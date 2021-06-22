@@ -1,0 +1,6 @@
+#base "npc_soldier.txt"
+npc_soldier_sidearm
+{
+	title						"Pistol Grunt"
+	DefaultWeapon				"mp_weapon_semipistol"
+}

@@ -1,0 +1,84 @@
+global function SvXP_Init
+global function PlayerProgressionAllowed
+global function HandleXPGainForScoreEvent
+global function AddXP
+
+void function SvXP_Init()
+{
+	AddCallback_OnClientConnected( SetupPlayerPreviousXPValues )
+}
+
+void function SetupPlayerPreviousXPValues( entity player )
+{
+	InitXP( player )
+
+	foreach ( string xpFaction in GetAllFactionRefs() )
+		player.SetPersistentVar( "previousFactionXP[" + xpFaction + "]", FactionGetXP( player, xpFaction ) )
+
+	foreach ( string xpTitan in shTitanXP.titanClasses )
+	{
+		player.SetPersistentVar( "previousTitanXP[" + xpTitan + "]", TitanGetXP( player, xpTitan ) )
+		player.SetPersistentVar( "fdPreviousTitanXP[" + xpTitan + "]", FD_TitanGetXP( player, xpTitan ) )
+	}
+
+	foreach ( string xpWeapon in shWeaponXP.weaponClassNames )
+		player.SetPersistentVar( GetItemPersistenceStruct( xpWeapon ) + ".previousWeaponXP", WeaponGetXP( player, xpWeapon ) )
+}
+
+bool function PlayerProgressionAllowed( entity player )
+{
+	return true
+}
+
+void function HandleXPGainForScoreEvent( entity player, ScoreEvent event )
+{
+	// note: obviously all xp stuff can be cheated in if people want to on customs, this is mainly just here for fun for those who want it and feature completeness
+
+	int xpValue = ScoreEvent_GetXPValue( event )
+	int weaponXp = ScoreEvent_GetXPValueWeapon( event )
+	int titanXp = ScoreEvent_GetXPValueTitan( event )
+	int factionXp = ScoreEvent_GetXPValueFaction( event )
+
+	if ( player.GetPlayerNetInt( "xpMultiplier" ) > 0 || GetCurrentPlaylistVarInt( "double_xp_enabled", 0 ) == 1 )
+	{
+		xpValue *= 2
+		weaponXp *= 2
+		titanXp *= 2
+		factionXp *= 2
+	}
+
+	entity weapon = player.GetActiveWeapon()
+	if ( IsValid( weapon ) && ShouldTrackXPForWeapon( weapon.GetWeaponClassName() ) && weaponXp != 0 )
+		AddWeaponXP( player, weaponXp )
+
+	// if we specifically gain titan xp, then give titan xp no matter what, otherwise only give it when we're in a titan
+	if ( titanXp != 0 )
+		AddTitanXP( player, titanXp )
+
+	if ( factionXp != 0 )
+		AddFactionXP( player, factionXp )
+
+	// global xp
+	if ( xpValue != 0 )
+		AddXP( player, xpValue )
+}
+
+void function AddXP( entity player, int amount )
+{
+	int oldXp = player.GetPersistentVarAsInt( "xp" )
+	if ( oldXp < 0 )
+		oldXp = 0
+	int oldLevel = GetLevelForXP( oldXp )
+	player.SetPersistentVar( "xp", min( oldXp + amount, PlayerGetMaxXPPerGen() ) )
+	player.XPChanged() // network xp change to client, gen can't change here
+
+	int newXp = player.GetPersistentVarAsInt( "xp" )
+	int newLevel = GetLevelForXP( newXp )
+	if ( newLevel != oldLevel )
+	{
+		Remote_CallFunction_NonReplay( player, "ServerCallback_PlayerLeveledUp", player.GetPersistentVarAsInt( "gen" ), newLevel )
+
+		if ( ProgressionEnabledForPlayer( player ) )
+			AwardRandomItemsForPlayerLevels( player, player.GetPersistentVarAsInt( "gen" ), newLevel )
+	}
+}

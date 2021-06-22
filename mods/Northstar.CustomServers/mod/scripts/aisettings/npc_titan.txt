@@ -1,0 +1,172 @@
+npc_titan
+{
+	HullType				"HULL_TITAN"
+	useSequenceBounds		1
+	collideWithPlayer		1
+	AIClass					titan
+	BodyType				titan
+	ArmorType				heavy
+	SmartAmmoLockType		large
+	TraverseAnimType		titan
+	title 					#NPC_TITAN
+	ui_targetinfo			"ui/targetinfo_titan"       [$mp]
+	ui_targetinfo			"ui/targetinfo_titan_sp"    [$sp]
+
+	smartAmmoLockAttachmentName0	SMART_AMMO_HEAD
+	smartAmmoLockAttachmentName1	SMART_AMMO_TORSO_FRONT
+	smartAmmoLockAttachmentName2	SMART_AMMO_TORSO_BASE
+	smartAmmoLockAttachmentName3	SMART_AMMO_ARM_LEFT
+	smartAmmoLockAttachmentName4	SMART_AMMO_ARM_RIGHT
+
+	BaseClass				"npc_titan"
+
+	DefaultModelName		"models/titans/buddy/titan_buddy.mdl"
+	DefaultWeapon			"mp_titanweapon_particle_accelerator"
+	BehaviorSelector		"behavior_titan"
+	WeaponCapacity			"TitanMainWeapons"
+	npc_titan_player_settings 		"titan_atlas"
+
+	mechanical				1
+
+	showHolsteredWeapons	1
+
+	Health					8000 [$sp]
+	Health					8000 [$mp]
+
+	PainOnHeavyDamageThreshold		1000
+	PainOnRepeatDamageThreshold		3000
+	RepeatDamageTimeInterval		3
+	breakOutOfPainDamageThreshold	300
+	lightPainMinInterval	1.5
+	heavyPainMinInterval	8
+
+	FOV_Vert_Offset			-20
+    FOV_Near_Dist			180		// use near values up to this distance
+	FOV_Far_Dist			1000	// use far values after this distance, interpolate horizontal in between, use far for vertical
+
+	FOV_Idle_Near_Horz		140
+	FOV_Idle_Near_Vert		120
+	FOV_Idle_Far_Horz		100
+	FOV_Idle_Far_Vert		70
+
+	FOV_Alert_Near_Horz		180
+	FOV_Alert_Near_Vert		90
+	FOV_Alert_Far_Horz		170
+	FOV_Alert_Far_Vert		70
+
+	FOV_Combat_Near_Horz		180
+	FOV_Combat_Near_Vert		120
+	FOV_Combat_Far_Horz		170
+	FOV_Combat_Far_Vert		90
+
+	YawSpeed				25
+	MoveYawSpeed			15
+	AimAngularSpeed			10
+
+	moveDeflectionSmallObstacleRadius	25
+
+	MeleeDamageMin			150
+	MeleeDamageMax			300
+	MeleeDamageMinHeavyArmor	500
+	MeleeDamageMaxHeavyArmor	600
+	MeleeDamageRadius		120
+	MeleeDamageForce		2500000
+	MeleeChargeDamageForce 		2800000
+	MeleeDamageUpwardBias	0.5
+	MeleeRange				200
+	MeleeChargeRange		270
+	MeleeChargeDamageRadius		150
+	MeleeChargeDamageHeight		150
+	MeleeChargeDamageMin	500
+	MeleeChargeDamageMax	700
+	MeleeChargeDamageMinHeavyArmor	700
+	MeleeChargeDamageMaxHeavyArmor	1000
+	meleeInterval			2
+	meleeChargeInterval		3
+	meleeMaxCombo			2
+	meleeCameraShakeDuration	1.0
+	MeleeEnemyArmorType		any
+	MeleeChargeEnemyArmorType		any
+	meleeImpactEffectTable		"melee_titan"
+	syncedMeleeEngageDist			80
+	syncedMeleePressToInitiateDist	300
+	landingImpactTable			"titan_landing"
+	footstepImpactTable			"titan_footstep"
+	dodgeImpactTable			"titan_dodge"
+
+	circleStrafeDist		1000
+	circleStrafeAngleIncrement	20
+
+	faceEnemyToleranceAngle	85
+	faceEnemyWhileMovingDist 3500
+	faceEnemyWhileMovingDuration	3
+	StrafeDodgeDamage		800
+
+	takeCoverFromEnemyRadius	700
+	chaseStopDist			200
+   	chaseStopDistHeavyArmor	1000
+
+	MinStartMoveDist		300
+	MaxArrivalDist			320
+	MinForceWalkDist		300
+
+	showFriendlyIcon				1
+	restrictAimGunToValidSequences	1
+	waitBetweenWeaponBurst			1
+	shootableByFriendlyPlayer		1
+
+	allowFlee				0
+	allowSignals			1
+	allowPatrol				1
+	allowInvestigate		1
+	allowCrouchAnims		0
+
+	patrolRangeMin			1000
+	patrolRangeMax			2500
+
+	minGoalRadius			256
+
+	aiEnemy_immediateThreatDist	800		[$sp]
+	aiEnemy_usePriorityDist		2200
+	aiEnemy_priority			50
+
+	ai_passThroughThickness 128
+
+	titan_footstep_damage_height_check_ratio 0.15
+	titan_footstep_damage_min_speed	50
+   	titan_footstep_damage_interval 1.0
+   	titan_footstep_damage_dist_interval 150
+
+	chasecamDistanceMax		320
+	chasecamMaxOrbitDepth	90
+	chasecamOffsetUp		0
+	chasecamOffsetRight		110
+
+	magneticRange			190
+
+	dodgePeriod					8 // Don't dodge more than maxDodgePerPeriod within this time
+	maxDodgePerPeriod			2 // Don't dodge more than this many times in dodgePeriod
+	dodgeForwardThreshold		1000
+	dodgeBackwardThreshold		1600
+	enemyAimAtMeWidthHeavyArmor	50
+	reactChanceDefault			100
+
+	evasiveCombatShieldPct				0.8			// if my shield is above 80% don't be evasive
+
+	evasiveCombatHealthSegmentPct		0.0
+	aggressiveCombatHealthSegmentPct	0.0
+
+	aggressiveCombatTotalHealthDiffPct 	0.3 		// if my health+shield - enemy heatlh+shield is > 30% of my max health+shield
+
+	evasiveCombatTotalHealthDiffPct 	1.0	[$mp]	// if enemy health+shield - my heatlh+shield is > 100% of my max health+shield
+	evasiveCombatTotalHealthDiffPct 	0.2	[$sp]	// if enemy health+shield - my heatlh+shield is > 20% of my max health+shield
+
+	evasiveCombatHealthChangeRateDiff	-200
+	aggresiveCombatHealthChangeRateDiff	100
+
+	sharedEnergyTotal 1000
+	sharedEnergyRegenDelay 0.2
+	sharedEnergyRegenRate 100.0
+
+	DrawEnemyHealthBar	1
+}

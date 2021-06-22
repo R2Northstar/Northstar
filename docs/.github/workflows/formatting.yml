@@ -1,0 +1,39 @@
+name: Formatting
+
+on: [push, pull_request]
+
+jobs:
+  consistent-whitespace:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for tabs
+        run: |
+          echo "Checking for tabs..."
+          TABBED_FILES=$(grep --recursive --binary-files=without-match --perl-regexp --files-with-matches "\t" --exclude-dir=.git . || true)
+          if [ -n "$TABBED_FILES" ]; then
+            echo "Error: Tabs found in the following files:"
+            echo "$TABBED_FILES"
+            exit 1
+          else
+            echo "No tabs found."
+          fi
+
+  trailing-whitespace:
+    name: Find Trailing Whitespace
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Find trailing whitespaces in text files
+        run: |
+          # List all text file extensions to check
+          FILE_EXTENSIONS=("*.txt" "*.md" "*.yml" "*.yaml" "*.json" "*.sh" "*.py")
+
+          # Loop over each extension and check for trailing whitespaces
+          for EXT in "${FILE_EXTENSIONS[@]}"; do
+            if git ls-files "$EXT" | grep -q .; then
+              git ls-files "$EXT" | xargs grep -n -E " +$" && exit 1 || echo "No trailing whitespaces found in $EXT files"
+            fi
+          done

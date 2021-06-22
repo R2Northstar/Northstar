@@ -1,0 +1,9 @@
+# Configures dependabot
+
+version: 2
+updates:
+  # uv packages
+  - package-ecosystem: 'uv'
+    directory: '/'
+    schedule:
+      interval: "weekly"

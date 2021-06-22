@@ -1,0 +1,11 @@
+global function NorthstarCustomPrecache
+
+void function NorthstarCustomPrecache()
+{
+	PrecacheWeapon( "mp_weapon_peacekraber" )
+	PrecacheWeapon( "mp_titanweapon_triplethreat" )
+	PrecacheWeapon( "mp_titanweapon_arc_cannon" )
+	PrecacheWeapon( "melee_pilot_kunai" )
+
+	RegisterWeaponDamageSources( { mp_weapon_peacekraber = "#WPN_PEACEKRABER", melee_pilot_kunai = "#MELEE_KUNAI" } )
+}

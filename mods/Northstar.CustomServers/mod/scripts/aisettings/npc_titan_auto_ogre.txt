@@ -1,0 +1,13 @@
+#base "npc_titan_auto.txt"
+
+npc_titan_auto_ogre
+{
+	footstep_type			"ogre"
+	title 					#NPC_TITAN_AUTO_OGRE
+
+	StrafeDodgeDamage		1000
+
+	dodgePeriod				7 	  	 	// Don't dodge more than maxDodgePerPeriod within this time
+	maxDodgePerPeriod		1 		 	// Don't dodge more than this many times in dodgePeriod
+	DefaultModelName		"models/titans/heavy/titan_heavy_ogre.mdl"
+}

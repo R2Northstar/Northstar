@@ -1,0 +1,174 @@
+{
+	"Name": "Northstar.Client",
+	"Description": "Various ui and client changes to fix bugs and add better support for mods",
+	"Version": "0.0.0.1+dev",
+	"LoadPriority": 0,
+	"InitScript": "cl_northstar_client_init.nut",
+	"ConVars": [
+		{
+			"Name": "allow_mod_auto_download",
+			"DefaultValue": "1"
+		},
+		{
+			"Name": "filter_hide_empty",
+			"DefaultValue": "0"
+		},
+		{
+			"Name": "filter_hide_full",
+			"DefaultValue": "0"
+		},
+		{
+			"Name": "filter_hide_protected",
+			"DefaultValue": "0"
+		},
+		{
+			"Name": "filter_map",
+			"DefaultValue": "0"
+		},
+		{
+			"Name": "filter_gamemode",
+			"DefaultValue": "0"
+		},
+		{
+			"Name": "filter_mods",
+			"DefaultValue": "0"
+		},
+		{
+			"Name": "filter_map_hide_locked",
+			"DefaultValue": "0"
+		},
+		{
+			"Name": "modlist_show_convars",
+			"DefaultValue": "0",
+			"Flags": "ARCHIVE_PLAYERPROFILE"
+		},
+		{
+			"Name": "modlist_reverse",
+			"DefaultValue": "0",
+			"Flags": "ARCHIVE_PLAYERPROFILE"
+		},
+		{
+			"Name": "modemenu_mode_filter",
+			"DefaultValue": "-1"
+		},
+		{
+			"Name": "serverlist_remove_colors",
+			"DefaultValue": "0",
+			"Flags": "ARCHIVE_PLAYERPROFILE"
+		}
+	],
+	"Scripts": [
+		{
+			"Path": "_custom_codecallbacks_client.gnut",
+			"RunOn": "CLIENT"
+		},
+		{
+			"Path": "client/cl_chat.gnut",
+			"RunOn": "CLIENT"
+		},
+		{
+			"Path": "ui/menu_ns_modmenu.nut",
+			"RunOn": "UI",
+			"UICallback": {
+				"Before": "AddNorthstarModMenu",
+				"After": "AddNorthstarModMenu_MainMenuFooter"
+			}
+		},
+		{
+			"Path": "ui/menu_ns_setversionlabel.nut",
+			"RunOn": "UI",
+			"UICallback": {
+				"After": "NS_SetVersionLabel"
+			}
+		},
+		{
+			"Path": "presence/ui_presence.nut",
+			"RunOn": "UI",
+			"UICallback": {
+				"After": "NSUpdateGameStateUIStart"
+			}
+		},
+		{
+			"Path": "presence/cl_presence.nut",
+			"RunOn": "CLIENT",
+			"ClientCallback": {
+				"After": "NSUpdateGameStateClientStart"
+			}
+		},
+		{
+			"Path": "ui/menu_ns_moddownload.nut",
+			"RunOn": "UI"
+		},
+		{
+			"Path": "ui/menu_ns_serverbrowser.nut",
+			"RunOn": "UI",
+			"UICallback": {
+				"Before": "AddNorthstarServerBrowserMenu"
+			}
+		},
+		{
+			"Path": "ui/menu_ns_connect_password.nut",
+			"RunOn": "UI",
+			"UICallback": {
+				"Before": "AddNorthstarConnectWithPasswordMenu"
+			}
+		},
+		{
+			"Path": "ui/menu_ns_custom_match_settings_categories.nut",
+			"RunOn": "UI",
+			"UICallback": {
+				"Before": "AddNorthstarCustomMatchSettingsCategoryMenu"
+			}
+		},
+		{
+			"Path": "ui/menu_ns_custom_match_settings.nut",
+			"RunOn": "UI",
+			"UICallback": {
+				"Before": "AddNorthstarCustomMatchSettingsMenu"
+			}
+		},
+		{
+			"Path": "ui/controller_prompts.nut",
+			"RunOn": "UI"
+		},
+		{
+			"Path": "ui/ns_slider.nut",
+			"RunOn": "UI"
+		},
+		{
+			"Path": "ui/menu_ns_color_picker.nut",
+			"RunOn": "UI || CLIENT",
+			"UICallback": {
+				"After": "AddColorPickerMenu"
+			}
+		},
+		{
+			"Path": "ui/menu_mod_settings.nut",
+			"RunOn": "UI",
+			"UICallback":{
+				"Before": "AddModSettingsMenu"
+			}
+		},
+		{
+			"Path": "ui/ui_mouse_capture.nut",
+			"RunOn": "UI"
+		},
+		{
+			"Path": "ui/atlas_auth.nut",
+			"RunOn": "UI",
+			"UICallback": {
+				"After": "AtlasAuthDialog"
+			}
+		},
+		{
+			"Path": "ui/ns_client_mod_settings.gnut",
+			"RunOn": "UI",
+			"UICallback":{
+				"Before": "NSClientModSettings"
+			}
+		}
+	],
+	"Localisation": [
+		"resource/northstar_client_localisation_%language%.txt"
+	]
+}

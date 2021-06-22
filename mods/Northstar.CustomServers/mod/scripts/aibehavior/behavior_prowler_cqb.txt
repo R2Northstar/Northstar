@@ -1,0 +1,38 @@
+Selector Common
+
+	SelectSchedule_FallToGround
+	SelectSchedule_Flinch
+	SelectSchedule_DisplaceFromDangerousArea
+	SelectSchedule_ReactCloak
+	SelectSchedule_ReactBullet
+	SelectSchedule_ReactSurprised
+	SelectSchedule_SyncedMeleeAttack
+	SelectSchedule_PressToInitiateSyncedMeleeAttack
+	SelectSchedule_LayeredBehavior
+
+Selector_End
+
+
+Selector Idle
+
+	SelectSchedule_Idle
+
+Selector_End
+
+
+Selector Alert
+
+	SelectSchedule_Alert
+
+Selector_End
+
+
+Selector Combat
+
+	SelectSchedule_MeleeAttack
+	SelectSchedule_MeleeAttackJumpUp
+	SelectSchedule_NewEnemySignal
+	SelectSchedule_ChaseEnemy
+	SelectSchedule_MeleeAttackWait
+
+Selector_End

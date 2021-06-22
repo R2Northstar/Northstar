@@ -1,0 +1,4 @@
+#base "npc_soldier_shield_captain.txt"
+npc_soldier_drone_summoner
+{
+}

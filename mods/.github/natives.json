@@ -1,0 +1,684 @@
+{
+	"CONSTS":[
+		{
+			"name": "VANILLA",
+			"value": 0
+		},
+		{
+			"name": "MAX_FOLDER_SIZE",
+			"value": 1024
+		},
+		{
+			"name": "NS_VERSION_MAJOR",
+			"value": 0
+		},
+		{
+			"name": "NS_VERSION_MINOR",
+			"value": 0
+		},
+		{
+			"name": "NS_VERSION_PATCH",
+			"value": 0
+		},
+		{
+			"name": "NS_VERSION_DEV",
+			"value": 1
+		}
+	],
+	"SERVER":[
+		{
+			"name":"NSGetModNames",
+			"helpText":"",
+			"returnTypeString":"array<string>",
+			"argTypes":""
+		},
+		{
+			"name":"NSGetModsInformation",
+			"helpText":"",
+			"returnTypeString":"array<ModInfo>",
+			"argTypes":""
+		},
+		{
+			"name":"NSSetModEnabled",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"string modName, string modVersion, bool enabled"
+		},
+		{
+			"name":"DecodeJSON",
+			"helpText":"converts a json string to a squirrel table",
+			"returnTypeString":"table",
+			"argTypes":"string json, bool fatalParseErrors = false"
+		},
+		{
+			"name":"EncodeJSON",
+			"helpText":"converts a squirrel table to a json string",
+			"returnTypeString":"string",
+			"argTypes":"table data"
+		},
+		{
+			"name":"StringToAsset",
+			"helpText":"converts a given string to an asset",
+			"returnTypeString":"asset",
+			"argTypes":"string assetName"
+		},
+		{
+			"name":"NSGetLocalPlayerUID",
+			"helpText":"Returns the local player's uid.",
+			"returnTypeString":"string",
+			"argTypes":""
+		},
+		{
+			"name":"NSEarlyWritePlayerPersistenceForLeave",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"entity player"
+		},
+		{
+			"name":"NSIsWritingPlayerPersistence",
+			"helpText":"",
+			"returnTypeString":"bool",
+			"argTypes":""
+		},
+		{
+			"name":"NSIsPlayerLocalPlayer",
+			"helpText":"",
+			"returnTypeString":"bool",
+			"argTypes":"entity player"
+		},
+		{
+			"name":"NSIsDedicated",
+			"helpText":"",
+			"returnTypeString":"bool",
+			"argTypes":""
+		},
+		{
+			"name":"NSDisconnectPlayer",
+			"helpText":"Disconnects the player from the server with the given reason",
+			"returnTypeString":"bool",
+			"argTypes":"entity player, string reason"
+		},
+		{
+			"name":"GetUserInfoKVString_Internal",
+			"helpText":"Gets the string value of a given player's userinfo convar by name",
+			"returnTypeString":"string",
+			"argTypes":"entity player, string key, string defaultValue = \"\""
+		},
+		{
+			"name":"GetUserInfoKVAsset_Internal",
+			"helpText":"Gets the asset value of a given player's userinfo convar by name",
+			"returnTypeString":"asset",
+			"argTypes":"entity player, string key, asset defaultValue = $\"\""
+		},
+		{
+			"name":"GetUserInfoKVInt_Internal",
+			"helpText":"Gets the int value of a given player's userinfo convar by name",
+			"returnTypeString":"int",
+			"argTypes":"entity player, string key, int defaultValue = 0"
+		},
+		{
+			"name":"GetUserInfoKVFloat_Internal",
+			"helpText":"Gets the float value of a given player's userinfo convar by name",
+			"returnTypeString":"float",
+			"argTypes":"entity player, string key, float defaultValue = 0"
+		},
+		{
+			"name":"GetUserInfoKVBool_Internal",
+			"helpText":"Gets the bool value of a given player's userinfo convar by name",
+			"returnTypeString":"bool",
+			"argTypes":"entity player, string key, bool defaultValue = false"
+		},
+		{
+			"name":"NSSendMessage",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"int playerIndex, string text, bool isTeam"
+		},
+		{
+			"name":"NSBroadcastMessage",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"int fromPlayerIndex, int toPlayerIndex, string text, bool isTeam, bool isDead, int messageType"
+		},
+		{
+			"name":"NSGetCurrentModName",
+			"helpText":"Returns the mod name of the script running this function",
+			"returnTypeString":"string",
+			"argTypes":""
+		},
+		{
+			"name":"NSGetCallingModName",
+			"helpText":"Returns the mod name of the script running this function",
+			"returnTypeString":"string",
+			"argTypes":"int depth = 0"
+		},
+		{
+			"name":"NS_InternalMakeHttpRequest",
+			"helpText":"[Internal use only] Passes the HttpRequest struct fields to be reconstructed in native and used for an http request",
+			"returnTypeString":"int",
+			"argTypes":"int method, string baseUrl, table<string, array<string> > headers, table<string, array<string> > queryParams, string contentType, string body, int timeout, string userAgent"
+		},
+		{
+			"name":"NSIsHttpEnabled",
+			"helpText":"Whether or not HTTP requests are enabled. You can opt-out by starting the game with -disablehttprequests.",
+			"returnTypeString":"bool",
+			"argTypes":""
+		},
+		{
+			"name":"NSIsLocalHttpAllowed",
+			"helpText":"Whether or not HTTP requests can be made to a private network address. You can enable this by starting the game with -allowlocalhttp.",
+			"returnTypeString":"bool",
+			"argTypes":""
+		},
+		{
+			"name":"NS_InternalLoadFile",
+			"helpText":"Loads a file asynchronously.",
+			"returnTypeString":"int",
+			"argTypes":"string file"
+		},
+		{
+			"name":"NSSaveFile",
+			"helpText":"Saves a file.",
+			"returnTypeString":"void",
+			"argTypes":"string file, string data"
+		},
+		{
+			"name":"NSSaveJSONFile",
+			"helpText":"Converts a squirrel table to a json string, then saves it to a file.",
+			"returnTypeString":"void",
+			"argTypes":"string file, table data"
+		},
+		{
+			"name":"NSDoesFileExist",
+			"helpText":"Checks whether or not a file exists.",
+			"returnTypeString":"bool",
+			"argTypes":"string file"
+		},
+		{
+			"name":"NSDeleteFile",
+			"helpText":"Deletes a file.",
+			"returnTypeString":"bool",
+			"argTypes":"string file"
+		},
+		{
+			"name":"NS_InternalGetAllFiles",
+			"helpText":"Returns an array of all files in a mod's save folder.",
+			"returnTypeString":"array<string>",
+			"argTypes":"string path"
+		},
+		{
+			"name":"NSGetFileSize",
+			"helpText":"Returns the size of a file, in KB, rounded down.",
+			"returnTypeString":"int",
+			"argTypes":"string file"
+		},
+		{
+			"name":"NSIsFolder",
+			"helpText":"Returns whether or not a given path leads to a folder.",
+			"returnTypeString":"bool",
+			"argTypes":"string path"
+		}
+	],
+	"CLIENT":[
+		{
+			"name":"NSSendMessage",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"string message, bool isIngame, bool isTeam"
+		},
+		{
+			"name":"NSChatWrite",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"int context, string text"
+		},
+		{
+			"name":"NSChatWriteRaw",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"int context, string text"
+		},
+		{
+			"name":"NSChatWriteLine",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"int context, string text"
+		},
+		{
+			"name":"NSGetModNames",
+			"helpText":"",
+			"returnTypeString":"array<string>",
+			"argTypes":""
+		},
+		{
+			"name":"NSSetModEnabled",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"string modName, string modVersion, bool enabled"
+		},
+		{
+			"name":"DecodeJSON",
+			"helpText":"converts a json string to a squirrel table",
+			"returnTypeString":"table",
+			"argTypes":"string json, bool fatalParseErrors = false"
+		},
+		{
+			"name":"EncodeJSON",
+			"helpText":"converts a squirrel table to a json string",
+			"returnTypeString":"string",
+			"argTypes":"table data"
+		},
+		{
+			"name":"StringToAsset",
+			"helpText":"converts a given string to an asset",
+			"returnTypeString":"asset",
+			"argTypes":"string assetName"
+		},
+		{
+			"name":"NSGetLocalPlayerUID",
+			"helpText":"Returns the local player's uid.",
+			"returnTypeString":"string",
+			"argTypes":""
+		},
+		{
+			"name":"NSGetCurrentModName",
+			"helpText":"Returns the mod name of the script running this function",
+			"returnTypeString":"string",
+			"argTypes":""
+		},
+		{
+			"name":"NSGetCallingModName",
+			"helpText":"Returns the mod name of the script running this function",
+			"returnTypeString":"string",
+			"argTypes":"int depth = 0"
+		},
+		{
+			"name":"NSUpdateGameStateClient",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"int playerCount, int maxPlayers, int outScore, int secondHighestScore, int highestScore, bool roundBased, int scoreLimit"
+		},
+		{
+			"name":"NSUpdateServerInfoReload",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"int maxPlayers"
+		},
+		{
+			"name":"NSUpdateTimeInfo",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"float timeInFuture"
+		},
+		{
+			"name":"NS_InternalMakeHttpRequest",
+			"helpText":"[Internal use only] Passes the HttpRequest struct fields to be reconstructed in native and used for an http request",
+			"returnTypeString":"int",
+			"argTypes":"int method, string baseUrl, table<string, array<string> > headers, table<string, array<string> > queryParams, string contentType, string body, int timeout, string userAgent"
+		},
+		{
+			"name":"NSIsHttpEnabled",
+			"helpText":"Whether or not HTTP requests are enabled. You can opt-out by starting the game with -disablehttprequests.",
+			"returnTypeString":"bool",
+			"argTypes":""
+		},
+		{
+			"name":"NSIsLocalHttpAllowed",
+			"helpText":"Whether or not HTTP requests can be made to a private network address. You can enable this by starting the game with -allowlocalhttp.",
+			"returnTypeString":"bool",
+			"argTypes":""
+		},
+		{
+			"name":"NS_InternalLoadFile",
+			"helpText":"Loads a file asynchronously.",
+			"returnTypeString":"int",
+			"argTypes":"string file"
+		},
+		{
+			"name":"NSSaveFile",
+			"helpText":"Saves a file.",
+			"returnTypeString":"void",
+			"argTypes":"string file, string data"
+		},
+		{
+			"name":"NSSaveJSONFile",
+			"helpText":"Converts a squirrel table to a json string, then saves it to a file.",
+			"returnTypeString":"void",
+			"argTypes":"string file, table data"
+		},
+		{
+			"name":"NSDoesFileExist",
+			"helpText":"Checks whether or not a file exists.",
+			"returnTypeString":"bool",
+			"argTypes":"string file"
+		},
+		{
+			"name":"NSDeleteFile",
+			"helpText":"Deletes a file.",
+			"returnTypeString":"bool",
+			"argTypes":"string file"
+		},
+		{
+			"name":"NS_InternalGetAllFiles",
+			"helpText":"Returns an array of all files in a mod's save folder.",
+			"returnTypeString":"array<string>",
+			"argTypes":"string path"
+		},
+		{
+			"name":"NSGetFileSize",
+			"helpText":"Returns the size of a file, in KB, rounded down.",
+			"returnTypeString":"int",
+			"argTypes":"string file"
+		},
+		{
+			"name":"NSIsFolder",
+			"helpText":"Returns whether or not a given path leads to a folder.",
+			"returnTypeString":"bool",
+			"argTypes":"string path"
+    }
+	],
+	"UI":[
+		{
+			"name":"NSGetCursorPosition",
+			"helpText":"",
+			"returnTypeString":"vector ornull",
+			"argTypes":""
+		},
+		{
+			"name":"NSRequestCustomMainMenuPromos",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":""
+		},
+		{
+			"name":"NSHasCustomMainMenuPromoData",
+			"helpText":"",
+			"returnTypeString":"bool",
+			"argTypes":""
+		},
+		{
+			"name":"NSGetCustomMainMenuPromoData",
+			"helpText":"",
+			"returnTypeString":"var",
+			"argTypes":"int promoDataKey"
+		},
+		{
+			"name":"NSGetModNames",
+			"helpText":"",
+			"returnTypeString":"array<string>",
+			"argTypes":""
+		},
+		{
+			"name":"NSGetModsInformation",
+			"helpText":"",
+			"returnTypeString":"array<ModInfo>",
+			"argTypes":""
+		},
+		{
+			"name":"NSGetModInformation",
+			"helpText":"",
+			"returnTypeString":"array<ModInfo>",
+			"argTypes":"string modName"
+		},
+		{
+			"name":"NSSetModEnabled",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"string modName, string modVersion, bool enabled"
+		},
+		{
+			"name": "NSFetchVerifiedModsManifesto",
+			"helpText": "Retrieves the verified mods list from the central authority (GitHub).",
+			"returnTypeString": "void",
+			"argTypes": ""
+
+		},
+		{
+			"name": "NSIsModDownloadable",
+			"helpText": "checks whether a mod is verified and can be auto-downloaded",
+			"returnTypeString": "bool",
+			"argTypes": "string name, string version"
+
+		},
+		{
+			"name": "NSDownloadMod",
+			"helpText": "downloads a given mod from distant API to local game profile",
+			"returnTypeString": "void",
+			"argTypes": "string name, string version"
+		},
+		{
+			"name": "NSCancelModDownload",
+			"helpText": "prevents installation of the mod currently being installed",
+			"returnTypeString": "void",
+			"argTypes": ""
+		},
+		{
+			"name": "NSGetModInstallState",
+			"helpText": "get status of the mod currently being installed",
+			"returnTypeString": "ModInstallState",
+			"argTypes": ""
+		},
+		{
+			"name":"NSReloadMods",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":""
+		},
+		{
+			"name":"NSIsMasterServerAuthenticated",
+			"helpText":"",
+			"returnTypeString":"bool",
+			"argTypes":""
+		},
+		{
+			"name":"NSRequestServerList",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":""
+		},
+		{
+			"name":"NSIsRequestingServerList",
+			"helpText":"",
+			"returnTypeString":"bool",
+			"argTypes":""
+		},
+		{
+			"name":"NSMasterServerConnectionSuccessful",
+			"helpText":"",
+			"returnTypeString":"bool",
+			"argTypes":""
+		},
+		{
+			"name":"NSGetServerCount",
+			"helpText":"",
+			"returnTypeString":"int",
+			"argTypes":""
+		},
+		{
+			"name": "NSGetGameServers",
+			"helpText": "Gets all fetched servers",
+			"returnTypeString": "array<ServerInfo>",
+			"argTypes": ""
+		},
+		{
+			"name":"NSClearRecievedServerList",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":""
+		},
+		{
+			"name":"NSTryAuthWithServer",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"int serverIndex, string password = ''"
+		},
+		{
+			"name":"NSIsAuthenticatingWithServer",
+			"helpText":"",
+			"returnTypeString":"bool",
+			"argTypes":""
+		},
+		{
+			"name":"NSWasAuthSuccessful",
+			"helpText":"",
+			"returnTypeString":"bool",
+			"argTypes":""
+		},
+		{
+			"name":"NSConnectToAuthedServer",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":""
+		},
+		{
+			"name":"NSTryAuthWithLocalServer",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":""
+		},
+		{
+			"name":"NSCompleteAuthWithLocalServer",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":""
+		},
+		{
+			"name":"NSGetAuthFailReason",
+			"helpText":"",
+			"returnTypeString":"string",
+			"argTypes":""
+		},
+		{
+			"name":"DecodeJSON",
+			"helpText":"converts a json string to a squirrel table",
+			"returnTypeString":"table",
+			"argTypes":"string json, bool fatalParseErrors = false"
+		},
+		{
+			"name":"EncodeJSON",
+			"helpText":"converts a squirrel table to a json string",
+			"returnTypeString":"string",
+			"argTypes":"table data"
+		},
+		{
+			"name":"StringToAsset",
+			"helpText":"converts a given string to an asset",
+			"returnTypeString":"asset",
+			"argTypes":"string assetName"
+		},
+		{
+			"name":"NSGetLocalPlayerUID",
+			"helpText":"Returns the local player's uid.",
+			"returnTypeString":"string",
+			"argTypes":""
+		},
+		{
+			"name":"NSGetCurrentModName",
+			"helpText":"Returns the mod name of the script running this function",
+			"returnTypeString":"string",
+			"argTypes":""
+		},
+		{
+			"name":"NSGetCallingModName",
+			"helpText":"Returns the mod name of the script running this function",
+			"returnTypeString":"string",
+			"argTypes":"int depth = 0"
+		},
+		{
+			"name":"NSUpdateGameStateUI",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"string gamemode, string gamemodeName, string map, string mapName, bool connected, bool loading"
+		},
+		{
+			"name":"NSUpdateServerInfo",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"string id, string name, string password, int players, int maxPlayers, string map, string mapDisplayName, string playlist, string playlistDisplayName"
+		},
+		{
+			"name":"NSSetLoading",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"bool loading"
+		},
+		{
+			"name":"NSUpdateListenServer",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":""
+		},
+		{
+			"name":"NS_InternalMakeHttpRequest",
+			"helpText":"[Internal use only] Passes the HttpRequest struct fields to be reconstructed in native and used for an http request",
+			"returnTypeString":"int",
+			"argTypes":"int method, string baseUrl, table<string, array<string> > headers, table<string, array<string> > queryParams, string contentType, string body, int timeout, string userAgent"
+		},
+		{
+			"name":"NSIsHttpEnabled",
+			"helpText":"Whether or not HTTP requests are enabled. You can opt-out by starting the game with -disablehttprequests.",
+			"returnTypeString":"bool",
+			"argTypes":""
+		},
+		{
+			"name":"NSIsLocalHttpAllowed",
+			"helpText":"Whether or not HTTP requests can be made to a private network address. You can enable this by starting the game with -allowlocalhttp.",
+			"returnTypeString":"bool",
+			"argTypes":""
+		},
+		{
+			"name":"NS_InternalLoadFile",
+			"helpText":"Loads a file asynchronously.",
+			"returnTypeString":"int",
+			"argTypes":"string file"
+		},
+		{
+			"name":"NSSaveFile",
+			"helpText":"Saves a file.",
+			"returnTypeString":"void",
+			"argTypes":"string file, string data"
+		},
+		{
+			"name":"NSSaveJSONFile",
+			"helpText":"Converts a squirrel table to a json string, then saves it to a file.",
+			"returnTypeString":"void",
+			"argTypes":"string file, table data"
+		},
+		{
+			"name":"NSDoesFileExist",
+			"helpText":"Checks whether or not a file exists.",
+			"returnTypeString":"bool",
+			"argTypes":"string file"
+		},
+		{
+			"name":"NSDeleteFile",
+			"helpText":"Deletes a file.",
+			"returnTypeString":"bool",
+			"argTypes":"string file"
+		},
+		{
+			"name":"NS_InternalGetAllFiles",
+			"helpText":"Returns an array of all files in a mod's save folder.",
+			"returnTypeString":"array<string>",
+			"argTypes":"string path"
+		},
+		{
+			"name":"NSGetFileSize",
+			"helpText":"Returns the size of a file, in KB, rounded down.",
+			"returnTypeString":"int",
+			"argTypes":"string file"
+		},
+		{
+			"name":"NSIsFolder",
+			"helpText":"Returns whether or not a given path leads to a folder.",
+			"returnTypeString":"bool",
+			"argTypes":"string path"
+    },
+		{
+			"name":"NSGetMasterServerAuthResult",
+			"helpText":"",
+			"returnTypeString":"MasterServerAuthResult",
+			"argTypes":""
+		}
+	]
+}

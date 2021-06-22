@@ -1,0 +1,22 @@
+#base "npc_titan.txt"
+
+npc_titan_ogre
+{
+	footstep_type			"ogre"
+	title 					#NPC_TITAN_OGRE
+
+	StrafeDodgeDamage		1000
+	PainOnRepeatDamageThreshold		3500
+
+	MeleeChargeRange		300
+
+	dodgePeriod				10 [$sp] 	  	 	// Don't dodge more than maxDodgePerPeriod within this time
+	maxDodgePerPeriod		1 [$sp] 		 	// Don't dodge more than this many times in dodgePeriod
+
+	dodgePeriod				12 [$mp] 	  	 	// Don't dodge more than maxDodgePerPeriod within this time
+	maxDodgePerPeriod		0 [$mp] 		 	// Don't dodge more than this many times in dodgePeriod
+
+	DefaultModelName		"models/titans/heavy/titan_heavy_ogre.mdl" [$mp]
+	DefaultModelName		"models/titans/heavy/sp_titan_heavy_deadbolt.mdl" [$sp]
+	npc_titan_player_settings		"titan_ogre"
+}

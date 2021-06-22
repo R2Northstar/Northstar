@@ -1,0 +1,8 @@
+#base "npc_turret_sentry.txt"
+npc_turret_sentry_windup
+{
+	health 							600
+	MaxTurretYaw        			180
+	windup_time 					2.5
+	DefaultWeapon					"mp_weapon_yh803"
+}

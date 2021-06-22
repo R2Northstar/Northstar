@@ -1,0 +1,12 @@
+#base "npc_soldier.txt"
+
+npc_soldier_pve_eliteguard
+{
+    title					"Elite Guard"
+
+    DefaultModelName		"models/humans/grunts/imc_grunt_rifle_pve.mdl"
+    DefaultModelName_IMC	"models/humans/grunts/imc_grunt_rifle_pve.mdl"
+    DefaultModelName_MIL	"models/humans/grunts/imc_grunt_rifle_pve.mdl"
+
+    returnToIdleTime		3
+}

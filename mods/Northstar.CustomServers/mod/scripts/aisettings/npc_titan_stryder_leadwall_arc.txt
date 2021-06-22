@@ -1,0 +1,11 @@
+#base "npc_titan_stryder_leadwall.txt"
+npc_titan_stryder_leadwall_arc
+{
+    title							#NPC_TITAN_ARC
+
+	npc_titan_player_settings	"titan_stryder_leadwall_arc"
+
+	titanCamoIndex 2
+	titanDecalIndex 0
+	titanSkinIndex 52
+}

@@ -1,0 +1,49 @@
+{
+    "ignorePatterns": [
+        {
+            "pattern": "http://127.0.0.1:8000/"
+        },
+        {
+            "pattern": "https://cra0.net/public/bin-published/Titanfall_VPKTool3.4_Portable.zip"
+        },
+        {
+            "pattern": "https://crates.io/crates/rrplug"
+        },
+        {
+            "pattern": "https://forum.manjaro.org/t/howto-troubleshoot-crackling-in-pipewire/82442"
+        },
+        {
+            "pattern": "https://forums.getpaint.net/topic/6265-gradient-mapping/"
+        },
+        {
+            "pattern": "https://help.ea.com/en/help/pc/link-ea-and-steam/"
+        },
+        {
+            "pattern": "https://panel.ticketsbot.net/manage/920776187884732556/tags"
+        },
+        {
+            "pattern": "https://pastebin.com/raw/3DSCK09f"
+        },
+        {
+            "pattern": "https://taskinoz.com/northstar/"
+        },
+        {
+            "pattern": "https://wiki.archlinux.org/title/PulseAudio/Troubleshooting#Glitches.2C\\_skips\\_or\\_crackling"
+        },
+        {
+            "pattern": "https://www.majorgeeks.com/files/details/ati_tray_tools.html"
+        },
+        {
+            "pattern": "https://www.wunderboy.org/valve-hl2source-sdk-tools/#vtf_shell"
+        },
+        {
+            "pattern": "https://www.blender.org/"
+        },
+        {
+            "pattern": "#*"
+        },
+        {
+            "pattern": "/_static/"
+        }
+    ]
+}

@@ -1,0 +1,73 @@
+npc_marvin
+{
+	AIClass							marvin
+
+	title 							#NPC_MARVIN
+	ui_targetinfo					"ui/targetinfo_npc_basic" [$mp]
+	ui_targetinfo					"" [$sp]
+
+	HullType						"HULL_HUMAN"
+	BodyType						marvin
+	SmartAmmoLockType				none
+	smartAmmoLockAttachmentName0	HEADFOCUS
+
+	marvin_type 					"marvin_type_walker"
+
+	BehaviorSelector				"behavior_marvin"
+
+	mechanical						1
+	nonCombatAI						1
+
+	BaseClass						"npc_marvin"
+
+	footstep_type					"robot"
+
+	leechAnimSet					marvin
+
+	DefaultModelName				"models/robots/marvin/marvin.mdl"
+	DefaultWeapon					""
+
+	Health							10 [$sp]
+	Health							10 [$mp]
+
+	FOV_Vert_Offset					-10
+    FOV_Near_Dist					150		// distance at which we transition between near and far FOV values
+	FOV_Far_Dist					1000	// use far values after this distance, interpolate horizontal in between, use far for vertical
+
+	FOV_Idle_Near_Horz				180
+	FOV_Idle_Near_Vert				180
+	FOV_Idle_Far_Horz				180
+	FOV_Idle_Far_Vert				180
+
+	FOV_Alert_Near_Horz				180
+	FOV_Alert_Near_Vert				180
+	FOV_Alert_Far_Horz				180
+	FOV_Alert_Far_Vert				180
+
+	FOV_Combat_Near_Horz			180
+	FOV_Combat_Near_Vert			180
+	FOV_Combat_Far_Horz				180
+	FOV_Combat_Far_Vert				180
+
+	YawSpeed						30
+	MoveYawSpeed					12
+	AimAngularSpeed					7
+
+	MeleeDamageMin					10
+	MeleeDamageMax					20
+	MeleeDamageRadius				64
+
+	fallDeathHeight 				300
+
+	PainOnHeavyDamageThreshold		0
+	PainOnRepeatDamageThreshold		0
+
+	MinStartMoveDist				100
+	MaxArrivalDist					120
+	MinForceWalkDist				150
+
+	magneticRange					60
+
+	moveDeflectionLookAheadTime		1.5
+	reactChanceDefault				100
+}

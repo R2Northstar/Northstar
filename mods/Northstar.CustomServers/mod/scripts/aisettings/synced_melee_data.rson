@@ -1,0 +1,628 @@
+/*
+Synced Melee between AI data.
+This list should be sorted by attacker/defender pairs.
+*/
+
+/*
+engageAngleThreshold - How much turntable blending the defender is willing to do.
+Larger values increase the likelihood that the melee occurs, but at the cost of more blending.
+*/
+
+
+
+
+
+
+// ----- grunt VS grunt ----- //
+// front
+{
+	attackerClass:	"human"
+	defenderClass:	"human"
+	attackerSeq:	"pt_synced_melee_F_punch_A"
+	defenderSeq:	"pt_synced_melee_F_punch_D"
+	engageAngleThreshold:	40
+}
+
+{
+	attackerClass:	"human"
+	defenderClass:	"human"
+	attackerSeq:	"pt_synced_melee_F_throw_A"
+	defenderSeq:	"pt_synced_melee_F_throw_D"
+	engageAngleThreshold:	40
+}
+
+{
+	attackerClass:	"human"
+	defenderClass:	"human"
+	attackerSeq:	"pt_synced_melee_knife_kick_A"
+	defenderSeq:	"pt_synced_melee_knife_kick_D"
+	engageAngleThreshold:	40
+}
+
+{
+	attackerClass:	"human"
+	defenderClass:	"human"
+	attackerSeq:	"pt_synced_melee_knife_struggle_A"
+	defenderSeq:	"pt_synced_melee_knife_struggle_D"
+	engageAngleThreshold:	40
+}
+
+
+// side
+{
+	attackerClass:	"human"
+	defenderClass:	"human"
+	attackerSeq:	"pt_synced_melee_R_disarm_A"
+	defenderSeq:	"pt_synced_melee_R_disarm_D"
+	engageAngleThreshold:	40
+}
+
+{
+	attackerClass:	"human"
+	defenderClass:	"human"
+	attackerSeq:	"pt_synced_melee_L_tackle_A"
+	defenderSeq:	"pt_synced_melee_L_tackle_D"
+	engageAngleThreshold:	40
+}
+
+
+// back
+{
+	attackerClass:	"human"
+	defenderClass:	"human"
+	attackerSeq:	"pt_synced_melee_back_backstab_A"
+	defenderSeq:	"pt_synced_melee_back_backstab_D"
+	engageAngleThreshold:	40
+}
+
+{
+	attackerClass:	"human"
+	defenderClass:	"human"
+	attackerSeq:	"pt_synced_melee_back_cheststab_A"
+	defenderSeq:	"pt_synced_melee_back_cheststab_D"
+	engageAngleThreshold:	40
+}
+
+{
+	attackerClass:	"human"
+	defenderClass:	"human"
+	attackerSeq:	"pt_synced_melee_back_neckstab_A"
+	defenderSeq:	"pt_synced_melee_back_neckstab_D"
+	engageAngleThreshold:	40
+}
+
+{
+	attackerClass:	"human"
+	defenderClass:	"human"
+	attackerSeq:	"pt_synced_melee_back_throw_A"
+	defenderSeq:	"pt_synced_melee_back_throw_D"
+	engageAngleThreshold:	40
+}
+
+
+
+
+
+
+// ----- spectre VS spectre ----- //
+{
+	attackerClass:	"spectre"
+	defenderClass:	"spectre"
+	attackerSeq:	"sp_stand_melee_A"
+	defenderSeq:	"sp_stand_melee_V"
+	engageAngleThreshold:	70
+}
+
+{
+	attackerClass:	"spectre"
+	defenderClass:	"spectre"
+	attackerSeq:	"sp_stand_melee_headrip_A"
+	defenderSeq:	"sp_stand_melee_headrip_V"
+	engageAngleThreshold:	70
+}
+
+{
+	attackerClass:	"spectre"
+	defenderClass:	"spectre"
+	attackerSeq:	"sp_stand_melee_behind_A"
+	defenderSeq:	"sp_stand_melee_behind_V"
+	engageAngleThreshold:	70
+}
+
+{
+	attackerClass:	"spectre"
+	defenderClass:	"spectre"
+	attackerSeq:	"sp_stand_melee_left_A"
+	defenderSeq:	"sp_stand_melee_left_V"
+	engageAngleThreshold:	40
+}
+
+
+
+
+
+
+// ----- crawling stalker VS grunt ----- //
+{
+	attackerClass:	"stalker_crawling"
+	defenderClass:	"human"
+	attackerSeq:	"st_synced_melee_F_grunt_crawl"
+	defenderSeq:	"pt_synced_melee_F_grunt_crawl"
+	engageAngleThreshold:	70
+}
+
+
+
+
+
+
+// ----- stalker VS grunt ----- //
+{
+	attackerClass:	"stalker"
+	defenderClass:	"human"
+	attackerSeq:	"st_synced_melee_F_chestpunch_A"
+	defenderSeq:	"pt_synced_melee_F_chestpunch_D"
+	engageAngleThreshold:	70
+}
+
+{
+	attackerClass:	"stalker"
+	defenderClass:	"human"
+	attackerSeq:	"st_synced_melee_F_facepunch"
+	defenderSeq:	"pt_synced_melee_F_facepunch"
+	engageAngleThreshold:	90
+}
+
+{
+	attackerClass:	"stalker"
+	defenderClass:	"human"
+	attackerSeq:	"st_synced_melee_B_chestpunch_A"
+	defenderSeq:	"pt_synced_melee_B_chestpunch_D"
+	engageAngleThreshold:	90
+}
+
+{
+	attackerClass:	"stalker"
+	defenderClass:	"human"
+	attackerSeq:	"st_synced_melee_F_spinepunch"
+	defenderSeq:	"pt_synced_melee_B_spinepunch"
+	engageAngleThreshold:	40
+}
+
+
+
+
+
+
+// ----- spectre VS grunt ----- //
+{
+	attackerClass:	"spectre"
+	defenderClass:	"human"
+	attackerSeq:	"sp_stand_melee_A"
+	defenderSeq:	"pt_stand_melee_V"
+	engageAngleThreshold:	70
+}
+
+{
+	attackerClass:	"spectre"
+	defenderClass:	"human"
+	attackerSeq:	"sp_stand_melee_headrip_A"
+	defenderSeq:	"pt_stand_melee_headrip_V"
+	engageAngleThreshold:	70
+}
+
+{
+	attackerClass:	"spectre"
+	defenderClass:	"human"
+	attackerSeq:	"sp_stand_melee_behind_A"
+	defenderSeq:	"pt_stand_melee_behind_V"
+	engageAngleThreshold:	70
+}
+
+{
+	attackerClass:	"spectre"
+	defenderClass:	"human"
+	attackerSeq:	"sp_stand_melee_left_A"
+	defenderSeq:	"pt_stand_melee_left_V"
+	engageAngleThreshold:	40
+}
+
+
+
+
+
+
+// ----- prowler VS grunt ----- //
+{
+	attackerClass:	"prowler"
+	defenderClass:	"human"
+	attackerSeq:	"pr_grunt_attack_F"
+	defenderSeq:	"pt_prowler_attack_F"
+	engageAngleThreshold:	70
+}
+
+
+
+
+
+
+// ----- grunt VS pilot ----- //
+{
+	attackerClass:	"human"
+	defenderClass:	"pilot_assassin"
+	attackerSeq:	"pt_synced_melee_B_neckstab_V"
+	defenderSeq:	"ninja_synced_melee_B_neckstab_A"
+	engageAngleThreshold:	40
+}
+
+{
+	attackerClass:	"human"
+	defenderClass:	"pilot_assassin"
+	attackerSeq:	"pt_synced_melee_R_chestleap_V"
+	defenderSeq:	"ninja_synced_melee_R_chestleap_A"
+	engageAngleThreshold:	40
+}
+
+{
+	attackerClass:	"human"
+	defenderClass:	"pilot_assassin"
+	attackerSeq:	"pt_synced_melee_F_chestslam_V"
+	defenderSeq:	"ninja_synced_melee_F_chestslam_A"
+	engageAngleThreshold:	40
+}
+
+{
+	attackerClass:	"human"
+	defenderClass:	"pilot_assassin"
+	attackerSeq:	"pt_synced_melee_F_chestkick_V"
+	defenderSeq:	"ninja_synced_melee_F_chestkick_A"
+	engageAngleThreshold:	40
+}
+
+{
+	attackerClass:	"human"
+	defenderClass:	"pilot_assassin"
+	attackerSeq:	"pt_synced_melee_L_headcut_V"
+	defenderSeq:	"ninja_synced_melee_L_headcut_A"
+	engageAngleThreshold:	40
+}
+
+
+
+
+
+
+// ----- titan VS grunt ----- //
+{
+	attackerClass:	"titan"
+	defenderClass:	"human"
+	attackerSeq:	"at_synced_melee_F_toss_A"
+	defenderSeq:	"pt_synced_melee_F_toss_V"
+	engageAngleThreshold:	60
+}
+
+{
+	attackerClass:	"titan"
+	defenderClass:	"human"
+	attackerSeq:	"at_synced_melee_B_toss_A"
+	defenderSeq:	"pt_synced_melee_B_toss_V"
+	engageAngleThreshold:	60
+}
+
+
+
+
+
+
+// ----- titan VS spectre ----- //
+{
+	attackerClass:	"titan"
+	defenderClass:	"spectre"
+	attackerSeq:	"at_synced_melee_F_toss_A"
+	defenderSeq:	"pt_synced_melee_F_toss_V"
+	engageAngleThreshold:	60
+}
+
+{
+	attackerClass:	"titan"
+	defenderClass:	"spectre"
+	attackerSeq:	"at_synced_melee_B_toss_A"
+	defenderSeq:	"pt_synced_melee_B_toss_V"
+	engageAngleThreshold:	60
+}
+
+
+
+
+
+
+// ----- titan VS titan ----- //
+{
+	attackerClass:	"titan"
+	defenderClass:	"titan"
+	attackerSeq:	"mt_ai_sync_melee_kick_knockback_A"
+	defenderSeq:	"mt_ai_sync_melee_kick_knockback_V"
+	engageAngleThreshold:	60
+	attackerSeq_sparselyAvailable:	true
+	//defenderHealthThreshold_above:	0.3
+}
+
+{
+	attackerClass:	"titan"
+	defenderClass:	"titan"
+	attackerSeq:	"mt_ai_synced_melee_kick_finisher_A"
+	defenderSeq:	"mt_ai_synced_melee_kick_finisher_V"
+	engageAngleThreshold:	90
+	attackerSeq_sparselyAvailable:	true
+	defenderHealthThreshold_below:	0.3
+}
+
+/*
+{
+	attackerClass:	"titan"
+	defenderClass:	"titan"
+	attackerSeq:	"at_synced_melee_F_bash_A"
+	defenderSeq:	"at_synced_melee_F_bash_V"
+	engageAngleThreshold:	60
+}
+
+{
+	attackerClass:	"titan"
+	defenderClass:	"titan"
+	attackerSeq:	"at_synced_melee_F_punch_A"
+	defenderSeq:	"at_synced_melee_F_punch_V"
+	engageAngleThreshold:	60
+}
+*/
+{
+	attackerClass:	"titan"
+	defenderClass:	"titan"
+	attackerSeq:	"mt_ai_synced_finisher_B_armrip_A"
+	defenderSeq:	"mt_ai_synced_finisher_B_armrip_V"
+	engageAngleThreshold:	60
+	defenderHealthThreshold_below:	0.3
+}
+
+{
+	attackerClass:	"titan"
+	defenderClass:	"titan"
+	attackerSeq:	"mt_ai_synced_knockback_B_slam_A"
+	defenderSeq:	"mt_ai_synced_knockback_B_slam_V"
+	engageAngleThreshold:	60
+}
+
+
+
+// ----- BT VS titan (melee) ----- //
+{
+	attackerClass:	"titan_buddy"
+	defenderClass:	"titan"
+	attackerSeq:	"bt_synced_titan_uppercut_A"
+	defenderSeq:	"titan_synced_bt_uppercut_D"
+	engageAngleThreshold:	60
+	defenderHealthThreshold_above:	0.3
+}
+
+{
+	attackerClass:	"titan_buddy"
+	defenderClass:	"titan"
+	attackerSeq:	"bt_synced_titan_kickshoot_A"
+	defenderSeq:	"titan_synced_bt_kickshoot_D"
+	engageAngleThreshold:	60
+	defenderHealthThreshold_above:	0.3
+}
+
+{
+	attackerClass:	"titan_buddy"
+	defenderClass:	"titan"
+	attackerSeq:	"bt_synced_titan_2hitcombo_A"
+	defenderSeq:	"titan_synced_bt_2hitcombo_D"
+	engageAngleThreshold:	60
+	defenderHealthThreshold_above:	0.3
+}
+
+
+
+
+
+
+// ----- BT VS titan (executions) ----- //
+{
+	attackerClass:	"titan_buddy"
+	defenderClass:	"titan"
+	attackerSeq:	"bt_synced_titan_execute_kickshoot_AI_A"
+	defenderSeq:	"titan_synced_bt_execute_kickshoot_AI_V"
+	engageAngleThreshold:	60
+	defenderHealthThreshold_below:	0.3
+}
+
+{
+	attackerClass:	"titan_buddy"
+	defenderClass:	"titan"
+	attackerSeq:	"bt_synced_titan_execute_flip_takedown_AI_A"
+	defenderSeq:	"titan_synced_bt_execute_flip_takedown_AI_V"
+	engageAngleThreshold:	60
+	defenderHealthThreshold_below:	0.3
+}
+
+{
+	attackerClass:	"titan_buddy"
+	defenderClass:	"titan"
+	attackerSeq:	"bt_synced_titan_execute_pilot_rip_A"
+	defenderSeq:	"titan_synced_bt_execute_pilot_rip_V"
+	engageAngleThreshold:	60
+	defenderHealthThreshold_below:	0.3
+}
+
+
+
+
+
+
+// ----- titan VS BT (melee) ----- //
+// generic titan
+{
+	attackerClass:	"titan"
+	defenderClass:	"titan_buddy"
+	attackerSeq:	"at_synced_melee_F_punch_A"
+	defenderSeq:	"at_synced_melee_F_punch_V"
+	engageAngleThreshold:	60
+}
+
+// medium titan only
+{
+	attackerClass:	"titan"
+	defenderClass:	"titan_buddy"
+	attackerSeq:	"mt_ai_sync_melee_kick_knockback_A"
+	defenderSeq:	"bt_ai_sync_melee_kick_knockback_V"
+	engageAngleThreshold:	60
+	attackerSeq_sparselyAvailable:	true
+	defenderHealthThreshold_above:	0.3
+}
+
+
+
+
+
+
+// ----- titan VS BT (executions) ----- //
+// light titan only
+{
+	attackerClass:	"titan"
+	defenderClass:	"titan_buddy"
+	attackerSeq:	"lt_execution_attacker_sword_01"
+	defenderSeq:	"bt_execution_victim_sword_01"
+	engageAngleThreshold:	60
+	attackerSeq_sparselyAvailable:	true
+	defenderHealthThreshold_below:	0.3
+}
+
+// medium titan only
+{
+	attackerClass:	"titan"
+	defenderClass:	"titan_buddy"
+	attackerSeq:	"mt_ai_synced_melee_kick_finisher_A"
+	defenderSeq:	"bt_ai_synced_melee_kick_finisher_V"
+	engageAngleThreshold:	60
+	attackerSeq_sparselyAvailable:	true
+	defenderHealthThreshold_below:	0.3
+}
+
+{
+	attackerClass:	"titan"
+	defenderClass:	"titan_buddy"
+	attackerSeq:	"mt_execution_attacker_laser"
+	defenderSeq:	"bt_execution_victim_laser"
+	engageAngleThreshold:	60
+	attackerSeq_sparselyAvailable:	true
+	defenderHealthThreshold_below:	0.3
+}
+
+{
+	attackerClass:	"titan"
+	defenderClass:	"titan_buddy"
+	attackerSeq:	"mt_execution_attacker_tone"
+	defenderSeq:	"bt_execution_victim_tone"
+	engageAngleThreshold:	60
+	attackerSeq_sparselyAvailable:	true
+	defenderHealthThreshold_below:	0.3
+}
+
+// heavy titan only
+{
+	attackerClass:	"titan"
+	defenderClass:	"titan_buddy"
+	attackerSeq:	"htPRED_MP_Sync_Execution_attacker"
+	defenderSeq:	"t_MeleeExecuted_By_htPred"
+	engageAngleThreshold:	60
+	attackerSeq_sparselyAvailable:	true
+	defenderHealthThreshold_below:	0.3
+}
+
+{
+	attackerClass:	"titan"
+	defenderClass:	"titan_buddy"
+	attackerSeq:	"htThermite_MP_Sync_Execution_attacker"
+	defenderSeq:	"t_MeleeExecuted_By_htThermite"
+	engageAngleThreshold:	60
+	attackerSeq_sparselyAvailable:	true
+	defenderHealthThreshold_below:	0.3
+}
+
+
+
+
+
+
+// ----- BT VS prowler (executions) ----- //
+{
+	attackerClass:	"prowler"
+	defenderClass:	"titan_buddy"
+	attackerSeq:	"prowler_synced_bt_front_01_A"
+	defenderSeq:	"bt_synced_prowler_front_01_D"
+	engageAngleThreshold:	45
+}
+
+{
+	attackerClass:	"prowler"
+	defenderClass:	"titan_buddy"
+	attackerSeq:	"prowler_synced_bt_front_02_A"
+	defenderSeq:	"bt_synced_prowler_front_02_D"
+	engageAngleThreshold:	45
+}
+
+{
+	attackerClass:	"prowler"
+	defenderClass:	"titan_buddy"
+	attackerSeq:	"prowler_synced_bt_45_left_A"
+	defenderSeq:	"bt_synced_prowler_45_left_D"
+	engageAngleThreshold:	45
+}
+
+{
+	attackerClass:	"prowler"
+	defenderClass:	"titan_buddy"
+	attackerSeq:	"prowler_synced_bt_45_right_A"
+	defenderSeq:	"bt_synced_prowler_45_right_D"
+	engageAngleThreshold:	45
+}
+
+{
+	attackerClass:	"prowler"
+	defenderClass:	"titan_buddy"
+	attackerSeq:	"prowler_synced_bt_90_left_A"
+	defenderSeq:	"bt_synced_prowler_90_left_D"
+	engageAngleThreshold:	45
+}
+
+{
+	attackerClass:	"prowler"
+	defenderClass:	"titan_buddy"
+	attackerSeq:	"prowler_synced_bt_90_right_A"
+	defenderSeq:	"bt_synced_prowler_90_right_D"
+	engageAngleThreshold:	45
+}
+
+{
+	attackerClass:	"prowler"
+	defenderClass:	"titan_buddy"
+	attackerSeq:	"prowler_synced_bt_135_left_A"
+	defenderSeq:	"bt_synced_prowler_135_left_D"
+	engageAngleThreshold:	45
+}
+
+{
+	attackerClass:	"prowler"
+	defenderClass:	"titan_buddy"
+	attackerSeq:	"prowler_synced_bt_135_right_A"
+	defenderSeq:	"bt_synced_prowler_135_right_D"
+	engageAngleThreshold:	45
+}
+
+{
+	attackerClass:	"prowler"
+	defenderClass:	"titan_buddy"
+	attackerSeq:	"prowler_synced_bt_back_01_A"
+	defenderSeq:	"bt_synced_prowler_back_01_D"
+	engageAngleThreshold:	45
+}

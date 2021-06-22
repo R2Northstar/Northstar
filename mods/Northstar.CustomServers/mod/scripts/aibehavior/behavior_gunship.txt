@@ -1,0 +1,30 @@
+Selector Common
+
+	SelectSchedule_MissileDodge
+	SelectSchedule_LayeredBehavior
+Selector_End
+
+
+Selector Idle
+
+	SelectSchedule_PatrolRun
+Selector_End
+
+
+Selector Alert
+
+	SelectSchedule_PatrolRun
+Selector_End
+
+
+Selector Combat
+	SelectSchedule_EnemyTooClose
+	SelectSchedule_StrafeDodge
+	SelectSchedule_AttackRun
+	SelectSchedule_CircleStrafe
+	SelectSchedule_StationaryLowAmmo
+	SelectSchedule_RangeAttack
+	SelectSchedule_CantSeeEnemy
+	SelectSchedule_MoveToWeaponRange
+	SelectSchedule_ChaseEnemy
+Selector_End

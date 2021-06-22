@@ -1,0 +1,58 @@
+Selector Common
+
+	//SelectSchedule_FallToGround
+	SelectSchedule_Flinch
+	SelectSchedule_DisplaceFromDangerousArea
+	SelectSchedule_ReactSurprised
+	SelectSchedule_LayeredBehavior
+Selector_End
+
+
+Selector Idle
+
+	SelectSchedule_Idle
+Selector_End
+
+
+Selector Alert
+
+	SelectSchedule_Alert
+Selector_End
+
+
+Selector Combat
+
+	SelectSchedule_MissileDodge
+	SelectSchedule_LongJump
+	SelectSchedule_StrafeDodge
+	SelectSchedule_ForwardDodge
+	SelectSchedule_MeleeAttack
+	SelectSchedule_SpecialAttack
+	SelectSchedule_RangeAttack
+	SelectSchedule_WeaponBlocked
+	SelectSchedule_ChargeAttack
+	SelectSchedule_CantSeeEnemy
+	SelectSchedule_EngagementDistMax
+	//SelectSchedule_EngagementDistMin
+	SelectSchedule_CombatFace
+Selector_End
+
+
+Selector CombatEvasive
+
+	SelectSchedule_MissileDodge
+	SelectSchedule_BackwardDodge
+	SelectSchedule_StrafeDodge
+	SelectSchedule_MeleeAttack
+	SelectSchedule_EnemyAimDodge
+	//SelectSchedule_TakeCoverFromEnemy health > 0.1
+	SelectSchedule_SpecialAttack
+	SelectSchedule_RangeAttack
+	SelectSchedule_ChaseEnemy
+	//SelectSchedule_EnemyTooClose
+	SelectSchedule_WeaponBlocked
+	SelectSchedule_CantSeeEnemy
+	SelectSchedule_EngagementDistMax
+	//SelectSchedule_EngagementDistMin
+	SelectSchedule_CombatFace
+Selector_End

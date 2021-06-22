@@ -1,0 +1,43 @@
+.sidebar-drawer {
+    background: var(--color-sidebar-background);
+    border-right: 1px solid var(--color-sidebar-background-border);
+    box-sizing: border-box;
+    display: flex;
+    justify-content: flex-end;
+    min-width: 15em;
+    width: 0px !important;
+}
+
+.toc-drawer {
+    position: fixed;
+    right: 0;
+}
+
+@media(max-width:82em) {
+    .toc-drawer {
+        border-left: 1px solid var(--color-background-muted);
+        height: 100vh;
+        position: fixed;
+        right: -15em;
+        top: 0
+    }
+}
+
+.sig {
+    border-top: 4px solid rgb(66, 71, 127);
+    background-color: rgba(66, 71, 127,0.1);
+}
+
+.sphinx-tabs-tab {
+    padding-top: 0.5rem !important;
+    padding-right: 1rem !important;
+    padding-bottom: 0rem !important;
+    padding-left: 1rem !important;
+}
+
+
+/* disabled due to breaking when the lexer fails and no syntax highlighting happens. */
+/* body:not([data-theme="light"]) .highlight {
+    background-color: var(--color-background-secondary);
+    color: var(--color-background-secondary);
+} */
