@@ -1,0 +1,40 @@
+#if DEV
+untyped
+#endif
+
+//=========================================================
+//	_init
+//  Called on newgame or transitions, AFTER entities have been created and initialized
+//=========================================================
+
+global function CodeCallback_PostEntityInit
+
+bool _initialized = false
+
+void function CodeCallback_PostEntityInit()
+{
+	printl( "Code Script: _init" )
+
+	// prevent save/load code from running global scripts again
+	Assert( !_initialized )
+	_initialized = true
+
+	RunCallbacks_EntitiesDidLoad()
+
+	FlagInit( "EntitiesDidLoad" )
+	FlagSet( "EntitiesDidLoad" )
+
+	array<entity> exfilPanels = GetEntArrayByClass_Expensive( "prop_exfil_panel" )
+	foreach ( panel in exfilPanels )
+		panel.Destroy()
+
+	// regexp unit tests
+	Assert( regexp( "^foo.*bar$" ).match( "foobar" ) )
+	Assert( !regexp( "^foo.+bar$" ).match( "foobar" ) )
+	Assert( regexp( "^foo.*bar$" ).match( "fooxbar" ) )
+	Assert( regexp( "^foo.+bar$" ).match( "fooxbar" ) )
+	Assert( regexp( "^foo.*$" ).match( "foo" ) )
+	Assert( !regexp( "^foo.+$" ).match( "foo" ) )
+	Assert( regexp( "^foo.*$" ).match( "foon" ) )
+	Assert( regexp( "^foo.+$" ).match( "foon" ) )
+}

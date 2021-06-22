@@ -1,0 +1,128 @@
+global function Sv_EarnMeterMP_Init
+global function EarnMeterMP_SetTitanLoadout
+
+struct {
+	float playingStartTime
+} file
+
+void function Sv_EarnMeterMP_Init()
+{
+	if ( !EARNMETER_ENABLED )
+		return
+
+	AddCallback_OnClientConnected( SetupPlayerEarnMeter )
+	AddCallback_GameStateEnter( eGameState.Playing, OnPlaying ) // can't change boost after prematch
+	AddCallback_OnPlayerRespawned( OnPlayerRespawned )
+}
+
+void function EarnMeterMP_SetTitanLoadout( entity player )
+{
+	if ( EarnMeterMP_IsTitanEarnGametype() )
+		PlayerEarnMeter_SetGoal( player, EarnObject_GetByRef( GetTitanLoadoutForPlayer( player ).titanClass ) )
+}
+
+void function SetupPlayerEarnMeter( entity player )
+{
+	PlayerEarnMeter_Reset( player )
+	
+	// todo: need to do burnmeter stuff here ( e.g. rewards/boosts )
+	if ( EarnMeterMP_IsTitanEarnGametype() )
+		PlayerEarnMeter_SetGoal( player, EarnObject_GetByRef( GetTitanLoadoutForPlayer( player ).titanClass ) )
+		
+	PlayerEarnMeter_EnableGoal( player ) // prevents goalstate from being set incorrectly
+	
+	// catchup bonus for late joiners
+	// todo: maths on this is fine but for some reason it won't set correctly, could be getting reset somewhere?
+	PlayerEarnMeter_AddOwnedFrac( player, ( ( Time() - file.playingStartTime ) / 4.0 ) * 0.01 )
+}
+
+void function OnPlaying()
+{
+	file.playingStartTime = Time()
+	foreach ( entity player in GetPlayerArray() )
+		SetupPlayerEarnMeter( player )
+		
+	// do this in playing so that gamemodes/maps can disable and this'll take affect
+	if ( EarnMeterMP_IsTitanEarnGametype() ) // settitanavailable when earnmeter full
+	{
+		Riff_ForceTitanAvailability( eTitanAvailability.Custom ) // doesn't seem to affect anything aside from preventing some annoying client stuff
+		svGlobal.titanAvailabilityCheck = IsTitanAvailable
+		AddEarnMeterThresholdEarnedCallback( 1.0, void function( entity player ) { SetTitanAvailable( player ) }, true )
+	}
+	else // if no titans from earnmeter in this mode, just reset when we finish meter
+		AddEarnMeterThresholdEarnedCallback( 1.0, PlayerEarnMeter_Reset, true )
+}
+
+void function OnPlayerRespawned( entity player )
+{
+	thread EarnMeterMP_PlayerLifeThink( player )
+}
+
+void function EarnMeterMP_PlayerLifeThink( entity player )
+{
+	player.EndSignal( "OnDeath" )
+
+	int lastEarnMeterMode = PlayerEarnMeter_GetMode( player )
+	float lastPassiveGainTime = Time()
+
+	while ( true )
+	{
+		int desiredEarnMeterMode
+
+		if ( player.IsTitan() )
+		{
+			entity soul = player.GetTitanSoul()
+			if ( SoulTitanCore_GetExpireTime( soul ) > Time() )
+				desiredEarnMeterMode = eEarnMeterMode.CORE_ACTIVE
+			else
+				desiredEarnMeterMode = eEarnMeterMode.CORE
+		}
+		else if ( IsValid( player.GetPetTitan() ) )
+			desiredEarnMeterMode = eEarnMeterMode.PET
+		else
+			desiredEarnMeterMode = eEarnMeterMode.DEFAULT
+
+		if ( desiredEarnMeterMode != lastEarnMeterMode )
+		{
+			PlayerEarnMeter_SetMode( player, desiredEarnMeterMode )
+
+			if ( desiredEarnMeterMode == eEarnMeterMode.DEFAULT )
+			{
+				if ( !IsTitanAvailable( player ) && PlayerEarnMeter_GetOwnedFrac( player ) == 1.0 ) // this should only be the case after player has dropped their titan
+					PlayerEarnMeter_Reset( player )
+					
+				if ( PlayerEarnMeter_GetRewardFrac( player ) != 0 )
+					PlayerEarnMeter_EnableReward( player )
+			}
+			else
+			{
+				PlayerEarnMeter_DisableGoal( player )
+				PlayerEarnMeter_DisableReward( player )
+			}
+
+			lastEarnMeterMode = desiredEarnMeterMode
+		}
+		
+		if ( lastEarnMeterMode == eEarnMeterMode.DEFAULT )
+		{
+			if ( PlayerEarnMeter_GetOwnedFrac( player ) < 1.0 )
+				PlayerEarnMeter_DisableGoal( player )
+			else if ( player.GetPlayerNetInt( "goalState" ) != eRewardState.UNAVAILABLE )
+			{
+				// if goal is enabled then the client will show "titan ready" alerts even if it isn't
+				// the problem is that if the goal isn't available when we fill the earnmeter, then it won't make it available
+				// so unfortunately we have to do this manually
+				player.SetPlayerNetInt( "goalState", eRewardState.AVAILABLE )
+				PlayerEarnMeter_RefreshGoal( player )
+			}
+				
+			if ( Time() - lastPassiveGainTime > 4.0 ) // this might be 5.0
+			{
+				lastPassiveGainTime = Time()
+				PlayerEarnMeter_AddOwnedFrac( player, 0.01 )
+			}
+		}
+		
+		WaitFrame()
+	}
+}

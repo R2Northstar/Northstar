@@ -1,0 +1,126 @@
+global function GamemodeKR_Init
+
+struct {
+	float currentHighestKillraceAmount
+	int currentKillraceScore
+	entity currentRacer
+	array<vector> flagSpawnPoints
+} file
+
+void function GamemodeKR_Init()
+{
+	PrecacheModel( CTF_FLAG_MODEL )
+
+	SetSpawnpointGamemodeOverride( FFA )
+	
+	Evac_SetEnabled( false )
+	Riff_ForceTitanAvailability( eTitanAvailability.Never )
+	Riff_ForceBoostAvailability( eBoostAvailability.Disabled )
+	
+	AddSpawnCallback( "info_hardpoint", AddFlagSpawnPoint )
+	
+	AddCallback_OnPlayerKilled( OnPlayerKilled )
+	AddCallback_OnTouchHealthKit( "item_flag", StartPlayerKillrace )
+	
+	AddCallback_GameStateEnter( eGameState.Playing, StartKillraceSpawnThink )
+}
+
+void function AddFlagSpawnPoint( entity hardpoint )
+{
+	if ( hardpoint.HasKey( "hardpointGroup" ) && ( hardpoint.kv.hardpointGroup == "A" || hardpoint.kv.hardpointGroup == "B" || hardpoint.kv.hardpointGroup == "C" ) )
+		file.flagSpawnPoints.append( hardpoint.GetOrigin() )
+}
+
+void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
+{
+	if ( !victim.IsPlayer() || !attacker.IsPlayer() || attacker == victim )	
+		return
+	
+	float killRaceTime = attacker.GetPlayerNetTime( "killRaceTime" ) + 5.0
+	attacker.SetPlayerNetTime( "killRaceTime", killRaceTime )
+	if ( killRaceTime > file.currentHighestKillraceAmount )
+		file.currentHighestKillraceAmount = killRaceTime
+	if ( file.currentRacer != null )
+		file.currentKillraceScore++
+}
+
+bool function StartPlayerKillrace( entity player, entity flag )
+{
+	float killRaceTime = player.GetPlayerNetTime( "killRaceTime" )
+	if ( killRaceTime > 0.0 )
+	{
+		thread PlayerKillrace( player, killRaceTime )
+		return true // delete the flag entity
+	}
+	
+	return false // keep it alive
+}
+
+void function PlayerKillrace( entity player, float raceTime )
+{
+	file.currentKillraceScore = 0
+	file.currentRacer = player
+	int oldMaxHealth = player.GetMaxHealth()
+
+	player.SetMaxHealth( oldMaxHealth * 10 )
+	player.SetHealth( player.GetMaxHealth() )
+	
+	foreach ( entity weapon in player.GetMainWeapons() )
+		foreach ( string mod in GetWeaponBurnMods( weapon.GetWeaponClassName() ) )
+			weapon.AddMod( mod )
+	
+	foreach ( entity otherPlayer in GetPlayerArray() )
+		Remote_CallFunction_NonReplay( otherPlayer, "ServerCallback_NewKillRacer", player.GetEncodedEHandle(), Time() + raceTime )
+	
+	float raceEnd = Time() + raceTime
+	while ( raceEnd > Time() && IsAlive( player ) )
+		WaitFrame()
+		
+	player.SetPlayerNetTime( "killRaceTime", 0.0 )
+	player.SetMaxHealth( oldMaxHealth )
+	
+	foreach ( entity weapon in player.GetMainWeapons() )
+		foreach ( string mod in GetWeaponBurnMods( weapon.GetWeaponClassName() ) )
+			weapon.RemoveMod( mod )
+	
+	foreach ( entity otherPlayer in GetPlayerArray() )
+		Remote_CallFunction_NonReplay( otherPlayer, "ServerCallback_EndKillrace", player.GetEncodedEHandle(), file.currentKillraceScore )
+	
+	if ( GameRules_GetTeamScore( player.GetTeam() ) < file.currentKillraceScore ) 
+	{
+		GameRules_SetTeamScore( player.GetTeam(), file.currentKillraceScore )
+		player.SetPlayerGameStat( PGS_ASSAULT_SCORE, file.currentKillraceScore )
+	}
+	
+	thread KillraceSpawnThink() // go to spawn next flag
+}
+
+void function StartKillraceSpawnThink()
+{
+	thread KillraceSpawnThink()
+}
+
+void function KillraceSpawnThink()
+{
+	file.currentHighestKillraceAmount = 0
+	file.currentRacer = null
+	file.currentKillraceScore = 0
+	float time = Time()
+	while ( time + 20.0 > Time() && file.currentHighestKillraceAmount < 25 )
+		WaitFrame()
+	
+	vector spawnpos = file.flagSpawnPoints[ RandomInt( file.flagSpawnPoints.len() ) ]
+	foreach ( entity player in GetPlayerArray() )
+		Remote_CallFunction_NonReplay( player, "ServerCallback_FlagSpawnIncoming", spawnpos.x, spawnpos.y, spawnpos.z, Time() + 15 )
+		
+	wait 15.0
+	
+	// create a flag
+	entity flag = CreateEntity( "item_flag" )
+	flag.SetValueForModelKey( CTF_FLAG_MODEL )
+	SetTargetName( flag, "krflag" )
+	DispatchSpawn( flag )
+	flag.SetModel( CTF_FLAG_MODEL )
+	flag.SetOrigin( spawnpos + < 0, 0, flag.GetBoundingMaxs().z / 2 > ) // get it out of the ground
+	flag.SetVelocity( < 0, 0, 1 > ) // make it do gravity again	
+}

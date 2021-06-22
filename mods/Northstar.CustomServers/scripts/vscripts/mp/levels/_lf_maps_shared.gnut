@@ -1,0 +1,8 @@
+global function SetupLiveFireMaps
+
+// live fire maps don't support alot of things like intros and titans, this makes sure those things are disabled
+void function SetupLiveFireMaps()
+{
+	Riff_ForceTitanAvailability( eTitanAvailability.Never )
+	ClassicMP_SetCustomIntro( ClassicMP_DefaultNoIntro_Setup, NOINTRO_INTRO_LENGTH )
+}

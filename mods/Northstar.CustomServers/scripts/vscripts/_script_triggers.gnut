@@ -1,0 +1,318 @@
+
+untyped
+
+globalize_all_functions
+
+// flags defaults to player only
+entity function CreateTriggerRadiusMultiple( vector origin, float radius, array<entity> ents = [], int flags = TRIG_FLAG_PLAYERONLY, float top = 16384.0, float bottom = -16384.0 )
+{
+	return _CreateScriptCylinderTriggerInternal( origin, radius, flags, ents, top, bottom )
+}
+
+// flags defaults to player only
+entity function CreateTriggerRadiusOnce( vector origin, float radius, array<entity> ents = [], int flags = TRIG_FLAG_PLAYERONLY )
+{
+	return _CreateScriptCylinderTriggerInternal( origin, radius, flags | TRIG_FLAG_ONCE, ents, null, null )
+}
+
+entity function CreateScriptCylinderTrigger( vector origin, float radius, float ornull top = null, float ornull bottom = null )
+{
+	return _CreateScriptCylinderTriggerInternal( origin, radius, TRIG_FLAG_PLAYERONLY | TRIG_FLAG_START_DISABLED, [], top, bottom )
+}
+
+entity function _CreateScriptCylinderTriggerInternal( vector origin, float radius, int flags, array<entity> ents, float ornull top, float ornull bottom )
+{
+	entity trigger = CreateScriptRef( origin, < 0.0, 0.0, 0.0 > )
+
+
+	if ( flags & TRIG_FLAG_START_DISABLED )
+		trigger.e.scriptTriggerData.enabled = false
+	else
+	trigger.e.scriptTriggerData.enabled = true
+	trigger.e.scriptTriggerData.radius = radius
+
+	trigger.e.scriptTriggerData.top = 16384.0
+
+	if ( top != null )
+		trigger.e.scriptTriggerData.top = origin.z + expect float( top )
+
+	trigger.e.scriptTriggerData.bottom = -16384.0
+	if ( bottom != null )
+		trigger.e.scriptTriggerData.bottom = origin.z + expect float( bottom )
+
+	trigger.e.scriptTriggerData.flags = flags
+	trigger.e.scriptTriggerData.managedEntArrayHandle = -1
+
+	if ( ents.len() )
+	{
+		trigger.e.scriptTriggerData.flags = (flags | TRIG_FLAG_EXCLUSIVE)
+		trigger.e.scriptTriggerData.managedEntArrayHandle = CreateScriptManagedEntArray()
+
+		foreach ( ent in ents )
+			AddToScriptManagedEntArray( trigger.e.scriptTriggerData.managedEntArrayHandle, ent )
+	}
+
+	if ( flags & TRIG_FLAG_DEVDRAW )
+		DebugDrawTrigger( origin, radius, RandomInt( 255 ), RandomInt( 255 ), RandomInt( 255 ) )
+
+	thread CylinderTriggerThink( trigger )
+
+	return trigger
+}
+
+void function ScriptTriggerSetEnabled( entity trigger, bool state )
+{
+	trigger.e.scriptTriggerData.enabled = state
+}
+
+void function CylinderTriggerThink( entity triggerEnt )
+{
+	//Ensures that any callbacks the user sets are in place when the user spawns.
+	WaitFrame()
+
+	bool wasEnabled = triggerEnt.e.scriptTriggerData.enabled
+	int flags = triggerEnt.e.scriptTriggerData.flags
+
+	while ( IsValid( triggerEnt ) )
+	{
+		if ( !triggerEnt.e.scriptTriggerData.enabled )
+		{
+			if ( wasEnabled )
+			{
+				array<entity> entitiesToRemove // build an array since looping through a table and removing elements is undefined
+				foreach( ent in triggerEnt.e.scriptTriggerData.entities )
+				{
+					entitiesToRemove.append( ent )
+				}
+
+				foreach ( ent in entitiesToRemove )
+				{
+					ScriptTriggerRemoveEntity( triggerEnt, ent )
+				}
+
+				Assert( !triggerEnt.e.scriptTriggerData.entities.len() )
+			}
+		}
+		else
+		{
+			array<entity> entities
+			if ( flags & TRIG_FLAG_EXCLUSIVE )
+			{
+				entities = GetScriptManagedEntArray( triggerEnt.e.scriptTriggerData.managedEntArrayHandle )
+				// all of the entites from this array are gone, this trigger is of no use
+				if ( !entities.len() )
+				{
+					triggerEnt.Kill_Deprecated_UseDestroyInstead()
+					return
+				}
+			}
+			else if ( flags & TRIG_FLAG_PLAYERONLY )
+			{
+				entities = GetPlayerArray()
+			}
+			else if ( flags & TRIG_FLAG_NPCONLY )
+			{
+				entities = GetNPCArray()
+			}
+			else
+			{
+				entities = GetPlayerArray()
+				entities.extend( GetNPCArray() )
+				entities.extend( GetPlayerDecoyArray() )
+			}
+
+			foreach ( ent in entities )
+			{
+				if ( !IsAlive( ent ) )
+				{
+					if ( ent in triggerEnt.e.scriptTriggerData.entities )
+						ScriptTriggerRemoveEntity( triggerEnt, ent )
+					continue
+				}
+
+				if ( ent.IsPlayer() && ent.IsPhaseShifted() && (flags & TRIG_FLAG_NO_PHASE_SHIFT) )
+				{
+					if ( ent in triggerEnt.e.scriptTriggerData.entities )
+						ScriptTriggerRemoveEntity( triggerEnt, ent )
+					continue
+				}
+
+				vector entityOrg = ent.GetOrigin()
+
+				if ( Distance2D( entityOrg, triggerEnt.GetOrigin() ) < triggerEnt.e.scriptTriggerData.radius )
+				{
+					if ( entityOrg.z > triggerEnt.e.scriptTriggerData.top )
+						continue
+
+					if ( entityOrg.z + 72.0 < triggerEnt.e.scriptTriggerData.bottom ) //72 is magic number for height of players. Should account for height of NPCs
+						continue
+
+					if ( (flags & TRIG_FLAG_NOCONTEXTBUSY) && !ent.IsPlayerDecoy() && ent.ContextAction_IsBusy() ) //This should probably be ContextAction_IsActive()
+						continue
+
+					if ( !(ent in triggerEnt.e.scriptTriggerData.entities) )
+					{
+						ScriptTriggerAddEntity( triggerEnt, ent )
+						if ( flags & TRIG_FLAG_ONCE )
+						{
+							WaitEndFrame()
+							triggerEnt.Kill_Deprecated_UseDestroyInstead()
+							return
+						}
+					}
+				}
+				else if ( ent in triggerEnt.e.scriptTriggerData.entities )
+				{
+					ScriptTriggerRemoveEntity( triggerEnt, ent )
+				}
+			}
+		}
+
+		wasEnabled = triggerEnt.e.scriptTriggerData.enabled
+		WaitFrame()
+	}
+}
+
+void function ScriptTriggerRemoveEntity( entity triggerEnt, entity ent )
+{
+	Assert( ent in triggerEnt.e.scriptTriggerData.entities )
+
+	foreach ( callbackFunc in triggerEnt.e.scriptTriggerData.leaveCallbacks )
+	{
+		callbackFunc( triggerEnt, ent )
+	}
+
+	delete triggerEnt.e.scriptTriggerData.entities[ent]
+}
+
+void function ScriptTriggerAddEntity( entity triggerEnt, entity ent )
+{
+	Assert( !(ent in triggerEnt.e.scriptTriggerData.entities) )
+
+	triggerEnt.e.scriptTriggerData.entities[ent] <- ent
+
+	foreach ( callbackFunc in triggerEnt.e.scriptTriggerData.enterCallbacks )
+	{
+		callbackFunc( triggerEnt, ent )
+	}
+
+	triggerEnt.Signal( TRIGGER_INTERNAL_SIGNAL )
+
+	thread ScriptTriggerPlayerDisconnectThink( triggerEnt, ent )
+}
+
+void function ScriptTriggerPlayerDisconnectThink( entity triggerEnt, entity ent )
+{
+	triggerEnt.EndSignal( "OnDestroy" )
+	ent.EndSignal( "OnDeath" )
+
+	OnThreadEnd(
+		function() : ( triggerEnt, ent )
+		{
+			if ( !IsValid( ent ) )
+				return
+
+			if ( ent in triggerEnt.e.scriptTriggerData.entities )
+				ScriptTriggerRemoveEntity( triggerEnt, ent )
+		}
+	)
+
+	ent.WaitSignal( "OnDestroy" )
+}
+
+array<entity> function GetAllEntitiesInTrigger( entity trigger )
+{
+	array<entity> ents
+	foreach ( ent in trigger.e.scriptTriggerData.entities )
+	{
+		ents.append( ent )
+	}
+
+	return ents
+}
+
+void function AddCallback_ScriptTriggerEnter( entity trigger, void functionref( entity, entity ) callbackFunc )
+{
+	trigger.e.scriptTriggerData.enterCallbacks.append( callbackFunc )
+}
+
+void function AddCallback_ScriptTriggerLeave( entity trigger, void functionref( entity, entity )  callbackFunc )
+{
+	trigger.e.scriptTriggerData.leaveCallbacks.append( callbackFunc )
+}
+
+/*
+void function thing()
+{
+	RegisterSignal( "TriggerGetOutThink" )
+
+	array<entity> targets = GetEntArrayByScriptName( "fling_target" )
+
+	foreach ( target in targets )
+	{
+		entity trigger = CreateEntity( "trigger_cylinder" )
+		trigger.SetRadius( 128 )
+		trigger.SetAboveHeight( 64 ) //Still not quite a sphere, will see if close enough
+		trigger.SetBelowHeight( 32 )
+		trigger.SetOrigin( target.GetOrigin() )
+		trigger.ConnectOutput( "OnStartTouch", TriggerGetOutStartTouch )
+		DispatchSpawn( trigger )
+	}
+}
+*/
+void function TriggerGetOutStartTouch( entity trigger, entity ent, entity caller, var value )
+{
+	if ( !ent.IsPlayer() )
+		return
+
+	if ( ent.IsTitan() )
+		return
+
+	if ( !ent.IsAlive() )
+		return
+
+	thread TriggerGetOutThink( trigger, ent )
+}
+
+void function TriggerGetOutThink( entity trigger, entity player )
+{
+	const float FALL_OFF_SPEED_MIN = 100
+	const float FALL_OFF_SPEED_MAX = 300
+	const float FALL_OFF_ACCEL = 300
+	const float FALL_OFF_INTERVAL = 0.1
+
+	while ( IsAlive( player ) && trigger.IsTouching( player ) )
+	{
+		if ( player.IsOnGround() )
+		{
+			vector vel = player.GetVelocity()
+
+			float len = vel.Length2D()
+			while ( len < 1.0 )
+			{
+				vel.x = RandomFloatRange( -100, 100 )
+				vel.y = RandomFloatRange( -100, 100 )
+				len = vel.Length2D()
+			}
+
+			if ( len < FALL_OFF_SPEED_MIN )
+			{
+				float scale = FALL_OFF_SPEED_MIN / len
+				vel.x *= scale
+				vel.y *= scale
+			}
+			else if ( len < FALL_OFF_SPEED_MAX )
+			{
+				float newlen = len + FALL_OFF_INTERVAL * FALL_OFF_ACCEL
+				newlen = min( newlen, FALL_OFF_SPEED_MAX )
+				float scale = newlen / len
+				vel.x *= scale
+				vel.y *= scale
+			}
+
+			player.SetVelocity( vel )
+		}
+
+		WaitFrame()
+	}
+}

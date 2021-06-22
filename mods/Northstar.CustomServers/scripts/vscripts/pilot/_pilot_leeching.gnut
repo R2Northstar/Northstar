@@ -1,0 +1,610 @@
+global function PlayerLeeching_Init
+
+global function LeechSurroundingSpectres
+global function CodeCallback_LeechStart
+global function LeechPropagate
+global function ReleaseLeechOverflow
+global function IsBeingLeeched
+
+// 384	~ 32 feet
+// 256	~ 21.3 feet
+// 192	~ 16 feet
+// 128	~ 10.6 feet
+const float SPECTRE_LEECH_SURROUNDING_RANGE = 384.0
+
+#if MP
+const int GLOBAL_LEECH_LIMIT 		= 100  // per team
+const int MAX_LEECHABLE 			= 100  // per player
+const bool PROPAGATE_ON_LEECH 		= true
+#elseif SP
+const int GLOBAL_LEECH_LIMIT 		= 8
+const int MAX_LEECHABLE 			= 4
+const bool PROPAGATE_ON_LEECH 		= false
+#endif
+
+void function PlayerLeeching_Init()
+{
+	#if SERVER
+		PrecacheModel( DATA_KNIFE_MODEL )
+	#endif
+}
+
+void function PlayerStopLeeching( entity player, entity target )
+{
+	Assert( target != null )
+	Assert( player.p.leechTarget == target )
+
+	StopLeechingProgress( player.p.leechTarget )
+
+	player.p.leechTarget = null
+}
+
+void function CodeCallback_LeechStart( entity player, entity target )
+{
+	thread LeechStartThread( player, target )
+}
+
+void function LeechStartThread( entity player, entity target )
+{
+	if ( !IsAlive( target ) )
+		return
+
+	if ( !IsAlive( player ) )
+		return
+
+	LeechActionInfo action = FindLeechAction( player, target )
+	if ( !action.isValid )
+		return
+
+/*
+	if ( player.ContextAction_IsActive()
+	     || player.ContextAction_IsActive()
+	     || target.ContextAction_IsActive() )
+	{
+		return
+	}
+*/
+
+	player.EndSignal( "ScriptAnimStop" )
+	player.EndSignal( "OnDeath" )
+	target.EndSignal( "OnDestroy" )
+	target.EndSignal( "OnDeath" )
+	target.EndSignal( "ScriptAnimStop" )
+
+	StartLeechingProgress( target, player )
+
+	LeechData e
+	e.playerStartOrg = player.GetOrigin()
+	e.targetStartPos = target.GetOrigin()
+
+	OnThreadEnd
+	(
+		function() : ( e, player, target )
+		{
+			if ( IsValid( player ) )
+			{
+				player.SetSyncedEntity( null )
+				if ( player.ContextAction_IsLeeching() )
+					player.Event_LeechEnd()
+
+				// reset to start position in case animation moves us at all
+				//player.SetOrigin( e.playerStartOrg )
+				player.Anim_Stop()
+				player.UnforceStand()
+
+				// done with first person anims
+				ClearPlayerAnimViewEntity( player )
+				DeployAndEnableWeapons( player )
+			}
+
+			if ( IsValid( target ) )
+			{
+				if ( !e.success )
+				{
+					if ( IsValid( player ) )
+					{
+						TryLeechAbortCallback( target, player ) //Make "failed leech" sounds play here after exiting leech animation
+					}
+				}
+				
+				#if MP
+				target.SetUsable()
+				#endif
+				target.SetNoTarget( false )
+				target.SetNoTargetSmartAmmo( false )
+				target.Anim_Stop()
+				target.ClearParent()
+				if ( IsAlive( target ) )
+				{
+					// Note that e.targetStartPos is not guarranteed to be a safe spot since we can have moving geo in the game now
+					PutEntityInSafeSpot( target, null, null, target.GetOrigin(), target.GetOrigin() )
+				}
+
+				if ( target.ContextAction_IsLeeching() )
+					target.Event_LeechEnd()
+
+			}
+
+			foreach ( knife in e.knives )
+			{
+				if ( IsValid( knife ) )
+				{
+					knife.Destroy()
+				}
+
+			}
+
+			if ( IsValid( player ) && player.p.leechTarget )
+			{
+				PlayerStopLeeching( player, player.p.leechTarget )
+			}
+
+			if ( IsValid( e.ref ) )
+			{
+				if ( IsValid( player ) )
+					player.ClearParent()
+
+				if ( IsValid( target ) )
+					target.ClearParent()
+
+				//printt( "kill the ref" )
+				if ( IsValid( e.ref ) && !e.ref.IsPlayer() )
+					e.ref.Destroy()
+			}
+		}
+	)
+
+	Assert( player.p.leechTarget == null )
+	player.p.leechTarget = target
+	player.Event_LeechStart()
+	target.Event_LeechStart()
+	player.ForceStand()
+	HolsterAndDisableWeapons( player )
+
+	float leechTime = svGlobal.defaultPilotLeechTime
+	if ( PlayerHasPassive( player, ePassives.PAS_FAST_HACK ) )
+		leechTime *= 0.85
+
+	e.leechTime = leechTime
+
+	#if MP
+	target.UnsetUsable()
+	#endif
+	target.SetNoTarget( true )
+	target.SetNoTargetSmartAmmo( true )
+
+	if ( IsSpectre( target ) )
+		TellSquadmatesSpectreIsGettingLeeched( target, player )
+
+	waitthread PlayerLeechTargetAnimation( player, target, action, e )
+
+	e.leechStartTime = Time()
+	Remote_CallFunction_Replay( player, "ServerCallback_DataKnifeStartLeech", e.leechTime )
+	waitthread WaittillFinishedLeeching( player, target, e )
+
+	if ( e.success  )
+	{
+		thread DataKnifeSuccessSounds( player )
+
+		DoLeech( target, player )
+		PlayerStopLeeching( player, target )
+
+		// this will kill a random leeched ent from within the team, exluding the current target. When it's not done elsewhere
+		if ( !WIFI_HACK_OVERFLOW_DIES )
+			ReleaseLeechOverflow( player, target )
+
+		//this is called when the player leeches - not when the system is leeching other spectres
+		if ( PROPAGATE_ON_LEECH && IsSpectre( target ) )
+			LeechSurroundingSpectres( target.GetOrigin(), player )
+	}
+	else
+	{
+		DataKnifeCanceledSounds( player )
+		Remote_CallFunction_Replay( player, "ServerCallback_DataKnifeCancelLeech" )
+		PlayerStopLeeching( player, player.p.leechTarget )
+	}
+
+	waitthread PlayerExitLeechingAnim( player, target, action, e )
+}
+
+void function TellSquadmatesSpectreIsGettingLeeched( entity spectre, entity player )
+{
+	string squadName = expect string( spectre.kv.squadname )
+	if ( squadName == "" )
+		return
+
+	array<entity> squad = GetNPCArrayBySquad( squadName )
+	squad.removebyvalue( spectre )
+
+	foreach ( squadMate in squad )
+	{
+		//printt( "Setting enemy of " + squadMate + " to player:  " + player )
+		squadMate.SetEnemyLKP( player, player.GetOrigin() )
+	}
+}
+
+void function ReleaseLeechOverflow( entity player, entity lastLeeched )
+{
+	array<entity> teamLeechedEnts = GetTeamLeechedEnts( player.GetTeam() )
+	array<entity> leechedEnts = GetLeechedEnts( player )
+	int globalOverflow = GLOBAL_LEECH_LIMIT - teamLeechedEnts.len()
+	int playerOverflow = MAX_LEECHABLE - leechedEnts.len()
+
+	int overflow = minint( globalOverflow, playerOverflow )
+
+	if ( overflow >= 0 )
+		return
+
+	overflow = abs( overflow )
+
+	teamLeechedEnts.randomize()
+	foreach ( ent in teamLeechedEnts )
+	{
+		if ( lastLeeched == ent )
+			continue
+
+		entity owner = ent.GetBossPlayer()
+		Assert( owner.IsPlayer() )
+
+
+		// I think it's better to kill the overflow then have it become an enemy again.
+		ent.Die()
+
+		delete owner.p.leechedEnts[ ent ]
+		overflow--
+
+		if ( overflow == 0 )
+			break
+	}
+
+	Assert( overflow == 0 )
+}
+
+
+int function GetMaxNumberOfLeechedEnts( entity player )
+{
+	int teamLeechedCount = GetTeamLeechedEnts( player.GetTeam() ).len()
+	int leechedEntsCount = GetLeechedEnts( player ).len()
+	int teamLimit = maxint( 0, GLOBAL_LEECH_LIMIT - teamLeechedCount )
+	int maxSize = maxint( 0, MAX_LEECHABLE - leechedEntsCount )
+	maxSize = minint( teamLimit, maxSize )
+
+	return maxSize
+}
+
+void function LeechSurroundingSpectres( vector origin, entity player )
+{
+	array<entity> enemySpectreArray = GetNPCArrayEx( "npc_spectre", TEAM_ANY, player.GetTeam(), player.GetOrigin(), SPECTRE_LEECH_SURROUNDING_RANGE )
+
+	if ( !enemySpectreArray.len() )
+		return
+
+	// don't resize the array if we should kill the overflow instead
+	if ( !WIFI_HACK_OVERFLOW_DIES )
+	{
+		int maxSize = GetMaxNumberOfLeechedEnts( player )
+		int newSize = minint( enemySpectreArray.len(), maxSize )
+
+		enemySpectreArray.resize( newSize, null )
+	}
+
+	foreach ( spectre in enemySpectreArray )
+	{
+		thread LeechPropagate( spectre, player )
+	}
+
+	if ( enemySpectreArray.len() )
+	{
+		if ( PlayerHasPassive( player, ePassives.PAS_WIFI_SPECTRE ) )
+		{
+			EmitSoundOnEntity( player, "BurnCard_WiFiVirus_TurnSpectre" )
+			printt( "play BurnCard_WiFiVirus_TurnSpectre" )
+		}
+	}
+}
+
+void function LeechPropagate( entity spectre, entity player )
+{
+	if ( spectre.ContextAction_IsActive() )
+		return
+
+	if ( !spectre.IsInterruptable() )
+		return
+
+	if ( spectre.GetParent() )
+		return
+
+	if ( !Leech_IsLeechable( spectre ) )
+		return
+
+	player.EndSignal( "OnDestroy" )
+	spectre.EndSignal( "OnDestroy" )
+	spectre.EndSignal( "OnDeath" )
+
+	spectre.Event_LeechStart()
+
+	AddAnimEvent( spectre, "leech_switchteam", DoLeechAnimEvent, player )
+
+	OnThreadEnd(
+		function() : ( spectre )
+		{
+			if ( IsValid( spectre ) )
+			{
+				DeleteAnimEvent( spectre, "leech_switchteam" )
+
+				if ( spectre.ContextAction_IsLeeching() )
+					spectre.Event_LeechEnd()
+			}
+		}
+	)
+
+	spectre.Anim_Stop()
+	waitthread PlayAnim( spectre, "sp_reboot" )
+	spectre.SetVelocity( Vector(0,0,0) )
+}
+
+void function WaittillFinishedLeeching( entity player, entity target, LeechData e )
+{
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "ScriptAnimStop" )
+	target.EndSignal( "OnDeath" )
+
+	if ( !player.UseButtonPressed() )
+		return
+
+	float waitTime = e.leechTime
+	float timePassed = Time() - e.leechStartTime
+	waitTime -= timePassed
+	if ( waitTime > 0 )
+	{
+		float startTime = Time()
+		while ( Time() < startTime + waitTime && player.UseButtonPressed() )
+		{
+			WaitFrame()
+		}
+	}
+
+	if ( player.UseButtonPressed() )
+		e.success = true
+}
+
+/////////////////////////////////////////////////////////////
+bool function IsLeechTargetUsedAsAnimNode( entity target )
+{
+	return target.AISetting_LeechAnimTag() != ""
+}
+
+/////////////////////////////////////////////////////////////
+void function PlayerLeechTargetAnimation( entity player, entity target, LeechActionInfo action, LeechData e )
+{
+	Assert( action.isValid )
+	vector targetStartOrg = target.GetOrigin()
+	vector targetStartAng = target.GetAngles()
+
+	vector initialPlayerPosition = player.GetOrigin()
+	vector initialTargetPosition = target.GetOrigin()
+
+	vector endOrigin = target.GetOrigin()
+	vector startOrigin = player.GetOrigin()
+	vector refVec = endOrigin - startOrigin
+	string animTag
+
+	FirstPersonSequenceStruct playerSequence
+
+	//---------------------------------------------------------
+	// Leech anims played on the leech target, or at player position?
+	//---------------------------------------------------------
+	if ( IsLeechTargetUsedAsAnimNode( target ) )
+	{
+		e.ref = CreateLeechingScriptMoverBetweenEnts( player, target )
+		animTag = target.AISetting_LeechAnimTag()
+		Assert( animTag != "" )
+		e.ref.SetOrigin( target.GetOrigin() )
+		e.ref.SetParent( target, animTag )
+	}
+	else
+	{
+		e.ref = player
+		e.ref.SetOrigin( e.playerStartOrg )
+		playerSequence.playerPushable = true
+	}
+
+	e.ref.EndSignal( "OnDestroy" )
+
+	//-----------------------------------------------------------------
+	// Player FirstPersonSequence for the leeching
+	//-----------------------------------------------------------------
+	playerSequence.blendTime = 0.25
+	playerSequence.attachment = "ref"
+
+	//-----------------------------------------------------------------
+	// Only create FirstPersonSequence for leech target if anims exist
+	//-----------------------------------------------------------------
+	bool haveTargetSequence = false
+	FirstPersonSequenceStruct targetSequence
+
+	if ( action.targetAnimation3pStart != "" )
+	{
+		targetSequence = clone playerSequence
+		haveTargetSequence = true
+	}
+
+	playerSequence.thirdPersonAnim =  action.playerAnimation3pStart
+	playerSequence.thirdPersonAnimIdle = action.playerAnimation3pIdle
+	playerSequence.firstPersonAnim = action.playerAnimation1pStart
+	playerSequence.firstPersonAnimIdle = action.playerAnimation1pIdle
+
+	entity viewmodel = player.GetFirstPersonProxy()
+
+	if ( !HasAnimEvent( viewmodel, "PlaySound_DataKnife_Hack_Spectre_Pt1" ) )
+			AddAnimEvent( viewmodel, "PlaySound_DataKnife_Hack_Spectre_Pt1", PlaySound_DataKnife_Hack_Spectre_Pt1 )
+
+	if ( !HasAnimEvent( viewmodel, "PlaySound_DataKnife_Hack_Spectre_Pt2" ) )
+			AddAnimEvent( viewmodel, "PlaySound_DataKnife_Hack_Spectre_Pt2", PlaySound_DataKnife_Hack_Spectre_Pt2 )
+
+	if ( !HasAnimEvent( viewmodel, "PlaySound_DataKnife_Hack_Spectre_Pt3" ) )
+			AddAnimEvent( viewmodel, "PlaySound_DataKnife_Hack_Spectre_Pt3", PlaySound_DataKnife_Hack_Spectre_Pt3 )
+
+	if ( !HasAnimEvent( viewmodel, "PlaySound_Spectre_Servo_Heavy_Short" ) )
+			AddAnimEvent( viewmodel, "PlaySound_Spectre_Servo_Heavy_Short", PlaySound_Spectre_Servo_Heavy_Short )
+
+	if ( !HasAnimEvent( viewmodel, "PlaySound_DataKnife_Hack_Spectre_ArmorRattle" ) )
+			AddAnimEvent( viewmodel, "PlaySound_DataKnife_Hack_Spectre_ArmorRattle", PlaySound_DataKnife_Hack_Spectre_ArmorRattle )
+
+	if ( haveTargetSequence )
+	{
+		targetSequence.thirdPersonAnim = action.targetAnimation3pStart
+		targetSequence.thirdPersonAnimIdle = action.targetAnimation3pIdle
+	}
+
+	playerSequence.noParent = true
+
+	//-----------------------------------
+	// Data knife
+	//-----------------------------------
+	asset model = DATA_KNIFE_MODEL
+
+	string knifeTag = GetTagForDataknife( target )
+	entity thirdPersonKnife = CreatePropDynamic( model )
+	SetTargetName( thirdPersonKnife, "thirdPersonKnife" )
+	thirdPersonKnife.SetParent( player, knifeTag, false, 0.0 )
+	e.knives.append( thirdPersonKnife )
+
+	SetForceDrawWhileParented( target, true )
+
+	//------------------------------------------------------------------------------
+	// Play leech anim sequence for player, but only for target if leech anims exist
+	//-------------------------------------------------------------------------------
+	player.SetSyncedEntity( target )
+	entity ref = e.ref
+	if ( haveTargetSequence )
+		thread Animate_PlayerLeechTarget( targetSequence, target, ref )
+
+	waitthread FirstPersonSequence( playerSequence, player, null )
+}
+
+
+//Basically copy pasted from CreateMeleeScriptMoverBetweenEnts
+entity function CreateLeechingScriptMoverBetweenEnts( entity attacker, entity target )
+{
+	vector endOrigin = target.GetOrigin()
+	vector startOrigin = attacker.GetOrigin()
+	vector refVec = endOrigin - startOrigin
+
+	vector refAng = VectorToAngles( refVec )
+	float pitch = refAng.x
+	if ( pitch > 180 )
+		pitch -= 360
+	if ( fabs( pitch ) > 35 ) //If pitch is too much, use angles from target
+		refAng = target.GetAngles()  // Leech does it from behind target, so use target's angles.
+
+	vector refPos = endOrigin - refVec * 0.5
+
+	entity ref = CreateOwnedScriptMover( attacker )
+	ref.SetOrigin( refPos )
+	ref.SetAngles( refAng )
+
+	return ref
+}
+
+void function Animate_PlayerLeechTarget( FirstPersonSequenceStruct targetSequence, entity target, entity ref )
+{
+	ref.EndSignal( "OnDestroy" )
+	target.EndSignal( "OnDestroy" )
+	waitthread FirstPersonSequence( targetSequence, target, ref )
+}
+
+void function PlayerExitLeechingAnim( entity player, entity target, LeechActionInfo action, LeechData e )
+{
+	FirstPersonSequenceStruct playerSequence
+	playerSequence.blendTime = 0.3
+	playerSequence.attachment = "ref"
+	playerSequence.teleport = false
+	playerSequence.noParent = true
+	playerSequence.playerPushable = true
+
+	//--------------------------------------
+	// Target animates only if he has anims
+	//---------------------------------------
+	bool hasTargetSequence = false
+	FirstPersonSequenceStruct targetSequence
+	if ( action.targetAnimation3pEnd != "" )
+	{
+		targetSequence = clone playerSequence
+		hasTargetSequence = true
+	}
+
+	playerSequence.thirdPersonAnim = action.playerAnimation3pEnd
+	playerSequence.firstPersonAnim = action.playerAnimation1pEnd
+	playerSequence.snapPlayerFeetToEyes = false
+
+	entity ref = e.ref
+
+	if ( hasTargetSequence )
+	{
+		targetSequence.thirdPersonAnim = action.targetAnimation3pEnd
+		thread FirstPersonSequence( targetSequence, target, ref )
+	}
+	waitthread FirstPersonSequence( playerSequence, player, null )
+
+	//-------------------------------------------------------------
+	// Detach from rodeo if applicable (drones, superspectres, etc)
+	//-------------------------------------------------------------
+	if ( Rodeo_IsAttached( player ) )
+		player.Signal( "RodeoOver" )
+}
+
+bool function IsBeingLeeched( entity npc )
+{
+	return npc.ai.leechInProgress
+}
+
+void function PlaySound_DataKnife_Hack_Spectre_Pt1( entity playerFirstPersonProxy  )
+{
+	entity player = playerFirstPersonProxy.GetOwner()
+	if ( !IsValid( player ) )
+		return
+
+	EmitSoundOnEntityOnlyToPlayer( player, player, "DataKnife_Hack_Spectre_Pt1" )
+
+}
+
+void function PlaySound_DataKnife_Hack_Spectre_Pt2( entity playerFirstPersonProxy  )
+{
+	entity player = playerFirstPersonProxy.GetOwner()
+	if ( !IsValid( player ) )
+		return
+
+	EmitSoundOnEntityOnlyToPlayer( player, player, "DataKnife_Hack_Spectre_Pt2" )
+
+}
+
+void function PlaySound_DataKnife_Hack_Spectre_Pt3( entity playerFirstPersonProxy  )
+{
+	entity player = playerFirstPersonProxy.GetOwner()
+	if ( !IsValid( player ) )
+		return
+
+	EmitSoundOnEntityOnlyToPlayer( player, player, "DataKnife_Hack_Spectre_Pt3" )
+
+}
+
+void function PlaySound_Spectre_Servo_Heavy_Short( entity playerFirstPersonProxy  )
+{
+	entity player = playerFirstPersonProxy.GetOwner()
+	if ( !IsValid( player ) )
+		return
+
+	EmitSoundOnEntityOnlyToPlayer( player, player, "Spectre.Servo.Heavy.Short" )
+
+}
+
+void function PlaySound_DataKnife_Hack_Spectre_ArmorRattle( entity playerFirstPersonProxy  )
+{
+	entity player = playerFirstPersonProxy.GetOwner()
+	if ( !IsValid( player ) )
+		return
+
+	EmitSoundOnEntityOnlyToPlayer( player, player, "DataKnife_Hack_Spectre_ArmorRattle" )
+
+}

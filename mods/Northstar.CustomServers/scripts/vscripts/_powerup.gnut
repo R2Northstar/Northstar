@@ -1,0 +1,102 @@
+untyped
+global function PowerUps_Init
+
+void function PowerUps_Init()
+{
+	SH_PowerUp_Init()	
+	
+	AddCallback_EntitiesDidLoad( EntitesDidLoad )
+}
+
+void function EntitesDidLoad()
+{
+	array<entity> scriptRefs = GetEntArrayByClass_Expensive( "script_ref" )
+	foreach ( entity ref in scriptRefs )
+		if ( ref.HasKey( "powerUpType" ) )
+		{
+			PowerUp powerup = GetPowerUpFromItemRef( expect string( ref.kv.powerUpType ) )
+			
+			// CreatePickup is defined in mp/_pickups.gnut
+			// mp/_pickups.gnut is a sp-only script
+			// it's literally in the mp folder
+			// respawn PLEASE
+			//CreatePickup( ref, powerup.model, bool function( entity player ) { powerup.destroyFunc( player ); return true } )
+			
+			if ( powerup.spawnFunc() )
+			{
+				CreatePropDynamic( powerup.baseModel, ref.GetOrigin(), ref.GetAngles(), 2 )
+				thread PowerUpThink( ref, powerup )
+			}
+		}
+		
+	AddCallback_OnTouchHealthKit( "item_powerup", OnPowerUpCollected )
+}
+
+entity function CreatePowerUp( entity spawnpoint, PowerUp powerup )
+{
+	entity powerupEnt = CreateEntity( "item_powerup" )
+	
+	powerupEnt.SetValueForModelKey( powerup.model )
+	powerupEnt.kv.fadedist = 10000
+	powerupEnt.kv.gravity = 0.000001 // really hacky, but gravity 0.0 is considered the same as 1.0, and i'm not sure how to enable/disable gravity on entities in script
+	
+	DispatchSpawn( powerupEnt )
+	
+	powerupEnt.SetModel( powerup.model )
+	powerupEnt.SetOrigin( spawnpoint.GetOrigin() + powerup.modelOffset )
+	powerupEnt.SetAngles( spawnpoint.GetAngles() + powerup.modelAngles )
+	
+	powerupEnt.s.powerUpType <- powerup.itemRef
+	
+	return powerupEnt
+}
+
+void function PowerUpThink( entity spawnpoint, PowerUp powerup )
+{
+	svGlobal.levelEnt.EndSignal( "RoundEnd" ) // should reset on round end
+
+	entity powerupEnt
+
+	while ( true )
+	{
+		powerupEnt = CreatePowerUp( spawnpoint, powerup )
+			
+		OnThreadEnd( function() : ( powerupEnt, spawnpoint, powerup )
+			{
+				// should be called on round end
+				print( "resetting powerup..." )
+				if ( IsValid( powerupEnt ) )
+					powerupEnt.Destroy()
+				
+				// recursively spawn new powerup
+				thread PowerUpThink( spawnpoint, powerup )
+			}
+		)
+			
+		// handle the glow here so we can destroy it
+		PickupGlow glow = CreatePickupGlow( powerupEnt, powerup.glowColor.x.tointeger(), powerup.glowColor.y.tointeger(), powerup.glowColor.z.tointeger() )
+		glow.glowFX.SetOrigin( spawnpoint.GetOrigin() ) // want the glow to be parented to the powerup, but have the position of the spawnpoint
+		
+		powerupEnt.WaitSignal( "OnDestroy" )
+		
+		wait powerup.respawnDelay
+	}
+}
+
+bool function OnPowerUpCollected( entity player, entity healthpack )
+{
+	PowerUp powerup = GetPowerUpFromItemRef( expect string( healthpack.s.powerUpType ) )
+	
+	if ( player.IsTitan() == powerup.titanPickup )
+	{
+		// hack because i couldn't figure out any other way to do this without modifying sh_powerup
+		// ensure we don't kill the powerup if it's a battery the player can't pickup
+		if ( ( powerup.index == ePowerUps.titanTimeReduction || powerup.index == ePowerUps.LTS_TitanTimeReduction ) && PlayerHasBattery( player ) )
+			return false
+	
+		powerup.destroyFunc( player )
+		return true // destroys the powerup
+	}
+	
+	return false // keeps powerup alive
+}

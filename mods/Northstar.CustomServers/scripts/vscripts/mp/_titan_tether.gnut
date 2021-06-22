@@ -1,0 +1,307 @@
+global function TitanTether_Init
+global function AddTitanTether
+global function TetherFlyIn
+global function PROTO_GetActiveTethers
+global function CodeCallback_OnTetherRemove
+global function CodeCallback_OnTetherDamageMilestone
+global function AddOnTetherCallback
+
+struct TetherData
+{
+	entity owner
+	entity[2] endpointEnts
+	array<entity> tetherEnts = []
+	entity anchor
+	entity endEntForPlayer
+	entity endEntForOthers
+	int teamNum
+	int codeTetherID
+}
+
+
+struct
+{
+	array<TetherData> activeTitanTethers = []
+	array< void functionref( entity, entity ) > onTetherCallbacks = []
+} file
+
+void function TitanTether_Init()
+{
+	PrecacheImpactEffectTable( "exp_tether_trap" ) //Needs to match damagedef_fd_tether_trap
+}
+
+void function AddOnTetherCallback( void functionref( entity, entity ) callback )
+{
+	file.onTetherCallbacks.append( callback )
+}
+
+void function AddTitanTether( entity owner, entity startEnt, entity endEnt, array<entity> tetherEnts, entity anchor, entity tetherEndEntForPlayer, entity tetherEndEntForOthers, bool isExplosiveTether )
+{
+	//Run callbacks for tether trap activation.
+	foreach ( callback in file.onTetherCallbacks )
+	{
+		callback( owner, endEnt )
+	}
+
+	TetherData tetherData
+	tetherData.owner = owner
+
+	tetherData.teamNum = owner.GetTeam()
+
+	Assert( !startEnt.IsTitan() )
+	Assert( endEnt.IsTitan()|| IsSuperSpectre( endEnt ) )
+
+	if ( endEnt.IsTitan() || IsSuperSpectre( endEnt ) )
+	{
+		tetherData.codeTetherID = endEnt.AddTether( startEnt.GetOrigin() )
+		if ( owner.IsPlayer() )
+			EmitSoundOnEntityExceptToPlayer( startEnt, owner, "Wpn_TetherTrap_PopOpen_3p" )//Spring Sound
+		else
+			EmitSoundOnEntity( startEnt, "Wpn_TetherTrap_PopOpen_3p" )//Spring Sound
+
+		if ( endEnt.IsTitan() )
+			endEnt = endEnt.GetTitanSoul()
+	}
+
+	tetherData.endpointEnts[0] = startEnt
+	tetherData.endpointEnts[1] = endEnt
+
+	tetherData.tetherEnts = tetherEnts
+
+	tetherData.anchor = anchor
+	tetherData.endEntForPlayer = tetherEndEntForPlayer
+	tetherData.endEntForOthers = tetherEndEntForOthers
+
+	file.activeTitanTethers.append( tetherData )
+
+	thread TetherCleanup( owner, startEnt, endEnt, tetherData, isExplosiveTether )
+}
+
+void function TetherCleanup( entity owner, entity startEnt, entity endEnt, TetherData tetherData, bool isExplosiveTether )
+{
+	startEnt.EndSignal( "OnDestroy" )
+	endEnt.EndSignal( "OnDestroy" )
+	endEnt.EndSignal( "OnSyncedMelee" )
+
+	int tetherID = tetherData.codeTetherID
+//	int statusEffectId = StatusEffect_AddEndless( endEnt, eStatusEffect.tethered, 1.0 )
+	int statusEffectId = StatusEffect_AddTimed( endEnt, eStatusEffect.tethered, 1.0, 5.0, 0.0 )
+
+	vector anchorOrigin = tetherData.anchor.GetOrigin()
+
+	OnThreadEnd(
+	function() : ( owner, anchorOrigin, endEnt, tetherID, statusEffectId, isExplosiveTether )
+		{
+			if ( isExplosiveTether && IsValid( owner ) && IsValid( endEnt ) )
+			{
+				Explosion_DamageDefSimple( damagedef_fd_tether_trap, anchorOrigin,owner, owner, anchorOrigin + < 0, 0, 32 > )
+			}
+
+			foreach ( index, tetherData in file.activeTitanTethers )
+			{
+				if ( tetherData.codeTetherID == tetherID )
+				{
+					thread TitanTether_Remove( tetherData )
+					break
+				}
+			}
+
+			if ( IsValid( endEnt ) )
+				StatusEffect_Stop( endEnt, statusEffectId )
+		}
+	)
+
+	WaitForever()
+}
+
+void function TetherFlyIn( entity flyFrom, entity flyTo, entity rope, entity owner )
+{
+	flyTo.EndSignal( "OnDestroy" )
+	vector destLocal = flyTo.GetLocalOrigin()
+	flyTo.SetAbsOrigin( flyFrom.GetOrigin() )
+	flyTo.NonPhysicsMoveInWorldSpaceToLocalPos( destLocal, 0.3, 0, 0 )
+	wait 0.3
+	if ( IsValid( owner ) && owner.IsPlayer() )
+	{
+		EmitSoundOnEntityOnlyToPlayer( flyTo, owner, "Weapon_TetherGun_Attach_1P_VS_3P" )
+		EmitSoundOnEntityExceptToPlayer( flyTo, owner, "Weapon_TetherGun_Attach_3P_VS_3P" )
+	}
+	else
+	{
+		EmitSoundOnEntity( flyTo, "Weapon_TetherGun_Attach_3P_VS_3P" )
+	}
+}
+
+
+void function TitanTether_Remove( TetherData tetherData )
+{
+	entity endEnt = tetherData.endpointEnts[1]
+	if ( IsValid( endEnt ) )
+	{
+		if ( IsSoul( endEnt ) )
+			endEnt = endEnt.GetTitan()
+
+		if ( endEnt.IsValidTetherID( tetherData.codeTetherID ) )
+			endEnt.RemoveTether( tetherData.codeTetherID )
+	}
+
+	vector angvel = < RandomFloatRange( 50, 1000 ), RandomFloatRange( -200, 200 ), RandomFloatRange( -200, 200 )>
+
+	vector velForPlayer
+	vector velForOthers
+	vector rotaxis
+	float rotspeed
+	if ( IsValid( endEnt ) )
+	{
+		vector forward = endEnt.GetPlayerOrNPCViewVector()
+		velForPlayer = forward * 200
+
+		rotaxis = endEnt.GetPlayerOrNPCViewRight()
+		rotaxis += forward * RandomFloatRange( -0.4, 0.4 )
+		rotaxis += endEnt.GetPlayerOrNPCViewUp() * RandomFloatRange( -0.4, 0.4 )
+		rotspeed = RandomFloatRange( -2000, -1000 )
+	}
+	else
+	{
+		rotaxis = RandomVec( 1 )
+		rotspeed = RandomFloatRange( -2000, 2000 )
+	}
+
+	vector pullDirForPlayer
+	vector pullDirForOthers
+
+	bool endEntForPlayerIsValid = IsValid( tetherData.endEntForPlayer )
+	bool endEntForOthersIsValid = IsValid( tetherData.endEntForOthers )
+
+	if ( IsValid( tetherData.anchor ) )
+	{
+		if ( endEntForPlayerIsValid )
+			pullDirForPlayer = Normalize( tetherData.anchor.GetOrigin() - tetherData.endEntForPlayer.GetOrigin() )
+		if ( endEntForOthersIsValid )
+			pullDirForOthers = Normalize( tetherData.anchor.GetOrigin() - tetherData.endEntForOthers.GetOrigin() )
+	}
+
+	velForPlayer += < RandomFloatRange(-100,100), RandomFloatRange(-100,100), 0> + pullDirForPlayer * 100
+	float pullDirForOthersZ = pullDirForOthers.z
+	pullDirForOthers.z = 0
+	pullDirForOthers += < RandomFloatRange(-1,1), RandomFloatRange(-1,1), 0>
+	velForOthers = Normalize( pullDirForOthers )
+	velForOthers.x *= RandomFloatRange( 100, 200 )
+	velForOthers.y *= RandomFloatRange( 100, 200 )
+	velForOthers.z = pullDirForOthersZ * 200
+
+	rotaxis = Normalize( rotaxis )
+
+	// Since we're unparenting the tethers, we need to change how they control who they're visible to
+	if ( IsValid( endEnt ) )
+	{
+		if ( endEntForPlayerIsValid )
+		{
+			tetherData.endEntForPlayer.kv.VisibilityFlags = ENTITY_VISIBLE_TO_OWNER
+			tetherData.endEntForPlayer.SetOwner( endEnt )
+		}
+		if ( endEntForOthersIsValid )
+		{
+			tetherData.endEntForOthers.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY
+			tetherData.endEntForOthers.SetOwner( endEnt )
+		}
+	}
+	else
+	{
+		if ( endEntForPlayerIsValid )
+			tetherData.endEntForPlayer.kv.VisibilityFlags = ENTITY_VISIBLE_TO_NOBODY
+		if ( endEntForOthersIsValid )
+			tetherData.endEntForOthers.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
+	}
+
+	if ( endEntForPlayerIsValid )
+	{
+		tetherData.endEntForPlayer.ClearParent()
+		tetherData.endEntForPlayer.NonPhysicsRotate( rotaxis, rotspeed )
+		tetherData.endEntForPlayer.NonPhysicsMoveWithGravity( velForPlayer, < 0, 0, -750> )
+		tetherData.endEntForPlayer.RenderWithViewModels( false )
+		tetherData.endEntForPlayer.Dissolve( ENTITY_DISSOLVE_NORMAL, <0,0,0>, 100 )
+	}
+
+	if ( endEntForOthersIsValid )
+	{
+		tetherData.endEntForOthers.ClearParent()
+		tetherData.endEntForOthers.NonPhysicsRotate( rotaxis, rotspeed )
+		tetherData.endEntForOthers.NonPhysicsMoveWithGravity( velForOthers, < 0, 0, -750> )
+		tetherData.endEntForOthers.Dissolve( ENTITY_DISSOLVE_NORMAL, <0,0,0>, 100 )
+	}
+
+	wait 0.5
+
+	foreach ( index, ent in tetherData.endpointEnts )
+	{
+		if ( !IsValid( ent ) )
+			continue
+
+		if ( ent instanceof CBaseGrenade )
+			ent.Destroy()
+	}
+
+	foreach ( entity ent in tetherData.tetherEnts )
+	{
+		if ( IsValid( ent ) )
+			ent.Destroy()
+	}
+}
+
+
+int function PROTO_GetActiveTethers( entity owner )
+{
+//	_PruneActiveTitanTethers()
+
+	int activeTethers = 0
+	foreach ( TetherData tetherData in file.activeTitanTethers )
+	{
+		if ( tetherData.owner == owner )
+			activeTethers++
+	}
+
+	return activeTethers
+}
+
+
+bool removingTether
+
+void function CodeCallback_OnTetherRemove( entity guy, int tetherID )
+{
+	Assert( !removingTether )
+	removingTether = true
+
+	foreach ( index, tetherData in file.activeTitanTethers )
+	{
+		if ( tetherData.codeTetherID == tetherID )
+		{
+			thread TitanTether_Remove( tetherData )
+			file.activeTitanTethers.fastremove( index )
+			break
+		}
+	}
+
+	removingTether = false
+}
+
+TetherData function GetTetherDataForCodeID( int codeTetherID )
+{
+	foreach ( index, tetherData in file.activeTitanTethers )
+	{
+		if ( tetherData.codeTetherID == codeTetherID )
+			return tetherData
+	}
+
+	unreachable
+}
+
+void function CodeCallback_OnTetherDamageMilestone( entity guy, int tetherID, int damageMilestoneIndex, float health )
+{
+	float healthFrac = 1.0 - health / 1000.0
+
+	TetherData tetherData = GetTetherDataForCodeID( tetherID )
+
+	vector ang = tetherData.endEntForPlayer.GetLocalAngles()
+	tetherData.endEntForPlayer.SetLocalAngles( < healthFrac * 45, ang.y, ang.z> )
+}

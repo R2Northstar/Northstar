@@ -1,0 +1,343 @@
+untyped
+
+globalize_all_functions
+
+//=========================================================
+//	_global_entities
+//  Create/initialize various global entities
+//=========================================================
+
+
+// if you set this to zero, various things that spam developer 2 won't run
+const SPAMS_DEVELOPER2 = 1
+
+void function MP_PlayerPostInit( entity self )
+{
+	entity player = self
+	Assert( !player.hasSpawned )
+
+	player.InitMPClasses()
+
+	player.hasSpawned = true
+}
+
+array _PlayerDidSpawnCallbacks = []
+
+function __PlayerDidSpawn( entity player )
+{
+	if ( player.GetPlayerName() == "Replay" )
+		return
+
+	foreach( callback in _PlayerDidSpawnCallbacks )
+	{
+		thread callback()
+	}
+
+	svGlobal.levelEnt.Signal( "PlayerDidSpawn", { player=player } )
+	FlagSet( "PlayerDidSpawn" )
+}
+
+function AddCallback_PlayerDidSpawn( callback )
+{
+	_PlayerDidSpawnCallbacks.append( callback )
+}
+
+function ClientCommand( client, command, delay = 0 )
+{
+	EntFireByHandle( _cc, "Command", command, delay, client, null )
+}
+
+function ServerCommand( command, delay = 0 )
+{
+	EntFireByHandle( _sc, "Command", command, delay, null, null )
+}
+
+table __trackedRefs = {}
+
+function AddTrackRef( ref )
+{
+	//printl( "Adding ref for: " + string( ref ) )
+	__trackedRefs[string( ref )] <- ref.weakref()
+}
+
+function RefTrackerThink()
+{
+	foreach ( refName, entity refObj in __trackedRefs )
+	{
+		if ( !refObj || !refObj.ref() )
+		{
+			delete __trackedRefs[refName]
+			if ( SPAMS_DEVELOPER2 )
+				svGlobal.levelEnt.Fire( "CallScriptFunction", "RefTrackerThink", 0.033 )
+			return
+		}
+
+		if ( IsValid_ThisFrame( refObj ) )
+			continue
+
+		printl( "UNFREED REFERENCE (use weakref for entities): " + refName )
+		__trackedRefs[ refName ] = null
+	}
+
+	if ( SPAMS_DEVELOPER2 )
+		svGlobal.levelEnt.Fire( "CallScriptFunction", "RefTrackerThink", 2.0 )
+}
+
+function DumpTrackRefs()
+{
+	foreach ( refName, refObj in __trackedRefs )
+	{
+		if ( !refObj || !refObj.ref() )
+			continue
+
+		printl( "TRACKREF: " + refName + " " + refObj.ref() )
+
+	}
+}
+
+function MapRequiresFullFlightpathSupport()
+{
+	return false //GetMapName().find( "mp_" ) == 0
+}
+
+function AINFileIsUpToDate_Wrapper()
+{
+	if ( GetAINScriptVersion() != AIN_REV )
+		return false
+
+	return AINFileIsUpToDate()
+}
+
+
+function Hud_Hide( __t__, __tt__ )
+{
+}
+
+function Hud_Show( __t__, __tt__ )
+{
+}
+
+function PathsOutOfDate( player )
+{
+	SendHudMessage( player, "Paths Out of Date. Type buildainfile at console.", -1, 0.4, 255, 255, 0, 255, 0.0, 0.5, 0.0 )
+	//	, x_pos, y_pos, R, G, B, A, fade_in_time, hold_time, fade_out_time )
+}
+
+function NavmeshOutOfDate( player )
+{
+	SendHudMessage( player, "Navmesh Out of Date. Build in LevelEd", -1, 0.6, 192, 255, 0, 255, 0.0, 0.5, 0.0 )
+	//	, x_pos, y_pos, R, G, B, A, fade_in_time, hold_time, fade_out_time )
+}
+
+
+function NavmeshUpToDateCheck()
+{
+	FlagWait( "PlayerDidSpawn" )
+
+	if ( NavMesh_IsUpToDate() )
+		return
+
+	for ( int i = 0; i < 5; i++ )
+	{
+		wait 1
+
+		array<entity> players = GetPlayerArray()
+		// let's not spam the whole server
+		if ( players.len() )
+			NavmeshOutOfDate( players[0] )
+	}
+}
+
+
+// paths out of date
+function AINFileIsUpToDateCheck()
+{
+	FlagWait( "PlayerDidSpawn" )
+
+	if ( AINFileIsUpToDate_Wrapper() )
+		return
+
+	if ( !AINExists() )
+		return
+
+	for ( int i = 0; i < 5; i++ )
+	{
+		wait 1
+
+		array<entity> players = GetPlayerArray()
+		// let's not spam the whole server
+		if ( players.len() )
+			PathsOutOfDate( players[0] )
+	}
+}
+
+function PlayerSeesGraphWarning( player )
+{
+	player.EndSignal( "OnDestroy" )
+	local i
+	float minWait = 0.03
+	float maxWait = 0.7
+	local result
+	int max = 15
+	for ( i = 0; i < max; i++ )
+	{
+		result = Graph( i, 0, max, maxWait, minWait )
+
+		wait result
+		if ( !IsValid( player ) )
+			return
+
+		if ( GetNPCArray().len() == 0 )
+			continue
+
+		wait result * 0.5
+		if ( !IsValid( player ) )
+			return
+
+		PathsOutOfDate( player )
+	}
+
+	for ( ;; )
+	{
+		wait 0.5
+		if ( !IsValid( player ) )
+			return
+
+		if ( GetNPCArray().len() == 0 )
+			continue
+
+		wait 0.3
+		if ( !IsValid( player ) )
+			return
+
+		PathsOutOfDate( player )
+	}
+}
+
+
+
+// Look up and set damageSourceIds for environmental damage triggers
+// This works this way so maps don't have to be recompiled if any damageSourceIds change
+void function InitDamageTriggers( entity self )
+{
+	if ( !self.HasKey( "damageSourceName" ) )
+		return
+
+	switch ( self.GetValueForKey( "damageSourceName" ) )
+	{
+		case "fall":
+			self.kv.damageSourceId = eDamageSourceId.fall
+			break
+
+		case "splat":
+			self.kv.damageSourceId = eDamageSourceId.splat
+			break
+
+		case "burn":
+			self.kv.damageSourceId = eDamageSourceId.burn
+			break
+
+		case "submerged":
+			self.kv.damageSourceId = eDamageSourceId.submerged
+			break
+
+		case "electric_conduit":
+			self.kv.damageSourceId = eDamageSourceId.electric_conduit
+			break
+
+		case "turbine":
+			self.kv.damageSourceId = eDamageSourceId.turbine
+			break
+
+		case "lasergrid":
+			self.kv.damageSourceId = eDamageSourceId.lasergrid
+			break
+
+		case "crush":
+			self.kv.damageSourceId = eDamageSourceId.damagedef_crush
+			break
+
+		case "toxic_sludge":
+			self.kv.damageSourceId = eDamageSourceId.toxic_sludge
+			break
+
+		default:
+			Assert( false, "Unsupported damage source name on trigger_hurt: " + self.GetValueForKey( "damageSourceName" ) )
+	}
+}
+
+bool function IsDamageFromDamageTrigger( damageInfo )
+{
+	switch ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) )
+	{
+		case eDamageSourceId.fall:
+		case eDamageSourceId.splat:
+		case eDamageSourceId.burn:
+		case eDamageSourceId.submerged:
+			return true
+	}
+
+	return false
+}
+
+function ScriptLeakDetector()
+{
+	svGlobal.levelEnt.Signal( "GameEnd" )
+	OnThreadEnd(
+		function() : ()
+		{
+			TotalEnts()
+		}
+	)
+
+	WaitFrame()
+	TotalEnts()
+
+	for ( ;; )
+	{
+		wait 60
+		TotalEnts()
+	}
+}
+
+void function NavmeshSeparatorThink( entity separator )
+{
+	bool connected = true
+	if ( separator.HasKey( "startDisconnected" ) && separator.kv.startDisconnected == "1" )
+		connected = false
+
+	ToggleNPCPathsForEntity( separator, connected )
+	if ( connected )
+		separator.NotSolid()
+	else
+		separator.Solid()
+
+	if ( separator.HasKey( "script_flag" ) && separator.kv.script_flag != "" )
+	{
+		string flag = string( separator.kv.script_flag )
+		FlagInit( flag, connected )
+
+		while( IsValid( separator ) )
+		{
+			if ( connected )
+				FlagWaitClear( flag )
+			else
+				FlagWait( flag )
+
+			connected = !connected
+			ToggleNPCPathsForEntity( separator, connected )
+			if ( connected )
+				separator.NotSolid()
+			else
+				separator.Solid()
+		}
+	}
+}
+
+void function DevDebugText( entity node )
+{
+	Assert( node.HasKey( "text" ) && node.kv.text != "", "info_debug_text at " + node.GetOrigin() + " doesn't have text set on it." )
+	// Debug text doesn't work right away becuase of code, this delay makes them show up
+	wait 3.0
+	DebugDrawText( node.GetOrigin(), string( node.kv.text ), true, 999999.9 )
+}

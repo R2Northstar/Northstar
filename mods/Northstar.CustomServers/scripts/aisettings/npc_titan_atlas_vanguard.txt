@@ -1,0 +1,19 @@
+#base "npc_titan_atlas.txt"
+npc_titan_atlas_vanguard
+{
+	title 						#NPC_TITAN_ATLAS_VANGUARD
+	WeaponCapacity				"FromLoadout"
+	npc_titan_player_settings	"titan_atlas_vanguard"
+
+	BehaviorSelector		"behavior_titan_long_range"
+
+	circleStrafeDist			1500
+	circleStrafeAngleIncrement	15
+
+	aggresiveCombatHealthChangeRateDiff	300
+
+	DefaultModelName		"models/titans/medium/titan_medium_vanguard.mdl" [$mp]
+	DefaultModelName		"models/titans/medium/titan_medium_vanguard.mdl" [$sp]
+
+	footstep_type			"buddy"
+}

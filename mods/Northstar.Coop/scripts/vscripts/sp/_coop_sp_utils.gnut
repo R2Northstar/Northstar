@@ -1,0 +1,177 @@
+untyped
+global const float COOP_RESPAWN_DELAY = 5.0
+
+global function CoopSpUtils_Init
+
+global function GetPlayerToSpawnOn
+global function RestartWithoutDroppingPlayers
+global function TeleportToEntitySafe
+global function GetEntitiesByEditorClass
+
+global function GetPlayersInTimeline
+
+void function CoopSpUtils_Init()
+{
+	AddCallback_OnClientConnecting( OnClientConnecting )
+	AddDeathCallback( "player", OnPlayerDeath )
+}
+
+void function OnClientConnecting( entity player )
+{
+	// add custom script vars
+	if ( IsPlayingTimeshiftLevel() )
+	{
+		player.s.timeline <- 1 // TIMEZONE_NIGHT
+		player.s.isTimeTraveling <- false
+		player.s.lastGoodTimeshiftPosOvergrown <- <0, 0, 0>
+		player.s.lastGoodTimeshiftPosPristine <- <0, 0, 0>
+	}
+}
+
+void function OnPlayerDeath( entity player, var damageInfo )
+{
+	// add respawn delay, use networked entity var for client respawn timer
+	player.nv.nextRespawnTime = Time() + COOP_RESPAWN_DELAY
+	
+	if ( AreAllPlayersDead() )
+		thread FailLevel( COOP_RESPAWN_DELAY )
+}
+
+void function FailLevel( float respawnTime )
+{
+	wait respawnTime
+	RestartWithoutDroppingPlayers()
+}
+
+entity ornull function GetPlayerToSpawnOn() 
+{
+	array< entity > possiblePlayers
+	foreach ( entity player in GetPlayerArray())
+	{
+		if ( IsAlive( player ))
+			possiblePlayers.append( player )
+	}
+		
+	if ( possiblePlayers.len() == 0 )
+		return null // everyone is dead
+		
+	return possiblePlayers[ RandomInt( possiblePlayers.len() ) ]
+}
+
+void function RestartWithoutDroppingPlayers()
+{
+	// todo: make this deal with checkpoints/saves
+	ServerCommand( "changelevel " + GetMapName() )
+}
+
+void function TeleportToEntitySafe( entity teleported, entity target )
+{
+	// teleport to other entities without getting stuck in ceilings and shit
+	// PLEASE dont call this often, it's weird when used on living players
+	// was designed only to be used on spawn/respawn code
+		
+	vector targetPos = target.GetOrigin()
+	
+	// intelligent checks
+	// is the spot already valid?
+	if ( !PlayerPosInSolidIgnoreOtherPlayers( teleported, targetPos ) )
+	{
+		print( "TeleportToEntitySafe: pos was valid first time" )
+		teleported.SetOrigin( targetPos )
+		teleported.SetAngles( target.GetAngles() )
+		return
+	}
+	else if ( target.IsCrouched() && !teleported.IsCrouched() && !PlayerPosInSolidIgnoreOtherPlayers( teleported, targetPos, true ) )
+	{
+		// teleporting to sliding players while not sliding can cause clipping
+		// so if we set the player to be sliding maybe it'll kinda sorta work out
+		
+		// check if we can just offset ourselves downwards to a valid pos without crouching
+		// 25 is the diff in collision height between stood up/crouched
+		if ( !PlayerPosInSolidIgnoreOtherPlayers( teleported, targetPos + <0, 0, -25> ) )
+		{
+			print( "TeleportToEntitySafe: offset to valid position to account for crouch!" )
+			teleported.SetOrigin( targetPos + <0, 0, -25> )
+			teleported.SetAngles( target.GetAngles() )
+			return
+		}
+		else
+		{
+			print( "TeleportToEntitySafe: couldn't offset to valid pos for crouch, waiting for crouch to finish" )
+			teleported.ForceCrouch()
+		}
+	}
+	
+	// last resort - give up and wait for the pos to be valid
+	// given this is mainly used for teleporting to players it can probably be abused
+	
+	float startTime = Time()
+	float timeout = 5.0
+	
+	print( "TeleportToEntitySafe: couldn't get a safe pos with starting conditions, waiting for pos to be valid" )
+	while ( PlayerPosInSolidIgnoreOtherPlayers( teleported, target.GetOrigin() ) )
+	{
+		WaitFrame()
+		
+		if ( Time() - startTime > timeout )
+		{
+			// if we take too long, we probably aren't gonna teleport anyway, so why bother wasting cpu time on it
+			print( "TeleportToEntitySafe: timed out waiting for successful teleport attempt" )
+			return
+		}
+	}
+		
+	print( "TeleportToEntitySafe: done waiting for pos to be valid!" )
+	teleported.SetOrigin( target.GetOrigin() )
+	teleported.SetAngles( target.GetAngles() )
+	teleported.UnforceCrouch()
+}
+
+bool function PlayerPosInSolidIgnoreOtherPlayers( entity player, vector targetPos, bool fakeCrouch = false )
+{
+	// playerposinsolid by default doesn't ignore other players, only the player they're checking for
+	// this reimplements it, but ignores all players
+	// don't wanna patch the original function because the original behaviour could be useful
+			
+	vector maxs = player.GetPlayerMaxs()
+	
+	if ( maxs.z == 32 )
+		maxs.z = 72 // maxs seem broken when connecting so make sure they're normal for this
+	
+	if ( fakeCrouch )
+		maxs.z = 47 // 47 when crouched, 72 uncrouched
+	
+	TraceResults traceResult = TraceHull( targetPos, targetPos + <0, 0, 1>, player.GetPlayerMins(), maxs, GetPlayerArray(), TRACE_MASK_PLAYERSOLID, TRACE_COLLISION_GROUP_PLAYER )
+	return traceResult.startSolid
+}
+
+array< entity > function GetEntitiesByEditorClass( string editorClass )
+{
+	array< entity > ret
+	for ( int i = 0; i < 2048 /*max ents in source*/; i++ )
+	{
+		entity ent = GetEntByIndex( i )
+		if ( ent == null )
+			continue
+			
+		if ( GetEditorClass( ent ) == editorClass )
+			ret.append( ent )
+	}
+	
+	return ret
+}
+
+
+//EFFECT AND CAUSE/TIMESHIFT STUFF
+
+array< entity > function GetPlayersInTimeline( int timeline )
+{
+	array< entity > playersInTimeline
+	foreach ( entity player in GetPlayerArray() )
+	{
+		if ( player.s.timeline == timeline )
+			playersInTimeline.append( player )
+	}
+	
+	return playersInTimeline
+}

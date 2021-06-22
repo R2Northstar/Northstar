@@ -1,0 +1,6 @@
+global function Playlist_Init
+
+void function Playlist_Init()
+{
+
+}

@@ -1,0 +1,34 @@
+global function Sh_GamemodeTT_Init
+
+global const string GAMEMODE_TT = "tt"
+
+void function Sh_GamemodeTT_Init()
+{
+	// create custom gamemode
+	AddCallback_OnCustomGamemodesInit( CreateGamemodeTT )
+}
+
+void function CreateGamemodeTT()
+{
+	GameMode_Create( GAMEMODE_TT )
+	GameMode_SetName( GAMEMODE_TT, "#GAMEMODE_TT" )
+	GameMode_SetDesc( GAMEMODE_TT, "#PL_tt_desc" )
+	GameMode_SetGameModeAnnouncement( GAMEMODE_TT, "gnrc_modeDesc" )
+	GameMode_SetDefaultScoreLimits( GAMEMODE_TT, 20, 0 )
+	GameMode_SetDefaultTimeLimits( GAMEMODE_TT, 15, 0.0 )
+	GameMode_AddScoreboardColumnData( GAMEMODE_TT, "#SCOREBOARD_SCORE", PGS_ASSAULT_SCORE, 2 )
+	GameMode_AddScoreboardColumnData( GAMEMODE_TT, "#SCOREBOARD_TITAN_KILLS", PGS_TITAN_KILLS, 1 )
+	GameMode_AddScoreboardColumnData( GAMEMODE_TT, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 )
+	GameMode_SetColor( GAMEMODE_TT, [200, 40, 40, 255] )
+	
+	#if SERVER
+		GameMode_AddServerInit( GAMEMODE_TT, GamemodeTT_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( GAMEMODE_TT, RateSpawnpoints_Generic )
+		GameMode_SetTitanSpawnpointsRatingFunc( GAMEMODE_TT, RateSpawnpoints_Generic )
+	#elseif CLIENT
+		GameMode_AddClientInit( GAMEMODE_TT, ClGamemodeTT_Init )
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( GAMEMODE_TT, CompareAssaultScore )
+	#endif
+}

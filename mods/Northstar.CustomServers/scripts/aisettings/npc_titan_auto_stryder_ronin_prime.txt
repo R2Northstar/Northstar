@@ -1,0 +1,6 @@
+#base "npc_titan_auto_stryder_leadwall.txt"
+
+npc_titan_auto_stryder_ronin_prime
+{
+	npc_titan_player_settings	"titan_stryder_ronin_prime"
+}

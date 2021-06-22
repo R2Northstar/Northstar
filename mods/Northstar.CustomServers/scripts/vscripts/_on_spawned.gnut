@@ -1,0 +1,508 @@
+untyped
+
+global function CodeCallback_PreSpawn
+global function CodeCallback_OnSpawned
+global function RunMySpawnFunctions
+global function AddScriptNoteworthySpawnCallback
+global function SpawnFromSpawnerArray
+global function AddSpawnCallback
+global function AddSpawnCallbackEditorClass
+global function AddSpawnCallback_ScriptName
+global function GetLeveledAISettings
+global function GetSpawnAISettings
+global function GetDefaultAISetting
+
+void function CodeCallback_PreSpawn( entity npc )
+{
+	/*
+	SCRIPTERS READ THIS
+
+	The purpose of this function is to fixup npc fields coming from all the many places they can come from, so that code doesn't break them during DispatchSpawn.
+	If you want to fix an AI field on spawned, you should do it in ai_spawn_content, unless the field change is related to code functionality and needs
+	to change before code spawns the AI. Then, it should be here.
+
+	Thanks
+	-Mackey
+	*/
+	Assert( npc.IsNPC() )
+
+	if ( !npc.HasAISettings() )
+	{
+		// this ai has no ai settings file
+		string aisettings = GetDefaultAISetting( npc )
+		Assert( aisettings != "" )
+		SetAISettingsWrapper( npc, aisettings )
+	}
+
+	if ( npc.IsTitan() )
+	{
+		if ( npc.ai.titanSettings.titanSetFile == "" )
+		{
+			if ( npc.HasKey( "leveled_titan_settings" ) )
+			{
+				SetTitanSettings( npc.ai.titanSettings, expect string( npc.kv.leveled_titan_settings ) )
+			}
+		}
+
+		var builtInLoadout
+
+		if ( npc.HasKey( "leveled_titan_loadout" ) )
+		{
+			builtInLoadout = npc.GetValueForKey( "leveled_titan_loadout" )
+		}
+		else
+		{
+			if ( npc.Dev_GetAISettingByKeyField( "WeaponCapacity" ) == "FromLoadout" )
+				builtInLoadout = npc.Dev_GetAISettingByKeyField( "npc_titan_player_settings" )
+		}
+
+		if ( builtInLoadout != null )
+		{
+			// derive loadout from built in loadout in this case
+			expect string( builtInLoadout )
+			if ( npc.ai.titanSettings.titanSetFile != builtInLoadout )
+				SetTitanSettings( npc.ai.titanSettings, builtInLoadout )
+
+			npc.ai.titanSpawnLoadout.setFile = builtInLoadout
+			// OverwriteLoadoutWithDefaultsForSetFile_ExceptSpecialAndAntiRodeo( npc.ai.titanSpawnLoadout )
+			OverwriteLoadoutWithDefaultsForSetFile( npc.ai.titanSpawnLoadout ) // get the entire loadout, including defensive and tactical
+
+			//Set camo, decal, and skin indices from npc settings.
+			//Using Dev_GetAISettingsByKeyField_Global because titan has not spawned yet, so the non-global version of this function does not work.
+			var camoIndex 	= Dev_GetAISettingByKeyField_Global( npc.GetAISettingsName(), "titanCamoIndex" )
+			var decalIndex 	= Dev_GetAISettingByKeyField_Global( npc.GetAISettingsName(), "titanDecalIndex" )
+			var skinIndex	= Dev_GetAISettingByKeyField_Global( npc.GetAISettingsName(), "titanSkinIndex" )
+			if ( camoIndex != null )
+				npc.ai.titanSpawnLoadout.camoIndex = expect int ( camoIndex )
+			if ( decalIndex != null )
+				npc.ai.titanSpawnLoadout.decalIndex = expect int ( decalIndex )
+			if ( skinIndex != null )
+				npc.ai.titanSpawnLoadout.skinIndex = expect int ( skinIndex )
+		}
+
+		AssignSpawnOptionsFromLeveled( npc, SetSpawnOption_Weapon, "additionalequipment", "primaryWeapon_mods" )
+		npc.kv.additionalequipment = ""
+		AssignSpawnOptionsFromLeveled( npc, SetSpawnOption_Ordnance, "titanOrdnance", "titanOrdnance_mods" )
+		AssignSpawnOptionsFromLeveled( npc, SetSpawnOption_Special, "titanSpecial", "titanSpecial_mods" )
+		AssignSpawnOptionsFromLeveled( npc, SetSpawnOption_Antirodeo, "titanAntiRodeo", "titanAntiRodeo_mods" )
+
+		// temp fix for npc_create npc_titan, probably should refactor away npc.ai.titanSettings
+		if ( npc.ai.titanSettings.titanSetFile == "" )
+			SetTitanSettings( npc.ai.titanSettings, expect string( npc.Dev_GetAISettingByKeyField( "npc_titan_player_settings" ) ) )
+
+		CreateTitanModelAndSkinSetup( npc )
+
+		if ( npc.GetAIClass() == AIC_TITAN_BUDDY )
+			npc.kv.squadname = "bt"
+	}
+	else
+	{
+		npc.SetValueForModelKey( npc.GetSettingModelName() )
+	}
+
+	if ( !IsTurret( npc ) && IsSingleplayer() && npc.kv.squadname == "" && npc.GetTeam() >= FIRST_GAME_TEAM )
+		npc.SetAutoSquad()
+		//AutoSquadnameAssignment( npc )
+
+	if ( !npc.IsTitan() )
+	{
+		AssignGrenadeWeaponFromAISettings( npc )
+
+		AssignDroneSpawnAISettings( npc )
+
+		if ( npc.ai.mySpawnOptions_weapon == null )
+		{
+			if ( !IsTurret( npc ) )
+			{
+				NPCDefaultWeapon ornull defaultWeapon = GetNPCDefaultWeaponForLevel( npc )
+				if ( defaultWeapon != null )
+				{
+					expect NPCDefaultWeapon( defaultWeapon )
+					SetSpawnOption_Weapon( npc, defaultWeapon.wep, defaultWeapon.mods )
+					npc.kv.additionalequipment = ""
+					return
+				}
+			}
+
+			switch ( npc.kv.additionalequipment )
+			{
+				case "":
+				case "auto_weapon":
+				case "auto_weapon_antititan":
+				case "auto_weapon_sidearm":
+				case "auto_weapon_rifle":
+				case "auto_weapon_lmg":
+				case "auto_weapon_shield_captain":
+				case "auto_weapon_shotgun":
+				case "auto_weapon_smg":
+				case "auto_weapon_sniper":
+				case "auto_weapon_specialist":
+
+					// fill weapon in from ai settings file
+					npc.kv.additionalequipment = ""
+					string aiSettingsWeapon = npc.AISetting_GetDefaultWeapon()
+					if ( aiSettingsWeapon != "" )
+						SetSpawnOption_Weapon( npc, aiSettingsWeapon )
+					break
+
+				case "none":
+					npc.kv.additionalequipment = ""
+					break
+			}
+		}
+	}
+}
+
+void function AssignDroneSpawnAISettings( entity npc )
+{
+	if ( npc.HasKey( "script_drone_type" ) )
+	{
+		var droneType = npc.kv.script_drone_type
+		if ( droneType != null )
+		{
+			expect string( droneType )
+			if ( droneType.tolower() == "none" )
+				droneType = ""
+			npc.ai.droneSpawnAISettings = droneType
+		}
+		return
+	}
+
+	npc.ai.droneSpawnAISettings = npc.AISetting_SummonDrone()
+}
+
+
+void function AssignGrenadeWeaponFromAISettings( entity npc )
+{
+	if( npc.kv.grenadeWeaponName == "none" )
+	{
+		npc.kv.grenadeWeaponName = ""
+		return
+	}
+
+	if ( npc.kv.GrenadeWeaponName != "" )
+		return
+
+	string grenadeWeaponName = npc.AISetting_GetGrenadeWeapon()
+	if ( grenadeWeaponName == "" )
+		return
+
+	npc.kv.grenadeWeaponName = grenadeWeaponName
+}
+
+void function AssignSpawnOptionsFromLeveled( entity npc, void functionref( entity, string, array<string> = 0 ) spawnSettingsFunc, string kvWeapon, string kvWeaponMods )
+{
+	if ( !npc.HasKey( kvWeapon ) )
+		return
+	string weapon = npc.GetValueForKey( kvWeapon )
+	if ( weapon == "" )
+		return
+
+	array<string> mods
+	if ( npc.HasKey( kvWeaponMods ) )
+	{
+		mods = split( npc.GetValueForKey( kvWeaponMods ), " " )
+	}
+
+	spawnSettingsFunc( npc, weapon, mods )
+}
+
+string function GetDefaultAISetting( entity npc )
+{
+//	change this to map directly by file name from subClass, and error if its not there.
+//	This insures consistent settings file naming and makes settings files less of a mix-and-match concept.
+//	subclasses should also sub-name off their class (except for craaaaaazy soldier/grunt guy)
+
+	if ( npc.mySpawnOptions_aiSettings != null )
+	{
+		// you have to include base if you use SpawnOption_AISettings
+		return string( npc.mySpawnOptions_aiSettings )
+	}
+
+	if ( npc.HasKey( "leveled_aisettings" ) )
+	{
+		return GetLeveledAISettings( npc )
+	}
+
+	if ( npc.IsTitan() && npc.ai.titanSettings.titanSetFile != "" )
+	{
+		// from titan player set file
+		string settingsKey = GetAISettingsStringForMode()
+
+		var aiSettings = Dev_GetPlayerSettingByKeyField_Global( npc.ai.titanSettings.titanSetFile, settingsKey )
+		if ( aiSettings != null )
+			return expect string( aiSettings )
+	}
+
+	return npc.GetClassName()
+}
+
+string function GetLeveledAISettings( entity npc )
+{
+	Assert( npc.IsNPC() )
+	Assert( npc.HasKey( "leveled_aisettings" ) )
+	string settings = expect string( npc.kv.leveled_aisettings )
+	switch ( settings )
+	{
+		// remap deprecated substrings for awhile
+		case "npc_soldier_drone_summoner_shield":
+			return "npc_soldier_drone_summoner"
+	}
+	return settings
+}
+
+string function GetSpawnAISettings( entity npc )
+{
+	if ( npc.mySpawnOptions_aiSettings != null)
+		return expect string( npc.mySpawnOptions_aiSettings )
+	else if ( npc.HasKey( "leveled_aisettings" ) )
+		return expect string( npc.kv.leveled_aisettings )
+
+	return ""
+}
+
+void function CodeCallback_OnSpawned( entity ent )
+{
+	if ( IsSpawner( ent ) )
+	{
+		var spawnerKVs = ent.GetSpawnEntityKeyValues()
+		if ( "script_flag_killed" in spawnerKVs )
+			thread SetupFlagKilledForNPC( ent )
+		return
+	}
+
+	string classname = ent.GetClassName()
+
+	if ( classname in _entityClassVars )
+	{
+		if ( !ent._entityVars )
+			InitEntityVars( ent )
+
+		//ent.ConnectOutput( "OnDestroy", "_RemoveFromEntityList" )
+	}
+
+	int teamNum = int( expect string( ent.kv.teamnumber ) )
+	if ( teamNum != 0 )
+		SetTeam( ent, teamNum )
+
+	SetModelSkinFromLeveled( ent )
+
+    if ( IsLobby() )
+    {
+		RunMySpawnFunctions( ent )
+        return
+    }
+
+	if ( ent.IsNPC() )
+	{
+		CommonNPCOnSpawned( ent )
+	}
+
+	if ( ent instanceof CBaseCombatCharacter && ent.GetModelName() != $"" )
+		InitDamageStates( ent )
+
+	if ( ent instanceof CProjectile || ent instanceof CBaseGrenade )
+		thread PROTO_InitTrackedProjectile( ent )
+
+	/*
+	if ( !( "totalSpawned" in level ) )
+	{
+		level.totalSpawned <- {}
+		level.totalSpawned.total <- 0
+	}
+
+	if ( !( "classname" in level.totalSpawned ) )
+	{
+		level.totalSpawned[ classname ] <- {}
+	}
+
+	level.totalSpawned[ classname ][ ent ] <- ent
+	level.totalSpawned.total++
+	*/
+
+	RegisterForDamageDeathCallbacks( ent )
+
+	RunMySpawnFunctions( ent )
+}
+
+function RunMySpawnFunctions( entity self )
+{
+	if ( !IsValid( self ) )
+	{
+		// entity was deleted already
+		return
+	}
+
+	RunSpawnCallbacks( self )
+	RunEditorClassCallbacks( self )
+	RunScriptNoteworthyCallbacks( self )
+	RunScriptNameCallbacks( self )
+}
+
+void function AddSpawnCallback( string classname, void functionref( entity ) func )
+{
+	foreach ( spawnCallbackFuncArray funcArray in svGlobal.spawnCallbackFuncs )
+	{
+		if ( funcArray.entityClassname == classname )
+		{
+			funcArray.callbackArray.append( func )
+			return
+		}
+	}
+
+	spawnCallbackFuncArray funcArray
+	funcArray.entityClassname = classname
+	funcArray.callbackArray.append( func )
+	svGlobal.spawnCallbackFuncs.append( funcArray )
+}
+
+void function AddSpawnCallbackEditorClass( string classname, string editorClassname, void functionref( entity ) func )
+{
+	foreach ( spawnCallbackEditorClassFuncArray funcArray in svGlobal.spawnCallbackEditorClassFuncs )
+	{
+		if ( funcArray.entityClassname == classname && funcArray.entityEditorClassname == editorClassname )
+		{
+			funcArray.callbackArray.append( func )
+			return
+		}
+	}
+
+	spawnCallbackEditorClassFuncArray funcArray
+	funcArray.entityClassname = classname
+	funcArray.entityEditorClassname = editorClassname
+	funcArray.callbackArray.append( func )
+	svGlobal.spawnCallbackEditorClassFuncs.append( funcArray )
+}
+
+function RunSpawnCallbacks( entity self )
+{
+	string classname = self.GetClassName()
+
+	foreach ( spawnCallbackFuncArray funcArray in svGlobal.spawnCallbackFuncs )
+	{
+		if ( funcArray.entityClassname == classname )
+		{
+			foreach ( func in funcArray.callbackArray )
+			{
+				func( self )
+			}
+		}
+	}
+}
+
+function RunEditorClassCallbacks( entity self )
+{
+	string editorClassname = GetEditorClass( self )
+	if ( editorClassname == "" )
+		return
+
+	string classname = self.GetClassName()
+
+	foreach ( spawnCallbackEditorClassFuncArray funcArray in svGlobal.spawnCallbackEditorClassFuncs )
+	{
+		if ( funcArray.entityEditorClassname == editorClassname )
+		{
+			//Assert( funcArray.entityClassname == classname, "Editor classname callback was set on entity with wrong base classname type" )
+			if ( funcArray.entityClassname != classname )
+				CodeWarning( "Entity " + editorClassname + " is expecting alias of " + funcArray.entityClassname + " but found a " + classname + ". You may just need to reexport from LevelEd and recompile the map to fix this." )
+
+			foreach ( func in funcArray.callbackArray )
+			{
+				thread func( self )
+			}
+		}
+	}
+}
+
+array<entity> function SpawnFromSpawnerArray( array<entity> spawners, void functionref( entity ) ornull spawnSettingsFunc = null )
+{
+	array<entity> spawned
+	if ( spawnSettingsFunc == null )
+	{
+		foreach ( entity spawner in spawners )
+		{
+			entity ent = spawner.SpawnEntity()
+			DispatchSpawn( ent )
+			spawned.append( ent )
+		}
+	}
+	else
+	{
+		expect void functionref( entity )( spawnSettingsFunc )
+		foreach ( entity spawner in spawners )
+		{
+			entity ent = spawner.SpawnEntity()
+			spawnSettingsFunc( ent )
+			DispatchSpawn( ent )
+			spawned.append( ent )
+		}
+	}
+
+	return spawned
+}
+
+void function RunScriptNameCallbacks( entity ent )
+{
+	string name = ent.GetScriptName()
+	if ( !( name in svGlobal.spawnCallbacks_scriptName ) )
+		return
+
+	foreach ( callback in svGlobal.spawnCallbacks_scriptName[ name ] )
+	{
+		thread callback( ent )
+	}
+}
+
+void function AddSpawnCallback_ScriptName( string scriptName, void functionref( entity ) func )
+{
+	if ( !( scriptName in svGlobal.spawnCallbacks_scriptName ) )
+		svGlobal.spawnCallbacks_scriptName[ scriptName ] <- []
+	svGlobal.spawnCallbacks_scriptName[ scriptName ].append( func )
+}
+
+void function RunScriptNoteworthyCallbacks( entity ent )
+{
+	if ( !( ent.HasKey( "script_noteworthy" ) ) )
+		return
+
+	foreach ( noteworthyCallback in svGlobal.spawnCallbackFuncs_scriptNoteworthy )
+	{
+		if ( ent.kv.script_noteworthy != noteworthyCallback.scriptNoteworthy )
+			continue
+
+		foreach ( func in noteworthyCallback.callbackArray )
+		{
+			func( ent )
+		}
+
+		break // ??? break?
+	}
+}
+
+void function AddScriptNoteworthySpawnCallback( string script_noteworthy, void functionref( entity ) func )
+{
+	foreach ( noteworthyCallback in svGlobal.spawnCallbackFuncs_scriptNoteworthy )
+	{
+		if ( script_noteworthy != noteworthyCallback.scriptNoteworthy )
+			continue
+
+		noteworthyCallback.callbackArray.append( func )
+		return
+	}
+
+	spawnCallbackFuncArray_scriptNoteworthy newNoteworthyCallback
+	newNoteworthyCallback.scriptNoteworthy = script_noteworthy
+	newNoteworthyCallback.callbackArray.append( func )
+	svGlobal.spawnCallbackFuncs_scriptNoteworthy.append( newNoteworthyCallback )
+}
+
+void function SetModelSkinFromLeveled( entity ent )
+{
+	// Hack that we have to wait a frame for it to work. Code should just do this for us anyways.
+	if ( !ent.HasKey( "modelskin" ) )
+		return
+
+	int skin = expect int( ent.kv.modelskin.tointeger() )
+	if ( skin > 0 )
+		ent.SetSkin( skin )
+}

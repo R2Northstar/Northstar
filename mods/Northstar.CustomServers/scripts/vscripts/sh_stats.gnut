@@ -1,0 +1,526 @@
+
+global function InitStatsTables
+global function IsValidStat
+global function GetPlayerStatInt
+global function GetPlayerStatFloat
+global function GetPlayerStat_AllCompetitiveModesAndMapsInt
+global function GetStatVar
+global function GetStatVarType
+global function GetStatVarLocalizedUnlock
+global function Stats_GetFixedSaveVar
+global function FD_GetHighestDifficultyForTitan
+
+/*void function AddItemsToStatsList( array<string> refs )
+{
+	foreach ( ref in refs )
+		shGlobalMP.statsItemsList.append( ref )
+}*/
+
+void function InitStatsTables()
+{
+	int persistenceItemsCount = PersistenceGetEnumCount( "loadoutWeaponsAndAbilities" )
+	for ( int i = 0; i < persistenceItemsCount; i++ )
+	{
+		string enumName = PersistenceGetEnumItemNameForIndex( "loadoutWeaponsAndAbilities", i )
+		if ( enumName != "" )
+			shGlobalMP.statsItemsList.append( enumName )
+	}
+
+	//##############################################
+	// 					GAMES STATS
+	//##############################################
+
+	AddPersistentStatCategory( "game_stats" )
+
+	AddPersistentStat( "game_stats", "game_joined", 						"",	 	"mapStats[%mapname%].gamesJoined[%gamemode%]", "#" )
+	AddPersistentStat( "game_stats", "game_completed",						"",		"mapStats[%mapname%].gamesCompleted[%gamemode%]", "#" )
+	AddPersistentStat( "game_stats", "game_won", 							"",	 	"mapStats[%mapname%].gamesWon[%gamemode%]", "#" )
+	AddPersistentStat( "game_stats", "game_lost", 							"",	 	"mapStats[%mapname%].gamesLost[%gamemode%]", "#" )
+	AddPersistentStat( "game_stats", "mvp", 								"",	 	"mapStats[%mapname%].topPlayerOnTeam[%gamemode%]", "#" )
+	AddPersistentStat( "game_stats", "top3OnTeam", 							"",	 	"mapStats[%mapname%].top3OnTeam[%gamemode%]", "#" )
+	AddPersistentStat( "game_stats", "hoursPlayed", 						"",		"mapStats[%mapname%].hoursPlayed[%gamemode%]", "#" )
+	AddPersistentStat( "game_stats", "perfectMatches", 						"",		"mapStats[%mapname%].perfectMatchesByDifficulty[%difficulty%]", "#" )
+	AddPersistentStat( "game_stats", "games_completed_fd", 					"",		"mapStats[%mapname%].matchesByDifficulty[%difficulty%]", "#" )
+	AddPersistentStat( "game_stats", "games_won_fd", 						"",		"mapStats[%mapname%].winsByDifficulty[%difficulty%]", "#" )
+
+	int gameModeCount = PersistenceGetEnumCount( "gameModes" )
+	for ( int modeIndex = 0; modeIndex < gameModeCount; modeIndex++ )
+	{
+		string gameModeName = PersistenceGetEnumItemNameForIndex( "gameModes", modeIndex )
+
+		AddPersistentStat( "game_stats", "mode_played", 						gameModeName,	 	"gameStats.modesPlayed[" + gameModeName + "]", "#UNLOCK_MODE_PLAYED" )
+		AddPersistentStat( "game_stats", "mode_won", 							gameModeName,	 	"gameStats.modesWon[" + gameModeName + "]", "#UNLOCK_MODE_WON" )
+
+		AddPersistentStat( "game_stats", "pvp_kills_by_mode",					gameModeName,		"gameStats.pvpKills[" + gameModeName + "]", "#UNLOCK_MODE_PILOT_KILLS" )
+		AddPersistentStat( "game_stats", "times_kd_2_to_1_by_mode",				gameModeName,		"gameStats.timesKillDeathRatio2to1[" + gameModeName + "]", "#UNLOCK_MODE_KD_2_1" )
+		AddPersistentStat( "game_stats", "times_kd_2_to_1_pvp_by_mode",			gameModeName,		"gameStats.timesKillDeathRatio2to1_pvp[" + gameModeName + "]", "#UNLOCK_MODE_PILOT_KD_2_1" )
+	}
+
+	AddPersistentStat( "game_stats", "mvp_total", 							"",	 	"gameStats.mvp_total", "#UNLOCK_GAME_MVP" )
+	AddPersistentStat( "game_stats", "game_completed_total",				"",		"gameStats.gamesCompletedTotal", "#UNLOCK_GAME_COMPLETED" )
+	AddPersistentStat( "game_stats", "game_won_total",						"",		"gameStats.gamesWonTotal", "#UNLOCK_GAME_WON" )
+
+	//##############################################
+	// 					TIME STATS
+	//##############################################
+
+	AddPersistentStatCategory( "time_stats" )
+
+	AddPersistentStatFloat( "time_stats", "hours_total", 			"",	 	"timeStats.total", "#UNLOCK_TIME_HOURS" )
+	AddPersistentStatFloat( "time_stats", "hours_as_pilot", 			"",	 	"timeStats.asPilot", "#UNLOCK_TIME_HOURS_PILOT" )
+	AddPersistentStatFloat( "time_stats", "hours_wallrunning", 		"",	 	"timeStats.wallrunning", "#UNLOCK_TIME_HOURS_WALLRUN" )
+	AddPersistentStatFloat( "time_stats", "hours_inAir", 			"",	 	"timeStats.inAir", "#UNLOCK_TIME_HOURS_AIR" )
+	AddPersistentStatFloat( "time_stats", "hours_as_titan", 			"",	 	"timeStats.asTitanTotal", "#UNLOCK_TIME_HOURS_TITAN" )
+
+	AddPersistentStatFloat( "time_stats", "hours_dead", 				"",	 	"timeStats.dead", "#" )
+	AddPersistentStatFloat( "time_stats", "hours_wallhanging", 		"",	 	"timeStats.wallhanging", "#" )
+
+	// hours_as_titan_stryder
+	// hours_as_titan_atlas
+	// hours_as_titan_ogre
+	foreach ( titan, alias in GetAsTitanTypes() )
+	 {
+		 AddPersistentStatFloat( "time_stats", "hours_as_titan_" + alias,	"",		"timeStats.asTitan[" + alias + "]", "#UNLOCK_TIME_HOURS_TITAN_SPECIFIC" )
+	 }
+
+	//##############################################
+	// 				DISTANCE STATS
+	//##############################################
+
+	AddPersistentStatCategory( "distance_stats" )
+
+	AddPersistentStatFloat( "distance_stats", "total", 			"",	 	"distanceStats.total", "#UNLOCK_DISTANCE_KM" )
+	AddPersistentStatFloat( "distance_stats", "asPilot", 		"",	 	"distanceStats.asPilot", "#UNLOCK_DISTANCE_KM_PILOT" )
+	AddPersistentStatFloat( "distance_stats", "wallrunning", 	"",	 	"distanceStats.wallrunning", "#UNLOCK_DISTANCE_KM_WALLRUN" )
+	AddPersistentStatFloat( "distance_stats", "inAir", 			"",	 	"distanceStats.inAir", "#UNLOCK_DISTANCE_KM_AIR" )
+	AddPersistentStatFloat( "distance_stats", "asTitan", 		"",	 	"distanceStats.asTitanTotal", "#UNLOCK_TIME_HOURS_TITAN" )
+
+	AddPersistentStatFloat( "distance_stats", "ziplining", 		"",	 	"distanceStats.ziplining", "#" )
+	AddPersistentStatFloat( "distance_stats", "onFriendlyTitan", "",	 	"distanceStats.onFriendlyTitan", "#" )
+	AddPersistentStatFloat( "distance_stats", "onEnemyTitan", 	"",	 	"distanceStats.onEnemyTitan", "#" )
+
+	 foreach ( titan, alias in GetAsTitanTypes() )
+	 {
+	 	AddPersistentStatFloat( "distance_stats", titan, "",	 	"distanceStats.asTitan[" + alias + "]", "#UNLOCK_DISTANCE_KM_TITAN_SPECIFIC" )
+	 }
+
+	//##############################################
+	//				WEAPON STATS
+	//##############################################
+
+	AddPersistentStatCategory( "weapon_stats" )
+
+	foreach ( string ref in shGlobalMP.statsItemsList )
+	{
+		AddPersistentStat( "weapon_stats", "shotsHit",		ref,	"weaponStats[" + ref + "].shotsHit", "#UNLOCK_WEAPON_SHOTS_HIT" )
+		AddPersistentStat( "weapon_stats", "headshots", 	ref,	"weaponStats[" + ref + "].headshots", "#UNLOCK_WEAPON_HEADSHOTS" )
+		AddPersistentStat( "weapon_stats", "critHits", 		ref,	"weaponStats[" + ref + "].critHits", "#UNLOCK_WEAPON_SHOTS_CRIT" )
+		AddPersistentStatFloat( "weapon_stats", "hoursUsed", 	ref,	"weaponStats[" + ref + "].hoursUsed", "#UNLOCK_WEAPON_HOURS_USED" )
+		AddPersistentStatFloat( "weapon_stats", "hoursEquipped", ref,	"weaponStats[" + ref + "].hoursEquipped", "#UNLOCK_WEAPON_HOURS_EQUIPPED" )
+
+		AddPersistentStat( "weapon_stats", "shotsFired", 	ref,	"weaponStats[" + ref + "].shotsFired", "#" )
+		AddPersistentStat( "weapon_stats", "titanDamage", 	ref,	"weaponStats[" + ref + "].titanDamage", "#UNLOCK_WEAPON_TITAN_DAMAGE" )
+	}
+
+	//##############################################
+	//			KILLS STATS FOR WEAPON
+	//##############################################
+
+	AddPersistentStatCategory( "weapon_kill_stats" )
+
+	foreach ( string ref in shGlobalMP.statsItemsList )
+	{
+		AddPersistentStat( "weapon_kill_stats", "total", 				ref,	"weaponKillStats[" + ref + "].total", "#UNLOCK_WEAPON_KILLS" )
+		AddPersistentStat( "weapon_kill_stats", "pilots", 				ref,	"weaponKillStats[" + ref + "].pilots", "#UNLOCK_WEAPON_PILOT_KILLS" )
+		AddPersistentStat( "weapon_kill_stats", "ejecting_pilots", 		ref,	"weaponKillStats[" + ref + "].ejecting_pilots", "#UNLOCK_WEAPON_GOOSER_KILLS" )
+		AddPersistentStat( "weapon_kill_stats", "titansTotal", 			ref,	"weaponKillStats[" + ref + "].titansTotal", "#UNLOCK_WEAPON_TITAN_KILLS" )
+		AddPersistentStat( "weapon_kill_stats", "assistsTotal", 		ref,	"weaponKillStats[" + ref + "].assistsTotal", "#UNLOCK_WEAPON_ASSISTS" )
+		AddPersistentStat( "weapon_kill_stats", "killingSprees", 		ref,	"weaponKillStats[" + ref + "].killingSprees", "#UNLOCK_WEAPON_KILLING_SPREES" )
+
+		AddPersistentStat( "weapon_kill_stats", "spectres", 			ref,	"weaponKillStats[" + ref + "].spectres", "#" )
+		AddPersistentStat( "weapon_kill_stats", "marvins", 				ref,	"weaponKillStats[" + ref + "].marvins", "#" )
+		AddPersistentStat( "weapon_kill_stats", "grunts", 				ref,	"weaponKillStats[" + ref + "].grunts", "#" )
+		AddPersistentStat( "weapon_kill_stats", "ai", 				ref,	"weaponKillStats[" + ref + "].ai", "#" )
+
+		foreach ( titan, alias in GetPluralTitanTypes() )
+		{
+			AddPersistentStat( "weapon_kill_stats", titan,	ref,	"weaponKillStats[" + ref + "].titans[" + alias + "]", "#" )
+		}
+
+		// fix this so it doesn't need explicit list of titans
+		AddPersistentStat( "weapon_kill_stats", "npcTitans_ion",	ref,	"weaponKillStats[" + ref + "].npcTitans[ion]", "#" )
+		AddPersistentStat( "weapon_kill_stats", "npcTitans_scorch", 		ref,	"weaponKillStats[" + ref + "].npcTitans[scorch]", "#" )
+		AddPersistentStat( "weapon_kill_stats", "npcTitans_northstar", 		ref,	"weaponKillStats[" + ref + "].npcTitans[northstar]", "#" )
+		AddPersistentStat( "weapon_kill_stats", "npcTitans_ronin", 		ref,	"weaponKillStats[" + ref + "].npcTitans[ronin]", "#" )
+		AddPersistentStat( "weapon_kill_stats", "npcTitans_tone", 		ref,	"weaponKillStats[" + ref + "].npcTitans[tone]", "#" )
+		AddPersistentStat( "weapon_kill_stats", "npcTitans_legion", 		ref,	"weaponKillStats[" + ref + "].npcTitans[legion]", "#" )
+		AddPersistentStat( "weapon_kill_stats", "npcTitans_vanguard", 		ref,	"weaponKillStats[" + ref + "].npcTitans[vanguard]", "#" )
+	}
+
+	//##############################################
+	//			  GENERAL KILLS STATS
+	//##############################################
+
+	AddPersistentStatCategory( "kills_stats" )
+
+	AddPersistentStat( "kills_stats", "total", 						"",		"killStats.total", "#UNLOCK_KILLS_TOTAL" )
+	AddPersistentStat( "kills_stats", "totalWhileUsingBurnCard", 	"",		"killStats.totalWhileUsingBurnCard", "#" )
+	AddPersistentStat( "kills_stats", "titansWhileTitanBCActive", 	"",		"killStats.titansWhileTitanBCActive", "#" )
+	AddPersistentStat( "kills_stats", "totalPVP", 					"",		"killStats.totalPVP", "#" )
+	AddPersistentStat( "kills_stats", "pilots", 					"",		"killStats.pilots", "#UNLOCK_KILLS_PILOT" )
+	AddPersistentStat( "kills_stats", "spectres", 					"",		"killStats.spectres", "#" )
+	AddPersistentStat( "kills_stats", "marvins", 					"",		"killStats.marvins", "#" )
+	AddPersistentStat( "kills_stats", "grunts", 					"",		"killStats.grunts", "#" )
+	AddPersistentStat( "kills_stats", "totalTitans", 				"",		"killStats.totalTitans", "#UNLOCK_KILLS_TITAN" )
+	AddPersistentStat( "kills_stats", "totalPilots", 				"",		"killStats.totalPilots", "#" )
+	AddPersistentStat( "kills_stats", "totalNPC", 					"",		"killStats.totalNPC", "#" )
+	AddPersistentStat( "kills_stats", "totalTitansWhileDoomed", 	"",		"killStats.totalTitansWhileDoomed", "#UNLOCK_KILLS_TITAN_WHILE_DOOMED" )
+	AddPersistentStat( "kills_stats", "asPilot", 					"",		"killStats.asPilot", "#" )
+	AddPersistentStat( "kills_stats", "totalAssists", 				"",		"killStats.totalAssists", "#UNLOCK_KILLS_ASSISTS" )
+
+	 foreach ( titan, alias in GetAsTitanTypes() )
+	 {
+	 	AddPersistentStat( "kills_stats", titan,	"",		"killStats.asTitan[" + alias + "]", "#UNLOCK_KILLS_ASTITAN" )
+	 }
+
+	AddPersistentStat( "kills_stats", "killingSpressAs_ion",	"",		"killStats.killingSprees[ion]", "#UNLOCK_KILLS_SPREES_ASTITAN" )
+	AddPersistentStat( "kills_stats", "killingSpressAs_scorch",	"",		"killStats.killingSprees[scorch]", "#UNLOCK_KILLS_SPREES_ASTITAN" )
+	AddPersistentStat( "kills_stats", "killingSpressAs_northstar",	"",		"killStats.killingSprees[northstar]", "#UNLOCK_KILLS_SPREES_ASTITAN" )
+	AddPersistentStat( "kills_stats", "killingSpressAs_ronin",	"",		"killStats.killingSprees[ronin]", "#UNLOCK_KILLS_SPREES_ASTITAN" )
+	AddPersistentStat( "kills_stats", "killingSpressAs_tone",	"",		"killStats.killingSprees[tone]", "#UNLOCK_KILLS_SPREES_ASTITAN" )
+	AddPersistentStat( "kills_stats", "killingSpressAs_legion",	"",		"killStats.killingSprees[legion]", "#UNLOCK_KILLS_SPREES_ASTITAN" )
+	AddPersistentStat( "kills_stats", "killingSpressAs_vanguard",	"",		"killStats.killingSprees[vanguard]", "#UNLOCK_KILLS_SPREES_ASTITAN" )
+
+	AddPersistentStat( "kills_stats", "firstStrikes", 				"",		"killStats.firstStrikes", "#UNLOCK_KILLS_FIRST_STRIKE" )
+	AddPersistentStat( "kills_stats", "ejectingPilots", 			"",		"killStats.ejectingPilots", "#UNLOCK_KILLS_GOOSER" )
+	AddPersistentStat( "kills_stats", "whileEjecting", 				"",		"killStats.whileEjecting", "#" )
+	AddPersistentStat( "kills_stats", "cloakedPilots", 				"",		"killStats.cloakedPilots", "#" )
+	AddPersistentStat( "kills_stats", "whileCloaked", 				"",		"killStats.whileCloaked", "#" )
+	AddPersistentStat( "kills_stats", "wallrunningPilots", 			"",		"killStats.wallrunningPilots", "#" )
+	AddPersistentStat( "kills_stats", "whileWallrunning", 			"",		"killStats.whileWallrunning", "#" )
+	AddPersistentStat( "kills_stats", "wallhangingPilots", 			"",		"killStats.wallhangingPilots", "#" )
+	AddPersistentStat( "kills_stats", "whileWallhanging", 			"",		"killStats.whileWallhanging", "#" )
+
+	AddPersistentStat( "kills_stats", "pilotExecution", 					"",		"killStats.pilotExecution", "#" )
+	AddPersistentStat( "kills_stats", "pilotExecutePilot", 					"",		"killStats.pilotExecutePilot", "#UNLOCK_KILLS_PILOT_EXECUTION" )
+	AddPersistentStat( "kills_stats", "pilotExecutePilotWhileCloaked", 		"",		"killStats.pilotExecutePilotWhileCloaked", "#UNLOCK_KILLS_PILOT_EXECUTION_WHILE_CLOAKED" )
+	AddPersistentStat( "kills_stats", "pilotKillsWithHoloPilotActive", 		"",		"killStats.pilotKillsWithHoloPilotActive", "#UNLOCK_KILLS_PILOT_KILLS_WHILE_HOLOPILOT_ACTIVE" )
+	AddPersistentStat( "kills_stats", "pilotKillsWithAmpedWallActive", 		"",		"killStats.pilotKillsWithAmpedWallActive", "#UNLOCK_KILLS_PILOT_KILLS_WHILE_AMPEDWALL_ACTIVE" )
+
+	int pilotExecutionCount = PersistenceGetEnumCount( "pilotExecution" )
+	for ( int i = 0; i < pilotExecutionCount; i++ )
+	{
+		string executionRef = PersistenceGetEnumItemNameForIndex( "pilotExecution", i )
+		if ( executionRef != "" )
+			AddPersistentStat( "kills_stats", "pilotExecutePilotUsing_" + executionRef, "",	"killStats.pilotExecutePilotByType[" + executionRef + "]", "#UNLOCK_KILLS_PILOT_EXECUTION_USING_TELEFRAG" ) // will need to modify string if other unlock refs are used
+	}
+
+	AddPersistentStat( "kills_stats", "pilotKickMelee", 			"",		"killStats.pilotKickMelee", "#" )
+	AddPersistentStat( "kills_stats", "pilotKickMeleePilot", 		"",		"killStats.pilotKickMeleePilot", "#" )
+	AddPersistentStat( "kills_stats", "titanMelee", 				"",		"killStats.titanMelee", "#" )
+	AddPersistentStat( "kills_stats", "titanMeleePilot", 			"",		"killStats.titanMeleePilot", "#" )
+	AddPersistentStat( "kills_stats", "titanStepCrush", 			"",		"killStats.titanStepCrush", "#" )
+	AddPersistentStat( "kills_stats", "titanStepCrushPilot", 		"",		"killStats.titanStepCrushPilot", "#" )
+
+	 foreach ( titan, alias in GetCapitalizedTitanTypes() )
+	 {
+	 	AddPersistentStat( "kills_stats", "titanExocution" + titan, 			"",		"killStats.titanExocution" + titan, "#UNLOCK_KILLS_TITAN_EXECUTION" )
+	 }
+
+	AddPersistentStat( "kills_stats", "titanFallKill", 							"",		"killStats.titanFallKill", "#UNLOCK_KILLS_TITANFALL" )
+	AddPersistentStat( "kills_stats", "petTitanKillsFollowMode",				"",		"killStats.petTitanKillsFollowMode", "#" )
+	AddPersistentStat( "kills_stats", "petTitanKillsGuardMode",					"",		"killStats.petTitanKillsGuardMode", "#" )
+	AddPersistentStat( "kills_stats", "rodeo_total",							"",		"killStats.rodeo_total", "#UNLOCK_KILLS_RODEO" )
+	AddPersistentStat( "kills_stats", "pilot_headshots_total",					"",		"killStats.pilot_headshots_total", "#UNLOCK_KILLS_HEADSHOT" )
+	AddPersistentStat( "kills_stats", "evacShips",								"",		"killStats.evacShips", "#" )
+	AddPersistentStat( "kills_stats", "flyers",									"",		"killStats.flyers", "#" )
+	AddPersistentStat( "kills_stats", "nuclearCore",							"",		"killStats.nuclearCore", "#" )
+	AddPersistentStat( "kills_stats", "evacuatingEnemies",						"",		"killStats.evacuatingEnemies", "#" )
+	AddPersistentStat( "kills_stats", "coopChallenge_NukeTitan_Kills",			"",		"killStats.coopChallenge_NukeTitan_Kills", "#" )
+	AddPersistentStat( "kills_stats", "coopChallenge_MortarTitan_Kills",		"",		"killStats.coopChallenge_MortarTitan_Kills", "#" )
+	AddPersistentStat( "kills_stats", "coopChallenge_EmpTitan_Kills",			"",		"killStats.coopChallenge_EmpTitan_Kills", "#" )
+	AddPersistentStat( "kills_stats", "coopChallenge_SuicideSpectre_Kills",		"",		"killStats.coopChallenge_SuicideSpectre_Kills", "#" )
+	AddPersistentStat( "kills_stats", "coopChallenge_Turret_Kills",				"",		"killStats.coopChallenge_Turret_Kills", "#" )
+	AddPersistentStat( "kills_stats", "coopChallenge_CloakDrone_Kills",			"",		"killStats.coopChallenge_CloakDrone_Kills", "#" )
+	AddPersistentStat( "kills_stats", "coopChallenge_BubbleShieldGrunt_Kills",	"",		"killStats.coopChallenge_BubbleShieldGrunt_Kills", "#" )
+	AddPersistentStat( "kills_stats", "coopChallenge_Dropship_Kills",			"",		"killStats.coopChallenge_Dropship_Kills", "#" )
+	AddPersistentStat( "kills_stats", "coopChallenge_Sniper_Kills",				"",		"killStats.coopChallenge_Sniper_Kills", "#" )
+	AddPersistentStat( "kills_stats", "ampedVortexKills",						"",		"killStats.ampedVortexKills", "#" )
+	AddPersistentStat( "kills_stats", "meleeWhileCloaked",						"",		"killStats.meleeWhileCloaked", "#" )
+	AddPersistentStat( "kills_stats", "pilotKillsWhileUsingActiveRadarPulse",	"",		"killStats.pilotKillsWhileUsingActiveRadarPulse", "#" )
+	AddPersistentStat( "kills_stats", "titanKillsAsPilot",						"",		"killStats.titanKillsAsPilot", "#UNLOCK_KILLS_PVT" )
+	AddPersistentStat( "kills_stats", "pilotKillsWhileStimActive",				"",		"killStats.pilotKillsWhileStimActive", "#" )
+	AddPersistentStat( "kills_stats", "pilotKillsAsTitan",						"",		"killStats.pilotKillsAsTitan", "#UNLOCK_KILLS_TVP" )
+	AddPersistentStat( "kills_stats", "pilotKillsAsPilot",						"",		"killStats.pilotKillsAsPilot", "#" )
+	AddPersistentStat( "kills_stats", "titanKillsAsTitan",						"",		"killStats.titanKillsAsTitan", "#" )
+
+	#if SERVER
+		AddPersistentStat( "kills_stats", "pilotExecutePilotUsing_execution_telefrag", "", "killStats.pilotExecutePilotUsing_execution_telefrag", "#" )
+	#endif
+
+	//##############################################
+	//			  GENERAL DEATHS STATS
+	//##############################################
+
+	AddPersistentStatCategory( "deaths_stats" )
+
+	AddPersistentStat( "deaths_stats", "total", 				"",		"deathStats.total" )
+	AddPersistentStat( "deaths_stats", "totalPVP", 				"",		"deathStats.totalPVP" )
+	AddPersistentStat( "deaths_stats", "asPilot", 				"",		"deathStats.asPilot" )
+
+	 foreach ( titan, alias in GetAsTitanTypes() )
+	 {
+	 	AddPersistentStat( "deaths_stats", titan,	"",		"deathStats.asTitan[" + alias + "]" )
+	 }
+
+	AddPersistentStat( "deaths_stats", "byPilots", 				"",		"deathStats.byPilots" )
+
+	 foreach ( titan, alias in GetByTitanTypes() )
+	 {
+	 	AddPersistentStat( "deaths_stats", titan, 	"",		"deathStats.byTitans[" + alias + "]" )
+	 }
+
+	AddPersistentStat( "deaths_stats", "bySpectres",			"",		"deathStats.bySpectres" )
+	AddPersistentStat( "deaths_stats", "byGrunts",				"",		"deathStats.byGrunts" )
+
+	 foreach ( titan, alias in GetAsNPCTitanTypes() )
+	 {
+	 	AddPersistentStat( "deaths_stats", titan, 	"",		"deathStats.byNPCTitans[" + alias + "]" )
+	 }
+	AddPersistentStat( "deaths_stats", "suicides", 				"",		"deathStats.suicides" )
+	AddPersistentStat( "deaths_stats", "whileEjecting", 		"",		"deathStats.whileEjecting" )
+
+
+	array<string> titanChassis = ["ion", "scorch", "northstar", "ronin", "tone", "legion", "vanguard"]
+
+	AddPersistentStatCategory( "titan_stats" )
+
+	foreach ( titan, chassis in GetCapitalizedTitanTypes() )
+	{
+		AddPersistentStat( "titan_stats", "pilots",				chassis,	"titanStats[" + chassis + "].pilots", "#UNLOCK_TITAN_PILOT_KILLS" )
+		AddPersistentStat( "titan_stats", "titansTotal",		chassis,	"titanStats[" + chassis + "].titansTotal", "#UNLOCK_TITAN_TITAN_KILLS" )
+		AddPersistentStat( "titan_stats", "titanDamage",		chassis,	"titanStats[" + chassis + "].titanDamage", "#UNLOCK_TITAN_TITAN_DAMAGE" )
+		AddPersistentStat( "titan_stats", "coresEarned",		chassis,	"titanStats[" + chassis + "].coresEarned" )
+		AddPersistentStat( "titan_stats", "pilotsAsPrime",		chassis,	"titanStats[" + chassis + "].pilotsAsPrime", "#UNLOCK_TITAN_PRIME_PILOT_KILLS" )
+		AddPersistentStat( "titan_stats", "titansAsPrime",		chassis,	"titanStats[" + chassis + "].titansAsPrime", "#UNLOCK_TITAN_PRIME_TITAN_KILLS" )
+		AddPersistentStat( "titan_stats", "executionsAsPrime",	chassis,	"titanStats[" + chassis + "].executionsAsPrime", "#UNLOCK_TITAN_PRIME_EXECUTIONS" )
+		AddPersistentStat( "titan_stats", "matchesByDifficulty",	chassis,	"titanStats[" + chassis + "].matchesByDifficulty[%difficulty%]", "" )
+		AddPersistentStat( "titan_stats", "perfectMatchesByDifficulty",	chassis,	"titanStats[" + chassis + "].perfectMatchesByDifficulty[%difficulty%]", "" )
+	}
+
+	//##############################################
+	//			  	  MISC STATS
+	//##############################################
+
+	AddPersistentStatCategory( "misc_stats" )
+
+	AddPersistentStat( "misc_stats", "titanFalls", 					"",		"miscStats.titanFalls", "#UNLOCK_MISC_TITANFALLS" )
+	AddPersistentStat( "misc_stats", "titanFallsFirst", 			"",		"miscStats.titanFallsFirst", "#UNLOCK_MISC_TITANFALLS_FIRST" )
+	AddPersistentStat( "misc_stats", "titanEmbarks", 				"",		"miscStats.titanEmbarks", "#" )
+	AddPersistentStat( "misc_stats", "rodeos", 						"",		"miscStats.rodeos", "#UNLOCK_MISC_RODEOS" )
+	AddPersistentStat( "misc_stats", "rodeosFromEject", 			"",		"miscStats.rodeosFromEject", "#UNLOCK_MISC_RODOES_EJECT" )
+	AddPersistentStat( "misc_stats", "timesEjected", 				"",		"miscStats.timesEjected", "#" )
+	AddPersistentStat( "misc_stats", "timesEjectedNuclear", 		"",		"miscStats.timesEjectedNuclear", "#" )
+	AddPersistentStat( "misc_stats", "burnCardsEarned", 			"",		"miscStats.burnCardsEarned", "#" )
+	AddPersistentStat( "misc_stats", "burnCardsSpent", 				"",		"miscStats.burnCardsSpent", "#" )
+	AddPersistentStat( "misc_stats", "boostsActivated", 			"",		"miscStats.boostsActivated", "#" )
+	AddPersistentStat( "misc_stats", "spectreLeeches", 				"",		"miscStats.spectreLeeches", "#" )
+	AddPersistentStat( "misc_stats", "spectreLeechesByMap", 		"",		"miscStats.spectreLeechesByMap[%mapname%]", "#" )
+	AddPersistentStat( "misc_stats", "evacsAttempted", 				"",		"miscStats.evacsAttempted", "#" )
+	AddPersistentStat( "misc_stats", "evacsSurvived", 				"",		"miscStats.evacsSurvived", "#UNLOCK_MISC_EVACS" )
+	AddPersistentStat( "misc_stats", "flagsCaptured", 				"",		"miscStats.flagsCaptured", "#" )
+	AddPersistentStat( "misc_stats", "flagsReturned", 				"",		"miscStats.flagsReturned", "#" )
+	AddPersistentStat( "misc_stats", "arcCannonMultiKills", 		"",		"miscStats.arcCannonMultiKills", "#" )
+	AddPersistentStat( "misc_stats", "gruntsConscripted", 			"",		"miscStats.gruntsConscripted", "#" )
+	AddPersistentStat( "misc_stats", "hardpointsCaptured", 			"",		"miscStats.hardpointsCaptured", "#" )
+	AddPersistentStat( "misc_stats", "challengeTiersCompleted", 	"",		"miscStats.challengeTiersCompleted", "#" )
+	AddPersistentStat( "misc_stats", "challengesCompleted", 		"",		"miscStats.challengesCompleted", "#" )
+	AddPersistentStat( "misc_stats", "dailyChallengesCompleted",	"",		"miscStats.dailyChallengesCompleted", "#" )
+	AddPersistentStat( "misc_stats", "timesLastTitanRemaining",		"",		"miscStats.timesLastTitanRemaining", "#" )
+	AddPersistentStat( "misc_stats", "killingSprees",				"",		"miscStats.killingSprees", "#UNLOCK_MISC_KILLING_SPREES" )
+	AddPersistentStat( "misc_stats", "coopChallengesCompleted",		"",		"miscStats.coopChallengesCompleted", "#" )
+
+	//##############################################
+	//			  	  FD STATS
+	//##############################################
+
+	AddPersistentStatCategory( "fd_stats" )
+
+	AddPersistentStat( "fd_stats", "arcMinesPlaced",			"",		"fdStats.arcMinesPlaced", "#UNLOCK_MISC_ARC_MINE_PLACE" )
+	AddPersistentStat( "fd_stats", "turretsPlaced",				"",		"fdStats.turretsPlaced", "#UNLOCK_MISC_TURRET_PLACE" )
+	AddPersistentStat( "fd_stats", "rodeos",					"",		"fdStats.rodeos", "#UNLOCK_FD_RODEOS" )
+	AddPersistentStat( "fd_stats", "rodeoNukes",				"",		"fdStats.rodeoNukes", "#UNLOCK_MISC_RODEO_NUKES" )
+	AddPersistentStat( "fd_stats", "arcMineZaps",				"",		"fdStats.arcMineZaps", "#UNLOCK_MISC_ARC_MINE_ZAPS" )
+	AddPersistentStat( "fd_stats", "turretKills",				"",		"fdStats.turretKills", "#UNLOCK_MISC_TURRET_KILLS" )
+	AddPersistentStat( "fd_stats", "harvesterBoosts",			"",		"fdStats.harvesterBoosts", "#UNLOCK_MISC_HARVESTER_BOOSTS" )
+	AddPersistentStat( "fd_stats", "wavesComplete",				"",		"fdStats.wavesComplete", "#UNLOCK_MISC_WAVES_COMPLETE" )
+	AddPersistentStat( "fd_stats", "easyWins",					"",		"fdStats.easyWins", "#UNLOCK_FD_EASY_WINS" )
+	AddPersistentStat( "fd_stats", "normalWins",				"",		"fdStats.normalWins", "#UNLOCK_FD_NORMAL_WINS" )
+	AddPersistentStat( "fd_stats", "hardWins",					"",		"fdStats.hardWins", "#UNLOCK_FD_HARD_WINS" )
+	AddPersistentStat( "fd_stats", "masterWins",				"",		"fdStats.masterWins", "#UNLOCK_FD_MASTER_WINS" )
+	AddPersistentStat( "fd_stats", "insaneWins",				"",		"fdStats.insaneWins", "#UNLOCK_FD_INSANE_WINS" )
+	AddPersistentStat( "fd_stats", "highestTitanFDLevel",		"",		"fdStats.highestTitanFDLevel", "#UNLOCK_FD_TITAN_LEVEL" )
+
+	//#############################################################
+	//	DEV ONLY STATS (NOT TRACKED IN RETAIL FOR PLAYER DISPLAY)
+	//#############################################################
+
+	AddPersistentStatCategory( "dev_stats" )
+
+	AddPersistentStat( "dev_stats", "rank_skill", 					"",	 	DEV_STAT )
+	AddPersistentStat( "dev_stats", "raw_rank_skill", 				"",	 	DEV_STAT )
+}
+
+void function AddPersistentStatCategory( string category )
+{
+	shGlobalMP.playerStatVars[ category ] <- {}
+}
+
+void function AddPersistentStat( string category, string alias, string subAlias, string variable, string localizedUnlock = "" )
+{
+	if ( !( alias in shGlobalMP.playerStatVars[ category ] ) )
+		shGlobalMP.playerStatVars[ category ][ alias ] <- {}
+	Assert( !( variable in shGlobalMP.playerStatVars[ category ][ alias ] ) )
+
+	PlayerStatData playerStatData
+	playerStatData.statVar = variable
+	playerStatData.statType = ePlayerStatType.INT
+	playerStatData.localizedUnlock = localizedUnlock
+	shGlobalMP.playerStatVars[ category ][ alias ][ subAlias ] <- playerStatData
+}
+
+void function AddPersistentStatInt( string category, string alias, string subAlias, string variable, string localizedUnlock = "" )
+{
+	if ( !( alias in shGlobalMP.playerStatVars[ category ] ) )
+		shGlobalMP.playerStatVars[ category ][ alias ] <- {}
+	Assert( !( variable in shGlobalMP.playerStatVars[ category ][ alias ] ) )
+
+	PlayerStatData playerStatData
+	playerStatData.statVar = variable
+	playerStatData.statType = ePlayerStatType.INT
+	playerStatData.localizedUnlock = localizedUnlock
+	shGlobalMP.playerStatVars[ category ][ alias ][ subAlias ] <- playerStatData
+}
+
+void function AddPersistentStatFloat( string category, string alias, string subAlias, string variable, string localizedUnlock = "" )
+{
+	if ( !( alias in shGlobalMP.playerStatVars[ category ] ) )
+		shGlobalMP.playerStatVars[ category ][ alias ] <- {}
+	Assert( !( variable in shGlobalMP.playerStatVars[ category ][ alias ] ) )
+
+	PlayerStatData playerStatData
+	playerStatData.statVar = variable
+	playerStatData.statType = ePlayerStatType.FLOAT
+	playerStatData.localizedUnlock = localizedUnlock
+	shGlobalMP.playerStatVars[ category ][ alias ][ subAlias ] <- playerStatData
+}
+
+bool function IsValidStat( string category, string alias, string subAlias )
+{
+	if ( category == "" || alias == "" )
+		return false
+
+	if ( !( category in shGlobalMP.playerStatVars ) )
+		return false
+
+	if ( !( alias in shGlobalMP.playerStatVars[ category ] ) )
+		return false
+
+	return ( subAlias in shGlobalMP.playerStatVars[ category ][ alias ] )
+}
+
+string function GetStatVar( string category, string alias, string subAlias = "" )
+{
+	Assert( category in shGlobalMP.playerStatVars, "Invalid stat category " + category )
+	Assert( alias in shGlobalMP.playerStatVars[ category ], "No stat alias " + alias + " in category " + category )
+
+
+	Assert( subAlias in shGlobalMP.playerStatVars[ category ][ alias ] )
+	return shGlobalMP.playerStatVars[ category ][ alias ][ subAlias ].statVar
+}
+
+int function GetStatVarType( string category, string alias, string subAlias = "" )
+{
+	Assert( category in shGlobalMP.playerStatVars, "Invalid stat category " + category )
+	Assert( alias in shGlobalMP.playerStatVars[ category ], "No stat alias " + alias + " in category " + category )
+
+	Assert( subAlias in shGlobalMP.playerStatVars[ category ][ alias ] )
+	return shGlobalMP.playerStatVars[ category ][ alias ][ subAlias ].statType
+}
+
+string function GetStatVarLocalizedUnlock( string category, string alias, string subAlias = "" )
+{
+	Assert( category in shGlobalMP.playerStatVars, "Invalid stat category " + category )
+	Assert( alias in shGlobalMP.playerStatVars[ category ], "No stat alias " + alias + " in category " + category )
+
+	Assert( subAlias in shGlobalMP.playerStatVars[ category ][ alias ] )
+	return shGlobalMP.playerStatVars[ category ][ alias ][ subAlias ].localizedUnlock
+}
+
+int function GetPlayerStatInt( entity player, string category, string alias, string subAlias = "" )
+{
+	Assert( IsUI() || IsValid( player ) )
+
+	string statString = GetStatVar( category, alias, subAlias )
+	return player.GetPersistentVarAsInt( statString )
+}
+
+float function GetPlayerStatFloat( entity player, string category, string alias, string subAlias = "" )
+{
+	Assert( IsUI() || IsValid( player ) )
+
+	string statString = GetStatVar( category, alias, subAlias )
+	return expect float( player.GetPersistentVar( statString ) )
+}
+
+
+string function Stats_GetFixedSaveVar( string saveVar, string mapName, string modeName, string difficultyLevel )
+{
+	string fixedSaveVar = saveVar
+	fixedSaveVar = StringReplace( fixedSaveVar, "%mapname%", mapName )
+	fixedSaveVar = StringReplace( fixedSaveVar, "%gamemode%", modeName )
+	fixedSaveVar = StringReplace( fixedSaveVar, "%difficulty%", difficultyLevel )
+
+	return fixedSaveVar
+}
+
+int function GetPlayerStat_AllCompetitiveModesAndMapsInt( entity player, string category, string alias, string subAlias = "" )
+{
+	Assert( IsUI() || IsValid( player ) )
+
+	int count = 0
+
+	int numMaps = PersistenceGetEnumCount( "maps" )
+	int numModes = PersistenceGetEnumCount( "gameModes" )
+
+	string statVarName = GetStatVar( category, alias, subAlias )
+	string fixedSaveVar
+
+	for ( int mode = 0; mode < numModes; mode++ )
+	{
+		for( int map = 0; map < numMaps; map++ )
+		{
+			fixedSaveVar = Stats_GetFixedSaveVar( statVarName, string( map ), string( mode ), "0" )
+			count += expect int( player.GetPersistentVar( fixedSaveVar ) )
+		}
+	}
+
+	return count
+}
+
+
+int function FD_GetHighestDifficultyForTitan( entity player, string titanRef )
+{
+	string statVar = GetStatVar( "titan_stats", "matchesByDifficulty", titanRef )
+
+	int highestDifficulty = 0
+	for ( int difficulty = 0; difficulty < 5; difficulty++ )
+	{
+		string persistentVar = Stats_GetFixedSaveVar( statVar, "", "", string( difficulty ) )
+		if ( player.GetPersistentVarAsInt( persistentVar ) > 0 )
+			highestDifficulty = difficulty
+	}
+
+	return highestDifficulty
+}
+

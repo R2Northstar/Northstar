@@ -1,0 +1,45 @@
+#base "npc_titan_stryder_leadwall.txt"
+npc_titan_stryder_leadwall_boss_fd
+{
+	title 						#NPC_TITAN_STRYDER_LEADWALL
+	WeaponCapacity				"FromLoadout"
+	npc_titan_player_settings	"titan_stryder_leadwall"
+
+	BehaviorSelector			"behavior_titan_shotgun"
+
+	MeleeDamageMinHeavyArmor	750
+	MeleeDamageMaxHeavyArmor	750
+
+	chaseStopDist							200
+	chaseStopDistHeavyArmor					750
+	chaseTryRunningDodgeWhenAimedAtMinDist	700
+
+	circleStrafeDist			700
+	circleStrafeAngleIncrement	35
+
+	dodgePeriod				12 [$sp] 	  	 	// Don't dodge more than maxDodgePerPeriod within this time
+	maxDodgePerPeriod		2 [$sp] 		 	// Don't dodge more than this many times in dodgePeriod
+
+	dodgePeriod				12 [$mp] 	  	 	// Don't dodge more than maxDodgePerPeriod within this time
+	maxDodgePerPeriod		2 [$mp] 		 	// Don't dodge more than this many times in dodgePeriod
+
+	evasiveCombatHealthChangeRateDiff	-350
+	aggresiveCombatHealthChangeRateDiff	50
+
+	//evasiveCombatHealthSegmentPct		0.0 [$mp]	// no segment health regen in mp
+	//evasiveCombatHealthSegmentPct		0.4	[$sp]	// if my segment is down to 40% be evasive
+
+	//aggressiveCombatHealthSegmentPct	0.0 [$mp]	// no segment health regen in mp
+	//aggressiveCombatHealthSegmentPct	0.5 [$sp]	// if enemy segement is down to 50% be aggressive
+
+	DefaultModelName			"models/titans/light/titan_light_locust.mdl" [$mp]
+	DefaultModelName			"models/titans/light/sp_titan_light_locust.mdl"	 [$sp]
+
+	aggressiveCombatTotalHealthDiffPct	0.2 		// if my health+shield - enemy heatlh+shield is > 40% of my max health+shield
+
+	footstep_type			"ronin"
+
+	titanCamoIndex -1
+	titanDecalIndex 12
+	titanSkinIndex 6
+}

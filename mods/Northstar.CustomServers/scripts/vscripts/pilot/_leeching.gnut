@@ -1,0 +1,493 @@
+global function Leeching_Init
+
+global function DoLeechAnimEvent
+global function DoLeech
+global function TryLeechAbortCallback
+global function StartLeechingProgress
+global function StopLeechingProgress
+global function EnableLeeching
+global function DisableLeeching
+global function MarvinWeaponsFree
+global function GetLeechedEnts
+global function DataKnifeSuccessSounds
+global function DataKnifeCanceledSounds
+
+global function GetTeamLeechedEnts
+
+// _leeching.nut
+// sets up global stuff for leeching
+global const MARVIN_EMOTE_SOUND_HAPPY 	= "diag_spectre_gs_LeechEnd_01_1"
+global const MARVIN_EMOTE_SOUND_SAD 	= "diag_spectre_gs_LeechAborted_01_1"
+global const MARVIN_EMOTE_SOUND_PAIN 	= "diag_spectre_gs_LeechStart_01_1"
+
+#if MP
+global const bool WIFI_HACK_OVERFLOW_DIES = false  // Kill a random leeched ent from within the team, exluding the current target, to create a new team member when hacked
+#elseif SP
+global const bool WIFI_HACK_OVERFLOW_DIES = true
+#endif
+
+struct LeechFuncInfo
+{
+	string classname
+	void functionref(entity,entity) DoLeech
+	void functionref(entity,entity) LeechStart
+	void functionref(entity,entity) LeechAbort
+}
+
+struct
+{
+	table<string, LeechFuncInfo> leechFuncs
+} file
+
+void function Leeching_Init()
+{
+	RegisterSignal( "OnLeeched" )
+	RegisterSignal( "OnStartLeech" )
+	RegisterSignal( "OnStopLeeched" )
+	RegisterSignal( "EnableLeeching" )
+
+	// Spectre leech
+	LeechFuncInfo spectre
+	spectre.classname 	= "npc_spectre"
+	spectre.DoLeech 	= LeechGeneric
+	spectre.LeechStart 	= LeechStartGeneric
+	spectre.LeechAbort 	= LeechAbortGeneric
+	file.leechFuncs[spectre.classname] <- spectre
+
+	// Reaper leech
+	LeechFuncInfo reaper
+	reaper.classname 	= "npc_super_spectre"
+	reaper.DoLeech 		= LeechGeneric
+	reaper.LeechStart 	= LeechStartGeneric
+	reaper.LeechAbort 	= LeechAbortGeneric
+	file.leechFuncs[reaper.classname] <- reaper
+
+	// Drone leech
+	LeechFuncInfo drone
+	drone.classname 	= "npc_drone"
+	drone.DoLeech 		= LeechGeneric
+	drone.LeechStart 	= LeechStartGeneric
+	drone.LeechAbort 	= LeechAbortGeneric
+	file.leechFuncs[drone.classname] <- drone
+
+	// Gunship leech
+	LeechFuncInfo gunship
+	gunship.classname 	= "npc_gunship"
+	gunship.DoLeech 	= LeechGeneric
+	gunship.LeechStart 	= LeechStartGeneric
+	gunship.LeechAbort 	= LeechAbortGeneric
+	file.leechFuncs[gunship.classname] <- gunship
+
+	LeechFuncInfo relay
+	relay.classname 	= "logic_relay"
+	relay.DoLeech 		= Leech_LogicRelay
+	file.leechFuncs[relay.classname] <- relay
+
+	LeechFuncInfo physbox
+	physbox.classname 	= "func_physbox"
+	physbox.DoLeech 	= Leech_FuncPhysbox
+	file.leechFuncs[physbox.classname] <- physbox
+}
+
+void function EnableLeeching( entity self )
+{
+	self.SetUsePrompts( "#DEFAULT_HACK_HOLD_PROMPT", "#DEFAULT_HACK_HOLD_PROMPT" )
+
+	Leech_SetLeechable( self )
+}
+
+void function DisableLeeching( entity self )
+{
+	if ( !IsValid_ThisFrame( self ) )
+		return
+
+	self.SetUsePrompts( " ", " " )
+
+	Leech_ClearLeechable( self )
+}
+
+void function StartLeechingProgress( entity self, entity leecher )
+{
+	self.Signal( "OnStartLeech" )
+	leecher.Signal( "OnStartLeech" )
+	self.ai.leechInProgress = true
+	self.ai.leechStartTime = Time()
+
+	TryLeechStartCallback( self, leecher )
+}
+
+void function StopLeechingProgress( entity self )
+{
+	self.ai.leechInProgress = false
+	self.ai.leechStartTime = -1
+}
+
+// called when any entity gets leeched
+void function DoLeechAnimEvent( entity self )
+{
+	entity leecher = expect entity( GetOptionalAnimEventVar( self, "leech_switchteam" ) )
+
+	DoLeech( self, leecher )
+}
+
+void function DoLeech( entity self, entity leecher )
+{
+	if ( !IsLeechable( self ) )
+		EnableLeeching( self )
+
+	Assert( "s" in self, "Self " + self + " has no .s" )
+	Assert( leecher )
+
+	// DEPRECATED- no scripts are currently using the results.player functionality- slayback
+	// logic_relays get Triggered when the object is leeched
+	//local results = {}
+	//results.player <- leecher
+	//self.Signal( "OnLeeched", results )
+	//leecher.Signal( "OnLeeched", results )
+
+	Signal( self, "OnLeeched" )
+	Signal( leecher, "OnLeeched" )
+
+	//DisableLeeching( self )
+
+	//_EnableLeechedPointMessage()
+
+	if ( leecher.IsPlayer() )
+	{
+		if ( self.IsNPC() )
+			self.SetBossPlayer( leecher )
+
+		TableRemoveDeadByKey( leecher.p.leechedEnts )
+
+		leecher.p.leechedEnts[ self ] <- self
+
+		// this will kill a random leeched ent from within the team, exluding the current target.
+		if ( WIFI_HACK_OVERFLOW_DIES )
+			ReleaseLeechOverflow( leecher, self )
+	}
+
+	if ( self.IsNPC() )
+	{
+		SetTeam( self, leecher.GetTeam() )
+		SetSquad( self, "" )
+		self.SetAutoSquad()
+		self.ClearPotentialThreatPos()
+		self.DisableBehavior( "Assault" )
+
+		foreach ( trigger in self.e.sonarTriggers )
+		{
+			OnSonarTriggerLeaveInternal( trigger, self )
+		}
+
+		#if DEV
+		// if crosshair spawned, switch squad so he isn't mixed in a squad with opposing team spectres
+		string squadname = expect string( self.kv.squadname )
+		if ( squadname.find( "crosshairSpawnSquad" ) != null )
+			self.SetSquad( "crosshairSpawnSquad_team_" + self.GetTeam() + "_" + self.GetClassName() )
+		#endif
+	}
+
+	// call a class specific leeching function for custom behavior
+	string targetCN = self.GetClassName()
+	if ( targetCN in file.leechFuncs )
+	{
+		LeechFuncInfo info = file.leechFuncs[ targetCN ]
+
+		// Assert( "DoLeech" in file.leechFuncs[ targetCN ] )  // not sure how to check legit functionref -slayback
+		void functionref(entity,entity) classLeechingFunc = file.leechFuncs[ targetCN ].DoLeech
+		thread classLeechingFunc( self, leecher )
+	}
+}
+
+array<entity> function GetTeamLeechedEnts( int team )
+{
+	array<entity> players = GetPlayerArrayOfTeam( team )
+	int totalCount = 0
+
+	array<entity> leechedArray
+	foreach ( player in players )
+	{
+		if ( IsValid( player ) && !player.IsBot() )
+			leechedArray.extend( GetLeechedEnts( player ) )
+	}
+
+	return leechedArray
+}
+
+array<entity> function GetLeechedEnts( entity leecher = null )
+{
+	array<entity> ents
+
+	foreach ( entity ent in leecher.p.leechedEnts )
+	{
+		if ( IsAlive( ent ) )
+			ents.append( ent )
+	}
+
+	return ents
+}
+
+void function TryLeechStartCallback( entity self, entity leecher )
+{
+	string leechtargetCN = self.GetClassName()
+	if ( leechtargetCN in file.leechFuncs )
+	{
+		if ( "LeechStart" in file.leechFuncs[ leechtargetCN ] )
+		{
+			void functionref(entity,entity) leechStartFunc = file.leechFuncs[ leechtargetCN ].LeechStart
+			thread leechStartFunc( self, leecher )
+		}
+	}
+}
+
+void function TryLeechAbortCallback( entity self, entity leecher )
+{
+	string leechtargetCN = self.GetClassName()
+	if ( leechtargetCN in file.leechFuncs )
+	{
+		if ( "LeechAbort" in file.leechFuncs[ leechtargetCN ] )
+		{
+			void functionref(entity,entity) leechAbortFunc = file.leechFuncs[ leechtargetCN ].LeechAbort
+			thread leechAbortFunc( self, leecher )
+		}
+	}
+}
+
+void function DataKnifeSuccessSounds( entity player )
+{
+	EmitDifferentSoundsOnEntityForPlayerAndWorld( "dataknife_complete", "dataknife_complete_3p", player, player )
+}
+
+void function DataKnifeCanceledSounds( entity player )
+{
+	EmitDifferentSoundsOnEntityForPlayerAndWorld( "dataknife_aborted", "dataknife_aborted_3p", player, player )
+}
+
+
+// --- CLASS SPECIFIC LEECH FUNCTIONS ---
+void function Leech_LogicRelay( entity self, entity leecher )
+{
+	Assert( self.GetClassName() == "logic_relay" )
+
+	// logic_relays get Triggered when the object is leeched
+	EntFire( self, "Trigger" )
+}
+
+void function Leech_FuncPhysbox( entity self, entity leecher )
+{
+	Assert( self.GetClassName() == "func_physbox" )
+
+	EntFire( self, "FireUser1" )
+}
+
+
+void function MarvinWeaponsFree( entity self )
+{
+	Assert( IsAlive( self ), self + " is dead, not alive!" )
+
+	// already have a weapon
+	if ( !self.GetActiveWeapon() )
+		return
+
+	self.EndSignal( "OnStopLeeched" )
+	self.EndSignal( "OnDeath" )
+	self.EndSignal( "OnTakeWeapon" )
+
+	OnThreadEnd(
+		function () : ( self )
+		{
+			if ( !IsAlive( self ) )
+				return
+		}
+	)
+
+	// its combat, time to get the hate on
+	EntFire( self, "UnholsterWeapon" )
+
+	WaitForever()
+}
+
+
+void function LeechStart_Marvin( entity self, entity leecher )
+{
+	//self.SetSkin( 4 )
+	EmitSoundOnEntity( self, MARVIN_EMOTE_SOUND_PAIN )
+}
+
+void function LeechAbort_Marvin( entity self, entity leecher )
+{
+	//self.SetSkin( 1 )  // happy
+	EmitSoundOnEntity( self, MARVIN_EMOTE_SOUND_SAD )
+}
+
+
+// Spectre leech
+
+void function Leech_Spectre( entity self, entity leecher )
+{
+	thread Leech_SpectreThread( self, leecher )
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+void function Leech_SpectreThread( entity self, entity leecher )
+{
+	Assert( self.GetClassName() == "npc_spectre" )
+
+	self.EndSignal( "OnDestroy" )
+	self.EndSignal( "OnDeath" )
+	self.EndSignal( "OnLeeched" )
+
+	EmitSoundOnEntity( self, MARVIN_EMOTE_SOUND_HAPPY )
+
+	Assert( leecher.IsPlayer() )
+
+	leecher.EndSignal( "OnDestroy" )
+
+	AddPlayerScore( leecher, "LeechSpectre" )
+
+	float timerCredit = GetCurrentPlaylistVarFloat( "spectre_kill_credit", 0.5 )
+	if ( PlayerHasServerFlag( leecher, SFLAG_HUNTER_SPECTRE ) )
+		timerCredit *= 2.5
+	DecrementBuildTimer( leecher, timerCredit )
+
+	NPCFollowsPlayer( self, leecher )
+
+	OnThreadEnd(
+		function() : ( self, leecher )
+		{
+			// leecher is still connected so don't kill the spectre
+			if ( IsValid( leecher ) && !IsDisconnected( leecher ) )
+				return
+
+			// leecher is disconnected so kill the spectre
+			if ( IsAlive( self ) )
+				self.Die()
+		}
+	)
+
+	foreach ( callbackFunc in svGlobal.onLeechedCustomCallbackFunc )
+	{
+		callbackFunc( self, leecher )
+	}
+
+	WaitForever()
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+void function LeechGeneric( entity self, entity leecher )
+{
+	thread LeechGenericThread( self, leecher )
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Run after the npc is successfully leeched
+// HACK: Should make this used by all leeched ents to avoid copy/pasted duplication. Will switch Spectre over to use this soon
+void function LeechGenericThread( entity self, entity leecher )
+{
+	Assert( IsValid( self ) )
+	self.EndSignal( "OnDestroy" )
+	self.EndSignal( "OnDeath" )
+	self.EndSignal( "OnLeeched" )
+
+	Assert( leecher.IsPlayer() )
+	leecher.EndSignal( "OnDestroy" )
+
+	string leechSound
+	float timerCredit
+
+	//--------------------------------------------
+	// Handle class-specific stuff
+	//---------------------------------------------
+	switch ( self.GetClassName() )
+	{
+		case "npc_spectre":
+			leechSound = MARVIN_EMOTE_SOUND_HAPPY
+			AddPlayerScore( leecher, "LeechSpectre" )
+			timerCredit = GetCurrentPlaylistVarFloat( "spectre_kill_credit", 0.5 )
+			if ( PlayerHasServerFlag( leecher, SFLAG_HUNTER_SPECTRE ) )
+				timerCredit *= 2.5
+			break
+		case "npc_super_spectre":
+			leechSound = MARVIN_EMOTE_SOUND_HAPPY
+			AddPlayerScore( leecher, "LeechSuperSpectre" )
+			timerCredit = GetCurrentPlaylistVarFloat( "spectre_kill_credit", 0.5 )
+			break
+		case "npc_drone":
+			leechSound = MARVIN_EMOTE_SOUND_HAPPY
+			AddPlayerScore( leecher, "LeechDrone" )
+			timerCredit = GetCurrentPlaylistVarFloat( "spectre_kill_credit", 0.5 )
+			break
+		case "npc_gunship":
+			leechSound = MARVIN_EMOTE_SOUND_HAPPY
+			timerCredit = GetCurrentPlaylistVarFloat( "spectre_kill_credit", 0.5 )
+			break
+		default:
+			Assert( 0, "Unhandled hacked entity: " + self.GetClassName() )
+	}
+
+	EmitSoundOnEntity( self, leechSound )
+	DecrementBuildTimer( leecher, timerCredit )
+
+	// Multiplayer the leeched NPCs still follow the player, but in SP we don't want them to
+	if ( IsMultiplayer() )
+		NPCFollowsPlayer( self, leecher )
+
+	//--------------------------------------------
+	// Any leech custom callback funcs?
+	//---------------------------------------------
+	foreach ( callbackFunc in svGlobal.onLeechedCustomCallbackFunc )
+	{
+		callbackFunc( self, leecher )
+	}
+
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+void function LeechStartGeneric( entity self, entity leecher )
+{
+	string leechStartSound
+
+	switch( self.GetClassName() )
+	{
+		case "npc_spectre":
+			leechStartSound = MARVIN_EMOTE_SOUND_PAIN
+			break
+		case "npc_super_spectre":
+			leechStartSound = MARVIN_EMOTE_SOUND_PAIN
+			break
+		case "npc_drone":
+			leechStartSound = MARVIN_EMOTE_SOUND_PAIN
+			break
+		case "npc_gunship":
+			leechStartSound = MARVIN_EMOTE_SOUND_PAIN
+			break
+	}
+	Assert( leechStartSound != "", "Couldn't find leechStartSound for: " + self )
+
+	EmitSoundOnEntity( self, leechStartSound )
+}
+/////////////////////////////////////////////////////////////////////////////////////
+void function LeechAbortGeneric( entity self, entity leecher )
+{
+	string leechAbortSound
+
+	switch( self.GetClassName() )
+	{
+		case "npc_spectre":
+			leechAbortSound = MARVIN_EMOTE_SOUND_SAD
+			break
+		case "npc_super_spectre":
+			leechAbortSound = MARVIN_EMOTE_SOUND_SAD
+			break
+		case "npc_drone":
+			leechAbortSound = MARVIN_EMOTE_SOUND_SAD
+			break
+		case "npc_gunship":
+			leechAbortSound = MARVIN_EMOTE_SOUND_SAD
+			break
+	}
+	Assert( leechAbortSound != "", "Couldn't find leechAbortSound for: " + self )
+
+	EmitSoundOnEntity( self, leechAbortSound )
+
+}
+
+// --- END CLASS SPECIFIC LEECH FUNCTIONS ---

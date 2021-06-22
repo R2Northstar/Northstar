@@ -1,0 +1,89 @@
+global function Melee_Init
+
+//global function CodeCallback_NPCMeleeChargedPlayerOrNPC
+global function CodeCallback_OnMeleeKilled
+global function EnablePlantingOnEntity
+
+void function Melee_Init()
+{
+	MeleeShared_Init()
+}
+
+//File is pretty sparse for now. In all honesty a lot of existing functionality in _melee_shared should
+//belong here instead, but we'll wait until we try to do prediction (which requires running the same code
+//on client and server) before we try to split up functionality in the different script files any better.
+
+/*
+void function CodeCallback_NPCMeleeChargedPlayerOrNPC( entity ent, var damageInfo )
+{
+	vector damageForce = DamageInfo_GetDamageForce( damageInfo )
+
+	if ( DamageInfo_GetDamage( damageInfo ) > 0 )
+	{
+		vector dmgVelocity = damageForce
+		dmgVelocity.z *= 0.25
+
+		const float maxAdditionalVelocity = 1200.0
+		if ( LengthSqr( dmgVelocity ) > ( maxAdditionalVelocity * maxAdditionalVelocity ) )
+		{
+			dmgVelocity = Normalize( dmgVelocity )
+			dmgVelocity *= maxAdditionalVelocity
+		}
+
+		ent.SetVelocity( ent.GetVelocity() + dmgVelocity )
+	}
+}
+*/
+
+void function CodeCallback_OnMeleeKilled( entity target )
+{
+	if ( !IsAlive( target ) )
+		return
+
+	target.ClearInvulnerable()
+
+	int damageSourceId
+	if ( target.IsTitan() )
+	{
+		// I don't think this branch ever gets hit. Titan executions do something else.
+		damageSourceId = eDamageSourceId.titan_execution
+	}
+	else
+	{
+		damageSourceId = eDamageSourceId.human_execution
+	}
+
+	entity attacker
+	if ( IsValid( target.e.syncedMeleeAttacker ) )
+	{
+		attacker = target.e.syncedMeleeAttacker
+	}
+	else if ( IsValid( target.e.lastSyncedMeleeAttacker ) )
+	{
+		attacker = target.e.lastSyncedMeleeAttacker
+	}
+	else
+	{
+		attacker = null
+	}
+
+
+	int damageAmount = target.GetMaxHealth() + 1
+	target.TakeDamage( damageAmount , attacker, attacker, { forceKill = true, damageType = DMG_MELEE_EXECUTION, damageSourceId = damageSourceId, scriptType = DF_NO_INDICATOR } )
+}
+
+
+void function EnablePlantingOnEntity( entity titan )
+{
+	entity parentEnt = titan.GetParent()
+
+	if ( parentEnt == null )
+		return
+
+	if ( titan.GetGroundEntity() && titan.GetGroundEntity().HasPusherRootParent() )
+		return
+
+	titan.ClearParent()
+	PutEntityInSafeSpot( titan, parentEnt, null, parentEnt.GetOrigin(), titan.GetOrigin() )
+	titan.Anim_EnablePlanting()
+}

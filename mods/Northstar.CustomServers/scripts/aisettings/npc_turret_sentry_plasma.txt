@@ -1,0 +1,9 @@
+#base "npc_turret_sentry.txt"
+npc_turret_sentry_plasma
+{
+	DefaultModelName		"models/robots/turret_plasma/turret_plasma.mdl"
+	DefaultWeapon			"mp_weapon_turretplasma"
+	title 					"#NPC_TURRET_SENTRY_PLASMA"
+
+	//MaxTurretYaw        	360
+}

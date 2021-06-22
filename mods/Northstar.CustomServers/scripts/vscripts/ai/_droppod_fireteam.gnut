@@ -1,0 +1,246 @@
+global function DropPodFireteam_Init
+
+global function InitFireteamDropPod
+global function ActivateFireteamDropPod
+global function DropPodActiveThink
+
+global function CreateDropPodDoor
+
+const DP_ARM_MODEL = $"models/vehicle/droppod_fireteam/droppod_fireteam_arm.mdl"
+const DP_DOOR_MODEL = $"models/vehicle/droppod_fireteam/droppod_fireteam_door.mdl"
+
+global enum eDropPodFlag
+{
+	DISSOLVE_AFTER_DISEMBARKS =		(1<<0)
+}
+
+struct DroppodStruct
+{
+	entity door
+	bool openDoor = false
+	int numGuys = 0
+	int flags = 0
+}
+
+struct
+{
+	table<entity, DroppodStruct> droppodTable
+}
+file
+
+void function DropPodFireteam_Init()
+{
+	RegisterSignal( "OpenDoor" )
+
+	PrecacheModel( DP_DOOR_MODEL )
+	PrecacheModel( DP_ARM_MODEL )
+}
+
+void function InitFireteamDropPod( entity pod, int flags = 0 )
+{
+	pod.NotSolid()
+
+	DroppodStruct droppodData
+	droppodData.flags = flags
+	droppodData.door = CreateDropPodDoor( pod )
+	file.droppodTable[ pod ] <- droppodData
+
+	pod.Anim_Play( "idle" )
+}
+
+void function ActivateFireteamDropPod( entity pod, array<entity> guys )
+{
+	DroppodStruct droppodData = file.droppodTable[ pod ]
+	droppodData.openDoor = true
+	pod.Signal( "OpenDoor" )
+
+	if ( guys.len() >= 1 )
+	{
+		SetAnim( guys[0], "drop_pod_exit_anim", "pt_dp_exit_a" )
+		SetAnim( guys[0], "drop_pod_idle_anim", "pt_dp_idle_a" )
+	}
+
+	if ( guys.len() >= 2 )
+	{
+		SetAnim( guys[1], "drop_pod_exit_anim", "pt_dp_exit_b" )
+		SetAnim( guys[1], "drop_pod_idle_anim", "pt_dp_idle_b" )
+	}
+
+	if ( guys.len() >= 3 )
+	{
+		SetAnim( guys[2], "drop_pod_exit_anim", "pt_dp_exit_c" )
+		SetAnim( guys[2], "drop_pod_idle_anim", "pt_dp_idle_c" )
+	}
+
+	if ( guys.len() >= 4 )
+	{
+		SetAnim( guys[3], "drop_pod_exit_anim", "pt_dp_exit_d" )
+		SetAnim( guys[3], "drop_pod_idle_anim", "pt_dp_idle_d" )
+	}
+
+	foreach ( guy in guys )
+	{
+		if ( IsAlive( guy ) )
+		{
+			guy.MakeVisible()
+			entity weapon = guy.GetActiveWeapon()
+			if ( IsValid( weapon ) )
+				weapon.MakeVisible()
+
+			thread GuyHangsInPod( guy, pod )
+		}
+	}
+
+	thread DropPodActiveThink( pod )
+}
+
+void function DropPodActiveThink( entity pod )
+{
+	DroppodStruct droppodData = file.droppodTable[ pod ]
+
+	OnThreadEnd(
+		function() : ( pod )
+		{
+			DroppodStruct droppodData = file.droppodTable[pod]
+			if ( droppodData.flags & eDropPodFlag.DISSOLVE_AFTER_DISEMBARKS )
+				CleanupFireteamPod( pod )
+			else
+				delaythread( 10 ) CleanupFireteamPod( pod )
+		}
+	)
+
+	pod.EndSignal( "OnDestroy" )
+
+	if ( DropPodDoorInGround( pod ) )
+		droppodData.door.Destroy()
+	else
+		DropPodOpenDoor( pod, droppodData.door )
+
+	while ( droppodData.numGuys )
+		WaitFrame()
+}
+
+bool function DropPodDoorInGround( entity pod )
+{
+	string attachment = "hatch"
+	int attachIndex = pod.LookupAttachment( attachment )
+	vector end = pod.GetAttachmentOrigin( attachIndex )
+
+	string originAttachment = "origin"
+	int originAttachIndex = pod.LookupAttachment( originAttachment )
+	vector start = pod.GetAttachmentOrigin( originAttachIndex )
+
+	TraceResults result = TraceLine( start, end, pod, TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_NONE )
+
+	return result.fraction < 1.0
+}
+
+void function CleanupFireteamPod( entity pod )
+{
+	DroppodStruct droppodData = file.droppodTable[ pod ]
+
+	if ( !IsValid( pod ) )
+		return
+
+	if ( IsValid( droppodData.door ) )
+		droppodData.door.Dissolve( ENTITY_DISSOLVE_CORE, Vector( 0, 0, 0 ), 500 )
+
+	EmitSoundAtPosition( TEAM_UNASSIGNED, pod.GetOrigin(), "droppod_dissolve" )
+
+	delete file.droppodTable[ pod ]
+
+	pod.NotSolid()
+	foreach( ent in pod.e.attachedEnts )
+	{
+		ent.NotSolid()
+	}
+	pod.Dissolve( ENTITY_DISSOLVE_CORE, Vector( 0, 0, 0 ), 500 )
+}
+
+entity function CreateDropPodDoor( entity pod )
+{
+	string attachment = "hatch"
+	int attachIndex = pod.LookupAttachment( attachment )
+	vector origin = pod.GetAttachmentOrigin( attachIndex )
+	vector angles = pod.GetAttachmentAngles( attachIndex )
+
+	entity prop_physics = CreateEntity( "prop_physics" )
+	SetTargetName( prop_physics, "door" + UniqueString() )
+	prop_physics.SetValueForModelKey( DP_DOOR_MODEL )
+	// Start Asleep
+	// Debris - Don't collide with the player or other debris
+	// Generate output on +USE
+	prop_physics.kv.spawnflags = 261 // non solid for now
+	prop_physics.kv.fadedist = -1
+	prop_physics.kv.physdamagescale = 0.1
+	prop_physics.kv.inertiaScale = 1.0
+	prop_physics.kv.renderamt = 0
+	prop_physics.kv.rendercolor = "255 255 255"
+
+	DispatchSpawn( prop_physics )
+
+	prop_physics.SetOrigin( origin )
+	prop_physics.SetAngles( angles )
+	prop_physics.SetParent( pod, "HATCH", false )
+	prop_physics.MarkAsNonMovingAttachment()
+
+	return prop_physics
+}
+
+void function DropPodOpenDoor( entity pod, entity door )
+{
+	door.ClearParent()
+	door.SetVelocity( door.GetForwardVector() * 500 )
+	EmitSoundOnEntity( pod, "droppod_door_open" )
+}
+
+void function GuyHangsInPod( entity guy, entity pod )
+{
+	DroppodStruct droppodData = file.droppodTable[ pod ]
+
+	guy.EndSignal( "OnDeath" )
+	guy.EndSignal( "OnDestroy" )
+
+	OnThreadEnd(
+		function() : ( droppodData )
+		{
+			droppodData.numGuys--
+		}
+	)
+
+	droppodData.numGuys++
+
+	string idleAnim
+	string exitAnim
+
+	if ( !droppodData.openDoor )
+	{
+		guy.SetEfficientMode( true )
+
+		guy.SetParent( pod, "ATTACH", false )
+
+		idleAnim = expect string( GetAnim( guy, "drop_pod_idle_anim" ) )
+		if ( guy.LookupSequence( idleAnim ) != -1 )
+			guy.Anim_ScriptedPlay( idleAnim )
+
+		pod.WaitSignal( "OpenDoor" )
+
+		//wait POST_TURRET_DELAY
+
+		guy.SetEfficientMode( false )
+	}
+
+
+	guy.SetParent( pod, "ATTACH", false )
+
+	exitAnim =  expect string ( GetAnim( guy, "drop_pod_exit_anim" ) )
+	bool exitAnimExists = guy.LookupSequence( exitAnim ) != -1
+	if ( exitAnimExists )
+		guy.Anim_ScriptedPlay( exitAnim )
+
+	guy.ClearParent()
+
+	if ( exitAnimExists )
+		WaittillAnimDone( guy )
+	guy.Signal( "npc_deployed" )
+}

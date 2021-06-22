@@ -1,0 +1,460 @@
+untyped
+
+global function ParticleWall_Init
+
+global function CreateTurretParticleWall
+global function CreateParticleWallFromOwner
+global function CreateShieldWithSettings
+global function DrainHealthOverTime
+
+global function CreateAmpedWallFromOwner
+
+global function CreateParticleWallForOwnerFromDirection
+
+global const SHIELD_WALL_COL_MODEL = $"models/fx/xo_shield_wall.mdl"
+global const SHIELD_WALL_FX = $"P_xo_shield_wall"
+
+global const TURRET_SHIELD_WALL_COL_MODEL = $"models/fx/turret_shield_wall.mdl"
+global const TURRET_SHIELD_WALL_FX = $"P_turret_shield_wall"
+
+global const AMPED_WALL_FX = $"P_xo_amped_wall"
+#if MP
+global const SHIELD_WALL_HEALTH = 2000
+global const TURRET_SHIELD_WALL_HEALTH = 3500//1750
+#else
+global const SHIELD_WALL_HEALTH = 1750
+global const TURRET_SHIELD_WALL_HEALTH = 1750
+#endif
+global const PAS_TONE_WALL_HEALTH = 3000
+global const PAS_TONE_WALL_DURATION_MULTIPLIER = 1.5
+global const SHIELD_WALL_DURATION = 8.0
+global const SHIELD_WALL_RADIUS = 180
+global const SHIELD_WALL_FOV = 120
+global const SHIELD_WALL_WIDTH = 156.0 // SHIELD_WALL_RADIUS * cos( SHIELD_WALL_FOV/2 )
+
+global function UpdateShieldWallColorForFrac
+global function PlayEffectOnVortexSphere
+global function SetVortexSphereShieldWallCPoint
+global function SetShieldWallCPoint
+global function StopShieldWallFX
+global function StopShieldWallFXOverTime
+global function SetShieldWallCPointOrigin
+
+function ParticleWall_Init()
+{
+	PrecacheParticleSystem( SHIELD_WALL_FX )
+	PrecacheModel( SHIELD_WALL_COL_MODEL )
+
+	PrecacheParticleSystem( TURRET_SHIELD_WALL_FX )
+	PrecacheModel( TURRET_SHIELD_WALL_COL_MODEL )
+
+	PrecacheParticleSystem( AMPED_WALL_FX )
+}
+
+void function CreateParticleWallFromOwner( entity weaponOwner, float duration, WeaponPrimaryAttackParams attackParams )
+{
+	vector dir = GetParticleWallAttackAnglesFromOwner( weaponOwner, attackParams )
+	CreateParticleWallForOwnerFromDirection( weaponOwner, duration, dir )
+}
+
+vector function GetParticleWallAttackAnglesFromOwner( entity weaponOwner, WeaponPrimaryAttackParams attackParams )
+{
+	if ( weaponOwner.IsNPC() )
+		return attackParams.dir
+
+	vector angles = weaponOwner.CameraAngles()
+	angles.x = 0
+	return AnglesToForward( angles )
+}
+
+void function CreateParticleWallForOwnerFromDirection( entity weaponOwner, float duration, vector dir )
+{
+	Assert( IsServer() )
+
+	entity titanSoul = weaponOwner.GetTitanSoul()
+
+	// JFS the weapon owner should always have a soul, at least on the server
+	if ( !IsValid( titanSoul ) )
+		return
+
+	vector origin = weaponOwner.GetOrigin()
+	vector safeSpot = origin
+	vector angles = VectorToAngles( dir )
+
+	if ( weaponOwner.IsNPC() )
+	{
+		// spawn in front of npc a bit
+		origin += dir * 100
+	}
+
+	float endTime = Time() + duration
+	titanSoul.SetDefensivePlacement( endTime, SHIELD_WALL_WIDTH, 0, true, safeSpot, dir )
+
+	Assert( weaponOwner.IsTitan() )
+	Assert( titanSoul )
+
+	int health
+	if ( SoulHasPassive( titanSoul, ePassives.PAS_TONE_WALL )  )
+	{
+		health = PAS_TONE_WALL_HEALTH
+		duration *= PAS_TONE_WALL_DURATION_MULTIPLIER
+	}
+	else
+	{
+		health = SHIELD_WALL_HEALTH
+	}
+	entity vortexSphere = CreateShieldWithSettings( origin + < 0, 0, -64 >, angles, SHIELD_WALL_RADIUS, SHIELD_WALL_RADIUS * 2, SHIELD_WALL_FOV, duration, health, SHIELD_WALL_FX )
+	thread DrainHealthOverTime( vortexSphere,  vortexSphere.e.shieldWallFX, duration )
+
+	entity groundEntity = weaponOwner.GetGroundEntity()
+	if ( groundEntity != null && groundEntity.HasPusherRootParent() )
+		vortexSphere.SetParent( groundEntity, "", true, 0 )
+}
+
+entity function CreateTurretParticleWall( vector origin, vector angles, float duration )
+{
+	Assert( IsServer() )
+
+	entity vortexSphere = CreateTurretShieldWithSettings( origin + < 0, 0, -64 >, angles, SHIELD_WALL_RADIUS, int( SHIELD_WALL_RADIUS * 1.65 ), 270, duration, TURRET_SHIELD_WALL_HEALTH, TURRET_SHIELD_WALL_FX )
+	thread DrainHealthOverTime( vortexSphere,  vortexSphere.e.shieldWallFX, duration )
+
+	return vortexSphere
+}
+
+entity function CreateShieldWithSettings( vector origin, vector angles, int radius, int height, int fov, float duration, int health, asset effectName )
+{
+	entity vortexSphere = CreateEntity( "vortex_sphere" )
+
+	vortexSphere.kv.spawnflags = SF_ABSORB_BULLETS | SF_BLOCK_OWNER_WEAPON | SF_BLOCK_NPC_WEAPON_LOF | SF_ABSORB_CYLINDER
+	vortexSphere.kv.enabled = 0
+	vortexSphere.kv.radius = radius
+	vortexSphere.kv.height = height
+	vortexSphere.kv.bullet_fov = fov
+	vortexSphere.kv.physics_pull_strength = 25
+	vortexSphere.kv.physics_side_dampening = 6
+	vortexSphere.kv.physics_fov = 360
+	vortexSphere.kv.physics_max_mass = 2
+	vortexSphere.kv.physics_max_size = 6
+
+	vortexSphere.SetAngles( angles ) // viewvec?
+	vortexSphere.SetOrigin( origin )
+	vortexSphere.SetMaxHealth( health )
+	vortexSphere.SetHealth( health )
+	vortexSphere.SetTakeDamageType( DAMAGE_YES )
+
+	DispatchSpawn( vortexSphere )
+
+	vortexSphere.Fire( "Enable" )
+	vortexSphere.Fire( "Kill", "", duration )
+
+	// Shield wall fx control point
+	entity cpoint = CreateEntity( "info_placement_helper" )
+	SetTargetName( cpoint, UniqueString( "shield_wall_controlpoint" ) )
+	DispatchSpawn( cpoint )
+
+	// Shield wall fx
+	entity shieldWallFX = PlayFXWithControlPoint( effectName, origin, cpoint, -1, null, angles, C_PLAYFX_LOOP )
+	vortexSphere.e.shieldWallFX = shieldWallFX
+	shieldWallFX.SetParent( vortexSphere )
+	SetVortexSphereShieldWallCPoint( vortexSphere, cpoint )
+	StopShieldWallFXOverTime( vortexSphere, duration )
+
+
+	thread StopFXOnDestroy( vortexSphere, shieldWallFX, duration )
+	return vortexSphere
+}
+
+//Turret Shields do not block npc line of fire.
+entity function CreateTurretShieldWithSettings( vector origin, vector angles, int radius, int height, int fov, float duration, int health, asset effectName )
+{
+	entity vortexSphere = CreateEntity( "vortex_sphere" )
+
+	vortexSphere.kv.spawnflags = SF_ABSORB_BULLETS | SF_BLOCK_OWNER_WEAPON | SF_ABSORB_CYLINDER
+	vortexSphere.kv.enabled = 0
+	vortexSphere.kv.radius = radius
+	vortexSphere.kv.height = height
+	vortexSphere.kv.bullet_fov = fov
+	vortexSphere.kv.physics_pull_strength = 25
+	vortexSphere.kv.physics_side_dampening = 6
+	vortexSphere.kv.physics_fov = 360
+	vortexSphere.kv.physics_max_mass = 2
+	vortexSphere.kv.physics_max_size = 6
+
+	vortexSphere.SetAngles( angles ) // viewvec?
+	vortexSphere.SetOrigin( origin )
+	vortexSphere.SetMaxHealth( health )
+	vortexSphere.SetHealth( health )
+	vortexSphere.SetTakeDamageType( DAMAGE_YES )
+
+	DispatchSpawn( vortexSphere )
+
+	vortexSphere.Fire( "Enable" )
+	vortexSphere.Fire( "Kill", "", duration )
+
+	// Shield wall fx control point
+	entity cpoint = CreateEntity( "info_placement_helper" )
+	SetTargetName( cpoint, UniqueString( "shield_wall_controlpoint" ) )
+	DispatchSpawn( cpoint )
+
+	// Shield wall fx
+	entity shieldWallFX = PlayFXWithControlPoint( effectName, origin, cpoint, -1, null, angles, C_PLAYFX_LOOP )
+	vortexSphere.e.shieldWallFX = shieldWallFX
+	shieldWallFX.SetParent( vortexSphere )
+	SetVortexSphereShieldWallCPoint( vortexSphere, cpoint )
+	StopShieldWallFXOverTime( vortexSphere, duration )
+
+
+	thread StopFXOnDestroy( vortexSphere, shieldWallFX, duration )
+	return vortexSphere
+}
+
+function StopFXOnDestroy( entity vortexSphere, entity shieldWallFX, float duration )
+{
+	vortexSphere.EndSignal( "OnDestroy" )
+	shieldWallFX.EndSignal( "OnDestroy" )
+
+	OnThreadEnd(
+		function() : ( vortexSphere )
+		{
+			StopShieldWallFX( vortexSphere )
+		}
+	)
+
+	wait duration * 1.5
+}
+
+void function CreateAmpedWallFromOwner( entity weaponOwner, float duration, WeaponPrimaryAttackParams attackParams )
+{
+	Assert( IsNewThread(), "Must be threaded off" )
+	Assert( IsServer() )
+	entity titanSoul = weaponOwner.GetTitanSoul()
+
+	// JFS the weapon owner should always have a soul, at least on the server
+	if ( !IsValid( titanSoul ) )
+		return
+	Assert( weaponOwner.IsTitan() )
+
+	vector dir = GetParticleWallAttackAnglesFromOwner( weaponOwner, attackParams )
+	vector origin = weaponOwner.GetOrigin()
+	vector safeSpot = origin
+	vector angles = VectorToAngles( dir )
+	vector forward = AnglesToForward( angles )
+	angles = AnglesCompose( angles, <0,180,0> )
+
+	if ( weaponOwner.IsNPC() )
+	{
+		// spawn in front of npc a bit
+		origin += dir * 100
+	}
+
+	origin += dir * 500
+	origin += Vector(0,0,-64)
+
+	float endTime = Time() + duration
+	titanSoul.SetDefensivePlacement( endTime, SHIELD_WALL_WIDTH, 0, true, safeSpot, dir )
+
+	entity vortexSphere = CreateShieldWithSettings( origin, angles, SHIELD_WALL_RADIUS, SHIELD_WALL_RADIUS * 2, SHIELD_WALL_FOV, duration, SHIELD_WALL_HEALTH, AMPED_WALL_FX )
+	vortexSphere.EndSignal( "OnDestroy" )
+	entity shieldWallFX = vortexSphere.e.shieldWallFX
+	shieldWallFX.EndSignal( "OnDestroy" )
+	SetTargetName( vortexSphere, PROTO_AMPED_WALL ) // so projectiles pass through
+
+	SetShieldWallCPointOrigin( shieldWallFX, < BURN_CARD_WEAPON_HUD_COLOR[0], BURN_CARD_WEAPON_HUD_COLOR[1], BURN_CARD_WEAPON_HUD_COLOR[2] > )
+
+	float tickRate = 0.1
+	float dps = vortexSphere.GetMaxHealth() / duration
+	float dmgAmount = dps * tickRate
+
+	EmitSoundOnEntity( vortexSphere, "ShieldWall_Loop" )
+
+	float endSoundTime = endTime - 3.0 // so magic
+	thread PlayDelayedVortexEndSound( endSoundTime, vortexSphere )
+	bool playedEndSound = false
+	vector vortexOrigin = vortexSphere.GetOrigin()
+	entity mover = CreateScriptMover()
+
+	int weaponOwnerTeam = weaponOwner.GetTeam();
+
+	OnThreadEnd(
+		function() : ( vortexSphere, vortexOrigin, endTime, mover, weaponOwnerTeam )
+		{
+			if ( IsValid( vortexSphere ) )
+			{
+				StopSoundOnEntity( vortexSphere, "ShieldWall_Loop" )
+				StopSoundOnEntity( vortexSphere, "ShieldWall_End" )
+			}
+
+			if ( IsValid( mover ) )
+				mover.Destroy()
+
+			if ( endTime - Time() >= 1.0 )
+				EmitSoundAtPosition( weaponOwnerTeam, vortexOrigin, "ShieldWall_Destroyed" )
+		}
+	)
+
+	int rampOuts = 3
+	float rampOutTime = 0.75
+	float rampOutFinalFade = 1.0
+	float finalFadeExtraBuffer = 0.45
+
+	wait duration - ( rampOutTime * rampOuts + rampOutFinalFade + finalFadeExtraBuffer )
+	EmitSoundOnEntity( vortexSphere, "ShieldWall_End" )
+
+	entity cpoint = GetShieldWallFXCPoint( shieldWallFX )
+
+	vector cpointOrigin = cpoint.GetOrigin()
+	mover.SetOrigin( cpointOrigin )
+	cpoint.SetParent( mover )
+	float rampTime1 = rampOutTime * 0.75
+	float rampTime2 = rampOutTime - rampTime1
+	for ( int i = 0; i < rampOuts; i++ )
+	{
+		mover.NonPhysicsMoveTo( <100,0,0>, rampTime1, rampTime1, 0.0 )
+		wait rampTime1
+		mover.NonPhysicsMoveTo( cpointOrigin, rampTime2, 0.0, rampTime2 )
+		wait rampTime2
+	}
+
+	mover.NonPhysicsMoveTo( <0,0,0>, rampOutFinalFade, 0.0, 0.0 )
+	wait rampOutFinalFade + finalFadeExtraBuffer
+}
+
+void function PlayDelayedVortexEndSound( float delay, entity vortexSphere )
+{
+	vortexSphere.EndSignal( "OnDestroy" )
+	wait delay
+	EmitSoundOnEntity( vortexSphere, "ShieldWall_End" )
+}
+
+
+function DrainHealthOverTime( entity vortexSphere, entity shieldWallFX, float duration )
+{
+	vortexSphere.EndSignal( "OnDestroy" )
+	shieldWallFX.EndSignal( "OnDestroy" )
+
+	float startTime = Time()
+	float endTime = startTime + duration
+
+	float tickRate = 0.1
+	float dps = vortexSphere.GetMaxHealth() / duration
+	float dmgAmount = dps * tickRate
+
+	EmitSoundOnEntity( vortexSphere, "ShieldWall_Loop" )
+
+	float endSoundTime = endTime - 3.0
+	bool playedEndSound = false
+	vector vortexOrigin = vortexSphere.GetOrigin()
+
+	OnThreadEnd(
+		function() : ( vortexSphere, vortexOrigin, endTime )
+		{
+			if ( endTime - Time() < 1.0 )
+				return
+
+			int teamNum = TEAM_UNASSIGNED
+
+			if ( IsValid( vortexSphere ) )
+			{
+				StopSoundOnEntity( vortexSphere, "ShieldWall_Loop" )
+				StopSoundOnEntity( vortexSphere, "ShieldWall_End" )
+
+				teamNum = vortexSphere.GetTeam()
+			}
+
+			EmitSoundAtPosition( teamNum, vortexOrigin, "ShieldWall_Destroyed" )
+		}
+	)
+
+	while ( Time() < endTime )
+	{
+		if ( Time() > endSoundTime && !playedEndSound )
+		{
+			EmitSoundOnEntity( vortexSphere, "ShieldWall_End" )
+			playedEndSound = true
+		}
+
+		//vortexSphere.SetHealth( vortexSphere.GetHealth() - dmgAmount )
+		UpdateShieldWallColorForFrac( shieldWallFX, GetHealthFrac( vortexSphere ) )
+		wait tickRate
+	}
+
+	StopSoundOnEntity( vortexSphere, "ShieldWall_Loop" )
+}
+
+function UpdateShieldWallColorForFrac( entity shieldWallFX, float colorFrac )
+{
+	vector color = GetShieldTriLerpColor( 1 - colorFrac )
+
+	if ( IsValid( shieldWallFX ) )
+		SetShieldWallCPointOrigin( shieldWallFX, color )
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// All functions that care about to-be-deprecated cpoint are below here:
+//
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+void function PlayEffectOnVortexSphere( int fx, vector origin, vector angles, entity vortexSphere )
+{
+	if ( !IsValid( vortexSphere ) )
+		return
+	if ( !IsValid( vortexSphere.e.shieldWallFX ) )
+		return
+	entity cpoint = vortexSphere.e.shieldWallFX.e.cpoint
+	if ( !IsValid( cpoint ) )
+		return
+	StartParticleEffectInWorldWithControlPoint( fx, origin, angles, cpoint.GetOrigin() )
+}
+
+void function SetVortexSphereShieldWallCPoint( entity vortexSphere, entity cpoint )
+{
+	Assert( IsValid( vortexSphere ) )
+	Assert( IsValid( vortexSphere.e.shieldWallFX ) )
+	SetShieldWallCPoint( vortexSphere.e.shieldWallFX, cpoint )
+}
+
+void function SetShieldWallCPoint( entity shieldWallFX, entity cpoint )
+{
+	Assert( IsValid( shieldWallFX ) )
+	Assert( IsValid( cpoint ) )
+	shieldWallFX.e.cpoint = cpoint
+}
+
+void function StopShieldWallFX( entity vortexSphere )
+{
+	entity shieldWallFX = vortexSphere.e.shieldWallFX
+	vortexSphere.e.shieldWallFX = null
+
+	if ( !IsValid( shieldWallFX ) )
+		return
+
+	shieldWallFX.Fire( "StopPlayEndCap" )
+	shieldWallFX.Fire( "Kill", "", 1.0 )
+
+	if ( IsValid( shieldWallFX.e.cpoint ) )
+		shieldWallFX.e.cpoint.Fire( "Kill", "", 1.0 )
+	EffectStop( shieldWallFX )
+}
+
+void function StopShieldWallFXOverTime( entity vortexSphere, float duration )
+{
+	entity shieldWallFX = vortexSphere.e.shieldWallFX
+	shieldWallFX.Fire( "StopPlayEndCap", "", duration )
+	shieldWallFX.Fire( "Kill", "", duration )
+	shieldWallFX.e.cpoint.Fire( "Kill", "", duration )
+}
+
+void function SetShieldWallCPointOrigin( entity shieldWallFX, vector AT_TURRET_SHIELD_COLOR )
+{
+	Assert( IsValid( shieldWallFX ) )
+	if ( !IsValid( shieldWallFX.e.cpoint ) )
+		return
+	shieldWallFX.e.cpoint.SetOrigin( AT_TURRET_SHIELD_COLOR )
+}
+
+entity function GetShieldWallFXCPoint( entity shieldWallFX )
+{
+	Assert( IsValid( shieldWallFX.e.cpoint ) )
+	return shieldWallFX.e.cpoint
+}

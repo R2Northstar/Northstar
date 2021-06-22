@@ -1,0 +1,196 @@
+untyped
+global function ToolgunTools_Init
+global function AddCallback_OnToolgunToolsInit
+
+global function RegisterTool
+global function CallToolOnEquipped
+global function CallToolOnUnequipped
+global function CallToolOnFired
+global function CallToolOnAds
+global function CallToolOnUnAds
+
+#if SERVER
+global function SetToolgunAmmoCount
+global function SetToolgunProscreen
+#endif // #if SERVER
+
+global struct ToolgunTool
+{
+	string toolName = ""
+	string toolDescription = ""
+
+	void functionref( entity, entity ) onEquipped
+	void functionref( entity, entity ) onUnequipped
+	void functionref( entity, entity, WeaponPrimaryAttackParams ) onFired
+	void functionref( entity, entity ) onAds
+	void functionref( entity, entity ) onUnAds
+}
+
+struct ToolgunPlayerSettings
+{
+	int selectedToolIndex
+	int ammoCount
+	int proscreenNumber
+}
+
+// doing preprocessor defs inside the struct seemed to cause compiler errors so we define them separately
+#if CLIENT
+struct {
+	array<void functionref()> onToolgunToolsInitCallbacks
+	
+	array<ToolgunTool> tools
+	ToolgunPlayerSettings clientPlayerSettings
+} file
+#endif // #if CLIENT
+
+#if SERVER
+struct {
+	array<void functionref()> onToolgunToolsInitCallbacks
+	
+	array<ToolgunTool> tools
+	// serverside playersettings
+	table<int, ToolgunPlayerSettings> playerSettings
+} file
+#endif // #if SERVER
+
+void function AddCallback_OnToolgunToolsInit( void functionref() callback )
+{
+	file.onToolgunToolsInitCallbacks.append( callback )
+}
+
+void function ToolgunTools_Init()
+{
+	//#if SERVER
+	//AddCallback_OnClientConnecting( InitialiseToolgunSettings )
+	//AddCallback_OnClientDisconnected( DestroyToolgunSettings )
+	//#endif // #if SERVER
+	//
+	//// need this threaded so we can wait a frame
+	//thread ToolgunTools_InitThreaded()
+}
+
+void function ToolgunTools_InitThreaded()
+{
+	// wait a frame for tools to all init and add their callbacks
+	WaitFrame()
+	
+	// call callbacks
+	foreach ( void functionref() callback in file.onToolgunToolsInitCallbacks )
+		callback()
+}
+
+void function RegisterTool( ToolgunTool toolStruct )
+{
+	file.tools.append( toolStruct )
+}
+
+void function CallToolOnEquipped( entity player, entity weapon )
+{
+	#if CLIENT
+	if ( file.tools[ file.clientPlayerSettings.selectedToolIndex ].onEquipped != null )
+		file.tools[ file.clientPlayerSettings.selectedToolIndex ].onEquipped( player, weapon )
+	#endif // #if CLIENT
+	
+	#if SERVER
+	// set ammo and proscreen numbers when equipped
+	weapon.SetProScreenIntValForIndex( PRO_SCREEN_INT_LIFETIME_KILLS, file.playerSettings[ player.GetPlayerIndex() ].proscreenNumber )
+	weapon.SetWeaponPrimaryClipCount( file.playerSettings[ player.GetPlayerIndex() ].ammoCount )
+	
+	if ( file.tools[ file.playerSettings[ player.GetPlayerIndex() ].selectedToolIndex ].onEquipped != null )
+		file.tools[ file.playerSettings[ player.GetPlayerIndex() ].selectedToolIndex ].onEquipped( player, weapon )
+	#endif // #if SERVER
+}
+
+void function CallToolOnUnequipped( entity player, entity weapon )
+{
+	#if CLIENT
+	if ( file.tools[ file.clientPlayerSettings.selectedToolIndex ].onUnequipped != null )
+		file.tools[ file.clientPlayerSettings.selectedToolIndex ].onUnequipped( player, weapon )
+	#endif // #if CLIENT
+
+	#if SERVER
+	if ( file.tools[ file.playerSettings[ player.GetPlayerIndex() ].selectedToolIndex ].onUnequipped != null )
+		file.tools[ file.playerSettings[ player.GetPlayerIndex() ].selectedToolIndex ].onUnequipped( player, weapon )
+	#endif // #if SERVER
+}
+
+void function CallToolOnFired( entity player, entity weapon, WeaponPrimaryAttackParams attackParams )
+{
+	#if CLIENT
+	if ( file.tools[ file.clientPlayerSettings.selectedToolIndex ].onFired != null )
+		file.tools[ file.clientPlayerSettings.selectedToolIndex ].onFired( player, weapon, attackParams )
+	#endif // #if CLIENT
+
+	#if SERVER
+	// ammocount needs to be +1 because we lose 1 ammo immediately after this function is run
+	weapon.SetWeaponPrimaryClipCount( file.playerSettings[ player.GetPlayerIndex() ].ammoCount + 1 )
+	
+	if ( file.tools[ file.playerSettings[ player.GetPlayerIndex() ].selectedToolIndex ].onFired != null )
+		file.tools[ file.playerSettings[ player.GetPlayerIndex() ].selectedToolIndex ].onFired( player, weapon, attackParams )
+	#endif // #if SERVER
+}
+
+void function CallToolOnAds( entity player, entity weapon )
+{
+	#if CLIENT
+	if ( file.tools[ file.clientPlayerSettings.selectedToolIndex ].onAds != null )
+		file.tools[ file.clientPlayerSettings.selectedToolIndex ].onAds( player, weapon )
+	#endif // #if CLIENT
+
+	#if SERVER
+	if ( file.tools[ file.playerSettings[ player.GetPlayerIndex() ].selectedToolIndex ].onUnequipped != null )
+		file.tools[ file.playerSettings[ player.GetPlayerIndex() ].selectedToolIndex ].onUnequipped( player, weapon )
+	#endif // #if SERVER
+}
+
+void function CallToolOnUnAds( entity player, entity weapon )
+{
+	#if CLIENT
+	if ( file.tools[ file.clientPlayerSettings.selectedToolIndex ].onUnAds != null )
+		file.tools[ file.clientPlayerSettings.selectedToolIndex ].onUnAds( player, weapon )
+	#endif // #if CLIENT
+
+	#if SERVER
+	if ( file.tools[ file.playerSettings[ player.GetPlayerIndex() ].selectedToolIndex ].onUnequipped != null )
+		file.tools[ file.playerSettings[ player.GetPlayerIndex() ].selectedToolIndex ].onUnequipped( player, weapon )
+	#endif // #if SERVER
+}
+
+#if SERVER
+void function InitialiseToolgunSettings( entity player )
+{
+	print( "initialising toolgun settings for player " + player )
+
+	ToolgunPlayerSettings playerSettings
+	playerSettings.selectedToolIndex = 0
+	
+	file.playerSettings[ player.GetPlayerIndex() ] <- playerSettings
+}
+
+void function DestroyToolgunSettings( entity player )
+{
+	delete file.playerSettings[ player.GetPlayerIndex() ]
+}
+
+void function SetToolgunAmmoCount( entity player, int ammoCount )
+{
+	entity currentWeapon = player.GetActiveWeapon()
+	if ( ammoCount > currentWeapon.GetWeaponPrimaryClipCountMax() ) // setting clipcount to over max clipcount crashes so we need to prevent that
+		return
+	
+	ToolgunPlayerSettings playerSettings = file.playerSettings[ player.GetPlayerIndex() ]
+	playerSettings.ammoCount = ammoCount
+	
+	if ( currentWeapon.GetWeaponClassName() == "mp_weapon_toolgun" ) // set ammocount immediately if we've got toolgun equipped already
+		currentWeapon.SetWeaponPrimaryClipCount( ammoCount )
+}
+
+void function SetToolgunProscreen( entity player, int proscreenNumber )
+{
+	ToolgunPlayerSettings playerSettings = file.playerSettings[ player.GetPlayerIndex() ]
+	playerSettings.proscreenNumber = proscreenNumber
+	
+	if ( player.GetActiveWeapon().GetWeaponClassName() == "mp_weapon_toolgun" ) // set proscreen number immediately if we've got toolgun equipped already
+		player.GetActiveWeapon().SetProScreenIntValForIndex( PRO_SCREEN_INT_LIFETIME_KILLS, proscreenNumber )
+}
+#endif // #if SERVER

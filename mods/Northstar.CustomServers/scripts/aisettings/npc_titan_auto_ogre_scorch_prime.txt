@@ -1,0 +1,6 @@
+#base "npc_titan_auto_ogre_meteor.txt"
+
+npc_titan_auto_ogre_scorch_prime
+{
+	npc_titan_player_settings	"titan_ogre_scorch_prime"
+}

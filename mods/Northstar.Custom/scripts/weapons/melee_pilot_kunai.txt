@@ -1,0 +1,149 @@
+WeaponData
+{
+	// General
+	"printname"   									"Melee"
+	"shortprintname"								"Melee"
+	"description" 									"Description needed"
+	"longdesc"										"Description needed"
+
+	"menu_icon"										"ui/temp"
+	"hud_icon"										"ui/temp"
+
+	"weaponClass" 									"human"
+	"weaponType" 									"melee"
+	"body_type"										"battle_rifle"
+	"fire_mode"   									"offhand_melee"
+	"never_drop"									"1"
+
+	// Models
+	"viewmodel"   									"models/weapons/kunai/ptpov_kunai.mdl"
+	"playermodel" 									"models/weapons/kunai/w_kunai.mdl"
+
+	// Melee
+	"melee_can_hit_humansized"						"1"
+	"melee_can_hit_titans"							"0"
+	"melee_raise_recovery_animtime_normal"			"0.25"
+	"melee_raise_recovery_animtime_quick"			"0.01"
+	"melee_range"									"40"
+	"melee_rumble_on_hit"							"pilot_melee_hit"
+	"melee_freezelook_on_hit"						"0.0"
+	"melee_sound_attack_1p"							"Player_Melee_Backhand_1P"
+	"melee_sound_attack_3p"							"player_melee_kick_3p"
+	"melee_anim_1p_number"							"1"								// ACT_VM_MELEE_ATTACK1, 2, or 3
+	"melee_anim_3p"									"ACT_MP_MELEE_KNIFE_FIRST"
+	"damage_flags"									"DF_MELEE | DF_KNOCK_BACK"
+	"impact_effect_table"							"melee_human"
+	"impulse_force"   								"25000"
+
+	"zoom_effects"									"0"
+
+	MP_BASE
+	{
+		"melee_lunge_target_range"						"130"
+		"melee_lunge_target_angle"						"30"
+		"melee_damage"									"300"
+		"melee_damage_heavyarmor"						"300"
+		"melee_attack_animtime"							"1.0"
+		"melee_lunge_time"								"0.125"
+	}
+
+	SP_BASE
+	{
+		"melee_lunge_target_range"						"200"
+		"melee_lunge_target_angle"						"40"
+		"melee_damage"									"130"
+		"melee_damage_heavyarmor"						"130"
+		"melee_attack_animtime"							"0.0"
+		"melee_lunge_time"								"0.2"
+	}
+
+	//
+	"ammo_suck_behavior"							"melee_weapons"
+	"viewkick_spring" 								"melee"
+
+	"viewkick_pitch_base" 							"-1.75"
+	"viewkick_pitch_random"   						"0.75"
+	"viewkick_pitch_softScale"						"0.3"
+	"viewkick_pitch_hardScale"						"10.5"
+
+	"viewkick_yaw_base"   							"-1.0"
+	"viewkick_yaw_random" 							"0.38"
+	"viewkick_yaw_softScale"  						"0.38"
+	"viewkick_yaw_hardScale"  						"30.5"
+
+	"viewkick_roll_base"  							"0"
+	"viewkick_roll_randomMin" 						"0.6"
+	"viewkick_roll_randomMax" 						"0.8"
+	"viewkick_roll_softScale" 						"0.2"
+	"viewkick_roll_hardScale" 						"10.0"
+
+	//
+	"damage_rodeo" 									"100"
+	"aimassist_disable_hipfire"						"1"
+	"aimassist_disable_ads"							"1"
+
+	// Bob
+	"bob_cycle_time"  								"0.45"
+	"bob_vert_dist"   								"0.075"
+	"bob_horz_dist"   								"0.05"
+	"bob_max_speed"   								"150"
+	"bob_pitch"   									"0.75"
+	"bob_yaw" 										"1"
+	"bob_roll"										"-0.75"
+
+	// View Drift
+	"viewdrift_hipfire_stand_scale_pitch" 			"0.325"
+	"viewdrift_hipfire_crouch_scale_pitch"			"0.275"
+	"viewdrift_hipfire_air_scale_pitch"   			"0.5"
+	"viewdrift_hipfire_stand_scale_yaw"   			"0.12"
+	"viewdrift_hipfire_crouch_scale_yaw"  			"0.10"
+	"viewdrift_hipfire_air_scale_yaw" 				"0.22"
+	"viewdrift_hipfire_speed_pitch"   				"0.6"
+	"viewdrift_hipfire_speed_yaw" 					"1.22"
+
+	// Sway
+	"sway_rotate_attach"  							"SWAY_ROTATE"
+	"sway_min_x"  									"-0.3"
+	"sway_min_y"  									"-0.5"
+	"sway_min_z"  									"-0.5"
+	"sway_max_x"  									"0.3"
+	"sway_max_y"  									"0.5"
+	"sway_max_z"  									"0.1"
+	"sway_min_pitch"  								"-3"
+	"sway_min_yaw"									"-3.5"
+	"sway_min_roll"   								"-2"
+	"sway_max_pitch"  								"3"
+	"sway_max_yaw"									"3.5"
+	"sway_max_roll"   								"3"
+	"sway_translate_gain" 							"10"
+	"sway_rotate_gain"								"12"
+	"sway_move_forward_translate_x"   				"0"
+	"sway_move_forward_translate_z"   				"-0.5"
+	"sway_move_back_translate_x"  					"-2"
+	"sway_move_back_translate_z"  					"-1"
+	"sway_move_left_translate_y"  					"-1"
+	"sway_move_left_translate_z"  					"-0.5"
+	"sway_move_left_rotate_roll"  					"-2"
+	"sway_move_right_translate_y" 					"1"
+	"sway_move_right_translate_z" 					"-0.5"
+	"sway_move_right_rotate_roll" 					"4"
+	"sway_move_up_translate_z"						"-1"
+	"sway_move_down_translate_z"  					"1"
+	"sway_turn_left_rotate_yaw"   					"-1"
+	"sway_turn_right_rotate_yaw"  					"1"
+	"sway_turn_up_rotate_pitch"   					"1"
+	"sway_turn_down_rotate_pitch" 					"-1"
+
+	// WeaponED Unhandled Key/Values and custom script Key/Values
+	"deployfirst_time"								"1.25"
+	"sprintcycle_time"								".55"
+
+	Mods
+	{
+		test_push
+		{
+			"melee_damage" "5"
+			"impulse_force" "50000"
+		}
+	}
+}

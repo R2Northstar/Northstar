@@ -1,0 +1,7 @@
+global function MortarSpectreGetSquadFiringPositions
+
+array<vector> function MortarSpectreGetSquadFiringPositions(vector origin, vector testTarget)
+{
+	array< vector > ret
+	return ret
+}

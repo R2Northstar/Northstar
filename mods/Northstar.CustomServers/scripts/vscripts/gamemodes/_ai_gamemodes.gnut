@@ -1,0 +1,6 @@
+global function AiGameModes_Init
+
+void function AiGameModes_Init()
+{
+
+}

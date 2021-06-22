@@ -1,0 +1,96 @@
+global function ClGamemodeFastball_Init
+global function ServerCallback_FastballUpdatePanelRui
+global function ServerCallback_FastballPanelHacked
+global function ServerCallback_FastballRespawnPlayer
+
+struct {
+	var panelARui
+	var panelBRui
+	var panelCRui
+} file
+
+void function ClGamemodeFastball_Init()
+{
+	ClGameState_RegisterGameStateAsset( $"ui/gamestate_info_lts.rpak" )
+
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_INTRO, "Music_Beacon_14_BTThrowThruFirstCrane", TEAM_MILITIA )
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_INTRO, "Music_Beacon_14_BTThrowThruFirstCrane", TEAM_MILITIA )
+	
+	AddCallback_OnClientScriptInit( FastballCreateRui )
+}
+
+void function FastballCreateRui( entity player )
+{
+	file.panelARui = CreateCockpitRui( $"ui/cp_hardpoint_marker.rpak", 200 )
+	file.panelBRui = CreateCockpitRui( $"ui/cp_hardpoint_marker.rpak", 200 )
+	file.panelCRui = CreateCockpitRui( $"ui/cp_hardpoint_marker.rpak", 200 )
+
+}
+
+void function ServerCallback_FastballUpdatePanelRui( int panelHandle, int id )
+{
+	entity panel = GetEntityFromEncodedEHandle( panelHandle )
+	var rui
+	if ( id == 0 )
+		rui = file.panelARui
+	else if ( id == 1 )
+		rui = file.panelBRui
+	else if ( id == 2 )
+		rui = file.panelCRui
+
+	RuiSetInt( rui, "hardpointId", id )
+	RuiTrackFloat3( rui, "pos", panel, RUI_TRACK_OVERHEAD_FOLLOW )
+	RuiSetInt( rui, "viewerTeam", GetLocalClientPlayer().GetTeam() )
+	////RuiTrackInt( rui, "cappingTeam", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "panel" + id + "progress" ) )
+	RuiTrackInt( rui, "hardpointTeamRelation", panel, RUI_TRACK_TEAM_RELATION_VIEWPLAYER )
+	
+	RuiSetBool( rui, "isVisible", true )
+}
+
+void function ServerCallback_FastballPanelHacked( int panelHandle, int id, int capturingPlayerHandle )
+{
+	ServerCallback_FastballUpdatePanelRui( panelHandle, id ) // may not be necessary, just wanna ensure this is always right
+
+	entity panel = GetEntityFromEncodedEHandle( panelHandle )
+	entity capturingPlayer = GetEntityFromEncodedEHandle( capturingPlayerHandle )
+	
+	if ( capturingPlayer == GetLocalViewPlayer() )
+		return
+		
+	string panelIdString
+	if ( id == 0 )
+		panelIdString = "A"
+	if ( id == 1 )
+		panelIdString = "B"
+	else if ( id == 2 )
+		panelIdString = "C"
+		
+	AnnouncementData announcement = Announcement_Create( Localize( "#FASTBALL_PANEL_CAPTURED", capturingPlayer.GetPlayerName(), panelIdString ) )
+	
+	if ( capturingPlayer.GetTeam() == GetLocalViewPlayer().GetTeam() )
+		Announcement_SetTitleColor( announcement, < 0, 0, 1 > )
+	else
+		Announcement_SetTitleColor( announcement, < 1, 0, 0 > )
+		
+	Announcement_SetPurge( announcement, true )
+	Announcement_SetPriority( announcement, 200 ) //Be higher priority than Titanfall ready indicator etc
+	Announcement_SetSoundAlias( announcement, SFX_HUD_ANNOUNCE_QUICK )
+	Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_QUICK )
+	AnnouncementFromClass( GetLocalViewPlayer(), announcement )
+}
+
+void function ServerCallback_FastballRespawnPlayer()
+{
+	thread FastballRespawnPlayerEffects_Threaded()
+}
+
+void function FastballRespawnPlayerEffects_Threaded()
+{
+	// sometimes this seems to get called before the player has respawned clientside, so we just wait until the client thinks they're alive
+	entity player = GetLocalViewPlayer()
+	
+	while ( !IsAlive( player ) )
+		WaitFrame()
+		
+	StartParticleEffectOnEntity( player.GetCockpit(), GetParticleSystemIndex( $"P_pod_screen_lasers_OUT" ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
+}

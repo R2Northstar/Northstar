@@ -1,0 +1,156 @@
+// TODO: could probably add some checks for whether player setting stuff is player 0 to check for host, might fail in dedicated tho
+
+global function PrivateLobby_Init
+
+struct {
+	int startState
+	string map = "mp_forwardbase_kodai"
+	string mode = "aitdm"
+} file 
+
+void function PrivateLobby_Init()
+{
+	print( "PrivateLobby_Init()" )
+	ClearPlaylistVarOverrides()
+	
+	AddClientCommandCallback( "PrivateMatchLaunch", ClientCommandCallback_PrivateMatchLaunch )
+	AddClientCommandCallback( "PrivateMatchSetMode", ClientCommandCallback_PrivateMatchSetMode )
+	AddClientCommandCallback( "SetCustomMap", ClientCommandCallback_SetCustomMap )
+	AddClientCommandCallback( "PrivateMatchSwitchTeams", ClientCommandCallback_PrivateMatchSwitchTeams )
+}
+
+bool function ClientCommandCallback_PrivateMatchLaunch( entity player, array<string> args )
+{
+	if ( file.startState == ePrivateMatchStartState.STARTING ) 
+	{
+		// cancel start if we're already mid-countdown
+		file.startState = ePrivateMatchStartState.READY
+		SetUIVar( level, "privatematch_starting", ePrivateMatchStartState.READY )
+		SetUIVar( level, "gameStartTime", null )
+	}
+	else
+	{
+		// start match
+		file.startState = ePrivateMatchStartState.STARTING
+		thread StartMatch()
+	}
+	
+	return true
+}
+
+bool function ClientCommandCallback_PrivateMatchSetMode( entity player, array<string> args )
+{
+	if ( file.startState == ePrivateMatchStartState.STARTING )
+		return true
+
+	if ( args.len() != 1 )
+		return true
+	
+	// todo: need to verify this value
+	file.mode = args[0]
+	//GameRules_SetGameMode( args[0] ) // can't do this here due to out of sync errors with new clients
+	
+	RefreshPlayerTeams()
+
+	SetUIVar( level, "privatematch_mode", GetPrivateMatchModeIndex( args[0] ) ) 
+	return true
+}
+
+bool function ClientCommandCallback_SetCustomMap( entity player, array<string> args )
+{
+	if ( file.startState == ePrivateMatchStartState.STARTING )
+		return true
+		
+	if ( args.len() != 1 )
+		return true
+	
+	// todo: need to verify this value
+	file.map = args[0]
+	
+	// todo: this should NOT be necessary, private matches should use an api to register maps in the future rather than hardcoded ids
+	// should be removed whenever possible really
+	SetUIVar( level, "privatematch_map", GetPrivateMatchMapIndex( args[0] ) )
+	return true
+}
+
+bool function ClientCommandCallback_PrivateMatchSwitchTeams( entity player, array<string> args )
+{
+	if ( file.startState == ePrivateMatchStartState.STARTING )
+		return true
+		
+	// currently only support 2 teams in private matches
+	SetTeam( player, player.GetTeam() == 2 ? 3 : 2 )
+	return true
+}
+
+void function StartMatch()
+{	
+	// set starting uivar
+	SetUIVar( level, "privatematch_starting", ePrivateMatchStartState.STARTING )
+	
+	// start countdown
+	SetUIVar( level, "gameStartTime", Time() + 15 ) 
+	float countdownEndTime = Time() + 15.0
+	
+	// can't use start here because we need to check stuff
+	while ( Time() < countdownEndTime )
+	{
+		// stop if the countdown's been cancelled
+		if ( file.startState != ePrivateMatchStartState.STARTING)
+			return
+	
+		WaitFrame()
+	}
+	
+	GameRules_SetGameMode( file.mode )
+	try
+	{
+		// todo: not every gamemode uses the same playlist as their name! need some code to resolve these manually
+		// would be nice if the gamemode api got some tweaks to allow for registering private match gamemodes maybe
+		SetCurrentPlaylist( file.mode )
+	}
+	catch ( exception ) 
+	{
+		// temp
+		if ( file.mode == "speedball" )
+			SetCurrentPlaylist( "lf" )
+	
+		print( "couldn't find playlist for gamemode " + file.mode )
+	}
+	
+	RefreshPlayerTeams()
+	
+	SetPlaylistVarOverride( "return_to_private_lobby", "1" )
+	// TEMP for now: start game
+	ServerCommand( "changelevel " + file.map )
+}
+
+void function RefreshPlayerTeams()
+{
+	int maxTeams = GetGamemodeVarOrUseValue( file.mode, "max_teams", "2" ).tointeger()
+	int maxPlayers = GetGamemodeVarOrUseValue( file.mode, "max_players", "12" ).tointeger()
+
+	// special case for situations where we wrongly assume ffa teams because there's 2 teams/2 players
+	if ( maxPlayers == maxTeams && maxTeams > 2 )
+	{
+		array<entity> players = GetPlayerArray()
+		for ( int i = 0; i < players.len(); i++ )
+			SetTeam( players[ i ], i + 7 ) // 7 is the lowest ffa team
+	}
+	else
+	{
+		bool lastSetMilitia = false
+		foreach ( entity player in GetPlayerArray() )
+		{
+			if ( player.GetTeam() == TEAM_MILITIA || player.GetTeam() == TEAM_IMC )
+				continue
+				
+			if ( lastSetMilitia ) // ensure roughly evenish distribution
+				SetTeam( player, TEAM_IMC )
+			else
+				SetTeam( player, TEAM_MILITIA )
+				
+			lastSetMilitia = !lastSetMilitia
+		}
+	}
+}

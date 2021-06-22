@@ -1,0 +1,6 @@
+global function InitChallenges
+
+void function InitChallenges()
+{
+
+}

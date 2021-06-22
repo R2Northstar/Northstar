@@ -1,0 +1,5 @@
+#base "npc_turret_mega.txt"
+npc_turret_mega_nowindup
+{
+	windup_time 					0.0
+}

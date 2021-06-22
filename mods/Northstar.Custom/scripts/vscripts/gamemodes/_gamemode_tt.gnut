@@ -1,0 +1,71 @@
+global function GamemodeTT_Init
+
+struct {
+	entity lastPlayerDropped
+} file
+
+void function GamemodeTT_Init()
+{
+	SetSpawnpointGamemodeOverride( TEAM_DEATHMATCH )
+	Riff_ForceTitanAvailability( eTitanAvailability.Never )
+
+	AddCallback_GameStateEnter( eGameState.Playing, OnEnterPlaying )
+	
+	AddCallback_OnPlayerKilled( OnPlayerKilled )
+	AddDeathCallback( "npc_titan", OnTitanKilled )
+}
+
+void function OnEnterPlaying()
+{
+	thread DropRandomTitan()
+}
+
+void function DropRandomTitan()
+{	
+	array<entity> players = GetPlayerArray()
+	
+	if ( players.len() == 1 )
+		file.lastPlayerDropped = null // don't wanna loop forever if only 1 player
+		
+	entity titanPlayer
+	do {
+		titanPlayer = players[ RandomInt( players.len() ) ]
+	} while ( titanPlayer == file.lastPlayerDropped )
+		
+	DropTitanForPlayer( titanPlayer, 5.0 )
+}
+
+void function DropTitanForPlayer( entity player, float delay )
+{
+	wait delay
+
+	file.lastPlayerDropped = player
+	CreateTitanForPlayerAndHotdrop( player, GetTitanReplacementPoint( player, false ) )
+}
+
+void function AttemptToDropTitanForKill( entity victim, entity attacker, var damageInfo )
+{
+	if ( !victim.IsTitan() )
+		return
+
+	if ( !attacker.IsPlayer() || victim == attacker )
+		thread DropRandomTitan()
+	else
+		thread DropTitanForPlayer( attacker, 2.0 )
+}
+
+void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
+{
+	if ( victim.IsTitan() )
+		AttemptToDropTitanForKill( victim, attacker, damageInfo )
+	else if ( attacker.IsTitan() )
+	{
+		AddTeamScore( attacker.GetTeam(), 1 )
+	}
+}
+
+void function OnTitanKilled( entity victim, var damageInfo )
+{
+	if ( IsPetTitan( victim ) )
+		AttemptToDropTitanForKill( victim, DamageInfo_GetAttacker( damageInfo ), damageInfo )
+}

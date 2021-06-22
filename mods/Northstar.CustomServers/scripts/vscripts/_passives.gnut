@@ -1,0 +1,1657 @@
+untyped
+
+global function Passives_Init
+
+global function InitPassives
+global function GivePassive
+global function GivePassiveLifeLong
+global function GiveTitanPassiveLifeLong
+global function TakePassive
+global function TakeAllPassives
+global function ScanMinimap
+global function MinimapPlayerConnected
+global function SoulHasPassive
+global function ScanMinimapUntilDeath
+global function GivePlayerPassivesFromSoul
+global function PrintAllPassives
+
+global function IsConscript
+
+global function UpdateMinimapStatusToOtherPlayers
+global function UpdateTitanMinimapStatusToOtherPlayers
+global function UpdateAIMinimapStatusToOtherPlayers
+global function UpdateMinimapStatus // moves to minimap script eventually?
+global function ApplyTitanWeaponPassives
+global function UpdateScorchHotStreakCoreMeter
+#if MP
+global function ApplyFDUpgradeWeaponPassives
+global function ApplyFDDerviedUpgrades
+#endif
+
+const FD_HOT_STREAK_DAMAGE_MAX = 10000
+const FD_HOT_STREAK_DECAY_TIME = 30.0 //1/2 this value until it the hotstreak falls off. 1/2 the value until it goes from full to empty.
+//const FD_HOT_STREAK_CORE_MULTIPLIER_MAX = 0.5
+
+function Passives_Init()
+{
+ 	RegisterSignal( "EndCloakedWallHangs" )
+ 	RegisterSignal( "EndCloakedWallruns" )
+
+	AddSpawnCallback( "npc_spectre", MinimapNPCSpawned )
+	AddSpawnCallback( "npc_soldier", MinimapNPCSpawned )
+	AddDeathCallback( "player", PassiveDeathCallback )
+
+	AddCallback_OnTitanGetsNewTitanLoadout( ApplyTitanWeaponPassives )
+
+	#if MP
+	if ( GetCurrentPlaylistVarInt( "aegis_upgrades", 0 ) == 1 )
+		AddCallback_OnUpdateDerivedPlayerTitanLoadout( ApplyFDDerviedUpgrades ) //Half of the meta functions, the other half lives in passives.gnut This is used for class mods.
+	#endif
+
+	level.wifiLeachInterval <- 2.5
+}
+
+function InitPassives( entity player )
+{
+	player.s.removePassiveOnDeath <- {}
+}
+
+#if MP
+void function ApplyFDDerviedUpgrades( entity player, TitanLoadoutDef loadout )
+{
+	array<ItemData> fdUpgrades = GetAllItemsOfType( eItemTypes.TITAN_FD_UPGRADE )
+	array<string> upgradeRefs
+	foreach ( ItemData upgrade in fdUpgrades )
+	{
+		if ( loadout.titanClass == upgrade.parentRef && !IsSubItemLocked( player, upgrade.ref, upgrade.parentRef ) )
+		{
+			upgradeRefs.append( upgrade.ref )
+		}
+	}
+	if ( loadout.titanClass == "ronin" )
+		ApplyDerivedRoninFDUpgrades( upgradeRefs, loadout )
+	else if ( loadout.titanClass == "northstar" )
+		ApplyDerivedNorthstarFDUpgrades( upgradeRefs, loadout )
+	else if ( loadout.titanClass == "vanguard" )
+		ApplyDerivedVanguardFDUpgrades( upgradeRefs, loadout )
+	else if ( loadout.titanClass == "ion" )
+		ApplyDerivedIonFDUpgrades( upgradeRefs, loadout )
+	else if ( loadout.titanClass == "tone" )
+		ApplyDerivedToneFDUpgrades( upgradeRefs, loadout )
+	else if ( loadout.titanClass == "scorch" )
+		ApplyDerivedScorchFDUpgrades( upgradeRefs, loadout )
+	else if ( loadout.titanClass == "legion" )
+		ApplyDerivedLegionFDUpgrades( upgradeRefs, loadout )
+}
+
+void function ApplyFDUpgradeWeaponPassives( entity titan, TitanLoadoutDef loadout )
+{
+	entity player
+	if ( titan.IsPlayer() )
+		player = titan
+	else if ( IsValid( titan.mySpawnOptions_ownerPlayer ) )
+		player = expect entity( titan.mySpawnOptions_ownerPlayer )
+	else
+		player = titan.GetBossPlayer()
+
+	if ( !IsValid( player ) )
+		return
+
+	array<ItemData> fdUpgrades = GetAllItemsOfType( eItemTypes.TITAN_FD_UPGRADE )
+	array<string> upgradeRefs
+	foreach ( ItemData upgrade in fdUpgrades )
+	{
+		if ( loadout.titanClass == upgrade.parentRef && !IsSubItemLocked( player, upgrade.ref, upgrade.parentRef ) )
+			upgradeRefs.append( upgrade.ref )
+	}
+
+	if ( loadout.titanClass == "ronin" )
+		ApplyRoninFDUpgrades( upgradeRefs, titan, loadout )
+	else if ( loadout.titanClass == "northstar" )
+		ApplyNorthstarFDUpgrades( upgradeRefs, titan, loadout )
+	else if ( loadout.titanClass == "vanguard" )
+		ApplyVanguardFDUpgrades( upgradeRefs, titan, loadout )
+	else if ( loadout.titanClass == "ion" )
+		ApplyIonFDUpgrades( upgradeRefs, titan, loadout )
+	else if ( loadout.titanClass == "tone" )
+		ApplyToneFDUpgrades( upgradeRefs, titan, loadout )
+	else if ( loadout.titanClass == "scorch" )
+		ApplyScorchFDUpgrades( upgradeRefs, titan, loadout )
+	else if ( loadout.titanClass == "legion" )
+		ApplyLegionFDUpgrades( upgradeRefs, titan, loadout )
+}
+
+void function ApplyDerivedRoninFDUpgrades( array<string> upgradeRefs, TitanLoadoutDef loadout )
+{
+	foreach ( upgrade in upgradeRefs )
+	{
+		switch ( upgrade )
+		{
+			case "fd_upgrade_ronin_defense_tier_1":
+				loadout.setFileMods.append( "fd_health_upgrade" )
+				break
+		}
+	}
+}
+
+void function ApplyRoninFDUpgrades( array<string> upgradeRefs, entity titan, TitanLoadoutDef loadout )
+{
+	entity soul = titan.GetTitanSoul()
+	if ( !IsValid( soul ) ) //Ejecting
+		return
+
+	foreach ( upgrade in upgradeRefs )
+	{
+		switch ( upgrade )
+		{
+			case "fd_upgrade_ronin_utility_tier_1":
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_ANTIRODEO )
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_phase_charges" )
+				weapon.SetMods( mods )
+				break
+			case "fd_upgrade_ronin_utility_tier_2":
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_ANTIRODEO )
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_phase_distance" )
+				weapon.SetMods( mods )
+				break
+			case "fd_upgrade_ronin_defense_tier_2":
+				float titanShieldHealth = GetTitanSoulShieldHealth( soul )
+				soul.SetShieldHealthMax( int( titanShieldHealth * 1.5 ) )
+				break
+			case "fd_upgrade_ronin_weapon_tier_1":
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_MELEE )
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_sword_upgrade" )
+				weapon.SetMods( mods )
+				break
+			case "fd_upgrade_ronin_weapon_tier_2":
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_LEFT )
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_sword_block" )
+				weapon.SetMods( mods )
+				break
+			case "fd_upgrade_ronin_ultimate":
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_EQUIPMENT )
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_duration" )
+				weapon.SetMods( mods )
+				break
+		}
+	}
+}
+
+void function ApplyDerivedNorthstarFDUpgrades( array<string> upgradeRefs, TitanLoadoutDef loadout )
+{
+	foreach ( upgrade in upgradeRefs )
+	{
+		switch ( upgrade )
+		{
+			case "fd_upgrade_northstar_defense_tier_1":
+				loadout.setFileMods.append( "fd_health_upgrade" )
+				break
+		}
+	}
+}
+
+void function ApplyNorthstarFDUpgrades( array<string> upgradeRefs, entity titan, TitanLoadoutDef loadout )
+{
+	entity soul = titan.GetTitanSoul()
+	if ( !IsValid( soul ) ) //Ejecting
+		return
+
+	foreach ( upgrade in upgradeRefs )
+	{
+		switch ( upgrade )
+		{
+			case "fd_upgrade_northstar_utility_tier_1":
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_LEFT )
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_explosive_trap" )
+				weapon.SetMods( mods )
+				break
+			case "fd_upgrade_northstar_utility_tier_2":
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_LEFT )
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_trap_charges" )
+				weapon.SetMods( mods )
+				break
+			case "fd_upgrade_northstar_defense_tier_2":
+				float titanShieldHealth = GetTitanSoulShieldHealth( soul )
+				soul.SetShieldHealthMax( int( titanShieldHealth * 1.5 ) )
+				break
+			case "fd_upgrade_northstar_weapon_tier_1":
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_upgrade_charge" )
+				weapon.SetMods( mods )
+				break
+			case "fd_upgrade_northstar_weapon_tier_2":
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_upgrade_crit" )
+				weapon.SetMods( mods )
+				break
+			case "fd_upgrade_northstar_ultimate":
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_RIGHT )
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_twin_cluster" )
+				weapon.SetMods( mods )
+				break
+		}
+	}
+}
+
+void function ApplyDerivedVanguardFDUpgrades( array<string> upgradeRefs, TitanLoadoutDef loadout )
+{
+	foreach ( upgrade in upgradeRefs )
+	{
+		switch ( upgrade )
+		{
+			case "fd_upgrade_vanguard_defense_tier_1":
+				loadout.setFileMods.append( "fd_health_upgrade" )
+				break
+		}
+	}
+}
+
+void function ApplyVanguardFDUpgrades( array<string> upgradeRefs, entity titan, TitanLoadoutDef loadout )
+{
+	entity soul = titan.GetTitanSoul()
+	if ( !IsValid( soul ) ) //Ejecting
+		return
+
+	entity primaryWeapon = titan.GetMainWeapons()[0]
+	array<string> primaryMods = primaryWeapon.GetMods()
+	primaryMods.append( "fd_balance" )
+	primaryWeapon.SetMods( primaryMods )
+
+	entity ordanance = titan.GetOffhandWeapon( OFFHAND_RIGHT )
+	array<string> ordananceMods = ordanance.GetMods()
+	ordananceMods.append( "fd_balance" )
+	ordanance.SetMods( ordananceMods )
+
+	foreach ( upgrade in upgradeRefs )
+	{
+		switch ( upgrade )
+		{
+			case "fd_upgrade_vanguard_utility_tier_1":
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_vanguard_utility_1" )
+				weapon.SetMods( mods )
+				break
+			case "fd_upgrade_vanguard_utility_tier_2":
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_vanguard_utility_2" )
+				weapon.SetMods( mods )
+				break
+			case "fd_upgrade_vanguard_defense_tier_2":
+				float titanShieldHealth = GetTitanSoulShieldHealth( soul )
+				soul.SetShieldHealthMax( int( titanShieldHealth * 1.5 ) )
+				break
+			case "fd_upgrade_vanguard_weapon_tier_1":
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_vanguard_weapon_1" )
+				weapon.SetMods( mods )
+				break
+			case "fd_upgrade_vanguard_weapon_tier_2":
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_vanguard_weapon_2" )
+				weapon.SetMods( mods )
+				break
+			case "fd_upgrade_vanguard_ultimate":
+				if ( SoulHasPassive( soul, ePassives.PAS_VANGUARD_CORE1 ) ) //Has Arc Rounds, Choose Energy Transfer or Missile Racks
+				{
+					if ( RandomIntRange( 1, 100 ) <= 50 )
+					{
+						entity offhandWeapon = titan.GetOffhandWeapon( OFFHAND_RIGHT )
+						if ( IsValid( offhandWeapon ) )
+						{
+							array<string> mods = offhandWeapon.GetMods()
+							mods.append( "missile_racks" )
+							offhandWeapon.SetMods( mods )
+						}
+					}
+					else
+					{
+						entity offhandWeapon = titan.GetOffhandWeapon( OFFHAND_LEFT )
+						if ( IsValid( offhandWeapon ) )
+						{
+							array<string> mods = offhandWeapon.GetMods()
+							mods.append( "energy_transfer" )
+							offhandWeapon.SetMods( mods )
+						}
+					}
+				}
+				else if ( SoulHasPassive( soul, ePassives.PAS_VANGUARD_CORE2 ) ) //Has Missile Racks, Choose Energy Transfer or Arc Rounds
+				{
+					if ( RandomIntRange( 1, 100 ) <= 50 )
+					{
+						array<entity> weapons = GetPrimaryWeapons( titan )
+						if ( weapons.len() > 0 )
+						{
+							entity primaryWeapon = weapons[0]
+							if ( IsValid( primaryWeapon ) )
+							{
+								array<string> mods = primaryWeapon.GetMods()
+								mods.append( "arc_rounds" )
+								primaryWeapon.SetMods( mods )
+								primaryWeapon.SetWeaponPrimaryClipCount( primaryWeapon.GetWeaponPrimaryClipCountMax() )
+							}
+						}
+					}
+					else
+					{
+						entity offhandWeapon = titan.GetOffhandWeapon( OFFHAND_LEFT )
+						if ( IsValid( offhandWeapon ) )
+						{
+							array<string> mods = offhandWeapon.GetMods()
+							mods.append( "energy_transfer" )
+							offhandWeapon.SetMods( mods )
+						}
+					}
+				}
+				else if ( SoulHasPassive( soul, ePassives.PAS_VANGUARD_CORE3 ) ) //Has Energy Transfer, Choose Arc Rounds or Missile Racks
+				{
+					if ( RandomIntRange( 1, 100 ) <= 50 )
+					{
+						array<entity> weapons = GetPrimaryWeapons( titan )
+						if ( weapons.len() > 0 )
+						{
+							entity primaryWeapon = weapons[0]
+							if ( IsValid( primaryWeapon ) )
+							{
+								array<string> mods = primaryWeapon.GetMods()
+								mods.append( "arc_rounds" )
+								primaryWeapon.SetMods( mods )
+								primaryWeapon.SetWeaponPrimaryClipCount( primaryWeapon.GetWeaponPrimaryClipCountMax() )
+							}
+						}
+					}
+					else
+					{
+						entity offhandWeapon = titan.GetOffhandWeapon( OFFHAND_RIGHT )
+						if ( IsValid( offhandWeapon ) )
+						{
+							array<string> mods = offhandWeapon.GetMods()
+							mods.append( "missile_racks" )
+							offhandWeapon.SetMods( mods )
+						}
+					}
+				}
+				break
+		}
+	}
+}
+
+void function ApplyDerivedIonFDUpgrades( array<string> upgradeRefs, TitanLoadoutDef loadout )
+{
+	foreach ( upgrade in upgradeRefs )
+	{
+		switch ( upgrade )
+		{
+			case "fd_upgrade_ion_utility_tier_1":
+				loadout.setFileMods.append( "fd_energy_regen" )
+				break
+			case "fd_upgrade_ion_utility_tier_2":
+				loadout.setFileMods.append( "fd_energy_max" )
+				break
+			case "fd_upgrade_ion_defense_tier_1":
+				loadout.setFileMods.append( "fd_health_upgrade" )
+				break
+		}
+	}
+}
+
+void function ApplyIonFDUpgrades( array<string> upgradeRefs, entity titan, TitanLoadoutDef loadout )
+{
+	entity soul = titan.GetTitanSoul()
+	if ( !IsValid( soul ) ) //Ejecting
+		return
+
+	entity primaryWeapon = titan.GetMainWeapons()[0]
+	array<string> primaryMods = primaryWeapon.GetMods()
+	primaryMods.append( "fd_balance" )
+	primaryWeapon.SetMods( primaryMods )
+
+	entity ordanance = titan.GetOffhandWeapon( OFFHAND_RIGHT )
+	array<string> ordananceMods = ordanance.GetMods()
+	ordananceMods.append( "fd_balance" )
+	ordanance.SetMods( ordananceMods )
+
+	//entity utilityWeapon = titan.GetOffhandWeapon( OFFHAND_ANTIRODEO )
+	//array<string> utilityMods = utilityWeapon.GetMods()
+	//utilityMods.append( "fd_balance" )
+	//utilityWeapon.SetMods( utilityMods )
+
+	entity coreWeapon = titan.GetOffhandWeapon( OFFHAND_EQUIPMENT )
+	array<string> coreMods = coreWeapon.GetMods()
+	coreMods.append( "fd_balance" )
+	coreWeapon.SetMods( coreMods )
+
+	foreach ( upgrade in upgradeRefs )
+	{
+		switch ( upgrade )
+		{
+			case "fd_upgrade_ion_defense_tier_2":
+				float titanShieldHealth = GetTitanSoulShieldHealth( soul )
+				soul.SetShieldHealthMax( int( titanShieldHealth * 1.5 ) )
+				break
+			case "fd_upgrade_ion_weapon_tier_1":
+				entity ordanance = titan.GetOffhandWeapon( OFFHAND_RIGHT )
+				array<string> ordananceMods = ordanance.GetMods()
+				ordananceMods.append( "fd_laser_upgrade" )
+				ordanance.SetMods( ordananceMods )
+				break
+			case "fd_upgrade_ion_weapon_tier_2":
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_split_shot_cost" )
+				weapon.SetMods( mods )
+				break
+
+			case "fd_upgrade_ion_ultimate":
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_EQUIPMENT )
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_laser_cannon" )
+				weapon.SetMods( mods )
+				break
+		}
+	}
+}
+
+void function ApplyDerivedToneFDUpgrades( array<string> upgradeRefs, TitanLoadoutDef loadout )
+{
+	foreach ( upgrade in upgradeRefs )
+	{
+		switch ( upgrade )
+		{
+			case "fd_upgrade_tone_defense_tier_1":
+				loadout.setFileMods.append( "fd_health_upgrade" )
+				break
+		}
+	}
+}
+
+void function ApplyToneFDUpgrades( array<string> upgradeRefs, entity titan, TitanLoadoutDef loadout )
+{
+	entity soul = titan.GetTitanSoul()
+	if ( !IsValid( soul ) ) //Ejecting
+		return
+
+	foreach ( upgrade in upgradeRefs )
+	{
+		switch ( upgrade )
+		{
+			case "fd_upgrade_tone_utility_tier_1":
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_ANTIRODEO )
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_sonar_duration" )
+				weapon.SetMods( mods )
+				break
+			case "fd_upgrade_tone_utility_tier_2":
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_ANTIRODEO )
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_sonar_damage_amp" )
+				weapon.SetMods( mods )
+				break
+			case "fd_upgrade_tone_defense_tier_2":
+				float titanShieldHealth = GetTitanSoulShieldHealth( soul )
+				soul.SetShieldHealthMax( int( titanShieldHealth * 1.5 ) )
+				break
+			case "fd_upgrade_tone_weapon_tier_1":
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_splasher_rounds" )
+				weapon.SetMods( mods )
+				break
+			case "fd_upgrade_tone_weapon_tier_2":
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_tone_weapon_2" )
+				weapon.SetMods( mods )
+				weapon.SetWeaponPrimaryClipCount( weapon.GetWeaponPrimaryClipCountMax() )
+				break
+			case "fd_upgrade_tone_ultimate":
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_EQUIPMENT )
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_salvo_core" )
+				weapon.SetMods( mods )
+				break
+		}
+	}
+}
+
+void function ApplyDerivedScorchFDUpgrades( array<string> upgradeRefs, TitanLoadoutDef loadout )
+{
+	foreach ( upgrade in upgradeRefs )
+	{
+		switch ( upgrade )
+		{
+			case "fd_upgrade_scorch_defense_tier_1":
+				loadout.setFileMods.append( "fd_health_upgrade" )
+				break
+		}
+	}
+}
+
+void function ApplyScorchFDUpgrades( array<string> upgradeRefs, entity titan, TitanLoadoutDef loadout )
+{
+	entity soul = titan.GetTitanSoul()
+	if ( !IsValid( soul ) ) //Ejecting
+		return
+
+	foreach ( upgrade in upgradeRefs )
+	{
+		switch ( upgrade )
+		{
+			case "fd_upgrade_scorch_utility_tier_1":
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_hot_streak" )
+				weapon.SetMods( mods )
+				break
+			case "fd_upgrade_scorch_utility_tier_2":
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_fire_damage_upgrade" )
+				weapon.SetMods( mods )
+				break
+			case "fd_upgrade_scorch_defense_tier_2":
+				float titanShieldHealth = GetTitanSoulShieldHealth( soul )
+				soul.SetShieldHealthMax( int( titanShieldHealth * 1.5 ) )
+				break
+			case "fd_upgrade_scorch_weapon_tier_1":
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				if ( !mods.contains( "fd_wpn_upgrade_2" ) )
+				{
+					mods.append( "fd_wpn_upgrade_1" )
+					weapon.SetMods( mods )
+					weapon.SetWeaponPrimaryClipCount( weapon.GetWeaponPrimaryClipCountMax() )
+				}
+				break
+			case "fd_upgrade_scorch_weapon_tier_2":
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				mods.fastremovebyvalue( "fd_wpn_upgrade_1" )
+				mods.append( "fd_wpn_upgrade_2" )
+				weapon.SetMods( mods )
+				weapon.SetWeaponPrimaryClipCount( weapon.GetWeaponPrimaryClipCountMax() )
+				break
+			case "fd_upgrade_scorch_ultimate":
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_ANTIRODEO )
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_explosive_barrel" )
+				weapon.SetMods( mods )
+				break
+		}
+	}
+}
+
+void function ApplyDerivedLegionFDUpgrades( array<string> upgradeRefs, TitanLoadoutDef loadout )
+{
+	foreach ( upgrade in upgradeRefs )
+	{
+		switch ( upgrade )
+		{
+			case "fd_upgrade_legion_defense_tier_1":
+				loadout.setFileMods.append( "fd_health_upgrade" )
+				break
+		}
+	}
+}
+
+void function ApplyLegionFDUpgrades( array<string> upgradeRefs, entity titan, TitanLoadoutDef loadout )
+{
+	entity soul = titan.GetTitanSoul()
+	if ( !IsValid( soul ) ) //Ejecting
+		return
+
+	foreach ( upgrade in upgradeRefs )
+	{
+		switch ( upgrade )
+		{
+			case "fd_upgrade_legion_utility_tier_1":
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_closerange_helper" )
+				weapon.SetMods( mods )
+				break
+			case "fd_upgrade_legion_utility_tier_2":
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_longrange_helper" )
+				weapon.SetMods( mods )
+				break
+			case "fd_upgrade_legion_defense_tier_2":
+				float titanShieldHealth = GetTitanSoulShieldHealth( soul )
+				soul.SetShieldHealthMax( int( titanShieldHealth * 1.5 ) )
+				break
+			case "fd_upgrade_legion_weapon_tier_1":
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_piercing_shots" )
+				weapon.SetMods( mods )
+				break
+			case "fd_upgrade_legion_weapon_tier_2":
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				mods.append( "fd_gun_shield_redirect" )
+				weapon.SetMods( mods )
+				break
+			case "fd_upgrade_legion_ultimate":
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				if ( !mods.contains( "pas_legion_weapon" ) )
+				{
+					mods.append( "pas_legion_weapon" )
+					weapon.SetMods( mods )
+					weapon.SetWeaponPrimaryClipCount( weapon.GetWeaponPrimaryClipCountMax() )
+				}
+				if ( !mods.contains( "pas_legion_spinup" ) )
+				{
+					mods.append( "pas_legion_spinup" )
+					weapon.SetMods( mods )
+				}
+				weapon = titan.GetOffhandWeapon( OFFHAND_EQUIPMENT )
+				mods = weapon.GetMods()
+				if ( !mods.contains( "pas_legion_smartcore" ) )
+				{
+					mods.append( "pas_legion_smartcore" )
+				}
+				weapon.SetMods( mods )
+				weapon = titan.GetOffhandWeapon( OFFHAND_RIGHT )
+				mods = weapon.GetMods()
+				if ( !mods.contains( "pas_legion_chargeshot" ) )
+				{
+					mods.append( "pas_legion_chargeshot" )
+				}
+				weapon.SetMods( mods )
+				weapon = titan.GetOffhandWeapon( OFFHAND_LEFT )
+				mods = weapon.GetMods()
+					mods.append( "fd_gun_shield" )
+				weapon.SetMods( mods )
+				break
+		}
+	}
+}
+#endif
+
+void function ApplyTitanWeaponPassives( entity titan, TitanLoadoutDef loadout )
+{
+	entity soul = titan.GetTitanSoul()
+	if ( !IsValid( soul ) ) //Ejecting
+		return
+
+	if ( loadout.titanClass == "ronin" && loadout.isPrime == "titan_is_prime" )
+	{
+		array<int> offhandSlots = [ OFFHAND_MELEE, OFFHAND_LEFT, OFFHAND_RIGHT ]
+
+		foreach ( slot in offhandSlots )
+		{
+			entity weapon = titan.GetOffhandWeapon( slot )
+			array<string> mods = weapon.GetMods()
+			mods.append( "modelset_prime" )
+			weapon.SetMods( mods )
+		}
+	}
+
+	foreach ( passive, value in soul.passives )
+	{
+		if ( !value )
+			continue
+
+		switch ( passive )
+		{
+			case ePassives.PAS_ION_TRIPWIRE:
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_ANTIRODEO )
+				array<string> mods = weapon.GetMods()
+				mods.append( "pas_ion_tripwire" )
+				weapon.SetMods( mods )
+				break
+
+			case ePassives.PAS_ION_VORTEX:
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_LEFT )
+				array<string> mods = weapon.GetMods()
+				mods.append( "pas_ion_vortex" )
+				weapon.SetMods( mods )
+				break
+
+			case ePassives.PAS_ION_LASERCANNON:
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_EQUIPMENT )
+				array<string> mods = weapon.GetMods()
+				mods.append( "pas_ion_lasercannon" )
+				weapon.SetMods( mods )
+				break
+
+			case ePassives.PAS_ION_WEAPON_ADS:
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				mods.append( "pas_ion_weapon_ads" )
+				weapon.SetMods( mods )
+				break
+
+			case ePassives.PAS_NORTHSTAR_WEAPON:
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				mods.append( "pas_northstar_weapon" )
+				weapon.SetMods( mods )
+				break
+
+			case ePassives.PAS_NORTHSTAR_TRAP:
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_LEFT )
+				array<string> mods = weapon.GetMods()
+				mods.append( "pas_northstar_trap" )
+				weapon.SetMods( mods )
+				break
+
+			case ePassives.PAS_NORTHSTAR_CLUSTER:
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_RIGHT )
+				array<string> mods = weapon.GetMods()
+				mods.append( "pas_northstar_cluster" )
+				weapon.SetMods( mods )
+				break
+
+			case ePassives.PAS_NORTHSTAR_OPTICS:
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				mods.append( "pas_northstar_optics" )
+				weapon.SetMods( mods )
+				break
+
+			case ePassives.PAS_SCORCH_SELFDMG:
+				soul.SetPreventCrits( true )
+				break
+
+			case ePassives.PAS_SCORCH_WEAPON:
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				mods.append( "pas_scorch_weapon" )
+				weapon.SetMods( mods )
+				break
+
+			case ePassives.PAS_SCORCH_SHIELD:
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_LEFT )
+				array<string> mods = weapon.GetMods()
+				mods.append( "pas_scorch_shield" )
+				weapon.SetMods( mods )
+				break
+
+			case ePassives.PAS_SCORCH_FIREWALL:
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_RIGHT )
+				array<string> mods = weapon.GetMods()
+				mods.append( "pas_scorch_firewall" )
+				weapon.SetMods( mods )
+				break
+
+			case ePassives.PAS_SCORCH_FLAMECORE:
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_EQUIPMENT )
+				array<string> mods = weapon.GetMods()
+				mods.append( "pas_scorch_flamecore" )
+				weapon.SetMods( mods )
+				break
+
+			case ePassives.PAS_LEGION_WEAPON:
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				mods.append( "pas_legion_weapon" )
+				weapon.SetMods( mods )
+				int max = weapon.GetWeaponPrimaryClipCountMax()
+				weapon.SetWeaponPrimaryClipCount( max )
+				break
+
+			case ePassives.PAS_LEGION_SPINUP:
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				mods.append( "pas_legion_spinup" )
+				weapon.SetMods( mods )
+				break
+
+			case ePassives.PAS_LEGION_SMARTCORE:
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_EQUIPMENT )
+				array<string> mods = weapon.GetMods()
+				mods.append( "pas_legion_smartcore" )
+				weapon.SetMods( mods )
+				break
+
+			case ePassives.PAS_LEGION_CHARGESHOT:
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_ORDNANCE )
+				array<string> mods = weapon.GetMods()
+				mods.append( "pas_legion_chargeshot" )
+				weapon.SetMods( mods )
+				break
+
+			case ePassives.PAS_TONE_WEAPON:
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				mods.append( "pas_tone_weapon" )
+				weapon.SetMods( mods )
+				break
+
+			case ePassives.PAS_TONE_BURST:
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				mods.append( "pas_tone_burst" )
+				weapon.SetMods( mods )
+				break
+
+			case ePassives.PAS_TONE_ROCKETS:
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_RIGHT )
+				array<string> mods = weapon.GetMods()
+				mods.append( "pas_tone_rockets" )
+				weapon.SetMods( mods )
+				break
+
+			case ePassives.PAS_TONE_SONAR:
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_ANTIRODEO )
+				array<string> mods = weapon.GetMods()
+				mods.append( "pas_tone_sonar" )
+				weapon.SetMods( mods )
+				break
+
+			case ePassives.PAS_RONIN_WEAPON:
+				entity weapon = titan.GetMainWeapons()[0]
+				array<string> mods = weapon.GetMods()
+				mods.append( "pas_ronin_weapon" )
+				weapon.SetMods( mods )
+				break
+
+			case ePassives.PAS_RONIN_ARCWAVE:
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_RIGHT )
+				array<string> mods = weapon.GetMods()
+				mods.append( "pas_ronin_arcwave" )
+				weapon.SetMods( mods )
+				break
+
+			case ePassives.PAS_RONIN_PHASE:
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_ANTIRODEO )
+				array<string> mods = weapon.GetMods()
+				mods.append( "pas_ronin_phase" )
+				weapon.SetMods( mods )
+				break
+
+			case ePassives.PAS_VANGUARD_REARM:
+				entity weapon = titan.GetOffhandWeapon( OFFHAND_ANTIRODEO )
+				array<string> mods = weapon.GetMods()
+				mods.append( "pas_vanguard_rearm" )
+				weapon.SetMods( mods )
+				break
+		}
+	}
+
+	#if MP
+	if ( GetCurrentPlaylistVarInt( "aegis_upgrades", 0 ) == 1 ) //Necessary to occur after normal weapon mods are assigned from passives.
+		ApplyFDUpgradeWeaponPassives( titan, loadout )
+	#endif
+}
+
+function GivePassive( entity player, int passive )
+{
+	if ( IsSoul( player ) )
+	{
+		entity soul = player
+		Assert( passive in level.titanPassives, "This is not a titan passive" )
+		soul.passives[ passive ] = true
+
+		entity titan = soul.GetTitan()
+		if ( IsValid( titan ) && titan.IsPlayer() )
+			GiveTitanPassiveLifeLong( titan, passive ) //This actually loops back around to GivePassive
+		return
+	}
+
+	// printt( "give passive " + GetPassiveName( passive ), passive )
+	player.GivePassive( passive )
+
+	// enter/exit functions for specific passives
+	switch ( passive )
+	{
+		case ePassives.PAS_MINIMAP_AI:
+		case ePassives.PAS_MINIMAP_ALL:
+		case ePassives.PAS_MINIMAP_PLAYERS:
+			UpdateMinimapStatus( player )
+			break
+
+		case ePassives.PAS_CONSCRIPT:
+			thread PlayerConscription( player )
+			break
+
+		case ePassives.PAS_WIFI_SPECTRE:
+			thread PlayerSpectreWifi( player )
+			break
+
+		case ePassives.PAS_FAST_SWAP:
+			player.GiveExtraWeaponMod( "pas_fast_swap" )
+			break
+
+		case ePassives.PAS_POWER_CELL:
+			player.GiveExtraWeaponMod( "pas_power_cell" )
+			break
+
+		case ePassives.PAS_WALLHANG:
+			player.GiveExtraWeaponMod( "pas_wallhang" )
+			break
+
+		case ePassives.PAS_FAST_HEALTH_REGEN:
+			player.GiveExtraWeaponMod( "pas_fast_health_regen" )
+			break
+
+		case ePassives.PAS_DEFENSIVE_CORE:
+			player.GiveExtraWeaponMod( "pas_defensive_core" )
+			break
+
+		case ePassives.PAS_RUN_AND_GUN:
+			player.GiveExtraWeaponMod( "pas_run_and_gun" )
+			break
+
+		case ePassives.PAS_ORDNANCE_PACK:
+			player.GiveExtraWeaponMod( "pas_ordnance_pack" )
+			break
+
+		case ePassives.PAS_FAST_RELOAD:
+			player.GiveExtraWeaponMod( "pas_fast_reload" )
+			break
+
+		case ePassives.PAS_ASSAULT_REACTOR:
+			player.GiveExtraWeaponMod( "mod_ordnance_core" )
+			break
+
+		case ePassives.PAS_MARATHON_CORE:
+			player.GiveExtraWeaponMod( "mod_marathon_core" )
+			break
+
+		case ePassives.PAS_CLOAKED_WALLHANG:
+			thread CloakedWallHangs( player )
+			break
+
+		case ePassives.PAS_CLOAKED_WALLRUN:
+			thread CloakedWallruns( player )
+			break
+
+		case ePassives.PAS_SMOKE_SIGHT:
+			Remote_CallFunction_Replay( player, "ServerCallback_BeginSmokeSight"  )
+			break
+	}
+}
+
+string function GetPassiveName( int passive )
+{
+	Assert( passive in level.passiveEnumFromPassive, "Passive bitfield: " + passive + " does not exist" )
+
+	return expect string( level.passiveEnumFromPassive[ passive ] )
+}
+
+function TakePassive( entity player, int passive )
+{
+	if ( IsSoul( player ) )
+	{
+		entity soul = player
+		Assert( passive in level.titanPassives, "This is not a titan passive" )
+		soul.passives[ passive ] = false
+		entity titan = soul.GetTitan()
+		if ( IsValid( titan ) && titan.IsPlayer() )
+			TakePassive( titan, passive )
+		return
+	}
+
+	//printt( "take passive " + PassiveEnumFromBitfield( passive ) )
+	player.RemovePassive( passive )
+
+	// enter/exit functions for specific passives
+	switch ( passive )
+	{
+		case ePassives.PAS_MINIMAP_AI:
+		case ePassives.PAS_MINIMAP_ALL:
+		case ePassives.PAS_MINIMAP_PLAYERS:
+			UpdateMinimapStatus( player )
+			break
+
+		case ePassives.PAS_FAST_SWAP:
+			player.TakeExtraWeaponMod( "pas_fast_swap" )
+			break
+
+		case ePassives.PAS_POWER_CELL:
+			player.TakeExtraWeaponMod( "pas_power_cell" )
+			break
+
+		case ePassives.PAS_WALLHANG:
+			player.TakeExtraWeaponMod( "pas_wallhang" )
+			break
+
+		case ePassives.PAS_FAST_HEALTH_REGEN:
+			player.TakeExtraWeaponMod( "pas_fast_health_regen" )
+			break
+
+		case ePassives.PAS_DEFENSIVE_CORE:
+			player.TakeExtraWeaponMod( "pas_defensive_core" )
+			break
+
+		case ePassives.PAS_RUN_AND_GUN:
+			player.TakeExtraWeaponMod( "pas_run_and_gun" )
+			break
+
+		case ePassives.PAS_ORDNANCE_PACK:
+			player.TakeExtraWeaponMod( "pas_ordnance_pack" )
+			break
+
+		case ePassives.PAS_FAST_RELOAD:
+			player.TakeExtraWeaponMod( "pas_fast_reload" )
+			break
+
+		case ePassives.PAS_ASSAULT_REACTOR:
+			player.TakeExtraWeaponMod( "mod_ordnance_core" )
+			break
+
+		case ePassives.PAS_MARATHON_CORE:
+			player.TakeExtraWeaponMod( "mod_marathon_core" )
+			break
+
+		case ePassives.PAS_CLOAKED_WALLHANG:
+			player.Signal( "EndCloakedWallHangs" )
+			break
+
+		case ePassives.PAS_CLOAKED_WALLRUN:
+			player.Signal( "EndCloakedWallruns" )
+			break
+
+		case ePassives.PAS_SMOKE_SIGHT:
+			Remote_CallFunction_Replay( player, "ServerCallback_EndSmokeSight" )
+			break
+	}
+}
+
+void function PassiveDeathCallback( entity player, var damageInfo )
+{
+	foreach ( int passive in player.s.removePassiveOnDeath )
+	{
+		TakePassive( player, passive )
+	}
+
+	player.s.removePassiveOnDeath = {}
+}
+
+function GivePassiveLifeLong( entity player, int passive )
+{
+	//Note: Badness happens if a burn card with passive tries to give a server flag!
+	Assert( !( passive in level.titanPassives ), "This is a titan passive" )
+
+	// give the passive for one life
+	player.s.removePassiveOnDeath[ passive ] <- passive
+	GivePassive( player, passive )
+}
+
+function GiveTitanPassiveLifeLong( entity player, int passive )
+{
+	Assert( passive in level.titanPassives, "This is a titan passive" )
+
+	// give the passive for one life
+	player.s.removePassiveOnDeath[ passive ] <- passive
+	GivePassive( player, passive )
+}
+
+function TakeAllPassives( entity player )
+{
+	foreach( passiveName, passive in _PassiveFromEnum )
+	{
+		if ( player.HasPassive( passive ) )
+			TakePassive( player, passive )
+	}
+
+	player.ClearExtraWeaponMods()
+	player.s.removePassiveOnDeath = {}
+}
+
+
+function GivePlayerPassivesFromSoul( entity player, entity soul )
+{
+	Assert( player == soul.GetTitan() )
+
+	foreach( passiveName, passive in _PassiveFromEnum ) //Since this is just a bitmask, we could just add all the soul's passives directly instead of trying to break it down to its components first like we do here. However, while it is less efficent, it's also easier to debug.
+	{
+		if ( soul.passives[ passive ] )
+			GiveTitanPassiveLifeLong( player, passive )
+	}
+}
+
+table function GetRevealParms( entity player )
+{
+	table Table = {}
+
+	if ( player.HasPassive( ePassives.PAS_MINIMAP_ALL ) )
+	{
+		Table.ai <- true
+		Table.players <- true
+		Table.titans <- true
+	}
+	else
+	{
+		Table.titans <- false
+
+		if ( player.HasPassive( ePassives.PAS_MINIMAP_PLAYERS ) )
+			Table.players <- true
+		else
+			Table.players <- false
+
+		if ( player.HasPassive( ePassives.PAS_MINIMAP_AI ) )
+			Table.ai <- true
+		else
+			Table.ai <- false
+	}
+
+	return Table
+}
+
+function UpdateMinimapStatusToOtherPlayers( entity player )
+{
+	int team = player.GetTeam()
+	array players = GetPlayerArray()
+	foreach ( otherPlayer in players )
+	{
+		// teammates are on minimap by default
+		if ( team == otherPlayer.GetTeam() )
+			continue
+
+		table reveal = GetRevealParms( expect entity( otherPlayer ) )
+		if ( reveal.players )
+		{
+			player.Minimap_AlwaysShow( 0, otherPlayer )
+		}
+	}
+}
+
+function UpdateTitanMinimapStatusToOtherPlayers( entity titan )
+{
+	int team = titan.GetTeam()
+	array players = GetPlayerArray()
+	foreach ( otherPlayer in players )
+	{
+		// teammates are on minimap by default
+		if ( team == otherPlayer.GetTeam() )
+			continue
+
+		table reveal = GetRevealParms( expect entity( otherPlayer ) )
+		if ( reveal.titans )
+		{
+			titan.Minimap_AlwaysShow( 0, otherPlayer )
+		}
+	}
+}
+
+function UpdateAIMinimapStatusToOtherPlayers( entity guy )
+{
+	int team = guy.GetTeam()
+	array players = GetPlayerArray()
+	foreach ( otherPlayer in players )
+	{
+		// teammates are on minimap by default
+		if ( team == otherPlayer.GetTeam() )
+			continue
+
+		table reveal = GetRevealParms( expect entity( otherPlayer ) )
+		if ( reveal.ai )
+		{
+			guy.Minimap_AlwaysShow( 0, otherPlayer )
+		}
+	}
+}
+
+function UpdateMinimapStatus( entity player )
+{
+	int team = player.GetTeam()
+	table reveal = GetRevealParms( player )
+
+	array players = GetPlayerArray()
+	if ( reveal.players )
+	{
+		foreach ( target in players )
+		{
+			if ( team != target.GetTeam() )
+				target.Minimap_AlwaysShow( 0, player )
+		}
+	}
+	else
+	{
+		foreach ( target in players )
+		{
+			if ( team != target.GetTeam() )
+				target.Minimap_DisplayDefault( 0, player )
+		}
+	}
+
+	array<entity> titans = GetNPCArrayByClass( "npc_titan" )
+	if ( reveal.titans )
+	{
+		foreach ( target in titans )
+		{
+			if ( team != target.GetTeam() )
+				target.Minimap_AlwaysShow( 0, player )
+		}
+	}
+	else
+	{
+		foreach ( target in titans )
+		{
+			if ( team != target.GetTeam() )
+				target.Minimap_DisplayDefault( 0, player )
+		}
+	}
+
+	array<entity> ai = GetNPCArrayByClass( "npc_soldier" )
+	ai.extend( GetNPCArrayByClass( "npc_spectre" ) )
+
+	if ( reveal.ai )
+	{
+		foreach ( target in ai )
+		{
+			if ( team != target.GetTeam() )
+				target.Minimap_AlwaysShow( 0, player )
+		}
+	}
+	else
+	{
+		foreach ( target in ai )
+		{
+			if ( team != target.GetTeam() )
+				target.Minimap_DisplayDefault( 0, player )
+		}
+	}
+
+//	foreach ( target in ai )
+//	{
+//		if ( target.GetBossPlayer() == player )
+//			target.Minimap_AlwaysShow( 0, player )
+//	}
+}
+
+function ScanMinimapUntilDeath( entity player )
+{
+	player.EndSignal( "OnDeath" )
+	for ( ;; )
+	{
+ 		thread ScanMinimap( player, true )
+ 		wait 10.0
+ 	}
+}
+
+function ScanMinimap( entity player, bool playSound, float displayTime = 3.0 )
+{
+	// already has the passive?
+	if ( PlayerHasPassive( player, ePassives.PAS_MINIMAP_ALL ) )
+		return
+
+	player.EndSignal( "OnDeath" )
+
+	int handle = player.GetEncodedEHandle()
+	Remote_CallFunction_Replay( player, "ServerCallback_MinimapPulse", handle )
+
+	OnThreadEnd(
+		function () : ( player )
+		{
+			if ( IsValid( player ) )
+				TakePassive( player, ePassives.PAS_MINIMAP_ALL )
+		}
+	)
+
+	GivePassive( player, ePassives.PAS_MINIMAP_ALL )
+	if ( playSound )
+		EmitSoundOnEntityOnlyToPlayer( player, player, "Burn_Card_Map_Hack_Radar_Pulse_V1_1P" )
+	wait displayTime
+}
+
+void function MinimapNPCSpawned( entity guy )
+{
+	// show up on minimap for player that has the passive
+
+	int team = guy.GetTeam()
+	if ( IsIMCOrMilitiaTeam( team ) == false )
+		return
+	array<entity> players = GetPlayerArrayOfEnemies( team )
+	foreach ( player in players )
+	{
+		if ( !PlayerRevealsNPCs( player ) )
+			continue
+
+		guy.Minimap_AlwaysShow( 0, player )
+	}
+}
+
+function PlayerRevealsPlayers( entity player )
+{
+	return player.HasPassive( ePassives.PAS_MINIMAP_PLAYERS ) || player.HasPassive( ePassives.PAS_MINIMAP_ALL )
+}
+
+function MinimapPlayerConnected( entity guy )
+{
+	int team = guy.GetTeam()
+	array<entity> players = GetPlayerArrayOfEnemies( team )
+	foreach ( player in players )
+	{
+		if ( !PlayerRevealsPlayers( player ) )
+			continue
+
+		guy.Minimap_AlwaysShow( 0, player )
+	}
+}
+
+function PlayerSpectreWifi( entity player )
+{
+	player.EndSignal( "OnDeath" )
+
+	for ( ;; )
+	{
+		if ( !PlayerHasPassive( player, ePassives.PAS_WIFI_SPECTRE ) )
+			return
+
+		LeechSurroundingSpectres( player.GetOrigin(), player )
+
+		wait level.wifiLeachInterval
+	}
+}
+
+const CLEAR_CONSCRIPTED_GRUNTS_ON_DEATH = false
+
+function PlayerConscription( entity player )
+{
+	player.EndSignal( "OnDestroy" )
+
+	if ( CLEAR_CONSCRIPTED_GRUNTS_ON_DEATH )
+	{
+		if ( "conscriptedGrunts" in player.s )
+			return
+
+		table conscriptedGrunts
+		if ( "conscriptedGrunts" in player.s )
+		{
+			conscriptedGrunts = expect table( player.s.conscriptedGrunts )
+		}
+		else
+		{
+			conscriptedGrunts = {}
+			player.s.conscriptedGrunts <- conscriptedGrunts
+		}
+
+		OnThreadEnd(
+			function () : ( player, conscriptedGrunts )
+			{
+				ClearConscriptedGrunts( player, conscriptedGrunts )
+			}
+		)
+	}
+
+	for ( ;; )
+	{
+		if ( !PlayerHasPassive( player, ePassives.PAS_CONSCRIPT ) )
+			return
+
+		if ( IsAlive( player ) )
+		{
+			ConscriptNearbyGrunts( player )
+		}
+		wait 1.5
+	}
+}
+
+function ConscriptNearbyGrunts( entity player )
+{
+	int team = player.GetTeam()
+	array<entity> grunts = GetNPCArrayEx( "npc_soldier", team, TEAM_ANY, player.GetOrigin(), 220 )
+
+	foreach ( grunt in grunts )
+	{
+		if ( !IsValid( grunt ) )
+			continue
+
+		if ( IsAlive( grunt.GetBossPlayer() ) )
+			continue
+
+		ConscriptGruntSquad( grunt, player, team )
+		WaitFrame()
+	}
+}
+
+function ConscriptGrunt( entity grunt, entity player, int team )
+{
+	EmitSoundOnEntity( grunt, "BurnCard_Conscription_TurnSoldier" )
+	grunt.Signal( "StopHardpointBehavior" )
+	SetTeam( grunt, team )
+	grunt.SetBossPlayer( player )
+	grunt.SetTitle( "#NPC_CONSCRIPT" )
+	grunt.ai.preventOwnerDamage = true
+
+	#if HAS_STATS
+	UpdatePlayerStat( player, "misc_stats", "gruntsConscripted", 1 )
+	#endif
+
+	if ( CLEAR_CONSCRIPTED_GRUNTS_ON_DEATH )
+	{
+		player.s.conscriptedGrunts[ grunt ] <- grunt
+		// printt( player + " Conscripted " + grunt + " to squadname " + grunt.kv.squadname )
+	}
+}
+
+function MakePlayerSquad( entity player )
+{
+	string squad = "player" + player.entindex() + "gruntSquad"
+	int index = 0
+	string squadName = squad + index
+	for ( ;; )
+	{
+		if ( GetNPCSquadSize( squadName ) == 0 )
+			return squadName
+
+		index++
+		squadName = squad + index
+	}
+}
+
+function ConscriptGruntSquad( entity grunt, entity player, int team )
+{
+	array<entity> grunts
+	string gruntSquad = expect string( grunt.Get( "squadname" ) )
+
+	if ( gruntSquad == "" )
+		grunts.append( grunt )
+	else
+		grunts = GetNPCArrayBySquad( gruntSquad )
+
+	foreach ( guy in grunts )
+	{
+		if ( IsAlive( guy.GetBossPlayer() ) )
+			continue
+		if ( guy.GetTeam() != team )
+			continue
+
+		ConscriptGrunt( guy, player, team )
+	}
+}
+
+function ClearConscriptedGrunts( entity player, table conscriptedGrunts )
+{
+	foreach ( grunt in conscriptedGrunts )
+	{
+		expect entity( grunt )
+		if ( !IsAlive( grunt ) )
+			continue
+
+		entity owner = grunt.GetBossPlayer()
+		if ( IsValid( owner ) && owner != player )
+			continue
+
+		grunt.ClearBossPlayer()
+		asset model = grunt.GetModelName()
+		int team
+		if ( model.find( "imc" ) != null )
+		{
+			team = TEAM_IMC
+		}
+		else
+		{
+			team = TEAM_MILITIA
+		}
+
+		var title = grunt.GetSettingTitle()
+		if ( title != null && title != "" )
+		{
+			grunt.SetTitle( title )
+			FixupTitle( grunt )
+		}
+
+		grunt.Signal( "StopHardpointBehavior" )
+		SetTeam( grunt, team )
+	}
+
+	delete player.s.conscriptedGrunts
+}
+
+bool function IsConscript( entity guy )
+{
+	return IsAlive( guy.GetBossPlayer() )
+}
+
+bool function SoulHasPassive( entity soul, int passive )
+{
+	return expect bool( soul.passives[ passive ] )
+}
+
+function PrintAllPassives( entity player )
+{
+	foreach( passiveName, passive in _PassiveFromEnum )
+	{
+		if ( player.HasPassive( passive ) )
+			printt( "Player " + player + " has passive: " + passiveName )
+	}
+}
+
+function CloakedWallHangs( entity player )
+{
+	player.Signal( "EndCloakedWallHangs" )
+	player.EndSignal( "EndCloakedWallHangs" )
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+
+	float cloakStartTime
+	float rechargeStartTime
+
+	if ( !( "wallHangCloakDuration" in player.s ) )
+		player.s.wallHangCloakDuration <- WALLHANG_CLOAK_DURATION
+
+	OnThreadEnd(
+		function() : ( player )
+		{
+			if ( !IsValid( player ) )
+				return
+
+			if ( IsCloaked( player ) )
+				DisableCloak( player, 0 )
+		}
+	)
+
+	while ( true )
+	{
+		while ( !player.IsWallHanging() )
+		{
+			rechargeStartTime = Time()
+			WaitFrame()
+			player.s.wallHangCloakDuration += Time() - rechargeStartTime
+
+			if ( player.s.wallHangCloakDuration > WALLHANG_CLOAK_DURATION )
+				player.s.wallHangCloakDuration = WALLHANG_CLOAK_DURATION
+		}
+
+		if ( !IsCloaked( player ) && player.s.wallHangCloakDuration )
+			EnableCloak( player, expect float( player.s.wallHangCloakDuration ), WALLHANG_CLOAK_TRANSITION_TIME )
+
+		while ( player.s.wallHangCloakDuration && player.IsWallHanging() )
+		{
+			cloakStartTime = Time()
+			WaitFrame()
+			player.s.wallHangCloakDuration -= Time() - cloakStartTime
+
+			if ( player.s.wallHangCloakDuration < 0 )
+				player.s.wallHangCloakDuration = 0
+		}
+
+		if ( IsCloaked( player ) )
+			DisableCloak( player, WALLHANG_CLOAK_TRANSITION_TIME )
+
+		if ( player.IsWallHanging() )
+			WaitFrame()
+	}
+}
+
+function CloakedWallruns( entity player )
+{
+	player.Signal( "EndCloakedWallruns" )
+	player.EndSignal( "EndCloakedWallruns" )
+	player.EndSignal( "OnDeath" )
+
+	float cloakStartTime
+	float rechargeStartTime
+
+	if ( !( "wallRunCloakDuration" in player.s ) )
+		player.s.wallRunCloakDuration <- WALLRUN_CLOAK_DURATION
+
+	OnThreadEnd(
+		function() : ( player )
+		{
+			if ( !IsValid( player ) )
+				return
+
+			if ( IsCloaked( player ) )
+				DisableCloak( player, 0 )
+		}
+	)
+
+	while ( true )
+	{
+		while ( !player.IsWallRunning() )
+		{
+			rechargeStartTime = Time()
+			WaitFrame()
+			player.s.wallRunCloakDuration += Time() - rechargeStartTime
+
+			if ( player.s.wallRunCloakDuration > WALLRUN_CLOAK_DURATION )
+				player.s.wallRunCloakDuration = WALLRUN_CLOAK_DURATION
+		}
+
+		if ( !IsCloaked( player ) && player.s.wallRunCloakDuration )
+			EnableCloak( player, expect float( player.s.wallRunCloakDuration ), WALLRUN_CLOAK_TRANSITION_TIME )
+
+		while ( player.s.wallRunCloakDuration && player.IsWallRunning() )
+		{
+			cloakStartTime = Time()
+			WaitFrame()
+			player.s.wallRunCloakDuration -= Time() - cloakStartTime
+
+			if ( player.s.wallRunCloakDuration < 0 )
+				player.s.wallRunCloakDuration = 0
+		}
+
+		if ( IsCloaked( player ) )
+			DisableCloak( player, WALLRUN_CLOAK_TRANSITION_TIME )
+
+		if ( player.IsWallRunning() )
+			WaitFrame()
+	}
+}
+
+//To avoid threads and callbacks, this is using any netFloat > 0.5 to mean full CoreMeter scaling.
+void function UpdateScorchHotStreakCoreMeter( entity attacker, float damage )
+{
+	if ( !attacker.IsPlayer() )
+		return
+
+	float baseValue = attacker.GetPlayerNetFloat( "coreMeterModifier" )
+	float newValue = damage / FD_HOT_STREAK_DAMAGE_MAX * 0.5
+	float combinedValue = baseValue + newValue
+	if ( baseValue + newValue >= 0.5 )
+		combinedValue = 1.0
+
+	attacker.SetPlayerNetFloat( "coreMeterModifier", combinedValue )
+	attacker.SetPlayerNetFloatOverTime( "coreMeterModifier", 0.0, FD_HOT_STREAK_DECAY_TIME )
+}

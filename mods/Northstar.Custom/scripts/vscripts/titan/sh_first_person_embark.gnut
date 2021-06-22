@@ -1,0 +1,41 @@
+global function FirstPersonEmbark_Init
+
+#if CLIENT
+	global function ServerCallback_HideHudForFPEmbark
+#endif
+
+void function FirstPersonEmbark_Init()
+{
+	// atm do this no matter what playlist we're on since playlist overrides seem to get sent to clients after networkvar registration
+	// not nice but whatever lol
+	AddCallback_OnRegisteringCustomNetworkVars( FirstPersonEmbark_RegisterCustomNetworkFunctions )
+	
+	// busted rn lol
+	if ( GetCurrentPlaylistVarInt( "fp_embark_enabled", 0 ) == 0 )
+		return
+	
+	#if CLIENT 
+		AddCallback_PlayerClassChanged( ShowHudOnEmbarkFinished )
+	#endif
+}
+
+void function FirstPersonEmbark_RegisterCustomNetworkFunctions()
+{
+	Remote_RegisterFunction( "ServerCallback_HideHudForFPEmbark" )
+}
+
+#if CLIENT
+void function ServerCallback_HideHudForFPEmbark()
+{
+	thread MainHud_TurnOff_RUI( true )
+	HidePermanentCockpitRui()
+}
+
+void function ShowHudOnEmbarkFinished( entity player )
+{
+	if ( !player.IsTitan() )
+		return
+
+	ShowPermanentCockpitRui()
+}
+#endif

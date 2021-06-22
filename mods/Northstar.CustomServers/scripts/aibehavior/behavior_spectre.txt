@@ -1,0 +1,47 @@
+Selector Common
+
+	SelectSchedule_FallToGround
+	SelectSchedule_Flinch
+	SelectSchedule_ReactJumpedOver
+	SelectSchedule_ChangeToDesiredStance
+	SelectSchedule_SyncedMeleeAttack
+	SelectSchedule_PressToInitiateSyncedMeleeAttack
+	SelectSchedule_LayeredBehavior
+Selector_End
+
+
+Selector Idle
+
+	SelectSchedule_Idle
+Selector_End
+
+
+Selector Alert
+
+	CAI_Combatant::SelectSchedule_ShootingCover
+	SelectSchedule_Alert
+Selector_End
+
+
+Selector Combat
+
+	SelectSchedule_AntiMassiveEnemy
+
+	SelectSchedule_MeleeAttack
+	CAI_Combatant::SelectSchedule_ShootingCover
+	SelectSchedule_EvasiveLowAmmo
+
+	CAI_Combatant::SelectSchedule_MoveToSquadAssignedNode
+	//SelectSchedule_ThrowGrenade
+	//SelectSchedule_RangeAttackEvasive
+	//SelectSchedule_LongJump
+	SelectSchedule_RangeAttackTwitch
+	SelectSchedule_RangeAttack
+
+	SelectSchedule_EnemyTooClose
+	SelectSchedule_CantSeeEnemy
+	SelectSchedule_MoveToWeaponRange
+	SelectSchedule_ChaseEnemy
+	SelectSchedule_AtEnemyLKP
+	SelectSchedule_CombatFace
+Selector_End

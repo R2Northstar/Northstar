@@ -1,0 +1,838 @@
+untyped
+
+global function Zipline_Init
+
+global function GuyZiplinesToGround
+global function GetZiplineSpawns
+global function GetHookOriginFromNode
+global function ZiplineInit
+
+global function CodeCallback_ZiplineMount
+global function CodeCallback_ZiplineStart
+global function CodeCallback_ZiplineMove
+global function CodeCallback_ZiplineStop
+
+global function AddCallback_ZiplineStart
+global function AddCallback_ZiplineStop
+
+global function TrackMoverDirection
+global function CreateRopeEntities
+global function SpawnZiplineEntities
+global function GetZiplineLandingAnims
+global function AnimDoneStuckInSolidFailSafe
+
+struct {
+	array<string> zipLineLandingAnimations = [
+		"pt_zipline_dismount_standF",
+		"pt_zipline_dismount_crouchF",
+		"pt_zipline_dismount_crouch180",
+		"pt_zipline_dismount_breakright",
+		"pt_zipline_land"
+		"pt_zipline_land"
+		"pt_zipline_land"
+		"pt_zipline_land"
+		"pt_zipline_land"
+		"pt_zipline_land"
+	]
+
+	array<string> zipLinePlayerLandingAnimations = [
+		"pt_zipline_dismount_standF"
+	]
+
+	array<string> zipLineReadyAnimations = [
+		"pt_zipline_ready_idleA",
+		"pt_zipline_ready_idleB"
+	]
+} file
+
+//typedef EntitiesDidLoadCallbackType void functionref(entity)
+array<void functionref(entity,entity)> 	_ZiplineStartCallbacks
+array<void functionref(entity)> 		_ZiplineStopCallbacks
+
+function Zipline_Init()
+{
+	if ( reloadingScripts )
+		return
+
+	RegisterSignal( "deploy" )
+	RegisterSignal( "stop_deploy" )
+	RegisterSignal( "npc_deployed" )
+
+	VehicleDropshipNew_Init()
+
+	level.MIN_ZIPLINE_LAND_DIST_SQRD <- 128 * 128
+	level.MIN_ZIPLINE_HOOK_DIST_SQRD <- 256 * 256
+	level._info_spawnpoint_dropships <- {}
+	AddSpawnCallback( "info_spawnpoint_dropship", 		AddToSpawnpointDropships )
+
+	PrecacheParticleSystem( $"hmn_mcorps_jump_jet_wallrun_full" )
+	PrecacheParticleSystem( $"hmn_imc_jump_jet_wallrun_full" )
+	PrecacheParticleSystem( $"P_Zipline_hld_1" )
+
+}
+
+void function AddToSpawnpointDropships( entity self )
+{
+	level._info_spawnpoint_dropships[ self ] <- self
+}
+
+function GetZiplineSpawns()
+{
+	local targets = []
+	foreach ( ent in clone level._info_spawnpoint_dropships )
+	{
+		if ( IsValid( ent ) )
+		{
+			targets.append( ent )
+			continue
+		}
+
+		delete level._info_spawnpoint_dropships[ ent ]
+	}
+
+	return targets
+}
+
+
+function GuyZiplinesToGround( guy, Table )
+{
+	expect entity( guy )
+
+	OnThreadEnd(
+		function() : ( guy )
+		{
+			if ( IsValid( guy ) )
+				guy.SetEfficientMode( false )
+		}
+	)
+
+	local ship		= Table.ship
+	local dropPos 	= GetDropPos( Table )
+
+	// ship didn't find a drop spot
+	if ( dropPos == null )
+		WaitForever()
+
+	//DebugDrawLine( guy.GetOrigin(), dropPos, 255, 0, 0, true, 8.0 )
+
+	local attachOrigin = ship.GetAttachmentOrigin( Table.attachIndex )
+	local nodeOrigin = dropPos
+	local hookOrigin = GetHookOriginFromNode( guy.GetOrigin(), nodeOrigin, attachOrigin )
+
+	// couldn't find a place to hook it? This needs to be tested on precompile
+	if ( !hookOrigin )
+	{
+		printt( "WARNING! Bad zipline dropship position!" )
+		WaitForever()
+	}
+
+	Table.hookOrigin <- hookOrigin
+
+	// Track the movement of the script mover that moves the guy to the ground
+	local e = {}
+
+	waitthread GuyRidesZiplineToGround( guy, Table, e, dropPos )
+
+	//DebugDrawLine( guy.GetOrigin(), dropPos, 255, 0, 135, true, 5.0 )
+
+	if ( !( "forward" in Table ) )
+	{
+		// the sequence ended before the guy reached the ground
+		local start = guy.GetOrigin()
+		// this needs functionification
+		local end = Table.hookOrigin + Vector( 0,0,-80 )
+		TraceResults result = TraceLine( start, end, guy )
+		local angles = guy.GetAngles()
+		Table.forward <- AnglesToForward( angles )
+		Table.origin <- result.endPos
+	}
+
+	// the guy detaches and falls to the ground
+	string landingAnim = file.zipLineLandingAnimations.getrandom()
+	//DrawArrow( guy.GetOrigin(), guy.GetAngles(), 5.0, 80 )
+
+	if ( !guy.IsInterruptable() )
+		return
+
+	guy.Anim_ScriptedPlay( landingAnim )
+	guy.Anim_EnablePlanting()
+
+	ShowName( guy )
+
+	local vec = e.currentOrigin - e.oldOrigin
+
+	guy.SetVelocity( vec * 15 )
+
+	thread AnimDoneStuckInSolidFailSafe( guy )
+}
+
+function AnimDoneStuckInSolidFailSafe( entity guy )
+{
+	guy.EndSignal( "OnDeath" )
+	guy.WaitSignal( "OnAnimationDone" )
+
+	if ( EntityInSolid( guy ) )
+	{
+		vector ornull clampedPos
+		clampedPos = NavMesh_ClampPointForAIWithExtents( guy.GetOrigin(), guy, < 400, 400, 400 > )
+
+		if ( clampedPos != null )
+		{
+			guy.SetOrigin( expect vector( clampedPos ) )
+			printt( guy + " was in solid, teleported" )
+		}
+	}
+}
+
+function TrackMoverDirection( mover, e )
+{
+	mover.EndSignal( "OnDestroy" )
+	// track the way the mover movers, so we can do the
+	// correct velocity on the falling guy
+	local origin = mover.GetOrigin()
+	e.oldOrigin <- origin
+	e.currentOrigin <- origin
+
+	for ( ;; )
+	{
+		WaitFrame()
+		e.oldOrigin = e.currentOrigin
+		e.currentOrigin = mover.GetOrigin()
+	}
+}
+
+function GuyRidesZiplineToGround( entity guy, zipline, e, dropPos )
+{
+	entity mover = CreateOwnedScriptMover( guy )
+	mover.EndSignal( "OnDestroy" )
+
+	thread TrackMoverDirection( mover, e )
+
+	OnThreadEnd(
+		function() : ( mover, zipline, guy )
+		{
+			thread ZiplineRetracts( zipline )
+
+			if ( IsValid( guy ) )
+			{
+				guy.ClearParent()
+				StopSoundOnEntity( guy, "3p_zipline_loop" )
+				EmitSoundOnEntity( guy, "3p_zipline_detach" )
+			}
+
+			if ( IsValid( mover ) )
+				mover.Kill_Deprecated_UseDestroyInstead()
+		}
+	)
+
+
+	local rideDist = Distance( guy.GetOrigin(), zipline.hookOrigin )
+
+	// how long it takes the zipline to travel 1000 units
+	zipline.pinTime <- Graph( rideDist, 0, 1000, 0, 0.4 )
+
+	// how long it takes the zipline to retract,
+	zipline.retractTime <- Graph( rideDist, 0, 1000, 0, 0.5 )
+
+	// how long it takes the rider to ride 1000 units
+	float rideTime = Graph( rideDist, 0, 1000, 0, 2.5 )
+
+
+	// orient the script_mover in the direction its going
+	local angles = guy.GetAngles()
+	local forward = AnglesToForward( angles )
+	local right = AnglesToRight( angles )
+
+	CreateRopeEntities( zipline )
+
+	local zipAttachOrigin = zipline.ship.GetAttachmentOrigin( zipline.attachIndex )
+	zipline.end.SetOrigin( zipAttachOrigin )
+
+	zipline.start.SetParent( zipline.ship, zipline.shipAttach )
+	zipline.mid.SetParent( zipline.ship, zipline.shipAttach )
+
+	// now that the origin is set we can spawn the zipline, otherwise we
+	// see the zipline lerp in
+	SpawnZiplineEntities( zipline )
+
+
+	// the zipline shoots out
+	ZiplineMover( expect entity( zipline.end ), zipline.hookOrigin, zipline.pinTime )
+
+	EmitSoundAtPosition( TEAM_UNASSIGNED, zipAttachOrigin, "dropship_zipline_zipfire" )
+	delaythread( zipline.pinTime ) ZiplineMoveCleanup( zipline )
+
+//	wait zipline.pinTime * 0.37
+	wait zipline.pinTime
+	EmitSoundAtPosition( TEAM_UNASSIGNED, zipline.hookOrigin, "dropship_zipline_impact" )
+
+	zipline.mid.SetParent( mover, "ref", false )
+	thread MoverMovesToGround( zipline, mover, rideTime )
+
+	if ( !IsAlive( guy ) || !guy.IsInterruptable() )
+		return
+
+	guy.SetParent( mover, "ref", false, 0.0 )
+
+	EmitSoundOnEntity( guy, "3p_zipline_attach" )
+	waitthread PlayAnim( guy, "pt_zipline_ready2slide", mover )
+	EmitSoundOnEntity( guy, "3p_zipline_loop" )
+
+	if ( !IsAlive( guy ) || !guy.IsInterruptable() || guy.GetParent() != mover )
+		return
+
+	// Anim_PlayWithRefPoint requires that the guy be parented to the ref point.
+	thread PlayAnim( guy, ZIPLINE_IDLE_ANIM, mover, "ref" )
+
+	//thread ZiplineAutoClipsToGeo( zipline, mover )
+
+	//wait 0.4 // some time to clear the lip
+
+	local nodeOrigin = dropPos
+	//DebugDrawLine( guy.GetOrigin(), nodeOrigin, 200, 255, 50, true, 8.0 )
+
+	rideDist = Distance( guy.GetOrigin(), nodeOrigin )
+	rideDist -= 100 // for animation at end
+	if ( rideDist < 0 )
+		rideDist = 0
+	rideTime = Graph( rideDist, 0, 100, 0, 0.15 )
+/*
+	printt( "ride time " + rideTime )
+	local endTime = Time() + rideTime
+	for ( ;; )
+	{
+		if ( Time() >= endTime )
+			return
+
+		DebugDrawLine( guy.GetOrigin(), nodeOrigin, 255, 0, 0, true, 0.15 )
+		DebugDrawText( nodeOrigin, ( endTime - Time() ) + "", true, 0.15 )
+		WaitFrame()
+	}
+*/
+	wait rideTime
+
+	thread ZiplineStuckFailsafe( guy, nodeOrigin )
+}
+
+function ZiplineStuckFailsafe( guy, nodeOrigin )
+{
+	TimeOut( 15.0 )
+
+	guy.EndSignal( "OnDeath" )
+
+	guy.WaitSignal( "OnFailedToPath" )
+
+	guy.SetOrigin( nodeOrigin )
+	printt( "Warning: AI Path failsafe at " + nodeOrigin )
+}
+
+function ZiplineMoveCleanup( zipline )
+{
+	// work around for moveto bug
+	if ( IsValid( zipline.end ) )
+	{
+		zipline.end.SetOrigin( zipline.hookOrigin )
+	}
+}
+
+function MoverMovesToGround( zipline, mover, timeTotal )
+{
+	// this handles the start point moving.
+	mover.EndSignal( "OnDestroy" )
+	zipline.ship.EndSignal( "OnDestroy" )
+
+	local origin = zipline.ship.GetAttachmentOrigin( zipline.attachIndex )
+	local angles = zipline.ship.GetAttachmentAngles( zipline.attachIndex )
+	mover.SetOrigin( origin )
+	mover.SetAngles( angles )
+
+	local start = zipline.start.GetOrigin()
+	local end = zipline.hookOrigin + Vector( 0,0,-180 )
+
+	local blendTime = 0.5
+	if ( timeTotal <= blendTime )
+		blendTime = 0
+
+	angles = VectorToAngles( end - start )
+	angles.x = 0
+	angles.z = 0
+
+	mover.MoveTo( end, timeTotal, blendTime, 0 )
+	mover.RotateTo( angles, 0.2 )
+}
+
+
+function WaitUntilZiplinerNearsGround( guy, zipline )
+{
+	local start, end, frac
+	local angles = guy.GetAngles()
+	local forward = AnglesToForward( angles )
+
+	local zipAngles, zipForward, dropDist
+
+	if ( guy.IsNPC() )
+		dropDist = 150
+	else
+		dropDist = 10  //much closer for player
+
+	local mins = guy.GetBoundingMins()
+	local maxs = guy.GetBoundingMaxs()
+
+	TraceResults result
+
+	for ( ;; )
+	{
+		start = guy.GetOrigin()
+		end = start + Vector(0,0,-dropDist)
+		end += forward * dropDist
+//		TraceResults result = TraceLine( start, end, guy )
+		result = TraceHull( start, end, mins, maxs, guy, TRACE_MASK_NPCSOLID_BRUSHONLY, TRACE_COLLISION_GROUP_NONE )
+		//DebugDrawLine( start, end, 255, 0, 0, true, 0.2 )
+
+		if ( result.fraction < 1.0 )
+			break
+
+		start = guy.GetOrigin()
+		end = zipline.hookOrigin + Vector( 0,0,-80 )
+
+		zipForward = ( end - start )
+		zipForward.Norm()
+		zipForward *= 250
+
+		end = start + zipForward
+		//DebugDrawLine( start, end, 255, 0, 0, true, 0.1 )
+
+//		result = TraceLine( start, end, guy )
+		//DebugDrawLine( start, end, 255, 150, 0, true, 0.2 )
+		result = TraceHull( start, end, mins, maxs, guy, TRACE_MASK_NPCSOLID_BRUSHONLY, TRACE_COLLISION_GROUP_NONE )
+
+		if ( result.fraction < 1.0 )
+			break
+
+		WaitFrame()
+	}
+
+	zipline.origin <- result.endPos
+	zipline.forward <- forward
+}
+
+
+function ZiplineRetracts( zipline )
+{
+	if ( !IsValid( zipline.start ) )
+		return
+	if ( !IsValid( zipline.mid ) )
+		return
+	if ( !IsValid( zipline.end ) )
+		return
+
+	OnThreadEnd(
+		function() : ( zipline )
+		{
+			if ( IsValid( zipline.start ) )
+				zipline.start.Kill_Deprecated_UseDestroyInstead()
+
+			if ( IsValid( zipline.mid ) )
+				zipline.mid.Kill_Deprecated_UseDestroyInstead()
+
+			// is the only one that's not parented and only gets deleted here
+			zipline.end.Kill_Deprecated_UseDestroyInstead()
+		}
+	)
+
+	// IsValid check succeeds, even if a delete brought us here.
+	// IsValid should've failed.
+	if ( !IsAlive( expect entity( zipline.ship ) ) )
+		return
+
+	zipline.ship.EndSignal( "OnDestroy" )
+
+	zipline.start.EndSignal( "OnDestroy" )
+	zipline.mid.EndSignal( "OnDestroy" )
+	zipline.end.EndSignal( "OnDestroy" )
+
+	local start, end, mid
+	local startDist
+	local endDist
+	local totalDist
+	local progress
+	local newMidPoint
+	local midRetractProgress
+
+	local startTime = Time()
+	local endTime = startTime + 0.3
+
+	zipline.mid.ClearParent()
+
+	start = zipline.start.GetOrigin()
+	end = zipline.end.GetOrigin()
+	mid = zipline.mid.GetOrigin()
+
+	startDist = Distance( mid, start )
+	endDist = Distance( mid, end )
+	totalDist = startDist + endDist
+
+	if ( totalDist <= 0 )
+		return
+
+	progress = startDist / totalDist
+//	newMidPoint = end * progress + start * ( 1 - progress )
+//
+//	// how far from the midpoint we are, vertically
+//	local mid_z_offset = newMidPoint.z - mid.z
+//	local addOffset
+
+	for ( ;; )
+	{
+		start = zipline.start.GetOrigin()
+		end = zipline.end.GetOrigin()
+
+		newMidPoint = end * progress + start * ( 1 - progress )
+
+		midRetractProgress = GraphCapped( Time(), startTime, endTime, 0, 1 )
+		if ( midRetractProgress >= 1.0 )
+			break
+
+		newMidPoint = mid * ( 1 - midRetractProgress ) + newMidPoint * midRetractProgress
+		//addOffset = mid_z_offset * ( 1 - midRetractProgress )
+		//newMidPoint.z -= addOffset
+		//DebugDrawLine( zipline.mid.GetOrigin(), newMidPoint, 255, 0, 0, true, 0.2 )
+
+		if ( !IsValid( zipline.mid ) )
+		{
+			printt( "Invalid zipline mid! Impossible!" )
+		}
+		else
+		{
+			zipline.mid.SetOrigin( newMidPoint )
+		}
+
+
+//		startDist = Distance( mid, start )
+//		endDist = Distance( mid, end )
+//		totalDist = startDist + endDist
+//		progress = startDist / totalDist
+		WaitFrame()
+	}
+
+//	DebugDrawLine( zipline.start.GetOrigin(), zipline.mid.GetOrigin(), 255, 100, 50, true, 5.0 )
+//	DebugDrawLine( zipline.end.GetOrigin(), zipline.mid.GetOrigin(), 60, 100, 244, true, 5.0 )
+	local moveTime = 0.4
+	ZiplineMover( expect entity( zipline.start ), zipline.end.GetOrigin(), moveTime )
+	ZiplineMover( expect entity( zipline.mid ), zipline.end.GetOrigin(), moveTime )
+
+	wait moveTime
+/*
+	startTime = Time()
+	endTime = startTime + zipline.retractTime
+	end = zipline.end.GetOrigin()
+
+	if ( !IsValid( zipline.mid ) )
+		return
+	mid = zipline.mid.GetOrigin()
+
+	local org
+
+	for ( ;; )
+	{
+		start = zipline.start.GetOrigin()
+
+		progress = Graph( Time(), startTime, endTime )
+		if ( progress >= 1.0 )
+			break
+
+		org = end * ( 1 - progress ) + start * progress
+		zipline.end.SetOrigin( org )
+
+		org = mid * ( 1 - progress ) + start * progress
+
+		if ( !IsValid( zipline.mid ) )
+			return
+		zipline.mid.SetOrigin( org )
+
+		WaitFrame()
+	}
+*/
+}
+
+function CreateRopeEntities( Table )
+{
+	local subdivisions = 8 // 25
+	local slack = 100 // 25
+	string midpointName = UniqueString( "rope_midpoint" )
+	string endpointName = UniqueString( "rope_endpoint" )
+
+	entity rope_start = CreateEntity( "move_rope" )
+	rope_start.kv.NextKey = midpointName
+	rope_start.kv.MoveSpeed = 64
+	rope_start.kv.Slack = slack
+	rope_start.kv.Subdiv = subdivisions
+	rope_start.kv.Width = "2"
+	rope_start.kv.TextureScale = "1"
+	rope_start.kv.RopeMaterial = "cable/cable.vmt"
+	rope_start.kv.PositionInterpolator = 2
+
+	entity rope_mid = CreateEntity( "keyframe_rope" )
+	SetTargetName( rope_mid, midpointName )
+	rope_mid.kv.NextKey = endpointName
+	rope_mid.kv.MoveSpeed = 64
+	rope_mid.kv.Slack = slack
+	rope_mid.kv.Subdiv = subdivisions
+	rope_mid.kv.Width = "2"
+	rope_mid.kv.TextureScale = "1"
+	rope_mid.kv.RopeMaterial = "cable/cable.vmt"
+
+	entity rope_end = CreateEntity( "keyframe_rope" )
+	SetTargetName( rope_end, endpointName )
+	rope_end.kv.MoveSpeed = 64
+	rope_end.kv.Slack = slack
+	rope_end.kv.Subdiv = subdivisions
+	rope_end.kv.Width = "2"
+	rope_end.kv.TextureScale = "1"
+	rope_end.kv.RopeMaterial = "cable/cable.vmt"
+
+	Table.start <- rope_start
+	Table.mid <- rope_mid
+	Table.end <- rope_end
+
+	return Table
+}
+
+function SpawnZiplineEntities( Table )
+{
+	// after origins are set
+	DispatchSpawn( Table.start )
+	DispatchSpawn( Table.mid   )
+	DispatchSpawn( Table.end   )
+	return Table
+}
+
+function GetDropPos( zipline )
+{
+	entity ship = expect entity( zipline.ship )
+	if ( !HasDropshipDropTable( ship ) )
+		return null
+
+	DropTable dropTable = GetDropshipDropTable( ship )
+
+	foreach ( side, nodeTables in dropTable.nodes )
+	{
+		foreach ( nodeTable in nodeTables )
+		{
+			if ( nodeTable.attachName == zipline.shipAttach )
+				return nodeTable.origin
+		}
+	}
+
+	return null
+}
+
+function GetHookOriginFromNode( origin, nodeOrigin, attachOrigin )
+{
+	// need to use the slope of guy to node to get the slope for the zipline, then launch it from the attachment origin
+	local dropVec = nodeOrigin - origin
+	local dropDist = Length( dropVec )
+	dropVec.Norm()
+
+//	DrawArrow( nodeOrigin, Vector(0,0,0), 5, 100 )
+	local attachEnd = attachOrigin + dropVec * ( dropDist + 1500 ) // some buffer
+	TraceResults zipTrace = TraceLine( attachOrigin, attachEnd, null, TRACE_MASK_NPCWORLDSTATIC )
+
+//	DebugDrawLine( attachOrigin, zipTrace.endPos, 0, 255, 0, true, 5.0 )
+//	DebugDrawLine( zipTrace.endPos, attachEnd, 255, 0, 0, true, 5.0 )
+
+	// zipline didn't connect with anything
+	if ( zipTrace.fraction == 1.0 )
+	{
+//		DebugDrawLine( attachOrigin, attachEnd, 255, 255, 0, true, 5.0 )
+		return null
+	}
+
+	if ( Distance( zipTrace.endPos, attachOrigin ) < 300 )
+		return null
+
+	return zipTrace.endPos
+}
+
+function ZiplineInit( entity player )
+{
+	player.s.ziplineEffects <- []
+}
+
+function CreateZiplineJetEffects( entity player )
+{
+	asset jumpJetEffectFriendlyName = $"hmn_imc_jump_jet_wallrun_full"
+	asset jumpJetEffectEnemyName = $"hmn_mcorps_jump_jet_wallrun_full"
+	int playerTeam = player.GetTeam()
+
+	//HACK!
+	//Create 2 sets of jump jet effects, 1 visible to friendly, 1 visible to enemy
+	//Doing this for a myriad of reasons on the server as opposed to on the client like the rest
+	//of the jump jet effects. Since ziplining isn't all that common an action it should be fine
+
+ 	//create left jump jetfriendly
+	entity leftJumpJetFriendly = CreateEntity( "info_particle_system" )
+	leftJumpJetFriendly.kv.start_active = 1
+	leftJumpJetFriendly.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY
+	leftJumpJetFriendly.SetValueForEffectNameKey( jumpJetEffectFriendlyName )
+	SetTargetName( leftJumpJetFriendly, UniqueString() )
+	leftJumpJetFriendly.SetParent( player, "vent_left_back", false, 0 )
+	SetTeam( leftJumpJetFriendly, playerTeam )
+	leftJumpJetFriendly.SetOwner( player)
+	DispatchSpawn( leftJumpJetFriendly )
+
+	//now create right jump jet	for friendly
+	entity rightJumpJetFriendly = CreateEntity( "info_particle_system" )
+	rightJumpJetFriendly.kv.start_active = 1
+	rightJumpJetFriendly.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY
+	rightJumpJetFriendly.SetValueForEffectNameKey( jumpJetEffectFriendlyName )
+	SetTargetName( rightJumpJetFriendly, UniqueString() )
+	rightJumpJetFriendly.SetParent( player, "vent_right_back", false, 0 )
+	SetTeam( rightJumpJetFriendly, playerTeam )
+	rightJumpJetFriendly.SetOwner( player)
+	DispatchSpawn( rightJumpJetFriendly )
+
+	//create left jump jet for enemy
+	entity leftJumpJetEnemy = CreateEntity( "info_particle_system" )
+	leftJumpJetEnemy.kv.start_active = 1
+	leftJumpJetEnemy.kv.VisibilityFlags = ENTITY_VISIBLE_TO_ENEMY
+	leftJumpJetEnemy.SetValueForEffectNameKey( jumpJetEffectEnemyName )
+	SetTargetName( leftJumpJetEnemy, UniqueString() )
+	leftJumpJetEnemy.SetParent( player, "vent_left_back", false, 0 )
+	SetTeam( leftJumpJetEnemy, playerTeam )
+	leftJumpJetEnemy.SetOwner( player)
+	DispatchSpawn( leftJumpJetEnemy )
+
+	//now create right jump jet	for enemy
+	entity rightJumpJetEnemy = CreateEntity( "info_particle_system" )
+	rightJumpJetEnemy.kv.start_active = 1
+	rightJumpJetEnemy.kv.VisibilityFlags = ENTITY_VISIBLE_TO_ENEMY
+	rightJumpJetEnemy.SetValueForEffectNameKey( jumpJetEffectEnemyName )
+	SetTargetName( rightJumpJetEnemy, UniqueString() )
+	rightJumpJetEnemy.SetParent( player, "vent_right_back", false, 0 )
+	SetTeam( rightJumpJetEnemy, playerTeam )
+	rightJumpJetEnemy.SetOwner( player)
+	DispatchSpawn( rightJumpJetEnemy )
+
+	//sparks from the hand
+	entity handSparks = CreateEntity( "info_particle_system" )
+	handSparks.kv.start_active = 1
+	handSparks.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY
+	handSparks.SetValueForEffectNameKey( $"P_Zipline_hld_1" )
+	SetTargetName( handSparks, UniqueString() )
+	handSparks.SetParent( player, "L_HAND", false, 0 )
+	handSparks.SetOwner( player)
+	DispatchSpawn( handSparks )
+
+	//Do it again for greater intensity!
+	entity handSparks2 = CreateEntity( "info_particle_system" )
+	handSparks2.kv.start_active = 1
+	handSparks2.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY
+	handSparks2.SetValueForEffectNameKey( $"P_Zipline_hld_1" )
+	SetTargetName( handSparks2, UniqueString() )
+	handSparks2.SetParent( player, "L_HAND", false, 0 )
+	handSparks2.SetOwner( player)
+	DispatchSpawn( handSparks2 )
+
+	player.s.ziplineEffects.append( leftJumpJetFriendly	)
+	player.s.ziplineEffects.append( rightJumpJetFriendly )
+	player.s.ziplineEffects.append( leftJumpJetEnemy )
+	player.s.ziplineEffects.append( rightJumpJetEnemy )
+
+	player.s.ziplineEffects.append( handSparks )
+	player.s.ziplineEffects.append( handSparks2 )
+}
+
+void function CodeCallback_ZiplineMount( entity player, entity zipline )
+{
+	// printl( "Mounting zipline")
+	#if SERVER
+		EmitDifferentSoundsOnEntityForPlayerAndWorld( "player_zipline_attach", "3p_zipline_attach", player, player )
+	#endif
+
+}
+
+void function CodeCallback_ZiplineStart( entity player, entity zipline )
+{
+	#if SERVER
+		CreateZiplineJetEffects( player )
+		EmitDifferentSoundsOnEntityForPlayerAndWorld( "player_zipline_loop", "3p_zipline_loop", player, player )
+		foreach ( callback in _ZiplineStartCallbacks )
+			thread callback( player, zipline )
+	#endif
+}
+
+void function CodeCallback_ZiplineMove( entity player, entity zipline )
+{
+	#if SERVER
+		if ( player.IsPhaseShifted() )
+		{
+			foreach( effect in player.s.ziplineEffects )
+			{
+				IsValid( effect )
+					effect.Destroy()
+			}
+			player.s.ziplineEffects.clear()
+		}
+		else if ( player.s.ziplineEffects.len() <= 0 )
+		{
+			CreateZiplineJetEffects( player );
+		}
+	#endif
+}
+
+void function CodeCallback_ZiplineStop( entity player )
+{
+	#if SERVER
+		foreach( effect in player.s.ziplineEffects )
+		{
+			IsValid( effect )
+				effect.Destroy()
+		}
+		player.s.ziplineEffects.clear()
+
+		StopSoundOnEntity( player, "player_zipline_loop" )
+		StopSoundOnEntity( player, "3p_zipline_loop" )
+
+		EmitDifferentSoundsOnEntityForPlayerAndWorld( "player_zipline_detach", "3p_zipline_detach", player, player )
+
+		foreach ( callback in _ZiplineStopCallbacks )
+			thread callback( player )
+	#endif
+}
+
+void function AddCallback_ZiplineStart( void functionref(entity,entity) callback )
+{
+	_ZiplineStartCallbacks.append( callback )
+}
+
+void function AddCallback_ZiplineStop( void functionref(entity) callback )
+{
+	_ZiplineStopCallbacks.append( callback )
+}
+
+function ZiplineMover( entity ent, end, timeTotal, blendIn = 0, blendOut = 0 )
+{
+	Assert( !IsThreadTop(), "This should not be waitthreaded off, it creates timing issues." )
+	entity mover = CreateOwnedScriptMover( ent )
+	ent.SetParent( mover )
+
+	OnThreadEnd(
+		function() : ( ent, mover )
+		{
+			if ( IsValid( mover ) )
+				mover.Destroy()
+		}
+	)
+
+	mover.MoveTo( end, timeTotal, blendIn, blendOut )
+	wait timeTotal
+
+	if ( IsValid( ent ) )
+		ent.ClearParent()
+}
+
+array<string> function GetZiplineLandingAnims()
+{
+	return file.zipLineLandingAnimations
+}

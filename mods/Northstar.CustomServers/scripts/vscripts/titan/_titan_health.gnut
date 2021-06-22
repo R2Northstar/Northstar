@@ -1,0 +1,1072 @@
+global function TitanHealth_Init
+
+global function Titan_PlayerTookDamage
+global function Titan_NPCTookDamage
+
+global function GetShieldRegenTime
+global function GetShieldRegenDelay
+global function PlayerHasAutoEject
+global function SetTitanCoreTimer
+global function GetTitanCoreTimer
+
+global function AddCreditToTitanCoreBuilderForTitanDamageInflicted
+global function AddCreditToTitanCoreBuilderForTitanDamageReceived
+global function AddCreditToTitanCoreBuilderForDoomInflicted
+global function AddCreditToTitanCoreBuilderForDoomEntered
+global function AddCreditToTitanCoreBuilder
+
+global function TitanShieldRegenThink
+
+global function IsRodeoDamageFromBatteryPack
+global function IsKillshot
+
+global function DoomedHealthThink
+global function UndoomTitan
+global function RestoreTitan
+
+global const SIGNAL_TITAN_HEALTH_REGEN = "BeginTitanHealthRegen"
+global const SIGNAL_TITAN_SHIELD_REGEN = "BeginTitanShieldRegen"
+
+global const TITAN_HEALTH_REGEN_DELAY_MAX				= 0.7 // 2.2
+
+#if MP
+//  PROTO : Was 99, 49 is for test
+global const TITAN_REGEN_MIN_DAMAGE = 49
+global const TITAN_REGEN_MIN_DAMAGE_DELAY = 0.5
+#elseif SP
+global const TITAN_REGEN_MIN_DAMAGE = 70
+global const TITAN_REGEN_MIN_DAMAGE_DELAY = 0.5
+#endif
+
+// titan health system
+const TITAN_HEALTH_HISTORY_FALLOFF_START = 0 	// how many seconds until shield begins to regen
+
+const float TITAN_HEALTH_HISTORY_FALLOFF_END = 4.0
+
+struct
+{
+  float earn_meter_titan_multiplier
+} file
+
+void function TitanHealth_Init()
+{
+	RegisterSignal( SIGNAL_TITAN_HEALTH_REGEN )
+	RegisterSignal( SIGNAL_TITAN_SHIELD_REGEN )
+	RegisterSignal( "Doomed" )
+	RegisterSignal( "TitanUnDoomed" )
+	RegisterSignal( "StopShieldRegen" )
+	RegisterSignal( "WeakTitanHealthInitialized" )
+
+	file.earn_meter_titan_multiplier = GetCurrentPlaylistVarFloat( "earn_meter_titan_multiplier", 1.0 )
+
+	if ( IsMenuLevel() )
+		return
+
+	HealthRegenInit()
+	AddSoulInitFunc( TitanShieldRegenThink ) //This runs even if playlist var titan_shield_regen is set to 0 because it also does stuff like give friendly Pilots protection with shield, etc
+	AddSoulDeathCallback( Titan_MonarchCleanup )
+}
+
+void function UndoomTitan( entity titan, int numSegments )
+{
+	entity soul = titan.GetTitanSoul()
+	string settings = GetSoulPlayerSettings( soul )
+
+	soul.DisableDoomed()
+	int maxHealth
+	int segmentHealth = GetSegmentHealthForTitan( titan )
+	if ( titan.IsNPC() )
+	{
+		maxHealth = int( GetPlayerSettingsFieldForClassName_Health( settings ) )
+		if ( titan.ai.titanSpawnLoadout.setFileMods.contains( "fd_health_upgrade" ) )
+			maxHealth += segmentHealth
+		if ( soul.soul.titanLoadout.setFileMods.contains( "core_health_upgrade" ) )
+			maxHealth += segmentHealth
+	}
+	else
+	{
+		maxHealth = int( titan.GetPlayerModHealth() )
+	}
+	titan.SetMaxHealth( maxHealth )
+	titan.SetHealth( segmentHealth * numSegments )
+	SetSoulBatteryCount( soul, numSegments )
+
+	titan.Signal( "TitanUnDoomed" )
+	UndoomTitan_Body( titan )
+	thread TitanShieldRegenThink( soul )
+}
+
+void function RestoreTitan( entity titan, float percent = 0.625 )
+{
+	entity soul = titan.GetTitanSoul()
+	if ( soul.IsDoomed() )
+		UndoomTitan( titan, 1 )
+
+	soul.nextRegenTime = 0.0
+	soul.SetShieldHealth( soul.GetShieldHealthMax() )
+	int minHealth = int( titan.GetMaxHealth() * percent )
+	if ( titan.GetHealth() < minHealth )
+	{
+		titan.SetHealth( minHealth )
+		int segmentHealth = GetSegmentHealthForTitan( titan )
+		int segments = int( minHealth / float( segmentHealth ) )
+		SetSoulBatteryCount( soul, segments )
+	}
+}
+
+bool function IsRodeoDamage( entity soul, var damageInfo )
+{
+	entity titan 	= soul.GetTitan()
+	entity attacker  = DamageInfo_GetAttacker( damageInfo )
+	if ( !attacker.IsPlayer() )
+	{
+		entity rider = GetRodeoPilot( titan )
+		if ( rider == attacker )
+			return true
+		else
+			return false
+	}
+
+	if ( attacker.GetTitanSoulBeingRodeoed() != soul )
+		return false
+
+	return true
+}
+
+bool function IsCoopRodeoDamage( entity soul, var damageInfo )
+{
+	entity titan 	= soul.GetTitan()
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	entity rider = GetRodeoPilot( titan )
+	if ( rider == attacker )
+		return true
+	else
+		return false
+
+	unreachable
+}
+
+
+void function CheckRodeoRiderHitsTitan( entity soul, var damageInfo )
+{
+	if ( IsRodeoDamage( soul, damageInfo )  )
+	{
+		//Set Last Attack Time so warning is triggered
+		soul.SetLastRodeoHitTime( Time() )
+
+		DamageInfo_AddCustomDamageType( damageInfo, DF_RODEO )
+	}
+}
+
+bool function ShouldMultiplyRodeoDamage( var damageInfo )
+{
+	switch ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) )
+	{
+		case eDamageSourceId.mp_weapon_smr:
+		case eDamageSourceId.mp_titanability_smoke:
+			return false
+
+		case eDamageSourceId.mp_weapon_defender :
+			return true
+	}
+
+	if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_EXPLOSION )
+		return false
+
+	return true
+}
+
+bool function IsRodeoDamageFromBatteryPack( entity soul, var damageInfo )
+{
+	if ( !IsRodeoDamage( soul, damageInfo ) )
+		return false
+
+	if ( DamageInfo_GetCustomDamageType( damageInfo ) != damageTypes.rodeoBatteryRemoval )
+		return false
+
+	return true
+}
+
+
+int function ShieldHealthUpdate( entity titan, var damageInfo, bool critHit )
+{
+	entity soul = titan.GetTitanSoul()
+	if ( DamageInfo_GetForceKill( damageInfo ) )
+	{
+		soul.SetShieldHealth( 0 )
+		return 0
+	}
+
+	if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_BYPASS_SHIELD )
+		return 0
+
+	float damage = DamageInfo_GetDamage( damageInfo )
+	int damageType = DamageInfo_GetCustomDamageType( damageInfo )
+
+	Assert( soul == titan.GetTitanSoul() )
+	int shieldHealth = soul.GetShieldHealth()
+
+	if ( soul.e.forcedRegenTime <= Time() )
+		soul.nextRegenTime = CalculateNextRegenTime( damage, damageType, critHit, expect float( soul.nextRegenTime ), GetShieldRegenDelay( soul ) )
+
+	int result = 0
+	if ( shieldHealth )
+	{
+		DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )
+		result = int( ShieldModifyDamage( titan, damageInfo ) )
+	}
+	else
+	{
+		TakeAwayFriendlyRodeoPlayerProtection( titan )
+	}
+
+	return result
+}
+
+
+void function PlayerOrNPCTitanTookDamage( entity titan, var damageInfo, bool critHit, TitanDamage titanDamage )
+{
+	entity soul = titan.GetTitanSoul()
+
+	if ( !IsValid( soul ) ) //Defensive fix for transient times in frame where Titan can have no soul but be damaged, e.g. immediately after embark
+		return
+
+	// zero out small forces
+	if ( LengthSqr( DamageInfo_GetDamageForce( damageInfo ) ) < 30000 * 30000 )
+		DamageInfo_SetDamageForce( damageInfo, < 0, 0, 0 > )
+
+	titanDamage.shieldDamage = CheckSpecialCaseShieldDamage( soul, titan, damageInfo )
+	if ( titanDamage.shieldDamage < 0 )
+	{
+		CheckRodeoRiderHitsTitan( soul, damageInfo )
+		titanDamage.shieldDamage = ShieldHealthUpdate( titan, damageInfo, critHit )
+	}
+
+	HandleKillshot( titan, damageInfo, titanDamage )
+
+	// health regen based on how much damage dealt to titan
+	float damage = DamageInfo_GetDamage( damageInfo )
+	int damageType = DamageInfo_GetCustomDamageType( damageInfo )
+	bool rodeoDamage = ( ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_RODEO ) > 0 )
+
+	if ( soul.e.forcedRegenTime <= Time() )
+		soul.nextHealthRegenTime = CalculateNextRegenTime( damage, damageType, critHit || rodeoDamage, expect float( soul.nextHealthRegenTime ), GetHealthRegenDelay( soul ) )
+}
+
+int function CheckSpecialCaseShieldDamage( entity soul, entity titan, var damageInfo )
+{
+	if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == damagedef_suicide )
+		return 0
+
+	// no protection from doomed health loss
+	if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOMED_HEALTH_LOSS )
+		return 0
+
+	if ( IsTitanWithinBubbleShield( titan ) || TitanHasBubbleShieldWeapon( titan ) )
+	{
+		DamageInfo_SetDamage( damageInfo, 0 )
+		return 0
+	}
+
+	return -1
+}
+
+void function Titan_NPCTookDamage( entity titan, var damageInfo, TitanDamage titanDamage )
+{
+	Assert( titan.IsTitan() )
+	Assert( DamageInfo_GetDamage( damageInfo ) > 0 )
+
+	// dead entities can take damage
+	if ( !IsAlive( titan ) )
+		return
+
+	entity soul = titan.GetTitanSoul()
+
+	if ( !IsValid( soul ) ) //Defensive fix for transient times in frame where Titan can have no soul but be damaged, e.g. immediately after embark
+		return
+
+	bool critHit = false
+	if ( CritWeaponInDamageInfo( damageInfo ) )
+		critHit = IsCriticalHit( DamageInfo_GetAttacker( damageInfo ), titan, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamage( damageInfo ), DamageInfo_GetDamageType( damageInfo ) )
+
+	if ( critHit )
+		DamageInfo_AddCustomDamageType( damageInfo, DF_CRITICAL )
+
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	if ( HeavyArmorCriticalHitRequired( damageInfo ) && CritWeaponInDamageInfo( damageInfo ) && !critHit && IsValid( attacker ) && !attacker.IsTitan())
+	{
+		float shieldHealth = float( titan.GetTitanSoul().GetShieldHealth() )
+		float damage = DamageInfo_GetDamage( damageInfo )
+		if ( shieldHealth - damage <= 0 )
+		{
+			if ( shieldHealth > 0 )
+				DamageInfo_SetDamage( damageInfo, shieldHealth )
+			else
+				DamageInfo_SetDamage( damageInfo, 0 )
+		}
+	}
+
+	PlayerOrNPCTitanTookDamage( titan, damageInfo, critHit, titanDamage )
+
+	RecordDamageToNPCTitanSoul( soul, damageInfo )
+
+	entity owner = GetPetTitanOwner( titan )
+	if ( IsValid( owner ) )
+		AutoTitan_TryMultipleTitanCallout( titan, damageInfo )
+
+	if ( GetDoomedState( titan ) )
+		titanDamage.shieldDamage = 0
+}
+
+void function Titan_PlayerTookDamage( entity player, var damageInfo, entity attacker, bool critHit, TitanDamage titanDamage )
+{
+	Assert( player.IsTitan() )
+
+	float damage = DamageInfo_GetDamage( damageInfo )
+
+	if ( !IsAlive( player ) )
+		return
+
+	entity soul = player.GetTitanSoul()
+	if ( !IsValid( soul ) ) //Defensive fix for transient times in frame where Titan can have no soul but be damaged, e.g. immediately after embark
+		return
+
+	if ( damage > 0 )
+		AdjustVelocityFromHit( player, damageInfo, attacker, damage, critHit )
+
+	if ( IsDemigod( player ) )
+		EntityDemigod_TryAdjustDamageInfo( player, damageInfo )
+
+	bool critHit = false
+	if ( CritWeaponInDamageInfo( damageInfo ) )
+		critHit = IsCriticalHit( attacker, player, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamage( damageInfo ), DamageInfo_GetDamageType( damageInfo ) )
+
+	if ( critHit )
+		DamageInfo_AddCustomDamageType( damageInfo, DF_CRITICAL )
+
+	#if MP
+		if ( HeavyArmorCriticalHitRequired( damageInfo ) && CritWeaponInDamageInfo( damageInfo ) && !critHit && IsValid( attacker ) && !attacker.IsTitan())
+		{
+			float shieldHealth = float( player.GetTitanSoul().GetShieldHealth() )
+			if ( shieldHealth - damage <= 0 )
+			{
+				if ( shieldHealth > 0 )
+					DamageInfo_SetDamage( damageInfo, shieldHealth )
+				else
+					DamageInfo_SetDamage( damageInfo, 0 )
+			}
+		}
+	#endif
+
+	PlayerOrNPCTitanTookDamage( player, damageInfo, critHit, titanDamage )
+}
+
+bool function IsKillshot( entity ent, var damageInfo, entity titanSoul )
+{
+	float damage = DamageInfo_GetDamage( damageInfo )
+	int health = ent.GetHealth()
+
+	if ( health - damage > DOOMED_MIN_HEALTH )
+		return false
+
+	return true
+}
+
+bool function ShouldDoomTitan( entity ent, var damageInfo )
+{
+	if ( DoomStateDisabled() )
+		return false
+
+	if ( GetDoomedState( ent ) )
+		return false
+
+	if ( DamageInfo_GetForceKill( damageInfo ) )
+		return false
+
+	float doomedHealth = GetTitanSoulDoomedHealth( ent.GetTitanSoul() )
+	if ( doomedHealth <= 0 )
+		return false
+
+	entity soul = ent.GetTitanSoul()
+	if ( soul.soul.skipDoomState )
+		return false
+
+	if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_SKIP_DAMAGE_PROT )
+		return doomedHealth > ( DamageInfo_GetDamage( damageInfo ) - ent.GetHealth() )
+
+	bool skipDoom = ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_SKIPS_DOOMED_STATE ) > 0
+	return !skipDoom
+}
+
+bool function HandleKillshot( entity ent, var damageInfo, TitanDamage titanDamage )
+{
+	#if NPC_TITAN_PILOT_PROTOTYPE
+	if ( TitanHasNpcPilot( ent ) ) //an npc titan that was dropped by an npc human
+	{
+		float damage = DamageInfo_GetDamage( damageInfo )
+		int health = ent.GetHealth()
+
+		if ( health - damage <= 0 )
+		{
+			DamageInfo_SetDamage( damageInfo, 0 )
+			thread TitanEjectPlayer( ent )
+		}
+
+		return
+	}
+	#endif
+
+	if ( ent.IsPlayer() && ent.IsBuddhaMode() )
+		return false
+
+	entity titanSoul = ent.GetTitanSoul()
+
+	if ( IsKillshot( ent, damageInfo, titanSoul ) )
+	{
+		entity boss = titanSoul.GetBossPlayer()
+		Soul_SetLastAttackInfo( titanSoul, damageInfo )
+
+		if ( ShouldDoomTitan( ent, damageInfo ) )
+		{
+			// Added via AddCallback_OnTitanDoomed
+			foreach ( callbackFunc in svGlobal.onTitanDoomedCallbacks )
+			{
+				callbackFunc( ent, damageInfo )
+			}
+
+			if ( IsMultiplayer() )
+			{
+				entity attacker = expect entity( expect table( titanSoul.lastAttackInfo ).attacker )
+				if ( IsValid( attacker ) )
+				{
+					entity bossPlayer = attacker.GetBossPlayer()
+					if ( attacker.IsNPC() && IsValid( bossPlayer ) )
+						attacker = bossPlayer
+
+					if ( attacker.IsPlayer() )
+						ScoreEvent_TitanDoomed( ent, attacker, damageInfo )
+				}
+			}
+
+			thread DoomedHealthThink( titanSoul, damageInfo )
+
+			titanDamage.doomedNow = true
+			titanDamage.doomedDamage = int( DamageInfo_GetDamage( damageInfo ) )
+
+			int health = ent.GetHealth()
+			DamageInfo_SetDamage( damageInfo, health - 1 )
+			return true
+		}
+		else
+		{
+			// handle auto eject here
+			if ( ent.IsPlayer() && PlayerHasAutoEject( ent ) )
+		    {
+			    int health = ent.GetHealth()
+			    DamageInfo_SetDamage( damageInfo, health - 1 )
+			    thread HandleAutoEject( ent, titanSoul )
+				return false
+			}
+		}
+	}
+
+	// Handle doom state damage
+	if ( GetDoomedState( ent ) )
+	{
+		// as long as we're dying but not yet ejecting, the last player to damage us gets credit
+		if ( titanSoul.IsEjecting() )
+		{
+			Soul_SetLastAttackInfo( titanSoul, damageInfo )
+		}
+		else if ( ent.IsPlayer() && PlayerHasAutoEject( ent ) ) //Handle auto eject for when the frame in which Titan became doomed was not valid for ejecting, e.g. melee
+		 {
+			int health = ent.GetHealth()
+			DamageInfo_SetDamage( damageInfo, health - 1 )
+			thread HandleAutoEject( ent, titanSoul )
+			return false
+		 }
+
+		// protect players who eject early
+		// if ( ent.IsPlayer() && IsEjectProtected( ent, damageInfo ) )
+		// 	DamageInfo_SetDamage( damageInfo, 0 )
+
+		// slight protection to prevent multiple rapid damage events from eating through doomed state health
+		if ( Time() - titanSoul.soul.doomedStartTime < TITAN_DOOMED_INVUL_TIME && !DamageInfo_GetForceKill( damageInfo ) )
+			DamageInfo_SetDamage( damageInfo, 0 )
+	}
+	else
+	{
+		Soul_SetLastAttackInfo( titanSoul, damageInfo )
+	}
+
+	return false
+}
+
+bool function PlayerHasAutoEject( entity player )
+{
+	if ( player.IsBot() )
+		return false
+
+	if ( !PlayerHasPassive( player, ePassives.PAS_AUTO_EJECT ) )
+		return false
+
+	return true
+}
+
+
+void function AdjustVelocityFromHit( entity player, var damageInfo, entity attacker, float damage, bool critHit )
+{
+/*
+	if ( DamageInfo_GetDamageCriticalHitScale( damageInfo ) > 1.0 )
+	{
+		// if you can crit, you have to crit!
+		if ( !critHit )
+			return
+	}
+*/
+
+	//printt( " " )
+	//printt( "damage: " + damage )
+
+	vector damageForward = DamageInfo_GetDamageForce( damageInfo )
+	damageForward.z = 0
+	//printt( "damageForward " + damageForward )
+
+	damageForward.Norm()
+
+	//vector org = DamageInfo_GetDamagePosition( damageInfo )
+	//DebugDrawLine( org, org + damageForward * 250, 255, 0, 0, true, 5.0 )
+
+	vector velocity = player.GetVelocity()
+	vector velForward = player.GetVelocity()
+	velForward.z = 0
+	velForward.Norm()
+
+	//DebugDrawLine( org, org + velForward * 250, 0, 255, 0, true, 5.0 )
+
+	float dot = DotProduct( velForward, damageForward )
+
+	// only stop from the ~front cone
+	if ( dot >= -0.5 )
+		return
+
+	float speedPercent
+
+	switch ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) )
+	{
+		//case eDamageSourceId.mp_titanweapon_40mm:
+		//	speedPercent = GraphCapped( damage, 0, 750, 1, 0 )
+		//	break
+
+		case eDamageSourceId.mp_titanweapon_xo16:
+			speedPercent = 0.075
+			break
+
+		default:
+			speedPercent = GraphCapped( damage, 0, 2500, 0, 1.0 )
+	}
+
+	//float dif = GraphCapped( dot, -1, -0.5, 1, 0 )
+	//speedPercent = speedPercent * dif + ( 1.0 - dif )
+
+	speedPercent *= GraphCapped( dot, -1.0, -0.5, 1, 0 )
+
+	//printt( " " )
+	//printt( "Damage: " + damage )
+	//printt( "dot: " + dot )
+	//printt( "speedPercent: " + speedPercent )
+	speedPercent = 1.0 - speedPercent
+	// make the dot into a tighter range
+	//dot += 0.5
+	//dot *= -2.0
+
+	//printt( "modifier: " + ( speedPercent ) )
+	velocity *= ( speedPercent )
+	player.SetVelocity( velocity )
+}
+
+
+
+void function DoomedHealthThink( entity titanSoul, var damageInfo )
+{
+	Assert( expect table( titanSoul.lastAttackInfo ).attacker, "Player entered reserve health with no attacker" )
+
+	entity soulOwner = titanSoul.GetTitan()
+	Assert( IsValid( soulOwner ), "Invalid owner " + soulOwner )
+
+	titanSoul.soul.doomedStartTime = Time()
+
+	// kill any existing health regen thread
+	titanSoul.Signal( SIGNAL_TITAN_HEALTH_REGEN )
+	titanSoul.Signal( SIGNAL_TITAN_SHIELD_REGEN )
+
+	titanSoul.EndSignal( "OnDestroy" )
+	titanSoul.EndSignal( "OnTitanDeath" )
+
+	float tickRate = 0.15
+	float maxDoomedHealth = GetTitanSoulDoomedHealth( titanSoul )
+	float doomedHealth = maxDoomedHealth
+	if (  DamageInfo_GetCustomDamageType( damageInfo ) & DF_SKIP_DAMAGE_PROT )
+		doomedHealth = min( doomedHealth + soulOwner.GetHealth() - DamageInfo_GetDamage( damageInfo ), doomedHealth )
+
+	float DPS = (doomedHealth / TITAN_DOOMED_MAX_DURATION )
+
+	titanSoul.EnableDoomed()
+	titanSoul.doomedTime = Time()
+	soulOwner.SetDoomed()
+	DoomTitan( soulOwner )
+	soulOwner.Signal( "Doomed" )
+	titanSoul.Signal( "Doomed" )
+
+	// allow the damage to go through before resetting the health, so that we get proper damage indicators, etc...
+	// this process should also be in code
+	WaitEndFrame()
+
+	// grab the soul owner again since there was a wait
+	soulOwner = titanSoul.GetTitan()
+	if ( !IsValid( soulOwner ) )
+		return
+
+	if ( PROTO_AlternateDoomedState() )
+	{
+		//printt( soulOwner.GetHealth() )
+		soulOwner.SetHealth( doomedHealth )
+		soulOwner.SetMaxHealth( maxDoomedHealth )
+		//soulOwner.SetHealthPerSegment( 0 )
+
+		soulOwner.ClearDoomed()
+
+		if ( soulOwner.IsPlayer() && PlayerHasAutoEject( soulOwner ) )
+		{
+			HandleAutoEject( soulOwner, titanSoul )
+		}
+		else
+		{
+			//If it's an auto-titan with auto-eject, this just instantly kills it.
+			var attacker = ( "attacker" in titanSoul.lastAttackInfo ) ? expect table( titanSoul.lastAttackInfo ).attacker : null
+			expect entity( attacker )
+			var inflictor = ( "inflictor" in titanSoul.lastAttackInfo ) ? expect table( titanSoul.lastAttackInfo ).inflictor : null
+			expect entity( inflictor )
+			var damageSource = ( "damageSourceId" in titanSoul.lastAttackInfo ) ? expect table( titanSoul.lastAttackInfo ).damageSourceId : -1
+			int damageFlags =  expect int( expect table( titanSoul.lastAttackInfo ).scriptType )
+			if ( SoulHasPassive( titanSoul, ePassives.PAS_AUTO_EJECT ) )
+			{
+				int scriptDamageType = damageTypes.titanEjectExplosion | damageFlags
+				soulOwner.Die( attacker, inflictor, { scriptType = scriptDamageType, damageSourceId = damageSource } )
+			}
+		}
+		return
+	}
+	soulOwner.SetHealth( doomedHealth )
+	soulOwner.SetMaxHealth( maxDoomedHealth )
+	//soulOwner.SetHealthPerSegment( 0 )
+
+	string settings = GetSoulPlayerSettings( titanSoul )
+	float damageMod = 1.0
+	while ( true )
+	{
+		table lastAttackInfo = expect table( titanSoul.lastAttackInfo )
+
+		table extraDeathInfo = {}
+		extraDeathInfo.scriptType <- (DF_NO_INDICATOR | DF_DOOMED_HEALTH_LOSS)
+		if ( expect int( lastAttackInfo.scriptType ) & DF_BURN_CARD_WEAPON )
+			extraDeathInfo.scriptType = expect int( extraDeathInfo.scriptType ) | DF_BURN_CARD_WEAPON
+		if ( expect int( lastAttackInfo.scriptType ) & DF_VORTEX_REFIRE )
+			extraDeathInfo.scriptType = expect int( extraDeathInfo.scriptType ) | DF_VORTEX_REFIRE
+
+		extraDeathInfo.damageSourceId <- lastAttackInfo.damageSourceId
+
+		entity soulOwner = titanSoul.GetTitan()
+		if ( !IsValid( soulOwner ) )
+			return
+		if ( soulOwner.IsPlayer() )
+		{
+			//if ( PlayerHasPassive( soulOwner, ePassives.PAS_DOOMED_TIME ) )
+			//	damageMod = 0.4
+			//else
+			//	damageMod = 1.0
+
+			if ( PlayerHasAutoEject( soulOwner ) )
+			{
+				//printt( "About to Auto Eject" )
+				// do it in the loop cause player could somehow get in a titan in doomed state
+				HandleAutoEject( soulOwner, titanSoul )
+			}
+		}
+
+		float dmgAmount = DPS * tickRate * damageMod
+
+		soulOwner.TakeDamage( dmgAmount, expect entity( lastAttackInfo.attacker ), expect entity( lastAttackInfo.inflictor ), extraDeathInfo )
+
+		wait tickRate
+	}
+}
+
+void function HandleAutoEject( entity rider, entity soul )
+{
+	soul.EndSignal( "OnDestroy" )
+	soul.EndSignal( "OnTitanDeath" )
+
+	thread TitanEjectPlayer( rider )
+	if ( soul.IsEjecting() )
+	{
+		 // so we don't cloak the titan during the ejection animation
+		if ( GetNuclearPayload( rider ) > 0 )
+			wait 2.0
+		else
+			wait 1.0
+
+		EnableCloak( rider, 7.0 )
+		return
+	}
+}
+
+void function TitanShieldRegenThink( entity soul  )
+{
+	thread TitanShieldRegenThink_Internal( soul )
+}
+
+// HACK: this technically doesn't work properly because server framerate and all that jazz. Should really be in code.
+void function TitanShieldRegenThink_Internal( entity soul )
+{
+	soul.EndSignal( "OnDestroy" )
+	soul.EndSignal( "Doomed" )
+	soul.EndSignal( "StopShieldRegen" )
+
+	//Shield starts at 0 health for now
+	string settings = GetSoulPlayerSettings( soul )
+	bool hasShield = Dev_GetPlayerSettingByKeyField_Global( settings, "start_with_shields" ) == 1
+
+	if ( !hasShield )
+		soul.SetShieldHealth( 0 )
+
+	int lastShieldHealth = soul.GetShieldHealth()
+	bool shieldHealthSound = false
+	int maxShield = soul.GetShieldHealthMax()
+	float lastTime = Time()
+
+	while ( true )
+	{
+		entity titan = soul.GetTitan()
+		if ( !IsValid( titan ) )
+			return
+
+		int shieldHealth = soul.GetShieldHealth()
+		Assert( titan )
+
+		if ( lastShieldHealth <= 0 && shieldHealth && titan.IsPlayer() )
+		{
+		 	EmitSoundOnEntityOnlyToPlayer( titan, titan, "titan_energyshield_up_1P" )
+		 	shieldHealthSound = true
+		 	if ( titan.IsTitan() )
+		 	{
+		 		GiveFriendlyRodeoPlayerProtection( titan )
+		 	}
+		 	else
+		 	{
+		 		if ( titan.IsPlayer() )
+		 		{
+		 			printt( "Player was " + titan.GetPlayerSettings() )
+		 		}
+
+		 		printt( "ERROR! Expected Titan, but got " + titan )
+		 	}
+		}
+		else if ( shieldHealthSound && shieldHealth == soul.GetShieldHealthMax() )
+		{
+			shieldHealthSound = false
+		}
+		else if ( lastShieldHealth > shieldHealth && shieldHealthSound )
+		{
+		 	StopSoundOnEntity( titan, "titan_energyshield_up_1P" )
+		 	shieldHealthSound = false
+		}
+
+		if ( Time() >= soul.nextRegenTime && TitanHasRegenningShield( soul ) )
+		{
+			float shieldRegenRate = maxShield / ( GetShieldRegenTime( soul ) / SHIELD_REGEN_TICK_TIME )
+
+			if ( SoulHasPassive( soul, ePassives.PAS_SHIELD_BOOST ) )
+				shieldRegenRate = SHIELD_BEACON_REGEN_RATE
+
+			float frameTime = max( 0.0, Time() - lastTime )
+			shieldRegenRate = shieldRegenRate * frameTime / SHIELD_REGEN_TICK_TIME
+			// Faster shield recharge if we have Fusion Core active ability ( Stryder Signature )
+			//if ( titan.IsPlayer() && PlayerHasPassive( titan, ePassives.PAS_FUSION_CORE ) )
+			//	shieldRegenRate *= 1.25
+
+			soul.SetShieldHealth( minint( soul.GetShieldHealthMax(), int( shieldHealth + shieldRegenRate ) ) )
+		}
+
+		lastShieldHealth = shieldHealth
+		lastTime = Time()
+		WaitFrame()
+	}
+}
+
+float function GetShieldRegenTime( entity soul )
+{
+	float time
+	if ( SoulHasPassive( soul, ePassives.PAS_SHIELD_REGEN ) )
+		time = TITAN_SHIELD_REGEN_TIME * 0.5
+	else
+		time = TITAN_SHIELD_REGEN_TIME
+
+	return time
+}
+
+float function GetHealthRegenDelay( entity soul )
+{
+	if ( GetDoomedState( soul.GetTitan() ) )
+		return TITAN_DOOMED_REGEN_DELAY
+
+	return GetShieldRegenDelay( soul )
+}
+
+float function GetShieldRegenDelay( entity soul )
+{
+	float regenDelay = TITAN_SHIELD_REGEN_DELAY
+
+	string settings = GetSoulPlayerSettings( soul )
+	regenDelay = expect float( Dev_GetPlayerSettingByKeyField_Global( settings, "titan_regen_delay" ) )
+
+	float delay
+	if ( SoulHasPassive( soul, ePassives.PAS_SHIELD_REGEN ) )
+		delay = regenDelay - 1.0
+	else
+		delay = regenDelay
+
+	if ( SoulHasPassive( soul, ePassives.PAS_SHIELD_BOOST ) )
+		delay = 2.0
+
+	return delay
+}
+
+void function RecordDamageToNPCTitanSoul( entity soul, var damageInfo )
+{
+	float damage = DamageInfo_GetDamage( damageInfo )
+
+	vector inflictOrigin = <0.0,0.0,0.0>
+	entity inflictor = DamageInfo_GetInflictor( damageInfo )
+	if ( IsValid( inflictor ) )
+		inflictOrigin = inflictor.GetOrigin()
+
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+
+	entity weapon = DamageInfo_GetWeapon( damageInfo )
+	array<string> weaponMods
+	if ( IsValid( weapon ) )
+		weaponMods = weapon.GetMods()
+
+	StoreDamageHistoryAndUpdate( soul, TITAN_HEALTH_HISTORY_FALLOFF_END, damage, inflictOrigin, DamageInfo_GetCustomDamageType( damageInfo ), DamageInfo_GetDamageSourceIdentifier( damageInfo ), attacker, weaponMods )
+}
+
+void function AutoTitan_TryMultipleTitanCallout( entity titan, var damageInfo )
+{
+	array<entity> titans = GetTitansHitMeInTime( titan.GetTitanSoul(), 5 )
+	entity enemy = titan.GetEnemy()
+	if ( IsAlive( enemy )  && enemy.IsTitan() && !titans.contains( enemy ) )
+		titans.append( enemy )
+
+	int totalEngagedTitans = titans.len()
+
+	if ( totalEngagedTitans == 1 )
+		PlayAutoTitanConversation( titan, "autoEngageTitan" )
+	else if ( totalEngagedTitans > 1 )
+		PlayAutoTitanConversation( titan, "autoEngageTitans" )
+}
+
+float function CalculateNextRegenTime( float damage, int damageType, bool critHit, float oldNextRegenTime, float maxRegenDelay )
+{
+	if ( damage >= TITAN_REGEN_MIN_DAMAGE || critHit || damageType & DF_STOPS_TITAN_REGEN )
+	{
+		if ( PROTO_VariableRegenDelay() )
+		{
+			// regen delay based on damage dealt
+			float minRegenDelay = 1.0
+			float regenDelay = GraphCapped( damage, 100, 1000, minRegenDelay, maxRegenDelay )
+
+			float nextRegenTime = oldNextRegenTime
+			float delayBasedOnCurrentTime = Time() + regenDelay
+			float delayBasedOnPreviousDelay = nextRegenTime + regenDelay
+			maxRegenDelay = Time() + maxRegenDelay
+
+			delayBasedOnCurrentTime = min( delayBasedOnCurrentTime, maxRegenDelay )
+			delayBasedOnPreviousDelay = min( delayBasedOnPreviousDelay, maxRegenDelay )
+			nextRegenTime = max( delayBasedOnCurrentTime, delayBasedOnPreviousDelay )
+
+			return nextRegenTime
+		}
+		else
+		{
+			// old style
+			return Time() + maxRegenDelay
+		}
+	}
+	else
+	{
+		float addTime = TITAN_REGEN_MIN_DAMAGE_DELAY
+
+		if ( oldNextRegenTime <= Time() + addTime )
+			return Time() + addTime
+	}
+
+	return oldNextRegenTime
+}
+
+void function AddCreditToTitanCoreBuilderForTitanDamageInflicted( entity titanAttacker, float damage )
+{
+	Assert( TitanDamageRewardsTitanCoreTime() )
+
+	float rateRaw = CORE_BUILD_PERCENT_FROM_TITAN_DAMAGE_INFLICTED
+	float rate = (rateRaw * 0.01)
+	float credit = (rate * damage)
+	if ( credit > 0.0 )
+		AddCreditToTitanCoreBuilder( titanAttacker, credit )
+}
+
+void function AddCreditToTitanCoreBuilderForTitanDamageReceived( entity titanVictim, float damage )
+{
+	Assert( TitanDamageRewardsTitanCoreTime() )
+
+	float rateRaw = CORE_BUILD_PERCENT_FROM_TITAN_DAMAGE_RECEIVED
+	float rate = (rateRaw * 0.01)
+	float credit = (rate * damage)
+	if ( credit > 0.0 )
+		AddCreditToTitanCoreBuilder( titanVictim, credit )
+}
+
+void function AddCreditToTitanCoreBuilderForDoomInflicted( entity titanAttacker )
+{
+	Assert( TitanDamageRewardsTitanCoreTime() )
+
+	float valueRaw = CORE_BUILD_PERCENT_FROM_DOOM_INFLICTED
+	float credit = (valueRaw * 0.01)
+	if ( credit > 0.0 )
+		AddCreditToTitanCoreBuilder( titanAttacker, credit )
+}
+
+void function AddCreditToTitanCoreBuilderForDoomEntered( entity titanVictim )
+{
+	Assert( TitanDamageRewardsTitanCoreTime() )
+
+	float valueRaw = CORE_BUILD_PERCENT_FROM_DOOM_ENTERED
+	float credit = (valueRaw * 0.01)
+	if ( credit > 0.0 )
+		AddCreditToTitanCoreBuilder( titanVictim, credit )
+}
+
+void function AddCreditToTitanCoreBuilder( entity titan, float credit )
+{
+	Assert( TitanDamageRewardsTitanCoreTime() )
+
+	entity soul = titan.GetTitanSoul()
+	if ( !IsValid( soul ) )
+		return
+
+	entity bossPlayer = soul.GetBossPlayer()
+
+	if ( titan.IsPlayer() )
+	{
+		if ( !IsValid( bossPlayer ) )
+			return
+
+		if ( bossPlayer.IsTitan() && TitanCoreInUse( bossPlayer ) )
+			return
+	}
+	else
+	{
+		Assert( titan.IsNPC() )
+		if ( TitanCoreInUse( titan ) )
+			return
+	}
+
+	if ( !IsAlive( titan ) )
+		return
+
+	if ( SoulHasPassive( soul, ePassives.PAS_VANGUARD_COREMETER ) )
+		credit *= 1.10
+
+	credit *= file.earn_meter_titan_multiplier
+	#if MP
+	if ( titan.IsPlayer() )
+	{
+		float coreModifier = titan.GetPlayerNetFloat( "coreMeterModifier" )
+		if ( coreModifier >= 0.5 )
+			credit *= FD_HOT_STREAK_MULTIPLIER
+	}
+	#endif
+
+	bool coreWasAvailable = false
+
+	if ( IsValid( bossPlayer ) )
+		coreWasAvailable = IsCoreChargeAvailable( bossPlayer, soul )
+
+	float oldTotalCredit = SoulTitanCore_GetNextAvailableTime( soul )
+	float newTotalCredit = (credit + oldTotalCredit)
+	if ( newTotalCredit >= 0.998 ) //JFS - the rui has a +0.001 for showing the meter as full. This fixes the case where the core meter displays 100 but can't be fired.
+		newTotalCredit = 1.0
+	SoulTitanCore_SetNextAvailableTime( soul, newTotalCredit )
+
+	if ( IsValid( bossPlayer ) && !coreWasAvailable && IsCoreChargeAvailable( bossPlayer, soul ) )
+	{
+		AddPlayerScore( bossPlayer, "TitanCoreEarned" )
+		#if MP
+			UpdateTitanCoreEarnedStat( bossPlayer, titan )
+			PIN_PlayerAbilityReady( bossPlayer, "core" )
+		#endif
+	}
+
+	#if MP
+	if ( IsValid( bossPlayer ) )
+		JFS_PlayerEarnMeter_CoreRewardUpdate( titan, oldTotalCredit, newTotalCredit )
+	#endif
+
+	#if HAS_TITAN_TELEMETRY
+	if ( titan.IsPlayer() )
+	{
+		if ( IsCoreChargeAvailable( titan, soul ) )
+		{
+			TitanHints_TryShowHint( titan, [OFFHAND_EQUIPMENT] )
+		}
+	}
+	#endif
+}
+
+float function GetTitanCoreTimer( entity titan )
+{
+	Assert( titan.IsTitan() )
+	entity soul = titan.GetTitanSoul()
+	Assert( soul )
+
+	return SoulTitanCore_GetNextAvailableTime( soul ) - Time()
+}
+
+
+
+void function SetTitanCoreTimer( entity titan, float timeDiff )
+{
+	Assert( !TitanDamageRewardsTitanCoreTime() )
+
+	Assert( titan.IsTitan() )
+	entity soul = titan.GetTitanSoul()
+	Assert( soul )
+
+	float newTime = Time() + timeDiff
+	SoulTitanCore_SetNextAvailableTime( soul, max( Time() - 1, newTime ) )
+}
+
+
+void function Titan_MonarchCleanup( entity soul, var damageInfo )
+{
+	entity titan = soul.GetTitan()
+
+	if ( !IsValid( titan ) )
+		return
+
+	int statesIndex = titan.FindBodyGroup( "states" )
+	if ( statesIndex <= -1 )
+		return
+
+	titan.SetBodygroup( statesIndex, 2 )
+}

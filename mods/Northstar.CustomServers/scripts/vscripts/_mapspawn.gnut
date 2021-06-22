@@ -1,0 +1,217 @@
+//=========================================================
+//	_mapspawn.nut
+//  Called on newgame or transitions, BEFORE entities have been created and initialized
+//=========================================================
+
+global function CodeCallback_MapSpawn
+global function CodeCallback_ClientCommand
+global table _ClientCommandCallbacks = {}
+global entity _cc = null
+global entity _sc = null
+
+global struct spawnCallbackFuncArray
+{
+	array<void functionref( entity )> callbackArray
+	string entityClassname
+}
+
+global struct spawnCallbackFuncArray_scriptNoteworthy
+{
+	array<void functionref( entity )> callbackArray
+	string scriptNoteworthy
+}
+
+global struct spawnCallbackEditorClassFuncArray
+{
+	array<void functionref( entity )> callbackArray
+	string entityClassname
+	string entityEditorClassname
+}
+
+global typedef pilotEliminationDialogueCallbackType void functionref( int, array<entity>, int, array<entity> )
+
+global struct SvGlobals
+{
+	entity worldspawn
+
+	array<spawnCallbackFuncArray> 					spawnCallbackFuncs
+	array<spawnCallbackEditorClassFuncArray>		spawnCallbackEditorClassFuncs
+	array<spawnCallbackFuncArray_scriptNoteworthy>	spawnCallbackFuncs_scriptNoteworthy
+
+	table<string, array<void functionref( entity )> > spawnCallbacks_scriptName
+
+	array<pilotEliminationDialogueCallbackType> 	pilotEliminationDialogueCallbacks
+	table<string, array<bool functionref( entity player, entity healthpack)> > onTouchHealthKitCallbacks
+	array<void functionref( entity )> onClientConnectedCallbacks
+	array<void functionref(entity)> onPlayerRespawnedCallbacks
+	array<void functionref( entity player, entity npc_titan )> onPilotBecomesTitanCallbacks
+	array<void functionref( entity player, entity npc_titan )> onTitanBecomesPilotCallbacks
+	array<void functionref( entity, entity, entity) > soulTransferFuncs
+	array<void functionref( entity titanSoul )> soulSettingsChangeFuncs
+	array<void functionref( entity titanSoul )> soulInitFuncs
+	table<string, array<void functionref( entity, var )> > damageByCallbacks
+
+	bool functionref( entity ) gameModeAbandonPenaltyApplies
+
+	bool functionref() timelimitCompleteFunc
+	bool functionref( entity ) titanAvailabilityCheck
+	bool cloakBreaksOnMelee = true //Reexamine if still needed if we have same behavior for cloak in MP/SP.
+	float defaultPilotLeechTime = 2.8
+	int winReason
+	string winReasonText
+	string lossReasonText
+	string gameWonAnnouncement
+	string gameLostAnnouncement
+
+	table< int, int > npcsSpawnedThisFrame_scriptManagedArray
+
+	float pilotRespawnDelay = 0.0
+
+	array<void functionref( entity, var )> 		soulDeathFuncs
+
+	table<string, void functionref(entity)> globalAnimEventCallbacks
+
+	array<void functionref( entity titan, TitanLoadoutDef newTitanLoadout )> onTitanGetsNewLoadoutCallbacks
+	array<void functionref( entity player, PilotLoadoutDef newTitanLoadout )> onPlayerGetsNewPilotLoadoutCallbacks
+	array<void functionref( TitanLoadoutDef newTitanLoadout )> onUpdateDerivedTitanLoadoutCallbacks
+	array<void functionref( entity player, TitanLoadoutDef newTitanLoadout )> onUpdateDerivedPlayerTitanLoadoutCallbacks
+	array<void functionref( PilotLoadoutDef newPilotLoadout )> onUpdateDerivedPilotLoadoutCallbacks
+
+	array<void functionref( entity victim, entity attacker, var damageInfo )> onPlayerKilledCallbacks
+	array<void functionref( entity victim, entity attacker, var damageInfo )> onNPCKilledCallbacks
+
+	array<void functionref( entity victim, var damageInfo )> onTitanDoomedCallbacks
+	array<void functionref( entity victim, entity attacker )> onTitanHealthSegmentLostCallbacks
+	array<void functionref( entity player )> onClientConnectingCallbacks
+	array<void functionref( entity player )> onClientDisconnectedCallbacks
+	array<void functionref( entity attacker, entity victim )> onPlayerAssistCallbacks
+
+	array<void functionref( entity player )> onPlayerDropsScriptedItemsCallbacks
+	array<void functionref( entity player )> onPlayerClassChangedCallbacks
+
+	array<void functionref( entity ship, string anim )> onWaveSpawnDropshipSpawned
+
+	table<string, array<void functionref( entity ent )> >onEntityChangedTeamCallbacks
+
+	table<string, bool functionref( entity player, array<string>args )> clientCommandCallbacks
+	array<void functionref()>[ eGameState._count_ ] gameStateEnterCallbacks
+
+	bool allowPointsOverLimit = false
+
+	bool bubbleShieldEnabled = true
+
+	entity levelEnt
+
+	//TODO: Get rid of these and use the new StartParticleEffectInWorld_ReturnEntity etc functions
+	entity fx_CP_color_enemy //Used for setting control points on FX
+	entity fx_CP_color_friendly //Used for setting control points on FX
+	entity fx_CP_color_neutral //Used for setting control points on FX
+
+	array<entity>[ TEAM_COUNT ] classicMPDropships
+	bool evacEnabled = false
+
+	void functionref( entity player ) observerFunc
+	array<void functionref()> playingThinkFuncTable
+	array<void functionref()> thirtySecondsLeftFuncTable
+	void functionref( int progress ) matchProgressAnnounceFunc
+
+	void functionref( entity player ) cp_VO_NagFunc
+	void functionref( entity player, entity hardpoint, float distance ) cp_VO_ApproachFunc
+	void functionref( entity touchEnt, entity hardpoint ) cp_VO_LeftTriggerWithoutCappingFunc
+
+	table<int, string> hardpointStringIDs
+
+	entity[ TEAM_COUNT ] flagSpawnPoints
+
+	vector distCheckTestPoint
+
+	void functionref() scoreEventOverrideFunc
+
+	array<void functionref( entity, entity )> onLeechedCustomCallbackFunc
+
+	bool forceSpawnAsTitan = false
+	bool forceSpawnIntoTitan = false
+	bool forceDisableTitanfalls = false
+	bool titanfallEnabled = true
+
+	//RoundWinningKillReplay related
+	entity roundWinningKillReplayViewEnt = null
+	entity roundWinningKillReplayVictim = null
+	int roundWinningKillReplayInflictorEHandle = -1
+	bool watchingRoundWinningKillReplay = false
+
+	bool forceNoFinalRoundDraws = false //Setting this to true will force a round based mode to keep playing rounds until a winner is determined. Game will not end on draw.
+
+	bool roundBasedTeamScore_RoundReset = true //if true, reset team scores at the start of each round.
+	bool isInPilotGracePeriod = false // if true, all players will be allowed to switch loadouts
+}
+
+global SvGlobals svGlobal
+
+void function CodeCallback_MapSpawn() // original script entry point
+{
+	ScriptCompilerTest()
+	LoadDiamond()
+
+	_cc = CreateEntity( "point_clientcommand" )
+	_sc = CreateEntity( "point_servercommand" )
+	PrecacheEntity( "env_entity_dissolver" )
+
+	LevelVarInit()
+
+	svGlobal.worldspawn = GetEnt( "worldspawn" )
+	svGlobal.worldspawn.kv.startdark = true
+
+	PrecacheModel( $"models/dev/editor_ref.mdl" )
+	PrecacheModel( $"models/dev/empty_model.mdl" )
+	PrecacheModel( $"models/test/brad/store_card.mdl" )
+	PrecacheModel( $"models/test/brad/store_card_angel_city.mdl" )
+	PrecacheModel( $"models/test/brad/store_card_colony.mdl" )
+	PrecacheModel( $"models/test/brad/store_card_relic.mdl" )
+	PrecacheModel( $"models/test/brad/store_card_prime_bundle.mdl" )
+	PrecacheModel( $"models/test/brad/store_titan_warpaint_bundle.mdl" )
+	PrecacheModel( $"models/test/brad/store_weapon_warpaint_bundle.mdl" )
+	PrecacheModel( $"models/test/brad/jump_start.mdl" )
+	PrecacheModel( $"models/weapons/shoulder_rocket_SRAM/ptpov_law_menu.mdl" ) // HACK
+	PrecacheModel( $"models/weapons/lstar/ptpov_lstar_menu.mdl" ) // HACK
+	PrecacheModel( $"models/weapons/softball_at/ptpov_softball_at_menu.mdl" ) // HACK
+	PrecacheModel( $"models/weapons/mastiff_stgn/ptpov_mastiff_menu.mdl" ) // HACK
+	PrecacheModel( $"models/error.mdl" ) // model used when no model is provided
+	if ( DREW_MODE == 2 ) // TEMPHACK
+		PrecacheModel( GREEN_SCREEN_MODEL )
+
+	printl( "Code Script: _mapspawn" )
+
+	// This will end up in either SP or MP
+	SPMP_MapSpawn_Init()
+}
+
+
+var function CodeCallback_ClientCommand( entity player, array<string> args )
+{
+	/*printl( "############################" )
+	printl( "CodeCallback_ClientCommand() before" )
+	printl( "player = " + player )
+	printl( "args:" )
+	foreach( key, value in args )
+		printl( key + " : " + value )
+	printl( "############################" )*/
+
+	string commandString = args.remove( 0 )
+
+	//TODO: Track down Why VModEnable is being called from code?
+
+	//Assert( commandString in svGlobal.clientCommandCallbacks )
+	if ( commandString in svGlobal.clientCommandCallbacks  )
+	{
+		return svGlobal.clientCommandCallbacks[ commandString ]( player, args )
+	}
+	else
+	{
+		printl( "############################" )
+		printl( "CommandString: " + commandString  + " was not added via AddClientCommandCallback but is being called in CodeCallback_ClientCommand" )
+		printl( "############################" )
+		return false
+	}
+}
+

@@ -1,0 +1,524 @@
+untyped
+
+global function HealthRegenInit
+
+global function TitanLoseSegementFX //JFS: Only being used for Rodeo now, rename later if needed
+global function GibBodyPart
+
+const SEGMENT_DOWN_SOUNDS_3P = [
+	"titan_healthbar_tier3_down_3P_vs_3P", // 0 left (doom)
+	"titan_healthbar_tier2_down_3P_vs_3P", // 1 left
+	"titan_healthbar_tier1_down_3P_vs_3P", // 2 left
+	"titan_healthbar_tier1_down_3P_vs_3P" // shield gone
+]
+
+const SEGMENT_DOWN_SOUNDS_3P_ATTACKER = [
+	"titan_healthbar_tier3_down_1P_vs_3P", // 0 left (doom)
+	"titan_healthbar_tier2_down_1P_vs_3P", // 1 left
+	"titan_healthbar_tier1_down_1P_vs_3P", // 2 left
+	"titan_healthbar_tier1_down_1P_vs_3P" // shield gone
+]
+
+const SEGMENT_DOWN_SOUNDS_1P = [
+	"titan_healthbar_tier3_down_1P", // 0 left (doom)
+	"titan_healthbar_tier2_down_1P", // 1 left
+	"titan_healthbar_tier1_down_1P", // 2 left
+	"titan_healthbar_tier1_down_1P" // shield gone
+]
+
+const DAMAGE_FORGIVENESS_CEILING = 1200.0
+const DAMAGE_FORGIVENESS_FLOOR = 500.0
+const LOW_HEALTH_WARNING_SOUND = "Weapon_Vortex_Gun.ExplosiveWarningBeep"
+
+const TITAN_DAMAGE_MITIGATION_DAMAGESCALE = 0.5
+
+struct {
+	int shieldDecayRate = 2
+
+	table< entity, table< entity, float > > soulToSoulDamageMemory
+} file;
+
+function HealthRegenInit()
+{
+	if ( GetCurrentPlaylistVarInt( "titan_health_decay_amount", 0 ) > 0 )
+	{
+		AddSoulInitFunc( TitanHealthDecayThink )
+	}
+
+	AddSoulInitFunc( TitanHealthRegenThink )
+
+	if ( TitanShieldDecayEnabled() )
+	{
+		AddSoulInitFunc( TitanShieldDecayThink )
+	}
+
+	AddDamageCallback( "player", TitanSegmentedHealth_OnDamage )
+	AddDamageCallback( "npc_titan", TitanSegmentedHealth_OnDamage )
+	AddCallback_OnTitanDoomed( OnTitanDoomed )
+
+	RegisterSignal( "HealthSegmentLost" )
+}
+
+
+void function TitanHealthDecayThink( entity soul )
+{
+	thread TitanHealthDecayThinkInternal( soul )
+}
+
+void function TitanHealthDecayThinkInternal( entity soul )
+{
+	soul.EndSignal( "OnDestroy" )
+	soul.EndSignal( "OnTitanDeath" )
+
+	soul.SetShieldHealth( 0 )
+
+	while ( 1 )
+	{
+		entity titan = soul.GetTitan()
+		int damageAmout = GetCurrentPlaylistVarInt( "titan_health_decay_amount", 0 )
+		titan.TakeDamage( damageAmout, null, null, { scriptType = DF_DOOMED_HEALTH_LOSS, damageSourceId = damagedef_suicide } )
+		WaitFrame()
+	}
+}
+
+void function TitanHealthRegenThink( entity soul )
+{
+	thread TitanHealthRegenThink_Internal( soul )
+}
+
+void function TitanHealthRegenThink_Internal( entity soul )
+{
+	soul.EndSignal( SIGNAL_TITAN_HEALTH_REGEN )
+	soul.EndSignal( "OnTitanDeath" )
+	soul.EndSignal( "OnDestroy" )
+
+	if ( !soul.soul.regensHealth )
+		return
+
+	entity titan = soul.GetTitan()
+
+	if ( !IsValid( titan ) )
+		return
+
+	int healthPerTab = GetSegmentHealthForTitan( titan )
+
+	// set this if AI titans need to be aware of segment health. Not used currently
+	//titan.SetHealthPerSegment( healthPerTab )
+
+	int lastTitanHealth = titan.GetHealth()
+	bool regenSound = false
+	int maxHealth = titan.GetMaxHealth()
+	float lastTime = Time()
+
+	while ( 1 )
+	{
+		titan = soul.GetTitan()
+		if ( !IsAlive( titan ) )
+			return
+		int titanHealth = titan.GetHealth()
+		Assert( titan )
+
+		if ( !titan.IsTitan() )
+			return
+
+		if ( !soul.soul.regensHealth )
+			return
+
+		int currentRegenTab = GetTitanCurrentRegenTab( titan )
+
+		if ( currentRegenTab != GetSoulBatteryCount( soul ) )
+			SetSoulBatteryCount( soul, GetTitanCurrentRegenTab( titan ) )
+
+		int maxHealthForCurrentTab = currentRegenTab * healthPerTab
+
+		if ( titanHealth == maxHealthForCurrentTab )
+		{
+			if ( regenSound )
+			{
+			 	StopSoundOnEntity( titan, "titan_energyshield_up" )
+			 	regenSound = false
+		 	}
+		}
+
+		lastTitanHealth = titanHealth
+		lastTime = Time()
+		WaitFrame()
+	}
+}
+
+void function TitanSegmentedHealth_OnDamage( entity titan, var damageInfo )
+{
+	if ( !titan.IsTitan() )
+		return
+
+	entity soul = titan.GetTitanSoul()
+
+	if ( !IsValid( soul ) )
+		return
+
+	if ( ShouldReduceDamageForSegmentedHealth( soul, damageInfo ) )
+		DamageInfo_ScaleDamage( damageInfo, 0.3 )
+
+	thread TitanSegmentedHealth_OnDamage_Thread( soul, damageInfo )
+}
+
+bool function ShouldReduceDamageForSegmentedHealth( entity soul, damageInfo )
+{
+	if ( !soul.soul.rebooting )
+		return false
+
+	if ( IsRodeoDamageFromBatteryPack( soul, damageInfo ) )
+		return false
+
+	if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOMED_HEALTH_LOSS )
+		return false
+
+	if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOM_FATALITY )
+		return false
+
+	return true
+}
+
+function TitanSegmentedHealth_OnDamage_Thread( entity soul, damageInfo )
+{
+	soul.EndSignal( "OnTitanDeath" )
+	soul.EndSignal( "OnDestroy" )
+	soul.EndSignal( "Doomed" )
+
+	entity titan = soul.GetTitan()
+
+	vector damageOrigin = GetDamageOrigin( damageInfo, titan )
+	float damageAmount = DamageInfo_GetDamage( damageInfo )
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	int hitBox = DamageInfo_GetHitBox( damageInfo )
+
+	int healthFloor = CalculateHealthFloorForDamage( soul, titan, damageInfo )
+
+	bool skipDoom = ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_SKIPS_DOOMED_STATE ) > 0
+
+
+	WaitEndFrame()
+
+	titan = soul.GetTitan()
+	Assert( IsValid( titan ) )
+
+	if ( soul.soul.lastSegmentLossTime >= Time() )
+		return
+
+	if ( GetDoomedState( titan ) )
+		return
+
+	if ( titan.GetHealth() > healthFloor )
+		return
+
+	if ( !IsAlive( titan ) )
+		return
+
+	string settings = GetSoulPlayerSettings( soul )
+	if ( Dev_GetPlayerSettingByKeyField_Global( settings, "use_damage_states" ) == 1 )
+		UpdateDamageStateForTab( titan, GetTitanCurrentRegenTab( titan ), hitBox )
+
+	thread TitanLoseSegement( soul, titan, damageOrigin, damageAmount, attacker )
+}
+
+int function CalculateHealthFloorForDamage( entity soul, entity titan, damageInfo )
+{
+	//Lets you bypass the health segment limitation and remove an entire health segment.
+	/*if ( IsRodeoDamageFromBatteryPack( soul, damageInfo ) )
+		return minint( 0, int ( titan.GetHealth() - DamageInfo_GetDamage( damageInfo ) ) )
+	*/
+	int oldTab = GetTitanCurrentRegenTab( titan )
+	return ( oldTab - 1 ) * GetSegmentHealthForTitan( titan )
+}
+
+void function TitanLoseSegement( entity soul, entity titan, vector damageOrigin, float damageAmount, entity attacker )
+{
+	if ( !IsValid( soul ) )
+		return
+
+	if ( !IsValid( titan ) )
+		return
+
+	if ( soul.soul.lastSegmentLossTime >= Time() )
+		return
+
+	soul.soul.lastSegmentLossTime = Time()
+
+	entity player
+	if ( titan.IsPlayer() )
+		player = titan
+
+	foreach ( callbackFunc in svGlobal.onTitanHealthSegmentLostCallbacks )
+	{
+		callbackFunc( titan, attacker )
+	}
+
+	// Added via AddTitanCallback_OnHealthSegmentLost
+	foreach ( callbackFunc in titan.e.entSegmentLostCallbacks )
+	{
+		callbackFunc( titan, attacker )
+	}
+
+	GiveDefenderAmmo( titan )
+
+	titan.Signal( "HealthSegmentLost" )
+
+	soul.EndSignal( "OnTitanDeath" )
+	soul.EndSignal( "OnDestroy" )
+
+	if ( GetCurrentPlaylistVarInt( "titan_health_chicklet_fx", 0 ) == 1 )
+		TitanLoseSegementFX( titan, attacker, damageOrigin )
+
+	SetSoulBatteryCount( soul, GetTitanCurrentRegenTab( titan ) )
+}
+
+void function TitanLoseSegementFX( entity titan, entity attacker, vector damageOrigin )
+{
+	int handle = titan.GetEncodedEHandle()
+	int handleAttacker = -1
+
+	if ( IsValid( attacker ) )
+		handleAttacker = attacker.GetEncodedEHandle()
+
+	array<entity> players = GetPlayerArray()
+	foreach ( player in players )
+	{
+		Remote_CallFunction_Replay( player, "ServerCallback_TitanLostHealthSegment", handle, handleAttacker, damageOrigin.x, damageOrigin.y, damageOrigin.z )
+	}
+
+	if ( !IsAlive( titan ) )
+		return
+
+	int currentRegenTab = minint( GetTitanCurrentRegenTab( titan ), SEGMENT_DOWN_SOUNDS_3P_ATTACKER.len()-1 )
+	if ( currentRegenTab < SEGMENT_DOWN_SOUNDS_3P_ATTACKER.len() )
+	{
+		if ( titan.IsPlayer() && IsAlive( attacker ) && attacker.IsPlayer() )
+		{
+			EmitSoundOnEntityOnlyToPlayer( titan, attacker, SEGMENT_DOWN_SOUNDS_3P_ATTACKER[ currentRegenTab ] )
+			EmitSoundOnEntityOnlyToPlayer( titan, titan, SEGMENT_DOWN_SOUNDS_1P[ currentRegenTab ] )
+
+			// need a command here to play for not victim and not attacker
+			EmitSoundOnEntityExceptToPlayer( titan, titan, SEGMENT_DOWN_SOUNDS_3P[ currentRegenTab ] )
+		}
+		else if ( IsAlive( attacker ) && attacker.IsPlayer() )
+		{
+			EmitSoundOnEntityOnlyToPlayer( titan, attacker, SEGMENT_DOWN_SOUNDS_3P_ATTACKER[ currentRegenTab ] )
+			EmitSoundOnEntityExceptToPlayer( titan, attacker, SEGMENT_DOWN_SOUNDS_3P[ currentRegenTab ] )
+		}
+		else if ( titan.IsPlayer() )
+		{
+			EmitSoundOnEntityOnlyToPlayer( titan, titan, SEGMENT_DOWN_SOUNDS_1P[ currentRegenTab ] )
+			EmitSoundOnEntityExceptToPlayer( titan, titan, SEGMENT_DOWN_SOUNDS_3P[ currentRegenTab ] )
+		}
+		else
+		{
+			EmitSoundOnEntity( titan, SEGMENT_DOWN_SOUNDS_3P[ currentRegenTab ] )
+		}
+	}
+}
+
+
+void function UpdateDamageStateForTab( entity titan, int tab, int hitBox )
+{
+	if ( hitBox == -1 ) // not every hitbox has data defined
+		return
+
+	var bodyGroup = titan.GetBodyGroupNameFromHitboxId( hitBox ) // can be null
+
+	if ( bodyGroup == null )
+	{
+		printt( "bodyGroup was null" )
+		return
+	}
+
+#if MP
+	// these are flipped on purpose to prevent both legs or arms from being blown up
+	switch ( bodyGroup )
+	{
+		case "left_leg":
+			if ( IsBroken( titan, "right_leg" ) )
+				return
+			break
+
+		case "right_leg":
+			if ( IsBroken( titan, "left_leg" ) )
+				return
+			break
+
+		case "left_arm":
+			if ( IsBroken( titan, "right_arm" ) )
+				return
+			break
+
+		case "right_arm":
+			if ( IsBroken( titan, "left_arm" ) )
+				return
+			break
+
+		default:
+			return
+	}
+
+	GibBodyPart( titan, bodyGroup )
+#else
+	int maxTab = 3
+	int count = maxTab - tab
+
+	RecursiveGibBodyPart( titan, bodyGroup, count )
+#endif
+}
+
+void function RecursiveGibBodyPart( entity titan, var bodyGroup, int count )
+{
+	GibBodyPart( titan, bodyGroup )
+
+	count -= 1
+	if ( count <= 0 )
+		return
+
+	foreach ( siblingName in titan.s.skeletonData[bodyGroup].siblings )
+	{
+		// printt( count + " recurse: " + siblingName )
+		RecursiveGibBodyPart( titan, siblingName, count )
+	}
+}
+
+bool function IsBroken( entity titan, var bodyGroup )
+{
+	local bodyGroupIndex = titan.FindBodyGroup( bodyGroup )
+	local stateCount = GetStateCountForBodyGroup( titan, bodyGroup )
+	local bodyGroupState = titan.GetBodyGroupState( bodyGroupIndex )
+
+	//return ( bodyGroupState >= (stateCount - 1) )
+	return ( bodyGroupState > 0 )
+}
+
+void function GibBodyPart( entity titan, var bodyGroup )
+{
+	// if ( IsBodyGroupBroken( titan, bodyGroup ) )
+	// 	return
+
+	// titan.s.damageStateInfo[bodyGroup] = 1
+
+	local bodyGroupIndex = titan.FindBodyGroup( bodyGroup )
+	local stateCount = GetStateCountForBodyGroup( titan, bodyGroup )
+	local bodyGroupState = titan.GetBodyGroupState( bodyGroupIndex )
+
+	if ( bodyGroupState >= (stateCount - 1) )
+		return
+
+	titan.SetBodygroup( bodyGroupIndex, bodyGroupState + 1 )
+	// printt( "break: " + bodyGroup )
+}
+
+function GiveAttackerAmmo( entity titan )
+{
+}
+
+void function TemporaryInvul( entity titan )
+{
+	titan.EndSignal( "OnDestroy" )
+	titan.EndSignal( "OnDeath" )
+	if ( titan.IsPlayer() )
+	{
+		titan.EndSignal( "DisembarkingTitan" )
+		titan.EndSignal( "TitanEjectionStarted" )
+	}
+
+	OnThreadEnd(
+	function() : ( titan )
+		{
+			if ( IsValid( titan ) )
+				titan.ClearInvulnerable()
+		}
+	)
+
+	titan.SetInvulnerable()
+	wait 0.25
+}
+
+void function GiveDefenderAmmo( entity titan )
+{
+	entity soul = titan.GetTitanSoul()
+
+	if ( IsSingleplayer() )
+	{
+		if ( titan.IsNPC() )
+		{
+			soul.SetNextCoreChargeAvailable( soul.GetNextCoreChargeAvailable() + 0.5 ) // shave time off core timer
+		}
+	}
+}
+
+void function OnTitanDoomed( entity titan, var damageInfo )
+{
+
+	if ( !IsAlive( titan ) )
+		return
+
+	entity soul = titan.GetTitanSoul()
+
+	if ( titan.IsPlayer() )
+	{
+		if ( SoulHasPassive( soul, ePassives.PAS_RONIN_AUTOSHIFT ) )
+			PhaseShift( titan, 0, 3.0 )
+
+ 		if ( SoulHasPassive( soul, ePassives.PAS_AUTO_EJECT ) )
+			return
+	}
+
+	soul.nextHealthRegenTime = Time()
+
+	vector damageOrigin = GetDamageOrigin( damageInfo, titan )
+	float damageAmount = DamageInfo_GetDamage( damageInfo )
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+
+	if ( TitanDamageRewardsTitanCoreTime() && (titan != attacker) )
+	{
+		AddCreditToTitanCoreBuilderForDoomEntered( titan )
+		if ( attacker.IsTitan() )
+			AddCreditToTitanCoreBuilderForDoomInflicted( attacker )
+	}
+
+	thread TitanLoseSegement( soul, titan, damageOrigin, damageAmount, attacker )
+
+	if ( SoulHasPassive( soul, ePassives.PAS_DOOMED_TIME ) )
+		return
+
+	if ( NoWeaponDoomState() )
+		TakeAllWeapons( titan )
+}
+
+void function OnTitanDeath( entity titan, var damageInfo )
+{
+	if ( !titan.IsTitan() )
+		return
+
+	if ( !PROTO_AlternateDoomedState() )
+		return
+
+	entity soul = titan.GetTitanSoul()
+	vector damageOrigin = GetDamageOrigin( damageInfo, titan )
+	float damageAmount = DamageInfo_GetDamage( damageInfo )
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+
+	thread TitanLoseSegement( soul, titan, damageOrigin, damageAmount, attacker )
+}
+
+void function TitanShieldDecayThink( entity soul )
+{
+	thread TitanShieldDecayThinkInternal( soul )
+}
+
+void function TitanShieldDecayThinkInternal( entity soul )
+{
+	soul.EndSignal( "OnDestroy" ) //This needs to be OnDestroy instead of OnDeath because souls don't have a death animation
+	soul.EndSignal( "OnTitanDeath" )
+
+	while ( 1 )
+	{
+		if ( Time() >= soul.e.nextShieldDecayTime && !TitanHasRegenningShield( soul ) )
+			soul.SetShieldHealth( maxint( soul.GetShieldHealth() - file.shieldDecayRate, 0 ) )
+		WaitFrame()
+	}
+}

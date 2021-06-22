@@ -1,0 +1,24 @@
+global function AiTurret_Init
+global function GetMegaTurretLinkedToPanel
+global function MegaTurretUsabilityFunc
+global function SetUsePromptForPanel
+
+void function AiTurret_Init()
+{
+
+}
+
+entity function GetMegaTurretLinkedToPanel(entity panel)
+{
+	return null
+}
+
+string function MegaTurretUsabilityFunc(var turret, var panel)
+{
+	return "pilot"
+}
+
+void function SetUsePromptForPanel(var panel, var turret)
+{
+
+}

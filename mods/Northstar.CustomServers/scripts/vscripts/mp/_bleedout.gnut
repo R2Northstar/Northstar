@@ -1,0 +1,403 @@
+//Bleed Out Mechanic Shared by several game modes.
+global function Bleedout_Init
+global function Bleedout_StartPlayerBleedout
+global function Bleedout_SetCallback_OnPlayerStartBleedout
+global function Bleedout_SetCallback_OnPlayerGiveFirstAid
+global function Bleedout_ShouldAIMissBleedingPlayer
+
+const asset FX_BLOODTRAIL = $"skit_blood_decal_LG"
+const float BLEEDOUT_MAX_USE_DIST2_MOD = 64 * 64
+
+struct
+{
+	table<entity,bool> isBleeding
+	table<entity, entity> IsGettingFirstAidFrom
+	table<entity,entity> lastAttacker
+	void functionref(entity) Callback_OnPlayerStartBleedout
+	void functionref(entity) Callback_OnPlayerGiveFirstAid
+	int firstAidAttemptID = 0 //The ID that identifies the first aid attempt. Used to distinguish between simultainous healing attempts on the client
+} file
+
+void function Bleedout_Init()
+{
+	RegisterSignal( "BleedOut_StopBleeding" )
+	RegisterSignal( "BleedOut_OnRevive" )
+	RegisterSignal( "BleedOut_OnStartDying" )
+	RegisterSignal( "OnContinousUseStopped" )
+
+	AddCallback_OnClientConnected( Bleedout_OnClientConnected )
+	AddCallback_OnClientDisconnected( Bleedout_OnClientDisconnected )
+
+	PrecacheParticleSystem( FX_BLOODTRAIL )
+}
+
+void function Bleedout_OnClientConnected( entity player )
+{
+	file.isBleeding[ player ] <- false
+	file.IsGettingFirstAidFrom[ player ] <- null
+	file.lastAttacker[ player ] <- svGlobal.worldspawn
+}
+
+void function Bleedout_OnClientDisconnected( entity player )
+{
+	delete file.isBleeding[ player ]
+	delete file.IsGettingFirstAidFrom[ player ]
+	delete file.lastAttacker[ player ]
+}
+
+void function Bleedout_SetCallback_OnPlayerStartBleedout( void functionref(entity) callback )
+{
+	file.Callback_OnPlayerStartBleedout = callback
+}
+
+void function Bleedout_SetCallback_OnPlayerGiveFirstAid( void functionref(entity) callback )
+{
+	file.Callback_OnPlayerGiveFirstAid = callback
+}
+
+void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
+{
+	//if the player is already bleeding don't restart bleeding logic.
+	if ( file.isBleeding[ player ] )
+		return
+
+	player.Signal( "BleedOut_StopBleeding" )
+	player.Signal( "BleedOut_OnStartDying" )
+
+	file.lastAttacker[ player ] = attacker
+
+	if ( IsValid( file.Callback_OnPlayerStartBleedout ) && !file.isBleeding[ player ] )
+		file.Callback_OnPlayerStartBleedout( player )
+
+	thread BloodTrail( player )
+	thread PlayerDying( player )
+	thread EnablePlayerRes( player )
+
+	//Start selfhealing thread if enabled.
+	if ( Bleedout_GetSelfResEnabled() )
+		thread EnablePlayerSelfRes( player )
+
+	if ( Bleedout_GetDeathOnTeamBleedout() )
+		CheckForTeamBleedout( player.GetTeam() )
+}
+
+void function PlayerDying( entity player )
+{
+	Assert( IsNewThread(), "Must be threaded off." )
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "BleedOut_OnRevive" )
+	player.EndSignal( "BleedOut_OnStartDying" )
+
+	float bleedoutTime = Bleedout_GetBleedoutTime()
+	bool forceHolster = Bleedout_GetForceWeaponHolster()
+
+	array<int> ids = []
+	ids.append( StatusEffect_AddEndless( player, eStatusEffect.move_slow, 0.25 ) )
+	ids.append( StatusEffect_AddEndless( player, eStatusEffect.turn_slow, 0.3 ) )
+
+	if ( bleedoutTime > 0 )
+		ids.append( StatusEffect_AddEndless( player, eStatusEffect.bleedoutDOF, 1.0 ) )
+
+	file.isBleeding[ player ] = true
+
+	player.ForceCrouch()
+	player.SetOneHandedWeaponUsageOn()
+
+	if ( forceHolster )
+		HolsterAndDisableWeapons( player )
+
+	OnThreadEnd(
+	function() : ( player, ids, forceHolster )
+		{
+			if ( IsValid( player ) )
+			{
+				foreach ( id in ids )
+					StatusEffect_Stop( player, id )
+
+				file.isBleeding[ player ] = false
+				file.lastAttacker[ player ] = svGlobal.worldspawn
+
+				player.UnforceCrouch()
+				player.SetOneHandedWeaponUsageOff()
+				//Remote_CallFunction_NonReplay( player, "ServerCallback_BLEEDOUT_PlayerRevivedDOF" )
+
+				if ( forceHolster )
+					DeployAndEnableWeapons( player )
+
+				//Hide wounded icon for wounded player's allies
+				int woundedPlayerEHandle = player.GetEncodedEHandle()
+				array<entity> teamPlayers = GetPlayerArrayOfTeam( player.GetTeam() )
+				foreach ( entity teamPlayer in teamPlayers )
+				{
+					if ( teamPlayer == player )
+						continue
+					Remote_CallFunction_NonReplay( teamPlayer, "ServerCallback_BLEEDOUT_HideWoundedMarker", woundedPlayerEHandle )
+				}
+			}
+		}
+	)
+
+	//if ( bleedoutTime > 0 )
+	//	StatusEffect_AddTimed( player, eStatusEffect.bleedoutDOF, 1.0, bleedoutTime, 0.0 )
+		//Remote_CallFunction_NonReplay( player, "ServerCallback_BLEEDOUT_StartDyingDOF", bleedoutTime )
+
+	//Show wounded icon for wounded player's allies
+	int woundedPlayerEHandle = player.GetEncodedEHandle()
+	array<entity> teamPlayers = GetPlayerArrayOfTeam( player.GetTeam() )
+	foreach ( entity teamPlayer in teamPlayers )
+	{
+		if ( teamPlayer == player )
+			continue
+
+		Remote_CallFunction_NonReplay( teamPlayer, "ServerCallback_BLEEDOUT_ShowWoundedMarker", woundedPlayerEHandle, Time(), Time() + bleedoutTime )
+	}
+
+	if ( bleedoutTime > 0 )
+		wait bleedoutTime
+	else
+		WaitForever()
+
+	PlayerDiesFromBleedout( player, file.lastAttacker[ player ] )
+}
+
+void function EnablePlayerRes( entity player )
+{
+	Assert( IsNewThread(), "Must be threaded off." )
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "BleedOut_OnStartDying" )
+	player.EndSignal( "BleedOut_OnRevive" )
+
+	Highlight_SetFriendlyHighlight( player, "interact_object_los_line" )
+
+	if ( IsPilotEliminationBased() )
+		SetPlayerEliminated( player )
+
+	OnThreadEnd(
+	function() : ( player )
+		{
+			if ( IsValid( player ) )
+			{
+				player.UnsetUsable()
+				Highlight_ClearFriendlyHighlight( player )
+			}
+		}
+	)
+
+	while ( true )
+	{
+		//If the player is not currently being treated or is self healing. (Team healing should always override self-healing)
+		if (  !IsPlayerGettingFirstAid( player ) || IsPlayerSelfHealing( player ) )
+		{
+			player.SetUsableByGroup( "friendlies pilot" )
+			player.SetUsePrompts( "#BLEEDOUT_USE_TEAMMATE_RES", "#BLEEDOUT_USE_TEAMMATE_RES_PC" )
+
+			entity playerHealer = expect entity ( player.WaitSignal( "OnPlayerUse" ).player )
+			player.UnsetUsable()
+
+			//Player can only res other players if they are not bleeding out themselves.
+			if ( !file.isBleeding[ playerHealer ] && ( !IsPlayerGettingFirstAid( player ) || IsPlayerSelfHealing( player ) ) )
+				waitthread PlayerAttemptRes( playerHealer, player )
+		}
+		else
+		{
+			WaitFrame()
+		}
+	}
+}
+
+void function EnablePlayerSelfRes( entity player )
+{
+	Assert( IsNewThread(), "Must be threaded off." )
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "BleedOut_OnStartDying" )
+	player.EndSignal( "BleedOut_OnRevive" )
+
+	while ( true )
+	{
+		if (  !IsPlayerGettingFirstAid( player ) )
+			MessageToPlayer( player, eEventNotifications.BLEEDOUT_SelfHealPrompt )
+
+		if ( player.UseButtonPressed() && !IsPlayerGettingFirstAid( player ) )
+		{
+			MessageToPlayer( player, eEventNotifications.Clear )
+			waitthread PlayerAttemptRes( player, player )
+		}
+
+		WaitFrame()
+	}
+}
+
+void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
+{
+	Assert( IsNewThread(), "Must be threaded off." )
+	playerToRes.EndSignal( "OnDeath" )
+	playerHealer.EndSignal( "OnDeath" )
+	playerHealer.EndSignal( "OnContinousUseStopped" )
+
+	HolsterAndDisableWeapons( playerHealer )
+
+	playerHealer.MovementDisable()
+	playerToRes.MovementDisable()
+
+	float firstAidTime = playerHealer == playerToRes ? Bleedout_GetFirstAidTimeSelf() : Bleedout_GetFirstAidTime()
+	float firstAidHealPercent = Bleedout_GetFirstAidHealPercent()
+
+	float endTime = Time() + firstAidTime
+
+	int playerEHandle = playerToRes.GetEncodedEHandle()
+	int healerEHandle = playerHealer.GetEncodedEHandle()
+	int attemptID = GetNewFirstAidAttemptID()
+
+	Remote_CallFunction_NonReplay( playerToRes, "ServerCallback_BLEEDOUT_StartFirstAidProgressBar", endTime, playerEHandle, healerEHandle, attemptID )
+	Remote_CallFunction_NonReplay( playerHealer, "ServerCallback_BLEEDOUT_StartFirstAidProgressBar", endTime, playerEHandle, healerEHandle, attemptID )
+	file.IsGettingFirstAidFrom[ playerToRes ] = playerHealer
+
+	OnThreadEnd(
+	function() : ( playerHealer, playerToRes, attemptID )
+		{
+			if ( IsValid( playerHealer ) )
+			{
+				DeployAndEnableWeapons( playerHealer )
+				playerHealer.MovementEnable()
+				Remote_CallFunction_NonReplay( playerHealer, "ServerCallback_BLEEDOUT_StopFirstAidProgressBar", attemptID )
+			}
+
+			if ( IsValid( playerToRes ) )
+			{
+				file.IsGettingFirstAidFrom[ playerToRes ] = null
+				playerToRes.MovementEnable()
+				Remote_CallFunction_NonReplay( playerToRes, "ServerCallback_BLEEDOUT_StopFirstAidProgressBar", attemptID )
+			}
+		}
+	)
+
+	waitthread TrackContinuousUse( playerHealer, playerToRes, firstAidTime, true )
+
+	//Heal player health
+	playerToRes.SetHealth( playerToRes.GetMaxHealth() * firstAidHealPercent )
+	file.isBleeding[ playerToRes ] = false
+	file.lastAttacker[ playerToRes ] = svGlobal.worldspawn
+	if ( IsPilotEliminationBased() )
+		ClearPlayerEliminated( playerToRes )
+
+	if ( IsValid( file.Callback_OnPlayerGiveFirstAid ) )
+	{
+		//Do not run this callback if player is self healing.
+		if ( playerHealer != playerToRes )
+			file.Callback_OnPlayerGiveFirstAid( playerHealer )
+	}
+
+	playerToRes.Signal( "BleedOut_OnRevive" )
+
+}
+
+void function BloodTrail( entity player )
+{
+	player.EndSignal( "BleedOut_StopBleeding" )
+	player.EndSignal( "BleedOut_OnRevive" )
+	player.EndSignal( "OnDeath")
+
+	while ( true )
+	{
+		float interval = RandomFloatRange( 0.25, 0.5 )
+		PlayFXOnEntity( FX_BLOODTRAIL, player )
+		wait interval
+	}
+}
+
+void function PlayerDiesFromBleedout( entity player, entity attacker )
+{
+	if ( IsValid( attacker ) )
+	{
+		player.Die( attacker, attacker, { damageSourceId = eDamageSourceId.bleedout } )
+		//player.BecomeRagdoll( Vector(0,0,0), false )
+	}
+	else
+	{
+		player.Die( svGlobal.worldspawn, svGlobal.worldspawn, { damageSourceId = eDamageSourceId.bleedout } )
+		//player.BecomeRagdoll( Vector(0,0,0), false )
+	}
+
+
+}
+
+//This function checks to see if all players on a team are dead or bleeding out.
+//If all the players are dead/bleeding out, it kills the surviving team players.
+void function CheckForTeamBleedout( int team )
+{
+	array<entity> teamPlayers = GetPlayerArrayOfTeam( team )
+	foreach ( entity teamPlayer in teamPlayers )
+	{
+		if ( IsAlive( teamPlayer ) && !file.isBleeding[ teamPlayer ] )
+			return
+	}
+
+	//All players on team are bleeding out
+	foreach ( entity teamPlayer in teamPlayers )
+	{
+		if ( IsAlive( teamPlayer ) )
+			PlayerDiesFromBleedout( teamPlayer, file.lastAttacker[ teamPlayer ] )
+	}
+}
+
+bool function Bleedout_ShouldAIMissBleedingPlayer( entity player )
+{
+	//If the player is not bleeding
+	if ( !file.isBleeding[ player ] )
+		return false
+
+	//If the bleedout settings don't affect AI accuracy.
+	if ( !Bleedout_ShouldAIMissPlayer() )
+		return false
+
+	return true
+}
+
+bool function IsPlayerGettingFirstAid( entity player )
+{
+	return file.IsGettingFirstAidFrom[ player ] != null
+}
+
+bool function IsPlayerSelfHealing( entity player )
+{
+	return file.IsGettingFirstAidFrom[ player ] == player
+}
+
+//////////////
+//Utilities
+//////////////
+void function TrackContinuousUse( entity player, entity useTarget, float useTime, bool doRequireUseButtonHeld )
+{
+	player.EndSignal( "OnDeath" )
+	useTarget.EndSignal( "OnDeath" )
+	useTarget.EndSignal( "OnDestroy" )
+
+	table result = {}
+	result.success <- false
+
+	float maxDist2 = DistanceSqr( player.GetOrigin(), useTarget.GetOrigin() ) + BLEEDOUT_MAX_USE_DIST2_MOD
+
+	OnThreadEnd
+	(
+		function() : ( player, result )
+		{
+			if ( !result.success )
+			{
+				player.Signal( "OnContinousUseStopped" )
+			}
+		}
+	)
+
+	float startTime = Time()
+	while ( Time() < startTime + useTime && (!doRequireUseButtonHeld || player.UseButtonPressed()) && !player.IsPhaseShifted() && DistanceSqr( player.GetOrigin(), useTarget.GetOrigin() ) <= maxDist2 )
+		WaitFrame()
+
+	if ( ( !doRequireUseButtonHeld || player.UseButtonPressed() ) && DistanceSqr( player.GetOrigin(), useTarget.GetOrigin() ) <= maxDist2  )
+		result.success = true
+}
+
+int function GetNewFirstAidAttemptID()
+{
+	file.firstAidAttemptID += 1
+	return file.firstAidAttemptID
+}

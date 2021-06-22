@@ -1,0 +1,37 @@
+untyped
+global function Lobby_Init
+global function Lobby_OnClientConnectionStarted
+global function Lobby_OnClientConnectionCompleted
+
+void function Lobby_Init()
+{
+	// need to prevent a crash
+	Music_Init()
+	
+	if ( IsPrivateMatch() || GetCurrentPlaylistName() == "private_match" ) // IsPrivateMatch() doesn't seem to be reliable on local server start
+		PrivateLobby_Init()
+	else
+	{
+		// non-private lobby clientcommands
+		AddClientCommandCallback( "StartPrivateMatchSearch", ClientCommandCallback_StartPrivateMatchSearch )
+	}
+}
+
+void function Lobby_OnClientConnectionStarted( entity player )
+{
+	
+}
+
+void function Lobby_OnClientConnectionCompleted( entity player )
+{
+	FinishClientScriptInitialization( player )
+}
+
+bool function ClientCommandCallback_StartPrivateMatchSearch( entity player, array<string> args )
+{
+	// open lobby in private match mode
+	SetCurrentPlaylist( "private_match" ) // required for private match lobby to start properly
+	ServerCommand( "changelevel mp_lobby" )
+	
+	return true
+}

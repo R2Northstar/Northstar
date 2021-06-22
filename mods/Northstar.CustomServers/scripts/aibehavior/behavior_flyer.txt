@@ -1,0 +1,33 @@
+Selector Common
+
+	SelectSchedule_Flinch
+	SelectSchedule_LayeredBehavior
+
+Selector_End
+
+
+Selector Idle
+
+	SelectSchedule_PatrolRun
+	SelectSchedule_IdleStand
+
+Selector_End
+
+
+Selector Alert
+
+	SelectSchedule_PatrolRun
+	SelectSchedule_IdleStand
+
+Selector_End
+
+
+Selector Combat
+
+	SelectSchedule_FearEnemy
+	SelectSchedule_SyncedMeleeAttack
+	SelectSchedule_MeleeAttack
+	SelectSchedule_ChaseEnemy
+	SelectSchedule_IdleStand
+
+Selector_End

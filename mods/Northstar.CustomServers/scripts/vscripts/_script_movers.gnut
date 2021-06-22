@@ -1,0 +1,1783 @@
+untyped
+
+global function ScriptMovers_Init
+global function ScriptedSwitchDeactivate
+global function ScriptToyChangeStatusLights
+global function SetSwitchUseFunc
+global function ScriptedRotatorRotate
+global function CodeCallback_PreBuildAINFile
+
+const FX_BARREL_EXPLOSION 						= $"P_spectre_suicide"
+const FX_GENERATOR_EXPLOSION 					= $"xo_exp_death"
+const FX_CONSOLE_EXPLOSION 						= $"xo_exp_death"
+const FX_PANEL_EXPLOSION 						= $"P_drone_exp_md"
+const FX_BARREL_FIRE_SMOKE						= $"P_fire_small_FULL"
+const FX_GENERATOR_FIRE_SMOKE					= $"P_fire_med_FULL"
+const FX_CONSOLE_FIRE_SMOKE						= $"P_fire_med_FULL"
+const FX_PANEL_FIRE_SMOKE						= $"P_fire_small_FULL"
+
+const SOUND_BARREL_EXPLODE 						= "corporate_spectre_death_explode"
+const SOUND_GENERATOR_EXPLODE 					= "Goblin_Dropship_Explode"
+const SOUND_PANEL_EXPLODE 						= "AngelCity_Scr_DroneExplodes"
+const SOUND_CONSOLE_EXPLODE 					= "corporate_spectre_death_explode"
+
+const FAN_PUSH_RAMP_TIME = 0.8
+const FAN_DEFAULT_PUSH_ACCEL = 25000 // units/sec^2
+const FAN_PUSH_ANTI_GRAVITY = 1000 // units/sec^2
+const FAN_PUSH_DECAY_SIDE_VELOCITY = false
+const FAN_DEBUG = false
+
+struct
+{
+	table switchCallbacks
+	//array<entity> entsInWindTunnel
+} file
+
+void function ScriptMovers_Init()
+{
+	AddSpawnCallbackEditorClass( "prop_dynamic", 				"script_door", 				ScriptedDoorInit )
+	AddSpawnCallbackEditorClass( "prop_dynamic", 				"script_switch", 			ScriptedSwitchInit )
+	AddSpawnCallbackEditorClass( "script_mover_lightweight", 	"script_rotator", 			ScriptedRotatorThink )
+	AddSpawnCallbackEditorClass( "script_mover_lightweight", 	"script_seesaw", 			SeeSawThink )
+	AddSpawnCallbackEditorClass( "prop_dynamic", 				"shootable_clasp", 			ClaspInit )
+
+	AddSpawnCallback_ScriptName( "FanPusher", FanPusherThink )
+
+	PrecacheParticleSystem( FX_BARREL_EXPLOSION )
+	PrecacheParticleSystem( FX_GENERATOR_EXPLOSION )
+	PrecacheParticleSystem( FX_PANEL_EXPLOSION )
+	PrecacheParticleSystem( FX_BARREL_FIRE_SMOKE )
+	PrecacheParticleSystem( FX_GENERATOR_FIRE_SMOKE )
+	PrecacheParticleSystem( FX_PANEL_FIRE_SMOKE )
+	PrecacheParticleSystem( FX_CONSOLE_EXPLOSION )
+	PrecacheParticleSystem( FX_CONSOLE_FIRE_SMOKE )
+
+	AddSpawnCallback( "script_mover", MoverInit )
+	AddSpawnCallback( "script_mover_lightweight", MoverInit )
+
+	RegisterSignal( "OpenDoor" )
+	RegisterSignal( "CloseDoor" )
+	RegisterSignal( "OnDeactivate")
+	RegisterSignal( "OnActivate")
+	RegisterSignal( "StopRotating" )
+}
+
+void function FlagControlsDoor( entity door, string flag )
+{
+	EndSignal( door, "OnDestroy" )
+	while ( true )
+	{
+		WaitSignal( level, flag )
+		if ( Flag( flag ) )
+			Signal( door, "OpenDoor" )
+		else
+			Signal( door, "CloseDoor" )
+	}
+}
+
+void function TriggerControlsDoor( entity door, entity trigger )
+{
+	EndSignal( door, "OpenDoor" )
+	EndSignal( door, "OnDestroy" )
+	EndSignal( trigger, "OnDestroy" )
+
+	WaitSignal( trigger, "OnTrigger" )
+
+	Signal( door, "OpenDoor" )
+}
+
+void function MotionActivatedDoor( entity door )
+{
+	bool doorOpen = false
+	if ( door.HasKey( "startOpen" ) )
+		doorOpen = (door.kv.startOpen == "1")
+
+	EndSignal( door, "OnDestroy" )
+
+	while ( true )
+	{
+		if ( doorOpen )
+		{
+			while ( ArrayEntityWithinDistance( GetPlayerArray(), door.GetOrigin(), 300 ) )
+				wait 0.2
+			Signal( door, "CloseDoor" )
+		}
+		else
+		{
+			while ( !ArrayEntityWithinDistance( GetPlayerArray(), door.GetOrigin(), 200 ) )
+				wait 0.2
+			Signal( door, "OpenDoor" )
+		}
+		doorOpen = !doorOpen
+		wait 1
+	}
+}
+
+void function CodeCallback_PreBuildAINFile()
+{
+	array<entity> doors = GetEntArrayByClass_Expensive( "prop_dynamic" )
+
+	foreach ( entity door in doors )
+	{
+		if ( GetEditorClass( door ) != "script_door" )
+			continue
+
+		door.SetBoneFollowersSolid( false )
+		array<entity> linkedEnts = door.GetLinkEntArray()
+		foreach ( entity ent in linkedEnts )
+		{
+			if ( ent.GetClassName() == "func_brush" )
+			{
+				ent.NotSolid()
+				break
+			}
+		}
+	}
+}
+
+
+void function ScriptedDoorInit( entity door )
+{
+	#if DEV
+	array validModels = [
+		$"models/door/door_imc_interior_03_128_animated.mdl",
+		$"models/door/pod_door_Hangar_IMC_01_animated.mdl",
+        $"models/door/door_512x512x16_elevatorstyle01_animated.mdl",
+		$"models/door/door_256x256x8_elevatorstyle01_animated.mdl",
+        $"models/door/door_128x104x8_rolldownstyle01_animated.mdl",
+        $"models/door/door_256x256x8_rolldownstyle01_animated.mdl",
+        $"models/door/door_256_02_beacon_metal_door_animated.mdl",
+		$"models/door/door_beacon_core_animated.mdl",
+        $"models/door/door_128x104x8_elevatorstyle01_animated.mdl"
+        $"models/door/door_marvin_animated.mdl"
+	]
+	Assert( validModels.contains( door.GetModelName() ), "Door model at " + door.GetOrigin() + " is invalid: " + door.GetModelName() )
+	#endif
+
+	EndSignal( door, "OnDestroy" )
+	door.SetBlocksLOS( true )
+
+	bool doorOpen = false
+	if ( door.HasKey( "startOpen" ) )
+		doorOpen = (door.kv.startOpen == "1")
+	bool initializing = true
+
+	if ( door.HasKey( "script_flag" ) )
+	{
+		string flag = expect string( door.kv.script_flag )
+		FlagInit( flag )
+		if ( doorOpen )
+			FlagSet( flag )
+		thread FlagControlsDoor( door, flag )
+	}
+
+	string flagToggle
+	if ( door.HasKey( "scr_flagToggle" ) )
+	{
+		flagToggle = expect string( door.kv.scr_flagToggle )
+		FlagInit( flagToggle )
+	}
+
+	if ( door.HasKey( "motionActivated" ) && door.kv.motionActivated == "1" )
+		thread MotionActivatedDoor( door )
+
+	// The door can link to a func_brush that is the collision of the door. The collision will be enabled/disabled based on the door state
+	entity clipBrush
+	array<entity> linkedEnts = door.GetLinkEntArray()
+	foreach ( entity ent in linkedEnts )
+	{
+		if ( ent.GetClassName() == "func_brush" )
+		{
+			clipBrush = ent
+			break
+		}
+	}
+	if ( IsValid( clipBrush ) )
+	{
+		clipBrush.Hide()
+		clipBrush.NotSolid()
+		WaitFrame()
+	}
+
+	// A trigger_multiple can link to the door, causing the door to open. It will only open the door once.
+	entity trigger
+	array<entity> linkParents = door.GetLinkParentArray()
+	foreach ( entity ent in linkParents )
+	{
+		if ( ent.GetClassName() == "trigger_multiple" )
+		{
+			trigger = ent
+			break
+		}
+	}
+	if ( IsValid( trigger ) )
+		thread TriggerControlsDoor( door, trigger )
+
+	while ( IsValid( door ) )
+	{
+		// UPDATE THE DOOR STATE
+		if ( doorOpen )
+			door.Anim_Play("open")
+		else if ( !initializing )
+			door.Anim_Play("close")
+
+		if ( IsValid( clipBrush ) )
+		{
+			ToggleNPCPathsForEntity( clipBrush, doorOpen )
+			if ( doorOpen )
+			{
+				clipBrush.Hide()
+				clipBrush.NotSolid()
+			}
+			else
+			{
+				clipBrush.Show()
+				clipBrush.Solid()
+			}
+		}
+		else
+		{
+			// door must be setup with expensive bone_follower collision for this to work
+			ToggleNPCPathsForEntity( door, doorOpen )
+		}
+
+		if ( flagToggle != "" )
+		{
+			if ( doorOpen )
+				FlagSet( flagToggle )
+			else
+				FlagClear( flagToggle )
+		}
+		initializing = false
+
+		// WAIT FOR STATE CHANGE
+		if ( doorOpen )
+			WaitSignal( door, "CloseDoor" )
+		else
+			WaitSignal( door, "OpenDoor" )
+
+		CreateShakeRumbleOnly( door.GetOrigin(), 15, 150, 1 )
+
+		doorOpen = !doorOpen
+	}
+}
+
+
+void function ScriptedSwitchInit( entity button )
+{
+	#if DEV
+	array< asset > validModels = [
+		$"models/domestic/light_switch_touchscreen.mdl",
+		$"models/props/pressure_plates/pressure_plate_titan_industrial_01.mdl",
+		$"models/domestic/elevator_switch_01.mdl",
+		$"models/beacon/crane_room_monitor_console.mdl",
+		$"models/props/global_access_panel_button/global_access_panel_button_wall.mdl",
+		$"models/props/global_access_panel_button/global_access_panel_button_console.mdl"
+	]
+	Assert( validModels.contains( button.GetModelName() ) )
+	#endif
+
+	bool usesSkins
+	int activeSkinID
+	int inactiveSkinID
+
+	switch( button.GetModelName() )
+	{
+		case $"models/props/global_access_panel_button/global_access_panel_button_wall.mdl":
+		case $"models/props/global_access_panel_button/global_access_panel_button_console.mdl":
+			usesSkins = true
+			activeSkinID = 0
+			inactiveSkinID = 1
+			break
+		case $"models/beacon/crane_room_monitor_console.mdl":
+			usesSkins = true
+			activeSkinID = 1
+			inactiveSkinID = 2
+			break
+		default:
+			usesSkins = false
+			break
+	}
+
+	int contextId = 0
+	button.Highlight_SetFunctions( contextId, 0, true, HIGHLIGHT_OUTLINE_INTERACT_BUTTON, 1, 0, false )
+	button.Highlight_SetParam( contextId, 0, HIGHLIGHT_COLOR_INTERACT )
+	button.Highlight_SetCurrentContext( contextId )
+
+	EndSignal( button, "OnDestroy" )
+	EndSignal( button, "OnDeactivate" )
+
+	OnThreadEnd(
+	function() : ( button )
+		{
+			// If we haven't destroyed the button, it must be inactive
+			if ( IsValid( button ) )
+			{
+				//ScriptToyChangeStatusLights( button, $"runway_light_red" )
+				Entity_StopFXArray( button )
+				button.UnsetUsable()
+				button.Highlight_HideInside( 1.0 )
+				button.Highlight_HideOutline( 1.0 )
+			}
+		}
+	)
+
+	bool buttonActivated = false
+	bool buttonIsSingleUse = false
+	bool initialized = false
+	bool buttonIsUsable = false
+	float multiUseDelay = 0.2
+
+	bool isPressurePlate = button.GetModelName() == $"models/props/pressure_plates/pressure_plate_titan_industrial_01.mdl"
+
+	if ( isPressurePlate )
+		button.kv.solid = 0 //hack until we can figure out why collision on this model kills titans when embarked
+
+	if ( button.HasKey( "singleUse" ) )
+		buttonIsSingleUse = (button.kv.singleUse == "1" )
+
+	if ( button.HasKey( "usable" ) )
+		buttonIsUsable = (button.kv.usable == "1" )
+
+	if ( button.HasKey( "multiUseDelay" ) )
+	{
+		multiUseDelay = float(button.kv.multiUseDelay)
+		if ( multiUseDelay > 0.0 )
+			Assert( !buttonIsSingleUse, "script_switch at " + button.GetOrigin() + "has multiUseDelay set and is single use" )
+	}
+
+	string flagToggle
+	if ( button.HasKey( "scr_flagToggle" ) )
+	{
+		flagToggle = expect string( button.kv.scr_flagToggle )
+		FlagInit( flagToggle )
+	}
+
+	string flagRequired
+	if ( button.HasKey( "scr_flagRequired" ) )
+	{
+		flagRequired = expect string( button.kv.scr_flagRequired )
+		FlagInit( flagRequired )
+	}
+
+	string hintString_hold = "#HOLD_TO_USE_GENERIC"
+	if ( button.HasKey( "hintString_hold" ) && button.kv.hintString_hold != "" )
+		hintString_hold = string( button.kv.hintString_hold )
+	string hintString_press = "#PRESS_TO_USE_GENERIC"
+	if ( button.HasKey( "hintString_press" ) && button.kv.hintString_press != "" )
+		hintString_press = string( button.kv.hintString_press )
+
+	entity trigger = GetLinkedTrigger( button )
+
+	//need a trigger for pressure plate unless it's just for show
+	if ( ( isPressurePlate ) && ( buttonIsUsable ) )
+		Assert( IsValid( trigger ), "script_switch pressure plate at " + button.GetOrigin() + " needs to link to a trigger_multiple" )
+
+	if ( isPressurePlate && buttonIsUsable )
+	{
+		Assert( IsValid( trigger ), "pressure plate switch at " + button.GetOrigin() + " requires a triggerTarget to activate" )
+		Assert( trigger.GetClassName() == "trigger_multiple", "pressure plate switch at "  + button.GetOrigin() + " requires a trigger_multiple to activate" )
+		Assert( trigger.kv.spawnflags == "3", "Trigger for pressure plate at " + button.GetOrigin() + " needs spawnflags set to 3" )
+	}
+
+	if ( !isPressurePlate )
+	{
+		button.SetUsable()
+		button.SetUsableByGroup( "pilot" )
+		button.SetUsePrompts( hintString_hold, hintString_press )
+		button.Highlight_ShowInside( 1.0 )
+		button.Highlight_ShowOutline( 1.0 )
+	}
+
+	var player //hack: have to use "var" when waiting on a usable signal or trigger
+	bool buttonUsedOnce = false
+
+	while ( IsValid( button ) )
+	{
+		//-------------------------
+		// UPDATE EFFECTS
+		//-------------------------
+
+		if ( buttonActivated )
+		{
+			//ScriptToyChangeStatusLights( button, $"runway_light_red" )
+			Entity_StopFXArray( button )
+			if ( usesSkins )
+				button.SetSkin( inactiveSkinID )
+		}
+		else
+		{
+			ScriptToyChangeStatusLights( button, $"runway_light_green" )
+			if ( usesSkins )
+				button.SetSkin( activeSkinID )
+		}
+
+		if ( !buttonIsUsable )
+			break 		//exit loop if we just want the pretty lights, but no player usability
+
+		if ( buttonIsSingleUse && buttonUsedOnce )
+			break 		//exit loop if this is a single use button
+
+		if ( isPressurePlate )
+		{
+			//-------------------------
+			// WAIT FOR STATE CHANGE (PRESSURE PLATE)
+			//-------------------------
+
+			if ( buttonActivated )
+				waitthread PressurePlateWaitSignal( trigger, "OnEndTouchAll" )
+			else
+				waitthread PressurePlateWaitSignal( trigger, "OnTrigger" )
+		}
+		else
+		{
+			if ( flagRequired != "" && !Flag( flagRequired ) )
+			{
+				if ( !isPressurePlate )
+				{
+					if ( button.HasKey( "disabledHintString" ) )
+						button.SetUsePrompts( button.kv.disabledHintString, button.kv.disabledHintString )
+					else
+						button.UnsetUsable()
+				}
+
+				//ScriptToyChangeStatusLights( button, $"runway_light_red" )
+				Entity_StopFXArray( button )
+				if ( usesSkins )
+					button.SetSkin( inactiveSkinID )
+				FlagWait( flagRequired )
+				ScriptToyChangeStatusLights( button, $"runway_light_green" )
+				if ( usesSkins )
+					button.SetSkin( activeSkinID )
+				button.SetUsePrompts( hintString_hold , hintString_press )
+				button.SetUsable()
+			}
+
+			//-------------------------
+			// WAIT FOR STATE CHANGE (SIMPLE PUSH BUTTON)
+			//-------------------------
+
+			if ( buttonActivated )
+			{
+				wait multiUseDelay
+			}
+			else
+			{
+				player = button.WaitSignal( "OnPlayerUse" ).player
+				if ( !IsValid( player ) )
+					continue
+				if ( !player.IsPlayer() )
+					continue
+			}
+		}
+
+		//--------------------------------------
+		// Player activated, switch button state
+		//--------------------------------------
+
+		buttonUsedOnce = true
+		buttonActivated = !buttonActivated
+
+		EmitSoundOnEntity( button, "Switch_Activate" )
+
+		button.Signal( "OnActivate" )
+
+		if ( !isPressurePlate && buttonActivated )
+		{
+			button.UnsetUsable() //make the button unusable right after clicking so player doesn't double hit it
+			button.Highlight_HideInside( 1.0 )
+			button.Highlight_HideOutline( 1.0 )
+
+			// Run callbacks
+			if ( button in file.switchCallbacks )
+			{
+				foreach( table callbackTable in file.switchCallbacks[ button ] )
+				{
+					if ( callbackTable.useEnt == null )
+						callbackTable.useFunc( button, player )
+					else
+						callbackTable.useFunc( button, player, callbackTable.useEnt )
+				}
+			}
+		}
+
+		//------------
+		// SET FLAGS
+		//------------
+
+		// Button activated (green)
+		if ( flagToggle != "" && buttonActivated )
+		{
+			FlagSet( flagToggle )
+		}
+
+		if ( buttonActivated )
+			SpawnSpawnersLinkedToButton( button, expect entity( player ) )
+
+		//else if ( buttonActivated && isPressurePlate )
+		//	wait 1.5	//wait a bit before re-enabling the usability
+
+		// Button deactivated (red)
+		if ( flagToggle != "" && !buttonActivated )
+			FlagClear( flagToggle )
+
+		if ( !buttonActivated )
+		{
+			button.SetUsable()
+			button.Highlight_ShowInside( 1.0 )
+			button.Highlight_ShowOutline( 1.0 )
+		}
+	}
+
+	if ( ( isPressurePlate ) && ( IsValid( trigger ) ) )
+		trigger.Destroy()
+	else
+	{
+		button.UnsetUsable()
+		button.Highlight_HideInside( 1.0 )
+		button.Highlight_HideOutline( 1.0 )
+	}
+}
+
+void function SpawnSpawnersLinkedToButton( entity button, entity activator )
+{
+	foreach ( entity linkedEnt in button.GetLinkEntArray() )
+	{
+		if ( IsStalkerRack( linkedEnt ) )
+		{
+			thread SpawnFromStalkerRack( linkedEnt, activator )
+		}
+		else if ( IsSpawner( linkedEnt ) )
+		{
+			entity spawned = linkedEnt.SpawnEntity()
+			DispatchSpawn( spawned )
+		}
+		else
+		{
+			Signal( linkedEnt, "OpenDoor" )
+		}
+	}
+}
+
+void function ScriptedSwitchDeactivate( entity button )
+{
+	Assert( IsValid( button ) )
+	button.Signal( "OnDeactivate" )
+}
+
+void function ScriptToyChangeStatusLights( entity button, asset fxName )
+{
+	//--------------------------
+	// Kill any previous effects
+	//--------------------------
+	Entity_StopFXArray( button )
+
+	//--------------------------
+	// Start new effects at tags
+	//--------------------------
+	array<entity> newFxLights
+	array<string> fxTags
+	entity newFx
+	int index = 0
+	string tagName
+
+	while (true)
+	{
+		tagName = "light" + index
+		local id = button.LookupAttachment( tagName )
+		if ( id == 0 )
+			break
+
+		newFx = PlayLoopFXOnEntity( fxName, button, tagName )
+		newFxLights.append( newFx )
+
+		index++
+	}
+
+	button.e.fxArray = newFxLights
+}
+
+void function PressurePlateWaitSignal( entity trigger, string waitSignal )
+{
+	//waitSignal is either "OnTrigger" or "OnEndTouchAll"
+
+	trigger.EndSignal( "OnDestroy" )
+	var result //hack. Result info from triggers
+
+	while ( IsValid( trigger ) )
+	{
+		result = trigger.WaitSignal( waitSignal )
+
+		if ( !IsValid( result.activator ) )
+			continue
+		if ( !result.activator.IsTitan() )
+			continue
+		if ( ( result.activator.IsPlayer() ) || ( IsPetTitan( result.activator ) ) )
+			break
+	}
+}
+
+void function ScriptedRotatorThink( entity rotator )
+{
+	rotator.Hide()
+
+	if ( rotator.HasKey( "use_local_rotation" ) && rotator.kv.use_local_rotation == "1" )
+		rotator.NonPhysicsSetRotateModeLocal( true )
+
+	EndSignal( rotator, "OnDestroy" )
+
+	vector baseAngles = rotator.GetAngles()
+
+	// Linked entities get parented
+	array<entity> linkedEnts = rotator.GetLinkEntArray()
+	foreach ( entity ent in linkedEnts )
+	{
+		ent.SetParent( rotator, "", true )
+	}
+
+	if ( rotator.HasKey( "player_collides" ) && rotator.kv.player_collides == "1" )
+		rotator.SetPusher( true )
+
+	if ( rotator.HasKey( "change_navmesh" ) && rotator.kv.change_navmesh == "1" )
+		rotator.ChangeNPCPathsOnMove( true )
+
+	// script will custom rotate this one
+	if ( rotator.HasKey( "scripted_rotator" ) && expect string( rotator.kv.scripted_rotator ) == "true" )
+		return
+
+	if ( rotator.HasKey( "script_flag" ) )
+	{
+		string flag = expect string( rotator.kv.script_flag )
+		FlagInit( flag )
+		while ( true )
+		{
+			bool returnToBaseAngle = false
+			if ( rotator.HasKey( "flag_clear_resets" ) )
+				returnToBaseAngle = rotator.kv.flag_clear_resets == "1"
+
+			FlagWait( flag )
+			thread ScriptedRotatorRotate( baseAngles, rotator )
+			FlagWaitClear( flag )
+			Signal( rotator, "StopRotating" )
+
+			// Return when the flag is cleared
+			if ( returnToBaseAngle )
+			{
+				if ( !IsValid( rotator ) )
+					return
+
+				float rotateTime = 1.0
+				if ( rotator.HasKey( "rotate_to_time" ) )
+					rotateTime = float( rotator.kv.rotate_to_time )
+				float easeTime = 0.0
+				if ( rotator.HasKey( "rotate_to_ease" ) && rotator.kv.rotate_to_ease == "1" )
+					easeTime = rotateTime * 0.33
+
+				rotator.NonPhysicsRotateTo( baseAngles, rotateTime, easeTime, easeTime )
+			}
+		}
+	}
+	else
+	{
+		thread ScriptedRotatorRotate( baseAngles, rotator )
+	}
+}
+
+vector function GetRotationVector( entity rotator )
+{
+	string axis
+	if ( rotator.HasKey( "rotation_axis" ) )
+		axis = expect string( rotator.kv.rotation_axis )
+
+	vector angles = rotator.GetAngles()
+	switch ( axis )
+	{
+		case "pitch":
+			return AnglesToRight( angles )
+
+		case "yaw":
+			return AnglesToUp( angles )
+
+		case "roll":
+		default:
+			return AnglesToForward( angles )
+
+	}
+
+	unreachable
+}
+
+void function ScriptedRotatorRotate( vector baseAngles, entity rotator )
+{
+	Signal( rotator, "StopRotating" )
+	EndSignal( rotator, "OnDestroy" )
+	EndSignal( rotator, "StopRotating" )
+
+	OnThreadEnd(
+	function() : ( rotator )
+		{
+			if ( IsValid( rotator ) )
+				rotator.NonPhysicsRotate( Vector( 0, 0, 0), 0 )
+		}
+	)
+
+	if ( rotator.HasKey( "start_delay" ) )
+	{
+		float delay = float( rotator.kv.start_delay )
+		if ( delay > 0 )
+			wait delay
+	}
+
+	if ( rotator.kv.rotate_forever_speed != "0" )
+	{
+		// Rotate forever
+		float speed = float( rotator.kv.rotate_forever_speed )
+		Assert( speed != 0.0 )
+
+		vector rotateVec = GetRotationVector( rotator )
+		rotator.NonPhysicsRotate( rotateVec, speed )
+		WaitForever()
+	}
+	else
+	{
+		// Rotate specified amount
+		Assert( rotator.HasKey( "rotate_to_degrees" ) )
+		Assert( rotator.HasKey( "rotate_to_time" ) )
+
+		string soundEffect = ""
+		if ( rotator.HasKey( "script_sound" ) )
+			soundEffect = string( rotator.kv.script_sound )
+
+		float rotateTime = float( rotator.kv.rotate_to_time )
+		if ( rotateTime > 0.0 )
+		{
+			vector rotateAngles = AnglesCompose( baseAngles, Vector( 0.0, 0.0, float( rotator.kv.rotate_to_degrees ) ) )
+
+			float easeTime = 0.0
+			if ( rotator.HasKey( "rotate_to_ease" ) && rotator.kv.rotate_to_ease == "1" )
+				easeTime = rotateTime * 0.33
+
+			while ( true )
+			{
+				// Rotate to the goal angle
+				rotator.NonPhysicsRotateTo( rotateAngles, rotateTime, easeTime, easeTime )
+				if ( soundEffect != "" )
+					EmitSoundOnEntity( rotator, soundEffect )
+				wait rotateTime
+
+				// Rotate back to base angle if specified
+				if ( !rotator.HasKey( "rotate_to_return_delay" ) || rotator.kv.rotate_to_return_delay == "-1" )
+					return
+				Assert( float( rotator.kv.rotate_to_return_delay ) >= 0.0 )
+				wait float( rotator.kv.rotate_to_return_delay )
+				rotator.NonPhysicsRotateTo( baseAngles, rotateTime, easeTime, easeTime )
+				if ( soundEffect != "" )
+					EmitSoundOnEntity( rotator, soundEffect )
+				wait rotateTime
+
+				// Wait a delay and repeat the rotation if specified
+				if ( !rotator.HasKey( "rotate_to_loop_time" ) || rotator.kv.rotate_to_loop_time == "-1" )
+					return
+				Assert( float( rotator.kv.rotate_to_loop_time ) >= 0.0 )
+				wait float( rotator.kv.rotate_to_loop_time )
+			}
+		}
+	}
+}
+
+void function MoverInit( entity mover )
+{
+	if ( !mover.HasKey( "leveledplaced" ) || mover.kv.leveledplaced != "1" )
+		return
+
+	// Linked entities get parented
+	if ( mover.HasKey( "parent_linked_ents" ) && mover.kv.parent_linked_ents == "1" )
+	{
+		array<entity> linkedEnts = mover.GetLinkEntArray()
+		foreach( entity ent in linkedEnts )
+		{
+			if ( GetEditorClass( ent ) != "script_mover_path" )
+				ent.SetParent( mover, "", true )
+		}
+	}
+
+	if ( mover.HasKey( "player_collides" ) && mover.kv.player_collides == "1" )
+		mover.SetPusher( true )
+
+	if ( mover.HasKey( "change_navmesh" ) && mover.kv.change_navmesh == "1" )
+		mover.ChangeNPCPathsOnMove( true )
+
+	thread MoverThink( mover )
+}
+
+void function MoverThink( entity mover )
+{
+	EndSignal( mover, "OnDestroy" )
+
+	if ( mover.GetModelName() == $"models/dev/editor_ref.mdl" )
+		mover.Hide()
+
+	array<entity> pathNodes = GetNextMoverPathNodes( mover )
+
+	// Go down the path gathering the nodes and init any flags
+	foreach( entity node in pathNodes )
+		InitMoverNodeFlagsAndErrorCheck( node )
+
+	Assert( mover.HasKey( "path_speed") && float( mover.kv.path_speed ) >= 0.0, "script_mover doesnt have a valid path speed" )
+	float pathSpeed = float( mover.kv.path_speed )
+	bool easeIn
+	bool easeOut
+
+	string startFlag = ""
+	if ( mover.HasKey( "script_flag" ) && mover.kv.script_flag != "" )
+	{
+		startFlag = mover.GetValueForKey( "script_flag" )
+		FlagInit( startFlag )
+	}
+
+	if ( mover.HasKey( "dangerous_area_radius" ) )
+		mover.AllowNPCGroundEnt( false )
+
+	if ( pathNodes.len() == 0 )
+		return
+
+	if ( startFlag != "" )
+		FlagWait( startFlag )
+
+	if ( mover.HasKey( "start_delay" ) && float( mover.kv.start_delay ) > 0.0 )
+		wait float( mover.kv.start_delay )
+
+	entity pathNode = pathNodes.getrandom()
+	entity lastNode
+
+	easeOut = pathNode.HasKey( "ease_from_node" ) && pathNode.GetValueForKey( "ease_from_node" ) == "1"
+
+	bool isMoving = false
+
+	while( IsValid( pathNode ) )
+	{
+		bool teleport = false
+		if ( pathNode.HasKey( "teleport_to_node" ) )
+			teleport = pathNode.GetValueForKey( "teleport_to_node" ) == "1"
+
+		bool perfectRotation = false
+		if ( IsValid( lastNode ) && lastNode.HasKey( "perfect_circular_rotation" ) )
+			perfectRotation = lastNode.GetValueForKey( "perfect_circular_rotation" ) == "1"
+
+		float rotationTime = 0.0
+		if ( IsValid( lastNode ) && lastNode.HasKey( "circular_rotation_time" ) )
+			rotationTime = float( lastNode.GetValueForKey( "circular_rotation_time" ) )
+
+		float dist = Distance( pathNode.GetOrigin(), mover.GetOrigin() )
+
+		if ( !isMoving )
+			MoverPath_StartSound( mover, pathNode )
+
+		if ( dist > 0.0 && !teleport )
+		{
+			easeIn = pathNode.HasKey( "ease_to_node" ) && pathNode.GetValueForKey( "ease_to_node" ) == "1"
+			float moveTime = dist / pathSpeed
+			float easeLeaving = easeOut ? moveTime * 0.5 : 0.0
+			float easeArriving = easeIn ? moveTime * 0.5 : 0.0
+			float angleChange = IsValid( lastNode ) ? MoverPath_GetAngleChange( lastNode, pathNode ) : 0.0
+
+			if ( perfectRotation && angleChange != 0 )
+			{
+				string rotationSoundEvent = ""
+				if ( mover.HasKey( "sound_circular_rotation" ) )
+					rotationSoundEvent = mover.GetValueForKey( "sound_circular_rotation" )
+				if ( rotationSoundEvent != "" )
+					EmitSoundOnEntity( mover, rotationSoundEvent )
+
+				vector turnAnchorPos = MoverPath_GetAngleAnchor( lastNode, pathNode )
+
+				// Create a new mover because as far as I know I can't get all the children of the mover and clearparent and reparent.
+				entity curveMover = CreateScriptMover( turnAnchorPos, lastNode.GetAngles() )
+				curveMover.SetPusher( mover.GetPusher() )
+				mover.SetParent( curveMover, "", true )
+
+				// Find the circumference of the turn so we can calculate the rotation time based on the distance traveled around the bend
+				float c = 2 * PI * Length(turnAnchorPos - lastNode.GetOrigin())
+				float frac = fabs(angleChange) / 360.0
+				moveTime = (c * frac) / pathSpeed
+
+				isMoving = true
+				curveMover.NonPhysicsRotateTo( pathNode.GetAngles(), moveTime, 0.0, 0.0 )
+
+				wait moveTime - 0.01
+
+				mover.ClearParent()
+				curveMover.Destroy()
+
+				if ( rotationSoundEvent != "" )
+					StopSoundOnEntity( mover, rotationSoundEvent )
+			}
+			else
+			{
+				// Linear move/rotate
+				isMoving = true
+				if ( mover.HasKey( "dangerous_area_radius" ) )
+					thread CreateMoverDangrousAreas( mover, mover.GetOrigin(), pathNode.GetOrigin(), float( mover.GetValueForKey( "dangerous_area_radius" ) ), moveTime )
+				mover.NonPhysicsMoveTo( pathNode.GetOrigin(), moveTime, easeLeaving, easeArriving )
+				mover.NonPhysicsRotateTo( pathNode.GetAngles(), moveTime, easeLeaving, easeArriving )
+				wait moveTime - 0.01
+			}
+		}
+		else if ( dist == 0.0 && !teleport && rotationTime > 0.0 )
+		{
+			// Rotation in place
+			string rotationSoundEvent = ""
+			if ( mover.HasKey( "sound_rotation" ) )
+				rotationSoundEvent = mover.GetValueForKey( "sound_rotation" )
+			if ( rotationSoundEvent != "" )
+				EmitSoundOnEntity( mover, rotationSoundEvent )
+
+			isMoving = false
+			MoverPath_StopMoveSound( mover )
+			MoverPath_StopSound( mover, pathNode )
+			float easeIn = easeOut ? rotationTime * 0.5 : 0.0
+			float easeOut = easeIn ? rotationTime * 0.5 : 0.0
+			mover.NonPhysicsRotateTo( pathNode.GetAngles(), rotationTime, easeIn, easeOut )
+			wait rotationTime - 0.01
+
+			if ( rotationSoundEvent != "" )
+				StopSoundOnEntity( mover, rotationSoundEvent )
+		}
+		else
+		{
+			mover.SetOrigin( pathNode.GetOrigin() )
+			mover.SetAngles( pathNode.GetAngles() )
+		}
+
+		easeOut = pathNode.HasKey( "ease_from_node" ) && pathNode.GetValueForKey( "ease_from_node" ) == "1"
+
+		if ( pathNode.HasKey( "scr_flag_set" ) )
+			FlagSet( pathNode.GetValueForKey( "scr_flag_set" ) )
+
+		if ( pathNode.HasKey( "scr_flag_clear" ) )
+			FlagClear( pathNode.GetValueForKey( "scr_flag_clear" ) )
+
+		if ( pathNode.HasKey( "scr_flag_wait" ) )
+		{
+			string flag = pathNode.GetValueForKey( "scr_flag_wait" )
+			if ( !Flag( flag ) )
+			{
+				isMoving = false
+				MoverPath_StopMoveSound( mover )
+				MoverPath_StopSound( mover, pathNode )
+				FlagWait( flag )
+			}
+		}
+
+		if ( pathNode.HasKey( "scr_flag_wait_clear" ) )
+		{
+			string flag = pathNode.GetValueForKey( "scr_flag_wait_clear" )
+			if ( Flag( flag ) )
+			{
+				isMoving = false
+				MoverPath_StopMoveSound( mover )
+				MoverPath_StopSound( mover, pathNode )
+				FlagWaitClear( flag )
+			}
+		}
+
+		if ( pathNode.HasKey( "path_wait" ) )
+		{
+			float time = float( pathNode.GetValueForKey( "path_wait" ) )
+			if ( time > 0.0 )
+			{
+				isMoving = false
+				MoverPath_StopMoveSound( mover )
+				MoverPath_StopSound( mover, pathNode )
+				wait time
+			}
+		}
+
+		pathNodes = GetNextMoverPathNodes( pathNode )
+		if ( pathNodes.len() == 0 )
+		{
+			MoverPath_StopMoveSound( mover )
+			MoverPath_StopSound( mover, pathNode )
+			break
+		}
+
+		// Update speed based on the node
+		if ( pathNode.HasKey( "path_speed" ) )
+			pathSpeed = float( pathNode.GetValueForKey( "path_speed" ) )
+
+		lastNode = pathNode
+		pathNode = pathNodes.getrandom()
+	}
+}
+
+void function CreateMoverDangrousAreas( entity mover, vector start, vector end, float radius, float duration )
+{
+	float d = Distance( start, end )
+	float spacing = radius * 1.5
+	int numDangerousSpots = int( ceil( d / spacing ) )
+	vector direction = Normalize( end - start )
+	vector pos
+
+	for ( int i = 0 ; i < numDangerousSpots ; i++ )
+	{
+		pos = start + ( direction * spacing * i )
+		thread CreateMoverDangrousAreaUntilMoverPasses( mover, start, end, pos, radius, duration )
+	}
+}
+
+void function CreateMoverDangrousAreaUntilMoverPasses( entity mover, vector start, vector end, vector pos, float radius, float maxDuration )
+{
+	// Create entity to link it to (lifetime)
+	entity lifetimeEnt = CreateScriptRef( pos )
+
+	// Create the dangerous area
+	AI_CreateDangerousArea_Static( lifetimeEnt, null, radius, TEAM_INVALID, true, true, pos )
+
+	// Wait for mover to go past the dangerous area, or timeout
+	float endTime = Time() + maxDuration
+	while( Time() <= endTime )
+	{
+		if ( DotProduct( end - start, pos - mover.GetOrigin() ) < 0 )
+			break
+		WaitFrame()
+	}
+
+	lifetimeEnt.Destroy()
+}
+
+void function MoverPath_StopMoveSound( entity mover )
+{
+	// Stops any move sounds playing on the mover
+
+	// Stop playing a sound on the mover if one is specified & it is set to do so
+	if ( mover.HasKey( "sound_move" ) && mover.kv.sound_move != "" )
+	{
+		// "sound_move" sound continues to play after moving unless this is checked"
+		if ( mover.HasKey( "stop_sound_move_on_stop" ) && mover.GetValueForKey( "stop_sound_move_on_stop" ) == "1" )
+			StopSoundOnEntity( mover, string( mover.kv.sound_move ) )
+	}
+}
+
+void function MoverPath_StopSound( entity mover, entity node )
+{
+	// Play sound on the node if one is specified
+	if ( node.HasKey( "sound_stop_move" ) && node.kv.sound_stop_move != "" )
+		EmitSoundAtPosition( TEAM_UNASSIGNED, node.GetOrigin(), string( node.kv.sound_stop_move ) )
+
+	// Play sound on the mover if one is specified
+	if ( mover.HasKey( "sound_stop_move" ) && mover.kv.sound_stop_move != "" )
+		EmitSoundOnEntity( mover, string( mover.kv.sound_stop_move ) )
+}
+
+void function MoverPath_StartSound( entity mover, entity node )
+{
+	// Play sound on the node if one is specified
+	if ( node.HasKey( "sound_start_move" ) && node.kv.sound_start_move != "" )
+		EmitSoundAtPosition( TEAM_UNASSIGNED, node.GetOrigin(), string( node.kv.sound_start_move ) )
+
+	// Play sound on mover if one is specified
+	if ( mover.HasKey( "sound_move" ) && mover.kv.sound_move != "" )
+		EmitSoundOnEntity( mover, string( mover.kv.sound_move ) )
+}
+
+float function MoverPath_GetAngleChange( entity node1, entity node2 )
+{
+	vector vec1 = node1.GetForwardVector()
+	vector vec2 = node2.GetForwardVector()
+	float angle = acos( DotProduct( vec1, vec2 ) ) * 180 / PI
+	return angle
+}
+
+vector function MoverPath_GetAngleAnchor( entity node1, entity node2 )
+{
+	vector node1Origin = node1.GetOrigin()
+	vector node2Origin = node2.GetOrigin()
+	vector node1Angles = node1.GetAngles()
+	vector node2Angles = node2.GetAngles()
+	vector node1SideVec
+	vector node2SideVec
+
+	if ( node1Origin.z != node2Origin.z )
+	{
+		// vertical turn
+		node1SideVec = AnglesToUp( node1Angles )
+		node2SideVec = AnglesToUp( node2Angles )
+	}
+	else
+	{
+		// horizontal turn
+		node1SideVec = AnglesToRight( node1Angles )
+		node2SideVec = AnglesToRight( node2Angles )
+	}
+
+	float angleChange = MoverPath_GetAngleChange( node1, node2 )
+	Assert( angleChange != 0 )
+	if ( angleChange > 0 )
+	{
+		node1SideVec *= -1
+		node2SideVec *= -1
+	}
+	float d = Distance( node1Origin, node2Origin )
+	vector intersect = GetClosestPointToLineSegments( node1Origin, node1Origin + node1SideVec * d, node2Origin, node2Origin + node2SideVec * d )
+
+	//DebugDrawLine( intersect, node1Origin, 255, 255, 0, true, 5.0 )
+	//DebugDrawLine( intersect, node2Origin, 0, 255, 255, true, 5.0 )
+	//DebugDrawLine( node1Origin, node1Origin + node1SideVec * 250, 100, 100, 100, true, 5.0 )
+	//DebugDrawLine( node2Origin, node2Origin + node2SideVec * 250, 100, 100, 100, true, 5.0 )
+	//DebugDrawLine( intersect, intersect - <0,0,128>, 100, 0, 0, true, 5.0 )
+	//DebugDrawText( intersect, angleChange.tostring(), true, 5.0 )
+
+	return intersect
+}
+
+array<entity> function GetNextMoverPathNodes( entity node, bool errorChecking = false )
+{
+	array<entity> nodes
+	array<entity> linkedEnts = node.GetLinkEntArray()
+	foreach( entity ent in linkedEnts )
+	{
+		if ( GetEditorClass( ent ) == "script_mover_path" )
+		{
+			if ( !errorChecking && ent.HasKey( "switchtrack_flag" ) && !Flag( ent.GetValueForKey( "switchtrack_flag" ) ) )
+				continue
+			nodes.append( ent )
+		}
+	}
+	return nodes
+}
+
+void function InitMoverNodeFlagsAndErrorCheck( entity node )
+{
+	if ( node.e.moverPathPrecached )
+		return
+
+	if ( node.HasKey( "path_speed" ) )
+		Assert( float( node.kv.path_speed ) > 0.0, "Node path_speed at " + node.GetOrigin() + " must be greater than 0." )
+
+	if ( node.HasKey( "path_wait" ) )
+		Assert( float( node.kv.path_wait ) >= 0.0, "Node path_wait at " + node.GetOrigin() + " must be greater than 0." )
+
+	if ( node.HasKey( "teleport_to_node" ) && node.kv.teleport_to_node == "1" )
+	{
+		if ( node.HasKey( "ease_to_node" ) )
+			Assert( node.kv.ease_to_node == "0", "Node at " + node.GetOrigin() + " cant have both teleport_to_node and ease_to_node checked." )
+	}
+
+	if ( node.HasKey( "scr_flag_set" ) )
+		FlagInit( node.GetValueForKey( "scr_flag_set" ) )
+	if ( node.HasKey( "scr_flag_clear" ) )
+		FlagInit( node.GetValueForKey( "scr_flag_clear" ) )
+	if ( node.HasKey( "scr_flag_wait" ) )
+		FlagInit( node.GetValueForKey( "scr_flag_wait" ) )
+	if ( node.HasKey( "switchtrack_flag" ) )
+		FlagInit( node.GetValueForKey( "switchtrack_flag" ), true )
+
+	node.e.moverPathPrecached = true
+
+	array<entity> pathNodes = GetNextMoverPathNodes( node, true )
+	foreach( entity node in pathNodes )
+		InitMoverNodeFlagsAndErrorCheck( node )
+}
+
+entity function GetLinkedTrigger( entity ent )
+{
+	array<entity> linkedEnts = ent.GetLinkEntArray()
+	foreach ( entity ent in linkedEnts )
+	{
+		if ( ent.GetClassName() == "trigger_multiple" )
+			return ent
+	}
+	return null
+}
+
+struct SeeSawThinkStruct // struct that is internal to seeSaw think logic
+{
+	float speed
+	bool touching
+	bool wasTouched
+	vector startAngles
+	float oldSpeed
+	bool playerIgnore
+	float maxSpeed = 10
+	float acceleration = 0.425
+}
+
+void function SeeSawThink( entity seeSaw )
+{
+	seeSaw.Hide()
+
+	seeSaw.EndSignal( "OnDestroy" )
+//	seeSaw.NonPhysicsSetRotateModeLocal( true )
+	seeSaw.SetPusher( true )
+
+	array<entity> parents = seeSaw.GetLinkParentArray()
+	array<entity> brushes
+	foreach ( ent in parents )
+	{
+		if ( ent.GetClassName() == "func_brush" )
+			brushes.append( ent )
+	}
+
+	float minz = 0
+	float maxz = 0
+	foreach ( brush in brushes )
+	{
+		vector mins = brush.GetBoundingMins()
+		vector maxs = brush.GetBoundingMaxs()
+
+		if ( mins.z < minz )
+			minz = mins.z
+
+		if ( maxs.z > maxz )
+			maxz = maxs.z
+	}
+
+	float height = fabs( minz ) + maxz
+
+	entity trigger = seeSaw.GetLinkEnt()
+	trigger.EndSignal( "OnDestroy" )
+
+	SeeSawThinkStruct e
+	e.startAngles = seeSaw.GetAngles()
+
+	if ( seeSaw.HasKey( "script_start_moving" ) && int( seeSaw.kv.script_start_moving ) > 0 )
+	{
+		e.wasTouched = true
+		e.speed = 8
+	}
+
+	thread SeeSawSpeedThink( seeSaw, e )
+
+	if ( seeSaw.HasKey( "script_player_ignore" ) && int( seeSaw.kv.script_player_ignore ) > 0 )
+	{
+		e.playerIgnore = true
+	}
+	else
+	{
+		thread SeeSawTriggerThink( seeSaw, trigger, height, e )
+	}
+
+
+}
+
+void function SeeSawTriggerThink( entity seeSaw, entity trigger, float height, SeeSawThinkStruct e )
+{
+	for ( ;; )
+	{
+		e.touching = false
+		table results = trigger.WaitSignal( "OnTrigger" )
+		entity player = expect entity( results.activator )
+		if ( !IsAlive( player ) )
+			continue
+
+		while ( trigger.IsTouching( player ) )
+		{
+			PlayerNearSeeSaw( player, seeSaw, height, e )
+			WaitFrame()
+		}
+	}
+}
+
+float ornull function SeeSawPitchLimitOverride()
+{
+//	return 60.0
+	return null
+}
+
+void function SeeSawSpeedThink( entity seeSaw, SeeSawThinkStruct e )
+{
+	seeSaw.EndSignal( "OnDestroy" )
+	float pitchLimit = 50 // 70.75
+
+	if ( seeSaw.HasKey( "script_pitch_limit" ) )
+		pitchLimit = float( seeSaw.kv.script_pitch_limit )
+
+	vector angles = seeSaw.GetAngles()
+	vector forward = AnglesToRight( angles ) * -1
+	vector rotateDir = forward // < -1,0,0 >
+
+	for ( ;; )
+	{
+		WaitFrame()
+		SeeSawSpeedThink_internal( seeSaw, e, rotateDir, pitchLimit )
+	}
+}
+
+void function SeeSawSpeedThink_internal( entity seeSaw, SeeSawThinkStruct e, vector rotateDir, float pitchLimit )
+{
+	float ornull pitchLimitOverride = SeeSawPitchLimitOverride()
+	if ( pitchLimitOverride != null )
+	{
+		pitchLimit = expect float( pitchLimitOverride )
+	}
+	vector localAngles = seeSaw.GetLocalAngles()
+
+	if ( ( !e.touching && e.wasTouched ) || e.playerIgnore )
+	{
+		vector startForward = AnglesToForward( e.startAngles )
+		vector startUp = AnglesToUp( e.startAngles )
+		vector seeSawForward = AnglesToForward( seeSaw.GetAngles() )
+
+//		if ( ge(106)==seeSaw)
+//		{
+//			printt( "dot is " + DotProduct( startForward, seeSawForward ) + " speed " + e.speed )
+//		}
+		//printt( "Dot " + DotProduct( startForward, seeSawForward ) )
+		//printt( "Dot " +
+		//printt( DotProduct( startUp, seeSawForward ) )
+
+
+		// return to normal
+		//printt( "start angles " + e.startAngles + " current angles " + seeSaw.GetAngles() )
+
+		if ( fabs( DotProduct( startForward, seeSawForward ) ) < 0.75 )
+		{
+			if ( DotProduct( startUp, seeSawForward ) > 0 )
+			{
+				if ( e.speed < e.maxSpeed )
+					e.speed += e.acceleration
+			}
+			else
+			{
+				if ( e.speed > -e.maxSpeed )
+					e.speed -= e.acceleration
+			}
+		}
+
+		//DebugDrawText( seeSaw.GetOrigin(), "" + e.speed, true, 1 )
+		//DebugDrawLine( seeSaw.GetOrigin(), GetPlayerArray()[0].GetOrigin(), 255, 0, 0, true, 0.2 )
+	}
+
+//	if ( ge(117) == seeSaw )
+//		return
+	if ( e.speed < 0 )
+	{
+		if ( localAngles.x < -pitchLimit )
+		{
+			seeSaw.NonPhysicsRotate( rotateDir, 0 )
+			e.speed = 0
+			return
+		}
+	}
+	else
+	{
+		if ( localAngles.x > pitchLimit )
+		{
+			seeSaw.NonPhysicsRotate( rotateDir, 0 )
+			e.speed = 0
+			return
+		}
+	}
+
+	if ( e.oldSpeed != e.speed || pitchLimitOverride != null )
+	{
+		seeSaw.NonPhysicsRotate( rotateDir, e.speed )
+		e.oldSpeed = e.speed
+	}
+}
+
+void function PlayerNearSeeSaw( entity player, entity seeSaw, float height, SeeSawThinkStruct e )
+{
+	vector playerOrigin = player.GetOrigin()
+	vector seeSawOrigin = seeSaw.GetOrigin()
+	//DebugDrawLine( playerOrigin, seeSawOrigin, 255, 0, 0, true, 0.2 )
+	vector originDif = playerOrigin - seeSawOrigin
+	vector difNormal = Normalize( originDif )
+	vector seeSawAngles = seeSaw.GetAngles()
+	vector seeSawUp = AnglesToUp( seeSawAngles )
+	bool onTop = DotProduct( difNormal, seeSawUp ) > 0
+
+	// may need to do something special for hands holding on
+	if ( !onTop )
+	{
+		e.touching = false
+		return
+	}
+
+	float amountAbove = DotProduct( originDif, seeSawUp )
+	amountAbove -= height
+	amountAbove += 2.5 // player is in the ground?
+
+//	if ( ge(117) == seeSaw )
+//	{
+//		printt( "amountAbove " + amountAbove )
+//	}
+
+	if ( amountAbove < 0 || amountAbove > 15 )
+	{
+		e.touching = false
+		return
+	}
+
+
+
+	vector seeSawForward = AnglesToForward( seeSawAngles )
+	float amountForward = DotProduct( originDif, seeSawForward )
+	e.speed += Graph( amountForward, 0, 1000, 0, 2 )
+	float maxSpeed = 10
+	e.speed = min( maxSpeed, e.speed )
+	e.speed = max( -maxSpeed, e.speed )
+	e.touching = true
+	e.wasTouched = true
+}
+
+void function ClaspInit(entity clasp)
+{
+	//printt( "" )
+	//printt( "INIT SHOOTABLE CLASP" )
+	//printt( "" )
+
+	if ( clasp.HasKey( "scr_flag_set" ) )
+		FlagInit( clasp.GetValueForKey( "scr_flag_set" ) )
+
+	AddEntityCallback_OnDamaged( clasp, OnClaspDamaged )
+
+}
+
+void function OnClaspDamaged( entity clasp, var damageInfo)
+{
+	//printt( "CLASP HAS TAKEN DAMAGE" )
+
+	//if the attacker is not valid
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	if ( !IsValid( attacker ) || !attacker.IsPlayer() )
+		return
+
+	if ( clasp.HasKey( "scr_flag_set") )
+	{
+		//printt( clasp )
+		//printt( clasp.GetEncodedEHandle() )
+		//printt( clasp.GetTargetName() )
+		//printt( clasp.GetValueForKey( "scr_flag_set" ) )
+		FlagSet( clasp.GetValueForKey( "scr_flag_set" ) )
+	}
+
+	//printt( "" )
+	//printt( "DESTROYING CLASP" )
+	//printt( "" )
+
+	//Destroy the clasp
+	clasp.Destroy()
+}
+
+function SetSwitchUseFunc( button, func, ent = null )
+{
+	local Table = InitControlPanelUseFuncTable()
+	Table.useFunc <- func
+	Table.useEnt <- ent
+
+	if ( !( button in file.switchCallbacks ) )
+		file.switchCallbacks[ button ] <- []
+	file.switchCallbacks[ button ].append( Table )
+}
+
+
+void function FanPusherThink( entity fanPusher )
+{
+	float fanPushDist = 3000
+
+	if ( fanPusher.HasKey( "height" ) )
+		fanPushDist = float( fanPusher.kv.height )
+
+	if ( fanPusher.HasKey( "script_gravityscale" ) && fanPusher.kv.script_gravityscale != "" )
+	{
+		fanPushDist *= string( fanPusher.kv.script_gravityscale ).tofloat()
+	}
+	else
+	{
+		float gravityScale = expect float( GetPlayerSettingsFieldForClassName( DEFAULT_PILOT_SETTINGS, "gravityscale" ) )
+		fanPushDist *= gravityScale // adjusted for new gravity scale
+	}
+
+	float radius = float( fanPusher.kv.script_radius )
+	vector forward = AnglesToForward( fanPusher.GetAngles() )
+	vector cylinderBottom = fanPusher.GetOrigin()
+	vector cylinderTop = cylinderBottom + ( forward * fanPushDist )
+
+	if ( FAN_DEBUG )
+		DebugDrawCylinder( fanPusher.GetOrigin(), fanPusher.GetAngles(), radius, fanPushDist, 100, 0, 0, true, 120.0 )
+
+	string flag = ""
+	if ( fanPusher.HasKey( "script_flag" ) )
+	{
+		flag = string( fanPusher.kv.script_flag )
+		FlagInit( flag )
+	}
+
+	bool lifterFan = DotProduct( forward, <0,0,1> ) >= 0.98
+	float pushAccel = FAN_DEFAULT_PUSH_ACCEL
+	if ( fanPusher.HasKey( "strength" ) )
+		pushAccel = float( fanPusher.kv.strength )
+
+	array<entity> fanPushables
+	table<entity,float> startTimes
+	table<entity,float> startHeights
+
+	// Play fan sound on entity instead of at position because some occluder bug with miles. Easiest fix for late in game. Next project fan pusher shoudln't be info_target that you can't play sounds on
+	entity fanSoundEntity = CreateScriptMover( fanPusher.GetOrigin() )
+	fanSoundEntity.DisableHibernation()
+
+	// Delay to fix code bug where audio wont play at map load
+	wait 0.2
+
+	FanOnSoundEffects( fanPusher, radius, fanSoundEntity )
+
+	while( true )
+	{
+		if ( flag != "" && !Flag( flag ) )
+		{
+			foreach( entity ent, float time in startTimes )
+				ent.e.inWindTunnel = false
+
+			startTimes.clear()
+			startHeights.clear()
+
+			FanOffSoundEffects( fanPusher, radius, fanSoundEntity )
+			FlagWait( flag )
+			FanOnSoundEffects( fanPusher, radius, fanSoundEntity )
+		}
+
+		fanPushables.clear()
+		fanPushables.extend( GetPlayerArray() )
+		fanPushables.extend( GetNPCArray() )
+		fanPushables.extend( GetProjectileArrayEx( "any", TEAM_ANY, TEAM_ANY, cylinderBottom, fanPushDist ) )
+		fanPushables.extend( GetEntArrayByClass_Expensive( "prop_physics" ) )
+
+		foreach( entity ent in fanPushables )
+		{
+			array<vector> testPosArray = [ ent.GetWorldSpaceCenter(), ent.EyePosition() + <0,0,16>, ent.GetOrigin() - <0,0,16> ]
+			bool isInFanCylinder = false
+			vector testPos = ent.GetWorldSpaceCenter()
+			if ( ent.e.windPushEnabled )
+			{
+				foreach( vector pos in testPosArray )
+				{
+					if ( !PointInCylinder( cylinderBottom, cylinderTop, radius, pos ) )
+						continue
+					isInFanCylinder = true
+					break
+				}
+			}
+
+			if ( isInFanCylinder )
+			{
+				if ( ent.IsPlayer() && ent.IsNoclipping() )
+					continue
+
+				if ( !( ent in startTimes ) )
+				{
+					ent.e.inWindTunnel = true
+					ent.e.windTunnelDirection = forward
+					if ( ent.IsPlayer() )
+						thread PlayerInWindTunnel( ent )
+					else
+						ent.SetOrigin( ent.GetOrigin() + <0,0,48> )
+					startTimes[ ent ] <- Time()
+				}
+				float startTime = startTimes[ ent ]
+				ent.e.windTunnelStartTime = startTime
+
+				float startHeight
+				if ( lifterFan )
+				{
+					if ( !( ent in startHeights ) )
+						startHeights[ ent ] <- ent.GetOrigin().z
+					startHeight = startHeights[ ent ]
+				}
+
+				// Figure out what force should be based on proximity to fan
+				vector pointAlongTunnel = GetClosestPointOnLineSegment( cylinderBottom, cylinderTop, testPos )
+				float distanceFromFanAlongTunnel = Distance( pointAlongTunnel, cylinderBottom )
+
+				float fanStrength = GetFanStrengthWithGeoBlockage( ent, testPos, cylinderBottom, cylinderTop, forward )
+				if ( ent.IsPlayer() )
+					ent.SetPlayerNetFloatOverTime( "FanRumbleStrength", fanStrength, 0.0 )
+
+				if ( lifterFan )
+					fanStrength = GraphCapped( distanceFromFanAlongTunnel, 0.0, fanPushDist, 1.0, 0.0 )
+
+				if ( ent.IsProjectile() )
+					fanStrength *= 2.0
+
+				if ( ent.GetModelName() == $"models/containers/barrel.mdl" )
+					fanStrength = 0.0
+
+				// Ramp up the push over time when first entering
+				float ramp = GraphCapped( Time(), startTime, startTime + FAN_PUSH_RAMP_TIME, 0.0, 1.0 )
+
+				float dt = 0.01666667 // old behavior
+				vector velocity = ent.GetVelocity()
+
+				// Apply push to the velocity
+				velocity += forward * ( dt * pushAccel * fanStrength )
+
+				// Decay other directional movement on the vector
+				if ( FAN_PUSH_DECAY_SIDE_VELOCITY )
+				{
+					vector velInOtherDirs = velocity - forward * DotProduct( velocity, forward )
+					float decayFrac = pow( ramp * fanStrength, dt )
+					vector loseVelInOtherDirs = velInOtherDirs * (1 - decayFrac)
+					velocity -= loseVelInOtherDirs
+				}
+
+				// Add some anti-gravity
+				velocity.z += dt * FAN_PUSH_ANTI_GRAVITY * fanStrength
+				ent.e.windTunnelStrength = fanStrength
+
+				// Apply new force to ent
+				ent.SetVelocity( velocity )
+
+				// Hack for drones. You can't set velocity on them yet so I'm doing this for now to test the gameplay
+				if ( ent.GetClassName() == "npc_drone" )
+				{
+					float zChange = dt * pushAccel * fanStrength * 1
+					ent.SetOrigin( ent.GetOrigin() + < 0, 0, zChange > )
+				}
+			}
+			else
+			{
+				if ( ent in startTimes )
+				{
+					ent.e.inWindTunnel = false
+					delete startTimes[ ent ]
+				}
+
+				if ( lifterFan && ent in startHeights )
+				{
+					delete startHeights[ ent ]
+				}
+
+				if ( ent.IsPlayer() )
+					ent.SetPlayerNetFloatOverTime( "FanRumbleStrength", 0.0, 1.0 )
+			}
+		}
+		WaitFrame()
+	}
+}
+
+void function PlayerInWindTunnel( entity player )
+{
+	//int poseIndex = player.LookupPoseParameterIndex( "windfrac" )
+
+	EndSignal( player, "OnDestroy" )
+	OnThreadEnd(
+		function() : ( player )
+		{
+			if ( FAN_DEBUG )
+				printt( "OUT!" )
+			if ( IsValid( player ) )
+			{
+				player.SetOneHandedWeaponUsageOff()
+				FadeOutSoundOnEntity( player, "Beacon_WindBuffet_Player", 1.0 )
+
+				player.kv.airSpeed = player.GetPlayerSettingsField( "airSpeed" )
+				player.kv.airAcceleration = player.GetPlayerSettingsField( "airAcceleration" )
+			}
+		}
+	)
+
+	if ( FAN_DEBUG )
+		printt( "IN!" )
+
+	bool playingWindBuffet = false
+
+	player.kv.airSpeed = 150
+	player.kv.airAcceleration = 650
+
+	while( player.e.inWindTunnel )
+	{
+		//player.GetViewModelEntity().SetPoseParameter( poseIndex, player.e.windTunnelStrength )
+
+		if ( player.e.windTunnelStrength > 0 )
+		{
+			player.SetOneHandedWeaponUsageOn()
+			if ( !playingWindBuffet )
+			{
+				EmitSoundOnEntityOnlyToPlayerWithFadeIn( player, player, "Beacon_WindBuffet_Player", 1.0 )
+				playingWindBuffet = true
+			}
+		}
+		else
+		{
+			player.SetOneHandedWeaponUsageOff()
+			if ( playingWindBuffet )
+			{
+				FadeOutSoundOnEntity( player, "Beacon_WindBuffet_Player", 1.0 )
+				playingWindBuffet = false
+			}
+		}
+		WaitFrame()
+	}
+}
+
+float function GetFanStrengthWithGeoBlockage( entity ent, vector testPos, vector cylinderBottom, vector cylinderTop, vector fanDirection )
+{
+	vector pointAlongFan = GetClosestPointOnLineSegment( cylinderBottom, cylinderTop, testPos )
+	vector vecFromFanCenter = testPos - pointAlongFan
+	vector traceEnd = cylinderBottom + vecFromFanCenter
+
+	// Trace from the entity towards the fan along the fan axis to see if we are getting blocked
+	TraceResults result = TraceLine( testPos, traceEnd, ent, TRACE_MASK_NPCSOLID, TRACE_COLLISION_GROUP_NONE )
+	if ( FAN_DEBUG )
+	{
+		DebugDrawLine( testPos, result.endPos, 255, 255, 0, true, 0.1 )
+		DebugDrawLine( result.endPos, traceEnd, 255, 255, 255, true, 0.1 )
+		//DebugDrawLine( <0,0,0>, result.endPos, 255, 0, 0, true, 0.1 )
+	}
+
+	float distFromCover = Distance( testPos, result.endPos )
+	float strength = GraphCapped( distFromCover, 256, 1024, 0.0, 1.0 )
+	if ( result.fraction == 1.0 )
+		strength = 1.0
+
+	//if ( FAN_DEBUG )
+	//{
+	//	printt( "strength:", strength )
+	//	printt( "fraction:", result.fraction )
+	//	printt( "dist from fan:", Distance( testPos, cylinderBottom ) )
+	//	printt( "distFromCover:", distFromCover )
+	//}
+
+	Assert( strength >= 0.0 && strength <= 1.0 )
+	return strength
+}
+
+void function FanOnSoundEffects( entity fanPusher, float radius, entity fanSoundEntity )
+{
+	// Turn on sound
+	if ( radius >= 350 )
+	{
+		EmitSoundOnEntity( fanSoundEntity, "Beacon_VerticalFanControl_On" )
+		if ( fanPusher.HasKey( "fan_loop_sound" ) )
+			EmitSoundOnEntity( fanSoundEntity, string( fanPusher.kv.fan_loop_sound ) )
+
+	}
+	else
+	{
+		EmitSoundOnEntity( fanSoundEntity, "Beacon_MediumBlueFan_On" )
+		string loopAlias = fanPusher.HasKey( "fan_loop_sound" ) ? string( fanPusher.kv.fan_loop_sound ) : "Beacon_MediumBlueFan_Loop_01"
+		EmitSoundOnEntity( fanSoundEntity, loopAlias )
+		//DebugDrawText( fanPusher.GetOrigin(), loopAlias, true, 90.0 )
+	}
+}
+
+void function FanOffSoundEffects( entity fanPusher, float radius, entity fanSoundEntity )
+{
+	// Turn off sound
+	if ( radius >= 350 )
+	{
+		string alias = "Beacon_VerticalFanControl_Off"
+		if ( fanPusher.HasKey( "shutoff_sound" ) )
+			alias = string( fanPusher.kv.shutoff_sound )
+		EmitSoundOnEntity( fanSoundEntity, alias )
+
+		if ( fanPusher.HasKey( "fan_loop_sound" ) )
+			StopSoundOnEntity( fanSoundEntity, string( fanPusher.kv.fan_loop_sound ) )
+	}
+	else
+	{
+		EmitSoundOnEntity( fanSoundEntity, "Beacon_MediumBlueFan_Off" )
+		string loopAlias = fanPusher.HasKey( "fan_loop_sound" ) ? string( fanPusher.kv.fan_loop_sound ) : "Beacon_MediumBlueFan_Loop_01"
+		StopSoundOnEntity( fanSoundEntity, loopAlias )
+	}
+}

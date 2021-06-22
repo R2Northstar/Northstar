@@ -1,0 +1,60 @@
+untyped
+global function NorthstarDevCommands_Init
+
+void function NorthstarDevCommands_Init()
+{
+	AddClientCommandCallback( "noclip", ClientCommandCallbackToggleNoclip )
+	AddClientCommandCallback( "script", ClientCommandCallbackEvalScript )
+	AddClientCommandCallback( "kill", ClientCommandCallbackKill )
+}
+
+bool function ClientCommandCallbackToggleNoclip( entity player, array<string> args )
+{
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return true
+
+	//if ( player.IsNoclipping() )
+	//	DisableNoclipForEntityIndex( player.GetIndexForEntity() )
+	//else
+	//	EnableNoclipForEntityIndex( player.GetIndexForEntity() )
+	
+	// new way that doesn't require native stuff yay
+	if ( player.IsNoclipping() )
+		player.SetPhysics( MOVETYPE_WALK ) // just hoping this is the right movetype, not much of a way to check
+	else
+		player.SetPhysics( MOVETYPE_NOCLIP )
+		
+	return true
+}
+
+bool function ClientCommandCallbackEvalScript( entity player, array<string> args )
+{
+	if ( args.len() < 1  || GetConVarInt( "sv_cheats" ) != 1 )
+		return true
+	
+	// todo: rewrite this at some point to use a concommand because clientcommands can't just take in a single string with spaces, quotes etc
+	// should just have the concommand call a clientcommand manually with properly formatted args
+	string joinedArgs = args[0]
+	for ( int i = 1; i < args.len(); i++ )
+		joinedArgs += " " + args[i]
+
+	try
+	{
+		compilestring( joinedArgs )()
+	}
+	catch (exception)
+	{
+		// should probably send this to the client at some point
+		// no need to log here because compilestring errors already do that
+	}
+
+	return true
+}
+
+bool function ClientCommandCallbackKill( entity player, array<string> args )
+{
+	if ( IsAlive( player ) && GetConVarInt( "sv_cheats" ) == 1 )
+		player.Die()
+	
+	return true
+}

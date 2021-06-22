@@ -1,0 +1,34 @@
+untyped
+
+global function ClCoopSpUtils_Init
+global function AreAllPlayersDead
+
+global function IsPlayingTimeshiftLevel 
+
+void function ClCoopSpUtils_Init()
+{
+
+}
+
+bool function AreAllPlayersDead()
+{
+	foreach ( entity player in GetPlayerArray() )
+		if ( IsAlive( player ) )
+			return false
+			
+	return true
+}
+
+// TIMESHIFT STUFF
+
+bool function IsPlayingTimeshiftLevel()
+{
+	bool allowed = false
+	try
+	{
+		allowed = expect bool( level.allowTimeTravel )
+	}
+	catch ( exception ) {}
+	
+	return GetMapName().find( "timeshift" ) != null || allowed
+}

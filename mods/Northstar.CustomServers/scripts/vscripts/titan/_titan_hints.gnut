@@ -1,0 +1,267 @@
+global function TitanHints_Init
+global function TitanHints_NotifyUsedOffhand
+global function TitanHints_ResetThresholds
+global function TitanHints_TryShowHint
+global function TitanHints_ShowHint
+
+const float FIGHT_START_THRESHOLD = 10.0
+const float FIGHT_HINT_THRESHOLD = 8.0
+const float TITAN_HINT_COOLDOWN = 15.0
+
+struct
+{
+	float titanFightStartTime = -99
+	float lastDidDamageTime = -99
+	float lastTookDamageTime = -99
+	float lastShowHintTime = -99
+	float lastDodgeTime = -99
+	table<int,float> titanHintThresholds
+	table<int,float> titanHintThresholdAdd
+	table<int,float> lastShowHintTimes
+} file
+
+void function TitanHints_Init()
+{
+	AddDamageCallback( "player", TitanHint_Player_OnDamaged )
+	AddDamageCallback( "npc_titan", TitanHint_NPC_OnDamaged )
+	AddDamageCallback( "npc_super_spectre", TitanHint_NPC_OnDamaged )
+
+	file.titanHintThresholds[ TITAN_HINT_DASH ] <- 5.0
+	file.titanHintThresholds[ OFFHAND_ORDNANCE ] <- 5.0
+	file.titanHintThresholds[ OFFHAND_SPECIAL ] <- 5.0
+	file.titanHintThresholds[ OFFHAND_ANTIRODEO ] <- 10.0
+	file.titanHintThresholds[ OFFHAND_EQUIPMENT ] <- 1.0
+
+	file.lastShowHintTimes[ TITAN_HINT_DASH ] <- -99.0
+	file.lastShowHintTimes[ OFFHAND_ORDNANCE ] <- -99.0
+	file.lastShowHintTimes[ OFFHAND_SPECIAL ] <- -99.0
+	file.lastShowHintTimes[ OFFHAND_ANTIRODEO ] <- -99.0
+	file.lastShowHintTimes[ OFFHAND_EQUIPMENT ] <- -99.0
+
+	file.titanHintThresholdAdd[ TITAN_HINT_DASH ] <- 0
+	file.titanHintThresholdAdd[ OFFHAND_ORDNANCE ] <- 0
+	file.titanHintThresholdAdd[ OFFHAND_SPECIAL ] <- 0
+	file.titanHintThresholdAdd[ OFFHAND_ANTIRODEO ] <- 0
+	file.titanHintThresholdAdd[ OFFHAND_EQUIPMENT ] <- 0
+
+	AddCallback_OnPlayerInventoryChanged( TitanHints_ResetThresholds )
+	AddSpawnCallback( "player", PlayerDidLoad )
+}
+
+void function PlayerDidLoad( entity player )
+{
+	AddPlayerMovementEventCallback( player, ePlayerMovementEvents.DODGE, OnPlayerDodge )
+}
+
+void function TitanHint_Player_OnDamaged( entity player, var damageInfo )
+{
+	if ( !player.IsTitan() )
+		return
+
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	if ( !attacker.IsTitan() && !IsSuperSpectre(attacker) )
+		return
+
+	if ( attacker.GetTeam() == player.GetTeam() )
+		return
+
+	TrySetFightTime()
+
+	file.lastTookDamageTime = Time()
+
+	array<int> hintsToShow = [ TITAN_HINT_DASH, OFFHAND_EQUIPMENT, OFFHAND_SPECIAL, OFFHAND_ORDNANCE, OFFHAND_ANTIRODEO ]
+
+	if ( GetDoomedState( player ) || GetTitanCurrentRegenTab( player ) < 2 )
+		hintsToShow = [ TITAN_HINT_DASH, OFFHAND_SPECIAL ]
+
+	TitanHints_TryShowHint( player, hintsToShow, attacker )
+}
+
+void function TitanHint_NPC_OnDamaged( entity victim, var damageInfo )
+{
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	if ( !attacker.IsPlayer() )
+		return
+
+	if ( !attacker.IsTitan() )
+		return
+
+	TrySetFightTime()
+
+	file.lastDidDamageTime = Time()
+
+	TitanHints_TryShowHint( attacker, [ OFFHAND_EQUIPMENT, OFFHAND_ORDNANCE, OFFHAND_ANTIRODEO ], victim )
+}
+
+// reset thresholds
+void function TitanHints_ResetThresholds( entity player )
+{
+	if ( !player.IsTitan() )
+		return
+
+	foreach ( index, value in file.titanHintThresholdAdd )
+	{
+		if ( index != TITAN_HINT_DASH ) // don't reset dash
+			file.titanHintThresholdAdd[ index ] = 0.0
+	}
+}
+
+// increase threshold for hints every time the player uses it
+void function TitanHints_NotifyUsedOffhand( int index )
+{
+	// never increment for core
+	if ( index == OFFHAND_EQUIPMENT )
+		return
+
+	if ( index in file.titanHintThresholds )
+	{
+		file.titanHintThresholdAdd[ index ] += TITAN_HINT_COOLDOWN
+	}
+}
+
+bool function TrySetFightTime()
+{
+	if (
+		Time() - file.lastTookDamageTime > FIGHT_START_THRESHOLD &&
+		Time() - file.lastDidDamageTime > FIGHT_START_THRESHOLD
+		 )
+	{
+		file.titanFightStartTime = Time()
+		return true
+	}
+
+	return false
+}
+
+void function TitanHints_TryShowHint( entity player, array<int> indexes, entity enemy = null )
+{
+	if ( GetConVarInt( "hud_setting_showTips" ) == 0 )
+		return
+
+	float fightDuration = Time() - file.titanFightStartTime
+	if ( fightDuration < FIGHT_HINT_THRESHOLD )
+		return
+
+	if ( TitanCoreInUse( player ) )
+		return
+
+	foreach ( idx in indexes )
+	{
+		float threshold = file.titanHintThresholds[idx] + file.titanHintThresholdAdd[idx]
+
+		// have we been fighting for a while?
+		if ( fightDuration < max( threshold, TITAN_HINT_COOLDOWN ) )
+			continue
+
+		// have we already shown this hint?
+		if ( Time() - file.lastShowHintTimes[idx] < max( threshold, TITAN_HINT_COOLDOWN ) )
+			continue
+
+		// have we already shown a hint?
+		if ( Time() - file.lastShowHintTime < TITAN_HINT_COOLDOWN )
+			continue
+
+		if ( idx != TITAN_HINT_DASH )
+		{
+			// when did you last use this ability?
+			if ( Time() - player.p.lastTitanOffhandUseTime[idx] < threshold )
+				continue
+
+			entity weapon = player.GetOffhandWeapon( idx )
+
+			if ( weapon == null )
+				continue
+
+			// has this ability been available for a while?
+			if ( weapon.GetNextAttackAllowedTime() + threshold > Time() )
+				continue
+
+			var requiresLocks = weapon.GetWeaponInfoFileKeyField( "requires_lock" )
+
+			if ( requiresLocks != null )
+			{
+				expect int( requiresLocks )
+				if ( requiresLocks == 1 )
+				{
+					if ( weapon.SmartAmmo_IsEnabled() && !SmartAmmo_CanWeaponBeFired( weapon ) )
+						continue
+				}
+			}
+
+
+			int curEnergyCost = weapon.GetWeaponCurrentEnergyCost()
+			if ( !player.CanUseSharedEnergy( curEnergyCost ) )
+				continue
+
+			if ( weapon.IsChargeWeapon() )
+			{
+				if ( weapon.GetWeaponChargeFraction() > 0.0 )
+					continue
+			}
+
+			if ( weapon.GetWeaponPrimaryClipCount() < weapon.GetWeaponSettingInt( eWeaponVar.ammo_min_to_fire ) )
+				continue
+
+			// special core check
+			if ( idx == OFFHAND_EQUIPMENT )
+			{
+				if( !CheckCoreAvailable( weapon ) )
+					continue
+				if ( IsConversationPlaying() )
+					continue
+			}
+
+			var hintType = weapon.GetWeaponInfoFileKeyField( "hint_type" )
+			if ( hintType != null )
+			{
+				if ( hintType == "range_toggle" )
+				{
+					if ( enemy != null )
+					{
+						float dist = Distance2D( enemy.GetOrigin(), player.GetOrigin() )
+
+						if ( weapon.HasMod( "ammo_swap_ranged_mode" ) )
+						{ // has long range mode, will tell to swap to short range
+							if ( dist > 2500 )
+							{
+								continue
+							}
+						}
+						else
+						{ // has short range mode, will tell to swap to long range
+							if ( dist < 1500 )
+							{
+								continue
+							}
+						}
+					}
+				}
+			}
+
+		}
+		else
+		{
+			if ( Time() - file.lastDodgeTime < threshold )
+				continue
+
+			// should check if dodge is available here, but we can't seem to do that
+		}
+
+		// show hint
+		TitanHints_ShowHint( player, idx )
+		break
+	}
+}
+
+void function TitanHints_ShowHint( entity player, int idx )
+{
+	Remote_CallFunction_Replay( player, "ServerCallback_ShowOffhandWeaponHint", idx )
+	file.lastShowHintTimes[idx] = Time()
+	file.lastShowHintTime = Time()
+}
+
+void function OnPlayerDodge( entity player )
+{
+	file.lastDodgeTime = Time()
+	file.titanHintThresholdAdd[ TITAN_HINT_DASH ] += TITAN_HINT_COOLDOWN
+}

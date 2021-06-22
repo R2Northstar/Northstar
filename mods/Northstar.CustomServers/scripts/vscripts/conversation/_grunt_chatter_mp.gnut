@@ -1,0 +1,18 @@
+global function GruntChatter_MP_Init
+global function PlayGruntChatterMPLine
+
+void function GruntChatter_MP_Init()
+{
+	//ShGruntChatter_MP_Init()
+}
+
+void function PlayGruntChatterMPLine( entity grunt, string conversationType )
+{
+	#if !GRUNT_CHATTER_MP_ENABLED
+		return
+	#endif
+	
+	foreach ( entity player in GetPlayerArray() )
+		if ( ShouldPlayGruntChatterMPLine( conversationType, player, grunt ) )
+			Remote_CallFunction_NonReplay( player, "ServerCallback_PlayGruntChatterMP", GetConversationIndex( conversationType ), grunt.GetEncodedEHandle() )
+}

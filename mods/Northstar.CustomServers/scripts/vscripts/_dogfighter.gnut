@@ -1,0 +1,343 @@
+untyped
+
+global function Dogfighter_Init
+
+global function CreateDogFighterAttack
+global function LaunchRandomDogFighterAttacks
+global function CreateDogFighter
+global function CreateDogFighterAssist
+global function GetGunshipModel
+const TURRET_WEAPON_BULLETS = "mp_weapon_yh803_bullet"
+
+function Dogfighter_Init()
+{
+
+	AddDeathCallback( "npc_dropship", OnDogFighterDeath )
+
+	RegisterSignal( "new_attack_thread" )
+	RegisterSignal( "GunshipForceLeave" )
+}
+
+function LaunchRandomDogFighterAttacks( int team )
+{
+	svGlobal.levelEnt.Signal( "new_attack_thread" )
+	svGlobal.levelEnt.EndSignal( "new_attack_thread" )
+
+	for ( ;; )
+	{
+		thread CreateDogFighterAttack( team )
+		wait RandomFloatRange( 3, 9 )
+	}
+}
+
+function CreateDogFighterAttack( int team )
+{
+	FlightPath flightPath = GetAnalysisForModel( GetFlightPathModel( "fp_straton_model" ), STRATON_ATTACK_FULL )
+
+	CallinData drop
+	InitCallinData( drop )
+	SetCallinStyle( drop, eDropStyle.RANDOM_FROM_YAW )
+	SetCallinYaw( drop, RandomFloat( 360 ) )
+
+
+ 	SpawnPointFP spawnPoint = GetSpawnPointForStyle( flightPath, drop )
+ 	if ( !spawnPoint.valid )
+ 		return
+
+	entity ship = CreateDogFighter( Vector(0,0,0), Vector(0,0,0), team )
+
+	int hornet_health = 2000
+	ship.SetHealth( hornet_health )
+	ship.SetMaxHealth( hornet_health )
+
+	ship.EndSignal( "OnDeath" )
+
+	//AddBulletTurrets( ship, team )
+
+	waitthread PlayAnimTeleport( ship, "st_AngelCity_IMC_Win_ComeIn", spawnPoint.origin, spawnPoint.angles )
+
+	thread PlayAnim( ship, "st_AngelCity_IMC_Win_Idle", spawnPoint.origin, spawnPoint.angles )
+	waitthread DogFighterWaitsUntilLeave( ship )
+
+	waitthread PlayAnim( ship, "st_AngelCity_IMC_Win_Leave", spawnPoint.origin, spawnPoint.angles, 0.5 )
+
+	ship.Kill_Deprecated_UseDestroyInstead()
+}
+
+
+function DogFighterWaitsUntilLeave( ship, idleMin = 10, idleMax = 15 )
+{
+	local duration = ship.GetSequenceDuration( "st_AngelCity_IMC_Win_Idle" )
+
+	// make it play full increments of the idle anim
+	local maxHealth = ship.GetMaxHealth().tofloat()
+	local idleTime = RandomFloatRange( idleMin, idleMax )
+	local reps = ( duration / idleTime ).tointeger()
+	local totalTime = reps * duration
+	local endTime = Time() + totalTime
+
+	for ( ;; )
+	{
+		if ( ship.GetHealth().tofloat() / maxHealth < 0.2 )
+			return
+		if ( Time() >= endTime )
+			return
+		wait 0.1
+	}
+}
+
+entity function CreateDogFighter( vector origin, vector angles, int team )
+{
+	entity hornet
+	if ( GetBugReproNum() == 81765 )
+	{
+		hornet = CreateEntity( "npc_dropship" )
+	}
+	else
+	{
+		// HACK: using a prop script for now since NPC dropships are still buggy
+		// Jiesang told me to do it!
+		hornet = CreatePropScript( GetGunshipModel( team ), origin, angles, 8 )
+		hornet.EnableAttackableByAI( 50, 0, AI_AP_FLAG_NONE )
+		SetTeam( hornet, team )
+		hornet.SetOrigin( origin )
+		hornet.SetAngles( angles )
+	}
+
+	hornet.s.dogfighter <- true
+	hornet.kv.teamnumber = team
+
+	local title
+	switch ( team )
+	{
+		case TEAM_MILITIA:
+			hornet.SetModel( GetFlightPathModel( "fp_hornet_model" ) )
+			title = "Militia Hornet"
+			break
+
+		case TEAM_IMC:
+			hornet.SetModel( GetFlightPathModel( "fp_straton_model" ) )
+			title = "IMC Phantom"
+			break
+	}
+
+	hornet.SetTitle( title )
+
+	hornet.SetOrigin( origin )
+	hornet.SetAngles( angles )
+	// DispatchSpawn( hornet )
+
+	//hornet.EnableRenderAlways()
+	//hornet.SetAimAssistAllowed( false )
+
+	return hornet
+}
+
+void function OnDogFighterDeath( entity ent, var damageInfo )
+{
+	if ( !IsValid( ent ) )
+		return
+
+	if ( !( "dogfighter" in ent.s ) )
+		return
+
+	if ( ent.GetHealth() <= 0 )
+		FighterExplodes( ent )
+}
+
+
+
+
+function AddRocketTurrets( entity ship, int team, int prof = eWeaponProficiency.VERYGOOD )
+{
+	entity turret = AddTurret( ship, team, "mp_weapon_yh803", "l_exhaust_front_1" )
+ 	turret.kv.WeaponProficiency = prof
+	turret.NotSolid()
+	turret.Show()
+	entity weapon = turret.GetActiveWeapon()
+	weapon.Show()
+
+	turret = AddTurret( ship, team, "mp_weapon_yh803", "r_exhaust_front_1" )
+	turret.kv.WeaponProficiency = prof
+	turret.NotSolid()
+	turret.Show()
+	weapon = turret.GetActiveWeapon()
+	weapon.Show()
+}
+
+void function AddBulletTurrets( entity ship, int team, int prof = eWeaponProficiency.VERYGOOD )
+{
+	entity turret = AddTurret( ship, team, TURRET_WEAPON_BULLETS, "l_exhaust_front_1" )
+ 	turret.kv.WeaponProficiency = prof
+	turret.NotSolid()
+	turret = AddTurret( ship, team, TURRET_WEAPON_BULLETS, "r_exhaust_front_1" )
+	turret.kv.WeaponProficiency = prof
+	turret.NotSolid()
+}
+
+asset function GetGunshipModel( int team )
+{
+	switch ( team )
+	{
+		case TEAM_MILITIA:
+			return GetFlightPathModel( "fp_hornet_model" )
+
+		case TEAM_IMC:
+			return GetFlightPathModel( "fp_straton_model" )
+	}
+
+	unreachable
+}
+
+void function CreateDogFighterAssist( int team, vector origin, vector angles, float duration = 10.0, entity ship = null, float dropHeight = 1500 )
+{
+	angles += <0,90,0>
+
+	angles = < 0, angles.y%360, 0 >
+
+ 	// DebugDrawSphere( origin, 256, 255, 0, 0, true, 10.0 )
+
+	// warp in effect before
+	Point start = GetWarpinPosition( GetFighterModelForTeam( team ), "st_AngelCity_IMC_Win_ComeIn_fast", origin, angles )
+
+	if ( !IsValid( ship ) )
+	{
+		ship = CreateDogFighter( start.origin, start.angles, team )
+	}
+	else
+	{
+		ship.SetOrigin( start.origin )
+		ship.SetAngles( start.angles )
+	}
+
+	waitthread __WarpInEffectShared( start.origin, start.angles, "", 0.0 )
+
+
+	ship.SetHealth( 10000 )
+	ship.SetMaxHealth( 10000 )
+	ship.EndSignal( "OnDeath" )
+
+	#if R1_VGUI_MINIMAP
+		ship.Minimap_SetDefaultMaterial( GetMinimapMaterial( "VIP_friendly" ) )
+		ship.Minimap_SetFriendlyMaterial( GetMinimapMaterial( "VIP_friendly" ) )
+		ship.Minimap_SetEnemyMaterial( GetMinimapMaterial( "VIP_enemy" ) )
+		ship.Minimap_SetBossPlayerMaterial( GetMinimapMaterial( "VIP_friendly" ) )
+	#endif
+	ship.Minimap_SetObjectScale( 0.11 )
+	ship.Minimap_SetZOrder( MINIMAP_Z_NPC )
+
+	entity mover = CreateScriptMover( origin, angles )
+
+	OnThreadEnd(
+		function () : ( ship, mover )
+		{
+			if ( IsValid( mover ) )
+				mover.Destroy()
+			if ( IsValid( ship ) )
+				ship.Destroy()
+		}
+	)
+
+	float SHIP_SIZE = 530
+	vector SHIP_MIN = Vector( -SHIP_SIZE/2, -SHIP_SIZE/2, -250 )
+	vector SHIP_MAX = Vector( SHIP_SIZE/2, SHIP_SIZE/2, 100 )
+
+	entity turret
+
+	turret = CreateEntity( "npc_turret_sentry" )
+	SetSpawnOption_AISettings( turret, "npc_turret_sentry_rockets_dropship" )
+	SetSpawnOption_Weapon( turret, "mp_turretweapon_blaster" )
+	SetSpawnOption_Alert( turret )
+	SetTeam( turret, team )
+	DispatchSpawn( turret )
+	turret.SetInvulnerable()
+	turret.SetParent( ship, "r_turret_attach", false, 0.0 )
+	turret.SetTitle( ship.GetTitle() )
+	NPC_NoTarget( turret )
+
+	turret = CreateEntity( "npc_turret_sentry" )
+	SetSpawnOption_AISettings( turret, "npc_turret_sentry_rockets_dropship" )
+	SetSpawnOption_Weapon( turret, "mp_turretweapon_blaster" )
+	SetSpawnOption_Alert( turret )
+	SetTeam( turret, team )
+	DispatchSpawn( turret )
+	turret.SetInvulnerable()
+	turret.SetParent( ship, "l_turret_attach", false, 0.0 )
+	turret.SetTitle( ship.GetTitle() )
+	NPC_NoTarget( turret )
+
+	// DrawArrow( origin, angles, 10, 50 )
+
+	waitthread PlayAnimTeleport( ship, "st_AngelCity_IMC_Win_ComeIn_fast", origin, angles )
+
+	// -------------------------------------------------
+	// now we want to drop the ship close to the ground
+	// -------------------------------------------------
+
+	vector shipOrigin = ship.GetOrigin()
+	vector newOrigin = shipOrigin
+
+	if ( dropHeight > 0 )
+	{
+		// TRACE to find the floor
+		float traceFrac = TraceLineSimple( shipOrigin, shipOrigin - Vector(0,0,dropHeight), ship )
+		vector floorPos = shipOrigin - Vector(0,0,dropHeight * traceFrac)
+		floorPos += Vector( 0,0,400 ) //we don't want the ship to land!
+
+		// TRACE to see if anything is in the way
+		float result = TraceHullSimple( shipOrigin, floorPos, SHIP_MIN, SHIP_MAX, ship )
+		vector offset = ( shipOrigin - floorPos ) * result
+
+		// This is where we will move the spawnpoint
+		newOrigin = origin - offset
+	}
+
+	// float duration = ship.GetSequenceDuration( "st_AngelCity_IMC_Win_Idle" )
+
+	ship.SetParent( mover, "REF" )
+	ship.Anim_EnableUseAnimatedRefAttachmentInsteadOfRootMotion()
+
+	// Ship comes in...
+	thread PlayAnim( ship, "st_AngelCity_IMC_Win_Idle", mover, "REF" )
+
+	// Ship goes down...
+	float dropDuration = 5.0
+	if ( dropHeight > 0 )
+	{
+		mover.NonPhysicsMoveTo( newOrigin, dropDuration, dropDuration*0.4, dropDuration*0.4 )
+		wait dropDuration
+	}
+
+	// Ship hangs out for a while...
+	waitthread GunshipWaitLeave( ship, duration )
+
+	// Ship raises before it leaves...
+	if ( dropHeight > 0 )
+	{
+		mover.NonPhysicsMoveTo( origin, dropDuration, dropDuration*0.4, dropDuration*0.4 )
+		wait dropDuration
+	}
+	ship.ClearParent()
+
+	// Ship leaves...
+	waitthread PlayAnim( ship, "st_AngelCity_IMC_Win_Leave", origin, angles, 0.5 )
+}
+
+void function GunshipWaitLeave( entity ship, float duration )
+{
+	ship.EndSignal( "GunshipForceLeave" )
+	wait duration
+}
+
+asset function GetFighterModelForTeam( int team )
+{
+	switch ( team )
+	{
+		case TEAM_MILITIA:
+			return GetFlightPathModel( "fp_hornet_model" )
+
+		case TEAM_IMC:
+			return GetFlightPathModel( "fp_straton_model" )
+	}
+	unreachable
+}

@@ -1,0 +1,1183 @@
+untyped
+
+global function ReplacementTitans_Init
+
+global function EmptyTitanPlaysAnim
+global function TryReplacementTitanReadyAnnouncement
+
+global function IsReplacementTitanAvailable
+
+global function SetTitanRespawnTimer
+global function GetTitanRespawnTimer
+global function DecrementBuildTimer
+global function ReplacementTitanTimerFinished
+global function GetAttachmentAtTimeFromModel
+global function TryETATitanReadyAnnouncement
+global function TryUpdateTitanRespawnTimerForNewTitanSelection
+global function IsReplacementDropInProgress
+
+global function req
+global function ReplacementTitan
+global function TryAnnounceTitanfallWarningToEnemyTeam
+global function GetTitanForPlayer
+
+
+global function ShouldSetTitanRespawnTimer
+
+global function PauseTitanTimers
+global function PauseTitansThink
+
+global function IsReplacementTitanAvailableForGameState
+
+global function SetReplacementTitanGamemodeRules
+global function SetRequestTitanGamemodeRules
+
+global function CreateTitanForPlayerAndHotdrop
+
+struct {
+	array<int> ETATimeThresholds = [ 120, 60, 30, 15 ]
+	float ETA2MinUpperBound = 123
+	float ETA2MinLowerBound = 115
+	float ETA60sUpperBound = 63
+	float ETA60sLowerBound = 55
+	float ETA30sUpperBound = 33
+	float ETA30sLowerBound = 25
+	float ETA15sUpperBound = 18
+	float ETA15sLowerBound = 12
+	float ETAAnnouncementAllowanceTime = 6.0
+
+	bool buildTimerDisabled = false
+
+	table warpFallDebounce = {}
+
+	bool functionref( entity ) ReplacementTitanGamemodeRules
+	bool functionref( entity, vector ) RequestTitanGamemodeRules
+
+} file
+
+const nagInterval = 40
+
+global const float WARPFALL_SOUND_DELAY = 1.1
+global const float WARPFALL_FX_DELAY = 0.9
+
+function ReplacementTitans_Init()
+{
+	ReplacementTitansDrop_Init()
+
+	RegisterSignal( "titan_impact" )
+
+	RegisterSignal( "SetTitanRespawnTimer" )
+	RegisterSignal( "CalledInReplacementTitan" )
+
+	PrecacheEffect( TURBO_WARP_FX )
+	PrecacheEffect( TURBO_WARP_COMPANY )
+
+
+	AddCallback_OnClientConnecting( ReplacementTitan_InitPlayer )
+	AddClientCommandCallback( "ClientCommand_RequestTitan", ClientCommand_RequestTitan )
+	AddSoulDeathCallback( ResetTitanReplacementAnnouncements )
+
+	level.maxTitansPerTeam <- 2
+
+	if ( file.ReplacementTitanGamemodeRules == null )
+		file.ReplacementTitanGamemodeRules = ReplacementTitanGamemodeRules_Default
+	if ( file.RequestTitanGamemodeRules == null )
+		file.RequestTitanGamemodeRules = RequestTitanGamemodeRules_Default
+
+	FlagInit( "LevelHasRoof" )
+}
+
+
+void function ReplacementTitan_InitPlayer( entity player )
+{
+	player.p.replacementTitanETATimer = GetTimeLimit_ForGameMode() * 60.0
+}
+
+
+bool function IsReplacementTitanAvailable( player, timeBuffer = 0 )
+{
+	expect entity( player )
+
+	if ( !IsReplacementTitanAvailableForGameState() )
+		return false
+
+	if ( player.IsTitan() )
+		return false
+
+	if ( IsAlive( player.GetPetTitan() ) )
+		return false
+
+	if ( player.isSpawning )
+		return false
+
+	if ( !file.ReplacementTitanGamemodeRules( player ) )
+		return false
+
+	switch ( Riff_TitanAvailability() )
+	{
+		case eTitanAvailability.Default:
+			if ( player.titansBuilt == 0 )
+				return true
+			else
+				break
+
+		default:
+			return Riff_IsTitanAvailable( player )
+	}
+
+	if ( player.IsBot() )
+		return true
+
+	return ReplacementTitanTimerFinished( player, timeBuffer )
+}
+
+function IsReplacementTitanAvailableForGameState()
+{
+	#if HAS_GAMEMODES
+	local currentGameState = GetGameState()
+
+	switch ( currentGameState ) //need to add a new entry in here for every new game state we make
+	{
+		case eGameState.WaitingForCustomStart:
+		case eGameState.WaitingForPlayers:
+		case eGameState.PickLoadout:
+		case eGameState.Prematch:
+		case eGameState.SwitchingSides:
+		case eGameState.Postmatch:
+			return false
+
+		case eGameState.Playing:
+		case eGameState.SuddenDeath:
+			return true
+
+		case eGameState.WinnerDetermined:
+		case eGameState.Epilogue:
+		{
+			if ( IsRoundBased() )
+		 	{
+		 		if ( !IsRoundBasedGameOver() )
+		 			return false
+
+		 		if ( !ShouldRunEvac() )
+		 			return false
+		 	}
+
+		 	return true
+		}
+
+		default:
+			Assert( false, "Unknown Game State: " + currentGameState )
+			return false
+	}
+	#endif
+
+	return true
+}
+
+void function SetReplacementTitanGamemodeRules( bool functionref( entity ) rules )
+{
+	file.ReplacementTitanGamemodeRules = rules
+}
+
+void function SetRequestTitanGamemodeRules( bool functionref( entity, vector ) rules )
+{
+	file.RequestTitanGamemodeRules = rules
+}
+
+bool function ReplacementTitanGamemodeRules_Default( entity player )
+{
+	return true
+}
+
+bool function RequestTitanGamemodeRules_Default( entity player, vector origin )
+{
+	return true
+}
+
+float function GetTitanRespawnTimer( entity player )
+{
+	return player.GetNextTitanRespawnAvailable() - Time()
+}
+
+
+#if SP
+void function DecrementBuildTimer( entity player, float amount )
+{
+	if ( !player.IsTitan() )
+		return
+	// core ability in use
+	if ( TitanCoreInUse( player ) )
+		return
+
+	if ( !IsAlive( player ) )
+		return
+
+	SetTitanCoreTimer( player, GetTitanCoreTimer( player ) - amount )
+}
+#endif
+
+#if MP
+void function DecrementBuildTimer( entity player, float amount )
+{
+	Assert( !TitanDamageRewardsTitanCoreTime() || !player.IsTitan() )
+
+	amount = ModifyBuildTimeForPlayerBonuses( player, amount )
+
+	bool shouldDecrementBuildTimer = true
+
+	if ( player.IsTitan() )
+	{
+		// core ability in use
+		if ( TitanCoreInUse( player ) )
+			return
+
+		if ( !IsAlive( player ) )
+			return
+	}
+	else
+	{
+		//Don't decrement build time for Titan if already have Titan in map
+		if ( player.GetPetTitan() )
+			return
+	}
+
+	if ( player.IsTitan() )
+	{
+		SetTitanCoreTimer( player, GetTitanCoreTimer( player ) - amount )
+	}
+	else if ( shouldDecrementBuildTimer )
+	{
+		float remainingTime = GetTitanRespawnTimer( player )
+		SetTitanRespawnTimer( player, remainingTime - amount )
+	}
+}
+#endif
+
+float function ModifyBuildTimeForPlayerBonuses( entity player, float amount )
+{
+	if ( PlayerHasServerFlag( player, SFLAG_FAST_BUILD2 ) )
+		amount *= 2.0
+	else if ( PlayerHasServerFlag( player, SFLAG_FAST_BUILD1 ) )
+		amount *= 1.5
+
+	return amount
+}
+
+
+void function TryUpdateTitanRespawnTimerForNewTitanSelection( entity player )
+{
+	if ( GetCurrentPlaylistVarInt( "titan_build_time_use_set_file", 0 ) == 1 )
+	{
+		if ( ShouldSetTitanRespawnTimer( player ) )
+		{
+			if ( player.GetTitanBuildTime() != GetTitanBuildTime( player ) )
+			{
+				float timeElapsed = player.GetTitanBuildTime() - ( player.GetNextTitanRespawnAvailable() - Time() )
+				ResetTitanBuildTime( player ) // update titan build time here
+				float newTime = Time() + ( player.GetTitanBuildTime() - timeElapsed )
+				player.SetNextTitanRespawnAvailable( max( 0, newTime ) )
+			}
+		}
+	}
+}
+
+void function SetTitanRespawnTimer( entity player, float timeDiff )
+{
+	//printt( "SetTitanRespawnTimer with timeDiff: " + timeDiff )
+	if ( ShouldSetTitanRespawnTimer( player ) == false )
+		return
+
+	float newTime = Time() + timeDiff
+	player.SetNextTitanRespawnAvailable( max( Time() - 1, newTime ) )
+
+	thread WaitToAnnounceTitanETA( player, timeDiff )
+}
+
+bool function ShouldSetTitanRespawnTimer( player )
+{
+	if ( Riff_TitanAvailability() == eTitanAvailability.Custom )
+		return false
+
+	if ( Riff_TitanAvailability() == eTitanAvailability.Default )
+		return true
+
+	if ( player.IsTitan() )
+		return true
+
+	if ( IsValid( player.GetPetTitan() ) )
+		return true
+
+	if ( player.GetNextTitanRespawnAvailable() < 0 )
+		return false
+
+	return true
+}
+
+
+
+function WaitToAnnounceTitanETA( entity player, timeDiff )
+{
+	player.EndSignal( "OnDestroy" )
+	player.Signal( "SetTitanRespawnTimer" )
+	player.EndSignal( "SetTitanRespawnTimer" )
+	player.EndSignal( "CalledInReplacementTitan" )
+	player.EndSignal( "ChoseToSpawnAsTitan" )
+
+	if ( timeDiff > 0 )
+		wait GetTimeTillNextETAAnnouncement( player )
+
+	TryETATitanReadyAnnouncement( player )
+}
+
+float function GetTimeTillNextETAAnnouncement( entity player )
+{
+//	if ( !IsValid( player ) )
+//		return 0
+
+	float timeTillNextTitan = player.GetNextTitanRespawnAvailable() - Time()
+	if ( timeTillNextTitan <= 0 )
+	{
+		//printt( "Waiting 0, Titan Ready" )
+		return 0
+	}
+
+//	if ( !( "replacementTitanETATimer" in player.s ) )
+//		return 0
+
+	if ( timeTillNextTitan >= file.ETA2MinUpperBound && player.p.replacementTitanETATimer > 120 )  //Give some leadup time to conversation starting
+	{
+		//printt( "Waiting " + ( timeTillNextTitan - file.ETA2MinUpperBound ) + " till 2 min announcement" )
+		return timeTillNextTitan - file.ETA2MinUpperBound
+	}
+
+	if ( timeTillNextTitan >= file.ETA2MinLowerBound && player.p.replacementTitanETATimer > 120 )
+	{
+		//printt( "Waiting 0 till 2 min announcement" )
+		return 0 //Play 2 min ETA announcement immediately
+	}
+
+	if ( timeTillNextTitan >= file.ETA60sUpperBound && player.p.replacementTitanETATimer > 60 )
+	{
+		//printt( "Waiting " + ( timeTillNextTitan - file.ETA60sUpperBound ) + " till 60s announcement" )
+		return timeTillNextTitan - file.ETA60sUpperBound
+	}
+
+	if ( timeTillNextTitan >= file.ETA60sLowerBound && player.p.replacementTitanETATimer > 60 )
+	{
+		//printt( "Waiting 0 till 60s announcement" )
+		return 0
+	}
+
+	if ( timeTillNextTitan >= file.ETA30sUpperBound && player.p.replacementTitanETATimer > 30 )
+	{
+		//printt( "Waiting " + ( timeTillNextTitan - file.ETA30sUpperBound ) + " till 30s announcement" )
+		return timeTillNextTitan - file.ETA30sUpperBound
+	}
+
+	if ( timeTillNextTitan >= file.ETA30sLowerBound && player.p.replacementTitanETATimer > 30 )
+	{
+		//printt( "Waiting 0 till 30 announcement" )
+		return 0
+	}
+
+	if ( timeTillNextTitan >= file.ETA15sUpperBound && player.p.replacementTitanETATimer > 15 )
+	{
+		//printt( "Waiting " + ( timeTillNextTitan - file.ETA15sUpperBound ) + " till 15s announcement" )
+		return timeTillNextTitan - file.ETA15sUpperBound
+	}
+
+	if ( timeTillNextTitan >= file.ETA15sLowerBound  && player.p.replacementTitanETATimer > 15 )
+	{
+		//printt( "Waiting 0 till 15s announcement" )
+		return 0
+	}
+
+	//printt( "Waiting " + timeTillNextTitan + " till next Titan" )
+	return timeTillNextTitan
+
+
+}
+
+function TryETATitanReadyAnnouncement( entity player )
+{
+	//printt( "TryETATitanReadyAnnouncement" )
+	if ( !IsAlive( player ) )
+		return
+
+	if ( GetPlayerTitanInMap( player ) )
+		return
+
+	if ( player.GetNextTitanRespawnAvailable() < 0 )
+		return
+
+	if ( GetGameState() > eGameState.SuddenDeath )
+		return
+
+	if ( GameTime_PlayingTime() < 5.0 )
+		return
+
+	local timeTillNextTitan = player.GetNextTitanRespawnAvailable() - Time()
+	//printt( "TryETATitanReadyAnnouncement timetillNextTitan: " + timeTillNextTitan )
+	if ( floor(timeTillNextTitan) <= 0 )
+	{
+		//Titan is ready, let TryReplacementTitanReadyAnnouncement take care of it
+		TryReplacementTitanReadyAnnouncement( player )
+		return
+	}
+
+	//This entire loop is probably too complicated now for what it's doing. Simplify next game!
+	//Loop might be pretty hard to read, a particular iteration of the loop is written in comments below
+	for ( int i = 0; i < file.ETATimeThresholds.len(); ++i )
+	{
+		if ( fabs( timeTillNextTitan - file.ETATimeThresholds[ i ] ) < file.ETAAnnouncementAllowanceTime )
+		{
+			if ( player.p.replacementTitanETATimer > file.ETATimeThresholds[ i ] )
+			{
+				if ( player.titansBuilt )
+					PlayConversationToPlayer( "TitanReplacementETA" + file.ETATimeThresholds[ i ] + "s" , player )
+				else
+					PlayConversationToPlayer( "FirstTitanETA" + file.ETATimeThresholds[ i ] + "s", player )
+
+				player.p.replacementTitanETATimer = float ( file.ETATimeThresholds[ i ] )
+				wait timeTillNextTitan - file.ETATimeThresholds[ i ]
+				if ( IsAlive( player ) )
+					SetTitanRespawnTimer( player, player.GetNextTitanRespawnAvailable() - Time() )
+				return
+			}
+		}
+	}
+
+	/*if ( fabs( timeTillNextTitan - 120 ) < ETAAnnouncementAllowanceTime && player.p.replacementTitanETATimer > 120 )
+	{
+		if ( player.titansBuilt )
+			PlayConversationToPlayer( "TitanReplacementETA120s", player )
+		else
+			PlayConversationToPlayer( "FirstTitanETA120s", player )
+		player.p.replacementTitanETATimer = 120
+		wait timeTillNextTitan - 120
+		SetTitanRespawnTimer( player, player.GetNextTitanRespawnAvailable() - Time()  )
+		return
+	}
+	*/
+
+}
+
+function TryReplacementTitanReadyAnnouncement( entity player )
+{
+	while( true )
+	{
+		//printt( "TryReplacementTitanReadyAnnouncementLoop" )
+		if ( !IsAlive( player ) )
+			return
+
+		if ( GetGameState() > eGameState.SuddenDeath )
+			return
+
+		if ( GetPlayerTitanInMap( player ) )
+			return
+
+		if ( level.nv.titanDropEnabledForTeam != TEAM_BOTH && level.nv.titanDropEnabledForTeam != player.GetTeam() )
+			return
+
+		if ( player.p.replacementTitanReady_lastNagTime == 0 || Time() - player.p.replacementTitanReady_lastNagTime >= nagInterval )
+		{
+			//Don't play Titan Replacement Announcements if you don't have it ready
+			switch ( Riff_TitanAvailability() )
+			{
+				case eTitanAvailability.Default:
+					break
+
+				default:
+					if ( !Riff_IsTitanAvailable( player ) )
+						return
+			}
+
+			if ( player.titansBuilt )
+			{
+				PlayConversationToPlayer( "TitanReplacementReady", player )
+			}
+			else
+			{
+				PlayConversationToPlayer( "FirstTitanReady", player )
+			}
+			player.p.replacementTitanReady_lastNagTime = Time()
+		}
+
+		wait 5.0 // Once every 5 seconds should be fine
+	}
+}
+
+void function ResetTitanReplacementAnnouncements( entity soul, var damageInfo )
+{
+	entity player = soul.GetBossPlayer()
+
+	if ( !IsValid( player ) )
+		return
+
+	player.p.replacementTitanETATimer = expect float( level.nv.gameEndTime )
+}
+
+function req()
+{
+	ReplacementTitan( GetPlayerArray()[0] )
+}
+
+bool function ClientCommand_RequestTitan( entity player, array<string> args )
+{
+	ReplacementTitan( player ) //Separate function because other functions will call ReplacementTitan
+	return true
+}
+
+// This a baseline titan request function; the only things that prevent this from happening are
+// common cases; wrong gamestate, already has a titan, is currently dead, etc...
+bool function RequestTitan( entity player )
+{
+	if ( !IsReplacementTitanAvailableForGameState() )
+		return false
+
+	if ( player.IsTitan() )
+		return false
+
+	if ( IsAlive( player.GetPetTitan() ) )
+		return false
+
+	if ( player.isSpawning )
+		return false
+
+	if ( !IsAlive( player ) )
+		return false
+
+	Point spawnPoint = GetTitanReplacementPoint( player, false )
+	local origin = spawnPoint.origin
+	Assert( origin )
+
+	//Check titanfall request against any custom gamemode rules
+	if ( !file.RequestTitanGamemodeRules( player, spawnPoint.origin ) )
+		return false
+
+	//if ( ShouldDoTitanfall() )
+	thread CreateTitanForPlayerAndHotdrop( player, spawnPoint )
+	//else
+	//	thread ForcePilotToBecomeTitan( player )
+
+	return true
+}
+
+bool function ReplacementTitan( entity player )
+{
+	if ( !IsAlive( player ) )
+	{
+		printt( "ReplacementTitan", player, player.entindex(), "failed", "IsAlive( player ) was false" )
+		return false
+	}
+
+	if ( !IsReplacementTitanAvailable( player, 0 ) )
+	{
+		printt( "ReplacementTitan", player, player.entindex(), "failed", "IsReplacementTitanAvailable was false" )
+		return false
+	}
+
+	entity titan = GetPlayerTitanInMap( player )
+	if ( IsAlive( titan ) )
+	{
+		printt( "ReplacementTitan", player, player.entindex(), "failed", "GetPlayerTitanInMap was true" )
+		return false
+	}
+
+	if ( player in file.warpFallDebounce )
+	{
+		if ( Time() - file.warpFallDebounce[ player ] < 3.0 )
+		{
+			printt( "ReplacementTitan", player, player.entindex(), "failed", "player in file.warpFallDebounce was true" )
+			return false
+		}
+	}
+
+	Point spawnPoint = GetTitanReplacementPoint( player, false )
+	local origin = spawnPoint.origin
+	Assert( origin )
+
+	#if MP
+		PIN_PlayerAbility( player, "titanfall", "titanfall", {pos = origin} )
+	#endif
+
+	//Check titanfall request against any custom gamemode rules
+	if ( !file.RequestTitanGamemodeRules( player, spawnPoint.origin ) )
+		return false
+
+	#if SP
+	thread CreateTitanForPlayerAndHotdrop( player, spawnPoint )
+	#endif
+
+	#if MP
+	if ( ShouldDoTitanfall() )
+		thread CreateTitanForPlayerAndHotdrop( player, spawnPoint )
+	else
+		thread ForcePilotToBecomeTitan( player )
+	#endif
+
+	return true
+}
+
+#if MP
+
+void function ForcePilotToBecomeTitan( entity player )
+{
+	float fadeTime = 0.5
+	float holdTime = 2.0
+
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+
+	if ( GAMETYPE != SST )
+	{
+		#if FACTION_DIALOGUE_ENABLED
+			PlayFactionDialogueToPlayer( "mp_titanInbound" , player )
+		#else
+			if ( player.titansBuilt )
+				PlayConversationToPlayer( "TitanReplacement", player )
+			else
+				PlayConversationToPlayer( "FirstTitanInbound", player )
+		#endif
+	}
+
+	player.Signal( "RodeoOver" )
+	player.Signal( "ScriptAnimStop" )
+
+	table<string,bool> e = {}
+	e.settingsRestored <- false
+
+	OnThreadEnd(
+	function() : ( player, e )
+		{
+			if ( IsValid( player ) && !e.settingsRestored )
+			{
+				Rodeo_Allow( player )
+				player.Show()
+				player.MakeVisible()
+			}
+		}
+	)
+	Rodeo_Disallow( player )
+
+	ScreenFadeToBlack( player, fadeTime, holdTime )
+	player.DissolveNonLethal( ENTITY_DISSOLVE_CORE, Vector( 0, 0, 0 ), 500 )
+
+	wait fadeTime
+	player.SetInvulnerable()
+	player.Hide()
+
+	wait holdTime
+	ScreenFadeFromBlack( player, 1.0, 0.5 )
+	waitthread TitanPlayerHotDropsIntoLevel( player )
+	e.settingsRestored = true
+	Rodeo_Allow( player )
+	player.Show()
+	player.MakeVisible()
+	player.ClearInvulnerable()
+}
+#endif
+
+bool function IsReplacementDropInProgress( entity player )
+{
+	return expect bool( player.s.replacementDropInProgress )
+}
+
+void function CreateTitanForPlayerAndHotdrop( entity player, Point spawnPoint, TitanLoadoutDef ornull overrideLoadout = null )
+{
+	Assert( IsValid( player ) )
+
+	if ( player.isSpawning )
+	{
+		printt( "CreateTitanForPlayerAndHotdrop", player, player.entindex(), "failed", "player.isSpawning was true" )
+		return
+	}
+
+	if ( player.s.replacementDropInProgress )
+	{
+		printt( "CreateTitanForPlayerAndHotdrop", player, player.entindex(), "failed", "player.s.replacementDropInProgress was true" )
+		return
+	}
+
+	player.s.replacementDropInProgress = true
+
+	entity titanFallDisablingEntity = CreateInfoTarget()
+
+	OnThreadEnd(
+		function() : ( player, titanFallDisablingEntity )
+		{
+			if ( IsValid( titanFallDisablingEntity ) ) //As a fail safe. Should have been cleaned up in OnThreadEnd of CleanupTitanFallDisablingEntity
+				titanFallDisablingEntity.Destroy()
+
+			if ( !IsValid( player ) )
+				return
+
+			player.s.replacementDropInProgress = false
+			player.ClearHotDropImpactTime()
+		}
+	)
+
+	player.EndSignal( "OnDestroy" )
+
+	if ( GAMETYPE != SST )
+	{
+		#if FACTION_DIALOGUE_ENABLED
+			PlayFactionDialogueToPlayer( "mp_titanInbound" , player )
+		#else
+			if ( player.titansBuilt )
+				PlayConversationToPlayer( "TitanReplacement", player )
+			else
+				PlayConversationToPlayer( "FirstTitanInbound", player )
+		#endif
+	}
+
+	vector origin = spawnPoint.origin
+	vector angles
+	if ( spawnPoint.angles != < 0.0, 0.0, 0.0 > )
+		angles = spawnPoint.angles
+	else
+		angles = VectorToAngles( FlattenVector( player.GetViewVector() ) * -1 )	// face the player
+
+	printt( "Dropping replacement titan at " + origin + " with angles " + angles )
+
+	#if HAS_STATS
+	UpdatePlayerStat( player, "misc_stats", "titanFalls" )
+	#endif
+	#if SERVER && MP
+		PIN_AddToPlayerCountStat( player, "titanfalls" )
+	#endif
+
+	if ( !level.firstTitanfall )
+	{
+		AddPlayerScore( player, "FirstTitanfall", player )
+
+		#if HAS_STATS
+		UpdatePlayerStat( player, "misc_stats", "titanFallsFirst" )
+		#endif
+
+		level.firstTitanfall = true
+	}
+	else
+	{
+		AddPlayerScore( player, "Titanfall", player )
+	}
+
+
+	player.Signal( "CalledInReplacementTitan" )
+
+	int playerTeam = player.GetTeam()
+
+	TryAnnounceTitanfallWarningToEnemyTeam( playerTeam, origin )
+
+	titanFallDisablingEntity.SetOrigin( origin )
+	DisableTitanfallForLifetimeOfEntityNearOrigin( titanFallDisablingEntity, origin, TITANHOTDROP_DISABLE_ENEMY_TITANFALL_RADIUS )
+
+	entity titan
+	string animation
+
+	string regularTitanfallAnim = "at_hotdrop_drop_2knee_turbo"
+
+	TitanLoadoutDef loadout
+	if ( overrideLoadout == null )
+	{
+		loadout = GetTitanLoadoutForPlayer( player )
+	}
+	else
+	{
+		loadout = expect TitanLoadoutDef( overrideLoadout )
+	}
+	bool hasWarpfall = loadout.passive3 == "pas_warpfall"
+	if ( hasWarpfall || Flag( "LevelHasRoof" ) )
+	{
+		ClearTitanAvailable( player ) //Normally this is done when the Titan is spawned, but for warpfall the Titan isn't spawned instaneously after requesting it.
+
+		file.warpFallDebounce[ player ] <- Time()
+		animation = "at_hotdrop_drop_2knee_turbo_upgraded"
+		string settings = loadout.setFile
+		asset model = GetPlayerSettingsAssetForClassName( settings, "bodymodel" )
+		Attachment warpAttach = GetAttachmentAtTimeFromModel( model, animation, "offset", origin, angles, 0 )
+
+		entity fakeTitan = CreatePropDynamic( model )
+		float impactTime = GetHotDropImpactTime( fakeTitan, animation )
+
+		float diff = 0.0
+
+		if ( !hasWarpfall ) // this means the level requested the warpfall
+		{
+			float regularImpactTime = GetHotDropImpactTime( fakeTitan, regularTitanfallAnim ) - (WARPFALL_SOUND_DELAY + WARPFALL_FX_DELAY)
+			diff = ( regularImpactTime - impactTime )
+			impactTime = regularImpactTime
+		}
+
+		fakeTitan.Kill_Deprecated_UseDestroyInstead()
+
+		local impactStartTime = Time()
+		impactTime += (WARPFALL_SOUND_DELAY + WARPFALL_FX_DELAY)
+		player.SetHotDropImpactDelay( impactTime )
+		Remote_CallFunction_Replay( player, "ServerCallback_ReplacementTitanSpawnpoint", origin.x, origin.y, origin.z, Time() + impactTime )
+
+		EmitDifferentSoundsAtPositionForPlayerAndWorld( "Titan_1P_Warpfall_CallIn", "Titan_3P_Warpfall_CallIn", origin, player, playerTeam )
+
+		wait diff
+
+		wait WARPFALL_SOUND_DELAY
+
+		//	"Titan_1P_Warpfall_Start" 			- for first person warp calls, starting right on the button press
+		//	"Titan_3P_Warpfall_Start"  			- for any 3P other player or NPC when they call in a warp, starting right on their button press
+		EmitSoundAtPositionOnlyToPlayer( playerTeam, origin, player, "Titan_1P_Warpfall_Start" )
+		EmitSoundAtPositionExceptToPlayer( playerTeam, origin, player, "Titan_3P_Warpfall_Start" )
+
+		PlayFX( TURBO_WARP_FX, warpAttach.position + Vector(0,0,-104), warpAttach.angle )
+
+		wait WARPFALL_FX_DELAY
+
+		titan = CreateAutoTitanForPlayer_FromTitanLoadout( player, loadout, origin, angles )
+		DispatchSpawn( titan )
+		thread PlayFXOnEntity( TURBO_WARP_COMPANY, titan, "offset" )
+	}
+	else
+	{
+		animation = regularTitanfallAnim
+
+		titan = CreateAutoTitanForPlayer_FromTitanLoadout( player, loadout, origin, angles )
+		DispatchSpawn( titan )
+
+		float impactTime = GetHotDropImpactTime( titan, animation )
+		player.SetHotDropImpactDelay( impactTime )
+		Remote_CallFunction_Replay( player, "ServerCallback_ReplacementTitanSpawnpoint", origin.x, origin.y, origin.z, Time() + impactTime )
+	}
+
+	SetActiveTitanLoadoutIndex( player, GetPersistentSpawnLoadoutIndex( player, "titan" ) )
+	#if MP
+	SetActiveTitanLoadout( player )
+	#endif
+	if ( player in file.warpFallDebounce )
+		delete file.warpFallDebounce[ player ]
+
+	titan.EndSignal( "OnDeath" )
+	Assert( IsAlive( titan ) )
+
+	// dont let AI titan get enemies while dropping. Don't do trigger checks
+	titan.SetEfficientMode( true )
+	titan.SetTouchTriggers( false )
+	titan.SetNoTarget( true )
+	titan.SetAimAssistAllowed( false )
+
+#if R1_VGUI_MINIMAP
+	thread PingMinimapDuringHotdrop( player, titan, origin )
+#endif
+
+	thread CleanupTitanFallDisablingEntity( titanFallDisablingEntity, titan ) //needs to be here after titan is created
+	waitthread PlayersTitanHotdrops( titan, origin, angles, player, animation ) //Note that this function returns after the titan has played the landing anim, not when the titan hits the ground
+
+	titan.SetEfficientMode( false )
+	titan.SetTouchTriggers( true )
+	titan.SetAimAssistAllowed( true )
+
+	player.Signal( "titan_impact" )
+
+	thread TitanNPC_WaitForBubbleShield_StartAutoTitanBehavior( titan )
+}
+
+void function CleanupTitanFallDisablingEntity( entity titanFallDisablingEntity, entity titan )
+{
+	titanFallDisablingEntity.EndSignal( "OnDestroy" ) //titanFallDisablingEntity can be destroyed multiple ways
+	titan.EndSignal( "ClearDisableTitanfall" ) //This is awkward, CreateBubbleShield() and OnHotDropImpact() signals this to deestroy CleanupTitanFallDisablingEntity
+	titan.EndSignal( "OnDestroy" )
+
+	OnThreadEnd(
+	function() : ( titanFallDisablingEntity )
+		{
+			if( IsValid( titanFallDisablingEntity ) )
+				titanFallDisablingEntity.Destroy()
+
+		}
+	)
+
+	WaitForever()
+}
+
+void function DrawReplacementTitanLocation( entity player, vector origin, float delay )
+{
+	// have to keep resending this info because a dead player won't see it
+	player.EndSignal( "OnDestroy" )
+	float endTime = Time() + delay
+
+	for ( ;; )
+	{
+		if ( !IsAlive( player ) )
+		{
+			player.WaitSignal( "OnRespawned" )
+			continue
+		}
+
+		float remainingTime = endTime - Time()
+		if ( remainingTime <= 0 )
+			return
+
+		player.SetHotDropImpactDelay( remainingTime )
+		Remote_CallFunction_Replay( player, "ServerCallback_ReplacementTitanSpawnpoint", origin.x, origin.y, origin.z, Time() + remainingTime )
+		player.WaitSignal( "OnDeath" )
+	}
+}
+
+void function TryAnnounceTitanfallWarningToEnemyTeam( int team, vector origin )
+{
+	float innerDistance = TITANFALL_OUTER_RADIUS * TITANFALL_OUTER_RADIUS
+	float outerDistance = innerDistance * 4.0
+
+	array<entity> enemies = GetPlayerArrayOfEnemies( team )
+	foreach ( entity enemyPlayer in enemies )
+	{
+		float distSqr = DistanceSqr( origin, enemyPlayer.GetOrigin() )
+		if ( distSqr > outerDistance )
+			continue
+
+		if ( distSqr < innerDistance )
+			Remote_CallFunction_NonReplay( enemyPlayer, "ServerCallback_TitanFallWarning", true )
+		else
+			Remote_CallFunction_NonReplay( enemyPlayer, "ServerCallback_TitanFallWarning", false )
+	}
+}
+
+TitanSettings function GetTitanForPlayer( entity player )
+{
+	string ornull currentTitanSettings
+	array<string> currentTitanMods
+
+	if ( player.IsBot() )
+	{
+		string botTitanSettings = GetConVarString( "bot_titan_settings" )
+		array<string> legalLoadouts = GetAllowedTitanSetFiles()
+		if ( legalLoadouts.contains( botTitanSettings ) )
+			currentTitanSettings = botTitanSettings
+		else
+			currentTitanSettings = legalLoadouts.getrandom()
+	}
+
+	if ( currentTitanSettings == null )
+	{
+		TitanLoadoutDef loadout = GetTitanLoadoutForPlayer( player )
+		currentTitanSettings = loadout.setFile
+		foreach ( mod in loadout.setFileMods )
+			{
+			currentTitanMods.append( mod )
+		}
+	}
+
+	if ( DebugNewTitanModels() )
+	{
+		switch ( currentTitanSettings )
+		{
+			case "titan_atlas":
+				currentTitanSettings = "titan_medium_ajax"
+				break
+			case "titan_stryder":
+				currentTitanSettings = "titan_light_locust"
+				break
+			case "titan_ogre":
+				currentTitanSettings = "titan_heavy_ogre"
+				break
+		}
+	}
+
+	TitanSettings titanSettings
+	titanSettings.titanSetFile = expect string( currentTitanSettings )
+	titanSettings.titanSetFileMods = currentTitanMods
+	return titanSettings
+}
+
+Attachment function GetAttachmentAtTimeFromModel( asset model, string animation, string attachment, vector origin, vector angles, float time )
+{
+	entity dummy = CreatePropDynamic( model, origin, angles )
+	Attachment start = dummy.Anim_GetAttachmentAtTime( animation, attachment, time )
+	dummy.Destroy()
+	return start
+}
+
+#if R1_VGUI_MINIMAP
+function PingMinimapDuringHotdrop( player, titan, impactOrigin )
+{
+	expect entity( player )
+	expect entity( titan )
+
+	player.EndSignal( "titan_impact" )
+	player.EndSignal( "OnDestroy" )
+	titan.EndSignal( "OnDeath" )
+
+	titan.Minimap_Hide( TEAM_IMC, null )
+	titan.Minimap_Hide( TEAM_MILITIA, null )
+
+	OnThreadEnd(
+		function() : ( player, titan )
+		{
+			if ( !IsAlive( titan ) )
+				return
+
+			titan.Minimap_DisplayDefault( TEAM_IMC, null )
+			titan.Minimap_DisplayDefault( TEAM_MILITIA, null )
+		}
+	)
+
+	while ( true )
+	{
+		Minimap_CreatePingForPlayer( player, impactOrigin, $"vgui/HUD/threathud_titan_friendlyself", 0.5 )
+		wait 0.4
+	}
+}
+#endif
+
+function EmptyTitanPlaysAnim( titan )
+{
+	local idleAnimAlias = "at_atlas_getin_idle"
+	if ( titan.HasKey( "idleAnim" ) )
+		idleAnimAlias = titan.GetValueForKey( "idleAnim" )
+
+	thread PlayAnim( titan, idleAnimAlias )
+}
+
+function FreeSpawnpointOnEnterTitan( spawnpoint, titan )
+{
+	titan.EndSignal( "OnDestroy" )
+	titan.EndSignal( "TitanEntered" )
+
+	OnThreadEnd(
+		function() : ( spawnpoint, titan )
+		{
+			Assert( IsValid( titan ) )
+			spawnpoint.e.spawnPointInUse = false
+		}
+	)
+
+	titan.WaitSignal( "TitanBeingEntered" )
+}
+
+
+function DebugText( origin, text, time )
+{
+	local endTime = Time() + time
+
+	while( Time() < endTime )
+	{
+		DebugDrawText( origin, text, true, 1.0 )
+		wait 1
+	}
+}
+
+
+
+bool function ReplacementTitanTimerFinished( player, timeBuffer = 0 )
+{
+	local nextTitanTime = player.GetNextTitanRespawnAvailable()
+	if ( nextTitanTime < 0 )
+		return false
+
+	return nextTitanTime - Time() <= timeBuffer
+}
+
+
+struct
+{
+	float titanTimerPauseTime = 0
+	table<entity, float> playerPauseStartTimes
+
+} protoFile
+
+
+void function PauseTitansThink()
+{
+	bool titan
+	while ( true )
+	{
+		array<entity> players = GetPlayerArray()
+
+		bool foundTitan = false
+		foreach ( player in players )
+		{
+			if ( player.IsTitan() || IsValid( player.GetPetTitan() ) )
+			{
+				foundTitan = true
+				break
+			}
+		}
+
+		if ( foundTitan && protoFile.titanTimerPauseTime == 0 )
+			thread PauseTitanTimers()
+		else if ( !foundTitan && protoFile.titanTimerPauseTime != 0 )
+			thread PauseTitanTimers()
+
+		WaitFrame()
+	}
+}
+
+
+void function PauseTitanTimers()
+{
+	RegisterSignal( "PauseTitanTimers" )
+	svGlobal.levelEnt.Signal( "PauseTitanTimers" )
+	svGlobal.levelEnt.EndSignal( "PauseTitanTimers" )
+
+	if ( protoFile.titanTimerPauseTime != 0 )
+	{
+		protoFile.playerPauseStartTimes = {}
+		protoFile.titanTimerPauseTime = 0
+		return
+	}
+
+	protoFile.titanTimerPauseTime = Time()
+	float lastTime = Time()
+
+	while ( true )
+	{
+		array<entity> players = GetPlayerArray()
+
+		float addTime = Time() - protoFile.titanTimerPauseTime
+
+		foreach ( player in players )
+		{
+			if ( player.IsTitan() )
+			{
+				if ( player in protoFile.playerPauseStartTimes )
+					delete protoFile.playerPauseStartTimes[player]
+
+				continue
+			}
+
+			if ( IsValid( player.GetPetTitan() ) )
+			{
+				if ( player in protoFile.playerPauseStartTimes )
+					delete protoFile.playerPauseStartTimes[player]
+
+				continue
+			}
+
+			if ( Time() > player.GetNextTitanRespawnAvailable() )
+			{
+				if ( player in protoFile.playerPauseStartTimes )
+					delete protoFile.playerPauseStartTimes[player]
+
+				continue
+			}
+
+			if ( !(player in protoFile.playerPauseStartTimes) )
+			{
+				protoFile.playerPauseStartTimes[player] <- player.GetNextTitanRespawnAvailable()
+			}
+
+			protoFile.playerPauseStartTimes[player] += Time() - lastTime
+
+			player.SetNextTitanRespawnAvailable( protoFile.playerPauseStartTimes[player] )
+		}
+
+		lastTime = Time()
+		wait 0.1
+	}
+}
+
+bool function ShouldDoTitanfall()
+{
+	if ( svGlobal.forceDisableTitanfalls )
+		return false
+
+	return ( GetCurrentPlaylistVarInt( "enable_titanfalls", 1 ) == 1 )
+}

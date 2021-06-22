@@ -1,0 +1,33 @@
+global function Hardpoints_Init
+global function CapturePoint_GetStartProgress
+global function CapturePoint_GetCappingTeam
+global function CapturePoint_GetOwningTeam
+global function CapturePoint_GetGoalProgress
+
+global array<entity> HARDPOINTS
+
+void function Hardpoints_Init()
+{
+
+
+}
+
+float function CapturePoint_GetStartProgress( entity hardpoint )
+{
+	return 0.5
+}
+
+int function CapturePoint_GetCappingTeam( entity hardpoint )
+{
+	return 0
+}
+
+int function CapturePoint_GetOwningTeam( entity hardpoint )
+{
+	return 0
+}
+
+float function CapturePoint_GetGoalProgress( entity hardpoint )
+{
+	return 1.0
+}

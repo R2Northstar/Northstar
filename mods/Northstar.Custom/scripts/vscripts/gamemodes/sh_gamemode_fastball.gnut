@@ -1,0 +1,45 @@
+global function Sh_GamemodeFastball_Init
+
+global const string GAMEMODE_FASTBALL = "fastball"
+
+void function Sh_GamemodeFastball_Init()
+{
+	// create custom gamemode
+	AddCallback_OnCustomGamemodesInit( CreateGamemodeFastball )
+	AddCallback_OnRegisteringCustomNetworkVars( FastballRegisterNetworkVars )
+}
+
+void function CreateGamemodeFastball()
+{
+	GameMode_Create( GAMEMODE_FASTBALL )
+	GameMode_SetName( GAMEMODE_FASTBALL, "#GAMEMODE_FASTBALL" )
+	GameMode_SetDesc( GAMEMODE_FASTBALL, "#PL_fastball_desc" )
+	GameMode_SetGameModeAnnouncement( GAMEMODE_FASTBALL, "grnc_modeDesc" )
+	GameMode_SetDefaultTimeLimits( GAMEMODE_FASTBALL, 1, 0 )
+	GameMode_SetDefaultScoreLimits( GAMEMODE_FASTBALL, 5, 0 )
+	GameMode_AddScoreboardColumnData( GAMEMODE_FASTBALL, "#SCOREBOARD_FASTBALL_HACKS", PGS_ASSAULT_SCORE, 2 )
+	GameMode_AddScoreboardColumnData( GAMEMODE_FASTBALL, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 )
+	GameMode_AddScoreboardColumnData( GAMEMODE_FASTBALL, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
+	GameMode_SetColor( GAMEMODE_FASTBALL, [147, 204, 57, 255] )
+	
+	#if SERVER
+		GameMode_AddServerInit( GAMEMODE_FASTBALL, GamemodeFastball_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( GAMEMODE_FASTBALL, RateSpawnpoints_Generic )
+		GameMode_SetTitanSpawnpointsRatingFunc( GAMEMODE_FASTBALL, RateSpawnpoints_Generic )
+	#elseif CLIENT
+		GameMode_AddClientInit( GAMEMODE_FASTBALL, ClGamemodeFastball_Init )
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( GAMEMODE_FASTBALL, CompareAssaultScore )
+	#endif
+}
+
+void function FastballRegisterNetworkVars()
+{
+	if ( GAMETYPE != GAMEMODE_FASTBALL )
+		return
+	
+	Remote_RegisterFunction( "ServerCallback_FastballUpdatePanelRui" )
+	Remote_RegisterFunction( "ServerCallback_FastballPanelHacked" )
+	Remote_RegisterFunction( "ServerCallback_FastballRespawnPlayer" )
+}

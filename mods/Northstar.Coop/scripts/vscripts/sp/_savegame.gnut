@@ -1,0 +1,860 @@
+global function AddCallback_OnLoadSaveGame
+global function CheckPoint
+global function CheckPoint_Forced
+global function CheckPoint_ForcedSilent
+global function CheckPoint_Silent
+global function RestartFromLevelTransition
+global function CodeCallback_IsSaveGameSafeToCommit
+global function CodeCallback_OnLoadSaveGame
+global function CodeCallback_OnSavedSaveGame
+global function InitSaveGame
+global function LoadSaveTimeDamageMultiplier
+global function ReloadForMissionFailure
+global function GetLastCheckPointLoadTime
+global function SafeForCheckPoint
+global function SafeToSpawnAtOrigin
+global function JustLoadedFromCheckpoint
+global function GetFirstPlayer
+
+const float LAST_SAVE_DEBOUNCE = 4.0
+const float TITAN_SAFE_DIST = 1200
+const SAVE_DEBUG = true
+global const SAVE_NEW = false
+global const MAX_SAFELOCATION_DIST = 5000
+global const float SAVE_SPAWN_VOFFSET = 2.0
+
+global struct CheckPointData
+{
+	float searchTime = 5.0
+	bool onGroundRequired = true
+	array<entity> safeLocations
+	bool forced
+	bool skipDelayedIsAliveCheck
+	bool skipSaveToActualPlayerLocation
+	bool functionref( entity ) ornull additionalCheck = null
+}
+
+struct
+{
+	bool nextSaveSilent
+	table signalDummy
+	float loadSaveTime
+
+	float lastSaveTime
+
+	array<StoredWeapon> saveStoredWeapons
+	string storedTitanWeapon
+
+	vector saveOrigin
+	vector saveAngles
+	bool saveRestoreResetsPlayer
+
+} file
+
+void function InitSaveGame()
+{
+	Assert( MAX_SAFELOCATION_DIST < TIME_ZOFFSET * 0.8 )
+
+	RegisterSignal( "StopSearchingForSafeSave" )
+	RegisterSignal( "RespawnNow" )
+
+	FlagInit( "OnLoadSaveGame_PlayerRecoveryEnabled", true )
+	FlagInit( "SaveRequires_PlayerIsTitan" )
+	AddClientCommandCallback( "RestartFromLevelTransition", RestartFromLevelTransition )
+	AddClientCommandCallback( "RespawnNowSP", RespawnNowSP )
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// GLOBAL COMMANDS
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void function CheckPoint_Silent( CheckPointData ornull checkPointData = null )
+{
+	CheckPointData data = GetCheckPointDataOrDefaults( checkPointData )
+	CheckPoint_Silent_FromData( data )
+}
+
+void function CheckPoint_Silent_FromData( CheckPointData checkPointData )
+{
+	file.nextSaveSilent = true
+	CheckPoint( checkPointData )
+}
+
+void function CheckPoint_ForcedSilent()
+{
+	file.nextSaveSilent = true
+	CheckPoint_Forced()
+}
+
+void function CheckPoint_Forced()
+{
+	CheckPointData checkPointData
+	checkPointData.forced = true
+	CheckPoint_FromData( checkPointData )
+}
+
+void function CheckPoint( CheckPointData ornull checkPointData = null )
+{
+	CheckPointData data = GetCheckPointDataOrDefaults( checkPointData )
+	thread CheckPoint_FromData( data )
+}
+
+void function CheckPoint_FromData( CheckPointData checkPointData )
+{
+	printt( "SAVEGAME: New save attempt (8/3/2016)" )
+
+	float searchTime = checkPointData.searchTime
+	bool onGroundRequired = checkPointData.onGroundRequired
+	bool skipDelayedIsAliveCheck = checkPointData.skipDelayedIsAliveCheck
+	bool skipSaveToActualPlayerLocation = checkPointData.skipSaveToActualPlayerLocation
+	bool forced = checkPointData.forced
+	array<entity> safeLocations = checkPointData.safeLocations
+	bool functionref( entity ) ornull additionalCheck = checkPointData.additionalCheck
+
+	if ( !Flag( "SaveGame_Enabled" ) )
+	{
+		printt( "SAVEGAME: failed: Saves are disabled" )
+		return
+	}
+
+	entity player = GetFirstPlayer()
+	entity safeLocation
+
+	if ( forced )
+	{
+		printt( "SAVEGAME: creating: Forced" )
+	}
+	else
+	{
+		if ( Flag( "SaveRequires_PlayerIsTitan" ) && !player.IsTitan() )
+		{
+			printt( "SAVEGAME: failed: Flag SaveRequires_PlayerIsTitan and player is not a Titan" )
+			return
+		}
+
+		printt( "SAVEGAME: creating: Safe for check point?" )
+		EndSignal( file.signalDummy, "StopSearchingForSafeSave" )
+
+		bool regularSafetyCheck = GetBugReproNum() != 184641 // respawned with no UI
+		bool functionref( entity ) safeCheck
+		if ( onGroundRequired )
+			safeCheck = SafeForCheckPoint_OnGround
+		else
+			safeCheck = SafeForCheckPoint
+
+
+		if ( skipSaveToActualPlayerLocation )
+		{
+			printt( "SAVEGAME: skipSaveToActualPlayerLocation." )
+		}
+		else
+		{
+			float rate = 0.333
+			int reps = int( searchTime / rate )
+
+			if ( regularSafetyCheck )
+			{
+				// wait a few seconds until it is safe to save
+				for ( int i = 0; i < reps; i++ )
+				{
+					if ( safeCheck( player ) )
+						break
+
+					wait rate
+				}
+			}
+			else
+			{
+				printt( "SAVEGAME: regularSafetyCheck disabled for bug repro" )
+			}
+		}
+
+		if ( !regularSafetyCheck || skipSaveToActualPlayerLocation || !safeCheck( player ) )
+		{
+			printt( "SAVEGAME: Not safe to save actual player position." )
+			if ( !safeLocations.len() )
+			{
+				printt( "SAVEGAME: failed: no alternate safe locations." )
+				return
+			}
+
+			// titan cores do funky stuff with weapons and make it hard to resume to a new position safely
+			if ( !IsTitanCoreFiring( player ) )
+				safeLocation = GetBestSaveLocationEnt( safeLocations )
+
+			if ( safeLocation == null )
+			{
+				printt( "SAVEGAME: failed: couldn't find a safe location from those provided." )
+				return
+			}
+
+			printt( "SAVEGAME: Found safe location " + safeLocation.GetOrigin() )
+		}
+		else
+		{
+			printt( "SAVEGAME: Safe to save at actual player location: " + player.GetOrigin() )
+		}
+
+		if ( Time() - file.lastSaveTime < 3 )
+		{
+			printt( "SAVEGAME: failed: last save was too recent." )
+			return
+		}
+
+		if ( additionalCheck != null )
+		{
+			expect bool functionref(entity)( additionalCheck )
+			if ( !additionalCheck( player ) )
+			{
+				printt( "SAVEGAME: failed: custom check failed." )
+				return
+			}
+		}
+	}
+
+	if ( IsValid( safeLocation ) )
+	{
+		printt( "SAVEGAME: saveRestoreResetsPlayer = true" )
+		WriteRestoreLocationFromEntity( safeLocation )
+		file.saveRestoreResetsPlayer = true
+	}
+	else
+	{
+		printt( "SAVEGAME: saveRestoreResetsPlayer = false" )
+		file.saveRestoreResetsPlayer = false
+	}
+
+	int startPointIndex = GetCurrentStartPointIndex()
+
+	if ( !IsAlive( player ) )
+	{
+		printt( "SAVEGAME: failed: Tried to save while player was dead" )
+		return
+	}
+
+	if ( skipDelayedIsAliveCheck || forced )
+	{
+		printt( "SAVEGAME: SaveGame_Create" )
+		file.lastSaveTime = Time()
+		SaveGame_Create( GetSaveName(), SAVEGAME_VERSION, startPointIndex )
+	}
+	else
+	{
+		printt( "SAVEGAME: SaveGame_CreateWithCommitDelay" )
+		file.lastSaveTime = Time()
+		SaveGame_CreateWithCommitDelay( GetSaveName(), SAVEGAME_VERSION, 3.5, 1, startPointIndex )
+	}
+
+	// kill any ongoing attempts to save. Note this also may end this thread, so it is called last.
+	Signal( file.signalDummy, "StopSearchingForSafeSave" )
+}
+
+CheckPointData function GetCheckPointDataOrDefaults( CheckPointData ornull checkPointData = null )
+{
+	if ( checkPointData != null )
+		return expect CheckPointData( checkPointData )
+
+	CheckPointData data
+	return data
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CODE CALLBACKS
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+bool function CodeCallback_IsSaveGameSafeToCommit()
+{
+	if ( !Flag( "SaveGame_Enabled" ) )
+		return false
+
+	foreach ( player in GetPlayerArray() )
+	{
+		if ( !IsAlive( player ) )
+			return false
+	}
+
+	return true
+}
+
+
+void function ClearPlayerVelocityOnContext( entity player )
+{
+	if ( player.IsTitan() )
+		return
+
+	switch ( GetCurrentStartPoint() )
+	{
+		case "Rising World Jump":
+			return
+	}
+
+	player.SetVelocity( <0,0,0> )
+}
+
+
+void function CodeCallback_OnLoadSaveGame()
+{
+	printt( "SaveGame: OnLoadSaveGame" )
+	file.loadSaveTime = Time()
+
+	UpdateCollectiblesAfterLoadSaveGame()
+	array<entity> players = GetPlayerArray()
+
+	Assert( players.len() == 1 )
+	entity player = players[0]
+
+	// restore health on load from save
+	if ( !IsAlive( player ) )
+		return
+
+	ClearPlayerVelocityOnContext( player )
+
+	thread UpdateUI( player.IsTitan(), player )
+
+	// run on load save game callbacks
+	foreach ( callbackFunc in svGlobalSP.onLoadSaveGameCallbacks )
+	{
+		callbackFunc( player )
+	}
+
+	thread DelayedOnLoadSetup( player )
+}
+
+void function DelayedOnLoadSetup( entity player )
+{
+	player.EndSignal( "OnDeath" )
+
+	WaitFrame() // fixes crash bug, also can't issue a remote call on this codecallback until waiting a frame.
+
+	Remote_CallFunction_UI( player, "ServerCallback_GetObjectiveReminderOnLoad" ) // show objective reminder
+
+	bool forceStanding = file.saveRestoreResetsPlayer
+	if ( file.saveRestoreResetsPlayer )
+	{
+		file.saveRestoreResetsPlayer = false
+
+		printt( "SAVEGAME: Restoring player to safe location " + file.saveOrigin )
+		player.SetOrigin( file.saveOrigin )
+		player.SetAngles( file.saveAngles )
+		player.SetVelocity( <0,0,0> )
+
+		TakeAllWeapons( player )
+
+		player.ForceStand()
+
+		if ( IsPilot( player ) )
+		{
+			GiveWeaponsFromStoredArray( player, file.saveStoredWeapons )
+		}
+		else
+		{
+			player.GiveWeapon( file.storedTitanWeapon )
+		}
+	}
+
+	if ( Flag( "OnLoadSaveGame_PlayerRecoveryEnabled" ) )
+	{
+		if ( player.IsTitan() )
+		{
+			RestoreTitan( player )
+
+			int index = GetConVarInt( "sp_titanLoadoutCurrent" )
+			if ( index > -1 && IsBTLoadoutUnlocked( index ) )
+			{
+				string weapon = GetTitanWeaponFromIndex( index )
+				TakeAllWeapons( player )
+				player.GiveWeapon( weapon )
+			}
+		}
+		else
+		{
+			player.SetHealth( player.GetMaxHealth() )
+			entity offhand = player.GetOffhandWeapon( OFFHAND_SPECIAL )
+			if ( IsValid( offhand ) )
+			{
+				// restore offhand, so for example, cloak will be ready to use
+				int max = offhand.GetWeaponPrimaryClipCountMax()
+				offhand.SetWeaponPrimaryClipCount(max)
+			}
+
+			entity petTitan = player.GetPetTitan()
+			if ( IsAlive( petTitan ) )
+			{
+				RestoreTitan( petTitan )
+			}
+		}
+	}
+
+	WaitFrame()
+
+	if ( forceStanding )
+		player.UnforceStand()
+
+}
+
+void function CodeCallback_OnSavedSaveGame( bool saved )
+{
+	printt( "SAVEGAME: Success (OnSavedSaveGame)" )
+
+	// failed to save
+	if ( !saved )
+		return
+
+	// tell clients about the save
+	foreach ( player in GetPlayerArray() )
+	{
+		Remote_CallFunction_UI( player, "ServerCallback_ClearObjectiveReminderOnLoad" ) // dont need objective reminder again on load
+	}
+
+	BroadcastCheckpointMessage()
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SAVE UTILITIES
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+entity function GetFirstPlayer()
+{
+	foreach ( player in GetPlayerArray() )
+	{
+		return player
+	}
+
+	unreachable
+}
+
+bool function SafeToSpawnAtOrigin( entity player, vector origin )
+{
+	if ( player.IsTitan() )
+	{
+		array<entity> titans = GetNPCArrayEx( "npc_titan", TEAM_ANY, TEAM_MILITIA, origin, TITAN_SAFE_DIST )
+		if ( titans.len() > 0 )
+			return false
+
+		array<entity> superSpectres = GetNPCArrayEx( "npc_super_spectre", TEAM_ANY, TEAM_MILITIA, origin, TITAN_SAFE_DIST )
+		if ( superSpectres.len() > 0 )
+			return false
+	}
+	else
+	{
+		array<entity> enemies = GetNPCArrayEx( "any", TEAM_ANY, TEAM_MILITIA, origin, 300 )
+		if ( enemies.len() > 0 )
+			return false
+	}
+
+	return IsPlayerSafeFromProjectiles( player, origin )
+}
+
+entity function GetBestSaveLocationEnt( array<entity> safeLocations )
+{
+	entity player = GetFirstPlayer()
+	vector mins = player.GetBoundingMins()
+	vector maxs = player.GetBoundingMaxs()
+
+	vector playerOrg = player.GetOrigin()
+	array<entity> orderedLocations = ArrayClosest( safeLocations, player.GetOrigin() )
+	foreach ( ent in orderedLocations )
+	{
+		vector org = ent.GetOrigin() + <0,0,SAVE_SPAWN_VOFFSET>
+
+		// too far to spawn
+		if ( Distance( playerOrg, org ) > MAX_SAFELOCATION_DIST )
+			break
+
+		if ( !SafeToSpawnAtOrigin( player, ent.GetOrigin() ) )
+			continue
+
+		// blocked at that origin?
+		TraceResults result = TraceHull( org, org + Vector( 0, 0, 1), mins, maxs, [ player ], TRACE_MASK_PLAYERSOLID, TRACE_COLLISION_GROUP_PLAYER )
+		if ( result.startSolid )
+			continue
+		if ( result.fraction != 1.0 )
+			continue
+
+		return ent
+	}
+
+	return null
+}
+
+void function WriteRestoreLocationFromEntity( entity safeLocation )
+{
+	Assert( safeLocation != null )
+	entity player = GetFirstPlayer()
+	Assert( IsAlive( player ), "Tried to save while player was dead" )
+
+	if ( IsPilot( player ) )
+	{
+		file.saveStoredWeapons = StoreWeapons( player )
+	}
+	else
+	{
+		array<entity> weapons = player.GetMainWeapons()
+		Assert( weapons.len() == 1, "Player had multiple titan weapons" )
+		file.storedTitanWeapon = weapons[0].GetWeaponClassName()
+	}
+
+	file.saveOrigin = safeLocation.GetOrigin() + <0,0,SAVE_SPAWN_VOFFSET>
+	file.saveAngles = safeLocation.GetAngles()
+}
+
+bool function RestartFromLevelTransition( entity player, array<string> args )
+{
+	thread ReloadFromLevelStart()
+
+	return true
+}
+
+void function ReloadForMissionFailure( float extraDelay = 0 )
+{
+	// prevent automatic restarts
+	//thread ReloadForMissionFailure_Thread( extraDelay )
+}
+
+void function ReloadForMissionFailure_Thread( float extraDelay )
+{
+	FlagClear( "SaveGame_Enabled" ) // no more saving, you have lost
+	FlagSet( "MissionFailed" )
+
+	Signal( file.signalDummy, "StopSearchingForSafeSave" )
+
+	entity player = GetFirstPlayer()
+	if ( IsValid( player ) )
+		EmitSoundOnEntityOnlyToPlayer( player, player, "4_second_fadeout" )
+
+	wait 1
+
+	waitthread WaitForRespawnNowOrTimePass( player, 2.8 + extraDelay )
+
+	ReloadFromSave_RestartFallback()
+}
+
+void function WaitForRespawnNowOrTimePass( entity player, float delay )
+{
+	player.EndSignal( "RespawnNow" )
+	wait delay
+}
+
+void function SkipReloadDelay_Thread( entity player )
+{
+	EmitSoundOnEntityOnlyToPlayer( player, player, "1_second_fadeout" )
+	ScreenFadeToBlackForever( player, 0.5 )
+	wait 1.0
+	player.Signal( "RespawnNow" )
+}
+
+bool function RespawnNowSP( entity player, array<string> args )
+{
+	// this clientcommand is always bound now so we need to make sure it isn't called while player is alive
+	if ( IsAlive( player ))
+		return true
+		
+	// wait a few seconds before we allow respawns
+	if ( player.nv.nextRespawnTime > Time() )
+		return true
+
+	//thread SkipReloadDelay_Thread( player )
+		
+	// do our respawning code
+	entity ornull respawningOn = GetPlayerToSpawnOn()
+	
+	if ( respawningOn == null )
+	{
+		// todo: logic for restarting level without dropping clients
+		print( "everyone is dead! restarting from last checkpoint..." )
+		RestartWithoutDroppingPlayers()
+	}
+	else
+	{
+		expect entity( respawningOn )
+		// HACK: compiler has a fit if we directly call player.RespawnPlayer in this file
+		// 		 so we need to make a functionref in another file that does it
+		
+		hackRespawnPlayerFunc( player, respawningOn )
+		// honestly unsure if the respawningOn arg works with players so manually set pos too
+		thread TeleportToEntitySafe( player, respawningOn )
+	}
+
+	
+	return true
+}
+
+void function ReloadFromSave_RestartFallback()
+{
+	if ( LoadedFromSave() )
+		return
+
+	ReloadFromLevelStart()
+}
+
+void function ReloadFromLevelStart()
+{
+	array<entity> players = GetPlayerArray()
+	Assert( players.len() == 1 )
+	entity player = players[0]
+	ServerRestartMission( player )
+}
+
+bool function SafeForCheckPoint_OnGround( entity player )
+{
+	Assert( player.IsPlayer() )
+
+	if ( !player.IsOnGround() )
+	{
+		#if SAVE_DEBUG
+		printt( "SaveGame: Failed: !player.IsOnGround()" )
+		#endif
+		return false
+	}
+
+	if ( player.IsWallRunning() )
+	{
+		#if SAVE_DEBUG
+		printt( "SaveGame: Failed: player.IsWallRunning()" )
+		#endif
+		return false
+	}
+
+	return SafeForCheckPoint( player )
+}
+
+bool function SafeForCheckPoint( entity player )
+{
+	Assert( player.IsPlayer() )
+
+	if ( Flag( "CheckPointDisabled" ) )
+	{
+		#if SAVE_DEBUG
+		printt( "SaveGame: Failed: Flag( \"CheckPointDisabled\" )" )
+		#endif
+		return false
+	}
+
+	if ( !IsAlive( player ) )
+	{
+		#if SAVE_DEBUG
+		printt( "SaveGame: Failed: !IsAlive( player )" )
+		#endif
+		return false
+	}
+
+	if ( IsPlayerEmbarking( player ) )
+	{
+		#if SAVE_DEBUG
+		printt( "SaveGame: Failed: IsPlayerEmbarking( player )" )
+		#endif
+		return false
+	}
+
+	if ( IsPlayerDisembarking( player ) )
+	{
+		#if SAVE_DEBUG
+		printt( "SaveGame: Failed: IsPlayerDisembarking( player )" )
+		#endif
+		return false
+	}
+
+	if ( player.p.doingQuickDeath )
+	{
+		#if SAVE_DEBUG
+		printt( "SaveGame: Failed: player.p.doingQuickDeath" )
+		#endif
+		return false
+	}
+
+	if ( EntityIsOutOfBounds( player ) )
+	{
+		#if SAVE_DEBUG
+		printt( "SaveGame: Failed: EntityIsOutOfBounds( player )" )
+		#endif
+		return false
+	}
+
+
+	float range = 300
+	if ( player.IsTitan() )
+	{
+		range = 1000
+
+		// awkward to resume into a core-in-progress
+		if ( IsTitanCoreFiring( player ) )
+		{
+			#if SAVE_DEBUG
+			printt( "SaveGame: Failed: IsTitanCoreFiring( player )" )
+			#endif
+			return false
+		}
+	}
+	else
+	{
+		entity weapon = player.GetActiveWeapon()
+		if ( IsValid( weapon ) )
+		{
+			// cooking grenade?
+			if ( player.GetOffhandWeapon( OFFHAND_ORDNANCE ) == weapon )
+			{
+				#if SAVE_DEBUG
+				printt( "SaveGame: Failed: Cooking grenade" )
+				#endif
+				return false
+			}
+		}
+
+		if ( player.IsPhaseShifted() )
+		{
+			#if SAVE_DEBUG
+			printt( "SaveGame: Failed: player.IsPhaseShifted()" )
+			#endif
+			return false
+		}
+	}
+
+	array<entity> enemies = GetNPCArrayEx( "any", TEAM_ANY, TEAM_MILITIA, player.GetOrigin(), range )
+	if ( enemies.len() > 0 )
+	{
+		#if SAVE_DEBUG
+		printt( "SaveGame: Failed: Enemy within " + range + " units" )
+		#endif
+		return false
+	}
+
+	if ( player.IsTitan() )
+	{
+
+		array<entity> titans = GetNPCArrayEx( "npc_titan", TEAM_ANY, TEAM_MILITIA, player.GetOrigin(), 3000 )
+		foreach ( titan in titans )
+		{
+			if ( titan.GetEnemy() == player )
+			{
+				#if SAVE_DEBUG
+				printt( "SaveGame: Failed: Enemy Titan within 3000 units" )
+				#endif
+				return false
+			}
+		}
+	}
+
+	if ( !IsPlayerSafeFromNPCs( player ) )
+	{
+		#if SAVE_DEBUG
+		printt( "SaveGame: Failed: !IsPlayerSafeFromNPCs( player )" )
+		#endif
+		return false
+	}
+
+	if ( !IsPlayerSafeFromProjectiles( player, player.GetOrigin() ) )
+	{
+		#if SAVE_DEBUG
+		printt( "SaveGame: Failed: !IsPlayerSafeFromProjectiles( player )" )
+		#endif
+		return false
+	}
+
+	if ( WasRecentlyHitByDamageSourceId( player, eDamageSourceId.toxic_sludge, 3.0 ) )
+	{
+		#if SAVE_DEBUG
+		printt( "SaveGame: Failed: WasRecentlyHitByDamageSourceId( player, eDamageSourceId.toxic_sludge, 3.0 )" )
+		#endif
+		return false
+	}
+
+	return true
+}
+
+void function BroadcastCheckpointMessage()
+{
+	if ( file.nextSaveSilent )
+	{
+		file.nextSaveSilent = false
+		return
+	}
+
+	// tell clients about the save
+	foreach ( player in GetPlayerArray() )
+	{
+		if ( !IsAlive( player ) )
+			continue
+
+		Remote_CallFunction_NonReplay( player, "SCB_CheckPoint" )
+	}
+}
+
+
+void function AddCallback_OnLoadSaveGame( void functionref( entity ) callbackFunc )
+{
+	Assert( !svGlobalSP.onLoadSaveGameCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnLoadSaveGame" )
+	svGlobalSP.onLoadSaveGameCallbacks.append( callbackFunc )
+}
+
+// Why does this need to be threaded?? I don't know!  But it doesn't work if I don't wait a bit.
+void function UpdateUI( bool isTitan, entity player )
+{
+	if ( !IsValid( player ) )
+		return
+
+	player.EndSignal( "OnDeath" )
+
+	wait 0.1
+
+	UpdatePauseMenuMissionLog( player )
+
+	if ( isTitan )
+	{
+		UI_NotifySPTitanLoadoutChange( player )
+		NotifyUI_ShowTitanLoadout( player, null )
+	}
+	else
+	{
+		NotifyUI_HideTitanLoadout( player, null )
+	}
+}
+
+float function LoadSaveTimeDamageMultiplier()
+{
+	return GraphCapped( Time() - file.loadSaveTime, 2.5, 4.0, 0.0, 1.0 )
+}
+
+float function GetLastCheckPointLoadTime()
+{
+	return file.loadSaveTime
+}
+
+bool function JustLoadedFromCheckpoint()
+{
+	return Time() - file.loadSaveTime < 1.0
+}
+
+bool function LoadedFromSave()
+{
+	printt( "SAVEGAME: Trying to load saveName" )
+	if ( !HasValidSaveGame() )
+	{
+		printt( "SAVEGAME: !HasValidSaveGame" )
+		return false
+	}
+
+	string saveName = GetSaveName()
+	printt( "SAVEGAME: Did load " + saveName )
+
+	// set the correct loadscreen
+	string mapName = SaveGame_GetMapName( saveName )
+	int startPointIndex = SaveGame_GetStartPoint( saveName )
+
+	array<string> clientCommands = GetLoadingClientCommands( mapName, startPointIndex, DETENT_FORCE_DISABLE, false )
+	ExecuteClientCommands( clientCommands )
+
+	if ( GetBugReproNum() != 196356 )
+	{
+		printt( "LOADPROGRESS" )
+		ClientCommand( GetFirstPlayer(), "show_loading_progress" )
+		WaitFrame()
+	}
+
+	SaveGame_LoadWithStartPointFallback()
+	return true
+}

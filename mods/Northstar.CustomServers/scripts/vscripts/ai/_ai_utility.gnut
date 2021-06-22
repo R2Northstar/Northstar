@@ -1,0 +1,558 @@
+untyped
+
+globalize_all_functions
+
+function AiUtility_Init()
+{
+	RegisterSignal( "OnNewOwner" )
+	RegisterSignal( "squadInCombat" )
+	RegisterSignal( "OnEndFollow" )
+	RegisterSignal( "OnStunned" )
+
+}
+////////////////////////////////////////////////////////////////////////////////
+// Cloaks npc forever (to be used by anim events)
+function NpcCloakOn( npc )
+{
+	//SetCloakDuration( fade in, duration, fade out )
+	npc.SetCloakDuration( 2.0, -1, 0 )
+	EmitSoundOnEntity( npc, CLOAKED_DRONE_CLOAK_START_SFX )
+	EmitSoundOnEntity( npc, CLOAKED_DRONE_CLOAK_LOOP_SFX )
+	npc.Minimap_Hide( TEAM_IMC, null )
+	npc.Minimap_Hide( TEAM_MILITIA, null )
+}
+////////////////////////////////////////////////////////////////////////////////
+// De-cloaks npc
+function NpcCloakOff( npc)
+{
+	npc.SetCloakDuration( 0, 0, 1.5 )
+	StopSoundOnEntity( npc, CLOAKED_DRONE_CLOAK_LOOP_SFX )
+	npc.Minimap_AlwaysShow( TEAM_IMC, null )
+	npc.Minimap_AlwaysShow( TEAM_MILITIA, null )
+}
+
+int function GetDefaultNPCFollowBehavior( npc )
+{
+	switch ( npc.GetAIClass() )
+	{
+		case AIC_FLYING_DRONE:
+			return AIF_SUPPORT_DRONE
+
+		case AIC_VEHICLE:
+			return AIF_GUNSHIP
+
+		case AIC_TITAN:
+		case AIC_TITAN_BUDDY:
+			return AIF_TITAN_FOLLOW_PILOT
+	}
+
+	return AIF_FIRETEAM
+}
+
+void function DieOnPlayerDisconnect( entity npc, entity player )
+{
+	Assert( IsNewThread(), "Must be threaded off" )
+	Assert( npc.IsNPC() )
+	Assert( player.IsPlayer() )
+	Assert( IsAlive( npc ) )
+	Assert( npc.GetBossPlayer() == player )
+	Assert( !IsDisconnected( player ) )
+	npc.EndSignal( "OnDeath" )
+
+	player.WaitSignal( "OnDestroy" )
+
+	// my boss quit the server!
+	if ( IsAlive( npc ) && npc.GetBossPlayer() == player )
+		npc.Die()
+}
+
+void function NPCFollowsPlayer( entity npc, entity leader )
+{
+	Assert( IsAlive( npc ) )
+	Assert( leader.IsPlayer() )
+
+	npc.SetBossPlayer( leader )
+
+	// team
+	SetTeam( npc, leader.GetTeam() )
+
+	if ( IsSpectre( npc ) )
+	{
+		string squadName = GetPlayerSpectreSquadName( leader )
+		SetSquad( npc, squadName )
+	}
+
+	thread DieOnPlayerDisconnect( npc, leader )
+	#if SP
+	Highlight_SetFriendlyHighlight( npc, "friendly_ai" )
+	#else
+	Highlight_SetOwnedHighlight( npc, "friendly_ai" )
+	#endif
+
+	NpcFollowsEntity( npc, leader )
+}
+
+void function NPCFollowsNPC( entity npc, entity leader )
+{
+	Assert( IsAlive( npc ) )
+	Assert( IsAlive( leader ) )
+	Assert( leader.IsNPC() )
+
+	// team
+	SetTeam( npc, leader.GetTeam() )
+
+	// squad
+	string squadNameOwner = expect string( leader.Get( "squadname" ) )
+	if ( squadNameOwner != "" && leader.GetClassName() == npc.GetClassName() )
+		SetSquad( npc, squadNameOwner )
+
+	NpcFollowsEntity( npc, leader )
+}
+
+void function NpcFollowsEntity( entity npc, entity leader )
+{
+	// stop scripted things
+	if ( IsMultiplayer() )
+		npc.Signal( "StopHardpointBehavior" )
+
+	if ( leader.IsPlayer() && leader.p.followPlayerOverride != null )
+	{
+		leader.p.followPlayerOverride( npc, leader )
+		return
+	}
+
+	// follow!
+	int followBehavior = GetDefaultNPCFollowBehavior( npc )
+	npc.InitFollowBehavior( leader, followBehavior )
+	npc.DisableBehavior( "Assault" )
+	npc.DisableNPCFlag( NPC_ALLOW_PATROL | NPC_ALLOW_INVESTIGATE | NPC_USE_SHOOTING_COVER )
+	npc.EnableBehavior( "Follow" )
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+bool function HasEnemyWithinDist( entity npc, float dist )
+{
+	float distSq = dist * dist
+
+	array<entity> enemies
+	entity closestEnemy = npc.GetClosestEnemy()
+	if ( closestEnemy )
+		enemies.append( closestEnemy )
+
+	entity currentEnemy = npc.GetEnemy()
+	if ( currentEnemy && currentEnemy != closestEnemy )
+		enemies.append( currentEnemy )
+
+	if ( !enemies.len() )
+		return false
+
+	vector origin = npc.GetOrigin()
+	foreach ( enemy in enemies )
+	{
+		if ( DistanceSqr( origin, enemy.GetOrigin() ) < distSq )
+			return true
+	}
+
+	return false
+}
+
+SpawnPointFP function FindSpawnPointForNpcCallin( entity npc, asset model, string anim )
+{
+	float yaw = npc.EyeAngles().y
+
+	vector npcView 				= AnglesToForward( npc.EyeAngles() )
+	FlightPath flightPath 		= GetAnalysisForModel( model, anim )
+
+	CallinData drop
+	InitCallinData( drop )
+	SetCallinStyle( drop, eDropStyle.NEAREST_YAW_FALLBACK )
+	SetCallinOwnerEyePos( drop, npc.EyePosition() )
+	drop.dist 			= 800
+	drop.origin 		= npc.GetOrigin() + npcView * 250
+	drop.yaw 			= yaw
+
+	vector angles = Vector( 0, yaw, 0 )
+ 	SpawnPointFP spawnPoint = GetSpawnPointForStyle( flightPath, drop )
+	if ( spawnPoint.valid )
+		return spawnPoint
+
+	//if it didn't find one where he was looking - try near him
+	drop.origin 		= npc.GetOrigin()
+	spawnPoint = GetSpawnPointForStyle( flightPath, drop )
+
+	return spawnPoint
+}
+
+function WaitForSquadInCombat( squad )
+{
+	local master = {}
+
+	//when the thread ends, let child threads now
+	OnThreadEnd(
+		function() : ( master )
+		{
+			Signal( master, "OnDestroy" )
+		}
+	)
+
+	// this internal function keeps track of each guy
+	local combatTracker =
+		function( guy, master )
+		{
+			expect entity( guy )
+			expect entity( master )
+
+			EndSignal( master, "OnDestroy" )
+			EndSignal( guy, "OnDeath", "OnDestroy" )
+			if ( !IsAlive( guy ) )
+				return
+
+			while ( guy.GetNPCState() != "combat" )
+				guy.WaitSignal( "OnStateChange" )
+
+			Signal( master, "squadInCombat" )
+		}
+
+	foreach ( guy in squad )
+	{
+		thread combatTracker( guy, master )
+	}
+
+	WaitSignal( master, "squadInCombat" )
+}
+
+function WaitForNpcInCombat( npc )
+{
+	while ( npc.GetNPCState() != "combat" )
+		npc.WaitSignal( "OnStateChange" )
+}
+
+int function GetNpcHullType( entity npc )
+{
+	string aiSettings = npc.GetAISettingsName()
+	return int ( Dev_GetAISettingByKeyField_Global( aiSettings, "HullType" ) )
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+// "SPAWN AI" DEV MENU Fuctions
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+const float CROSSHAIR_VERT_OFFSET = 32
+
+vector function GetPlayerCrosshairOriginRaw( entity player )
+{
+	vector angles = player.EyeAngles()
+	vector forward = AnglesToForward( angles )
+	vector origin = player.EyePosition()
+
+	vector start = origin
+	vector end = origin + forward * 50000
+	TraceResults result = TraceLine( start, end )
+	vector crosshairOrigin = result.endPos
+
+	return crosshairOrigin
+}
+
+vector function GetPlayerCrosshairOrigin( entity player )
+{
+	return (GetPlayerCrosshairOriginRaw( player ) + Vector( 0, 0, CROSSHAIR_VERT_OFFSET ))
+}
+
+void function DEV_SpawnBTAtCrosshair( bool hotdrop = false )
+{
+	DisablePrecacheErrors()
+	wait 0.2
+	entity player = GetPlayerArray()[ 0 ]
+
+	entity pet_titan = player.GetPetTitan()
+	if ( IsValid(pet_titan) )
+		pet_titan.Destroy()
+
+	vector origin = GetPlayerCrosshairOrigin( player )
+	vector angles = Vector( 0, 0, 0 )
+
+	TitanLoadoutDef loadout = GetTitanLoadoutForCurrentMap()
+	entity npc = CreateAutoTitanForPlayer_FromTitanLoadout( player, loadout, origin, angles )
+
+	SetSpawnOption_AISettings( npc, "npc_titan_buddy" )
+
+	DispatchSpawn( npc )
+
+	SetPlayerPetTitan( player, npc )
+
+	if ( hotdrop )
+		thread NPCTitanHotdrops( npc, false )
+}
+
+void function DEV_SpawnAllNPCsWithTeam( int team )
+{
+	printt( "script thread DEV_SpawnAllNPCsWithTeam( " + team + " )" )
+	Assert( IsNewThread(), "Must be threaded off due to precache issues" )
+	bool restoreHostThreadMode = GetConVarInt( "host_thread_mode" ) != 0
+	if ( restoreHostThreadMode )
+	{
+		DisablePrecacheErrors()
+		wait 0.5
+	}
+
+	entity player = GetPlayerArray()[ 0 ]
+	vector origin = GetPlayerCrosshairOrigin( player )
+	array<string> aiSettings = GetAllNPCSettings()
+
+	foreach ( settings in aiSettings )
+	{
+		vector angles = < 0, RandomFloat( 360 ), 0 >
+		entity npc = CreateNPCFromAISettings( settings, team, origin, angles )
+		DispatchSpawn( npc )
+	}
+
+	if ( restoreHostThreadMode )
+	{
+		wait 0.2
+		RestorePrecacheErrors()
+	}
+}
+
+void function DEV_SpawnNPCWithWeaponAtCrosshair( string baseClass, string aiSettings, int team, string weaponName = "" )
+{
+	printt( "script thread DEV_SpawnNPCWithWeaponAtCrosshair( \"" + baseClass + "\", \"" + aiSettings + "\", " + team + ", \"" + weaponName + "\")" )
+	Assert( IsNewThread(), "Must be threaded off due to precache issues" )
+	bool restoreHostThreadMode = GetConVarInt( "host_thread_mode" ) != 0
+	entity npc = DEV_SpawnNPCWithWeaponAtCrosshairStart( restoreHostThreadMode, baseClass, aiSettings, team, weaponName )
+	DispatchSpawn( npc )
+	DEV_SpawnNPCWithWeaponAtCrosshairEnd( restoreHostThreadMode )
+}
+
+void function DEV_SpawnMercTitanAtCrosshair( string mercName )
+{
+	printt( "script thread DEV_SpawnMercTitanAtCrosshair( \"" + mercName + "\")" )
+	Assert( IsNewThread(), "Must be threaded off due to precache issues" )
+	TitanLoadoutDef ornull loadout = GetTitanLoadoutForBossCharacter( mercName )
+	if ( loadout == null )
+		return
+	expect TitanLoadoutDef( loadout )
+	string baseClass = "npc_titan"
+	string aiSettings = GetNPCSettingsFileForTitanPlayerSetFile( loadout.setFile )
+
+	bool restoreHostThreadMode = GetConVarInt( "host_thread_mode" ) != 0
+	entity npc = DEV_SpawnNPCWithWeaponAtCrosshairStart( restoreHostThreadMode, baseClass, aiSettings, TEAM_IMC )
+	SetSpawnOption_NPCTitan( npc, TITAN_MERC )
+	SetSpawnOption_TitanLoadout( npc, loadout )
+	npc.ai.bossTitanPlayIntro = false
+
+	DispatchSpawn( npc )
+	DEV_SpawnNPCWithWeaponAtCrosshairEnd( restoreHostThreadMode )
+}
+
+void function DEV_SpawnWeaponAtCrosshair( string weaponName )
+{
+	printt( "script thread DEV_SpawnWeaponAtCrosshair( \"" + weaponName + "\")" )
+
+	Assert( IsNewThread(), "Must be threaded off due to precache issues" )
+
+	entity player = GetPlayerArray()[ 0 ]
+	if ( !IsValid( player ) )
+		return
+	vector origin = GetPlayerCrosshairOrigin( player )
+	vector angles = Vector( 0, 0, 0 )
+	entity weapon = CreateWeaponEntityByNameWithPhysics( weaponName, origin, angles )
+
+#if SP
+	bool isTitanWeapon = weaponName.find( "mp_titanweapon_" ) != null
+	if ( isTitanWeapon )
+		thread TitanLoadoutWaitsForPickup( weapon, SPTitanLoadoutPickup )
+#endif
+
+}
+
+string function GetAISettingsFromPlayerSetFile( string playerSetfile )
+{
+	TitanLoadoutDef ornull loadout = GetTitanLoadoutForColumn( "setFile", playerSetfile )
+	Assert( loadout != null, "Couldn't find loadout with set file " + playerSetfile )
+	expect TitanLoadoutDef( loadout )
+
+	return expect string( Dev_GetPlayerSettingByKeyField_Global( playerSetfile, GetAISettingsStringForMode() ) )
+}
+
+
+void function DEV_SpawnBossTitanAtCrosshair( string playerSetfile )
+{
+	string aiSettings = GetAISettingsFromPlayerSetFile( playerSetfile )
+	printt( "script thread DEV_SpawnBossTitanAtCrosshair( \"" + aiSettings + "\")" )
+	Assert( IsNewThread(), "Must be threaded off due to precache issues" )
+
+	string baseClass = "npc_titan"
+	bool restoreHostThreadMode = GetConVarInt( "host_thread_mode" ) != 0
+	entity npc = DEV_SpawnNPCWithWeaponAtCrosshairStart( restoreHostThreadMode, baseClass, aiSettings, TEAM_IMC )
+	SetSpawnOption_NPCTitan( npc, TITAN_BOSS )
+//	SetSpawnOption_TitanLoadout( npc, loadout )
+
+	string builtInLoadout = expect string( Dev_GetAISettingByKeyField_Global( aiSettings, "npc_titan_player_settings" ) )
+//	SetTitanSettings( npc.ai.titanSettings, builtInLoadout )
+	npc.ai.titanSpawnLoadout.setFile = builtInLoadout
+	OverwriteLoadoutWithDefaultsForSetFile( npc.ai.titanSpawnLoadout ) // get the entire loadout, including defensive and tactical
+
+	DispatchSpawn( npc )
+	DEV_SpawnNPCWithWeaponAtCrosshairEnd( restoreHostThreadMode )
+}
+
+entity function DEV_SpawnNPCWithWeaponAtCrosshairStart( bool restoreHostThreadMode, string baseClass, string aiSettings, int team, string weaponName = "" )
+{
+	if ( restoreHostThreadMode )
+	{
+		DisablePrecacheErrors()
+		wait 0.5
+	}
+
+	float time = Time()
+	for ( ;; )
+	{
+		if ( Time() > time )
+			break
+		WaitFrame()
+	}
+	entity player = GetPlayerArray()[ 0 ]
+	if ( !IsValid( player ) )
+		return
+
+	vector origin = GetPlayerCrosshairOrigin( player )
+	vector angles = Vector( 0, 0, 0 )
+
+	entity npc = CreateNPC( baseClass, team, origin, angles )
+	if ( IsTurret( npc ) )
+		npc.kv.origin -= Vector( 0, 0, CROSSHAIR_VERT_OFFSET )
+	SetSpawnOption_AISettings( npc, aiSettings )
+
+	if ( npc.GetClassName() == "npc_soldier" || npc.GetClassName() == "npc_spectre" )
+		npc.kv.squadname = "crosshairSpawnSquad_team_" + team + "_" + baseClass + "_" + aiSettings
+
+	if ( weaponName != "" )
+		SetSpawnOption_Weapon( npc, weaponName )
+
+	if ( npc.GetClassName() == "npc_titan" )
+	{
+		string builtInLoadout = expect string( Dev_GetAISettingByKeyField_Global( aiSettings, "npc_titan_player_settings" ) )
+		SetTitanSettings( npc.ai.titanSettings, builtInLoadout )
+		npc.ai.titanSpawnLoadout.setFile = builtInLoadout
+		OverwriteLoadoutWithDefaultsForSetFile( npc.ai.titanSpawnLoadout ) // get the entire loadout, including defensive and tactical
+	}
+
+	return npc
+}
+
+void function DEV_SpawnNPCWithWeaponAtCrosshairEnd( bool restoreHostThreadMode )
+{
+	if ( restoreHostThreadMode )
+	{
+		wait 0.2
+		RestorePrecacheErrors()
+	}
+}
+
+
+function SetAISettingsWrapper( entity npc, string settings )
+{
+	npc.SetAISettings( settings )
+	Assert( settings.find( npc.GetClassName() ) == 0, "NPC classname " + npc.GetClassName() + " not found in " + settings )
+
+	if ( IsSingleplayer() )
+	{
+		FixupTitle( npc )
+	}
+}
+
+bool function WithinEngagementRange( entity npc, vector origin )
+{
+	entity weapon = npc.GetActiveWeapon()
+	if ( weapon == null )
+		return false
+
+	float dist = Distance( npc.GetOrigin(), origin )
+	if ( dist < weapon.GetWeaponInfoFileKeyField( "npc_min_engage_range" ) )
+		return false
+
+	return dist <= weapon.GetWeaponInfoFileKeyField( "npc_max_engage_range" )
+}
+
+
+function DEV_AITitanDuel()
+{
+	thread DEV_AITitanDuelThread()
+}
+
+entity function DEV_AITitanDuelSpawn( entity player, int team, vector origin, vector angles, aiSetting )
+{
+	entity titan = CreateNPC( "npc_titan", team, origin, angles )
+	SetSpawnOption_AISettings( titan, aiSetting )
+	DispatchSpawn( titan )
+
+	vector ornull clampedPos = NavMesh_ClampPointForAI( origin, titan )
+	if ( clampedPos != null )
+	{
+		titan.SetOrigin( expect vector( clampedPos ) )
+	}
+	else
+	{
+		array<entity> spawnpoints = SpawnPoints_GetTitan()
+		if ( spawnpoints.len() )
+		{
+			entity spawnpoint = GetClosest( spawnpoints, origin )
+			titan.SetOrigin( spawnpoint.GetOrigin() )
+		}
+	}
+
+	return titan
+}
+
+function DEV_AITitanDuelThread()
+{
+	DisablePrecacheErrors()
+	wait 0.5
+
+	array<string> aiSettings = GetAllowedTitanAISettings()
+
+	aiSettings.randomize()
+
+	entity player = GetPlayerArray()[ 0 ]
+
+	entity imcTitan = null
+	entity militiaTitan = null
+
+	int currentSetting = 0
+
+
+	while ( 1 )
+	{
+		if ( !IsValid( imcTitan ) )
+		{
+			vector origin = GetPlayerCrosshairOrigin( player ) + < -300, -300, 0 >
+			vector angles = Vector( 0, 0, 0 )
+
+			imcTitan = DEV_AITitanDuelSpawn( player, TEAM_IMC, origin, angles, aiSettings[currentSetting] )
+			currentSetting = (currentSetting + 1) % aiSettings.len()
+
+			if ( IsValid( militiaTitan ) )
+			{
+				imcTitan.SetEnemyLKP( militiaTitan, militiaTitan.GetOrigin() )
+				militiaTitan.SetEnemyLKP( imcTitan, imcTitan.GetOrigin() )
+			}
+		}
+
+		if ( !IsValid( militiaTitan ) )
+		{
+			vector origin = GetPlayerCrosshairOrigin( player ) + < 300, 300, 0 >
+			vector angles = Vector( 0, 180, 0 )
+
+			militiaTitan = DEV_AITitanDuelSpawn( player, TEAM_MILITIA, origin, angles, aiSettings[currentSetting] )
+			currentSetting = (currentSetting + 1) % aiSettings.len()
+
+			if ( IsValid( imcTitan ) )
+			{
+				militiaTitan.SetEnemyLKP( imcTitan, imcTitan.GetOrigin() )
+				imcTitan.SetEnemyLKP( militiaTitan, militiaTitan.GetOrigin() )
+			}
+		}
+
+		wait 2
+	}
+}

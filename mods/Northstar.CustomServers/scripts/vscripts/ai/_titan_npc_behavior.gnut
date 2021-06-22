@@ -1,0 +1,404 @@
+untyped
+
+global function TitanNpcBehavior_Init
+
+global function TitanNPC_Think
+global function TitanNPC_WaitForBubbleShield_StartAutoTitanBehavior
+global function TitanStandUp
+global function TitanKneel
+global function GetBubbleShieldDuration
+global function ShowMainTitanWeapons
+
+global function ChangedStance
+
+global function TitanWaitsToChangeStance
+global function ShouldBecomeAutoTitan
+
+function TitanNpcBehavior_Init()
+{
+	FlagInit( "DisableTitanKneelingEmbark" )
+
+	RegisterSignal( "TitanStopsThinking" )
+	RegisterSignal( "RodeoRiderChanged" )
+
+	if ( IsMultiplayer() )
+	{
+		AddCallback_OnTitanBecomesPilot( OnClassChangeBecomePilot )
+		AddCallback_OnPilotBecomesTitan( OnClassChangeBecomeTitan )
+	}
+}
+
+void function OnClassChangeBecomePilot( entity player, entity titan )
+{
+	entity soul = titan.GetTitanSoul()
+	if ( !SoulHasPassive( soul, ePassives.PAS_ENHANCED_TITAN_AI ) )
+	{
+		entity ordnanceWeapon = titan.GetOffhandWeapon( OFFHAND_ORDNANCE )
+		if ( IsValid( ordnanceWeapon ) )
+			ordnanceWeapon.AllowUse( false )
+
+		entity centerWeapon = titan.GetOffhandWeapon( OFFHAND_TITAN_CENTER )
+		if ( IsValid( centerWeapon ) )
+			centerWeapon.AllowUse( false )
+	}
+}
+
+void function OnClassChangeBecomeTitan( entity player, entity titan )
+{
+	entity soul = player.GetTitanSoul()
+
+	entity ordnanceWeapon = player.GetOffhandWeapon( OFFHAND_ORDNANCE )
+	if ( IsValid( ordnanceWeapon ) )
+		ordnanceWeapon.AllowUse( true )
+
+	entity centerWeapon = player.GetOffhandWeapon( OFFHAND_TITAN_CENTER )
+	if ( IsValid( centerWeapon ) )
+		centerWeapon.AllowUse( true )
+}
+
+float function GetBubbleShieldDuration( entity player )
+{
+	if ( PlayerHasPassive( player, ePassives.PAS_LONGER_BUBBLE ) )
+		return EMBARK_TIMEOUT + 10.0
+	else
+		return EMBARK_TIMEOUT
+
+	unreachable
+}
+
+void function TitanNPC_WaitForBubbleShield_StartAutoTitanBehavior( entity titan )
+{
+	Assert( IsAlive( titan ) )
+
+	titan.Signal( "TitanStopsThinking" )
+	titan.EndSignal( "OnDeath" )
+	titan.EndSignal( "TitanStopsThinking" )
+	titan.EndSignal( "ContextAction_SetBusy" )
+
+	entity bossPlayer = titan.GetBossPlayer()
+	if ( !bossPlayer )
+		return
+
+	OnThreadEnd(
+		function () : ( titan )
+		{
+			if ( IsAlive( titan ) )
+			{
+				titan.SetNoTarget( false )
+				thread TitanNPC_Think( titan )
+			}
+		}
+	)
+
+	titan.EndSignal( "ChangedTitanMode" )
+
+	float timeout
+	if ( SoulHasPassive( titan.GetTitanSoul(), ePassives.PAS_BUBBLESHIELD ) )
+	{
+		entity player = titan.GetBossPlayer()
+		timeout = GetBubbleShieldDuration( player )
+	}
+	else
+	{
+		timeout = 0
+	}
+
+	wait timeout
+}
+
+function TitanNPC_Think( entity titan )
+{
+	entity soul = titan.GetTitanSoul()
+
+	// JFS - Shouldn't have to check for presence of soul.
+	// The real fix for next game would be to make sure no other script can run between transferring away a titan's soul and destroying the titan.
+	// This particular bug occurred if TitanNPC_WaitForBubbleShield_StartAutoTitanBehavior() was called before soul transferred from npc to player,
+	// in which case the soul transfer killed the thread via Signal( "TitanStopsThinking" ), which causes the OnThreadEnd() to run TitanNPC_Think().
+	if ( !IsValid( soul ) )
+		return;
+
+	if ( soul.capturable || !ShouldBecomeAutoTitan( titan ) )
+	{
+		// capturable titan just kneels
+		if ( soul.GetStance() > STANCE_KNEELING )
+			thread TitanKneel( titan )
+		return
+	}
+
+	Assert( IsAlive( titan ) )
+
+	if ( !TitanCanStand( titan ) )// sets the var
+	{
+		// try to put the titan on the navmesh
+		vector ornull clampedPos = NavMesh_ClampPointForAIWithExtents( titan.GetOrigin(), titan, < 100, 100, 100 > )
+		if ( clampedPos != null )
+		{
+			expect vector( clampedPos )
+			titan.SetOrigin( clampedPos )
+			TitanCanStand( titan )
+		}
+	}
+
+	if ( !titan.GetBossPlayer() )
+	{
+		titan.Signal( "TitanStopsThinking" )
+		return
+	}
+
+	if ( "disableAutoTitanConversation" in titan.s ) //At this point the Titan has stood up and is ready to talk
+		delete titan.s.disableAutoTitanConversation
+
+	titan.EndSignal( "TitanStopsThinking" )
+	titan.EndSignal( "OnDeath" )
+	titan.EndSignal( "player_embarks_titan" )
+
+	// kneel in certain circumstances
+	for ( ;; )
+	{
+		if ( !ChangedStance( titan ) )
+			waitthread TitanWaitsToChangeStance( titan )
+	}
+}
+
+bool function ChangedStance( entity titan )
+{
+	if ( GetEmbarkDisembarkPlayer( titan ) )
+		return false
+
+	local soul = titan.GetTitanSoul()
+
+	// in a scripted sequence?
+	if ( IsValid( titan.GetParent() ) )
+		return false
+
+	if ( soul.GetStance() > STANCE_KNEELING )
+	{
+		if ( TitanShouldKneel( titan ) )
+		{
+			//waitthread PlayAnimGravity( titan, "at_MP_stand2knee_straight" )
+			waitthread KneelToShowRider( titan )
+			thread PlayAnim( titan, "at_MP_embark_idle_blended" )
+			SetStanceKneel( soul )
+			return true
+		}
+	}
+	else
+	{
+		if ( !TitanShouldKneel( titan ) && TitanCanStand( titan ) )
+		{
+			waitthread TitanStandUp( titan )
+			return true
+		}
+
+		if ( soul.GetStance() == STANCE_KNEEL )
+		{
+			thread PlayAnim( titan, "at_MP_embark_idle_blended" )
+		}
+	}
+
+	return false
+}
+
+function TitanShouldKneel( entity titan )
+{
+	local soul = titan.GetTitanSoul()
+
+	if ( soul.capturable )
+		return true
+
+	//if( HasEnemyRodeoRiders( titan ) )
+	//	return true
+	if ( !TitanCanStand( titan ) )
+		return false
+
+	if ( !ShouldBecomeAutoTitan( titan ) )
+		return true
+
+	return false
+}
+
+function TitanWaitsToChangeStance( titan )
+{
+	local soul = titan.GetTitanSoul()
+	soul.EndSignal( "RodeoRiderChanged" )
+
+	titan.EndSignal( "OnAnimationInterrupted" )
+	titan.EndSignal( "OnAnimationDone" )
+
+	WaitForever()
+}
+
+function TitanStandUp( titan )
+{
+	local soul = titan.GetTitanSoul()
+	// stand up
+	titan.s.standQueued = false
+	ShowMainTitanWeapons( titan )
+	titan.Anim_Stop()
+	waitthread PlayAnimGravity( titan, "at_hotdrop_quickstand" )
+	Assert( soul == titan.GetTitanSoul() )
+	SetStanceStand( soul )
+}
+
+
+void function TitanKneel( entity titan )
+{
+	titan.EndSignal( "TitanStopsThinking" )
+	titan.EndSignal( "OnDeath" )
+	Assert( IsAlive( titan ) )
+	local soul = titan.GetTitanSoul()
+
+	waitthread KneelToShowRider( titan )
+
+	thread PlayAnim( titan, "at_MP_embark_idle_blended" )
+	SetStanceKneel( soul )
+}
+
+
+/*
+function TitanWaittillShouldStand( entity titan )
+{
+	//Don't wait if player is dead - titan should just stand up immediately
+	local player = titan.GetBossPlayer()
+	if ( !IsAlive( player ) )
+		return
+
+	player.EndSignal( "OnDeath" )
+
+	for ( ;; )
+	{
+		if ( TitanCanStand( titan ) )
+			break
+
+		wait 5
+	}
+	if ( titan.s.standQueued )
+		return
+
+	titan.WaitSignal( "titanStand" )
+}
+*/
+
+void function KneelToShowRider( entity titan )
+{
+	entity soul = titan.GetTitanSoul()
+	entity player = soul.GetBossPlayer()
+	local animation
+	local yawDif
+
+	//if ( IsAlive( player ) )
+	//{
+	//	local table = GetFrontRightDots( titan, player )
+    //
+	//	local dotForward = Table.dotForward
+	//	local dotRight = Table.dotRight
+    //
+	////	DebugDrawLine( titanOrg, titanOrg + titan.GetForwardVector() * 200, 255, 0, 0, true, 5 )
+	////	DebugDrawLine( titanOrg, titanOrg + vecToEnt * 200, 0, 255, 0, true, 5 )
+    //
+	//	if ( dotForward > 0.88 )
+	//	{
+	//		animation = "at_MP_stand2knee_L90"
+	//		yawDif = 0
+	//	}
+	//	else
+	//	if ( dotForward < -0.88 )
+	//	{
+	//		animation = "at_MP_stand2knee_R90"
+	//		yawDif = 180
+	//	}
+	//	else
+	//	if ( dotRight > 0 )
+	//	{
+	//		animation = "at_MP_stand2knee_straight"
+	//		yawDif = 90
+	//	}
+	//	else
+	//	{
+	//		animation = "at_MP_stand2knee_180"
+	//		yawDif = -90
+	//	}
+	//}
+	//else
+	{
+		animation = "at_MP_stand2knee_straight"
+		yawDif = 0
+	}
+
+	thread HideOgreMainWeaponFromEnemies( titan )
+
+	if ( !IsAlive( player ) )
+	{
+		waitthread PlayAnimGravity( titan, animation )
+		return
+	}
+
+	local titanOrg = titan.GetOrigin()
+	local playerOrg = player.GetOrigin()
+
+	/*
+	local vec = playerOrg - titanOrg
+	vec.z = 0
+
+	local angles = VectorToAngles( vec )
+
+	angles.y += yawDif
+	*/
+
+	local angles = titan.GetAngles()
+
+	titan.Anim_ScriptedPlayWithRefPoint( animation, titanOrg, angles, 0.5 )
+	titan.Anim_EnablePlanting()
+
+	WaittillAnimDone( titan )
+}
+
+function HideOgreMainWeaponFromEnemies( titan )
+{
+	expect entity( titan )
+
+	titan.EndSignal( "OnDeath" )
+	titan.EndSignal( "OnDestroy" )
+
+	wait 1.0
+
+	entity soul = titan.GetTitanSoul()
+
+	Assert( IsValid( soul ) )
+
+	local titanSubClass = GetSoulTitanSubClass( soul )
+	if ( titanSubClass == "ogre" )
+	{
+		if ( IsValid( GetEnemyRodeoPilot( titan ) ) )
+			HideMainWeaponsFromEnemies( titan )
+	}
+}
+
+function HideMainWeaponsFromEnemies( titan )
+{
+	local weapons = titan.GetMainWeapons()
+	foreach ( weapon in weapons )
+		weapon.kv.visibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY
+}
+
+function ShowMainTitanWeapons( titan )
+{
+	local weapons = titan.GetMainWeapons()
+	foreach ( weapon in weapons )
+	{
+		weapon.kv.visibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
+	}
+}
+
+bool function ShouldBecomeAutoTitan( entity titan )
+{
+	entity soul = titan.GetTitanSoul()
+
+	if ( soul != null )
+	{
+		if ( SoulHasPassive( soul, ePassives.PAS_ENHANCED_TITAN_AI ) )
+			return true
+	}
+
+	return ( !PROTO_AutoTitansDisabled() )
+}

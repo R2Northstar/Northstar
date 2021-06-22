@@ -1,0 +1,19 @@
+#base "npc_frag_drone.txt"
+npc_frag_drone_throwable
+{
+	title							"#WPN_FRAG_DRONE"
+	suicideExplosionDelay			1.25  	[$mp]
+	suicideExplosionDistance		100.0  	[$mp]
+
+	Health							60 [$sp]
+	Health							60 [$mp]
+
+	DefaultModelName				"models/weapons/sentry_frag/sentry_frag.mdl"
+	DefaultModelName_IMC			"models/weapons/sentry_frag/sentry_frag.mdl"
+	DefaultModelName_MIL			"models/weapons/sentry_frag/sentry_frag.mdl"
+
+	footstep_type					"sentryfragdrone"
+
+	SuicideChaseTime				3.0 [$sp]
+	SuicideChaseTime				0.0 [$mp]
+}

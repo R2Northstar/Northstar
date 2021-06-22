@@ -1,0 +1,241 @@
+global function ClGamemodeKR_Init
+
+global function ShowTimeGainOnKill
+global function ServerCallback_FlagSpawnIncoming
+global function ServerCallback_NewKillRacer
+global function ServerCallback_EndKillrace
+
+struct {
+	var currentTimeRui
+	var currentTimeAdditionRui
+	var flagRui
+	var flagIncomingRui
+	var killRacerRui
+	
+	bool isCurrentlyInRace = false
+	float currentTimeAmount
+	float currentTimeLastAdditionTime
+	float currentTimeAdditionCombined
+} file
+
+void function ClGamemodeKR_Init()
+{
+	// add ffa gamestate asset
+	ClGameState_RegisterGameStateAsset( $"ui/gamestate_info_ffa.rpak" )
+
+	// add music for mode, this is copied directly from the ffa/fra music registered in cl_music.gnut
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_INTRO, "music_mp_freeagents_intro", TEAM_IMC )
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_INTRO, "music_mp_freeagents_intro", TEAM_MILITIA )
+
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_WIN, "music_mp_freeagents_outro_win", TEAM_IMC )
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_WIN, "music_mp_freeagents_outro_win", TEAM_MILITIA )
+
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_DRAW, "music_mp_freeagents_outro_lose", TEAM_IMC )
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_DRAW, "music_mp_freeagents_outro_lose", TEAM_MILITIA )
+
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LOSS, "music_mp_freeagents_outro_lose", TEAM_IMC )
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LOSS, "music_mp_freeagents_outro_lose", TEAM_MILITIA )
+
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_THREE_MINUTE, "music_mp_freeagents_almostdone", TEAM_IMC )
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_THREE_MINUTE, "music_mp_freeagents_almostdone", TEAM_MILITIA )
+
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LAST_MINUTE, "music_mp_freeagents_lastminute", TEAM_IMC )
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LAST_MINUTE, "music_mp_freeagents_lastminute", TEAM_MILITIA )
+	
+	AddCallback_OnClientScriptInit( CreateKRUI )
+	AddCreateCallback( "item_flag", OnFlagCreated )
+	AddDestroyCallback( "item_flag", OnFlagDestroyed )
+}
+
+void function CreateKRUI( entity player )
+{
+	file.currentTimeRui = CreateCockpitRui( $"ui/titan_protocol_text_center.rpak", 200 )
+	RuiSetInt( file.currentTimeRui, "lineNum", 1 )
+	RuiSetGameTime( file.currentTimeRui, "startTime", 0.0 )
+	UpdateCurrentTimeAmount()
+	
+	file.flagRui = CreateCockpitRui( $"ui/speedball_flag_marker.rpak", 200 )
+	RuiSetBool( file.flagRui, "playerIsCarrying", false )
+	RuiSetBool( file.flagRui, "isCarried", false )
+			
+	file.killRacerRui = CreateCockpitRui( $"ui/mfd_target_marker.rpak", 200 )
+	RuiSetBool( file.killRacerRui, "isVisible", false )
+	RuiSetImage( file.killRacerRui, "markedIcon", $"rui/hud/gametype_icons/mfd/mfd_enemy" )
+	RuiSetBool( file.killRacerRui, "isMarked", true )
+}
+
+void function OnFlagCreated( entity flag )
+{
+	if ( IsValid( file.flagIncomingRui ) )
+		RuiDestroy( file.flagIncomingRui )
+
+	RuiSetBool( file.flagRui, "isVisible", true )
+	RuiTrackFloat3( file.flagRui, "pos", flag, RUI_TRACK_OVERHEAD_FOLLOW )
+}
+
+void function OnFlagDestroyed( entity flag )
+{
+	RuiSetBool( file.flagRui, "isVisible", false )
+}
+
+void function ShowTimeGainOnKill( entity player, float oldVal, float newVal, bool actuallyChanged )
+{	
+	if ( file.isCurrentlyInRace || player != GetLocalViewPlayer() || !actuallyChanged )
+		return
+
+	if ( newVal > oldVal ) // time increase: likely given on kill
+	{
+		float amount = newVal - oldVal
+	
+		// show a combined number on the addition rui if last addition was recent enough
+		float additionShowAmount = amount
+		file.currentTimeAdditionCombined += amount
+		if ( Time() - file.currentTimeLastAdditionTime < 1.25 )
+			amount = file.currentTimeAdditionCombined
+		else
+		{
+			file.currentTimeAdditionRui = CreateCockpitRui( $"ui/titan_protocol_text_center.rpak", 200 )
+			RuiSetInt( file.currentTimeAdditionRui, "lineNum", 2 )
+			file.currentTimeAdditionCombined = amount
+		}
+	
+		RuiSetString( file.currentTimeAdditionRui, "displayString", "+" + amount + "s 00ms " ) // formatted so that it lines up with other rui
+		RuiSetGameTime( file.currentTimeAdditionRui, "startTime", Time() )
+		RuiSetGameTime( file.currentTimeAdditionRui, "endTime", Time() + 1.5 )
+		
+		file.currentTimeLastAdditionTime = Time()
+		
+		thread UpdateFullTimeAmountAfterAdditionDone( file.currentTimeLastAdditionTime )
+	}
+	else // time decrease either a reset or 
+		UpdateCurrentTimeAmount()
+}
+
+void function UpdateFullTimeAmountAfterAdditionDone( float previousAdditionTime )
+{
+	wait 1.25
+	
+	if ( previousAdditionTime == file.currentTimeLastAdditionTime ) // if not, there's been another addition since this was last updated and we'll wait for that instead
+		UpdateCurrentTimeAmount()
+}
+
+void function UpdateCurrentTimeAmount( float overrideTime = -1 )
+{
+	if ( overrideTime == -1 )
+		file.currentTimeAmount = GetLocalViewPlayer().GetPlayerNetTime( "killRaceTime" )
+	else	
+		file.currentTimeAmount = overrideTime
+	
+	string currentTimeString 
+	int seconds = file.currentTimeAmount.tointeger()
+	
+	string secondsString = seconds.tostring()
+	if ( secondsString.len() < 2 ) // pad to 2 chars
+		secondsString = "0" + secondsString
+	currentTimeString += secondsString + "s "
+	
+	string msString = ( ( file.currentTimeAmount - file.currentTimeAmount.tointeger() ) * 100 ).tostring()
+	if ( msString.len() < 2 ) // pad to 2 chars
+		msString = "0" + msString
+	currentTimeString += msString.slice( 0, 2 ) + "ms "
+	
+	RuiSetString( file.currentTimeRui, "displayString", currentTimeString )
+	RuiSetGameTime( file.currentTimeRui, "endTime", Time() + 99999.0 ) // arbitrarily large number so this doesn't disappear
+}
+
+void function ServerCallback_FlagSpawnIncoming( float x, float y, float z , float spawnTime )
+{
+	print( "flagspawn: < " + x + ", " + y + ", " + z + " > in " + ( spawnTime - Time() ) + " seconds" )
+	
+	AnnouncementData announcement = Announcement_Create( Localize( "#KR_FLAG_INCOMING", spawnTime.tostring() ) )
+	Announcement_SetSubText( announcement, "#KR_COLLECT_FLAG" )
+	Announcement_SetTitleColor( announcement, < 0, 0, 1 > )
+	Announcement_SetPurge( announcement, true )
+	Announcement_SetPriority( announcement, 200 )
+	Announcement_SetSoundAlias( announcement, SFX_HUD_ANNOUNCE_QUICK )
+	Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_QUICK )
+	AnnouncementFromClass( GetLocalViewPlayer(), announcement )
+	
+	RuiSetFloat3( file.flagRui, "pos", < x, y, z > )
+	RuiSetBool( file.flagRui, "isVisible", true )
+	
+	file.flagIncomingRui = RuiCreate( $"ui/titanfall_timer.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
+	RuiTrackFloat3( file.flagIncomingRui, "playerPos", GetLocalViewPlayer(), RUI_TRACK_ABSORIGIN_FOLLOW )
+	RuiSetFloat3( file.flagIncomingRui, "pos", < x, y, z > + < 0, 0, 48 > )
+	RuiSetGameTime( file.flagIncomingRui, "impactTime", spawnTime )
+}
+
+void function ServerCallback_NewKillRacer( int playerHandle, float endTime )
+{
+	entity player = GetEntityFromEncodedEHandle( playerHandle )
+	
+	string announcementMessage = Localize( "#KR_NEW_RACER", player.GetPlayerName() )
+	string announcementSubMessage
+	if ( player == GetLocalViewPlayer() )
+	{
+		file.isCurrentlyInRace = true
+		thread LerpTimeDuringRace( endTime )
+		
+		StartParticleEffectOnEntity( player.GetCockpit(), GetParticleSystemIndex( $"P_MFD" ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
+		EmitSoundOnEntity( player, "UI_InGame_MarkedForDeath_PlayerMarked"  )
+		HideEventNotification()
+		
+		announcementMessage = "#KR_YOU_ARE_NEW_RACER"
+		announcementSubMessage = "#KR_YOU_SET_NEW_RECORD"
+	}
+	else
+	{
+		// mark the player
+		RuiTrackFloat3( file.killRacerRui, "pos", player, RUI_TRACK_OVERHEAD_FOLLOW )
+		RuiSetBool( file.killRacerRui, "isVisible", true )
+	}
+	
+	AnnouncementData announcement = Announcement_Create( announcementMessage )
+	Announcement_SetSubText( announcement, announcementSubMessage )
+	Announcement_SetTitleColor( announcement, < 1, 0, 0 > )
+	Announcement_SetPurge( announcement, true )
+	Announcement_SetPriority( announcement, 200 )
+	Announcement_SetSoundAlias( announcement, SFX_HUD_ANNOUNCE_QUICK )
+	Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_QUICK )
+	AnnouncementFromClass( GetLocalViewPlayer(), announcement )
+}
+
+void function LerpTimeDuringRace( float endTime )
+{
+	while ( Time() < endTime )
+	{
+		// manually update this here so we can get more frequent updates than what we'd get with networked vars
+		UpdateCurrentTimeAmount( endTime - Time() )
+		WaitFrame()
+	}
+	
+	UpdateCurrentTimeAmount( 0.0 )
+	file.isCurrentlyInRace = false
+}
+
+void function ServerCallback_EndKillrace( int playerHandle, int score )
+{
+	entity player = GetEntityFromEncodedEHandle( playerHandle )
+	
+	vector colour = < 0, 0, 1 >
+	string announcementMessage = Localize( "#KR_ENEMY_KILLRACE_OVER", player.GetPlayerName() )
+	string announcementSubMessage
+	if ( player == GetLocalViewPlayer() )
+	{
+		StartParticleEffectOnEntity( GetLocalViewPlayer().GetCockpit(), GetParticleSystemIndex( $"P_MFD_unmark" ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
+		colour = < 1, 0, 0 >
+		announcementMessage = "#KR_YOUR_KILLRACE_OVER"
+		announcementSubMessage = Localize( "#KR_YOUR_KILLRACE_SCORE", score )
+	}		
+	
+	AnnouncementData announcement = Announcement_Create( announcementMessage )
+	Announcement_SetSubText( announcement, announcementSubMessage ) 
+	Announcement_SetTitleColor( announcement, colour )
+	Announcement_SetPurge( announcement, true )
+	Announcement_SetPriority( announcement, 200 )
+	Announcement_SetSoundAlias( announcement, SFX_HUD_ANNOUNCE_QUICK )
+	Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_QUICK )
+	AnnouncementFromClass( GetLocalViewPlayer(), announcement )
+	
+	RuiSetBool( file.killRacerRui, "isVisible", false )
+}
