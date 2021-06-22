@@ -1,0 +1,9 @@
+#base "npc_dropship.txt"
+npc_dropship_hero
+{
+	ui_targetinfo			"ui/targetinfo_titan" [$mp]
+
+	DefaultModelName		"models/vehicle/goblin_dropship/goblin_dropship_hero.mdl"
+	DefaultModelName_IMC	"models/vehicle/goblin_dropship/goblin_dropship_hero.mdl"
+	DefaultModelName_MIL	"models/vehicle/crow_dropship/crow_dropship_hero.mdl"
+}

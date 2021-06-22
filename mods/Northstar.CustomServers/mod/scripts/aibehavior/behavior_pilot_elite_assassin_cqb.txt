@@ -1,0 +1,64 @@
+Selector Common
+
+	SelectSchedule_RodeoAttack
+	SelectSchedule_FallToGround
+	SelectSchedule_MissileDodge
+	SelectSchedule_Flinch
+	SelectSchedule_LayeredBehavior
+Selector_End
+
+
+Selector Idle
+
+	SelectSchedule_Idle
+Selector_End
+
+
+Selector Alert
+
+	SelectSchedule_Alert
+Selector_End
+
+
+Selector Combat
+
+	SelectSchedule_LongJump
+	SelectSchedule_StrafeDodge
+//	SelectSchedule_DisengageAfterMeleeAttack
+	SelectSchedule_ForwardDodge
+	SelectSchedule_SyncedMeleeAttack
+	SelectSchedule_MeleeAttack
+	SelectSchedule_StationaryLowAmmo
+	//SelectSchedule_Taunt
+	SelectSchedule_MoveToWeaponRange
+	SelectSchedule_ChaseEnemy
+	SelectSchedule_RangeAttack2
+	SelectSchedule_RangeAttack
+	SelectSchedule_EnemyTooClose
+	SelectSchedule_WeaponBlocked
+	SelectSchedule_CantSeeEnemy
+	SelectSchedule_CircleStrafe
+	SelectSchedule_CombatFace
+Selector_End
+
+
+Selector CombatEvasive
+
+	SelectSchedule_LongJump
+	SelectSchedule_StrafeDodge
+	SelectSchedule_DisengageAfterMeleeAttack
+	SelectSchedule_BackwardDodge
+	SelectSchedule_SyncedMeleeAttack
+	SelectSchedule_MeleeAttack
+	SelectSchedule_StationaryLowAmmo
+	//SelectSchedule_RangeAttack2
+	//SelectSchedule_RangeAttack
+	//SelectSchedule_Taunt
+	SelectSchedule_ChaseEnemy
+	SelectSchedule_EnemyTooClose
+	SelectSchedule_WeaponBlocked
+	SelectSchedule_CantSeeEnemy
+	SelectSchedule_MoveToWeaponRange
+	SelectSchedule_CircleStrafe
+	SelectSchedule_CombatFace
+Selector_End

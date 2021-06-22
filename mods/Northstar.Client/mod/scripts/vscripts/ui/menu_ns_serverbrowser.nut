@@ -1,0 +1,1597 @@
+untyped
+// Only way to get Hud_GetPos(sliderButton) working was to use untyped
+
+global function AddNorthstarServerBrowserMenu
+global function OnServerSelected_Threaded
+
+global function AddConnectToServerCallback
+global function RemoveConnectToServerCallback
+
+// Stop peeking
+
+const int BUTTONS_PER_PAGE = 15 // Number of servers we show
+const float DOUBLE_CLICK_TIME_MS = 0.4 // Max time between clicks for double click registering
+
+// Stores mouse delta used for scroll bar
+struct
+{
+	int deltaX = 0
+	int deltaY = 0
+} mouseDeltaBuffer
+
+// Filters
+struct
+{
+	bool hideFull = false
+	bool hideEmpty = false
+	bool hideProtected = false
+	bool useSearch = false
+	string searchTerm
+	array<string> filterMaps
+	string filterMap
+	array<string> filterGamemodes
+	string filterGamemode
+} filterArguments
+
+enum sortingBy
+{
+	NONE,
+	DEFAULT,
+	NAME,
+	PLAYERS,
+	MAP,
+	GAMEMODE,
+	REGION
+}
+
+// Column sort direction, only one of these can be aplied at once
+struct
+{
+	// true = alphabeticaly false = reverse
+	bool serverName = true
+	bool serverPlayers = true
+	bool serverMap = true
+	bool serverGamemode = true
+	bool serverRegion = true
+	// 0 = none; 1 = default; 2 = name; 3 = players; 4 = map; 5 = gamemode; 6 = region
+	int sortingBy = 1
+} filterDirection
+
+struct serverStruct
+{
+	int serverIndex
+	bool serverProtected
+	string serverName
+	int serverPlayers
+	int serverPlayersMax
+	string serverMap
+	string serverGamemode
+	string serverRegion
+}
+
+struct
+{
+	// UI state vars
+	var menu
+	int focusedServerIndex = 0
+	int scrollOffset = 0
+	bool serverListRequestFailed = false
+	float serverSelectedTime = 0
+	float serverSelectedTimeLast = 0
+	int serverButtonFocusedID = 0
+	bool shouldFocus = true
+	bool cancelConnection = false
+
+	// filtered array of servers
+	array<serverStruct> serversArrayFiltered
+
+	array<ServerInfo> filteredServers
+	ServerInfo& focusedServer
+	ServerInfo& lastSelectedServer
+
+	// UI references
+	array<var> serverButtons
+	array<var> serversName
+	array<var> playerCountLabels
+	array<var> serversProtected
+	array<var> serversMap
+	array<var> serversGamemode
+	array<var> serversRegion
+
+	array<void functionref( ServerInfo )> connectCallbacks
+} file
+
+bool function FloatsEqual( float arg1, float arg2, float epsilon )
+{
+	if ( fabs( arg1 - arg2 ) < epsilon )
+		return true
+
+	return false
+}
+
+// //////////////////////////
+// Custom map handling
+// //////////////////////////
+
+/**
+ * A map name is deemed raw if it is not localized (happens if the map
+ * is not an original Titanfall2 map, or is not localized by its mod).
+*/
+bool function IsMapNameRaw( string mapname )
+{
+	return mapname == Localize( mapname )
+}
+
+/**
+ * Formats a map name in a human readable way.
+ * (e.g. inputting "#mp_chroma_null_surf" returns "Chroma Null Surf" )
+*/
+string function GetCustomMapDisplayName( string mapname )
+{
+	// Remove "#mp_" prefix
+	string res = mapname.slice( 4 )
+
+	// Remove underscores
+	res = StringReplace( res, "_", " ", true )
+
+	// Uppercase first letter
+	res = res.slice( 0, 1 ).toupper() + res.slice( 1 )
+
+	// Uppercase each word
+	// / Early exit
+	if ( !res.find( " " ) )
+	{
+		return res
+	}
+
+	// / Uppercasing
+	for ( int i = 0; i < res.len(); i++ )
+	{
+		string c = res.slice( i, i + 1 )
+		if ( c != " " )
+			continue
+
+		res = res.slice( 0, i + 1 ) + res.slice( i + 1, i + 2 ).toupper() + res.slice( i + 2 )
+	}
+
+	return res
+}
+
+/**
+ * Supersedes the default {GetMapDisplayName} function, to the addition of returning a
+ * nicely formatted map name if it couldn't be properly localized by the game (happens
+ * with maps that are not original sp or mp maps).
+*/
+string function GetMapBrowserName( string mapname )
+{
+	string localized = GetMapDisplayName( mapname )
+
+	if ( IsMapNameRaw( localized ) )
+		return GetCustomMapDisplayName( localized )
+	return localized
+}
+
+// //////////////////////////
+// Init
+// //////////////////////////
+void function AddNorthstarServerBrowserMenu()
+{
+	AddMenu( "ServerBrowserMenu", $"resource/ui/menus/server_browser.menu", InitServerBrowserMenu, "#MENU_SERVER_BROWSER" )
+}
+
+void function UpdatePrivateMatchModesAndMaps()
+{
+	array<string> realMaps = [ "mp_lobby" ]
+	realMaps.extend( GetPrivateMatchMaps() )
+
+	foreach ( int enum_, string map in realMaps )
+	{
+		if ( filterArguments.filterMaps.find( map ) != -1 )
+			continue
+
+		filterArguments.filterMaps.append( map )
+
+		string localized = GetMapBrowserName( map )
+		Hud_DialogList_AddListItem( Hud_GetChild( file.menu, "SwtBtnSelectMap" ), localized, string( enum_ + 1 ) )
+	}
+
+	array<string> realModes = [ "private_match" ]
+	realModes.extend( GetPrivateMatchModes() )
+
+	foreach ( int enum_, string mode in realModes )
+	{
+		string localized = GetGameModeDisplayName( mode )
+		if ( filterArguments.filterGamemodes.find( localized ) != -1 )
+			continue
+
+		filterArguments.filterGamemodes.append( localized )
+		Hud_DialogList_AddListItem( Hud_GetChild( file.menu, "SwtBtnSelectGamemode" ), localized, string( enum_ + 1 ) )
+	}
+}
+
+void function InitServerBrowserMenu()
+{
+	file.menu = GetMenu( "ServerBrowserMenu" )
+
+	AddMouseMovementCaptureHandler( Hud_GetChild( file.menu, "MouseMovementCapture" ), UpdateMouseDeltaBuffer )
+
+	// Get menu stuff
+	file.serverButtons = GetElementsByClassname( file.menu, "ServerButton" )
+	file.serversName = GetElementsByClassname( file.menu, "ServerName" )
+	file.playerCountLabels = GetElementsByClassname( file.menu, "PlayerCount" )
+	file.serversProtected = GetElementsByClassname( file.menu, "ServerLock" )
+	file.serversMap = GetElementsByClassname( file.menu, "ServerMap" )
+	file.serversGamemode = GetElementsByClassname( file.menu, "ServerGamemode" )
+	file.serversRegion = GetElementsByClassname( file.menu, "Serverregion" )
+
+	filterArguments.filterMaps = [ "SWITCH_ANY" ]
+	Hud_DialogList_AddListItem( Hud_GetChild( file.menu, "SwtBtnSelectMap" ), "SWITCH_ANY", "0" )
+
+	filterArguments.filterGamemodes = [ "SWITCH_ANY" ]
+	Hud_DialogList_AddListItem( Hud_GetChild( file.menu, "SwtBtnSelectGamemode" ), "SWITCH_ANY", "0" )
+
+	// Event handlers
+	AddMenuEventHandler( file.menu, eUIEvent.MENU_CLOSE, OnCloseServerBrowserMenu )
+	AddMenuEventHandler( file.menu, eUIEvent.MENU_OPEN, OnServerBrowserMenuOpened )
+	AddMenuFooterOption( file.menu, BUTTON_B, "#B_BUTTON_BACK", "#BACK" )
+	AddMenuFooterOption( file.menu, BUTTON_Y, PrependControllerPrompts( BUTTON_Y, "#REFRESH_SERVERS" ), "#REFRESH_SERVERS", RefreshServers )
+
+	// Setup server buttons
+	var width = 1120.0 * ( GetScreenSize()[ 1 ] / 1080.0 )
+	foreach ( var button in GetElementsByClassname( file.menu, "ServerButton" ) )
+	{
+		AddButtonEventHandler( button, UIE_CLICK, OnServerButtonClicked )
+		AddButtonEventHandler( button, UIE_GET_FOCUS, OnServerButtonFocused )
+		Hud_SetWidth( button, width )
+	}
+
+	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnServerDummmyTop" ), UIE_GET_FOCUS, OnHitDummyTop )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnServerDummmyBottom" ), UIE_GET_FOCUS, OnHitDummyBottom )
+
+	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnServerJoin" ), UIE_CLICK, OnServerSelected )
+
+	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnServerListUpArrow" ), UIE_CLICK, OnUpArrowSelected )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnServerListDownArrow" ), UIE_CLICK, OnDownArrowSelected )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnDummyAfterFilterClear" ), UIE_GET_FOCUS, OnHitDummyAfterFilterClear )
+
+	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnFiltersClear" ), UIE_CLICK, OnBtnFiltersClear_Activate )
+
+	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnServerNameTab" ), UIE_CLICK, SortServerListByName_Activate )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnServerPlayersTab" ), UIE_CLICK, SortServerListByPlayers_Activate )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnServerMapTab" ), UIE_CLICK, SortServerListByMap_Activate )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnServerGamemodeTab" ), UIE_CLICK, SortServerListByGamemode_Activate )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnServerRegionTab" ), UIE_CLICK, SortServerListByRegion_Activate )
+
+	AddButtonEventHandler( Hud_GetChild( file.menu, "SwtBtnSelectMap" ), UIE_CHANGE, FilterAndUpdateList )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "SwtBtnSelectGamemode" ), UIE_CHANGE, FilterAndUpdateList )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "SwtBtnHideFull" ), UIE_CHANGE, FilterAndUpdateList )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "SwtBtnHideEmpty" ), UIE_CHANGE, FilterAndUpdateList )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "SwtBtnHideProtected" ), UIE_CHANGE, FilterAndUpdateList )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnSearchLabel" ), UIE_CHANGE, FilterAndUpdateList )
+
+	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnServerSearch" ), UIE_CHANGE, FilterAndUpdateList )
+
+	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnServerDescription" ), UIE_CLICK, ShowServerDescription )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnServerMods" ), UIE_CLICK, ShowServerMods )
+
+	AddButtonEventHandler( Hud_GetChild( file.menu, "ConnectingButton" ), UIE_CLICK, ConnectingButton_Activate )
+
+	// Hidden cause no need, if server descriptions become too long use this
+	Hud_SetEnabled( Hud_GetChild( file.menu, "BtnServerDescription" ), false )
+	Hud_SetEnabled( Hud_GetChild( file.menu, "BtnServerMods" ), false )
+	Hud_SetText( Hud_GetChild( file.menu, "BtnServerDescription" ), "" )
+	Hud_SetText( Hud_GetChild( file.menu, "BtnServerMods" ), "" )
+
+	// Rui is a pain
+	RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "SwtBtnHideFull" ) ), "buttonText", "" )
+	RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "SwtBtnHideEmpty" ) ), "buttonText", "" )
+	RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "SwtBtnHideProtected" ) ), "buttonText", "" )
+	RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "SwtBtnSelectMap" ) ), "buttonText", "" )
+	RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "SwtBtnSelectGamemode" ) ), "buttonText", "" )
+
+	ToggleConnectingHUD( false )
+
+	// UI was cut off on some aspect ratios; not perfect
+	UpdateServerInfoBasedOnRes()
+
+	// Retrieve list of verified mods
+	thread NSFetchVerifiedModsManifesto()
+}
+
+// //////////////////////////
+// Slider
+// //////////////////////////
+void function UpdateMouseDeltaBuffer( int x, int y )
+{
+	mouseDeltaBuffer.deltaX += x
+	mouseDeltaBuffer.deltaY += y
+
+	SliderBarUpdate()
+}
+
+void function FlushMouseDeltaBuffer()
+{
+	mouseDeltaBuffer.deltaX = 0
+	mouseDeltaBuffer.deltaY = 0
+}
+
+void function SliderBarUpdate()
+{
+	if ( file.filteredServers.len() <= BUTTONS_PER_PAGE )
+	{
+		FlushMouseDeltaBuffer()
+		return
+	}
+
+	var sliderButton = Hud_GetChild( file.menu, "BtnServerListSlider" )
+	var sliderPanel = Hud_GetChild( file.menu, "BtnServerListSliderPanel" )
+	var movementCapture = Hud_GetChild( file.menu, "MouseMovementCapture" )
+
+	Hud_SetFocused( sliderButton )
+
+	float minYPos = -40.0 * ( GetScreenSize()[ 1 ] / 1080.0 )
+	float maxHeight = 562.0 * ( GetScreenSize()[ 1 ] / 1080.0 )
+	float maxYPos = minYPos - ( maxHeight - Hud_GetHeight( sliderPanel ) )
+	float useableSpace = ( maxHeight - Hud_GetHeight( sliderPanel ) )
+
+	float jump = minYPos - ( useableSpace / ( float( file.filteredServers.len() ) ) )
+
+	// got local from official respaw scripts, without untyped throws an error
+	local pos = Hud_GetPos( sliderButton )[ 1 ]
+	local newPos = pos - mouseDeltaBuffer.deltaY
+	FlushMouseDeltaBuffer()
+
+	if ( newPos < maxYPos )
+		newPos = maxYPos
+	if ( newPos > minYPos )
+		newPos = minYPos
+
+	Hud_SetPos( sliderButton, 2, newPos )
+	Hud_SetPos( sliderPanel, 2, newPos )
+	Hud_SetPos( movementCapture, 2, newPos )
+
+	file.scrollOffset = -int( ( ( newPos - minYPos ) / useableSpace ) * ( file.filteredServers.len() - BUTTONS_PER_PAGE ) )
+	UpdateShownPage()
+}
+
+void function UpdateListSliderHeight( float servers )
+{
+	var sliderButton = Hud_GetChild( file.menu, "BtnServerListSlider" )
+	var sliderPanel = Hud_GetChild( file.menu, "BtnServerListSliderPanel" )
+	var movementCapture = Hud_GetChild( file.menu, "MouseMovementCapture" )
+
+	float maxHeight = 562.0 * ( GetScreenSize()[ 1 ] / 1080.0 )
+	float minHeight = 80.0 * ( GetScreenSize()[ 1 ] / 1080.0 )
+
+	float height = maxHeight * ( BUTTONS_PER_PAGE / servers )
+
+	if ( height > maxHeight )
+		height = maxHeight
+	if ( height < minHeight )
+		height = minHeight
+
+	Hud_SetHeight( sliderButton, height )
+	Hud_SetHeight( sliderPanel, height )
+	Hud_SetHeight( movementCapture, height )
+}
+
+void function UpdateListSliderPosition( int servers )
+{
+	var sliderButton = Hud_GetChild( file.menu, "BtnServerListSlider" )
+	var sliderPanel = Hud_GetChild( file.menu, "BtnServerListSliderPanel" )
+	var movementCapture = Hud_GetChild( file.menu, "MouseMovementCapture" )
+
+	float minYPos = -40.0 * ( GetScreenSize()[ 1 ] / 1080.0 )
+	float useableSpace = ( 562.0 * ( GetScreenSize()[ 1 ] / 1080.0 ) - Hud_GetHeight( sliderPanel ) )
+
+	float jump = minYPos - ( useableSpace / ( float( servers ) - BUTTONS_PER_PAGE ) * file.scrollOffset )
+
+	if ( jump > minYPos )
+		jump = minYPos
+
+	Hud_SetPos( sliderButton, 2, jump )
+	Hud_SetPos( sliderPanel, 2, jump )
+	Hud_SetPos( movementCapture, 2, jump )
+}
+
+void function OnScrollDown( var button )
+{
+	if ( file.filteredServers.len() <= BUTTONS_PER_PAGE )
+		return
+	file.scrollOffset += 5
+	if ( file.scrollOffset + BUTTONS_PER_PAGE > file.filteredServers.len() )
+	{
+		file.scrollOffset = file.filteredServers.len() - BUTTONS_PER_PAGE
+	}
+	UpdateShownPage()
+	UpdateListSliderPosition( file.filteredServers.len() )
+}
+
+void function OnScrollUp( var button )
+{
+	file.scrollOffset -= 5
+	if ( file.scrollOffset < 0 )
+	{
+		file.scrollOffset = 0
+	}
+	UpdateShownPage()
+	UpdateListSliderPosition( file.filteredServers.len() )
+}
+
+// //////////////////////////
+// Connecting pop-up
+// //////////////////////////
+void function ToggleConnectingHUD( bool vis )
+{
+	foreach ( e in GetElementsByClassname( file.menu, "connectingHUD" ) )
+	{
+		Hud_SetEnabled( e, vis )
+		Hud_SetVisible( e, vis )
+	}
+
+	if ( vis )
+		Hud_SetFocused( Hud_GetChild( file.menu, "ConnectingButton" ) )
+}
+
+void function ConnectingButton_Activate( var button )
+{
+	file.cancelConnection = true
+}
+
+// //////////////////////////
+// Aspect ratio compensation
+// //////////////////////////
+// No way to get aspect ratio sadly
+// This doesn't werk on some obscure resolutions, mostly really small 4:3
+void function UpdateServerInfoBasedOnRes()
+{
+	if ( FloatsEqual( float( GetScreenSize()[ 0 ] ) / float( GetScreenSize()[ 1 ] ), 1.6, 0.07 ) ) // 16/10
+	{
+		Hud_SetWidth( Hud_GetChild( file.menu, "ServerName" ), 392 )
+		Hud_SetWidth( Hud_GetChild( file.menu, "NextMapImage" ), 400 )
+		Hud_SetWidth( Hud_GetChild( file.menu, "NextMapBack" ), 400 )
+		Hud_SetWidth( Hud_GetChild( file.menu, "LabelMods" ), 360 )
+		Hud_SetWidth( Hud_GetChild( file.menu, "LabelDescription" ), 360 )
+		Hud_SetWidth( Hud_GetChild( file.menu, "ServerDetailsPanel" ), 400 )
+	}
+	if ( FloatsEqual( float( GetScreenSize()[ 0 ] ) / float( GetScreenSize()[ 1 ] ), 1.3, 0.055 ) ) // 4/3
+	{
+		Hud_SetWidth( Hud_GetChild( file.menu, "ServerName" ), 292 )
+		Hud_SetWidth( Hud_GetChild( file.menu, "NextMapImage" ), 300 )
+		Hud_SetWidth( Hud_GetChild( file.menu, "NextMapBack" ), 300 )
+		Hud_SetWidth( Hud_GetChild( file.menu, "LabelMods" ), 260 )
+		Hud_SetWidth( Hud_GetChild( file.menu, "LabelDescription" ), 260 )
+		Hud_SetWidth( Hud_GetChild( file.menu, "ServerDetailsPanel" ), 300 )
+	}
+}
+
+// //////////////////////////
+// Open/close callbacks
+// //////////////////////////
+void function OnCloseServerBrowserMenu()
+{
+	try
+	{
+		DeregisterButtonPressedCallback( MOUSE_WHEEL_UP, OnScrollUp )
+		DeregisterButtonPressedCallback( MOUSE_WHEEL_DOWN, OnScrollDown )
+		DeregisterButtonPressedCallback( KEY_TAB, OnKeyTabPressed )
+		DeregisterButtonPressedCallback( KEY_ENTER, OnEnterPressed )
+		DeregisterButtonPressedCallback( KEY_R, OnKeyRPressed )
+	}
+	catch ( ex )
+	{
+	}
+}
+
+void function OnServerBrowserMenuOpened()
+{
+	Hud_SetText( Hud_GetChild( file.menu, "InGamePlayerLabel" ), Localize( "#INGAME_PLAYERS", "0" ) )
+	Hud_SetText( Hud_GetChild( file.menu, "TotalServerLabel" ), Localize( "#TOTAL_SERVERS", "0" ) )
+	UpdatePrivateMatchModesAndMaps()
+	Hud_SetText( Hud_GetChild( file.menu, "Title" ), "#MENU_TITLE_SERVER_BROWSER" )
+	UI_SetPresentationType( ePresentationType.KNOWLEDGEBASE_MAIN )
+
+	file.scrollOffset = 0
+	// dont rerequest if we came from the connect menu
+	if ( !NSIsRequestingServerList() && uiGlobal.lastMenuNavDirection != MENU_NAV_BACK )
+	{
+		NSClearRecievedServerList()
+		NSRequestServerList()
+	}
+
+	filterDirection.sortingBy = sortingBy.DEFAULT
+
+	thread WaitForServerListRequest()
+
+	RegisterButtonPressedCallback( MOUSE_WHEEL_UP, OnScrollUp )
+	RegisterButtonPressedCallback( MOUSE_WHEEL_DOWN, OnScrollDown )
+	RegisterButtonPressedCallback( KEY_TAB, OnKeyTabPressed )
+	RegisterButtonPressedCallback( KEY_ENTER, OnEnterPressed )
+	RegisterButtonPressedCallback( KEY_R, OnKeyRPressed )
+}
+
+// //////////////////////////
+// Arrow navigation fuckery
+// //////////////////////////
+bool function IsFilterPanelElementFocused()
+{
+	// get name of focused element
+	var focusedElement = GetFocus()
+
+	foreach ( element in GetElementsByClassname( file.menu, "FilterPanelChild" ) )
+	{
+		if ( element == focusedElement )
+			return true
+	}
+
+	return false
+}
+
+void function OnKeyTabPressed( var button )
+{
+	try
+	{
+		// toggle focus between server list and filter panel
+		if ( IsFilterPanelElementFocused() )
+		{
+			Hud_SetFocused( Hud_GetChild( file.menu, "BtnServer1" ) )
+		}
+		else
+		{
+			Hud_SetFocused( Hud_GetChild( file.menu, "BtnServerSearch" ) )
+			HideServerInfo()
+		}
+	}
+	catch ( ex )
+	{
+	}
+}
+
+void function OnHitDummyTop( var button )
+{
+	file.scrollOffset -= 1
+	if ( file.scrollOffset < 0 )
+	{
+		// was at top already
+		file.scrollOffset = 0
+		Hud_SetFocused( Hud_GetChild( file.menu, "BtnServerNameTab" ) )
+	}
+	else
+	{
+		// only update if list position changed
+		UpdateShownPage()
+		UpdateListSliderPosition( file.filteredServers.len() )
+		DisplayFocusedServerInfo( file.serverButtonFocusedID )
+		Hud_SetFocused( Hud_GetChild( file.menu, "BtnServer1" ) )
+	}
+}
+
+void function OnHitDummyBottom( var button )
+{
+	file.scrollOffset += 1
+	if ( file.scrollOffset + BUTTONS_PER_PAGE > file.filteredServers.len() )
+	{
+		// was at bottom already
+		file.scrollOffset = file.filteredServers.len() - BUTTONS_PER_PAGE
+		Hud_SetFocused( Hud_GetChild( file.menu, "BtnServerSearch" ) )
+		HideServerInfo()
+	}
+	else
+	{
+		// only update if list position changed
+		UpdateShownPage()
+		UpdateListSliderPosition( file.filteredServers.len() )
+		DisplayFocusedServerInfo( file.serverButtonFocusedID )
+		Hud_SetFocused( Hud_GetChild( file.menu, "BtnServer15" ) )
+	}
+}
+
+void function OnHitDummyAfterFilterClear( var button )
+{
+	Hud_SetFocused( Hud_GetChild( file.menu, "BtnServerNameTab" ) )
+}
+
+void function OnDownArrowSelected( var button )
+{
+	if ( file.filteredServers.len() <= BUTTONS_PER_PAGE )
+		return
+	file.scrollOffset += 1
+	if ( file.scrollOffset + BUTTONS_PER_PAGE > file.filteredServers.len() )
+	{
+		file.scrollOffset = file.filteredServers.len() - BUTTONS_PER_PAGE
+	}
+
+	UpdateShownPage()
+	UpdateListSliderPosition( file.filteredServers.len() )
+}
+
+void function OnUpArrowSelected( var button )
+{
+	file.scrollOffset -= 1
+	if ( file.scrollOffset < 0 )
+	{
+		file.scrollOffset = 0
+	}
+
+	UpdateShownPage()
+	UpdateListSliderPosition( file.filteredServers.len() )
+}
+
+// //////////////////////
+// Key Callbacks
+// //////////////////////
+void function OnEnterPressed( arg )
+{
+	// only trigger if a server is focused
+	if ( IsServerButtonFocused() )
+	{
+		OnServerSelected( 0 )
+	}
+}
+
+void function OnKeyRPressed( arg )
+{
+	if ( !IsSearchBarFocused() )
+	{
+		RefreshServers( 0 )
+	}
+}
+
+bool function IsServerButtonFocused()
+{
+	var focusedElement = GetFocus()
+	if ( focusedElement == null )
+		return false
+
+	var name = Hud_GetHudName( focusedElement )
+
+	foreach ( element in GetElementsByClassname( file.menu, "ServerButton" ) )
+	{
+		if ( element == focusedElement )
+			return true
+	}
+
+	return false
+}
+
+bool function IsSearchBarFocused()
+{
+	return Hud_GetChild( file.menu, "BtnServerSearch" ) == GetFocus()
+}
+
+// //////////////////////////
+// Unused
+// //////////////////////////
+void function ShowServerDescription( var button )
+{
+	Hud_SetVisible( Hud_GetChild( file.menu, "LabelDescription" ), true )
+	Hud_SetVisible( Hud_GetChild( file.menu, "LabelMods" ), false )
+}
+
+void function ShowServerMods( var button )
+{
+	Hud_SetVisible( Hud_GetChild( file.menu, "LabelDescription" ), false )
+	Hud_SetVisible( Hud_GetChild( file.menu, "LabelMods" ), true )
+}
+
+// //////////////////////////
+// Server list; filter,update,...
+// //////////////////////////
+void function HideServerInfo()
+{
+	Hud_SetVisible( Hud_GetChild( file.menu, "BtnServerDescription" ), false )
+	Hud_SetVisible( Hud_GetChild( file.menu, "BtnServerMods" ), false )
+	Hud_SetVisible( Hud_GetChild( file.menu, "BtnServerJoin" ), false )
+	Hud_SetVisible( Hud_GetChild( file.menu, "LabelDescription" ), false )
+	Hud_SetVisible( Hud_GetChild( file.menu, "LabelMods" ), false )
+	Hud_SetVisible( Hud_GetChild( file.menu, "NextMapImage" ), false )
+	Hud_SetVisible( Hud_GetChild( file.menu, "NextMapBack" ), false )
+	Hud_SetVisible( Hud_GetChild( file.menu, "NextMapName" ), false )
+	Hud_SetVisible( Hud_GetChild( file.menu, "ServerName" ), false )
+	Hud_SetVisible( Hud_GetChild( file.menu, "NextModeIcon" ), false )
+	Hud_SetVisible( Hud_GetChild( file.menu, "NextGameModeName" ), false )
+}
+
+void function OnBtnFiltersClear_Activate( var button )
+{
+	Hud_SetText( Hud_GetChild( file.menu, "BtnServerSearch" ), "" )
+
+	SetConVarBool( "filter_hide_empty", false )
+	SetConVarBool( "filter_hide_full", false )
+	SetConVarBool( "filter_hide_protected", false )
+	SetConVarInt( "filter_map", 0 )
+	SetConVarInt( "filter_gamemode", 0 )
+
+	FilterAndUpdateList( 0 )
+}
+
+void function FilterAndUpdateList( var n )
+{
+	filterArguments.searchTerm = Hud_GetUTF8Text( Hud_GetChild( file.menu, "BtnServerSearch" ) )
+	if ( filterArguments.searchTerm == "" )
+		filterArguments.useSearch = false
+	else
+		filterArguments.useSearch = true
+	filterArguments.filterMap = filterArguments.filterMaps[ GetConVarInt( "filter_map" ) ]
+	filterArguments.filterGamemode = filterArguments.filterGamemodes[ GetConVarInt( "filter_gamemode" ) ]
+	filterArguments.hideEmpty = GetConVarBool( "filter_hide_empty" )
+	filterArguments.hideFull = GetConVarBool( "filter_hide_full" )
+	filterArguments.hideProtected = GetConVarBool( "filter_hide_protected" )
+
+	file.scrollOffset = 0
+	UpdateListSliderPosition( file.filteredServers.len() )
+
+	HideServerInfo()
+	FilterServerList()
+
+	switch ( filterDirection.sortingBy )
+	{
+		case sortingBy.NONE:
+			UpdateShownPage()
+			break
+
+		case sortingBy.DEFAULT:
+			filterDirection.serverName = !filterDirection.serverName
+			SortServerListByDefault_Activate( 0 )
+			break
+
+		case sortingBy.NAME:
+			filterDirection.serverName = !filterDirection.serverName
+			SortServerListByName_Activate( 0 )
+			break
+
+		case sortingBy.PLAYERS:
+			filterDirection.serverPlayers = !filterDirection.serverPlayers
+			SortServerListByPlayers_Activate( 0 )
+			break
+
+		case sortingBy.MAP:
+			filterDirection.serverMap = !filterDirection.serverMap
+			SortServerListByMap_Activate( 0 )
+			break
+
+		case sortingBy.GAMEMODE:
+			filterDirection.serverGamemode = !filterDirection.serverGamemode
+			SortServerListByGamemode_Activate( 0 )
+			break
+
+		case sortingBy.REGION:
+			filterDirection.serverRegion = !filterDirection.serverRegion
+			SortServerListByRegion_Activate( 0 )
+			break
+
+		default:
+			printt( "How the f did you get here" )
+	}
+
+	if ( file.shouldFocus )
+	{
+		file.shouldFocus = false
+		Hud_SetFocused( Hud_GetChild( file.menu, "BtnServer1" ) )
+	}
+}
+
+void function RefreshServers( var button )
+{
+	if ( NSIsRequestingServerList() )
+		return
+
+	file.serverListRequestFailed = false
+	file.scrollOffset = 0
+	NSClearRecievedServerList()
+	NSRequestServerList()
+
+	thread WaitForServerListRequest()
+}
+
+void function WaitForServerListRequest()
+{
+	for ( int i = 0; i < BUTTONS_PER_PAGE; i++ )
+	{
+		Hud_SetVisible( file.serversProtected[ i ], false )
+		Hud_SetVisible( file.serverButtons[ i ], false )
+		Hud_SetText( file.serversName[ i ], "" )
+		Hud_SetText( file.playerCountLabels[ i ], "" )
+		Hud_SetText( file.serversMap[ i ], "" )
+		Hud_SetText( file.serversGamemode[ i ], "" )
+		Hud_SetText( file.serversRegion[ i ], "" )
+	}
+
+	HideServerInfo()
+
+	Hud_SetVisible( file.serversName[ 0 ], true )
+	Hud_SetText( file.serversName[ 0 ], "#NS_SERVERBROWSER_WAITINGFORSERVERS" )
+
+	// wait for request to complete
+	while ( NSIsRequestingServerList() )
+		WaitFrame()
+
+	file.serverListRequestFailed = !NSMasterServerConnectionSuccessful()
+	if ( file.serverListRequestFailed )
+	{
+		Hud_SetText( file.serversName[ 0 ], "#NS_SERVERBROWSER_CONNECTIONFAILED" )
+	}
+	else
+	{
+		FilterAndUpdateList( 0 )
+		Hud_SetFocused( Hud_GetChild( file.menu, "BtnServer1" ) )
+	}
+}
+
+bool function IsHexDigitChar( int c )
+{
+	return ( c >= '0' && c <= '9' ) || ( c >= 'A' && c <= 'F' ) || ( c >= 'a' && c <= 'f' )
+}
+
+int function GetNameColorCodeLengthAt( string s, int i )
+{
+	if ( i >= s.len() || s[ i ] != '^' )
+		return 0
+
+	int remaining = s.len() - ( i + 1 )
+	if ( remaining <= 0 )
+		return 0
+
+	if ( remaining >= 8 )
+	{
+		bool ok = true
+		for ( int j = 1; j <= 8; j++ )
+		{
+			int c = expect int( s[ i + j ].tointeger() )
+			if ( !IsHexDigitChar( c ) )
+			{
+				ok = false
+				break
+			}
+		}
+		if ( ok )
+			return 9
+	}
+
+	if ( remaining >= 6 )
+	{
+		bool ok = true
+		for ( int j = 1; j <= 6; j++ )
+		{
+			int c = expect int( s[ i + j ].tointeger() )
+			if ( !IsHexDigitChar( c ) )
+			{
+				ok = false
+				break
+			}
+		}
+		if ( ok )
+			return 7
+	}
+
+	int c1 = expect int( s[ i + 1 ].tointeger() )
+	if ( c1 >= '0' && c1 <= '9' )
+		return 2
+
+	return 0
+}
+
+string function StripColorCodes( string s )
+{
+	string clean = ""
+	for ( int i = 0; i < s.len(); )
+	{
+		int codeLen = GetNameColorCodeLengthAt( s, i )
+		if ( codeLen > 0 )
+		{
+			i += codeLen
+			continue
+		}
+
+		clean += format( "%c", expect int( s[ i ].tointeger() ) )
+		i++
+	}
+	return clean
+}
+
+void function FilterServerList()
+{
+	file.filteredServers.clear()
+
+	int totalPlayers = 0
+	int serverCount = 0
+
+	array<ServerInfo> servers = NSGetGameServers()
+
+	foreach ( ServerInfo server in servers )
+	{
+		totalPlayers += server.playerCount
+		serverCount++
+
+		// Filters
+		if ( filterArguments.hideEmpty && server.playerCount == 0 )
+			continue
+
+		if ( filterArguments.hideFull && server.playerCount == server.maxPlayerCount )
+			continue
+
+		if ( filterArguments.hideProtected && server.requiresPassword )
+			continue
+
+		if ( filterArguments.filterMap != "SWITCH_ANY" && filterArguments.filterMap != server.map )
+			continue
+
+		if ( filterArguments.filterGamemode != "SWITCH_ANY" && filterArguments.filterGamemode != GetGameModeDisplayName( server.playlist ) )
+			continue
+
+		// Search
+		if ( filterArguments.useSearch )
+		{
+			array<string> sName
+			sName.append( StripColorCodes( RemoveNewlines( server.name.tolower() ) ) )
+			sName.append( Localize( GetMapBrowserName( server.map ) ).tolower() )
+			sName.append( server.map.tolower() )
+			sName.append( server.playlist.tolower() )
+			sName.append( Localize( server.playlist ).tolower() )
+			sName.append( StripColorCodes( RemoveNewlines( server.description.tolower() ) ) )
+			sName.append( server.region.tolower() )
+
+			string sTerm = filterArguments.searchTerm.tolower()
+
+			bool found = false
+			for ( int j = 0; j < sName.len(); j++ )
+			{
+				if ( sName[ j ].find( sTerm ) != null )
+					found = true
+			}
+
+			if ( !found )
+				continue
+		}
+
+		file.filteredServers.append( server )
+	}
+
+	// Update player and server count
+	string totalPlayersStr = string( totalPlayers ) + ( totalPlayers == 1 ? " " : "" ) + ( totalPlayers < 10 ? " " : "" )
+	string serverCountStr = string( serverCount ) + ( serverCount == 1 ? " " : "" ) + ( serverCount < 10 ? " " : "" )
+	Hud_SetText( Hud_GetChild( file.menu, "InGamePlayerLabel" ), Localize( "#INGAME_PLAYERS", totalPlayersStr ) )
+	Hud_SetText( Hud_GetChild( file.menu, "TotalServerLabel" ), Localize( "#TOTAL_SERVERS", serverCountStr ) )
+}
+
+void function UpdateShownPage()
+{
+	for ( int i = 0; i < BUTTONS_PER_PAGE; i++ )
+	{
+		Hud_SetVisible( file.serversProtected[ i ], false )
+		Hud_SetVisible( file.serverButtons[ i ], false )
+		Hud_SetText( file.serversName[ i ], "" )
+		Hud_SetText( file.playerCountLabels[ i ], "" )
+		Hud_SetText( file.serversMap[ i ], "" )
+		Hud_SetText( file.serversGamemode[ i ], "" )
+		Hud_SetText( file.serversRegion[ i ], "" )
+	}
+
+	int j = file.filteredServers.len() > BUTTONS_PER_PAGE ? BUTTONS_PER_PAGE : file.filteredServers.len()
+
+	for ( int i = 0; i < j; i++ )
+	{
+		int buttonIndex = file.scrollOffset + i
+		ServerInfo server = file.filteredServers[ buttonIndex ]
+
+		Hud_SetEnabled( file.serverButtons[ i ], true )
+		Hud_SetVisible( file.serverButtons[ i ], true )
+
+		bool stripColor = GetConVarBool( "serverlist_remove_colors" )
+		Hud_SetVisible( file.serversProtected[ i ], server.requiresPassword )
+		Hud_SetText(
+			file.serversName[ i ],
+			stripColor ? StripColorCodes( EscapeLocalisationAndRemoveNewlines( server.name ) ) : EscapeLocalisationAndRemoveNewlines( server.name )
+		)
+		Hud_SetText( file.playerCountLabels[ i ], format( "%i/%i", server.playerCount, server.maxPlayerCount ) )
+		Hud_SetText( file.serversMap[ i ], GetMapBrowserName( server.map ) )
+		Hud_SetText( file.serversGamemode[ i ], GetGameModeDisplayName( server.playlist ) )
+		Hud_SetText( file.serversRegion[ i ], server.region )
+	}
+
+	if ( NSGetServerCount() == 0 )
+	{
+		Hud_SetEnabled( file.serverButtons[ 0 ], true )
+		Hud_SetVisible( file.serverButtons[ 0 ], true )
+		Hud_SetText( file.serversName[ 0 ], "#NS_SERVERBROWSER_NOSERVERS" )
+	}
+	UpdateListSliderHeight( float( file.filteredServers.len() ) )
+}
+
+void function OnServerButtonFocused( var button )
+{
+	if ( file.scrollOffset < 0 )
+		file.scrollOffset = 0
+
+	int scriptID = int( Hud_GetScriptID( button ) )
+	file.serverButtonFocusedID = scriptID
+	if ( file.filteredServers.len() > 0 )
+		// file.focusedServerIndex = file.filteredServers[ file.scrollOffset + scriptID ].serverIndex
+		file.focusedServer = file.filteredServers[ file.scrollOffset + scriptID ]
+	DisplayFocusedServerInfo( scriptID )
+}
+
+void function OnServerButtonClicked( var button )
+{
+	int scriptID = int( Hud_GetScriptID( button ) )
+
+	DisplayFocusedServerInfo( scriptID )
+	CheckDoubleClick( scriptID, true )
+}
+
+void function CheckDoubleClick( int scriptID, bool wasClickNav )
+{
+	if ( NSGetServerCount() == 0 )
+		return
+
+	int serverIndex = file.scrollOffset + scriptID
+
+	bool sameServer = false
+	if ( file.lastSelectedServer == file.filteredServers[ serverIndex ] )
+		sameServer = true
+
+	file.serverSelectedTimeLast = file.serverSelectedTime
+	file.serverSelectedTime = Time()
+
+	file.lastSelectedServer = file.filteredServers[ serverIndex ]
+
+	if ( wasClickNav && ( file.serverSelectedTime - file.serverSelectedTimeLast < DOUBLE_CLICK_TIME_MS ) && sameServer )
+	{
+		OnServerSelected( 0 )
+	}
+}
+
+void function DisplayFocusedServerInfo( int scriptID )
+{
+	if ( scriptID == 999 || scriptID == -1 || scriptID == 16 )
+		return
+
+	if ( NSIsRequestingServerList() || NSGetServerCount() == 0 || file.serverListRequestFailed || file.filteredServers.len() == 0 )
+		return
+
+	var menu = GetMenu( "ServerBrowserMenu" )
+
+	int serverIndex = file.scrollOffset + scriptID
+	if ( serverIndex < 0 )
+		serverIndex = 0
+
+	ServerInfo server = file.filteredServers[ serverIndex ]
+
+	bool stripColor = GetConVarBool( "serverlist_remove_colors" )
+
+	string description = stripColor ? StripColorCodes( RemoveNewlines( server.description ) ) : RemoveNewlines( server.description )
+	Hud_SetVisible( Hud_GetChild( menu, "BtnServerDescription" ), true )
+	Hud_SetVisible( Hud_GetChild( menu, "BtnServerMods" ), true )
+	Hud_SetVisible( Hud_GetChild( menu, "BtnServerJoin" ), true )
+	// text panels
+	Hud_SetVisible( Hud_GetChild( menu, "LabelDescription" ), true )
+	Hud_SetVisible( Hud_GetChild( menu, "LabelMods" ), false )
+	Hud_SetText( Hud_GetChild( menu, "LabelDescription" ), description + " ^FFFFFFFF" + "\n\nRequired Mods:\n" + FillInServerModsLabel( server.requiredMods ) )
+
+	// map name/image/server name
+	string map = server.map
+	string serverName = stripColor ? StripColorCodes( EscapeLocalisationAndRemoveNewlines( server.name ) ) : EscapeLocalisationAndRemoveNewlines( server.name )
+	Hud_SetVisible( Hud_GetChild( menu, "NextMapImage" ), true )
+	Hud_SetVisible( Hud_GetChild( menu, "NextMapBack" ), true )
+	RuiSetImage( Hud_GetRui( Hud_GetChild( menu, "NextMapImage" ) ), "basicImage", GetMapImageForMapName( map ) )
+	Hud_SetVisible( Hud_GetChild( menu, "NextMapName" ), true )
+	Hud_SetText( Hud_GetChild( menu, "NextMapName" ), GetMapBrowserName( map ) )
+	Hud_SetVisible( Hud_GetChild( menu, "ServerName" ), true )
+	Hud_SetText( Hud_GetChild( menu, "ServerName" ), serverName )
+
+	// mode name/image
+	string mode = server.playlist
+	Hud_SetVisible( Hud_GetChild( menu, "NextModeIcon" ), true )
+	RuiSetImage( Hud_GetRui( Hud_GetChild( menu, "NextModeIcon" ) ), "basicImage", GetPlaylistThumbnailImage( mode ) )
+	Hud_SetVisible( Hud_GetChild( menu, "NextGameModeName" ), true )
+
+	if ( mode.len() != 0 )
+		Hud_SetText( Hud_GetChild( menu, "NextGameModeName" ), GetGameModeDisplayName( mode ) )
+	else
+		Hud_SetText( Hud_GetChild( menu, "NextGameModeName" ), "#NS_SERVERBROWSER_UNKNOWNMODE" )
+}
+
+string function FillInServerModsLabel( array<RequiredModInfo> mods )
+{
+	string ret
+
+	foreach ( RequiredModInfo mod in mods )
+	{
+		string template = ""
+
+		// Display nothing if the mod is installed locally
+		if ( IsCoreMod( mod.name ) || IsModInstalled( mod.name, mod.version ) )
+		{
+			template = "  %s v%s\n"
+		}
+		// Display a green checkmark if it can be downloaded, a red cross if not
+		else
+		{
+			template = NSIsModDownloadable( mod.name, mod.version ) ? "  %s v%s ^00ff0000(↓)^FFFFFFFF\n" : "  %s v%s ^ff000000(x)^FFFFFFFF\n"
+		}
+
+		ret += format( template, mod.name, mod.version )
+	}
+
+	return ret
+}
+
+void function OnServerSelected( var button )
+{
+	thread OnServerSelected_Threaded()
+}
+
+void function OnServerSelected_Threaded( string password = "" )
+{
+	if ( NSIsRequestingServerList() || NSGetServerCount() == 0 || file.serverListRequestFailed )
+		return
+
+	ServerInfo server = file.focusedServer
+	file.lastSelectedServer = server
+
+	// Ensure user is authenticated to server before eventually downloading mods
+	if ( server.requiresPassword )
+	{
+		if ( password == "" )
+		{
+			OnCloseServerBrowserMenu()
+			AdvanceMenu( GetMenu( "ConnectWithPasswordMenu" ) )
+			return
+		}
+	}
+
+	if ( NSIsAuthenticatingWithServer() )
+		return
+	NSTryAuthWithServer( file.lastSelectedServer.index, password )
+	ToggleConnectingHUD( true )
+
+	while ( NSIsAuthenticatingWithServer() && !file.cancelConnection )
+	{
+		WaitFrame()
+	}
+
+	ToggleConnectingHUD( false )
+
+	if ( file.cancelConnection )
+	{
+		file.cancelConnection = false
+		// re-focus server list
+		Hud_SetFocused( Hud_GetChild( file.menu, "BtnServer" + ( file.serverButtonFocusedID + 1 ) ) )
+		return
+	}
+
+	if ( !NSWasAuthSuccessful() )
+	{
+		string reason = NSGetAuthFailReason()
+
+		DialogData dialogData
+		dialogData.header = "#ERROR"
+		dialogData.message = reason
+		dialogData.image = $"ui/menu/common/dialog_error"
+
+		#if PC_PROG
+			AddDialogButton( dialogData, "#DISMISS" )
+
+			AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
+		#endif // PC_PROG
+		AddDialogFooter( dialogData, "#B_BUTTON_DISMISS_RUI" )
+
+		OpenDialog( dialogData )
+		return
+	}
+
+	// Count mods that have been successfully downloaded
+	bool autoDownloadAllowed = GetConVarBool( "allow_mod_auto_download" )
+	int downloadedMods = 0
+
+	// Check out if there's any server-required mod that is not locally installed
+	array<string> modNames = NSGetModNames()
+	bool uninstalledModFound = false
+	foreach ( requiredModInfo in server.requiredMods )
+	{
+		// Tolerate core mods having different versions
+		if ( IsCoreMod( requiredModInfo.name ) )
+			continue
+
+		if ( !modNames.contains( requiredModInfo.name ) )
+		{
+			print( format( "\"%s\" was not found locally" + ( autoDownloadAllowed ? ", triggering manifesto fetching." : "." ), requiredModInfo.name ) )
+			uninstalledModFound = true
+			break
+		}
+		else
+		{
+			array<string> modVersions = GetModVersions( requiredModInfo.name )
+
+			if ( !modVersions.contains( requiredModInfo.version ) )
+			{
+				print( format( "\"%s\" was found locally but has versions:", requiredModInfo.name ) )
+				foreach ( string version in modVersions )
+				{
+					print( "    - " + version )
+				}
+				print( format( "while server requires \"%s\"" + ( autoDownloadAllowed ? ", triggering manifesto fetching." : "." ), requiredModInfo.version ) )
+				uninstalledModFound = true
+				break
+			}
+		}
+	}
+
+	// If yes, we fetch the verified mods manifesto, to check whether uninstalled
+	// mods can be installed through auto-download
+	if ( uninstalledModFound && autoDownloadAllowed )
+	{
+		FetchVerifiedModsManifesto()
+	}
+
+	foreach ( RequiredModInfo mod in server.requiredMods )
+	{
+		// Tolerate core mods having different versions
+		if ( IsCoreMod( mod.name ) )
+			continue
+
+		if ( !NSGetModNames().contains( mod.name ) || !GetModVersions( mod.name ).contains( mod.version ) )
+		{
+			// Auto-download mod
+			if ( autoDownloadAllowed )
+			{
+				bool modIsVerified = NSIsModDownloadable( mod.name, mod.version )
+
+				// Display error message if mod is not verified
+				if ( !modIsVerified )
+				{
+					DialogData dialogData
+					dialogData.header = "#ERROR"
+					dialogData.message = Localize( "#MISSING_MOD", mod.name, mod.version )
+					dialogData.message += "\n" + Localize( "#MOD_NOT_VERIFIED" )
+					dialogData.image = $"ui/menu/common/dialog_error"
+
+					AddDialogButton( dialogData, "#DISMISS" )
+					AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
+					AddDialogFooter( dialogData, "#B_BUTTON_DISMISS_RUI" )
+
+					OpenDialog( dialogData )
+					return
+				}
+				else
+				{
+					if ( DownloadMod( mod ) )
+					{
+						downloadedMods++
+					}
+					else
+					{
+						DisplayModDownloadErrorDialog( mod.name )
+						return
+					}
+				}
+			}
+			// Mod not found, display error message
+			else
+			{
+				DialogData dialogData
+				dialogData.header = "#ERROR"
+				dialogData.message = Localize( "#MISSING_MOD", mod.name, mod.version )
+				dialogData.image = $"ui/menu/common/dialog_error"
+
+				AddDialogButton( dialogData, "#DISMISS" )
+				AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
+				AddDialogFooter( dialogData, "#B_BUTTON_DISMISS_RUI" )
+
+				OpenDialog( dialogData )
+				return
+			}
+		}
+		// If we get here, means that mod version exists locally => we good
+	}
+
+	TriggerConnectToServerCallbacks()
+	ConnectToServer( downloadedMods != 0 )
+}
+
+void function ConnectToServer( bool modsChanged = false )
+{
+	// disable all RequiredOnClient mods that are not required by the server and are currently enabled
+	foreach ( ModInfo mod in NSGetModsInformation() )
+	{
+		string modName = mod.name
+		string modVersion = mod.version
+
+		if ( mod.requiredOnClient && mod.enabled )
+		{
+			// find the mod name in the list of server required mods
+			bool found = false
+			foreach ( RequiredModInfo mod in file.lastSelectedServer.requiredMods )
+			{
+				// this tolerates a version difference for requiredOnClient core mods (only Northstar.Custom for now)
+				if ( mod.name == modName && ( IsCoreMod( modName ) || mod.version == modVersion ) )
+				{
+					found = true
+					print( format( "\"%s\" (v%s) is required and already enabled.", modName, modVersion ) )
+					break
+				}
+			}
+			// if we didn't find the mod name, disable the mod
+			if ( !found )
+			{
+				modsChanged = true
+				NSSetModEnabled( modName, modVersion, false )
+				print( format( "Disabled \"%s\" (v%s) since it's not required on server.", modName, modVersion ) )
+			}
+		}
+	}
+
+	// enable all RequiredOnClient mods that are required by the server and are currently disabled
+	foreach ( RequiredModInfo mod in file.lastSelectedServer.requiredMods )
+	{
+		string modName = mod.name
+		string modVersion = mod.version
+		array<ModInfo> localModInfos = NSGetModInformation( modName )
+
+		// Tolerate core mods (only Northstar.Custom for now) having a different version than server
+		if ( IsCoreMod( modName ) )
+		{
+			if ( !localModInfos[ 0 ].enabled )
+			{
+				modsChanged = true
+				NSSetModEnabled( modName, localModInfos[ 0 ].version, true )
+				print( format( "Enabled \"%s\" (v%s) to join server.", modName, localModInfos[ 0 ].version ) )
+			}
+		}
+		else
+		{
+			foreach ( localMod in localModInfos )
+			{
+				if ( localMod.version == mod.version )
+				{
+					modsChanged = true
+					NSSetModEnabled( mod.name, mod.version, true )
+					print( format( "Enabled \"%s\" (v%s) to join server.", modName, modVersion ) )
+					break
+				}
+			}
+		}
+	}
+
+	// only actually reload if we need to since the uiscript reset on reload lags hard
+	if ( modsChanged )
+		ReloadMods()
+
+	NSConnectToAuthedServer()
+}
+
+// ////////////////////////////////////
+// Shadow realm
+// ////////////////////////////////////
+int function ServerSortLogic( ServerInfo a, ServerInfo b )
+{
+	var aTemp
+	var bTemp
+
+	bool direction
+
+	// We can hard code this cause adding entire columns isn't as easy
+	switch ( filterDirection.sortingBy )
+	{
+		case sortingBy.DEFAULT:
+			aTemp = a.playerCount
+			bTemp = b.playerCount
+
+			// `1000` is assumed to always be higher than `serverPlayersMax`
+			if ( aTemp + 1 < a.maxPlayerCount )
+				aTemp = aTemp + 2000
+			if ( bTemp + 1 < b.maxPlayerCount )
+				bTemp = bTemp + 2000
+			if ( aTemp + 1 == a.maxPlayerCount )
+				aTemp = aTemp + 1000
+			if ( bTemp + 1 == b.maxPlayerCount )
+				bTemp = bTemp + 1000
+
+			direction = filterDirection.serverName
+			break
+
+		case sortingBy.NAME:
+			aTemp = a.name.tolower()
+			bTemp = b.name.tolower()
+			direction = filterDirection.serverName
+			break
+
+		case sortingBy.PLAYERS:
+			aTemp = a.playerCount
+			bTemp = b.playerCount
+			direction = filterDirection.serverPlayers
+			break
+
+		case sortingBy.MAP:
+			aTemp = Localize( a.map ).tolower()
+			bTemp = Localize( b.map ).tolower()
+			direction = filterDirection.serverMap
+			break
+
+		case sortingBy.GAMEMODE:
+			aTemp = Localize( a.playlist ).tolower()
+			bTemp = Localize( b.playlist ).tolower()
+			direction = filterDirection.serverGamemode
+			break
+
+		case sortingBy.REGION:
+			aTemp = a.region
+			bTemp = b.region
+			direction = filterDirection.serverRegion
+			break
+
+		default:
+			return 0
+	}
+
+	int invert = direction == true ? 1 : -1
+
+	if ( aTemp > bTemp )
+		return 1 * invert
+
+	if ( aTemp < bTemp )
+		return -1 * invert
+
+	return 0
+}
+
+void function SortServerListByDefault_Activate( var button )
+{
+	filterDirection.sortingBy = sortingBy.DEFAULT
+
+	file.filteredServers.sort( ServerSortLogic )
+
+	filterDirection.serverName = !filterDirection.serverName
+
+	UpdateShownPage()
+}
+
+void function SortServerListByName_Activate( var button )
+{
+	filterDirection.sortingBy = sortingBy.NAME
+
+	file.filteredServers.sort( ServerSortLogic )
+
+	filterDirection.serverName = !filterDirection.serverName
+
+	UpdateShownPage()
+}
+
+void function SortServerListByPlayers_Activate( var button )
+{
+	filterDirection.sortingBy = sortingBy.PLAYERS
+
+	file.filteredServers.sort( ServerSortLogic )
+
+	filterDirection.serverPlayers = !filterDirection.serverPlayers
+
+	UpdateShownPage()
+}
+
+void function SortServerListByMap_Activate( var button )
+{
+	filterDirection.sortingBy = sortingBy.MAP
+
+	file.filteredServers.sort( ServerSortLogic )
+
+	filterDirection.serverMap = !filterDirection.serverMap
+
+	UpdateShownPage()
+}
+
+void function SortServerListByGamemode_Activate( var button )
+{
+	filterDirection.sortingBy = sortingBy.GAMEMODE
+
+	file.filteredServers.sort( ServerSortLogic )
+
+	filterDirection.serverGamemode = !filterDirection.serverGamemode
+
+	UpdateShownPage()
+}
+
+void function SortServerListByRegion_Activate( var button )
+{
+	filterDirection.sortingBy = sortingBy.REGION
+
+	file.filteredServers.sort( ServerSortLogic )
+
+	filterDirection.serverRegion = !filterDirection.serverRegion
+
+	UpdateShownPage()
+}
+
+// ////////////////////////////////////
+// Callbacks
+// ////////////////////////////////////
+
+void function AddConnectToServerCallback( void functionref( ServerInfo ) callback )
+{
+	if ( file.connectCallbacks.find( callback ) >= 0 )
+		throw "ConnectToServerCallback has been registered twice. Duplicate callbacks are not allowed."
+	file.connectCallbacks.append( callback )
+}
+
+void function RemoveConnectToServerCallback( void functionref( ServerInfo ) callback )
+{
+	file.connectCallbacks.fastremovebyvalue( callback )
+}
+
+void function TriggerConnectToServerCallbacks( ServerInfo ornull targetServer = null )
+{
+	ServerInfo server
+	if ( targetServer == null )
+	{
+		targetServer = file.lastSelectedServer
+	}
+
+	foreach ( callback in file.connectCallbacks )
+	{
+		callback( expect ServerInfo( targetServer ) )
+	}
+}
+
+const array<string> CORE_MODS = [ "Northstar.Client", "Northstar.Coop", "Northstar.CustomServers", "Northstar.Custom" ]
+bool function IsCoreMod( string modName )
+{
+	return CORE_MODS.find( modName ) != -1
+}
+
+array<string> function GetModVersions( string modName )
+{
+	array<string> versions = []
+	foreach ( ModInfo mod in NSGetModInformation( modName ) )
+	{
+		versions.append( mod.version )
+	}
+	return versions
+}
+
+bool function IsModInstalled( string modName, string modVersion )
+{
+	array<string> versions = GetModVersions( modName )
+	if ( versions.len() == 0 )
+	{
+		return false
+	}
+
+	foreach ( string version in versions )
+	{
+		if ( version == modVersion )
+		{
+			return true
+		}
+	}
+
+	return false
+}
+
+// escapes localisation by replacing # with ^FFFFFFFF#
+string function EscapeLocalisation( string input )
+{
+	// only escape if it actually localizes
+	// localisations like eula, can script error with how long it is
+	try
+	{
+		if ( Localize( input ) != input )
+			return StringReplace( input, "#", "^FFFFFFFF#" )
+	}
+	catch ( error )
+	{
+		return StringReplace( input, "#", "^FFFFFFFF#" )
+	}
+
+	return input
+}
+
+// removes all newlines
+string function RemoveNewlines( string input )
+{
+	return StringReplace( input, "\n", " " )
+}
+
+// EscapeLocalisation and RemoveNewlines combined
+string function EscapeLocalisationAndRemoveNewlines( string input )
+{
+	return EscapeLocalisation( RemoveNewlines( input ) )
+}

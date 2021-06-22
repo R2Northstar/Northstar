@@ -1,0 +1,9 @@
+#base "npc_stalker_zombie.txt"
+npc_stalker_zombie_mossy
+{
+	title							"#NPC_STALKER_ZOMBIE_MOSSY"		[$sp]
+
+	DefaultModelName				"models/robots/stalker/robot_stalker_mossy.mdl"
+	DefaultModelName_IMC			"models/robots/stalker/robot_stalker_mossy.mdl"
+	DefaultModelName_MIL			"models/robots/stalker/robot_stalker_mossy.mdl"
+}

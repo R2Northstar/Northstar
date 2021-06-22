@@ -1,0 +1,8 @@
+#base "npc_drone.txt"
+npc_drone_rocket
+{
+	DefaultWeapon			"mp_weapon_dronerocket"
+	title					#NPC_DRONE_ROCKET
+	drone_type				"drone_type_rocket"
+	DefaultModelName		"models/robots/drone_air_attack/drone_air_attack_rockets.mdl"
+}

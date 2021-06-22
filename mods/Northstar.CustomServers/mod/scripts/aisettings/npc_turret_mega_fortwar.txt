@@ -1,0 +1,42 @@
+#base "npc_turret_mega.txt"
+npc_turret_mega_fortwar
+{
+	windup_time 					0.0
+	Health					        10000 //15000
+
+	maxEnemyDist			0
+	maxEnemyDistHeavyArmor	8000
+	//maxEnemyDistForAttacker 			16000
+	//maxEnemyDistHeavyArmorForAttacker	16000
+
+	FOV_Vert_Offset			-20
+    FOV_Near_Dist			360		// use near values up to this distance
+	FOV_Far_Dist			4028	// use far values after this distance, interpolate horizontal in between, use far for vertical
+
+	YawSpeed				70 //50 //75
+	AimAngularSpeed			70 //60 //90
+
+	waitBetweenWeaponBurst			3
+
+	//faceEnemyToleranceAngle			5
+	//faceEnemyStrictToleranceAngle	5
+
+	onlyAttackableByTitans			1		// hack for fortwar mode
+
+	suppressLSP_duration			10		[$sp]
+	suppressLSP_duration			10		[$mp]
+
+	NoticeForgetPostTime	5.0			[$sp]
+	NoticeForgetPreTime		1.0			[$sp]
+
+	NoticeForgetPostTime	5.0			[$mp]
+	NoticeForgetPreTime		1.0			[$mp]
+
+	start_active					1
+	regen_rate						100
+	explode_on_death				1
+
+	ui_targetinfo			        "ui/targetinfo_megaturret_fw" [$mp]
+
+	smartAmmoLockFromTitansOnly 1
+}

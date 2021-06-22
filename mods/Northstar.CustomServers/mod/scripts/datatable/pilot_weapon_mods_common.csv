@@ -1,0 +1,27 @@
+mod,type,name,shortName,description,image,cost,costSniper,costPistol,costAT
+"iron_sights","attachment","#FACTORY_ISSUE_NAME","","#FACTORY_ISSUE_SIGHT_DESC","r2_ui/menus/loadout_icons/attachments/iron_sights",0,0,0,0
+"holosight","attachment","#MOD_HOLOSIGHT_NAME","","#MOD_HOLOSIGHT_DESC","r2_ui/menus/loadout_icons/attachments/holosight",0,0,0,0
+"hcog","attachment","#MOD_HCOG_NAME","HCOG","#MOD_HCOG_DESC","r2_ui/menus/loadout_icons/attachments/hcog_ranger",0,0,0,0
+"aog","attachment","#MOD_AOG_NAME","AOG","#MOD_AOG_DESC","r2_ui/menus/loadout_icons/attachments/aog",0,0,0,0
+"scope_4x","attachment","#MOD_SCOPE_4X_NAME","","#MOD_SCOPE_4X_DESC","r2_ui/menus/loadout_icons/attachments/variable_zoom",0,0,0,0
+"scope_6x","attachment","4x Zoom Scope","4x Zoom","#MOD_SCOPE_4X_DESC","ui/menu/items/attachment_icons/scope_6x",0,0,0,0
+"redline_sight","attachment","#MOD_ZOOM_SIGHT_NAME","#MOD_ZOOM_SIGHT_NAME","#MOD_ZOOM_SIGHT_DESC","r2_ui/menus/loadout_icons/attachments/hcog",0,0,0,0
+"threat_scope","attachment","#MOD_THREAT_SIGHT_NAME","T-Scope","#MOD_THREAT_SIGHT_DESC","r2_ui/menus/loadout_icons/attachments/threat_scope",0,0,0,0
+"extended_ammo","mod","#MOD_EXTENDED_AMMO_NAME","Ext. Mag","#MOD_EXTENDED_AMMO_DESC","rui/pilot_loadout/mods/extended_ammo",0,0,0,0
+"silencer","mod","#MOD_SILENCER_NAME","Suppressor","#MOD_SILENCER_DESC","r2_ui/menus/loadout_icons/attachments/suppressor",0,0,0,0
+"stabilizer","mod","Stabilizer","Stabilizer","Reduces sway when looking down scope","ui/menu/items/mod_icons/stabilizer",0,0,0,0
+"slammer","mod","Slammer","Slammer","Increases rodeo damage","ui/menu/items/mod_icons/slammer",0,0,0,0
+"enhanced_targeting","mod","Enhanced Targeting","E. Targeting","Enables multiple lock-on capability","ui/menu/items/mod_icons/enhanced_targeting",0,0,0,0
+"single_lock","mod","Single Lock","Single Lock","Single Lock on Pilots","ui/menu/items/mod_icons/enhanced_targeting",0,0,0,0
+"ricochet","mod","#MOD_RICOCHET_NAME","Ricochet","#MOD_RICOCHET_DESC","rui/pilot_loadout/mods/ricochet",0,0,0,0
+"ar_trajectory","mod","Ar Trajectory","Ar Trajectory","Displays estimated trajectory","rui/pilot_loadout/mods/ar_trajectory",0,0,0,0
+"alt_spread","mod","Alt Spread","Alt Spread","Alternate spread pattern","ui/temp",0,0,0,0
+"delayed_shot","mod","Soft Launch","Soft Launch","Delayed ignition with fast rockets","ui/temp",0,0,0,0
+"quick_charge","mod","#MOD_CHARGE_HACK_NAME","Charge Hack","#MOD_CHARGE_HACK_DESC","rui/pilot_loadout/mods/charge_hack",0,0,0,0
+"pas_run_and_gun","mod","#MOD_GUNRUNNER_NAME","Gunrunner","#MOD_GUNRUNNER_DESC","rui/pilot_loadout/mods/gunrunner",0,0,0,0
+"tactical_cdr_on_kill","mod","#MOD_TACTIKILL_NAME","Tactikill","#MOD_TACTIKILL_DESC","rui/pilot_loadout/mods/tactikill",0,0,0,0
+"pas_fast_ads","mod","#MOD_GUN_READY_NAME","Fast ADS","#MOD_GUN_READY_DESC","rui/pilot_loadout/mods/gun_ready",0,0,0,0
+"pas_fast_swap","mod","#MOD_SPEED_TRANSITION_NAME","Fast Swap","#MOD_SPEED_TRANSITION_DESC","rui/pilot_loadout/mods/speed_transition",0,0,0,0
+"pas_fast_reload","mod","#GEAR_QUICK_RELOAD","#GEAR_QUICK_RELOAD","#GEAR_QUICK_RELOAD_DESC","rui/pilot_loadout/kit/speed_loader",0,0,0,0
+"pro_screen","mod3","#MOD_PRO_SCREEN_NAME","Pro Screen","#MOD_PRO_SCREEN_DESC","rui/pilot_loadout/mods/pro_screen",0,0,0,0
+"rocket_arena","mod","#MOD_PRO_SCREEN_NAME","Pro Screen","#MOD_PRO_SCREEN_DESC","rui/pilot_loadout/mods/pro_screen",0,0,0,0

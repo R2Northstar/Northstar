@@ -1,0 +1,34 @@
+#base "npc_titan_ogre_fighter.txt"
+npc_titan_ogre_fighter_berserker_core
+{
+	BehaviorSelector			"behavior_titan_melee_core"
+
+	chaseStopDist				100
+   	chaseStopDistHeavyArmor		100
+
+ 	dodgePeriod					1.2	  	 	// Don't dodge more than maxDodgePerPeriod within this time
+	maxDodgePerPeriod			1 		 	// Don't dodge more than this many times in dodgePeriod
+
+	PainOnHeavyDamageThreshold	0	// no heavy damage
+	PainOnRepeatDamageThreshold	1
+
+	meleeInterval				0.5
+	meleeChargeInterval			0.5
+	meleeMaxCombo				8
+
+	MeleeDamageMin			2000
+	MeleeDamageMax			3000
+	MeleeDamageMinHeavyArmor	2000
+	MeleeDamageMaxHeavyArmor	3000
+	MeleeDamageRadius		150
+	MeleeDamageForce		3000000
+	MeleeChargeDamageForce 		3200000
+	MeleeRange				200
+	MeleeChargeRange		300
+	MeleeChargeDamageRadius		100
+	MeleeChargeDamageHeight		100
+	MeleeChargeDamageMin	500
+	MeleeChargeDamageMax	500
+	MeleeChargeDamageMinHeavyArmor	3000
+	MeleeChargeDamageMaxHeavyArmor	4000
+}

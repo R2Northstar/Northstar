@@ -1,0 +1,313 @@
+level,startpoint,loadScreenIndex,hasDetente,spLog,spLogTitle,isLeft
+"sp_grunt_arena","Pilot vs 3 Grunts (Trial)",0,0,"","",0
+"sp_grunt_arena","Pilot and Leeched Spectre vs Grunts (Trial)",0,0,"","",0
+"sp_grunt_arena","Pilot vs Spectre (Trial)",0,0,"","",0
+"sp_grunt_arena","Arc Grenades vs Spectres and Grunts (Trial)",0,0,"","",0
+"sp_grunt_arena","Learn to use Shield Drone (Trial)",0,0,"","",0
+"sp_grunt_arena","Pilot vs Grunts (Small Arena)",0,0,"","",0
+"sp_grunt_arena","Pilot vs Grunts (Big Arena)",0,0,"","",0
+"sp_grunt_arena","Shield Drone vs Turrets (Trial)",0,0,"","",0
+"sp_grunt_arena","Pilot vs Captains (Trial)",0,0,"","",0
+"sp_grunt_arena","Use Turrets vs AI (Trial)",0,0,"","",0
+"sp_grunt_arena","Turret Maze Part 1 (Trial)",0,0,"","",0
+"sp_grunt_arena","Turret Maze Part 2 (Trial)",0,0,"","",0
+"sp_grunt_arena","Learn to use Suicide Spectres (Trial)",0,0,"","",0
+"sp_grunt_arena","Pilot vs Mixed AI (Big Arena)",0,0,"","",0
+"sp_grunt_arena","Pilot and Titan vs Many AI (Big Arena)",0,0,"","",0
+"sp_grunt_arena","Titan Wingman Arena (Big Arena)",0,0,"","",0
+"sp_grunt_arena","Titan vs Many AI (Big Arena)",0,0,"","",0
+"sp_grunt_arena","Pilot vs Super Spectre (Big Arena)",0,0,"","",0
+"sp_grunt_arena","Pilot vs Super Spectres (Small Arena)",0,0,"","",0
+"sp_grunt_arena","Titan vs Super Spectres (Big Arena)",0,0,"","",0
+"sp_grunt_arena","Pilot vs Spectres (Big Arena)",0,0,"","",0
+"sp_grunt_arena","Pilot vs Stalker progressive (Big Arena)",0,0,"","",0
+"sp_grunt_arena","The End!",0,0,"","",0
+"sp_ab_gym","gym_windmills",0,0,"","",0
+"sp_ab_gym","gym_bongo_board",0,0,"","",0
+"sp_ab_testfire2","room1",0,0,"","",0
+"sp_ab_testfire2","room2",0,0,"","",0
+"sp_ola_hub","topside",0,0,"","",0
+"sp_ola_hub","hub_intro",0,0,"","",0
+"sp_ola_hub","engine1_connect",0,0,"","",0
+"sp_ola_spoke1","sp_ola_spoke1",0,0,"","",0
+"sp_ola_spoke1","ola_spoke1_cleanroom",0,0,"","",0
+"sp_ola_spoke1","ola_spoke1_powerrod_factory",0,0,"","",0
+"sp_ola_spoke1","ola_spoke1_canyon",0,0,"","",0
+"sp_ola_sewers","ola_sewers_drain",0,0,"","",0
+"sp_ola_sewers","ola_sewers_sludge_test1",0,0,"","",0
+"sp_ola_sewers","ola_sewers_sludge_test2",0,0,"","",0
+"sp_ola_sewers","ola_sewers_sludge_test3",0,0,"","",0
+"sp_ola_sewers","ola_sewers_sludge_test4",0,0,"","",0
+"sp_ola_sewers","ola_sewers_sludge_bt_test1",0,0,"","",0
+"sp_ola_canyon_test","ola_canyontest1",0,0,"","",0
+"sp_ola_canyon_test","ola_canyontest2",0,0,"","",0
+"sp_ola_canyon_test","ola_canyontest3",0,0,"","",0
+"sp_ola_canyon_test","ola_canyontest4",0,0,"","",0
+"sp_ola_canyon_test","dish_array",0,0,"","",0
+"sp_ola_canyon_test","ledge_run",0,0,"","",0
+"sp_ab_canyon_prowler","prowler_canyon_1",0,0,"","",0
+"sp_ab_canyon_prowler","prowler_canyon_2",0,0,"","",0
+"sp_ab_canyon_prowler","prowler_canyon_3",0,0,"","",0
+"sp_hub_timeshift","LECTURE HALLS",0,1,"SP_MISSION_LOG_TIMESHIFT","MENU_SP_OBJECTIVES_TITLE",1
+"sp_hub_timeshift","OVERGROWN CAMPUS",1,0,"SP_MISSION_LOG_TIMESHIFT","MENU_SP_OBJECTIVES_TITLE",1
+"sp_hub_timeshift","Corpse Search",1,0,"SP_MISSION_LOG_TIMESHIFT","MENU_SP_OBJECTIVES_TITLE",1
+"sp_hub_timeshift","BT EXPLAINS IT ALL",1,0,"SP_MISSION_LOG_TIMESHIFT","MENU_SP_OBJECTIVES_TITLE",1
+"sp_hub_timeshift","Zipline",1,0,"SP_MISSION_LOG_TIMESHIFT_SPLOG0","MENU_SP_LOG_TITLE_TIMESHIFT1",1
+"sp_hub_timeshift","Security",1,0,"SP_MISSION_LOG_TIMESHIFT_SPLOG0","MENU_SP_LOG_TITLE_TIMESHIFT1",1
+"sp_hub_timeshift","Skybridge",1,0,"SP_MISSION_LOG_TIMESHIFT_SPLOG0","MENU_SP_LOG_TITLE_TIMESHIFT1",1
+"sp_hub_timeshift","PRISTINE CAMPUS",2,1,"SP_MISSION_LOG_TIMESHIFT_SPLOG1","MENU_SP_LOG_TITLE_TIMESHIFT2",1
+"sp_hub_timeshift","Hub Fight",2,0,"SP_MISSION_LOG_TIMESHIFT_SPLOG1","MENU_SP_LOG_TITLE_TIMESHIFT2",1
+"sp_hub_timeshift","Extended Bridge",2,0,"SP_MISSION_LOG_TIMESHIFT_SPLOG1","MENU_SP_LOG_TITLE_TIMESHIFT2",1
+"sp_hub_timeshift","REACTOR MELTDOWN",2,0,"SP_MISSION_LOG_TIMESHIFT_SPLOG1","MENU_SP_LOG_TITLE_TIMESHIFT2",1
+"sp_hub_timeshift","Core Scan",2,0,"SP_MISSION_LOG_TIMESHIFT_SPLOG1","MENU_SP_LOG_TITLE_TIMESHIFT2",1
+"sp_hub_timeshift","Level End",2,0,"SP_MISSION_LOG_TIMESHIFT_SPLOG1","MENU_SP_LOG_TITLE_TIMESHIFT2",1
+"sp_timeshift_spoke02","Timeshift Device",1,1,"SP_MISSION_LOG_TIMESHIFT_SPLOG0","MENU_SP_LOG_TITLE_TIMESHIFT1",1
+"sp_timeshift_spoke02","WILDLIFE RESEARCH",1,0,"SP_MISSION_LOG_TIMESHIFT_SPLOG0","MENU_SP_LOG_TITLE_TIMESHIFT1",1
+"sp_timeshift_spoke02","First Timeshift Fight",1,0,"SP_MISSION_LOG_TIMESHIFT_SPLOG0","MENU_SP_LOG_TITLE_TIMESHIFT1",1
+"sp_timeshift_spoke02","Elevator Fight",1,0,"SP_MISSION_LOG_TIMESHIFT_SPLOG0","MENU_SP_LOG_TITLE_TIMESHIFT1",1
+"sp_timeshift_spoke02","HUMAN RESEARCH",2,0,"SP_MISSION_LOG_TIMESHIFT_SPLOG0","MENU_SP_LOG_TITLE_TIMESHIFT1",1
+"sp_timeshift_spoke02","Sphere Room",2,0,"SP_MISSION_LOG_TIMESHIFT_SPLOG0","MENU_SP_LOG_TITLE_TIMESHIFT1",1
+"sp_timeshift_spoke02","Human Room",3,0,"SP_MISSION_LOG_TIMESHIFT_SPLOG0","MENU_SP_LOG_TITLE_TIMESHIFT1",0
+"sp_timeshift_spoke02","CAMPUS RETURN",3,0,"SP_MISSION_LOG_TIMESHIFT_SPLOG0","MENU_SP_LOG_TITLE_TIMESHIFT1",0
+"sp_timeshift_spoke02","Fan Drop",3,0,"SP_MISSION_LOG_TIMESHIFT_SPLOG0","MENU_SP_LOG_TITLE_TIMESHIFT1",0
+"sp_timeshift_spoke02","Fan Drop End",3,0,"SP_MISSION_LOG_TIMESHIFT_SPLOG0","MENU_SP_LOG_TITLE_TIMESHIFT1",0
+"sp_beacon","Level Start",1,1,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",0
+"sp_beacon","Control Room",1,0,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",1
+"sp_beacon","Spoke_0_Complete",2,1,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",1
+"sp_beacon","Power Relays Online",1,0,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",1
+"sp_beacon","Fastball to Spoke 1",3,0,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",1
+"sp_beacon","Spoke 1 Start",3,0,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",1
+"sp_beacon","Spoke 1 First Combat",3,0,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",1
+"sp_beacon","Spoke 1 Second Combat",3,0,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",1
+"sp_beacon","Spoke 1 Pillar Room",3,0,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",1
+"sp_beacon","Double Crane Puzzle",3,0,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",1
+"sp_beacon","Second Beacon",3,0,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",1
+"sp_beacon","Spoke 1 Arena",3,0,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",1
+"sp_beacon","Wallrun Panels",3,0,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",1
+"sp_beacon","Back at HUB",3,0,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",1
+"sp_beacon","Climb Dish",1,0,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",1
+"sp_beacon","Final Battle",4,0,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",0
+"sp_beacon","Send Signal",4,0,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",0
+"sp_beacon","Beacon Ending",4,0,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",0
+"sp_beacon_spoke0","Level Start",0,1,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",1
+"sp_beacon_spoke0","First Fight",1,0,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",1
+"sp_beacon_spoke0","Get Arc Tool",1,0,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",1
+"sp_beacon_spoke0","Got Arc Tool",2,0,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",0
+"sp_beacon_spoke0","Horizontal Fan",2,0,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",0
+"sp_beacon_spoke0","Horizontal Fan Complete",2,0,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",0
+"sp_beacon_spoke0","Fan Wallrun",2,0,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",0
+"sp_beacon_spoke2","Level Start",0,0,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",1
+"sp_beacon_spoke2","Fastball",0,0,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",1
+"sp_beacon_spoke2","Loading Dock",0,0,"#SP_MISSION_LOG_BEACON","MENU_SP_OBJECTIVES_TITLE",1
+"sp_boomtown_ride","1 - Level Start",0,0,"","",0
+"sp_boomtown_ride","2 - Assembly Line",0,0,"","",0
+"sp_boomtown_ride","3 - First Fight",0,0,"","",0
+"sp_boomtown_ride","4 - First Ride",0,0,"","",0
+"sp_boomtown_ride","5 - Second Ride",0,0,"","",0
+"sp_ab_moving_geo_combat_1","1 - Moving Cover",0,0,"","",0
+"sp_ab_moving_geo_combat_1","2 - Moving Cover with High Ceiling",0,0,"","",0
+"sp_ab_moving_geo_combat_1","3 - Rotating Cover (CQC)",0,0,"","",0
+"sp_ab_moving_geo_combat_1","4 - Rotating Cover - Only Grunts",0,0,"","",0
+"sp_ab_moving_geo_combat_1","5 - Rotating Cover - Stationary Reaper",0,0,"","",0
+"sp_ab_moving_geo_combat_1","6 - Rotating Cover - Mobile Reaper",0,0,"","",0
+"sp_ab_moving_geo_combat_1","7 - Building Assembly Battle",0,0,"","",0
+"sp_training","Pod Intro",1,1,"#SP_MISSION_LOG_TRAINING","MENU_SP_OBJECTIVES_TITLE",0
+"sp_training","Basic Movement",1,0,"#SP_MISSION_LOG_TRAINING","MENU_SP_OBJECTIVES_TITLE",0
+"sp_training","Zen Garden",1,0,"#SP_MISSION_LOG_TRAINING","MENU_SP_OBJECTIVES_TITLE",0
+"sp_training","Firing Range",1,0,"#SP_MISSION_LOG_TRAINING","MENU_SP_OBJECTIVES_TITLE",0
+"sp_training","Gauntlet",1,0,"#SP_MISSION_LOG_TRAINING","MENU_SP_OBJECTIVES_TITLE",0
+"sp_training","Gauntlet Challenge",1,0,"#SP_MISSION_LOG_TRAINING","MENU_SP_OBJECTIVES_TITLE",0
+"sp_training","Titanfall",1,0,"#SP_MISSION_LOG_TRAINING","MENU_SP_OBJECTIVES_TITLE",0
+"sp_training","Pod Outro",1,0,"#SP_MISSION_LOG_TRAINING","MENU_SP_OBJECTIVES_TITLE",0
+"sp_training","Meet OG",1,0,"#SP_MISSION_LOG_TRAINING","MENU_SP_OBJECTIVES_TITLE",0
+"sp_training","Gauntlet Mode",1,0,"#SP_MISSION_LOG_TRAINING","MENU_SP_OBJECTIVES_TITLE",0
+"sp_training","DEV_GHOSTREC_GAUNTLET_FIRSTRUN",0,0,"#SP_MISSION_LOG_TRAINING","MENU_SP_OBJECTIVES_TITLE",0
+"sp_training","DEV_GHOSTREC_GAUNTLET_CHAL_WIP",0,0,"#SP_MISSION_LOG_TRAINING","MENU_SP_OBJECTIVES_TITLE",0
+"sp_training","DEV_GHOSTREC_GAUNTLET_CHAL_01",0,0,"#SP_MISSION_LOG_TRAINING","MENU_SP_OBJECTIVES_TITLE",0
+"sp_training","DEV_GHOSTREC_GAUNTLET_CHAL_02",0,0,"#SP_MISSION_LOG_TRAINING","MENU_SP_OBJECTIVES_TITLE",0
+"sp_training","DEV_GHOSTREC_GAUNTLET_CHAL_03",0,0,"#SP_MISSION_LOG_TRAINING","MENU_SP_OBJECTIVES_TITLE",0
+"sp_training","DEV_GHOSTREC_GAUNTLET_CHAL_04",0,0,"#SP_MISSION_LOG_TRAINING","MENU_SP_OBJECTIVES_TITLE",0
+"sp_training","DEV_GHOSTREC_GAUNTLET_CHAL_05",0,0,"#SP_MISSION_LOG_TRAINING","MENU_SP_OBJECTIVES_TITLE",0
+"sp_training","DEV_GHOSTREC_GAUNTLET_CHAL_06",0,0,"#SP_MISSION_LOG_TRAINING","MENU_SP_OBJECTIVES_TITLE",0
+"sp_training","DEV_GHOSTREC_GAUNTLET_CHAL_07",0,0,"#SP_MISSION_LOG_TRAINING","MENU_SP_OBJECTIVES_TITLE",0
+"sp_training","DEV_GHOSTREC_GAUNTLET_CHAL_08",0,0,"#SP_MISSION_LOG_TRAINING","MENU_SP_OBJECTIVES_TITLE",0
+"sp_training","DEV_GHOSTREC_GAUNTLET_CHAL_09",0,0,"#SP_MISSION_LOG_TRAINING","MENU_SP_OBJECTIVES_TITLE",0
+"sp_training","Pod Intro DEV",0,0,"#SP_MISSION_LOG_TRAINING","MENU_SP_OBJECTIVES_TITLE",0
+"sp_training","Pod Outro DEV",0,0,"#SP_MISSION_LOG_TRAINING","MENU_SP_OBJECTIVES_TITLE",0
+"sp_wild","1  - Spoke 1: Escape Pod",0,0,"","",0
+"sp_wild","2  - Spoke 1: Basic Movement",0,0,"","",0
+"sp_wild","placeholder 3  - Spoke 1: Spectre Forest",0,0,"","",0
+"sp_wild","placeholder 4  - Spoke 1: Friend or Foe?",0,0,"","",0
+"sp_wild","placeholder 5  - Spoke 1: Grand Reveal",0,0,"","",0
+"sp_wild","placeholder 6  - Spoke 1: Checkpoint Zulu",0,0,"","",0
+"sp_wild","placeholder 7  - Spoke 1: Pistol Puzzle",0,0,"","",0
+"sp_wild","placeholder 8  - Spoke 1: Intruder",0,0,"","",0
+"sp_wild","placeholder 9  - HUB p-1: Gravity",0,0,"","",0
+"sp_wild","placeholder 10 - HUB p-1: Flirtation",0,0,"","",0
+"sp_wild","placeholder 11 - HUB p-1: Chase",0,0,"","",0
+"sp_wild","placeholder 12 - Spoke 2: Gorilla in the Mist",0,0,"","",0
+"sp_wild","13 - Spoke 2: Upgrades",0,0,"","",0
+"sp_wild","placeholder 14 - Spoke 2: A whole new world",0,0,"","",0
+"sp_wild","placeholder 15 - HUB p-2: Making Friends",0,0,"","",0
+"sp_wild","placeholder 16 - HUB p-2: Influencing People",0,0,"","",0
+"sp_wild","placeholder 17 - Spoke 3: Survivors",0,0,"","",0
+"sp_wild","placeholder 18 - Spoke 3: Prisoners",0,0,"","",0
+"sp_wild","placeholder 19 - HUB p-3: Snatch and Grab",0,0,"","",0
+"sp_wild","placeholder 20 - HUB p-3: Hero to Zero",0,0,"","",0
+"sp_wild","placeholder 21 - Spoke 4: Outpost Cherokee",0,0,"","",0
+"sp_wild","placeholder 22 - Spoke 4: Grenades",0,0,"","",0
+"sp_wild","placeholder 23 - Spoke 4: QRF",0,0,"","",0
+"sp_wild","placeholder 24 - Spoke 4: Those Eyes",0,0,"","",0
+"sp_wild","placeholder 25 - Spoke 5: Tree of Life",0,0,"","",0
+"sp_wild","26 - Spoke 5: Gift From the Gods",0,0,"","",0
+"sp_wild","placeholder 27 - HUB p-4: Energizer",0,0,"","",0
+"sp_wild","placeholder 28 - HUB p-4: One Man Army",0,0,"","",0
+"sp_wild","placeholder 29 - Spoke 5: p-2: Sleeping Beauty",0,0,"","",0
+"sp_wild","placeholder 30 - Spoke 5: p-2: Prowler Den",0,0,"","",0
+"sp_wild","placeholder 31 - Spoke 5: p-2: Common Ground",0,0,"","",0
+"sp_wild","placeholder 32 - Spoke 5: p-2: Dharma Hatch",0,0,"","",0
+"sp_crashsite","LevelStart",1,1,"SP_MISSION_LOG_WILDS_SPLOG0","MENU_SP_LOG_TITLE_WILDS",1
+"sp_crashsite","BT_Intro",1,0,"SP_MISSION_LOG_WILDS_SPLOG0","MENU_SP_LOG_TITLE_WILDS",1
+"sp_crashsite","Blisk_Intro",1,0,"SP_MISSION_LOG_WILDS_SPLOG0","MENU_SP_LOG_TITLE_WILDS",1
+"sp_crashsite","FamilyPhoto",1,0,"SP_MISSION_LOG_WILDS_SPLOG0","MENU_SP_LOG_TITLE_WILDS",1
+"sp_crashsite","Waking_Up",2,0,"SP_MISSION_LOG_WILDS_SPLOG0","MENU_SP_LOG_TITLE_WILDS",1
+"sp_crashsite","Field_Promotion",2,0,"SP_MISSION_LOG_WILDS_SPLOG0","MENU_SP_LOG_TITLE_WILDS",1
+"sp_crashsite","Grave",2,0,"SP_MISSION_LOG_WILDS_ALT","MENU_SP_OBJECTIVES_TITLE",0
+"sp_crashsite","Battery2_Path",2,0,"SP_MISSION_LOG_WILDS_ALT","MENU_SP_OBJECTIVES_TITLE",0
+"sp_crashsite","Battery2_Combat",2,0,"SP_MISSION_LOG_WILDS_ALT","MENU_SP_OBJECTIVES_TITLE",0
+"sp_crashsite","Battery2_Ship",2,0,"SP_MISSION_LOG_WILDS_ALT","MENU_SP_OBJECTIVES_TITLE",0
+"sp_crashsite","Battery3_Path",2,0,"SP_MISSION_LOG_WILDS_ALT","MENU_SP_OBJECTIVES_TITLE",0
+"sp_crashsite","Battery3_Combat",2,0,"SP_MISSION_LOG_WILDS_ALT","MENU_SP_OBJECTIVES_TITLE",0
+"sp_crashsite","Battery3_Ship",2,0,"SP_MISSION_LOG_WILDS_ALT","MENU_SP_OBJECTIVES_TITLE",0
+"sp_crashsite","PilotLink",2,0,"SP_MISSION_LOG_WILDS_ALT","MENU_SP_OBJECTIVES_TITLE",0
+"sp_ship_01","S2S_GOBLIN",0,0,"","",0
+"sp_ship_01","Goblin Deploy",0,0,"","",0
+"sp_ship_01","Goblin Deploy Zip",0,0,"","",0
+"sp_ship_01","S2S_FASTBALL",0,0,"","",0
+"sp_ship_01","S2S_REDEYE",0,0,"","",0
+"sp_ship_01","S2S_SENTINEL",0,0,"","",0
+"sp_ship_01","Model Test [ solid ]",0,0,"","",0
+"sp_ship_01","Model Test [ notsolid ]",0,0,"","",0
+"sp_ship_01","Bug: Skycam Parent",0,0,"","",0
+"sp_ship_01","Bug: Skycam Move/Rotate",0,0,"","",0
+"sp_ship_01","Bug: Ents outside Bounds",0,0,"","",0
+"sp_ship_01","S2S_COMBAT1-p1",0,0,"","",0
+"sp_ship_01","S2S_COMBAT1-p2",0,0,"","",0
+"sp_ship_01","S2S_COMBAT1-p3",0,0,"","",0
+"sp_ship_01","S2S_COMBAT1-p4",0,0,"","",0
+"sp_ship_03","hull combat p1",0,0,"","",0
+"sp_ship_04","hull combat p1",0,0,"","",0
+"sp_ship_05","hull combat p1",0,0,"","",0
+"sp_s2s","Level Start",1,1,"SP_MISSION_LOG_S2S","MENU_SP_OBJECTIVES_TITLE",0
+"sp_s2s","Intro",1,0,"SP_MISSION_LOG_S2S","MENU_SP_OBJECTIVES_TITLE",0
+"sp_s2s","Gibraltar",1,0,"SP_MISSION_LOG_S2S","MENU_SP_OBJECTIVES_TITLE",0
+"sp_s2s","Boss Intro",1,0,"SP_MISSION_LOG_S2S","MENU_SP_OBJECTIVES_TITLE",0
+"sp_s2s","Widow Fall",1,0,"SP_MISSION_LOG_S2S","MENU_SP_OBJECTIVES_TITLE",0
+"sp_s2s","Barker Ship",2,0,"SP_MISSION_LOG_S2S","MENU_SP_OBJECTIVES_TITLE",0
+"sp_s2s","FastBall 1",2,0,"SP_MISSION_LOG_S2S","MENU_SP_OBJECTIVES_TITLE",0
+"sp_s2s","Malta Intro",2,0,"SP_MISSION_LOG_S2S","MENU_SP_OBJECTIVES_TITLE",0
+"sp_s2s","Malta Drone Room",2,0,"SP_MISSION_LOG_S2S","MENU_SP_OBJECTIVES_TITLE",0
+"sp_s2s","Malta Guns",2,0,"SP_MISSION_LOG_S2S","MENU_SP_OBJECTIVES_TITLE",0
+"sp_s2s","Malta Widow Jump",2,0,"SP_MISSION_LOG_S2S","MENU_SP_OBJECTIVES_TITLE",0
+"sp_s2s","Malta Hangar",2,0,"SP_MISSION_LOG_S2S","MENU_SP_OBJECTIVES_TITLE",0
+"sp_s2s","Malta Breach",2,0,"SP_MISSION_LOG_S2S","MENU_SP_OBJECTIVES_TITLE",0
+"sp_s2s","Malta Bridge",2,0,"SP_MISSION_LOG_S2S","MENU_SP_OBJECTIVES_TITLE",0
+"sp_s2s","Reunite with BT",2,0,"SP_MISSION_LOG_S2S","MENU_SP_OBJECTIVES_TITLE",0
+"sp_s2s","Malta Deck",3,0,"SP_MISSION_LOG_S2S","MENU_SP_OBJECTIVES_TITLE",0
+"sp_s2s","BT Tackle",3,0,"SP_MISSION_LOG_S2S","MENU_SP_OBJECTIVES_TITLE",0
+"sp_s2s","Boss Fight",3,0,"SP_MISSION_LOG_S2S","MENU_SP_OBJECTIVES_TITLE",0
+"sp_s2s","Viper Dead",3,0,"SP_MISSION_LOG_S2S","MENU_SP_OBJECTIVES_TITLE",0
+"sp_s2s","Life Boats",4,0,"SP_MISSION_LOG_S2S","MENU_SP_OBJECTIVES_TITLE",1
+"sp_s2s","Core Room",4,0,"SP_MISSION_LOG_S2S","MENU_SP_OBJECTIVES_TITLE",1
+"sp_s2s","OLA Crash",4,0,"SP_MISSION_LOG_S2S","MENU_SP_OBJECTIVES_TITLE",1
+"sp_s2s","--------------",4,0,"SP_MISSION_LOG_S2S","MENU_SP_OBJECTIVES_TITLE",1
+"sp_s2s","TestBed",1,0,"","",0
+"sp_s2s","Dropship Combat Test",1,0,"","",0
+"sp_s2s","LightEdit Connect",1,0,"","",0
+"sp_s2s","TRAILER bridge",1,0,"","",0
+"sp_scrapyard_test","Arena 1",0,0,"","",0
+"sp_sewers1","Channel Mortar Run",1,1,"SP_MISSION_LOG_SEWERS","MENU_SP_OBJECTIVES_TITLE",1
+"sp_sewers1","Sewer Split",2,0,"SP_MISSION_LOG_SEWERS","MENU_SP_OBJECTIVES_TITLE",0
+"sp_sewers1","Sludge Falls",3,0,"SP_MISSION_LOG_SEWERS","MENU_SP_OBJECTIVES_TITLE",1
+"sp_sewers1","Corkscrew Room",4,0,"SP_MISSION_LOG_SEWERS","MENU_SP_OBJECTIVES_TITLE",0
+"sp_sewers1","Pipe Room Climb",5,0,"SP_MISSION_LOG_SEWERS","MENU_SP_OBJECTIVES_TITLE",1
+"sp_sewers1","Sewer Arena",6,0,"SP_MISSION_LOG_SEWERS","MENU_SP_OBJECTIVES_TITLE",1
+"sp_sewers1","Sewer Arena Defend",6,0,"SP_MISSION_LOG_SEWERS","MENU_SP_OBJECTIVES_TITLE",1
+"sp_sewers1","Kane Arena",7,0,"SP_MISSION_LOG_SEWERS","MENU_SP_OBJECTIVES_TITLE",1
+"sp_davis_sewer_battle","Sneaky Section",0,0,"","",0
+"sp_davis_sewer_battle","Combat Arena",0,0,"","",0
+"sp_davis_sewer_battle","Cylinder Tick Tunnels",0,0,"","",0
+"sp_ab_titan_arena","TvT Linear w 1.5 Boss Titans",0,0,"","",0
+"sp_ab_titan_arena","TvT Arena",0,0,"","",0
+"sp_ab_titan_arena","1v1 Arena A",0,0,"","",0
+"sp_ab_titan_arena","1v1 Arena B",0,0,"","",0
+"sp_ab_titan_arena","1v1 Arena C",0,0,"","",0
+"sp_ab_titan_arena","1v1 Arena D",0,0,"","",0
+"sp_boomtown_townboot","Town Boot",0,0,"","",0
+"sp_boomtown_townboot","Town Delivery",0,0,"","",0
+"sp_boomtown_townboot","Spotlight",0,0,"","",0
+"sp_ab_wilds_combat_test","Battery2",0,0,"","",0
+"sp_ab_wilds_combat_test","Battery3",0,0,"","",0
+"sp_skyway_v1","Level Start",0,1,"","",0
+"sp_skyway_v1","Torture Room B",1,0,"","",0
+"sp_skyway_v1","Smart Pistol Run",1,0,"","",0
+"sp_skyway_v1","Bridge Fight",2,0,"","",0
+"sp_skyway_v1","BT Reunion",3,0,"","",0
+"sp_skyway_v1","Titan Hill",3,0,"","",0
+"sp_skyway_v1","Titan Smash Hallway",3,0,"","",0
+"sp_skyway_v1","Sculptor Climb",3,0,"","",0
+"sp_skyway_v1","Targeting Room",4,0,"","",0
+"sp_skyway_v1","Injector Room",4,0,"","",0
+"sp_skyway_v1","Blisk's Farewell",4,0,"","",0
+"sp_skyway_v1","BT Sacrifice",4,0,"","",0
+"sp_skyway_v1","Rising World Run",5,0,"","",0
+"sp_skyway_v1","Rising World Jump",5,0,"","",0
+"sp_skyway_v1","Exploding Planet",5,0,"","",0
+"sp_skyway_v1","Harmony",5,0,"SP_MISSION_LOG_SKYWAY_ALT","MENU_SP_OBJECTIVES_TITLE",1
+"sp_skyway_v1","--- CREDITS ---",5,0,"SP_MISSION_LOG_SKYWAY_ALT","MENU_SP_OBJECTIVES_TITLE",1
+"sp_skyway_v1","sarah intro",5,0,"SP_MISSION_LOG_SKYWAY_ALT","MENU_SP_OBJECTIVES_TITLE",1
+"sp_skyway_v1","walk",5,0,"SP_MISSION_LOG_SKYWAY_ALT","MENU_SP_OBJECTIVES_TITLE",1
+"sp_skyway_v1","hug",5,0,"SP_MISSION_LOG_SKYWAY_ALT","MENU_SP_OBJECTIVES_TITLE",1
+"sp_skyway_v1","cheer",5,0,"SP_MISSION_LOG_SKYWAY_ALT","MENU_SP_OBJECTIVES_TITLE",1
+"sp_skyway_v1","actor jack cooper",5,0,"SP_MISSION_LOG_SKYWAY_ALT","MENU_SP_OBJECTIVES_TITLE",1
+"sp_skyway_v1","actor BT / OG",5,0,"SP_MISSION_LOG_SKYWAY_ALT","MENU_SP_OBJECTIVES_TITLE",1
+"sp_skyway_v1","actor blisk",5,0,"SP_MISSION_LOG_SKYWAY_ALT","MENU_SP_OBJECTIVES_TITLE",1
+"sp_skyway_v1","actor sarah",5,0,"SP_MISSION_LOG_SKYWAY_ALT","MENU_SP_OBJECTIVES_TITLE",1
+"sp_skyway_v1","actor bosses",5,0,"SP_MISSION_LOG_SKYWAY_ALT","MENU_SP_OBJECTIVES_TITLE",1
+"sp_skyway_v1","actor marder",5,0,"SP_MISSION_LOG_SKYWAY_ALT","MENU_SP_OBJECTIVES_TITLE",1
+"sp_skyway_v1","actors 6-4",5,0,"SP_MISSION_LOG_SKYWAY_ALT","MENU_SP_OBJECTIVES_TITLE",1
+"sp_skyway_v1","actor barker",5,0,"SP_MISSION_LOG_SKYWAY_ALT","MENU_SP_OBJECTIVES_TITLE",1
+"sp_skyway_v1","new BT",5,0,"SP_MISSION_LOG_SKYWAY_ALT","MENU_SP_OBJECTIVES_TITLE",1
+"sp_skyway_v1","board ship",5,0,"SP_MISSION_LOG_SKYWAY_ALT","MENU_SP_OBJECTIVES_TITLE",1
+"sp_skyway_v1","final image",5,0,"SP_MISSION_LOG_SKYWAY_ALT","MENU_SP_OBJECTIVES_TITLE",1
+"sp_template","Level Start",0,0,"","",0
+"sp_template","Big Fight",0,0,"","",0
+"sp_template","Finale",0,0,"","",0
+"sp_tday","Intro",1,1,"SP_MISSION_LOG_TDAY","MENU_SP_OBJECTIVES_TITLE",1
+"sp_tday","Wall Bombardment",1,0,"SP_MISSION_LOG_TDAY","MENU_SP_OBJECTIVES_TITLE",1
+"sp_tday","Militia Big Charge",1,0,"SP_MISSION_LOG_TDAY","MENU_SP_OBJECTIVES_TITLE",1
+"sp_tday","Underground Fuel Storage",2,0,"SP_MISSION_LOG_TDAY","MENU_SP_OBJECTIVES_TITLE",1
+"sp_tday","Elevator",2,0,"SP_MISSION_LOG_TDAY","MENU_SP_OBJECTIVES_TITLE",1
+"sp_tday","VTOL",3,0,"SP_MISSION_LOG_TDAY","MENU_SP_OBJECTIVES_TITLE",0
+"sp_tday","Fire on the Runway",4,0,"SP_MISSION_LOG_TDAY","MENU_SP_OBJECTIVES_TITLE",0
+"sp_tday","OLA Launch",4,0,"SP_MISSION_LOG_TDAY","MENU_SP_OBJECTIVES_TITLE",0
+"sp_boomtown_start","Intro",0,1,"SP_MISSION_LOG_BOOMTOWN_1","MENU_SP_OBJECTIVES_TITLE",0
+"sp_boomtown_start","Prop House",1,0,"SP_MISSION_LOG_BOOMTOWN_1","MENU_SP_OBJECTIVES_TITLE",1
+"sp_boomtown_start","Narrow Hallway",1,0,"SP_MISSION_LOG_BOOMTOWN_1","MENU_SP_OBJECTIVES_TITLE",1
+"sp_boomtown_start","Titan Arena",1,0,"SP_MISSION_LOG_BOOMTOWN_1","MENU_SP_OBJECTIVES_TITLE",1
+"sp_boomtown_start","Loading Dock",1,0,"SP_MISSION_LOG_BOOMTOWN_1","MENU_SP_OBJECTIVES_TITLE",1
+"sp_boomtown","Start",0,1,"SP_MISSION_LOG_BOOMTOWN_SPLOG0","MENU_SP_LOG_TITLE_BOOMTOWN",1
+"sp_boomtown","Assembly_Start",1,0,"SP_MISSION_LOG_BOOMTOWN_SPLOG0","MENU_SP_LOG_TITLE_BOOMTOWN",1
+"sp_boomtown","Assembly_Dirt",1,0,"SP_MISSION_LOG_BOOMTOWN_SPLOG0","MENU_SP_LOG_TITLE_BOOMTOWN",1
+"sp_boomtown","Assembly_Wallrun",1,0,"SP_MISSION_LOG_BOOMTOWN_SPLOG0","MENU_SP_LOG_TITLE_BOOMTOWN",1
+"sp_boomtown","Assembly_Furniture",1,0,"SP_MISSION_LOG_BOOMTOWN_SPLOG0","MENU_SP_LOG_TITLE_BOOMTOWN",1
+"sp_boomtown","Assembly_Walls",1,0,"SP_MISSION_LOG_BOOMTOWN_SPLOG0","MENU_SP_LOG_TITLE_BOOMTOWN",1
+"sp_boomtown","Assembly_Highway",1,0,"SP_MISSION_LOG_BOOMTOWN_SPLOG0","MENU_SP_LOG_TITLE_BOOMTOWN",1
+"sp_boomtown","Town_Climb_Entry",1,0,"SP_MISSION_LOG_BOOMTOWN_SPLOG0","MENU_SP_LOG_TITLE_BOOMTOWN",1
+"sp_boomtown","ReaperTown",2,0,"SP_MISSION_LOG_BOOMTOWN_SPLOG0","MENU_SP_LOG_TITLE_BOOMTOWN",1
+"sp_boomtown_end","Intro Caves",0,1,"SP_MISSION_LOG_BOOMTOWN_SPLOG1","MENU_SP_LOG_TITLE_BOOMTOWN",1
+"sp_boomtown_end","Prowler Towers",0,0,"SP_MISSION_LOG_BOOMTOWN_SPLOG1","MENU_SP_LOG_TITLE_BOOMTOWN",1
+"sp_boomtown_end","Above The Dome",1,0,"SP_MISSION_LOG_BOOMTOWN_SPLOG1","MENU_SP_LOG_TITLE_BOOMTOWN",1
+"sp_boomtown_end","Pre Ash Fight",2,0,"SP_MISSION_LOG_BOOMTOWN_SPLOG1","MENU_SP_LOG_TITLE_BOOMTOWN",1
+"sp_boomtown_end","Ash Fight",3,0,"SP_MISSION_LOG_BOOMTOWN_SPLOG1","MENU_SP_LOG_TITLE_BOOMTOWN",1
+"eof","eof",0,0,"","",0

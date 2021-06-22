@@ -1,0 +1,8 @@
+name,mp_model,sp_model
+"fp_dropship_model","models/vehicle/goblin_dropship/goblin_dropship.mdl","models/vehicle/goblin_dropship/goblin_dropship.mdl"
+"fp_dropship_hero_model","models/vehicle/goblin_dropship/goblin_dropship_hero.mdl","models/vehicle/goblin_dropship/goblin_dropship_hero.mdl"
+"fp_crow_model","models/vehicle/crow_dropship/crow_dropship.mdl","models/vehicle/crow_dropship/crow_dropship.mdl"
+"fp_crow_hero_model","models/vehicle/crow_dropship/crow_dropship_hero.mdl","models/vehicle/crow_dropship/crow_dropship_hero.mdl"
+"fp_titan_model","models/titans/medium/titan_medium_ajax.mdl","models/titans/medium/sp_titan_medium_ajax.mdl"
+"fp_straton_model","models/vehicle/straton/straton_imc_gunship_01.mdl","models/vehicle/straton/straton_imc_gunship_01.mdl"
+"fp_hornet_model","models/vehicle/hornet/hornet_fighter.mdl","models/vehicle/hornet/hornet_fighter.mdl"

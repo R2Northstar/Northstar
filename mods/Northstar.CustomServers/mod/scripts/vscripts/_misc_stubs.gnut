@@ -1,0 +1,22 @@
+// todo figure out where these stub functions should be and move them to those places
+global function FW_Border_GlobalInit
+global function IsVDUTitan
+
+void function FW_Border_GlobalInit()
+{
+	AddSpawnCallbackEditorClass( "func_brush", "func_brush_fw_territory_border", RemoveFWBorder )
+}
+
+void function RemoveFWBorder( entity border )
+{
+	if ( GameModeRemove( border ) )
+		return
+
+	if ( !border.HasKey( "gamemode_" + GAMETYPE ) )
+		border.Destroy()
+}
+
+bool function IsVDUTitan( entity titan )
+{
+	return false
+}

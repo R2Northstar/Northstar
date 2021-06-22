@@ -1,0 +1,286 @@
+// TODO: could probably add some checks for whether player setting stuff is player 0 to check for host, might fail in dedicated tho
+
+global function PrivateLobby_Init
+
+struct
+{
+	int startState
+	string map = "mp_forwardbase_kodai"
+	string mode = "aitdm"
+} file
+
+void function PrivateLobby_Init()
+{
+	print( "PrivateLobby_Init()" )
+
+	file.map = GetConVarString( "ns_private_match_last_map" )
+	file.mode = GetConVarString( "ns_private_match_last_mode" )
+
+	thread SetupPrivateMatchUIVarsWhenReady()
+
+	AddClientCommandCallback( "PrivateMatchLaunch", ClientCommandCallback_PrivateMatchLaunch )
+	AddClientCommandCallback( "PrivateMatchSetMode", ClientCommandCallback_PrivateMatchSetMode )
+	AddClientCommandCallback( "SetCustomMap", ClientCommandCallback_SetCustomMap )
+	AddClientCommandCallback( "PrivateMatchSwitchTeams", ClientCommandCallback_PrivateMatchSwitchTeams )
+	AddClientCommandCallback( "PrivateMatchToggleSpectate", ClientCommandCallback_PrivateMatchToggleSpectate )
+
+	AddClientCommandCallback( "PrivateMatchSetPlaylistVarOverride", ClientCommandCallback_PrivateMatchSetPlaylistVarOverride )
+	AddClientCommandCallback( "ResetMatchSettingsToDefault", ClientCommandCallback_ResetMatchSettingsToDefault )
+}
+
+void function SetupPrivateMatchUIVarsWhenReady()
+{
+	// have to wait until end of first frame for SetUIVar to work
+	WaitEndFrame()
+	SetUIVar( level, "privatematch_map", GetPrivateMatchMapIndex( file.map ) )
+	SetUIVar( level, "privatematch_mode", GetPrivateMatchModeIndex( file.mode ) )
+}
+
+bool function ClientCommandCallback_PrivateMatchLaunch( entity player, array<string> args )
+{
+	if ( GetConVarBool( "ns_private_match_only_host_can_start" ) )
+		if ( !NSIsPlayerLocalPlayer( player ) )
+			return true
+
+	LogPrivateMatchChange( player, " changed the game state.", args )
+
+	if ( file.startState == ePrivateMatchStartState.STARTING )
+	{
+		LogPrivateMatchChange( player, " canceled the game countdown.", args )
+
+		// cancel start if we're already mid-countdown
+		file.startState = ePrivateMatchStartState.READY
+		SetUIVar( level, "privatematch_starting", ePrivateMatchStartState.READY )
+		SetUIVar( level, "gameStartTime", null )
+	}
+	else
+	{
+		LogPrivateMatchChange( player, " started the game countdown.", args )
+
+		// start match
+		file.startState = ePrivateMatchStartState.STARTING
+		thread StartMatch()
+	}
+
+	return true
+}
+
+bool function ClientCommandCallback_PrivateMatchSetMode( entity player, array<string> args )
+{
+	if ( file.startState == ePrivateMatchStartState.STARTING )
+		return true
+
+	if ( args.len() != 1 )
+		return true
+
+	if ( GetConVarInt( "ns_private_match_only_host_can_change_settings" ) == 2 )
+		if ( !NSIsPlayerLocalPlayer( player ) )
+			return true
+
+	if ( GetPrivateMatchModes().contains( args[ 0 ] ) )
+	{
+		LogPrivateMatchChange( player, " changed the mode to ", args )
+	}
+	else
+	{
+		LogPrivateMatchChange( player, " attempted to set an invalid mode: ", args )
+		return true
+	}
+
+	file.mode = args[ 0 ]
+	// GameRules_SetGameMode( args[0] ) // can't do this here due to out of sync errors with new clients
+
+	RefreshPlayerTeams()
+
+	SetUIVar( level, "privatematch_mode", GetPrivateMatchModeIndex( args[ 0 ] ) )
+	return true
+}
+
+bool function ClientCommandCallback_SetCustomMap( entity player, array<string> args )
+{
+	if ( file.startState == ePrivateMatchStartState.STARTING )
+		return true
+
+	if ( args.len() != 1 )
+		return true
+
+	if ( GetConVarInt( "ns_private_match_only_host_can_change_settings" ) == 2 )
+		if ( !NSIsPlayerLocalPlayer( player ) )
+			return true
+
+	if ( GetPrivateMatchMapsForMode( file.mode ).contains( args[ 0 ] ) )
+	{
+		LogPrivateMatchChange( player, " changed the map to ", args )
+	}
+	else
+	{
+		args[ 0 ] += " for mode: " + file.mode
+		LogPrivateMatchChange( player, " attempted to set an invalid map: ", args )
+		return true
+	}
+
+	file.map = args[ 0 ]
+
+	// todo: this should NOT be necessary, private matches should use an api to register maps in the future rather than hardcoded ids
+	// should be removed whenever possible really
+	SetUIVar( level, "privatematch_map", GetPrivateMatchMapIndex( args[ 0 ] ) )
+	return true
+}
+
+bool function ClientCommandCallback_PrivateMatchSwitchTeams( entity player, array<string> args )
+{
+	if ( file.startState == ePrivateMatchStartState.STARTING || GetGamemodeVarOrUseValue( file.mode, "max_teams", "2" ).tointeger() != 2 )
+		return true
+
+	// currently only support 2 teams in private matches
+	SetTeam( player, player.GetTeam() == 2 ? 3 : 2 )
+	return true
+}
+
+bool function ClientCommandCallback_PrivateMatchToggleSpectate( entity player, array<string> args )
+{
+	if ( file.startState == ePrivateMatchStartState.STARTING || !GetConVarBool( "ns_allow_spectators" ) )
+		return true
+
+	player.SetPersistentVar( "privateMatchState", player.GetPersistentVarAsInt( "privateMatchState" ) == 0 ? 1 : 0 )
+	return true
+}
+
+void function StartMatch()
+{
+	// set starting uivar
+	SetUIVar( level, "privatematch_starting", ePrivateMatchStartState.STARTING )
+
+	// start countdown
+	SetUIVar( level, "gameStartTime", Time() + GetConVarFloat( "ns_private_match_countdown_length" ) )
+	float countdownEndTime = Time() + GetConVarFloat( "ns_private_match_countdown_length" )
+
+	// can't use start here because we need to check stuff
+	while ( Time() < countdownEndTime )
+	{
+		// stop if the countdown's been cancelled
+		if ( file.startState != ePrivateMatchStartState.STARTING )
+			return
+
+		WaitFrame()
+	}
+
+	// do this before setting playlist
+	if ( GetConVarBool( "ns_private_match_override_maxplayers" ) )
+		SetPlaylistVarOverride( "max_players", GetCurrentPlaylistVarString( "max_players", "16" ) )
+
+	try
+	{
+		// todo: not every gamemode uses the same playlist as their name! need some code to resolve these manually
+		// would be nice if the gamemode api got some tweaks to allow for registering private match gamemodes maybe
+		SetCurrentPlaylist( file.mode )
+	}
+	catch ( exception )
+	{
+		// temp
+		if ( file.mode == "speedball" )
+			SetCurrentPlaylist( "lf" )
+
+		print( "couldn't find playlist for gamemode " + file.mode )
+	}
+
+	RefreshPlayerTeams()
+
+	SetConVarString( "ns_private_match_last_map", file.map )
+	SetConVarString( "ns_private_match_last_mode", file.mode )
+	// SetConVarBool( "ns_should_return_to_lobby", true ) // potentially temp?
+
+	string mode = file.mode
+	if ( !( mode in GAMETYPE_TEXT ) )
+		mode = GetPlaylistGamemodeByIndex( file.mode, 0 )
+
+	GameRules_ChangeMap( file.map, mode )
+}
+
+void function RefreshPlayerTeams()
+{
+	int maxTeams = GetGamemodeVarOrUseValue( file.mode, "max_teams", "2" ).tointeger()
+	int maxPlayers = GetGamemodeVarOrUseValue( file.mode, "max_players", "12" ).tointeger()
+
+	// special case for situations where we wrongly assume ffa teams because there's 2 teams/2 players
+	if ( maxPlayers == maxTeams && maxTeams > 2 )
+	{
+		array<entity> players = GetPlayerArray()
+		for ( int i = 0; i < players.len(); i++ )
+			SetTeam( players[ i ], i + 7 ) // 7 is the lowest ffa team
+	}
+	else
+	{
+		bool lastSetMilitia = false
+		foreach ( entity player in GetPlayerArray() )
+		{
+			if ( player.GetTeam() == TEAM_MILITIA || player.GetTeam() == TEAM_IMC )
+				continue
+
+			if ( lastSetMilitia ) // ensure roughly evenish distribution
+				SetTeam( player, TEAM_IMC )
+			else
+				SetTeam( player, TEAM_MILITIA )
+
+			lastSetMilitia = !lastSetMilitia
+		}
+	}
+}
+
+bool function ClientCommandCallback_PrivateMatchSetPlaylistVarOverride( entity player, array<string> args )
+{
+	if ( file.startState == ePrivateMatchStartState.STARTING )
+		return true
+
+	if ( args.len() < 2 )
+		return true
+
+	if ( GetConVarInt( "ns_private_match_only_host_can_change_settings" ) >= 1 )
+		if ( !NSIsPlayerLocalPlayer( player ) )
+			return true
+
+	LogPrivateMatchChange( player, " override the setting ", args )
+
+	bool found = false
+	foreach ( string category in GetPrivateMatchSettingCategories() )
+	{
+		foreach ( CustomMatchSettingContainer setting in GetPrivateMatchCustomSettingsForCategory( category ) )
+		{
+			if ( args[ 0 ] == setting.playlistVar )
+			{
+				found = true
+				break
+			}
+		}
+	}
+
+	if ( found )
+		SetPlaylistVarOverride( args[ 0 ], args[ 1 ] )
+
+	return true
+}
+
+bool function ClientCommandCallback_ResetMatchSettingsToDefault( entity player, array<string> args )
+{
+	if ( file.startState == ePrivateMatchStartState.STARTING )
+		return true
+
+	if ( GetConVarInt( "ns_private_match_only_host_can_change_settings" ) >= 1 )
+		if ( !NSIsPlayerLocalPlayer( player ) )
+			return true
+
+	LogPrivateMatchChange( player, " reset to default", args )
+
+	ClearPlaylistVarOverrides()
+	return true
+}
+
+void function LogPrivateMatchChange( entity player, string step, array<string> args )
+{
+	if ( step.find( "mode" ) || step.find( "map" ) )
+		print( player.GetPlayerName() + step + args[ 0 ] + ".---" + "UID:" + player.GetUID() )
+	else if ( step.find( "setting" ) )
+		print( player.GetPlayerName() + step + args[ 0 ] + " to " + args[ 1 ] + ".---" + "UID:" + player.GetUID() )
+	else
+		print( player.GetPlayerName() + step + ".---" + "UID:" + player.GetUID() )
+}

@@ -1,0 +1,16 @@
+#base "npc_turret_sentry.txt"
+npc_turret_sentry_burn_card_ap
+{
+	DefaultModelName		"models/Robots/turret_hitscan/turret_hitscan.mdl"
+	DefaultWeapon			"mp_weapon_yh803_bullet"
+	title 					"#NPC_TURRET_SENTRY_AP"
+
+	maxEnemyDistHeavyArmor	0
+
+	Health							600 [$sp]
+	Health							1250 [$mp]
+
+	turret_lifetime			60.0 //Make sure to change #BURNMETER_AP_TURRETWEAPON_DESC
+
+	//MaxTurretYaw        	360
+}

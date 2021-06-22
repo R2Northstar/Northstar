@@ -1,0 +1,6 @@
+#base "npc_titan_auto_atlas_tracker.txt"
+
+npc_titan_auto_atlas_tone_prime
+{
+	npc_titan_player_settings	"titan_atlas_tone_prime"
+}

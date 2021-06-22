@@ -1,0 +1,6 @@
+#base "npc_titan_auto_ogre_minigun.txt"
+
+npc_titan_auto_ogre_legion_prime
+{
+	npc_titan_player_settings	"titan_ogre_legion_prime"
+}

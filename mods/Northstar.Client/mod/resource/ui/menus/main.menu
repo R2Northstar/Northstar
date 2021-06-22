@@ -1,0 +1,176 @@
+resource/ui/menus/main.menu
+{
+	menu
+	{
+		ControlName Frame
+		xpos 0
+		ypos 0
+		zpos 3
+		wide f0
+		tall f0
+		autoResize 0
+		pinCorner 0
+		visible 1
+		enabled 1
+		tabPosition 0
+		PaintBackgroundType 0 // 0 for normal(opaque), 1 for single texture from Texture1, and 2 for rounded box w/ four corner textures
+		infocus_bgcolor_override "0 0 0 0"
+		outoffocus_bgcolor_override "0 0 0 0"
+
+		Screen
+		{
+			ControlName Label
+			wide %100
+			tall %100
+			labelText ""
+			visible 0
+		}
+
+		SafeArea
+		{
+			ControlName Label
+			wide %90
+			tall %90
+			labelText ""
+			visible 0
+
+			pin_to_sibling Screen
+			pin_corner_to_sibling CENTER
+			pin_to_sibling_corner CENTER
+		}
+
+		TitleRui
+		{
+			ControlName RuiPanel
+			xpos -50
+			ypos -160
+			wide 1408
+			tall 288
+			rui "ui/basic_image_premul.rpak"
+			visible 1
+
+			pin_to_sibling Screen
+			pin_corner_to_sibling CENTER
+			pin_to_sibling_corner CENTER
+		}
+
+		TrialLabel
+		{
+			ControlName Label
+			xpos -850
+			ypos -190
+			auto_wide_tocontents 1
+			auto_tall_tocontents 1
+			labelText "#TRIAL_MODE"
+			font DefaultBold_65
+			visible 1
+			fgcolor_override "254 184 0 255"
+
+			pin_to_sibling TitleRui
+			pin_corner_to_sibling TOP_RIGHT
+			pin_to_sibling_corner TOP_LEFT
+		}
+
+		VersionDisplay
+		{
+			ControlName Label
+			xpos -920
+			ypos -198
+			auto_wide_tocontents 1
+			auto_tall_tocontents 1
+			labelText ""
+			font Default_21
+			visible 0
+			fgcolor_override "120 120 140 0"
+
+			pin_to_sibling TitleRui
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner TOP_LEFT
+		}
+
+		CopyrightInfo
+		{
+			ControlName Label
+			ypos -4
+			zpos 5
+			wide 674
+			auto_tall_tocontents 1
+			labelText "#COPYRIGHT_TEXT"
+			font Default_16
+			textAlignment east
+			allcaps 1
+			visible 1
+			fgcolor_override "255 255 255 127"
+
+			pin_to_sibling SafeArea
+			pin_corner_to_sibling BOTTOM_RIGHT
+			pin_to_sibling_corner BOTTOM_RIGHT
+		}
+
+		RespawnLogo
+		{
+			ControlName ImagePanel
+			xpos 24
+			wide 284
+			tall 56
+			visible 1
+			image "ui/menu/title_screen/title_respawn_logo"
+			scaleImage 1
+
+			pin_to_sibling CopyrightInfo
+			pin_corner_to_sibling BOTTOM_RIGHT
+			pin_to_sibling_corner TOP_RIGHT
+		}
+
+		NSVersion
+		{
+			ControlName Label
+			classname "nsVersionClass"
+			xpos 0
+			ypos 0
+			auto_wide_tocontents 1
+			auto_tall_tocontents 1
+			labelText ""
+			font Default_21
+			textAlignment east
+			allcaps 0
+			visible 1
+			fgcolor_override "101 109 208 255"
+			pin_to_sibling VersionDisplay
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner TOP_LEFT
+		}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		EstablishUserPanel
+		{
+			ControlName CNestedPanel
+			classname "MainMenuPanelClass"
+			wide 1920
+			tall 1080
+			visible 0
+			controlSettingsFile "resource/ui/menus/panels/establish_user.res"
+		}
+
+		MainMenuPanel
+		{
+			ControlName CNestedPanel
+			classname "MainMenuPanelClass"
+			//wide 1920
+			//tall 1080
+			wide %100
+			tall %100
+			visible 0
+			tabPosition 1
+			controlSettingsFile "resource/ui/menus/panels/mainmenu.res"
+		}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		FooterButtons
+		{
+			ControlName CNestedPanel
+			InheritProperties FooterButtons
+		}
+	}
+}

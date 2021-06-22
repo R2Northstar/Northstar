@@ -1,0 +1,14 @@
+playlists
+{
+	Gamemodes
+	{
+		defaults
+		{
+			vars
+			{
+				player_force_respawn 5
+				pingspot_enabled 0
+			}
+		}
+	}
+}

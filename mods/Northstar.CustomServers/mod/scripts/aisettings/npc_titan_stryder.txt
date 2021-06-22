@@ -1,0 +1,20 @@
+#base "npc_titan.txt"
+
+npc_titan_stryder
+{
+	footstep_type			"northstar"
+	title 					#NPC_TITAN_STRYDER
+
+	dodgePeriod				8 [$sp] 	  	 	// Don't dodge more than maxDodgePerPeriod within this time
+	maxDodgePerPeriod		3 [$sp] 		 	// Don't dodge more than this many times in dodgePeriod
+
+	dodgePeriod				12 [$mp] 	  	 	// Don't dodge more than maxDodgePerPeriod within this time
+	maxDodgePerPeriod		2 [$mp] 		 	// Don't dodge more than this many times in dodgePeriod
+
+	DefaultModelName		"models/titans/light/titan_light_locust.mdl"
+	npc_titan_player_settings		"titan_stryder"
+
+	takeCoverFromEnemyRadius	1500
+
+	evasiveCombatHealthChangeRateDiff	-150
+}

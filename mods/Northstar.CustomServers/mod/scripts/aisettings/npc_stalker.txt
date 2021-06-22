@@ -1,0 +1,162 @@
+npc_stalker
+{
+	AIClass							stalker
+	TraverseAnimType				stalker
+
+	title							#NPC_STALKER
+	ui_targetinfo					"ui/targetinfo_stalker_bounty" [$mp]
+	ui_targetinfo					"ui/targetinfo_npc_hackable" [$sp]
+	ui_targetinfo_offset_z			12
+
+	useSequenceBounds				1
+
+	aiEnemy_usePriorityDist			1300
+	aiEnemy_immediateThreatDist		200
+
+	AimAngularSpeed					7
+
+	ArmorType						normal
+
+	BaseClass						"npc_stalker"
+	BodyType						human
+
+	footstep_type					"stalker"
+	footstepSprintSpeedThreshold 	85
+	mechanical						1
+
+	BehaviorSelector				"behavior_stalker"
+	crawlingSettingsWrapper			"npc_stalker_crawling"
+
+	chaseStopDist					75 [$sp]
+	chaseStopDistHeavyArmor			200 [$sp]
+
+	chaseStopDist					500 [$mp]
+	chaseStopDistHeavyArmor			800 [$mp]
+
+	traverseCostFactor				5.0	// need to take into account slow move speed
+	minGoalRadius					1600
+
+	DefaultModelName				"models/robots/stalker/robot_stalker.mdl" [$sp]
+	DefaultModelName_IMC			"models/robots/stalker/robot_stalker.mdl" [$sp]
+	DefaultModelName_MIL			"models/robots/stalker/robot_stalker.mdl" [$sp]
+
+	DefaultModelName				"models/robots/stalker/robot_stalker_red.mdl" [$mp]
+	DefaultModelName_IMC			"models/robots/stalker/robot_stalker_red.mdl" [$mp]
+	DefaultModelName_MIL			"models/robots/stalker/robot_stalker_red.mdl" [$mp]
+
+	DefaultWeapon					"mp_weapon_lstar"
+	WeaponCapacity					"PilotMainWeapons"
+
+	longJumpHeight					2000
+
+	GibModel0						"models/robots/stalker/robot_stalker_l_leg_gib.mdl" [$sp]
+	GibModel1						"models/robots/stalker/robot_stalker_r_leg_gib.mdl" [$sp]
+	GibModel2						"models/robots/stalker/robot_stalker_l_arm_gib.mdl" [$sp]
+	GibModel3						"models/robots/stalker/robot_stalker_r_arm_gib.mdl" [$sp]
+	GibModelSoftened0				"models/robots/stalker/robot_stalker_l_leg_gib.mdl" [$sp]
+	GibModelSoftened1				"models/robots/stalker/robot_stalker_r_leg_gib.mdl" [$sp]
+	GibModelSoftened2				"models/robots/stalker/robot_stalker_l_arm_gib.mdl" [$sp]
+	GibModelSoftened3				"models/robots/stalker/robot_stalker_r_arm_gib.mdl" [$sp]
+	GibModel0						"models/robots/stalker/robot_stalker_l_leg_red_gib.mdl" [$mp]
+	GibModel1						"models/robots/stalker/robot_stalker_r_leg_red_gib.mdl" [$mp]
+	GibModel2						"models/robots/stalker/robot_stalker_l_arm_red_gib.mdl" [$mp]
+	GibModel3						"models/robots/stalker/robot_stalker_r_arm_red_gib.mdl" [$mp]
+	GibModelSoftened0				"models/robots/stalker/robot_stalker_l_leg_red_gib.mdl" [$mp]
+	GibModelSoftened1				"models/robots/stalker/robot_stalker_r_leg_red_gib.mdl" [$mp]
+	GibModelSoftened2				"models/robots/stalker/robot_stalker_l_arm_red_gib.mdl" [$mp]
+	GibModelSoftened3				"models/robots/stalker/robot_stalker_r_arm_red_gib.mdl" [$mp]
+	GibAttachment0					"left_leg"
+	GibAttachment1					"right_leg"
+	GibAttachment2					"left_arm"
+	GibAttachment3					"right_arm"
+	GibSpeed						100
+	GibAngularSpeed					5
+	GibMaxDist 						1600
+	GibFX							"P_exp_spectre_death"
+	GibSound						"Explo_Spectre"
+
+	headshotFX 						"P_headshot_pilot_robot"
+	landingImpactTable				"pilot_landing"
+	footstepImpactTable				"pilot_foostep"
+
+	faceEnemyStrictToleranceAngle	25
+	faceEnemyWhileMovingDist		60
+
+	FOV_Idle_Far_Horz				60
+	FOV_Idle_Far_Vert				50
+	FOV_Idle_Near_Horz				130
+	FOV_Idle_Near_Vert				70
+
+	FOV_Alert_Far_Horz				60
+	FOV_Alert_Far_Vert				50
+	FOV_Alert_Near_Horz				130
+	FOV_Alert_Near_Vert				70
+
+	FOV_Combat_Far_Horz				60
+	FOV_Combat_Far_Vert				50
+	FOV_Combat_Near_Horz			130
+	FOV_Combat_Near_Vert			70
+
+	FOV_Far_Dist					1000	// use far values after this distance, interpolate horizontal in between, use far for vertical
+	FOV_Near_Dist					350		// distance at which we transition between near and far FOV values
+	FOV_Vert_Offset					0
+
+	HullType						"HULL_HUMAN"
+	magneticRange					125
+	MaxArrivalDist					170
+
+	aimassist_adspull_centerAttachmentName		"CHESTFOCUS"
+	aimassist_adspull_centerRadius				11.0
+	aimassist_adspull_headshotAttachmentName	"HEADSHOT"
+	aimassist_adspull_headshotRadius			8.0
+	aimassist_adspull_noPitchUp					1  // don't want players to get sucked to chest when they're trying to chop the legs
+
+	MeleeDamageMin					20		[$mp]
+	MeleeDamageMax					20		[$mp]
+	Health							150		[$mp]
+
+	PainOnHeavyDamageThreshold		80		[$mp]	// turned off for mp
+	PainOnRepeatDamageThreshold		50		[$mp]
+
+	MeleeDamageMin					53		[$sp]
+	MeleeDamageMax					53		[$sp]
+	Health							250		[$sp]
+
+	PainOnHeavyDamageThreshold		59		[$sp]
+	PainOnRepeatDamageThreshold		75		[$sp]
+
+	MeleeDamageRadius				30		[$mp]
+	MeleeRange						50		[$mp]
+
+	MeleeDamageRadius				60		[$sp]
+	MeleeRange						60		[$sp]
+
+	MeleeDamageForce				40000
+
+	meleeImpactEffectTable			"melee_spectre"
+
+	MinForceWalkDist				0
+	MinStartMoveDist				100
+	MoveYawSpeed					12
+	allowTurn45Anims				0
+	moveDeflectionLookAheadTime		1.5
+
+	DrawEnemyHealthBar				0
+	DrawTargetHealthBar				0
+
+	resetBurstOnStopShootOverlay	1
+	restrictAimGunToValidSequences	1
+
+	showFriendlyIcon				1
+	showTitle						1	[$mp]
+	showTitle						1	[$sp]
+
+	smartAmmoLockAttachmentName0	HEADFOCUS
+	smartAmmoLockAttachmentName1	left_arm
+	smartAmmoLockAttachmentName2	right_arm
+	smartAmmoLockAttachmentName3	foot_L_sole
+	smartAmmoLockAttachmentName4	foot_R_sole
+	waitBetweenWeaponBurst			1
+	suppressLSP_duration			8
+	reactChanceDefault				90
+}

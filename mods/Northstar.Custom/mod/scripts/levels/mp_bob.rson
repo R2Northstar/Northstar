@@ -1,0 +1,9 @@
+//C:\depot\r2dev\game autofastfunction.pl
+
+IsTestMap: false
+When: "SERVER"
+Scripts:
+[
+	mp/levels/mp_bob_temp_props.nut
+	mp/levels/mp_bob.nut
+]

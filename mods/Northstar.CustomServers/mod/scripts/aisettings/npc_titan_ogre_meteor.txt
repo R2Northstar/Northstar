@@ -1,0 +1,24 @@
+#base "npc_titan_ogre.txt"
+npc_titan_ogre_meteor
+{
+	title 						#NPC_TITAN_OGRE_METEOR
+	WeaponCapacity				"FromLoadout"
+	npc_titan_player_settings	"titan_ogre_meteor"
+
+	BehaviorSelector			"behavior_titan_ogre_meteor"
+
+	chaseStopDist				500
+	chaseStopDistHeavyArmor		700
+	circleStrafeDist			600
+
+	evasiveCombatTotalHealthDiffPct 	0.1
+
+	evasiveCombatHealthChangeRateDiff	-300
+	aggresiveCombatHealthChangeRateDiff	50
+
+	footstep_type			"scorch"
+
+	DefaultModelName		"models/titans/heavy/titan_heavy_ogre.mdl" [$mp]
+	DefaultModelName		"models/titans/heavy/sp_titan_heavy_ogre.mdl" [$sp]
+
+}

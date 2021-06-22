@@ -1,0 +1,14 @@
+WeaponData
+{
+	Mods
+	{
+		sns
+		{
+			explosion_damage "50"
+			damage_near_value "50"
+			damage_far_value "50"
+			ammo_clip_size "1"
+			projectile_launch_speed "7500"
+		}
+	}
+}

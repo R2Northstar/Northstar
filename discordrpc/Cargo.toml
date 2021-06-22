@@ -1,0 +1,16 @@
+[package]
+name = "northstar-discord-rpc"
+version = "14.0.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rrplug = "=4.3.0"
+discord-sdk = "0.4.0"
+tokio = "1.52.3"
+parking_lot = "0.12.5"
+
+[lib]
+name = "DiscordRPC"
+crate-type = ["cdylib"]

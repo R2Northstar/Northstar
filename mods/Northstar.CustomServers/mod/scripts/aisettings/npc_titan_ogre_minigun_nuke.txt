@@ -1,0 +1,13 @@
+#base "npc_titan_ogre_minigun.txt"
+npc_titan_ogre_minigun_nuke
+{
+    title                       #NPC_TITAN_AUTO_NUKE
+    npc_titan_player_settings	"titan_ogre_minigun_nuke"
+	minGoalRadius			32
+
+	BehaviorSelector			"behavior_titan_ogre_minigun_nuke"
+
+	titanCamoIndex 133
+	titanDecalIndex 15
+	titanSkinIndex 2
+}

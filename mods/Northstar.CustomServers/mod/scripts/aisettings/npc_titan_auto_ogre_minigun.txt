@@ -1,0 +1,17 @@
+#base "npc_titan_auto_ogre.txt"
+
+npc_titan_auto_ogre_minigun
+{
+	title 					"#NPC_TITAN_AUTO_OGRE_MINIGUN"
+
+	maxDodgePerPeriod		0 		 	// Don't dodge more than this many times in dodgePeriod
+
+	aimAngularSpeed			2
+	aimConeCos 				0.5	// 60 degree
+	aimConeCloseCos			0.5	// 60 degree
+
+	npc_titan_player_settings	"titan_ogre_minigun"
+	windup_time 			1.0
+
+	footstep_type			"legion"
+}

@@ -1,0 +1,8 @@
+#base "npc_dropship.txt"
+npc_dropship_dogfighter
+{
+	title 					#NPC_DROPSHIP_DOGFIGHTER
+	DefaultModelName		"models/vehicle/straton/straton_imc_gunship_01.mdl"
+	DefaultModelName_IMC	"models/vehicle/straton/straton_imc_gunship_01.mdl"
+	DefaultModelName_MIL	"models/vehicle/hornet/hornet_fighter.mdl"
+}

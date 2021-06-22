@@ -1,0 +1,22 @@
+Selector Common
+
+	SelectSchedule_FallToGround
+	SelectSchedule_Flinch
+	SelectSchedule_LayeredBehavior
+	SelectSchedule_Idle
+Selector_End
+
+
+Selector Idle
+
+Selector_End
+
+
+Selector Alert
+
+Selector_End
+
+
+Selector Combat
+
+Selector_End

@@ -1,0 +1,8 @@
+//C:\depot\r2dev\game autofastfunction.pl
+
+IsTestMap: true
+When: "SERVER"
+Scripts:
+[
+	mp/levels/mp_box.nut
+]

@@ -1,0 +1,11 @@
+#base "npc_stalker_crawling.txt"
+npc_stalker_crawling_mossy
+{
+	title							"#NPC_STALKER_ZOMBIE_MOSSY"		[$sp]
+
+	DefaultModelName				"models/robots/stalker/robot_stalker_mossy.mdl"
+	DefaultModelName_IMC			"models/robots/stalker/robot_stalker_mossy.mdl"
+	DefaultModelName_MIL			"models/robots/stalker/robot_stalker_mossy.mdl"
+
+	Health							150
+}

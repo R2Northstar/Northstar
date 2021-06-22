@@ -1,0 +1,43 @@
+#base "npc_titan.txt"
+
+npc_titan_auto
+{
+	title 					#NPC_TITAN_AUTO
+
+	BaseClass				"npc_titan"
+
+	footstep_type			"atlas"
+
+	aggressiveCombatTotalHealthDiffPct	 	0.5
+
+	"general"	[$mp]
+	{
+		BehaviorSelector						"behavior_mp_auto_titan"
+		chaseStopDistHeavyArmor					1000
+		dodgeBackwardThreshold					1600
+		dodgeForwardThreshold					800
+		faceEnemyWhileMovingDist				2500
+		faceEnemyWhileMovingDist				3500
+		Health									8000
+		lockOnDodgeHealthThreshold				0.6
+		MeleeChargeDamageMaxHeavyArmor			2000
+		MeleeChargeDamageMinHeavyArmor			2000
+		MeleeDamageMaxHeavyArmor				500
+		MeleeDamageMinHeavyArmor				400
+		StrafeDodgeDamage						800
+	}
+
+	"general"	[$sp]
+	{
+		BehaviorSelector						"behavior_sp_auto_titan"
+		chaseStopDistHeavyArmor					600
+		dodgeBackwardThreshold					2000
+		dodgeForwardThreshold					1500
+		Health									7500
+		MeleeChargeDamageMaxHeavyArmor			1500
+		MeleeChargeDamageMinHeavyArmor			1000
+		MeleeDamageMaxHeavyArmor				1000
+		MeleeDamageMinHeavyArmor				750
+		StrafeDodgeDamage						800
+	}
+}

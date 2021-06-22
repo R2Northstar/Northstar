@@ -1,0 +1,25 @@
+name: Build
+on: [push, pull_request]
+
+jobs:
+  check-loc-encoding:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check Northstar.Client localization files encoding
+        run: |
+          files=$(ls Northstar.Client/mod/resource/northstar_client_localisation_*.txt)
+          IFS=$'\n'; files=($files); unset IFS; ! file --mime "${files[@]}" | grep -v "charset=utf-16le"
+      - name: Check Northstar.Custom localization files encoding
+        run: |
+          files=$(ls Northstar.Custom/mod/resource/northstar_custom_*.txt)
+          IFS=$'\n'; files=($files); unset IFS; ! file --mime "${files[@]}" | grep -v "charset=utf-16le"
+  check-missing-translations:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Look out for missing translations
+        run: node .github/build/find-missing-translations.js
+        continue-on-error: true

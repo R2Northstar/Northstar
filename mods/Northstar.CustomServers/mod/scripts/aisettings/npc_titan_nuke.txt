@@ -1,0 +1,9 @@
+#base "npc_titan.txt"
+npc_titan_nuke
+{
+	title 					#NPC_TITAN_NUKE
+	WeaponCapacity					"Locked"
+	npc_titan_player_settings		"titan_ogre"
+	is_nuke_titan				1
+	faceEnemyWhileMovingDist	500
+}

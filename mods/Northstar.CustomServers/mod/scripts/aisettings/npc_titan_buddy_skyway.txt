@@ -1,0 +1,7 @@
+#base "npc_titan_buddy.txt"
+
+npc_titan_buddy_skyway
+{
+	DefaultModelName		"models/titans/buddy/titan_buddy_skyway.mdl"
+	npc_titan_player_settings		"titan_buddy_spare"
+}

@@ -1,0 +1,83 @@
+#base "base_vehicle.txt"
+npc_gunship
+{
+	HullType				"HULL_FLYING_VEHICLE"
+	AIClass					vehicle
+	BodyType				vehicle
+	collideWithPlayer		1
+
+	ArmorType				heavy
+	SmartAmmoLockType		large
+
+	title 					#NPC_GUNSHIP
+	titleIMC				#NPC_PHANTOM
+	titleMIL				#NPC_HORNET
+	ui_targetinfo			"ui/targetinfo_titan" [$mp]
+	ui_targetinfo			"" [$sp]
+
+	BaseClass				"npc_gunship"
+
+	DefaultModelName		"models/vehicle/straton/straton_imc_gunship_01.mdl"
+	DefaultWeapon			"mp_weapon_gunship_missile"
+	//DefaultWeapon			"mp_weapon_gunship_turret"
+	BehaviorSelector		"behavior_gunship"
+	chaseStopDist			700
+	chaseStopDistHeavyArmor	1000
+	DrawEnemyHealthBar		1
+	DrawTargetHealthBar		1
+
+	Health					10000 [$sp]
+	Health					10000 [$mp]
+
+	aiEnemy_priority		50
+
+	faceEnemyToleranceAngle			2
+	faceEnemyStrictToleranceAngle	1
+	aimConeCos						0.906	// 25 degree
+	aimConeCloseCos					0.906	// 25 degree
+
+	meleeable			false
+	circleStrafeDist	1300
+
+	magneticRange			190
+	leechMaxDist			150
+	rodeoMaxDist			200
+
+	waitBetweenWeaponBurst	0
+
+	YawSpeed				30
+
+	minGoalRadius			300
+	patrolRangeMin			2000
+	patrolRangeMax			3000
+
+	goalTolerance			400
+	waypointTolerance		350
+	flyingStoppingTime		1.0
+	tiltLookaheadTime		2.0
+	yawLookaheadTime		2.0
+	randomHoverAmount		15
+	maxFlyingAccel			1500
+	maxFlyingSpeed			2200
+	maxFlyingSpeedNonCombat	1000
+
+	attackRunHeight		300
+	attackRunDist		2500
+
+	maxPitch			30
+	maxRoll				30
+
+	missileAwarenessCos		-1
+
+	dodgePeriod 			10 // Don't dodge more than maxDodgePerPeriod within this time
+	maxDodgePerPeriod		3 // Don't dodge more than this many times in dodgePeriod
+	minConsecutiveDodgeTime	2
+	StrafeDodgeDamage		400
+	flyingDodgeDist			800
+	enemyAimAtMeWidthHeavyArmor		150
+
+	chasecamDistanceMax		320
+	chasecamMaxOrbitDepth	90
+	chasecamOffsetUp		150
+	chasecamOffsetRight		110
+}

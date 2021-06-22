@@ -1,0 +1,5 @@
+#base "npc_titan_stryder_leadwall.txt"
+npc_titan_stryder_leadwall_bounty
+{
+	ui_targetinfo			"ui/targetinfo_titan_bounty" [$mp]
+}

@@ -1,0 +1,7 @@
+#base "npc_titan_stryder.txt"
+npc_titan_stryder_arc
+{
+	title 						#NPC_TITAN_STRYDER_ARC
+	WeaponCapacity				"FromLoadout"
+	npc_titan_player_settings	"titan_stryder_arc"
+}

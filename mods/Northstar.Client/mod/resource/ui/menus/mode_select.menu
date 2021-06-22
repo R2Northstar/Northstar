@@ -1,0 +1,608 @@
+resource/ui/menus/mode_select.menu
+{
+	menu
+	{
+		ControlName				Frame
+		xpos					0
+		ypos					0
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+
+		MenuCommon
+		{
+			ControlName				CNestedPanel
+			xpos					0
+			ypos					0
+			wide					f0
+			tall					f0
+			visible					1
+			controlSettingsFile		"resource/ui/menus/panels/menu_common.res"
+		}
+
+		MatchmakingStatus
+		{
+			ControlName				CNestedPanel
+			xpos					0
+			ypos					0
+			wide					f0
+			tall					f0
+			visible					1
+			controlSettingsFile		"resource/ui/menus/panels/matchmaking_status.res"
+		}
+
+		MenuTitle
+		{
+			ControlName				Label
+			InheritProperties		MenuTitle
+			labelText				"#SELECT_GAME_MODE"
+		}
+
+		ButtonRowAnchor
+		{
+			ControlName				Label
+			labelText				""
+
+			xpos                    96
+			ypos                    140
+		}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//	NEXT MODE PANEL
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		NextModeImageFrame
+		{
+			ControlName				RuiPanel
+			xpos 					740
+			ypos					160
+			wide					860
+			tall					520
+			labelText				""
+			visible				    1
+			bgcolor_override        "0 0 0 0"
+			paintbackground         1
+			rui "ui/control_options_description.rpak"
+		}
+
+		NextModeImage
+		{
+			ControlName				RuiPanel
+			pin_to_sibling			NextModeImageFrame
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+			xpos                    0
+			ypos                    14
+			wide					480
+			tall					240
+			visible					1
+			scaleImage				1
+			rui                     "ui/basic_menu_image.rpak"
+			zpos					2
+		}
+
+		ModeIconImage
+		{
+			ControlName				RuiPanel
+			pin_to_sibling			NextModeImage
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+			xpos                    0
+			ypos                    -16
+			wide					72
+			tall					72
+			visible					1
+			scaleImage				1
+			rui                     "ui/basic_image_add.rpak"
+			zpos					2
+		}
+
+		NextModeName
+		{
+			ControlName				Label
+			pin_to_sibling			NextModeImage
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			ypos					-10
+			xpos					-10
+			wide                    840
+			auto_tall_tocontents	1
+			visible					1
+			labelText				"Foo"
+			//textAlignment           center
+			//centerWrap              1
+			font					Default_43_DropShadow
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+		}
+
+		NextModeDesc
+		{
+			ControlName				Label
+			pin_to_sibling			NextModeName
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			xpos					0
+			ypos					10
+			wide					840
+			wrap					1
+			auto_tall_tocontents	1
+			visible					1
+			labelText				"Bar"
+			//textAlignment           center
+			//centerWrap              1
+			font					Default_27
+			allcaps					0
+			fgcolor_override		"255 255 255 255"
+		}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//	FILTERS PANEL
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		FiltersPanel
+		{
+			ControlName				RuiPanel
+			xpos 					740
+			ypos					682
+			wide					860
+			tall					156
+			zpos					-1
+
+			rui						"ui/control_options_description.rpak"
+		}
+
+		BtnModeLabel
+		{
+			ControlName			RuiButton
+			InheritProperties	RuiSmallButton
+			labelText			"#SEARCHBAR_LABEL"
+			textAlignment		west
+			classname			FilterPanelChild
+
+			wide 500
+			xpos -18
+			ypos -16
+
+			pin_to_sibling FiltersPanel
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner TOP_LEFT
+		}
+
+		BtnModeSearch
+		{
+			ControlName TextEntry
+			classname FilterPanelChild
+			zpos 100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			xpos -400
+			ypos -5
+			wide 390
+			tall 30
+			textHidden 0
+			editable 1
+			font Default_21
+			allowRightClickMenu 0
+			allowSpecialCharacters 0
+			unicode 1
+
+			pin_to_sibling BtnModeLabel
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner TOP_RIGHT
+		}
+
+		SwtModeLabel
+		{
+			ControlName RuiButton
+			InheritProperties SwitchButton
+			labelText "#MODE_MENU_FILTER"
+			ConVar "modemenu_mode_filter"
+			classname FilterPanelChild
+			wide 500
+			ypos 2
+
+			pin_to_sibling BtnModeLabel
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner BOTTOM_LEFT
+		}
+
+		BtnModeFiltersClear
+		{
+			ControlName			RuiButton
+			InheritProperties	RuiSmallButton
+			labelText			"#CLEAR_FILTERS"
+			textAlignment		west
+			classname			FilterPanelChild
+
+			wide 100
+			ypos 2
+
+			pin_to_sibling SwtModeLabel
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner BOTTOM_LEFT
+		}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//	PANELS LIST
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		Panel1
+		{
+			ControlName				CNestedPanel
+			classname				ModeSelectorPanel
+			scriptID				1
+
+			controlSettingsFile		"resource/ui/menus/panels/mode_select_button.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			ButtonRowAnchor
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
+		}
+
+		Panel2
+		{
+			ControlName				"CNestedPanel"
+			classname				ModeSelectorPanel
+			scriptID				2
+
+			controlSettingsFile		"resource/ui/menus/panels/mode_select_button.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel1
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
+		}
+
+		Panel3
+		{
+			ControlName				"CNestedPanel"
+			classname				ModeSelectorPanel
+			scriptID				3
+
+			controlSettingsFile		"resource/ui/menus/panels/mode_select_button.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel2
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
+		}
+
+		Panel4
+		{
+			ControlName				"CNestedPanel"
+			classname				ModeSelectorPanel
+			scriptID				4
+
+			controlSettingsFile		"resource/ui/menus/panels/mode_select_button.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel3
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
+		}
+
+		Panel5
+		{
+			ControlName				"CNestedPanel"
+			classname				ModeSelectorPanel
+			scriptID				5
+
+			controlSettingsFile		"resource/ui/menus/panels/mode_select_button.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel4
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
+		}
+
+		Panel6
+		{
+			ControlName				"CNestedPanel"
+			classname				ModeSelectorPanel
+			scriptID				6
+
+			controlSettingsFile		"resource/ui/menus/panels/mode_select_button.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel5
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
+		}
+
+		Panel7
+		{
+			ControlName				"CNestedPanel"
+			classname				ModeSelectorPanel
+			scriptID				7
+
+			controlSettingsFile		"resource/ui/menus/panels/mode_select_button.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel6
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
+		}
+
+		Panel8
+		{
+			ControlName				"CNestedPanel"
+			classname				ModeSelectorPanel
+			scriptID				8
+
+			controlSettingsFile		"resource/ui/menus/panels/mode_select_button.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel7
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
+		}
+
+		Panel9
+		{
+			ControlName				"CNestedPanel"
+			classname				ModeSelectorPanel
+			scriptID				9
+
+			controlSettingsFile		"resource/ui/menus/panels/mode_select_button.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel8
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
+		}
+
+		Panel10
+		{
+			ControlName				"CNestedPanel"
+			classname				ModeSelectorPanel
+			scriptID				10
+
+			controlSettingsFile		"resource/ui/menus/panels/mode_select_button.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel9
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
+		}
+
+		Panel11
+		{
+			ControlName				"CNestedPanel"
+			classname				ModeSelectorPanel
+			scriptID				11
+
+			controlSettingsFile		"resource/ui/menus/panels/mode_select_button.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel10
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
+		}
+
+		Panel12
+		{
+			ControlName				"CNestedPanel"
+			classname				ModeSelectorPanel
+			scriptID				12
+
+			controlSettingsFile		"resource/ui/menus/panels/mode_select_button.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel11
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
+		}
+
+		Panel13
+		{
+			ControlName				"CNestedPanel"
+			classname				ModeSelectorPanel
+			scriptID				13
+
+			controlSettingsFile		"resource/ui/menus/panels/mode_select_button.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel12
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
+		}
+
+		Panel14
+		{
+			ControlName				"CNestedPanel"
+			classname				ModeSelectorPanel
+			scriptID				14
+
+			controlSettingsFile		"resource/ui/menus/panels/mode_select_button.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel13
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
+		}
+
+		Panel15
+		{
+			ControlName				"CNestedPanel"
+			classname				ModeSelectorPanel
+			scriptID				15
+
+			controlSettingsFile		"resource/ui/menus/panels/mode_select_button.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel14
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
+		}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SLIDER
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		BtnModeListUpArrow
+		{
+			ControlName RuiButton
+			InheritProperties RuiSmallButton
+			//labelText "A"
+			wide 40
+			tall 40
+			xpos 2
+			ypos 2
+
+			image "vgui/hud/white"
+			drawColor "255 255 255 128"
+
+			pin_to_sibling NextModeImageFrame
+			pin_corner_to_sibling TOP_RIGHT
+			pin_to_sibling_corner TOP_LEFT
+		}
+
+		BtnModeListUpArrowPanel
+		{
+			ControlName RuiPanel
+			wide 40
+			tall 40
+			xpos 2
+			ypos 2
+
+			rui "ui/control_options_description.rpak"
+
+			visible 1
+			zpos -1
+
+			pin_to_sibling NextModeImageFrame
+			pin_corner_to_sibling TOP_RIGHT
+			pin_to_sibling_corner TOP_LEFT
+		}
+
+		BtnModeListDownArrow
+		{
+			ControlName RuiButton
+			InheritProperties RuiSmallButton
+			//labelText "V"
+			wide 40
+			tall 40
+			xpos 2
+			ypos -639
+
+			image "vgui/hud/white"
+			drawColor "255 255 255 128"
+
+			pin_to_sibling NextModeImageFrame
+			pin_corner_to_sibling TOP_RIGHT
+			pin_to_sibling_corner TOP_LEFT
+		}
+
+		BtnModeListDownArrowPanel
+		{
+			ControlName RuiPanel
+			wide 40
+			tall 40
+			xpos 2
+			ypos -639
+
+			rui "ui/control_options_description.rpak"
+
+			visible 1
+			zpos -1
+
+			pin_to_sibling NextModeImageFrame
+			pin_corner_to_sibling TOP_RIGHT
+			pin_to_sibling_corner TOP_LEFT
+		}
+
+		BtnModeListSlider
+		{
+			ControlName RuiButton
+			InheritProperties RuiSmallButton
+			//labelText "V"
+			wide 40
+			tall 599
+			xpos 2
+			ypos -42
+			zpos 0
+
+			image "vgui/hud/white"
+			drawColor "255 255 255 128"
+
+			pin_to_sibling NextModeImageFrame
+			pin_corner_to_sibling TOP_RIGHT
+			pin_to_sibling_corner TOP_LEFT
+		}
+
+		BtnModeListSliderPanel
+		{
+			ControlName RuiPanel
+			wide 40
+			tall 599
+			xpos 2
+			ypos -42
+
+			rui "ui/control_options_description.rpak"
+
+			visible 1
+			zpos -1
+
+			pin_to_sibling NextModeImageFrame
+			pin_corner_to_sibling TOP_RIGHT
+			pin_to_sibling_corner TOP_LEFT
+		}
+
+		// sh_menu_models.gnut has a global function which gets called when
+		// left mouse button gets called while hovering and has mouse
+		// deltaX; deltaY which we can yoink for ourselfes
+		MouseMovementCapture
+		{
+				ControlName CMouseMovementCapturePanel
+				wide 40
+				tall 562
+				xpos 2
+				ypos -42
+				zpos 1
+
+				pin_to_sibling NextModeImageFrame
+				pin_corner_to_sibling TOP_RIGHT
+				pin_to_sibling_corner TOP_LEFT
+		}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		ButtonTooltip
+		{
+			ControlName				CNestedPanel
+			InheritProperties		ButtonTooltip
+		}
+
+		FooterButtons
+		{
+			ControlName				CNestedPanel
+			xpos					0
+			ypos					r119
+			wide					f0
+			tall					36
+			visible					1
+			controlSettingsFile		"resource/ui/menus/panels/footer_buttons.res"
+		}
+	}
+}

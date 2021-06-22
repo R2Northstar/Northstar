@@ -1,0 +1,8 @@
+type,image,tactical,defaultPassive1,defaultPassive2,melee,cost
+"nomad","rui/pilot_loadout/suit/nomad","mp_ability_heal","pas_power_cell","pas_enemy_death_icons","melee_pilot_emptyhanded",180
+"light","rui/pilot_loadout/suit/light","mp_ability_shifter","pas_fast_health_regen","pas_wallhang","melee_pilot_emptyhanded",180
+"geist","rui/pilot_loadout/suit/geist","mp_ability_cloak","pas_power_cell","pas_enemy_death_icons","melee_pilot_emptyhanded",180
+"medium","rui/pilot_loadout/suit/medium","mp_weapon_grenade_sonar","pas_fast_health_regen","pas_wallhang","melee_pilot_emptyhanded",180
+"grapple","rui/pilot_loadout/suit/grapple","mp_ability_grapple","pas_power_cell","pas_wallhang","melee_pilot_emptyhanded",180
+"heavy","rui/pilot_loadout/suit/heavy","mp_weapon_deployable_cover","pas_fast_health_regen","pas_enemy_death_icons","melee_pilot_emptyhanded",180
+"stalker","rui/pilot_loadout/suit/stalker","mp_ability_holopilot","pas_power_cell","pas_enemy_death_icons","melee_pilot_emptyhanded",180

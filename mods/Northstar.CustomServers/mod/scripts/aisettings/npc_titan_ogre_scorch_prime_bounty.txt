@@ -1,0 +1,6 @@
+#base "npc_titan_ogre_meteor_bounty.txt"
+npc_titan_ogre_scorch_prime_bounty
+{
+	ui_targetinfo			"ui/targetinfo_titan_bounty" [$mp]
+	npc_titan_player_settings	"titan_ogre_scorch_prime"
+}

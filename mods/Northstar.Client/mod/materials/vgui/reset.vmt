@@ -1,0 +1,12 @@
+"Basic"
+{
+	"$basetexture" "vgui/reset"
+	"$translucent" 1
+	"$vertexcolor" 1
+	"$vertexalpha" 1
+	"$no_fullbright" 1
+	"$ignorez" 1
+	"$nolod" 1
+
+	"$SHADERSRGBREAD360" 1
+}

@@ -1,0 +1,206 @@
+/* Catpuccin Latte theme: https://github.com/catppuccin/catppuccin/ */
+/* :root {
+    --catpuccin-rosewater: #dc8a78;
+    --catpuccin-flamingo: #dd7878;
+    --catpuccin-pink: #ea76cb;
+    --catpuccin-mauve: #8839ef;
+    --catpuccin-red: #d20f39;
+    --catpuccin-maroon: #e64553;
+    --catpuccin-peach: #fe640b;
+    --catpuccin-yellow: #df8e1d;
+    --catpuccin-green: #40a02b;
+    --catpuccin-teal: #179299;
+    --catpuccin-sky: #04a5e5;
+    --catpuccin-sapphire: #209fb5;
+    --catpuccin-blue: #1e66f5;
+    --catpuccin-lavender: #7287fd;
+    --catpuccin-text: #4c4f69;
+    --catpuccin-subtext1: #5c5f77;
+    --catpuccin-subtext0: #6c6f85;
+    --catpuccin-overlay2: #7c7f93;
+    --catpuccin-overlay1: #8c8fa1;
+    --catpuccin-overlay0: #9ca0b0;
+    --catpuccin-surface2: #acb0be;
+    --catpuccin-surface1: #bcc0cc;
+    --catpuccin-surface0: #ccd0da;
+    --catpuccin-base: #eff1f5;
+    --catpuccin-mantle: #e6e9ef;
+    --catpuccin-crust: #dce0e8;
+} */
+
+/* Catpuccin Mocha theme: https://github.com/catppuccin/catppuccin/ */
+:root {
+    --catpuccin-rosewater: #f5e0dc;
+    --catpuccin-flamingo: #f2cdcd;
+    --catpuccin-pink: #f5c2e7;
+    --catpuccin-mauve: #cba6f7;
+    --catpuccin-red: #f38ba8;
+    --catpuccin-maroon: #eba0ac;
+    --catpuccin-peach: #fab387;
+    --catpuccin-yellow: #f9e2af;
+    --catpuccin-green: #a6e3a1;
+    --catpuccin-teal: #94e2d5;
+    --catpuccin-sky: #89dceb;
+    --catpuccin-sapphire: #74c7ec;
+    --catpuccin-blue: #89b4fa;
+    --catpuccin-lavender: #b4befe;
+    --catpuccin-text: #cdd6f4;
+    --catpuccin-subtext1: #bac2de;
+    --catpuccin-subtext0: #a6adc8;
+    --catpuccin-overlay2: #9399b2;
+    --catpuccin-overlay1: #7f849c;
+    --catpuccin-overlay0: #6c7086;
+    --catpuccin-surface2: #585b70;
+    --catpuccin-surface1: #45475a;
+    --catpuccin-surface0: #313244;
+    --catpuccin-base: #1e1e2e;
+    --catpuccin-mantle: #181825;
+    --catpuccin-crust: #11111b;
+}
+
+:root>* {
+    --md-code-hl-keyword-color: var(--catpuccin-mauve);
+    --md-code-hl-string-color: var(--catpuccin-green);
+    --md-code-hl-punctuation-color: var(--catpuccin-red);
+    --md-code-hl-number-color: var(--catpuccin-peach);
+    --md-code-hl-special-color: var(--catpuccin-pink);
+    --md-code-hl-function-color: var(--catpuccin-blue);
+    --md-code-hl-constant-color: var(--catpuccin-peach);
+    --md-code-hl-name-color: var(--catpuccin-maroon);
+    --md-code-hl-operator-color: var(--catpuccin-sky);
+    --md-code-hl-comment-color: var(--catpuccin-overlay2);
+    --md-code-hl-generic-color: var(--catpuccin-teal);
+    --md-code-hl-variable-color: var(--catpuccin-yellow);
+}
+
+.md-typeset code {
+    border-radius: 0.6rem;
+}
+
+/* Custom admonition for C++ code */
+:root {
+  --md-admonition-icon--cpp-function: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 0 0"></svg>')
+}
+.md-typeset .admonition.cpp-function,
+.md-typeset details.cpp-function {
+  border-color: #42477f;
+  border-width: 0;
+  border-top-width: 4px;
+  color: #ee5151;
+}
+.md-typeset .cpp-function > .admonition-title,
+.md-typeset .cpp-function > summary {
+  background-color: #14141e;
+}
+.md-typeset .cpp-function > .admonition-title::before,
+.md-typeset .cpp-function > summary::before {
+  -webkit-mask-image: var(--md-admonition-icon--cpp-function);
+          mask-image: var(--md-admonition-icon--cpp-function);
+}
+
+/* Custom admonition for C++ code */
+:root {
+  --md-admonition-icon--cpp-struct: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 0 0"></svg>')
+}
+.md-typeset .admonition.cpp-struct,
+.md-typeset details.cpp-struct {
+  border-color: #42477f;
+  border-width: 0;
+  border-top-width: 4px;
+  color: #ee5151;
+}
+.md-typeset .cpp-struct > .admonition-title,
+.md-typeset .cpp-struct > summary {
+  background-color: #14141e;
+}
+.md-typeset .cpp-struct > .admonition-title::before,
+.md-typeset .cpp-struct > summary::before {
+  -webkit-mask-image: var(--md-admonition-icon--cpp-struct);
+          mask-image: var(--md-admonition-icon--cpp-struct);
+}
+
+/* Custom admonition for C++ code */
+:root {
+  --md-admonition-icon--cpp-var: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 0 0"></svg>')
+}
+.md-typeset .admonition.cpp-var,
+.md-typeset details.cpp-var {
+  border-color: #42477f;
+  border-width: 0;
+  border-top-width: 4px;
+  color: #ee5151;
+}
+.md-typeset .cpp-var > .admonition-title,
+.md-typeset .cpp-var > summary {
+  background-color: #14141e;
+}
+.md-typeset .cpp-var > .admonition-title::before,
+.md-typeset .cpp-var > summary::before {
+  -webkit-mask-image: var(--md-admonition-icon--cpp-var);
+          mask-image: var(--md-admonition-icon--cpp-var);
+}
+
+/* Custom admonition for C++ code */
+:root {
+  --md-admonition-icon--cpp-enum: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 0 0"></svg>')
+}
+.md-typeset .admonition.cpp-enum,
+.md-typeset details.cpp-enum {
+  border-color: #42477f;
+  border-width: 0;
+  border-top-width: 4px;
+  color: #ee5151;
+}
+.md-typeset .cpp-enum > .admonition-title,
+.md-typeset .cpp-enum > summary {
+  background-color: #14141e;
+}
+.md-typeset .cpp-enum > .admonition-title::before,
+.md-typeset .cpp-enum > summary::before {
+  -webkit-mask-image: var(--md-admonition-icon--cpp-enum);
+          mask-image: var(--md-admonition-icon--cpp-enum);
+}
+
+
+/* Custom admonition for C++ code */
+:root {
+  --md-admonition-icon--cpp-member: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 0 0"></svg>')
+}
+.md-typeset .admonition.cpp-member,
+.md-typeset details.cpp-member {
+  border-color: #42477f;
+  border-width: 0;
+  border-top-width: 4px;
+  color: #ee5151;
+}
+.md-typeset .cpp-member > .admonition-title,
+.md-typeset .cpp-member > summary {
+  background-color: #14141e;
+}
+.md-typeset .cpp-member > .admonition-title::before,
+.md-typeset .cpp-member > summary::before {
+  -webkit-mask-image: var(--md-admonition-icon--cpp-member);
+          mask-image: var(--md-admonition-icon--cpp-member);
+}
+
+
+/* Custom admonition for C++ code */
+:root {
+  --md-admonition-icon--cpp-class: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 0 0"></svg>')
+}
+.md-typeset .admonition.cpp-class,
+.md-typeset details.cpp-class {
+  border-color: #42477f;
+  border-width: 0;
+  border-top-width: 4px;
+  color: #ee5151;
+}
+.md-typeset .cpp-class > .admonition-title,
+.md-typeset .cpp-class > summary {
+  background-color: #14141e;
+}
+.md-typeset .cpp-class > .admonition-title::before,
+.md-typeset .cpp-class > summary::before {
+  -webkit-mask-image: var(--md-admonition-icon--cpp-class);
+          mask-image: var(--md-admonition-icon--cpp-class);
+}

@@ -1,0 +1,216 @@
+npc_spectre
+{
+	AIClass							spectre
+	TraverseAnimType				spectre
+
+	title							#NPC_SPECTRE
+	useSequenceBounds				1
+
+	aiEnemy_usePriorityDist			1300
+	aiEnemy_immediateThreatDist		200 [$sp]
+	aiEnemy_immediateThreatDist		94	[$mp]
+
+	AimAngularSpeed					7
+
+	ArmorType						normal
+
+	BaseClass						"npc_spectre"
+	BodyType						human
+
+	footstep_type					"robot"
+	mechanical						1
+
+	BehaviorSelector				"behavior_spectre"
+
+	chaseStopDist					300
+	chaseStopDistHeavyArmor			800
+
+	allowCower						0
+	allowUseCover					1
+
+	traverseCostFactor				2.0
+	minGoalRadius					256
+
+	DefaultModelName				"models/robots/spectre/imc_spectre.mdl"
+	DefaultModelName_IMC			"models/robots/spectre/imc_spectre.mdl"
+	DefaultModelName_MIL			"models/robots/spectre/imc_spectre.mdl"
+
+	DefaultWeapon					"mp_weapon_rspn101"
+	WeaponCapacity					"PilotMainWeapons"
+
+	longJumpCheckMinInterval		15
+	longJumpCheckMaxInterval		30
+	longJumpMinDist					400
+	longJumpMaxDist					700
+	longJumpHeight					300
+
+	GibModel0						"models/robots/spectre/spectre_assault_d_gib_leg_l.mdl"
+	GibModel1						"models/robots/spectre/spectre_assault_d_gib_leg_r.mdl"
+	GibModel2						"models/robots/spectre/spectre_assault_d_gib_arm_l.mdl"
+	GibModel3						"models/robots/spectre/spectre_assault_d_gib_arm_r.mdl"
+	GibModelSoftened0				"models/robots/spectre/spectre_assault_d_gib_leg_l.mdl"
+	GibModelSoftened1				"models/robots/spectre/spectre_assault_d_gib_leg_r.mdl"
+	GibModelSoftened2				"models/robots/spectre/spectre_assault_d_gib_arm_l.mdl"
+	GibModelSoftened3				"models/robots/spectre/spectre_assault_d_gib_arm_r.mdl"
+	GibAttachment0					"left_leg"
+	GibAttachment1					"right_leg"
+	GibAttachment2					"left_arm"
+	GibAttachment3					"right_arm"
+	GibSpeed						200
+	GibAngularSpeed					20
+	GibMaxDist						1600
+	GibFX							"P_exp_spectre_death"
+	GibSound						"Explo_Spectre"
+
+	headshotFX 						"P_headshot_pilot_robot"
+	landingImpactTable				"pilot_landing"
+	footstepImpactTable				"pilot_foostep"
+
+	faceEnemyStrictToleranceAngle	30
+	faceEnemyWhileMovingDist		600
+
+	"mp" [$mp]
+	{
+		crouchCombatDistInner	300
+		crouchCombatDistOuter	350
+
+		FOV_Alert_Far_Horz		100
+		FOV_Alert_Far_Vert		60
+		FOV_Alert_Near_Horz		130
+		FOV_Alert_Near_Vert		180
+		FOV_Combat_Far_Horz		100
+		FOV_Combat_Far_Vert		60
+		FOV_Combat_Near_Horz	130
+		FOV_Combat_Near_Vert	180
+		FOV_Idle_Far_Horz		100
+		FOV_Idle_Far_Vert		60
+		FOV_Idle_Near_Horz		130
+		FOV_Idle_Near_Vert		180
+
+		NoticeForgetPostTime	5.0
+		NoticeForgetPreTime		1.0
+
+		NoticeDistNear_Alert	300
+		NoticeDistNear_Combat	300
+		NoticeDistNear_Idle		150
+		NoticeDistFar_Alert		2000
+		NoticeDistFar_Combat	2000
+		NoticeDistFar_Idle		2000
+		NoticeTimeNear_Alert	0.1
+		NoticeTimeNear_Combat	0.0
+		NoticeTimeNear_Idle		0.1
+		NoticeTimeFar_Alert		1.0
+		NoticeTimeFar_Combat	1.0
+		NoticeTimeFar_Idle		1.0
+		NoticeTimePeripheral_Alert	0.7
+		NoticeTimePeripheral_Combat 0.7
+		NoticeTimePeripheral_Idle	0.7
+	}
+
+	"sp" [$sp]
+	{
+		crouchCombatDistInner	400
+		crouchCombatDistOuter	500
+
+		FOV_Alert_Far_Horz		100
+		FOV_Alert_Far_Vert		60
+		FOV_Alert_Near_Horz		180
+		FOV_Alert_Near_Vert		100
+		FOV_Combat_Far_Horz		100
+		FOV_Combat_Far_Vert		60
+		FOV_Combat_Near_Horz	180
+		FOV_Combat_Near_Vert	80
+		FOV_Idle_Far_Horz		100
+		FOV_Idle_Far_Vert		60
+		FOV_Idle_Near_Horz		170
+		FOV_Idle_Near_Vert		80
+
+		NoticeForgetPostTime	5.0
+		NoticeForgetPreTime		1.0
+
+		NoticeDistNear_Alert	300
+		NoticeDistNear_Combat	300
+		NoticeDistNear_Idle		150
+		NoticeDistFar_Alert		1800
+		NoticeDistFar_Combat	2500
+		NoticeDistFar_Idle		1500
+		NoticeTimeNear_Alert	0.2
+		NoticeTimeNear_Combat	0.1
+		NoticeTimeNear_Idle		0.5
+		NoticeTimeFar_Alert		0.75
+		NoticeTimeFar_Combat	0.5
+		NoticeTimeFar_Idle		2.0
+		NoticeTimePeripheral_Alert	1.0
+		NoticeTimePeripheral_Combat 0.75
+		NoticeTimePeripheral_Idle	2.0
+	}
+
+	FOV_Near_Dist			150		// distance at which we transition between near and far FOV values
+	FOV_Far_Dist			2000	// use far values after this distance, interpolate horizontal in between, use far for vertical
+	FOV_Vert_Offset			-20		// looking down instead of up... better for pilots on high ground feeling
+
+	HullType						"HULL_HUMAN"
+	leechAnimSet					spectre
+	leechMaxDist					150
+	magneticRange					125
+	MaxArrivalDist					170
+
+	aimassist_adspull_centerAttachmentName		"CHESTFOCUS"
+	aimassist_adspull_centerRadius				11.0
+	aimassist_adspull_headshotAttachmentName	"HEADSHOT"
+	aimassist_adspull_headshotRadius			7.0
+
+	MeleeDamageMax					20		[$mp]
+	MeleeDamageMin					20		[$mp]
+
+	MeleeDamageMax					53		[$sp]
+	MeleeDamageMin					53		[$sp]
+
+	Health							130		[$sp]
+	Health							100		[$mp]
+
+	PainOnHeavyDamageThreshold		32
+	PainOnRepeatDamageThreshold		70
+
+	MeleeDamageRadius				40		[$mp]
+	MeleeRange						65		[$mp]
+
+	MeleeDamageRadius				60		[$sp]
+	MeleeRange						60		[$sp]
+
+	MeleeChargeDamageMin			80
+	MeleeChargeDamageMax			80
+	MeleeChargeDamageMinHeavyArmor	80
+	MeleeChargeDamageMaxHeavyArmor	80
+	MeleeChargeDamageRadius			25
+	MeleeChargeRange				135
+	meleeChargeInterval				1
+	MeleeChargeEnemyArmorType		any
+
+	meleeImpactEffectTable			"melee_spectre"
+
+	MinForceWalkDist				0
+	MinStartMoveDist				100
+	MoveYawSpeed					12
+	moveDeflectionLookAheadTime		0.5			[$sp]
+
+	shootingCoverFightRadius 		600			[$sp]
+
+	DrawEnemyHealthBar				0
+	DrawTargetHealthBar				0
+
+	resetBurstOnStopShootOverlay	1
+	restrictAimGunToValidSequences	1
+
+	showFriendlyIcon				1
+	showTitle						1	[$mp]
+	showTitle						1	[$sp]
+
+	ui_targetinfo					"ui/targetinfo_spectre_bounty" [$mp]
+	ui_targetinfo					"ui/targetinfo_npc_hackable" [$sp]
+
+	smartAmmoLockAttachmentName0	HEADFOCUS
+	waitBetweenWeaponBurst			1
+	suppressLSP_duration			1.5
+	reactChanceDefault				90
+}

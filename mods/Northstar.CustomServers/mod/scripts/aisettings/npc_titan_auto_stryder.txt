@@ -1,0 +1,11 @@
+#base "npc_titan_auto.txt"
+
+npc_titan_auto_stryder
+{
+	footstep_type			"northstar"
+	title 					#NPC_TITAN_AUTO_STRYDER
+
+	dodgePeriod				8 	  	 	// Don't dodge more than maxDodgePerPeriod within this time
+	maxDodgePerPeriod		3 		 	// Don't dodge more than this many times in dodgePeriod
+	DefaultModelName		"models/titans/light/titan_light_locust.mdl"
+}

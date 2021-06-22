@@ -1,0 +1,20 @@
+#base "npc_drone_plasma.txt"
+npc_drone_plasma_fd
+{
+	DefaultWeapon			"mp_weapon_droneplasma"
+	ForceAutoPrecacheDefaultWeapon	1
+	title					#NPC_DRONE_PLASMA
+	drone_type				"drone_type_plasma"
+	DefaultModelName		"models/robots/drone_air_attack/drone_air_attack_plasma.mdl"
+
+	waypointTolerance		400
+	randomHoverAmount		1
+	flyingStoppingTime		0.0
+	maxFlyingSpeed			400
+	maxFlyingSpeedNonCombat	300
+
+	YawSpeed				75
+	MoveYawSpeed			65
+
+	SmartAmmoLockType				small
+}

@@ -1,0 +1,402 @@
+resource/ui/menus/map_select.menu
+{
+	menu
+	{
+		ControlName Frame
+		xpos 0
+		ypos 0
+		zpos 3
+		wide f0
+		tall f0
+		autoResize 0
+		visible 1
+		enabled 1
+		pinCorner 0
+		PaintBackgroundType 0
+		infocus_bgcolor_override "0 0 0 0"
+		outoffocus_bgcolor_override "0 0 0 0"
+		
+		Vignette
+		{
+				ControlName ImagePanel
+				InheritProperties MenuVignette
+		}
+		
+		MenuTitle
+		{
+			ControlName Label
+			InheritProperties MenuTitle
+			labelText "#SELECT_MAP"
+		}
+
+		ButtonRowAnchor
+		{
+			ControlName Label
+			labelText ""
+
+			xpos 96
+	 		ypos 160
+		}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		MapsGridPanel
+		{
+			ControlName CNestedPanel
+			zpos 200
+			wide 803
+			tall 728
+			visible 1
+			controlSettingsFile "resource/ui/menus/panels/map_grid.res"
+
+			pin_to_sibling ButtonRowAnchor
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner TOP_LEFT
+		}
+		
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		
+		FilterPanel
+		{
+			ControlName RuiPanel
+			wide 904
+			tall 114
+			xpos 96
+	 ypos 828
+	
+			rui "ui/control_options_description.rpak"
+	
+			visible 1
+		}
+		
+		BtnSearchLabel
+		{
+			ControlName RuiButton
+			InheritProperties RuiSmallButton
+			labelText "#SEARCHBAR_LABEL"
+			textAlignment west
+			classname FilterPanelChild
+	
+			wide 500
+			xpos -17
+			ypos -17
+	
+			wrap 1
+			visible 1
+			zpos 998
+	
+			pin_to_sibling FilterPanel
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner TOP_LEFT
+		}
+	
+		BtnMapsSearch
+		{
+			ControlName TextEntry
+			classname FilterPanelChild
+			zpos 999
+			xpos -400
+			ypos -5
+			wide 390
+			tall 30
+			textHidden 0
+			editable 1
+			font Default_21
+			allowRightClickMenu 0
+			allowSpecialCharacters 0
+			unicode 0
+	
+			pin_to_sibling BtnSearchLabel
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner TOP_RIGHT
+		}
+		
+	
+		
+		SwtBtnHideLocked
+		{
+			ControlName RuiButton
+			InheritProperties SwitchButton
+			labelText "#HIDE_LOCKED"
+			ConVar "filter_map_hide_locked"
+			classname FilterPanelChild
+			wide 500
+			zpos 998
+			
+			list
+			{
+				"#NO" 0
+				"#YES" 1
+			}
+	
+			pin_to_sibling BtnSearchLabel
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner BOTTOM_LEFT
+		}
+		
+		BtnFiltersClear
+		{
+			ControlName RuiButton
+			InheritProperties RuiSmallButton
+			labelText "#CLEAR_FILTERS"
+			wide 100
+			xpos -17
+			ypos -57
+			zpos 90
+	
+			scriptID 1999
+	
+			pin_to_sibling FilterPanel
+			pin_corner_to_sibling TOP_RIGHT
+			pin_to_sibling_corner BOTTOM_RIGHT
+		}
+	
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+		MapDetailsPanel
+		{
+			ControlName RuiPanel
+			xpos 1002
+			ypos 160
+			tall 782
+			wide 810
+			rui "ui/control_options_description.rpak"
+			wrap 1
+			visible 1
+			zpos -1
+		}
+		
+		NextMapImage
+	 {
+		ControlName RuiPanel
+		wide 500
+		tall 288
+		visible 1
+		scaleImage 1
+		zpos 0
+		
+		// Hud_GetRui() requires this to work
+		rui "ui/basic_menu_image.rpak"
+			
+			pin_to_sibling MapDetailsPanel
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner TOP_LEFT
+	 }
+		
+		NextMapName
+		{
+			ControlName Label
+			pin_to_sibling NextMapImage
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner TOP_LEFT
+			
+			labelText "testname"
+
+			xpos -12
+			ypos -10
+			zpos 1
+
+			auto_wide_tocontents 1
+			auto_tall_tocontents 1
+			font Default_43_DropShadow
+			allcaps 1
+			fgcolor_override "255 255 255 255"
+		}
+		
+		NextMapCreator
+		{
+			ControlName Label
+			pin_to_sibling NextMapImage
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner TOP_RIGHT
+			
+			labelText "Creator: your mom"
+
+			xpos 12
+			ypos -12
+			zpos 1
+
+			auto_wide_tocontents 1
+			auto_tall_tocontents 1
+			font Default_28_DropShadow
+			fgcolor_override "255 255 255 255"
+			
+			visible 0
+		}
+		
+		NextMapVersion
+		{
+			ControlName Label
+			pin_to_sibling NextMapCreator
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner BOTTOM_LEFT
+			
+			labelText "Version: 0.0.0"
+
+			xpos 0
+			ypos 0
+			zpos 1
+
+			auto_wide_tocontents 1
+			auto_tall_tocontents 1
+			font Default_28_DropShadow
+			fgcolor_override "255 255 255 255"
+			
+			visible 0
+		}
+		
+		NextMapDescription
+		{
+			ControlName Label
+			textAlignment north
+			tall 500
+			wide 460
+			ypos -300
+			xpos -20
+			
+			labelText "testdescription"
+
+			wrap 1
+			visible 1
+			zpos -1
+
+			pin_to_sibling MapDetailsPanel
+			pin_corner_to_sibling TOP_LEFT
+			pin_to_sibling_corner TOP_LEFT
+		}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		BtnMapGridUpArrowPanel
+		{
+			ControlName RuiPanel
+			wide 40
+			tall 40
+			xpos 2
+	
+			rui "ui/control_options_description.rpak"
+	
+			visible 1
+			zpos -1
+	
+			pin_to_sibling MapDetailsPanel
+			pin_corner_to_sibling TOP_RIGHT
+			pin_to_sibling_corner TOP_LEFT
+		}
+		
+		BtnMapGridUpArrow
+		{
+			ControlName RuiButton
+			InheritProperties RuiSmallButton
+			//labelText "A"
+			wide 40
+			tall 40
+			xpos 2
+			zpos 999
+	
+			image "vgui/hud/white"
+			drawColor "255 255 255 128"
+	
+			pin_to_sibling MapDetailsPanel
+			pin_corner_to_sibling TOP_RIGHT
+			pin_to_sibling_corner TOP_LEFT
+		}
+	
+		BtnMapGridDownArrow
+		{
+			ControlName RuiButton
+			InheritProperties RuiSmallButton
+			//labelText "V"
+			wide 40
+			tall 40
+			xpos 2
+			ypos -626
+			zpos 999
+	
+			image "vgui/hud/white"
+			drawColor "255 255 255 128"
+	
+			pin_to_sibling MapDetailsPanel
+			pin_corner_to_sibling TOP_RIGHT
+			pin_to_sibling_corner TOP_LEFT
+		}
+	
+		BtnMapGridDownArrowPanel
+		{
+			ControlName RuiPanel
+			wide 40
+			tall 40
+			xpos 2
+			ypos -626
+	
+			rui "ui/control_options_description.rpak"
+	
+			visible 1
+			zpos -1
+	
+			pin_to_sibling MapDetailsPanel
+			pin_corner_to_sibling TOP_RIGHT
+			pin_to_sibling_corner TOP_LEFT
+		}
+	
+		BtnMapGridSlider
+		{
+			ControlName RuiButton
+			InheritProperties RuiSmallButton
+			//labelText "V"
+			wide 40
+			tall 582
+			xpos 2
+			ypos -42
+			zpos 0
+	
+			image "vgui/hud/white"
+			drawColor "255 255 255 128"
+	
+			pin_to_sibling MapDetailsPanel
+			pin_corner_to_sibling TOP_RIGHT
+			pin_to_sibling_corner TOP_LEFT
+		}
+	
+		BtnMapGridSliderPanel
+		{
+			ControlName RuiPanel
+			wide 40
+			tall 582
+			xpos 2
+			ypos -42
+	
+			rui "ui/control_options_description.rpak"
+	
+			visible 1
+			zpos -1
+	
+			pin_to_sibling MapDetailsPanel
+			pin_corner_to_sibling TOP_RIGHT
+			pin_to_sibling_corner TOP_LEFT
+		}
+	
+		MouseMovementCapture
+		{
+				ControlName CMouseMovementCapturePanel
+				wide 40
+				tall 582
+				xpos 2
+				ypos -42
+				zpos 1
+	
+				pin_to_sibling MapDetailsPanel
+				pin_corner_to_sibling TOP_RIGHT
+				pin_to_sibling_corner TOP_LEFT
+		}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		FooterButtons
+		{
+			ControlName CNestedPanel
+			InheritProperties FooterButtons
+		}
+	}
+}

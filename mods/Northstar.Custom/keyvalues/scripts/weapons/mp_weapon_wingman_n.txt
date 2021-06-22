@@ -1,0 +1,28 @@
+WeaponData
+{
+	Mods
+	{
+		one_in_the_chamber
+		{
+			damage_near_value "9999"
+			damage_far_value "9999"
+			damage_very_far_value "9999"
+		}
+		sns
+		{
+			damage_near_value "9999"
+			damage_far_value "9999"
+			damage_very_far_value "9999"
+			ammo_clip_size "1"
+			reload_time "*0.5"
+			reload_time_late1 "*0.5"
+			reloadempty_time "*0.5"
+			reloadempty_time_late1 "*0.5"
+			bolt_bounce_frac "0.7"
+			projectile_damage_reduction_per_bounce "0.0"
+			projectile_damages_owner "0"
+			projectile_ricochet_max_count "3"
+			ads_move_speed_scale "1"
+		}
+	}
+}

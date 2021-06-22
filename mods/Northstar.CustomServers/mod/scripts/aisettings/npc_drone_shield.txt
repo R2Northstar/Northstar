@@ -1,0 +1,9 @@
+#base "npc_drone.txt"
+npc_drone_shield
+{
+	title 					#NPC_DRONE_SHIELD
+	drone_type				"drone_type_shield"
+	Health					350
+
+	nonCombatAI			1
+}

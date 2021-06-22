@@ -1,0 +1,5 @@
+#base "npc_titan_atlas_stickybomb_bounty.txt"
+npc_titan_atlas_ion_prime_bounty
+{
+	npc_titan_player_settings	"titan_atlas_ion_prime"
+}

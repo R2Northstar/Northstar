@@ -1,0 +1,14 @@
+#base "npc_pilot_elite_assassin.txt"
+npc_pilot_elite_assassin_sniper
+{
+	title							#NPC_PILOT_ELITE_ASSASSIN_SNIPE
+
+	canCloak						1
+
+	DefaultWeapon					"mp_weapon_dmr"
+	BehaviorSelector				"behavior_pilot_elite_assassin_sniper"
+
+	Health							1500 //hack for testing
+
+	decloakOnShoot					1
+}

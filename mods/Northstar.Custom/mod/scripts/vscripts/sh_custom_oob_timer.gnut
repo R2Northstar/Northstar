@@ -1,0 +1,7 @@
+global function CustomOOBTimer_Init
+
+void function CustomOOBTimer_Init()
+{
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_MATCH", "oob_timer_enabled", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "1" )
+	level.disableOutOfBounds <- GetCurrentPlaylistVarInt( "oob_timer_enabled", 1 ) == 0
+}

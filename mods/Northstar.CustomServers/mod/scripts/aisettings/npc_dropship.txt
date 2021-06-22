@@ -1,0 +1,49 @@
+#base "base_vehicle.txt"
+npc_dropship
+{
+	BaseClass				"npc_dropship"
+	title 					#NPC_DROPSHIP
+	titleIMC				#NPC_GOBLIN
+	titleMIL				#NPC_CROW
+	ui_targetinfo			"ui/targetinfo_titan" [$mp]
+	ui_targetinfo			"" [$sp]
+
+	HullType				"HULL_FLYING_VEHICLE"
+	AIClass					vehicle
+	BodyType				vehicle
+
+	collideWithPlayer		1
+	ArmorType				heavy
+	SmartAmmoLockType		large
+	DrawEnemyHealthBar		1
+	DrawTargetHealthBar		1
+
+	BehaviorSelector		"behavior_dropship"
+
+	DefaultModelName		"models/vehicle/goblin_dropship/goblin_dropship.mdl"
+	DefaultModelName_IMC	"models/vehicle/goblin_dropship/goblin_dropship.mdl"
+	DefaultModelName_MIL	"models/vehicle/crow_dropship/crow_dropship.mdl"
+
+	DefaultWeapon			""
+
+	Health					10000 [$sp]
+	Health					10000 [$mp]
+
+	meleeable			false
+
+	magneticRange			190
+
+	YawSpeed				45
+	goalTolerance			400
+	waypointTolerance		1000
+	flyingStoppingTime		1.0
+	tiltLookaheadTime		1.0
+	yawLookaheadTime		2.0
+	randomHoverAmount		15
+	maxFlyingAccel			2000
+	maxFlyingSpeed			3000
+	maxFlyingSpeedNonCombat	3000
+
+	maxPitch			10
+	maxRoll				30
+}

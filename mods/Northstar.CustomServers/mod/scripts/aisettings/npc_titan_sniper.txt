@@ -1,0 +1,20 @@
+#base "npc_titan.txt"
+
+npc_titan_sniper
+{
+	HullType							"HULL_TITAN"
+	title 								#NPC_TITAN_SNIPER
+
+	BehaviorSelector					"behavior_titan_sniper"
+	WeaponCapacity						"Locked"
+	npc_titan_player_settings 					"titan_atlas"
+
+	circleStrafeDist					2500
+	circleStrafeAngleIncrement			5
+
+	aiEnemy_usePriorityDist				3500
+
+	LookDistDefault_Combat	9500 //DO NOT set less than 9k without talking to mo first - will break s2s
+
+	aggressiveCombatTotalHealthDiffPct	0.8
+}

@@ -1,0 +1,4 @@
+# git config --global blame.ignoreRevsFile .git-blame-ignore-revs
+
+# sqformat commit
+ebf89c805e96de91bc4d069cfa38aafb0ae34f32

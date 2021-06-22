@@ -1,0 +1,7 @@
+#base "npc_turret_sentry.txt"
+npc_turret_sentry_tactical_ability
+{
+	Health				600
+	title 				#NPC_TURRET_SENTRY_TACTICAL_ABILITY
+	//SecondaryWeapon		"mp_weapon_engineer_turret_rocket"
+}

@@ -1,0 +1,6 @@
+#base "npc_pilot_elite.txt"
+
+npc_pilot_elite_s2s
+{
+	LookDistDefault_Combat	15000 //so the 6-4 can shoot at distant ships in the intro
+}

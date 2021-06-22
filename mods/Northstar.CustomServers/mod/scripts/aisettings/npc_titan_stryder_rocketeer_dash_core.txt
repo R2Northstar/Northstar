@@ -1,0 +1,11 @@
+#base "npc_titan_stryder_rocketeer.txt"
+npc_titan_stryder_rocketeer_dash_core
+{
+   	circleStrafeDist			80
+
+ 	dodgePeriod					0.1 	  	 	// Don't dodge more than maxDodgePerPeriod within this time
+	maxDodgePerPeriod			3 		 	// Don't dodge more than this many times in dodgePeriod
+
+	evasiveCombatHealthChangeRateDiff	-600
+	aggresiveCombatHealthChangeRateDiff	-400
+}

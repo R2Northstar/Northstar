@@ -1,0 +1,201 @@
+
+npc_soldier
+{
+	AIClass					human
+	ArmorType				normal
+	BaseClass				"npc_soldier"
+	BodyType				human
+	HullType				"HULL_HUMAN"
+	SmartAmmoLockType		small		// defaults to small
+	TraverseAnimType		human
+	traverseCostFactor		5.0
+
+	difficultTraverseFlags	256			// 1 << 8 (TRAVERSE_JUMP_UP_DOWN_128)
+
+	BehaviorSelector		"behavior_soldier"		[$mp]
+	BehaviorSelector		"behavior_sp_soldier"	[$sp]
+
+	footstep_type			"grunt"
+	footstepSprintSpeedThreshold 	100
+
+	title 					#NPC_SOLDIER
+	title_IMC				#NPC_GRUNT_IMC
+	title_MIL				#NPC_GRUNT_MILITIA
+	ui_targetinfo			"ui/targetinfo_soldier_bounty" [$mp]
+	ui_targetinfo			"ui/targetinfo_cockpit_name" [$sp]
+
+	IsGenericGrunt	1
+
+	GrenadeWeaponName 		mp_weapon_frag_grenade
+
+	AimAngularSpeed			7
+	allowFlee				1
+	allowInvestigate		1	[$sp]
+	allowPatrol				1	[$sp]
+	allowSignals			1
+	allowUseCover			1
+	DefaultModelName		"models/humans/grunts/imc_grunt_rifle.mdl"
+	DefaultModelName_IMC	"models/humans/grunts/imc_grunt_rifle.mdl"
+	DefaultModelName_MIL	"models/humans/grunts/mlt_grunt_rifle.mdl"
+
+	DefaultWeapon			"mp_weapon_rspn101"
+	WeaponCapacity			"PilotMainWeapons"
+	GibModel0				"models/gibs/human_gibs.mdl"
+
+	headshotFX 				"P_headshot_human"
+
+	faceEnemyStrictToleranceAngle	30
+	faceEnemyWhileMovingDist		400 [$sp]
+	faceEnemyWhileMovingDist		600	[$mp]
+
+	Health					90		[$sp]
+	Health					50		[$mp]
+
+	PainOnRepeatDamageThreshold	39	[$sp]
+	PainOnRepeatDamageThreshold	15	[$mp]
+	RepeatDamageTimeInterval		8
+
+	PainOnHeavyDamageThreshold		80	// more than health so never happens for base soldier but will happen for higher health ones
+	PainOnSurpriseHit				1
+	PainWhileRunning				1
+
+	fallDeathHeight 		300
+
+	aimassist_adspull_centerAttachmentName		"CHESTFOCUS"
+	aimassist_adspull_centerRadius				11.0
+	aimassist_adspull_headshotAttachmentName	"HEADSHOT"
+	aimassist_adspull_headshotRadius			8.0
+
+	MeleeDamageMax			30		[$mp]
+	MeleeDamageMin			30		[$mp]
+	MeleeDamageMax			53		[$sp]
+	MeleeDamageMin			53		[$sp]
+	MeleeDamageRadius		40		[$mp]
+	MeleeRange				40		[$mp]
+	MeleeDamageRadius		60		[$sp]
+	MeleeRange				60		[$sp]
+	MeleeDamageForce		15000
+
+	MeleeChargeDamageMin			20
+	MeleeChargeDamageMax			20
+	MeleeChargeDamageRadius			35
+	MeleeChargeRange				0
+	MeleeChargeCosAngleRange		0.866	// 30 degrees
+	MeleeChargeInterval				3
+	MeleeChargeEnemyArmorType		normal
+	MeleeChargeOnlyPlayers			1
+
+	MaxArrivalDist			170
+	MinForceWalkDist		150
+	MinStartMoveDist		100
+	MoveYawSpeed			12
+
+	moveDeflectionLookAheadTime	0.5	[$sp]
+	moveDeflectionLookAheadTime	0.5	[$mp]
+
+	LookDistDefault_Alert	3000
+	LookDistDefault_Combat	5000
+	LookDistDefault_Idle	1500
+
+	"mp" [$mp]
+	{
+		crouchCombatDistInner	350
+		crouchCombatDistOuter	450
+
+		FOV_Alert_Far_Horz		100
+		FOV_Alert_Far_Vert		60
+		FOV_Alert_Near_Horz		130
+		FOV_Alert_Near_Vert		180
+		FOV_Combat_Far_Horz		100
+		FOV_Combat_Far_Vert		60
+		FOV_Combat_Near_Horz	130
+		FOV_Combat_Near_Vert	180
+		FOV_Idle_Far_Horz		100
+		FOV_Idle_Far_Vert		60
+		FOV_Idle_Near_Horz		130
+		FOV_Idle_Near_Vert		180
+
+		NoticeForgetPostTime	5.0
+		NoticeForgetPreTime		1.0
+
+		NoticeDistNear_Alert	300
+		NoticeDistNear_Combat	300
+		NoticeDistNear_Idle		150
+		NoticeDistFar_Alert		2000
+		NoticeDistFar_Combat	2000
+		NoticeDistFar_Idle		2000
+		NoticeTimeNear_Alert	0.1
+		NoticeTimeNear_Combat	0.0
+		NoticeTimeNear_Idle		0.1
+		NoticeTimeFar_Alert		1.0
+		NoticeTimeFar_Combat	1.0
+		NoticeTimeFar_Idle		1.0
+		NoticeTimePeripheral_Alert	0.7
+		NoticeTimePeripheral_Combat 0.7
+		NoticeTimePeripheral_Idle	0.7
+	}
+
+	"sp" [$sp]
+	{
+		crouchCombatDistInner	500
+		crouchCombatDistOuter	650
+
+		FOV_Alert_Far_Horz		100
+		FOV_Alert_Far_Vert		60
+		FOV_Alert_Near_Horz		180
+		FOV_Alert_Near_Vert		100
+		FOV_Combat_Far_Horz		100
+		FOV_Combat_Far_Vert		60
+		FOV_Combat_Near_Horz	180
+		FOV_Combat_Near_Vert	80
+		FOV_Idle_Far_Horz		80
+		FOV_Idle_Far_Vert		60
+		FOV_Idle_Near_Horz		170
+		FOV_Idle_Near_Vert		80
+
+		NoticeForgetPostTime	5.0
+		NoticeForgetPreTime		1.0
+
+		NoticeDistNear_Alert	300
+		NoticeDistNear_Combat	300
+		NoticeDistNear_Idle		150
+		NoticeDistFar_Alert		1800
+		NoticeDistFar_Combat	2500
+		NoticeDistFar_Idle		1500
+		NoticeTimeNear_Alert	0.2
+		NoticeTimeNear_Combat	0.1
+		NoticeTimeNear_Idle		0.5
+		NoticeTimeFar_Alert		0.75
+		NoticeTimeFar_Combat	0.5
+		NoticeTimeFar_Idle		2.0
+		NoticeTimePeripheral_Alert	1.0
+		NoticeTimePeripheral_Combat 0.75
+		NoticeTimePeripheral_Idle	2.0
+	}
+
+	FOV_Near_Dist			150		// distance at which we transition between near and far FOV values
+	FOV_Far_Dist			2000	// use far values after this distance, interpolate horizontal in between, use far for vertical
+	FOV_Vert_Offset			-20		// looking down instead of up... better for pilots on high ground feeling
+
+	showTitle				1
+
+	resetBurstOnStopShootOverlay	1
+	restrictAimGunToValidSequences	1
+	showFriendlyIcon				1
+	waitBetweenWeaponBurst			1
+	suppressLSP_duration			10		[$sp]
+	suppressLSP_duration			10		[$mp]
+	enemyAimAtMeWidth				100
+
+	aiEnemy_usePriorityDist			2000	[$sp]
+	aiEnemy_immediateThreatDist		230		[$sp]
+	aiEnemy_immediateThreatDist		94		[$mp]
+
+	braceWhenDangerousAreaDisplacementFails	1
+
+	reactChanceDefault					90  [$sp]
+	reactChanceDefault					60  [$mp]
+	reactBulletChanceDefault			90  [$sp]
+	reactBulletChanceDefault			60  [$mp]
+	reactFriendlyChanceDefault			100
+}

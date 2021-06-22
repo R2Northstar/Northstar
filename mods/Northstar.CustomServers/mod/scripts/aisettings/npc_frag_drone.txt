@@ -1,0 +1,92 @@
+npc_frag_drone
+{
+	HullType						"HULL_HUMAN"
+	orientToGround					1
+	BodyType						human
+	ArmorType						normal
+	smartAmmoLockAttachmentName0	CHESTFOCUS
+	title							#NPC_SPECTRE_SUICIDE
+
+	footstep_type					"Tick"
+
+	minSpeedScale					0.8
+	maxSpeedScale					1.5
+
+	BaseClass						npc_frag_drone
+	AIClass							frag_drone
+	TraverseAnimType				frag_drone
+	BehaviorSelector				"behavior_frag_drone"
+
+	mechanical						1
+
+	DefaultModelName				"models/robots/drone_frag/drone_frag.mdl"
+	DefaultModelName_IMC			"models/robots/drone_frag/drone_frag.mdl"
+	DefaultModelName_MIL			"models/robots/drone_frag/drone_frag.mdl"
+	DefaultWeapon					""
+	WeaponCapacity					"Locked"
+
+	Health							45 [$sp]
+	Health							110 [$mp]
+
+	LookDistDefault_Idle			2000
+	LookDistDefault_Alert			2000
+	LookDistDefault_Combat			2000
+
+	FOV_Idle_Near_Horz				360
+	FOV_Idle_Near_Vert				180
+	FOV_Idle_Far_Horz				360
+	FOV_Idle_Far_Vert				180
+
+	FOV_Alert_Near_Horz				360
+	FOV_Alert_Near_Vert				180
+	FOV_Alert_Far_Horz				360
+	FOV_Alert_Far_Vert				180
+
+	FOV_Combat_Near_Horz			360
+	FOV_Combat_Near_Vert			180
+	FOV_Combat_Far_Horz				360
+	FOV_Combat_Far_Vert				180
+
+	faceEnemyToleranceAngle			180
+	faceEnemyStrictToleranceAngle	180
+	shouldConsiderFacingDir			0
+	moveYawSpeed					30
+
+	aimassist_bounds_override		25
+	aimassist_adspull_centerAttachmentName		"aimassist_center"
+	aimassist_adspull_centerRadius				13.0
+	aimassist_adspull_headshotAttachmentName	""
+	aimassist_adspull_headshotRadius			0.0
+
+	MeleeDamageMin					120
+	MeleeDamageMax					120
+	MeleeDamageRadius				32
+	MeleeRange						16
+	meleeImpactEffectTable			"melee_spectre"
+
+	meleeable						0
+	leechMaxDist					0
+
+	MinStartMoveDist				100
+	MaxArrivalDist					150
+	MinForceWalkDist				0
+	moveDeflectionLookAheadTime		0.5
+
+	allowPatrol				1
+	allowInvestigate		1
+
+	chaseStopDist					16
+    chaseStopDistHeavyArmor			16
+
+	shootableByFriendlyPlayer		1
+	showFriendlyIcon				1
+	ui_targetinfo					"ui/targetinfo_npc_basic" [$mp]
+	ui_targetinfo					"" [$sp]
+
+	aiEnemy_usePriorityDist			1300
+
+	magneticRange					125
+
+	suicideExplosionDelay			2.1
+	suicideExplosionDistance		200.0
+}

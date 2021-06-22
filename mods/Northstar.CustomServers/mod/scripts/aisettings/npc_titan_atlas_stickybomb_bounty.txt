@@ -1,0 +1,5 @@
+#base "npc_titan_atlas_stickybomb.txt"
+npc_titan_atlas_stickybomb_bounty
+{
+	ui_targetinfo			"ui/targetinfo_titan_bounty" [$mp]
+}
