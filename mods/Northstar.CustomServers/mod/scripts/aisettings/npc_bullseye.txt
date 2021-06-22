@@ -1,8 +1,0 @@
-npc_bullseye
-{
-	BaseClass				"npc_bullseye"
-	title 					#NPC_BULLSEYE
-
-	noModel					1
-	meleeable				0
-}
