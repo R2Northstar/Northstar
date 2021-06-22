@@ -1,0 +1,15 @@
+#base "npc_drone.txt"
+npc_drone_cloaked
+{
+	DefaultWeapon			""
+	title					#NPC_DRONE_CLOAKED
+	drone_type				"drone_type_cloaked"
+
+	YawSpeed				60
+	MoveYawSpeed			30
+	AimAngularSpeed			30
+
+	maxFlyingSpeed			1500
+	maxFlyingSpeedNonCombat	1500
+	hoverHeight			300	// if has target, offset above target's height
+}

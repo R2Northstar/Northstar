@@ -1,0 +1,395 @@
+untyped
+
+global function MortarTitanThink
+global function MortarTitans_Init
+
+global function MortarTitanDeathCleanup
+global function MortarMissileFiredCallback
+global function MoveToMortarPosition
+
+global function MortarTitanKneelToAttack
+
+global function MortarTitanAttack
+
+global function MortarTitanStopAttack
+
+//global function MortarAIWaitToEngage
+
+const float MORTAR_TITAN_ABORT_ATTACK_HEALTH_FRAC			= 0.90	// will stop mortar attack if he's health gets below 90% of his current health.
+const float MORTAR_TITAN_POSITION_SEARCH_RANGE			= 1024 //3072	// How far away from his spawn point a mortar titan will look for positions to mortar from.
+const float MORTAR_TITAN_ENGAGE_DELAY						= 3.0	// How long before a mortar titan start to attack the generator if he's taken damage getting to his mortar position.
+const float MORTAR_TITAN_REENGAGE_DELAY					= 7.0	// How long before a mortar titan goes back to attacking the generator after breaking of an attack.
+
+// --------------------------------------------------------------------
+// MORTAR TITAN LOGIC
+// --------------------------------------------------------------------
+
+function MortarTitans_Init()
+{
+	RegisterSignal( "InterruptMortarAttack" )
+	RegisterSignal( "BeginMortarAttack" )
+}
+
+void function MortarTitanDeathCleanup( entity titan )
+{
+	titan.EndSignal( "OnSyncedMeleeVictim" )
+	titan.EndSignal( "OnDeath" )
+	titan.EndSignal( "OnDestroy" )
+
+	OnThreadEnd(
+		function() : ( titan )
+		{
+			entity animEnt = titan.ai.carryBarrel
+
+			if ( IsValid( animEnt ) )
+				animEnt.Destroy()
+
+			if ( IsAlive( titan ) )
+			{
+				titan.Signal( "InterruptMortarAttack" )
+				titan.Anim_Stop()
+			}
+		}
+	)
+
+	WaitForever()
+}
+
+void function MortarMissileFiredCallback( entity missile, entity weaponOwner )
+{
+	thread MortarMissileThink( missile, weaponOwner )
+}
+
+void function MortarMissileThink( entity missile, entity weaponOwner )
+{
+	Assert( IsValid( missile ) )
+
+	missile.EndSignal( "OnDestroy" )
+	missile.EndSignal( "OnDeath" )
+
+	if ( !IsValid( weaponOwner.ai.mortarTarget ) )
+		return
+
+	entity targetEnt = weaponOwner.ai.mortarTarget
+
+	missile.DamageAliveOnly( true )
+	missile.kv.lifetime = 6.0
+	missile.s.mortar <- true
+	vector startPos = missile.GetOrigin()
+
+	// made a hacky way to get the mortar arc to go higher and still have it hit it's target.
+
+	float dist = Distance( startPos, targetEnt.GetOrigin() )
+
+	// radius tightens over time
+	float radius = GraphCapped( Time() - weaponOwner.ai.spawnTime, 60.0, 180.0, 220, 100 )
+	missile.SetMissileTarget( targetEnt, < RandomFloatRange( -radius, radius ), RandomFloatRange( -radius, radius ), 0 > )
+
+	string sound = "weapon_spectremortar_projectile"
+	if ( weaponOwner.IsTitan() )
+		sound = "Weapon_FlightCore_Incoming_Projectile"
+
+	EmitSoundAtPosition( weaponOwner.GetTeam(), targetEnt.GetOrigin(), sound )
+
+	float homingSpeedMin = 10.0
+	float homingSpeedMax = Graph( dist, 2500, 7000, 400, 200 )
+	float estTravelTime = GraphCapped( dist, 0, 7000, 0, 5 )
+
+	float startTime = Time()
+	while( true )
+	{
+		float frac = min( 1, pow( ( Time() - startTime ) / estTravelTime, 2.0 ) )
+
+	 	if ( frac > 1.0 )
+	 		break
+
+		float homingSpeed = GraphCapped( frac, 0, 1, homingSpeedMin, homingSpeedMax )
+
+	 	missile.SetHomingSpeeds( homingSpeed, 0 )
+
+	 	wait 0.25
+	}
+
+	missile.ClearMissileTargetPosition()
+}
+
+void function MoveToMortarPosition( entity titan, vector origin, entity target )
+{
+	titan.EndSignal( "OnSyncedMeleeVictim" )
+	titan.EndSignal( "OnDeath" )
+	titan.EndSignal( "OnDestroy" )
+
+	titan.SetLookDistOverride( 320 )
+	titan.SetHearingSensitivity( 0 )
+	titan.EnableNPCMoveFlag( NPCMF_PREFER_SPRINT )
+
+	local animEnt = titan.ai.carryBarrel
+
+	local dir = target.GetOrigin() - origin
+	local dist = dir.Norm()
+	local angles = VectorToAngles( dir )
+	angles.x = 0
+	angles.z = 0
+
+	float frac = TraceLineSimple( origin + < 0, 0, 32 >, origin + < 0, 0, -32 >, titan )
+	if ( frac > 0 && frac < 1 )
+		origin = origin + < 0, 0, 32 > - < 0, 0, 64 * frac >
+
+	animEnt.SetOrigin( origin )
+	animEnt.SetAngles( angles )
+
+	float goalRadius = titan.GetMinGoalRadius()
+
+	OnThreadEnd(
+		function() : ( titan )
+		{
+			if ( !IsValid( titan ) )
+				return
+
+			local classname = titan.GetClassName()
+			titan.DisableLookDistOverride()
+			titan.SetHearingSensitivity( 1 )
+			titan.DisableNPCMoveFlag( NPCMF_PREFER_SPRINT )
+		}
+	)
+
+	local tries = 0
+	while( true )
+	{
+		local dist = Distance( titan.GetOrigin(), origin )
+		if ( dist <= goalRadius * 2 )
+			break
+
+		printt( "Mortar titan moving toward his goal", dist, tries++ )
+		titan.AssaultPoint( origin )
+		titan.AssaultSetGoalRadius( goalRadius )
+
+		local result = WaitSignal( titan, "OnFinishedAssault", "OnEnterGoalRadius" )
+	}
+}
+
+void function MortarTitanKneelToAttack( entity titan )
+{
+	titan.EndSignal( "OnSyncedMeleeVictim" )
+	titan.EndSignal( "OnDeath" )
+	titan.EndSignal( "OnDestroy" )
+
+	entity animEnt = titan.ai.carryBarrel
+	waitthread PlayAnim( titan, "at_mortar_stand2knee", animEnt )
+}
+
+function MortarTitanAttack( entity titan, entity target )
+{
+	titan.EndSignal( "OnSyncedMeleeVictim" )
+	titan.EndSignal( "OnDeath" )
+	titan.EndSignal( "OnDestroy" )
+	titan.EndSignal( "InterruptMortarAttack" )
+
+	OnThreadEnd(
+		function() : ( titan )
+		{
+			if ( !IsValid( titan ) )
+				return
+
+			if ( "selectedPosition" in titan.s )
+			{
+				titan.s.selectedPosition.inUse = false
+				delete titan.s.selectedPosition
+			}
+
+			if ( IsAlive( titan ) )
+				thread MortarTitanAttackEnd( titan )
+		}
+	)
+
+	titan.ai.mortarTarget = target
+	entity animEnt = titan.ai.carryBarrel
+
+	entity weapon = titan.GetActiveWeapon()
+
+	while ( weapon.IsWeaponOffhand() )
+	{
+		WaitFrame()
+		weapon = titan.GetActiveWeapon()
+	}
+
+	weapon.SetMods(  [ "coop_mortar_titan" ] )
+
+	while( true )
+	{
+		waitthread PlayAnim( titan, "at_mortar_knee", animEnt )
+	}
+}
+
+function MortarTitanAttackEnd( entity titan )
+{
+	titan.EndSignal( "OnDeath" )
+	titan.EndSignal( "OnDestroy" )
+
+	entity animEnt = titan.ai.carryBarrel
+
+	// remove the mortar mod, we do this so that we don't get mortar sound and fx when firing normal
+	entity weapon = titan.GetActiveWeapon()
+
+	while ( weapon.IsWeaponOffhand() )
+	{
+		WaitFrame()
+		weapon = titan.GetActiveWeapon()
+	}
+
+	weapon.SetMods( [] )
+
+	WaitEndFrame() // if I didn't add this PlayAnim, below, would return immediately for some unknown reason.
+
+	if ( IsValid( animEnt ) && IsAlive( titan ) )
+		waitthread PlayAnim( titan, "at_mortar_knee2stand", animEnt )
+}
+
+function MortarTitanStopAttack( titan )
+{
+	titan.Signal( "InterruptMortarAttack" )
+}
+
+function MortarTitanStopAttack_Internal( titan )
+{
+	titan.Signal( "InterruptMortarAttack" )
+	titan.Anim_Stop()
+}
+
+void function MortarAIWaitToEngage( entity titan, float timeFrame, int minDamage = 75 )
+{
+	entity soul = titan.GetTitanSoul()
+	float endtime = Time() + timeFrame
+	int lastHealth = titan.GetHealth() + soul.GetShieldHealth()
+ 	float tickTime = 1.0
+
+	while ( Time() < endtime )
+	{
+		wait tickTime
+
+		int currentHealth = titan.GetHealth() + soul.GetShieldHealth()
+		if ( lastHealth > ( currentHealth + minDamage ) ) // add minDamage so that we ignore low amounts of damage.
+		{
+			lastHealth = currentHealth
+			endtime = Time() + timeFrame
+		}
+	}
+}
+
+
+/*******************************************************************\
+	MORTAR TITANS
+\*******************************************************************/
+//Function assumes that given Titan is spawned as npc_titan_atlas_tracker_mortar. Changing the Titan's AISettings post-spawn
+//disrupts the Titan's titanfall animations and can result in the Titan landing outside the level.
+void function MortarTitanThink( entity titan, entity generator )
+{
+	titan.EndSignal( "OnSyncedMeleeVictim" )
+	titan.EndSignal( "OnDeath" )
+	titan.EndSignal( "OnDestroy" )
+
+	entity soul = titan.GetTitanSoul()
+	soul.EndSignal( "OnDestroy" )
+
+	titan.ai.carryBarrel = CreateScriptRef()
+	titan.TakeWeaponNow( titan.GetActiveWeapon().GetWeaponClassName() )
+	titan.GiveWeapon( "mp_titanweapon_rocketeer_rocketstream" )
+	titan.SetActiveWeaponByName( "mp_titanweapon_rocketeer_rocketstream" )
+	titan.SetScriptName( "mortar_titan" )
+
+	entity weapon = titan.GetActiveWeapon()
+	weapon.w.missileFiredCallback = MortarMissileFiredCallback
+	thread MortarTitanDeathCleanup( titan )
+
+	WaitTillHotDropComplete( titan )
+
+	float minEngagementDuration = 5
+	StationaryAIPosition ornull mortarPosition = GetRandomStationaryPosition( titan.GetOrigin(), MORTAR_TITAN_POSITION_SEARCH_RANGE, eStationaryAIPositionTypes.MORTAR_TITAN )
+	while ( mortarPosition == null )
+	{
+		// incase all stationary titan positions are in use wait for one to become available
+		wait 5
+		mortarPosition = GetRandomStationaryPosition( titan.GetOrigin(), MORTAR_TITAN_POSITION_SEARCH_RANGE, eStationaryAIPositionTypes.MORTAR_TITAN )
+	}
+
+	expect StationaryAIPosition( mortarPosition )
+
+	ClaimStationaryAIPosition( mortarPosition )
+
+	OnThreadEnd(
+		function() : ( mortarPosition )
+		{
+			// release mortar position when dead
+			ReleaseStationaryAIPosition( mortarPosition )
+		}
+	)
+
+	float minDamage = 75 // so that the titan doesn't care about small amounts of damage.
+
+	while( true )
+	{
+		vector origin = mortarPosition.origin
+
+		float startHealth = float( titan.GetHealth() + soul.GetShieldHealth() )
+		waitthread MoveToMortarPosition( titan, origin, generator )
+
+		if ( startHealth > ( ( titan.GetHealth() + soul.GetShieldHealth() ) + minDamage ) || !titan.IsInterruptable() )
+		{
+			// we took damage getting to the mortar location lets wait until we stop taking damage
+			waitthread MortarAIWaitToEngage( titan, MORTAR_TITAN_ENGAGE_DELAY )
+			continue
+		}
+
+		waitthread MortarTitanKneelToAttack( titan )
+		thread MortarTitanAttack( titan, generator )
+
+		wait minEngagementDuration	// aways mortar the target for a while before potentially breaking out
+
+		// wait for interruption
+		waitthread WaitForInteruption( titan )
+
+		MortarTitanStopAttack_Internal( titan )
+
+		// lets wait until we stop taking damage before going back to attacking the generator
+		waitthread MortarAIWaitToEngage( titan, MORTAR_TITAN_REENGAGE_DELAY )
+	}
+}
+
+void function WaitForInteruption( entity titan )
+{
+	Assert( IsNewThread(), "Must be threaded off" )
+
+	titan.EndSignal( "OnSyncedMeleeVictim" )
+	titan.EndSignal( "OnDeath" )
+	titan.EndSignal( "OnDestroy" )
+	titan.EndSignal( "InterruptMortarAttack" )
+
+	entity soul = titan.GetTitanSoul()
+	soul.EndSignal( "OnDestroy" )
+
+	float playerProximityDistSqr = pow( 256, 2 )
+	float healthBreakOff = ( titan.GetHealth() + soul.GetShieldHealth() ) * MORTAR_TITAN_ABORT_ATTACK_HEALTH_FRAC
+
+	while( true )
+	{
+		if ( IsEnemyWithinDist( titan, playerProximityDistSqr ) )
+			break
+		if ( ( titan.GetHealth() + soul.GetShieldHealth() ) < healthBreakOff )
+			break
+		wait 1
+	}
+}
+
+bool function IsEnemyWithinDist( entity titan, float dist )
+{
+	vector origin = titan.GetOrigin()
+	array<entity> players = GetPlayerArrayOfEnemies_Alive( titan.GetTeam() )
+
+	foreach( player in players )
+	{
+		if ( DistanceSqr( player.GetOrigin(), origin ) < dist )
+			return true
+	}
+
+	return false
+}

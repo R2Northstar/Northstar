@@ -1,0 +1,38 @@
+global function TeamEMP_Init
+global function EMPEffects
+
+void function TeamEMP_Init()
+{
+	RegisterSignal( "PlayerEMPed" )
+}
+
+void function EMPEffects( entity player, float time )
+{
+	player.nv.empEndTime = Time() + time
+
+	player.Signal( "PlayerEMPed" )
+
+	// remember this is a stack so you need to enable as many times as you disable
+	DisableOffhandWeapons( player )
+
+	thread RecoverFromEMP( player, time )
+}
+
+void function RecoverFromEMP( entity player, float time )
+{
+	svGlobal.levelEnt.EndSignal( "BurnMeter_PreMatchEnter" )
+	player.EndSignal( "OnDestroy" )
+
+	OnThreadEnd(
+		function() : ( player )
+		{
+			if ( IsValid( player ) )
+			{
+			// remember this is a stack so you need to enable as many times as you disable
+				EnableOffhandWeapons( player )
+			}
+		}
+	)
+
+	wait time + 0.1
+}

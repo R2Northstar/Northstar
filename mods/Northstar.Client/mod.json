@@ -1,0 +1,15 @@
+{
+	"ApiId" : "Northstar.Client",
+	"Name" : "Northstar.Client",
+	"Description" : "Various ui and client changes to fix bugs and add better support for mods",
+	"Authors" : [
+		"BobTheBob"
+	],
+	"Contacts" : [
+		"BobTheBob#1150"
+	],
+	"Version" : "0.1",
+	"CustomScripts": [
+
+	]
+}

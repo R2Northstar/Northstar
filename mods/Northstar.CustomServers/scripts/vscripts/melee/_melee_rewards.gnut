@@ -1,0 +1,74 @@
+untyped
+
+global function MeleeRewards_Init
+
+
+function MeleeRewards_Init()
+{
+	AddSyncedMeleeServerCallback( GetSyncedMeleeChooser( "human", "human" ), GiveMeleeRewards )
+}
+
+void function GiveMeleeRewards( SyncedMeleeChooser actions, SyncedMelee action, entity player, entity enemy )
+{
+	thread GiveMeleeRewards_Internal( player, enemy )
+}
+
+enum eMeleeReward
+{
+	NONE
+	AMMO
+	MAPHACK
+}
+
+function GiveMeleeRewards_Internal( entity player, entity enemy )
+{
+	player.EndSignal( "OnDeath" )
+
+	local reward = eMeleeReward.NONE
+
+	if ( enemy.IsPlayer() )
+		reward = eMeleeReward.MAPHACK
+	else if ( enemy.IsNPC() )
+		reward = eMeleeReward.AMMO
+
+	player.WaitSignal( "SyncedMeleeComplete" )
+
+	switch ( reward )
+	{
+		case eMeleeReward.MAPHACK:
+			ExecutionGivesMapHack( player )
+			break
+		case eMeleeReward.AMMO:
+			ExecutionGivesAmmo( player )
+			break
+		default:
+			break
+	}
+}
+
+function ExecutionGivesMapHack( entity player )
+{
+	printt( "melee gave map hack!" )
+	thread ScanMinimap( player, true )
+}
+
+function ExecutionGivesAmmo( entity player )
+{
+	printt( "melee gave ammo!" )
+	local grenadeWeapon = player.GetOffhandWeapon( 0 )
+
+	if ( !IsValid( grenadeWeapon ) )
+		return
+
+	local maxAmmoClip = player.GetWeaponAmmoMaxLoaded( grenadeWeapon )
+	local remainingAmmo = player.GetWeaponAmmoLoaded( grenadeWeapon )
+
+	if ( remainingAmmo == maxAmmoClip )
+		return
+
+	local ammo = remainingAmmo + 1
+
+	grenadeWeapon.SetWeaponPrimaryClipCount( ammo )
+
+	EmitSoundOnEntity( player, "Coop_AmmoBox_AmmoRefill" )
+}

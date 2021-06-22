@@ -1,0 +1,99 @@
+npc_drone_worker
+{
+	HullType				"HULL_SMALL"
+	AIClass					flyingdrone
+	BodyType				flyingdrone
+	SmartAmmoLockType		any
+
+	marvin_type 			"marvin_type_drone"
+	drone_type				"drone_type_marvin"
+	BaseClass				"npc_drone"
+	nonCombatAI				1
+
+	BehaviorSelector		"behavior_drone"
+	title 					#NPC_DRONE_WORKER
+
+	Health					20 [$sp]
+	Health					20 [$mp]
+
+	//leechAnimSet			flyingdrone
+	//onLeechFuncName		DroneOnLeeched
+	//leechAnimTag			HIJACK
+	//leechDataKnifeTag		KNIFE
+	leechMaxDist			0
+
+	DefaultModelName		"models/robots/aerial_unmanned_worker/aerial_unmanned_worker.mdl"
+
+	FOV_Vert_Offset			0
+    FOV_Near_Dist			500		// use near values up to this distance
+	FOV_Far_Dist			2000	// use far values after this distance, interpolate horizontal in between, use far for vertical
+
+	FOV_Idle_Near_Horz		130
+	FOV_Idle_Near_Vert		180
+	FOV_Idle_Far_Horz		60
+	FOV_Idle_Far_Vert		60
+
+	FOV_Alert_Near_Horz		130
+	FOV_Alert_Near_Vert		180
+	FOV_Alert_Far_Horz		60
+	FOV_Alert_Far_Vert		60
+
+	FOV_Combat_Near_Horz	160
+	FOV_Combat_Near_Vert	180
+	FOV_Combat_Far_Horz		130
+	FOV_Combat_Far_Vert		60
+
+	aimassist_adspull_centerAttachmentName		"CHESTFOCUS"
+	aimassist_adspull_centerRadius				11.0
+	aimassist_adspull_headshotAttachmentName	""
+	aimassist_adspull_headshotRadius			0.0
+
+	YawSpeed				30
+	MoveYawSpeed			15
+	AimAngularSpeed			10
+
+	// TEMP for now, make them basically blind unless you're right in front of them
+	NoticeDistNear_Idle		200
+	NoticeDistNear_Alert	300
+	NoticeDistNear_Combat	1000
+
+	NoticeDistFar_Idle		2000
+	NoticeDistFar_Alert		2000
+	NoticeDistFar_Combat	2000
+
+	NoticeTimeNear_Idle		0.1
+	NoticeTimeNear_Alert	0.1
+	NoticeTimeNear_Combat	0.0
+
+	NoticeTimeFar_Idle		1.0
+	NoticeTimeFar_Alert		1.0
+	NoticeTimeFar_Combat	1.0
+
+	NoticeForgetPreTime		0.3
+	NoticeForgetPostTime	5.0
+
+	rodeoMaxDist			0	// set to > 0 to make rodeoable
+	chaseStopDist			700
+	chaseStopDistHeavyArmor	1000
+
+	faceEnemyToleranceAngle			2
+	faceEnemyStrictToleranceAngle	1
+	PainOnHeavyDamageThreshold		0	// no heavy damage
+
+	waitBetweenWeaponBurst	1
+
+	magneticRange			30
+	randomHoverAmount		1
+	flyingStoppingTime		0.75
+	maxFlyingSpeed			200
+	maxFlyingSpeedNonCombat	120
+
+	minGoalRadius			16
+
+	maxPitch			45
+	maxRoll				45
+
+	moveLoopingSound		WorkerDrone_Mvmt_Hover
+
+	hoverHeight			100	// if has target, offset above target's height
+}

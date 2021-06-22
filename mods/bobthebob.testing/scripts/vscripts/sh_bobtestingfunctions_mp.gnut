@@ -1,0 +1,128 @@
+globalize_all_functions
+
+void function DumpPdefEnum( string pdefEnum )
+{
+	for ( int i = 0; i < PersistenceGetEnumCount( pdefEnum ); i++ )
+		print( PersistenceGetEnumItemNameForIndex( pdefEnum, i ) )
+}
+
+void function ListPlayers()
+{
+	foreach ( entity player in GetPlayerArray() )
+	{
+		if ( player == null )
+			continue
+	
+		print( "player " + player.GetPlayerName() + ": G" + player.GetGen() + "." + player.GetLevel() )
+	}
+}
+
+void function DumpPdefTable()
+{
+	foreach ( key0, value0 in shGlobalMP.playerStatVars )
+	{
+		foreach ( key1, value1 in value0 )
+		{
+			foreach ( key2, statData in value1 )
+			{
+				print ( statData.statVar )
+			}
+		}
+	}
+}
+
+void function DumpModels()
+{
+	for ( int i = 0; i < 2048; i++ )
+		if ( GetEntByIndex( i ) != null && GetEntByIndex( i ).GetModelName() != $"?" )
+			print( i + ": " + GetEntByIndex( i ).GetModelName() )
+}
+
+void function DumpScoreEvents()
+{
+	int i = 0;
+	while ( true ) 
+	{
+		ScoreEvent event 
+		try event = ScoreEvent_FromId( i ) catch ( exception ) break
+			
+		print( "event " + i + ":" )
+		print( "name: " + event.name )
+		print( "splashText: " + event.splashText )
+		
+		// get string representation of displaytype
+		// if squirrel has a better way to do this i don't know it
+		string displayType
+		
+		if ( event.displayType & eEventDisplayType.HIDDEN )
+			displayType += "HIDDEN, "
+		if ( event.displayType & eEventDisplayType.CENTER )
+			displayType += "CENTER, "
+		if ( event.displayType & eEventDisplayType.MEDAL )
+			displayType += "MEDAL, "
+		if ( event.displayType & eEventDisplayType.CALLINGCARD )
+			displayType += "CALLINGCARD, "
+		if ( event.displayType & eEventDisplayType.ATTRITION )
+			displayType += "ATTRITION, "
+		if ( event.displayType & eEventDisplayType.BIG )
+			displayType += "BIG, "
+		if ( event.displayType & eEventDisplayType.GAMEMODE )
+			displayType += "GAMEMODE, "
+		if ( event.displayType & eEventDisplayType.CHALLENGE )
+			displayType += "CHALLENGE, "
+		if ( event.displayType & eEventDisplayType.MEDAL_FORCED )
+			displayType += "MEDAL_FORCED, "
+		if ( event.displayType & eEventDisplayType.SHOW_SCORE )
+			displayType += "SHOW_SCORE, "
+		
+		print( "displayType: " + displayType )
+		print( " " ) // newline
+		
+		i++
+	}
+	
+	print( "got " + i + " events!" )
+}
+
+void function DumpConversations()
+{
+	foreach ( string k, v in GetConversationToIndexTable() )
+		print( k )
+}
+
+#if CLIENT 
+void function TestMarkRUI()
+{
+	var rui = CreateCockpitRui( $"ui/speedball_flag_marker.rpak", 200 )
+	RuiSetBool( rui, "isVisible", true )
+	RuiSetFloat3( rui, "pos", GetLocalViewPlayer().GetOrigin() )
+	RuiSetBool( rui, "playerIsCarrying", false )
+	RuiSetInt( rui, "teamRelation", TEAM_IMC )
+	RuiSetBool( rui, "isCarried", false )
+}
+
+void function TestObjectiveRUIHunted()
+{
+	var rui = CreateCockpitRui( $"ui/hunted_objective.rpak", 200 )
+	RuiSetGameTime( rui, "startTime", Time() )
+	RuiSetGameTime( rui, "endTime", Time() + 20.0 )
+	RuiSetString( rui, "objectiveTitleText", "#HUNTED_OBJECTIVE_TITLE" )
+	RuiSetFloat( rui, "blingDuration", 5.0 )
+	RuiSetBool( rui, "showAll", true )
+}
+
+void function TestObjectiveRUIFW()
+{
+	var rui = CreateCockpitRui( $"ui/fw_objective_text.rpak" )
+	RuiSetString( rui, "objective", "deez nuts" )
+	
+	float time = Time() + 10.0
+	while ( time > Time() )
+	{
+		RuiSetString( rui, "objective", "deez nuts " + ( time - Time() ) )
+		WaitFrame()
+	}
+	
+	RuiDestroy( rui )
+}
+#endif

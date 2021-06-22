@@ -1,0 +1,49 @@
+untyped
+
+global function TitanCommands_Init
+
+
+function TitanCommands_Init()
+{
+	if ( GetCurrentPlaylistVarInt( "titan_move_command_enabled", 0 ) == 0 )
+		return
+
+	AddClientCommandCallback( "PrototypeOrderTitanMove", Prototype_OrderTitanMove )
+	RegisterSignal( "Prototype_TitanMove" )
+}
+
+bool function Prototype_OrderTitanMove( entity player, array<string> args )
+{
+	Assert( args.len() == 3 )
+	vector pos = Vector( args[0].tofloat(), args[1].tofloat(), args[2].tofloat() )
+
+	DebugDrawLine( pos, pos + Vector(0,0,500), 255, 0, 0, true, 5.0 )
+	entity titan = player.GetPetTitan()
+	if ( !IsAlive( titan ) )
+		return true
+
+	thread Prototype_TitanMove( player, titan, pos )
+
+	return true
+}
+
+void function Prototype_TitanMove( entity player, entity titan, vector origin )
+{
+	titan.Signal( "Prototype_TitanMove" )
+	titan.EndSignal( "Prototype_TitanMove" )
+	titan.EndSignal( "ChangedTitanMode" )
+	titan.EndSignal( "OnDeath" )
+	local mode = player.GetPetTitanMode()
+	if ( mode != eNPCTitanMode.STAY ) // assuming there are only 2 modes
+	{
+		player.SetPetTitanMode( eNPCTitanMode.STAY )
+		titan.DisableBehavior( "Follow" )
+		#if R1_VGUI_MINIMAP
+			titan.Minimap_SetBossPlayerMaterial( $"vgui/HUD/threathud_titan_friendlyself_guard" )
+		#endif
+
+		titan.AssaultSetOrigin( origin )
+	}
+
+	AssaultOrigin( titan, origin, 100 )
+}

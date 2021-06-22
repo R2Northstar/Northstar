@@ -1,0 +1,657 @@
+untyped
+global function BaseGametype_Init_MPSP
+global function CodeCallback_OnWeaponAttack
+global function CodeCallback_OnPlayerMatchmakingChanged
+global function CodeCallback_OnClientConnectionCompleted
+global function CodeCallback_OnClientDisconnected
+global function CodeCallback_OnPlayerRespawned
+global function CodeCallback_OnWeaponTouch
+global function CodeCallback_WeaponDropped
+global function DecideRespawnPlayer
+global function ShouldEntTakeDamage_SPMP
+global function ShouldUseReplacementSpawn
+global function TryGameModeAnnouncement
+global function CodeCallback_OnClientConnectionStarted
+global function CodeCallback_OnPlayerKilled
+global function CreateNoSpawnArea
+global function DeleteNoSpawnArea
+global function IsSpawnpointValidDrop
+global function ClientCommand_OpenDifficultyMenu
+global function CodeCallback_PlayerHasBeenConnectedForDuration
+global function OnPlayerKilled_DeathNotify
+global function GetSPLevelEnumForMapname
+
+global void functionref( entity, entity ) hackRespawnPlayerFunc
+
+struct
+{
+	float lastObitMsgTime = 0.0
+	int wallRunKills = 0
+	int slideKills = 0
+	float lastMultiKillStartTime = 0.0
+	int multiKillCount = 0
+} file
+
+void function BaseGametype_Init_MPSP()
+{
+	AddClientCommandCallback( "ClientCommand_OpenDifficultyMenu", ClientCommand_OpenDifficultyMenu )
+
+	AddCallback_OnPlayerKilled( OnPlayerKilled_DeathNotify )
+	AddCallback_OnPlayerInventoryChanged( RefreshWeaponHighlights )
+	AddCallback_OnPilotBecomesTitan( RefreshWeaponHighlightTitanTransfer )
+	AddCallback_OnTitanBecomesPilot( RefreshWeaponHighlightTitanTransfer )
+
+	if ( GetMapName() != "sp_training" )
+	{
+		AddDeathCallback( "npc_soldier", OnNPCKilled )
+		AddDeathCallback( "npc_spectre", OnNPCKilled )
+		AddDeathCallback( "npc_prowler", OnNPCKilled )
+		AddDeathCallback( "npc_titan", OnNPCKilled )
+		AddDeathCallback( "npc_stalker", OnNPCKilled )
+		AddDeathCallback( "npc_drone", OnNPCKilled )
+		AddDeathCallback( "npc_frag_drone", OnNPCKilled )
+		AddDeathCallback( "npc_turret_sentry", OnNPCKilled )
+	}
+
+	RegisterSignal( "RevertToRegularHighlight" )
+
+	FlagInit( "WeaponDropsAllowed" )
+	FlagSet( "WeaponDropsAllowed" )
+	
+	hackRespawnPlayerFunc = HackRespawnPlayer
+}
+
+void function HackRespawnPlayer( entity player, entity respawnOn ) 
+{
+	player.RespawnPlayer( null )
+}
+
+void function CodeCallback_OnWeaponAttack( entity player, entity weapon, string weaponName, int ammoUsed )
+{
+
+}
+
+void function CodeCallback_OnPlayerMatchmakingChanged( entity player )
+{
+
+}
+
+// playerconnected
+void function CodeCallback_OnClientConnectionCompleted( entity player )
+{
+	if ( IsLobby() )
+	{
+		level.Lobby_OnClientConnectionCompleted( player )
+		return
+	}
+
+	player.hasConnected = true
+
+	InitMeleeAnimEventCallbacks( player )
+	ZiplineInit( player )
+
+	FinishClientScriptInitialization( player )
+
+	// Added via AddCallback_OnClientConnected
+	foreach ( callbackFunc in svGlobal.onClientConnectedCallbacks )
+	{
+		callbackFunc( player )
+	}
+
+	if ( !Flag( "PlayerDidSpawn") )
+	{
+		__PlayerDidSpawn( player )
+		svGlobal.levelEnt.Signal( "PlayerDidSpawn", { player = player } )
+	}
+
+	// Player was already positioned at info_player_start in SpPlayerConnecting.
+	// Don't reposition him, in case movers have already pushed him.
+	player.RespawnPlayer( null )
+	AddPlayerMovementEventCallback( player, ePlayerMovementEvents.BEGIN_WALLRUN, Callback_WallrunBegin )
+}
+
+void function CodeCallback_OnClientDisconnected( entity player, string reason )
+{
+	if ( IsLobby() )
+	{
+		player.Signal( "_disconnectedInternal" )
+		UpdateBadRepPresent()
+		return
+	}
+
+	if ( !player.hasConnected )
+		return
+
+	// Added via AddCallback_OnClientDisconnected
+	foreach ( callbackFunc in svGlobal.onClientDisconnectedCallbacks )
+	{
+		callbackFunc( player )
+	}
+
+	player.Disconnected()
+	player.p.isDisconnected = true
+	player.CleanupMPClasses()
+}
+
+int function GetSPLevelEnumForMapname( string mapName )
+{
+	switch ( mapName )
+	{
+		case "sp_training":
+			return eSPLevel.TRAINING
+
+		case "sp_crashsite":
+			return eSPLevel.WILDS
+
+		case "sp_sewers1":
+			return eSPLevel.SEWERS
+
+		case "sp_boomtown_start":
+		case "sp_boomtown":
+		case "sp_boomtown_end":
+			return eSPLevel.BOOM_TOWN
+
+		case "sp_hub_timeshift":
+		case "sp_timeshift_spoke02":
+			return eSPLevel.TIME_SHIFT
+
+		case "sp_beacon":
+		case "sp_beacon_spoke0":
+			return eSPLevel.BEACON
+
+		case "sp_tday":
+			return eSPLevel.TDAY
+
+		case "sp_s2s":
+			return eSPLevel.SHIP2SHIP
+
+		case "sp_skyway_v1":
+			return eSPLevel.SKYWAY
+
+		default:
+			return eSPLevel.UNKNOWN
+	}
+
+	unreachable
+}
+
+bool function ShouldGiveFullGrenades()
+{
+	int levelID = GetSPLevelEnumForMapname( GetMapName() )
+	if ( levelID == eSPLevel.UNKNOWN )
+		return true
+
+	LevelTransitionStruct ornull trans = GetLevelTransitionStruct()
+	if ( trans == null )
+		return true
+
+	expect LevelTransitionStruct( trans )
+	if ( trans.levelID != levelID )
+		return true
+
+	return false
+}
+
+void function CodeCallback_OnPlayerRespawned( entity player )
+{
+	SetHumanRagdollImpactTable( player )
+
+	player.s.respawnCount++
+	player.s.respawnTime = Time()
+	ClearRecentDamageHistory( player )
+
+	player.Signal( "OnRespawned" )
+
+	PilotLoadoutDef loadout = GetPilotLoadoutForCurrentMapSP()
+	if ( !IsTestMap() )
+		PopulatePilotLoadoutFromLevelTrans( loadout )
+	GivePilotLoadout( player, loadout )
+
+	if ( ShouldGiveFullGrenades() )
+	{
+		entity ordnanceWeapon = player.GetOffhandWeapon( OFFHAND_ORDNANCE )
+		if ( IsValid( ordnanceWeapon ) )
+		{
+			int maxClip = ordnanceWeapon.GetWeaponPrimaryClipCountMax()
+			if ( maxClip > 0 )
+				ordnanceWeapon.SetWeaponPrimaryClipCount( maxClip )
+		}
+	}
+
+
+	LevelTransitionStruct ornull trans = GetLevelTransitionStruct()
+	if ( trans != null )
+	{
+		expect LevelTransitionStruct( trans )
+		if ( trans.pilotHasBattery )
+		{
+			entity battery = Rodeo_CreateBatteryPack()
+			Rodeo_PilotPicksUpBattery_Silent( player, battery )
+		}
+	}
+
+	NPCTitanInitModeOnPlayerRespawn( player )
+
+	// Added via AddCallback_OnPlayerRespawned
+	foreach ( callbackFunc in svGlobal.onPlayerRespawnedCallbacks )
+	{
+		callbackFunc( player )
+	}
+
+	player.e.lastAttacker = null
+}
+
+void function DecideRespawnPlayer( entity player )
+{
+}
+
+
+// Returns bool or nothing
+function RespawnTitanPilot( entity player )
+{
+}
+
+bool function ShouldEntTakeDamage_SPMP( entity ent, var damageInfo )
+{
+	return true
+}
+
+bool function ShouldUseReplacementSpawn( entity player )
+{
+	return false
+}
+
+void function TryGameModeAnnouncement( entity player )
+{
+
+}
+
+void function CodeCallback_OnClientConnectionStarted( entity player )
+{
+	// not a real player?
+	#if DEV
+	if ( player.GetPlayerName() == "Replay" )
+		return
+	#endif
+
+	if ( IsLobby() )
+	{
+		level.Lobby_OnClientConnectionStarted( player )
+		return
+	}
+
+//	ScreenFade( player, 0, 0, 0, 255, 2.0, 0.5, FFADE_IN | FFADE_PURGE )
+
+	SetTargetName( player, "player" + player.entindex() )
+
+	player.p.controllableProjectiles_scriptManagedID = CreateScriptManagedEntArray()
+	player.p.npcFollowersArrayID = CreateScriptManagedEntArray()
+
+	player.s = {}
+	player.s.attackerInfo <- {}
+	player.p.clientScriptInitialized = player.IsBot()
+	player.s.inPostDeath <- null
+	player.s.respawnCount <- 0
+	player.s.respawnTime <- 0
+	player.s.lostTitanTime <- 0
+	player.s.cloakedShotsAllowed <- 0
+	player.s.startDashMeleeTime <- 0
+	player.s.respawnSelectionDone <- true  // this gets set to false in postdeaththread but we need it to be true when connecting
+	player.s.waveSpawnProtection <- false
+
+	player.s.nextStatUpdateFunc <- null
+
+	player.s.activeTrapArrayId <- CreateScriptManagedEntArray()
+
+	player.s.restartBurnCardEffectOnSpawn <- false
+	player.s.replacementDropInProgress <- false
+
+	player.s.inGracePeriod <- true
+
+	// should I just add these when playing coop?
+	player.s.usedLoadoutCrate <- false
+	player.s.restockAmmoTime <- 0
+	player.s.restockAmmoCrate <- null
+
+	player.s.autoTitanLastEngageCalloutTime <- 0
+	player.s.autoTitanLastEngageCallout <- null
+	player.s.lastAIConversationTime <- {} // when was a conversation last played?
+
+	player.s.updatedPersistenceOnDisconnect <- false
+
+	player.s.lastFriendlySpawnedOn <- null
+	player.s.nextWaveSpawnTime <- 0.0
+
+	player.s.meleeSlowMoEndTime <- 0.0
+
+	Assert( !player._entityVars )
+
+	// Added via AddCallback_OnClientConnecting
+	foreach ( callbackFunc in svGlobal.onClientConnectingCallbacks )
+	{
+		callbackFunc( player )
+	}
+	
+	// do this after callbacks so we can define our own player script vars in callbacks
+	InitEntityVars( player )
+
+	printl( "Player connect started: " + player )
+
+	thread PilotHealthRegenThinkSP( player )
+}
+
+void function CodeCallback_OnPlayerKilled( entity player, var damageInfo )
+{
+	thread PostDeathThread_SP( player, damageInfo )
+}
+
+function PostDeathThread_SP( entity player, damageInfo )
+{
+	if ( player.p.watchingPetTitanKillReplay )
+		return
+
+	float timeOfDeath = Time()
+	player.p.postDeathThreadStartTime = Time()
+
+	Assert( IsValid( player ), "Not a valid player" )
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "OnRespawned" )
+
+	player.p.deathOrigin = player.GetOrigin()
+	player.p.deathAngles = player.GetAngles()
+
+	player.s.inPostDeath = true
+	player.s.respawnSelectionDone = false
+
+	player.cloakedForever = false
+	player.stimmedForever = false
+	player.SetNoTarget( false )
+	player.SetNoTargetSmartAmmo( false )
+	player.ClearExtraWeaponMods()
+
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	int methodOfDeath = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+
+	player.p.rematchOrigin = player.p.deathOrigin
+	if ( IsValid( attacker ) && methodOfDeath == eDamageSourceId.titan_execution )
+	{
+		// execution can throw you out of the map
+		player.p.rematchOrigin = attacker.GetOrigin()
+	}
+
+	int attackerViewIndex = attacker.GetIndexForEntity()
+
+	player.SetPredictionEnabled( false )
+	player.Signal( "RodeoOver" )
+	player.ClearParent()
+	bool showedDeathHint = ShowDeathHintSP( player, damageInfo )
+
+	int damageSource = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	if ( damageSource != eDamageSourceId.fall )
+	{
+		player.StartObserverMode( OBS_MODE_DEATHCAM )
+		if ( ShouldSetObserverTarget( attacker ) )
+			player.SetObserverTarget( attacker )
+		else
+			player.SetObserverTarget( null )
+	}
+
+	foreach( callbackFunc in svGlobal.onPlayerKilledCallbacks )
+	{
+		callbackFunc( player, attacker, damageInfo )
+	}
+
+	float reloadExtraDelay
+	if ( showedDeathHint )
+		reloadExtraDelay = 3.2
+
+	ReloadForMissionFailure( reloadExtraDelay )
+}
+
+
+
+
+function FinalPlayerUpdate( entity player )
+{
+	// every player runs this either after match/evac, or when they disconnect
+
+	// in case you disconnect during final scoreboard
+	if ( "ranFinalPlayerUpdate" in player.s )
+		return
+	player.s.ranFinalPlayerUpdate <- true
+}
+
+/*------------------------------------------------------------------------
+DUMPSITE FROM OTHER FILES
+--------------------------------------------------------------------------*/
+
+string function CreateNoSpawnArea( int blockSpecificTeam, int blockEnemiesOfTeam, vector origin, float timeout, float length, width = null, angles = null )
+{
+	return ""
+}
+
+void function DeleteNoSpawnArea( string id )
+{
+
+}
+
+
+bool function IsSpawnpointValidDrop( entity spawnpoint, int team )
+{
+	return true
+}
+
+bool function ClientCommand_OpenDifficultyMenu( entity player, array<string> args )
+{
+	if ( IsValid( player ) )
+		Remote_CallFunction_UI( player, "ServerCallback_OpenDifficultyMenu" )
+	return true
+}
+
+
+void function CodeCallback_PlayerHasBeenConnectedForDuration( entity player, float durationInSeconds ) //Empty function declaration to stop load error.
+{
+}
+
+void function OnPlayerKilled_DeathNotify( entity player, entity attacker, var damageInfo )
+{
+	EmitSoundOnEntity( player, "Player_Death_Begin" )
+}
+
+void function CodeCallback_WeaponDropped( entity weapon )
+{
+	if ( !IsValid( weapon ) )
+		return
+
+	if ( !Flag( "WeaponDropsAllowed" ) )
+	{
+		weapon.Destroy()
+		return
+	}
+
+	int loadoutIndex = GetSPTitanLoadoutIndexForWeapon( weapon.GetWeaponClassName() )
+	if ( loadoutIndex >= 0 )
+	{
+		if ( IsBTLoadoutUnlocked( loadoutIndex ) )
+		{
+			weapon.Destroy()
+			return
+		}
+		else
+		{
+			weapon.MarkAsLoadoutPickup()
+		}
+	}
+
+	SetTeam( weapon, TEAM_UNASSIGNED )
+
+	if ( weapon.IsLoadoutPickup() )
+	{
+		HighlightWeapon( weapon )
+	}
+	else
+	{
+		Highlight_SetOwnedHighlight( weapon, "weapon_drop_active" )
+		Highlight_SetNeutralHighlight( weapon, "weapon_drop_fresh" )
+		thread RevertToRegularHighlight( weapon )
+	}
+}
+
+void function RevertToRegularHighlight( entity weapon )
+{
+	weapon.Signal( "RevertToRegularHighlight" )
+	weapon.EndSignal( "RevertToRegularHighlight" )
+	weapon.EndSignal( "OnDestroy" )
+	wait 4.0
+	HighlightWeapon( weapon )
+}
+
+void function RefreshWeaponHighlightTitanTransfer( entity player, entity titan )
+{
+	RefreshWeaponHighlights( player )
+}
+
+void function CodeCallback_OnWeaponTouch( entity player, entity weapon, int ammoRecieved )
+{
+	if ( !IsAlive( player ) )
+		return
+
+	if ( Time() - file.lastObitMsgTime < 0.1 )
+		return
+
+	if ( ammoRecieved == 0 )
+	{
+		if ( !PlayerCanUseWeapon( player, weapon.GetWeaponClass() ) )
+			return
+
+		if ( !PlayerHasWeapon( player, weapon.GetWeaponClassName() ) )
+			return
+
+		MessageToPlayer( player, eEventNotifications.WEAP_AmmoFull, weapon, ammoRecieved )
+	}
+	else
+	{
+		MessageToPlayer( player, eEventNotifications.WEAP_GotAmmo, weapon, ammoRecieved )
+	}
+
+	file.lastObitMsgTime = Time()
+}
+void function Callback_WallrunBegin( entity player )
+{
+	file.wallRunKills = 0
+}
+
+void function OnNPCKilled( entity npc, var damageInfo )
+{
+	entity player = DamageInfo_GetAttacker( damageInfo )
+
+	if ( !IsValid( player ) )
+		return
+
+	if ( !player.IsPlayer() )
+		return
+
+	if ( player.IsTitan() )
+	{
+		if ( IsTitanCrushDamage( damageInfo ) )
+		{
+			thread PlayerTitanCrushKill_TryRumble( player, npc )
+		}
+
+		if ( IsHumanSized( npc ) )
+		{
+			TryInfantryMultiKill( player )
+		}
+
+		return
+	}
+
+	entity weapon = DamageInfo_GetWeapon( damageInfo )
+	int damageSource = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	if ( !IsValid( weapon ) )
+		return
+
+	if ( weapon.IsWeaponOffhand() && damageSource != eDamageSourceId.sp_weapon_arc_tool ) // special case let arc tool through
+		return
+
+	if ( player.IsWallRunning() )
+		file.wallRunKills++
+
+	if ( player.IsSliding() )
+	{
+		if ( file.slideKills == 0 )
+		{
+			thread TrackSlideEnd( player )
+		}
+		file.slideKills++
+	}
+
+	printt( "Wall Run Kills: " + file.wallRunKills )
+	printt( "Slide Kills: " + file.slideKills )
+
+	if ( file.wallRunKills >= 3 )
+		UnlockAchievement( player, achievements.WALLRUN_KILLS )
+
+	if ( file.slideKills >= 3 )
+		UnlockAchievement( player, achievements.SLIDE_KILLS )
+}
+
+void function PlayerTitanCrushKill_TryRumble( entity player, entity victim )
+{
+	player.EndSignal( "OnDeath" )
+
+	if ( !IsHumanSized( victim ) && !IsProwler( victim ) )
+		return
+
+	float rumbleAmplitude = 80.0
+	float rumbleFrequency = 150.0
+	float rumbleDuration = 0.4
+
+	// bigger rumble if victim is tougher than a Grunt
+	if ( victim.IsMechanical() || IsProwler( victim ) )
+	{
+		rumbleAmplitude = 140.0
+		rumbleFrequency = 100.0
+		rumbleDuration = 0.6
+	}
+
+	// delay makes it feel better with the SFX
+	// (sound starts at same time, but takes a moment to get loud)
+	wait 0.1
+
+	CreateAirShakeRumbleOnly( player.GetOrigin(), rumbleAmplitude, rumbleFrequency, rumbleDuration )
+	//printt( "CRUSH RUMBLE", rumbleAmplitude )
+}
+
+void function TrackSlideEnd( entity player )
+{
+	player.EndSignal( "OnDeath" )
+
+	OnThreadEnd(
+	function() : (  )
+		{
+			file.slideKills = 0
+		}
+	)
+
+	while ( player.IsSliding() )
+	{
+		wait 0.1
+	}
+}
+
+void function TryInfantryMultiKill( entity player )
+{
+	if ( file.lastMultiKillStartTime + 2.0 < Time() )
+	{
+		file.lastMultiKillStartTime = Time()
+		file.multiKillCount = 0
+	}
+
+	file.multiKillCount++
+
+	printt( "Multi Kills: " + file.multiKillCount )
+
+	if ( file.multiKillCount >= 25 )
+		UnlockAchievement( player, achievements.INFANTRY_MULTIKILL )
+}

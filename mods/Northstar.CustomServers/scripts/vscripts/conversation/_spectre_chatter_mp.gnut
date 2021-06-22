@@ -1,0 +1,18 @@
+global function SpectreChatter_MP_Init
+global function PlaySpectreChatterMPLine
+
+void function SpectreChatter_MP_Init()
+{
+	//ShSpectreChatter_MP_Init()
+}
+
+void function PlaySpectreChatterMPLine( entity spectre, string conversationType )
+{
+	#if !SPECTRE_CHATTER_MP_ENABLED
+		return
+	#endif
+	
+	foreach ( entity player in GetPlayerArray() )
+		if ( ShouldPlaySpectreChatterMPLine( conversationType, player, spectre ) )
+			Remote_CallFunction_NonReplay( player, "ServerCallback_PlaySpectreChatterMP", GetConversationIndex( conversationType ), spectre.GetEncodedEHandle() )
+}

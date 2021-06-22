@@ -1,0 +1,606 @@
+global function AiStalker_Init
+global function GetDeathForce
+global function StalkerGearOverloads
+global function StalkerMeltingDown
+
+global function IsStalkerLimbBlownOff
+
+const float STALKER_DAMAGE_REQUIRED_TO_HEADSHOT = 0.3
+//
+// Base npc script shared between all npc types (regular, suicide, etc.)
+//
+
+const STALKER_REACTOR_CRITIMPACT_SOUND_1P_VS_3P = "ai_stalker_bulletimpact_nukecrit_1p_vs_3p"
+const STALKER_REACTOR_CRITIMPACT_SOUND_3P_VS_3P = "ai_stalker_bulletimpact_nukecrit_3p_vs_3p"
+const STALKER_REACTOR_CRITICAL_SOUND = "ai_stalker_nukedestruct_warmup_3p"
+const STALKER_REACTOR_CRITICAL_FX = $"P_spectre_suicide_warn"
+
+void function AiStalker_Init()
+{
+	PrecacheImpactEffectTable( "exp_stalker_powersupply" )
+	PrecacheImpactEffectTable( "exp_small_stalker_powersupply" )
+	PrecacheParticleSystem( STALKER_REACTOR_CRITICAL_FX )
+	AddDamageCallback( "npc_stalker", StalkerOnDamaged )
+	AddDeathCallback( "npc_stalker", StalkerOnDeath )
+	AddSpawnCallback( "npc_stalker", StalkerOnSpawned )
+}
+
+void function StalkerOnSpawned( entity npc )
+{
+	StalkerOnSpawned_Think( npc )
+}
+
+void function StalkerOnSpawned_Think( entity npc )
+{
+	npc.SetCanBeMeleeExecuted( false )
+
+	for ( int hitGroup = 0; hitGroup < HITGROUP_COUNT; hitGroup++ )
+	{
+		npc.ai.stalkerHitgroupDamageAccumulated[ hitGroup ] <- 0
+		npc.ai.stalkerHitgroupLastHitTime[ hitGroup ] <- 0
+	}
+
+	if ( npc.Dev_GetAISettingByKeyField( "ScriptSpawnAsCrawler" ) == 1 )
+	{
+		EnableStalkerCrawlingBehavior( npc )
+		PlayCrawlingAnim( npc, "ACT_RUN" )
+		npc.Anim_Stop() // start playing a crawl anim then cut it off so it doesnt loop
+	}
+}
+
+void function StalkerOnDeath( entity npc, var damageInfo )
+{
+	thread StalkerOnDeath_Internal( npc, damageInfo )
+
+	#if MP
+	int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	if ( sourceId == eDamageSourceId.damagedef_titan_step )
+	{
+		Explosion_DamageDefSimple(
+			damagedef_stalker_powersupply_explosion_large_at,
+			npc.GetOrigin(),
+			npc,
+			npc,
+			npc.GetOrigin()
+		)
+	}
+	#endif
+
+}
+
+void function StalkerOnDeath_Internal( entity npc, var damageInfo )
+{
+	int customDamageFlags = DamageInfo_GetCustomDamageType( damageInfo )
+	bool allowDismemberment = bool( customDamageFlags & DF_DISMEMBERMENT )
+	if ( allowDismemberment )
+	{
+		int hitGroup = GetHitGroupFromDamageInfo( npc, damageInfo )
+		if ( hitGroup >= HITGROUP_GENERIC )
+		{
+			entity attacker = DamageInfo_GetAttacker( damageInfo )
+			TryDismemberStalker( npc, damageInfo, attacker, hitGroup )
+		}
+	}
+
+	if ( IsCrawling( npc ) )
+	{
+		WaitFrame() // or head won't disappear
+		if ( IsValid( npc ) )
+			npc.BecomeRagdoll( Vector( 0, 0, 0 ), false )
+		return
+	}
+}
+
+
+// All damage to stalkers comes here for modification and then either branches out to other npc types (Suicide, etc) for custom stuff or it just continues like normal.
+void function StalkerOnDamaged( entity npc, var damageInfo )
+{
+	StalkerOnDamaged_Internal( npc, damageInfo )
+}
+
+void function StalkerOnDamaged_Internal( entity npc, var damageInfo )
+{
+	if ( !IsAlive( npc ) )
+		return
+
+	if ( StalkerMeltingDown( npc ) )
+	{
+		DamageInfo_ScaleDamage( damageInfo, 0.0 )
+		return
+	}
+
+	// can't shoot, don't blow off limbs
+	if ( IsCrawling( npc ) )
+	{
+		if ( Time() - npc.ai.startCrawlingTime < 0.75 )
+		{
+			DamageInfo_SetDamage( damageInfo, 0 )
+			return
+		}
+	}
+
+	int hitGroup = GetHitGroupFromDamageInfo( npc, damageInfo )
+	if ( hitGroup < HITGROUP_GENERIC )
+		hitGroup = HITGROUP_GENERIC
+
+	float damage = DamageInfo_GetDamage( damageInfo )
+
+	// limb dead yet?
+	npc.ai.stalkerHitgroupDamageAccumulated[ hitGroup ] += int( damage )
+	npc.ai.stalkerHitgroupLastHitTime[ hitGroup ] = Time()
+
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+
+	if ( PlayerHitGear( npc, damageInfo, hitGroup ) )
+	{
+		// don't die from damage
+		float damage = DamageInfo_GetDamage( damageInfo )
+		damage = npc.GetHealth() - 1.0
+		DamageInfo_SetDamage( damageInfo, damage )
+
+		thread StalkerGearOverloads( npc, attacker )
+		return
+	}
+
+	int customDamageFlags = DamageInfo_GetCustomDamageType( damageInfo )
+	bool allowDismemberment = bool( customDamageFlags & DF_DISMEMBERMENT )
+	if ( !allowDismemberment )
+		return
+
+	bool canBeStaggered = TryDismemberStalker( npc, damageInfo, attacker, hitGroup )
+
+	if ( canBeStaggered && !IsCrawling( npc ) && !npc.ai.transitioningToCrawl )
+	{
+		if ( npc.GetHealth().tofloat() / npc.GetMaxHealth().tofloat() <= 0.5 )
+		{
+			thread AttemptStandToStaggerAnimation( npc )
+			npc.SetActivityModifier( ACT_MODIFIER_STAGGER, true )
+		}
+	}
+}
+
+bool function TryDismemberStalker( entity npc, var damageInfo, entity attacker, int hitGroup )
+{
+	string fpSound
+	string tpSound
+
+	switch ( hitGroup )
+	{
+		case HITGROUP_CHEST:
+		case HITGROUP_STOMACH:
+			fpSound = "AndroidArmored.BulletImpact_1P_vs_3P"
+			tpSound = "AndroidArmored.BulletImpact_3P_vs_3P"
+			break
+
+		default:
+			fpSound = "AndroidVulnerable.BulletImpact_1P_vs_3P"
+			tpSound = "AndroidVulnerable.BulletImpact_3P_vs_3P"
+			break
+	}
+
+	if ( IsAlive( attacker ) && attacker.IsPlayer() )
+	{
+		EmitSoundOnEntityOnlyToPlayer( npc, attacker, fpSound )
+		EmitSoundOnEntityExceptToPlayer( npc, attacker, tpSound )
+	}
+	else
+	{
+		EmitSoundOnEntity( npc, tpSound )
+	}
+
+	bool justAFleshWound = true
+
+	switch ( hitGroup )
+	{
+		case HITGROUP_HEAD:
+			thread StalkerHeadShot( npc, damageInfo, hitGroup )
+			justAFleshWound = false
+			break
+
+		case HITGROUP_LEFTARM:
+			if ( StalkerLimbBlownOff( npc, damageInfo, hitGroup, 0.085, "left_arm", [ "left_arm", "l_hand" ], "Spectre.Arm.Explode" ) )
+			{
+				npc.SetActivityModifier( ACT_MODIFIER_ONEHANDED, true )
+
+				// Some of his synced melees depend on using his left arm
+				npc.SetCapabilityFlag( bits_CAP_SYNCED_MELEE_ATTACK, false )
+			}
+			break
+
+		case HITGROUP_LEFTLEG:
+			justAFleshWound = TryLegBlownOff( npc, damageInfo, hitGroup, 0.17, "left_leg", [ "left_leg", "foot_L_sole" ], "Spectre.Leg.Explode" )
+			break
+
+		case HITGROUP_RIGHTLEG:
+			justAFleshWound = TryLegBlownOff( npc, damageInfo, hitGroup, 0.17, "right_leg", [ "right_leg", "foot_R_sole" ], "Spectre.Leg.Explode" )
+			break
+	}
+
+	return justAFleshWound
+}
+
+bool function PlayerHitGear( entity npc, var damageInfo, int hitGroup )
+{
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+
+	if ( !attacker.IsPlayer() )
+		return false
+
+	if ( hitGroup != HITGROUP_GEAR )
+		return false
+
+	if ( !( DamageInfo_GetCustomDamageType( damageInfo ) & DF_BULLET ) )
+		return false
+
+	return true
+}
+
+int function GetHitGroupFromDamageInfo( entity npc, var damageInfo )
+{
+	int hitGroup = DamageInfo_GetHitGroup( damageInfo )
+
+	if ( hitGroup <= HITGROUP_GENERIC )
+	{
+		int hitBox = DamageInfo_GetHitBox( damageInfo )
+		if ( hitBox >= 0 )
+			return GetHitgroupForHitboxOnEntity( npc, hitBox )
+	}
+
+	return hitGroup
+}
+
+bool function StalkerMeltingDown( entity npc )
+{
+	int bodyGroup = npc.FindBodyGroup( "gear" )
+	Assert( bodyGroup != -1 )
+
+	// gear already blown up?
+	return npc.GetBodyGroupState( bodyGroup ) != 0
+}
+
+void function StalkerGearOverloads( entity npc, entity attacker = null )
+{
+	Assert( !StalkerMeltingDown( npc ) )
+
+	if ( !IsCrawling( npc ) && StalkerCanCrawl( npc ) )
+		thread FallAndBecomeCrawlingStalker( npc )
+
+	int bodyGroup = npc.FindBodyGroup( "gear" )
+
+	// hide gear
+	npc.SetBodygroup( bodyGroup, 1 )
+
+	string attachment = "CHESTFOCUS"
+
+	npc.EndSignal( "OnDestroy" )
+	npc.EndSignal( "OnDeath" )
+
+	entity nukeFXInfoTarget = CreateEntity( "info_target" )
+	nukeFXInfoTarget.kv.spawnflags = SF_INFOTARGET_ALWAYS_TRANSMIT_TO_CLIENT
+	DispatchSpawn( nukeFXInfoTarget )
+
+	nukeFXInfoTarget.SetParent( npc, attachment )
+
+	if ( attacker != null )
+	{
+		EmitSoundOnEntityOnlyToPlayer( nukeFXInfoTarget, attacker, STALKER_REACTOR_CRITIMPACT_SOUND_1P_VS_3P )
+		EmitSoundOnEntityExceptToPlayer( nukeFXInfoTarget, attacker, STALKER_REACTOR_CRITIMPACT_SOUND_3P_VS_3P )
+	}
+	else
+	{
+		EmitSoundOnEntity( nukeFXInfoTarget, STALKER_REACTOR_CRITIMPACT_SOUND_3P_VS_3P )
+	}
+
+	EmitSoundOnEntity( nukeFXInfoTarget, STALKER_REACTOR_CRITICAL_SOUND )
+
+	AI_CreateDangerousArea_DamageDef( damagedef_stalker_powersupply_explosion_small, nukeFXInfoTarget, TEAM_INVALID, true, false )
+
+	entity fx = PlayFXOnEntity( STALKER_REACTOR_CRITICAL_FX, nukeFXInfoTarget )
+
+	OnThreadEnd(
+	function() : ( nukeFXInfoTarget, fx, npc, attacker )
+		{
+			if ( IsValid( npc ) )
+				StopSoundOnEntity( nukeFXInfoTarget, STALKER_REACTOR_CRITICAL_SOUND )
+
+			if ( IsValid( nukeFXInfoTarget ) )
+				nukeFXInfoTarget.Destroy()
+
+			if ( IsValid( fx ) )
+				fx.Destroy()
+
+			if ( IsAlive( npc ) )
+			{
+				entity damageAttacker
+				if ( IsValid( attacker ) )
+					damageAttacker = attacker
+				else
+					damageAttacker = npc
+
+				vector force = GetDeathForce()
+				npc.Die( damageAttacker, npc, { force = force, scriptType = DF_GIB, damageSourceId = eDamageSourceId.suicideSpectreAoE } )
+			}
+		}
+	)
+
+	wait 1.0
+
+	float duration = 2.1
+	float endTime = Time() + duration
+	float startTime = Time()
+
+	int tagID = npc.LookupAttachment( "CHESTFOCUS" )
+
+	for ( ;; )
+	{
+		float timePassed = Time() - startTime
+		float explodeMin = Graph( timePassed, 0, duration, 0.4, 0.1 )
+		float explodeMax = explodeMin + Graph( timePassed, 0, duration, 0.21, 0.1 )
+		wait RandomFloatRange( explodeMin, explodeMax )
+
+		entity damageAttacker = GetNPCAttackerEnt( npc, attacker )
+
+		// origin = npc.GetWorldSpaceCenter()
+		vector origin = npc.GetAttachmentOrigin( tagID )
+
+		if ( Time() >= endTime )
+		{
+			Explosion_DamageDefSimple( damagedef_stalker_powersupply_explosion_large, origin, damageAttacker, npc, origin )
+			break
+		}
+		else
+		{
+			Explosion_DamageDefSimple( damagedef_stalker_powersupply_explosion_small, origin, damageAttacker, npc, origin )
+		}
+	}
+}
+
+bool function StalkerCanCrawl( entity npc )
+{
+	if ( !IsAlive( npc ) )
+		return false
+
+	if ( npc.Anim_IsActive() )
+		return false
+
+	return true
+}
+
+bool function TryLegBlownOff( entity npc, var damageInfo, int hitGroup, float limbHealthPercentOfMax, string leg, array<string> fxTags, string sound )
+{
+	if ( IsCrawling( npc ) )
+	{
+		// can blow off leg if stalker is already crawling
+		StalkerLimbBlownOff( npc, damageInfo, hitGroup, limbHealthPercentOfMax, leg, fxTags, sound )
+		return true
+	}
+
+	if ( !StalkerCanCrawl( npc ) )
+		return true
+
+	if ( StalkerLimbBlownOff( npc, damageInfo, hitGroup, limbHealthPercentOfMax, leg, fxTags, sound ) )
+	{
+		thread FallAndBecomeCrawlingStalker( npc )
+		return false
+	}
+
+	return true
+}
+
+void function EnableStalkerCrawlingBehavior( entity npc )
+{
+	Assert( StalkerCanCrawl( npc ) )
+	Assert( !IsCrawling( npc ) )
+
+	DisableLeeching( npc )
+
+	DisableMinionUsesHeavyWeapons( npc )
+
+	string crawlingSettings = string ( npc.Dev_GetAISettingByKeyField( "crawlingSettingsWrapper" ) )
+
+	// Changing the setting file includes changing the behavior file to	"behavior_stalker_crawling"
+	SetAISettingsWrapper( npc, crawlingSettings )
+
+	npc.ai.crawling = true
+	npc.ai.startCrawlingTime = Time()
+	npc.DisableGrappleAttachment()
+	npc.EnableNPCMoveFlag( NPCMF_DISABLE_ARRIVALS )
+	npc.SetCapabilityFlag( bits_CAP_MOVE_TRAVERSE | bits_CAP_MOVE_SHOOT | bits_CAP_WEAPON_RANGE_ATTACK1 | bits_CAP_AIM_GUN, false )
+	npc.SetActivityModifier( ACT_MODIFIER_CRAWL, true )
+	npc.SetActivityModifier( ACT_MODIFIER_STAGGER, false )
+	npc.SetCanBeGroundExecuted( true )
+	npc.ClearMoveAnim()
+
+	npc.SetHealth( npc.GetMaxHealth() * 0.5 )
+
+	npc.SetAimAssistForcePullPitchEnabled( true )
+
+	thread SelfTerminateAfterDelay( npc )
+}
+
+void function SelfTerminateAfterDelay( entity npc )
+{
+	const float lifeSupportDuration = 8
+	float deathTime = Time() + (lifeSupportDuration * 2)
+
+	npc.EndSignal( "OnDeath" )
+	for ( ;; )
+	{
+		entity enemy = npc.GetEnemy()
+		if ( IsAlive( enemy ) )
+		{
+			if ( Distance( npc.GetEnemyLKP(), npc.GetOrigin() ) < 500 )
+			{
+				if ( npc.TimeSinceSeen( enemy ) < 3 )
+					deathTime = max( Time() + lifeSupportDuration, deathTime )
+			}
+		}
+
+		if ( Time() > deathTime )
+		{
+			npc.Die()
+			return
+		}
+
+		wait 1.0
+	}
+}
+
+void function FallAndBecomeCrawlingStalker( entity npc )
+{
+	// finish what he's doing
+	npc.EndSignal( "OnDeath" )
+
+	npc.ai.transitioningToCrawl = true
+
+	// Workaround for Bug 114372
+	WaitFrame()
+
+	for ( ;; )
+	{
+		if ( npc.IsInterruptable() )
+			break
+		WaitFrame()
+	}
+
+	if ( !StalkerCanCrawl( npc ) )
+		return
+
+	if ( IsCrawling( npc ) )
+		return
+
+	EnableStalkerCrawlingBehavior( npc )
+
+	npc.Anim_Stop() // stop leeching, etc.
+
+	PlayCrawlingAnim( npc, "ACT_STAND_TO_CRAWL" )
+}
+
+void function PlayCrawlingAnim( entity npc, string animation )
+{
+	npc.Anim_ScriptedPlayActivityByName( animation, true, 0.1 )
+	npc.UseSequenceBounds( true )
+}
+
+void function AttemptStandToStaggerAnimation( entity npc )
+{
+	// Check if we are already staggered
+	if ( npc.IsActivityModifierActive( ACT_MODIFIER_STAGGER ) )
+		return
+
+	if ( !npc.IsInterruptable() )
+		return
+
+	if ( npc.ContextAction_IsBusy() )
+		return
+
+	// Are we blocking additional pain animations
+	if ( npc.GetNPCFlag( NPC_NO_PAIN ) )
+		return
+
+	// finish what he's doing
+	npc.EndSignal( "OnDeath" )
+
+	// Workaround for Bug 114372
+	WaitFrame()
+
+	for ( ;; )
+	{
+		if ( npc.IsInterruptable() )
+			break
+
+		WaitFrame()
+	}
+
+	if ( IsCrawling( npc ) || npc.ai.transitioningToCrawl )
+		return
+
+	npc.Anim_ScriptedPlayActivityByName( "ACT_STAND_TO_STAGGER", true, 0.1 )
+	npc.UseSequenceBounds( true )
+	npc.EnableNPCFlag( NPC_PAIN_IN_SCRIPTED_ANIM )
+}
+
+bool function IsStalkerLimbBlownOff( entity npc, string limbName )
+{
+	int bodyGroup = npc.FindBodyGroup( limbName )
+	if ( npc.GetBodyGroupState( bodyGroup ) != 0 )
+		return true
+
+	return false
+}
+
+bool function StalkerLimbBlownOff( entity npc, var damageInfo, int hitGroup, float limbHealthPercentOfMax, string limbName, array<string> fxTags, string sound )
+{
+	int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	switch ( damageSourceId )
+	{
+		case eDamageSourceId.mp_weapon_grenade_emp:
+		case eDamageSourceId.mp_weapon_proximity_mine:
+			return false
+	}
+
+	int bodyGroup = npc.FindBodyGroup( limbName )
+	if ( bodyGroup == -1 )
+		return false
+
+	if ( IsStalkerLimbBlownOff( npc, limbName ) )
+		return false
+
+	EmitSoundOnEntity( npc, sound )
+
+	// blow off limb
+	npc.SetBodygroup( bodyGroup, 1 )
+
+	return true
+}
+
+void function StalkerHeadShot( entity npc, var damageInfo, int hitGroup )
+{
+	// random chance to blow up head
+//	if ( DamageInfo_GetDamage( damageInfo ) < 100 && RandomFloat( 100 ) <= 66 )
+//		return
+
+	if ( !IsValidHeadShot( damageInfo, npc ) )
+		return
+
+	// only players score headshots
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	if ( !IsAlive( attacker ) )
+		return
+	if ( !attacker.IsPlayer() )
+		return
+
+	if ( DamageInfo_GetDamage( damageInfo ) < npc.GetHealth() )
+	{
+		// force lethal if we have done more than this much damage
+		if ( npc.ai.stalkerHitgroupDamageAccumulated[ hitGroup ] < npc.GetMaxHealth() * STALKER_DAMAGE_REQUIRED_TO_HEADSHOT )
+			return
+	}
+
+	npc.Anim_Stop() // stop leeching, etc.
+	npc.ClearParent()
+
+	//DisableLeeching( npc )
+
+	// No pain anims
+	//DamageInfo_AddDamageFlags( damageInfo, DAMAGEFLAG_NOPAIN )
+
+	// Set these so cl_player knows to kill the eye glow and play the right SFX
+	DamageInfo_AddCustomDamageType( damageInfo, DF_HEADSHOT )
+	DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
+
+	EmitSoundOnEntityExceptToPlayer( npc, attacker, "SuicideSpectre.BulletImpact_HeadShot_3P_vs_3P" )
+
+	int bodyGroupIndex = npc.FindBodyGroup( "removableHead" )
+	int stateIndex = 1  // 0 = show, 1 = hide
+	npc.SetBodygroup( bodyGroupIndex, stateIndex )
+
+	DamageInfo_SetDamage( damageInfo, npc.GetMaxHealth() )
+}
+
+vector function GetDeathForce()
+{
+	vector angles = <RandomFloatRange(-45,-75),RandomFloat(360),0>
+	vector forward = AnglesToForward( angles )
+	return forward * RandomFloatRange( 0.25, 0.75 )
+}

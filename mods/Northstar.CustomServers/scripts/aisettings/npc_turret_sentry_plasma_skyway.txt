@@ -1,0 +1,14 @@
+#base "npc_turret_sentry.txt"
+npc_turret_sentry_plasma_skyway
+{
+	DefaultModelName		"models/robots/turret_plasma/turret_plasma.mdl"
+	DefaultWeapon			"mp_weapon_turretplasma"
+	title 					"#NPC_TURRET_SENTRY_PLASMA"
+
+	//MaxTurretYaw        	360
+
+	maxEnemyDist						8000
+	maxEnemyDistHeavyArmor				8000
+	maxEnemyDistForAttacker 			8000
+	maxEnemyDistHeavyArmorForAttacker	8000
+}

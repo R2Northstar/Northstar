@@ -1,0 +1,46 @@
+global function FactionDialogue_Init
+global function InitFactionDialoguePersistence
+global function PlayFactionDialogueToPlayer
+global function PlayFactionDialogueToTeam
+global function PlayFactionDialogueToTeamExceptPlayer
+
+void function FactionDialogue_Init()
+{
+	AddCallback_OnClientConnected( AssignEnemyFactionToPlayer )
+}
+
+void function InitFactionDialoguePersistence( entity player )
+{
+	// doesn't seem to be used? required to compile tho
+}
+
+void function PlayFactionDialogueToPlayer( string conversationType, entity player )
+{
+	#if !FACTION_DIALOGUE_ENABLED
+		return
+	#endif
+	
+	if ( !ShouldPlayFactionDialogue( conversationType, player ) )
+		return
+	
+	int conversationIndex = GetConversationIndex( conversationType )
+	Remote_CallFunction_NonReplay( player, "ServerCallback_PlayFactionDialogue", conversationIndex )
+}
+
+void function PlayFactionDialogueToTeam( string conversationType, int team )
+{
+	foreach ( entity player in GetPlayerArrayOfTeam( team ) ) 
+		PlayFactionDialogueToPlayer( conversationType, player )
+}
+
+void function PlayFactionDialogueToTeamExceptPlayer( string conversationType, int team, entity except )
+{
+	foreach ( entity player in GetPlayerArrayOfTeam( team ) ) 
+		if ( player != except )
+			PlayFactionDialogueToPlayer( conversationType, player ) 
+}
+
+void function AssignEnemyFactionToPlayer( entity player )
+{
+	AssignEnemyFaction( player, expect string( player.GetPersistentVar( "factionChoice" ) ) )
+}

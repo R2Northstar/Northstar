@@ -1,0 +1,107 @@
+global function Music_Init
+global function CreateTeamMusicEvent
+global function PlayCurrentTeamMusicEventsOnPlayer
+global function CreateLevelIntroMusicEvent
+global function PlayMusicToCompletion
+global function PlayMusicToAll
+global function CreateLevelWinnerDeterminedMusicEvent
+
+const int MUSIC_EVENT_UNINITIALIZED = -1
+
+
+struct MusicEvent
+{
+	int musicPieceID = MUSIC_EVENT_UNINITIALIZED
+	float timeMusicStarted
+	bool shouldSeek
+}
+
+struct
+{
+	table< int, MusicEvent > musicEvents
+} file
+
+
+void function Music_Init()
+{
+	MusicEvent imcMusicEvent
+	MusicEvent militiaMusicEvent
+	file.musicEvents[ TEAM_IMC ] <- imcMusicEvent
+	file.musicEvents[ TEAM_MILITIA ] <- militiaMusicEvent
+
+	AddCallback_GameStateEnter( eGameState.Prematch, CreateLevelIntroMusicEvent )
+}
+
+void function CreateTeamMusicEvent( int team, int musicPieceID, float timeMusicStarted, bool shouldSeek = true )
+{
+	Assert( !( shouldSeek == false && timeMusicStarted > 0 ), "Don't pass in timeMusicStarted when creating a TeamMusicEvent with shouldSeek set to false!" )
+
+	MusicEvent musicEvent
+	musicEvent.musicPieceID  = musicPieceID
+	musicEvent.timeMusicStarted = timeMusicStarted
+	musicEvent.shouldSeek = shouldSeek
+
+	file.musicEvents[ team ] = musicEvent
+}
+
+void function PlayCurrentTeamMusicEventsOnPlayer( entity player )
+{
+	int team = player.GetTeam()
+	MusicEvent musicEvent
+
+	if ( team in file.musicEvents )
+		musicEvent = file.musicEvents[ team ]
+	else
+		musicEvent = file.musicEvents[ TEAM_MILITIA ] //This normally means we're in FFA. Fine to failsafe to use any music event
+
+	if ( musicEvent.musicPieceID == MUSIC_EVENT_UNINITIALIZED ) //No current music event
+		return
+
+	Remote_CallFunction_NonReplay( player, "ServerCallback_PlayTeamMusicEvent", musicEvent.musicPieceID, musicEvent.timeMusicStarted, musicEvent.shouldSeek )
+}
+
+void function CreateLevelIntroMusicEvent()
+{
+	//printt( "Creating LevelIntroMusicEvent" )
+	CreateTeamMusicEvent( TEAM_IMC, eMusicPieceID.LEVEL_INTRO, Time() )
+	CreateTeamMusicEvent( TEAM_MILITIA, eMusicPieceID.LEVEL_INTRO, Time() )
+}
+
+void function PlayMusicToCompletion( int musicID )
+{
+	array<entity> players = GetPlayerArray()
+	foreach ( entity player in players )
+	{
+		Remote_CallFunction_NonReplay( player, "ServerCallback_PlayMusicToCompletion", musicID )
+	}
+}
+
+void function PlayMusicToAll( int musicID )
+{
+	array<entity> players = GetPlayerArray()
+	foreach ( entity player in players )
+	{
+		Remote_CallFunction_NonReplay( player, "ServerCallback_PlayMusic", musicID )
+	}
+}
+
+void function CreateLevelWinnerDeterminedMusicEvent()
+{
+	//printt( "Creating CreateLevelWinnerDeterminedMusicEvent" )
+	if ( IsFFAGame() )
+		return
+
+	int winningTeam = GetWinningTeam()
+
+	if ( winningTeam )
+	{
+		int losingTeam = GetOtherTeam( winningTeam )
+		CreateTeamMusicEvent( winningTeam, eMusicPieceID.LEVEL_WIN, Time() )
+		CreateTeamMusicEvent( losingTeam, eMusicPieceID.LEVEL_LOSS, Time() )
+	}
+	else
+	{
+		CreateTeamMusicEvent( TEAM_MILITIA, eMusicPieceID.LEVEL_DRAW, Time() )
+		CreateTeamMusicEvent( TEAM_IMC, eMusicPieceID.LEVEL_DRAW, Time() )
+	}
+}

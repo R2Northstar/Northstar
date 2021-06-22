@@ -1,0 +1,65 @@
+//todo change this to be map-based
+global function SPMP_MapSpawn_Init
+global struct SvSpawnGlobals
+{
+	array<entity> allNormalSpawnpoints
+}
+
+global SvSpawnGlobals svSpawnGlobals
+
+void function SPMP_MapSpawn_Init()
+{
+	printl( "Code Script: _mp_mapspawn" )
+
+	svGlobal.npcsSpawnedThisFrame_scriptManagedArray[ TEAM_IMC ] <- CreateScriptManagedEntArray()
+	svGlobal.npcsSpawnedThisFrame_scriptManagedArray[ TEAM_MILITIA ] <- CreateScriptManagedEntArray()
+
+	level.spawnActions <- {} // these run after all initial spawn functions have run
+	svGlobal.levelEnt = CreateEntity( "info_landmark" )
+	SetTargetName( svGlobal.levelEnt, "Level Ent"  )
+	DispatchSpawn( svGlobal.levelEnt )
+	level.isTestmap <- false
+
+	FlagInit( "EntitiesDidLoad" )
+	FlagInit( "PlayerDidSpawn" )
+
+	level.privateMatchForcedEnd <- null
+	level.defenseTeam <- TEAM_IMC
+
+	level.onRodeoStartedCallbacks <- [] // runs when a player starts rodeoing a titan
+	level.onRodeoEndedCallbacks <- [] // runs when a player stops rodeoing a titan
+
+	FlagInit( "FireteamAutoSpawn" )
+	FlagInit( "DebugFoundEnemy" )
+	FlagInit( "OldAnimRefStyle" )
+	FlagInit( "EarlyCatch" )
+	FlagInit( "ForceStartSpawn" )
+	FlagInit( "IgnoreStartSpawn" )
+	FlagInit( "ReadyToStartMatch" ) // past waiting for players, in prematch
+
+	RegisterSignal( "OnChangedPlayerClass" )
+	RegisterSignal( "Disconnected" )
+	RegisterSignal( "_disconnectedInternal" )
+	RegisterSignal( "TeamChange" )
+	RegisterSignal( "LeftClass" )
+	RegisterSignal( "forever" )
+	RegisterSignal( "waitOver" )
+	RegisterSignal( "HitSky" )
+	
+	AddSpawnCallback( "trigger_hurt", InitDamageTriggers )
+
+	AddSpawnCallbackEditorClass( "func_brush", "func_brush_navmesh_separator", NavmeshSeparatorThink )
+	
+	//AddCallback_EntitiesDidLoad( ActivateSkyBox )
+
+	AddSpawnCallback( "player", MP_PlayerPostInit )
+
+	// unsure if this should be done here, but it's required for mp to load
+	PrecacheModel( $"models/menu/default_environment.mdl" )
+
+	//if ( IsMultiplayer() && GetClassicMPMode() && !IsLobby() )
+	//	ClassicMP_TryDefaultIntroSetup()
+
+	//InitDefaultLoadouts()
+	SPMP_Shared_Init()
+}

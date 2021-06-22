@@ -1,0 +1,97 @@
+untyped
+
+global function AiGunship_Init
+
+global function GunshipThink
+
+global const SOUND_GUNSHIP_HOVER = "Gunship_Hover"
+global const SOUND_GUNSHIP_EXPLODE_DEFAULT = "Gunship_Explode"
+global const FX_GUNSHIP_EXPLOSION = $"P_veh_exp_crow"
+
+function AiGunship_Init()
+{
+	PrecacheParticleSystem( FX_GUNSHIP_EXPLOSION )
+	AddDeathCallback( "npc_gunship", GunshipDeath )
+}
+
+
+function GunshipThink( gunship )
+{
+	gunship.EndSignal( "OnDeath" )
+
+	entity owner
+	entity currentTarget
+	local accuracyMultiplierBase = gunship.kv.AccuracyMultiplier
+	local accuracyMultiplierAgainstDrones = 100
+
+	while( true )
+	{
+		wait 0.25
+
+		//----------------------------------
+		// Get owner and current enemy
+		//----------------------------------
+		currentTarget = expect entity( gunship.GetEnemy() )
+		owner = expect entity( gunship.GetFollowTarget() )
+
+		//----------------------------------
+		// Free roam if owner is dead or HasEnemy
+		//----------------------------------
+		if ( ( !IsAlive( owner ) ) || ( currentTarget != null ) )
+		{
+			gunship.DisableBehavior( "Follow" )
+		}
+
+		//---------------------------------------------------------------------
+		// If owner is alive and no enemies in sight, go back and follow owner
+		//----------------------------------------------------------------------
+		if ( ( IsAlive( owner ) ) && ( currentTarget == null ) )
+		{
+			gunship.EnableBehavior( "Follow" )
+		}
+
+
+		//----------------------------------------------
+		// Jack up accuracy if targeting a small target (like a drone)
+		//----------------------------------------------
+		if ( ( currentTarget != null ) && ( IsAirDrone( currentTarget ) ) )
+		{
+			gunship.kv.AccuracyMultiplier = accuracyMultiplierAgainstDrones
+		}
+		else
+		{
+			gunship.kv.AccuracyMultiplier = accuracyMultiplierBase
+		}
+	}
+
+}
+
+
+void function GunshipDeath( entity gunship, var damageInfo )
+{
+	/*
+	Script errors
+
+	// Explosion effect
+	entity explosion = CreateEntity( "info_particle_system" )
+	explosion.SetOrigin( gunship.GetWorldSpaceCenter() )
+	explosion.SetAngles( gunship.GetAngles() )
+	explosion.SetValueForEffectNameKey( FX_GUNSHIP_EXPLOSION )
+	explosion.kv.start_active = 1
+	DispatchSpawn( explosion )
+	EmitSoundAtPosition( TEAM_UNASSIGNED, gunship.GetOrigin(), SOUND_GUNSHIP_EXPLODE_DEFAULT )
+	explosion.destroy( 3 )
+
+	gunship.Destroy()
+
+	P_veh_exp_hornet, TAG_ORIGIN, attach
+
+	*/
+
+	//TEMP
+	PlayFX( FX_GUNSHIP_EXPLOSION, gunship.GetOrigin() )
+	EmitSoundAtPosition( TEAM_UNASSIGNED, gunship.GetOrigin(), "Goblin_Dropship_Explode" )
+	gunship.Destroy()
+}
+
+

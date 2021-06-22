@@ -1,0 +1,25 @@
+global function BattleChatter_Init
+global function PlayBattleChatterLine
+global function TryPlayWeaponBattleChatterLine
+
+void function BattleChatter_Init()
+{
+	//ShBattleChatter_Init()
+}
+
+void function PlayBattleChatterLine( entity player, string conversationType )
+{
+	foreach( entity otherPlayer in GetPlayerArray() )
+		if ( ShouldPlayBattleChatter( conversationType, otherPlayer, player ) && player != otherPlayer )
+			Remote_CallFunction_NonReplay( otherPlayer, "ServerCallback_PlayBattleChatter", GetConversationIndex( conversationType ), player.GetEncodedEHandle() )
+}
+
+void function TryPlayWeaponBattleChatterLine( entity player, entity weapon )
+{
+	var chatterEvent = weapon.GetWeaponInfoFileKeyField( "battle_chatter_event" )
+	if ( chatterEvent == null )
+		return
+		
+	expect string( chatterEvent )
+	PlayBattleChatterLine( player, chatterEvent )
+}

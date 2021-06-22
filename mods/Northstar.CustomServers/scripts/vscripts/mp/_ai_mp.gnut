@@ -1,0 +1,41 @@
+global function MpInitAILoadouts
+global function SetProficiency
+global function IsAutoPopulateEnabled
+global function SPMP_UpdateNPCProficiency
+global function SPMP_Callback_ForceAIMissPlayer
+
+void function MpInitAILoadouts()
+{
+
+}
+
+void function SetProficiency( entity soldier )
+{
+
+}
+
+bool function IsAutoPopulateEnabled( var team = null )
+{
+	if ( IsNPCSpawningEnabled() == false )
+		return false
+
+	if ( Flag( "disable_npcs" ) )
+		return false
+
+	if ( team == TEAM_MILITIA && Flag( "Disable_MILITIA" ) )
+		return false
+	if ( team == TEAM_IMC && Flag( "Disable_IMC" ) )
+		return false
+
+	return true
+}
+
+void function SPMP_UpdateNPCProficiency(entity ent)
+{
+
+}
+
+bool function SPMP_Callback_ForceAIMissPlayer(entity npc, entity player)
+{
+	return true
+}

@@ -1,0 +1,778 @@
+untyped
+
+global function TitanHotdrop_Init
+
+global function TitanHotDrop
+global function PlayersTitanHotdrops
+global function NPCTitanHotdrops
+global function NPCPrespawnWarpfallSequence
+global function WaitTillHotDropComplete
+global function OnTitanHotdropImpact
+global function PlayHotdropImpactFX
+global function TitanTestDropPoint
+global function EdgeTraceDropPoint
+
+
+global function GetHotDropImpactTime
+
+global function ModifyOriginForDrop
+
+global function NearTitanfallBlocker
+
+global function DevCheckInTitanfallBlocker
+
+global function DrawTitanfallBlockers
+
+global function DropPodFindDropNodes
+
+global function PlayDeathFromTitanFallSounds
+
+global const HOTDROP_FP_WARP = $"P_warpjump_FP"
+global const HOTDROP_TRAIL_FX = $"hotdrop_hld_warp"
+global int BUBBLE_SHIELD_FX_PARTICLE_SYSTEM_INDEX
+
+function TitanHotdrop_Init()
+{
+
+	RegisterSignal( "titan_impact" )
+	RegisterSignal( "TitanHotDropComplete" )
+	RegisterSignal( "BubbleShieldStatusUpdate" )
+
+	PrecacheEffect( HOTDROP_TRAIL_FX )
+	PrecacheEffect( HOTDROP_FP_WARP )
+
+	AddDamageCallbackSourceID( damagedef_titan_fall, TitanFall_DamagedPlayerOrNPC )
+
+	PrecacheImpactEffectTable( HOTDROP_IMPACT_FX_TABLE )
+
+	PrecacheModel( $"models/fx/xo_shield.mdl" )
+	PrecacheModel( $"models/fx/xo_shield_wall.mdl" )
+	BUBBLE_SHIELD_FX_PARTICLE_SYSTEM_INDEX =  PrecacheParticleSystem( $"P_shield_hld_01_CP" )
+
+	BubbleShield_Init()
+}
+
+void function TitanHotDrop( entity titan, string animation, vector origin, vector angles, entity player, entity camera )
+{
+	Assert( titan.IsTitan(), titan + " is not a titan" )
+
+	titan.EndSignal( "OnDeath" )
+
+	HideName( titan )
+
+	array<entity> cleanup = [] // ents that will be deleted upon completion
+
+	OnThreadEnd(
+		function() : ( cleanup, titan, player, camera )
+		{
+			printt( "Post impact,anim is done" )
+			if ( IsValid( titan ) )
+			{
+				delete titan.s.hotDropPlayer
+				titan.e.isHotDropping = false
+				titan.Signal( "TitanHotDropComplete" )
+				if ( !IsFFAGame() )
+					titan.Minimap_DisplayDefault( titan.GetTeam(), null )
+			}
+
+			if ( IsValid( camera ) )
+				camera.ClearParent()
+
+			foreach ( entity ent in cleanup )
+			{
+				if ( IsValid_ThisFrame( ent ) )
+				{
+					// Delay enough seconds to allow titan hot drop smokeTrail FX to play fully
+					ent.Kill_Deprecated_UseDestroyInstead()
+				}
+			}
+
+			if ( IsValid( player ) )
+				ScreenFadeFromBlack( player, 0.2, 0.2 )
+		}
+	)
+
+	titan.s.hotDropPlayer <- player
+	titan.e.isHotDropping = true
+
+	origin += Vector(0,0,8 ) // work around for currently busted animation
+
+	entity ref = CreateScriptRef()
+	ref.SetOrigin( origin )
+	ref.SetAngles( angles )
+	ref.Show()
+	cleanup.append( ref )
+
+	// add smoke fx
+
+	TitanHotDrop_Smoke( cleanup, titan, titan.GetBossPlayer() )
+
+//	"Titan_1P_Warpfall_Hotdrop" 		- for first person drops while inside the titan dropping into the level
+//	"Titan_1P_Warpfall_Start" 			- for first person warp calls, starting right on the button press
+//	"Titan_1P_Warpfall_WarpToLanding" 	- for first person from the visual of the titan appearing and falling
+//	"Titan_3P_Warpfall_Start"  			- for any 3P other player or NPC when they call in a warp, starting right on their button press
+//	"Titan_3P_Warpfall_WarpToLanding" 	- for any 3P other player or NPC  from the visual of the titan appearing and falling
+	int teamNum = TEAM_UNASSIGNED
+	if ( IsValid( player ) )
+		teamNum = player.GetTeam();
+
+	EmitSoundAtPositionOnlyToPlayer( teamNum, origin, player, "Titan_1P_Warpfall_Hotdrop" )
+	EmitSoundAtPositionOnlyToPlayer( teamNum, origin, player, "Titan_1P_Warpfall_Start" )
+	EmitSoundAtPositionExceptToPlayer( teamNum, origin, player, "Titan_3P_Warpfall_Start" )
+	EmitSoundAtPositionExceptToPlayer( teamNum, origin, player, "Titan_3P_Warpfall_WarpToLanding" )
+
+	float duration = titan.GetSequenceDuration( animation )
+
+	Minimap_PingForTeam( titan.GetTeam(), origin, 64.0, duration, TEAM_COLOR_FRIENDLY / 255.0, 4, false )
+	if ( !IsFFAGame() )
+		titan.Minimap_Hide( titan.GetTeam(), null )
+
+	titan.NotSolid();
+	thread PlayAnimTeleport( titan, animation, ref )
+	titan.EndSignal( "OnAnimationDone" )
+
+	if ( player )
+	{
+		player.PlayerCone_SetMinYaw( -70 )
+		player.PlayerCone_SetMaxYaw( 70 )
+		player.PlayerCone_SetMinPitch( -90 )
+		player.PlayerCone_SetMaxPitch( 90 )
+	}
+
+	titan.WaitSignal( "titan_impact" )
+	player.ClearHotDropImpactTime()
+//	wait duration - 1.25
+
+	titan.Solid();
+
+	ShowName( titan )
+
+	vector sourcePosition = origin
+	sourcePosition.z = sourcePosition.z + 5.0
+
+	Explosion_DamageDefSimple(
+		damagedef_titan_hotdrop,
+		origin,
+		titan,								// attacker
+		titan,								// inflictor
+		origin )
+
+	float zoomTime = 2.0
+	float rotateTime = 0.5
+
+	//printt( "Post impact, before anim is done" )
+
+	if ( IsValid( camera ) )
+	{
+		camera.ClearParent()
+
+		entity mover = CreateExpensiveScriptMover()
+		mover.SetOrigin( camera.GetOrigin() )
+		mover.SetAngles( camera.GetAngles() )
+		camera.SetParent( mover )
+
+		mover.NonPhysicsMoveTo( titan.GetWorldSpaceCenter(), zoomTime, zoomTime * 0.4, zoomTime * 0.4 )
+		cleanup.append( mover )
+
+		wait 0.5
+
+		ScreenFadeToBlackForever( player, 0.8 )
+
+		wait 0.6
+
+		mover.RotateTo( angles, rotateTime, rotateTime*0.2, rotateTime*0.2 )
+	}
+
+	WaittillAnimDone( titan )
+}
+
+entity function TitanHotDrop_Smoke( array<entity> cleanup, entity titan, entity player )
+{
+	entity smokeTrail = CreateEntity( "info_particle_system" )
+	if ( IsValid( player ) )
+	{
+		smokeTrail.SetOwner( player )
+		smokeTrail.kv.VisibilityFlags = ENTITY_VISIBLE_TO_OWNER
+	}
+
+	smokeTrail.SetValueForEffectNameKey( HOTDROP_TRAIL_FX ) // HOTDROP_FP_WARP
+	smokeTrail.kv.start_active = 1
+	DispatchSpawn( smokeTrail )
+	smokeTrail.SetParent( titan, "HATCH_HEAD" )
+	cleanup.append( smokeTrail )
+
+
+	smokeTrail = CreateEntity( "info_particle_system" )
+	if ( IsValid( player ) )
+	{
+		smokeTrail.SetOwner( player )
+		smokeTrail.kv.VisibilityFlags = (ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY) //owner cant see
+	}
+
+	smokeTrail.SetValueForEffectNameKey( HOTDROP_TRAIL_FX ) // HOTDROP_FP_WARP
+	smokeTrail.kv.start_active = 1
+	DispatchSpawn( smokeTrail )
+	smokeTrail.SetParent( titan, "HATCH_HEAD" )
+	cleanup.append( smokeTrail )
+
+	return smokeTrail
+}
+
+void function PlayersTitanHotdrops( entity titan, vector origin, vector angles, entity player, string animation )
+{
+	titan.EndSignal( "OnDeath" )
+	titan.s.disableAutoTitanConversation <- true // refactor: Should be created on spawn, and always exist -mackey
+
+	OnThreadEnd(
+		function() : ( titan, player )
+		{
+			if ( !IsValid( titan ) )
+				return
+
+			// removed so that model highlight always works for you autotitan
+//			titan.DisableRenderAlways()
+
+			delete titan.s.hotDropPlayer
+			titan.e.isHotDropping = false
+			titan.Signal( "TitanHotDropComplete" )
+			DeleteAnimEvent( titan, "titan_impact" )
+			DeleteAnimEvent( titan, "second_stage" )
+			DeleteAnimEvent( titan, "set_usable" )
+		}
+	)
+
+	HideName( titan )
+	titan.s.hotDropPlayer <- player
+	titan.e.isHotDropping = true
+	titan.UnsetUsable() //Stop titan embark before it lands
+	AddAnimEvent( titan, "titan_impact", OnTitanHotdropImpact )
+	AddAnimEvent( titan, "second_stage", OnReplacementTitanSecondStage, origin )
+	AddAnimEvent( titan, "set_usable", SetTitanUsableByOwner )
+
+	string sfxFirstPerson
+	string sfxThirdPerson
+
+	switch ( animation )
+	{
+		case "at_hotdrop_drop_2knee_turbo_upgraded":
+			sfxFirstPerson = "Titan_1P_Warpfall_WarpToLanding_fast"
+			sfxThirdPerson = "Titan_3P_Warpfall_WarpToLanding_fast"
+			break
+
+		case "bt_hotdrop_skyway":
+			sfxFirstPerson = "titan_hot_drop_turbo_begin"
+			sfxThirdPerson = "titan_hot_drop_turbo_begin_3P"
+			break
+
+		case "at_hotdrop_drop_2knee_turbo":
+			sfxFirstPerson = "titan_hot_drop_turbo_begin"
+			sfxThirdPerson = "titan_hot_drop_turbo_begin_3P"
+			break
+
+		default:
+			Assert( 0, "Unknown anim " + animation )
+	}
+
+	float impactTime = GetHotDropImpactTime( titan, animation )
+	Attachment result = titan.Anim_GetAttachmentAtTime( animation, "OFFSET", impactTime )
+	vector maxs = titan.GetBoundingMaxs()
+	vector mins = titan.GetBoundingMins()
+	int mask = titan.GetPhysicsSolidMask()
+	origin = ModifyOriginForDrop( origin, mins, maxs, result.position, mask )
+
+	titan.SetInvulnerable() //Make Titan invulnerable until bubble shield is up. Cleared in OnTitanHotdropImpact
+
+	if ( SoulHasPassive( titan.GetTitanSoul(), ePassives.PAS_BUBBLESHIELD ) )
+	{
+		delaythread( impactTime ) CreateBubbleShield( titan, origin, angles )
+	}
+	else if ( SoulHasPassive( titan.GetTitanSoul(), ePassives.PAS_WARPFALL ) )
+	{
+		angles = AnglesCompose( angles, Vector( 0.0, 180.0, 0.0) )
+	}
+
+	//DrawArrow( origin, angles, 10, 150 )
+	// HACK: not really a hack, but this could be optimized to only render always for a given client
+	titan.EnableRenderAlways()
+
+	int teamNum = TEAM_UNASSIGNED
+	if ( IsValid( player ) )
+		teamNum = player.GetTeam()
+
+	EmitDifferentSoundsAtPositionForPlayerAndWorld( sfxFirstPerson, sfxThirdPerson, origin, player, teamNum )
+
+	SetStanceKneel( titan.GetTitanSoul() )
+
+	waitthread PlayAnimTeleport( titan, animation, origin, angles )
+
+	TitanCanStand( titan )
+	if ( !titan.GetCanStand() )
+	{
+		titan.SetOrigin( origin )
+		titan.SetAngles( angles )
+	}
+
+	titan.ClearInvulnerable() //Make Titan vulnerable again once he's landed
+
+	if ( !Flag( "DisableTitanKneelingEmbark" ) )
+	{
+		if ( IsValid( GetEmbarkPlayer( titan ) ) )
+		{
+			titan.SetTouchTriggers( true ) //Hack, potential fix for triggers bug. See bug 212751
+			//A player is trying to get in before the hotdrop animation has finished
+			//Wait until the embark animation has finished
+			WaittillAnimDone( titan )
+			return
+		}
+
+		titan.s.standQueued = false // SetStanceKneel should set this
+		SetStanceKneel( titan.GetTitanSoul() )
+		thread PlayAnim( titan, "at_MP_embark_idle_blended" )
+	}
+}
+
+float function GetHotDropImpactTime( entity titan, string animation )
+{
+	float impactTime = titan.GetScriptedAnimEventCycleFrac( animation, "titan_impact" )
+	if ( impactTime < 0.0 )
+		impactTime = titan.GetScriptedAnimEventCycleFrac( animation, "signal:titan_impact" )
+
+	Assert( impactTime > -1.0, "No event titan_impact in " + animation )
+
+	float duration = titan.GetSequenceDuration( animation )
+
+	impactTime *= duration
+
+	return impactTime
+}
+
+function NPCTitanHotdrops( entity titan, bool standImmediately, string titanfallAnim = "at_hotdrop_drop_2knee_turbo" )
+{
+	titan.EndSignal( "OnDeath" )
+	titan.EndSignal( "OnDestroy" )
+
+	titan.e.isHotDropping = true
+	titan.s.bubbleShieldStatus <- 0
+
+	titan.SetEfficientMode( true )
+	titan.SetTouchTriggers( false )
+	titan.SetAimAssistAllowed( false )
+
+	float impactTime = GetHotDropImpactTime( titan, titanfallAnim )
+	vector origin = titan.GetOrigin()
+	vector angles = titan.GetAngles()
+
+	#if GRUNTCHATTER_ENABLED
+		GruntChatter_TryIncomingSpawn( titan, origin )
+	#endif
+
+	#if MP
+	TryAnnounceTitanfallWarningToEnemyTeam( titan.GetTeam(), origin )
+	#endif
+
+	if ( NPCShouldDoBubbleShieldAfterHotdrop( titan ) )
+	{
+		titan.SetNoTarget( true )
+		thread CreateGenericBubbleShield_Delayed( titan, origin, angles, impactTime - 0.1 )
+	}
+
+	waitthread PlayersTitanHotdrops( titan, origin, angles, null, titanfallAnim )
+
+	if ( standImmediately )
+	{
+		SetStanceStand( titan.GetTitanSoul() )
+		waitthread PlayAnimGravity( titan, "at_hotdrop_quickstand" )
+	}
+
+	titan.SetEfficientMode( false )
+	titan.SetTouchTriggers( true )
+	titan.SetAimAssistAllowed( true )
+
+	titan.e.isHotDropping = false
+	titan.Signal( "TitanHotDropComplete" )
+
+	titan.SetNoTarget( false )
+
+	while( titan.s.bubbleShieldStatus == 1 )
+		titan.WaitSignal( "BubbleShieldStatusUpdate" )
+}
+
+void function NPCPrespawnWarpfallSequence( string aiSettings, vector spawnOrigin, vector spawnAngle )
+{
+	string animation = "at_hotdrop_drop_2knee_turbo_upgraded"
+//	string settings = GetTitanForPlayer( player ).titanSetFile
+	string playerSettings = expect string( Dev_GetAISettingByKeyField_Global( aiSettings, "npc_titan_player_settings" ) )
+	asset model = GetPlayerSettingsAssetForClassName( playerSettings, "bodymodel" )
+	Attachment warpAttach = GetAttachmentAtTimeFromModel( model, animation, "offset", spawnOrigin, spawnAngle, 0 )
+
+	entity fakeTitan = CreatePropDynamic( model )
+	float impactTime = GetHotDropImpactTime( fakeTitan, animation )
+
+	#if SP //MP AI already call DisableTitanfallForLifetimeOfEntityNearOrigin() in SpawnNeutralAI()/SpawnTeamAI() functions. Pretty sure can just remove this for SP too
+		thread TemporarilyDisableTitanfallAroundRadius( spawnOrigin, 72, WARPFALL_SOUND_DELAY + WARPFALL_FX_DELAY ) //TODO: Look into getting rid of this. Doesn't play well with DisableTitanfallForLifetimeOfEntityNearOrigin. Only used in Beacon
+	#endif
+
+	fakeTitan.Kill_Deprecated_UseDestroyInstead()
+
+	EmitSoundAtPosition( TEAM_UNASSIGNED, spawnOrigin, "Titan_3P_Warpfall_CallIn" )
+
+	wait WARPFALL_SOUND_DELAY
+
+	//	"Titan_1P_Warpfall_Start" 			- for first person warp calls, starting right on the button press
+	//	"Titan_3P_Warpfall_Start"  			- for any 3P other player or NPC when they call in a warp, starting right on their button press
+	EmitSoundAtPosition( TEAM_UNASSIGNED, spawnOrigin, "Titan_3P_Warpfall_Start" )
+
+	PlayFX( TURBO_WARP_FX, warpAttach.position + Vector(0,0,-104), warpAttach.angle )
+
+	wait WARPFALL_FX_DELAY
+}
+
+void function WaitTillHotDropComplete( entity titan )
+{
+	titan.EndSignal( "OnDeath" )
+	titan.EndSignal( "OnDestroy" )
+
+	// waits for him to drop in from the sky AND stand up
+	if ( titan.e.isHotDropping )
+		WaitSignal( titan, "TitanHotDropComplete" )
+}
+
+function CreateGenericBubbleShield_Delayed( entity titan, vector origin, vector angles, float delay = 0.0 )
+{
+	titan.EndSignal( "OnDestroy" )
+
+	if ( delay > 0 )
+		wait delay
+
+	titan.s.bubbleShieldStatus = 1
+	CreateGenericBubbleShield( titan, origin, angles )
+	titan.s.bubbleShieldStatus = 0
+	titan.Signal( "BubbleShieldStatusUpdate" )
+}
+
+
+vector function ModifyOriginForDrop( vector origin, vector mins, vector maxs, vector resultPos, int mask )
+{
+	TraceResults trace = TraceHull( resultPos + Vector(0,0,20), resultPos + Vector(0,0,-20), mins, maxs, null, mask, TRACE_COLLISION_GROUP_NONE )
+	float zDif = trace.endPos.z - resultPos.z
+	origin.z += zDif
+	origin.z += 3.0
+
+	return origin
+}
+
+void function OnReplacementTitanSecondStage( entity titan )
+{
+	vector origin = expect vector( GetOptionalAnimEventVar( titan, "second_stage" ) )
+
+	string sfxFirstPerson = "titan_drop_pod_turbo_landing"
+	string sfxThirdPerson = "titan_drop_pod_turbo_landing_3P"
+	entity player = titan.GetBossPlayer()
+	EmitDifferentSoundsAtPositionForPlayerAndWorld( sfxFirstPerson, sfxThirdPerson, origin, player, titan.GetTeam() )
+}
+
+void function OnTitanHotdropImpact( entity titan )
+{
+	ShowName( titan )
+	PlayHotdropImpactFX( titan )
+	titan.Signal( "ClearDisableTitanfall" )
+}
+
+function SetTitanUsable( titan )
+{
+	titan.SetUsableByGroup( "friendlies pilot" )
+}
+
+void function SetTitanUsableByOwner( entity titan )
+{
+	titan.SetUsableByGroup( "owner pilot" )
+}
+
+function PlayHotdropImpactFX( titan )
+{
+	expect entity( titan )
+	if ( !IsAlive( titan ) || !titan.IsTitan() )
+		return
+
+	local origin = titan.GetOrigin()
+
+	Explosion_DamageDefSimple(
+		damagedef_titan_fall,
+		origin,
+		titan,								// attacker
+		titan,								// inflictor
+		origin )
+
+
+	CreateShake( titan.GetOrigin(), 16, 150, 2, 1500 )
+	// No Damage - Only Force
+	// Push players
+	// Push radially - not as a sphere
+	// Test LOS before pushing
+	int flags = 15
+	vector impactOrigin = titan.GetOrigin() + Vector( 0,0,10 )
+	float impactRadius = 512
+	CreatePhysExplosion( impactOrigin, impactRadius, PHYS_EXPLOSION_LARGE, flags )
+}
+
+function NearTitanfallBlocker( baseOrigin )
+{
+	foreach ( hardpoint in level.testHardPoints )
+	{
+		local hpOrigin = hardpoint.GetOrigin()
+		hpOrigin.z -= 100 // why are hardpoints not really at the origin?
+		if ( Distance( hpOrigin, baseOrigin ) < SAFE_TITANFALL_DISTANCE )
+			return true
+	}
+
+	foreach ( flagSpawnPoint in level.testFlagSpawnPoints )
+	{
+		local fspOrigin = flagSpawnPoint.GetOrigin()
+		if ( Distance( fspOrigin, baseOrigin ) < SAFE_TITANFALL_DISTANCE_CTF )
+			return true
+	}
+
+	foreach ( blocker in level.titanfallBlockers )
+	{
+		if ( Distance2D( baseOrigin, blocker.origin  ) > blocker.radius )
+			continue
+
+		if ( baseOrigin.z < blocker.origin.z )
+			continue
+
+		if ( baseOrigin.z > blocker.maxHeight )
+			continue
+
+		return true
+	}
+
+	return false
+}
+
+function DevCheckInTitanfallBlocker()
+{
+	if ( "toggleBlocker" in svGlobal.levelEnt.s )
+	{
+		svGlobal.levelEnt.s.toggleBlocker.Kill_Deprecated_UseDestroyInstead()
+		delete svGlobal.levelEnt.s.toggleBlocker
+		return
+	}
+
+	svGlobal.levelEnt.s.toggleBlocker <- CreateScriptRef()
+	svGlobal.levelEnt.s.toggleBlocker.EndSignal( "OnDestroy" )
+
+	entity player = GetPlayerArray()[0]
+	for ( ;; )
+	{
+		printt( "Inside Titanfall blocker: " + NearTitanfallBlocker( player.GetOrigin() ) )
+		DrawTitanfallBlockers()
+		wait 0.5
+	}
+}
+
+function DrawTitanfallBlockers()
+{
+	foreach ( hardpoint in level.testHardPoints )
+	{
+		vector hpOrigin = expect entity( hardpoint ).GetOrigin()
+		DebugDrawCircle( hpOrigin, Vector(0,0,0), SAFE_TITANFALL_DISTANCE, 255, 255, 0, true, 1.0 )
+	}
+
+	foreach ( flagSpawnPoint in level.testFlagSpawnPoints )
+	{
+		vector fspOrigin = expect entity( flagSpawnPoint ).GetOrigin()
+		DebugDrawCircle( fspOrigin, Vector(0,0,0), SAFE_TITANFALL_DISTANCE_CTF, 255, 255, 0, true, 1.0 )
+	}
+
+	foreach ( blocker in level.titanfallBlockers )
+	{
+		DebugDrawCircle( expect vector( blocker.origin ), Vector(0,0,0), expect float( blocker.radius ), 255, 255, 0, true, 1.0 )
+		vector org = Vector( blocker.origin.x, blocker.origin.y, blocker.maxHeight )
+		DebugDrawCircle( org, Vector(0,0,0), expect float( blocker.radius ), 255, 255, 0, true, 1.0 )
+	}
+}
+
+
+
+bool function EdgeTraceDropPoint( vector dropPoint )
+{
+	local offsetArray = [
+		Vector( 64,64,0 ),
+		Vector( -64,64,0 ),
+		Vector( 64,-64,0 ),
+		Vector( -64,-64,0 ),
+	]
+	local maxDif = 48
+	local mask = TRACE_MASK_TITANSOLID | TRACE_MASK_PLAYERSOLID | TRACE_MASK_SOLID | TRACE_MASK_NPCSOLID
+	local totalDif = 0
+
+	foreach ( offset in offsetArray )
+	{
+		local startPos = dropPoint + Vector( 0, 0, 64 ) + offset
+		local endPos = dropPoint + Vector( 0, 0, -64 ) + offset
+		TraceResults result = TraceLine( startPos, endPos, null, mask, TRACE_COLLISION_GROUP_NONE )
+		local dif = fabs( result.endPos.z - dropPoint.z )
+		totalDif += dif
+
+		if ( dif > maxDif )
+		{
+			//DebugDrawLine( startPos, result.endPos, 200, 50, 50, true, 3  )
+			return false
+		}
+		//DebugDrawLine( startPos, result.endPos, 50, 50, 200, true, 3  )
+	}
+
+	if ( totalDif > ( maxDif * 2 ) )
+	{
+		// this should catch cases where a small item like a box or barrel stops the hull collision trace above the ground.
+		return false
+	}
+
+	return true
+}
+
+
+bool function DropPodFindDropNodes( FlightPath flightPath, vector origin, float yaw )
+{
+	if ( NearTitanfallBlocker( origin ) )
+		return false
+
+	//level.drawAnalysisPreview = true
+	if ( !TitanTestDropPoint( origin, flightPath ) )
+		return false
+
+	return EdgeTraceDropPoint( origin )
+}
+
+bool function TitanTestDropPoint( vector start, FlightPath flightPath )
+{
+	local draw = level.drawAnalysisPreview
+	local end = start + Vector(0,0,8000)
+
+	TraceResults result = TraceHull( start, end, flightPath.mins, flightPath.maxs, null, flightPath.traceMask, TRACE_COLLISION_GROUP_NONE )
+	if ( result.startSolid )
+	{
+		if ( draw )
+		{
+			DrawArrow( start, Vector(0,0,0), 5.0, 80 )
+			DebugDrawLine( start, result.endPos, 0, 255, 0, true, 5.0 )
+			DebugDrawLine( result.endPos, end, 255, 0, 0, true, 5.0 )
+			//local newstart = start + Vector(0,0,150)
+			//local reresult = TraceHull( newstart, start, flightPath.mins, flightPath.maxs, null, flightPath.traceMask, TRACE_COLLISION_GROUP_NONE )
+			//printt( "surface " + reresult.surfaceName )
+			//DebugDrawLine( newstart, reresult.endPos, 155, 0, 0, true, ANALYSIS_PREVIEW_TIME )
+			//DrawArrow( reresult.endPos, Vector(0,0,0), ANALYSIS_PREVIEW_TIME, 15 )
+            //
+//			//DrawArrow( start, Vector(0,0,0), ANALYSIS_PREVIEW_TIME, 15 )
+			//DebugDrawLine( start, result.endPos, 255, 0, 0, true, ANALYSIS_PREVIEW_TIME )
+			//printt( "length " + Length( start - result.endPos ) )
+		}
+		return false
+	}
+
+	if ( result.fraction < 1 )
+	{
+		if ( result.hitSky )
+		{
+			if ( draw )
+			{
+				DebugDrawLine( start, end, 0, 0, 255, true, ANALYSIS_PREVIEW_TIME )
+				//DrawArrow( start, Vector(0,0,0), 1.0, 100 )
+			}
+			return true
+		}
+
+//		if ( draw )
+//			DebugDrawLine( orgs[i-1] + Vector(10,10,10), orgs[i]+ Vector(10,10,10), 255, 255, 0, true, ANALYSIS_PREVIEW_TIME )
+
+		// some fudge factor
+		if ( Distance( result.endPos, end ) > 16 )
+		{
+			if ( draw )
+			{
+				local offset = Vector(-0.1, -0.1, 0 )
+				DebugDrawLine( start + offset, result.endPos + offset, 0, 255, 0, true, ANALYSIS_PREVIEW_TIME )
+				DebugDrawLine( result.endPos + offset, end + offset, 255, 0, 0, true, ANALYSIS_PREVIEW_TIME )
+				//DebugDrawLine( start, end, 255, 0, 0, true, ANALYSIS_PREVIEW_TIME )
+			}
+			return false
+		}
+	}
+
+//		DebugDrawLine( orgs[i-1], orgs[i], 0, 255, 0, true, ANALYSIS_PREVIEW_TIME )
+
+	if ( draw )
+		DebugDrawLine( start, end, 0, 255, 0, true, 0.2 )
+	return true
+}
+
+
+
+
+
+void function TitanFall_DamagedPlayerOrNPC( entity ent, var damageInfo )
+{
+	if ( !ent.IsPlayer() )
+		return
+
+	if ( !ent.IsTitan() )
+		return
+
+	vector damageOrigin = DamageInfo_GetDamagePosition( damageInfo )
+	vector entityOrigin = ent.GetOrigin()
+	local distance = Distance( entityOrigin, damageOrigin )
+
+	// on top of them, let the titans fall where they may
+	if ( distance < TITANFALL_INNER_RADIUS )
+		return
+
+	if ( IsTitanWithinBubbleShield( ent ) )
+	{
+		DamageInfo_SetDamage( damageInfo, 0 )
+		return
+	}
+
+	vector pushVector = Normalize( entityOrigin - damageOrigin )
+
+	vector traceEndOrigin = damageOrigin + (pushVector * TITANFALL_OUTER_RADIUS)
+	TraceResults traceResult = TraceHull( damageOrigin, traceEndOrigin, ent.GetBoundingMins(), ent.GetBoundingMins(), ent, TRACE_MASK_NPCSOLID_BRUSHONLY, TRACE_COLLISION_GROUP_NONE )
+
+	// no room to push them
+	if ( traceResult.fraction < 0.85 )
+		return
+
+	DamageInfo_ScaleDamage( damageInfo, 0.15 )
+
+	ent.SetVelocity( pushVector * 400 )
+	ent.SetStaggering()
+}
+
+function PlayDeathFromTitanFallSounds( player )
+{
+	if ( player.IsTitan() )
+	{
+		//printt( "Playing titanfall_on_titan at: "+ player.GetOrigin() )
+		EmitSoundAtPosition( TEAM_UNASSIGNED, player.GetOrigin(), "titanfall_on_titan" )
+	}
+	else
+	{
+		//printt( "Playing titanfall_on_human at " + player.GetOrigin() )
+		EmitSoundAtPosition( TEAM_UNASSIGNED, player.GetOrigin(), "titanfall_on_human" )
+	}
+}
+
+bool function NPCShouldDoBubbleShieldAfterHotdrop( entity titan )
+{
+	if ( titan.HasKey( "script_hotdrop" ) )
+	{
+		switch ( titan.kv.script_hotdrop )
+		{
+			case "4":
+			case "3":
+				printt( "DROP WITH NO BUBBLE" )
+				return false
+		}
+	}
+
+	return true
+}

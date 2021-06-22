@@ -1,0 +1,18 @@
+global function Utility_MP_Init
+global function ClientCommand_OnDevnetBugScreenshot
+global function SafeForTitanFall
+
+void function Utility_MP_Init()
+{
+
+}
+
+bool function ClientCommand_OnDevnetBugScreenshot( entity player, array<string> args )
+{
+	return true
+}
+
+bool function SafeForTitanFall( vector dropPoint )
+{
+	return true
+}

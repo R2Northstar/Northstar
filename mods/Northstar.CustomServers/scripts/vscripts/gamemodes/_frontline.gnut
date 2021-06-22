@@ -1,0 +1,159 @@
+untyped
+
+
+global function GetFrontline
+global function SetFrontline
+global function AddCalculateFrontlineCallback
+
+const DEBUG_FRONTLINE = false
+
+global struct Frontline
+{
+	vector origin = Vector( 0.0, 0.0, 0.0 )
+	vector combatDir = Vector( 0.0, 0.0, 0.0 )
+	vector line = Vector( 0.0, 0.0, 0.0 )
+	vector friendlyCenter = Vector( 0.0, 0.0, 0.0 )
+	vector enemyCenter = Vector( 0.0, 0.0, 0.0 )
+	float lastCalcTime = -1.0
+}
+
+struct
+{
+	Frontline frontline
+	array<void functionref()> calculateFrontlineCallbacks
+} file
+
+Frontline function GetFrontline( team )
+{
+	if ( file.frontline.lastCalcTime < Time() )
+	{
+		CalculateFrontline()
+		file.frontline.lastCalcTime = Time()
+	}
+
+	Frontline fl
+	fl = clone file.frontline
+
+	if ( team == TEAM_MILITIA )
+	{
+		fl.combatDir *= -1.0
+		vector temp = fl.friendlyCenter
+		fl.friendlyCenter = fl.enemyCenter
+		fl.enemyCenter = temp
+	}
+
+	return fl
+}
+
+void function AddCalculateFrontlineCallback( void functionref() callbackFunc )
+{
+	// Check if this function has already been added
+	#if DEV
+		foreach ( func in file.calculateFrontlineCallbacks )
+		{
+			Assert( func != callbackFunc )
+		}
+	#endif
+
+	file.calculateFrontlineCallbacks.append( callbackFunc )
+}
+
+void function CalculateFrontline()
+{
+	#if DEV
+		float debugTime = 0.2
+	#endif
+
+	if ( file.calculateFrontlineCallbacks.len() > 0 )
+	{
+		foreach ( callbackFunc in file.calculateFrontlineCallbacks )
+		{
+			callbackFunc()
+		}
+	}
+	else
+	{
+		vector militiaCenter = CalculateWeightedTeamCenter( TEAM_MILITIA )
+		vector imcCenter = CalculateWeightedTeamCenter( TEAM_IMC )
+
+		file.frontline.friendlyCenter = imcCenter // friendlyCenter is for TEAM_IMC by default
+		file.frontline.enemyCenter = militiaCenter
+
+		file.frontline.origin = ( militiaCenter + imcCenter ) * 0.5
+		file.frontline.combatDir = Normalize( militiaCenter - imcCenter ) // combatDir is for TEAM_IMC by default
+		file.frontline.line = CrossProduct( file.frontline.combatDir, Vector( 0.0, 0.0, 1.0 ) )
+
+		#if DEV
+			if ( DEBUG_FRONTLINE )
+			{
+				DrawBox( militiaCenter, Vector( -8.0, -8.0, -8.0 ), Vector( 8.0, 8.0, 8.0 ), 255, 102, 0, true, debugTime )
+				DrawBox( imcCenter, Vector( -8.0, -8.0, -8.0 ), Vector( 8.0, 8.0, 8.0 ), 0, 0, 255, true, debugTime )
+				DebugDrawLine( militiaCenter, imcCenter, 0, 255, 0, true, debugTime )
+			}
+		#endif
+	}
+
+	#if DEV
+		if ( DEBUG_FRONTLINE )
+		{
+			DrawBox( file.frontline.origin, Vector( -32.0, -32.0, -32.0 ), Vector( 32.0, 32.0, 32.0 ), 255, 0, 0, true, debugTime )
+			DebugDrawLine( file.frontline.origin - file.frontline.line * 500.0, file.frontline.origin + file.frontline.line * 500.0, 255, 0, 0, true, debugTime )
+		}
+	#endif
+}
+
+void function SetFrontline( vector origin, vector combatDir )
+{
+	file.frontline.origin = origin
+	file.frontline.combatDir = combatDir
+	file.frontline.line = CrossProduct( file.frontline.combatDir, Vector( 0.0, 0.0, 1.0 ) )
+}
+
+vector function CalculateWeightedTeamCenter( int team )
+{
+	array<entity> teamPlayers = GetPlayerArrayOfTeam_Alive( team )
+	int teamPlayersCount = teamPlayers.len()
+
+	if ( teamPlayersCount == 0 )
+		return Vector( 0.0, 0.0, 0.0 )
+
+	// find minimum distances between teammates
+	array<float> minTeammateDistances// = arrayofsize( teamPlayersCount, 99999.0 )
+	minTeammateDistances.resize( teamPlayersCount, 99999.0 )
+
+	for ( int i = 0; i < teamPlayersCount; i++ )
+	{
+		entity playerI = teamPlayers[ i ]
+
+		for ( int j = i + 1; j < teamPlayersCount; j++ )
+		{
+			entity playerJ = teamPlayers[ j ]
+			float distanceBetweenPlayers = Distance( playerI.GetOrigin(), playerJ.GetOrigin() )
+
+			if ( distanceBetweenPlayers < minTeammateDistances[ i ] )
+				minTeammateDistances[ i ] = distanceBetweenPlayers
+
+			if ( distanceBetweenPlayers < minTeammateDistances[ j ] )
+				minTeammateDistances[ j ] = distanceBetweenPlayers
+		}
+	}
+
+	vector weightedOrgSum = Vector( 0.0, 0.0, 0.0 )
+	float weightSum = 0.0
+	float weight = 0.0
+	float halfPi = 1.57 // passing a fraction of this value into sin which gives us the first part of a sin wave from 0 - 1
+	float maxPossibleDistance = MAX_WORLD_RANGE
+	float magicNumber = 14.0 // magic number gives the desired falloff
+
+	// calculate a weighted origin based on how close players are to teammates
+	foreach ( index, player in teamPlayers )
+	{
+		float radians = halfPi * ( minTeammateDistances[ index ] / maxPossibleDistance ) // radians will be a value between 0 - halfPi
+		weight = pow( ( 1.0 - sin( radians ) ), magicNumber ) // pow squashes the result so the curve has the falloff that's desired
+
+		weightedOrgSum += player.GetOrigin() * weight
+		weightSum += weight
+	}
+
+	return weightedOrgSum / weightSum
+}

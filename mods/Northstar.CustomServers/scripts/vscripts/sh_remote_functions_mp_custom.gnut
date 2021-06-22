@@ -1,0 +1,20 @@
+untyped
+global function InitCustomNetworkVars
+global function AddCallback_OnRegisteringCustomNetworkVars
+
+struct {
+	array<void functionref()> onRegisteringCustomNetworkVarsCallbacks
+} file
+
+void function InitCustomNetworkVars()
+{
+	print( "InitCustomNetworkVars" )
+
+	foreach ( void functionref() callback in file.onRegisteringCustomNetworkVarsCallbacks )
+		callback()
+}
+
+void function AddCallback_OnRegisteringCustomNetworkVars( void functionref() callback )
+{
+	file.onRegisteringCustomNetworkVarsCallbacks.append( callback )
+}

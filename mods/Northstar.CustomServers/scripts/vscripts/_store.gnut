@@ -1,0 +1,38 @@
+//todo some of the stuff here should probably get moved to other scripts
+
+global function PIN_BuyItemWithRealMoney
+global function PIN_BuyItem
+global function PIN_GiveItem
+global function PIN_GiveCredits
+global function PIN_ConsumeItem
+global function PIN_AddToPlayerCountStat
+
+void function PIN_BuyItemWithRealMoney(entity player, bool _0, string name, int cost)
+{
+
+}
+
+void function PIN_BuyItem(entity player, bool _0, string name, int cost)
+{
+
+}
+
+void function PIN_GiveItem(entity player, bool _0, string name, int count)
+{
+
+}
+
+void function PIN_GiveCredits(entity player, int count)
+{
+
+}
+
+void function PIN_ConsumeItem(entity player, string name)
+{
+
+}
+
+void function PIN_AddToPlayerCountStat(entity player, string name)
+{
+
+}

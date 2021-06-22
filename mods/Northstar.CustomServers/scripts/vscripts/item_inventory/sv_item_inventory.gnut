@@ -1,0 +1,60 @@
+global function Sv_ItemInventory_Init
+global function PIN_Init
+global function SvPlayerInventory_ItemCount
+global function PlayerInventory_StartCriticalSection
+global function PlayerInventory_EndCriticalSectionForWeaponOnEndFrame
+global function PlayerInventory_CountTurrets
+global function PIN_PlayerAbility
+global function PIN_PlayerAbilityReady
+global function PIN_DamageDone
+global function PlayerInventory_RefreshEquippedState
+
+void function Sv_ItemInventory_Init()
+{
+
+}
+
+void function PIN_Init()
+{
+
+}
+
+int function SvPlayerInventory_ItemCount(entity player)
+{
+	return 0
+}
+
+void function PlayerInventory_StartCriticalSection(entity player)
+{
+
+}
+
+void function PlayerInventory_EndCriticalSectionForWeaponOnEndFrame(entity player)
+{
+
+}
+
+int function PlayerInventory_CountTurrets(entity owner)
+{
+	return 0
+}
+
+void function PIN_PlayerAbility(entity player, string name, string action, /*no idea what this type is supposed to be*/ var _0, float duration = 0)
+{
+
+}
+
+void function PIN_PlayerAbilityReady(entity player, string action)
+{
+
+}
+
+void function PIN_DamageDone(entity player, entity victim, var damageInfo)
+{
+
+}
+
+void function PlayerInventory_RefreshEquippedState( entity player )
+{
+
+}

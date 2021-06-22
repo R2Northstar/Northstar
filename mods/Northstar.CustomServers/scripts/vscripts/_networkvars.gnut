@@ -1,0 +1,169 @@
+untyped
+
+
+global function SetEntityVar
+global function SetServerVar
+global function SetNetworkVar
+global function SyncServerVars
+global function SyncEntityVars
+
+
+function SetEntityVar( entity ent, varName, value )
+{
+	Assert( IsServer() )
+	Assert( varName in _entityClassVars[ent.GetClassName()], "Entity " + ent + " does not have remote var " + varName )
+	Assert( varName in _entityClassVarsIsEnts[ent.GetClassName()] )
+	Assert( varName in _entityClassVarsSyncToAllClients[ent.GetClassName()] )
+	Assert( typeof value != "string" )
+
+	Assert( "_entityVars" in ent )
+
+	if ( ent._entityVars[varName] == value )
+		return
+
+	ent._entityVars[varName] = value
+
+	if ( _entityClassVarsIsEnts[ent.GetClassName()][varName] && value != null )
+	{
+		//printl( "SET NETWORK ENTITY VAR TO AN ENTITY. GETTING EHANDLE" )
+		value = value.GetEncodedEHandle()
+	}
+
+	local syncToAllPlayers = _entityClassVarsSyncToAllClients[ent.GetClassName()][varName]
+
+	// only sync "player" variables to that player
+	if ( ent.IsPlayer() && !ent.IsBot() && !syncToAllPlayers )
+	{
+		if ( !ent.p.clientScriptInitialized )
+			return
+
+		Remote_CallFunction_NonReplay( ent, "ServerCallback_SetEntityVar", ent.GetEncodedEHandle(), _entityClassVarHandles[varName], value )
+	}
+	else
+	{
+		array<entity> players = GetPlayerArray()
+		foreach ( player in players )
+		{
+			if ( player.IsBot() )
+				continue
+
+			if ( !player.p.clientScriptInitialized )
+				continue
+
+			Remote_CallFunction_NonReplay( player, "ServerCallback_SetEntityVar", ent.GetEncodedEHandle(), _entityClassVarHandles[varName], value )
+		}
+	}
+}
+
+function SetServerVar( varName, value )
+{
+	Assert( IsServer() )
+	Assert( varName in _serverVars )
+	Assert( typeof value != "string" )
+	expect string( varName )
+
+	if ( _serverVars[varName] == value )
+		return
+
+	_serverVars[varName] = value
+
+	if ( varName in _serverEntityVars && value != null )
+	{
+		if ( IsValid( value ) )
+			value = value.GetEncodedEHandle()
+		else
+			value = null
+	}
+
+	// Run server script change callback if one exists
+	thread ServerVarChangedCallbacks( varName )
+
+	// Update the var on all clients
+	array<entity> players = GetPlayerArray()
+	foreach ( player in players )
+	{
+		if ( !player.p.clientScriptInitialized )
+			continue
+
+		Remote_CallFunction_NonReplay( player, "ServerCallback_SetServerVar", _serverVarHandles[varName], value )
+	}
+}
+
+function SetNetworkVar( obj, varName, value )
+{
+	if ( obj == level )
+	{
+		return SetServerVar( varName, value )
+	}
+	else
+	{
+		expect entity( obj )
+		return SetEntityVar( obj, varName, value )
+	}
+}
+
+function SyncServerVars( entity player )
+{
+	Assert( IsServer() )
+
+	foreach ( varName, value in _serverVars )
+	{
+		if ( varName in _serverEntityVars && value != null )
+		{
+			if ( IsValid( value ) )
+				value = value.GetEncodedEHandle()
+			else
+				value = null
+		}
+
+		Remote_CallFunction_NonReplay( player, "ServerCallback_SetServerVar", _serverVarHandles[varName], value )
+	}
+}
+
+function SyncEntityVars( entity player )
+{
+	Assert( IsServer() )
+
+	foreach ( className, _ in _entityClassVars )
+	{
+		array<entity> entities
+		if ( className == "player" )
+			entities = GetPlayerArray()
+		else
+			entities = GetNPCArrayByClass( className )
+
+		foreach ( ent in entities )
+		{
+			if ( !IsValid( ent ) )
+				continue
+
+			foreach( varName, value in _entityClassVars[className] )
+			{
+				local entValue = ent._entityVars[varName]
+				if ( entValue == value )
+					continue
+
+				if ( !_entityClassVarsSyncToAllClients[className][varName] && ent != player )
+				{
+					Assert( className == "player" )
+					continue
+				}
+				//if ( className == "player" && !_entityClassVarsSyncToAllClients[className][varName] )
+				//	continue
+                //
+				if ( _entityClassVarsIsEnts[className][varName] )
+				{
+					if ( !IsValid( entValue ) )
+						continue
+					// if this is an entity var, change over to e-handle
+					entValue = entValue.GetEncodedEHandle()
+				}
+
+				Assert( player.p.clientScriptInitialized )
+
+				Remote_CallFunction_NonReplay( player, "ServerCallback_SetEntityVar", ent.GetEncodedEHandle(), _entityClassVarHandles[varName], entValue )
+			}
+		}
+	}
+}
+

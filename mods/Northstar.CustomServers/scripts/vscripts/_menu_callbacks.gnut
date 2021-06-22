@@ -1,0 +1,14 @@
+global function MenuCallbacks_Init
+
+void function MenuCallbacks_Init()
+{
+	AddClientCommandCallback( "LeaveMatch", ClientCommandCallback_LeaveMatch )
+}
+
+bool function ClientCommandCallback_LeaveMatch( entity player, array<string> args )
+{
+	SavePdataForEntityIndex( player.GetPlayerIndex() )
+	ClientCommand( player, "disconnect" )
+	
+	return true
+}

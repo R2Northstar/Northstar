@@ -1,0 +1,12 @@
+#base "npc_soldier.txt"
+npc_soldier_hero_sarah
+{
+	title 						#NPC_SARAH_NAME
+	SettingsTitle				#NPC_SARAH_NAME
+	IsGenericGrunt			0
+
+	DefaultModelName 			"models/humans/heroes/mlt_hero_sarah.mdl"
+	DefaultModelName_IMC		"models/humans/heroes/mlt_hero_sarah.mdl"
+	DefaultModelName_MIL		"models/humans/heroes/mlt_hero_sarah.mdl"
+}
+

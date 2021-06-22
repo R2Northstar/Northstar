@@ -1,0 +1,24 @@
+disabled{
+	"ApiId" : "Northstar.Coop",
+	"Name" : "Northstar.Coop",
+	"Description" : "Various script patches to fix functionality for coop servers",
+	"Authors" : [
+		"BobTheBob"
+	],
+	"Contacts" : [
+		"BobTheBob#1150"
+	],
+	"Version" : "0.1",
+	"CustomScripts": [
+		{
+			"Path": "sp/_coop_sp_utils.gnut",
+			"RunOn": "SERVER && SP",
+			"ServerCallback": "CoopSpUtils_Init"
+		},
+		{
+			"Path": "sp/sh_coop_sp_utils.gnut",
+			"RunOn": "( CLIENT || SERVER ) && SP",
+			"ServerCallback": "ClCoopSpUtils_Init"
+		}
+	]
+}

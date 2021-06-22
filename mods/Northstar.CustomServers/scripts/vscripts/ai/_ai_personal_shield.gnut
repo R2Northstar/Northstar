@@ -1,0 +1,371 @@
+global function AiPersonalShield
+global function ActivatePersonalShield
+const FX_DRONE_SHIELD_WALL_HUMAN 	= $"P_drone_shield_wall_sm"
+const SHIELD_BREAK_FX = $"P_xo_armor_break_CP"
+const SHIELD_HEALTH = 620
+global const AI_PERSONAL_SHIELD_PAIN_SHIELD_STYLE = true
+const float PERSONAL_SHIELD_HEALTH_FRAC_DAMAGED = 0.5  // below what frac of total health will the personal shield owner want to chatter about shield damage?
+
+struct
+{
+	table<entity, entity> npcVortexSpheres
+} file
+
+
+void function AiPersonalShield()
+{
+	PrecacheParticleSystem( FX_DRONE_SHIELD_WALL_HUMAN )
+	PrecacheParticleSystem( SHIELD_BREAK_FX )
+	AddSyncedMeleeServerCallback( GetSyncedMeleeChooser( "human", "human" ), DisableShieldOnExecution )
+}
+
+void function DisableShieldOnExecution( SyncedMeleeChooser actions, SyncedMelee action, entity player, entity target )
+{
+	if ( !( target in file.npcVortexSpheres ) )
+		return
+
+	entity vortex = file.npcVortexSpheres[ target ]
+	vortex.Destroy()
+}
+
+void function ActivatePersonalShield( entity owner )
+{
+	owner.EndSignal( "OnDeath" )
+	for ( ;; )
+	{
+		waitthread ActivatePersonalShield_Recreate( owner )
+
+		// got stunned? make new shield after awhile
+		wait 15
+	}
+}
+
+void function ShieldProtectsOwnerFromMelee( entity ent, var damageInfo )
+{
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	if ( !IsAlive( attacker ) )
+		return
+	if ( !attacker.IsPlayer() )
+		return
+	if ( !IsPilot( attacker ) )
+		return
+	entity weapon = DamageInfo_GetWeapon( damageInfo )
+	if ( !IsValid( weapon ) )
+		weapon = attacker.GetActiveWeapon()
+	if ( !IsValid( weapon ) )
+		return
+	var weaponType = weapon.GetWeaponInfoFileKeyField( "weaponType" )
+	if ( weaponType != "melee" )
+		return
+
+	Assert( ent in file.npcVortexSpheres )
+	entity vortexSphere = file.npcVortexSpheres[ ent ]
+
+	float radius = float( vortexSphere.kv.radius )
+	float height = float( vortexSphere.kv.height )
+	float bullet_fov = float( vortexSphere.kv.bullet_fov )
+	float dot = cos( bullet_fov * 0.5 )
+
+	vector origin = vortexSphere.GetOrigin()
+	vector angles = vortexSphere.GetAngles()
+	vector forward = AnglesToForward( angles )
+	int team = vortexSphere.GetTeam()
+
+	if ( ProtectedFromShield( attacker, origin, height, radius, bullet_fov, dot, forward ) )
+	{
+		DamageInfo_SetDamage( damageInfo, 0 )
+		StunPushBack( attacker, forward )
+	}
+}
+
+entity function ActivatePersonalShield_Recreate( entity owner )
+{
+	if ( !AI_PERSONAL_SHIELD_PAIN_SHIELD_STYLE )
+		AddEntityCallback_OnDamaged( owner, ShieldProtectsOwnerFromMelee )
+	//------------------------------
+	// Shield vars
+	//------------------------------
+	vector origin = owner.GetOrigin()
+	vector angles = owner.GetAngles() + Vector( 0, 0, 180 )
+
+	float shieldWallRadius = 45 // 90
+	asset shieldFx = FX_DRONE_SHIELD_WALL_HUMAN
+	float wallFOV = DRONE_SHIELD_WALL_FOV_HUMAN
+	float shieldWallHeight = 102
+
+	//------------------------------
+	// Vortex to block the actual bullets
+	//------------------------------
+	entity vortexSphere = CreateEntity( "vortex_sphere" )
+
+	Assert( !( owner in file.npcVortexSpheres ), owner + " already has a shield" )
+	file.npcVortexSpheres[ owner ] <- vortexSphere
+	vortexSphere.kv.spawnflags = SF_ABSORB_BULLETS | SF_BLOCK_OWNER_WEAPON | SF_BLOCK_NPC_WEAPON_LOF | SF_ABSORB_CYLINDER
+	vortexSphere.kv.enabled = 0
+	vortexSphere.kv.radius = shieldWallRadius
+	vortexSphere.kv.height = shieldWallHeight
+	vortexSphere.kv.bullet_fov = wallFOV
+	vortexSphere.kv.physics_pull_strength = 25
+	vortexSphere.kv.physics_side_dampening = 6
+	vortexSphere.kv.physics_fov = 360
+	vortexSphere.kv.physics_max_mass = 2
+	vortexSphere.kv.physics_max_size = 6
+
+	StatusEffect_AddEndless( vortexSphere, eStatusEffect.destroyed_by_emp, 1.0 )
+
+	vortexSphere.SetAngles( angles ) // viewvec?
+	vortexSphere.SetOrigin( origin + Vector( 0, 0, shieldWallRadius - 64 ) )
+	vortexSphere.SetMaxHealth( SHIELD_HEALTH )
+	vortexSphere.SetHealth( SHIELD_HEALTH )
+	SetTeam( vortexSphere, owner.GetTeam() )
+
+	thread PROTO_VortexSlowsPlayers_PersonalShield( owner, vortexSphere )
+
+	DispatchSpawn( vortexSphere )
+
+	EntFireByHandle( vortexSphere, "Enable", "", 0, null, null )
+
+	vortexSphere.SetTakeDamageType( DAMAGE_YES )
+	vortexSphere.ClearInvulnerable() // make particle wall invulnerable to weapon damage. It will still drain over time
+
+	//------------------------------------------
+	// Shield wall fx for visuals/health drain
+	//------------------------------------------
+	entity cpoint = CreateEntity( "info_placement_helper" )
+	SetTargetName( cpoint, UniqueString( "shield_wall_controlpoint" ) )
+	DispatchSpawn( cpoint )
+
+	entity mover = CreateScriptMover()
+	mover.SetOrigin( owner.GetOrigin() )
+	vector moverAngles = owner.GetAngles()
+	mover.SetAngles( AnglesCompose( moverAngles, <0,0,180> ) )
+
+	int fxid = GetParticleSystemIndex( FX_DRONE_SHIELD_WALL_HUMAN )
+	entity shieldWallFX = StartParticleEffectOnEntity_ReturnEntity( mover, fxid, FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
+	shieldWallFX.DisableHibernation()
+	EffectSetControlPointEntity( shieldWallFX, 0, mover )
+
+	//thread DrawArrowOnTag( mover )
+	vortexSphere.e.shieldWallFX = shieldWallFX
+	vector color = GetShieldTriLerpColor( 0.0 )
+
+	cpoint.SetOrigin( color )
+	EffectSetControlPointEntity( shieldWallFX, 1, cpoint )
+	SetVortexSphereShieldWallCPoint( vortexSphere, cpoint )
+
+	#if GRUNTCHATTER_ENABLED
+		// have to do this, vortex shield isn't an entity that works with AddEntityCallback_OnDamaged
+		thread PersonalShieldOwner_ReactsToDamage( owner, vortexSphere )
+	#endif
+
+	//-----------------------
+	// Attach shield to owner
+	//------------------------
+	vortexSphere.SetParent( mover )
+
+	vortexSphere.EndSignal( "OnDestroy" )
+	Assert( IsAlive( owner ) )
+	owner.EndSignal( "OnDeath" )
+	owner.EndSignal( "ArcStunned" )
+	mover.EndSignal( "OnDestroy" )
+	#if MP
+	shieldWallFX.EndSignal( "OnDestroy" )
+	#endif
+
+	OnThreadEnd(
+	function() : ( owner, mover, vortexSphere )
+		{
+			delete file.npcVortexSpheres[ owner ]
+			if ( IsValid( owner ) )
+			{
+				owner.kv.defenseActive = false
+				if ( !AI_PERSONAL_SHIELD_PAIN_SHIELD_STYLE )
+					RemoveEntityCallback_OnDamaged( owner, ShieldProtectsOwnerFromMelee )
+			}
+
+			StopShieldWallFX( vortexSphere )
+
+			if ( IsValid( vortexSphere ) )
+				vortexSphere.Destroy()
+
+			if ( IsValid( mover ) )
+			{
+				//PlayFX( SHIELD_BREAK_FX, mover.GetOrigin(), mover.GetAngles() )
+				mover.Destroy()
+			}
+		}
+	)
+
+	owner.kv.defenseActive = true
+
+	for ( ;; )
+	{
+		Assert( IsAlive( owner ) )
+		UpdateShieldPosition( mover, owner )
+
+		#if MP
+		if ( IsCloaked( owner ) )
+			EntFireByHandle( shieldWallFX, "Stop", "", 0, null, null )
+		else
+			EntFireByHandle( shieldWallFX, "Start", "", 0, null, null )
+		#endif
+	}
+}
+
+#if GRUNTCHATTER_ENABLED
+void function PersonalShieldOwner_ReactsToDamage( entity owner, entity vortexSphere )
+{
+	EndSignal( owner, "OnDeath" )
+	EndSignal( vortexSphere, "OnDestroy" )
+
+	float alertHealth = vortexSphere.GetMaxHealth() * PERSONAL_SHIELD_HEALTH_FRAC_DAMAGED
+
+	while ( vortexSphere.GetHealth() >= alertHealth )
+		wait 0.25
+
+	GruntChatter_TryPersonalShieldDamaged( owner ) //Commenting out to unblock tree. See bug  186062
+}
+#endif
+
+float function GetYawForEnemyOrLKP( entity owner )
+{
+	entity enemy = owner.GetEnemy()
+	if ( !IsValid( enemy ) )
+		return owner.GetAngles().y
+
+	vector ornull lkp = owner.LastKnownPosition( enemy )
+	if ( lkp == null )
+		return owner.GetAngles().y
+
+	expect vector( lkp )
+	vector dif = lkp - owner.GetOrigin()
+	return VectorToAngles( dif ).y
+}
+
+void function UpdateShieldPosition( entity mover, entity owner )
+{
+	mover.NonPhysicsMoveTo( owner.GetOrigin(), 0.1, 0.0, 0.0 )
+	vector angles = owner.EyeAngles()
+	float yaw = angles.y
+	yaw %= 360
+	mover.NonPhysicsRotateTo( <0,yaw,180>, 1.35, 0, 0 )
+
+//	float yaw = GetYawForEnemyOrLKP( owner )
+//	float boost = sin( Time() * 1.5 ) * 65
+//	yaw += boost
+//	yaw %= 360
+//	mover.NonPhysicsRotateTo( <0,yaw,0>, 0.95, 0, 0 )
+
+	WaitFrame()
+}
+
+void function PROTO_VortexSlowsPlayers_PersonalShield( entity owner, entity vortexSphere )
+{
+	owner.EndSignal( "OnDeath" )
+	vortexSphere.EndSignal( "OnDestroy" )
+
+	float radius = float(vortexSphere.kv.radius )
+	float height = float(vortexSphere.kv.height )
+	float bullet_fov = float( vortexSphere.kv.bullet_fov )
+	float dot = cos( bullet_fov * 0.5 )
+
+	for ( ;; )
+	{
+		vector origin = vortexSphere.GetOrigin()
+		vector angles = vortexSphere.GetAngles()
+		vector forward = AnglesToForward( angles )
+		int team = vortexSphere.GetTeam()
+
+		foreach ( player in GetPlayerArray() )
+		{
+			if ( !IsAlive( player ) )
+				continue
+			if ( player.GetTeam() == team )
+				continue
+			if ( VortexStunCheck_PersonalShield( player, origin, height, radius, bullet_fov, dot, forward ) )
+			{
+				player.p.lastDroneShieldStunPushTime = Time()
+
+				if ( AI_PERSONAL_SHIELD_PAIN_SHIELD_STYLE )
+				{
+					Explosion_DamageDefSimple( damagedef_shield_captain_arc_shield, player.GetOrigin(),owner, owner, player.GetOrigin() )
+				}
+			}
+		}
+		WaitFrame()
+	}
+}
+
+bool function ProtectedFromShield( entity player, vector origin, float height, float radius, float bullet_fov, float dotLimit, vector forward )
+{
+	vector playerOrg = player.GetOrigin()
+	vector dif = Normalize( playerOrg - origin )
+
+	float dot = DotProduct2D( dif, forward )
+	return dot >= dotLimit
+}
+
+bool function VortexStunCheck_PersonalShield( entity player, vector origin, float height, float radius, float bullet_fov, float dot, vector forward )
+{
+	if ( !IsPilot( player ) )
+		return false
+
+	if ( player.IsGodMode() )
+		return false
+
+	if ( AI_PERSONAL_SHIELD_PAIN_SHIELD_STYLE )
+	{
+		if ( Time() - player.p.lastDroneShieldStunPushTime < 1.00 )
+			return false
+	}
+	else
+	{
+		if ( Time() - player.p.lastDroneShieldStunPushTime < 1.75 )
+			return false
+	}
+
+	vector playerOrg = player.GetOrigin()
+	float dist2d = Distance2D( playerOrg, origin )
+
+	if ( dist2d > radius + 5 )
+		return false
+	if ( dist2d < radius - 15 )
+		return false
+
+	float heightOffset = fabs( playerOrg.z - origin.z )
+
+	if ( heightOffset < 0 || heightOffset > height )
+		return false
+
+	if ( !ProtectedFromShield( player, origin, height, radius, bullet_fov, dot, forward ) )
+		return false
+
+	if ( AI_PERSONAL_SHIELD_PAIN_SHIELD_STYLE )
+	{
+		const float VORTEX_STUN_DURATION = 1.0
+		GiveEMPStunStatusEffects( player, VORTEX_STUN_DURATION + 0.5 )
+		float strength = 0.4
+		StatusEffect_AddTimed( player, eStatusEffect.emp, strength, VORTEX_STUN_DURATION, 0.5 )
+		EmitSoundOnEntityOnlyToPlayer( player, player, "flesh_electrical_damage_1p" )
+	}
+	else
+	{
+		StunPushBack( player, forward )
+	}
+
+	return true
+}
+
+void function StunPushBack( entity player, vector forward )
+{
+	const float VORTEX_STUN_DURATION = 1.0
+	GiveEMPStunStatusEffects( player, VORTEX_STUN_DURATION + 0.5 )
+	float strength = 0.4
+	StatusEffect_AddTimed( player, eStatusEffect.emp, strength, VORTEX_STUN_DURATION, 0.5 )
+	thread TempLossOfAirControl( player, VORTEX_STUN_DURATION )
+	vector velocity = forward * 300
+	velocity.z = 400
+
+	EmitSoundOnEntityOnlyToPlayer( player, player, "flesh_electrical_damage_1p" )
+	player.SetVelocity( velocity )
+}

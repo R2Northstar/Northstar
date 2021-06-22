@@ -1,0 +1,99 @@
+global function GameModeArena_Init
+
+struct {
+	entity imcBoostStore
+	entity militiaBoostStore
+	
+	entity imcShield
+	entity militiaShield
+} file
+
+void function GameModeArena_Init()
+{
+	AddCallback_EntitiesDidLoad( CreateBoostStores )
+	AddCallback_GameStateEnter( eGameState.Prematch, StartBuyPhase )
+	AddCallback_GameStateEnter( eGameState.Playing, FinishBuyPhase )
+	
+	// todo: need a custom intro for this that allows players to move, buy etc in prematch
+	// if that's actually possible lol not sure it is
+}
+
+void function CreateBoostStores()
+{
+	array<entity> startspawns = GetEntArrayByClass_Expensive( "info_spawnpoint_human_start" ) // easier to do this than use a spawn callback imo
+	
+	vector imcAverageOrigin
+	float imcAverageAngle
+	int imcNumSpawns
+	
+	vector militiaAverageOrigin
+	float militiaAverageAngle
+	int militiaNumSpawns
+	
+	foreach ( entity startspawn in startspawns )
+	{
+		if ( startspawn.GetTeam() == TEAM_IMC )
+		{
+			imcAverageOrigin += startspawn.GetOrigin()
+			imcAverageAngle += startspawn.GetAngles().y
+			imcNumSpawns++
+		}
+		else
+		{
+			militiaAverageOrigin += startspawn.GetOrigin()
+			militiaAverageAngle += startspawn.GetAngles().y
+			militiaNumSpawns++
+		}
+	}
+	
+	// create imc boost store 
+	vector finalPositionImc = < imcAverageOrigin.x / imcNumSpawns, imcAverageOrigin.y / imcNumSpawns, imcAverageOrigin.z / imcNumSpawns >
+	finalPositionImc += ( 200 * AnglesToForward( < 0, imcAverageAngle / imcNumSpawns, 0 > ) )
+	CreateBoostStoreLocation( TEAM_IMC, finalPositionImc, < 0, 0, 0 >, true )
+	
+	vector finalPositionMilitia = < militiaAverageOrigin.x / militiaNumSpawns, militiaAverageOrigin.y / militiaNumSpawns, militiaAverageOrigin.z / militiaNumSpawns >
+	finalPositionMilitia += ( 200 * AnglesToForward( < 0, militiaAverageAngle / militiaNumSpawns, 0 > ) )
+	CreateBoostStoreLocation( TEAM_MILITIA, finalPositionMilitia, < 0, 0, 0 >, true )
+	
+	// createbooststorelocation is void so have to do this 
+	// also boost store code is just fully fucked lol, teams only get set on open so can't compare teams at this point
+	// sorry if someone else makes their own boost stores lol this'll just break
+	// if there's some way to get the invisible crates used for boost stores i will be very happy
+	
+	if ( GetBoostStores().len() != 2 )
+		print( "_gamemode_arena.gnut: there are more than 2 boost stores, very bad no good" )
+	
+	file.imcBoostStore = GetBoostStores()[0]
+	file.militiaBoostStore = GetBoostStores()[1]
+}
+
+void function StartBuyPhase()
+{
+	//file.imcShield = CreateBubbleShieldWithSettings( TEAM_IMC, file.imcBoostStore.GetOrigin(), <0,0,0>, null, 15.0 )
+	//file.militiaShield = CreateBubbleShieldWithSettings( TEAM_MILITIA, file.militiaBoostStore.GetOrigin(), <0,0,0>, null, 15.0 )
+	
+	entity bubbleShield = CreateEntity( "prop_dynamic" )
+	bubbleShield.SetValueForModelKey( $"models/fx/xo_shield.mdl" )
+	bubbleShield.kv.solid = 0
+    bubbleShield.kv.rendercolor = "255 255 255" // white
+	bubbleShield.kv.modelscale = 2.25
+	bubbleShield.SetOrigin( file.imcBoostStore.GetOrigin() )
+	DispatchSpawn( bubbleShield )
+	
+	file.imcShield = bubbleShield
+	
+	//SetTeam( bubbleShield, TEAM_IMC )
+	
+	// current problem, there is seemingly no way of getting a shield we can resize which actually resizes the collision
+	// could probably just damage players that try to leave lol
+	
+	OpenBoostStores()
+}
+
+void function FinishBuyPhase()
+{
+	file.imcShield.Destroy()
+	//file.militiaShield.Destroy()
+	
+	CloseBoostStores()
+}

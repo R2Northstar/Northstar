@@ -1,0 +1,552 @@
+//TODO: Add "retrigger if held" functionality to stick
+
+
+// Player input callbacks
+global function AddButtonPressedPlayerInputCallback
+global function RemoveButtonPressedPlayerInputCallback
+global function AddButtonReleasedPlayerInputCallback
+global function RemoveButtonReleasedPlayerInputCallback
+global function AddPlayerHeldButtonEventCallback
+global function RemovePlayerHeldButtonEventCallback
+
+global function AddPlayerPressedForwardCallback
+global function RemovePlayerPressedForwardCallback
+global function AddPlayerPressedBackCallback
+global function RemovePlayerPressedBackCallback
+global function AddPlayerPressedLeftCallback
+global function RemovePlayerPressedLeftCallback
+global function AddPlayerPressedRightCallback
+global function RemovePlayerPressedRightCallback
+
+global function DEBUG_AddSprintJumpHeldMeleePressed //Only for reference on how to do more complicated input events
+
+global function CodeCallback_OnPlayerInputCommandChanged
+global function CodeCallback_OnPlayerInputAxisChanged
+
+void function CodeCallback_OnPlayerInputCommandChanged( entity player, int cmdsHeld, int cmdsPressed, int cmdsReleased )
+{
+	foreach( callbackStruct in player.p.playerInputEventCallbacks )
+	{
+		if ( PlayerInputsMatchCallbackInputs( cmdsHeld, cmdsPressed, cmdsReleased, callbackStruct )  )
+			callbackStruct.callbackFunc( player )
+	}
+
+	foreach( callbackStruct in player.p.playerHeldButtonEventCallbacks )
+	{
+		if ( cmdsPressed & callbackStruct.buttonHeld )
+			thread RunHeldCallbackAfterTimePasses( player, callbackStruct )
+	}
+
+	foreach( callbackStruct in player.p.playerHeldButtonEventCallbacks )
+	{
+		if ( cmdsReleased & callbackStruct.buttonHeld )
+		{
+			string endSignalName = GetEndSignalNameForHeldButtonCallback( callbackStruct )
+			player.Signal( endSignalName ) //Send signal to kill corresponding RunHeldCallbackAfterTimePasses
+		}
+	}
+}
+
+void function CodeCallback_OnPlayerInputAxisChanged( entity player, float horizAxis, float vertAxis )
+{
+	//printt( "Axis Changed: X: " + horizAxis + " Y: " + vertAxis )
+
+	foreach( callbackStruct in player.p.playerInputAxisEventCallbacks )
+	{
+		if ( ShouldRunPlayerInputAxisCallbackFunc( horizAxis, vertAxis, callbackStruct )  )
+			RunPlayerInputAxisCallbackFunc( player, callbackStruct )
+	}
+}
+
+void function AddPlayerInputEventCallback_Internal( entity player, PlayerInputEventCallbackStruct inputCallbackStruct ) //Not really meant to be used directly unless you know what you're doing! Use utility functions like AddButtonPressedPlayerInputCallback instead
+{
+	if ( !player.GetSendInputCallbacks() )
+		player.SetSendInputCallbacks( true )
+
+	Assert( !InputEventCallbackAlreadyExists( player, inputCallbackStruct ), " Adding the same inputEventCallback " + string ( inputCallbackStruct.callbackFunc ) + " with the same inputs!" )
+
+	player.p.playerInputEventCallbacks.append( inputCallbackStruct )
+}
+
+void function RemovePlayerInputEventCallback_Internal( entity player, PlayerInputEventCallbackStruct inputCallbackStruct ) //Not really meant to be used directly unless you know what you're doing! Use utility functions like RemoveButtonPressedPlayerInputCallback instead
+{
+	for( int i = player.p.playerInputEventCallbacks.len() - 1; i >= 0; --i ) //Removing from the end of an array, so it's fine to remove as we go along
+	{
+		if ( InputCallbackStructsAreTheSame( player.p.playerInputEventCallbacks[i], inputCallbackStruct ) )
+		{
+			player.p.playerInputEventCallbacks.remove( i )
+			break
+		}
+
+	}
+
+	TurnOffInputCallbacksIfNecessary( player )
+}
+
+bool function InputEventCallbackAlreadyExists( entity player, PlayerInputEventCallbackStruct inputCallbackStruct )
+{
+	foreach( existingCallbackStruct in player.p.playerInputEventCallbacks )
+	{
+		if ( InputCallbackStructsAreTheSame( existingCallbackStruct, inputCallbackStruct ) )
+			return true
+	}
+
+	return false
+}
+
+void function AddPlayerHeldButtonEventCallback( entity player, int buttonEnum,  void functionref( entity player ) callbackFunc, float buttonHeldTime = 1.0 )
+{
+	if ( !player.GetSendInputCallbacks() )
+		player.SetSendInputCallbacks( true )
+
+	PlayerHeldButtonEventCallbackStruct callbackStruct
+	callbackStruct.buttonHeld =  buttonEnum
+	callbackStruct.callbackFunc =  callbackFunc
+	callbackStruct.timeHeld =  buttonHeldTime
+
+	Assert( !HeldEventCallbackAlreadyExists( player, callbackStruct ), " Adding the same heldEventCallback " + string ( callbackStruct.callbackFunc ) + " with the same parameters!" )
+
+	string endSignalName = GetEndSignalNameForHeldButtonCallback( callbackStruct )
+	RegisterSignal( endSignalName )//Signal meant to kill the waiting thread if button is released. Note that registering the same signal multiple times seems to be ok.
+
+	player.p.playerHeldButtonEventCallbacks.append( callbackStruct )
+}
+
+
+void function RemovePlayerHeldButtonEventCallback( entity player, int buttonEnum,  void functionref( entity player ) callbackFunc, float buttonHeldTime = 1.0 )
+{
+	PlayerHeldButtonEventCallbackStruct callbackStruct
+	callbackStruct.buttonHeld =  buttonEnum
+	callbackStruct.callbackFunc =  callbackFunc
+	callbackStruct.timeHeld =  buttonHeldTime
+
+	for( int i = player.p.playerHeldButtonEventCallbacks.len() - 1; i >= 0; --i ) //Removing from the end of an array, so it's fine to remove as we go along
+	{
+		if ( HeldButtonCallbackStructsAreTheSame( player.p.playerHeldButtonEventCallbacks[i], callbackStruct ) )
+				player.p.playerHeldButtonEventCallbacks.remove( i )
+	}
+
+	TurnOffInputCallbacksIfNecessary( player )
+}
+
+bool function HeldEventCallbackAlreadyExists( entity player, PlayerHeldButtonEventCallbackStruct callbackStruct )
+{
+	foreach( existingCallbackStruct in player.p.playerHeldButtonEventCallbacks )
+	{
+		if ( HeldButtonCallbackStructsAreTheSame( existingCallbackStruct, callbackStruct ) )
+			return true
+	}
+
+	return false
+}
+
+void function DEBUG_PlayerHeldSprintJumpAndPressedMelee( entity player ) //Debug function, just an example on how to hook up more complicated InputEvents
+{
+	PrintFunc()
+}
+
+void function DEBUG_AddSprintJumpHeldMeleePressed() //Debug function, just an example on how to hook up more complicated InputEvents
+{
+	PlayerInputEventCallbackStruct callbackStruct
+	callbackStruct.cmdsHeldBitMask = IN_SPEED | IN_JUMP
+	callbackStruct.cmdsPressedBitMask = IN_MELEE
+	callbackStruct.callbackFunc = DEBUG_PlayerHeldSprintJumpAndPressedMelee
+
+	AddPlayerInputEventCallback_Internal( GetPlayerArray()[0], callbackStruct )
+}
+
+//List of valid inputs are in sh_constants for reference
+void function AddButtonPressedPlayerInputCallback( entity player, int buttonEnum, void functionref( entity player ) callbackFunc )
+{
+	PlayerInputEventCallbackStruct callbackStruct
+	callbackStruct.cmdsPressedBitMask = buttonEnum
+	callbackStruct.callbackFunc = callbackFunc
+
+	AddPlayerInputEventCallback_Internal( player, callbackStruct )
+}
+
+void function RemoveButtonPressedPlayerInputCallback( entity player, int buttonEnum, void functionref( entity player ) callbackFunc )
+{
+	PlayerInputEventCallbackStruct callbackStruct
+	callbackStruct.cmdsPressedBitMask = buttonEnum
+	callbackStruct.callbackFunc = callbackFunc
+
+	RemovePlayerInputEventCallback_Internal( player, callbackStruct )
+}
+
+void function AddButtonReleasedPlayerInputCallback( entity player, int buttonEnum, void functionref( entity player ) callbackFunc )
+{
+	PlayerInputEventCallbackStruct callbackStruct
+	callbackStruct.cmdsReleasedBitMask = buttonEnum
+	callbackStruct.callbackFunc = callbackFunc
+
+	AddPlayerInputEventCallback_Internal( player, callbackStruct )
+}
+
+void function RemoveButtonReleasedPlayerInputCallback( entity player, int buttonEnum, void functionref( entity player ) callbackFunc )
+{
+	PlayerInputEventCallbackStruct callbackStruct
+	callbackStruct.cmdsReleasedBitMask = buttonEnum
+	callbackStruct.callbackFunc = callbackFunc
+
+	RemovePlayerInputEventCallback_Internal( player, callbackStruct )
+}
+
+
+void function RunHeldCallbackAfterTimePasses( entity player, PlayerHeldButtonEventCallbackStruct callbackStruct )
+{
+	string endSignalName = GetEndSignalNameForHeldButtonCallback( callbackStruct )
+	player.EndSignal( endSignalName )
+	player.EndSignal( "OnDeath" )
+
+	/*OnThreadEnd(
+	function() : (  )
+		{
+			printt( "function ended at: " + Time() )
+
+		}
+	)
+
+	printt( "Pre wait time: " + Time()  )*/
+	wait callbackStruct.timeHeld
+
+	//printt( "Post wait time: " + Time()  )
+
+	if ( !IsValid( player ) )
+		return
+
+	callbackStruct.callbackFunc( player )
+}
+
+string function GetEndSignalNameForHeldButtonCallback( PlayerHeldButtonEventCallbackStruct callbackStruct  )
+{
+	return ( "Button" + callbackStruct.buttonHeld + "Released_EndSignal" )
+}
+
+bool function InputCallbackStructsAreTheSame( PlayerInputEventCallbackStruct callbackStruct1, PlayerInputEventCallbackStruct callbackStruct2  ) //Really just a comparison function because == does a compare by reference, not a compare by value
+{
+	if ( callbackStruct1.cmdsPressedBitMask != callbackStruct2.cmdsPressedBitMask )
+		return false
+
+	if ( callbackStruct1.cmdsHeldBitMask != callbackStruct2.cmdsHeldBitMask )
+		return false
+
+	if ( callbackStruct1.cmdsReleasedBitMask != callbackStruct2.cmdsReleasedBitMask )
+		return false
+
+	if ( callbackStruct1.callbackFunc != callbackStruct2.callbackFunc )
+		return false
+
+	return true
+}
+
+bool function PlayerInputsMatchCallbackInputs( int cmdsHeld, int cmdsPressed, int cmdsReleased, PlayerInputEventCallbackStruct callbackStruct  )
+{
+	if ( !HasBitMask( cmdsHeld, callbackStruct.cmdsHeldBitMask ) )
+		return false
+
+	if ( !HasBitMask( cmdsPressed, callbackStruct.cmdsPressedBitMask ) )
+		return false
+
+	if ( !HasBitMask( cmdsReleased, callbackStruct.cmdsReleasedBitMask ) )
+		return false
+
+	return true
+}
+
+bool function HeldButtonCallbackStructsAreTheSame( PlayerHeldButtonEventCallbackStruct struct1, PlayerHeldButtonEventCallbackStruct struct2 ) //Really just a comparison function because == does a compare by reference, not a compare by value
+{
+	if ( struct1.buttonHeld != struct2.buttonHeld )
+		return false
+
+	if ( struct1.callbackFunc != struct2.callbackFunc )
+		return false
+
+	if ( struct1.timeHeld != struct2.timeHeld )
+		return false
+
+	return true
+
+}
+
+void function TurnOffInputCallbacksIfNecessary( entity player )
+{
+	if ( player.p.playerInputEventCallbacks.len() > 0 )
+		return
+
+	if ( player.p.playerHeldButtonEventCallbacks.len() > 0 )
+		return
+
+	if ( player.p.playerInputAxisEventCallbacks.len() > 0 )
+		return
+
+	//printt( "No more input callbacks, SetInputCallbacks to false" )
+	player.SetSendInputCallbacks( false )
+}
+
+PlayerInputAxisEventCallbackStruct function MakePressedForwardCallbackStruct()
+{
+	PlayerInputAxisEventCallbackStruct callbackStruct
+	callbackStruct.horizAxisMinThreshold = -1.0
+	callbackStruct.horizAxisMaxThreshold = 1.0
+	callbackStruct.vertAxisMinThreshold = 0.4
+	callbackStruct.vertAxisMaxThreshold = 1.0
+
+	return callbackStruct
+}
+
+void function AddPlayerPressedForwardCallback( entity player, bool functionref( entity player ) callbackFunc, float debounceTime = 2.0 )
+{
+	PlayerInputAxisEventCallbackStruct callbackStruct = MakePressedForwardCallbackStruct()
+	callbackStruct.debounceTime = debounceTime
+	callbackStruct.callbackFunc = callbackFunc
+
+	AddPlayerInputAxisEventCallback_Internal( player, callbackStruct )
+}
+
+void function RemovePlayerPressedForwardCallback( entity player, bool functionref( entity player ) callbackFunc, float debounceTime = 2.0 )
+{
+	PlayerInputAxisEventCallbackStruct callbackStruct = MakePressedForwardCallbackStruct()
+	callbackStruct.debounceTime = debounceTime
+	callbackStruct.callbackFunc = callbackFunc
+
+	RemovePlayerInputAxisEventCallback_Internal( player, callbackStruct )
+}
+
+PlayerInputAxisEventCallbackStruct function MakePressedBackCallbackStruct()
+{
+	PlayerInputAxisEventCallbackStruct callbackStruct
+	callbackStruct.horizAxisMinThreshold = -1.0
+	callbackStruct.horizAxisMaxThreshold = 1.0
+	callbackStruct.vertAxisMinThreshold = -1.0
+	callbackStruct.vertAxisMaxThreshold = -0.4
+
+	return callbackStruct
+}
+
+void function AddPlayerPressedBackCallback( entity player, bool functionref( entity player ) callbackFunc, float debounceTime = 2.0 )
+{
+	PlayerInputAxisEventCallbackStruct callbackStruct = MakePressedBackCallbackStruct()
+	callbackStruct.debounceTime = debounceTime
+	callbackStruct.callbackFunc = callbackFunc
+
+	AddPlayerInputAxisEventCallback_Internal( player, callbackStruct )
+
+}
+
+void function RemovePlayerPressedBackCallback( entity player, bool functionref( entity player ) callbackFunc, float debounceTime = 2.0 )
+{
+	PlayerInputAxisEventCallbackStruct callbackStruct = MakePressedBackCallbackStruct()
+	callbackStruct.debounceTime = debounceTime
+	callbackStruct.callbackFunc = callbackFunc
+
+	RemovePlayerInputAxisEventCallback_Internal( player, callbackStruct )
+
+}
+
+PlayerInputAxisEventCallbackStruct function MakePressedLeftCallbackStruct()
+{
+	PlayerInputAxisEventCallbackStruct callbackStruct
+	callbackStruct.horizAxisMinThreshold = -1.0
+	callbackStruct.horizAxisMaxThreshold = -0.4
+	callbackStruct.vertAxisMinThreshold = -1.0
+	callbackStruct.vertAxisMaxThreshold = 1.0
+
+	return callbackStruct
+}
+
+void function AddPlayerPressedLeftCallback( entity player, bool functionref( entity player ) callbackFunc, float debounceTime = 2.0 )
+{
+	PlayerInputAxisEventCallbackStruct callbackStruct = MakePressedLeftCallbackStruct()
+	callbackStruct.debounceTime = debounceTime
+	callbackStruct.callbackFunc = callbackFunc
+
+	AddPlayerInputAxisEventCallback_Internal( player, callbackStruct )
+}
+
+void function RemovePlayerPressedLeftCallback( entity player, bool functionref( entity player ) callbackFunc, float debounceTime = 2.0 )
+{
+	PlayerInputAxisEventCallbackStruct callbackStruct = MakePressedLeftCallbackStruct()
+	callbackStruct.debounceTime = debounceTime
+	callbackStruct.callbackFunc = callbackFunc
+
+	RemovePlayerInputAxisEventCallback_Internal( player, callbackStruct )
+}
+
+PlayerInputAxisEventCallbackStruct function MakePressedRightCallbackStruct()
+{
+	PlayerInputAxisEventCallbackStruct callbackStruct
+	callbackStruct.horizAxisMinThreshold = 0.4
+	callbackStruct.horizAxisMaxThreshold = 1.0
+	callbackStruct.vertAxisMinThreshold = -1.0
+	callbackStruct.vertAxisMaxThreshold = 1.0
+
+	return callbackStruct
+}
+
+void function AddPlayerPressedRightCallback( entity player, bool functionref( entity player ) callbackFunc, float debounceTime = 2.0 )
+{
+	PlayerInputAxisEventCallbackStruct callbackStruct = MakePressedRightCallbackStruct()
+	callbackStruct.debounceTime = debounceTime
+	callbackStruct.callbackFunc = callbackFunc
+
+	AddPlayerInputAxisEventCallback_Internal( player, callbackStruct )
+}
+
+void function RemovePlayerPressedRightCallback( entity player, bool functionref( entity player ) callbackFunc, float debounceTime = 2.0 )
+{
+	PlayerInputAxisEventCallbackStruct callbackStruct = MakePressedRightCallbackStruct()
+	callbackStruct.debounceTime = debounceTime
+	callbackStruct.callbackFunc = callbackFunc
+
+	RemovePlayerInputAxisEventCallback_Internal( player, callbackStruct )
+}
+
+
+void function AddPlayerInputAxisEventCallback_Internal( entity player, PlayerInputAxisEventCallbackStruct callbackStruct )
+{
+	if ( !player.GetSendInputCallbacks() )
+		player.SetSendInputCallbacks( true )
+
+	Assert( IsValidPlayerInputAxisEventCallbackStruct( callbackStruct ) )
+
+	Assert( !InputAxisEventCallbackAlreadyExists( player, callbackStruct ), " Adding the same inputEventCallback " + string ( callbackStruct.callbackFunc ) + " with the same inputs!" )
+
+	player.p.playerInputAxisEventCallbacks.append( callbackStruct )
+}
+
+void function RemovePlayerInputAxisEventCallback_Internal( entity player, PlayerInputAxisEventCallbackStruct callbackStruct )
+{
+	for( int i = player.p.playerInputAxisEventCallbacks.len() - 1; i >= 0; --i ) //Removing from the end of an array, so it's fine to remove as we go along
+	{
+		if ( InputAxisCallbackStructsAreTheSame( player.p.playerInputAxisEventCallbacks[i], callbackStruct ) )
+		{
+			player.p.playerInputAxisEventCallbacks.remove( i )
+			break //Can break since we shouldn't have more than one callbackstruct that's exactly the same
+		}
+	}
+
+	TurnOffInputCallbacksIfNecessary( player )
+}
+
+bool function InputAxisEventCallbackAlreadyExists( entity player, PlayerInputAxisEventCallbackStruct callbackStruct )
+{
+	foreach( existingStruct in player.p.playerInputAxisEventCallbacks )
+	{
+		if ( InputAxisCallbackStructsAreTheSame( existingStruct, callbackStruct ) )
+			return true
+	}
+
+	return false
+}
+
+bool function InputAxisCallbackStructsAreTheSame( PlayerInputAxisEventCallbackStruct callbackStruct1, PlayerInputAxisEventCallbackStruct callbackStruct2  ) //Really just a comparison function because == does a compare by reference, not a compare by value
+{
+	if ( callbackStruct1.horizAxisMinThreshold != callbackStruct2.horizAxisMinThreshold )
+		return false
+
+	if ( callbackStruct1.horizAxisMaxThreshold != callbackStruct2.horizAxisMaxThreshold )
+		return false
+
+	if ( callbackStruct1.vertAxisMinThreshold != callbackStruct2.vertAxisMinThreshold )
+		return false
+
+	if ( callbackStruct1.vertAxisMaxThreshold != callbackStruct2.vertAxisMaxThreshold )
+		return false
+
+	if ( callbackStruct1.debounceTime != callbackStruct2.debounceTime )
+		return false
+
+	if ( callbackStruct1.callbackFunc != callbackStruct2.callbackFunc )
+		return false
+
+	return true
+}
+
+bool function ShouldRunPlayerInputAxisCallbackFunc( float horizAxis, float vertAxis, PlayerInputAxisEventCallbackStruct callbackStruct )
+{
+	if ( horizAxis < callbackStruct.horizAxisMinThreshold )
+		return false
+
+	if ( horizAxis > callbackStruct.horizAxisMaxThreshold )
+		return false
+
+	if ( vertAxis < callbackStruct.vertAxisMinThreshold )
+		return false
+
+	if ( vertAxis > callbackStruct.vertAxisMaxThreshold )
+		return false
+
+	if ( Time() < callbackStruct.lastTriggeredTime + callbackStruct.debounceTime )
+		return false
+
+	return true
+
+}
+
+bool function IsValidPlayerInputAxisEventCallbackStruct( PlayerInputAxisEventCallbackStruct callbackStruct  )
+{
+	//Make sure thresholds are within valid ranges
+	if ( callbackStruct.horizAxisMinThreshold < -1.0 )
+		return false
+
+	if ( callbackStruct.horizAxisMinThreshold > 1.0 )
+		return false
+
+	if ( callbackStruct.horizAxisMaxThreshold < -1.0 )
+		return false
+
+	if ( callbackStruct.horizAxisMaxThreshold > 1.0 )
+		return false
+
+	if ( callbackStruct.vertAxisMinThreshold < -1.0 )
+		return false
+
+	if ( callbackStruct.vertAxisMinThreshold > 1.0 )
+		return false
+
+	if ( callbackStruct.vertAxisMaxThreshold < 1.0 )
+		return false
+
+	if ( callbackStruct.vertAxisMaxThreshold > 1.0 )
+		return false
+
+	//Make sure min and maxes are correct relative to each other
+	if ( callbackStruct.horizAxisMinThreshold > callbackStruct.horizAxisMaxThreshold )
+		return false
+
+	if ( callbackStruct.vertAxisMinThreshold > callbackStruct.vertAxisMaxThreshold )
+		return false
+
+	return true
+}
+
+void function RunPlayerInputAxisCallbackFunc( entity player, PlayerInputAxisEventCallbackStruct callbackStruct )
+{
+	bool callbackResult = callbackStruct.callbackFunc( player )
+	if ( callbackResult )
+	{
+		callbackStruct.lastTriggeredTime = Time()
+
+		if ( callbackStruct.debounceTime > 0 )
+			thread RunInputAxisCallbackAfterTimePasses( player, callbackStruct ) //Note that this has the potential to call RunPlayerInputAxisCallbackFunc again
+	}
+}
+
+void function RunInputAxisCallbackAfterTimePasses( entity player, PlayerInputAxisEventCallbackStruct callbackStruct )
+{
+	player.EndSignal( "OnDeath" )
+
+	wait callbackStruct.debounceTime
+	WaitFrame() //Time to wait isn't exact due to floating point precision, so wait an extra frame.
+
+
+	if ( !IsValid( player ) )
+		return
+
+	float horizAxis = player.GetInputAxisRight()
+	float vertAxis = player.GetInputAxisForward()
+
+	if ( ShouldRunPlayerInputAxisCallbackFunc( horizAxis, vertAxis, callbackStruct ) )
+		RunPlayerInputAxisCallbackFunc( player, callbackStruct ) //Note that this has the potential to call RunInputAxisCallbackAfterTimePasses again
+}

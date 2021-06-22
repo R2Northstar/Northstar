@@ -1,0 +1,600 @@
+
+/*
+	ToDo:
+		-if marvin has no jobs to go to make him to back to spawn position instead of standing at last node
+*/
+
+global function MarvinJobs_Init
+global function MarvinJobThink
+global function GetMarvinType
+
+const DEBUG_MARVIN_JOBS = false
+const MAX_JOB_SEARCH_DIST_SQR = 1000 * 1000
+const JOB_NODE_COOLDOWN_TIME = 15.0
+
+struct MarvinJob
+{
+	string validMarvinType
+	entity node
+	entity user
+	string jobType
+	bool tempJob
+	float nextUsableTime = 0
+	entity barrel
+}
+
+struct
+{
+	array<MarvinJob> marvinJobs
+	table<string,void functionref( entity,MarvinJob)> jobFunctions
+} file
+
+
+
+
+//	██╗███╗   ██╗██╗████████╗
+//	██║████╗  ██║██║╚══██╔══╝
+//	██║██╔██╗ ██║██║   ██║
+//	██║██║╚██╗██║██║   ██║
+//	██║██║ ╚████║██║   ██║
+//	╚═╝╚═╝  ╚═══╝╚═╝   ╚═╝
+
+void function MarvinJobs_Init()
+{
+	file.jobFunctions[ "welding" ] 			<- SimpleJobAnims
+	file.jobFunctions[ "welding_under" ] 	<- SimpleJobAnims
+	file.jobFunctions[ "window" ] 			<- SimpleJobAnims
+	file.jobFunctions[ "fightFire" ] 		<- SimpleJobAnims
+	file.jobFunctions[ "barrel_pickup" ] 	<- MarvinPicksUpBarrel
+	file.jobFunctions[ "barrel_putdown" ] 	<- MarvinPutsDownBarrel
+	file.jobFunctions[ "repair_over_edge" ] <- SimpleJobAnims
+	file.jobFunctions[ "repair_above" ] 	<- SimpleJobAnims
+	file.jobFunctions[ "repair_under" ] 	<- SimpleJobAnims
+	file.jobFunctions[ "datacards" ] 		<- SimpleJobAnims
+
+	file.jobFunctions[ "drone_welding" ] 	<- SimpleJobAnims
+	file.jobFunctions[ "drone_inspect" ] 	<- SimpleJobAnims
+
+	RegisterSignal( "pickup_barrel" )
+	RegisterSignal( "putdown_barrel" )
+	RegisterSignal( "JobStarted" )
+	RegisterSignal( "StopDoingJobs" )
+
+	AddSpawnCallback( "script_marvin_job", InitMarvinJob )
+
+	AddCallback_EntitiesDidLoad( MarvinJobsEntitiesDidLoad )
+}
+
+void function InitMarvinJob( entity node )
+{
+	Assert( node.HasKey( "job" ) )
+	Assert( node.kv.job != "" )
+	Assert( string( node.kv.job ) in file.jobFunctions, "Marvin job node at " + node.GetOrigin() + " has unhandled job type " + string( node.kv.job ) )
+	string editorClass = GetEditorClass( node )
+
+	// Drop node to ground for certain types or if checked on the entity
+	if ( editorClass == "" )
+	{
+		if ( !node.HasKey( "hover" ) || node.kv.hover != "1" )
+			DropToGround( node )
+	}
+
+	if ( DEBUG_MARVIN_JOBS )
+		DebugDrawAngles( node.GetOrigin(), node.GetAngles() )
+
+	// Create marvin job struct
+	MarvinJob marvinJob
+	marvinJob.node = node
+	marvinJob.jobType = string( node.kv.job )
+	marvinJob.tempJob = node.HasKey( "tempJob" ) && node.kv.tempJob == "1"
+
+	if ( marvinJob.jobType == "barrel_pickup" )
+		marvinJob.barrel = CreateBarrel( node )
+
+	// Set what marvin_type of NPC can use this job
+	switch ( editorClass )
+	{
+		case "script_marvin_drone_job":
+			marvinJob.validMarvinType = "marvin_type_drone"
+			break
+		default:
+			marvinJob.validMarvinType = "marvin_type_walker"
+			break
+	}
+
+	file.marvinJobs.append( marvinJob )
+}
+
+void function MarvinJobsEntitiesDidLoad()
+{
+	if ( DEBUG_MARVIN_JOBS )
+		DebugMarvinJobs()
+}
+
+
+
+
+
+//	████████╗██╗  ██╗██╗███╗   ██╗██╗  ██╗
+//	╚══██╔══╝██║  ██║██║████╗  ██║██║ ██╔╝
+//	   ██║   ███████║██║██╔██╗ ██║█████╔╝
+//	   ██║   ██╔══██║██║██║╚██╗██║██╔═██╗
+//	   ██║   ██║  ██║██║██║ ╚████║██║  ██╗
+//	   ╚═╝   ╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝
+
+void function MarvinJobThink( entity marvin )
+{
+	EndSignal( marvin, "OnDeath" )
+	EndSignal( marvin, "OnDestroy" )
+	EndSignal( marvin, "StopDoingJobs" )
+
+	// Wait a frame because npcs that are spawned at map load may run this function before job nodes are finished being initialized
+	WaitFrame()
+
+	// Get all jobs this marvin can do
+	array<MarvinJob> jobs = GetJobsForMarvin( marvin )
+	if ( jobs.len() == 0 )
+		return
+
+	OnThreadEnd(
+	function() : ( marvin )
+		{
+			Assert( !IsAlive( marvin ), "MarvinJobThink ended but the marvin is still alive" )
+		}
+	)
+
+	while ( true )
+	{
+		foreach ( MarvinJob job in jobs )
+		{
+			waitthread MarvinDoJob( marvin, job )
+			WaitFrame()
+		}
+
+		jobs.randomize()
+		WaitFrame()
+	}
+}
+
+void function MarvinDoJob( entity marvin, MarvinJob job )
+{
+	Assert( IsAlive( marvin ), "Marvin " + marvin + " is not alive" )
+	EndSignal( marvin, "OnFailedToPath" )
+	EndSignal( marvin, "OnDeath" )
+
+	// Don't do a job that's already in use or not ready to be used again
+	if ( IsValid( job.user ) || Time() < job.nextUsableTime )
+		return
+
+	// Don't use a barrel put down job if you can'r carrying a barrel
+	if ( job.jobType == "barrel_putdown" && !IsValid( marvin.ai.carryBarrel ) )
+		return
+
+	// If you're carrying a barrel, only do a barrel put down job
+	if ( IsValid( marvin.ai.carryBarrel ) && job.jobType != "barrel_putdown" )
+		return
+
+	OnThreadEnd(
+	function() : ( job )
+		{
+			job.user = null
+			job.nextUsableTime = Time() + JOB_NODE_COOLDOWN_TIME
+		}
+	)
+
+	// Default walk anim
+	MarvinDefaultMoveAnim( marvin )
+
+	// Node gets occupied
+	job.user = marvin
+
+	if ( DEBUG_MARVIN_JOBS )
+		DebugDrawLine( marvin.GetWorldSpaceCenter(), job.node.GetOrigin(), 255, 0, 0, true, 3.0 )
+
+	// Run the job function
+	thread DontDisableJobOnPathFailOrDeath( marvin, job )
+	waitthread file.jobFunctions[ job.jobType ]( marvin, job )
+	if ( IsValid( marvin ) )
+		marvin.Anim_Stop()
+}
+
+void function DontDisableJobOnPathFailOrDeath( entity marvin, MarvinJob job )
+{
+	EndSignal( marvin, "JobStarted" )
+	WaitSignal( marvin, "OnFailedToPath", "OnDeath" )
+	job.nextUsableTime = Time()
+}
+
+
+
+
+
+//	     ██╗ ██████╗ ██████╗     ███████╗██╗   ██╗███╗   ██╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
+//	     ██║██╔═══██╗██╔══██╗    ██╔════╝██║   ██║████╗  ██║██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║██╔════╝
+//	     ██║██║   ██║██████╔╝    █████╗  ██║   ██║██╔██╗ ██║██║        ██║   ██║██║   ██║██╔██╗ ██║███████╗
+//	██   ██║██║   ██║██╔══██╗    ██╔══╝  ██║   ██║██║╚██╗██║██║        ██║   ██║██║   ██║██║╚██╗██║╚════██║
+//	╚█████╔╝╚██████╔╝██████╔╝    ██║     ╚██████╔╝██║ ╚████║╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║███████║
+//	 ╚════╝  ╚═════╝ ╚═════╝     ╚═╝      ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
+
+void function SimpleJobAnims( entity marvin, MarvinJob job )
+{
+	// Get the anims to use for the job
+	array<string> anims
+	switch ( job.jobType )
+	{
+		// Marvin jobs
+		case "welding":
+			anims.append( "mv_idle_weld" )
+			break
+		case "welding_under":
+			anims.append( "mv_weld_under" )
+			anims.append( "mv_weld_under" )
+			anims.append( "mv_weld_under_stumble" )
+			break
+		case "window":
+			anims.append( "mv_idle_wash_window_noloop" )
+			anims.append( "mv_idle_buff_window_noloop" )
+			break
+		case "fightFire":
+			anims.append( "mv_fireman_idle" )
+			anims.append( "mv_fireman_shift" )
+			break
+		case "repair_over_edge":
+			anims.append( "mv_repair_overedge" )
+			anims.append( "mv_repair_overedge" )
+			anims.append( "mv_repair_overedge_stumble" )
+			break
+		case "repair_above":
+			anims.append( "mv_repair_ship_above" )
+			break
+		case "repair_under":
+			anims.append( "mv_repair_under" )
+			anims.append( "mv_repair_under_stumble" )
+			break
+		case "datacards":
+			anims.append( "mv_job_replace_datacards" )
+			break
+
+		// Marvin drone jobs
+		case "drone_welding":
+			anims.append( "dw_jobs_welding_wallpanel" )
+			break
+		case "drone_inspect":
+			anims.append( "inspect1" )
+			anims.append( "inspect2" )
+			break
+	}
+	Assert( anims.len() > 0 )
+
+	if ( IsMarvinWalker( marvin ) )
+		waitthread MarvinRunToAnimStart( marvin, anims[0], job.node )
+	else
+		waitthread MarvinFlyToAnimStart( marvin, anims[0], job.node )
+
+	Signal( marvin, "JobStarted" )
+
+	while ( true )
+	{
+		anims.randomize()
+		foreach ( string anim in anims )
+		{
+			float animLength = marvin.GetSequenceDuration( anim ) // wait anim length because some anims may be looping so we can't wait for them to end
+
+			if ( IsMarvinDrone( marvin ) )
+				thread PlayAnimTeleport( marvin, anim, job.node )
+			else
+				thread PlayAnim( marvin, anim, job.node, null, 0.6 )
+
+			wait animLength
+		}
+		if ( job.tempJob )
+			break
+	}
+}
+
+void function MarvinPicksUpBarrel( entity marvin, MarvinJob job )
+{
+	// Don't try to pick up a barrel if there isn't one nearby
+	if ( !IsValid( job.barrel ) )
+		return
+	if ( Distance( job.node.GetOrigin(), job.barrel.GetOrigin() ) > 25 )
+		return
+
+	EndSignal( job.barrel, "OnDestroy" )
+
+	entity info_target = CreateEntity( "info_target" )
+	DispatchSpawn( info_target )
+
+	OnThreadEnd(
+		function () : ( info_target )
+		{
+			info_target.Destroy()
+		}
+	)
+
+	vector barrelFlatAngles = job.barrel.GetAngles()
+	barrelFlatAngles.x = 0
+	barrelFlatAngles.z = 0
+
+	info_target.SetOrigin( job.barrel.GetOrigin() )
+	info_target.SetAngles( barrelFlatAngles )
+
+	DropToGround( info_target )
+
+	if ( info_target.GetOrigin().z < -MAX_WORLD_COORD )
+		return // Fell through map
+
+	if ( DEBUG_MARVIN_JOBS )
+		thread DrawAnglesForMovingEnt( info_target, 30.0 )
+
+
+	// Go to the barrel
+	MarvinRunToAnimStart( marvin, "mv_carry_barrel_pickup", info_target )
+
+	// Try to pick it up
+	thread PlayAnim( marvin, "mv_carry_barrel_pickup", info_target, null, 0.6 )
+
+	// Wait until animation should pick up the barrel
+	marvin.WaitSignal( "pickup_barrel" )
+
+	// Get attachment info
+	string attachment = "PROPGUN"
+	int attachIndex = marvin.LookupAttachment( attachment )
+	vector attachOrigin = marvin.GetAttachmentOrigin( attachIndex )
+
+	// Make sure the barrel is close when it's time to parent the barrel
+	if ( Distance( attachOrigin, job.barrel.GetOrigin() ) > 25 )
+	{
+		marvin.Anim_Stop()
+		return
+	}
+
+	// Marvin picks up the barrel and carries it
+	thread MarvinCarryBarrel( marvin, job.barrel )
+
+	marvin.WaitSignal( "OnAnimationDone" )
+}
+
+void function MarvinCarryBarrel( entity marvin, entity barrel )
+{
+	marvin.EndSignal( "OnDeath" )
+	marvin.EndSignal( "OnDamaged" )
+	marvin.EndSignal( "putdown_barrel" )
+
+	OnThreadEnd(
+		function () : ( marvin, barrel )
+		{
+			if ( IsValid( barrel ) )
+			{
+				barrel.kv.solid = SOLID_VPHYSICS
+				barrel.ClearParent()
+				barrel.SetOwner( null )
+				EntFireByHandle( barrel, "wake", "", 0, null, null )
+				EntFireByHandle( barrel, "enablemotion", "", 0, null, null )
+			}
+
+			if ( IsAlive( marvin ) )
+			{
+				MarvinDefaultMoveAnim( marvin )
+				marvin.ClearIdleAnim()
+				marvin.ai.carryBarrel = null
+			}
+		}
+	)
+
+	string attachment = "PROPGUN"
+	marvin.SetMoveAnim( "mv_carry_barrel_walk" )
+	marvin.SetIdleAnim( "mv_carry_barrel_idle" )
+	barrel.SetParent( marvin, attachment, false, 0.5 )
+	barrel.SetOwner( marvin )
+
+	barrel.kv.solid = 0 // not solid
+
+	marvin.ai.carryBarrel = barrel
+
+	WaitSignal( marvin, "OnDestroy" )
+}
+
+void function MarvinPutsDownBarrel( entity marvin, MarvinJob job )
+{
+	Assert( IsValid( marvin.ai.carryBarrel ) )
+
+	// Don't place a barrel here if there is already one
+	if ( IsValid( job.barrel ) )
+	{
+		if ( Distance( job.node.GetOrigin(), job.barrel.GetOrigin() ) <= 25 )
+		return
+	}
+
+	EndSignal( marvin.ai.carryBarrel, "OnDestroy" )
+
+	marvin.SetMoveAnim( "mv_carry_barrel_walk" )
+	marvin.SetIdleAnim( "mv_carry_barrel_idle" )
+
+	// Walk to the put down spot
+	MarvinRunToAnimStart( marvin, "mv_carry_barrel_putdown", job.node )
+
+	// Put down the barrel
+	thread PlayAnim( marvin, "mv_carry_barrel_putdown", job.node, null, 0.6 )
+
+	// Wait for release
+	marvin.WaitSignal( "putdown_barrel" )
+
+	marvin.WaitSignal( "OnAnimationDone" )
+}
+
+
+
+
+//	██╗   ██╗████████╗██╗██╗     ██╗████████╗██╗   ██╗
+//	██║   ██║╚══██╔══╝██║██║     ██║╚══██╔══╝╚██╗ ██╔╝
+//	██║   ██║   ██║   ██║██║     ██║   ██║    ╚████╔╝
+//	██║   ██║   ██║   ██║██║     ██║   ██║     ╚██╔╝
+//	╚██████╔╝   ██║   ██║███████╗██║   ██║      ██║
+//	 ╚═════╝    ╚═╝   ╚═╝╚══════╝╚═╝   ╚═╝      ╚═╝
+
+bool function IsMarvinWalker( entity marvin )
+{
+	return GetMarvinType( marvin ) == "marvin_type_walker"
+}
+
+bool function IsMarvinDrone( entity marvin )
+{
+	return GetMarvinType( marvin ) == "marvin_type_drone"
+}
+
+string function GetMarvinType( entity npc )
+{
+	var marvinType = npc.Dev_GetAISettingByKeyField( "marvin_type" )
+	if ( marvinType == null )
+		return "not_marvin"
+
+	return expect string( marvinType )
+}
+
+bool function IsJobNode( entity node )
+{
+	if ( node.GetClassName() == "script_marvin_job" )
+		return true
+	if ( GetEditorClass( node ) == "script_marvin_drone_job" )
+		return true
+	return false
+}
+
+void function MarvinDefaultMoveAnim( entity marvin )
+{
+	if ( IsMarvinWalker( marvin ) )
+	{
+		marvin.SetNPCMoveSpeedScale( 1.0 )
+		marvin.SetMoveAnim( "walk_all" )
+	}
+}
+
+array<MarvinJob> function GetJobsForMarvin( entity marvin )
+{
+	string marvinType = GetMarvinType( marvin )
+
+	// Get jobs this marvin links to, if any, and randomize
+	array<MarvinJob> linkedJobs
+	array<entity> linkedEnts = marvin.GetLinkEntArray()
+	foreach ( entity ent in linkedEnts )
+	{
+		if ( IsJobNode( ent ) )
+		{
+			MarvinJob linkedJob = GetMarvinJobForNode( ent )
+			Assert( IsValid( linkedJob.node ) )
+
+			// Error if we are linking to the wrong type of job node
+			Assert( marvinType == linkedJob.validMarvinType, "npc_marvin at " + marvin.GetOrigin() + " links to a marvin job of the wrong marvin_type" )
+
+			linkedJobs.append( linkedJob )
+		}
+	}
+	linkedJobs.randomize()
+
+	// If marvin was linked to jobs we only consider those
+	if ( marvin.HasKey( "LinkedJobsOnly" ) && marvin.kv.LinkedJobsOnly == "1" )
+	{
+		Assert( linkedJobs.len() > 0, "marvin at " + marvin.GetOrigin() + " has LinkedJobsOnly marked but does not link to any job nodes" )
+		return linkedJobs
+	}
+
+	// Add all jobs within valid distance and randomize
+	array<MarvinJob> jobs
+	foreach ( MarvinJob marvinJob in file.marvinJobs )
+	{
+		if ( marvinType != marvinJob.validMarvinType )
+			continue
+
+		// Don't re-add a job that was linked to
+		if ( linkedJobs.contains( marvinJob ) )
+			continue
+
+		// Teleport nodes are for special case jobs with no nav mesh do son't consider them automatically
+		if ( marvinJob.node.HasKey( "teleport" ) && marvinJob.node.kv.teleport == "1" )
+			continue
+
+		// Only search for jobs within a max distance
+		if ( DistanceSqr( marvinJob.node.GetOrigin(), marvin.GetOrigin() ) <= MAX_JOB_SEARCH_DIST_SQR )
+			jobs.append( marvinJob )
+	}
+
+	// Randomize the order so the marvin does them out of order
+	jobs.randomize()
+
+	// Add the linked jobs to the list, and put them at the beginning of the priority
+	foreach ( MarvinJob linkedJob in linkedJobs )
+		jobs.insert( 0, linkedJob )
+
+	// Debug draw jobs this marvin can take
+	if ( DEBUG_MARVIN_JOBS )
+	{
+		foreach ( MarvinJob job in jobs )
+		{
+			if ( linkedJobs.contains( job ) )
+				DebugDrawLine( marvin.GetOrigin(), job.node.GetOrigin(), 255, 255, 0, true, 10.0 )
+			else
+				DebugDrawLine( marvin.GetOrigin(), job.node.GetOrigin(), 200, 200, 200, true, 10.0 )
+		}
+	}
+
+	return jobs
+}
+
+void function DebugMarvinJobs()
+{
+	while ( true )
+	{
+		foreach ( MarvinJob marvinJob in file.marvinJobs )
+		{
+			string appendText = "AVAILABLE"
+			float timeTillNextUse = marvinJob.nextUsableTime - Time()
+			if ( IsValid( marvinJob.user ) )
+				appendText = "RESERVED"
+			else if ( timeTillNextUse > 0 )
+				appendText = format( "%.1f", timeTillNextUse )
+			DebugDrawText( marvinJob.node.GetOrigin(), marvinJob.jobType + " (" + appendText + ")", true, 0.1 )
+		}
+		wait 0.05
+	}
+}
+
+MarvinJob function GetMarvinJobForNode( entity node )
+{
+	MarvinJob marvinJob
+	foreach ( MarvinJob marvinJob in file.marvinJobs )
+	{
+		if ( marvinJob.node == node )
+			return marvinJob
+	}
+	return marvinJob
+}
+
+entity function CreateBarrel( entity node )
+{
+	return CreatePropPhysics( node.GetModelName(), node.GetOrigin(), node.GetAngles() )
+}
+
+void function MarvinRunToAnimStart( entity marvin, string anim, entity jobNode )
+{
+	if ( jobNode.HasKey( "teleport" ) && jobNode.kv.teleport == "1" )
+		wait 0.1
+	else
+		RunToAnimStartPos( marvin, anim, jobNode )
+}
+
+void function MarvinFlyToAnimStart( entity marvin, string anim, entity jobNode )
+{
+	if ( jobNode.HasKey( "teleport" ) && jobNode.kv.teleport == "1" )
+	{
+		wait 0.1
+		return
+	}
+
+	AnimRefPoint animStartInfo = marvin.Anim_GetStartForRefPoint( anim, jobNode.GetOrigin(), jobNode.GetAngles() )
+
+	marvin.AssaultPoint( animStartInfo.origin )
+	marvin.AssaultSetAngles( animStartInfo.angles, true )
+	marvin.AssaultSetArrivalTolerance( 16 )
+	marvin.WaitSignal( "OnFinishedAssault" )
+}

@@ -1,0 +1,172 @@
+
+global function HealthRegen_Init
+
+global function PilotHealthRegenThinkSP
+global function PilotShieldHealthUpdate
+
+struct
+{
+	float healthRegenRate
+} file
+
+void function HealthRegen_Init()
+{
+	if ( IsSingleplayer() )
+	{
+		file.healthRegenRate = 1.0
+	}
+	else
+	{
+		file.healthRegenRate = 6.0
+		AddCallback_PlayerClassChanged( HealthRegen_OnPlayerClassChangedMP )
+		RegisterSignal( "PilotHealthRegenThink" )
+	}
+}
+
+void function PilotHealthRegenThinkSP( entity player )
+{
+	player.EndSignal( "OnDestroy" )
+
+	while ( IsValid( player ) )
+	{
+		wait( HEALTH_REGEN_TICK_TIME )
+
+		if ( !IsAlive( player ) )
+			continue
+
+		if ( !IsPilot( player ) )
+			continue
+
+		if ( shGlobal.proto_pilotHealthRegenDisabled )
+			continue
+
+		//Assert( IsTestMap() || player.GetPlayerSettings() == DEFAULT_PILOT_SETTINGS, "for now, we should all be pilot_solo at all times, or in a test map." )
+
+		if ( player.GetHealth() == player.GetMaxHealth() )
+			continue
+
+		float healthRegenRate = 4.0
+		float healthRegenStartDelay = GraphCapped( player.GetHealth(), 0, player.GetMaxHealth(), 3.0, 0.8 )
+
+		//printt( "recentDamage " + recentDamage + " delay " + healthRegenStartDelay + " rate " + healthRegenRate )
+
+		if ( Time() - player.p.lastDamageTime < healthRegenStartDelay )
+		{
+			continue
+		}
+
+		player.SetHealth( min( player.GetMaxHealth(), player.GetHealth() + healthRegenRate ) )
+	}
+}
+
+bool function IsHealActive( entity player )
+{
+	return StatusEffect_Get( player, eStatusEffect.stim_visual_effect ) > 0.0
+}
+
+void function PilotHealthRegenThinkMP( entity player )
+{
+	player.EndSignal( "OnDestroy" )
+	player.Signal( "PilotHealthRegenThink" )
+	player.EndSignal( "PilotHealthRegenThink" )
+
+	//float healthRegenStartDelay = player.GetPlayerSettingsField( "powerRegenRateOp" ) // seconds after we take damager to start regen
+	float healthRegenStartDelay = 5.0 //Needs to use GetPlayerSettingsField() instead of hard coding, waiting on Bug 129567
+	if ( PlayerHasPassive( player, ePassives.PAS_FAST_HEALTH_REGEN ) )
+		healthRegenStartDelay = 2.5
+
+	while ( IsValid( player ) )
+	{
+		wait( HEALTH_REGEN_TICK_TIME )
+
+		if ( !IsAlive( player ) )
+			continue
+
+		if ( !IsPilot( player ) )
+			continue
+
+		if ( shGlobal.proto_pilotHealthRegenDisabled )
+			continue
+
+		float healthRegenRate = file.healthRegenRate 	// health regen per tick
+
+		if ( player.GetHealth() == player.GetMaxHealth() )
+			continue
+
+		// No regen during phase shift
+		if ( player.IsPhaseShifted() )
+			continue
+
+		if ( IsHealActive( player ) )
+		{
+			if ( Time() - player.p.lastDamageTime < min( ABILITY_STIM_REGEN_DELAY, healthRegenStartDelay ) )
+				continue
+			else
+				healthRegenRate = healthRegenRate * ABILITY_STIM_REGEN_MOD
+		}
+		else if ( Time() - player.p.lastDamageTime < healthRegenStartDelay )
+		{
+			continue
+		}
+
+		player.SetHealth( min( player.GetMaxHealth(), player.GetHealth() + healthRegenRate ) )
+		if ( player.GetHealth() == player.GetMaxHealth() )
+		{
+			ClearRecentDamageHistory( player )
+			ClearLastAttacker( player )
+		}
+	}
+}
+
+void function HealthRegen_OnPlayerClassChangedMP( entity player )
+{
+	thread PilotHealthRegenThinkMP( player )
+}
+
+float function PilotShieldHealthUpdate( entity player, var damageInfo )
+{
+	if ( DamageInfo_GetForceKill( damageInfo ) )
+	{
+		player.SetShieldHealth( 0 )
+		return 0.0
+	}
+
+	int shieldHealth = player.GetShieldHealth()
+
+	float shieldDamage = 0
+
+	if ( shieldHealth )
+	{
+		DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )
+
+		shieldDamage = PilotShieldModifyDamage( player, damageInfo )
+
+		if ( shieldDamage )
+			DamageInfo_SetDamage( damageInfo, 0 )
+	}
+
+	return shieldDamage
+}
+
+float function PilotShieldModifyDamage( entity player, var damageInfo )
+{
+	float shieldHealth = float( player.GetShieldHealth() )
+	float damage = DamageInfo_GetDamage( damageInfo )
+
+	float newShieldHealth = shieldHealth - damage
+	float permanentDamage = 0.0
+
+	if ( newShieldHealth < 0 )
+		permanentDamage = fabs( newShieldHealth )
+
+	player.SetShieldHealth( maxint( 0, int( newShieldHealth ) ) )
+
+	if ( shieldHealth && newShieldHealth <= 0 )
+	{
+		EmitSoundOnEntity( player, "titan_energyshield_down" )
+	}
+
+	DamageInfo_SetDamage( damageInfo, permanentDamage )
+
+	return min( shieldHealth, damage )
+}

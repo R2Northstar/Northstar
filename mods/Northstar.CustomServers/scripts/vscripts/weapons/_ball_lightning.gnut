@@ -1,0 +1,363 @@
+untyped
+
+global function BallLightning_Init
+global function AttachBallLightning
+global function AttachBallLightningToProp
+global function CreateBallLightning
+global function DestroyBallLightningOnEnt
+global function GetBallLightningFromEnt
+
+global function RegisterBallLightningDamage
+
+global function BallLightningZapFX
+global function BallLightningZapTargets
+global function BallLightningZapConnectionFX
+
+struct {
+	table< string, float > uniqueStrings
+} file
+
+function BallLightning_Init()
+{
+	PrecacheParticleSystem( BALL_LIGHTNING_ZAP_FX )
+
+	if ( BALL_LIGHTNING_FX_TABLE != "" )
+		PrecacheImpactEffectTable( BALL_LIGHTNING_FX_TABLE )
+
+	RegisterBallLightningDamage( eDamageSourceId.mp_weapon_arc_launcher )
+	RegisterBallLightningDamage( eDamageSourceId.mp_titanweapon_arc_ball )
+	RegisterBallLightningDamage( eDamageSourceId.mp_weapon_arc_trap )
+}
+
+function AttachBallLightning( entity weapon, entity projectile )
+{
+	Assert( !( "ballLightning" in projectile.s ) )
+
+	int damageSourceId
+	entity owner
+
+	if ( weapon.IsProjectile() )
+	{
+		owner = weapon.GetOwner()
+		damageSourceId = weapon.ProjectileGetDamageSourceID()
+	}
+	else
+	{
+		owner = weapon.GetWeaponOwner()
+		damageSourceId = weapon.GetDamageSourceID()
+	}
+
+
+	entity ball = CreateBallLightning( owner, damageSourceId, projectile.GetOrigin(), projectile.GetAngles() )
+	ball.SetParent( projectile )
+	projectile.s.ballLightning <- ball
+}
+
+void function DestroyBallLightningOnEnt( entity prop )
+{
+	if ( "ballLightning" in prop.s )
+	{
+		prop.s.ballLightning.Destroy()
+		delete prop.s.ballLightning
+	}
+}
+
+
+entity function AttachBallLightningToProp( entity prop, entity owner, int damageSourceId )
+{
+	entity ball = CreateBallLightning( owner, damageSourceId, prop.GetOrigin(), prop.GetAngles() )
+	ball.SetParent( prop )
+	prop.s.ballLightning <- ball
+	return ball
+}
+
+entity function CreateBallLightning( entity owner, int damageSourceId, vector origin, vector angles )
+{
+	entity ballLightning = CreateScriptMover( origin, angles )
+	ballLightning.SetOwner( owner )
+	SetTeam( ballLightning, owner.GetTeam() )
+
+	thread BallLightningThink( ballLightning, damageSourceId )
+	return ballLightning
+}
+
+void function RegisterBallLightningDamage( int damageSourceId )
+{
+	AddDamageCallbackSourceID( damageSourceId, OnBallLightningDamage )
+}
+
+void function OnBallLightningDamage( entity victim, var damageInfo )
+{
+	float damage = DamageInfo_GetDamage( damageInfo )
+
+	if ( damage <= 0 )
+		return
+
+	if ( victim.IsWorld() )
+		return
+
+	if ( victim.IsProjectile() )
+		return
+
+	if ( DamageInfo_GetCustomDamageType( damageInfo ) & (DF_EXPLOSION | DF_IMPACT) )
+		return
+
+	// if ( IsHumanSized( victim ) )
+	// {
+	// 	DamageInfo_SetDamage( damageInfo, 0 )
+	// 	return
+	// }
+
+	entity ballLightning = DamageInfo_GetInflictor( damageInfo )
+
+	if ( victim == ballLightning )
+		return
+
+	if ( victim.GetParent() == ballLightning )
+		return
+
+	if ( !IsTargetEntValid( ballLightning, victim, ballLightning.e.ballLightningData ) )
+	{
+		DamageInfo_SetDamage( damageInfo, 0 )
+		return
+	}
+
+	vector origin = DamageInfo_GetDamagePosition( damageInfo )
+	int hitBox = DamageInfo_GetHitBox( damageInfo )
+
+	string tag = GetEntityCenterTag( victim )
+	thread BallLightningZapConnectionFX( ballLightning, victim, tag, ballLightning.e.ballLightningData )
+	BallLightningZapFX( ballLightning, victim, tag, ballLightning.e.ballLightningData )
+}
+
+void function BallLightningThink( entity ballLightning, int damageSourceId )
+{
+	ballLightning.EndSignal( "OnDestroy" )
+
+	EmitSoundOnEntity( ballLightning, "Weapon_Arc_Ball_Loop" )
+
+	local data = {}
+
+	OnThreadEnd(
+		function() : ( ballLightning, data )
+		{
+			if ( IsValid( ballLightning ) )
+				StopSoundOnEntity( ballLightning, "Weapon_Arc_Ball_Loop" )
+		}
+	)
+
+	int inflictorTeam = ballLightning.GetTeam()
+	ballLightning.e.ballLightningTargetsIdx = CreateScriptManagedEntArray()
+
+	WaitEndFrame()
+
+	while( 1 )
+	{
+		for( int i=0; i<BALL_LIGHTNING_BURST_NUM; i++ )
+		{
+			if ( BALL_LIGHTNING_BURST_NUM > 1 )
+				wait BALL_LIGHTNING_BURST_PAUSE
+
+			vector origin = ballLightning.GetOrigin()
+			BallLightningZapTargets( ballLightning, origin, inflictorTeam, damageSourceId, ballLightning.e.ballLightningData, false )
+		}
+		wait BALL_LIGHTNING_BURST_DELAY
+	}
+}
+
+void function BallLightningZapTargets( entity ballLightning, vector origin, int inflictorTeam, int damageSourceId, BallLightningData fxData, bool single )
+{
+	RadiusDamage(
+	    origin,				// origin
+	    ballLightning.GetOwner(),		// owner
+	    ballLightning,		 			// inflictor
+	    fxData.damageToPilots,								// normal damage
+	    fxData.damage,					// heavy armor damage
+	    fxData.radius,							// inner radius
+	    fxData.radius,							// outer radius
+	    SF_ENVEXPLOSION_NO_DAMAGEOWNER,	// explosion flags
+	    0, 								// distanceFromAttacker
+	    0, 								// explosionForce
+	    fxData.deathPackage,				// damage flags
+	    damageSourceId	// damage source id
+	)
+}
+
+string function GetEntityCenterTag( entity target )
+{
+	string tag = "center"
+
+	if ( IsHumanSized( target ) )
+		tag = "CHESTFOCUS"
+	else if ( target.IsTitan() )
+		tag = "HIJACK"
+	else if ( IsSuperSpectre( target ) || IsAirDrone( target ) )
+		tag = "CHESTFOCUS"
+	else if ( IsDropship( target ) )
+		tag = "ORIGIN"
+	else if ( target.GetClassName() == "npc_turret_mega" )
+		tag = "ATTACH"
+
+	return tag
+}
+
+bool function IsTargetEntValid( entity ballLightning, entity target, BallLightningData fxData )
+{
+	if ( !IsValid( target ) )
+		return false
+
+	vector origin = ballLightning.GetOrigin()
+
+	if ( target == ballLightning )
+		return false
+
+	if ( target == ballLightning.GetParent() )
+		return false
+
+	if ( target.GetParent() == ballLightning.GetParent() )
+		return false
+
+	// if ( target.IsPlayer() && !target.IsTitan() )
+	// 	return false
+
+	if ( fabs( origin.z - target.GetOrigin().z ) > fxData.height )
+		return false
+
+	if ( GetBugReproNum() != 131703 )
+	{
+		if ( target.GetModelName() == $"" )
+			return false
+	}
+
+	if ( !( target.GetClassName() in ArcCannonTargetClassnames ) )
+		return false
+
+	vector entityCenter = target.GetWorldSpaceCenter()
+
+	if ( target.GetModelName() != $"" )
+	{
+		string tag = GetEntityCenterTag( target )
+		int index = target.LookupAttachment( tag )
+
+		if ( index == 0 )
+			return false
+
+		entityCenter = target.GetAttachmentOrigin( index )
+	}
+
+	vector fwd = AnglesToForward( ballLightning.GetAngles() )
+	vector fwdToEnemy = Normalize( entityCenter - ballLightning.GetOrigin() )
+
+	float dot = DotProduct( fwd, fwdToEnemy )
+
+	if ( dot < fxData.minDot )
+		return false
+
+
+	if ( IsHumanSized( target ) )
+	{
+		float maxDist = fxData.humanRadius
+		if ( Distance( entityCenter, ballLightning.GetOrigin() ) > maxDist )
+			return false
+	}
+
+	// array<entity> ignoreEnts = [ target, ballLightning ]
+	// if ( ballLightning.GetParent() != null )
+	// 	ignoreEnts.append( ballLightning.GetParent() )
+
+	// TraceResults trace = TraceLine( ballLightning.GetOrigin(), entityCenter, ignoreEnts, TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_BLOCK_WEAPONS )
+
+	// if ( trace.fraction < 1 )
+	// 	return false
+
+	VortexBulletHit ornull vortexHit = VortexBulletHitCheck( ballLightning.GetOwner(), ballLightning.GetOrigin(), entityCenter )
+
+	if ( vortexHit )
+		return false
+
+	return true
+}
+
+void function BallLightningZapConnectionFX( entity ballLightning, entity target, string tag, BallLightningData fxData )
+{
+	if ( fxData.zapFx != $"" )
+	{
+		// Control point sets the end position of the effect
+		entity cpEnd = CreateEntity( "info_placement_helper" )
+		SetTargetName( cpEnd, GetUniqueCpString() )
+		cpEnd.SetParent( target, tag, false, 0.0 )
+		DispatchSpawn( cpEnd )
+
+		entity zapBeam = CreateEntity( "info_particle_system" )
+		zapBeam.kv.cpoint1 = cpEnd.GetTargetName()
+
+		zapBeam.SetValueForEffectNameKey( fxData.zapFx )
+		zapBeam.kv.start_active = 0
+		zapBeam.SetOwner( ballLightning )
+		zapBeam.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
+		zapBeam.SetParent( ballLightning, "", false, 0.0 )
+		DispatchSpawn( zapBeam )
+
+		zapBeam.Fire( "Start" )
+
+		OnThreadEnd(
+		function() : ( zapBeam, cpEnd )
+			{
+				if ( IsValid( zapBeam ) )
+					zapBeam.Destroy()
+				if ( IsValid( cpEnd ) )
+					cpEnd.Destroy()
+			}
+		)
+
+		ballLightning.EndSignal( "OnDestroy" )
+		target.EndSignal( "OnDestroy" )
+		target.EndSignal( "OnDeath" )
+
+		if ( fxData.zapLifetime > 0 )
+		{
+			wait fxData.zapLifetime
+		}
+	}
+}
+
+void function BallLightningZapFX( entity ballLightning, entity target, string tag, BallLightningData fxData )
+{
+	int index = target.LookupAttachment( tag )
+
+	vector entityCenter = target.GetAttachmentOrigin( index )
+
+	if ( fxData.zapImpactTable != "" )
+		PlayImpactFXTable( entityCenter, ballLightning.GetOwner(), fxData.zapImpactTable, SF_ENVEXPLOSION_INCLUDE_ENTITIES )
+
+	EmitSoundOnEntity( ballLightning, fxData.zapSound )
+	thread FadeOutSoundOnEntityAfterDelay( ballLightning, fxData.zapSound, 0.2, 0.2 )
+}
+
+// This is to minimize creation of new Unique Strings
+string function GetUniqueCpString()
+{
+	foreach ( string uString, float useTime in file.uniqueStrings )
+	{
+		if ( useTime + BALL_LIGHTNING_ZAP_LIFETIME*2 > Time() )
+			continue
+
+		file.uniqueStrings[ uString ] = Time()
+		return uString
+	}
+
+	string newString = UniqueString( "ball_lightning_cpEnd" )
+
+	// printt( "Generated new string " + newString )
+
+	file.uniqueStrings[ newString ] <- Time()
+	return newString
+}
+
+entity function GetBallLightningFromEnt( entity ent )
+{
+	if ( "ballLightning" in ent.s )
+		return expect entity( ent.s.ballLightning )
+
+	return null
+}

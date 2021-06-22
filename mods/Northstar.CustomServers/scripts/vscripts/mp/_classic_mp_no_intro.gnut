@@ -1,0 +1,46 @@
+untyped
+
+global function ClassicMP_DefaultNoIntro_Setup
+global const float NOINTRO_INTRO_LENGTH = 10.0
+
+void function ClassicMP_DefaultNoIntro_Setup()
+{
+	AddCallback_OnClientConnected( ClassicMP_DefaultNoIntro_SpawnPlayer )
+	AddCallback_GameStateEnter( eGameState.Prematch, ClassicMP_DefaultNoIntro_Start )
+}
+
+void function ClassicMP_DefaultNoIntro_Start()
+{
+	ClassicMP_OnIntroStarted()
+
+	foreach ( entity player in GetPlayerArray() )
+		thread ClassicMP_DefaultNoIntro_SpawnPlayer( player )
+		
+	wait NOINTRO_INTRO_LENGTH
+	
+	foreach ( entity player in GetPlayerArray() )
+	{
+		player.UnfreezeControlsOnServer()
+		RemoveCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING )
+		TryGameModeAnnouncement( player )
+	}
+	
+	ClassicMP_OnIntroFinished()
+}
+
+void function ClassicMP_DefaultNoIntro_SpawnPlayer( entity player )
+{
+	if ( GetGameState() != eGameState.Prematch )
+		return
+	
+	if ( IsAlive( player ) )
+	{
+		player.Die()
+		WaitFrame()
+	}
+	
+	RespawnAsPilot( player )
+	player.FreezeControlsOnServer()
+	AddCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING )
+	ScreenFadeFromBlack( player, 0.5, 0.5 )
+}

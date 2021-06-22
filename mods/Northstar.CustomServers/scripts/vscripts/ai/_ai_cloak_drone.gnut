@@ -1,0 +1,678 @@
+untyped
+
+global function CloakDrone_Init
+
+global function SpawnCloakDrone
+global function GetNPCCloakedDrones
+global function RemoveLeftoverCloakedDrones
+const FX_DRONE_CLOAK_BEAM 				= $"P_drone_cloak_beam"
+
+const float CLOAK_DRONE_REACHED_HARVESTER_DIST = 1300.0
+
+struct
+{
+	int cloakedDronesManagedEntArrayID
+	table<entity,string> cloakedDroneClaimedSquadList
+} file
+
+struct CloakDronePath
+{
+	vector start
+	vector goal
+	bool goalValid = false
+	float lastHeight
+}
+
+function CloakDrone_Init()
+{
+	PrecacheParticleSystem( FX_DRONE_CLOAK_BEAM )
+
+	file.cloakedDronesManagedEntArrayID = CreateScriptManagedEntArray()
+
+	RegisterSignal( "DroneCleanup" )
+	RegisterSignal( "DroneCrashing" )
+}
+
+entity function SpawnCloakDrone( int team, vector origin, vector angles, vector towerOrigin )
+{
+	int droneCount = GetNPCCloakedDrones().len()
+
+	// add some minor randomness to the spawn location as well as an offset based on number of drones in the world.
+	origin += < RandomIntRange( -64, 64 ), RandomIntRange( -64, 64 ), 300 + (droneCount * 128) >
+
+	entity cloakedDrone = CreateGenericDrone( team, origin, angles )
+	SetSpawnOption_AISettings( cloakedDrone, "npc_drone_cloaked" )
+
+	//these enable global damage callbacks for the cloakedDrone
+	cloakedDrone.s.isHidden <- false
+	cloakedDrone.s.fx <- null
+	cloakedDrone.s.towerOrigin <- towerOrigin
+
+	DispatchSpawn( cloakedDrone )
+	SetTeam( cloakedDrone, team )
+	SetTargetName( cloakedDrone, "Cloak Drone" )
+	cloakedDrone.SetTitle( "#NPC_CLOAK_DRONE" )
+	cloakedDrone.SetMaxHealth( 250 )
+	cloakedDrone.SetHealth( 250 )
+	cloakedDrone.SetTakeDamageType( DAMAGE_YES )
+	cloakedDrone.SetDamageNotifications( true )
+	cloakedDrone.SetDeathNotifications( true )
+	cloakedDrone.Solid()
+	cloakedDrone.Show()
+	cloakedDrone.EnableNPCFlag( NPC_IGNORE_ALL )
+
+	EmitSoundOnEntity( cloakedDrone, CLOAKED_DRONE_HOVER_LOOP_SFX )
+	EmitSoundOnEntity( cloakedDrone, CLOAKED_DRONE_LOOPING_SFX )
+	EmitSoundOnEntity( cloakedDrone, CLOAKED_DRONE_WARP_IN_SFX )
+
+	cloakedDrone.s.fx = CreateDroneCloakBeam( cloakedDrone )
+
+	SetVisibleEntitiesInConeQueriableEnabled( cloakedDrone, true )
+
+	thread CloakedDronePathThink( cloakedDrone )
+	thread CloakedDroneCloakThink( cloakedDrone )
+
+	#if R1_VGUI_MINIMAP
+		cloakedDrone.Minimap_SetDefaultMaterial( $"vgui/hud/cloak_drone_minimap_orange" )
+	#endif
+	cloakedDrone.Minimap_SetAlignUpright( true )
+	cloakedDrone.Minimap_AlwaysShow( TEAM_IMC, null )
+	cloakedDrone.Minimap_AlwaysShow( TEAM_MILITIA, null )
+	cloakedDrone.Minimap_SetObjectScale( MINIMAP_CLOAKED_DRONE_SCALE )
+	cloakedDrone.Minimap_SetZOrder( MINIMAP_Z_NPC )
+
+	ShowName( cloakedDrone )
+
+	AddToGlobalCloakedDroneList( cloakedDrone )
+	return cloakedDrone
+}
+
+function AddToGlobalCloakedDroneList( cloakedDrone )
+{
+	AddToScriptManagedEntArray( file.cloakedDronesManagedEntArrayID, cloakedDrone )
+}
+
+array<entity> function GetNPCCloakedDrones()
+{
+	return GetScriptManagedEntArray( file.cloakedDronesManagedEntArrayID )
+}
+
+function RemoveLeftoverCloakedDrones()
+{
+	array<entity> droneArray = GetNPCCloakedDrones()
+	foreach ( cloakedDrone in droneArray )
+	{
+		thread CloakedDroneWarpOutAndDestroy( cloakedDrone )
+	}
+}
+
+void function CloakedDroneWarpOutAndDestroy( entity cloakedDrone )
+{
+	cloakedDrone.EndSignal( "OnDestroy" )
+	cloakedDrone.EndSignal( "OnDeath" )
+	cloakedDrone.SetInvulnerable()
+
+	CloakedDroneWarpOut( cloakedDrone, cloakedDrone.GetOrigin() )
+	cloakedDrone.Destroy()
+}
+
+/************************************************************************************************\
+
+ ######  ##        #######     ###    ##    ## #### ##    ##  ######
+##    ## ##       ##     ##   ## ##   ##   ##   ##  ###   ## ##    ##
+##       ##       ##     ##  ##   ##  ##  ##    ##  ####  ## ##
+##       ##       ##     ## ##     ## #####     ##  ## ## ## ##   ####
+##       ##       ##     ## ######### ##  ##    ##  ##  #### ##    ##
+##    ## ##       ##     ## ##     ## ##   ##   ##  ##   ### ##    ##
+ ######  ########  #######  ##     ## ##    ## #### ##    ##  ######
+
+\************************************************************************************************/
+//HACK - this should probably move into code
+function CloakedDroneCloakThink( cloakedDrone )
+{
+	expect entity( cloakedDrone )
+
+	cloakedDrone.EndSignal( "OnDestroy" )
+	cloakedDrone.EndSignal( "OnDeath" )
+	cloakedDrone.EndSignal( "DroneCrashing" )
+	cloakedDrone.EndSignal( "DroneCleanup" )
+
+	wait 2	// wait a few seconds since it would start cloaking before picking an npc to follow
+			// some npcs might not be picked since they where already cloaked by accident.
+
+	CloakerThink( cloakedDrone, 400.0, [ "any" ], < 0, 0, -350 >, CloakDroneShouldCloakGuy, 1.5 )
+}
+
+function CloakDroneShouldCloakGuy( cloakedDrone, guy )
+{
+	expect entity( guy )
+	if ( !( guy.IsTitan() || IsSpectre( guy ) || IsGrunt( guy ) || IsSuperSpectre( guy ) ) )
+		return false
+
+	if ( guy.GetTargetName() == "empTitan" )
+		return false
+
+	if ( IsSniperSpectre( guy ) )
+		return false
+
+	if ( IsValid( GetRodeoPilot( guy ) ) )
+		return false
+
+	if ( cloakedDrone.s.isHidden )
+		return false
+
+	if ( StatusEffect_Get( guy, eStatusEffect.sonar_detected ) )
+		return false
+
+	// if ( !cloakedDrone.CanSee( guy ) )
+	// 	return false
+
+	return true
+}
+
+/************************************************************************************************\
+
+########     ###    ######## ##     ## #### ##    ##  ######
+##     ##   ## ##      ##    ##     ##  ##  ###   ## ##    ##
+##     ##  ##   ##     ##    ##     ##  ##  ####  ## ##
+########  ##     ##    ##    #########  ##  ## ## ## ##   ####
+##        #########    ##    ##     ##  ##  ##  #### ##    ##
+##        ##     ##    ##    ##     ##  ##  ##   ### ##    ##
+##        ##     ##    ##    ##     ## #### ##    ##  ######
+
+\************************************************************************************************/
+//HACK -> this should probably move into code
+const VALIDPATHFRAC = 0.99
+
+void function CloakedDronePathThink( entity cloakedDrone )
+{
+	cloakedDrone.EndSignal( "OnDestroy" )
+	cloakedDrone.EndSignal( "OnDeath" )
+	cloakedDrone.EndSignal( "DroneCrashing" )
+	cloakedDrone.EndSignal( "DroneCleanup" )
+
+	entity goalNPC = null
+	entity previousNPC = null
+	vector spawnOrigin = cloakedDrone.GetOrigin()
+	vector lastOrigin = cloakedDrone.GetOrigin()
+	float stuckDistSqr = 64.0*64.0
+	float targetLostTime = Time()
+	array<entity> claimedGuys = []
+
+	while( 1 )
+	{
+		while( goalNPC == null )
+		{
+			wait 1.0
+			array<entity> testArray = GetNPCArrayEx( "any", cloakedDrone.GetTeam(), TEAM_ANY, < 0, 0, 0 >, -1 )
+
+			// remove guys already being followed by an cloakedDrone
+			// or in other ways not suitable
+			array<entity> NPCs = []
+			foreach ( guy in testArray )
+			{
+				if ( !IsAlive( guy ) )
+					continue
+
+				//Only cloak titans, spectres, grunts,
+				if ( !( guy.IsTitan() || IsSpectre( guy ) || IsGrunt( guy ) || IsSuperSpectre( guy ) ) )
+					continue
+
+				//Don't cloak arc titans
+				if ( guy.GetTargetName() == "empTitan" )
+					continue
+
+				if ( IsSniperSpectre( guy ) )
+					continue
+
+				if ( IsFragDrone( guy ) )
+					continue
+
+				if ( guy == previousNPC )
+					continue
+
+				if ( guy.ContextAction_IsBusy() )
+					continue
+
+				if ( guy.GetParent() != null )
+					continue
+
+				if ( IsCloaked( guy ) )
+					continue
+
+				if ( IsSquadCenterClose( guy ) == false )
+					continue
+
+				if ( "cloakedDrone" in guy.s && IsAlive( expect entity( guy.s.cloakedDrone ) ) )
+					continue
+
+				if ( CloakedDroneIsSquadClaimed( expect string( guy.kv.squadname ) ) )
+					continue
+
+				if ( IsValid( GetRodeoPilot( guy ) ) )
+					continue
+
+				if ( StatusEffect_Get( guy, eStatusEffect.sonar_detected ) )
+					continue
+
+				NPCs.append( guy )
+			}
+
+			if ( NPCs.len() == 0 )
+			{
+				previousNPC = null
+
+				if ( Time() - targetLostTime > 10 )
+				{
+					// couldn't find anything to cloak for 10 seconds so we'll warp out until we find something
+					if ( cloakedDrone.s.isHidden == false )
+						CloakedDroneWarpOut( cloakedDrone, spawnOrigin )
+				}
+				continue
+			}
+
+			goalNPC = FindBestCloakTarget( NPCs, cloakedDrone.GetOrigin(), cloakedDrone )
+			Assert( goalNPC )
+		}
+
+		CloakedDroneClaimSquad( cloakedDrone, expect string( goalNPC.kv.squadname ) )
+
+		waitthread CloakedDronePathFollowNPC( cloakedDrone, goalNPC )
+
+		CloakedDroneReleaseSquad( cloakedDrone )
+
+		previousNPC = goalNPC
+		goalNPC = null
+		targetLostTime = Time()
+
+		float distSqr = DistanceSqr( lastOrigin, cloakedDrone.GetOrigin() )
+		if ( distSqr < stuckDistSqr )
+			CloakedDroneWarpOut( cloakedDrone, spawnOrigin )
+
+		lastOrigin = cloakedDrone.GetOrigin()
+	}
+}
+
+void function CloakedDroneClaimSquad( entity  cloakedDrone, string squadname )
+{
+	if ( GetNPCSquadSize( squadname ) )
+		file.cloakedDroneClaimedSquadList[ cloakedDrone ] <- squadname
+}
+
+void function CloakedDroneReleaseSquad( entity cloakedDrone )
+{
+	if ( cloakedDrone in file.cloakedDroneClaimedSquadList )
+		delete file.cloakedDroneClaimedSquadList[ cloakedDrone ]
+}
+
+bool function CloakedDroneIsSquadClaimed( string squadname )
+{
+	table<entity,string> cloneTable = clone file.cloakedDroneClaimedSquadList
+	foreach ( entity cloakedDrone, squad in cloneTable )
+	{
+		if ( !IsAlive( cloakedDrone ) )
+			delete file.cloakedDroneClaimedSquadList[ cloakedDrone ]
+		else if ( squad == squadname )
+			return true
+	}
+	return false
+}
+
+void function CloakedDronePathFollowNPC( entity cloakedDrone, entity goalNPC )
+{
+	cloakedDrone.EndSignal( "OnDestroy" )
+	cloakedDrone.EndSignal( "OnDeath" )
+	cloakedDrone.EndSignal( "DroneCrashing" )
+	goalNPC.EndSignal( "OnDeath" )
+	goalNPC.EndSignal( "OnDestroy" )
+
+	if ( !( "cloakedDrone" in goalNPC.s ) )
+		goalNPC.s.cloakedDrone <- null
+	goalNPC.s.cloakedDrone = cloakedDrone
+
+	OnThreadEnd(
+		function() : ( goalNPC )
+		{
+			if ( IsAlive( goalNPC ) )
+				goalNPC.s.cloakedDrone = null
+		}
+	)
+
+	int droneTeam = cloakedDrone.GetTeam()
+
+	//vector maxs = < 64, 64, 53.5 >//bigger than model to compensate for large effect
+	//vector mins = < -64, -64, -64 >
+
+	vector maxs = < 32, 32, 32 >//bigger than model to compensate for large effect
+	vector mins = < -32, -32, -32 >
+
+	int mask = cloakedDrone.GetPhysicsSolidMask()
+
+	float defaultHeight 					= 300
+	array<float> traceHeightsLow			= [ -75.0, -150.0, -250.0 ]
+	array<float> traceHeightsHigh			= [ 150.0, 300.0, 800.0, 1500.0 ]
+
+	float waitTime 	= 0.25
+
+	CloakDronePath path
+	path.goalValid = false
+	path.lastHeight = defaultHeight
+
+	//If drone is following titan wait for titan to leave bubble shield.
+	if ( goalNPC.IsTitan() )
+		WaitTillHotDropComplete( goalNPC )
+
+	while( goalNPC.GetTeam() == droneTeam )
+	{
+		if ( IsValid( GetRodeoPilot( goalNPC ) ) )
+			return
+
+		//If our target npc gets revealed by a sonar pulse, ditch that chump.
+		if ( StatusEffect_Get( goalNPC, eStatusEffect.sonar_detected ) )
+			return
+
+		float minDist = CLOAK_DRONE_REACHED_HARVESTER_DIST * CLOAK_DRONE_REACHED_HARVESTER_DIST
+		float distToGenerator = DistanceSqr( goalNPC.GetOrigin(), cloakedDrone.s.towerOrigin )
+		//if we've gotten our npc to the generator, go find someone farther out to escort.
+		if ( distToGenerator <= minDist )
+			return
+
+		//DebugDrawCircleOnEnt( goalNPC, 20, 255, 0, 0, 0.1 )
+
+		float startTime = Time()
+		path.goalValid 	= false
+
+		CloakedDroneFindPathDefault( path, defaultHeight, mins, maxs, cloakedDrone, goalNPC, mask )
+
+		//find a new path if necessary
+		if ( !path.goalValid )
+		{
+			//lets check some heights and see if any are valid
+			CloakedDroneFindPathHorizontal( path, traceHeightsLow, defaultHeight, mins, maxs, cloakedDrone, goalNPC, mask )
+
+			if ( !path.goalValid )
+			{
+				//OK so no way to directly go to those heights - lets see if we can move vertically down,
+				CloakedDroneFindPathVertical( path, traceHeightsLow, defaultHeight, mins, maxs, cloakedDrone, goalNPC, mask )
+
+				if ( !path.goalValid )
+				{
+					//still no good...lets check up
+					CloakedDroneFindPathHorizontal( path, traceHeightsHigh, defaultHeight, mins, maxs, cloakedDrone, goalNPC, mask )
+
+					if ( !path.goalValid )
+					{
+						//no direct shots up - lets try moving vertically up first
+						CloakedDroneFindPathVertical( path, traceHeightsHigh, defaultHeight, mins, maxs, cloakedDrone, goalNPC, mask )
+					}
+				}
+			}
+		}
+
+		// if we can't find a valid path find a new goal
+		if ( !path.goalValid )
+		{
+			waitthread CloakedDroneWarpOut( cloakedDrone, GetCloakTargetOrigin( goalNPC ) + < 0, 0, defaultHeight > )
+			CloakedDroneWarpIn( cloakedDrone, GetCloakTargetOrigin( goalNPC ) + < 0, 0, defaultHeight > )
+			continue
+		}
+
+		if ( cloakedDrone.s.isHidden == true )
+			CloakedDroneWarpIn( cloakedDrone, cloakedDrone.GetOrigin() )
+
+		thread AssaultOrigin( cloakedDrone, path.goal )
+
+		float endTime = Time()
+		float elapsedTime = endTime - startTime
+		if ( elapsedTime < waitTime )
+			wait waitTime - elapsedTime
+	}
+}
+
+bool function CloakedDroneFindPathDefault( CloakDronePath path, float defaultHeight, vector mins, vector maxs, entity cloakedDrone, entity  goalNPC, int mask )
+{
+	vector offset 	= < 0, 0, defaultHeight >
+	path.start 		= ( cloakedDrone.GetOrigin() ) + < 0, 0, 32 > //Offset so path start is just above drone instead at bottom of drone.
+	path.goal 		= GetCloakTargetOrigin( goalNPC ) + offset
+
+	//find out if we can get there using the default height
+	TraceResults result = TraceHull( path.start, path.goal, mins, maxs, [ cloakedDrone, goalNPC ] , mask, TRACE_COLLISION_GROUP_NONE )
+	//DebugDrawLine( path.start, path.goal, 50, 0, 0, true, 1.0 )
+	if ( result.fraction >= VALIDPATHFRAC )
+	{
+		path.lastHeight = defaultHeight
+		path.goalValid 	= true
+	}
+
+	return path.goalValid
+}
+
+bool function CloakedDroneFindPathHorizontal( CloakDronePath path, array<float> traceHeights, float defaultHeight, vector mins, vector maxs, entity cloakedDrone, entity  goalNPC, int mask )
+{
+	wait 0.1
+
+	vector offset
+	float testHeight
+
+	//slight optimization... recheck if the last time was also not the default height
+	if ( path.lastHeight != defaultHeight )
+	{
+		offset 			= < 0, 0, defaultHeight + path.lastHeight >
+		path.start 		= ( cloakedDrone.GetOrigin() )
+		path.goal 		= GetCloakTargetOrigin( goalNPC ) + offset
+
+		TraceResults result = TraceHull( path.start, path.goal, mins, maxs, [ cloakedDrone, goalNPC ], mask, TRACE_COLLISION_GROUP_NONE )
+		//DebugDrawLine( path.start, path.goal, 0, 255, 0, true, 1.0 )
+		if ( result.fraction >= VALIDPATHFRAC )
+		{
+			path.goalValid = true
+			return path.goalValid
+		}
+	}
+
+	for ( int i = 0; i < traceHeights.len(); i++ )
+	{
+		testHeight = traceHeights[ i ]
+		if ( path.lastHeight == testHeight )
+			continue
+
+//		wait 0.1
+
+		offset 			= < 0, 0, defaultHeight + testHeight >
+		path.start 		= ( cloakedDrone.GetOrigin() ) + ( testHeight > 0 ? < 0, 0, 0 > : < 0, 0, 32 > ) //Check from the top or bottom of the drone depending on if the drone is going up or down
+		path.goal 		= GetCloakTargetOrigin( goalNPC ) + offset
+
+		TraceResults result = TraceHull( path.start, path.goal, mins, maxs, [ cloakedDrone, goalNPC ], mask, TRACE_COLLISION_GROUP_NONE )
+		if ( result.fraction < VALIDPATHFRAC )
+		{
+			//DebugDrawLine( path.start, path.goal, 200, 0, 0, true, 3.0 )
+			continue
+		}
+
+		//DebugDrawLine( path.start, path.goal, 0, 255, 0, true, 3.0 )
+
+		path.lastHeight = testHeight
+		path.goalValid = true
+		break
+	}
+
+	return path.goalValid
+}
+
+bool function CloakedDroneFindPathVertical( CloakDronePath path, array<float> traceHeights, float defaultHeight, vector mins, vector maxs, entity cloakedDrone, entity  goalNPC, int mask )
+{
+	vector offset
+	vector origin
+	float testHeight
+
+	for ( int i = 0; i < traceHeights.len(); i++ )
+	{
+		wait 0.1
+
+		testHeight 		= traceHeights[ i ]
+		origin 			= cloakedDrone.GetOrigin()
+		offset 			= < 0, 0, defaultHeight + testHeight >
+		path.start 		= < origin.x, origin.y, defaultHeight + testHeight >
+		path.goal 		= GetCloakTargetOrigin( goalNPC ) + offset
+
+		TraceResults result = TraceHull( path.start, path.goal, mins, maxs, [ cloakedDrone, goalNPC ], mask, TRACE_COLLISION_GROUP_NONE )
+		//DebugDrawLine( path.start, path.goal, 50, 50, 100, true, 1.0 )
+		if ( result.fraction < VALIDPATHFRAC )
+			continue
+
+		//ok so it's valid - lets see if we can move to it from where we are
+//		wait 0.1
+
+		path.goal 	= < path.start.x, path.start.y, path.start.z >
+		path.start 	= cloakedDrone.GetOrigin()
+
+		result = TraceHull( path.start, path.goal, mins, maxs, [ cloakedDrone, goalNPC ], mask, TRACE_COLLISION_GROUP_NONE )
+		//DebugDrawLine( path.start, path.goal, 255, 255, 0, true, 1.0 )
+		if ( result.fraction < VALIDPATHFRAC )
+			continue
+
+		path.lastHeight = testHeight
+		path.goalValid = true
+		break
+	}
+
+	return path.goalValid
+}
+
+void function CloakedDroneWarpOut( entity cloakedDrone, vector origin )
+{
+	if ( cloakedDrone.s.isHidden == false )
+	{
+		// only do this if we are not already hidden
+		FadeOutSoundOnEntity( cloakedDrone, CLOAKED_DRONE_LOOPING_SFX, 0.5 )
+		FadeOutSoundOnEntity( cloakedDrone, CLOAKED_DRONE_HOVER_LOOP_SFX, 0.5 )
+		EmitSoundOnEntity( cloakedDrone, CLOAKED_DRONE_WARP_OUT_SFX )
+
+		cloakedDrone.s.fx.Fire( "StopPlayEndCap" )
+		cloakedDrone.SetTitle( "" )
+		cloakedDrone.s.isHidden = true
+		cloakedDrone.NotSolid()
+		cloakedDrone.Minimap_Hide( TEAM_IMC, null )
+		cloakedDrone.Minimap_Hide( TEAM_MILITIA, null )
+		cloakedDrone.SetNoTarget( true )
+		// let the beam fx end
+
+		if ( "smokeEffect" in cloakedDrone.s )
+		{
+			cloakedDrone.s.smokeEffect.Kill_Deprecated_UseDestroyInstead()
+			delete cloakedDrone.s.smokeEffect
+		}
+		UntrackAllToneMarks( cloakedDrone )
+
+		wait 0.3	// wait a bit before hidding the done so that the fx looks better
+		cloakedDrone.Hide()
+	}
+
+	wait 2.0
+
+	cloakedDrone.DisableBehavior( "Follow" )
+	thread AssaultOrigin( cloakedDrone, origin )
+	cloakedDrone.SetOrigin( origin )
+}
+
+void function CloakedDroneWarpIn( entity cloakedDrone, vector origin )
+{
+	cloakedDrone.DisableBehavior( "Follow" )
+	cloakedDrone.SetOrigin( origin )
+	PutEntityInSafeSpot( cloakedDrone, cloakedDrone, null, cloakedDrone.GetOrigin() + <0, 0, 32>, cloakedDrone.GetOrigin() )
+	thread AssaultOrigin( cloakedDrone, origin )
+
+	EmitSoundOnEntity( cloakedDrone, CLOAKED_DRONE_HOVER_LOOP_SFX )
+	EmitSoundOnEntity( cloakedDrone, CLOAKED_DRONE_LOOPING_SFX )
+	EmitSoundOnEntity( cloakedDrone, CLOAKED_DRONE_WARP_IN_SFX )
+
+	cloakedDrone.Show()
+	cloakedDrone.s.fx.Fire( "start" )
+	cloakedDrone.SetTitle( "#NPC_CLOAK_DRONE" )
+	cloakedDrone.s.isHidden = false
+	cloakedDrone.Solid()
+	cloakedDrone.Minimap_AlwaysShow( TEAM_IMC, null )
+	cloakedDrone.Minimap_AlwaysShow( TEAM_MILITIA, null )
+	cloakedDrone.SetNoTarget( false )
+}
+
+
+entity function CreateDroneCloakBeam( entity cloakedDrone )
+{
+	entity fx = PlayLoopFXOnEntity( FX_DRONE_CLOAK_BEAM, cloakedDrone, "", null, < 90, 0, 0 > )//, visibilityFlagOverride = null, visibilityFlagEntOverride = null )
+	return fx
+}
+
+entity function FindBestCloakTarget( array<entity> npcArray, vector origin, entity drone )
+{
+	entity  selectedNPC = null
+	float maxDist = 10000 * 10000
+	float minDist = 1300 * 1300
+	float highestScore = -1
+
+	foreach ( npc in npcArray )
+	{
+		float score = 0
+		float distToGenerator = DistanceSqr( npc.GetOrigin(), drone.s.towerOrigin )
+		if ( distToGenerator > minDist )
+		{
+			// only give dist bonus if we aren't to close to the generator.
+			local dist = DistanceSqr( npc.GetOrigin(), origin )
+			score = GraphCapped( dist, maxDist, minDist, 0, 1 )
+		}
+
+		if ( npc.IsTitan() )
+		{
+			score += 0.75
+			if ( IsArcTitan( npc ) )
+				score -= 0.1
+		 	if ( IsMortarTitan( npc ) )
+				score -= 0.2
+//			if ( IsNukeTitan( npc ) )
+//				score += 0.1
+		}
+		if ( score > highestScore )
+		{
+			highestScore = score
+			selectedNPC = npc
+		}
+	}
+
+	return selectedNPC
+}
+
+vector function GetCloakTargetOrigin( entity npc )
+{
+	// returns the center of squad if the npc is in one
+	// else returns a good spot to cloak a titan
+
+	vector origin
+
+	if ( GetNPCSquadSize( npc.kv.squadname ) == 0 )
+	{
+		origin = npc.GetOrigin() + npc.GetNPCVelocity()
+	}
+	else
+		origin = npc.GetSquadCentroid()
+
+	Assert( origin.x < ( 16384 * 100 ) );
+
+	// defensive hack
+	if ( origin.x > ( 16384 * 100 ) )
+		origin = npc.GetOrigin()
+
+	return origin
+}
+
+function IsSquadCenterClose( npc, dist = 256 )
+{
+	// return true if there is no squad
+	if ( GetNPCSquadSize( npc.kv.squadname ) == 0 )
+		return true
+
+	// return true if the squad isn't too spread out.
+	if ( DistanceSqr( npc.GetSquadCentroid(), npc.GetOrigin() ) <= ( dist * dist ) )
+		return true
+
+	return false
+}

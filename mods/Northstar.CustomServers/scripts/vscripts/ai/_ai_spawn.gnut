@@ -1,0 +1,696 @@
+untyped
+
+global function AiSpawn_Init
+
+global function __GetWeaponModel
+global function AssaultLinkedMoveTarget
+global function AssaultMoveTarget
+global function AutoSquadnameAssignment
+global function CreateArcTitan
+global function CreateAtlas
+global function CreateElitePilot
+global function CreateElitePilotAssassin
+global function CreateFragDrone
+global function CreateFragDroneCan
+global function CreateGenericDrone
+global function CreateGunship
+global function CreateHenchTitan
+global function CreateMarvin
+global function CreateNPC
+global function CreateNPCFromAISettings
+global function CreateNPCTitan
+global function CreateOgre
+global function CreateProwler
+global function CreateRocketDrone
+global function CreateRocketDroneGrunt
+global function CreateShieldDrone
+global function CreateShieldDroneGrunt
+global function CreateSoldier
+global function CreateSpectre
+global function CreateStalker
+global function CreateStryder
+global function CreateSuperSpectre
+global function CreateWorkerDrone
+global function CreateZombieStalker
+global function CreateZombieStalkerMossy
+global function StopAssaultMoveTarget
+
+global const HACK_CAP_BACK1 = $"models/sandtrap/sandtrap_wall_bracket.mdl"
+global const HACK_CAP_BACK2 = $"models/pipes/pipe_modular_grey_bracket_cap.mdl"
+global const HACK_CAP_BACK3 = $"models/lamps/office_lights_hanging_wire.mdl"
+global const HACK_DRONE_BACK1 = $"models/Weapons/ammoboxes/backpack_single.mdl"
+global const HACK_DRONE_BACK2 = $"models/barriers/fence_wire_holder_double.mdl"
+global const DEFAULT_TETHER_RADIUS = 1500
+global const DEFAULT_COVER_BEHAVIOR_CYLINDER_HEIGHT = 512
+
+struct
+{
+	array<string> moveTargetClasses
+} file
+
+void function AiSpawn_Init()
+{
+	PrecacheModel( HACK_CAP_BACK1 )
+	PrecacheModel( HACK_CAP_BACK2 )
+	PrecacheModel( HACK_CAP_BACK3 )
+	PrecacheModel( HACK_DRONE_BACK1 )
+	PrecacheModel( HACK_DRONE_BACK2 )
+	PrecacheModel( TEAM_IMC_GRUNT_MODEL )
+	PrecacheModel( TEAM_IMC_GRUNT_MODEL_LMG )
+	PrecacheModel( TEAM_IMC_GRUNT_MODEL_RIFLE )
+	PrecacheModel( TEAM_IMC_GRUNT_MODEL_ROCKET )
+	PrecacheModel( TEAM_IMC_GRUNT_MODEL_SHOTGUN )
+	PrecacheModel( TEAM_IMC_GRUNT_MODEL_SMG )
+
+	PrecacheModel( TEAM_MIL_GRUNT_MODEL )
+	PrecacheModel( TEAM_MIL_GRUNT_MODEL_LMG )
+	PrecacheModel( TEAM_MIL_GRUNT_MODEL_RIFLE )
+	PrecacheModel( TEAM_MIL_GRUNT_MODEL_ROCKET )
+	PrecacheModel( TEAM_MIL_GRUNT_MODEL_SHOTGUN )
+	PrecacheModel( TEAM_MIL_GRUNT_MODEL_SMG )
+
+	file.moveTargetClasses = [ "info_move_target", "info_move_animation" ]
+	foreach ( movetargetClass in file.moveTargetClasses )
+	{
+		AddSpawnCallbackEditorClass( "info_target", movetargetClass, InitInfoMoveTargetFlags )
+	}
+
+	RegisterSignal( "StopAssaultMoveTarget" )
+	RegisterSignal( "OnFinishedAssaultChain" )
+
+	AiSpawnContent_Init()
+	#if DEV
+	// just to insure that ai settings are being setup properly.
+	InitNpcSettingsFileNamesForDevMenu()
+	SetupSpawnAIButtons( TEAM_MILITIA )
+	AddCallback_EntitiesDidLoad( AiSpawn_EntitiesDidLoad )
+	#endif
+}
+
+void function AiSpawn_EntitiesDidLoad()
+{
+	#if DEV
+	//	On load in dev, verify that subclass matches leveled_aisettings. Subclass is being eradicated.
+	foreach ( spawner in GetSpawnerArrayByClassName( "npc_titan" ) )
+	{
+		table spawnerKeyValues = spawner.GetSpawnEntityKeyValues()
+		if ( "model" in spawnerKeyValues )
+		{
+			switch ( spawnerKeyValues.model.tolower() )
+			{
+				case "models/titans/atlas/atlas_titan.mdl":
+				case "models/titans/ogre/ogre_titan.mdl":
+				case "models/titans/stryder/stryder_titan.mdl":
+					CodeWarning( "Titan has deprecated model at " + spawnerKeyValues.origin )
+					break
+			}
+		}
+	}
+
+	foreach ( model in GetEntArrayByClass_Expensive( "prop_dynamic" ) )
+	{
+		switch ( model.GetModelName() )
+		{
+			case $"models/titans/atlas/atlas_titan.mdl":
+			case $"models/titans/ogre/ogre_titan.mdl":
+			case $"models/titans/stryder/stryder_titan.mdl":
+				CodeWarning( "Prop has deprecated model at " + model.GetOrigin() )
+				break
+		}
+	}
+
+	if ( IsSingleplayer() )
+	{
+		foreach ( spawner in GetSpawnerArrayByClassName( "npc_titan" ) )
+		{
+			table kvs = spawner.GetSpawnEntityKeyValues()
+			vector origin = StringToVector( expect string( kvs.origin ) )
+			if ( !( "leveled_aisettings" in kvs ) )
+			{
+				CodeWarning( "Titan Spawner at " + origin + " has no leveled_aisettings" )
+				continue
+			}
+
+			string aiSettings = expect string( kvs.leveled_aisettings )
+			string playerSettings = expect string(  Dev_GetAISettingByKeyField_Global( aiSettings, "npc_titan_player_settings" ) )
+			string playerModel = expect string( GetPlayerSettingsFieldForClassName( playerSettings, "bodymodel" ) )
+			string npcModel = expect string( kvs.model )
+			if ( npcModel != playerModel )
+				CodeWarning( "Titan spawner at " + origin + " has model " + npcModel + " that does not match player settings model " + playerModel )
+		}
+	}
+
+	#endif
+
+	table<entity, bool> foundSpawners
+	// precache weapons from the AI
+	foreach ( aiSettings in GetAllNPCSettings() )
+	{
+		// any of these spawned in the level?
+		string baseClass = expect string( Dev_GetAISettingByKeyField_Global( aiSettings, "BaseClass" ) )
+		array<entity> spawners = GetSpawnerArrayByClassName( baseClass )
+
+		foreach ( spawner in spawners )
+		{
+			if ( spawner in foundSpawners )
+				continue
+			foundSpawners[ spawner ] <- true
+			// this may be set on the entity in leveled
+			table kvs = spawner.GetSpawnEntityKeyValues()
+			if ( !( "subclass" in kvs ) )
+				continue
+
+			string origin = expect string( spawner.GetSpawnEntityKeyValues().origin )
+			string subclass = expect string( spawner.GetSpawnEntityKeyValues().subclass )
+			CodeWarning( "NPC spawner at " + origin + " has subclass " + subclass + ". Replace deprecated subclass key with leveled_aisettings." )
+		}
+	}
+
+}
+
+const ESCALATION_INCOMBAT_TIMEOUT 	= 180
+const ESCALATION_FRACTION_DEAD 		= 0.5
+
+
+/************************************************************************************************\
+
+######## #### ########    ###    ##    ##
+   ##     ##     ##      ## ##   ###   ##
+   ##     ##     ##     ##   ##  ####  ##
+   ##     ##     ##    ##     ## ## ## ##
+   ##     ##     ##    ######### ##  ####
+   ##     ##     ##    ##     ## ##   ###
+   ##    ####    ##    ##     ## ##    ##
+
+\************************************************************************************************/
+
+//////////////////////////////////////////////////////////
+
+entity function CreateHenchTitan( string titanType, vector origin, vector angles )
+{
+	entity npc = CreateNPCTitan( titanType, TEAM_IMC, origin, angles, [] )
+	string settings = expect string( Dev_GetPlayerSettingByKeyField_Global( titanType, "sp_aiSettingsFile" ) )
+	SetSpawnOption_AISettings( npc, settings )
+	SetSpawnOption_Titanfall( npc )
+	SetSpawnOption_Alert( npc )
+	SetSpawnOption_NPCTitan( npc, TITAN_HENCH )
+	npc.ai.titanSpawnLoadout.setFile = titanType
+	OverwriteLoadoutWithDefaultsForSetFile( npc.ai.titanSpawnLoadout )
+	return npc
+}
+
+entity function CreateAtlas( int team, vector origin, vector angles, array<string> settingsMods = [] )
+{
+	entity npc = CreateNPCTitan( "titan_atlas", team, origin, angles, settingsMods )
+	SetSpawnOption_AISettings( npc, "npc_titan_atlas" )
+	return npc
+}
+
+entity function CreateStryder( int team, vector origin, vector angles, array<string> settingsMods = [] )
+{
+	entity npc = CreateNPCTitan( "titan_stryder", team, origin, angles, settingsMods )
+	SetSpawnOption_AISettings( npc, "npc_titan_stryder" )
+	return npc
+}
+
+entity function CreateOgre( int team, vector origin, vector angles, array<string> settingsMods = [] )
+{
+	entity npc = CreateNPCTitan( "titan_ogre", team, origin, angles, settingsMods )
+	SetSpawnOption_AISettings( npc, "npc_titan_ogre" )
+	return npc
+}
+
+entity function CreateArcTitan( int team, vector origin, vector angles, array<string> settingsMods = [] )
+{
+	entity npc = CreateNPCTitan( "titan_stryder", team, origin, angles, settingsMods )
+	SetSpawnOption_AISettings( npc, "npc_titan_arc" )
+	return npc
+}
+
+entity function CreateNPCTitan( string settings, int team, vector origin, vector angles, array<string> settingsMods = [] )
+{
+	entity npc = CreateEntity( "npc_titan" )
+	npc.kv.origin = origin
+	npc.kv.angles = Vector( 0, angles.y, 0 )
+	npc.kv.teamnumber = team
+	SetTitanSettings( npc.ai.titanSettings, settings, settingsMods )
+	return npc
+}
+
+entity function CreateSpectre( int team, vector origin, vector angles )
+{
+	return CreateNPC( "npc_spectre", team, origin, angles )
+}
+
+entity function CreateStalker( int team, vector origin, vector angles )
+{
+	return CreateNPC( "npc_stalker", team, origin, angles )
+}
+
+entity function CreateZombieStalker( int team, vector origin, vector angles )
+{
+	entity npc = CreateNPC( "npc_stalker", team, origin, angles )
+	SetSpawnOption_AISettings( npc, "npc_stalker_zombie" )
+	return npc
+}
+
+entity function CreateZombieStalkerMossy( int team, vector origin, vector angles )
+{
+	entity npc = CreateNPC( "npc_stalker", team, origin, angles )
+	SetSpawnOption_AISettings( npc, "npc_stalker_zombie_mossy" )
+	return npc
+}
+
+entity function CreateSuperSpectre( int team, vector origin, vector angles )
+{
+	return CreateNPC( "npc_super_spectre", team, origin, angles )
+}
+
+entity function CreateGunship( int team, vector origin, vector angles )
+{
+	return CreateNPC( "npc_gunship", team, origin, angles )
+}
+
+entity function CreateSoldier( int team, vector origin, vector angles )
+{
+	return CreateNPC( "npc_soldier", team, origin, angles )
+}
+
+entity function CreateProwler( int team, vector origin, vector angles )
+{
+	return CreateNPC( "npc_prowler", team, origin, angles )
+}
+
+entity function CreateRocketDroneGrunt( int team, vector origin, vector angles )
+{
+	entity npc = CreateNPC( "npc_soldier", team, origin, angles )
+	SetSpawnOption_AISettings( npc, "npc_soldier_drone_summoner_rocket" )
+	return npc
+}
+
+entity function CreateShieldDroneGrunt( int team, vector origin, vector angles )
+{
+	entity npc = CreateNPC( "npc_soldier", team, origin, angles )
+	SetSpawnOption_AISettings( npc, "npc_soldier_drone_summoner" )
+	return npc
+}
+
+entity function CreateElitePilot( int team, vector origin, vector angles )
+{
+	return CreateNPC( "npc_pilot_elite", team, origin, angles )
+}
+
+entity function CreateElitePilotAssassin( int team, vector origin, vector angles )
+{
+	entity npc = CreateNPC( "npc_pilot_elite", team, origin, angles )
+	SetSpawnOption_AISettings( npc, "npc_pilot_elite_assassin" )
+	return npc
+}
+
+entity function CreateFragDrone( int team, vector origin, vector angles )
+{
+	return CreateNPC( "npc_frag_drone", team, origin, angles )
+}
+
+entity function CreateFragDroneCan( int team, vector origin, vector angles )
+{
+	entity npc = CreateNPC( "npc_frag_drone", team, origin, angles )
+	npc.ai.fragDroneArmed = false
+	return npc
+}
+
+entity function CreateRocketDrone( int team, vector origin, vector angles )
+{
+	entity npc = CreateNPC( "npc_drone", team, origin, angles )
+	SetSpawnOption_AISettings( npc, "npc_drone_rocket" )
+	return npc
+}
+
+entity function CreateShieldDrone( int team, vector origin, vector angles )
+{
+	entity npc = CreateNPC( "npc_drone", team, origin, angles )
+	SetSpawnOption_AISettings( npc, "npc_drone_shield" )
+	return npc
+}
+
+entity function CreateGenericDrone( int team, vector origin, vector angles )
+{
+	entity npc = CreateNPC( "npc_drone", team, origin, angles )
+	SetSpawnOption_AISettings( npc, "npc_drone" )
+	return npc
+}
+
+entity function CreateWorkerDrone( int team, vector origin, vector angles )
+{
+	entity npc = CreateNPC( "npc_drone", team, origin, angles )
+	SetSpawnOption_AISettings( npc, "npc_drone_worker" )
+	return npc
+}
+
+entity function CreateMarvin( int team, vector origin, vector angles )
+{
+	return CreateNPC( "npc_marvin", team, origin, angles )
+}
+
+entity function CreateNPC( baseClass, team, origin, angles )
+{
+	entity npc = CreateEntity( expect string( baseClass ) )
+	npc.kv.teamnumber = team
+	npc.kv.origin = origin
+	npc.kv.angles = angles
+
+	return npc
+}
+
+entity function CreateNPCFromAISettings( string aiSettings, int team, vector origin, vector angles )
+{
+	string baseClass = expect string( Dev_GetAISettingByKeyField_Global( aiSettings, "BaseClass" ) )
+	entity npc = CreateNPC( baseClass, team, origin, angles )
+	SetSpawnOption_AISettings( npc, aiSettings )
+	return npc
+}
+
+
+
+/************************************************************************************************\
+
+ ######   #######  ##     ## ##     ##  #######  ##    ##
+##    ## ##     ## ###   ### ###   ### ##     ## ###   ##
+##       ##     ## #### #### #### #### ##     ## ####  ##
+##       ##     ## ## ### ## ## ### ## ##     ## ## ## ##
+##       ##     ## ##     ## ##     ## ##     ## ##  ####
+##    ## ##     ## ##     ## ##     ## ##     ## ##   ###
+ ######   #######  ##     ## ##     ##  #######  ##    ##
+
+\************************************************************************************************/
+
+entity function GetTargetOrLink( entity npc )
+{
+	string target = npc.GetTarget_Deprecated()
+	if ( target != "" )
+		return GetEnt( target )
+
+	array<entity> links = npc.GetLinkEntArray()
+	if ( links.len() )
+		return links.getrandom()
+
+	return null
+}
+
+bool function IsMoveTarget( entity ent )
+{
+	if ( !ent.HasKey( "editorclass" ) )
+		return false
+
+	string editorClass = expect string( ent.kv.editorclass )
+	foreach ( moveTargetClass in file.moveTargetClasses )
+	{
+		if ( editorClass == moveTargetClass )
+			return true
+	}
+	return false
+}
+
+bool function IsPotentialThreatTarget( entity ent )
+{
+	if ( !ent.HasKey( "editorclass" ) )
+		return false
+
+	string editorClass = expect string( ent.kv.editorclass )
+	if ( editorClass == "info_potential_threat_target" )
+		return true
+
+	return false
+}
+
+function AssaultLinkedMoveTarget( entity npc )
+{
+	entity ent = GetTargetOrLink( npc )
+	if ( ent == null )
+		return
+	if ( !IsMoveTarget( ent ) )
+		return
+
+	AssaultMoveTarget( npc, ent )
+}
+
+function AssaultMoveTarget( entity npc, entity ent )
+{
+	npc.EndSignal( "OnDeath" )
+	npc.EndSignal( "OnDestroy" )
+	npc.EndSignal( "StopAssaultMoveTarget" )
+	ent.EndSignal( "OnDestroy" )
+
+	Assert( IsMoveTarget( ent ) )
+
+	OnThreadEnd(
+	function() : ( npc )
+		{
+			if ( IsAlive( npc ) )
+			{
+				Signal( npc, "OnFinishedAssaultChain" )
+			}
+		}
+	)
+
+	for ( ;; )
+	{
+		vector origin = ent.GetOrigin()
+		vector angles = ent.GetAngles()
+		float radius = 750
+		float height = 750
+
+		if ( ent.HasKey( "script_predelay" ) )
+		{
+			float time = float( ent.GetValueForKey( "script_predelay" ) )
+			if ( time > 0.0 )
+				wait time
+		}
+
+		if ( ent.HasKey( "script_goal_radius" ) )
+			radius = float( ent.kv.script_goal_radius )
+
+		if ( ent.HasKey( "script_goal_height" ) )
+			height = float( ent.kv.script_goal_height )
+
+		npc.AssaultPointClamped( origin )
+		npc.AssaultSetGoalRadius( radius )
+		npc.AssaultSetGoalHeight( height )
+
+		if ( ent.HasKey( "face_angles" ) && ent.kv.face_angles == "1" )
+			npc.AssaultSetAngles( angles, true )
+
+		if ( ent.HasKey( "script_fight_radius" ) )
+		{
+			float fightRadius = float( ent.kv.script_fight_radius )
+			npc.AssaultSetFightRadius( fightRadius )
+		}
+
+		if ( npc.IsLinkedToEnt( ent ) && ent.HasKey( "unlink" ) && ent.kv.unlink == "1" )
+			npc.UnlinkFromEnt( ent )
+
+		array<entity> entChildren = ent.GetLinkEntArray()
+
+		bool finalDestination = entChildren.len() == 0
+		npc.AssaultSetFinalDestination( finalDestination )	// this doesn't seem to make any difference as far as I can tell. Bug #117062
+
+		if ( ent.HasKey( "clear_potential_threat_pos" ) && int( ent.kv.clear_potential_threat_pos ) == 1 )
+			npc.ClearPotentialThreatPos()
+
+		foreach ( ent in entChildren )
+		{
+			if ( IsPotentialThreatTarget( ent ) )
+			{
+				npc.SetPotentialThreatPos( ent.GetOrigin() )
+				break
+			}
+		}
+
+		table results
+
+		bool skipRunto = ent.HasKey( "skip_runto" ) && int( ent.kv.skip_runto ) == 1
+		if ( !skipRunto )
+		{
+			// If pathing fails we retry waiting for the other signals for 3 seconds.
+			// This solves an issue with npc that failed to path because they where falling.
+
+			const float RETRY_TIME = 3.0
+			float waitStartTime = Time()
+
+			while( true )
+			{
+				// activator, caller, self, signal, value
+				results = WaitSignal( npc, "OnFinishedAssault", "OnEnterGoalRadius", "OnFailedToPath" )
+
+				if ( results.signal != "OnFailedToPath" || waitStartTime + RETRY_TIME < Time() )
+					break
+			}
+		}
+
+		if ( ent.HasKey( "scr_signal" ) )
+			Signal( npc, ent.GetValueForKey( "scr_signal" ), { nodeSignal = results.signal, node = ent } )
+
+		if ( ent.HasKey( "leveled_animation" ) )
+		{
+			string animation = expect string( ent.kv.leveled_animation )
+			Assert( npc.Anim_HasSequence( animation ), "Npc " + npc + " with model " + npc.GetModelName() + " does not have animation sequence " + animation )
+			if ( skipRunto )
+				waitthread PlayAnimTeleport( npc, animation, ent )
+			else
+				waitthread PlayAnimRun( npc, animation, ent, false )
+		}
+
+		if ( ent.HasKey( "scr_flag_set" ) )
+			FlagSet( ent.GetValueForKey( "scr_flag_set" ) )
+
+		if ( ent.HasKey( "scr_flag_clear" ) )
+			FlagClear( ent.GetValueForKey( "scr_flag_clear" ) )
+
+		if ( ent.HasKey( "scr_flag_wait" ) )
+			FlagWait( ent.GetValueForKey( "scr_flag_wait" ) )
+
+		if ( ent.HasKey( "scr_flag_wait_clear" ) )
+			FlagWaitClear( ent.GetValueForKey( "scr_flag_wait_clear" ) )
+
+		if ( ent.HasKey( "path_wait" ) )
+		{
+			float time = float( ent.GetValueForKey( "path_wait" ) )
+			if ( time > 0.0 )
+				wait time
+		}
+
+		if ( ent.HasKey( "disable_assault_on_goal" ) && int( ent.kv.disable_assault_on_goal ) == 1 )
+			npc.DisableBehavior( "Assault" )
+
+		if ( entChildren.len() == 0 )
+			return
+
+		entChildren.randomize()
+		ent = null
+		foreach ( child in entChildren )
+		{
+			if ( IsMoveTarget( child ) )
+			{
+				ent = child
+				break
+			}
+		}
+
+		if ( ent == null )
+			return
+	}
+}
+
+void function StopAssaultMoveTarget( entity npc )
+{
+	npc.Signal( "StopAssaultMoveTarget" )
+}
+
+void function InitInfoMoveTargetFlags( entity infoMoveTarget )
+{
+	#if DEV
+	if ( infoMoveTarget.HasKey( "script_goal_radius" ) )
+	{
+		int radius = int( infoMoveTarget.kv.script_goal_radius )
+		if ( radius < 64 )
+			CodeWarning( "move target at " + infoMoveTarget.GetOrigin() + " had goal radius " + radius + " which is less than minimum 64" )
+	}
+	#endif
+	if ( infoMoveTarget.HasKey( "scr_flag_set" ) )
+		FlagInit( infoMoveTarget.GetValueForKey( "scr_flag_set" ) )
+	if ( infoMoveTarget.HasKey( "scr_flag_clear" ) )
+		FlagInit( infoMoveTarget.GetValueForKey( "scr_flag_clear" ) )
+	if ( infoMoveTarget.HasKey( "scr_flag_wait" ) )
+		FlagInit( infoMoveTarget.GetValueForKey( "scr_flag_wait" ) )
+	if ( infoMoveTarget.HasKey( "scr_flag_wait_clear" ) )
+		FlagInit( infoMoveTarget.GetValueForKey( "scr_flag_wait_clear" ) )
+
+	if ( infoMoveTarget.HasKey( "scr_signal" ) )
+		RegisterSignal( infoMoveTarget.GetValueForKey( "scr_signal" ) )
+}
+
+/************************************************************************************************\
+
+########  #######   #######  ##        ######
+   ##    ##     ## ##     ## ##       ##    ##
+   ##    ##     ## ##     ## ##       ##
+   ##    ##     ## ##     ## ##        ######
+   ##    ##     ## ##     ## ##             ##
+   ##    ##     ## ##     ## ##       ##    ##
+   ##     #######   #######  ########  ######
+
+\************************************************************************************************/
+asset function __GetWeaponModel( weapon )
+{
+	switch ( weapon )
+	{
+		case "mp_weapon_rspn101":
+			return $"models/weapons/rspn101/r101_ab_01.mdl"//$"models/weapons/rspn101/w_rspn101.mdl" --> this is the one I want to spawn, but I get a vague code error when I try
+			break
+
+		default:
+			Assert( 0, "weapon: " + weapon + " not handled to return a model" )
+			break
+	}
+	unreachable
+}
+
+void function AutoSquadnameAssignment( entity npc )
+{
+	int team = npc.GetTeam()
+	switch ( npc.GetClassName() )
+	{
+		case "npc_turret_sentry":
+		case "npc_turret_mega":
+		case "npc_dropship":
+		case "npc_dropship_hero":
+			return
+	}
+
+	switch ( npc.GetTeam() )
+	{
+		case TEAM_IMC:
+		case TEAM_MILITIA:
+			int index = svGlobal.npcsSpawnedThisFrame_scriptManagedArray[ team ]
+			if ( GetScriptManagedEntArrayLen( index ) == 0 )
+			{
+				thread AutosquadnameAssignment_Thread( index, npc, team )
+			}
+
+			AddToScriptManagedEntArray( index, npc )
+			break
+
+		default:
+			break
+	}
+}
+
+void function AutosquadnameAssignment_Thread( int scriptManagedArrayIndex, entity npc, int team )
+{
+	WaitEndFrame() // wait for everybody to spawn this frame
+
+	array<entity> entities = GetScriptManagedEntArray( scriptManagedArrayIndex )
+	if ( entities.len() <=  1 )
+	{
+		foreach ( npc in entities )
+		{
+			RemoveFromScriptManagedEntArray( scriptManagedArrayIndex, npc )
+		}
+		return
+	}
+
+	string squadName = UniqueString( "autosquad_team_" + team )
+
+	foreach ( npc in entities )
+	{
+		RemoveFromScriptManagedEntArray( scriptManagedArrayIndex, npc )
+		if ( !IsValid( npc ) )
+			continue
+		if ( npc.kv.squadname != "" )
+			continue
+		if ( !IsAlive( npc ) )
+			continue
+		SetSquad( npc, squadName )
+	}
+	Assert( GetScriptManagedEntArrayLen( scriptManagedArrayIndex ) == 0 )
+}

@@ -1,0 +1,84 @@
+untyped
+
+//========== Copyright © 2008, Valve Corporation, All rights reserved. ========
+
+global function UniqueString
+global function EntFire
+global function __DumpScope
+
+
+int __uniqueStringId = 0
+string function UniqueString( string str = "" )
+{
+	return str + "_us" + __uniqueStringId++;
+}
+
+function EntFire( target, action, value = null, delay = 0.0, activator = null )
+{
+	if ( !value )
+	{
+		value = "";
+	}
+
+	local caller = null;
+	if ( "self" in this )
+	{
+		caller = this.self;
+		if ( !activator )
+		{
+			activator = this.self;
+		}
+	}
+
+	DoEntFire( string( target ), string( action ), string( value ), delay, activator, caller );
+}
+
+//---------------------------------------------------------
+// Text dump this scope's contents to the console.
+//---------------------------------------------------------
+void function __DumpScope( int depth, var Table )
+{
+	local indent=function( count )
+	{
+		local i;
+		for( i = 0 ; i < count ; i++ )
+		{
+			print("   ");
+		}
+	}
+
+    foreach(key, value in Table)
+    {
+		indent(depth);
+		print( key );
+        switch (type(value))
+        {
+            case "table":
+				print("(TABLE)\n");
+				indent(depth);
+                print("{\n");
+                __DumpScope( depth + 1, value);
+				indent(depth);
+                print("}");
+                break;
+            case "array":
+				print("(ARRAY)\n");
+				indent(depth);
+                print("[\n")
+                __DumpScope( depth + 1, value);
+				indent(depth);
+                print("]");
+                break;
+            case "string":
+                print(" = \"");
+                print(value);
+                print("\"");
+                break;
+            default:
+                print(" = ");
+                print(value);
+                break;
+        }
+        print("\n");
+	}
+}

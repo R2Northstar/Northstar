@@ -1,0 +1,284 @@
+untyped
+
+global function ATTurrets_Init
+global function CreateATTurret
+global function ATTurretSettings
+//global function SetDriverOnTurret
+global function PROTO_ATTurretsEnabled
+global function PROTO_Simulate_Turret_Use
+
+const USE_DEBOUNCE_TIME = 0.3
+const FX_ANTI_TITAN_SHIELD_WALL = $"P_anti_titan_shield_3P"
+const vector AT_TURRET_SHIELD_COLOR	= Vector( 115, 247, 255 )
+
+void function ATTurrets_Init()
+{
+	AddSpawnCallbackEditorClass( "turret", "turret_pilot_at", ATTurretSettings )
+	RegisterSignal( "ClearDriver" )
+	RegisterSignal( "DismebarkATTurret" )
+}
+
+void function CreateATTurret( vector origin, vector angles )
+{
+	entity turret = CreateEntity( "turret" )
+	turret.kv.editorclass = "turret_pilot_at"
+	turret.kv.settings = "PROTO_at_turret"
+	turret.kv.teamnumber = 0
+	turret.SetValueForModelKey( $"models/weapons/sentry_turret/sentry_turret.mdl" )
+	turret.kv.origin = origin
+	turret.kv.angles = angles
+	DispatchSpawn( turret )
+	ATTurretSettings( turret )
+}
+
+void function ATTurretSettings( entity turret )
+{
+	if ( PROTO_ATTurretsEnabled() )
+	{
+		turret.SetUsable()
+		turret.SetUsableByGroup( "pilot" )
+		turret.SetUsePrompts( "Hold %use% to use AT-Turret", "Press %use% to use AT-Turret" )
+		//AddCallback_OnUseEntity( turret, SetDriverOnTurret )
+		AddCallback_OnUseEntity( turret, PROTO_Simulate_Turret_Use )
+
+		local attachmentID = turret.LookupAttachment( "muzzle_flash" )
+		local origin = turret.GetAttachmentOrigin( attachmentID )
+		local angles = turret.GetAttachmentAngles( attachmentID )
+
+		entity cpoint = CreateEntity( "info_placement_helper" )
+		SetTargetName( cpoint, UniqueString( "shield_wall_controlpoint" ) )
+		DispatchSpawn( cpoint )
+
+		turret.e.shieldWallFX = CreateEntity( "info_particle_system" )
+		entity shieldWallFX = turret.e.shieldWallFX
+		shieldWallFX.SetValueForEffectNameKey( FX_ANTI_TITAN_SHIELD_WALL )
+		shieldWallFX.kv.start_active = 1
+		SetShieldWallCPoint( shieldWallFX, cpoint )
+		shieldWallFX.SetOwner( turret )
+		shieldWallFX.kv.VisibilityFlags = (ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY) // not owner only
+		shieldWallFX.kv.cpoint1 = cpoint.GetTargetName()
+		shieldWallFX.SetStopType( "destroyImmediately" )
+		shieldWallFX.SetOrigin( origin )
+		shieldWallFX.SetAngles( angles - Vector(0,0,90) )
+		shieldWallFX.SetParent( turret, "muzzle_flash", true, 0.0 )
+		DispatchSpawn( shieldWallFX )
+		SetShieldWallCPointOrigin( shieldWallFX, AT_TURRET_SHIELD_COLOR )
+	}
+	else
+	{
+		turret.DisableDraw()
+		turret.NotSolid()
+	}
+}
+
+bool function PROTO_ATTurretsEnabled()
+{
+	return ( GetCurrentPlaylistVarInt( "at_turrets_enabled", 0 ) == 1 )
+}
+
+/*/////////////////////////////////////////////////////////////////
+						WEAPON PROTOTYPE
+///////////////////////////////////////////////////////////////////*/
+
+function PROTO_Simulate_Turret_Use( turret, player )
+{
+	expect entity( turret )
+	expect entity( player )
+
+	if ( Time() < player.p.PROTO_UseDebounceEndTime )
+		return
+
+	PROTO_ActivateTurret( turret, player )
+}
+
+const array<int> TURRET_CANCEL_BUTTONS =
+[
+	IN_USE,
+	IN_DUCK,
+	IN_DUCKTOGGLE,
+	IN_WEAPON_CYCLE,
+	IN_MELEE,
+	IN_OFFHAND0,
+	IN_OFFHAND1,
+	IN_OFFHAND2,
+	IN_OFFHAND3,
+	IN_OFFHAND4,
+	IN_JUMP
+]
+
+void function PROTO_ActivateTurret( entity turret, entity player )
+{
+	if ( turret.GetOwner() == player )
+	{
+		player.Signal( "DismebarkATTurret" )
+	}
+	else
+	{
+		if ( turret.GetOwner() == null )
+		{
+			turret.DisableDraw()
+			turret.NotSolid()
+			SetShieldWallCPointOrigin( turret.e.shieldWallFX, < 0, 0, 0 > )
+			turret.SetOwner( player )
+			player.p.PROTO_UseDebounceEndTime = Time() + USE_DEBOUNCE_TIME
+			foreach( int button in TURRET_CANCEL_BUTTONS )
+				AddButtonPressedPlayerInputCallback( player, button, PROTO_DisembarkATTurret )
+			AddEntityCallback_OnDamaged( player, PlayerDamagedWhileOnTurret )
+			thread MonitorPilot( turret, player )
+		}
+		else
+		{
+			SendHudMessage( player, "Turret in use.", -1, 0.4, 255, 255, 0, 255, 0.0, 0.5, 0.0 )
+		}
+	}
+}
+
+void function PlayerDamagedWhileOnTurret( entity player, var damageInfo )
+{
+	if ( Time() < player.p.PROTO_UseDebounceEndTime )
+		return
+
+	player.Signal( "DismebarkATTurret" )
+}
+
+function MonitorPilot( entity turret, entity player )
+{
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "DismebarkATTurret")
+	turret.EndSignal( "OnDestroy" )
+
+	player.ForceStand()
+	entity playerMover = CreateOwnedScriptMover( player )
+	player.SetParent( playerMover, "ref", true )
+	vector forward = turret.GetForwardVector()
+	vector basePos = turret.GetOrigin() + forward * -25
+	vector startOrigin = player.GetOrigin()
+	float moveTime = 0.1
+	playerMover.NonPhysicsMoveTo( basePos, moveTime, 0.0, 0.0 )
+	playerMover.NonPhysicsRotateTo( turret.GetAngles(), moveTime, 0, 0 )
+	player.FreezeControlsOnServer()
+
+	StorePilotWeapons( player )
+
+	OnThreadEnd(
+	function() : ( turret, player, playerMover, startOrigin )
+		{
+		 	if ( IsValid( player ) )
+		 	{
+				player.ClearParent()
+				player.UnforceStand()
+				ClearPlayerAnimViewEntity( player )
+				player.UnfreezeControlsOnServer()
+				RetrievePilotWeapons( player )
+				ViewConeZeroInstant( player )
+				foreach( int button in TURRET_CANCEL_BUTTONS )
+					RemoveButtonPressedPlayerInputCallback( player, button, PROTO_DisembarkATTurret )
+				RemoveEntityCallback_OnDamaged( player, PlayerDamagedWhileOnTurret )
+				player.p.PROTO_UseDebounceEndTime = Time() + USE_DEBOUNCE_TIME
+				PutEntityInSafeSpot( player, turret, null, startOrigin, player.GetOrigin() )
+		 	}
+
+		 	if ( IsValid( turret ) )
+		 	{
+		 		turret.EnableDraw()
+		 		turret.Solid()
+				SetShieldWallCPointOrigin( turret.e.shieldWallFX, AT_TURRET_SHIELD_COLOR )
+		 		turret.SetOwner( null )
+		 	}
+
+		 	playerMover.Destroy()
+		}
+	)
+
+	wait moveTime
+
+	player.PlayerCone_SetSpecific( forward )
+	ViewConeZeroInstant( player )
+
+	// PROTO: Supporting ability to pick different turret weapons for turrets in LevelEd and the legacy Defender prototype turret
+	// We need a predator cannon style turret in SP.
+	if ( IsMultiplayer() )
+	{
+		//player.GiveWeapon( "mp_weapon_smr", [ "PROTO_at_turret" ] )
+		//player.SetActiveWeaponByName( "mp_weapon_smr" )
+		
+		// modded code: smr's at turret mod does exist in release tf2
+		player.GiveWeapon( "mp_weapon_defender", [ "PROTO_at_turret" ] )
+		player.SetActiveWeaponByName( "mp_weapon_defender" )
+	}
+	else if ( turret.HasKey( "weaponsettings" ) )
+	{
+		// See if we have any special turret mods on this weapon
+		array<string> turretMods = []
+		array<string> mods = GetWeaponMods_Global( turret.kv.weaponsettings )
+		foreach ( mod in mods )
+		{
+			if ( mod.find( "PROTO_at_turret" ) == 0 )
+				turretMods.append( "PROTO_at_turret" )
+		}
+
+		player.GiveWeapon( turret.kv.weaponsettings, turretMods )
+		player.SetActiveWeaponByName( turret.kv.weaponsettings )
+	}
+
+	wait 0.1
+
+	player.UnfreezeControlsOnServer()
+
+	ViewConeLockedForward( player )
+
+ 	player.WaitSignal( "OnDeath" )
+}
+
+void function PROTO_DisembarkATTurret( entity player )
+{
+	if ( Time() < player.p.PROTO_UseDebounceEndTime )
+		return
+
+	player.Signal( "DismebarkATTurret" )
+}
+
+/*/////////////////////////////////////////////////////////////////
+					TURRET ENTITY PROTOTYPE
+///////////////////////////////////////////////////////////////////*/
+//
+//function SetDriverOnTurret( turret, player )
+//{
+//	if ( turret.GetOwner() == player )
+//	{
+//		turret.SetOwner( null )
+//		turret.ClearDriver()
+//		player.Signal( "ClearDriver" )
+//	}
+//	else
+//	{
+//		entity oldOwner = expect entity( turret.GetOwner() )
+//		if ( oldOwner != null )
+//		{
+//			oldOwner.Signal( "ClearDriver" )
+//			turret.ClearDriver()
+//		}
+//		turret.SetOwner( player )
+//		turret.SetDriver( player )
+//		thread ClearDriverOnDeath( turret, player )
+//	}
+//	//turret.SetUsePrompts( "DEACTIVATE", "DEACTIVATE" )
+//	//turret.SetOwner( player )
+//	//turret.SetBossPlayer( player )
+//	//turret.SetUsableByGroup( "owner pilot" )
+//}
+//
+//function ClearDriverOnDeath( turret, player )
+//{
+//	player.EndSignal( "ClearDriver" )
+//	player.EndSignal( "OnDestroy" )
+//	turret.EndSignal( "OnDestroy" )
+//
+// 	player.WaitSignal( "OnDeath" )
+//
+// 	if ( IsValid( turret ) )
+// 		turret.ClearDriver()
+//}
+////TODO: Handle death and handle deactivate.
+//
+//

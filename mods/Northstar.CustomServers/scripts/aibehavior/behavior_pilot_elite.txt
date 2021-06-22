@@ -1,0 +1,63 @@
+Selector Common
+
+	SelectSchedule_RodeoAttack
+	SelectSchedule_FallToGround
+	SelectSchedule_MissileDodge
+	SelectSchedule_Flinch
+	SelectSchedule_DisplaceFromDangerousArea
+	//SelectSchedule_ChangeToDesiredStance
+	SelectSchedule_SyncedMeleeAttack
+	SelectSchedule_LayeredBehavior
+Selector_End
+
+
+Selector Idle
+
+	SelectSchedule_Idle
+Selector_End
+
+
+Selector Alert
+
+	SelectSchedule_Alert
+Selector_End
+
+
+Selector Combat
+
+	//SelectSchedule_StrafeDodge
+	//SelectSchedule_ForwardDodge
+
+	SelectSchedule_MeleeAttack
+
+	//CAI_Combatant::SelectSchedule_CombatNewEnemy
+	SelectSchedule_SwitchWeapon
+	SelectSchedule_EvasiveLowAmmo
+
+	SelectSchedule_CircleStrafe
+	CAI_Combatant::SelectSchedule_ShootingCover
+	//SelectSchedule_Taunt health > 0.8
+
+	SelectSchedule_ThrowGrenade
+	SelectSchedule_RangeAttackEvasive
+	SelectSchedule_RangeAttackTwitch
+	SelectSchedule_RangeAttack
+	//SelectSchedule_ChaseEnemy health > 0.4
+
+	SelectSchedule_CombatFace
+Selector_End
+
+Selector CombatEvasive
+
+	SelectSchedule_StrafeDodge
+	SelectSchedule_BackwardDodge
+	SelectSchedule_StationaryLowAmmo
+	SelectSchedule_RangeAttack2
+	SelectSchedule_RangeAttack
+	SelectSchedule_ChaseEnemy health > 0.4
+	SelectSchedule_EnemyTooClose
+	SelectSchedule_WeaponBlocked
+	SelectSchedule_CantSeeEnemy
+	SelectSchedule_CircleStrafe
+	SelectSchedule_CombatFace
+Selector_End

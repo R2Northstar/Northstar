@@ -1,0 +1,352 @@
+untyped
+
+
+global function Revive_Init
+
+global function PlayerRevivesOrBleedsOut
+global function DeathPackage_PlayerRevive
+global function ShouldRevivePlayer
+
+const float REVIVE_BLEED_OUT_TIME		= 15.0
+global const float REVIVE_DEATH_TIME	= 2.0
+const float REVIVE_DIST_OUTER 			= 135.0
+const float REVIVE_DIST_INNER 			= 120.0
+
+struct
+{
+	table fakePlayers
+} file
+
+function Revive_Init()
+{
+	if ( !ReviveEnabled() )
+		return
+
+	RegisterSignal( "KillReviveNag" )
+	RegisterSignal( "DoneBleedingOut" )
+	RegisterSignal( "ReviveSucceeded" )
+	RegisterSignal( "ReviveFailed" )
+	RegisterSignal( "ForceBleedOut" )
+
+	AddCallback_OnClientDisconnected( ReviveOnClientDisconnect )
+}
+
+void function PlayerRevivesOrBleedsOut( entity player )
+{
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "ForceBleedOut" )
+	svGlobal.levelEnt.EndSignal( "RoundEnd" )
+
+	table e = { revived = false }
+	//thread PlayerReviveVONag( player, 0.5 )
+
+	OnThreadEnd(
+		function() : ( player, e )
+		{
+			if ( !IsValid( player ) )
+				return
+
+			player.Signal( "KillReviveNag" )
+			player.Signal( "DoneBleedingOut" )
+			player.nv.reviveBleedingOut = -1.0 //-1 means off
+
+			if ( e.revived )
+			{
+				player.Signal( "ReviveSucceeded")
+				thread PlayerStandsBackUp( player )
+			}
+			else
+			{
+				file.fakePlayers[ player ].Destroy()
+				player.Signal( "ReviveFailed" )
+				DecideRespawnPlayer( player )
+			}
+		}
+	)
+
+	wait( REVIVE_DEATH_TIME )
+	player.StartObserverMode( OBS_MODE_DEATHCAM )
+
+	ForceRespawnIfEntireTeamIsDead( player )
+
+	float endTime = Time() + REVIVE_BLEED_OUT_TIME
+	player.nv.reviveBleedingOut = endTime
+
+	bool reviving = false
+	float doneReviveTime = Time() + 100
+
+	float distOuterSqr = pow( REVIVE_DIST_OUTER, 2 )
+	float distInnerSqr = pow( REVIVE_DIST_INNER, 2 )
+
+	while ( true )
+	{
+		array<entity> healers = Revive_GetAvailablePlayerHealers( player )
+
+		//we were reviving but aren't anymore - set revive to false.
+		if ( reviving && !FriendlyIsReviving( healers, player, distOuterSqr ) )
+		{
+			//thread PlayerReviveVONag( player )
+			reviving = false
+			player.nv.reviveHealedTime = -1.0 //-1 means off
+		}
+		//we were not reviving but now we are? set the new revive done time.
+		else if ( !reviving && FriendlyIsReviving( healers, player, distInnerSqr ) )
+		{
+			player.Signal( "KillReviveNag" )
+			doneReviveTime = Time() + REVIVE_TIME_TO_REVIVE
+			player.nv.reviveHealedTime = doneReviveTime
+			reviving = true
+		}
+
+		//are we done reviving? then set the value and return
+		if ( reviving && Time() > doneReviveTime )
+		{
+			e.revived = true
+			return
+		}
+
+		//we didn't make it
+		if ( !reviving && Time() > endTime )
+			return
+
+		wait 0.2
+	}
+}
+
+void function ForceRespawnIfEntireTeamIsDead( entity player )
+{
+	int playerTeam = player.GetTeam()
+	array<entity> victimTeamMembers = GetPlayerArrayOfTeam( playerTeam )
+	foreach ( member in victimTeamMembers )
+	{
+		if ( member.p.isReviving || IsAlive( member ) )
+			return
+	}
+	foreach ( member in victimTeamMembers )
+	{
+		if ( player != member && member.p.isReviving == false )
+			member.Signal( "ForceBleedOut" )
+	}
+	MessageToTeam( GetOtherTeam( playerTeam ), eEventNotifications.EnemyTeamEliminated )
+	player.Signal( "ForceBleedOut" )
+}
+
+void function PlayerReviveVONag( entity player, float delay = 0.5 )
+{
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "KillReviveNag" )
+
+	OnThreadEnd(
+		function() : ( player )
+		{
+			if ( IsValid( player ) )
+				StopSoundOnEntity( player, "diag_coop_bleedout_help" )
+		}
+	)
+
+	if ( delay > 0 )
+		wait delay
+
+	while ( true )
+	{
+		float time = EmitSoundOnEntity( player, "diag_coop_bleedout_help" )
+		wait time
+
+		wait RandomFloatRange( 10, 15 )
+	}
+}
+
+bool function FriendlyIsReviving( array<entity> healers, entity player, float distSqr )
+{
+	vector origin = player.GetOrigin()
+
+	foreach ( friend in healers )
+	{
+		if ( !IsAlive( friend ) )
+			continue
+
+		if ( DistanceSqr( friend.GetOrigin(), origin ) < distSqr )
+			return true
+	}
+
+	return false
+}
+
+array<entity> function Revive_GetAvailablePlayerHealers( entity player )
+{
+	int team = player.GetTeam()
+	array<entity> players = GetPlayerArrayOfTeam( team )
+	array<entity> playersCanRevive = []
+	foreach ( player in players )
+	{
+		if ( !IsAlive( player ) )
+			continue
+
+		playersCanRevive.append( player )
+	}
+
+	return playersCanRevive
+}
+
+bool function ShouldRevivePlayer( entity player, var damageInfo )
+{
+	if ( !ReviveEnabled() )
+		return false
+
+	if ( !GamePlaying() )
+		return false
+
+	if ( player.ContextAction_IsMeleeExecution() )
+		return false
+
+	if ( player.IsTitan() )
+		return false
+
+	int source = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+
+	if ( source == eDamageSourceId.fall ||
+		 source == eDamageSourceId.submerged ||
+		 source == eDamageSourceId.outOfBounds ||
+		 source == eDamageSourceId.indoor_inferno )
+		return false
+
+	return true
+}
+
+entity function SpawnFakePlayer( entity player, int team, vector origin, vector angles, asset weaponModel, asset model )
+{
+	float fadeDist 	= 10000.0
+	int solidType = 0// 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
+
+	entity fakePlayer = CreatePropDynamic( model, origin, angles, solidType, fadeDist )
+	if ( !( player in file.fakePlayers ) )
+	{
+		file.fakePlayers[ player ] <- null
+	}
+	file.fakePlayers[ player ] = fakePlayer
+
+	thread FakePlayerTrack( fakePlayer, player )
+
+	if ( weaponModel != $"" )
+	{
+		entity gun = CreatePropDynamic( weaponModel, origin, angles, 0, fadeDist )
+		gun.SetParent( fakePlayer, "PROPGUN" )
+	}
+
+	return fakePlayer
+}
+
+void function FakePlayerTrack( entity fakePlayer, entity player )
+{
+	fakePlayer.EndSignal( "OnDestroy" )
+	player.EndSignal( "OnDestroy" )
+	vector lastPlayerOrg = Vector( 0.0, 0.0, 0.0 )
+
+	while ( true )
+	{
+		if ( player.GetOrigin() == lastPlayerOrg )
+			player.SetVelocity( Vector( 0.0, 0.0, 0.0 ) )
+		lastPlayerOrg = player.GetOrigin()
+
+		fakePlayer.SetOrigin( player.GetOrigin() )
+		WaitFrame()
+	}
+}
+
+void function DeathPackage_PlayerRevive( entity player )
+{
+	player.kv.VisibilityFlags = ENTITY_VISIBLE_TO_NOBODY
+
+	vector deathOrg = player.GetOrigin()
+
+	vector mins = Vector( -16.0, -16.0, 0.0 )
+	vector maxs = Vector( 16.0, 16.0, 72.0 )
+	TraceResults result = TraceHull( deathOrg + Vector( 0.0, 0.0, 8.0 ), deathOrg + Vector( 0.0, 0.0, -16000.0 ), mins, maxs, player, ( TRACE_MASK_PLAYERSOLID_BRUSHONLY | TRACE_MASK_BLOCKLOS ), TRACE_COLLISION_GROUP_NONE )
+
+	player.SetVelocity( Vector( 0.0, 0.0, 0.0 ) )
+	thread ReviveLerpToOrigin( player, deathOrg, result.endPos )
+
+	entity activeWeapon = player.GetActiveWeapon()
+
+	asset weaponModel = activeWeapon == null ? $"" : activeWeapon.GetModelName()
+
+	entity fakePlayer = SpawnFakePlayer( player, player.GetTeam(), deathOrg, player.GetAngles(), weaponModel, player.GetModelName() )
+	fakePlayer.Anim_Play( "pt_wounded_drag_zinger_A_idle" )
+	player.Anim_Play( "pt_wounded_drag_zinger_A_idle" )
+}
+
+void function ReviveLerpToOrigin( entity player, vector deathOrg, vector endPos )
+{
+	player.EndSignal( "DoneBleedingOut" )
+	player.EndSignal( "OnDestroy" )
+
+	entity mover = CreateScriptMover()
+
+	OnThreadEnd(
+		function() : ( player, mover )
+		{
+			if ( IsValid( player ) )
+				player.ClearParent()
+
+			if ( IsValid( mover ) )
+				mover.Destroy()
+		}
+	)
+
+	mover.SetOrigin( deathOrg )
+	player.SetOrigin( deathOrg )
+	player.SetParent( mover )
+
+	float moveTime = GraphCapped( deathOrg.z - endPos.z, 0.0, 768.0, 0.1, 2.0 )
+
+	mover.NonPhysicsMoveTo( endPos, moveTime, moveTime, 0.0 )
+	wait( moveTime )
+	player.ClearParent()
+
+	while ( true )
+	{
+		player.SetOrigin( endPos )
+		WaitFrame()
+	}
+}
+
+void function PlayerStandsBackUp( entity player )
+{
+	player.EndSignal( "OnDestroy" )
+	svGlobal.levelEnt.EndSignal( "RoundEnd" )
+
+	entity fakePlayer = expect entity( file.fakePlayers[ player ] )
+	file.fakePlayers[ player ] = null
+
+	player.p.isReviving = true
+
+	OnThreadEnd(
+		function() : ( player, fakePlayer )
+		{
+			if ( IsValid( fakePlayer ) )
+				fakePlayer.Destroy()
+
+			if ( IsValid( player ) )
+				player.p.isReviving = false
+		}
+	)
+
+	fakePlayer.Anim_Play( "CQB_knockback_pain_react" )
+	fakePlayer.Anim_SetInitialTime( 2.0 )
+	wait( 1.5 )
+
+	var settings = player.GetPlayerSettings()
+	player.SetPlayerSettings( "spectator" )
+	player.SetPlayerSettings( settings )
+	player.RespawnPlayer( null )
+}
+
+void function ReviveOnClientDisconnect( entity player )
+{
+	if ( player in file.fakePlayers )
+	{
+		if ( IsValid( file.fakePlayers[ player ] ) )
+			file.fakePlayers[ player ].Destroy()
+		delete file.fakePlayers[ player ]
+	}
+}

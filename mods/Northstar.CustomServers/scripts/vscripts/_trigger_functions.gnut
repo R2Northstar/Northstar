@@ -1,0 +1,585 @@
+untyped
+
+global function TriggerFunctions_Init
+
+global function InitFlagMaskTriggers
+global function TriggerInit
+global function AddToFlagTriggers
+global function AddTriggerEditorClassFunc
+global function UpdateTriggerStatusFromFlagChange
+
+const DEBUG_DEADLY_FOG = false
+const asset BIRD_ALERT_FX = $"P_bird_alert_white"
+struct BirdAlertInfo
+{
+	entity scriptRef //Also FX location
+	array<entity> triggers
+	float lastUseTime
+}
+
+struct
+{
+	//bool checkpointReached
+	//vector checkpointOrigin
+	//vector checkpointAngles
+	table<string, array<void functionref( entity )> > triggerEditorClassFunctions
+
+	table<string, int> flagTriggerEntArrayIndex
+	array<BirdAlertInfo> birdAlerts
+} file
+
+function TriggerFunctions_Init()
+{
+	AddCallback_EntitiesDidLoad( InitFlagMaskTriggers )
+
+	level._flagTriggers <- {} // triggers that can be enabled/disabled via flag
+
+	AddTriggerEditorClassFunc( "trigger_flag_set", TriggerSetFlagOnTrigger )
+	AddTriggerEditorClassFunc( "trigger_flag_clear", TriggerClearFlagOnTrigger )
+	AddTriggerEditorClassFunc( "trigger_flag_touching", TriggerTouchingFlagOnTrigger )
+
+	AddSpawnCallback( "trigger_multiple", 		TriggerInit )
+	AddSpawnCallback( "trigger_once", 			TriggerInit )
+	AddSpawnCallback( "trigger_hurt", 			TriggerInit )
+
+	AddTriggerEditorClassFunc( "trigger_death_fall", TriggerDeathFall )
+	AddSpawnCallbackEditorClass( "trigger_multiple", "trigger_deadly_fog", DeadlyFogTriggerInit )
+
+	AddSpawnCallbackEditorClass( "script_ref", "script_bird_alert", BirdAlertInit )
+
+	PrecacheParticleSystem( BIRD_ALERT_FX )
+
+	RegisterSignal( "OutOfDeadlyFog" )
+
+	PrecacheParticleSystem( $"Swtch_Elec_hzd_rope_end" )
+}
+
+void function AddTriggerEditorClassFunc( string editorClass, void functionref( entity ) triggerFunc )
+{
+	if ( !( editorClass in file.triggerEditorClassFunctions ) )
+		file.triggerEditorClassFunctions[ editorClass ] <- []
+
+	file.triggerEditorClassFunctions[ editorClass ].append( triggerFunc )
+}
+
+void function AddKeyPairFunctionality( entity trigger )
+{
+	table< string, void functionref( entity, string )> funcs
+	funcs[ "scr_flagSet" ] <- TriggerFlagSet
+	funcs[ "scr_flagClear" ] <- TriggerFlagClear
+
+	foreach ( key, func in funcs )
+	{
+		if ( trigger.HasKey( key ) )
+		{
+			thread func( trigger, expect string( trigger.kv[ key ] ) )
+		}
+	}
+}
+
+function AddToFlagTriggers( entity self )
+{
+	level._flagTriggers[ self ] <- self
+}
+
+function GetFlagTriggers()
+{
+	foreach ( entity guy in clone level._flagTriggers )
+	{
+		if ( IsValid_ThisFrame( guy ) )
+			continue
+
+		delete level._flagTriggers[ guy ]
+	}
+
+	return level._flagTriggers
+}
+
+
+function AddKeyPairFunctionToClass( funcs, classname )
+{
+	array<entity> triggers = GetEntArrayByClass_Expensive( classname )
+
+	foreach ( trigger in triggers )
+	{
+		foreach ( key, func in funcs )
+		{
+			if ( trigger.HasKey( key ) )
+			{
+				thread func( trigger, trigger.kv[ key ] )
+			}
+		}
+	}
+}
+
+void function TriggerChangesFlagOnTrigger( entity trigger, string flag, void functionref( string ) func )
+{
+	trigger.EndSignal( "OnDestroy" )
+
+	array<string> flags = GetFlagsFromString( flag )
+
+	for ( ;; )
+	{
+		trigger.WaitSignal( "OnTrigger" )
+
+		foreach ( flag in flags )
+		{
+			func( flag )
+		}
+	}
+}
+
+void function TriggerFlagSet( entity trigger, string flagString )
+{
+	thread TriggerChangesFlagOnTrigger( trigger, flagString, FlagSet )
+}
+
+void function TriggerFlagClear( entity trigger, string flagString )
+{
+	thread TriggerChangesFlagOnTrigger( trigger, flagString, FlagClear )
+}
+
+void function TriggerInit( entity trigger )
+{
+	if ( trigger.HasKey( "editorclass" ) )
+		RunTriggerEditorClassFunctions( trigger )
+
+	InitFlagsFromTrigger( trigger )
+	AddKeyPairFunctionality( trigger )
+	AddToFlagTriggers( trigger )
+}
+
+function RunTriggerEditorClassFunctions( entity trigger )
+{
+	string editorClass = expect string( trigger.kv.editorclass )
+	if ( !( editorClass in file.triggerEditorClassFunctions ) )
+		return
+
+	foreach ( func in file.triggerEditorClassFunctions[ editorClass ] )
+	{
+		thread func( trigger )
+	}
+}
+
+void function TriggerSetFlagOnTrigger( entity trigger )
+{
+	trigger.EndSignal( "OnDestroy" )
+
+	string flag
+	if ( trigger.HasKey( "script_flag" ) )
+		flag = expect string( trigger.kv.script_flag )
+	else if ( trigger.HasKey( "scr_flagSet" ) )
+		flag = expect string( trigger.kv.scr_flagSet )
+
+	bool triggerOnce = trigger.HasKey( "trigger_once" ) && trigger.kv.trigger_once == "1"
+
+	Assert( flag != "", "Trigger " + GetEditorClass( trigger ) + " at " + trigger.GetOrigin() + "has empty flag value" )
+
+	while ( true )
+	{
+		trigger.WaitSignal( "OnTrigger" )
+		FlagSet( flag )
+
+		if ( triggerOnce )
+			return
+
+		FlagWaitClear( flag )
+	}
+}
+
+void function TriggerClearFlagOnTrigger( entity trigger )
+{
+	string flag
+	if ( trigger.HasKey( "script_flag" ) )
+		flag = expect string( trigger.kv.script_flag )
+	else if ( trigger.HasKey( "scr_flagClear" ) )
+		flag = expect string( trigger.kv.scr_flagClear )
+
+	Assert( flag != "" )
+
+	thread TriggerFlagClear( trigger, flag )
+}
+
+void function TriggerTouchingFlagOnTrigger( entity trigger )
+{
+	trigger.EndSignal( "OnDestroy" )
+	string flag = expect string( trigger.kv.script_flag )
+	Assert( flag != "" )
+
+	while ( true )
+	{
+		if ( !trigger.IsTouched() )
+			trigger.WaitSignal( "OnStartTouch" )
+
+		FlagSet( flag )
+
+		if ( trigger.IsTouched() )
+			trigger.WaitSignal( "OnEndTouchAll" )
+
+		FlagClear( flag )
+	}
+}
+
+array<string> function GetFlagRelatedKeys()
+{
+	array<string> check
+	check.append( "scr_flagTrueAll" )
+	check.append( "scr_flagTrueAny" )
+	check.append( "scr_flagFalseAll" )
+	check.append( "scr_flagFalseAny" )
+	check.append( "scr_flag" )
+	check.append( "script_flag" )
+	check.append( "scr_flagSet" )
+	check.append( "scr_flagClear" )
+
+	return check
+}
+
+void function InitFlagMaskTriggers()
+{
+	local triggers = GetFlagTriggers()
+	array<string> check = GetFlagRelatedKeys()
+	array<string> flags
+	local allTriggersWithFlags = {}
+
+	foreach ( trigger in triggers )
+	{
+		if ( trigger.HasKey( "scr_flagTrueAll" ) )
+		{
+			Assert( !trigger.HasKey( "scr_flagTrueAny" ), "Trigger at " + trigger.GetOrigin() + " has flag all and flag any" )
+		}
+		else
+		if ( trigger.HasKey( "scr_flagTrueAny" ) )
+		{
+			Assert( !trigger.HasKey( "scr_flagTrueAll" ), "Trigger at " + trigger.GetOrigin() + " has flag all and flag any" )
+		}
+
+		if ( trigger.HasKey( "scr_flagFalseAll" ) )
+		{
+			Assert( !trigger.HasKey( "scr_flagFalseAny" ), "Trigger at " + trigger.GetOrigin() + " has flag all and flag any" )
+		}
+		else
+		if ( trigger.HasKey( "scr_flagFalseAny" ) )
+		{
+			Assert( !trigger.HasKey( "scr_flagFalseAll" ), "Trigger at " + trigger.GetOrigin() + " has flag all and flag any" )
+		}
+
+		foreach ( field in check )
+		{
+			if ( trigger.HasKey( field ) )
+			{
+				allTriggersWithFlags[ trigger ] <- true
+				flags = GetFlagsFromField( trigger, field )
+
+				foreach ( flag in flags )
+				{
+					if ( !( flag in file.flagTriggerEntArrayIndex ) )
+						file.flagTriggerEntArrayIndex[ flag ] <- CreateScriptManagedEntArray()
+
+					AddToScriptManagedEntArray( file.flagTriggerEntArrayIndex[ flag ], trigger )
+
+					// init the flag so these flags an be used in hammer more easily
+					FlagInit( flag )
+				}
+			}
+		}
+	}
+
+	foreach ( trigger, _ in allTriggersWithFlags )
+	{
+		expect entity( trigger )
+		SetTriggerEnableFromFlag( trigger )
+	}
+}
+
+void function SetTriggerEnableFromFlag( entity trigger )
+{
+	if ( GetTriggerEnabled( trigger ) )
+		trigger.Fire( "Enable" )
+	else
+		trigger.Fire( "Disable" )
+}
+
+void function UpdateTriggerStatusFromFlagChange( string flag )
+{
+	// enable or disable triggers based on flag settings
+	if ( !( flag in file.flagTriggerEntArrayIndex ) )
+		return
+
+	array<entity> triggers = GetScriptManagedEntArray( file.flagTriggerEntArrayIndex[ flag ] )
+	foreach ( trigger in triggers )
+	{
+		SetTriggerEnableFromFlag( trigger )
+	}
+}
+
+function InitFlagsFromTrigger( entity trigger )
+{
+	array<string> check = GetFlagRelatedKeys()
+	array<string> flags
+
+	foreach ( field in check )
+	{
+		if ( !trigger.HasKey( field ) )
+			continue
+		flags = GetFlagsFromField( trigger, field )
+
+		foreach ( flag in flags )
+		{
+			// init the flag so these flags an be used in hammer more easily
+			FlagInit( flag )
+		}
+	}
+}
+
+
+void function DeadlyFogTriggerInit( entity trigger )
+{
+	trigger.ConnectOutput( "OnStartTouch", DeadlyFogStartTouch )
+	trigger.ConnectOutput( "OnEndTouch", DeadlyFogEndTouch )
+
+	if ( trigger.HasKey( "electricEffect" ) && trigger.kv.electricEffect == "1" )
+		thread DeadlyFogVisuals( trigger )
+}
+
+void function DeadlyFogStartTouch( entity trigger, entity ent, entity caller, var value )
+{
+	thread DeadlyFogDamagedEntity( trigger, ent )
+}
+
+void function DeadlyFogDamagedEntity( entity trigger, entity ent )
+{
+	if ( !IsAlive( ent ) || !IsValid( trigger ) )
+		return
+
+	EndSignal( ent, "OutOfDeadlyFog" )
+	EndSignal( trigger, "OnDestroy" )
+	EndSignal( ent, "OnDeath" )
+
+	bool damagePilots = trigger.kv.damagePilots == "1"
+	bool damageTitans = trigger.kv.damageTitans == "1"
+	if ( !damagePilots && !damageTitans )
+		return
+
+	float tickTime = 0.5
+	float timeTillDeath = 4.0
+
+	entity worldSpawn = GetEnt( "worldspawn" )
+	while( true )
+	{
+		if ( !IsValid( ent ) )
+		{
+			wait 0.5
+			continue
+		}
+
+		if ( IsPilot( ent ) && !damagePilots )
+		{
+			wait 0.5
+			continue
+		}
+
+		if ( ent.IsTitan() && !damageTitans )
+		{
+			wait 0.5
+			continue
+		}
+
+		local isTitan = ent.IsTitan()
+		local damageOrigin = ent.GetOrigin() + ( isTitan ? < 0.0, 0.0, 0.0 > : < 0.0 , 0.0, -200.0 > )
+		damageOrigin += < RandomFloatRange( -300.0, 300.0 ), RandomFloatRange( -300.0, 300.0 ), RandomFloatRange( -100.0, 100.0 ) >
+		local scriptTypeMask = damageTypes.dissolve | DF_STOPS_TITAN_REGEN
+
+		local damageAmount = ( ent.GetMaxHealth() / ( timeTillDeath / tickTime ) )
+
+		ent.TakeDamage( damageAmount, worldSpawn, worldSpawn, { origin = damageOrigin, scriptType = scriptTypeMask, damageSourceId = eDamageSourceId.deadly_fog } )
+
+		if ( ent.IsPlayer() )
+			StatusEffect_AddTimed( ent, eStatusEffect.emp, 1.0, 1.0, 0.5 )
+
+		wait 0.5
+	}
+}
+
+void function DeadlyFogEndTouch( entity trigger, entity ent, entity caller, var value )
+{
+	if ( IsValid( ent ) )
+		Signal( ent, "OutOfDeadlyFog" )
+}
+
+void function DeadlyFogVisuals( entity trigger )
+{
+	wait 0.5
+
+	// Get the trigger bounds
+	vector triggerMins = trigger.GetBoundingMins()
+	vector triggerMaxs = trigger.GetBoundingMaxs()
+	vector triggerOrigin = trigger.GetOrigin()
+	if ( DEBUG_DEADLY_FOG )
+	{
+		DebugDrawBox( triggerOrigin, triggerMins, triggerMaxs, 255, 255, 0, 1, 60.0 )
+		DebugDrawSphere( triggerOrigin, 25.0, 255, 200, 0, true, 60.0 )
+	}
+
+	// Divide the trigger into smaller squares
+	vector triggerDimension = triggerMaxs - triggerMins
+
+	int segmentSizeX = int( max( triggerDimension.x / 2000, 1500 ) )
+	int segmentSizeY = int( max( triggerDimension.y / 2000, 1500 ) )
+	int segmentSizeZ = int( min( 300, triggerDimension.z ) )
+
+	vector segmentSize = Vector( segmentSizeX, segmentSizeY, segmentSizeZ )
+	vector segmentCount = Vector( triggerDimension.x / segmentSize.x, triggerDimension.y / segmentSize.y, triggerDimension.z / segmentSize.z )
+
+	segmentCount.x = floor( segmentCount.x )
+	segmentCount.y = floor( segmentCount.y )
+	segmentCount.z = floor( segmentCount.z )
+	segmentCount.x = segmentCount.x < 1.0 ? 1.0 : segmentCount.x
+	segmentCount.y = segmentCount.y < 1.0 ? 1.0 : segmentCount.y
+	segmentCount.z = segmentCount.z < 1.0 ? 1.0 : segmentCount.z
+
+	vector startPos = triggerOrigin + triggerMins + segmentSize * 0.5
+	startPos.x += (triggerDimension.x - (segmentCount.x * segmentSize.x)) * 0.5
+	startPos.y += (triggerDimension.y - (segmentCount.y * segmentSize.y)) * 0.5
+	startPos.z += (triggerDimension.z - (segmentCount.z * segmentSize.z)) * 0.5
+
+	vector segmentPos = startPos
+	for ( int z = 0 ; z < segmentCount.z ; z++ )
+	{
+		// Only do effects on the top layer of the trigger
+		if ( z < ( segmentCount.z - 1 ) )
+			continue
+
+		for ( int y = 0 ; y < floor(segmentCount.y) ; y++ )
+		{
+			for ( int x = 0 ; x < floor(segmentCount.x) ; x++ )
+			{
+				vector segmentPos = startPos + Vector( segmentSize.x * x, segmentSize.y * y, segmentSize.z * z )
+				thread DeadlyFogEffect( segmentPos, segmentSize )
+			}
+		}
+	}
+}
+
+void function DeadlyFogEffect( vector origin, vector segmentSize )
+{
+	entity effect = CreateEntity( "info_particle_system" )
+	effect.SetValueForEffectNameKey( $"Swtch_Elec_hzd_rope_end" )
+	effect.kv.start_active = 0
+	effect.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
+	effect.SetOrigin( origin )
+	DispatchSpawn( effect )
+
+	vector mins = origin + (segmentSize * -0.5)
+	vector maxs = origin + (segmentSize * 0.5)
+	if ( DEBUG_DEADLY_FOG )
+	{
+		DebugDrawBox( origin, mins - origin, maxs - origin, 255, 255, 0, 1, 60.0 )
+		DebugDrawSphere( origin, 25.0, 255, 200, 0, true, 60.0 )
+	}
+
+	while( true )
+	{
+		wait RandomFloatRange( 2.1, 2.6 )
+
+		vector org = Vector( RandomFloatRange( mins.x, maxs.x ), RandomFloatRange( mins.y, maxs.y ), RandomFloatRange( mins.z, maxs.z ) )
+
+		if ( DEBUG_DEADLY_FOG )
+			DebugDrawLine( origin, org, 255, 0, 0, true, 2.0 )
+
+		effect.SetOrigin( org )
+		effect.Fire( "Start" )
+		effect.Fire( "StopPlayEndCap", "", 2.0 )
+	}
+}
+
+void function TriggerDeathFall( entity trigger )
+{
+	EndSignal( trigger, "OnDestroy" )
+
+	while ( true )
+	{
+		table results = trigger.WaitSignal( "OnTrigger" )
+		entity player = expect entity( results.activator )
+		if ( !IsValid( player ) || !player.IsPlayer() || !IsAlive( player ) )
+			continue
+
+		if ( player.IsGodMode() )
+		{
+			printt( "GOD MODE PLAYER CANT DIE" )
+			continue
+		}
+
+		if ( player.p.doingQuickDeath )
+			continue
+
+		if ( IsSingleplayer() )
+			FlagClear( "SaveGame_Enabled" ) // no more saving, you have lost
+
+		player.EndSignal( "OnDeath" )
+
+		// Go to black and fade it out after a pause
+		float fadeTime = 0.5
+		float holdTime = 999
+		ScreenFade( player, 0, 1, 0, 255, fadeTime, holdTime, FFADE_OUT | FFADE_PURGE )
+
+		float deathTime = Time() + fadeTime
+		while ( Time() <= deathTime )
+		{
+			if ( player.IsOnGround() || player.IsWallRunning() || player.IsWallHanging() || player.p.doingQuickDeath )
+				break
+			WaitFrame()
+		}
+
+		if ( player.p.doingQuickDeath )
+			continue
+
+		if ( IsAlive( player ) )
+		{
+			KillPlayer( player, eDamageSourceId.fall )
+			return
+		}
+	}
+}
+
+
+void function BirdAlertInit( entity ref )
+{
+	BirdAlertInfo info
+	info.scriptRef = ref
+	array<entity> linkedEntities = ref.GetLinkEntArray()
+	foreach ( trigger in linkedEntities )
+	{
+		info.triggers.append( trigger )
+		trigger.ConnectOutput( "OnStartTouch", BirdAlertStartTouch )
+	}
+	file.birdAlerts.append( info )
+}
+
+void function BirdAlertStartTouch( entity trigger, entity ent, entity caller, var value )
+{
+	array<BirdAlertInfo> birdAlerts = GetBirdAlertInfoFromTrigger( trigger )
+	foreach( alert in birdAlerts )
+	{
+		float debounceTime = 6.0
+		if ( alert.lastUseTime + debounceTime > Time() )
+			return
+
+		StartParticleEffectInWorld( GetParticleSystemIndex( BIRD_ALERT_FX ), alert.scriptRef.GetOrigin(), alert.scriptRef.GetAngles() )
+		alert.lastUseTime = Time()
+	}
+}
+
+array<BirdAlertInfo> function GetBirdAlertInfoFromTrigger( entity trigger )
+{
+	array<BirdAlertInfo> birdAlerts
+	foreach ( infoStruct in file.birdAlerts )
+	{
+		if ( infoStruct.triggers.contains( trigger ) )
+			birdAlerts.append( infoStruct )
+	}
+
+	return birdAlerts
+	unreachable
+}
+

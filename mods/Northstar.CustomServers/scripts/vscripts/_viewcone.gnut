@@ -1,0 +1,520 @@
+
+global function Viewcone_Init
+
+	//DEFAULT: if you don't set one - defaults to this one
+global function ViewConeRampFree
+
+//misc
+global function ViewConeZero
+global function ViewConeZeroInstant
+global function ViewConeNarrow
+global function ViewConeTight
+global function ViewConeSmall
+global function ViewConeWide
+global function ViewConeFreeLookingForward
+global function ViewConeLockedForward
+global function ViewConeTDay
+global function ViewConeTDayZero
+global function ViewConeFastball
+
+//run out ramp
+global function ViewConeRampFrontLeft
+global function ViewConeRampFrontRight
+global function ViewConeRampBackLeft
+global function ViewConeRampBackRight
+
+//droppod
+global function ViewConeDropPodFrontR
+global function ViewConeDropPodFrontL
+global function ViewConeDropPodBackR
+global function ViewConeDropPodBackL
+global function ViewConeDropPod
+
+//right side jump
+global function ViewConeSideRightStandFront
+global function ViewConeSideRightStandBack
+global function ViewConeSideRightSitFront
+global function ViewConeSideRightSitBack
+
+//right side jump - focus on hero
+global function ViewConeSideRightWithHeroStandFront
+global function ViewConeSideRightWithHeroStandBack
+global function ViewConeSideRightWithHeroSitFront
+global function ViewConeSideRightWithHeroSitBack
+
+//right side jump - locked 180 view forward
+global function ViewConeSideRightLockedForwardStandFront
+global function ViewConeSideRightLockedForwardSitFront
+global function ViewConeSideRightLockedForwardStandBack
+global function ViewConeSideRightLockedForwardSitBack
+
+global function ViewConeSpSpawn
+global function InitView
+
+//evac
+global function ViewConeFree
+
+global function IsViewConeCurrent
+
+void function Viewcone_Init()
+{
+	AddGlobalAnimEvent( "ViewConeZero",					ViewConeZero )
+	AddGlobalAnimEvent( "ViewConeTight",				ViewConeTight )
+	AddGlobalAnimEvent( "ViewConeDropPod",				ViewConeDropPod )
+	AddGlobalAnimEvent( "ViewConeDropPodFrontR",		ViewConeDropPodFrontR )
+	AddGlobalAnimEvent( "ViewConeDropPodFrontL",		ViewConeDropPodFrontL )
+	AddGlobalAnimEvent( "ViewConeDropPodBackR",			ViewConeDropPodBackR )
+	AddGlobalAnimEvent( "ViewConeDropPodBackL",			ViewConeDropPodBackL )
+	AddGlobalAnimEvent( "ViewConeNarrow",				ViewConeNarrow )
+	AddGlobalAnimEvent( "ViewConeSmall",				ViewConeSmall )
+	AddGlobalAnimEvent( "ViewConeRampFrontLeft",		ViewConeRampFrontLeft )
+	AddGlobalAnimEvent( "ViewConeRampFrontRight",		ViewConeRampFrontRight )
+	AddGlobalAnimEvent( "ViewConeRampBackLeft",			ViewConeRampBackLeft )
+	AddGlobalAnimEvent( "ViewConeRampBackRight",		ViewConeRampBackRight )
+	AddGlobalAnimEvent( "ViewConeRampFree",				ViewConeRampFree )
+	AddGlobalAnimEvent( "ViewConeFree",					ViewConeFree )
+	AddGlobalAnimEvent( "ViewConeFreeLookingForward",	ViewConeFreeLookingForward )
+	AddGlobalAnimEvent( "ViewConeTDay",					ViewConeTDay )
+	AddGlobalAnimEvent( "ViewConeTDayZero",				ViewConeTDayZero )
+}
+
+void function ViewConeZero( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	player.PlayerCone_SetLerpTime( 0.5 )
+
+	player.PlayerCone_FromAnim()
+	player.PlayerCone_SetMinYaw( 0 )
+	player.PlayerCone_SetMaxYaw( 0 )
+	player.PlayerCone_SetMinPitch( 0 )
+	player.PlayerCone_SetMaxPitch( 0 )
+}
+
+void function ViewConeZeroInstant( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	player.PlayerCone_SetLerpTime( 0.0 )
+
+	player.PlayerCone_FromAnim()
+	player.PlayerCone_SetMinYaw( 0 )
+	player.PlayerCone_SetMaxYaw( 0 )
+	player.PlayerCone_SetMinPitch( 0 )
+	player.PlayerCone_SetMaxPitch( 0 )
+}
+
+void function ViewConeTight( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	player.PlayerCone_SetLerpTime( 0.5 )
+
+	player.PlayerCone_FromAnim()
+	player.PlayerCone_SetMinYaw( -15 )
+	player.PlayerCone_SetMaxYaw( 15 )
+	player.PlayerCone_SetMinPitch( -15 )
+	player.PlayerCone_SetMaxPitch( 15 )
+}
+
+void function ViewConeSmall( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	player.PlayerCone_SetLerpTime( 0.5 )
+
+	player.PlayerCone_FromAnim()
+	player.PlayerCone_SetMinYaw( -38 )
+	player.PlayerCone_SetMaxYaw( 38 )
+	player.PlayerCone_SetMinPitch( -25 )
+	player.PlayerCone_SetMaxPitch( 25 )
+}
+
+void function ViewConeWide( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	player.PlayerCone_SetLerpTime( 0.5 )
+
+	player.PlayerCone_FromAnim()
+	player.PlayerCone_SetMinYaw( -50 )
+	player.PlayerCone_SetMaxYaw( 50 )
+	player.PlayerCone_SetMinPitch( -35 )
+	player.PlayerCone_SetMaxPitch( 35 )
+}
+
+void function ViewConeDropPod( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	player.PlayerCone_SetLerpTime( 0.5 )
+
+	player.PlayerCone_FromAnim()
+	player.PlayerCone_SetMinYaw( -70 )
+	player.PlayerCone_SetMaxYaw( 70 )
+	player.PlayerCone_SetMinPitch( -30 )
+	player.PlayerCone_SetMaxPitch( 30 )
+}
+
+const FRONTDIF = -75
+const BACKDIF = -30
+
+void function ViewConeDropPodFrontR( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	player.PlayerCone_SetLerpTime( 0.5 )
+
+	player.PlayerCone_FromAnim()
+	//range is 140
+	player.PlayerCone_SetMinYaw( -70 - FRONTDIF )
+	player.PlayerCone_SetMaxYaw( 70 - FRONTDIF )
+	player.PlayerCone_SetMinPitch( -30 )
+	player.PlayerCone_SetMaxPitch( 30 )
+}
+
+void function ViewConeDropPodFrontL( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	player.PlayerCone_SetLerpTime( 0.5 )
+
+	player.PlayerCone_FromAnim()
+	//range is 140
+	player.PlayerCone_SetMinYaw( -70 + FRONTDIF )
+	player.PlayerCone_SetMaxYaw( 70 + FRONTDIF )
+	player.PlayerCone_SetMinPitch( -30 )
+	player.PlayerCone_SetMaxPitch( 30 )
+}
+
+void function ViewConeDropPodBackR( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	player.PlayerCone_SetLerpTime( 0.5 )
+
+	player.PlayerCone_FromAnim()
+	//range is 140
+	player.PlayerCone_SetMinYaw( -70 - BACKDIF )
+	player.PlayerCone_SetMaxYaw( 70 - BACKDIF )
+	player.PlayerCone_SetMinPitch( -30 )
+	player.PlayerCone_SetMaxPitch( 30 )
+}
+
+void function ViewConeDropPodBackL( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	player.PlayerCone_SetLerpTime( 0.5 )
+
+	player.PlayerCone_FromAnim()
+	//range is 140
+	player.PlayerCone_SetMinYaw( -70 + BACKDIF )
+	player.PlayerCone_SetMaxYaw( 70 + BACKDIF )
+	player.PlayerCone_SetMinPitch( -30 )
+	player.PlayerCone_SetMaxPitch( 30 )
+}
+
+void function ViewConeNarrow( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	player.PlayerCone_SetLerpTime( 0.5 )
+
+	player.PlayerCone_FromAnim()
+	player.PlayerCone_SetMinYaw( -60 )
+	player.PlayerCone_SetMaxYaw( 60 )
+	player.PlayerCone_SetMinPitch( -60 )
+	player.PlayerCone_SetMaxPitch( 60 )
+}
+
+void function ViewConeTDay( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	player.PlayerCone_SetLerpTime( 1.0 )
+
+	player.PlayerCone_FromAnim()
+	player.PlayerCone_SetMinYaw( -30 )
+	player.PlayerCone_SetMaxYaw( 30 )
+	player.PlayerCone_SetMinPitch( 0 )
+	player.PlayerCone_SetMaxPitch( 30 )
+}
+
+void function ViewConeTDayZero( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	player.PlayerCone_SetLerpTime( 1.5 )
+
+	player.PlayerCone_FromAnim()
+	player.PlayerCone_SetMinYaw( 0 )
+	player.PlayerCone_SetMaxYaw( 0 )
+	player.PlayerCone_SetMinPitch( 0 )
+	player.PlayerCone_SetMaxPitch( 0 )
+}
+
+void function ViewConeFastball( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	player.PlayerCone_SetLerpTime( 0.5 )
+
+	player.PlayerCone_FromAnim()
+	player.PlayerCone_SetMinYaw( -25 )
+	player.PlayerCone_SetMaxYaw( 25 )
+	player.PlayerCone_SetMinPitch( -15 )
+	player.PlayerCone_SetMaxPitch( 15 )
+}
+
+void function ViewConeFreeLookingForward( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	ViewConeFree( player )
+
+	thread InitView( player, 0, 180, ViewConeFreeLookingForward )
+}
+
+void function ViewConeSpSpawn( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+
+	player.PlayerCone_SetLerpTime( 0.25 )
+	player.PlayerCone_FromAnim()
+
+	player.PlayerCone_SetMinYaw( 125 )
+	player.PlayerCone_SetMaxYaw( 125 )
+	player.PlayerCone_SetMinPitch( 7 )
+	player.PlayerCone_SetMaxPitch( 7 )
+
+	thread InitView( player, 7, 125, ViewConeSpSpawn )
+}
+
+void function ViewConeSideRightLockedForwardStandFront( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	ViewConeLockedForward( player )
+
+	thread InitView( player, 15, 20, ViewConeSideRightLockedForwardStandFront )
+}
+
+void function ViewConeSideRightLockedForwardSitFront( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	ViewConeLockedForward( player )
+
+	thread InitView( player, 0, 50, ViewConeSideRightLockedForwardSitFront )
+}
+
+void function ViewConeSideRightLockedForwardStandBack( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	ViewConeLockedForward( player )
+
+	thread InitView( player, 15, 45, ViewConeSideRightLockedForwardStandBack )
+}
+
+void function ViewConeSideRightLockedForwardSitBack( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	ViewConeLockedForward( player )
+
+	thread InitView( player, 0, 50, ViewConeSideRightLockedForwardSitBack )
+}
+
+void function ViewConeSideRightWithHeroStandFront( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	ViewConeFree( player )
+
+	thread InitView( player, 15, 20, ViewConeSideRightWithHeroStandFront )
+}
+
+void function ViewConeSideRightWithHeroSitFront( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	ViewConeFree( player )
+
+	thread InitView( player, 0, 50, ViewConeSideRightWithHeroSitFront )
+}
+
+void function ViewConeSideRightWithHeroStandBack( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	ViewConeFree( player )
+
+	thread InitView( player, 15, 45, ViewConeSideRightWithHeroStandBack )
+}
+
+void function ViewConeSideRightWithHeroSitBack( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	ViewConeFree( player )
+
+	thread InitView( player, 0, 50, ViewConeSideRightWithHeroSitBack )
+}
+
+void function ViewConeSideRightStandFront( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	ViewConeFree( player )
+
+	thread InitView( player, 30, -10, ViewConeSideRightStandFront )
+}
+
+void function ViewConeSideRightSitFront( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	ViewConeFree( player )
+
+	thread InitView( player, 20, -20, ViewConeSideRightSitFront )
+}
+
+void function ViewConeSideRightStandBack( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	ViewConeFree( player )
+
+	thread InitView( player, 30, 20, ViewConeSideRightStandBack )
+}
+
+void function ViewConeSideRightSitBack( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	ViewConeFree( player )
+
+	thread InitView( player, 20, 35, ViewConeSideRightSitBack )
+}
+
+void function ViewConeRampFrontLeft( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	ViewConeRampFree( player )
+
+	thread InitView( player, 5, 70, ViewConeRampFrontLeft )
+}
+
+void function ViewConeRampFrontRight( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	ViewConeRampFree( player )
+
+	thread InitView( player, 5, -70, ViewConeRampFrontRight )
+}
+
+void function ViewConeRampBackLeft( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	ViewConeRampFree( player )
+
+	thread InitView( player, 5, 100, ViewConeRampBackLeft )
+}
+
+void function ViewConeRampBackRight( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	ViewConeRampFree( player )
+
+	thread InitView( player, 5, -100, ViewConeRampBackRight )
+}
+
+void function ViewConeRampFree( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	player.PlayerCone_SetLerpTime( 0.5 )
+
+	player.PlayerCone_FromAnim()
+
+	player.PlayerCone_SetMinYaw( -179 )
+	player.PlayerCone_SetMaxYaw( 181 )
+	player.PlayerCone_SetMinPitch( -30 )
+	player.PlayerCone_SetMaxPitch( 30 )
+}
+
+void function ViewConeLockedForward( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	player.PlayerCone_SetLerpTime( 0.5 )
+
+	player.PlayerCone_FromAnim()
+
+	player.PlayerCone_SetMinYaw( -89 )
+	player.PlayerCone_SetMaxYaw( 81 )
+	player.PlayerCone_SetMinPitch( -30 )
+	player.PlayerCone_SetMaxPitch( 60 )
+}
+
+void function ViewConeFree( entity player )
+{
+	if ( !player.IsPlayer() )
+		return
+	player.PlayerCone_SetLerpTime( 0.5 )
+
+	player.PlayerCone_FromAnim()
+	player.PlayerCone_SetMinYaw( -179 )
+	player.PlayerCone_SetMaxYaw( 181 )
+	player.PlayerCone_SetMinPitch( -60 )
+	player.PlayerCone_SetMaxPitch( 60 )
+}
+
+void function InitView( entity player, int pitch, int yaw, void functionref( entity )callFunction )
+{
+	if ( !player.IsPlayer() )
+		return
+
+	//have we already init the viewcone from this function before
+	if ( IsViewConeCurrent( player, callFunction ) )
+		return
+
+	player.EndSignal( "OnDestroy" )
+
+	entity dropship = player.GetParent()
+
+	while( !dropship )
+	{
+		wait 0.05
+		dropship = player.GetParent()
+	}
+
+	for ( int i = 0; i < 5; i++ )
+	{
+		player.SetLocalAngles( Vector( pitch, yaw, 0 ) )
+		wait 0.1
+	}
+}
+
+bool function IsViewConeCurrent( entity actor, void functionref(entity ) func )
+{
+	entity player = actor
+
+	if ( !IsValid( player ) )
+		return false
+
+	Assert( player.IsPlayer() )
+
+	if ( player.p.currViewConeFunction == func )
+		return true
+
+	 player.p.currViewConeFunction = func
+	 return false
+}

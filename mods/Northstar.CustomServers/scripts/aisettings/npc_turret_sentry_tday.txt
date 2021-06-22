@@ -1,0 +1,70 @@
+npc_turret_sentry_tday
+{
+	HullType						"HULL_CUSTOM"
+	AIClass							small_turret
+	collideWithPlayer				1
+
+	BodyType						other
+	ArmorType						heavy
+	title 							#NPC_TURRET_HEAVY
+	ui_targetinfo					"ui/targetinfo_npc_basic" [$mp]
+	ui_targetinfo					"" [$sp]
+
+	Health							600 [$sp]
+	Health							1200 [$mp]
+
+	mechanical						1
+    titanStompable					0
+
+    turret_explode_on_death			0
+
+	SmartAmmoLockType				any
+
+	BaseClass						"npc_turret_sentry"
+
+	DefaultModelName		        "models/Robots/turret_heavy/turret_heavy.mdl"
+    DefaultWeapon			        "mp_weapon_turret_tday"
+	DrawEnemyHealthBar				0
+	DrawTargetHealthBar				0
+
+	LookDistDefault_Idle			10000
+	LookDistDefault_Alert			10000
+	LookDistDefault_Combat			10000
+
+	FOV_Vert_Offset			        -20
+    FOV_Near_Dist			        180		// use near values up to this distance
+    FOV_Far_Dist			        10000	// use far values after this distance, interpolate horizontal in between, use far for vertical
+
+    FOV_Idle_Near_Horz		        180
+    FOV_Idle_Near_Vert		        180
+    FOV_Idle_Far_Horz		        180
+    FOV_Idle_Far_Vert		        180
+
+    FOV_Alert_Near_Horz		        180
+    FOV_Alert_Near_Vert		        180
+    FOV_Alert_Far_Horz		        180
+    FOV_Alert_Far_Vert		        180
+
+    FOV_Combat_Near_Horz	        180
+    FOV_Combat_Near_Vert	        180
+    FOV_Combat_Far_Horz		        180
+    FOV_Combat_Far_Vert		        180
+
+	MaxTurretYaw        			90
+	YawSpeed						40
+	AimAngularSpeed					55
+
+	meleeable						0
+
+	suppressLSP_duration			10
+
+	magneticRange					90
+	aim_laser_disabled               1
+
+	sound0					        "MegaTurret_Servos_Clunk"	// start sound
+    sound1					        "MegaTurret_Servos_Tilt_LP"	// pitch sound
+    sound2					        "MegaTurret_Servos_Rotate_LP"	// yaw sound
+
+    windup_time 					0.0
+    start_active					0
+}

@@ -1,0 +1,27 @@
+#base "npc_soldier.txt"
+npc_soldier_shield_captain
+{
+	title 					#NPC_SOLDIER_SHIELD_CAPTAIN
+	PersonalShield					1
+
+	DefaultWeapon					"mp_weapon_lmg"
+
+	Health					350 [$mp]
+	Health					150 [$sp]
+
+	PainOnRepeatDamageThreshold		260  [$mp]
+	PainOnRepeatDamageThreshold		110  [$sp]
+
+	AimAngularSpeed					3
+	faceEnemyToleranceAngle			35
+
+	IsGenericGrunt			0
+
+	DefaultModelName				"models/humans/grunts/imc_grunt_shield_captain.mdl"
+	DefaultModelName_IMC			"models/humans/grunts/imc_grunt_shield_captain.mdl"
+	DefaultModelName_MIL			"models/humans/grunts/imc_grunt_shield_captain.mdl"
+
+	headshotFX 					"P_headshot_pilot"
+
+	braceWhenDangerousAreaDisplacementFails	0
+}

@@ -1,0 +1,56 @@
+global function Sh_GamemodeInfection_Init
+
+global const string GAMEMODE_INFECTION = "inf"
+global const int INFECTION_TEAM_SURVIVOR = TEAM_MILITIA
+global const int INFECTION_TEAM_INFECTED = TEAM_IMC
+
+void function Sh_GamemodeInfection_Init()
+{
+	// create custom gamemode
+	AddCallback_OnCustomGamemodesInit( CreateGamemodeInfection )
+	AddCallback_OnRegisteringCustomNetworkVars( InfectionRegisterNetworkVars )
+}
+
+void function CreateGamemodeInfection()
+{
+	GameMode_Create( GAMEMODE_INFECTION )
+	GameMode_SetName( GAMEMODE_INFECTION, "#GAMEMODE_inf" )
+	GameMode_SetDesc( GAMEMODE_INFECTION, "#PL_inf_desc" )
+	GameMode_SetGameModeAnnouncement( GAMEMODE_INFECTION, "ffa_modeDesc" )
+	GameMode_SetDefaultTimeLimits( GAMEMODE_INFECTION, 5, 0.0 )
+	GameMode_AddScoreboardColumnData( GAMEMODE_INFECTION, "#SCOREBOARD_KILLS", PGS_ASSAULT_SCORE, 2 )
+	GameMode_SetColor( GAMEMODE_INFECTION, [147, 204, 57, 255] )
+	
+	#if SERVER
+		GameMode_AddServerInit( GAMEMODE_INFECTION, GamemodeInfection_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( GAMEMODE_INFECTION, RateSpawnpoints_Generic )
+		GameMode_SetTitanSpawnpointsRatingFunc( GAMEMODE_INFECTION, RateSpawnpoints_Generic )
+	#elseif CLIENT
+		GameMode_AddClientInit( GAMEMODE_INFECTION, ClGamemodeInfection_Init )
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( GAMEMODE_INFECTION, CompareAssaultScoreAndInfection )
+	#endif
+}
+
+void function InfectionRegisterNetworkVars()
+{
+	if ( GAMETYPE != GAMEMODE_INFECTION )
+		return
+
+	Remote_RegisterFunction( "ServerCallback_YouAreInfected" )
+	Remote_RegisterFunction( "ServerCallback_AnnounceFirstInfected" )
+	Remote_RegisterFunction( "ServerCallback_AnnounceLastSurvivor" )
+}
+
+int function CompareAssaultScoreAndInfection( entity a, entity b )
+{
+	// survivors should be on top, then sort by assault score
+
+	if ( a.GetTeam() == INFECTION_TEAM_INFECTED && b.GetTeam() == INFECTION_TEAM_SURVIVOR )
+		return 1
+	else if ( a.GetTeam() == INFECTION_TEAM_SURVIVOR && b.GetTeam() == INFECTION_TEAM_INFECTED )
+		return -1
+		
+	return CompareAssaultScore( a, b )
+}

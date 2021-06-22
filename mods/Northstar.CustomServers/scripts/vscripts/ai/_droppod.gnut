@@ -1,0 +1,6 @@
+global function DropPod_Init
+
+void function DropPod_Init()
+{
+
+}

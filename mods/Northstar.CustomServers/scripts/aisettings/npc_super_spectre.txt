@@ -1,0 +1,210 @@
+npc_super_spectre
+{
+	HullType						"HULL_MEDIUM"
+	AIClass							super_spectre
+	TraverseAnimType				super_spectre
+	collideWithPlayer				1
+
+	ragdollOnTraverseDeath			0
+	mechanical						1
+	BodyType						super_spectre
+	ArmorType						heavy [$sp]
+	ArmorType						heavy [$mp]
+	SmartAmmoLockType				large
+	smartAmmoLockAttachmentName0	CHESTFOCUS
+	smartAmmoLockAttachmentName1	HEADFOCUS
+	smartAmmoLockAttachmentName2	exp_torso_main
+	smartAmmoLockAttachmentName3	shell
+	smartAmmoLockAttachmentName4	shell2
+
+	suppressLSP_duration			5
+
+	title 							#NPC_SUPER_SPECTRE
+	ui_targetinfo					"ui/targetinfo_titan" [$mp]
+	ui_targetinfo					"" [$sp]
+
+	DrawEnemyHealthBar				1 [$mp]
+	DrawTargetHealthBar				1 [$mp]
+
+	DrawEnemyHealthBar				0 [$sp]
+	DrawTargetHealthBar				0 [$sp]
+
+	footstep_type					"superspectre"
+	footstepSprintSpeedThreshold 	500
+
+	BaseClass						"npc_super_spectre"
+
+	DefaultModelName				"models/robots/super_spectre/super_spectre_v1.mdl"
+	DefaultWeapon					"mp_weapon_super_spectre"
+	ForceAutoPrecacheDefaultWeapon	1
+	AdditionalScriptWeapon			"mp_weapon_spectre_spawner"
+	AdditionalAISettings			"npc_frag_drone"
+	BehaviorSelector				"behavior_super_spectre"
+
+	GibModel0						"models/robots/super_spectre/super_spectre_left_arm.mdl"
+	GibModel1						"models/robots/super_spectre/super_spectre_right_arm.mdl"
+	GibModel2						"models/robots/super_spectre/super_spectre_left_leg.mdl"
+	GibModel3						"models/robots/super_spectre/super_spectre_right_leg.mdl"
+	GibModelSoftened0				"models/robots/super_spectre/super_spectre_left_arm.mdl"
+	GibModelSoftened1				"models/robots/super_spectre/super_spectre_right_arm.mdl"
+	GibModelSoftened2				"models/robots/super_spectre/super_spectre_left_leg.mdl"
+	GibModelSoftened3				"models/robots/super_spectre/super_spectre_right_leg.mdl"
+	GibAttachment0					"FX_DAM_VENT_RL"
+	GibAttachment1					"FX_DAM_VENT_RR"
+	GibAttachment2					"THRUST_L_FOOT"
+	GibAttachment3					"THRUST_R_FOOT"
+	GibSpeed						450
+	GibAngularSpeed					30
+	GibMaxDist						16000
+	GibFX							"P_sup_spectre_death"
+	//GibSound						"ai_reaper_explo_3p"
+
+	//leechAnimSet					super_spectre
+	//onLeechFuncName					SuperSpectreOnLeeched
+	//leechAnimTag					REF
+	//leechDataKnifeTag				KNIFE
+	leechMaxDist					0
+
+	Health							3500 [$mp]
+	Health							3000 [$sp]
+
+	PainOnHeavyDamageThreshold		450
+	PainOnRepeatDamageThreshold		2400
+	breakOutOfPainDamageThreshold	500
+	PainOnSurpriseHit				0
+	PainWhileRunning				0
+
+	FOV_Vert_Offset					0
+    FOV_Near_Dist					500		// distance at which we transition between near and far FOV values
+	FOV_Far_Dist					2000	// use far values after this distance, interpolate horizontal in between, use far for vertical
+
+	FOV_Idle_Near_Horz				130
+	FOV_Idle_Near_Vert				180
+	FOV_Idle_Far_Horz				60
+	FOV_Idle_Far_Vert				60
+
+	FOV_Alert_Near_Horz				130
+	FOV_Alert_Near_Vert				180
+	FOV_Alert_Far_Horz				60
+	FOV_Alert_Far_Vert				60
+
+	FOV_Combat_Near_Horz			160
+	FOV_Combat_Near_Vert			180
+	FOV_Combat_Far_Horz				130
+	FOV_Combat_Far_Vert				60
+
+	MoveYawSpeed					15
+	AimAngularSpeed					20
+
+	moveDeflectionSmallObstacleRadius	25
+
+	aimassist_adspull_centerAttachmentName		"exp_torso_core_fx"
+	aimassist_adspull_centerRadius				18.0
+	aimassist_adspull_headshotAttachmentName	"HEADFOCUS"
+	aimassist_adspull_headshotRadius			17.0
+
+	// The common ground slam melee attack he does is actually defined by damagedef_reaper_groundslam
+	MeleeCosAngleRange 				-1		// 360
+	MeleeDamageForce				50000
+	MeleeChargeDamageForce 			50000
+
+	// MP melee settings
+	MeleeDamageMin					50 		[$mp]
+	MeleeDamageMax					70 		[$mp]
+	MeleeDamageMinHeavyArmor		1000 	[$mp]
+	MeleeDamageMaxHeavyArmor		2000 	[$mp]
+	MeleeChargeDamageMin			60 		[$mp]
+	MeleeChargeDamageMax			80 		[$mp]
+	MeleeChargeDamageMinHeavyArmor	1000 	[$mp]
+	MeleeChargeDamageMaxHeavyArmor	2000 	[$mp]
+
+	// SP melee settings
+	MeleeDamageMin					20 		[$sp]
+	MeleeDamageMax					30 		[$sp]
+	MeleeDamageMinHeavyArmor		1000 	[$sp]
+	MeleeDamageMaxHeavyArmor		2000 	[$sp]
+	MeleeChargeDamageMin			40 		[$sp]
+	MeleeChargeDamageMax			50 		[$sp]
+	MeleeChargeDamageMinHeavyArmor	1000 	[$sp]
+	MeleeChargeDamageMaxHeavyArmor	2000 	[$sp]
+
+	MeleeDamageRadius 				120
+	MeleeRange						150
+	MeleeChargeDamageRadius			100
+	MeleeChargeDamageHeight			120
+	MeleeChargeRange				150
+
+	MeleeEnemyArmorType				any
+	MeleeChargeEnemyArmorType		normal
+	MeleeChargeCosAngleRange 		0.5
+	MeleeDamageFlags				"DF_MELEE | DF_KNOCK_BACK"
+	MeleeChargeDamageFlags			"DF_MELEE | DF_KNOCK_BACK"
+
+	meleeCameraShakeDuration		1.0
+	meleeImpactEffectTable			"melee_superSpectre"
+	//landingImpactTable			"titan_landing"
+	//footstepImpactTable			"titan_footstep"
+	dodgeImpactTable				"titan_dodge"
+
+	specialRangeAttackMinDist		700
+	specialRangeAttackMaxDist		1500
+
+	faceEnemyToleranceAngle			45
+	faceEnemyStrictToleranceAngle	45
+
+	waitBetweenWeaponBurst			0
+
+	MinStartMoveDist				100
+	MaxArrivalDist					250
+	MinForceWalkDist				1500
+	MinForceWalkDistVsHeavyArmor	150
+
+	titanStompable					0
+	rodeoMaxDist					0
+	showFriendlyIcon				1
+
+	aiEnemy_usePriorityDist			1500
+	aiEnemy_priority				20
+
+	magneticRange					125
+	chaseStopDist					150
+	chaseStopDistHeavyArmor			1200
+	chaseOnlyReachable				1
+
+	traverseCostFactor				2.0
+	minGoalRadius					256
+
+	dodgePeriod 					6 [$sp] // Don't dodge more than maxDodgePerPeriod within this time
+	maxDodgePerPeriod				2 [$sp] // Don't dodge more than this many times in dodgePeriod
+
+	dodgePeriod 					6 [$mp] // Don't dodge more than maxDodgePerPeriod within this time
+	maxDodgePerPeriod				1 [$mp] // Don't dodge more than this many times in dodgePeriod
+
+	minConsecutiveDodgeTime			0
+	missileAwarenessCos				-0.1
+	dodgeForwardThreshold			800
+	dodgeBackwardThreshold  		400
+	StrafeDodgeDamage				400
+	lockOnDodgeHealthThreshold		0.8
+	enemyAimAtMeWidthHeavyArmor		75
+
+	longJumpCheckMinInterval		8
+	longJumpCheckMaxInterval		15
+	longJumpMinDist					600
+	longJumpMaxDist					1000
+	longJumpHeight					300
+
+	chasecamDistanceMax				320
+	chasecamMaxOrbitDepth			90
+	chasecamOffsetUp				0
+	chasecamOffsetRight				110
+
+	enable_frag_drones				1 [$sp]
+	enable_frag_drones				0 [$mp]
+
+	reactChanceDefault				100
+	reactSurprised_maxRadius		2000
+	reactSurprised_distDelta		600
+
+	nuke_on_death					1
+}

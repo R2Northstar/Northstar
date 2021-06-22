@@ -1,0 +1,131 @@
+global function AiSpectre_Init
+global function NPCCarriesBattery
+
+void function AiSpectre_Init()
+{
+	//AddDamageCallback( "npc_spectre", SpectreOnDamaged )
+	AddDeathCallback( "npc_spectre", SpectreOnDeath )
+	//AddSpawnCallback( "npc_spectre", SpectreOnSpawned )
+
+	#if !SPECTRE_CHATTER_MP_ENABLED
+		AddCallback_OnPlayerKilled( SpectreChatter_OnPlayerKilled )
+		AddCallback_OnNPCKilled( SpectreChatter_OnNPCKilled )
+	#endif
+}
+
+void function SpectreOnSpawned( entity npc )
+{
+
+}
+
+void function SpectreOnDeath( entity npc, var damageInfo )
+{
+	if ( !IsValidHeadShot( damageInfo, npc ) )
+		return
+
+	// Set these so cl_player knows to kill the eye glow and play the right SFX
+	DamageInfo_AddCustomDamageType( damageInfo, DF_HEADSHOT )
+	DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
+//	EmitSoundOnEntityExceptToPlayer( npc, attacker, "SuicideSpectre.BulletImpact_HeadShot_3P_vs_3P" )
+
+	int bodyGroupIndex = npc.FindBodyGroup( "removableHead" )
+	int stateIndex = 1  // 0 = show, 1 = hide
+	npc.SetBodygroup( bodyGroupIndex, stateIndex )
+
+	DamageInfo_SetDamage( damageInfo, npc.GetMaxHealth() )
+
+}
+
+// All damage to spectres comes here for modification and then either branches out to other npc types (Suicide, etc) for custom stuff or it just continues like normal.
+void function SpectreOnDamaged( entity npc, var damageInfo )
+{
+
+}
+
+void function SpectreChatter_OnPlayerKilled( entity playerKilled, entity attacker, var damageInfo )
+{
+	if ( !IsSpectre( attacker ) )
+		return
+
+	if ( playerKilled.IsTitan() )
+		thread PlaySpectreChatterAfterDelay( attacker, "spectre_gs_gruntkillstitan_02_1" )
+	else
+		thread PlaySpectreChatterAfterDelay( attacker, "spectre_gs_killenemypilot_01_1" )
+
+}
+
+void function SpectreChatter_OnNPCKilled( entity npcKilled, entity attacker, var damageInfo )
+{
+	if ( IsSpectre( npcKilled ) )
+	{
+		string deadGuySquadName = expect string( npcKilled.kv.squadname )
+		if ( deadGuySquadName == "" )
+			return
+
+		array<entity> squad = GetNPCArrayBySquad( deadGuySquadName )
+
+		entity speakingSquadMate = null
+
+		foreach( squadMate in squad )
+		{
+			if ( IsSpectre( squadMate ) )
+			{
+				speakingSquadMate = squadMate
+				break
+			}
+		}
+		if ( speakingSquadMate == null )
+			return
+
+		if ( squad.len() == 1 )
+			thread PlaySpectreChatterAfterDelay( speakingSquadMate, "spectre_gs_squaddeplete_01_1" )
+		else if ( squad.len() > 0  )
+			thread PlaySpectreChatterAfterDelay( speakingSquadMate, "spectre_gs_allygrundown_05_1" )
+	}
+	else
+	{
+		if ( !IsSpectre( attacker ) )
+			return
+
+		if ( npcKilled.IsTitan() )
+			thread PlaySpectreChatterAfterDelay( attacker, "spectre_gs_gruntkillstitan_02_1" )
+	}
+}
+
+void function PlaySpectreChatterAfterDelay( entity spectre, string chatterLine, float delay = 0.3 )
+{
+	wait delay
+
+	if ( !IsAlive( spectre ) ) //Really this is just an optimization thing, if the spectre is dead no point in running the same check for every player nearby in ShouldPlaySpectreChatterMPLine
+		return
+
+	PlaySpectreChatterToAll( chatterLine, spectre )
+}
+
+void function NPCCarriesBattery( entity npc )
+{
+	entity battery = Rodeo_CreateBatteryPack()
+	battery.SetParent( npc, "BATTERY_ATTACH" )
+	battery.MarkAsNonMovingAttachment()
+	thread SpectreBatteryThink( npc, battery )
+}
+
+void function SpectreBatteryThink( entity npc, entity battery )
+{
+	battery.EndSignal( "OnDestroy" )
+	npc.EndSignal( "OnDestroy" )
+
+	OnThreadEnd(
+	function() : ( battery )
+		{
+			if ( IsValid( battery ) )
+			{
+				battery.ClearParent()
+				battery.SetAngles( < 0,0,0 > )
+				battery.SetVelocity( < 0,0,200 > )
+			}
+		}
+	)
+
+	npc.WaitSignal( "OnDeath" )
+}

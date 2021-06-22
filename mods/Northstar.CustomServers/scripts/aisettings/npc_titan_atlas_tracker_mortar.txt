@@ -1,0 +1,10 @@
+#base "npc_titan_atlas_tracker.txt"
+npc_titan_atlas_tracker_mortar
+{
+    title						#NPC_TITAN_MORTAR
+
+    npc_titan_player_settings	"titan_atlas_tracker_mortar"
+	minGoalRadius				32
+	assaultHarvester            0
+	allowCrouchAnims			1
+}

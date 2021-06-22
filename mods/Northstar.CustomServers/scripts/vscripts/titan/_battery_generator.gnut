@@ -1,0 +1,128 @@
+global function InitDestroyableGenerator
+global function ClearGenerators
+
+const GENERATOR_HEALTH = 200
+
+const MODEL_DESTROYED_GENERATOR = $"models/beacon/charge_generator_01_destroyed.mdl"
+const FX_GENERATOR_EXP = $"P_generator_exp"
+
+struct
+{
+	array<entity> generators
+} file
+
+void function InitDestroyableGenerator()
+{
+	AddSpawnCallbackEditorClass( "script_ref", "script_battery_generator", SpawnPropGenerator )
+	AddSpawnCallback_ScriptName( "prop_battery_generator", PropBatteryGeneratorThink )
+
+	PrecacheModel( MODEL_GENERATOR )
+	PrecacheModel( MODEL_DESTROYED_GENERATOR )
+	PrecacheParticleSystem( FX_GENERATOR_EXP )
+}
+
+void function SpawnPropGenerator( entity generatorRef )
+{
+	entity generator = CreatePropScript( MODEL_GENERATOR, generatorRef.GetOrigin(), generatorRef.GetAngles(), 6 )
+	thread PropBatteryGeneratorThink( generator )
+	generatorRef.Destroy()
+}
+
+void function PropBatteryGeneratorThink( entity generator )
+{
+	SetObjectCanBeMeleed( generator, true )
+	SetVisibleEntitiesInConeQueriableEnabled( generator, true )
+	generator.SetTakeDamageType( DAMAGE_EVENTS_ONLY )
+	generator.SetDamageNotifications( true )
+	generator.SetMaxHealth( GENERATOR_HEALTH )
+	generator.SetHealth( GENERATOR_HEALTH )
+	generator.DisableHibernation()
+	AddEntityCallback_OnDamaged( generator, GeneratorOnDamage )
+
+	entity trigger = CreateEntity( "trigger_cylinder" )
+	trigger.SetRadius( 150 )
+	trigger.SetAboveHeight( 150 )
+	trigger.SetBelowHeight( 150 ) //i.e. make the trigger a sphere as opposed to a cylinder
+	trigger.SetOrigin( generator.GetOrigin() )
+	trigger.SetParent( generator )
+	DispatchSpawn( trigger )
+	trigger.SetEnterCallback( GeneratorTriggerThink )
+
+
+	file.generators.append( generator )
+}
+
+void function GeneratorTriggerThink( entity trigger, entity ent )
+{
+	if ( ent.IsTitan() || IsSuperSpectre( ent ) )
+	{
+		entity generator = trigger.GetParent()
+
+		if ( generator != null )
+		{
+			GeneratorDestroy( generator )
+		}
+	}
+}
+
+void function GeneratorOnDamage( entity generator, var damageInfo )
+{
+	if ( !IsValid( generator ) )
+	{
+		// sometimes OnDamage gets called twice in the same frame, ( scorch's fire )
+		// and first call destroys generator in GeneratorDestroy()
+		return
+	}
+
+	float damage = DamageInfo_GetDamage( damageInfo )
+
+	int health = generator.GetHealth()
+	health -= int( damage )
+
+	if ( health <= 0 )
+		GeneratorDestroy( generator )
+	else
+		generator.SetHealth( health )
+}
+
+void function GeneratorDestroy( entity generator )
+{
+	int solidType = 6 //phys collision
+	entity destroyedProp = CreatePropDynamic( MODEL_DESTROYED_GENERATOR, generator.GetOrigin(), generator.GetAngles(), solidType )
+	if ( generator.GetParent() )
+		destroyedProp.SetToSameParentAs( generator )
+
+	destroyedProp.AllowMantle()
+	destroyedProp.DisableHibernation()
+	int fxID = GetParticleSystemIndex( FX_GENERATOR_EXP )
+	vector origin = generator.GetOrigin()
+	vector up 		= generator.GetUpVector()
+
+	EmitSoundOnEntity( destroyedProp, "BatteryCrate_Explosion" )
+	StartParticleEffectOnEntity( destroyedProp, fxID, FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
+
+	entity battery = CreateTitanBattery( origin + ( up * 40 ) )
+	battery.DisableHibernation()
+
+	//throw out the battery
+	vector right 	= generator.GetRightVector() * RandomFloatRange( -0.5, 0.5 )
+	vector forward 	= generator.GetForwardVector() * RandomFloatRange( -0.5, 0.5 )
+	vector velocity = Normalize( up + right + forward ) * 10
+
+	//for moving geo
+	vector parentVelocity = generator.GetVelocity()
+
+	battery.SetVelocity( velocity + parentVelocity )
+
+	file.generators.fastremovebyvalue( generator )
+	generator.Destroy()
+}
+
+void function ClearGenerators()
+{
+	foreach ( g in file.generators )
+	{
+		g.Destroy()
+	}
+	file.generators = []
+}

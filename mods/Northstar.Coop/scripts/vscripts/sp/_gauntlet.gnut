@@ -1,0 +1,1054 @@
+global function Gauntlet_ServerInit
+global function EnableAllGauntlets
+global function DisableAllGauntlets
+global function EnableGauntlet
+global function DisableGauntlet
+global function Gauntlet_HideLeaderboard
+global function Gauntlet_ShowLeaderboard
+global function Gauntlet_NPC_PostSpawn
+global function ClientCommand_Gauntlet_PlayerRestartedFromMenu
+global function Gauntlet_StartGhostPlayback
+global function Gauntlet_StopGhostPlayback
+global function Gauntlet_ChallengeLeaderboardGhosts
+#if DEV
+global function Gauntlet_Player_GhostRecordOrPlayback
+#endif
+
+const float GAUNTLET_ENEMY_MISSED_TIME_PENALTY = 2.0
+const float GAUNTLET_TARGET_DISSOLVE_TIME = 1.0
+const float GAUNTLET_TARGET_DISSOLVE_TIME_MS = GAUNTLET_TARGET_DISSOLVE_TIME * 100
+
+void function Gauntlet_ServerInit()
+{
+	AddClientCommandCallback( "Gauntlet_PlayerRestartedFromMenu", ClientCommand_Gauntlet_PlayerRestartedFromMenu )
+	AddCallback_EntitiesDidLoad( Gauntlet_PostEntityLoadSetup )
+	AddCallback_OnClientConnected( Gauntlet_PlayerConnected )
+	AddCallback_OnLoadSaveGame( Gauntlet_OnLoadSaveGame )
+
+	RegisterSignal( "trigStart_OnStartTouch" )
+	RegisterSignal( "trigStart_OnEndTouch" )
+	RegisterSignal( "trigStart2_OnStartTouch" )
+	RegisterSignal( "trigStart2_OnEndTouch" )
+
+	RegisterSignal( "Gauntlet_PlayerHitStartTrig" )
+	RegisterSignal( "Gauntlet_PlayerWentBackwardsThroughStartTrig" )
+	RegisterSignal( "Gauntlet_PlayerHitFinishTrig" )
+	RegisterSignal( "Gauntlet_CheckpointHit" )
+	RegisterSignal( "Gauntlet_ForceRestart" )
+	RegisterSignal( "GhostAnimationPlayback_Start" )
+	RegisterSignal( "GhostAnimationPlayback_Stop" )
+	RegisterSignal( "Gauntlet_PlayerBeatChallengeGhost" )
+	RegisterSignal( "Gauntlet_PlayerBeatAllChallengeGhosts" )
+	#if DEV
+	RegisterSignal( "RecordAnimation_Start")
+	RegisterSignal( "Player_StartRecordingGhost_HintStart" )
+	#endif
+}
+
+void function Gauntlet_PostEntityLoadSetup()
+{
+	foreach ( gauntlet in GetGauntlets() )
+	{
+		InitGauntlet( gauntlet )
+
+		if ( gauntlet.startEnabled )
+			EnableGauntlet( gauntlet )
+	}
+}
+
+void function Gauntlet_PlayerConnected( entity player )
+{
+	foreach ( gauntlet in GetGauntlets() )
+	{
+		// send ghost duration data to client- only server can read the anim durations
+		foreach ( ghost in gauntlet.ghosts )
+			Remote_CallFunction_Replay( player, "ScriptCallback_Gauntlet_SetGhostDuration", gauntlet.id, ghost.id, ghost.duration )
+
+		if ( gauntlet.showLeaderboard )
+		{
+			Gauntlet_ShowLeaderboard( gauntlet )
+
+			if ( gauntlet.activeGhostID != -1 )
+				Gauntlet_RefreshActiveGhostID( gauntlet )
+		}
+	}
+}
+
+void function Gauntlet_OnLoadSaveGame( entity player )
+{
+	thread Gauntlet_OnLoadSaveGame_Thread( player )
+}
+
+void function Gauntlet_OnLoadSaveGame_Thread( entity player )
+{
+	wait 1.0
+	Gauntlet_PlayerConnected( player )
+}
+
+// turns on a particular gauntlet
+void function EnableGauntlet( GauntletInfo gauntlet )
+{
+	Assert( gauntlet.isInited, "Must run InitGauntlet before enabling" )
+
+	if ( gauntlet.isEnabled )
+		return
+
+	Gauntlet_CreateSignalEnt( gauntlet )
+
+	foreach ( player in GetPlayerArray() )
+		Remote_CallFunction_Replay( player, "ScriptCallback_EnableGauntlet", gauntlet.id )
+
+	thread Gauntlet_Think( gauntlet )
+
+	gauntlet.isEnabled = true
+}
+
+// turns off a particular gauntlet
+void function DisableGauntlet( GauntletInfo gauntlet )
+{
+	if ( !gauntlet.isEnabled )
+		return
+
+	gauntlet.signalEnt.Signal( "DisableGauntlet" )
+
+	Gauntlet_CleanupSignalEnt( gauntlet )
+	Gauntlet_ClearSpawnedNPCs( gauntlet )
+	thread ClearDroppedWeapons( GAUNTLET_TARGET_DISSOLVE_TIME + 0.1 )  // needs to be longer than gauntlet ghost dissolve time so weapons drop
+
+	foreach ( player in GetPlayerArray() )
+		Remote_CallFunction_Replay( player, "ScriptCallback_DisableGauntlet", gauntlet.id )
+
+	gauntlet.isEnabled = false
+}
+
+void function Gauntlet_HideLeaderboard( GauntletInfo gauntlet )
+{
+	Gauntlet_SetLeaderboardEnabled( gauntlet, false )
+
+	foreach ( player in GetPlayerArray() )
+		Remote_CallFunction_Replay( player, "ScriptCallback_HideLeaderboard", gauntlet.id )
+}
+
+void function Gauntlet_ShowLeaderboard( GauntletInfo gauntlet )
+{
+	Gauntlet_SetLeaderboardEnabled( gauntlet, true )
+
+	foreach ( player in GetPlayerArray() )
+		Remote_CallFunction_Replay( player, "ScriptCallback_ShowLeaderboard", gauntlet.id )
+}
+
+void function Gauntlet_Checkpoints( GauntletInfo gauntlet )
+{
+	if ( !gauntlet.checkpoints.len() )
+		return
+
+	foreach ( trig in gauntlet.checkpoints )
+		thread Gauntlet_CheckpointTrig_WaitForPlayer( gauntlet, trig )
+}
+
+void function Gauntlet_CheckpointTrig_WaitForPlayer( GauntletInfo gauntlet, entity trig )
+{
+	gauntlet.player.EndSignal( "OnDestroy" )
+	gauntlet.player.EndSignal( "Gauntlet_RunStarted" )
+	gauntlet.player.EndSignal( "Gauntlet_RunStopped" )
+	trig.EndSignal( "OnDestroy" )
+
+	table result
+	entity activator
+
+	while ( 1 )
+	{
+		result = trig.WaitSignal( "OnStartTouch" )
+		activator = expect entity( result.activator )
+
+		if ( !activator.IsPlayer() )
+			continue
+
+		if ( !IsAlive( activator ) )
+			continue
+
+		if ( activator.IsTitan() )
+			continue
+
+		break
+	}
+
+	gauntlet.checkpointsHit++
+	activator.Signal( "Gauntlet_CheckpointHit" )
+}
+
+void function Gauntlet_ClearSpawnedNPCs( GauntletInfo gauntlet )
+{
+	foreach ( guy in gauntlet.spawned )
+	{
+		if ( IsAlive( guy ) )
+		{
+			Gauntlet_UnfreezeNPC( guy )
+			guy.Die()
+		}
+	}
+
+	gauntlet.spawned = []
+}
+
+void function Gauntlet_SpawnNPCs( GauntletInfo gauntlet )
+{
+	Gauntlet_ClearSpawnedNPCs( gauntlet )
+
+	array<entity> spawned = SpawnFromSpawnerArray( gauntlet.spawners )
+	foreach ( guy in spawned )
+		thread Gauntlet_NPC_PostSpawn( guy, gauntlet )
+
+	gauntlet.spawned = spawned
+}
+
+void function Gauntlet_NPC_PostSpawn( entity npc, GauntletInfo gauntlet )
+{
+	if ( IsGrunt( npc ) )
+	{
+		// TODO- pulse as player runs through course, so the effect highlights the different ranges where the enemies are
+		Highlight_SetEnemyHighlightWithParam1( npc, "gauntlet_target_highlight", npc.EyePosition() )
+
+		npc.SetHealth( 1 )
+
+		npc.SetCanBeMeleeExecuted( false )
+	}
+
+	npc.EndSignal( "OnDeath" )
+	thread Gauntlet_NPC_DeathWait( npc, gauntlet )
+
+	AddEntityCallback_OnDamaged( npc, Gauntlet_NPC_Damaged )
+
+	npc.SetNoTarget( true )
+	npc.SetEfficientMode( true )
+	npc.SetHologram()
+	npc.SetDeathActivity( "ACT_DIESIMPLE" )
+
+	wait RandomFloatRange( 0.5, 1.0 )  // This is no good, too variable. TODO put in a pose instead
+
+	npc.Freeze()
+}
+
+void function Gauntlet_NPC_Damaged( entity npc, var damageInfo )
+{
+	printt( "NPC Damaged!", npc.GetHealth() )
+
+	float dmg = DamageInfo_GetDamage( damageInfo )
+	float finalHealth = npc.GetHealth() - dmg
+
+	if ( finalHealth <= 0 )
+		Gauntlet_UnfreezeNPC( npc )
+}
+
+void function Gauntlet_NPC_DeathWait( entity npc, GauntletInfo gauntlet )
+{
+	gauntlet.signalEnt.EndSignal( "DisableGauntlet" )
+
+	npc.WaitSignal( "OnDeath" )
+
+	EmitSoundAtPosition( TEAM_UNASSIGNED, npc.GetOrigin(), "holopilot_impacts_training" )
+	npc.Dissolve( ENTITY_DISSOLVE_PHASESHIFT, Vector( 0, 0, 0 ), GAUNTLET_TARGET_DISSOLVE_TIME_MS )
+
+	if ( !gauntlet.isActive )
+		return
+
+	if ( gauntlet.runFinished )
+		return
+
+	gauntlet.enemiesKilled++
+
+	Remote_CallFunction_Replay( gauntlet.player, "ScriptCallback_Gauntlet_SetEnemyInfo", gauntlet.id, gauntlet.spawners.len(), gauntlet.enemiesKilled )
+}
+
+void function Gauntlet_UnfreezeNPC( entity npc )
+{
+	if ( !npc.IsFrozen() )
+		return
+
+	npc.Unfreeze()
+}
+
+string function EnableAllGauntlets()
+{
+	foreach ( idx, gauntlet in GetGauntlets() )
+		EnableGauntlet( gauntlet )
+
+	return( "All gauntlets enabled" )
+}
+
+string function DisableAllGauntlets()
+{
+	foreach ( idx, gauntlet in GetGauntlets() )
+		DisableGauntlet( gauntlet )
+
+	return( "All gauntlets disabled" )
+}
+
+void function Gauntlet_Think( GauntletInfo gauntlet )
+{
+	gauntlet.signalEnt.EndSignal( "DisableGauntlet" )
+
+	OnThreadEnd(
+	function() : ( gauntlet )
+		{
+			Gauntlet_ResetTrackerStats( gauntlet )
+
+			if ( gauntlet.player && !gauntlet.runFinished )
+				Gauntlet_AbortRun( gauntlet )
+		}
+	)
+
+	while ( 1 )
+	{
+		thread Gauntlet_StartTrigThink( gauntlet )
+
+		waitthread Gauntlet_WaitForPlayerToStart( gauntlet )
+
+		Gauntlet_ResetTrackerStats( gauntlet )
+
+		Gauntlet_StartRun( gauntlet )
+
+		thread Gauntlet_HandlePlayerForceRestart( gauntlet )
+
+		waitthread Gauntlet_WaitForStop( gauntlet )
+
+		waitthread Gauntlet_StopRun( gauntlet )
+	}
+}
+
+void function Gauntlet_StartRun( GauntletInfo gauntlet )
+{
+	printt( "Gauntlet Run Started for player " + gauntlet.player )
+
+	RestockPlayerAmmo( gauntlet.player )
+	EmitSoundOnEntityOnlyToPlayer( gauntlet.player, gauntlet.player, "training_scr_gaunlet_start" )
+
+	gauntlet.isActive = true
+	gauntlet.startTime = Time()
+	gauntlet.player.Signal( "Gauntlet_RunStarted" )
+	gauntlet.signalEnt.Signal( "Gauntlet_RunStarted" )
+	level.ui.playerRunningGauntlet = true
+
+	Remote_CallFunction_Replay( gauntlet.player, "ScriptCallback_Gauntlet_StartRun", gauntlet.id )
+	Remote_CallFunction_Replay( gauntlet.player, "ScriptCallback_Gauntlet_SetEnemyInfo", gauntlet.id, gauntlet.spawners.len(), 0 )
+
+	thread Gauntlet_SpawnNPCs( gauntlet )
+
+	thread Gauntlet_Checkpoints( gauntlet )
+}
+
+void function Gauntlet_StopRun( GauntletInfo gauntlet )
+{
+	gauntlet.isActive = false
+	level.ui.playerRunningGauntlet = false
+
+	string feedbackSound = ""
+
+	ResetPlayerHealthAndStatus( gauntlet.player )
+
+	if ( !gauntlet.runFinished )
+	{
+		Gauntlet_AbortRun( gauntlet )
+		feedbackSound = "training_scr_gaunlet_abort"
+	}
+	else
+	{
+		Gauntlet_FinishRun( gauntlet )
+
+		if ( gauntlet.lastRunDefeatedGhost )
+			feedbackSound = "training_scr_gaunlet_high_score"
+		else if ( gauntlet.lastRunBestTime )
+			feedbackSound = "training_scr_gaunlet_high_score"
+		else
+			feedbackSound = "training_scr_gaunlet_end"
+
+		if ( feedbackSound != "" && IsAlive( gauntlet.player ) )
+			EmitSoundOnEntityOnlyToPlayer( gauntlet.player, gauntlet.player, feedbackSound )
+	}
+
+	wait 0.1 // let the gauntlet finish and count NPCs remaining before killing the remainder
+	Gauntlet_ClearSpawnedNPCs( gauntlet )
+	thread ClearDroppedWeapons( GAUNTLET_TARGET_DISSOLVE_TIME + 0.1 )  // needs to be longer than gauntlet ghost dissolve time so weapons drop
+
+	if ( IsValid( gauntlet.player ) )
+		ClearActiveProjectilesForTeam( gauntlet.player.GetTeam() )
+
+	// need to wait before firing final signal, so this signal doesn't kill Gauntlet_HandlePlayerForceRestart
+	if ( IsValid( gauntlet.player ) )
+		gauntlet.player.Signal( "Gauntlet_RunStopped" )
+
+	if ( IsValid( gauntlet.signalEnt ) )
+		gauntlet.signalEnt.Signal( "Gauntlet_RunStopped" )
+
+	wait 0.1 // let other threads catch the signals and check the gauntlet struct before ResetTrackerStats
+}
+
+void function ResetPlayerHealthAndStatus( entity player )
+{
+	if ( !IsAlive( player ) )
+		return
+
+	player.SetHealth( player.GetMaxHealth() )
+
+	array<int> statusEffectsToStop = []
+	statusEffectsToStop.append( eStatusEffect.emp )
+	statusEffectsToStop.append( eStatusEffect.move_slow )
+	statusEffectsToStop.append( eStatusEffect.turn_slow )
+
+	foreach ( statusEffect in statusEffectsToStop )
+	{
+		if ( StatusEffect_Get( player, statusEffect ) > 0.0 )
+			StatusEffect_StopAll( player, statusEffect ) // arc grenade stun
+	}
+}
+
+void function Gauntlet_FinishRun( GauntletInfo gauntlet )
+{
+	RestockPlayerAmmo( gauntlet.player )
+
+	float elapsedTime = Time() - gauntlet.startTime
+	printt( "Gauntlet Run Finished, elapsed time", elapsedTime )
+
+	// time penalties for missed enemies
+	float enemiesMissedTimePenalty = 0.0
+	if ( gauntlet.spawners.len() > gauntlet.enemiesKilled )
+	{
+		int numEnemiesRemaining = gauntlet.spawners.len() - gauntlet.enemiesKilled
+		enemiesMissedTimePenalty = ( numEnemiesRemaining.tofloat() * GAUNTLET_ENEMY_MISSED_TIME_PENALTY )
+
+		elapsedTime += enemiesMissedTimePenalty
+	}
+
+	// check if new best time was set
+	gauntlet.lastRunTime = elapsedTime
+	if ( gauntlet.bestTime == -1.0 || elapsedTime < gauntlet.bestTime )
+	{
+		printt( "New best time!" )
+		gauntlet.bestTime = elapsedTime
+		gauntlet.lastRunBestTime = true
+
+		// if there's a player ghost (for leaderboard), update its duration
+		if ( gauntlet.hasPlayerGhost )
+		{
+			// update player ghost
+			GauntletGhost playerGhost = Gauntlet_GetPlayerGhost( gauntlet )
+			Gauntlet_SetGhostDuration( gauntlet, playerGhost, gauntlet.bestTime )
+		}
+	}
+
+	// did player beat a ghost racer?
+	if ( Gauntlet_HasActiveGhost( gauntlet ) )
+	{
+		GauntletGhost activeGhost = Gauntlet_GetActiveGhost( gauntlet )
+
+		if ( gauntlet.lastRunTime < activeGhost.duration )
+		{
+			printt( "player beat active ghost!" )
+			gauntlet.lastRunDefeatedGhost = true
+		}
+	}
+
+	Remote_CallFunction_Replay( gauntlet.player, "ScriptCallback_Gauntlet_FinishRun", gauntlet.id, elapsedTime, gauntlet.bestTime, enemiesMissedTimePenalty )
+}
+
+void function Gauntlet_AbortRun( GauntletInfo gauntlet )
+{
+	entity player = gauntlet.player
+	if ( !IsValid( player ) )
+		return
+
+	RestockPlayerAmmo_Silent( gauntlet.player )
+
+	EmitSoundOnEntityOnlyToPlayer( player, player, "training_scr_gaunlet_abort" )
+
+	Remote_CallFunction_Replay( player, "ScriptCallback_Gauntlet_AbortRun", gauntlet.id )
+}
+
+void function Gauntlet_WaitForPlayerToStart( GauntletInfo gauntlet )
+{
+	WaitSignal( gauntlet.signalEnt, "Gauntlet_PlayerHitStartTrig" )
+	Assert( IsValid( gauntlet.player ) )
+}
+
+entity function Gauntlet_StartTrigThink( GauntletInfo gauntlet )
+{
+	entity trigStart = gauntlet.trigStart
+	entity trigStart2 = gauntlet.trigStart2
+
+	EndSignal( gauntlet.signalEnt, "OnDestroy" )
+	EndSignal( trigStart, "OnDestroy" )
+	EndSignal( trigStart2, "OnDestroy" )
+	EndSignal( gauntlet.signalEnt, "Gauntlet_RunStopped" )
+
+	table result
+	string signal
+	entity player
+
+	//printt( "WaitForPlayerToHitStartTrig started" )
+
+	// "trigStart_OnStartTouch", "trigStart_OnEndTouch", "trigStart2_OnStartTouch", "trigStart2_OnEndTouch"
+	thread Gauntlet_PlayerStartSignals( gauntlet, trigStart, "trigStart_" )
+	thread Gauntlet_PlayerStartSignals( gauntlet, trigStart2, "trigStart2_" )
+
+	while ( 1 )
+	{
+		entity alreadyTouchingEnt = null
+		foreach ( p in GetPlayerArray() )
+		{
+			if ( trigStart.IsTouching( p ) && Gauntlet_EntCanActivateGauntletTrigger( p ) )
+			{
+				alreadyTouchingEnt = p
+				break
+			}
+		}
+
+		if ( IsValid( alreadyTouchingEnt ) )
+		{
+			player = alreadyTouchingEnt
+		}
+		else
+		{
+			//printt( "Waiting for trigStart OnStartTouch" )
+
+			result = WaitSignal( trigStart, "OnStartTouch" )
+			player = expect entity( result.activator )
+		}
+
+		if ( !Gauntlet_EntCanActivateGauntletTrigger( player ) )
+			continue
+
+		if ( !IsAlive( player ) )
+			continue
+
+		//printt( "WAITING for trigStart_OnEndTouch" )
+
+		while ( IsAlive( player ) )
+		{
+			WaitSignal( player, "trigStart_OnEndTouch" )
+
+			//printt( "RECEIVED trigStart_OnEndTouch" )
+
+			// player exited start trig without running gauntlet
+			if ( !trigStart2.IsTouching( player ) )
+			{
+				player.Signal( "Gauntlet_PlayerWentBackwardsThroughStartTrig" )
+				continue
+			}
+
+			//printt( "WAITING for trigStart_OnStartTouch or trigStart2_OnEndTouch" )
+
+			// player is now in trig2
+			result = WaitSignal( player, "trigStart_OnStartTouch", "trigStart2_OnEndTouch" )
+			signal = expect string( result.signal )
+			if ( signal == "trigStart2_OnEndTouch" )
+			{
+				//printt( "RECEIVED trigStart2_OnEndTouch" )
+
+				// player exited trig2 without touching trig1, so we know they started the gauntlet
+				if ( !trigStart.IsTouching( player ) )
+				{
+					//printt( "SENDING Gauntlet_PlayerHitStartTrig" )
+					gauntlet.signalEnt.Signal( "Gauntlet_PlayerHitStartTrig" )
+					gauntlet.player = player
+				}
+			}
+		}
+	}
+}
+
+void function Gauntlet_PlayerStartSignals( GauntletInfo gauntlet, entity trig, string signalPrefix )
+{
+	EndSignal( trig, "OnDestroy" )
+	EndSignal( gauntlet.signalEnt, "Gauntlet_RunStopped" )
+
+	/*
+	OnThreadEnd(
+	function() : (  )
+		{
+			printt( "Gauntlet_PlayerStartSignals ENDED" )
+		}
+	)
+
+	printt( "PlayerStartSignals started" )
+	*/
+
+	while ( 1 )
+	{
+		table result = WaitSignal( trig, "OnStartTouch", "OnEndTouch" )
+		string signal = expect string( result.signal )
+		entity activator = expect entity( result.activator )
+
+		if  ( !Gauntlet_EntCanActivateGauntletTrigger( activator ) )
+			continue
+
+		string outboundSignal = signalPrefix
+		if ( signal == "OnStartTouch" )
+			outboundSignal += "OnStartTouch"
+		else if ( signal == "OnEndTouch" )
+			outboundSignal += "OnEndTouch"
+
+		Assert( outboundSignal != signalPrefix )
+
+		Signal( activator, outboundSignal )
+	}
+}
+
+void function Gauntlet_WaitForStop( GauntletInfo gauntlet )
+{
+	gauntlet.player.EndSignal( "OnDeath" )
+	gauntlet.player.EndSignal( "Gauntlet_PlayerWentBackwardsThroughStartTrig" )
+	gauntlet.player.EndSignal( "Gauntlet_ForceRestart" )
+	gauntlet.signalEnt.EndSignal( "DisableGauntlet" )
+
+	table result
+	entity activator
+
+	while ( 1 )
+	{
+		result = gauntlet.trigFinish.WaitSignal( "OnStartTouch" )
+		activator = expect entity( result.activator )
+
+		if ( !activator.IsPlayer() )
+			continue
+
+		if ( activator != gauntlet.player )
+			continue
+
+		gauntlet.player.Signal( "Gauntlet_PlayerHitFinishTrig" )
+
+		gauntlet.runFinished = true
+		if ( gauntlet.checkpoints.len() && gauntlet.checkpointsHit < gauntlet.checkpoints.len() )
+			gauntlet.runFinished = false
+
+		break
+	}
+}
+
+bool function Gauntlet_EntCanActivateGauntletTrigger( entity ent )
+{
+	if ( !ent.IsPlayer() )
+		return false
+
+	if ( !IsAlive( ent ) )
+		return false
+
+	if ( ent.IsTitan() )
+		return false
+
+	return true
+}
+
+void function Gauntlet_HandlePlayerForceRestart( GauntletInfo gauntlet )
+{
+	gauntlet.player.EndSignal( "OnDestroy" )
+	gauntlet.player.EndSignal( "Gauntlet_RunStopped" )
+
+	gauntlet.player.WaitSignal( "Gauntlet_ForceRestart" )
+
+	thread Gauntlet_TeleportPlayerToStart( gauntlet )
+}
+
+void function Gauntlet_TeleportPlayerToStart( GauntletInfo gauntlet )
+{
+	entity player = gauntlet.player
+	entity startpoint = gauntlet.startpoint
+
+	if ( !IsAlive( player ) )
+		return
+
+	if ( !IsValid( startpoint ) )
+		return
+
+	EndSignal( player, "OnDestroy" )
+
+	// wait for quick death to finish before continuing
+	printt( "player doing quick death (1)?", player.p.doingQuickDeath )
+	while ( player.p.doingQuickDeath )
+		wait 0.1
+
+	//printt( "starting reset fade" )
+
+	float fadeTime = 0.1
+	float holdTime = 0.3
+	ScreenFadeToBlack( player, fadeTime, holdTime )
+	player.FreezeControlsOnServer()
+	player.SetVelocity( <0,0,0> )
+
+	OnThreadEnd(
+	function() : ( player, gauntlet )
+		{
+			if ( IsValid( player ) )
+			{
+				player.UnfreezeControlsOnServer()
+				player.UnforceStand()
+				thread Gauntlet_TeleportFailsafe( player, gauntlet )
+			}
+		}
+	)
+
+	wait fadeTime
+
+	// again, wait for quick death to finish before continuing since it could have started during fadeTime
+	printt( "player doing quick death (2)?", player.p.doingQuickDeath )
+	while ( player.p.doingQuickDeath )
+		wait 0.1
+
+	printt( "moving player back to start" )
+
+	player.FreezeControlsOnServer()  // just in case they were unfrozen by quick death ending since we started waiting
+	player.SetOrigin( OriginToGround( startpoint.GetOrigin() + <0,0,1> ) )
+	player.SetAngles( startpoint.GetAngles() )
+	player.SetVelocity( <0,0,0> )
+	player.ForceStand()
+
+	wait holdTime
+}
+
+// HACK this is in case the quick death teleport happens on the exact same server frame as the gauntlet restart teleport
+void function Gauntlet_TeleportFailsafe( entity player, GauntletInfo gauntlet )
+{
+	// HACK this breaks in other levels that don't have the flag trigger
+	// in the future set this up as a gauntlet setting
+	if ( GetMapName() != "sp_training" )
+		return
+
+	EndSignal( player, "OnDestroy" )
+
+	wait 0.5
+
+	if ( !gauntlet.isActive && !Flag( "PlayerInGauntletEntryway" ) )
+	{
+		printt( "Gauntlet reset FAILSAFE!" )
+		thread Gauntlet_TeleportPlayerToStart( gauntlet )
+	}
+}
+
+bool function ClientCommand_Gauntlet_PlayerRestartedFromMenu( entity player, array<string> args )
+{
+	player.Signal( "Gauntlet_ForceRestart" )
+	return true
+}
+
+void function Gauntlet_CreateSignalEnt( GauntletInfo gauntlet )
+{
+	Assert( !IsValid( gauntlet.signalEnt ) )
+
+	entity signalEnt = CreateEntity( "info_target" )
+	DispatchSpawn( signalEnt )
+
+	gauntlet.signalEnt = signalEnt
+}
+
+void function Gauntlet_CleanupSignalEnt( GauntletInfo gauntlet )
+{
+	gauntlet.signalEnt.Destroy()
+	gauntlet.signalEnt = null
+}
+
+
+void function Gauntlet_ResetTrackerStats( GauntletInfo gauntlet )
+{
+	gauntlet.startTime = -1
+	gauntlet.runFinished = false
+	gauntlet.lastRunBestTime = false
+	gauntlet.lastRunDefeatedGhost = false
+	gauntlet.enemiesKilled = 0
+}
+
+
+// ===== GHOST RECORDINGS =====
+void function Gauntlet_StartGhostPlayback( GauntletInfo gauntlet, string ghostFileName, string ghostDisplayName = "" )//, bool waitForPlayerToStartFirstRun = true )
+{
+	gauntlet.signalEnt.Signal( "GhostAnimationPlayback_Start" )
+	gauntlet.signalEnt.EndSignal( "GhostAnimationPlayback_Start" )
+	gauntlet.signalEnt.EndSignal( "GhostAnimationPlayback_Stop" )
+	gauntlet.signalEnt.EndSignal( "DisableGauntlet" )
+
+	GauntletGhost ghostInfo = Gauntlet_GetGhostByFileName( gauntlet, ghostFileName )
+	var rec = LoadRecordedAnimation( ghostInfo.fileAsset )
+	float duration = GetRecordedAnimationDuration( rec )
+	printt( "duration is", duration )
+
+	Gauntlet_SetActiveGhostID( gauntlet, ghostInfo.id )
+
+	entity animRef = gauntlet.startpoint
+
+	bool createdIdleRef = false
+	entity idleRef
+	if ( gauntlet.ghostAttractSpot != null )
+	{
+		idleRef = gauntlet.ghostAttractSpot
+	}
+	else
+	{
+		createdIdleRef = true
+		idleRef = CreateScriptMover( animRef.GetOrigin(), animRef.GetAngles() )
+		DropToGround( idleRef )
+	}
+
+	table<int,entity> g = {}
+
+	OnThreadEnd(
+	function() : ( g, idleRef, createdIdleRef, gauntlet )
+		{
+			if ( IsValid( g[0] ) )
+			{
+				g[0].Anim_Stop()
+				StopSoundOnEntity( g[0], "PathHologram_Sustain_Loop_3P" )
+				DissolveGhost( g[0] )
+			}
+
+			if ( createdIdleRef && IsValid( idleRef ) )
+				idleRef.Destroy()
+
+			Gauntlet_ClearActiveGhost( gauntlet )
+		}
+	)
+
+	entity ghost
+	entity ghostWeapon
+
+	bool isFirstRun = true
+
+	while ( 1 )
+	{
+		if ( IsValid( ghost ) )
+		{
+			StopSoundOnEntity( ghost, "PathHologram_Sustain_Loop_3P" )
+			DissolveGhost( ghost )
+		}
+
+		ghost = CreateGhost( idleRef.GetOrigin(), ghostDisplayName )
+		g[0] <- ghost
+		//ghost.SetTitle( "Ghost Runner" )
+		//ShowName( ghost )  // not working
+
+		ghostWeapon = Ghost_GetWeaponEnt( ghost )
+		ghostWeapon.kv.VisibilityFlags = ENTITY_VISIBLE_TO_NOBODY
+
+		thread PlayAnimTeleport( ghost, "pt_OG_training_stand", idleRef )
+
+		if ( !gauntlet.isActive )
+			gauntlet.signalEnt.WaitSignal( "Gauntlet_RunStarted" )
+
+		float startTime = Time()
+
+		ghostWeapon.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
+
+		EmitSoundOnEntity( ghost, "PathHologram_Sustain_Loop_3P" )
+
+		ghost.Anim_Stop()
+		ghost.PlayRecordedAnimation( rec, <0,0,0>, <0,0,0>, DEFAULT_SCRIPTED_ANIMATION_BLEND_TIME, animRef )
+
+		thread GhostPlayback_HideGhostIfPlayerIsNear( ghost, ghostWeapon )
+
+		float ghostFadeTime = 1.2
+		float waitBeforeFade = duration - ghostFadeTime
+		WaitSignalTimeout( gauntlet.signalEnt, waitBeforeFade, "Gauntlet_RunStopped" )
+
+		// ended prematurely
+		if ( Time() - startTime < waitBeforeFade )
+			ghost.Anim_Stop()
+
+		isFirstRun = false
+	}
+}
+
+void function GhostPlayback_HideGhostIfPlayerIsNear( entity ghost, entity ghostWeapon )
+{
+	EndSignal( ghost, "OnDestroy" )
+	EndSignal( ghostWeapon, "OnDestroy" )
+
+	const float TICK_WAIT = 0.1
+
+	while ( 1 )
+	{
+		wait TICK_WAIT
+
+		entity nearbyPlayer
+
+		array<entity> players = GetPlayerArray()
+		foreach ( player in players )
+		{
+			if ( !IsAlive( player ) )
+				continue
+
+			if ( PlayerTooCloseToGhost( player, ghost ) )
+			{
+				nearbyPlayer = player
+				break
+			}
+		}
+
+		if ( IsValid( nearbyPlayer ) )
+		{
+			ghost.kv.VisibilityFlags = ENTITY_VISIBLE_TO_NOBODY
+			ghostWeapon.kv.VisibilityFlags = ENTITY_VISIBLE_TO_NOBODY
+
+			while ( PlayerTooCloseToGhost( nearbyPlayer, ghost ) )
+				wait TICK_WAIT
+
+			ghost.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
+			ghostWeapon.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
+		}
+
+	}
+}
+
+bool function PlayerTooCloseToGhost( entity player, entity ghost )
+{
+	if ( !IsAlive( player ) )
+		return false
+
+	const float CLOSE_DIST = 64.0
+
+	if ( Distance( player.EyePosition(), ghost.GetOrigin() ) <= CLOSE_DIST )
+		return true
+
+	if ( Distance( player.EyePosition(), ghost.EyePosition() ) <= CLOSE_DIST )
+		return true
+
+	return false
+}
+
+void function Gauntlet_StopGhostPlayback( GauntletInfo gauntlet )
+{
+	gauntlet.signalEnt.Signal( "GhostAnimationPlayback_Stop" )
+}
+
+
+// - Player climbs the leaderboard as her best run time improves
+// - Skips challenging ghosts whose times are worse than the player's
+void function Gauntlet_ChallengeLeaderboardGhosts( entity player, GauntletInfo gauntlet, string endFlag )
+{
+	if ( Flag( endFlag ) )
+		return
+
+	FlagEnd( endFlag )
+
+	player.EndSignal( "OnDestroy" )
+	gauntlet.signalEnt.EndSignal( "OnDestroy" )
+
+	GauntletGhost playerGhost = Gauntlet_GetPlayerGhost( gauntlet )
+
+	int currPlayerIdx 	= GAUNTLET_LEADERBOARD_MAX_ENTRIES - 1
+	int nextGhostIdx 	= currPlayerIdx - 1
+
+	while ( currPlayerIdx > 0 )
+	{
+		array<GauntletGhost> leaderboard = Gauntlet_GetLeaderboard( gauntlet )
+
+		// get current player leaderboard position
+		int maxLeaderboardIdx = leaderboard.len() - 1
+		if ( currPlayerIdx >= maxLeaderboardIdx )
+			currPlayerIdx = maxLeaderboardIdx
+
+		foreach ( idx, leaderboardGhost in leaderboard )
+		{
+			if ( leaderboardGhost.fileName == playerGhost.fileName )
+				currPlayerIdx = idx
+		}
+
+		// player is top of the leaderboard, stop racing ghosts
+		if ( currPlayerIdx <= 0 )
+			break
+
+		// if player is not top of leaderboard, cue the ghost above player leaderboard position
+		int nextGhostIdx = currPlayerIdx - 1
+		GauntletGhost ghost = leaderboard[ nextGhostIdx ]
+
+		Assert( ghost.fileName != GHOST_NAME_PLAYER, "Can't race against own player ghost- no anim recording asset" )
+
+		thread Gauntlet_StartGhostPlayback( gauntlet, ghost.fileName, ghost.displayName )
+
+		if ( !gauntlet.isActive )
+			WaitSignal( player, "Gauntlet_RunStarted" )
+
+		// wait for run to stop
+		WaitSignal( player, "Gauntlet_RunStopped" )
+	}
+
+	Gauntlet_ClearActiveGhost( gauntlet )
+
+	gauntlet.allGhostsDefeated = true
+}
+
+#if DEV
+void function Gauntlet_Player_GhostRecordOrPlayback( entity player, GauntletInfo gauntlet, string ghostFileName )
+{
+	if ( GetBugReproNum() == 55 )
+	{
+		thread Gauntlet_Player_StartRecordingGhost( player, gauntlet, ghostFileName )
+	}
+	else
+	{
+		thread Gauntlet_StartGhostPlayback( gauntlet, ghostFileName )
+
+		GauntletGhost ghost = Gauntlet_GetGhostByFileName( gauntlet, ghostFileName )
+		Dev_PrintMessage( player, "Ghost Playback:", "TO RECORD, set bug_reproNum 55", 4.0 )
+		wait 4.0
+		Dev_PrintMessage( player, ghost.displayName, "TO RECORD, set bug_reproNum 55", 4.0 )
+	}
+}
+
+void function Gauntlet_Player_StartRecordingGhost( entity player, GauntletInfo gauntlet, string ghostFileName )
+{
+	player.Signal( "RecordAnimation_Start" )
+	player.EndSignal( "RecordAnimation_Start" )
+	player.EndSignal( "OnDestroy" )
+
+	entity animRef = gauntlet.startpoint
+	GauntletGhost ghost = Gauntlet_GetGhostByFileName( gauntlet, ghostFileName )
+
+	thread Gauntlet_StartGhostPlayback( gauntlet, ghostFileName )
+
+	while ( 1 )
+	{
+		#if PC_PROG
+			thread Gauntlet_Player_StartRecordingGhost_Hints( player, gauntlet, ghost )
+		#endif
+
+		printt( "READY TO RECORD:", ghost.fileName )
+
+		player.WaitSignal( "Gauntlet_RunStarted" )
+
+		player.StartRecordingAnimation( animRef.GetOrigin(), animRef.GetAngles() )
+		printt( "RECORDING STARTED:", ghost.fileName )
+
+		player.WaitSignal( "Gauntlet_RunStopped" )
+
+		var recording = player.StopRecordingAnimation()
+
+		if ( !gauntlet.runFinished )
+			continue
+
+		if ( gauntlet.enemiesKilled < gauntlet.spawners.len() )
+		{
+			Dev_PrintMessage( player, "RECORDING NOT SAVED!", "Must kill all the enemies on your run to save.", 7.0 )
+			printt( "!!!! RECORDED ANIM NOT SAVED!!!!" )
+			continue
+		}
+
+		#if PC_PROG
+			SaveRecordedAnimation( recording, ghost.fileName )
+			Dev_PrintMessage( player, "Anim Data Saved", "BAKE and CLEAR BUG REPRO NUM and RELOAD LEVEL to play it back.", 5.5 )
+			printt( "RECORDED ANIM SAVED:", ghost.fileName )
+
+			wait 5.5
+
+			thread Gauntlet_StartGhostPlayback( gauntlet, ghostFileName )
+		#endif
+	}
+}
+
+void function Gauntlet_Player_StartRecordingGhost_Hints( entity player, GauntletInfo gauntlet, GauntletGhost ghost )
+{
+	player.Signal( "Player_StartRecordingGhost_HintStart" )
+	player.EndSignal( "Player_StartRecordingGhost_HintStart" )
+	player.EndSignal( "OnDestroy" )
+
+	Dev_PrintMessage( player, "Ready To Record Ghost:", "FINISH Gauntlet and kill ALL TARGETS to SAVE GHOST.", 3.0 )
+	wait 3.0
+	Dev_PrintMessage( player, ghost.displayName, "FINISH Gauntlet and kill ALL TARGETS to SAVE GHOST.", 5.0 )
+}
+#endif //DEV

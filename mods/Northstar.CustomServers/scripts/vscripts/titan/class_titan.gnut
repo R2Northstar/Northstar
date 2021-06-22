@@ -1,0 +1,77 @@
+untyped
+
+global function ClassTitan_Init
+
+global function Titan_AddPlayer
+global function Titan_OnPlayerDeath
+global function ClientCommand_TitanEject
+global function ApplyTitanLoadoutModifiers
+
+
+const TITAN_HATCHCOMMANDANIMTIME = 1.5	// cooldown time between toggling the cockpit state. Will be needed when we have animations to play
+
+const COCKPIT_JOLT_DAMAGE_MIN = 1
+const COCKPIT_JOLT_DAMAGE_MAX = 200
+const TITAN_STUMBLE_HEALTH_PERCENTAGE = 0.5
+
+string thisClassName = "titan"
+
+function ClassTitan_Init()
+{
+
+	AddClientCommandCallback( "TitanEject", ClientCommand_TitanEject ) //
+}
+
+function Titan_AddPlayer( player )
+{
+	player.playerClassData[thisClassName] <- {}
+	player.s.lastStaggerTime <- 0
+}
+
+
+// TODO: There should be an equivalent function for pilots
+TitanLoadoutDef function ApplyTitanLoadoutModifiers( entity player, TitanLoadoutDef loadout )
+{
+	return loadout
+}
+
+void function Titan_OnPlayerDeath( entity player, var damageInfo )
+{
+	player.p.storedWeapons.clear()
+}
+
+bool function PlayerCanEject( entity player )
+{
+	if ( !IsAlive( player ) )
+		return false
+
+	if ( !player.IsTitan() )
+		return false
+
+	if ( Riff_TitanExitEnabled() == eTitanExitEnabled.Never )
+		return false
+
+	//if ( !CanDisembark( player ) )
+	//	return false
+
+	if ( IsPlayerDisembarking( player ) )
+		return false
+
+	if ( TitanEjectIsDisabled() )
+		return false
+
+	return true
+}
+
+bool function ClientCommand_TitanEject( entity player, array<string> args )
+{
+	if ( !PlayerCanEject( player ) )
+		return true
+
+	int ejectPressCount = args[ 0 ].tointeger()
+	if ( ejectPressCount < 3 )
+		return true
+
+	thread TitanEjectPlayer( player )
+	return true
+}

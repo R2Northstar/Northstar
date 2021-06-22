@@ -1,0 +1,208 @@
+untyped
+global function GamemodeFastballIntroSetup
+global function FastballAddBuddySpawnForLevel
+
+struct {
+	float introStartTime
+	
+	table< int, Point > buddySpawns
+	entity militiaBuddy
+	entity imcBuddy
+	
+	table<entity, bool> playersHoldingJump
+} file
+
+void function GamemodeFastballIntroSetup()
+{
+	RegisterSignal( "fastball_start_throw" )
+	RegisterSignal( "fastball_release" )
+	
+	AddCallback_GameStateEnter( eGameState.Prematch, OnPrematchStart )
+	AddCallback_OnClientConnected( AddPlayerToFastballIntro )
+}
+
+void function FastballAddBuddySpawnForLevel( string level, int team, vector origin, vector angles )
+{
+	if ( GetMapName() != level )
+		return
+		
+	Point spawnPoint
+	spawnPoint.origin = origin
+	spawnPoint.angles = angles
+	
+	file.buddySpawns[ team ] <- spawnPoint
+}
+
+void function OnPrematchStart()
+{
+	ClassicMP_OnIntroStarted()
+
+	file.introStartTime = Time()
+	file.playersHoldingJump = {} // clear it
+	
+	Point militiaBuddySpawn
+	Point imcBuddySpawn
+	
+	// figure out positions if there's none manually specified
+	if ( file.buddySpawns.len() == 0 )
+	{
+		array<entity> militiaSpawns
+		array<entity> imcSpawns
+	
+		foreach ( entity spawnpoint in GetEntArrayByClass_Expensive( "info_spawnpoint_titan_start" ) )
+		{
+			// trace from top to bottom
+			float result = TraceHullSimple( spawnpoint.GetOrigin() + < 0, 0, 250 >, spawnpoint.GetOrigin(), < -200, -200, 0 >, < 200, 200, 400 >, null )
+			
+			// don't need to trace much, as long as it's over 0 that means it fits
+			// cases where it's over 0 but less than 1 are usually caused by terrain
+			if ( result > 0 )
+			{
+				if ( spawnpoint.GetTeam() == TEAM_MILITIA ) 
+					militiaSpawns.append( spawnpoint )
+				else
+					imcSpawns.append( spawnpoint )
+			}
+		}
+		
+		entity milititaSpawnEnt = militiaSpawns[ RandomInt( militiaSpawns.len() ) ]
+		militiaBuddySpawn.origin = milititaSpawnEnt.GetOrigin()
+		militiaBuddySpawn.angles = milititaSpawnEnt.GetAngles()
+		
+		entity imcSpawnEnt = imcSpawns[ RandomInt( imcSpawns.len() ) ]
+		imcBuddySpawn.origin = imcSpawnEnt.GetOrigin()
+		imcBuddySpawn.angles = imcSpawnEnt.GetAngles()
+	}
+	else
+	{
+		militiaBuddySpawn = file.buddySpawns[ TEAM_MILITIA ]
+		imcBuddySpawn = file.buddySpawns[ TEAM_IMC ] 
+	}
+			
+	file.militiaBuddy = CreatePropDynamic( $"models/titans/buddy/titan_buddy.mdl" )
+	file.militiaBuddy.SetOrigin( militiaBuddySpawn.origin )
+	file.militiaBuddy.SetAngles( militiaBuddySpawn.angles )
+	thread AnimateBuddy( file.militiaBuddy )
+	
+	file.imcBuddy = CreatePropDynamic( $"models/titans/buddy/titan_buddy.mdl" )
+	file.imcBuddy.SetOrigin( imcBuddySpawn.origin )
+	file.imcBuddy.SetAngles( imcBuddySpawn.angles )
+	thread AnimateBuddy( file.imcBuddy )
+	
+	foreach ( entity player in GetPlayerArray() )
+		thread FastballPlayer( player )
+}
+
+void function AnimateBuddy( entity buddy )
+{
+	print( "buddy spawn at " + buddy.GetOrigin() + " " + buddy.GetAngles() )
+
+	thread PlayAnim( buddy, "bt_beacon_fastball_throw_end" )
+	
+	// play dialogue at the right time
+	buddy.WaitSignal( "fastball_start_throw" )
+	float diagDuration = EmitSoundOnEntity( buddy, "diag_sp_spoke1_BE117_04_01_mcor_bt" ) // trust me
+	StartParticleEffectOnEntity( buddy, GetParticleSystemIndex( $"P_BT_eye_SM" ), FX_PATTACH_POINT_FOLLOW, buddy.LookupAttachment( "EYEGLOW" ) )
+	
+	wait diagDuration
+	if ( GetGameState() != eGameState.Playing )
+		ClassicMP_OnIntroFinished()
+	
+	buddy.WaitSignal( "fastball_release" )
+	wait 5.0
+	buddy.Destroy()
+}
+
+void function AddPlayerToFastballIntro( entity player )
+{	
+	if ( GetGameState() == eGameState.Prematch )
+		thread FastballPlayer( player )
+}
+
+void function FastballPlayer( entity player )
+{
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+	
+	OnThreadEnd( function() : ( player )
+	{
+		RemoveCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING )
+		player.ClearParent()
+		ClearPlayerAnimViewEntity( player )
+		player.DeployWeapon()
+		player.PlayerCone_Disable()
+		
+		RemoveButtonPressedPlayerInputCallback( player, IN_JUMP, PlayerHoldingJumpInIntro )
+		RemoveButtonReleasedPlayerInputCallback( player, IN_JUMP, PlayerNoLongerHoldingJumpInIntro )
+	})
+	
+	FirstPersonSequenceStruct throwSequence
+	throwSequence.attachment = "REF"
+	throwSequence.useAnimatedRefAttachment = true
+	throwSequence.hideProxy = true
+	throwSequence.viewConeFunction = ViewConeFastball // this seemingly does not trigger for some reason
+	throwSequence.firstPersonAnim = "ptpov_beacon_fastball_throw_end"
+	// mp models seemingly have no 3p animation for this
+	throwSequence.firstPersonBlendOutTime = 0.0
+	throwSequence.teleport = true
+	throwSequence.setInitialTime = Time() - file.introStartTime
+	
+	// get our buddy
+	entity buddy
+	if ( player.GetTeam() == TEAM_MILITIA )
+		buddy = file.militiaBuddy
+	else
+		buddy = file.imcBuddy
+	
+	// respawn the player
+	player.SetOrigin( buddy.GetOrigin() )
+	player.RespawnPlayer( null )
+	player.Hide()
+	player.HolsterWeapon()
+	
+	// hide hud, fade screen out from black
+	AddCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING )
+	ScreenFadeFromBlack( player, 0.5, 0.5 )
+	
+	// start fp sequence
+	thread FirstPersonSequence( throwSequence, player, buddy )
+	
+	// manually do this because i can't get viewconefastball to work
+	player.PlayerCone_FromAnim()
+	player.PlayerCone_SetMinYaw( -50 )
+	player.PlayerCone_SetMaxYaw( 25 )
+	player.PlayerCone_SetMinPitch( -15 )
+	player.PlayerCone_SetMaxPitch( 15 )
+	
+	buddy.WaitSignal( "fastball_start_throw" )
+	// lock in their final angles at this point
+	vector throwVel = AnglesToForward( player.EyeAngles() ) * 950
+	throwVel.z = 675.0
+	
+	// allow players to gain extra height by holding jump after this point too
+	AddButtonPressedPlayerInputCallback( player, IN_JUMP, PlayerHoldingJumpInIntro )
+	AddButtonReleasedPlayerInputCallback( player, IN_JUMP, PlayerNoLongerHoldingJumpInIntro )
+	
+	// wait for it to finish
+	buddy.WaitSignal( "fastball_release" )
+	
+	if ( player in file.playersHoldingJump && file.playersHoldingJump[ player ] )
+		throwVel.z = 850.0
+	
+	// have to correct this manually here since due to no 3p animation our position isn't set right during this sequence
+	player.SetOrigin( buddy.GetAttachmentOrigin( buddy.LookupAttachment( "FASTBALL_R" ) ) )
+	player.Show()
+	player.SetVelocity( throwVel )
+	
+	TryGameModeAnnouncement( player )
+}
+
+void function PlayerHoldingJumpInIntro( entity player )
+{
+	file.playersHoldingJump[ player ] <- true
+}
+
+void function PlayerNoLongerHoldingJumpInIntro( entity player )
+{
+	file.playersHoldingJump[ player ] <- false
+}

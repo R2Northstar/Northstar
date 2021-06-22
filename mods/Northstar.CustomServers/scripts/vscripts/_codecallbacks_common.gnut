@@ -1,0 +1,853 @@
+
+global function CodeCallback_DamageEntity
+global function HandleFootstepDamage
+global function CodeCallback_OnEntityKilled
+
+global function AddDamageCallback
+global function RemoveDamageCallback
+global function RunClassDamageCallbacks
+global function AddDamageFinalCallback
+global function RunClassDamageFinalCallbacks
+global function AddPostDamageCallback
+global function RunClassPostDamageCallbacks
+
+global function AddDamageByCallback
+global function AddDamageCallbackSourceID
+global function AddDeathCallback
+global function RemoveDeathCallback
+global function AddSoulDeathCallback
+global function AddCallback_OnPlayerRespawned
+global function AddCallback_OnPlayerKilled
+global function AddCallback_OnNPCKilled
+global function AddCallback_OnTitanDoomed
+global function AddCallback_OnTitanHealthSegmentLost
+global function AddCallback_OnClientConnecting
+global function AddCallback_OnClientConnected
+global function AddCallback_OnClientDisconnected
+global function AddCallback_OnPilotBecomesTitan
+global function AddCallback_OnTitanBecomesPilot
+global function AddCallback_EntityChangedTeam
+global function AddCallback_OnTouchHealthKit
+global function AddCallback_OnPlayerAssist
+global function AddCallback_OnPlayerGetsNewPilotLoadout
+global function AddCallback_OnTitanGetsNewTitanLoadout
+global function AddCallback_OnUpdateDerivedPilotLoadout
+global function AddCallback_OnUpdateDerivedTitanLoadout
+global function AddCallback_OnUpdateDerivedPlayerTitanLoadout
+global function AddClientCommandCallback
+global function AddPlayerDropScriptedItemsCallback
+global function AddCallback_OnPlayerInventoryChanged
+
+// Register functions are called when an entity spawns.
+global function RegisterForDamageDeathCallbacks
+global function CodeCallback_OnInventoryChanged
+global function CodeCallback_OnEntityChangedTeam
+
+global function AddEntityCallback_OnDamaged
+global function RemoveEntityCallback_OnDamaged
+global function AddEntityCallback_OnPostDamaged
+global function RemoveEntityCallback_OnPostDamaged
+global function AddEntityCallback_OnKilled
+global function RemoveEntityCallback_OnKilled
+global function AddEntityCallback_OnPostShieldDamage
+global function RemoveEntityCallback_OnPostShieldDamage
+
+global function AddTitanCallback_OnHealthSegmentLost
+global function RemoveTitanCallback_OnHealthSegmentLost
+
+// Player movement callbacks
+global function AddPlayerMovementEventCallback
+global function RemovePlayerMovementEventCallback
+global function CodeCallback_OnPlayerJump
+global function CodeCallback_OnPlayerDoubleJump
+global function CodeCallback_OnPlayerDodge
+global function CodeCallback_OnPlayerLeaveGround
+global function CodeCallback_OnPlayerTouchGround
+global function CodeCallback_OnPlayerMantle
+global function CodeCallback_OnPlayerBeginWallrun
+global function CodeCallback_OnPlayerEndWallrun
+global function CodeCallback_OnPlayerBeginWallhang
+global function CodeCallback_OnPlayerEndWallhang
+
+struct
+{
+	table<string, array< void functionref( entity, var ) > > classDamageCallbacks
+	table<string, array< void functionref( entity, var ) > > classDamageFinalCallbacks
+	table<string, array< void functionref( entity, var ) > > classPostDamageCallbacks
+	array< void functionref( entity ) > playerInventoryChangedCallbacks
+} file
+
+void function CodeCallback_DamageEntity( entity ent, var damageInfo )
+{
+	// gametype script decides if ent should take damage
+	if ( !ScriptCallback_ShouldEntTakeDamage( ent, damageInfo ) )
+	{
+		DamageInfo_SetDamage( damageInfo, 0 )
+		return
+	}
+
+	#if VERBOSE_DAMAGE_PRINTOUTS
+		printt( "CodeCallback_DamageEntity() top:", DamageInfo_GetDamage( damageInfo ) )
+	#endif
+
+	if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == damagedef_titan_step )
+		HandleFootstepDamage( ent, damageInfo )
+
+	RunClassDamageCallbacks( ent, damageInfo )
+	#if VERBOSE_DAMAGE_PRINTOUTS
+		printt( "    after class damage callbacks:", DamageInfo_GetDamage( damageInfo ) )
+	#endif
+
+	// Added via AddEntityCallback_OnDamaged
+	foreach ( callbackFunc in ent.e.entDamageCallbacks )
+		callbackFunc( ent, damageInfo )
+	#if VERBOSE_DAMAGE_PRINTOUTS
+		printt( "    after AddEntityCallback_OnDamaged() callbacks:", DamageInfo_GetDamage( damageInfo ) )
+	#endif
+
+	int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	if ( damageSourceId in shGlobal.damageSourceIdCallbacks )
+	{
+		foreach ( callbackFunc in shGlobal.damageSourceIdCallbacks[ damageSourceId ] )
+			callbackFunc( ent, damageInfo )
+	}
+	#if VERBOSE_DAMAGE_PRINTOUTS
+		printt( "    after damageSourceId callbacks:", DamageInfo_GetDamage( damageInfo ) )
+	#endif
+
+	RunClassDamageFinalCallbacks( ent, damageInfo )
+	#if VERBOSE_DAMAGE_PRINTOUTS
+		printt( "    after class damage final callbacks:", DamageInfo_GetDamage( damageInfo ) )
+	#endif
+
+	// make destructible vehicles take more damage from DF_EXPLOSION damage type
+	if ( "isDestructibleVehicle" in ent.s && DamageInfo_GetCustomDamageType( damageInfo ) & DF_EXPLOSION )
+	{
+		DamageInfo_ScaleDamage( damageInfo, 2.0 )
+	}
+
+	if ( ent.GetShieldHealth() > 0 )
+	{
+		DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )
+		ShieldModifyDamage( ent, damageInfo )
+	}
+
+	// Added via AddEntityCallback_OnPostDamaged
+	foreach ( callbackFunc in ent.e.entPostDamageCallbacks )
+	{
+		callbackFunc( ent, damageInfo )
+	}
+
+	#if VERBOSE_DAMAGE_PRINTOUTS
+		printt( "CodeCallback_DamageEntity() bottom:", DamageInfo_GetDamage( damageInfo ) )
+	#endif
+
+	if ( DamageInfo_GetDamage( damageInfo ) == 0 )
+		return
+
+	UpdateLastDamageTime( ent )
+
+	AddFlinch( ent, damageInfo )
+
+	UpdateAttackerInfo( ent, DamageInfo_GetAttacker( damageInfo ), DamageInfo_GetDamage( damageInfo ) )
+}
+
+bool function TrySpectreVirus( entity victim, var damageInfo )
+{
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	if ( !IsSpectre( victim ) )
+		return false
+
+	if ( !IsAlive( attacker ) )
+		return false
+
+	if ( !attacker.IsTitan() )
+		return false
+
+	if ( !attacker.IsPlayer() )
+		return false
+
+	if ( !PlayerHasPassive( attacker, ePassives.PAS_WIFI_SPECTRE ) )
+		return false
+
+	thread LeechPropagate( victim, attacker )
+	return true
+}
+
+
+void function HandleFootstepDamage( entity victim, var damageInfo )
+{
+	if ( TrySpectreVirus( victim, damageInfo ) )
+	{
+		DamageInfo_SetDamage( damageInfo, 0 )
+		return
+	}
+}
+
+void function CodeCallback_OnEntityKilled( entity ent, var damageInfo )
+{
+	// npcs and player do death package in their own killed callbacks which are always called (even if deathNotifications is false)
+	if ( !ent.IsNPC() && !ent.IsPlayer() )
+		HandleDeathPackage( ent, damageInfo )
+
+	string className = ent.GetClassName()
+	if ( className in shGlobal.deathCallbacks )
+	{
+		foreach ( callbackFunc in shGlobal.deathCallbacks[className] )
+		{
+			callbackFunc( ent, damageInfo )
+		}
+	}
+
+
+	// Added via AddEntityCallback_OnKilled
+	foreach ( callbackFunc in ent.e.entKilledCallbacks )
+	{
+		callbackFunc( ent, damageInfo )
+	}
+
+	SendEntityKilledEvent( ent, damageInfo )
+}
+
+
+void function SendEntityKilledEvent( entity ent, var damageInfo )
+{
+	array<entity> players = GetPlayerArray()
+
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	// trigger_hurt is no longer networked, so the "attacker" fails to display obituaries
+	if ( attacker )
+	{
+		string attackerClassname = attacker.GetClassName()
+
+		if ( attackerClassname == "trigger_hurt" || attackerClassname == "trigger_multiple" )
+			attacker = GetEntByIndex( 0 ) // worldspawn
+	}
+
+	int attackerEHandle = attacker ? attacker.GetEncodedEHandle() : -1
+
+	int victimEHandle = ent.GetEncodedEHandle()
+	int scriptDamageType = DamageInfo_GetCustomDamageType( damageInfo )
+	int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+
+	if ( scriptDamageType & DF_VORTEX_REFIRE )
+		damageSourceId = eDamageSourceId.mp_titanweapon_vortex_shield
+
+	if ( IsValidHeadShot( damageInfo, ent ) )
+		scriptDamageType = scriptDamageType | DF_HEADSHOT
+	else
+		scriptDamageType = scriptDamageType & (~DF_HEADSHOT)
+
+	foreach ( player in players )
+	{
+		Remote_CallFunction_NonReplay( player, "ServerCallback_OnEntityKilled", attackerEHandle, victimEHandle, scriptDamageType, damageSourceId )
+	}
+}
+
+//=====================================================================================
+// Utility functions
+//=====================================================================================
+
+void function AddDamageCallback( string className, void functionref( entity, var ) callbackFunc )
+{
+	if ( !( className in file.classDamageCallbacks ) )
+		file.classDamageCallbacks[className] <- []
+
+	file.classDamageCallbacks[className].append( callbackFunc )
+}
+
+void function RemoveDamageCallback( string className, void functionref( entity, var ) callbackFunc )
+{
+	Assert( className in file.classDamageCallbacks, "Tried to remove damage callback that isn't added" )
+	Assert( file.classDamageCallbacks[className].contains( callbackFunc ), "Tried to remove damage callback that isn't added" )
+	file.classDamageCallbacks[className].fastremovebyvalue( callbackFunc )
+}
+
+void function RunClassDamageCallbacks( entity ent, var damageInfo )
+{
+	string className = ent.GetClassName()
+	if ( !( className in file.classDamageCallbacks ) )
+		return
+
+	foreach ( callbackFunc in file.classDamageCallbacks[className] )
+	{
+		callbackFunc( ent, damageInfo )
+		if ( DamageInfo_GetDamage( damageInfo ) == 0 )
+			return
+	}
+}
+
+void function AddDamageFinalCallback( string className, void functionref( entity, var ) callbackFunc )
+{
+	if ( !( className in file.classDamageFinalCallbacks ) )
+		file.classDamageFinalCallbacks[className] <- []
+
+	file.classDamageFinalCallbacks[className].append( callbackFunc )
+}
+void function RunClassDamageFinalCallbacks( entity ent, var damageInfo )
+{
+	string className = ent.GetClassName()
+	if ( !( className in file.classDamageFinalCallbacks ) )
+		return
+
+	foreach ( callbackFunc in file.classDamageFinalCallbacks[className] )
+	{
+		if ( DamageInfo_GetDamage( damageInfo ) == 0 )
+			return
+		callbackFunc( ent, damageInfo )
+	}
+}
+
+
+void function AddPostDamageCallback( string className, void functionref( entity, var ) callbackFunc )
+{
+	if ( !( className in file.classPostDamageCallbacks ) )
+		file.classPostDamageCallbacks[className] <- []
+
+	file.classPostDamageCallbacks[className].append( callbackFunc )
+}
+
+void function RunClassPostDamageCallbacks( entity ent, var damageInfo )
+{
+	string className = ent.GetClassName()
+	if ( !( className in file.classPostDamageCallbacks ) )
+		return
+
+	foreach ( callbackFunc in file.classPostDamageCallbacks[className] )
+	{
+		#if DEV
+		float damage = DamageInfo_GetDamage( damageInfo )
+		#endif
+		callbackFunc( ent, damageInfo )
+
+		#if DEV
+		Assert( damage == DamageInfo_GetDamage( damageInfo ), "Damage changed in a post damage callback" )
+		#endif
+	}
+}
+
+void function AddDamageByCallback( string className, void functionref( entity, var ) callbackFunc )
+{
+	if ( !( className in svGlobal.damageByCallbacks ) )
+		svGlobal.damageByCallbacks[className] <- []
+
+	svGlobal.damageByCallbacks[className].append( callbackFunc )
+}
+
+void function AddDamageCallbackSourceID( int id, void functionref(entity, var) callbackFunc )
+{
+	if ( !( id in shGlobal.damageSourceIdCallbacks ) )
+		shGlobal.damageSourceIdCallbacks[id] <- []
+
+	shGlobal.damageSourceIdCallbacks[id].append( callbackFunc )
+}
+
+void function AddDeathCallback( string className, void functionref( entity, var ) callbackFunc )
+{
+	if ( !( className in shGlobal.deathCallbacks ) )
+		shGlobal.deathCallbacks[className] <- []
+
+	shGlobal.deathCallbacks[className].append( callbackFunc )
+}
+
+void function RemoveDeathCallback( string className, void functionref( entity, var ) callbackFunc )
+{
+	Assert( className in shGlobal.deathCallbacks, "Tried to remove death callback that isn't added" )
+	Assert( shGlobal.deathCallbacks[className].contains( callbackFunc ), "Tried to remove death callback that isn't added" )
+	shGlobal.deathCallbacks[className].fastremovebyvalue( callbackFunc )
+}
+
+void function AddSoulDeathCallback( void functionref( entity, var ) callbackFunc )
+{
+	#if DEV
+	foreach ( func in svGlobal.soulDeathFuncs )
+	{
+		Assert( func != callbackFunc , "Already added " + string( callbackFunc ) + " with AddSoulDeathCallback" )
+	}
+	#endif
+
+	svGlobal.soulDeathFuncs.append( callbackFunc )
+}
+
+void function AddCallback_OnTouchHealthKit( string className, bool functionref( entity player, entity healthpack ) callbackFunc )
+{
+	if ( ! (className in svGlobal.onTouchHealthKitCallbacks ) )
+	{
+		svGlobal.onTouchHealthKitCallbacks[ className ] <- [ callbackFunc ]
+		return
+	}
+	else
+	{
+		Assert( !svGlobal.onTouchHealthKitCallbacks[className].contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnTouchHealthKit to class " + className )
+		svGlobal.onTouchHealthKitCallbacks[className].append( callbackFunc )
+	}
+
+}
+
+void function AddCallback_OnPlayerRespawned( void functionref( entity ) callbackFunc )
+{
+	Assert( !svGlobal.onPlayerRespawnedCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnPlayerRespawned" )
+	svGlobal.onPlayerRespawnedCallbacks.append( callbackFunc )
+}
+
+void function AddCallback_OnPlayerKilled( void functionref( entity victim, entity attacker, var damageInfo ) callbackFunc )
+{
+	Assert( !svGlobal.onPlayerKilledCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnPlayerKilled" )
+	svGlobal.onPlayerKilledCallbacks.append( callbackFunc )
+}
+
+void function AddCallback_OnNPCKilled( void functionref( entity victim, entity attacker, var damageInfo ) callbackFunc )
+{
+	Assert( !svGlobal.onNPCKilledCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnPlayerKilled" )
+	svGlobal.onNPCKilledCallbacks.append( callbackFunc )
+}
+
+void function AddCallback_OnTitanDoomed( void functionref( entity victim, var damageInfo ) callbackFunc )
+{
+	Assert( !svGlobal.onTitanDoomedCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnTitanDoomed" )
+	svGlobal.onTitanDoomedCallbacks.append( callbackFunc )
+}
+
+void function AddCallback_OnTitanHealthSegmentLost( void functionref( entity victim, entity attacker ) callbackFunc )
+{
+	Assert( !svGlobal.onTitanHealthSegmentLostCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnTitanHealthSegmentLost" )
+	svGlobal.onTitanHealthSegmentLostCallbacks.append( callbackFunc )
+}
+
+void function AddCallback_OnClientConnecting( void functionref( entity player ) callbackFunc )
+{
+	Assert( !svGlobal.onClientConnectingCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnClientConnecting" )
+	svGlobal.onClientConnectingCallbacks.append( callbackFunc )
+}
+
+void function AddCallback_OnClientConnected( void functionref( entity player ) callbackFunc )
+{
+	Assert( !svGlobal.onClientConnectedCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnClientConnected" )
+	svGlobal.onClientConnectedCallbacks.append( callbackFunc )
+}
+
+void function AddCallback_OnClientDisconnected( void functionref( entity player ) callbackFunc )
+{
+	Assert( !svGlobal.onClientDisconnectedCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnClientDisconnected" )
+	svGlobal.onClientDisconnectedCallbacks.append( callbackFunc )
+}
+
+void function AddCallback_OnPilotBecomesTitan( void functionref( entity pilot, entity npc_titan ) callbackFunc )
+{
+	Assert( !svGlobal.onPilotBecomesTitanCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnPilotBecomesTitan" )
+	svGlobal.onPilotBecomesTitanCallbacks.append( callbackFunc )
+}
+
+void function AddCallback_OnTitanBecomesPilot( void functionref( entity pilot, entity npc_titan ) callbackFunc )
+{
+	Assert( !svGlobal.onTitanBecomesPilotCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnTitanBecomesPilot" )
+	svGlobal.onTitanBecomesPilotCallbacks.append( callbackFunc )
+}
+
+void function AddCallback_OnPlayerAssist( void functionref( entity attacker, entity victim ) callbackFunc )
+{
+	Assert( !svGlobal.onPlayerAssistCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnPlayerAssist" )
+	svGlobal.onPlayerAssistCallbacks.append( callbackFunc )
+}
+
+void function AddCallback_EntityChangedTeam( string className, void functionref( entity ent ) callbackFunc )
+{
+	if ( !( className in svGlobal.onEntityChangedTeamCallbacks ) )
+	{
+		svGlobal.onEntityChangedTeamCallbacks[ className ] <- [ callbackFunc ]
+		return
+	}
+	else
+	{
+		Assert( !svGlobal.onEntityChangedTeamCallbacks[ className ].contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_EntityChangedTeam" )
+		svGlobal.onEntityChangedTeamCallbacks[ className ].append( callbackFunc )
+	}
+}
+
+void function AddCallback_OnTitanGetsNewTitanLoadout( void functionref( entity titan, TitanLoadoutDef newTitanLoadout ) callbackFunc )
+{
+	Assert( !svGlobal.onTitanGetsNewLoadoutCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnTitanGetsNewTitanLoadout" )
+	svGlobal.onTitanGetsNewLoadoutCallbacks.append( callbackFunc )
+}
+
+void function AddCallback_OnPlayerGetsNewPilotLoadout( void functionref( entity player, PilotLoadoutDef newTitanLoadout ) callbackFunc )
+{
+	Assert( !svGlobal.onPlayerGetsNewPilotLoadoutCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnPlayerGetsNewPilotLoadout" )
+	svGlobal.onPlayerGetsNewPilotLoadoutCallbacks.append( callbackFunc )
+}
+
+void function AddCallback_OnUpdateDerivedTitanLoadout( void functionref( TitanLoadoutDef newTitanLoadout ) callbackFunc )
+{
+	Assert( !svGlobal.onUpdateDerivedTitanLoadoutCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnUpdateDerivedTitanLoadout" )
+	svGlobal.onUpdateDerivedTitanLoadoutCallbacks.append( callbackFunc )
+}
+
+void function AddCallback_OnUpdateDerivedPlayerTitanLoadout( void functionref( entity player, TitanLoadoutDef newTitanLoadout ) callbackFunc )
+{
+	Assert( !svGlobal.onUpdateDerivedPlayerTitanLoadoutCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnUpdateDerivedTitanLoadout" )
+	svGlobal.onUpdateDerivedPlayerTitanLoadoutCallbacks.append( callbackFunc )
+}
+
+void function AddCallback_OnUpdateDerivedPilotLoadout( void functionref( PilotLoadoutDef newPilotLoadout ) callbackFunc )
+{
+	Assert( !svGlobal.onUpdateDerivedPilotLoadoutCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnUpdateDerivedPilotLoadout" )
+	svGlobal.onUpdateDerivedPilotLoadoutCallbacks.append( callbackFunc )
+}
+
+void function AddClientCommandCallback( string commandString, bool functionref( entity player, array<string> args ) callbackFunc )
+{
+	Assert( !( commandString in svGlobal.clientCommandCallbacks ), "Already added " + commandString + " with AddClientCommandCallback" )
+	svGlobal.clientCommandCallbacks[ commandString ] <- callbackFunc
+}
+
+void function AddPlayerDropScriptedItemsCallback( void functionref(entity player) callbackFunc )
+{
+	Assert( !( svGlobal.onPlayerDropsScriptedItemsCallbacks.contains( callbackFunc ) ), "Already added " + string( callbackFunc ) + " with AddPlayerDropScriptedItemsCallback" )
+	svGlobal.onPlayerDropsScriptedItemsCallbacks.append( callbackFunc )
+}
+
+//=====================================================================================
+// Register functions are called when an entity spawns.
+//=====================================================================================
+
+void function RegisterForDamageDeathCallbacks( entity ent )
+{
+	string className = ent.GetClassName()
+
+	if ( (className in file.classDamageCallbacks) || (className in file.classDamageFinalCallbacks) )
+		ent.SetDamageNotifications( true )
+
+	if ( className in shGlobal.deathCallbacks )
+		ent.SetDeathNotifications( true )
+}
+
+void function AddTitanCallback_OnHealthSegmentLost( entity ent, void functionref( entity titan, entity victim ) callbackFunc )
+{
+	Assert( !ent.e.entSegmentLostCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " to entity" )
+
+	ent.e.entSegmentLostCallbacks.append( callbackFunc )
+}
+
+void function RemoveTitanCallback_OnHealthSegmentLost( entity ent, void functionref( entity titan, entity victim ) callbackFunc )
+{
+	int index = ent.e.entSegmentLostCallbacks.find( callbackFunc )
+
+	Assert( index != -1, "Requested DamageCallback " + string( callbackFunc ) + " to be removed not found! " )
+	ent.e.entSegmentLostCallbacks.fastremove( index )
+}
+
+void function AddEntityCallback_OnDamaged( entity ent, void functionref( entity ent, var damageInfo ) callbackFunc )
+{
+	Assert( !ent.e.entDamageCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " to entity" )
+
+	ent.SetDamageNotifications( true )
+	ent.e.entDamageCallbacks.append( callbackFunc )
+}
+
+void function RemoveEntityCallback_OnDamaged( entity ent, void functionref( entity ent, var damageInfo ) callbackFunc )
+{
+	int index = ent.e.entDamageCallbacks.find( callbackFunc )
+
+	Assert( index != -1, "Requested DamageCallback " + string( callbackFunc ) + " to be removed not found! " )
+	ent.e.entDamageCallbacks.fastremove( index )
+
+	if ( ent.e.entDamageCallbacks.len() == 0 && ent.e.entPostDamageCallbacks.len() == 0 )
+		ent.SetDamageNotifications( false )
+}
+
+void function AddEntityCallback_OnPostDamaged( entity ent, void functionref( entity ent, var damageInfo ) callbackFunc )
+{
+	Assert( !ent.e.entPostDamageCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " to entity" )
+
+	ent.SetDamageNotifications( true )
+	ent.e.entPostDamageCallbacks.append( callbackFunc )
+}
+
+void function RemoveEntityCallback_OnPostDamaged( entity ent, void functionref( entity ent, var damageInfo ) callbackFunc )
+{
+	int index = ent.e.entPostDamageCallbacks.find( callbackFunc )
+
+	Assert( index != -1, "Requested PostDamageCallback " + string( callbackFunc ) + " to be removed not found! " )
+	ent.e.entPostDamageCallbacks.fastremove( index )
+
+	if ( ent.e.entPostDamageCallbacks.len() == 0 && ent.e.entDamageCallbacks.len() == 0 )
+		ent.SetDamageNotifications( false )
+}
+
+void function AddEntityCallback_OnKilled( entity ent, void functionref( entity, var ) callbackFunc )
+{
+	#if DEV
+	foreach ( func in  ent.e.entKilledCallbacks )
+	{
+		Assert( func != callbackFunc , "Already added " + string( callbackFunc ) + " to entity" )
+	}
+	#endif
+
+	ent.SetDeathNotifications( true )
+	ent.e.entKilledCallbacks.append( callbackFunc )
+}
+
+void function RemoveEntityCallback_OnKilled( entity ent, void functionref( entity, var ) callbackFunc )
+{
+	int index = ent.e.entKilledCallbacks.find( callbackFunc )
+
+	Assert( index != -1, "Requested KilledCallback " + string( callbackFunc ) + " to be removed not found! " )
+	ent.e.entKilledCallbacks.fastremove( index )
+
+	if ( ent.e.entKilledCallbacks.len() == 0 )
+		ent.SetDeathNotifications( false )
+}
+
+void function AddEntityCallback_OnPostShieldDamage( entity ent, void functionref( entity, var, float ) callbackFunc )
+{
+	#if DEV
+	foreach ( func in  ent.e.entPostShieldDamageCallbacks )
+	{
+		Assert( func != callbackFunc , "Already added " + string( callbackFunc ) + " to entity" )
+	}
+	#endif
+
+	ent.e.entPostShieldDamageCallbacks.append( callbackFunc )
+}
+
+void function RemoveEntityCallback_OnPostShieldDamage( entity ent, void functionref( entity, var, float ) callbackFunc )
+{
+	int index = ent.e.entPostShieldDamageCallbacks.find( callbackFunc )
+
+	Assert( index != -1, "Requested OnPostShieldDamage " + string( callbackFunc ) + " to be removed not found! " )
+	ent.e.entPostShieldDamageCallbacks.fastremove( index )
+}
+
+void function CodeCallback_OnInventoryChanged( entity player )
+{
+	player.Signal( "InventoryChanged" )
+
+	if ( !IsAlive( player ) )
+		return
+
+#if HAS_TITAN_WEAPON_SWAPPING
+	if ( player.IsTitan() )
+	{
+		array<entity> weapons = GetPrimaryWeapons( player )
+		bool weaponSwap = true
+		foreach ( weapon in weapons )
+		{
+			if ( weapon == player.p.lastPrimaryWeaponEnt )
+				weaponSwap = false
+			player.p.lastPrimaryWeaponEnt = weapon
+		}
+
+		if ( weaponSwap )
+		{
+			table<int,float> cooldowns = GetWeaponCooldownsForTitanLoadoutSwitch( player )
+
+			ResetTitanLoadoutFromPrimary( player )
+
+			bool foundNewWeapon
+
+			foreach ( weapon in weapons )
+			{
+				int loadoutIndex = GetSPTitanLoadoutIndexForWeapon( weapon.GetWeaponClassName() )
+				if ( loadoutIndex >= 0 )
+				{
+					if ( GetSPTitanLoadoutHasEverBeenSelected( loadoutIndex ) )
+						continue
+
+					foundNewWeapon = true
+					SetSPTitanLoadoutHasEverBeenSelected( loadoutIndex )
+				}
+			}
+
+			if ( !JustLoadedFromCheckpoint() && !foundNewWeapon )
+				SetWeaponCooldownsForTitanLoadoutSwitch( player, cooldowns )
+		}
+
+		Assert( player.GetOffhandWeapon( OFFHAND_SPECIAL ) == null || !player.GetOffhandWeapon( OFFHAND_SPECIAL ).HasMod( "npc_normal_difficulty" ), "Player should never have mod npc_normal_difficulty" )
+	}
+#endif // #if HAS_TITAN_WEAPON_SWAPPING
+
+	foreach ( callbackFunc in file.playerInventoryChangedCallbacks )
+	{
+		callbackFunc( player )
+	}
+}
+
+void function CodeCallback_OnEntityChangedTeam( entity ent )
+{
+	string className = ent.GetClassName()
+	if ( !( className in svGlobal.onEntityChangedTeamCallbacks ) )
+		return
+
+	// Added via AddCallback_EntityChangedTeam
+	foreach ( callbackFunc in svGlobal.onEntityChangedTeamCallbacks[ className ] )
+	{
+		callbackFunc( ent )
+	}
+}
+
+//=============================
+// Player movement callbacks
+//=============================
+
+void function AddPlayerMovementEventCallback( entity player, int playerMovementEvent, void functionref( entity player ) callbackFunc )
+{
+	if ( !player.GetSendMovementCallbacks() )
+		player.SetSendMovementCallbacks( true )
+
+	table<int, array<void functionref( entity )> > callbackTable = player.p.playerMovementEventCallbacks
+
+	if ( ! ( playerMovementEvent in callbackTable ) )
+		callbackTable[ playerMovementEvent ] <- []
+
+	Assert( !callbackTable[ playerMovementEvent ].contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddPlayerMovementEventCallback for player " + player.GetPlayerName() )
+	callbackTable[ playerMovementEvent ].append( callbackFunc )
+}
+
+void function RemovePlayerMovementEventCallback( entity player, int playerMovementEvent, void functionref( entity player ) callbackFunc )
+{
+	table<int, array<void functionref( entity )> > callbackTable = player.p.playerMovementEventCallbacks
+
+	Assert( playerMovementEvent in callbackTable )
+
+	callbackTable[ playerMovementEvent ].fastremovebyvalue( callbackFunc )
+
+	if ( callbackTable[ playerMovementEvent ].len() == 0 )
+	{
+		//printt( "No more callbacks for playerMovementEvent: " + playerMovementEvent + ", removing array of functions" )
+		delete callbackTable[ playerMovementEvent ]
+	}
+
+	if ( callbackTable.len() == 0 )
+	{
+		//printt( "No more playerMovementEventCallbacks for player : " + player + ", make player not get movementcallbacks anymore." )
+		player.SetSendMovementCallbacks( false )
+	}
+}
+
+void function CodeCallback_OnPlayerJump( entity player )
+{
+	if ( ! ( ePlayerMovementEvents.JUMP in player.p.playerMovementEventCallbacks ) )
+		return
+
+	//printt( "Player Jump")
+
+	//Run actual functions
+	foreach( callbackFunc in player.p.playerMovementEventCallbacks[ ePlayerMovementEvents.JUMP ] )
+		callbackFunc( player )
+}
+
+void function CodeCallback_OnPlayerDoubleJump( entity player )
+{
+	if ( ! ( ePlayerMovementEvents.DOUBLE_JUMP in player.p.playerMovementEventCallbacks ) )
+		return
+
+	//printt( "Player Double Jump")
+
+	//Run actual functions
+	foreach( callbackFunc in player.p.playerMovementEventCallbacks[ ePlayerMovementEvents.DOUBLE_JUMP ] )
+		callbackFunc( player )
+}
+
+void function CodeCallback_OnPlayerDodge( entity player )
+{
+	if ( ! ( ePlayerMovementEvents.DODGE in player.p.playerMovementEventCallbacks ) )
+		return
+
+	//printt( "Player Dodge" )
+
+	//Run actual functions
+	foreach( callbackFunc in player.p.playerMovementEventCallbacks[ ePlayerMovementEvents.DODGE ] )
+		callbackFunc( player )
+}
+
+void function CodeCallback_OnPlayerLeaveGround( entity player )
+{
+	if ( ! ( ePlayerMovementEvents.LEAVE_GROUND in player.p.playerMovementEventCallbacks ) )
+		return
+
+	//printt( "Player Left Ground")
+
+	//Run actual functions
+	foreach( callbackFunc in player.p.playerMovementEventCallbacks[ ePlayerMovementEvents.LEAVE_GROUND ] )
+		callbackFunc( player )
+}
+
+void function CodeCallback_OnPlayerTouchGround( entity player )
+{
+	if ( ! ( ePlayerMovementEvents.TOUCH_GROUND in player.p.playerMovementEventCallbacks ) )
+		return
+
+	//printt( "Player Touch Ground")
+
+	array<void functionref(entity)> callbacks = clone player.p.playerMovementEventCallbacks[ ePlayerMovementEvents.TOUCH_GROUND ]
+
+	//Run actual functions
+	foreach( callbackFunc in callbacks )
+		callbackFunc( player )
+}
+
+void function CodeCallback_OnPlayerMantle( entity player )
+{
+	if ( ! ( ePlayerMovementEvents.MANTLE in player.p.playerMovementEventCallbacks ) )
+		return
+
+	//printt( "Player Mantle")
+
+	//Run actual functions
+	foreach( callbackFunc in player.p.playerMovementEventCallbacks[ ePlayerMovementEvents.MANTLE ] )
+		callbackFunc( player )
+}
+
+void function CodeCallback_OnPlayerBeginWallrun( entity player )
+{
+	if ( ! ( ePlayerMovementEvents.BEGIN_WALLRUN in player.p.playerMovementEventCallbacks ) )
+		return
+
+	//printt( "Player Wallrun Begin")
+
+	//Run actual functions
+	foreach( callbackFunc in player.p.playerMovementEventCallbacks[ ePlayerMovementEvents.BEGIN_WALLRUN ] )
+		callbackFunc( player )
+}
+
+void function CodeCallback_OnPlayerEndWallrun( entity player )
+{
+	if ( ! ( ePlayerMovementEvents.END_WALLRUN in player.p.playerMovementEventCallbacks ) )
+		return
+
+	//printt( "Player Wallrun End")
+
+	//Run actual functions
+	foreach( callbackFunc in player.p.playerMovementEventCallbacks[ ePlayerMovementEvents.END_WALLRUN ] )
+		callbackFunc( player )
+}
+
+void function CodeCallback_OnPlayerBeginWallhang( entity player )
+{
+	if ( ! ( ePlayerMovementEvents.BEGIN_WALLHANG in player.p.playerMovementEventCallbacks ) )
+		return
+
+	//printt( "Player Wallhang Begin")
+
+	//Run actual functions
+	foreach( callbackFunc in player.p.playerMovementEventCallbacks[ ePlayerMovementEvents.BEGIN_WALLHANG ] )
+		callbackFunc( player )
+}
+
+void function CodeCallback_OnPlayerEndWallhang( entity player )
+{
+	if ( ! ( ePlayerMovementEvents.END_WALLHANG in player.p.playerMovementEventCallbacks ) )
+		return
+
+	//printt( "Player Wallhang End")
+
+	//Run actual functions
+	foreach( callbackFunc in player.p.playerMovementEventCallbacks[ ePlayerMovementEvents.END_WALLHANG ] )
+		callbackFunc( player )
+}
+
+
+void function AddCallback_OnPlayerInventoryChanged( void functionref( entity ) callbackFunc )
+{
+	file.playerInventoryChangedCallbacks.append( callbackFunc )
+}

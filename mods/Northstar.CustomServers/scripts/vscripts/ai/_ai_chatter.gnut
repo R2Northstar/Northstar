@@ -1,0 +1,129 @@
+global function DialogueChatter_Init
+
+global function TitanVO_AlertTitansIfTargetWasKilled
+global function TitanVO_TellPlayersThatAreAlsoFightingThisTarget
+global function TitanVO_AlertTitansTargetingThisTitanOfRodeo
+global function TitanVO_DelayedTitanDown
+
+const TITAN_VO_DIST_SQR = 2000 * 2000
+
+const CHATTER_TIME_LAPSE = 30.0
+//const CHATTER_TIME_LAPSE = 5.0  //For testing
+//const CHATTER_TIME_LAPSE = 8.0  //For testing
+//const CHATTER_TIME_LAPSE = 15.0 //For testing
+
+void function DialogueChatter_Init()
+{
+}
+
+void function TitanVO_TellPlayersThatAreAlsoFightingThisTarget( entity attacker, entity soul )
+{
+	int voEnum
+	if ( attacker.IsTitan() )
+		voEnum = eTitanVO.FRIENDLY_TITAN_HELPING
+	else
+		voEnum = eTitanVO.PILOT_HELPING
+
+	bool atackerIsTitan = attacker.IsTitan()
+	int attackerTeam = attacker.GetTeam()
+	array<entity> players = GetPlayerArray()
+	foreach ( player in players )
+	{
+		if ( !player.IsTitan() )
+			continue
+
+		if ( player.GetTeam() != attackerTeam )
+			continue
+		// attacker gets a score callout
+		if ( player == attacker )
+			continue
+
+		if ( soul != player.p.currentTargetPlayerOrSoul_Ent )
+			continue
+
+		float timeDif = Time() - player.p.currentTargetPlayerOrSoul_LastHitTime
+		if ( timeDif > CURRENT_TARGET_FORGET_TIME )
+			continue
+
+		// alert other player that cared about this target
+		Remote_CallFunction_Replay( player, "SCB_TitanDialogue", voEnum )
+	}
+}
+
+void function TitanVO_AlertTitansTargetingThisTitanOfRodeo( entity rodeoer, entity soul )
+{
+	int team = rodeoer.GetTeam()
+
+	array<entity> players = GetPlayerArray()
+	foreach ( player in players )
+	{
+		if ( !player.IsTitan() )
+			continue
+
+		if ( player.GetTeam() != team )
+			continue
+
+		if ( soul != player.p.currentTargetPlayerOrSoul_Ent )
+			continue
+
+		// if we havent hurt the target recently then forget about it
+		if ( Time() - player.p.currentTargetPlayerOrSoul_LastHitTime > CURRENT_TARGET_FORGET_TIME )
+			continue
+
+		Remote_CallFunction_Replay( player, "SCB_TitanDialogue", eTitanVO.FRIENDLY_RODEOING_ENEMY )
+	}
+}
+
+void function TitanVO_DelayedTitanDown( entity ent )
+{
+	vector titanOrigin = ent.GetOrigin()
+	int team = ent.GetTeam()
+
+	wait 0.9
+
+	array<entity> playerArray = GetPlayerArray()
+	float dist = TITAN_VO_DIST_SQR
+
+	foreach ( player in playerArray )
+	{
+		// only titans get BB vo
+		if ( !player.IsTitan() )
+			continue
+
+		if ( DistanceSqr( titanOrigin, player.GetOrigin() ) > dist )
+			continue
+
+		if ( player.GetTeam() != team )
+			Remote_CallFunction_Replay( player, "SCB_TitanDialogue", eTitanVO.ENEMY_TITAN_DEAD )
+		else
+			Remote_CallFunction_Replay( player, "SCB_TitanDialogue", eTitanVO.FRIENDLY_TITAN_DEAD )
+	}
+}
+
+
+void function TitanVO_AlertTitansIfTargetWasKilled( entity victim, entity attacker )
+{
+	array<entity> enemyPlayers = GetPlayerArrayOfEnemies( victim.GetTeam() )
+
+	if ( victim.IsTitan() )
+		victim = victim.GetTitanSoul()
+
+	foreach ( player in enemyPlayers )
+	{
+		if ( !player.IsTitan() )
+			continue
+
+		// attacker gets a score callout
+		if ( player == attacker )
+			continue
+
+		if ( victim != player.p.currentTargetPlayerOrSoul_Ent )
+			continue
+
+		if ( Time() - player.p.currentTargetPlayerOrSoul_LastHitTime > CURRENT_TARGET_FORGET_TIME )
+			continue
+
+		// alert other player that cared about this target
+		Remote_CallFunction_Replay( player, "SCB_TitanDialogue", eTitanVO.ENEMY_TARGET_ELIMINATED )
+	}
+}

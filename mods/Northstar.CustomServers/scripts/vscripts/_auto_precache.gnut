@@ -1,0 +1,771 @@
+#if DEV
+global function AutoPrecache_Init
+global function SetAutoPrecacheVersion
+global function MarkNPCForAutoPrecache
+global function AP_NPCSpawnerFound
+global function AP_PrecacheWeapon
+global function AP_PrecacheModel
+
+const int AUTO_PRECACHE_VERSION = 5
+
+global struct AutoPrecacheList
+{
+	array<string> weapons
+	table<string,int> weaponCount
+	table<string,array<entity> > npcSpawners
+	table<asset,string> autoPrecacheScript
+
+	array<asset> models
+}
+
+struct
+{
+	int autoPrecacheVersion
+	array<string> forceAutoPrecacheAiSettings
+
+	table<string,int> autoPrecacheFound_weapons
+	table<asset,bool> autoPrecacheFound_models
+	table<string,int> autoPrecacheFound_npcs
+
+} file
+
+void function AutoPrecache_Init()
+{
+	thread VerifyAutoPrecaches()
+
+	AddCallback_OnClientConnecting( AutoPrecache_OnPlayerConnect )
+}
+
+void function AutoPrecache_OnPlayerConnect( entity player )
+{
+	if ( Dev_CommandLineHasParm( "-autoprecache_all" ) )
+	{
+		switch ( GetMapName() )
+		{
+			case "sp_training":
+				ClientCommand( player, "map sp_crashsite" )
+				return
+
+			case "sp_crashsite":
+				ClientCommand( player, "map sp_sewers1" )
+				return
+
+			case "sp_sewers1":
+				ClientCommand( player, "map sp_boomtown" )
+				return
+
+			case "sp_boomtown":
+				ClientCommand( player, "map sp_boomtown_end" )
+				return
+
+			case "sp_boomtown_end":
+				ClientCommand( player, "map sp_boomtown_start" )
+				return
+
+			case "sp_boomtown_start":
+				ClientCommand( player, "map sp_hub_timeshift" )
+				return
+
+			case "sp_hub_timeshift":
+				ClientCommand( player, "map sp_timeshift_spoke02" )
+				return
+
+			case "sp_timeshift_spoke02":
+				ClientCommand( player, "map sp_beacon" )
+				return
+
+			case "sp_beacon":
+				ClientCommand( player, "map sp_beacon_spoke0" )
+				return
+
+			case "sp_beacon_spoke0":
+				ClientCommand( player, "map sp_tday" )
+				return
+
+			case "sp_tday":
+				ClientCommand( player, "map sp_s2s" )
+				return
+
+			case "sp_s2s":
+				ClientCommand( player, "map sp_skyway_v1" )
+				return
+
+			case "sp_skyway_v1":
+				ClientCommand( player, "map mp_grave" )
+				return
+
+			case "mp_grave":
+				ClientCommand( player, "quit" )
+				return
+
+			default:
+				ClientCommand( player, "map sp_training" )
+				return
+		}
+
+	}
+}
+
+void function VerifyAutoPrecaches()
+{
+	WaitEndFrame()
+	if ( !IsTestMap() )
+		Autoprecache_Verify()
+}
+
+void function Autoprecache_Verify()
+{
+	AutoPrecacheList autoPrecacheList = GenerateAutoPrecacheListForLevel()
+	if ( AutoPrecacheUpToDate( autoPrecacheList ) )
+		return
+
+	if ( !Dev_CommandLineHasParm( "-autoprecache_all" ) && !Dev_CommandLineHasParm( "-autoprecache" ) )
+	{
+		// dont really want mp generating auto precache if one map has an npc randomly placed in it, or an mp dedi going rogue
+		CodeWarning( "Entities have changed. Re-export auto precache script or run game with -autoprecache." )
+		return
+	}
+
+	ExportAutoPrecacheList( autoPrecacheList )
+
+	if ( Dev_CommandLineHasParm( "-autoprecache" ) )
+	{
+		Dev_CommandLineRemoveParm( "-autoprecache" )
+		ServerCommand( "reload" )
+		return
+	}
+
+	LevelTransitionStruct ornull trans = GetLevelTransitionStruct()
+	if ( trans != null )
+	{
+		expect LevelTransitionStruct( trans )
+		ChangeLevel( GetMapName(), trans )
+		return
+	}
+
+	LevelTransitionStruct trans2
+	ChangeLevel( GetMapName(), trans2 )
+
+}
+
+bool function IsTitanAISettings( string aiSettings )
+{
+	return Dev_GetAISettingByKeyField_Global( aiSettings, "aiclass" ) == "titan"
+}
+
+void function AddAutoPrecacheWeapon( AutoPrecacheList autoPrecacheList, string weapon )
+{
+	if ( weapon == "" )
+		return
+	autoPrecacheList.weapons.append( weapon )
+}
+
+void function FillAISettingsPrecaches( string aiSettings, AutoPrecacheList autoPrecacheList )
+{
+	if ( Dev_GetAISettingByKeyField_Global( aiSettings, "ForceAutoPrecacheDefaultWeapon" ) == 1 )
+	{
+		string weapon = expect string( Dev_GetAISettingByKeyField_Global( aiSettings, "DefaultWeapon" ) )
+		Assert( weapon != "", "Expected a weapon because ForceAutoPrecacheDefaultWeapon 1" )
+		AddAutoPrecacheWeapon( autoPrecacheList, weapon )
+	}
+
+	var grenadeWeapon = Dev_GetAISettingByKeyField_Global( aiSettings, "GrenadeWeaponName" )
+
+	if ( grenadeWeapon != "" )
+	{
+		expect string( grenadeWeapon )
+		AddAutoPrecacheWeapon( autoPrecacheList, grenadeWeapon )
+	}
+
+	var AdditionalScriptWeapon = Dev_GetAISettingByKeyField_Global( aiSettings, "AdditionalScriptWeapon" )
+	if ( AdditionalScriptWeapon != null )
+	{
+		expect string( AdditionalScriptWeapon )
+		AddAutoPrecacheWeapon( autoPrecacheList, AdditionalScriptWeapon )
+	}
+
+	var AdditionalAISettings = Dev_GetAISettingByKeyField_Global( aiSettings, "AdditionalAISettings" )
+	if ( AdditionalAISettings != null )
+	{
+		expect string( AdditionalAISettings )
+		FillAISettingsPrecaches( AdditionalAISettings, autoPrecacheList )
+	}
+
+	for ( int i = 0;; i++ )
+	{
+		asset gibModel = Dev_GetAISettingAssetByKeyField_Global( aiSettings, "GibModel" + i )
+		if ( gibModel == $"" )
+			break
+		autoPrecacheList.models.append( gibModel )
+	}
+
+	if ( IsTitanAISettings( aiSettings ) )
+	{
+		var titanSettings = Dev_GetAISettingByKeyField_Global( aiSettings, "npc_titan_player_settings" )
+		// is it a titan?
+		Assert( titanSettings != null, "No npc_titan_player_settings field in titan settings " + titanSettings )
+
+		// titans get their model from player model
+		expect string( titanSettings )
+		TitanLoadoutDef ornull titanLoadout = GetTitanLoadoutForColumn( "setFile", titanSettings )
+		if ( titanLoadout == null )
+			return
+
+		expect TitanLoadoutDef( titanLoadout )
+		AddTitanLoadoutToAutoPrecache( titanLoadout, autoPrecacheList )
+	}
+	else
+	{
+		// non-titan npcs get their model from their set file
+		string baseClass = expect string( Dev_GetAISettingByKeyField_Global( aiSettings, "BaseClass" ) )
+		array<string> keys = [ "DefaultModelName", "DefaultModelName_IMC", "DefaultModelName_MIL" ]
+
+		foreach ( key in keys )
+		{
+			var model = Dev_GetAISettingAssetByKeyField_Global( aiSettings, key )
+			if ( model == null )
+				continue
+
+			if ( model == $"" )
+				continue
+
+			expect asset( model )
+			autoPrecacheList.models.append( model )
+		}
+	}
+}
+
+void function AddTitanLoadoutToAutoPrecache( TitanLoadoutDef titanLoadout, AutoPrecacheList autoPrecacheList )
+{
+	array<string> weapons = GetWeaponsFromTitanLoadout( titanLoadout )
+	foreach ( weapon in weapons )
+	{
+		AddAutoPrecacheWeapon( autoPrecacheList, weapon )
+	}
+
+	#if MP
+		//Precache both the prime and non-prime versions
+		string primeSetFile
+		string nonPrimeSetFile
+		string titanClass = titanLoadout.titanClass
+		Assert( titanClass != "" )
+		nonPrimeSetFile = GetSetFileForTitanClassAndPrimeStatus( titanClass, false )
+		AddTitanSetFileToAutoPrecache( nonPrimeSetFile, autoPrecacheList )
+
+		if(  TitanClassHasPrimeTitan( titanClass )  )
+		{
+			primeSetFile = GetSetFileForTitanClassAndPrimeStatus( titanClass, true )
+			AddTitanSetFileToAutoPrecache( primeSetFile, autoPrecacheList )
+		}
+	#elseif SP
+		string nonPrimeSetFile = titanLoadout.setFile
+		//printt( "nonPrimeSetFile: " + nonPrimeSetFile )
+		AddTitanSetFileToAutoPrecache( nonPrimeSetFile, autoPrecacheList )
+	#endif
+}
+
+void function AddTitanSetFileToAutoPrecache( string setFile, AutoPrecacheList autoPrecacheList )
+{
+	asset model = GetPlayerSettingsAssetForClassName( setFile, "bodymodel" )
+	autoPrecacheList.models.append( model )
+
+	autoPrecacheList.models.extend(	GetModelsFromSetFile_3rdPerson( setFile ) )
+
+	asset hatchmodel = Dev_GetPlayerSettingAssetByKeyField_Global( setFile, "hatchmodel" )
+	if ( hatchmodel != $"" )
+	{
+		autoPrecacheList.models.append( hatchmodel )
+	}
+
+	AddAutoPrecacheScript( autoPrecacheList, setFile )
+
+	#if MP
+		autoPrecacheList.models.extend( GetModelsFromSetFile( setFile ) )
+	#endif
+}
+
+void function MarkNPCForAutoPrecache( string aiSettings )
+{
+	Assert( !file.forceAutoPrecacheAiSettings.contains( aiSettings ), "Already marked " + aiSettings + " for auto precache" )
+	file.forceAutoPrecacheAiSettings.append( aiSettings )
+}
+
+bool function AutoPrecacheUpToDate( AutoPrecacheList autoPrecacheList )
+{
+	foreach ( weapon in autoPrecacheList.weapons )
+	{
+		if ( !( weapon in file.autoPrecacheFound_weapons ) )
+		{
+			CodeWarning( "Auto Precache Failed: Weapon " + weapon + " not found." )
+			return false
+		}
+
+		if ( file.autoPrecacheFound_weapons[ weapon ] != autoPrecacheList.weaponCount[ weapon ] )
+		{
+			CodeWarning( "Auto Precache Failed: Weapon " + weapon + " count changed from " + file.autoPrecacheFound_weapons[ weapon ] + " to " + autoPrecacheList.weaponCount[ weapon ] )
+			return false
+		}
+
+		if ( !WeaponIsPrecached( weapon ) )
+		{
+			CodeWarning( "Auto Precache Failed: Weapon " + weapon + " is not precached." )
+			return false
+		}
+	}
+
+	foreach ( model in autoPrecacheList.models )
+	{
+		if ( !( model in file.autoPrecacheFound_models ) )
+		{
+			CodeWarning( "Auto Precache Failed: Model " + model + " not found." )
+			return false
+		}
+
+		if ( !ModelIsPrecached( model ) )
+		{
+			CodeWarning( "Auto Precache Failed: Model " + model + " is not precached." )
+			return false
+		}
+
+		//TODO: I think this is correct but it would make SP's autoprecache stuff need to get updated. Not worth the risk for R2.
+		/*if ( file.autoPrecacheFound_models.len() != autoPrecacheList.models.len() )
+		{
+			CodeWarning( "Auto Precache Failed: autoPrecacheFound_models.len() is not the same as  autoPrecacheList.models.len()"  )
+			return false
+		}*/
+	}
+
+	foreach ( settings, spawners in autoPrecacheList.npcSpawners )
+	{
+		if ( !( settings in file.autoPrecacheFound_npcs ) )
+		{
+			CodeWarning( "Auto Precache Failed: NPC " + settings + " not found." )
+			return false
+		}
+
+		if ( file.autoPrecacheFound_npcs[ settings ] != spawners.len() )
+		{
+			CodeWarning( "Auto Precache Failed: NPC spawner " + settings + " count changed from " + file.autoPrecacheFound_npcs[ settings ] + " to " + spawners.len() )
+			return false
+		}
+	}
+
+	// verify up to date autoprecache
+	return file.autoPrecacheVersion == AUTO_PRECACHE_VERSION
+}
+
+
+void function SetAutoPrecacheVersion( int ver )
+{
+	file.autoPrecacheVersion = ver
+}
+
+
+void function FillFromNPCSettings( array<string> npcAiSettings, AutoPrecacheList autoPrecacheList )
+{
+	table<string,bool> filledAiSettings
+
+	foreach ( aiSettings in file.forceAutoPrecacheAiSettings )
+	{
+		FillAISettingsPrecaches( aiSettings, autoPrecacheList )
+		filledAiSettings[ aiSettings ] <- true
+	}
+
+	// precache weapons from the AI
+	foreach ( aiSettings in npcAiSettings )
+	{
+		// any of these spawned in the level?
+		string baseClass = expect string( Dev_GetAISettingByKeyField_Global( aiSettings, "BaseClass" ) )
+		array<entity> spawners = GetSpawnerArrayByClassName( baseClass )
+
+		bool titanSettings = IsTitanAISettings( aiSettings )
+
+		foreach ( spawner in spawners )
+		{
+			// this may be set on the entity in leveled
+			table kvs = spawner.GetSpawnEntityKeyValues()
+
+			string leveledAISettings
+			if ( "leveled_aisettings" in kvs )
+			{
+				leveledAISettings = expect string( kvs.leveled_aisettings )
+			}
+
+			// this finds all spawners with the same baseclass, so only check the spawners that match ai settings.
+			if ( leveledAISettings == "" )
+			{
+				if ( baseClass != aiSettings )
+					continue
+			}
+			else
+			{
+				if ( leveledAISettings != aiSettings )
+					continue
+			}
+
+			if ( !( aiSettings in filledAiSettings ) )
+			{
+				// found a spawner with these leveled AI settings
+				FillAISettingsPrecaches( aiSettings, autoPrecacheList )
+				filledAiSettings[ aiSettings ] <- true
+			}
+
+			if ( !( aiSettings in autoPrecacheList.npcSpawners ) )
+				autoPrecacheList.npcSpawners[ aiSettings ] <- []
+			autoPrecacheList.npcSpawners[ aiSettings ].append( spawner )
+
+			if ( "script_drone_type" in kvs )
+			{
+				string script_drone_type = expect string( kvs.script_drone_type )
+				if ( !( script_drone_type in filledAiSettings ) )
+				{
+					filledAiSettings[ script_drone_type ] <- true
+					FillAISettingsPrecaches( script_drone_type, autoPrecacheList )
+				}
+			}
+
+			if ( "additionalequipment" in kvs )
+			{
+				string additionalequipment = expect string( kvs.additionalequipment )
+				if ( LegalWeaponString( additionalequipment ) && additionalequipment.find( "auto_" ) != 0 )
+				{
+					AddAutoPrecacheWeapon( autoPrecacheList, additionalequipment )
+				}
+			}
+
+			if ( "grenadeWeaponName" in kvs )
+			{
+				string grenadeWeaponName = expect string( kvs.grenadeWeaponName )
+				if ( LegalWeaponString( grenadeWeaponName ) )
+				{
+					AddAutoPrecacheWeapon( autoPrecacheList, grenadeWeaponName )
+				}
+			}
+
+			if ( titanSettings )
+			{
+				int titanType = int( expect string( kvs.TitanType ) )
+				string leveledTitanLoadout = expect string( kvs.leveled_titan_loadout )
+
+				TitanLoadoutDef loadout = GetTitanLoadoutFromPlayerSetFile( leveledTitanLoadout )
+
+				array<string> weapons = GetWeaponsFromTitanLoadout( loadout )
+				foreach ( weapon in weapons )
+				{
+					AddAutoPrecacheWeapon( autoPrecacheList, weapon )
+				}
+
+				#if SP
+				if ( titanType == TITAN_MERC )
+				{
+					// we have a boss!
+					string titanSettings = expect string( Dev_GetAISettingByKeyField_Global( aiSettings, "npc_titan_player_settings" ) )
+					string bossName = GetMercCharacterForSetFile( titanSettings )
+					BossTitanData bossTitanData = GetBossTitanData( bossName )
+					autoPrecacheList.models.append( bossTitanData.characterModel )
+				}
+				#endif
+			}
+		}
+	}
+}
+
+AutoPrecacheList function GenerateAutoPrecacheListForLevel()
+{
+	AutoPrecacheList autoPrecacheList
+
+	FillFromNPCSettings( GetAllNPCSettings(), autoPrecacheList )
+	array<string> deprecatedNPCs = GetAllDeprecatedNPCSettings()
+	FillFromNPCSettings( deprecatedNPCs, autoPrecacheList )
+
+	foreach ( aiSettings in deprecatedNPCs )
+	{
+		if ( !( aiSettings in autoPrecacheList.npcSpawners ) )
+			continue
+		foreach ( spawner in autoPrecacheList.npcSpawners[ aiSettings ] )
+		{
+			CodeWarning( "Found deprecated NPC " + aiSettings + " at " + spawner.GetSpawnEntityKeyValues().origin )
+		}
+	}
+
+	foreach ( npc in GetNPCArray() )
+	{
+		if ( !IsValid( npc ) )
+			continue
+
+		string weapon = expect string( npc.kv.additionalequipment )
+		if ( LegalWeaponString( weapon ) )
+			AddAutoPrecacheWeapon( autoPrecacheList, weapon )
+//		string weapon = npc.AISetting_GetDefaultWeapon()
+//		if ( LegalWeaponString( weapon ) )
+//			weapons.append( weapon )
+
+		if ( npc.HasKey( "grenadeWeaponName" ) )
+		{
+			string grenadeWeaponName = expect string( npc.kv.grenadeWeaponName )
+			if ( LegalWeaponString( grenadeWeaponName ) )
+			{
+				AddAutoPrecacheWeapon( autoPrecacheList, grenadeWeaponName )
+			}
+		}
+
+		string grenadeWeapon = npc.AISetting_GetGrenadeWeapon()
+		if ( grenadeWeapon != "" )
+			AddAutoPrecacheWeapon( autoPrecacheList, grenadeWeapon )
+
+		var AdditionalScriptWeapon = npc.Dev_GetAISettingByKeyField( "AdditionalScriptWeapon" )
+		if ( AdditionalScriptWeapon != null )
+		{
+			expect string( AdditionalScriptWeapon )
+			AddAutoPrecacheWeapon( autoPrecacheList, AdditionalScriptWeapon )
+		}
+	}
+
+	#if SP
+	LeveledScriptedWeapons leveledScriptedWeapons = GetAllLeveledScriptWeapons()
+	foreach ( weaponClass, _ in leveledScriptedWeapons.foundScriptWeapons )
+	{
+		AddAutoPrecacheWeapon( autoPrecacheList, weaponClass )
+	}
+
+	array<string> weapons
+
+	weapons = GetNPCDefaultWeapons()
+	foreach ( weapon in weapons )
+	{
+		AddAutoPrecacheWeapon( autoPrecacheList, weapon )
+	}
+
+	PilotLoadoutDef loadout = GetPilotLoadoutForCurrentMapSP()
+	weapons = GetWeaponsFromPilotLoadout( loadout )
+	foreach ( weapon in weapons )
+	{
+		AddAutoPrecacheWeapon( autoPrecacheList, weapon )
+	}
+
+	autoPrecacheList.models.extend( GetModelsFromSetFile( loadout.setFile ) )
+	AddAutoPrecacheScript( autoPrecacheList, loadout.setFile )
+
+	TitanLoadoutDef titanLoadout = GetTitanLoadoutForCurrentMap()
+	autoPrecacheList.models.extend( GetModelsFromSetFile( titanLoadout.setFile ) )
+	AddAutoPrecacheScript( autoPrecacheList, titanLoadout.setFile )
+	#endif
+
+
+	#if MP
+	array<string> pilotTypes = GetAllItemRefsOfType( eItemTypes.PILOT_SUIT )
+
+	foreach ( suit in pilotTypes )
+	{
+		string suitMale = GetSuitAndGenderBasedSetFile( suit, "race_human_male" )
+		autoPrecacheList.models.extend( GetModelsFromSetFile( suitMale ) )
+		AddAutoPrecacheScript( autoPrecacheList, suitMale )
+
+		string suitFemale = GetSuitAndGenderBasedSetFile( suit, "race_human_female" )
+		autoPrecacheList.models.extend( GetModelsFromSetFile( suitFemale ) )
+		AddAutoPrecacheScript( autoPrecacheList, suitFemale )
+	}
+	#endif
+
+	array<TitanLoadoutDef> titanLoadouts = GetAllowedTitanLoadouts()
+
+	foreach ( loadout in titanLoadouts )
+	{
+		#if MP
+		// in sp we dont want all the extra cockpit models and whatnot
+		AddTitanLoadoutToAutoPrecache( loadout, autoPrecacheList )
+		#endif
+
+		#if SP
+		// in sp it would be good to get away from giving all weapons on all levels
+		weapons = GetWeaponsFromTitanLoadout( loadout )
+		foreach ( weapon in weapons )
+		{
+			AddAutoPrecacheWeapon( autoPrecacheList, weapon )
+		}
+		#endif
+	}
+
+	AutoPrecache_InitFlightpathShared( autoPrecacheList )
+
+	autoPrecacheList.weapons.sort( SortStringAlphabetize )
+
+	table<string,int> weaponCount
+	foreach ( weapon in autoPrecacheList.weapons )
+	{
+		if ( !( weapon in weaponCount ) )
+			weaponCount[ weapon ] <- 0
+		weaponCount[ weapon ]++
+	}
+
+	autoPrecacheList.weaponCount = weaponCount
+
+	RemoveDupesFromSorted_String( autoPrecacheList.weapons )
+
+	autoPrecacheList.models.sort( SortAssetAlphabetize )
+	RemoveDupesFromSorted_Asset( autoPrecacheList.models )
+
+	return autoPrecacheList
+}
+
+void function AddAutoPrecacheScript( AutoPrecacheList autoPrecacheList, string settings )
+{
+	var autoprecache = Dev_GetPlayerSettingByKeyField_Global( settings, "autoprecache_script" )
+	if ( autoprecache == null )
+		return
+
+	expect string( autoprecache )
+	Assert( autoprecache != "" )
+
+	asset bodyModel = GetPlayerSettingsAssetForClassName( settings, "bodymodel" )
+	autoPrecacheList.autoPrecacheScript[ bodyModel ] <- autoprecache
+}
+
+void function AP_NPCSpawnerFound( string settings, int count )
+{
+	file.autoPrecacheFound_npcs[ settings ] <- count
+}
+
+void function AP_PrecacheWeapon( string weapon, int count )
+{
+	file.autoPrecacheFound_weapons[ weapon ] <- count
+
+	PrecacheWeapon( weapon )
+}
+
+void function AP_PrecacheModel( asset model )
+{
+	file.autoPrecacheFound_models[ model ] <- true
+
+	PrecacheModel( model )
+}
+
+void function ExportAutoPrecacheList( AutoPrecacheList autoPrecacheList )
+{
+	string mapName
+	#if SP
+	mapName = GetMapName().toupper()
+	#endif
+
+	#if MP
+	mapName = "MP"
+	#endif
+
+	// Write function open
+	DevTextBufferClear()
+	// Write verification call
+
+	DevTextBufferWrite( "global function " + mapName + "_AutoPrecache\n\n" )
+	DevTextBufferWrite( "void function " + mapName + "_AutoPrecache()\n" )
+	DevTextBufferWrite( "{\n" )
+
+	DevTextBufferWrite( "#if DEV\n" )
+
+	DevTextBufferWrite( "	#if SERVER\n" )
+	DevTextBufferWrite( "	SetAutoPrecacheVersion( " + AUTO_PRECACHE_VERSION + " )\n" )
+
+	DevTextBufferWrite( "	// NPC spawners found:\n" )
+	array<string> spawnerNames
+	foreach ( aiSettings, spawnerArray in autoPrecacheList.npcSpawners )
+	{
+		spawnerNames.append( aiSettings )
+	}
+	spawnerNames.sort( SortStringAlphabetize )
+
+	foreach ( aiSettings in spawnerNames )
+	{
+		array<entity> spawnerArray = autoPrecacheList.npcSpawners[ aiSettings ]
+		DevTextBufferWrite( "	AP_NPCSpawnerFound( \"" + aiSettings + "\", " + spawnerArray.len() + " )\n" )
+	}
+	DevTextBufferWrite( "	#endif\n" )
+	DevTextBufferWrite( "\n" )
+
+	foreach ( weapon in autoPrecacheList.weapons )
+	{
+		int count = autoPrecacheList.weaponCount[ weapon ]
+		DevTextBufferWrite( "	AP_PrecacheWeapon( \"" + weapon + "\", " + count + " )\n" )
+	}
+
+	foreach ( model in autoPrecacheList.models )
+	{
+		DevTextBufferWrite( "	AP_PrecacheModel( " + model + " )\n" )
+	}
+
+	DevTextBufferWrite( "#endif\n\n" )
+
+	DevTextBufferWrite( "#if !DEV\n" )
+
+	DevTextBufferWrite( "\n" )
+
+	foreach ( weapon in autoPrecacheList.weapons )
+	{
+		int count = autoPrecacheList.weaponCount[ weapon ]
+		DevTextBufferWrite( "	PrecacheWeapon( \"" + weapon + "\" )\n" )
+	}
+
+	foreach ( model in autoPrecacheList.models )
+	{
+		DevTextBufferWrite( "	PrecacheModel( " + model + " )\n" )
+	}
+
+	DevTextBufferWrite( "#endif\n\n" )
+
+	DevTextBufferWrite( "#if CLIENT\n" )
+
+	array<string>[4] titanModelAssets
+	foreach ( model, script in autoPrecacheList.autoPrecacheScript )
+	{
+		switch ( script )
+		{
+			case "atlas":
+				titanModelAssets[ 0 ].append( "	ClTitanAtlas_Init( " + model + " )\n" )
+				break
+
+			case "ogre":
+
+				titanModelAssets[ 1 ].append( "	ClTitanOgre_Init( " + model + " )\n" )
+				break
+
+			case "stryder":
+				titanModelAssets[ 2 ].append( "	ClTitanStryder_Init( " + model + " )\n" )
+				break
+
+			case "buddy":
+				titanModelAssets[ 2 ].append( "	ClTitanBuddy_Init( " + model + " )\n" )
+				break
+
+			default:
+				Assert( 0, "Unknown autoprecache_script key " + script )
+				break
+		}
+	}
+
+	foreach( arrayOfAsset in titanModelAssets ) //Sort output so exported precache file can be diffed easily
+	{
+		arrayOfAsset.sort( SortStringAlphabetize )
+		foreach( assetElement in arrayOfAsset )
+		{
+			DevTextBufferWrite( assetElement )
+		}
+	}
+
+	DevTextBufferWrite( "#endif\n" )
+
+	// Write function close
+	DevTextBufferWrite( "}\n\n" )
+
+
+	#if SP
+	string filename = "scripts/vscripts/sp/autoprecache/" + mapName + "_autoprecache.nut"
+	#endif
+
+	#if MP
+	string filename = "scripts/vscripts/mp/" + mapName + "_autoprecache.nut"
+	#endif
+	DevP4Checkout( filename )
+	DevTextBufferDumpToFile( filename )
+	DevP4Add( filename )
+	printt( "Wrote " + filename )
+}
+
+#endif

@@ -1,0 +1,75 @@
+global function ClGamemodeInfection_Init
+global function ServerCallback_YouAreInfected
+global function ServerCallback_AnnounceFirstInfected
+global function ServerCallback_AnnounceLastSurvivor
+
+void function ClGamemodeInfection_Init()
+{
+	//ClGameState_RegisterGameStateAsset( $"ui/gamestate_info_ffa.rpak" )
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_INTRO, "music_beacon_8a_jumpingsuccess", TEAM_MILITIA )
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_INTRO, "music_beacon_8a_jumpingsuccess", TEAM_IMC )
+	RegisterLevelMusicForTeam( eMusicPieceID.GAMEMODE_1, "Music_Beacon_24_BTLob", TEAM_MILITIA )
+	RegisterLevelMusicForTeam( eMusicPieceID.GAMEMODE_1, "Music_Beacon_24_BTLob", TEAM_IMC )
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LAST_MINUTE, "music_mp_titanwar_lastminute", TEAM_MILITIA )
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LAST_MINUTE, "music_mp_titanwar_lastminute", TEAM_IMC )
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_WIN, "music_mp_freeagents_outro_lose", TEAM_MILITIA )
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_WIN, "music_mp_freeagents_outro_lose", TEAM_IMC )
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_DRAW, "music_mp_freeagents_outro_lose", TEAM_MILITIA )
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_DRAW, "music_mp_freeagents_outro_lose", TEAM_IMC )
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LOSS, "music_mp_freeagents_outro_lose", TEAM_MILITIA )
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LOSS, "music_mp_freeagents_outro_lose", TEAM_IMC )
+}
+
+void function ServerCallback_YouAreInfected()
+{
+	// heavily based on mfd code
+	entity localPlayer = GetLocalViewPlayer()
+
+	StartParticleEffectOnEntity( localPlayer.GetCockpit(), GetParticleSystemIndex( $"P_MFD" ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
+	EmitSoundOnEntity( localPlayer, "UI_InGame_MarkedForDeath_PlayerMarked"  )
+	HideEventNotification()
+	AnnouncementData announcement = Announcement_Create( "#INFECTION_YOU_ARE_INFECTED" )
+	Announcement_SetSubText( announcement, "#INFECTION_KILL_SURVIVORS" )
+	Announcement_SetTitleColor( announcement, <1,0,0> )
+	Announcement_SetPurge( announcement, true )
+	Announcement_SetPriority( announcement, 200 ) //Be higher priority than Titanfall ready indicator etc
+	Announcement_SetSoundAlias( announcement, SFX_HUD_ANNOUNCE_QUICK )
+	Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_QUICK )
+	AnnouncementFromClass( localPlayer, announcement )
+}
+
+void function ServerCallback_AnnounceFirstInfected( int survivorEHandle )
+{
+	entity player = GetEntityFromEncodedEHandle( survivorEHandle )
+
+	AnnouncementData announcement = Announcement_Create( Localize( "#INFECTION_FIRST_INFECTED", player.GetPlayerName() ) )
+	//Announcement_SetSubText( announcement, "#INFECTION_KILL_LAST_SURVIVOR" )
+	Announcement_SetTitleColor( announcement, <1,0,0> )
+	Announcement_SetPurge( announcement, true )
+	Announcement_SetPriority( announcement, 200 ) //Be higher priority than Titanfall ready indicator etc
+	Announcement_SetSoundAlias( announcement, SFX_HUD_ANNOUNCE_QUICK )
+	Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_QUICK )
+	AnnouncementFromClass( GetLocalViewPlayer(), announcement )
+}
+
+void function ServerCallback_AnnounceLastSurvivor( int survivorEHandle )
+{
+	entity player = GetEntityFromEncodedEHandle( survivorEHandle )
+
+	string announcementString = Localize( "#INFECTION_LAST_SURVIVOR", player.GetPlayerName() )
+	string announcementSubString = "#INFECTION_KILL_LAST_SURVIVOR"
+	if ( player == GetLocalViewPlayer() )
+	{
+		announcementString = "#INFECTION_YOU_ARE_LAST_SURVIVOR"
+		announcementSubString = "#INFECTION_SURVIVE_LAST_SURVIVOR"
+	}
+	
+	AnnouncementData announcement = Announcement_Create( announcementString )
+	Announcement_SetSubText( announcement, announcementSubString )
+	Announcement_SetTitleColor( announcement, <1,0,0> )
+	Announcement_SetPurge( announcement, true )
+	Announcement_SetPriority( announcement, 200 ) //Be higher priority than Titanfall ready indicator etc
+	Announcement_SetSoundAlias( announcement, SFX_HUD_ANNOUNCE_QUICK )
+	Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_QUICK )
+	AnnouncementFromClass( GetLocalViewPlayer(), announcement )
+}

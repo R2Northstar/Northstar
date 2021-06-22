@@ -1,0 +1,692 @@
+global struct BeamEffect
+{
+	entity effect
+	entity cpoint
+}
+
+global struct SpawnPointData
+{
+	table lastRatingData = {}
+}
+
+global struct BallLightningData
+{
+	asset zapFx = BALL_LIGHTNING_ZAP_FX
+	float zapLifetime = BALL_LIGHTNING_ZAP_LIFETIME
+	string zapSound = BALL_LIGHTNING_ZAP_SOUND
+	string zapImpactTable = BALL_LIGHTNING_FX_TABLE
+	float radius = BALL_LIGHTNING_ZAP_RADIUS
+	float humanRadius = BALL_LIGHTNING_ZAP_HUMANSIZE_RADIUS
+	float height = BALL_LIGHTNING_ZAP_HEIGHT
+	float minDot = -1.0
+	float damageToPilots = BALL_LIGHTNING_DAMAGE_TO_PILOTS
+	float damage = BALL_LIGHTNING_DAMAGE
+	bool zapPylons = false
+	int deathPackage = ( DF_DISSOLVE | DF_GIB | DF_ELECTRICAL | DF_STOPS_TITAN_REGEN )
+	bool fatalToDoomedTitans = false
+}
+
+global struct PhaseRewindData
+{
+	vector origin
+	vector angles
+	vector velocity
+	bool wasInContextAction
+	bool wasCrouched
+}
+
+global struct PlayerInputEventCallbackStruct
+{
+	int cmdsPressedBitMask = 0
+	int cmdsHeldBitMask = 0
+	int cmdsReleasedBitMask = 0
+	void functionref( entity player ) callbackFunc
+}
+
+global struct PlayerHeldButtonEventCallbackStruct
+{
+	int buttonHeld = 0
+	void functionref( entity player ) callbackFunc
+	float timeHeld = 1.0
+}
+
+global struct PlayerInputAxisEventCallbackStruct
+{
+	float horizAxisMinThreshold = -1.0
+	float horizAxisMaxThreshold =  1.0
+	float vertAxisMinThreshold= -1.0
+	float vertAxisMaxThreshold= 1.0
+
+	bool functionref( entity player ) callbackFunc
+	float debounceTime = 0.0
+	float lastTriggeredTime = 0.0
+}
+
+global enum eStatUpdateTime
+{
+	DISTANCE,
+	TIME_PLAYED,
+	WEAPON_USAGE,
+	COUNT
+}
+
+global enum eStoredWeaponType
+{
+	main,
+	offhand
+}
+
+global struct TitanDamage
+{
+	int shieldDamage
+
+	bool doomedNow
+	int doomedDamage
+}
+
+global struct RecentUnlock
+{
+	int refGuid = 0
+	int parentRefGuid = 0
+	int count = 0
+}
+
+global struct StoredWeapon
+{
+	string name
+	int weaponType = eStoredWeaponType.main
+	bool activeWeapon = false
+	int inventoryIndex
+	array<string> mods
+	int modBitfield
+	int ammoCount
+	int clipCount
+	float nextAttackTime
+	int skinIndex
+	int camoIndex
+	bool isProScreenOwner
+	#if MP
+	string burnReward
+	#endif
+	int scriptFlags0
+	int scriptTime0
+}
+
+global struct ScriptTriggerData
+{
+	bool enabled
+	float radius
+	table<entity> entities
+	array<void functionref(entity, entity)> enterCallbacks
+	array<void functionref(entity, entity)> leaveCallbacks
+	float top
+	float bottom
+	int flags
+	int managedEntArrayHandle
+}
+
+global struct BurnCardPhaseRewindStruct
+{
+	array<PhaseRewindData> phaseRetreatSavedPositions
+	bool phaseRetreatShouldSave = true
+}
+
+// This struct is hooked up to entity.e in code
+global struct ServerEntityStruct
+{
+	entity repairSoul // repair drones
+	array<void functionref( entity, var )> entKilledCallbacks
+	array<entity> fxArray
+	entity cpoint1
+	bool moverPathPrecached
+	bool blockActive = false
+	int embarkCount = 0 // For the Titan soul to know how many times a player has embarked.
+
+	entity syncedMeleeAttacker
+	entity lastSyncedMeleeAttacker
+	bool markedForExecutionDeath
+
+	bool proto_weakToPilotWeapons
+
+	bool isHotDropping
+
+	bool spawnPointInUse
+	entity lastAttacker
+
+	// sticky props
+	float spawnTime = 0.0
+	bool isStickyCrit = false
+	int stickyRoundsArrayId = -1 //script managed ent array index
+
+	table<string,AnimEventData> animEventDataForEntity
+
+	array<DamageHistoryStruct> recentDamageHistory
+
+	float lastTakeDamageTime_thermite // meteor thermite does an extra burst of damage on first contact
+	float lastTakeDamageTime_laser_cannon
+
+	// tracker rounds
+	int myTrackerRoundsIdx = -1 //script managed ent array index
+	int myReservedTrackerRoundsIdx = -1 //script managed ent array index
+	int trackerRoundsOnMeIdx = -1 //script managed ent array index
+	bool allowLifetimeDeath = true
+
+	// entities
+	float nextAllowStickyExplodeTime = 0.0
+	float stickyClearTime = 0.0
+
+	entity shieldWallFX
+	entity cpoint
+
+	// vortex rules
+	var functionref( entity, var ) BulletHitRules
+	bool functionref( entity, entity, bool ) ProjectileHitRules
+
+	// soul shield
+	float nextShieldDecayTime = 0.0
+	float forcedRegenTime = 0.0
+
+	// ball lightning
+	BallLightningData ballLightningData
+	int ballLightningTargetsIdx = -1
+	int arcPylonArrayIdx = -1 //script managed ent array index
+	float lastArcTime = 0.0
+
+	// laser tripwire
+	int laserPylonArrayIdx = -1 //script managed ent array index
+
+	//Survivor
+	int crateType
+
+	//Bomb
+	// TODO: remove hasBomb and replace with deterministic checks
+	bool hasBomb = false
+	bool destroyOutOfBounds = false
+	bool destroyTriggerHurt = false
+
+	//Rodeo
+	entity lastRodeoAttacker
+
+	array<int> smokeScreenSlowdownIdx
+
+	// number of shield beacons affecting me
+	int shieldBeaconCount
+	array<BeamEffect> shieldBeaconFXArray
+
+	//Ping
+	entity lastPlayerToSpot
+	float lastSpotTime = -9999.0
+
+	bool forceRagdollDeath = false
+
+	int projectileID
+
+	bool windPushEnabled = true
+	bool inWindTunnel
+	float windTunnelStartTime
+	float windTunnelStrength
+	vector windTunnelDirection
+
+	bool forceGibDeath = false
+
+	SpawnPointData spawnPointData
+
+	array<void functionref( entity ent, var damageInfo )> entDamageCallbacks
+	array<void functionref( entity ent, var damageInfo )> entPostDamageCallbacks
+	array<void functionref( entity titan, entity attacker )> entSegmentLostCallbacks
+	array<void functionref( entity ent, var damageInfo, float actualShieldDamage )> entPostShieldDamageCallbacks
+
+	// Used for weapons and abilities that have multiple ticks, but we only want a single tick to hit each player
+	array<entity> damagedEntities
+	bool onlyDamageEntitiesOnce = false
+	bool onlyDamageEntitiesOncePerTick = false
+	float lastDamageTickTime
+
+	array<entity> attachedEnts
+
+	//Scorch Variables
+	table< int, array<entity> > waveLinkFXTable //Wave FX Link - Used for the wide projectile attacks so we can link FX across the rows.
+	table< int, vector > fireTrapEndPositions //Used to spawn 1 particle per arm instead of many.
+	table< int, entity > fireTrapMovingGeo //Used track which piece of moving geo the fire trap arms are on
+
+	//Legion Variables
+	bool ammoSwapPlaying = false
+	bool gunShieldActive = false
+
+	int fxType
+	array<entity> fxControlPoints
+
+	int totalEntsStoredID = 0
+	int AT_BossID
+
+	ScriptTriggerData scriptTriggerData
+
+	bool noOwnerFriendlyFire = false
+
+	bool hasDefaultEnemyHighlight
+
+	bool isDisabled = false
+
+	int gameModeId
+
+	// PVE //
+	int roamerSpawnType = -1
+	int pveSpawnType = -1
+	int pveSpawnFlags = 0
+	bool roamerIsAggro = false
+	//
+	int objectiveGoalVersion = 0
+	int objectiveGoalFlags = 0		// eObjectiveTracking.*
+	/////////
+
+	array<entity> sonarTriggers
+
+	string enemyHighlight = ""
+	string burnReward = ""
+	int fd_roundDeployed = -1
+}
+
+global struct MeritData
+{
+	int scoreMeritState
+	int completionMeritState
+	int winMeritState
+	int evacMeritState
+
+	int weaponMerits
+	int titanMerits
+
+	int happyHourMeritState
+}
+
+// This struct is hooked up to entity.p in code
+global struct ServerPlayerStruct
+{
+	float						connectTime
+	bool						clientScriptInitialized = false
+
+	bool						hasMatchLossProtection = false
+
+	bool						usingLoadoutCrate
+	int 						activePilotLoadoutIndex = -1
+	int 						activeTitanLoadoutIndex = -1
+	int							npcFollowersArrayID
+	entity 						lastFriendlyTriggerTouched
+	float						titanDamageDealt // Does not include shield damage
+	float 						titanDamageDealt_Stat // Does not include shield damage
+	string 						spectreSquad
+	bool 						fastballActivatePressed
+	float 						nextATShieldRegenTime
+	bool 						demigod
+	bool						partyMember
+
+	bool[OFFHAND_COUNT]			offhandSlotLocked = [ false, false, false, false, false, false ]
+	float[OFFHAND_COUNT]		lastPilotOffhandUseTime = [ -99.0, -99.0, -99.0, -99.0, -99.0, -99.0 ]
+	float[OFFHAND_COUNT]		lastPilotOffhandChargeFrac = [ -1.0, -1.0, -1.0, -1.0, -1.0, -1.0 ]
+	float[OFFHAND_COUNT]		lastPilotClipFrac = [ 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 ]
+	float[OFFHAND_COUNT]		lastTitanOffhandUseTime = [ -99.0, -99.0, -99.0, -99.0, -99.0, -99.0 ]
+	float[OFFHAND_COUNT]		lastTitanOffhandChargeFrac = [ -1.0, -1.0, -1.0, -1.0, -1.0, -1.0 ]
+	float[OFFHAND_COUNT]		lastTitanClipFrac = [ 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 ]
+	float						lastSuitPower = -1.0
+
+	entity currentTargetPlayerOrSoul_Ent
+	float currentTargetPlayerOrSoul_LastHitTime
+
+	entity 						lastPrimaryWeaponEnt // track when your primary changes
+
+	void functionref( entity, entity ) followPlayerOverride
+
+	float 						postDeathThreadStartTime
+	float 						lastSelectSPTitanLoadoutTime
+
+	float lastNpcSyncedMeleeVsPlayerTime = -99
+
+	bool 						watchingPetTitanKillReplay
+
+	bool						hasSniperWeapon = false
+
+	int 						controllableProjectiles_scriptManagedID = -1
+
+	float 						lastDroneShieldStunPushTime
+
+	float						lastRespawnTime
+	float						lastDamageTime
+	float						lastDeathTime
+	vector						deathOrigin
+	vector						deathAngles
+	vector						rematchOrigin
+
+	entity						lastKiller
+	array<float>				recentPlayerKilledTimes
+	array<float>				recentAllKilledTimes
+	bool						seekingRevenge
+	table<entity, int>			playerKillStreaks
+	int							playerOrTitanKillsSinceLastDeath //This used to only be player Kills, changed primarily for challenge unlock. See 207007
+	float						lastOnslaughtTime = -ONSLAUGHT_REQUIREMENT_TIME
+	float						lastMayhemTime = -MAYHEM_REQUIREMENT_TIME
+
+	entity						lastSpawnPoint
+
+	string						lastExecutionUsed
+
+	MeritData					meritData
+
+	void functionref( entity ) currViewConeFunction = null
+	RodeoPackageStruct&			rodeoPackage //To assign into a nested struct, reference is needed. Less efficient than directly changing values of struct
+	bool rodeoReadyForAction = true
+	float lastClamberFailedTime = 0.0
+
+	table<int, array<void functionref( entity )> > playerMovementEventCallbacks
+	array<PlayerInputEventCallbackStruct> playerInputEventCallbacks
+	array<PlayerHeldButtonEventCallbackStruct> playerHeldButtonEventCallbacks
+	array<PlayerInputAxisEventCallbackStruct> playerInputAxisEventCallbacks
+
+	// for titan zipline
+	entity 			activeZiplineBolt
+	table<entity> 	activeZiplineEnts
+	int 			activeZiplineTargetID
+	string 			ogTitanOffhandWeaponName
+
+	array<PlayerSlowDownEffect>		slowEffects
+
+	//AT Turrets
+	float PROTO_UseDebounceEndTime = 0.0 //Working around hacky implementation.
+
+	entity deployableAmmoBeacon
+
+	bool pilotLoadoutChanged
+	bool titanLoadoutChanged
+	int pilotModelNeedsUpdate = -1
+	int titanModelNeedsUpdate = -1
+
+	int lastActivatedSpreeRewardsWeaponReward
+
+	float empEndTime
+
+	int disableOffhandWeaponsStackCount
+
+	float timeTitanUpgradesStartCountingDown = -1.0
+	float timeTitanUpgradesAccumulatedPauseTime = -1.0
+
+	bool isEmbarking = false
+	bool isDisembarking = false
+	bool isCustomDisembark = false
+
+	vector ornull quickDeathOrigin = null
+	vector ornull quickDeathAngles = null
+	bool doingQuickDeath = false
+	bool quickDeathRealDeathFadesToBlack  = false
+
+	int numberOfDeaths = 0
+	int numberOfDeathsSinceLastKill = 0
+
+	float lastGrappledTime
+
+	bool isReviving = false
+
+	float lastEjectTime = 0
+
+	bool showingMobilityGhost
+	float timeNearMobilityGhostHint
+
+	array<StoredWeapon> storedWeapons
+
+	bool rodeoShouldAdjustJumpOffVelocity = false
+	float rodeoRequestBatteryHintLastShownTime = 0.0
+	float batteryLastTouchedNotificationTime = 0.0
+
+	entity leechTarget = null
+	float lastLeechTypeSoundTime = -1
+	table<entity, entity> leechedEnts = {}
+
+	float lastFullHealthTime
+
+	bool isDisconnected = false
+	array<int> empStatusEffectsToClearForPhaseShift //Not great, done to avoid needing code work to get a separate empSlow/empSTurnEffects
+
+	float stats_wallrunTime = 0
+	float stats_wallhangTime = 0
+	float stats_airTime = 0
+	float[ eStatUpdateTime.COUNT ] statUpdateTimes
+	table<string, float> lastPlayerDidDamageTimes
+	bool rewardedMatchCredit = false
+
+	bool lastPosForDistanceStatValid = false
+	vector lastPosForDistanceStat
+
+	bool pilotEjecting = false
+	float pilotEjectStartTime
+	float pilotEjectEndTime
+
+	array<int> deathHintViews
+
+	float earnMeterOwnedFrac
+	float earnMeterOverdriveFrac
+	float earnMeterRewardFrac
+
+	BurnCardPhaseRewindStruct burnCardPhaseRewindStruct
+	array<entity> rodeoAnimTempProps
+
+	bool controllingTurret = false
+
+	int pveTacticalType = -1
+	int pveTacticalLevel = -1
+
+	array<RecentUnlock> challengeUnlocks
+
+	float lastDpadSayTime = -999
+	int consecutiveDpadMessages = 0
+	float replacementTitanETATimer = 0
+	float replacementTitanReady_lastNagTime = 0
+
+	int turretArrayId = -1
+
+	float hotStreakTime = 0.0
+}
+
+global struct TitanSettings
+{
+	string titanSetFile = ""
+	array<string> titanSetFileMods
+}
+
+global struct NPCDefaultWeapon
+{
+	string wep
+	array<string> mods
+}
+
+// This struct is hooked up to entity.ai in code
+global struct ServerAIStruct
+{
+	TitanSettings titanSettings
+
+	TitanLoadoutDef& titanSpawnLoadout
+
+	vector spawnOrigin
+
+	NPCDefaultWeapon ornull mySpawnOptions_weapon
+
+	string droneSpawnAISettings
+
+	float startCrawlingTime
+	bool crawling = false
+	bool transitioningToCrawl = false
+	bool preventOwnerDamage
+	bool invulnerableToNPC = false
+	bool buddhaMode
+	bool killShotSound = true
+
+	table<int,int> stalkerHitgroupDamageAccumulated // used to decide when to blow off limbs
+	table<int,float> stalkerHitgroupLastHitTime // used to decide when to blow off limbs
+
+	bool fragDroneArmed = true
+	entity suicideSpectreExplodingAttacker
+	float suicideSpectreDefaultExplosionDelay
+	float suicideSpectreExplosionDelay
+	float suicideSpectreExplosionDistance
+	float suicideSpectreExplosionTraceTime
+
+	bool superSpectreEnableFragDrones = true
+	int fragDroneMin = 0
+	int fragDroneMax = 0
+	int fragDroneBatch = 0
+	int activeMinionEntArrayID = -1
+
+	bool readyToFire = true
+
+	float nextRegenTime
+	float nextAllowAnnounceTime
+
+	bool enableFriendlyFollower = true
+	entity lastFriendlyTrigger
+
+
+	bool leechInProgress = false
+	float leechStartTime = -1
+
+	//Marvins
+	entity carryBarrel
+	entity mortarTarget
+
+	int bossTitanType
+	bool bossTitanVDUEnabled = true
+	bool bossTitanPlayIntro = true
+	int mercCharacterID
+	string bossCharacterName
+
+	int killCount
+	int scoreCount
+
+	bool shouldDropBattery = true
+	int nukeCore = 0
+
+	int playerDoomedProficiency
+	int defaultProficiency
+
+	string dropshipSpawnStyle = ""
+	float spawnTime
+}
+
+
+// hooked up to entity.w in code
+global struct ServerWeaponStruct
+{
+	float startChargeTime = 0.0
+	bool wasCharged = false
+	bool initialized = false
+	entity lastProjectileFired
+	array vortexImpactData
+
+	array<PhaseRewindData> phaseRetreatSavedPositions
+	bool phaseRetreatShouldSave = true
+
+	entity laserWorldModel
+	entity guidedMissileTarget = null
+	array<entity> salvoMissileArray
+
+	entity weaponOwner
+	entity bubbleShield
+	array<int> statusEffects
+	array<entity> fxHandles
+	float lastFireTime
+
+	table< entity, int> targetLockEntityStatusEffectID
+	void functionref(entity, entity) missileFiredCallback
+	int savedKillCount
+}
+
+
+global struct RemoteTurretSettings
+{
+	vector turretOrigin
+	vector turretAngles
+	vector panelOrigin
+	vector panelAngles
+
+	asset turretModel
+	asset panelModel
+
+	string turretSettingsName
+	string weaponName
+
+	bool viewClampEnabled
+	float viewClampRangeYaw
+	float viewClampRangePitch
+	float viewStartPitch
+}
+
+// hooked up to entity.remoteturret in code
+global struct ServerRemoteTurretStruct
+{
+	RemoteTurretSettings ornull settings
+	entity controlPanel
+	int statusEffectID
+}
+
+
+// hooked up to entity.proj in code
+global struct ServerProjectileStruct
+{
+	bool isChargedShot = false
+	float damageScale = 1.0
+	bool onlyAllowSmartPistolDamage = false
+	bool selfPropelled = true
+	bool startPlanting = false
+	entity trackedEnt
+	int projectileBounceCount = 0
+	array<entity> projectileGroup
+	int projectileID
+	bool tetherAttached
+	vector savedOrigin
+	vector savedRelativeDelta
+	entity savedMovingGeo
+	vector savedAngles
+	entity inflictorOverride
+	bool hasBouncedOffVortex = false
+	bool isPlanted = false
+}
+
+// hooked up to entity.soul in code
+global struct ServerTitanSoulStruct
+{
+	bool rebooting = false
+	float lastSegmentLossTime = 0.0
+	float batteryTime
+	entity bubbleShield
+	NPCPilotStruct seatedNpcPilot
+	bool skipDoomState
+	bool regensHealth = true
+	bool diesOnEject = true
+	float doomedStartTime = 0.0
+	entity batteryContainer = null
+	entity armBadge = null
+	bool batteryContainerBeingUsed = false
+	bool batteryContainerPastPointOfNoReturn = false
+	entity lastOwner
+	int upgradeCount = 0
+	TitanLoadoutDef& titanLoadout
+	entity nukeAttacker = null
+	bool batteryMovedDown = false
+}
+
+// hooked up to entity.decoy in code
+global struct ServerPlayerDecoyStruct
+{
+	array< entity > fxHandles
+	array< string > loopingSounds
+}
+
+// hooked up to entity.sp in code
+global struct ServerSpawnpointStruct
+{
+	bool enabled
+	float lastUsedTime
+	array< int > zones
+	array< entity > visibleToTurret
+}
+
+global struct ServerFirstPersonProxyStruct
+{
+	entity battery
+}

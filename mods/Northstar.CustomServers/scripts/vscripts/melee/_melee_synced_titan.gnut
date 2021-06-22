@@ -1,0 +1,1543 @@
+untyped
+
+global function MeleeSyncedTitan_Init
+
+const TITANARMMODEL = $"models/weapons/arms/atlaspov.mdl"
+const TEAM_JUMPJET_DBL = $"P_team_jump_jet_DBL"
+
+enum eTitanExecutionType
+{
+	fistThroughCockpit
+	dummy //not used yet
+}
+
+struct TitanExcutionData
+{
+	string attackerAnimation3p
+	string attackerAnimation3p_vsAutoTitan
+	table<string,string> attackerAnimation3pPilot
+	table<string,string> targetAnimation3p
+	table<string,string> targetAnimation3pPilot
+	string sound_1p
+	string sound_3p
+	array<string> thirdPersonCameraAttachments
+	array<string> linkedExecutions
+}
+
+struct
+{
+	table<string, TitanExcutionData> executionData_3p
+} file
+
+int RAGDOLL_IMPACT_TABLE_IDX = -1
+
+function MeleeSyncedTitan_Init()
+{
+	RAGDOLL_IMPACT_TABLE_IDX = PrecacheImpactEffectTable( "ragdoll_human" )
+	AddSyncedMeleeServerThink( GetSyncedMeleeChooser( "titan", "titan" ), MeleeThread_TitanVsTitan )
+
+	if ( GetBugReproNum() == 129802 )
+	{
+		AddDeathCallback( "npc_titan", OnNPCTitanDeath )
+	}
+
+	PrecacheWeapon( "mp_titanweapon_salvo_rockets" )
+	PrecacheParticleSystem( TEAM_JUMPJET_DBL )
+
+	Init3pExecutions()
+}
+
+void function Init3pExecutions()
+{
+	var dataTable = GetDataTable( $"datatable/titan_executions.rpak" )
+	int numRows = GetDatatableRowCount( dataTable )
+	for ( int row=0; row<numRows; row++ )
+	{
+		TitanExcutionData data = Create_3p_ExecutionData( dataTable, row )
+		string ref = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "ref" ) )
+		file.executionData_3p[ref] <- data
+	}
+}
+
+TitanExcutionData function Create_3p_ExecutionData( var dataTable, int row )
+{
+	string attackerAnimation3p = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "attackerAnim" ) )
+	string attackerAnimation3p_vsAutoTitan = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "attackerAnimVsAutoTitan" ) )
+	string targetAnimation3p_lt = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "victimAnim_lt" ) )
+	string targetAnimation3p_md = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "victimAnim_md" ) )
+	string targetAnimation3p_hv = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "victimAnim_hv" ) )
+	string targetAnimation3pPilot_lt = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "victimAnim_pt_lt" ) )
+	string targetAnimation3pPilot_md = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "victimAnim_pt_md" ) )
+	string targetAnimation3pPilot_hv = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "victimAnim_pt_hv" ) )
+
+	string attackerAnimation3pPilot_lt = ""
+	if ( GetDataTableColumnByName( dataTable, "attackerAnim_pt_lt" ) != -1 )
+		attackerAnimation3pPilot_lt = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "attackerAnim_pt_lt" ) )
+
+	string attackerAnimation3pPilot_md = ""
+	if ( GetDataTableColumnByName( dataTable, "attackerAnim_pt_mt" ) != -1 )
+		attackerAnimation3pPilot_md = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "attackerAnim_pt_mt" ) )
+
+	string attackerAnimation3pPilot_hv = ""
+	if ( GetDataTableColumnByName( dataTable, "attackerAnim_pt_ht" ) != -1 )
+		attackerAnimation3pPilot_hv = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "attackerAnim_pt_ht" ) )
+
+	string sound_1p = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "sound_1p" ) )
+	string sound_3p = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "sound_3p" ) )
+	string camAttach = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "camAttach" ) )
+
+	array<string> camAttachments = split( camAttach, " " )
+
+	array<string> linkedExecutionArray = SplitAndStripStringArray( GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "linkedExecutions" ) ) )
+
+	TitanExcutionData data
+	data.attackerAnimation3p = attackerAnimation3p
+	data.attackerAnimation3p_vsAutoTitan = attackerAnimation3p_vsAutoTitan
+	data.targetAnimation3p[ "stryder" ] <- targetAnimation3p_lt
+	data.targetAnimation3p[ "atlas" ] <- targetAnimation3p_md
+	data.targetAnimation3p[ "ogre" ] <- targetAnimation3p_hv
+	data.targetAnimation3pPilot[ "stryder" ] <- targetAnimation3pPilot_lt
+	data.targetAnimation3pPilot[ "atlas" ] <- targetAnimation3pPilot_md
+	data.targetAnimation3pPilot[ "ogre" ] <- targetAnimation3pPilot_hv
+	data.attackerAnimation3pPilot[ "stryder" ] <- attackerAnimation3pPilot_lt
+	data.attackerAnimation3pPilot[ "atlas" ] <- attackerAnimation3pPilot_md
+	data.attackerAnimation3pPilot[ "ogre" ] <- attackerAnimation3pPilot_hv
+	data.sound_1p = sound_1p
+	data.sound_3p = sound_3p
+	data.thirdPersonCameraAttachments = camAttachments
+	data.linkedExecutions = linkedExecutionArray
+	return data
+}
+
+array<string> function SplitAndStripStringArray( string combinedString )
+{
+	array<string> stringArray = split( combinedString, "," )
+
+	foreach ( i, value in stringArray )
+	{
+		stringArray[ i ] = strip( value )
+	}
+
+	return stringArray
+}
+
+
+struct MeleeThread_TitanVsTitanDataStruct
+{
+	bool setAttackerInvulnerable = false
+	bool setAttackerDemigod = false
+}
+
+bool function MeleeThread_TitanVsTitan( SyncedMelee action, entity attacker, entity target )
+{
+	// function off for reload scripts
+	return MeleeThread_TitanVsTitan_Internal( action, attacker, target )
+}
+
+bool function MeleeThread_TitanVsTitan_Internal( SyncedMelee action, entity attacker, entity target )
+{
+	Assert( target.IsTitan(), target + " is not Titan target" )
+	Assert( attacker.IsPlayer() && attacker.IsTitan(), attacker + " is not Titan attacker" )
+
+	#if SERVER
+		printt( "Player", attacker, "attempting to melee", target, "TitanVsTitanMelee" )
+	#endif
+
+	if ( attacker.ContextAction_IsActive() || target.ContextAction_IsActive() )
+	{
+		printt("Either attacker or target already in ContextAction! Exiting Titan Vs Titan melee attempt")
+		return false
+	}
+
+	if ( !IsAlive( attacker ) )
+		return false
+
+	if ( !IsAlive( target ) )
+		return false
+
+	void functionref( SyncedMelee action, entity attacker, entity target ) func
+	func = GetTitanSyncedMeleeFunc( attacker, target )
+	if ( func == null )
+		return false
+
+	attacker.GetTitanSoul().Signal( "OnSyncedMelee" ) 	//Need the signal on the soul to clean-up tether traps during synced executions.
+
+	// JFS: signals can kill things mid frame: R2DLC-311 SCRIPT ERROR: PHONE_HOME: [SERVER] Entity is null
+	if ( !IsAlive( attacker ) )
+		return false
+
+	if ( !IsAlive( target ) )
+		return false
+
+	target.GetTitanSoul().Signal( "OnSyncedMelee" )
+
+	// JFS: signals can kill things mid frame: R2DLC-311 SCRIPT ERROR: PHONE_HOME: [SERVER] Entity is null
+	if ( !IsAlive( attacker ) )
+		return false
+
+	if ( !IsAlive( target ) )
+		return false
+	//attacker.Signal( "OnSyncedMelee" )
+	//target.Signal( "OnSyncedMelee" )
+
+	MeleeThread_TitanVsTitanDataStruct dataStruct
+
+	OnThreadEnd(
+		function() : ( attacker, target, dataStruct )
+		{
+			if ( IsValid( attacker ) )
+			{
+				if ( dataStruct.setAttackerInvulnerable )
+					attacker.ClearInvulnerable()
+
+				if ( dataStruct.setAttackerDemigod )
+					DisableDemigod( attacker )
+
+				attacker.PlayerMelee_SetState( PLAYER_MELEE_STATE_NONE )
+			}
+		}
+	)
+
+	string titanSubClass = GetSoulTitanSubClass( attacker.GetTitanSoul() )
+
+	entity burnCardTarget
+	entity bossPlayer = target.GetBossPlayer()
+	if ( target.IsNPC() )
+	{
+		if ( IsValid( bossPlayer ) )
+			burnCardTarget = bossPlayer
+	}
+	else
+	{
+		burnCardTarget = target
+	}
+
+	attacker.PlayerMelee_ExecutionStartAttacker( 0 )
+	target.PlayerMelee_ExecutionStartTarget( attacker )
+
+	attacker.Lunge_ClearTarget()
+
+	ForceTitanSustainedDischargeEnd( target )
+
+	#if TITAN_EXECUTION_ATTACKER_IS_INVULNERABLE
+		dataStruct.setAttackerInvulnerable = true
+		attacker.SetInvulnerable()
+	#else
+		dataStruct.setAttackerDemigod = true
+		EnableDemigod( attacker )
+	#endif
+
+	waitthread func( action, attacker, target )
+
+	if ( !IsValid( attacker ) )
+		return true
+
+	attacker.Signal( "SyncedMeleeComplete" )
+	#if MP
+	if ( attacker.IsPlayer() )
+		AddPlayerScore( attacker, "Execution" )
+	#endif
+	return true
+}
+
+void functionref( SyncedMelee action, entity attacker, entity target ) function GetTitanSyncedMeleeFunc( entity attacker, entity target )
+{
+	if ( GetCurrentPlaylistVarInt( "titan_executions_always_short", 0 ) != 0 )
+		return MeleeThread_AtlasVsTitanShort
+
+	entity soul = attacker.GetTitanSoul()
+	#if SP
+	TitanLoadoutDef loadout = GetTitanLoadoutForCurrentMap()
+	#else
+	TitanLoadoutDef loadout = soul.soul.titanLoadout // GetActiveTitanLoadout( attacker )
+	#endif
+	string executionRef = loadout.titanExecution
+	if ( SoulHasPassive( soul, ePassives.PAS_VANGUARD_COREMETER ) )
+		executionRef = "execution_vanguard_kit"
+
+	if ( executionRef in file.executionData_3p )
+		return TitanVsTitan_3p
+
+	if ( target.IsNPC() )
+	{
+		entity bossPlayer = target.GetBossPlayer()
+		if ( IsValid( bossPlayer ) || !IsVDUTitan( target ) )
+			return MeleeThread_AtlasVsTitanShort
+	}
+
+	string attackerType = GetSoulTitanSubClass( soul )
+
+	switch ( attackerType )
+	{
+		case "stryder":
+			return MeleeThread_StyderVsTitan
+
+		case "ogre":
+			return MeleeThread_OgreVsTitan
+
+		case "atlas":
+		case "buddy":
+			return MeleeThread_AtlasVsTitan
+	}
+
+	return null
+}
+
+void function MeleeThread_AtlasVsTitanShort( SyncedMelee action, entity attacker, entity target )
+{
+	if ( !IsAlive( attacker ) )
+		return
+
+	if ( !IsAlive( target ) )
+		return
+
+	string attackerAnimation1p = "atpov_melee_sync_frontkill_autotitan"
+	string attackerAnimation3p = "at_melee_sync_frontkill_autotitan"
+	string targetAnimation3p = "at_melee_sync_frontdeath_autotitan"
+
+	target.Signal( "TitanStopsThinking" ) // in future, need to make titan scripted anims co-exist better and not require gotcha stuff like this -Mackey
+
+	local e = {}
+	e.attackerViewBody <- null
+
+	e.attackerStartOrg <- attacker.GetOrigin()
+
+	entity ref = CreateMeleeScriptMoverBetweenEnts( attacker, target )
+
+	FirstPersonSequenceStruct attackerSequence
+	attackerSequence.blendTime = 0.25
+	attackerSequence.attachment = "ref"
+
+	FirstPersonSequenceStruct targetSequence = clone attackerSequence
+
+	attackerSequence.thirdPersonAnim = attackerAnimation3p
+	// attackerSequence.thirdPersonAnimIdle = "at_melee_sync_frontkill_end_idle"
+
+	attackerSequence.firstPersonAnim = attackerAnimation1p
+	targetSequence.thirdPersonAnim = targetAnimation3p
+	targetSequence.blendTime = 0.25
+
+	target.e.syncedMeleeAttacker = attacker
+
+	//	attacker.SetInvulnerable()
+	target.SetInvulnerable()    //HACK: Have to SetInvulnerable first before attacker holsters weapon, because if the attacker is vortexing, holster will release bullets caught and kill off the victim if low enough health
+
+	//HACK! This function was originally for NPCs only, but now that it is being used for players, we need to holster their weapon
+	if ( target.IsPlayer() )
+		HolsterAndDisableWeapons( target )
+
+	if ( ShouldHolsterWeaponForSyncedMelee( attacker ) )
+		HolsterAndDisableWeapons( attacker )
+
+	local attackerViewBody
+
+	// needs shortened verions
+	EmitDifferentSoundsOnEntityForPlayerAndWorld( "Titan_1p_Sync_Melee_vs_AutoTitan", "Titan_3p_Sync_Melee_vs_AutoTitan", attacker, attacker )
+
+	local soul = target.GetTitanSoul()
+	soul.SetInvalidHealthBarEnt( true )
+
+	AddAnimEvent( target, "rider_rodeo_over", ForceTitanRodeoToEnd  )
+
+	target.SetInvulnerable() //Setting target of execution as invulnerable to prevent them dying mid-way
+
+	OnThreadEnd(
+		function() : ( ref, attacker, target, e  )
+		{
+			if ( IsValid( ref ) )
+			{
+				if ( IsValid( attacker ) )
+					attacker.ClearParent()
+
+				if ( IsValid( target ) )
+					target.ClearParent()
+
+				AssertNoPlayerChildren( ref )
+				ref.Destroy()
+			}
+
+			if ( IsValid( attacker ) )
+			{
+				//attacker.ClearInvulnerable()
+				attacker.UnforceStand()
+				attacker.ClearParent()
+				ClearPlayerAnimViewEntity( attacker )
+				DeployAndEnableWeapons( attacker )
+				attacker.PlayerMelee_ExecutionEndAttacker()
+
+				if ( IsAlive( attacker ) )
+				{
+					// if we got into solid, teleport back to safe place
+					if ( !PutEntityInSafeSpot( attacker, null, null, expect vector( e.attackerStartOrg ), attacker.GetOrigin() ) )
+                    {
+						printt( "PutEntityInSafeSpot failed, putting him back at the start origin" )
+						attacker.SetOrigin( expect vector( e.attackerStartOrg ) )
+                    }
+
+				}
+			}
+
+			if ( IsValid( target ) )
+			{
+				if ( !target.IsNPC() )
+				{
+					target.PlayerMelee_ExecutionEndTarget()
+					ClearPlayerAnimViewEntity( target )
+					DeployAndEnableWeapons( target )
+				}
+
+
+				if ( IsAlive( target ) )
+				{
+					local attack = attacker
+					if ( !IsValid( attack ) )
+						attack = null
+
+					target.Die( attack, attack, { scriptType = 0, damageSourceId = eDamageSourceId.titan_execution } )
+				}
+
+				target.e.syncedMeleeAttacker = null
+
+				if ( HasAnimEvent( target, "rider_rodeo_over" ) )
+					DeleteAnimEvent( target, "rider_rodeo_over" )
+			}
+		}
+	)
+
+	thread FirstPersonSequence( targetSequence, target, ref )
+	waitthread FirstPersonSequence( attackerSequence, attacker, ref )
+
+	//wait ( 50.0 / 30.0 ) // 37 frames in
+}
+
+
+void function MeleeThread_StyderVsTitan( SyncedMelee action, entity attacker, entity target )
+{
+	table e
+	e.gib <- true
+	e.attackerAnimation1p <- "strypov_melee_sync_frontkill"
+	e.attackerAnimation3p <- "stry_melee_sync_frontkill"
+	e.targetAnimation3p <- "stry_melee_sync_frontdeath"
+	e.targetPilotAnimationForAttacker <- "pt_stry_melee_sync_front_pilotkill_1st"
+	e.targetPilotAnimationForObserver <- "pt_stry_melee_sync_front_pilotkill_3rd"
+	e.targetPilotAnimationForObserver1st <- "ptpov_stry_tvtmelee_targetdeath"
+	e.TitanSpecific1pSyncMeleeSound <- "Stryder_1p_Sync_Melee"
+	e.TitanSpecific3pSyncMeleeSound <- "Stryder_3p_Sync_Melee"
+
+	MeleeThread_TitanRipsPilot( e, action, attacker, target )
+}
+
+void function MeleeThread_AtlasVsTitan( SyncedMelee action, entity attacker, entity target )
+{
+	table e
+	e.gib <- false
+	e.attackerAnimation1p <- "atpov_melee_sync_frontkill"
+	e.attackerAnimation3p <- "at_melee_sync_frontkill"
+	e.targetAnimation3p <- "at_melee_sync_frontdeath"
+	e.targetPilotAnimationForAttacker <- "pt_melee_sync_front_pilotkill_1st"
+	e.targetPilotAnimationForObserver <- "pt_melee_sync_front_pilotkill_3rd"
+	e.targetPilotAnimationForObserver1st <- "ptpov_tvtmelee_targetdeath"
+	e.TitanSpecific1pSyncMeleeSound <- "Atlas_1p_Sync_Melee"
+	e.TitanSpecific3pSyncMeleeSound <- "Atlas_3p_Sync_Melee"
+
+	MeleeThread_TitanRipsPilot( e, action, attacker, target )
+}
+
+function MeleeThread_TitanRipsPilot( table e, SyncedMelee action, entity attacker, entity target )
+{
+	e.attackerViewBody <- null
+	e.attacker <- attacker
+	e.attackerStartOrg <- attacker.GetOrigin()
+
+	entity ref = CreateMeleeScriptMoverBetweenEnts( attacker, target )
+
+	FirstPersonSequenceStruct attackerSequence
+	attackerSequence.blendTime = 0.25
+	attackerSequence.attachment = "ref"
+
+	FirstPersonSequenceStruct targetSequence = clone attackerSequence
+
+	attackerSequence.thirdPersonAnim = expect string ( e.attackerAnimation3p )
+	// attackerSequence.thirdPersonAnimIdle = "at_melee_sync_frontkill_end_idle"
+
+	attackerSequence.firstPersonAnim = expect string( e.attackerAnimation1p )
+	targetSequence.thirdPersonAnim = expect string ( e.targetAnimation3p )
+	targetSequence.blendTime = 0.25
+
+	target.e.syncedMeleeAttacker = attacker
+
+	//	attacker.SetInvulnerable()
+	target.SetInvulnerable()    //HACK: Have to SetInvulnerable first before attacker holsters weapon, because if the attacker is vortexing, holster will release bullets caught and kill off the victim if low enough health
+	if ( ShouldHolsterWeaponForSyncedMelee( attacker ) )
+		HolsterAndDisableWeapons( attacker )
+
+	if ( !target.IsNPC() )
+		HolsterAndDisableWeapons( target )
+
+	EmitDifferentSoundsOnEntityForPlayerAndWorld( expect string ( e.TitanSpecific1pSyncMeleeSound ), expect string ( e.TitanSpecific3pSyncMeleeSound ), attacker, attacker )
+
+	entity attackerViewBody
+	bool targetIsPlayer = target.IsPlayer()
+
+	if ( targetIsPlayer )
+	{
+	    attackerViewBody = Wallrun_CreateCopyOfPilotModel( target ) //attackerViewBody is the model of the pilot getting ripped out of the cockpit
+	}
+	else
+	{
+	    attackerViewBody = CreateNpcTitanPilotModel( target )
+	}
+
+	attackerViewBody.SetOrigin( ref.GetOrigin() )
+	e.attackerViewBody = attackerViewBody
+	attackerViewBody.SetOwner( attacker )
+	attackerViewBody.kv.VisibilityFlags = ENTITY_VISIBLE_TO_OWNER
+	attackerViewBody.SetRagdollImpactFX( RAGDOLL_IMPACT_TABLE_IDX )
+	attackerViewBody.SetContinueAnimatingAfterRagdoll( true )
+
+	FirstPersonSequenceStruct attackerBodySequence
+	attackerBodySequence.attachment = "ref"
+	attackerBodySequence.teleport = true
+	attackerBodySequence.thirdPersonAnim = expect string ( e.targetPilotAnimationForAttacker )
+
+	FirstPersonSequenceStruct targetBodySequence
+	targetBodySequence.attachment = "ref"
+	targetBodySequence.blendTime = 0.25
+	targetBodySequence.thirdPersonAnim = expect string ( e.targetPilotAnimationForObserver )
+	targetBodySequence.firstPersonAnim = expect string ( e.targetPilotAnimationForObserver1st )
+
+
+	entity targetSoul = target.GetTitanSoul()
+	targetSoul.SetInvalidHealthBarEnt( true )
+
+	entity targetTitan
+	if ( targetIsPlayer )
+	{
+		e.oldPlayerSettings <- target.s.storedPlayerSettings
+		//target.s.storedPlayerSettings = "pilot_titan_cockpit" // Makes player have titan cockpit temporarily. Turned off to avoid having extra checks all over in script
+		targetTitan = CreateAutoTitanForPlayer_ForTitanBecomesPilot( target ) //TargetTitan is the NPC Titan that is created temporarily during execution
+		DispatchSpawn( targetTitan )
+
+		TitanBecomesPilot( target, targetTitan )
+		DisableTitanRodeo( targetTitan )
+		targetTitan.SetOwner( target )
+		targetTitan.kv.VisibilityFlags = (ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY) //owner cant see
+		targetTitan.PlayerMelee_ExecutionStartTarget( attacker )
+    	e.target <- target
+	}
+	else
+	{
+		targetTitan = target
+
+		// target is now a random dude
+		target = CreateSoldier( target.GetTeam(), Vector(0,0,0), Vector(0,0,0) )
+		DispatchSpawn( target )
+    	e.target <- target
+	}
+
+
+	AddAnimEvent( targetTitan, "rider_rodeo_over", ForceTitanRodeoToEnd  )
+	AddAnimEvent( targetTitan, "melee_killed_ragdoll", MeleeKilledRagdoll, attacker )
+
+	targetTitan.SetInvulnerable() //Setting target of execution as invulnerable to prevent them dying mid-way
+
+	target.SetOwner( attacker )
+	target.kv.VisibilityFlags = (ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY) //owner cant see
+	e.targetTitan <- targetTitan
+
+	if ( GetBugReproNum() == 129802 )
+		thread OnNPCTitanSignalDeath( targetTitan )
+
+	OnThreadEnd(
+		function() : ( ref, attacker, target, targetTitan, e  )
+		{
+			if ( IsValid( ref ) )
+			{
+				if ( IsValid( attacker ) )
+				{
+					attacker.ClearParent()
+				}
+				else
+				{
+					TryClearParent( attacker )
+				}
+
+				if ( IsValid( target ) )
+				{
+					target.ClearParent()
+				}
+				else
+				{
+					TryClearParent( target )
+				}
+
+				AssertNoPlayerChildren( ref )
+				ref.Kill_Deprecated_UseDestroyInstead()
+			}
+
+			if ( IsValid( attacker ) )
+			{
+				attacker.UnforceStand()
+				attacker.ClearParent()
+				ClearPlayerAnimViewEntity( attacker )
+				DeployAndEnableWeapons( attacker )
+				attacker.PlayerMelee_ExecutionEndAttacker()
+
+				if ( IsAlive( attacker ) )
+				{
+					// if we got into solid, teleport back to safe place
+					PutEntityInSafeSpot( attacker, null, null, expect vector( e.attackerStartOrg ), attacker.GetOrigin() )
+				}
+			}
+
+			if ( IsValid( target ) )
+			{
+				if ( !target.IsNPC() )
+				{
+					target.PlayerMelee_ExecutionEndTarget()
+					ClearPlayerAnimViewEntity( target )
+					DeployAndEnableWeapons( target )
+				}
+
+				if ( HasAnimEvent( target, "pink_mist" ) )
+					DeleteAnimEvent( target, "pink_mist" )
+
+				if ( IsAlive( expect entity( e.target ) ) )
+					MeleePinkMist( e )
+
+				target.e.syncedMeleeAttacker = null
+			}
+
+			if ( IsValid( e.attackerViewBody ) )
+				e.attackerViewBody.Kill_Deprecated_UseDestroyInstead()
+
+			if ( GetBugReproNum() != 129802 && IsAlive( targetTitan ) )
+			{
+				if ( IsValid( attacker ) )
+					targetTitan.Die( attacker, attacker, { scriptType = DF_MELEE, damageSourceId = eDamageSourceId.titan_execution } )
+				else
+					targetTitan.Die()
+
+				if ( GetBugReproNum() == 129815 )
+				{
+					targetTitan.SetContinueAnimatingAfterRagdoll( true )
+					targetTitan.BecomeRagdoll( Vector(0,0,0), false )
+				}
+			}
+		}
+	)
+
+	target.EndSignal( "OnRespawnPlayer" )
+
+	waitthread TitanSyncedMeleeAnimationsPlay( attackerBodySequence, attackerViewBody, ref, targetBodySequence, target, attackerSequence, attacker, targetSequence, targetTitan, e )
+}
+
+entity function CreateNpcTitanPilotModel( entity titan )
+{
+	asset modelName = GetNpcTitanPilotModel( titan )
+	return CreatePropDynamic( modelName )
+}
+
+
+
+asset function GetNpcTitanPilotModel( entity titan )
+{
+	asset modelName = TEAM_IMC_GRUNT_MODEL
+
+	#if HAS_BOSS_AI
+	if ( IsBossTitan( titan ) )
+	{
+		modelName = GetBossTitanCharacterModel( titan )
+	}
+	#endif
+
+	return modelName
+}
+
+function TitanSyncedMeleeAnimationsPlay( FirstPersonSequenceStruct attackerBodySequence, entity attackerViewBody, entity ref, FirstPersonSequenceStruct targetBodySequence, entity target, FirstPersonSequenceStruct attackerSequence, entity attacker, FirstPersonSequenceStruct targetSequence, entity targetTitan, table e )
+{
+	e.thrown <- false
+	OnThreadEnd (
+		function () : ( targetTitan, target, attacker, e )
+		{
+			// insure visibility
+			if ( IsValid( targetTitan ) )
+				targetTitan.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
+
+			if ( !IsAlive( attacker ) )
+			{
+				attacker.Anim_Stop()
+
+				if ( !e.thrown && IsAlive( target ) )
+				{
+					target.Anim_Stop()
+					target.SetOwner( null )
+					target.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
+					if ( target.IsPlayer() )
+					{
+						ClearPlayerAnimViewEntity( target )
+						target.GetFirstPersonProxy().Anim_Stop()
+						target.SetPlayerSettings( e.oldPlayerSettings )
+					}
+
+				}
+			}
+		}
+	)
+
+	attacker.EndSignal( "OnDeath" )
+	target.EndSignal( "OnDestroy" )
+	target.EndSignal( "OnRespawnPlayer" )
+
+	thread FirstPersonSequence( attackerBodySequence, attackerViewBody, ref )
+	if ( !target.IsPlayer() )
+	{
+		// don't do first person anims if we're not a player
+		targetBodySequence.firstPersonAnim = ""
+		targetBodySequence.firstPersonAnimIdle = ""
+	}
+
+	thread FirstPersonSequence( targetBodySequence, target, ref )
+	thread FirstPersonSequence( attackerSequence, attacker, ref )
+	thread FirstPersonSequence( targetSequence, targetTitan, ref )
+	targetTitan.Anim_AdvanceCycleEveryFrame( true )
+	local duration = attacker.GetSequenceDuration( attackerSequence.thirdPersonAnim )
+
+	if ( e.targetAnimation3p == "at_melee_sync_frontdeath" )
+	{
+		thread MeleeThrowIntoWallSplat( attacker, target, e )
+	}
+	else
+	{
+		AddAnimEvent( target, "pink_mist", MeleePinkMistAnimEvent, e )
+	}
+
+	float timer
+	string titanType = GetSoulTitanSubClass( attacker.GetTitanSoul() )
+	switch ( titanType )
+	{
+		case "stryder":
+			timer = 0.9
+			break
+		case "atlas":
+		case "buddy":
+			timer = 0.45
+			break
+		default:
+			Assert( 0, "Unknown titan type " + titanType )
+	}
+
+	wait timer
+
+	// first the victim cant see his titan, as a pilot, and then he can
+	targetTitan.SetNextThinkNow()
+	targetTitan.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
+	targetTitan.SetNextThinkNow()
+	wait duration - timer
+}
+
+void function MeleePinkMistAnimEvent( entity target ) //parameter isn't used, but function signature is like this because it's being called from an anim event
+{
+	table e = expect table( GetOptionalAnimEventVar( target, "pink_mist" ) )
+
+	MeleePinkMist( e )
+}
+
+void function MeleePinkMist( table e )
+{
+	entity target = expect entity( e.target )
+
+	if ( !IsAlive( target ) )
+		return
+
+	e.attackerViewBody.Dissolve( ENTITY_DISSOLVE_PINKMIST, Vector( 0, 0, 0 ), 0 )
+	if ( IsValid( e.attacker ) )
+	{
+		target.Die( e.attacker, e.attacker, { damageSourceId = eDamageSourceId.titan_execution, scriptType = DF_GIB } )
+	}
+	else
+	{
+		target.Die( e.target, target, { damageSourceId = eDamageSourceId.titan_execution, scriptType = DF_GIB } )
+	}
+
+	if ( target.IsPlayer() )
+		ClearPlayerAnimViewEntity( target )
+
+	target.ClearInvulnerable()
+}
+
+function MeleeThrowIntoWallSplat( entity attacker, entity target, e )
+{
+	OnThreadEnd(
+		function () : ( target, e )
+		{
+			if ( IsValid( target ) )
+			{
+				target.ClearParent()
+				target.Anim_Stop()
+				target.ClearInvulnerable()
+			}
+		}
+	)
+
+	target.EndSignal( "OnDeath" )
+
+	e.startOrigin <- target.GetOrigin()
+	wait 2.8
+	e.thrown = true
+
+
+	// attacker got killed? saved!
+	if ( !IsAlive( attacker ) )
+		return
+
+	local angles = attacker.GetAngles()
+	angles = AnglesCompose( angles, Vector( -15, 0, 0 ) )
+	local forward = AnglesToForward( angles )
+
+	local endPos
+	for ( ;; )
+	{
+		if ( !target.Anim_IsActive() )
+			break
+
+		local org = target.GetOrigin()
+		if ( IsAlive( attacker ) )
+		{
+			TraceResults titanPilotTrace = TraceLine( attacker.EyePosition(), org, attacker )
+
+			if ( titanPilotTrace.fraction < 1.0 )
+			{
+				endPos = titanPilotTrace.endPos
+				break
+			}
+		}
+
+
+		TraceResults result = TraceLine( org, org + forward * 200 )
+		if ( result.fraction < 1.0 )
+		{
+			wait result.fraction * 0.06
+			break
+		}
+
+		WaitFrame()
+	}
+
+	if ( endPos )
+	{
+		target.SetOrigin( endPos )
+	}
+
+	Assert( IsAlive( target ) )
+
+	target.ClearInvulnerable()
+
+	target.BecomeRagdoll( Vector(0,0,0), false )
+
+	WaitFrame() // ragdoll take hold!
+	EmitSoundOnEntity( target, "Titan_Victim_Wall_Splat" )
+
+	if ( e.gib )
+	{
+		local force = Vector(0,0,0)
+		if ( IsAlive( attacker ) )
+		{
+			local vec = target.GetOrigin() - attacker.GetOrigin()
+			vec.Norm()
+			force = vec
+		}
+		target.Die( attacker, attacker, { scriptType = DF_GIB | DF_KILLSHOT, force = force, damageSourceId = eDamageSourceId.titan_execution } )
+	}
+	else
+	{
+		target.Die( attacker, attacker, { scriptType = DF_KILLSHOT, damageSourceId = eDamageSourceId.titan_execution } )
+	}
+}
+
+
+function MeleeAnimThrow( attacker, target, throwDuration )
+{
+	attacker.EndSignal( "OnDeath" )
+	target.EndSignal( "OnDeath" )
+	wait throwDuration - 0.2
+
+	local angles = attacker.GetAngles()
+	local forward = AnglesToForward( angles )
+	target.ClearParent()
+	target.SetVelocity( forward * 500 )
+
+
+	target.Die( attacker, attacker, { scriptType = DF_KILLSHOT, damageSourceId = eDamageSourceId.titan_execution } )
+}
+
+///////////////////////////////////////
+// OGRE MELEES
+///////////////////////////////////////
+void function MeleeThread_OgreVsTitan( SyncedMelee action, entity attacker, entity target )
+{
+	string attackerAnimation1p = "ogpov_melee_armrip_attacker"
+	string attackerAnimation3p = "og_melee_armrip_attacker"
+	string targetAnimation1p = "ogpov_melee_armrip_victim"
+	string targetAnimation3p = "og_melee_armrip_victim"
+
+	table e = {}
+	e.attackerStartOrg <- attacker.GetOrigin()
+	e.lostArm <- false
+	e.targetStartOrg <- target.GetOrigin()
+
+	entity ref = CreateMeleeScriptMoverBetweenEnts( attacker, target )
+
+	FirstPersonSequenceStruct attackerSequence
+	attackerSequence.blendTime = 0.25
+	attackerSequence.attachment = "ref"
+
+	FirstPersonSequenceStruct targetSequence = clone attackerSequence
+
+	attackerSequence.thirdPersonAnim = attackerAnimation3p
+	attackerSequence.firstPersonAnim = attackerAnimation1p
+
+	if ( target.IsPlayer() )
+		targetSequence.firstPersonAnim = targetAnimation1p
+
+	targetSequence.thirdPersonAnim = targetAnimation3p
+	targetSequence.blendTime = 0.25
+
+	target.e.syncedMeleeAttacker = attacker
+	DisableWeapons( attacker, [] )
+	DisableWeapons( target, [] )
+
+	//	attacker.SetInvulnerable()
+	target.SetInvulnerable()
+
+	entity soul = target.GetTitanSoul()
+	soul.SetInvalidHealthBarEnt( true )
+
+	OnThreadEnd(
+		function() : ( ref, attacker, target, e  )
+		{
+			if ( IsValid( ref ) )
+			{
+				if ( IsValid( attacker ) )
+					attacker.ClearParent()
+
+				if ( IsValid( target ) )
+					target.ClearParent()
+
+				AssertNoPlayerChildren( ref )
+				ref.Kill_Deprecated_UseDestroyInstead()
+			}
+
+			if ( IsValid( attacker ) )
+			{
+				attacker.UnforceStand()
+				attacker.ClearParent()
+				ClearPlayerAnimViewEntity( attacker )
+				EnableWeapons( attacker, [] )
+				attacker.PlayerMelee_ExecutionEndAttacker()
+
+				if ( IsAlive( attacker ) )
+				{
+					// if we got into solid, teleport back to safe place
+					PutEntityInSafeSpot( attacker, null, null, expect vector( e.attackerStartOrg ), attacker.GetOrigin() )
+				}
+			}
+
+			if ( IsValid( target ) )
+			{
+				DeleteAnimEvent( target, "lost_arm" )
+
+				target.e.syncedMeleeAttacker = null
+
+				target.ClearParent()
+				target.ClearInvulnerable()
+				if ( target.IsPlayer() )
+				{
+					ClearPlayerAnimViewEntity( target )
+				}
+
+				EnableWeapons( target, [] )
+
+				if ( !target.IsNPC() )
+					target.PlayerMelee_ExecutionEndTarget()
+
+				if ( e.lostArm && IsAlive( target ) )
+				{
+					target.Die( attacker, attacker, { scriptType = DF_KILLSHOT, damageSourceId = eDamageSourceId.titan_execution } )
+					return
+				}
+				else if ( target.IsPlayer() )
+				{
+					PutEntityInSafeSpot( target, null, null, expect vector( e.targetStartOrg ), target.GetOrigin() )
+				}
+			}
+		}
+	)
+
+	attacker.EndSignal( "OnDeath" )
+
+	EmitDifferentSoundsOnEntityForPlayerAndWorld( "Ogre_1p_Sync_Melee", "Ogre_3p_Sync_Melee", attacker, attacker )
+
+	AddAnimEvent( target, "lost_arm", TitanLostArm, e )
+
+
+	thread FirstPersonSequence( targetSequence, target, ref )
+	waitthread FirstPersonSequence( attackerSequence, attacker, ref )
+}
+
+//Very similar to the above function for now, eventually won't have the 1st person component at all.
+void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity target )
+{
+	if ( !IsAlive( attacker ) )
+		return
+
+	if ( !IsAlive( target ) )
+		return
+
+	entity attackerSoul = attacker.GetTitanSoul()
+	#if SP
+	TitanLoadoutDef loadout = GetTitanLoadoutForCurrentMap()
+	string executionRef = loadout.titanExecution
+	TitanExcutionData data = file.executionData_3p[ executionRef ]
+	#else
+	TitanLoadoutDef loadout = attackerSoul.soul.titanLoadout // GetActiveTitanLoadout( attacker )
+	string executionRef = loadout.titanExecution
+	TitanExcutionData data = file.executionData_3p[ executionRef ]
+	if ( data.linkedExecutions.len() > 0 )
+	{
+		array<string> clonedLinkedExecutions = clone data.linkedExecutions
+		for ( int i = clonedLinkedExecutions.len() - 1; i >= 0; i-- )
+		{
+			if ( GetItemRequiresPrime( clonedLinkedExecutions[ i ] ) == true && !HasPrimeToMatchExecutionType( attacker, GetItemType( clonedLinkedExecutions[ i ] ) ) )
+				clonedLinkedExecutions.remove( i )
+		}
+		executionRef = clonedLinkedExecutions.getrandom()
+		data = file.executionData_3p[ executionRef ]
+	}
+	#endif
+	bool shouldApplyBatteryAfterRodeo = false
+	if ( SoulHasPassive( attackerSoul, ePassives.PAS_VANGUARD_COREMETER ) )
+	{
+		executionRef = "execution_vanguard_kit"
+		data = file.executionData_3p[ executionRef ]
+		shouldApplyBatteryAfterRodeo = true
+	}
+
+	string victimType = GetSoulTitanSubClass( target.GetTitanSoul() )
+
+	table e = {}
+	e.attackerStartOrg <- attacker.GetOrigin()
+	e.lostArm <- false
+	e.targetStartOrg <- target.GetOrigin()
+
+	FirstPersonSequenceStruct attackerSequence
+	attackerSequence.blendTime = 0.25
+	attackerSequence.attachment = "ref"
+	attackerSequence.thirdPersonCameraAttachments = clone data.thirdPersonCameraAttachments
+	attackerSequence.thirdPersonCameraVisibilityChecks = true
+	attackerSequence.viewConeFunction = ViewConeZero
+	attackerSequence.noViewLerp = true
+
+	FirstPersonSequenceStruct targetSequence = clone attackerSequence
+
+	attackerSequence.thirdPersonAnim = data.attackerAnimation3p
+	attackerSequence.firstPersonAnim = ""
+
+	if ( target.IsPlayer() )
+		targetSequence.firstPersonAnim = ""
+
+	targetSequence.thirdPersonAnim = data.targetAnimation3p[ victimType ]
+	targetSequence.thirdPersonCameraEntity = target
+
+	target.e.syncedMeleeAttacker = attacker
+
+	// HACK FOR SP!!!
+	e.replacedPrimary <- false
+	string xo16 = "mp_titanweapon_xo16_shorty"
+	if ( IsSingleplayer() && attacker.IsPlayer() && data.attackerAnimation3p == "bt_synced_titan_execute_kickshoot_A" )
+	{
+		array<entity> weapons = attacker.GetMainWeapons()
+		if ( weapons.len() > 0 )
+		{
+			if ( weapons[0].GetWeaponClassName() != xo16 )
+			{
+				e.replacedPrimary = true
+				e.oldPrimary <- weapons[0].GetWeaponClassName()
+				attacker.SetActiveWeaponBySlot( 0 )
+				attacker.ReplaceActiveWeapon( xo16 ) //this assumes the active weapon is the weapon in slot 0 so we need to set active weapon to the one in slot 0
+			}
+		}
+	}
+	// END HACK FOR SP!!!
+
+	if ( !target.IsNPC() )
+		HolsterViewModelAndDisableWeapons( target )  //Melee anims need to use this to stop players from firing weapons but for the weapon to still show up in the 3p anims
+	else
+		DisableWeapons( target, [] )
+
+	if ( attacker.IsPlayer() )
+	{
+		HolsterViewModelAndDisableWeapons( attacker )  //Melee anims need to use this to stop players from firing weapons but for the weapon to still show up in the 3p anims
+		attacker.Anim_StopGesture( DEFAULT_SCRIPTED_ANIMATION_BLEND_TIME )
+	}
+
+	//	attacker.SetInvulnerable()
+	target.SetInvulnerable()
+
+	entity targetViewBody
+	FirstPersonSequenceStruct targetBodySequence
+	entity attackerViewBody
+	FirstPersonSequenceStruct attackerBodySequence
+
+	bool titanHasPilot = target.IsPlayer()
+	#if HAS_BOSS_AI
+		titanHasPilot = titanHasPilot || ( IsBossTitan( target ) )
+	#endif
+
+	if ( attacker.IsPlayer() )
+	{
+		Remote_CallFunction_Replay( attacker, "SCB_StopTitanCockpitSounds" )
+	}
+
+	if ( target.IsPlayer() )
+	{
+		Remote_CallFunction_Replay( target, "SCB_StopTitanCockpitSounds" )
+	}
+
+	if ( data.targetAnimation3pPilot[ victimType ] != "" && titanHasPilot )
+	{
+		if ( target.IsNPC() )
+			targetViewBody = CreateNpcTitanPilotModel( target )
+		else
+			targetViewBody = Wallrun_CreateCopyOfPilotModel( target )
+
+		targetViewBody.SetOrigin( target.GetOrigin() )
+		targetViewBody.SetRagdollImpactFX( RAGDOLL_IMPACT_TABLE_IDX )
+		targetViewBody.SetContinueAnimatingAfterRagdoll( true )
+
+		targetBodySequence.attachment = "ref"
+		targetBodySequence.teleport = true
+		targetBodySequence.thirdPersonAnim = data.targetAnimation3pPilot[ victimType ]
+
+		AddAnimEvent( targetViewBody, "pink_mist", MeleePinkMistFakeBody )
+	}
+
+	if ( data.attackerAnimation3pPilot[ victimType ] != "" && attacker.IsPlayer() )
+	{
+		attackerViewBody = Wallrun_CreateCopyOfPilotModel( attacker )
+
+		attackerViewBody.SetOrigin( attacker.GetOrigin() )
+		attackerViewBody.SetRagdollImpactFX( RAGDOLL_IMPACT_TABLE_IDX )
+		attackerViewBody.SetContinueAnimatingAfterRagdoll( true )
+
+		attackerBodySequence.attachment = "ref"
+		attackerBodySequence.teleport = true
+		attackerBodySequence.thirdPersonAnim = data.attackerAnimation3pPilot[ victimType ]
+	}
+
+	if ( !IsValid( targetViewBody ) )
+	{
+		attackerSequence.thirdPersonAnim = data.attackerAnimation3p_vsAutoTitan
+	}
+
+	entity soul = target.GetTitanSoul()
+	soul.SetInvalidHealthBarEnt( true )
+
+	bool isAttackerRef = false
+	if ( GetConVarBool( "melee_titan_execution_attacker_can_be_ref" ) )
+	{
+		isAttackerRef = IsAttackerRef( null, target )
+	}
+
+	OnThreadEnd(
+		function() : ( attacker, target, e, attackerViewBody, targetViewBody, shouldApplyBatteryAfterRodeo, isAttackerRef )
+		{
+			if ( IsValid( attacker ) )
+			{
+				DeleteAnimEvent( attacker, "synced_melee_enable_planting" )
+				DeleteAnimEvent( attacker, "rocket_pod_fire_left" )
+				DeleteAnimEvent( attacker, "rocket_pod_fire_right" )
+
+				attacker.UnforceStand()
+				attacker.ClearParent()
+				ClearPlayerAnimViewEntity( attacker )
+				attacker.PlayerMelee_ExecutionEndAttacker()
+				ForceTitanSustainedDischargeEnd( attacker )
+				DeployViewModelAndEnableWeapons( attacker ) //Melee anims need to use this to stop players from firing weapons but for the weapon to still show up in the 3p anims
+				if ( IsAlive( attacker ) )
+				{
+					if ( !isAttackerRef && IsValid( target ) )
+					{
+						PutEntityInSafeSpot( attacker, target, null, target.GetOrigin(), attacker.GetOrigin() )
+					}
+					else
+					{
+						PutEntityInSafeSpot( attacker, target, null, attacker.GetOrigin(), attacker.GetOrigin() )
+					}
+
+					if ( attacker.IsTitan() )
+					{
+						Remote_CallFunction_Replay( attacker, "SCB_PlayTitanCockpitSounds" )
+						#if TITAN_EXECUTION_GIVES_BATTERY
+							Rodeo_GiveExecutingTitanABattery( attacker )
+						#else
+							if ( shouldApplyBatteryAfterRodeo )
+								Rodeo_GiveExecutingTitanABattery( attacker )
+						#endif
+					}
+
+					if ( IsSingleplayer() )
+					{
+						if ( e.replacedPrimary )
+						{
+							attacker.ReplaceActiveWeapon( e.oldPrimary )
+						}
+					}
+					else
+                    {
+						attacker.Anim_Stop() // if you are fighting an NPC, then they can get destroyed early the moment they explode.  But sometimes, your animation isn't done playing yet so you can't move
+                    }
+				}
+
+			}
+
+			if ( IsValid( target ) )
+			{
+				DeleteAnimEvent( target, "melee_killed_ragdoll" )
+				DeleteAnimEvent( target, "execution_battery_show" )
+				DeleteAnimEvent( target, "execution_battery_hide" )
+
+
+				if ( HasAnimEvent( target, "rider_rodeo_over" ) )
+					DeleteAnimEvent( target, "rider_rodeo_over" )
+
+				target.e.syncedMeleeAttacker = null
+
+				target.ClearParent()
+				target.ClearInvulnerable()
+				if ( target.IsPlayer() )
+				{
+					ClearPlayerAnimViewEntity( target )
+					DeployViewModelAndEnableWeapons( target ) //Melee anims need to use this to stop players from firing weapons but for the weapon to still show up in the 3p anims
+				}
+
+				if ( !target.IsNPC() && target.ContextAction_IsMeleeExecution() )
+					target.PlayerMelee_ExecutionEndTarget()
+
+				if ( IsAlive( target ) ) //Should have no need to PlayTitanCockpitSounds for target because the target is going to die
+				{
+					target.Die( attacker, attacker, { scriptType = DF_KILLSHOT, damageSourceId = eDamageSourceId.titan_execution } )
+				}
+				else if ( target.IsPlayer() )
+				{
+					if ( isAttackerRef && IsValid( attacker ) )
+					{
+						PutEntityInSafeSpot( target, attacker, null, attacker.GetOrigin(), target.GetOrigin() )
+					}
+					else
+					{
+						PutEntityInSafeSpot( target, attacker, null, target.GetOrigin(), target.GetOrigin() )
+					}
+				}
+			}
+
+			if ( IsValid( attackerViewBody ) )
+			{
+				//DeleteAnimEvent( attackerViewBody, "rodeo_battery_rip" )
+				DeleteAnimEvent( attackerViewBody, "execution_battery_pilot" )
+				DeleteAnimEvent( attackerViewBody, "execution_battery_pilot_jump_jets" )
+				attackerViewBody.Hide()
+				attackerViewBody.Destroy()
+			}
+
+			if ( IsValid( targetViewBody ) )
+			{
+				targetViewBody.Hide()
+				targetViewBody.Destroy()
+			}
+		}
+	)
+
+	attacker.EndSignal( "OnDeath" )
+	entity bossPlayer = target.GetBossPlayer()
+	if ( IsValid( bossPlayer ) ) //Executing an auto-Titan, when the pilot disconnects it destroys the auto-titan creating weird circumstances.
+		bossPlayer.EndSignal( "OnDestroy" )
+	target.EndSignal( "OnDestroy" )
+
+	if ( isAttackerRef )
+	{
+		thread ClearParentOnDeathOrDestroy( target, attacker )
+	}
+	else
+	{
+		thread ClearParentOnDeathOrDestroy( attacker, target )
+	}
+
+	EmitDifferentSoundsOnEntityForPlayerAndWorld( data.sound_1p, data.sound_3p, attacker, attacker )
+
+	AddAnimEvent( target, "rider_rodeo_over", ForceTitanRodeoToEnd  )
+	AddAnimEvent( target, "melee_killed_ragdoll", PredatorMeleeKilledRagdoll )
+	AddAnimEvent( attacker, "synced_melee_enable_planting", EnablePlantingOnEntity )
+	AddAnimEvent( attacker, "rocket_pod_fire_left", Northstar_Rocket_Pod_Left, target )
+	AddAnimEvent( attacker, "rocket_pod_fire_right", Northstar_Rocket_Pod_Right, target )
+	AddAnimEvent( target, "execution_battery_show", Execution_ShowBattery )
+	AddAnimEvent( target, "execution_battery_hide", Execution_HideBattery )
+	if ( attackerViewBody != null )
+	{
+		AddAnimEvent( attackerViewBody, "execution_battery_pilot", Execution_GivePilotBattery )
+		AddAnimEvent( attackerViewBody, "execution_battery_pilot_jump_jets", Execution_BatteryStealJumpJets )
+	}
+
+
+	if ( isAttackerRef )
+	{
+		attackerSequence.enablePlanting = true
+		attackerSequence.playerPushable = true
+		targetSequence.useAnimatedRefAttachment = true
+	}
+	else
+	{
+		targetSequence.enablePlanting = true
+		targetSequence.playerPushable = true
+		attackerSequence.useAnimatedRefAttachment = true
+	}
+
+	array<entity> ignoreEnts = [ attacker, target ]
+
+	vector refAngles = GetRefAnglesBetweenEnts( attacker, target )
+
+	if ( !attacker.IsOnGround() )
+	{
+		refAngles = <0,refAngles.y,0>
+	}
+
+	vector fwd = AnglesToForward( refAngles )
+	fwd *= -1
+	vector targetAngles = VectorToAngles( fwd )
+	if ( !target.IsNPC() )
+	{
+		targetAngles.x = 0
+		target.SetAngles( targetAngles )
+	}
+
+	target.SetAngles( targetAngles )
+
+	if ( attackerViewBody != null )
+	{
+		attackerBodySequence.useAnimatedRefAttachment = true
+		thread FirstPersonSequence( attackerBodySequence, attackerViewBody, attacker )
+	}
+
+	if ( targetViewBody != null )
+	{
+		targetBodySequence.useAnimatedRefAttachment = true
+		thread FirstPersonSequence( targetBodySequence, targetViewBody, target )
+	}
+
+	if ( isAttackerRef )
+	{
+		thread FirstPersonSequence( attackerSequence, attacker )
+		waitthread FirstPersonSequence( targetSequence, target, attacker )
+	}
+	else
+	{
+		thread FirstPersonSequence( targetSequence, target )
+		waitthread FirstPersonSequence( attackerSequence, attacker, target )
+	}
+}
+
+void function Execution_ShowBattery( entity titan )
+{
+	entity titanSoul = titan.GetTitanSoul()
+	if ( !IsValid( titanSoul ) ) //Out of bounds
+		return
+	string titanType = GetSoulTitanSubClass( titanSoul )
+	entity batteryContainer = titanSoul.soul.batteryContainer
+	Assert( IsValid( titanSoul.soul.batteryContainer ), " need to find the repro for this" )
+	if ( !IsValid( titanSoul.soul.batteryContainer ) )
+		return
+
+	batteryContainer.Anim_Play( GetAnimFromAlias( titanType, "hatch_rodeo_up_idle" )  )
+}
+
+void function Execution_HideBattery( entity titan )
+{
+	entity titanSoul = titan.GetTitanSoul()
+	if ( !IsValid( titanSoul ) ) //Out of bounds
+		return
+	string titanType = GetSoulTitanSubClass( titanSoul )
+	entity batteryContainer = titanSoul.soul.batteryContainer
+	Assert( IsValid( titanSoul.soul.batteryContainer ), " need to find the repro for this" )
+	if ( !IsValid( titanSoul.soul.batteryContainer ) )
+		return
+
+	batteryContainer.Anim_Play( GetAnimFromAlias( titanType, "hatch_rodeo_down_idle" )  )
+	EmitSoundOnEntity( batteryContainer, GetAudioFromAlias( titanType, "rodeo_battery_steal_3p" ) )
+}
+
+void function Execution_GivePilotBattery( entity fakePilotModel )
+{
+	entity tempBattery3p = CreatePropDynamic( RODEO_BATTERY_MODEL_FOR_RODEO_ANIMS )
+	tempBattery3p.SetParent( fakePilotModel, "R_HAND", false, 0.0 )
+	tempBattery3p.RemoveFromSpatialPartition()
+	tempBattery3p.Show()
+	Battery_StartFX( tempBattery3p )
+}
+
+
+void function Execution_BatteryStealJumpJets( entity fakePilotModel )
+{
+	int attachmentIndex = fakePilotModel.LookupAttachment( "vent_left" )
+	int fxIndex = GetParticleSystemIndex( TEAM_JUMPJET_DBL )
+	StartParticleEffectOnEntity( fakePilotModel, fxIndex, FX_PATTACH_POINT_FOLLOW, attachmentIndex )
+
+	attachmentIndex = fakePilotModel.LookupAttachment( "vent_right" )
+	StartParticleEffectOnEntity( fakePilotModel, fxIndex, FX_PATTACH_POINT_FOLLOW, attachmentIndex )
+}
+
+/*
+void function RodeoBatteryRemoval( entity pilot )
+{
+	entity titan = GetTitanBeingRodeoed( pilot )
+	if ( !IsValid( titan ) )
+		return
+
+	// THROW RODEO RIDER OFF
+	entity soul = titan.GetTitanSoul()
+	string titanType = GetSoulTitanSubClass( soul )
+
+	soul.SetLastRodeoHitTime( Time() )
+
+	RodeoBatteryPackRemovalDamage( pilot, titan, soul )
+
+	if ( !PlayerHasBattery( pilot ) )
+	{
+		AddPlayerScore( pilot, "PilotBatteryStolen" )
+		entity battery = Rodeo_CreateBatteryPack( titan )
+		Rodeo_PilotPicksUpBattery( pilot, battery )
+		thread BatteryThiefHighlight( pilot )
+
+		if ( titan.IsPlayer() )
+		{
+			EmitSoundOnEntityOnlyToPlayer( titan, titan, TITAN_GOT_BATTERY_RIPPED_SOUND ) //Consider playing this in world once we get sounds that aren't just notification beeps
+		}
+	}
+
+	vector direction = CalculateDirectionToThrowOffBatteryThief( pilot, titan )
+
+	ThrowRiderOff( pilot, titan, direction ) //This signals RodeoOver
+}
+*/
+
+void function ClearParentOnDeathOrDestroy( entity clearParentEntity, entity onDeathOrDestroyEntity )
+{
+	Assert( IsValid( clearParentEntity ) )
+	Assert( IsAlive( clearParentEntity ) )
+
+	Assert( IsValid( onDeathOrDestroyEntity ) )
+	Assert( IsAlive( onDeathOrDestroyEntity ) )
+
+	OnThreadEnd(
+		function() : ( clearParentEntity, onDeathOrDestroyEntity )
+		{
+			if ( IsValid( clearParentEntity ) )
+			{
+				clearParentEntity.ClearParent()
+
+				if ( IsValid( onDeathOrDestroyEntity ) )
+				{
+					PutEntityInSafeSpot( clearParentEntity, onDeathOrDestroyEntity, null, onDeathOrDestroyEntity.GetOrigin(), clearParentEntity.GetOrigin() )
+				}
+			}
+		}
+	)
+
+	onDeathOrDestroyEntity.EndSignal( "OnDeath" )
+	onDeathOrDestroyEntity.WaitSignal( "OnDestroy" )
+}
+
+void function PredatorMeleeKilledRagdoll( entity titan )
+{
+	titan.e.forceRagdollDeath = true
+}
+
+void function MeleePinkMistFakeBody( entity target )
+{
+	target.Dissolve( ENTITY_DISSOLVE_PINKMIST, < 0, 0, 0 >, 0 )
+}
+
+void function TitanLostArm( entity titan )
+{
+	table e = expect table( GetOptionalAnimEventVar( titan, "lost_arm" ) )
+
+	e.lostArm = true
+}
+
+void function MeleeKilledRagdoll( entity titan )
+{
+	entity attacker = expect entity( GetOptionalAnimEventVar( titan, "melee_killed_ragdoll" ) )
+
+	if ( !IsValid( attacker ) )
+		return
+	titan.Die( attacker, attacker, { scriptType = DF_MELEE, damageSourceId = eDamageSourceId.titan_execution } )
+	titan.SetContinueAnimatingAfterRagdoll( true )
+	titan.BecomeRagdoll( < 0, 0, 0 >, false )
+}
+
+void function OnNPCTitanDeath( entity titan, var damageInfo ) //Debug function, for bug 129802
+{
+	PrintFunc()
+}
+
+void function OnNPCTitanSignalDeath( entity titan ) //Debug function, for bug 129802
+{
+	PrintFunc()
+
+	titan.WaitSignal( "OnDeath" )
+
+	printt( "titan : " + titan + " recieved OnDeath Signal in OnNPCTitanSignalDeath" )
+}
+
+
+void function Northstar_Rocket_Pod_Left( entity guy )
+{
+	entity victim = expect entity( GetOptionalAnimEventVar( guy, "rocket_pod_fire_left" ) )
+	Rocket_Pod( guy, "muzzle_flash", victim )
+}
+
+void function Northstar_Rocket_Pod_Right( entity guy )
+{
+	entity victim = expect entity( GetOptionalAnimEventVar( guy, "rocket_pod_fire_right" ) )
+	Rocket_Pod( guy, "muzzle_flash2", victim )
+}
+
+void function Rocket_Pod( entity guy, string tag, entity victim )
+{
+	entity oldOffhandWeapon = guy.GetOffhandWeapon( 0 )
+	guy.TakeOffhandWeapon( 0 )
+	guy.GiveOffhandWeapon( "mp_titanweapon_salvo_rockets", 0, [ "northstar_prime_execution" ] )
+
+	entity newOffhandWeapon = guy.GetOffhandWeapon( 0 )
+	int attachID = guy.LookupAttachment( tag )
+	vector angles = guy.GetAttachmentAngles( attachID )
+	WeaponPrimaryAttackParams params
+	params.pos = guy.GetAttachmentOrigin( attachID )
+	params.dir = AnglesToForward( angles )
+
+	if ( IsAlive( victim ) && victim.IsTitan() )
+	{
+		vector victimTagPos = victim.GetAttachmentOrigin( victim.LookupAttachment( "CHESTFOCUS" ) ) + RandomVec( 30 )
+		params.dir = Normalize( victimTagPos - params.pos )
+		StartParticleEffectInWorld(GetParticleSystemIndex( $"P_muzzleflash_predator" ), params.pos, VectorToAngles( params.dir ) )
+	}
+
+	// DebugDrawSphere(params.pos, 10, 255,0,0, true, 1.0 )
+	// DebugDrawLine( params.pos, params.pos + params.dir*200, 255,0,0, true, 1.0 )
+
+	thread OnWeaponPrimaryAttack_titanweapon_salvo_rockets( newOffhandWeapon, params )
+
+	guy.TakeOffhandWeapon( 0 )
+
+	if ( oldOffhandWeapon )
+ 		guy.GiveOffhandWeapon( oldOffhandWeapon.GetWeaponClassName(), 0, oldOffhandWeapon.GetMods() )
+}

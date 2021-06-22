@@ -1,0 +1,4394 @@
+
+globalize_all_functions
+
+//=========================================================
+//	_utility
+//
+//=========================================================
+
+int functionref( bool = false ) ornull te = null
+int EntTracker = 0
+
+global const C_PLAYFX_SINGLE	= 0
+global const C_PLAYFX_MULTIPLE	= 1
+global const C_PLAYFX_LOOP		= 2
+
+global const MUTEALLFADEIN 		= 2
+
+global struct ZipLine
+{
+	entity start
+	entity mid
+	entity end
+}
+
+global int HUMAN_RAGDOLL_IMPACT_TABLE_IDX = -1
+
+global struct ArrayDotResultStruct
+{
+	entity ent
+	float dot
+}
+
+global struct ShieldDamageModifier
+{
+	float permanentDamageFrac = TITAN_SHIELD_PERMAMENT_DAMAGE_FRAC
+	bool normalizeShieldDamage = false
+	float damageScale = 1.0
+}
+
+
+struct
+{
+	bool isSkyboxView = false
+} file
+
+void function Utility_Init()
+{
+	te = TotalEnts
+	EntTracker = 0
+
+	#document( "SetDeathFuncName", "Sets the name of a function that runs when the NPC dies." )
+	#document( "CenterPrint", "Print to the screen" )
+	#document( "GetAllSoldiers", "Get all living soldiers." )
+	#document( "ClearDeathFuncName", "Clears the script death function." )
+
+	HUMAN_RAGDOLL_IMPACT_TABLE_IDX = PrecacheImpactEffectTable( "ragdoll_human" )
+
+	RegisterSignal( "PetTitanUpdated" )
+	RegisterSignal( "WaitDeadTimeOut" )
+	RegisterSignal( "InventoryChanged" )
+
+	AddClientCommandCallback( "OnDevnetBugScreenshot", ClientCommand_OnDevnetBugScreenshot )
+	#if DEV
+		FlagInit( "AimAssistSwitchTest_Enabled" )
+		AddClientCommandCallback( "DoomTitan", ClientCommand_DoomTitan )
+	#endif
+}
+
+void function GiveAllTitans()
+{
+
+	array<entity> players = GetPlayerArray()
+	foreach ( player in players )
+	{
+		#if MP
+		GiveTitanToPlayer( player )
+		#endif
+
+		if ( player.IsTitan() )
+		{
+			entity soul = player.GetTitanSoul()
+			if ( soul )
+			{
+				SoulTitanCore_SetNextAvailableTime( soul, 1 )
+			}
+		}
+	}
+
+	array<entity> titans = GetNPCArrayByClass( "npc_titan" )
+	foreach ( titan in titans )
+	{
+		entity soul = titan.GetTitanSoul()
+		if ( soul )
+			SoulTitanCore_SetNextAvailableTime( soul, 1 )
+	}
+}
+
+#if DEV
+
+void function KillAllBadguys()
+{
+	array<entity> npcs = GetNPCArrayOfEnemies( GetPlayerArray()[0].GetTeam() )
+	foreach ( n in npcs )
+	{
+		if ( n.GetClassName() == "npc_bullseye" )
+			continue
+
+		if ( !IsAlive( n ) )
+			continue
+		n.Die()
+	}
+}
+
+bool function ClientCommand_DoomTitan( entity player, array<string> args )
+{
+	entity titan
+	if ( player.IsTitan() )
+		titan = player
+	else
+		titan = player.GetPetTitan()
+
+	if ( !IsAlive( titan ) )
+		return true
+
+	if ( GetDoomedState( titan ) )
+		return true
+
+	entity soul = titan.GetTitanSoul()
+	soul.SetShieldHealth( 0 )
+
+	titan.TakeDamage( titan.GetHealth(), null, null, { damageSourceId=damagedef_suicide, scriptType = DF_SKIP_DAMAGE_PROT } )
+
+	return true
+}
+#endif
+
+void function PrintPlaylists()
+{
+	printt( "=== PLAYLIST NAMES: ===" )
+
+	int count = GetPlaylistCount()
+	for ( int i = 0; i < count; i++ )
+	{
+		printt( "--", GetPlaylistName( i ) )
+	}
+}
+
+entity function CreateEntity( string name )
+{
+//	if ( name == "npc_titan" )
+//	{
+//		DumpStack(3)
+//	}
+//	if ( name == "info_particle_system" )
+//	{
+//		printl( " " )
+//		DumpStack(3)
+//	}
+	return Entities_CreateByClassname( name )
+}
+
+// used from the console to quick-test fields
+void function setnpcfields( string key, var val )
+{
+	array<entity> npcs = GetNPCArrayByClass( "npc_soldier" )
+	foreach ( npc in npcs )
+	{
+		npc.kv[ key ] = val
+	}
+}
+
+void function WaitUntilNumDead( array<entity> guys, int numDead )
+{
+	Assert( numDead <= guys.len(), "asked for " + numDead + " guys to die, but only passed in an array of " + guys.len() + " guys." )
+	float timeout = -1
+	__WaitUntilDeadInternal( guys, numDead, timeout, __WaitUntilDeadTracker )
+}
+
+void function WaitUntilNumDeadWithTimeout( array<entity> guys, int numDead, float timeout )
+{
+	Assert( numDead <= guys.len(), "asked for " + numDead + " guys to die, but only passed in an array of " + guys.len() + " guys." )
+	Assert( timeout > 0 )
+	__WaitUntilDeadInternal( guys, numDead, timeout, __WaitUntilDeadTracker )
+}
+
+void function WaitUntilAllDead( array<entity> guys )
+{
+	int count = guys.len()
+	float timeout = -1
+	__WaitUntilDeadInternal( guys, count, timeout, __WaitUntilDeadTracker )
+}
+
+void function WaitUntilAllDeadWithTimeout( array<entity> guys, float timeout )
+{
+	int count = guys.len()
+	Assert( timeout > 0 )
+	__WaitUntilDeadInternal( guys, count, timeout, __WaitUntilDeadTracker )
+}
+
+void function WaitUntilNumDeadOrLeeched( array<entity> guys, int numDead )
+{
+	Assert( numDead <= guys.len(), "asked for " + numDead + " guys to die, but only passed in an array of " + guys.len() + " guys." )
+	float timeout = -1
+	__WaitUntilDeadInternal( guys, numDead, timeout, __WaitUntilDeadOrLeechedTracker )
+}
+
+void function WaitUntilNumDeadOrLeechedWithTimeout( array<entity> guys, int numDead, float timeout )
+{
+	Assert( numDead <= guys.len(), "asked for " + numDead + " guys to die, but only passed in an array of " + guys.len() + " guys." )
+	Assert( timeout > 0 )
+	__WaitUntilDeadInternal( guys, numDead, timeout, __WaitUntilDeadOrLeechedTracker )
+}
+
+void function WaitUntilAllDeadOrLeeched( array<entity> guys )
+{
+	int count = guys.len()
+	float timeout = -1
+	__WaitUntilDeadInternal( guys, count, timeout, __WaitUntilDeadOrLeechedTracker )
+}
+
+void function WaitUntilAllDeadOrLeechedWithTimeout( array<entity> guys, float timeout )
+{
+	int count = guys.len()
+	Assert( timeout > 0 )
+	__WaitUntilDeadInternal( guys, count, timeout, __WaitUntilDeadOrLeechedTracker )
+}
+
+void function __WaitUntilDeadInternal( array<entity> guys, int numDead, float timeout, void functionref( entity, table<string, int> ) deathTrackerFunc )
+{
+	table<string, int> master = { count = numDead }
+
+	if ( timeout > 0.0 )
+		thread __WaitUntilDeadTrackerDelayedSignal( master, "WaitDeadTimeOut", timeout )
+
+	//when the thread ends, let child threads know
+	OnThreadEnd(
+		function() : ( master )
+		{
+			Signal( master, "OnDestroy" )
+		}
+	)
+
+	foreach ( guy in guys )
+		thread deathTrackerFunc( guy, master )
+
+	while ( master.count > 0 )
+	{
+		table result = WaitSignal( master, "OnDeath", "WaitDeadTimeOut" )
+		if ( result.signal == "WaitDeadTimeOut" ) //can't do endsignal, because it will kill the calling function too
+			return
+	}
+}
+
+void function __WaitUntilDeadTrackerDelayedSignal( table<string, int> master, string signal, float delay )
+{
+	EndSignal( master, signal )
+
+	wait delay
+	if ( IsValid( master ) )
+		Signal( master, signal )
+}
+
+void function __WaitUntilDeadTracker( entity guy, table<string, int> master )
+{
+	EndSignal( master, "OnDestroy" )
+	if ( IsAlive( guy ) )
+		WaitSignal( guy, "OnDeath", "OnDestroy" )
+
+	master.count--
+	Signal( master, "OnDeath" )
+}
+
+void function __WaitUntilDeadOrLeechedTracker( entity guy, table<string, int> master )
+{
+	EndSignal( master, "OnDestroy" )
+	if ( IsAlive( guy ) )
+		WaitSignal( guy, "OnDeath", "OnDestroy", "OnLeeched" )
+
+	master.count--
+	Signal( master, "OnDeath" )
+}
+
+void function SetRebreatherMaskVisible( entity ent, bool visible )
+{
+	asset modelname = ent.GetModelName()
+
+	int maskIdx = ent.FindBodyGroup( "mask" )
+	if ( maskIdx == -1 )
+		return
+
+	int visibleIdx = 1
+	if ( !visible )
+		visibleIdx = 0
+
+	ent.SetBodygroup( maskIdx, visibleIdx )
+}
+
+int function EntHasSpawnflag( entity ent, int spawnflagHexVal )
+{
+	return ( expect int( ent.kv.spawnflags ) & spawnflagHexVal )
+}
+
+entity function CreateInfoTarget( vector origin = <0,0,0>, vector angles = <0,0,0> )
+{
+	entity info_target = CreateEntity( "info_target" )
+	info_target.SetOrigin( origin )
+	info_target.SetAngles( angles )
+	DispatchSpawn( info_target )
+	return info_target
+}
+
+entity function CreateExpensiveScriptMover( vector origin = <0.0, 0.0, 0.0>, vector angles = <0.0, 0.0, 0.0>, int solidType = 0 )
+{
+	entity script_mover = CreateEntity( "script_mover" )
+	script_mover.kv.solid = solidType
+	script_mover.SetValueForModelKey( $"models/dev/empty_model.mdl" )
+	script_mover.kv.SpawnAsPhysicsMover = 0
+	script_mover.SetOrigin( origin )
+	script_mover.SetAngles( angles )
+
+	DispatchSpawn( script_mover )
+	return script_mover
+}
+
+entity function CreateScriptMover( vector origin = <0.0, 0.0, 0.0>, vector angles = <0.0, 0.0, 0.0>, int solidType = 0 )
+{
+	entity script_mover = CreateEntity( "script_mover_lightweight" )
+	script_mover.kv.solid = solidType
+	script_mover.SetValueForModelKey( $"models/dev/empty_model.mdl" )
+	script_mover.kv.SpawnAsPhysicsMover = 0
+	script_mover.SetOrigin( origin )
+	script_mover.SetAngles( angles )
+	DispatchSpawn( script_mover )
+	return script_mover
+}
+
+entity function CreateScriptMoverModel( asset model, vector origin = <0.0, 0.0, 0.0>, vector angles = <0.0, 0.0, 0.0>, int solidType = 0, float fadeDist = -1 )
+{
+	entity script_mover = CreateEntity( "script_mover_lightweight" )
+	script_mover.kv.solid = solidType
+	script_mover.kv.fadedist = fadeDist
+	script_mover.SetValueForModelKey( model )
+	script_mover.kv.SpawnAsPhysicsMover = 0
+	script_mover.SetOrigin( origin )
+	script_mover.SetAngles( angles )
+	DispatchSpawn( script_mover )
+	return script_mover
+}
+
+entity function CreateExpensiveScriptMoverModel( asset model, vector origin = <0.0, 0.0, 0.0>, vector angles = <0.0, 0.0, 0.0>, int solidType = 0, float fadeDist = -1 )
+{
+	entity script_mover = CreateEntity( "script_mover" )
+	script_mover.kv.solid = solidType
+	script_mover.kv.fadedist = fadeDist
+	script_mover.SetValueForModelKey( model )
+	script_mover.kv.SpawnAsPhysicsMover = 0
+	script_mover.SetOrigin( origin )
+	script_mover.SetAngles( angles )
+	DispatchSpawn( script_mover )
+	return script_mover
+}
+
+entity function CreateOwnedScriptMover( entity owner )
+{
+	entity script_mover = CreateEntity( "script_mover" )
+	script_mover.kv.solid = 0
+	script_mover.SetValueForModelKey( $"models/dev/empty_model.mdl" )
+	script_mover.kv.SpawnAsPhysicsMover = 0
+	script_mover.SetOrigin( owner.GetOrigin() )
+	script_mover.SetAngles( owner.GetAngles() )
+	DispatchSpawn( script_mover )
+	script_mover.Hide()
+
+	script_mover.SetOwner( owner )
+	return script_mover
+}
+
+// useful for finding out what ents are in a level. Should only be used for debugging.
+int function TotalEnts( bool hidden = false )
+{
+	array<entity> entities
+
+	EntTracker++
+
+	entity ent = Entities_FindInSphere( null, < 0, 0, 0 >, 90000 )
+	string name
+	for ( ;; )
+	{
+		if ( ent == null )
+			break
+
+		entities.append( ent )
+
+		name = ent.GetTargetName()
+
+		string strPrefix = "Old ent"
+		if ( ent.e.totalEntsStoredID == 0 )
+		{
+			string strPrefix = "* New ent"
+			ent.e.totalEntsStoredID = EntTracker
+		}
+
+		string strPostfix = ""
+		if ( name != "" )
+			strPostfix = " \"" + name + "\""
+
+		if ( !hidden )
+			printl( strPrefix + " (" + ent.e.totalEntsStoredID + "): " + ent + strPostfix )
+
+		ent = Entities_FindInSphere( ent, < 0, 0, 0 >, 90000 )
+	}
+
+	if ( !hidden )
+		printl( "Total entities " + entities.len() )
+
+	return entities.len()
+}
+
+bool function IsThreadTop()
+{
+	return getstackinfos( 3 ) == null
+}
+
+string function ThisFunc()
+{
+	return expect string( expect table( getstackinfos( 2 ) )[ "func" ] )
+}
+
+entity function ge( int index ) // shorthand version for typing from console
+{
+	return GetEntByIndex( index )
+}
+
+entity function GetEnt( string name )
+{
+	entity ent = Entities_FindByName( null, name )
+	if ( ent == null )
+	{
+		ent = Entities_FindByClassname( null, name )
+		Assert( Entities_FindByClassname( ent, name ) == null, "Tried to GetEnt but there were multiple entities with that name" )
+	}
+	else
+	{
+		Assert( Entities_FindByName( ent, name ) == null, "Tried to GetEnt but there were multiple entities with name " + name )
+	}
+
+	return ent
+}
+
+array<entity> function ArrayWithinCenter( array<entity> ents, vector start, int range )
+{
+	array<entity> Array
+	foreach ( ent in ents )
+	{
+		if ( Distance( start, ent.GetWorldSpaceCenter() ) > range )
+			continue
+
+		Array.append( ent )
+	}
+
+	return Array
+}
+
+vector function GetCenter( array<entity> ents )
+{
+	vector total
+
+	foreach ( ent in ents )
+	{
+		total += ent.GetOrigin()
+	}
+
+	total.x /= float( ents.len() )
+	total.y /= float( ents.len() )
+	total.z /= float( ents.len() )
+
+	return total
+}
+
+void function TableRemoveInvalid( table<entity, entity> Table )
+{
+	array<entity> deleteKey = []
+
+	foreach ( entity key, entity value in Table )
+	{
+		if ( !IsValid_ThisFrame( key ) )
+			deleteKey.append( key )
+
+		if ( !IsValid_ThisFrame( value ) )
+			deleteKey.append( key )
+	}
+
+	foreach ( key in deleteKey )
+	{
+		// in this search, two things could end up on the same key
+		if ( key in Table )
+			delete Table[ key ]
+	}
+}
+
+void function TableRemoveInvalidByValue( table<entity, entity> Table )
+{
+	array<entity> deleteKey = []
+
+	foreach ( key, entity value in Table )
+	{
+		if ( !IsValid_ThisFrame( value ) )
+			deleteKey.append( key )
+	}
+
+	foreach ( key in deleteKey )
+	{
+		delete Table[ key ]
+	}
+}
+
+void function TableRemoveDeadByKey( table<entity, entity> Table )
+{
+	array<entity> deleteKey = []
+
+	foreach ( key, value in Table )
+	{
+		if ( !IsAlive( key ) )
+			deleteKey.append( key )
+	}
+
+	foreach ( key in deleteKey )
+	{
+		delete Table[ key ]
+	}
+}
+
+
+void function ArrayDump( array<var> Array )
+{
+	for ( int i = 0; i < Array.len(); i++ )
+	{
+		printl( "index " + i + " is: " + Array[i] )
+	}
+}
+
+
+int function DotCompareLargest( ArrayDotResultStruct a, ArrayDotResultStruct b )
+{
+	if ( a.dot < b.dot )
+		return 1
+	else if ( a.dot > b.dot )
+		return -1
+
+	return 0
+}
+
+int function DotCompareSmallest( ArrayDotResultStruct a, ArrayDotResultStruct b )
+{
+	if ( a.dot > b.dot )
+		return 1
+	else if ( a.dot < b.dot )
+		return -1
+
+	return 0
+}
+
+array<ArrayDotResultStruct> function ArrayDotResults( array<entity> Array, entity ent )
+{
+	array<ArrayDotResultStruct> allResults
+
+	foreach ( arrayEnt in Array )
+	{
+		ArrayDotResultStruct results
+
+		results.dot = VectorDot_EntToEnt( ent, arrayEnt )
+		results.ent = arrayEnt
+		allResults.append( results )
+	}
+
+	return allResults
+}
+
+
+// Return an array of entities ordered from closest to furthest from the facing of the entity
+array<entity> function ArrayClosestToView( array<entity> Array, entity ent )
+{
+	Assert( type( Array ) == "array" )
+	array<ArrayDotResultStruct> allResults = ArrayDotResults( Array, ent )
+
+	allResults.sort( DotCompareLargest )
+
+	array<entity> returnEntities = []
+
+	foreach ( index, result in allResults )
+	{
+		//printl( "Results are " + result.dot )
+		returnEntities.insert( index, result.ent )
+	}
+
+	// the actual distances aren't returned
+	return returnEntities
+}
+
+
+entity function SpawnRefEnt( entity ent )
+{
+	printl( "Ent model " + ent.GetValueForModelKey() )
+	int attach = ent.LookupAttachment( "ref" )
+	vector origin = ent.GetAttachmentOrigin( attach )
+	vector angles = ent.GetAttachmentAngles( attach )
+
+	entity ref = CreateEntity( "prop_dynamic" )
+	//ref.kv.SpawnAsPhysicsMover = 0
+	ref.SetValueForModelKey( $"models/dev/empty_model.mdl" )
+	DispatchSpawn( ref )
+
+	ref.SetOrigin( origin )
+	ref.SetAngles( angles )
+	ref.Hide()
+	return ref
+}
+
+entity function CreateScriptRef( vector ornull origin = null, vector ornull angles = null )
+{
+	entity ent = CreateEntity( "script_ref" )
+
+	if ( origin )
+		ent.SetOrigin( expect vector( origin ) )
+
+	if ( angles )
+		ent.SetAngles( expect vector( angles ) )
+
+	DispatchSpawn( ent )
+	return ent
+}
+
+entity function CreateScriptRefMinimap( vector origin, vector angles )
+{
+	entity ent = CreateEntity( "script_ref_minimap" )
+
+	ent.SetOrigin( origin )
+	ent.SetAngles( angles )
+
+	DispatchSpawn( ent )
+
+	return ent
+}
+
+bool function exists( table tbl, string val )
+{
+	if ( !(val in tbl) )
+		return false
+
+	return tbl[ val ] != null
+}
+
+var function TableRandomIndex( table Table )
+{
+	array Array = []
+
+	foreach ( index, _ in Table )
+	{
+		Array.append( index )
+	}
+
+	return Array.getrandom()
+}
+
+// should improve this
+float function YawDifference( float yaw1, float yaw2 )
+{
+	Assert( yaw1 >= 0 )
+	Assert( yaw1 <= 360 )
+	Assert( yaw2 >= 0 )
+	Assert( yaw2 <= 360 )
+
+	float diff = fabs( yaw1 - yaw2 )
+
+	if ( diff > 180 )
+	    return 360 - diff
+	else
+	    return diff
+
+	unreachable
+}
+
+
+
+/*function TrackIsTouching( ent )
+{
+	return // now uses IsTouching
+
+	//ent.s.touching <- {}
+	//ent.ConnectOutput( "OnStartTouch", TrackIsTouching_OnStartTouch )
+	//ent.ConnectOutput( "OnEndTouch", TrackIsTouching_OnEndTouch )
+}
+
+void function TrackIsTouching_OnStartTouch( entity self, entity activator, entity caller, var value )
+{
+	if ( activator )
+	{
+		self.s.touching[ activator ] <- true
+	}
+}
+
+void function TrackIsTouching_OnEndTouch( entity self, entity activator, entity caller, var value )
+{
+	if ( activator )
+	{
+		if ( activator in self.s.touching )
+		{
+			delete self.s.touching[ activator ]
+		}
+	}
+}*/
+
+void function NPC_NoTarget( entity self )
+{
+	self.SetNoTarget( true )
+	self.SetNoTargetSmartAmmo( true )
+}
+
+vector function GetSimpleTraceEnd( vector start, vector end, float frac )
+{
+	vector vec = end - start
+	vec *= frac
+	return start + vec
+}
+
+bool function LoadedMain()
+{
+	if ( "LoadedMain" in level )
+		return true
+
+	level.LoadedMain <- true
+
+	return false
+}
+
+void function Warning( string msg )
+{
+	printl( "*** WARNING ***" )
+	printl( msg )
+	DumpStack()
+	printl( "*** WARNING ***" )
+}
+
+void function TimeOut( float time )
+{
+	table Table = {}
+	EndSignal( Table, "OnDeath" )
+	delaythread( time ) Signal( Table, "OnDeath" )
+}
+
+string function GetActiveWeaponClass( entity player )
+{
+	entity weapon = player.GetActiveWeapon()
+	Assert( weapon != null )
+
+	string weaponclass = weapon.GetWeaponClassName()
+	return weaponclass
+}
+
+bool function HasWeapon( entity ent, string weaponClassName, array<string> mods = [] )
+{
+	Assert( ent.IsPlayer() || ent.IsNPC() )
+
+	array<entity> weaponArray = ent.GetMainWeapons()
+	foreach ( weapon in weaponArray )
+	{
+		if ( weapon.GetWeaponClassName() == weaponClassName )
+		{
+			if ( WeaponHasSameMods( weapon, mods ) )
+				return true
+		}
+	}
+
+	return false
+}
+
+bool function HasOrdnance( entity ent, string weaponClassName, array<string> mods = [] )
+{
+	return HasOffhandForSlot( ent, OFFHAND_ORDNANCE, weaponClassName, mods )
+}
+
+bool function HasCoreAbility( entity ent, string weaponClassName, array<string> mods = [] )
+{
+	return HasOffhandForSlot( ent, OFFHAND_EQUIPMENT, weaponClassName, mods )
+}
+
+bool function HasSpecial( entity ent, string weaponClassName, array<string> mods = [] )
+{
+	return HasOffhandForSlot( ent, OFFHAND_SPECIAL, weaponClassName, mods )
+}
+
+bool function HasAntiRodeo( entity ent, string weaponClassName, array<string> mods = [] )
+{
+	return HasOffhandForSlot( ent, OFFHAND_ANTIRODEO, weaponClassName, mods )
+}
+
+bool function HasMelee( entity ent, string weaponClassName, array<string> mods = [] )
+{
+	return HasOffhandForSlot( ent, OFFHAND_MELEE, weaponClassName, mods )
+}
+
+bool function HasOffhandForSlot( entity ent, int slot, string weaponClassName, array<string> mods = [] )
+{
+	Assert( ent.IsPlayer() || ent.IsNPC() )
+
+	entity weapon = ent.GetOffhandWeapon( slot )
+	if ( !IsValid( weapon ) )
+		return false
+
+	if ( weapon.GetWeaponClassName() != weaponClassName )
+		return false
+
+	return WeaponHasSameMods( weapon, mods )
+}
+
+bool function WeaponHasSameMods( entity weapon, array<string> mods = [] )
+{
+	array hasMods = clone mods
+	foreach ( mod in weapon.GetMods() )
+	{
+		hasMods.removebyvalue( mod )
+	}
+
+	// has all the same mods.
+	return hasMods.len() == 0
+}
+
+bool function HasOffhandWeapon( entity ent, string weaponClassName )
+{
+	Assert( ent.IsPlayer() || ent.IsNPC() )
+
+	array<entity> weaponArray = ent.GetOffhandWeapons()
+	foreach ( weapon in weaponArray )
+	{
+		if ( weapon.GetWeaponClassName() == weaponClassName )
+			return true
+	}
+
+	return false
+}
+
+float function GetFraction( float value, float min, float max )
+{
+	return ( value - min ) / ( max - min )
+}
+
+float function GetFractionClamped( float value, float min, float max )
+{
+	float frac = GetFraction( value, min, max )
+	return clamp( frac, 0.0, 1.0 )
+}
+
+float function GetValueFromFraction( float value, float value_min, float value_max, float return_min, float return_max )
+{
+	float frac = GetFractionClamped( value, value_min, value_max )
+	float retVal = return_min + ( ( return_max - return_min ) * frac )
+	return clamp( retVal, return_min, return_max )
+}
+
+bool function VectorCompare( vector vec1, vector vec2 )
+{
+	if ( vec1.x != vec2.x )
+		return false
+
+	if ( vec1.y != vec2.y )
+		return false
+
+	return vec1.z == vec2.z
+}
+
+// returns vectordot from viewEnt to targetEnt
+float function VectorDot_EntToEnt( entity viewEnt, entity targetEnt )
+{
+	vector maxs = targetEnt.GetBoundingMaxs()
+	vector mins = targetEnt.GetBoundingMins()
+	maxs += mins
+	maxs.x *= 0.5
+	maxs.y *= 0.5
+	maxs.z *= 0.5
+	vector targetOrg = targetEnt.GetOrigin() + maxs
+
+	maxs = viewEnt.GetBoundingMaxs()
+	mins = viewEnt.GetBoundingMins()
+	maxs += mins
+	maxs.x *= 0.5
+	maxs.y *= 0.5
+	maxs.z *= 0.5
+	vector viewOrg = viewEnt.GetOrigin() + maxs
+
+	//DebugDrawLine( targetOrg, viewOrg, 255, 255, 255, true, 0.5 )
+	vector vecToEnt = ( targetOrg - viewOrg )
+	vecToEnt = Normalize( vecToEnt )
+
+	float dotVal = DotProduct( vecToEnt, viewEnt.GetForwardVector() )
+	return dotVal
+}
+
+void function PrecacheEffect( asset effectName )
+{
+	entity warningParticle = CreateEntity( "info_particle_system" )
+	warningParticle.SetValueForEffectNameKey( effectName )
+	warningParticle.kv.start_active = 0
+	DispatchSpawn( warningParticle )
+	warningParticle.Destroy()
+}
+
+void function PrecacheEntity( string entName, asset model = $"" )
+{
+	entity tempEnt = CreateEntity( entName )
+
+	if ( model != $"" )
+		tempEnt.SetValueForModelKey( model )
+
+	tempEnt.kv.spawnflags = SF_NPC_ALLOW_SPAWN_SOLID
+
+	DispatchSpawn( tempEnt )
+	tempEnt.Destroy()
+}
+
+void function PrecacheProjectileEntity( string entName, string weaponClassName, asset model = $"" )
+{
+	entity tempEnt = Entities_CreateProjectileByClassname( entName, weaponClassName )
+
+	if ( model != $"" )
+		tempEnt.SetValueForModelKey( model )
+
+	tempEnt.kv.spawnflags = SF_NPC_ALLOW_SPAWN_SOLID
+
+	DispatchSpawn( tempEnt )
+	tempEnt.Destroy()
+}
+
+void function PrecacheSprite( asset spriteName )
+{
+	entity sprite = CreateEntity( "env_sprite_oriented" )
+	sprite.SetValueForModelKey( spriteName )
+	sprite.kv.spawnflags = 1
+	DispatchSpawn( sprite )
+	sprite.Destroy()
+}
+
+entity function CreatePointMessage( string msg, vector origin, int displayRadius = 512 )
+{
+	entity point_message = CreateEntity( "point_message" )
+	point_message.SetOrigin( origin )
+	point_message.kv.message = msg
+	point_message.kv.radius = displayRadius
+
+	DispatchSpawn( point_message )
+
+	return point_message
+}
+
+entity function CreateGameText( string msg, float xPos, float yPos, int channel, string color = "255 255 255", float fadein = 2, float fadeout = 0.5, float holdtime = 2 )
+{
+	entity game_text = CreateEntity( "game_text" )
+
+	game_text.SetScriptName( "gt" + UniqueString()  )
+	game_text.kv.message = msg
+	game_text.kv["x"] = xPos
+	game_text.kv["y"] = yPos
+	game_text.kv.channel = channel
+	game_text.kv.color = color
+	game_text.kv.color2 = "240 110 0"  // doesn't appear to do anything atm, not supporting in params
+	game_text.kv.fadein = fadein
+	game_text.kv.fadeout = fadeout
+	game_text.kv.holdtime = holdtime
+	game_text.kv.fxtime = "0.25"
+
+	DispatchSpawn( game_text )
+
+	return game_text
+}
+
+// pass the origin where the player's feet would be
+// tests a player sized box for any collision and returns true only if it's clear
+bool function PlayerCanTeleportHere( entity player, vector testOrg, entity ignoreEnt = null ) //TODO: This is a copy of SP's PlayerPosInSolid(). Not changing it to avoid patching SP. Merge into one function next game
+{
+	int solidMask = TRACE_MASK_PLAYERSOLID
+	vector mins
+	vector maxs
+	int collisionGroup = TRACE_COLLISION_GROUP_PLAYER
+	array<entity> ignoreEnts = [ player ]
+
+	if ( IsValid( ignoreEnt ) )
+		ignoreEnts.append( ignoreEnt )
+	TraceResults result
+
+	mins = player.GetPlayerMins()
+	maxs = player.GetPlayerMaxs()
+	result = TraceHull( testOrg, testOrg + < 0, 0, 1 >, mins, maxs, ignoreEnts, solidMask, collisionGroup )
+
+	if ( result.startSolid )
+		return false
+
+	return true
+}
+
+
+enum eAttach
+{
+	No
+	ViewAndTeleport
+	View
+	Teleport
+	ThirdPersonView
+}
+
+
+void function LoadDiamond()
+{
+    printl( " " )
+    printl( " " )
+    printl( " " )
+
+    // Draw a diamond of a random size and phase (of the moon) so it is easy to separate sections of logs.
+    int random_spread = RandomIntRange( 4, 7 )
+    float random_fullness = RandomFloat( 2.0 )
+    bool functionref( int, int ) compare_func
+    string msg
+
+    if ( RandomFloat( 1.0 ) > 0.5 )
+    {
+	    compare_func = bool function( int a, int b )
+	    {
+		    return a <= b
+	    }
+    }
+    else
+    {
+	    compare_func = bool function( int a, int b )
+	    {
+		    return a >= b
+	    }
+    }
+
+    for ( int i = 0; i <= random_spread - 2; i++ )
+    {
+	    msg = ""
+
+	    for ( int p = 0; p <= random_spread - i; p++ )
+	    {
+		    msg = msg + " "
+	    }
+
+	    for ( int p = 0; p <= i * 2; p++ )
+	    {
+		    if ( p == i * 2 || p == 0 )
+		    {
+			    msg = msg + "*"
+		    }
+		    else
+		    {
+			    int an_int = int( i * random_fullness )
+
+			    if ( compare_func( p, an_int ) )
+				    msg = msg + "*"
+			    else
+				    msg = msg + " "
+		    }
+	    }
+
+	    printl( msg )
+    }
+
+    for ( int i = random_spread - 1; i >= 0; i-- )
+    {
+	    msg = ""
+
+	    for ( int p = 0; p <= random_spread - i; p++ )
+	    {
+		    msg = msg + " "
+	    }
+
+
+	    for ( int p = 0; p <= i * 2; p++ )
+	    {
+		    if ( p == i * 2 || p == 0 )
+		    {
+			    msg = msg + "*"
+		    }
+		    else
+		    {
+			    if ( compare_func( p, int( i * random_fullness ) ) )
+			    {
+				    msg = msg + "*"
+			    }
+			    else
+			    {
+				    msg = msg + " "
+			    }
+		    }
+	    }
+
+	    printl( msg )
+    }
+
+    printl( " " )
+    printl( " " )
+    printl( " " )
+}
+
+// this will clear all dropped weapons in the map
+void function ClearDroppedWeapons( float delayTime = 0.0 )
+{
+	if ( delayTime > 0 )
+		wait delayTime
+
+	bool onlyNotOwnedWeapons = true  // don't get the ones in guys' hands
+	array<entity> weapons = GetWeaponArray( onlyNotOwnedWeapons )
+
+	foreach ( weapon in weapons )
+	{
+		// don't clean up weapon pickups that were placed in leveled
+		int spawnflags = expect string( weapon.kv.spawnflags ).tointeger()
+		if ( spawnflags & SF_WEAPON_START_CONSTRAINED )
+			continue
+
+		weapon.Destroy()
+	}
+}
+
+void function ClearActiveProjectilesForTeam( int team, vector searchOrigin = <0,0,0>, float searchDist = -1 )
+{
+	array<entity> projectiles = GetProjectileArrayEx( "any", team, TEAM_ANY, searchOrigin, searchDist )
+
+	printt( "cleaning up", projectiles.len(), "weapon projectiles for team", team )
+
+	foreach ( proj in projectiles )
+	{
+		if( !IsValid( proj ) )
+			continue
+
+		proj.Destroy()
+	}
+}
+
+void function RestockPlayerAmmo_Silent( entity player = null )
+{
+	RestockPlayerAmmo( player, true )
+}
+
+void function RestockPlayerAmmo( entity player = null, bool isSilent = false )
+{
+	array<entity> players
+	if ( IsAlive( player ) )
+		players.append( player )
+	else
+		players = GetPlayerArray_Alive()
+
+	foreach( player in players )
+	{
+		player.RefillAllAmmo()
+
+		if ( !isSilent )
+			EmitSoundOnEntityOnlyToPlayer( player, player, "Coop_AmmoBox_AmmoRefill" )
+	}
+}
+
+entity function CreateLightSprite( vector origin, vector angles, string lightcolor = "255 0 0", float scale = 0.5 )
+{
+	// attach a light so we can see it
+	entity env_sprite = CreateEntity( "env_sprite" )
+	env_sprite.SetScriptName( UniqueString( "molotov_sprite" ) )
+	env_sprite.kv.rendermode = 5
+	env_sprite.kv.origin = origin
+	env_sprite.kv.angles = angles
+	env_sprite.kv.rendercolor = lightcolor
+	env_sprite.kv.renderamt = 255
+	env_sprite.kv.framerate = "10.0"
+	env_sprite.SetValueForModelKey( $"sprites/glow_05.vmt" )
+	env_sprite.kv.scale = string( scale )
+	env_sprite.kv.spawnflags = 1
+	env_sprite.kv.GlowProxySize = 16.0
+	env_sprite.kv.HDRColorScale = 1.0
+	DispatchSpawn( env_sprite )
+	EntFireByHandle( env_sprite, "ShowSprite", "", 0, null, null )
+
+	return env_sprite
+}
+
+// defaultWinner: if it's a tie, return this value
+int function GetCurrentWinner( int defaultWinner = TEAM_MILITIA )
+{
+	int imcScore
+	int militiaScore
+
+	if ( IsRoundBased() )
+	{
+		imcScore = GameRules_GetTeamScore2( TEAM_IMC )
+		militiaScore = GameRules_GetTeamScore2( TEAM_MILITIA )
+
+		if ( IsRoundBasedUsingTeamScore() && ( imcScore == militiaScore ) )
+		{
+			imcScore = GameRules_GetTeamScore( TEAM_IMC )
+			militiaScore = GameRules_GetTeamScore( TEAM_MILITIA )
+		}
+	}
+	else
+	{
+		imcScore = GameRules_GetTeamScore( TEAM_IMC )
+		militiaScore = GameRules_GetTeamScore( TEAM_MILITIA )
+	}
+
+	int currentWinner = defaultWinner
+
+	if ( militiaScore > imcScore )
+		currentWinner = TEAM_MILITIA
+	else if ( imcScore > militiaScore )
+		currentWinner = TEAM_IMC
+
+	return currentWinner
+}
+
+void function SetNpcFollowsPlayerOverride( entity player, void functionref( entity, entity ) override )
+{
+	player.p.followPlayerOverride = override
+}
+
+void function ClearNpcFollowsPlayerOverride( entity player )
+{
+	player.p.followPlayerOverride = null
+}
+
+void function AddCallback_GameStateEnter( int gameState, void functionref() callbackFunc )
+{
+	Assert( gameState < svGlobal.gameStateEnterCallbacks.len() )
+
+	Assert( !svGlobal.gameStateEnterCallbacks[ gameState ].contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_GameStateEnter" )
+
+	svGlobal.gameStateEnterCallbacks[ gameState ].append( callbackFunc )
+}
+
+void function GM_SetObserverFunc( void functionref( entity ) callbackFunc )
+{
+	svGlobal.observerFunc = callbackFunc
+}
+
+void function GM_AddPlayingThinkFunc( void functionref() callbackFunc )
+{
+	Assert( !svGlobal.playingThinkFuncTable.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with GM_AddPlayingThinkFunc" )
+
+	svGlobal.playingThinkFuncTable.append( callbackFunc )
+}
+
+void function GM_AddThirtySecondsLeftFunc( void functionref() callbackFunc )
+{
+	Assert( !svGlobal.thirtySecondsLeftFuncTable.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with GM_AddThirtySecondsLeftFunc" )
+
+	svGlobal.thirtySecondsLeftFuncTable.append( callbackFunc )
+}
+
+void function GM_SetMatchProgressAnnounceFunc( void functionref( int ) callbackFunc )
+{
+	svGlobal.matchProgressAnnounceFunc = callbackFunc
+}
+
+// Get an absolute offset poistion to an entity even if it's been rotated in world space
+vector function GetEntPosPlusOffset( entity ent, float offsetX, float offsetY, float offsetZ )
+{
+	vector entAngles = ent.GetAngles()
+	vector entOrg = ent.GetOrigin()
+
+	vector right = AnglesToRight( entAngles )
+	right = Normalize( right )
+	vector pos = entOrg + ( right * offsetY )
+
+	vector forward = AnglesToForward( entAngles )
+	forward = Normalize( forward )
+	pos = pos + ( forward * offsetX )
+
+	vector up = AnglesToUp( entAngles )
+	up = Normalize( up )
+	pos = pos + ( up * offsetZ )
+
+	return pos
+}
+
+void function EmitSoundToTeamPlayers( string alias, int team )
+{
+	array<entity> players = GetPlayerArrayOfTeam( team )
+
+	foreach ( player in players )
+		EmitSoundOnEntityOnlyToPlayer( player, player, alias )
+}
+
+void function EmitDifferentSoundsAtPositionForPlayerAndWorld( string soundForPlayer, string soundForWorld, vector position, entity player, int teamNum )
+{
+	if ( IsValid( player ) && player.IsPlayer() )
+	{
+		EmitSoundAtPositionExceptToPlayer( teamNum, position, player, soundForWorld )
+		EmitSoundAtPositionOnlyToPlayer( teamNum, position, player, soundForPlayer)
+	}
+	else
+	{
+		EmitSoundAtPosition( teamNum, position, soundForWorld )
+	}
+}
+
+void function EmitDifferentSoundsOnEntityForPlayerAndWorld( string soundForPlayer, string soundForWorld, entity soundEnt, entity player )
+{
+	if ( IsValid( player ) && player.IsPlayer() )
+	{
+		EmitSoundOnEntityExceptToPlayerNotPredicted( soundEnt, player, soundForWorld )
+		EmitSoundOnEntityOnlyToPlayer(soundEnt, player, soundForPlayer)
+	}
+	else
+	{
+		EmitSoundOnEntity( soundEnt, soundForWorld )
+	}
+}
+
+// Drop an entity to the ground by tracing straight down from its z-axis
+void function DropToGround( entity ent )
+{
+	vector targetOrigin = OriginToGround( ent.GetOrigin() + <0,0,1> )
+	ent.SetOrigin( targetOrigin )
+}
+
+void function DropTitanToGround( entity titan, array<entity> ignoreEnts )
+{
+	vector endOrigin = titan.GetOrigin() - < 0, 0, 20000 >
+	vector mins = GetBoundsMin( HULL_TITAN )
+	vector maxs = GetBoundsMax( HULL_TITAN )
+	TraceResults traceResult = TraceHull( titan.GetOrigin(), endOrigin, mins, maxs, ignoreEnts, TRACE_MASK_TITANSOLID, TRACE_COLLISION_GROUP_NONE )
+
+	titan.SetOrigin( traceResult.endPos )
+}
+
+vector function OriginToGround( vector origin )
+{
+	vector endOrigin = origin - < 0, 0, 20000 >
+	TraceResults traceResult = TraceLine( origin, endOrigin, [], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+
+	return traceResult.endPos
+}
+
+float function GetVerticalClearance( vector origin )
+{
+	vector endOrigin = origin + < 0, 0, 20000 >
+	TraceResults traceResult = TraceLine( origin, endOrigin, [], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+	vector endPos = traceResult.endPos
+	float zDelta = ( endPos.z - origin.z )
+
+	return zDelta
+}
+
+// ---------------------------------------------------------------------
+// Determine if an entity is a valid player spawnpoint
+// ---------------------------------------------------------------------
+bool function PlayerSpawnpointIsValid( entity ent )
+{
+	if ( ent.GetClassName() != "prop_dynamic" )
+		return false
+	if ( ent.GetValueForModelKey() != $"models/humans/pete/mri_male.mdl" )
+		return false
+
+	return true
+}
+
+// ---------------------------------------------------------------------
+// Make an NPC or the player invincible (true/false)
+//	(_npc.nut intercepts incoming damage and negates it if the ent is tagged as invincible)
+// ---------------------------------------------------------------------
+void function MakeInvincible( entity ent )
+{
+	Assert( IsValid( ent ), "Tried to make invalid " + ent + " invincible" )
+	Assert( ent.IsNPC() || ent.IsPlayer(), "MakeInvincible() can only be called on NPCs and the player" )
+	Assert( IsAlive( ent ), "Tried to make dead ent " + ent + " invincible" )
+
+	ent.SetInvulnerable()
+}
+
+void function ClearInvincible( entity ent )
+{
+	Assert( IsValid( ent ), "Tried to clear invalid " + ent + " invincible" )
+
+	ent.ClearInvulnerable()
+}
+
+bool function IsInvincible( entity ent )
+{
+	return ent.IsInvulnerable()
+}
+
+//-------------------------------------
+// Teleport an entity (teleporter) to an entity's org and angles (ent)
+//--------------------------------------
+void function TeleportToEnt( entity teleporter, entity ent )
+{
+	Assert( teleporter != null, "Unable to teleport null entity" )
+	Assert( ent != null, "Unable to teleport to a null entity" )
+	teleporter.SetOrigin( ent.GetOrigin() )
+	teleporter.SetAngles( ent.GetAngles() )
+}
+
+//-----------------------------------------------------------
+// CreateShake() - create and fire an env_shake at a specified origin
+// - returns the shake in case you want to parent it
+//------------------------------------------------------------
+
+entity function CreateShake_internal( vector org, float amplitude, float frequency, float duration, float radius, int spawnFlags )
+{
+	entity env_shake = CreateEntity( "env_shake" )
+	env_shake.kv.amplitude = amplitude
+	env_shake.kv.radius = radius
+	env_shake.kv.duration = duration
+	env_shake.kv.frequency = frequency
+	env_shake.kv.spawnflags = spawnFlags
+
+	DispatchSpawn( env_shake )
+
+	env_shake.SetOrigin( org )
+
+	EntFireByHandle( env_shake, "StartShake", "", 0, null, null )
+	EntFireByHandle( env_shake, "Kill", "", ( duration + 1 ), null, null )
+
+	return env_shake
+}
+
+entity function CreateShake( vector org, float amplitude = 16, float frequency = 150, float duration = 1.5, float radius = 2048 )
+{
+	return CreateShake_internal( org, amplitude, frequency, duration, radius, 0 );
+}
+
+entity function CreateShakeRumbleOnly( vector org, float amplitude = 16, float frequency = 150, float duration = 1.5, float radius = 2048 )
+{
+	return CreateShake_internal( org, amplitude, frequency, duration, radius, SF_SHAKE_RUMBLE_ONLY );
+}
+
+entity function CreateShakeNoRumble( vector org, float amplitude = 16, float frequency = 150, float duration = 1.5, float radius = 2048 )
+{
+	return CreateShake_internal( org, amplitude, frequency, duration, radius, SF_SHAKE_NO_RUMBLE );
+}
+
+entity function CreateAirShake( vector org, float amplitude = 16, float frequency = 150, float duration = 1.5, float radius = 2048 )
+{
+	return CreateShake_internal( org, amplitude, frequency, duration, radius, SF_SHAKE_INAIR );
+}
+
+entity function CreateAirShakeRumbleOnly( vector org, float amplitude = 16, float frequency = 150, float duration = 1.5, float radius = 2048 )
+{
+	return CreateShake_internal( org, amplitude, frequency, duration, radius, (SF_SHAKE_INAIR | SF_SHAKE_RUMBLE_ONLY) );
+}
+
+entity function CreateAirShakeNoRumble( vector org, float amplitude = 16, float frequency = 150, float duration = 1.5, float radius = 2048 )
+{
+	return CreateShake_internal( org, amplitude, frequency, duration, radius, (SF_SHAKE_INAIR | SF_SHAKE_NO_RUMBLE) );
+}
+
+//-------------------------------------
+// CreatePhysExplosion - physExplosion...small, medium or large
+//--------------------------------------
+entity function CreatePhysExplosion( vector org, float radius, int magnitude = 1, int flags = 1, bool dealsDamage = true )
+{
+	entity env_physexplosion = CreateEntity( "env_physexplosion" )
+	env_physexplosion.kv.spawnflags = flags // default 1 = No Damage - Only Force
+	env_physexplosion.kv.magnitude = magnitude
+	env_physexplosion.kv.radius = string( radius )
+	env_physexplosion.SetOrigin( org )
+	env_physexplosion.kv.scriptDamageType = damageTypes.explosive
+	DispatchSpawn( env_physexplosion )
+
+	EntFireByHandle( env_physexplosion, "Explode", "", 0, null, null )
+	EntFireByHandle( env_physexplosion, "Kill", "", 2, null, null )
+}
+
+//-----------------------------------------------------------
+// CreatePropDynamic( model ) - create a generic prop_dynamic with default properties
+//------------------------------------------------------------
+entity function CreatePropDynamic( asset model, vector ornull origin = null, vector ornull angles = null, var solidType = 0, float fadeDist = -1 )
+{
+	entity prop_dynamic = CreateEntity( "prop_dynamic" )
+	prop_dynamic.SetValueForModelKey( model )
+	prop_dynamic.kv.fadedist = fadeDist
+	prop_dynamic.kv.renderamt = 255
+	prop_dynamic.kv.rendercolor = "255 255 255"
+	prop_dynamic.kv.solid = solidType // 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
+	if ( origin )
+	{
+		// hack: Setting origin twice. SetOrigin needs to happen before DispatchSpawn, otherwise the prop may not touch triggers
+		prop_dynamic.SetOrigin( expect vector( origin ) )
+		if ( angles )
+			prop_dynamic.SetAngles( expect vector( angles ) )
+	}
+	DispatchSpawn( prop_dynamic )
+	if ( origin )
+	{
+		// hack: Setting origin twice. SetOrigin needs to happen after DispatchSpawn, otherwise origin is snapped to nearest whole unit
+		prop_dynamic.SetOrigin( expect vector( origin ) )
+		if ( angles )
+			prop_dynamic.SetAngles( expect vector( angles ) )
+	}
+
+	return prop_dynamic
+}
+
+
+//-----------------------------------------------------------
+// CreatePropDynamicLightweight( model ) - create a generic prop_dynamic_lightweight with default properties
+//------------------------------------------------------------
+entity function CreatePropDynamicLightweight( asset model, vector ornull origin = null, vector ornull angles = null, var solidType = 0, float fadeDist = -1 )
+{
+	entity prop_dynamic = CreateEntity( "prop_dynamic_lightweight" )
+	prop_dynamic.SetValueForModelKey( model )
+	prop_dynamic.kv.fadedist = fadeDist
+	prop_dynamic.kv.renderamt = 255
+	prop_dynamic.kv.rendercolor = "255 255 255"
+	prop_dynamic.kv.solid = solidType // 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
+	if ( origin )
+	{
+		// hack: Setting origin twice. SetOrigin needs to happen before DispatchSpawn, otherwise the prop may not touch triggers
+		prop_dynamic.SetOrigin( expect vector( origin ) )
+		if ( angles )
+			prop_dynamic.SetAngles( expect vector( angles ) )
+	}
+	DispatchSpawn( prop_dynamic )
+	if ( origin )
+	{
+		// hack: Setting origin twice. SetOrigin needs to happen after DispatchSpawn, otherwise origin is snapped to nearest whole unit
+		prop_dynamic.SetOrigin( expect vector( origin ) )
+		if ( angles )
+			prop_dynamic.SetAngles( expect vector( angles ) )
+	}
+
+	return prop_dynamic
+}
+
+
+//-----------------------------------------------------------
+// CreatePropScript( model ) - create a generic prop_script with default properties
+//------------------------------------------------------------
+entity function CreatePropScript( asset model, vector ornull origin = null, vector ornull angles = null, int solidType = 0, float fadeDist = -1 )
+{
+	entity prop_script = CreateEntity( "prop_script" )
+	prop_script.SetValueForModelKey( model )
+	prop_script.kv.fadedist = fadeDist
+	prop_script.kv.renderamt = 255
+	prop_script.kv.rendercolor = "255 255 255"
+	prop_script.kv.solid = solidType // 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
+	if ( origin )
+	{
+		// hack: Setting origin twice. SetOrigin needs to happen before DispatchSpawn, otherwise the prop may not touch triggers
+		prop_script.SetOrigin( expect vector( origin ) )
+		if ( angles )
+			prop_script.SetAngles( expect vector( angles ) )
+	}
+	DispatchSpawn( prop_script )
+	if ( origin )
+	{
+		// hack: Setting origin twice. SetOrigin needs to happen after DispatchSpawn, otherwise origin is snapped to nearest whole unit
+		prop_script.SetOrigin( expect vector( origin ) )
+		if ( angles )
+			prop_script.SetAngles( expect vector( angles ) )
+	}
+
+	return prop_script
+}
+
+
+
+//-----------------------------------------------------------
+// CreatePropPhysics( model ) - create a generic prop_physics with default properties
+//------------------------------------------------------------
+entity function CreatePropPhysics( asset model, vector origin, vector angles )
+{
+	entity prop_physics = CreateEntity( "prop_physics" )
+	prop_physics.SetValueForModelKey( model )
+	prop_physics.kv.spawnflags = 0
+	prop_physics.kv.fadedist = -1
+	prop_physics.kv.physdamagescale = 0.1
+	prop_physics.kv.inertiaScale = 1.0
+	prop_physics.kv.renderamt = 255
+	prop_physics.kv.rendercolor = "255 255 255"
+	SetTeam( prop_physics, TEAM_BOTH )	// need to have a team other then 0 or it won't take impact damage
+
+	prop_physics.SetOrigin( origin )
+	prop_physics.SetAngles( angles )
+	DispatchSpawn( prop_physics )
+
+	return prop_physics
+}
+
+//-----------------------------------------------------------
+// SpawnBullseye() - creates a npc_bullseye and attaches it to an entity
+//------------------------------------------------------------
+entity function SpawnBullseye( int team, entity ent = null )
+{
+	entity bullseye = CreateEntity( "npc_bullseye" )
+	bullseye.SetScriptName( UniqueString( "bullseye" ) )
+	bullseye.kv.rendercolor = "255 255 255"
+	bullseye.kv.renderamt = 0
+	bullseye.kv.health = 9999
+	bullseye.kv.max_health = -1
+	bullseye.kv.spawnflags = 516
+	bullseye.kv.FieldOfView = 0.5
+	bullseye.kv.FieldOfViewAlert = 0.2
+	bullseye.kv.AccuracyMultiplier = 1.0
+	bullseye.kv.physdamagescale = 1.0
+	bullseye.kv.WeaponProficiency = eWeaponProficiency.VERYGOOD
+	bullseye.kv.minangle = "360"
+	DispatchSpawn( bullseye )
+
+	SetTeam( bullseye, team )
+
+	if ( ent )
+	{
+		vector bounds = ent.GetBoundingMaxs()
+		bullseye.SetOrigin( ent.GetOrigin() + < 0, 0, bounds.z * 0.5 > )
+		bullseye.SetParent( ent )
+	}
+
+	return bullseye
+}
+
+void function CenterPrint( ... )
+{
+	string msg = ""
+	for ( int i = 0; i < vargc; i++ )
+		msg = ( msg + " " + string( vargv[ i ] ) )
+
+	int words = expect int( vargc )
+	if ( words < 1 )
+		words = 1
+
+	float delay = GraphCapped( float( words ), 2.0, 8.0, 2.1, 3.5 )
+
+	entity ent = CreateGameText( msg, -1, 0.5, 10, "255 255 255", 0.25, 0.25, delay )
+	EntFireByHandle( ent, "Display", "", 0, null, null )
+
+	thread DestroyCenterPrint( ent, delay )
+}
+
+void function DestroyCenterPrint( entity ent, float delay )
+{
+	wait( delay )
+	ent.Destroy()
+}
+
+bool function IsValidPlayer( entity player )
+{
+	if ( !IsValid( player ) )
+		return false
+
+	if ( !player.IsPlayer() )
+		return false
+
+	if ( IsDisconnected( player ) )
+		return false
+
+	return true
+}
+
+bool function IsDisconnected( entity player )
+{
+	return player.p.isDisconnected
+}
+
+/****************************************************************************************************\
+/*
+|*											PLAY FX
+\*
+\****************************************************************************************************/
+
+entity function PlayFX( asset effectName, vector org, vector ornull optionalAng = null, vector ornull overrideAngle = null )
+{
+	return __CreateFxInternal( effectName, null, "", org, optionalAng, C_PLAYFX_SINGLE, null, -1, null, overrideAngle )
+}
+
+entity function PlayFXWithControlPoint( asset effectName, vector org, entity cpoint1, int visibilityFlagOverride = -1, entity visibilityFlagEntOverride = null, vector ornull overrideAngle = null, int _type = C_PLAYFX_SINGLE )
+{
+	return __CreateFxInternal( effectName, null, "", org, null, _type, cpoint1, visibilityFlagOverride, visibilityFlagEntOverride, overrideAngle)
+}
+
+entity function PlayFXOnEntityWithControlPoint( asset effectName, entity ent, entity cpoint1, int visibilityFlagOverride = -1, entity visibilityFlagEntOverride = null, vector ornull overrideAngle = null, int _type = C_PLAYFX_SINGLE )
+{
+	return __CreateFxInternal( effectName, ent, "", null, null, _type, cpoint1, visibilityFlagOverride, visibilityFlagEntOverride, overrideAngle)
+}
+
+entity function PlayFXOnEntity( asset effectName, entity ent, string optionalTag = "", vector ornull optionalTranslation = null, vector ornull optionalRotation = null, int visibilityFlagOverride = -1, entity visibilityFlagEntOverride = null, vector ornull overrideAngle = null )
+{
+	return __CreateFxInternal( effectName, ent, optionalTag, optionalTranslation, optionalRotation, C_PLAYFX_SINGLE, null,  visibilityFlagOverride, visibilityFlagEntOverride, overrideAngle )
+}
+
+entity function PlayFXForPlayer( asset effectName, entity player, vector ornull org, vector ornull optionalAng = null )
+{
+	return __CreateFxInternal( effectName, null, "", org, optionalAng, C_PLAYFX_SINGLE, null, ENTITY_VISIBLE_TO_OWNER, player )
+}
+
+entity function PlayFXOnEntityForEveryoneExceptPlayer( asset effectName, entity ent, entity player, string optionalTag = "", vector ornull optionalTranslation = null, vector ornull optionalRotation = null )
+{
+	return __CreateFxInternal( effectName, ent, optionalTag, optionalTranslation, optionalRotation, C_PLAYFX_SINGLE, null, (ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY), player )
+}
+
+entity function PlayFXForEveryoneExceptPlayer( asset effectName, entity player, vector ornull org, vector ornull optionalAng = null )
+{
+	return __CreateFxInternal( effectName, null, "", org, optionalAng, C_PLAYFX_SINGLE, null, (ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY), player )
+}
+
+void function PlayFXOnTitanPlayerForTime( asset effectName, entity titan, string attachment, float duration )
+{
+	titan.EndSignal( "OnDeath" )
+	titan.EndSignal( "DisembarkingTitan" )
+	titan.EndSignal( "TitanEjectionStarted" )
+
+	entity fx = PlayFXOnEntityForEveryoneExceptPlayer( effectName, titan, titan, attachment )
+
+	OnThreadEnd(
+	function() : ( fx )
+		{
+			if ( IsValid(fx) )
+			{
+				fx.Destroy()
+			}
+		}
+	)
+
+	wait duration
+}
+
+entity function ClientStylePlayFXOnEntity( asset effectName, entity ent, string tag, float duration = 2.0 )
+{
+	string name = ent.GetScriptName()
+	ent.SetScriptName( UniqueString() ) // hack because you can only specify control points by name
+	// hack this is also not quite right because we can't specify the attachment type on the server... should be trivial to add in code:
+	// change DEFINE_FIELD( m_parentAttachmentType, FIELD_INTEGER ), to DEFINE_KEYFIELD( m_parentAttachmentType, FIELD_INTEGER, "attachmentType" ),
+	entity result = __CreateFxInternal( effectName, ent, tag, null, null, C_PLAYFX_SINGLE, ent, (ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY), ent )
+	EntFireByHandle( result, "Kill", "", duration, null, null )
+	ent.SetScriptName( name )
+
+	return result
+}
+
+entity function PlayLoopFX( asset effectName, vector ornull org, vector ornull optionalAng = null )
+{
+	return __CreateFxInternal( effectName, null, "", org, optionalAng, C_PLAYFX_LOOP )
+}
+
+entity function PlayLoopFXOnEntity( asset effectName, entity ent, string optionalTag = "", vector ornull optionalTranslation = null, vector ornull optionalRotation = null, int visibilityFlagOverride = -1, entity visibilityFlagEntOverride = null )
+{
+	return __CreateFxInternal( effectName, ent, optionalTag, optionalTranslation, optionalRotation, C_PLAYFX_LOOP, null, visibilityFlagOverride, visibilityFlagEntOverride )
+}
+
+entity function __CreateFxInternal( asset effectName, entity ent, string optionalTag = "", vector ornull optionalTranslation = <0,0,0>, vector ornull optionalRotation = <0,0,0>,
+									int _type = C_PLAYFX_SINGLE, entity cpointEnt1 = null, int visibilityFlagOverride = -1, entity visibilityFlagEntOverride = null, vector ornull overrideAngle = null )
+{
+	entity fx = CreateEntity( "info_particle_system" )
+	fx.SetValueForEffectNameKey( effectName )
+	if( visibilityFlagOverride != -1 )
+		fx.kv.VisibilityFlags = visibilityFlagOverride
+	else
+		fx.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
+	fx.kv.start_active = 1
+	fx.e.fxType = _type
+
+	if ( _type == C_PLAYFX_SINGLE )
+		fx.DoNotCreateFXOnRestore();
+
+	vector coreOrg
+	vector coreAng
+
+	//are we attaching to an ent?
+	if ( ent )
+	{
+		//are we attaching to a tag on an ent
+		if ( optionalTag != "" )
+		{
+			int attachID = ent.LookupAttachment( optionalTag )
+			coreOrg = ent.GetAttachmentOrigin( attachID )
+			coreAng = ent.GetAttachmentAngles( attachID )
+		}
+		else
+		{
+			coreOrg = ent.GetOrigin()
+			coreAng = ent.GetAngles()
+		}
+
+		fx.Code_SetTeam( ent.GetTeam() );
+	}
+	else //if not we're just playing in space
+	{
+		optionalTag = ""
+		coreOrg = < 0, 0, 0 >
+		coreAng = < 0, 0, 0 >
+	}
+
+	if ( optionalTranslation )
+	{
+		expect vector( optionalTranslation )
+		if ( ent )
+			coreOrg = PositionOffsetFromEnt( ent, optionalTranslation.x, optionalTranslation.y, optionalTranslation.z )
+		else
+			coreOrg = coreOrg + optionalTranslation
+	}
+
+	coreOrg = ClampToWorldspace( coreOrg )
+	fx.SetOrigin( coreOrg )
+
+	if ( overrideAngle )
+	{
+		expect vector( overrideAngle )
+		fx.SetAngles( overrideAngle )
+	}
+	else if ( optionalRotation )
+	{
+		expect vector( optionalRotation )
+		fx.SetAngles( coreAng + optionalRotation )
+	}
+	else
+	{
+		fx.SetAngles( coreAng )
+	}
+
+	if ( ent )
+	{
+		if ( !ent.IsMarkedForDeletion() ) // TODO: This is a hack for shipping. The real solution is to spawn the FX before deleting the parent entity.
+		{
+			fx.SetParent( ent, optionalTag, true )
+		}
+	}
+
+	if ( visibilityFlagEntOverride != null )
+		fx.SetOwner( visibilityFlagEntOverride )
+
+	if ( cpointEnt1 )
+		fx.kv.cpoint1 = cpointEnt1.GetTargetName()
+
+	DispatchSpawn( fx )
+	thread __DeleteFxInternal( fx )
+
+	//SetTargetName( fx, "FX_" + effectName )
+	return fx
+}
+
+void function __DeleteFxInternal( entity fx )
+{
+	//if it loops or is multiple then don't delete internally
+	if ( fx.e.fxType == C_PLAYFX_MULTIPLE )
+		return
+
+	if ( fx.e.fxType == C_PLAYFX_LOOP )
+		return
+
+	wait 30 //no way to know when an effect is over
+	if ( !IsValid( fx ) )
+		return
+
+	fx.ClearParent()
+	fx.Destroy()
+}
+
+void function StartFX( entity fx )
+{
+	Assert( fx.e.fxType == C_PLAYFX_LOOP, "Tried to use StartFX() on effect that is not LOOPING" )
+	EntFireByHandle( fx, "Start", "", 0, null, null )
+}
+
+void function StopFX( entity fx )
+{
+	Assert( fx.e.fxType == C_PLAYFX_LOOP, "Tried to use StopFX() on effect that is not LOOPING" )
+	EntFireByHandle( fx, "Stop", "", 0, null, null )
+}
+
+void function ReplayFX( entity fx )
+{
+	Assert( fx.e.fxType == C_PLAYFX_MULTIPLE, "Tried to use ReplayFX() on effect that is not MULTIPLE" )
+	//thread it because there is a WaitFrame() inside the function
+	thread __ReplayFXInternal( fx )
+}
+
+void function __ReplayFXInternal( entity fx )
+{
+	//for non-looping fx, we must stop first before we can fire again
+	EntFireByHandle( fx, "Stop", "", 0, null, null )
+	//we can't start in the same frame, WaitFrame() skips 1 false
+	//it should be noted that "WaitFrame()" doesn't work with a timescale above 1
+	WaitFrame()
+	//may have died since the last frame
+	if ( IsValid( fx ) )
+		EntFireByHandle( fx, "Start", "", 0, null, null )
+}
+
+void function Entity_StopFXArray( entity ent )
+{
+	foreach( fx in ent.e.fxArray )
+	{
+		if ( IsValid( fx ) )
+		{
+			StopFX( fx )
+			fx.Destroy()
+		}
+	}
+}
+
+/****************************************************************************************************\
+|*											end play fx
+\****************************************************************************************************/
+
+
+table function GetDamageTableFromInfo( var damageInfo )
+{
+	table Table = {}
+	Table.damageSourceId <- DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	Table.origin <- DamageInfo_GetDamagePosition( damageInfo )
+	Table.force <- DamageInfo_GetDamageForce( damageInfo )
+	Table.scriptType <- DamageInfo_GetCustomDamageType( damageInfo )
+
+	return Table
+}
+
+bool function EntityInSolid( entity ent, entity ignoreEnt = null, int buffer = 0 ) //TODO:  This function returns true for a player standing inside a friendly grunt. It also returns true if you are right up against a ceiling.Needs fixing for next game
+{
+	Assert( IsValid( ent ) )
+	int solidMask
+	vector mins
+	vector maxs
+	int collisionGroup
+	array<entity> ignoreEnts = []
+
+	ignoreEnts.append( ent )
+
+	if ( IsValid( ignoreEnt ) )
+	{
+		ignoreEnts.append( ignoreEnt )
+	}
+
+	if ( ent.IsTitan() )
+		solidMask = TRACE_MASK_TITANSOLID
+	else if ( ent.IsPlayer() )
+		solidMask = TRACE_MASK_PLAYERSOLID
+	else
+		solidMask = TRACE_MASK_NPCSOLID
+
+	if ( ent.IsPlayer() )
+	{
+		mins = ent.GetPlayerMins()
+		maxs = ent.GetPlayerMaxs()
+		collisionGroup = TRACE_COLLISION_GROUP_PLAYER
+	}
+	else
+	{
+		Assert( ent.IsNPC() )
+		mins = ent.GetBoundingMins()
+		maxs = ent.GetBoundingMaxs()
+		collisionGroup = TRACE_COLLISION_GROUP_NONE
+	}
+
+	if ( buffer > 0 )
+	{
+		mins.x -= float( buffer )
+		mins.y -= float( buffer )
+		maxs.x += float( buffer )
+		maxs.y += float( buffer )
+	}
+
+	// if we got into solid, teleport back to safe place
+	vector currentOrigin = ent.GetOrigin()
+	TraceResults result = TraceHull( currentOrigin, currentOrigin + < 0, 0, 1 >, mins, maxs, ignoreEnts, solidMask, collisionGroup )
+	//PrintTable( result )
+	//DrawArrow( result.endPos, Vector(0,0,0), 5, 150 )
+	if ( result.startSolid )
+		return true
+
+	return result.fraction < 1.0 // TODO: Probably not needed according to Jiesang. Fix after ship.
+}
+
+bool function EntityInSpecifiedEnt( entity ent, entity specifiedEnt, int buffer = 0 )
+{
+	Assert( IsValid( ent ) )
+	Assert( IsValid( specifiedEnt ) )
+
+	int solidMask
+	vector mins
+	vector maxs
+	int collisionGroup
+
+	if ( ent.IsTitan() )
+		solidMask = TRACE_MASK_TITANSOLID
+	else if ( ent.IsPlayer() )
+		solidMask = TRACE_MASK_PLAYERSOLID
+	else
+		solidMask = TRACE_MASK_NPCSOLID
+
+	if ( ent.IsPlayer() )
+	{
+		mins = ent.GetPlayerMins()
+		maxs = ent.GetPlayerMaxs()
+		collisionGroup = TRACE_COLLISION_GROUP_PLAYER
+	}
+	else
+	{
+		Assert( ent.IsNPC() )
+		mins = ent.GetBoundingMins()
+		maxs = ent.GetBoundingMaxs()
+		collisionGroup = TRACE_COLLISION_GROUP_NONE
+	}
+
+	if ( buffer > 0 )
+	{
+		mins.x -= float( buffer )
+		mins.y -= float( buffer )
+		maxs.x += float( buffer )
+		maxs.y += float( buffer )
+	}
+
+	// if we got into solid, teleport back to safe place
+	vector currentOrigin = ent.GetOrigin()
+	TraceResults result = TraceHull( currentOrigin, currentOrigin + < 0, 0, 1 >, mins, maxs, null, solidMask, collisionGroup )
+	//PrintTable( result )
+	//DrawArrow( result.endPos, Vector(0,0,0), 5, 150 )
+	if ( result.startSolid == false )
+		return false
+
+	return result.hitEnt == specifiedEnt
+}
+
+void function KillFromInfo( entity ent, var damageInfo )
+{
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	entity weapon = DamageInfo_GetWeapon( damageInfo )
+	//float amount = DamageInfo_GetDamage( damageInfo )
+
+	// JFS: if the player became invalid, the attacker becomes the projectile which is bad
+	if ( attacker.IsProjectile() )
+		attacker = svGlobal.worldspawn
+
+	if ( !weapon )
+		weapon = attacker
+
+	table Table = GetDamageTableFromInfo( damageInfo )
+	Table.forceKill <- true
+
+	ent.TakeDamage( 9999, attacker, weapon, Table )
+}
+
+
+entity function GetPlayerTitanInMap( entity player )
+{
+	// temporarily flipped
+	entity petTitan = player.GetPetTitan()
+	if ( IsValid( petTitan ) && IsAlive( petTitan ) )
+		return petTitan
+
+	// first try to return the player's actual titan
+	if ( player.IsTitan() )
+		return player
+
+	return null
+}
+
+
+entity function GetPlayerTitanFromSouls( entity player )
+{
+	// returns the first owned titan found
+	array<entity> souls = GetTitanSoulArray()
+	foreach ( soul in souls )
+	{
+		if ( !IsValid( soul ) )
+			continue
+
+		if ( soul.GetBossPlayer() != player )
+			continue
+
+		if ( !IsAlive( soul.GetTitan() ) )
+			continue
+
+		return soul.GetTitan()
+	}
+
+	return null
+}
+
+void function DisableTitanShield( entity titan )
+{
+	entity soul = titan.GetTitanSoul()
+
+	soul.SetShieldHealth( 0 )
+	soul.SetShieldHealthMax( 0 )
+}
+
+void function DisableShield( entity ent )
+{
+	entity soul = ent.GetTitanSoul()
+
+	if ( soul )
+	{
+		DisableTitanShield( ent )
+		return
+	}
+
+	ent.SetShieldHealth( 0 )
+	ent.SetShieldHealthMax( 0 )
+}
+
+void function SetVelocityTowardsEntity( entity entToMove, entity targetEnt, float speed )
+{
+	Assert( speed > 0 )
+	Assert( IsValid( entToMove ) )
+	Assert( IsValid( targetEnt ) )
+
+	vector direction = ( targetEnt.GetWorldSpaceCenter() - entToMove.GetOrigin() )
+	direction = Normalize( direction ) * speed
+	entToMove.SetVelocity( direction )
+}
+
+void function SetVelocityTowardsEntityTag( entity entToMove, entity targetEnt, string targetTag, float speed )
+{
+	Assert( speed > 0 )
+	Assert( IsValid( entToMove ) )
+	Assert( IsValid( targetEnt ) )
+
+	int attachID = targetEnt.LookupAttachment( targetTag )
+	vector attachOrigin = targetEnt.GetAttachmentOrigin( attachID )
+
+	vector direction = ( attachOrigin - entToMove.GetOrigin() )
+	direction = Normalize( direction ) * speed
+	entToMove.SetVelocity( direction )
+}
+
+void function EntityDemigod_TryAdjustDamageInfo( entity ent, var damageInfo )
+{
+	float dmg = DamageInfo_GetDamage( damageInfo )
+	if ( dmg <= 0 )
+		return
+
+	if ( ent.IsTitan() && !GetDoomedState( ent ) ) //Allow demigod titans to go into doomed
+		return
+
+	int bottomLimit = 5
+	if ( ent.GetHealth() <= bottomLimit )
+		ent.SetHealth( bottomLimit + 1 ) //Set it up so that you at least take 1 damage, for hit indicators etc to trigger
+
+	int health = ent.GetHealth()
+
+	if ( health - dmg <= bottomLimit )
+	{
+		int newdmg = health - bottomLimit
+		DamageInfo_SetDamage( damageInfo, newdmg )
+		//printt( "setting damage to ", newdmg )
+	}
+}
+
+void function DebugDamageInfo( entity ent, var damageInfo )
+{
+	printt( "damage to " + ent + ": " + DamageInfo_GetDamage( damageInfo ) )
+	int damageType = DamageInfo_GetCustomDamageType( damageInfo )
+	printt( "explosive: " + ( damageType & DF_EXPLOSION ) )
+	printt( "bullet: " + ( damageType & DF_BULLET ) )
+	printt( "gib: " + ( damageType & DF_GIB ) )
+
+	vector dampos = DamageInfo_GetDamagePosition( damageInfo )
+	vector org = DamageInfo_GetInflictor( damageInfo ).GetOrigin()
+	DebugDrawLine( dampos, org, 255, 0, 0, true, 10.0 )
+	DebugDrawLine( org, ent.GetOrigin(), 255, 255, 0, true, 10.0 )
+}
+
+vector function RandomVecInDome( vector dir )
+{
+	vector angles = VectorToAngles( dir )
+	vector forward = AnglesToForward( angles )
+	vector right = AnglesToRight( angles )
+	vector up = AnglesToUp( angles )
+
+	float offsetRight = RandomFloatRange( -1, 1 )
+	float offsetUp = RandomFloatRange( -1, 1 )
+	float offsetForward = RandomFloat( 1.0 )
+
+	vector endPos = < 0, 0, 0 >
+	endPos += forward * offsetForward
+	endPos += up * offsetUp
+	endPos += right * offsetRight
+	endPos.Norm()
+
+	return endPos
+}
+
+float function GetAnimEventTime( asset modelname, string anim, string event )
+{
+	entity dummy = CreatePropDynamic( modelname )
+	dummy.Hide()
+
+	float duration 	= dummy.GetSequenceDuration( anim )
+	float frac 		= dummy.GetScriptedAnimEventCycleFrac( anim, event )
+
+	dummy.Destroy()
+
+	//this might cause some issues in R2 - but we'll fix them as we go - it's important this doesn't silently fail
+	Assert( frac > 0.0, "event: " + event + " doesn't exist in animation: " + anim )
+	Assert( frac < 1.0, "event: " + event + " doesn't exist in animation: " + anim )
+
+	return duration * frac
+}
+
+void function SetDeathFuncName( entity npc, string functionNameString )
+{
+	Assert( npc.kv.deathScriptFuncName == "", "deathScriptFuncName was already set" )
+	npc.kv.deathScriptFuncName = functionNameString
+}
+
+void function ClearDeathFuncName( entity npc )
+{
+	npc.kv.deathScriptFuncName = ""
+}
+
+/*function PushSunLightAngles( x, y, z )
+{
+	entity clight = GetEnt( "env_cascade_light" )
+	Assert( clight )
+
+	clight.PushAngles( x, y, z )
+}
+
+function PopSunLightAngles()
+{
+	entity clight = GetEnt( "env_cascade_light" )
+	Assert( clight )
+
+	clight.PopAngles()
+}*/
+
+entity function GetPilotAntiPersonnelWeapon( entity player )
+{
+	array<entity> weaponsArray = player.GetMainWeapons()
+	foreach( weapon in weaponsArray )
+	{
+			int weaponType = weapon.GetWeaponType()
+			if ( weaponType == WT_SIDEARM || weaponType == WT_ANTITITAN )
+				continue;
+
+			return weapon
+	}
+
+	return null
+}
+
+entity function GetPilotSideArmWeapon( entity player )
+{
+	array<entity> weaponsArray = player.GetMainWeapons()
+	foreach( weapon in weaponsArray )
+	{
+		if ( weapon.GetWeaponType() == WT_SIDEARM )
+			return weapon
+	}
+
+	return null
+}
+
+entity function GetPilotAntiTitanWeapon( entity player )
+{
+	array<entity> weaponsArray = player.GetMainWeapons()
+	foreach( weapon in weaponsArray )
+	{
+		if ( weapon.GetWeaponType() == WT_ANTITITAN )
+			return weapon
+	}
+
+	return null
+}
+
+bool function PilotHasSniperWeapon( entity player )
+{
+	array<entity> weaponsArray = player.GetMainWeapons()
+	foreach ( weapon in weaponsArray )
+	{
+		if ( IsValid( weapon ) && weapon.GetWeaponInfoFileKeyField( "is_sniper" ) == 1 )
+			return true
+	}
+
+	return false
+}
+
+bool function PilotActiveWeaponIsSniper( entity player )
+{
+	entity weapon = player.GetActiveWeapon()
+
+	if ( IsValid( weapon ) && weapon.GetWeaponInfoFileKeyField( "is_sniper" ) == 1 )
+		return true
+
+	return false
+}
+
+void function ScreenFadeToColor( entity player, float r, float g, float b, float a, float fadeTime = 1.7, float holdTime = 0.0 )
+{
+	Assert( IsValid( player ) )
+
+	ScreenFade( player, r, g, b, a, fadeTime, holdTime, FFADE_OUT | FFADE_PURGE )
+}
+
+
+void function ScreenFadeFromColor( entity player, float r, float g, float b, float a, float fadeTime = 2.0, float holdTime = 2.0 )
+{
+	Assert( IsValid( player ) )
+
+	ScreenFade( player, r, g, b, a, fadeTime, holdTime, FFADE_IN | FFADE_PURGE )
+}
+
+void function ScreenFadeToBlack( entity player, float fadeTime, float holdTime )
+{
+	Assert( IsValid( player ) )
+
+	ScreenFade( player, 0, 0, 1, 255, fadeTime, holdTime, FFADE_OUT | FFADE_PURGE )
+}
+
+void function ScreenFadeFromBlack( entity player, float fadeTime = 2.0, float holdTime = 2.0 )
+{
+	Assert( IsValid( player ) )
+
+	ScreenFade( player, 0, 1, 0, 255, fadeTime, holdTime, FFADE_IN | FFADE_PURGE )
+}
+
+void function ScreenFadeToBlackForever( entity player, float fadeTime = 1.7 )
+{
+	Assert( IsValid( player ) )
+
+	ScreenFade( player, 0, 0, 1, 255, fadeTime, 0, FFADE_OUT | FFADE_STAYOUT )
+}
+
+/*******************************************************
+/ Server Effects
+/
+/	CreateServerEffect_Friendly( effectName, team )
+/	CreateServerEffect_Enemy( effectName, team )
+/	CreateServerEffect_Owner( effectName, owner )
+/	SetServerEffectControlPoint( effectEnt, controlPoint, vecValue )
+/	StartServerEffect( effectEnt )
+/	StartServerEffectInWorld( effectEnt, origin, angles )
+/	StartServerEffectOnEntity( effectEnt, ent, tag = null )
+/
+*******************************************************/
+
+// NOTE: this does not play the effect, use StartEffectOnEntity
+entity function CreateServerEffect_Friendly( asset effectName, int team )
+{
+	entity friendlyEffect = _CreateServerEffect( effectName, 2 ) // ENTITY_VISIBLE_TO_FRIENDLY
+	friendlyEffect.kv.TeamNum = team
+	friendlyEffect.kv.teamnumber = team
+
+	return friendlyEffect
+}
+
+// NOTE: this does not play the effect, use StartEffectOnEntity
+entity function CreateServerEffect_Enemy( asset effectName, int team )
+{
+	entity enemyEffect = _CreateServerEffect( effectName, 4 ) // ENTITY_VISIBLE_TO_ENEMY
+	enemyEffect.kv.TeamNum = team
+	enemyEffect.kv.teamnumber = team
+
+	return enemyEffect
+}
+
+// NOTE: this does not play the effect, use StartEffectOnEntity
+entity function CreateServerEffect_Owner( asset effectName, entity owner )
+{
+	Assert( IsValid( owner ) )
+
+	entity ownerEffect = _CreateServerEffect( effectName, 1 ) // ENTITY_VISIBLE_TO_OWNER
+	ownerEffect.kv.TeamNum = owner.GetTeam()
+	ownerEffect.SetOwner( owner )
+
+	return ownerEffect
+}
+
+entity function _CreateServerEffect( asset effectName, int visFlags )
+{
+	entity serverEffect = CreateEntity( "info_particle_system" )
+	serverEffect.SetOrigin( <0, 0, 0> )
+	serverEffect.SetAngles( <0, 0, 0> )
+	serverEffect.SetValueForEffectNameKey( effectName )
+	serverEffect.kv.start_active = 1
+	serverEffect.kv.VisibilityFlags = visFlags
+
+	thread _ServerEffectCleanup( serverEffect )
+	return serverEffect
+}
+
+entity function SetServerEffectControlPoint( entity effectEnt, int controlPoint, vector vecValue ) // for now, only support static
+{
+	entity helper = CreateEntity( "info_placement_helper" )
+	helper.SetOrigin( vecValue )
+	effectEnt.SetControlPointEnt( controlPoint, helper )
+	effectEnt.e.fxControlPoints.append( helper )
+
+	return helper
+}
+
+void function StartServerEffect( entity effectEnt )
+{
+	DispatchSpawn( effectEnt )
+}
+
+void function StartServerEffectInWorld( entity effectEnt, vector origin, vector angles )
+{
+	effectEnt.SetOrigin( origin )
+	effectEnt.SetAngles( angles )
+	DispatchSpawn( effectEnt )
+}
+
+void function StartServerEffectOnEntity( entity effectEnt, entity ent, string tag = "" )
+{
+	Assert( IsValid( effectEnt ) )
+	Assert( IsValid( ent ) )
+
+	if ( tag != "" )
+	{
+		int attachID = ent.LookupAttachment( tag )
+		vector origin = ent.GetAttachmentOrigin( attachID )
+		vector angles = ent.GetAttachmentAngles( attachID )
+
+		origin = ClampToWorldspace( origin )
+		effectEnt.SetOrigin( origin )
+		effectEnt.SetAngles( angles )
+		effectEnt.SetParent( ent, tag, true )
+	}
+	else
+	{
+		effectEnt.SetParent( ent )
+	}
+
+	DispatchSpawn( effectEnt )
+}
+
+void function _ServerEffectCleanup( entity effectEnt )
+{
+	effectEnt.WaitSignal( "OnDestroy" )
+
+	foreach ( entity controlPoint in effectEnt.e.fxControlPoints )
+	{
+		controlPoint.Destroy()
+	}
+}
+
+float function GetYaw( vector org1, vector org2 )
+{
+	vector vec = org2 - org1
+	vector angles = VectorToAngles( vec )
+	return angles.y
+}
+
+void function HideName( entity ent )
+{
+	ent.SetNameVisibleToFriendly( false )
+	ent.SetNameVisibleToEnemy( false )
+	ent.SetNameVisibleToNeutral( false )
+	ent.SetNameVisibleToOwner( false )
+}
+
+void function ShowName( entity ent )
+{
+	ent.SetNameVisibleToFriendly( true )
+	ent.SetNameVisibleToEnemy( true )
+	ent.SetNameVisibleToNeutral( true )
+	ent.SetNameVisibleToOwner( true )
+}
+
+void function ShowNameToAllExceptOwner( entity ent )
+{
+	ent.SetNameVisibleToFriendly( true )
+	ent.SetNameVisibleToEnemy( true )
+	ent.SetNameVisibleToNeutral( true )
+	ent.SetNameVisibleToOwner( false )
+}
+
+void function EmitSoundOnEntityToTeamExceptPlayer( entity ent, string sound, int team, entity excludePlayer )
+{
+	array<entity> players = GetPlayerArrayOfTeam( team )
+
+	foreach ( player in players )
+	{
+		if ( player == excludePlayer )
+			continue
+
+		EmitSoundOnEntityOnlyToPlayer( ent, player, sound )
+	}
+}
+
+#if DEV
+// DEV function to toggle player view between the skybox and the real world.
+void function ToggleSkyboxView( float scale = 0.001 )
+{
+	entity player = GetEntByIndex( 1 )
+
+	entity skyboxCamLevel = GetEnt( "skybox_cam_level" )
+
+	Assert( IsValid( skyboxCamLevel ), "Could not find a sky_camera entity named \"skybox_cam_level\" in this map." )
+
+	vector skyOrigin = skyboxCamLevel.GetOrigin()
+
+	if ( !file.isSkyboxView )
+	{
+		if ( !player.IsNoclipping() )
+		{
+			ClientCommand( player, "noclip" )
+			wait( 0.25 )
+		}
+
+		ClientCommand( player, "sv_noclipspeed 0.1" )
+		file.isSkyboxView = true
+		vector offset = player.GetOrigin()
+		offset *= scale
+
+		player.SetOrigin( skyOrigin + offset - < 0.0, 0.0, 60.0 - (60.0 * scale) > )
+	}
+	else
+	{
+		ClientCommand( player, "sv_noclipspeed 5" )
+		file.isSkyboxView = false
+		vector offset = player.GetOrigin() - skyOrigin + < 0.0, 0.0, 60.0 - (60.0 * scale) >
+		offset *= 1.0 / scale
+
+		offset = ClampToWorldspace( offset )
+
+		player.SetOrigin( offset )
+	}
+}
+
+void function DamageRange( float value, float headShotMultiplier, int playerHealth = 200 )
+{
+	printt( "Damage Range: ", value, headShotMultiplier )
+
+	float bodyShot = value
+	float headShot = value * headShotMultiplier
+
+	int maxHeadshots = 0
+
+	int simHealth = playerHealth
+	while ( simHealth > 0 )
+	{
+		simHealth = (simHealth.tofloat() - headShot).tointeger()
+		maxHeadshots++
+	}
+
+	printt( "HeadShots:    BodyShots:     Total:" )
+
+	simHealth = playerHealth
+	int numHeadshots = 0
+	while ( numHeadshots < maxHeadshots )
+	{
+		simHealth = playerHealth
+		for ( int hsIdx = 0; hsIdx < numHeadshots; hsIdx++ )
+		{
+			simHealth = (simHealth.tofloat() - headShot).tointeger()
+		}
+
+		int numBodyShots = 0
+		while ( simHealth > 0 )
+		{
+			simHealth = (simHealth.tofloat() - bodyShot).tointeger()
+			numBodyShots++
+		}
+		printt( format( "%i             %i              %i", numHeadshots, numBodyShots, numHeadshots + numBodyShots ) )
+		numHeadshots++
+	}
+
+	printt( format( "%i             %i              %i", numHeadshots, 0, numHeadshots ) )
+}
+
+#endif // DEV
+
+void function MuteAll( entity player, int fadeOutTime = 2 )
+{
+	//DumpStack(2)
+	Assert( player.IsPlayer() )
+
+	Assert( fadeOutTime >= 1 && fadeOutTime <= 4 , "Only have 4 kinds of fadeout to play, time must be in the range [1,4]" )
+
+	string fadeoutSoundString
+
+	switch( fadeOutTime )
+	{
+		case 1:
+			fadeoutSoundString = "1_second_fadeout"
+			break
+
+		case 2:
+			fadeoutSoundString = "2_second_fadeout"
+			break
+
+		case 3:
+			fadeoutSoundString = "3_second_fadeout"
+			break
+
+		case 4:
+			fadeoutSoundString = "4_second_fadeout"
+			break
+
+		default:
+			unreachable
+
+	}
+
+	printt( "Apply " +  fadeoutSoundString + " to player: " + player )
+
+	EmitSoundOnEntityOnlyToPlayer( player, player, fadeoutSoundString )
+}
+
+//Mutes all except halftime sounds and dialogue
+void function MuteHalfTime( entity player )
+{
+	Assert( player.IsPlayer() )
+	printt( "Apply HalfTime_fadeout to player: " + player )
+	EmitSoundOnEntityOnlyToPlayer( player, player, "HalfTime_fadeout" )
+}
+
+void function UnMuteAll( entity player )
+{
+	//DumpStack(2)
+	Assert( player.IsPlayer() )
+
+	//Just stop all the possible fadeout sounds.
+	printt( "Stopping all fadeout for player: " + player )
+	StopSoundOnEntity( player, "1_second_fadeout" )
+	StopSoundOnEntity( player, "2_second_fadeout" )
+	StopSoundOnEntity( player, "3_second_fadeout" )
+	StopSoundOnEntity( player, "4_second_fadeout" )
+	StopSoundOnEntity( player, "HalfTime_fadeout" )
+}
+
+void function AllPlayersMuteAll( int time = MUTEALLFADEIN )
+{
+	array<entity> players = GetPlayerArray()
+
+	foreach ( player in players )
+		MuteAll( player, time )
+}
+
+void function AllPlayersUnMuteAll()
+{
+	array<entity> players = GetPlayerArray()
+
+	foreach ( player in players )
+		UnMuteAll( player )
+}
+
+void function TakeAmmoFromPlayer( entity player )
+{
+	array<entity> mainWeapons = player.GetMainWeapons()
+	array<entity> offhandWeapons = player.GetOffhandWeapons()
+
+	foreach ( weapon in mainWeapons )
+	{
+		weapon.SetWeaponPrimaryAmmoCount( 0 )
+
+		if ( weapon.GetWeaponPrimaryClipCountMax() > 0 )
+			weapon.SetWeaponPrimaryClipCount( 0 )
+	}
+
+	foreach ( weapon in offhandWeapons )
+	{
+		weapon.SetWeaponPrimaryAmmoCount( 0 )
+
+		if ( weapon.GetWeaponPrimaryClipCountMax() > 0 )
+			weapon.SetWeaponPrimaryClipCount( 0 )
+	}
+}
+
+
+bool function NearFlagSpawnPoint( vector dropPoint )
+{
+	if ( "flagSpawnPoint" in level && IsValid( level.flagSpawnPoint ) )
+	{
+		vector fspOrigin = expect entity( level.flagSpawnPoint ).GetOrigin()
+		if ( Distance( fspOrigin, dropPoint ) < SAFE_TITANFALL_DISTANCE_CTF )
+			return true
+	}
+
+	if ( "flagReturnPoint" in level && IsValid( level.flagReturnPoint ) )
+	{
+		vector fspOrigin = expect entity( level.flagReturnPoint ).GetOrigin()
+		if ( Distance( fspOrigin, dropPoint ) < SAFE_TITANFALL_DISTANCE_CTF )
+			return true
+	}
+
+	if ( "flagSpawnPoints" in level )
+	{
+		foreach ( flagSpawnPoint in svGlobal.flagSpawnPoints )
+		{
+			vector fspOrigin = flagSpawnPoint.GetOrigin()
+			if ( Distance( fspOrigin, dropPoint ) < SAFE_TITANFALL_DISTANCE_CTF )
+				return true
+		}
+	}
+
+	return false
+}
+
+bool function HasCinematicFlag( entity player, int flag )
+{
+	Assert( player.IsPlayer() )
+	Assert( IsValid( player ) )
+	return ( player.GetCinematicEventFlags() & flag ) != 0
+}
+
+void function AddCinematicFlag( entity player, int flag )
+{
+	Assert( player.IsPlayer() )
+	Assert( IsValid( player ) )
+	player.SetCinematicEventFlags( player.GetCinematicEventFlags() | flag )
+	player.Signal( "CE_FLAGS_CHANGED" )
+}
+
+void function RemoveCinematicFlag( entity player, int flag )
+{
+	Assert( player.IsPlayer() )
+	Assert( IsValid( player ) )
+	player.SetCinematicEventFlags( player.GetCinematicEventFlags() & ( ~flag ) )
+	player.Signal( "CE_FLAGS_CHANGED" )
+}
+
+void function SkyScaleDefault( entity ent, float time = 1.0 )
+{
+	if ( IsValid( ent ) )
+		ent.LerpSkyScale( SKYSCALE_DEFAULT, time )
+}
+
+void function MoveSpawn( string targetName, vector origin, vector angles )
+{
+	entity ent = GetEnt( targetName )
+	ent.SetOrigin( origin )
+	ent.SetAngles( angles )
+}
+
+/*
+function CheckDailyChallengeAchievement( entity player )
+{
+	if ( player.GetPersistentVar( "cu8achievement.ach_allDailyChallengesForDay" ) == true )
+		return
+
+	int maxRefs = PersistenceGetArrayCount( "activeDailyChallenges" )
+	int todaysDailiesComplete = 0
+	int today = Daily_GetDayForCurrentTime()
+	for ( int i = 0; i < maxRefs; i++ )
+	{
+		int day = player.GetPersistentVarAsInt( "activeDailyChallenges[" + i + "].day" )
+		if ( day != today )
+			continue
+
+		local ref = player.GetPersistentVar( "activeDailyChallenges[" + i + "].ref" )
+		if ( !IsChallengeComplete( ref, player ) )
+			continue
+
+		todaysDailiesComplete++
+	}
+
+	if ( todaysDailiesComplete >= 3 )
+		player.SetPersistentVar( "cu8achievement.ach_allDailyChallengesForDay", true )
+}
+*/
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Get an array of all linked entities targeted to one after the other down the chain
+array<entity> function GetEntityTargetChain_Deprecated( entity ent )
+{
+	array<entity> entityChain = []
+	entity currentEnt = ent
+	entity nextEnt
+
+	while ( true )
+	{
+		nextEnt = GetEnt( currentEnt.GetTarget_Deprecated() )
+		if ( IsValid( nextEnt ) )
+			entityChain.append( nextEnt )
+		else
+			return entityChain
+		currentEnt = nextEnt
+	}
+
+	unreachable
+}
+
+void function PlayImpactFXTable( vector origin, entity owner, string impactFX, int flags = 0 )
+{
+	Explosion(
+		origin,										//center,
+		owner,										//attacker,
+		owner,										//inflictor,flags
+		0,											//damage,
+		0,											//damageHeavyArmor,
+		1,											//innerRadius,
+		1,											//outerRadius,
+		flags,										//flags,
+		origin,										//projectileLaunchOrigin,
+		0,											//explosionForce,
+		damageTypes.explosive,						//scriptDamageFlags,
+		-1,											//scriptDamageSourceIdentifier,
+		impactFX )									//impactEffectTableName
+}
+
+void function SetSignalDelayed( entity ent, string signal, float delay )
+{
+	thread __SetSignalDelayedThread( ent, signal, delay )
+}
+
+void function __SetSignalDelayedThread( entity ent, string signal, float delay )
+{
+	EndSignal( ent, signal )	// so that if we call this again with the same signal on the same ent we won't get multiple signal events.
+
+	wait delay
+	if ( IsValid( ent ) )
+		Signal( ent, signal )
+}
+
+#if DEV
+table function GetPlayerPos( entity player = null )
+{
+	if ( !player )
+		player = gp()[0]
+
+	vector org = player.GetOrigin()
+	vector vec = player.GetViewVector()
+	vector ang = VectorToAngles( vec )
+
+	return { origin = org, angles = ang }
+}
+
+string function GetScriptPos( entity player = null )
+{
+	table playerPos = GetPlayerPos( player )
+	vector origin = expect vector( playerPos.origin )
+	vector angles = expect vector( playerPos.angles )
+
+	string returnStr = CreateOriginAnglesString( origin, <0, angles.y, 0> )
+	return returnStr
+}
+
+string function CreateOriginAnglesString( vector origin, vector angles )
+{
+	string returnStr = "< " + origin.x + ", " + origin.y + ", " + origin.z + " >, < " + angles.x + ", " + angles.y + ", " + angles.z + " >"
+	return returnStr
+}
+
+void function DistCheck_SetTestPoint()
+{
+	svGlobal.distCheckTestPoint = expect vector( GetPlayerPos().origin )
+	printt( "DistCheck test point set to:", svGlobal.distCheckTestPoint )
+}
+
+void function DistCheck()
+{
+	vector here = expect vector( GetPlayerPos().origin )
+	float dist = Distance( here, svGlobal.distCheckTestPoint )
+	printt( "Distance:", dist, "units from", svGlobal.distCheckTestPoint )
+}
+#endif // DEV
+
+void function ClearChildren( entity parentEnt ) //Probably should have code give us a GetChildren() function that returns a list instead of having to iterate through NextMovePeer
+{
+	entity childEnt = parentEnt.FirstMoveChild()
+	entity nextChildEnt
+
+	while ( childEnt != null )
+	{
+		nextChildEnt = childEnt.NextMovePeer()
+		childEnt.ClearParent()
+
+		childEnt = nextChildEnt
+	}
+}
+
+void function ForceTimeLimitDone()
+{
+	level.devForcedWin = true
+	level.devForcedTimeLimit = true
+	svGlobal.levelEnt.Signal( "devForcedWin" )
+	ServerCommand( "mp_enabletimelimit 1" )
+	ServerCommand( "mp_enablematchending 1" )
+}
+
+
+void function UpdateBadRepPresent()
+{
+	array<entity> players = GetPlayerArray()
+	bool found = false
+/*	always set to false for now
+	foreach ( player in players )
+	{
+		if ( player.HasBadReputation() )
+		{
+			found = true
+			break
+		}
+	}
+*/
+	level.nv.badRepPresent = found
+	level.ui.badRepPresent = found
+}
+
+void function Dev_PrintMessage( entity player, string text, string subText = "", float duration = 7.0, string soundAlias = "" )
+{
+	#if DEV
+	// Build the message on the client
+	string sendMessage
+	for ( int textType = 0 ; textType < 2 ; textType++ )
+	{
+		sendMessage = textType == 0 ? text : subText
+
+		for ( int i = 0; i < sendMessage.len(); i++ )
+		{
+			Remote_CallFunction_NonReplay( player, "Dev_BuildClientMessage", textType, sendMessage[i] )
+		}
+	}
+	Remote_CallFunction_NonReplay( player, "Dev_PrintClientMessage", duration )
+	if ( soundAlias != "" )
+		EmitSoundOnEntity( player, soundAlias )
+	#endif
+}
+
+bool function IsAttackDefendBased() //If needed to, we can make this a .nv and then move this function into utility_shared
+{
+	return expect bool( level.attackDefendBased )
+}
+
+bool function IsRoundBasedUsingTeamScore()  //If needed to, we can make this a .nv and then move this function into utility_shared
+{
+	return IsRoundBased() && expect bool( level.roundBasedUsingTeamScore )
+}
+
+bool function ShouldResetRoundBasedTeamScore()
+{
+	return IsRoundBased() && svGlobal.roundBasedTeamScore_RoundReset
+}
+
+void function CreateZipline( vector startPos, vector endPos )
+{
+	string startpointName = UniqueString( "rope_startpoint" )
+	string endpointName = UniqueString( "rope_endpoint" )
+
+	entity rope_start = CreateEntity( "move_rope" )
+	SetTargetName( rope_start, startpointName )
+	rope_start.kv.NextKey = endpointName
+	rope_start.kv.MoveSpeed = 64
+	rope_start.kv.Slack = 25
+	rope_start.kv.Subdiv = "2"
+	rope_start.kv.Width = "2"
+	rope_start.kv.Type = "0"
+	rope_start.kv.TextureScale = "1"
+	rope_start.kv.RopeMaterial = "cable/zipline.vmt"
+	rope_start.kv.PositionInterpolator = 2
+	rope_start.kv.Zipline = "1"
+	rope_start.kv.ZiplineAutoDetachDistance = "150"
+	rope_start.kv.ZiplineSagEnable = "0"
+	rope_start.kv.ZiplineSagHeight = "50"
+	rope_start.SetOrigin( startPos )
+
+	entity rope_end = CreateEntity( "keyframe_rope" )
+	SetTargetName( rope_end, endpointName )
+	rope_end.kv.MoveSpeed = 64
+	rope_end.kv.Slack = 25
+	rope_end.kv.Subdiv = "2"
+	rope_end.kv.Width = "2"
+	rope_end.kv.Type = "0"
+	rope_end.kv.TextureScale = "1"
+	rope_end.kv.RopeMaterial = "cable/zipline.vmt"
+	rope_end.kv.PositionInterpolator = 2
+	rope_end.kv.Zipline = "1"
+	rope_end.kv.ZiplineAutoDetachDistance = "150"
+	rope_end.kv.ZiplineSagEnable = "0"
+	rope_end.kv.ZiplineSagHeight = "50"
+	rope_end.SetOrigin( endPos )
+
+	DispatchSpawn( rope_start )
+	DispatchSpawn( rope_end )
+}
+
+string function GetNPCTitanSettingFile( entity titan )
+{
+	Assert( titan.IsTitan(), titan + " is not a titan" )
+	return titan.ai.titanSettings.titanSetFile
+}
+
+void function DecodeBitField( int bitField )
+{
+	for ( int bitIndex = 0; bitIndex < 32; bitIndex++ )
+	{
+		if ( bitField & (1 << bitIndex) )
+		{
+			printt( "Comparison: ", bitField, "& ( 1 <<", bitIndex, ") = ", bitField & (1 << bitIndex) )
+			printt( "BIT SET: ", bitIndex, bitField, 1 << bitIndex )
+		}
+	}
+}
+
+void function DropWeapon( entity npc )
+{
+	entity weapon = npc.GetActiveWeapon()
+	if ( !weapon )
+		return
+
+	string name = weapon.GetWeaponClassName()
+
+	// giving the weapon you have drops a new one in its place
+	npc.GiveWeapon( name )
+	npc.TakeActiveWeapon()
+}
+
+void function TestGiveGunTo( int index, string weaponName )
+{
+	entity ent = GetEntByIndex( index )
+	if ( !ent )
+	{
+		printt( "No entity for index:", index )
+		return;
+	}
+
+	TakePrimaryWeapon( ent )
+	ent.GiveWeapon( weaponName )
+	ent.SetActiveWeaponByName( weaponName )
+}
+
+string function GetEditorClass( entity self )
+{
+	if ( self.HasKey( "editorclass" ) )
+		return expect string( self.kv.editorclass )
+
+	return ""
+}
+
+bool function TitanHasRegenningShield( entity soul )
+{
+	if ( !TitanShieldRegenEnabled() )
+		return false
+
+	if ( !TitanShieldDecayEnabled() )
+		return true
+
+	if ( SoulHasPassive( soul, ePassives.PAS_SHIELD_BOOST ) )
+		return true
+
+	return false
+}
+
+void function DelayShieldDecayTime( entity soul, float delay )
+{
+	soul.e.nextShieldDecayTime = Time() + delay
+}
+
+void function HighlightWeapon( entity weapon )
+{
+#if HAS_WEAPON_PICKUP_HIGHLIGHT
+	if ( weapon.IsLoadoutPickup() )
+	{
+		Highlight_SetOwnedHighlight( weapon, "sp_loadout_pickup" )
+		Highlight_SetNeutralHighlight( weapon, "sp_loadout_pickup" )
+	}
+	else
+	{
+		Highlight_SetOwnedHighlight( weapon, "weapon_drop_active" )
+		Highlight_SetNeutralHighlight( weapon, "weapon_drop_normal" )
+	}
+#endif // #if HAS_WEAPON_PICKUP_HIGHLIGHT
+}
+
+void function WaitTillLookingAt( entity player, entity ent, bool doTrace, float degrees, float minDist = 0, float timeOut = 0, entity trigger = null, string failsafeFlag = "" )
+{
+	EndSignal( ent, "OnDestroy" )
+	EndSignal( player, "OnDeath" )
+
+	//trigger = the trigger ther player must be touching while doing the check
+	//failsafeFlag = bypass everything if this flag gets set
+
+	if ( failsafeFlag != "" )
+		EndSignal( level, failsafeFlag )
+
+	float minDistSqr = minDist * minDist
+	Assert( minDistSqr >= 0 )
+	float timeoutTime = Time() + timeOut
+
+	while( true )
+	{
+
+		if ( timeOut > 0 && Time() > timeoutTime )
+			break
+
+		if ( failsafeFlag != "" && Flag( failsafeFlag ) )
+			break
+
+		// Within range?
+		if ( minDistSqr > 0 && DistanceSqr( player.GetOrigin(), ent.GetOrigin() ) > minDistSqr )
+		{
+			WaitFrame()
+			continue
+		}
+
+		// Touching trigger?
+		if ( ( trigger != null ) && ( !trigger.IsTouching( player ) ) )
+		{
+			WaitFrame()
+			continue
+		}
+
+		if ( PlayerCanSee( player, ent, doTrace, degrees ) )
+			break
+
+		WaitFrame()
+	}
+}
+
+void function SetTargetName( entity ent, string name )
+{
+	ent.SetValueForKey( "targetname", name )
+}
+
+ZipLine function CreateZipLine( vector start, vector end, int autoDetachDistance = 150, float ziplineMoveSpeedScale = 1.0 )
+{
+	string midpointName = UniqueString( "rope_midpoint" )
+	string endpointName = UniqueString( "rope_endpoint" )
+
+	entity rope_start = CreateEntity( "move_rope" )
+	rope_start.kv.NextKey = midpointName
+	rope_start.kv.MoveSpeed = 0
+	rope_start.kv.ZiplineMoveSpeedScale = ziplineMoveSpeedScale
+	rope_start.kv.Slack = 0
+	rope_start.kv.Subdiv = 0
+	rope_start.kv.Width = "2"
+	rope_start.kv.TextureScale = "1"
+	rope_start.kv.RopeMaterial = "cable/zipline.vmt"
+	rope_start.kv.PositionInterpolator = 2
+	rope_start.kv.Zipline = "1"
+	rope_start.kv.ZiplineAutoDetachDistance = string( autoDetachDistance )
+	rope_start.kv.ZiplineSagEnable = "0"
+	rope_start.kv.ZiplineSagHeight = "0"
+	rope_start.SetOrigin( start )
+
+	entity rope_mid = CreateEntity( "keyframe_rope" )
+	SetTargetName( rope_mid, midpointName )
+	rope_start.kv.NextKey = endpointName
+	rope_mid.SetOrigin( ( start + end ) * 0.5 )
+	//rope_mid.SetOrigin( start )
+
+	entity rope_end = CreateEntity( "keyframe_rope" )
+	SetTargetName( rope_end, endpointName )
+	rope_end.SetOrigin( end )
+
+	// Dispatch spawn entities
+	DispatchSpawn( rope_start )
+	DispatchSpawn( rope_mid )
+	DispatchSpawn( rope_end )
+
+	ZipLine zipLine
+	zipLine.start = rope_start
+	zipLine.mid = rope_mid
+	zipLine.end = rope_end
+
+	return zipLine
+}
+
+entity function GetPlayerFromEntity( entity ent )
+{
+	entity player = null
+
+	if ( ent.IsPlayer() )
+	{
+		player = ent
+	}
+	else if ( ent.IsNPC() )
+	{
+		player = ent.GetBossPlayer()
+	}
+	else
+	{
+		player = ent.GetOwner()
+		if ( !player || !player.IsPlayer() )
+			return null
+	}
+
+	if ( IsValid_ThisFrame( player ) )
+		return player
+
+	return null
+}
+
+void function SetHumanRagdollImpactTable( entity ent )
+{
+	ent.SetRagdollImpactFX( HUMAN_RAGDOLL_IMPACT_TABLE_IDX )
+}
+
+bool function ScriptManagedEntArrayContains( int handle, entity ent )
+{
+	array< entity > ents = GetScriptManagedEntArray( handle )
+	foreach ( ent in ents )
+	{
+		if ( ent == ent )
+			return true
+	}
+
+	return false
+}
+
+void function HideCrit( entity ent )
+{
+	int bodyGroupIndex = ent.FindBodyGroup( "hitpoints" )
+
+	if ( bodyGroupIndex == -1 )
+	{
+		return
+	}
+
+	ent.SetBodygroup( bodyGroupIndex, 1 )
+}
+
+void function ShowCrit( entity ent )
+{
+	int bodyGroupIndex = ent.FindBodyGroup( "hitpoints" )
+
+	if ( bodyGroupIndex == -1 )
+	{
+		return
+	}
+
+	ent.SetBodygroup( bodyGroupIndex, 0 )
+}
+
+
+#if DEV
+void function TeleportEnemyBotToView()
+{
+	entity player = gp()[0]
+
+	TraceResults traceResults = PlayerViewTrace( player )
+
+	if ( traceResults.fraction >= 1.0 )
+		return
+
+	array<entity> players = GetPlayerArrayOfEnemies_Alive( player.GetTeam() )
+	foreach ( enemy in players )
+	{
+		if ( !enemy.IsBot() )
+			continue
+
+		enemy.SetOrigin( traceResults.endPos )
+		return
+	}
+}
+
+void function TeleportEntityToView( entity ent )
+{
+	entity player = gp()[0]
+
+	TraceResults traceResults = PlayerViewTrace( player )
+
+	if ( traceResults.fraction >= 1.0 )
+		return
+
+	ent.SetOrigin( traceResults.endPos )
+	//traceResults.surfaceNormal
+}
+
+void function TeleportFriendlyBotToView()
+{
+	entity player = gp()[0]
+
+	TraceResults traceResults = PlayerViewTrace( player )
+
+	if ( traceResults.fraction >= 1.0 )
+		return
+
+	array<entity> players = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
+	foreach ( enemy in players )
+	{
+		if ( !enemy.IsBot() )
+			continue
+
+		enemy.SetOrigin( traceResults.endPos )
+		return
+	}
+}
+
+void function TeleportBotToAbove()
+{
+	entity player = gp()[0]
+
+	array<entity> players = GetPlayerArray_AlivePilots()
+	foreach ( enemy in players )
+	{
+		if ( !enemy.IsBot() )
+			continue
+
+		enemy.SetOrigin( player.GetOrigin() + < 0, 0, 512 > )
+		return
+	}
+}
+
+TraceResults function PlayerViewTrace( entity player, float distance = 10000 )
+{
+	vector eyePosition = player.EyePosition()
+	vector viewVector = player.GetViewVector()
+
+	TraceResults traceResults = TraceLine( eyePosition, eyePosition + viewVector * distance, player, TRACE_MASK_SHOT_BRUSHONLY, TRACE_COLLISION_GROUP_NONE )
+
+	return traceResults
+}
+#endif
+
+void function ClearPlayerAnimViewEntity( entity player, float time = 0.3 )
+{
+	entity viewEnt = player.GetFirstPersonProxy()
+	viewEnt.HideFirstPersonProxy()
+	viewEnt.Anim_Stop()
+
+	player.AnimViewEntity_SetLerpOutTime( time )
+	player.AnimViewEntity_Clear()
+	player.p.currViewConeFunction = null
+}
+
+
+void function BrushMoves( entity brush )
+{
+	float moveTime = float( brush.kv.move_time )
+	int movedir = int( brush.kv.movedirection )
+
+	BrushMovesInDirection( brush, movedir, moveTime )
+}
+
+
+void function BrushMovesInDirection( entity ent, int dir, float moveTime = 0, float blendIn = 0, float blendOut = 0, float lip = 8 )
+{
+	entity mover = CreateOwnedScriptMover( ent )
+	OnThreadEnd(
+		function() : ( ent, mover )
+		{
+			if ( IsValid( ent ) )
+				ent.ClearParent()
+			if ( IsValid( mover ) )
+				mover.Destroy()
+		}
+	)
+
+	dir %= 360
+	if ( dir > 180 )
+		dir -= 360
+	else if ( dir < -180 )
+		dir += 360
+
+	string moveAxis = GetMoveAxisFromDir( dir )
+
+	ent.SetParent( mover )
+	vector origin = ent.GetOrigin()
+	float moveAmount
+	if ( ent.HasKey( "move_amount" ) )
+	{
+		moveAmount = float( ent.kv.move_amount ) - lip
+		switch ( moveAxis )
+		{
+			case "x":
+			case "y":
+				if ( dir < 0 )
+					moveAmount *= -1
+				break
+
+			case "z":
+				if ( dir == -1 )
+					moveAmount *= -1
+				break
+		}
+	}
+	else
+	{
+		switch ( moveAxis )
+		{
+			case "x":
+				moveAmount = GetEntWidth( ent ) - lip
+				if ( dir < 0 )
+					moveAmount *= -1
+				break
+
+			case "y":
+				moveAmount = GetEntDepth( ent ) - lip
+				if ( dir < 0 )
+					moveAmount *= -1
+				break
+
+			case "z":
+				moveAmount = GetEntHeight( ent ) - lip
+				if ( dir == -1 )
+					moveAmount *= -1
+				break
+		}
+	}
+
+	switch ( moveAxis )
+	{
+		case "x":
+			origin.x += moveAmount
+			break
+		case "y":
+			origin.y += moveAmount
+			break
+		case "z":
+			origin.z += moveAmount
+			break
+	}
+
+	if ( moveTime > 0 )
+	{
+		mover.NonPhysicsMoveTo( origin, moveTime, blendIn, blendOut )
+		wait moveTime
+	}
+	else
+	{
+		mover.SetOrigin( origin )
+	}
+}
+
+string function GetMoveAxisFromDir( int dir )
+{
+	if ( dir == 1 || dir == -1 )
+		return "z"
+
+	if ( dir % 180 == 0 )
+		return "x"
+
+	return "y"
+}
+
+
+float function GetEntHeight( entity ent )
+{
+	return ent.GetBoundingMaxs().z - ent.GetBoundingMins().z
+}
+
+float function GetEntWidth( entity ent )
+{
+	return ent.GetBoundingMaxs().x - ent.GetBoundingMins().x
+}
+
+float function GetEntDepth( entity ent )
+{
+	return ent.GetBoundingMaxs().y - ent.GetBoundingMins().y
+}
+
+void function PushEntWithVelocity( entity ent, vector velocity )
+{
+	if ( !ent.IsPlayer() && !ent.IsNPC() )
+		return
+
+	if ( !IsAlive( ent ) )
+		return
+
+	float scale = 1.0
+	float pushbackScale = 1.0
+	if ( ent.IsTitan() )
+	{
+		entity soul = ent.GetTitanSoul()
+		if ( soul != null ) // defensive fix
+		{
+			string settings = GetSoulPlayerSettings( soul )
+			var scale = Dev_GetPlayerSettingByKeyField_Global( settings, "pushbackScale" )
+			if ( scale != null )
+			{
+				pushbackScale = expect float( scale )
+			}
+		}
+	}
+
+	scale = 1.0 - StatusEffect_Get( ent, eStatusEffect.pushback_dampen )
+	scale = scale * pushbackScale
+
+	velocity *= scale
+
+	ent.SetVelocity( velocity )
+}
+
+
+
+bool function IsPlayerMalePilot( entity player )
+{
+	Assert( player.IsPlayer() )
+
+	if ( !IsPilot( player ) )
+		return false
+
+	return !IsPlayerFemale( player )
+}
+
+bool function IsPlayerFemalePilot( entity player )
+{
+	Assert( player.IsPlayer() )
+
+	if ( !IsPilot( player ) )
+		return false
+
+	return IsPlayerFemale( player )
+}
+
+bool function IsFacingEnemy( entity guy, entity enemy, int viewAngle = 75 )
+{
+	vector dir = enemy.GetOrigin() - guy.GetOrigin()
+	dir = Normalize( dir )
+	float dot = DotProduct( guy.GetPlayerOrNPCViewVector(), dir )
+	float yaw = DotToAngle( dot )
+
+	return ( yaw < viewAngle )
+}
+
+void function SetSquad( entity guy, string squadName )
+{
+	Assert( IsValid( guy ) )
+
+	if ( guy.kv.squadname == squadName )
+		return
+
+	// we only want squads containing NPCs of the same class
+	#if HAS_AI_SQUAD_LIMITS
+	Assert( SquadValidForClass( squadName, guy.GetClassName() ), "Can't put AI " + guy + " in squad " + squadName + ", because it contains one or more AI with a different class." )
+	Assert( SquadCanAcceptNewMembers( guy, squadName ), "Can't add AI " + guy + " to squad " + squadName + ", because that squad already has " + SQUAD_SIZE + " slots filled or reserved." )
+	#endif
+
+	guy.SetSquad( squadName )
+}
+
+void function PushPlayersApart( entity target, entity attacker, float speed )
+{
+	vector dif = Normalize( target.GetOrigin() - attacker.GetOrigin() )
+	dif *= speed
+	PushPlayerAway( target, dif )
+	PushPlayerAway( attacker, -dif )
+}
+
+void function PushPlayerAway( entity target, vector velocity )
+{
+	#if MP
+	if ( !target.IsPlayer() && !target.IsNPC() )
+		return
+	#endif
+
+	vector result = velocity // + target.GetVelocity()
+	result.z = max( 200, fabs( velocity.z ) )
+	target.SetVelocity( result )
+	//DebugDrawLine( target.GetOrigin(), target.GetOrigin() + result * 5, 255, 0, 0, true, 5.0 )
+}
+
+
+int function SortBySpawnTime( entity ent1, entity ent2 )
+{
+	if ( ent1.e.spawnTime > ent2.e.spawnTime )
+		return 1
+
+	if ( ent2.e.spawnTime > ent1.e.spawnTime )
+		return -1
+
+	return 0
+}
+
+void function HolsterAndDisableWeapons( entity player )
+{
+	player.HolsterWeapon()
+	DisableOffhandWeapons( player )
+}
+
+void function HolsterViewModelAndDisableWeapons( entity player ) //Note that this skips the first person holster animation, and it appears to 3p observers you still have a gun out
+{
+	player.DisableWeaponViewModel()
+	DisableOffhandWeapons( player )
+}
+
+
+void function DeployAndEnableWeapons( entity player )
+{
+	player.DeployWeapon()
+	EnableOffhandWeapons( player )
+}
+
+void function DeployViewModelAndEnableWeapons( entity player )
+{
+	if ( IsAlive( player ) )
+		player.EnableWeaponViewModel()
+	EnableOffhandWeapons( player )
+}
+
+//Investigate: This might be getting called without enableoffhandweapons being called. If so,  Server_TurnOffhandWeaponsDisabledOn() should be used instead of this stack system.
+void function DisableOffhandWeapons( entity player )
+{
+	player.Server_TurnOffhandWeaponsDisabledOn()
+	player.p.disableOffhandWeaponsStackCount++
+}
+
+void function EnableOffhandWeapons( entity player )
+{
+	player.p.disableOffhandWeaponsStackCount--
+	if ( player.p.disableOffhandWeaponsStackCount <= 0 )
+		player.Server_TurnOffhandWeaponsDisabledOff()
+
+	Assert( player.p.disableOffhandWeaponsStackCount >= 0, "Warning! Called EnableOffhandWeapons() but the weapons aren't disabled!" )
+}
+
+void function PushEntWithDamageInfoAndDistanceScale( entity ent, var damageInfo, float nearRange, float farRange, float nearScale, float farScale, float forceMultiplier_dotBase = 0.5 )
+{
+	float scale = GraphCapped( DamageInfo_GetDistFromAttackOrigin( damageInfo ), nearRange, farRange, nearScale, farScale )
+
+	if ( scale > 0 )
+		PushEntWithDamageInfo( ent, damageInfo, forceMultiplier_dotBase, scale )
+}
+
+void function PushEntWithDamageInfo( entity ent, var damageInfo, float forceMultiplier_dotBase = 0.5, float forceMultiplier_dotScale = 0.5 )
+{
+	int source = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	switch ( source )
+	{
+ 		case eDamageSourceId.mp_titanweapon_vortex_shield:
+  		case eDamageSourceId.mp_titanweapon_vortex_shield_ion:
+			return
+	}
+
+	entity projectile = DamageInfo_GetInflictor( damageInfo )
+	if ( !IsValid( projectile ) )
+		return
+
+	vector attackDirection = Normalize( projectile.GetVelocity() )
+	float damage = DamageInfo_GetDamage( damageInfo )
+
+	PushEntWithDamageFromDirection( ent, damage, attackDirection, forceMultiplier_dotBase, forceMultiplier_dotScale )
+}
+
+void function PushEntWithDamageFromDirection( entity ent, float damage, vector attackDirection, float forceMultiplier_dotBase = 0.5, float forceMultiplier_dotScale = 0.5 )
+{
+
+	float speed
+	if ( damage < 900 )
+		speed = GraphCapped( damage, 0, 900, 0, 650 )
+	else
+		speed = GraphCapped( damage, 900, 1400, 650, 1400 )
+
+	vector direction = attackDirection + <0,0,0>
+	direction.z *= 0.25
+	vector force = direction * speed
+
+	force += < 0, 0, fabs( direction.z ) * 0.25 >
+
+	vector velocity = ent.GetVelocity()
+	vector baseVel = Normalize( velocity + <0,0,0> )
+
+	float dot = DotProduct( baseVel, attackDirection ) * -1
+	float dotMultiplier
+	if ( dot > 0 )
+	{
+		dot *= forceMultiplier_dotScale
+	}
+	else
+	{
+		dot = 0
+	}
+
+	force *= ( forceMultiplier_dotBase + dot )
+	//printt( "force " + Length( force ) )
+	velocity += force
+	PushEntWithVelocity( ent, velocity )
+}
+
+
+void function SetPlayerAnimViewEntity( entity player, entity model )
+{
+	// clear any attempts to hide the view anim entity
+	player.Signal( "NewViewAnimEntity" )
+	player.AnimViewEntity_SetEntity( model )
+}
+
+
+void function RandomizeHead( entity model ) //Randomize head across all available heads
+{
+	int headIndex = model.FindBodyGroup( "head" )
+	if ( headIndex == -1 )
+	{
+		//printt( "HeadIndex == -1, returning" )
+		return
+	}
+	int numOfHeads = model.GetBodyGroupModelCount( headIndex ) - 1 // last one is no head
+	//printt( "Num of Heads: " + numOfHeads )
+
+	if ( HasTeamSkin( model ) )
+	{
+		RandomizeHeadByTeam( model, headIndex, numOfHeads )
+		return
+	}
+	else
+	{
+		int randomHeadIndex = RandomInt( numOfHeads )
+		//printt( "Set head to: : " + randomHeadIndex )
+		model.SetBodygroup( headIndex, randomHeadIndex )
+	}
+}
+
+bool function HasTeamSkin( entity model )
+{
+	return  "teamSkin" in model.CreateTableFromModelKeyValues()
+}
+
+void function RandomizeHeadByTeam( entity model, int headIndex, int numOfHeads ) //Randomize head across heads available to a particular team. Assumes for a model all imc heads are first, then all militia heads are later.
+{
+	float midPoint = float( numOfHeads / 2 )
+
+	int randomHeadIndex = 0
+	if ( model.GetTeam() == TEAM_IMC )
+	{
+		randomHeadIndex = RandomInt( midPoint )
+	}
+	else if ( model.GetTeam() == TEAM_MILITIA )
+	{
+		randomHeadIndex = RandomIntRange( midPoint, numOfHeads )
+	}
+	//printt( "Model ", model.GetModelName(), " is using ", numOfHeads, " randomHeadIndex")
+
+	//printt( "Set head to: : " + randomHeadIndex )
+	model.SetBodygroup( headIndex, randomHeadIndex )
+}
+
+void function TakeWeaponsForArray( entity ent, array<entity> weapons )
+{
+	foreach ( weapon in weapons )
+	{
+		ent.TakeWeaponNow( weapon.GetWeaponClassName() )
+	}
+}
+
+void function ScaleHealth( entity ent, float scale )
+{
+	Assert( IsAlive( ent ) )
+
+	int maxHealth = ent.GetMaxHealth()
+	float healthRatio = float( ent.GetHealth() ) / maxHealth
+	maxHealth = int( maxHealth * scale )
+	ent.SetHealth( maxHealth * healthRatio )
+	ent.SetMaxHealth( maxHealth )
+}
+
+void function TeleportPlayerToEnt( entity player, entity org )
+{
+	if ( !IsValid( player ) )
+		return
+	Assert( player.IsPlayer() )
+	player.SetOrigin( org.GetOrigin() )
+	player.SetAngles( org.GetAngles() )
+}
+
+float function ShieldModifyDamage( entity ent, var damageInfo )
+{
+	entity victim
+	if ( ent.IsTitan() )
+		victim = ent.GetTitanSoul()
+	else
+		victim = ent
+
+	int shieldHealth = victim.GetShieldHealth()
+
+	float damage = DamageInfo_GetDamage( damageInfo )
+
+	int damageSourceIdentifier = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	ShieldDamageModifier damageModifier = GetShieldDamageModifier( damageInfo )
+	damage *= damageModifier.damageScale
+
+	float healthFrac = GetHealthFrac( victim )
+
+	float permanentDamage = (damage * damageModifier.permanentDamageFrac * healthFrac)
+
+	float shieldDamage
+
+	if ( damageSourceIdentifier == eDamageSourceId.titanEmpField )
+	{
+		shieldDamage = min( 1000.0, float( shieldHealth ) )
+	}
+	else
+	{
+		if ( damageModifier.normalizeShieldDamage )
+			shieldDamage = damage * 0.5
+		else
+			shieldDamage = damage - permanentDamage
+
+		// if ( IsSoul( victim ) && SoulHasPassive( victim, ePassives.PAS_SHIELD_BOOST ) )
+		// 	shieldDamage *= SHIELD_BOOST_DAMAGE_DAMPEN
+
+		if ( IsSoul( victim ) && SoulHasPassive( victim, ePassives.PAS_BERSERKER ) )
+			shieldDamage *= BERSERKER_INCOMING_DAMAGE_DAMPEN
+	}
+
+	float newShieldHealth = shieldHealth - shieldDamage
+
+	victim.SetShieldHealth( max( 0, newShieldHealth ) )
+
+	if ( shieldHealth > 0 && newShieldHealth <= 0 )
+	{
+		if ( ent.IsPlayer() )
+		{
+			EmitSoundOnEntityExceptToPlayer( ent, ent, "titan_energyshield_down_3P" )
+			EmitSoundOnEntityOnlyToPlayer( ent, ent, "titan_energyshield_down_1P" )
+		}
+		else if ( ent.GetScriptName() == "fw_team_tower" )
+		{
+			EmitSoundOnEntity( ent, "TitanWar_Harvester_ShieldDown" )
+
+			#if FACTION_DIALOGUE_ENABLED
+				PlayFactionDialogueToTeam( "fortwar_baseShieldDownFriendly", ent.GetTeam() )
+				PlayFactionDialogueToTeam( "fortwar_baseShieldDownEnemy", GetOtherTeam( ent.GetTeam() ) )
+			#endif
+		}
+		else
+		{
+			EmitSoundOnEntity( ent, "titan_energyshield_down_3P" )
+		}
+	}
+
+	DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )
+
+	if ( newShieldHealth < 0 )
+	{
+		DamageInfo_SetDamage( damageInfo, fabs( newShieldHealth ) + permanentDamage )
+	}
+	else
+	{
+		if ( permanentDamage == 0 )
+		{
+			entity attacker = DamageInfo_GetAttacker( damageInfo )
+			vector damageOrigin = GetDamageOrigin( damageInfo, ent )
+			int damageType = DamageInfo_GetCustomDamageType( damageInfo )
+			int attackerEHandle = attacker.GetEncodedEHandle()
+			int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+
+			if ( attacker.IsPlayer() )
+				attacker.NotifyDidDamage( ent, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamagePosition( damageInfo ), damageType, shieldDamage, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
+			if ( ent.IsPlayer() )
+				Remote_CallFunction_Replay( ent, "ServerCallback_TitanTookDamage", shieldDamage, damageOrigin.x, damageOrigin.y, damageOrigin.z, damageType, damageSourceId, attackerEHandle, null, false, 0 )
+		}
+		DamageInfo_SetDamage( damageInfo, permanentDamage )
+	}
+
+	float actualShieldDamage = min( shieldHealth, shieldDamage )
+
+	if ( actualShieldDamage > 0 )
+	{
+		foreach ( func in ent.e.entPostShieldDamageCallbacks )
+		{
+			func( ent, damageInfo, actualShieldDamage )
+		}
+	}
+
+	return actualShieldDamage
+}
+
+ShieldDamageModifier function GetShieldDamageModifier( var damageInfo )
+{
+	ShieldDamageModifier damageModifier
+
+	// Disabling Shield Damage Modifiers and rebalancing the weapons. The below mechanics seem cool in an R1 style system though so leaving them commented out.
+	// NOTE: Changing Damage Scale has a buggy interaction with permanent damage that must be fixed if we re-enable this.
+	/*
+	int damageSourceIdentifier = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+
+	switch ( damageSourceIdentifier )
+	{
+		case eDamageSourceId.mp_weapon_thermite_grenade:
+			damageModifier.permanentDamageFrac = 0.9
+			break
+	}
+
+	if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_ELECTRICAL )
+	{
+		// amped version
+		if ( damageSourceIdentifier == eDamageSourceId.mp_titanweapon_xo16 )
+			damageModifier.damageScale *= 1.5
+
+		// amped version
+		if ( damageSourceIdentifier == eDamageSourceId.mp_titanweapon_triple_threat )
+			damageModifier.damageScale *= 1.5
+
+		if ( damageSourceIdentifier == eDamageSourceId.mp_titanweapon_arc_cannon )
+			damageModifier.damageScale *= 1.5
+	}
+	*/
+
+	if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_ELECTRICAL )
+	{
+		int damageSourceIdentifier = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+		// Vanguard Arc Rounds
+		if ( damageSourceIdentifier == eDamageSourceId.mp_titanweapon_xo16_vanguard )
+			damageModifier.damageScale *= 1.5
+	}
+
+
+	return damageModifier
+}
+
+
+
+void function AddCallback_NPCLeeched( void functionref( entity, entity ) callbackFunc )
+{
+	Assert( !( svGlobal.onLeechedCustomCallbackFunc.contains( callbackFunc ) ) )
+	svGlobal.onLeechedCustomCallbackFunc.append( callbackFunc )
+}
+
+void function MessageToPlayer( entity player, int eventID, entity ent = null, var eventVal = null )
+{
+	var eHandle = null
+	if ( ent )
+		eHandle = ent.GetEncodedEHandle()
+
+	Remote_CallFunction_NonReplay( player, "ServerCallback_EventNotification", eventID, eHandle, eventVal )
+	//SendHudMessage( player, message, 0.33, 0.28, 255, 255, 255, 255, 0.15, 3.0, 0.5 )
+}
+
+
+void function MessageToTeam( int team, int eventID, entity excludePlayer = null, entity ent = null, var eventVal = null )
+{
+	array<entity> players = GetPlayerArray()
+
+	foreach ( player in players )
+	{
+		if ( player.GetTeam() != team )
+			continue
+
+		if ( player == excludePlayer )
+			continue
+
+		MessageToPlayer( player, eventID, ent, eventVal )
+	}
+}
+
+void function MessageToAll( int eventID, entity excludePlayer = null, entity ent = null, var eventVal = null )
+{
+	array<entity> players = GetPlayerArray()
+
+	foreach ( player in players )
+	{
+		if ( player == excludePlayer )
+			continue
+
+		MessageToPlayer( player, eventID, ent, eventVal )
+	}
+}
+
+
+
+string function ReloadScriptsInternal()
+{
+	reloadingScripts = true
+	reloadedScripts = true
+	ReloadingScriptsBegin()
+
+	if ( IsMenuLevel() )
+	{
+		reloadingScripts = false
+		ReloadingScriptsEnd()
+		return ""
+	}
+
+	TitanEmbark_Init()
+
+	ReloadScriptCallbacks()
+
+	reloadingScripts = false
+	ReloadingScriptsEnd()
+
+	return ( "reloaded server scripts" )
+}
+
+string function ReloadScripts()
+{
+	ServerCommand( "fs_report_sync_opens 0" ) // makes reload scripts slow
+	delaythread ( 0 ) ReloadScriptsInternal()
+
+	return ( "reloaded server scripts" )
+}
+
+int function GameTime_TimeLimitSeconds()
+{
+	if ( IsRoundBased() )
+	{
+		return ( GetRoundTimeLimit_ForGameMode() * 60.0 ).tointeger()
+	}
+	else
+	{
+		if ( IsSuddenDeathGameMode() && GetGameState() == eGameState.SuddenDeath )
+			return ( GetTimeLimit_ForGameMode() * 60.0 ).tointeger() + ( GetSuddenDeathTimeLimit_ForGameMode() * 60.0 ).tointeger()
+		else
+			return ( GetTimeLimit_ForGameMode() * 60.0 ).tointeger()
+	}
+	unreachable
+}
+
+int function GetSuddenDeathTimeLimit_ForGameMode()
+{
+	string mode = GameRules_GetGameMode()
+	string playlistString = "suddendeath_timelimit"
+
+	return GetCurrentPlaylistVarInt( playlistString, 4 )
+}
+
+int function GameTime_TimeLimitMinutes()
+{
+	if ( IsRoundBased() )
+		return floor( GetRoundTimeLimit_ForGameMode() ).tointeger()
+	else
+		return floor( GetTimeLimit_ForGameMode() ).tointeger()
+	unreachable
+}
+
+int function GameTime_TimeLeftMinutes()
+{
+	if ( GetGameState() == eGameState.WaitingForPlayers )
+		return 0
+	if ( GetGameState() == eGameState.Prematch )
+		return int( ( expect float( GetServerVar( "gameStartTime" ) ) - Time()) / 60.0 )
+
+	return floor( GameTime_TimeLimitMinutes() - GameTime_PlayingTime() / 60 ).tointeger()
+}
+
+int function GameTime_TimeLeftSeconds()
+{
+	if ( GetGameState() == eGameState.Prematch )
+		return int( expect float( GetServerVar( "gameStartTime" ) ) - Time() )
+
+	return floor( GameTime_TimeLimitSeconds() - GameTime_PlayingTime() ).tointeger()
+}
+
+int function GameTime_Seconds()
+{
+	return floor( Time() ).tointeger()
+}
+
+int function GameTime_Minutes()
+{
+	return int( floor( GameTime_Seconds() / 60 ) )
+}
+
+float function GameTime_PlayingTime()
+{
+	return GameTime_PlayingTimeSince( Time() )
+}
+
+float function GameTime_PlayingTimeSince( float sinceTime )
+{
+	int gameState = GetGameState()
+	
+	// temp fix because i have no fucking clue why this crashes
+
+	if ( gameState < eGameState.Playing )
+		return 0
+
+	if ( IsRoundBased() )
+	{
+		if ( gameState > eGameState.SuddenDeath )
+			return (expect float( GetServerVar( "roundEndTime" ) ) - expect float( GetServerVar( "roundStartTime" ) ) )
+		else
+			return sinceTime - expect float( GetServerVar( "roundStartTime" ) )
+	
+	}
+	else
+	{
+		if ( gameState > eGameState.SuddenDeath )
+			return (expect float( GetServerVar( "gameEndTime" ) ) - expect float( GetServerVar( "gameStartTime" ) ) )
+		else
+			return sinceTime - expect float( GetServerVar( "gameStartTime" ) )
+	}
+	
+	unreachable
+}
+
+float function GameTime_TimeSpentInCurrentState()
+{
+	return Time() - expect float( GetServerVar( "gameStateChangeTime" ) )
+}
+
+int function GameScore_GetFirstToScoreLimit()
+{
+	return expect int( level.firstToScoreLimit )
+}
+
+bool function GameScore_AllowPointsOverLimit()
+{
+	return svGlobal.allowPointsOverLimit
+}
+
+int function GameScore_GetWinningTeam()
+{
+	if ( GameScore_GetFirstToScoreLimit() )
+		return GameScore_GetFirstToScoreLimit()
+
+	if ( IsRoundBased() )
+	{
+		if ( GameRules_GetTeamScore2( TEAM_IMC ) > GameRules_GetTeamScore2( TEAM_MILITIA ) )
+			return TEAM_IMC
+		else if ( GameRules_GetTeamScore2( TEAM_MILITIA ) > GameRules_GetTeamScore2( TEAM_IMC ) )
+			return TEAM_MILITIA
+	}
+	else
+	{
+		if ( GameRules_GetTeamScore( TEAM_IMC ) > GameRules_GetTeamScore( TEAM_MILITIA ) )
+			return TEAM_IMC
+		else if ( GameRules_GetTeamScore( TEAM_MILITIA ) > GameRules_GetTeamScore( TEAM_IMC ) )
+			return TEAM_MILITIA
+	}
+
+	return TEAM_UNASSIGNED
+}
+
+int function GameScore_GetWinningTeam_ThisRound()
+{
+	if ( GameScore_GetFirstToScoreLimit() )
+		return GameScore_GetFirstToScoreLimit()
+
+	Assert ( IsRoundBased() )
+
+	if ( GameRules_GetTeamScore( TEAM_IMC ) > GameRules_GetTeamScore( TEAM_MILITIA ) )
+		return TEAM_IMC
+	else if ( GameRules_GetTeamScore( TEAM_MILITIA ) > GameRules_GetTeamScore( TEAM_IMC ) )
+		return TEAM_MILITIA
+
+	return TEAM_UNASSIGNED
+}
+
+#if DEV
+void function KillIMC()
+{
+	array<entity> enemies = GetNPCArrayOfTeam( TEAM_IMC )
+	foreach ( enemy in enemies )
+	{
+		enemy.Die()
+	}
+}
+
+void function killtitans()
+{
+	printt( "Script command: Kill all titans" )
+	array<entity> titans = GetTitanArray()
+	foreach ( titan in titans )
+		titan.Die()
+}
+
+void function killminions()
+{
+	printt( "Script command: Kill all minions" )
+	array<entity> minions = GetAllMinions()
+	foreach ( minion in minions )
+	{
+		minion.Die()
+	}
+}
+#endif
+
+
+array<entity> function GetTeamMinions( int team )
+{
+	array<entity> ai = GetNPCArrayByClass( "npc_soldier" )
+	ai.extend( GetNPCArrayByClass( "npc_spectre" ) )
+
+	for ( int i = 0; i < ai.len(); i++ )
+	{
+		if ( ai[i].GetTeam() != team )
+		{
+			ai.remove(i)
+			i--
+		}
+	}
+
+	return ai
+}
+
+array<entity> function GetAllMinions()
+{
+	array<entity> ai = GetNPCArrayByClass( "npc_soldier" )
+	ai.extend( GetNPCArrayByClass( "npc_spectre" ) )
+	ai.extend( GetNPCArrayByClass( "npc_drone" ) )
+
+	return ai
+}
+
+
+bool function GameScore_IsLowScoreDifference()
+{
+	int winningTeam = GameScore_GetWinningTeam()
+
+	if ( !winningTeam )
+		return true
+
+	int losingTeam = GetOtherTeam( winningTeam )
+
+	int winningTeamScore
+	int losingTeamScore
+
+	if ( IsRoundBased() )
+	{
+		winningTeamScore = GameRules_GetTeamScore2( winningTeam )
+		losingTeamScore =  GameRules_GetTeamScore2( losingTeam )
+	}
+	else
+	{
+		winningTeamScore =  GameRules_GetTeamScore( winningTeam )
+		losingTeamScore =   GameRules_GetTeamScore( losingTeam )
+	}
+
+	return ( winningTeamScore - losingTeamScore < 2 )
+}
+
+bool function IsFastPilot( entity player )
+{
+	Assert( IsPilot( player ), "Pilot only check" )
+
+	if ( player.IsWallHanging() )
+		return false
+
+	if ( player.IsWallRunning() )
+		return true
+
+	if ( !player.IsOnGround() )
+		return true
+
+	if ( LengthSqr( player.GetSmoothedVelocity() ) > 180*180 || LengthSqr( player.GetVelocity() ) > 180*180 )
+		return true
+
+	return false
+}
+
+void function KillPlayer( entity player, int damageSource )
+{
+	#if DEV
+	printt( "Played Killed from script: " )
+	DumpStack()
+	#endif
+
+	Assert( IsAlive( player ) )
+	Assert( player.IsPlayer() )
+	player.Die( svGlobal.worldspawn, svGlobal.worldspawn, { damageSourceId = damageSource, scriptType=DF_SKIP_DAMAGE_PROT | DF_SKIPS_DOOMED_STATE } )
+}
+
+
+//////////////////////////////////////////////////////////
+void function TurretChangeTeam( entity turret, int team )
+{
+	if ( team != TEAM_UNASSIGNED )
+	{
+		// If a turret is on some player's team it should never be invulnerable
+		MakeTurretVulnerable( turret )
+	}
+
+	SetTeam( turret, team )
+
+	// refresh the turret client side particle effects
+	UpdateTurretClientSideParticleEffects( turret )
+}
+
+void function MakeTurretInvulnerable( entity turret )
+{
+	Assert( IsValid( turret ) )
+	turret.SetInvulnerable()
+	turret.SetNoTarget(true)
+	turret.SetNoTargetSmartAmmo(true)
+}
+
+void function MakeTurretVulnerable( entity turret )
+{
+	Assert( IsValid( turret ) )
+	turret.ClearInvulnerable()
+	turret.SetNoTarget(false)
+	turret.SetNoTargetSmartAmmo(false)
+}
+
+
+void function UpdateTurretClientSideParticleEffects( entity turret )
+{
+	if ( !IsValid( turret ) )
+		return
+
+	int turretEHandle = turret.GetEncodedEHandle()
+	array<entity> players = GetPlayerArray()
+	foreach( player in players )
+	{
+		Remote_CallFunction_Replay( player, "ServerCallback_TurretRefresh", turretEHandle )
+	}
+}
+
+
+
+bool function TakePrimaryWeapon( entity player )
+{
+	array<entity> weapons = player.GetMainWeapons()
+	foreach ( index, weaponEnt in weapons )
+	{
+		int weaponType = weaponEnt.GetWeaponType()
+		if ( weaponType == WT_SIDEARM || weaponType == WT_ANTITITAN )
+			continue;
+
+		string weapon = weaponEnt.GetWeaponClassName()
+		player.TakeWeaponNow( weapon )
+		return true
+	}
+	return false
+}
+
+bool function TakeSecondaryWeapon( entity player )
+{
+	array<entity> weapons = player.GetMainWeapons()
+	foreach ( index, weaponEnt in weapons )
+	{
+		if ( weaponEnt.GetWeaponType() != WT_ANTITITAN )
+			continue
+
+		string weapon = weaponEnt.GetWeaponClassName()
+		player.TakeWeaponNow( weapon )
+		return true
+	}
+	return false
+}
+
+bool function TakeSidearmWeapon( entity player )
+{
+	array<entity> weapons = player.GetMainWeapons()
+	foreach ( index, weaponEnt in weapons )
+	{
+		if ( weaponEnt.GetWeaponType() != WT_SIDEARM )
+			continue
+
+		string weapon = weaponEnt.GetWeaponClassName()
+		player.TakeWeaponNow( weapon )
+		return true
+	}
+	return false
+}
+
+void function TakeAllWeapons( entity ent )
+{
+	if ( ent.IsPlayer() )
+	{
+		ent.RemoveAllItems()
+		array<entity> weapons = ent.GetMainWeapons()
+		foreach ( weapon in weapons )
+		{
+			Assert( 0, ent + " still has weapon " + weapon.GetWeaponClassName() + " after doing takeallweapons" )
+		}
+	}
+	else
+	{
+		array<entity> weapons = ent.GetMainWeapons()
+		TakeWeaponsForArray( ent, weapons )
+
+		weapons = ent.GetOffhandWeapons()
+		foreach ( index, weapon in clone weapons )
+		{
+			ent.TakeOffhandWeapon( index )
+		}
+		TakeWeaponsForArray( ent, weapons )
+	}
+}
+
+
+void function SetSpawnflags( entity ent, int spawnFlags )
+{
+	ent.kv.spawnflags = spawnFlags
+}
+
+
+void function DestroyAfterDelay( entity ent, float delay )
+{
+	Assert( IsNewThread(), "Must be threaded off" )
+
+	ent.EndSignal( "OnDestroy" )
+
+	wait( delay )
+
+	ent.Destroy()
+}
+
+void function UnlockAchievement( entity player, int achievementID )
+{
+	Assert( IsValid( player ), "Can't unlock achievement on invalid player entity" )
+	Assert( player.IsPlayer(), "Can't unlock achivement on non-player entity" )
+	Assert( achievementID > 0 && achievementID < achievements.MAX_ACHIVEMENTS, "Tried to unlock achievement with invalid enum value" )
+
+	Remote_CallFunction_UI( player, "ScriptCallback_UnlockAchievement", achievementID )
+}
+
+void function UpdateHeroStatsForPlayer( entity player )
+{
+	if ( !IsValid( player ) )
+		return
+	Remote_CallFunction_NonReplay( player, "ServerCallback_UpdateHeroStats" )
+}
+
+void function TestDeathFall()
+{
+	entity trigger = GetEntByScriptName( "DeathFallTrigger" )
+	table results = WaitSignal( trigger, "OnTrigger" )
+	printt( "DEATH FALL TRIGGERED" )
+	PrintTable( results )
+}
+
+bool function PlayerHasTitan( entity player )
+{
+	entity titan
+	if ( player.IsTitan() )
+		titan = player
+	else
+		titan = player.GetPetTitan()
+
+	if ( IsAlive( titan ) )
+		return true
+
+	return false
+}

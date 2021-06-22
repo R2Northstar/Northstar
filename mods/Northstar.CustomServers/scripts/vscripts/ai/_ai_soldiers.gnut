@@ -1,0 +1,787 @@
+untyped
+
+global const RPG_USE_ALWAYS = 2
+
+global const STANDARDGOALRADIUS = 100
+
+global function AiSoldiers_Init
+
+global function MakeSquadName
+global function GetPlayerSpectreSquadName
+global function disable_npcs
+global function disable_new_npcs
+global function Disable_IMC
+global function Disable_MILITIA
+
+global function CommonMinionInit
+global function DisableMinionUsesHeavyWeapons
+global function SetupMinionForRPGs
+global function IsNPCSpawningEnabled
+global function EnableAutoPopulate
+global function DisableAutoPopulate
+global function OnEnemyChanged_MinionSwitchToHeavyArmorWeapon
+global function OnEnemyChanged_MinionUpdateAimSettingsForEnemy
+global function OnEnemyChanged_TryHeavyArmorWeapon
+global function ResetNPCs
+global function IsValidRocketTarget
+global function GetMilitiaTitle
+
+global function AssaultOrigin
+global function SquadAssaultOrigin
+
+global function ClientCommand_SpawnViewGrunt
+
+global function OnSoldierSeeEnemy
+global function TryFriendlyPassingNearby
+
+global function OnSpectreSeeEnemy
+
+global function onlyimc		// debug
+global function onlymilitia    // debug
+
+global function SetGlobalNPCHealth //debug
+
+
+//=========================================================
+// MP ai soldier
+//
+//=========================================================
+
+struct
+{
+	int militiaTitlesIndex
+	array<string> militiaTitles
+} file
+
+function AiSoldiers_Init()
+{
+	level.COOP_AT_WEAPON_RATES <- {}
+	level.COOP_AT_WEAPON_RATES[ "mp_weapon_rocket_launcher" ] <- 0.5
+	level.COOP_AT_WEAPON_RATES[ "mp_weapon_smr" ] <- 0.4
+	level.COOP_AT_WEAPON_RATES[ "mp_weapon_mgl" ] <- 0.1
+
+	PrecacheSprite( $"sprites/glow_05.vmt" )
+	FlagInit( "disable_npcs" )
+	FlagInit( "Disable_IMC" )
+	FlagInit( "Disable_MILITIA" )
+
+	level.onlySpawn <- null
+
+	level.spectreSpawnStyle <- eSpectreSpawnStyle.MORE_FOR_ENEMY_TITANS
+
+	FlagInit( "AllSpectre" )
+	FlagInit( "AllSpectreIMC" )
+	FlagInit( "AllSpectreMilitia" )
+	FlagInit( "NoSpectreIMC" )
+	FlagInit( "NoSpectreMilitia" )
+
+	RegisterSignal( "OnSendAIToAssaultPoint" )
+
+	InitMilitiaTitles()
+
+	AddCallback_OnClientConnecting( AiSoldiers_InitPlayer )
+
+	if ( GetDeveloperLevel() > 0 )
+		AddClientCommandCallback( "SpawnViewGrunt", ClientCommand_SpawnViewGrunt )
+
+}
+
+bool function ClientCommand_SpawnViewGrunt( entity player, array<string> args )
+{
+	int team = args[0].tointeger()
+	if ( GetDeveloperLevel() < 1 )
+		return true
+
+	vector origin = player.EyePosition()
+	vector angles = player.EyeAngles()
+	vector forward = AnglesToForward( angles )
+	TraceResults result = TraceLine( origin, origin + forward * 2000, player )
+	angles.x = 0
+	angles.z = 0
+
+	entity guy = CreateSoldier( team, result.endPos, angles )
+	DispatchSpawn( guy )
+	return true
+}
+
+// debug commands
+function onlyimc()
+{
+	level.onlySpawn = TEAM_IMC
+	printt( "Only spawning IMC AI" )
+}
+
+// debug commands
+function onlymilitia()
+{
+	level.onlySpawn = TEAM_MILITIA
+	printt( "Only spawning Militia AI" )
+}
+
+//////////////////////////////////////////////////////////
+void function AiSoldiers_InitPlayer( entity player )
+{
+	player.s.next_ai_callout_time <- -1
+
+	string squadName = GetPlayerSpectreSquadName( player )
+	player.p.spectreSquad = squadName
+}
+
+//////////////////////////////////////////////////////////
+string function MakeSquadName( int team, string msg )
+{
+	string teamStr
+
+	if ( team == TEAM_IMC )
+		teamStr = "imc"
+	else if ( team == TEAM_MILITIA )
+		teamStr = "militia"
+	else
+		teamStr = "default"
+
+	return "squad_" + teamStr + msg
+}
+
+//////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////
+// common init for grunts and spectres
+void function CommonMinionInit( entity npc )
+{
+	RandomizeHead( npc )
+
+	if ( IsMultiplayer() )
+	{
+		npc.kv.alwaysAlert = 1
+		npc.EnableNPCFlag( NPC_STAY_CLOSE_TO_SQUAD | NPC_NEW_ENEMY_FROM_SOUND )
+		npc.DisableNPCFlag( NPC_ALLOW_PATROL | NPC_ALLOW_INVESTIGATE )
+	}
+
+	npc.s.cpState <- eNPCStateCP.NONE
+
+	if ( npc.kv.alwaysalert.tointeger() == 1 )
+		npc.SetDefaultSchedule( "SCHED_ALERT_SCAN" )
+}
+
+function SetupMinionForRPGs( entity soldier )
+{
+	soldier.SetEnemyChangeCallback( OnEnemyChanged_MinionSwitchToHeavyArmorWeapon )
+}
+
+
+void function OnSoldierSeeEnemy( entity guy )
+{
+	guy.EndSignal( "OnDeath" )
+
+	if ( NPC_GruntChatterSPEnabled( guy ) )
+		return
+
+	while ( true )
+	{
+		var results = WaitSignal( guy, "OnSeeEnemy" )
+
+		if ( !IsValid( guy ) )
+			return
+
+		TrySpottedCallout( guy, expect entity( results.activator ) )
+	}
+}
+
+void function TryFriendlyPassingNearby( entity grunt )
+{
+	grunt.EndSignal( "OnDeath" )
+
+	if ( NPC_GruntChatterSPEnabled( grunt ) )
+		return
+
+	while ( true )
+	{
+		wait 5
+
+		if ( !IsValid( grunt ) )
+			return
+
+		#if GRUNT_CHATTER_MP_ENABLED
+		// only do this a minute into the match
+		if ( Time() > 60.0 && TryFriendlyCallout( grunt, "pilot", "bc_reactFriendlyPilot" , 500 ) )
+			continue
+		if ( TryFriendlyCallout( grunt, "titan", "bc_reactTitanfallFriendlyArrives" , 500 ) )
+			continue
+		if ( TryFriendlyCallout( grunt, "npc_super_spectre", "bc_reactReaperFriendlyArrives" , 500 ) )
+			continue
+		if ( TryFriendlyCallout( grunt, "npc_frag_drone", "bc_reactTickSpawnFriendly" , 500 ) )
+			continue
+		if ( IsAlive( grunt.GetEnemy() ) )
+		{
+			entity enemy = grunt.GetEnemy()
+			if ( enemy.IsTitan() )
+				PlayGruntChatterMPLine( grunt, "bc_generalCombatTitan" )
+			else
+				PlayGruntChatterMPLine( grunt, "bc_generalCombat" )
+		}
+		else
+		{
+			PlayGruntChatterMPLine( grunt, "bc_generalNonCombat" )
+		}
+		#endif
+	}
+}
+
+#if GRUNT_CHATTER_MP_ENABLED
+bool function TryFriendlyCallout( entity grunt, string npcClassname, string callout, float dist )
+{
+	array<entity> nearbyFriendlies
+	float distSq = dist*dist
+	if ( npcClassname == "pilot" )
+	{
+		array<entity> players = GetPlayerArrayOfTeam_AlivePilots( grunt.GetTeam() )
+		foreach( p in players )
+		{
+			if ( DistanceSqr( p.GetOrigin(), grunt.GetOrigin() ) > distSq )
+				continue
+			nearbyFriendlies.append( p )
+		}
+	}
+	else if ( npcClassname == "titan" )
+	{
+		nearbyFriendlies = GetNPCArrayEx( "npc_titan", grunt.GetTeam(), TEAM_ANY, grunt.GetOrigin(), dist )
+		array<entity> players = GetPlayerArrayOfTeam_Alive( grunt.GetTeam() )
+		foreach( p in players )
+		{
+			if ( !p.IsTitan() )
+				continue
+			if ( DistanceSqr( p.GetOrigin(), grunt.GetOrigin() ) > distSq )
+				continue
+			nearbyFriendlies.append( p )
+		}
+	}
+	else
+	{
+		nearbyFriendlies = GetNPCArrayEx( npcClassname, grunt.GetTeam(), TEAM_ANY, grunt.GetOrigin(), dist )
+	}
+
+	foreach ( friendly in nearbyFriendlies )
+	{
+		if ( !IsAlive( friendly ) )
+			continue
+
+		if ( GetDoomedState( friendly ) )
+			continue
+
+		PlayGruntChatterMPLine( grunt, callout )
+		return true
+	}
+
+	return false
+}
+#endif
+
+void function OnSpectreSeeEnemy( entity guy )
+{
+	guy.EndSignal( "OnDeath" )
+
+	while ( true )
+	{
+		var results = WaitSignal( guy, "OnGainEnemyLOS" )
+
+		TrySpottedCallout( guy, expect entity( results.activator ) )
+	}
+}
+
+
+//////////////////////////////////////////////////////////
+bool function IsValidRocketTarget( entity enemy )
+{
+	return enemy.GetArmorType() == ARMOR_TYPE_HEAVY
+}
+
+//////////////////////////////////////////////////////////
+function DisableMinionUsesHeavyWeapons( entity soldier )
+{
+	soldier.SetEnemyChangeCallback( OnEnemyChanged_MinionUpdateAimSettingsForEnemy )
+}
+
+void function OnEnemyChanged_MinionSwitchToHeavyArmorWeapon( entity soldier )
+{
+	OnEnemyChanged_TryHeavyArmorWeapon( soldier )
+	OnEnemyChanged_MinionUpdateAimSettingsForEnemy( soldier )
+}
+
+//////////////////////////////////////////////////////////
+void function OnEnemyChanged_MinionUpdateAimSettingsForEnemy( entity soldier )
+{
+	SetProficiency( soldier )
+}
+
+
+bool function AssignNPCAppropriateWeaponFromWeapons( entity npc, array<entity> weapons, bool isRocketTarget )
+{
+	// first try to find an appropriate weapon
+	foreach ( weapon in weapons )
+	{
+		bool isAntiTitan = weapon.GetWeaponType() == WT_ANTITITAN
+		if ( isAntiTitan == isRocketTarget )
+		{
+			// found a weapon to use
+			npc.SetActiveWeaponByName( weapon.GetWeaponClassName() )
+			return true
+		}
+	}
+	return false
+}
+
+//////////////////////////////////////////////////////////
+void function OnEnemyChanged_TryHeavyArmorWeapon( entity npc )
+{
+	entity enemy = npc.GetEnemy()
+	if ( !IsAlive( enemy ) )
+		return
+
+	array<entity> weapons = npc.GetMainWeapons()
+
+	// do we have a weapon to switch to?
+	if ( !weapons.len() )
+		return
+
+	entity activeWeapon = npc.GetActiveWeapon()
+	bool isRocketTarget = IsValidRocketTarget( enemy )
+
+	if ( activeWeapon == null )
+	{
+		if ( AssignNPCAppropriateWeaponFromWeapons( npc, weapons, isRocketTarget ) )
+			return
+
+		// if that fails, use the first weapon, so we do consistent behavior
+		npc.SetActiveWeaponByName( weapons[0].GetWeaponClassName() )
+		return
+	}
+
+	bool isActiveWeapon_AntiTitan = activeWeapon.GetWeaponType() == WT_ANTITITAN
+
+	// already using an appropriate weapon?
+	if ( isActiveWeapon_AntiTitan == isRocketTarget )
+		return
+
+	AssignNPCAppropriateWeaponFromWeapons( npc, weapons, isRocketTarget )
+}
+
+const float NPC_CLOSE_DISTANCE_SQR_THRESHOLD = 1000.0 * 1000.0
+
+//////////////////////////////////////////////////////////
+void function TrySpottedCallout( entity guy, entity enemy )
+{
+	if ( !IsAlive( guy ) )
+		return
+
+	if ( !IsAlive( enemy ) )
+		return
+
+	float distanceSqr = DistanceSqr( guy.GetOrigin(), enemy.GetOrigin() )
+	bool isClose = distanceSqr <= NPC_CLOSE_DISTANCE_SQR_THRESHOLD
+
+	if ( enemy.IsTitan() )
+	{
+		if ( IsSpectre( guy ) ) //Spectre callouts
+		{
+			#if SPECTRE_CHATTER_MP_ENABLED
+				PlaySpectreChatterMPLine( guy, "diag_imc_spectre_gs_spotclosetitancall_01" )
+			#else
+				if ( isClose )
+					PlaySpectreChatterToAll( "spectre_gs_spotclosetitancall_01", guy )
+				else
+					PlaySpectreChatterToAll( "spectre_gs_spotfartitan_1_1", guy )
+			#endif
+
+		}
+		else //Grunt callouts
+		{
+			#if GRUNT_CHATTER_MP_ENABLED
+				PlayGruntChatterMPLine( guy, "bc_enemytitanspotcall" )
+			#endif
+		}
+	}
+	else if ( enemy.IsPlayer() )
+	{
+		if ( IsSpectre( guy ) ) //Spectre callouts
+		{
+			#if SPECTRE_CHATTER_MP_ENABLED
+				PlaySpectreChatterMPLine( guy, "diag_imc_spectre_gs_engagepilotenemy_01_1" )
+			#else
+				if ( isClose )
+					PlaySpectreChatterToAll( "spectre_gs_engagepilotenemy_01_1", guy )
+				else
+					PlaySpectreChatterToAll( "spectre_gs_spotenemypilot_01_1", guy )
+			#endif
+		}
+		else //Grunt callouts
+		{
+			#if GRUNT_CHATTER_MP_ENABLED
+				if ( isClose )
+					PlayGruntChatterMPLine( guy, "bc_spotenemypilot" )
+				else
+					PlayGruntChatterMPLine( guy, "bc_engagepilotenemy" )
+			#endif
+		}
+	}
+	else if ( IsSuperSpectre( enemy ) )
+	{
+		if ( !IsSpectre( guy ) ) //Spectre callouts
+		{
+			#if GRUNT_CHATTER_MP_ENABLED
+				PlayGruntChatterMPLine( guy, "bc_reactEnemyReaper" )
+			#endif
+		}
+	}
+	else
+	{
+		if ( !IsSpectre( guy ) ) //Spectre callouts
+		{
+			#if GRUNT_CHATTER_MP_ENABLED
+				PlayGruntChatterMPLine( guy, "bc_reactEnemySpotted" )
+			#endif
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////
+string function GetPlayerSpectreSquadName( entity player )
+{
+	return "player" + player.entindex() + "spectreSquad"
+}
+
+
+//////////////////////////////////////////////////////////
+
+string function GetMilitiaTitle()
+{
+	file.militiaTitlesIndex++
+	if ( file.militiaTitlesIndex >= file.militiaTitles.len() )
+		file.militiaTitlesIndex = 0
+
+	return file.militiaTitles[ file.militiaTitlesIndex ]
+}
+
+void function InitMilitiaTitles()
+{
+	file.militiaTitles = [
+		"#NPC_MILITIA_NAME_AND_RANK_0",
+		"#NPC_MILITIA_NAME_AND_RANK_1",
+		"#NPC_MILITIA_NAME_AND_RANK_2",
+		"#NPC_MILITIA_NAME_AND_RANK_3",
+		"#NPC_MILITIA_NAME_AND_RANK_4",
+		"#NPC_MILITIA_NAME_AND_RANK_5",
+		"#NPC_MILITIA_NAME_AND_RANK_6",
+		"#NPC_MILITIA_NAME_AND_RANK_7",
+		"#NPC_MILITIA_NAME_AND_RANK_8",
+		"#NPC_MILITIA_NAME_AND_RANK_9",
+		"#NPC_MILITIA_NAME_AND_RANK_10",
+		"#NPC_MILITIA_NAME_AND_RANK_11",
+		"#NPC_MILITIA_NAME_AND_RANK_12",
+		"#NPC_MILITIA_NAME_AND_RANK_13",
+		"#NPC_MILITIA_NAME_AND_RANK_14",
+		"#NPC_MILITIA_NAME_AND_RANK_15",
+		"#NPC_MILITIA_NAME_AND_RANK_16",
+		"#NPC_MILITIA_NAME_AND_RANK_17",
+		"#NPC_MILITIA_NAME_AND_RANK_18",
+		"#NPC_MILITIA_NAME_AND_RANK_19",
+		"#NPC_MILITIA_NAME_AND_RANK_20",
+		"#NPC_MILITIA_NAME_AND_RANK_21",
+		"#NPC_MILITIA_NAME_AND_RANK_22",
+		"#NPC_MILITIA_NAME_AND_RANK_23",
+		"#NPC_MILITIA_NAME_AND_RANK_24",
+		"#NPC_MILITIA_NAME_AND_RANK_25",
+		"#NPC_MILITIA_NAME_AND_RANK_26",
+		"#NPC_MILITIA_NAME_AND_RANK_27",
+		"#NPC_MILITIA_NAME_AND_RANK_28",
+		"#NPC_MILITIA_NAME_AND_RANK_29",
+		"#NPC_MILITIA_NAME_AND_RANK_30",
+		"#NPC_MILITIA_NAME_AND_RANK_31",
+		"#NPC_MILITIA_NAME_AND_RANK_32",
+		"#NPC_MILITIA_NAME_AND_RANK_33",
+		"#NPC_MILITIA_NAME_AND_RANK_34",
+		"#NPC_MILITIA_NAME_AND_RANK_35",
+		"#NPC_MILITIA_NAME_AND_RANK_36",
+		"#NPC_MILITIA_NAME_AND_RANK_37",
+		"#NPC_MILITIA_NAME_AND_RANK_38",
+		"#NPC_MILITIA_NAME_AND_RANK_39",
+		"#NPC_MILITIA_NAME_AND_RANK_40",
+		"#NPC_MILITIA_NAME_AND_RANK_41",
+		"#NPC_MILITIA_NAME_AND_RANK_42",
+		"#NPC_MILITIA_NAME_AND_RANK_43",
+		"#NPC_MILITIA_NAME_AND_RANK_44",
+		"#NPC_MILITIA_NAME_AND_RANK_45",
+		"#NPC_MILITIA_NAME_AND_RANK_46",
+		"#NPC_MILITIA_NAME_AND_RANK_47",
+		"#NPC_MILITIA_NAME_AND_RANK_48",
+		"#NPC_MILITIA_NAME_AND_RANK_49",
+		"#NPC_MILITIA_NAME_AND_RANK_50",
+		"#NPC_MILITIA_NAME_AND_RANK_51",
+		"#NPC_MILITIA_NAME_AND_RANK_52",
+		"#NPC_MILITIA_NAME_AND_RANK_53",
+		"#NPC_MILITIA_NAME_AND_RANK_54",
+		"#NPC_MILITIA_NAME_AND_RANK_55",
+		"#NPC_MILITIA_NAME_AND_RANK_56",
+		"#NPC_MILITIA_NAME_AND_RANK_57",
+		"#NPC_MILITIA_NAME_AND_RANK_58",
+		"#NPC_MILITIA_NAME_AND_RANK_59",
+		"#NPC_MILITIA_NAME_AND_RANK_60",
+		"#NPC_MILITIA_NAME_AND_RANK_61",
+		"#NPC_MILITIA_NAME_AND_RANK_62",
+		"#NPC_MILITIA_NAME_AND_RANK_63",
+		"#NPC_MILITIA_NAME_AND_RANK_64",
+		"#NPC_MILITIA_NAME_AND_RANK_65",
+		"#NPC_MILITIA_NAME_AND_RANK_66",
+		"#NPC_MILITIA_NAME_AND_RANK_67",
+		"#NPC_MILITIA_NAME_AND_RANK_68",
+		"#NPC_MILITIA_NAME_AND_RANK_69",
+		"#NPC_MILITIA_NAME_AND_RANK_70",
+		"#NPC_MILITIA_NAME_AND_RANK_71",
+		"#NPC_MILITIA_NAME_AND_RANK_72",
+		"#NPC_MILITIA_NAME_AND_RANK_73",
+		"#NPC_MILITIA_NAME_AND_RANK_74",
+		"#NPC_MILITIA_NAME_AND_RANK_75",
+		"#NPC_MILITIA_NAME_AND_RANK_76",
+		"#NPC_MILITIA_NAME_AND_RANK_77",
+		"#NPC_MILITIA_NAME_AND_RANK_78",
+		"#NPC_MILITIA_NAME_AND_RANK_79",
+		"#NPC_MILITIA_NAME_AND_RANK_80",
+		"#NPC_MILITIA_NAME_AND_RANK_81",
+		"#NPC_MILITIA_NAME_AND_RANK_82",
+		"#NPC_MILITIA_NAME_AND_RANK_83",
+		"#NPC_MILITIA_NAME_AND_RANK_84",
+		"#NPC_MILITIA_NAME_AND_RANK_85",
+		"#NPC_MILITIA_NAME_AND_RANK_86",
+		"#NPC_MILITIA_NAME_AND_RANK_87",
+		"#NPC_MILITIA_NAME_AND_RANK_88",
+		"#NPC_MILITIA_NAME_AND_RANK_89",
+		"#NPC_MILITIA_NAME_AND_RANK_90",
+		"#NPC_MILITIA_NAME_AND_RANK_91",
+		"#NPC_MILITIA_NAME_AND_RANK_92",
+		"#NPC_MILITIA_NAME_AND_RANK_93",
+		"#NPC_MILITIA_NAME_AND_RANK_94",
+		"#NPC_MILITIA_NAME_AND_RANK_95"
+		"#NPC_MILITIA_NAME_AND_RANK_96",
+		"#NPC_MILITIA_NAME_AND_RANK_97",
+		"#NPC_MILITIA_NAME_AND_RANK_98",
+		"#NPC_MILITIA_NAME_AND_RANK_99"
+	]
+
+	file.militiaTitles.randomize()
+	file.militiaTitlesIndex = 0
+}
+
+//////////////////////////////////////////////////////////
+function disable_npcs()
+{
+	FlagSet( "disable_npcs" )
+	printl( "disabling_npcs" )
+	array<entity> guys = GetNPCArray()
+	foreach ( guy in guys )
+	{
+		if ( guy.GetClassName() == "npc_turret_mega" )
+			continue
+		if ( guy.GetClassName() == "npc_turret_sentry" )
+			continue
+		if ( guy.GetClassName() == "npc_titan" )
+			continue
+
+		guy.Destroy()
+	}
+}
+//////////////////////////////////////////////////////////
+// //hack - we want to toggle new AI on and off through the dev menu even though playlist defaults to use them all the time
+function disable_new_npcs()
+{
+	array<entity> guys = GetNPCArray()
+	foreach ( guy in guys )
+	{
+		if ( guy.GetClassName() == "npc_turret_mega" )
+			continue
+		if ( guy.GetClassName() == "npc_turret_sentry" )
+			continue
+		if ( guy.GetClassName() == "npc_titan" )
+			continue
+
+		guy.Destroy()
+	}
+}
+
+function ResetNPCs()
+{
+	array<entity> guys = GetNPCArray()
+	foreach ( guy in guys )
+	{
+		if ( guy.GetClassName() == "npc_turret_mega" )
+			continue
+		if ( guy.GetClassName() == "npc_turret_sentry" )
+			continue
+
+		if ( guy.GetClassName() == "npc_titan" && IsValid( guy.GetTitanSoul() ) )
+		{
+			guy.GetTitanSoul().Destroy()
+		}
+
+		guy.Destroy()
+	}
+}
+
+//////////////////////////////////////////////////////////
+function Disable_IMC()
+{
+	DisableAutoPopulate( TEAM_IMC )
+	printl( "Disable_IMC" )
+	array<entity> guys = GetNPCArray()
+	foreach ( guy in guys )
+	{
+		if ( guy.GetTeam() == TEAM_IMC )
+			guy.Kill_Deprecated_UseDestroyInstead()
+	}
+}
+
+
+//////////////////////////////////////////////////////////
+function Disable_MILITIA()
+{
+	DisableAutoPopulate( TEAM_MILITIA )
+	printl( "Disable_MILITIA" )
+	array<entity> guys = GetNPCArray()
+	foreach ( guy in guys )
+	{
+		if ( guy.GetTeam() == TEAM_MILITIA )
+			guy.Kill_Deprecated_UseDestroyInstead()
+	}
+}
+
+//////////////////////////////////////////////////////////
+function IsNPCSpawningEnabled()
+{
+	if ( Riff_AllowNPCs() != eAllowNPCs.Default )
+	{
+		if ( Riff_AllowNPCs() == eAllowNPCs.None )
+			return false
+
+		return true
+	}
+
+	return true
+}
+
+
+function DisableAutoPopulate( team )
+{
+	switch ( team )
+	{
+		case TEAM_IMC:
+			FlagSet( "Disable_IMC" )
+			break
+
+		case TEAM_MILITIA:
+			FlagSet( "Disable_MILITIA" )
+			break
+
+		default:
+			Assert( 0, "team number " + team + " not setup for autoPopulation.")
+			break
+	}
+}
+
+function EnableAutoPopulate( team )
+{
+	switch ( team )
+	{
+		case TEAM_IMC:
+			FlagClear( "Disable_IMC" )
+			break
+
+		case TEAM_MILITIA:
+			FlagClear( "Disable_MILITIA" )
+			break
+
+		default:
+			Assert( 0, "team number " + team + " not setup for autoPopulation.")
+			break
+	}
+}
+
+//////////////////////////////////////////////////////////
+
+
+function GuyTeleportsOnPathFail( guy, origin )
+{
+	expect entity( guy )
+
+	guy.EndSignal( "OnFailedToPath" )
+
+	local e = {}
+	e.waited <- false
+	OnThreadEnd(
+		function() : ( guy, origin, e )
+		{
+			if ( !IsAlive( guy ) )
+				return
+
+			// wait was cut off
+			if ( !e.waited )
+				guy.SetOrigin( origin )
+		}
+	)
+
+	wait 2
+	e.waited = true
+}
+
+void function SquadAssaultOrigin( array<entity> group, vector origin, float radius = STANDARDGOALRADIUS )
+{
+	foreach ( member in group )
+	{
+		thread AssaultOrigin( member, origin, radius )
+	}
+}
+
+void function AssaultOrigin( entity guy, vector origin, float radius = STANDARDGOALRADIUS )
+{
+	waitthread SendAIToAssaultPoint( guy, origin, <0,0,0>, radius )
+}
+
+void function SendAIToAssaultPoint( entity guy, vector origin, vector angles, float radius = STANDARDGOALRADIUS )
+{
+	Assert( IsAlive( guy ) )
+	guy.Signal( "OnSendAIToAssaultPoint" )
+	guy.Anim_Stop() // in case we were doing an anim already
+	guy.EndSignal( "OnDeath" )
+	guy.EndSignal( "OnSendAIToAssaultPoint" )
+
+	bool allowFlee = guy.GetNPCFlag( NPC_ALLOW_FLEE )
+	bool allowHandSignal = guy.GetNPCFlag( NPC_ALLOW_HAND_SIGNALS )
+
+	OnThreadEnd(
+		function() : ( guy, allowFlee, allowHandSignal )
+		{
+			if ( IsAlive( guy ) )
+			{
+				guy.SetNPCFlag( NPC_ALLOW_FLEE, allowFlee )
+				guy.SetNPCFlag( NPC_ALLOW_HAND_SIGNALS, allowHandSignal )
+			}
+		}
+	)
+
+	guy.DisableNPCFlag( NPC_ALLOW_FLEE | NPC_ALLOW_HAND_SIGNALS )
+	guy.AssaultPoint( origin )
+	guy.AssaultSetGoalRadius( radius )
+	guy.WaitSignal( "OnFinishedAssault" )
+
+}
+
+function SetGlobalNPCHealth( healthValue ) //Debug, for trailer team
+{
+	array<entity> npcArray = GetNPCArray()
+
+	foreach ( npc in npcArray )
+	{
+		npc.SetMaxHealth( healthValue )
+		npc.SetHealth( healthValue )
+	}
+}
+

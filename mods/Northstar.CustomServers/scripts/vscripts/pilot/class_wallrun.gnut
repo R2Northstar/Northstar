@@ -1,0 +1,224 @@
+untyped
+
+global function ClassWallrun_Init
+
+global function Wallrun_AddPlayer
+global function Wallrun_OnPlayerSpawn
+global function Wallrun_OnPlayerDeath
+global function Wallrun_PlayerTookDamage
+global function Wallrun_EnforceWeaponDefaults
+global function Wallrun_CreateCopyOfPilotModel
+
+function ClassWallrun_Init()
+{
+
+	// Make weapons less effective when playing at higher difficulty.
+	level.lethalityMods <- {}
+}
+
+function Wallrun_AddPlayer( player )
+{
+	player.playerClassData[level.pilotClass] <- {}
+}
+
+
+function Wallrun_EnforceWeaponDefaults( player )
+{
+	if ( player.playerClassData[ level.pilotClass ].primaryWeapon )
+	{
+		// settings already exist
+		return
+	}
+
+	player.playerClassData[ level.pilotClass ].primaryWeapon = "mp_weapon_r97"
+	player.playerClassData[ level.pilotClass ].secondaryWeapon = "mp_weapon_sniper"
+
+	local offhandWeaponTable = {}
+	offhandWeaponTable[0] <- { weapon = "mp_weapon_frag_grenade", mods = [] }
+	offhandWeaponTable[1] <- { weapon = "mp_ability_heal", mods = [] }
+
+	player.playerClassData[ level.pilotClass ].offhandWeapons = offhandWeaponTable
+	player.playerClassData[ level.pilotClass ].playerSetFile = DEFAULT_PILOT_SETTINGS
+}
+
+
+function Wallrun_OnPlayerSpawn( player )
+{
+}
+
+
+function Wallrun_PlayerTookDamage( entity player, damageInfo, entity attacker )
+{
+	if ( IsDemigod( player ) )
+	{
+		EntityDemigod_TryAdjustDamageInfo( player, damageInfo )
+		return
+	}
+
+	AdjustDamageForRodeoPlayers( player, damageInfo, attacker )
+
+	#if VERBOSE_DAMAGE_PRINTOUTS
+		printt( "    After Wallrun_PlayerTookDamage:", DamageInfo_GetDamage( damageInfo ) )
+	#endif
+
+	if ( player.GetShieldHealthMax() > 0 )
+	{
+		local shieldDamage = PilotShieldHealthUpdate( player, damageInfo )
+		return shieldDamage
+	}
+
+	return
+}
+
+function AdjustDamageForRodeoPlayers( entity player, var damageInfo, entity attacker )
+{
+	if ( player == attacker )
+		return
+
+	local titanSoulRodeoed = player.GetTitanSoulBeingRodeoed()
+	if ( !IsValid( titanSoulRodeoed ) )
+		return
+
+	local playerParent = titanSoulRodeoed.GetTitan()
+
+	// dont let npcs hurt rodeo player
+	if ( attacker.IsNPC() && attacker != playerParent && DamageInfo_GetDamageSourceIdentifier( damageInfo ) != eDamageSourceId.mp_titanability_smoke )
+	{
+		DamageInfo_SetDamage( damageInfo, 0 )
+		return
+	}
+
+	local damage = DamageInfo_GetDamage( damageInfo )
+
+	if ( !ShouldAdjustDamageForRodeoPlayer( damageInfo ) )
+		return
+
+	local maxPer500ms
+
+	if ( attacker == playerParent )
+	{
+		// rodeo'd player can't damage quite as much
+		maxPer500ms = 56
+	}
+	else
+	if ( playerParent.GetTeam() == player.GetTeam() )
+	{
+		// riding same team titan protects you a bit from random fire on that titan
+		if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_EXPLOSION )
+		{
+			maxPer500ms = 75
+		}
+		else if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_MELEE  ) //If melee, players still die in one hit
+		{
+			maxPer500ms = player.GetMaxHealth() + 1
+		}
+		else
+		{
+			maxPer500ms = 175
+		}
+	}
+	else
+	{
+		return
+	}
+
+	//Set a cap on how much damage the playerParent can do.
+	local damageTaken = GetTotalDamageTakenInTime( player, 0.5 )
+
+	local allowedDamage = maxPer500ms - damageTaken
+	if ( damage < allowedDamage )
+		return
+
+	damage = allowedDamage
+	if ( damage <= 0 )
+		damage = 0
+
+	DamageInfo_SetDamage( damageInfo, damage )
+}
+
+
+function ShouldAdjustDamageForRodeoPlayer( damageInfo )
+{
+	int sourceID = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+
+	switch( sourceID )
+	{
+		case eDamageSourceId.rodeo_trap:
+		case eDamageSourceId.mp_titanweapon_vortex_shield:
+		case eDamageSourceId.mp_titanweapon_vortex_shield_ion:
+		case eDamageSourceId.mp_titanability_smoke:
+		case eDamageSourceId.mp_weapon_satchel:	//added so that rodeoing players are no longer invulnerable to their satchels when detonated by Titan's smoke
+			return false
+
+		default:
+			return true
+	}
+}
+
+
+function Wallrun_OnPlayerDeath( entity player, damageInfo )
+{
+	if ( IsValidHeadShot( damageInfo, player ) )
+	{
+		int damageType = DamageInfo_GetCustomDamageType( damageInfo )
+		local soundAlias
+		if ( damageType & DF_SHOTGUN )
+		{
+			EmitSoundOnEntityOnlyToPlayer( player, player, "Flesh.Shotgun.BulletImpact_Headshot_3P_vs_1P" )
+			soundAlias = "Flesh.Shotgun.BulletImpact_Headshot_3P_vs_3P"
+		}
+		else if ( damageType & damageTypes.bullet || damageType & DF_BULLET )
+		{
+			EmitSoundOnEntityOnlyToPlayer( player, player, "Flesh.Light.BulletImpact_Headshot_3P_vs_1P" )
+			soundAlias = "Flesh.Light.BulletImpact_Headshot_3P_vs_3P"
+		}
+		else if ( damageType & damageTypes.largeCaliber ||  damageType & DF_GIB  )
+		{
+			EmitSoundOnEntityOnlyToPlayer( player, player, "Flesh.Heavy.BulletImpact_Headshot_3P_vs_1P" )
+			soundAlias = "Flesh.Heavy.BulletImpact_Headshot_3P_vs_3P"
+		}
+
+		if ( soundAlias )
+		{
+			entity attacker = DamageInfo_GetAttacker( damageInfo )
+			array<entity> pilotArray = GetPlayerArray()
+			//Iterating because we need to not play this sound on 2 pilots and the function only allows for 1. Performance difference is negligible according to Eric M between this and adding a specific code function.
+			foreach ( pilot in pilotArray )
+			{
+				if ( !IsValid( pilot ) )
+					continue
+
+				if ( pilot == player || pilot == attacker )
+					continue
+
+				EmitSoundOnEntityOnlyToPlayer( player, pilot, soundAlias )
+			}
+		}
+	}
+}
+
+
+entity function Wallrun_CreateCopyOfPilotModel( entity player )
+{
+	const string PLAYER_SETTINGS_FIELD = "bodymodel"
+
+	asset modelName
+	if ( player.IsTitan() )
+	{
+		modelName = GetPlayerSettingsAssetForClassName( player.s.storedPlayerSettings, PLAYER_SETTINGS_FIELD )
+	}
+	else
+	{
+		modelName = player.GetPlayerSettingsAsset( PLAYER_SETTINGS_FIELD )
+	}
+
+	entity model = CreatePropDynamic( modelName )
+
+	SetTeam( model, player.GetTeam() )
+
+	//model.SetSkin( 0 )
+
+	RandomizeHead( model )
+
+	return model
+}

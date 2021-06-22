@@ -1,0 +1,537 @@
+global function SPObjectiveInit
+
+const OBJECTIVE_DISPLAY_TIME = 8.0
+const FADE_IN_TIME = 0.2
+const FADE_OUT_TIME = 0.5
+const OBJECTIVE_DISPLAY_TOTAL_TIME = FADE_IN_TIME + OBJECTIVE_DISPLAY_TIME + FADE_OUT_TIME
+
+#if SERVER
+	global function Objective_Set
+	global function Objective_SetSilent
+	global function Objective_Set_WithAltHighlight
+	global function Objective_SetSilent_WithAltHighlight
+	global function Objective_AddHighlightEntity
+	global function Objective_Clear
+	global function Objective_Hide
+	global function Objective_Update
+	global function Objective_InitEntity
+	global function Objective_Remind
+	global function Objective_AddKilometers
+	global function Objective_StaticModelHighlightOverrideEntity // if set it will highlight this entity instead, and also hide/show the entity when highlighting. This helps us get around not being able to do model highlight on a static model
+	global function Objective_StaticModelHighlightOverrideEntityArray
+	global function Objective_GetMarkerEntity // Dont use this if you're not working on S2S
+	global function Objective_SetFastball// Don't use this unless you grab the marker ent and clear it's parent after you're done
+	global function Objective_WayPointEneable
+	global function Objective_LastShownTime
+	global function Objective_SuppressCloseMenuShowsObjective
+
+	struct
+	{
+		array<entity> objectiveEntities
+		entity objectiveMarkerEnt
+		array<entity> objectiveHighlightEntArray
+		array<entity> objectiveAltHighlightEntArray
+		bool showingObjective
+		float objectiveLastShownTime
+		bool suppressCloseMenuShowsObjective
+		bool objectiveAltHighlight = false
+	} file
+#endif
+
+#if CLIENT
+	global function ShowObjectiveLineChanged
+	global function ObjectiveStringChanged
+	global function ShowObjectiveChanged
+
+	const OBJECTIVE_MARKER_MODEL = $"models/dev/editor_ref.mdl"
+	const BLING_DURATION = 0.2
+
+	struct
+	{
+		bool onTimeshiftLevel
+		var objectiveRUI
+	} file
+#endif
+
+void function SPObjectiveInit()
+{
+	#if SERVER
+		RegisterSignal( "ShowingObjective" )
+		RegisterSignal( "HidingObjective" )
+		AddClientCommandCallback( "ToggleObjective", ClientCommandToggleObjective )
+		AddClientCommandCallback( "ShowObjective", ClientCommandShowObjective )
+	#endif
+
+	#if CLIENT
+		PrecacheModel( OBJECTIVE_MARKER_MODEL )
+		RegisterSignal( "ShowingObjectiveRUI" )
+		
+		file.onTimeshiftLevel = GetMapName().find( "sp_timeshift" ) == 0
+		if ( file.onTimeshiftLevel )
+			thread TimeshiftClientMarkerPositionThink()
+	#endif
+}
+
+#if SERVER
+	void function Objective_Remind()
+	{
+		foreach( entity player in GetPlayerArray() )
+			ClientCommand( player, "ShowObjective" )
+	}
+
+	void function Objective_InitEntity( entity ent )
+	{
+		if ( ent.GetClassName() == "func_brush" )
+			return
+
+		// Add the entity to a valid list of highlightable objective entities
+		// (allows highlighting to be enabled without errors before everyone updates their script to call this function)
+		file.objectiveEntities.append( ent )
+
+		// Make the entity always render so the highlighting wont stop working
+		ent.DisableHibernation()
+		ent.EnableRenderAlways()
+		ent.kv.fadedist = 99999
+
+		// Highlight and unhighlight to precache the highlight ability on this entity (required by code)
+		Highlight_SetNeutralHighlight( ent, OBJECTIVE_HIGHLIGHT )
+		Highlight_ClearNeutralHighlight( ent )
+	}
+
+	void function Objective_Set_WithAltHighlight( string objective, vector position = < 0, 0, 0 >, entity ent = null )
+	{
+		file.objectiveAltHighlight = true
+		_ObjectiveSet( objective, position, ent, false )
+	}
+
+	void function Objective_SetSilent_WithAltHighlight( string objective, vector position = < 0, 0, 0 >, entity ent = null )
+	{
+		file.objectiveAltHighlight = true
+		_ObjectiveSet( objective, position, ent, true )
+	}
+
+	void function Objective_Set( string objective, vector position = < 0, 0, 0 >, entity ent = null )
+	{
+		file.objectiveAltHighlight = false
+		_ObjectiveSet( objective, position, ent, false )
+	}
+
+	void function Objective_SetSilent( string objective, vector position = < 0, 0, 0 >, entity ent = null )
+	{
+		file.objectiveAltHighlight = false
+		_ObjectiveSet( objective, position, ent, true )
+	}
+
+	void function _ObjectiveSet( string objective, vector position, entity ent, bool silent )
+	{
+		UpdateMarkerEnt( position, ent )
+		SetGlobalNetInt( "objectiveStringIndex", GetObjectiveStringID( objective ) )
+
+		ClearObjectiveHighlight()
+		file.objectiveHighlightEntArray = [ ent ]
+		file.objectiveAltHighlightEntArray = []
+		SetGlobalNetBool( "hilightingObjective", IsValid( ent ) )
+		SetGlobalNetFloat( "additionalKilometers", 0.0 )
+
+		if ( !silent )
+			thread ShowNewObjective()
+
+		int stringIndex = GetGlobalNetInt( "objectiveStringIndex" )
+		foreach( entity player in GetPlayerArray() )
+			Remote_CallFunction_UI( player, "ServerCallback_UI_ObjectiveUpdated", stringIndex )
+	}
+
+	void function ShowNewObjective()
+	{
+		wait 0.1 // give time to sent position and entity to client
+		foreach( entity player in GetPlayerArray() )
+			thread ShowObjectiveForDuration( player, OBJECTIVE_DISPLAY_TOTAL_TIME )
+	}
+
+	void function Objective_AddKilometers( float kilometers )
+	{
+		Assert( kilometers >= 0.0 && kilometers <= 128.0 )
+		SetGlobalNetFloat( "additionalKilometers", kilometers )
+	}
+
+	void function Objective_AddHighlightEntity( entity ent )
+	{
+		file.objectiveHighlightEntArray.append( ent )
+	}
+
+	void function Objective_StaticModelHighlightOverrideEntity( entity ent )
+	{
+		ent.kv.rendermode = 3
+		ent.kv.renderamt = 1
+		ent.Hide()
+		file.objectiveAltHighlightEntArray.append( ent )
+	}
+
+	void function Objective_StaticModelHighlightOverrideEntityArray( array<entity> ents )
+	{
+		foreach ( ent in ents )
+			Objective_StaticModelHighlightOverrideEntity( ent )
+	}
+
+	void function Objective_Clear()
+	{
+		file.objectiveAltHighlight = false
+		ClearObjectiveHighlight()
+		file.objectiveHighlightEntArray = []
+		file.objectiveAltHighlightEntArray = []
+		SetGlobalNetBool( "hilightingObjective", false )
+		SetGlobalNetInt( "objectiveStringIndex", 0 )
+		SetGlobalNetFloat( "additionalKilometers", 0.0 )
+
+		foreach( entity player in GetPlayerArray() )
+		{
+			Objective_Hide( player )
+			Remote_CallFunction_UI( player, "ServerCallback_UI_ObjectiveUpdated", -1 )  //-1 is no objective
+		}
+	}
+
+	void function Objective_Update( vector position, entity ent = null )
+	{
+		UpdateMarkerEnt( position, ent )
+		ClearObjectiveHighlight()
+		file.objectiveHighlightEntArray = [ ent ]
+		file.objectiveAltHighlightEntArray = []
+		SetGlobalNetBool( "hilightingObjective", IsValid( ent ) )
+	}
+
+	void function UpdateMarkerEnt( vector position, entity ent )
+	{
+		vector newPos = position
+		bool showLine = IsValid( ent ) || (position != <0,0,0>)
+
+		SetGlobalNetBool( "showObjectiveLine", showLine )
+
+		if ( IsValid( ent ) )
+		{
+			newPos = ent.GetOrigin() + position
+		}
+
+		// Create marker ent every time
+		RefreshMarkerEnt( newPos )
+
+		if ( IsValid( ent ) )
+		{
+			if ( ent.GetClassName() != "info_target" )
+				file.objectiveMarkerEnt.SetParent( ent, "", true )
+			else
+				CodeWarning( "Tried to set objective entity to an info_target. This isn't supported because they aren't sent to the client. Try using a script_mover_lightweight or prop_dynamic." )
+		}
+	}
+
+	void function RefreshMarkerEnt( vector position )
+	{
+		if ( !IsValid( file.objectiveMarkerEnt ) )
+		{
+			file.objectiveMarkerEnt = CreateEntity( "info_target" )
+			file.objectiveMarkerEnt.kv.spawnflags = SF_INFOTARGET_ALWAYS_TRANSMIT_TO_CLIENT
+			DispatchSpawn( file.objectiveMarkerEnt )
+
+			SetGlobalNetEnt( "objectiveMarkerEntity", file.objectiveMarkerEnt )
+		}
+
+		file.objectiveMarkerEnt.ClearParent()
+		file.objectiveMarkerEnt.SetOrigin( position )
+	}
+
+	void function ShowObjectiveForDuration( entity player, float duration )
+	{
+		EndSignal( player, "OnDeath" )
+		EndSignal( player, "OnDestroy" )
+
+		// Make sure thread only runs once
+		Signal( player, "ShowingObjective" )
+		EndSignal( player, "ShowingObjective" )
+		EndSignal( player, "HidingObjective" )
+
+		player.SetPlayerNetBool( "showObjective", true )
+		SetObjectiveHighlight()
+		file.objectiveLastShownTime = Time()
+
+		wait duration
+		Objective_Hide( player )
+	}
+
+	void function Objective_Hide( entity player )
+	{
+		player.SetPlayerNetBool( "showObjective", false )
+		ClearObjectiveHighlight()
+		Signal( player, "HidingObjective" )
+	}
+
+	float function Objective_LastShownTime()
+	{
+		return file.objectiveLastShownTime
+	}
+
+	bool function ClientCommandToggleObjective( entity player, array<string> args )
+	{
+		bool isShowing = player.GetPlayerNetBool( "showObjective" )
+
+		if ( isShowing )
+			thread Objective_Hide( player )
+		else
+			thread ShowObjectiveForDuration( player, OBJECTIVE_DISPLAY_TOTAL_TIME )
+
+		return true
+	}
+
+	bool function ClientCommandShowObjective( entity player, array<string> args )
+	{
+		if ( args.len() > 0 )
+		{
+			if ( args[0] == "closedSPMenu" && file.suppressCloseMenuShowsObjective )
+				return true
+		}
+
+		if ( IsAlive( player ) )
+			thread ShowObjectiveForDuration( player, OBJECTIVE_DISPLAY_TOTAL_TIME )
+		return true
+	}
+
+	void function Objective_SuppressCloseMenuShowsObjective( bool enabled )
+	{
+		file.suppressCloseMenuShowsObjective = enabled
+	}
+
+	void function SetObjectiveHighlight()
+	{
+		// Alt highlight ent?
+		if ( file.objectiveAltHighlightEntArray.len() )
+		{
+			foreach ( ent in file.objectiveAltHighlightEntArray )
+			{
+				if ( !IsValid( ent ) )
+					continue
+				Assert( file.objectiveEntities.contains( ent ), "Tried to use Objective_StaticModelHighlightOverrideEntity on entity that didn't call Objective_InitEntity" )
+				ent.Show()
+				Highlight_SetNeutralHighlight( ent, OBJECTIVE_HIGHLIGHT )
+			}
+		}
+		else if ( file.objectiveHighlightEntArray.len() )
+		{
+			foreach ( ent in file.objectiveHighlightEntArray )
+			{
+				if ( !IsValid( ent ) )
+					continue
+
+				if ( file.objectiveEntities.contains( ent ) )
+					Highlight_SetNeutralHighlight( ent, OBJECTIVE_HIGHLIGHT )
+			}
+		}
+	}
+
+	void function ClearObjectiveHighlight()
+	{
+		// Alt highlight ent?
+		if ( file.objectiveAltHighlightEntArray.len() )
+		{
+			foreach ( ent in file.objectiveAltHighlightEntArray )
+			{
+				if ( !IsValid( ent ) )
+					continue
+				Assert( file.objectiveEntities.contains( ent ), "Tried to use Objective_StaticModelHighlightOverrideEntity on entity that didn't call Objective_InitEntity" )
+				ClearObjectiveHighlight_Internal( ent )
+				ent.Hide()
+			}
+		}
+		else if ( file.objectiveHighlightEntArray.len() )
+		{
+			foreach ( ent in file.objectiveHighlightEntArray )
+			{
+				if ( !IsValid( ent ) )
+					continue
+				if ( file.objectiveEntities.contains( ent ) )
+					ClearObjectiveHighlight_Internal( ent )
+			}
+			}
+		}
+
+	void function ClearObjectiveHighlight_Internal( entity ent )
+	{
+		if ( !file.objectiveAltHighlight )
+			Highlight_ClearNeutralHighlight( ent )
+		else
+			Highlight_SetNeutralHighlight( ent, OBJECTIVE_HIGHLIGHT_ALT )
+	}
+
+	entity function Objective_GetMarkerEntity()
+	{
+		return file.objectiveMarkerEnt
+	}
+
+	entity function Objective_WayPointEneable( bool enable )
+	{
+		SetGlobalNetBool( "objectiveMarkerIsWayPoint", enable )
+	}
+
+	// Don't use this unless you grab the marker ent and clear it's parent after you're done
+	void function Objective_SetFastball( entity bt )
+	{
+		entity marker = Objective_GetMarkerEntity()
+		string tag = "HAND_R"
+		int attachID = bt.LookupAttachment( tag )
+		vector angles = bt.GetAttachmentAngles( attachID )
+		vector offset = AnglesToRight( angles ) * 20
+		marker.SetOrigin( bt.GetAttachmentOrigin( attachID ) + offset )
+		marker.SetParent( bt, tag, true, 0  )
+	}
+
+
+#endif
+
+
+
+
+
+
+
+
+
+
+#if CLIENT
+	void function ObjectiveStringChanged( entity player, int oldString, int newString, bool actuallyChanged )
+	{
+		if ( file.objectiveRUI == null )
+			return
+
+		if ( newString == 0 )
+			return
+
+		string objectiveText = GetObjectiveStringFromID( newString )
+		RuiSetString( file.objectiveRUI, "objectiveText", objectiveText )
+	}
+
+	void function ShowObjectiveLineChanged( entity player, bool old, bool new, bool actuallyChanged )
+	{
+		if ( file.objectiveRUI == null )
+			return
+
+		if ( !new )
+			RuiSetBool( file.objectiveRUI, "showLine", false )
+		else
+			RuiSetBool( file.objectiveRUI, "showLine", true )
+
+		if ( GetGlobalNetBool( "hilightingObjective" ) == true || !new )
+			RuiSetBool( file.objectiveRUI, "showMarker", false )
+		else
+			RuiSetBool( file.objectiveRUI, "showMarker", true )
+	}
+
+	void function ShowObjectiveChanged( entity player, bool wasShowing, bool isShowing, bool actuallyChanged )
+	{
+		if ( !actuallyChanged )
+			return
+
+		if ( isShowing )
+			thread ShowObjective( true )
+		else
+			HideObjective()
+	}
+
+	void function ShowObjective( bool newObjective )
+	{
+		// Make sure only one RUI is displayed at a time
+		Signal( clGlobal.levelEnt, "ShowingObjectiveRUI" )
+		EndSignal( clGlobal.levelEnt, "ShowingObjectiveRUI" )
+
+		entity marker = GetGlobalNetEnt( "objectiveMarkerEntity" )
+		if ( !IsValid( marker ) )
+			return
+
+		OnThreadEnd(
+			function() : (  )
+			{
+				HideObjective()
+			}
+		)
+
+		int stringIndex = GetGlobalNetInt( "objectiveStringIndex" )
+		if ( stringIndex == 0 )
+			return
+
+		string titleText = newObjective ? "#OBJECTIVE_UPDATED" : "#OBJECTIVE_REMIND"
+		bool isWayPoint = GetGlobalNetBool( "objectiveMarkerIsWayPoint" )
+		if( isWayPoint )
+			titleText = "#OBJECTIVE_WAYPOINT"
+
+		string objectiveText = GetObjectiveStringFromID( stringIndex )
+		float additionalKilometers = GetGlobalNetFloat( "additionalKilometers" )
+
+		HideObjective()
+		file.objectiveRUI = CreatePermanentCockpitRui( $"ui/sp_objective.rpak", 0 )
+
+		RuiSetGameTime( file.objectiveRUI, "startTime", Time() )
+		RuiSetGameTime( file.objectiveRUI, "endTime", Time() + OBJECTIVE_DISPLAY_TIME )
+		RuiSetFloat( file.objectiveRUI, "fadeInDuration", FADE_IN_TIME )
+		RuiSetFloat( file.objectiveRUI, "fadeOutDuration", FADE_OUT_TIME )
+		RuiSetFloat( file.objectiveRUI, "blingDuration", newObjective ? BLING_DURATION : 0.0 )
+		RuiSetString( file.objectiveRUI, "objectiveTitleText", titleText )
+		RuiSetString( file.objectiveRUI, "objectiveText", objectiveText )
+		RuiSetBool( file.objectiveRUI, "showButtonHint", newObjective )
+		
+		// handle objective position in code on timeshift levels 
+		if ( !file.onTimeshiftLevel )
+			RuiTrackFloat3( file.objectiveRUI, "pos", marker, RUI_TRACK_ABSORIGIN_FOLLOW )
+			
+		RuiSetFloat( file.objectiveRUI, "additionalKilometers", additionalKilometers )
+
+		if ( !GetGlobalNetBool( "showObjectiveLine" ) )
+			RuiSetBool( file.objectiveRUI, "showLine", false )
+
+		if ( GetGlobalNetBool( "hilightingObjective" ) == true || !GetGlobalNetBool( "showObjectiveLine" ) )
+			RuiSetBool( file.objectiveRUI, "showMarker", false )
+
+		EmitSoundOnEntity( GetLocalClientPlayer(), "ui_holotutorial_analyzingfinish" )
+
+		wait OBJECTIVE_DISPLAY_TOTAL_TIME
+	}
+
+	void function HideObjective()
+	{
+		if ( file.objectiveRUI != null )
+		{
+			RuiDestroyIfAlive( file.objectiveRUI )
+			file.objectiveRUI = null
+		}
+	}
+	
+	void function TimeshiftClientMarkerPositionThink()
+	{
+		while ( true )
+		{
+			WaitFrame()
+			
+			if ( IsValid( file.objectiveRUI ) )
+			{
+				// marker is how the server tells us the objective pos
+				entity marker = GetGlobalNetEnt( "objectiveMarkerEntity" )
+				if ( !IsValid( marker ) ) 
+					continue // unsure if this can even ever be hit
+			
+				// get our current timeline and get zoffset for it
+				int zOffset = 0
+				if ( marker.GetOrigin().z < -6000 ) // frozen time
+				{
+					RuiTrackFloat3( file.objectiveRUI, "pos", marker, RUI_TRACK_ABSORIGIN_FOLLOW ) 
+					break // once we hit frozen time, all objectives from now will be on the same timeline as players so we can use normal objective pos logic
+				}
+				else if ( marker.GetOrigin().z < 5300 && GetLocalClientPlayer().GetOrigin().z > 5300 ) // marker in night, player in day
+					zOffset = TIME_ZOFFSET 
+				else if ( marker.GetOrigin().z > 5300 && GetLocalClientPlayer().GetOrigin().z < 5300 ) // marker in day, player in night
+					zOffset = TIME_ZOFFSET * -1
+					
+				// set objective pos
+				vector pos = marker.GetOrigin() + Vector( 0, 0, zOffset )
+				//RuiSetString( file.objectiveRUI, "objectiveTitleText", "marker: " + marker.GetOrigin() + ", player: " + GetLocalClientPlayer().GetOrigin() + ", offset: " + zOffset )
+				RuiSetFloat3( file.objectiveRUI, "pos", pos )
+			}
+		}
+	}
+
+#endif
+

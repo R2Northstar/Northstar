@@ -1,0 +1,58 @@
+global function Sh_GamemodeArena_Init
+
+global const string GAMEMODE_ARENA = "arena"
+
+void function Sh_GamemodeArena_Init()
+{
+	// create custom gamemode
+	AddCallback_OnCustomGamemodesInit( CreateGamemodeArena )
+	AddCallback_OnRegisteringCustomNetworkVars( ArenaRegisterNetworkVars )
+}
+
+void function CreateGamemodeArena()
+{
+	GameMode_Create( GAMEMODE_ARENA )
+	GameMode_SetName( GAMEMODE_ARENA, "#GAMEMODE_arena" )
+	GameMode_SetDesc( GAMEMODE_ARENA, "#PL_arena_desc" )
+	GameMode_SetGameModeAnnouncement( GAMEMODE_ARENA, "gnrc_modeDesc" )
+	GameMode_SetDefaultTimeLimits( GAMEMODE_ARENA, 5, 0.0 )
+	GameMode_AddScoreboardColumnData( GAMEMODE_ARENA, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 )
+	GameMode_SetColor( GAMEMODE_ARENA, [147, 204, 57, 255] )
+	
+	#if SERVER
+		GameMode_AddServerInit( GAMEMODE_ARENA, GameModeArena_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( GAMEMODE_ARENA, RateSpawnpoints_Generic )
+		GameMode_SetTitanSpawnpointsRatingFunc( GAMEMODE_ARENA, RateSpawnpoints_Generic )
+	#elseif CLIENT
+		GameMode_AddClientInit( GAMEMODE_ARENA, ClGameModeArena_Init )
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( GAMEMODE_ARENA, CompareAssaultScore )
+	#endif
+}
+
+void function ArenaRegisterNetworkVars()
+{
+	if ( GAMETYPE != GAMEMODE_ARENA )
+		return
+
+	// boost store stuff
+	Remote_RegisterFunction( "ServerCallback_OpenBoostStore" )
+	Remote_RegisterFunction( "ServerCallback_UpdateMoney" )
+    Remote_RegisterFunction( "ServerCallback_UpdateTeamReserve" )
+	Remote_RegisterFunction( "ServerCallback_UpdatePlayerHasBattery" )
+	Remote_RegisterFunction( "ServerCallback_UpdateAmpedWeaponState" )
+	Remote_RegisterFunction( "ServerCallback_BoostStoreTitanHint" )
+	Remote_RegisterFunction( "ServerCallback_UpdateTurretCount" )
+	
+	RegisterNetworkedVariable( "boostStoreOpen", SNDC_GLOBAL, SNVT_BOOL, false )
+	RegisterNetworkedVariable( "FD_money", SNDC_PLAYER_GLOBAL, SNVT_UNSIGNED_INT, 0 )
+	RegisterNetworkedVariable( "FD_money256", SNDC_PLAYER_GLOBAL, SNVT_UNSIGNED_INT, 0 )
+	
+	// these are required to prevent crashes in fd code that's called from menu_boost_store
+	RegisterNetworkedVariable( "numSuperRodeoGrenades", SNDC_PLAYER_GLOBAL, SNVT_INT, 0 )
+	RegisterNetworkedVariable( "FD_waveActive", SNDC_GLOBAL, SNVT_BOOL, false )
+	
+	// arena-exclusive stuff
+	Remote_RegisterFunction( "ServerCallback_CreateMoneyParticles" )
+}

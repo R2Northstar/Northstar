@@ -1,0 +1,53 @@
+global function Sh_GamemodeKR_Init
+
+global const string GAMEMODE_KR = "kr"
+
+void function Sh_GamemodeKR_Init()
+{
+	// create custom gamemode
+	AddCallback_OnCustomGamemodesInit( CreateGamemodeKR )
+	AddCallback_OnRegisteringCustomNetworkVars( KRRegisterNetworkVars )
+}
+
+void function CreateGamemodeKR()
+{
+	GameMode_Create( GAMEMODE_KR )
+	GameMode_SetName( GAMEMODE_KR, "#GAMEMODE_kr" )
+	GameMode_SetDesc( GAMEMODE_KR, "#PL_kr_desc" )
+	GameMode_SetGameModeAnnouncement( GAMEMODE_KR, "ffa_modeDesc" )
+	GameMode_SetDefaultTimeLimits( GAMEMODE_KR, 10, 0.0 )
+	GameMode_AddScoreboardColumnData( GAMEMODE_KR, "#SCOREBOARD_KR_RECORD", PGS_ASSAULT_SCORE, 2 )
+	GameMode_AddScoreboardColumnData( GAMEMODE_KR, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 )
+	GameMode_SetColor( GAMEMODE_KR, [147, 204, 57, 255] )
+	
+	#if SERVER
+		GameMode_AddServerInit( GAMEMODE_KR, GamemodeKR_Init )
+		GameMode_AddServerInit( GAMEMODE_KR, GamemodeFFAShared_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( GAMEMODE_KR, RateSpawnpoints_Generic )
+		GameMode_SetTitanSpawnpointsRatingFunc( GAMEMODE_KR, RateSpawnpoints_Generic )	
+	#elseif CLIENT
+		GameMode_AddClientInit( GAMEMODE_KR, ClGamemodeKR_Init )
+		GameMode_AddClientInit( GAMEMODE_KR, GamemodeFFAShared_Init )
+		GameMode_AddClientInit( GAMEMODE_KR, ClGamemodeFFA_Init )	
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( GAMEMODE_KR, CompareAssaultScore )
+		GameMode_AddSharedInit( GAMEMODE_KR, GamemodeFFA_Dialogue_Init )
+	#endif
+}
+
+void function KRRegisterNetworkVars()
+{
+	if ( GAMETYPE != GAMEMODE_KR )
+		return
+		
+	Remote_RegisterFunction( "ServerCallback_FlagSpawnIncoming" )
+	Remote_RegisterFunction( "ServerCallback_NewKillRacer" )
+	Remote_RegisterFunction( "ServerCallback_EndKillrace" )
+	
+	RegisterNetworkedVariable( "killRaceTime", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME, 0.0 )
+	
+	#if CLIENT
+		RegisterNetworkedVariableChangeCallback_time( "killRaceTime", ShowTimeGainOnKill )
+	#endif 
+}

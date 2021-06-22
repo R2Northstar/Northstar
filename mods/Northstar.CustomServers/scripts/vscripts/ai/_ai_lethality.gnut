@@ -1,0 +1,97 @@
+untyped
+
+global enum eAILethality
+{
+	VeryLow,
+	Low,
+	Medium,
+	High,
+	VeryHigh
+}
+
+global function SetAILethality
+
+global function UpdateNPCForAILethality
+
+function SetAILethality( aiLethality )
+{
+	Assert( IsMultiplayer() )
+	level.nv.aiLethality = aiLethality
+
+	switch ( aiLethality )
+	{
+		case eAILethality.Medium:
+			break
+
+		case eAILethality.High:
+			NPCSetAimConeFocusParams( 6, 2.5 )
+			NPCSetAimPatternFocusParams( 4, 0.3, 0.8 )
+			break
+		case eAILethality.VeryHigh:
+			NPCSetAimConeFocusParams( 5, 2.0 )
+			NPCSetAimPatternFocusParams( 4, 0.3, 0.8 )
+			break
+	}
+
+	// reset ai lethality
+
+	array<entity> npcs = GetNPCArray()
+	foreach ( npc in npcs )
+	{
+		UpdateNPCForAILethality( npc )
+	}
+}
+
+
+function SetTitanAccuracyAndProficiency( entity npcTitan )
+{
+	Assert( IsMultiplayer() )
+	int lethality = Riff_AILethality()
+	float accuracyMultiplier = 1.0
+	int weaponProficiency = eWeaponProficiency.GOOD
+
+	entity player = GetPetTitanOwner( npcTitan )
+	entity soul = npcTitan.GetTitanSoul()
+
+	// auto titans have lower proficiency
+	if ( player && soul == null)
+	{
+		soul = player.GetTitanSoul() // in mid transfer
+	}
+
+	if ( IsValid( soul ) )
+	{
+		if ( SoulHasPassive( soul, ePassives.PAS_ENHANCED_TITAN_AI ) )
+		{
+			weaponProficiency = eWeaponProficiency.GOOD
+ 		}
+		else if ( player )
+		{
+			weaponProficiency = eWeaponProficiency.AVERAGE
+			entity ordnanceWeapon = npcTitan.GetOffhandWeapon( OFFHAND_ORDNANCE )
+			if ( IsValid( ordnanceWeapon ) )
+				ordnanceWeapon.AllowUse( false )
+
+			entity centerWeapon = npcTitan.GetOffhandWeapon( OFFHAND_TITAN_CENTER )
+			if ( IsValid( centerWeapon ) )
+				centerWeapon.AllowUse( false )
+		}
+	}
+
+	npcTitan.kv.AccuracyMultiplier = accuracyMultiplier
+	npcTitan.kv.WeaponProficiency = weaponProficiency
+}
+
+function UpdateNPCForAILethality( entity npc )
+{
+	Assert( IsMultiplayer() )
+	if ( npc.IsTitan() )
+	{
+		SetTitanAccuracyAndProficiency( npc )
+		return
+	}
+
+	if ( IsMinion( npc ) )
+		SetProficiency( npc )
+}
+

@@ -1,0 +1,56 @@
+{
+	"ApiId" : "Northstar.CustomServers",
+	"Name" : "Northstar.CustomServers",
+	"Description" : "Various script patches to fix and reimplement functionality for custom multiplayer servers",
+	"Authors" : [
+		"BobTheBob"
+	],
+	"Contacts" : [
+		"BobTheBob#1150"
+	],
+	"Version" : "0.1",
+	"CustomScripts": [
+		{
+			"Path": "_misc.gnut",
+			"RunOn": "SERVER && MP",
+		},
+		{
+			"Path": "_store.gnut",
+			"RunOn": "SERVER && MP",
+		},
+		{
+			"Path": "_script_movers.gnut",
+			"RunOn": "SERVER && MP",
+		},
+		
+		{
+			"Path": "mp/levels/_lf_maps_shared.gnut",
+			"RunOn": "SERVER && MP"
+		},
+		
+		{
+			"Path": "gamemodes/sh_gamemodes_custom.gnut",
+			"RunOn": "(CLIENT || SERVER) && MP"
+		},
+		
+		{
+			"Path": "sh_remote_functions_mp_custom.gnut",
+			"RunOn": "(CLIENT || SERVER) && MP"
+		},
+		
+		{
+			"Path": "mp/_classic_mp_dropship_intro.gnut",
+			"RunOn": "SERVER && MP",
+		},
+		{
+			"Path": "mp/_classic_mp_no_intro.gnut",
+			"RunOn": "SERVER && MP"
+		},
+		
+		{
+			"Path": "_loadouts_mp.gnut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": "SvLoadoutsMP_Init"
+		},
+	]
+}

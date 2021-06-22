@@ -1,0 +1,20 @@
+untyped
+global function InitCustomGamemodes
+global function AddCallback_OnCustomGamemodesInit
+
+struct {
+	array<void functionref()> onCustomGamemodesInitCallbacks
+} file
+
+void function InitCustomGamemodes()
+{
+	print( "InitCustomGamemodes" )
+
+	foreach ( void functionref() callback in file.onCustomGamemodesInitCallbacks )
+		callback()
+}
+
+void function AddCallback_OnCustomGamemodesInit( void functionref() callback )
+{
+	file.onCustomGamemodesInitCallbacks.append( callback )
+}

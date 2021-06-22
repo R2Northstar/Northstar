@@ -1,0 +1,43 @@
+#base "npc_soldier.txt"
+npc_soldier_specialist
+{
+	SummonDrone				npc_drone_plasma
+	title 					#NPC_SPECIALIST
+
+	IsGenericGrunt			0
+
+	mechanical 						1
+	magneticRange					125
+
+	DefaultWeapon					"mp_weapon_lstar"
+	GrenadeWeaponName 				"mp_weapon_frag_drone"
+
+	Health							120
+	PainOnRepeatDamageThreshold		90
+
+	DefaultModelName				"models/humans/pilots/sp_light_ged_m.mdl"
+	DefaultModelName_IMC			"models/humans/pilots/sp_light_ged_m.mdl"
+	DefaultModelName_MIL			"models/humans/pilots/sp_light_ged_m.mdl"
+
+	GibModel0						"models/robots/spectre/spectre_assault_d_gib_leg_l.mdl"
+	GibModel1						"models/robots/spectre/spectre_assault_d_gib_leg_r.mdl"
+	GibModel2						"models/robots/spectre/spectre_assault_d_gib_arm_l.mdl"
+	GibModel3						"models/robots/spectre/spectre_assault_d_gib_arm_r.mdl"
+	GibModelSoftened0				"models/robots/spectre/spectre_assault_d_gib_leg_l.mdl"
+	GibModelSoftened1				"models/robots/spectre/spectre_assault_d_gib_leg_r.mdl"
+	GibModelSoftened2				"models/robots/spectre/spectre_assault_d_gib_arm_l.mdl"
+	GibModelSoftened3				"models/robots/spectre/spectre_assault_d_gib_arm_r.mdl"
+	GibAttachment0					"left_leg"
+	GibAttachment1					"right_leg"
+	GibAttachment2					"left_arm"
+	GibAttachment3					"right_arm"
+	GibSpeed						200
+	GibAngularSpeed					20
+	GibMaxDist						1600
+	GibFX							"P_exp_spectre_death"
+	GibSound						"Explo_Spectre"
+
+	headshotFX 						"P_headshot_pilot_robot"
+
+	footstep_type					"robopilot"
+}

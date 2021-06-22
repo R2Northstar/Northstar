@@ -1,0 +1,545 @@
+untyped
+
+global function Rodeo_Init
+
+global function CodeCallback_StartRodeo
+global function CodeCallback_ForceEndRodeo
+global function CodeCallback_EmbarkTitan
+global function CodeCallback_EmbarkTitanFromGrapple
+
+global function PlayerBeginsRodeo
+global function WatchForPlayerJumpingOffRodeo
+global function PlayerJumpsOffRodeoTarget
+global function PlayerClimbsIntoRodeoPosition
+global function rodeodebug
+
+//-----------------------------------------------------------------------------
+//  _rodeo.nut
+//
+//  The central location for rodeo, mostly a place to put code callbacks that
+//  then call other things in other files based on the thing being rodeod.
+//
+//-----------------------------------------------------------------------------
+//
+// HOW TO ADD A NEW RODEO TYPE
+//
+// Create a new file for the rodeo type like _rodeo_prowler.nut and:
+//      Implement "IsValid_NEWTYPE_RodeoTarget()"
+//      Implement "GetRodeoPackage_RIDER_to_NEWTYPE_()"
+//      Implement "_RIDER_Begins_NEWTYPE_Rodeo()"
+//      Implement "_RIDER_LerpsInto_NEWTYPE_Rodeo()"
+//
+//   _RIDER_ is the rodeo rider type like "Player" or "Prowler"
+//   _NEWTYPE_ is the new kind of rodeo target like "SuperSpectre" or "Drone"
+//
+// In _rodeo_shared.nut:
+//		IncludeFile() the NEWTYPE file
+// 		Add a hook for NEWTYPE in CodeCallback_OnRodeoAttach()
+//		Add a hook for NEWTYPE in CodeCallback_IsValidRodeoTarget()
+//		Add a hook for NEWTYPE in GetRodeoPackage() if needed
+//
+//-----------------------------------------------------------------------------
+
+function Rodeo_Init()
+{
+	RodeoShared_Init()
+	RodeoTitan_Init()
+	RegisterSignal( "RodeoPointOfNoReturn" )
+	AddCallback_OnTitanDoomed( OnTitanDoomed_Rodeo )
+}
+
+
+void function CodeCallback_EmbarkTitan( entity player, entity titan )
+{
+	if ( player.Lunge_IsActive() && (titan == player.Lunge_GetTargetEntity()) )
+	{
+		if ( PlayerCanImmediatelyEmbarkTitan( player, titan ) )
+		{
+			table embarkDirection = expect table( FindBestEmbark( player, titan ) )
+			thread PlayerEmbarksTitan( player, titan, embarkDirection )
+		}
+	}
+}
+
+bool function CodeCallback_EmbarkTitanFromGrapple( entity player, entity titan )
+{
+	Assert( player.IsHuman() )
+	Assert( titan.IsTitan() )
+
+	if ( !PlayerCanEmbarkIntoTitan( player, titan ) )
+		return false
+
+	table ornull embarkDirection = expect table ornull( FindBestEmbark( player, titan, false ) )
+	if ( !embarkDirection )
+		return false
+
+	expect table( embarkDirection )
+	thread PlayerEmbarksTitan( player, titan, embarkDirection )
+
+	return true
+}
+
+
+void function CodeCallback_StartRodeo( entity player, entity rodeoTarget )
+{
+	if ( IsMenuLevel() )
+		return
+
+	// Review: Good to remove?
+	if ( GetBugReproNum() == 7205 )
+	{
+		thread RodeoTest( player, rodeoTarget )
+		return
+	}
+
+	thread PlayerBeginsRodeo( player, player.p.rodeoPackage, rodeoTarget )
+}
+
+
+void function CodeCallback_ForceEndRodeo( entity player )
+{
+	ForceEndRodeo( player )
+}
+
+void function ForceEndRodeo( entity player )
+{
+	player.Signal( "RodeoOver" )
+}
+
+
+function RodeoTest( player, rodeoTarget )
+{
+	player.SetParent( rodeoTarget, "RODEO", false, 1 )
+	wait 5
+	player.ClearParent()
+	Rodeo_Detach( player )
+}
+
+function PlayerBeginsRodeo( entity player, RodeoPackageStruct rodeoPackage, entity rodeoTarget )
+{
+	Assert( player.GetParent() == null )
+	player.Lunge_ClearTarget()
+
+	Assert( IsValid( player ) )
+	Assert( IsValid( rodeoTarget ) )
+	Assert( !player.IsTitan() )
+
+	if ( rodeoTarget.IsTitan() )
+		PlayerBeginsTitanRodeo( player, rodeoPackage, rodeoTarget )
+	else
+		PlayerBeginsNPCRodeo( player, rodeoPackage, rodeoTarget ) //Not tested very well since non-Titan Rodeo never really became a thing. Should work thought
+}
+
+function PlayerBeginsNPCRodeo( entity player, RodeoPackageStruct rodeoPackage, entity rodeoTarget )
+{
+	bool sameTeam = player.GetTeam() == rodeoTarget.GetTeam()
+	bool playerWasEjecting = player.p.pilotEjecting // have to store this off here because the "RodeoStarted" signal below ends eject, so it will be too late to check it in actual rodeo function
+
+	player.Signal( "RodeoStarted" )
+
+	OnThreadEnd(
+		function () : ( player, rodeoTarget )
+		{
+			RodeoPackageStruct rodeoPackage = player.p.rodeoPackage
+
+			entity newRodeoTarget = rodeoTarget
+			if ( IsValid( player ) )
+			{
+				player.Signal( "RodeoOver" )
+
+				// Added via AddCallback_OnRodeoEnded
+				foreach ( callbackFunc in level.onRodeoEndedCallbacks ) //TODO: Remove this!
+				{
+					callbackFunc( player )
+				}
+
+				// show name of the pilot again
+				player.SetNameVisibleToFriendly( true )
+				player.SetNameVisibleToEnemy( true )
+
+				ClearPlayerAnimViewEntity( player )
+
+				// blend out the clear anim view entity
+				player.AnimViewEntity_SetLerpOutTime( 0.4 )
+
+				player.ClearParent()
+				player.Anim_Stop()
+				player.SetOneHandedWeaponUsageOff()
+				player.SetTitanSoulBeingRodeoed( null )
+				player.UnforceStand()
+				player.kv.PassDamageToParent = false
+				player.TouchGround() // so you can double jump off
+
+				StopSoundOnEntity( player, rodeoPackage.cockpitSound )
+				StopSoundOnEntity( player, rodeoPackage.worldSound )
+
+				if ( Rodeo_IsAttached( player ) )
+				{
+					Rodeo_Detach( player )
+				}
+
+				if ( IsAlive( player ) )
+				{
+					int attachIndex = newRodeoTarget.LookupAttachment( rodeoPackage.attachPoint )
+					vector startPos = newRodeoTarget.GetAttachmentOrigin( attachIndex )
+
+					if ( !PlayerCanTeleportHere( player, startPos, newRodeoTarget ) )
+					{
+						startPos = newRodeoTarget.GetOrigin()
+						if ( !PlayerCanTeleportHere( player, startPos, newRodeoTarget ) )
+							startPos = player.GetOrigin()
+					}
+
+					thread PlayerJumpsOffRodeoTarget( player, newRodeoTarget, startPos )
+				}
+			}
+		}
+	)
+
+	rodeoTarget.EndSignal( "OnDestroy" )
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "RodeoOver" )
+
+	string rodeoTargetType = rodeoPackage.rodeoTargetType
+
+	thread WatchForPlayerJumpingOffRodeo( player )
+
+	player.SetNameVisibleToFriendly( false ) // hide name of the pilot while he is rodeoing
+	player.SetNameVisibleToEnemy( false )
+	player.ForceStand()
+	HolsterAndDisableWeapons( player )
+	player.SetOneHandedWeaponUsageOn()
+	player.TouchGround() // so you can double jump off
+
+	waitthread PlayerClimbsIntoRodeoPosition( player, rodeoTarget, rodeoPackage, playerWasEjecting )
+
+	#if FACTION_DIALOGUE_ENABLED
+	if ( !sameTeam )
+		PlayFactionDialogueToPlayer( "kc_rodeo", player )
+	#endif
+
+	// Go straight into idle animations
+	FirstPersonSequenceStruct sequence
+	sequence.thirdPersonAnimIdle 	= GetAnimFromAlias( rodeoTargetType, "pt_rodeo_panel_aim_idle" )
+	sequence.firstPersonAnimIdle 	= GetAnimFromAlias( rodeoTargetType, "ptpov_rodeo_panel_aim_idle" )
+
+	if ( !rodeoPackage.useAttachAngles )
+		player.Anim_IgnoreParentRotation( true )
+
+	sequence.useAnimatedRefAttachment  = true
+
+	thread FirstPersonSequence( sequence, player, rodeoTarget )
+
+	if ( sameTeam )
+	{
+		player.GetFirstPersonProxy().HideFirstPersonProxy()
+		OpenViewCone( player )
+	}
+	else
+	{
+		PlayerRodeoViewCone( player, rodeoTargetType )   // TODO: Add air_drone and make enum in this func()
+	}
+
+	// look! he rodeoed!
+	thread AIChatter( "aichat_rodeo_cheer", player.GetTeam(), player.GetOrigin() )
+
+	Rodeo_OnFinishClimbOnAnimation( player ) // This is to let code know the player has finished climbing on the rodeo and ready to fire
+
+	if ( sameTeam )
+	{
+		player.PlayerCone_Disable()
+		player.EnableWorldSpacePlayerEyeAngles()
+	}
+
+	DeployAndEnableWeapons( player )
+
+	WaitForever()
+}
+
+void function PlayerClimbsIntoRodeoPosition( entity player, entity rodeoTarget, RodeoPackageStruct rodeoPackage, bool playerWasEjecting = false ) //TODO: Rename this function since new style rodeo anims have climbing as part of the anim
+{
+	player.EndSignal( "OnDeath" )
+
+
+	// The only thing that should have a soul is titans now. Legacy. Can't remove without major code feature work.
+	entity soul
+	if ( rodeoTarget.IsTitan() )
+	{
+		soul = rodeoTarget.GetTitanSoul()
+		soul.EndSignal( "OnTitanDeath" )
+		soul.EndSignal( "OnDestroy" )
+	}
+	else
+	{
+		rodeoTarget.EndSignal( "OnTitanDeath" )
+		rodeoTarget.EndSignal( "OnDestroy" )
+	}
+
+	FirstPersonSequenceStruct sequence
+	sequence.attachment =  rodeoPackage.attachPoint
+	SetRodeoAnimsFromPackage( sequence, rodeoPackage )
+
+	switch ( rodeoPackage.method )
+	{
+		case RODEO_APPROACH_FALLING_FROM_ABOVE:
+			table animStartPos = player.Anim_GetStartForRefEntity_Old( sequence.thirdPersonAnim, rodeoTarget, rodeoPackage.attachPoint )
+			float dist = Distance( player.GetOrigin(), animStartPos.origin )
+			float speed = Length( player.GetVelocity() )
+			float fallTime = dist / speed
+			fallTime *= 0.95
+
+			sequence.blendTime = clamp( fallTime, 0.4, 1 )
+
+			break
+
+		case RODEO_APPROACH_JUMP_ON:
+			sequence.blendTime = 0.6
+			break
+
+		default:
+			Assert( 0, "Unhandled rodeo method " + rodeoPackage.method )
+	}
+
+	if ( !PlayerHasPassive( player, ePassives.PAS_STEALTH_MOVEMENT ) )
+		EmitDifferentSoundsOnEntityForPlayerAndWorld( rodeoPackage.cockpitSound, rodeoPackage.worldSound, player, rodeoTarget )
+
+	string titanType
+
+	// Titans only
+	if ( IsValid( soul ) )
+	{
+		if ( !( player in soul.rodeoRiderTracker ) )
+		{
+			soul.rodeoRiderTracker[ player ] <- true
+			if ( rodeoTarget.GetTeam() == player.GetTeam() )
+			{
+				AddPlayerScore( player, "HitchRide" )
+				AddPlayerScore( rodeoTarget, "GiveRide" )
+			}
+			else
+			{
+				AddPlayerScore( player, "RodeoEnemyTitan" )
+
+				#if HAS_STATS
+				UpdatePlayerStat( player, "misc_stats", "rodeos" )
+
+				if ( playerWasEjecting )
+					UpdatePlayerStat( player, "misc_stats", "rodeosFromEject" )
+				#endif
+
+				#if SERVER && MP
+					PIN_AddToPlayerCountStat( player, "rodeos" )
+					if ( rodeoTarget.IsPlayer() )
+						PIN_AddToPlayerCountStat( rodeoTarget, "rodeo_receives" )
+				#endif
+			}
+		}
+
+		titanType = GetSoulTitanSubClass( soul )
+	}
+
+	MessageToPlayer( player, eEventNotifications.Rodeo_HideBatteryHint )
+
+	float time = player.GetSequenceDuration( sequence.thirdPersonAnim )
+
+	if ( !rodeoPackage.useAttachAngles )
+		player.Anim_IgnoreParentRotation( true )
+
+	thread FirstPersonSequence( sequence, player, rodeoTarget )
+	wait time
+}
+
+void function WatchForPlayerJumpingOffRodeo( entity player )
+{
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "RodeoOver" )
+	player.EndSignal( "RodeoPointOfNoReturn" )
+
+	wait 0.6 // debounce so you dont accihop
+
+	AddButtonPressedPlayerInputCallback( player, IN_JUMP, ForceEndRodeo )
+
+	OnThreadEnd(
+	function() : ( player )
+		{
+			//RodeoOver is signalled at the end of PlayerBeginsRodeo, so even if Rodeo ends via the Titan disconnecting etc this will run
+			RemoveButtonPressedPlayerInputCallback( player, IN_JUMP, ForceEndRodeo )
+		}
+	)
+
+	WaitForever()
+}
+
+
+void function PlayerJumpsOffRodeoTarget( entity player, entity rodeoTarget, vector startPos )
+{
+	#if DEV
+		if ( GetDebugRodeoPrint() )
+			printt( "PlayerJumpsOffRodeoTarget, playerPos: " + player.GetOrigin() + " playerAngles: " + player.GetAngles() + " rodeoTargetPos: " + rodeoTarget.GetOrigin() + " rodeoTargetAngles: " + rodeoTarget.GetAngles() + ", startPos: " + startPos )
+	#endif
+
+	// ejected, or rip off battery, etc. Those adjust velocity for the rodeo player anyway, so don't do any more adjustments for them.
+	if ( player.p.rodeoShouldAdjustJumpOffVelocity == false )
+		return
+
+	if ( !IsValid( rodeoTarget ) )
+	{
+		PutEntityInSafeSpot( player, null, null, startPos, player.GetOrigin() )
+
+		#if DEV
+			if ( GetDebugRodeoPrint() )
+				printt( "PlayerJumpsOffRodeoTarget, playerPos after PutEntityInSafeSpot, !ISValid(rodeoTarget): " + player.GetOrigin() )
+		#endif
+		return
+	}
+
+	PutEntityInSafeSpot( player, rodeoTarget, null, startPos, player.GetOrigin() )
+	#if DEV
+		if ( GetDebugRodeoPrint() )
+			printt( "PlayerJumpsOffRodeoTarget, playerPos after PutEntityInSafeSpot, rodeoTarget valid: " + player.GetOrigin() )
+	#endif
+
+	EmitDifferentSoundsOnEntityForPlayerAndWorld( "Rodeo_Jump_Off_Interior", "Rodeo_Jump_Off", player, rodeoTarget )
+
+	vector forward = player.GetViewForward()
+	vector right = player.GetViewRight()
+
+	forward.z = 0
+	right.z = 0
+
+	// map the player's controls to his angles, and add that velocity
+	float xAxis = player.GetInputAxisRight()
+	float yAxis = player.GetInputAxisForward()
+
+	vector velocity
+	if ( fabs( xAxis ) < 0.2 && fabs( yAxis ) < 0.2 )
+	{
+	    // no press = back press
+	    velocity = Vector(0,0,0)
+	}
+	else
+	{
+	    vector forwardVec = forward * yAxis
+	    vector rightVec = right * xAxis
+	    vector directionVec = ( rightVec + forwardVec )
+
+	    //printt( "ForwardVec: " + forwardVec + ", rightVec: " + rightVec + ", directionVec :" + directionVec + ", directionVec scaled: " + (directionVec * 350 ) ) // for bug 123013
+
+	    float speed = 350
+	    velocity = directionVec * speed
+	}
+
+	// IMPORTANT: Don't give boost pilots too much vertical or they go sky high
+	if ( player.GetPlayerSettingsField( "boostEnabled" ).tointeger() > 0 )
+	    velocity += Vector(0,0,200)
+	else
+	    velocity += Vector(0,0,390 )
+
+	//printt( "Setting velocity to: " + velocity ) // for bug 123013
+
+	player.SetVelocity( velocity )
+	player.JumpedOffRodeo()
+}
+
+void function rodeodebug()
+{
+	// console command for forcing rodeo amongst 2 players
+	thread makerodeothread()
+}
+
+void function makerodeothread()
+{
+	array<entity> players = GetPlayerArray()
+	vector titanOrg
+	bool titanOrgSet = false
+	entity titan, pilot
+
+	for ( int i = players.len() - 1; i >= 0; i-- )
+	{
+		entity player = players[i]
+
+		if ( player.IsTitan() )
+		{
+			titan = player
+		}
+		else
+		{
+			pilot = player
+		}
+	}
+
+	if ( !titan )
+	{
+		for ( int i = players.len() - 1; i >= 0; i-- )
+		{
+			entity player = players[i]
+
+			if ( !player.IsTitan() )
+			{
+				player.SetPlayerSettings( "titan_atlas" )
+				titan = player
+				break
+			}
+		}
+	}
+	else
+	if ( !pilot )
+	{
+		for ( int i = players.len() - 1; i >= 0; i-- )
+		{
+			entity player = players[i]
+
+			if ( player.IsTitan() )
+			{
+				thread TitanEjectPlayer( player )
+				wait 1.5
+				pilot = player
+				break
+			}
+		}
+	}
+
+	for ( int i = players.len() - 1; i >= 0; i-- )
+	{
+		entity player = players[i]
+
+		if ( player.IsTitan() )
+		{
+			titanOrg = player.GetOrigin()
+			titanOrgSet = true
+		}
+	}
+
+	if ( !titanOrgSet )
+		return
+
+	for ( int i = players.len() - 1; i >= 0; i-- )
+	{
+		entity player = players[i]
+
+		if ( !player.IsTitan() )
+		{
+			vector angles = titan.GetAngles()
+			vector forward = AnglesToForward( angles )
+			titanOrg += forward * -100
+			titanOrg.z += 500
+			angles.x = 30
+			player.SetAngles( angles )
+			player.SetOrigin( titanOrg )
+			player.SetVelocity( Vector(0,0,0) )
+			break
+		}
+	}
+}
+
+void function OnTitanDoomed_Rodeo( entity titan, var damageInfo )
+{
+	if ( !IsAlive( titan ) )
+		return
+
+	entity rodeoPilot = GetRodeoPilot( titan )
+	if ( !IsValid( rodeoPilot ) )
+		return
+
+	Remote_CallFunction_NonReplay( rodeoPilot, "ServerCallback_UpdateRodeoRiderHud" )
+}

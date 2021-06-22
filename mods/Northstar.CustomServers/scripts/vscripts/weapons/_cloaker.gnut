@@ -1,0 +1,121 @@
+untyped
+
+global function CloakerThink
+global function CloakerShouldCloakGuy
+
+global function CloakerCloaksGuy
+global function CloakerDeCloaksGuy
+
+function CloakerThink( entity cloaker, float radius, array<string> ents = [ "any" ], vector offset = Vector(0,0,0), var shouldCloakGuyFunc = null, float waitTime = 0.25 )
+{
+	OnThreadEnd(
+		function() : ( cloaker )
+		{
+			local cloakList = clone cloaker.s.cloakList
+			foreach ( entity guy, value in cloakList )
+			{
+				if ( !IsAlive( guy ) )
+					continue
+
+				CloakerDeCloaksGuy( guy )
+			}
+		}
+	)
+
+	cloaker.s.cloakList <- {}
+	cloaker.s.decloakList <- {}
+
+	while( 1 )
+	{
+		vector origin = cloaker.GetOrigin() + offset
+		array<entity> guys
+
+		foreach ( entType in ents )
+		{
+			switch ( entType )
+			{
+				case "player":
+				case "players":
+					guys.extend( GetPlayerArrayEx( "any", cloaker.GetTeam(), TEAM_ANY, origin, radius ) )
+					break;
+				default:
+					guys.extend( GetNPCArrayEx( entType, cloaker.GetTeam(), TEAM_ANY, origin, radius ) )
+					break
+			}
+		}
+		int index = 0
+
+		float startTime = Time()
+
+		table cloakList = expect table( cloaker.s.cloakList )
+		cloaker.s.decloakList = clone cloakList
+
+		foreach ( guy in guys )
+		{
+			//only do 5 distanceSqr / cansee checks per frame
+			if ( index++ > 5 )
+			{
+				wait 0.1
+				index = 0
+				origin = cloaker.GetOrigin() + offset
+			}
+
+			bool shouldCloakGuy = CloakerShouldCloakGuy( cloaker, guy )
+
+			if ( shouldCloakGuy )
+				shouldCloakGuy = expect bool( shouldCloakGuyFunc( cloaker, guy ) )
+
+			if ( shouldCloakGuy )
+			{
+				if ( guy in cloaker.s.decloakList )
+					delete cloaker.s.decloakList[ guy ]
+
+				if ( IsCloaked( guy ) )
+					continue
+
+				cloakList[ guy ] <- true
+				CloakerCloaksGuy( guy )
+			}
+		}
+
+		foreach ( entity guy, value in cloaker.s.decloakList )
+		{
+			// any guys still in the decloakList shouldn't be decloaked ... if alive.
+			Assert( guy in cloakList )
+			delete cloakList[ guy ]
+
+			if ( IsAlive( guy ) )
+				CloakerDeCloaksGuy( guy )
+		}
+
+		float endTime = Time()
+		float elapsedTime = endTime - startTime
+		if ( elapsedTime < waitTime )
+			wait waitTime - elapsedTime
+	}
+}
+
+void function CloakerCloaksGuy( guy )
+{
+	guy.SetCloakDuration( 2.0, -1, 0 )
+	EmitSoundOnEntity( guy, CLOAKED_DRONE_CLOAK_START_SFX )
+	EmitSoundOnEntity( guy, CLOAKED_DRONE_CLOAK_LOOP_SFX )
+	guy.Minimap_Hide( TEAM_IMC, null )
+	guy.Minimap_Hide( TEAM_MILITIA, null )
+}
+
+void function CloakerDeCloaksGuy( guy )
+{
+	guy.SetCloakDuration( 0, 0, 1.5 )
+	StopSoundOnEntity( guy, CLOAKED_DRONE_CLOAK_LOOP_SFX )
+	guy.Minimap_AlwaysShow( TEAM_IMC, null )
+	guy.Minimap_AlwaysShow( TEAM_MILITIA, null )
+}
+
+bool function CloakerShouldCloakGuy( entity cloaker, entity guy )
+{
+	if ( !IsAlive( guy ) )
+		return false
+
+	return true
+}

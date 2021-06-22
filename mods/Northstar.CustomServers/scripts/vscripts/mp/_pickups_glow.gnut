@@ -1,0 +1,53 @@
+global function CreatePickupGlow
+global function PickupGlow_SetColor
+
+global struct PickupGlow
+{
+	entity cpoint
+	entity glowFX
+}
+
+PickupGlow function CreatePickupGlow( entity ent, int r, int g, int b )
+{
+	vector origin = ent.GetOrigin()
+	entity cpoint = CreateEntity( "info_placement_helper" )
+	SetTargetName( cpoint, UniqueString( "pickup_controlpoint" ) )
+	DispatchSpawn( cpoint )
+	cpoint.SetOrigin( Vector(r,g,b) )
+	entity glowFX = PlayFXWithControlPoint( COLLECTIBLE_PICKUP_EFFECT, origin, cpoint, -1, null, null, C_PLAYFX_LOOP )
+
+	PickupGlow pickupGlow
+	pickupGlow.cpoint = cpoint
+	pickupGlow.glowFX = glowFX
+	thread PickupGlowCleanup( ent, pickupGlow )
+	return pickupGlow
+}
+
+void function PickupGlowCleanup( entity ent, PickupGlow pickupGlow )
+{
+	OnThreadEnd(
+		function() : ( pickupGlow )
+		{
+			StopPickupGlow( pickupGlow )
+		}
+	)
+
+	ent.WaitSignal( "OnDestroy" )
+}
+
+void function StopPickupGlow( PickupGlow pickupGlow )
+{
+	if ( IsValid( pickupGlow.cpoint ) )
+		pickupGlow.cpoint.Destroy()
+
+	if ( IsValid(pickupGlow.glowFX) )
+	{
+		EntityFire( pickupGlow.glowFX, "StopPlayEndCap" )
+		pickupGlow.glowFX.Destroy()
+	}
+}
+
+void function PickupGlow_SetColor( PickupGlow pickupGlow, int r, int g, int b )
+{
+	pickupGlow.cpoint.SetOrigin( Vector( r, g, b ) )
+}

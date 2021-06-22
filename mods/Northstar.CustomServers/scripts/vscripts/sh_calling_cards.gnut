@@ -1,0 +1,424 @@
+global function ShCallingCards_Init
+
+global function PlayerCallingCard_GetActive
+global function PlayerCallingCard_GetActiveIndex
+
+global function CallingCard_GetRef
+global function CallingCard_GetImage
+global function CallingCards_GetCount
+global function CallingCard_GetByIndex
+global function CallingCard_GetByRef
+
+global function PlayerCallsignIcon_GetActive
+global function PlayerCallsignIcon_GetActiveIndex
+
+global function CallsignIcon_GetRef
+global function CallsignIcon_GetImage
+global function CallingCard_GetLayout
+global function CallsignIcon_GetSmallImage
+global function CallsignIcons_GetCount
+global function CallsignIcon_GetByIndex
+global function CallsignIcon_GetByRef
+
+global function PlayerCallingCard_RefOverride
+
+#if SERVER
+	global function PlayerCallsignIcon_SetActive
+	global function PlayerCallingCard_SetActiveByRef
+	global function PlayerCallsignIcon_SetActiveByRef
+#endif
+
+global struct CallingCard
+{
+	int index = -1
+	string ref = ""
+	asset image = $""
+	int layoutType = 0
+}
+
+global struct CallsignIcon
+{
+	int index = -1
+	string ref = ""
+	asset image = $""
+	asset smallImage = $""
+	int layoutType = 0
+}
+
+struct
+{
+	table<string, CallingCard> callingCards
+	array<string> callingCardRefs
+
+	table<string, CallsignIcon> callsignIcons
+	array<string> callsignIconRefs
+
+	int nextCallingCardIndex = 0
+	int nextCallsignIconIndex = 0
+} file
+
+void function ShCallingCards_Init()
+{
+	bool initialized = ( file.callingCardRefs.len() > 0 )
+
+	if ( !initialized )
+	{
+		var dataTable = GetDataTable( $"datatable/calling_cards.rpak" )
+		for ( int row = 0; row < GetDatatableRowCount( dataTable ); row++ )
+		{
+			string cardRef = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, CALLING_CARD_REF_COLUMN_NAME ) )
+			asset image = GetDataTableAsset( dataTable, row, GetDataTableColumnByName( dataTable, CALLING_CARD_IMAGE_COLUMN_NAME ) )
+			int layoutType = GetDataTableInt( dataTable, row, GetDataTableColumnByName( dataTable, CALLING_CARD_LAYOUT_COLUMN_NAME ) )
+
+			CallingCard callingCard
+			callingCard.ref = cardRef
+			callingCard.image = image
+			callingCard.index = row
+			callingCard.layoutType = layoutType
+
+			file.callingCards[cardRef] <- callingCard
+			file.callingCardRefs.append( cardRef )
+		}
+	}
+
+	if ( !initialized )
+	{
+		var dataTable = GetDataTable( $"datatable/callsign_icons.rpak" )
+		for ( int row = 0; row < GetDatatableRowCount( dataTable ); row++ )
+		{
+			string iconRef = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, CALLSIGN_ICON_REF_COLUMN_NAME ) )
+			asset image = GetDataTableAsset( dataTable, row, GetDataTableColumnByName( dataTable, CALLSIGN_ICON_IMAGE_COLUMN_NAME ) )
+			asset smallImage = GetDataTableAsset( dataTable, row, GetDataTableColumnByName( dataTable, CALLSIGN_ICON_SMALL_IMAGE_COLUMN_NAME ) )
+
+			CallsignIcon callsignIcon
+			callsignIcon.ref = iconRef
+			callsignIcon.image = image
+			callsignIcon.smallImage = smallImage
+			callsignIcon.index = row
+
+			file.callsignIcons[iconRef] <- callsignIcon
+			file.callsignIconRefs.append( iconRef )
+		}
+	}
+
+	#if SERVER
+	AddCallback_OnClientConnecting( OnClientConnecting )
+	AddCallback_OnTitanBecomesPilot( OnClassChangeBecomePilot )
+	AddCallback_OnPilotBecomesTitan( OnClassChangeBecomeTitan )
+	#endif
+}
+
+#if SERVER
+void function OnClientConnecting( entity player )
+{
+	// hack - don't do this because pdefs aren't fully working
+	
+	// initialize the persistent network vars
+	// string ref = CallingCard_GetRef( PlayerCallingCard_GetActive( player ) )
+	// PlayerCallingCard_SetActiveByRef( player, ref )
+	// 
+	// CallsignIcon callsignIcon = PlayerCallsignIcon_GetActive( player )
+	// 
+	// PlayerCallsignIcon_SetActive( player, callsignIcon )
+	// player.SetTargetInfoIcon( callsignIcon.smallImage )
+}
+#endif
+
+#if DEV
+CallingCard function DEV_GetNextCallingCard()
+{
+	int index = file.nextCallingCardIndex
+	printt( "using CallingCard index", index )
+	file.nextCallingCardIndex++
+	file.nextCallingCardIndex = file.nextCallingCardIndex % file.callingCardRefs.len()
+
+	string ref = file.callingCardRefs[index]
+	return file.callingCards[ref]
+}
+
+CallsignIcon function DEV_GetNextCallsignIcon()
+{
+	int index = file.nextCallsignIconIndex
+	printt( "using CallsignIcon index", index )
+	file.nextCallsignIconIndex++
+	file.nextCallsignIconIndex = file.nextCallsignIconIndex % file.callsignIconRefs.len()
+
+	string ref = file.callsignIconRefs[index]
+	return file.callsignIcons[ref]
+}
+#endif
+
+int function PlayerCallingCard_GetActiveIndex( entity player )
+{
+	#if CLIENT
+		int index
+		if ( player != GetLocalClientPlayer() )
+			index = player.GetPlayerNetInt( "activeCallingCardIndex" )
+		else
+			index = player.GetPersistentVarAsInt( "activeCallingCardIndex" )
+	#else
+		int index = player.GetPersistentVarAsInt( "activeCallingCardIndex" )
+	#endif
+	return index
+}
+
+CallingCard function PlayerCallingCard_GetActive( entity player )
+{
+	int index = PlayerCallingCard_GetActiveIndex( player )
+	string ref = file.callingCardRefs[index]
+	#if CLIENT || UI
+		ref = PlayerCallingCard_RefOverride( player, ref )
+	#endif
+	return file.callingCards[ref]
+}
+
+string function CallingCard_GetRef( CallingCard callingCard )
+{
+	return callingCard.ref
+}
+
+asset function CallingCard_GetImage( CallingCard callingCard )
+{
+	return callingCard.image
+}
+
+int function CallingCard_GetLayout( CallingCard callingCard )
+{
+	return callingCard.layoutType
+}
+
+int function CallingCards_GetCount()
+{
+	return file.callingCards.len()
+}
+
+CallingCard function CallingCard_GetByIndex( int index )
+{
+	// JFS: handle players with invalid indices
+	//Assert( index < CallingCards_GetCount() )
+	if ( index >= file.callingCards.len() )
+		return file.callingCards["callsign_16_col"]
+
+	return file.callingCards[file.callingCardRefs[index]]
+}
+
+CallingCard function CallingCard_GetByRef( string ref )
+{
+	return file.callingCards[ref]
+}
+
+
+int function PlayerCallsignIcon_GetActiveIndex( entity player )
+{
+	#if CLIENT
+		int index
+		if ( player != GetLocalClientPlayer() )
+			index = player.GetPlayerNetInt( "activeCallsignIconIndex" )
+		else
+			index = player.GetPersistentVarAsInt( "activeCallsignIconIndex" )
+	#else
+		int index = player.GetPersistentVarAsInt( "activeCallsignIconIndex" )
+	#endif
+	return index
+}
+
+CallsignIcon function PlayerCallsignIcon_GetActive( entity player )
+{
+	int index = PlayerCallsignIcon_GetActiveIndex( player )
+	string ref = file.callsignIconRefs[index]
+	return file.callsignIcons[ref]
+}
+
+string function CallsignIcon_GetRef( CallsignIcon callsignIcon )
+{
+	return callsignIcon.ref
+}
+
+asset function CallsignIcon_GetImage( CallsignIcon callsignIcon )
+{
+	return callsignIcon.image
+}
+
+asset function CallsignIcon_GetSmallImage( CallsignIcon callsignIcon )
+{
+	return callsignIcon.smallImage
+}
+
+int function CallsignIcons_GetCount()
+{
+	return file.callsignIcons.len()
+}
+
+CallsignIcon function CallsignIcon_GetByIndex( int index )
+{
+	// JFS: handle players with invalid indices
+	// Assert( index < CallsignIcons_GetCount() )
+
+	if ( index >= file.callsignIconRefs.len() )
+		index = 0
+
+	return file.callsignIcons[file.callsignIconRefs[index]]
+}
+
+CallsignIcon function CallsignIcon_GetByRef( string ref )
+{
+	return file.callsignIcons[ref]
+}
+
+
+const table< string, string > dynamicCardRefMap = {
+	callsign_fd_ion_dynamic = "ion",
+	callsign_fd_tone_dynamic = "tone",
+	callsign_fd_scorch_dynamic = "scorch",
+	callsign_fd_legion_dynamic = "legion",
+	callsign_fd_northstar_dynamic = "northstar",
+	callsign_fd_ronin_dynamic = "ronin",
+	callsign_fd_monarch_dynamic = "vanguard",
+}
+
+const table< string, array<string> > dynamicCardMap = {
+	callsign_fd_ion_dynamic =
+	[
+		"callsign_fd_ion_dynamic",
+		"callsign_fd_ion_dynamic",
+		"callsign_fd_ion_hard",
+		"callsign_fd_ion_master",
+		"callsign_fd_ion_insane",
+	],
+
+	callsign_fd_tone_dynamic =
+	[
+		"callsign_fd_tone_dynamic",
+		"callsign_fd_tone_dynamic",
+		"callsign_fd_tone_hard",
+		"callsign_fd_tone_master",
+		"callsign_fd_tone_insane",
+	],
+
+	callsign_fd_scorch_dynamic =
+	[
+		"callsign_fd_scorch_dynamic",
+		"callsign_fd_scorch_dynamic",
+		"callsign_fd_scorch_hard",
+		"callsign_fd_scorch_master",
+		"callsign_fd_scorch_insane",
+	],
+
+	callsign_fd_legion_dynamic =
+	[
+		"callsign_fd_legion_dynamic",
+		"callsign_fd_legion_dynamic",
+		"callsign_fd_legion_hard",
+		"callsign_fd_legion_master",
+		"callsign_fd_legion_insane",
+	],
+
+	callsign_fd_northstar_dynamic =
+	[
+		"callsign_fd_northstar_dynamic",
+		"callsign_fd_northstar_dynamic",
+		"callsign_fd_northstar_hard",
+		"callsign_fd_northstar_master",
+		"callsign_fd_northstar_insane",
+	],
+
+	callsign_fd_ronin_dynamic =
+	[
+		"callsign_fd_ronin_dynamic",
+		"callsign_fd_ronin_dynamic",
+		"callsign_fd_ronin_hard",
+		"callsign_fd_ronin_master",
+		"callsign_fd_ronin_insane",
+	],
+
+	callsign_fd_monarch_dynamic =
+	[
+		"callsign_fd_monarch_dynamic",
+		"callsign_fd_monarch_dynamic",
+		"callsign_fd_monarch_hard",
+		"callsign_fd_monarch_master",
+		"callsign_fd_monarch_insane",
+	],
+}
+
+string function PlayerCallingCard_RefOverride( entity player, string ref )
+{
+	const string CARD_DYNAMIC = "_dynamic"
+
+	if ( ref.find( CARD_DYNAMIC ) == null )
+		return ref
+
+	if ( ref.find( CARD_DYNAMIC ) != ref.len() - CARD_DYNAMIC.len() )
+		return ref
+
+	if ( ref in dynamicCardRefMap )
+	{
+		string titanRef = dynamicCardRefMap[ref]
+		int highestDifficulty = FD_GetHighestDifficultyForTitan( player, titanRef )
+
+		return dynamicCardMap[ref][minint( highestDifficulty, dynamicCardMap[ref].len() - 1 )]
+	}
+
+	return ref
+}
+
+#if SERVER
+/*
+InitUnlockAsEntitlement( "callsign_fd_ion_dynamic", "", ET_DLC7_ION_WARPAINT )
+InitUnlockAsEntitlement( "callsign_fd_tone_dynamic", "", ET_DLC7_TONE_WARPAINT )
+InitUnlockAsEntitlement( "callsign_fd_scorch_dynamic", "", ET_DLC7_SCORCH_WARPAINT )
+InitUnlockAsEntitlement( "callsign_fd_legion_dynamic", "", ET_DLC7_LEGION_WARPAINT )
+InitUnlockAsEntitlement( "callsign_fd_northstar_dynamic", "", ET_DLC7_NORTHSTAR_WARPAINT )
+InitUnlockAsEntitlement( "callsign_fd_ronin_dynamic", "", ET_DLC7_RONIN_WARPAINT )
+InitUnlockAsEntitlement( "callsign_fd_monarch_dynamic", "", ET_DLC7_MONARCH_WARPAINT )
+*/
+
+void function PlayerCallingCard_SetActiveByIndex( entity player, int index )
+{
+//	if ( player.GetPersistentVarAsInt( "activeCallingCardIndex" ) != index )
+	player.SetCallingCard( index )
+
+	player.SetPlayerNetInt( "activeCallingCardIndex", index )
+	player.SetPersistentVar( "activeCallingCardIndex", index )
+}
+
+void function PlayerCallingCard_SetActiveByRef( entity player, string ref )
+{
+	PlayerCallingCard_SetActiveByIndex( player, file.callingCards[ref].index )
+
+	if ( PlayerCallingCard_RefOverride( player, ref ) != ref )
+		player.SetCallingCard( file.callingCards[PlayerCallingCard_RefOverride( player, ref )].index )
+}
+
+void function PlayerCallsignIcon_SetActiveByIndex( entity player, int index )
+{
+//	if ( player.GetPersistentVarAsInt( "activeCallsignIconIndex" ) != index )
+		player.SetCallSign( index )
+
+	player.SetPlayerNetInt( "activeCallsignIconIndex", index )
+	player.SetPersistentVar( "activeCallsignIconIndex", index )
+}
+
+void function PlayerCallsignIcon_SetActive( entity player, CallsignIcon callsignIcon )
+{
+	PlayerCallsignIcon_SetActiveByIndex( player, callsignIcon.index )
+}
+
+void function PlayerCallsignIcon_SetActiveByRef( entity player, string ref )
+{
+	PlayerCallsignIcon_SetActiveByIndex( player, file.callsignIcons[ref].index )
+}
+
+void function OnClassChangeBecomePilot( entity player, entity titan )
+{
+	CallsignIcon callsignIcon = PlayerCallsignIcon_GetActive( player )
+	player.SetTargetInfoIcon( callsignIcon.smallImage )
+}
+
+void function OnClassChangeBecomeTitan( entity player, entity titan )
+{
+	string titanRef = GetTitanCharacterNameFromSetFile( player.GetPlayerSettings() )
+	player.SetTargetInfoIcon( GetTitanCoreIcon( titanRef ) )
+}
+
+#endif

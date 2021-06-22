@@ -1,0 +1,42 @@
+global function BurnMeter_Init
+global function InitBurnMeterPersistentData
+global function BurnMeter_GiveRewardDirect
+global function RunBurnCardUseFunc
+global function UseBurnCardWeapon
+global function UseBurnCardWeaponInCriticalSection
+global function GetBurnCardWeaponSkin
+
+void function BurnMeter_Init()
+{
+
+}
+
+void function InitBurnMeterPersistentData(entity player)
+{
+
+}
+
+void function BurnMeter_GiveRewardDirect( entity player, string itemRef )
+{
+	
+}
+
+void function RunBurnCardUseFunc(entity player, string itemRef)
+{
+
+}
+
+void function UseBurnCardWeapon( entity weapon, entity ownerPlayer )
+{
+
+}
+
+void function UseBurnCardWeaponInCriticalSection( entity weapon, entity ownerPlayer )
+{
+
+}
+
+int function GetBurnCardWeaponSkin(entity weapon)
+{
+	return 0
+}

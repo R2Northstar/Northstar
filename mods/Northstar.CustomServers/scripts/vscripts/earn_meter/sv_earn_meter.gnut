@@ -1,0 +1,508 @@
+global function Sv_EarnMeter_Init
+global function PlayerEarnMeter_SoftReset
+global function PlayerEarnMeter_SetOwnedFrac
+global function PlayerEarnMeter_Reset
+global function PlayerEarnMeter_Empty
+global function PlayerEarnMeter_AddEarnedFrac
+global function PlayerEarnMeter_AddOwnedFrac
+global function PlayerEarnMeter_AddEarnedAndOwned
+global function PlayerEarnMeter_SetMode
+global function PlayerEarnMeter_SetRewardFrac
+
+global function PlayerEarnMeter_GetPilotMultiplier
+global function PlayerEarnMeter_GetPilotOverdriveEnum
+
+global function PlayerEarnMeter_RefreshGoal
+
+global function PlayerEarnMeter_SetReward
+global function PlayerEarnMeter_SetGoal
+
+global function PlayerEarnMeter_SetGoalUsed
+global function PlayerEarnMeter_EnableGoal
+global function PlayerEarnMeter_DisableGoal
+
+global function PlayerEarnMeter_SetRewardUsed
+global function PlayerEarnMeter_DisableReward
+global function PlayerEarnMeter_EnableReward
+
+global function PlayerEarnMeter_CanEarn
+
+global function SetCallback_EarnMeterGoalEarned
+global function SetCallback_EarnMeterRewardEarned
+
+global function AddEarnMeterThresholdEarnedCallback
+
+global function JFS_PlayerEarnMeter_CoreRewardUpdate
+global function GiveOffhandElectricSmoke
+
+global function SharedEarnMeter_AddEarnedAndOwned
+global function PlayerEarnMeter_SetEnabled
+global function PlayerEarnMeter_Enabled
+
+global struct EarnMeterThresholdEarnedStruct
+{
+	float threshold
+	bool triggerFunctionOnFullEarnMeter = false
+	void functionref( entity player ) thresholdEarnedCallback
+}
+
+struct
+{
+	void functionref( entity player ) goalEarnedCallback
+	void functionref( entity player ) rewardEarnedCallback
+	array<EarnMeterThresholdEarnedStruct> thresholdEarnedCallbacks
+
+	float earn_meter_pilot_multiplier
+	int earn_meter_pilot_overdrive // ePilotOverdrive
+	bool earnMeterEnabled = true
+} file
+
+void function Sv_EarnMeter_Init()
+{
+	if ( !EARNMETER_ENABLED )
+		return
+
+	RegisterSignal( "EarnMeterDecayThink" )
+
+	SetCallback_EarnMeterGoalEarned( DummyGoalEarnedCallback )
+	SetCallback_EarnMeterRewardEarned( DummyRewardEarnedCallback )
+
+	file.earn_meter_pilot_multiplier = PlayerEarnMeter_GetPilotMultiplier()
+	file.earn_meter_pilot_overdrive = PlayerEarnMeter_GetPilotOverdriveEnum()
+}
+
+float function PlayerEarnMeter_GetPilotMultiplier()
+{
+	return GetCurrentPlaylistVarFloat( "earn_meter_pilot_multiplier", 1.0 )
+}
+
+int function PlayerEarnMeter_GetPilotOverdriveEnum()
+{
+	return GetCurrentPlaylistVarInt( "earn_meter_pilot_overdrive", ePilotOverdrive.Enabled )
+}
+
+void function AddEarnMeterThresholdEarnedCallback( float thresholdForCallback, void functionref( entity player ) callbackFunc, bool triggerFunctionOnFullEarnMeter = false )
+{
+	EarnMeterThresholdEarnedStruct thresholdStruct
+	thresholdStruct.threshold = thresholdForCallback
+	thresholdStruct.thresholdEarnedCallback = callbackFunc
+	thresholdStruct.triggerFunctionOnFullEarnMeter = triggerFunctionOnFullEarnMeter
+
+	Assert( !AlreadyContainsThresholdCallback( thresholdStruct ), "Already added " + string( callbackFunc ) + " with threshold " + thresholdForCallback )
+	file.thresholdEarnedCallbacks.append( thresholdStruct )
+}
+
+bool function AlreadyContainsThresholdCallback( EarnMeterThresholdEarnedStruct thresholdStruct )
+{
+	foreach( existingThresholdStruct in file.thresholdEarnedCallbacks  )
+	{
+		if ( existingThresholdStruct.threshold != thresholdStruct.threshold )
+			continue
+
+		if ( existingThresholdStruct.thresholdEarnedCallback != thresholdStruct.thresholdEarnedCallback )
+			continue
+
+		 if ( existingThresholdStruct.triggerFunctionOnFullEarnMeter != thresholdStruct.triggerFunctionOnFullEarnMeter )
+			continue
+
+		return true
+	}
+
+	return false
+}
+
+void function SetCallback_EarnMeterGoalEarned( void functionref( entity player ) callback )
+{
+	if ( file.goalEarnedCallback == null || file.goalEarnedCallback == DummyGoalEarnedCallback )
+		file.goalEarnedCallback = callback
+}
+
+void function SetCallback_EarnMeterRewardEarned( void functionref( entity player ) callback )
+{
+	if ( file.rewardEarnedCallback == null || file.rewardEarnedCallback == DummyRewardEarnedCallback )
+		file.rewardEarnedCallback = callback
+}
+
+
+void function PlayerEarnMeter_SetMode( entity player, int mode )
+{
+	player.SetPlayerNetInt( EARNMETER_MODE, mode )
+}
+
+
+void function PlayerEarnMeter_AddEarnedFrac( entity player, float earnedFrac )
+{
+	PlayerEarnMeter_AddEarnedAndOwned( player, earnedFrac, 0.0 )
+}
+
+
+void function PlayerEarnMeter_AddOwnedFrac( entity player, float addValue )
+{
+	PlayerEarnMeter_AddEarnedAndOwned( player, 0.0, addValue )
+}
+
+
+bool function PlayerEarnMeter_CanEarn( entity player )
+{
+	if ( PlayerEarnMeter_GetMode( player ) != eEarnMeterMode.DEFAULT || player.IsTitan() || IsValid( player.GetPetTitan() ) )
+		return false
+
+	return file.earnMeterEnabled
+}
+
+void function SharedEarnMeter_AddEarnedAndOwned( entity player, float addOverdriveValue, float addOwnedValue )
+{
+	int teamShareEarnMeter = Riff_TeamShareEarnMeter()
+	Assert( teamShareEarnMeter != eTeamShareEarnMeter.Disabled )
+
+	float sharedEarnMeterScale = GetCurrentPlaylistVarFloat( "riff_team_share_earn_meter_scale", 0.5 )
+
+	float overdriveValue = addOverdriveValue * sharedEarnMeterScale
+	float ownedValue = addOwnedValue * sharedEarnMeterScale
+
+	array<entity> teamPlayers = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
+	foreach ( teamPlayer in teamPlayers )
+	{
+		if ( teamPlayer == player )
+			continue
+
+		if ( !PlayerEarnMeter_CanEarn( teamPlayer ) )
+			continue
+
+		if ( teamShareEarnMeter == eTeamShareEarnMeter.Enabled )
+			PlayerEarnMeter_AddEarnedAndOwned( teamPlayer, overdriveValue, ownedValue )
+		else if ( teamShareEarnMeter == eTeamShareEarnMeter.OwnedOnly )
+			PlayerEarnMeter_AddOwnedFrac( teamPlayer, ownedValue )
+		else if ( teamShareEarnMeter == eTeamShareEarnMeter.OverdriveOnly )
+			PlayerEarnMeter_AddEarnedFrac( teamPlayer, overdriveValue )
+	}
+}
+
+void function PlayerEarnMeter_AddEarnedAndOwned( entity player, float addOverdriveValue, float addOwnedValue )
+{
+	// TODO: Core Meter should be unified with earn meter so this can go away and we keep the hot streak concept for Titan Cores.
+	if ( player.IsTitan() )
+	{
+		AddCreditToTitanCoreBuilder( player, addOwnedValue )
+		return
+	}
+
+	if ( !PlayerEarnMeter_CanEarn( player ) )
+		return
+
+	if ( addOverdriveValue == 0 && addOwnedValue == 0 )
+		return
+
+	if ( file.earn_meter_pilot_overdrive == ePilotOverdrive.Only )
+		addOwnedValue = 0.0
+
+	if ( file.earn_meter_pilot_overdrive == ePilotOverdrive.Disabled )
+		addOverdriveValue = 0.0
+
+	float startingOverdriveValue = PlayerEarnMeter_GetEarnedFrac( player )
+	float startingOwnedValue = PlayerEarnMeter_GetOwnedFrac( player )
+	float startingOverdriveDiff = max( 0, startingOverdriveValue - startingOwnedValue )
+
+	float multipliedOwnedValue = addOwnedValue * file.earn_meter_pilot_multiplier
+	float newOwnedValue = min( startingOwnedValue + multipliedOwnedValue, 1.0 )
+	PlayerEarnMeter_SetOwnedFrac( player, min( newOwnedValue, 1.0 ) )
+
+	float multipliedOverdriveValue = addOverdriveValue * file.earn_meter_pilot_multiplier
+	float newOverdriveValue = max( min( newOwnedValue + startingOverdriveDiff + multipliedOverdriveValue, 1.0 ), 0.0 )
+	PlayerEarnMeter_SetEarnedFrac( player, newOverdriveValue )
+
+	if ( newOverdriveValue > startingOverdriveValue )
+		thread EarnMeterDecayThink( player )
+
+	foreach( thresholdStruct in file.thresholdEarnedCallbacks  )
+	{
+		if ( newOverdriveValue <  thresholdStruct.threshold ) //We're not past the threshold yet, don't run the function
+			continue
+
+		if ( startingOverdriveValue >= thresholdStruct.threshold ) //This isn't the first time we're past the threshold, don't run the function
+			continue
+
+		if ( newOwnedValue == 1.0 && thresholdStruct.triggerFunctionOnFullEarnMeter == false ) //We've earned enough earn meter to just fill out the bar, we should just run whatever functionality
+			continue
+
+		thresholdStruct.thresholdEarnedCallback( player )
+	}
+
+	if ( PlayerEarnMeter_IsRewardEnabled( player ) )
+	{
+		float rewardFrac = PlayerEarnMeter_GetRewardFrac( player )
+
+		// If we earned our reward
+		if ( (startingOverdriveValue < rewardFrac && newOverdriveValue >= rewardFrac) || (startingOwnedValue < rewardFrac && newOwnedValue >= rewardFrac) )
+		{
+			//if ( newOwnedValue < rewardFrac ) // if the owned portion isn't already maxed out, do so
+			//	PlayerEarnMeter_SetOwnedFrac( player, rewardFrac )
+
+			PlayerEarnMeter_TryMakeRewardAvailable( player )
+		}
+	}
+
+	// If we earned our goal
+	if ( (startingOverdriveValue < 1.0 && newOverdriveValue >= 1.0) || (startingOwnedValue < 1.0 && newOwnedValue >= 1.0) )
+	{
+		if ( newOwnedValue < 1.0 ) // if the owned portion isn't already maxed out, do so
+			PlayerEarnMeter_SetOwnedFrac( player, 1.0 )
+
+		PlayerEarnMeter_TryMakeGoalAvailable( player )
+	}
+
+	//#if MP
+	//	Remote_CallFunction_NonReplay( player, "ServerCallback_EarnMeterAwarded", addOverdriveValue, addOwnedValue )
+	//#endif
+}
+
+
+void function PlayerEarnMeter_RefreshGoal( entity player )
+{
+	if ( player.GetPlayerNetInt( "goalState" ) == eRewardState.AVAILABLE )
+	{
+		file.goalEarnedCallback( player )
+	}
+}
+
+
+void function PlayerEarnMeter_SetEarnedFrac( entity player, float value )
+{
+	player.p.earnMeterOverdriveFrac = value
+	player.SetPlayerNetFloat( EARNMETER_EARNEDFRAC, value )
+}
+
+
+void function PlayerEarnMeter_SetOwnedFrac( entity player, float value )
+{
+	player.p.earnMeterOwnedFrac = value
+	player.SetPlayerNetFloat( EARNMETER_OWNEDFRAC, value )
+}
+
+
+void function PlayerEarnMeter_SetRewardFrac( entity player, float value )
+{
+	player.p.earnMeterRewardFrac = value
+	player.SetPlayerNetFloat( EARNMETER_REWARDFRAC, value )
+}
+
+
+void function PlayerEarnMeter_SoftReset( entity player )
+{
+	float ownedFrac = PlayerEarnMeter_GetOwnedFrac( player )
+	PlayerEarnMeter_SetEarnedFrac( player, ownedFrac )
+}
+
+
+void function PlayerEarnMeter_Reset( entity player )
+{
+	player.Signal( "EarnMeterDecayThink" )
+
+	PlayerEarnMeter_SetEarnedFrac( player, 0.0 )
+	PlayerEarnMeter_SetOwnedFrac( player, 0.0 )
+	PlayerEarnMeter_SetRewardFrac( player, 0.0 )
+
+	player.SetPlayerNetInt( "goalState", eRewardState.DISABLED )
+	player.SetPlayerNetInt( "rewardState", eRewardState.DISABLED )
+}
+
+void function PlayerEarnMeter_Empty( entity player )
+{
+	player.Signal( "EarnMeterDecayThink" )
+
+	PlayerEarnMeter_SetEarnedFrac( player, 0.0 )
+	PlayerEarnMeter_SetOwnedFrac( player, 0.0 )
+	PlayerEarnMeter_SetRewardFrac( player, 0.0 )
+}
+
+
+void function EarnMeterDecayThink( entity player )
+{
+	player.EndSignal( "OnDeath" )
+	player.Signal( "EarnMeterDecayThink" )
+	player.EndSignal( "EarnMeterDecayThink" )
+
+	if ( EarnMeter_DecayHold() < 0 )
+		return
+
+	wait EarnMeter_DecayHold()
+
+	float earnedValue = PlayerEarnMeter_GetEarnedFrac( player )
+	float ownedValue = PlayerEarnMeter_GetOwnedFrac( player )
+
+	// 10% over 20 seconds
+	float decayRate = 1.0 / 135.0
+
+	//float startTime = Time()
+	while ( earnedValue > ownedValue )
+	{
+		//float frameTime = Time() - startTime
+		//startTime = Time()
+
+		PlayerEarnMeter_AddEarnedFrac( player, -(decayRate * 0.25) )
+
+		wait 0.25
+
+		earnedValue = PlayerEarnMeter_GetEarnedFrac( player )
+		ownedValue = PlayerEarnMeter_GetOwnedFrac( player )
+	}
+}
+
+
+bool function PlayerEarnMeter_TryMakeGoalAvailable( entity player )
+{
+	if ( player.GetPlayerNetInt( "goalState" ) == eRewardState.USED )
+		return false
+
+	if ( player.GetPlayerNetInt( "goalState" ) == eRewardState.DISABLED )
+		return false
+
+	if ( player.GetPlayerNetInt( "goalState" ) == eRewardState.AVAILABLE )
+		return false
+
+	player.SetPlayerNetInt( "goalState", eRewardState.AVAILABLE )
+
+	file.goalEarnedCallback( player )
+
+	return true
+}
+
+
+void function PlayerEarnMeter_DisableReward( entity player )
+{
+	player.SetPlayerNetInt( "rewardState", eRewardState.DISABLED )
+}
+
+
+void function PlayerEarnMeter_EnableReward( entity player )
+{
+	player.SetPlayerNetInt( "rewardState", eRewardState.UNAVAILABLE )
+}
+
+
+void function PlayerEarnMeter_SetRewardUsed( entity player )
+{
+	player.SetPlayerNetInt( "rewardState", eRewardState.USED )
+}
+
+
+void function PlayerEarnMeter_DisableGoal( entity player )
+{
+	player.SetPlayerNetInt( "goalState", eRewardState.DISABLED )
+}
+
+
+void function PlayerEarnMeter_EnableGoal( entity player )
+{
+	player.SetPlayerNetInt( "goalState", eRewardState.UNAVAILABLE )
+}
+
+
+void function PlayerEarnMeter_SetGoalUsed( entity player )
+{
+	player.SetPlayerNetInt( "goalState", eRewardState.USED )
+}
+
+
+bool function PlayerEarnMeter_TryMakeRewardAvailable( entity player )
+{
+	if ( player.GetPlayerNetInt( "rewardState" ) == eRewardState.USED )
+		return false
+
+	if ( player.GetPlayerNetInt( "rewardState" ) == eRewardState.DISABLED )
+		return false
+
+	if ( player.GetPlayerNetInt( "rewardState" ) == eRewardState.AVAILABLE )
+		return false
+
+	player.SetPlayerNetInt( "rewardState", eRewardState.AVAILABLE )
+
+	file.rewardEarnedCallback( player )
+	return true
+}
+
+
+void function PlayerEarnMeter_SetReward( entity player, EarnObject earnObject )
+{
+	Assert( earnObject.id > -1 )
+	Assert( earnObject.earnType == "REWARD" )
+
+	player.SetPlayerNetInt( EARNMETER_REWARDID, earnObject.id )
+}
+
+void function PlayerEarnMeter_SetGoal( entity player, EarnObject earnObject )
+{
+	Assert( earnObject.id > -1 )
+	//Assert( earnObject.earnType == "GOAL" )
+
+	player.SetPlayerNetInt( EARNMETER_GOALID, earnObject.id )
+}
+
+
+void function DummyRewardEarnedCallback( entity player )
+{
+	Assert( false, "Must set a reward earned callback with SetCallback_EarnMeterRewardEarned() if rewards are in use" )
+}
+
+
+void function DummyGoalEarnedCallback( entity player )
+{
+	Assert( false, "Must set a goal earned callback with SetCallback_EarnMeterGoalEarned() if meter is in use" )
+}
+
+// Hook into the existing core system until it can be replaced.
+void function JFS_PlayerEarnMeter_CoreRewardUpdate( entity titan, float startingCoreValue, float newCoreValue )
+{
+	#if ANTI_RODEO_SMOKE_ENABLED
+	if ( startingCoreValue < CORE_SMOKE_FRAC && newCoreValue >= CORE_SMOKE_FRAC )
+	{
+		GiveOffhandElectricSmoke( titan )
+
+		if ( titan.IsPlayer() )
+			Remote_CallFunction_NonReplay( titan, "ServerCallback_RewardReadyMessage", (Time() - GetPlayerLastRespawnTime( titan )) )
+
+		if ( titan.IsPlayer() )
+			 PlayerEarnMeter_SetRewardUsed( titan )
+	}
+	#endif
+}
+
+void function GiveOffhandElectricSmoke( entity titan )
+{
+	entity soul = titan.GetTitanSoul()
+	bool hasAntiRodeoKit = IsValid( soul ) && SoulHasPassive( soul, ePassives.PAS_ANTI_RODEO )
+	if ( titan.GetOffhandWeapon( OFFHAND_INVENTORY ) != null )
+	{
+		entity weapon = titan.GetOffhandWeapon( OFFHAND_INVENTORY )
+		if ( hasAntiRodeoKit )
+			weapon.SetWeaponPrimaryAmmoCount( weapon.GetWeaponPrimaryAmmoCount() + 2 )
+		else
+			weapon.SetWeaponPrimaryAmmoCount( weapon.GetWeaponPrimaryAmmoCount() + 1 )
+	}
+	else
+	{
+		titan.GiveOffhandWeapon( CORE_SMOKE_WEAPON, OFFHAND_INVENTORY )
+		entity weapon = titan.GetOffhandWeapon( OFFHAND_INVENTORY )
+		if ( hasAntiRodeoKit )
+		{
+			weapon.SetWeaponPrimaryAmmoCount( weapon.GetWeaponPrimaryAmmoCount() + 1 )
+		}
+		if ( soul.GetTitanSoulNetInt( "upgradeCount" ) >= 2 && SoulHasPassive( soul, ePassives.PAS_VANGUARD_CORE5 ) )
+		{
+			entity weapon = titan.GetOffhandWeapon( OFFHAND_INVENTORY )
+			array<string> mods = weapon.GetMods()
+			mods.append( "maelstrom" )
+			weapon.SetMods( mods )
+		}
+	}
+}
+
+void function PlayerEarnMeter_SetEnabled( bool enabled )
+{
+	file.earnMeterEnabled = enabled
+}
+
+bool function PlayerEarnMeter_Enabled()
+{
+	return file.earnMeterEnabled
+}

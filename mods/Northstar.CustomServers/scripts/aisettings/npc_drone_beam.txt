@@ -1,0 +1,9 @@
+#base "npc_drone.txt"
+npc_drone_beam
+{
+	DefaultWeapon			"mp_weapon_dronebeam"
+	ForceAutoPrecacheDefaultWeapon	1
+	title					#NPC_DRONE_BEAM
+	drone_type				"drone_type_beam"
+	DefaultModelName		"models/robots/drone_air_attack/drone_air_attack_plasma.mdl"
+}

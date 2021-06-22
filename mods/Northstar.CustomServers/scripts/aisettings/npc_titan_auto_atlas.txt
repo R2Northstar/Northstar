@@ -1,0 +1,15 @@
+#base "npc_titan_auto.txt"
+
+npc_titan_auto_atlas
+{
+	footstep_type			"atlas"
+	title 					#NPC_TITAN_AUTO_ATLAS
+
+	StrafeDodgeDamage		800
+
+	dodgePeriod				8 	  	 	// Don't dodge more than maxDodgePerPeriod within this time
+	maxDodgePerPeriod		2 		 	// Don't dodge more than this many times in dodgePeriod
+
+	ai_passThroughThickness 128
+	DefaultModelName		"models/titans/medium/titan_medium_ajax.mdl"
+}
