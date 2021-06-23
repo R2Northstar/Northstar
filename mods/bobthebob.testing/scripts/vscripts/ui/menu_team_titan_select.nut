@@ -309,6 +309,7 @@ void function OnTeamTitanSelectMenu_Open()
 		var rui = Hud_GetRui( button )
 
 		RuiSetImage( rui, "buttonImage", icon )
+		Hud_SetLocked( button, true )
 
 		if ( !IsTitanLoadoutAvailable( player, loadout.titanClass ) )
 		{
@@ -357,9 +358,9 @@ void function OnTeamTitanSelectMenu_Open()
 	RunMenuClientFunction( "ShowTTSPanel" )
 
 	if ( file.isReady )
-		UI_SetPresentationType( ePresentationType.TITAN_CENTER_SELECTED )
+		UI_SetPresentationType( ePresentationType.STORE_CAMO_PACKS )
 	else
-		UI_SetPresentationType( ePresentationType.TITAN_CENTER )
+		UI_SetPresentationType( ePresentationType.STORE_CAMO_PACKS )
 
 
 	RunClientScript( "TTS_UpdateLocalPlayerTitan", loadout.setFile, loadout.primary, loadout.passive1, loadout.passive2 )

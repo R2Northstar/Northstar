@@ -14,9 +14,9 @@ void function GamemodeSpeedball_Init()
 	// gamemode settings
 	SetRoundBased( true )
 	SetRespawnsEnabled( false )
+	SetShouldUseRoundWinningKillReplay( true )
 	Riff_ForceTitanAvailability( eTitanAvailability.Never )
 	Riff_ForceSetEliminationMode( eEliminationMode.Pilots )
-	SetServerVar( "roundWinningKillReplayEnabled", true ) // really ought to get a function for setting this
 	
 	AddSpawnCallbackEditorClass( "script_ref", "info_speedball_flag", CreateFlag )
 	
@@ -59,19 +59,9 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		DropFlag()
 		
 	if ( victim.IsPlayer() && GetGameState() == eGameState.Playing )
-	{
-		// this REALLY ought to be an elimationmode thing rather than gamemode-based
-		int livingPlayers
-		foreach ( entity player in GetPlayerArrayOfTeam( victim.GetTeam() ) )
-			if ( IsAlive( player ) )
-				livingPlayers++
-		
-		if ( livingPlayers == 0 )
-			SetWinner( GetOtherTeam( victim.GetTeam() ) )
-		else if ( livingPlayers == 1 )
+		if ( GetPlayerArrayOfTeam_Alive( victim.GetTeam() ).len() == 1 )
 			foreach ( entity player in GetPlayerArray() )
 				Remote_CallFunction_NonReplay( player, "ServerCallback_SPEEDBALL_LastPlayer", player.GetTeam() != victim.GetTeam() )
-	}
 }
 
 void function GiveFlag( entity player )
