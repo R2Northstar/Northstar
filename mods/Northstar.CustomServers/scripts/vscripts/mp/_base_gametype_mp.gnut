@@ -231,12 +231,6 @@ void function CodeCallback_OnPlayerKilled( entity player, var damageInfo )
 
 void function PostDeathThread_MP( entity player, var damageInfo ) // based on gametype_sp: postdeaththread_sp
 {
-	// honestly this feels jank af, it's messy and the sp code it's based off is a bit of a pain imo, needs a rewrite at some point
-	// also this likely needs an onthreadend to set a couple values
-
-	//if ( player.p.watchingPetTitanKillReplay )
-	//	return
-	
 	if ( player.s.inPostDeath )
 		return
 
