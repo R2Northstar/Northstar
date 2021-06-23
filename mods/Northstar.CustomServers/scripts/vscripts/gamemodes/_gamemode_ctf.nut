@@ -30,7 +30,8 @@ void function CaptureTheFlag_Init()
 	CaptureTheFlagShared_Init()
 	SetSwitchSidesBased( true )
 	SetSuddenDeathBased( true )
-	//SetSpawnsUseFrontline( true )
+	SetShouldUseRoundWinningKillReplay( true )
+	SetRoundWinningKillReplayKillClasses( false, false ) // make these fully manual
 	
 	AddCallback_OnClientConnected( CTFInitPlayer )
 
@@ -417,6 +418,7 @@ void function CaptureFlag( entity player, entity flag )
 	AddTeamScore( team, 1 )
 	AddPlayerScore( player, "FlagCapture", player )
 	player.AddToPlayerGameStat( PGS_ASSAULT_SCORE, 1 ) // add 1 to captures on scoreboard
+	SetRoundWinningKillReplayAttacker( player ) // set attacker for last cap replay
 	
 	array<entity> assistList
 	if ( player.GetTeam() == TEAM_IMC )

@@ -17,49 +17,49 @@ void function GamemodeLts_Init()
 	SetRoundBased( true )
 	SetRespawnsEnabled( false )
 	Riff_ForceSetEliminationMode( eEliminationMode.PilotsTitans )
-	SetServerVar( "roundWinningKillReplayEnabled", true ) // really ought to get a function for setting this
-
-	AddCallback_OnPlayerKilled( OnPlayerKilled )
-	AddDeathCallback( "npc_titan", OnTitanKilled )
+	SetShouldUseRoundWinningKillReplay( true )
+	SetRoundWinningKillReplayKillClasses( true, true ) // both titan and pilot kills are tracked
 	
 	AddDamageCallback( "player", OnPlayerDamaged )
 	AddDamageCallback( "npc_titan", OnTitanDamaged )
 	
-	AddCallback_OnPilotBecomesTitan( GamemodeLTS_RefreshHighlight )
-	AddCallback_OnTitanBecomesPilot( GamemodeLTS_RefreshHighlight )
+	AddCallback_OnPilotBecomesTitan( RefreshThirtySecondWallhackHighlight )
+	AddCallback_OnTitanBecomesPilot( RefreshThirtySecondWallhackHighlight )
 	
-	ClassicMP_SetCustomIntro( GamemodeLTS_Intro, 0.0 )
+	SetTimeoutWinnerDecisionFunc( CheckTitanHealthForDraw )
+	
+	ClassicMP_SetCustomIntro( GamemodeLTS_Intro, 0.0 ) // dont any sorta 
 }
 
+// this should also probably be moved into a generic intro rather than being lts-specific
 void function GamemodeLTS_Intro()
 {
-	AddCallback_GameStateEnter( eGameState.Prematch, GamemodeLTS_IntroOnPrematchStart )
+	AddCallback_GameStateEnter( eGameState.Prematch, LTSIntroOnPrematchStart )
 }
 
-void function GamemodeLTS_IntroOnPrematchStart()
+void function LTSIntroOnPrematchStart()
 {
 	ClassicMP_OnIntroStarted()
-	
-	SetGameState( eGameState.Playing )
+
 	foreach ( entity player in GetPlayerArray() )
-		thread GamemodeLTS_IntroSpawnPlayer( player )
+		thread LTSIntroSpawnPlayer( player )
+	
+	wait 2.0 // literally a guess number for how long the drop might take
 	
 	ClassicMP_OnIntroFinished()
 	
-	SetKillcamsEnabled( true )
-	file.shouldDoHighlights = false
 	thread GamemodeLTS_PlayingThink()
 }
 
-void function GamemodeLTS_IntroSpawnPlayer( entity player )
+void function LTSIntroSpawnPlayer( entity player )
 {
 	if ( IsAlive( player ) )
 	{
 		player.Die()
-		WaitFrame()
+		WaitFrame() // this doesn't work for some reason but the player will die in roundend anyway so not really an issue
 	}
-	
-	RespawnAsTitan( player, false )
+
+	thread RespawnAsTitan( player, false )
 
 	while ( !player.IsTitan() )
 		WaitFrame()
@@ -69,12 +69,9 @@ void function GamemodeLTS_IntroSpawnPlayer( entity player )
 
 void function GamemodeLTS_PlayingThink()
 {
-	WaitFrame() // due to how this is all written the prematch callbacks might not've run by the time this starts
-	// so we need to wait a frame to ensure they've been run so gameEndTime is set
 	svGlobal.levelEnt.EndSignal( "RoundEnd" ) // end this on round end
 	
 	float endTime = expect float ( GetServerVar( "gameEndTime" ) )
-	print( "ENDTIME " + endTime )
 	
 	// wait until 30sec left 
 	wait endTime - 30 - Time()
@@ -83,18 +80,14 @@ void function GamemodeLTS_PlayingThink()
 		// warn there's 30 seconds left
 		Remote_CallFunction_NonReplay( player, "ServerCallback_LTSThirtySecondWarning" )
 		
-		// do highlights
-		file.shouldDoHighlights = true
-		GamemodeLTS_RefreshHighlight( player, null )
+		// do initial highlight
+		RefreshThirtySecondWallhackHighlight( player, null )
 	}
-	
-	wait endTime - Time()
-	thread CheckTitansForDraw() // need to thread this so we don't accidentally signal roundend in the same thread that'll be ended when we hit roundend
 }
 
-void function GamemodeLTS_RefreshHighlight( entity player, entity titan )
+void function RefreshThirtySecondWallhackHighlight( entity player, entity titan )
 {
-	if ( !file.shouldDoHighlights )
+	if ( TimeSpentInCurrentState() < 30.0 )
 		return
 		
 	Highlight_SetEnemyHighlight( player, "enemy_sonar" ) // i think this needs a different effect, this works for now tho
@@ -103,133 +96,59 @@ void function GamemodeLTS_RefreshHighlight( entity player, entity titan )
 		Highlight_SetEnemyHighlight( player.GetPetTitan(), "enemy_sonar" )
 }
 
-void function CheckTeamTitans( int team )
+int function CheckTitanHealthForDraw()
 {
-	if ( GetGameState() != eGameState.Playing )
-		return
-
-	array<entity> teamPlayers = GetPlayerArrayOfTeam( team )
+	int militiaTitans
+	int imcTitans
 	
-	int numLivingTitans = 0
-	int numLivingPlayers = 0
-	foreach ( entity player in teamPlayers )
+	float militiaHealth
+	float imcHealth
+	
+	foreach ( entity titan in GetTitanArray() )
 	{
-		// wouldn't it be easier just to only track and increment numLivingTitans if the owner is alive?
-		// yes it would
-		// but for some reason this is not how respawn does it
-		if ( IsAlive( player ) )
-			numLivingPlayers++
-	
-		if ( IsAlive( player.GetPetTitan() ) || player.IsTitan() )
-			numLivingTitans++
+		if ( titan.GetTeam() == TEAM_MILITIA )
+		{
+			// doomed is counted as 0 health
+			militiaHealth += titan.GetTitanSoul().IsDoomed() ? 0.0 : GetHealthFrac( titan )
+			militiaTitans++
+		}
+		else
+		{
+			// doomed is counted as 0 health in this
+			imcHealth += titan.GetTitanSoul().IsDoomed() ? 0.0 : GetHealthFrac( titan )
+			imcTitans++
+		}
 	}
-			
-	if ( numLivingPlayers == 0 || numLivingTitans == 0 )
-	{
-		SetKillcamsEnabled( false ) // make sure killcams can't interrupt the round winning kill replay
-		//SetRoundWinningKillReplayInfo( file.lastDamageInfoVictim, file.lastDamageInfoAttacker, file.lastDamageInfoMethodOfDeath, file.lastDamageInfoTime )
-		SetWinner( GetOtherTeam( team ), "#GAMEMODE_ENEMY_TITANS_DESTROYED", "#GAMEMODE_FRIENDLY_TITANS_DESTROYED" ) 
-	}
-}
-
-void function CheckTitansForDraw()
-{
-	int militiaLivingTitans
-	int imcLivingTitans
 	
-	float militiaCombinedHealth
-	float imcCombinedHealth
-
-	foreach ( entity player in GetPlayerArray() )
-	{
-		// only need to track titans for this, can assume that neither team has lost due to titan death if the round is still going
-		entity titan = IsAlive( player.GetPetTitan() ) ? player.GetPetTitan() : player
-		if ( titan.IsPlayer() && !titan.IsTitan() )
-			continue
+	// note: due to how stuff is set up rn, there's actually no way to do win/loss reasons in timeout decision funcs
+	// as soon as there is, strings in question are "#GAMEMODE_TITAN_TITAN_ADVANTAGE" and "#GAMEMODE_TITAN_TITAN_DISADVANTAGE"
+	
+	if ( militiaTitans != imcTitans )
+		return militiaTitans > imcTitans ? TEAM_MILITIA : TEAM_IMC
+	else if ( militiaHealth != imcHealth )
+		return militiaHealth > imcHealth ? TEAM_MILITIA : TEAM_IMC
 		
-		if ( IsAlive( titan ) )
-			if ( player.GetTeam() == TEAM_MILITIA )
-			{
-				// doomed is counted as 0 health in this
-				militiaCombinedHealth += titan.GetTitanSoul().IsDoomed() ? 0.0 : GetHealthFrac( titan )
-				militiaLivingTitans++
-			}
-			else
-			{
-				// doomed is counted as 0 health in this
-				imcCombinedHealth += titan.GetTitanSoul().IsDoomed() ? 0.0 : GetHealthFrac( titan )
-				imcLivingTitans++
-			}
-	}
-	
-	SetKillcamsEnabled( false )
-	//SetRoundWinningKillReplayInfo( null, null, 0, 0 ) // make sure we don't do a replay
-	
-	// default if both teams are equal
-	int winner = TEAM_UNASSIGNED
-	
-	string winnerSubstr
-	string loserSubstr
-	
-	if ( militiaLivingTitans != imcLivingTitans ) // one team has a titan lead
-	{
-		winnerSubstr = "#GAMEMODE_TITAN_TITAN_ADVANTAGE"
-		loserSubstr = "#GAMEMODE_TITAN_TITAN_DISADVANTAGE"
-		
-		winner =  militiaLivingTitans > imcLivingTitans ? TEAM_MILITIA : TEAM_IMC
-	}
-	else if ( militiaCombinedHealth != imcCombinedHealth ) // one team has a health lead
-	{
-		winnerSubstr = "#GAMEMODE_TITAN_DAMAGE_ADVANTAGE"
-		loserSubstr = "#GAMEMODE_TITAN_DAMAGE_DISADVANTAGE"
-
-		winner = militiaCombinedHealth > imcCombinedHealth ? TEAM_MILITIA : TEAM_IMC
-	}
-	
-	print( "CheckTitansForDraw(): " + winner )
-	SetWinner( winner, winnerSubstr, loserSubstr )
+	return TEAM_UNASSIGNED
 }
 
-void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
-{
-	file.lastDamageInfoVictim = victim
-	file.lastDamageInfoAttacker = DamageInfo_GetAttacker( damageInfo )
-	file.lastDamageInfoMethodOfDeath = DamageInfo_GetDamageSourceIdentifier( damageInfo )
-	file.lastDamageInfoTime = Time()
-	
-	if ( !victim.isSpawning )
-		CheckTeamTitans( victim.GetTeam() )
-}
-
-void function OnTitanKilled( entity titan, var damageInfo )
-{
-	file.lastDamageInfoVictim = titan.GetOwner()
-	file.lastDamageInfoAttacker = DamageInfo_GetAttacker( damageInfo )
-	file.lastDamageInfoMethodOfDeath = DamageInfo_GetDamageSourceIdentifier( damageInfo )
-	file.lastDamageInfoTime = Time()
-	
-	if ( IsPetTitan( titan ) && !titan.GetBossPlayer().isSpawning )
-		CheckTeamTitans( titan.GetTeam() )
-}
-
-void function AddToDamageStat( var damageInfo )
+// this should be generic, not restricted to a specific gamemode
+void function AddToTitanDamageStat( entity victim, var damageInfo )
 {
 	// todo: this needs to not count selfdamage
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
 	float amount = DamageInfo_GetDamage( damageInfo )
 
-	if ( attacker.IsPlayer() )
+	if ( attacker.IsPlayer() && attacker != victim )
 		attacker.AddToPlayerGameStat( PGS_ASSAULT_SCORE, amount ) // titan damage on 
 }
 
 void function OnPlayerDamaged( entity player, var damageInfo )
 {
 	if ( player.IsTitan() )
-		AddToDamageStat( damageInfo )
+		AddToTitanDamageStat( player, damageInfo )
 }
 
 void function OnTitanDamaged( entity titan, var damageInfo )
 {
-	if ( IsPetTitan( titan ) )
-		AddToDamageStat( damageInfo ) 
+	AddToTitanDamageStat( titan, damageInfo ) 
 }

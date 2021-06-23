@@ -39,11 +39,14 @@ struct {
 	bool roundWinningKillReplayTrackPilotKills = true 
 	bool roundWinningKillReplayTrackTitanKills = false
 	
+	float roundWinningKillReplayTime
 	entity roundWinningKillReplayVictim
 	entity roundWinningKillReplayAttacker
 	int roundWinningKillReplayMethodOfDeath
 	float roundWinningKillReplayTimeOfDeath
 	float roundWinningKillReplayHealthFrac
+	
+	array<void functionref()> roundEndCleanupCallbacks
 } file
 
 void function PIN_GameStart()
@@ -69,9 +72,10 @@ void function PIN_GameStart()
 	AddCallback_GameStateEnter( eGameState.SuddenDeath, GameStateEnter_SuddenDeath )
 	AddCallback_GameStateEnter( eGameState.Postmatch, GameStateEnter_Postmatch )
 	
-	AddCallback_OnClientConnected( SetSkyCam ) // had no idea where to put this lol
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	AddDeathCallback( "npc_titan", OnTitanKilled )
+	
+	RegisterSignal( "CleanUpEntitiesForRoundEnd" )
 }
 
 void function SetGameState( int newState )
@@ -241,11 +245,16 @@ void function GameStateEnter_WinnerDetermined()
 
 void function GameStateEnter_WinnerDetermined_Threaded()
 {
+	bool killcamsWereEnabled = KillcamsEnabled()
+	if ( killcamsWereEnabled ) // dont want killcams to interrupt stuff
+		SetKillcamsEnabled( false )
+
 	WaitFrame() // wait a frame so other scripts can setup killreplay stuff
 
 	entity replayAttacker = file.roundWinningKillReplayAttacker
-	bool doReplay = Replay_IsEnabled() && Evac_IsEnabled() && IsRoundWinningKillReplayEnabled() && IsValid( replayAttacker )
-	
+	bool doReplay = Replay_IsEnabled() && !( !IsRoundBased() && Evac_IsEnabled() ) && IsRoundWinningKillReplayEnabled() && IsValid( replayAttacker )
+				 && Time() - file.roundWinningKillReplayTime <= ROUND_WINNING_KILL_REPLAY_LENGTH_OF_REPLAY
+ 	
 	float replayLength = 2.0 // extra delay if no replay
 	if ( doReplay )
 	{
@@ -256,7 +265,15 @@ void function GameStateEnter_WinnerDetermined_Threaded()
 	foreach ( entity player in GetPlayerArray() )
 		thread PlayerWatchesRoundWinningKillReplay( player, doReplay, replayLength )
 	
-	wait replayLength + ROUND_WINNING_KILL_REPLAY_SCREEN_FADE_TIME
+	wait ROUND_WINNING_KILL_REPLAY_SCREEN_FADE_TIME
+	CleanUpEntitiesForRoundEnd() // fade should be done by this point, so cleanup stuff now when people won't see
+	wait replayLength 
+	
+	WaitFrame() // prevent a race condition with PlayerWatchesRoundWinningKillReplay
+	file.roundWinningKillReplayAttacker = null // clear this
+	
+	if ( killcamsWereEnabled )
+		SetKillcamsEnabled( true )
 	
 	if ( IsRoundBased() )
 	{
@@ -266,7 +283,7 @@ void function GameStateEnter_WinnerDetermined_Threaded()
 		if ( max( GameRules_GetTeamScore( TEAM_IMC ), GameRules_GetTeamScore( TEAM_MILITIA ) ) >= GameMode_GetRoundScoreLimit( GAMETYPE ) )
 			SetGameState( eGameState.Postmatch )
 		else if ( file.switchSidesBased && !file.hasSwitchedSides )
-			SetGameState( eGameState.SwitchingSides )
+			SetGameState( eGameState.SwitchingSides ) // note: switchingsides will handle setting to pickloadout and prematch by itself
 		else if ( file.usePickLoadoutScreen )
 			SetGameState( eGameState.PickLoadout )
 		else
@@ -300,12 +317,6 @@ void function PlayerWatchesRoundWinningKillReplay( entity player, bool doReplay,
 		ScreenFadeToBlackForever( player, ROUND_WINNING_KILL_REPLAY_SCREEN_FADE_TIME )
 		wait ROUND_WINNING_KILL_REPLAY_SCREEN_FADE_TIME
 		
-		// do this after screen goes black so people can't see the titan dying
-		// don't use .die since that makes explosions and that
-		// todo: need a function specifically for cleaning up npcs and stuff on round end, this is imperfect
-		if ( IsAlive( player.GetPetTitan() ) )
-			player.GetPetTitan().Destroy()
-			
 		if ( doReplay )
 		{
 			player.SetPredictionEnabled( false ) // prediction fucks with replays
@@ -347,8 +358,15 @@ void function GameStateEnter_SwitchingSides()
 
 void function GameStateEnter_SwitchingSides_Threaded()
 {
+	bool killcamsWereEnabled = KillcamsEnabled()
+	if ( killcamsWereEnabled ) // dont want killcams to interrupt stuff
+		SetKillcamsEnabled( false )
+		
+	WaitFrame() // wait a frame so callbacks can set killreplay info
+
 	entity replayAttacker = file.roundWinningKillReplayAttacker
 	bool doReplay = Replay_IsEnabled() && IsRoundWinningKillReplayEnabled() && IsValid( replayAttacker ) && !IsRoundBased() // for roundbased modes, we've already done the replay
+				 && Time() - file.roundWinningKillReplayTime <= ROUND_WINNING_KILL_REPLAY_LENGTH_OF_REPLAY
 	
 	float replayLength = SWITCHING_SIDES_DELAY_REPLAY // extra delay if no replay
 	if ( doReplay )
@@ -360,9 +378,15 @@ void function GameStateEnter_SwitchingSides_Threaded()
 	foreach ( entity player in GetPlayerArray() )
 		thread PlayerWatchesSwitchingSidesKillReplay( player, doReplay, replayLength )
 
-	wait SWITCHING_SIDES_DELAY_REPLAY + replayLength
+	wait SWITCHING_SIDES_DELAY_REPLAY
+	CleanUpEntitiesForRoundEnd() // fade should be done by this point, so cleanup stuff now when people won't see
+	wait replayLength
+	
+	if ( killcamsWereEnabled )
+		SetKillcamsEnabled( true )
 	
 	file.hasSwitchedSides = true
+	svGlobal.levelEnt.Signal( "RoundEnd" ) // might be good to get a new signal for this? not 100% necessary tho i think
 	SetServerVar( "switchedSides", 1 )
 	file.roundWinningKillReplayAttacker = null // reset this after replay
 	
@@ -378,11 +402,6 @@ void function PlayerWatchesSwitchingSidesKillReplay( entity player, bool doRepla
 
 	ScreenFadeToBlackForever( player, SWITCHING_SIDES_DELAY_REPLAY ) // automatically cleared 
 	wait SWITCHING_SIDES_DELAY_REPLAY
-	
-	// do this after screen goes black so people can't see the titan dying
-	// don't use .die since that makes explosions and that
-	if ( IsAlive( player.GetPetTitan() ) )
-		player.GetPetTitan().Destroy()
 	
 	if ( doReplay )
 	{
@@ -483,13 +502,6 @@ void function ForceFadeToBlack( entity player )
 
 
 // shared across multiple gamestates
-void function SetSkyCam( entity player )
-{
-	entity skycam = GetEnt( "skybox_cam_level" )
-	
-	if ( skycam != null )
-		player.SetSkyCamera( skycam )
-}
 
 void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
@@ -499,6 +511,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	// set round winning killreplay info here if no custom replaydelay
 	if ( file.roundWinningKillReplayTrackPilotKills )
 	{
+		file.roundWinningKillReplayTime = Time()
 		file.roundWinningKillReplayVictim = victim
 		file.roundWinningKillReplayAttacker = attacker
 		file.roundWinningKillReplayMethodOfDeath = DamageInfo_GetDamageSourceIdentifier( damageInfo )
@@ -532,7 +545,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	}
 	
 	if ( ( Riff_EliminationMode() == eEliminationMode.Titans || Riff_EliminationMode() == eEliminationMode.PilotsTitans ) && victim.IsTitan() ) // need an extra check for this
-			OnTitanKilled( victim, damageInfo )
+		OnTitanKilled( victim, damageInfo )
 }
 
 void function OnTitanKilled( entity victim, var damageInfo )
@@ -545,6 +558,7 @@ void function OnTitanKilled( entity victim, var damageInfo )
 	{
 		entity attacker = DamageInfo_GetAttacker( damageInfo )
 	
+		file.roundWinningKillReplayTime = Time()
 		file.roundWinningKillReplayVictim = victim
 		file.roundWinningKillReplayAttacker = attacker
 		file.roundWinningKillReplayMethodOfDeath = DamageInfo_GetDamageSourceIdentifier( damageInfo )
@@ -582,6 +596,36 @@ void function OnTitanKilled( entity victim, var damageInfo )
 	}
 }
 
+void function AddCallback_OnRoundEndCleanup( void functionref() callback )
+{
+	file.roundEndCleanupCallbacks.append( callback )
+}
+
+void function CleanUpEntitiesForRoundEnd()
+{
+	// this function should clean up any and all entities that need to be removed between rounds, ideally at a point where it isn't noticable to players
+	SetPlayerDeathsHidden( true ) // hide death sounds and such so people won't notice they're dying
+	
+	foreach ( entity player in GetPlayerArray() )
+	{
+		if ( IsAlive( player ) )
+			player.Die()
+		
+		if ( IsAlive( player.GetPetTitan() ) )
+			player.GetPetTitan().Destroy()
+	}
+	
+	foreach ( entity npc in GetNPCArray() )
+		npc.Die()
+	
+	// allow other scripts to clean stuff up too
+	svGlobal.levelEnt.Signal( "CleanUpEntitiesForRoundEnd" ) 
+	foreach ( void functionref() callback in file.roundEndCleanupCallbacks )
+		callback()
+	
+	SetPlayerDeathsHidden( false )
+}
+
 
 
 // stuff for gamemodes to call
@@ -606,16 +650,17 @@ void function SetShouldUseRoundWinningKillReplay( bool shouldUse )
 	SetServerVar( "roundWinningKillReplayEnabled", shouldUse )
 }
 
-// is this necessary? idk really
 void function SetRoundWinningKillReplayKillClasses( bool pilot, bool titan )
 {
 	file.roundWinningKillReplayTrackPilotKills = pilot
 	file.roundWinningKillReplayTrackTitanKills = titan // player kills in titans should get tracked anyway, might be worth renaming this
 }
 
-void function SetRoundWinningKillReplayAttacker( entity target )
+void function SetRoundWinningKillReplayAttacker( entity attacker )
 {
-	file.roundWinningKillReplayAttacker = target
+	file.roundWinningKillReplayTime = Time()
+	file.roundWinningKillReplayHealthFrac = GetHealthFrac( attacker )
+	file.roundWinningKillReplayAttacker = attacker
 }
 
 void function SetWinner( int team, string winningReason = "", string losingReason = "" )
@@ -664,16 +709,6 @@ void function AddTeamScore( int team, int amount )
 		SetGameState( eGameState.SwitchingSides )
 }
 
-void function SetRoundWinningKillReplayInfo( entity victim, entity attacker, int methodOfDeath, float timeOfDeath ) // can't just pass in a damageinfo because they seem to die over time somehow
-{
-	file.roundWinningKillReplayVictim = victim
-	file.roundWinningKillReplayAttacker = attacker
-	file.roundWinningKillReplayMethodOfDeath = methodOfDeath
-	file.roundWinningKillReplayTimeOfDeath = timeOfDeath
-	if ( attacker != null )
-		file.roundWinningKillReplayHealthFrac = GetHealthFrac( attacker )
-}
-
 void function SetTimeoutWinnerDecisionFunc( int functionref() callback )
 {
 	file.timeoutWinnerDecisionFunc = callback
@@ -696,7 +731,7 @@ bool function ShouldRunEvac()
 	return true
 }
 
-void function GiveTitanToPlayer(entity player)
+void function GiveTitanToPlayer( entity player )
 {
 
 }

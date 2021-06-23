@@ -12,6 +12,7 @@ global function TryGameModeAnnouncement
 
 global function SetKillcamsEnabled
 global function KillcamsEnabled
+global function SetPlayerDeathsHidden
 
 global function ShouldEntTakeDamage_SPMP
 global function GetTitanBuildTime
@@ -19,6 +20,7 @@ global function TitanPlayerHotDropsIntoLevel
 
 struct {
 	bool killcamsEnabled = true
+	bool playerDeathsHidden = false
 	
 	entity intermissionCamera
 	array<entity> specCams 
@@ -147,6 +149,10 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 	NotifyClientsOfConnection( player, 1 )
 	PlayCurrentTeamMusicEventsOnPlayer( player )
 	SetCurrentTeamObjectiveForPlayer( player )
+
+	entity skycam = GetEnt( "skybox_cam_level" )
+	if ( skycam != null )
+		player.SetSkyCamera( skycam )
 
 	FinishClientScriptInitialization( player )
 
@@ -304,7 +310,8 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 			player.SetObserverTarget( null )
 	}
 	
-	Remote_CallFunction_NonReplay( player, "ServerCallback_YouDied", attacker.GetEncodedEHandle(), GetHealthFrac( attacker ), methodOfDeath )
+	if ( !file.playerDeathsHidden )
+		Remote_CallFunction_NonReplay( player, "ServerCallback_YouDied", attacker.GetEncodedEHandle(), GetHealthFrac( attacker ), methodOfDeath )
 
 	float deathcamLength = GetDeathCamLength( player )
 	wait deathcamLength
@@ -385,15 +392,6 @@ void function EndReplayOnTime( entity player, float replayLength )
 void function DecideRespawnPlayer( entity player )
 {
 	// this isn't even used atm, could likely be removed if some vanilla code didn't rely on it
-
-	Assert( IsValid( player ), player + " is invalid!!" )
-	Assert( !IsAlive( player ), player + " is already alive" )
-	Assert( player.hasConnected, player + "isn't connected" )
-	
-	if ( GetClassicMPMode() && GetGameState() < eGameState.Playing )
-		return // let intro functions handle spawning if we're in classicmp and not spawned yet
-		
-	
 }
 
 void function RespawnAsPilot( entity player, bool manualPosition = false )
@@ -437,7 +435,7 @@ void function RespawnAsTitan( entity player, bool manualPosition = false )
 	vector xyOffset = RotateAroundOrigin2D( < 44, 0, 520 >, < 0, 0, 0 >, spawnpoint.GetAngles().y )
 	
 	camera.SetLocalOrigin( xyOffset )
-	camera.SetLocalAngles( < camera.GetAngles().x, spawnpoint.GetAngles().y, camera.GetAngles().z > ) 
+	camera.SetLocalAngles( < camera.GetAngles().x, spawnpoint.GetAngles().y, camera.GetAngles().z > ) // this straight up just does not work lol
 	camera.Fire( "Enable", "!activator", 0, player )
 	
 	waitthread TitanHotDrop( titan, "at_hotdrop_01", spawnpoint.GetOrigin(), spawnpoint.GetAngles(), player, camera ) // do hotdrop anim
@@ -473,7 +471,6 @@ void function PlayerBecomesSpectator( entity player )
 		targets.append( file.intermissionCamera )
 		foreach( entity cam in file.specCams )
 			targets.append( cam )
-			
 			
 		array<entity> targetPlayers
 		if ( IsFFAGame() )
@@ -566,9 +563,13 @@ bool function KillcamsEnabled()
 	return file.killcamsEnabled
 }
 
+void function SetPlayerDeathsHidden( bool hidden )
+{
+	file.playerDeathsHidden = hidden
+}
+
+
 // stuff to change later
-
-
 
 bool function ShouldEntTakeDamage_SPMP( entity ent, var damageInfo )
 {
