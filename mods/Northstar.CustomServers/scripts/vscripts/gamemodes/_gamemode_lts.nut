@@ -14,6 +14,7 @@ void function GamemodeLts_Init()
 {
 	// gamemode settings
 	SetShouldUsePickLoadoutScreen( true )
+	SetSwitchSidesBased( true )
 	SetRoundBased( true )
 	SetRespawnsEnabled( false )
 	Riff_ForceSetEliminationMode( eEliminationMode.PilotsTitans )
@@ -28,7 +29,7 @@ void function GamemodeLts_Init()
 	
 	SetTimeoutWinnerDecisionFunc( CheckTitanHealthForDraw )
 	
-	ClassicMP_SetCustomIntro( GamemodeLTS_Intro, 0.0 ) // dont any sorta 
+	ClassicMP_SetCustomIntro( GamemodeLTS_Intro, 0.0 ) // dont any sorta timer
 }
 
 // this should also probably be moved into a generic intro rather than being lts-specific
@@ -71,10 +72,10 @@ void function GamemodeLTS_PlayingThink()
 {
 	svGlobal.levelEnt.EndSignal( "RoundEnd" ) // end this on round end
 	
-	float endTime = expect float ( GetServerVar( "gameEndTime" ) )
+	float endTime = expect float ( GetServerVar( "roundEndTime" ) )
 	
 	// wait until 30sec left 
-	wait endTime - 30 - Time()
+	wait ( endTime - 30 ) - Time()
 	foreach ( entity player in GetPlayerArray() )
 	{	
 		// warn there's 30 seconds left
@@ -87,7 +88,7 @@ void function GamemodeLTS_PlayingThink()
 
 void function RefreshThirtySecondWallhackHighlight( entity player, entity titan )
 {
-	if ( TimeSpentInCurrentState() < 30.0 )
+	if ( TimeSpentInCurrentState() < expect float ( GetServerVar( "roundEndTime" ) ) - 30.0 )
 		return
 		
 	Highlight_SetEnemyHighlight( player, "enemy_sonar" ) // i think this needs a different effect, this works for now tho

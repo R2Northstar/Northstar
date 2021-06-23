@@ -218,7 +218,7 @@ void function GameStateEnter_Playing_Threaded()
 			else
 				winningTeam = GameScore_GetWinningTeam()
 			
-			if ( file.switchSidesBased && !file.hasSwitchedSides )
+			if ( file.switchSidesBased && !file.hasSwitchedSides && !IsRoundBased() ) // in roundbased modes, we handle this in setwinner
 				SetGameState( eGameState.SwitchingSides )
 			else if ( file.suddenDeathBased && winningTeam == TEAM_UNASSIGNED ) // suddendeath if we draw and suddendeath is enabled and haven't switched sides
 				SetGameState( eGameState.SuddenDeath )
@@ -258,7 +258,10 @@ void function GameStateEnter_WinnerDetermined_Threaded()
 	float replayLength = 2.0 // extra delay if no replay
 	if ( doReplay )
 	{
-		replayLength = min( ROUND_WINNING_KILL_REPLAY_LENGTH_OF_REPLAY, Time() - replayAttacker.s.respawnTime ) // 7.5s unless player lifetime < that
+		replayLength = ROUND_WINNING_KILL_REPLAY_LENGTH_OF_REPLAY
+		if ( "respawnTime" in replayAttacker.s && Time() - replayAttacker.s.respawnTime < replayLength )
+			replayLength += Time() - expect float ( replayAttacker.s.respawnTime )
+		
 		SetServerVar( "roundWinningKillReplayEntHealthFrac", file.roundWinningKillReplayHealthFrac )
 	}
 	
@@ -278,11 +281,15 @@ void function GameStateEnter_WinnerDetermined_Threaded()
 	if ( IsRoundBased() )
 	{
 		svGlobal.levelEnt.Signal( "RoundEnd" )
-		SetServerVar( "roundsPlayed", GetServerVar( "roundsPlayed" ) + 1 )
+		int roundsPlayed = expect int ( GetServerVar( "roundsPlayed" ) )
+		SetServerVar( "roundsPlayed", roundsPlayed + 1 )
 		
-		if ( max( GameRules_GetTeamScore( TEAM_IMC ), GameRules_GetTeamScore( TEAM_MILITIA ) ) >= GameMode_GetRoundScoreLimit( GAMETYPE ) )
+		float highestScore = max( GameRules_GetTeamScore( TEAM_IMC ), GameRules_GetTeamScore( TEAM_MILITIA ) )
+		int roundScoreLimit = GameMode_GetRoundScoreLimit( GAMETYPE )
+		
+		if ( highestScore >= roundScoreLimit )
 			SetGameState( eGameState.Postmatch )
-		else if ( file.switchSidesBased && !file.hasSwitchedSides )
+		else if ( file.switchSidesBased && !file.hasSwitchedSides && highestScore >= ( roundScoreLimit.tofloat() / 2.0 ) ) // round up
 			SetGameState( eGameState.SwitchingSides ) // note: switchingsides will handle setting to pickloadout and prematch by itself
 		else if ( file.usePickLoadoutScreen )
 			SetGameState( eGameState.PickLoadout )
@@ -366,12 +373,15 @@ void function GameStateEnter_SwitchingSides_Threaded()
 
 	entity replayAttacker = file.roundWinningKillReplayAttacker
 	bool doReplay = Replay_IsEnabled() && IsRoundWinningKillReplayEnabled() && IsValid( replayAttacker ) && !IsRoundBased() // for roundbased modes, we've already done the replay
-				 && Time() - file.roundWinningKillReplayTime <= ROUND_WINNING_KILL_REPLAY_LENGTH_OF_REPLAY
+				 && Time() - file.roundWinningKillReplayTime <= SWITCHING_SIDES_DELAY
 	
 	float replayLength = SWITCHING_SIDES_DELAY_REPLAY // extra delay if no replay
 	if ( doReplay )
-	{
-		replayLength = min( SWITCHING_SIDES_DELAY, Time() - replayAttacker.s.respawnTime ) // 6s unless player lifetime < that
+	{		
+		replayLength = SWITCHING_SIDES_DELAY
+		if ( "respawnTime" in replayAttacker.s && Time() - replayAttacker.s.respawnTime < replayLength )
+			replayLength += Time() - expect float ( replayAttacker.s.respawnTime )
+			
 		SetServerVar( "roundWinningKillReplayEntHealthFrac", file.roundWinningKillReplayHealthFrac )
 	}
 	
@@ -509,7 +519,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		return
 
 	// set round winning killreplay info here if no custom replaydelay
-	if ( file.roundWinningKillReplayTrackPilotKills )
+	if ( file.roundWinningKillReplayTrackPilotKills && victim != attacker )
 	{
 		file.roundWinningKillReplayTime = Time()
 		file.roundWinningKillReplayVictim = victim
@@ -554,10 +564,9 @@ void function OnTitanKilled( entity victim, var damageInfo )
 		return
 
 	// set round winning killreplay info here if no custom replaydelay
-	if ( file.roundWinningKillReplayTrackTitanKills )
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	if ( file.roundWinningKillReplayTrackTitanKills && victim != attacker )
 	{
-		entity attacker = DamageInfo_GetAttacker( damageInfo )
-	
 		file.roundWinningKillReplayTime = Time()
 		file.roundWinningKillReplayVictim = victim
 		file.roundWinningKillReplayAttacker = attacker

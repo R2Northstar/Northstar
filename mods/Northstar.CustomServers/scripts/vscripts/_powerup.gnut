@@ -11,6 +11,7 @@ void function PowerUps_Init()
 		
 	AddSpawnCallbackEditorClass( "script_ref", "script_power_up_other", AddPowerupSpawn )
 	AddCallback_OnTouchHealthKit( "item_powerup", OnPowerupCollected )
+	AddCallback_GameStateEnter( eGameState.Prematch, RespawnPowerups )
 }
 
 void function AddPowerupSpawn( entity spawnpoint )
@@ -40,22 +41,20 @@ void function PowerupSpawnerThink( entity spawnpoint, PowerUp powerupDef )
 	while ( true )
 	{
 		if ( !powerupDef.spawnFunc() )
-		{
-			// unsure if this is the best way of doing it
-			WaitFrame()
-			continue
-		}
+			return
 						
 		entity powerup = CreateEntity( "item_powerup" )
 		
+		// need to do this otherwise the position seems to mess up occasionally
+		powerup.SetOrigin( base.GetOrigin() )
+		powerup.SetAngles( base.GetAngles() )
 		powerup.SetParent( base ) // parenting ensures that gravity isn't an issue
 		powerup.SetValueForModelKey( powerupDef.model )
 		
 		DispatchSpawn( powerup )
 		
-		// offset from parent's position/angles
-		powerup.SetOrigin( powerupDef.modelOffset )
-		powerup.SetAngles( powerupDef.modelAngles )
+		powerup.SetLocalOrigin( powerupDef.modelOffset )
+		powerup.SetLocalAngles( powerupDef.modelAngles )
 		
 		powerup.SetModel( powerupDef.model )
 		powerup.s.powerupRef <- powerupDef.itemRef
