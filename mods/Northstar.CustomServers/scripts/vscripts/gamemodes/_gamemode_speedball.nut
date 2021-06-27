@@ -25,7 +25,7 @@ void function GamemodeSpeedball_Init()
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	SetTimeoutWinnerDecisionFunc( TimeoutCheckFlagHolder )
 
-	ClassicMP_SetCustomIntro( ClassicMP_DefaultNoIntro_Setup, NOINTRO_INTRO_LENGTH )
+	ClassicMP_SetCustomIntro( ClassicMP_DefaultNoIntro_Setup, ClassicMP_DefaultNoIntro_GetLength() )
 }
 
 void function CreateFlag( entity flagSpawn )

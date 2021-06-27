@@ -996,6 +996,34 @@ playlists
 				gamemode_score_hint #GAMEMODE_SCORE_HINT_TDM
 			}
 		}
+		ctf_comp
+		{
+			inherit defaults
+			vars
+			{
+				name #GAMEMODE_ctf_comp
+				lobbytitle #PL_capture_the_flag_lobby
+				description #PL_capture_the_flag_desc
+				hint #PL_capture_the_flag_hint
+				abbreviation #PL_capture_the_flag_abbr
+				image ctf
+				respawn_delay 8
+				scorelimit 5
+				suddendeath_timelimit 2
+				timelimit 12
+				max_players 10
+				phase_shift_drop_flag 1
+				ctf_flag_return_time 1
+				color		"0 119 245 255"
+
+				gamemode_score_hint #GAMEMODE_SCORE_HINT_CTF
+				gamemode_bullet_001	#GAMEMODE_BULLET_CTF_001
+				gamemode_bullet_002	#GAMEMODE_BULLET_CTF_002
+				gamemode_bullet_003	#GAMEMODE_BULLET_CTF_003
+				gamemode_bullet_004	#GAMEMODE_BULLET_CTF_004
+				gamemode_bullet_005	#GAMEMODE_BULLET_CTF_005
+			}
+		}
 		
 		
 // END OF MP GAMEMODES LINE ----------------------------------------------------
@@ -2680,6 +2708,63 @@ playlists
 						mp_relic02 1
 						mp_wargames 1
 						mp_rise 1
+					}
+				}
+			}
+		}
+		ctf_comp
+		{
+			inherit defaults
+			vars
+			{
+				name #GAMEMODE_ctf_comp
+				lobbytitle #PL_capture_the_flag_lobby
+				description #PL_capture_the_flag_desc
+				abbreviation #PL_capture_the_flag_abbr
+				image ctf
+				mixtape_slot 4
+				mixtape_timeout 120
+				visible 1
+				
+				// comp-exclusive settings
+				// note: these don't display right on the private match menu yet
+				pilot_health_multiplier 1.25
+				respawn_delay 7.0
+				
+				boosts_enabled 1 // this is actually disabled lol
+				earn_meter_pilot_overdrive 0
+				earn_meter_pilot_multiplier 0.5
+				earn_meter_titan_multiplier 0.5
+				
+				scorelimit 6
+				timelimit 14
+			}
+			gamemodes
+			{
+				ctf
+				{
+					maps
+					{
+						mp_complex3 1
+						mp_drydock 2
+						mp_glitch 1
+						mp_homestead 2
+						mp_eden 2
+						mp_forwardbase_kodai 1
+						mp_black_water_canal 2
+						mp_glitch 1
+						mp_angel_city 1
+						mp_colony02 1
+                        mp_relic02 1
+						mp_grave 2
+						mp_homestead 2
+						mp_drydock 2
+						mp_glitch 1
+						mp_thaw 1
+						mp_eden 2
+						mp_black_water_canal 2
+						mp_glitch 1
+                        mp_relic02 1
 					}
 				}
 			}
@@ -4876,6 +4961,8 @@ playlists
 				"PL_fastball_abbr" "FB"
 				"FASTBALL_PANEL_CAPTURED" "%s1 captured panel %s2"
 				"SCOREBOARD_FASTBALL_HACKS" "Panels Captured"
+				
+				"GAMEMODE_ctf_comp" "Competitive CTF"
 				
 				// FAQ - Community
 				//

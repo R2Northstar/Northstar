@@ -417,6 +417,8 @@ void function PlayerWatchesSwitchingSidesKillReplay( entity player, bool doRepla
 	{
 		player.SetPredictionEnabled( false ) // prediction fucks with replays
 	
+		// delay seems weird for switchingsides? ends literally the frame the flag is collected
+	
 		entity attacker = file.roundWinningKillReplayAttacker
 		player.SetKillReplayDelay( Time() - replayLength, THIRD_PERSON_KILL_REPLAY_ALWAYS )
 		player.SetKillReplayInflictorEHandle( attacker.GetEncodedEHandle() )
@@ -452,34 +454,6 @@ void function GameStateEnter_SuddenDeath()
 	SetRespawnsEnabled( false )
 }
 
-void function GameStateEnter_SuddenDeath_Threaded()
-{
-	while ( GetGameState() == eGameState.SuddenDeath )
-	{
-		// todo this really ought to work for ffa in the future
-		int imcPlayers
-		int militiaPlayers
-		
-		foreach ( entity player in GetPlayerArray() )
-		{
-			if ( IsAlive( player ) )
-			{
-				if ( player.GetTeam() == TEAM_IMC )
-					imcPlayers++
-				else
-					militiaPlayers++
-			}
-		}
-		
-		if ( imcPlayers == 0 )
-			SetWinner( TEAM_MILITIA )
-		else if ( militiaPlayers == 0 )
-			SetWinner( TEAM_IMC )
-		
-		WaitFrame()
-	}
-}
-
 
 // eGameState.Postmatch
 void function GameStateEnter_Postmatch()
@@ -502,6 +476,9 @@ void function GameStateEnter_Postmatch_Threaded()
 
 void function ForceFadeToBlack( entity player )
 {
+	// todo: check if this is still necessary
+	player.EndSignal( "OnDestroy" )
+
 	// hack until i figure out what deathcam stuff is causing fadetoblacks to be cleared
 	while ( true )
 	{
@@ -518,8 +495,9 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	if ( !GamePlayingOrSuddenDeath() )
 		return
 
-	// set round winning killreplay info here if no custom replaydelay
-	if ( file.roundWinningKillReplayTrackPilotKills && victim != attacker )
+	// set round winning killreplay info here if we're tracking pilot kills
+	// todo: make this not count environmental deaths like falls, unsure how to prevent this
+	if ( file.roundWinningKillReplayTrackPilotKills && victim != attacker && attacker != svGlobal.worldspawn && IsValid( attacker ) )
 	{
 		file.roundWinningKillReplayTime = Time()
 		file.roundWinningKillReplayVictim = victim
@@ -563,9 +541,10 @@ void function OnTitanKilled( entity victim, var damageInfo )
 	if ( !GamePlayingOrSuddenDeath() )
 		return
 
-	// set round winning killreplay info here if no custom replaydelay
+	// set round winning killreplay info here if we're tracking titan kills
+	// todo: make this not count environmental deaths like falls, unsure how to prevent this
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
-	if ( file.roundWinningKillReplayTrackTitanKills && victim != attacker )
+	if ( file.roundWinningKillReplayTrackTitanKills && victim != attacker && attacker != svGlobal.worldspawn && IsValid( attacker ) )
 	{
 		file.roundWinningKillReplayTime = Time()
 		file.roundWinningKillReplayVictim = victim
@@ -625,7 +604,8 @@ void function CleanUpEntitiesForRoundEnd()
 	}
 	
 	foreach ( entity npc in GetNPCArray() )
-		npc.Die()
+		if ( IsAlive( npc ) )
+			npc.Die() // need this because getnpcarray includes the pettitans we just killed at this point
 	
 	// allow other scripts to clean stuff up too
 	svGlobal.levelEnt.Signal( "CleanUpEntitiesForRoundEnd" ) 

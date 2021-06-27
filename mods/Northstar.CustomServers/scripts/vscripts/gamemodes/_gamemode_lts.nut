@@ -18,57 +18,26 @@ void function GamemodeLts_Init()
 	SetRoundBased( true )
 	SetRespawnsEnabled( false )
 	Riff_ForceSetEliminationMode( eEliminationMode.PilotsTitans )
+	Riff_ForceSetSpawnAsTitan( eSpawnAsTitan.Always )
 	SetShouldUseRoundWinningKillReplay( true )
 	SetRoundWinningKillReplayKillClasses( true, true ) // both titan and pilot kills are tracked
-	
-	AddDamageCallback( "player", OnPlayerDamaged )
-	AddDamageCallback( "npc_titan", OnTitanDamaged )
-	
+
 	AddCallback_OnPilotBecomesTitan( RefreshThirtySecondWallhackHighlight )
 	AddCallback_OnTitanBecomesPilot( RefreshThirtySecondWallhackHighlight )
 	
 	SetTimeoutWinnerDecisionFunc( CheckTitanHealthForDraw )
+	TrackTitanDamageInPlayerGameStat( PGS_ASSAULT_SCORE )
 	
-	ClassicMP_SetCustomIntro( GamemodeLTS_Intro, 0.0 ) // dont any sorta timer
+	ClassicMP_SetCustomIntro( ClassicMP_DefaultNoIntro_Setup, ClassicMP_DefaultNoIntro_GetLength() )
+	AddCallback_GameStateEnter( eGameState.Playing, WaitForThirtySecondsLeft )
 }
 
-// this should also probably be moved into a generic intro rather than being lts-specific
-void function GamemodeLTS_Intro()
+void function WaitForThirtySecondsLeft()
 {
-	AddCallback_GameStateEnter( eGameState.Prematch, LTSIntroOnPrematchStart )
+	thread WaitForThirtySecondsLeftThreaded()
 }
 
-void function LTSIntroOnPrematchStart()
-{
-	ClassicMP_OnIntroStarted()
-
-	foreach ( entity player in GetPlayerArray() )
-		thread LTSIntroSpawnPlayer( player )
-	
-	wait 2.0 // literally a guess number for how long the drop might take
-	
-	ClassicMP_OnIntroFinished()
-	
-	thread GamemodeLTS_PlayingThink()
-}
-
-void function LTSIntroSpawnPlayer( entity player )
-{
-	if ( IsAlive( player ) )
-	{
-		player.Die()
-		WaitFrame() // this doesn't work for some reason but the player will die in roundend anyway so not really an issue
-	}
-
-	thread RespawnAsTitan( player, false )
-
-	while ( !player.IsTitan() )
-		WaitFrame()
-		
-	TryGameModeAnnouncement( player )
-}
-
-void function GamemodeLTS_PlayingThink()
+void function WaitForThirtySecondsLeftThreaded()
 {
 	svGlobal.levelEnt.EndSignal( "RoundEnd" ) // end this on round end
 	
@@ -121,7 +90,7 @@ int function CheckTitanHealthForDraw()
 		}
 	}
 	
-	// note: due to how stuff is set up rn, there's actually no way to do win/loss reasons in timeout decision funcs
+	// note: due to how stuff is set up rn, there's actually no way to do win/loss reasons outside of a SetWinner call, i.e. not in timeout winner decision
 	// as soon as there is, strings in question are "#GAMEMODE_TITAN_TITAN_ADVANTAGE" and "#GAMEMODE_TITAN_TITAN_DISADVANTAGE"
 	
 	if ( militiaTitans != imcTitans )
@@ -130,26 +99,4 @@ int function CheckTitanHealthForDraw()
 		return militiaHealth > imcHealth ? TEAM_MILITIA : TEAM_IMC
 		
 	return TEAM_UNASSIGNED
-}
-
-// this should be generic, not restricted to a specific gamemode
-void function AddToTitanDamageStat( entity victim, var damageInfo )
-{
-	// todo: this needs to not count selfdamage
-	entity attacker = DamageInfo_GetAttacker( damageInfo )
-	float amount = DamageInfo_GetDamage( damageInfo )
-
-	if ( attacker.IsPlayer() && attacker != victim )
-		attacker.AddToPlayerGameStat( PGS_ASSAULT_SCORE, amount ) // titan damage on 
-}
-
-void function OnPlayerDamaged( entity player, var damageInfo )
-{
-	if ( player.IsTitan() )
-		AddToTitanDamageStat( player, damageInfo )
-}
-
-void function OnTitanDamaged( entity titan, var damageInfo )
-{
-	AddToTitanDamageStat( titan, damageInfo ) 
 }

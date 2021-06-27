@@ -7,6 +7,7 @@ global function SetSpawnsUseFrontline
 global function SetRespawnsEnabled
 global function RespawnsEnabled
 global function SetSpawnpointGamemodeOverride
+global function GetSpawnpointGamemodeOverride
 global function CreateNoSpawnArea
 global function DeleteNoSpawnArea
 
@@ -119,6 +120,16 @@ void function DeleteNoSpawnArea( string noSpawnIdx )
 void function SetSpawnpointGamemodeOverride( string gamemode )
 {
 	file.spawnpointGamemodeOverride = gamemode
+}
+
+string function GetSpawnpointGamemodeOverride()
+{
+	if ( file.spawnpointGamemodeOverride != "" )
+		return file.spawnpointGamemodeOverride
+	else
+		return GAMETYPE
+	
+	unreachable
 }
 
 void function SetSpawnsUseFrontline( bool useFrontline )

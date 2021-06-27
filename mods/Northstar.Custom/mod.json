@@ -162,6 +162,13 @@
 		},
 		
 		{
+			"Path": "gamemodes/sh_gamemode_ctf_comp.gnut",
+			"RunOn": "( CLIENT || SERVER ) && MP",
+			"ClientPreCallback": "ShGamemodeCTFComp_Init",
+			"ServerPreCallback": "ShGamemodeCTFComp_Init"
+		},
+		
+		{
 			"Path": "titan/sh_first_person_embark.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
 			"ClientPreCallback": "FirstPersonEmbark_Init",
