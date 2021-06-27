@@ -17,7 +17,14 @@ struct {
 
 void function Score_Init()
 {
+	AddCallback_OnClientConnected( InitPlayerForScoreEvents )
+}
 
+void function InitPlayerForScoreEvents( entity player )
+{	
+	player.s.currentKillstreak <- 0
+	player.s.lastKillTime <- 0.0
+	player.s.currentTimedKillstreak <- 0
 }
 
 void function AddPlayerScore( entity targetPlayer, string scoreEventName, entity associatedEnt = null, string noideawhatthisis = "", int pointValueOverride = -1 )
@@ -33,12 +40,28 @@ void function AddPlayerScore( entity targetPlayer, string scoreEventName, entity
 		
 	if ( pointValueOverride != -1 )
 		event.pointValue = pointValueOverride 
-		
-	float scale = targetPlayer.IsTitan() ? event.coreMeterScalar : 1.0	
+	
+	float scale = targetPlayer.IsTitan() ? event.coreMeterScalar : 1.0
+	
 	float earnValue = event.earnMeterEarnValue * scale
 	float ownValue = event.earnMeterOwnValue * scale
 	
 	PlayerEarnMeter_AddEarnedAndOwned( targetPlayer, earnValue * scale, ownValue * scale )
+	
+	// PlayerEarnMeter_AddEarnedAndOwned handles this scaling by itself, we just need to do this for the visual stuff
+	float pilotScaleVar = ( expect string ( GetCurrentPlaylistVarOrUseValue( "earn_meter_pilot_multiplier", "1" ) ) ).tofloat()
+	float titanScaleVar = ( expect string ( GetCurrentPlaylistVarOrUseValue( "earn_meter_titan_multiplier", "1" ) ) ).tofloat()
+	
+	if ( targetPlayer.IsTitan() )
+	{
+		earnValue *= titanScaleVar
+		ownValue *= titanScaleVar
+	}
+	else
+	{
+		earnValue *= pilotScaleVar
+		ownValue *= pilotScaleVar
+	}
 	
 	Remote_CallFunction_NonReplay( targetPlayer, "ServerCallback_ScoreEvent", event.eventId, event.pointValue, event.displayType, associatedHandle, ownValue, earnValue )
 	
@@ -54,24 +77,90 @@ void function AddPlayerScore( entity targetPlayer, string scoreEventName, entity
 	}
 	
 	if ( ScoreEvent_HasConversation( event ) )
-		thread Delayed_PlayConversationToPlayer( event.conversation, targetPlayer, event.conversationDelay )
+		PlayFactionDialogueToPlayer( event.conversation, targetPlayer )
 }
 
 void function ScoreEvent_PlayerKilled( entity victim, entity attacker, var damageInfo )
 {
+	// reset killstreaks and stuff		
+	victim.s.currentKillstreak = 0
+	victim.s.lastKillTime = 0.0
+	victim.s.currentTimedKillstreak = 0
+	
+	victim.p.numberOfDeathsSinceLastKill++ // this is reset on kill
+	
+	// have to do this early before we reset victim's player killstreaks
+	// nemesis when you kill a player that is dominating you
+	if ( attacker.IsPlayer() && attacker in victim.p.playerKillStreaks && victim.p.playerKillStreaks[ attacker ] == NEMESIS_KILL_REQUIREMENT )
+		AddPlayerScore( attacker, "Nemesis" )
+	
+	// reset killstreaks on specific players
+	foreach ( entity killstreakPlayer, int numKills in victim.p.playerKillStreaks )
+		delete victim.p.playerKillStreaks[ killstreakPlayer ]
+
+	if ( victim.IsTitan() )
+		ScoreEvent_TitanKilled( victim, attacker, damageInfo )
+
+	if ( !attacker.IsPlayer() )
+		return
+
+
+	// pilot kill
 	AddPlayerScore( attacker, "KillPilot", victim )
 	
+	// headshot
 	if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_HEADSHOT )
 		AddPlayerScore( attacker, "Headshot", victim )
-		
+	
+	// first strike
 	if ( !file.firstStrikeDone )
 	{
 		file.firstStrikeDone = true
 		AddPlayerScore( attacker, "FirstStrike", attacker )
 	}
 	
-	if ( victim.IsTitan() )
-		ScoreEvent_TitanKilled( victim, attacker, damageInfo )
+	// comeback
+	if ( attacker.p.numberOfDeathsSinceLastKill >= COMEBACK_DEATHS_REQUIREMENT )
+	{
+		AddPlayerScore( attacker, "Comeback" )
+		attacker.p.numberOfDeathsSinceLastKill = 0
+	}
+	
+	
+	// untimed killstreaks
+	attacker.s.currentKillstreak++
+	if ( attacker.s.currentKillstreak == 3 )
+		AddPlayerScore( attacker, "KillingSpree" )
+	else if ( attacker.s.currentKillstreak == 5 )
+		AddPlayerScore( attacker, "Rampage" )
+	
+	// increment untimed killstreaks against specific players
+	if ( !( victim in attacker.p.playerKillStreaks ) )
+		attacker.p.playerKillStreaks[ victim ] <- 1
+	else
+		attacker.p.playerKillStreaks[ victim ]++
+	
+	// dominating
+	if ( attacker.p.playerKillStreaks[ victim ] == DOMINATING_KILL_REQUIREMENT )
+		AddPlayerScore( attacker, "Dominating" )
+	
+	
+	// timed killstreaks
+	if ( Time() - attacker.s.lastKillTime <= CASCADINGKILL_REQUIREMENT_TIME )
+	{
+		attacker.s.currentTimedKillstreak++
+		
+		if ( attacker.s.currentTimedKillstreak == DOUBLEKILL_REQUIREMENT_KILLS )
+			AddPlayerScore( attacker, "DoubleKill" )
+		else if ( attacker.s.currentTimedKillstreak == TRIPLEKILL_REQUIREMENT_KILLS )
+			AddPlayerScore( attacker, "TripleKill" )
+		else if ( attacker.s.currentTimedKillstreak == MEGAKILL_REQUIREMENT_KILLS )
+			AddPlayerScore( attacker, "MegaKill" )
+	}
+	else
+		attacker.s.currentTimedKillstreak = 0 // reset if a kill took too long
+	
+	attacker.s.lastKillTime = Time()
 }
 
 void function ScoreEvent_TitanDoomed( entity titan, entity attacker, var damageInfo )
@@ -87,6 +176,8 @@ void function ScoreEvent_TitanDoomed( entity titan, entity attacker, var damageI
 void function ScoreEvent_TitanKilled( entity victim, entity attacker, var damageInfo )
 {
 	// will this handle npc titans with no owners well? i have literally no idea
+	if ( !attacker.IsPlayer() )
+		return
 
 	if ( attacker.IsTitan() )
 		AddPlayerScore( attacker, "TitanKillTitan", victim.GetTitanSoul().GetOwner() )

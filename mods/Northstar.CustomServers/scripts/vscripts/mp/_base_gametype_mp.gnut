@@ -13,6 +13,7 @@ global function TryGameModeAnnouncement
 global function SetKillcamsEnabled
 global function KillcamsEnabled
 global function SetPlayerDeathsHidden
+global function TrackTitanDamageInPlayerGameStat
 
 global function ShouldEntTakeDamage_SPMP
 global function GetTitanBuildTime
@@ -21,6 +22,7 @@ global function TitanPlayerHotDropsIntoLevel
 struct {
 	bool killcamsEnabled = true
 	bool playerDeathsHidden = false
+	int titanDamageGameStat = -1
 	
 	entity intermissionCamera
 	array<entity> specCams 
@@ -35,6 +37,9 @@ void function BaseGametype_Init_MPSP()
 	AddClientCommandCallback( "spec_next", ClientCommandCallback_spec_next )
 	AddClientCommandCallback( "spec_prev", ClientCommandCallback_spec_prev )
 	AddClientCommandCallback( "spec_mode", ClientCommandCallback_spec_mode )
+	
+	AddDamageCallback( "player", AddToTitanDamageStat )
+	AddDamageCallback( "npc_titan", AddToTitanDamageStat )
 }
 
 void function SetIntermissionCamera( entity camera )
@@ -222,10 +227,6 @@ void function CodeCallback_OnPlayerRespawned( entity player )
 void function CodeCallback_OnPlayerKilled( entity player, var damageInfo )
 {
 	PlayerOrNPCKilled( player, damageInfo )
-
-	if ( player.IsTitan() )
-		SoulDies( player.GetTitanSoul(), damageInfo ) // cleanup some titan stuff, no idea where else to put this
-
 	thread PostDeathThread_MP( player, damageInfo )
 }
 
@@ -252,6 +253,11 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 	player.SetNoTarget( false )
 	player.SetNoTargetSmartAmmo( false )
 	player.ClearExtraWeaponMods()
+	
+	player.AddToPlayerGameStat( PGS_DEATHS, 1 )
+	
+	if ( player.IsTitan() )
+		SoulDies( player.GetTitanSoul(), damageInfo ) // cleanup some titan stuff, no idea where else to put this
 	
 	ClearRespawnAvailable( player )
 
@@ -285,24 +291,24 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 		thread TrackDestroyTimeForReplay( attacker, replayTracker )
 	
 	int damageSource = DamageInfo_GetDamageSourceIdentifier( damageInfo )
-	if ( damageSource == eDamageSourceId.fall )
-	{
-		// this is straight up just incorrect lol, based off tf1 stuff
-	
-		player.SetObserverModeStaticPosition( player.GetOrigin() )
-		player.SetObserverModeStaticAngles( player.GetVelocity() * -1 )
-		
-		player.StartObserverMode( OBS_MODE_STATIC_LOCKED )
-		player.SetObserverTarget( null )
-	}
-	else
-	{
+	//if ( damageSource == eDamageSourceId.fall )
+	//{
+	//	// this is straight up just incorrect lol, based off tf1 stuff
+	//
+	//	player.SetObserverModeStaticPosition( player.GetOrigin() )
+	//	player.SetObserverModeStaticAngles( player.GetVelocity() * -1 )
+	//	
+	//	player.StartObserverMode( OBS_MODE_STATIC_LOCKED )
+	//	player.SetObserverTarget( null )
+	//}
+	//else
+	//{
 		player.StartObserverMode( OBS_MODE_DEATHCAM )
 		if ( ShouldSetObserverTarget( attacker ) )
 			player.SetObserverTarget( attacker )
 		else
 			player.SetObserverTarget( null )
-	}
+	//}
 	
 	if ( !file.playerDeathsHidden )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_YouDied", attacker.GetEncodedEHandle(), GetHealthFrac( attacker ), methodOfDeath )
@@ -356,7 +362,7 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 		player.WaitSignal( "RespawnMe" ) // set in base_gametype: ClientCommand_RespawnPlayer
 		ClearRespawnAvailable( player ) // need so the respawn icon doesn't show for like a frame on next death
 			
-		if ( ( expect bool( player.GetPersistentVar( "spawnAsTitan" ) ) && IsTitanAvailable( player ) ) || Riff_SpawnAsTitan() == 1 )	// spawn as titan
+		if ( ( expect bool( player.GetPersistentVar( "spawnAsTitan" ) ) && IsTitanAvailable( player ) ) || ( Riff_SpawnAsTitan() > 0 && Riff_ShouldSpawnAsTitan( player ) ) )	// spawn as titan
 			thread RespawnAsTitan( player )
 		else // spawn as pilot
 			RespawnAsPilot( player )
@@ -560,6 +566,25 @@ bool function KillcamsEnabled()
 void function SetPlayerDeathsHidden( bool hidden )
 {
 	file.playerDeathsHidden = hidden
+}
+
+void function TrackTitanDamageInPlayerGameStat( int playerGameStat )
+{
+	file.titanDamageGameStat = playerGameStat
+}
+
+// this should be generic, not restricted to a specific gamemode
+void function AddToTitanDamageStat( entity victim, var damageInfo )
+{
+	if ( !victim.IsTitan() || file.titanDamageGameStat == -1 )
+		return
+
+	// todo: this needs to not count selfdamage
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	float amount = DamageInfo_GetDamage( damageInfo )
+
+	if ( attacker.IsPlayer() && attacker != victim )
+		attacker.AddToPlayerGameStat( PGS_ASSAULT_SCORE, amount ) // titan damage on 
 }
 
 

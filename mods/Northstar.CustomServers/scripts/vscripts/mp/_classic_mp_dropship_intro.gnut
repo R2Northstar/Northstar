@@ -104,7 +104,7 @@ void function OnPrematchStart()
 	array<entity> dropshipSpawns = GetEntArrayByClass_Expensive( "info_spawnpoint_dropship_start" )
 	foreach ( entity dropshipSpawn in dropshipSpawns )
 	{
-		if ( GameModeRemove( dropshipSpawn ) )
+		if ( GameModeRemove( dropshipSpawn ) || ( GetSpawnpointGamemodeOverride() != GAMETYPE && dropshipSpawn.kv[ "gamemode_" + GetSpawnpointGamemodeOverride() ] == "0" ) )
 			continue
 	
 		// todo: possibly make this only spawn dropships if we've got enough players to need them

@@ -1,7 +1,11 @@
 untyped
 
 global function ClassicMP_DefaultNoIntro_Setup
-global const float NOINTRO_INTRO_LENGTH = 10.0
+global function ClassicMP_DefaultNoIntro_GetLength
+
+global const float NOINTRO_INTRO_PILOT_LENGTH = 10.0
+global const float TITAN_DROP_SPAWN_INTRO_LENGTH = 0.0 // this intro shouldn't have a countdown visually, so we have to set the length of this intro to 0
+global const float TITAN_DROP_SPAWN_INTRO_REAL_LENGTH = 2.0 // we wait roughly this long during the intro, even when it's technically over
 
 void function ClassicMP_DefaultNoIntro_Setup()
 {
@@ -9,20 +13,35 @@ void function ClassicMP_DefaultNoIntro_Setup()
 	AddCallback_GameStateEnter( eGameState.Prematch, ClassicMP_DefaultNoIntro_Start )
 }
 
+float function ClassicMP_DefaultNoIntro_GetLength()
+{
+	if ( ShouldIntroSpawnAsTitan() )
+		return TITAN_DROP_SPAWN_INTRO_LENGTH
+	else
+		return NOINTRO_INTRO_PILOT_LENGTH
+		
+	unreachable
+}
+
 void function ClassicMP_DefaultNoIntro_Start()
 {
 	ClassicMP_OnIntroStarted()
 
 	foreach ( entity player in GetPlayerArray() )
-		thread ClassicMP_DefaultNoIntro_SpawnPlayer( player )
+		ClassicMP_DefaultNoIntro_SpawnPlayer( player )
 		
-	wait NOINTRO_INTRO_LENGTH
-	
-	foreach ( entity player in GetPlayerArray() )
+	if ( ShouldIntroSpawnAsTitan() )
+		wait TITAN_DROP_SPAWN_INTRO_REAL_LENGTH
+	else
 	{
-		player.UnfreezeControlsOnServer()
-		RemoveCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING )
-		TryGameModeAnnouncement( player )
+		wait NOINTRO_INTRO_PILOT_LENGTH
+		
+		foreach ( entity player in GetPlayerArray() )
+		{
+			player.UnfreezeControlsOnServer()
+			RemoveCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING )
+			TryGameModeAnnouncement( player )
+		}
 	}
 	
 	ClassicMP_OnIntroFinished()
@@ -34,13 +53,28 @@ void function ClassicMP_DefaultNoIntro_SpawnPlayer( entity player )
 		return
 	
 	if ( IsAlive( player ) )
-	{
 		player.Die()
-		WaitFrame()
-	}
 	
+	if ( ShouldIntroSpawnAsTitan() )
+		thread ClassicMP_DefaultNoIntro_TitanSpawnPlayer( player )
+	else
+		thread ClassicMP_DefaultNoIntro_PilotSpawnPlayer( player )
+}
+
+
+// spawn as pilot for intro
+void function ClassicMP_DefaultNoIntro_PilotSpawnPlayer( entity player )
+{
 	RespawnAsPilot( player )
 	player.FreezeControlsOnServer()
 	AddCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING )
 	ScreenFadeFromBlack( player, 0.5, 0.5 )
+}
+
+// spawn as titan for intro
+void function ClassicMP_DefaultNoIntro_TitanSpawnPlayer( entity player )
+{
+	// blocking call
+	RespawnAsTitan( player, false )
+	TryGameModeAnnouncement( player )
 }

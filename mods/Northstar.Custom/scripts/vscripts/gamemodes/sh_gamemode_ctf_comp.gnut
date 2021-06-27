@@ -1,0 +1,109 @@
+global function ShGamemodeCTFComp_Init
+
+global const string GAMEMODE_CTF_COMP = "ctf_comp"
+
+void function ShGamemodeCTFComp_Init()
+{
+	// create custom gamemode
+	AddCallback_OnCustomGamemodesInit( CreateGamemodeCTFComp )
+	AddCallback_OnRegisteringCustomNetworkVars( CTFCompRegisterNetworkVars )
+}
+
+void function CreateGamemodeCTFComp()
+{
+	GameMode_Create( GAMEMODE_CTF_COMP )
+	GameMode_SetName( GAMEMODE_CTF_COMP, "#GAMEMODE_ctf_comp" )
+	GameMode_SetGameModeAnnouncement( GAMEMODE_CTF_COMP, "ctf_modeDesc" )
+	GameMode_SetDesc( GAMEMODE_CTF_COMP, "#PL_capture_the_flag_hint" )
+	GameMode_SetIcon( GAMEMODE_CTF_COMP, $"ui/menu/playlist/ctf" )
+	GameMode_SetSuddenDeath( GAMEMODE_CTF_COMP, true )
+	GameMode_SetDefaultScoreLimits( GAMEMODE_CTF_COMP, 0, 5 )
+	GameMode_SetDefaultTimeLimits( GAMEMODE_CTF_COMP, 0, 3.0 )
+	GameMode_AddScoreboardColumnData( GAMEMODE_CTF_COMP, "#SCOREBOARD_CAPTURES", PGS_ASSAULT_SCORE, 2 )
+	GameMode_AddScoreboardColumnData( GAMEMODE_CTF_COMP, "#SCOREBOARD_RETURNS", PGS_DEFENSE_SCORE, 2 )
+	GameMode_AddScoreboardColumnData( GAMEMODE_CTF_COMP, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
+	GameMode_AddScoreboardColumnData( GAMEMODE_CTF_COMP, "#SCOREBOARD_TITAN_DAMAGE", PGS_DISTANCE_SCORE, 6 ) // gotta use a weird pgs here since we're running out of them lol
+	GameMode_SetColor( GAMEMODE_CTF_COMP, [61, 117, 193, 255] )
+	
+	// this gamemode is literally just normal ctf + a few extra settings
+	// as such we do all the inits in this file, not enough logic to be worth splitting it up
+	
+	#if SERVER
+		GameMode_AddServerInit( GAMEMODE_CTF_COMP, InitCTFCompSpecificSettings )
+		GameMode_AddServerInit( GAMEMODE_CTF_COMP, CaptureTheFlag_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( GAMEMODE_CTF_COMP, RateSpawnpoints_CTF )
+		GameMode_SetTitanSpawnpointsRatingFunc( GAMEMODE_CTF_COMP, RateSpawnpoints_CTF )
+	#elseif CLIENT
+		GameMode_AddClientInit( GAMEMODE_CTF_COMP, InitCTFCompSpecificSettings )
+		GameMode_AddClientInit( GAMEMODE_CTF_COMP, ClCaptureTheFlag_Init )
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( GAMEMODE_CTF_COMP, CompareCTF )
+		GameMode_AddSharedInit( GAMEMODE_CTF_COMP, GamemodeCtfDialogue_Init )
+		GameMode_AddSharedInit( GAMEMODE_CTF_COMP, CaptureTheFlagShared_Init )
+	#endif
+}
+
+void function CTFCompRegisterNetworkVars()
+{
+	// copied from the vanilla ctf remote functions
+	RegisterNetworkedVariable( "imcFlag", SNDC_GLOBAL, SNVT_ENTITY )
+	RegisterNetworkedVariable( "milFlag", SNDC_GLOBAL, SNVT_ENTITY )
+
+	RegisterNetworkedVariable( "imcFlagHome", SNDC_GLOBAL, SNVT_ENTITY )
+	RegisterNetworkedVariable( "milFlagHome", SNDC_GLOBAL, SNVT_ENTITY )
+
+	RegisterNetworkedVariable( "imcFlagState", SNDC_GLOBAL, SNVT_INT, 0 )
+	RegisterNetworkedVariable( "milFlagState", SNDC_GLOBAL, SNVT_INT, 0 )
+
+	RegisterNetworkedVariable( "flagReturnProgress", SNDC_GLOBAL, SNVT_FLOAT_RANGE_OVER_TIME, 0.0, 0.0, 1.0 )
+	RegisterNetworkedVariable( "returningFlag", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, false )
+
+	Remote_RegisterFunction( "ServerCallback_CTF_PlayMatchNearEndMusic" )
+	Remote_RegisterFunction( "ServerCallback_CTF_StartReturnFlagProgressBar" )
+	Remote_RegisterFunction( "ServerCallback_CTF_StopReturnFlagProgressBar" )
+
+	#if CLIENT
+		CLCaptureTheFlag_RegisterNetworkFunctions()
+	#endif
+}
+
+void function InitCTFCompSpecificSettings()
+{
+	#if SERVER 
+		SetShouldUsePickLoadoutScreen( true )
+		TrackTitanDamageInPlayerGameStat( PGS_DISTANCE_SCORE )
+		SetSpawnpointGamemodeOverride( CAPTURE_THE_FLAG )
+		TeamTitanSelectMenu_Init()
+	#elseif CLIENT
+		ClTeamTitanSelectMenu_Init()
+		
+		// gotta register the music here because this is done hardcoded to ctf in cl_music
+		RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_INTRO, "music_mp_ctf_intro_flyin", TEAM_IMC )
+		RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_INTRO, "music_mp_ctf_intro_flyin", TEAM_MILITIA )
+
+		RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_WIN, "music_mp_ctf_epilogue_win", TEAM_IMC )
+		RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_WIN, "music_mp_ctf_epilogue_win", TEAM_MILITIA )
+
+		RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_DRAW, "music_mp_ctf_halftime_losing", TEAM_IMC )
+		RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_DRAW, "music_mp_ctf_halftime_losing", TEAM_MILITIA )
+
+		RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_SUDDEN_DEATH, "music_mp_ctf_draw", TEAM_IMC )
+		RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_SUDDEN_DEATH, "music_mp_ctf_draw", TEAM_MILITIA )
+
+		RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LOSS, "music_mp_ctf_epilogue_lose", TEAM_IMC )
+		RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LOSS, "music_mp_ctf_epilogue_lose", TEAM_MILITIA )
+
+		RegisterLevelMusicForTeam( eMusicPieceID.ROUND_BASED_GAME_WON, "music_mp_ctf_halftime_winning", TEAM_IMC )
+		RegisterLevelMusicForTeam( eMusicPieceID.ROUND_BASED_GAME_WON, "music_mp_ctf_halftime_winning", TEAM_MILITIA )
+
+		RegisterLevelMusicForTeam( eMusicPieceID.ROUND_BASED_GAME_LOST, "music_mp_ctf_halftime_losing", TEAM_IMC )
+		RegisterLevelMusicForTeam( eMusicPieceID.ROUND_BASED_GAME_LOST, "music_mp_ctf_halftime_losing", TEAM_MILITIA )
+
+		RegisterLevelMusicForTeam( eMusicPieceID.GAMEMODE_1, "music_mp_ctf_flag_4", TEAM_IMC )
+		RegisterLevelMusicForTeam( eMusicPieceID.GAMEMODE_1, "music_mp_ctf_flag_4", TEAM_MILITIA )
+
+		RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LAST_MINUTE, "music_mp_ctf_lastminute", TEAM_IMC )
+		RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LAST_MINUTE, "music_mp_ctf_lastminute", TEAM_MILITIA )
+	#endif
+}

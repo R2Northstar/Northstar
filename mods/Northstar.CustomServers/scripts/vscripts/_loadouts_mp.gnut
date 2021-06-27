@@ -167,7 +167,7 @@ bool function ClientCommandCallback_SwapSecondaryAndWeapon3PersistentLoadoutData
 
 bool function ClientCommandCallback_SetBurnCardPersistenceSlot( entity player, array<string> args )
 {
-	if ( args.len() != 1 )
+	if ( args.len() != 1 || GetGameState() >= eGameState.Playing )
 		return true
 	
 	print( player + " SetBurnCardPersistenceSlot " + args[0] )

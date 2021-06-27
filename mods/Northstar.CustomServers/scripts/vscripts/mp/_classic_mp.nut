@@ -22,7 +22,7 @@ void function ClassicMP_TryDefaultIntroSetup()
 	if ( file.introSetupFunc == null )
 	{	
 		if ( IsFFAGame() )
-			ClassicMP_SetCustomIntro( ClassicMP_DefaultNoIntro_Setup, NOINTRO_INTRO_LENGTH )
+			ClassicMP_SetCustomIntro( ClassicMP_DefaultNoIntro_Setup, ClassicMP_DefaultNoIntro_GetLength() )
 		else
 			ClassicMP_SetCustomIntro( ClassicMP_DefaultDropshipIntro_Setup, DROPSHIP_INTRO_LENGTH )
 	}
