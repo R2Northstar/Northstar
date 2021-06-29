@@ -102,16 +102,14 @@ void function ModeButton_Click( var button )
 	if ( Hud_IsLocked( button ) )
 		return
 
-	int mapID = int( Hud_GetScriptID( button ) ) + ( file.currentModePage * MODES_PER_PAGE )
-
-	var menu = GetMenu( "MapsMenu" )
+	int modeID = int( Hud_GetScriptID( button ) ) + ( file.currentModePage * MODES_PER_PAGE )
 
 	array<string> modesArray = GetPrivateMatchModes()
 	string modeName = modesArray[mapID]
 
 	// on modded servers set us to the first map for that mode automatically
 	// need this for coliseum mainly which is literally impossible to select without this
-	if ( IsNorthstarServer() && !PrivateMatch_IsValidMapModeCombo( PrivateMatch_GetSelectedMap(), modesArray[ mapID ] ) )
+	if ( IsNorthstarServer() && !PrivateMatch_IsValidMapModeCombo( PrivateMatch_GetSelectedMap(), modesArray[ modeID ] ) )
 		ClientCommand( "SetCustomMap " + GetPrivateMatchMapsForMode( modeName )[ 0 ] )
 		
 	// set it

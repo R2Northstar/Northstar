@@ -423,7 +423,7 @@ void function RespawnAsTitan( entity player, bool manualPosition = false )
 	// do titanfall scoreevent
 	AddPlayerScore( player, "Titanfall", player )
 	
-	entity camera = CreateTitanDropCamera( spawnpoint.GetAngles(), < 90, 10, 0 > )
+	entity camera = CreateTitanDropCamera( spawnpoint.GetAngles(), < 90, titan.GetAngles().y, 0 > )
 	camera.SetParent( titan )
 	
 	// calc offset for spawnpoint angle
@@ -584,7 +584,7 @@ void function AddToTitanDamageStat( entity victim, var damageInfo )
 	float amount = DamageInfo_GetDamage( damageInfo )
 
 	if ( attacker.IsPlayer() && attacker != victim )
-		attacker.AddToPlayerGameStat( PGS_ASSAULT_SCORE, amount ) // titan damage on 
+		attacker.AddToPlayerGameStat( file.titanDamageGameStat, amount ) // titan damage on 
 }
 
 

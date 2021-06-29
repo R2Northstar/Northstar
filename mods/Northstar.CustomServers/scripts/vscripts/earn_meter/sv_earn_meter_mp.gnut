@@ -61,6 +61,7 @@ void function OnPlayerRespawned( entity player )
 void function EarnMeterMP_PlayerLifeThink( entity player )
 {
 	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
 
 	int lastEarnMeterMode = PlayerEarnMeter_GetMode( player )
 	float lastPassiveGainTime = Time()
