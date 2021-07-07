@@ -25,6 +25,8 @@ void function CreateGamemodeCTFComp()
 	GameMode_AddScoreboardColumnData( GAMEMODE_CTF_COMP, "#SCOREBOARD_TITAN_DAMAGE", PGS_DISTANCE_SCORE, 6 ) // gotta use a weird pgs here since we're running out of them lol
 	GameMode_SetColor( GAMEMODE_CTF_COMP, [61, 117, 193, 255] )
 	
+	AddPrivateMatchMode( GAMEMODE_CTF_COMP ) // add to private lobby modes
+	
 	// this gamemode is literally just normal ctf + a few extra settings
 	// as such we do all the inits in this file, not enough logic to be worth splitting it up
 	
@@ -46,6 +48,9 @@ void function CreateGamemodeCTFComp()
 
 void function CTFCompRegisterNetworkVars()
 {
+	if ( GAMETYPE != GAMEMODE_CTF_COMP )
+		return
+
 	// copied from the vanilla ctf remote functions
 	RegisterNetworkedVariable( "imcFlag", SNDC_GLOBAL, SNVT_ENTITY )
 	RegisterNetworkedVariable( "milFlag", SNDC_GLOBAL, SNVT_ENTITY )

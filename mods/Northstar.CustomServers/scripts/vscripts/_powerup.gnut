@@ -81,7 +81,7 @@ bool function OnPowerupCollected( entity player, entity healthpack )
 	{
 		// hack because i couldn't figure out any other way to do this without modifying sh_powerup
 		// ensure we don't kill the powerup if it's a battery the player can't pickup
-		if ( ( powerup.index == ePowerUps.titanTimeReduction || powerup.index == ePowerUps.LTS_TitanTimeReduction ) && PlayerHasBattery( player ) )
+		if ( ( powerup.index == ePowerUps.titanTimeReduction || powerup.index == ePowerUps.LTS_TitanTimeReduction ) && ( player.IsTitan() || PlayerHasMaxBatteryCount( player ) ) )
 			return false
 	
 		// idk why the powerup.destroyFunc doesn't just return a bool? would mean they could just handle stuff like this in powerup code

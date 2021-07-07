@@ -22,6 +22,8 @@ void function CreateGamemodeFastball()
 	GameMode_AddScoreboardColumnData( GAMEMODE_FASTBALL, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
 	GameMode_SetColor( GAMEMODE_FASTBALL, [147, 204, 57, 255] )
 	
+	AddPrivateMatchMode( GAMEMODE_FASTBALL ) // add to private lobby modes
+	
 	#if SERVER
 		GameMode_AddServerInit( GAMEMODE_FASTBALL, GamemodeFastball_Init )
 		GameMode_SetPilotSpawnpointsRatingFunc( GAMEMODE_FASTBALL, RateSpawnpoints_Generic )

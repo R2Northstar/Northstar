@@ -21,6 +21,8 @@ void function CreateGamemodeTT()
 	GameMode_AddScoreboardColumnData( GAMEMODE_TT, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 )
 	GameMode_SetColor( GAMEMODE_TT, [200, 40, 40, 255] )
 	
+	AddPrivateMatchMode( GAMEMODE_TT ) // add to private lobby modes
+	
 	#if SERVER
 		GameMode_AddServerInit( GAMEMODE_TT, GamemodeTT_Init )
 		GameMode_SetPilotSpawnpointsRatingFunc( GAMEMODE_TT, RateSpawnpoints_Generic )

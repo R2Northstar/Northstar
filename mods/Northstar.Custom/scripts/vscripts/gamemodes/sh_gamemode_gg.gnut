@@ -31,6 +31,7 @@ void function CreateGamemodeGG()
 	GameMode_AddScoreboardColumnData( GAMEMODE_GG, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 )
 	GameMode_SetColor( GAMEMODE_GG, [147, 204, 57, 255] )
 	
+	AddPrivateMatchMode( GAMEMODE_GG ) // add to private lobby modes
 	
 	// setup guns
 	

@@ -2,7 +2,6 @@ global function InitModesMenu
 
 struct {
 	int currentModePage
-	
 } file
 
 const int MODES_PER_PAGE = 15
@@ -105,7 +104,7 @@ void function ModeButton_Click( var button )
 	int modeID = int( Hud_GetScriptID( button ) ) + ( file.currentModePage * MODES_PER_PAGE )
 
 	array<string> modesArray = GetPrivateMatchModes()
-	string modeName = modesArray[mapID]
+	string modeName = modesArray[ modeID ]
 
 	// on modded servers set us to the first map for that mode automatically
 	// need this for coliseum mainly which is literally impossible to select without this
