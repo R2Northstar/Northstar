@@ -21,6 +21,8 @@ void function CreateGamemodeInfection()
 	GameMode_AddScoreboardColumnData( GAMEMODE_INFECTION, "#SCOREBOARD_KILLS", PGS_ASSAULT_SCORE, 2 )
 	GameMode_SetColor( GAMEMODE_INFECTION, [147, 204, 57, 255] )
 	
+	AddPrivateMatchMode( GAMEMODE_INFECTION ) // add to private lobby modes
+	
 	#if SERVER
 		GameMode_AddServerInit( GAMEMODE_INFECTION, GamemodeInfection_Init )
 		GameMode_SetPilotSpawnpointsRatingFunc( GAMEMODE_INFECTION, RateSpawnpoints_Generic )

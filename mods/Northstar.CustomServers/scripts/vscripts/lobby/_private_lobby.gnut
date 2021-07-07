@@ -102,7 +102,11 @@ void function StartMatch()
 		WaitFrame()
 	}
 	
-	GameRules_SetGameMode( file.mode )
+	if ( file.mode in GAMETYPE_TEXT )
+		GameRules_SetGameMode( file.mode )
+	else
+		GameRules_SetGameMode( GetPlaylistGamemodeByIndex( file.mode, 0 ) )
+		
 	try
 	{
 		// todo: not every gamemode uses the same playlist as their name! need some code to resolve these manually

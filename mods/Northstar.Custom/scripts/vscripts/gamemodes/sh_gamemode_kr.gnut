@@ -19,6 +19,8 @@ void function CreateGamemodeKR()
 	GameMode_AddScoreboardColumnData( GAMEMODE_KR, "#SCOREBOARD_KR_RECORD", PGS_ASSAULT_SCORE, 2 )
 	GameMode_AddScoreboardColumnData( GAMEMODE_KR, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 )
 	GameMode_SetColor( GAMEMODE_KR, [147, 204, 57, 255] )
+
+	AddPrivateMatchMode( GAMEMODE_KR ) // add to private lobby modes
 	
 	#if SERVER
 		GameMode_AddServerInit( GAMEMODE_KR, GamemodeKR_Init )

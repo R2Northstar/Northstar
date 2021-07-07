@@ -1,0 +1,634 @@
+untyped
+
+globalize_all_functions
+
+global const NUM_EOG_CHALLENGE_BOXES = 6
+
+global const WEBBROWSER_FLAG_NONE = 0
+global const WEBBROWSER_FLAG_MUTEGAME = 0x0001
+
+
+function UtilityUI_Init()
+{
+	level.getPersistentVarWrapper <- class
+	{
+		function GetPersistentVar( variable )
+		{
+			// This looks up the code function GetPersistentVar
+			return GetPersistentVar( variable )
+		}
+
+		function GetPersistentVarAsInt( string variable )
+		{
+			return GetPersistentVarAsInt( variable )
+		}
+	}
+}
+
+int[2] function GetScreenSize()
+{
+	var screenSize = Hud_GetSize( GetMenu( "MainMenu" ) )
+
+	int[2] returnSize
+	returnSize[0] = expect int( screenSize[0] )
+	returnSize[1] = expect int( screenSize[1] )
+
+	return returnSize
+}
+
+float[2] function GetContentScaleFactor( var menu )
+{
+	local screenSize = menu.GetSize()
+	float screenSizeX = expect int( screenSize[0] ).tofloat()
+	float screenSizeY = expect int( screenSize[1] ).tofloat()
+	float aspectRatio = screenSizeX / screenSizeY
+	float[2] scaleFactor
+	scaleFactor[0] = screenSizeX / ( 1080.0 * aspectRatio )
+	scaleFactor[1] = screenSizeY / 1080.0
+	return scaleFactor
+}
+
+float function ContentScaledX( int val )
+{
+	return (val * GetContentScaleFactor( GetMenu( "MainMenu" ) )[0])
+}
+
+float function ContentScaledY( int val )
+{
+	return (val * GetContentScaleFactor( GetMenu( "MainMenu" ) )[1])
+}
+
+int function ContentScaledXAsInt( int val )
+{
+	float fVal = val * GetContentScaleFactor( GetMenu( "MainMenu" ) )[0]
+	return int( fVal + 0.5 )
+}
+
+int function ContentScaledYAsInt( int val )
+{
+	float fVal = val * GetContentScaleFactor( GetMenu( "MainMenu" ) )[1]
+	return int( fVal + 0.5 )
+}
+
+// Returns string or null
+function GetLobbyTeamImage( int team )
+{
+	Assert( IsConnected() )
+
+	if ( !GetLobbyTeamsShowAsBalanced() )
+		return null
+
+	if ( GetLobbyTypeScript() == eLobbyType.MATCH || GetLobbyTypeScript() == eLobbyType.PRIVATE_MATCH )
+		return GetTeamImage( team )
+
+	return null
+}
+
+// Returns string or null
+function GetLobbyTeamName( int team )
+{
+	Assert( IsConnected() )
+
+	if ( !GetLobbyTeamsShowAsBalanced() )
+		return null
+
+	if ( GetLobbyTypeScript() == eLobbyType.MATCH || GetLobbyTypeScript() == eLobbyType.PRIVATE_MATCH )
+		return GetTeamName( team )
+
+	return null
+}
+
+asset function GetTeamImage( int team )
+{
+	Assert( team == TEAM_IMC || team == TEAM_MILITIA )
+
+	if ( team == TEAM_IMC )
+		return $"ui/scoreboard_imc_logo"
+
+	return $"ui/scoreboard_mcorp_logo"
+}
+
+function RefreshPersistentFunc( func )
+{
+	for ( int i = 0; i < 5; i++ )
+	{
+		// cause who knows when persistent data changes
+		delaythread( i * 0.1 ) RunFuncWithConnectedCheck( func )
+	}
+}
+
+function RunFuncWithConnectedCheck( func )
+{
+	if ( !IsConnected() )
+		return
+	func()
+}
+
+string function GetActiveLevel()
+{
+	// The level load callbacks overlap with the level init/shutdown callbacks, so we track each one separately.
+	if ( uiGlobal.loadedLevel != "" )
+		return uiGlobal.loadedLevel
+	return uiGlobal.loadingLevel
+}
+
+function HandleLockedMenuItem( menu, button, hideTip = false )
+{
+	/*array<var> elements = GetElementsByClassname( menu, "HideWhenLocked" )
+	var buttonTooltip = Hud_GetChild( menu, "ButtonTooltip" )
+	//var buttonTooltip = GetElementsByClassname( menu, "ButtonTooltip" )[0]
+	var toolTipLabel = Hud_GetChild( buttonTooltip, "Label" )
+
+	entity player = GetUIPlayer()
+	if ( player == null )
+		return
+
+	if ( "ref" in button.s && button.s.ref != null && IsItemLocked( player, expect string( button.s.ref ) ) && !hideTip )
+	{
+		foreach( elem in elements )
+			Hud_Hide( elem )
+
+		Hud_SetText( toolTipLabel, "#UNLOCKED_AT_LEVEL", g_unlocks[ expect string( button.s.ref ) ].unlockLevel, "" )
+
+		local buttonPos = Hud_GetAbsPos( button )
+		local buttonHeight = Hud_GetHeight( button )
+		local tooltipHeight = Hud_GetHeight( buttonTooltip )
+		local yOffset = ( tooltipHeight - buttonHeight ) / 2.0
+
+		Hud_SetPos( buttonTooltip, buttonPos[0] + Hud_GetWidth( button ) * 0.9, buttonPos[1] - yOffset )
+		Hud_Show( buttonTooltip )
+
+		return true
+	}
+	else
+	{
+		foreach( elem in elements )
+			Hud_Show( elem )
+		Hud_Hide( buttonTooltip )
+	}
+	return false*/
+}
+
+// No way to test a named element exists so this is a workaround
+var function GetSingleElementByClassname( var menu, string classname )
+{
+	array<var> elems = GetElementsByClassname( menu, classname )
+
+	if ( elems.len() )
+	{
+		Assert( elems.len() == 1 )
+		return elems[0]
+	}
+
+	return null
+}
+
+array function GetElementsByClassnameForMenus( string classname, array menus )
+{
+	array elements = []
+
+	foreach ( menu in menus )
+		elements.extend( GetElementsByClassname( menu, classname ) )
+
+	return elements
+}
+
+function WaitFrameOrUntilLevelLoaded()
+{
+	WaitFrame()
+
+	while ( uiGlobal.loadedLevel == "" )
+		WaitFrame()
+}
+
+bool function IsPlayerAlone()
+{
+	int myTeam = GetTeam()
+	if ( GetTeamSize( myTeam ) <= 1 )
+		return true
+
+	return false
+}
+
+bool function PartyHasMembers()
+{
+	if ( GetPartySize() > 1 )
+		return true
+
+	return false
+}
+
+bool function AmIPartyMember()
+{
+	return ( PartyHasMembers() && !AmIPartyLeader() )
+}
+
+string function GetGameModeDisplayName( string mode )
+{
+	string displayName = GetGamemodeVarOrUseValue( mode, "name", (mode in GAMETYPE_TEXT) ? GAMETYPE_TEXT[mode] : "" )
+	
+	// modification to support playlists too
+	if ( displayName == "" )
+		return GetPlaylistVarOrUseValue( mode, "name", "" )
+	
+	return displayName
+}
+
+string function GetGameModeDisplayDesc( string mode ) //TODO: Make this support attack/defend descriptions
+{
+	string displayDesc = GetGamemodeVarOrUseValue( mode, "description", (mode in GAMETYPE_DESC) ? GAMETYPE_DESC[mode] : "" )
+	
+	// modification to support playlists too
+	if ( displayDesc == "" )
+	{
+		displayDesc = Localize( GetPlaylistVarOrUseValue( mode, "description", "" ) )
+		
+		if ( displayDesc.find( "^" ) != null )
+			displayDesc = displayDesc.slice( 0, displayDesc.find( "^" ) )
+	}
+	
+	return displayDesc
+}
+
+string function GetGameModeDisplayHint( string mode ) //TODO: Make this support attack/defend descriptions
+{
+	string displayDesc = GetGamemodeVarOrUseValue( mode, "hint", GetGameModeDisplayDesc( mode ) )
+	return displayDesc
+}
+
+asset function GetGameModeDisplayImage( string mode )
+{
+	return GAMETYPE_ICON[ mode ]
+}
+
+array<int> function ColorStringToArray( string colorString )
+{
+	array<string> tokens = split( colorString, " " )
+
+	Assert( tokens.len() >= 3 && tokens.len() <= 4 )
+
+	array<int> colorArray
+	foreach ( token in tokens )
+		colorArray.append( int( token ) )
+
+	return colorArray
+}
+
+array<int> function GetGameModeDisplayColor( string mode )
+{
+	array<int> displayColor = ColorStringToArray( GetGamemodeVarOrUseValue( mode, "color", "" ) )
+	if ( displayColor.len() == 0 )
+		displayColor = GameMode_GetColor( mode )
+
+	return displayColor
+}
+
+float function GetCurrentPlaylistVarFloat( val, useVal )
+{
+	expect string( val )
+	expect float( useVal )
+
+	local result = GetCurrentPlaylistVarOrUseValue( val, useVal )
+	if ( result == null )
+		return 0.0
+
+	return float( result )
+}
+
+// ???: player not used
+bool function PlayerProgressionAllowed( player = null )
+{
+	if ( IsPrivateMatch() )
+		return false
+
+	return true
+}
+
+entity function GetUIPlayer()
+{
+	if ( !IsFullyConnected() )
+		return null
+
+	return GetLocalClientPlayer()
+}
+
+
+int function GetLobbyTypeScript()
+{
+	if ( GetLobbyType() == "game" )
+	{
+		if ( IsPrivateMatch() )
+			return eLobbyType.PRIVATE_MATCH
+		else
+			return eLobbyType.MATCH
+	}
+	else
+	{
+		if ( AmIPartyLeader() )
+		{
+			if ( IsPlayerAlone() ) // TODO: This function was changed to only check your team size, not the true player count, so you'll probably now have access to some menus you shouldn't be able to.
+				return eLobbyType.SOLO
+			else
+				return eLobbyType.PARTY_LEADER
+		}
+		else
+		{
+			return eLobbyType.PARTY_MEMBER
+		}
+	}
+
+	unreachable
+}
+
+function AddMenu( blockName, asset resourceFile, void functionref() initFunc = null, string displayName = "" )
+{
+	local menu = CreateMenu( "menu_" + blockName, resourceFile )
+	uiGlobal.menus[blockName] <- menu
+	menu.SetHudName( blockName )
+
+	if ( displayName != "" )
+		menu.SetDisplayName( displayName )
+	else
+		menu.SetDisplayName( blockName )
+
+	uiGlobal.allMenus.append( menu )
+
+	MenuDef defaultMenuData
+	uiGlobal.menuData[ menu ] <- defaultMenuData
+
+	if ( initFunc != null )
+		uiGlobal.menuData[ menu ].initFunc = initFunc
+
+	return menu
+}
+
+function AddMenu_WithCreateFunc( blockName, asset resourceFile, void functionref() initFunc, createMenuFunc )
+{
+	local menu = createMenuFunc( "menu_" + blockName, resourceFile )
+	uiGlobal.menus[blockName] <- menu
+	menu.SetHudName( blockName )
+
+	uiGlobal.allMenus.append( menu )
+
+	MenuDef defaultMenuData
+	uiGlobal.menuData[ menu ] <- defaultMenuData
+
+	if ( initFunc != null )
+		uiGlobal.menuData[ menu ].initFunc = initFunc
+
+	return menu
+}
+
+function AddPanel( var menu, string panelName, void functionref() initFunc = null )
+{
+	//printt( "AddPanel called, panelName:", panelName )
+
+	var panel = Hud_GetChild( menu, panelName )
+	uiGlobal.panels[ panelName ] <- panel
+	uiGlobal.allPanels.append( panel )
+
+	PanelDef defaultPanelData
+	uiGlobal.panelData[ panel ] <- defaultPanelData
+
+	if ( initFunc != null )
+		uiGlobal.panelData[ panel ].initFunc = initFunc
+
+	return panel
+}
+
+function AddSubmenu( blockName, asset resourceFile, void functionref() initFunc = null )
+{
+	local menu = CreateMenu( "menu_" + blockName, resourceFile )
+	uiGlobal.menus[blockName] <- menu
+	menu.SetHudName( blockName )
+	menu.SetType( "submenu" )
+
+	menu.s.newFocusRef <- null
+
+	uiGlobal.allMenus.append( menu )
+
+	MenuDef defaultMenuData
+	uiGlobal.menuData[ menu ] <- defaultMenuData
+
+	if ( initFunc != null )
+		uiGlobal.menuData[ menu ].initFunc = initFunc
+
+	return menu
+}
+
+function ClearButton( button )
+{
+	Hud_SetText( button, "" )
+	Hud_SetEnabled( button, false )
+	Hud_SetLocked( button, false )
+	Hud_SetNew( button, false )
+	Hud_SetSelected( button, false )
+}
+
+void function HudElem_SetText( var hudelem, string text )
+{
+	hudelem.SetText( text )
+}
+
+void function SetButtonRuiText( var elem, string text )
+{
+	var rui = Hud_GetRui( elem )
+	RuiSetString( rui, "buttonText", text )
+}
+
+void function SetLabelRuiText( var elem, string text )
+{
+	var rui = Hud_GetRui( elem )
+	RuiSetString( rui, "labelText", text )
+}
+
+void function SetNamedRuiText( var elem, string name, string text )
+{
+	var rui = Hud_GetRui( elem )
+	RuiSetString( rui, name, text )
+}
+
+void function SetNamedRuiBool( var elem, string name, bool state )
+{
+	var rui = Hud_GetRui( elem )
+	RuiSetBool( rui, name, state )
+}
+
+void function SetNamedRuiImage( var elem, string name, asset assetName )
+{
+	var rui = Hud_GetRui( elem )
+	RuiSetImage( rui, name, assetName )
+}
+
+// Should be using Hud_GetChild() instead of this
+var function GetMenuChild( var elem, string name )
+{
+	return elem.GetChild( name )
+}
+
+bool function IsWeaponButton( var button )
+{
+	array<var> weaponButtons = GetElementsByClassname( GetParentMenu( button ), "WeaponSelectClass" )
+
+	foreach ( weaponButton in weaponButtons )
+	{
+		if ( button == weaponButton )
+			return true
+	}
+
+	return false
+}
+
+void function SetPanelTabTitle( var panel, string title )
+{
+	uiGlobal.panelData[ panel ].tabTitle = title
+}
+
+string function GetPanelTabTitle( var panel )
+{
+	return uiGlobal.panelData[ panel ].tabTitle
+}
+
+void function ScriptCallback_UnlockAchievement( int achievementID )
+{
+	Assert( achievementID > 0 && achievementID < achievements.MAX_ACHIVEMENTS, "Tried to unlock achievement with invalid enum value" )
+
+	#if DEV
+		string ref
+		foreach( string _ref, int val in achievements )
+		{
+			if ( val != achievementID )
+				continue
+			ref = _ref
+			break
+		}
+		printt( "#############################################" )
+		printt( "UNLOCKED ACHIEVEMENT:", ref, "(" + achievementID + ")" )
+		printt( "#############################################" )
+	#endif //DEV
+
+	if ( Script_IsRunningTrialVersion() )
+	{
+		printt( "Achievements not awarded in trial version" )
+		return
+	}
+
+
+	Plat_UnlockAchievementByID( achievementID )
+}
+
+void function TryUnlockCollectiblesAchievement()
+{
+	int totalLionsCollectedForGame = GetTotalLionsCollected()
+
+	if ( totalLionsCollectedForGame >= GetTotalLionsInGame() )
+		ScriptCallback_UnlockAchievement( achievements.COLLECTIBLES_3 )
+
+	if ( totalLionsCollectedForGame >= ACHIEVEMENT_COLLECTIBLES_2_COUNT )
+		ScriptCallback_UnlockAchievement( achievements.COLLECTIBLES_2 )
+
+	if ( totalLionsCollectedForGame >= ACHIEVEMENT_COLLECTIBLES_1_COUNT )
+		ScriptCallback_UnlockAchievement( achievements.COLLECTIBLES_1 )
+}
+
+void function TryUnlockCompletedGameAchievements()
+{
+	if ( Script_IsRunningTrialVersion() )
+		return
+
+	var dataTable = GetDataTable( $"datatable/sp_levels.rpak" )
+	int numRows = GetDatatableRowCount( dataTable )
+
+	// Check Completed All Levels Achievement
+	int normalCompleted = 0
+	int hardCompleted = 0
+	int masterCompleted = 0
+	for ( int i=0; i<numRows; i++ )
+	{
+		int levelNum = GetDataTableInt( dataTable, i, GetDataTableColumnByName( dataTable, "levelNum" ) )
+
+		// always count training as master completed
+		if ( GetCompletedDifficultyForBSPNum( i, "sp_missionMasterCompletion" ) || levelNum == 0 )
+			masterCompleted++
+		if ( GetCompletedDifficultyForBSPNum( i, "sp_missionHardCompletion" ) || levelNum == 0 )
+			hardCompleted++
+		if ( GetCompletedDifficultyForBSPNum( i, "sp_missionNormalCompletion" ) || levelNum == 0 )
+			normalCompleted++
+	}
+
+	if ( normalCompleted >= numRows )
+		ScriptCallback_UnlockAchievement( achievements.COMPLETE_NORMAL )
+
+	if ( hardCompleted >= numRows )
+		ScriptCallback_UnlockAchievement( achievements.COMPLETE_HARD )
+
+	if ( masterCompleted >= numRows )
+		ScriptCallback_UnlockAchievement( achievements.COMPLETE_MASTER )
+}
+
+void function PopUpOriginOverlayDisabledDialog()
+{
+	DialogData dialogData
+	dialogData.header = "#ORIGIN_OVERLAY_DISABLED"
+	AddDialogButton( dialogData, "#OK" )
+	OpenDialog( dialogData )
+}
+
+void function PrintPartyData()
+{
+	Party partyData = GetParty()
+
+	printt( "PARTY DATA:" )
+
+	if ( partyData.numSlots == 0 )
+	{
+		printt( "    INVALID, numSlots: 0" )
+		return
+	}
+
+	printt( "    partyType:      ", partyData.partyType )
+	printt( "    playlistName:   ", partyData.playlistName )
+	printt( "    originatorName: ", partyData.originatorName )
+	printt( "    originatorUID:  ", partyData.originatorUID )
+	printt( "    numSlots:       ", partyData.numSlots )
+	printt( "    numClaimedSlots:", partyData.numClaimedSlots )
+	printt( "    numFreeSlots:   ", partyData.numFreeSlots )
+	printt( "    timeLeft:       ", partyData.timeLeft )
+	printt( "    amIInThis:      ", partyData.amIInThis )
+	printt( "    amILeader:      ", partyData.amILeader )
+	printt( "    searching:      ", partyData.searching )
+	print( "    members:         " )
+
+	foreach ( index, member in partyData.members )
+	{
+		if ( index != 0 )
+			print( "                     " )
+
+		printt( member.name, "uid:", member.uid, "callsignIdx:", member.callsignIdx, "skillMu:", member.skillMu )
+	}
+}
+
+void function PlayVideoFullScreen( string video, bool showCaptions = false )
+{
+	PlayVideo( video, 0, 0, 0, 0, showCaptions )
+}
+
+void function PlayVideoUsingPanelRect( string video, var panel )
+{
+	int xPos = Hud_GetX( panel )
+	int yPos = Hud_GetY( panel )
+	int width = Hud_GetWidth( panel )
+	int height = Hud_GetHeight( panel )
+
+	PlayVideo( video, xPos, yPos, width, height, false )
+}
+
+void function Hud_SetNavUp( var buttonFrom, var buttonTo )
+{
+	buttonFrom.SetNavUp( buttonTo )
+}
+
+void function Hud_SetNavDown( var buttonFrom, var buttonTo )
+{
+	buttonFrom.SetNavDown( buttonTo )
+}

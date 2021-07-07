@@ -1,0 +1,11 @@
+global function CustomPrivateMatchModesInit
+
+void function CustomPrivateMatchModesInit()
+{
+	// modes
+	AddPrivateMatchMode( "gg" )
+	AddPrivateMatchMode( "inf" )
+	AddPrivateMatchMode( "kr" )
+	AddPrivateMatchMode( "tt" )
+	AddPrivateMatchMode( "ctf_comp" )
+}

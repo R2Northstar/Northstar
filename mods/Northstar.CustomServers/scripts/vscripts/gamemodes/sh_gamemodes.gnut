@@ -415,7 +415,10 @@ void function GameModes_Init()
 	#endif
 
 	#if SERVER || CLIENT
-	InitCustomGamemodes()
+	// add modes/maps/playlists to private lobby that aren't there by default
+	PrivateMatchModesInit() 
+	
+	InitCustomGamemodes() // do custom gamemode callbacks
 	GameModes_Init_SV_CL()
 	#endif
 	

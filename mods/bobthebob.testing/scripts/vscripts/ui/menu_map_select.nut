@@ -5,16 +5,9 @@ global function MenuMapSelect_Init
 
 global function InitMapsMenu
 
-const int MAPS_PER_PAGE = 21
-
-const MAP_LIST_VISIBLE_ROWS = 21
-const MAP_LIST_SCROLL_SPEED = 0
-
 struct {
-	var menu = null
-	array<var> buttons
-	int numMapButtonsOffScreen
-	int mapListScrollState = 0
+	int mapsPerPage = 21
+	int currentMapPage
 } file
 
 // note: this does have a scrolling system in vanilla, but it's honestly really weird and jank and i don't like it
@@ -27,8 +20,7 @@ function MenuMapSelect_Init()
 
 void function InitMapsMenu()
 {
-	file.menu = GetMenu( "MapsMenu" )
-	var menu = file.menu
+	var menu = GetMenu( "MapsMenu" )
 
 	AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, OnOpenMapsMenu )
 	AddMenuEventHandler( menu, eUIEvent.MENU_CLOSE, OnCloseMapsMenu )
@@ -36,13 +28,9 @@ void function InitMapsMenu()
 	AddEventHandlerToButtonClass( menu, "MapButtonClass", UIE_GET_FOCUS, MapButton_Focused )
 	AddEventHandlerToButtonClass( menu, "MapButtonClass", UIE_LOSE_FOCUS, MapButton_LostFocus )
 	AddEventHandlerToButtonClass( menu, "MapButtonClass", UIE_CLICK, MapButton_Activate )
-	//AddEventHandlerToButtonClass( menu, "MapListScrollUpClass", UIE_CLICK, OnMapListScrollUp_Activate )
-	//AddEventHandlerToButtonClass( menu, "MapListScrollDownClass", UIE_CLICK, OnMapListScrollDown_Activate )
 
 	AddMenuFooterOption( menu, BUTTON_A, "#A_BUTTON_SELECT" )
 	AddMenuFooterOption( menu, BUTTON_B, "#B_BUTTON_BACK", "#BACK" )
-
-	file.buttons = GetElementsByClassname( menu, "MapButtonClass" )
 	
 	AddMenuFooterOption( menu, BUTTON_SHOULDER_LEFT, "#PRIVATE_MATCH_PAGE_PREV", "#PRIVATE_MATCH_PAGE_PREV", CycleModesBack, IsNorthstarServer )
 	AddMenuFooterOption( menu, BUTTON_SHOULDER_RIGHT, "#PRIVATE_MATCH_PAGE_NEXT", "#PRIVATE_MATCH_PAGE_NEXT", CycleModesForward, IsNorthstarServer )
@@ -50,19 +38,27 @@ void function InitMapsMenu()
 
 void function OnOpenMapsMenu()
 {
-	array<var> buttons = file.buttons
-	array<string> mapsArray = GetPrivateMatchMaps()
+	if ( IsNorthstarServer() )
+		file.mapsPerPage = 15
+	else
+		file.mapsPerPage = 21
 
-	file.numMapButtonsOffScreen = int( max( mapsArray.len() - MAP_LIST_VISIBLE_ROWS, 0 ) )
-//	Assert( file.numMapButtonsOffScreen >= 0 )
+	UpdateVisibleMaps()
+}
+
+void function UpdateVisibleMaps()
+{
+	array<var> buttons = GetElementsByClassname( GetMenu( "MapsMenu" ), "MapButtonClass" )
+	array<string> mapsArray = GetPrivateMatchMaps()
 
 	foreach ( button in buttons )
 	{
 		int buttonID = int( Hud_GetScriptID( button ) )
+		int mapID = buttonID + ( file.currentMapPage * file.mapsPerPage )
 
-		if ( buttonID >= 0 && buttonID < mapsArray.len() )
+		if ( buttonID < file.mapsPerPage && mapID < GetPrivateMatchMaps().len() )
 		{
-			string name = mapsArray[buttonID]
+			string name = mapsArray[ mapID ]
 			SetButtonRuiText( button, GetMapDisplayName( name ) )
 			Hud_SetEnabled( button, true )
 
@@ -86,36 +82,30 @@ void function OnOpenMapsMenu()
 			Hud_SetEnabled( button, false )
 		}
 
-		if ( buttonID == level.ui.privatematch_map )
+		if ( mapID == level.ui.privatematch_map )
 		{
 			printt( buttonID, mapsArray[buttonID] )
 			Hud_SetFocused( button )
 		}
 	}
-
-	//RegisterButtonPressedCallback( MOUSE_WHEEL_UP, OnMapListScrollUp_Activate )
-	//RegisterButtonPressedCallback( MOUSE_WHEEL_DOWN, OnMapListScrollDown_Activate )
 }
 
 void function OnCloseMapsMenu()
 {
-	//DeregisterButtonPressedCallback( MOUSE_WHEEL_UP, OnMapListScrollUp_Activate )
-	//DeregisterButtonPressedCallback( MOUSE_WHEEL_DOWN, OnMapListScrollDown_Activate )
-
 	Signal( uiGlobal.signalDummy, "OnCloseMapsMenu" )
 }
 
 void function MapButton_Focused( var button )
 {
-	int buttonID = int( Hud_GetScriptID( button ) )
+	int mapID = int( Hud_GetScriptID( button ) ) + ( file.currentMapPage * file.mapsPerPage )
 
-	var menu = file.menu
+	var menu = GetMenu( "MapsMenu" )
 	var nextMapImage = Hud_GetChild( menu, "NextMapImage" )
 	var nextMapName = Hud_GetChild( menu, "NextMapName" )
 	var nextMapDesc = Hud_GetChild( menu, "NextMapDesc" )
 
 	array<string> mapsArray = GetPrivateMatchMaps()
-	string mapName = mapsArray[buttonID]
+	string mapName = mapsArray[ mapID ]
 
 	asset mapImage = GetMapImageForMapName( mapName )
 	RuiSetImage( Hud_GetRui( nextMapImage ), "basicImage", mapImage )
@@ -128,36 +118,24 @@ void function MapButton_Focused( var button )
 	else
 		Hud_SetText( nextMapDesc, GetMapDisplayDesc( mapName ) )
 
-	// Update window scrolling if we highlight a map not in view
-	int minScrollState = int( clamp( buttonID - (MAP_LIST_VISIBLE_ROWS - 1), 0, file.numMapButtonsOffScreen ) )
-	int maxScrollState = int( clamp( buttonID, 0, file.numMapButtonsOffScreen ) )
-
-	if ( file.mapListScrollState < minScrollState )
-		file.mapListScrollState = minScrollState
-	if ( file.mapListScrollState > maxScrollState )
-		file.mapListScrollState = maxScrollState
-
-	UpdateMapListScroll()
 }
 
 void function MapButton_LostFocus( var button )
 {
-	HandleLockedCustomMenuItem( file.menu, button, [], true )
+	HandleLockedCustomMenuItem( GetMenu( "MapsMenu" ), button, [], true )
 }
 
 void function MapButton_Activate( var button )
 {
 	if ( Hud_IsLocked( button ) )
-	{
 		return
-	}
 
 	if ( !AmIPartyLeader() && GetPartySize() > 1 )
 		return
 
 	array<string> mapsArray = GetPrivateMatchMaps()
 	int mapID = int( Hud_GetScriptID( button ) )
-	string mapName = mapsArray[mapID]
+	string mapName = mapsArray[ mapID + ( file.currentMapPage * file.mapsPerPage ) ]
 
 	printt( mapName, mapID )
 
@@ -165,36 +143,20 @@ void function MapButton_Activate( var button )
 	CloseActiveMenu()
 }
 
-
-void function OnMapListScrollUp_Activate( var button )
-{
-	file.mapListScrollState--
-	if ( file.mapListScrollState < 0 )
-		file.mapListScrollState = 0
-
-	UpdateMapListScroll()
-}
-
-void function OnMapListScrollDown_Activate( var button )
-{
-	file.mapListScrollState++
-	if ( file.mapListScrollState > file.numMapButtonsOffScreen )
-		file.mapListScrollState = file.numMapButtonsOffScreen
-
-	UpdateMapListScroll()
-}
-
-function UpdateMapListScroll()
-{
-	array<var> buttons = file.buttons
-	local basePos = buttons[0].GetBasePos()
-	local offset = buttons[0].GetHeight() * file.mapListScrollState
-
-	buttons[0].SetPos( basePos[0], basePos[1] - offset )
-}
-
 void function CycleModesBack( var button )
-{}
+{
+	if ( file.currentMapPage == 0 )
+		return
+	
+	file.currentMapPage--
+	UpdateVisibleMaps()
+}
 
 void function CycleModesForward( var button )
-{}
+{
+	if ( ( file.currentMapPage + 1 ) * file.mapsPerPage >= GetPrivateMatchMaps().len() )
+		return
+	
+	file.currentMapPage++
+	UpdateVisibleMaps()
+}

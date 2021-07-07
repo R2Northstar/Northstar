@@ -30,11 +30,5 @@
 			"ServerPreCallback": "BleedoutTest_Init",
 			"ClientPreCallback": "BleedoutTest_Init",
 		},
-		
-		{
-			"Path": "sh_northstar_utils.gnut",
-			"RunOn": "CLIENT || SERVER || UI",
-		}
-		
 	]
 }

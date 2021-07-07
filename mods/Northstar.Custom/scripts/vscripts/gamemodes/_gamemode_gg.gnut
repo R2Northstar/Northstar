@@ -73,6 +73,8 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 
 void function UpdateLoadout( entity player )
 {
+	// todo: honestly, this should be reworked to use PilotLoadoutDefs instead of directly modifying weapons and shit
+	
 	int currentWeaponIndex = GameRules_GetTeamScore( player.GetTeam() )
 	array<GunGameWeapon> weapons = GetGunGameWeapons()
 	

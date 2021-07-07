@@ -125,4 +125,10 @@ void function TestObjectiveRUIFW()
 	
 	RuiDestroy( rui )
 }
+
+void function RespawnWhy()
+{
+	for ( int i = 0; i < 500; i++ ) // this only works in lobby, luckily
+		GetLocalViewPlayer().ClientCommand( "test_clientsetplaylistvaroverride " + i + " whyyyyy" )
+}
 #endif

@@ -24,6 +24,11 @@
 		},
 		
 		{
+			"Path": "sh_northstar_utils.gnut",
+			"RunOn": "CLIENT || SERVER || UI",
+		},
+		
+		{
 			"Path": "mp/levels/_lf_maps_shared.gnut",
 			"RunOn": "SERVER && MP"
 		},
@@ -32,10 +37,19 @@
 			"Path": "gamemodes/sh_gamemodes_custom.gnut",
 			"RunOn": "(CLIENT || SERVER) && MP"
 		},
-		
 		{
 			"Path": "sh_remote_functions_mp_custom.gnut",
 			"RunOn": "(CLIENT || SERVER) && MP"
+		},
+		{
+			"Path": "gamemodes/_gamemode_fra.nut",
+			"RunOn": "SERVER && MP",
+			"ServerPreCallback": "GamemodeFRA_AddAdditionalInitCallback"
+		},
+		{
+			"Path": "gamemodes/_featured_mode_settings.gnut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": "FeaturedModeSettings_Init"
 		},
 		
 		{
@@ -51,6 +65,11 @@
 			"Path": "_loadouts_mp.gnut",
 			"RunOn": "SERVER && MP",
 			"ServerCallback": "SvLoadoutsMP_Init"
+		},
+		
+		{
+			"Path": "lobby/sh_private_lobby_modes_init.gnut",
+			"RunOn": "( SERVER || CLIENT ) && MP",
 		},
 	]
 }
