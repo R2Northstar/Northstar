@@ -1,0 +1,10 @@
+LIBRARY tier0.dll
+EXPORTS
+CreateGlobalMemAlloc
+g_pMemAllocSingleton
+ThreadInMainThread
+
+Error
+
+LoggingSystem_RegisterLoggingListener
+LoggingSystem_Log
