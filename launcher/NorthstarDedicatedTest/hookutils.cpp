@@ -1,0 +1,57 @@
+#include "pch.h"
+#include "hookutils.h"
+#include "tier0.h"
+
+#include <iostream>
+
+TempReadWrite::TempReadWrite(void* ptr)
+{
+    m_ptr = ptr;
+    MEMORY_BASIC_INFORMATION mbi;
+    VirtualQuery(m_ptr, &mbi, sizeof(mbi));
+    VirtualProtect(mbi.BaseAddress, mbi.RegionSize, PAGE_EXECUTE_READWRITE, &mbi.Protect);
+    m_origProtection = mbi.Protect;
+}
+
+TempReadWrite::~TempReadWrite()
+{
+    MEMORY_BASIC_INFORMATION mbi;
+    VirtualQuery(m_ptr, &mbi, sizeof(mbi));
+    VirtualProtect(mbi.BaseAddress, mbi.RegionSize, m_origProtection, &mbi.Protect);
+}
+
+
+void HookEnabler::CreateHook(LPVOID ppTarget, LPVOID ppDetour, LPVOID* ppOriginal, const char* targetName)
+{
+    if (MH_CreateHook(ppTarget, ppDetour, ppOriginal) == MH_OK)
+    {
+        HookTarget *target = new HookTarget;
+        target->targetAddress = ppTarget;
+        target->targetName = (char*)targetName;
+
+        m_hookTargets.push_back(target);
+    }
+    else
+    {
+        if (targetName != nullptr)
+            Error("MH_CreateHook failed for function %s", targetName);
+        else
+            Error("MH_CreateHook failed for unknown function");
+    }
+}
+
+HookEnabler::~HookEnabler()
+{
+    for (auto& hook : m_hookTargets)
+    {
+        if (MH_EnableHook(hook->targetAddress) != MH_OK)
+        {
+            if (hook->targetName != nullptr)
+                Error("MH_EnableHook failed for function %s", hook->targetName);
+            else
+                Error("MH_EnableHook failed for unknown function");
+        }
+        else
+            std::cout << "enabling hook " << hook->targetName << std::endl;
+    }   
+}
