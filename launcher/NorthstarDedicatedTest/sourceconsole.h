@@ -87,4 +87,4 @@ public:
     CConsoleDialog* m_pConsole;
 };
 
-extern SourceInterface<CGameConsole>* g_SourceGameConsole;
+extern SourceInterface<CGameConsole>* g_pSourceGameConsole;

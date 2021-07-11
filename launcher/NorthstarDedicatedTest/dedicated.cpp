@@ -7,6 +7,7 @@
 bool IsDedicated()
 {
 	// temp: should get this from commandline
+	//return true;
 	return false;
 }
 
@@ -69,6 +70,12 @@ void InitialiseDedicated(HMODULE engineAddress)
 
 	// ptr to ptr
 	*ptr = (intptr_t)doublePtr;
+
+	// extra potential patches:
+	// nop engine.dll+1c67cd1 and +1c67d8 to skip videomode creategamewindow
+	// also look into launcher.dll+d381, seems to cause renderthread to get made
+	// this crashes HARD if no window which makes sense tbh
+	// also look into materialsystem + 5B344 since it seems to be the base of all the renderthread stuff
 }
 
 void Sys_Printf(CDedicatedExports* dedicated, char* msg)
