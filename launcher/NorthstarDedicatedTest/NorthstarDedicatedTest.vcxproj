@@ -170,6 +170,7 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="concommand.h" />
     <ClInclude Include="context.h" />
     <ClInclude Include="dedicated.h" />
     <ClInclude Include="hooks.h" />
@@ -199,7 +200,6 @@
     </ClCompile>
     <ClCompile Include="sigscanning.cpp" />
     <ClCompile Include="sourceconsole.cpp" />
-    <ClCompile Include="sourceinterface.cpp" />
     <ClCompile Include="squirrel.cpp" />
     <ClCompile Include="tier0.cpp" />
   </ItemGroup>

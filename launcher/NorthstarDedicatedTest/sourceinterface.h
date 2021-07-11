@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "tier0.h"
 
 // literally just copied from ttf2sdk definition
 typedef void* (*CreateInterfaceFn)(const char* pName, int* pReturnCode);
@@ -10,7 +11,14 @@ private:
     T* m_interface;
 
 public:
-    SourceInterface(const std::string& moduleName, const std::string& interfaceName);
+    SourceInterface(const std::string& moduleName, const std::string& interfaceName)
+    {
+        HMODULE handle = GetModuleHandleA(moduleName.c_str());
+        CreateInterfaceFn createInterface = (CreateInterfaceFn)GetProcAddress(handle, "CreateInterface");
+        m_interface = (T*)createInterface(interfaceName.c_str(), NULL);
+        if (m_interface == nullptr)
+            Error("Failed to call CreateInterface for %s in %s", interfaceName, moduleName);
+    }
 
     T* operator->() const
     {

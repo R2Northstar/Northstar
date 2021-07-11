@@ -40,6 +40,9 @@
     <Filter Include="Header Files\Client">
       <UniqueIdentifier>{ca657be5-c2d8-4322-a689-1154aaafe57b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Shared\ConVar">
+      <UniqueIdentifier>{9751b551-5886-45d4-a039-cbd10445263d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -81,6 +84,9 @@
     <ClInclude Include="sourceinterface.h">
       <Filter>Header Files\Shared</Filter>
     </ClInclude>
+    <ClInclude Include="concommand.h">
+      <Filter>Header Files\Shared\ConVar</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -114,9 +120,6 @@
       <Filter>Source Files\Shared</Filter>
     </ClCompile>
     <ClCompile Include="context.cpp">
-      <Filter>Source Files\Shared</Filter>
-    </ClCompile>
-    <ClCompile Include="sourceinterface.cpp">
       <Filter>Source Files\Shared</Filter>
     </ClCompile>
   </ItemGroup>
