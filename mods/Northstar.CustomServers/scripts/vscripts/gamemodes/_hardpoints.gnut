@@ -1,33 +1,35 @@
+// atm this is just a stub script since hardpoints are only really used in hardpoint
+// respawn probably tried to share this code across multiple modes but atm we just dont need to do that 
+
 global function Hardpoints_Init
+
 global function CapturePoint_GetStartProgress
 global function CapturePoint_GetCappingTeam
 global function CapturePoint_GetOwningTeam
 global function CapturePoint_GetGoalProgress
 
-global array<entity> HARDPOINTS
 
 void function Hardpoints_Init()
 {
-
-
+	
 }
 
 float function CapturePoint_GetStartProgress( entity hardpoint )
 {
-	return 0.5
+	return GetGlobalNetFloat( "objective" + hardpoint.kv.hardpointGroup + "Progress" )
 }
 
 int function CapturePoint_GetCappingTeam( entity hardpoint )
 {
-	return 0
+	return GetGlobalNetInt( "objective" + hardpoint.kv.hardpointGroup + "CappingTeam" )
 }
 
 int function CapturePoint_GetOwningTeam( entity hardpoint )
 {
-	return 0
+	return hardpoint.GetTeam()
 }
 
 float function CapturePoint_GetGoalProgress( entity hardpoint )
 {
-	return 1.0
+	return GetGlobalNetFloat( "objective" + hardpoint.kv.hardpointGroup + "Progress" )
 }

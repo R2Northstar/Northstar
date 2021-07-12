@@ -1,8 +1,10 @@
 global function Sv_EarnMeterMP_Init
 global function EarnMeterMP_SetTitanLoadout
+global function EarnMeterMP_SetPassiveMeterGainEnabled
 
 struct {
 	float playingStartTime
+	bool passiveMeterGainEnabled = true
 } file
 
 void function Sv_EarnMeterMP_Init()
@@ -19,6 +21,11 @@ void function EarnMeterMP_SetTitanLoadout( entity player )
 {
 	if ( EarnMeterMP_IsTitanEarnGametype() )
 		PlayerEarnMeter_SetGoal( player, EarnObject_GetByRef( GetTitanLoadoutForPlayer( player ).titanClass ) )
+}
+
+void function EarnMeterMP_SetPassiveMeterGainEnabled( bool enabled )
+{
+	file.passiveMeterGainEnabled = enabled
 }
 
 void function SetupPlayerEarnMeter( entity player )
@@ -117,7 +124,7 @@ void function EarnMeterMP_PlayerLifeThink( entity player )
 				PlayerEarnMeter_RefreshGoal( player )
 			}
 				
-			if ( Time() - lastPassiveGainTime > 4.0 ) // this might be 5.0
+			if ( Time() - lastPassiveGainTime > 4.0 && file.passiveMeterGainEnabled ) // this might be 5.0
 			{
 				lastPassiveGainTime = Time()
 				PlayerEarnMeter_AddOwnedFrac( player, 0.01 )

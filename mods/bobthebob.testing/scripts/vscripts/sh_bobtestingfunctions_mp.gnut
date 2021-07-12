@@ -1,3 +1,4 @@
+untyped
 globalize_all_functions
 
 void function DumpPdefEnum( string pdefEnum )

@@ -1,15 +1,16 @@
 untyped
 
-global function CodeCallback_RegisterClass_C_HardPointEntity
+// note: had to rename all instances of C_HardPointEntity to CHardPointEntity here, unsure why this was even a thing?
+global function CodeCallback_RegisterClass_CHardPointEntity
 
-function CodeCallback_RegisterClass_C_HardPointEntity()
+function CodeCallback_RegisterClass_CHardPointEntity()
 {
-	/*C_HardPointEntity.ClassName <- "C_HardPointEntity"
+	CHardPointEntity.ClassName <- "CHardPointEntity"
 
 
-	function C_HardPointEntity::Enabled()
+	function CHardPointEntity::Enabled()
 	{
 		return this.GetHardpointID() >= 0
 	}
-	#document( "C_HardPointEntity::Enabled", "Returns true if this hardpoint is enabled" )*/
+	#document( "CHardPointEntity::Enabled", "Returns true if this hardpoint is enabled" )
 }

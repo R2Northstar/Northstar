@@ -15,6 +15,8 @@ void function GamemodeFRA_Init()
 {
 	// need a way to disable passive earnmeter gain
 	ScoreEvent_SetEarnMeterValues( "PilotBatteryPickup", 0.0, 0.34 )
+	EarnMeterMP_SetPassiveMeterGainEnabled( false )
+	PilotBattery_SetMaxCount( 3 )
 
 	AddCallback_OnPlayerKilled( FRARemoveEarnMeter )
 }

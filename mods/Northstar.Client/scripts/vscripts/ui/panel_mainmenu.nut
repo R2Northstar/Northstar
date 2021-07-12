@@ -506,6 +506,7 @@ void function OnPlayFDButton_Activate( var button ) // repurposed for launching 
 		//thread file.mpButtonActivateFunc()
 		
 		ClientCommand( "everything_unlocked 1" ) // todo super temp, need this removed when server autoexecs are good
+		ClientCommand( "setplaylist tdm" )
 		ClientCommand( "map mp_lobby" )
 	}
 }

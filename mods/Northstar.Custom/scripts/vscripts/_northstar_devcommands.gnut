@@ -13,14 +13,8 @@ bool function ClientCommandCallbackToggleNoclip( entity player, array<string> ar
 	if ( GetConVarInt( "sv_cheats" ) != 1 )
 		return true
 
-	//if ( player.IsNoclipping() )
-	//	DisableNoclipForEntityIndex( player.GetIndexForEntity() )
-	//else
-	//	EnableNoclipForEntityIndex( player.GetIndexForEntity() )
-	
-	// new way that doesn't require native stuff yay
 	if ( player.IsNoclipping() )
-		player.SetPhysics( MOVETYPE_WALK ) // just hoping this is the right movetype, not much of a way to check
+		player.SetPhysics( MOVETYPE_WALK )
 	else
 		player.SetPhysics( MOVETYPE_NOCLIP )
 		
