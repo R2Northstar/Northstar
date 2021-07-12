@@ -32,7 +32,7 @@ void function OnPlayerRespawned_Threaded( entity player )
 
 void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
-	if ( !victim.IsPlayer() || !attacker.IsPlayer() )
+	if ( !victim.IsPlayer() || !attacker.IsPlayer() || GetGameState() != eGameState.Playing )
 		return
 		
 	if ( attacker == victim ) // suicide

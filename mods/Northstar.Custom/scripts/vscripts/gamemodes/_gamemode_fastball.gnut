@@ -15,6 +15,7 @@ void function GamemodeFastball_Init()
 	// used for respawn
 	PrecacheParticleSystem( $"P_pod_screen_lasers_OUT" )
 	
+	SetShouldUseRoundWinningKillReplay( true )
 	SetRoundBased( true )
 	SetRespawnsEnabled( false )
 	Riff_ForceSetEliminationMode( eEliminationMode.Pilots )

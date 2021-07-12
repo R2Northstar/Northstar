@@ -1,0 +1,1119 @@
+untyped
+
+global function ClGameState_Init
+global function ClGameState_Think
+global function ClGameState_GetRui
+global function ClGameState_RegisterNetworkFunctions
+global function ClGameState_SetInfoStatusText
+
+global function ServerCallback_AnnounceWinner
+global function ServerCallback_AnnounceRoundWinner
+
+global function ShowRoundScoresInAnnouncement
+
+global function PlayRoundWonConversationWithAnnouncementDelay
+
+global function UpdatePilotTitanStatusDisplay
+global function UpdatePilotTitanStatusDisplayWithCount
+
+global function SetGameModeScoreBarUpdateRules
+global function SetGameModeScoreBarUpdateRulesWithFlags
+
+global function DisplayPostMatchTop3
+
+global function GetGameStartTime
+
+global function ClGameState_RegisterGameStateAsset
+
+global function ClGameState_SetPilotTitanStatusCallback
+global function GetPilotTitanStatusForPlayer
+
+global enum ePlayerStatusType
+{
+	PTS_TYPE_NONE,
+	PTS_TYPE_DEAD,
+	PTS_TYPE_DEAD_PILOT_TITAN,
+	PTS_TYPE_DEAD_READY,
+	PTS_TYPE_PILOT,
+	PTS_TYPE_READY,
+	PTS_TYPE_PILOT_TITAN,
+	PTS_TYPE_EVAC,
+	PTS_TYPE_ION,
+	PTS_TYPE_SCORCH,
+	PTS_TYPE_RONIN,
+	PTS_TYPE_TONE,
+	PTS_TYPE_LEGION,
+	PTS_TYPE_NORTHSTAR,
+	PTS_TYPE_VANGUARD,
+	PTS_TYPE_WAVE_READY,
+	PTS_TYPE_WAVE_NOT_READY,
+	PTS_TYPE_COUNT,
+}
+
+struct PilotTitanStatus
+{
+	int playerCount
+	int[8] slotTypes
+}
+
+global enum sbflag
+{
+	SKIP_STANDARD_UPDATE = (1<<0),
+	_count = 1
+}
+
+struct
+{
+	var gamestate_info
+	var letterBoxRui = null
+	bool thirtySecondWarningDone = false
+
+	void functionref( var ) gameModeScoreBarUpdateRules
+	int gameModeScoreBarUpdateFlags = 0
+
+	table< int, PilotTitanStatus> pilotTitanStatus
+	int functionref( entity,int ) pilotTitanStatusCallback
+
+	asset gameStateRuiAsset = $""
+} file
+
+
+const DEV_COUNTDOWNTIMER = 0//turn on to see the countdown timer to match starts - helps with lining up intros
+
+function ClGameState_Init()
+{
+	RegisterSignal( "GameStateChanged" )
+	RegisterServerVarChangeCallback( "gameState", ClGameState_Changed )
+	RegisterServerVarChangeCallback( "badRepPresent", UpdateScoreboardBadRepPresentMessage )
+
+	AddCallback_OnClientScriptInit( ClGameState_AddClient )
+
+	var rui = CreatePermanentCockpitRui( GetGameStateAsset(), MINIMAP_Z_BASE - 1 )
+	file.gamestate_info = rui
+
+	if ( file.gameModeScoreBarUpdateRules == null )
+		SetGameModeScoreBarUpdateRules( GameModeScoreBarUpdateRules_Default )
+}
+
+void function GameModeScoreBarUpdateRules_Default( var rui )
+{
+}
+
+void function SetGameModeScoreBarUpdateRulesWithFlags( void functionref( var ) rules, int sbflags )
+{
+	file.gameModeScoreBarUpdateRules = rules
+	file.gameModeScoreBarUpdateFlags = sbflags
+}
+
+void function SetGameModeScoreBarUpdateRules( void functionref( var ) rules )
+{
+	SetGameModeScoreBarUpdateRulesWithFlags( rules, 0 )
+}
+
+void function ClGameState_RegisterNetworkFunctions()
+{
+	RegisterNetworkedVariableChangeCallback_int( "gameInfoStatusText", ClGameState_UpdateInfoStatusText )
+}
+
+void function ClGameState_UpdateInfoStatusText( entity player, int oldValue, int newValue, bool actuallyChanged )
+{
+	printt( "UPDATE", player, oldValue, newValue )
+
+	if ( newValue == -1 )
+	{
+		RuiSetString( file.gamestate_info, "statusText", "" )
+		return
+	}
+
+	string statusText = GetStringFromNetworkableID( newValue )
+	printt( "SET", player, statusText, Localize( statusText ) )
+	RuiSetString( file.gamestate_info, "statusText", Localize( statusText ) )
+}
+
+
+void function ClGameState_SetInfoStatusText( string statusText )
+{
+	RuiSetString( file.gamestate_info, "statusText", Localize( statusText ) )
+}
+
+
+asset function GetGameStateAsset()
+{
+	if ( GAMETYPE == ATTRITION )
+		return $"ui/gamestate_info_at.rpak"
+
+	if ( GAMETYPE == FREE_AGENCY )
+		return $"ui/gamestate_info_fra.rpak"
+
+	if ( GAMETYPE == FFA )
+		return $"ui/gamestate_info_ffa.rpak"
+
+	if ( GAMETYPE == FORT_WAR )
+		return $"ui/gamestate_info_fw.rpak"
+
+	if ( GAMETYPE == LAST_TITAN_STANDING )
+		return $"ui/gamestate_info_lts.rpak"
+
+	if ( GAMETYPE == LTS_BOMB )
+		return $"ui/gamestate_info_lts_bomb.rpak"
+
+	if ( GAMETYPE == CAPTURE_POINT )
+		return $"ui/gamestate_info_cp.rpak"
+
+	if ( GAMETYPE == PILOT_SKIRMISH )
+		return $"ui/gamestate_info_ps.rpak"
+
+	if ( GAMETYPE == COLISEUM )
+		return $"ui/gamestate_info_coliseum.rpak"
+
+	if ( GAMETYPE == SPEEDBALL )
+		return $"ui/gamestate_info_speedball.rpak"
+
+	if ( GAMETYPE == MARKED_FOR_DEATH )
+		return $"ui/gamestate_info_mfd.rpak"
+
+	if ( file.gameStateRuiAsset != $"" )
+		return file.gameStateRuiAsset
+
+	return $"ui/gamestate_info.rpak"
+}
+
+void function ClGameState_RegisterGameStateAsset( asset gameStateAsset )
+{
+	file.gameStateRuiAsset = gameStateAsset
+}
+
+void function ClGameState_AddClient( entity player )
+{
+	player.cv.scoreboardBadRepPresentMessage <- HudElement( "ScoreboardBadRepPresentMessage", HudElement( "Scoreboard" ) )
+
+	#if PC_PROG
+		player.cv.scoreboardBadRepPresentMessage.SetText( "#ASTERISK_FAIRFIGHT_CHEATER" )
+	#else
+		player.cv.scoreboardBadRepPresentMessage.SetText( "#ASTERISK_BAD_REPUTATION" )
+	#endif
+
+	player.cv.hudCheaterMessage <- HudElement( "HudCheaterMessage" )
+	if ( !Durango_IsDurango() && !IsLobby() && player.HasBadReputation() )
+		player.cv.hudCheaterMessage.Show()
+	else
+		player.cv.hudCheaterMessage.Hide()
+}
+
+
+var function ClGameState_GetRui()
+{
+	return file.gamestate_info
+}
+
+
+void function ClGameState_Think()
+{
+	entity player = GetLocalClientPlayer()
+
+	TEMP_UpdateRuiScores( player )
+	switch( GetGameState() )
+	{
+		case eGameState.WaitingForPlayers:
+			ClGameStateThink_WaitingForPlayers( player )
+			break
+
+		case eGameState.PickLoadout:
+			ClGameStateThink_PickLoadOut( player )
+			break
+
+		case eGameState.Prematch:
+			ClGameStateThink_Prematch( player )
+			break
+
+		case eGameState.Playing:
+			ClGameStateThink_Playing( player )
+			break
+
+		case eGameState.SwitchingSides:
+			ClGameStateThink_SwitchingSides( player )
+			break
+
+		case eGameState.Postmatch:
+			ClGameStateThink_Postmatch( player )
+			break
+	}
+}
+
+
+void function ClGameStateThink_Prematch( entity player )
+{
+	string factionChoice = GetFactionChoice( player )
+	ItemDisplayData displayData = GetItemDisplayData( factionChoice )
+	asset factionLogo = displayData.image
+	string factionTitle = displayData.name
+
+	RuiSetImage( ClGameState_GetRui(), "factionImage", factionLogo )
+
+	//removing countdown timer all together
+	if ( !DEV_COUNTDOWNTIMER )
+		return
+
+	local timeRemaining = ceil( level.nv.gameStartTime - Time() )
+
+	player.cv.prematchTimer.Show()
+	player.cv.prematchTimerGlow.Show()
+	player.cv.prematchDesc.Show()
+
+	player.cv.prematchTimer.SetText( string( timeRemaining ) )
+	player.cv.prematchTimerGlow.SetText( string( timeRemaining ) )
+}
+
+void function ClGameStateThink_WaitingForPlayers( player )
+{
+	int reservedCount
+	int connectingCount
+	int loadingCount
+	if ( IsFFAGame() )
+	{
+		reservedCount = GetTotalPendingPlayersReserved()
+		connectingCount = GetTotalPendingPlayersConnecting()
+		loadingCount = GetTotalPendingPlayersLoading()
+	}
+	else
+	{
+		reservedCount = GetTeamPendingPlayersReserved( TEAM_MILITIA ) + GetTeamPendingPlayersReserved( TEAM_IMC )
+		connectingCount = GetTeamPendingPlayersConnecting( TEAM_MILITIA ) + GetTeamPendingPlayersConnecting( TEAM_IMC )
+		loadingCount = GetTeamPendingPlayersLoading( TEAM_MILITIA ) + GetTeamPendingPlayersLoading( TEAM_IMC )
+	}
+
+	int connectedCount = GetPlayerArray().len()
+	int allKnownPlayersCount = reservedCount + connectingCount + loadingCount + connectedCount
+	int minPlayers = GetCurrentPlaylistVarInt( "min_players", 0 )
+	int expectedPlayers = maxint( minPlayers, allKnownPlayersCount )
+
+	if ( !("lastTimeRemaining" in player.cv) )
+		player.cv.lastTimeRemaining <- null
+
+	if ( Time() <= level.nv.connectionTimeout )
+	{
+		local timeRemainingFloat = level.nv.connectionTimeout - Time()
+		local timeRemaining = ceil( timeRemainingFloat )
+
+		//player.cv.waitingForPlayersDesc.SetText( "#HUD_WAITING_FOR_PLAYERS", connectedCount, expectedPlayers, timeRemaining )
+		//player.cv.waitingForPlayersDesc.Show()
+
+		if ( player.cv.lastTimeRemaining && timeRemaining != player.cv.lastTimeRemaining )
+			EmitSoundOnEntity( player, WAITING_FOR_PLAYERS_COUNTDOWN_SOUND )
+
+		player.cv.lastTimeRemaining = timeRemaining
+	}
+	else
+	{
+		//player.cv.waitingForPlayersDesc.SetText( "#HUD_WAITING_FOR_PLAYERS", connectedCount, expectedPlayers, "" )
+		//player.cv.waitingForPlayersDesc.Show()
+	}
+}
+
+void function ClGameStateThink_PickLoadOut( entity player )
+{
+	if ( IsMultiplayerPlaylist() && ClassicMP_Client_GetGameStateThinkFunc_PickLoadOut() != null )
+		ClassicMP_Client_GetGameStateThinkFunc_PickLoadOut()( player )
+}
+
+entity function GetTopCompetitor( int team )
+{
+	array<entity> players = GetPlayerArrayOfEnemies( team )
+
+	entity topCompetitor
+	foreach ( player in players )
+	{
+		if ( !topCompetitor || (GameRules_GetTeamScore( player.GetTeam()) ) > GameRules_GetTeamScore( topCompetitor.GetTeam()) )
+			topCompetitor = player
+	}
+
+	return topCompetitor
+}
+
+
+string function GetTopCompetitorName( int team )
+{
+	entity topCompetitor = GetTopCompetitor( team )
+	return topCompetitor != null ? topCompetitor.GetPlayerName() : "None"
+}
+
+
+int function GetTopCompetitorTeam( int team )
+{
+	entity topCompetitor = GetTopCompetitor( team )
+	return topCompetitor != null ? topCompetitor.GetTeam() : 0
+}
+
+
+void function TEMP_UpdateRuiScores( entity player )
+{
+	float endTime
+	if ( IsRoundBased() )
+	{
+		endTime = expect float( level.nv.roundEndTime )
+		if (
+			GetGameState() == eGameState.Prematch ||
+			GetGameState() == eGameState.Playing
+			)
+			RuiSetString( file.gamestate_info, "roundText", Localize( "#GAMESTATE_ROUND_N", GetRoundsPlayed() + 1 ) )
+	}
+	else
+	{
+		endTime = expect float( level.nv.gameEndTime )
+	}
+
+	RuiSetInt( file.gamestate_info, "maxTeamScore", GetScoreLimit_FromPlaylist() )
+	int maxPlayers = GetCurrentPlaylistVarInt( "max_players", 12 )
+	RuiSetInt( file.gamestate_info, "maxTeamPlayers", maxPlayers / 2 )
+
+	int friendlyTeam = player.GetTeam()
+	RuiSetFloat( file.gamestate_info, "leftTeamScore", float( GameRules_GetTeamScore( friendlyTeam ) ) )
+
+	UpdatePilotTitanStatusDisplay( friendlyTeam )
+
+	int enemyTeam
+	if ( IsFFAGame() )
+	{
+		enemyTeam = GetTopCompetitorTeam( player.GetTeam() )
+		RuiSetImage( file.gamestate_info, "friendlyPlayerCardImage", CallsignIcon_GetImage( PlayerCallsignIcon_GetActive( player ) ) )
+		array<entity> enemyPlayers = GetPlayerArrayOfTeam( enemyTeam )
+		if ( enemyPlayers.len() > 0 )
+			RuiSetImage( file.gamestate_info, "enemyPlayerCardImage", CallsignIcon_GetImage( PlayerCallsignIcon_GetActive( enemyPlayers[0] ) ) )
+	}
+	else
+	{
+		enemyTeam = friendlyTeam == TEAM_IMC ? TEAM_MILITIA : TEAM_IMC
+	}
+
+	RuiSetFloat( file.gamestate_info, "rightTeamScore", float( GameRules_GetTeamScore( enemyTeam ) ) )
+
+	//Run any gamemode specific score bar logic (e.g. the bonus segment on the scorebar in bounty hunt ). No special logic is run by default.
+	file.gameModeScoreBarUpdateRules( file.gamestate_info )
+
+	if ( !endTime )
+		return
+
+	if ( Time() > endTime )
+	{
+		RuiSetGameTime( file.gamestate_info, "endTime", RUI_BADGAMETIME )
+		return
+	}
+
+	RuiSetGameTime( file.gamestate_info, "endTime", endTime )
+}
+
+
+void function ClGameStateThink_Playing( entity player )
+{
+	//TEMP_UpdateRuiScores( player )
+
+	local endTime
+	if ( IsRoundBased() )
+		endTime = level.nv.roundEndTime
+	else
+		endTime = level.nv.gameEndTime
+
+	if ( !endTime )
+		return
+
+	if ( Time() > endTime )
+		return
+
+	if ( endTime - Time() > 30.0 )
+		return
+
+	if ( file.thirtySecondWarningDone )
+		return
+
+	thread ThirtySecondWarning()
+	file.thirtySecondWarningDone = true
+}
+
+
+void function ThirtySecondWarning()
+{
+	string conversation = GameMode_GetGameEndingConversation( GameRules_GetGameMode() )
+	if ( conversation != "" )
+		PlayConversationToLocalClient( conversation )
+
+	int lastSecond = -1
+	while ( Time() < level.nv.gameEndTime && GetGameState() == eGameState.Playing )
+	{
+		int second = int( floor( level.nv.gameEndTime - Time() ) )
+		if ( lastSecond == -1 )
+		{
+			lastSecond = second
+		}
+		else if ( second != lastSecond && second < 30 )
+		{
+			if ( second > 5 )
+			{
+				EmitSoundOnEntity( GetLocalClientPlayer(), "HUD_match_start_timer_tick_1P" )
+			}
+			else if ( second >= 0 )
+			{
+				EmitSoundOnEntity( GetLocalClientPlayer(), "HUD_match_start_timer_5_seconds_1P" )
+			}
+		}
+
+		lastSecond = second
+
+		WaitFrame()
+	}
+
+	EmitSoundOnEntity( GetLocalClientPlayer(), "HUD_match_start_timer_0_seconds_1P" )
+
+}
+
+
+string function GetTitanClass( entity titan )
+{
+	entity soul = titan.GetTitanSoul()
+	string settingsName = PlayerSettingsIndexToName( soul.GetPlayerSettingsNum() )
+
+	return expect string( Dev_GetPlayerSettingByKeyField_Global( settingsName, "titanCharacterName" ) )
+}
+
+
+array<int> function GetPilotTitanStatusForTeam( int team )
+{
+	array<int> statusTypes = [ ePlayerStatusType.PTS_TYPE_NONE, ePlayerStatusType.PTS_TYPE_NONE, ePlayerStatusType.PTS_TYPE_NONE, ePlayerStatusType.PTS_TYPE_NONE, ePlayerStatusType.PTS_TYPE_NONE, ePlayerStatusType.PTS_TYPE_NONE, ePlayerStatusType.PTS_TYPE_NONE, ePlayerStatusType.PTS_TYPE_NONE ]
+
+	int playerIndex = 0
+	foreach ( teamPlayer in GetPlayerArrayOfTeam( team ) )
+	{
+		// fix for situations where number of players > 8, which happens in infection
+		// could be good to move this to northstar.client at some point, unsure
+		if ( playerIndex == statusTypes.len() )
+			break
+	
+		statusTypes[playerIndex] = GetPilotTitanStatusForPlayer( teamPlayer )
+		playerIndex++
+	}
+
+	statusTypes.sort( PilotTitanStatusSort )
+
+	return statusTypes
+}
+
+int function GetPilotTitanStatusForPlayer( entity teamPlayer )
+{
+	int statusIndex = ePlayerStatusType.PTS_TYPE_NONE
+	entity titan
+	if ( teamPlayer.GetPetTitan() )
+		titan = teamPlayer.GetPetTitan()
+	else if ( teamPlayer.IsTitan() )
+		titan = teamPlayer
+
+	entity playerParent = teamPlayer.GetParent()
+	bool playerIsInDropship = playerParent != null && IsDropship( playerParent )
+
+	if ( playerIsInDropship && ( GetWaveSpawnType() == eWaveSpawnType.DROPSHIP || GetGameState() == eGameState.Epilogue ) )
+	{
+		statusIndex = ePlayerStatusType.PTS_TYPE_EVAC
+	}
+	else if ( titan && titan.GetTitanSoul() )
+	{
+		if ( !teamPlayer.IsTitan() )
+		{
+			if ( IsAlive( teamPlayer ) )
+				statusIndex = ePlayerStatusType.PTS_TYPE_PILOT_TITAN
+			else
+				statusIndex = ePlayerStatusType.PTS_TYPE_DEAD_PILOT_TITAN
+		}
+		else
+		{
+			if ( !IsAlive( teamPlayer ) )
+			{
+				statusIndex = ePlayerStatusType.PTS_TYPE_DEAD
+			}
+			else
+			{
+				switch ( GetTitanClass( titan ) )
+				{
+					case "ion":
+						statusIndex = ePlayerStatusType.PTS_TYPE_ION
+						break
+					case "scorch":
+						statusIndex = ePlayerStatusType.PTS_TYPE_SCORCH
+						break
+					case "ronin":
+						statusIndex = ePlayerStatusType.PTS_TYPE_RONIN
+						break
+					case "tone":
+						statusIndex = ePlayerStatusType.PTS_TYPE_TONE
+						break
+					case "legion":
+						statusIndex = ePlayerStatusType.PTS_TYPE_LEGION
+						break
+					case "northstar":
+						statusIndex = ePlayerStatusType.PTS_TYPE_NORTHSTAR
+						break
+					case "vanguard":
+						statusIndex = ePlayerStatusType.PTS_TYPE_VANGUARD
+						break
+				}
+			}
+		}
+	}
+	else
+	{
+		if ( IsAlive( teamPlayer ) )
+			statusIndex = IsTitanAvailable( teamPlayer ) ? ePlayerStatusType.PTS_TYPE_READY : ePlayerStatusType.PTS_TYPE_PILOT
+		else
+			statusIndex = IsTitanAvailable( teamPlayer ) ? ePlayerStatusType.PTS_TYPE_DEAD_READY : ePlayerStatusType.PTS_TYPE_DEAD
+	}
+
+	if ( file.pilotTitanStatusCallback != null )
+		statusIndex = file.pilotTitanStatusCallback( teamPlayer, statusIndex )
+
+	return statusIndex
+}
+
+int function PilotTitanStatusSort( int a, int b )
+{
+	if ( a > b )
+		return -1
+	else if ( a < b )
+		return 1
+
+	return 0
+}
+
+
+void function UpdatePilotTitanStatusDisplayWithCount( int team, int friendlyCount, int enemyCount )
+{
+	if ( IsFFAGame() )
+		return
+	var statusRui = ClGameState_GetRui()
+
+	array<int> playerStatus = GetPilotTitanStatusForTeam( team )
+	for ( int index = 0; index < friendlyCount; index++ )
+		RuiSetInt( statusRui, "friendlyPlayerStatusType" + (index + 1), playerStatus[index] )
+
+	array<int> enemyPlayerStatus = GetPilotTitanStatusForTeam( GetOtherTeam( team ) )
+	for ( int index = 0; index < enemyCount; index++ )
+		RuiSetInt( statusRui, "enemyPlayerStatusType" + (index + 1), enemyPlayerStatus[index] )
+}
+
+void function UpdatePilotTitanStatusDisplay( int team )
+{
+	if ( GAMETYPE == "fd" )
+		UpdatePilotTitanStatusDisplayWithCount( team, 4, 0 )
+	else
+		UpdatePilotTitanStatusDisplayWithCount( team, 8, 8 )
+}
+
+void function ClGameStateThink_Postmatch( player )
+{
+}
+
+void function ClGameStateThink_SwitchingSides( player )
+{
+	//player.cv.vignette.SetColor( 0, 0, 0, 255 )
+	//player.cv.vignette.Show()
+}
+
+
+void function ClGameState_Changed()
+{
+	entity player = GetLocalClientPlayer()
+	player.Signal( "GameStateChanged" )
+
+	foreach ( callbackFunc in clGlobal.gameStateEnterCallbacks[ GetGameState() ] )
+	{
+		callbackFunc()
+	}
+
+	switch ( GetGameState() )
+	{
+		case eGameState.WaitingForCustomStart:
+			//player.cv.gamescomWaitTillReady.Show()
+			break
+
+		case eGameState.WaitingForPlayers:
+			if ( IsMultiplayerPlaylist() && ClassicMP_Client_GetGameStateEnterFunc_WaitingForPlayers() != null )
+				ClassicMP_Client_GetGameStateEnterFunc_WaitingForPlayers()( player )
+			//player.cv.gamescomWaitTillReady.Hide()
+
+			//player.cv.waitingForPlayersDesc.SetText( "#HUD_WAITING_FOR_PLAYERS_BASIC" )
+			//player.cv.waitingForPlayersDesc.Show()
+			//player.cv.waitingForPlayersLine.Show()
+			//player.cv.waitingForPlayersTimer.Show()
+			break
+
+		case eGameState.PickLoadout:
+			if ( IsMultiplayerPlaylist() && ClassicMP_Client_GetGameStateEnterFunc_PickLoadOut() != null )
+				ClassicMP_Client_GetGameStateEnterFunc_PickLoadOut()( player )
+
+			break
+
+		case eGameState.Prematch:
+			RemoveAllRagdolls()
+			HideEventNotification()
+
+			SetCrosshairPriorityState( crosshairPriorityLevel.PREMATCH, CROSSHAIR_STATE_HIDE_ALL )
+
+			//player.cv.waitingForPlayersDesc.HideOverTime( 0.25 )
+			//player.cv.waitingForPlayersLine.HideOverTime( 0.25 )
+			//player.cv.waitingForPlayersTimer.HideOverTime( 0.25 )
+
+			file.letterBoxRui = RuiCreate( $"ui/letter_box.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
+
+			//player.cv.prematchTimer.SetAlpha( 255 )
+			//player.cv.prematchTimerGlow.SetAlpha( 255 )
+			//player.cv.prematchDesc.SetAlpha( 255 )
+
+			file.thirtySecondWarningDone = false
+
+			StopPlayerDeathSound( player ) //If you were watching your own kill replay, don't want this playing through till next round
+
+			clGlobal.levelEnt.Signal( "AnnoucementPurge" )
+
+			break
+
+		case eGameState.Playing:
+			ClearCrosshairPriority( crosshairPriorityLevel.PREMATCH )
+			//player.cv.vignette.HideOverTime( 0.25 )
+			if ( file.letterBoxRui != null )
+				RuiSetGameTime( file.letterBoxRui, "hideStartTime", Time() )
+			//player.cv.prematchTimer.HideOverTime( 0.25 )
+			//player.cv.prematchTimerGlow.HideOverTime( 0.25 )
+			//player.cv.prematchDesc.HideOverTime( 0.25 )
+
+			ShowScriptHUD( player )
+			break
+
+		case eGameState.SuddenDeath:
+			AnnouncementData announcement = Announcement_Create( "#GAMEMODE_ANNOUNCEMENT_SUDDEN_DEATH" )
+
+			switch ( GAMETYPE )
+			{
+				case CAPTURE_THE_FLAG:
+				case RAID:
+					Announcement_SetSubText( announcement, "#GAMEMODE_ANNOUNCEMENT_SUDDEN_DEATH_CTF" )
+					break
+
+				case TEAM_DEATHMATCH:
+				case TITAN_BRAWL:
+				case HARDCORE_TDM:
+					Announcement_SetSubText( announcement, "#GAMEMODE_ANNOUNCEMENT_SUDDEN_DEATH_TDM" )
+					break
+
+				default:
+					Announcement_SetSubText( announcement, "" )
+			}
+
+			Announcement_SetHideOnDeath( announcement, false )
+			Announcement_SetDuration( announcement, 7.0 )
+			Announcement_SetPurge( announcement, true )
+			AnnouncementFromClass( player, announcement )
+			break
+
+		case eGameState.WinnerDetermined:
+			player.cv.roundSpawnCount = 0
+			break
+
+		case eGameState.Epilogue:
+			thread MainHud_Outro( level.nv.winningTeam )
+			break
+
+		case eGameState.SwitchingSides:
+
+			float announcementDuration = 7.0
+			if ( IsRoundWinningKillReplayEnabled() == true && ( !IsRoundBased() && IsSwitchSidesBased() ) ) //Ideally this should be a call to WillShowRoundWinningKillReplay(), but that's only available on the server
+				announcementDuration = SWITCHING_SIDES_DELAY + ROUND_WINNING_KILL_REPLAY_TOTAL_LENGTH
+
+			AnnouncementData announcement = Announcement_Create( "#GameState_HALFTIME" )
+			announcement.sortKey = RUI_SORT_SCREENFADE + 1 // Draw over screen fade
+			announcement.drawOverScreenFade = true
+			Announcement_SetSubText( announcement, "#GameState_SWITCHING_SIDES" )
+			Announcement_SetHideOnDeath( announcement, false )
+			Announcement_SetDuration( announcement, announcementDuration )
+			Announcement_SetPurge( announcement, true )
+
+			EmitSoundOnEntity( player, "UI_InGame_HalftimeText_Enter" )
+			EmitSoundOnEntityAfterDelay( player, "UI_InGame_HalftimeText_Exit", announcementDuration )
+
+			local friendlyTeam = player.GetTeam()
+			local enemyTeam = friendlyTeam == TEAM_IMC ? TEAM_MILITIA : TEAM_IMC
+
+			if ( friendlyTeam == TEAM_IMC )
+			{
+				Announcement_SetLeftIcon( announcement, TEAM_ICON_IMC )
+				Announcement_SetRightIcon( announcement, TEAM_ICON_MILITIA )
+			}
+			else
+			{
+				Announcement_SetLeftIcon( announcement, TEAM_ICON_MILITIA )
+				Announcement_SetRightIcon( announcement, TEAM_ICON_IMC )
+			}
+
+			if ( IsRoundBased() )
+			{
+				Announcement_SetSubText2( announcement, "#GAMEMODE_ROUND_WIN_CONDITION", GetRoundScoreLimit_FromPlaylist() )
+				Announcement_SetLeftText( announcement, "#GAMEMODE_JUST_THE_SCORE", GameRules_GetTeamScore2( friendlyTeam ) )
+				Announcement_SetRightText( announcement, "#GAMEMODE_JUST_THE_SCORE", GameRules_GetTeamScore2( enemyTeam ) )
+			}
+			else
+			{
+				Announcement_SetLeftText( announcement, "#GAMEMODE_JUST_THE_SCORE", GameRules_GetTeamScore( friendlyTeam ) )
+				Announcement_SetRightText( announcement, "#GAMEMODE_JUST_THE_SCORE", GameRules_GetTeamScore( enemyTeam ) )
+			}
+
+			AnnouncementFromClass( player, announcement )
+
+			break
+
+		case eGameState.Postmatch:
+			ShowScoreboard()
+			//wait for scoreboard to be up
+			delaythread( 1.5 ) ServerCallback_ResetMapSettings()
+			break
+	}
+}
+
+void function SwitchingSides_Changed()
+{
+	if ( IsMenuLevel() )
+		return
+
+	thread SwitchingSides_Changed_threaded()
+}
+
+void function SwitchingSides_Changed_threaded()
+{
+	//entity player = GetLocalViewPlayer()
+	//
+	//if ( level.nv.switchingSides )
+	//{
+	//	player.cv.halfTimeText.SetText( "Test - Switching Sides" )
+	//	player.cv.halfTimeText.Show()
+	//	wait 1.5
+	//}
+	//else
+	//{
+	//	player.cv.halfTimeText.Hide()
+	//
+	//}
+}
+
+void function ServerCallback_AnnounceWinner( int teamIndex, int subStringIndex, float winnerDeterminedWait )
+{
+	entity player = GetLocalClientPlayer()
+
+	string subString = ""
+	if ( subStringIndex )
+		subString = GetStringFromID( subStringIndex )
+
+	if ( !level.nv.winningTeam )
+	{
+		AnnouncementData outcomeAnnouncement = Announcement_Create( "#GAMEMODE_DRAW" )
+		outcomeAnnouncement.drawOverScreenFade = true
+		Announcement_SetSubText( outcomeAnnouncement, subString )
+		//Announcement_SetTitleColor( outcomeAnnouncement, TEAM_COLOR_YOU )
+		Announcement_SetHideOnDeath( outcomeAnnouncement, false )
+		Announcement_SetDuration( outcomeAnnouncement, winnerDeterminedWait )
+		Announcement_SetPriority( outcomeAnnouncement, 500 )
+		Announcement_SetPurge( outcomeAnnouncement, true )
+		AnnouncementFromClass( player, outcomeAnnouncement )
+	}
+	else if ( IsFFAGame() )
+	{
+		array<entity> players = GetPlayerArrayOfTeam( level.nv.winningTeam )
+		if ( players.len() )
+		{
+			string winText = ((players[0] == player) ? "#GAMEMODE_MATCH_WON_BY_SELF" : "#GAMEMODE_MATCH_WON_BY_ENEMY_TEAM")
+			AnnouncementData outcomeAnnouncement = Announcement_Create( winText )
+			outcomeAnnouncement.drawOverScreenFade = true
+			Announcement_SetSubText( outcomeAnnouncement, subString )
+			Announcement_SetOptionalTextArgsArray( outcomeAnnouncement,  [players[0].GetPlayerName()] )
+			Announcement_SetTitleColor( outcomeAnnouncement, TEAM_COLOR_YOU )
+			Announcement_SetHideOnDeath( outcomeAnnouncement, false )
+			Announcement_SetDuration( outcomeAnnouncement, winnerDeterminedWait )
+			Announcement_SetPriority( outcomeAnnouncement, 500 )
+			Announcement_SetPurge( outcomeAnnouncement, true )
+			AnnouncementFromClass( player, outcomeAnnouncement )
+		}
+	}
+	else if ( player.GetTeam() == level.nv.winningTeam )
+	{
+
+		AnnouncementData outcomeAnnouncement = Announcement_Create( "#GAMEMODE_VICTORY" )
+		outcomeAnnouncement.announcementStyle = ANNOUNCEMENT_STYLE_RESULTS
+		outcomeAnnouncement.drawOverScreenFade = true
+		outcomeAnnouncement.soundAlias = "HUD_MP_Match_End_WinLoss_UI_Sweep_1P"
+		Announcement_SetSubText( outcomeAnnouncement, subString )
+		Announcement_SetTitleColor( outcomeAnnouncement, TEAM_COLOR_PARTY )
+		Announcement_SetHideOnDeath( outcomeAnnouncement, false )
+		Announcement_SetDuration( outcomeAnnouncement, winnerDeterminedWait )
+		Announcement_SetPriority( outcomeAnnouncement, 500 )
+		Announcement_SetPurge( outcomeAnnouncement, true )
+		AnnouncementFromClass( player, outcomeAnnouncement )
+	}
+	else if ( level.nv.winningTeam != TEAM_UNASSIGNED )
+	{
+		AnnouncementData outcomeAnnouncement = Announcement_Create( "#GAMEMODE_DEFEATED" )
+		outcomeAnnouncement.announcementStyle = ANNOUNCEMENT_STYLE_RESULTS
+		outcomeAnnouncement.drawOverScreenFade = true
+		outcomeAnnouncement.soundAlias = "HUD_MP_Match_End_WinLoss_UI_Sweep_1P"
+		Announcement_SetSubText( outcomeAnnouncement, subString )
+		Announcement_SetTitleColor( outcomeAnnouncement, TEAM_COLOR_ENEMY )
+		Announcement_SetHideOnDeath( outcomeAnnouncement, false )
+		Announcement_SetDuration( outcomeAnnouncement, winnerDeterminedWait )
+		Announcement_SetPriority( outcomeAnnouncement, 500 )
+		Announcement_SetPurge( outcomeAnnouncement, true )
+		AnnouncementFromClass( player, outcomeAnnouncement )
+	}
+}
+
+void function ServerCallback_AnnounceRoundWinner( int teamIndex, int subStringIndex, float winnerDeterminedWait, int imcTeamScore2, int militiaTeamScore2 )
+{
+	string subString = ""
+	if ( subStringIndex )
+		subString = GetStringFromID( subStringIndex )
+
+	entity player = GetLocalClientPlayer()
+
+	// ANNOUNCEMENT_FLICKER_BUFFER Ensures that the INTERPOLATOR_FLICKER animation is played before the message is hidden in
+	// AnnouncementMessage_DisplayOnHud(). I'm not certain why this is needed. There may be a delay before
+	// ServerCallback_AnnounceRoundWinner is actually received and/or the hud fades may be framerate
+	// dependent (they don't seem to play nice with timescale), or it could be something much more simple that I'm missing.
+	const ANNOUNCEMENT_FLICKER_BUFFER = 0.2
+
+	float announcementDuration = winnerDeterminedWait - ANNOUNCEMENT_FLICKER_BUFFER
+	float subtext2IconDelay = winnerDeterminedWait - 4.5
+	float conversationDelay = subtext2IconDelay + 1.5 // Bit of time to give it to breathe, and to let RoundWinningKillReplay be fully over before starting the conversation.
+
+	if ( !level.nv.winningTeam )
+	{
+		AnnouncementData announcement = Announcement_Create( "#GAMEMODE_ROUND_DRAW" )
+		announcement.drawOverScreenFade = true
+		Announcement_SetSubText( announcement, subString )
+		//Announcement_SetTitleColor( announcement, TEAM_COLOR_YOU )
+		Announcement_SetHideOnDeath( announcement, false )
+		Announcement_SetPurge( announcement, true )
+		Announcement_SetDuration( announcement, announcementDuration)
+
+		ShowRoundScoresInAnnouncement( announcement, subtext2IconDelay, imcTeamScore2, militiaTeamScore2 )
+		AnnouncementFromClass( player, announcement )
+	}
+	else if ( player.GetTeam() == level.nv.winningTeam )
+	{
+		AnnouncementData announcement = Announcement_Create( "#GAMEMODE_ROUND_WIN" )
+		announcement.drawOverScreenFade = true
+		Announcement_SetSubText( announcement, subString )
+		Announcement_SetTitleColor(announcement, TEAM_COLOR_FRIENDLY )
+		Announcement_SetHideOnDeath( announcement, false )
+		Announcement_SetPurge( announcement, true )
+		Announcement_SetDuration( announcement, announcementDuration)
+
+		ShowRoundScoresInAnnouncement( announcement, subtext2IconDelay, imcTeamScore2, militiaTeamScore2 )
+		thread PlayRoundWonConversationWithAnnouncementDelay( conversationDelay )
+
+		AnnouncementFromClass( player, announcement )
+	}
+	else if ( level.nv.winningTeam != TEAM_UNASSIGNED )
+	{
+		AnnouncementData announcement = Announcement_Create( "#GAMEMODE_ROUND_LOSS" )
+		announcement.drawOverScreenFade = true
+		Announcement_SetSubText( announcement, subString )
+		Announcement_SetTitleColor( announcement, TEAM_COLOR_ENEMY )
+		Announcement_SetHideOnDeath( announcement, false )
+		Announcement_SetPurge( announcement, true )
+		Announcement_SetDuration( announcement, announcementDuration)
+
+		ShowRoundScoresInAnnouncement( announcement, subtext2IconDelay, imcTeamScore2, militiaTeamScore2 )
+		thread PlayRoundWonConversationWithAnnouncementDelay( conversationDelay )
+
+		AnnouncementFromClass( player, announcement )
+	}
+}
+
+//Note that RoundWinningKillReplay doesn't send imcTeamScore2 and militiaTeamScore2 overrides.
+void function ShowRoundScoresInAnnouncement( AnnouncementData announcement, float subtext2IconDelay, int ornull imcTeamScore2 = null, int ornull militiaTeamScore2 = null )
+{
+	entity player = GetLocalClientPlayer()
+
+	local friendlyTeam = player.GetTeam()
+	local enemyTeam = friendlyTeam == TEAM_IMC ? TEAM_MILITIA : TEAM_IMC
+
+	asset leftIcon
+	asset rightIcon
+
+	if ( friendlyTeam == TEAM_IMC )
+	{
+		leftIcon = TEAM_ICON_IMC
+		rightIcon = TEAM_ICON_MILITIA
+	}
+	else
+	{
+		leftIcon = TEAM_ICON_MILITIA
+		rightIcon = TEAM_ICON_IMC
+	}
+
+	if ( level.nv.roundScoreLimitComplete == true ) //Generally this is never true except for modes with RoundWinningKillReplay enabled
+	{
+		if ( friendlyTeam == level.nv.winningTeam )
+		{
+			Announcement_SetSubText( announcement, "#GAMEMODE_MATCH_WON_BY_FRIENDLY_TEAM" )
+			string friendlyTeamString = friendlyTeam == TEAM_IMC ? "#TEAM_IMC" : "#TEAM_MCOR"
+			Announcement_SetOptionalSubTextArgsArray( announcement, [ friendlyTeamString ] )
+		}
+		else if ( enemyTeam == level.nv.winningTeam )
+		{
+			Announcement_SetSubText( announcement, "#GAMEMODE_MATCH_WON_BY_ENEMY_TEAM" )
+			string enemyTeamString = enemyTeam == TEAM_IMC ? "#TEAM_IMC" : "#TEAM_MCOR"
+			Announcement_SetOptionalSubTextArgsArray( announcement, [ enemyTeamString ] )
+		}
+
+	}
+	else
+	{
+		Announcement_SetSubText2( announcement, "#GAMEMODE_ROUND_WIN_CONDITION", GetRoundScoreLimit_FromPlaylist() )
+		Announcement_SetSubText2AndIconDelay( announcement, subtext2IconDelay )
+	}
+
+	//Hack: GetTeamScore2 doesn't work mid-kill replay because we get the rewound values as opposed to the current values.
+	//Fix for R2 when we get the ability to flag certain values as "use current value instead of rewound value"
+	if ( imcTeamScore2 == null && militiaTeamScore2 == null  )
+	{
+		Announcement_SetLeftText( announcement, "#GAMEMODE_JUST_THE_SCORE", GameRules_GetTeamScore2( friendlyTeam ) )
+		Announcement_SetRightText( announcement, "#GAMEMODE_JUST_THE_SCORE", GameRules_GetTeamScore2( enemyTeam ) )
+	}
+	else
+	{
+		Assert( imcTeamScore2 != null && militiaTeamScore2 != null ) //Don't have only one team with teamScore2 override
+		if ( friendlyTeam == TEAM_IMC )
+		{
+			Announcement_SetLeftText( announcement, "#GAMEMODE_JUST_THE_SCORE", imcTeamScore2 )
+			Announcement_SetRightText( announcement, "#GAMEMODE_JUST_THE_SCORE", militiaTeamScore2 )
+
+		}
+		else
+		{
+			Announcement_SetLeftText( announcement, "#GAMEMODE_JUST_THE_SCORE", militiaTeamScore2 )
+			Announcement_SetRightText( announcement, "#GAMEMODE_JUST_THE_SCORE", imcTeamScore2 )
+		}
+	}
+
+	Announcement_SetLeftIcon( announcement, leftIcon )
+	Announcement_SetRightIcon( announcement, rightIcon )
+}
+
+void function PlayRoundWonConversationWithAnnouncementDelay( conversationDelay )
+{
+	WaitEndFrame() //Necessary so we don't get the AnnouncementPurge signal from the same announcement we are originating from
+	clGlobal.levelEnt.EndSignal( "AnnoucementPurge" )
+
+	if ( conversationDelay != 0 )
+		wait conversationDelay
+
+	if ( level.nv.winningTeam == null )
+		return
+
+	entity player = GetLocalClientPlayer()
+	if ( player.GetTeam() == level.nv.winningTeam )
+		PlayConversationToLocalClient( "RoundWonAnnouncement" )
+	else if ( level.nv.winningTeam != TEAM_UNASSIGNED )
+		PlayConversationToLocalClient( "RoundLostAnnouncement" )
+}
+
+void function UpdateScoreboardBadRepPresentMessage()
+{
+	if ( IsLobby() )
+		return
+
+	entity player = GetLocalClientPlayer()
+
+	if ( level.nv.badRepPresent )
+		player.cv.scoreboardBadRepPresentMessage.Show()
+	else
+		player.cv.scoreboardBadRepPresentMessage.Hide()
+}
+
+void function UpdateChatHudLocationForTop3()
+{
+	var hudElement = HudElement( "IngameTextChat" )
+	var height = hudElement.GetHeight()
+	var screenSize = Hud.GetScreenSize()
+	var position = hudElement.GetPos()
+	HudElement( "IngameTextChat" ).SetPos( position[0], -1 * ( screenSize[1] - ( height + screenSize[1] * 0.10 ) ) )
+}
+
+void function DisplayPostMatchTop3()
+{
+	array<entity> players = GetPlayerArray()
+
+	for ( int i = players.len() - 1; i >= 0; i-- )
+	{
+		if ( IsPrivateMatchSpectator( players[ i ] ) )
+			players.remove( i )
+	}
+
+	if ( players.len() >= 1 )
+	{
+		int localTeam = GetLocalClientPlayer().GetTeam()
+		#if PC_PROG
+		var rui = RuiCreate( $"ui/scoreboard_postmatch_top3_pc.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 1001 )
+		UpdateChatHudLocationForTop3()
+		#else
+		var rui = RuiCreate( $"ui/scoreboard_postmatch_top3.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 1001 )
+		#endif
+		string gamemode = GameRules_GetGameMode()
+		int functionref( entity, entity ) compareFunc = GameMode_GetScoreCompareFunc( gamemode )
+		if ( compareFunc == null )
+		{
+			printt( "gamemode doesn't have a compare func to display the top 3")
+			return
+		}
+		players.sort( compareFunc )
+		int playerCount = players.len()
+		int currentPlace = 1
+		for ( int i = 0; i < 3; i++ )
+		{
+			if ( i >= playerCount )
+				continue
+
+			string playerRank
+			if ( i > 0 && compareFunc( players[i - 1], players[i] ) != 0 )
+				currentPlace += 1
+
+			switch( currentPlace )
+			{
+				case 1:
+					playerRank = "#GENERATION_NUMERIC_1"
+					break
+				case 2:
+					playerRank = "#GENERATION_NUMERIC_2"
+					break
+				case 3:
+					playerRank = "#GENERATION_NUMERIC_3"
+					break
+			}
+
+			float cardScale = currentPlace == 1 ? 1.0 : 0.9
+
+			RuiSetString( rui, "playerName" + i, players[i].GetPlayerName() )
+			RuiSetString( rui, "playerRank" + i, Localize( playerRank ) )
+			RuiSetFloat( rui, "cardScale" + i, cardScale )
+			RuiSetImage( rui, "cardImage" + i, CallingCard_GetImage( PlayerCallingCard_GetActive( players[i] ) ) )
+			RuiSetImage( rui, "iconImage" + i, CallsignIcon_GetImage( PlayerCallsignIcon_GetActive( players[i] ) ) )
+			RuiSetInt( rui, "layoutType" + i, CallingCard_GetLayout( PlayerCallingCard_GetActive( players[i] ) ) )
+			RuiSetImage( rui, "cardGenImage" + i, PlayerXPGetGenIcon( players[i] ) )
+			RuiSetString( rui, "playerLevel" + i, PlayerXPDisplayGenAndLevel( players[i].GetGen(), players[i].GetLevel() ) )
+			RuiSetBool( rui, "isFriendly" + i, localTeam == players[i].GetTeam() )
+		}
+	}
+}
+
+
+float function GetGameStartTime()
+{
+	return expect float( level.nv.gameStartTime.tofloat() )
+}
+
+void function ClGameState_SetPilotTitanStatusCallback( int functionref(entity,int) func )
+{
+	file.pilotTitanStatusCallback = func
+}

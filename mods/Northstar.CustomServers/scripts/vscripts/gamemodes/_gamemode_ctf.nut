@@ -457,7 +457,7 @@ void function OnPlayerEntersFlagReturnTrigger( entity trigger, entity player )
 	else
 		flag = file.militiaFlag
 	
-	if ( !player.IsPlayer() || !player.IsTitan() || player.GetTeam() != flag.GetTeam() || IsFlagHome( flag ) || flag.GetParent() != null )
+	if ( !player.IsPlayer() || player.IsTitan() || player.GetTeam() != flag.GetTeam() || IsFlagHome( flag ) || flag.GetParent() != null )
 		return
 		
 	thread TryReturnFlag( player, flag )
@@ -471,7 +471,7 @@ void function OnPlayerExitsFlagReturnTrigger( entity trigger, entity player )
 	else
 		flag = file.militiaFlag
 		
-	if ( !player.IsPlayer() || !player.IsTitan() || player.GetTeam() != flag.GetTeam() || IsFlagHome( flag ) || flag.GetParent() != null )
+	if ( !player.IsPlayer() || player.IsTitan() || player.GetTeam() != flag.GetTeam() || IsFlagHome( flag ) || flag.GetParent() != null )
 		return
 	
 	player.Signal( "FlagReturnEnded" )
