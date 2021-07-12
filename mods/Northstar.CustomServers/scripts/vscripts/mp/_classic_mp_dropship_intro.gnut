@@ -72,7 +72,9 @@ void function DropshipIntro_OnClientConnected( entity player )
 					
 					return
 				}
-			
+	
+	// if we're at this point, we have more players than we do dropships, oh dear
+	RespawnAsPilot( player )
 }
 
 void function DropshipIntro_OnClientDisconnected( entity player )

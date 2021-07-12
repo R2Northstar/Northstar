@@ -31,7 +31,7 @@ void function AddPlayerScore( entity targetPlayer, string scoreEventName, entity
 {
 	ScoreEvent event = GetScoreEvent( scoreEventName )
 	
-	if ( !event.enabled || !targetPlayer.IsPlayer() )
+	if ( !event.enabled || !IsValid( targetPlayer ) || !targetPlayer.IsPlayer() )
 		return
 
 	var associatedHandle = 0

@@ -56,6 +56,8 @@ void function FeaturedModeSettingsSetupPilotLoadouts( entity player )
 	
 	if ( IsFeaturedMode( "rocket_arena" ) )
 	{	
+		// this crashes sometimes for some reason
+	
 		shouldChangeLoadout = true
 	
 		modifiedLoadout.primary = "mp_weapon_epg"
@@ -72,6 +74,8 @@ void function FeaturedModeSettingsSetupPilotLoadouts( entity player )
 			modifiedLoadout.secondary = "mp_weapon_autopistol"
 			modifiedLoadout.secondaryMods = [ "rocket_arena" ]
 		}
+		
+		player.GiveExtraWeaponMod( "rocket_arena" )
 	}
 	
 	if ( IsFeaturedMode( "shotguns_snipers" ) )

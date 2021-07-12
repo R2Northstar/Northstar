@@ -131,9 +131,6 @@ void function FastballPlayer( entity player )
 		ClearPlayerAnimViewEntity( player )
 		player.DeployWeapon()
 		player.PlayerCone_Disable()
-		
-		RemoveButtonPressedPlayerInputCallback( player, IN_JUMP, PlayerHoldingJumpInIntro )
-		RemoveButtonReleasedPlayerInputCallback( player, IN_JUMP, PlayerNoLongerHoldingJumpInIntro )
 	})
 	
 	FirstPersonSequenceStruct throwSequence
@@ -179,14 +176,10 @@ void function FastballPlayer( entity player )
 	vector throwVel = AnglesToForward( player.EyeAngles() ) * 950
 	throwVel.z = 675.0
 	
-	// allow players to gain extra height by holding jump after this point too
-	AddButtonPressedPlayerInputCallback( player, IN_JUMP, PlayerHoldingJumpInIntro )
-	AddButtonReleasedPlayerInputCallback( player, IN_JUMP, PlayerNoLongerHoldingJumpInIntro )
-	
 	// wait for it to finish
 	buddy.WaitSignal( "fastball_release" )
 	
-	if ( player in file.playersHoldingJump && file.playersHoldingJump[ player ] )
+	if ( player.IsInputCommandHeld( IN_JUMP ) )
 		throwVel.z = 850.0
 	
 	// have to correct this manually here since due to no 3p animation our position isn't set right during this sequence
