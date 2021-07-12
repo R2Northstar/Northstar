@@ -47,7 +47,7 @@ void function SelectFirstInfectedDelayed()
 
 void function InfectionOnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
-	if ( !victim.IsPlayer() )
+	if ( !victim.IsPlayer() || GetGameState() != eGameState.Playing )
 		return
 		
 	if ( victim.GetTeam() == INFECTION_TEAM_SURVIVOR )
@@ -100,8 +100,11 @@ void function RespawnInfected( entity player )
 	
 	// stats for infected
 	StimPlayer( player, 9999.9 ) // can't do endless since we don't get the visual effect in endless
-	player.SetMaxHealth( 50 )
+	player.kv.airAcceleration = 2500
 	
+	// scale health with num of infected, with 50 as base health
+	player.SetMaxHealth( 50 + ( GetPlayerArrayOfTeam( INFECTION_TEAM_SURVIVOR ).len() * 25 ) )
+		
 	// set loadout 
 	foreach ( entity weapon in player.GetMainWeapons() )
 		player.TakeWeaponNow( weapon.GetWeaponClassName() )

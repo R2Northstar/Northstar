@@ -161,7 +161,7 @@ string function GetPrivateMatchMapForIndex( int index )
 {
 	array<string> mapsArray = GetPrivateMatchMaps()
 
-	if ( index >= mapsArray.len() )
+	if ( index >= mapsArray.len() || index < 0 )
 		return ""
 
 	return mapsArray[index]
@@ -171,7 +171,7 @@ string function GetPrivateMatchModeForIndex( int index )
 {
 	array<string> modesArray = GetPrivateMatchModes()
 
-	if ( index >= modesArray.len() )
+	if ( index >= modesArray.len() || index < 0 )
 		return ""
 
 	return modesArray[index]

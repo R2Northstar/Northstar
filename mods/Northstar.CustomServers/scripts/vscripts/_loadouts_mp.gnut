@@ -34,7 +34,10 @@ void function SvLoadoutsMP_Init()
 		AddClientCommandCallback( "SetFactionChoicePersistenceSlot", ClientCommandCallback_SetFactionChoicePersistenceSlot )
 	}
 	else
+	{
 		AddClientCommandCallback( "InGameMPMenuClosed", ClientCommandCallback_InGameMPMenuClosed )
+		AddClientCommandCallback( "LoadoutMenuClosed", ClientCommandCallback_LoadoutMenuClosed )
+	}
 		
 	AddCallback_OnPlayerKilled( DestroyDroppedWeapon )
 }
@@ -216,10 +219,17 @@ bool function ClientCommandCallback_SetFactionChoicePersistenceSlot( entity play
 	return true
 }
 
-bool function ClientCommandCallback_InGameMPMenuClosed( entity player, array<string> args )
+bool function ClientCommandCallback_LoadoutMenuClosed( entity player, array<string> args )
 {
 	SavePdataForEntityIndex( player.GetPlayerIndex() )
 	TryGivePilotLoadoutForGracePeriod( player )
+	return true
+}
+
+bool function ClientCommandCallback_InGameMPMenuClosed( entity player, array<string> args )
+{
+	SavePdataForEntityIndex( player.GetPlayerIndex() )
+	//TryGivePilotLoadoutForGracePeriod( player )
 	return true
 }
 
@@ -230,7 +240,7 @@ bool function IsRefValidAndOfType( string ref, int itemType )
 
 void function SetPlayerLoadoutDirty( entity player )
 {
-	if ( file.loadoutGracePeriodEnabled )
+	if ( file.loadoutGracePeriodEnabled || player.p.usingLoadoutCrate  )
 		file.dirtyLoadouts.append( player )
 }
 
@@ -240,8 +250,11 @@ void function TryGivePilotLoadoutForGracePeriod( entity player )
 	{
 		file.dirtyLoadouts.remove( file.dirtyLoadouts.find( player ) )
 	
-		if ( Time() - player.s.respawnTime <= CLASS_CHANGE_GRACE_PERIOD )
+		if ( Time() - player.s.respawnTime <= CLASS_CHANGE_GRACE_PERIOD || player.p.usingLoadoutCrate )
+		{
 			Loadouts_TryGivePilotLoadout( player )
+			player.p.usingLoadoutCrate = false
+		}
 		else
 			SendHudMessage( player, "#LOADOUT_CHANGE_NEXT_BOTH", -1, 0.4, 255, 255, 255, 255, 0.15, 3.0, 0.5 ) // like 90% sure this is innacurate lol
 	}

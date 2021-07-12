@@ -17,6 +17,7 @@ void function PrivateLobby_Init()
 	AddClientCommandCallback( "PrivateMatchSetMode", ClientCommandCallback_PrivateMatchSetMode )
 	AddClientCommandCallback( "SetCustomMap", ClientCommandCallback_SetCustomMap )
 	AddClientCommandCallback( "PrivateMatchSwitchTeams", ClientCommandCallback_PrivateMatchSwitchTeams )
+	AddClientCommandCallback( "ResetMatchSettingsToDefault", ClientCommandCallback_ResetMatchSettingsToDefault )
 }
 
 bool function ClientCommandCallback_PrivateMatchLaunch( entity player, array<string> args )
@@ -157,4 +158,10 @@ void function RefreshPlayerTeams()
 			lastSetMilitia = !lastSetMilitia
 		}
 	}
+}
+
+bool function ClientCommandCallback_ResetMatchSettingsToDefault( entity player, array<string> args )
+{
+	ClearPlaylistVarOverrides()
+	return true
 }
