@@ -1191,7 +1191,7 @@ void function OpenServerBrowser( var button )
 
 	// nothing here yet lol
 	// look at OpenSelectedPlaylistMenu for advancing to server browser menu probably
-	// AdvanceMenu( GetMenu( "ServerBrowser ) ) i guess? idk
+	AdvanceMenu( GetMenu( "ServerBrowserMenu" ) )
 }
 
 void function BigPlayButton1_Activate( var button )

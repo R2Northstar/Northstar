@@ -51,7 +51,7 @@ struct {
 
 void function PIN_GameStart()
 {
-	// todo: using the pin telemetry function here is weird and was done veeery early on before i knew how this all worked, should use a different one
+	// todo: using the pin telemetry function here, weird and was done veeery early on before i knew how this all worked, should use a different one
 
 	// called from InitGameState
 	//FlagInit( "ReadyToStartMatch" )
@@ -596,6 +596,8 @@ void function CleanUpEntitiesForRoundEnd()
 	
 	foreach ( entity player in GetPlayerArray() )
 	{
+		ClearTitanAvailable( player )
+		
 		if ( IsAlive( player ) )
 			player.Die()
 		

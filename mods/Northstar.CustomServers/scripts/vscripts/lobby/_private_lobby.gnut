@@ -17,6 +17,8 @@ void function PrivateLobby_Init()
 	AddClientCommandCallback( "PrivateMatchSetMode", ClientCommandCallback_PrivateMatchSetMode )
 	AddClientCommandCallback( "SetCustomMap", ClientCommandCallback_SetCustomMap )
 	AddClientCommandCallback( "PrivateMatchSwitchTeams", ClientCommandCallback_PrivateMatchSwitchTeams )
+	
+	AddClientCommandCallback( "PrivateMatchSetPlaylistVarOverride", ClientCommandCallback_PrivateMatchSetPlaylistVarOverride )
 	AddClientCommandCallback( "ResetMatchSettingsToDefault", ClientCommandCallback_ResetMatchSettingsToDefault )
 }
 
@@ -158,6 +160,18 @@ void function RefreshPlayerTeams()
 			lastSetMilitia = !lastSetMilitia
 		}
 	}
+}
+
+bool function ClientCommandCallback_PrivateMatchSetPlaylistVarOverride( entity player, array<string> args )
+{
+	// note: atm this doesn't actually check for the number of overrides, since there's no way to do this on server yet
+	// need to expose this to script soon
+	
+	if ( args.len() < 2 )
+		return true
+		
+	SetPlaylistVarOverride( args[0], args[1] )
+	return true
 }
 
 bool function ClientCommandCallback_ResetMatchSettingsToDefault( entity player, array<string> args )

@@ -103,7 +103,7 @@ void function RespawnInfected( entity player )
 	player.kv.airAcceleration = 2500
 	
 	// scale health with num of infected, with 50 as base health
-	player.SetMaxHealth( GetPlayerArrayOfTeam( INFECTION_TEAM_SURVIVOR ).len() * 10 )
+	player.SetMaxHealth( ( GetPlayerArrayOfTeam( INFECTION_TEAM_SURVIVOR ).len() + 1 ) * 10 )
 		
 	// set loadout 
 	foreach ( entity weapon in player.GetMainWeapons() )

@@ -339,8 +339,7 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 		if ( "respawnTime" in attacker.s )
 			respawnTime = Time() - expect float ( attacker.s.respawnTime )
 		
-		thread PlayerWatchesKillReplay( player, attacker.GetEncodedEHandle(), attacker.GetIndexForEntity(), respawnTime, timeOfDeath, beforeTime, replayTracker )
-		thread EndReplayOnTime( player, replayLength )
+		thread PlayerWatchesKillReplayWrapper( player, attacker, respawnTime, timeOfDeath, beforeTime, replayTracker )		
 	}
 
 	player.SetPlayerSettings( "spectator" ) // prevent a crash with going from titan => pilot on respawn
@@ -356,10 +355,10 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 		SetRespawnAvailable( player )
 		
 		wait respawnDelay
+				
+		player.WaitSignal( "RespawnMe" ) // set in base_gametype: ClientCommand_RespawnPlayer
 		
 		player.SetPredictionEnabled( true )
-		
-		player.WaitSignal( "RespawnMe" ) // set in base_gametype: ClientCommand_RespawnPlayer
 		ClearRespawnAvailable( player ) // need so the respawn icon doesn't show for like a frame on next death
 			
 		if ( ( expect bool( player.GetPersistentVar( "spawnAsTitan" ) ) && IsTitanAvailable( player ) ) || ( Riff_SpawnAsTitan() > 0 && Riff_ShouldSpawnAsTitan( player ) ) )	// spawn as titan
@@ -373,6 +372,14 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 	}
 }
 
+void function PlayerWatchesKillReplayWrapper( entity player, entity attacker, float timeSinceAttackerSpawned, float timeOfDeath, float beforeTime, table replayTracker )
+{
+	PlayerWatchesKillReplay( player, attacker.GetEncodedEHandle(), attacker.GetIndexForEntity(), timeSinceAttackerSpawned, timeOfDeath, beforeTime, replayTracker )
+	player.ClearReplayDelay()
+	player.ClearViewEntity()
+	player.SetPredictionEnabled( true )
+}
+
 void function EndReplayOnTime( entity player, float replayLength )
 {
 	player.EndSignal( "RespawnMe" )
@@ -381,6 +388,8 @@ void function EndReplayOnTime( entity player, float replayLength )
 	wait replayLength
 	if ( IsValid( player ) && KillcamsEnabled() )
 	{
+		print( "fucking how" )
+	
 		player.ClearReplayDelay()
 		player.ClearViewEntity()
 		player.SetPredictionEnabled( true )

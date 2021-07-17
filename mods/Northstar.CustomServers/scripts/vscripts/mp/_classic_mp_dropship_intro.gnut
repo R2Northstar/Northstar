@@ -72,9 +72,6 @@ void function DropshipIntro_OnClientConnected( entity player )
 					
 					return
 				}
-	
-	// if we're at this point, we have more players than we do dropships, oh dear
-	RespawnAsPilot( player )
 }
 
 void function DropshipIntro_OnClientDisconnected( entity player )
@@ -159,6 +156,16 @@ void function SpawnPlayerIntoDropship( entity player )
 				
 				break
 			}
+			
+	if ( playerDropship.dropship == null )
+	{
+		// if we're at this point, we have more players than we do dropships, oh dear
+		ScreenFadeFromBlack( player, 0.0 )
+		RespawnAsPilot( player )
+		
+		file.numPlayersInIntro--
+		return
+	}
 		
 	// figure out what anims we're using for idle
 	string idleAnim = DROPSHIP_IDLE_ANIMS[ playerDropshipIndex ]

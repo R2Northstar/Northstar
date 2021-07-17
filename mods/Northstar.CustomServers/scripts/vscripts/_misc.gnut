@@ -12,21 +12,7 @@ void function Spotting_Init()
 
 void function FW_Border_GlobalInit()
 {
-	AddCallback_EntitiesDidLoad( FW_Border_EntitiesDidLoad )
-}
-
-void function FW_Border_EntitiesDidLoad()
-{
-	if ( GetConVarString( "mp_gamemode" ) != "fw" )
-	{
-		// remove fw borders if we're not playing fw
-		array<entity> brushes = GetEntArrayByClass_Expensive( "func_brush" )
-		foreach ( entity brush in brushes )
-			if ( GetEditorClass( brush ) == "func_brush_fw_territory_border" && GameModeRemove( brush ) )
-				brush.Destroy()
-
-		return
-	}
+	AddSpawnCallbackEditorClass( "func_brush", "func_brush_fw_territory_border", void function( entity e ) { GameModeRemove( e ) } )
 }
 
 bool function IsVDUTitan(entity titan)

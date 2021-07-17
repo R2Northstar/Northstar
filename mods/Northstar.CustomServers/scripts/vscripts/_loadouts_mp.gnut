@@ -54,7 +54,7 @@ void function SetWeaponDropsEnabled( bool enabled )
 
 void function DestroyDroppedWeapon( entity victim, entity attacker, var damageInfo )
 {
-	if ( !file.weaponDropsEnabled )
+	if ( !file.weaponDropsEnabled && IsValid( victim.GetActiveWeapon() ) )
 		victim.GetActiveWeapon().Destroy()
 }
 
