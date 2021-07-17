@@ -4,6 +4,7 @@ void function GamemodeGG_Init()
 {
 	SetSpawnpointGamemodeOverride( FFA )
 
+	SetShouldUseRoundWinningKillReplay( true )
 	Evac_SetEnabled( false )
 	SetLoadoutGracePeriodEnabled( false ) // prevent modifying loadouts with grace period
 	SetWeaponDropsEnabled( false )

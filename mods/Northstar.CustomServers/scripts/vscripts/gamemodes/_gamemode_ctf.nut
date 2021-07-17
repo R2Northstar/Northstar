@@ -69,8 +69,12 @@ void function RateSpawnpoints_CTF( int checkClass, array<entity> spawnpoints, in
 	// if there are, spawn them outside of it ( but ideally still close )
 	// max distance away should be like, angel city markets
 	
-	array<entity> startSpawns = SpawnPoints_GetPilotStart( team )
-	array<entity> enemyPlayers = GetPlayerArrayOfTeam_Alive( GetOtherTeam( team ) )
+	int spawnTeam = team
+	if ( HasSwitchedSides() )
+		spawnTeam = GetOtherTeam( team )
+	
+	array<entity> startSpawns = SpawnPoints_GetPilotStart( spawnTeam )
+	array<entity> enemyPlayers = GetPlayerArrayOfTeam_Alive( GetOtherTeam( spawnTeam ) )
 	
 	vector startSpawnAverage
 	bool enemyInBase = false
