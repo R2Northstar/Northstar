@@ -4,7 +4,11 @@
 #include "squirrel.h"
 #include "dedicated.h"
 #include "sourceconsole.h"
+#include "logging.h"
+#include "concommand.h"
 #include <iostream>
+
+bool initialised = false;
 
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
@@ -20,25 +24,28 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     case DLL_PROCESS_DETACH:
         break;
     }
-    
-    InitialiseNorthstar();
+
+    if (!initialised)
+        InitialiseNorthstar();
+    initialised = true;
 
     return TRUE;
 }
 
-// this is called from the injector and initialises stuff, dllmain is called multiple times while this should only be called once
+// in the future this will be called from launcher instead of dllmain
 void InitialiseNorthstar()
 {
-    AllocConsole();
-    freopen("CONOUT$", "w", stdout);
-    AddLoggingSink(DefaultLoggingSink);
-
-    // apply hooks
+    InitialiseLogging();
+    // apply initial hooks
     InstallInitialHooks();
+    InitialiseInterfaceCreationHooks();
 
     if (IsDedicated())
         AddDllLoadCallback("engine.dll", InitialiseDedicated);
     
+    AddDllLoadCallback("engine.dll", InitialiseConVars);
+    AddDllLoadCallback("engine.dll", InitialiseConCommands);
+
     if (!IsDedicated())
     {
         AddDllLoadCallback("client.dll", InitialiseClientSquirrel);

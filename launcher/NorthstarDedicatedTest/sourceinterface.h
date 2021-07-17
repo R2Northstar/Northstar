@@ -3,7 +3,7 @@
 #include "tier0.h"
 
 // literally just copied from ttf2sdk definition
-typedef void* (*CreateInterfaceFn)(const char* pName, int* pReturnCode);
+typedef void*(*CreateInterfaceFn)(const char* pName, int* pReturnCode);
 
 template<typename T> class SourceInterface
 {
@@ -30,3 +30,6 @@ public:
         return m_interface;
     }
 };
+
+// functions for interface creation callbacks
+void InitialiseInterfaceCreationHooks();

@@ -15,7 +15,7 @@ typedef SQInteger SQRESULT;
 template<Context context> class SquirrelManager
 {
 public:
-
+	void* sqvm;
 
 public:
 	SquirrelManager();
@@ -23,4 +23,4 @@ public:
 
 extern SquirrelManager<CLIENT>* g_ClientSquirrelManager;
 extern SquirrelManager<SERVER>* g_ServerSquirrelManager;
-//extern SquirrelManager<UI> g_UISquirrelManager
+extern SquirrelManager<UI>* g_UISquirrelManager;

@@ -2,10 +2,10 @@
 
 enum Context
 {
-	NONE,
-	CLIENT,
 	SERVER,
-	UI // this is used exclusively in scripts
+	CLIENT,
+	UI,
+	NONE
 };
 
 const char* GetContextName(Context context);

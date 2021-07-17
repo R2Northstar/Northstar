@@ -3,8 +3,6 @@
 
 const char* GetContextName(Context context)
 {
-	if (context == NONE)
-		return "";
 	if (context == CLIENT)
 		return "CLIENT";
 	else if (context == SERVER)
@@ -12,5 +10,5 @@ const char* GetContextName(Context context)
 	else if (context == UI)
 		return "UI";
 	
-	return nullptr;
+	return "";
 }
