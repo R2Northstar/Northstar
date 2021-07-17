@@ -95,14 +95,19 @@ void RunServer(CDedicatedExports* dedicated)
 
 	CEngineAPI__SetMap engineApiSetMap = (CEngineAPI__SetMap)((char*)engine + 0x1C7B30);
 
-	engineApiSetMap(nullptr, "mp_lobby; net_usesocketsforloopback 1");
+	engineApiSetMap(nullptr, "mp_thaw");
 	Sys_Printf(dedicated, (char*)"CDedicatedServerAPI::RunServer(): map mp_lobby");
+
+	// allow us to hit CHostState::FrameUpdate
+	*((int*)((char*)cEnginePtr + 12)) = 2;
+	*((int*)((char*)cEnginePtr + 16)) = 2;
 
 	while (true)
 	{
 		engineFrame(cEnginePtr);
 		//engineApiStartSimulation(nullptr, true);
 		Sys_Printf(dedicated, (char*)"engine->Frame()");
+		engineApiSetMap(nullptr, "mp_thaw");
 		Sleep(50);
 	}
 }

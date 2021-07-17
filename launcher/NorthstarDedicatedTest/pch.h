@@ -7,5 +7,6 @@
 #include <Windows.h>
 #include "logging.h"
 #include "include/MinHook.h"
+#include "spdlog/spdlog.h"
 
 #endif

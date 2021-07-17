@@ -19,8 +19,6 @@ LoadLibraryExWType LoadLibraryExWOriginal;
 
 void InstallInitialHooks()
 {
-	//AllocConsole();
-
 	if (MH_Initialize() != MH_OK)
 		Error("MH_Initialize failed");
 	

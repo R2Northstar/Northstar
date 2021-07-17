@@ -23,6 +23,11 @@ TempReadWrite::~TempReadWrite()
 
 void HookEnabler::CreateHook(LPVOID ppTarget, LPVOID ppDetour, LPVOID* ppOriginal, const char* targetName)
 {
+    // the macro for this uses ppTarget's name as targetName, and this typically starts with &
+    // targetname is used for debug stuff and debug output is nicer if we don't have this
+    if (*targetName == '&')
+        targetName++;
+
     if (MH_CreateHook(ppTarget, ppDetour, ppOriginal) == MH_OK)
     {
         HookTarget *target = new HookTarget;

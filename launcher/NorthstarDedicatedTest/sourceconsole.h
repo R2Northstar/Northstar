@@ -1,8 +1,8 @@
 #pragma once
 #include "pch.h"
 #include "sourceinterface.h"
-
-void InitialiseSourceConsole(HMODULE baseAddress);
+#include "spdlog/sinks/base_sink.h"
+#include <map>
 
 class EditablePanel
 {
@@ -87,4 +87,21 @@ public:
     CConsoleDialog* m_pConsole;
 };
 
-extern SourceInterface<CGameConsole>* g_pSourceGameConsole;
+extern SourceInterface<CGameConsole>* g_SourceGameConsole;
+
+// spdlog logger
+class SourceConsoleSink : public spdlog::sinks::base_sink<std::mutex>
+{
+private:
+    std::map<spdlog::level::level_enum, SourceColor> logColours;
+
+public:
+    SourceConsoleSink();
+
+protected:
+    void sink_it_(const spdlog::details::log_msg& msg) override;
+    void flush_() override;
+};
+
+void InitialiseSourceConsole(HMODULE baseAddress);
+void InitialiseConsoleOnInterfaceCreation();
