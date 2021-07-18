@@ -70,7 +70,7 @@ template<Context context> SQInteger SQPrintHook(void* sqvm, char* fmt, ...)
 
 void* CreateNewVMHook(void* a1, Context context)
 {
-	std::cout << "CreateNewVM " << GetContextName(context) << std::endl;
+	spdlog::info("CreateNewVM {}", GetContextName(context));
 	
 	if (context == CLIENT)
 	{

@@ -16,7 +16,7 @@ void ConCommand_toggleconsole(const CCommand& arg)
 
 void ConCommand_help(const CCommand& arg)
 {
-	
+	// todo: this should basically just call FindConVar once we have that working, then just print convar.GetHelpString
 }
 
 typedef void(*OnCommandSubmittedType)(CConsoleDialog* consoleDialog, const char* pCommand);

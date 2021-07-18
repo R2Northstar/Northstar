@@ -57,6 +57,6 @@ HookEnabler::~HookEnabler()
                 Error("MH_EnableHook failed for unknown function");
         }
         else
-            std::cout << "enabling hook " << hook->targetName << std::endl;
+            spdlog::info("Enabling hook {}", hook->targetName);
     }   
 }

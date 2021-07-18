@@ -6,6 +6,7 @@
 #include "sourceconsole.h"
 #include "logging.h"
 #include "concommand.h"
+#include "modmanager.h"
 #include <iostream>
 
 bool initialised = false;
@@ -53,4 +54,8 @@ void InitialiseNorthstar()
     }
 
     AddDllLoadCallback("server.dll", InitialiseServerSquirrel);
+
+
+    // do this after all the other callbacks
+    AddDllLoadCallback("engine.dll", InitialiseModManager);
 }
