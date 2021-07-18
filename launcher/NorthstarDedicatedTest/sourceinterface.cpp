@@ -15,7 +15,7 @@ void* ClientCreateInterfaceHook(const char* pName, int* pReturnCode)
 {
 	void* ret = clientCreateInterfaceOriginal(pName, pReturnCode);
 
-	std::cout << "CreateInterface CLIENT " << pName << std::endl;
+	spdlog::info("CreateInterface CLIENT {}", pName);
 	if (!strcmp(pName, "GameClientExports001"))
 		InitialiseConsoleOnInterfaceCreation();
 
@@ -63,6 +63,8 @@ void HookEngineCreateInterface(HMODULE baseAddress)
 void InitialiseInterfaceCreationHooks()
 {
 	AddDllLoadCallback("client.dll", HookClientCreateInterface);
-	AddDllLoadCallback("server.dll", HookServerCreateInterface);
-	AddDllLoadCallback("engine.dll", HookEngineCreateInterface);
+
+	// not used atm
+	//AddDllLoadCallback("server.dll", HookServerCreateInterface);
+	//AddDllLoadCallback("engine.dll", HookEngineCreateInterface);
 }

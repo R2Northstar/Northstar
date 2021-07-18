@@ -1,5 +1,4 @@
 #pragma once
-
 // taken directly from iconvar.h
 
 // The default, no flags at all
@@ -58,6 +57,8 @@
 // #define FCVAR_AVAILABLE			(1<<27)
 // #define FCVAR_AVAILABLE			(1<<31)
 
+class ConCommand;
+
 // still need to map out functions and that for this, would be nice to be able to get actual values out of these in native
 // also i sure do hope this size is right because there's a fairly decent chance it isn't
 class ConVar
@@ -72,8 +73,8 @@ public:
     virtual void				AddFlags(int flags) {}
     virtual void				RemoveFlags(int flags) {}
     virtual int					GetFlags() const { return 0; }
-    virtual const char* GetName(void) const { return nullptr; }
-    virtual const char* GetHelpText(void) const { return nullptr; }
+    virtual const char*         GetName(void) const { return nullptr; }
+    virtual const char*         GetHelpText(void) const { return nullptr; }
     virtual bool				IsRegistered(void) const { return false; }
 };
 
