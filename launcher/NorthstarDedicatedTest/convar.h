@@ -1,4 +1,5 @@
 #pragma once
+#include <set>
 // taken directly from iconvar.h
 
 // The default, no flags at all
@@ -95,3 +96,5 @@ public:
 
 ConVar* RegisterConVar(const char* name, const char* defaultValue, int flags, const char* helpString);
 void InitialiseConVars(HMODULE baseAddress);
+
+extern std::set<std::string> g_CustomConvars;

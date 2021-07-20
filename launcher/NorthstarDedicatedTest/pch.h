@@ -2,6 +2,8 @@
 #define PCH_H
 
 #define _CRT_SECURE_NO_WARNINGS
+#define RAPIDJSON_NOMEMBERITERATORCLASS // need this for rapidjson
+#define NOMINMAX // this too
 
 // add headers that you want to pre-compile here
 #include <Windows.h>
