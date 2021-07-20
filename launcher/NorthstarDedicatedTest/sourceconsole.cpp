@@ -28,6 +28,8 @@ void OnCommandSubmittedHook(CConsoleDialog* consoleDialog, const char* pCommand)
 	consoleDialog->m_pConsolePanel->Print("\n");
 
 	// todo: call the help command in the future
+
+	onCommandSubmittedOriginal(consoleDialog, pCommand);
 }
 
 // called from sourceinterface.cpp in client createinterface hooks, on GameClientExports001
@@ -50,6 +52,9 @@ void InitialiseSourceConsole(HMODULE baseAddress)
 	g_SourceGameConsole = new SourceInterface<CGameConsole>("client.dll", "GameConsole004");
 	RegisterConCommand("toggleconsole", ConCommand_toggleconsole, "toggles the console", FCVAR_NONE);
 }
+
+
+// logging stuff
 
 SourceConsoleSink::SourceConsoleSink()
 {

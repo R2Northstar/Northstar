@@ -1,9 +1,15 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <filesystem>
+
+namespace fs = std::filesystem;
+
+const fs::path MOD_FOLDER_PATH = "R2Northstar/mods";
 
 class ModConVar
 {
+public:
 	std::string Name;
 	std::string DefaultValue;
 	std::string HelpString;
@@ -12,6 +18,7 @@ class ModConVar
 
 class ModScriptCallback
 {
+public:
 	std::string HookedCodeCallback;
 
 	// called before the codecallback is executed
@@ -22,8 +29,9 @@ class ModScriptCallback
 
 class ModScript
 {
+public:
 	std::string Path;
-	std::string ScriptsRsonSide;
+	std::string RsonRunOn;
 
 	std::vector<ModScriptCallback*> Callbacks;
 };
@@ -54,6 +62,13 @@ public:
 
 	std::vector<std::string> Vpks;
 	//std::vector<ModKeyValues*> KeyValues;
+
+	// other stuff
+
+	bool wasReadSuccessfully = false;
+
+public:
+	Mod(fs::path modPath, char* jsonBuf);
 };
 
 class ModManager
