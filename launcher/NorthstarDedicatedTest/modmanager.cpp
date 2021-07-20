@@ -106,20 +106,44 @@ Mod::Mod(fs::path modDir, char* jsonBuf)
 			script->Path = scriptObj["Path"].GetString();
 			script->RsonRunOn = scriptObj["RunOn"].GetString();
 
-			// callbacks
-			for (auto iterator = scriptObj.MemberBegin(); iterator != scriptObj.MemberEnd(); iterator++)
+			if (scriptObj.HasMember("ServerCallback") && scriptObj["ServerCallback"].IsObject())
 			{
-				if (!iterator->name.IsString() || !iterator->value.IsObject())
-					continue;
-
 				ModScriptCallback* callback = new ModScriptCallback;
-				callback->HookedCodeCallback = iterator->name.GetString();
+				callback->Context = SERVER;
 
-				if (iterator->value.HasMember("Before") && iterator->value["Before"].IsString())
-					callback->BeforeCallback = iterator->value["Before"].GetString();
+				if (scriptObj["ServerCallback"].HasMember("Before") && scriptObj["ServerCallback"]["Before"].IsString())
+					callback->BeforeCallback = scriptObj["ServerCallback"]["Before"].GetString();
 
-				if (iterator->value.HasMember("After") && iterator->value["After"].IsString())
-					callback->AfterCallback = iterator->value["After"].GetString();
+				if (scriptObj["ServerCallback"].HasMember("After") && scriptObj["ServerCallback"]["After"].IsString())
+					callback->AfterCallback = scriptObj["ServerCallback"]["After"].GetString();
+			
+				script->Callbacks.push_back(callback);
+			}
+
+			if (scriptObj.HasMember("ClientCallback") && scriptObj["ClientCallback"].IsObject())
+			{
+				ModScriptCallback* callback = new ModScriptCallback;
+				callback->Context = CLIENT;
+
+				if (scriptObj["ClientCallback"].HasMember("Before") && scriptObj["ClientCallback"]["Before"].IsString())
+					callback->BeforeCallback = scriptObj["ClientCallback"]["Before"].GetString();
+
+				if (scriptObj["ClientCallback"].HasMember("After") && scriptObj["ClientCallback"]["After"].IsString())
+					callback->AfterCallback = scriptObj["ClientCallback"]["After"].GetString();
+
+				script->Callbacks.push_back(callback);
+			}
+
+			if (scriptObj.HasMember("UICallback") && scriptObj["UICallback"].IsObject())
+			{
+				ModScriptCallback* callback = new ModScriptCallback;
+				callback->Context = UI;
+
+				if (scriptObj["UICallback"].HasMember("Before") && scriptObj["UICallback"]["Before"].IsString())
+					callback->BeforeCallback = scriptObj["UICallback"]["Before"].GetString();
+
+				if (scriptObj["UICallback"].HasMember("After") && scriptObj["UICallback"]["After"].IsString())
+					callback->AfterCallback = scriptObj["UICallback"]["After"].GetString();
 
 				script->Callbacks.push_back(callback);
 			}
@@ -127,6 +151,12 @@ Mod::Mod(fs::path modDir, char* jsonBuf)
 			Scripts.push_back(script);
 		}
 	}
+
+	// vpk stuff
+	if (fs::exists(modDir / "vpk"))
+		for (fs::directory_entry file : fs::directory_iterator(modDir / "vpk"))
+			if (fs::is_regular_file(file) && file.path().extension() == "vpk")
+				Vpks.push_back(file.path().string());
 
 	wasReadSuccessfully = true;
 }
@@ -138,6 +168,8 @@ ModManager::ModManager()
 
 void ModManager::LoadMods()
 {
+	// this needs better support for reloads
+
 	std::vector<fs::path> modDirs;
 
 	// get mod directories
@@ -179,8 +211,10 @@ void ModManager::LoadMods()
 
 	for (Mod* mod : loadedMods)
 	{
+		// for reloads, this is sorta barebones, when we have a good findconvar method, we could probably reset flags and stuff on preexisting convars
+		// potentially it might also be good to unregister convars when they get removed on a reload, but unsure if necessary
 		for (ModConVar* convar : mod->ConVars)
-			if (g_CustomConvars.find(convar->Name) == g_CustomConvars.end()) // make sure convar isn't registered yet
+			if (g_CustomConvars.find(convar->Name) == g_CustomConvars.end()) // make sure convar isn't registered yet, unsure if necessary but idk what behaviour is for defining same convar multiple times
 				RegisterConVar(convar->Name.c_str(), convar->DefaultValue.c_str(), convar->Flags, convar->HelpString.c_str());
 	}
 

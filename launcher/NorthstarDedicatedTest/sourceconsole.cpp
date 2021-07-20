@@ -51,6 +51,7 @@ void InitialiseSourceConsole(HMODULE baseAddress)
 {
 	g_SourceGameConsole = new SourceInterface<CGameConsole>("client.dll", "GameConsole004");
 	RegisterConCommand("toggleconsole", ConCommand_toggleconsole, "toggles the console", FCVAR_NONE);
+	RegisterConVar("ns_test", "yeah", 0, "fuck");
 }
 
 

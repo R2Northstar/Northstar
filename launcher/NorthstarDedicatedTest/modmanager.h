@@ -19,7 +19,10 @@ public:
 class ModScriptCallback
 {
 public:
-	std::string HookedCodeCallback;
+	// would've liked to make it possible to hook arbitrary codecallbacks, but couldn't find a function that calls some ui ones
+	//std::string HookedCodeCallback;
+
+	Context Context;
 
 	// called before the codecallback is executed
 	std::string BeforeCallback;
