@@ -7,6 +7,7 @@
 #include "logging.h"
 #include "concommand.h"
 #include "modmanager.h"
+#include "filesystem.h"
 #include <iostream>
 
 bool initialised = false;
@@ -55,6 +56,7 @@ void InitialiseNorthstar()
 
     AddDllLoadCallback("server.dll", InitialiseServerSquirrel);
 
+    AddDllLoadCallback("filesystem_stdio.dll", InitialiseFilesystem);
 
     // do this after all the other callbacks
     AddDllLoadCallback("engine.dll", InitialiseModManager);

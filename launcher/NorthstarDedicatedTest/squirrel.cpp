@@ -4,6 +4,7 @@
 #include "hookutils.h"
 #include "sigscanning.h"
 #include "concommand.h"
+#include "modmanager.h"
 #include <iostream>
 
 // hook forward declarations
@@ -23,10 +24,15 @@ DestroyVMType ClientDestroyVM; // only need a client one since ui doesn't have i
 DestroyVMType ServerDestroyVM;
 template<Context context> void DestroyVMHook(void* a1, void* sqvm);
 
-typedef void (*SQCompileErrorType)(void* sqvm, const char* error, const char* file, int line, int column);
-SQCompileErrorType ClientSQCompileError; // only need a client one since ui doesn't have its own func for this
-SQCompileErrorType ServerSQCompileError;
-template<Context context> void SQCompileErrorHook(void* sqvm, const char* error, const char* file, int line, int column);
+typedef void(*ScriptCompileError)(void* sqvm, const char* error, const char* file, int line, int column);
+ScriptCompileError ClientSQCompileError; // only need a client one since ui doesn't have its own func for this
+ScriptCompileError ServerSQCompileError;
+template<Context context> void ScriptCompileErrorHook(void* sqvm, const char* error, const char* file, int line, int column);
+
+typedef char(*CallScriptInitCallbackType)(void* sqvm, const char* callback);
+CallScriptInitCallbackType ClientCallScriptInitCallback;
+CallScriptInitCallbackType ServerCallScriptInitCallback;
+template<Context context> char CallScriptInitCallbackHook(void* sqvm, const char* callback);
 
 sq_compilebufferType ClientSq_compilebuffer;
 sq_compilebufferType ServerSq_compilebuffer;
@@ -65,7 +71,8 @@ void InitialiseClientSquirrel(HMODULE baseAddress)
 
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x26130, &CreateNewVMHook<CLIENT>, reinterpret_cast<LPVOID*>(&ClientCreateNewVM)); // client createnewvm function
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x26E70, &DestroyVMHook<CLIENT>, reinterpret_cast<LPVOID*>(&ClientDestroyVM)); // client destroyvm function
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x79A50, &SQCompileErrorHook<CLIENT>, reinterpret_cast<LPVOID*>(&ClientSQCompileError)); // client compileerror function
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x79A50, &ScriptCompileErrorHook<CLIENT>, reinterpret_cast<LPVOID*>(&ClientSQCompileError)); // client compileerror function
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x10190, &CallScriptInitCallbackHook<CLIENT>, reinterpret_cast<LPVOID*>(&ClientCallScriptInitCallback)); // client callscriptinitcallback function
 }
 
 void InitialiseServerSquirrel(HMODULE baseAddress)
@@ -81,7 +88,7 @@ void InitialiseServerSquirrel(HMODULE baseAddress)
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1FE90, &SQPrintHook<SERVER>, reinterpret_cast<LPVOID*>(&ServerSQPrint)); // server print function
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x260E0, &CreateNewVMHook<SERVER>, reinterpret_cast<LPVOID*>(&ServerCreateNewVM)); // server createnewvm function
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x26E20, &DestroyVMHook<SERVER>, reinterpret_cast<LPVOID*>(&ServerDestroyVM)); // server destroyvm function
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x799E0, &SQCompileErrorHook<SERVER>, reinterpret_cast<LPVOID*>(&ServerSQCompileError)); // server compileerror function
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x799E0, &ScriptCompileErrorHook<SERVER>, reinterpret_cast<LPVOID*>(&ServerSQCompileError)); // server compileerror function
 
 	RegisterConCommand("script", ExecuteCodeCommand<SERVER>, "Executes script code in the server vm", FCVAR_GAMEDLL);
 }
@@ -155,12 +162,12 @@ template<Context context> void DestroyVMHook(void* a1, void* sqvm)
 	spdlog::info("DestroyVM {} {}", GetContextName(realContext), sqvm);
 }
 
-template<Context context> void SQCompileErrorHook(void* sqvm, const char* error, const char* file, int line, int column)
+template<Context context> void ScriptCompileErrorHook(void* sqvm, const char* error, const char* file, int line, int column)
 {
 	// note: i think vanilla might actually show the script line that errored, might be nice to implement that if it's a thing
 	// look into client.dll+79540 for way better errors too
 
-	Context realContext = context;
+	Context realContext = context; // ui and client use the same function so we use this for prints
 	if (context == CLIENT && sqvm == g_UISquirrelManager->sqvm)
 		realContext = UI;
 
@@ -171,6 +178,75 @@ template<Context context> void SQCompileErrorHook(void* sqvm, const char* error,
 	// in the future it'd be nice to do an actual error with UICodeCallback_ErrorDialog here, but only if we're compiling level scripts
 	// compilestring and stuff shouldn't tho
 	// though, that also has potential to be REALLY bad if we're compiling ui scripts lol
+}
+
+template<Context context> char CallScriptInitCallbackHook(void* sqvm, const char* callback)
+{
+	char ret;
+
+	if (context == CLIENT)
+	{
+		Context realContext = context; // ui and client use the same function so we use this for prints
+		bool shouldCallCustomCallbacks = false;
+		
+		// since we don't hook arbitrary callbacks yet, make sure we're only doing callbacks on inits
+		if (!strcmp(callback, "UICodeCallback_UIInit"))
+		{
+			realContext = UI;
+			shouldCallCustomCallbacks = true;
+		}
+		else if (!strcmp(callback, "ClientCodeCallback_MapSpawn"))
+			shouldCallCustomCallbacks = true;
+
+		// run before callbacks
+		if (shouldCallCustomCallbacks)
+		{
+			for (Mod* mod : g_ModManager->GetMods())
+			{
+				for (ModScript* script : mod->Scripts)
+				{
+					for (ModScriptCallback* modCallback : script->Callbacks)
+					{
+						if (modCallback->Context == realContext && modCallback->BeforeCallback.length())
+						{
+							spdlog::info("Running custom {} script callback \"{}\"", GetContextName(realContext), modCallback->BeforeCallback);
+							ClientCallScriptInitCallback(sqvm, modCallback->BeforeCallback.c_str());
+						}
+					}
+				}
+			}
+		}
+
+		spdlog::info("{} CodeCallback {} called", GetContextName(realContext), callback);
+		if (!shouldCallCustomCallbacks)
+			spdlog::info("Not executing custom callbacks for CodeCallback {}", callback);
+		ret = ClientCallScriptInitCallback(sqvm, callback);
+
+		// run after callbacks
+		if (shouldCallCustomCallbacks)
+		{
+			for (Mod* mod : g_ModManager->GetMods())
+			{
+				for (ModScript* script : mod->Scripts)
+				{
+					for (ModScriptCallback* modCallback : script->Callbacks)
+					{
+						if (modCallback->Context == realContext && modCallback->AfterCallback.length())
+						{
+							spdlog::info("Running custom {} script callback \"{}\"", GetContextName(realContext), modCallback->AfterCallback);
+							ClientCallScriptInitCallback(sqvm, modCallback->AfterCallback.c_str());
+						}
+					}
+				}
+			}
+		}
+	}
+	else if (context == SERVER)
+	{
+		// todo lol
+	}
+
+	return ret;
 }
 
 template<Context context> void ExecuteCodeCommand(const CCommand& args)

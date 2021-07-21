@@ -11,6 +11,15 @@ bool IsDedicated()
 	return false;
 }
 
+enum EngineState_t
+{
+	DLL_INACTIVE = 0,		// no dll
+	DLL_ACTIVE,				// engine is focused
+	DLL_CLOSE,				// closing down dll
+	DLL_RESTART,			// engine is shutting down but will restart right away
+	DLL_PAUSED,				// engine is paused, can become active from this state
+};
+
 void InitialiseDedicated(HMODULE engineAddress)
 {
 	std::cout << "InitialiseDedicated()" << std::endl;

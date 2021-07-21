@@ -220,6 +220,11 @@ void ModManager::LoadMods()
 
 }
 
+std::vector<Mod*> ModManager::GetMods()
+{
+	return loadedMods;
+}
+
 void InitialiseModManager(HMODULE baseAddress)
 {
 	g_ModManager = new ModManager();
