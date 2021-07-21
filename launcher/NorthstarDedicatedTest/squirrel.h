@@ -52,8 +52,7 @@ public:
 
 public:
 	SquirrelManager() : sqvm(nullptr)
-	{
-	}
+	{}
 
 	void ExecuteCode(const char* code)
 	{
@@ -96,6 +95,7 @@ public:
 			}
 		}
 	}
+
 	void AddFuncRegistration(std::string returnType, std::string name, std::string argTypes, std::string helpText, SQFunction func)
 	{
 		
