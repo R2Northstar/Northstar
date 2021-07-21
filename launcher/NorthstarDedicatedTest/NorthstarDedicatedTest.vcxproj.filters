@@ -507,6 +507,9 @@
     <ClInclude Include="include\rapidjson\msinttypes\stdint.h">
       <Filter>Header Files\include\rapidjson\msinttypes</Filter>
     </ClInclude>
+    <ClInclude Include="filesystem.h">
+      <Filter>Header Files\Shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -553,6 +556,9 @@
     </ClCompile>
     <ClCompile Include="modmanager.cpp">
       <Filter>Source Files\Shared\Mods</Filter>
+    </ClCompile>
+    <ClCompile Include="filesystem.cpp">
+      <Filter>Source Files\Shared</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
