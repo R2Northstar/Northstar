@@ -38,6 +38,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 void InitialiseNorthstar()
 {
     InitialiseLogging();
+
     // apply initial hooks
     InstallInitialHooks();
     InitialiseInterfaceCreationHooks();
@@ -58,6 +59,6 @@ void InitialiseNorthstar()
 
     AddDllLoadCallback("filesystem_stdio.dll", InitialiseFilesystem);
 
-    // do this after all the other callbacks
+    // mod manager after everything else
     AddDllLoadCallback("engine.dll", InitialiseModManager);
 }

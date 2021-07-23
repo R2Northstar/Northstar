@@ -3,6 +3,9 @@
 #include "hooks.h"
 #include "hookutils.h"
 #include "sourceinterface.h"
+#include "modmanager.h"
+
+#include <iostream>
 
 // hook forward declares
 typedef FileHandle_t(*ReadFileFromVPKType)(VPKData* vpkInfo, __int64* b, const char* filename);
@@ -25,8 +28,25 @@ void InitialiseFilesystem(HMODULE baseAddress)
 	ENABLER_CREATEHOOK(hook, (*g_Filesystem)->m_vtable->ReadFromCache, &ReadFromCacheHook, reinterpret_cast<LPVOID*>(&readFromCache));
 }
 
-bool ShouldReplaceFile(const char* path)
+void SetNewModSearchPaths(Mod* mod)
 {
+	// put our new path to the head
+	// in future we should look into manipulating paths at head manually, might be effort tho
+	(*g_Filesystem)->m_vtable->AddSearchPath(&*(*g_Filesystem), (fs::absolute(mod->ModDirectory) / "mod").string().c_str(), "GAME", PATH_ADD_TO_HEAD);
+}
+
+bool TryReplaceFile(const char* path)
+{
+	// is this efficient? no clue
+	for (ModOverrideFile* modFile : g_ModManager->m_modFiles)
+	{
+		if (!modFile->path.compare(fs::path(path).lexically_normal()))
+		{
+			SetNewModSearchPaths(modFile->owningMod);
+			return true;
+		}
+	}
+
 	return false;
 }
 
@@ -34,7 +54,7 @@ FileHandle_t ReadFileFromVPKHook(VPKData* vpkInfo, __int64* b, const char* filen
 {
 	// move this to a convar at some point when we can read them in native
 	//spdlog::info("ReadFileFromVPKHook {} {}", filename, vpkInfo->path);
-	if (ShouldReplaceFile(filename))
+	if (TryReplaceFile(filename))
 	{
 		*b = -1;
 		return b;
@@ -48,6 +68,8 @@ bool ReadFromCacheHook(IFileSystem* filesystem, const char* path, void* result)
 	// move this to a convar at some point when we can read them in native
 	//spdlog::info("ReadFromCacheHook {}", path);
 
+	if (TryReplaceFile(path))
+		return false;
 
 	return readFromCache(filesystem, path, result);
 }

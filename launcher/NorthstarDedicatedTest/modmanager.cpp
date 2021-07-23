@@ -16,6 +16,8 @@ Mod::Mod(fs::path modDir, char* jsonBuf)
 {
 	wasReadSuccessfully = false;
 
+	ModDirectory = modDir;
+
 	rapidjson::Document modJson;
 	modJson.Parse<rapidjson::ParseFlag::kParseCommentsFlag | rapidjson::ParseFlag::kParseTrailingCommasFlag>(jsonBuf);
 
@@ -200,7 +202,7 @@ void ModManager::LoadMods()
 		if (mod->wasReadSuccessfully)
 		{
 			spdlog::info("Loaded mod {} successfully", mod->Name);
-			loadedMods.push_back(mod);
+			m_loadedMods.push_back(mod);
 		}
 		else
 		{
@@ -209,20 +211,36 @@ void ModManager::LoadMods()
 		}
 	}
 
-	for (Mod* mod : loadedMods)
+	// do we need to dealloc individual entries in m_modFiles? idk, rework
+	m_modFiles.clear();
+
+	for (Mod* mod : m_loadedMods)
 	{
+		// register convars
 		// for reloads, this is sorta barebones, when we have a good findconvar method, we could probably reset flags and stuff on preexisting convars
-		// potentially it might also be good to unregister convars when they get removed on a reload, but unsure if necessary
+		// potentially it might also be good to unregister convars if they get removed on a reload, but unsure if necessary
 		for (ModConVar* convar : mod->ConVars)
 			if (g_CustomConvars.find(convar->Name) == g_CustomConvars.end()) // make sure convar isn't registered yet, unsure if necessary but idk what behaviour is for defining same convar multiple times
 				RegisterConVar(convar->Name.c_str(), convar->DefaultValue.c_str(), convar->Flags, convar->HelpString.c_str());
+		
+		
+		// register mod files
+		if (fs::exists(mod->ModDirectory / "mod"))
+		{
+			for (fs::directory_entry file : fs::recursive_directory_iterator(mod->ModDirectory / "mod"))
+			{
+				if (file.is_regular_file())
+				{
+					// super temp because it relies hard on load order
+					ModOverrideFile* modFile = new ModOverrideFile;
+					modFile->owningMod = mod;
+					modFile->path = file.path().lexically_relative(mod->ModDirectory / "mod").lexically_normal();
+					m_modFiles.push_back(modFile);
+				}
+			}
+		}
 	}
 
-}
-
-std::vector<Mod*> ModManager::GetMods()
-{
-	return loadedMods;
 }
 
 void InitialiseModManager(HMODULE baseAddress)

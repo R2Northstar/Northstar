@@ -2,6 +2,7 @@
 #include "convar.h"
 #include <set>
 
+// should this be in modmanager?
 std::set<std::string> g_CustomConvars; // this is used in modloading code to determine whether we've registered a mod convar already
 
 typedef void(*ConVarConstructorType)(ConVar* newVar, const char* name, const char* defaultValue, int flags, const char* helpString);
