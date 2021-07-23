@@ -133,7 +133,7 @@ template<Context context> void* CreateNewVMHook(void* a1, Context realContext)
 		g_ServerSquirrelManager->sqvm = sqvm;
 	}
 
-	spdlog::info("CreateNewVM {} {}", GetContextName(context), sqvm);
+	spdlog::info("CreateNewVM {} {}", GetContextName(realContext), sqvm);
 	return sqvm;
 }
 
@@ -199,6 +199,7 @@ template<Context context> char CallScriptInitCallbackHook(void* sqvm, const char
 			shouldCallCustomCallbacks = true;
 
 		// run before callbacks
+		// todo: we need to verify if RunOn is valid for current state before calling callbacks
 		if (shouldCallCustomCallbacks)
 		{
 			for (Mod* mod : g_ModManager->m_loadedMods)

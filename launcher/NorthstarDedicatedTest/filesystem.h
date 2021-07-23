@@ -66,5 +66,8 @@ public:
     VTable2* m_vtable2;
 };
 
+std::string ReadVPKFile(const char* path);
+std::string ReadVPKOriginalFile(const char* path);
+
 void InitialiseFilesystem(HMODULE baseAddress);
 extern SourceInterface<IFileSystem>* g_Filesystem;

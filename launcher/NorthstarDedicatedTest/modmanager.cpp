@@ -225,22 +225,31 @@ void ModManager::LoadMods()
 		
 		
 		// register mod files
-		if (fs::exists(mod->ModDirectory / "mod"))
+		if (fs::exists(mod->ModDirectory / MOD_OVERRIDE_DIR))
 		{
-			for (fs::directory_entry file : fs::recursive_directory_iterator(mod->ModDirectory / "mod"))
+			for (fs::directory_entry file : fs::recursive_directory_iterator(mod->ModDirectory / MOD_OVERRIDE_DIR))
 			{
 				if (file.is_regular_file())
 				{
 					// super temp because it relies hard on load order
 					ModOverrideFile* modFile = new ModOverrideFile;
 					modFile->owningMod = mod;
-					modFile->path = file.path().lexically_relative(mod->ModDirectory / "mod").lexically_normal();
+					modFile->path = file.path().lexically_relative(mod->ModDirectory / MOD_OVERRIDE_DIR).lexically_normal();
 					m_modFiles.push_back(modFile);
 				}
 			}
 		}
 	}
 
+}
+
+void ModManager::CompileAssetsForFile(const char* filename)
+{
+	fs::path path(filename);
+
+	if (!path.filename().compare("scripts.rson"))
+		BuildScriptsRson();
+	
 }
 
 void InitialiseModManager(HMODULE baseAddress)
