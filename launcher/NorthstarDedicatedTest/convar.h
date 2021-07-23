@@ -66,7 +66,13 @@ class ConVar
 {
 private:
 	// if there are ever crashes caused by modifying custom cvars, check this
-	unsigned char unknown[0x88];
+	unsigned char unknown[0x58];
+    char* m_pszString;
+    int64_t m_StringLength;
+    float m_fValue;
+    int32_t m_nValue;
+    unsigned char unknown2[0x10];
+
 public:
     virtual	void    			EngineDestructor(void) {}
     virtual	bool				IsCommand(void) const { return false; }

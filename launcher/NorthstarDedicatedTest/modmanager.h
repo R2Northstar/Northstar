@@ -7,7 +7,7 @@ namespace fs = std::filesystem;
 
 const fs::path MOD_FOLDER_PATH = "R2Northstar/mods";
 
-class ModConVar
+struct ModConVar
 {
 public:
 	std::string Name;
@@ -16,7 +16,7 @@ public:
 	int Flags;
 };
 
-class ModScriptCallback
+struct ModScriptCallback
 {
 public:
 	// would've liked to make it possible to hook arbitrary codecallbacks, but couldn't find a function that calls some ui ones
@@ -30,7 +30,7 @@ public:
 	std::string AfterCallback;
 };
 
-class ModScript
+struct ModScript
 {
 public:
 	std::string Path;
@@ -42,6 +42,8 @@ public:
 class Mod
 {
 public:
+	fs::path ModDirectory;
+
 	// mod.json stuff:
 
 	// the mod's name
@@ -74,19 +76,22 @@ public:
 	Mod(fs::path modPath, char* jsonBuf);
 };
 
+struct ModOverrideFile
+{
+public:
+	Mod* owningMod;
+	fs::path path;
+};
+
 class ModManager
 {
-private:
-	std::vector<Mod*> loadedMods;
+public:
+	std::vector<Mod*> m_loadedMods;
+	std::vector<ModOverrideFile*> m_modFiles;
 
 public:
 	ModManager();
 	void LoadMods();
-
-	std::vector<Mod*> GetMods();
-	std::vector<Mod*> GetClientMods();
-	std::vector<std::string> GetModVpks();
-	std::vector<std::string> GetModOverridePaths();
 };
 
 void InitialiseModManager(HMODULE baseAddress);

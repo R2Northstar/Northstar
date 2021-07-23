@@ -81,7 +81,7 @@ void InitialiseDedicated(HMODULE engineAddress)
 	*ptr = (intptr_t)doublePtr;
 
 	// extra potential patches:
-	// nop engine.dll+1c67cd1 and +1c67d8 to skip videomode creategamewindow
+	// nop engine.dll+1c67d1 and +1c67d8 to skip videomode creategamewindow
 	// also look into launcher.dll+d381, seems to cause renderthread to get made
 	// this crashes HARD if no window which makes sense tbh
 	// also look into materialsystem + 5B344 since it seems to be the base of all the renderthread stuff
@@ -108,8 +108,8 @@ void RunServer(CDedicatedExports* dedicated)
 	Sys_Printf(dedicated, (char*)"CDedicatedServerAPI::RunServer(): map mp_lobby");
 
 	// allow us to hit CHostState::FrameUpdate
-	*((int*)((char*)cEnginePtr + 12)) = 2;
-	*((int*)((char*)cEnginePtr + 16)) = 2;
+	//*((int*)((char*)cEnginePtr + 12)) = 2;
+	//*((int*)((char*)cEnginePtr + 16)) = 2;
 
 	while (true)
 	{

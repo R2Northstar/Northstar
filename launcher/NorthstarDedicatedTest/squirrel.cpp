@@ -201,7 +201,7 @@ template<Context context> char CallScriptInitCallbackHook(void* sqvm, const char
 		// run before callbacks
 		if (shouldCallCustomCallbacks)
 		{
-			for (Mod* mod : g_ModManager->GetMods())
+			for (Mod* mod : g_ModManager->m_loadedMods)
 			{
 				for (ModScript* script : mod->Scripts)
 				{
@@ -225,7 +225,7 @@ template<Context context> char CallScriptInitCallbackHook(void* sqvm, const char
 		// run after callbacks
 		if (shouldCallCustomCallbacks)
 		{
-			for (Mod* mod : g_ModManager->GetMods())
+			for (Mod* mod : g_ModManager->m_loadedMods)
 			{
 				for (ModScript* script : mod->Scripts)
 				{
