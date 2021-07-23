@@ -6,6 +6,9 @@
 namespace fs = std::filesystem;
 
 const fs::path MOD_FOLDER_PATH = "R2Northstar/mods";
+const fs::path MOD_OVERRIDE_DIR = "mod";
+
+const fs::path COMPILED_ASSETS_PATH = "R2Northstar/runtime/compiled";
 
 struct ModConVar
 {
@@ -92,6 +95,10 @@ public:
 public:
 	ModManager();
 	void LoadMods();
+	void CompileAssetsForFile(const char* filename);
+
+	// compile asset type stuff, these are done in files under Mods/Compiled/
+	void BuildScriptsRson();
 };
 
 void InitialiseModManager(HMODULE baseAddress);

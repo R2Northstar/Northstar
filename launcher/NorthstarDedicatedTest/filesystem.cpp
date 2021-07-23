@@ -6,6 +6,7 @@
 #include "modmanager.h"
 
 #include <iostream>
+#include <sstream>
 
 // hook forward declares
 typedef FileHandle_t(*ReadFileFromVPKType)(VPKData* vpkInfo, __int64* b, const char* filename);
@@ -16,6 +17,7 @@ typedef bool(*ReadFromCacheType)(IFileSystem* filesystem, const char* path, void
 ReadFromCacheType readFromCache;
 bool ReadFromCacheHook(IFileSystem* filesystem, const char* path, void* result);
 
+bool readingOriginalFile;
 SourceInterface<IFileSystem>* g_Filesystem;
 
 void InitialiseFilesystem(HMODULE baseAddress)
@@ -28,15 +30,52 @@ void InitialiseFilesystem(HMODULE baseAddress)
 	ENABLER_CREATEHOOK(hook, (*g_Filesystem)->m_vtable->ReadFromCache, &ReadFromCacheHook, reinterpret_cast<LPVOID*>(&readFromCache));
 }
 
+std::string ReadVPKFile(const char* path)
+{
+	// read scripts.rson file, todo: check if this can be overwritten
+	FileHandle_t fileHandle = (*g_Filesystem)->m_vtable2->Open(&(*g_Filesystem)->m_vtable2, path, "rb", "GAME", 0);
+
+	std::stringstream fileStream;
+	int bytesRead = 0;
+	char data[4096];
+	do
+	{
+		bytesRead = (*g_Filesystem)->m_vtable2->Read(&(*g_Filesystem)->m_vtable2, data, std::size(data), fileHandle);
+		fileStream.write(data, bytesRead);
+	} while (bytesRead == std::size(data));
+
+	(*g_Filesystem)->m_vtable2->Close(*g_Filesystem, fileHandle);
+
+	return fileStream.str();
+}
+
+std::string ReadVPKOriginalFile(const char* path)
+{
+	readingOriginalFile = true;
+	std::string ret = ReadVPKFile(path);
+	readingOriginalFile = false;
+
+	return ret;
+}
+
 void SetNewModSearchPaths(Mod* mod)
 {
 	// put our new path to the head
 	// in future we should look into manipulating paths at head manually, might be effort tho
-	(*g_Filesystem)->m_vtable->AddSearchPath(&*(*g_Filesystem), (fs::absolute(mod->ModDirectory) / "mod").string().c_str(), "GAME", PATH_ADD_TO_HEAD);
+	// potentially we could also determine whether the file we're setting paths for needs a mod dir, or compiled assets
+	if (mod != nullptr)
+		(*g_Filesystem)->m_vtable->AddSearchPath(&*(*g_Filesystem), (fs::absolute(mod->ModDirectory) / MOD_OVERRIDE_DIR).string().c_str(), "GAME", PATH_ADD_TO_HEAD);
+	
+	(*g_Filesystem)->m_vtable->AddSearchPath(&*(*g_Filesystem), fs::absolute(COMPILED_ASSETS_PATH).string().c_str(), "GAME", PATH_ADD_TO_HEAD);
 }
 
 bool TryReplaceFile(const char* path)
 {
+	if (readingOriginalFile)
+		return false;
+
+	(*g_ModManager).CompileAssetsForFile(path);
+
 	// is this efficient? no clue
 	for (ModOverrideFile* modFile : g_ModManager->m_modFiles)
 	{

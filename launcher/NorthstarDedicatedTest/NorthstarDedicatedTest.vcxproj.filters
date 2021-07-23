@@ -25,9 +25,6 @@
     <Filter Include="Source Files\Shared">
       <UniqueIdentifier>{4f525372-34a8-40b3-8a95-81d77cdfcf7f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Shared\Hooks">
-      <UniqueIdentifier>{4db0d1e9-9035-457f-87f1-5dc3f13b6b9e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Dedicated">
       <UniqueIdentifier>{947835db-67d6-42c0-870d-62743f85231f}</UniqueIdentifier>
     </Filter>
@@ -81,6 +78,15 @@
     </Filter>
     <Filter Include="Header Files\include\rapidjson\msinttypes">
       <UniqueIdentifier>{85aacdee-0f92-4ec4-b20c-0739c1175055}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Shared\Hooks">
+      <UniqueIdentifier>{4db0d1e9-9035-457f-87f1-5dc3f13b6b9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Shared\Mods\Compiled">
+      <UniqueIdentifier>{d1f93d1e-0ecb-44fe-a277-d3e75aec2570}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Shared\Mods\Compiled">
+      <UniqueIdentifier>{14fc0931-acad-46ec-a55e-94f4469d4235}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -510,6 +516,9 @@
     <ClInclude Include="filesystem.h">
       <Filter>Header Files\Shared</Filter>
     </ClInclude>
+    <ClInclude Include="scriptsrson.h">
+      <Filter>Header Files\Shared\Mods\Compiled</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -559,6 +568,9 @@
     </ClCompile>
     <ClCompile Include="filesystem.cpp">
       <Filter>Source Files\Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="scriptsrson.cpp">
+      <Filter>Source Files\Shared\Mods\Compiled</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
