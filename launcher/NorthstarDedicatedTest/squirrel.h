@@ -26,6 +26,33 @@ struct CompileBufferState
 	}
 };
 
+struct SQFuncRegistration
+{
+	const char* squirrelFuncName;
+	const char* cppFuncName;
+	const char* helpText;
+	const char* returnValueType;
+	const char* argTypes;
+	int16_t somethingThatsZero;
+	int16_t padding1;
+	int32_t unknown1;
+	int64_t unknown2;
+	int32_t unknown3;
+	int32_t padding2;
+	int64_t unknown4;
+	int64_t unknown5;
+	int64_t unknown6;
+	int32_t unknown7;
+	int32_t padding3;
+	void* funcPtr;
+
+	SQFuncRegistration()
+	{
+		memset(this, 0, sizeof(SQFuncRegistration));
+		this->padding2 = 32;
+	}
+};
+
 typedef SQRESULT(*sq_compilebufferType)(void* sqvm, CompileBufferState* compileBuffer, const char* file, int a1, int a2);
 extern sq_compilebufferType ClientSq_compilebuffer;
 extern sq_compilebufferType ServerSq_compilebuffer;
@@ -38,22 +65,41 @@ typedef SQRESULT(*sq_callType)(void* sqvm, SQInteger s1, SQBool a2, SQBool a3);
 extern sq_callType ClientSq_call;
 extern sq_callType ServerSq_call;
 
+typedef int64_t(*RegisterSquirrelFuncType)(void* sqvm, SQFuncRegistration* funcReg, char unknown);
+extern RegisterSquirrelFuncType ClientRegisterSquirrelFunc;
+extern RegisterSquirrelFuncType ServerRegisterSquirrelFunc;
+
 //template<Context context> void ExecuteSQCode(SquirrelManager<context> sqManager, const char* code); // need this because we can't do template class functions in the .cpp file
 
 typedef SQInteger(*SQFunction)(void* sqvm);
 
 template<Context context> class SquirrelManager
 {
+private:
+	std::vector<SQFuncRegistration*> m_funcRegistrations;
+
 public:
 	void* sqvm;
+	void* sqvm2;
 
 public:
 	SquirrelManager() : sqvm(nullptr)
 	{}
 
-	void VMCreated(void* sqvm)
+	void VMCreated(void* newSqvm)
 	{
-		sqvm = sqvm;
+		sqvm = newSqvm;
+		sqvm2 = *((void**)((char*)sqvm + 8)); // honestly not 100% sure on what this is, but alot of functions take it
+
+		for (SQFuncRegistration* funcReg : m_funcRegistrations)
+		{
+			spdlog::info("Registering {} function {}", GetContextName(context), funcReg->squirrelFuncName);
+
+			if (context == CLIENT || context == UI)
+				ClientRegisterSquirrelFunc(sqvm, funcReg, 1);
+			else
+				ServerRegisterSquirrelFunc(sqvm, funcReg, 1);
+		}
 	}
 
 	void VMDestroyed()
@@ -70,9 +116,6 @@ public:
 			spdlog::error("Cannot execute code, {} squirrel vm is not initialised", GetContextName(context));
 			return;
 		}
-
-		void* sqvm2 = *((void**)((char*)sqvm + 8)); // honestly not 100% sure on what this is, but it seems to be what this function is supposed to take
-		// potentially move to a property later if it's used alot
 
 		spdlog::info("Executing {} script code {} ", GetContextName(context), code);
 
@@ -105,7 +148,24 @@ public:
 
 	void AddFuncRegistration(std::string returnType, std::string name, std::string argTypes, std::string helpText, SQFunction func)
 	{
-		
+		SQFuncRegistration* reg = new SQFuncRegistration;
+
+		reg->squirrelFuncName = new char[name.size() + 1];
+		strcpy((char*)reg->squirrelFuncName, name.c_str());
+		reg->cppFuncName = reg->squirrelFuncName;
+
+		reg->helpText = new char[helpText.size() + 1];
+		strcpy((char*)reg->helpText, helpText.c_str());
+
+		reg->returnValueType = new char[returnType.size() + 1];
+		strcpy((char*)reg->returnValueType, returnType.c_str());
+
+		reg->argTypes = new char[argTypes.size() + 1];
+		strcpy((char*)reg->argTypes, argTypes.c_str());
+
+		reg->funcPtr = func;
+
+		m_funcRegistrations.push_back(reg);
 	}
 };
 
