@@ -123,14 +123,14 @@ template<Context context> void* CreateNewVMHook(void* a1, Context realContext)
 		sqvm = ClientCreateNewVM(a1, realContext);
 
 		if (realContext == UI)
-			g_UISquirrelManager->sqvm = sqvm;
+			g_UISquirrelManager->VMCreated(sqvm);
 		else
-			g_ClientSquirrelManager->sqvm = sqvm;
+			g_ClientSquirrelManager->VMCreated(sqvm)
 	}
 	else if (context == SERVER)
 	{
 		sqvm = ServerCreateNewVM(a1, context);
-		g_ServerSquirrelManager->sqvm = sqvm;
+		g_ServerSquirrelManager->VMCreated(sqvm);
 	}
 
 	spdlog::info("CreateNewVM {} {}", GetContextName(realContext), sqvm);
@@ -144,18 +144,18 @@ template<Context context> void DestroyVMHook(void* a1, void* sqvm)
 	if (context == CLIENT)
 	{
 		if (g_ClientSquirrelManager->sqvm == sqvm)
-			g_ClientSquirrelManager->sqvm = nullptr;
+			g_ClientSquirrelManager->VMDestroyed();
 		else if (g_UISquirrelManager->sqvm == sqvm)
 		{
-			g_UISquirrelManager->sqvm = nullptr;
-			realContext == UI;
+			g_UISquirrelManager->VMDestroyed();
+			realContext = UI;
 		}
 
 		ClientDestroyVM(a1, sqvm);
 	}
 	else if (context == SERVER)
 	{
-		g_ServerSquirrelManager->sqvm = nullptr;
+		g_ServerSquirrelManager->VMDestroyed();
 		ServerDestroyVM(a1, sqvm);
 	}
 

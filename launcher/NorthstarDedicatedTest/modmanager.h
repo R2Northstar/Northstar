@@ -59,7 +59,9 @@ public:
 	std::string DownloadLink;
 
 	// whether clients need the mod to join servers running this mod
-	bool RequiredOnClient = true;
+	bool RequiredOnClient;
+	// the priority for this mod's files, mods with prio 0 are loaded first, then 1, then 2, etc
+	int LoadPriority;
 
 	// custom scripts used by the mod
 	std::vector<ModScript*> Scripts;

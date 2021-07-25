@@ -68,6 +68,14 @@ Mod::Mod(fs::path modDir, char* jsonBuf)
 	else
 		RequiredOnClient = false;
 
+	if (modJson.HasMember("LoadPriority"))
+		LoadPriority = modJson["LoadPriority"].GetInt();
+	else
+	{
+		spdlog::info("Mod file {} is missing a LoadPriority, consider adding one", (modDir / "mod.json").string());
+		LoadPriority = 0;
+	}
+
 	// mod convars
 	if (modJson.HasMember("ConVars") && modJson["ConVars"].IsArray())
 	{
@@ -171,6 +179,9 @@ ModManager::ModManager()
 void ModManager::LoadMods()
 {
 	// this needs better support for reloads
+	
+	// do we need to dealloc individual entries in m_loadedMods? idk, rework
+	m_loadedMods.clear();
 
 	std::vector<fs::path> modDirs;
 
@@ -211,8 +222,14 @@ void ModManager::LoadMods()
 		}
 	}
 
+	// sort by load prio, lowest-highest
+	std::sort(m_loadedMods.begin(), m_loadedMods.end(), [](Mod* a, Mod* b) {
+		return a->LoadPriority > b->LoadPriority;
+	});
+
 	// do we need to dealloc individual entries in m_modFiles? idk, rework
 	m_modFiles.clear();
+	fs::remove_all(COMPILED_ASSETS_PATH);
 
 	for (Mod* mod : m_loadedMods)
 	{
@@ -222,25 +239,26 @@ void ModManager::LoadMods()
 		for (ModConVar* convar : mod->ConVars)
 			if (g_CustomConvars.find(convar->Name) == g_CustomConvars.end()) // make sure convar isn't registered yet, unsure if necessary but idk what behaviour is for defining same convar multiple times
 				RegisterConVar(convar->Name.c_str(), convar->DefaultValue.c_str(), convar->Flags, convar->HelpString.c_str());
-		
-		
-		// register mod files
-		if (fs::exists(mod->ModDirectory / MOD_OVERRIDE_DIR))
+	}
+
+	// in a seperate loop because we register mod files in reverse order, since mods loaded later should have their files prioritised
+	for (int i = m_loadedMods.size() - 1; i > -1; i--)
+	{
+		if (fs::exists(m_loadedMods[i]->ModDirectory / MOD_OVERRIDE_DIR))
 		{
-			for (fs::directory_entry file : fs::recursive_directory_iterator(mod->ModDirectory / MOD_OVERRIDE_DIR))
+			for (fs::directory_entry file : fs::recursive_directory_iterator(m_loadedMods[i]->ModDirectory / MOD_OVERRIDE_DIR))
 			{
 				if (file.is_regular_file())
 				{
 					// super temp because it relies hard on load order
 					ModOverrideFile* modFile = new ModOverrideFile;
-					modFile->owningMod = mod;
-					modFile->path = file.path().lexically_relative(mod->ModDirectory / MOD_OVERRIDE_DIR).lexically_normal();
+					modFile->owningMod = m_loadedMods[i];
+					modFile->path = file.path().lexically_relative(m_loadedMods[i]->ModDirectory / MOD_OVERRIDE_DIR).lexically_normal();
 					m_modFiles.push_back(modFile);
 				}
 			}
 		}
 	}
-
 }
 
 void ModManager::CompileAssetsForFile(const char* filename)
