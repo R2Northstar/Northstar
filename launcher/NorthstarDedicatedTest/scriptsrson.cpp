@@ -2,6 +2,7 @@
 #include "modmanager.h"
 #include "scriptsrson.h"
 #include "filesystem.h"
+#include "squirrel.h"
 
 #include <sstream>
 #include <fstream>
@@ -21,11 +22,11 @@ void ModManager::BuildScriptsRson()
 	{
 		for (ModScript* script : mod->Scripts)
 		{
-			/* should create something with the format
+			/* should create something with this format for each script
 			When: "CONTEXT"
 			Scripts:
 			[
-				"_coolscript.gnut"
+				_coolscript.gnut
 			]*/
 
 			scriptsRson += "When: \"";
@@ -48,4 +49,7 @@ void ModManager::BuildScriptsRson()
 	overrideFile->owningMod = nullptr;
 	overrideFile->path = "scripts/vscripts/scripts.rson";
 	m_modFiles.push_back(overrideFile);
+
+	// todo: for preventing dupe scripts in scripts.rson, we could actually parse when conditions with the squirrel vm, just need a way to get a result out of squirrelmanager.ExecuteCode
+	// this would probably be the best way to do this, imo
 }

@@ -44,15 +44,22 @@ typedef SQInteger(*SQFunction)(void* sqvm);
 
 template<Context context> class SquirrelManager
 {
-private:
-	//std::vector<
-
 public:
 	void* sqvm;
 
 public:
 	SquirrelManager() : sqvm(nullptr)
 	{}
+
+	void VMCreated(void* sqvm)
+	{
+		sqvm = sqvm;
+	}
+
+	void VMDestroyed()
+	{
+		sqvm = nullptr;
+	}
 
 	void ExecuteCode(const char* code)
 	{
