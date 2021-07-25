@@ -43,6 +43,9 @@ sq_pushroottableType ServerSq_pushroottable;
 sq_callType ClientSq_call;
 sq_callType ServerSq_call;
 
+RegisterSquirrelFuncType ClientRegisterSquirrelFunc;
+RegisterSquirrelFuncType ServerRegisterSquirrelFunc;
+
 template<Context context> void ExecuteCodeCommand(const CCommand& args);
 
 // inits
@@ -50,24 +53,32 @@ SquirrelManager<CLIENT>* g_ClientSquirrelManager;
 SquirrelManager<SERVER>* g_ServerSquirrelManager;
 SquirrelManager<UI>* g_UISquirrelManager;
 
+SQInteger NSTestFunc(void* sqvm)
+{
+	return 1;
+}
+
 void InitialiseClientSquirrel(HMODULE baseAddress)
 {
 	HookEnabler hook;
 
 	// client inits
 	g_ClientSquirrelManager = new SquirrelManager<CLIENT>();
+
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x12B00, &SQPrintHook<CLIENT>, reinterpret_cast<LPVOID*>(&ClientSQPrint)); // client print function
-	RegisterConCommand("script_client", ExecuteCodeCommand<CLIENT>, "Executes script code in the client vm", FCVAR_CLIENTDLL);
+	RegisterConCommand("script_client", ExecuteCodeCommand<CLIENT>, "Executes script code on the client vm", FCVAR_CLIENTDLL);
 
 	// ui inits
 	g_UISquirrelManager = new SquirrelManager<UI>();
+
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x12BA0, &SQPrintHook<UI>, reinterpret_cast<LPVOID*>(&UISQPrint)); // ui print function
-	RegisterConCommand("script_ui", ExecuteCodeCommand<UI>, "Executes script code in the client vm", FCVAR_CLIENTDLL);
+	RegisterConCommand("script_ui", ExecuteCodeCommand<UI>, "Executes script code on the ui vm", FCVAR_CLIENTDLL);
 
 	// inits for both client and ui, since they share some functions
 	ClientSq_compilebuffer = (sq_compilebufferType)((char*)baseAddress + 0x3110);
 	ClientSq_pushroottable = (sq_pushroottableType)((char*)baseAddress + 0x5860);
 	ClientSq_call = (sq_callType)((char*)baseAddress + 0x8650);
+	ClientRegisterSquirrelFunc = (RegisterSquirrelFuncType)((char*)baseAddress + 0x108E0);
 
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x26130, &CreateNewVMHook<CLIENT>, reinterpret_cast<LPVOID*>(&ClientCreateNewVM)); // client createnewvm function
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x26E70, &DestroyVMHook<CLIENT>, reinterpret_cast<LPVOID*>(&ClientDestroyVM)); // client destroyvm function
@@ -84,13 +95,14 @@ void InitialiseServerSquirrel(HMODULE baseAddress)
 	ServerSq_compilebuffer = (sq_compilebufferType)((char*)baseAddress + 0x3110);
 	ServerSq_pushroottable = (sq_pushroottableType)((char*)baseAddress + 0x5840);
 	ServerSq_call = (sq_callType)((char*)baseAddress + 0x8620);
+	ServerRegisterSquirrelFunc = (RegisterSquirrelFuncType)((char*)baseAddress + 0x1DDD10);
 
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1FE90, &SQPrintHook<SERVER>, reinterpret_cast<LPVOID*>(&ServerSQPrint)); // server print function
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x260E0, &CreateNewVMHook<SERVER>, reinterpret_cast<LPVOID*>(&ServerCreateNewVM)); // server createnewvm function
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x26E20, &DestroyVMHook<SERVER>, reinterpret_cast<LPVOID*>(&ServerDestroyVM)); // server destroyvm function
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x799E0, &ScriptCompileErrorHook<SERVER>, reinterpret_cast<LPVOID*>(&ServerSQCompileError)); // server compileerror function
 
-	RegisterConCommand("script", ExecuteCodeCommand<SERVER>, "Executes script code in the server vm", FCVAR_GAMEDLL);
+	RegisterConCommand("script", ExecuteCodeCommand<SERVER>, "Executes script code on the server vm", FCVAR_GAMEDLL);
 }
 
 // hooks
@@ -244,7 +256,52 @@ template<Context context> char CallScriptInitCallbackHook(void* sqvm, const char
 	}
 	else if (context == SERVER)
 	{
-		// todo lol
+		// since we don't hook arbitrary callbacks yet, make sure we're only doing callbacks on inits
+		bool shouldCallCustomCallbacks = !strcmp(callback, "CodeCallback_MapSpawn");
+
+		// run before callbacks
+		// todo: we need to verify if RunOn is valid for current state before calling callbacks
+		if (shouldCallCustomCallbacks)
+		{
+			for (Mod* mod : g_ModManager->m_loadedMods)
+			{
+				for (ModScript* script : mod->Scripts)
+				{
+					for (ModScriptCallback* modCallback : script->Callbacks)
+					{
+						if (modCallback->Context == SERVER && modCallback->BeforeCallback.length())
+						{
+							spdlog::info("Running custom {} script callback \"{}\"", GetContextName(context), modCallback->BeforeCallback);
+							ServerCallScriptInitCallback(sqvm, modCallback->BeforeCallback.c_str());
+						}
+					}
+				}
+			}
+		}
+
+		spdlog::info("{} CodeCallback {} called", GetContextName(context), callback);
+		if (!shouldCallCustomCallbacks)
+			spdlog::info("Not executing custom callbacks for CodeCallback {}", callback);
+		ret = ServerCallScriptInitCallback(sqvm, callback);
+
+		// run after callbacks
+		if (shouldCallCustomCallbacks)
+		{
+			for (Mod* mod : g_ModManager->m_loadedMods)
+			{
+				for (ModScript* script : mod->Scripts)
+				{
+					for (ModScriptCallback* modCallback : script->Callbacks)
+					{
+						if (modCallback->Context == SERVER  && modCallback->AfterCallback.length())
+						{
+							spdlog::info("Running custom {} script callback \"{}\"", GetContextName(context), modCallback->AfterCallback);
+							ClientCallScriptInitCallback(sqvm, modCallback->AfterCallback.c_str());
+						}
+					}
+				}
+			}
+		}
 	}
 
 	return ret;
