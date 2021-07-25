@@ -125,7 +125,7 @@ template<Context context> void* CreateNewVMHook(void* a1, Context realContext)
 		if (realContext == UI)
 			g_UISquirrelManager->VMCreated(sqvm);
 		else
-			g_ClientSquirrelManager->VMCreated(sqvm)
+			g_ClientSquirrelManager->VMCreated(sqvm);
 	}
 	else if (context == SERVER)
 	{
