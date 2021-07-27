@@ -5,9 +5,7 @@
 #include <fstream>
 #include <filesystem>
 
-// hooks
-typedef void(*RejectClientType)(void* a1, const char* a2, void* player, const char* fmt, ...);
-RejectClientType RejectClient;
+// hook types
 
 typedef void*(*CBaseServer__ConnectClientType)(void* server, void* a2, void* a3, uint32_t a4, uint32_t a5, int32_t a6, void* a7, void* a8, char* serverFilter, void* a10, char a11, void* a12, char a13, char a14, void* a15, uint32_t a16, uint32_t a17);
 CBaseServer__ConnectClientType CBaseServer__ConnectClient;
@@ -15,21 +13,24 @@ CBaseServer__ConnectClientType CBaseServer__ConnectClient;
 typedef char(*CBaseClient__ConnectType)(void* self, char* name, __int64 netchan_ptr_arg, char b_fake_player_arg, __int64 a5, char* Buffer, int a7);
 CBaseClient__ConnectType CBaseClient__Connect;
 
+typedef void(*CBaseClient__ActivatePlayerType)(void* self);
+CBaseClient__ActivatePlayerType CBaseClient__ActivatePlayer;
+
+typedef void(*CBaseClient__DisconnectType)(void* self, uint32_t unknownButAlways1, const char* reason, ...);
+CBaseClient__DisconnectType CBaseClient__Disconnect;
+
 // global vars
 ServerAuthenticationManager* g_ServerAuthenticationManager;
 
 ConVar* CVar_ns_auth_allow_insecure;
 ConVar* CVar_ns_auth_allow_insecure_write;
 
-ServerAuthenticationManager::ServerAuthenticationManager() : m_authData(std::unordered_map<std::string, AuthData*>())
-{}
-
 void ServerAuthenticationManager::AddPlayerAuth(char* authToken, char* uid, char* pdata, size_t pdataSize)
 {
 	
 }
 
-bool ServerAuthenticationManager::AuthenticatePlayer(__int64 player, char* authToken)
+bool ServerAuthenticationManager::AuthenticatePlayer(void* player, char* authToken)
 {
 	// straight up just given up
 	if (!m_authData.empty() && m_authData.count(authToken))
@@ -42,19 +43,19 @@ bool ServerAuthenticationManager::AuthenticatePlayer(__int64 player, char* authT
 
 		// copy pdata into buffer
 		memcpy((char*)player + 0x4FA, authData->pdata, authData->pdataSize);
+
+		// set persistent data as ready, we use 0x4 internally to mark the client as using remote persistence
+		*((char*)player + 0x4a0) = (char)0x4;
 	}
 	else
 	{
 		if (!CVar_ns_auth_allow_insecure->m_nValue) // no auth data and insecure connections aren't allowed, so dc the client
 			return false;
 
-		spdlog::info("wtf");
-		spdlog::info(player);
-
-		// no auth data available and insecure connections are allowed, try reading from disk, using authtoken as uid
+		// insecure connections are allowed, try reading from disk, using authtoken as uid
 		
 		// uuid
-		strcpy((char*)(player + 0xF500), authToken);
+		strcpy((char*)player + 0xF500, authToken);
 
 		// try reading pdata file for player
 		std::string pdataPath = "playerdata/playerdata_";
@@ -71,16 +72,32 @@ bool ServerAuthenticationManager::AuthenticatePlayer(__int64 player, char* authT
 		pdataStream.seekg(0, pdataStream.beg);
 
 		// copy pdata into buffer
-		
+		pdataStream.read((char*)player + 0x4FA, length);
 
-		pdataStream.read((char*)(player + 0x4FA), length);
+		pdataStream.close();
+
+		// set persistent data as ready, we use 0x3 internally to mark the client as using local persistence
+		*((char*)player + 0x4a0) = (char)0x3;
 	}
-
-	// set persistent data as ready
-	*(char*)(player + 0x4a0) = (char)0x3;
 
 	return true; // auth successful, client stays on
 }
+
+void ServerAuthenticationManager::WritePersistentData(void* player)
+{
+	// we use 0x4 internally to mark clients as using remote persistence
+	if (*((char*)player + 0x4A0) == (char)0x4)
+	{
+
+	}
+	else if (CVar_ns_auth_allow_insecure_write->m_nValue)
+	{
+		// todo: write pdata to disk here
+	}
+}
+
+
+// auth hooks
 
 // store this in a var so we can use it in CBaseClient::Connect
 // this is fine because serverfilter ptr won't decay by the time we use this
@@ -96,35 +113,70 @@ void* CBaseServer__ConnectClientHook(void* server, void* a2, void* a3, uint32_t 
 
 char CBaseClient__ConnectHook(void* self, char* name, __int64 netchan_ptr_arg, char b_fake_player_arg, __int64 a5, char* Buffer, int a7)
 {
-	if (!g_ServerAuthenticationManager->AuthenticatePlayer((__int64)self, nextPlayerToken))
-	{
-		//RejectClient(nullptr, "Authentication failed", self, "Authentication failed");
-		//return 0;
-	}
+	// try to auth player, dc if it fails
+	// we connect irregardless of auth, because returning bad from this function can fuck client state p bad
+	char ret = CBaseClient__Connect(self, name, netchan_ptr_arg, b_fake_player_arg, a5, Buffer, a7);
+	if (!g_ServerAuthenticationManager->AuthenticatePlayer(self, nextPlayerToken))
+		CBaseClient__Disconnect(self, 1, "Authentication Failed");
 
-	return CBaseClient__Connect(self, name, netchan_ptr_arg, b_fake_player_arg, a5, Buffer, a7);
+	return ret;
+}
+
+void CBaseClient__ActivatePlayerHook(void* self)
+{
+	// check whether we're authed, todo: need to only write persistence on/after second call to this per player
+	// todo: also need to remove authdata here
+	if (*((char*)self + 0x4A0) >= (char)0x3)
+	{
+		CBaseClient__ActivatePlayer(self);
+		g_ServerAuthenticationManager->WritePersistentData(self);
+	}
+}
+
+void CBaseClient__DisconnectHook(void* self, uint32_t unknownButAlways1, const char* reason, ...)
+{
+	// have to manually format message because can't pass varargs to original func
+	char buf[1024];
+
+	va_list va;
+	va_start(va, reason);
+	vsprintf(buf, reason, va);
+	va_end(va);
+
+	// dcing, write persistent data
+	g_ServerAuthenticationManager->WritePersistentData(self);
+
+	CBaseClient__Disconnect(self, unknownButAlways1, buf);
 }
 
 void InitialiseServerAuthentication(HMODULE baseAddress)
 {
 	g_ServerAuthenticationManager = new ServerAuthenticationManager;
 
-	RejectClient = (RejectClientType)((char*)baseAddress + 0x1182E0);
-
 	CVar_ns_auth_allow_insecure = RegisterConVar("ns_auth_allow_insecure", "0", FCVAR_GAMEDLL, "Whether this server will allow unauthenicated players to connect");
 	CVar_ns_auth_allow_insecure_write = RegisterConVar("ns_auth_allow_insecure_write", "0", FCVAR_GAMEDLL, "Whether the pdata of unauthenticated clients will be written to disk when changed");
-
-	spdlog::info((void*)CVar_ns_auth_allow_insecure);
-	spdlog::info((void*)&CVar_ns_auth_allow_insecure->m_nValue);
 
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x114430, &CBaseServer__ConnectClientHook, reinterpret_cast<LPVOID*>(&CBaseServer__ConnectClient));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x101740, &CBaseClient__ConnectHook, reinterpret_cast<LPVOID*>(&CBaseClient__Connect));
+	//ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x100F80, &CBaseClient__ActivatePlayerHook, reinterpret_cast<LPVOID*>(&CBaseClient__ActivatePlayer));
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1012C0, &CBaseClient__DisconnectHook, reinterpret_cast<LPVOID*>(&CBaseClient__Disconnect));
 
 	// patch to disable kicking based on incorrect serverfilter in connectclient, since we repurpose it for use as an auth token
 	{
 		void* ptr = (char*)baseAddress + 0x114655;
 		TempReadWrite rw(ptr);
 		*((char*)ptr) = (char)0xEB; // jz => jmp
+	}
+
+	// patch to disable fairfight marking players as cheaters and kicking them
+	{
+		void* ptr = (char*)baseAddress + 0x101012;
+		TempReadWrite rw(ptr);
+		*((char*)ptr) = (char)0xE9; // jz => jmp
+		*((char*)ptr + 1) = (char)0x90;
+		*((char*)ptr + 2) = (char)0x0;
+
+		*((char*)ptr + 5) = (char)0x90; // nop extra byte we no longer use
 	}
 }
