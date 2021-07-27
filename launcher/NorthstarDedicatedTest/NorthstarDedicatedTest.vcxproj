@@ -308,6 +308,7 @@
     <ClInclude Include="modmanager.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="scriptsrson.h" />
+    <ClInclude Include="serverauthentication.h" />
     <ClInclude Include="sigscanning.h" />
     <ClInclude Include="sourceconsole.h" />
     <ClInclude Include="sourceinterface.h" />
@@ -332,6 +333,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="scriptsrson.cpp" />
+    <ClCompile Include="serverauthentication.cpp" />
     <ClCompile Include="sigscanning.cpp" />
     <ClCompile Include="sourceconsole.cpp" />
     <ClCompile Include="sourceinterface.cpp" />

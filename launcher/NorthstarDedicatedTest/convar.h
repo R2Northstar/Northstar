@@ -64,14 +64,14 @@ class ConCommand;
 // also i sure do hope this size is right because there's a fairly decent chance it isn't
 class ConVar
 {
-private:
+public:
 	// if there are ever crashes caused by modifying custom cvars, check this
-	unsigned char unknown[0x58];
+	unsigned char unknown[0x40];
     char* m_pszString;
-    int64_t m_StringLength;
+    size_t m_StringLength;
     float m_fValue;
     int32_t m_nValue;
-    unsigned char unknown2[0x10];
+    unsigned char unknown2[0x28];
 
 public:
     virtual	void    			EngineDestructor(void) {}

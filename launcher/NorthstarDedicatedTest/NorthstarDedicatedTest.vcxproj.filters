@@ -88,6 +88,18 @@
     <Filter Include="Source Files\Shared\Mods\Compiled">
       <UniqueIdentifier>{14fc0931-acad-46ec-a55e-94f4469d4235}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Server">
+      <UniqueIdentifier>{3d41d3fc-8a3b-4358-b3e8-4f06dc96abfe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Server\Authentication">
+      <UniqueIdentifier>{d69760a9-d5ec-4f3e-8f43-f74041654d44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Server">
+      <UniqueIdentifier>{365e5c1f-4b2f-4d8b-a1d8-cdef401ca689}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Server\Authentication">
+      <UniqueIdentifier>{24fd0855-9288-4129-93ba-c6cafdc98d1b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -519,6 +531,9 @@
     <ClInclude Include="scriptsrson.h">
       <Filter>Header Files\Shared\Mods\Compiled</Filter>
     </ClInclude>
+    <ClInclude Include="serverauthentication.h">
+      <Filter>Header Files\Server\Authentication</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -571,6 +586,9 @@
     </ClCompile>
     <ClCompile Include="scriptsrson.cpp">
       <Filter>Source Files\Shared\Mods\Compiled</Filter>
+    </ClCompile>
+    <ClCompile Include="serverauthentication.cpp">
+      <Filter>Source Files\Server\Authentication</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

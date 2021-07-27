@@ -162,12 +162,6 @@ Mod::Mod(fs::path modDir, char* jsonBuf)
 		}
 	}
 
-	// vpk stuff
-	if (fs::exists(modDir / "vpk"))
-		for (fs::directory_entry file : fs::directory_iterator(modDir / "vpk"))
-			if (fs::is_regular_file(file) && file.path().extension() == "vpk")
-				Vpks.push_back(file.path().string());
-
 	wasReadSuccessfully = true;
 }
 
@@ -239,6 +233,12 @@ void ModManager::LoadMods()
 		for (ModConVar* convar : mod->ConVars)
 			if (g_CustomConvars.find(convar->Name) == g_CustomConvars.end()) // make sure convar isn't registered yet, unsure if necessary but idk what behaviour is for defining same convar multiple times
 				RegisterConVar(convar->Name.c_str(), convar->DefaultValue.c_str(), convar->Flags, convar->HelpString.c_str());
+
+		// read vpk paths
+		if (fs::exists(mod->ModDirectory / "vpk"))
+			for (fs::directory_entry file : fs::directory_iterator(mod->ModDirectory / "vpk"))
+				if (fs::is_regular_file(file) && file.path().extension() == "vpk")
+					mod->Vpks.push_back(file.path().string());
 	}
 
 	// in a seperate loop because we register mod files in reverse order, since mods loaded later should have their files prioritised
