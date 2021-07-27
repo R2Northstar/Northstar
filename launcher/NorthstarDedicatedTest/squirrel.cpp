@@ -89,18 +89,20 @@ void InitialiseClientSquirrel(HMODULE baseAddress)
 void InitialiseServerSquirrel(HMODULE baseAddress)
 {
 	g_ServerSquirrelManager = new SquirrelManager<SERVER>();
+	g_ServerSquirrelManager->AddFuncRegistration("void", "SavePdataForEntityIndex", "int i", "idk", NSTestFunc);
 
 	HookEnabler hook;
 
 	ServerSq_compilebuffer = (sq_compilebufferType)((char*)baseAddress + 0x3110);
 	ServerSq_pushroottable = (sq_pushroottableType)((char*)baseAddress + 0x5840);
 	ServerSq_call = (sq_callType)((char*)baseAddress + 0x8620);
-	ServerRegisterSquirrelFunc = (RegisterSquirrelFuncType)((char*)baseAddress + 0x1DDD10);
+	ServerRegisterSquirrelFunc = (RegisterSquirrelFuncType)((char*)baseAddress + 0x1DD10);
 
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1FE90, &SQPrintHook<SERVER>, reinterpret_cast<LPVOID*>(&ServerSQPrint)); // server print function
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x260E0, &CreateNewVMHook<SERVER>, reinterpret_cast<LPVOID*>(&ServerCreateNewVM)); // server createnewvm function
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x26E20, &DestroyVMHook<SERVER>, reinterpret_cast<LPVOID*>(&ServerDestroyVM)); // server destroyvm function
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x799E0, &ScriptCompileErrorHook<SERVER>, reinterpret_cast<LPVOID*>(&ServerSQCompileError)); // server compileerror function
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1D5C0, &CallScriptInitCallbackHook<SERVER>, reinterpret_cast<LPVOID*>(&ServerCallScriptInitCallback)); // server callscriptinitcallback function
 
 	RegisterConCommand("script", ExecuteCodeCommand<SERVER>, "Executes script code on the server vm", FCVAR_GAMEDLL);
 }

@@ -8,6 +8,7 @@
 #include "concommand.h"
 #include "modmanager.h"
 #include "filesystem.h"
+#include "serverauthentication.h"
 #include <iostream>
 
 bool initialised = false;
@@ -56,6 +57,7 @@ void InitialiseNorthstar()
     }
 
     AddDllLoadCallback("server.dll", InitialiseServerSquirrel);
+    AddDllLoadCallback("engine.dll", InitialiseServerAuthentication);
 
     AddDllLoadCallback("filesystem_stdio.dll", InitialiseFilesystem);
 
