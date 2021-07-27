@@ -17,9 +17,8 @@ public:
 	std::unordered_map<std::string, AuthData*> m_authData;
 
 public:
-	ServerAuthenticationManager();
 	void AddPlayerAuth(char* authToken, char* uid, char* pdata, size_t pdataSize);
-	bool AuthenticatePlayer(__int64 player, char* authToken);
+	bool AuthenticatePlayer(void* player, char* authToken);
 	void WritePersistentData(void* player);
 };
 
