@@ -9,13 +9,13 @@
 #include <sstream>
 
 // hook forward declares
-typedef FileHandle_t(*ReadFileFromVPKType)(VPKData* vpkInfo, __int64* b, const char* filename);
+typedef FileHandle_t(*ReadFileFromVPKType)(VPKData* vpkInfo, __int64* b, char* filename);
 ReadFileFromVPKType readFileFromVPK;
-FileHandle_t ReadFileFromVPKHook(VPKData* vpkInfo, __int64* b, const char* filename);
+FileHandle_t ReadFileFromVPKHook(VPKData* vpkInfo, __int64* b, char* filename);
 
-typedef bool(*ReadFromCacheType)(IFileSystem* filesystem, const char* path, void* result);
+typedef bool(*ReadFromCacheType)(IFileSystem* filesystem, char* path, void* result);
 ReadFromCacheType readFromCache;
-bool ReadFromCacheHook(IFileSystem* filesystem, const char* path, void* result);
+bool ReadFromCacheHook(IFileSystem* filesystem, char* path, void* result);
 
 typedef void(*AddSearchPathType)(IFileSystem* fileSystem, const char* pPath, const char* pathID, SearchPathAdd_t addType);
 AddSearchPathType addSearchPathOriginal;
@@ -78,32 +78,31 @@ void SetNewModSearchPaths(Mod* mod)
 			currentModPath = (fs::absolute(mod->ModDirectory) / MOD_OVERRIDE_DIR).string();
 		}
 	}
-	else if (!currentModPath.size()) // if currentModPath isn't set yet, then push compiled to head
+	else // push compiled to head
 		addSearchPathOriginal(&*(*g_Filesystem), fs::absolute(COMPILED_ASSETS_PATH).string().c_str(), "GAME", PATH_ADD_TO_HEAD);
 
 }
 
-bool TryReplaceFile(const char* path)
+bool TryReplaceFile(char* path)
 {
 	if (readingOriginalFile)
 		return false;
 
 	(*g_ModManager).CompileAssetsForFile(path);
 
-	// is this efficient? could probably be improved
-	for (ModOverrideFile* modFile : g_ModManager->m_modFiles)
+	// idk how efficient the lexically normal check is
+	// can't just set all /s in path to \, since some paths aren't in writeable memory
+	auto file = g_ModManager->m_modFiles.find(fs::path(path).lexically_normal().string());
+	if (file != g_ModManager->m_modFiles.end())
 	{
-		if (!modFile->path.compare(fs::path(path).lexically_normal()))
-		{
-			SetNewModSearchPaths(modFile->owningMod);
-			return true;
-		}
+		SetNewModSearchPaths(file->second->owningMod);
+		return true;
 	}
 
 	return false;
 }
 
-FileHandle_t ReadFileFromVPKHook(VPKData* vpkInfo, __int64* b, const char* filename)
+FileHandle_t ReadFileFromVPKHook(VPKData* vpkInfo, __int64* b, char* filename)
 {
 	// move this to a convar at some point when we can read them in native
 	//spdlog::info("ReadFileFromVPKHook {} {}", filename, vpkInfo->path);
@@ -116,7 +115,7 @@ FileHandle_t ReadFileFromVPKHook(VPKData* vpkInfo, __int64* b, const char* filen
 	return readFileFromVPK(vpkInfo, b, filename);
 }
 
-bool ReadFromCacheHook(IFileSystem* filesystem, const char* path, void* result)
+bool ReadFromCacheHook(IFileSystem* filesystem, char* path, void* result)
 {
 	// move this to a convar at some point when we can read them in native
 	//spdlog::info("ReadFromCacheHook {}", path);

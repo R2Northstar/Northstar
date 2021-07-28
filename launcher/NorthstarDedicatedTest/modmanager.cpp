@@ -248,13 +248,15 @@ void ModManager::LoadMods()
 		{
 			for (fs::directory_entry file : fs::recursive_directory_iterator(m_loadedMods[i]->ModDirectory / MOD_OVERRIDE_DIR))
 			{
-				if (file.is_regular_file())
+				fs::path path = file.path().lexically_relative(m_loadedMods[i]->ModDirectory / MOD_OVERRIDE_DIR).lexically_normal();
+
+				if (file.is_regular_file() && m_modFiles.find(path.string()) == m_modFiles.end())
 				{
 					// super temp because it relies hard on load order
 					ModOverrideFile* modFile = new ModOverrideFile;
 					modFile->owningMod = m_loadedMods[i];
-					modFile->path = file.path().lexically_relative(m_loadedMods[i]->ModDirectory / MOD_OVERRIDE_DIR).lexically_normal();
-					m_modFiles.push_back(modFile);
+					modFile->path = path;
+					m_modFiles.insert(std::make_pair(path.string(), modFile));
 				}
 			}
 		}

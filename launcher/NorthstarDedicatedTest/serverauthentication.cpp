@@ -83,6 +83,23 @@ bool ServerAuthenticationManager::AuthenticatePlayer(void* player, char* authTok
 	return true; // auth successful, client stays on
 }
 
+bool ServerAuthenticationManager::RemovePlayerAuthData(void* player)
+{
+	// we don't have our auth token at this point, so lookup authdata by uid
+	for (auto& auth : m_authData)
+	{
+		if (!strcmp((char*)player + 0xF500, auth.second->uid))
+		{
+			// pretty sure this is fine, since we don't iterate after the erase
+			// i think if we iterated after it'd be undefined behaviour tho
+			m_authData.erase(auth.first);
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void ServerAuthenticationManager::WritePersistentData(void* player)
 {
 	// we use 0x4 internally to mark clients as using remote persistence
@@ -100,7 +117,7 @@ void ServerAuthenticationManager::WritePersistentData(void* player)
 // auth hooks
 
 // store this in a var so we can use it in CBaseClient::Connect
-// this is fine because serverfilter ptr won't decay by the time we use this
+// this is fine because serverfilter ptr won't decay by the time we use this, just don't use it outside of cbaseclient::connect
 char* nextPlayerToken;
 
 void* CBaseServer__ConnectClientHook(void* server, void* a2, void* a3, uint32_t a4, uint32_t a5, int32_t a6, void* a7, void* a8, char* serverFilter, void* a10, char a11, void* a12, char a13, char a14, void* a15, uint32_t a16, uint32_t a17)
@@ -116,7 +133,9 @@ char CBaseClient__ConnectHook(void* self, char* name, __int64 netchan_ptr_arg, c
 	// try to auth player, dc if it fails
 	// we connect irregardless of auth, because returning bad from this function can fuck client state p bad
 	char ret = CBaseClient__Connect(self, name, netchan_ptr_arg, b_fake_player_arg, a5, Buffer, a7);
-	if (!g_ServerAuthenticationManager->AuthenticatePlayer(self, nextPlayerToken))
+	if (strlen(name) >= 64) // fix for name overflow bug
+		CBaseClient__Disconnect(self, 1, "Invalid name");
+	else if (!g_ServerAuthenticationManager->AuthenticatePlayer(self, nextPlayerToken))
 		CBaseClient__Disconnect(self, 1, "Authentication Failed");
 
 	return ret;
@@ -124,13 +143,12 @@ char CBaseClient__ConnectHook(void* self, char* name, __int64 netchan_ptr_arg, c
 
 void CBaseClient__ActivatePlayerHook(void* self)
 {
-	// check whether we're authed, todo: need to only write persistence on/after second call to this per player
-	// todo: also need to remove authdata here
-	if (*((char*)self + 0x4A0) >= (char)0x3)
-	{
-		CBaseClient__ActivatePlayer(self);
+	// if we're authed, write our persistent data
+	// RemovePlayerAuthData returns true if it removed successfully, i.e. on first call only, and we only want to write on >= second call (since this func is called on map loads)
+	if (*((char*)self + 0x4A0) >= (char)0x3 && !g_ServerAuthenticationManager->RemovePlayerAuthData(self))
 		g_ServerAuthenticationManager->WritePersistentData(self);
-	}
+
+	CBaseClient__ActivatePlayer(self);
 }
 
 void CBaseClient__DisconnectHook(void* self, uint32_t unknownButAlways1, const char* reason, ...)
@@ -159,7 +177,7 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x114430, &CBaseServer__ConnectClientHook, reinterpret_cast<LPVOID*>(&CBaseServer__ConnectClient));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x101740, &CBaseClient__ConnectHook, reinterpret_cast<LPVOID*>(&CBaseClient__Connect));
-	//ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x100F80, &CBaseClient__ActivatePlayerHook, reinterpret_cast<LPVOID*>(&CBaseClient__ActivatePlayer));
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x100F80, &CBaseClient__ActivatePlayerHook, reinterpret_cast<LPVOID*>(&CBaseClient__ActivatePlayer));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1012C0, &CBaseClient__DisconnectHook, reinterpret_cast<LPVOID*>(&CBaseClient__Disconnect));
 
 	// patch to disable kicking based on incorrect serverfilter in connectclient, since we repurpose it for use as an auth token
