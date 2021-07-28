@@ -92,7 +92,8 @@ class ModManager
 {
 public:
 	std::vector<Mod*> m_loadedMods;
-	std::vector<ModOverrideFile*> m_modFiles;
+	//std::vector<ModOverrideFile*> m_modFiles;
+	std::unordered_map<std::string, ModOverrideFile*> m_modFiles;
 
 public:
 	ModManager();
