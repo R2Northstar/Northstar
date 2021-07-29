@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "modmanager.h"
 #include "convar.h"
+#include "concommand.h"
 
 #include "rapidjson/error/en.h"
 #include "rapidjson/document.h"
@@ -272,7 +273,14 @@ void ModManager::CompileAssetsForFile(const char* filename)
 	
 }
 
+void ReloadModsCommand(const CCommand& args)
+{
+	g_ModManager->LoadMods();
+}
+
 void InitialiseModManager(HMODULE baseAddress)
 {
 	g_ModManager = new ModManager();
+
+	RegisterConCommand("reload_mods", ReloadModsCommand, "idk", FCVAR_NONE);
 }
