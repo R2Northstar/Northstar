@@ -9,7 +9,7 @@
 #include "modmanager.h"
 #include "filesystem.h"
 #include "serverauthentication.h"
-#include <iostream>
+#include "scriptmodmenu.h"
 
 bool initialised = false;
 
@@ -53,7 +53,9 @@ void InitialiseNorthstar()
     if (!IsDedicated())
     {
         AddDllLoadCallback("client.dll", InitialiseClientSquirrel);
+
         AddDllLoadCallback("client.dll", InitialiseSourceConsole);
+        AddDllLoadCallback("client.dll", InitialiseScriptModMenu);
     }
 
     AddDllLoadCallback("server.dll", InitialiseServerSquirrel);

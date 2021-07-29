@@ -307,6 +307,7 @@
     <ClInclude Include="main.h" />
     <ClInclude Include="modmanager.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="scriptmodmenu.h" />
     <ClInclude Include="scriptsrson.h" />
     <ClInclude Include="serverauthentication.h" />
     <ClInclude Include="sigscanning.h" />
@@ -332,6 +333,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="scriptmodmenu.cpp" />
     <ClCompile Include="scriptsrson.cpp" />
     <ClCompile Include="serverauthentication.cpp" />
     <ClCompile Include="sigscanning.cpp" />

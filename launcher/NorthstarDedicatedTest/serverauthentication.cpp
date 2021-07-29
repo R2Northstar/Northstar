@@ -19,11 +19,15 @@ CBaseClient__ActivatePlayerType CBaseClient__ActivatePlayer;
 typedef void(*CBaseClient__DisconnectType)(void* self, uint32_t unknownButAlways1, const char* reason, ...);
 CBaseClient__DisconnectType CBaseClient__Disconnect;
 
+typedef char(*CGameClient__ExecuteStringCommandType)(void* self, uint32_t unknown, const char* pCommandString);
+CGameClient__ExecuteStringCommandType CGameClient__ExecuteStringCommand;
+
 // global vars
 ServerAuthenticationManager* g_ServerAuthenticationManager;
 
 ConVar* CVar_ns_auth_allow_insecure;
 ConVar* CVar_ns_auth_allow_insecure_write;
+ConVar* CVar_sv_quota_stringcmdspersecond;
 
 void ServerAuthenticationManager::AddPlayerAuth(char* authToken, char* uid, char* pdata, size_t pdataSize)
 {
@@ -167,18 +171,28 @@ void CBaseClient__DisconnectHook(void* self, uint32_t unknownButAlways1, const c
 	CBaseClient__Disconnect(self, unknownButAlways1, buf);
 }
 
+// maybe this should be done outside of auth code, but effort to refactor rn and it sorta fits
+char CGameClient__ExecuteStringCommandHook(void* self, uint32_t unknown, const char* pCommandString)
+{
+	// todo later, basically just limit to CVar_sv_quota_stringcmdspersecond->m_nValue stringcmds per client per second
+	return CGameClient__ExecuteStringCommand(self, unknown, pCommandString);
+}
+
 void InitialiseServerAuthentication(HMODULE baseAddress)
 {
 	g_ServerAuthenticationManager = new ServerAuthenticationManager;
 
 	CVar_ns_auth_allow_insecure = RegisterConVar("ns_auth_allow_insecure", "0", FCVAR_GAMEDLL, "Whether this server will allow unauthenicated players to connect");
 	CVar_ns_auth_allow_insecure_write = RegisterConVar("ns_auth_allow_insecure_write", "0", FCVAR_GAMEDLL, "Whether the pdata of unauthenticated clients will be written to disk when changed");
+	// literally just stolen from a fix valve used in csgo
+	CVar_sv_quota_stringcmdspersecond = RegisterConVar("sv_quota_stringcmdspersecond", "40", FCVAR_NONE, "How many string commands per second clients are allowed to submit, 0 to disallow all string commands");
 
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x114430, &CBaseServer__ConnectClientHook, reinterpret_cast<LPVOID*>(&CBaseServer__ConnectClient));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x101740, &CBaseClient__ConnectHook, reinterpret_cast<LPVOID*>(&CBaseClient__Connect));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x100F80, &CBaseClient__ActivatePlayerHook, reinterpret_cast<LPVOID*>(&CBaseClient__ActivatePlayer));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1012C0, &CBaseClient__DisconnectHook, reinterpret_cast<LPVOID*>(&CBaseClient__Disconnect));
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1022E0, &CGameClient__ExecuteStringCommandHook, reinterpret_cast<LPVOID*>(&CGameClient__ExecuteStringCommand));
 
 	// patch to disable kicking based on incorrect serverfilter in connectclient, since we repurpose it for use as an auth token
 	{

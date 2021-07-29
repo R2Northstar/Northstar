@@ -12,6 +12,8 @@ typedef char SQChar;
 typedef SQUnsignedInteger SQBool;
 typedef SQInteger SQRESULT;
 
+typedef SQInteger(*SQFunction)(void* sqvm);
+
 struct CompileBufferState
 {
 	const SQChar* buffer;
@@ -53,6 +55,7 @@ struct SQFuncRegistration
 	}
 };
 
+// core sqvm funcs
 typedef SQRESULT(*sq_compilebufferType)(void* sqvm, CompileBufferState* compileBuffer, const char* file, int a1, int a2);
 extern sq_compilebufferType ClientSq_compilebuffer;
 extern sq_compilebufferType ServerSq_compilebuffer;
@@ -69,9 +72,44 @@ typedef int64_t(*RegisterSquirrelFuncType)(void* sqvm, SQFuncRegistration* funcR
 extern RegisterSquirrelFuncType ClientRegisterSquirrelFunc;
 extern RegisterSquirrelFuncType ServerRegisterSquirrelFunc;
 
-//template<Context context> void ExecuteSQCode(SquirrelManager<context> sqManager, const char* code); // need this because we can't do template class functions in the .cpp file
+// sq stack array funcs
+typedef void(*sq_newarrayType)(void* sqvm, SQInteger stackpos);
+extern sq_newarrayType ClientSq_newarray;
+extern sq_newarrayType ServerSq_newarray;
 
-typedef SQInteger(*SQFunction)(void* sqvm);
+typedef SQRESULT(*sq_arrayappendType)(void* sqvm, SQInteger stackpos);
+extern sq_arrayappendType ClientSq_arrayappend;
+extern sq_arrayappendType ServerSq_arrayappend;
+
+
+// sq stack push funcs
+typedef void(*sq_pushstringType)(void* sqvm, const SQChar* str, SQInteger stackpos);
+extern sq_pushstringType ClientSq_pushstring;
+extern sq_pushstringType ServerSq_pushstring;
+
+// weird how these don't take a stackpos arg?
+typedef void(*sq_pushintegerType)(void* sqvm, SQInteger i);
+extern sq_pushintegerType ClientSq_pushinteger;
+extern sq_pushintegerType ServerSq_pushinteger;
+
+typedef void(*sq_pushfloatType)(void* sqvm, SQFloat f);
+extern sq_pushfloatType ClientSq_pushfloat;
+extern sq_pushfloatType ServerSq_pushfloat;
+
+
+// sq stack get funcs
+typedef const SQChar*(*sq_getstringType)(void* sqvm, SQInteger stackpos);
+extern sq_getstringType ClientSq_getstring;
+extern sq_getstringType ServerSq_getstring;
+
+typedef SQInteger(*sq_getintegerType)(void* sqvm, SQInteger stackpos);
+extern sq_getintegerType ClientSq_getinteger;
+extern sq_getintegerType ServerSq_getinteger;
+
+typedef SQFloat(*sq_getfloatType)(void*, SQInteger stackpos);
+extern sq_getfloatType ClientSq_getfloat;
+extern sq_getfloatType ServerSq_getfloat;
+
 
 template<Context context> class SquirrelManager
 {

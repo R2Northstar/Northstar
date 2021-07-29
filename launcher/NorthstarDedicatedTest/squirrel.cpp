@@ -34,6 +34,7 @@ CallScriptInitCallbackType ClientCallScriptInitCallback;
 CallScriptInitCallbackType ServerCallScriptInitCallback;
 template<Context context> char CallScriptInitCallbackHook(void* sqvm, const char* callback);
 
+// core sqvm funcs
 sq_compilebufferType ClientSq_compilebuffer;
 sq_compilebufferType ServerSq_compilebuffer;
 
@@ -45,6 +46,37 @@ sq_callType ServerSq_call;
 
 RegisterSquirrelFuncType ClientRegisterSquirrelFunc;
 RegisterSquirrelFuncType ServerRegisterSquirrelFunc;
+
+
+// sq stack array funcs
+sq_newarrayType ClientSq_newarray;
+sq_newarrayType ServerSq_newarray;
+
+sq_arrayappendType ClientSq_arrayappend;
+sq_arrayappendType ServerSq_arrayappend;
+
+
+// sq stack push funcs
+sq_pushstringType ClientSq_pushstring;
+sq_pushstringType ServerSq_pushstring;
+
+sq_pushintegerType ClientSq_pushinteger;
+sq_pushintegerType ServerSq_pushinteger;
+
+sq_pushfloatType ClientSq_pushfloat;
+sq_pushfloatType ServerSq_pushfloat;
+
+
+// sq stack get funcs
+sq_getstringType ClientSq_getstring;
+sq_getstringType ServerSq_getstring;
+
+sq_getintegerType ClientSq_getinteger;
+sq_getintegerType ServerSq_getinteger;
+
+sq_getfloatType ClientSq_getfloat;
+sq_getfloatType ServerSq_getfloat;
+
 
 template<Context context> void ExecuteCodeCommand(const CCommand& args);
 
@@ -80,6 +112,17 @@ void InitialiseClientSquirrel(HMODULE baseAddress)
 	ClientSq_call = (sq_callType)((char*)baseAddress + 0x8650);
 	ClientRegisterSquirrelFunc = (RegisterSquirrelFuncType)((char*)baseAddress + 0x108E0);
 
+	ClientSq_newarray = (sq_newarrayType)((char*)baseAddress + 0x39F0);
+	ClientSq_arrayappend = (sq_arrayappendType)((char*)baseAddress + 0x3C70);
+
+	ClientSq_pushstring = (sq_pushstringType)((char*)baseAddress + 0x3440);
+	ClientSq_pushinteger = (sq_pushintegerType)((char*)baseAddress + 0x36A0);
+	ClientSq_pushfloat = (sq_pushfloatType)((char*)baseAddress + 0x3800);
+
+	ClientSq_getstring = (sq_getstringType)((char*)baseAddress + 0x60C0);
+	ClientSq_getinteger = (sq_getintegerType)((char*)baseAddress + 0x60E0);
+	ClientSq_getfloat = (sq_getfloatType)((char*)baseAddress + 0x6100);
+
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x26130, &CreateNewVMHook<CLIENT>, reinterpret_cast<LPVOID*>(&ClientCreateNewVM)); // client createnewvm function
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x26E70, &DestroyVMHook<CLIENT>, reinterpret_cast<LPVOID*>(&ClientDestroyVM)); // client destroyvm function
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x79A50, &ScriptCompileErrorHook<CLIENT>, reinterpret_cast<LPVOID*>(&ClientSQCompileError)); // client compileerror function
@@ -97,6 +140,17 @@ void InitialiseServerSquirrel(HMODULE baseAddress)
 	ServerSq_pushroottable = (sq_pushroottableType)((char*)baseAddress + 0x5840);
 	ServerSq_call = (sq_callType)((char*)baseAddress + 0x8620);
 	ServerRegisterSquirrelFunc = (RegisterSquirrelFuncType)((char*)baseAddress + 0x1DD10);
+
+	ServerSq_newarray = (sq_newarrayType)((char*)baseAddress + 0x39F0);
+	ServerSq_arrayappend = (sq_arrayappendType)((char*)baseAddress + 0x3C70);
+	
+	ServerSq_pushstring = (sq_pushstringType)((char*)baseAddress + 0x3440);
+	ServerSq_pushinteger = (sq_pushintegerType)((char*)baseAddress + 0x36A0);
+	ServerSq_pushfloat = (sq_pushfloatType)((char*)baseAddress + 0x3800);
+
+	ServerSq_getstring = (sq_getstringType)((char*)baseAddress + 0x60A0);
+	ServerSq_getinteger = (sq_getintegerType)((char*)baseAddress + 0x60C0);
+	ServerSq_getfloat = (sq_getfloatType)((char*)baseAddress + 0x60E0);
 
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1FE90, &SQPrintHook<SERVER>, reinterpret_cast<LPVOID*>(&ServerSQPrint)); // server print function
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x260E0, &CreateNewVMHook<SERVER>, reinterpret_cast<LPVOID*>(&ServerCreateNewVM)); // server createnewvm function

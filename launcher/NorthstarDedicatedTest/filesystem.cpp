@@ -21,6 +21,10 @@ typedef void(*AddSearchPathType)(IFileSystem* fileSystem, const char* pPath, con
 AddSearchPathType addSearchPathOriginal;
 void AddSearchPathHook(IFileSystem* fileSystem, const char* pPath, const char* pathID, SearchPathAdd_t addType);
 
+typedef FileHandle_t(*ReadFileFromFilesystemType)(IFileSystem* filesystem, const char* pPath, const char* pOptions, int64_t a4, uint32_t a5);
+ReadFileFromFilesystemType readFileFromFilesystem;
+FileHandle_t ReadFileFromFilesystemHook(IFileSystem* filesystem, const char* pPath, const char* pOptions, int64_t a4, uint32_t a5);
+
 bool readingOriginalFile;
 std::string currentModPath;
 SourceInterface<IFileSystem>* g_Filesystem;
@@ -34,6 +38,7 @@ void InitialiseFilesystem(HMODULE baseAddress)
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x5CBA0, &ReadFileFromVPKHook, reinterpret_cast<LPVOID*>(&readFileFromVPK));
 	ENABLER_CREATEHOOK(hook, (*g_Filesystem)->m_vtable->ReadFromCache, &ReadFromCacheHook, reinterpret_cast<LPVOID*>(&readFromCache));
 	ENABLER_CREATEHOOK(hook, (*g_Filesystem)->m_vtable->AddSearchPath, &AddSearchPathHook, reinterpret_cast<LPVOID*>(&addSearchPathOriginal));
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x15F20, &ReadFileFromFilesystemHook, reinterpret_cast<LPVOID*>(&readFileFromFilesystem));
 }
 
 std::string ReadVPKFile(const char* path)
@@ -136,4 +141,11 @@ void AddSearchPathHook(IFileSystem* fileSystem, const char* pPath, const char* p
 		addSearchPathOriginal(fileSystem, currentModPath.c_str(), "GAME", PATH_ADD_TO_HEAD);
 		addSearchPathOriginal(fileSystem, COMPILED_ASSETS_PATH.string().c_str(), "GAME", PATH_ADD_TO_HEAD);
 	}
+}
+
+FileHandle_t ReadFileFromFilesystemHook(IFileSystem* filesystem, const char* pPath, const char* pOptions, int64_t a4, uint32_t a5)
+{
+	// this isn't super efficient, but it's necessary, since calling addsearchpath in readfilefromvpk doesn't work, possibly refactor later
+	TryReplaceFile((char*)pPath);
+	return readFileFromFilesystem(filesystem, pPath, pOptions, a4, a5);
 }

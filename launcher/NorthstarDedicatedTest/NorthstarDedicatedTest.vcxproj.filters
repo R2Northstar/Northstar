@@ -534,6 +534,9 @@
     <ClInclude Include="serverauthentication.h">
       <Filter>Header Files\Server\Authentication</Filter>
     </ClInclude>
+    <ClInclude Include="scriptmodmenu.h">
+      <Filter>Header Files\Client</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -589,6 +592,9 @@
     </ClCompile>
     <ClCompile Include="serverauthentication.cpp">
       <Filter>Source Files\Server\Authentication</Filter>
+    </ClCompile>
+    <ClCompile Include="scriptmodmenu.cpp">
+      <Filter>Source Files\Client</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
