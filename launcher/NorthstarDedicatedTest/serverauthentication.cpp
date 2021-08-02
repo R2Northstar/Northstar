@@ -7,7 +7,7 @@
 
 // hook types
 
-typedef void*(*CBaseServer__ConnectClientType)(void* server, void* a2, void* a3, uint32_t a4, uint32_t a5, int32_t a6, void* a7, void* a8, char* serverFilter, void* a10, char a11, void* a12, char a13, char a14, void* a15, uint32_t a16, uint32_t a17);
+typedef void*(*CBaseServer__ConnectClientType)(void* server, void* a2, void* a3, uint32_t a4, uint32_t a5, int32_t a6, void* a7, void* a8, char* serverFilter, void* a10, char a11, void* a12, char a13, char a14, int64_t uid, uint32_t a16, uint32_t a17);
 CBaseServer__ConnectClientType CBaseServer__ConnectClient;
 
 typedef char(*CBaseClient__ConnectType)(void* self, char* name, __int64 netchan_ptr_arg, char b_fake_player_arg, __int64 a5, char* Buffer, int a7);
@@ -34,16 +34,19 @@ void ServerAuthenticationManager::AddPlayerAuth(char* authToken, char* uid, char
 	
 }
 
-bool ServerAuthenticationManager::AuthenticatePlayer(void* player, char* authToken)
+bool ServerAuthenticationManager::AuthenticatePlayer(void* player, int64_t uid, char* authToken)
 {
-	// straight up just given up
+	std::string strUid = std::to_string(uid);
+
 	if (!m_authData.empty() && m_authData.count(authToken))
 	{
 		// use stored auth data
 		AuthData* authData = m_authData[authToken];
-		
+		if (strcmp(strUid.c_str(), authData->uid)) // connecting client's uid is different from auth's uid
+			return false;
+
 		// uuid
-		strcpy((char*)player + 0xF500, authData->uid);
+		strcpy((char*)player + 0xF500, strUid.c_str());
 
 		// copy pdata into buffer
 		memcpy((char*)player + 0x4FA, authData->pdata, authData->pdataSize);
@@ -56,14 +59,13 @@ bool ServerAuthenticationManager::AuthenticatePlayer(void* player, char* authTok
 		if (!CVar_ns_auth_allow_insecure->m_nValue) // no auth data and insecure connections aren't allowed, so dc the client
 			return false;
 
-		// insecure connections are allowed, try reading from disk, using authtoken as uid
-		
+		// insecure connections are allowed, try reading from disk
 		// uuid
-		strcpy((char*)player + 0xF500, authToken);
+		strcpy((char*)player + 0xF500, strUid.c_str());
 
 		// try reading pdata file for player
 		std::string pdataPath = "playerdata/playerdata_";
-		pdataPath += authToken;
+		pdataPath += strUid;
 		pdataPath += ".pdata";
 
 		std::fstream pdataStream(pdataPath, std::ios_base::in);
@@ -120,16 +122,18 @@ void ServerAuthenticationManager::WritePersistentData(void* player)
 
 // auth hooks
 
-// store this in a var so we can use it in CBaseClient::Connect
-// this is fine because serverfilter ptr won't decay by the time we use this, just don't use it outside of cbaseclient::connect
+// store these in vars so we can use them in CBaseClient::Connect
+// this is fine because ptrs won't decay by the time we use this, just don't use it outside of cbaseclient::connect
 char* nextPlayerToken;
+int64_t nextPlayerUid;
 
-void* CBaseServer__ConnectClientHook(void* server, void* a2, void* a3, uint32_t a4, uint32_t a5, int32_t a6, void* a7, void* a8, char* serverFilter, void* a10, char a11, void* a12, char a13, char a14, void* a15, uint32_t a16, uint32_t a17)
+void* CBaseServer__ConnectClientHook(void* server, void* a2, void* a3, uint32_t a4, uint32_t a5, int32_t a6, void* a7, void* a8, char* serverFilter, void* a10, char a11, void* a12, char a13, char a14, int64_t uid, uint32_t a16, uint32_t a17)
 {
 	// auth tokens are sent with serverfilter, can't be accessed from player struct to my knowledge, so have to do this here
 	nextPlayerToken = serverFilter;
+	nextPlayerUid = uid;
 
-	return CBaseServer__ConnectClient(server, a2, a3, a4, a5, a6, a7, a8, serverFilter, a10, a11, a12, a13, a14, a15, a16, a17);
+	return CBaseServer__ConnectClient(server, a2, a3, a4, a5, a6, a7, a8, serverFilter, a10, a11, a12, a13, a14, uid, a16, a17);
 }
 
 char CBaseClient__ConnectHook(void* self, char* name, __int64 netchan_ptr_arg, char b_fake_player_arg, __int64 a5, char* Buffer, int a7)
@@ -139,7 +143,7 @@ char CBaseClient__ConnectHook(void* self, char* name, __int64 netchan_ptr_arg, c
 	char ret = CBaseClient__Connect(self, name, netchan_ptr_arg, b_fake_player_arg, a5, Buffer, a7);
 	if (strlen(name) >= 64) // fix for name overflow bug
 		CBaseClient__Disconnect(self, 1, "Invalid name");
-	else if (!g_ServerAuthenticationManager->AuthenticatePlayer(self, nextPlayerToken))
+	else if (!g_ServerAuthenticationManager->AuthenticatePlayer(self, nextPlayerUid, nextPlayerToken))
 		CBaseClient__Disconnect(self, 1, "Authentication Failed");
 
 	return ret;

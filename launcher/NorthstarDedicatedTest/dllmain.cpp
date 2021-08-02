@@ -10,6 +10,7 @@
 #include "filesystem.h"
 #include "serverauthentication.h"
 #include "scriptmodmenu.h"
+#include "scriptserverbrowser.h"
 
 bool initialised = false;
 
@@ -56,6 +57,7 @@ void InitialiseNorthstar()
 
         AddDllLoadCallback("client.dll", InitialiseSourceConsole);
         AddDllLoadCallback("client.dll", InitialiseScriptModMenu);
+        AddDllLoadCallback("client.dll", InitialiseScriptServerBrowser);
     }
 
     AddDllLoadCallback("server.dll", InitialiseServerSquirrel);

@@ -4,7 +4,6 @@
 #include "filesystem.h"
 #include "squirrel.h"
 
-#include <sstream>
 #include <fstream>
 
 void ModManager::BuildScriptsRson()

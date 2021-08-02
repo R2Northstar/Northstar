@@ -18,7 +18,7 @@ public:
 
 public:
 	void AddPlayerAuth(char* authToken, char* uid, char* pdata, size_t pdataSize);
-	bool AuthenticatePlayer(void* player, char* authToken);
+	bool AuthenticatePlayer(void* player, int64_t uid, char* authToken);
 	bool RemovePlayerAuthData(void* player);
 	void WritePersistentData(void* player);
 };

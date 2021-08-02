@@ -66,6 +66,9 @@ sq_pushintegerType ServerSq_pushinteger;
 sq_pushfloatType ClientSq_pushfloat;
 sq_pushfloatType ServerSq_pushfloat;
 
+sq_pushboolType ClientSq_pushbool;
+sq_pushboolType ServerSq_pushbool;
+
 
 // sq stack get funcs
 sq_getstringType ClientSq_getstring;
@@ -118,6 +121,7 @@ void InitialiseClientSquirrel(HMODULE baseAddress)
 	ClientSq_pushstring = (sq_pushstringType)((char*)baseAddress + 0x3440);
 	ClientSq_pushinteger = (sq_pushintegerType)((char*)baseAddress + 0x36A0);
 	ClientSq_pushfloat = (sq_pushfloatType)((char*)baseAddress + 0x3800);
+	ClientSq_pushbool = (sq_pushboolType)((char*)baseAddress + 0x3710);
 
 	ClientSq_getstring = (sq_getstringType)((char*)baseAddress + 0x60C0);
 	ClientSq_getinteger = (sq_getintegerType)((char*)baseAddress + 0x60E0);
@@ -147,6 +151,7 @@ void InitialiseServerSquirrel(HMODULE baseAddress)
 	ServerSq_pushstring = (sq_pushstringType)((char*)baseAddress + 0x3440);
 	ServerSq_pushinteger = (sq_pushintegerType)((char*)baseAddress + 0x36A0);
 	ServerSq_pushfloat = (sq_pushfloatType)((char*)baseAddress + 0x3800);
+	ServerSq_pushbool = (sq_pushboolType)((char*)baseAddress + 0x3710);
 
 	ServerSq_getstring = (sq_getstringType)((char*)baseAddress + 0x60A0);
 	ServerSq_getinteger = (sq_getintegerType)((char*)baseAddress + 0x60C0);

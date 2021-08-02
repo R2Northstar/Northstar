@@ -103,4 +103,4 @@ public:
 ConVar* RegisterConVar(const char* name, const char* defaultValue, int flags, const char* helpString);
 void InitialiseConVars(HMODULE baseAddress);
 
-extern std::set<std::string> g_CustomConvars;
+extern std::unordered_map<std::string, ConVar*> g_CustomConvars;

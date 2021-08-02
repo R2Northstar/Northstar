@@ -303,11 +303,13 @@
     <ClInclude Include="include\spdlog\stopwatch.h" />
     <ClInclude Include="include\spdlog\tweakme.h" />
     <ClInclude Include="include\spdlog\version.h" />
+    <ClInclude Include="keyvalues.h" />
     <ClInclude Include="logging.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="modmanager.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="scriptmodmenu.h" />
+    <ClInclude Include="scriptserverbrowser.h" />
     <ClInclude Include="scriptsrson.h" />
     <ClInclude Include="serverauthentication.h" />
     <ClInclude Include="sigscanning.h" />
@@ -325,6 +327,7 @@
     <ClCompile Include="filesystem.cpp" />
     <ClCompile Include="hooks.cpp" />
     <ClCompile Include="hookutils.cpp" />
+    <ClCompile Include="keyvalues.cpp" />
     <ClCompile Include="logging.cpp" />
     <ClCompile Include="modmanager.cpp" />
     <ClCompile Include="pch.cpp">
@@ -334,6 +337,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="scriptmodmenu.cpp" />
+    <ClCompile Include="scriptserverbrowser.cpp" />
     <ClCompile Include="scriptsrson.cpp" />
     <ClCompile Include="serverauthentication.cpp" />
     <ClCompile Include="sigscanning.cpp" />

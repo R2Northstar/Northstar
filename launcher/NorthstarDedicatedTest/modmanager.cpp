@@ -173,10 +173,7 @@ ModManager::ModManager()
 
 void ModManager::LoadMods()
 {
-	// this needs better support for reloads
-	
-	// do we need to dealloc individual entries in m_loadedMods? idk, rework
-	m_loadedMods.clear();
+	UnloadMods();
 
 	std::vector<fs::path> modDirs;
 
@@ -228,6 +225,11 @@ void ModManager::LoadMods()
 
 	for (Mod* mod : m_loadedMods)
 	{
+		mod->KeyValuesHash.clear();
+
+		if (!mod->Enabled)
+			continue;
+
 		// register convars
 		// for reloads, this is sorta barebones, when we have a good findconvar method, we could probably reset flags and stuff on preexisting convars
 		// potentially it might also be good to unregister convars if they get removed on a reload, but unsure if necessary
@@ -240,11 +242,27 @@ void ModManager::LoadMods()
 			for (fs::directory_entry file : fs::directory_iterator(mod->ModDirectory / "vpk"))
 				if (fs::is_regular_file(file) && file.path().extension() == "vpk")
 					mod->Vpks.push_back(file.path().string());
+
+		if (fs::exists(mod->ModDirectory / "keyvalues"))
+		{
+			for (fs::directory_entry file : fs::recursive_directory_iterator(mod->ModDirectory / "keyvalues"))
+			{
+				if (fs::is_regular_file(file) && !file.path().extension().compare(".txt"))
+				{
+					std::string kvStr = file.path().lexically_relative(mod->ModDirectory / "keyvalues").lexically_normal().string();
+					mod->KeyValuesHash.push_back(std::hash<std::string>{}(kvStr));
+					mod->KeyValues.push_back(kvStr);
+				}
+			}
+		}
 	}
 
 	// in a seperate loop because we register mod files in reverse order, since mods loaded later should have their files prioritised
 	for (int i = m_loadedMods.size() - 1; i > -1; i--)
 	{
+		if (!m_loadedMods[i]->Enabled)
+			continue;
+
 		if (fs::exists(m_loadedMods[i]->ModDirectory / MOD_OVERRIDE_DIR))
 		{
 			for (fs::directory_entry file : fs::recursive_directory_iterator(m_loadedMods[i]->ModDirectory / MOD_OVERRIDE_DIR))
@@ -253,7 +271,6 @@ void ModManager::LoadMods()
 
 				if (file.is_regular_file() && m_modFiles.find(path.string()) == m_modFiles.end())
 				{
-					// super temp because it relies hard on load order
 					ModOverrideFile* modFile = new ModOverrideFile;
 					modFile->owningMod = m_loadedMods[i];
 					modFile->path = path;
@@ -264,13 +281,38 @@ void ModManager::LoadMods()
 	}
 }
 
+void ModManager::UnloadMods()
+{
+	// clean up stuff from mods before we unload
+
+	// remove all built kvs
+	for (Mod* mod : m_loadedMods)
+		for (std::string kvPaths : mod->KeyValues)
+			fs::remove(COMPILED_ASSETS_PATH / fs::path(kvPaths).lexically_relative(mod->ModDirectory));
+
+	// do we need to dealloc individual entries in m_loadedMods? idk, rework
+	m_loadedMods.clear();
+}
+
 void ModManager::CompileAssetsForFile(const char* filename)
 {
 	fs::path path(filename);
 
 	if (!path.filename().compare("scripts.rson"))
 		BuildScriptsRson();
-	
+	else if (!strcmp((filename + strlen(filename)) - 3, "txt")) // check if it's a .txt
+	{
+		// check if we should build keyvalues, depending on whether any of our mods have patch kvs for this file
+		for (Mod* mod : m_loadedMods)
+		{
+			size_t fileHash = std::hash<std::string>{}(fs::path(filename).lexically_normal().string());
+			if (std::find(mod->KeyValuesHash.begin(), mod->KeyValuesHash.end(), fileHash) != mod->KeyValuesHash.end())
+			{
+				TryBuildKeyValues(filename);
+				return;
+			}
+		}
+	}
 }
 
 void ReloadModsCommand(const CCommand& args)

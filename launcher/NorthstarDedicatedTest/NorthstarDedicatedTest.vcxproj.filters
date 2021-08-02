@@ -537,6 +537,12 @@
     <ClInclude Include="scriptmodmenu.h">
       <Filter>Header Files\Client</Filter>
     </ClInclude>
+    <ClInclude Include="scriptserverbrowser.h">
+      <Filter>Header Files\Client</Filter>
+    </ClInclude>
+    <ClInclude Include="keyvalues.h">
+      <Filter>Header Files\Shared\Mods\Compiled</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -595,6 +601,12 @@
     </ClCompile>
     <ClCompile Include="scriptmodmenu.cpp">
       <Filter>Source Files\Client</Filter>
+    </ClCompile>
+    <ClCompile Include="scriptserverbrowser.cpp">
+      <Filter>Source Files\Client</Filter>
+    </ClCompile>
+    <ClCompile Include="keyvalues.cpp">
+      <Filter>Source Files\Shared\Mods\Compiled</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

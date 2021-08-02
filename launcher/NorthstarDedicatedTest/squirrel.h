@@ -96,6 +96,10 @@ typedef void(*sq_pushfloatType)(void* sqvm, SQFloat f);
 extern sq_pushfloatType ClientSq_pushfloat;
 extern sq_pushfloatType ServerSq_pushfloat;
 
+typedef void(*sq_pushboolType)(void* sqvm, SQBool b);
+extern sq_pushboolType ClientSq_pushbool;
+extern sq_pushboolType ServerSq_pushbool;
+
 
 // sq stack get funcs
 typedef const SQChar*(*sq_getstringType)(void* sqvm, SQInteger stackpos);
