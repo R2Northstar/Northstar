@@ -1,4 +1,5 @@
 #pragma once
+#include "convar.h"
 #include <string>
 #include <vector>
 #include <filesystem>
@@ -45,7 +46,9 @@ public:
 class Mod
 {
 public:
+	// runtime stuff
 	fs::path ModDirectory;
+	bool Enabled = true;
 
 	// mod.json stuff:
 
@@ -71,7 +74,8 @@ public:
 	// other files:
 
 	std::vector<std::string> Vpks;
-	//std::vector<ModKeyValues*> KeyValues;
+	std::vector<std::string> KeyValues;
+	std::vector<size_t> KeyValuesHash; // size_t because we hash these filesnames: faster than string comp
 
 	// other stuff
 
@@ -92,16 +96,17 @@ class ModManager
 {
 public:
 	std::vector<Mod*> m_loadedMods;
-	//std::vector<ModOverrideFile*> m_modFiles;
 	std::unordered_map<std::string, ModOverrideFile*> m_modFiles;
 
 public:
 	ModManager();
 	void LoadMods();
+	void UnloadMods();
 	void CompileAssetsForFile(const char* filename);
 
 	// compile asset type stuff, these are done in files under Mods/Compiled/
 	void BuildScriptsRson();
+	void TryBuildKeyValues(const char* filename);
 };
 
 void InitialiseModManager(HMODULE baseAddress);

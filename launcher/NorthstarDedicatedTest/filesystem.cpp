@@ -88,12 +88,13 @@ void SetNewModSearchPaths(Mod* mod)
 
 }
 
-bool TryReplaceFile(char* path)
+bool TryReplaceFile(char* path, bool shouldCompile)
 {
 	if (readingOriginalFile)
 		return false;
 
-	(*g_ModManager).CompileAssetsForFile(path);
+	if (shouldCompile)
+		(*g_ModManager).CompileAssetsForFile(path);
 
 	// idk how efficient the lexically normal check is
 	// can't just set all /s in path to \, since some paths aren't in writeable memory
@@ -111,7 +112,9 @@ FileHandle_t ReadFileFromVPKHook(VPKData* vpkInfo, __int64* b, char* filename)
 {
 	// move this to a convar at some point when we can read them in native
 	//spdlog::info("ReadFileFromVPKHook {} {}", filename, vpkInfo->path);
-	if (TryReplaceFile(filename))
+
+	// there is literally never any reason to compile here, since we'll always compile in ReadFileFromFilesystemHook in the same codepath this is called
+	if (TryReplaceFile(filename, false))
 	{
 		*b = -1;
 		return b;
@@ -125,7 +128,7 @@ bool ReadFromCacheHook(IFileSystem* filesystem, char* path, void* result)
 	// move this to a convar at some point when we can read them in native
 	//spdlog::info("ReadFromCacheHook {}", path);
 
-	if (TryReplaceFile(path))
+	if (TryReplaceFile(path, true))
 		return false;
 
 	return readFromCache(filesystem, path, result);
@@ -146,6 +149,9 @@ void AddSearchPathHook(IFileSystem* fileSystem, const char* pPath, const char* p
 FileHandle_t ReadFileFromFilesystemHook(IFileSystem* filesystem, const char* pPath, const char* pOptions, int64_t a4, uint32_t a5)
 {
 	// this isn't super efficient, but it's necessary, since calling addsearchpath in readfilefromvpk doesn't work, possibly refactor later
-	TryReplaceFile((char*)pPath);
+	// it also might be possible to hook functions that are called later, idk look into callstack for ReadFileFromVPK
+	if (!readingOriginalFile)
+		TryReplaceFile((char*)pPath, true);
+
 	return readFileFromFilesystem(filesystem, pPath, pOptions, a4, a5);
 }

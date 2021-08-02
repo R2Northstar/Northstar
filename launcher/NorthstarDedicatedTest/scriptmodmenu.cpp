@@ -113,12 +113,21 @@ SQInteger SQ_GetModConvars(void* sqvm)
 	return 1; // return empty array
 }
 
+// void NSReloadMods()
+SQInteger SQ_ReloadMods(void* sqvm)
+{
+	g_ModManager->LoadMods();
+	return 0;
+}
+
 void InitialiseScriptModMenu(HMODULE baseAddress)
 {
 	g_UISquirrelManager->AddFuncRegistration("array<string>", "NSGetModNames", "", "Returns the names of all loaded mods", SQ_GetModNames);
-	g_UISquirrelManager->AddFuncRegistration("string", "NSGetModDescriptionByModName", "asset modName", "Returns a given mod's description", SQ_GetModDescription);
+	g_UISquirrelManager->AddFuncRegistration("string", "NSGetModDescriptionByModName", "string modName", "Returns a given mod's description", SQ_GetModDescription);
 	g_UISquirrelManager->AddFuncRegistration("string", "NSGetModVersionByModName", "string modName", "Returns a given mod's version", SQ_GetModVersion);	
-	g_UISquirrelManager->AddFuncRegistration("string", "NSGetModDownloadLinkByModName", "string modName", "Returns a given mod's download link", SQ_GetModVersion);
+	g_UISquirrelManager->AddFuncRegistration("string", "NSGetModDownloadLinkByModName", "string modName", "Returns a given mod's download link", SQ_GetModDownloadLink);
 	g_UISquirrelManager->AddFuncRegistration("int", "NSGetModLoadPriority", "string modName", "Returns a given mod's load priority", SQ_GetModLoadPriority);
 	g_UISquirrelManager->AddFuncRegistration("array<string>", "NSGetModConvarsByModName", "string modName", "Returns the names of all a given mod's cvars", SQ_GetModConvars);
+
+	g_UISquirrelManager->AddFuncRegistration("void", "NSReloadMods", "", "Reloads mods", SQ_ReloadMods);
 }
