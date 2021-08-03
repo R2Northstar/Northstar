@@ -11,6 +11,7 @@
 #include "serverauthentication.h"
 #include "scriptmodmenu.h"
 #include "scriptserverbrowser.h"
+#include "keyvalues.h"
 
 bool initialised = false;
 
@@ -64,6 +65,7 @@ void InitialiseNorthstar()
     AddDllLoadCallback("engine.dll", InitialiseServerAuthentication);
 
     AddDllLoadCallback("filesystem_stdio.dll", InitialiseFilesystem);
+    AddDllLoadCallback("engine.dll", InitialiseKeyValues);
 
     // mod manager after everything else
     AddDllLoadCallback("engine.dll", InitialiseModManager);

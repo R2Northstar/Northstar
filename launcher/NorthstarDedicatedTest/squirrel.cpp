@@ -237,9 +237,6 @@ template<Context context> void DestroyVMHook(void* a1, void* sqvm)
 
 template<Context context> void ScriptCompileErrorHook(void* sqvm, const char* error, const char* file, int line, int column)
 {
-	// note: i think vanilla might actually show the script line that errored, might be nice to implement that if it's a thing
-	// look into client.dll+79540 for way better errors too
-
 	Context realContext = context; // ui and client use the same function so we use this for prints
 	if (context == CLIENT && sqvm == g_UISquirrelManager->sqvm)
 		realContext = UI;

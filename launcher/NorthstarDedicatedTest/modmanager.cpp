@@ -247,7 +247,7 @@ void ModManager::LoadMods()
 		{
 			for (fs::directory_entry file : fs::recursive_directory_iterator(mod->ModDirectory / "keyvalues"))
 			{
-				if (fs::is_regular_file(file) && !file.path().extension().compare(".txt"))
+				if (fs::is_regular_file(file))
 				{
 					std::string kvStr = file.path().lexically_relative(mod->ModDirectory / "keyvalues").lexically_normal().string();
 					mod->KeyValuesHash.push_back(std::hash<std::string>{}(kvStr));
