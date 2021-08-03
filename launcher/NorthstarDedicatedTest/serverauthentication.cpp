@@ -29,7 +29,7 @@ ConVar* CVar_ns_auth_allow_insecure;
 ConVar* CVar_ns_auth_allow_insecure_write;
 ConVar* CVar_sv_quota_stringcmdspersecond;
 
-void ServerAuthenticationManager::AddPlayerAuth(char* authToken, char* uid, char* pdata, size_t pdataSize)
+void ServerAuthenticationManager::AddPlayerAuthData(char* authToken, char* uid, char* pdata, size_t pdataSize)
 {
 	
 }

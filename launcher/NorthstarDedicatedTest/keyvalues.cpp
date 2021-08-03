@@ -2,8 +2,34 @@
 #include "keyvalues.h"
 #include "modmanager.h"
 #include "filesystem.h"
+#include "hookutils.h"
 
 #include <fstream>
+
+// hook forward defs
+typedef char(*KeyValues__LoadFromBufferType)(void* self, const char* resourceName, const char* pBuffer, void* pFileSystem, void* a5, void* a6, int a7);
+KeyValues__LoadFromBufferType KeyValues__LoadFromBuffer;
+char KeyValues__LoadFromBufferHook(void* self, const char* resourceName, const char* pBuffer, void* pFileSystem, void* a5, void* a6, int a7);
+
+void InitialiseKeyValues(HMODULE baseAddress)
+{
+	HookEnabler hook;
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x426C30, &KeyValues__LoadFromBufferHook, reinterpret_cast<LPVOID*>(&KeyValues__LoadFromBuffer));
+}
+
+void* savedFilesystemPtr;
+
+char KeyValues__LoadFromBufferHook(void* self, const char* resourceName, const char* pBuffer, void* pFileSystem, void* a5, void* a6, int a7)
+{
+	// this is just to allow playlists to get a valid pFileSystem ptr for kv building, other functions that call this particular overload of LoadFromBuffer seem to get called on network stuff exclusively
+	// not exactly sure what the address wanted here is, so just taking it from a function call that always happens before playlists is loaded
+	if (pFileSystem != nullptr)
+		savedFilesystemPtr = pFileSystem;
+	if (!pFileSystem && !strcmp(resourceName, "playlists"))
+		pFileSystem = savedFilesystemPtr;
+
+	return KeyValues__LoadFromBuffer(self, resourceName, pBuffer, pFileSystem, a5, a6, a7);
+}
 
 void ModManager::TryBuildKeyValues(const char* filename)
 {
@@ -22,7 +48,8 @@ void ModManager::TryBuildKeyValues(const char* filename)
 
 	int patchNum = 0;
 
-	// copy over patch kv files, and add #includes to new file, last mods' patches should be applied first
+	// copy over patch kv files, and add #bases to new file, last mods' patches should be applied first
+	// note: #include should be identical but it's actually just broken, thanks respawn
 	for (int i = m_loadedMods.size() - 1; i > -1; i--)
 	{
 		size_t fileHash = std::hash<std::string>{}(normalisedPath);
@@ -48,6 +75,7 @@ void ModManager::TryBuildKeyValues(const char* filename)
 		}
 	}
 
+	// add original #base last, #bases don't override preexisting keys, including the ones we've just done 
 	newKvs += "#base \"";
 	newKvs += ogFilePath;
 	newKvs += "\"\n";
@@ -57,7 +85,7 @@ void ModManager::TryBuildKeyValues(const char* filename)
 	char rootName[64];
 	memset(rootName, 0, sizeof(rootName));
 
-	// iterate over all lines that aren't empty, and don't start with #s or //s, first one should be the name of the root obj
+	// iterate until we hit an ascii char that isn't in a # command or comment to get root obj name
 	int i = 0;
 	while (!(originalFile[i] >= 65 && originalFile[i] <= 122))
 	{
@@ -73,7 +101,7 @@ void ModManager::TryBuildKeyValues(const char* filename)
 	for (int j = 0; originalFile[i] >= 65 && originalFile[i] <= 122; j++)
 		rootName[j] = originalFile[i++];
 	
-	// empty kv, all the other stuff gets #base'd or #include'd
+	// empty kv, all the other stuff gets #base'd
 	newKvs += rootName;
 	newKvs += "\n{\n}\n";
 
