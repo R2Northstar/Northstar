@@ -177,6 +177,7 @@
     <ClInclude Include="filesystem.h" />
     <ClInclude Include="hooks.h" />
     <ClInclude Include="hookutils.h" />
+    <ClInclude Include="include\httplib.h" />
     <ClInclude Include="include\MinHook.h" />
     <ClInclude Include="include\rapidjson\allocators.h" />
     <ClInclude Include="include\rapidjson\document.h" />
@@ -306,6 +307,7 @@
     <ClInclude Include="keyvalues.h" />
     <ClInclude Include="logging.h" />
     <ClInclude Include="main.h" />
+    <ClInclude Include="masterserver.h" />
     <ClInclude Include="modmanager.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="scriptmodmenu.h" />
@@ -329,6 +331,7 @@
     <ClCompile Include="hookutils.cpp" />
     <ClCompile Include="keyvalues.cpp" />
     <ClCompile Include="logging.cpp" />
+    <ClCompile Include="masterserver.cpp" />
     <ClCompile Include="modmanager.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

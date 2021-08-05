@@ -12,6 +12,7 @@
 #include "scriptmodmenu.h"
 #include "scriptserverbrowser.h"
 #include "keyvalues.h"
+#include "masterserver.h"
 
 bool initialised = false;
 
@@ -63,6 +64,7 @@ void InitialiseNorthstar()
 
     AddDllLoadCallback("server.dll", InitialiseServerSquirrel);
     AddDllLoadCallback("engine.dll", InitialiseServerAuthentication);
+    AddDllLoadCallback("engine.dll", InitialiseSharedMasterServer);
 
     AddDllLoadCallback("filesystem_stdio.dll", InitialiseFilesystem);
     AddDllLoadCallback("engine.dll", InitialiseKeyValues);
