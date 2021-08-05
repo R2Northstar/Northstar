@@ -543,6 +543,12 @@
     <ClInclude Include="keyvalues.h">
       <Filter>Header Files\Shared\Mods\Compiled</Filter>
     </ClInclude>
+    <ClInclude Include="include\httplib.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="masterserver.h">
+      <Filter>Header Files\Shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -607,6 +613,9 @@
     </ClCompile>
     <ClCompile Include="keyvalues.cpp">
       <Filter>Source Files\Shared\Mods\Compiled</Filter>
+    </ClCompile>
+    <ClCompile Include="masterserver.cpp">
+      <Filter>Source Files\Shared</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
