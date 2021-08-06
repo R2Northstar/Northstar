@@ -219,14 +219,8 @@ void ModManager::LoadMods()
 		return a->LoadPriority > b->LoadPriority;
 	});
 
-	// do we need to dealloc individual entries in m_modFiles? idk, rework
-	m_modFiles.clear();
-	fs::remove_all(COMPILED_ASSETS_PATH);
-
 	for (Mod* mod : m_loadedMods)
 	{
-		mod->KeyValuesHash.clear();
-
 		if (!mod->Enabled)
 			continue;
 
@@ -285,10 +279,19 @@ void ModManager::UnloadMods()
 {
 	// clean up stuff from mods before we unload
 
-	// remove all built kvs
+	// do we need to dealloc individual entries in m_modFiles? idk, rework
+	m_modFiles.clear();
+	fs::remove_all(COMPILED_ASSETS_PATH);
+
 	for (Mod* mod : m_loadedMods)
+	{	
+		// remove all built kvs
 		for (std::string kvPaths : mod->KeyValues)
 			fs::remove(COMPILED_ASSETS_PATH / fs::path(kvPaths).lexically_relative(mod->ModDirectory));
+
+		mod->KeyValuesHash.clear();
+		mod->KeyValues.clear();
+	}
 
 	// do we need to dealloc individual entries in m_loadedMods? idk, rework
 	m_loadedMods.clear();
@@ -300,7 +303,7 @@ void ModManager::CompileAssetsForFile(const char* filename)
 
 	if (!path.filename().compare("scripts.rson"))
 		BuildScriptsRson();
-	else if (!strcmp((filename + strlen(filename)) - 3, "txt")) // check if it's a .txt
+	else //if (!strcmp((filename + strlen(filename)) - 3, "txt")) // check if it's a .txt
 	{
 		// check if we should build keyvalues, depending on whether any of our mods have patch kvs for this file
 		for (Mod* mod : m_loadedMods)

@@ -100,6 +100,12 @@
     <Filter Include="Header Files\Server\Authentication">
       <UniqueIdentifier>{24fd0855-9288-4129-93ba-c6cafdc98d1b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Shared\Game Functions">
+      <UniqueIdentifier>{2cbddb28-0b17-4881-847d-8773da52b268}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Shared\Game Functions">
+      <UniqueIdentifier>{0c93d909-e0d6-4c35-a8a4-a13f681a1012}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -113,9 +119,6 @@
     </ClInclude>
     <ClInclude Include="hookutils.h">
       <Filter>Header Files\Shared\Hooks</Filter>
-    </ClInclude>
-    <ClInclude Include="tier0.h">
-      <Filter>Header Files\Shared</Filter>
     </ClInclude>
     <ClInclude Include="main.h">
       <Filter>Header Files</Filter>
@@ -549,6 +552,15 @@
     <ClInclude Include="masterserver.h">
       <Filter>Header Files\Shared</Filter>
     </ClInclude>
+    <ClInclude Include="tier0.h">
+      <Filter>Header Files\Shared\Game Functions</Filter>
+    </ClInclude>
+    <ClInclude Include="gameutils.h">
+      <Filter>Header Files\Shared\Game Functions</Filter>
+    </ClInclude>
+    <ClInclude Include="chatcommand.h">
+      <Filter>Header Files\Client</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -559,9 +571,6 @@
     </ClCompile>
     <ClCompile Include="hooks.cpp">
       <Filter>Source Files\Shared\Hooks</Filter>
-    </ClCompile>
-    <ClCompile Include="tier0.cpp">
-      <Filter>Source Files\Shared</Filter>
     </ClCompile>
     <ClCompile Include="hookutils.cpp">
       <Filter>Source Files\Shared\Hooks</Filter>
@@ -616,6 +625,15 @@
     </ClCompile>
     <ClCompile Include="masterserver.cpp">
       <Filter>Source Files\Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="tier0.cpp">
+      <Filter>Source Files\Shared\Game Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="gameutils.cpp">
+      <Filter>Source Files\Shared\Game Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="chatcommand.cpp">
+      <Filter>Source Files\Client</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

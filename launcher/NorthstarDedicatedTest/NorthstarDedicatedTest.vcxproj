@@ -170,11 +170,13 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="chatcommand.h" />
     <ClInclude Include="concommand.h" />
     <ClInclude Include="context.h" />
     <ClInclude Include="convar.h" />
     <ClInclude Include="dedicated.h" />
     <ClInclude Include="filesystem.h" />
+    <ClInclude Include="gameutils.h" />
     <ClInclude Include="hooks.h" />
     <ClInclude Include="hookutils.h" />
     <ClInclude Include="include\httplib.h" />
@@ -321,12 +323,14 @@
     <ClInclude Include="tier0.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="chatcommand.cpp" />
     <ClCompile Include="concommand.cpp" />
     <ClCompile Include="context.cpp" />
     <ClCompile Include="convar.cpp" />
     <ClCompile Include="dedicated.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="filesystem.cpp" />
+    <ClCompile Include="gameutils.cpp" />
     <ClCompile Include="hooks.cpp" />
     <ClCompile Include="hookutils.cpp" />
     <ClCompile Include="keyvalues.cpp" />
