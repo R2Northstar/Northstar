@@ -24,8 +24,7 @@ RemoteServerInfo::RemoteServerInfo(const char* newId, const char* newName, const
 	strncpy((char*)name, newName, 63);
 	name[63] = 0;
 
-	description = new char[strlen(newDescription) + 1];
-	strcpy(description, newDescription);
+	description = std::string(newDescription);
 
 	strncpy((char*)map, newMap, 31);
 	map[31] = 0;
@@ -46,8 +45,7 @@ RemoteServerInfo::RemoteServerInfo(const char* newId, const char* newName, const
 	strncpy((char*)name, newName, 63);
 	name[63] = 0;
 
-	description = new char[strlen(newDescription) + 1];
-	strcpy(description, newDescription);
+	description = std::string(newDescription);
 
 	strncpy((char*)map, newMap, 31);
 	map[31] = 0;
@@ -59,11 +57,6 @@ RemoteServerInfo::RemoteServerInfo(const char* newId, const char* newName, const
 
 	ip = newIp;
 	port = newPort;
-}
-
-RemoteServerInfo::~RemoteServerInfo()
-{
-	delete[] description;
 }
 
 void MasterServerManager::ClearServerList()
@@ -78,6 +71,7 @@ void MasterServerManager::ClearServerList()
 
 void MasterServerManager::RequestServerList()
 {
+	// do this here so it's instantly set on call for scripts
 	m_scriptRequestingServerList = true;
 
 	std::thread requestThread([this]()
@@ -95,7 +89,7 @@ void MasterServerManager::RequestServerList()
 
 			spdlog::info("Requesting server list from {}", Cvar_ns_masterserver_hostname->m_pszString);
 
-			if (auto result = http.Get("/servers"))
+			if (auto result = http.Get("/client/servers"))
 			{
 				m_successfullyConnected = true;
 
@@ -105,13 +99,20 @@ void MasterServerManager::RequestServerList()
 				if (serverInfoJson.HasParseError())
 				{
 					spdlog::error("Failed reading masterserver response: encountered parse error \"{}\"", rapidjson::GetParseError_En(serverInfoJson.GetParseError()));
-					goto REQUEST_SERVER_LIST_END;
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (serverInfoJson.IsObject() && serverInfoJson.HasMember("error"))
+				{
+					spdlog::error("Failed reading masterserver response: got fastify error response");
+					spdlog::error(result->body);
+					goto REQUEST_END_CLEANUP;
 				}
 
 				if (!serverInfoJson.IsArray())
 				{
 					spdlog::error("Failed reading masterserver response: root object is not an array");
-					goto REQUEST_SERVER_LIST_END;
+					goto REQUEST_END_CLEANUP;
 				}
 
 				rapidjson::GenericArray<false, rapidjson::Value> serverArray = serverInfoJson.GetArray();
@@ -123,7 +124,7 @@ void MasterServerManager::RequestServerList()
 					if (!serverObj.IsObject())
 					{
 						spdlog::error("Failed reading masterserver response: member of server array is not an object");
-						goto REQUEST_SERVER_LIST_END;
+						goto REQUEST_END_CLEANUP;
 					}
 
 					// todo: verify json props are fine before adding to m_remoteServers
@@ -138,7 +139,7 @@ void MasterServerManager::RequestServerList()
 						|| !serverObj.HasMember("hasPassword") || !serverObj["hasPassword"].IsBool())
 					{
 						spdlog::error("Failed reading masterserver response: malformed server object");
-						goto REQUEST_SERVER_LIST_END;
+						goto REQUEST_END_CLEANUP;
 					}
 
 					bool hasPassword = serverObj["hasPassword"].GetBool();
@@ -147,7 +148,7 @@ void MasterServerManager::RequestServerList()
 					bool createNewServerInfo = true;
 					for (RemoteServerInfo& server : m_remoteServers)
 					{
-						// server already exists, update info
+						// if server already exists, update info rather than adding to it
 						if (!strncmp((const char*)server.id, id, 31))
 						{
 							if (hasPassword)
@@ -173,6 +174,12 @@ void MasterServerManager::RequestServerList()
 							m_remoteServers.emplace_back(id, serverObj["name"].GetString(), serverObj["description"].GetString(), serverObj["map"].GetString(), serverObj["playlist"].GetString(), serverObj["playerCount"].GetInt(), serverObj["maxPlayers"].GetInt());
 						else
 						{
+							if (!serverObj.HasMember("ip") || !serverObj["ip"].IsUint64() || !serverObj.HasMember("port") || !serverObj["port"].IsNumber())
+							{
+								spdlog::error("Failed reading masterserver response: malformed server object");
+								goto REQUEST_END_CLEANUP;
+							}
+
 							in_addr addr;
 							addr.S_un.S_addr = serverObj["ip"].GetUint64();
 
@@ -190,9 +197,90 @@ void MasterServerManager::RequestServerList()
 			}
 
 			// we goto this instead of returning so we always hit this
-			REQUEST_SERVER_LIST_END:
+			REQUEST_END_CLEANUP:
 			m_requestingServerList = false;
 			m_scriptRequestingServerList = false;
+		});
+
+	requestThread.detach();
+}
+
+void MasterServerManager::TryAuthenticateWithServer(char* serverId, char* password)
+{
+	// dont wait, just stop if we're trying to do 2 auth requests at once
+	if (m_authenticatingWithGameServer)
+		return;
+
+	m_authenticatingWithGameServer = true;
+	m_scriptAuthenticatingWithGameServer = true;
+	m_successfullyAuthenticatedWithGameServer = false;
+
+	std::thread requestThread([this, serverId, password]()
+		{
+			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);
+			http.set_connection_timeout(20);
+
+			spdlog::info("Attempting authentication with server of id \"{}\"", serverId);
+
+			spdlog::info(fmt::format("/client/auth_with_server?server={}&password={}", serverId, password));
+
+			if (auto result = http.Post(fmt::format("/client/auth_with_server?server={}&password={}", serverId, password).c_str()))
+			{
+				m_successfullyConnected = true;
+				
+				rapidjson::Document connectionInfoJson;
+				connectionInfoJson.Parse(result->body.c_str());
+
+				if (connectionInfoJson.HasParseError())
+				{
+					spdlog::error("Failed reading masterserver authentication response: encountered parse error \"{}\"", rapidjson::GetParseError_En(connectionInfoJson.GetParseError()));
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (!connectionInfoJson.IsObject())
+				{
+					spdlog::error("Failed reading masterserver authentication response: root object is not an object");
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (connectionInfoJson.HasMember("error"))
+				{
+					spdlog::error("Failed reading masterserver response: got fastify error response");
+					spdlog::error(result->body);
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (!connectionInfoJson["success"].IsTrue())
+				{
+					spdlog::error("Authentication with masterserver failed: \"success\" is not true");
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (!connectionInfoJson.HasMember("success") || !connectionInfoJson.HasMember("ip") || !connectionInfoJson["ip"].IsUint64() || !connectionInfoJson.HasMember("port") || !connectionInfoJson["port"].IsNumber() || !connectionInfoJson.HasMember("authToken") || !connectionInfoJson["authToken"].IsString())
+				{
+					spdlog::error("Failed reading masterserver authentication response: malformed json object");
+					goto REQUEST_END_CLEANUP;
+				}
+
+				m_pendingConnectionInfo.ip.S_un.S_addr = connectionInfoJson["ip"].GetUint64();
+				m_pendingConnectionInfo.port = connectionInfoJson["port"].GetInt();
+
+				strncpy(m_pendingConnectionInfo.authToken, connectionInfoJson["authToken"].GetString(), 31);
+				m_pendingConnectionInfo.authToken[31] = 0;
+
+				m_hasPendingConnectionInfo = true;
+				m_successfullyAuthenticatedWithGameServer = true;
+			}
+			else
+			{
+				spdlog::error("Failed authenticating with server: error {}", result.error());
+				m_successfullyConnected = false;
+				m_successfullyAuthenticatedWithGameServer = false;
+			}
+
+			REQUEST_END_CLEANUP:
+			m_authenticatingWithGameServer = false;
+			m_scriptAuthenticatingWithGameServer = false;
 		});
 
 	requestThread.detach();

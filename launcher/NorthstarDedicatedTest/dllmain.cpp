@@ -13,6 +13,8 @@
 #include "scriptserverbrowser.h"
 #include "keyvalues.h"
 #include "masterserver.h"
+#include "gameutils.h"
+#include "chatcommand.h"
 
 bool initialised = false;
 
@@ -47,6 +49,8 @@ void InitialiseNorthstar()
     InstallInitialHooks();
     InitialiseInterfaceCreationHooks();
 
+    AddDllLoadCallback("engine.dll", InitialiseEngineGameUtilFunctions);
+
     if (IsDedicated())
         AddDllLoadCallback("engine.dll", InitialiseDedicated);
     
@@ -58,6 +62,7 @@ void InitialiseNorthstar()
         AddDllLoadCallback("client.dll", InitialiseClientSquirrel);
 
         AddDllLoadCallback("client.dll", InitialiseSourceConsole);
+        AddDllLoadCallback("engine.dll", InitialiseChatCommands);
         AddDllLoadCallback("client.dll", InitialiseScriptModMenu);
         AddDllLoadCallback("client.dll", InitialiseScriptServerBrowser);
     }

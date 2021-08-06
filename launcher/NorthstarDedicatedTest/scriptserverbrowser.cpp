@@ -2,6 +2,7 @@
 #include "scriptserverbrowser.h"
 #include "squirrel.h"
 #include "masterserver.h"
+#include "gameutils.h"
 
 // functions for viewing server browser
 
@@ -44,10 +45,7 @@ SQInteger SQ_GetServerName(void* sqvm)
 		return 0;
 	}
 
-	auto iterator = g_MasterServerManager->m_remoteServers.begin();
-	std::advance(iterator, serverIndex);
-
-	ClientSq_pushstring(sqvm, iterator->name, -1);
+	ClientSq_pushstring(sqvm, g_MasterServerManager->m_remoteServers[serverIndex].name, -1);
 	return 1;
 }
 
@@ -62,10 +60,7 @@ SQInteger SQ_GetServerMap(void* sqvm)
 		return 0;
 	}
 
-	auto iterator = g_MasterServerManager->m_remoteServers.begin();
-	std::advance(iterator, serverIndex);
-
-	ClientSq_pushstring(sqvm, iterator->map, -1);
+	ClientSq_pushstring(sqvm, g_MasterServerManager->m_remoteServers[serverIndex].map, -1);
 	return 1;
 }
 
@@ -80,10 +75,7 @@ SQInteger SQ_GetServerPlaylist(void* sqvm)
 		return 0;
 	}
 
-	auto iterator = g_MasterServerManager->m_remoteServers.begin();
-	std::advance(iterator, serverIndex);
-
-	ClientSq_pushstring(sqvm, iterator->playlist, -1);
+	ClientSq_pushstring(sqvm, g_MasterServerManager->m_remoteServers[serverIndex].playlist, -1);
 	return 1;
 }
 
@@ -98,10 +90,21 @@ SQInteger SQ_GetServerID(void* sqvm)
 		return 0;
 	}
 
-	auto iterator = g_MasterServerManager->m_remoteServers.begin();
-	std::advance(iterator, serverIndex);
+	ClientSq_pushstring(sqvm, g_MasterServerManager->m_remoteServers[serverIndex].id, -1);
+	return 1;
+}
 
-	ClientSq_pushstring(sqvm, iterator->id, -1);
+SQInteger SQ_ServerRequiresPassword(void* sqvm)
+{
+	SQInteger serverIndex = ClientSq_getinteger(sqvm, 1);
+
+	if (serverIndex >= g_MasterServerManager->m_remoteServers.size())
+	{
+		spdlog::warn("Tried to get hasPassword of server index {} when only {} servers are available", serverIndex, g_MasterServerManager->m_remoteServers.size());
+		return 0;
+	}
+
+	ClientSq_pushbool(sqvm, g_MasterServerManager->m_remoteServers[serverIndex].requiresPassword);
 	return 1;
 }
 
@@ -115,27 +118,57 @@ SQInteger SQ_ClearRecievedServerList(void* sqvm)
 
 // functions for authenticating with servers
 
-// void function NSTryAuthWithServer( string serverId )
+// void function NSTryAuthWithServer( int serverIndex, string password = "" )
 SQInteger SQ_TryAuthWithServer(void* sqvm)
 {
+	SQInteger serverIndex = ClientSq_getinteger(sqvm, 1);
+	const SQChar* password = ClientSq_getstring(sqvm, 2);
+
+	if (serverIndex >= g_MasterServerManager->m_remoteServers.size())
+	{
+		spdlog::warn("Tried to auth with server index {} when only {} servers are available", serverIndex, g_MasterServerManager->m_remoteServers.size());
+		return 0;
+	}
+
+	// do auth
+	g_MasterServerManager->TryAuthenticateWithServer(g_MasterServerManager->m_remoteServers[serverIndex].id, (char*)password);
+
 	return 0;
 }
 
-// int function NSWasAuthSuccessful()
+// bool function NSIsAuthenticatingWithServer()
+SQInteger SQ_IsAuthComplete(void* sqvm)
+{
+	ClientSq_pushbool(sqvm, g_MasterServerManager->m_scriptAuthenticatingWithGameServer);
+	return 1;
+}
+
+// bool function NSWasAuthSuccessful()
 SQInteger SQ_WasAuthSuccessful(void* sqvm)
 {
-	return 0;
+	ClientSq_pushbool(sqvm, g_MasterServerManager->m_successfullyAuthenticatedWithGameServer);
+	return 1;
 }
 
-// string function NSTryGetAuthedServerAddress()
-SQInteger SQ_TryGetAuthedServerAddress(void* sqvm)
+// void function NSConnectToAuthedServer()
+SQInteger SQ_ConnectToAuthedServer(void* sqvm)
 {
-	return 0;
-}
+	if (!g_MasterServerManager->m_hasPendingConnectionInfo)
+	{
+		spdlog::error("Tried to connect to authed server before any pending connection info was available");
+		return 0;
+	}
 
-// string function NSTryGetAuthedServerToken()
-SQInteger SQ_TryGetAuthedServerToken(void* sqvm)
-{
+	RemoteServerConnectionInfo info = g_MasterServerManager->m_pendingConnectionInfo;
+
+	// set auth token, then try to connect
+	// i'm honestly not entirely sure how silentconnect works regarding ports and encryption so using connect for now
+	Cbuf_AddText(Cbuf_GetCurrentPlayer(), fmt::format("serverfilter {}", info.authToken).c_str(), cmd_source_t::kCommandSrcCode);
+	Cbuf_AddText(Cbuf_GetCurrentPlayer(), fmt::format("connect {}.{}.{}.{}:{}", info.ip.S_un.S_un_b.s_b1, info.ip.S_un.S_un_b.s_b2, info.ip.S_un.S_un_b.s_b3, info.ip.S_un.S_un_b.s_b4, info.port).c_str(), cmd_source_t::kCommandSrcCode);
+	
+	spdlog::info(fmt::format("connect {}.{}.{}.{}:{}", info.ip.S_un.S_un_b.s_b1, info.ip.S_un.S_un_b.s_b2, info.ip.S_un.S_un_b.s_b3, info.ip.S_un.S_un_b.s_b4, info.port));
+
+	g_MasterServerManager->m_hasPendingConnectionInfo = false;
 	return 0;
 }
 
@@ -151,13 +184,10 @@ void InitialiseScriptServerBrowser(HMODULE baseAddress)
 	g_UISquirrelManager->AddFuncRegistration("string", "NSGetServerMap", "int serverIndex", "", SQ_GetServerMap);
 	g_UISquirrelManager->AddFuncRegistration("string", "NSGetServerPlaylist", "int serverIndex", "", SQ_GetServerPlaylist);
 	g_UISquirrelManager->AddFuncRegistration("string", "NSGetServerID", "int serverIndex", "", SQ_GetServerID);
+	g_UISquirrelManager->AddFuncRegistration("bool", "NSServerRequiresPassword", "int serverIndex", "", SQ_ServerRequiresPassword);
 
-	//g_UISquirrelManager->AddFuncRegistration("bool", "NSPollServerPage", "int page", "", SQ_PollServerPage);
-	//g_UISquirrelManager->AddFuncRegistration("int", "NSGetNumServersOnPage", "int page", "", SQ_GetNumServersOnPage);
-	//g_UISquirrelManager->AddFuncRegistration("string", "NSGetServerName", "int page, int serverIndex", "", SQ_GetServerName);
-	//g_UISquirrelManager->AddFuncRegistration("string", "NSGetServerMap", "int page, int serverIndex", "", SQ_GetServerMap);
-	//g_UISquirrelManager->AddFuncRegistration("string", "NSGetServerMode", "int page, int serverIndex", "", SQ_GetServerMode);
-	//g_UISquirrelManager->AddFuncRegistration("void", "NSResetRecievedServers", "", "", SQ_ResetRecievedServers);
-	//
-	//g_UISquirrelManager->AddFuncRegistration("string", "NSTryGetAuthedServerToken", "", "", SQ_TryGetAuthedServerToken);
+	g_UISquirrelManager->AddFuncRegistration("void", "NSTryAuthWithServer", "int serverIndex, string password = \"\"", "", SQ_TryAuthWithServer);
+	g_UISquirrelManager->AddFuncRegistration("bool", "NSIsAuthenticatingWithServer", "", "", SQ_IsAuthComplete);
+	g_UISquirrelManager->AddFuncRegistration("bool", "NSWasAuthSuccessful", "", "", SQ_WasAuthSuccessful);
+	g_UISquirrelManager->AddFuncRegistration("void", "NSConnectToAuthedServer", "", "", SQ_ConnectToAuthedServer);
 }
