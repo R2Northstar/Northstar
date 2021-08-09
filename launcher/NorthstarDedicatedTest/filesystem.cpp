@@ -28,6 +28,7 @@ FileHandle_t ReadFileFromFilesystemHook(IFileSystem* filesystem, const char* pPa
 bool readingOriginalFile;
 std::string currentModPath;
 SourceInterface<IFileSystem>* g_Filesystem;
+void* g_pVGuiLocalize;
 
 void InitialiseFilesystem(HMODULE baseAddress)
 {

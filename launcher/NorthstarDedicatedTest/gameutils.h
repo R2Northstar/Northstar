@@ -1,4 +1,5 @@
 #pragma once
+#include "convar.h"
 
 // cmd.h
 
@@ -53,5 +54,34 @@ extern Cbuf_GetCurrentPlayerType Cbuf_GetCurrentPlayer;
 // compared to the defs i've seen, this is missing an arg, it could be nTickInterval or source, not sure, guessing it's source
 typedef void(*Cbuf_AddTextType)(ECommandTarget_t eTarget, const char* text, cmd_source_t source);
 extern Cbuf_AddTextType Cbuf_AddText;
+
+
+// hoststate stuff
+
+struct CHostState
+{
+public:
+	int32_t m_iCurrentState;
+	int32_t m_iNextState;
+
+	float m_vecLocation[3];
+	float m_angLocation[3];
+
+	char m_levelName[32];
+
+	// not reversed past this point, struct seems weird
+};
+
+extern CHostState* g_GameCHostStateSingleton;
+
+// network stuff
+
+extern ConVar* Cvar_hostport;
+
+
+// playlist stuff
+
+typedef const char*(*GetCurrentPlaylistType)();
+extern GetCurrentPlaylistType GetCurrentPlaylistName;
 
 void InitialiseEngineGameUtilFunctions(HMODULE baseAddress);

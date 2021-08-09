@@ -49,6 +49,21 @@ SQInteger SQ_GetServerName(void* sqvm)
 	return 1;
 }
 
+// string function NSGetServerDescription( int serverIndex )
+SQInteger SQ_GetServerDescription(void* sqvm)
+{
+	SQInteger serverIndex = ClientSq_getinteger(sqvm, 1);
+
+	if (serverIndex >= g_MasterServerManager->m_remoteServers.size())
+	{
+		spdlog::warn("Tried to get description of server index {} when only {} servers are available", serverIndex, g_MasterServerManager->m_remoteServers.size());
+		return 0;
+	}
+
+	ClientSq_pushstring(sqvm, g_MasterServerManager->m_remoteServers[serverIndex].description.c_str(), -1);
+	return 1;
+}
+
 // string function NSGetServerMap( int serverIndex )
 SQInteger SQ_GetServerMap(void* sqvm)
 {
@@ -76,6 +91,36 @@ SQInteger SQ_GetServerPlaylist(void* sqvm)
 	}
 
 	ClientSq_pushstring(sqvm, g_MasterServerManager->m_remoteServers[serverIndex].playlist, -1);
+	return 1;
+}
+
+// int function NSGetServerPlayerCount( int serverIndex )
+SQInteger SQ_GetServerPlayerCount(void* sqvm)
+{
+	SQInteger serverIndex = ClientSq_getinteger(sqvm, 1);
+
+	if (serverIndex >= g_MasterServerManager->m_remoteServers.size())
+	{
+		spdlog::warn("Tried to get playercount of server index {} when only {} servers are available", serverIndex, g_MasterServerManager->m_remoteServers.size());
+		return 0;
+	}
+
+	ClientSq_pushinteger(sqvm, g_MasterServerManager->m_remoteServers[serverIndex].playerCount);
+	return 1;
+}
+
+// int function NSGetServerMaxPlayerCount( int serverIndex )
+SQInteger SQ_GetServerMaxPlayerCount(void* sqvm)
+{
+	SQInteger serverIndex = ClientSq_getinteger(sqvm, 1);
+
+	if (serverIndex >= g_MasterServerManager->m_remoteServers.size())
+	{
+		spdlog::warn("Tried to get max playercount of server index {} when only {} servers are available", serverIndex, g_MasterServerManager->m_remoteServers.size());
+		return 0;
+	}
+
+	ClientSq_pushinteger(sqvm, g_MasterServerManager->m_remoteServers[serverIndex].maxPlayers);
 	return 1;
 }
 
@@ -131,7 +176,7 @@ SQInteger SQ_TryAuthWithServer(void* sqvm)
 	}
 
 	// do auth
-	g_MasterServerManager->TryAuthenticateWithServer(g_MasterServerManager->m_remoteServers[serverIndex].id, (char*)password);
+	g_MasterServerManager->AuthenticateWithServer(g_MasterServerManager->m_remoteServers[serverIndex].id, (char*)password);
 
 	return 0;
 }
@@ -181,8 +226,11 @@ void InitialiseScriptServerBrowser(HMODULE baseAddress)
 	g_UISquirrelManager->AddFuncRegistration("void", "NSClearRecievedServerList", "", "", SQ_ClearRecievedServerList);
 
 	g_UISquirrelManager->AddFuncRegistration("string", "NSGetServerName", "int serverIndex", "", SQ_GetServerName);
+	g_UISquirrelManager->AddFuncRegistration("string", "NSGetServerDescription", "int serverIndex", "", SQ_GetServerDescription);
 	g_UISquirrelManager->AddFuncRegistration("string", "NSGetServerMap", "int serverIndex", "", SQ_GetServerMap);
 	g_UISquirrelManager->AddFuncRegistration("string", "NSGetServerPlaylist", "int serverIndex", "", SQ_GetServerPlaylist);
+	g_UISquirrelManager->AddFuncRegistration("int", "NSGetServerPlayerCount", "int serverIndex", "", SQ_GetServerPlayerCount);
+	g_UISquirrelManager->AddFuncRegistration("int", "NSGetServerMaxPlayerCount", "int serverIndex", "", SQ_GetServerMaxPlayerCount);
 	g_UISquirrelManager->AddFuncRegistration("string", "NSGetServerID", "int serverIndex", "", SQ_GetServerID);
 	g_UISquirrelManager->AddFuncRegistration("bool", "NSServerRequiresPassword", "int serverIndex", "", SQ_ServerRequiresPassword);
 

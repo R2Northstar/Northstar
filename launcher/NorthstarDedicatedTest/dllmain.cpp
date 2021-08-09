@@ -15,6 +15,7 @@
 #include "masterserver.h"
 #include "gameutils.h"
 #include "chatcommand.h"
+#include "modlocalisation.h"
 
 bool initialised = false;
 
@@ -60,11 +61,11 @@ void InitialiseNorthstar()
     if (!IsDedicated())
     {
         AddDllLoadCallback("client.dll", InitialiseClientSquirrel);
-
         AddDllLoadCallback("client.dll", InitialiseSourceConsole);
         AddDllLoadCallback("engine.dll", InitialiseChatCommands);
         AddDllLoadCallback("client.dll", InitialiseScriptModMenu);
         AddDllLoadCallback("client.dll", InitialiseScriptServerBrowser);
+        AddDllLoadCallback("localize.dll", InitialiseModLocalisation);
     }
 
     AddDllLoadCallback("server.dll", InitialiseServerSquirrel);

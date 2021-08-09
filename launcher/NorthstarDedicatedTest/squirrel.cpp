@@ -163,7 +163,9 @@ void InitialiseServerSquirrel(HMODULE baseAddress)
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x799E0, &ScriptCompileErrorHook<SERVER>, reinterpret_cast<LPVOID*>(&ServerSQCompileError)); // server compileerror function
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1D5C0, &CallScriptInitCallbackHook<SERVER>, reinterpret_cast<LPVOID*>(&ServerCallScriptInitCallback)); // server callscriptinitcallback function
 
-	RegisterConCommand("script", ExecuteCodeCommand<SERVER>, "Executes script code on the server vm", FCVAR_GAMEDLL);
+	// cheat and clientcmd_can_execute allows clients to execute this, but since it's unsafe we only allow it when cheats are enabled
+	// for script_client and script_ui, we don't use cheats, so clients can execute them on themselves all they want 
+	RegisterConCommand("script", ExecuteCodeCommand<SERVER>, "Executes script code on the server vm", FCVAR_GAMEDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_CHEAT);
 }
 
 // hooks

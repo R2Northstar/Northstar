@@ -5,7 +5,7 @@
 class RemoteServerInfo
 {
 public:
-	char id[32];
+	char id[33]; // 32 bytes + nullterminator
 
 	// server info
 	char name[64];
@@ -18,12 +18,9 @@ public:
 
 	// connection stuff
 	bool requiresPassword;
-	in_addr ip;
-	int port;
 
 public:
-	RemoteServerInfo(const char* newId, const char* newName, const char* newDescription, const char* newMap, const char* newPlaylist, int newPlayerCount, int newMaxPlayers);
-	RemoteServerInfo(const char* newId, const char* newName, const char* newDescription, const char* newMap, const char* newPlaylist, int newPlayerCount, int newMaxPlayers, in_addr newIp, int newPort);
+	RemoteServerInfo(const char* newId, const char* newName, const char* newDescription, const char* newMap, const char* newPlaylist, int newPlayerCount, int newMaxPlayers, bool newRequiresPassword);
 };
 
 struct RemoteServerConnectionInfo
@@ -42,6 +39,8 @@ private:
 	bool m_authenticatingWithGameServer = false;
 
 public:
+	char m_ownServerId[33];
+
 	bool m_scriptRequestingServerList = false;
 	bool m_successfullyConnected = true;
 
@@ -56,7 +55,11 @@ public:
 public:
 	void ClearServerList();
 	void RequestServerList();
-	void TryAuthenticateWithServer(char* serverId, char* password);
+	void AuthenticateWithServer(char* serverId, char* password);
+	void AddSelfToServerList(int port, char* name, char* description, char* map, char* playlist, int maxPlayers, char* password);
+	void UpdateServerMapAndPlaylist(char* map, char* playlist);
+	void UpdateServerPlayerCount(int playerCount);
+	void RemoveSelfFromServerList();
 };
 
 void InitialiseSharedMasterServer(HMODULE baseAddress);

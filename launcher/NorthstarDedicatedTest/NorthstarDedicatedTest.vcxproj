@@ -310,6 +310,7 @@
     <ClInclude Include="logging.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="masterserver.h" />
+    <ClInclude Include="modlocalisation.h" />
     <ClInclude Include="modmanager.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="scriptmodmenu.h" />
@@ -334,6 +335,7 @@
     <ClCompile Include="hooks.cpp" />
     <ClCompile Include="hookutils.cpp" />
     <ClCompile Include="keyvalues.cpp" />
+    <ClCompile Include="modlocalisation.cpp" />
     <ClCompile Include="logging.cpp" />
     <ClCompile Include="masterserver.cpp" />
     <ClCompile Include="modmanager.cpp" />

@@ -163,6 +163,17 @@ Mod::Mod(fs::path modDir, char* jsonBuf)
 		}
 	}
 
+	if (modJson.HasMember("Localisation") && modJson["Localisation"].IsArray())
+	{
+		for (auto& localisationStr : modJson["Localisation"].GetArray())
+		{
+			if (!localisationStr.IsString())
+				continue;
+
+			LocalisationFiles.push_back(localisationStr.GetString());
+		}
+	}
+
 	wasReadSuccessfully = true;
 }
 
@@ -237,6 +248,7 @@ void ModManager::LoadMods()
 				if (fs::is_regular_file(file) && file.path().extension() == "vpk")
 					mod->Vpks.push_back(file.path().string());
 
+		// read keyvalues paths
 		if (fs::exists(mod->ModDirectory / "keyvalues"))
 		{
 			for (fs::directory_entry file : fs::recursive_directory_iterator(mod->ModDirectory / "keyvalues"))

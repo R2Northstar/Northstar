@@ -1,62 +1,54 @@
 #include "pch.h"
 #include "masterserver.h"
+#include "concommand.h"
+#include "gameutils.h"
+#include "hookutils.h"
 #include "httplib.h"
 #include "rapidjson/document.h"
 #include "rapidjson/error/en.h"
 
-#include "concommand.h"
-
 ConVar* Cvar_ns_masterserver_hostname;
 ConVar* Cvar_ns_masterserver_port;
+ConVar* Cvar_ns_report_server_to_masterserver;
+ConVar* Cvar_ns_report_sp_server_to_masterserver;
+
+ConVar* Cvar_ns_server_name;
+ConVar* Cvar_ns_server_desc;
+ConVar* Cvar_ns_server_password;
 
 MasterServerManager* g_MasterServerManager;
 
-// requires password constructor
-RemoteServerInfo::RemoteServerInfo(const char* newId, const char* newName, const char* newDescription, const char* newMap, const char* newPlaylist, int newPlayerCount, int newMaxPlayers)
+typedef void(*CHostState__State_NewGameType)(CHostState* hostState);
+CHostState__State_NewGameType CHostState__State_NewGame;
+
+typedef void(*CHostState__State_ChangeLevelMPType)(CHostState* hostState);
+CHostState__State_ChangeLevelMPType CHostState__State_ChangeLevelMP;
+
+typedef void(*CHostState__State_ChangeLevelSPType)(CHostState* hostState);
+CHostState__State_ChangeLevelSPType CHostState__State_ChangeLevelSP;
+
+typedef void(*CHostState__State_GameShutdownType)(CHostState* hostState);
+CHostState__State_GameShutdownType CHostState__State_GameShutdown;
+
+RemoteServerInfo::RemoteServerInfo(const char* newId, const char* newName, const char* newDescription, const char* newMap, const char* newPlaylist, int newPlayerCount, int newMaxPlayers, bool newRequiresPassword)
 {
 	// passworded servers don't have public ips
-	requiresPassword = true;
-	memset(&ip, 0, sizeof(ip));
-	port = 0;
+	requiresPassword = newRequiresPassword;
 
-	strncpy((char*)id, newId, 31);
-	id[31] = 0;
-	strncpy((char*)name, newName, 63);
-	name[63] = 0;
+	strncpy((char*)id, newId, sizeof(id));
+	id[sizeof(id) - 1] = 0;
+	strncpy((char*)name, newName, sizeof(name));
+	name[sizeof(name) - 1] = 0;
 
 	description = std::string(newDescription);
 
-	strncpy((char*)map, newMap, 31);
-	map[31] = 0;
-	strncpy((char*)playlist, newPlaylist, 15);
-	playlist[15] = 0;
+	strncpy((char*)map, newMap, sizeof(map));
+	map[sizeof(map) - 1] = 0;
+	strncpy((char*)playlist, newPlaylist, sizeof(playlist));
+	playlist[sizeof(playlist) - 1] = 0;
 
 	playerCount = newPlayerCount;
 	maxPlayers = newMaxPlayers;
-}
-
-// doesnt require password constructor
-RemoteServerInfo::RemoteServerInfo(const char* newId, const char* newName, const char* newDescription, const char* newMap, const char* newPlaylist, int newPlayerCount, int newMaxPlayers, in_addr newIp, int newPort)
-{
-	requiresPassword = false;
-
-	strncpy((char*)id, newId, 31);
-	id[31] = 0;
-	strncpy((char*)name, newName, 63);
-	name[63] = 0;
-
-	description = std::string(newDescription);
-
-	strncpy((char*)map, newMap, 31);
-	map[31] = 0;
-	strncpy((char*)playlist, newPlaylist, 15);
-	playlist[15] = 0;
-
-	playerCount = newPlayerCount;
-	maxPlayers = newMaxPlayers;
-
-	ip = newIp;
-	port = newPort;
 }
 
 void MasterServerManager::ClearServerList()
@@ -142,25 +134,15 @@ void MasterServerManager::RequestServerList()
 						goto REQUEST_END_CLEANUP;
 					}
 
-					bool hasPassword = serverObj["hasPassword"].GetBool();
 					const char* id = serverObj["id"].GetString();
 
 					bool createNewServerInfo = true;
 					for (RemoteServerInfo& server : m_remoteServers)
 					{
 						// if server already exists, update info rather than adding to it
-						if (!strncmp((const char*)server.id, id, 31))
+						if (!strncmp((const char*)server.id, id, 32))
 						{
-							if (hasPassword)
-								server = RemoteServerInfo(id, serverObj["name"].GetString(), serverObj["description"].GetString(), serverObj["map"].GetString(), serverObj["playlist"].GetString(), serverObj["playerCount"].GetInt(), serverObj["maxPlayers"].GetInt());
-							else
-							{
-								in_addr addr;
-								addr.S_un.S_addr = serverObj["ip"].GetUint64();
-
-								server = RemoteServerInfo(id, serverObj["name"].GetString(), serverObj["description"].GetString(), serverObj["map"].GetString(), serverObj["playlist"].GetString(), serverObj["playerCount"].GetInt(), serverObj["maxPlayers"].GetInt(), addr, serverObj["port"].GetInt());
-							}
-
+							server = RemoteServerInfo(id, serverObj["name"].GetString(), serverObj["description"].GetString(), serverObj["map"].GetString(), serverObj["playlist"].GetString(), serverObj["playerCount"].GetInt(), serverObj["maxPlayers"].GetInt(), serverObj["hasPassword"].IsTrue());
 							createNewServerInfo = false;
 							break;
 						}
@@ -168,24 +150,7 @@ void MasterServerManager::RequestServerList()
 
 					// server didn't exist
 					if (createNewServerInfo)
-					{
-						// passworded servers shouldn't send ip/port
-						if (hasPassword)
-							m_remoteServers.emplace_back(id, serverObj["name"].GetString(), serverObj["description"].GetString(), serverObj["map"].GetString(), serverObj["playlist"].GetString(), serverObj["playerCount"].GetInt(), serverObj["maxPlayers"].GetInt());
-						else
-						{
-							if (!serverObj.HasMember("ip") || !serverObj["ip"].IsUint64() || !serverObj.HasMember("port") || !serverObj["port"].IsNumber())
-							{
-								spdlog::error("Failed reading masterserver response: malformed server object");
-								goto REQUEST_END_CLEANUP;
-							}
-
-							in_addr addr;
-							addr.S_un.S_addr = serverObj["ip"].GetUint64();
-
-							m_remoteServers.emplace_back(id, serverObj["name"].GetString(), serverObj["description"].GetString(), serverObj["map"].GetString(), serverObj["playlist"].GetString(), serverObj["playerCount"].GetInt(), serverObj["maxPlayers"].GetInt(), addr, serverObj["port"].GetInt());
-						}
-					}
+						m_remoteServers.emplace_back(id, serverObj["name"].GetString(), serverObj["description"].GetString(), serverObj["map"].GetString(), serverObj["playlist"].GetString(), serverObj["playerCount"].GetInt(), serverObj["maxPlayers"].GetInt(), serverObj["hasPassword"].IsTrue());
 
 					spdlog::info("Server {} on map {} with playlist {} has {}/{} players", serverObj["name"].GetString(), serverObj["map"].GetString(), serverObj["playlist"].GetString(), serverObj["playerCount"].GetInt(), serverObj["maxPlayers"].GetInt());
 				}
@@ -205,7 +170,7 @@ void MasterServerManager::RequestServerList()
 	requestThread.detach();
 }
 
-void MasterServerManager::TryAuthenticateWithServer(char* serverId, char* password)
+void MasterServerManager::AuthenticateWithServer(char* serverId, char* password)
 {
 	// dont wait, just stop if we're trying to do 2 auth requests at once
 	if (m_authenticatingWithGameServer)
@@ -221,8 +186,6 @@ void MasterServerManager::TryAuthenticateWithServer(char* serverId, char* passwo
 			http.set_connection_timeout(20);
 
 			spdlog::info("Attempting authentication with server of id \"{}\"", serverId);
-
-			spdlog::info(fmt::format("/client/auth_with_server?server={}&password={}", serverId, password));
 
 			if (auto result = http.Post(fmt::format("/client/auth_with_server?server={}&password={}", serverId, password).c_str()))
 			{
@@ -256,13 +219,13 @@ void MasterServerManager::TryAuthenticateWithServer(char* serverId, char* passwo
 					goto REQUEST_END_CLEANUP;
 				}
 
-				if (!connectionInfoJson.HasMember("success") || !connectionInfoJson.HasMember("ip") || !connectionInfoJson["ip"].IsUint64() || !connectionInfoJson.HasMember("port") || !connectionInfoJson["port"].IsNumber() || !connectionInfoJson.HasMember("authToken") || !connectionInfoJson["authToken"].IsString())
+				if (!connectionInfoJson.HasMember("success") || !connectionInfoJson.HasMember("ip") || !connectionInfoJson["ip"].IsString() || !connectionInfoJson.HasMember("port") || !connectionInfoJson["port"].IsNumber() || !connectionInfoJson.HasMember("authToken") || !connectionInfoJson["authToken"].IsString())
 				{
 					spdlog::error("Failed reading masterserver authentication response: malformed json object");
 					goto REQUEST_END_CLEANUP;
 				}
 
-				m_pendingConnectionInfo.ip.S_un.S_addr = connectionInfoJson["ip"].GetUint64();
+				m_pendingConnectionInfo.ip.S_un.S_addr = inet_addr(connectionInfoJson["ip"].GetString());
 				m_pendingConnectionInfo.port = connectionInfoJson["port"].GetInt();
 
 				strncpy(m_pendingConnectionInfo.authToken, connectionInfoJson["authToken"].GetString(), 31);
@@ -286,16 +249,215 @@ void MasterServerManager::TryAuthenticateWithServer(char* serverId, char* passwo
 	requestThread.detach();
 }
 
+void MasterServerManager::AddSelfToServerList(int port, char* name, char* description, char* map, char* playlist, int maxPlayers, char* password)
+{
+	if (!Cvar_ns_report_server_to_masterserver->m_nValue)
+		return;
+
+	if (!Cvar_ns_report_sp_server_to_masterserver->m_nValue && !strncmp(map, "sp_", 3))
+		return;
+
+	std::thread requestThread([this, port, name, description, map, playlist, maxPlayers, password] {
+			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);
+			http.set_connection_timeout(20);
+
+			m_ownServerId[0] = 0;
+
+			std::string request;
+			if (*password)
+				request = fmt::format("/server/add_server?port={}&name={}&description={}&map={}&playlist={}&maxPlayers={}&password={}", port, name, description, map, playlist, maxPlayers, password);
+			else
+				request = fmt::format("/server/add_server?port={}&name={}&description={}&map={}&playlist={}&maxPlayers={}", port, name, description, map, playlist, maxPlayers);
+
+			if (auto result = http.Post(request.c_str()))
+			{
+				m_successfullyConnected = true;
+				
+				rapidjson::Document serverAddedJson;
+				serverAddedJson.Parse(result->body.c_str());
+
+				if (serverAddedJson.HasParseError())
+				{
+					spdlog::error("Failed reading masterserver authentication response: encountered parse error \"{}\"", rapidjson::GetParseError_En(serverAddedJson.GetParseError()));
+					return;
+				}
+
+				if (!serverAddedJson.IsObject())
+				{
+					spdlog::error("Failed reading masterserver authentication response: root object is not an object");
+					return;
+				}
+
+				if (serverAddedJson.HasMember("error"))
+				{
+					spdlog::error("Failed reading masterserver response: got fastify error response");
+					spdlog::error(result->body);
+					return;
+				}
+
+				if (!serverAddedJson["success"].IsTrue())
+				{
+					spdlog::error("Adding server to masterserver failed: \"success\" is not true");
+					return;
+				}
+
+				if (!serverAddedJson.HasMember("id") || !serverAddedJson["id"].IsString())
+				{
+					spdlog::error("Failed reading masterserver response: malformed json object");
+					return;
+				}
+
+				strncpy(m_ownServerId, serverAddedJson["id"].GetString(), sizeof(m_ownServerId));
+				m_ownServerId[sizeof(m_ownServerId) - 1] = 0;
+
+
+				// heartbeat thread
+				std::thread heartbeatThread([this] {
+						httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);
+						http.set_connection_timeout(10);
+
+						while (*m_ownServerId)
+						{
+							Sleep(15000);
+							http.Post(fmt::format("/server/heartbeat?id={}", m_ownServerId).c_str());
+						}
+					});
+
+				heartbeatThread.detach();
+			}
+			else
+			{
+				spdlog::error("Failed authenticating with server: error {}", result.error());
+				m_successfullyConnected = false;
+			}
+		});
+
+	requestThread.detach();
+}
+
+void MasterServerManager::UpdateServerMapAndPlaylist(char* map, char* playlist)
+{
+	// dont call this if we don't have a server id
+	if (!*m_ownServerId)
+		return;
+
+	std::thread requestThread([this, map, playlist] {
+			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);
+			http.set_connection_timeout(10);
+
+			// we dont process this at all atm, maybe do later, but atm not necessary
+			if (auto result = http.Post(fmt::format("/server/update_values?id={}&map={}&playlist={}", m_ownServerId, map, playlist).c_str()))
+			{
+				m_successfullyConnected = true;
+			}
+			else
+			{
+				m_successfullyConnected = false;
+			}
+		});
+
+	requestThread.detach();
+}
+
+void MasterServerManager::UpdateServerPlayerCount(int playerCount)
+{
+	// dont call this if we don't have a server id
+	if (!*m_ownServerId)
+		return;
+
+	std::thread requestThread([this, playerCount] {
+			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);
+			http.set_connection_timeout(10);
+
+			// we dont process this at all atm, maybe do later, but atm not necessary
+			if (auto result = http.Post(fmt::format("/server/update_values?id={}&playerCount={}", m_ownServerId, playerCount).c_str()))
+			{
+				m_successfullyConnected = true;
+			}
+			else
+			{
+				m_successfullyConnected = false;
+			}		
+		});
+
+	requestThread.detach();
+}
+
+void MasterServerManager::RemoveSelfFromServerList()
+{
+	// dont call this if we don't have a server id
+	if (!*m_ownServerId || !Cvar_ns_report_server_to_masterserver->m_nValue)
+		return;
+
+	std::thread requestThread([this] {
+			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);
+			http.set_connection_timeout(10);
+
+			// we dont process this at all atm, maybe do later, but atm not necessary
+			if (auto result = http.Delete(fmt::format("/server/remove_server?id={}", m_ownServerId).c_str()))
+			{
+				m_successfullyConnected = true;
+			}
+			else
+			{
+				m_successfullyConnected = false;
+			}
+
+			m_ownServerId[0] = 0;
+		});
+
+	requestThread.detach();
+}
+
 void ConCommand_ns_fetchservers(const CCommand& args)
 {
 	g_MasterServerManager->RequestServerList();
+}
+
+void CHostState__State_NewGameHook(CHostState* hostState)
+{
+	// not 100% we should do this here, but whatever
+	Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec autoexec_ns_server", cmd_source_t::kCommandSrcCode);
+
+	g_MasterServerManager->AddSelfToServerList(Cvar_hostport->m_nValue, Cvar_ns_server_name->m_pszString, Cvar_ns_server_desc->m_pszString, hostState->m_levelName, (char*)GetCurrentPlaylistName(), 16, Cvar_ns_server_password->m_pszString);
+	CHostState__State_NewGame(hostState);
+}
+
+void CHostState__State_ChangeLevelMPHook(CHostState* hostState)
+{
+	g_MasterServerManager->UpdateServerMapAndPlaylist(hostState->m_levelName, (char*)GetCurrentPlaylistName());
+	CHostState__State_ChangeLevelMP(hostState);
+}
+
+void CHostState__State_ChangeLevelSPHook(CHostState* hostState)
+{
+	g_MasterServerManager->UpdateServerMapAndPlaylist(hostState->m_levelName, (char*)GetCurrentPlaylistName());
+	CHostState__State_ChangeLevelSP(hostState);
+}
+
+void CHostState__State_GameShutdownHook(CHostState* hostState)
+{
+	g_MasterServerManager->RemoveSelfFromServerList();
+	CHostState__State_GameShutdown(hostState);
 }
 
 void InitialiseSharedMasterServer(HMODULE baseAddress)
 {
 	Cvar_ns_masterserver_hostname = RegisterConVar("ns_masterserver_hostname", "localhost", FCVAR_NONE, "");
 	Cvar_ns_masterserver_port = RegisterConVar("ns_masterserver_port", "8080", FCVAR_NONE, "");
+
+	Cvar_ns_server_name = RegisterConVar("ns_server_name", "Unnamed Northstar Server", FCVAR_GAMEDLL, "");
+	Cvar_ns_server_desc = RegisterConVar("ns_server_desc", "Default server description", FCVAR_GAMEDLL, "");
+	Cvar_ns_server_password = RegisterConVar("ns_server_password", "", FCVAR_GAMEDLL, "");
+	Cvar_ns_report_server_to_masterserver = RegisterConVar("ns_report_server_to_masterserver", "1", FCVAR_GAMEDLL, "");
+	Cvar_ns_report_sp_server_to_masterserver = RegisterConVar("ns_report_sp_server_to_masterserver", "0", FCVAR_GAMEDLL, "");
 	g_MasterServerManager = new MasterServerManager;
 
 	RegisterConCommand("ns_fetchservers", ConCommand_ns_fetchservers, "", FCVAR_CLIENTDLL);
+
+	HookEnabler hook;
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x16E7D0, CHostState__State_NewGameHook, reinterpret_cast<LPVOID*>(&CHostState__State_NewGame));
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x16E5D0, CHostState__State_ChangeLevelMPHook, reinterpret_cast<LPVOID*>(&CHostState__State_ChangeLevelMP));
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x16E520, CHostState__State_ChangeLevelSPHook, reinterpret_cast<LPVOID*>(&CHostState__State_ChangeLevelSP));
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x16E640, CHostState__State_GameShutdownHook, reinterpret_cast<LPVOID*>(&CHostState__State_GameShutdown));
 }
