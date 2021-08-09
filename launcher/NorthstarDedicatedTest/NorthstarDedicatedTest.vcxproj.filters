@@ -561,6 +561,9 @@
     <ClInclude Include="chatcommand.h">
       <Filter>Header Files\Client</Filter>
     </ClInclude>
+    <ClInclude Include="modlocalisation.h">
+      <Filter>Header Files\Client</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -633,6 +636,9 @@
       <Filter>Source Files\Shared\Game Functions</Filter>
     </ClCompile>
     <ClCompile Include="chatcommand.cpp">
+      <Filter>Source Files\Client</Filter>
+    </ClCompile>
+    <ClCompile Include="modlocalisation.cpp">
       <Filter>Source Files\Client</Filter>
     </ClCompile>
   </ItemGroup>

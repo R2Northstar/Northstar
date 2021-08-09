@@ -2,8 +2,11 @@
 #include "serverauthentication.h"
 #include "convar.h"
 #include "hookutils.h"
+#include "masterserver.h"
+#include "httplib.h"
 #include <fstream>
 #include <filesystem>
+#include <thread>
 
 // hook types
 
@@ -25,9 +28,24 @@ CGameClient__ExecuteStringCommandType CGameClient__ExecuteStringCommand;
 // global vars
 ServerAuthenticationManager* g_ServerAuthenticationManager;
 
+ConVar* Cvar_ns_player_auth_port;
 ConVar* CVar_ns_auth_allow_insecure;
 ConVar* CVar_ns_auth_allow_insecure_write;
 ConVar* CVar_sv_quota_stringcmdspersecond;
+
+void ServerAuthenticationManager::StartPlayerAuthServer()
+{
+	m_runningPlayerAuthThread = true;
+
+	std::thread serverThread([this] {
+			while (m_runningPlayerAuthThread)
+			{
+
+			}
+		});
+
+	serverThread.detach();
+}
 
 void ServerAuthenticationManager::AddPlayerAuthData(char* authToken, char* uid, char* pdata, size_t pdataSize)
 {
@@ -122,6 +140,8 @@ void ServerAuthenticationManager::WritePersistentData(void* player)
 
 // auth hooks
 
+int playerCount = 0; // temp
+
 // store these in vars so we can use them in CBaseClient::Connect
 // this is fine because ptrs won't decay by the time we use this, just don't use it outside of cbaseclient::connect
 char* nextPlayerToken;
@@ -146,6 +166,8 @@ char CBaseClient__ConnectHook(void* self, char* name, __int64 netchan_ptr_arg, c
 	else if (!g_ServerAuthenticationManager->AuthenticatePlayer(self, nextPlayerUid, nextPlayerToken))
 		CBaseClient__Disconnect(self, 1, "Authentication Failed");
 
+	playerCount++;
+
 	return ret;
 }
 
@@ -154,7 +176,10 @@ void CBaseClient__ActivatePlayerHook(void* self)
 	// if we're authed, write our persistent data
 	// RemovePlayerAuthData returns true if it removed successfully, i.e. on first call only, and we only want to write on >= second call (since this func is called on map loads)
 	if (*((char*)self + 0x4A0) >= (char)0x3 && !g_ServerAuthenticationManager->RemovePlayerAuthData(self))
+	{
 		g_ServerAuthenticationManager->WritePersistentData(self);
+		g_MasterServerManager->UpdateServerPlayerCount(playerCount);
+	}
 
 	CBaseClient__ActivatePlayer(self);
 }
@@ -171,6 +196,8 @@ void CBaseClient__DisconnectHook(void* self, uint32_t unknownButAlways1, const c
 
 	// dcing, write persistent data
 	g_ServerAuthenticationManager->WritePersistentData(self);
+
+	g_MasterServerManager->UpdateServerPlayerCount(playerCount = std::max(playerCount - 1, 0));
 
 	CBaseClient__Disconnect(self, unknownButAlways1, buf);
 }
