@@ -8,6 +8,8 @@
 #include <filesystem>
 #include <thread>
 
+const char* AUTHSERVER_VERIFY_STRING = "I am a northstar server!";
+
 // hook types
 
 typedef void*(*CBaseServer__ConnectClientType)(void* server, void* a2, void* a3, uint32_t a4, uint32_t a5, int32_t a6, void* a7, void* a8, char* serverFilter, void* a10, char a11, void* a12, char a13, char a14, int64_t uid, uint32_t a16, uint32_t a17);
@@ -35,39 +37,77 @@ ConVar* CVar_sv_quota_stringcmdspersecond;
 
 void ServerAuthenticationManager::StartPlayerAuthServer()
 {
+	if (m_runningPlayerAuthThread)
+	{
+		spdlog::warn("ServerAuthenticationManager::StartPlayerAuthServer was called while m_runningPlayerAuthThread is true");
+		return;
+	}
+
 	m_runningPlayerAuthThread = true;
 
+	// listen is a blocking call so thread this
 	std::thread serverThread([this] {
-			while (m_runningPlayerAuthThread)
-			{
+			// this is just a super basic way to verify that servers have ports open, masterserver will try to read this before ensuring server is legit
+			m_playerAuthServer.Get("/verify", [](const httplib::Request& request, httplib::Response& response) {
+					response.set_content(AUTHSERVER_VERIFY_STRING, "text/plain");
+				});
 
-			}
+			m_playerAuthServer.Post("/authenticate_incoming_player", [this](const httplib::Request& request, httplib::Response& response) {
+					if (!request.has_param("id") || !request.has_param("authToken") || request.remote_addr != Cvar_ns_masterserver_hostname->m_pszString)
+					{
+						response.set_content("{\"success\":false}", "application/json");
+						return;
+					}
+
+					AuthData newAuthData;
+					strncpy(newAuthData.uid, request.get_param_value("id").c_str(), sizeof(newAuthData.uid));
+					newAuthData.uid[sizeof(newAuthData.uid) - 1] = 0;
+
+					newAuthData.pdataSize = request.body.size();
+					newAuthData.pdata = new char[newAuthData.pdataSize];
+					memcpy(newAuthData.pdata, request.body.c_str(), newAuthData.pdataSize);
+
+					std::lock_guard<std::mutex> guard(m_authDataMutex);
+					m_authData.insert(std::make_pair(request.get_param_value("authToken"), newAuthData));
+
+					response.set_content("{\"success\":true}", "application/json");
+				});
+
+			m_playerAuthServer.listen("0.0.0.0", Cvar_ns_player_auth_port->m_nValue);
 		});
-
+	
 	serverThread.detach();
 }
 
-void ServerAuthenticationManager::AddPlayerAuthData(char* authToken, char* uid, char* pdata, size_t pdataSize)
+void ServerAuthenticationManager::StopPlayerAuthServer()
 {
-	
+	if (!m_runningPlayerAuthThread)
+	{
+		spdlog::warn("ServerAuthenticationManager::StopPlayerAuthServer was called while m_runningPlayerAuthThread is false");
+		return;
+	}
+
+	m_runningPlayerAuthThread = false;
+	m_playerAuthServer.stop();
 }
 
 bool ServerAuthenticationManager::AuthenticatePlayer(void* player, int64_t uid, char* authToken)
 {
 	std::string strUid = std::to_string(uid);
 
-	if (!m_authData.empty() && m_authData.count(authToken))
+	std::lock_guard<std::mutex> guard(m_authDataMutex);
+	if (!m_authData.empty() && m_authData.count(std::string(authToken)))
 	{
 		// use stored auth data
-		AuthData* authData = m_authData[authToken];
-		if (strcmp(strUid.c_str(), authData->uid)) // connecting client's uid is different from auth's uid
+		AuthData authData = m_authData[authToken];
+		if (strcmp(strUid.c_str(), authData.uid)) // connecting client's uid is different from auth's uid
 			return false;
 
 		// uuid
 		strcpy((char*)player + 0xF500, strUid.c_str());
 
 		// copy pdata into buffer
-		memcpy((char*)player + 0x4FA, authData->pdata, authData->pdataSize);
+		memcpy((char*)player + 0x4FA, authData.pdata, authData.pdataSize);
 
 		// set persistent data as ready, we use 0x4 internally to mark the client as using remote persistence
 		*((char*)player + 0x4a0) = (char)0x4;
@@ -112,10 +152,13 @@ bool ServerAuthenticationManager::RemovePlayerAuthData(void* player)
 	// we don't have our auth token at this point, so lookup authdata by uid
 	for (auto& auth : m_authData)
 	{
-		if (!strcmp((char*)player + 0xF500, auth.second->uid))
+		if (!strcmp((char*)player + 0xF500, auth.second.uid))
 		{
 			// pretty sure this is fine, since we don't iterate after the erase
 			// i think if we iterated after it'd be undefined behaviour tho
+			std::lock_guard<std::mutex> guard(m_authDataMutex);
+
+			delete[] auth.second.pdata;
 			m_authData.erase(auth.first);
 			return true;
 		}
@@ -196,6 +239,7 @@ void CBaseClient__DisconnectHook(void* self, uint32_t unknownButAlways1, const c
 
 	// dcing, write persistent data
 	g_ServerAuthenticationManager->WritePersistentData(self);
+	g_ServerAuthenticationManager->RemovePlayerAuthData(self); // won't do anything 99% of the time, but just in case
 
 	g_MasterServerManager->UpdateServerPlayerCount(playerCount = std::max(playerCount - 1, 0));
 
@@ -217,6 +261,7 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 	CVar_ns_auth_allow_insecure_write = RegisterConVar("ns_auth_allow_insecure_write", "0", FCVAR_GAMEDLL, "Whether the pdata of unauthenticated clients will be written to disk when changed");
 	// literally just stolen from a fix valve used in csgo
 	CVar_sv_quota_stringcmdspersecond = RegisterConVar("sv_quota_stringcmdspersecond", "40", FCVAR_NONE, "How many string commands per second clients are allowed to submit, 0 to disallow all string commands");
+	Cvar_ns_player_auth_port = RegisterConVar("Cvar_ns_player_auth_port", "8081", FCVAR_GAMEDLL, "");
 
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x114430, &CBaseServer__ConnectClientHook, reinterpret_cast<LPVOID*>(&CBaseServer__ConnectClient));

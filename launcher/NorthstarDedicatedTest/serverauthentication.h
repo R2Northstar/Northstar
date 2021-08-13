@@ -1,10 +1,12 @@
 #pragma once
+#include "convar.h"
+#include "httplib.h"
 #include <unordered_map>
 #include <string>
 
 struct AuthData
 {
-	char* uid;
+	char uid[33];
 
 	// pdata
 	char* pdata;
@@ -13,13 +15,17 @@ struct AuthData
 
 class ServerAuthenticationManager
 {
+private:
+	httplib::Server m_playerAuthServer;
+
 public:
-	std::unordered_map<std::string, AuthData*> m_authData;
+	std::mutex m_authDataMutex;
+	std::unordered_map<std::string, AuthData> m_authData;
 	bool m_runningPlayerAuthThread = false;
 
 public:
 	void StartPlayerAuthServer();
-	void AddPlayerAuthData(char* authToken, char* uid, char* pdata, size_t pdataSize);
+	void StopPlayerAuthServer();
 	bool AuthenticatePlayer(void* player, int64_t uid, char* authToken);
 	bool RemovePlayerAuthData(void* player);
 	void WritePersistentData(void* player);

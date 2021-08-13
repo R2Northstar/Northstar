@@ -4,6 +4,7 @@
 #include "gameutils.h"
 #include "hookutils.h"
 #include "httplib.h"
+#include "serverauthentication.h"
 #include "rapidjson/document.h"
 #include "rapidjson/error/en.h"
 
@@ -170,7 +171,7 @@ void MasterServerManager::RequestServerList()
 	requestThread.detach();
 }
 
-void MasterServerManager::AuthenticateWithServer(char* serverId, char* password)
+void MasterServerManager::AuthenticateWithServer(char* uid, char* playerToken, char* serverId, char* password)
 {
 	// dont wait, just stop if we're trying to do 2 auth requests at once
 	if (m_authenticatingWithGameServer)
@@ -180,14 +181,14 @@ void MasterServerManager::AuthenticateWithServer(char* serverId, char* password)
 	m_scriptAuthenticatingWithGameServer = true;
 	m_successfullyAuthenticatedWithGameServer = false;
 
-	std::thread requestThread([this, serverId, password]()
+	std::thread requestThread([this, uid, playerToken, serverId, password]()
 		{
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);
 			http.set_connection_timeout(20);
 
 			spdlog::info("Attempting authentication with server of id \"{}\"", serverId);
 
-			if (auto result = http.Post(fmt::format("/client/auth_with_server?server={}&password={}", serverId, password).c_str()))
+			if (auto result = http.Post(fmt::format("/client/auth_with_server?id={}&playerToken={}&server={}&password={}", uid, playerToken, serverId, password).c_str()))
 			{
 				m_successfullyConnected = true;
 				
@@ -239,6 +240,7 @@ void MasterServerManager::AuthenticateWithServer(char* serverId, char* password)
 				spdlog::error("Failed authenticating with server: error {}", result.error());
 				m_successfullyConnected = false;
 				m_successfullyAuthenticatedWithGameServer = false;
+				m_scriptAuthenticatingWithGameServer = false;
 			}
 
 			REQUEST_END_CLEANUP:
@@ -249,7 +251,7 @@ void MasterServerManager::AuthenticateWithServer(char* serverId, char* password)
 	requestThread.detach();
 }
 
-void MasterServerManager::AddSelfToServerList(int port, char* name, char* description, char* map, char* playlist, int maxPlayers, char* password)
+void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name, char* description, char* map, char* playlist, int maxPlayers, char* password)
 {
 	if (!Cvar_ns_report_server_to_masterserver->m_nValue)
 		return;
@@ -257,7 +259,7 @@ void MasterServerManager::AddSelfToServerList(int port, char* name, char* descri
 	if (!Cvar_ns_report_sp_server_to_masterserver->m_nValue && !strncmp(map, "sp_", 3))
 		return;
 
-	std::thread requestThread([this, port, name, description, map, playlist, maxPlayers, password] {
+	std::thread requestThread([this, port, authPort, name, description, map, playlist, maxPlayers, password] {
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);
 			http.set_connection_timeout(20);
 
@@ -265,9 +267,9 @@ void MasterServerManager::AddSelfToServerList(int port, char* name, char* descri
 
 			std::string request;
 			if (*password)
-				request = fmt::format("/server/add_server?port={}&name={}&description={}&map={}&playlist={}&maxPlayers={}&password={}", port, name, description, map, playlist, maxPlayers, password);
+				request = fmt::format("/server/add_server?port={}&authPort={}&name={}&description={}&map={}&playlist={}&maxPlayers={}&password={}", port, authPort, name, description, map, playlist, maxPlayers, password);
 			else
-				request = fmt::format("/server/add_server?port={}&name={}&description={}&map={}&playlist={}&maxPlayers={}", port, name, description, map, playlist, maxPlayers);
+				request = fmt::format("/server/add_server?port={}&authPort={}&name={}&description={}&map={}&playlist={}&maxPlayers={}&password=", port, authPort, name, description, map, playlist, maxPlayers);
 
 			if (auto result = http.Post(request.c_str()))
 			{
@@ -419,7 +421,9 @@ void CHostState__State_NewGameHook(CHostState* hostState)
 	// not 100% we should do this here, but whatever
 	Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec autoexec_ns_server", cmd_source_t::kCommandSrcCode);
 
-	g_MasterServerManager->AddSelfToServerList(Cvar_hostport->m_nValue, Cvar_ns_server_name->m_pszString, Cvar_ns_server_desc->m_pszString, hostState->m_levelName, (char*)GetCurrentPlaylistName(), 16, Cvar_ns_server_password->m_pszString);
+	g_MasterServerManager->AddSelfToServerList(Cvar_hostport->m_nValue, Cvar_ns_player_auth_port->m_nValue, Cvar_ns_server_name->m_pszString, Cvar_ns_server_desc->m_pszString, hostState->m_levelName, (char*)GetCurrentPlaylistName(), 16, Cvar_ns_server_password->m_pszString);
+	g_ServerAuthenticationManager->StartPlayerAuthServer();
+
 	CHostState__State_NewGame(hostState);
 }
 
@@ -438,12 +442,14 @@ void CHostState__State_ChangeLevelSPHook(CHostState* hostState)
 void CHostState__State_GameShutdownHook(CHostState* hostState)
 {
 	g_MasterServerManager->RemoveSelfFromServerList();
+	g_ServerAuthenticationManager->StopPlayerAuthServer();
+
 	CHostState__State_GameShutdown(hostState);
 }
 
 void InitialiseSharedMasterServer(HMODULE baseAddress)
 {
-	Cvar_ns_masterserver_hostname = RegisterConVar("ns_masterserver_hostname", "localhost", FCVAR_NONE, "");
+	Cvar_ns_masterserver_hostname = RegisterConVar("ns_masterserver_hostname", "127.0.0.1", FCVAR_NONE, "");
 	Cvar_ns_masterserver_port = RegisterConVar("ns_masterserver_port", "8080", FCVAR_NONE, "");
 
 	Cvar_ns_server_name = RegisterConVar("ns_server_name", "Unnamed Northstar Server", FCVAR_GAMEDLL, "");

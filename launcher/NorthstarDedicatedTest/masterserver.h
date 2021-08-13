@@ -55,13 +55,15 @@ public:
 public:
 	void ClearServerList();
 	void RequestServerList();
-	void AuthenticateWithServer(char* serverId, char* password);
-	void AddSelfToServerList(int port, char* name, char* description, char* map, char* playlist, int maxPlayers, char* password);
+	void AuthenticateWithServer(char* uid, char* playerToken, char* serverId, char* password);
+	void AddSelfToServerList(int port, int authPort, char* name, char* description, char* map, char* playlist, int maxPlayers, char* password);
 	void UpdateServerMapAndPlaylist(char* map, char* playlist);
 	void UpdateServerPlayerCount(int playerCount);
+	void WritePlayerPersistentData(char* playerId, char* pdata);
 	void RemoveSelfFromServerList();
 };
 
 void InitialiseSharedMasterServer(HMODULE baseAddress);
 
 extern MasterServerManager* g_MasterServerManager;
+extern ConVar* Cvar_ns_masterserver_hostname;

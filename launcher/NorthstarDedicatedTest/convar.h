@@ -93,7 +93,7 @@ public:
         void* unknown[10];
         void(*UnregisterConCommand) (ICvar* cvar, ConCommand* pCommandBase);
         void* unknown2[28];
-        ConVar*(*FindVar)(const char* var_name);
+        ConVar*(*FindVar)(const char* var_name); // offset for this is currently very wrong
     };
 
     VTable* m_vtable;

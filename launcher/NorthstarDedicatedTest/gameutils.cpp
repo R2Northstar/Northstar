@@ -15,6 +15,9 @@ ConVar* Cvar_hostport;
 // playlist stuff
 GetCurrentPlaylistType GetCurrentPlaylistName;
 
+// uid
+char* g_LocalPlayerUserID;
+
 void InitialiseEngineGameUtilFunctions(HMODULE baseAddress)
 {
 	Cbuf_GetCurrentPlayer = (Cbuf_GetCurrentPlayerType)((char*)baseAddress + 0x120630);
@@ -22,7 +25,9 @@ void InitialiseEngineGameUtilFunctions(HMODULE baseAddress)
 
 	g_GameCHostStateSingleton = (CHostState*)((char*)baseAddress + 0x7CF180);
 
-	Cvar_hostport = (ConVar*)((char*)baseAddress + 0x1FA6070);
+	Cvar_hostport = (ConVar*)((char*)baseAddress + 0x13FA6070);
 
 	GetCurrentPlaylistName = (GetCurrentPlaylistType)((char*)baseAddress + 0x18C640);
+
+	g_LocalPlayerUserID = (char*)baseAddress + 0x13F8E688;
 }

@@ -10,7 +10,7 @@ int main() {
     memset(&startupInfo, 0, sizeof(startupInfo));
     memset(&processInfo, 0, sizeof(processInfo));
 
-    CreateProcessW(PROC_NAME, (LPWSTR)L"", NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &startupInfo, &processInfo);
+    CreateProcessW(PROC_NAME, (LPWSTR)L"-noorigin -multiple -novid", NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &startupInfo, &processInfo);
 
     HMODULE hKernel32 = GetModuleHandleW(L"kernel32.dll");
     LPTHREAD_START_ROUTINE pLoadLibraryW =

@@ -84,4 +84,8 @@ extern ConVar* Cvar_hostport;
 typedef const char*(*GetCurrentPlaylistType)();
 extern GetCurrentPlaylistType GetCurrentPlaylistName;
 
+// uid
+
+extern char* g_LocalPlayerUserID;
+
 void InitialiseEngineGameUtilFunctions(HMODULE baseAddress);

@@ -16,6 +16,9 @@ void ConCommand_toggleconsole(const CCommand& arg)
 
 void ConCommand_help(const CCommand& arg)
 {
+	if (arg.ArgC() < 2)
+		return;
+
 	// todo: this should basically just call FindConVar once we have that working, then just print convar.GetHelpString
 }
 
