@@ -176,7 +176,7 @@ SQInteger SQ_TryAuthWithServer(void* sqvm)
 	}
 
 	// do auth
-	g_MasterServerManager->AuthenticateWithServer(g_MasterServerManager->m_remoteServers[serverIndex].id, (char*)password);
+	g_MasterServerManager->AuthenticateWithServer(g_LocalPlayerUserID, (char*)"", g_MasterServerManager->m_remoteServers[serverIndex].id, (char*)password);
 
 	return 0;
 }
@@ -210,8 +210,6 @@ SQInteger SQ_ConnectToAuthedServer(void* sqvm)
 	// i'm honestly not entirely sure how silentconnect works regarding ports and encryption so using connect for now
 	Cbuf_AddText(Cbuf_GetCurrentPlayer(), fmt::format("serverfilter {}", info.authToken).c_str(), cmd_source_t::kCommandSrcCode);
 	Cbuf_AddText(Cbuf_GetCurrentPlayer(), fmt::format("connect {}.{}.{}.{}:{}", info.ip.S_un.S_un_b.s_b1, info.ip.S_un.S_un_b.s_b2, info.ip.S_un.S_un_b.s_b3, info.ip.S_un.S_un_b.s_b4, info.port).c_str(), cmd_source_t::kCommandSrcCode);
-	
-	spdlog::info(fmt::format("connect {}.{}.{}.{}:{}", info.ip.S_un.S_un_b.s_b1, info.ip.S_un.S_un_b.s_b2, info.ip.S_un.S_un_b.s_b3, info.ip.S_un.S_un_b.s_b4, info.port));
 
 	g_MasterServerManager->m_hasPendingConnectionInfo = false;
 	return 0;
