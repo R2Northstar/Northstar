@@ -4,6 +4,7 @@
 #include "hookutils.h"
 #include "masterserver.h"
 #include "httplib.h"
+#include "tier0.h"
 #include <fstream>
 #include <filesystem>
 #include <thread>
@@ -172,7 +173,7 @@ void ServerAuthenticationManager::WritePersistentData(void* player)
 	// we use 0x4 internally to mark clients as using remote persistence
 	if (*((char*)player + 0x4A0) == (char)0x4)
 	{
-
+		g_MasterServerManager->WritePlayerPersistentData((char*)player + 0xF500, (char*)player + 0x4FA, m_additionalPlayerData[player].pdataSize);
 	}
 	else if (CVar_ns_auth_allow_insecure_write->m_nValue)
 	{
@@ -182,8 +183,6 @@ void ServerAuthenticationManager::WritePersistentData(void* player)
 
 
 // auth hooks
-
-int playerCount = 0; // temp
 
 // store these in vars so we can use them in CBaseClient::Connect
 // this is fine because ptrs won't decay by the time we use this, just don't use it outside of cbaseclient::connect
@@ -209,7 +208,14 @@ char CBaseClient__ConnectHook(void* self, char* name, __int64 netchan_ptr_arg, c
 	else if (!g_ServerAuthenticationManager->AuthenticatePlayer(self, nextPlayerUid, nextPlayerToken))
 		CBaseClient__Disconnect(self, 1, "Authentication Failed");
 
-	playerCount++;
+	if (!g_ServerAuthenticationManager->m_additionalPlayerData.count(self))
+	{
+		AdditionalPlayerData additionalData;
+		additionalData.pdataSize = g_ServerAuthenticationManager->m_authData[nextPlayerToken].pdataSize;
+		additionalData.usingLocalPdata = *((char*)self + 0x4a0) == (char)0x3;
+
+		g_ServerAuthenticationManager->m_additionalPlayerData.insert(std::make_pair(self, additionalData));
+	}
 
 	return ret;
 }
@@ -221,7 +227,7 @@ void CBaseClient__ActivatePlayerHook(void* self)
 	if (*((char*)self + 0x4A0) >= (char)0x3 && !g_ServerAuthenticationManager->RemovePlayerAuthData(self))
 	{
 		g_ServerAuthenticationManager->WritePersistentData(self);
-		g_MasterServerManager->UpdateServerPlayerCount(playerCount);
+		g_MasterServerManager->UpdateServerPlayerCount(g_ServerAuthenticationManager->m_additionalPlayerData.size());
 	}
 
 	CBaseClient__ActivatePlayer(self);
@@ -237,11 +243,20 @@ void CBaseClient__DisconnectHook(void* self, uint32_t unknownButAlways1, const c
 	vsprintf(buf, reason, va);
 	va_end(va);
 
-	// dcing, write persistent data
-	g_ServerAuthenticationManager->WritePersistentData(self);
-	g_ServerAuthenticationManager->RemovePlayerAuthData(self); // won't do anything 99% of the time, but just in case
 
-	g_MasterServerManager->UpdateServerPlayerCount(playerCount = std::max(playerCount - 1, 0));
+	// this reason is used while connecting to a local server, hacky, but just ignore it
+	if (strcmp(reason, "Connection closing"))
+	{
+		// dcing, write persistent data
+		g_ServerAuthenticationManager->WritePersistentData(self);
+		g_ServerAuthenticationManager->RemovePlayerAuthData(self); // won't do anything 99% of the time, but just in case
+	}
+
+	if (g_ServerAuthenticationManager->m_additionalPlayerData.count(self))
+	{
+		g_ServerAuthenticationManager->m_additionalPlayerData.erase(self);
+		g_MasterServerManager->UpdateServerPlayerCount(g_ServerAuthenticationManager->m_additionalPlayerData.size());
+	}
 
 	CBaseClient__Disconnect(self, unknownButAlways1, buf);
 }
@@ -249,6 +264,26 @@ void CBaseClient__DisconnectHook(void* self, uint32_t unknownButAlways1, const c
 // maybe this should be done outside of auth code, but effort to refactor rn and it sorta fits
 char CGameClient__ExecuteStringCommandHook(void* self, uint32_t unknown, const char* pCommandString)
 {
+	if (CVar_sv_quota_stringcmdspersecond->m_nValue != -1)
+	{
+		// note: this isn't super perfect, legit clients can trigger it in lobby, mostly good enough tho imo
+		// https://github.com/perilouswithadollarsign/cstrike15_src/blob/f82112a2388b841d72cb62ca48ab1846dfcc11c8/engine/sv_client.cpp#L1513
+		if (Plat_FloatTime() - g_ServerAuthenticationManager->m_additionalPlayerData[self].lastClientCommandQuotaStart >= 1.0f)
+		{
+			// reset quota
+			g_ServerAuthenticationManager->m_additionalPlayerData[self].lastClientCommandQuotaStart = Plat_FloatTime();
+			g_ServerAuthenticationManager->m_additionalPlayerData[self].numClientCommandsInQuota = 0;
+		}
+
+		g_ServerAuthenticationManager->m_additionalPlayerData[self].numClientCommandsInQuota++;
+		if (g_ServerAuthenticationManager->m_additionalPlayerData[self].numClientCommandsInQuota > CVar_sv_quota_stringcmdspersecond->m_nValue)
+		{
+			// too many stringcmds, dc player
+			CBaseClient__Disconnect(self, 1, "Sent too many stringcmd commands");
+			return false;
+		}
+	}
+
 	// todo later, basically just limit to CVar_sv_quota_stringcmdspersecond->m_nValue stringcmds per client per second
 	return CGameClient__ExecuteStringCommand(self, unknown, pCommandString);
 }
@@ -260,7 +295,7 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 	CVar_ns_auth_allow_insecure = RegisterConVar("ns_auth_allow_insecure", "0", FCVAR_GAMEDLL, "Whether this server will allow unauthenicated players to connect");
 	CVar_ns_auth_allow_insecure_write = RegisterConVar("ns_auth_allow_insecure_write", "0", FCVAR_GAMEDLL, "Whether the pdata of unauthenticated clients will be written to disk when changed");
 	// literally just stolen from a fix valve used in csgo
-	CVar_sv_quota_stringcmdspersecond = RegisterConVar("sv_quota_stringcmdspersecond", "40", FCVAR_NONE, "How many string commands per second clients are allowed to submit, 0 to disallow all string commands");
+	CVar_sv_quota_stringcmdspersecond = RegisterConVar("sv_quota_stringcmdspersecond", "60", FCVAR_NONE, "How many string commands per second clients are allowed to submit, 0 to disallow all string commands");
 	Cvar_ns_player_auth_port = RegisterConVar("Cvar_ns_player_auth_port", "8081", FCVAR_GAMEDLL, "");
 
 	HookEnabler hook;
@@ -287,4 +322,12 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 
 		*((char*)ptr + 5) = (char)0x90; // nop extra byte we no longer use
 	}
+
+	// patch to allow same of multiple account
+	{
+		void* ptr = (char*)baseAddress + 0x114510;
+		TempReadWrite rw(ptr);
+		*((char*)ptr) = (char)0xEB; // jz => jmp
+	}
+
 }

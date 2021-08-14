@@ -84,6 +84,9 @@ extern ConVar* Cvar_hostport;
 typedef const char*(*GetCurrentPlaylistType)();
 extern GetCurrentPlaylistType GetCurrentPlaylistName;
 
+typedef void(*SetCurrentPlaylistType)(const char* playlistName);
+extern SetCurrentPlaylistType SetCurrentPlaylist;
+
 // uid
 
 extern char* g_LocalPlayerUserID;

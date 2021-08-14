@@ -13,6 +13,15 @@ struct AuthData
 	size_t pdataSize;
 };
 
+struct AdditionalPlayerData
+{
+	bool usingLocalPdata;
+	size_t pdataSize;
+
+	double lastClientCommandQuotaStart = 0;
+	int numClientCommandsInQuota = 0;
+};
+
 class ServerAuthenticationManager
 {
 private:
@@ -21,6 +30,7 @@ private:
 public:
 	std::mutex m_authDataMutex;
 	std::unordered_map<std::string, AuthData> m_authData;
+	std::unordered_map<void*, AdditionalPlayerData> m_additionalPlayerData;
 	bool m_runningPlayerAuthThread = false;
 
 public:
