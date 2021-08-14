@@ -37,6 +37,7 @@ class MasterServerManager
 private:
 	bool m_requestingServerList = false;
 	bool m_authenticatingWithGameServer = false;
+	bool m_savingPersistentData = false;
 
 public:
 	char m_ownServerId[33];
@@ -55,11 +56,12 @@ public:
 public:
 	void ClearServerList();
 	void RequestServerList();
+	void AuthenticateWithOwnServer(char* uid, char* playerToken);
 	void AuthenticateWithServer(char* uid, char* playerToken, char* serverId, char* password);
 	void AddSelfToServerList(int port, int authPort, char* name, char* description, char* map, char* playlist, int maxPlayers, char* password);
 	void UpdateServerMapAndPlaylist(char* map, char* playlist);
 	void UpdateServerPlayerCount(int playerCount);
-	void WritePlayerPersistentData(char* playerId, char* pdata);
+	void WritePlayerPersistentData(char* playerId, char* pdata, size_t pdataSize);
 	void RemoveSelfFromServerList();
 };
 

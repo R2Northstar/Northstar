@@ -3,6 +3,7 @@
 #include "squirrel.h"
 #include "masterserver.h"
 #include "gameutils.h"
+#include "serverauthentication.h"
 
 // functions for viewing server browser
 
@@ -175,6 +176,11 @@ SQInteger SQ_TryAuthWithServer(void* sqvm)
 		return 0;
 	}
 
+	// send off persistent data first, don't worry about server/client stuff, since m_additionalPlayerData should only have entries when we're a local server
+	// note: this seems like it could create a race condition, test later
+	for (auto& pair : g_ServerAuthenticationManager->m_additionalPlayerData)
+		g_ServerAuthenticationManager->WritePersistentData(pair.first);
+
 	// do auth
 	g_MasterServerManager->AuthenticateWithServer(g_LocalPlayerUserID, (char*)"", g_MasterServerManager->m_remoteServers[serverIndex].id, (char*)password);
 
@@ -215,6 +221,25 @@ SQInteger SQ_ConnectToAuthedServer(void* sqvm)
 	return 0;
 }
 
+// void function NSTryAuthWithLocalServer()
+SQInteger SQ_TryAuthWithLocalServer(void* sqvm)
+{
+	// do auth request
+	g_MasterServerManager->AuthenticateWithOwnServer(g_LocalPlayerUserID, (char*)"");
+
+	return 0;
+}
+
+// void function NSCompleteAuthWithLocalServer()
+SQInteger SQ_CompleteAuthWithLocalServer(void* sqvm)
+{
+	// literally just set serverfilter
+	// note: this assumes we have no authdata other than our own
+	Cbuf_AddText(Cbuf_GetCurrentPlayer(), fmt::format("serverfilter {}", g_ServerAuthenticationManager->m_authData.begin()->first).c_str(), cmd_source_t::kCommandSrcCode);
+
+	return 0;
+}
+
 void InitialiseScriptServerBrowser(HMODULE baseAddress)
 {
 	g_UISquirrelManager->AddFuncRegistration("void", "NSRequestServerList", "", "", SQ_RequestServerList);
@@ -236,4 +261,7 @@ void InitialiseScriptServerBrowser(HMODULE baseAddress)
 	g_UISquirrelManager->AddFuncRegistration("bool", "NSIsAuthenticatingWithServer", "", "", SQ_IsAuthComplete);
 	g_UISquirrelManager->AddFuncRegistration("bool", "NSWasAuthSuccessful", "", "", SQ_WasAuthSuccessful);
 	g_UISquirrelManager->AddFuncRegistration("void", "NSConnectToAuthedServer", "", "", SQ_ConnectToAuthedServer);
+
+	g_UISquirrelManager->AddFuncRegistration("void", "NSTryAuthWithLocalServer", "", "", SQ_TryAuthWithLocalServer);
+	g_UISquirrelManager->AddFuncRegistration("void", "NSCompleteAuthWithLocalServer", "", "", SQ_CompleteAuthWithLocalServer);
 }

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "gameutils.h"
 #include "convar.h"
+#include "concommand.h"
 
 // cmd.h
 Cbuf_GetCurrentPlayerType Cbuf_GetCurrentPlayer;
@@ -14,6 +15,7 @@ ConVar* Cvar_hostport;
 
 // playlist stuff
 GetCurrentPlaylistType GetCurrentPlaylistName;
+SetCurrentPlaylistType SetCurrentPlaylist;
 
 // uid
 char* g_LocalPlayerUserID;
@@ -28,6 +30,7 @@ void InitialiseEngineGameUtilFunctions(HMODULE baseAddress)
 	Cvar_hostport = (ConVar*)((char*)baseAddress + 0x13FA6070);
 
 	GetCurrentPlaylistName = (GetCurrentPlaylistType)((char*)baseAddress + 0x18C640);
+	SetCurrentPlaylist = (SetCurrentPlaylistType)((char*)baseAddress + 0x18EB20);
 
 	g_LocalPlayerUserID = (char*)baseAddress + 0x13F8E688;
 }

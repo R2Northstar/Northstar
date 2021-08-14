@@ -25,3 +25,5 @@ void operator delete(void* p) throw();
 // actual function defs
 // would've liked to resolve these at compile time, but we load before tier0 so not really possible
 void Error(const char* fmt, ...);
+
+double Plat_FloatTime();

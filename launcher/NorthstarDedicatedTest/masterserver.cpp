@@ -171,6 +171,103 @@ void MasterServerManager::RequestServerList()
 	requestThread.detach();
 }
 
+void MasterServerManager::AuthenticateWithOwnServer(char* uid, char* playerToken)
+{
+	// dont wait, just stop if we're trying to do 2 auth requests at once
+	if (m_authenticatingWithGameServer)
+		return;
+
+	m_authenticatingWithGameServer = true;
+	m_scriptAuthenticatingWithGameServer = true;
+	m_successfullyAuthenticatedWithGameServer = false;
+	
+	std::thread requestThread([this, uid, playerToken]()
+		{
+			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);
+			http.set_connection_timeout(20);
+
+			if (auto result = http.Post(fmt::format("/client/auth_with_self?id={}&playerToken={}", uid, playerToken).c_str()))
+			{
+				m_successfullyConnected = true;
+
+				rapidjson::Document authInfoJson;
+				authInfoJson.Parse(result->body.c_str());
+
+				if (authInfoJson.HasParseError())
+				{
+					spdlog::error("Failed reading masterserver authentication response: encountered parse error \"{}\"", rapidjson::GetParseError_En(authInfoJson.GetParseError()));
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (!authInfoJson.IsObject())
+				{
+					spdlog::error("Failed reading masterserver authentication response: root object is not an object");
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (authInfoJson.HasMember("error"))
+				{
+					spdlog::error("Failed reading masterserver response: got fastify error response");
+					spdlog::error(result->body);
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (!authInfoJson["success"].IsTrue())
+				{
+					spdlog::error("Authentication with masterserver failed: \"success\" is not true");
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (!authInfoJson.HasMember("success") || !authInfoJson.HasMember("id") || !authInfoJson["id"].IsString() || !authInfoJson.HasMember("authToken") || !authInfoJson["authToken"].IsString() || !authInfoJson.HasMember("persistentData") || !authInfoJson["persistentData"].IsArray())
+				{
+					spdlog::error("Failed reading masterserver authentication response: malformed json object");
+					goto REQUEST_END_CLEANUP;
+				}
+
+				AuthData newAuthData;
+				strncpy(newAuthData.uid, authInfoJson["id"].GetString(), sizeof(newAuthData.uid));
+				newAuthData.uid[sizeof(newAuthData.uid) - 1] = 0;
+
+				newAuthData.pdataSize = authInfoJson["persistentData"].GetArray().Size();
+				newAuthData.pdata = new char[newAuthData.pdataSize];
+				//memcpy(newAuthData.pdata, authInfoJson["persistentData"].GetString(), newAuthData.pdataSize);
+
+				int i = 0;
+				// note: persistentData is a uint8array because i had problems getting strings to behave, it sucks but it's just how it be unfortunately
+				// potentially refactor later
+				for (auto& byte : authInfoJson["persistentData"].GetArray())
+				{
+					if (!byte.IsUint() || byte.GetUint() > 255)
+					{
+						spdlog::error("Failed reading masterserver authentication response: malformed json object");
+						goto REQUEST_END_CLEANUP;
+					}
+					
+					newAuthData.pdata[i++] = byte.GetUint();
+				}
+
+				std::lock_guard<std::mutex> guard(g_ServerAuthenticationManager->m_authDataMutex);
+				g_ServerAuthenticationManager->m_authData.clear();
+				g_ServerAuthenticationManager->m_authData.insert(std::make_pair(authInfoJson["authToken"].GetString(), newAuthData));
+			
+				m_successfullyAuthenticatedWithGameServer = true;
+			}
+			else
+			{
+				spdlog::error("Failed authenticating with own server: error {}", result.error());
+				m_successfullyConnected = false;
+				m_successfullyAuthenticatedWithGameServer = false;
+				m_scriptAuthenticatingWithGameServer = false;
+			}
+
+			REQUEST_END_CLEANUP:
+			m_authenticatingWithGameServer = false;
+			m_scriptAuthenticatingWithGameServer = false;
+		});
+
+	requestThread.detach();
+}
+
 void MasterServerManager::AuthenticateWithServer(char* uid, char* playerToken, char* serverId, char* password)
 {
 	// dont wait, just stop if we're trying to do 2 auth requests at once
@@ -183,6 +280,10 @@ void MasterServerManager::AuthenticateWithServer(char* uid, char* playerToken, c
 
 	std::thread requestThread([this, uid, playerToken, serverId, password]()
 		{
+			// esnure that any persistence saving is done, so we know masterserver has newest
+			while (m_savingPersistentData)
+				Sleep(100);
+
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);
 			http.set_connection_timeout(20);
 
@@ -380,6 +481,39 @@ void MasterServerManager::UpdateServerPlayerCount(int playerCount)
 			{
 				m_successfullyConnected = false;
 			}		
+		});
+
+	requestThread.detach();
+}
+
+void MasterServerManager::WritePlayerPersistentData(char* playerId, char* pdata, size_t pdataSize)
+{
+	// dont call this if we don't have a server id
+	if (!*m_ownServerId)
+		return;
+
+	m_savingPersistentData = true;
+
+	std::string playerIdTemp(playerId);
+	std::thread requestThread([this, playerIdTemp, pdata, pdataSize] {
+			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);
+			http.set_connection_timeout(10); 
+
+			httplib::MultipartFormDataItems requestItems = {
+				{ "pdata", std::string(&pdata[0], pdataSize), "file.pdata", "application/octet-stream"}
+			};
+
+			// we dont process this at all atm, maybe do later, but atm not necessary
+			if (auto result = http.Post(fmt::format("/accounts/write_persistence?id={}", playerIdTemp).c_str(), requestItems))
+			{
+				m_successfullyConnected = true;
+			}
+			else
+			{
+				m_successfullyConnected = false;
+			}
+
+			m_savingPersistentData = false;
 		});
 
 	requestThread.detach();
