@@ -154,10 +154,3 @@ dmypy.json
 cython_debug/
 
 # End of https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks
-
-# repo specific stuff
-.vscode
-docs/source/_build
-
-# mdbook related folder
-book
