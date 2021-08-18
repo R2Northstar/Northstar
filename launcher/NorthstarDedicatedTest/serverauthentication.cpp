@@ -32,6 +32,7 @@ CGameClient__ExecuteStringCommandType CGameClient__ExecuteStringCommand;
 ServerAuthenticationManager* g_ServerAuthenticationManager;
 
 ConVar* Cvar_ns_player_auth_port;
+ConVar* Cvar_ns_erase_auth_info;
 ConVar* CVar_ns_auth_allow_insecure;
 ConVar* CVar_ns_auth_allow_insecure_write;
 ConVar* CVar_sv_quota_stringcmdspersecond;
@@ -150,6 +151,9 @@ bool ServerAuthenticationManager::AuthenticatePlayer(void* player, int64_t uid, 
 
 bool ServerAuthenticationManager::RemovePlayerAuthData(void* player)
 {
+	if (!Cvar_ns_erase_auth_info->m_nValue)
+		return false;
+
 	// we don't have our auth token at this point, so lookup authdata by uid
 	for (auto& auth : m_authData)
 	{
@@ -292,11 +296,12 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 {
 	g_ServerAuthenticationManager = new ServerAuthenticationManager;
 
+	Cvar_ns_erase_auth_info = RegisterConVar("ns_erase_auth_info", "1", FCVAR_GAMEDLL, "Whether auth info should be erased from this server on disconnect or crash");
 	CVar_ns_auth_allow_insecure = RegisterConVar("ns_auth_allow_insecure", "0", FCVAR_GAMEDLL, "Whether this server will allow unauthenicated players to connect");
 	CVar_ns_auth_allow_insecure_write = RegisterConVar("ns_auth_allow_insecure_write", "0", FCVAR_GAMEDLL, "Whether the pdata of unauthenticated clients will be written to disk when changed");
 	// literally just stolen from a fix valve used in csgo
 	CVar_sv_quota_stringcmdspersecond = RegisterConVar("sv_quota_stringcmdspersecond", "60", FCVAR_NONE, "How many string commands per second clients are allowed to submit, 0 to disallow all string commands");
-	Cvar_ns_player_auth_port = RegisterConVar("Cvar_ns_player_auth_port", "8081", FCVAR_GAMEDLL, "");
+	Cvar_ns_player_auth_port = RegisterConVar("ns_player_auth_port", "8081", FCVAR_GAMEDLL, "");
 
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x114430, &CBaseServer__ConnectClientHook, reinterpret_cast<LPVOID*>(&CBaseServer__ConnectClient));
