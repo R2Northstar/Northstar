@@ -3,14 +3,17 @@
 #include "hookutils.h"
 #include "modmanager.h"
 
-typedef char(*AddLocalisationFileType)(void* g_pVguiLocalize, const char* path, const char* pathId);
+typedef bool(*AddLocalisationFileType)(void* g_pVguiLocalize, const char* path, const char* pathId, char unknown);
 AddLocalisationFileType AddLocalisationFile;
 
 bool loadModLocalisationFiles = true;
 
-char AddLocalisationFileHook(void* g_pVguiLocalize, const char* path, char* pathId)
+bool AddLocalisationFileHook(void* g_pVguiLocalize, const char* path, const char* pathId, char unknown)
 {
-	char ret = AddLocalisationFile(g_pVguiLocalize, path, pathId);
+	bool ret = AddLocalisationFile(g_pVguiLocalize, path, pathId, unknown);
+
+	if (ret)
+		spdlog::info("Loaded localisation file {} successfully", path);
 
 	if (!loadModLocalisationFiles)
 		return ret;
@@ -18,13 +21,8 @@ char AddLocalisationFileHook(void* g_pVguiLocalize, const char* path, char* path
 	loadModLocalisationFiles = false;
 
 	for (Mod* mod : g_ModManager->m_loadedMods)
-	{
 		for (std::string& localisationFile : mod->LocalisationFiles)
-		{
-			spdlog::info("Adding mod localisation file {}", localisationFile);
-			AddLocalisationFile(g_pVguiLocalize, localisationFile.c_str(), pathId);
-		}
-	}
+			AddLocalisationFile(g_pVguiLocalize, localisationFile.c_str(), pathId, unknown);
 
 	loadModLocalisationFiles = true;
 

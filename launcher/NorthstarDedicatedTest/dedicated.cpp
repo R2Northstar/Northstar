@@ -7,7 +7,7 @@
 bool IsDedicated()
 {
 	// temp: should get this from commandline
-	//return true;
+	return true;
 	return false;
 }
 
@@ -20,9 +20,18 @@ enum EngineState_t
 	DLL_PAUSED,				// engine is paused, can become active from this state
 };
 
+struct CEngine
+{
+public:
+	char unknown[12];
+
+	EngineState_t m_nDllState;
+	EngineState_t m_nNextDllState;
+};
+
 void InitialiseDedicated(HMODULE engineAddress)
 {
-	std::cout << "InitialiseDedicated()" << std::endl;
+	spdlog::info("InitialiseDedicated");
 
 	while (!IsDebuggerPresent())
 		Sleep(100);
@@ -66,6 +75,32 @@ void InitialiseDedicated(HMODULE engineAddress)
 		*(ptr + 4) = (char)0x90;
 	}
 
+	{
+		// runframeserver
+		char* ptr = (char*)engineAddress + 0x159819;
+		TempReadWrite rw(ptr);
+
+		// nop some access violations
+		*ptr = (char)0x90;
+		*(ptr + 1) = (char)0x90;
+		*(ptr + 2) = (char)0x90;
+		*(ptr + 3) = (char)0x90;
+		*(ptr + 4) = (char)0x90;
+		*(ptr + 5) = (char)0x90;
+		*(ptr + 6) = (char)0x90;
+		*(ptr + 7) = (char)0x90;
+		*(ptr + 8) = (char)0x90;
+		*(ptr + 9) = (char)0x90;
+		*(ptr + 10) = (char)0x90;
+		*(ptr + 11) = (char)0x90;
+		*(ptr + 12) = (char)0x90;
+		*(ptr + 13) = (char)0x90;
+		*(ptr + 14) = (char)0x90;
+		*(ptr + 15) = (char)0x90;
+		*(ptr + 16) = (char)0x90;
+	}
+
+
 	CDedicatedExports* dedicatedApi = new CDedicatedExports;
 	dedicatedApi->Sys_Printf = Sys_Printf;
 	dedicatedApi->RunServer = RunServer;
@@ -100,16 +135,16 @@ void RunServer(CDedicatedExports* dedicated)
 	CEngine__Frame engineFrame = (CEngine__Frame)((char*)engine + 0x1C8650);
 	CEngineAPI__ActivateSimulation engineApiStartSimulation = (CEngineAPI__ActivateSimulation)((char*)engine + 0x1C4370);
 
-	void* cEnginePtr = (void*)((char*)engine + 0x7D70C8);
+	CEngine* cEnginePtr = (CEngine*)((char*)engine + 0x7D70C8);
 
 	CEngineAPI__SetMap engineApiSetMap = (CEngineAPI__SetMap)((char*)engine + 0x1C7B30);
-
-	engineApiSetMap(nullptr, "mp_thaw");
-	Sys_Printf(dedicated, (char*)"CDedicatedServerAPI::RunServer(): map mp_lobby");
+	
+	// call once to init
+	engineFrame(cEnginePtr);
 
 	// allow us to hit CHostState::FrameUpdate
-	//*((int*)((char*)cEnginePtr + 12)) = 2;
-	//*((int*)((char*)cEnginePtr + 16)) = 2;
+	cEnginePtr->m_nDllState = EngineState_t::DLL_ACTIVE;
+	cEnginePtr->m_nNextDllState = EngineState_t::DLL_ACTIVE;
 
 	while (true)
 	{
