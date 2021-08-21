@@ -135,7 +135,7 @@ int main()
 		
 		CreateAndHookUnpackedTitanfallProcess();
 	}
-	// packed origin
+	// packed
 	else
 	{
 		// create a titanfall process, this will cause origin to start launching the game

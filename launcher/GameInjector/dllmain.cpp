@@ -44,14 +44,21 @@ BOOL WINAPI CreateProcessWHook(
 
     // origin doesn't use lpApplicationName
     if (lpApplicationName)
+    {
+        std::wcout << lpApplicationName << std::endl;
         isTitanfallProcess = wcsstr(lpApplicationName, L"Titanfall2\\Titanfall2.exe");
+    }
     else
+    {
+        std::wcout << lpCommandLine << std::endl;
         isTitanfallProcess = wcsstr(lpCommandLine, L"Titanfall2\\Titanfall2.exe");
+    }
 
-    std::wcout << lpCommandLine << std::endl;
+    // steam will start processes suspended
+    bool alreadySuspended = dwCreationFlags & CREATE_SUSPENDED;
 
     // suspend process on creation so we can hook
-    if (isTitanfallProcess)
+    if (isTitanfallProcess && !alreadySuspended)
         dwCreationFlags |= CREATE_SUSPENDED;
 
     BOOL ret = CreateProcessWOriginal(lpApplicationName, lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment, lpCurrentDirectory, lpStartupInfo, lpProcessInformation);
@@ -73,7 +80,9 @@ BOOL WINAPI CreateProcessWHook(
 
         CreateProcessA((tf2DirPath / "InjectionProxy64.exe").string().c_str(), (LPSTR)(argStr.str().c_str()), 0, 0, false, 0, 0, tf2DirPath.string().c_str(), (LPSTARTUPINFOA)&si, &pi);
         WaitForSingleObject(pi.hThread, INFINITE);
-        ResumeThread(lpProcessInformation->hProcess);
+
+        if (!alreadySuspended)
+            ResumeThread(lpProcessInformation->hThread);
 
         MH_RemoveHook(&CreateProcessW);
         FreeLibrary(ownHModule);
@@ -97,6 +106,9 @@ BOOL APIENTRY DllMain(HMODULE hModule,
     case DLL_PROCESS_DETACH:
         break;
     }
+
+    //AllocConsole();
+    //freopen("CONOUT$", "w", stdout);
 
     ownHModule = hModule;
     char ownDllPath[MAX_PATH];

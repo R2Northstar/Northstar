@@ -356,7 +356,7 @@ template<Context context> char CallScriptInitCallbackHook(void* sqvm, const char
 						if (modCallback->Context == SERVER  && modCallback->AfterCallback.length())
 						{
 							spdlog::info("Running custom {} script callback \"{}\"", GetContextName(context), modCallback->AfterCallback);
-							ClientCallScriptInitCallback(sqvm, modCallback->AfterCallback.c_str());
+							ServerCallScriptInitCallback(sqvm, modCallback->AfterCallback.c_str());
 						}
 					}
 				}

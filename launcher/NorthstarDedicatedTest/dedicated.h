@@ -27,4 +27,4 @@ struct CDedicatedExports
 // hooking stuff
 extern bool bDedicatedHooksInitialised;
 void InitialiseDedicated(HMODULE moduleAddress);
-
+void InitialiseDedicatedMaterialSystem(HMODULE baseAddress);

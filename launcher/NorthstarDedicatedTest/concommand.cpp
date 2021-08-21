@@ -27,5 +27,6 @@ void InitialiseConCommands(HMODULE baseAddress)
 {
 	conCommandConstructor = (ConCommandConstructorType)((char*)baseAddress + 0x415F60);
 
+	// this shouldn't be here but idk where else to put it rn
 	RegisterConCommand("setplaylist", SetPlaylistCommand, "", FCVAR_NONE);
 }

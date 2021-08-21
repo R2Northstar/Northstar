@@ -52,7 +52,10 @@ void InitialiseNorthstar()
     AddDllLoadCallback("engine.dll", InitialiseEngineGameUtilFunctions);
 
     if (IsDedicated())
+    {
         AddDllLoadCallback("engine.dll", InitialiseDedicated);
+        AddDllLoadCallback("materialsystem_dx11.dll", InitialiseDedicatedMaterialSystem);
+    }
     
     AddDllLoadCallback("engine.dll", InitialiseConVars);
     AddDllLoadCallback("engine.dll", InitialiseConCommands);
