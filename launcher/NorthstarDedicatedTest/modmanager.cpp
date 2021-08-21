@@ -188,6 +188,9 @@ void ModManager::LoadMods()
 
 	std::vector<fs::path> modDirs;
 
+	// ensure dirs exist
+	fs::create_directories(MOD_FOLDER_PATH);
+
 	// get mod directories
 	for (fs::directory_entry dir : fs::directory_iterator(MOD_FOLDER_PATH))
 		if (fs::exists(dir.path() / "mod.json"))

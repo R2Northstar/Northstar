@@ -81,9 +81,7 @@ double Plat_FloatTime()
 	Tier0FloatTime tier0Func = (Tier0FloatTime)ResolveTier0Function("Plat_FloatTime");
 
 	if (tier0Func)
-	{
 		return tier0Func();
-	}
 	else
 		return 0.0f;
 }
