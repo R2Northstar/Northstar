@@ -98,23 +98,28 @@ bool ServerAuthenticationManager::AuthenticatePlayer(void* player, int64_t uid, 
 	std::string strUid = std::to_string(uid);
 
 	std::lock_guard<std::mutex> guard(m_authDataMutex);
+
+	bool authFail = true;
 	if (!m_authData.empty() && m_authData.count(std::string(authToken)))
 	{
 		// use stored auth data
 		AuthData authData = m_authData[authToken];
-		if (strcmp(strUid.c_str(), authData.uid)) // connecting client's uid is different from auth's uid
-			return false;
+		if (!strcmp(strUid.c_str(), authData.uid)) // connecting client's uid is different from auth's uid
+		{
+			authFail = false;
+			// uuid
+			strcpy((char*)player + 0xF500, strUid.c_str());
 
-		// uuid
-		strcpy((char*)player + 0xF500, strUid.c_str());
+			// copy pdata into buffer
+			memcpy((char*)player + 0x4FA, authData.pdata, authData.pdataSize);
 
-		// copy pdata into buffer
-		memcpy((char*)player + 0x4FA, authData.pdata, authData.pdataSize);
-
-		// set persistent data as ready, we use 0x4 internally to mark the client as using remote persistence
-		*((char*)player + 0x4a0) = (char)0x4;
+			// set persistent data as ready, we use 0x4 internally to mark the client as using remote persistence
+			*((char*)player + 0x4a0) = (char)0x4;
+		}
 	}
-	else
+
+
+	if (authFail)
 	{
 		if (!CVar_ns_auth_allow_insecure->m_nValue) // no auth data and insecure connections aren't allowed, so dc the client
 			return false;
