@@ -276,8 +276,7 @@ void RunServer(CDedicatedExports* dedicated)
 
 	// set up engine and host states to allow us to enter CHostState::FrameUpdate, with the state HS_NEW_GAME
 	cEnginePtr->m_nNextDllState = EngineState_t::DLL_ACTIVE;
-	cHostStatePtr->m_currentState = HostState_t::HS_NEW_GAME;
-	cHostStatePtr->m_nextState = HostState_t::HS_RUN;
+	cHostStatePtr->m_nextState = HostState_t::HS_NEW_GAME;
 	strcpy(cHostStatePtr->m_levelName, "mp_lobby"); // set map to load into
 
 	while (true)

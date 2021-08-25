@@ -16,6 +16,7 @@
 #include "gameutils.h"
 #include "chatcommand.h"
 #include "modlocalisation.h"
+#include "playlist.h"
 
 bool initialised = false;
 
@@ -73,6 +74,8 @@ void InitialiseNorthstar()
     AddDllLoadCallback("server.dll", InitialiseServerSquirrel);
     AddDllLoadCallback("engine.dll", InitialiseServerAuthentication);
     AddDllLoadCallback("engine.dll", InitialiseSharedMasterServer);
+
+    AddDllLoadCallback("engine.dll", InitialisePlaylistHooks);
 
     AddDllLoadCallback("filesystem_stdio.dll", InitialiseFilesystem);
     AddDllLoadCallback("engine.dll", InitialiseKeyValues);

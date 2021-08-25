@@ -15,18 +15,7 @@ void RegisterConCommand(const char* name, void(*callback)(const CCommand&), cons
 	conCommandConstructor(newCommand, name, callback, helpString, flags, nullptr);
 }
 
-void SetPlaylistCommand(const CCommand& args)
-{
-	if (args.ArgC() < 2)
-		return;
-
-	SetCurrentPlaylist(args.Arg(1));
-}
-
 void InitialiseConCommands(HMODULE baseAddress)
 {
 	conCommandConstructor = (ConCommandConstructorType)((char*)baseAddress + 0x415F60);
-
-	// this shouldn't be here but idk where else to put it rn
-	RegisterConCommand("setplaylist", SetPlaylistCommand, "", FCVAR_NONE);
 }

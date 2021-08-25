@@ -151,7 +151,7 @@ int main()
 		// hook launcher
 		DWORD launcherPID;
 		if (steamBuild)
-			while (!(launcherPID = GetProcessByName(L"steam.exe"))) Sleep(50);
+			while (!(launcherPID = GetProcessByName(L"EASteamProxy.exe"))) Sleep(50);
 		else
 			while (!(launcherPID = GetProcessByName(L"Origin.exe"))) Sleep(50);
 

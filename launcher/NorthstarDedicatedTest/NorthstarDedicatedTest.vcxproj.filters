@@ -564,6 +564,9 @@
     <ClInclude Include="modlocalisation.h">
       <Filter>Header Files\Client</Filter>
     </ClInclude>
+    <ClInclude Include="playlist.h">
+      <Filter>Header Files\Server</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -640,6 +643,9 @@
     </ClCompile>
     <ClCompile Include="modlocalisation.cpp">
       <Filter>Source Files\Client</Filter>
+    </ClCompile>
+    <ClCompile Include="playlist.cpp">
+      <Filter>Source Files\Server</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
