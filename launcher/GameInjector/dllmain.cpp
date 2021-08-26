@@ -81,10 +81,14 @@ BOOL WINAPI CreateProcessWHook(
         CreateProcessA((tf2DirPath / "InjectionProxy64.exe").string().c_str(), (LPSTR)(argStr.str().c_str()), 0, 0, false, 0, 0, tf2DirPath.string().c_str(), (LPSTARTUPINFOA)&si, &pi);
         WaitForSingleObject(pi.hThread, INFINITE);
 
-        if (!alreadySuspended)
-            ResumeThread(lpProcessInformation->hThread);
+        // this doesn't seem to work super well
+        //if (!alreadySuspended)
+        ResumeThread(lpProcessInformation->hThread);
 
+        MH_DisableHook(&CreateProcessW);
         MH_RemoveHook(&CreateProcessW);
+        MH_Uninitialize();
+
         FreeLibrary(ownHModule);
     }
 
@@ -101,23 +105,20 @@ BOOL APIENTRY DllMain(HMODULE hModule,
     {
     case DLL_PROCESS_ATTACH:
     case DLL_THREAD_ATTACH:
-        //DisableThreadLibraryCalls(hModule);
+        DisableThreadLibraryCalls(hModule);
     case DLL_THREAD_DETACH:
     case DLL_PROCESS_DETACH:
         break;
     }
 
-    //AllocConsole();
-    //freopen("CONOUT$", "w", stdout);
+    AllocConsole();
+    freopen("CONOUT$", "w", stdout);
 
     ownHModule = hModule;
     char ownDllPath[MAX_PATH];
     GetModuleFileNameA(hModule, ownDllPath, MAX_PATH);
 
     tf2DirPath = std::filesystem::path(ownDllPath).parent_path();
-
-    //AllocConsole();
-    //freopen("CONOUT$", "w", stdout);
 
     // hook CreateProcessW
     if (MH_Initialize() > MH_ERROR_ALREADY_INITIALIZED) // MH_ERROR_ALREADY_INITIALIZED = 1, MH_OK = 0, these are the only results we should expect
