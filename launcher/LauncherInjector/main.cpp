@@ -101,7 +101,7 @@ int main()
 
 	// check for steam dll and unpacked exe
 	bool unpacked = fs::exists("Titanfall2-unpacked.exe");
-	bool steamBuild = !unpacked && fs::exists("steam_api64.dll");
+	//bool steamBuild = !unpacked && fs::exists("steam_api64.dll"); // dont actually need to check for this
 	
 	// unpacked origin
 	if (unpacked)
@@ -150,10 +150,11 @@ int main()
 	
 		// hook launcher
 		DWORD launcherPID;
-		if (steamBuild)
-			while (!(launcherPID = GetProcessByName(L"EASteamProxy.exe"))) Sleep(50);
-		else
-			while (!(launcherPID = GetProcessByName(L"Origin.exe"))) Sleep(50);
+		// dont actually need to check for steam, origin launches game no matter what
+		//if (steamBuild)
+		//	while (!(launcherPID = GetProcessByName(L"EASteamProxy.exe"))) Sleep(50);
+		//else
+		while (!(launcherPID = GetProcessByName(L"Origin.exe"))) Sleep(50);
 
 		// injector should clean itself up after its job is done
 		InjectInjectorIntoProcess(launcherPID);
