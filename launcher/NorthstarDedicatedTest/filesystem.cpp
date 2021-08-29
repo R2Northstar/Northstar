@@ -25,6 +25,10 @@ typedef FileHandle_t(*ReadFileFromFilesystemType)(IFileSystem* filesystem, const
 ReadFileFromFilesystemType readFileFromFilesystem;
 FileHandle_t ReadFileFromFilesystemHook(IFileSystem* filesystem, const char* pPath, const char* pOptions, int64_t a4, uint32_t a5);
 
+typedef VPKData* (*MountVPKType)(IFileSystem* fileSystem, const char* vpkPath);
+MountVPKType mountVPK;
+VPKData* MountVPKHook(IFileSystem* fileSystem, const char* vpkPath);
+
 bool readingOriginalFile;
 std::string currentModPath;
 SourceInterface<IFileSystem>* g_Filesystem;
@@ -40,6 +44,7 @@ void InitialiseFilesystem(HMODULE baseAddress)
 	ENABLER_CREATEHOOK(hook, (*g_Filesystem)->m_vtable->ReadFromCache, &ReadFromCacheHook, reinterpret_cast<LPVOID*>(&readFromCache));
 	ENABLER_CREATEHOOK(hook, (*g_Filesystem)->m_vtable->AddSearchPath, &AddSearchPathHook, reinterpret_cast<LPVOID*>(&addSearchPathOriginal));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x15F20, &ReadFileFromFilesystemHook, reinterpret_cast<LPVOID*>(&readFileFromFilesystem));
+	ENABLER_CREATEHOOK(hook, (*g_Filesystem)->m_vtable->MountVPK, &MountVPKHook, reinterpret_cast<LPVOID*>(&mountVPK));
 }
 
 std::string ReadVPKFile(const char* path)
@@ -155,4 +160,24 @@ FileHandle_t ReadFileFromFilesystemHook(IFileSystem* filesystem, const char* pPa
 		TryReplaceFile((char*)pPath, true);
 
 	return readFileFromFilesystem(filesystem, pPath, pOptions, a4, a5);
+}
+
+VPKData* MountVPKHook(IFileSystem* fileSystem, const char* vpkPath)
+{
+	spdlog::info("MountVPK {}", vpkPath);
+	VPKData* ret = mountVPK(fileSystem, vpkPath);
+
+	for (Mod* mod : g_ModManager->m_loadedMods)
+	{
+		if (!mod->Enabled)
+			continue;
+
+		for (std::string& vpkPath : mod->Vpks)
+		{
+			spdlog::info(vpkPath);
+			spdlog::info((void*)mountVPK(fileSystem, vpkPath.c_str()));
+		}
+	}
+
+	return ret;
 }

@@ -247,9 +247,22 @@ void ModManager::LoadMods()
 
 		// read vpk paths
 		if (fs::exists(mod->ModDirectory / "vpk"))
+		{
 			for (fs::directory_entry file : fs::directory_iterator(mod->ModDirectory / "vpk"))
-				if (fs::is_regular_file(file) && file.path().extension() == "vpk")
-					mod->Vpks.push_back(file.path().string());
+			{
+				// a bunch of checks to make sure we're only adding dir vpks and their paths are good
+				// note: the game will literally only load vpks with the english prefix
+				if (fs::is_regular_file(file) && file.path().extension() == ".vpk" && 
+					file.path().string().find("english") != std::string::npos && file.path().string().find(".bsp.pak000_dir") != std::string::npos)
+				{
+					std::string formattedPath = file.path().filename().string();
+
+					// this really fucking sucks but it'll work
+					mod->Vpks.push_back((file.path().parent_path() / formattedPath.substr(strlen("english"), formattedPath.find(".bsp") - 3)).string());
+				}
+			}
+		}
+			
 
 		// read keyvalues paths
 		if (fs::exists(mod->ModDirectory / "keyvalues"))
