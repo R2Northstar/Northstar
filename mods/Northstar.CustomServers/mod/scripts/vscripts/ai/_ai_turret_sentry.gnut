@@ -1,0 +1,72 @@
+global function AiTurretSentry_Init
+
+const DEAD_SENTRY_TURRET_FX		= $"P_impact_exp_med_air"
+const DEAD_SENTRY_TURRET_SFX	= "SentryTurret_DeathExplo"
+const SENTRY_TURRET_AIM_FX_RED = $"P_wpn_lasercannon_aim_short"
+const SENTRY_TURRET_AIM_FX_BLUE = $"P_wpn_lasercannon_aim_short_blue"
+
+void function AiTurretSentry_Init()
+{
+	PrecacheParticleSystem( DEAD_SENTRY_TURRET_FX )
+	//PrecacheParticleSystem( SENTRY_TURRET_AIM_FX_RED )
+	//PrecacheParticleSystem( SENTRY_TURRET_AIM_FX_BLUE )
+	//PrecacheParticleSystem( SENTRY_TURRET_AIM_FX2 )
+
+	AddSpawnCallback( "npc_turret_sentry", LightTurretSpawnFunction )
+	AddDeathCallback( "npc_turret_sentry", LightTurretDeathFX )
+
+	//RegisterSignal( "TurretDisabled" )
+	//RegisterSignal( "HandleTargetDeath" )
+	//RegisterSignal( "OnPlayerDisconnectResetTurret" )
+	//RegisterSignal( "Deactivate_Turret" )
+	//RegisterSignal( "TurretShieldWallRelease")
+	//RegisterSignal( "DestroyShieldFX")
+}
+
+void function LightTurretDeathFX( entity turret, var damageInfo )
+{
+	turret.SetBodygroup( 0, 1 )
+
+	int turretEHandle = turret.GetEncodedEHandle()
+	array<entity> players = GetPlayerArray()
+	foreach( player in players )
+	{
+		Remote_CallFunction_Replay( player, "ServerCallback_TurretRefresh", turretEHandle )
+	}
+
+	EmitSoundAtPosition( turret.GetTeam(), turret.GetOrigin(), DEAD_SENTRY_TURRET_SFX )
+	PlayFX( DEAD_SENTRY_TURRET_FX, turret.GetOrigin() + Vector( 0,0,38 ) )	// played with a slight offset as requested by BigRig
+}
+
+//////////////////////////////////////////////////////////
+void function LightTurretSpawnFunction( entity turret )
+{
+ 	turret.UnsetUsable()
+
+//	float windupTime = TurretGetWindupTime( turret )
+//	if ( windupTime > 0 )
+//		thread HACK_TurretManagePreAttack( turret, OnWindupBegin_SentryTurret, OnWindupEnd_Turret )
+//
+	if ( turret.Dev_GetAISettingByKeyField( "aim_laser_disabled" ) )
+		return
+
+	thread SentryTurretAimLaser( turret )
+}
+
+void function SentryTurretAimLaser( entity turret )
+{
+	entity fx1 = PlayLoopFXOnEntity( SENTRY_TURRET_AIM_FX_RED, turret, "camera_glow", null, null, ENTITY_VISIBLE_TO_ENEMY )
+	entity fx2 = PlayLoopFXOnEntity( SENTRY_TURRET_AIM_FX_BLUE, turret, "camera_glow", null, null, ENTITY_VISIBLE_TO_FRIENDLY )
+
+	OnThreadEnd(
+		function() : ( fx1, fx2 )
+		{
+			if ( IsValid( fx1 ) )
+				EffectStop( fx1 )
+			if ( IsValid( fx2 ) )
+				EffectStop( fx2 )
+		}
+	)
+
+	WaitSignal( turret, "OnDeath" )
+}

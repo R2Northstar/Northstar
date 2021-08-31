@@ -1,0 +1,4 @@
+WeaponData
+{
+	"playermodel" "models/SPOILER_w_titan_particle_accelerator.mdl"
+}

@@ -1,0 +1,185 @@
+global function GameModeArena_Init
+
+struct {
+	bool inBuyPhase
+
+	entity imcBoostStore
+	entity militiaBoostStore
+	
+	entity imcShield
+	entity militiaShield
+} file
+
+void function GameModeArena_Init()
+{
+	SetSpawnpointGamemodeOverride( TEAM_DEATHMATCH )
+
+	SetShouldUseRoundWinningKillReplay( true )
+	SetRoundBased( true )
+	SetRespawnsEnabled( false )
+	SetLoadoutGracePeriodEnabled( false ) // prevent modifying loadouts with grace period
+	Riff_ForceTitanAvailability( eTitanAvailability.Never )
+	Riff_ForceBoostAvailability( eBoostAvailability.Disabled )
+	Riff_ForceSetEliminationMode( eEliminationMode.Pilots )
+
+	ClassicMP_SetCustomIntro( GameModeArena_BuyPhaseSetup, 30.0 )
+	AddCallback_EntitiesDidLoad( CreateBoostStores )
+	AddCallback_OnPlayerRespawned( SetupArenaLoadoutForPlayer )
+}
+
+// intro / buy phase
+
+void function GameModeArena_BuyPhaseSetup()
+{
+	AddCallback_OnClientConnected( SpawnPlayerIntoArenasIntro )
+	AddCallback_GameStateEnter( eGameState.Prematch, void function() { thread BuyPhase() } )
+}
+
+void function SpawnPlayerIntoArenasIntro( entity player )
+{
+	if ( GetGameState() == eGameState.Prematch )
+		RespawnAsPilot( player )
+}
+
+void function CreateBoostStores()
+{
+	array<entity> startspawns = GetEntArrayByClass_Expensive( "info_spawnpoint_human_start" ) // easier to do this than use a spawn callback imo
+	
+	vector imcAverageOrigin
+	float imcAverageAngle
+	int imcNumSpawns
+	
+	vector militiaAverageOrigin
+	float militiaAverageAngle
+	int militiaNumSpawns
+	
+	foreach ( entity startspawn in startspawns )
+	{
+		if ( !startspawn.HasKey( "gamemode_tdm" ) || startspawn.kv.gamemode_tdm == "0" )
+			continue
+	
+		if ( startspawn.GetTeam() == TEAM_IMC )
+		{
+			imcAverageOrigin += startspawn.GetOrigin()
+			imcAverageAngle += startspawn.GetAngles().y
+			imcNumSpawns++
+		}
+		else
+		{
+			militiaAverageOrigin += startspawn.GetOrigin()
+			militiaAverageAngle += startspawn.GetAngles().y
+			militiaNumSpawns++
+		}
+	}
+	
+	// create imc boost store 
+	vector finalPositionImc = < imcAverageOrigin.x / imcNumSpawns, imcAverageOrigin.y / imcNumSpawns, imcAverageOrigin.z / imcNumSpawns >
+	finalPositionImc += ( 200 * AnglesToForward( < 0, imcAverageAngle / imcNumSpawns, 0 > ) )
+	CreateBoostStoreLocation( TEAM_IMC, finalPositionImc, < 0, 0, 0 >, true )
+	
+	vector finalPositionMilitia = < militiaAverageOrigin.x / militiaNumSpawns, militiaAverageOrigin.y / militiaNumSpawns, militiaAverageOrigin.z / militiaNumSpawns >
+	finalPositionMilitia += ( 200 * AnglesToForward( < 0, militiaAverageAngle / militiaNumSpawns, 0 > ) )
+	CreateBoostStoreLocation( TEAM_MILITIA, finalPositionMilitia, < 0, 0, 0 >, true )
+	
+	// createbooststorelocation is void so have to do this 
+	// also boost store code is just fully fucked lol, teams only get set on open so can't compare teams at this point
+	// sorry if someone else makes their own boost stores lol this'll just break
+	// if there's some way to get the invisible crates used for boost stores i will be very happy
+	
+	if ( GetBoostStores().len() != 2 )
+		print( "_gamemode_arena.gnut: there are more than 2 boost stores, very bad no good" )
+	
+	file.imcBoostStore = GetBoostStores()[0]
+	file.militiaBoostStore = GetBoostStores()[1]
+}
+
+void function BuyPhase()
+{
+	ClassicMP_OnIntroStarted()
+
+	foreach ( entity player in GetPlayerArray() )
+	{
+		ScreenFadeFromBlack( player )
+		RespawnAsPilot( player )
+		
+		AddMoneyToPlayer( player, GetCashBoostForRoundCount( GetRoundsPlayed() ) )
+	}
+	
+	SetJoinInProgressBonus( GetCashBoostForRoundCount( GetRoundsPlayed() ) )
+
+	// sort of a hack, set up a new intro here, so dropship intro only ever plays once
+
+	//file.imcShield = CreateBubbleShieldWithSettings( TEAM_IMC, file.imcBoostStore.GetOrigin(), <0,0,0>, null, 15.0 )
+	//file.militiaShield = CreateBubbleShieldWithSettings( TEAM_MILITIA, file.militiaBoostStore.GetOrigin(), <0,0,0>, null, 15.0 )
+	
+	entity imcShield = CreateEntity( "prop_dynamic" )
+	imcShield.SetValueForModelKey( $"models/fx/xo_shield.mdl" )
+	imcShield.kv.solid = 0
+    imcShield.kv.rendercolor = "255 255 255" // white
+	imcShield.kv.modelscale = 2.25
+	imcShield.SetOrigin( file.imcBoostStore.GetOrigin() )
+	DispatchSpawn( imcShield )
+		
+	entity militiaShield = CreateEntity( "prop_dynamic" )
+	militiaShield.SetValueForModelKey( $"models/fx/xo_shield.mdl" )
+	militiaShield.kv.solid = 0
+    militiaShield.kv.rendercolor = "255 255 255" // white
+	militiaShield.kv.modelscale = 2.25
+	militiaShield.SetOrigin( file.militiaBoostStore.GetOrigin() )
+	DispatchSpawn( militiaShield )
+			
+	// current problem, there is seemingly no way of getting a shield we can resize which actually resizes the collision
+	// could probably just damage players that try to leave lol
+	
+	OpenBoostStores()
+	
+	thread DamageLeavingPlayers( imcShield.GetOrigin(), militiaShield.GetOrigin() )
+	
+	wait 30.0 // intro length
+	
+	CloseBoostStores()
+	imcShield.Destroy()
+	militiaShield.Destroy()
+	
+	foreach ( entity player in GetPlayerArray() )
+		if ( player.GetMainWeapons().len() != 3 )
+			player.GiveWeapon( "mp_weapon_semipistol" )
+	
+	ClassicMP_OnIntroFinished()
+}
+
+void function DamageLeavingPlayers( vector imcOrigin, vector militiaOrigin )
+{
+	while ( GetGameState() == eGameState.Prematch )
+	{
+		wait 0.5
+		foreach ( entity player in GetPlayerArray() )
+		{
+			vector pos = imcOrigin
+			if ( player.GetTeam() == TEAM_MILITIA )
+				pos = militiaOrigin
+			
+			if ( Distance( player.GetOrigin(), pos ) > 510.0 ) // roughly the size of the shield
+				player.TakeDamage( 25, svGlobal.worldspawn, svGlobal.worldspawn, {} )
+		}
+	}
+}
+
+void function SetupArenaLoadoutForPlayer( entity player )
+{
+	PilotLoadoutDef playerLoadout = clone GetActivePilotLoadout( player )
+
+	if ( GetGameState() == eGameState.Prematch ) // buy phase
+	{
+		playerLoadout.primary = ""
+		playerLoadout.primaryMods = []
+		playerLoadout.secondary = ""
+		playerLoadout.secondaryMods = []
+		playerLoadout.weapon3 = ""
+		playerLoadout.weapon3Mods = []
+		playerLoadout.ordnance = ""
+		playerLoadout.special = ""
+	}
+	
+	GivePilotLoadout( player, playerLoadout )
+}

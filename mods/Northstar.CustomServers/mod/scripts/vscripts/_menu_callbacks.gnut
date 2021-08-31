@@ -1,0 +1,17 @@
+global function MenuCallbacks_Init
+
+void function MenuCallbacks_Init()
+{
+	AddClientCommandCallback( "LeaveMatch", ClientCommandCallback_LeaveMatch )
+}
+
+bool function ClientCommandCallback_LeaveMatch( entity player, array<string> args )
+{
+	// todo: ideally, it'd be nice to get clients to return to lobby here, rather than just dcing them
+	// kind of a pain tho, since we'd have to get it to call script code without a remote func, since that'd break compatibility
+
+	ClientCommand( player, "disconnect" )
+	//ClientCommand( player, "setplaylist tdm; map mp_lobby" )
+	
+	return true
+}

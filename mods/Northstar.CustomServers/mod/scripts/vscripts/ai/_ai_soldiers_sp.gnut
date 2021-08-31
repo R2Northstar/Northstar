@@ -1,0 +1,17 @@
+global function IsAutoPopulateEnabled
+
+bool function IsAutoPopulateEnabled( var team = null )
+{
+	if ( IsNPCSpawningEnabled() == false )
+		return false
+
+	if ( Flag( "disable_npcs" ) )
+		return false
+
+	if ( team == TEAM_MILITIA && Flag( "Disable_MILITIA" ) )
+		return false
+	if ( team == TEAM_IMC && Flag( "Disable_IMC" ) )
+		return false
+
+	return true
+}

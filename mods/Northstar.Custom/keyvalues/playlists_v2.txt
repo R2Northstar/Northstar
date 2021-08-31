@@ -1,0 +1,572 @@
+playlists
+{
+	Gamemodes
+	{
+		sbox
+		{
+			inherit defaults
+			vars
+			{
+				name #PL_sbox
+				lobbytitle #PL_sbox_lobby
+				description #PL_sbox_desc
+				abbreviation #PL_sbox_abbr
+				
+				max_teams 1
+				classic_mp 0
+			}
+		}
+		fw
+		{
+			inherit defaults
+			vars
+			{
+				name #PL_fw
+				lobbytitle #PL_fw_lobby
+				description #PL_fw_desc
+				abbreviation #PL_fw_abbr
+					
+				max_players 16
+				max_teams 2
+				classic_mp 1
+				scorelimit 100 // score is a percentage so ofc need max to be 100%
+			}
+		}
+		gg
+		{
+			inherit defaults
+			vars
+			{
+				name #PL_gg
+				lobbytitle #PL_gg_lobby
+				description #PL_gg_desc
+				hint #PL_gg_hint
+				abbreviation #PL_gg_abbr
+				max_players 12
+				max_teams 12
+				classic_mp 1
+				
+				scorelimit 21 // temp until we have a way of dynamically setting non-default scorelimit in code
+				
+				gamemode_score_hint #GAMEMODE_SCORE_HINT_FFA
+				gamemode_bullet_001	#GAMEMODE_BULLET_FFA_001
+				gamemode_bullet_002	#GAMEMODE_BULLET_FFA_002
+				gamemode_bullet_003	#GAMEMODE_BULLET_FFA_003
+				gamemode_bullet_004	#GAMEMODE_BULLET_FFA_004
+				gamemode_bullet_005	#GAMEMODE_BULLET_FFA_005
+			}
+		}
+		tt
+		{
+			inherit defaults
+			vars
+			{
+				name #PL_tt
+				lobbytitle #PL_tt_lobby
+				description #PL_tt_desc
+				hint #PL_tt_hint
+				abbreviation #PL_tt_abbr
+				max_players 12
+				max_teams 2
+				classic_mp 1
+				
+				scorelimit 20
+				
+				gamemode_score_hint #GAMEMODE_SCORE_HINT_TDM
+			}
+		}
+		inf
+		{
+			inherit defaults
+			vars
+			{
+				name #PL_inf
+				lobbytitle #PL_inf_lobby
+				description #PL_inf_desc
+				hint #PL_inf_hint
+				abbreviation #PL_inf_abbr
+				max_players 12
+				max_teams 2
+				classic_mp 1
+				
+				gamemode_score_hint #GAMEMODE_SCORE_HINT_TDM
+			}
+		}
+		arena
+		{
+			inherit defaults
+			vars
+			{
+				name #PL_arena
+				lobbytitle #PL_arena_lobby
+				description #PL_arena_desc
+				hint #PL_arena_hint
+				abbreviation #PL_arena_abbr
+				max_players 6
+				max_teams 2
+				classic_mp 1
+				boost_store_mode arena
+				boost_store_team_reserve 1
+				scorelimit 5
+				timelimit 2
+				roundtimelimit 2
+				roundscorelimit 5
+				
+				gamemode_score_hint #GAMEMODE_SCORE_HINT_TDM
+			}
+		}
+		kr
+		{
+			inherit defaults
+			vars
+			{
+				name #PL_kr
+				lobbytitle #PL_kr_lobby
+				description #PL_kr_desc
+				hint #PL_kr_hint
+				abbreviation #PL_kr_abbr
+				
+				max_players 16
+				max_teams 16
+				classic_mp 1
+				timelimit 7.5
+				scorelimit 99999 // arbitrarily high number
+				
+				gamemode_score_hint #GAMEMODE_SCORE_HINT_TDM
+			}
+		}
+		fastball
+		{
+			inherit defaults
+			vars
+			{
+				name #PL_fastball
+				lobbytitle #PL_fastball_lobby
+				description #PL_fastball_desc
+				hint #PL_fastball_hint
+				abbreviation #PL_fastball_abbr
+				
+				max_players 16
+				max_teams 2
+				classic_mp 1
+				scorelimit 5
+				timelimit 2
+				roundtimelimit 2
+				roundscorelimit 5
+				
+				gamemode_score_hint #GAMEMODE_SCORE_HINT_TDM
+			}
+		}
+		ctf_comp
+		{
+			inherit defaults
+			vars
+			{
+				name #GAMEMODE_ctf_comp
+				lobbytitle #PL_capture_the_flag_lobby
+				description #PL_capture_the_flag_desc
+				hint #PL_capture_the_flag_hint
+				abbreviation #PL_capture_the_flag_abbr
+				image ctf
+				respawn_delay 8
+				scorelimit 5
+				suddendeath_timelimit 2
+				timelimit 12
+				max_players 10
+				phase_shift_drop_flag 1
+				ctf_flag_return_time 1
+				color		"0 119 245 255"
+
+				gamemode_score_hint #GAMEMODE_SCORE_HINT_CTF
+				gamemode_bullet_001	#GAMEMODE_BULLET_CTF_001
+				gamemode_bullet_002	#GAMEMODE_BULLET_CTF_002
+				gamemode_bullet_003	#GAMEMODE_BULLET_CTF_003
+				gamemode_bullet_004	#GAMEMODE_BULLET_CTF_004
+				gamemode_bullet_005	#GAMEMODE_BULLET_CTF_005
+			}
+		}
+	}
+	Playlists
+	{
+		gg
+		{
+			inherit defaults
+			vars
+			{
+				name #PL_gg
+				lobbytitle #PL_gg_lobby
+				description #PL_gg_desc
+				abbreviation #PL_gg_abbr
+				image varietypack
+				//mixtape_slot 7
+				mixtape_timeout 120
+				visible 0
+			}
+			gamemodes
+			{
+				gg
+				{
+					maps
+					{
+					    mp_forwardbase_kodai 1
+                        mp_grave 1
+                        mp_homestead 1
+                        mp_thaw 1
+                        mp_black_water_canal 1
+                        mp_eden 1
+                        mp_drydock 1
+                        mp_crashsite3 1
+                        mp_complex3 1
+                        mp_angel_city 1
+                        mp_colony02 1
+                        mp_glitch 1
+						mp_lf_stacks 1
+						mp_lf_deck 1
+						mp_lf_meadow 1
+						mp_lf_traffic 1
+						mp_lf_township 1
+						mp_lf_uma 1
+						mp_relic02 1
+						mp_wargames 1
+						mp_rise 1
+					}
+				}
+			}
+		}
+		tt
+		{
+			inherit defaults
+			vars
+			{
+				name #PL_tt
+				lobbytitle #PL_tt_lobby
+				description #PL_tt_desc
+				hint #PL_tt_hint
+				abbreviation #PL_tt_abbr
+				visible 0
+			}
+			gamemodes
+			{
+				tt
+				{
+					maps
+					{
+					    mp_forwardbase_kodai 1
+                        mp_grave 1
+                        mp_homestead 1
+                        mp_thaw 1
+                        mp_black_water_canal 1
+                        mp_eden 1
+                        mp_drydock 1
+                        mp_crashsite3 1
+                        mp_complex3 1
+                        mp_angel_city 1
+                        mp_colony02 1
+                        mp_glitch 1
+						mp_relic02 1
+						mp_wargames 1
+						mp_rise 1
+					}
+				}
+			}
+		}
+		inf
+		{
+			inherit defaults
+			vars
+			{
+				name #PL_inf
+				lobbytitle #PL_inf_lobby
+				description #PL_inf_desc
+				hint #PL_inf_hint
+				abbreviation #PL_inf_abbr
+				visible 0
+			}
+			gamemodes
+			{
+				inf
+				{
+					maps
+					{
+					    mp_forwardbase_kodai 1
+                        mp_grave 1
+                        mp_homestead 1
+                        mp_thaw 1
+                        mp_black_water_canal 1
+                        mp_eden 1
+                        mp_drydock 1
+                        mp_crashsite3 1
+                        mp_complex3 1
+                        mp_angel_city 1
+                        mp_colony02 1
+                        mp_glitch 1
+						mp_lf_stacks 1
+						mp_lf_deck 1
+						mp_lf_meadow 1
+						mp_lf_traffic 1
+						mp_lf_township 1
+						mp_lf_uma 1
+						mp_relic02 1
+						mp_wargames 1
+						mp_rise 1
+					}
+				}
+			}
+		}
+		arena
+		{
+			inherit defaults
+			vars
+			{
+				name #PL_arena
+				lobbytitle #PL_arena_lobby
+				description #PL_arena_desc
+				hint #PL_arena_hint
+				abbreviation #PL_arena_abbr
+				max_players 6
+				max_teams 2
+				classic_mp 1
+				boost_store_mode arena
+				boost_store_team_reserve 1
+				scorelimit 5
+				timelimit 2
+				roundtimelimit 2
+				roundscorelimit 5
+				
+				gamemode_score_hint #GAMEMODE_SCORE_HINT_TDM
+			}
+			gamemodes
+			{
+				arena
+				{
+					maps
+					{
+					    mp_forwardbase_kodai 1
+                        mp_grave 1
+                        mp_homestead 1
+                        mp_thaw 1
+                        mp_black_water_canal 1
+                        mp_eden 1
+                        mp_drydock 1
+                        mp_crashsite3 1
+                        mp_complex3 1
+                        mp_angel_city 1
+                        mp_colony02 1
+                        mp_glitch 1
+						mp_lf_stacks 1
+						mp_lf_deck 1
+						mp_lf_meadow 1
+						mp_lf_traffic 1
+						mp_lf_township 1
+						mp_lf_uma 1
+						mp_relic02 1
+						mp_wargames 1
+						mp_rise 1
+					}
+				}
+			}
+		}
+		kr
+		{
+			inherit defaults
+			vars
+			{
+				name #PL_kr
+				lobbytitle #PL_kr_lobby
+				description #PL_kr_desc
+				hint #PL_kr_hint
+				abbreviation #PL_kr_abbr
+				
+				max_players 16
+				max_teams 16
+				classic_mp 1
+				timelimit 7.5
+				scorelimit 99999 // arbitrarily high number
+			}
+			gamemodes
+			{
+				kr
+				{
+					maps
+					{
+					    mp_forwardbase_kodai 1
+                        mp_grave 1
+                        mp_homestead 1
+                        mp_thaw 1
+                        mp_black_water_canal 1
+                        mp_eden 1
+                        mp_drydock 1
+                        mp_crashsite3 1
+                        mp_complex3 1
+                        mp_angel_city 1
+                        mp_colony02 1
+                        mp_glitch 1
+						mp_lf_stacks 1
+						mp_lf_deck 1
+						mp_lf_meadow 1
+						mp_lf_traffic 1
+						mp_lf_township 1
+						mp_lf_uma 1
+						mp_relic02 1
+						mp_wargames 1
+						mp_rise 1
+					}
+				}
+			}
+		}
+		fastball
+		{
+			inherit defaults
+			vars
+			{
+				name #PL_fastball
+				lobbytitle #PL_fastball_lobby
+				description #PL_fastball_desc
+				hint #PL_fastball_hint
+				abbreviation #PL_fastball_abbr
+				
+				max_players 16
+				max_teams 2
+				classic_mp 1
+				scorelimit 5
+				roundtimelimit 2
+				roundscorelimit 5
+				
+				gamemode_score_hint #GAMEMODE_SCORE_HINT_TDM
+			}	
+			gamemodes
+			{
+				fastball
+				{
+					maps
+					{
+					    mp_forwardbase_kodai 1
+                        mp_grave 1
+                        mp_homestead 1
+                        mp_thaw 1
+                        mp_black_water_canal 1
+                        mp_eden 1
+                        mp_drydock 1
+                        mp_crashsite3 1
+                        mp_complex3 1
+                        mp_angel_city 1
+                        mp_colony02 1
+                        mp_glitch 1
+						mp_relic02 1
+						mp_wargames 1
+						mp_rise 1
+					}
+				}
+			}
+		}
+		fw
+		{
+			inherit defaults
+			vars
+			{
+				name #PL_fw
+				lobbytitle #PL_fw_lobby
+				description #PL_fw_desc
+				hint #PL_fw_hint
+				abbreviation #PL_fw_abbr
+				
+				max_players 16
+				max_teams 2
+				classic_mp 1
+				scorelimit 100
+				
+				gamemode_score_hint #GAMEMODE_SCORE_HINT_TDM
+			}	
+			gamemodes
+			{
+				fw
+				{
+					maps
+					{
+					    	mp_forwardbase_kodai 1
+                        			mp_grave 1
+                        			mp_homestead 1
+                        			mp_thaw 1
+                        			mp_black_water_canal 1
+                        			mp_eden 1
+                        			mp_drydock 1
+                        			mp_crashsite3 1
+                        			mp_complex3 1
+                       				mp_angel_city 1
+                        			mp_colony02 1
+                        			mp_glitch 1
+						mp_relic02 1
+						mp_wargames 1
+						mp_rise 1
+					}
+				}
+			}
+		}
+		ctf_comp
+		{
+			inherit defaults
+			vars
+			{
+				name #GAMEMODE_ctf_comp
+				lobbytitle #PL_capture_the_flag_lobby
+				description #PL_capture_the_flag_desc
+				abbreviation #PL_capture_the_flag_abbr
+				image ctf
+				mixtape_slot 4
+				mixtape_timeout 120
+				visible 1
+				
+				// comp-exclusive settings
+				// note: these don't display right on the private match menu yet
+				pilot_health_multiplier 1.25
+				respawn_delay 7.0
+				
+				boosts_enabled 1 // this is actually disabled lol
+				earn_meter_pilot_overdrive 0
+				earn_meter_pilot_multiplier 0.5
+				earn_meter_titan_multiplier 0.5
+				
+				scorelimit 6
+				timelimit 14
+			}
+			gamemodes
+			{
+				ctf
+				{
+					maps
+					{
+						mp_complex3 1
+						mp_drydock 1
+						mp_glitch 1
+						mp_homestead 2
+						mp_eden 1
+						mp_forwardbase_kodai 1
+						mp_black_water_canal 1
+						mp_glitch 1
+						mp_angel_city 1
+						mp_colony02 1
+                        			mp_relic02 1
+						mp_grave 1
+						mp_homestead 1
+						mp_drydock 1
+						mp_glitch 1
+						mp_thaw 1
+						mp_eden 2
+						mp_black_water_canal 1
+						mp_glitch 1
+                        			mp_relic02 1
+						mp_wargames 1
+						mp_rise 1
+						mp_crashsite3 1
+						mp_lf_stacks 1
+						mp_lf_deck 1
+						mp_lf_meadow 1
+						mp_lf_traffic 1
+						mp_lf_township 1
+						mp_lf_uma 1
+					}
+				}
+			}
+		}
+	}
+}

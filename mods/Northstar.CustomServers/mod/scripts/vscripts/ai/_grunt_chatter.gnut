@@ -1,0 +1,1786 @@
+// _grunt_chatter.gnut
+
+global function GruntChatter_Init
+global function GruntChatter_AddCategory
+global function GruntChatter_AddEvent
+global function GruntChatter_TryCloakedPilotSpotted
+global function GruntChatter_TryThrowingGrenade
+global function GruntChatter_TryFriendlyEquipmentDeployed
+global function GruntChatter_TryPersonalShieldDamaged
+global function GruntChatter_TryDisplacingFromDangerousArea
+global function GruntChatter_TryEnemyTimeShifted
+global function GruntChatter_TryIncomingSpawn
+global function GruntChatter_TryPlayerPilotReloading
+global function GruntChatter_TryGruntFlankedByPlayer
+
+const float CHATTER_THINK_WAIT = 1.0
+const float CHATTER_SIGNAL_INTERRUPT_WAIT = 1.0 // how often the grunts will interrupt their signal waiting thread to check their kv timers
+const float CHATTER_EVENT_EXPIRE_TIME = 3.0 // chatter events get thrown away when they're at least this old
+
+const float CHATTER_PLAYER_COMBAT_STATE_CHANGE_DEBOUNCE = 1.5
+
+const float CHATTER_PILOT_LOST_NEARBY_TEAMMATE_DIST = 1024.0
+const float CHATTER_PLAYER_CLOSE_MIN_DIST 			= 370.0 // all squad members have to be at least this far away from enemy to say they lost visual
+
+const float CHATTER_PILOT_SPOTTED_CLOSE_DIST 			= 600.0
+const float CHATTER_PILOT_SPOTTED_MID_DIST 				= 1100.0
+const float CHATTER_PILOT_SPOTTED_NEARBY_TEAMMATE_DIST 	= 1024.0
+
+const float CHATTER_PILOT_SPOTTED_MID_DIST_MOVING_MIN_SPEED = 170.0
+
+const float CHATTER_PILOT_SPOTTED_RANGE_DIST_MIN 	= 600.0
+const float CHATTER_PILOT_SPOTTED_RANGE_DIST_MAX 	= 1400.0
+const float CHATTER_PILOT_SPOTTED_RANGE_DIST_20 	= 787.0
+const float CHATTER_PILOT_SPOTTED_RANGE_DIST_25 	= 984.0
+const float CHATTER_PILOT_SPOTTED_RANGE_DIST_30 	= 1181.0
+const float CHATTER_PILOT_SPOTTED_RANGE_DIST_35 	= 1378.0
+
+const float CHATTER_PILOT_DECOY_SPOTTED_DIST_MAX 		= 1500.0
+
+const float CHATTER_ENEMY_GRUNT_SPOTTED_DIST 			= 1250.0
+const float CHATTER_ENEMY_TITAN_SPOTTED_DIST 			= 3000.0
+const float CHATTER_ENEMY_TITAN_SPOTTED_DIST_CLOSE 		= 1024.0
+const float CHATTER_ENEMY_SPECTRE_SPOTTED_DIST 			= 1250.0
+const float CHATTER_ENEMY_SPECTRE_SPOTTED_DIST_CLOSE 	= 650.0
+const float CHATTER_ENEMY_TICK_SPOTTED_DIST 			= 1024.0
+
+const float CHATTER_PILOT_SPOTTED_ABOVE_DIST_MIN 	= 128.0
+const float CHATTER_PILOT_SPOTTED_ABOVE_DIST_MAX 	= 1024.0
+const float CHATTER_PILOT_SPOTTED_ABOVE_RADIUS 		= 450.0
+const float CHATTER_PILOT_SPOTTED_BELOW_DIST_MIN 	= 128.0
+const float CHATTER_PILOT_SPOTTED_BELOW_DIST_MAX 	= 1024.0
+const float CHATTER_PILOT_SPOTTED_BELOW_RADIUS 		= 512.0
+
+const float CHATTER_GRUNT_ENEMY_OUT_OF_SIGHT_TIME 	= 15.0
+
+const float CHATTER_FRIENDLY_EQUIPMENT_DEPLOYED_NEARBY_DIST = 900.0 // distance from the Specialist that a Grunt will chatter about him deploying things
+
+const bool 	CHATTER_DO_UNSUSPECTING_PILOT_CALLOUTS 			= false // couldn't get it working well enough in time just in script... next game maybe
+const float CHATTER_UNSUSPECTING_PILOT_TARGET_DIST_MAX 		= 512.0
+const float CHATTER_UNSUSPECTING_PILOT_TARGET_MIN_DOT_REAR 	= 0.65
+const float CHATTER_UNSUSPECTING_PILOT_MAX_SPEED 			= 170.0 // player has to be below this speed to trigger "unsuspecting pilot"
+const float CHATTER_UNSUSPECTING_PILOT_STATETIME_MIN 		= 2.0  	// how long the player has to be in "unsuspecting state" before we try to chatter about it
+
+const float CHATTER_SEE_CLOAKED_PILOT_MIN_DOT_REAR = 0.65
+
+const float CHATTER_SUPPRESSION_EXPIRE_TIME 		= 0.2 	// secs after kv.lastSuppressionTime that we will be ok with adding a chatter event about it
+const float CHATTER_MISS_FAST_TARGET_EXPIRE_TIME 	= 0.5 	// secs after kv.lastMissFastPlayerTime that we will be ok with adding a chatter event about it
+const float CHATTER_MISS_FAST_TARGET_MIN_SPEED 		= 350.0 // min "speed" that player needs to be moving to trigger a missing fast player callout
+
+const float CHATTER_PILOT_LOW_HEALTH_FRAC 		= 0.35 		// below this fraction of pilot maxhealth, enemies can chatter about pilot low health
+const float CHATTER_PILOT_LOW_HEALTH_RANGE 		= 1024.0 	// beyond this distance, enemies won't chatter about pilot low health
+const float CHATTER_PLAYER_RELOADING_RANGE 		= 800.0
+
+const float CHATTER_NEARBY_GRUNT_TRACEFRAC_MIN 		= 0.95  // for when we need "LOS" trace
+
+const float CHATTER_ENEMY_PILOT_MULTIKILL_EXPIRETIME 	= 4.5  // max time between kills to trigger multikill callout
+const int 	CHATTER_PILOT_MULTIKILL_MIN_KILLS 			= 3
+
+const float CHATTER_FRIENDLY_GRUNT_DOWN_DIST_MAX 	= 1100.0
+const float CHATTER_FRIENDLY_TITAN_DOWN_DIST_MAX 	= 1500.0
+const float CHATTER_ENEMY_PILOT_DOWN_DIST_MAX 		= 600.0
+const float CHATTER_ENEMY_GRUNT_DOWN_DIST_MAX 		= 800.0
+const float CHATTER_ENEMY_TITAN_DOWN_DIST_MAX 		= 1500.0
+const float CHATTER_ENEMY_SPECTRE_DOWN_DIST_MAX 	= 800.0
+
+const float CHATTER_NEARBY_TITAN_DIST 		= 1024.0
+const float CHATTER_NEARBY_REAPER_DIST 		= 1024.0
+const float CHATTER_NEARBY_SPECTRE_DIST 	= 800.0
+
+const float CHATTER_ENEMY_TIME_SHIFT_NEARBY_DIST 	= 700.0
+
+const float CHATTER_SQUAD_DEPLETED_FRIENDLY_NEARBY_DIST = 650.0  // if any other friendly grunt is within this dist, squad deplete chatter won't play
+
+const float CHATTER_DANGEROUS_AREA_NEARBY_RANGE = 512.0
+
+struct ChatterCategory
+{
+	string 	alias
+	int 	priority = -1
+	string 	timer
+	string 	secondaryTimer
+	bool 	trackEventTarget
+	bool 	resetTargetKillChain
+}
+
+struct ChatterEvent
+{
+	ChatterCategory& category
+	entity npc 		= null
+	bool hasNPC 	= false
+	entity target 	= null
+	bool hasTarget 	= false
+	bool isValid 	= false
+	float time 		= -1
+}
+
+struct
+{
+	array<ChatterEvent> chatterEvents = []
+	table< string, ChatterCategory > chatterCategories
+	int usedEventTargetsArrayHandle
+
+	int pilotKillChainCounter = 0
+	float lastPilotKillTime = -1
+
+	int debugLevel = 0
+} file
+
+void function GruntChatter_Init()
+{
+	Assert( IsSingleplayer(), "Grunt chatter is only set up for SP." )
+
+	AddSpawnCallback( "player", GruntChatter_OnPlayerSpawned )
+	AddSpawnCallback( "npc_soldier", GruntChatter_OnGruntSpawned )
+	AddSpawnCallback( "npc_turret_sentry", GruntChatter_OnSentryTurretSpawned )
+
+	RegisterSignal( "GruntChatter_CombatStateChangeThread" )
+	RegisterSignal( "GruntChatter_Interrupt" )
+
+	file.usedEventTargetsArrayHandle = CreateScriptManagedEntArray()
+
+	AddCallback_OnPlayerKilled( GruntChatter_OnPlayerOrNPCKilled )
+	AddCallback_OnNPCKilled( GruntChatter_OnPlayerOrNPCKilled )
+	AddDeathCallback( "player_decoy", GruntChatter_OnPilotDecoyKilled )
+
+	GruntChatter_SharedInit()
+}
+
+void function GruntChatter_OnPlayerSpawned( entity player )
+{
+	thread GruntChatter_PlayerThink( player )
+	thread GruntChatter_TrackGruntCombatStateVsPlayer( player )
+
+	if ( CHATTER_DO_UNSUSPECTING_PILOT_CALLOUTS )
+		thread GruntChatter_DetectPlayerPilotUnsuspecting( player )
+}
+
+void function GruntChatter_OnGruntSpawned( entity grunt )
+{
+	if( IsMultiplayer() )
+		return
+
+	if ( !GruntChatter_IsGruntTypeEligibleForChatter( grunt ) )
+		return
+
+	AddEntityCallback_OnDamaged( grunt, GruntChatter_OnGruntDamaged )
+
+	thread GruntChatter_GruntSignalWait( grunt )
+}
+
+void function GruntChatter_OnSentryTurretSpawned( entity turret )
+{
+	if ( turret.GetTeam() != TEAM_IMC )
+		return
+
+	thread GruntChatter_TurretSignalWait( turret )
+}
+
+// ==== chatter mission control ====
+void function GruntChatter_AddCategory( string chatterAlias, int priority, string timerAlias, string secondaryTimerAlias, bool trackEventTarget, bool resetTargetKillChain )
+{
+	Assert( !( chatterAlias in file.chatterCategories ), "Chatter alias already set up: " + chatterAlias )
+	Assert( TimerExists( timerAlias ), "Grunt chatter timer not set up in grunt_chatter_timers.csv: " + timerAlias )
+
+	ChatterCategory newCategory
+	newCategory.alias = chatterAlias
+	newCategory.priority = priority
+	newCategory.timer = timerAlias
+	newCategory.trackEventTarget = trackEventTarget
+	newCategory.resetTargetKillChain = resetTargetKillChain
+
+	if ( secondaryTimerAlias != "" )
+		newCategory.secondaryTimer = secondaryTimerAlias
+
+	file.chatterCategories[ chatterAlias ] <- newCategory
+}
+
+// add a grunt to have him chatter specifically
+// target: must be alive or else event won't fire
+void function GruntChatter_AddEvent( string alias, entity ornull npc = null, entity ornull target = null )
+{
+	Assert( alias in file.chatterCategories, "Couldn't find chatter category alias " + alias + ", was it set up?" )
+
+	ChatterEvent newEvent
+	newEvent.category = file.chatterCategories[ alias ]
+	newEvent.isValid = true
+	newEvent.time = Time()
+
+	if ( npc != null )
+	{
+		newEvent.npc = expect entity( npc )
+		newEvent.hasNPC = true
+	}
+
+	if ( file.chatterCategories[ alias ].trackEventTarget )
+		Assert( target != null, "Category " + file.chatterCategories[ alias ].alias + " requires a target to track for its events." )
+
+	if ( file.chatterCategories[ alias ].resetTargetKillChain )
+		Assert( target != null, "Category " + file.chatterCategories[ alias ].alias + " requires a target on which to record kill chains." )
+
+	if ( target != null )
+	{
+		newEvent.target = expect entity( target )
+		newEvent.hasTarget = true
+	}
+
+	if ( file.debugLevel > 1 )
+		printt( "ADDING EVENT:", newEvent.category.alias )
+
+	file.chatterEvents.append( newEvent )
+}
+
+void function GruntChatter_AddToUsedEventTargets( entity ent )
+{
+	Assert( !GruntChatter_EventTargetAlreadyUsed( ent ), "Ent already added to event targets: " + ent )
+	AddToScriptManagedEntArray( file.usedEventTargetsArrayHandle, ent )
+}
+
+bool function GruntChatter_EventTargetAlreadyUsed( entity ent )
+{
+	return ScriptManagedEntArrayContains( file.usedEventTargetsArrayHandle, ent )
+}
+
+void function GruntChatter_PlayerThink( entity player )
+{
+	player.EndSignal( "OnDestroy" )
+
+	while ( 1 )
+	{
+		wait CHATTER_THINK_WAIT
+
+		// squad conversations don't play to dead players
+		if ( !IsAlive( player ) )
+			continue
+
+		if ( player.GetForcedDialogueOnly() )
+			continue
+
+		if ( !file.chatterEvents.len() )
+			continue
+
+		if ( !TimerCheck( "chatter_global" ) )
+			continue
+
+		// prune expired chatter events if necessary
+		GruntChatter_RemoveExpiredEventsFromQueue()
+
+		// process chatter events
+		array< ChatterEvent > currChatterEvents = file.chatterEvents
+
+		ChatterEvent eventToPlay
+
+		foreach ( chatterEvent in currChatterEvents )
+		{
+			// check timer
+			if ( !TimerCheck( chatterEvent.category.timer ) )
+				continue
+
+			// check priority vs currently selected
+			if ( chatterEvent.category.priority < eventToPlay.category.priority )
+				continue
+
+			// check ents are still legit
+			if ( chatterEvent.hasNPC )
+			{
+				if ( !GruntChatter_CanGruntChatterNow( chatterEvent.npc ) )
+					continue
+
+				if ( !GruntChatter_CanGruntChatterToPlayer( chatterEvent.npc, player ) )
+					continue
+			}
+
+			if ( chatterEvent.hasTarget && !GruntChatter_CanChatterEventUseEnemyTarget( chatterEvent ) )
+				continue
+
+			// check which event is more current
+			if ( eventToPlay.time > chatterEvent.time )
+				continue
+
+			eventToPlay = chatterEvent
+		}
+
+		if ( eventToPlay.isValid )
+		{
+			string alias = eventToPlay.category.alias
+			string timer = eventToPlay.category.timer
+
+			entity grunt = eventToPlay.npc
+			// if the event didn't include a grunt, use the closest grunt as the source
+			if ( !IsValid( grunt ) )
+			{
+				// only human grunts should talk
+				array<entity> nearbyGrunts = GetNearbyEnemyHumanGrunts( player.GetOrigin(), player.GetTeam() )
+
+				if ( !nearbyGrunts.len() )
+				{
+					if ( file.debugLevel > 0 )
+						printt( "GRUNT CHATTER: can't play chatter event because nobody is close enough:", alias )
+
+					continue
+				}
+
+				nearbyGrunts = ArrayClosest( nearbyGrunts, player.GetOrigin() )
+				grunt = nearbyGrunts[0]
+			}
+
+			Assert( IsAlive( grunt ), "Grunt chatter error: need a grunt to talk" )
+
+			if ( file.debugLevel > 0 )
+				printt( "GRUNT CHATTER:", alias )
+
+			if ( eventToPlay.category.trackEventTarget )
+				GruntChatter_AddToUsedEventTargets( eventToPlay.target )
+
+			if ( eventToPlay.category.resetTargetKillChain )
+				GruntChatter_ResetPilotKillChain( eventToPlay.target )
+
+			PlaySquadConversationToAll( alias, grunt )
+			ChatterTimerReset( eventToPlay )
+
+			// throw away all the old chatter events now that we processed one
+			GruntChatter_FlushEventQueue()
+		}
+	}
+}
+
+void function GruntChatter_FlushEventQueue()
+{
+	file.chatterEvents = []
+}
+
+void function GruntChatter_RemoveExpiredEventsFromQueue()
+{
+	array< ChatterEvent > recentEvents = []
+	foreach ( event in file.chatterEvents )
+	{
+		if ( Time() - event.time >= CHATTER_EVENT_EXPIRE_TIME )
+		{
+			if ( file.debugLevel > 1 )
+				printt( "expired event:", event.category.alias, "time:", Time() - event.time )
+
+			continue
+		}
+
+		recentEvents.append( event )
+	}
+
+	file.chatterEvents = recentEvents
+}
+
+void function ChatterTimerReset( ChatterEvent event )
+{
+	TimerReset( "chatter_global" )
+	TimerReset( event.category.timer )
+
+	if ( event.category.secondaryTimer != "" )
+		TimerReset( event.category.secondaryTimer )
+}
+
+
+// ==== combat state tracking ====
+void function GruntChatter_TrackGruntCombatStateVsPlayer( entity player )
+{
+	player.EndSignal( "OnDestroy" )
+
+	while ( 1 )
+	{
+		wait 1.0
+
+		if ( !IsAlive( player ) )
+			continue
+
+		int currState = GruntChatter_GetGruntCombatStateVsPlayer( player )
+
+		if ( currState == svGlobalSP.gruntCombatState )
+			continue
+
+		if ( file.debugLevel > 1 )
+			printt( "combat state change:", currState )
+
+		thread GruntChatter_TryPlayerPilotCombatStateChange( player, currState, svGlobalSP.gruntCombatState )
+
+		svGlobalSP.gruntCombatState = currState
+	}
+}
+
+int function GruntChatter_GetGruntCombatStateVsPlayer( entity player )
+{
+	array<entity> enemies = GetNPCArrayEx( "npc_soldier", TEAM_ANY, player.GetTeam(), Vector( 0, 0, 0 ), -1 )
+	ArrayRemoveDead( enemies )
+
+	int currState = eGruntCombatState.IDLE
+
+	foreach ( npc in enemies )
+	{
+		if ( !IsAlive( npc ) )
+			continue
+
+		if ( npc.GetNPCState() == "alert" && currState != eGruntCombatState.COMBAT )
+			currState = eGruntCombatState.ALERT
+		else if ( npc.GetNPCState() == "combat" && npc.GetEnemy() == player )
+			return eGruntCombatState.COMBAT
+	}
+
+	return currState
+}
+
+
+// ==== player event handling ====
+// not currently used - I can't make it work well enough in script. Maybe code next game.
+void function GruntChatter_DetectPlayerPilotUnsuspecting( entity player )
+{
+	player.EndSignal( "OnDestroy" )
+
+	bool resetUnsuspectingTime = true
+	float unsuspectingTime = -1
+	array<entity> nearbyGrunts
+
+	while ( 1 )
+	{
+		if ( resetUnsuspectingTime )
+		{
+			if ( Time() - unsuspectingTime >= CHATTER_UNSUSPECTING_PILOT_STATETIME_MIN )
+				if ( file.debugLevel > 2 )
+					printt( "========== RESET UNSUSPECTING!" )
+
+			unsuspectingTime = Time()
+		}
+
+		wait 1.0
+
+		if ( !IsAlive( player ) )
+			continue
+
+		if ( !IsPilot( player ) )
+			continue
+
+		if ( Length( player.GetVelocity() ) > CHATTER_UNSUSPECTING_PILOT_MAX_SPEED )
+			continue
+
+		array<entity> validGrunts
+
+		nearbyGrunts = GetNearbyEnemyHumanGrunts( player.GetOrigin(), player.GetTeam(), CHATTER_UNSUSPECTING_PILOT_TARGET_DIST_MAX )
+		if ( !nearbyGrunts.len() )
+			continue
+
+		foreach ( grunt in nearbyGrunts )
+		{
+			if ( grunt.GetEnemy() != player )
+				continue
+
+			// don't care about facing direction, just if he can trace to the player
+			if ( !GruntChatter_CanGruntTraceToLocation( grunt, player.EyePosition() ) )
+				continue
+
+			if ( !GruntChatter_IsTargetFacingAway( grunt, player, CHATTER_UNSUSPECTING_PILOT_TARGET_MIN_DOT_REAR ) )
+				continue
+
+			validGrunts.append( grunt )
+		}
+
+		if ( !validGrunts.len() )
+			continue
+
+		resetUnsuspectingTime = false
+
+		if ( file.debugLevel > 2 )
+			printt( "========== PLAYER IS UNSUSPECTING!" )
+
+		if ( unsuspectingTime < Time() && Time() - unsuspectingTime < CHATTER_UNSUSPECTING_PILOT_STATETIME_MIN )
+			continue
+
+		if ( !TimerCheck( "chatter_pilot_target_unsuspecting" ) )
+		{
+			if ( file.debugLevel > 2 )
+				printt( "waiting for UNSUSPECTING chatter timer...")
+
+			continue
+		}
+
+		entity closestGrunt = GetClosest( validGrunts, player.GetOrigin() )
+		GruntChatter_AddEvent( "gruntchatter_pilot_target_unsuspecting", closestGrunt, player )
+
+		resetUnsuspectingTime = true
+	}
+}
+
+
+// ==== grunt event handling ====
+void function GruntChatter_GruntSignalWait( entity grunt )
+{
+	grunt.EndSignal( "OnDeath" )
+	grunt.EndSignal( "OnDestroy" )
+
+	while ( 1 )
+	{
+		thread GruntChatter_InterruptSignal( grunt )
+		table result = WaitSignal( grunt, "OnFoundEnemy", "OnSeeEnemy", "OnLostEnemy", "GruntChatter_Interrupt" )
+
+		string signal = expect string( result.signal )
+
+		switch( signal )
+		{
+			// Sees target for the first time, or switches back to a target
+			case "OnFoundEnemy":
+				entity enemy = expect entity( result.value )
+				GruntChatter_TryOnFoundEnemy( grunt, enemy )
+				break
+
+			// Sees active target ent again
+			case "OnSeeEnemy":
+				entity enemy = expect entity( result.activator )
+				GruntChatter_TryPlayerPilotSpotted( grunt, enemy, signal )
+				break
+
+			// can no longer see active target ent
+			case "OnLostEnemy":
+				entity lostEnemy = expect entity( result.activator )
+				GruntChatter_TryPilotLost( grunt, lostEnemy )
+
+				// Grunt will send OnLost and OnFound at the same time if switching targets
+				entity newEnemy = grunt.GetEnemy()
+				if ( IsAlive( newEnemy ) )
+					GruntChatter_TryOnFoundEnemy( grunt, newEnemy )
+				break
+
+			case "GruntChatter_Interrupt":
+				GruntChatter_CheckGruntForEvents( grunt )
+				break
+		}
+	}
+}
+
+void function GruntChatter_TryOnFoundEnemy( entity grunt, entity enemy )
+{
+	GruntChatter_TryPlayerPilotSpotted( grunt, enemy, "OnFoundEnemy" )
+	GruntChatter_TryEnemySpotted( grunt, enemy )
+}
+
+void function GruntChatter_InterruptSignal( entity grunt )
+{
+	grunt.EndSignal( "OnDeath" )
+	grunt.EndSignal( "OnDestroy" )
+
+	grunt.EndSignal( "OnFoundEnemy" )
+	grunt.EndSignal( "OnSeeEnemy" )
+	grunt.EndSignal( "OnLostEnemy" )
+
+	wait CHATTER_SIGNAL_INTERRUPT_WAIT
+	grunt.Signal( "GruntChatter_Interrupt" )
+}
+
+// tries to send all valid events, lets the priority system handle which one should play
+void function GruntChatter_CheckGruntForEvents( entity grunt )
+{
+	GruntChatter_TryFriendlyPassingNearby( grunt )
+
+	// everything below this cares about having a living target
+	entity target = grunt.GetEnemy()
+	if ( !IsAlive( target ) )
+		return
+
+	GruntChatter_HACK_TryPilotTargetOutOfSight( grunt, target )
+	GruntChatter_TrySuppressingPilotTarget( grunt, target )
+	GruntChatter_TryMissingFastTarget( grunt, target )
+	GruntChatter_TryPilotLowHealth( grunt, target )
+	GruntChatter_TryEngagingNonPilotTarget( grunt, target )
+}
+
+// HACK fakey pilot lost if player out of sight for a while
+void function GruntChatter_HACK_TryPilotTargetOutOfSight( entity grunt, entity target )
+{
+	entity gruntEnemy = grunt.GetEnemy()
+
+	if ( !IsAlive( gruntEnemy ) )
+		return
+
+	if ( !IsPilot( gruntEnemy ) )
+		return
+
+	if ( grunt.GetNPCState() != "combat" )
+		return
+
+	if ( grunt.GetEnemyLastTimeSeen() == 0 )
+		return
+
+	if ( Time() - grunt.GetEnemyLastTimeSeen() < CHATTER_GRUNT_ENEMY_OUT_OF_SIGHT_TIME )
+		return
+
+	//if ( file.debugLevel > 1 )
+	//	printt( "FAKEY LOST TARGET" )
+
+	if ( !TimerCheck( "chatter_pilot_lost" ) )
+		return
+
+	GruntChatter_TryPilotLost( grunt, gruntEnemy )
+}
+
+void function GruntChatter_TryPlayerPilotCombatStateChange( entity player, int currState, int prevState )
+{
+	// these lines are mostly written as if the state changes are happening during combat vs a Pilot
+	if ( !IsPilot( player ) )
+		return
+
+	player.Signal( "GruntChatter_CombatStateChangeThread" )
+	player.EndSignal( "GruntChatter_CombatStateChangeThread" )
+	player.EndSignal( "OnDeath" )
+
+	wait CHATTER_PLAYER_COMBAT_STATE_CHANGE_DEBOUNCE
+
+	string alias = ""
+	switch ( currState )
+	{
+		case eGruntCombatState.ALERT:
+			alias = "gruntchatter_statechange_idle2alert"
+			if ( prevState == eGruntCombatState.COMBAT )
+				alias = "gruntchatter_statechange_combat2alert"
+			break
+
+		case eGruntCombatState.COMBAT:
+			alias = "gruntchatter_statechange_idle2combat"
+			if ( prevState == eGruntCombatState.ALERT )
+				alias = "gruntchatter_statechange_alert2combat"
+			break
+	}
+
+	if ( alias == "" )
+		return
+
+	GruntChatter_AddEvent( alias )
+}
+
+void function GruntChatter_TryPilotLost( entity grunt, entity enemy )
+{
+	if ( !GruntChatter_CanGruntChatterNow( grunt ) )
+		return
+
+	if ( !IsAlive( enemy ) || !IsPilot( enemy ) )
+		return
+
+	if ( !TimerCheck( "chatter_pilot_lost" ) )
+		return
+
+	// if anyone near you can see the enemy, don't say we lost the target
+	if ( CanNearbyGruntTeammatesSeeEnemy( grunt, enemy, CHATTER_PILOT_LOST_NEARBY_TEAMMATE_DIST ) )
+		return
+
+	// if a nearby friendly grunt is close to the enemy don't chatter about losing sight of the enemy
+	if ( GruntChatter_IsFriendlyGruntCloseToLocation( grunt.GetTeam(), enemy.GetOrigin(), CHATTER_PLAYER_CLOSE_MIN_DIST ) )
+		return
+
+	string alias = "gruntchatter_pilot_lost"
+	array<entity> nearbyGrunts = GetNearbyFriendlyGrunts( grunt.GetOrigin(), grunt.GetTeam(), CHATTER_PILOT_LOST_NEARBY_TEAMMATE_DIST )
+	if ( nearbyGrunts.len() >= 2 && RandomInt( 100 ) < 40 )
+		alias = "gruntchatter_pilot_lost_neg"
+
+	GruntChatter_AddEvent( alias, grunt )
+}
+
+void function GruntChatter_TryPlayerPilotSpotted( entity grunt, entity player, string resultSignal )
+{
+	if ( !GruntChatter_CanGruntChatterNow( grunt ) )
+		return
+
+	if ( !IsAlive( player ) || !player.IsPlayer() || !IsPilot( player ) )
+		return
+
+	if ( TimerCheck ( "chatter_pilot_spotted" ) )
+	{
+		string spottedAlias = "gruntchatter_pilot_spotted"
+
+		if ( resultSignal == "OnFoundEnemy" )
+		{
+			if ( svGlobalSP.gruntCombatState != eGruntCombatState.COMBAT )
+			{
+				spottedAlias = "gruntchatter_pilot_first_sighting"
+			}
+		}
+		else
+		{
+			float distToPilot = Distance( grunt.GetOrigin(), player.GetOrigin() )
+			bool canSeePilot = grunt.CanSee( player )
+			bool pilotIsMoving = Length( player.GetVelocity() ) >= CHATTER_PILOT_SPOTTED_MID_DIST_MOVING_MIN_SPEED
+
+			if ( canSeePilot )
+			{
+				if ( distToPilot <= CHATTER_PILOT_SPOTTED_CLOSE_DIST )
+				{
+					spottedAlias = "gruntchatter_pilot_spotted_close_range"
+				}
+				else if ( canSeePilot && distToPilot > CHATTER_PILOT_SPOTTED_CLOSE_DIST && distToPilot <= CHATTER_PILOT_SPOTTED_MID_DIST )
+				{
+					spottedAlias = "gruntchatter_pilot_spotted_mid_range"
+					if ( pilotIsMoving )
+						spottedAlias = "gruntchatter_pilot_spotted_mid_range_moving"
+				}
+
+				if ( TimerCheck( "chatter_pilot_spotted_specific_range" ) && RandomInt( 100 ) < 40 )
+				{
+					table<string, float> rangeDists
+					rangeDists["chatter_pilot_spotted_specific_range_20"] <- CHATTER_PILOT_SPOTTED_RANGE_DIST_20
+					rangeDists["chatter_pilot_spotted_specific_range_25"] <- CHATTER_PILOT_SPOTTED_RANGE_DIST_25
+					rangeDists["chatter_pilot_spotted_specific_range_30"] <- CHATTER_PILOT_SPOTTED_RANGE_DIST_30
+					rangeDists["chatter_pilot_spotted_specific_range_35"] <- CHATTER_PILOT_SPOTTED_RANGE_DIST_35
+
+					if ( distToPilot >= CHATTER_PILOT_SPOTTED_RANGE_DIST_MIN && distToPilot <= CHATTER_PILOT_SPOTTED_RANGE_DIST_MAX )
+					{
+						string closestAlias
+						float closestDist
+						foreach ( rangeAlias, rangeDist in rangeDists )
+						{
+							float thisDist = fabs( distToPilot - rangeDist )
+							if ( closestAlias == "" || thisDist < closestDist )
+							{
+								closestAlias = rangeAlias
+								closestDist = thisDist
+							}
+						}
+
+						spottedAlias = closestAlias
+					}
+				}
+			}
+		}
+
+		GruntChatter_AddEvent( spottedAlias, grunt )
+	}
+
+	if ( TimerCheck ( "chatter_pilot_spotted_abovebelow" ) )
+	{
+		bool isEnemyAbove = GruntChatter_IsEnemyAbove( grunt, player )
+		bool isEnemyBelow = GruntChatter_IsEnemyBelow( grunt, player )
+
+		if ( isEnemyAbove )
+			GruntChatter_AddEvent( "gruntchatter_pilot_spotted_above", grunt )
+		else if ( isEnemyBelow )
+			GruntChatter_AddEvent( "gruntchatter_pilot_spotted_below", grunt )
+	}
+}
+
+void function GruntChatter_TryEnemySpotted( entity grunt, entity spottedEnemy )
+{
+	if ( !GruntChatter_CanGruntChatterNow( grunt ) )
+		return
+
+	if ( !IsAlive( spottedEnemy ) )
+		return
+
+	if ( spottedEnemy.GetTeam() == grunt.GetTeam() )
+		return
+
+	string alias = ""
+	float distToSpottedEnemy = Distance( grunt.GetOrigin(), spottedEnemy.GetOrigin() )
+
+	// TODO move to data files
+	if ( IsGrunt( spottedEnemy ) && TimerCheck( "chatter_enemy_grunt_spotted" ) && distToSpottedEnemy <= CHATTER_ENEMY_GRUNT_SPOTTED_DIST )
+	{
+		alias = "gruntchatter_enemy_grunt_spotted"
+	}
+	else if ( spottedEnemy.IsTitan() && TimerCheck( "chatter_enemy_titan_spotted" ) && distToSpottedEnemy <= CHATTER_ENEMY_TITAN_SPOTTED_DIST )
+	{
+		alias = "gruntchatter_enemy_titan_spotted"
+		if ( distToSpottedEnemy <= CHATTER_ENEMY_TITAN_SPOTTED_DIST_CLOSE )
+			alias = "gruntchatter_enemy_titan_spotted_close"
+	}
+	else if ( IsSpectre( spottedEnemy ) && TimerCheck( "chatter_enemy_spectre_spotted" ) && distToSpottedEnemy <= CHATTER_ENEMY_SPECTRE_SPOTTED_DIST )
+	{
+		alias = "gruntchatter_enemy_spectre_spotted"
+		if ( distToSpottedEnemy <= CHATTER_ENEMY_SPECTRE_SPOTTED_DIST_CLOSE )
+			alias = "gruntchatter_enemy_spectre_spotted_close"
+	}
+	else if ( IsTick( spottedEnemy ) && TimerCheck( "chatter_enemy_tick_spotted" ) && distToSpottedEnemy <= CHATTER_ENEMY_TICK_SPOTTED_DIST )
+	{
+		alias = "gruntchatter_enemy_tick_spotted"
+	}
+	else if ( IsPilotDecoy( spottedEnemy ) && TimerCheck( "chatter_enemy_pilot_decoy_spotted" ) && distToSpottedEnemy <= CHATTER_PILOT_DECOY_SPOTTED_DIST_MAX )
+	{
+		alias = "gruntchatter_enemy_pilot_decoy_spotted"
+	}
+
+	if ( alias == "" )
+		return
+
+	GruntChatter_AddEvent( alias, grunt, spottedEnemy )
+}
+
+void function GruntChatter_TryEngagingNonPilotTarget( entity grunt, entity target )
+{
+	if ( !GruntChatter_CanGruntChatterNow( grunt ) )
+		return
+
+	if ( !IsAlive( target ) )
+		return
+
+	string alias = ""
+
+	if ( IsGrunt( target ) && TimerCheck( "chatter_engaging_grunt" ) )
+	{
+		alias = "gruntchatter_engaging_grunt"
+	}
+	else if ( IsSpectre( target ) && TimerCheck( "chatter_engaging_spectre" ) )
+	{
+		alias = "gruntchatter_engaging_spectre"
+		if ( IsValid( target.GetBossPlayer() ) )
+			alias = "gruntchatter_engaging_hacked_spectre"
+	}
+	else if ( IsProwler( target ) && TimerCheck( "chatter_engaging_prowler" ) )
+	{
+		alias = "gruntchatter_engaging_prowler"
+	}
+	else if ( IsStalker( target ) && TimerCheck( "chatter_engaging_stalker" ) )
+	{
+		alias = "gruntchatter_engaging_stalker"
+	}
+
+	if ( alias == "" )
+		return
+
+	GruntChatter_AddEvent( alias, grunt, target )
+}
+
+void function GruntChatter_TryCloakedPilotSpotted( entity grunt, entity pilot )
+{
+	if ( !GruntChatter_CanGruntChatterNow( grunt ) )
+		return
+
+	if ( !IsAlive( pilot ) )
+		return
+
+	if ( !IsCloaked( pilot ) )
+		return
+
+	// note: CanSee doesn't work when player is cloaked (as expected...)
+	if ( !GruntChatter_CanGruntTraceToLocation( grunt, pilot.EyePosition() ) )
+		return
+
+	if ( GruntChatter_IsTargetFacingAway( pilot, grunt, CHATTER_SEE_CLOAKED_PILOT_MIN_DOT_REAR ) )
+		return
+
+	GruntChatter_AddEvent( "gruntchatter_pilot_spotted_cloaked", grunt )
+}
+
+void function GruntChatter_TryPersonalShieldDamaged( entity shieldOwner )
+{
+	GruntChatter_AddEvent( "gruntchatter_personal_shield_damaged", shieldOwner )
+}
+
+void function GruntChatter_TryFriendlyEquipmentDeployed( entity deployer, string equipmentClassName )
+{
+	string alias = ""
+	string timerAlias = ""
+
+	// TODO move to data files
+	switch ( equipmentClassName )
+	{
+		case "npc_drone":
+			alias = "gruntchatter_friendly_drone_deployed"
+			timerAlias = "chatter_friendly_drone_deployed"
+			break
+
+		case "mp_weapon_frag_drone":
+			alias = "gruntchatter_friendly_tick_deployed"
+			timerAlias = "chatter_friendly_tick_deployed"
+			break
+	}
+
+	if ( alias == "" )
+		return
+
+	if ( !TimerCheck( timerAlias ) )
+		return
+
+	entity closestGrunt = GruntChatter_FindClosestFriendlyHumanGrunt_LOS( deployer.GetOrigin(), deployer.GetTeam(), CHATTER_FRIENDLY_EQUIPMENT_DEPLOYED_NEARBY_DIST )
+	if ( !closestGrunt )
+		return
+
+	GruntChatter_AddEvent( alias, closestGrunt )
+}
+
+void function GruntChatter_TryDisplacingFromDangerousArea( entity displacingGrunt )
+{
+	string dangerousAreaWeaponName = displacingGrunt.GetDangerousAreaWeapon()
+	GruntChatter_TryDangerousAreaWeapon( displacingGrunt, dangerousAreaWeaponName )
+}
+
+void function GruntChatter_TryDangerousAreaWeapon( entity grunt, string dangerousAreaWeaponName )
+{
+	if  ( !GruntChatter_CanGruntChatterNow( grunt ) )
+		return
+
+	string alias
+	string timerAlias
+
+	// TODO move to data files
+	switch ( dangerousAreaWeaponName )
+	{
+		case "mp_weapon_frag_grenade": //Since GruntChatter_TryDangerousAreaWeapon() is called from both CodeDialogue_DangerousAreaDisplace() and GruntChatter_OnGruntDamaged() this has bugs; a grunt who was not in the dangerous area created but took damage from the frag grenade will say VO like "Incoming Frag!! Take cover!". Not worth fixing this late in.
+			alias = "gruntchatter_dangerous_area_frag"
+			timerAlias = "chatter_dangerous_area_frag"
+			break
+
+		case "mp_weapon_grenade_emp": //This is triggered from GruntChatter_OnGruntDamaged(), since arc grenades don't create a dangerousarea
+			alias = "gruntchatter_dangerous_area_arc_grenade"
+			timerAlias = "chatter_dangerous_area_arc_grenade"
+			break
+
+		case "mp_weapon_thermite_grenade":
+			alias = "gruntchatter_dangerous_area_thermite"
+			timerAlias = "chatter_dangerous_area_thermite"
+			break
+
+		case "mp_weapon_grenade_gravity":
+			alias = "gruntchatter_dangerous_area_grav_grenade"
+			timerAlias = "chatter_dangerous_area_grav_grenade"
+			break
+
+		case "mp_weapon_grenade_electric_smoke":
+			alias = "gruntchatter_dangerous_area_esmoke"
+			timerAlias = "chatter_dangerous_area_esmoke"
+			break
+	}
+
+	if ( alias == "" )
+		return
+
+	if ( !TimerCheck ( timerAlias ) )
+		return
+
+	// all grunts in the area will try to call it out, in case this guy dies
+	array<entity> nearbyGrunts = GetNearbyFriendlyGrunts( grunt.GetOrigin(), grunt.GetTeam(), CHATTER_DANGEROUS_AREA_NEARBY_RANGE )
+	foreach ( nearbyGrunt in nearbyGrunts )
+		GruntChatter_AddEvent( alias, nearbyGrunt )
+}
+
+void function GruntChatter_TryEnemyTimeShifted( entity timeShiftedEnemy )
+{
+	if ( !IsAlive( timeShiftedEnemy ) )
+		return
+
+	if ( !TimerCheck( "chatter_enemy_time_shifted" ) )
+		return
+
+	entity closestGrunt = GruntChatter_FindClosestEnemyHumanGrunt_LOS( timeShiftedEnemy.GetOrigin(), timeShiftedEnemy.GetTeam(), CHATTER_ENEMY_TIME_SHIFT_NEARBY_DIST )
+	if ( !closestGrunt )
+		return
+
+	GruntChatter_AddEvent( "gruntchatter_enemy_time_shifted", closestGrunt )
+}
+
+void function GruntChatter_OnGruntDamaged( entity grunt, var damageInfo )
+{
+	if ( !IsValid( grunt ) )
+		return
+
+	string damageWeaponName
+	int damageSourceID = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	table dmgSources = expect table( getconsttable().eDamageSourceId )
+	foreach ( name, id in dmgSources )
+	{
+		if ( id == damageSourceID )
+		{
+			damageWeaponName = expect string( name )
+			break
+		}
+	}
+
+	if ( damageWeaponName != "" )
+		GruntChatter_TryDangerousAreaWeapon( grunt, damageWeaponName )
+}
+
+void function GruntChatter_OnPlayerOrNPCKilled( entity deadGuy, entity attacker, var damageInfo )
+{
+	if ( !IsValid( deadGuy ) )
+		return
+
+	if ( deadGuy.GetTeam() == TEAM_IMC )
+	{
+		GruntChatter_TryEnemyPlayerPilot_Multikill( deadGuy, damageInfo )
+		GruntChatter_TryEnemyPlayerPilot_MobilityKill( deadGuy, damageInfo )
+		GruntChatter_TryFriendlyDown( deadGuy )
+		GruntChatter_TrySquadDepleted( deadGuy )
+	}
+	else
+	{
+		GruntChatter_TryEnemyDown( deadGuy )
+	}
+}
+
+void function GruntChatter_OnPilotDecoyKilled( entity decoy, var damageInfo )
+{
+	GruntChatter_TryEnemyDown( decoy )
+}
+
+void function GruntChatter_TryEnemyPlayerPilot_Multikill( entity deadGuy, var damageInfo )
+{
+	if ( !TimerCheck( "chatter_enemy_pilot_multikill" ) )
+		return
+
+	// don't worry about larger targets
+	if ( !IsHumanSized( deadGuy ) )
+		return
+
+	int customDamageType = DamageInfo_GetCustomDamageType( damageInfo )
+
+	// explosive kills don't count for pilot multikills
+	if ( customDamageType & DF_EXPLOSION )
+		return
+
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	if ( !IsPilot( attacker ) )
+		return
+
+	// -- multikills --
+	if ( !GruntChatter_IsKillChainStillActive( attacker ) )
+		GruntChatter_ResetPilotKillChain( attacker )
+
+	GruntChatter_UpdatePilotKillChain( attacker )
+
+	if ( GruntChatter_GetPilotKillChain( attacker ) < CHATTER_PILOT_MULTIKILL_MIN_KILLS )
+		return
+
+	entity closestGrunt = GruntChatter_FindClosestFriendlyHumanGrunt_LOS( deadGuy.GetOrigin(), deadGuy.GetTeam(), CHATTER_FRIENDLY_GRUNT_DOWN_DIST_MAX )
+	if ( !closestGrunt )
+		return
+
+	GruntChatter_AddEvent( "gruntchatter_enemy_pilot_multikill", closestGrunt, attacker )
+}
+
+void function GruntChatter_TryEnemyPlayerPilot_MobilityKill( entity deadGuy, var damageInfo )
+{
+	if ( !TimerCheck( "chatter_enemy_pilot_mobility_kill" ) )
+		return
+
+	// don't worry about larger targets
+	if ( !IsHumanSized( deadGuy ) )
+		return
+
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	if ( !IsPilot( attacker ) )
+		return
+
+	if ( attacker.IsOnGround() )
+		return
+
+	float targetSpeed = Length( attacker.GetVelocity() )
+	if ( !attacker.IsWallRunning() && targetSpeed < CHATTER_MISS_FAST_TARGET_MIN_SPEED )
+		return
+
+	entity closestGrunt = GruntChatter_FindClosestFriendlyHumanGrunt_LOS( deadGuy.GetOrigin(), deadGuy.GetTeam(), CHATTER_FRIENDLY_GRUNT_DOWN_DIST_MAX )
+	if ( !closestGrunt )
+		return
+
+	GruntChatter_AddEvent( "gruntchatter_enemy_pilot_mobility_kill", closestGrunt, attacker )
+}
+
+void function GruntChatter_TryFriendlyDown( entity deadGuy )
+{
+	string alias = ""
+	float searchRange = -1.0
+
+	if ( IsGrunt( deadGuy ) && TimerCheck( "chatter_friendly_grunt_down" ) )
+	{
+		alias = "gruntchatter_friendly_grunt_down"
+		if ( svGlobalSP.gruntCombatState == eGruntCombatState.IDLE )
+			alias = "gruntchatter_friendly_grunt_down_notarget"
+
+		searchRange = CHATTER_FRIENDLY_GRUNT_DOWN_DIST_MAX
+	}
+	else if ( deadGuy.IsTitan() && TimerCheck( "chatter_friendly_titan_down" ) )
+	{
+		alias = "gruntchatter_friendly_titan_down"
+		searchRange = CHATTER_FRIENDLY_TITAN_DOWN_DIST_MAX
+	}
+
+	if ( alias == "" )
+		return
+
+	entity closestGrunt = GruntChatter_FindClosestFriendlyHumanGrunt_LOS( deadGuy.GetOrigin(), deadGuy.GetTeam(), searchRange )
+	if ( !closestGrunt )
+		return
+
+	GruntChatter_AddEvent( alias, closestGrunt )
+}
+
+void function GruntChatter_TrySquadDepleted( entity deadGuy )
+{
+	if ( !TimerCheck( "chatter_squad_depleted" ) )
+		return
+
+	if ( !IsGrunt( deadGuy ) )
+		return
+
+	string deadGuySquadName = GetSquadName( deadGuy )
+	if ( deadGuySquadName == "" )
+		return
+
+	array<entity> squad = GetNPCArrayBySquad( deadGuySquadName )
+	entity lastSquadMember
+	if ( squad.len() == 1 )
+		lastSquadMember = squad[0]
+
+	if ( !GruntChatter_CanGruntChatterNow( lastSquadMember ) )
+		return
+
+	// if state is idle, don't freak out about being alone
+	if ( lastSquadMember.GetNPCState() == "idle" )
+		return
+
+	// if another grunt from another squad is nearby, don't chatter about being alone
+	array<entity> nearbyGrunts = GetNearbyFriendlyGrunts( lastSquadMember.GetOrigin(), lastSquadMember.GetTeam(), CHATTER_SQUAD_DEPLETED_FRIENDLY_NEARBY_DIST )
+	nearbyGrunts.fastremovebyvalue( lastSquadMember )
+	if ( nearbyGrunts.len() )
+		return
+
+	GruntChatter_AddEvent( "gruntchatter_squad_depleted", lastSquadMember )
+}
+
+void function GruntChatter_TryEnemyDown( entity deadGuy )
+{
+	string alias = ""
+	float searchRange = -1.0
+
+	if ( IsPilot( deadGuy ) && TimerCheck( "chatter_enemy_pilot_down" ) )
+	{
+		alias = "gruntchatter_enemy_pilot_down"
+		searchRange = CHATTER_ENEMY_PILOT_DOWN_DIST_MAX
+	}
+	else if ( IsGrunt( deadGuy ) && TimerCheck( "chatter_enemy_grunt_down" ) )
+	{
+		alias = "gruntchatter_enemy_grunt_down"
+		searchRange = CHATTER_ENEMY_GRUNT_DOWN_DIST_MAX
+	}
+	else if ( deadGuy.IsTitan() && TimerCheck( "chatter_enemy_titan_down" ) )
+	{
+		alias = "gruntchatter_enemy_titan_down"
+		searchRange = CHATTER_ENEMY_TITAN_DOWN_DIST_MAX
+	}
+	else if ( IsSpectre( deadGuy ) && TimerCheck( "chatter_enemy_spectre_down" ) )
+	{
+		alias = "gruntchatter_enemy_spectre_down"
+		searchRange = CHATTER_ENEMY_SPECTRE_DOWN_DIST_MAX
+	}
+	else if ( IsPilotDecoy( deadGuy ) && TimerCheck( "chatter_enemy_pilot_decoy_revealed" ) )
+	{
+		alias = "gruntchatter_enemy_pilot_decoy_revealed"
+		searchRange = CHATTER_PILOT_DECOY_SPOTTED_DIST_MAX
+	}
+
+	if ( alias == "" )
+		return
+
+	entity closestGrunt = GruntChatter_FindClosestEnemyHumanGrunt_LOS( deadGuy.GetOrigin(), deadGuy.GetTeam(), searchRange )
+	if ( !closestGrunt )
+		return
+
+	// HACK- squad conversations don't play to dead players
+	if ( alias == "gruntchatter_enemy_pilot_down" )
+	{
+		HACK_GruntChatter_TryEnemyPilotDown( deadGuy, closestGrunt )
+		return
+	}
+
+	GruntChatter_AddEvent( alias, closestGrunt )
+}
+
+void function HACK_GruntChatter_TryEnemyPilotDown( entity deadGuy, entity closestGrunt )
+{
+	if ( !deadGuy.IsPlayer() )
+		return
+
+	if ( deadGuy.GetForcedDialogueOnly() )
+		return
+
+	TimerReset( "chatter_enemy_pilot_down" )
+
+	string rawAlias = "diag_imc_grunt1_bc_killenemypilot_01"
+	if ( CoinFlip() )
+		rawAlias = "diag_imc_grunt1_bc_killenemypilot_02"
+
+	EmitSoundOnEntity( closestGrunt, rawAlias )
+}
+
+void function GruntChatter_TryThrowingGrenade( entity grunt )
+{
+	if ( !GruntChatter_CanGruntChatterNow( grunt ) )
+		return
+
+	entity enemy = grunt.GetEnemy()
+	if ( !IsAlive( enemy ) )
+		return
+
+	if ( !TimerCheck( "chatter_throwing_grenade" ) )
+		return
+
+	string alias = ""
+	// TODO move to data files
+	switch ( grunt.kv.grenadeWeaponName )
+	{
+		case "mp_weapon_frag_grenade":
+			alias = "gruntchatter_throwing_grenade_frag"
+			break
+
+		case "mp_weapon_grenade_electric_smoke":
+			alias = "gruntchatter_throwing_grenade_electric_smoke"
+			break
+
+		case "mp_weapon_thermite_grenade":
+			alias = "gruntchatter_throwing_grenade_thermite"
+			break
+	}
+
+	if ( alias == "" )
+		return
+
+	GruntChatter_AddEvent( alias, grunt )
+}
+
+// TODO move to data files
+void function GruntChatter_TryFriendlyPassingNearby( entity grunt )
+{
+	if ( !GruntChatter_CanGruntChatterNow( grunt ) )
+		return
+
+	// these lines are written as if the grunts are in combat
+	if ( grunt.GetNPCState() != "combat" )
+		return
+
+	if ( TimerCheck( "chatter_nearby_friendly_titan" ) )
+	{
+		array<entity> nearbyTitans = GetNPCArrayEx( "npc_titan", grunt.GetTeam(), TEAM_ANY, grunt.GetOrigin(), CHATTER_NEARBY_TITAN_DIST )
+		entity nearbyTitan
+		foreach ( titan in nearbyTitans )
+		{
+			if ( !IsAlive( titan ) )
+				continue
+
+			if ( GetDoomedState( titan ) )
+				continue
+
+			if ( GruntChatter_EventTargetAlreadyUsed( titan ) )
+				continue
+
+			nearbyTitan = titan
+			break
+		}
+
+		if ( nearbyTitan )
+			GruntChatter_AddEvent( "gruntchatter_nearby_friendly_titan", grunt, nearbyTitan )
+	}
+
+	if ( TimerCheck( "chatter_nearby_friendly_reaper" ) )
+	{
+		array<entity> nearbyReapers = GetNPCArrayEx( "npc_super_spectre", grunt.GetTeam(), TEAM_ANY, grunt.GetOrigin(), CHATTER_NEARBY_REAPER_DIST )
+		foreach ( reaper in nearbyReapers )
+		{
+			if ( !IsAlive( reaper ) )
+				continue
+
+			if ( GetDoomedState( reaper ) )
+				continue
+
+			if ( GruntChatter_EventTargetAlreadyUsed( reaper ) )
+				continue
+
+			GruntChatter_AddEvent( "gruntchatter_nearby_friendly_reaper", grunt, reaper )
+			break
+		}
+	}
+
+	if ( TimerCheck( "chatter_nearby_friendly_spectre" ) )
+	{
+		array<entity> nearbySpectres = GetNPCArrayEx( "npc_spectre", grunt.GetTeam(), TEAM_ANY, grunt.GetOrigin(), CHATTER_NEARBY_SPECTRE_DIST )
+		if ( nearbySpectres.len() )
+		{
+			entity closestSpectre = GetClosest( nearbySpectres, grunt.GetOrigin() )
+			GruntChatter_AddEvent( "gruntchatter_nearby_friendly_spectre", grunt, closestSpectre )
+		}
+	}
+}
+
+void function GruntChatter_TryIncomingSpawn( entity inboundEnt, vector arrivalLocation )
+{
+	if ( !IsValid( inboundEnt ) )
+		return
+
+	string alias
+	string timer
+	float nearbyRange
+	entity closestGrunt
+
+	// TODO move to data files
+	if ( inboundEnt.GetTeam() == TEAM_IMC )
+	{
+		switch ( inboundEnt.GetClassName() )
+		{
+			case "npc_titan":
+				alias = "gruntchatter_incoming_friendly_titanfall"
+				timer = "chatter_incoming_friendly_titanfall"
+				nearbyRange = CHATTER_NEARBY_TITAN_DIST
+				break
+
+			case "npc_super_spectre":
+				alias = "gruntchatter_incoming_friendly_reaperfall"
+				timer = "chatter_incoming_friendly_reaperfall"
+				nearbyRange = CHATTER_NEARBY_REAPER_DIST
+				break
+		}
+
+		if ( alias == "" )
+			return
+
+		closestGrunt = GruntChatter_FindClosestFriendlyHumanGrunt_LOS( arrivalLocation, inboundEnt.GetTeam(), nearbyRange )
+		if ( !closestGrunt )
+			return
+	}
+	else if ( inboundEnt.GetTeam() == TEAM_MILITIA )
+	{
+		switch ( inboundEnt.GetClassName() )
+		{
+			case "npc_titan":
+				alias = "gruntchatter_incoming_enemy_titanfall"
+				timer = "chatter_incoming_enemy_titanfall"
+				nearbyRange = CHATTER_NEARBY_TITAN_DIST
+				break
+		}
+
+		if ( alias == "" )
+			return
+
+		closestGrunt = GruntChatter_FindClosestEnemyHumanGrunt_LOS( arrivalLocation, inboundEnt.GetTeam(), nearbyRange )
+		if ( !closestGrunt )
+			return
+	}
+
+	// NOTE- can't send the target for these events because the distance check to where the titanfall starts will fail
+	GruntChatter_AddEvent( alias, closestGrunt )
+}
+
+void function GruntChatter_TrySuppressingPilotTarget( entity grunt, entity target )
+{
+	if ( !GruntChatter_CanGruntChatterNow( grunt ) )
+		return
+
+	if ( !IsAlive( target ) )
+		return
+
+	// this is mostly useful for players
+	if ( !target.IsPlayer() )
+		return
+
+	if ( !IsPilot( target ) )
+		return
+
+	if ( !TimerCheck( "chatter_suppressingLKP_start" ) )
+		return
+
+	string STR_lastSuppressionTime = expect string( grunt.kv.lastSuppressionTime )  // hacky
+	float lastSuppressionTime = STR_lastSuppressionTime.tofloat()
+	float validRecentWindow_suppression = Time() - CHATTER_SUPPRESSION_EXPIRE_TIME
+
+	if ( lastSuppressionTime < validRecentWindow_suppression )
+		return
+
+	GruntChatter_AddEvent( "gruntchatter_suppressingLKP_start", grunt )
+}
+
+void function GruntChatter_TryMissingFastTarget( entity grunt, entity target )
+{
+	if ( !GruntChatter_CanGruntChatterNow( grunt ) )
+		return
+
+	if ( !IsAlive( target ) )
+		return
+
+	if ( !IsPilot( target ) )
+		return
+
+	if ( !TimerCheck( "chatter_missing_fast_target" ) )
+		return
+
+	float targetSpeed = Length( target.GetVelocity() )
+	if ( targetSpeed < CHATTER_MISS_FAST_TARGET_MIN_SPEED )
+		return
+
+	string STR_lastMissFastPlayerTime = expect string( grunt.kv.lastMissFastPlayerTime )  // hacky
+	float lastMissFastPlayerTime = STR_lastMissFastPlayerTime.tofloat()
+	float validRecentWindow_missFastTarget = Time() - CHATTER_MISS_FAST_TARGET_EXPIRE_TIME
+
+	if ( lastMissFastPlayerTime < validRecentWindow_missFastTarget )
+		return
+
+	GruntChatter_AddEvent( "gruntchatter_missing_fast_target", grunt )
+}
+
+void function GruntChatter_TryPilotLowHealth( entity grunt, entity target )
+{
+	if ( !GruntChatter_CanGruntChatterNow( grunt ) )
+		return
+
+	if ( !IsAlive( target ) )
+		return
+
+	if ( !IsPilot( target ) )
+		return
+
+	if ( !TimerCheck( "chatter_pilot_low_health" ) )
+		return
+
+	if ( target.GetHealth().tofloat() / target.GetMaxHealth().tofloat() > CHATTER_PILOT_LOW_HEALTH_FRAC )
+		return
+
+	if ( Distance( grunt.GetOrigin(), target.GetOrigin() ) > CHATTER_PILOT_LOW_HEALTH_RANGE )
+		return
+
+	GruntChatter_AddEvent( "gruntchatter_pilot_low_health", grunt )
+}
+
+void function GruntChatter_TryPlayerPilotReloading( entity player )
+{
+	if ( !IsAlive( player ) || !IsPilot( player ) )
+		return
+
+	if ( !TimerCheck( "chatter_target_reloading" ) )
+		return
+
+	entity closestGrunt = GruntChatter_FindClosestEnemyHumanGrunt_LOS( player.GetOrigin(), player.GetTeam(), CHATTER_PLAYER_RELOADING_RANGE )
+	if ( !closestGrunt )
+		return
+
+	GruntChatter_AddEvent( "gruntchatter_target_reloading", closestGrunt, player )
+}
+
+
+// ==== turret event handling ====
+void function GruntChatter_TurretSignalWait( entity turret )
+{
+	turret.EndSignal( "OnDeath" )
+	turret.EndSignal( "OnDestroy" )
+
+	while ( 1 )
+	{
+		table result = WaitSignal( turret, "OnFoundEnemy", "OnSeeEnemy" )
+
+		string signal = expect string( result.signal )
+
+		switch( signal )
+		{
+			case "OnFoundEnemy":
+				entity enemy = expect entity( result.value )
+				GruntChatter_TryFriendlyTurretFoundTarget( turret, enemy )
+				break
+
+			case "OnSeeEnemy":
+				entity enemy = expect entity( result.activator )
+				GruntChatter_TryFriendlyTurretFoundTarget( turret, enemy )
+				break
+
+		}
+	}
+}
+
+void function GruntChatter_TryFriendlyTurretFoundTarget( entity turret, entity enemy )
+{
+	if ( !IsAlive( turret ) || !IsAlive( enemy ) )
+		return
+
+	if ( !TimerCheck( "chatter_friendly_turret_found_target") )
+		return
+
+	entity closestGrunt = GruntChatter_FindClosestFriendlyHumanGrunt_LOS( turret.GetOrigin(), turret.GetTeam(), CHATTER_FRIENDLY_EQUIPMENT_DEPLOYED_NEARBY_DIST )
+	if ( !closestGrunt )
+		return
+
+	GruntChatter_AddEvent( "gruntchatter_friendly_turret_found_target", closestGrunt, enemy )
+}
+
+
+// ==== pilot kill chains ====
+// NOTE: don't technically require a pilot, but makes it easier to port to an MP environment
+void function GruntChatter_UpdatePilotKillChain( entity pilot )
+{
+	file.pilotKillChainCounter++
+	file.lastPilotKillTime = Time()
+}
+
+int function GruntChatter_GetPilotKillChain( entity pilot )
+{
+	return file.pilotKillChainCounter
+}
+
+bool function GruntChatter_IsKillChainStillActive( entity pilot )
+{
+	if ( file.lastPilotKillTime == -1 )
+		return true
+
+	return (Time() - file.lastPilotKillTime) < CHATTER_ENEMY_PILOT_MULTIKILL_EXPIRETIME
+}
+
+void function GruntChatter_ResetPilotKillChain( entity pilot )
+{
+	file.pilotKillChainCounter = 0
+}
+
+
+// ==== chatter util ====
+// won't return mechanicals like Specialists
+array<entity> function GetNearbyFriendlyHumanGrunts( vector searchOrigin, int friendlyTeam, float ornull searchRange = null )
+{
+	array<entity> nearbyGrunts = GetNearbyFriendlyGrunts( searchOrigin, friendlyTeam, searchRange )
+	array<entity> humanGrunts = []
+	foreach ( grunt in nearbyGrunts )
+	{
+		if ( grunt.IsMechanical() )
+			continue
+
+		humanGrunts.append( grunt )
+	}
+
+	return humanGrunts
+}
+
+// won't return mechanicals like Specialists
+array<entity> function GetNearbyEnemyHumanGrunts( vector searchOrigin, int enemyTeam, float ornull searchRange = null )
+{
+	array<entity> nearbyGrunts = GetNearbyEnemyGrunts( searchOrigin, enemyTeam, searchRange )
+	array<entity> humanGrunts = []
+	foreach ( grunt in nearbyGrunts )
+	{
+		if ( grunt.IsMechanical() )
+			continue
+
+		humanGrunts.append( grunt )
+	}
+
+	return humanGrunts
+}
+
+bool function GruntChatter_CanGruntChatterNow( entity grunt )
+{
+	if ( !IsAlive( grunt ) )
+		return false
+
+	if ( !GruntChatter_IsGruntTypeEligibleForChatter( grunt ) )
+		return false
+
+	if ( grunt.ContextAction_IsMeleeExecution() )
+		return false
+
+	// we only care about this because the grunt conversation system wants it
+	if ( GetSquadName( grunt ) == "" )
+		return false
+
+	return true
+}
+
+bool function GruntChatter_IsGruntTypeEligibleForChatter( entity grunt )
+{
+	if ( !IsGrunt( grunt ) )
+		return false
+
+	// mechanical grunts don't chatter
+	if ( grunt.IsMechanical() )
+		return false
+
+	if ( grunt.GetTeam() != TEAM_IMC )
+		return false
+
+	return true
+}
+
+bool function GruntChatter_CanGruntChatterToPlayer( entity grunt, entity player )
+{
+	if ( DistanceSqr( grunt.GetOrigin(), player.GetOrigin() ) > MAX_VOICE_DIST_SQRD )
+		return false
+
+	return true
+}
+
+bool function GruntChatter_CanChatterEventUseEnemyTarget( ChatterEvent chatterEvent )
+{
+	entity grunt = chatterEvent.npc
+	entity target = chatterEvent.target
+	bool trackEventTarget = chatterEvent.category.trackEventTarget
+
+	if ( !chatterEvent.hasTarget )
+		return false
+
+	if ( !IsAlive( target ) )
+		return false
+
+	if ( trackEventTarget && GruntChatter_EventTargetAlreadyUsed( target ) )
+		return false
+
+	float distToEnemySqr = DistanceSqr( grunt.GetOrigin(), target.GetOrigin() )
+	if ( distToEnemySqr > MAX_VOICE_DIST_SQRD )
+		return false
+
+	return true
+}
+
+bool function CanNearbyGruntTeammatesSeeEnemy( entity grunt, entity enemy, float nearbyRange )
+{
+	if ( !IsAlive( enemy ) )
+		return false
+
+	array<entity> nearbyGrunts = GetNearbyFriendlyGrunts( enemy.GetOrigin(), grunt.GetTeam(), nearbyRange )
+
+	foreach ( grunt in nearbyGrunts )
+	{
+		if ( grunt.CanSee( enemy ) )
+			return true
+	}
+
+	return false
+}
+
+bool function GruntChatter_IsFriendlyGruntCloseToLocation( int team, vector location, float nearbyRange )
+{
+	array<entity> nearbyGrunts = GetNearbyFriendlyGrunts( location, team, nearbyRange )
+
+	if ( nearbyGrunts.len() )
+		return true
+
+	return false
+}
+
+bool function GruntChatter_IsTargetFacingAway( entity grunt, entity target, float minDotRear )
+{
+	if ( !IsAlive( grunt ) || !IsAlive( target ) )
+		return false
+
+	vector viewAng = target.GetAngles()  // overall body angles better for this than viewvec
+	vector viewVec = AnglesToForward( viewAng )
+	vector vecRear = viewVec * -1
+	vector angRear = VectorToAngles( vecRear )
+
+	vector vecToTarget = Normalize( grunt.EyePosition() - target.EyePosition() )
+	float dot2Grunt_rear = DotProduct( vecToTarget, vecRear )
+
+	//printt( "REAR dot to enemy:", dot2Grunt_rear )
+
+	return dot2Grunt_rear >= minDotRear
+}
+
+bool function GruntChatter_IsEnemyAbove( entity grunt, entity enemy )
+{
+	// Pilots jumping over guys gives false positives
+	if ( IsPilot( enemy ) && !enemy.IsOnGround() )
+		return false
+
+	vector gOrg = grunt.GetOrigin()
+	vector eOrg = enemy.GetOrigin()
+
+	vector cylinderBottom 	= gOrg + < 0, 0, CHATTER_PILOT_SPOTTED_ABOVE_DIST_MIN >
+	vector cylinderTop 		= gOrg + < 0, 0, CHATTER_PILOT_SPOTTED_ABOVE_DIST_MAX >
+
+	bool isAbove = PointInCylinder( cylinderBottom, cylinderTop, CHATTER_PILOT_SPOTTED_ABOVE_RADIUS, eOrg )
+	return isAbove
+}
+
+bool function GruntChatter_IsEnemyBelow( entity grunt, entity enemy )
+{
+	vector gOrg = grunt.GetOrigin()
+	vector eOrg = enemy.GetOrigin()
+
+	vector cylinderBottom 	= gOrg - < 0, 0, CHATTER_PILOT_SPOTTED_BELOW_DIST_MAX >
+	vector cylinderTop 		= gOrg - < 0, 0, CHATTER_PILOT_SPOTTED_BELOW_DIST_MIN >
+
+	bool isBelow = PointInCylinder( cylinderBottom, cylinderTop, CHATTER_PILOT_SPOTTED_BELOW_RADIUS, eOrg )
+	return isBelow
+}
+
+void function GruntChatter_TryGruntFlankedByPlayer( entity grunt, int aiSurprisedReactionType )
+{
+	if ( !GruntChatter_CanGruntDoFlankingCallout( grunt ) )
+		return
+
+	entity surprisingEnemy = grunt.GetEnemy()
+	if ( !IsPilot( surprisingEnemy ) || !surprisingEnemy.IsPlayer() )
+		return
+
+	string alias
+	switch ( aiSurprisedReactionType )
+	{
+		case RSR_REAR_FLANK:
+			//printt( "REAR      FLANK!")
+			alias = "gruntchatter_pilot_spotted_flank_rear"
+			break
+
+		case RSR_SIDE_FLANK:
+			//printt( "     SIDE FLANK!" )
+			alias = "gruntchatter_pilot_spotted_flank_side"
+			break
+	}
+
+	if ( alias == "" )
+		return
+
+	GruntChatter_AddEvent( alias, grunt, surprisingEnemy )
+}
+
+bool function GruntChatter_CanGruntDoFlankingCallout( entity grunt )
+{
+	if ( !TimerCheck( "chatter_pilot_flanking" ) )
+		return false
+
+	if ( !GruntChatter_CanGruntChatterNow( grunt ) )
+		return false
+
+	return true
+}
+
+entity function GruntChatter_FindClosestEnemyHumanGrunt_LOS( vector searchOrigin, int enemyTeam, float searchDist )
+{
+	array<entity> humanGrunts = GetNearbyEnemyHumanGrunts( searchOrigin, enemyTeam, searchDist )
+	return GruntChatter_GetClosestGrunt_LOS( humanGrunts, searchOrigin )
+}
+
+entity function GruntChatter_FindClosestFriendlyHumanGrunt_LOS( vector searchOrigin, int friendlyTeam, float searchDist )
+{
+	array<entity> humanGrunts = GetNearbyFriendlyHumanGrunts( searchOrigin, friendlyTeam, searchDist )
+	return GruntChatter_GetClosestGrunt_LOS( humanGrunts, searchOrigin )
+}
+
+entity function GruntChatter_GetClosestGrunt_LOS( array<entity> nearbyGrunts, vector searchOrigin )
+{
+	entity closestGrunt = null
+	float closestDist = 10000
+
+	foreach ( grunt in nearbyGrunts )
+	{
+		vector gruntOrigin = grunt.GetOrigin()
+
+		// CanSee doesn't return true if the target is dead
+		if ( !GruntChatter_CanGruntTraceToLocation( grunt, searchOrigin ) )
+			continue
+
+		if ( !closestGrunt )
+		{
+			closestGrunt = grunt
+			continue
+		}
+
+		float distFromSearchOrigin = Distance( grunt.GetOrigin(), searchOrigin )
+
+		if ( closestDist > distFromSearchOrigin )
+			continue
+
+		closestGrunt = grunt
+		closestDist = distFromSearchOrigin
+	}
+
+	return closestGrunt
+}
+
+bool function GruntChatter_CanGruntTraceToLocation( entity grunt, vector traceEnd )
+{
+	float traceFrac = TraceLineSimple( grunt.GetOrigin(), traceEnd, grunt )
+	return traceFrac > CHATTER_NEARBY_GRUNT_TRACEFRAC_MIN
+}
+
+string function GetSquadName( entity grunt )
+{
+	string squadName = expect string( grunt.kv.squadname )
+	return squadName
+}

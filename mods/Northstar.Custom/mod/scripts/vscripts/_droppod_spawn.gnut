@@ -1,0 +1,79 @@
+untyped
+global function DropPodSpawn_Init
+global function SpawnPlayersInDropPod
+
+struct {
+	array< entity > droppods
+} file
+
+void function DropPodSpawn_Init()
+{
+	AddCallback_OnRoundEndCleanup( CleanupSpawningDropPods )
+}
+
+void function CleanupSpawningDropPods()
+{
+	foreach ( entity pod in file.droppods )
+		pod.Destroy()
+	
+	file.droppods.clear()
+}
+
+void function SpawnPlayersInDropPod( array< entity > players, vector targetOrigin, vector angles, float destructionTime = -1 )
+{
+	entity pod = CreateDropPod( targetOrigin, angles )
+	
+	file.droppods.append( pod )
+	svGlobal.levelEnt.EndSignal( "CleanUpEntitiesForRoundEnd" )
+	
+	// TODO: we need to make a door for this, CreateDropPodDoor in _droppod_fireteam is just busted for some reason tho
+	
+	entity camera = CreateEntity( "point_viewcontrol" )
+	camera.SetParent( pod, "ATTACH", false )
+	camera.SetLocalOrigin( < 0, 150, 450 > )
+	camera.SetAngles( < 60, -90, 0 > )
+	
+	foreach ( entity player in players )
+	{
+		if ( !IsAlive( player ) )
+			player.RespawnPlayer( null )
+	
+		player.SetOrigin( pod.GetOrigin() )
+		player.SetAngles( pod.GetAngles() )
+		player.SetParent( pod )
+		player.FreezeControlsOnServer()
+		AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
+		player.SetViewEntity( camera, true )
+	}
+	
+	// wait for this
+	LaunchAnimDropPod( pod, "pod_testpath", targetOrigin, angles )
+	
+	foreach ( entity player in players )
+	{
+		player.ClearParent()
+		player.ClearViewEntity()
+		player.UnfreezeControlsOnServer()
+		RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
+	}
+	
+	// wait a frame, otherwise this won't properly work
+	WaitFrame()
+	vector doorPos = pod.GetAttachmentOrigin( pod.LookupAttachment( "hatch" ) )
+	
+	foreach ( entity player in players )
+	{
+		vector viewAngles = doorPos - player.GetOrigin()
+		viewAngles.x = 3.0
+		
+		player.SetAngles( viewAngles )
+	}
+	
+	if ( destructionTime != -1 )
+	{
+		wait destructionTime
+		pod.Dissolve( ENTITY_DISSOLVE_NORMAL, < 0, 0, 0 >, 0 )
+		
+		file.droppods.remove( file.droppods.find( pod ) )
+	}
+}

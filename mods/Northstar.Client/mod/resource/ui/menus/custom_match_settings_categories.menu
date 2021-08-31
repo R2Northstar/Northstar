@@ -1,0 +1,752 @@
+resource/ui/menus/mods_browse.menu
+{
+	menu
+	{
+		ControlName				Frame
+		xpos					0
+		ypos					0
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		visible					1
+		enabled					1
+		pinCorner				0
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+
+        Vignette
+        {
+            ControlName             ImagePanel
+            InheritProperties       MenuVignette
+        }
+
+		Title
+		{
+			ControlName				Label
+			InheritProperties		MenuTitle
+			labelText				"#MENU_MATCH_SETTINGS"
+		}
+
+		ImgTopBar
+		{
+			ControlName				ImagePanel
+			InheritProperties		MenuTopBar
+		}
+		
+		ButtonRowAnchor
+		{
+			ControlName				Label
+			labelText				""
+
+			xpos                    120
+            ypos                    160
+		}
+		
+		//test
+		//{
+		//	ControlName ListPanel
+		//	xpos		"200"
+		//	ypos		"200"
+		//	zpos 999
+		//	wide		"312"
+		//	tall		"340"
+		//	autoResize		"0"
+		//	pinCorner		"0"
+		//	visible		"1"
+		//	enabled		"1"
+		//	tabPosition		"0"
+		//}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		BtnDev0
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				0
+			xpos					96
+			ypos					177
+			tabPosition				1
+			navUp					BtnDev47
+			navDown					BtnDev1
+			navRight				BtnDev15
+			navLeft					BtnDev31
+		}
+		BtnDev1
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				1
+			pin_to_sibling			BtnDev0
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev0
+			navDown					BtnDev2
+			navRight				BtnDev16
+			navLeft					BtnDev32
+		}
+		BtnDev2
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				2
+			pin_to_sibling			BtnDev1
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev1
+			navDown					BtnDev3
+			navRight				BtnDev17
+			navLeft					BtnDev33
+		}
+		BtnDev3
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				3
+			pin_to_sibling			BtnDev2
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev2
+			navDown					BtnDev4
+			navRight				BtnDev18
+			navLeft					BtnDev34
+		}
+		BtnDev4
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				4
+			pin_to_sibling			BtnDev3
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev3
+			navDown					BtnDev5
+			navRight				BtnDev19
+			navLeft					BtnDev35
+		}
+		BtnDev5
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				5
+			pin_to_sibling			BtnDev4
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev4
+			navDown					BtnDev6
+			navRight				BtnDev20
+			navLeft					BtnDev36
+		}
+		BtnDev6
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				6
+			pin_to_sibling			BtnDev5
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev5
+			navDown					BtnDev7
+			navRight				BtnDev21
+			navLeft					BtnDev37
+		}
+		BtnDev7
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				7
+			pin_to_sibling			BtnDev6
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev6
+			navDown					BtnDev8
+			navRight				BtnDev22
+			navLeft					BtnDev38
+		}
+		BtnDev8
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				8
+			pin_to_sibling			BtnDev7
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev7
+			navDown					BtnDev9
+			navRight				BtnDev23
+			navLeft					BtnDev39
+		}
+		BtnDev9
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				9
+			pin_to_sibling			BtnDev8
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev8
+			navDown					BtnDev10
+			navRight				BtnDev24
+			navLeft					BtnDev40
+		}
+		BtnDev10
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				10
+			pin_to_sibling			BtnDev9
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev9
+			navDown					BtnDev11
+			navRight				BtnDev25
+			navLeft					BtnDev41
+		}
+		BtnDev11
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				11
+			pin_to_sibling			BtnDev10
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev10
+			navDown					BtnDev12
+			navRight				BtnDev26
+			navLeft					BtnDev42
+		}
+		BtnDev12
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				12
+			pin_to_sibling			BtnDev11
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev11
+			navDown					BtnDev13
+			navRight				BtnDev27
+			navLeft					BtnDev43
+		}
+		BtnDev13
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				13
+			pin_to_sibling			BtnDev12
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev12
+			navDown					BtnDev14
+			navRight				BtnDev28
+			navLeft					BtnDev44
+		}
+		BtnDev14
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				14
+			pin_to_sibling			BtnDev13
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev13
+			navDown					BtnDev47
+			navRight				BtnDev29
+			navLeft					BtnDev45
+		}
+
+//////////////////////////////////////
+
+		BtnDev15
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				15
+			pin_to_sibling			BtnDev0
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP_RIGHT
+			navUp					BtnDev30
+			navDown					BtnDev16
+			navRight				BtnDev31
+			navLeft					BtnDev0
+		}
+		BtnDev16
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				16
+			pin_to_sibling			BtnDev15
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev15
+			navDown					BtnDev17
+			navRight				BtnDev32
+			navLeft					BtnDev1
+		}
+		BtnDev17
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				17
+			pin_to_sibling			BtnDev16
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev16
+			navDown					BtnDev18
+			navRight				BtnDev33
+			navLeft					BtnDev2
+		}
+		BtnDev18
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				18
+			pin_to_sibling			BtnDev17
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev17
+			navDown					BtnDev19
+			navRight				BtnDev34
+			navLeft					BtnDev3
+		}
+		BtnDev19
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				19
+			pin_to_sibling			BtnDev18
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev18
+			navDown					BtnDev20
+			navRight				BtnDev35
+			navLeft					BtnDev4
+		}
+		BtnDev20
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				20
+			pin_to_sibling			BtnDev19
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev19
+			navDown					BtnDev21
+			navRight				BtnDev36
+			navLeft					BtnDev5
+		}
+		BtnDev21
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				21
+			pin_to_sibling			BtnDev20
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev20
+			navDown					BtnDev22
+			navRight				BtnDev37
+			navLeft					BtnDev6
+		}
+		BtnDev22
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				22
+			pin_to_sibling			BtnDev21
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev21
+			navDown					BtnDev23
+			navRight				BtnDev38
+			navLeft					BtnDev7
+		}
+		BtnDev23
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				23
+			pin_to_sibling			BtnDev22
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev22
+			navDown					BtnDev24
+			navRight				BtnDev39
+			navLeft					BtnDev8
+		}
+		BtnDev24
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				24
+			pin_to_sibling			BtnDev23
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev23
+			navDown					BtnDev25
+			navRight				BtnDev40
+			navLeft					BtnDev9
+		}
+		BtnDev25
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				25
+			pin_to_sibling			BtnDev24
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev24
+			navDown					BtnDev26
+			navRight				BtnDev41
+			navLeft					BtnDev10
+		}
+		BtnDev26
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				26
+			pin_to_sibling			BtnDev25
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev25
+			navDown					BtnDev27
+			navRight				BtnDev42
+			navLeft					BtnDev11
+		}
+		BtnDev27
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				27
+			pin_to_sibling			BtnDev26
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev26
+			navDown					BtnDev28
+			navRight				BtnDev43
+			navLeft					BtnDev12
+		}
+		BtnDev28
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				28
+			pin_to_sibling			BtnDev27
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev27
+			navDown					BtnDev29
+			navRight				BtnDev44
+			navLeft					BtnDev13
+		}
+		BtnDev29
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				29
+			pin_to_sibling			BtnDev28
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev28
+			navDown					BtnDev30
+			navRight				BtnDev45
+			navLeft					BtnDev14
+		}
+		BtnDev30
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				30
+			pin_to_sibling			BtnDev29
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev29
+			navDown					BtnDev15
+			navRight				BtnDev46
+			navLeft					BtnDev47
+		}
+		
+		BtnDev47
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				47
+			pin_to_sibling			BtnDev14
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev14
+			navDown					BtnDev0
+			navRight				BtnDev30
+			navLeft					BtnDev46
+		}
+
+//////////////////////////////////////
+
+		BtnDev31
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				31
+			pin_to_sibling			BtnDev15
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP_RIGHT
+			navUp					BtnDev46
+			navDown					BtnDev32
+			navRight				BtnDev0
+			navLeft					BtnDev15
+		}
+		BtnDev32
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				32
+			pin_to_sibling			BtnDev31
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev31
+			navDown					BtnDev33
+			navRight				BtnDev1
+			navLeft					BtnDev16
+		}
+		BtnDev33
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				33
+			pin_to_sibling			BtnDev32
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev32
+			navDown					BtnDev34
+			navRight				BtnDev2
+			navLeft					BtnDev17
+		}
+		BtnDev34
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				34
+			pin_to_sibling			BtnDev33
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev33
+			navDown					BtnDev35
+			navRight				BtnDev3
+			navLeft					BtnDev18
+		}
+		BtnDev35
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				35
+			pin_to_sibling			BtnDev34
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev34
+			navDown					BtnDev36
+			navRight				BtnDev4
+			navLeft					BtnDev19
+		}
+		BtnDev36
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				36
+			pin_to_sibling			BtnDev35
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev35
+			navDown					BtnDev37
+			navRight				BtnDev5
+			navLeft					BtnDev20
+		}
+		BtnDev37
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				37
+			pin_to_sibling			BtnDev36
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev36
+			navDown					BtnDev38
+			navRight				BtnDev6
+			navLeft					BtnDev21
+		}
+		BtnDev38
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				38
+			pin_to_sibling			BtnDev37
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev37
+			navDown					BtnDev39
+			navRight				BtnDev7
+			navLeft					BtnDev22
+		}
+		BtnDev39
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				39
+			pin_to_sibling			BtnDev38
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev38
+			navDown					BtnDev40
+			navRight				BtnDev8
+			navLeft					BtnDev23
+		}
+		BtnDev40
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				40
+			pin_to_sibling			BtnDev39
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev39
+			navDown					BtnDev41
+			navRight				BtnDev9
+			navLeft					BtnDev24
+		}
+		BtnDev41
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				41
+			pin_to_sibling			BtnDev40
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev40
+			navDown					BtnDev42
+			navRight				BtnDev10
+			navLeft					BtnDev25
+		}
+		BtnDev42
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				42
+			pin_to_sibling			BtnDev41
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev41
+			navDown					BtnDev43
+			navRight				BtnDev11
+			navLeft					BtnDev26
+		}
+		BtnDev43
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				43
+			pin_to_sibling			BtnDev42
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev42
+			navDown					BtnDev44
+			navRight				BtnDev12
+			navLeft					BtnDev27
+		}
+		BtnDev44
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				44
+			pin_to_sibling			BtnDev43
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev43
+			navDown					BtnDev45
+			navRight				BtnDev13
+			navLeft					BtnDev28
+		}
+		BtnDev45
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				45
+			pin_to_sibling			BtnDev44
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev44
+			navDown					BtnDev46
+			navRight				BtnDev14
+			navLeft					BtnDev29
+		}
+		BtnDev46
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingCategoryButton
+			scriptID				46
+			pin_to_sibling			BtnDev45
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnDev45
+			navDown					BtnDev31
+			navRight				BtnDev47
+			navLeft					BtnDev30
+		}
+		
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		FooterButtons
+		{
+			ControlName				CNestedPanel
+			InheritProperties       FooterButtons
+		}
+	}
+}

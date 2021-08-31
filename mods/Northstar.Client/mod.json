@@ -1,15 +1,54 @@
 {
-	"ApiId" : "Northstar.Client",
 	"Name" : "Northstar.Client",
 	"Description" : "Various ui and client changes to fix bugs and add better support for mods",
-	"Authors" : [
-		"BobTheBob"
-	],
-	"Contacts" : [
-		"BobTheBob#1150"
-	],
-	"Version" : "0.1",
-	"CustomScripts": [
 
+	"LoadPriority": 0,
+
+	// ui inits need to happen before so our init callbacks get called
+	"Scripts": [
+		{
+			"Path": "ui/menu_ns_modmenu.nut",
+			"RunOn": "UI",
+			"UICallback": {
+				"Before": "AddNorthstarModMenu", 
+				"After": "AddNorthstarModMenu_MainMenuFooter" // need to do this after, so we add footer after mainmenu init
+			}
+		},
+		
+		{
+			"Path": "ui/menu_ns_serverbrowser.nut",
+			"RunOn": "UI",
+			"UICallback": {
+				"Before": "AddNorthstarServerBrowserMenu"
+			}
+		},
+		
+		{
+			"Path": "ui/menu_ns_connect_password.nut",
+			"RunOn": "UI",
+			"UICallback": {
+				"Before": "AddNorthstarConnectWithPasswordMenu"
+			}
+		},
+		
+		{
+			"Path": "ui/menu_ns_custom_match_settings_categories.nut",
+			"RunOn": "UI",
+			"UICallback": {
+				"Before": "AddNorthstarCustomMatchSettingsCategoryMenu"
+			}
+		},
+		
+		{
+			"Path": "ui/menu_ns_custom_match_settings.nut",
+			"RunOn": "UI",
+			"UICallback": {
+				"Before": "AddNorthstarCustomMatchSettingsMenu"
+			}
+		}
+	],
+	
+	"Localisation": [
+		"resource/northstar_client_localisation_%language%.txt"
 	]
 }

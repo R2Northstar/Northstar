@@ -1,0 +1,55 @@
+global function PrivateMatchModesInit
+
+void function PrivateMatchModesInit()
+{
+	// match settings
+	// super temp: do localisation strings later
+	AddPrivateMatchModeSettingArbitrary( "Match", "scorelimit", "5" ) //, "Score Limit" )
+	AddPrivateMatchModeSettingArbitrary( "Match", "roundscorelimit", "0" ) //, "Score Limit (round-based modes)" )
+	AddPrivateMatchModeSettingArbitrary( "Match", "timelimit", "12" ) //, "Time Limit" )
+	AddPrivateMatchModeSettingArbitrary( "Match", "roundtimelimit", "0" ) //, "Time Limit (round-based modes)" )
+	
+	AddPrivateMatchModeSettingArbitrary( "Pilot", "pilot_health_multiplier", "1.0" )
+	AddPrivateMatchModeSettingArbitrary( "Pilot", "respawn_delay", "0.0" )
+	AddPrivateMatchModeSettingEnum( "Pilot", "boosts_enabled", [ "Default", "Disabled" ], "1" )
+	AddPrivateMatchModeSettingEnum( "Pilot", "earn_meter_pilot_overdrive", [ "Disabled", "Enabled", "Only" ], "1" )
+	AddPrivateMatchModeSettingArbitrary( "Pilot", "earn_meter_pilot_multiplier", "1.0" )
+	
+	AddPrivateMatchModeSettingArbitrary( "Titan", "earn_meter_titan_multiplier", "1.0" )
+	AddPrivateMatchModeSettingEnum( "Titan", "aegis_upgrades", [ "Disabled", "Enabled" ], "0" )
+	AddPrivateMatchModeSettingEnum( "Titan", "infinite_doomed_state", [ "Disabled", "Enabled" ], "0" )
+	AddPrivateMatchModeSettingEnum( "Titan", "titan_shield_regen", [ "Disabled", "Enabled" ], "0" )
+	
+	AddPrivateMatchModeSettingEnum( "Riff Settings", "riff_floorislava", [ "Default", "Enabled", "Disabled" ], "0" )
+	AddPrivateMatchModeSettingEnum( "Riff Settings", "featured_mode_all_holopilot", [ "Disabled", "Enabled" ], "0" )
+	AddPrivateMatchModeSettingEnum( "Riff Settings", "featured_mode_all_grapple", [ "Disabled", "Enabled" ], "0" )
+	AddPrivateMatchModeSettingEnum( "Riff Settings", "featured_mode_all_phase", [ "Disabled", "Enabled" ], "0" )
+	AddPrivateMatchModeSettingEnum( "Riff Settings", "featured_mode_all_ticks", [ "Disabled", "Enabled" ], "0" )
+	AddPrivateMatchModeSettingEnum( "Riff Settings", "featured_mode_tactikill", [ "Disabled", "Enabled" ], "0" )
+	AddPrivateMatchModeSettingEnum( "Riff Settings", "featured_mode_amped_tacticals", [ "Disabled", "Enabled" ], "0" )
+	AddPrivateMatchModeSettingEnum( "Riff Settings", "featured_mode_rocket_arena", [ "Disabled", "Enabled" ], "0" )
+	AddPrivateMatchModeSettingEnum( "Riff Settings", "featured_mode_shotguns_snipers", [ "Disabled", "Enabled" ], "0" )
+	
+	// gamemode settings
+	AddPrivateMatchModeSettingEnum( "#GAMEMODE_cp", "amped_capture_points", [ "Disabled", "Enabled" ], "0" )
+	
+	AddPrivateMatchModeSettingEnum( "#GAMEMODE_coliseum", "coliseum_loadouts_enabled", [ "Disabled", "Enabled" ], "1" )
+
+
+	// modes
+	AddPrivateMatchMode( "ffa" )
+	AddPrivateMatchMode( "fra" )
+	AddPrivateMatchMode( "coliseum" )
+	
+	// playlists
+	AddPrivateMatchMode( "attdm" )
+	AddPrivateMatchMode( "turbo_ttdm" )
+	AddPrivateMatchMode( "alts" )
+	AddPrivateMatchMode( "turbo_lts" )
+	AddPrivateMatchMode( "rocket_lf" )
+	AddPrivateMatchMode( "holopilot_lf" )
+	
+	// maps
+	AddPrivateMatchMap( "mp_coliseum" )
+	AddPrivateMatchMap( "mp_coliseum_column" )
+}

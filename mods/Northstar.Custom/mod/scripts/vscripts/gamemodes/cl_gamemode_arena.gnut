@@ -1,0 +1,40 @@
+global function ClGameModeArena_Init
+global function ServerCallback_CreateMoneyParticles
+
+struct {
+	var moneyRui
+} file
+
+void function ClGameModeArena_Init()
+{
+	AddCallback_OnClientScriptInit( CreateArenaUI )
+	
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_INTRO, "music_mp_fd_intro_easy", TEAM_MILITIA )
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_INTRO, "music_mp_fd_intro_easy", TEAM_IMC )
+}
+
+void function CreateArenaUI( entity player )
+{
+	AddEventNotificationCallback( eEventNotifications.FD_BoughtItem, void function( entity e, var v ) {} )
+
+	var rui = CreateCockpitRui( $"ui/fd_score_splash.rpak", 500 )
+	RuiTrackInt( rui, "pointValue", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "FD_money" ) )
+	RuiTrackInt( rui, "pointStack", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "FD_money256" ) )
+	file.moneyRui = rui
+}
+
+void function ServerCallback_CreateMoneyParticles( int playerHandle, int amount )
+{
+	// largely taken from cl_gamemode_fd
+	entity player = GetEntityFromEncodedEHandle( playerHandle )
+
+	vector randDir2D = < RandomFloatRange( -1, 1 ), 1, 0 >
+	randDir2D = Normalize( randDir2D )
+
+	var rui = RuiCreate( $"ui/at_score_popup.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 100 )
+	RuiSetInt( rui, "scoreVal", amount )
+	RuiSetGameTime( rui, "startTime", Time() )
+	RuiSetFloat3( rui, "pos", player.EyePosition() )
+	RuiSetFloat2( rui, "driftDir", randDir2D )
+	RuiSetBool( rui, "showNormalPoints", false )
+}

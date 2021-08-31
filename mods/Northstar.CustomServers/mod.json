@@ -1,15 +1,19 @@
 {
-	"ApiId" : "Northstar.CustomServers",
-	"Name" : "Northstar.CustomServers",
-	"Description" : "Various script patches to fix and reimplement functionality for custom multiplayer servers",
-	"Authors" : [
-		"BobTheBob"
+	"Name": "Northstar.CustomServers",
+	
+	"ConVars": [
+		{
+			"Name": "ns_lobby_type",
+			"DefaultValue": "0"
+		},
+		
+		{
+			"Name": "ns_should_return_to_lobby",
+			"DefaultValue": "1"
+		}
 	],
-	"Contacts" : [
-		"BobTheBob#1150"
-	],
-	"Version" : "0.1",
-	"CustomScripts": [
+	
+	"Scripts": [
 		{
 			"Path": "_misc.gnut",
 			"RunOn": "SERVER && MP",
@@ -44,12 +48,16 @@
 		{
 			"Path": "gamemodes/_gamemode_fra.nut",
 			"RunOn": "SERVER && MP",
-			"ServerPreCallback": "GamemodeFRA_AddAdditionalInitCallback"
+			"ServerCallback": {
+				"Before": "GamemodeFRA_AddAdditionalInitCallback"
+			}
 		},
 		{
 			"Path": "gamemodes/_featured_mode_settings.gnut",
 			"RunOn": "SERVER && MP",
-			"ServerCallback": "FeaturedModeSettings_Init"
+			"ServerCallback": { 
+				"After": "FeaturedModeSettings_Init"
+			}
 		},
 		
 		{
@@ -64,7 +72,9 @@
 		{
 			"Path": "_loadouts_mp.gnut",
 			"RunOn": "SERVER && MP",
-			"ServerCallback": "SvLoadoutsMP_Init"
+			"ServerCallback": {
+				"After": "SvLoadoutsMP_Init"
+			}
 		},
 		
 		{

@@ -1,0 +1,613 @@
+untyped
+global function BaseGametype_Init_MPSP
+global function CodeCallback_OnClientConnectionStarted
+global function CodeCallback_OnClientConnectionCompleted
+global function CodeCallback_OnClientDisconnected
+global function CodeCallback_OnPlayerRespawned
+global function CodeCallback_OnPlayerKilled
+global function DecideRespawnPlayer
+global function RespawnAsPilot
+global function RespawnAsTitan
+global function TryGameModeAnnouncement
+
+global function SetKillcamsEnabled
+global function KillcamsEnabled
+global function SetPlayerDeathsHidden
+global function TrackTitanDamageInPlayerGameStat
+
+global function ShouldEntTakeDamage_SPMP
+global function GetTitanBuildTime
+global function TitanPlayerHotDropsIntoLevel
+
+struct {
+	bool killcamsEnabled = true
+	bool playerDeathsHidden = false
+	int titanDamageGameStat = -1
+	
+	entity intermissionCamera
+	array<entity> specCams 
+} file
+
+void function BaseGametype_Init_MPSP()
+{
+	AddSpawnCallback( "info_intermission", SetIntermissionCamera )
+	AddCallback_EntitiesDidLoad( SetSpecCams )
+	
+	RegisterSignal( "ObserverTargetChanged" )
+	AddClientCommandCallback( "spec_next", ClientCommandCallback_spec_next )
+	AddClientCommandCallback( "spec_prev", ClientCommandCallback_spec_prev )
+	AddClientCommandCallback( "spec_mode", ClientCommandCallback_spec_mode )
+	
+	AddDamageCallback( "player", AddToTitanDamageStat )
+	AddDamageCallback( "npc_titan", AddToTitanDamageStat )
+}
+
+void function SetIntermissionCamera( entity camera )
+{
+	file.intermissionCamera = camera
+}
+
+void function SetSpecCams()
+{
+	// spec cams are called spec_cam1,2,3 etc by default, so this is the easiest way to get them imo
+	int camNum = 1 
+	entity lastCam = null
+	do {
+		lastCam = GetEnt( "spec_cam" + camNum++ )
+		
+		if ( lastCam != null )
+			file.specCams.append( lastCam )
+	} while ( lastCam != null )
+}
+
+void function CodeCallback_OnClientConnectionStarted( entity player )
+{
+	// not a real player?
+	#if DEV
+	if ( player.GetPlayerName() == "Replay" )
+		return
+	#endif
+
+	if ( IsLobby() )
+	{
+		Lobby_OnClientConnectionStarted( player )
+		return
+	}
+
+//	ScreenFade( player, 0, 0, 0, 255, 2.0, 0.5, FFADE_IN | FFADE_PURGE )
+
+	SetTargetName( player, "player" + player.entindex() )
+
+	player.p.controllableProjectiles_scriptManagedID = CreateScriptManagedEntArray()
+	player.p.npcFollowersArrayID = CreateScriptManagedEntArray()
+
+	player.s = {}
+	player.s.attackerInfo <- {}
+	player.p.clientScriptInitialized = player.IsBot()
+	player.s.inPostDeath <- null
+	player.s.respawnCount <- 0
+	player.s.respawnTime <- 0
+	player.s.lostTitanTime <- 0
+	player.s.cloakedShotsAllowed <- 0
+	player.s.startDashMeleeTime <- 0
+	player.s.respawnSelectionDone <- true  // this gets set to false in postdeaththread but we need it to be true when connecting
+	player.s.waveSpawnProtection <- false
+
+	player.s.nextStatUpdateFunc <- null
+
+	player.s.activeTrapArrayId <- CreateScriptManagedEntArray()
+
+	player.s.restartBurnCardEffectOnSpawn <- false
+	player.s.replacementDropInProgress <- false
+
+	player.s.inGracePeriod <- true
+
+	// should I just add these when playing coop?
+	player.s.usedLoadoutCrate <- false
+	player.s.restockAmmoTime <- 0
+	player.s.restockAmmoCrate <- null
+
+	player.s.autoTitanLastEngageCalloutTime <- 0
+	player.s.autoTitanLastEngageCallout <- null
+	player.s.lastAIConversationTime <- {} // when was a conversation last played?
+
+	player.s.updatedPersistenceOnDisconnect <- false
+
+	player.s.lastFriendlySpawnedOn <- null
+	player.s.nextWaveSpawnTime <- 0.0
+
+	player.s.meleeSlowMoEndTime <- 0.0
+	
+	player.p.connectTime = Time()
+
+	Assert( !player._entityVars )
+	InitEntityVars( player )
+
+	// Added via AddCallback_OnClientConnecting
+	foreach ( callbackFunc in svGlobal.onClientConnectingCallbacks )
+	{
+		callbackFunc( player )
+	}
+
+	printl( "Player connect started: " + player )
+	
+	InitPassives( player )
+}
+
+// playerconnected
+void function CodeCallback_OnClientConnectionCompleted( entity player )
+{
+	if ( IsLobby() )
+	{
+		Lobby_OnClientConnectionCompleted( player )
+		return
+	}
+
+	player.hasConnected = true
+
+	InitMeleeAnimEventCallbacks( player )
+	ZiplineInit( player )
+	
+	UpdateMinimapStatus( player )
+	UpdateMinimapStatusToOtherPlayers( player )
+	MinimapPlayerConnected( player )
+	NotifyClientsOfConnection( player, 1 )
+	PlayCurrentTeamMusicEventsOnPlayer( player )
+	SetCurrentTeamObjectiveForPlayer( player )
+
+	entity skycam = GetEnt( "skybox_cam_level" )
+	if ( skycam != null )
+		player.SetSkyCamera( skycam )
+
+	FinishClientScriptInitialization( player )
+
+	// Added via AddCallback_OnClientConnected
+	foreach ( callbackFunc in svGlobal.onClientConnectedCallbacks )
+	{
+		callbackFunc( player )
+	}
+
+	if ( !Flag( "PlayerDidSpawn") )
+		__PlayerDidSpawn( player )
+
+	svGlobal.levelEnt.Signal( "PlayerDidSpawn", { player = player } )
+
+	// handle spawning late joiners
+	if ( GetGameState() == eGameState.Playing )
+	{
+		if ( RespawnsEnabled() )
+		{
+			// likely temp, deffo needs some work
+			if ( Riff_SpawnAsTitan() == 1 )	// spawn as titan
+				thread RespawnAsTitan( player )
+			else // spawn as pilot
+				RespawnAsPilot( player )
+		}
+		else
+			thread PlayerBecomesSpectator( player )
+	}
+}
+
+void function CodeCallback_OnClientDisconnected( entity player, string reason )
+{
+	if ( IsLobby() )
+	{
+		player.Signal( "_disconnectedInternal" )
+		UpdateBadRepPresent()
+		return
+	}
+
+	if ( !player.hasConnected )
+		return
+
+	// Added via AddCallback_OnClientDisconnected
+	foreach ( callbackFunc in svGlobal.onClientDisconnectedCallbacks )
+	{
+		callbackFunc( player )
+	}
+
+	player.Disconnected()
+	player.p.isDisconnected = true
+	player.CleanupMPClasses()
+}
+
+void function CodeCallback_OnPlayerRespawned( entity player )
+{
+	player.Signal( "OnRespawned" ) // kill any postdeaththreads that could be running
+
+	Remote_CallFunction_NonReplay( player, "ServerCallback_YouRespawned" )
+	player.s.respawnTime = Time()
+	
+	Loadouts_TryGivePilotLoadout( player )
+		
+	foreach ( void functionref( entity ) callback in svGlobal.onPlayerRespawnedCallbacks )
+		callback( player )
+}
+
+void function CodeCallback_OnPlayerKilled( entity player, var damageInfo )
+{
+	PlayerOrNPCKilled( player, damageInfo )
+	thread PostDeathThread_MP( player, damageInfo )
+}
+
+void function PostDeathThread_MP( entity player, var damageInfo ) // based on gametype_sp: postdeaththread_sp
+{
+	if ( player.s.inPostDeath )
+		return
+
+	float timeOfDeath = Time()
+	player.p.postDeathThreadStartTime = Time()
+
+	Assert( IsValid( player ), "Not a valid player" )
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "OnRespawned" )
+
+	player.p.deathOrigin = player.GetOrigin()
+	player.p.deathAngles = player.GetAngles()
+
+	player.s.inPostDeath = true
+	player.s.respawnSelectionDone = false
+
+	player.cloakedForever = false
+	player.stimmedForever = false
+	player.SetNoTarget( false )
+	player.SetNoTargetSmartAmmo( false )
+	player.ClearExtraWeaponMods()
+	
+	player.AddToPlayerGameStat( PGS_DEATHS, 1 )
+	
+	if ( player.IsTitan() )
+		SoulDies( player.GetTitanSoul(), damageInfo ) // cleanup some titan stuff, no idea where else to put this
+	
+	ClearRespawnAvailable( player )
+
+	OnThreadEnd( function() : ( player )
+	{
+		if ( !IsValid( player ) )
+			return
+	
+		player.SetPredictionEnabled( true )
+		player.s.inPostDeath = false
+	})
+
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	int methodOfDeath = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+
+	player.p.rematchOrigin = player.p.deathOrigin
+	if ( IsValid( attacker ) && methodOfDeath == eDamageSourceId.titan_execution )
+	{
+		// execution can throw you out of the map
+		player.p.rematchOrigin = attacker.GetOrigin()
+	}
+
+	player.Signal( "RodeoOver" )
+	player.ClearParent()
+	
+	// do some pre-replay stuff if we're gonna do a replay
+	float replayLength = CalculateLengthOfKillReplay( player, methodOfDeath )
+	bool shouldDoReplay = Replay_IsEnabled() && KillcamsEnabled() && ShouldDoReplay( player, attacker, replayLength, methodOfDeath )
+	table replayTracker = { validTime = null }
+	if ( shouldDoReplay )
+		thread TrackDestroyTimeForReplay( attacker, replayTracker )
+	
+	int damageSource = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	//if ( damageSource == eDamageSourceId.fall )
+	//{
+	//	// this is straight up just incorrect lol, based off tf1 stuff
+	//
+	//	player.SetObserverModeStaticPosition( player.GetOrigin() )
+	//	player.SetObserverModeStaticAngles( player.GetVelocity() * -1 )
+	//	
+	//	player.StartObserverMode( OBS_MODE_STATIC_LOCKED )
+	//	player.SetObserverTarget( null )
+	//}
+	//else
+	//{
+		player.StartObserverMode( OBS_MODE_DEATHCAM )
+		if ( ShouldSetObserverTarget( attacker ) )
+			player.SetObserverTarget( attacker )
+		else
+			player.SetObserverTarget( null )
+	//}
+	
+	if ( !file.playerDeathsHidden )
+		Remote_CallFunction_NonReplay( player, "ServerCallback_YouDied", attacker.GetEncodedEHandle(), GetHealthFrac( attacker ), methodOfDeath )
+
+	float deathcamLength = GetDeathCamLength( player )
+	wait deathcamLength
+	
+	// use info_intermission camera after deathcam, if it exists
+	if ( file.intermissionCamera != null )
+	{
+		player.SetObserverModeStaticPosition( file.intermissionCamera.GetOrigin() )
+		player.SetObserverModeStaticAngles( file.intermissionCamera.GetAngles() )
+		player.StartObserverMode( OBS_MODE_STATIC_LOCKED )
+		player.SetObserverTarget( null )
+	}
+
+	// quick note: in cases where player.Die() is called: e.g. for round ends, player == attacker
+	if ( shouldDoReplay )
+	{
+		player.SetPredictionEnabled( false )
+	
+		player.watchingKillreplayEndTime = Time() + replayLength		
+		float beforeTime = GetKillReplayBeforeTime( player, methodOfDeath )
+		
+		replayTracker.validTime <- null 
+		
+		float respawnTime = Time() - 2 // seems to get the killreplay to end around the actual kill
+		if ( "respawnTime" in attacker.s )
+			respawnTime = Time() - expect float ( attacker.s.respawnTime )
+		
+		thread PlayerWatchesKillReplayWrapper( player, attacker, respawnTime, timeOfDeath, beforeTime, replayTracker )		
+	}
+
+	player.SetPlayerSettings( "spectator" ) // prevent a crash with going from titan => pilot on respawn
+
+	if ( RespawnsEnabled() )
+	{
+		// is it a good idea to do respawn code in postdeaththread? fuck if i know lol
+		float respawnDelay = max( 0, GetCurrentPlaylistVarFloat( "respawn_delay", 0.0 ) - deathcamLength )
+	
+		print( "respawn delay " + respawnDelay )
+		
+		UpdateNextRespawnTime( player, Time() + respawnDelay )
+		SetRespawnAvailable( player )
+		
+		wait respawnDelay
+				
+		player.WaitSignal( "RespawnMe" ) // set in base_gametype: ClientCommand_RespawnPlayer
+		
+		player.SetPredictionEnabled( true )
+		ClearRespawnAvailable( player ) // need so the respawn icon doesn't show for like a frame on next death
+			
+		if ( ( expect bool( player.GetPersistentVar( "spawnAsTitan" ) ) && IsTitanAvailable( player ) ) || ( Riff_SpawnAsTitan() > 0 && Riff_ShouldSpawnAsTitan( player ) ) )	// spawn as titan
+			thread RespawnAsTitan( player )
+		else // spawn as pilot
+			RespawnAsPilot( player )
+	}
+	else
+	{
+		thread PlayerBecomesSpectator( player )
+	}
+}
+
+void function PlayerWatchesKillReplayWrapper( entity player, entity attacker, float timeSinceAttackerSpawned, float timeOfDeath, float beforeTime, table replayTracker )
+{
+	PlayerWatchesKillReplay( player, attacker.GetEncodedEHandle(), attacker.GetIndexForEntity(), timeSinceAttackerSpawned, timeOfDeath, beforeTime, replayTracker )
+	player.ClearReplayDelay()
+	player.ClearViewEntity()
+	player.SetPredictionEnabled( true )
+}
+
+void function EndReplayOnTime( entity player, float replayLength )
+{
+	player.EndSignal( "RespawnMe" )
+	player.EndSignal( "OnRespawned" )
+	
+	wait replayLength
+	if ( IsValid( player ) && KillcamsEnabled() )
+	{
+		print( "fucking how" )
+	
+		player.ClearReplayDelay()
+		player.ClearViewEntity()
+		player.SetPredictionEnabled( true )
+		
+		player.SetObserverTarget( null )
+	}   
+}
+
+void function DecideRespawnPlayer( entity player )
+{
+	// this isn't even used atm, could likely be removed if some vanilla code didn't rely on it
+}
+
+void function RespawnAsPilot( entity player, bool manualPosition = false )
+{
+	player.RespawnPlayer( FindSpawnPoint( player, false, ShouldStartSpawn( player ) && !IsFFAGame() ) )
+}
+
+void function RespawnAsTitan( entity player, bool manualPosition = false )
+{
+	player.isSpawning = true
+
+	entity spawnpoint = FindSpawnPoint( player, true, ShouldStartSpawn( player ) && !IsFFAGame() )
+
+	TitanLoadoutDef titanLoadout = GetTitanLoadoutForPlayer( player )
+	
+	asset model = GetPlayerSettingsAssetForClassName( titanLoadout.setFile, "bodymodel" )
+	Attachment warpAttach = GetAttachmentAtTimeFromModel( model, "at_hotdrop_01", "offset", spawnpoint.GetOrigin(), spawnpoint.GetAngles(), 0 )
+	PlayFX( TURBO_WARP_FX, warpAttach.position, warpAttach.angle )
+	
+	player.RespawnPlayer( null ) // spawn player as pilot so they get their pilot loadout on embark
+	
+	entity titan = CreateAutoTitanForPlayer_FromTitanLoadout( player, titanLoadout, spawnpoint.GetOrigin(), spawnpoint.GetAngles() )
+	DispatchSpawn( titan )
+	player.SetPetTitan( null ) // prevent embark prompt from showing up
+	
+	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD ) // hide hud
+	player.HolsterWeapon() // hide crosshair
+	
+	// do titanfall scoreevent
+	AddPlayerScore( player, "Titanfall", player )
+	
+	entity camera = CreateTitanDropCamera( spawnpoint.GetAngles(), < 90, titan.GetAngles().y, 0 > )
+	camera.SetParent( titan )
+	
+	// calc offset for spawnpoint angle
+	// todo this seems bad but too lazy to figure it out rn
+	//vector xyOffset = RotateAroundOrigin2D( < 44, 0, 0 >, < 0, 0, 0>, spawnpoint.GetAngles().y )
+	//xyOffset.z = 520 // < 44, 0, 520 > at 0,0,0, seems to be the offset used in tf2
+	//print( xyOffset )
+	
+	vector xyOffset = RotateAroundOrigin2D( < 44, 0, 520 >, < 0, 0, 0 >, spawnpoint.GetAngles().y )
+	
+	camera.SetLocalOrigin( xyOffset )
+	camera.SetLocalAngles( < camera.GetAngles().x, spawnpoint.GetAngles().y, camera.GetAngles().z > ) // this straight up just does not work lol
+	camera.Fire( "Enable", "!activator", 0, player )
+	
+	waitthread TitanHotDrop( titan, "at_hotdrop_01", spawnpoint.GetOrigin(), spawnpoint.GetAngles(), player, camera ) // do hotdrop anim
+	
+	camera.Fire( "Disable", "!activator", 0, player ) // stop using the camera
+	camera.Destroy()
+	RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD ) // show hud
+	player.DeployWeapon() // let them use weapons again
+	player.isSpawning = false
+		
+	PilotBecomesTitan( player, titan ) // make player titan
+	titan.Destroy() // pilotbecomestitan leaves an npc titan that we need to delete
+}
+
+
+// spectator stuff
+
+void function PlayerBecomesSpectator( entity player )
+{
+	player.StartObserverMode( OBS_MODE_CHASE )
+
+	player.EndSignal( "OnRespawned" )
+	player.EndSignal( "OnDestroy" )
+
+	int targetIndex = 0
+	
+	while ( true )
+	{	
+		table result = player.WaitSignal( "ObserverTargetChanged" )
+		
+		array<entity> targets
+		
+		targets.append( file.intermissionCamera )
+		foreach( entity cam in file.specCams )
+			targets.append( cam )
+			
+		array<entity> targetPlayers
+		if ( IsFFAGame() )
+			targetPlayers = GetPlayerArray_Alive()
+		else
+			targetPlayers = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
+		
+		foreach( entity player in targetPlayers )
+			targets.append( player )
+		
+		if ( result.next )
+			targetIndex = ( targetIndex + 1 ) % targets.len()
+		else
+		{
+			if ( targetIndex == 0 )
+				targetIndex = ( targets.len() - 1 )
+			else
+				targetIndex--
+		}
+		
+		entity target = targets[ targetIndex ]
+		
+		player.StopObserverMode()
+		player.SetSpecReplayDelay( 0.0 ) // clear spectator replay
+		
+		if ( target.IsPlayer() )
+		{
+			player.SetObserverTarget( target )
+			player.StartObserverMode( OBS_MODE_CHASE )
+		}
+		else
+		{
+			player.SetObserverModeStaticPosition( target.GetOrigin() )
+			player.SetObserverModeStaticAngles( target.GetAngles() )
+			player.StartObserverMode( OBS_MODE_STATIC )
+		}  
+	}
+}
+
+bool function ClientCommandCallback_spec_next( entity player, array<string> args )
+{
+	if ( player.GetObserverMode() == OBS_MODE_CHASE || player.GetObserverMode() == OBS_MODE_STATIC || player.GetObserverMode() == OBS_MODE_IN_EYE )
+		player.Signal( "ObserverTargetChanged", { next = true } )
+		
+	return true
+}
+
+bool function ClientCommandCallback_spec_prev( entity player, array<string> args )
+{
+	if ( player.GetObserverMode() == OBS_MODE_CHASE || player.GetObserverMode() == OBS_MODE_STATIC || player.GetObserverMode() == OBS_MODE_IN_EYE )
+		player.Signal( "ObserverTargetChanged", { next = false } )
+		
+	return true
+}
+
+bool function ClientCommandCallback_spec_mode( entity player, array<string> args )
+{
+	// currently unsure how this actually gets called on client, works through console and has references in client.dll tho
+	if ( player.GetObserverMode() == OBS_MODE_CHASE )
+	{
+		// set to first person spectate		
+		player.SetSpecReplayDelay( FIRST_PERSON_SPECTATOR_DELAY )
+		player.SetViewEntity( player.GetObserverTarget(), true )
+		player.StartObserverMode( OBS_MODE_IN_EYE )
+	}
+	else if ( player.GetObserverMode() == OBS_MODE_IN_EYE )
+	{	
+		// set to third person spectate
+		player.SetSpecReplayDelay( 0.0 )
+		player.StartObserverMode( OBS_MODE_CHASE )
+	}
+	
+	return true
+}
+
+
+void function TryGameModeAnnouncement( entity player ) // only putting this here because it's here in gametype_sp lol
+{
+	Remote_CallFunction_NonReplay( player, "ServerCallback_GameModeAnnouncement" )
+	PlayFactionDialogueToPlayer( GameMode_GetGameModeAnnouncement( GAMETYPE ), player )
+}
+
+void function SetKillcamsEnabled( bool enabled )
+{
+	file.killcamsEnabled = enabled
+}
+
+bool function KillcamsEnabled()
+{
+	return file.killcamsEnabled
+}
+
+void function SetPlayerDeathsHidden( bool hidden )
+{
+	file.playerDeathsHidden = hidden
+}
+
+void function TrackTitanDamageInPlayerGameStat( int playerGameStat )
+{
+	file.titanDamageGameStat = playerGameStat
+}
+
+void function AddToTitanDamageStat( entity victim, var damageInfo )
+{
+	if ( !victim.IsTitan() || file.titanDamageGameStat == -1 )
+		return
+
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	float amount = DamageInfo_GetDamage( damageInfo )
+
+	if ( attacker.IsPlayer() && attacker != victim )
+		attacker.AddToPlayerGameStat( file.titanDamageGameStat, amount ) // titan damage on 
+}
+
+
+// stuff to change later
+
+bool function ShouldEntTakeDamage_SPMP( entity ent, var damageInfo )
+{
+	return true
+}
+
+float function GetTitanBuildTime(entity player)
+{
+	return 100.0
+}
+
+void function TitanPlayerHotDropsIntoLevel( entity player )
+{
+
+}

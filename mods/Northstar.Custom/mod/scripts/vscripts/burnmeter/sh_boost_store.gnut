@@ -1,0 +1,762 @@
+global function ShInitBoostStore
+global function ShInitBoostStoreForMode
+global function GetAvailableBoosts
+global function BoostStoreEnabled
+global function CanPurchaseBoost
+global function CanAffordBoost
+global function GetPlaylistBoostCost
+
+#if CLIENT || SERVER
+global function BoostStoreOpen
+#endif
+
+#if SERVER
+global function SetBoostPurchaseCallback
+global function SetBoostRefundCallback
+global function SetTeamReserveInteractCallback
+global function AddMoneyToPlayer
+global function SetMoneyForPlayer
+global function CreateBoostStoreLocation
+global function OpenBoostStores
+global function CloseBoostStores
+global function GetBoostStores
+global function BurnRewardRefundThink
+global function SetJoinInProgressBonus
+#endif
+
+#if CLIENT
+global function ServerCallback_EnableDropshipBoostStore
+global function ServerCallback_DisableDropshipBoostStore
+global function ServerCallback_BoostStoreTitanHint
+#endif
+
+#if UI
+global function UpdatePlayerMoney
+global function ServerCallback_UpdateTurretCount
+global function ServerCallback_UpdatePlayerHasBattery
+global function ServerCallback_UpdateAmpedWeaponState
+#endif
+
+global function GetPlayerMoney
+global function GetTeamReserve
+global function UpdateTeamReserve
+
+const int MAX_MONEY = 5000
+const float BOOST_STORE_TRIGGER_RADIUS = 300
+const int BOOST_STORE_DEFAULT_EXCHANGE = 100
+
+global struct BoostStoreData
+{
+	string itemRef
+	string modesAllowed
+	string additionalDesc
+	int cost
+	bool autoActivate
+	asset storeIcon
+	asset lockedStoreIcon
+	string additionalDescFail
+}
+
+struct
+{
+	array<BoostStoreData> allBoosts
+	array<BoostStoreData> availableBoosts
+	table<entity,int> playerBonusData
+	int joinInProgressBonus = 0
+	array<string> joinInProgressGivenToPlayers
+
+	int teamReserveAmount = 0
+
+	var boostStoreHintRui
+
+	#if UI
+		int playerMoney = 0
+		int turretCount = 0
+		int maxTurretCount = 5
+		bool playerHasBattery = false
+		bool playerHasAmpedWeapons = false
+	#endif
+
+	array<entity> storeLocations
+	table<string,bool functionref(entity)> boostPurchaseExtraChecks
+	void functionref(entity,BoostStoreData) boostPurchaseCallback
+	void functionref( entity, string ) boostRefundCallback
+	void functionref( entity, string, int ) teamReserveDepositOrWithdrawCallback
+} file
+
+void function ShInitBoostStore()
+{
+	var dataTable = GetDataTable( $"datatable/burn_meter_store.rpak" )
+	int len = GetDatatableRowCount( dataTable )
+	for ( int i=0; i<len; i++ )
+	{
+		string allowedModes = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "modes" ) )
+		string itemRef = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "itemRef" ) )
+		string additionalDesc = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "extraDesc" ) )
+		int cost = GetDataTableInt( dataTable, i, GetDataTableColumnByName( dataTable, "cost" ) )
+		bool autoActivate = GetDataTableBool( dataTable, i, GetDataTableColumnByName( dataTable, "autoActivate" ) )
+		asset storeIcon = GetDataTableAsset( dataTable, i, GetDataTableColumnByName( dataTable, "storeIcon" ) )
+		asset lockedStoreIcon = GetDataTableAsset( dataTable, i, GetDataTableColumnByName( dataTable, "lockedStoreIcon" ) )
+		string additionalDescFail = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "extraDescFail" ) )
+		BoostStoreData data
+		data.itemRef = itemRef
+		data.cost = cost
+		data.modesAllowed = allowedModes
+		data.additionalDesc = additionalDesc
+		data.autoActivate = autoActivate
+		data.storeIcon = storeIcon
+		data.lockedStoreIcon = lockedStoreIcon
+		data.additionalDescFail = additionalDescFail
+		file.allBoosts.append( data )
+	}
+
+	foreach ( turretType in GetAllBoostTurretTypes() )
+	{
+		file.boostPurchaseExtraChecks[ turretType ] <- CheckTooManyTurrets
+	}
+
+	file.boostPurchaseExtraChecks[ "burnmeter_instant_battery" ] <- CheckHasNoBattery
+	file.boostPurchaseExtraChecks[ "burnmeter_amped_weapons_permanent" ] <- CheckHasNoAmpedWeapons
+
+	#if UI
+	AddUICallback_OnLevelInit( ShInitBoostStoreForMode )
+	#else
+	if ( !IsLobby() )
+		ShInitBoostStoreForMode()
+	#endif
+
+	#if SERVER
+	if ( !BoostStoreEnabled() )
+		return
+
+	AddCallback_OnClientConnected( Store_OnClientConnected )
+	AddClientCommandCallback( "PurchaseBoost", ClientCommand_PurchaseBoost )
+	AddClientCommandCallback( "TeamReserveDeposit", ClientCommand_Deposit )
+	AddClientCommandCallback( "TeamReserveWithdraw", ClientCommand_Withdraw )
+	RegisterSignal( "BoostRefunded" )
+	RegisterSignal( "CancelRefund" )
+	#endif
+}
+
+#if SERVER
+void function SetJoinInProgressBonus( int moneyToAdd )
+{
+	file.joinInProgressBonus = file.joinInProgressBonus + moneyToAdd
+}
+
+void function SetBoostPurchaseCallback( void functionref( entity, BoostStoreData ) func )
+{
+	file.boostPurchaseCallback = func
+}
+
+void function SetBoostRefundCallback( void functionref( entity, string ) func )
+{
+	file.boostRefundCallback = func
+}
+
+void function SetTeamReserveInteractCallback( void functionref( entity, string, int ) func )
+{
+	file.teamReserveDepositOrWithdrawCallback = func
+}
+
+void function Store_OnClientConnected( entity player )
+{
+	file.playerBonusData[ player ] <- 0
+	string playerUID = player.GetUID()
+	if ( !file.joinInProgressGivenToPlayers.contains( playerUID ) )
+	{
+		AddMoneyToPlayer( player, file.joinInProgressBonus )
+		file.joinInProgressGivenToPlayers.append( playerUID )
+	}
+}
+#endif
+
+void function ShInitBoostStoreForMode()
+{
+	string boostStoreMode = GetCurrentPlaylistVarString( "boost_store_mode", "off" )
+	file.availableBoosts.clear()
+
+	if ( boostStoreMode == "off" )
+		return
+
+	foreach ( data in file.allBoosts )
+	{
+		array<string> tokens = split( data.modesAllowed, " " )
+		if ( tokens.contains( boostStoreMode ) )
+		{
+			file.availableBoosts.append( data )
+		}
+	}
+	file.availableBoosts.sort( SortCompareBoostCost )
+	printt( file.availableBoosts.len() )
+}
+
+int function SortCompareBoostCost( BoostStoreData a, BoostStoreData b )
+{
+	int acost = GetPlaylistBoostCost( a.itemRef, a.cost )
+	int bcost = GetPlaylistBoostCost( b.itemRef, b.cost )
+
+	if ( acost > bcost )
+		return 1
+
+	if ( bcost > acost )
+		return -1
+
+	return 0
+}
+
+array<BoostStoreData> function GetAvailableBoosts()
+{
+	// custom stuff for arena
+	string boostStoreMode = GetCurrentPlaylistVarString( "boost_store_mode", "off" )
+	if ( boostStoreMode == "arena" )
+	{
+		array<BoostStoreData> arenaLoadouts = PopulateArenaLoadouts()
+		
+		#if SERVER
+			// bit of a hack, but assign weapon checks to weapon refs
+			foreach ( BoostStoreData data in arenaLoadouts )
+				if ( data.itemRef in eDamageSourceId )
+					file.boostPurchaseExtraChecks[ data.itemRef ] <- bool function( entity player ) { return player.GetMainWeapons().len() != 3 } 
+		#endif
+		
+		return arenaLoadouts
+	}
+
+	return file.availableBoosts
+}
+
+bool function CanAffordBoost( entity player, BoostStoreData data )
+{
+	int money = GetPlayerMoney( player )
+	return money >= GetPlaylistBoostCost( data.itemRef, data.cost )
+}
+
+bool function CanPurchaseBoost( entity player, BoostStoreData data, bool checkMoney = true )
+{
+	bool canBuy = true
+
+	if ( checkMoney )
+		canBuy = canBuy && CanAffordBoost( player, data )
+
+	if ( data.itemRef in file.boostPurchaseExtraChecks )
+	{
+		canBuy = canBuy && file.boostPurchaseExtraChecks[ data.itemRef ]( player )
+	}
+
+	return canBuy
+}
+
+#if SERVER
+bool function ClientCommand_PurchaseBoost( entity player, array<string> args )
+{
+	// bob note: readded this check, why the fuck is it not a check in vanilla
+	if ( !BoostStoreOpen() )
+		return true
+
+	if ( player.IsPhaseShifted() )
+		return false
+
+	if ( !IsAlive( player ) )
+		return false
+
+	if ( player.IsTitan() )
+		return false
+
+	array<BoostStoreData> availableBoosts = GetAvailableBoosts()
+
+	if ( args.len() == 0 )
+		return false
+
+	foreach ( data in availableBoosts )
+	{
+		if ( data.itemRef == args[0] )
+		{
+			if ( IsItemLocked( player, data.itemRef ) )
+				break
+
+			if ( CanPurchaseBoost( player, data ) )
+			{
+				if ( file.boostPurchaseCallback != null )
+					file.boostPurchaseCallback( player, data )
+
+				AddMoneyToPlayer( player, -1*GetPlaylistBoostCost( data.itemRef, data.cost ) )
+				BurnReward burnReward = BurnReward_GetByRef( data.itemRef )
+				if ( !data.autoActivate )
+				{
+					BurnMeter_GiveRewardDirect( player, data.itemRef )
+				}
+				else
+				{
+					RunBurnCardUseFunc( player, data.itemRef )
+					Remote_CallFunction_NonReplay( player, "ServerCallback_RewardUsed", burnReward.id )
+					EmitSoundOnEntityOnlyToPlayer( player, player, "HUD_Boost_Card_Earned_1P" )
+				}
+				EmitSoundOnEntityOnlyToPlayer( player, player, "UI_InGame_FD_ArmoryPurchase" )
+				MessageToTeam( player.GetTeam(), eEventNotifications.FD_BoughtItem, null, player, burnReward.id )
+				break
+			}
+		}
+	}
+
+	return true
+}
+
+bool function ClientCommand_Deposit( entity player, array<string> args )
+{
+	// if ( !BoostStoreOpen() )
+	// 	return true
+
+	int depositAmount = minint( file.playerBonusData[ player ], BOOST_STORE_DEFAULT_EXCHANGE )
+	file.teamReserveAmount += depositAmount
+	AddMoneyToPlayer( player, -1*depositAmount )
+
+	if ( IsValid( file.teamReserveDepositOrWithdrawCallback ) )
+		file.teamReserveDepositOrWithdrawCallback( player, "deposit", depositAmount )
+
+	foreach ( player in GetPlayerArray() )
+	{
+		Remote_CallFunction_UI( player, "ServerCallback_UpdateTeamReserve", file.teamReserveAmount )
+	}
+
+	return true
+}
+
+
+bool function ClientCommand_Withdraw( entity player, array<string> args )
+{
+	// if ( !BoostStoreOpen() )
+	// 	return true
+
+	if ( GetPlayerMoney( player ) >= MAX_MONEY )
+		return true
+
+	int withdrawAmount = minint( file.teamReserveAmount, BOOST_STORE_DEFAULT_EXCHANGE )
+	file.teamReserveAmount -= withdrawAmount
+	AddMoneyToPlayer( player, withdrawAmount )
+
+	if ( IsValid( file.teamReserveDepositOrWithdrawCallback ) )
+		file.teamReserveDepositOrWithdrawCallback( player, "withdraw", withdrawAmount )
+
+	foreach ( player in GetPlayerArray() )
+	{
+		Remote_CallFunction_UI( player, "ServerCallback_UpdateTeamReserve", file.teamReserveAmount )
+	}
+
+	return true
+}
+
+void function AddMoneyToPlayer( entity player, int points )
+{
+	SetMoneyForPlayer( player, file.playerBonusData[ player ] + points )
+}
+
+void function SetMoneyForPlayer( entity player, int points )
+{
+	file.playerBonusData[ player ] = int( Clamp( float( points ), 0, MAX_MONEY ) )
+
+	int bonusPoints = file.playerBonusData[ player ]
+	int bonusPointStack = int( max( ( bonusPoints - ( bonusPoints % 256 ) ) / 256, 0 ) )
+	int bonusPointRemainder = ( bonusPoints % 256 )
+
+	player.SetPlayerNetInt( "FD_money", bonusPointRemainder )
+	player.SetPlayerNetInt( "FD_money256", bonusPointStack )
+	player.SetTitle( "$" + bonusPoints )
+
+	Remote_CallFunction_UI( player, "ServerCallback_UpdateMoney", file.playerBonusData[ player ] )
+}
+
+void function CreateBoostStoreLocation( int team, vector origin, vector angles, bool showOnMinimap = true )
+{
+	if ( !BoostStoreEnabled() )
+		return
+
+	entity crate = CreatePropDynamic( MODEL_ATTRITION_BANK, origin, angles, 6 )
+
+	entity invisibleCrate = CreatePropScript( MODEL_ATTRITION_BANK, origin, angles, 6 )
+	SetTargetName( invisibleCrate, "boostStore" )
+	SetTeam( invisibleCrate, team )
+	invisibleCrate.Hide()
+	invisibleCrate.NotSolid()
+
+	// just to create an association
+	crate.SetParent( invisibleCrate )
+
+	thread PlayAnim( crate, "mh_inactive_idle", crate.GetParent() )
+	if ( BoostStoreOpen() )
+		thread EnableBoostStoreCrate( crate )
+
+	crate.SetUsePrompts( "#BOOST_STORE_HOLD_USE", "#BOOST_STORE_PRESS_USE" )
+	crate.SetForceVisibleInPhaseShift( true )
+
+	file.storeLocations.append( crate )
+
+	if ( showOnMinimap )
+	{
+		invisibleCrate.Minimap_SetObjectScale( MINIMAP_LOADOUT_CRATE_SCALE )
+		invisibleCrate.Minimap_SetAlignUpright( true )
+		invisibleCrate.Minimap_AlwaysShow( TEAM_IMC, null )
+		invisibleCrate.Minimap_AlwaysShow( TEAM_MILITIA, null )
+		invisibleCrate.Minimap_SetHeightTracking( true )
+		invisibleCrate.Minimap_SetZOrder( MINIMAP_Z_OBJECT )
+		invisibleCrate.Minimap_SetCustomState( eMinimapObject_prop_script.BOOST_STORE )
+	}
+	if ( !GetGlobalNetBool("boostStoreOpen") )
+	{
+		invisibleCrate.Minimap_Hide( TEAM_IMC, null )
+		invisibleCrate.Minimap_Hide( TEAM_MILITIA, null )
+	}
+
+	thread CreateBoostStoreHintTrigger( crate )
+	thread BoostStoreThink( crate )
+}
+
+void function EnableBoostStoreCrate( entity crate )
+{
+	crate.EndSignal( "OnDestroy" )
+	crate.SetUsable()
+
+	entity parentCrate = crate.GetParent()
+	int team = parentCrate.GetTeam()
+	if ( team == TEAM_MILITIA || team == TEAM_IMC )
+		crate.SetUsableByGroup( "friendlies pilot" )
+	else
+		crate.SetUsableByGroup( "pilot" )
+
+	SetTeam( crate, team )
+
+	waitthread PlayAnim( crate, "mh_inactive_2_active", crate.GetParent() )
+	thread PlayAnim( crate, "mh_active_idle", crate.GetParent() )
+	EmitSoundOnEntity( crate, "Mobile_Hardpoint_Idle" )
+}
+
+void function DisableBoostStoreCrate( entity crate )
+{
+	crate.EndSignal( "OnDestroy" )
+	crate.UnsetUsable()
+	SetTeam( crate, TEAM_UNASSIGNED )
+	FadeOutSoundOnEntity( crate, "Mobile_Hardpoint_Idle", 1.0 )
+	waitthread PlayAnim( crate, "mh_active_2_inactive", crate.GetParent() )
+	thread PlayAnim( crate, "mh_inactive_idle", crate.GetParent() )
+}
+
+void function CreateBoostStoreHintTrigger( entity crate )
+{
+	entity trig = CreateEntity( "trigger_cylinder" )
+	trig.SetRadius( BOOST_STORE_TRIGGER_RADIUS )
+	trig.SetAboveHeight( 200 )
+	trig.SetBelowHeight( 0)
+	trig.SetOrigin( crate.GetOrigin() )
+	trig.kv.triggerFilterNpc = "none"
+	trig.kv.triggerFilterPlayer = "all"
+	DispatchSpawn( trig )
+
+	trig.EndSignal( "OnDestroy" )
+	crate.EndSignal( "OnDestroy" )
+
+	OnThreadEnd(
+	function() : ( trig )
+		{
+			if ( IsValid( trig ) )
+				trig.Destroy()
+		}
+	)
+
+	trig.SetEnterCallback( BoostHintTrigEnter )
+
+	WaitForever()
+}
+
+void function BoostHintTrigEnter( entity trigger, entity ent )
+{
+	if ( !ent.IsPlayer() )
+		return
+	if ( !ent.IsTitan() )
+		return
+	if ( !GetGlobalNetBool( "boostStoreOpen" ) )
+		return
+	vector org = trigger.GetOrigin()
+	Remote_CallFunction_NonReplay( ent, "ServerCallback_BoostStoreTitanHint", org.x, org.y, org.z )
+}
+
+void function CloseBoostStores()
+{
+	foreach ( crate in file.storeLocations )
+		thread DisableBoostStoreCrate( crate )
+	SetGlobalNetBool("boostStoreOpen", false)
+}
+
+void function OpenBoostStores()
+{
+	foreach ( crate in file.storeLocations )
+		thread EnableBoostStoreCrate( crate )
+	SetGlobalNetBool("boostStoreOpen", true)
+}
+
+array<entity> function GetBoostStores()
+{
+	return file.storeLocations
+}
+
+void function BurnRewardRefundThink( entity useEnt, entity ent )
+{
+	useEnt.EndSignal( "OnDestroy" )
+	ent.EndSignal( "OnDestroy" )
+	ent.EndSignal( "OnDeath" )
+	ent.EndSignal( "CancelRefund" )
+	useEnt.SetUsable()
+	useEnt.SetUsableByGroup( "owner pilot" )
+	useEnt.SetUsePrompts( "#REFUND_HOLD_USE", "#REFUND_PRESS_USE" )
+
+	entity player = expect entity( useEnt.WaitSignal( "OnPlayerUse" ).player )
+	{
+		if ( ent.e.burnReward == "" )
+			return
+
+		BurnMeter_GiveRewardDirect( player, ent.e.burnReward )
+		entity weapon = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+
+		// Defensive: meaning the boost didn't make it to the inventory for some reason
+		if ( weapon == null )
+			return
+
+		if ( IsTurret( ent ) )
+		{
+			weapon.w.savedKillCount = int( ent.kv.killCount )
+			ent.DisableTurret()
+			ent.Signal( "StopTurretLaser" )
+		}
+		weapon.e.fd_roundDeployed = ent.e.fd_roundDeployed
+
+		EmitSoundAtPosition( TEAM_UNASSIGNED, ent.GetOrigin(), "Emplacement_Move_Dissolve" )
+		ent.Signal( "BoostRefunded" )
+		ent.UnsetUsable()
+		ent.SetInvulnerable()
+		ent.Dissolve( ENTITY_DISSOLVE_CORE, Vector( 0, 0, 0 ), 100 )
+
+		if ( file.boostRefundCallback != null )
+			file.boostRefundCallback( player, ent.e.burnReward )
+	}
+}
+
+void function BoostStoreThink( entity crate )
+{
+	while( IsValid( crate ) )
+	{
+		entity player = expect entity( crate.WaitSignal( "OnPlayerUse" ).player )
+		if ( IsValid( player ) )
+			OpenBoostStoreMenu( player )
+	}
+}
+
+void function OpenBoostStoreMenu( entity player )
+{
+	if ( !BoostStoreEnabled() )
+		return
+
+	CalculatePlayerTurretCount( player )
+	Remote_CallFunction_UI( player, "ServerCallback_UpdateMoney", file.playerBonusData[ player ] )
+	Remote_CallFunction_UI( player, "ServerCallback_UpdateTeamReserve", file.teamReserveAmount )
+	Remote_CallFunction_UI( player, "ServerCallback_UpdatePlayerHasBattery", PlayerHasBattery( player ) )
+	Remote_CallFunction_UI( player, "ServerCallback_UpdateAmpedWeaponState", PlayerHasAmpedWeapons( player ) )
+	Remote_CallFunction_UI( player, "ServerCallback_OpenBoostStore" )
+}
+#endif
+
+#if CLIENT
+void function ServerCallback_BoostStoreTitanHint( float x, float y, float z )
+{
+	vector org = <x,y,z>
+	thread ServerCallback_BoostStoreTitanHint_Internal( org )
+}
+
+void function ServerCallback_BoostStoreTitanHint_Internal( vector org )
+{
+	entity player = GetLocalViewPlayer()
+
+	player.EndSignal( "OnDeath" )
+
+	float titanHullCompensate = 75.0
+	float maxDist = ((BOOST_STORE_TRIGGER_RADIUS+titanHullCompensate) * (BOOST_STORE_TRIGGER_RADIUS+titanHullCompensate))
+	float minDot = 0.8
+	float fadeTime = 0.25
+	float hintTime = 3.5
+	float showHintTime = -999.0
+	bool hintShowing = false
+
+	OnThreadEnd(
+	function() : (  )
+		{
+			HidePlayerHint( "#BOOST_STORE_NEED_PILOT_HINT" )
+		}
+	)
+
+	while ( player.IsTitan() )
+	{
+		float dist = DistanceSqr( org, player.GetOrigin() )
+
+		bool showHint = false
+
+		if ( dist <= maxDist )
+		{
+			if ( PlayerCanSeePos( player, org, false, 35.0 ) )
+			{
+				if ( Time() - showHintTime + fadeTime >= hintTime )
+				{
+					AddPlayerHint( hintTime, fadeTime, $"", "#BOOST_STORE_NEED_PILOT_HINT" )
+					showHintTime = Time()
+				}
+				showHint = true
+			}
+		}
+		else
+		{
+			return
+		}
+
+		if ( !showHint && Time() - showHintTime + fadeTime < hintTime )
+		{
+			showHintTime = -999.0
+			HidePlayerHint( "#BOOST_STORE_NEED_PILOT_HINT" )
+		}
+
+		WaitFrame()
+	}
+}
+
+
+void function OpenBoostStoreMenu( entity player )
+{
+	if ( !BoostStoreEnabled() )
+		return
+
+	RunUIScript( "OpenBoostStore" )
+}
+
+void function ServerCallback_EnableDropshipBoostStore()
+{
+	if ( !BoostStoreEnabled() )
+		return
+
+	RegisterButtonPressedCallback( BUTTON_A, OpenBoostStoreMenu )
+	RegisterButtonPressedCallback( KEY_SPACE, OpenBoostStoreMenu )
+	if ( file.boostStoreHintRui != null )
+		RuiDestroyIfAlive( file.boostStoreHintRui )
+	file.boostStoreHintRui = CreatePermanentCockpitRui( $"ui/hint_display.rpak" )
+	RuiSetString( file.boostStoreHintRui, "hintText", Localize( "#BOOST_STORE_DROPSHIP_PRESS_USE" ) )
+}
+
+void function ServerCallback_DisableDropshipBoostStore()
+{
+	if ( !BoostStoreEnabled() )
+		return
+
+	if ( file.boostStoreHintRui != null )
+	{
+		RuiDestroyIfAlive( file.boostStoreHintRui )
+		DeregisterButtonPressedCallback( BUTTON_A, OpenBoostStoreMenu )
+		DeregisterButtonPressedCallback( KEY_SPACE, OpenBoostStoreMenu )
+		file.boostStoreHintRui = null
+	}
+}
+#endif
+
+bool function BoostStoreEnabled()
+{
+	return ( GetCurrentPlaylistVarString( "boost_store_mode", "off" ) != "off" )
+}
+
+#if CLIENT || SERVER
+bool function BoostStoreOpen()
+{
+	return GetGlobalNetBool("boostStoreOpen" )
+}
+#endif
+
+int function GetTeamReserve()
+{
+	return file.teamReserveAmount
+}
+
+void function UpdateTeamReserve( int reserveMoney )
+{
+	file.teamReserveAmount = reserveMoney
+}
+
+
+int function GetPlayerMoney( entity player )
+{
+	#if SERVER
+	return file.playerBonusData[ player ]
+	#endif
+
+	#if CLIENT
+	int money = player.GetPlayerNetInt( "FD_money" )
+	int money256 = player.GetPlayerNetInt( "FD_money256" )
+	return ( money256 * 256 ) + money
+	#endif
+
+	#if UI
+	return file.playerMoney
+	#endif
+}
+
+bool function CheckTooManyTurrets( entity player )
+{
+	#if SERVER || CLIENT
+	return player.GetPlayerNetInt( "burn_numTurrets" ) < GetGlobalNetInt( "burn_turretLimit" )
+	#elseif UI
+	return file.turretCount < file.maxTurretCount
+	#endif
+}
+
+bool function CheckHasNoBattery( entity player )
+{
+	#if SERVER || CLIENT
+	return !PlayerHasBattery( player )
+	#elseif UI
+	return !file.playerHasBattery
+	#endif
+}
+
+bool function CheckHasNoAmpedWeapons( entity player )
+{
+	#if SERVER || CLIENT
+		return !PlayerHasAmpedWeapons( player )
+	#elseif UI
+		return !file.playerHasAmpedWeapons
+	#endif
+}
+
+#if UI
+void function ServerCallback_UpdatePlayerHasBattery( bool hasBattery )
+{
+	file.playerHasBattery = hasBattery
+}
+
+void function ServerCallback_UpdateAmpedWeaponState( bool hasAmpedWeapons )
+{
+	file.playerHasAmpedWeapons = hasAmpedWeapons
+}
+
+void function ServerCallback_UpdateTurretCount( int count, int max )
+{
+	file.turretCount = count
+	file.maxTurretCount = max
+}
+
+void function UpdatePlayerMoney( int money )
+{
+	file.playerMoney = money
+}
+#endif
+
+int function GetPlaylistBoostCost( string ref, int originalCost )
+{
+	int cost = GetCurrentPlaylistVarInt( "override_boost_cost_" + ref, -1 )
+
+	if ( cost > 0 )
+		return cost
+
+	return originalCost
+}

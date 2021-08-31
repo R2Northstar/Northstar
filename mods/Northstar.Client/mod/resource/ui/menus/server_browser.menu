@@ -1,0 +1,338 @@
+resource/ui/menus/mods_browse.menu
+{
+	menu
+	{
+		ControlName				Frame
+		xpos					0
+		ypos					0
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		visible					1
+		enabled					1
+		pinCorner				0
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+
+        Vignette
+        {
+            ControlName             ImagePanel
+            InheritProperties       MenuVignette
+        }
+
+		Title
+		{
+			ControlName				Label
+			InheritProperties		MenuTitle
+			labelText				"#MENU_TITLE_SERVER_BROWSER"
+		}
+
+		ImgTopBar
+		{
+			ControlName				ImagePanel
+			InheritProperties		MenuTopBar
+		}
+		
+		ButtonRowAnchor
+		{
+			ControlName				Label
+			labelText				""
+
+			xpos                    120
+            ypos                    160
+		}
+		
+		//test
+		//{
+		//	ControlName ListPanel
+		//	xpos		"200"
+		//	ypos		"200"
+		//	zpos 999
+		//	wide		"312"
+		//	tall		"340"
+		//	autoResize		"0"
+		//	pinCorner		"0"
+		//	visible		"1"
+		//	enabled		"1"
+		//	tabPosition		"0"
+		//}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		BtnServer1
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ServerButton
+			scriptID				0
+			navUp					BtnServer15
+			navDown					BtnServer2
+
+			pin_to_sibling				ButtonRowAnchor
+			pin_corner_to_sibling		TOP_LEFT
+			pin_to_sibling_corner		TOP_LEFT
+		}
+		BtnServer2
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ServerButton
+			scriptID				1
+			pin_to_sibling			BtnServer1
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnServer1
+			navDown					BtnServer3
+		}
+		BtnServer3
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ServerButton
+			scriptID				2
+			pin_to_sibling			BtnServer2
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnServer2
+			navDown					BtnServer4
+		}
+		BtnServer4
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ServerButton
+			scriptID				3
+			pin_to_sibling			BtnServer3
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			//ypos					11
+			navUp					BtnServer3
+			navDown					BtnServer5
+		}
+		BtnServer5
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ServerButton
+			scriptID				4
+			pin_to_sibling			BtnServer4
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnServer4
+			navDown					BtnServer6
+		}
+		BtnServer6
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ServerButton
+			scriptID				5
+			pin_to_sibling			BtnServer5
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnServer5
+			navDown					BtnServer7
+		}
+		BtnServer7
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ServerButton
+			scriptID				6
+			pin_to_sibling			BtnServer6
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnServer6
+			navDown					BtnServer8
+		}
+		BtnServer8
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ServerButton
+			scriptID				7
+			pin_to_sibling			BtnServer7
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnServer7
+			navDown					BtnServer9
+		}
+		BtnServer9
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ServerButton
+			scriptID				8
+			pin_to_sibling			BtnServer8
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnServer8
+			navDown					BtnServer10
+		}
+		BtnServer10
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ServerButton
+			scriptID				9
+			pin_to_sibling			BtnServer9
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnServer9
+			navDown					BtnServer11
+		}
+		BtnServer11
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ServerButton
+			scriptID				10
+			pin_to_sibling			BtnServer10
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnServer10
+			navDown					BtnServer12
+		}
+		BtnServer12
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ServerButton
+			scriptID				11
+			pin_to_sibling			BtnServer11
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnServer11
+			navDown					BtnServer13
+		}
+		BtnServer13
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ServerButton
+			scriptID				12
+			pin_to_sibling			BtnServer12
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnServer12
+			navDown					BtnServer14
+		}
+		BtnServer14
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ServerButton
+			scriptID				13
+			pin_to_sibling			BtnServer13
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnServer13
+			navDown					BtnServer15
+		}
+		BtnServer15
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ServerButton
+			scriptID				14
+			pin_to_sibling			BtnServer14
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnServer14
+			navDown					BtnServer1
+		}
+		
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		LabelDetails
+		{
+			ControlName				RuiPanel
+			xpos					900
+			ypos					160
+			tall					800
+			wide 					950
+			rui 					"ui/knowledgebase_panel.rpak"
+			wrap					1
+			visible					1
+			zpos					-1
+		}
+
+		NextMapImage
+		{
+			ControlName				RuiPanel
+			wide					500
+			tall					288
+			visible					0
+			scaleImage				1
+
+			rui                     "ui/basic_menu_image.rpak"
+
+			pin_to_sibling			LabelDetails
+			pin_corner_to_sibling	TOP_RIGHT
+			pin_to_sibling_corner	TOP_RIGHT
+		}
+		NextMapName
+		{
+			ControlName				Label
+			pin_to_sibling			NextMapImage
+			pin_corner_to_sibling	BOTTOM_RIGHT
+			pin_to_sibling_corner	BOTTOM_RIGHT
+		
+			xpos                    -12
+			ypos                    0
+			zpos 1
+
+			auto_wide_tocontents 	1
+			auto_tall_tocontents	1
+			labelText				""
+			font					Default_43_DropShadow
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+		}
+		NextGameModeName
+		{
+			ControlName				Label
+			pin_to_sibling			NextMapName
+			pin_corner_to_sibling	BOTTOM_RIGHT
+			pin_to_sibling_corner	TOP_RIGHT
+
+			ypos					-8
+			zpos 1
+
+			auto_wide_tocontents 	1
+			auto_tall_tocontents	1
+			labelText				""
+			use_proportional_insets	1
+			textinsetx 				2
+			font					Default_28_DropShadow
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+		}
+		NextModeIcon
+		{
+			ControlName				RuiPanel
+			wide					72
+			tall					72
+			visible					0
+			scaleImage				1
+			image					""
+			zpos 1
+
+			rui                     "ui/basic_image_add.rpak"
+
+			pin_to_sibling			NextGameModeName
+			pin_corner_to_sibling	BOTTOM_RIGHT
+			pin_to_sibling_corner	TOP_RIGHT
+		}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		FooterButtons
+		{
+			ControlName				CNestedPanel
+			InheritProperties       FooterButtons
+		}
+	}
+}
