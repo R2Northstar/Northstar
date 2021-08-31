@@ -1,0 +1,25 @@
+untyped
+global function Promode_Init
+global function PromodeEnabled
+
+void function Promode_Init()
+{
+	AddPrivateMatchModeSettingEnum( "Promode", "promode_enable", [ "Disabled", "Enabled" ], "0" )
+	
+	#if SERVER
+		AddCallback_OnPlayerRespawned( GivePromodeWeaponMod )
+	#endif
+}
+
+bool function PromodeEnabled()
+{
+	return GetCurrentPlaylistVarInt( "promode_enable", 0 ) == 1
+}
+
+#if SERVER
+void function GivePromodeWeaponMod( entity player )
+{
+	if ( PromodeEnabled() )
+		player.GiveExtraWeaponMod( "promode" )
+}
+#endif

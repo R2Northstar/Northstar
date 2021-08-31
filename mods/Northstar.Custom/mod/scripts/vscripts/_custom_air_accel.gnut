@@ -1,0 +1,23 @@
+global function CustomAirAccelVars_Init
+
+void function CustomAirAccelVars_Init()
+{
+	AddPrivateMatchModeSettingArbitrary( "Pilot", "custom_air_accel_pilot", "500" ) // 500 is the default airaccel
+	
+	#if SERVER
+		AddCallback_OnPlayerRespawned( ApplyCustomPlayerAirAccel )
+		AddCallback_OnPilotBecomesTitan( ApplyCustomPlayerAirAccelFromTitan ) // not sure if necessary but assuming it is
+	#endif
+}
+
+#if SERVER
+void function ApplyCustomPlayerAirAccel( entity player )
+{
+	player.kv.airAcceleration = GetCurrentPlaylistVarInt( "custom_air_accel_pilot", int( player.GetPlayerSettingsField( "airAcceleration" ) ) )
+}
+
+void function ApplyCustomPlayerAirAccelFromTitan( entity player, entity titan )
+{
+	player.kv.airAcceleration = GetCurrentPlaylistVarInt( "custom_air_accel_pilot", int( player.GetPlayerSettingsField( "airAcceleration" ) ) )
+}
+#endif

@@ -1,25 +1,25 @@
 {
-	"ApiId" : "Northstar.Custom",
 	"Name" : "Northstar.Custom",
-	"Description" : "Additional content for coop and custom multiplayer servers",
-	"Authors" : [
-		"BobTheBob"
-	],
-	"Contacts" : [
-		"BobTheBob#1150"
-	],
-	"Version" : "0.1",
-	"CustomScripts": [
+	"LoadPriority": 1,
+
+	"Scripts": [
 		{
 			"Path": "northstar_custom_autoprecache.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
-			"ClientCallback": "NorthstarCustomAutoprecache",
-			"ServerCallback": "NorthstarCustomAutoprecache",
+			"ClientCallback": {
+				"After": "NorthstarCustomAutoprecache"
+			},
+			
+			"ServerCallback": {
+				"After": "NorthstarCustomAutoprecache"
+			}
 		},
 		{
 			"Path": "_northstar_devcommands.gnut",
 			"RunOn": "SERVER && MP",
-			"ServerCallback": "NorthstarDevCommands_Init"
+			"ServerCallback": {
+				"After": "NorthstarDevCommands_Init"
+			}
 		},
 		
 		{
@@ -30,8 +30,13 @@
 		{
 			"Path": "gamemodes/sh_gamemode_sbox.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
-			"ClientPreCallback": "Sh_GamemodeSbox_Init",
-			"ServerPreCallback": "Sh_GamemodeSbox_Init"
+			"ClientPreCallback": {
+				"Before": "Sh_GamemodeSbox_Init"
+			},
+			
+			"ServerPreCallback": {
+				"Before": "Sh_GamemodeSbox_Init"
+			}
 		},
 		{
 			"Path": "gamemodes/_gamemode_sbox.gnut",
@@ -50,28 +55,58 @@
 		{
 			"Path": "weapons/toolgun/sh_toolgun_tool_throw.nut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
-			"ClientCallback": "ToolgunToolThrowEntity_Init",
-			"ServerCallback": "ToolgunToolThrowEntity_Init"
+			"ClientCallback": {
+				"After": "ToolgunToolThrowEntity_Init"
+			},
+			
+			"ServerCallback": {
+				"After": "ToolgunToolThrowEntity_Init"
+			}
 		},
 		{
 			"Path": "weapons/toolgun/sh_toolgun_tool_explode.nut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
-			"ClientCallback": "ToolgunToolCreateExplosion_Init",
-			"ServerCallback": "ToolgunToolCreateExplosion_Init"
+			"ClientCallback": {
+				"After": "ToolgunToolCreateExplosion_Init"
+			},
+			
+			"ServerCallback": {
+				"After": "ToolgunToolCreateExplosion_Init"
+			}
 		},
 		
+		// fortwar
 		{
 			"Path": "gamemodes/sh_gamemode_fw_custom.nut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
-			"ClientPreCallback": "SHCreateGamemodeFW_Init",
-			"ServerPreCallback": "SHCreateGamemodeFW_Init"
+			"ClientCallback": {
+				"Before": "SHCreateGamemodeFW_Init"
+			},
+			
+			"ServerCallback": {
+				"Before": "SHCreateGamemodeFW_Init"
+			}
+		},
+		{
+			"Path": "gamemodes/sh_gamemode_fw.nut",
+			"RunOn": "( CLIENT || SERVER ) && MP"
+		},
+		{
+			"Path": "gamemodes/cl_gamemode_fw.nut",
+			"RunOn": "CLIENT && MP"
 		},
 		
+		// gungame
 		{
 			"Path": "gamemodes/sh_gamemode_gg.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
-			"ClientPreCallback": "Sh_GamemodeGG_Init",
-			"ServerPreCallback": "Sh_GamemodeGG_Init"
+			"ClientCallback": {
+				"Before": "Sh_GamemodeGG_Init"
+			},
+			
+			"ServerCallback": {
+				"Before": "Sh_GamemodeGG_Init"
+			}
 		},
 		{
 			"Path": "gamemodes/_gamemode_gg.gnut",
@@ -82,11 +117,17 @@
 			"RunOn": "CLIENT && MP"
 		},
 		
+		// titan tag
 		{
 			"Path": "gamemodes/sh_gamemode_tt.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
-			"ClientPreCallback": "Sh_GamemodeTT_Init",
-			"ServerPreCallback": "Sh_GamemodeTT_Init"
+			"ClientCallback": {
+				"Before": "Sh_GamemodeTT_Init"
+			},	
+			
+			"ServerCallback": {
+				"Before": "Sh_GamemodeTT_Init"
+			}
 		},
 		{
 			"Path": "gamemodes/_gamemode_tt.gnut",
@@ -97,11 +138,17 @@
 			"RunOn": "CLIENT && MP"
 		},
 		
+		// infection
 		{
 			"Path": "gamemodes/sh_gamemode_inf.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
-			"ClientPreCallback": "Sh_GamemodeInfection_Init",
-			"ServerPreCallback": "Sh_GamemodeInfection_Init"
+			"ClientCallback": {
+				"Before": "Sh_GamemodeInfection_Init",
+			},
+			
+			"ServerCallback": {
+				"Before": "Sh_GamemodeInfection_Init"
+			}
 		},
 		{
 			"Path": "gamemodes/_gamemode_inf.gnut",
@@ -112,11 +159,40 @@
 			"RunOn": "CLIENT && MP"
 		},
 		
+		// arena
+		{
+			"Path": "_droppod_spawn.gnut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+				"After": "DropPodSpawn_Init"
+			}
+		},
 		{
 			"Path": "gamemodes/sh_gamemode_arena.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
-			"ClientPreCallback": "Sh_GamemodeArena_Init",
-			"ServerPreCallback": "Sh_GamemodeArena_Init"
+			"ClientCallback": {
+				"Before": "Sh_GamemodeArena_Init"
+			},
+			
+			"ServerCallback": {
+				"Before": "Sh_GamemodeArena_Init"
+			}
+		},
+		{
+			"Path": "gamemodes/sh_arena_loadouts.gnut",
+			"RunOn": "UI || MP",
+			
+			"ClientCallback": {
+				"After": "InitialiseArenaLoadouts"
+			},
+			
+			"ServerCallback": {
+				"After": "InitialiseArenaLoadouts"
+			},
+			
+			"UICallback": {
+				"After": "InitialiseArenaLoadouts"
+			}
 		},
 		{
 			"Path": "gamemodes/_gamemode_arena.gnut",
@@ -127,11 +203,17 @@
 			"RunOn": "CLIENT && MP"
 		},
 		
+		// amped killrace
 		{
 			"Path": "gamemodes/sh_gamemode_kr.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
-			"ClientPreCallback": "Sh_GamemodeKR_Init",
-			"ServerPreCallback": "Sh_GamemodeKR_Init"
+			"ClientCallback": {
+				"Before": "Sh_GamemodeKR_Init"
+			},
+			
+			"ServerCallback": {
+				"Before": "Sh_GamemodeKR_Init"
+			}
 		},
 		{
 			"Path": "gamemodes/_gamemode_kr.gnut",
@@ -142,11 +224,17 @@
 			"RunOn": "CLIENT && MP"
 		},
 		
+		// fastball
 		{
 			"Path": "gamemodes/sh_gamemode_fastball.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
-			"ClientPreCallback": "Sh_GamemodeFastball_Init",
-			"ServerPreCallback": "Sh_GamemodeFastball_Init"
+			"ClientCallback": {
+				"Before": "Sh_GamemodeFastball_Init"
+			},
+			
+			"ServerCallback": {
+				"Before": "Sh_GamemodeFastball_Init"
+			}
 		},
 		{
 			"Path": "gamemodes/_gamemode_fastball.gnut",
@@ -161,33 +249,66 @@
 			"RunOn": "CLIENT && MP"
 		},
 		
+		// ctf comp
 		{
 			"Path": "gamemodes/sh_gamemode_ctf_comp.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
-			"ClientPreCallback": "ShGamemodeCTFComp_Init",
-			"ServerPreCallback": "ShGamemodeCTFComp_Init"
+			"ClientCallback": {
+				"Before": "ShGamemodeCTFComp_Init"
+			},
+			
+			"ServerCallback": {
+				"Before": "ShGamemodeCTFComp_Init"
+			}
 		},
 		
 		{
 			"Path": "titan/sh_first_person_embark.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
-			"ClientPreCallback": "FirstPersonEmbark_Init",
-			"ServerPreCallback": "FirstPersonEmbark_Init"
+			"ClientCallback": {
+				"Before": "FirstPersonEmbark_Init",
+			},
+			
+			"ServerCallback": {
+				"Before": "FirstPersonEmbark_Init"
+			}
 		},
+		
+		// riffs, playlist vars etc
 		{
 			"Path": "gamemodes/_riff_instagib.gnut",
 			"RunOn": "SERVER && MP",
-			"ServerCallback": "RiffInstagib_Init"
+			"ServerCallback": {
+				"After": "RiffInstagib_Init"
+			}
+		},
+		
+		{
+			"Path": "_custom_air_accel.gnut",
+			"RunOn": "MP",
+			"ClientCallback": {
+				"After": "CustomAirAccelVars_Init"
+			},
+			
+			"ServerCallback": {
+				"After": "CustomAirAccelVars_Init"
+			}
+		},
+		
+		{
+			"Path": "_promode.gnut",
+			"RunOn": "MP",
+			"ClientCallback": {
+				"After": "Promode_Init"
+			},
+			
+			"ServerCallback": {
+				"After": "Promode_Init"
+			}
 		},
 	],
-	"IncludeAdditionalPreexistingScripts": [
-		{
-			"Path": "gamemodes/sh_gamemode_fw.nut",
-			"RunOn": "( CLIENT || SERVER ) && MP"
-		},
-		{
-			"Path": "gamemodes/cl_gamemode_fw.nut",
-			"RunOn": "CLIENT && MP"
-		}
+	
+	"Localisation": [
+		"resource/northstar_custom_%language%.txt"
 	]
 }

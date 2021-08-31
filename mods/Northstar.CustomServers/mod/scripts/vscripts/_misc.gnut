@@ -1,0 +1,40 @@
+//todo figure out where these stub functions should be and move them to those places
+global function Spotting_Init
+global function FW_Border_GlobalInit
+global function IsVDUTitan
+global function PIN_PlayerRodeoedEnemyTitanToCompletion
+global function PlayerProgressionAllowed
+
+void function Spotting_Init()
+{
+
+}
+
+void function FW_Border_GlobalInit()
+{
+	AddSpawnCallbackEditorClass( "func_brush", "func_brush_fw_territory_border", RemoveFWBorder )
+}
+
+void function RemoveFWBorder( entity border )
+{
+	if ( GameModeRemove( border ) )
+		return
+
+	if ( !border.HasKey( "gamemode_" + GAMETYPE ) )
+		border.Destroy()
+}
+
+bool function IsVDUTitan(entity titan)
+{
+	return false
+}
+
+void function PIN_PlayerRodeoedEnemyTitanToCompletion( entity player, entity titan, bool playerHadBattery )
+{
+
+}
+
+bool function PlayerProgressionAllowed( entity player )
+{
+	return true
+}

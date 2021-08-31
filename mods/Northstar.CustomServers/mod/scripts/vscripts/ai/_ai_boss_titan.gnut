@@ -1,0 +1,794 @@
+global function PlayerParentTest
+
+global function AIBossTitan_Init
+global function OnBossTitanPrimaryFire
+global function IsVDUTitan
+global function IsBossTitan
+global function GetBossTitanCharacterModel
+
+global function BossTitanRetreat
+global function BossTitanAdvance
+global function IsMercTitan
+global function GetMercCharacterID
+global function BossTitanIntro
+global function BossTitanVDUEnabled
+global function BossTitanPlayerView
+
+global function MakeMidHealthTitan
+
+global const float SLAMZOOM_TIME = 1.0
+global const float BOSS_TITAN_CORE_DAMAGE_SCALER_LOW = 0.6
+global const float BOSS_TITAN_CORE_DAMAGE_SCALER = 0.5
+
+void function AIBossTitan_Init()
+{
+	if ( IsMultiplayer() )
+		return
+
+	FlagInit( "BossTitanViewFollow" )
+
+	AddSpawnCallback( "npc_titan", NPCTitanSpawned )
+	AddDeathCallback( "npc_titan", OnBossTitanDeath )
+	AddCallback_OnTitanDoomed( OnBossTitanDoomed )
+	AddCallback_OnTitanHealthSegmentLost( OnTitanLostSegment )
+
+	AddSyncedMeleeServerCallback( GetSyncedMeleeChooser( "titan", "titan" ), OnBossTitanExecuted )
+
+	PrecacheParticleSystem( $"P_VDU_mflash" )
+
+	RegisterSignal( "BossTitanStartAnim" )
+	RegisterSignal( "BossTitanIntroEnded" )
+}
+
+void function OnBossTitanExecuted( SyncedMeleeChooser actions, SyncedMelee action, entity attacker, entity victim )
+{
+	if ( victim.IsNPC() && IsVDUTitan( victim ) && BossTitanVDUEnabled( victim ) )
+	{
+		string name = victim.ai.bossCharacterName == "" ? "Generic1" : victim.ai.bossCharacterName
+		int bossID = GetBossTitanID( name )
+		foreach ( player in GetPlayerArray() )
+		{
+			if ( player == attacker || IsMercTitan( victim ) )
+			{
+				Remote_CallFunction_NonReplay( player, "ServerCallback_BossTitanDeath", victim.GetEncodedEHandle(), bossID )
+			}
+		}
+	}
+}
+
+void function OnBossTitanDeath( entity titan, var damageInfo )
+{
+	int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	if ( damageSourceId == eDamageSourceId.titan_execution )
+		return
+
+	entity soul = titan.GetTitanSoul()
+	if ( soul.IsEjecting() )
+		return
+
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+
+	if ( IsVDUTitan( titan ) && BossTitanVDUEnabled( titan ) )
+	{
+		foreach ( player in GetPlayerArray() )
+		{
+			if ( player == attacker || IsMercTitan( titan ) )
+			{
+				string name = titan.ai.bossCharacterName == "" ? "Generic1" : titan.ai.bossCharacterName
+				Remote_CallFunction_NonReplay( player, "ServerCallback_BossTitanDeath", titan.GetEncodedEHandle(), GetBossTitanID( name ) )
+			}
+		}
+	}
+}
+
+void function OnBossTitanDoomed( entity titan, var damageInfo )
+{
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+
+	if ( IsVDUTitan( titan ) && BossTitanVDUEnabled( titan ) )
+	{
+		foreach ( player in GetPlayerArray() )
+		{
+			if ( player == attacker || IsMercTitan( titan ) )
+				Remote_CallFunction_NonReplay( player, "ServerCallback_BossTitanDoomed", titan.GetEncodedEHandle() )
+		}
+	}
+}
+
+void function OnBossTitanCoreMitigation( entity titan, var damageInfo )
+{
+	int damageSourceID = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	switch ( damageSourceID )
+	{
+		case eDamageSourceId.mp_titancore_salvo_core:
+			DamageInfo_ScaleDamage( damageInfo, BOSS_TITAN_CORE_DAMAGE_SCALER_LOW )
+			return
+
+		// case eDamageSourceId.mp_titancore_laser_cannon: laser core handles this in mp_titanweapon_lasercannon.nut
+		case eDamageSourceId.mp_titancore_flame_wave:
+		case eDamageSourceId.mp_titancore_flame_wave_secondary:
+		case eDamageSourceId.mp_titancore_shift_core:
+		case eDamageSourceId.mp_titanweapon_flightcore_rockets:
+		case eDamageSourceId.mp_titancore_amp_core:
+		case damagedef_nuclear_core:
+			DamageInfo_ScaleDamage( damageInfo, BOSS_TITAN_CORE_DAMAGE_SCALER )
+			return
+	}
+
+	// SMART CORE
+	array<string> weaponMods = GetWeaponModsFromDamageInfo( damageInfo )
+	if ( weaponMods.contains( "Smart_Core" ) )
+	{
+		DamageInfo_ScaleDamage( damageInfo, BOSS_TITAN_CORE_DAMAGE_SCALER )
+		// DamageInfo_ScaleDamage( damageInfo, BOSS_TITAN_CORE_DAMAGE_SCALER_LOW )
+		return
+	}
+}
+
+void function NPCTitanSpawned( entity titan )
+{
+	Assert( !IsMultiplayer() )
+
+	if ( titan.GetTeam() == TEAM_IMC )
+	{
+		switch ( titan.ai.bossTitanType )
+		{
+			case TITAN_WEAK:
+			case TITAN_HENCH:
+				MakeMidHealthTitan( titan )
+
+			case TITAN_BOSS:
+				RegisterBossTitan( titan )
+				ApplyTitanDamageState( titan )
+
+				if ( titan.ai.bossTitanType == TITAN_BOSS )
+					AddEntityCallback_OnDamaged( titan, OnBossTitanCoreMitigation )
+
+				if ( titan.HasKey( "skip_boss_intro" ) && titan.GetValueForKey( "skip_boss_intro" ) == "1" )
+					return
+				thread BossTitanNoIntro( titan )
+				break;
+
+
+			case TITAN_MERC:
+				// TODO: This SetSkin() call should move to RegisterBossTitan() when the above TITAN_BOSS stuff is cleaned up/removed.
+				titan.SetSkin( 1 ) // all titan models have a boss titan version of the skin at index 1
+				RegisterBossTitan( titan )
+				ApplyTitanDamageState( titan )
+
+				AddEntityCallback_OnDamaged( titan, OnBossTitanCoreMitigation )
+
+				if ( titan.HasKey( "skip_boss_intro" ) && titan.GetValueForKey( "skip_boss_intro" ) == "1" )
+					return
+
+				if ( !titan.ai.bossTitanPlayIntro )
+					return
+
+				foreach ( player in GetPlayerArray() )
+				{
+					thread BossTitanIntro( player, titan )
+				}
+				break
+
+			// case TITAN_WEAK:
+				// MakeLowHealthTitan( titan )
+				// break
+
+			case TITAN_AUTO:
+				if ( !IsMultiplayer() && GetMapName() == "sp_hub_timeshift" || GetMapName() == "sp_timeshift_spoke02" )
+					MakeLowHealthTitan( titan )
+				break
+			default:
+				return
+		}
+	}
+}
+
+void function BossTitanNoIntro( entity titan )
+{
+	FlagWait( "PlayerDidSpawn" )
+
+	entity player = GetPlayerArray()[0]
+
+	player.EndSignal( "OnDeath" )
+	titan.EndSignal( "OnDeath" )
+
+	// Wait until player sees the boss titan
+	waitthread WaitForHotdropToEnd( titan )
+
+	while ( 1 )
+	{
+		waitthread WaitTillLookingAt( player, titan, true, 60, 5100 )
+		if ( titan.GetEnemy() == null )
+			titan.WaitSignal( "OnSeeEnemy" )
+		else
+			break
+	}
+
+ 	if ( BossTitanVDUEnabled( titan ) )
+		Remote_CallFunction_NonReplay( player, "ServerCallback_BossTitanNoIntro", titan.GetEncodedEHandle() )
+	AddEntityCallback_OnDamaged( titan, OnBossTitanDamaged )
+	AddTitanCallback_OnHealthSegmentLost( titan, OnBossTitanLostSegment )
+}
+
+void function BossTitanIntro( entity player, entity titan, BossTitanIntroData ornull introdata = null )
+{
+	Assert( titan.IsNPC() )
+	Assert( titan.ai.bossCharacterName != "" )
+
+	if ( introdata == null )
+	{
+		BossTitanIntroData defaultData = GetBossTitanIntroData( titan.ai.bossCharacterName )
+		introdata = defaultData
+	}
+
+	expect BossTitanIntroData( introdata )
+
+	player.EndSignal( "OnDeath" )
+	titan.EndSignal( "OnDeath" )
+
+	HideCrit( titan )
+	titan.SetValidHealthBarTarget( false )
+	titan.SetInvulnerable()
+
+	// Wait until player sees the boss titan
+
+	while ( titan.e.isHotDropping )
+	{
+		WaitFrame()
+	}
+
+	HideName( titan )
+	titan.kv.allowshoot = 0
+
+	if ( introdata.waitToStartFlag != "" )
+		FlagWait( introdata.waitToStartFlag )
+
+	if ( introdata.waitForLookat )
+		waitthread WaitTillLookingAt( player, titan, introdata.lookatDoTrace, introdata.lookatDegrees, introdata.lookatMinDist )
+
+	while ( IsPlayerDisembarking( player ) || IsPlayerEmbarking( player ) )
+	{
+		WaitFrame()
+	}
+
+	BossTitanData bossTitanData = GetBossTitanData( titan.ai.bossCharacterName )
+
+	// Create a ref node to animate on
+	vector refPos
+	vector refAngles
+
+	if ( bossTitanData.introAnimTitanRef != "" )
+	{
+		entity titanAnimRef = GetEntByScriptName( bossTitanData.introAnimTitanRef )
+		refPos = titanAnimRef.GetOrigin()
+		refAngles = titanAnimRef.GetAngles()
+	}
+	else
+	{
+		refPos = titan.GetOrigin()
+
+		vector vecToPlayer = Normalize( player.GetOrigin() - titan.GetOrigin() )
+		refAngles = VectorToAngles( vecToPlayer )
+		refAngles = FlattenAngles( refAngles )
+	}
+
+	entity ref
+	if ( introdata.parentRef != null )
+	{
+		ref = introdata.parentRef
+	}
+	else
+		ref = CreateScriptRef( refPos, refAngles )
+
+	entity soul = titan.GetTitanSoul()
+	if ( IsValid( soul.soul.bubbleShield ) )
+	{
+		soul.soul.bubbleShield.Destroy()
+	}
+
+	// Freeze player and clear up the screen
+	StartBossIntro( player, titan, introdata )
+	player.Hide()
+	player.SetVelocity( <0,0,0> )
+	player.FreezeControlsOnServer()
+	player.SetNoTarget( true )
+	player.SetInvulnerable()
+
+	// Do special player view movement
+	FlagSet( "BossTitanViewFollow" )
+
+	// Animate the boss titan
+	entity pilot = CreatePropDynamic( GetBossTitanCharacterModel( titan ) )
+	if ( introdata.parentRef != null )
+	{
+		if ( introdata.parentAttach != "" )
+		{
+			pilot.SetParent( introdata.parentRef, introdata.parentAttach )
+		}
+		else
+		{
+			pilot.SetParent( introdata.parentRef )
+		}
+	}
+	SetTeam( pilot, TEAM_IMC )
+
+	string pilotAnimName = bossTitanData.introAnimPilot
+	string titanAnimName = bossTitanData.introAnimTitan
+
+	float introDuration = 6.0
+
+	Assert( titan.Anim_HasSequence( titanAnimName ), "Your boss titan does not have an intro animation set, or it is missing." )
+
+	introDuration = titan.GetSequenceDuration( titanAnimName )
+
+	svGlobal.levelEnt.Signal( "BossTitanStartAnim" )
+
+	if ( introdata.parentAttach != "" )
+	{
+		thread PlayAnim( pilot, pilotAnimName, ref, introdata.parentAttach, 0.0 )
+		thread PlayAnim( titan, titanAnimName, ref, introdata.parentAttach, 0.0 )
+	}
+	else
+	{
+		thread PlayAnim( pilot, pilotAnimName, ref, 0.0 )
+		thread PlayAnim( titan, titanAnimName, ref, 0.0 )
+	}
+
+	Objective_Hide( player )
+
+	thread BossTitanPlayerView( player, titan, ref, bossTitanData.titanCameraAttachment )
+
+	wait introDuration - SLAMZOOM_TIME
+
+	// Player view returns to normal
+	FlagClear( "BossTitanViewFollow" )
+	EndBossIntro( player, titan )
+
+	wait SLAMZOOM_TIME
+
+	// Return the player screen and movement back to normal
+	player.UnfreezeControlsOnServer()
+	player.SetNoTarget( false )
+	player.ClearInvulnerable()
+	player.Show()
+	pilot.Destroy()
+
+	if ( IsValid( titan ) )
+	{
+		titan.ClearInvulnerable()
+		titan.Solid()
+		AddEntityCallback_OnDamaged( titan, OnBossTitanDamaged )
+		AddTitanCallback_OnHealthSegmentLost( titan, OnBossTitanLostSegment )
+		ShowName( titan )
+		titan.SetValidHealthBarTarget( true )
+		ShowCrit( titan )
+		Signal( titan, "BossTitanIntroEnded" )
+	}
+
+	wait 0.5
+
+	if ( Flag( "AutomaticCheckpointsEnabled" ) )
+	{
+		if ( introdata.checkpointOnlyIfPlayerTitan )
+		{
+			if ( player.IsTitan() )
+				CheckPoint_Forced()
+		}
+		else
+			CheckPoint_Forced()
+	}
+
+	wait 1.0
+
+	titan.kv.allowshoot = 1
+	Remote_CallFunction_NonReplay( player, "ServerCallback_BossTitanPostIntro", titan.GetEncodedEHandle(), BossTitanVDUEnabled( titan ) )
+}
+
+void function PlayerParentTest()
+{
+	entity player = GetPlayerArray()[0]
+
+	vector moverStartPos = player.EyePosition()
+	vector moverStartAng = FlattenAngles( player.GetAngles() )
+	entity mover = CreateScriptMover( moverStartPos, moverStartAng )
+
+	player.SnapEyeAngles( moverStartAng )
+	player.SetParent( mover, "", true )
+}
+
+void function BossTitanPlayerView( entity player, entity titan, entity ref, string titanCameraAttachment )
+{
+	bool hasTitanCameraAttachment = titanCameraAttachment != ""
+
+	EndSignal( player, "OnDeath" )
+	EndSignal( titan, "OnDeath" )
+
+	vector moverStartPos = player.CameraPosition()
+
+	vector camFeetDiff = < 0,0,-185 >//player.GetOrigin() - player.CameraPosition()
+
+	vector moverStartAng = player.CameraAngles()
+	entity mover = CreateScriptMover( moverStartPos, moverStartAng )
+
+	// player.SnapEyeAngles( moverStartAng )
+	// player.SetParent( mover, "", true )
+	// ViewConeZero( player )
+
+	entity camera = CreateEntity( "point_viewcontrol" )
+	camera.kv.spawnflags = 56 // infinite hold time, snap to goal angles, make player non-solid
+
+	camera.SetOrigin( player.CameraPosition() )
+	camera.SetAngles( player.CameraAngles() )
+	DispatchSpawn( camera )
+
+	camera.SetParent( mover, "", false )
+
+	OnThreadEnd(
+	function() : ( player, titan, mover, camera )
+		{
+			if ( IsValid( camera ) )
+			{
+				camera.Destroy()
+			}
+
+			mover.Destroy()
+
+			if ( IsValid( player ) )
+			{
+				player.ClearParent()
+				player.ClearViewEntity()
+				RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
+				RemoveCinematicFlag( player, CE_FLAG_TITAN_3P_CAM )
+			}
+
+			if ( IsAlive( titan ) && titan.IsNPC() )
+			{
+				titan.SetNoTarget( false )
+				titan.DisableNPCFlag( NPC_IGNORE_ALL )
+			}
+		}
+	)
+
+	// Slam Zoom In
+	float slamZoomTime = SLAMZOOM_TIME
+	float slamZoomTimeAccel = 0.3
+	float slamZoomTimeDecel = 0.3
+	vector viewOffset = < 200, 100, 160 >
+
+	vector viewPos = ref.GetOrigin() + ( AnglesToForward( ref.GetAngles() ) * viewOffset.x ) + ( AnglesToRight( ref.GetAngles() ) * viewOffset.y ) + ( AnglesToUp( ref.GetAngles() ) * viewOffset.z )
+	vector viewAngles = ref.GetAngles() + <0,180,0>
+	if ( hasTitanCameraAttachment )
+	{
+		WaitFrame()
+		int titanCameraAttachmentID = titan.LookupAttachment( titanCameraAttachment )
+		viewPos = titan.GetAttachmentOrigin( titanCameraAttachmentID )
+		viewAngles = titan.GetAttachmentAngles( titanCameraAttachmentID )
+	}
+
+	float blendTime = 0.5
+	float waittime = 0.3
+	float moveTime = slamZoomTime - blendTime - waittime
+
+	float startTime = Time()
+
+	player.SetVelocity( < 0,0,0 > )
+	player.MakeInvisible()
+	HolsterAndDisableWeapons( player )
+
+	wait waittime // wait for the AI to blend into the anim
+
+	if ( titan.IsNPC() )
+	{
+		titan.SetNoTarget( true )
+		titan.EnableNPCFlag( NPC_IGNORE_ALL )
+	}
+
+	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD  )
+	AddCinematicFlag( player, CE_FLAG_TITAN_3P_CAM )
+
+	mover.SetOrigin( player.CameraPosition() )
+	mover.SetAngles( player.CameraAngles() )
+	player.SetViewEntity( camera, true )
+
+	player.SetPredictionEnabled( false )
+	OnThreadEnd(
+	function() : ( player )
+		{
+			if ( IsValid( player ) )
+				player.SetPredictionEnabled( true )
+		}
+	)
+
+	while ( Time() - startTime < moveTime )
+	{
+		if ( hasTitanCameraAttachment )
+		{
+			int titanCameraAttachmentID = titan.LookupAttachment( titanCameraAttachment )
+			viewPos = titan.GetAttachmentOrigin( titanCameraAttachmentID )
+			viewAngles = titan.GetAttachmentAngles( titanCameraAttachmentID )
+		}
+		mover.NonPhysicsMoveTo( viewPos, moveTime - (Time() - startTime), 0, 0 )
+		mover.NonPhysicsRotateTo( viewAngles, moveTime - (Time() - startTime), 0, 0 )
+		wait 0.1
+	}
+
+	if ( hasTitanCameraAttachment )
+	{
+		mover.SetParent( titan, titanCameraAttachment, false, blendTime )
+	}
+
+	wait 0.5
+
+	int tagID = titan.LookupAttachment( "CHESTFOCUS" )
+	while ( Flag( "BossTitanViewFollow" ) )
+	{
+		vector lookVec = Normalize( titan.GetAttachmentOrigin( tagID ) - mover.GetOrigin() )
+		vector angles = VectorToAngles( lookVec )
+		if ( !hasTitanCameraAttachment )
+			mover.NonPhysicsRotateTo( angles, 0.2, 0.0, 0.0 )
+		WaitFrame()
+	}
+
+	// Slam Zoom Out
+
+	mover.ClearParent()
+
+	startTime = Time()
+	while ( Time() - startTime < slamZoomTime )
+	{
+		moverStartPos = player.GetOrigin() - camFeetDiff
+		moverStartAng = FlattenAngles( player.GetAngles() )
+		mover.NonPhysicsMoveTo( moverStartPos, slamZoomTime - (Time() - startTime), 0, 0 )
+		mover.NonPhysicsRotateTo( moverStartAng, slamZoomTime - (Time() - startTime), 0, 0 )
+		wait 0.1
+	}
+
+	// mover.NonPhysicsMoveTo( moverStartPos, slamZoomTime, slamZoomTimeDecel, slamZoomTimeAccel )
+	// mover.NonPhysicsRotateTo( moverStartAng, slamZoomTime, slamZoomTimeDecel, slamZoomTimeAccel )
+	// wait slamZoomTime
+
+	ClearPlayerAnimViewEntity( player )
+	player.SnapEyeAngles( moverStartAng )
+	DeployAndEnableWeapons( player )
+	player.MakeVisible()
+
+	EmitSoundOnEntity( player, "UI_Lobby_RankChip_Disable" )
+}
+
+void function OnBossTitanDamaged( entity titan, var damageInfo )
+{
+}
+
+void function OnBossTitanLostSegment( entity titan, entity attacker )
+{
+	if ( !titan.IsNPC() || !BossTitanVDUEnabled( titan ) )
+		return
+
+	foreach ( player in GetPlayerArray() )
+	{
+		if ( player == attacker || IsMercTitan( titan ) )
+			Remote_CallFunction_NonReplay( player, "ServerCallback_BossTitanLostSegment", titan.GetEncodedEHandle(), GetTitanCurrentRegenTab( titan ) )
+	}
+}
+
+void function OnBossTitanPrimaryFire( entity titan )
+{
+}
+
+bool function IsVDUTitan( entity titan )
+{
+	Assert( IsSingleplayer() )
+
+	if ( titan.GetTeam() != TEAM_IMC )
+		return false
+
+	switch ( titan.ai.bossTitanType )
+	{
+		case TITAN_AUTO:
+		case TITAN_WEAK:
+			return false
+
+		case TITAN_HENCH:
+		case TITAN_MERC:
+		case TITAN_BOSS:
+			return true
+	}
+
+	Assert( 0, "Unknown boss titan type " + titan.ai.bossTitanType )
+	unreachable
+}
+
+bool function IsBossTitan( entity titan )
+{
+	Assert( IsSingleplayer() )
+
+	if ( titan.GetTeam() != TEAM_IMC )
+		return false
+
+	switch ( titan.ai.bossTitanType )
+	{
+		case TITAN_MERC:
+		case TITAN_BOSS:
+			return true
+	}
+
+	return false
+}
+
+int function GetMercCharacterID( entity titan )
+{
+	return titan.ai.mercCharacterID
+}
+
+asset function GetBossTitanCharacterModel( entity titan )
+{
+	int mercCharacterID = GetMercCharacterID( titan )
+	return GetMercCharacterModel( mercCharacterID )
+}
+
+void function OnTitanLostSegment( entity titan, entity attacker )
+{
+	entity player
+
+	if ( !titan.IsPlayer() )
+		player = titan.GetBossPlayer()
+	else
+		player = titan
+
+	if ( !IsValid( player ) )
+		return
+
+	if ( !IsValid( attacker ) )
+		return
+
+	if ( !attacker.IsNPC() || !IsVDUTitan( attacker ) || !BossTitanVDUEnabled( attacker ) )
+		return
+
+	Remote_CallFunction_NonReplay( player, "BossTitanPlayerLostHealthSegment", GetSegmentHealthForTitan( titan ) )
+}
+
+void function BossTitanRetreat( entity titan )
+{
+	if ( !IsVDUTitan( titan ) || !BossTitanVDUEnabled( titan ) )
+		return
+
+	foreach ( player in GetPlayerArray() )
+	{
+		Remote_CallFunction_NonReplay( player, "ServerCallback_BossTitanRetreat", titan.GetEncodedEHandle() )
+	}
+}
+
+void function BossTitanAdvance( entity titan )
+{
+	if ( !IsVDUTitan( titan ) || !BossTitanVDUEnabled( titan ) )
+		return
+
+	foreach ( player in GetPlayerArray() )
+	{
+		Remote_CallFunction_NonReplay( player, "ServerCallback_BossTitanAdvance", titan.GetEncodedEHandle() )
+	}
+}
+
+/*
+------------------------------------------------------------
+Low Health Titans
+------------------------------------------------------------
+*/
+
+void function MakeLowHealthTitan( entity ent )
+{
+	entity soul = ent.GetTitanSoul()
+	soul.soul.regensHealth = false
+	thread SetHealthValuesForLowHealth( soul )
+	//ent.SetValidHealthBarTarget( false )
+
+	ent.TakeOffhandWeapon( OFFHAND_ORDNANCE )
+	ent.TakeOffhandWeapon( OFFHAND_ANTIRODEO )
+	ent.TakeOffhandWeapon( OFFHAND_EQUIPMENT )
+	ent.TakeOffhandWeapon( OFFHAND_SPECIAL )
+}
+
+void function MakeMidHealthTitan( entity ent )
+{
+	entity soul = ent.GetTitanSoul()
+	soul.soul.regensHealth = false
+	thread SetHealthValuesForMidHealth( soul )
+}
+
+void function SetHealthValuesForMidHealth( entity soul )
+{
+	soul.EndSignal( "OnDestroy" )
+	WaitEndFrame() // wait for a bunch of variables to start up
+	soul.Signal( SIGNAL_TITAN_HEALTH_REGEN )
+	soul.Signal( "StopShieldRegen" )
+	soul.SetShieldHealth( 0 )
+
+	entity titan = soul.GetTitan()
+	int numSegments = ( titan.GetMaxHealth() / GetSegmentHealthForTitan( titan ) ) - 2
+	Assert( numSegments > 0 )
+	SetSoulBatteryCount( soul, numSegments )
+	if ( IsAlive( titan ) )
+	{
+		soul.soul.skipDoomState = true
+		int segmentHealth = GetSegmentHealthForTitan( titan ) * numSegments
+		titan.SetMaxHealth( segmentHealth )
+		titan.SetHealth( segmentHealth )
+		titan.kv.healthEvalMultiplier = 2
+	}
+
+	titan.Signal( "WeakTitanHealthInitialized" )
+
+	ApplyTitanDamageState( titan )
+}
+
+void function SetHealthValuesForLowHealth( entity soul )
+{
+	soul.EndSignal( "OnDestroy" )
+	WaitEndFrame() // wait for a bunch of variables to start up
+	soul.Signal( SIGNAL_TITAN_HEALTH_REGEN )
+	soul.Signal( "StopShieldRegen" )
+	soul.SetShieldHealth( 0 )
+
+	int numSegments = 2
+
+	SetSoulBatteryCount( soul, numSegments )
+	entity titan = soul.GetTitan()
+	if ( IsAlive( titan ) )
+	{
+		soul.soul.skipDoomState = true
+		int segmentHealth = GetSegmentHealthForTitan( titan ) * numSegments
+		titan.SetMaxHealth( segmentHealth )
+		titan.SetHealth( segmentHealth )
+		titan.kv.healthEvalMultiplier = 2
+	}
+
+	titan.Signal( "WeakTitanHealthInitialized" )
+
+	ApplyTitanDamageState( titan )
+}
+
+void function ApplyTitanDamageState( entity titan )
+{
+	array<float> healthScale = [
+	1.0,
+	0.6,
+	0.3,
+	0.1
+	]
+
+	int state = 0
+
+	if ( titan.HasKey( "DamageState" ) )
+	{
+		state = int( titan.GetValueForKey( "DamageState" ) )
+	}
+
+	titan.SetHealth( titan.GetMaxHealth() * healthScale[state] )
+
+	if ( state >= 1 )
+	{
+		string part = [
+			"left_arm",
+			"right_arm"
+		].getrandom()
+		GibBodyPart( titan, part )
+	}
+
+	if ( state >= 2 )
+		GibBodyPart( titan, "torso" )
+}
+
+bool function IsMercTitan( entity titan )
+{
+	if ( IsMultiplayer() )
+		return false
+	if ( titan.GetTeam() != TEAM_IMC )
+		return false
+	return titan.ai.bossTitanType == TITAN_MERC
+}
+
+bool function BossTitanVDUEnabled( entity titan )
+{
+	return titan.ai.bossTitanVDUEnabled
+}

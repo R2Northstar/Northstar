@@ -1,0 +1,98 @@
+// the purpose of this script is basically just to provide methods that are used in modified burnmeter and boost_store scripts to get custom items to work
+
+global function InitialiseArenaLoadouts
+global function PopulateArenaLoadouts
+global function GetArenaLoadoutForRoundCount
+global function GetArenaLoadoutItemAsBurnReward
+global function GetCashBoostForRoundCount
+
+#if SERVER
+	global function GivePlayerArenaLoadoutItem
+#endif
+
+const int ABILITY_ROUND = 2
+const int CRATE_ROUND = 4
+const int TITAN_ROUND = 7
+
+struct {
+	array<BoostStoreData> tier0Weapons
+	array<BoostStoreData> tier1Weapons
+	array<BoostStoreData> antiTitanWeapons
+	
+	BoostStoreData droppodRespawn
+	BoostStoreData titanBattery
+	BoostStoreData titanfall
+} file
+
+void function InitialiseArenaLoadouts()
+{
+	BoostStoreData g2Data = { itemRef="mp_weapon_g2", modesAllowed="arena", cost=75, ... }
+	file.tier0Weapons.append( g2Data )
+	
+	BoostStoreData flatlineData = { itemRef="mp_weapon_vinson", modesAllowed="arena", cost=125, ... }
+	file.tier0Weapons.append( flatlineData )
+	
+	BoostStoreData wingmanData = { itemRef="mp_weapon_wingman", modesAllowed="arena", cost=50, ... }
+	file.tier0Weapons.append( wingmanData )
+	
+	BoostStoreData respawnData = { itemRef="droppodRespawn", modesAllowed="arena", cost=50, ... }
+	file.tier0Weapons.append( respawnData )
+	
+	#if SERVER
+		SetBoostPurchaseCallback( GivePlayerArenaLoadoutItem )
+	#endif
+}
+
+array<BoostStoreData> function PopulateArenaLoadouts()
+{
+	return GetArenaLoadoutForRoundCount( 0 )
+}
+
+array<BoostStoreData> function GetArenaLoadoutForRoundCount( int round )
+{
+	return file.tier0Weapons
+}
+
+BurnReward function GetArenaLoadoutItemAsBurnReward( string itemRef )
+{
+	BurnReward reward
+	reward.ref = itemRef
+	reward.localizedName = itemRef
+	
+	return reward
+}
+
+bool function ArenaLoadoutItemIsWeapon( string item )
+{
+	if ( item.find( "mp_weapon" ) == 0 )
+		return true
+	
+	return false
+}
+
+int function GetCashBoostForRoundCount( int round )
+{
+	if ( round == 0 )
+		return 150
+	
+	if ( round < 4 )
+		return 250
+	
+	return 350
+}
+
+#if SERVER
+	void function GivePlayerArenaLoadoutItem( entity player, BoostStoreData item )
+	{
+		if ( ArenaLoadoutItemIsWeapon( item.itemRef ) )
+		{
+			array<string> mods
+			// apply mods
+			//if ( item.itemRef = "mp_weapon_wingman" )
+		
+			player.GiveWeapon( item.itemRef, mods )
+			player.SetActiveWeaponByName( item.itemRef )
+			return
+		}
+	}
+#endif

@@ -1,0 +1,187 @@
+untyped
+
+global function DropPod_Init
+
+global function CreateDropPod
+global function LaunchAnimDropPod
+global function GetDropPodAnimDuration
+global function CreateDropPodSmokeTrail
+
+const DP_COLL_MODEL = $"models/vehicle/droppod_fireteam/droppod_fireteam_collision.mdl"
+const DROPPOD_MODEL = $"models/vehicle/droppod_fireteam/droppod_fireteam.mdl"
+
+function DropPod_Init()
+{
+	PrecacheModel( DROPPOD_MODEL )
+
+	RegisterSignal( "OnLaunch" )
+	RegisterSignal( "OnImpact" )
+
+	PrecacheModel( DP_COLL_MODEL )
+
+	PrecacheEffect( $"droppod_trail" )
+	PrecacheEffect( $"droppod_impact" )
+}
+
+
+function GetDropPodAnimDuration()
+{
+	// hack seems bad to spawn an ent to get this info
+	entity dropPod = CreateDropPod()
+
+	local animDuration = dropPod.GetSequenceDuration( "pod_testpath" )
+	dropPod.Destroy()
+
+	return animDuration
+}
+
+function LaunchAnimDropPod( entity dropPod, string anim, vector targetOrigin, vector targetAngles )
+{
+	dropPod.EndSignal( "OnDestroy" )
+	dropPod.EnableRenderAlways()
+
+	dropPod.s.launchAnim <- anim
+
+	int team = dropPod.GetTeam()
+
+	entity ref = CreateOwnedScriptMover( dropPod )
+    ref.SetOrigin( targetOrigin )
+    ref.SetAngles( targetAngles )
+
+	OnThreadEnd(
+		function () : ( dropPod, ref )
+		{
+			if ( IsValid( dropPod ) )
+			{
+				dropPod.ClearParent()
+			}
+
+			if ( IsValid( ref ) )
+				ref.Kill_Deprecated_UseDestroyInstead()
+		}
+	)
+
+	local e = {}
+	e.targetOrigin <- targetOrigin
+	e.targetAngles <- targetAngles
+
+	AddAnimEvent( dropPod, "OnImpact", DropPodOnImpactFXAndShake, e )
+	EmitSoundOnEntity( dropPod, "spectre_drop_pod" )
+
+	FirstPersonSequenceStruct sequence
+	sequence.thirdPersonAnim 		= anim
+
+	sequence.blendTime 			= 0.0
+	sequence.attachment 		= "ref"
+	sequence.useAnimatedRefAttachment		= true
+	//DrawArrow( ref.GetOrigin(), ref.GetAngles(), 5, 100 )
+	waitthread FirstPersonSequence( sequence, dropPod, ref )
+	dropPod.DisableRenderAlways()
+//	WaitFrame()
+}
+
+function CheckPlayersIntersectingPod( pod, targetOrigin )
+{
+	array<entity> playerList = GetPlayerArray()
+
+	// Multiplying the bounds by 1.42 to ensure this encloses the droppod when it's rotated 45 degrees
+	local mins = pod.GetBoundingMins() * 1.42 + targetOrigin
+	local maxs = pod.GetBoundingMaxs() * 1.42 + targetOrigin
+	local safeRadiusSqr = 250 * 250
+
+	foreach ( player in playerList )
+	{
+		local playerOrigin = player.GetOrigin()
+
+		if ( DistanceSqr( targetOrigin, playerOrigin ) > safeRadiusSqr )
+			continue
+
+		local playerMins = player.GetBoundingMins() + playerOrigin
+		local playerMaxs = player.GetBoundingMaxs() + playerOrigin
+
+		if ( BoxIntersectsBox( mins, maxs, playerMins, playerMaxs ) )
+			return true
+	}
+
+	return false
+}
+
+entity function CreateDropPod( vector ornull origin = null, vector ornull angles = null )
+{
+	entity prop_dynamic = CreateEntity( "prop_dynamic" )
+	prop_dynamic.SetValueForModelKey( DROPPOD_MODEL )
+	prop_dynamic.kv.contents = int( prop_dynamic.kv.contents ) & ~CONTENTS_TITANCLIP
+	prop_dynamic.kv.fadedist = -1
+	prop_dynamic.kv.renderamt = 255
+	prop_dynamic.kv.rendercolor = "255 255 255"
+	prop_dynamic.kv.solid = 6 // 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
+	if ( origin )
+	{
+		prop_dynamic.SetOrigin( expect vector( origin ) )
+		if ( angles )
+			prop_dynamic.SetAngles( expect vector( angles ) )
+	}
+	DispatchSpawn( prop_dynamic )
+
+	return prop_dynamic
+}
+
+void function PushPlayerAndCreateDropPodCollision( entity pod, vector targetOrigin )
+{
+	pod.EndSignal( "OnDestroy" )
+
+	entity point_push = CreateEntity( "point_push" )
+	point_push.kv.spawnflags = 8
+	point_push.kv.enabled = 1
+	point_push.kv.magnitude = 140.0 * 0.75 //Compensate for reduced player gravity to match R1
+	point_push.kv.radius = 192.0
+	point_push.SetOrigin( targetOrigin + Vector( 0.0, 0.0, 32.0 ) )
+	DispatchSpawn( point_push )
+
+	OnThreadEnd(
+		function() : ( point_push )
+		{
+			point_push.Fire( "Kill", "", 0.0 )
+		}
+	)
+
+	while ( CheckPlayersIntersectingPod( pod, targetOrigin ) )
+		wait( 0.1 )
+
+	pod.Solid()
+}
+
+function DropPodOnImpactFX( droppod, e )
+{
+	PlayImpactFXTable( expect vector( e.targetOrigin ), expect entity( droppod ), HOTDROP_IMPACT_FX_TABLE )
+}
+
+void function DropPodOnImpactFXAndShake( entity droppod )
+{
+	var e = GetOptionalAnimEventVar( droppod, "OnImpact" )
+	DropPodOnImpactFX( droppod, e )
+	CreateShake( expect vector( e.targetOrigin ), 7, 0.15, 1.75, 768 )
+
+	// 1 - No Damage - Only Force
+	// 2 - Push players
+	// 8 - Test LOS before pushing
+	local flags = 11
+	local impactOrigin = e.targetOrigin + Vector( 0,0,10 )
+	local impactRadius = 192
+	thread PushPlayerAndCreateDropPodCollision( droppod, expect vector( e.targetOrigin ) )
+}
+
+
+function CreateDropPodSmokeTrail( pod )
+{
+	entity smokeTrail = CreateEntity( "info_particle_system" )
+	smokeTrail.SetValueForEffectNameKey( $"droppod_trail" )
+	smokeTrail.kv.start_active = 0
+	DispatchSpawn( smokeTrail )
+
+	smokeTrail.SetOrigin( pod.GetOrigin() + Vector( 0, 0, 152 ) )
+	smokeTrail.SetParent( pod )
+
+	return smokeTrail
+}
+

@@ -1,0 +1,2203 @@
+resource/ui/menus/mods_browse.menu
+{
+	menu
+	{
+		ControlName				Frame
+		xpos					0
+		ypos					0
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		visible					1
+		enabled					1
+		pinCorner				0
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+
+        Vignette
+        {
+            ControlName             ImagePanel
+            InheritProperties       MenuVignette
+        }
+
+		Title
+		{
+			ControlName				Label
+			InheritProperties		MenuTitle
+			labelText				"#MENU_MATCH_SETTINGS"
+		}
+
+		ImgTopBar
+		{
+			ControlName				ImagePanel
+			InheritProperties		MenuTopBar
+		}
+		
+		ButtonRowAnchor
+		{
+			ControlName				Label
+			labelText				""
+
+			xpos                    120
+            ypos                    160
+		}
+		
+		//test
+		//{
+		//	ControlName ListPanel
+		//	xpos		"200"
+		//	ypos		"200"
+		//	zpos 999
+		//	wide		"312"
+		//	tall		"340"
+		//	autoResize		"0"
+		//	pinCorner		"0"
+		//	visible		"1"
+		//	enabled		"1"
+		//	tabPosition		"0"
+		//}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		//TextEntrySldFOV
+		//{
+		//	ControlName				TextEntry
+		//	xpos                    8
+		//	zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+		//	wide					50
+		//	tall					30
+		//	visible					1
+		//	enabled					1
+		//	textHidden				0
+		//	editable				1
+		//	maxchars				3
+		//	NumericInputOnly		1
+		//	font 					Default_21
+		//	allowRightClickMenu		0
+		//	allowSpecialCharacters	0
+		//	unicode					0
+		//
+		//	pin_to_sibling			SldFOV
+        //    pin_corner_to_sibling	LEFT
+        //    pin_to_sibling_corner	RIGHT
+		//}
+
+		BtnSetting0
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				0
+			xpos					96
+			ypos					177
+			tabPosition				1
+			navUp					BtnSetting0
+			navDown					BtnSetting1
+		}
+		
+		TextEntrySetting0
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				0
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting0
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting47
+			navDown					BtnSetting1
+		}
+		
+		BtnSetting1
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				1
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting0
+			navDown					BtnSetting2
+			
+			pin_to_sibling BtnSetting0
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting1
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				1
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting1
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting0
+			navDown					BtnSetting2
+		}
+
+		BtnSetting2
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				2
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting1
+			navDown					BtnSetting3
+			
+			pin_to_sibling BtnSetting1
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting2
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				2
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting2
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting1
+			navDown					BtnSetting3
+		}
+
+		BtnSetting3
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				3
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting2
+			navDown					BtnSetting4
+			
+			pin_to_sibling BtnSetting2
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting3
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				3
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting3
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting2
+			navDown					BtnSetting4
+		}
+
+		BtnSetting4
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				4
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting3
+			navDown					BtnSetting5
+			
+			pin_to_sibling BtnSetting3
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting4
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				4
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting4
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting3
+			navDown					BtnSetting5
+		}
+
+		BtnSetting5
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				5
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting4
+			navDown					BtnSetting6
+			
+			pin_to_sibling BtnSetting4
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting5
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				5
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting5
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting4
+			navDown					BtnSetting6
+		}
+
+		BtnSetting6
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				6
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting5
+			navDown					BtnSetting7
+			
+			pin_to_sibling BtnSetting5
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting6
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				6
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting6
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting5
+			navDown					BtnSetting7
+		}
+
+		BtnSetting7
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				7
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting6
+			navDown					BtnSetting8
+			
+			pin_to_sibling BtnSetting6
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting7
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				7
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting7
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting6
+			navDown					BtnSetting8
+		}
+
+		BtnSetting8
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				8
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting7
+			navDown					BtnSetting9
+			
+			pin_to_sibling BtnSetting7
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting8
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				8
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting8
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting7
+			navDown					BtnSetting9
+		}
+
+		BtnSetting9
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				9
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting8
+			navDown					BtnSetting10
+			
+			pin_to_sibling BtnSetting8
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting9
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				9
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting9
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting8
+			navDown					BtnSetting10
+		}
+
+		BtnSetting10
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				10
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting9
+			navDown					BtnSetting11
+			
+			pin_to_sibling BtnSetting9
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting10
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				10
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting10
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting9
+			navDown					BtnSetting11
+		}
+
+		BtnSetting11
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				11
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting10
+			navDown					BtnSetting12
+			
+			pin_to_sibling BtnSetting10
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting11
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				11
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting11
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting10
+			navDown					BtnSetting12
+		}
+
+		BtnSetting12
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				12
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting11
+			navDown					BtnSetting13
+			
+			pin_to_sibling BtnSetting11
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting12
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				12
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting12
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting11
+			navDown					BtnSetting13
+		}
+
+		BtnSetting13
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				13
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting12
+			navDown					BtnSetting14
+			
+			pin_to_sibling BtnSetting12
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting13
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				13
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting13
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting12
+			navDown					BtnSetting14
+		}
+
+		BtnSetting14
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				14
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting13
+			navDown					BtnSetting15
+			
+			pin_to_sibling BtnSetting13
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting14
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				14
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting14
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting13
+			navDown					BtnSetting15
+		}
+
+		BtnSetting15
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				15
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting14
+			navDown					BtnSetting16
+			
+			pin_to_sibling BtnSetting14
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting15
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				15
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting15
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting14
+			navDown					BtnSetting16
+		}
+
+		BtnSetting16
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				16
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting15
+			navDown					BtnSetting17
+			
+			pin_to_sibling BtnSetting0
+			pin_corner_to_sibling	LEFT
+			pin_to_sibling_corner	RIGHT
+		}
+		
+		TextEntrySetting16
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				16
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting16
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting15
+			navDown					BtnSetting17
+		}
+
+		BtnSetting17
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				17
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting16
+			navDown					BtnSetting18
+			
+			pin_to_sibling BtnSetting16
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting17
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				17
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting17
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting16
+			navDown					BtnSetting18
+		}
+
+		BtnSetting18
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				18
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting17
+			navDown					BtnSetting19
+			
+			pin_to_sibling BtnSetting17
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting18
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				18
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting18
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting17
+			navDown					BtnSetting19
+		}
+
+		BtnSetting19
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				19
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting18
+			navDown					BtnSetting20
+			
+			pin_to_sibling BtnSetting18
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting19
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				19
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting19
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting18
+			navDown					BtnSetting20
+		}
+
+		BtnSetting20
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				20
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting19
+			navDown					BtnSetting21
+			
+			pin_to_sibling BtnSetting19
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting20
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				20
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting20
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting19
+			navDown					BtnSetting21
+		}
+
+		BtnSetting21
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				21
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting20
+			navDown					BtnSetting22
+			
+			pin_to_sibling BtnSetting20
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting21
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				21
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting21
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting20
+			navDown					BtnSetting22
+		}
+
+		BtnSetting22
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				22
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting21
+			navDown					BtnSetting23
+			
+			pin_to_sibling BtnSetting21
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting22
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				22
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting22
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting21
+			navDown					BtnSetting23
+		}
+
+		BtnSetting23
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				23
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting22
+			navDown					BtnSetting24
+			
+			pin_to_sibling BtnSetting22
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting23
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				23
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting23
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting22
+			navDown					BtnSetting24
+		}
+
+		BtnSetting24
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				24
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting23
+			navDown					BtnSetting25
+			
+			pin_to_sibling BtnSetting23
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting24
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				24
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting24
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting23
+			navDown					BtnSetting25
+		}
+
+		BtnSetting25
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				25
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting24
+			navDown					BtnSetting26
+			
+			pin_to_sibling BtnSetting24
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting25
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				25
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting25
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting24
+			navDown					BtnSetting26
+		}
+
+		BtnSetting26
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				26
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting25
+			navDown					BtnSetting27
+			
+			pin_to_sibling BtnSetting25
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting26
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				26
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting26
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting25
+			navDown					BtnSetting27
+		}
+
+		BtnSetting27
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				27
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting26
+			navDown					BtnSetting28
+			
+			pin_to_sibling BtnSetting26
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting27
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				27
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting27
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting26
+			navDown					BtnSetting28
+		}
+
+		BtnSetting28
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				28
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting27
+			navDown					BtnSetting29
+			
+			pin_to_sibling BtnSetting27
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting28
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				28
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting28
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting27
+			navDown					BtnSetting29
+		}
+
+		BtnSetting29
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				29
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting28
+			navDown					BtnSetting30
+			
+			pin_to_sibling BtnSetting28
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting29
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				29
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting29
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting28
+			navDown					BtnSetting30
+		}
+
+		BtnSetting30
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				30
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting29
+			navDown					BtnSetting31
+			
+			pin_to_sibling BtnSetting29
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting30
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				30
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting30
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting29
+			navDown					BtnSetting31
+		}
+
+		BtnSetting31
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				31
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting30
+			navDown					BtnSetting32
+			
+			pin_to_sibling BtnSetting30
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting31
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				31
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting31
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting30
+			navDown					BtnSetting32
+		}
+
+		BtnSetting32
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				32
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting31
+			navDown					BtnSetting33
+			
+			pin_to_sibling BtnSetting16
+			pin_corner_to_sibling	LEFT
+			pin_to_sibling_corner	RIGHT
+		}
+		
+		TextEntrySetting32
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				32
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting32
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting31
+			navDown					BtnSetting33
+		}
+
+		BtnSetting33
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				33
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting32
+			navDown					BtnSetting34
+			
+			pin_to_sibling BtnSetting32
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting33
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				33
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting33
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting32
+			navDown					BtnSetting34
+		}
+
+		BtnSetting34
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				34
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting33
+			navDown					BtnSetting35
+			
+			pin_to_sibling BtnSetting33
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting34
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				34
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting34
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting33
+			navDown					BtnSetting35
+		}
+
+		BtnSetting35
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				35
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting34
+			navDown					BtnSetting36
+			
+			pin_to_sibling BtnSetting34
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting35
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				35
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting35
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting34
+			navDown					BtnSetting36
+		}
+
+		BtnSetting36
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				36
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting35
+			navDown					BtnSetting37
+			
+			pin_to_sibling BtnSetting35
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting36
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				36
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting36
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting35
+			navDown					BtnSetting37
+		}
+
+		BtnSetting37
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				37
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting36
+			navDown					BtnSetting38
+			
+			pin_to_sibling BtnSetting36
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting37
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				37
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting37
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting36
+			navDown					BtnSetting38
+		}
+
+		BtnSetting38
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				38
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting37
+			navDown					BtnSetting39
+			
+			pin_to_sibling BtnSetting37
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting38
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				38
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting38
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting37
+			navDown					BtnSetting39
+		}
+
+		BtnSetting39
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				39
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting38
+			navDown					BtnSetting40
+			
+			pin_to_sibling BtnSetting38
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting39
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				39
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting39
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting38
+			navDown					BtnSetting40
+		}
+
+		BtnSetting40
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				40
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting39
+			navDown					BtnSetting41
+			
+			pin_to_sibling BtnSetting39
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting40
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				40
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting40
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting39
+			navDown					BtnSetting41
+		}
+
+		BtnSetting41
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				41
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting40
+			navDown					BtnSetting42
+			
+			pin_to_sibling BtnSetting40
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting41
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				41
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting41
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting40
+			navDown					BtnSetting42
+		}
+
+		BtnSetting42
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				42
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting41
+			navDown					BtnSetting43
+			
+			pin_to_sibling BtnSetting41
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting42
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				42
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting42
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting41
+			navDown					BtnSetting43
+		}
+
+		BtnSetting43
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				43
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting42
+			navDown					BtnSetting44
+			
+			pin_to_sibling BtnSetting42
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting43
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				43
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting43
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting42
+			navDown					BtnSetting44
+		}
+
+		BtnSetting44
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				44
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting43
+			navDown					BtnSetting45
+			
+			pin_to_sibling BtnSetting43
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting44
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				44
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting44
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting43
+			navDown					BtnSetting45
+		}
+
+		BtnSetting45
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				45
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting44
+			navDown					BtnSetting46
+			
+			pin_to_sibling BtnSetting44
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting45
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				45
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting45
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting44
+			navDown					BtnSetting46
+		}
+
+		BtnSetting46
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				46
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting45
+			navDown					BtnSetting47
+			
+			pin_to_sibling BtnSetting45
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting46
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				46
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting46
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting45
+			navDown					BtnSetting47
+		}
+
+		BtnSetting47
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				MatchSettingButton
+			style					DialogListButton
+			scriptID				47
+			//xpos					96
+			//ypos					177
+			tabPosition				1
+			navUp					BtnSetting46
+			navDown					BtnSetting0
+			
+			pin_to_sibling BtnSetting46
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		TextEntrySetting47
+		{
+			ControlName				TextEntry
+			classname				MatchSettingTextEntry
+			xpos                    "-35"
+			ypos					"-3"
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					175
+			tall					30
+			scriptID				47
+			textHidden				0
+			editable				1
+			//NumericInputOnly		1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+		
+			pin_to_sibling			BtnSetting47
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+			
+			navUp					BtnSetting46
+			navDown					BtnSetting0
+		}
+		
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		FooterButtons
+		{
+			ControlName				CNestedPanel
+			InheritProperties       FooterButtons
+		}
+	}
+}
