@@ -2,7 +2,7 @@ global function CustomAirAccelVars_Init
 
 void function CustomAirAccelVars_Init()
 {
-	AddPrivateMatchModeSettingArbitrary( "Pilot", "custom_air_accel_pilot", "500" ) // 500 is the default airaccel
+	AddPrivateMatchModeSettingArbitrary( "#MODE_SETTING_CATEGORY_PILOT", "custom_air_accel_pilot", "500" ) // 500 is the default airaccel
 	
 	#if SERVER
 		AddCallback_OnPlayerRespawned( ApplyCustomPlayerAirAccel )

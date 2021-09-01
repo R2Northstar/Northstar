@@ -628,6 +628,8 @@ function UpdateLobby()
 			}
 			else
 			{
+				bool shouldBreak = false
+				
 				foreach ( string category in GetPrivateMatchSettingCategories() )
 				{
 					foreach ( CustomMatchSettingContainer setting in GetPrivateMatchCustomSettingsForCategory( category ) )
@@ -635,18 +637,18 @@ function UpdateLobby()
 						if ( setting.playlistVar == varName )
 						{
 							if ( setting.isEnumSetting )
-							{
 								playlistOverridesDesc += Localize( setting.localizedName ) + ": `2" + setting.enumNames[ setting.enumValues.find( expect string ( GetCurrentPlaylistVar( varName ) ) ) ] + "`0\n"
-							}
 							else
 								playlistOverridesDesc += Localize( setting.localizedName ) + ": `2" + GetCurrentPlaylistVar( varName ) + "`0\n"
-								
+							
+							shouldBreak = true
 							break
 						}
 					}
+					
+					if ( shouldBreak )
+						break
 				}
-			
-				// sorta temp: ideally wanna localise playlist var names in the future
 			}
 		}
 
