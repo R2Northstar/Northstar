@@ -17,6 +17,7 @@ void function AddNorthstarCustomMatchSettingsMenu()
 void function SetNextMatchSettingsCategory( string category )
 {
 	file.currentCategory = category
+	Hud_SetText( Hud_GetChild( GetMenu( "CustomMatchSettingsMenu" ), "Title" ), Localize( "#MENU_MATCH_SETTINGS_SUBMENU", Localize( category ) ) )
 	print( "Category: " + category )
 	
 	file.enumRealValues.clear()

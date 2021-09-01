@@ -4,7 +4,7 @@ global function PromodeEnabled
 
 void function Promode_Init()
 {
-	AddPrivateMatchModeSettingEnum( "Promode", "promode_enable", [ "Disabled", "Enabled" ], "0" )
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_PROMODE", "promode_enable", [ "Disabled", "Enabled" ], "0" )
 	
 	#if SERVER
 		AddCallback_OnPlayerRespawned( GivePromodeWeaponMod )

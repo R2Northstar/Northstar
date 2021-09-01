@@ -24,7 +24,7 @@ struct {
 
 void function GamemodeCP_Init()
 {
-	file.ampingEnabled = GetCurrentPlaylistVar( "amped_capture_points" ) == "1"
+	file.ampingEnabled = GetCurrentPlaylistVarInt( "cp_amped_capture_points", 1 ) == 1
 
 	RegisterSignal( "HardpointCaptureStart" )
 
