@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <iostream>
 #include <iomanip>
+#include <thread>
 
 #define DLL_NAME L"Northstar.dll"
 
@@ -84,6 +85,7 @@ BOOL WINAPI CreateProcessWHook(
         std::cout << "Creating titanfall process!" << std::endl;
         std::cout << "Handle: " << lpProcessInformation->hProcess << " ID: " << lpProcessInformation->dwProcessId << " Thread: " << lpProcessInformation->hThread << std::endl;
 
+        //while (!IsDebuggerPresent()) Sleep(100);
         STARTUPINFO si;
         memset(&si, 0, sizeof(si));
         PROCESS_INFORMATION pi;
@@ -91,7 +93,7 @@ BOOL WINAPI CreateProcessWHook(
 
         // check if we're launching EASteamProxy for steam users, or just launching tf2 directly for origin users
         // note: atm we fully disable steam integration in origin when we inject, return to this later
-        if (!wcsstr(lpApplicationName, L"Origin\\EASteamProxy.exe"))
+        if (!wcsstr(lpCommandLine, L"Origin\\EASteamProxy.exe"))
         {
             std::stringstream argStr;
             argStr << lpProcessInformation->dwProcessId;
@@ -112,6 +114,7 @@ BOOL WINAPI CreateProcessWHook(
         ResumeThread(lpProcessInformation->hThread);
 
         // cleanup
+        // note: i phyisically cannot get cleanup to work rn, not sure why
         MH_DisableHook(&CreateProcessW);
         MH_RemoveHook(&CreateProcessW);
         MH_Uninitialize();
@@ -131,7 +134,6 @@ BOOL WINAPI CreateProcessWHook(
         FreeLibrary(ownHModule);
     }
 
-
     return ret;
 }
 
@@ -140,18 +142,16 @@ BOOL APIENTRY DllMain(HMODULE hModule,
                        LPVOID lpReserved
                      )
 {
+
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
     case DLL_THREAD_ATTACH:
-        DisableThreadLibraryCalls(hModule);
+        // DisableThreadLibraryCalls(hModule); // wanted this, but unfortunately tf2 hates me
     case DLL_THREAD_DETACH:
     case DLL_PROCESS_DETACH:
         break;
     }
-
-    //AllocConsole();
-    //freopen("CONOUT$", "w", stdout);
 
     ownHModule = hModule;
     char ownDllPath[MAX_PATH];
@@ -160,22 +160,34 @@ BOOL APIENTRY DllMain(HMODULE hModule,
     tf2DirPath = std::filesystem::path(ownDllPath).parent_path();
 
     // hook CreateProcessW
-    if (MH_Initialize() > MH_ERROR_ALREADY_INITIALIZED) // MH_ERROR_ALREADY_INITIALIZED = 1, MH_OK = 0, these are the only results we should expect
+    if (MH_Initialize() != MH_OK) 
         return TRUE;
     
     MH_CreateHook(&CreateProcessW, &CreateProcessWHook, reinterpret_cast<LPVOID*>(&CreateProcessWOriginal));
     MH_EnableHook(&CreateProcessW);
 
+    char ownProcessPath[MAX_PATH];
+    GetModuleFileNameA(NULL, ownProcessPath, MAX_PATH);
     // TEMP: temporarily disable steam stuff because it's a huge pain
     // change conditional jump to EASteamProxy stuff in launchStep2 to never hit EASteamProxy launch
-    void* ptr = (char*)GetModuleHandleA("OriginClient.dll") + 0x2A83FA;
-    TempReadWrite rw(ptr);
     
-    *((char*)ptr) = 0xE9; // je => jmp
-    *((char*)ptr + 1) = 0xE6;
-    *((char*)ptr + 2) = 0x01;
-    *((char*)ptr + 3) = 0x00;
-    *((char*)ptr + 4) = 0x00;
+    if (!strcmp(ownProcessPath, "Origin.exe"))
+    {
+        void* ptr = (char*)LoadLibraryA("OriginClient.dll") + 0x2A83FA;
+        TempReadWrite rw(ptr);
+
+        *((char*)ptr) = 0xE9; // je => jmp
+        *((char*)ptr + 1) = 0xE6;
+        *((char*)ptr + 2) = 0x01;
+        *((char*)ptr + 3) = 0x00;
+        *((char*)ptr + 4) = 0x00;
+    }
+    else if (!strcmp(ownProcessPath, "EADesktop.exe"))
+    {
+        // idk not doing this rn
+        MessageBoxA(NULL, "EADesktop not currently supported", "", MB_OK);
+    }
+   
 
     return TRUE;
 }

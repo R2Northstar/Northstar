@@ -82,6 +82,13 @@ void ModManager::TryBuildKeyValues(const char* filename)
 
 	// load original file, so we can parse out the name of the root obj (e.g. WeaponData for weapons)
 	std::string originalFile = ReadVPKOriginalFile(filename);
+
+	if (!originalFile.length())
+	{
+		spdlog::warn("Tried to patch kv {} but no base kv was found!", ogFilePath);
+		return;
+	}
+
 	char rootName[64];
 	memset(rootName, 0, sizeof(rootName));
 
