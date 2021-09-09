@@ -358,7 +358,12 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 		return;
 
 	if (!Cvar_ns_report_sp_server_to_masterserver->m_nValue && !strncmp(map, "sp_", 3))
+	{
+		m_bRequireClientAuth = false;
 		return;
+	}
+
+	m_bRequireClientAuth = true;
 
 	std::thread requestThread([this, port, authPort, name, description, map, playlist, maxPlayers, password] {
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);

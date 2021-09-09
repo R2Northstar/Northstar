@@ -3,6 +3,7 @@
 #include "main.h"
 #include "squirrel.h"
 #include "dedicated.h"
+#include "dedicatedmaterialsystem.h"
 #include "sourceconsole.h"
 #include "logging.h"
 #include "concommand.h"
@@ -17,6 +18,7 @@
 #include "chatcommand.h"
 #include "modlocalisation.h"
 #include "playlist.h"
+#include "securitypatches.h"
 
 bool initialised = false;
 
@@ -63,6 +65,7 @@ void InitialiseNorthstar()
 
     if (!IsDedicated())
     {
+        AddDllLoadCallback("engine.dll", InitialiseClientEngineSecurityPatches);
         AddDllLoadCallback("client.dll", InitialiseClientSquirrel);
         AddDllLoadCallback("client.dll", InitialiseSourceConsole);
         AddDllLoadCallback("engine.dll", InitialiseChatCommands);
