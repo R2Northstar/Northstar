@@ -214,7 +214,7 @@ char CBaseClient__ConnectHook(void* self, char* name, __int64 netchan_ptr_arg, c
 	char ret = CBaseClient__Connect(self, name, netchan_ptr_arg, b_fake_player_arg, a5, Buffer, a7);
 	if (strlen(name) >= 64) // fix for name overflow bug
 		CBaseClient__Disconnect(self, 1, "Invalid name");
-	else if (!g_ServerAuthenticationManager->AuthenticatePlayer(self, nextPlayerUid, nextPlayerToken))
+	else if (!g_ServerAuthenticationManager->AuthenticatePlayer(self, nextPlayerUid, nextPlayerToken) && g_MasterServerManager->m_bRequireClientAuth)
 		CBaseClient__Disconnect(self, 1, "Authentication Failed");
 
 	if (!g_ServerAuthenticationManager->m_additionalPlayerData.count(self))

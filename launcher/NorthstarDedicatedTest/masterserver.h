@@ -38,10 +38,11 @@ private:
 	bool m_requestingServerList = false;
 	bool m_authenticatingWithGameServer = false;
 	bool m_savingPersistentData = false;
-	bool m_bRequireClientAuth = false;
 
 public:
 	char m_ownServerId[33];
+
+	bool m_bRequireClientAuth = false;
 
 	bool m_scriptRequestingServerList = false;
 	bool m_successfullyConnected = true;
