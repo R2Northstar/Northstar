@@ -567,6 +567,12 @@
     <ClInclude Include="playlist.h">
       <Filter>Header Files\Server</Filter>
     </ClInclude>
+    <ClInclude Include="securitypatches.h">
+      <Filter>Header Files\Client</Filter>
+    </ClInclude>
+    <ClInclude Include="dedicatedmaterialsystem.h">
+      <Filter>Header Files\Dedicated</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -646,6 +652,12 @@
     </ClCompile>
     <ClCompile Include="playlist.cpp">
       <Filter>Source Files\Server</Filter>
+    </ClCompile>
+    <ClCompile Include="securitypatches.cpp">
+      <Filter>Source Files\Client</Filter>
+    </ClCompile>
+    <ClCompile Include="dedicatedmaterialsystem.cpp">
+      <Filter>Source Files\Dedicated</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

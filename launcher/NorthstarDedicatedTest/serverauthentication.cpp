@@ -329,8 +329,6 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 		*((char*)ptr) = (char)0xE9; // jz => jmp
 		*((char*)ptr + 1) = (char)0x90;
 		*((char*)ptr + 2) = (char)0x0;
-
-		*((char*)ptr + 5) = (char)0x90; // nop extra byte we no longer use
 	}
 
 	// patch to allow same of multiple account
