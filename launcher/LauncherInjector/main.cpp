@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <sstream>
 #include <iostream>
+#include <fstream>
 
 namespace fs = std::filesystem;
 
@@ -35,7 +36,7 @@ DWORD GetProcessByName(std::wstring processName)
 #define PROCESS_NAME L"Titanfall2-unpacked.exe"
 #define DLL_NAME L"Northstar.dll"
 
-int main() {
+int main(int argc, char* argv[]) {
     if (!fs::exists(PROCESS_NAME))
     {
         MessageBoxA(0, "Titanfall2-unpacked.exe not found! Please launch from your titanfall 2 directory and ensure you have Northstar installed correctly!", "", MB_OK);
@@ -48,7 +49,12 @@ int main() {
         return 1;
     }
 
-    if (!GetProcessByName(L"Origin.exe"))
+    bool isdedi = false;
+    for (int i = 0; i < argc; i++)
+        if (!strcmp(argv[i], "-dedicated"))
+            isdedi = true;
+
+    if (!GetProcessByName(L"Origin.exe") && !isdedi)
     {
         // unpacked exe will crash if origin isn't open on launch, so launch it
         // get origin path from registry, code here is reversed from OriginSDK.dll
@@ -78,13 +84,36 @@ int main() {
             Sleep(200);
     }
 
+    // get cmdline args from file
+    std::wstring args;
+    std::ifstream cmdlineArgFile;
+
+    if (!isdedi)
+        cmdlineArgFile = std::ifstream("ns_startup_args.txt");
+    else
+        cmdlineArgFile = std::ifstream("ns_startup_args_dedi.txt");
+
+    if (cmdlineArgFile)
+    {
+        std::stringstream argBuffer;
+        argBuffer << cmdlineArgFile.rdbuf();
+        cmdlineArgFile.close();
+    
+        std::string str = argBuffer.str();
+        args.append(std::wstring(str.begin(), str.end()));
+    }
+
+    if (isdedi)
+        // copy -dedicated into args if we have it in commandline args
+        args.append(L" -dedicated");
+
     STARTUPINFO startupInfo;
     PROCESS_INFORMATION processInfo;
 
     memset(&startupInfo, 0, sizeof(startupInfo));
     memset(&processInfo, 0, sizeof(processInfo));
 
-    CreateProcessW(PROCESS_NAME, (wchar_t*)L" -multiple -novid", NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &startupInfo, &processInfo);
+    CreateProcessW(PROCESS_NAME, (LPWSTR)args.c_str(), NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &startupInfo, &processInfo);
 
     HMODULE hKernel32 = GetModuleHandleW(L"kernel32.dll");
     LPTHREAD_START_ROUTINE pLoadLibraryW = (LPTHREAD_START_ROUTINE)GetProcAddress(hKernel32, "LoadLibraryW");

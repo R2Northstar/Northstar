@@ -15,6 +15,7 @@ struct CDedicatedExports; // forward declare
 typedef void (*DedicatedSys_PrintfType)(CDedicatedExports* dedicated, char* msg);
 typedef void (*DedicatedRunServerType)(CDedicatedExports* dedicated);
 
+// would've liked to just do this as a class but have not been able to get it to work
 struct CDedicatedExports
 {
 	void* vtable; // because it's easier, we just set this to &this, since CDedicatedExports has no props we care about other than funcs
@@ -37,22 +38,21 @@ void RunServer(CDedicatedExports* dedicated)
 {
 	Sys_Printf(dedicated, (char*)"CDedicatedExports::RunServer(): starting");
 
-	HMODULE engine = GetModuleHandleA("engine.dll");
-	CEngine__FrameType CEngine__Frame = (CEngine__FrameType)((char*)engine + 0x1C8650);
-	CHostState__InitType CHostState__Init = (CHostState__InitType)((char*)engine + 0x16E110);
-
 	// init hoststate, if we don't do this, we get a crash later on
+	CHostState__InitType CHostState__Init = (CHostState__InitType)((char*)GetModuleHandleA("engine.dll") + 0x16E110);
 	CHostState__Init(g_pHostState);
 
 	// set host state to allow us to enter CHostState::FrameUpdate, with the state HS_NEW_GAME
 	g_pHostState->m_iNextState = HostState_t::HS_NEW_GAME;
 	strncpy(g_pHostState->m_levelName, CommandLine()->ParmValue("+map", "mp_lobby"), sizeof(g_pHostState->m_levelName)); // set map to load into
 
-	while (true)
-	{
-		CEngine__Frame(g_pEngine);
+	spdlog::info(CommandLine()->GetCmdLine());
 
-		spdlog::info("CEngine::Frame() on map {} took {}ms", g_pHostState->m_levelName, g_pEngine->m_flFrameTime);
+	while (g_pEngine->m_nQuitting == EngineQuitState::QUIT_NOTQUITTING)
+	{
+		g_pEngine->Frame();
+
+		spdlog::info("g_pEngine->Frame() on map {} took {}ms", g_pHostState->m_levelName, g_pEngine->GetFrameTime());
 		Sleep(50);
 	}
 }
@@ -233,4 +233,18 @@ void InitialiseDedicated(HMODULE engineAddress)
 	CommandLine()->AppendParm("-nomenuvid", 0);
 	CommandLine()->AppendParm("-nosound", 0);
 	CommandLine()->AppendParm("+host_preload_shaders", "0");
+}
+
+typedef void(*Tier0_InitOriginType)();
+Tier0_InitOriginType Tier0_InitOrigin;
+void Tier0_InitOriginHook()
+{
+	if (!IsDedicated())
+		Tier0_InitOrigin();
+}
+
+void InitialiseDedicatedOrigin(HMODULE baseAddress)
+{
+	HookEnabler hook;
+	ENABLER_CREATEHOOK(hook, GetProcAddress(GetModuleHandleA("tier0.dll"), "Tier0_InitOrigin"), &Tier0_InitOriginHook, reinterpret_cast<LPVOID*>(&Tier0_InitOrigin));
 }

@@ -144,10 +144,16 @@ enum EngineState_t
 	DLL_PAUSED,				// engine is paused, can become active from this state
 };
 
-struct CEngine
+class CEngine
 {
 public:
-	void* vtable;
+	virtual bool Load(bool dedicated, const char* baseDir) {}
+	virtual void Unload() {}
+	virtual void SetNextState(EngineState_t iNextState) {}
+	virtual EngineState_t GetState() {}
+	virtual void Frame() {}
+	virtual float GetFrameTime() {}
+	virtual float GetCurTime() {}
 
 	EngineQuitState m_nQuitting;
 	EngineState_t m_nDllState;
