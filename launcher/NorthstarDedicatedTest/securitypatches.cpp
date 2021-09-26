@@ -2,6 +2,7 @@
 #include "securitypatches.h"
 #include "hookutils.h"
 #include "concommand.h"
+#include "dedicated.h"
 
 typedef bool(*IsValveModType)();
 IsValveModType IsValveMod;
@@ -18,6 +19,9 @@ bool IsValveModHook()
 
 void InitialiseClientEngineSecurityPatches(HMODULE baseAddress)
 {
+	if (IsDedicated())
+		return;
+
 	HookEnabler hook;
 
 	// note: this could break some things

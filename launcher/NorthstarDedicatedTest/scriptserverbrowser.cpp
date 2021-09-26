@@ -4,6 +4,7 @@
 #include "masterserver.h"
 #include "gameutils.h"
 #include "serverauthentication.h"
+#include "dedicated.h"
 
 // functions for viewing server browser
 
@@ -242,6 +243,9 @@ SQInteger SQ_CompleteAuthWithLocalServer(void* sqvm)
 
 void InitialiseScriptServerBrowser(HMODULE baseAddress)
 {
+	if (IsDedicated())
+		return;
+
 	g_UISquirrelManager->AddFuncRegistration("void", "NSRequestServerList", "", "", SQ_RequestServerList);
 	g_UISquirrelManager->AddFuncRegistration("bool", "NSIsRequestingServerList", "", "", SQ_IsRequestingServerList);
 	g_UISquirrelManager->AddFuncRegistration("bool", "NSMasterServerConnectionSuccessful", "", "", SQ_MasterServerConnectionSuccessful);

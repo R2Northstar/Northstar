@@ -557,8 +557,8 @@ void ConCommand_ns_fetchservers(const CCommand& args)
 
 void CHostState__State_NewGameHook(CHostState* hostState)
 {
-	// not 100% we should do this here, but whatever
 	Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec autoexec_ns_server", cmd_source_t::kCommandSrcCode);
+	Cbuf_Execute();
 
 	g_MasterServerManager->AddSelfToServerList(Cvar_hostport->m_nValue, Cvar_ns_player_auth_port->m_nValue, Cvar_ns_server_name->m_pszString, Cvar_ns_server_desc->m_pszString, hostState->m_levelName, (char*)GetCurrentPlaylistName(), 16, Cvar_ns_server_password->m_pszString);
 	g_ServerAuthenticationManager->StartPlayerAuthServer();

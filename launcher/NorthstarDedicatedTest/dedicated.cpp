@@ -1,14 +1,14 @@
 #include "pch.h"
 #include "dedicated.h"
 #include "hookutils.h"
+#include "tier0.h"
+#include "gameutils.h"
 
 #include <iostream>
 
 bool IsDedicated()
 {
-	// temp: should get this from commandline
-	//return true;
-	return false;
+	return CommandLine()->HasParm("-dedicated");
 }
 
 enum EngineState_t
@@ -47,26 +47,11 @@ enum HostState_t
 	HS_RESTART,
 };
 
-struct CHostState
-{
-	HostState_t m_currentState;
-	HostState_t m_nextState;
-
-	float m_vecLocationX;
-	float m_vecLocationY;
-	float m_vecLocationZ;
-
-	float m_angLocationX;
-	float m_angLocationY;
-	float m_angLocationZ;
-
-	char m_levelName[32];
-
-	// there's more stuff here, just this is all i use atm
-};
-
 void InitialiseDedicated(HMODULE engineAddress)
 {
+	if (!IsDedicated())
+		return;
+
 	spdlog::info("InitialiseDedicated");
 
 	//while (!IsDebuggerPresent())
@@ -231,6 +216,11 @@ void InitialiseDedicated(HMODULE engineAddress)
 	// also look into launcher.dll+d381, seems to cause renderthread to get made
 	// this crashes HARD if no window which makes sense tbh
 	// also look into materialsystem + 5B344 since it seems to be the base of all the renderthread stuff
+
+	// add cmdline args that are good for dedi
+	CommandLine()->AppendParm("-nomenuvid", 0);
+	CommandLine()->AppendParm("+host_preload_shaders", 0);
+	CommandLine()->AppendParm("-nosound", 0);
 }
 
 void Sys_Printf(CDedicatedExports* dedicated, char* msg)
@@ -261,7 +251,7 @@ void RunServer(CDedicatedExports* dedicated)
 
 	// set up engine and host states to allow us to enter CHostState::FrameUpdate, with the state HS_NEW_GAME
 	cEnginePtr->m_nNextDllState = EngineState_t::DLL_ACTIVE;
-	cHostStatePtr->m_nextState = HostState_t::HS_NEW_GAME;
+	cHostStatePtr->m_iNextState = HostState_t::HS_NEW_GAME;
 	strcpy(cHostStatePtr->m_levelName, "mp_lobby"); // set map to load into
 
 	while (true)

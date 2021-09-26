@@ -54,7 +54,7 @@ void InitialiseNorthstar()
 
     AddDllLoadCallback("engine.dll", InitialiseEngineGameUtilFunctions);
 
-    if (IsDedicated())
+    // dedi patches
     {
         AddDllLoadCallback("engine.dll", InitialiseDedicated);
         AddDllLoadCallback("materialsystem_dx11.dll", InitialiseDedicatedMaterialSystem);
@@ -63,7 +63,7 @@ void InitialiseNorthstar()
     AddDllLoadCallback("engine.dll", InitialiseConVars);
     AddDllLoadCallback("engine.dll", InitialiseConCommands);
 
-    if (!IsDedicated())
+    // client-exclusive patches
     {
         AddDllLoadCallback("engine.dll", InitialiseClientEngineSecurityPatches);
         AddDllLoadCallback("client.dll", InitialiseClientSquirrel);
