@@ -31,7 +31,7 @@ void InitialiseEngineGameUtilFunctions(HMODULE baseAddress)
 	Cbuf_Execute = (Cbuf_ExecuteType)((char*)baseAddress + 0x1204B0);
 
 	g_pHostState = (CHostState*)((char*)baseAddress + 0x7CF180);
-	g_pEngine = (CEngine*)((char*)baseAddress + 0x7D70C8);
+	g_pEngine = *(CEngine**)((char*)baseAddress + 0x7D70C8);
 
 	Cvar_hostport = (ConVar*)((char*)baseAddress + 0x13FA6070);
 
