@@ -4,48 +4,63 @@
 #include "tier0.h"
 #include "gameutils.h"
 
-#include <iostream>
-
 bool IsDedicated()
 {
-	return CommandLine()->HasParm("-dedicated");
+	return CommandLine()->CheckParm("-dedicated");
 }
 
-enum EngineState_t
+// CDedidcatedExports defs
+struct CDedicatedExports; // forward declare
+
+typedef void (*DedicatedSys_PrintfType)(CDedicatedExports* dedicated, char* msg);
+typedef void (*DedicatedRunServerType)(CDedicatedExports* dedicated);
+
+struct CDedicatedExports
 {
-	DLL_INACTIVE = 0,		// no dll
-	DLL_ACTIVE,				// engine is focused
-	DLL_CLOSE,				// closing down dll
-	DLL_RESTART,			// engine is shutting down but will restart right away
-	DLL_PAUSED,				// engine is paused, can become active from this state
+	void* vtable; // because it's easier, we just set this to &this, since CDedicatedExports has no props we care about other than funcs
+
+	char unused[56];
+
+	DedicatedSys_PrintfType Sys_Printf;
+	DedicatedRunServerType RunServer;
 };
 
-struct CEngine
+void Sys_Printf(CDedicatedExports* dedicated, char* msg)
 {
-public:
-	void* vtable;
-	
-	int m_nQuitting;
-	EngineState_t m_nDllState;
-	EngineState_t m_nNextDllState;
-	double m_flCurrentTime;
-	float m_flFrameTime;
-	double m_flPreviousTime;
-	float m_flFilteredTime;
-	float m_flMinFrameTime; // Expected duration of a frame, or zero if it is unlimited.
-};
+	spdlog::info("[DEDICATED PRINT] {}", msg);
+}
 
-enum HostState_t
+typedef bool (*CEngine__FrameType)(void* engineSelf);
+typedef void(*CHostState__InitType)(CHostState* self);
+
+void RunServer(CDedicatedExports* dedicated)
 {
-	HS_NEW_GAME = 0,
-	HS_LOAD_GAME,
-	HS_CHANGE_LEVEL_SP,
-	HS_CHANGE_LEVEL_MP,
-	HS_RUN,
-	HS_GAME_SHUTDOWN,
-	HS_SHUTDOWN,
-	HS_RESTART,
-};
+	Sys_Printf(dedicated, (char*)"CDedicatedExports::RunServer(): starting");
+
+	HMODULE engine = GetModuleHandleA("engine.dll");
+	CEngine__FrameType CEngine__Frame = (CEngine__FrameType)((char*)engine + 0x1C8650);
+	CHostState__InitType CHostState__Init = (CHostState__InitType)((char*)engine + 0x16E110);
+
+	// call once to init
+	CEngine__Frame(g_pEngine);
+
+	// init hoststate, if we don't do this, we get a crash later on
+	CHostState__Init(g_pHostState);
+
+	// set up engine and host states to allow us to enter CHostState::FrameUpdate, with the state HS_NEW_GAME
+	g_pEngine->m_nNextDllState = EngineState_t::DLL_ACTIVE;
+	g_pHostState->m_iNextState = HostState_t::HS_NEW_GAME;
+	strncpy(g_pHostState->m_levelName, CommandLine()->ParmValue("+map", "mp_lobby"), sizeof(g_pHostState->m_levelName)); // set map to load into
+
+	while (true)
+	{
+		CEngine__Frame(g_pEngine);
+
+		//engineApiStartSimulation(nullptr, true);
+		Sys_Printf(dedicated, (char*)"engine->Frame()");
+		Sleep(50);
+	}
+}
 
 void InitialiseDedicated(HMODULE engineAddress)
 {
@@ -53,21 +68,6 @@ void InitialiseDedicated(HMODULE engineAddress)
 		return;
 
 	spdlog::info("InitialiseDedicated");
-
-	//while (!IsDebuggerPresent())
-	//	Sleep(100);
-
-	// create binary patches
-	//{
-	//	// CEngineAPI::SetStartupInfo
-	//	// prevents englishclient_frontend from loading
-	//
-	//	char* ptr = (char*)engineAddress + 0x1C7CBE;
-	//	TempReadWrite rw(ptr);
-	//
-	//	// je => jmp
-	//	*ptr = (char)0xEB;
-	//}
 
 	{
 		// Host_Init
@@ -183,6 +183,33 @@ void InitialiseDedicated(HMODULE engineAddress)
 	}
 
 	{
+		// CEngineAPI::Connect
+		char* ptr = (char*)engineAddress + 0x1C4D7D;
+		TempReadWrite rw(ptr);
+
+		// remove call to Shader_Connect
+		*ptr = 0x90;
+		*(ptr + 1) = (char)0x90;
+		*(ptr + 2) = (char)0x90;
+		*(ptr + 3) = (char)0x90;
+		*(ptr + 4) = (char)0x90;
+	}
+
+	// not currently using this because it's for nopping renderthread/gamewindow stuff i.e. very hard
+	//{
+	//	// CEngineAPI::Init
+	//	char* ptr = (char*)engineAddress + 0x1C60CE;
+	//	TempReadWrite rw(ptr);
+	//
+	//	// remove call to something or other that reads video settings
+	//	*ptr = 0x90;
+	//	*(ptr + 1) = (char)0x90;
+	//	*(ptr + 2) = (char)0x90;
+	//	*(ptr + 3) = (char)0x90;
+	//	*(ptr + 4) = (char)0x90;
+	//}
+
+	{
 		// some inputsystem bullshit
 		char* ptr = (char*)engineAddress + 0x1CEE28;
 		TempReadWrite rw(ptr);
@@ -193,24 +220,14 @@ void InitialiseDedicated(HMODULE engineAddress)
 		*(ptr + 2) = (char)0x90;
 	}
 
+	CDedicatedExports* dedicatedExports = new CDedicatedExports;
+	dedicatedExports->vtable = dedicatedExports;
+	dedicatedExports->Sys_Printf = Sys_Printf;
+	dedicatedExports->RunServer = RunServer;
 
-	// materialsystem later:
-	// do materialsystem + 5f0f1 je => jmp to make material loading not die
-
-	CDedicatedExports* dedicatedApi = new CDedicatedExports;
-	dedicatedApi->Sys_Printf = Sys_Printf;
-	dedicatedApi->RunServer = RunServer;
-
-	// double ptr to dedicatedApi
-	intptr_t* ptr = (intptr_t*)((char*)engineAddress + 0x13F0B668);
+	CDedicatedExports** exports = (CDedicatedExports**)((char*)engineAddress + 0x13F0B668);
+	*exports = dedicatedExports;
 	
-	// ptr to dedicatedApi
-	intptr_t* doublePtr = new intptr_t;
-	*doublePtr = (intptr_t)dedicatedApi;
-
-	// ptr to ptr
-	*ptr = (intptr_t)doublePtr;
-
 	// extra potential patches:
 	// nop engine.dll+1c67d1 and +1c67d8 to skip videomode creategamewindow
 	// also look into launcher.dll+d381, seems to cause renderthread to get made
@@ -219,47 +236,6 @@ void InitialiseDedicated(HMODULE engineAddress)
 
 	// add cmdline args that are good for dedi
 	CommandLine()->AppendParm("-nomenuvid", 0);
-	CommandLine()->AppendParm("+host_preload_shaders", 0);
 	CommandLine()->AppendParm("-nosound", 0);
-}
-
-void Sys_Printf(CDedicatedExports* dedicated, char* msg)
-{
-	spdlog::info("[DEDICATED PRINT] {}", msg);
-}
-
-typedef void(*CHostState__InitType)(CHostState* self);
-
-void RunServer(CDedicatedExports* dedicated)
-{
-	while (!IsDebuggerPresent())Sleep(100);
-
-	Sys_Printf(dedicated, (char*)"CDedicatedServerAPI::RunServer(): starting");
-
-	HMODULE engine = GetModuleHandleA("engine.dll");
-	CEngine__Frame engineFrame = (CEngine__Frame)((char*)engine + 0x1C8650);
-	CEngine* cEnginePtr = (CEngine*)((char*)engine + 0x7D70C8);
-	CHostState* cHostStatePtr = (CHostState*)((char*)engine + 0x7CF180);
-	
-	CHostState__InitType CHostState__Init = (CHostState__InitType)((char*)engine + 0x16E110);
-
-	// call once to init
-	engineFrame(cEnginePtr);
-
-	// init hoststate, if we don't do this, we get a crash later on
-	CHostState__Init(cHostStatePtr);
-
-	// set up engine and host states to allow us to enter CHostState::FrameUpdate, with the state HS_NEW_GAME
-	cEnginePtr->m_nNextDllState = EngineState_t::DLL_ACTIVE;
-	cHostStatePtr->m_iNextState = HostState_t::HS_NEW_GAME;
-	strcpy(cHostStatePtr->m_levelName, "mp_lobby"); // set map to load into
-
-	while (true)
-	{
-		engineFrame(cEnginePtr);
-
-		//engineApiStartSimulation(nullptr, true);
-		Sys_Printf(dedicated, (char*)"engine->Frame()");
-		Sleep(50);
-	}
+	CommandLine()->AppendParm("+host_preload_shaders", "0");
 }
