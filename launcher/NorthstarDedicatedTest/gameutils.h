@@ -109,14 +109,31 @@ public:
 	float m_angLocation[3];
 
 	char m_levelName[32];
+	char m_mapGroupName[32];
+	char m_landmarkName[32];
+	char m_saveName[32];
+	float		m_flShortFrameTime;		// run a few one-tick frames to avoid large timesteps while loading assets
 
-	// not reversed past this point, struct seems weird
-	// pretty decent chance m_levelname is bigger, given it was 256 long in normal source
+	bool		m_activeGame;
+	bool		m_bRememberLocation;
+	bool		m_bBackgroundLevel;
+	bool		m_bWaitingForConnection;
+	bool		m_bLetToolsOverrideLoadGameEnts;	// During a load game, this tells Foundry to override ents that are selected in Hammer.
+	bool		m_bSplitScreenConnect;
+	bool		m_bGameHasShutDownAndFlushedMemory;	// This is false once we load a map into memory, and set to true once the map is unloaded and all memory flushed
+	bool		m_bWorkshopMapDownloadPending;
 };
 
 extern CHostState* g_pHostState;
 
 // cengine stuff
+
+enum EngineQuitState
+{
+	QUIT_NOTQUITTING = 0,
+	QUIT_TODESKTOP,
+	QUIT_RESTART
+};
 
 enum EngineState_t
 {
@@ -132,7 +149,7 @@ struct CEngine
 public:
 	void* vtable;
 
-	int m_nQuitting;
+	EngineQuitState m_nQuitting;
 	EngineState_t m_nDllState;
 	EngineState_t m_nNextDllState;
 	double m_flCurrentTime;

@@ -41,14 +41,10 @@ void RunServer(CDedicatedExports* dedicated)
 	CEngine__FrameType CEngine__Frame = (CEngine__FrameType)((char*)engine + 0x1C8650);
 	CHostState__InitType CHostState__Init = (CHostState__InitType)((char*)engine + 0x16E110);
 
-	// call once to init
-	CEngine__Frame(g_pEngine);
-
 	// init hoststate, if we don't do this, we get a crash later on
 	CHostState__Init(g_pHostState);
 
-	// set up engine and host states to allow us to enter CHostState::FrameUpdate, with the state HS_NEW_GAME
-	g_pEngine->m_nNextDllState = EngineState_t::DLL_ACTIVE;
+	// set host state to allow us to enter CHostState::FrameUpdate, with the state HS_NEW_GAME
 	g_pHostState->m_iNextState = HostState_t::HS_NEW_GAME;
 	strncpy(g_pHostState->m_levelName, CommandLine()->ParmValue("+map", "mp_lobby"), sizeof(g_pHostState->m_levelName)); // set map to load into
 
@@ -56,8 +52,7 @@ void RunServer(CDedicatedExports* dedicated)
 	{
 		CEngine__Frame(g_pEngine);
 
-		//engineApiStartSimulation(nullptr, true);
-		Sys_Printf(dedicated, (char*)"engine->Frame()");
+		spdlog::info("CEngine::Frame() on map {} took {}ms", g_pHostState->m_levelName, g_pEngine->m_flFrameTime);
 		Sleep(50);
 	}
 }
