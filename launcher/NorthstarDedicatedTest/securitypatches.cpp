@@ -3,6 +3,7 @@
 #include "hookutils.h"
 #include "concommand.h"
 #include "dedicated.h"
+#include "tier0.h"
 
 typedef bool(*IsValveModType)();
 IsValveModType IsValveMod;
@@ -12,9 +13,7 @@ bool IsValveModHook()
 	// basically: by default r2 isn't set as a valve mod, meaning that m_bRestrictServerCommands is false
 	// this is HORRIBLE for security, because it means servers can run arbitrary concommands on clients
 	// especially since we have script commands this could theoretically be awful
-
-	// todo: possibly have a commandline arg to disable this
-	return true;
+	return !CommandLine()->CheckParm("-norestrictservercommands");
 }
 
 void InitialiseClientEngineSecurityPatches(HMODULE baseAddress)

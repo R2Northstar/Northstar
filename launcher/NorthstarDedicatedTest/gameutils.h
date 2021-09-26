@@ -62,34 +62,48 @@ extern Cbuf_ExecuteType Cbuf_Execute;
 class CCommandLine
 {
 public:
+	// based on the defs in the 2013 source sdk, but for some reason has an extra function (may be another CreateCmdLine overload?)
+	// these seem to line up with what they should be though
 	virtual void CreateCmdLine(const char* commandline) {}
 	virtual void CreateCmdLine(int argc, char** argv) {}
+	virtual void unknown() {}
 	virtual const char* GetCmdLine(void) const {}
-	virtual const char* CheckParm(const char* psz, const char** ppszValue = 0) const {}
-	virtual bool HasParm(const char* psz) const {}
 
+	virtual const char* CheckParm(const char* psz, const char** ppszValue = 0) const {}
 	virtual void RemoveParm() const {}
 	virtual void AppendParm(const char* pszParm, const char* pszValues) {}
-
-	virtual int ParmCount() const {}
-	virtual int FindParm(const char* psz) const {}
-	virtual const char* GetParm(int nIndex) const {}
 
 	virtual const char* ParmValue(const char* psz, const char* pDefaultVal = 0) const {}
 	virtual int ParmValue(const char* psz, int nDefaultVal) const {}
 	virtual float ParmValue(const char* psz, float flDefaultVal) const {}
+
+	virtual int ParmCount() const {}
+	virtual int FindParm(const char* psz) const {}
+	virtual const char* GetParm(int nIndex) const {}
 	virtual void SetParm(int nIndex, char const* pParm) {}
 
-	virtual const char** GetParms() const {}
+	//virtual const char** GetParms() const {}
 };
 
 // hoststate stuff
 
+enum HostState_t
+{
+	HS_NEW_GAME = 0,
+	HS_LOAD_GAME,
+	HS_CHANGE_LEVEL_SP,
+	HS_CHANGE_LEVEL_MP,
+	HS_RUN,
+	HS_GAME_SHUTDOWN,
+	HS_SHUTDOWN,
+	HS_RESTART,
+};
+
 struct CHostState
 {
 public:
-	int32_t m_iCurrentState;
-	int32_t m_iNextState;
+	HostState_t m_iCurrentState;
+	HostState_t m_iNextState;
 
 	float m_vecLocation[3];
 	float m_angLocation[3];
@@ -97,9 +111,38 @@ public:
 	char m_levelName[32];
 
 	// not reversed past this point, struct seems weird
+	// pretty decent chance m_levelname is bigger, given it was 256 long in normal source
 };
 
-extern CHostState* g_GameCHostStateSingleton;
+extern CHostState* g_pHostState;
+
+// cengine stuff
+
+enum EngineState_t
+{
+	DLL_INACTIVE = 0,		// no dll
+	DLL_ACTIVE,				// engine is focused
+	DLL_CLOSE,				// closing down dll
+	DLL_RESTART,			// engine is shutting down but will restart right away
+	DLL_PAUSED,				// engine is paused, can become active from this state
+};
+
+struct CEngine
+{
+public:
+	void* vtable;
+
+	int m_nQuitting;
+	EngineState_t m_nDllState;
+	EngineState_t m_nNextDllState;
+	double m_flCurrentTime;
+	float m_flFrameTime;
+	double m_flPreviousTime;
+	float m_flFilteredTime;
+	float m_flMinFrameTime; // Expected duration of a frame, or zero if it is unlimited.
+};
+
+extern CEngine* g_pEngine;
 
 // network stuff
 

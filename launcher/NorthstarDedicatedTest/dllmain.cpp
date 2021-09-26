@@ -43,6 +43,16 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     return TRUE;
 }
 
+void WaitForDebugger(HMODULE baseAddress)
+{
+    // earlier waitfordebugger call than is in vanilla, just so we can debug stuff a little easier
+    if (CommandLine()->CheckParm("-waitfordebugger"))
+    {
+        while (!IsDebuggerPresent())
+            Sleep(100);
+    }
+}
+
 // in the future this will be called from launcher instead of dllmain
 void InitialiseNorthstar()
 {
@@ -52,6 +62,7 @@ void InitialiseNorthstar()
     InstallInitialHooks();
     InitialiseInterfaceCreationHooks();
 
+    AddDllLoadCallback("engine.dll", WaitForDebugger);
     AddDllLoadCallback("engine.dll", InitialiseEngineGameUtilFunctions);
 
     // dedi patches
