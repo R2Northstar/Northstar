@@ -5,6 +5,7 @@
 #include "sigscanning.h"
 #include "concommand.h"
 #include "modmanager.h"
+#include "dedicated.h"
 #include <iostream>
 
 // hook forward declarations
@@ -95,6 +96,9 @@ SQInteger NSTestFunc(void* sqvm)
 
 void InitialiseClientSquirrel(HMODULE baseAddress)
 {
+	if (IsDedicated())
+		return;
+
 	HookEnabler hook;
 
 	// client inits

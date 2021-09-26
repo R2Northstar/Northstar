@@ -84,7 +84,7 @@ int main() {
     memset(&startupInfo, 0, sizeof(startupInfo));
     memset(&processInfo, 0, sizeof(processInfo));
 
-    CreateProcessW(PROCESS_NAME, (LPWSTR)L"-multiple -novid", NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &startupInfo, &processInfo);
+    CreateProcessW(PROCESS_NAME, (wchar_t*)L" -multiple -novid", NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &startupInfo, &processInfo);
 
     HMODULE hKernel32 = GetModuleHandleW(L"kernel32.dll");
     LPTHREAD_START_ROUTINE pLoadLibraryW = (LPTHREAD_START_ROUTINE)GetProcAddress(hKernel32, "LoadLibraryW");
@@ -97,6 +97,9 @@ int main() {
 
     HANDLE hThread = CreateRemoteThread(processInfo.hProcess, NULL, NULL, pLoadLibraryW, lpLibName, NULL, NULL);
     WaitForSingleObject(hThread, INFINITE);
+
+    MessageBoxA(0, std::to_string(GetLastError()).c_str(), "", MB_OK);
+
     CloseHandle(hThread);
 
     ResumeThread(processInfo.hThread);

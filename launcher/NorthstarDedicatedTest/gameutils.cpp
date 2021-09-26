@@ -6,6 +6,7 @@
 // cmd.h
 Cbuf_GetCurrentPlayerType Cbuf_GetCurrentPlayer;
 Cbuf_AddTextType Cbuf_AddText;
+Cbuf_ExecuteType Cbuf_Execute;
 
 // hoststate stuff
 CHostState* g_GameCHostStateSingleton;
@@ -24,6 +25,7 @@ void InitialiseEngineGameUtilFunctions(HMODULE baseAddress)
 {
 	Cbuf_GetCurrentPlayer = (Cbuf_GetCurrentPlayerType)((char*)baseAddress + 0x120630);
 	Cbuf_AddText = (Cbuf_AddTextType)((char*)baseAddress + 0x1203B0);
+	Cbuf_Execute = (Cbuf_ExecuteType)((char*)baseAddress + 0x1204B0);
 
 	g_GameCHostStateSingleton = (CHostState*)((char*)baseAddress + 0x7CF180);
 

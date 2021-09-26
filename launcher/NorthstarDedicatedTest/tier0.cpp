@@ -55,6 +55,8 @@ void operator delete(void* p) throw()
 	//(*alloc)->m_vtable->Free(*alloc, p);
 }
 
+// honestly this all really sucks and should be reworked
+
 typedef void(*Tier0Error)(const char* fmt, ...);
 void Error(const char* fmt, ...)
 {
@@ -84,4 +86,12 @@ double Plat_FloatTime()
 		return tier0Func();
 	else
 		return 0.0f;
+}
+
+typedef CCommandLine*(*Tier0CommandLine)();
+CCommandLine* CommandLine()
+{
+	Tier0CommandLine tier0Func = (Tier0CommandLine)ResolveTier0Function("CommandLine");
+
+	return tier0Func();
 }

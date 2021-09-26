@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include "gameutils.h"
 
 // get exported tier0 by name 
 void* ResolveTier0Function(const char* name);
@@ -27,3 +28,5 @@ void operator delete(void* p) throw();
 void Error(const char* fmt, ...);
 
 double Plat_FloatTime();
+
+CCommandLine* CommandLine();
