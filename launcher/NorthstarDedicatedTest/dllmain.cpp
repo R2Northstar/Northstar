@@ -68,6 +68,7 @@ void InitialiseNorthstar()
     // dedi patches
     {
         AddDllLoadCallback("engine.dll", InitialiseDedicated);
+        AddDllLoadCallback("launcher.dll", InitialiseDedicatedOrigin);
         AddDllLoadCallback("materialsystem_dx11.dll", InitialiseDedicatedMaterialSystem);
     }
     
