@@ -239,6 +239,10 @@ typedef void(*Tier0_InitOriginType)();
 Tier0_InitOriginType Tier0_InitOrigin;
 void Tier0_InitOriginHook()
 {
+	// disable origin on dedicated
+	// for any big ea lawyers, this can't be used to play the game without origin, game will throw a fit if you try to do anything without an origin id as a client
+	// for dedi it's fine though, game doesn't care if origin is disabled as long as there's only a server
+
 	if (!IsDedicated())
 		Tier0_InitOrigin();
 }
