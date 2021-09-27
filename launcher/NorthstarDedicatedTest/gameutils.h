@@ -147,12 +147,13 @@ enum EngineState_t
 class CEngine
 {
 public:
+	virtual void unknown() {} // unsure if this is where 
 	virtual bool Load(bool dedicated, const char* baseDir) {}
 	virtual void Unload() {}
 	virtual void SetNextState(EngineState_t iNextState) {}
 	virtual EngineState_t GetState() {}
 	virtual void Frame() {}
-	virtual float GetFrameTime() {}
+	virtual double GetFrameTime() {}
 	virtual float GetCurTime() {}
 
 	EngineQuitState m_nQuitting;
@@ -170,7 +171,6 @@ extern CEngine* g_pEngine;
 // network stuff
 
 extern ConVar* Cvar_hostport;
-
 
 // playlist stuff
 

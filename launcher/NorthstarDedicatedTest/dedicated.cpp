@@ -52,9 +52,16 @@ void RunServer(CDedicatedExports* dedicated)
 	{
 		g_pEngine->Frame();
 
-		spdlog::info("g_pEngine->Frame() on map {} took {}ms", g_pHostState->m_levelName, g_pEngine->GetFrameTime());
+		SetConsoleTitleA(fmt::format("Titanfall 2 dedicated server - {} {}/{} players", g_pHostState->m_levelName, "0", "0").c_str());
 		Sleep(50);
 	}
+}
+
+typedef bool(*IsGameActiveWindowType)();
+IsGameActiveWindowType IsGameActiveWindow;
+bool IsGameActiveWindowHook()
+{
+	return true;
 }
 
 void InitialiseDedicated(HMODULE engineAddress)
@@ -143,14 +150,19 @@ void InitialiseDedicated(HMODULE engineAddress)
 		*(ptr + 4) = (char)0x90;
 		*(ptr + 5) = (char)0x90;
 		*(ptr + 6) = (char)0x90;
-		*(ptr + 7) = (char)0x90;
-		*(ptr + 8) = (char)0x90;
-		*(ptr + 9) = (char)0x90;
-		*(ptr + 10) = (char)0x90;
-		*(ptr + 11) = (char)0x90;
-		*(ptr + 12) = (char)0x90;
-		*(ptr + 13) = (char)0x90;
-		*(ptr + 14) = (char)0x90;
+
+		// previously patched these, took me a couple weeks to figure out they were the issue
+		// removing these will mess up register state when this function is over, so we'll write HS_RUN to the wrong address
+		// so uhh, don't do that
+		//*(ptr + 7) = (char)0x90;
+		//*(ptr + 8) = (char)0x90;
+		//*(ptr + 9) = (char)0x90;
+		//*(ptr + 10) = (char)0x90;
+		//*(ptr + 11) = (char)0x90;
+		//*(ptr + 12) = (char)0x90;
+		//*(ptr + 13) = (char)0x90;
+		//*(ptr + 14) = (char)0x90;
+
 		*(ptr + 15) = (char)0x90;
 		*(ptr + 16) = (char)0x90;
 		*(ptr + 17) = (char)0x90;
@@ -158,6 +170,8 @@ void InitialiseDedicated(HMODULE engineAddress)
 		*(ptr + 19) = (char)0x90;
 		*(ptr + 20) = (char)0x90;
 		*(ptr + 21) = (char)0x90;
+		*(ptr + 22) = (char)0x90;
+		*(ptr + 23) = (char)0x90;
 	}
 
 	{
@@ -215,6 +229,32 @@ void InitialiseDedicated(HMODULE engineAddress)
 		*(ptr + 2) = (char)0x90;
 	}
 
+	{
+		// some function that gets called from RunFrameServer
+		char* ptr = (char*)engineAddress + 0x15A0BB;
+		TempReadWrite rw(ptr);
+
+		// nop a function that makes requests to stryder, this will eventually access violation if left alone and isn't necessary anyway
+		*ptr = (char)0x90;
+		*(ptr + 1) = (char)0x90;
+		*(ptr + 2) = (char)0x90;
+		*(ptr + 3) = (char)0x90;
+		*(ptr + 4) = (char)0x90;
+	}
+
+	{
+		// some function that gets called from RunFrameServer
+		char* ptr = (char*)engineAddress + 0x159BF3;
+		TempReadWrite rw(ptr);
+
+		// nop a function that makes requests to stryder, this will eventually access violation if left alone and isn't necessary anyway
+		*ptr = (char)0x90;
+		*(ptr + 1) = (char)0x90;
+		*(ptr + 2) = (char)0x90;
+		*(ptr + 3) = (char)0x90;
+		*(ptr + 4) = (char)0x90;
+	}
+
 	CDedicatedExports* dedicatedExports = new CDedicatedExports;
 	dedicatedExports->vtable = dedicatedExports;
 	dedicatedExports->Sys_Printf = Sys_Printf;
@@ -222,6 +262,9 @@ void InitialiseDedicated(HMODULE engineAddress)
 
 	CDedicatedExports** exports = (CDedicatedExports**)((char*)engineAddress + 0x13F0B668);
 	*exports = dedicatedExports;
+
+	HookEnabler hook;
+	ENABLER_CREATEHOOK(hook, (char*)engineAddress + 0x1CDC80, &IsGameActiveWindowHook, reinterpret_cast<LPVOID*>(&IsGameActiveWindow));
 	
 	// extra potential patches:
 	// nop engine.dll+1c67d1 and +1c67d8 to skip videomode creategamewindow
