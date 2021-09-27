@@ -88,6 +88,15 @@ int main(int argc, char* argv[]) {
     std::wstring args;
     std::ifstream cmdlineArgFile;
 
+    args.append(L" ");
+    for (int i = 0; i < argc; i++)
+    {
+        std::string str = argv[i];
+
+        args.append(std::wstring(str.begin(), str.end()));
+        args.append(L" ");
+    }
+
     if (!isdedi)
         cmdlineArgFile = std::ifstream("ns_startup_args.txt");
     else
@@ -103,9 +112,9 @@ int main(int argc, char* argv[]) {
         args.append(std::wstring(str.begin(), str.end()));
     }
 
-    if (isdedi)
-        // copy -dedicated into args if we have it in commandline args
-        args.append(L" -dedicated");
+    //if (isdedi)
+    //    // copy -dedicated into args if we have it in commandline args
+    //    args.append(L" -dedicated");
 
     STARTUPINFO startupInfo;
     PROCESS_INFORMATION processInfo;
@@ -127,7 +136,7 @@ int main(int argc, char* argv[]) {
     HANDLE hThread = CreateRemoteThread(processInfo.hProcess, NULL, NULL, pLoadLibraryW, lpLibName, NULL, NULL);
     WaitForSingleObject(hThread, INFINITE);
 
-    MessageBoxA(0, std::to_string(GetLastError()).c_str(), "", MB_OK);
+    //MessageBoxA(0, std::to_string(GetLastError()).c_str(), "", MB_OK);
 
     CloseHandle(hThread);
 
