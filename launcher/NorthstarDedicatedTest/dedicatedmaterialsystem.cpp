@@ -8,6 +8,9 @@ void InitialiseDedicatedMaterialSystem(HMODULE baseAddress)
 {
 	if (!IsDedicated())
 		return;
+
+	//while (!IsDebuggerPresent())
+	//	Sleep(100);
 	
 	// not using these for now since they're related to nopping renderthread/gamewindow i.e. very hard
 	//{
@@ -43,5 +46,18 @@ void InitialiseDedicatedMaterialSystem(HMODULE baseAddress)
 		*(ptr + 1) = (char)0x34;
 		*(ptr + 2) = (char)0x03;
 		*(ptr + 3) = (char)0x00;
+	}
+
+	if (DisableDedicatedWindowCreation())
+	{
+		{
+			// some renderthread stuff
+			char* ptr = (char*)baseAddress + 0x8C10;
+			TempReadWrite rw(ptr);
+
+			// call => nop
+			*ptr = (char)0x90;
+			*(ptr + 1) = (char)0x90;
+		}
 	}
 }

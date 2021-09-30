@@ -180,6 +180,9 @@ extern GetCurrentPlaylistType GetCurrentPlaylistName;
 typedef void(*SetCurrentPlaylistType)(const char* playlistName);
 extern SetCurrentPlaylistType SetCurrentPlaylist;
 
+typedef void(*SetPlaylistVarOverrideType)(const char* varName, const char* value);
+extern SetPlaylistVarOverrideType SetPlaylistVarOverride;
+
 // uid
 
 extern char* g_LocalPlayerUserID;

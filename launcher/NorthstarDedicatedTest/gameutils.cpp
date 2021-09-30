@@ -20,6 +20,7 @@ ConVar* Cvar_hostport;
 // playlist stuff
 GetCurrentPlaylistType GetCurrentPlaylistName;
 SetCurrentPlaylistType SetCurrentPlaylist;
+SetPlaylistVarOverrideType SetPlaylistVarOverride;
 
 // uid
 char* g_LocalPlayerUserID;
@@ -37,6 +38,7 @@ void InitialiseEngineGameUtilFunctions(HMODULE baseAddress)
 
 	GetCurrentPlaylistName = (GetCurrentPlaylistType)((char*)baseAddress + 0x18C640);
 	SetCurrentPlaylist = (SetCurrentPlaylistType)((char*)baseAddress + 0x18EB20);
+	SetPlaylistVarOverride = (SetPlaylistVarOverrideType)((char*)baseAddress + 0x18ED17);
 
 	g_LocalPlayerUserID = (char*)baseAddress + 0x13F8E688;
 }
