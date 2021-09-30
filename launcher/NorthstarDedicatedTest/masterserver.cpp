@@ -17,7 +17,7 @@ ConVar* Cvar_ns_server_name;
 ConVar* Cvar_ns_server_desc;
 ConVar* Cvar_ns_server_password;
 
-MasterServerManager* g_MasterServerManager;
+std::unique_ptr<MasterServerManager> g_MasterServerManager;
 
 typedef void(*CHostState__State_NewGameType)(CHostState* hostState);
 CHostState__State_NewGameType CHostState__State_NewGame;
@@ -596,7 +596,7 @@ void InitialiseSharedMasterServer(HMODULE baseAddress)
 	Cvar_ns_server_password = RegisterConVar("ns_server_password", "", FCVAR_GAMEDLL, "");
 	Cvar_ns_report_server_to_masterserver = RegisterConVar("ns_report_server_to_masterserver", "1", FCVAR_GAMEDLL, "");
 	Cvar_ns_report_sp_server_to_masterserver = RegisterConVar("ns_report_sp_server_to_masterserver", "0", FCVAR_GAMEDLL, "");
-	g_MasterServerManager = new MasterServerManager;
+	g_MasterServerManager = std::make_unique<MasterServerManager>();
 
 	RegisterConCommand("ns_fetchservers", ConCommand_ns_fetchservers, "", FCVAR_CLIENTDLL);
 

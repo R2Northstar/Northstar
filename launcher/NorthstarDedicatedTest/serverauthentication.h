@@ -43,5 +43,5 @@ public:
 
 void InitialiseServerAuthentication(HMODULE baseAddress);
 
-extern ServerAuthenticationManager* g_ServerAuthenticationManager;
+extern std::unique_ptr<ServerAuthenticationManager> g_ServerAuthenticationManager;
 extern ConVar* Cvar_ns_player_auth_port;

@@ -85,9 +85,9 @@ sq_getfloatType ServerSq_getfloat;
 template<Context context> void ExecuteCodeCommand(const CCommand& args);
 
 // inits
-SquirrelManager<CLIENT>* g_ClientSquirrelManager;
-SquirrelManager<SERVER>* g_ServerSquirrelManager;
-SquirrelManager<UI>* g_UISquirrelManager;
+std::unique_ptr<SquirrelManager<CLIENT>> g_ClientSquirrelManager;
+std::unique_ptr<SquirrelManager<SERVER>> g_ServerSquirrelManager;
+std::unique_ptr<SquirrelManager<UI>> g_UISquirrelManager;
 
 SQInteger NSTestFunc(void* sqvm)
 {
@@ -102,13 +102,13 @@ void InitialiseClientSquirrel(HMODULE baseAddress)
 	HookEnabler hook;
 
 	// client inits
-	g_ClientSquirrelManager = new SquirrelManager<CLIENT>();
+	g_ClientSquirrelManager = std::make_unique<SquirrelManager<CLIENT>>();
 
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x12B00, &SQPrintHook<CLIENT>, reinterpret_cast<LPVOID*>(&ClientSQPrint)); // client print function
 	RegisterConCommand("script_client", ExecuteCodeCommand<CLIENT>, "Executes script code on the client vm", FCVAR_CLIENTDLL);
 
 	// ui inits
-	g_UISquirrelManager = new SquirrelManager<UI>();
+	g_UISquirrelManager = std::make_unique<SquirrelManager<UI>>();
 
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x12BA0, &SQPrintHook<UI>, reinterpret_cast<LPVOID*>(&UISQPrint)); // ui print function
 	RegisterConCommand("script_ui", ExecuteCodeCommand<UI>, "Executes script code on the ui vm", FCVAR_CLIENTDLL);
@@ -139,7 +139,7 @@ void InitialiseClientSquirrel(HMODULE baseAddress)
 
 void InitialiseServerSquirrel(HMODULE baseAddress)
 {
-	g_ServerSquirrelManager = new SquirrelManager<SERVER>();
+	g_ServerSquirrelManager = std::make_unique<SquirrelManager<SERVER>>();
 	g_ServerSquirrelManager->AddFuncRegistration("void", "SavePdataForEntityIndex", "int i", "idk", NSTestFunc);
 
 	HookEnabler hook;
@@ -278,16 +278,16 @@ template<Context context> char CallScriptInitCallbackHook(void* sqvm, const char
 		// todo: we need to verify if RunOn is valid for current state before calling callbacks
 		if (shouldCallCustomCallbacks)
 		{
-			for (Mod* mod : g_ModManager->m_loadedMods)
+			for (Mod mod : g_ModManager->m_loadedMods)
 			{
-				for (ModScript* script : mod->Scripts)
+				for (ModScript script : mod.Scripts)
 				{
-					for (ModScriptCallback* modCallback : script->Callbacks)
+					for (ModScriptCallback modCallback : script.Callbacks)
 					{
-						if (modCallback->Context == realContext && modCallback->BeforeCallback.length())
+						if (modCallback.Context == realContext && modCallback.BeforeCallback.length())
 						{
-							spdlog::info("Running custom {} script callback \"{}\"", GetContextName(realContext), modCallback->BeforeCallback);
-							ClientCallScriptInitCallback(sqvm, modCallback->BeforeCallback.c_str());
+							spdlog::info("Running custom {} script callback \"{}\"", GetContextName(realContext), modCallback.BeforeCallback);
+							ClientCallScriptInitCallback(sqvm, modCallback.BeforeCallback.c_str());
 						}
 					}
 				}
@@ -302,16 +302,16 @@ template<Context context> char CallScriptInitCallbackHook(void* sqvm, const char
 		// run after callbacks
 		if (shouldCallCustomCallbacks)
 		{
-			for (Mod* mod : g_ModManager->m_loadedMods)
+			for (Mod mod : g_ModManager->m_loadedMods)
 			{
-				for (ModScript* script : mod->Scripts)
+				for (ModScript script : mod.Scripts)
 				{
-					for (ModScriptCallback* modCallback : script->Callbacks)
+					for (ModScriptCallback modCallback : script.Callbacks)
 					{
-						if (modCallback->Context == realContext && modCallback->AfterCallback.length())
+						if (modCallback.Context == realContext && modCallback.AfterCallback.length())
 						{
-							spdlog::info("Running custom {} script callback \"{}\"", GetContextName(realContext), modCallback->AfterCallback);
-							ClientCallScriptInitCallback(sqvm, modCallback->AfterCallback.c_str());
+							spdlog::info("Running custom {} script callback \"{}\"", GetContextName(realContext), modCallback.AfterCallback);
+							ClientCallScriptInitCallback(sqvm, modCallback.AfterCallback.c_str());
 						}
 					}
 				}
@@ -327,16 +327,16 @@ template<Context context> char CallScriptInitCallbackHook(void* sqvm, const char
 		// todo: we need to verify if RunOn is valid for current state before calling callbacks
 		if (shouldCallCustomCallbacks)
 		{
-			for (Mod* mod : g_ModManager->m_loadedMods)
+			for (Mod mod : g_ModManager->m_loadedMods)
 			{
-				for (ModScript* script : mod->Scripts)
+				for (ModScript script : mod.Scripts)
 				{
-					for (ModScriptCallback* modCallback : script->Callbacks)
+					for (ModScriptCallback modCallback : script.Callbacks)
 					{
-						if (modCallback->Context == SERVER && modCallback->BeforeCallback.length())
+						if (modCallback.Context == SERVER && modCallback.BeforeCallback.length())
 						{
-							spdlog::info("Running custom {} script callback \"{}\"", GetContextName(context), modCallback->BeforeCallback);
-							ServerCallScriptInitCallback(sqvm, modCallback->BeforeCallback.c_str());
+							spdlog::info("Running custom {} script callback \"{}\"", GetContextName(context), modCallback.BeforeCallback);
+							ServerCallScriptInitCallback(sqvm, modCallback.BeforeCallback.c_str());
 						}
 					}
 				}
@@ -351,16 +351,16 @@ template<Context context> char CallScriptInitCallbackHook(void* sqvm, const char
 		// run after callbacks
 		if (shouldCallCustomCallbacks)
 		{
-			for (Mod* mod : g_ModManager->m_loadedMods)
+			for (Mod mod : g_ModManager->m_loadedMods)
 			{
-				for (ModScript* script : mod->Scripts)
+				for (ModScript script : mod.Scripts)
 				{
-					for (ModScriptCallback* modCallback : script->Callbacks)
+					for (ModScriptCallback modCallback : script.Callbacks)
 					{
-						if (modCallback->Context == SERVER  && modCallback->AfterCallback.length())
+						if (modCallback.Context == SERVER  && modCallback.AfterCallback.length())
 						{
-							spdlog::info("Running custom {} script callback \"{}\"", GetContextName(context), modCallback->AfterCallback);
-							ServerCallScriptInitCallback(sqvm, modCallback->AfterCallback.c_str());
+							spdlog::info("Running custom {} script callback \"{}\"", GetContextName(context), modCallback.AfterCallback);
+							ServerCallScriptInitCallback(sqvm, modCallback.AfterCallback.c_str());
 						}
 					}
 				}
