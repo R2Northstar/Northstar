@@ -58,7 +58,8 @@ void RunServer(CDedicatedExports* dedicated)
 	{
 		g_pEngine->Frame();
 
-		SetConsoleTitleA(fmt::format("Titanfall 2 dedicated server - {} {}/{} players", g_pHostState->m_levelName, g_ServerAuthenticationManager->m_additionalPlayerData.size(), "0").c_str());
+		// this way of getting playercount/maxplayers honestly really sucks, but not got any other methods of doing it rn
+		SetConsoleTitleA(fmt::format("Titanfall 2 dedicated server - {} {}/{} players", g_pHostState->m_levelName, g_ServerAuthenticationManager->m_additionalPlayerData.size(), GetCurrentPlaylistVar("max_players", false)).c_str());
 		Sleep(50);
 	}
 }
