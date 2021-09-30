@@ -2,7 +2,6 @@
 #include "convar.h"
 
 // cmd.h
-
 enum class ECommandTarget_t
 {
 	CBUF_FIRST_PLAYER = 0,
@@ -86,7 +85,6 @@ public:
 };
 
 // hoststate stuff
-
 enum HostState_t
 {
 	HS_NEW_GAME = 0,
@@ -127,7 +125,6 @@ public:
 extern CHostState* g_pHostState;
 
 // cengine stuff
-
 enum EngineQuitState
 {
 	QUIT_NOTQUITTING = 0,
@@ -169,11 +166,9 @@ public:
 extern CEngine* g_pEngine;
 
 // network stuff
-
 extern ConVar* Cvar_hostport;
 
 // playlist stuff
-
 typedef const char*(*GetCurrentPlaylistType)();
 extern GetCurrentPlaylistType GetCurrentPlaylistName;
 
@@ -183,8 +178,10 @@ extern SetCurrentPlaylistType SetCurrentPlaylist;
 typedef void(*SetPlaylistVarOverrideType)(const char* varName, const char* value);
 extern SetPlaylistVarOverrideType SetPlaylistVarOverride;
 
-// uid
+typedef char*(*GetCurrentPlaylistVarType)(const char* varName, bool useOverrides);
+extern GetCurrentPlaylistVarType GetCurrentPlaylistVar;
 
+// uid
 extern char* g_LocalPlayerUserID;
 
 void InitialiseEngineGameUtilFunctions(HMODULE baseAddress);

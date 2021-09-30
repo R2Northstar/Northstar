@@ -8,7 +8,7 @@ void* ResolveTier0Function(const char* name)
 	HMODULE tier0 = GetModuleHandle(L"tier0.dll");
 
 	// todo: maybe cache resolved funcs? idk the performance hit of getprocaddress
-	std::cout << "ResolveTier0Function " << name << " " << tier0 << "::" <<  GetProcAddress(tier0, name) << std::endl;
+	//std::cout << "ResolveTier0Function " << name << " " << tier0 << "::" <<  GetProcAddress(tier0, name) << std::endl;
 	return GetProcAddress(tier0, name);
 }
 
