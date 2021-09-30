@@ -64,6 +64,7 @@ void InitialiseNorthstar()
 
     AddDllLoadCallback("engine.dll", WaitForDebugger);
     AddDllLoadCallback("engine.dll", InitialiseEngineGameUtilFunctions);
+    AddDllLoadCallback("engine.dll", InitialiseEngineSpewFuncHooks);
 
     // dedi patches
     {

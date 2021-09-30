@@ -3,10 +3,16 @@
 #include "hookutils.h"
 #include "tier0.h"
 #include "gameutils.h"
+#include "serverauthentication.h"
 
 bool IsDedicated()
 {
 	return CommandLine()->CheckParm("-dedicated");
+}
+
+bool DisableDedicatedWindowCreation()
+{
+	return !CommandLine()->CheckParm("-windoweddedi");
 }
 
 // CDedidcatedExports defs
@@ -52,7 +58,7 @@ void RunServer(CDedicatedExports* dedicated)
 	{
 		g_pEngine->Frame();
 
-		SetConsoleTitleA(fmt::format("Titanfall 2 dedicated server - {} {}/{} players", g_pHostState->m_levelName, "0", "0").c_str());
+		SetConsoleTitleA(fmt::format("Titanfall 2 dedicated server - {} {}/{} players", g_pHostState->m_levelName, g_ServerAuthenticationManager->m_additionalPlayerData.size(), "0").c_str());
 		Sleep(50);
 	}
 }
@@ -204,13 +210,13 @@ void InitialiseDedicated(HMODULE engineAddress)
 		*(ptr + 4) = (char)0x90;
 	}
 
-	// not currently using this because it's for nopping renderthread/gamewindow stuff i.e. very hard
+	// currently does not work, crashes stuff, likely gotta keep this here
 	//{
-	//	// CEngineAPI::Init
-	//	char* ptr = (char*)engineAddress + 0x1C60CE;
+	//	// CEngineAPI::Connect
+	//	char* ptr = (char*)engineAddress + 0x1C4E07;
 	//	TempReadWrite rw(ptr);
-	//
-	//	// remove call to something or other that reads video settings
+	//	
+	//	// remove calls to register ui rpak asset types
 	//	*ptr = 0x90;
 	//	*(ptr + 1) = (char)0x90;
 	//	*(ptr + 2) = (char)0x90;
@@ -218,15 +224,27 @@ void InitialiseDedicated(HMODULE engineAddress)
 	//	*(ptr + 4) = (char)0x90;
 	//}
 
+	// not sure if this should be done, not loading ui at least is good, but should everything be gone?
 	{
-		// some inputsystem bullshit
-		char* ptr = (char*)engineAddress + 0x1CEE28;
+		// Host_Init
+		char* ptr = (char*)engineAddress + 0x15653B;
 		TempReadWrite rw(ptr);
 
-		// nop an accessviolation: temp because we still create game window atm
-		*ptr = (char)0x90;
+		// change the number of rpaks to load from 6 to 1, so we only load common.rpak
+		*(ptr + 1) = (char)0x01;
+	}
+
+	{
+		// Host_Init
+		char* ptr = (char*)engineAddress + 0x156595;
+		TempReadWrite rw(ptr);
+
+		// remove call to ui loading stuff
+		*ptr = 0x90;
 		*(ptr + 1) = (char)0x90;
 		*(ptr + 2) = (char)0x90;
+		*(ptr + 3) = (char)0x90;
+		*(ptr + 4) = (char)0x90;
 	}
 
 	{
@@ -243,16 +261,99 @@ void InitialiseDedicated(HMODULE engineAddress)
 	}
 
 	{
-		// some function that gets called from RunFrameServer
+		// RunFrameServer
 		char* ptr = (char*)engineAddress + 0x159BF3;
 		TempReadWrite rw(ptr);
 
-		// nop a function that makes requests to stryder, this will eventually access violation if left alone and isn't necessary anyway
+		// nop a function that access violations
 		*ptr = (char)0x90;
 		*(ptr + 1) = (char)0x90;
 		*(ptr + 2) = (char)0x90;
 		*(ptr + 3) = (char)0x90;
 		*(ptr + 4) = (char)0x90;
+	}
+
+	// stuff that disables renderer/window creation: unstable atm
+	if (DisableDedicatedWindowCreation())
+	{
+		{
+			// CEngineAPI::Init
+			char* ptr = (char*)engineAddress + 0x1C60CE;
+			TempReadWrite rw(ptr);
+
+			// remove call to something or other that reads video settings
+			*ptr = (char)0x90;
+			*(ptr + 1) = (char)0x90;
+			*(ptr + 2) = (char)0x90;
+			*(ptr + 3) = (char)0x90;
+			*(ptr + 4) = (char)0x90;
+		}
+
+		{
+			// some inputsystem bullshit
+			char* ptr = (char*)engineAddress + 0x1CEE28;
+			TempReadWrite rw(ptr);
+
+			// nop an accessviolation: temp because we still create game window atm
+			*ptr = (char)0x90;
+			*(ptr + 1) = (char)0x90;
+			*(ptr + 2) = (char)0x90;
+		}
+
+		//{
+		//	// CEngineAPI::ModInit
+		//	char* ptr = (char*)engineAddress + 0x1C67D1;
+		//	TempReadWrite rw(ptr);
+		//
+		//	// prevent game window from being created
+		//	*ptr = (char)0x90;
+		//	*(ptr + 1) = (char)0x90;
+		//	*(ptr + 2) = (char)0x90;
+		//	*(ptr + 3) = (char)0x90;
+		//	*(ptr + 4) = (char)0x90;
+		//
+		//	*(ptr + 7) = (char)0xEB; // jnz => jmp
+		//}
+		
+		// note: this is a different way of nopping window creation, i'm assuming there are like a shitload of inits here we shouldn't skip
+		// i know at the very least it registers datatables which are important
+		{
+			// IVideoMode::CreateGameWindow
+			char* ptr = (char*)engineAddress + 0x1CD0ED;
+			TempReadWrite rw(ptr);
+
+			// prevent game window from being created
+			*ptr = (char)0x90;
+			*(ptr + 1) = (char)0x90;
+			*(ptr + 2) = (char)0x90;
+			*(ptr + 3) = (char)0x90;
+			*(ptr + 4) = (char)0x90;
+		}
+
+		{
+			// IVideoMode::CreateGameWindow
+			char* ptr = (char*)engineAddress + 0x1CD146;
+			TempReadWrite rw(ptr);
+
+			// prevent game from calling a matsystem function that will crash here
+			//*ptr = (char)0x90;
+			//*(ptr + 1) = (char)0x90;
+			//*(ptr + 2) = (char)0x90;
+			//*(ptr + 3) = (char)0x90;
+			//*(ptr + 4) = (char)0x90;
+		}
+
+		{
+			// IVideoMode::CreateGameWindow
+			char* ptr = (char*)engineAddress + 0x1CD160;
+			TempReadWrite rw(ptr);
+
+			// prevent game from complaining about window not being created
+			*ptr = (char)0x90;
+			*(ptr + 1) = (char)0x90;
+		}
+
+		CommandLine()->AppendParm("-noshaderapi", 0);
 	}
 
 	CDedicatedExports* dedicatedExports = new CDedicatedExports;
@@ -271,6 +372,9 @@ void InitialiseDedicated(HMODULE engineAddress)
 	// also look into launcher.dll+d381, seems to cause renderthread to get made
 	// this crashes HARD if no window which makes sense tbh
 	// also look into materialsystem + 5B344 since it seems to be the base of all the renderthread stuff
+
+	// big note: datatable gets registered in window creation
+	// make sure it still gets registered
 
 	// add cmdline args that are good for dedi
 	CommandLine()->AppendParm("-nomenuvid", 0);
