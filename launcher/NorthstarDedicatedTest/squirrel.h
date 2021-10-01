@@ -211,6 +211,6 @@ public:
 	}
 };
 
-extern std::unique_ptr<SquirrelManager<CLIENT>> g_ClientSquirrelManager;
-extern std::unique_ptr<SquirrelManager<SERVER>> g_ServerSquirrelManager;
-extern std::unique_ptr<SquirrelManager<UI>> g_UISquirrelManager;
+extern SquirrelManager<CLIENT>* g_ClientSquirrelManager;
+extern SquirrelManager<SERVER>* g_ServerSquirrelManager;
+extern SquirrelManager<UI>* g_UISquirrelManager;

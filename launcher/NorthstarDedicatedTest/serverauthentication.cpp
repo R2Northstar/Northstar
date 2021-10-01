@@ -29,7 +29,7 @@ typedef char(*CGameClient__ExecuteStringCommandType)(void* self, uint32_t unknow
 CGameClient__ExecuteStringCommandType CGameClient__ExecuteStringCommand;
 
 // global vars
-std::unique_ptr<ServerAuthenticationManager> g_ServerAuthenticationManager;
+ServerAuthenticationManager* g_ServerAuthenticationManager;
 
 ConVar* Cvar_ns_player_auth_port;
 ConVar* Cvar_ns_erase_auth_info;
@@ -299,7 +299,7 @@ char CGameClient__ExecuteStringCommandHook(void* self, uint32_t unknown, const c
 
 void InitialiseServerAuthentication(HMODULE baseAddress)
 {
-	g_ServerAuthenticationManager = std::make_unique<ServerAuthenticationManager>();
+	g_ServerAuthenticationManager = new ServerAuthenticationManager;
 
 	Cvar_ns_erase_auth_info = RegisterConVar("ns_erase_auth_info", "1", FCVAR_GAMEDLL, "Whether auth info should be erased from this server on disconnect or crash");
 	CVar_ns_auth_allow_insecure = RegisterConVar("ns_auth_allow_insecure", "0", FCVAR_GAMEDLL, "Whether this server will allow unauthenicated players to connect");
