@@ -69,5 +69,5 @@ public:
 
 void InitialiseSharedMasterServer(HMODULE baseAddress);
 
-extern std::unique_ptr<MasterServerManager> g_MasterServerManager;
+extern MasterServerManager* g_MasterServerManager;
 extern ConVar* Cvar_ns_masterserver_hostname;
