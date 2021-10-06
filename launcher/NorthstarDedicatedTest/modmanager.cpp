@@ -5,6 +5,8 @@
 
 #include "rapidjson/error/en.h"
 #include "rapidjson/document.h"
+#include "rapidjson/ostreamwrapper.h"
+#include "rapidjson/writer.h"
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -184,12 +186,31 @@ ModManager::ModManager()
 
 void ModManager::LoadMods()
 {
-	UnloadMods();
+	if (m_hasLoadedMods)
+		UnloadMods();
+
+	m_hasLoadedMods = true;
 
 	std::vector<fs::path> modDirs;
 
 	// ensure dirs exist
+	fs::remove_all(COMPILED_ASSETS_PATH);
 	fs::create_directories(MOD_FOLDER_PATH);
+
+	// read enabled mods cfg
+	std::ifstream enabledModsStream("R2Northstar/enabledmods.json");
+	std::stringstream enabledModsStringStream;
+
+	if (!enabledModsStream.fail())
+	{
+		while (enabledModsStream.peek() != EOF)
+			enabledModsStringStream << (char)enabledModsStream.get();
+
+		enabledModsStream.close();
+		m_enabledModsCfg.Parse<rapidjson::ParseFlag::kParseCommentsFlag | rapidjson::ParseFlag::kParseTrailingCommasFlag>(enabledModsStringStream.str().c_str());
+		
+		m_hasEnabledModsCfg = m_enabledModsCfg.IsObject();
+	}
 
 	// get mod directories
 	for (fs::directory_entry dir : fs::directory_iterator(MOD_FOLDER_PATH))
@@ -215,6 +236,11 @@ void ModManager::LoadMods()
 		jsonStream.close();
 	
 		Mod* mod = new Mod(modDir, (char*)jsonStringStream.str().c_str());
+
+		if (m_hasEnabledModsCfg && m_enabledModsCfg.HasMember(mod->Name.c_str()))
+			mod->Enabled = m_enabledModsCfg[mod->Name.c_str()].IsTrue();
+		else
+			mod->Enabled = true;
 
 		if (mod->wasReadSuccessfully)
 		{
@@ -311,6 +337,9 @@ void ModManager::UnloadMods()
 	m_modFiles.clear();
 	fs::remove_all(COMPILED_ASSETS_PATH);
 
+	if (!m_hasEnabledModsCfg)
+		m_enabledModsCfg.SetObject();
+
 	for (Mod* mod : m_loadedMods)
 	{	
 		// remove all built kvs
@@ -319,7 +348,18 @@ void ModManager::UnloadMods()
 
 		mod->KeyValuesHash.clear();
 		mod->KeyValues.clear();
+
+		// write to m_enabledModsCfg
+		if (!m_enabledModsCfg.HasMember(mod->Name.c_str()))
+			m_enabledModsCfg.AddMember(rapidjson::StringRef(mod->Name.c_str()), rapidjson::Value(false), m_enabledModsCfg.GetAllocator());
+
+		m_enabledModsCfg[mod->Name.c_str()].SetBool(mod->Enabled);
 	}
+
+	std::ofstream writeStream("R2Northstar/enabledmods.json");
+	rapidjson::OStreamWrapper writeStreamWrapper(writeStream);
+	rapidjson::Writer<rapidjson::OStreamWrapper> writer(writeStreamWrapper);
+	m_enabledModsCfg.Accept(writer);
 
 	// do we need to dealloc individual entries in m_loadedMods? idk, rework
 	m_loadedMods.clear();
@@ -336,6 +376,9 @@ void ModManager::CompileAssetsForFile(const char* filename)
 		// check if we should build keyvalues, depending on whether any of our mods have patch kvs for this file
 		for (Mod* mod : m_loadedMods)
 		{
+			if (!mod->Enabled)
+				continue;
+
 			size_t fileHash = std::hash<std::string>{}(fs::path(filename).lexically_normal().string());
 			if (std::find(mod->KeyValuesHash.begin(), mod->KeyValuesHash.end(), fileHash) != mod->KeyValuesHash.end())
 			{

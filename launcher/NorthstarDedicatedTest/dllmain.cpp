@@ -2,6 +2,7 @@
 #include "hooks.h"
 #include "main.h"
 #include "squirrel.h"
+#include "tier0.h"
 #include "dedicated.h"
 #include "dedicatedmaterialsystem.h"
 #include "sourceconsole.h"

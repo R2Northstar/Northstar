@@ -114,6 +114,10 @@ typedef SQFloat(*sq_getfloatType)(void*, SQInteger stackpos);
 extern sq_getfloatType ClientSq_getfloat;
 extern sq_getfloatType ServerSq_getfloat;
 
+typedef SQBool(*sq_getboolType)(void*, SQInteger stackpos);
+extern sq_getboolType ClientSq_getbool;
+extern sq_getboolType ServerSq_getbool;
+
 
 template<Context context> class SquirrelManager
 {
