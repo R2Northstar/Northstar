@@ -81,6 +81,9 @@ sq_getintegerType ServerSq_getinteger;
 sq_getfloatType ClientSq_getfloat;
 sq_getfloatType ServerSq_getfloat;
 
+sq_getboolType ClientSq_getbool;
+sq_getboolType ServerSq_getbool;
+
 
 template<Context context> void ExecuteCodeCommand(const CCommand& args);
 
@@ -130,6 +133,7 @@ void InitialiseClientSquirrel(HMODULE baseAddress)
 	ClientSq_getstring = (sq_getstringType)((char*)baseAddress + 0x60C0);
 	ClientSq_getinteger = (sq_getintegerType)((char*)baseAddress + 0x60E0);
 	ClientSq_getfloat = (sq_getfloatType)((char*)baseAddress + 0x6100);
+	ClientSq_getbool = (sq_getboolType)((char*)baseAddress + 0x6130);
 
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x26130, &CreateNewVMHook<CLIENT>, reinterpret_cast<LPVOID*>(&ClientCreateNewVM)); // client createnewvm function
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x26E70, &DestroyVMHook<CLIENT>, reinterpret_cast<LPVOID*>(&ClientDestroyVM)); // client destroyvm function
@@ -140,7 +144,6 @@ void InitialiseClientSquirrel(HMODULE baseAddress)
 void InitialiseServerSquirrel(HMODULE baseAddress)
 {
 	g_ServerSquirrelManager = new SquirrelManager<SERVER>();
-	g_ServerSquirrelManager->AddFuncRegistration("void", "SavePdataForEntityIndex", "int i", "idk", NSTestFunc);
 
 	HookEnabler hook;
 
@@ -160,6 +163,7 @@ void InitialiseServerSquirrel(HMODULE baseAddress)
 	ServerSq_getstring = (sq_getstringType)((char*)baseAddress + 0x60A0);
 	ServerSq_getinteger = (sq_getintegerType)((char*)baseAddress + 0x60C0);
 	ServerSq_getfloat = (sq_getfloatType)((char*)baseAddress + 0x60E0);
+	ServerSq_getbool = (sq_getboolType)((char*)baseAddress + 0x6110);
 
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1FE90, &SQPrintHook<SERVER>, reinterpret_cast<LPVOID*>(&ServerSQPrint)); // server print function
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x260E0, &CreateNewVMHook<SERVER>, reinterpret_cast<LPVOID*>(&ServerCreateNewVM)); // server createnewvm function
@@ -280,6 +284,9 @@ template<Context context> char CallScriptInitCallbackHook(void* sqvm, const char
 		{
 			for (Mod* mod : g_ModManager->m_loadedMods)
 			{
+				if (!mod->Enabled)
+					continue;
+
 				for (ModScript* script : mod->Scripts)
 				{
 					for (ModScriptCallback* modCallback : script->Callbacks)
@@ -304,6 +311,9 @@ template<Context context> char CallScriptInitCallbackHook(void* sqvm, const char
 		{
 			for (Mod* mod : g_ModManager->m_loadedMods)
 			{
+				if (!mod->Enabled)
+					continue;
+
 				for (ModScript* script : mod->Scripts)
 				{
 					for (ModScriptCallback* modCallback : script->Callbacks)
@@ -329,6 +339,9 @@ template<Context context> char CallScriptInitCallbackHook(void* sqvm, const char
 		{
 			for (Mod* mod : g_ModManager->m_loadedMods)
 			{
+				if (!mod->Enabled)
+					continue;
+
 				for (ModScript* script : mod->Scripts)
 				{
 					for (ModScriptCallback* modCallback : script->Callbacks)
@@ -353,6 +366,9 @@ template<Context context> char CallScriptInitCallbackHook(void* sqvm, const char
 		{
 			for (Mod* mod : g_ModManager->m_loadedMods)
 			{
+				if (!mod->Enabled)
+					continue;
+
 				for (ModScript* script : mod->Scripts)
 				{
 					for (ModScriptCallback* modCallback : script->Callbacks)

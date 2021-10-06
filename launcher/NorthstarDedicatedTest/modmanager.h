@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <filesystem>
+#include "rapidjson/document.h"
 
 namespace fs = std::filesystem;
 
@@ -96,6 +97,11 @@ public:
 
 class ModManager
 {
+private:
+	bool m_hasLoadedMods = false;
+	bool m_hasEnabledModsCfg;
+	rapidjson::Document m_enabledModsCfg;
+
 public:
 	std::vector<Mod*> m_loadedMods;
 	std::unordered_map<std::string, ModOverrideFile*> m_modFiles;

@@ -18,6 +18,43 @@ SQInteger SQ_GetModNames(void* sqvm)
 	return 1;
 }
 
+// bool NSIsModEnabled(string modName)
+SQInteger SQ_IsModEnabled(void* sqvm)
+{
+	const SQChar* modName = ClientSq_getstring(sqvm, 1);
+
+	// manual lookup, not super performant but eh not a big deal
+	for (Mod* mod : g_ModManager->m_loadedMods)
+	{
+		if (!mod->Name.compare(modName))
+		{
+			ClientSq_pushbool(sqvm, mod->Enabled);
+			return 1;
+		}
+	}
+
+	return 0; // return null
+}
+
+// void NSSetModEnabled(string modName, bool enabled)
+SQInteger SQ_SetModEnabled(void* sqvm)
+{
+	const SQChar* modName = ClientSq_getstring(sqvm, 1);
+	const SQBool enabled = ClientSq_getbool(sqvm, 2);
+
+	// manual lookup, not super performant but eh not a big deal
+	for (Mod* mod : g_ModManager->m_loadedMods)
+	{
+		if (!mod->Name.compare(modName))
+		{
+			mod->Enabled = enabled;
+			return 0; // return null
+		}
+	}
+
+	return 0; // return null
+}
+
 // string NSGetModDescriptionByModName(string modName)
 SQInteger SQ_GetModDescription(void* sqvm)
 {
@@ -127,6 +164,8 @@ void InitialiseScriptModMenu(HMODULE baseAddress)
 		return;
 
 	g_UISquirrelManager->AddFuncRegistration("array<string>", "NSGetModNames", "", "Returns the names of all loaded mods", SQ_GetModNames);
+	g_UISquirrelManager->AddFuncRegistration("bool", "NSIsModEnabled", "string modName", "Returns whether a given mod is enabled", SQ_IsModEnabled);
+	g_UISquirrelManager->AddFuncRegistration("void", "NSSetModEnabled", "string modName, bool enabled", "Sets whether a given mod is enabled", SQ_SetModEnabled);
 	g_UISquirrelManager->AddFuncRegistration("string", "NSGetModDescriptionByModName", "string modName", "Returns a given mod's description", SQ_GetModDescription);
 	g_UISquirrelManager->AddFuncRegistration("string", "NSGetModVersionByModName", "string modName", "Returns a given mod's version", SQ_GetModVersion);	
 	g_UISquirrelManager->AddFuncRegistration("string", "NSGetModDownloadLinkByModName", "string modName", "Returns a given mod's download link", SQ_GetModDownloadLink);

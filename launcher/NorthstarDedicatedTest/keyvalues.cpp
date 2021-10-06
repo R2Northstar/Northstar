@@ -52,6 +52,9 @@ void ModManager::TryBuildKeyValues(const char* filename)
 	// note: #include should be identical but it's actually just broken, thanks respawn
 	for (int i = m_loadedMods.size() - 1; i > -1; i--)
 	{
+		if (!m_loadedMods[i]->Enabled)
+			continue;
+
 		size_t fileHash = std::hash<std::string>{}(normalisedPath);
 		for (int j = 0; j < m_loadedMods[i]->KeyValuesHash.size(); j++)
 		{

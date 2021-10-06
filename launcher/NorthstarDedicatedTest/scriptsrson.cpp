@@ -19,6 +19,9 @@ void ModManager::BuildScriptsRson()
 
 	for (Mod* mod : m_loadedMods)
 	{
+		if (!mod->Enabled)
+			continue;
+
 		// this isn't needed at all, just nice to have imo
 		scriptsRson += "// MOD: ";
 		scriptsRson += mod->Name;
