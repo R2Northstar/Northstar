@@ -573,6 +573,9 @@
     <ClInclude Include="dedicatedmaterialsystem.h">
       <Filter>Header Files\Dedicated</Filter>
     </ClInclude>
+    <ClInclude Include="misccommands.h">
+      <Filter>Header Files\Shared\Convar</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -658,6 +661,9 @@
     </ClCompile>
     <ClCompile Include="dedicatedmaterialsystem.cpp">
       <Filter>Source Files\Dedicated</Filter>
+    </ClCompile>
+    <ClCompile Include="misccommands.cpp">
+      <Filter>Source Files\Shared\Convar</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
