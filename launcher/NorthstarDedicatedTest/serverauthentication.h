@@ -17,6 +17,7 @@ struct AdditionalPlayerData
 {
 	bool usingLocalPdata;
 	size_t pdataSize;
+	bool needPersistenceWriteOnLeave = true;
 
 	double lastClientCommandQuotaStart = 0;
 	int numClientCommandsInQuota = 0;

@@ -5,6 +5,7 @@
 #include "hookutils.h"
 #include "httplib.h"
 #include "serverauthentication.h"
+#include "gameutils.h"
 #include "rapidjson/document.h"
 #include "rapidjson/error/en.h"
 
@@ -560,7 +561,7 @@ void CHostState__State_NewGameHook(CHostState* hostState)
 	Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec autoexec_ns_server", cmd_source_t::kCommandSrcCode);
 	Cbuf_Execute();
 
-	g_MasterServerManager->AddSelfToServerList(Cvar_hostport->m_nValue, Cvar_ns_player_auth_port->m_nValue, Cvar_ns_server_name->m_pszString, Cvar_ns_server_desc->m_pszString, hostState->m_levelName, (char*)GetCurrentPlaylistName(), 16, Cvar_ns_server_password->m_pszString);
+	g_MasterServerManager->AddSelfToServerList(Cvar_hostport->m_nValue, Cvar_ns_player_auth_port->m_nValue, Cvar_ns_server_name->m_pszString, Cvar_ns_server_desc->m_pszString, hostState->m_levelName, (char*)GetCurrentPlaylistName(), std::stoi(GetCurrentPlaylistVar("max_players", true)), Cvar_ns_server_password->m_pszString);
 	g_ServerAuthenticationManager->StartPlayerAuthServer();
 
 	CHostState__State_NewGame(hostState);

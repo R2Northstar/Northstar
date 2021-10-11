@@ -1,0 +1,1 @@
+void InitialiseServerScriptPersistence(HMODULE baseAddress);
