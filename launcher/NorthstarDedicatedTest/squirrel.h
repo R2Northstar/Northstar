@@ -118,6 +118,10 @@ typedef SQBool(*sq_getboolType)(void*, SQInteger stackpos);
 extern sq_getboolType ClientSq_getbool;
 extern sq_getboolType ServerSq_getbool;
 
+typedef SQBool(*sq_getentityType)(void*, void** entity);
+extern sq_getentityType ClientSq_getentity;
+extern sq_getentityType ServerSq_getentity;
+
 
 template<Context context> class SquirrelManager
 {

@@ -20,6 +20,7 @@
 #include "modlocalisation.h"
 #include "playlist.h"
 #include "securitypatches.h"
+#include "serverscriptpersistence.h"
 
 bool initialised = false;
 
@@ -91,6 +92,7 @@ void InitialiseNorthstar()
     AddDllLoadCallback("server.dll", InitialiseServerSquirrel);
     AddDllLoadCallback("engine.dll", InitialiseServerAuthentication);
     AddDllLoadCallback("engine.dll", InitialiseSharedMasterServer);
+    AddDllLoadCallback("server.dll", InitialiseServerScriptPersistence);
 
     AddDllLoadCallback("engine.dll", InitialisePlaylistHooks);
 

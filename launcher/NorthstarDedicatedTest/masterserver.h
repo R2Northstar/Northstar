@@ -2,6 +2,13 @@
 #include "convar.h"
 #include <WinSock2.h>
 
+struct RemoteServerModInfo
+{
+public:
+	std::string modName;
+	std::string modServer;
+};
+
 class RemoteServerInfo
 {
 public:
@@ -12,6 +19,7 @@ public:
 	std::string description;
 	char map[32];
 	char playlist[16];
+	std::vector<RemoteServerModInfo> requiredMods;
 
 	int playerCount;
 	int maxPlayers;
@@ -37,12 +45,12 @@ class MasterServerManager
 private:
 	bool m_requestingServerList = false;
 	bool m_authenticatingWithGameServer = false;
-	bool m_savingPersistentData = false;
 
 public:
 	char m_ownServerId[33];
 
 	bool m_bRequireClientAuth = false;
+	bool m_savingPersistentData = false;
 
 	bool m_scriptRequestingServerList = false;
 	bool m_successfullyConnected = true;

@@ -576,6 +576,9 @@
     <ClInclude Include="misccommands.h">
       <Filter>Header Files\Shared\Convar</Filter>
     </ClInclude>
+    <ClInclude Include="serverscriptpersistence.h">
+      <Filter>Header Files\Server</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -664,6 +667,9 @@
     </ClCompile>
     <ClCompile Include="misccommands.cpp">
       <Filter>Source Files\Shared\Convar</Filter>
+    </ClCompile>
+    <ClCompile Include="serverscriptpersistence.cpp">
+      <Filter>Source Files\Server</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

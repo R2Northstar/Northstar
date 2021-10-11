@@ -245,6 +245,11 @@ void ModManager::LoadMods()
 		if (mod->wasReadSuccessfully)
 		{
 			spdlog::info("Loaded mod {} successfully", mod->Name);
+			if (mod->Enabled)
+				spdlog::info("Mod {} is enabled", mod->Name);
+			else
+				spdlog::info("Mod {} is disabled", mod->Name);
+
 			m_loadedMods.push_back(mod);
 		}
 		else

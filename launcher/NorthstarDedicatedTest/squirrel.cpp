@@ -84,6 +84,9 @@ sq_getfloatType ServerSq_getfloat;
 sq_getboolType ClientSq_getbool;
 sq_getboolType ServerSq_getbool;
 
+sq_getentityType ClientSq_getentity;
+sq_getentityType ServerSq_getentity;
+
 
 template<Context context> void ExecuteCodeCommand(const CCommand& args);
 
@@ -134,6 +137,7 @@ void InitialiseClientSquirrel(HMODULE baseAddress)
 	ClientSq_getinteger = (sq_getintegerType)((char*)baseAddress + 0x60E0);
 	ClientSq_getfloat = (sq_getfloatType)((char*)baseAddress + 0x6100);
 	ClientSq_getbool = (sq_getboolType)((char*)baseAddress + 0x6130);
+	ClientSq_getentity = (sq_getentityType)((char*)baseAddress + 0x12F80);
 
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x26130, &CreateNewVMHook<CLIENT>, reinterpret_cast<LPVOID*>(&ClientCreateNewVM)); // client createnewvm function
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x26E70, &DestroyVMHook<CLIENT>, reinterpret_cast<LPVOID*>(&ClientDestroyVM)); // client destroyvm function
@@ -164,6 +168,7 @@ void InitialiseServerSquirrel(HMODULE baseAddress)
 	ServerSq_getinteger = (sq_getintegerType)((char*)baseAddress + 0x60C0);
 	ServerSq_getfloat = (sq_getfloatType)((char*)baseAddress + 0x60E0);
 	ServerSq_getbool = (sq_getboolType)((char*)baseAddress + 0x6110);
+	ServerSq_getentity = (sq_getentityType)((char*)baseAddress + 0x203B0);
 
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1FE90, &SQPrintHook<SERVER>, reinterpret_cast<LPVOID*>(&ServerSQPrint)); // server print function
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x260E0, &CreateNewVMHook<SERVER>, reinterpret_cast<LPVOID*>(&ServerCreateNewVM)); // server createnewvm function
