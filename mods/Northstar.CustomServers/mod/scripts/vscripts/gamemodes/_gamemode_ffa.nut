@@ -2,7 +2,7 @@ global function FFA_Init
 
 void function FFA_Init()
 {
-	Evac_SetEnabled( false )
+	ClassicMP_ForceDisableEpilogue( true )
 
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 }

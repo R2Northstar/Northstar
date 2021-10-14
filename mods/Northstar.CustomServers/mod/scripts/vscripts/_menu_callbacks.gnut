@@ -7,11 +7,18 @@ void function MenuCallbacks_Init()
 
 bool function ClientCommandCallback_LeaveMatch( entity player, array<string> args )
 {
-	// todo: ideally, it'd be nice to get clients to return to lobby here, rather than just dcing them
-	// kind of a pain tho, since we'd have to get it to call script code without a remote func, since that'd break compatibility
-
-	ClientCommand( player, "disconnect" )
-	//ClientCommand( player, "setplaylist tdm; map mp_lobby" )
-	
+	thread WritePersistenceAndLeave( player )
 	return true
+}
+
+void function WritePersistenceAndLeave( entity player )
+{
+	// write player persistence before we leave, since leaving player might load local lobby before server writes persistence, so they won't get newest
+	// not super essential, but a nice qol thing
+	NSEarlyWritePlayerPersistenceForLeave( player )
+	while ( NSIsWritingPlayerPersistence() )
+		WaitFrame()
+	
+	// this is a custom concommand which can be called on clients, it causes them to leave and doesn't have issues if they're host
+	ClientCommand( player, "ns_leave_to_lobby" )
 }

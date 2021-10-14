@@ -189,11 +189,32 @@ void function AddPrivateMatchModeSettingEnumEx( string category, string playlist
 	#endif
 }
 
-array< string > function GetPrivateMatchSettingCategories()
+array< string > function GetPrivateMatchSettingCategories( bool uiAllowAllModeCategories = false )
 {
 	array< string > categories
 	foreach ( string k, v in file.customMatchSettingsByCategory )
+	{
+		// can only do this in ui because it relies on GetUIVar
+		#if UI
+			bool gamemode = k.find( "#GAMEMODE_" ) == 0
+			if ( !uiAllowAllModeCategories && ( gamemode || k.find( "#PL_" ) == 0 ) )
+			{
+				if ( gamemode )
+				{
+					if ( k.slice( 10 ) != PrivateMatch_GetSelectedMode() )
+					{	
+						continue
+					}
+				}
+				else if ( k.slice( 4 ) != PrivateMatch_GetSelectedMode() )
+				{
+					continue 
+				}
+			}
+		#endif
+	
 		categories.append( k )
+	}
 	
 	return categories
 }

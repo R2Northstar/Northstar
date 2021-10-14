@@ -13,6 +13,7 @@ void function GamemodeInfection_Init()
 	Riff_ForceTitanAvailability( eTitanAvailability.Never )
 	Riff_ForceBoostAvailability( eBoostAvailability.Disabled )
 
+	SetShouldPlayerStartBleedoutFunc( InfectionShouldPlayerStartBleedout )
 	AddCallback_OnClientConnected( InfectionInitPlayer )
 	AddCallback_OnPlayerKilled( InfectionOnPlayerKilled )
 	AddCallback_OnPlayerRespawned( RespawnInfected )
@@ -176,4 +177,9 @@ int function TimeoutCheckSurvivors()
 		return INFECTION_TEAM_SURVIVOR
 		
 	return INFECTION_TEAM_INFECTED
+}
+
+bool function InfectionShouldPlayerStartBleedout( entity player, var damageInfo )
+{
+	return player.GetTeam() != INFECTION_TEAM_INFECTED
 }

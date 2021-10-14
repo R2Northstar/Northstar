@@ -13,6 +13,11 @@ void function PrivateLobby_Init()
 	print( "PrivateLobby_Init()" )
 	//ClearPlaylistVarOverrides()
 	
+	file.map = GetConVarString( "ns_private_match_last_map" )
+	file.mode = GetConVarString( "ns_private_match_last_mode" )
+	
+	thread SetupPrivateMatchUIVarsWhenReady()
+	
 	AddClientCommandCallback( "PrivateMatchLaunch", ClientCommandCallback_PrivateMatchLaunch )
 	AddClientCommandCallback( "PrivateMatchSetMode", ClientCommandCallback_PrivateMatchSetMode )
 	AddClientCommandCallback( "SetCustomMap", ClientCommandCallback_SetCustomMap )
@@ -20,6 +25,14 @@ void function PrivateLobby_Init()
 	
 	AddClientCommandCallback( "PrivateMatchSetPlaylistVarOverride", ClientCommandCallback_PrivateMatchSetPlaylistVarOverride )
 	AddClientCommandCallback( "ResetMatchSettingsToDefault", ClientCommandCallback_ResetMatchSettingsToDefault )
+}
+
+void function SetupPrivateMatchUIVarsWhenReady()
+{
+	// have to wait until end of first frame for SetUIVar to work
+	WaitEndFrame()
+	SetUIVar( level, "privatematch_map", GetPrivateMatchMapIndex( file.map ) )
+	SetUIVar( level, "privatematch_mode", GetPrivateMatchModeIndex( file.mode ) )
 }
 
 bool function ClientCommandCallback_PrivateMatchLaunch( entity player, array<string> args )
@@ -127,6 +140,8 @@ void function StartMatch()
 	
 	RefreshPlayerTeams()
 	
+	SetConVarString( "ns_private_match_last_map", file.map )
+	SetConVarString( "ns_private_match_last_mode", file.mode )
 	SetConVarBool( "ns_should_return_to_lobby", true ) // potentially temp?
 	
 	// TEMP for now: start game

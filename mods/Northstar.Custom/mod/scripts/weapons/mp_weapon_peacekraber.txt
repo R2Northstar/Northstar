@@ -335,13 +335,9 @@ WeaponData
 		    crosshairMovementY          weapon_is_reloading
 		}
 
-		Crosshair_2 
+		Crosshair_2
 		{
 			"ui"						"ui/crosshair_lstar"
 			"base_spread"				"4"
-			Args
-			{
-				
-			}
 		}
 }

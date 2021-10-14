@@ -5,7 +5,7 @@ void function GamemodeGG_Init()
 	SetSpawnpointGamemodeOverride( FFA )
 
 	SetShouldUseRoundWinningKillReplay( true )
-	Evac_SetEnabled( false )
+	ClassicMP_ForceDisableEpilogue( true )
 	SetLoadoutGracePeriodEnabled( false ) // prevent modifying loadouts with grace period
 	SetWeaponDropsEnabled( false )
 	Riff_ForceTitanAvailability( eTitanAvailability.Never )

@@ -59,7 +59,12 @@ void function UpdateVisibleMaps()
 		if ( buttonID < file.mapsPerPage && mapID < GetPrivateMatchMaps().len() )
 		{
 			string name = mapsArray[ mapID ]
-			SetButtonRuiText( button, GetMapDisplayName( name ) )
+			
+			bool sp = name.find( "sp_" ) == 0
+			if ( sp )
+				SetButtonRuiText( button, Localize( "#PRIVATE_MATCH_SINGLEPLAYER_LEVEL", Localize( GetMapDisplayName( name ) ) ) )
+			else
+				SetButtonRuiText( button, GetMapDisplayName( name ) )
 			Hud_SetEnabled( button, true )
 
 			if ( IsItemInEntitlementUnlock( name ) && IsValid( GetUIPlayer() ) )
@@ -73,7 +78,7 @@ void function UpdateVisibleMaps()
 			bool mapSupportsMode = PrivateMatch_IsValidMapModeCombo( name, PrivateMatch_GetSelectedMode() )
 			Hud_SetLocked( button, !mapSupportsMode )
 
-			if ( !mapSupportsMode )
+			if ( !mapSupportsMode && !sp )
 				SetButtonRuiText( button, Localize( "#PRIVATE_MATCH_UNAVAILABLE", Localize( GetMapDisplayName( name ) ) ) )
 		}
 		else

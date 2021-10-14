@@ -92,7 +92,8 @@ void function SetGameState( int newState )
 
 void function GameState_EntitiesDidLoad()
 {
-	// nothing of importance to put here, this is referenced in _gamestate though so need it
+	if ( GetClassicMPMode() )
+		ClassicMP_SetupIntro()
 }
 
 void function WaittillGameStateOrHigher( int gameState )
@@ -185,9 +186,29 @@ void function GameStateEnter_Prematch()
 	int timeLimit = GameMode_GetTimeLimit( GAMETYPE ) * 60
 	if ( file.switchSidesBased )
 		timeLimit /= 2 // endtime is half of total per side
-		
+	
 	SetServerVar( "gameEndTime", Time() + timeLimit + ClassicMP_GetIntroLength() )
 	SetServerVar( "roundEndTime", Time() + ClassicMP_GetIntroLength() + GameMode_GetRoundTimeLimit( GAMETYPE ) * 60 )
+	
+	if ( !GetClassicMPMode() )
+		thread StartGameWithoutClassicMP()
+}
+
+void function StartGameWithoutClassicMP()
+{
+	WaitFrame() // wait for callbacks to finish
+	
+	// need these otherwise game will complain
+	SetServerVar( "gameStartTime", Time() )
+	SetServerVar( "roundStartTime", Time() )
+	
+	foreach ( entity player in GetPlayerArray() )
+	{
+		RespawnAsPilot( player )
+		ScreenFadeFromBlack( player, 0 )
+	}
+	
+	SetGameState( eGameState.Playing )
 }
 
 
@@ -246,38 +267,53 @@ void function GameStateEnter_WinnerDetermined()
 
 void function GameStateEnter_WinnerDetermined_Threaded()
 {
-	bool killcamsWereEnabled = KillcamsEnabled()
-	if ( killcamsWereEnabled ) // dont want killcams to interrupt stuff
-		SetKillcamsEnabled( false )
-
+	// do win announcement
+	int winningTeam = GetWinningTeam()
+		
+	foreach ( entity player in GetPlayerArray() )
+	{
+		int announcementSubstr
+		if ( winningTeam != TEAM_UNASSIGNED )
+			announcementSubstr = player.GetTeam() == winningTeam ? file.announceRoundWinnerWinningSubstr : file.announceRoundWinnerLosingSubstr
+	
+		if ( IsRoundBased() )
+			Remote_CallFunction_NonReplay( player, "ServerCallback_AnnounceRoundWinner", GetWinningTeam(), announcementSubstr, ROUND_WINNING_KILL_REPLAY_SCREEN_FADE_TIME, GameRules_GetTeamScore2( TEAM_MILITIA ), GameRules_GetTeamScore2( TEAM_IMC ) )
+		else
+			Remote_CallFunction_NonReplay( player, "ServerCallback_AnnounceWinner", GetWinningTeam(), announcementSubstr, ROUND_WINNING_KILL_REPLAY_SCREEN_FADE_TIME )
+	}
+	
 	WaitFrame() // wait a frame so other scripts can setup killreplay stuff
 
 	entity replayAttacker = file.roundWinningKillReplayAttacker
-	bool doReplay = Replay_IsEnabled() && !( !IsRoundBased() && Evac_IsEnabled() ) && IsRoundWinningKillReplayEnabled() && IsValid( replayAttacker )
+	bool doReplay = Replay_IsEnabled() && !ClassicMP_ShouldRunEpilogue() && IsRoundWinningKillReplayEnabled() && IsValid( replayAttacker )
 				 && Time() - file.roundWinningKillReplayTime <= ROUND_WINNING_KILL_REPLAY_LENGTH_OF_REPLAY
  	
 	float replayLength = 2.0 // extra delay if no replay
 	if ( doReplay )
 	{
+		bool killcamsWereEnabled = KillcamsEnabled()
+		if ( killcamsWereEnabled ) // dont want killcams to interrupt stuff
+			SetKillcamsEnabled( false )
+	
 		replayLength = ROUND_WINNING_KILL_REPLAY_LENGTH_OF_REPLAY
 		if ( "respawnTime" in replayAttacker.s && Time() - replayAttacker.s.respawnTime < replayLength )
 			replayLength += Time() - expect float ( replayAttacker.s.respawnTime )
 		
 		SetServerVar( "roundWinningKillReplayEntHealthFrac", file.roundWinningKillReplayHealthFrac )
+		
+		foreach ( entity player in GetPlayerArray() )
+			thread PlayerWatchesRoundWinningKillReplay( player, doReplay, replayLength )
+	
+		wait ROUND_WINNING_KILL_REPLAY_SCREEN_FADE_TIME
+		CleanUpEntitiesForRoundEnd() // fade should be done by this point, so cleanup stuff now when people won't see
+		wait replayLength 
+		
+		WaitFrame() // prevent a race condition with PlayerWatchesRoundWinningKillReplay
+		file.roundWinningKillReplayAttacker = null // clear this
+		
+		if ( killcamsWereEnabled )
+			SetKillcamsEnabled( true )
 	}
-	
-	foreach ( entity player in GetPlayerArray() )
-		thread PlayerWatchesRoundWinningKillReplay( player, doReplay, replayLength )
-	
-	wait ROUND_WINNING_KILL_REPLAY_SCREEN_FADE_TIME
-	CleanUpEntitiesForRoundEnd() // fade should be done by this point, so cleanup stuff now when people won't see
-	wait replayLength 
-	
-	WaitFrame() // prevent a race condition with PlayerWatchesRoundWinningKillReplay
-	file.roundWinningKillReplayAttacker = null // clear this
-	
-	if ( killcamsWereEnabled )
-		SetKillcamsEnabled( true )
 	
 	if ( IsRoundBased() )
 	{
@@ -299,8 +335,11 @@ void function GameStateEnter_WinnerDetermined_Threaded()
 	}
 	else
 	{
-		if ( Evac_IsEnabled() )
+		if ( ClassicMP_ShouldRunEpilogue() )
+		{
+			ClassicMP_SetupEpilogue()
 			SetGameState( eGameState.Epilogue )
+		}
 		else
 			SetGameState( eGameState.Postmatch )
 	}
@@ -309,18 +348,8 @@ void function GameStateEnter_WinnerDetermined_Threaded()
 void function PlayerWatchesRoundWinningKillReplay( entity player, bool doReplay, float replayLength )
 {
 	player.FreezeControlsOnServer()
-	
-	int winningTeam = GetWinningTeam()
-	int announcementSubstr
-	if ( winningTeam != TEAM_UNASSIGNED )
-		announcementSubstr = player.GetTeam() == winningTeam ? file.announceRoundWinnerWinningSubstr : file.announceRoundWinnerLosingSubstr
 		
-	if ( IsRoundBased() )
-		Remote_CallFunction_NonReplay( player, "ServerCallback_AnnounceRoundWinner", winningTeam, announcementSubstr, ROUND_WINNING_KILL_REPLAY_SCREEN_FADE_TIME, GameRules_GetTeamScore2( TEAM_MILITIA ), GameRules_GetTeamScore2( TEAM_IMC ) )
-	else
-		Remote_CallFunction_NonReplay( player, "ServerCallback_AnnounceWinner", winningTeam, announcementSubstr, ROUND_WINNING_KILL_REPLAY_SCREEN_FADE_TIME )
-		
-	if ( IsRoundBased() || !Evac_IsEnabled() ) // if we're doing evac, then no fades or killreplay
+	if ( IsRoundBased() || !ClassicMP_ShouldRunEpilogue() ) // if we're doing evac, then no fades or killreplay
 	{
 		ScreenFadeToBlackForever( player, ROUND_WINNING_KILL_REPLAY_SCREEN_FADE_TIME )
 		wait ROUND_WINNING_KILL_REPLAY_SCREEN_FADE_TIME

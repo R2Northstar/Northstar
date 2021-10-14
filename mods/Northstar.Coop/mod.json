@@ -1,0 +1,25 @@
+{
+	"Name" : "Northstar.Coop",
+	"Description" : "Allows the singleplayer campaign to be played in multiplayer",
+
+	"LoadPriority": 0,
+
+	"Scripts": [
+		{
+			"Path": "sh_sp_coop.gnut",
+			"RunOn": "SP"
+		},
+	
+		{
+			"Path": "sh_sp_coop_lobby.gnut",
+			"RunOn": "( CLIENT || SERVER ) && MP",
+			"ClientCallback": {
+				"After": "SingleplayerCoopLobby_Init"
+			},
+			
+			"ServerCallback": {
+				"After": "SingleplayerCoopLobby_Init"
+			}
+		},
+	],
+}

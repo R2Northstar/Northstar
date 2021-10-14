@@ -195,4 +195,22 @@ void function ThreadedAuthAndConnectToServer( string password = "" )
 	
 	if ( NSWasAuthSuccessful() )
 		NSConnectToAuthedServer()
+	else
+	{
+		print( "fuck" )
+	
+		DialogData dialogData
+		dialogData.header = "#ERROR"
+		dialogData.message = "Authentication Failed"
+		dialogData.image = $"ui/menu/common/dialog_error"
+	
+		#if PC_PROG
+			AddDialogButton( dialogData, "#DISMISS" )
+		
+			AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
+		#endif // PC_PROG
+		AddDialogFooter( dialogData, "#B_BUTTON_DISMISS_RUI" )
+
+		OpenDialog( dialogData )
+	}
 }	

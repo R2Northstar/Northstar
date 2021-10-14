@@ -91,6 +91,19 @@ const table<asset> mapImages =
 	mp_rise = $"loadscreens/mp_rise_lobby",
 	mp_lf_township = $"loadscreens/mp_lf_township_lobby",
 	mp_lf_uma = $"loadscreens/mp_lf_uma_lobby",
+	
+	// not really sure if this should be here, whatever
+	// might be good to make this modular in the future?
+	sp_training = $"rui/menu/level_select/level_image1",
+	sp_crashsite = $"rui/menu/level_select/level_image2",
+	sp_sewers1 = $"rui/menu/level_select/level_image3",
+	sp_boomtown_start = $"rui/menu/level_select/level_image4",
+	sp_hub_timeshift = $"rui/menu/level_select/level_image5",
+	sp_beacon = $"rui/menu/level_select/level_image6",
+	sp_tday = $"rui/menu/level_select/level_image7",
+	sp_s2s = $"rui/menu/level_select/level_image8",
+	sp_skyway_v1 = $"rui/menu/level_select/level_image9",
+	
 }
 
 void function MenuPrivateMatch_Init()
@@ -630,7 +643,7 @@ function UpdateLobby()
 			{
 				bool shouldBreak = false
 				
-				foreach ( string category in GetPrivateMatchSettingCategories() )
+				foreach ( string category in GetPrivateMatchSettingCategories( true ) )
 				{
 					foreach ( CustomMatchSettingContainer setting in GetPrivateMatchCustomSettingsForCategory( category ) )
 					{

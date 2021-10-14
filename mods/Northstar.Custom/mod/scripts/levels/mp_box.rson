@@ -1,6 +1,6 @@
 //C:\depot\r2dev\game autofastfunction.pl
 
-IsTestMap: false
+IsTestMap: true
 When: "SERVER"
 Scripts:
 [

@@ -4,6 +4,8 @@ void function PrivateMatchModesInit()
 {
 	// match settings
 	// super temp: do localisation strings later
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_MATCH", "classic_mp", [ "Disabled", "Enabled" ], "1" )
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_MATCH", "run_epilogue", [ "Disabled", "Enabled" ], "1" )
 	AddPrivateMatchModeSettingArbitrary( "#MODE_SETTING_CATEGORY_MATCH", "scorelimit", "5" ) //, "Score Limit" )
 	AddPrivateMatchModeSettingArbitrary( "#MODE_SETTING_CATEGORY_MATCH", "roundscorelimit", "0" ) //, "Score Limit (round-based modes)" )
 	AddPrivateMatchModeSettingArbitrary( "#MODE_SETTING_CATEGORY_MATCH", "timelimit", "12" ) //, "Time Limit" )
