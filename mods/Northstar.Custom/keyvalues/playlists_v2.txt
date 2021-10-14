@@ -185,6 +185,23 @@ playlists
 				gamemode_bullet_005	#GAMEMODE_BULLET_CTF_005
 			}
 		}
+		hs
+		{
+			inherit defaults
+			vars
+			{
+				name #GAMEMODE_hs
+				lobbytitle #PL_hs_lobby
+				description #PL_hs_desc
+				hint #PL_hs_hint
+				abbreviation #PL_hs_abbr
+				image tdm
+				timelimit 10
+				max_players 16
+				
+				gamemode_score_hint #GAMEMODE_SCORE_HINT_TDM
+			}
+		}
 	}
 	Playlists
 	{
@@ -242,6 +259,7 @@ playlists
 				lobbytitle #PL_tt_lobby
 				description #PL_tt_desc
 				hint #PL_tt_hint
+				image lts
 				abbreviation #PL_tt_abbr
 				visible 0
 			}
@@ -279,6 +297,7 @@ playlists
 				lobbytitle #PL_inf_lobby
 				description #PL_inf_desc
 				hint #PL_inf_hint
+				image ps
 				abbreviation #PL_inf_abbr
 				visible 0
 			}
@@ -376,7 +395,7 @@ playlists
 				description #PL_kr_desc
 				hint #PL_kr_hint
 				abbreviation #PL_kr_abbr
-				
+				image ctf
 				max_players 16
 				max_teams 16
 				classic_mp 1
@@ -424,7 +443,7 @@ playlists
 				description #PL_fastball_desc
 				hint #PL_fastball_hint
 				abbreviation #PL_fastball_abbr
-				
+				image ffa
 				max_players 16
 				max_teams 2
 				classic_mp 1
@@ -469,6 +488,7 @@ playlists
 				description #PL_fw_desc
 				hint #PL_fw_hint
 				abbreviation #PL_fw_abbr
+				image fw
 				
 				max_players 16
 				max_teams 2
@@ -565,6 +585,58 @@ playlists
 						mp_lf_township 1
 						mp_lf_uma 1
 					}
+				}
+			}
+		}
+		hs
+		{
+			inherit defaults
+			vars
+			{
+				name #GAMEMODE_hs
+				lobbytitle #PL_hs_lobby
+				description #PL_hs_desc
+				hint #PL_hs_hint
+				abbreviation #PL_hs_abbr
+				image tdm
+				timelimit 10
+				max_players 16
+				
+				gamemode_score_hint #GAMEMODE_SCORE_HINT_TDM
+			}
+			gamemodes
+			{
+				hs
+				{
+					mp_complex3 1
+					mp_drydock 1
+					mp_glitch 1
+					mp_homestead 2
+					mp_eden 1
+					mp_forwardbase_kodai 1
+					mp_black_water_canal 1
+					mp_glitch 1
+					mp_angel_city 1
+					mp_colony02 1
+					mp_relic02 1
+					mp_grave 1
+					mp_homestead 1
+					mp_drydock 1
+					mp_glitch 1
+					mp_thaw 1
+					mp_eden 2
+					mp_black_water_canal 1
+					mp_glitch 1
+					mp_relic02 1
+					mp_wargames 1
+					mp_rise 1
+					mp_crashsite3 1
+					mp_lf_stacks 1
+					mp_lf_deck 1
+					mp_lf_meadow 1
+					mp_lf_traffic 1
+					mp_lf_township 1
+					mp_lf_uma 1
 				}
 			}
 		}

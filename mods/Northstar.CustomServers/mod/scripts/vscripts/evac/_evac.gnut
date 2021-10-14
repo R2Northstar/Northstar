@@ -1,57 +1,82 @@
 untyped
-
 global function Evac_Init
-global function Evac_AddLocation
-global function Evac_SetSpacePosition
-global function Evac_SetEnabled
-global function Evac_IsEnabled
+global function AddEvacNode
+global function SetEvacSpaceNode
 global function IsEvacDropship
-global function EvacMain
 
+global function EvacEpilogueSetup
+global function Evac
+
+const float EVAC_INITIAL_WAIT = 5.0
 const float EVAC_ARRIVAL_TIME = 40.0
 const float EVAC_WAIT_TIME = 18.0
 
-struct {
-	bool enabled = true
+// we don't use these because they're busted, just keeping them
+const array<string> EVAC_EMBARK_ANIMS_1P = [
+	"ptpov_e3_rescue_side_embark_A",
+	"ptpov_e3_rescue_side_embark_B",
+	"ptpov_e3_rescue_side_embark_C",
+	"ptpov_e3_rescue_side_embark_D",
+	"ptpov_e3_rescue_side_embark_E",
+	"ptpov_e3_rescue_side_embark_F",
+	"ptpov_e3_rescue_side_embark_G",
+	"ptpov_e3_rescue_side_embark_H"
+]
 
-	array<Point> evacPoints
-	Point spacePosition
+const array<string> EVAC_EMBARK_ANIMS_3P = [
+	"pt_e3_rescue_side_embark_A",
+	"pt_e3_rescue_side_embark_B",
+	"pt_e3_rescue_side_embark_C",
+	"pt_e3_rescue_side_embark_D",
+	"pt_e3_rescue_side_embark_E",
+	"pt_e3_rescue_side_embark_F",
+	"pt_e3_rescue_side_embark_G",
+	"pt_e3_rescue_side_embark_H"
+]
+
+const array<string> EVAC_IDLE_ANIMS_1P = [
+	"ptpov_e3_rescue_side_embark_A_idle",
+	"ptpov_e3_rescue_side_embark_B_idle",
+	"ptpov_e3_rescue_side_embark_C_idle",
+	"ptpov_e3_rescue_side_embark_D_idle",
+	"ptpov_e3_rescue_side_embark_E_idle",
+	"ptpov_e3_rescue_side_embark_F_idle",
+	"ptpov_e3_rescue_side_embark_G_idle",
+	"ptpov_e3_rescue_side_embark_H_idle"
+]
+
+const array<string> EVAC_IDLE_ANIMS_3P = [
+	"pt_e3_rescue_side_idle_A",
+	"pt_e3_rescue_side_idle_B",
+	"pt_e3_rescue_side_idle_C",
+	"pt_e3_rescue_side_idle_D",
+	"pt_e3_rescue_side_idle_E",
+	"pt_e3_rescue_side_idle_F",
+	"pt_e3_rescue_side_idle_G",
+	"pt_e3_rescue_side_idle_H"
+]
+
+struct {
+	array<entity> evacNodes
+	entity spaceNode
 	
 	entity evacDropship
-	array<entity> evacPlayers
+	entity evacIcon
 } file
 
 void function Evac_Init()
 {
 	EvacShared_Init()
-	
-	AddCallback_GameStateEnter( eGameState.Epilogue, Evac_OnEpilogue )
 }
 
-void function Evac_SetEnabled( bool enabled )
+void function AddEvacNode( entity evacNode )
 {
-	file.enabled = enabled
+	file.evacNodes.append( evacNode )
 }
 
-bool function Evac_IsEnabled()
+void function SetEvacSpaceNode( entity spaceNode )
 {
-	return false // shit is busted rn lol
-	//return file.enabled && GetClassicMPMode() && !IsRoundBased()
-}
-
-void function Evac_AddLocation( vector origin, vector angles )
-{
-	Point evacPoint
-	evacPoint.origin = origin
-	evacPoint.angles = angles
-	
-	file.evacPoints.append( evacPoint )
-}
-
-void function Evac_SetSpacePosition( vector origin, vector angles )
-{
-	file.spacePosition.origin = origin
-	file.spacePosition.angles = angles
+	file.spaceNode = spaceNode
 }
 
 bool function IsEvacDropship( entity ent )
@@ -59,257 +84,277 @@ bool function IsEvacDropship( entity ent )
 	return file.evacDropship == ent && IsValid( file.evacDropship )
 }
 
-void function Evac_OnEpilogue()
+// evac epilogue
+void function EvacEpilogueSetup()
 {
-	if ( Evac_IsEnabled() )
-		thread EvacMain( GetOtherTeam( GameScore_GetWinningTeam() ) )
+	AddCallback_GameStateEnter( eGameState.Epilogue, EvacEpilogue )
 }
 
-void function EvacMain( int winningTeam )
+void function EvacEpilogue()
 {
-	if ( file.evacPoints.len() == 0 )
-	{
-		// automatically add evac locations if they aren't registered yet
-		int i = 1
-		entity current = null
-		while ( true )
-		{
-			current = GetEnt( "escape_node" + i )
-			print( current )
-			
-			if ( current != null )
-				Evac_AddLocation( current.GetOrigin(), current.GetAngles() )
-			else
-				break
-				
-			i++
-		}
-		
-		if ( file.evacPoints.len() == 0 )
-			unreachable
-	}
+	thread Evac( GetPlayerArray()[0].GetTeam(), EVAC_INITIAL_WAIT, EVAC_ARRIVAL_TIME, EVAC_WAIT_TIME, EvacEpiloguePlayerCanBoard, EvacEpilogueShouldLeaveEarly, EvacEpilogueCompleted )
+}
+
+bool function EvacEpiloguePlayerCanBoard( entity dropship, entity player )
+{
+	// can't board a dropship on a different team
+	if ( dropship.GetTeam() != player.GetTeam() )
+		return false
 	
-	if ( file.spacePosition.origin == < 0, 0, 0 > )
-	{
-		// automatically add a space node if not registered yet
-		entity defaultSpaceNode = GetEnt( "spaceNode" )
-		if ( defaultSpaceNode == null )
-			unreachable
-		
-		Evac_SetSpacePosition( defaultSpaceNode.GetOrigin(), defaultSpaceNode.GetAngles() )
-	}
+	// check if there are any free slots on the dropship, if there are then they can board
+	foreach ( entity player in dropship.s.evacSlots )
+		if ( !IsValid( player ) )
+			return true
 	
-	Point evacPoint = file.evacPoints[ RandomInt( file.evacPoints.len() ) ]
-	
-	// create an entity for the evac point that clients will get
-	entity evacPointEntity = CreateEntity( MARKER_ENT_CLASSNAME )
-	evacPointEntity.SetOrigin( evacPoint.origin )
-	evacPointEntity.kv.spawnflags = SF_INFOTARGET_ALWAYS_TRANSMIT_TO_CLIENT
-	DispatchSpawn( evacPointEntity )
-	evacPointEntity.DisableHibernation()
-			
-	// set objectives
-	//SetTeamActiveObjective( winningTeam, "EG_DropshipExtract", Time() + EVAC_ARRIVAL_TIME, evacPointEntity )
-	//SetTeamActiveObjective( GetOtherTeam( winningTeam ), "EG_StopExtract", Time() + EVAC_ARRIVAL_TIME, evacPointEntity )
-		
-	// wanted to do this with an actual dropship to calculate embarkStartDelay but spawning it before it should exist ingame is weird
-	// could probably do it with a dummy entity but effort
-	wait EVAC_ARRIVAL_TIME - 4.33333//embarkStartDelay
-		
-	// create dropship
-	entity dropship = CreateDropship( winningTeam, evacPoint.origin, evacPoint.angles )
-	file.evacDropship = dropship 
-	
-	DispatchSpawn( dropship )
-	
-	dropship.SetModel( $"models/vehicle/crow_dropship/crow_dropship_hero.mdl" ) // gotta do this after dispatch for some reason
-	vector startPos = dropship.Anim_GetStartForRefEntity( "cd_dropship_rescue_side_start", evacPointEntity, "origin" ).origin
-	dropship.SetOrigin( startPos ) // set origin so the dropship isn't in the map
-	dropship.EndSignal( "OnDestroy" )
-	
-	// calculate time until idle 
-	float sequenceDuration = dropship.GetSequenceDuration( "cd_dropship_rescue_side_start" )
-	float cycleFrac = dropship.GetScriptedAnimEventCycleFrac( "cd_dropship_rescue_side_start", "ReadyToLoad" )
-	float embarkStartDelay = sequenceDuration * cycleFrac
-		
-	// play anim
-	thread PlayAnim( dropship, "cd_dropship_rescue_side_start", evacPointEntity )
-	wait embarkStartDelay
-	
-	print( "evac flyin done! ready to load players" )
-	
-	// set objectives again
-	SetTeamActiveObjective( winningTeam, "EG_DropshipExtract2", Time() + EVAC_WAIT_TIME, evacPointEntity )
-	SetTeamActiveObjective( GetOtherTeam( winningTeam ), "EG_StopExtract2", Time() + EVAC_WAIT_TIME, evacPointEntity )
-	
-	thread EvacShipThink( dropship ) // let people enter it
-	
-	wait EVAC_WAIT_TIME
-	
-	// fly away
-	thread PlayAnim( dropship, "cd_dropship_rescue_side_end", evacPointEntity )
-	
-	// set objectives again
-	SetTeamActiveObjective( winningTeam, "EG_DropshipExtractDropshipFlyingAway" )
-	SetTeamActiveObjective( GetOtherTeam( winningTeam ), "EG_StopExtractDropshipFlyingAway" )
-	
-	wait dropship.GetSequenceDuration( "cd_dropship_rescue_side_end" ) - WARPINFXTIME
-	
-	foreach ( entity player in file.evacPlayers  )
-	{
-		Remote_CallFunction_Replay( player, "ServerCallback_PlayScreenFXWarpJump" )
-	}
-	
-	// todo screen effects and shit
-	//WaittillAnimDone( dropship )
-	wait WARPINFXTIME
-	
-	// space
-	dropship.SetOrigin( file.spacePosition.origin )
-	dropship.SetAngles( file.spacePosition.angles )
-	thread PlayAnim( dropship, "ds_space_flyby_dropshipA" )
-	
-	// display player [Evacuated] in killfeed
-	foreach ( entity player in GetPlayerArray() )
-	{
-		foreach ( entity evacPlayer in file.evacPlayers )
-			Remote_CallFunction_NonReplay( player, "ServerCallback_EvacObit", evacPlayer.GetEncodedEHandle() )
-	}
-	
-	foreach ( entity player in file.evacPlayers )
-	{
-		// set skybox to space for all evac players
-		player.SetSkyCamera( GetEnt( "skybox_cam_intro" ) )
-		Remote_CallFunction_NonReplay( player, "ServerCallback_DisableHudForEvac" )
-	}
-	
+	// no empty slots
+	return false
+}
+
+bool function EvacEpilogueShouldLeaveEarly( entity dropship )
+{
+	int numEvacing
+	foreach ( entity player in dropship.s.evacSlots )
+		if ( IsValid( player ) )
+			numEvacing++
+
+	return GetPlayerArrayOfTeam( dropship.GetTeam() ).len() == numEvacing || numEvacing == dropship.s.evacSlots.len()
+}
+
+void function EvacEpilogueCompleted( entity dropship )
+{
 	wait 5.0
+	print( dropship )
 	
-	foreach ( entity player in GetPlayerArray() )
+	foreach ( entity player in dropship.s.evacSlots )
+	{
+		if ( !IsValid( player ) )
+			continue
+		
 		ScreenFadeToBlackForever( player, 2.0 )
-		
+	}
+	
 	wait 2.0
-		
-	// end game lol
+	
 	SetGameState( eGameState.Postmatch )
 }
 
-void function EvacShipThink( entity dropship )
+// global evac func, anything can call this, it's not necessarily an epilogue thing
+void function Evac( int evacTeam, float initialWait, float arrivalTime, float waitTime, bool functionref( entity, entity ) canBoardCallback, bool functionref( entity ) shouldLeaveEarlyCallback, void functionref( entity ) completionCallback )
 {
-	dropship.EndSignal( "OnDestroy" )
-	
-	// this is the easiest way i could figure out to get a bounding box that's parented to the dropship
-	entity mover1 = CreateScriptMover( dropship.GetOrigin(), dropship.GetAngles() )
-	mover1.SetParent( dropship )
-	mover1.SetLocalOrigin( dropship.GetBoundingMaxs() - < 0, 0, 100> )
-	
-	entity mover2 = CreateScriptMover( dropship.GetOrigin(), dropship.GetAngles() )
-	mover2.SetParent( dropship )
-	mover2.SetLocalOrigin( dropship.GetBoundingMins() - < 0, 0, 100 > )
-	
-	while ( true )
+	wait initialWait 
+
+	// setup evac nodes if not manually registered
+	if ( file.evacNodes.len() == 0 )
 	{
-		foreach ( entity player in GetPlayerArrayOfTeam( dropship.GetTeam() ) )
+		for ( int i = 1; ; i++ )
 		{
-			if ( file.evacPlayers.contains( player ) || !IsAlive( player ) )
-				continue
-				
-			vector playerPos = player.GetOrigin()
-
-			vector mover1Pos = mover1.GetOrigin()
-			vector mover2Pos = mover2.GetOrigin()
-			vector maxPos
-			maxPos.x = mover1Pos.x > mover2Pos.x ? mover1Pos.x : mover2Pos.x
-			maxPos.y = mover1Pos.y > mover2Pos.y ? mover1Pos.y : mover2Pos.y
-			maxPos.z = mover1Pos.z > mover2Pos.z ? mover1Pos.z : mover2Pos.z
+			entity newNode = GetEnt( "escape_node" + i )
+			if ( !IsValid( newNode ) )
+				break
 			
-			vector minPos
-			minPos.x = mover1Pos.x < mover2Pos.x ? mover1Pos.x : mover2Pos.x
-			minPos.y = mover1Pos.y < mover2Pos.y ? mover1Pos.y : mover2Pos.y
-			minPos.z = mover1Pos.z < mover2Pos.z ? mover1Pos.z : mover2Pos.z
-			
-			print( "\n" )
-			print( player )
-			print( playerPos )
-			print( minPos )
-			print( maxPos )
-			
-			if ( playerPos.x > minPos.x && playerPos.y > minPos.y && playerPos.z > minPos.z &&
-				 playerPos.x < maxPos.x && playerPos.y < maxPos.y && playerPos.z < maxPos.z )
-			{
-				print( player + " is evacuating!" )
-			
-				file.evacPlayers.append( player )
-				player.SetParent( dropship )
-				
-				// super duper temp
-				player.SetLocalOrigin( dropship.GetOrigin() - < 0, 10, 80 > )
-			}
+			file.evacNodes.append( newNode )
 		}
-		
-		WaitFrame()
 	}
-}
-
-/*void function TestEvac()
-{
-	if ( file.evacShipSpawns.len() == 0 )
-		Evac_AddLocation( GetEnt( "escape_node1" ).GetOrigin(), GetEnt( "escape_node1" ).GetAngles() )
-
-	Point shipSpawn = file.evacShipSpawns[ RandomInt( file.evacShipSpawns.len() ) ]
 	
-	entity dropship = CreateDropship( GetPlayerArray()[0].GetTeam(), shipSpawn.origin, shipSpawn.angles )
-	file.evacDropship = dropship	
+	// setup space node if not manually registered
+	if ( !IsValid( file.spaceNode ) )
+		file.spaceNode = GetEnt( "spaceNode" )
+
+	entity evacNode = file.evacNodes.getrandom()
+
+	// setup client evac position
+	file.evacIcon = CreateEntity( "info_target" )
+	file.evacIcon.SetOrigin( evacNode.GetOrigin() )
+	file.evacIcon.kv.spawnFlags = SF_INFOTARGET_ALWAYS_TRANSMIT_TO_CLIENT
+	DispatchSpawn( file.evacIcon )
+	file.evacIcon.DisableHibernation()
+
+	wait 0.5 // need to wait here, or the target won't appear on clients for some reason
+	// eta until arrive
+	SetTeamActiveObjective( evacTeam, "EG_DropshipExtract", Time() + arrivalTime, file.evacIcon )
+	SetTeamActiveObjective( GetOtherTeam( evacTeam ), "EG_StopExtract", Time() + arrivalTime, file.evacIcon )
+	
+	// would've liked to use cd_dropship_rescue_side_start length here, but can't since this is done before dropship spawn, can't
+	wait arrivalTime - 4.33333
+	
+	entity dropship = CreateDropship( evacTeam, evacNode.GetOrigin(), evacNode.GetAngles() )
+	dropship.SetModel( $"models/vehicle/crow_dropship/crow_dropship_hero.mdl" ) 
+	dropship.SetValueForModelKey( $"models/vehicle/crow_dropship/crow_dropship_hero.mdl" )
 	DispatchSpawn( dropship )
 	
-	dropship.SetModel( $"models/vehicle/crow_dropship/crow_dropship_hero.mdl" )
+	dropship.s.evacSlots <- [ null, null, null, null, null, null, null, null ]
 	
-	print( dropship.GetSequenceDuration( "cd_dropship_rescue_side_start" ) )
-	print( dropship.GetScriptedAnimEventCycleFrac( "cd_dropship_rescue_side_start", "ReadyToLoad" ) )
-	
-	float embarkStart = dropship.GetSequenceDuration( "cd_dropship_rescue_side_start" ) * dropship.GetScriptedAnimEventCycleFrac( "cd_dropship_rescue_side_start", "ReadyToLoad" )
-	print( embarkStart )
-	
-	thread PlayAnim( dropship, "cd_dropship_rescue_side_start" )
-	wait embarkStart
-	print( "evac start anim done" )
-	thread TestEvacThink( dropship )
-	SetTeamActiveObjective( GetPlayerArray()[0].GetTeam(), "EG_DropshipExtract2", Time() + 30, dropship )
-
-	thread PlayAnim( dropship, "cd_dropship_rescue_side_idle", GetEnt( "escape_node1" ) )
-}
-
-void function TestEvacThink( entity dropship )
-{
 	dropship.EndSignal( "OnDestroy" )
-		
-	// these numbers are probably innacurate but there's no real way of getting accurate ones and these are good enough
-	entity mover = CreateScriptMover( dropship.GetOrigin(), dropship.GetAngles() )
-	mover.SetParent( dropship )
-	mover.SetLocalOrigin( dropship.GetBoundingMaxs() - < 0, 0, 100> )
-	
-	entity mover2 = CreateScriptMover( dropship.GetOrigin(), dropship.GetAngles() )
-	mover2.SetParent( dropship )
-	mover2.SetLocalOrigin( dropship.GetBoundingMins() - < 0, 0, 100> )	
-	
-	while ( true )
+	OnThreadEnd( function() : ( evacTeam, completionCallback, dropship ) 
 	{
-		foreach ( entity player in GetPlayerArrayOfTeam( dropship.GetTeam() ) )
-		{
-			if ( !IsAlive( player ) )
-				continue
+		if ( "evacTrigger" in dropship.s )
+			dropship.s.evacTrigger.Destroy()
 		
-			vector playerOrigin = player.GetOrigin()
-					
-			vector dropshipMax = mover.GetOrigin()
-			vector dropshipMin = mover2.GetOrigin()
+		// this should be for both teams
+		SetTeamActiveObjective( evacTeam, "EG_DropshipExtractDropshipDestroyed" )
+		SetTeamActiveObjective( GetOtherTeam( evacTeam ), "EG_DropshipExtractDropshipDestroyed" )
+	
+		foreach ( entity player in dropship.s.evacSlots )
+		{
+			if ( !IsValid( player ) )
+				continue
 			
-			// temp, might be permenant but idk if box triggers are a thing in script
-			if ( playerOrigin.x > dropshipMin.x && playerOrigin.y > dropshipMin.y && playerOrigin.z > dropshipMin.z &&
-				 playerOrigin.x < dropshipMax.x && playerOrigin.y < dropshipMax.y && playerOrigin.z < dropshipMax.z )
-				 player.Die()
+			player.ClearInvulnerable()
 		}
 		
+		// this is called whether dropship is destroyed or evac finishes, callback can handle this itself
+		thread completionCallback( dropship )
+	})
+		
+	// flyin
+	thread PlayAnim( dropship, "cd_dropship_rescue_side_start", evacNode )
+	
+	// calculate time until idle start
+	float sequenceDuration = dropship.GetSequenceDuration( "cd_dropship_rescue_side_start" )
+	float cycleFrac = dropship.GetScriptedAnimEventCycleFrac( "cd_dropship_rescue_side_start", "ReadyToLoad" )
+	wait sequenceDuration * cycleFrac
+	
+	thread PlayAnim( dropship, "cd_dropship_rescue_side_idle", evacNode )
+	
+	// eta until leave
+	SetTeamActiveObjective( evacTeam, "EG_DropshipExtract2", Time() + EVAC_WAIT_TIME, file.evacIcon )
+	SetTeamActiveObjective( GetOtherTeam( evacTeam ), "EG_StopExtract2", Time() + EVAC_WAIT_TIME, file.evacIcon )
+	
+	// setup evac trigger
+	entity trigger = CreateEntity( "trigger_cylinder" )
+	trigger.SetRadius( 150 )
+	trigger.SetAboveHeight( 100 )
+	trigger.SetBelowHeight( 100 )
+	trigger.SetOrigin( dropship.GetOrigin() )
+	trigger.SetParent( dropship, "ORIGIN" )
+	DispatchSpawn( trigger )
+	// have to do this inline since we capture the completionCallback
+	trigger.SetEnterCallback( void function( entity trigger, entity player ) : ( canBoardCallback, dropship ) 
+	{ 	
+		if ( !player.IsPlayer() || !IsAlive( player ) || !canBoardCallback( dropship, player ) || PlayerInDropship( player, dropship ) )
+			return
+		
+		thread AddPlayerToEvacDropship( dropship, player )
+	})
+	
+	dropship.s.evacTrigger <- trigger
+		
+	float waitStartTime = Time()
+	while ( Time() - waitStartTime < waitTime )
+	{
+		if ( shouldLeaveEarlyCallback( dropship ) )
+			break
+			
 		WaitFrame()
 	}
-}*/
+	
+	// holster all weapons
+	foreach ( entity player in dropship.s.evacSlots )
+		if ( IsValid( player ) )
+			player.HolsterWeapon()
+	
+	// fly away
+	thread PlayAnim( dropship, "cd_dropship_rescue_side_end", evacNode )
+	
+	SetTeamActiveObjective( evacTeam, "EG_DropshipExtractDropshipFlyingAway" )
+	SetTeamActiveObjective( GetOtherTeam( evacTeam ), "EG_StopExtractDropshipFlyingAway" )
+	
+	// todo: play the warpout effect somewhere here
+	
+	wait dropship.GetSequenceDuration( "cd_dropship_rescue_side_end" ) - WARPINFXTIME
+	
+	foreach ( entity player in dropship.s.evacSlots )
+		if ( IsValid( player ) )
+			Remote_CallFunction_NonReplay( player, "ServerCallback_PlayScreenFXWarpJump" )
+	
+	wait WARPINFXTIME
+	
+	// go to space 
+	// hardcoded angles here are a hack, spacenode position doesn't face the planet in the skybox, for some reason
+	file.spaceNode.SetAngles( < 30, -75, 20 >)
+	dropship.SetOrigin( file.spaceNode.GetOrigin() )
+	dropship.SetAngles( file.spaceNode.GetAngles() )
+	dropship.SetInvulnerable()
+	thread PlayAnim( dropship, "ds_space_flyby_dropshipA", file.spaceNode )
+	
+	foreach( entity player in GetPlayerArray() )
+	{	
+		// evac-ed players only beyond this point
+		if ( !PlayerInDropship( player, dropship ) )
+		{
+			if ( player.GetTeam() == dropship.GetTeam() )
+				SetPlayerActiveObjective( player, "EG_DropshipExtractFailedEscape" )
+				
+			return
+		}
+		
+		SetPlayerActiveObjective( player, "EG_DropshipExtractSuccessfulEscape" )
+		
+		// skybox
+		player.SetSkyCamera( GetEnt( "skybox_cam_intro" ) )
+		Remote_CallFunction_NonReplay( player, "ServerCallback_DisableHudForEvac" )
+		Remote_CallFunction_NonReplay( player, "ServerCallback_SetClassicSkyScale", dropship.GetEncodedEHandle(), 0.7 )
+		Remote_CallFunction_NonReplay( player, "ServerCallback_SetMapSettings", 4.0, false, 0.4, 0.125 )
+		
+		// display player [Evacuated] in killfeed
+		foreach ( entity otherPlayer in GetPlayerArray() )
+			Remote_CallFunction_NonReplay( otherPlayer, "ServerCallback_EvacObit", player.GetEncodedEHandle() )
+	}
+	
+}
+
+void function AddPlayerToEvacDropship( entity dropship, entity player ) 
+{
+	int slot = RandomInt( dropship.s.evacSlots.len() )
+	for ( int i = 0; i < dropship.s.evacSlots.len(); i++ )
+	{
+		if ( !IsValid( dropship.s.evacSlots[ slot ] ) )
+		{
+			dropship.s.evacSlots[ slot ] = player
+			break
+		}
+	
+		slot = ( slot + 1 ) % expect int( dropship.s.evacSlots.len() )
+	}
+	
+	// no slots available
+	if ( !PlayerInDropship( player, dropship ) )
+		return
+		
+	player.SetInvulnerable()
+	player.UnforceCrouch()
+	player.ForceStand()
+
+	FirstPersonSequenceStruct fp
+	//fp.firstPersonAnim = EVAC_EMBARK_ANIMS_1P[ slot ]
+	fp.thirdPersonAnim = EVAC_EMBARK_ANIMS_3P[ slot ]
+	fp.attachment = "RESCUE"
+	fp.teleport = true
+	fp.thirdPersonCameraAttachments = [ "VDU" ] // this seems wrong, firstperson anim has better angles, but no head
+	
+	EmitSoundOnEntityOnlyToPlayer( player, player, SHIFTER_START_SOUND_3P )
+	// should play SHIFTER_START_SOUND_1P when they actually arrive in the ship i think, unsure how this is supposed to be done
+	PlayPhaseShiftDisappearFX( player )
+	waitthread FirstPersonSequence( fp, player, dropship )
+	
+	FirstPersonSequenceStruct idleFp
+	idleFp.firstPersonAnimIdle = EVAC_IDLE_ANIMS_1P[ slot ]
+	idleFp.thirdPersonAnimIdle = EVAC_IDLE_ANIMS_3P[ slot ]
+	idleFp.attachment = "RESCUE"
+	idleFp.teleport = true
+	idleFp.hideProxy = true
+	idleFp.viewConeFunction = ViewConeWide  
+		
+	thread FirstPersonSequence( idleFp, player, dropship )
+	ViewConeWide( player ) // gotta do this after for some reason, adding it to idleFp does not work for some reason
+}
+
+bool function PlayerInDropship( entity player, entity dropship )
+{
+	// couldn't get "player in dropship.s.evacSlots" to work for some reason, likely due to static typing?
+	foreach ( entity dropshipPlayer in dropship.s.evacSlots )
+		if ( dropshipPlayer == player )
+			return true
+			
+	return false
+}

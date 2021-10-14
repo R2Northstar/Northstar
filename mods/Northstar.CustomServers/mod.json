@@ -10,6 +10,16 @@
 		{
 			"Name": "ns_should_return_to_lobby",
 			"DefaultValue": "1"
+		},
+		
+		{
+			"Name": "ns_private_match_last_mode",
+			"DefaultValue": "aitdm"
+		},
+		
+		{
+			"Name": "ns_private_match_last_map",
+			"DefaultValue": "mp_forwardbase_kodai"
 		}
 	],
 	

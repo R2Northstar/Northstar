@@ -27,7 +27,6 @@ void function GamemodeFastball_Init()
 	SetTimeoutWinnerDecisionFunc( FastballDecideWinner )
 	
 	AddCallback_OnClientConnected( FastballInitPlayer )
-	AddCallback_OnPlayerKilled( FastballOnPlayerKilled ) // move this to a system in _gamestate soon!!
 	
 	// setup spawns
 	// first is a, second is b, third is c
@@ -162,15 +161,6 @@ function FastballOnPanelHacked( panel, player, success )
 			Remote_CallFunction_NonReplay( deadPlayer, "ServerCallback_FastballRespawnPlayer" ) 
 		}
 	}
-}
-
-void function FastballOnPlayerKilled( entity victim, entity attacker, var damageInfo )
-{
-	if ( !victim.IsPlayer() || GetGameState() != eGameState.Playing )
-		return
-	
-	if ( GetPlayerArrayOfTeam_Alive( victim.GetTeam() ).len() == 0 )
-		SetWinner( GetOtherTeam( victim.GetTeam() ) )
 }
 
 int function FastballDecideWinner()

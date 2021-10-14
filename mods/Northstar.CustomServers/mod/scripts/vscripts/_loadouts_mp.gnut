@@ -221,14 +221,12 @@ bool function ClientCommandCallback_SetFactionChoicePersistenceSlot( entity play
 
 bool function ClientCommandCallback_LoadoutMenuClosed( entity player, array<string> args )
 {
-	SavePdataForEntityIndex( player.GetPlayerIndex() )
 	TryGivePilotLoadoutForGracePeriod( player )
 	return true
 }
 
 bool function ClientCommandCallback_InGameMPMenuClosed( entity player, array<string> args )
 {
-	SavePdataForEntityIndex( player.GetPlayerIndex() )
 	//TryGivePilotLoadoutForGracePeriod( player )
 	return true
 }

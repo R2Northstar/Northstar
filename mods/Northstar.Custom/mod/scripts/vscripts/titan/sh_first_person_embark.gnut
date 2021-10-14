@@ -1,4 +1,5 @@
 global function FirstPersonEmbark_Init
+global function FirstPersonEmbark_InitPlaylistVars
 
 #if CLIENT
 	global function ServerCallback_HideHudForFPEmbark
@@ -22,6 +23,11 @@ void function FirstPersonEmbark_Init()
 void function FirstPersonEmbark_RegisterCustomNetworkFunctions()
 {
 	Remote_RegisterFunction( "ServerCallback_HideHudForFPEmbark" )
+}
+
+void function FirstPersonEmbark_InitPlaylistVars()
+{
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_TITAN", "fp_embark_enabled", [ "Disabled", "Enabled" ], "0" )
 }
 
 #if CLIENT

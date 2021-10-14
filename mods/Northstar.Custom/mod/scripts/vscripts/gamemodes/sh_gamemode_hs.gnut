@@ -1,0 +1,47 @@
+global function Sh_GamemodeHideAndSeek_Init
+
+global const string GAMEMODE_HIDEANDSEEK = "hs"
+global const int HIDEANDSEEK_TEAM_SEEKER = TEAM_IMC
+global const int HIDEANDSEEK_TEAM_HIDER = TEAM_MILITIA
+
+void function Sh_GamemodeHideAndSeek_Init()
+{
+	// create custom gamemode
+	AddCallback_OnCustomGamemodesInit( CreateGamemodeHideAndSeek )
+	AddCallback_OnRegisteringCustomNetworkVars( HideAndSeekRegisterNetworkVars )
+}
+
+void function CreateGamemodeHideAndSeek()
+{
+	GameMode_Create( GAMEMODE_HIDEANDSEEK )
+	GameMode_SetName( GAMEMODE_HIDEANDSEEK, "#GAMEMODE_hs" )
+	GameMode_SetDesc( GAMEMODE_HIDEANDSEEK, "#PL_hs_desc" )
+	GameMode_SetGameModeAnnouncement( GAMEMODE_HIDEANDSEEK, "ffa_modeDesc" )
+	GameMode_SetColor( GAMEMODE_HIDEANDSEEK, [147, 204, 57, 255] )
+	
+	AddPrivateMatchMode( GAMEMODE_HIDEANDSEEK ) // add to private lobby modes
+	AddPrivateMatchModeSettingEnum( "#GAMEMODE_hs", "hideandseek_balance_teams", [ "Disabled", "Enabled" ], "1" )
+	AddPrivateMatchModeSettingArbitrary( "#GAMEMODE_hs", "hideandseek_hiding_time", "60" )
+	
+	#if SERVER
+		GameMode_AddServerInit( GAMEMODE_HIDEANDSEEK, GamemodeHideAndSeek_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( GAMEMODE_HIDEANDSEEK, RateSpawnpoints_Generic )
+		GameMode_SetTitanSpawnpointsRatingFunc( GAMEMODE_HIDEANDSEEK, RateSpawnpoints_Generic )
+	#elseif CLIENT
+		GameMode_AddClientInit( GAMEMODE_HIDEANDSEEK, ClGamemodeHideAndSeek_Init )
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( GAMEMODE_HIDEANDSEEK, CompareAssaultScore )
+	#endif
+}
+
+void function HideAndSeekRegisterNetworkVars()
+{
+	if ( GAMETYPE != GAMEMODE_HIDEANDSEEK )
+		return
+		
+	Remote_RegisterFunction( "ServerCallback_ShowHideAndSeekCountdown" )
+	Remote_RegisterFunction( "ServerCallback_SeekersIncoming" )
+	Remote_RegisterFunction( "ServerCallback_LastHiderAlive" )
+	Remote_RegisterFunction( "ServerCallback_AnnounceHideAndSeekRole" )
+}

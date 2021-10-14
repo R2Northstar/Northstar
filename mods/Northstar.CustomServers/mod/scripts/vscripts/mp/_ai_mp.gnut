@@ -30,12 +30,12 @@ bool function IsAutoPopulateEnabled( var team = null )
 	return true
 }
 
-void function SPMP_UpdateNPCProficiency(entity ent)
+void function SPMP_UpdateNPCProficiency( entity ent )
 {
 
 }
 
-bool function SPMP_Callback_ForceAIMissPlayer(entity npc, entity player)
+bool function SPMP_Callback_ForceAIMissPlayer( entity npc, entity player )
 {
 	return true
 }

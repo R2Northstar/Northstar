@@ -219,6 +219,7 @@ void function CodeCallback_OnPlayerRespawned( entity player )
 	player.s.respawnTime = Time()
 	
 	Loadouts_TryGivePilotLoadout( player )
+	SetHumanRagdollImpactTable( player )
 		
 	foreach ( void functionref( entity ) callback in svGlobal.onPlayerRespawnedCallbacks )
 		callback( player )

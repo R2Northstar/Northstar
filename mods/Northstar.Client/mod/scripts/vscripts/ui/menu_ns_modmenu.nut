@@ -1,6 +1,10 @@
 global function AddNorthstarModMenu
 global function AddNorthstarModMenu_MainMenuFooter
 
+struct {
+	bool shouldReloadModsOnEnd
+} file
+
 void function AddNorthstarModMenu()
 {
 	AddMenu( "ModListMenu", $"resource/ui/menus/modlist.menu", InitModMenu )
@@ -21,15 +25,21 @@ void function InitModMenu()
 	var menu = GetMenu( "ModListMenu" )
 
 	AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, OnModMenuOpened )
+	AddMenuEventHandler( menu, eUIEvent.MENU_CLOSE, OnModMenuClosed )
 	AddMenuFooterOption( menu, BUTTON_B, "#B_BUTTON_BACK", "#BACK" )
-	AddMenuFooterOption( menu, BUTTON_Y, "#Y_RELOAD_MODS", "#RELOAD_MODS", ReloadMods )
+	AddMenuFooterOption( menu, BUTTON_Y, "#Y_RELOAD_MODS", "#RELOAD_MODS", OnReloadModsButtonPressed )
 	
 	foreach ( var button in GetElementsByClassname( GetMenu( "ModListMenu" ), "ModButton" ) )
+	{
 		AddButtonEventHandler( button, UIE_GET_FOCUS, OnModMenuButtonFocused )
+		AddButtonEventHandler( button, UIE_CLICK, OnModMenuButtonPressed )
+	}
 }
 
 void function OnModMenuOpened()
 {
+	file.shouldReloadModsOnEnd = false
+
 	Hud_SetText( Hud_GetChild( GetMenu( "ModListMenu" ), "Title" ), "#MENU_TITLE_MODS" )
 
 	array<var> buttons = GetElementsByClassname( GetMenu( "ModListMenu" ), "ModButton" )
@@ -47,8 +57,34 @@ void function OnModMenuOpened()
 		Hud_SetEnabled( buttons[ i ], true )
 		Hud_SetVisible( buttons[ i ], true )
 		
-		SetButtonRuiText( buttons[ i ], modNames[ i ] + " v" + NSGetModVersionByModName( modNames[ i ] ) )
+		SetModMenuNameText( buttons[ i ] )
 	}
+}
+
+void function OnModMenuClosed()
+{
+	if ( file.shouldReloadModsOnEnd )
+		ReloadMods()
+}
+
+void function SetModMenuNameText( var button )
+{
+	string modName = NSGetModNames()[ int ( Hud_GetScriptID( button ) ) ]
+
+	// should be localisation at some point
+	if ( NSIsModEnabled( modName ) )
+		SetButtonRuiText( button, modName + " v" + NSGetModVersionByModName( modName ) )
+	else
+		SetButtonRuiText( button, modName + " (DISABLED)" ) 
+}
+
+void function OnModMenuButtonPressed( var button )
+{
+	string modName = NSGetModNames()[ int ( Hud_GetScriptID( button ) ) ]
+	NSSetModEnabled( modName, !NSIsModEnabled( modName ) )
+	SetModMenuNameText( button )
+	
+	file.shouldReloadModsOnEnd = true
 }
 
 void function OnModMenuButtonFocused( var button )
@@ -101,8 +137,17 @@ string function FormatModDescription( string modName )
 	return ret
 }
 
-void function ReloadMods( var button )
+void function OnReloadModsButtonPressed( var button )
+{
+	ReloadMods()
+}
+
+void function ReloadMods()
 {
 	NSReloadMods()
-	OnModMenuOpened() // temp, until we start doing uiscript_reset here
+	ClientCommand( "reload_localization" )
+	ClientCommand( "loadPlaylists" )
+	// ClientCommand( "weapon_reparse" ) // this doesn't work, weapon_reparse only works if a server is running and sv_cheats is 1, gotta figure this out eventually
+	// note: the logic for this seems really odd, unsure why it doesn't seem to update, since the same code seems to get run irregardless of whether we've read weapon data before
+	ClientCommand( "uiscript_reset" )
 }

@@ -25,31 +25,14 @@ void function OnNorthstarCustomMatchSettingsCategoryMenuOpened()
 	array<string> categories = GetPrivateMatchSettingCategories()
 	array<var> buttons = GetElementsByClassname( GetMenu( "CustomMatchSettingsCategoryMenu" ), "MatchSettingCategoryButton" )
 	
+	foreach ( var button in buttons )
+	{
+		Hud_SetEnabled( button, false )
+		Hud_SetVisible( button, false )
+	}
+	
 	for ( int i = 0, j = 0; j < categories.len() && i < buttons.len(); i++, j++ )
 	{
-		Hud_SetEnabled( buttons[ i ], false )
-		Hud_SetVisible( buttons[ i ], false )
-	
-		// skip gamemode/playlist categories for modes that aren't the current one
-		// todo this fucking breaks everything lmao
-		//bool gamemode = categories[ j ].find( "#GAMEMODE_" ) == 0
-		//if ( gamemode || categories[ j ].find( "#PL_" ) == 0 )
-		//{
-		//	if ( gamemode )
-		//	{
-		//		if ( categories[ j ].slice( 10 ) != PrivateMatch_GetSelectedMode() )
-		//		{	
-		//			i--
-		//			continue
-		//		}
-		//	}
-		//	else if ( categories[ j ].slice( 4 ) != PrivateMatch_GetSelectedMode() )
-		//	{
-		//		i--
-		//		continue 
-		//	}
-		//}
-		
 		Hud_SetText( buttons[ i ], Localize( categories[ j ] ) + " ->" )
 		Hud_SetEnabled( buttons[ i ], true )
 		Hud_SetVisible( buttons[ i ], true )

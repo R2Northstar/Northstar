@@ -32,6 +32,11 @@ const DEBUG_PERMISSIONS = false
 
 void function InitMainMenuPanel()
 {
+	// disable communities because of the cool openinvite exploit (not required anymore but keeping here anyway
+	SetConVarBool( "communities_enabled", false )
+	SetConVarString( "communities_hostname", "localhost" )
+	
+
 	RegisterSignal( "EndShowMainMenuPanel" )
 
 	file.panel = GetPanel( "MainMenuPanel" )
@@ -77,7 +82,7 @@ void function InitMainMenuPanel()
 	var multiplayerHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MULTIPLAYER_ALLCAPS" )
 	file.mpButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MULTIPLAYER_LAUNCH" )
 	Hud_AddEventHandler( file.mpButton, UIE_CLICK, OnPlayMPButton_Activate )
-	file.fdButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#GAMEMODE_COOP" )
+	file.fdButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_LAUNCH_NORTHSTAR" )
 	Hud_AddEventHandler( file.fdButton, UIE_CLICK, OnPlayFDButton_Activate )
 
 	headerIndex++
@@ -443,7 +448,7 @@ void function UpdatePlayButton( var button )
 		//else
 		//{
 			//ComboButton_SetText( file.fdButton, "#MULTIPLAYER_LAUNCH_FD" )
-			ComboButton_SetText( file.fdButton, "Launch Northstar" ) // this needs to use localised text at some point when we have a modular way of doing that
+			ComboButton_SetText( file.fdButton, "#MENU_LAUNCH_NORTHSTAR" ) // this needs to use localised text at some point when we have a modular way of doing that
 			Hud_SetEnabled( file.fdButton, true )
 		//}
 
@@ -521,6 +526,9 @@ void function TryAuthWithLocalServer()
 	if ( NSWasAuthSuccessful() )
 		NSCompleteAuthWithLocalServer()
 	
+	if ( GetConVarString( "mp_gamemode" ) == "solo" )
+		SetConVarString( "mp_gamemode", "tdm" )
+
 	ClientCommand( "setplaylist tdm" )
 	ClientCommand( "map mp_lobby" )
 }
