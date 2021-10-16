@@ -286,7 +286,7 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 	
 	// do some pre-replay stuff if we're gonna do a replay
 	float replayLength = CalculateLengthOfKillReplay( player, methodOfDeath )
-	bool shouldDoReplay = Replay_IsEnabled() && KillcamsEnabled() && ShouldDoReplay( player, attacker, replayLength, methodOfDeath )
+	bool shouldDoReplay = Replay_IsEnabled() && KillcamsEnabled() && IsValid( attacker ) && ShouldDoReplay( player, attacker, replayLength, methodOfDeath )
 	table replayTracker = { validTime = null }
 	if ( shouldDoReplay )
 		thread TrackDestroyTimeForReplay( attacker, replayTracker )
