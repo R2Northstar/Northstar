@@ -951,20 +951,8 @@ function TitanEmbark_PlayerEmbarks( entity player, entity titan, table e )
 		}
 	)
 	
-	if ( GetCurrentPlaylistVarInt( "fp_embark_enabled", 0 ) == 1 )
-	{
-		Remote_CallFunction_NonReplay( player, "ServerCallback_HideHudForFPEmbark" )
-	
-		// fp embark hacks
-		entity viewControl = CreateEntity( "point_viewcontrol" )
-		viewControl.kv.spawnflags = 56
-		DispatchSpawn( viewControl )
-		
-		viewControl.SetParent( player, "headshot" )
-		viewControl.SetOrigin( < 4, 0, 0 > )
-		viewControl.SetAngles( < 0, 0, 0 > )
-		player.SetViewEntity( viewControl, false )
-	}
+	if ( GetCurrentPlaylistVarInt( "fp_embark_enabled", 0 ) == 1 && !doFirstPersonAnim )
+		FirstPersonSequenceForce1P( sequence, player, titan  )
 
 	thread FirstPersonSequence( sequence, player, titan )
 	// EmitDifferentSoundsOnEntityForPlayerAndWorld( firstPersonAudio, thirdPersonAudio, titan, player )
@@ -1032,15 +1020,9 @@ void function Embark_DelayedFadeOut( entity player, entity titan, float delay )
 	}
 	else
 	{
-		OnThreadEnd( function() : ( player )
-		{
-			player.ClearViewEntity()
-		})
-	
 		wait EMBARK_FADE_TIME - 0.2
 		ScreenFadeToBlack( player, 0.2, 0.4 )
 		wait 0.2
-		player.ClearViewEntity() // make sure player is in normal first person again
 	}
 	
 	ScreenFadeFromBlack( player, EMBARK_FADE_TIME, EMBARK_FADE_TIME )
@@ -1105,10 +1087,7 @@ void function PhaseEmbarkPhaseStart( entity player )
 	EmitSoundOnEntity( player, "pilot_phaseembark_activate_3p" )
 	
 	if ( GetCurrentPlaylistVarInt( "fp_embark_enabled", 0 ) == 1 )
-	{
 		player.PhaseShiftBegin( 0.0, 0.2 )
-		player.GetPetTitan().SetForceVisibleInPhaseShift( true ) // doesn't work for some reason
-	}	
 	
 	thread PhaseEmbarkPhaseCleanup( player )
 }

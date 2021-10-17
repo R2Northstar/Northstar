@@ -1,3 +1,4 @@
+untyped
 global function Sv_EarnMeterMP_Init
 global function EarnMeterMP_SetTitanLoadout
 global function EarnMeterMP_SetPassiveMeterGainEnabled
@@ -32,11 +33,19 @@ void function SetupPlayerEarnMeter( entity player )
 {
 	PlayerEarnMeter_Reset( player )
 	
-	// todo: need to do burnmeter stuff here ( e.g. rewards/boosts )
+	if ( Riff_BoostAvailability() != eBoostAvailability.Disabled ) 
+	{
+		string burncardRef = GetSelectedBurncardRefFromWeaponOrPlayer( null, player )
+		PlayerEarnMeter_SetReward( player, EarnObject_GetByRef( burncardRef ) ) // pretty sure this works?
+		PlayerEarnMeter_SetRewardFrac( player, BurnReward_GetByRef( burncardRef ).cost )
+		PlayerEarnMeter_EnableReward( player )
+	}
+	
 	if ( EarnMeterMP_IsTitanEarnGametype() )
+	{
 		PlayerEarnMeter_SetGoal( player, EarnObject_GetByRef( GetTitanLoadoutForPlayer( player ).titanClass ) )
-		
-	PlayerEarnMeter_EnableGoal( player ) // prevents goalstate from being set incorrectly
+		PlayerEarnMeter_EnableGoal( player ) // prevents goalstate from being set incorrectly
+	}
 	
 	// catchup bonus for late joiners
 	// todo: maths on this is fine but for some reason it won't set correctly, could be getting reset somewhere?
@@ -49,15 +58,18 @@ void function OnPlaying()
 	foreach ( entity player in GetPlayerArray() )
 		SetupPlayerEarnMeter( player )
 		
+	if ( Riff_BoostAvailability() != eBoostAvailability.Disabled )
+		SetCallback_EarnMeterRewardEarned( EarnMeterMP_BoostEarned )
+		
 	// do this in playing so that gamemodes/maps can disable and this'll take affect
 	if ( EarnMeterMP_IsTitanEarnGametype() ) // settitanavailable when earnmeter full
 	{
 		Riff_ForceTitanAvailability( eTitanAvailability.Custom ) // doesn't seem to affect anything aside from preventing some annoying client stuff
 		svGlobal.titanAvailabilityCheck = IsTitanAvailable
-		AddEarnMeterThresholdEarnedCallback( 1.0, void function( entity player ) { SetTitanAvailable( player ) }, true )
+		SetCallback_EarnMeterGoalEarned( EarnMeterMP_TitanEarned )
 	}
 	else // if no titans from earnmeter in this mode, just reset when we finish meter
-		AddEarnMeterThresholdEarnedCallback( 1.0, PlayerEarnMeter_Reset, true )
+		SetCallback_EarnMeterGoalEarned( PlayerEarnMeter_Reset )
 }
 
 void function OnPlayerRespawned( entity player )
@@ -97,7 +109,14 @@ void function EarnMeterMP_PlayerLifeThink( entity player )
 			if ( desiredEarnMeterMode == eEarnMeterMode.DEFAULT )
 			{
 				if ( !IsTitanAvailable( player ) && PlayerEarnMeter_GetOwnedFrac( player ) == 1.0 ) // this should only be the case after player has dropped their titan
+				{
 					PlayerEarnMeter_Reset( player )
+					// reset rewards
+					string burncardRef = GetSelectedBurncardRefFromWeaponOrPlayer( null, player )
+					PlayerEarnMeter_SetReward( player, EarnObject_GetByRef( burncardRef ) )
+					PlayerEarnMeter_SetRewardFrac( player, BurnReward_GetByRef( burncardRef ).cost )
+					PlayerEarnMeter_EnableReward( player )
+				}
 					
 				if ( PlayerEarnMeter_GetRewardFrac( player ) != 0 )
 					PlayerEarnMeter_EnableReward( player )
@@ -133,4 +152,25 @@ void function EarnMeterMP_PlayerLifeThink( entity player )
 		
 		WaitFrame()
 	}
+}
+
+void function EarnMeterMP_BoostEarned( entity player )
+{
+	BurnReward burncard = BurnReward_GetByRef( GetSelectedBurnCardRef( player ) )
+	
+	while ( burncard.ref == "burnmeter_random_foil" )
+		burncard = BurnReward_GetRandom()
+	
+	array<string> mods = [ "burn_card_weapon_mod" ]
+	if ( burncard.extraWeaponMod != "" )
+		mods.append( burncard.extraWeaponMod )
+	
+	player.GiveOffhandWeapon( burncard.weaponName, OFFHAND_INVENTORY, mods )
+	Remote_CallFunction_Replay( player, "ServerCallback_RewardReadyMessage", player.s.respawnTime )
+}
+
+void function EarnMeterMP_TitanEarned( entity player )
+{
+	SetTitanAvailable( player )
+	//Remote_CallFunction_Replay( player, "ServerCallback_TitanReadyMessage" ) // broken for some reason
 }

@@ -1,6 +1,8 @@
 untyped
 
 global function BurnMeter_Init
+global function ForceSetGlobalBurncardOverride
+global function GetSelectedBurncardRefFromWeaponOrPlayer
 global function RunBurnCardUseFunc
 global function UseBurnCardWeapon
 global function UseBurnCardWeaponInCriticalSection
@@ -8,9 +10,19 @@ global function BurnMeter_GiveRewardDirect
 global function GetBurnCardWeaponSkin
 global function InitBurnMeterPersistentData
 
+const float PHASE_REWIND_LENGTH = 2.0
 // taken from wraith portal in apex, assuming it's the same as tf2's
 const float PHASE_REWIND_PATH_SNAPSHOT_INTERVAL = 0.1
+const int PHASE_REWIND_MAX_SNAPSHOTS = int( PHASE_REWIND_LENGTH / PHASE_REWIND_PATH_SNAPSHOT_INTERVAL )
+
 const float AMPED_WEAPONS_LENGTH = 30.0
+
+const int MAPHACK_PULSE_COUNT = 4
+const float MAPHACK_PULSE_DELAY = 2.0
+
+struct {
+	string forcedGlobalBurncardOverride = ""
+} file
 
 void function BurnMeter_Init()
 {
@@ -24,35 +36,97 @@ void function BurnMeter_Init()
 	BurnReward_GetByRef( "burnmeter_smart_pistol" ).rewardAvailableCallback = PlayerUsesSmartPistolBurncard
 	BurnReward_GetByRef( "burnmeter_emergency_battery" ).rewardAvailableCallback = PlayerUsesBatteryBurncard
 	BurnReward_GetByRef( "burnmeter_radar_jammer" ).rewardAvailableCallback = PlayerUsesRadarJammerBurncard
-	//BurnReward_GetByRef( "burnmeter_maphack" ).rewardAvailableCallback = 
-	//BurnReward_GetByRef( "burnmeter_phase_rewind" ).rewardAvailableCallback = 
+	BurnReward_GetByRef( "burnmeter_maphack" ).rewardAvailableCallback = PlayerUsesMaphackBurncard
+	BurnReward_GetByRef( "burnmeter_phase_rewind" ).rewardAvailableCallback = PlayerUsesPhaseRewindBurncard
 	
-	// these ones aren't so important
-	BurnReward_GetByRef( "burnmeter_nuke_titan" ).rewardAvailableCallback = PlayerUsesNukeTitanBurncard // unused in vanilla, fun though
+	// these ones aren't so important, they're either for fd ( unsupported rn ) or unused
 	//BurnReward_GetByRef( "burnmeter_harvester_shield" ).rewardAvailableCallback = 
 	BurnReward_GetByRef( "burnmeter_rodeo_grenade" ).rewardAvailableCallback = PlayerUsesRodeoGrenadeBurncard
+	BurnReward_GetByRef( "burnmeter_nuke_titan" ).rewardAvailableCallback = PlayerUsesNukeTitanBurncard // unused in vanilla, fun though
 	
 	// setup player callbacks
 	AddCallback_GameStateEnter( eGameState.Playing, InitBurncardsForIntroPlayers )
 	AddCallback_OnClientConnected( InitBurncardsForLateJoiner )
 	
 	AddCallback_OnPlayerRespawned( StartPhaseRewindLifetime )
+	
+	// necessary signals
+	RegisterSignal( "StopAmpedWeapons" )
+}
+
+void function ForceSetGlobalBurncardOverride( string ref )
+{
+	file.forcedGlobalBurncardOverride = ref
+}
+
+string function GetSelectedBurncardRefFromWeaponOrPlayer( entity weapon, entity player )
+{
+	// determine the burncard we're using
+	// in actual gameplay, this will always be the player's selected burncard
+	// however, if we want to manually give burncards and such, we want to make sure they'll still work
+	// so some extra work goes into this
+	
+	string ref = GetSelectedBurnCardRef( player )
+	
+	if ( file.forcedGlobalBurncardOverride.len() > 0 )
+		ref = file.forcedGlobalBurncardOverride
+	
+	if ( IsValid( weapon ) )
+	{
+		// determine via weapon mods, this assumes weapon mod names are the same as burn refs, which works in practice but is a bit weird
+		// this does crash with the burnmeter_doublexp mod, but who cares, it doesn't get hit normally
+		if ( weapon.GetWeaponClassName() == "mp_ability_burncardweapon" )
+		{
+			foreach ( string mod in weapon.GetMods() )
+				if ( mod.find( "burnmeter_" ) == 0 )
+					return mod
+		}
+		// determine via weapon name in the case of stuff like holopilot etc
+		else
+		{
+			// unfortunately, we have to hardcode this, we don't have a way of getting refs directly from weapons other than the burncard weapon
+			// this should be modular at some point, wish we could just iterate over burncards and find ones with the current weapon, but this isn't possible
+			switch ( weapon.GetWeaponClassName() )
+			{
+				case "mp_ability_holopilot_nova":
+					return "burnmeter_holopilot_nova"
+				
+				case "mp_weapon_arc_trap":
+					return "burnmeter_arc_trap"
+				
+				case "mp_weapon_frag_drone":
+					return "burnmeter_ticks"
+				
+				case "mp_weapon_hard_cover":
+					return "burnmeter_hard_cover"
+					
+				case "mp_ability_turretweapon":
+					// turret has 2 burncards, antititan and antipilot
+					if( weapon.HasMod( "burnmeter_at_turret_weapon" ) || weapon.HasMod( "burnmeter_at_turret_weapon_inf" ) )
+						return "burnmeter_at_turret_weapon"
+					else 
+						return "burnmeter_ap_turret_weapon"
+				
+				// note: cloak and stim both have burn_card_weapon_mod mods, but they aren't used and don't call burncard code at all, likely for tf1 infinite stim/cloak burncards?
+				
+				default:
+					print( "tried to use unknown burncard weapon " + weapon.GetWeaponClassName() )
+					return "burnmeter_amped_weapons"
+			}
+		}
+	}
+	
+	return ref
 }
 
 void function InitPlayerBurncards( entity player )
 {
-	int burnmeterSlot = player.GetPersistentVarAsInt( "burnmeterSlot" )
-	player.SetPlayerNetInt( TOP_INVENTORY_ITEM_BURN_CARD_ID, burnmeterSlot )
+	string ref = GetSelectedBurncardRefFromWeaponOrPlayer( null, player )
+	BurnReward reward = BurnReward_GetByRef( ref )
+	player.SetPlayerNetInt( TOP_INVENTORY_ITEM_BURN_CARD_ID, reward.id )
 	
-	if ( BurnReward_GetById( burnmeterSlot ).ref == "burnmeter_phase_rewind" )
-	{
-		player.s.hasPhaseRewind <- true
-		
-		if ( IsAlive( player ) )
-			thread PhaseRewindLifetime( player )
-	}
-	else
-		player.s.hasPhaseRewind <- false
+	if ( IsAlive( player ) )
+		thread PhaseRewindLifetime( player )
 }
 
 void function InitBurncardsForIntroPlayers()
@@ -71,8 +145,7 @@ void function InitBurncardsForLateJoiner( entity player )
 
 void function StartPhaseRewindLifetime( entity player )
 {
-	if ( "hasPhaseRewind" in player.s && player.s.hasPhaseRewind )
-		thread PhaseRewindLifetime( player )
+	thread PhaseRewindLifetime( player )
 }
 
 void function PhaseRewindLifetime( entity player )
@@ -82,12 +155,28 @@ void function PhaseRewindLifetime( entity player )
 	
 	OnThreadEnd( function() : ( player )
 	{
-	
+		player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions.clear()
 	})
 
 	while ( true )
 	{
+		PhaseRewindData rewindData
+		rewindData.origin = player.GetOrigin()
+		rewindData.angles = player.GetAngles()
+		rewindData.velocity = player.GetVelocity()
+		rewindData.wasInContextAction = player.ContextAction_IsActive()
+		rewindData.wasCrouched = player.IsCrouched()
 		
+		if ( player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions.len() >= PHASE_REWIND_MAX_SNAPSHOTS )
+		{
+			// shift all snapshots left	
+			for ( int i = 0; i < PHASE_REWIND_MAX_SNAPSHOTS - 1; i++ )
+				player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions[ i ] = player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions[ i + 1 ]
+			
+			player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions[ PHASE_REWIND_MAX_SNAPSHOTS - 1 ] = rewindData
+		}
+		else
+			player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions.append( rewindData )
 		
 		wait PHASE_REWIND_PATH_SNAPSHOT_INTERVAL
 	}
@@ -100,62 +189,9 @@ void function RunBurnCardUseFunc( entity player, string itemRef )
 		( expect void functionref( entity ) ( func ) )( player )
 }
 
-string function GetBurncardRefFromWeaponOrPlayer( entity weapon, entity player )
-{
-	// determine the burncard we're using
-	// in actual gameplay, this will always be the player's selected burncard
-	// however, if we want to manually give burncards and such, we want to make sure they'll still work
-	// so some extra work goes into this
-	
-	string ref = GetSelectedBurnCardRef( player )
-	// determine via weapon mods, this assumes weapon mod names are the same as burn refs, which works in practice but is a bit weird
-	// though, this does crash with the burnmeter_doublexp mod
-	if ( weapon.GetWeaponClassName() == "mp_ability_burncardweapon" )
-	{
-		foreach ( string mod in weapon.GetMods() )
-			if ( mod.find( "burnmeter_" ) == 0 )
-				return mod
-	}
-	// determine via weapon name in the case of stuff like holopilot etc
-	else
-	{
-		// unfortunately, we have to hardcode this, we don't have a way of getting refs directly from weapons other than the burncard weapon
-		// this should be modular at some point, wish we could just iterate over burncards and find ones with the current weapon, but this isn't possible
-		switch ( weapon.GetWeaponClassName() )
-		{
-			case "mp_ability_holopilot_nova":
-				return "burnmeter_holopilot_nova"
-			
-			case "mp_weapon_arc_trap":
-				return "burnmeter_arc_trap"
-			
-			case "mp_weapon_frag_drone":
-				return "burnmeter_ticks"
-			
-			case "mp_weapon_hard_cover":
-				return "burnmeter_hard_cover"
-				
-			case "mp_ability_turretweapon":
-				// turret has 2 burncards, antititan and antipilot
-				if( weapon.HasMod( "burnmeter_at_turret_weapon" ) || weapon.HasMod( "burnmeter_at_turret_weapon_inf" ) )
-					return "burnmeter_at_turret_weapon"
-				else 
-					return "burnmeter_ap_turret_weapon"
-			
-			// note: cloak and stim both have burn_card_weapon_mod mods, but they aren't used, likely for infinite stim/cloak burncards?
-			
-			default:
-				print( "tried to use unknown burncard weapon " + weapon.GetWeaponClassName() )
-				return "burnmeter_amped_weapons" // shouldn't hit this
-		}
-	}
-	
-	return ref
-}
-
 void function UseBurnCardWeapon( entity weapon, entity player )
 {
-	string ref = GetBurncardRefFromWeaponOrPlayer( weapon, player )
+	string ref = GetSelectedBurncardRefFromWeaponOrPlayer( weapon, player )
 	
 	Remote_CallFunction_Replay( player, "ServerCallback_RewardUsed", BurnReward_GetByRef( ref ).id )
 	RunBurnCardUseFunc( player, ref )
@@ -163,12 +199,12 @@ void function UseBurnCardWeapon( entity weapon, entity player )
 	// dont remove in RunBurnCardUseFunc because it can be called in non-burn_card_weapon_mod contexts
 	// TODO: currently not sure how burncards can be stacked ( max clipcount for all burncards is 1, so can't just set that )
 	// if this gets figured out, add a conditional check here to prevent removes if they've got burncards left
-	player.TakeOffhandWeapon( 4 )
+	player.TakeWeapon( BurnReward_GetByRef( ref ).weaponName )
 }
 
 void function UseBurnCardWeaponInCriticalSection( entity weapon, entity ownerPlayer )
 {
-	// ignoring critical section stuff, assuming it was necessary in tf1 where burncards were part of inventory
+	// ignoring critical section stuff, assuming it was necessary in tf1 where burncards were part of inventory, but not here
 	UseBurnCardWeapon( weapon, ownerPlayer )
 }
 
@@ -179,7 +215,7 @@ void function BurnMeter_GiveRewardDirect( entity player, string itemRef )
 
 int function GetBurnCardWeaponSkin( entity weapon )
 {
-	return GetBoostSkin( GetBurncardRefFromWeaponOrPlayer( weapon, weapon.GetOwner() ) )
+	return GetBoostSkin( GetSelectedBurncardRefFromWeaponOrPlayer( weapon, weapon.GetOwner() ) )
 }
 
 // stub
@@ -252,6 +288,77 @@ void function PlayerUsesRadarJammerBurncard( entity player )
 	}
 }
 
+void function PlayerUsesMaphackBurncard( entity player )
+{
+	thread PlayerUsesMaphackBurncardThreaded( player )
+}
+
+void function PlayerUsesMaphackBurncardThreaded( entity player )
+{
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "OnDeath" )
+	
+	// todo: potentially look into ScanMinimap in _passives for doing this better? boost is pretty likely based off it pretty heavily
+	for ( int i = 0; i < MAPHACK_PULSE_COUNT; i++ )
+	{
+		EmitSoundOnEntityOnlyToPlayer( player, player, "Burn_Card_Map_Hack_Radar_Pulse_V1_1P" )
+	
+		foreach ( entity otherPlayer in GetPlayerArray() )
+		{
+			Remote_CallFunction_Replay( otherPlayer, "ServerCallback_SonarPulseFromPosition", player.GetOrigin().x, player.GetOrigin().y, player.GetOrigin().z, SONAR_GRENADE_RADIUS )
+		
+			if ( otherPlayer.GetTeam() != player.GetTeam() )
+			{
+				StatusEffect_AddTimed( player, eStatusEffect.maphack_detected, 1.0, MAPHACK_PULSE_DELAY / 2, 0.0 )
+				SonarStart( otherPlayer, player.GetOrigin(), player.GetTeam(), player )
+			}
+		}
+		
+		wait MAPHACK_PULSE_DELAY
+	}
+}
+
+void function PlayerUsesPhaseRewindBurncard( entity player )
+{
+	thread PlayerUsesPhaseRewindBurncardThreaded( player )
+}
+
+void function PlayerUsesPhaseRewindBurncardThreaded( entity player )
+{
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "OnDeath" )
+	
+	entity mover = CreateScriptMover( player.GetOrigin(), player.GetAngles() )
+	player.SetParent( mover, "REF" )
+	
+	OnThreadEnd( function() : ( player, mover )
+	{
+		CancelPhaseShift( player )
+		player.DeployWeapon()
+		player.SetPredictionEnabled( true )
+		player.ClearParent()
+		ViewConeFree( player )
+		mover.Destroy()
+	})
+	
+	array<PhaseRewindData> positions = clone player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions
+	
+	ViewConeZero( player )
+	player.HolsterWeapon()
+	player.SetPredictionEnabled( false )
+	PhaseShift( player, 0.0, positions.len() * PHASE_REWIND_PATH_SNAPSHOT_INTERVAL * 1.5 )
+
+	for ( int i = positions.len() - 1; i > -1; i-- )
+	{
+		mover.NonPhysicsMoveTo( positions[ i ].origin, PHASE_REWIND_PATH_SNAPSHOT_INTERVAL, 0, 0 )
+		mover.NonPhysicsRotateTo( positions[ i ].angles, PHASE_REWIND_PATH_SNAPSHOT_INTERVAL, 0, 0 )
+		wait PHASE_REWIND_PATH_SNAPSHOT_INTERVAL
+	}
+	
+	// this isn't vanilla but it's cool lol, should prolly remove it tho
+	player.SetVelocity( -positions[ positions.len() - 1 ].velocity )
+}
+
 void function PlayerUsesNukeTitanBurncard( entity player )
 {
 	thread PlayerUsesNukeBurncardThreaded( player )
@@ -292,5 +399,15 @@ void function PlayerUsesNukeBurncardThreaded( entity player )
 
 void function PlayerUsesRodeoGrenadeBurncard( entity player )
 {
-	player.SetPlayerNetInt( "numSuperRodeoGrenades", 7player.GetPlayerNetInt( "numSuperRodeoGrenades" ) + 1 )
+	player.SetPlayerNetInt( "numSuperRodeoGrenades", player.GetPlayerNetInt( "numSuperRodeoGrenades" ) + 1 )
+}
+
+// unused burncard that's mentioned in a few areas and has a validiation function in sh_burnmeter ( BurnMeter_SummonReaperCanUse ), thought it'd be neat to add it
+void function PlayerUsesReaperfallBurncard( entity player )
+{
+	Point spawnpoint = GetTitanReplacementPoint( player, false )
+	entity reaper = CreateSuperSpectre( player.GetTeam(), spawnpoint.origin, spawnpoint.angles )
+	DispatchSpawn( reaper )
+	
+	thread SuperSpectre_WarpFall( reaper )
 }
