@@ -599,22 +599,24 @@ void function DoGameNeedsToInstallDialog()
 
 void function UpdateTrialLabel()
 {
-	bool isTrialVersion
-	bool lastIsTrialVersion = Script_IsRunningTrialVersion()
+	//bool isTrialVersion
+	//bool lastIsTrialVersion = Script_IsRunningTrialVersion()
 
-	Hud_SetVisible( file.trialLabel, lastIsTrialVersion )
+	Hud_SetColor( file.trialLabel, 101, 109, 207, 255 )
+	Hud_SetText( file.trialLabel, "+ NORTHSTAR" )
+	Hud_SetVisible( file.trialLabel, true )
 
-	while ( GetTopNonDialogMenu() == file.menu )
-	{
-		isTrialVersion = Script_IsRunningTrialVersion()
-
-		if ( isTrialVersion != lastIsTrialVersion )
-			Hud_SetVisible( file.trialLabel, isTrialVersion )
-
-		lastIsTrialVersion = isTrialVersion
-
-		WaitFrame()
-	}
+	//while ( GetTopNonDialogMenu() == file.menu )
+	//{
+	//	isTrialVersion = Script_IsRunningTrialVersion()
+	//
+	//	if ( isTrialVersion != lastIsTrialVersion )
+	//		Hud_SetVisible( file.trialLabel, isTrialVersion )
+	//
+	//	lastIsTrialVersion = isTrialVersion
+	//
+	//	WaitFrame()
+	//}
 }
 
 void function OpenSinglePlayerDevMenu( var button )

@@ -32,11 +32,6 @@ const DEBUG_PERMISSIONS = false
 
 void function InitMainMenuPanel()
 {
-	// disable communities because of the cool openinvite exploit (not required anymore but keeping here anyway
-	SetConVarBool( "communities_enabled", false )
-	SetConVarString( "communities_hostname", "localhost" )
-	
-
 	RegisterSignal( "EndShowMainMenuPanel" )
 
 	file.panel = GetPanel( "MainMenuPanel" )
