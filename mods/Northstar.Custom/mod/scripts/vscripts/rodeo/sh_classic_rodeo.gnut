@@ -1,0 +1,61 @@
+untyped
+
+global function ClassicRodeo_InitPlaylistVars
+
+#if SERVER
+global function CreateClassicRodeoWeakpoint
+#endif
+
+const asset RODEO_WEAKPOINT_HITBOX_MODEL = $"models/Weapons/ammoboxes/backpack_single.mdl"
+
+void function ClassicRodeo_InitPlaylistVars()
+{
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_TITAN", "classic_rodeo", [ "Disabled", "Enabled" ], "0" )
+}
+
+#if SERVER
+entity function CreateClassicRodeoWeakpoint( entity player, entity titan )
+{
+	entity weakpoint = CreatePropScript( RODEO_WEAKPOINT_HITBOX_MODEL )
+	weakpoint.SetParent( titan, "RODEO_BATTERY" )
+	weakpoint.SetLocalAngles( < 90, -90, 0 > )
+	weakpoint.SetTakeDamageType( DAMAGE_YES )
+	SetTeam( weakpoint, TEAM_UNASSIGNED )
+	SetObjectCanBeMeleed( weakpoint, false )
+	weakpoint.kv.solid = 6
+	weakpoint.Hide()
+	
+	// stryder ones don't really work in the default position, so change it
+	// note: stryders are way too easy to hit because of this lol so possibly fuck with it
+	if ( GetSoulTitanSubClass( titan.GetTitanSoul() ) == "stryder" )
+		weakpoint.SetLocalOrigin( < 0, 4, -4 > )
+	
+	weakpoint.s.pilot <- player
+	weakpoint.s.titan <- titan
+	
+	AddEntityCallback_OnDamaged( weakpoint, OnRodeoWeakpointDamaged )
+}
+
+void function OnRodeoWeakpointDamaged( entity weakpoint, var damageInfo )
+{	
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	entity titan = attacker.GetParent()
+	float damageAmount = DamageInfo_GetDamage( damageInfo )
+	DamageInfo_SetDamage( damageInfo, 0 ) // make sure weakpoint ent doesn't die ever
+
+	if ( attacker != weakpoint.s.pilot || titan != weakpoint.s.titan )
+		return
+	
+	// hitmarker
+	attacker.NotifyDidDamage( weakpoint, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamagePosition( damageInfo ), DamageInfo_GetCustomDamageType( damageInfo ) | DF_CRITICAL, damageAmount, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
+	
+	// figure out damage to deal to titan
+	entity attackerWeapon = attacker.GetActiveWeapon()
+	int rodeoDamage = attackerWeapon.GetWeaponSettingInt( eWeaponVar.damage_rodeo ) // only really on weapons that were in tf1, unfortunately
+	if ( rodeoDamage == 0 )
+		rodeoDamage = int( attackerWeapon.GetWeaponSettingInt( eWeaponVar.damage_near_value_titanarmor ) * ( attackerWeapon.GetWeaponSettingFloat( eWeaponVar.damage_headshot_scale ) * 1.5 ) ) // would use headshot scale, but it's a bit low in most cases to be competitive
+		
+	// damage titan
+	titan.TakeDamage( rodeoDamage, attacker, attackerWeapon, { damageSourceId = eDamageSourceId.rodeo } )
+}
+#endif

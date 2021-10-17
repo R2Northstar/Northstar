@@ -154,7 +154,8 @@ void function FastballPlayer( entity player )
 	// respawn the player
 	player.SetOrigin( buddy.GetOrigin() )
 	player.RespawnPlayer( null )
-	player.Hide()
+	var oldVisibility = player.kv.VisibilityFlags // better than .Hide(), hides weapons and such
+	player.kv.VisibilityFlags = 0
 	player.HolsterWeapon()
 	
 	// hide hud, fade screen out from black
@@ -184,7 +185,7 @@ void function FastballPlayer( entity player )
 	
 	// have to correct this manually here since due to no 3p animation our position isn't set right during this sequence
 	player.SetOrigin( buddy.GetAttachmentOrigin( buddy.LookupAttachment( "FASTBALL_R" ) ) )
-	player.Show()
+	player.kv.VisibilityFlags = oldVisibility // restore visibility
 	player.SetVelocity( throwVel )
 	
 	TryGameModeAnnouncement( player )

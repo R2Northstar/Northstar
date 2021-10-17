@@ -1,0 +1,178 @@
+global function FirstPersonSequenceForce1P_Init
+global function FirstPersonSequenceForce1P_InitPlaylistVars
+
+#if SERVER
+	global function FirstPersonSequenceForce1P
+#endif
+
+#if CLIENT
+	global function ServerCallback_HideHudForFPHackAnim
+#endif
+
+global const string FORCE1P_PILOT_1P_ATTACHMENT = "HEADFOCUS"
+global const string FORCE1P_TITAN_1P_ATTACHMENT = "HATCH_HEAD" // CHEST_LASER could be better, but is only on atlas titans
+
+global const string FORCE1P_PILOT_1P_HIDDEN_BODYGROUP = "head"
+global const string FORCE1P_TITAN_1P_HIDDEN_BODYGROUP = "torso"
+
+global const string FORCE1P_PILOT_ENTITYCLASS = "npc_pilot_elite"
+global const string FORCE1P_TITAN_ENTITYCLASS = "npc_titan"
+
+global struct Forced1PSequenceData
+{
+	entity player
+	entity camera
+	entity ownerProxy
+	entity thirdPersonProxy
+}
+
+void function FirstPersonSequenceForce1P_Init()
+{
+	// atm do this no matter what playlist we're on since playlist overrides seem to get sent to clients after networkvar registration
+	// not nice but whatever lol
+	AddCallback_OnRegisteringCustomNetworkVars( FirstPersonSequenceForce1P_RegisterCustomNetworkFunctions )
+}
+
+void function FirstPersonSequenceForce1P_InitPlaylistVars()
+{
+	PrecacheModel( $"models/weapons/sentry_turret/sentry_turret.mdl" )
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "fp_embark_enabled", [ "Disabled", "Enabled" ], "0" )
+}
+
+void function FirstPersonSequenceForce1P_RegisterCustomNetworkFunctions()
+{
+	Remote_RegisterFunction( "ServerCallback_HideHudForFPHackAnim" )
+}
+
+#if SERVER
+Forced1PSequenceData function FirstPersonSequenceForce1P( FirstPersonSequenceStruct sequence, entity player, entity other = null )
+{
+	string attachment = FORCE1P_PILOT_1P_ATTACHMENT
+	string hiddenBodygroup = FORCE1P_PILOT_1P_HIDDEN_BODYGROUP
+	string entityclass = FORCE1P_PILOT_ENTITYCLASS
+
+	if ( player.IsTitan() )
+	{
+		attachment = FORCE1P_TITAN_1P_ATTACHMENT
+		hiddenBodygroup = FORCE1P_TITAN_1P_HIDDEN_BODYGROUP	
+		entityclass	= FORCE1P_TITAN_ENTITYCLASS
+	}
+			
+	// hide player from everyone, unlike VisibilityFlags, this won't hide children, which is way easier to deal with
+	player.Hide()
+	
+	Forced1PSequenceData cleanupData
+	cleanupData.player = player
+	
+	// for some melee sequences, player.GetAngles() will be the angles the player had before they began the melee, which can cause desyncs
+	// eyeangles are fine though
+	vector angles = player.GetAngles()
+	angles.y = player.EyeAngles().y
+	
+	// create the first proxy entity, this should visually be identical to the player, but only visible to them, and with head/torso hidden
+	// this is an npc because some firstpersonsequences use animation features that only work on npcs and pilots, not props, so need to do this
+	entity ownerProxy = CreateEntity( entityclass ) //CreatePropDynamic( player.GetModelName(), player.GetOrigin(), player.GetAngles() )
+	ownerProxy.SetModel( player.GetModelName() )
+	ownerProxy.SetValueForModelKey( player.GetModelName() )
+	ownerProxy.SetOrigin( player.GetOrigin() )
+	ownerProxy.SetAngles( angles )
+	ownerProxy.kv.VisibilityFlags = ENTITY_VISIBLE_TO_OWNER
+	ownerProxy.kv.solid = 0 // nonsolid
+	SetTeam( ownerProxy, player.GetTeam() )
+	ownerProxy.SetOwner( player )
+	ownerProxy.SetSkin( player.GetSkin() )
+	ownerProxy.SetCamo( player.GetCamo() ) // note: this seems weird, doesn't set right
+	DispatchSpawn( ownerProxy )
+	ownerProxy.SetModel( player.GetModelName() )
+	ownerProxy.SetValueForModelKey( player.GetModelName() )
+	ownerProxy.SetInvulnerable()
+	cleanupData.ownerProxy = ownerProxy
+	
+	int bodygroupValue = 1
+	if ( hiddenBodygroup == "torso" )
+		bodygroupValue = 2
+	
+	// hide annoying bodygroup
+	ownerProxy.SetBodygroup( ownerProxy.FindBodyGroup( hiddenBodygroup ), bodygroupValue )
+	// don't play anim until later so we can do cleanup stuff
+		
+	// create the second proxy entity, this visible to everyone else
+	entity thirdPersonProxy = CreateEntity( entityclass ) //CreatePropDynamic( player.GetModelName(), player.GetOrigin(), player.GetAngles() )
+	thirdPersonProxy.SetModel( player.GetModelName() )
+	thirdPersonProxy.SetValueForModelKey( player.GetModelName() )
+	thirdPersonProxy.SetOrigin( player.GetOrigin() )
+	thirdPersonProxy.SetAngles( angles )
+	thirdPersonProxy.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE & ~ENTITY_VISIBLE_TO_OWNER
+	thirdPersonProxy.kv.solid = 0 // nonsolid
+	SetTeam( thirdPersonProxy, player.GetTeam() )
+	thirdPersonProxy.SetOwner( player )
+	thirdPersonProxy.SetSkin( player.GetSkin() )
+	thirdPersonProxy.SetCamo( player.GetCamo() ) // note: this seems weird, doesn't set right
+	DispatchSpawn( thirdPersonProxy	)
+	thirdPersonProxy.SetModel( player.GetModelName() )
+	thirdPersonProxy.SetValueForModelKey( player.GetModelName() )
+	thirdPersonProxy.SetInvulnerable()
+	cleanupData.thirdPersonProxy = thirdPersonProxy
+	
+	if ( player.IsTitan() )
+		Highlight_SetEnemyHighlight( thirdPersonProxy, "enemy_titan" )
+	else
+		Highlight_SetEnemyHighlight( thirdPersonProxy, "enemy_player" )
+	
+	thread FirstPersonSequence( sequence, thirdPersonProxy, other )
+	
+	// create the viewpoint entity
+	entity camera = CreateEntity( "point_viewcontrol" )
+	camera.SetParent( ownerProxy, attachment )
+	camera.kv.spawnflags = 56
+	DispatchSpawn( camera )
+	player.SetViewEntity( camera, false )
+	cleanupData.camera = camera
+	
+	Remote_CallFunction_NonReplay( player, "ServerCallback_HideHudForFPHackAnim" )
+	// play this anim now, so we can cleanup after it's done
+	thread CleanupForced1PSequenceAfterAnimDone( sequence, ownerProxy, other, cleanupData )
+	return cleanupData
+}
+
+void function CleanupForced1PSequenceAfterAnimDone( FirstPersonSequenceStruct sequence, entity player, entity other, Forced1PSequenceData cleanupData )
+{
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "OnAnimationDone" )
+
+	OnThreadEnd( function() : ( cleanupData )
+	{
+		CleanupForced1PSequence( cleanupData )
+	})
+
+	FirstPersonSequence( sequence, player, other )
+}
+
+void function CleanupForced1PSequence( Forced1PSequenceData cleanupData )
+{
+	cleanupData.player.Show()
+	cleanupData.player.ClearViewEntity()
+	cleanupData.camera.Destroy()
+	cleanupData.ownerProxy.Destroy()
+	cleanupData.thirdPersonProxy.Destroy()
+}
+#endif
+
+#if CLIENT
+void function ServerCallback_HideHudForFPHackAnim()
+{
+	thread MainHud_TurnOff_RUI( true )
+	HidePermanentCockpitRui()
+	
+	thread EnableHudOnViewRestored()
+}
+
+void function EnableHudOnViewRestored()
+{
+	while ( GetViewEntity() != GetLocalClientPlayer() )
+		WaitFrame()
+	
+	thread MainHud_TurnOn_RUI( true )
+	ShowPermanentCockpitRui()
+}
+#endif

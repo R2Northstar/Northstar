@@ -99,6 +99,10 @@ void function RespawnInfected( entity player )
 	player.SetSkin( 1 )
 	player.SetCamo( 110 )
 	
+	// if human, remove helmet bodygroup, human models have some weird bloody white thing underneath their helmet that works well for this, imo
+	if ( !player.IsMechanical() )
+		player.SetBodygroup( player.FindBodyGroup( "head" ), 1 )
+	
 	// stats for infected
 	StimPlayer( player, 9999.9 ) // can't do endless since we don't get the visual effect in endless
 	player.kv.airAcceleration = 2500

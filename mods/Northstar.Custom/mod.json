@@ -284,16 +284,16 @@
 		},
 		
 		{
-			"Path": "titan/sh_first_person_embark.gnut",
+			"Path": "sh_3psequence_to_1p_hacks.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
 			"ClientCallback": {
-				"Before": "FirstPersonEmbark_Init",
-				"After": "FirstPersonEmbark_InitPlaylistVars"
+				"Before": "FirstPersonSequenceForce1P_Init",
+				"After": "FirstPersonSequenceForce1P_InitPlaylistVars"
 			},
 			
 			"ServerCallback": {
-				"Before": "FirstPersonEmbark_Init",
-				"After": "FirstPersonEmbark_InitPlaylistVars"
+				"Before": "FirstPersonSequenceForce1P_Init",
+				"After": "FirstPersonSequenceForce1P_InitPlaylistVars"
 			}
 		},
 		
@@ -354,7 +354,19 @@
 			"ServerCallback": {
 				"After": "CustomOOBTimer_Init"
 			}
-		}
+		},
+		
+		{
+			"Path": "rodeo/sh_classic_rodeo.gnut",
+			"RunOn": "( CLIENT || SERVER ) && MP",
+			"ClientCallback": {
+				"After": "ClassicRodeo_InitPlaylistVars"
+			},
+			
+			"ServerCallback": {
+				"After": "ClassicRodeo_InitPlaylistVars"
+			}
+		},
 	],
 	
 	"Localisation": [
