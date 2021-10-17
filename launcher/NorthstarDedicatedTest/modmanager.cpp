@@ -261,7 +261,7 @@ void ModManager::LoadMods()
 
 	// sort by load prio, lowest-highest
 	std::sort(m_loadedMods.begin(), m_loadedMods.end(), [](Mod* a, Mod* b) {
-		return a->LoadPriority > b->LoadPriority;
+		return a->LoadPriority < b->LoadPriority;
 	});
 
 	for (Mod* mod : m_loadedMods)
