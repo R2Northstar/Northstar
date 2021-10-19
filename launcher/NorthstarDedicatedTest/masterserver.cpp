@@ -287,6 +287,13 @@ void MasterServerManager::AuthenticateWithOwnServer(char* uid, char* playerToken
 			REQUEST_END_CLEANUP:
 			m_authenticatingWithGameServer = false;
 			m_scriptAuthenticatingWithGameServer = false;
+
+			if (m_bNewgameAfterSelfAuth)
+			{
+				// pretty sure this is threadsafe?
+				Cbuf_AddText(Cbuf_GetCurrentPlayer(), "ns_end_reauth_and_leave_to_lobby", cmd_source_t::kCommandSrcCode);
+				m_bNewgameAfterSelfAuth = false;
+			}
 		});
 
 	requestThread.detach();
@@ -621,6 +628,7 @@ void CHostState__State_NewGameHook(CHostState* hostState)
 	g_ServerAuthenticationManager->StartPlayerAuthServer();
 
 	CHostState__State_NewGame(hostState);
+	g_ServerAuthenticationManager->m_bNeedLocalAuthForNewgame = false;
 }
 
 void CHostState__State_ChangeLevelMPHook(CHostState* hostState)

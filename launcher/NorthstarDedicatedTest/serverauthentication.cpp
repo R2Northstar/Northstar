@@ -159,6 +159,10 @@ bool ServerAuthenticationManager::RemovePlayerAuthData(void* player)
 	if (!Cvar_ns_erase_auth_info->m_nValue)
 		return false;
 
+	// hack for special case where we're on a local server, so we erase our own newly created auth data on disconnect
+	if (m_bNeedLocalAuthForNewgame && !strcmp((char*)player + 0xF500, g_LocalPlayerUserID))
+		return false;
+
 	// we don't have our auth token at this point, so lookup authdata by uid
 	for (auto& auth : m_authData)
 	{

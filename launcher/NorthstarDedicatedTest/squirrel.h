@@ -12,6 +12,10 @@ typedef char SQChar;
 typedef SQUnsignedInteger SQBool;
 typedef SQInteger SQRESULT;
 
+const SQRESULT SQRESULT_ERROR = -1;
+const SQRESULT SQRESULT_NULL = 0;
+const SQRESULT SQRESULT_NOTNULL = 1;
+
 typedef SQInteger(*SQFunction)(void* sqvm);
 
 struct CompileBufferState

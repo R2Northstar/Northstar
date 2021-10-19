@@ -33,6 +33,7 @@ public:
 	std::unordered_map<std::string, AuthData> m_authData;
 	std::unordered_map<void*, AdditionalPlayerData> m_additionalPlayerData;
 	bool m_runningPlayerAuthThread = false;
+	bool m_bNeedLocalAuthForNewgame = false;
 
 public:
 	void StartPlayerAuthServer();

@@ -15,7 +15,7 @@ SQInteger SQ_GetModNames(void* sqvm)
 		ClientSq_arrayappend(sqvm, -2);
 	}
 
-	return 1;
+	return SQRESULT_NOTNULL;
 }
 
 // bool NSIsModEnabled(string modName)
@@ -29,11 +29,11 @@ SQInteger SQ_IsModEnabled(void* sqvm)
 		if (!mod->Name.compare(modName))
 		{
 			ClientSq_pushbool(sqvm, mod->Enabled);
-			return 1;
+			return SQRESULT_NOTNULL;
 		}
 	}
 
-	return 0; // return null
+	return SQRESULT_NULL;
 }
 
 // void NSSetModEnabled(string modName, bool enabled)
@@ -48,11 +48,11 @@ SQInteger SQ_SetModEnabled(void* sqvm)
 		if (!mod->Name.compare(modName))
 		{
 			mod->Enabled = enabled;
-			return 0; // return null
+			return SQRESULT_NULL;
 		}
 	}
 
-	return 0; // return null
+	return SQRESULT_NULL;
 }
 
 // string NSGetModDescriptionByModName(string modName)
@@ -66,11 +66,11 @@ SQInteger SQ_GetModDescription(void* sqvm)
 		if (!mod->Name.compare(modName))
 		{
 			ClientSq_pushstring(sqvm, mod->Description.c_str(), -1);
-			return 1;
+			return SQRESULT_NOTNULL;
 		}
 	}
 
-	return 0; // return null
+	return SQRESULT_NULL;
 }
 
 // string NSGetModVersionByModName(string modName)
@@ -84,11 +84,11 @@ SQInteger SQ_GetModVersion(void* sqvm)
 		if (!mod->Name.compare(modName))
 		{
 			ClientSq_pushstring(sqvm, mod->Version.c_str(), -1);
-			return 1;
+			return SQRESULT_NOTNULL;
 		}
 	}
 
-	return 0; // return null
+	return SQRESULT_NULL;
 }
 
 // string NSGetModDownloadLinkByModName(string modName)
@@ -102,11 +102,11 @@ SQInteger SQ_GetModDownloadLink(void* sqvm)
 		if (!mod->Name.compare(modName))
 		{
 			ClientSq_pushstring(sqvm, mod->DownloadLink.c_str(), -1);
-			return 1;
+			return SQRESULT_NOTNULL;
 		}
 	}
 
-	return 0; // return null
+	return SQRESULT_NULL;
 }
 
 // int NSGetModLoadPriority(string modName)
@@ -120,11 +120,11 @@ SQInteger SQ_GetModLoadPriority(void* sqvm)
 		if (!mod->Name.compare(modName))
 		{
 			ClientSq_pushinteger(sqvm, mod->LoadPriority);
-			return 1;
+			return SQRESULT_NOTNULL;
 		}
 	}
 
-	return 0; // return null
+	return SQRESULT_NULL;
 }
 
 // bool NSIsModRequiredOnClient(string modName)
@@ -138,11 +138,11 @@ SQInteger SQ_IsModRequiredOnClient(void* sqvm)
 		if (!mod->Name.compare(modName))
 		{
 			ClientSq_pushbool(sqvm, mod->RequiredOnClient);
-			return 1;
+			return SQRESULT_NOTNULL;
 		}
 	}
 
-	return 0; // return null
+	return SQRESULT_NULL;
 }
 
 // array<string> NSGetModConvarsByModName(string modName)
@@ -162,18 +162,18 @@ SQInteger SQ_GetModConvars(void* sqvm)
 				ClientSq_arrayappend(sqvm, -2);
 			}
 
-			return 1;
+			return SQRESULT_NOTNULL;
 		}
 	}
 
-	return 1; // return empty array
+	return SQRESULT_NOTNULL; // return empty array
 }
 
 // void NSReloadMods()
-SQInteger SQ_ReloadMods(void* sqvm)
+SQRESULT SQ_ReloadMods(void* sqvm)
 {
 	g_ModManager->LoadMods();
-	return 0;
+	return SQRESULT_NULL;
 }
 
 void InitialiseScriptModMenu(HMODULE baseAddress)
