@@ -19,7 +19,7 @@ void* GetPlayerByIndex(int playerIndex)
 }
 
 // void function NSEarlyWritePlayerIndexPersistenceForLeave( int playerIndex )
-SQInteger SQ_EarlyWritePlayerIndexPersistenceForLeave(void* sqvm)
+SQRESULT SQ_EarlyWritePlayerIndexPersistenceForLeave(void* sqvm)
 {
 	int playerIndex = ServerSq_getinteger(sqvm, 1);
 	void* player = GetPlayerByIndex(playerIndex);
@@ -27,34 +27,34 @@ SQInteger SQ_EarlyWritePlayerIndexPersistenceForLeave(void* sqvm)
 	if (!g_ServerAuthenticationManager->m_additionalPlayerData.count(player))
 	{
 		ServerSq_pusherror(sqvm, fmt::format("Invalid playerindex {}", playerIndex).c_str());
-		return -1;
+		return SQRESULT_ERROR;
 	}
 
 	g_ServerAuthenticationManager->m_additionalPlayerData[player].needPersistenceWriteOnLeave = false;
 	g_ServerAuthenticationManager->WritePersistentData(player);
-	return 0;
+	return SQRESULT_NULL;
 }
 
 // bool function NSIsWritingPlayerPersistence()
-SQInteger SQ_IsWritingPlayerPersistence(void* sqvm)
+SQRESULT SQ_IsWritingPlayerPersistence(void* sqvm)
 {
 	ServerSq_pushbool(sqvm, g_MasterServerManager->m_savingPersistentData);
-	return 1;
+	return SQRESULT_NOTNULL;
 }
 
 // bool function NSIsPlayerIndexLocalPlayer( int playerIndex )
-SQInteger SQ_IsPlayerIndexLocalPlayer(void* sqvm)
+SQRESULT SQ_IsPlayerIndexLocalPlayer(void* sqvm)
 {
 	int playerIndex = ServerSq_getinteger(sqvm, 1);
 	void* player = GetPlayerByIndex(playerIndex);
 	if (!g_ServerAuthenticationManager->m_additionalPlayerData.count(player))
 	{
 		ServerSq_pusherror(sqvm, fmt::format("Invalid playerindex {}", playerIndex).c_str());
-		return -1;
+		return SQRESULT_ERROR;
 	}
 	
 	ServerSq_pushbool(sqvm, !strcmp(g_LocalPlayerUserID, (char*)player + 0xF500));
-	return 1;
+	return SQRESULT_NOTNULL;
 }
 
 void InitialiseMiscServerScriptCommand(HMODULE baseAddress)

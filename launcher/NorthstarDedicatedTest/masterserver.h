@@ -55,6 +55,7 @@ public:
 	bool m_scriptRequestingServerList = false;
 	bool m_successfullyConnected = true;
 
+	bool m_bNewgameAfterSelfAuth = false;
 	bool m_scriptAuthenticatingWithGameServer = false;
 	bool m_successfullyAuthenticatedWithGameServer = false;
 
