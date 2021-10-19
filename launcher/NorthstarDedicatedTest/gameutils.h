@@ -181,7 +181,12 @@ extern SetPlaylistVarOverrideType SetPlaylistVarOverride;
 typedef char*(*GetCurrentPlaylistVarType)(const char* varName, bool useOverrides);
 extern GetCurrentPlaylistVarType GetCurrentPlaylistVar;
 
+// server entity stuff
+typedef void*(*Server_GetEntityByIndexType)(int index);
+extern Server_GetEntityByIndexType Server_GetEntityByIndex;
+
 // uid
 extern char* g_LocalPlayerUserID;
 
 void InitialiseEngineGameUtilFunctions(HMODULE baseAddress);
+void InitialiseServerGameUtilFunctions(HMODULE baseAddress);

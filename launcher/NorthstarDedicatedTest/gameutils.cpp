@@ -23,6 +23,9 @@ SetCurrentPlaylistType SetCurrentPlaylist;
 SetPlaylistVarOverrideType SetPlaylistVarOverride;
 GetCurrentPlaylistVarType GetCurrentPlaylistVar;
 
+// server entity stuff
+Server_GetEntityByIndexType Server_GetEntityByIndex;
+
 // uid
 char* g_LocalPlayerUserID;
 
@@ -43,4 +46,9 @@ void InitialiseEngineGameUtilFunctions(HMODULE baseAddress)
 	GetCurrentPlaylistVar = (GetCurrentPlaylistVarType)((char*)baseAddress + 0x18C680);
 
 	g_LocalPlayerUserID = (char*)baseAddress + 0x13F8E688;
+}
+
+void InitialiseServerGameUtilFunctions(HMODULE baseAddress)
+{
+	Server_GetEntityByIndex = (Server_GetEntityByIndexType)((char*)baseAddress + 0xFB820);
 }

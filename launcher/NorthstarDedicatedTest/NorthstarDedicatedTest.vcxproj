@@ -316,7 +316,7 @@
     <ClInclude Include="modmanager.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="playlist.h" />
-    <ClInclude Include="serverscriptpersistence.h" />
+    <ClInclude Include="miscserverscript.h" />
     <ClInclude Include="securitypatches.h" />
     <ClInclude Include="scriptmodmenu.h" />
     <ClInclude Include="scriptserverbrowser.h" />
@@ -358,7 +358,7 @@
     <ClCompile Include="scriptserverbrowser.cpp" />
     <ClCompile Include="scriptsrson.cpp" />
     <ClCompile Include="serverauthentication.cpp" />
-    <ClCompile Include="serverscriptpersistence.cpp" />
+    <ClCompile Include="miscserverscript.cpp" />
     <ClCompile Include="sigscanning.cpp" />
     <ClCompile Include="sourceconsole.cpp" />
     <ClCompile Include="sourceinterface.cpp" />

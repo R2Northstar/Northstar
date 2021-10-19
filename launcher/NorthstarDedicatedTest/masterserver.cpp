@@ -7,7 +7,10 @@
 #include "serverauthentication.h"
 #include "gameutils.h"
 #include "rapidjson/document.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/writer.h"
 #include "rapidjson/error/en.h"
+#include "modmanager.h"
 
 ConVar* Cvar_ns_masterserver_hostname;
 ConVar* Cvar_ns_masterserver_port;
@@ -130,13 +133,16 @@ void MasterServerManager::RequestServerList()
 						|| !serverObj.HasMember("playlist") || !serverObj["playlist"].IsString()
 						|| !serverObj.HasMember("playerCount") || !serverObj["playerCount"].IsNumber()
 						|| !serverObj.HasMember("maxPlayers") || !serverObj["maxPlayers"].IsNumber()
-						|| !serverObj.HasMember("hasPassword") || !serverObj["hasPassword"].IsBool())
+						|| !serverObj.HasMember("hasPassword") || !serverObj["hasPassword"].IsBool()
+						|| !serverObj.HasMember("modInfo") || !serverObj["modInfo"].HasMember("Mods") || !serverObj["modInfo"]["Mods"].IsArray() )
 					{
 						spdlog::error("Failed reading masterserver response: malformed server object");
 						goto REQUEST_END_CLEANUP;
 					}
 
 					const char* id = serverObj["id"].GetString();
+
+					RemoteServerInfo* newServer = nullptr;
 
 					bool createNewServerInfo = true;
 					for (RemoteServerInfo& server : m_remoteServers)
@@ -145,6 +151,7 @@ void MasterServerManager::RequestServerList()
 						if (!strncmp((const char*)server.id, id, 32))
 						{
 							server = RemoteServerInfo(id, serverObj["name"].GetString(), serverObj["description"].GetString(), serverObj["map"].GetString(), serverObj["playlist"].GetString(), serverObj["playerCount"].GetInt(), serverObj["maxPlayers"].GetInt(), serverObj["hasPassword"].IsTrue());
+							newServer = &server;
 							createNewServerInfo = false;
 							break;
 						}
@@ -152,7 +159,23 @@ void MasterServerManager::RequestServerList()
 
 					// server didn't exist
 					if (createNewServerInfo)
-						m_remoteServers.emplace_back(id, serverObj["name"].GetString(), serverObj["description"].GetString(), serverObj["map"].GetString(), serverObj["playlist"].GetString(), serverObj["playerCount"].GetInt(), serverObj["maxPlayers"].GetInt(), serverObj["hasPassword"].IsTrue());
+						newServer = &m_remoteServers.emplace_back(id, serverObj["name"].GetString(), serverObj["description"].GetString(), serverObj["map"].GetString(), serverObj["playlist"].GetString(), serverObj["playerCount"].GetInt(), serverObj["maxPlayers"].GetInt(), serverObj["hasPassword"].IsTrue());
+
+					newServer->requiredMods.clear();
+					for (auto& requiredMod : serverObj["modInfo"]["Mods"].GetArray())
+					{
+						RemoteModInfo modInfo;
+
+						if (!requiredMod.HasMember("Name") || !requiredMod["Name"].IsString())
+							continue;
+						modInfo.Name = requiredMod["Name"].GetString();
+
+						if (!requiredMod.HasMember("Version") || !requiredMod["Version"].IsString())
+							continue;
+						modInfo.Version = requiredMod["Version"].GetString();
+
+						newServer->requiredMods.push_back(modInfo);
+					}
 
 					spdlog::info("Server {} on map {} with playlist {} has {}/{} players", serverObj["name"].GetString(), serverObj["map"].GetString(), serverObj["playlist"].GetString(), serverObj["playerCount"].GetInt(), serverObj["maxPlayers"].GetInt());
 				}
@@ -378,7 +401,35 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 			else
 				request = fmt::format("/server/add_server?port={}&authPort={}&name={}&description={}&map={}&playlist={}&maxPlayers={}&password=", port, authPort, name, description, map, playlist, maxPlayers);
 
-			if (auto result = http.Post(request.c_str()))
+			// build modinfo obj
+			rapidjson::Document modinfoDoc;
+			modinfoDoc.SetObject();
+			modinfoDoc.AddMember("Mods", rapidjson::Value(rapidjson::kArrayType), modinfoDoc.GetAllocator());
+
+			int currentModIndex = 0;
+			for (Mod* mod : g_ModManager->m_loadedMods)
+			{
+				if (!mod->RequiredOnClient)
+					continue;
+
+				modinfoDoc["Mods"].PushBack(rapidjson::Value(rapidjson::kObjectType), modinfoDoc.GetAllocator());
+				modinfoDoc["Mods"][currentModIndex].AddMember("Name", rapidjson::StringRef(mod->Name.c_str()), modinfoDoc.GetAllocator());
+				modinfoDoc["Mods"][currentModIndex].AddMember("Version", rapidjson::StringRef(mod->Version.c_str()), modinfoDoc.GetAllocator());
+
+				currentModIndex++;
+			}
+
+			rapidjson::StringBuffer buffer;
+			buffer.Clear();
+			rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+			modinfoDoc.Accept(writer);
+			const char* modInfoString = buffer.GetString();
+
+			httplib::MultipartFormDataItems requestItems = {
+				{"modinfo", std::string(modInfoString, buffer.GetSize()), "modinfo.json", "application/octet-stream"}
+			};
+
+			if (auto result = http.Post(request.c_str(), requestItems))
 			{
 				m_successfullyConnected = true;
 				
@@ -506,7 +557,7 @@ void MasterServerManager::WritePlayerPersistentData(char* playerId, char* pdata,
 			http.set_connection_timeout(10); 
 
 			httplib::MultipartFormDataItems requestItems = {
-				{ "pdata", std::string(&pdata[0], pdataSize), "file.pdata", "application/octet-stream"}
+				{ "pdata", std::string(pdata, pdataSize), "file.pdata", "application/octet-stream"}
 			};
 
 			// we dont process this at all atm, maybe do later, but atm not necessary

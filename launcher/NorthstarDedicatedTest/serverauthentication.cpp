@@ -257,7 +257,7 @@ void CBaseClient__DisconnectHook(void* self, uint32_t unknownButAlways1, const c
 	if (strcmp(reason, "Connection closing"))
 	{
 		// dcing, write persistent data
-		if (!g_ServerAuthenticationManager->m_additionalPlayerData[self].needPersistenceWriteOnLeave)
+		if (g_ServerAuthenticationManager->m_additionalPlayerData[self].needPersistenceWriteOnLeave)
 			g_ServerAuthenticationManager->WritePersistentData(self);
 		g_ServerAuthenticationManager->RemovePlayerAuthData(self); // won't do anything 99% of the time, but just in case
 	}
