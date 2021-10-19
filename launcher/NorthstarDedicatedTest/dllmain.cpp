@@ -20,7 +20,7 @@
 #include "modlocalisation.h"
 #include "playlist.h"
 #include "securitypatches.h"
-#include "serverscriptpersistence.h"
+#include "miscserverscript.h"
 
 bool initialised = false;
 
@@ -66,6 +66,7 @@ void InitialiseNorthstar()
 
     AddDllLoadCallback("engine.dll", WaitForDebugger);
     AddDllLoadCallback("engine.dll", InitialiseEngineGameUtilFunctions);
+    AddDllLoadCallback("server.dll", InitialiseServerGameUtilFunctions);
     AddDllLoadCallback("engine.dll", InitialiseEngineSpewFuncHooks);
 
     // dedi patches
@@ -92,7 +93,7 @@ void InitialiseNorthstar()
     AddDllLoadCallback("server.dll", InitialiseServerSquirrel);
     AddDllLoadCallback("engine.dll", InitialiseServerAuthentication);
     AddDllLoadCallback("engine.dll", InitialiseSharedMasterServer);
-    AddDllLoadCallback("server.dll", InitialiseServerScriptPersistence);
+    AddDllLoadCallback("server.dll", InitialiseMiscServerScriptCommand);
 
     AddDllLoadCallback("engine.dll", InitialisePlaylistHooks);
 

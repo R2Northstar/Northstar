@@ -2,11 +2,11 @@
 #include "convar.h"
 #include <WinSock2.h>
 
-struct RemoteServerModInfo
+struct RemoteModInfo
 {
 public:
-	std::string modName;
-	std::string modServer;
+	std::string Name;
+	std::string Version;
 };
 
 class RemoteServerInfo
@@ -19,7 +19,7 @@ public:
 	std::string description;
 	char map[32];
 	char playlist[16];
-	std::vector<RemoteServerModInfo> requiredMods;
+	std::vector<RemoteModInfo> requiredMods;
 
 	int playerCount;
 	int maxPlayers;

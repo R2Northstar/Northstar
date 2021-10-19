@@ -1,0 +1,1 @@
+void InitialiseMiscServerScriptCommand(HMODULE baseAddress);

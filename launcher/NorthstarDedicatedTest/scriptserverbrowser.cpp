@@ -141,6 +141,7 @@ SQInteger SQ_GetServerID(void* sqvm)
 	return 1;
 }
 
+// bool function NSServerRequiresPassword( int serverIndex )
 SQInteger SQ_ServerRequiresPassword(void* sqvm)
 {
 	SQInteger serverIndex = ClientSq_getinteger(sqvm, 1);
@@ -152,6 +153,65 @@ SQInteger SQ_ServerRequiresPassword(void* sqvm)
 	}
 
 	ClientSq_pushbool(sqvm, g_MasterServerManager->m_remoteServers[serverIndex].requiresPassword);
+	return 1;
+}
+
+// int function NSGetServerRequiredModsCount( int serverIndex )
+SQInteger SQ_GetServerRequiredModsCount(void* sqvm)
+{
+	SQInteger serverIndex = ClientSq_getinteger(sqvm, 1);
+
+	if (serverIndex >= g_MasterServerManager->m_remoteServers.size())
+	{
+		spdlog::warn("Tried to get required mods count of server index {} when only {} servers are available", serverIndex, g_MasterServerManager->m_remoteServers.size());
+		return 0;
+	}
+
+	ClientSq_pushinteger(sqvm, g_MasterServerManager->m_remoteServers[serverIndex].requiredMods.size());
+	return 1;
+}
+
+// string function NSGetServerRequiredModName( int serverIndex, int modIndex )
+SQInteger SQ_GetServerRequiredModName(void* sqvm)
+{
+	SQInteger serverIndex = ClientSq_getinteger(sqvm, 1);
+	SQInteger modIndex = ClientSq_getinteger(sqvm, 2);
+
+	if (serverIndex >= g_MasterServerManager->m_remoteServers.size())
+	{
+		spdlog::warn("Tried to get hasPassword of server index {} when only {} servers are available", serverIndex, g_MasterServerManager->m_remoteServers.size());
+		return 0;
+	}
+
+	if (modIndex >= g_MasterServerManager->m_remoteServers[serverIndex].requiredMods.size())
+	{
+		spdlog::warn("Tried to get required mod name of mod index {} when only {} mod are available", modIndex, g_MasterServerManager->m_remoteServers[serverIndex].requiredMods.size());
+		return 0;
+	}
+
+	ClientSq_pushstring(sqvm, g_MasterServerManager->m_remoteServers[serverIndex].requiredMods[modIndex].Name.c_str(), -1);
+	return 1;
+}
+
+// string function NSGetServerRequiredModVersion( int serverIndex, int modIndex )
+SQInteger SQ_GetServerRequiredModVersion(void* sqvm)
+{
+	SQInteger serverIndex = ClientSq_getinteger(sqvm, 1);
+	SQInteger modIndex = ClientSq_getinteger(sqvm, 2);
+
+	if (serverIndex >= g_MasterServerManager->m_remoteServers.size())
+	{
+		spdlog::warn("Tried to get required mod version of server index {} when only {} servers are available", serverIndex, g_MasterServerManager->m_remoteServers.size());
+		return 0;
+	}
+
+	if (modIndex >= g_MasterServerManager->m_remoteServers[serverIndex].requiredMods.size())
+	{
+		spdlog::warn("Tried to get required mod version of mod index {} when only {} mod are available", modIndex, g_MasterServerManager->m_remoteServers[serverIndex].requiredMods.size());
+		return 0;
+	}
+
+	ClientSq_pushstring(sqvm, g_MasterServerManager->m_remoteServers[serverIndex].requiredMods[modIndex].Version.c_str(), -1);
 	return 1;
 }
 
@@ -260,6 +320,9 @@ void InitialiseScriptServerBrowser(HMODULE baseAddress)
 	g_UISquirrelManager->AddFuncRegistration("int", "NSGetServerMaxPlayerCount", "int serverIndex", "", SQ_GetServerMaxPlayerCount);
 	g_UISquirrelManager->AddFuncRegistration("string", "NSGetServerID", "int serverIndex", "", SQ_GetServerID);
 	g_UISquirrelManager->AddFuncRegistration("bool", "NSServerRequiresPassword", "int serverIndex", "", SQ_ServerRequiresPassword);
+	g_UISquirrelManager->AddFuncRegistration("int", "NSGetServerRequiredModsCount", "int serverIndex", "", SQ_GetServerRequiredModsCount);
+	g_UISquirrelManager->AddFuncRegistration("string", "NSGetServerRequiredModName", "int serverIndex, int modIndex", "", SQ_GetServerRequiredModName);
+	g_UISquirrelManager->AddFuncRegistration("string", "NSGetServerRequiredModVersion", "int serverIndex, int modIndex", "", SQ_GetServerRequiredModVersion);
 
 	g_UISquirrelManager->AddFuncRegistration("void", "NSTryAuthWithServer", "int serverIndex, string password = \"\"", "", SQ_TryAuthWithServer);
 	g_UISquirrelManager->AddFuncRegistration("bool", "NSIsAuthenticatingWithServer", "", "", SQ_IsAuthComplete);
