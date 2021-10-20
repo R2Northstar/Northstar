@@ -161,7 +161,11 @@ string function FormatServerDescription( int server )
 	
 	ret += NSGetServerName( server ) + "\n"
 	ret += format( "%i/%i players\n", NSGetServerPlayerCount( server ), NSGetServerMaxPlayerCount( server ) )
-	ret += NSGetServerDescription( server ) + "\n"
+	ret += NSGetServerDescription( server ) + "\n\n"
+	
+	ret += "Required Mods: \n"
+	for ( int i = 0; i < NSGetServerRequiredModsCount( server ); i++ )
+		ret += "    " + NSGetServerRequiredModName( server, i ) + " v" + NSGetServerRequiredModVersion( server, i ) + "\n"
 	
 	return ret
 }
@@ -170,6 +174,36 @@ void function OnServerSelected( var button )
 {
 	if ( NSIsRequestingServerList() || !NSMasterServerConnectionSuccessful() )
 		return
+
+	int server = int( Hud_GetScriptID( button ) )
+
+	// check mods
+	for ( int i = 0; i < NSGetServerRequiredModsCount( server ); i++ ) 
+	{	
+		if ( !NSGetModNames().contains( NSGetServerRequiredModName( server, i ) ) )
+		{		
+			DialogData dialogData
+			dialogData.header = "#ERROR"
+			dialogData.message = "Missing mod \"" + NSGetServerRequiredModName( server, i ) + "\" v" + NSGetServerRequiredModVersion( server, i )
+			dialogData.image = $"ui/menu/common/dialog_error"
+		
+			#if PC_PROG
+				AddDialogButton( dialogData, "#DISMISS" )
+			
+				AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
+			#endif // PC_PROG
+			AddDialogFooter( dialogData, "#B_BUTTON_DISMISS_RUI" )
+	
+			OpenDialog( dialogData )
+			
+			return
+		}
+		else
+		{
+			string modVersion = NSGetServerRequiredModVersion( server, i )
+			// check this is sorta valid semver, d
+		}
+	}
 		
 	var menu = GetMenu( "ServerBrowserMenu" )
 	int serverIndex = file.page * BUTTONS_PER_PAGE + int ( Hud_GetScriptID( button ) )
@@ -194,11 +228,22 @@ void function ThreadedAuthAndConnectToServer( string password = "" )
 		WaitFrame()
 	
 	if ( NSWasAuthSuccessful() )
-		NSConnectToAuthedServer()
-	else
 	{
-		print( "fuck" )
+		array<string> requiredMods
+		for ( int i = 0; i < NSGetServerRequiredModsCount( file.lastSelectedServer ); i++ )
+			requiredMods.append( NSGetServerRequiredModName( file.lastSelectedServer, i ) )
 	
+		// unload mods we don't need, load necessary ones and reload mods before connecting
+		foreach ( string mod in NSGetModNames() )
+			if ( NSIsModRequiredOnClient( mod ) )
+				NSSetModEnabled( mod, requiredMods.contains( mod ) )
+			
+		ReloadMods()
+		
+		NSConnectToAuthedServer()
+	}
+	else
+	{	
 		DialogData dialogData
 		dialogData.header = "#ERROR"
 		dialogData.message = "Authentication Failed"

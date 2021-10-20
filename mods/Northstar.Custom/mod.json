@@ -1,17 +1,18 @@
 {
 	"Name" : "Northstar.Custom",
 	"LoadPriority": 1,
-
+	"RequiredOnClient": true,
+	
 	"Scripts": [
 		{
-			"Path": "northstar_custom_autoprecache.gnut",
+			"Path": "sh_northstar_custom_precache.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
 			"ClientCallback": {
-				"After": "NorthstarCustomAutoprecache"
+				"After": "NorthstarCustomPrecache"
 			},
 			
 			"ServerCallback": {
-				"After": "NorthstarCustomAutoprecache"
+				"After": "NorthstarCustomPrecache"
 			}
 		},
 		{
@@ -25,54 +26,6 @@
 		{
 			"Path": "weapons/mp_weapon_peacekraber.nut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
-		},
-		
-		{
-			"Path": "gamemodes/sh_gamemode_sbox.gnut",
-			"RunOn": "( CLIENT || SERVER ) && MP",
-			"ClientPreCallback": {
-				"Before": "Sh_GamemodeSbox_Init"
-			},
-			
-			"ServerPreCallback": {
-				"Before": "Sh_GamemodeSbox_Init"
-			}
-		},
-		{
-			"Path": "gamemodes/_gamemode_sbox.gnut",
-			"RunOn": "SERVER && MP"
-		},
-		{
-			"Path": "weapons/mp_weapon_toolgun.nut",
-			"RunOn": "( CLIENT || SERVER ) && MP"
-		},
-		{
-			"Path": "weapons/toolgun/sh_toolgun_tools.gnut",
-			"RunOn": "( CLIENT || SERVER ) && MP",
-			"ClientCallback": "ToolgunTools_Init",
-			"ServerCallback": "ToolgunTools_Init"
-		},
-		{
-			"Path": "weapons/toolgun/sh_toolgun_tool_throw.nut",
-			"RunOn": "( CLIENT || SERVER ) && MP",
-			"ClientCallback": {
-				"After": "ToolgunToolThrowEntity_Init"
-			},
-			
-			"ServerCallback": {
-				"After": "ToolgunToolThrowEntity_Init"
-			}
-		},
-		{
-			"Path": "weapons/toolgun/sh_toolgun_tool_explode.nut",
-			"RunOn": "( CLIENT || SERVER ) && MP",
-			"ClientCallback": {
-				"After": "ToolgunToolCreateExplosion_Init"
-			},
-			
-			"ServerCallback": {
-				"After": "ToolgunToolCreateExplosion_Init"
-			}
 		},
 		
 		// fortwar
@@ -299,15 +252,19 @@
 		
 		// riffs, playlist vars etc
 		{
-			"Path": "gamemodes/_riff_instagib.gnut",
-			"RunOn": "SERVER && MP",
+			"Path": "gamemodes/sh_riff_instagib.gnut",
+			"RunOn": "( CLIENT || SERVER ) && MP",
+			"ClientCallback": {
+				"After": "RiffInstagib_Init"
+			},
+			
 			"ServerCallback": {
 				"After": "RiffInstagib_Init"
 			}
 		},
 		
 		{
-			"Path": "_custom_air_accel.gnut",
+			"Path": "sh_custom_air_accel.gnut",
 			"RunOn": "CLIENT || SERVER",
 			"ClientCallback": {
 				"After": "CustomAirAccelVars_Init"
@@ -319,7 +276,7 @@
 		},
 		
 		{
-			"Path": "_promode.gnut",
+			"Path": "sh_promode.gnut",
 			"RunOn": "MP",
 			"ClientCallback": {
 				"After": "Promode_Init"
@@ -331,7 +288,7 @@
 		},
 		
 		{
-			"Path": "_bleedout_damage.gnut",
+			"Path": "sh_bleedout_damage.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
 			"ClientCallback": {
 				"Before": "BleedoutDamage_PreInit",
@@ -345,7 +302,7 @@
 		},
 		
 		{
-			"Path": "_custom_oob_timer.gnut",
+			"Path": "sh_custom_oob_timer.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
 			"ClientCallback": {
 				"After": "CustomOOBTimer_Init"

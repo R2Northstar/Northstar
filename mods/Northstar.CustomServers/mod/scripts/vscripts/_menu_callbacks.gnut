@@ -15,10 +15,10 @@ void function WritePersistenceAndLeave( entity player )
 {
 	// write player persistence before we leave, since leaving player might load local lobby before server writes persistence, so they won't get newest
 	// not super essential, but a nice qol thing
-	NSEarlyWritePlayerPersistenceForLeave( player )
+	NSEarlyWritePlayerIndexPersistenceForLeave( player.GetPlayerIndex() )
 	while ( NSIsWritingPlayerPersistence() )
 		WaitFrame()
 	
 	// this is a custom concommand which can be called on clients, it causes them to leave and doesn't have issues if they're host
-	ClientCommand( player, "ns_leave_to_lobby" )
+	ClientCommand( player, "ns_start_reauth_and_leave_to_lobby" )
 }

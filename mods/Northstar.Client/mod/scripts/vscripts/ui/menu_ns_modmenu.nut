@@ -1,5 +1,6 @@
 global function AddNorthstarModMenu
 global function AddNorthstarModMenu_MainMenuFooter
+global function ReloadMods
 
 struct {
 	bool shouldReloadModsOnEnd
@@ -147,7 +148,7 @@ void function ReloadMods()
 	NSReloadMods()
 	ClientCommand( "reload_localization" )
 	ClientCommand( "loadPlaylists" )
-	// ClientCommand( "weapon_reparse" ) // this doesn't work, weapon_reparse only works if a server is running and sv_cheats is 1, gotta figure this out eventually
+	ClientCommand( "sv_cheats 1; weapon_reparse; sv_cheats 0" ) // weapon_reparse only works if a server is running and sv_cheats is 1, gotta figure this out eventually
 	// note: the logic for this seems really odd, unsure why it doesn't seem to update, since the same code seems to get run irregardless of whether we've read weapon data before
 	ClientCommand( "uiscript_reset" )
 }
