@@ -50,12 +50,15 @@ void function OnRodeoWeakpointDamaged( entity weakpoint, var damageInfo )
 	attacker.NotifyDidDamage( weakpoint, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamagePosition( damageInfo ), DamageInfo_GetCustomDamageType( damageInfo ) | DF_CRITICAL, damageAmount, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
 	
 	// figure out damage to deal to titan
-	entity attackerWeapon = attacker.GetActiveWeapon()
+	entity attackerWeapon = DamageInfo_GetWeapon( damageInfo )
+	if ( !IsValid( attackerWeapon ) )
+		attackerWeapon = attacker.GetActiveWeapon()
+	
 	int rodeoDamage = attackerWeapon.GetWeaponSettingInt( eWeaponVar.damage_rodeo ) // only really on weapons that were in tf1, unfortunately
-	if ( rodeoDamage == 0 )
-		rodeoDamage = int( attackerWeapon.GetWeaponSettingInt( eWeaponVar.damage_near_value_titanarmor ) * ( attackerWeapon.GetWeaponSettingFloat( eWeaponVar.damage_headshot_scale ) * 1.5 ) ) // would use headshot scale, but it's a bit low in most cases to be competitive
+	if ( rodeoDamage == 0 ) // would use headshot scale, but it's a bit low in most cases to be competitive with weapons with a valid damage_rodeo
+		rodeoDamage = int( attackerWeapon.GetWeaponSettingInt( eWeaponVar.damage_near_value_titanarmor ) * ( attackerWeapon.GetWeaponSettingFloat( eWeaponVar.damage_headshot_scale ) * 1.5 ) )
 		
-	// damage titan
-	titan.TakeDamage( rodeoDamage, attacker, attackerWeapon, { damageSourceId = eDamageSourceId.rodeo } )
+	// damage titan, make sure DF_BYPASS_SHIELD	is a thing for proper behaviour
+	titan.TakeDamage( rodeoDamage, attacker, attackerWeapon, { damageSourceId = eDamageSourceId.rodeo, scriptType = DamageInfo_GetCustomDamageType( damageInfo ) | DF_BYPASS_SHIELD } )
 }
 #endif

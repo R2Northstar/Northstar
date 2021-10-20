@@ -1,12 +1,17 @@
 global function RiffInstagib_Init
 
+#if SERVER
 struct {
 	table<entity, int> playerWeapons
 	array<string> instagibWeapons
 } file
+#endif
 
 void function RiffInstagib_Init()
 {
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "riff_instagib", [ "Disabled", "Enabled" ], "0" )
+	
+	#if SERVER
 	if ( GetCurrentPlaylistVarInt( "riff_instagib", 0 ) == 0 )
 		return
 
@@ -26,8 +31,10 @@ void function RiffInstagib_Init()
 	AddCallback_OnPlayerRespawned( InstagibSetWeapons )
 	AddCallback_OnPlayerKilled( InstagibCycleWeaponsForKill )
 	AddCallback_OnClientDisconnected( InstagibCleanupClient )
+	#endif
 }
 
+#if SERVER
 void function InstagibSetWeapons( entity player )
 {
 	if ( !( player in file.playerWeapons ) )
@@ -63,3 +70,4 @@ void function InstagibCleanupClient( entity player )
 	if ( player in file.playerWeapons )
 		delete file.playerWeapons[ player ]
 }
+#endif

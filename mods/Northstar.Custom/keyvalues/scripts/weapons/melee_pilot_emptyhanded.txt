@@ -1,0 +1,9 @@
+WeaponData
+{
+	// mod for testing low damage, high knockback "shove" melee rebalance
+	test_push
+	{
+		"melee_damage" "5"
+		"impulse_force" "150000"
+	}
+}

@@ -15,6 +15,10 @@ void function GamemodeGG_Init()
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	
 	AddCallback_GameStateEnter( eGameState.WinnerDetermined, OnWinnerDetermined )
+	
+	// set scorelimit if it's wrongm sort of a jank way to do it but best i've got rn
+	if ( GetCurrentPlaylistVarInt( "scorelimit", GetGunGameWeapons().len() ) != GetGunGameWeapons().len() )
+		SetPlaylistVarOverride( "scorelimit", GetGunGameWeapons().len().tostring() )
 }
 
 void function OnPlayerRespawned( entity player )

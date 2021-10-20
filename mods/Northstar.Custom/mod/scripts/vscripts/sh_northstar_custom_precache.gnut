@@ -1,0 +1,11 @@
+untyped
+global function NorthstarCustomPrecache
+
+void function NorthstarCustomPrecache()
+{
+	PrecacheWeapon( "mp_weapon_peacekraber" )
+	PrecacheWeapon( "melee_pilot_kunai" )
+	
+	// create kunai damage source so game won't crash when we hit smth with it
+	getconsttable()[ "eDamageSourceId" ][ "melee_pilot_kunai" ] <- eDamageSourceId.melee_pilot_emptyhanded
+}
