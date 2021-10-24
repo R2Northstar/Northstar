@@ -74,6 +74,8 @@ void InitialiseNorthstar()
         AddDllLoadCallback("engine.dll", InitialiseDedicated);
         AddDllLoadCallback("launcher.dll", InitialiseDedicatedOrigin);
         AddDllLoadCallback("materialsystem_dx11.dll", InitialiseDedicatedMaterialSystem);
+        // this fucking sucks, but seemingly we somehow load after rtech_game???? unsure how, but because of this we have to apply patches here, not on rtech_game load
+        AddDllLoadCallback("engine.dll", InitialiseDedicatedRtechGame);
     }
     
     AddDllLoadCallback("engine.dll", InitialiseConVars);

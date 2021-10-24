@@ -281,7 +281,7 @@ void InitialiseDedicated(HMODULE engineAddress)
 			// CEngineAPI::Init
 			char* ptr = (char*)engineAddress + 0x1C60CE;
 			TempReadWrite rw(ptr);
-
+		
 			// remove call to something or other that reads video settings
 			*ptr = (char)0x90;
 			*(ptr + 1) = (char)0x90;
@@ -289,16 +289,29 @@ void InitialiseDedicated(HMODULE engineAddress)
 			*(ptr + 3) = (char)0x90;
 			*(ptr + 4) = (char)0x90;
 		}
-
+		
 		{
 			// some inputsystem bullshit
 			char* ptr = (char*)engineAddress + 0x1CEE28;
 			TempReadWrite rw(ptr);
-
+		
 			// nop an accessviolation: temp because we still create game window atm
 			*ptr = (char)0x90;
 			*(ptr + 1) = (char)0x90;
 			*(ptr + 2) = (char)0x90;
+		}
+
+		{
+			// no clue what this is
+			char* ptr = (char*)engineAddress + 0x1CD146;
+			TempReadWrite rw(ptr);
+
+			// nop a crashing call
+			*ptr = (char)0x90;
+			*(ptr + 1) = (char)0x90;
+			*(ptr + 2) = (char)0x90;
+			*(ptr + 3) = (char)0x90;
+			*(ptr + 4) = (char)0x90;
 		}
 
 		//{
