@@ -66,46 +66,24 @@ void InitialiseDedicatedMaterialSystem(HMODULE baseAddress)
 		// these don't work, they cause game to hang on rpak init, needs reworking
 		{
 			// materialsystem rpak type: texture
-			char* ptr = (char*)baseAddress + 0x2B00;
+			char* ptr = (char*)baseAddress + 0x2B3A;
 			TempReadWrite rw(ptr);
 
-			// make it return 0
-			// mov rax,0
-			*ptr = 0x48;
-			*(ptr + 1) = (char)0xB8;
-			*(ptr + 2) = (char)0x00;
+			// je=>jmp
+			*ptr = (char)0xE9;
+			*(ptr + 1) = (char)0x48;
+			*(ptr + 2) = (char)0x02;
 			*(ptr + 3) = (char)0x00;
 			*(ptr + 4) = (char)0x00;
-			*(ptr + 5) = (char)0x00;
-			*(ptr + 6) = (char)0x00;
-			*(ptr + 7) = (char)0x00;
-			*(ptr + 8) = (char)0x00;
-			*(ptr + 9) = (char)0x00;
-
-			// ret
-			*(ptr + 10) = (char)0xC3;
 		}
 
 		{
 			// materialsystem rpak type: material
-			char* ptr = (char*)baseAddress + 0x50AA0;
+			char* ptr = (char*)baseAddress + 0x50AD4;
 			TempReadWrite rw(ptr);
 
-			// make it return 0
-			// mov rax,0
-			*ptr = 0x48;
-			*(ptr + 1) = (char)0xB8;
-			*(ptr + 2) = (char)0x00;
-			*(ptr + 3) = (char)0x00;
-			*(ptr + 4) = (char)0x00;
-			*(ptr + 5) = (char)0x00;
-			*(ptr + 6) = (char)0x00;
-			*(ptr + 7) = (char)0x00;
-			*(ptr + 8) = (char)0x00;
-			*(ptr + 9) = (char)0x00;
-
-			// ret
-			*(ptr + 10) = (char)0xC3;
+			// je=>jmp
+			*ptr = (char)0xEB;
 		}
 
 		{
@@ -161,13 +139,13 @@ void* RegisterRpakTypeHook(RpakTypeDefinition* rpakStruct, unsigned int a1, unsi
 	// make sure this prints right
 	char magicName[5];
 	memcpy(magicName, &rpakStruct->magic, 4);
-	magicName[4] = 0;
+	magicName[4] = 0; // null terminator
 
-	spdlog::info("rpak type {} {} registered {} {}", magicName, rpakStruct->longName, a1, a2);
+	spdlog::info("rpak type {} {} registered", magicName, rpakStruct->longName);
 
 	// reregister rpak types that aren't registered on a windowless dedi
-	if (IsDedicated() && DisableDedicatedWindowCreation() && rpakStruct->magic == 0x64636C72) // rlcd, this one is registered last
-		((RegisterMaterialSystemRpakTypes)((char*)GetModuleHandleA("materialsystem_dx11.dll") + 0x22A0))(); // slightly hellish call
+	if (IsDedicated() && DisableDedicatedWindowCreation() && rpakStruct->magic == 0x64636C72) // rlcd magic, this one is registered last
+		((RegisterMaterialSystemRpakTypes)((char*)GetModuleHandleA("materialsystem_dx11.dll") + 0x22A0))(); // slightly hellish call, registers materialsystem rpak types
 
 	return RegisterRpakType(rpakStruct, a1, a2);
 }
