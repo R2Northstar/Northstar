@@ -12,6 +12,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include "filesystem.h"
 
 ModManager* g_ModManager;
 
@@ -189,8 +190,6 @@ void ModManager::LoadMods()
 	if (m_hasLoadedMods)
 		UnloadMods();
 
-	m_hasLoadedMods = true;
-
 	std::vector<fs::path> modDirs;
 
 	// ensure dirs exist
@@ -289,7 +288,11 @@ void ModManager::LoadMods()
 					std::string formattedPath = file.path().filename().string();
 
 					// this really fucking sucks but it'll work
-					mod->Vpks.push_back((file.path().parent_path() / formattedPath.substr(strlen("english"), formattedPath.find(".bsp") - 3)).string());
+					std::string vpkName = (file.path().parent_path() / formattedPath.substr(strlen("english"), formattedPath.find(".bsp") - 3)).string();
+					mod->Vpks.push_back(vpkName);
+				
+					if (m_hasLoadedMods)
+						(*g_Filesystem)->m_vtable->MountVPK(*g_Filesystem, vpkName.c_str());
 				}
 			}
 		}
@@ -332,6 +335,8 @@ void ModManager::LoadMods()
 			}
 		}
 	}
+
+	m_hasLoadedMods = true;
 }
 
 void ModManager::UnloadMods()
