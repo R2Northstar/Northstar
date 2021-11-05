@@ -52,13 +52,13 @@ void ModManager::TryBuildKeyValues(const char* filename)
 	// note: #include should be identical but it's actually just broken, thanks respawn
 	for (int i = m_loadedMods.size() - 1; i > -1; i--)
 	{
-		if (!m_loadedMods[i]->Enabled)
+		if (!m_loadedMods[i].Enabled)
 			continue;
 
 		size_t fileHash = std::hash<std::string>{}(normalisedPath);
-		for (int j = 0; j < m_loadedMods[i]->KeyValuesHash.size(); j++)
+		for (int j = 0; j < m_loadedMods[i].KeyValuesHash.size(); j++)
 		{
-			if (fileHash == m_loadedMods[i]->KeyValuesHash[j])
+			if (fileHash == m_loadedMods[i].KeyValuesHash[j])
 			{
 				// should result in smth along the lines of #include "mod_patch_5_mp_weapon_car.txt"
 
@@ -73,7 +73,7 @@ void ModManager::TryBuildKeyValues(const char* filename)
 
 				fs::remove(compiledDir / patchFilePath);
 
-				fs::copy_file(m_loadedMods[i]->ModDirectory / "keyvalues" / filename, compiledDir / patchFilePath);
+				fs::copy_file(m_loadedMods[i].ModDirectory / "keyvalues" / filename, compiledDir / patchFilePath);
 			}
 		}
 	}
@@ -123,9 +123,9 @@ void ModManager::TryBuildKeyValues(const char* filename)
 	writeStream << newKvs;
 	writeStream.close();
 
-	ModOverrideFile* overrideFile = new ModOverrideFile;
-	overrideFile->owningMod = nullptr;
-	overrideFile->path = normalisedPath;
+	ModOverrideFile overrideFile;
+	overrideFile.owningMod = nullptr;
+	overrideFile.path = normalisedPath;
 
 	if (m_modFiles.find(normalisedPath) == m_modFiles.end())
 		m_modFiles.insert(std::make_pair(normalisedPath, overrideFile));

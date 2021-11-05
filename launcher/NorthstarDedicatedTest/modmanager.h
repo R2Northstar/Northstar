@@ -41,7 +41,7 @@ public:
 	std::string Path;
 	std::string RsonRunOn;
 
-	std::vector<ModScriptCallback*> Callbacks;
+	std::vector<ModScriptCallback> Callbacks;
 };
 
 class Mod
@@ -68,7 +68,7 @@ public:
 	int LoadPriority;
 
 	// custom scripts used by the mod
-	std::vector<ModScript*> Scripts;
+	std::vector<ModScript> Scripts;
 	// convars created by the mod
 	std::vector<ModConVar*> ConVars;
 	// custom localisation files created by the mod
@@ -103,8 +103,8 @@ private:
 	rapidjson::Document m_enabledModsCfg;
 
 public:
-	std::vector<Mod*> m_loadedMods;
-	std::unordered_map<std::string, ModOverrideFile*> m_modFiles;
+	std::vector<Mod> m_loadedMods;
+	std::unordered_map<std::string, ModOverrideFile> m_modFiles;
 
 public:
 	ModManager();

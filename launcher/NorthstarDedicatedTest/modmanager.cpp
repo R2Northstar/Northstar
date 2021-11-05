@@ -88,6 +88,8 @@ Mod::Mod(fs::path modDir, char* jsonBuf)
 			if (!convarObj.IsObject() || !convarObj.HasMember("Name") || !convarObj.HasMember("DefaultValue"))
 				continue;
 
+			// have to allocate this manually, otherwise convar registration will break
+			// unfortunately this causes us to leak memory on reload, unsure of a way around this rn
 			ModConVar* convar = new ModConVar;
 			convar->Name = convarObj["Name"].GetString();
 			convar->DefaultValue = convarObj["DefaultValue"].GetString();
@@ -97,7 +99,7 @@ Mod::Mod(fs::path modDir, char* jsonBuf)
 			else
 				convar->HelpString = "";
 
-			// todo: could possibly parse FCVAR names here instead
+			// todo: could possibly parse FCVAR names here instead, would be easier
 			if (convarObj.HasMember("Flags"))
 				convar->Flags = convarObj["Flags"].GetInt();
 			else
@@ -115,51 +117,51 @@ Mod::Mod(fs::path modDir, char* jsonBuf)
 			if (!scriptObj.IsObject() || !scriptObj.HasMember("Path") || !scriptObj.HasMember("RunOn"))
 				continue;
 			
-			ModScript* script = new ModScript;
+			ModScript script;
 
-			script->Path = scriptObj["Path"].GetString();
-			script->RsonRunOn = scriptObj["RunOn"].GetString();
+			script.Path = scriptObj["Path"].GetString();
+			script.RsonRunOn = scriptObj["RunOn"].GetString();
 
 			if (scriptObj.HasMember("ServerCallback") && scriptObj["ServerCallback"].IsObject())
 			{
-				ModScriptCallback* callback = new ModScriptCallback;
-				callback->Context = SERVER;
+				ModScriptCallback callback;
+				callback.Context = SERVER;
 
 				if (scriptObj["ServerCallback"].HasMember("Before") && scriptObj["ServerCallback"]["Before"].IsString())
-					callback->BeforeCallback = scriptObj["ServerCallback"]["Before"].GetString();
+					callback.BeforeCallback = scriptObj["ServerCallback"]["Before"].GetString();
 
 				if (scriptObj["ServerCallback"].HasMember("After") && scriptObj["ServerCallback"]["After"].IsString())
-					callback->AfterCallback = scriptObj["ServerCallback"]["After"].GetString();
+					callback.AfterCallback = scriptObj["ServerCallback"]["After"].GetString();
 			
-				script->Callbacks.push_back(callback);
+				script.Callbacks.push_back(callback);
 			}
 
 			if (scriptObj.HasMember("ClientCallback") && scriptObj["ClientCallback"].IsObject())
 			{
-				ModScriptCallback* callback = new ModScriptCallback;
-				callback->Context = CLIENT;
+				ModScriptCallback callback;
+				callback.Context = CLIENT;
 
 				if (scriptObj["ClientCallback"].HasMember("Before") && scriptObj["ClientCallback"]["Before"].IsString())
-					callback->BeforeCallback = scriptObj["ClientCallback"]["Before"].GetString();
+					callback.BeforeCallback = scriptObj["ClientCallback"]["Before"].GetString();
 
 				if (scriptObj["ClientCallback"].HasMember("After") && scriptObj["ClientCallback"]["After"].IsString())
-					callback->AfterCallback = scriptObj["ClientCallback"]["After"].GetString();
+					callback.AfterCallback = scriptObj["ClientCallback"]["After"].GetString();
 
-				script->Callbacks.push_back(callback);
+				script.Callbacks.push_back(callback);
 			}
 
 			if (scriptObj.HasMember("UICallback") && scriptObj["UICallback"].IsObject())
 			{
-				ModScriptCallback* callback = new ModScriptCallback;
-				callback->Context = UI;
+				ModScriptCallback callback;
+				callback.Context = UI;
 
 				if (scriptObj["UICallback"].HasMember("Before") && scriptObj["UICallback"]["Before"].IsString())
-					callback->BeforeCallback = scriptObj["UICallback"]["Before"].GetString();
+					callback.BeforeCallback = scriptObj["UICallback"]["Before"].GetString();
 
 				if (scriptObj["UICallback"].HasMember("After") && scriptObj["UICallback"]["After"].IsString())
-					callback->AfterCallback = scriptObj["UICallback"]["After"].GetString();
+					callback.AfterCallback = scriptObj["UICallback"]["After"].GetString();
 
-				script->Callbacks.push_back(callback);
+				script.Callbacks.push_back(callback);
 			}
 
 			Scripts.push_back(script);
@@ -234,51 +236,48 @@ void ModManager::LoadMods()
 
 		jsonStream.close();
 	
-		Mod* mod = new Mod(modDir, (char*)jsonStringStream.str().c_str());
+		Mod mod(modDir, (char*)jsonStringStream.str().c_str());
 
-		if (m_hasEnabledModsCfg && m_enabledModsCfg.HasMember(mod->Name.c_str()))
-			mod->Enabled = m_enabledModsCfg[mod->Name.c_str()].IsTrue();
+		if (m_hasEnabledModsCfg && m_enabledModsCfg.HasMember(mod.Name.c_str()))
+			mod.Enabled = m_enabledModsCfg[mod.Name.c_str()].IsTrue();
 		else
-			mod->Enabled = true;
+			mod.Enabled = true;
 
-		if (mod->wasReadSuccessfully)
+		if (mod.wasReadSuccessfully)
 		{
-			spdlog::info("Loaded mod {} successfully", mod->Name);
-			if (mod->Enabled)
-				spdlog::info("Mod {} is enabled", mod->Name);
+			spdlog::info("Loaded mod {} successfully", mod.Name);
+			if (mod.Enabled)
+				spdlog::info("Mod {} is enabled", mod.Name);
 			else
-				spdlog::info("Mod {} is disabled", mod->Name);
+				spdlog::info("Mod {} is disabled", mod.Name);
 
 			m_loadedMods.push_back(mod);
 		}
 		else
-		{
 			spdlog::warn("Skipping loading mod file {}", (modDir / "mod.json").string());
-			delete mod;
-		}
 	}
 
 	// sort by load prio, lowest-highest
-	std::sort(m_loadedMods.begin(), m_loadedMods.end(), [](Mod* a, Mod* b) {
-		return a->LoadPriority < b->LoadPriority;
+	std::sort(m_loadedMods.begin(), m_loadedMods.end(), [](Mod a, Mod b) {
+		return a.LoadPriority < b.LoadPriority;
 	});
 
-	for (Mod* mod : m_loadedMods)
+	for (Mod mod : m_loadedMods)
 	{
-		if (!mod->Enabled)
+		if (!mod.Enabled)
 			continue;
 
 		// register convars
 		// for reloads, this is sorta barebones, when we have a good findconvar method, we could probably reset flags and stuff on preexisting convars
-		// potentially it might also be good to unregister convars if they get removed on a reload, but unsure if necessary
-		for (ModConVar* convar : mod->ConVars)
+		// note: we don't delete convars if they already exist because they're used for script stuff, unfortunately this causes us to leak memory on reload, but not much, potentially find a way to not do this at some point
+		for (ModConVar* convar : mod.ConVars)
 			if (g_CustomConvars.find(convar->Name) == g_CustomConvars.end()) // make sure convar isn't registered yet, unsure if necessary but idk what behaviour is for defining same convar multiple times
 				RegisterConVar(convar->Name.c_str(), convar->DefaultValue.c_str(), convar->Flags, convar->HelpString.c_str());
 
 		// read vpk paths
-		if (fs::exists(mod->ModDirectory / "vpk"))
+		if (fs::exists(mod.ModDirectory / "vpk"))
 		{
-			for (fs::directory_entry file : fs::directory_iterator(mod->ModDirectory / "vpk"))
+			for (fs::directory_entry file : fs::directory_iterator(mod.ModDirectory / "vpk"))
 			{
 				// a bunch of checks to make sure we're only adding dir vpks and their paths are good
 				// note: the game will literally only load vpks with the english prefix
@@ -289,7 +288,7 @@ void ModManager::LoadMods()
 
 					// this really fucking sucks but it'll work
 					std::string vpkName = (file.path().parent_path() / formattedPath.substr(strlen("english"), formattedPath.find(".bsp") - 3)).string();
-					mod->Vpks.push_back(vpkName);
+					mod.Vpks.push_back(vpkName);
 				
 					if (m_hasLoadedMods)
 						(*g_Filesystem)->m_vtable->MountVPK(*g_Filesystem, vpkName.c_str());
@@ -299,15 +298,15 @@ void ModManager::LoadMods()
 			
 
 		// read keyvalues paths
-		if (fs::exists(mod->ModDirectory / "keyvalues"))
+		if (fs::exists(mod.ModDirectory / "keyvalues"))
 		{
-			for (fs::directory_entry file : fs::recursive_directory_iterator(mod->ModDirectory / "keyvalues"))
+			for (fs::directory_entry file : fs::recursive_directory_iterator(mod.ModDirectory / "keyvalues"))
 			{
 				if (fs::is_regular_file(file))
 				{
-					std::string kvStr = file.path().lexically_relative(mod->ModDirectory / "keyvalues").lexically_normal().string();
-					mod->KeyValuesHash.push_back(std::hash<std::string>{}(kvStr));
-					mod->KeyValues.push_back(kvStr);
+					std::string kvStr = file.path().lexically_relative(mod.ModDirectory / "keyvalues").lexically_normal().string();
+					mod.KeyValuesHash.push_back(std::hash<std::string>{}(kvStr));
+					mod.KeyValues.push_back(kvStr);
 				}
 			}
 		}
@@ -316,20 +315,20 @@ void ModManager::LoadMods()
 	// in a seperate loop because we register mod files in reverse order, since mods loaded later should have their files prioritised
 	for (int i = m_loadedMods.size() - 1; i > -1; i--)
 	{
-		if (!m_loadedMods[i]->Enabled)
+		if (!m_loadedMods[i].Enabled)
 			continue;
 
-		if (fs::exists(m_loadedMods[i]->ModDirectory / MOD_OVERRIDE_DIR))
+		if (fs::exists(m_loadedMods[i].ModDirectory / MOD_OVERRIDE_DIR))
 		{
-			for (fs::directory_entry file : fs::recursive_directory_iterator(m_loadedMods[i]->ModDirectory / MOD_OVERRIDE_DIR))
+			for (fs::directory_entry file : fs::recursive_directory_iterator(m_loadedMods[i].ModDirectory / MOD_OVERRIDE_DIR))
 			{
-				fs::path path = file.path().lexically_relative(m_loadedMods[i]->ModDirectory / MOD_OVERRIDE_DIR).lexically_normal();
+				fs::path path = file.path().lexically_relative(m_loadedMods[i].ModDirectory / MOD_OVERRIDE_DIR).lexically_normal();
 
 				if (file.is_regular_file() && m_modFiles.find(path.string()) == m_modFiles.end())
 				{
-					ModOverrideFile* modFile = new ModOverrideFile;
-					modFile->owningMod = m_loadedMods[i];
-					modFile->path = path;
+					ModOverrideFile modFile;
+					modFile.owningMod = &m_loadedMods[i];
+					modFile.path = path;
 					m_modFiles.insert(std::make_pair(path.string(), modFile));
 				}
 			}
@@ -350,20 +349,20 @@ void ModManager::UnloadMods()
 	if (!m_hasEnabledModsCfg)
 		m_enabledModsCfg.SetObject();
 
-	for (Mod* mod : m_loadedMods)
+	for (Mod mod : m_loadedMods)
 	{	
 		// remove all built kvs
-		for (std::string kvPaths : mod->KeyValues)
-			fs::remove(COMPILED_ASSETS_PATH / fs::path(kvPaths).lexically_relative(mod->ModDirectory));
+		for (std::string kvPaths : mod.KeyValues)
+			fs::remove(COMPILED_ASSETS_PATH / fs::path(kvPaths).lexically_relative(mod.ModDirectory));
 
-		mod->KeyValuesHash.clear();
-		mod->KeyValues.clear();
+		mod.KeyValuesHash.clear();
+		mod.KeyValues.clear();
 
 		// write to m_enabledModsCfg
-		if (!m_enabledModsCfg.HasMember(mod->Name.c_str()))
-			m_enabledModsCfg.AddMember(rapidjson::StringRef(mod->Name.c_str()), rapidjson::Value(false), m_enabledModsCfg.GetAllocator());
+		if (!m_enabledModsCfg.HasMember(mod.Name.c_str()))
+			m_enabledModsCfg.AddMember(rapidjson::StringRef(mod.Name.c_str()), rapidjson::Value(false), m_enabledModsCfg.GetAllocator());
 
-		m_enabledModsCfg[mod->Name.c_str()].SetBool(mod->Enabled);
+		m_enabledModsCfg[mod.Name.c_str()].SetBool(mod.Enabled);
 	}
 
 	std::ofstream writeStream("R2Northstar/enabledmods.json");
@@ -384,13 +383,13 @@ void ModManager::CompileAssetsForFile(const char* filename)
 	else //if (!strcmp((filename + strlen(filename)) - 3, "txt")) // check if it's a .txt
 	{
 		// check if we should build keyvalues, depending on whether any of our mods have patch kvs for this file
-		for (Mod* mod : m_loadedMods)
+		for (Mod mod : m_loadedMods)
 		{
-			if (!mod->Enabled)
+			if (!mod.Enabled)
 				continue;
 
 			size_t fileHash = std::hash<std::string>{}(fs::path(filename).lexically_normal().string());
-			if (std::find(mod->KeyValuesHash.begin(), mod->KeyValuesHash.end(), fileHash) != mod->KeyValuesHash.end())
+			if (std::find(mod.KeyValuesHash.begin(), mod.KeyValuesHash.end(), fileHash) != mod.KeyValuesHash.end())
 			{
 				TryBuildKeyValues(filename);
 				return;
