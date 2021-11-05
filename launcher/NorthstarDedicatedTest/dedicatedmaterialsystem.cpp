@@ -13,6 +13,7 @@ void InitialiseDedicatedMaterialSystem(HMODULE baseAddress)
 	//	Sleep(100);
 	
 	// not using these for now since they're related to nopping renderthread/gamewindow i.e. very hard
+	// we use -noshaderapi instead now
 	//{
 	//	// function that launches renderthread
 	//	char* ptr = (char*)baseAddress + 0x87047;
@@ -63,7 +64,7 @@ void InitialiseDedicatedMaterialSystem(HMODULE baseAddress)
 			*(ptr + 4) = (char)0x90;
 		}
 
-		// these don't work, they cause game to hang on rpak init, needs reworking
+		// these don't fully work, they cause game to hang on rpak init, needs reworking
 		{
 			// materialsystem rpak type: texture
 			char* ptr = (char*)baseAddress + 0x2B3A;
@@ -152,6 +153,8 @@ void* RegisterRpakTypeHook(RpakTypeDefinition* rpakStruct, unsigned int a1, unsi
 
 void InitialiseDedicatedRtechGame(HMODULE baseAddress)
 {
+	// potentially do this somewhere other than dedicated stuff if it's going to be used in non-dedi
+
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)GetModuleHandleA("rtech_game.dll") + 0x7BE0, &RegisterRpakTypeHook, reinterpret_cast<LPVOID*>(&RegisterRpakType));
 
