@@ -17,17 +17,17 @@ void ModManager::BuildScriptsRson()
 	std::string scriptsRson = ReadVPKOriginalFile(VPK_SCRIPTS_RSON_PATH);
 	scriptsRson += "\n\n// START MODDED SCRIPT CONTENT\n\n"; // newline before we start custom stuff
 
-	for (Mod* mod : m_loadedMods)
+	for (Mod mod : m_loadedMods)
 	{
-		if (!mod->Enabled)
+		if (!mod.Enabled)
 			continue;
 
 		// this isn't needed at all, just nice to have imo
 		scriptsRson += "// MOD: ";
-		scriptsRson += mod->Name;
+		scriptsRson += mod.Name;
 		scriptsRson += ":\n\n";
 
-		for (ModScript* script : mod->Scripts)
+		for (ModScript script : mod.Scripts)
 		{
 			/* should create something with this format for each script
 			When: "CONTEXT"
@@ -37,11 +37,11 @@ void ModManager::BuildScriptsRson()
 			]*/
 
 			scriptsRson += "When: \"";
-			scriptsRson += script->RsonRunOn;
+			scriptsRson += script.RsonRunOn;
 			scriptsRson += "\"\n";
 
 			scriptsRson += "Scripts:\n[\n\t";
-			scriptsRson += script->Path;
+			scriptsRson += script.Path;
 			scriptsRson += "\n]\n\n";
 		}
 	}
@@ -52,9 +52,9 @@ void ModManager::BuildScriptsRson()
 	writeStream << scriptsRson;
 	writeStream.close();
 
-	ModOverrideFile* overrideFile = new ModOverrideFile;
-	overrideFile->owningMod = nullptr;
-	overrideFile->path = VPK_SCRIPTS_RSON_PATH;
+	ModOverrideFile overrideFile;
+	overrideFile.owningMod = nullptr;
+	overrideFile.path = VPK_SCRIPTS_RSON_PATH;
 
 	if (m_modFiles.find(VPK_SCRIPTS_RSON_PATH) == m_modFiles.end())
 		m_modFiles.insert(std::make_pair(VPK_SCRIPTS_RSON_PATH, overrideFile));

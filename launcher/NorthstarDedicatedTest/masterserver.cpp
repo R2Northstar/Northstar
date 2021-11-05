@@ -414,14 +414,14 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 			modinfoDoc.AddMember("Mods", rapidjson::Value(rapidjson::kArrayType), modinfoDoc.GetAllocator());
 
 			int currentModIndex = 0;
-			for (Mod* mod : g_ModManager->m_loadedMods)
+			for (Mod mod : g_ModManager->m_loadedMods)
 			{
-				if (!mod->RequiredOnClient)
+				if (!mod.RequiredOnClient)
 					continue;
 
 				modinfoDoc["Mods"].PushBack(rapidjson::Value(rapidjson::kObjectType), modinfoDoc.GetAllocator());
-				modinfoDoc["Mods"][currentModIndex].AddMember("Name", rapidjson::StringRef(mod->Name.c_str()), modinfoDoc.GetAllocator());
-				modinfoDoc["Mods"][currentModIndex].AddMember("Version", rapidjson::StringRef(mod->Version.c_str()), modinfoDoc.GetAllocator());
+				modinfoDoc["Mods"][currentModIndex].AddMember("Name", rapidjson::StringRef(mod.Name.c_str()), modinfoDoc.GetAllocator());
+				modinfoDoc["Mods"][currentModIndex].AddMember("Version", rapidjson::StringRef(mod.Version.c_str()), modinfoDoc.GetAllocator());
 
 				currentModIndex++;
 			}

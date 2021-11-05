@@ -107,7 +107,7 @@ bool TryReplaceFile(char* path, bool shouldCompile)
 	auto file = g_ModManager->m_modFiles.find(fs::path(path).lexically_normal().string());
 	if (file != g_ModManager->m_modFiles.end())
 	{
-		SetNewModSearchPaths(file->second->owningMod);
+		SetNewModSearchPaths(file->second.owningMod);
 		return true;
 	}
 
@@ -167,12 +167,12 @@ VPKData* MountVPKHook(IFileSystem* fileSystem, const char* vpkPath)
 	spdlog::info("MountVPK {}", vpkPath);
 	VPKData* ret = mountVPK(fileSystem, vpkPath);
 
-	for (Mod* mod : g_ModManager->m_loadedMods)
+	for (Mod mod : g_ModManager->m_loadedMods)
 	{
-		if (!mod->Enabled)
+		if (!mod.Enabled)
 			continue;
 
-		for (std::string& vpkPath : mod->Vpks)
+		for (std::string& vpkPath : mod.Vpks)
 		{
 			spdlog::info(vpkPath);
 			spdlog::info((void*)mountVPK(fileSystem, vpkPath.c_str()));
