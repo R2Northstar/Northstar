@@ -11,6 +11,7 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/error/en.h"
 #include "modmanager.h"
+#include "misccommands.h"
 
 ConVar* Cvar_ns_masterserver_hostname;
 ConVar* Cvar_ns_masterserver_port;
@@ -414,14 +415,15 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 			modinfoDoc.AddMember("Mods", rapidjson::Value(rapidjson::kArrayType), modinfoDoc.GetAllocator());
 
 			int currentModIndex = 0;
-			for (Mod mod : g_ModManager->m_loadedMods)
+			for (Mod& mod : g_ModManager->m_loadedMods)
 			{
 				if (!mod.RequiredOnClient)
 					continue;
 
 				modinfoDoc["Mods"].PushBack(rapidjson::Value(rapidjson::kObjectType), modinfoDoc.GetAllocator());
-				modinfoDoc["Mods"][currentModIndex].AddMember("Name", rapidjson::StringRef(mod.Name.c_str()), modinfoDoc.GetAllocator());
-				modinfoDoc["Mods"][currentModIndex].AddMember("Version", rapidjson::StringRef(mod.Version.c_str()), modinfoDoc.GetAllocator());
+				modinfoDoc["Mods"][currentModIndex].AddMember("Name", rapidjson::StringRef(&mod.Name[0]), modinfoDoc.GetAllocator());
+				modinfoDoc["Mods"][currentModIndex].AddMember("Version", rapidjson::StringRef(&mod.Version[0]), modinfoDoc.GetAllocator());
+				modinfoDoc["Mods"][currentModIndex].AddMember("Pdiff", rapidjson::StringRef(&mod.Pdiff[0]), modinfoDoc.GetAllocator());
 
 				currentModIndex++;
 			}
@@ -619,15 +621,19 @@ void CHostState__State_NewGameHook(CHostState* hostState)
 	Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec autoexec_ns_server", cmd_source_t::kCommandSrcCode);
 	Cbuf_Execute();
 
+	// need to do this to ensure 
+	if (g_ServerAuthenticationManager->m_bNeedLocalAuthForNewgame)
+		SetCurrentPlaylist("tdm");
+
+	CHostState__State_NewGame(hostState);
+
 	int maxPlayers = 6;
 	char* maxPlayersVar = GetCurrentPlaylistVar("max_players", true);
 	if (maxPlayersVar) // GetCurrentPlaylistVar can return null so protect against this
-		std::stoi(maxPlayersVar);
+		maxPlayers = std::stoi(maxPlayersVar);
 
 	g_MasterServerManager->AddSelfToServerList(Cvar_hostport->m_nValue, Cvar_ns_player_auth_port->m_nValue, Cvar_ns_server_name->m_pszString, Cvar_ns_server_desc->m_pszString, hostState->m_levelName, (char*)GetCurrentPlaylistName(), maxPlayers, Cvar_ns_server_password->m_pszString);
 	g_ServerAuthenticationManager->StartPlayerAuthServer();
-
-	CHostState__State_NewGame(hostState);
 	g_ServerAuthenticationManager->m_bNeedLocalAuthForNewgame = false;
 }
 

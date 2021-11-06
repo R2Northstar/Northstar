@@ -77,8 +77,8 @@ public:
 	// other files:
 
 	std::vector<std::string> Vpks;
-	std::vector<std::string> KeyValues;
-	std::vector<size_t> KeyValuesHash; // size_t because we hash these filesnames: faster than string comp
+	std::unordered_map<size_t, std::string> KeyValues;
+	std::string Pdiff; // only need one per mod
 
 	// other stuff
 

@@ -174,7 +174,8 @@ VPKData* MountVPKHook(IFileSystem* fileSystem, const char* vpkPath)
 
 		for (std::string& vpkPath : mod.Vpks)
 		{
-			spdlog::info(vpkPath);
+			// note: could potentially not mount these if they're already mounted?
+			spdlog::info("MountVPK {}", vpkPath);
 			spdlog::info((void*)mountVPK(fileSystem, vpkPath.c_str()));
 		}
 	}

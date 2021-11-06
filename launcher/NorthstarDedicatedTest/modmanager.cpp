@@ -258,11 +258,11 @@ void ModManager::LoadMods()
 	}
 
 	// sort by load prio, lowest-highest
-	std::sort(m_loadedMods.begin(), m_loadedMods.end(), [](Mod a, Mod b) {
+	std::sort(m_loadedMods.begin(), m_loadedMods.end(), [](Mod& a, Mod& b) {
 		return a.LoadPriority < b.LoadPriority;
 	});
 
-	for (Mod mod : m_loadedMods)
+	for (Mod& mod : m_loadedMods)
 	{
 		if (!mod.Enabled)
 			continue;
@@ -296,7 +296,6 @@ void ModManager::LoadMods()
 			}
 		}
 			
-
 		// read keyvalues paths
 		if (fs::exists(mod.ModDirectory / "keyvalues"))
 		{
@@ -305,9 +304,25 @@ void ModManager::LoadMods()
 				if (fs::is_regular_file(file))
 				{
 					std::string kvStr = file.path().lexically_relative(mod.ModDirectory / "keyvalues").lexically_normal().string();
-					mod.KeyValuesHash.push_back(std::hash<std::string>{}(kvStr));
-					mod.KeyValues.push_back(kvStr);
+					mod.KeyValues.insert(std::make_pair(std::hash<std::string>{}(kvStr), kvStr));
 				}
+			}
+		}
+
+		// read pdiff
+		if (fs::exists(mod.ModDirectory / "mod.pdiff"))
+		{
+			std::ifstream pdiffStream(mod.ModDirectory / "mod.pdiff");
+
+			if (!pdiffStream.fail())
+			{
+				std::stringstream pdiffStringStream;
+				while (pdiffStream.peek() != EOF)
+					pdiffStringStream << (char)pdiffStream.get();
+
+				pdiffStream.close();
+
+				mod.Pdiff = pdiffStringStream.str();
 			}
 		}
 	}
@@ -349,13 +364,12 @@ void ModManager::UnloadMods()
 	if (!m_hasEnabledModsCfg)
 		m_enabledModsCfg.SetObject();
 
-	for (Mod mod : m_loadedMods)
+	for (Mod& mod : m_loadedMods)
 	{	
 		// remove all built kvs
-		for (std::string kvPaths : mod.KeyValues)
-			fs::remove(COMPILED_ASSETS_PATH / fs::path(kvPaths).lexically_relative(mod.ModDirectory));
+		for (std::pair<size_t, std::string> kvPaths : mod.KeyValues)
+			fs::remove(COMPILED_ASSETS_PATH / fs::path(kvPaths.second).lexically_relative(mod.ModDirectory));
 
-		mod.KeyValuesHash.clear();
 		mod.KeyValues.clear();
 
 		// write to m_enabledModsCfg
@@ -383,13 +397,13 @@ void ModManager::CompileAssetsForFile(const char* filename)
 	else //if (!strcmp((filename + strlen(filename)) - 3, "txt")) // check if it's a .txt
 	{
 		// check if we should build keyvalues, depending on whether any of our mods have patch kvs for this file
-		for (Mod mod : m_loadedMods)
+		for (Mod& mod : m_loadedMods)
 		{
 			if (!mod.Enabled)
 				continue;
 
 			size_t fileHash = std::hash<std::string>{}(fs::path(filename).lexically_normal().string());
-			if (std::find(mod.KeyValuesHash.begin(), mod.KeyValuesHash.end(), fileHash) != mod.KeyValuesHash.end())
+			if (mod.KeyValues.find(fileHash) != mod.KeyValues.end())
 			{
 				TryBuildKeyValues(filename);
 				return;

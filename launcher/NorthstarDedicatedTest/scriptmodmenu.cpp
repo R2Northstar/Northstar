@@ -9,7 +9,7 @@ SQInteger SQ_GetModNames(void* sqvm)
 {
 	ClientSq_newarray(sqvm, 0);
 
-	for (Mod mod : g_ModManager->m_loadedMods)
+	for (Mod& mod : g_ModManager->m_loadedMods)
 	{
 		ClientSq_pushstring(sqvm, mod.Name.c_str(), -1);
 		ClientSq_arrayappend(sqvm, -2);
@@ -24,7 +24,7 @@ SQInteger SQ_IsModEnabled(void* sqvm)
 	const SQChar* modName = ClientSq_getstring(sqvm, 1);
 
 	// manual lookup, not super performant but eh not a big deal
-	for (Mod mod : g_ModManager->m_loadedMods)
+	for (Mod& mod : g_ModManager->m_loadedMods)
 	{
 		if (!mod.Name.compare(modName))
 		{
@@ -43,7 +43,7 @@ SQInteger SQ_SetModEnabled(void* sqvm)
 	const SQBool enabled = ClientSq_getbool(sqvm, 2);
 
 	// manual lookup, not super performant but eh not a big deal
-	for (Mod mod : g_ModManager->m_loadedMods)
+	for (Mod& mod : g_ModManager->m_loadedMods)
 	{
 		if (!mod.Name.compare(modName))
 		{
@@ -61,7 +61,7 @@ SQInteger SQ_GetModDescription(void* sqvm)
 	const SQChar* modName = ClientSq_getstring(sqvm, 1);
 	
 	// manual lookup, not super performant but eh not a big deal
-	for (Mod mod : g_ModManager->m_loadedMods)
+	for (Mod& mod : g_ModManager->m_loadedMods)
 	{
 		if (!mod.Name.compare(modName))
 		{
@@ -79,7 +79,7 @@ SQInteger SQ_GetModVersion(void* sqvm)
 	const SQChar* modName = ClientSq_getstring(sqvm, 1);
 
 	// manual lookup, not super performant but eh not a big deal
-	for (Mod mod : g_ModManager->m_loadedMods)
+	for (Mod& mod : g_ModManager->m_loadedMods)
 	{
 		if (!mod.Name.compare(modName))
 		{
@@ -97,7 +97,7 @@ SQInteger SQ_GetModDownloadLink(void* sqvm)
 	const SQChar* modName = ClientSq_getstring(sqvm, 1);
 
 	// manual lookup, not super performant but eh not a big deal
-	for (Mod mod : g_ModManager->m_loadedMods)
+	for (Mod& mod : g_ModManager->m_loadedMods)
 	{
 		if (!mod.Name.compare(modName))
 		{
@@ -115,7 +115,7 @@ SQInteger SQ_GetModLoadPriority(void* sqvm)
 	const SQChar* modName = ClientSq_getstring(sqvm, 1);
 
 	// manual lookup, not super performant but eh not a big deal
-	for (Mod mod : g_ModManager->m_loadedMods)
+	for (Mod& mod : g_ModManager->m_loadedMods)
 	{
 		if (!mod.Name.compare(modName))
 		{
@@ -133,7 +133,7 @@ SQInteger SQ_IsModRequiredOnClient(void* sqvm)
 	const SQChar* modName = ClientSq_getstring(sqvm, 1);
 
 	// manual lookup, not super performant but eh not a big deal
-	for (Mod mod : g_ModManager->m_loadedMods)
+	for (Mod& mod : g_ModManager->m_loadedMods)
 	{
 		if (!mod.Name.compare(modName))
 		{
@@ -152,7 +152,7 @@ SQInteger SQ_GetModConvars(void* sqvm)
 	ClientSq_newarray(sqvm, 0);
 
 	// manual lookup, not super performant but eh not a big deal
-	for (Mod mod : g_ModManager->m_loadedMods)
+	for (Mod& mod : g_ModManager->m_loadedMods)
 	{
 		if (!mod.Name.compare(modName))
 		{
@@ -187,7 +187,7 @@ void InitialiseScriptModMenu(HMODULE baseAddress)
 	g_UISquirrelManager->AddFuncRegistration("string", "NSGetModDescriptionByModName", "string modName", "Returns a given mod's description", SQ_GetModDescription);
 	g_UISquirrelManager->AddFuncRegistration("string", "NSGetModVersionByModName", "string modName", "Returns a given mod's version", SQ_GetModVersion);	
 	g_UISquirrelManager->AddFuncRegistration("string", "NSGetModDownloadLinkByModName", "string modName", "Returns a given mod's download link", SQ_GetModDownloadLink);
-	g_UISquirrelManager->AddFuncRegistration("bool", "NSIsModRequiredOnClient", "string modName", "Returns whether a given mod is required on connecting clients", SQ_IsModEnabled);
+	g_UISquirrelManager->AddFuncRegistration("bool", "NSIsModRequiredOnClient", "string modName", "Returns whether a given mod is required on connecting clients", SQ_IsModRequiredOnClient);
 	g_UISquirrelManager->AddFuncRegistration("int", "NSGetModLoadPriority", "string modName", "Returns a given mod's load priority", SQ_GetModLoadPriority);
 	g_UISquirrelManager->AddFuncRegistration("array<string>", "NSGetModConvarsByModName", "string modName", "Returns the names of all a given mod's cvars", SQ_GetModConvars);
 
