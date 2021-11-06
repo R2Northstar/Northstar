@@ -17,7 +17,7 @@ void ModManager::BuildScriptsRson()
 	std::string scriptsRson = ReadVPKOriginalFile(VPK_SCRIPTS_RSON_PATH);
 	scriptsRson += "\n\n// START MODDED SCRIPT CONTENT\n\n"; // newline before we start custom stuff
 
-	for (Mod mod : m_loadedMods)
+	for (Mod& mod : m_loadedMods)
 	{
 		if (!mod.Enabled)
 			continue;
@@ -27,7 +27,7 @@ void ModManager::BuildScriptsRson()
 		scriptsRson += mod.Name;
 		scriptsRson += ":\n\n";
 
-		for (ModScript script : mod.Scripts)
+		for (ModScript& script : mod.Scripts)
 		{
 			/* should create something with this format for each script
 			When: "CONTEXT"

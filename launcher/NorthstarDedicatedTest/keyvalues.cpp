@@ -56,25 +56,23 @@ void ModManager::TryBuildKeyValues(const char* filename)
 			continue;
 
 		size_t fileHash = std::hash<std::string>{}(normalisedPath);
-		for (int j = 0; j < m_loadedMods[i].KeyValuesHash.size(); j++)
+		auto modKv = m_loadedMods[i].KeyValues.find(fileHash);
+		if (modKv != m_loadedMods[i].KeyValues.end())
 		{
-			if (fileHash == m_loadedMods[i].KeyValuesHash[j])
-			{
-				// should result in smth along the lines of #include "mod_patch_5_mp_weapon_car.txt"
+			// should result in smth along the lines of #include "mod_patch_5_mp_weapon_car.txt"
 
-				std::string patchFilePath = "mod_patch_";
-				patchFilePath += std::to_string(patchNum++);
-				patchFilePath += "_";
-				patchFilePath += kvPath.filename().string();
+			std::string patchFilePath = "mod_patch_";
+			patchFilePath += std::to_string(patchNum++);
+			patchFilePath += "_";
+			patchFilePath += kvPath.filename().string();
 
-				newKvs += "#base \"";
-				newKvs += patchFilePath;
-				newKvs += "\"\n";
+			newKvs += "#base \"";
+			newKvs += patchFilePath;
+			newKvs += "\"\n";
 
-				fs::remove(compiledDir / patchFilePath);
+			fs::remove(compiledDir / patchFilePath);
 
-				fs::copy_file(m_loadedMods[i].ModDirectory / "keyvalues" / filename, compiledDir / patchFilePath);
-			}
+			fs::copy_file(m_loadedMods[i].ModDirectory / "keyvalues" / filename, compiledDir / patchFilePath);
 		}
 	}
 

@@ -28,6 +28,8 @@ void EndSelfAuthAndLeaveToLobbyCommand(const CCommand& arg)
 	Cbuf_Execute();
 
 	g_ServerAuthenticationManager->m_bNeedLocalAuthForNewgame = true;
+	// this won't set playlist correctly on remote clients, don't think they can set playlist until they've left which sorta fucks things
+	// should maybe set this in HostState_NewGame?
 	SetCurrentPlaylist("tdm");
 	strcpy(g_pHostState->m_levelName, "mp_lobby");
 	g_pHostState->m_iNextState = HS_NEW_GAME;
