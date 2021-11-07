@@ -49,7 +49,7 @@ void ModManager::BuildPdef()
 			if (end == std::string::npos)
 				end = currentLine.size() - 1; // last char
 
-			if (!currentLine.compare(start, 2, "//") || end < 1)
+			if (!currentLine.size() || !currentLine.compare(start, 2, "//"))
 				continue;
 
 			if (inEnum)
@@ -57,16 +57,7 @@ void ModManager::BuildPdef()
 				if (!currentLine.compare(start, 9, "$ENUM_END"))
 					inEnum = false;
 				else
-				{
-					std::string enumMember = currentLine.substr(start, currentLine.size() - end - start);
-					// seek to first whitespace, just in case
-					int whitespaceIdx = 0;
-					for (; whitespaceIdx < enumMember.size(); whitespaceIdx++)
-						if (enumMember[whitespaceIdx] == ' ' || enumMember[whitespaceIdx] == '\t')
-							break;
-
-					enumAdds[currentEnum].push_back(enumMember.substr(0, whitespaceIdx));
-				}
+					enumAdds[currentEnum].push_back(currentLine); // only need to push_back current line, if there's syntax errors then game pdef parser will handle them
 			}
 			else if (!currentLine.compare(start, 9, "$ENUM_ADD"))
 			{
@@ -83,8 +74,27 @@ void ModManager::BuildPdef()
 			}
 		}
 
-		// todo: enum stuff
+		// add new members to preexisting enums
+		// note: this code could 100% be messed up if people put //$ENUM_START comments and the like
+		// could make it protect against this, but honestly not worth atm
+		for (auto enumAdd : enumAdds)
+		{
+			std::string addStr;
+			for (std::string enumMember : enumAdd.second)
+			{
+				addStr += enumMember;
+				addStr += '\n';
+			}
 
+			// start of enum we're adding to
+			std::string startStr = "$ENUM_START ";
+			startStr += enumAdd.first;
+
+			// insert enum values into enum
+			size_t insertIdx = pdef.find("$ENUM_END", pdef.find(startStr));
+			pdef.reserve(addStr.size());
+			pdef.insert(insertIdx, addStr);
+		}
 	}
 
 	fs::create_directories(MOD_PDEF_PATH.parent_path());
