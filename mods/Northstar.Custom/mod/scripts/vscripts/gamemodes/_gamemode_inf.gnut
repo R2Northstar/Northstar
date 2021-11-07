@@ -12,6 +12,7 @@ void function GamemodeInfection_Init()
 	SetWeaponDropsEnabled( false )
 	Riff_ForceTitanAvailability( eTitanAvailability.Never )
 	Riff_ForceBoostAvailability( eBoostAvailability.Disabled )
+	ClassicMP_ForceDisableEpilogue( true )
 
 	SetShouldPlayerStartBleedoutFunc( InfectionShouldPlayerStartBleedout )
 	AddCallback_OnClientConnected( InfectionInitPlayer )
@@ -169,7 +170,7 @@ void function SetLastSurvivor( entity player )
 		Remote_CallFunction_NonReplay( otherPlayer, "ServerCallback_AnnounceLastSurvivor", player.GetEncodedEHandle() )
 
 	Highlight_SetEnemyHighlight( player, "enemy_sonar" )
-	thread CreateTitanForPlayerAndHotdrop( player, GetTitanReplacementPoint( player, false ) )
+	//thread CreateTitanForPlayerAndHotdrop( player, GetTitanReplacementPoint( player, false ) )
 	
 	if ( GameTime_TimeLeftSeconds() > 45 )
 		SetServerVar( "gameEndTime", Time() + 45.0 )

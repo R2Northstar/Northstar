@@ -20,6 +20,7 @@ void function GamemodeHideAndSeek_Init()
 	
 	SetTimeoutWinnerDecisionFunc( HideAndSeekDecideWinner )
 	ClassicMP_SetCustomIntro( GamemodeHideAndSeekIntroSetup, 0.0 )
+	ClassicMP_ForceDisableEpilogue( true )
 	
 	AddCallback_OnPlayerRespawned( SetupHideAndSeekPlayer )
 	AddCallback_OnPlayerKilled( TryNotifyLastPlayerAlive )

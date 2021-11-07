@@ -220,6 +220,9 @@ void function CodeCallback_OnPlayerRespawned( entity player )
 	
 	Loadouts_TryGivePilotLoadout( player )
 	SetHumanRagdollImpactTable( player )
+	
+	foreach ( entity weapon in player.GetMainWeapons() )
+		weapon.SetProScreenOwner( player )
 		
 	foreach ( void functionref( entity ) callback in svGlobal.onPlayerRespawnedCallbacks )
 		callback( player )

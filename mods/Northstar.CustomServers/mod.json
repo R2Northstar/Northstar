@@ -8,6 +8,12 @@
 		},
 		
 		{
+			"Name": "ns_is_modded_server",
+			"DefaultValue": "1",
+			"Flags": 8192 // FCVAR_REPLICATED
+		},
+		
+		{
 			"Name": "ns_should_return_to_lobby",
 			"DefaultValue": "1"
 		},
@@ -25,7 +31,7 @@
 	
 	"Scripts": [
 		{
-			"Path": "_misc.gnut",
+			"Path": "_misc_stubs.gnut",
 			"RunOn": "SERVER && MP",
 		},
 		{

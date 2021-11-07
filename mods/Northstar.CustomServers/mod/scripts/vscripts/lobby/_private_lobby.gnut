@@ -11,7 +11,6 @@ struct {
 void function PrivateLobby_Init()
 {
 	print( "PrivateLobby_Init()" )
-	//ClearPlaylistVarOverrides()
 	
 	file.map = GetConVarString( "ns_private_match_last_map" )
 	file.mode = GetConVarString( "ns_private_match_last_mode" )
@@ -22,6 +21,7 @@ void function PrivateLobby_Init()
 	AddClientCommandCallback( "PrivateMatchSetMode", ClientCommandCallback_PrivateMatchSetMode )
 	AddClientCommandCallback( "SetCustomMap", ClientCommandCallback_SetCustomMap )
 	AddClientCommandCallback( "PrivateMatchSwitchTeams", ClientCommandCallback_PrivateMatchSwitchTeams )
+	AddClientCommandCallback( "PrivateMatchToggleSpectate", ClientCommandCallback_PrivateMatchToggleSpectate )
 	
 	AddClientCommandCallback( "PrivateMatchSetPlaylistVarOverride", ClientCommandCallback_PrivateMatchSetPlaylistVarOverride )
 	AddClientCommandCallback( "ResetMatchSettingsToDefault", ClientCommandCallback_ResetMatchSettingsToDefault )
@@ -99,6 +99,12 @@ bool function ClientCommandCallback_PrivateMatchSwitchTeams( entity player, arra
 	return true
 }
 
+bool function ClientCommandCallback_PrivateMatchToggleSpectate( entity player, array<string> args )
+{
+	// not currently working, gotta figure it out at some point
+	return true
+}
+
 void function StartMatch()
 {	
 	// set starting uivar
@@ -112,16 +118,11 @@ void function StartMatch()
 	while ( Time() < countdownEndTime )
 	{
 		// stop if the countdown's been cancelled
-		if ( file.startState != ePrivateMatchStartState.STARTING)
+		if ( file.startState != ePrivateMatchStartState.STARTING )
 			return
 	
 		WaitFrame()
 	}
-	
-	if ( file.mode in GAMETYPE_TEXT )
-		GameRules_SetGameMode( file.mode )
-	else
-		GameRules_SetGameMode( GetPlaylistGamemodeByIndex( file.mode, 0 ) )
 		
 	try
 	{
@@ -144,8 +145,11 @@ void function StartMatch()
 	SetConVarString( "ns_private_match_last_mode", file.mode )
 	SetConVarBool( "ns_should_return_to_lobby", true ) // potentially temp?
 	
-	// TEMP for now: start game
-	ServerCommand( "changelevel " + file.map )
+	string mode = file.mode
+	if ( !( mode in GAMETYPE_TEXT ) )
+		mode = GetPlaylistGamemodeByIndex( file.mode, 0 )
+	
+	GameRules_ChangeMap( file.map, mode )
 }
 
 void function RefreshPlayerTeams()

@@ -274,15 +274,15 @@ void function UpdatePlayButton( var button )
 				message = "#CONTACTING_RESPAWN_SERVERS"
 				file.mpButtonActivateFunc = null
 			}
-			else if ( !isFullyInstalled )
+			
+			bool hasNonVanillaMods = false
+			if ( hasNonVanillaMods )
 			{
-				//message = "#INSTALL_IN_PROGRESS"
-				file.mpButtonActivateFunc = LaunchMP
+				// todo: make this disable non-vanilla mods
 			}
 			else
-			{
 				file.mpButtonActivateFunc = LaunchMP
-			}
+			
 
 			isLocked = file.mpButtonActivateFunc == null ? true : false
 			Hud_SetLocked( button, isLocked )
@@ -507,6 +507,7 @@ void function OnPlayFDButton_Activate( var button ) // repurposed for launching 
 		
 		//ClientCommand( "setplaylist tdm" )
 		//ClientCommand( "map mp_lobby" )
+		SetConVarBool( "ns_is_modded_server", true )
 		
 		NSTryAuthWithLocalServer()
 		thread TryAuthWithLocalServer()
@@ -537,6 +538,7 @@ void function OnPlayMPButton_Activate( var button )
 	{
 		Lobby_SetAutoFDOpen( false )
 		// Lobby_SetFDMode( false )
+		SetConVarBool( "ns_is_modded_server", false )
 		thread file.mpButtonActivateFunc()
 	}
 }

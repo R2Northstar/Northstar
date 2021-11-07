@@ -7,5 +7,6 @@ void function NorthstarCustomPrecache()
 	PrecacheWeapon( "melee_pilot_kunai" )
 	
 	// create kunai damage source so game won't crash when we hit smth with it
+	// just using the default melee one, easier than making a new one
 	getconsttable()[ "eDamageSourceId" ][ "melee_pilot_kunai" ] <- eDamageSourceId.melee_pilot_emptyhanded
 }

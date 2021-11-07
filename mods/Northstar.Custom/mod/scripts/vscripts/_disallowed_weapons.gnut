@@ -1,0 +1,48 @@
+global function DisallowedWeapons_Init
+
+struct {
+	array<string> disallowedWeapons
+	string disallowedWeaponsStringLastVal
+	string disallowedWeaponReplacement
+} file
+
+void function DisallowedWeapons_Init()
+{
+	UpdateDisallowedWeaponList()
+	AddCallback_OnPlayerRespawned( ReplacePlayerWeaponsForSpawn )
+}
+
+void function UpdateDisallowedWeaponList()
+{
+	string cvar = GetConVarString( "ns_disallowed_weapons" )
+	if ( file.disallowedWeaponsStringLastVal == cvar )
+		return
+	
+	file.disallowedWeapons = split( cvar, "," )
+	foreach ( string weapon in file.disallowedWeapons )
+		StringReplace( weapon, " ", "" )
+	
+	file.disallowedWeaponReplacement = GetConVarString( "ns_disallowed_weapon_primary_replacement" )
+}
+
+void function ReplacePlayerWeaponsForSpawn( entity player )
+{
+	UpdateDisallowedWeaponList()
+	if ( file.disallowedWeapons.len() == 0 )
+		return
+	
+	bool hadDisallowedWeapon = false
+
+	foreach ( entity weapon in player.GetMainWeapons() )
+	{
+		if ( file.disallowedWeapons.contains( weapon.GetWeaponClassName() ) )
+		{
+			player.TakeWeaponNow( weapon.GetWeaponClassName() )
+			player.GiveWeapon( file.disallowedWeaponReplacement )
+			hadDisallowedWeapon = true
+		}
+	}
+	
+	if ( hadDisallowedWeapon )
+		SendHudMessage( player, "Restricted weapons were removed", -1, 0.4, 255, 255, 255, 255, 0.15, 3.0, 0.5 )
+}

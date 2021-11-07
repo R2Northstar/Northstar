@@ -1,23 +1,15 @@
 globalize_all_functions
 
-enum eNorthstarLobbyType
+global enum eNorthstarLobbyType
 {
 	PrivateMatchLobby, // normal vanilla private lobby
-	IntermissionLobby, // similar to tf1's intermission lobby, chooses next map automatically
-	CompetitiveLobby // similar to vanilla privates, but with ready up system
+	IntermissionLobby, // similar to tf1's intermission lobby, chooses next map automatically, can't change settings unless you're host
 }
 
 // whether the server is a modded, northstar server
 bool function IsNorthstarServer()
 {
-	bool isModded = true // TEMP for testing
-	try
-	{
-		// need this in a trycatch because the var might not exist atm
-		isModded = GetConVarInt( "northstar_is_modded_server" ) == 1
-	} catch ( ex ) {}
-	
-	return isModded
+	return GetConVarBool( "ns_is_modded_server" )
 }
 
 // whether the game should return to the lobby on GameRules_EndMatch()
@@ -30,13 +22,6 @@ int function GetNorthstarLobbyType()
 {
 	if ( !IsNorthstarServer() )
 		return eNorthstarLobbyType.PrivateMatchLobby
-		
-	int lobbyType = eNorthstarLobbyType.PrivateMatchLobby
-	try
-	{
-		// need this in a trycatch because the var might not exist atm
-		lobbyType = GetConVarInt( "northstar_lobby_type" )
-	} catch ( ex ) {}
 	
-	return lobbyType
+	return GetConVarInt( "ns_lobby_type" )
 }

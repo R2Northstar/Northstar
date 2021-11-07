@@ -8,17 +8,17 @@ void function AiTurret_Init()
 
 }
 
-entity function GetMegaTurretLinkedToPanel(entity panel)
+entity function GetMegaTurretLinkedToPanel( entity panel )
 {
 	return null
 }
 
-string function MegaTurretUsabilityFunc(var turret, var panel)
+string function MegaTurretUsabilityFunc( var turret, var panel )
 {
 	return "pilot"
 }
 
-void function SetUsePromptForPanel(var panel, var turret)
+void function SetUsePromptForPanel( var panel, var turret )
 {
 
 }
