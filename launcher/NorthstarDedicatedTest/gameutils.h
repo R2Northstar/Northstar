@@ -185,8 +185,9 @@ extern GetCurrentPlaylistVarType GetCurrentPlaylistVar;
 typedef void*(*Server_GetEntityByIndexType)(int index);
 extern Server_GetEntityByIndexType Server_GetEntityByIndex;
 
-// uid
+// auth
 extern char* g_LocalPlayerUserID;
+extern char* g_LocalPlayerOriginToken;
 
 void InitialiseEngineGameUtilFunctions(HMODULE baseAddress);
 void InitialiseServerGameUtilFunctions(HMODULE baseAddress);

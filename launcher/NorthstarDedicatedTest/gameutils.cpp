@@ -26,8 +26,9 @@ GetCurrentPlaylistVarType GetCurrentPlaylistVar;
 // server entity stuff
 Server_GetEntityByIndexType Server_GetEntityByIndex;
 
-// uid
+// auth
 char* g_LocalPlayerUserID;
+char* g_LocalPlayerOriginToken;
 
 void InitialiseEngineGameUtilFunctions(HMODULE baseAddress)
 {
@@ -46,6 +47,7 @@ void InitialiseEngineGameUtilFunctions(HMODULE baseAddress)
 	GetCurrentPlaylistVar = (GetCurrentPlaylistVarType)((char*)baseAddress + 0x18C680);
 
 	g_LocalPlayerUserID = (char*)baseAddress + 0x13F8E688;
+	g_LocalPlayerOriginToken = (char*)baseAddress + 0x13979C80;
 }
 
 void InitialiseServerGameUtilFunctions(HMODULE baseAddress)
