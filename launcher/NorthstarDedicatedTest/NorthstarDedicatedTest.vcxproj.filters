@@ -582,6 +582,9 @@
     <ClInclude Include="pdef.h">
       <Filter>Header Files\Shared\Mods\Compiled</Filter>
     </ClInclude>
+    <ClInclude Include="clientauthhooks.h">
+      <Filter>Header Files\Client</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -676,6 +679,9 @@
     </ClCompile>
     <ClCompile Include="pdef.cpp">
       <Filter>Source Files\Shared\Mods\Compiled</Filter>
+    </ClCompile>
+    <ClCompile Include="clientauthhooks.cpp">
+      <Filter>Source Files\Client</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

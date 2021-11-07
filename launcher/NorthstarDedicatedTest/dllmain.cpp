@@ -21,6 +21,7 @@
 #include "playlist.h"
 #include "securitypatches.h"
 #include "miscserverscript.h"
+#include "clientauthhooks.h"
 
 bool initialised = false;
 
@@ -90,6 +91,7 @@ void InitialiseNorthstar()
         AddDllLoadCallback("client.dll", InitialiseScriptModMenu);
         AddDllLoadCallback("client.dll", InitialiseScriptServerBrowser);
         AddDllLoadCallback("localize.dll", InitialiseModLocalisation);
+        AddDllLoadCallback("engine.dll", InitialiseClientAuthHooks);
     }
 
     AddDllLoadCallback("server.dll", InitialiseServerSquirrel);

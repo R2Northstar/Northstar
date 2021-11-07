@@ -67,6 +67,62 @@ void MasterServerManager::ClearServerList()
 	m_requestingServerList = false;
 }
 
+void MasterServerManager::AuthenticateOriginWithMasterServer(char* uid, char* originToken)
+{
+	if (m_bOriginAuthWithMasterServerInProgress)
+		return;
+
+	// do this here so it's instantly set
+	m_bOriginAuthWithMasterServerInProgress = true;
+	std::string uidStr(uid);
+	std::string tokenStr(originToken);
+
+	std::thread requestThread([this, uidStr, tokenStr]()
+		{
+			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);
+			http.set_connection_timeout(10);
+
+			spdlog::info("Trying to authenticate with northstar masterserver for user {} {}", uidStr, tokenStr);
+
+			if (auto result = http.Get(fmt::format("/client/origin_auth?uid={}&token={}", uidStr, tokenStr).c_str()))
+			{
+				m_successfullyConnected = true;
+
+				rapidjson::Document originAuthInfo;
+				originAuthInfo.Parse(result->body.c_str());
+
+				if (originAuthInfo.HasParseError())
+				{
+					spdlog::error("Failed reading origin auth info response: encountered parse error \{}\"", rapidjson::GetParseError_En(originAuthInfo.GetParseError()));
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (!originAuthInfo.IsObject() || !originAuthInfo.HasMember("success"))
+				{
+					spdlog::error("Failed reading origin auth info response: malformed response object {}", result->body);
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (originAuthInfo["success"].IsTrue())
+					spdlog::info("Northstar origin authentication completed successfully!");
+				else
+					spdlog::error("Northstar origin authentication failed");
+			}
+			else
+			{
+				spdlog::error("Failed performing northstar origin auth: error {}", result.error());
+				m_successfullyConnected = false;
+			}
+
+			// we goto this instead of returning so we always hit this
+			REQUEST_END_CLEANUP:
+			m_bOriginAuthWithMasterServerInProgress = false;
+			m_bOriginAuthWithMasterServerDone = true;
+		});
+
+	requestThread.detach();
+}
+
 void MasterServerManager::RequestServerList()
 {
 	// do this here so it's instantly set on call for scripts

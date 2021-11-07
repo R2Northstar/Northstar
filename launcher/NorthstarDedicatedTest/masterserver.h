@@ -49,6 +49,9 @@ private:
 public:
 	char m_ownServerId[33];
 
+	bool m_bOriginAuthWithMasterServerDone = false;
+	bool m_bOriginAuthWithMasterServerInProgress = false;
+
 	bool m_bRequireClientAuth = false;
 	bool m_savingPersistentData = false;
 
@@ -67,6 +70,7 @@ public:
 public:
 	void ClearServerList();
 	void RequestServerList();
+	void AuthenticateOriginWithMasterServer(char* uid, char* originToken);
 	void AuthenticateWithOwnServer(char* uid, char* playerToken);
 	void AuthenticateWithServer(char* uid, char* playerToken, char* serverId, char* password);
 	void AddSelfToServerList(int port, int authPort, char* name, char* description, char* map, char* playlist, int maxPlayers, char* password);
