@@ -1,1 +1,14 @@
-//fuck
+global function AddTitanXP
+
+void function AddTitanXP( entity player, int amount )
+{
+	string titan = GetActiveTitanLoadout( player ).titanClass
+	int oldLevel = TitanGetLevel( player, titan )
+	
+	// increment xp
+	player.SetPersistentVar( "titanXP[" + titan + "]", min( TitanGetXP( player, titan ) + amount, TitanGetMaxXP( titan ) ) )
+	
+	// level up notif
+	if ( TitanGetLevel( player, titan ) != oldLevel )
+		Remote_CallFunction_NonReplay( player, "ServerCallback_TitanLeveledUp", shTitanXP.titanClasses.find( titan ), TitanGetGen( player, titan ), TitanGetLevel( player, titan ) )
+}

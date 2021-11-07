@@ -1,1 +1,7 @@
-//fuck
+// as much as i'd like to restore this i've not been able to get any of this working
+global function Spotting_Init 
+
+void function Spotting_Init()
+{
+
+}

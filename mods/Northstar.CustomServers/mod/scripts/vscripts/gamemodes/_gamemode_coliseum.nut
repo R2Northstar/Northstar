@@ -52,7 +52,25 @@ void function ShowColiseumIntroScreenThreaded()
 	wait 5
 
 	foreach ( entity player in GetPlayerArray() )
-		Remote_CallFunction_NonReplay( player,  "ServerCallback_ColiseumIntro", 1, 1, 1 ) // stub numbers atm because lazy
+	{
+		
+		array<entity> otherTeam = GetPlayerArrayOfTeam( GetOtherTeam( player.GetTeam() ) )
+		
+		int winstreak = 0
+		int wins = 0 
+		int losses = 0
+		
+		if ( otherTeam.len() != 0 )
+		{
+			entity enemy = otherTeam[ 0 ]
+		
+			winstreak = enemy.GetPersistentVarAsInt( "coliseumWinStreak" )
+			wins = enemy.GetPersistentVarAsInt( "coliseumTotalWins" )
+			losses = enemy.GetPersistentVarAsInt( "coliseumTotalLosses" )
+		}
+	
+		Remote_CallFunction_NonReplay( player, "ServerCallback_ColiseumIntro", winstreak, wins, losses ) // stub numbers atm because lazy
+	}
 }
 
 void function GivePlayerColiseumLoadout( entity player )

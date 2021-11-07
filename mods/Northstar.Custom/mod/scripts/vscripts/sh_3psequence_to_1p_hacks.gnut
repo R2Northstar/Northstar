@@ -35,7 +35,6 @@ void function FirstPersonSequenceForce1P_Init()
 
 void function FirstPersonSequenceForce1P_InitPlaylistVars()
 {
-	PrecacheModel( $"models/weapons/sentry_turret/sentry_turret.mdl" )
 	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "fp_embark_enabled", [ "Disabled", "Enabled" ], "0" )
 }
 
@@ -86,6 +85,7 @@ Forced1PSequenceData function FirstPersonSequenceForce1P( FirstPersonSequenceStr
 	ownerProxy.SetModel( player.GetModelName() )
 	ownerProxy.SetValueForModelKey( player.GetModelName() )
 	ownerProxy.SetInvulnerable()
+	HideName( ownerProxy )
 	cleanupData.ownerProxy = ownerProxy
 	
 	int bodygroupValue = 1
@@ -112,6 +112,7 @@ Forced1PSequenceData function FirstPersonSequenceForce1P( FirstPersonSequenceStr
 	thirdPersonProxy.SetModel( player.GetModelName() )
 	thirdPersonProxy.SetValueForModelKey( player.GetModelName() )
 	thirdPersonProxy.SetInvulnerable()
+	HideName( thirdPersonProxy )
 	cleanupData.thirdPersonProxy = thirdPersonProxy
 	
 	if ( player.IsTitan() )
@@ -126,8 +127,13 @@ Forced1PSequenceData function FirstPersonSequenceForce1P( FirstPersonSequenceStr
 	camera.SetParent( ownerProxy, attachment )
 	camera.kv.spawnflags = 56
 	DispatchSpawn( camera )
-	player.SetViewEntity( camera, false )
+	player.SetViewEntity( camera, true )
 	cleanupData.camera = camera
+	
+	// note for potential thing that could be done
+	// entity e = CreatePropDynamic($"models/weapons/arms/pov_titan_light_cockpit.mdl"); e.SetParent(GetPlayerArray()[0].GetPetTitan(), "HATCH_HEAD"); e.SetOrigin(<0.75,0,-195>)
+	// this is so we get a cockpit in these anims, issue with it is that the cockpit seems to break alot of rendering stuff
+	// which really sucks since it'd be awesome to have a cockpit over these anims, really makes them better, even the client func to render through cockpits doesn't seem to work for it, just makes stuff rendering through the cockpit invisible rather than rendering in a broken way
 	
 	Remote_CallFunction_NonReplay( player, "ServerCallback_HideHudForFPHackAnim" )
 	// play this anim now, so we can cleanup after it's done
@@ -161,9 +167,13 @@ void function CleanupForced1PSequence( Forced1PSequenceData cleanupData )
 #if CLIENT
 void function ServerCallback_HideHudForFPHackAnim()
 {
-	thread MainHud_TurnOff_RUI( true )
-	HidePermanentCockpitRui()
-	
+	// these functions just set hud positions to infront of/behind the camera, manually set them up here so they'll be far enough away so we don't see them in these anims
+	// in an ideal world we wouldn't even have to turn off this rui stuff because it would be parented to our camera but unfortunately we do not live in an ideal world
+	//thread MainHud_TurnOff_RUI( true )
+	//HidePermanentCockpitRui()
+	RuiTopology_UpdatePos( clGlobal.topoCockpitHud, < -1000, -1000, -1000 >, < -1000, -1000, -1000 >, < -1000, -1000, -1000 > )
+	RuiTopology_UpdatePos( clGlobal.topoCockpitHudPermanent, < -1000, -1000, -1000 >, < -1000, -1000, -1000 >, < -1000, -1000, -1000 > )
+		
 	thread EnableHudOnViewRestored()
 }
 

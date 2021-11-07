@@ -87,12 +87,17 @@ bool function IsEvacDropship( entity ent )
 // evac epilogue
 void function EvacEpilogueSetup()
 {
+	// don't do much here because other scripts should be able to call evac stuff themselves
 	AddCallback_GameStateEnter( eGameState.Epilogue, EvacEpilogue )
 }
 
 void function EvacEpilogue()
 {
-	thread Evac( GetPlayerArray()[0].GetTeam(), EVAC_INITIAL_WAIT, EVAC_ARRIVAL_TIME, EVAC_WAIT_TIME, EvacEpiloguePlayerCanBoard, EvacEpilogueShouldLeaveEarly, EvacEpilogueCompleted )
+	// make sure we don't run this on ffa modes if no epilogue was specified, since evac is default epilogue
+	if ( GetCurrentPlaylistVarInt( "max_teams", 2 ) == 2 )
+		thread Evac( GetPlayerArray()[0].GetTeam(), EVAC_INITIAL_WAIT, EVAC_ARRIVAL_TIME, EVAC_WAIT_TIME, EvacEpiloguePlayerCanBoard, EvacEpilogueShouldLeaveEarly, EvacEpilogueCompleted )
+	else
+		thread EvacEpilogueCompleted( null ) // this is hacky but like, this also shouldn't really be hit in normal gameplay
 }
 
 bool function EvacEpiloguePlayerCanBoard( entity dropship, entity player )
@@ -123,14 +128,16 @@ bool function EvacEpilogueShouldLeaveEarly( entity dropship )
 void function EvacEpilogueCompleted( entity dropship )
 {
 	wait 5.0
-	print( dropship )
 	
-	foreach ( entity player in dropship.s.evacSlots )
+	if ( IsValid( dropship ) )
 	{
-		if ( !IsValid( player ) )
-			continue
-		
-		ScreenFadeToBlackForever( player, 2.0 )
+		foreach ( entity player in dropship.s.evacSlots )
+		{
+			if ( !IsValid( player ) )
+				continue
+			
+			ScreenFadeToBlackForever( player, 2.0 )
+		}
 	}
 	
 	wait 2.0

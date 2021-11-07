@@ -3,6 +3,17 @@
 	"LoadPriority": 1,
 	"RequiredOnClient": true,
 	
+	"ConVars": [
+		{
+			"Name": "ns_disallowed_weapons",
+			"DefaultValue": ""
+		},
+		{
+			"Name": "ns_disallowed_weapon_primary_replacement",
+			"DefaultValue": "mp_weapon_rspn101"
+		}
+	],
+	
 	"Scripts": [
 		{
 			"Path": "sh_northstar_custom_precache.gnut",
@@ -324,6 +335,14 @@
 				"After": "ClassicRodeo_InitPlaylistVars"
 			}
 		},
+		
+		{
+			"Path": "_disallowed_weapons.gnut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+				"After": "DisallowedWeapons_Init"
+			}
+		}
 	],
 	
 	"Localisation": [

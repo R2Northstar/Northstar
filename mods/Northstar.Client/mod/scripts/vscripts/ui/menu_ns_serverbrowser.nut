@@ -175,16 +175,17 @@ void function OnServerSelected( var button )
 	if ( NSIsRequestingServerList() || !NSMasterServerConnectionSuccessful() )
 		return
 
-	int server = int( Hud_GetScriptID( button ) )
+	int serverIndex = file.page * BUTTONS_PER_PAGE + int ( Hud_GetScriptID( button ) )
+	file.lastSelectedServer = serverIndex
 
 	// check mods
-	for ( int i = 0; i < NSGetServerRequiredModsCount( server ); i++ ) 
+	for ( int i = 0; i < NSGetServerRequiredModsCount( serverIndex ); i++ ) 
 	{	
-		if ( !NSGetModNames().contains( NSGetServerRequiredModName( server, i ) ) )
+		if ( !NSGetModNames().contains( NSGetServerRequiredModName( serverIndex, i ) ) )
 		{		
 			DialogData dialogData
 			dialogData.header = "#ERROR"
-			dialogData.message = "Missing mod \"" + NSGetServerRequiredModName( server, i ) + "\" v" + NSGetServerRequiredModVersion( server, i )
+			dialogData.message = "Missing mod \"" + NSGetServerRequiredModName( serverIndex, i ) + "\" v" + NSGetServerRequiredModVersion( serverIndex, i )
 			dialogData.image = $"ui/menu/common/dialog_error"
 		
 			#if PC_PROG
@@ -200,16 +201,43 @@ void function OnServerSelected( var button )
 		}
 		else
 		{
-			string modVersion = NSGetServerRequiredModVersion( server, i )
-			// check this is sorta valid semver, d
+			// this uses semver https://semver.org
+			array<string> serverModVersion = split( NSGetServerRequiredModVersion( serverIndex, i ), "." )
+			array<string> clientModVersion = split( NSGetModVersionByModName( NSGetServerRequiredModName( serverIndex, i ) ), "." )
+			
+			bool semverFail = false
+			// if server has invalid semver don't bother checking
+			if ( serverModVersion.len() == 3 )
+			{
+				// bad client semver
+				if ( clientModVersion.len() != serverModVersion.len() )
+					semverFail = true
+				// major version, don't think we should need to check other versions
+				else if ( clientModVersion[ 0 ] != serverModVersion[ 0 ] )
+					semverFail = true
+			}
+			
+			if ( semverFail )
+			{
+				DialogData dialogData
+				dialogData.header = "#ERROR"
+				dialogData.message = "Server has mod \"" + NSGetServerRequiredModName( serverIndex, i ) + "\" v" + NSGetServerRequiredModVersion( serverIndex, i ) + " while we have v" + NSGetModVersionByModName( NSGetServerRequiredModName( serverIndex, i ) ) 
+				dialogData.image = $"ui/menu/common/dialog_error"
+			
+				#if PC_PROG
+					AddDialogButton( dialogData, "#DISMISS" )
+				
+					AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
+				#endif // PC_PROG
+				AddDialogFooter( dialogData, "#B_BUTTON_DISMISS_RUI" )
+		
+				OpenDialog( dialogData )
+				
+				return
+			}
 		}
 	}
 		
-	var menu = GetMenu( "ServerBrowserMenu" )
-	int serverIndex = file.page * BUTTONS_PER_PAGE + int ( Hud_GetScriptID( button ) )
-	
-	file.lastSelectedServer = serverIndex
-	
 	if ( NSServerRequiresPassword( serverIndex ) )
 		AdvanceMenu( GetMenu( "ConnectWithPasswordMenu" ) )
 	else
@@ -229,16 +257,25 @@ void function ThreadedAuthAndConnectToServer( string password = "" )
 	
 	if ( NSWasAuthSuccessful() )
 	{
+		bool modsChanged
+	
 		array<string> requiredMods
 		for ( int i = 0; i < NSGetServerRequiredModsCount( file.lastSelectedServer ); i++ )
 			requiredMods.append( NSGetServerRequiredModName( file.lastSelectedServer, i ) )
 	
 		// unload mods we don't need, load necessary ones and reload mods before connecting
 		foreach ( string mod in NSGetModNames() )
+		{
 			if ( NSIsModRequiredOnClient( mod ) )
+			{
+				modsChanged = modsChanged || NSIsModEnabled( mod ) != requiredMods.contains( mod )
 				NSSetModEnabled( mod, requiredMods.contains( mod ) )
-			
-		ReloadMods()
+			}
+		}
+		
+		// only actually reload if we need to since the uiscript reset on reload lags hard
+		if ( modsChanged )
+			ReloadMods()
 		
 		NSConnectToAuthedServer()
 	}
