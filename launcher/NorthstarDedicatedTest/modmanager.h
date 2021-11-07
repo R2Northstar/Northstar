@@ -102,6 +102,10 @@ private:
 	bool m_hasEnabledModsCfg;
 	rapidjson::Document m_enabledModsCfg;
 
+	// precalculated hashes
+	size_t m_hScriptsRsonHash;
+	size_t m_hPdefHash;
+
 public:
 	std::vector<Mod> m_loadedMods;
 	std::unordered_map<std::string, ModOverrideFile> m_modFiles;
@@ -115,6 +119,7 @@ public:
 	// compile asset type stuff, these are done in files under Mods/Compiled/
 	void BuildScriptsRson();
 	void TryBuildKeyValues(const char* filename);
+	void BuildPdef();
 };
 
 void InitialiseModManager(HMODULE baseAddress);
