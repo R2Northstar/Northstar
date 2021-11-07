@@ -184,6 +184,11 @@ Mod::Mod(fs::path modDir, char* jsonBuf)
 
 ModManager::ModManager()
 {
+	// precaculated string hashes
+	// note: use backslashes for these, since we use lexically_normal for file paths which uses them
+	m_hScriptsRsonHash = std::hash<std::string>{}("scripts\\vscripts\\scripts.rson");
+	m_hPdefHash = std::hash<std::string>{}("cfg\\server\\persistent_player_data_version_231.pdef"); // this can have multiple versions, but we use 231 so that's what we hash
+
 	LoadMods();
 }
 
@@ -356,8 +361,6 @@ void ModManager::LoadMods()
 void ModManager::UnloadMods()
 {
 	// clean up stuff from mods before we unload
-
-	// do we need to dealloc individual entries in m_modFiles? idk, rework
 	m_modFiles.clear();
 	fs::remove_all(COMPILED_ASSETS_PATH);
 
@@ -373,6 +376,8 @@ void ModManager::UnloadMods()
 		mod.KeyValues.clear();
 
 		// write to m_enabledModsCfg
+		// should we be doing this here or should scripts be doing this manually?
+		// main issue with doing this here is when we reload mods for connecting to a server, we write enabled mods, which isn't necessarily what we wanna do
 		if (!m_enabledModsCfg.HasMember(mod.Name.c_str()))
 			m_enabledModsCfg.AddMember(rapidjson::StringRef(mod.Name.c_str()), rapidjson::Value(false), m_enabledModsCfg.GetAllocator());
 
@@ -390,11 +395,13 @@ void ModManager::UnloadMods()
 
 void ModManager::CompileAssetsForFile(const char* filename)
 {
-	fs::path path(filename);
+	size_t fileHash = std::hash<std::string>{}(fs::path(filename).lexically_normal().string());
 
-	if (!path.filename().compare("scripts.rson"))
+	if (fileHash == m_hScriptsRsonHash)
 		BuildScriptsRson();
-	else //if (!strcmp((filename + strlen(filename)) - 3, "txt")) // check if it's a .txt
+	else if (fileHash == m_hPdefHash)
+		BuildPdef();
+	else
 	{
 		// check if we should build keyvalues, depending on whether any of our mods have patch kvs for this file
 		for (Mod& mod : m_loadedMods)
@@ -402,7 +409,6 @@ void ModManager::CompileAssetsForFile(const char* filename)
 			if (!mod.Enabled)
 				continue;
 
-			size_t fileHash = std::hash<std::string>{}(fs::path(filename).lexically_normal().string());
 			if (mod.KeyValues.find(fileHash) != mod.KeyValues.end())
 			{
 				TryBuildKeyValues(filename);
