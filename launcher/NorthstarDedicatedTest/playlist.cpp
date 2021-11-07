@@ -21,6 +21,7 @@ void SetPlaylistCommand(const CCommand& args)
 
 void SetPlaylistVarOverrideCommand(const CCommand& args)
 {
+	// this is broken lol
 	if (args.ArgC() < 3)
 		return;
 

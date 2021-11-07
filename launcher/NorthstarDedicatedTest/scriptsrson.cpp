@@ -48,7 +48,7 @@ void ModManager::BuildScriptsRson()
 
 	fs::create_directories(MOD_SCRIPTS_RSON_PATH.parent_path());
 
-	std::ofstream writeStream(MOD_SCRIPTS_RSON_PATH);
+	std::ofstream writeStream(MOD_SCRIPTS_RSON_PATH, std::ios::binary);
 	writeStream << scriptsRson;
 	writeStream.close();
 

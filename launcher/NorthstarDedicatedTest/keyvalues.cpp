@@ -113,11 +113,11 @@ void ModManager::TryBuildKeyValues(const char* filename)
 	newKvs += rootName;
 	newKvs += "\n{\n}\n";
 
-	std::ofstream originalFileWriteStream(compiledDir / ogFilePath);
+	std::ofstream originalFileWriteStream(compiledDir / ogFilePath, std::ios::binary);
 	originalFileWriteStream << originalFile;
 	originalFileWriteStream.close();
 
-	std::ofstream writeStream(compiledPath);
+	std::ofstream writeStream(compiledPath, std::ios::binary);
 	writeStream << newKvs;
 	writeStream.close();
 
