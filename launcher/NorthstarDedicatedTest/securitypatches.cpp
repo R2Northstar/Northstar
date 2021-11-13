@@ -27,6 +27,7 @@ void InitialiseClientEngineSecurityPatches(HMODULE baseAddress)
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1C6360, &IsValveModHook, reinterpret_cast<LPVOID*>(&IsValveMod));
 	
 	// patches to make commands run from client/ui script still work
+	// note: this is likely preventable in a nicer way? test prolly
 	{
 		void* ptr = (char*)baseAddress + 0x4FB65;
 		TempReadWrite rw(ptr);

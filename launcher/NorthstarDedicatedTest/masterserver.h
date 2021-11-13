@@ -48,6 +48,7 @@ private:
 
 public:
 	char m_ownServerId[33];
+	char m_ownClientAuthToken[33];
 
 	bool m_bOriginAuthWithMasterServerDone = false;
 	bool m_bOriginAuthWithMasterServerInProgress = false;

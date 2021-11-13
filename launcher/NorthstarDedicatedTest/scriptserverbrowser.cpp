@@ -243,7 +243,7 @@ SQRESULT SQ_TryAuthWithServer(void* sqvm)
 		g_ServerAuthenticationManager->WritePersistentData(pair.first);
 
 	// do auth
-	g_MasterServerManager->AuthenticateWithServer(g_LocalPlayerUserID, (char*)"", g_MasterServerManager->m_remoteServers[serverIndex].id, (char*)password);
+	g_MasterServerManager->AuthenticateWithServer(g_LocalPlayerUserID, g_MasterServerManager->m_ownClientAuthToken, g_MasterServerManager->m_remoteServers[serverIndex].id, (char*)password);
 
 	return SQRESULT_NULL;
 }
@@ -286,7 +286,7 @@ SQRESULT SQ_ConnectToAuthedServer(void* sqvm)
 SQRESULT SQ_TryAuthWithLocalServer(void* sqvm)
 {
 	// do auth request
-	g_MasterServerManager->AuthenticateWithOwnServer(g_LocalPlayerUserID, (char*)"");
+	g_MasterServerManager->AuthenticateWithOwnServer(g_LocalPlayerUserID, g_MasterServerManager->m_ownClientAuthToken);
 
 	return SQRESULT_NULL;
 }

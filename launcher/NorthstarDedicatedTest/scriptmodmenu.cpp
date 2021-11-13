@@ -5,7 +5,7 @@
 #include "dedicated.h"
 
 // array<string> NSGetModNames()
-SQInteger SQ_GetModNames(void* sqvm)
+SQRESULT SQ_GetModNames(void* sqvm)
 {
 	ClientSq_newarray(sqvm, 0);
 
@@ -19,7 +19,7 @@ SQInteger SQ_GetModNames(void* sqvm)
 }
 
 // bool NSIsModEnabled(string modName)
-SQInteger SQ_IsModEnabled(void* sqvm)
+SQRESULT SQ_IsModEnabled(void* sqvm)
 {
 	const SQChar* modName = ClientSq_getstring(sqvm, 1);
 
@@ -37,7 +37,7 @@ SQInteger SQ_IsModEnabled(void* sqvm)
 }
 
 // void NSSetModEnabled(string modName, bool enabled)
-SQInteger SQ_SetModEnabled(void* sqvm)
+SQRESULT SQ_SetModEnabled(void* sqvm)
 {
 	const SQChar* modName = ClientSq_getstring(sqvm, 1);
 	const SQBool enabled = ClientSq_getbool(sqvm, 2);
@@ -56,7 +56,7 @@ SQInteger SQ_SetModEnabled(void* sqvm)
 }
 
 // string NSGetModDescriptionByModName(string modName)
-SQInteger SQ_GetModDescription(void* sqvm)
+SQRESULT SQ_GetModDescription(void* sqvm)
 {
 	const SQChar* modName = ClientSq_getstring(sqvm, 1);
 	
@@ -74,7 +74,7 @@ SQInteger SQ_GetModDescription(void* sqvm)
 }
 
 // string NSGetModVersionByModName(string modName)
-SQInteger SQ_GetModVersion(void* sqvm)
+SQRESULT SQ_GetModVersion(void* sqvm)
 {
 	const SQChar* modName = ClientSq_getstring(sqvm, 1);
 
@@ -92,7 +92,7 @@ SQInteger SQ_GetModVersion(void* sqvm)
 }
 
 // string NSGetModDownloadLinkByModName(string modName)
-SQInteger SQ_GetModDownloadLink(void* sqvm)
+SQRESULT SQ_GetModDownloadLink(void* sqvm)
 {
 	const SQChar* modName = ClientSq_getstring(sqvm, 1);
 
@@ -110,7 +110,7 @@ SQInteger SQ_GetModDownloadLink(void* sqvm)
 }
 
 // int NSGetModLoadPriority(string modName)
-SQInteger SQ_GetModLoadPriority(void* sqvm)
+SQRESULT SQ_GetModLoadPriority(void* sqvm)
 {
 	const SQChar* modName = ClientSq_getstring(sqvm, 1);
 
@@ -128,7 +128,7 @@ SQInteger SQ_GetModLoadPriority(void* sqvm)
 }
 
 // bool NSIsModRequiredOnClient(string modName)
-SQInteger SQ_IsModRequiredOnClient(void* sqvm)
+SQRESULT SQ_IsModRequiredOnClient(void* sqvm)
 {
 	const SQChar* modName = ClientSq_getstring(sqvm, 1);
 
@@ -146,7 +146,7 @@ SQInteger SQ_IsModRequiredOnClient(void* sqvm)
 }
 
 // array<string> NSGetModConvarsByModName(string modName)
-SQInteger SQ_GetModConvars(void* sqvm)
+SQRESULT SQ_GetModConvars(void* sqvm)
 {
 	const SQChar* modName = ClientSq_getstring(sqvm, 1);
 	ClientSq_newarray(sqvm, 0);

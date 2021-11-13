@@ -19,7 +19,7 @@ void SelfAuthAndLeaveToLobbyCommand(const CCommand& arg)
 	// hack for special case where we're on a local server, so we erase our own newly created auth data on disconnect
 
 	g_MasterServerManager->m_bNewgameAfterSelfAuth = true;
-	g_MasterServerManager->AuthenticateWithOwnServer(g_LocalPlayerUserID, (char*)"");
+	g_MasterServerManager->AuthenticateWithOwnServer(g_LocalPlayerUserID, g_MasterServerManager->m_ownClientAuthToken);
 }
 
 void EndSelfAuthAndLeaveToLobbyCommand(const CCommand& arg)
