@@ -84,7 +84,7 @@ void MasterServerManager::AuthenticateOriginWithMasterServer(char* uid, char* or
 
 			spdlog::info("Trying to authenticate with northstar masterserver for user {} {}", uidStr, tokenStr);
 
-			if (auto result = http.Get(fmt::format("/client/origin_auth?uid={}&token={}", uidStr, tokenStr).c_str()))
+			if (auto result = http.Get(fmt::format("/client/origin_auth?id={}&token={}", uidStr, tokenStr).c_str()))
 			{
 				m_successfullyConnected = true;
 
@@ -103,8 +103,12 @@ void MasterServerManager::AuthenticateOriginWithMasterServer(char* uid, char* or
 					goto REQUEST_END_CLEANUP;
 				}
 
-				if (originAuthInfo["success"].IsTrue())
+				if (originAuthInfo["success"].IsTrue() && originAuthInfo.HasMember("token") && originAuthInfo["token"].IsString())
+				{
+					strncpy(m_ownClientAuthToken, originAuthInfo["token"].GetString(), sizeof(m_ownClientAuthToken));
+					m_ownClientAuthToken[sizeof(m_ownClientAuthToken) - 1] = 0;
 					spdlog::info("Northstar origin authentication completed successfully!");
+				}
 				else
 					spdlog::error("Northstar origin authentication failed");
 			}
@@ -324,7 +328,7 @@ void MasterServerManager::AuthenticateWithOwnServer(char* uid, char* playerToken
 						goto REQUEST_END_CLEANUP;
 					}
 					
-					newAuthData.pdata[i++] = byte.GetUint();
+					newAuthData.pdata[i++] = (char)byte.GetUint();
 				}
 
 				std::lock_guard<std::mutex> guard(g_ServerAuthenticationManager->m_authDataMutex);
