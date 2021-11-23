@@ -30,9 +30,7 @@ struct {
 	bool respawnsEnabled = true
 	string spawnpointGamemodeOverride
 
-	array<vector> preferSpawnNodes
 	table<string, NoSpawnArea> noSpawnAreas
-	bool sidesSwitched = false
 	
 	bool frontlineBased = false
 	float lastImcFrontlineRatingTime
@@ -42,31 +40,11 @@ struct {
 } file
 
 void function Spawn_Init()
-{
-	AddCallback_GameStateEnter( eGameState.SwitchingSides, OnSwitchingSides )
-	AddCallback_EntitiesDidLoad( InitPreferSpawnNodes )
-	
+{	
 	AddSpawnCallback( "info_spawnpoint_human", InitSpawnpoint )
 	AddSpawnCallback( "info_spawnpoint_human_start", InitSpawnpoint )
 	AddSpawnCallback( "info_spawnpoint_titan", InitSpawnpoint )
 	AddSpawnCallback( "info_spawnpoint_titan_start", InitSpawnpoint )
-}
-
-void function InitPreferSpawnNodes()
-{
-	foreach ( entity hardpoint in GetEntArrayByClass_Expensive( "info_hardpoint" ) )
-	{
-		if ( !hardpoint.HasKey( "hardpointGroup" ) )
-			continue
-			
-		if ( hardpoint.kv.hardpointGroup != "A" && hardpoint.kv.hardpointGroup != "B" && hardpoint.kv.hardpointGroup != "C" )
-			continue
-			
-		file.preferSpawnNodes.append( hardpoint.GetOrigin() )
-	}
-	
-	//foreach ( entity frontline in GetEntArrayByClass_Expensive( "info_frontline" ) )
-	//	file.preferSpawnNodes.append( frontline.GetOrigin() )
 }
 
 void function InitSpawnpoint( entity spawnpoint ) 
@@ -109,12 +87,8 @@ void function NoSpawnAreaLifetime( NoSpawnArea noSpawnArea )
 
 void function DeleteNoSpawnArea( string noSpawnIdx )
 {
-	try // unsure if the trycatch is necessary but better safe than sorry
-	{
+	if ( noSpawnIdx in file.noSpawnAreas )
 		delete file.noSpawnAreas[ noSpawnIdx ]
-	} 
-	catch ( exception )
-	{}
 }
 
 void function SetSpawnpointGamemodeOverride( string gamemode )
@@ -152,6 +126,7 @@ bool function InitRatings( entity player, int team )
 	return frontline.friendlyCenter == < 0, 0, 0 > && file.frontlineBased // if true, use startspawns
 }
 
+// this sucks
 Frontline function GetCurrentFrontline( int team )
 {
 	float lastFrontlineRatingTime
@@ -173,40 +148,6 @@ Frontline function GetCurrentFrontline( int team )
 		print( "rerating frontline..." )
 		Frontline frontline = GetFrontline( team )
 		
-		// this doesn't work lol
-		/*if ( frontline.friendlyCenter == < 0, 0, 0 > )
-		{
-			// recalculate to startspawnpoint positions
-			array<entity> startSpawns = SpawnPoints_GetPilotStart( team )
-			
-			vector averagePos
-			vector averageDir
-			foreach ( entity spawnpoint in startSpawns )
-			{
-				averagePos.x += spawnpoint.GetOrigin().x
-				averagePos.y += spawnpoint.GetOrigin().y
-				averagePos.z += spawnpoint.GetOrigin().z
-				
-				averageDir.x += spawnpoint.GetAngles().x
-				averageDir.y += spawnpoint.GetAngles().y
-				averageDir.z += spawnpoint.GetAngles().z
-			}
-			
-			averagePos.x /= startSpawns.len()
-			averagePos.y /= startSpawns.len()
-			averagePos.z /= startSpawns.len()
-			
-			averageDir.x /= startSpawns.len()
-			averageDir.y /= startSpawns.len()
-			averageDir.z /= startSpawns.len()
-			
-			print( "average " + averagePos )
-			
-			frontline.friendlyCenter = averagePos
-			frontline.origin = averagePos
-			frontline.combatDir = averageDir * -1
-		}*/
-		
 		if ( team == TEAM_IMC )
 		{
 			file.lastImcFrontlineRatingTime = Time()
@@ -227,7 +168,7 @@ Frontline function GetCurrentFrontline( int team )
 entity function FindSpawnPoint( entity player, bool isTitan, bool useStartSpawnpoint )
 {
 	int team = player.GetTeam()
-	if ( file.sidesSwitched )
+	if ( HasSwitchedSides() )
 		team = GetOtherTeam( team )
 
 	useStartSpawnpoint = InitRatings( player, player.GetTeam() ) || useStartSpawnpoint // force startspawns if no frontline
@@ -302,23 +243,23 @@ entity function GetBestSpawnpoint( entity player, array<entity> spawnpoints )
 
 bool function IsSpawnpointValid( entity spawnpoint, int team )
 {
-	//if ( !spawnpoint.HasKey( "ignoreGamemode" ) || ( spawnpoint.HasKey( "ignoreGamemode" ) && spawnpoint.kv.ignoreGamemode == "0" ) ) // used by script-spawned spawnpoints
-	//{
-	//	if ( file.spawnpointGamemodeOverride != "" )
-	//	{
-	//		string gamemodeKey = "gamemode_" + file.spawnpointGamemodeOverride
-	//		if ( spawnpoint.HasKey( gamemodeKey ) && ( spawnpoint.kv[ gamemodeKey ] == "0" || spawnpoint.kv[ gamemodeKey ] == "" ) )
-	//			return false
-	//	}
-	//	else if ( GameModeRemove( spawnpoint ) )
-	//		return false
-	//}
+	if ( !spawnpoint.HasKey( "ignoreGamemode" ) || ( spawnpoint.HasKey( "ignoreGamemode" ) && spawnpoint.kv.ignoreGamemode == "0" ) ) // used by script-spawned spawnpoints
+	{
+		if ( file.spawnpointGamemodeOverride != "" )
+		{
+			string gamemodeKey = "gamemode_" + file.spawnpointGamemodeOverride
+			if ( spawnpoint.HasKey( gamemodeKey ) && ( spawnpoint.kv[ gamemodeKey ] == "0" || spawnpoint.kv[ gamemodeKey ] == "" ) )
+				return false
+		}
+		else if ( GameModeRemove( spawnpoint ) )
+			return false
+	}
 		
 	if ( Riff_FloorIsLava() && spawnpoint.GetOrigin().z < GetLethalFogTop() )
 		return false
 	
 	int compareTeam = spawnpoint.GetTeam()
-	if ( file.sidesSwitched && ( compareTeam == TEAM_MILITIA || compareTeam == TEAM_IMC ) )
+	if ( HasSwitchedSides() && ( compareTeam == TEAM_MILITIA || compareTeam == TEAM_IMC ) )
 		compareTeam = GetOtherTeam( compareTeam )
 	
 	if ( spawnpoint.GetTeam() > 0 && compareTeam != team && !IsFFAGame() )
@@ -344,6 +285,31 @@ bool function IsSpawnpointValid( entity spawnpoint, int team )
 		if ( projectile.GetTeam() != team )
 			return false
 	
+	// los check
+	array<entity> enemyLosPlayers
+	if ( IsFFAGame() )
+		enemyLosPlayers = GetPlayerArray()
+	else 
+		enemyLosPlayers = GetPlayerArrayOfTeam( GetOtherTeam( team ) )
+	
+	foreach ( entity enemyPlayer in enemyLosPlayers )
+	{
+		if ( enemyPlayer.GetTeam() == team || !IsAlive( enemyPlayer ) )
+			continue
+		
+		// check distance, constant here is basically arbitrary
+		if ( Distance( enemyPlayer, spawnpoint ) > 1000.0 )
+			continue
+		
+		// check fov, constant here is stolen from every other place this is done
+		if ( VectorDot_PlayerToOrigin( enemyPlayer, spawnpoint.GetOrigin() ) < 0.8 )
+			continue
+		
+		// check actual los
+		if ( TraceLineSimple( enemyPlayer.EyePosition(), spawnpoint.GetOrigin() + < 0, 0, 48 >, enemyPlayer ) == 1.0 )
+			return false
+	}
+	
 	if ( Time() - spawnpoint.s.lastUsedTime <= 1.0 )
 		return false
 		
@@ -352,88 +318,9 @@ bool function IsSpawnpointValid( entity spawnpoint, int team )
 
 void function RateSpawnpoints_Generic( int checkClass, array<entity> spawnpoints, int team, entity player )
 {	
-	// calculate ratings for preferred nodes
-	// this tries to prefer nodes with more teammates, then activity on them
-	// todo: in the future it might be good to have this prefer nodes with enemies up to a limit of some sort
-	// especially in ffa modes i could deffo see this falling apart a bit rn
-	// perhaps dead players could be used to calculate some sort of activity rating? so high-activity points with an even balance of friendly/unfriendly players are preferred
-	array<float> preferSpawnNodeRatings
-	foreach ( vector preferSpawnNode in file.preferSpawnNodes )
-	{
-		float currentRating
-		
-		// this seems weird, not using rn
-		//Frontline currentFrontline = GetCurrentFrontline( team )
-		//if ( !IsFFAGame() || currentFrontline.friendlyCenter != < 0, 0, 0 > )
-		//	currentRating += max( 0.0, ( 1000.0 - Distance2D( currentFrontline.origin, preferSpawnNode ) ) / 200 )
-		
-		foreach ( entity nodePlayer in GetPlayerArray() )
-		{
-			float currentChange = 0.0
-			
-			// the closer a player is to a node the more they matter
-			float dist = Distance2D( preferSpawnNode, nodePlayer.GetOrigin() )
-			if ( dist > 600.0 )
-				continue
-			
-			currentChange = ( 600.0 - dist ) / 5
-			if ( player == nodePlayer )
-				currentChange *= -3 // always try to stay away from places we've already spawned
-			else if ( !IsAlive( nodePlayer ) ) // dead players mean activity which is good, but they're also dead so they don't matter as much as living ones
-				currentChange *= 0.6
-			if ( nodePlayer.GetTeam() != player.GetTeam() ) // if someone isn't on our team and alive they're probably bad
-			{
-				if ( IsFFAGame() ) // in ffa everyone is on different teams, so this isn't such a big deal
-					currentChange *= -0.2
-				else
-					currentChange *= -0.6
-			}
-				
-			currentRating += currentChange
-		}
-		
-		preferSpawnNodeRatings.append( currentRating )
-	}
+	// generic spawns v2
+	array<entity> startSpawns = checkClass == TD_TITAN ? SpawnPoints_GetTitanStart( team ) : SpawnPoints_GetPilotStart( team )
 	
-	foreach ( entity spawnpoint in spawnpoints )
-	{
-		float currentRating
-		float petTitanModifier
-		// scale how much a given spawnpoint matters to us based on how far it is from each node
-		bool spawnHasRecievedInitialBonus = false
-		for ( int i = 0; i < file.preferSpawnNodes.len(); i++ )
-		{
-			// bonus if autotitan is nearish
-			if ( IsAlive( player.GetPetTitan() ) && Distance( player.GetPetTitan().GetOrigin(), file.preferSpawnNodes[ i ] ) < 1200.0 )
-				petTitanModifier += 10.0
-			
-			float dist = Distance2D( spawnpoint.GetOrigin(), file.preferSpawnNodes[ i ] )
-			if ( dist > 750.0 )
-				continue
-						
-			if ( dist < 600.0 && !spawnHasRecievedInitialBonus )
-			{
-				currentRating += 10.0
-				spawnHasRecievedInitialBonus = true // should only get a bonus for simply being by a node once to avoid over-rating
-			}
-		
-			currentRating += ( preferSpawnNodeRatings[ i ] * ( ( 750.0 - dist ) / 75 ) ) +  max( RandomFloat( 1.25 ), 0.9 )
-			if ( dist < 250.0 ) // shouldn't get TOO close to an active node
-				currentRating *= 0.7 
-				
-			if ( spawnpoint.s.lastUsedTime < 10.0 )
-				currentRating *= 0.7
-		}
-	
-		float rating = spawnpoint.CalculateRating( checkClass, team, currentRating, currentRating + petTitanModifier )
-		//print( "spawnpoint at " + spawnpoint.GetOrigin() + " has rating: " +  )
-		
-		if ( rating != 0.0 || currentRating != 0.0 )
-			print( "rating = " + rating + ", internal rating = " + currentRating )
-	}
-}
-
-void function OnSwitchingSides()
-{
-	file.sidesSwitched = true
+	// realistically, this should spawn people fairly spread out across the map, preferring being closer to their startspawns
+	// should spawn like, near fights, but not in them
 }
