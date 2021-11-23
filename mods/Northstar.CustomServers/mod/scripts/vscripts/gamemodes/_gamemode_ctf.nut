@@ -63,93 +63,65 @@ void function CaptureTheFlag_Init()
 
 void function RateSpawnpoints_CTF( int checkClass, array<entity> spawnpoints, int team, entity player ) 
 {
-	// ok this is the 3rd time rewriting this due to not understanding ctf spawns properly
-	// legit just
-	// if there are no enemies in base, spawn them in base
-	// if there are, spawn them outside of it ( but ideally still close )
-	// max distance away should be like, angel city markets
+	// ctf spawn algo iteration 4 i despise extistence
+	array<entity> startSpawns = SpawnPoints_GetPilotStart( team )
+	array<entity> enemyStartSpawns = SpawnPoints_GetPilotStart( GetOtherTeam( team ) )
+	array<entity> enemyPlayers = GetPlayerArrayOfTeam_Alive( team )
 	
-	int spawnTeam = team
-	if ( HasSwitchedSides() )
-		spawnTeam = GetOtherTeam( team )
+	// get average startspawn position and max dist between spawns
+	// could probably cache this, tbh, not like it should change outside of halftimes
+	vector averageFriendlySpawns
+	float maxFriendlySpawnDist
 	
-	array<entity> startSpawns = SpawnPoints_GetPilotStart( spawnTeam )
-	array<entity> enemyPlayers = GetPlayerArrayOfTeam_Alive( GetOtherTeam( spawnTeam ) )
-	
-	vector startSpawnAverage
-	bool enemyInBase = false
-	foreach ( entity startSpawn in startSpawns )
+	foreach ( entity spawn in startSpawns )
 	{
-		startSpawnAverage += startSpawn.GetOrigin()
-		
-		foreach ( entity enemy in enemyPlayers )
+		foreach ( entity otherSpawn in startSpawns )
 		{
-			if ( Distance( startSpawn.GetOrigin(), enemy.GetOrigin() ) <= 1000.0 )
-			{
-				enemyInBase = true 
-				break
-			}
-		}	
+			float dist = Distance2D( spawn.GetOrigin(), otherSpawn.GetOrigin() )
+			if ( dist > maxFriendlySpawnDist )
+				maxFriendlySpawnDist = dist
+		}
+		
+		averageFriendlySpawns += spawn.GetOrigin()
 	}
 	
-	startSpawnAverage /= startSpawns.len()
+	averageFriendlySpawns /= startSpawns.len()
 	
-	print( "spawn for " + player + " is there an enemy in base?" + enemyInBase )
+	// get average enemy startspawn position
+	vector averageEnemySpawns
+	
+	foreach ( entity spawn in enemyStartSpawns )
+		averageEnemySpawns += spawn.GetOrigin()
+	
+	averageEnemySpawns /= enemyStartSpawns.len()
+	
+	// from here, rate spawns
+	float baseDistance = Distance2D( averageFriendlySpawns, averageEnemySpawns )
+	float spawnIterations = ( baseDistance / maxFriendlySpawnDist ) / 2
 	
 	foreach ( entity spawn in spawnpoints )
 	{
-		float rating = 0.0
-		
-		bool isStart = false
-		foreach ( entity startSpawn in startSpawns )
+		// ratings should max/min out at 100 / -100
+		// start by prioritizing closer spawns, but not so much that enemies won't really affect them
+		float rating = 10 * ( 1.0 - Distance2D( averageFriendlySpawns, spawn.GetOrigin() ) / baseDistance )
+		float remainingZonePower = 1.0 // this is used to ensure that players that are in multiple zones at once shouldn't affect all those zones too hard
+	
+		for ( int i = 0; i < spawnIterations; i++ )
 		{
-			if ( Distance2D( spawn.GetOrigin(), startSpawn.GetOrigin() ) < 1500.0 ) // this was for some reason the only distance i could get to work
-			{
-				isStart = true
-				break
-			}
-		}
-		
-		if ( isStart )
-		{
-			if ( !enemyInBase )
-				rating = 1000 + RandomFloat( 100.0 )
-			else
-				rating = -1000.0
-		}
-		else if ( !isStart && enemyInBase )
-		{
-			entity friendlyFlag
-			entity enemyFlag
-			if ( team == TEAM_IMC )
-			{
-				friendlyFlag = file.imcFlagSpawn
-				enemyFlag = file.militiaFlagSpawn
-			}
-			else
-			{
-				friendlyFlag = file.militiaFlagSpawn
-				enemyFlag = file.imcFlagSpawn
-			}
-				
-			float dist = Distance2D( spawn.GetOrigin(), enemyFlag.GetOrigin() )
-			float flagDist = Distance2D( startSpawnAverage, enemyFlag.GetOrigin() )
+			vector zonePos = averageFriendlySpawns + Normalize( averageEnemySpawns - averageFriendlySpawns ) * ( i * maxFriendlySpawnDist )
 			
-			if ( dist < ( flagDist / 2 ) ) // spawns shouldn't be closer to enemies than they are to us
-				rating = -1000.0
-			if ( dist > flagDist * 1.1 ) // spawn is behind startspawns
-				rating = -1000.0
-			else
-			{
-				rating = dist // closer spawns are better
-				
-				foreach( entity enemy in enemyPlayers ) // reduce rating if enemies are near by
-					if ( Distance( enemy.GetOrigin(), spawn.GetOrigin() ) < 500.0 )
-						rating /= 2
-			}
+			float zonePower
+			foreach ( entity player in enemyPlayers )
+				if ( Distance2D( player.GetOrigin(), zonePos ) < maxFriendlySpawnDist )
+					zonePower += 1.0 / enemyPlayers.len()
+			
+			zonePower = min( zonePower, remainingZonePower )
+			remainingZonePower -= zonePower
+			// scale rating based on distance between spawn and zone, baring in mind max 100 rating
+			rating -= ( zonePower * 100 ) * ( 1.0 - Distance2D( spawn.GetOrigin(), zonePos ) / baseDistance )
 		}
 		
-		spawn.CalculateRating( checkClass, team, rating, rating )
+		spawn.CalculateRating( checkClass, player.GetTeam(), rating, rating )
 	}
 }
 
