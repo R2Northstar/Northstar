@@ -46,7 +46,7 @@
 
 #define FCVAR_NOT_CONNECTED		(1<<22)	// cvar cannot be changed by a client that is connected to a server
 #define FCVAR_MATERIAL_SYSTEM_THREAD (1<<23)	// Indicates this cvar is read from the material system thread
-#define FCVAR_ARCHIVE_GAMECONSOLE	(1<<24) // cvar written to config.cfg on the Xbox
+#define FCVAR_ARCHIVE_PLAYERPROFILE	(1<<24) // respawn-defined flag, same as FCVAR_ARCHIVE but writes to profile.cfg
 
 #define FCVAR_SERVER_CAN_EXECUTE	(1<<28)// the server is allowed to execute this command on clients via ClientCommand/NET_StringCmd/CBaseClientState::ProcessStringCmd.
 #define FCVAR_SERVER_CANNOT_QUERY	(1<<29)// If this is set, then the server is not allowed to query this cvar's value (via IServerPluginHelpers::StartQueryCvarValue).
