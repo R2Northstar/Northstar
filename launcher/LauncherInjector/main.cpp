@@ -134,6 +134,19 @@ int main(int argc, char* argv[]) {
     WriteProcessMemory(processInfo.hProcess, lpLibName, DLL_NAME, dwLength, &written);
 
     HANDLE hThread = CreateRemoteThread(processInfo.hProcess, NULL, NULL, pLoadLibraryW, lpLibName, NULL, NULL);
+
+    if (hThread == NULL)
+    {
+        // injection failed
+
+        std::string errorMessage = "Injection failed! CreateRemoteThread returned ";
+        errorMessage += std::to_string(GetLastError()).c_str();
+        errorMessage += ", make sure bob hasn't accidentally shipped a debug build";
+
+        MessageBoxA(0, errorMessage.c_str(), "", MB_OK);
+        return 0;
+    }
+
     WaitForSingleObject(hThread, INFINITE);
 
     //MessageBoxA(0, std::to_string(GetLastError()).c_str(), "", MB_OK);

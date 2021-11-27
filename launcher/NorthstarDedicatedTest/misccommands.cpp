@@ -4,6 +4,7 @@
 #include "gameutils.h"
 #include "masterserver.h"
 #include "serverauthentication.h"
+#include "squirrel.h"
 
 void ForceLoadMapCommand(const CCommand& arg)
 {
@@ -27,12 +28,16 @@ void EndSelfAuthAndLeaveToLobbyCommand(const CCommand& arg)
 	Cbuf_AddText(Cbuf_GetCurrentPlayer(), fmt::format("serverfilter {}", g_ServerAuthenticationManager->m_authData.begin()->first).c_str(), cmd_source_t::kCommandSrcCode);
 	Cbuf_Execute();
 
-	g_ServerAuthenticationManager->m_bNeedLocalAuthForNewgame = true;
-	// this won't set playlist correctly on remote clients, don't think they can set playlist until they've left which sorta fucks things
-	// should maybe set this in HostState_NewGame?
-	SetCurrentPlaylist("tdm");
-	strcpy(g_pHostState->m_levelName, "mp_lobby");
-	g_pHostState->m_iNextState = HS_NEW_GAME;
+	// weird way of checking, but check if client script vm is initialised, mainly just to allow players to cancel this
+	if (g_ClientSquirrelManager->sqvm)
+	{
+		g_ServerAuthenticationManager->m_bNeedLocalAuthForNewgame = true;
+		// this won't set playlist correctly on remote clients, don't think they can set playlist until they've left which sorta fucks things
+		// should maybe set this in HostState_NewGame?
+		SetCurrentPlaylist("tdm");
+		strcpy(g_pHostState->m_levelName, "mp_lobby");
+		g_pHostState->m_iNextState = HS_NEW_GAME;
+	}
 }
 
 void AddMiscConCommands()
