@@ -35,7 +35,7 @@ void InitialiseClientAuthHooks(HMODULE baseAddress)
 		return;
 
 	// this cvar will save to cfg once initially agreed with
-	Cvar_ns_has_agreed_to_send_token = RegisterConVar("ns_has_agreed_to_send_token", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE, "whether the user has agreed to send their origin token to the northstar masterserver");
+	Cvar_ns_has_agreed_to_send_token = RegisterConVar("ns_has_agreed_to_send_token", "0", FCVAR_ARCHIVE_PLAYERPROFILE, "whether the user has agreed to send their origin token to the northstar masterserver");
 
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1843A0, &AuthWithStryderHook, reinterpret_cast<LPVOID*>(&AuthWithStryder));
