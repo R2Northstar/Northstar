@@ -227,6 +227,9 @@ void MasterServerManager::RequestServerList()
 					{
 						RemoteModInfo modInfo;
 
+						if (!requiredMod.HasMember("RequiredOnClient") || !requiredMod["RequiredOnClient"].IsTrue())
+							continue;
+
 						if (!requiredMod.HasMember("Name") || !requiredMod["Name"].IsString())
 							continue;
 						modInfo.Name = requiredMod["Name"].GetString();
@@ -477,12 +480,13 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 			int currentModIndex = 0;
 			for (Mod& mod : g_ModManager->m_loadedMods)
 			{
-				if (!mod.RequiredOnClient)
+				if (!mod.RequiredOnClient && !mod.Pdiff.size())
 					continue;
 
 				modinfoDoc["Mods"].PushBack(rapidjson::Value(rapidjson::kObjectType), modinfoDoc.GetAllocator());
 				modinfoDoc["Mods"][currentModIndex].AddMember("Name", rapidjson::StringRef(&mod.Name[0]), modinfoDoc.GetAllocator());
 				modinfoDoc["Mods"][currentModIndex].AddMember("Version", rapidjson::StringRef(&mod.Version[0]), modinfoDoc.GetAllocator());
+				modinfoDoc["Mods"][currentModIndex].AddMember("RequiredOnClient", mod.RequiredOnClient, modinfoDoc.GetAllocator());
 				modinfoDoc["Mods"][currentModIndex].AddMember("Pdiff", rapidjson::StringRef(&mod.Pdiff[0]), modinfoDoc.GetAllocator());
 
 				currentModIndex++;
