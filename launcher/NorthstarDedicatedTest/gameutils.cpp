@@ -26,9 +26,16 @@ GetCurrentPlaylistVarType GetCurrentPlaylistVar;
 // server entity stuff
 Server_GetEntityByIndexType Server_GetEntityByIndex;
 
+// server tickrate stuff
+ConVar* Cvar_base_tickinterval_mp;
+ConVar* Cvar_base_tickinterval_sp;
+
 // auth
 char* g_LocalPlayerUserID;
 char* g_LocalPlayerOriginToken;
+
+// misc stuff
+ConVar* Cvar_match_defaultMap;
 
 void InitialiseEngineGameUtilFunctions(HMODULE baseAddress)
 {
@@ -48,9 +55,13 @@ void InitialiseEngineGameUtilFunctions(HMODULE baseAddress)
 
 	g_LocalPlayerUserID = (char*)baseAddress + 0x13F8E688;
 	g_LocalPlayerOriginToken = (char*)baseAddress + 0x13979C80;
+
+	Cvar_match_defaultMap = (ConVar*)((char*)baseAddress + 0x8AB530);
 }
 
 void InitialiseServerGameUtilFunctions(HMODULE baseAddress)
 {
 	Server_GetEntityByIndex = (Server_GetEntityByIndexType)((char*)baseAddress + 0xFB820);
+	Cvar_base_tickinterval_mp = (ConVar*)((char*)baseAddress + 0xBFC360);
+	Cvar_base_tickinterval_mp = (ConVar*)((char*)baseAddress + 0xBFBEA0);
 }

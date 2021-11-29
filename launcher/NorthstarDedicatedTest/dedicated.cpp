@@ -50,7 +50,7 @@ void RunServer(CDedicatedExports* dedicated)
 
 	// set host state to allow us to enter CHostState::FrameUpdate, with the state HS_NEW_GAME
 	g_pHostState->m_iNextState = HostState_t::HS_NEW_GAME;
-	strncpy(g_pHostState->m_levelName, CommandLine()->ParmValue("+map", "mp_lobby"), sizeof(g_pHostState->m_levelName)); // set map to load into
+	strncpy(g_pHostState->m_levelName, CommandLine()->ParmValue("+map", Cvar_match_defaultMap->m_pszString), sizeof(g_pHostState->m_levelName)); // set map to load into
 
 	spdlog::info(CommandLine()->GetCmdLine());
 
@@ -64,7 +64,7 @@ void RunServer(CDedicatedExports* dedicated)
 			maxPlayers = "6";
 
 		SetConsoleTitleA(fmt::format("Titanfall 2 dedicated server - {} {}/{} players", g_pHostState->m_levelName, g_ServerAuthenticationManager->m_additionalPlayerData.size(), maxPlayers).c_str());
-		Sleep(50);
+		Sleep(1.0 / Cvar_base_tickinterval_mp->m_fValue); // currently only supports mp, doesnt really matter rn though since most sp levels crash on dedi
 	}
 }
 
@@ -278,6 +278,65 @@ void InitialiseDedicated(HMODULE engineAddress)
 		*(ptr + 4) = (char)0x90;
 	}
 
+	{
+		// func that checks if origin is inited
+		char* ptr = (char*)engineAddress + 0x183B70;
+		TempReadWrite rw(ptr);
+
+		// always return 1
+		*ptr = (char)0xB0; // mov al,01
+		*(ptr + 1) = (char)0x01;
+		*(ptr + 2) = (char)0xC3; // ret
+	}
+
+	{
+		// HostState_State_ChangeLevel
+		char* ptr = (char*)engineAddress + 0x1552ED;
+		TempReadWrite rw(ptr);
+
+		// nop clientinterface call
+		*ptr = (char)0x90;
+		*(ptr + 1) = (char)0x90;
+		*(ptr + 2) = (char)0x90;
+		*(ptr + 3) = (char)0x90;
+		*(ptr + 4) = (char)0x90;
+		*(ptr + 5) = (char)0x90;
+		*(ptr + 6) = (char)0x90;
+		*(ptr + 7) = (char)0x90;
+		*(ptr + 8) = (char)0x90;
+		*(ptr + 9) = (char)0x90;
+		*(ptr + 10) = (char)0x90;
+		*(ptr + 11) = (char)0x90;
+		*(ptr + 12) = (char)0x90;
+		*(ptr + 13) = (char)0x90;
+		*(ptr + 14) = (char)0x90;
+		*(ptr + 15) = (char)0x90;
+	}
+
+	{
+		// HostState_State_ChangeLevel
+		char* ptr = (char*)engineAddress + 0x155363;
+		TempReadWrite rw(ptr);
+
+		// nop clientinterface call
+		*ptr = (char)0x90;
+		*(ptr + 1) = (char)0x90;
+		*(ptr + 2) = (char)0x90;
+		*(ptr + 3) = (char)0x90;
+		*(ptr + 4) = (char)0x90;
+		*(ptr + 5) = (char)0x90;
+		*(ptr + 6) = (char)0x90;
+		*(ptr + 7) = (char)0x90;
+		*(ptr + 8) = (char)0x90;
+		*(ptr + 9) = (char)0x90;
+		*(ptr + 10) = (char)0x90;
+		*(ptr + 11) = (char)0x90;
+		*(ptr + 12) = (char)0x90;
+		*(ptr + 13) = (char)0x90;
+		*(ptr + 14) = (char)0x90;
+		*(ptr + 15) = (char)0x90;
+	}
+
 	// stuff that disables renderer/window creation: unstable atm
 	if (DisableDedicatedWindowCreation())
 	{
@@ -407,13 +466,31 @@ void Tier0_InitOriginHook()
 	// disable origin on dedicated
 	// for any big ea lawyers, this can't be used to play the game without origin, game will throw a fit if you try to do anything without an origin id as a client
 	// for dedi it's fine though, game doesn't care if origin is disabled as long as there's only a server
-
-	if (!IsDedicated())
-		Tier0_InitOrigin();
+	Tier0_InitOrigin();
 }
 
 void InitialiseDedicatedOrigin(HMODULE baseAddress)
 {
+	if (!IsDedicated())
+		return;
+
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, GetProcAddress(GetModuleHandleA("tier0.dll"), "Tier0_InitOrigin"), &Tier0_InitOriginHook, reinterpret_cast<LPVOID*>(&Tier0_InitOrigin));
+}
+
+typedef void(*PrintFatalSquirrelErrorType)(void* sqvm);
+PrintFatalSquirrelErrorType PrintFatalSquirrelError;
+void PrintFatalSquirrelErrorHook(void* sqvm)
+{
+	PrintFatalSquirrelError(sqvm);
+	abort();
+}
+
+void InitialiseDedicatedServerGameDLL(HMODULE baseAddress)
+{
+	if (!IsDedicated())
+		return;
+
+	HookEnabler hook;
+	ENABLER_CREATEHOOK(hook, baseAddress + 0x794D0, &PrintFatalSquirrelErrorHook, reinterpret_cast<LPVOID*>(&PrintFatalSquirrelError));
 }

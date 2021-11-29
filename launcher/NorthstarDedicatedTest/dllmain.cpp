@@ -22,6 +22,7 @@
 #include "securitypatches.h"
 #include "miscserverscript.h"
 #include "clientauthhooks.h"
+#include "scriptbrowserhooks.h"
 
 bool initialised = false;
 
@@ -74,6 +75,7 @@ void InitialiseNorthstar()
     {
         AddDllLoadCallback("engine.dll", InitialiseDedicated);
         AddDllLoadCallback("launcher.dll", InitialiseDedicatedOrigin);
+        AddDllLoadCallback("server.dll", InitialiseDedicatedServerGameDLL);
         AddDllLoadCallback("materialsystem_dx11.dll", InitialiseDedicatedMaterialSystem);
         // this fucking sucks, but seemingly we somehow load after rtech_game???? unsure how, but because of this we have to apply patches here, not on rtech_game load
         AddDllLoadCallback("engine.dll", InitialiseDedicatedRtechGame);
@@ -92,6 +94,7 @@ void InitialiseNorthstar()
         AddDllLoadCallback("client.dll", InitialiseScriptServerBrowser);
         AddDllLoadCallback("localize.dll", InitialiseModLocalisation);
         AddDllLoadCallback("engine.dll", InitialiseClientAuthHooks);
+        AddDllLoadCallback("engine.dll", InitialiseScriptExternalBrowserHooks);
     }
 
     AddDllLoadCallback("server.dll", InitialiseServerSquirrel);
