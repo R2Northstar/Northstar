@@ -585,6 +585,9 @@
     <ClInclude Include="clientauthhooks.h">
       <Filter>Header Files\Client</Filter>
     </ClInclude>
+    <ClInclude Include="scriptbrowserhooks.h">
+      <Filter>Header Files\Client</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -681,6 +684,9 @@
       <Filter>Source Files\Shared\Mods\Compiled</Filter>
     </ClCompile>
     <ClCompile Include="clientauthhooks.cpp">
+      <Filter>Source Files\Client</Filter>
+    </ClCompile>
+    <ClCompile Include="scriptbrowserhooks.cpp">
       <Filter>Source Files\Client</Filter>
     </ClCompile>
   </ItemGroup>

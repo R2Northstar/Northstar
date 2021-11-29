@@ -480,7 +480,7 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 			int currentModIndex = 0;
 			for (Mod& mod : g_ModManager->m_loadedMods)
 			{
-				if (!mod.RequiredOnClient && !mod.Pdiff.size())
+				if (!mod.Enabled || (!mod.RequiredOnClient && !mod.Pdiff.size()))
 					continue;
 
 				modinfoDoc["Mods"].PushBack(rapidjson::Value(rapidjson::kObjectType), modinfoDoc.GetAllocator());
@@ -685,7 +685,7 @@ void CHostState__State_NewGameHook(CHostState* hostState)
 	Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec autoexec_ns_server", cmd_source_t::kCommandSrcCode);
 	Cbuf_Execute();
 
-	// need to do this to ensure 
+	// need to do this to ensure we don't go to private match
 	if (g_ServerAuthenticationManager->m_bNeedLocalAuthForNewgame)
 		SetCurrentPlaylist("tdm");
 

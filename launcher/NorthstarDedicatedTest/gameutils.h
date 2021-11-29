@@ -185,9 +185,16 @@ extern GetCurrentPlaylistVarType GetCurrentPlaylistVar;
 typedef void*(*Server_GetEntityByIndexType)(int index);
 extern Server_GetEntityByIndexType Server_GetEntityByIndex;
 
+// server tickrate stuff
+extern ConVar* Cvar_base_tickinterval_mp;
+extern ConVar* Cvar_base_tickinterval_sp;
+
 // auth
 extern char* g_LocalPlayerUserID;
 extern char* g_LocalPlayerOriginToken;
+
+// misc stuff
+extern ConVar* Cvar_match_defaultMap;
 
 void InitialiseEngineGameUtilFunctions(HMODULE baseAddress);
 void InitialiseServerGameUtilFunctions(HMODULE baseAddress);
