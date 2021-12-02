@@ -552,12 +552,6 @@
     <ClInclude Include="masterserver.h">
       <Filter>Header Files\Shared</Filter>
     </ClInclude>
-    <ClInclude Include="tier0.h">
-      <Filter>Header Files\Shared\Game Functions</Filter>
-    </ClInclude>
-    <ClInclude Include="gameutils.h">
-      <Filter>Header Files\Shared\Game Functions</Filter>
-    </ClInclude>
     <ClInclude Include="chatcommand.h">
       <Filter>Header Files\Client</Filter>
     </ClInclude>
@@ -587,6 +581,9 @@
     </ClInclude>
     <ClInclude Include="scriptbrowserhooks.h">
       <Filter>Header Files\Client</Filter>
+    </ClInclude>
+    <ClInclude Include="gameutils.h">
+      <Filter>Header Files\Shared\Game Functions</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -652,9 +649,6 @@
     </ClCompile>
     <ClCompile Include="masterserver.cpp">
       <Filter>Source Files\Shared</Filter>
-    </ClCompile>
-    <ClCompile Include="tier0.cpp">
-      <Filter>Source Files\Shared\Game Functions</Filter>
     </ClCompile>
     <ClCompile Include="gameutils.cpp">
       <Filter>Source Files\Shared\Game Functions</Filter>

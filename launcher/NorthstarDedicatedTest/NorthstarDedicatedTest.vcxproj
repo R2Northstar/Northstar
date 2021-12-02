@@ -329,7 +329,6 @@
     <ClInclude Include="sourceconsole.h" />
     <ClInclude Include="sourceinterface.h" />
     <ClInclude Include="squirrel.h" />
-    <ClInclude Include="tier0.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="chatcommand.cpp" />
@@ -369,7 +368,6 @@
     <ClCompile Include="sourceconsole.cpp" />
     <ClCompile Include="sourceinterface.cpp" />
     <ClCompile Include="squirrel.cpp" />
-    <ClCompile Include="tier0.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="include\spdlog\fmt\bundled\LICENSE.rst" />

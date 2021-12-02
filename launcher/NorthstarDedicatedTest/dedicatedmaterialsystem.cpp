@@ -11,7 +11,7 @@ void InitialiseDedicatedMaterialSystem(HMODULE baseAddress)
 
 	//while (!IsDebuggerPresent())
 	//	Sleep(100);
-	
+
 	// not using these for now since they're related to nopping renderthread/gamewindow i.e. very hard
 	// we use -noshaderapi instead now
 	//{
@@ -64,51 +64,6 @@ void InitialiseDedicatedMaterialSystem(HMODULE baseAddress)
 			*(ptr + 4) = (char)0x90;
 		}
 
-		// these don't fully work, they cause game to hang on rpak init, needs reworking
-		{
-			// materialsystem rpak type: texture
-			char* ptr = (char*)baseAddress + 0x2B3A;
-			TempReadWrite rw(ptr);
-
-			// je=>jmp
-			*ptr = (char)0xE9;
-			*(ptr + 1) = (char)0x48;
-			*(ptr + 2) = (char)0x02;
-			*(ptr + 3) = (char)0x00;
-			*(ptr + 4) = (char)0x00;
-		}
-
-		{
-			// materialsystem rpak type: material
-			char* ptr = (char*)baseAddress + 0x50AD4;
-			TempReadWrite rw(ptr);
-
-			// je=>jmp
-			*ptr = (char)0xEB;
-		}
-
-		{
-			// materialsystem rpak type: shader
-			char* ptr = (char*)baseAddress + 0x2850;
-			TempReadWrite rw(ptr);
-
-			// make it return 0
-			// mov rax,0
-			*ptr = 0x48;
-			*(ptr + 1) = (char)0xB8;
-			*(ptr + 2) = (char)0x00;
-			*(ptr + 3) = (char)0x00;
-			*(ptr + 4) = (char)0x00;
-			*(ptr + 5) = (char)0x00;
-			*(ptr + 6) = (char)0x00;
-			*(ptr + 7) = (char)0x00;
-			*(ptr + 8) = (char)0x00;
-			*(ptr + 9) = (char)0x00;
-
-			// ret
-			*(ptr + 10) = (char)0xC3;
-		}
-
 		{
 			// some renderthread stuff
 			char* ptr = (char*)baseAddress + 0x8C10;
@@ -117,6 +72,35 @@ void InitialiseDedicatedMaterialSystem(HMODULE baseAddress)
 			// call => nop
 			*ptr = (char)0x90;
 			*(ptr + 1) = (char)0x90;
+		}
+
+		// rpak type callbacks
+		// these need to be nopped for dedi
+		{
+			// materialsystem rpak type: shader
+			char* ptr = (char*)baseAddress + 0x2850;
+			TempReadWrite rw(ptr);
+
+			// ret
+			*ptr = (char)0xC3;
+		}
+
+		{
+			// materialsystem rpak type: texture
+			char* ptr = (char*)baseAddress + 0x2B00;
+			TempReadWrite rw(ptr);
+
+			// ret
+			*ptr = (char)0xC3;
+		}
+
+		{
+			// materialsystem rpak type: material
+			char* ptr = (char*)baseAddress + 0x50AA0;
+			TempReadWrite rw(ptr);
+
+			// ret
+			*ptr = (char)0xC3;
 		}
 	}
 }

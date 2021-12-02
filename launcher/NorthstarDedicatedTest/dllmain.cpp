@@ -2,7 +2,6 @@
 #include "hooks.h"
 #include "main.h"
 #include "squirrel.h"
-#include "tier0.h"
 #include "dedicated.h"
 #include "dedicatedmaterialsystem.h"
 #include "sourceconsole.h"
@@ -66,6 +65,8 @@ void InitialiseNorthstar()
     InstallInitialHooks();
     InitialiseInterfaceCreationHooks();
 
+    // adding a callback to tier0 won't work for some reason
+    AddDllLoadCallback("launcher.dll", InitialiseTier0GameUtilFunctions);
     AddDllLoadCallback("engine.dll", WaitForDebugger);
     AddDllLoadCallback("engine.dll", InitialiseEngineGameUtilFunctions);
     AddDllLoadCallback("server.dll", InitialiseServerGameUtilFunctions);

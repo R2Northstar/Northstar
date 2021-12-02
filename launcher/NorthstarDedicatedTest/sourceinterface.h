@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "tier0.h"
+#include "gameutils.h"
 
 // literally just copied from ttf2sdk definition
 typedef void*(*CreateInterfaceFn)(const char* pName, int* pReturnCode);

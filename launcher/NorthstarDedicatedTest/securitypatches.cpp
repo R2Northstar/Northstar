@@ -3,7 +3,7 @@
 #include "hookutils.h"
 #include "concommand.h"
 #include "dedicated.h"
-#include "tier0.h"
+#include "gameutils.h"
 
 typedef bool(*IsValveModType)();
 IsValveModType IsValveMod;

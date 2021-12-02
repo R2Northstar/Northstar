@@ -195,6 +195,17 @@ extern char* g_LocalPlayerOriginToken;
 
 // misc stuff
 extern ConVar* Cvar_match_defaultMap;
+extern ConVar* Cvar_communities_hostname;
+
+typedef void(*ErrorType)(const char* fmt, ...);
+extern ErrorType Error;
+
+typedef CCommandLine*(*CommandLineType)();
+extern CommandLineType CommandLine;
+
+typedef double(*Plat_FloatTimeType)();
+extern Plat_FloatTimeType Plat_FloatTime;
 
 void InitialiseEngineGameUtilFunctions(HMODULE baseAddress);
 void InitialiseServerGameUtilFunctions(HMODULE baseAddress);
+void InitialiseTier0GameUtilFunctions(HMODULE baseAddress);
