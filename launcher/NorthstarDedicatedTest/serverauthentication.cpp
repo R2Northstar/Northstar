@@ -4,7 +4,7 @@
 #include "hookutils.h"
 #include "masterserver.h"
 #include "httplib.h"
-#include "tier0.h"
+#include "gameutils.h"
 #include <fstream>
 #include <filesystem>
 #include <thread>

@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "hookutils.h"
-#include "tier0.h"
 
 #include <iostream>
 
@@ -39,9 +38,9 @@ void HookEnabler::CreateHook(LPVOID ppTarget, LPVOID ppDetour, LPVOID* ppOrigina
     else
     {
         if (targetName != nullptr)
-            Error("MH_CreateHook failed for function %s", targetName);
+            spdlog::error("MH_CreateHook failed for function %s", targetName);
         else
-            Error("MH_CreateHook failed for unknown function");
+            spdlog::error("MH_CreateHook failed for unknown function");
     }
 }
 
@@ -52,9 +51,9 @@ HookEnabler::~HookEnabler()
         if (MH_EnableHook(hook->targetAddress) != MH_OK)
         {
             if (hook->targetName != nullptr)
-                Error("MH_EnableHook failed for function %s", hook->targetName);
+                spdlog::error("MH_EnableHook failed for function %s", hook->targetName);
             else
-                Error("MH_EnableHook failed for unknown function");
+                spdlog::error("MH_EnableHook failed for unknown function");
         }
         else
             spdlog::info("Enabling hook {}", hook->targetName);

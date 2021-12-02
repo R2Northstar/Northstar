@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "dedicated.h"
 #include "hookutils.h"
-#include "tier0.h"
 #include "gameutils.h"
 #include "serverauthentication.h"
 
@@ -37,7 +36,6 @@ void Sys_Printf(CDedicatedExports* dedicated, char* msg)
 	spdlog::info("[DEDICATED PRINT] {}", msg);
 }
 
-typedef bool (*CEngine__FrameType)(void* engineSelf);
 typedef void(*CHostState__InitType)(CHostState* self);
 
 void RunServer(CDedicatedExports* dedicated)
@@ -101,11 +99,11 @@ void InitialiseDedicated(HMODULE engineAddress)
 		// force the engine into dedicated mode by changing the first comparison to IsServerOnly to an assignment
 		char* ptr = (char*)engineAddress + 0x1C4EBD;
 		TempReadWrite rw(ptr);
-		
+
 		// cmp => mov
 		*(ptr + 1) = (char)0xC6;
 		*(ptr + 2) = (char)0x87;
-		
+
 		// 00 => 01
 		*((char*)ptr + 7) = (char)0x01;
 	}
@@ -174,7 +172,7 @@ void InitialiseDedicated(HMODULE engineAddress)
 		//*(ptr + 13) = (char)0x90;
 		//*(ptr + 14) = (char)0x90;
 
-		*(ptr + 15) = (char)0x90;
+		* (ptr + 15) = (char)0x90;
 		*(ptr + 16) = (char)0x90;
 		*(ptr + 17) = (char)0x90;
 		*(ptr + 18) = (char)0x90;
@@ -344,7 +342,7 @@ void InitialiseDedicated(HMODULE engineAddress)
 			// CEngineAPI::Init
 			char* ptr = (char*)engineAddress + 0x1C60CE;
 			TempReadWrite rw(ptr);
-		
+
 			// remove call to something or other that reads video settings
 			*ptr = (char)0x90;
 			*(ptr + 1) = (char)0x90;
@@ -352,12 +350,12 @@ void InitialiseDedicated(HMODULE engineAddress)
 			*(ptr + 3) = (char)0x90;
 			*(ptr + 4) = (char)0x90;
 		}
-		
+
 		{
 			// some inputsystem bullshit
 			char* ptr = (char*)engineAddress + 0x1CEE28;
 			TempReadWrite rw(ptr);
-		
+
 			// nop an accessviolation: temp because we still create game window atm
 			*ptr = (char)0x90;
 			*(ptr + 1) = (char)0x90;
@@ -391,7 +389,7 @@ void InitialiseDedicated(HMODULE engineAddress)
 		//
 		//	*(ptr + 7) = (char)0xEB; // jnz => jmp
 		//}
-		
+
 		// note: this is a different way of nopping window creation, i'm assuming there are like a shitload of inits here we shouldn't skip
 		// i know at the very least it registers datatables which are important
 		{
@@ -443,7 +441,7 @@ void InitialiseDedicated(HMODULE engineAddress)
 
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)engineAddress + 0x1CDC80, &IsGameActiveWindowHook, reinterpret_cast<LPVOID*>(&IsGameActiveWindow));
-	
+
 	// extra potential patches:
 	// nop engine.dll+1c67d1 and +1c67d8 to skip videomode creategamewindow
 	// also look into launcher.dll+d381, seems to cause renderthread to get made
@@ -457,6 +455,8 @@ void InitialiseDedicated(HMODULE engineAddress)
 	CommandLine()->AppendParm("-nomenuvid", 0);
 	CommandLine()->AppendParm("-nosound", 0);
 	CommandLine()->AppendParm("+host_preload_shaders", "0");
+	CommandLine()->AppendParm("+net_usesocketsforloopback", "1");
+	CommandLine()->AppendParm("+exec", "autoexec_ns_server");
 }
 
 typedef void(*Tier0_InitOriginType)();
@@ -483,7 +483,7 @@ PrintFatalSquirrelErrorType PrintFatalSquirrelError;
 void PrintFatalSquirrelErrorHook(void* sqvm)
 {
 	PrintFatalSquirrelError(sqvm);
-	abort();
+	//abort();
 }
 
 void InitialiseDedicatedServerGameDLL(HMODULE baseAddress)

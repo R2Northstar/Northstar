@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "hooks.h"
 #include "hookutils.h"
-#include "dedicated.h"
-#include "tier0.h"
 
 #include <wchar.h>
 #include <iostream>
@@ -20,7 +18,7 @@ LoadLibraryExWType LoadLibraryExWOriginal;
 void InstallInitialHooks()
 {
 	if (MH_Initialize() != MH_OK)
-		Error("MH_Initialize failed");
+		spdlog::error("MH_Initialize failed");
 	
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, &LoadLibraryExA, &LoadLibraryExAHook, reinterpret_cast<LPVOID*>(&LoadLibraryExAOriginal));
@@ -75,7 +73,8 @@ HMODULE LoadLibraryExWHook(LPCWSTR lpLibFileName, HANDLE hFile, DWORD dwFlags)
 	{
 		for (auto& callbackStruct : dllLoadCallbacks)
 		{
-			const wchar_t* callbackDll = std::wstring(callbackStruct->dll.begin(), callbackStruct->dll.end()).c_str();
+			std::wstring wcharStrDll = std::wstring(callbackStruct->dll.begin(), callbackStruct->dll.end());
+			const wchar_t* callbackDll = wcharStrDll.c_str();
 			if (!callbackStruct->called && wcsstr(lpLibFileName + (wcslen(lpLibFileName) - wcslen(callbackDll)), callbackDll) != nullptr)
 			{
 				callbackStruct->callback(moduleAddress);

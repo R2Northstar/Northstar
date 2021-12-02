@@ -36,6 +36,10 @@ char* g_LocalPlayerOriginToken;
 
 // misc stuff
 ConVar* Cvar_match_defaultMap;
+ConVar* Cvar_communities_hostname;
+ErrorType Error;
+CommandLineType CommandLine;
+Plat_FloatTimeType Plat_FloatTime;
 
 void InitialiseEngineGameUtilFunctions(HMODULE baseAddress)
 {
@@ -57,6 +61,7 @@ void InitialiseEngineGameUtilFunctions(HMODULE baseAddress)
 	g_LocalPlayerOriginToken = (char*)baseAddress + 0x13979C80;
 
 	Cvar_match_defaultMap = (ConVar*)((char*)baseAddress + 0x8AB530);
+	Cvar_communities_hostname = (ConVar*)((char*)baseAddress + 0x13157E50);
 }
 
 void InitialiseServerGameUtilFunctions(HMODULE baseAddress)
@@ -64,4 +69,13 @@ void InitialiseServerGameUtilFunctions(HMODULE baseAddress)
 	Server_GetEntityByIndex = (Server_GetEntityByIndexType)((char*)baseAddress + 0xFB820);
 	Cvar_base_tickinterval_mp = (ConVar*)((char*)baseAddress + 0xBFC360);
 	Cvar_base_tickinterval_mp = (ConVar*)((char*)baseAddress + 0xBFBEA0);
+}
+
+void InitialiseTier0GameUtilFunctions(HMODULE baseAddress)
+{
+	baseAddress = GetModuleHandleA("tier0.dll");
+
+	Error = (ErrorType)GetProcAddress(baseAddress, "Error");
+	CommandLine = (CommandLineType)GetProcAddress(baseAddress, "CommandLine");
+	Plat_FloatTime = (Plat_FloatTimeType)GetProcAddress(baseAddress, "Plat_FloatTime");
 }
