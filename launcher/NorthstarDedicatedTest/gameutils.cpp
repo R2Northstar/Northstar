@@ -3,6 +3,11 @@
 #include "convar.h"
 #include "concommand.h"
 
+// memory
+IMemAlloc* g_pMemAllocSingleton;
+typedef IMemAlloc* (*CreateGlobalMemAllocType)();
+CreateGlobalMemAllocType CreateGlobalMemAlloc;
+
 // cmd.h
 Cbuf_GetCurrentPlayerType Cbuf_GetCurrentPlayer;
 Cbuf_AddTextType Cbuf_AddText;
@@ -74,6 +79,9 @@ void InitialiseServerGameUtilFunctions(HMODULE baseAddress)
 void InitialiseTier0GameUtilFunctions(HMODULE baseAddress)
 {
 	baseAddress = GetModuleHandleA("tier0.dll");
+
+	CreateGlobalMemAlloc = (CreateGlobalMemAllocType)GetProcAddress(baseAddress, "CreateGlobalMemAlloc");
+	g_pMemAllocSingleton = CreateGlobalMemAlloc();
 
 	Error = (ErrorType)GetProcAddress(baseAddress, "Error");
 	CommandLine = (CommandLineType)GetProcAddress(baseAddress, "CommandLine");

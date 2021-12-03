@@ -19,15 +19,6 @@ void SetPlaylistCommand(const CCommand& args)
 	SetCurrentPlaylist(args.Arg(1));
 }
 
-void SetPlaylistVarOverrideCommand(const CCommand& args)
-{
-	// this is broken lol
-	if (args.ArgC() < 3)
-		return;
-
-	SetPlaylistVarOverride(args.Arg(1), args.Arg(2));
-}
-
 char Onclc_SetPlaylistVarOverrideHook(void* a1, void* a2)
 {
 	// the private_match playlist is the only situation where there should be any legitimate sending of this netmessage
@@ -41,7 +32,6 @@ char Onclc_SetPlaylistVarOverrideHook(void* a1, void* a2)
 void InitialisePlaylistHooks(HMODULE baseAddress)
 {
 	RegisterConCommand("setplaylist", SetPlaylistCommand, "Sets the current playlist", FCVAR_NONE);
-	RegisterConCommand("setplaylistvaroverride", SetPlaylistVarOverrideCommand, "Sets a playlist var override", FCVAR_NONE);
 	// note: clc_SetPlaylistVarOverride is pretty insecure, since it allows for entirely arbitrary playlist var overrides to be sent to the server
 	// this is somewhat restricted on custom servers to prevent it being done outside of private matches, but ideally it should be disabled altogether, since the custom menus won't use it anyway
 	// this should only really be accepted if you want vanilla client compatibility

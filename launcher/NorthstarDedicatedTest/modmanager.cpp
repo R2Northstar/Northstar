@@ -425,7 +425,7 @@ void ReloadModsCommand(const CCommand& args)
 
 void InitialiseModManager(HMODULE baseAddress)
 {
-	g_ModManager = new ModManager();
+	g_ModManager = new ModManager;
 
 	RegisterConCommand("reload_mods", ReloadModsCommand, "idk", FCVAR_NONE);
 }
