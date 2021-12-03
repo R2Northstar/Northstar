@@ -137,6 +137,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>$(ProjectDir)include\MinHook.x64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ForceSymbolReferences>
+      </ForceSymbolReferences>
     </Link>
     <PreBuildEvent>
       <Command>
@@ -163,6 +165,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>$(ProjectDir)include\MinHook.x64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ForceSymbolReferences>
+      </ForceSymbolReferences>
     </Link>
     <PreBuildEvent>
       <Command>
@@ -312,6 +316,7 @@
     <ClInclude Include="logging.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="masterserver.h" />
+    <ClInclude Include="memalloc.h" />
     <ClInclude Include="misccommands.h" />
     <ClInclude Include="modlocalisation.h" />
     <ClInclude Include="modmanager.h" />
@@ -344,6 +349,7 @@
     <ClCompile Include="hooks.cpp" />
     <ClCompile Include="hookutils.cpp" />
     <ClCompile Include="keyvalues.cpp" />
+    <ClCompile Include="memalloc.cpp" />
     <ClCompile Include="misccommands.cpp" />
     <ClCompile Include="modlocalisation.cpp" />
     <ClCompile Include="logging.cpp" />

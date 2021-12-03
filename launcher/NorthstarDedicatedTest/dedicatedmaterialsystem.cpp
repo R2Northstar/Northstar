@@ -129,7 +129,7 @@ void* RegisterRpakTypeHook(RpakTypeDefinition* rpakStruct, unsigned int a1, unsi
 	spdlog::info("rpak type {} {} registered", magicName, rpakStruct->longName);
 
 	// reregister rpak types that aren't registered on a windowless dedi
-	if (IsDedicated() && DisableDedicatedWindowCreation() && rpakStruct->magic == 0x64636C72) // rlcd magic, this one is registered last
+	if (rpakStruct->magic == 0x64636C72) // rlcd magic, this one is registered last
 		((RegisterMaterialSystemRpakTypes)((char*)GetModuleHandleA("materialsystem_dx11.dll") + 0x22A0))(); // slightly hellish call, registers materialsystem rpak types
 
 	return RegisterRpakType(rpakStruct, a1, a2);
@@ -137,13 +137,9 @@ void* RegisterRpakTypeHook(RpakTypeDefinition* rpakStruct, unsigned int a1, unsi
 
 void InitialiseDedicatedRtechGame(HMODULE baseAddress)
 {
-	// potentially do this somewhere other than dedicated stuff if it's going to be used in non-dedi
+	if (!IsDedicated() || !DisableDedicatedWindowCreation())
+		return;
 
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)GetModuleHandleA("rtech_game.dll") + 0x7BE0, &RegisterRpakTypeHook, reinterpret_cast<LPVOID*>(&RegisterRpakType));
-
-	if (!IsDedicated())
-		return;
-
-
 }

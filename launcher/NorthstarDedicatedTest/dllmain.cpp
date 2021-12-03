@@ -22,6 +22,7 @@
 #include "miscserverscript.h"
 #include "clientauthhooks.h"
 #include "scriptbrowserhooks.h"
+#include "memalloc.h"
 
 bool initialised = false;
 
@@ -51,6 +52,9 @@ void WaitForDebugger(HMODULE baseAddress)
     // earlier waitfordebugger call than is in vanilla, just so we can debug stuff a little easier
     if (CommandLine()->CheckParm("-waitfordebugger"))
     {
+        spdlog::info("waiting for debugger...");
+        spdlog::info("{} bytes have been statically allocated", g_iStaticAllocated);
+
         while (!IsDebuggerPresent())
             Sleep(100);
     }

@@ -1,6 +1,25 @@
 #pragma once
 #include "convar.h"
 
+// memory
+class IMemAlloc
+{
+public:
+	struct VTable
+	{
+		void* unknown[1];
+		void* (*Alloc)(IMemAlloc* memAlloc, size_t nSize);
+		void* unknown2[3];
+		void (*Free)(IMemAlloc* memAlloc, void* pMem);
+	};
+
+	VTable* m_vtable;
+};
+
+extern IMemAlloc* g_pMemAllocSingleton;
+typedef IMemAlloc*(*CreateGlobalMemAllocType)();
+extern CreateGlobalMemAllocType CreateGlobalMemAlloc;
+
 // cmd.h
 enum class ECommandTarget_t
 {

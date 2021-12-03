@@ -585,6 +585,9 @@
     <ClInclude Include="gameutils.h">
       <Filter>Header Files\Shared\Game Functions</Filter>
     </ClInclude>
+    <ClInclude Include="memalloc.h">
+      <Filter>Header Files\Shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -682,6 +685,9 @@
     </ClCompile>
     <ClCompile Include="scriptbrowserhooks.cpp">
       <Filter>Source Files\Client</Filter>
+    </ClCompile>
+    <ClCompile Include="memalloc.cpp">
+      <Filter>Source Files\Shared</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
