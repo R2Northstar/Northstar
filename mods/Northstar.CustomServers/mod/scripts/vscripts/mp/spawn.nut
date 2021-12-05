@@ -273,7 +273,7 @@ bool function IsSpawnpointValid( entity spawnpoint, int team )
 			continue
 		
 		// check distance, constant here is basically arbitrary
-		if ( Distance( enemyPlayer, spawnpoint ) > 1000.0 )
+		if ( Distance( enemyPlayer.GetOrigin(), spawnpoint.GetOrigin() ) > 1000.0 )
 			continue
 		
 		// check fov, constant here is stolen from every other place this is done

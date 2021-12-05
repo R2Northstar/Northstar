@@ -94,9 +94,11 @@ void function EvacEpilogueSetup()
 
 void function EvacEpilogue()
 {
-	// make sure we don't run this on ffa modes if no epilogue was specified, since evac is default epilogue
-	if ( GetCurrentPlaylistVarInt( "max_teams", 2 ) == 2 )
-		thread Evac( GetOtherTeam( GetWinningTeam() ), EVAC_INITIAL_WAIT, EVAC_ARRIVAL_TIME, EVAC_WAIT_TIME, EvacEpiloguePlayerCanBoard, EvacEpilogueShouldLeaveEarly, EvacEpilogueCompleted )
+	int winner = GetWinningTeam()		
+
+	// make sure we don't run this on ffa modes if no epilogue was specified or it won't work for current gamestate, since evac is default epilogue
+	if ( GetCurrentPlaylistVarInt( "max_teams", 2 ) == 2 && ( winner == TEAM_MILITIA || winner == TEAM_IMC ) )
+		thread Evac( GetOtherTeam( winner ), EVAC_INITIAL_WAIT, EVAC_ARRIVAL_TIME, EVAC_WAIT_TIME, EvacEpiloguePlayerCanBoard, EvacEpilogueShouldLeaveEarly, EvacEpilogueCompleted )
 	else
 		thread EvacEpilogueCompleted( null ) // this is hacky but like, this also shouldn't really be hit in normal gameplay
 }

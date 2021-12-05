@@ -68,13 +68,6 @@
 				"Before": "GamemodeFRA_AddAdditionalInitCallback"
 			}
 		},
-		{
-			"Path": "gamemodes/_featured_mode_settings.gnut",
-			"RunOn": "SERVER && MP",
-			"ServerCallback": { 
-				"After": "FeaturedModeSettings_Init"
-			}
-		},
 		
 		{
 			"Path": "mp/_classic_mp_dropship_intro.gnut",

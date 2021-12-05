@@ -11,7 +11,7 @@ global function CapturePoint_GetGoalProgress
 
 void function Hardpoints_Init()
 {
-	
+	RegisterSignal( "StopHardpointBehavior" )
 }
 
 float function CapturePoint_GetStartProgress( entity hardpoint )
