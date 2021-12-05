@@ -121,16 +121,26 @@ void function AddPlayerToFastballIntro( entity player )
 
 void function FastballPlayer( entity player )
 {
+	if ( IsAlive( player ) )
+		player.Die() // kill player if they're alive so there's no issues with that
+		
+	WaitFrame()
+
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "OnDestroy" )
-	
-	OnThreadEnd( function() : ( player )
+		
+	// do this here so it's in OnThreadEnd 
+	var oldVisibility = player.kv.VisibilityFlags 
+		
+	OnThreadEnd( function() : ( player, oldVisibility )
 	{
 		RemoveCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING )
 		player.ClearParent()
 		ClearPlayerAnimViewEntity( player )
 		player.DeployWeapon()
 		player.PlayerCone_Disable()
+		player.ClearInvulnerable()
+		player.kv.VisibilityFlags = oldVisibility // restore visibility
 	})
 	
 	FirstPersonSequenceStruct throwSequence
@@ -154,8 +164,8 @@ void function FastballPlayer( entity player )
 	// respawn the player
 	player.SetOrigin( buddy.GetOrigin() )
 	player.RespawnPlayer( null )
-	var oldVisibility = player.kv.VisibilityFlags // better than .Hide(), hides weapons and such
-	player.kv.VisibilityFlags = 0
+	player.kv.VisibilityFlags = 0 // better than .Hide(), hides weapons and such
+	player.SetInvulnerable() // in deadly ground we die without this lol
 	player.HolsterWeapon()
 	
 	// hide hud, fade screen out from black
@@ -185,7 +195,6 @@ void function FastballPlayer( entity player )
 	
 	// have to correct this manually here since due to no 3p animation our position isn't set right during this sequence
 	player.SetOrigin( buddy.GetAttachmentOrigin( buddy.LookupAttachment( "FASTBALL_R" ) ) )
-	player.kv.VisibilityFlags = oldVisibility // restore visibility
 	player.SetVelocity( throwVel )
 	
 	TryGameModeAnnouncement( player )

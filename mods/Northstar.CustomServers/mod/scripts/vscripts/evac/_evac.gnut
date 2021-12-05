@@ -67,6 +67,7 @@ struct {
 void function Evac_Init()
 {
 	EvacShared_Init()
+	RegisterSignal( "EvacShipLeaves" )
 }
 
 void function AddEvacNode( entity evacNode )
@@ -95,7 +96,7 @@ void function EvacEpilogue()
 {
 	// make sure we don't run this on ffa modes if no epilogue was specified, since evac is default epilogue
 	if ( GetCurrentPlaylistVarInt( "max_teams", 2 ) == 2 )
-		thread Evac( GetPlayerArray()[0].GetTeam(), EVAC_INITIAL_WAIT, EVAC_ARRIVAL_TIME, EVAC_WAIT_TIME, EvacEpiloguePlayerCanBoard, EvacEpilogueShouldLeaveEarly, EvacEpilogueCompleted )
+		thread Evac( GetOtherTeam( GetWinningTeam() ), EVAC_INITIAL_WAIT, EVAC_ARRIVAL_TIME, EVAC_WAIT_TIME, EvacEpiloguePlayerCanBoard, EvacEpilogueShouldLeaveEarly, EvacEpilogueCompleted )
 	else
 		thread EvacEpilogueCompleted( null ) // this is hacky but like, this also shouldn't really be hit in normal gameplay
 }
@@ -146,12 +147,12 @@ void function EvacEpilogueCompleted( entity dropship )
 }
 
 // global evac func, anything can call this, it's not necessarily an epilogue thing
-void function Evac( int evacTeam, float initialWait, float arrivalTime, float waitTime, bool functionref( entity, entity ) canBoardCallback, bool functionref( entity ) shouldLeaveEarlyCallback, void functionref( entity ) completionCallback )
+void function Evac( int evacTeam, float initialWait, float arrivalTime, float waitTime, bool functionref( entity, entity ) canBoardCallback, bool functionref( entity ) shouldLeaveEarlyCallback, void functionref( entity ) completionCallback, entity customEvacNode = null )
 {
 	wait initialWait 
 
 	// setup evac nodes if not manually registered
-	if ( file.evacNodes.len() == 0 )
+	if ( file.evacNodes.len() == 0 && !IsValid( customEvacNode ) )
 	{
 		for ( int i = 1; ; i++ )
 		{
@@ -167,7 +168,9 @@ void function Evac( int evacTeam, float initialWait, float arrivalTime, float wa
 	if ( !IsValid( file.spaceNode ) )
 		file.spaceNode = GetEnt( "spaceNode" )
 
-	entity evacNode = file.evacNodes.getrandom()
+	entity evacNode 
+	if ( !IsValid( customEvacNode ) )
+		evacNode = file.evacNodes.getrandom()
 
 	// setup client evac position
 	file.evacIcon = CreateEntity( "info_target" )
@@ -261,6 +264,7 @@ void function Evac( int evacTeam, float initialWait, float arrivalTime, float wa
 			player.HolsterWeapon()
 	
 	// fly away
+	dropship.Signal( "EvacShipLeaves" )
 	thread PlayAnim( dropship, "cd_dropship_rescue_side_end", evacNode )
 	
 	SetTeamActiveObjective( evacTeam, "EG_DropshipExtractDropshipFlyingAway" )

@@ -113,13 +113,10 @@ void function FeaturedModeSettingsSetupPilotLoadouts( entity player )
 
 void function FeaturedModeSettingsSetupTitanLoadouts( entity player, entity titan )
 {
-	// this doesn't work atm, figure out how it should work and fix at some point
-	entity soul = player.GetTitanSoul()
 	if ( IsFeaturedMode( "turbo_titans" ) )
 	{
-		if ( GetSoulTitanSubClass( soul ) == "stryder" || GetSoulTitanSubClass( soul ) == "atlas" )
-			GivePassive( player, ePassives.PAS_MOBILITY_DASH_CAPACITY )
-		else
-			GivePassive( player, ePassives.PAS_DASH_RECHARGE )
+		array<string> settingsMods = player.GetPlayerSettingsMods()
+		settingsMods.append( "turbo_titan" )
+		player.SetPlayerSettingsWithMods( player.GetPlayerSettings(), settingsMods )
 	}
 }

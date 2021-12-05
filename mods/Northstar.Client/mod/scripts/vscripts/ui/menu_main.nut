@@ -26,6 +26,7 @@ void function InitMainMenu()
 	var menu = GetMenu( "MainMenu" )
 	file.menu = menu
 
+	ClientCommand( "exec autoexec_ns_client" )
 	AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, OnMainMenu_Open )
 	AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, OnMainMenu_NavigateBack )
 
@@ -54,21 +55,6 @@ void function InitMainMenu()
 	if ( DevStartPoints() )
 		AddMenuFooterOption( menu, BUTTON_Y, "#Y_BUTTON_DEV_MENU", "#DEV_MENU", OpenSinglePlayerDevMenu )
 #endif // DEV
-
-	// do +map stuff
-	if ( Dev_CommandLineHasParm( "+map" ) )
-		thread DelayedMapCommand()
-}
-
-void function DelayedMapCommand()
-{
-	// if we do this too early, game won't run the map command, so we have to wait a bit
-	// 5.0 was determined exclusively by trial and error but seems to work pretty well
-	// might be possible to just do this in native instead, but idk effort
-	wait 5.0
-	SetConVarBool( "ns_auth_allow_insecure", true ) // good for testing
-	ClientCommand( "map " + Dev_CommandLineParmValue( "+map" ) )
-	Dev_CommandLineRemoveParm( "+map" )
 }
 
 #if CONSOLE_PROG
@@ -93,6 +79,28 @@ void function OnMainMenu_Open()
 	Hud_Show( file.versionDisplay )
 
 	thread UpdateTrialLabel()
+
+	// do +map stuff
+	if ( Dev_CommandLineHasParm( "+map" ) )
+	{
+		SetConVarBool( "ns_auth_allow_insecure", true ) // good for testing
+		ClientCommand( "map " + Dev_CommandLineParmValue( "+map" ) )
+		Dev_CommandLineRemoveParm( "+map" )
+	}
+	
+	// do agree to ns remote auth dialog
+	if ( !GetConVarBool( "ns_has_agreed_to_send_token" ) )
+	{	
+		// todo: this should be in localisation
+		DialogData dialogData
+		dialogData.header = "Thanks for installing Northstar!"
+		dialogData.image = $"rui/menu/fd_menu/upgrade_northstar_chassis"
+		dialogData.message = "For Northstar to work, it needs to authenticate using the Northstar master server. This will require sending your origin token to the master server, it will not be stored or used for any other purposes.\n" + 
+		"Press Yes if you agree to this. This choice can be changed in the mods menu at any time."
+		AddDialogButton( dialogData, "#YES", void function() { SetConVarInt( "ns_has_agreed_to_send_token", 1 ) } )
+		AddDialogButton( dialogData, "#NO", void function() { SetConVarInt( "ns_has_agreed_to_send_token", 2 ) } )
+		OpenDialog( dialogData )
+	}
 
 #if PC_PROG
 	ActivatePanel( GetPanel( "MainMenuPanel" ) )

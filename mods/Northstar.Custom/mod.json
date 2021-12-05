@@ -345,6 +345,15 @@
 		}
 	],
 	
+	// todo this bit of the format
+	"Maps": [
+		{
+			"Name": "mp_skyway_v1",
+			"VPK": "englishclient_mp_skyway_v1",
+			"RPak": "sp_skyway_v1"
+		}
+	],
+	
 	"Localisation": [
 		"resource/northstar_custom_%language%.txt"
 	]

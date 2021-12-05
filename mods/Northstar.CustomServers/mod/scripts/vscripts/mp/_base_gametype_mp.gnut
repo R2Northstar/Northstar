@@ -423,9 +423,7 @@ void function RespawnAsTitan( entity player, bool manualPosition = false )
 	asset model = GetPlayerSettingsAssetForClassName( titanLoadout.setFile, "bodymodel" )
 	Attachment warpAttach = GetAttachmentAtTimeFromModel( model, "at_hotdrop_01", "offset", spawnpoint.GetOrigin(), spawnpoint.GetAngles(), 0 )
 	PlayFX( TURBO_WARP_FX, warpAttach.position, warpAttach.angle )
-	
-	player.RespawnPlayer( null ) // spawn player as pilot so they get their pilot loadout on embark
-	
+		
 	entity titan = CreateAutoTitanForPlayer_FromTitanLoadout( player, titanLoadout, spawnpoint.GetOrigin(), spawnpoint.GetAngles() )
 	DispatchSpawn( titan )
 	player.SetPetTitan( null ) // prevent embark prompt from showing up
@@ -459,6 +457,10 @@ void function RespawnAsTitan( entity player, bool manualPosition = false )
 	player.DeployWeapon() // let them use weapons again
 	player.isSpawning = false
 		
+	player.RespawnPlayer( null ) // spawn player as pilot so they get their pilot loadout on embark
+	player.SetOrigin( titan.GetOrigin() )
+	WaitFrame()
+	
 	PilotBecomesTitan( player, titan ) // make player titan
 	titan.Destroy() // pilotbecomestitan leaves an npc titan that we need to delete
 }

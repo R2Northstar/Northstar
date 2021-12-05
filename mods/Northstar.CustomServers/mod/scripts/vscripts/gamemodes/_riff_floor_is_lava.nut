@@ -1,5 +1,10 @@
 global function RiffFloorIsLava_Init
 
+struct {
+	float pilotDamageMultiplier
+	float titanDamageMultiplier
+} file
+
 void function RiffFloorIsLava_Init()
 {
 	AddCallback_OnPlayerRespawned( FloorIsLava_PlayerRespawned )
@@ -83,20 +88,28 @@ void function FloorIsLava_ThinkForPlayer( entity player )
 	player.EndSignal( "OnDestroy" )
 	player.EndSignal( "OnDeath" )
 	
+	float lastHeight
+	
 	while ( true )
 	{
 		WaitFrame()
-			
-		if ( player.GetOrigin().z < GetLethalFogTop() )
+		
+		float height = player.GetOrigin().z
+		if ( height < GetLethalFogTop() )
 		{
 			// do damage
 			float damageMultiplier = 0.08
 			if ( player.IsTitan() )
-				damageMultiplier *= 0.05
-			
+				damageMultiplier = 0.04
+				
+			// scale damage by time spent in fog and depth
+			damageMultiplier *= 1 - ( height / GetLethalFogTop() )
+
 			player.TakeDamage( player.GetMaxHealth() * damageMultiplier, null, null, { damageSourceId = eDamageSourceId.floor_is_lava } )
 		
 			wait 0.1
 		}
+		
+		lastHeight = height
 	}
 }

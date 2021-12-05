@@ -6,6 +6,9 @@ global function UpdatePromoData
 global function UICodeCallback_GetOnPartyServer
 global function UICodeCallback_MainMenuPromosUpdated
 
+// defining this here because it's the only place it's used rn, custom const for a hook in launcher
+global const WEBBROWSER_FLAG_FORCEEXTERNAL = 1 << 1 // 2
+
 struct
 {
 	var menu
