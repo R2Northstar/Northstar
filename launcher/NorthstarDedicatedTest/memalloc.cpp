@@ -12,7 +12,7 @@
 // then just use the game's allocator after that
 // yes, this means we leak 100k of memory, idk how else to do this without breaking stuff
 
-const int STATIC_ALLOC_SIZE = 100000;
+const int STATIC_ALLOC_SIZE = 100000; // alot more than we need, could reduce to 50k or even 25k later potentially
 
 size_t g_iStaticAllocated = 0;
 char pStaticAllocBuf[STATIC_ALLOC_SIZE];
