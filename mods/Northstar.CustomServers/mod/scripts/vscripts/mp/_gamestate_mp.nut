@@ -314,6 +314,20 @@ void function GameStateEnter_WinnerDetermined_Threaded()
 		if ( killcamsWereEnabled )
 			SetKillcamsEnabled( true )
 	}
+	else
+	{
+		// these numbers are temp and should really be based on consts of some kind
+		foreach( entity player in GetPlayerArray() )
+		{
+			player.FreezeControlsOnServer()
+			ScreenFadeToBlackForever( player, 2.0 )
+		}
+		
+		wait 2.5
+		
+		foreach( entity player in GetPlayerArray() )
+			player.UnfreezeControlsOnServer()
+	}
 	
 	if ( IsRoundBased() )
 	{

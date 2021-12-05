@@ -103,7 +103,17 @@ const table<asset> mapImages =
 	sp_tday = $"rui/menu/level_select/level_image7",
 	sp_s2s = $"rui/menu/level_select/level_image8",
 	sp_skyway_v1 = $"rui/menu/level_select/level_image9",
-	
+
+	// mp converted variants
+	mp_training = $"rui/menu/level_select/level_image1",
+	mp_crashsite = $"rui/menu/level_select/level_image2",
+	mp_sewers1 = $"rui/menu/level_select/level_image3",
+	mp_boomtown_start = $"rui/menu/level_select/level_image4",
+	mp_hub_timeshift = $"rui/menu/level_select/level_image5",
+	mp_beacon = $"rui/menu/level_select/level_image6",
+	mp_tday = $"rui/menu/level_select/level_image7",
+	mp_s2s = $"rui/menu/level_select/level_image8",
+	mp_skyway_v1 = $"rui/menu/level_select/level_image9",
 }
 
 void function MenuPrivateMatch_Init()

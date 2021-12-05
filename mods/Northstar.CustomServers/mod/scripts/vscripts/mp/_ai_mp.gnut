@@ -1,15 +1,22 @@
+untyped
 global function MpInitAILoadouts
 global function SetProficiency
-global function IsAutoPopulateEnabled
 global function SPMP_UpdateNPCProficiency
 global function SPMP_Callback_ForceAIMissPlayer
+global function IsAutoPopulateEnabled
 
 void function MpInitAILoadouts()
 {
 
 }
 
-void function SetProficiency( entity soldier )
+void function SetProficiency( entity npc )
+{
+	// unsure what the logic for deciding this should be so just going to default good
+	npc.kv.WeaponProfiency = eWeaponProficiency.VERYGOOD
+}
+
+void function SPMP_UpdateNPCProficiency( entity npc )
 {
 
 }
@@ -30,12 +37,33 @@ bool function IsAutoPopulateEnabled( var team = null )
 	return true
 }
 
-void function SPMP_UpdateNPCProficiency( entity ent )
-{
-
-}
-
 bool function SPMP_Callback_ForceAIMissPlayer( entity npc, entity player )
 {
-	return true
+	if ( GetGameState() >= eGameState.Postmatch )
+		return true
+	
+	if ( player.IsTitan() )
+		return false
+		
+	int lethality = Riff_AILethality()
+	if ( lethality <= eAILethality.Medium )
+		if ( player.GetTitanSoulBeingRodeoed() != null )
+			return true
+	
+	if ( Bleedout_IsBleedoutLogicActive() && Bleedout_ShouldAIMissBleedingPlayer( player ) )
+		return true
+	
+	if ( player.ContextAction_IsActive() )
+		return RandomFloat( 1 ) >= 0.25
+	
+	if ( IsFastPilot( player ) )
+	{
+		float chance = ( lethality + 1 ) * 0.125
+		if ( lethality <= eAILethality.Medium && npc.IsMechanical() )
+			chance /= 1.25
+		
+		return RandomFloat( 1 ) >= chance
+	}
+	
+	return false
 }

@@ -1,9 +1,11 @@
 untyped
 global function GamemodeMfd_Init
+global function RateSpawnpoints_Frontline
 
 struct {
 	entity imcLastMark
 	entity militiaLastMark
+	bool isMfdPro
 } file
 
 void function GamemodeMfd_Init()
@@ -11,6 +13,16 @@ void function GamemodeMfd_Init()
 	GamemodeMfdShared_Init()
 		
 	RegisterSignal( "MarkKilled" )
+	
+	// todo
+	if ( GAMETYPE == MARKED_FOR_DEATH_PRO )
+	{
+		file.isMfdPro = true
+		SetRespawnsEnabled( true )
+		SetRoundBased( true )
+		SetShouldUseRoundWinningKillReplay( true )
+		Riff_ForceSetEliminationMode( eEliminationMode.Pilots )
+	}
 		
 	AddCallback_OnPlayerKilled( UpdateMarksForKill )
 	AddCallback_GameStateEnter( eGameState.Playing, CreateInitialMarks )
@@ -170,63 +182,57 @@ void function UpdateMarksForKill( entity victim, entity attacker, var damageInfo
 	}
 }
 
-/*
-void function MarkPlayers()
+// could probably put this in spawn.nut? only here because i believe it's the main mode that uses this func
+void function RateSpawnpoints_Frontline( int checkClass, array<entity> spawnpoints, int team, entity player )
 {
-	// todo: need to handle disconnecting marks
-	if ( !TargetsMarkedImmediately() )
-		wait MFD_BETWEEN_MARKS_TIME
-	
+	Frontline frontline = GetFrontline( player.GetTeam() )
 
-	// wait until we actually have 2 valid players
-	array<entity> imcPlayers
-	array<entity> militiaPlayers
-	while ( imcPlayers.len() == 0 || militiaPlayers.len() == 0 )
+	// heavily based on ctf spawn algo iteration 4, only changes it at the end
+	array<entity> startSpawns = SpawnPoints_GetPilotStart( team )
+	array<entity> enemyStartSpawns = SpawnPoints_GetPilotStart( GetOtherTeam( team ) )
+	array<entity> enemyPlayers = GetPlayerArrayOfTeam_Alive( team )
+	
+	// get average startspawn position and max dist between spawns
+	// could probably cache this, tbh, not like it should change outside of halftimes
+	vector averageFriendlySpawns
+	float maxFriendlySpawnDist
+	
+	foreach ( entity spawn in startSpawns )
 	{
-		imcPlayers =  GetPlayerArrayOfTeam( TEAM_IMC )
-		militiaPlayers = GetPlayerArrayOfTeam( TEAM_MILITIA )
+		foreach ( entity otherSpawn in startSpawns )
+		{
+			float dist = Distance2D( spawn.GetOrigin(), otherSpawn.GetOrigin() )
+			if ( dist > maxFriendlySpawnDist )
+				maxFriendlySpawnDist = dist
+		}
 		
-		WaitFrame()
+		averageFriendlySpawns += spawn.GetOrigin()
 	}
 	
-	// decide marks
-	entity imcMark = imcPlayers[ RandomInt( imcPlayers.len() ) ]
-	level.mfdPendingMarkedPlayerEnt[ TEAM_IMC ].SetOwner( imcMark )
+	averageFriendlySpawns /= startSpawns.len()
 	
-	entity militiaMark = militiaPlayers[ RandomInt( militiaPlayers.len() ) ]
-	level.mfdPendingMarkedPlayerEnt[ TEAM_MILITIA ].SetOwner( militiaMark )
+	// get average enemy startspawn position
+	vector averageEnemySpawns
 	
-	foreach ( entity player in GetPlayerArray() )
+	foreach ( entity spawn in enemyStartSpawns )
+		averageEnemySpawns += spawn.GetOrigin()
+	
+	averageEnemySpawns /= enemyStartSpawns.len()
+	
+	// from here, rate spawns
+	float baseDistance = Distance2D( averageFriendlySpawns, averageEnemySpawns )
+	float spawnIterations = ( baseDistance / maxFriendlySpawnDist ) / 2
+	
+	foreach ( entity spawn in spawnpoints )
 	{
-		Remote_CallFunction_NonReplay( player, "SCB_MarkedChanged" )
-		Remote_CallFunction_NonReplay( player, "ServerCallback_MFD_StartNewMarkCountdown", Time() + MFD_COUNTDOWN_TIME )
+		// ratings should max/min out at 100 / -100
+		// start by prioritizing closer spawns, but not so much that enemies won't really affect them
+		float rating = 10 * ( 1.0 - Distance2D( averageFriendlySpawns, spawn.GetOrigin() ) / baseDistance )
+		
+		// rate based on distance to frontline, and then prefer spawns in the same dir from the frontline as the combatdir
+		rating += rating * ( 1.0 - ( Distance2D( spawn.GetOrigin(), frontline.friendlyCenter ) / baseDistance ) )
+		rating *= fabs( frontline.combatDir.y - Normalize( spawn.GetOrigin() - averageFriendlySpawns ).y )
+		
+		spawn.CalculateRating( checkClass, player.GetTeam(), rating, rating )
 	}
-		
-	wait MFD_COUNTDOWN_TIME
-	
-	while ( !IsAlive( imcMark ) || !IsAlive( militiaMark ) )
-		WaitFrame()
-	
-	// clear pending marks
-	level.mfdPendingMarkedPlayerEnt[ TEAM_IMC ].SetOwner( null )
-	level.mfdPendingMarkedPlayerEnt[ TEAM_MILITIA ].SetOwner( null )
-	
-	// set marks
-	level.mfdActiveMarkedPlayerEnt[ TEAM_IMC ].SetOwner( imcMark )
-	level.mfdActiveMarkedPlayerEnt[ TEAM_MILITIA ].SetOwner( militiaMark )
-	
-	foreach ( entity player in GetPlayerArray() )
-		Remote_CallFunction_NonReplay( player, "SCB_MarkedChanged" )
-	
-	while ( IsAlive( imcMark ) && IsAlive( militiaMark ) )
-		WaitFrame()
-		
-	// clear marks
-	level.mfdActiveMarkedPlayerEnt[ TEAM_IMC ].SetOwner( null )
-	level.mfdActiveMarkedPlayerEnt[ TEAM_MILITIA ].SetOwner( null )
-		
-	foreach ( entity player in GetPlayerArray() )
-		Remote_CallFunction_NonReplay( player, "SCB_MarkedChanged" )
-	
-	thread MarkPlayers()
-}*/
+}

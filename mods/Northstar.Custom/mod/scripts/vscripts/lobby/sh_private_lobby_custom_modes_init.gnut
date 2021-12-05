@@ -8,4 +8,7 @@ void function CustomPrivateMatchModesInit()
 	AddPrivateMatchMode( "kr" )
 	AddPrivateMatchMode( "tt" )
 	AddPrivateMatchMode( "ctf_comp" )
+	
+	// this is nonfunctional for some reason
+	AddPrivateMatchMap( "mp_skyway_v1" )
 }
