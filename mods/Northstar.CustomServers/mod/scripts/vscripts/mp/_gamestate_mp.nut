@@ -314,7 +314,7 @@ void function GameStateEnter_WinnerDetermined_Threaded()
 		if ( killcamsWereEnabled )
 			SetKillcamsEnabled( true )
 	}
-	else
+	else if ( IsRoundBased() || !ClassicMP_ShouldRunEpilogue() )
 	{
 		// these numbers are temp and should really be based on consts of some kind
 		foreach( entity player in GetPlayerArray() )
@@ -650,8 +650,11 @@ void function CleanUpEntitiesForRoundEnd()
 	}
 	
 	foreach ( entity npc in GetNPCArray() )
-		if ( IsAlive( npc ) )
-			npc.Die() // need this because getnpcarray includes the pettitans we just killed at this point
+		if ( IsValid( npc ) )
+			npc.Destroy() // need this because getnpcarray includes the pettitans we just killed at this point
+			
+	foreach ( entity weapon in GetEntArrayByClass_Expensive( "weaponx" ) )
+		weapon.Destroy()
 	
 	// allow other scripts to clean stuff up too
 	svGlobal.levelEnt.Signal( "CleanUpEntitiesForRoundEnd" ) 

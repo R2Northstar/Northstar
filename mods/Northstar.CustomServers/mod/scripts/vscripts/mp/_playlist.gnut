@@ -1,6 +1,123 @@
+untyped
 global function Playlist_Init
 
 void function Playlist_Init()
 {
+	// featured mode settings
+	AddCallback_OnPlayerRespawned( FeaturedModeSettingsSetupPilotLoadouts )
+	AddCallback_OnPilotBecomesTitan( FeaturedModeSettingsSetupTitanLoadouts )
+	
+	// iron lts rules
+	if ( HasIronRules() ) 
+		Riff_ForceTitanExitEnabled( eTitanExitEnabled.Never )
+}
 
+bool function IsFeaturedMode( string modeName )
+{
+	return GetCurrentPlaylistVar( "featured_mode_" + modeName ) == "1"
+}
+
+void function FeaturedModeSettingsSetupPilotLoadouts( entity player )
+{
+	bool shouldChangeLoadout = false
+
+	// create loadout struct
+	PilotLoadoutDef modifiedLoadout = clone GetActivePilotLoadout( player )
+
+	if ( IsFeaturedMode( "all_holopilot" ) )
+	{
+		shouldChangeLoadout = true 
+		
+		modifiedLoadout.special = "mp_ability_holopilot"
+	}
+		
+	if ( IsFeaturedMode( "all_grapple" ) ) 
+	{
+		shouldChangeLoadout = true 
+		
+		modifiedLoadout.special = "mp_ability_grapple"
+		modifiedLoadout.specialMods = [ "all_grapple" ]
+	}
+		
+	if ( IsFeaturedMode( "all_phase" ) ) 
+	{
+		shouldChangeLoadout = true 
+		
+		modifiedLoadout.special = "mp_ability_shifter"
+		modifiedLoadout.specialMods = [ "all_phase" ]
+	}
+		
+	if ( IsFeaturedMode( "all_ticks" ) ) 
+	{
+		shouldChangeLoadout = true 
+		
+		modifiedLoadout.ordnance = "mp_weapon_frag_drone"
+		modifiedLoadout.ordnanceMods = [ "all_ticks" ]
+	}
+	
+	if ( IsFeaturedMode( "rocket_arena" ) )
+	{	
+		// this crashes sometimes for some reason
+	
+		shouldChangeLoadout = true
+	
+		modifiedLoadout.primary = "mp_weapon_epg"
+		modifiedLoadout.primaryMods = [ "rocket_arena" ]
+		
+		// set secondary to whatever one is pistol
+		if ( GetWeaponInfoFileKeyField_Global( player.GetMainWeapons()[ 1 ].GetWeaponClassName(), "menu_category" ) == "at" )
+		{
+			modifiedLoadout.weapon3 = "mp_weapon_autopistol"
+			modifiedLoadout.weapon3Mods = [ "rocket_arena" ]
+		}
+		else
+		{
+			modifiedLoadout.secondary = "mp_weapon_autopistol"
+			modifiedLoadout.secondaryMods = [ "rocket_arena" ]
+		}
+		
+		player.GiveExtraWeaponMod( "rocket_arena" )
+	}
+	
+	if ( IsFeaturedMode( "shotguns_snipers" ) )
+	{
+	
+		shouldChangeLoadout = true 
+		
+		// this one was never released, assuming it just gives you a mastiff and a kraber with quick swap
+		modifiedLoadout.primary = "mp_weapon_sniper"
+		modifiedLoadout.primaryMods = [ "pas_fast_swap", "pas_fast_ads" ]
+		
+		// set secondary to whatever one is pistol
+		if ( GetWeaponInfoFileKeyField_Global( player.GetMainWeapons()[ 1 ].GetWeaponClassName(), "menu_category" ) == "at" )
+		{
+			modifiedLoadout.weapon3 = "mp_weapon_mastiff"
+			modifiedLoadout.weapon3Mods = [ "pas_fast_swap", "pas_run_and_gun" ]
+		}
+		else
+		{
+			modifiedLoadout.secondary = "mp_weapon_mastiff"
+			modifiedLoadout.secondaryMods = [ "pas_fast_swap", "pas_run_and_gun" ]
+		}
+	}
+	
+	// dont wanna give a new loadout if it's not necessary, could break other callbacks
+	if ( shouldChangeLoadout )
+		GivePilotLoadout( player, modifiedLoadout )
+	
+	if ( IsFeaturedMode( "tactikill" ) )
+		player.GiveExtraWeaponMod( "tactical_cdr_on_kill" )
+	
+	if ( IsFeaturedMode( "amped_tacticals" ) )
+		player.GiveExtraWeaponMod( "amped_tacticals" )
+}
+
+void function FeaturedModeSettingsSetupTitanLoadouts( entity player, entity titan )
+{
+	if ( IsFeaturedMode( "turbo_titans" ) )
+	{
+		array<string> settingsMods = player.GetPlayerSettingsMods()
+		settingsMods.append( "turbo_titan" )
+		player.SetPlayerSettingsWithMods( player.GetPlayerSettings(), settingsMods )
+	}
 }

@@ -188,7 +188,12 @@ void function ScoreEvent_TitanKilled( entity victim, entity attacker, var damage
 
 void function ScoreEvent_NPCKilled( entity victim, entity attacker, var damageInfo )
 {
-	AddPlayerScore( attacker, ScoreEventForNPCKilled( victim, damageInfo ), victim )
+	try
+	{		
+		// have to trycatch this because marvins will crash on kill if we dont
+		AddPlayerScore( attacker, ScoreEventForNPCKilled( victim, damageInfo ), victim )
+	}
+	catch ( ex ) {}
 }
 
 
