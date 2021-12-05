@@ -52,6 +52,13 @@ void RunServer(CDedicatedExports* dedicated)
 
 	spdlog::info(CommandLine()->GetCmdLine());
 
+	// run initial 2 ticks, 1 to initialise engine and 1 to load initial map
+	g_pEngine->Frame();
+	g_pEngine->Frame();
+
+	// to fix a bug: set current playlist again, otherwise max_players will be set wrong
+	SetCurrentPlaylist(GetCurrentPlaylistName());
+
 	while (g_pEngine->m_nQuitting == EngineQuitState::QUIT_NOTQUITTING)
 	{
 		g_pEngine->Frame();
@@ -483,7 +490,7 @@ PrintFatalSquirrelErrorType PrintFatalSquirrelError;
 void PrintFatalSquirrelErrorHook(void* sqvm)
 {
 	PrintFatalSquirrelError(sqvm);
-	//abort();
+	g_pEngine->m_nQuitting = EngineQuitState::QUIT_TODESKTOP;
 }
 
 void InitialiseDedicatedServerGameDLL(HMODULE baseAddress)
