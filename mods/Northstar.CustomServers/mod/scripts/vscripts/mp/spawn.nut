@@ -139,6 +139,10 @@ entity function FindSpawnPoint( entity player, bool isTitan, bool useStartSpawnp
 	
 	InitRatings( player, team )
 	
+	// don't think this is necessary since we call discardratings
+	//foreach ( entity spawnpoint in spawnpoints )
+	//	spawnpoint.CalculateRating( isTitan ? TD_TITAN : TD_PILOT, team, 0.0, 0.0 )
+	
 	void functionref( int, array<entity>, int, entity ) ratingFunc = isTitan ? GameMode_GetTitanSpawnpointsRatingFunc( GAMETYPE ) : GameMode_GetPilotSpawnpointsRatingFunc( GAMETYPE )
 	ratingFunc( isTitan ? TD_TITAN : TD_PILOT, spawnpoints, team, player )
 	
@@ -165,7 +169,7 @@ entity function FindSpawnPoint( entity player, bool isTitan, bool useStartSpawnp
 	
 	spawnpoint.s.lastUsedTime = Time()
 	player.SetLastSpawnPoint( spawnpoint )
-	
+		
 	return spawnpoint
 }
 

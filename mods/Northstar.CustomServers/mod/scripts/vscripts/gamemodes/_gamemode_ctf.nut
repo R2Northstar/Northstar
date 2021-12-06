@@ -71,21 +71,24 @@ void function RateSpawnpoints_CTF( int checkClass, array<entity> spawnpoints, in
 	// get average startspawn position and max dist between spawns
 	// could probably cache this, tbh, not like it should change outside of halftimes
 	vector averageFriendlySpawns
-	float maxFriendlySpawnDist
+	float averageFriendlySpawnDist
+	
+	int averageDistCount
 	
 	foreach ( entity spawn in startSpawns )
 	{
 		foreach ( entity otherSpawn in startSpawns )
 		{
 			float dist = Distance2D( spawn.GetOrigin(), otherSpawn.GetOrigin() )
-			if ( dist > maxFriendlySpawnDist )
-				maxFriendlySpawnDist = dist
+			averageFriendlySpawnDist += dist
+			averageDistCount++
 		}
 		
 		averageFriendlySpawns += spawn.GetOrigin()
 	}
 	
 	averageFriendlySpawns /= startSpawns.len()
+	averageFriendlySpawnDist /= averageDistCount
 	
 	// get average enemy startspawn position
 	vector averageEnemySpawns
@@ -97,7 +100,7 @@ void function RateSpawnpoints_CTF( int checkClass, array<entity> spawnpoints, in
 	
 	// from here, rate spawns
 	float baseDistance = Distance2D( averageFriendlySpawns, averageEnemySpawns )
-	float spawnIterations = ( baseDistance / maxFriendlySpawnDist ) / 2
+	float spawnIterations = ( baseDistance / averageFriendlySpawnDist ) / 2
 	
 	foreach ( entity spawn in spawnpoints )
 	{
@@ -108,11 +111,11 @@ void function RateSpawnpoints_CTF( int checkClass, array<entity> spawnpoints, in
 	
 		for ( int i = 0; i < spawnIterations; i++ )
 		{
-			vector zonePos = averageFriendlySpawns + Normalize( averageEnemySpawns - averageFriendlySpawns ) * ( i * maxFriendlySpawnDist )
+			vector zonePos = averageFriendlySpawns + Normalize( averageEnemySpawns - averageFriendlySpawns ) * ( i * averageFriendlySpawnDist )
 			
 			float zonePower
 			foreach ( entity player in enemyPlayers )
-				if ( Distance2D( player.GetOrigin(), zonePos ) < maxFriendlySpawnDist )
+				if ( Distance2D( player.GetOrigin(), zonePos ) < averageFriendlySpawnDist )
 					zonePower += 1.0 / enemyPlayers.len()
 			
 			zonePower = min( zonePower, remainingZonePower )

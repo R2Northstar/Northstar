@@ -172,7 +172,7 @@ string function FormatServerDescription( int server )
 
 void function OnServerSelected( var button )
 {
-	if ( NSIsRequestingServerList() || !NSMasterServerConnectionSuccessful() )
+	if ( NSIsRequestingServerList() || !NSMasterServerConnectionSuccessful() || NSGetServerCount() == 0 )
 		return
 
 	int serverIndex = file.page * BUTTONS_PER_PAGE + int ( Hud_GetScriptID( button ) )
