@@ -31,6 +31,7 @@ void function PrivateMatchModesInit()
 	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "featured_mode_amped_tacticals", [ "Disabled", "Enabled" ], "0" )
 	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "featured_mode_rocket_arena", [ "Disabled", "Enabled" ], "0" )
 	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "featured_mode_shotguns_snipers", [ "Disabled", "Enabled" ], "0" )
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "iron_rules", [ "Disabled", "Enabled" ], "0" )
 	
 	// gamemode settings
 	AddPrivateMatchModeSettingEnum( "#GAMEMODE_cp", "cp_amped_capture_points", [ "Disabled", "Enabled" ], "1" ) // would've been nice to use amped_capture_points, but this var is already used ingame and its value is default 0

@@ -415,7 +415,6 @@ void function RespawnAsPilot( entity player, bool manualPosition = false )
 void function RespawnAsTitan( entity player, bool manualPosition = false )
 {
 	player.isSpawning = true
-
 	entity spawnpoint = FindSpawnPoint( player, true, ShouldStartSpawn( player ) && !IsFFAGame() )
 
 	TitanLoadoutDef titanLoadout = GetTitanLoadoutForPlayer( player )
@@ -429,7 +428,6 @@ void function RespawnAsTitan( entity player, bool manualPosition = false )
 	player.SetPetTitan( null ) // prevent embark prompt from showing up
 	
 	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD ) // hide hud
-	player.HolsterWeapon() // hide crosshair
 	
 	// do titanfall scoreevent
 	AddPlayerScore( player, "Titanfall", player )
@@ -449,20 +447,27 @@ void function RespawnAsTitan( entity player, bool manualPosition = false )
 	camera.SetLocalAngles( < camera.GetAngles().x, spawnpoint.GetAngles().y, camera.GetAngles().z > ) // this straight up just does not work lol
 	camera.Fire( "Enable", "!activator", 0, player )
 	
-	waitthread TitanHotDrop( titan, "at_hotdrop_01", spawnpoint.GetOrigin(), spawnpoint.GetAngles(), player, camera ) // do hotdrop anim
+	player.EndSignal( "OnDestroy" )
+	OnThreadEnd( function() : ( player, titan, camera )
+	{
+		if ( IsValid( player ) )
+		{
+			RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD ) // show hud
+			player.isSpawning = false
+		}
 	
-	camera.Fire( "Disable", "!activator", 0, player ) // stop using the camera
-	camera.Destroy()
-	RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD ) // show hud
-	player.DeployWeapon() // let them use weapons again
-	player.isSpawning = false
+		titan.Destroy() // pilotbecomestitan leaves an npc titan that we need to delete
+		camera.Fire( "Disable", "!activator", 0, player )
+		camera.Destroy()
+	})
+	
+	waitthread TitanHotDrop( titan, "at_hotdrop_01", spawnpoint.GetOrigin(), spawnpoint.GetAngles(), player, camera ) // do hotdrop anim
 		
 	player.RespawnPlayer( null ) // spawn player as pilot so they get their pilot loadout on embark
 	player.SetOrigin( titan.GetOrigin() )
 	WaitFrame()
 	
 	PilotBecomesTitan( player, titan ) // make player titan
-	titan.Destroy() // pilotbecomestitan leaves an npc titan that we need to delete
 }
 
 

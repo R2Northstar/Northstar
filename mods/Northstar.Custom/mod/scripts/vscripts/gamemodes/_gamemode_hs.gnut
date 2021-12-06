@@ -171,7 +171,7 @@ void function TryNotifyLastPlayerAlive( entity victim, entity attacker, var dama
 	if ( victim.GetTeam() == HIDEANDSEEK_TEAM_HIDER )
 	{
 		array<entity> hiders = GetPlayerArrayOfTeam( HIDEANDSEEK_TEAM_HIDER )
-		if ( hiders.len() == 1 )
+		if ( hiders.len() == 2 ) // 2nd to last hider is the one getting killed rn
 		{
 			PlayMusicToAll( eMusicPieceID.GAMEMODE_2 )
 		
