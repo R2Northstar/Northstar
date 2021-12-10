@@ -5,14 +5,17 @@ global function GamemodeColiseum_CustomIntro
 
 // outro anims
 // winner anims are for the winner, loser anims are for the loser
-// the loss number refers to the number of rounds the winner lost 
-const array<string> OUTROANIMS_WINNER_0LOSS = [ "pt_coliseum_winner_gunkick", "pt_coliseum_winner_compassion", "pt_coliseum_winner_drinking" ]
-const array<string> OUTROANIMS_WINNER_1LOSS = [ "pt_coliseum_winner_respect", "pt_coliseum_winner_headlock", "pt_coliseum_winner_authority" ]
-const array<string> OUTROANIMS_WINNER_2LOSS = [ "pt_coliseum_winner_punch", "pt_coliseum_winner_kick", "pt_coliseum_winner_stomp" ]
+const array< array<string> > OUTROANIMS_WINNER = [
+	[ "pt_coliseum_winner_gunkick", "pt_coliseum_winner_compassion", "pt_coliseum_winner_drinking" ], // winner lost 0 rounds
+	[ "pt_coliseum_winner_respect", "pt_coliseum_winner_headlock", "pt_coliseum_winner_authority" ], // winner lost 1 round
+	[ "pt_coliseum_winner_punch", "pt_coliseum_winner_kick", "pt_coliseum_winner_stomp" ] // winner lost 2 rounds
+]
 
-const array<string> OUTROANIMS_LOSER_0LOSS = [ "pt_coliseum_loser_gunkick", "pt_coliseum_loser_compassion", "pt_coliseum_loser_drinking" ]
-const array<string> OUTROANIMS_LOSER_1LOSS = [ "pt_coliseum_loser_respect", "pt_coliseum_loser_headlock", "pt_coliseum_loser_authority" ]
-const array<string> OUTROANIMS_LOSER_2LOSS = [ "pt_coliseum_loser_punch", "pt_coliseum_loser_kick", "pt_coliseum_loser_stomp" ]
+const array< array<string> > OUTROANIMS_LOSER = [
+	[ "pt_coliseum_loser_gunkick", "pt_coliseum_loser_compassion", "pt_coliseum_loser_drinking" ], // winner lost 0 rounds
+    [ "pt_coliseum_loser_respect", "pt_coliseum_loser_headlock", "pt_coliseum_loser_authority" ], // winner lost 1 round
+    [ "pt_coliseum_loser_punch", "pt_coliseum_loser_kick", "pt_coliseum_loser_stomp" ], // winner lost 2 rounds
+]
 
 struct {
 	bool hasShownIntroScreen
