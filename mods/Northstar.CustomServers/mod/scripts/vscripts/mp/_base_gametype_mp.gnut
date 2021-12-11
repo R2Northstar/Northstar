@@ -411,7 +411,7 @@ void function RespawnAsTitan( entity player, bool manualPosition = false )
 	DispatchSpawn( titan )
 	player.SetPetTitan( null ) // prevent embark prompt from showing up
 	
-	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD ) // hide hud
+	AddCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING ) // hide hud
 	
 	// do titanfall scoreevent
 	AddPlayerScore( player, "Titanfall", player )
@@ -436,7 +436,7 @@ void function RespawnAsTitan( entity player, bool manualPosition = false )
 	{
 		if ( IsValid( player ) )
 		{
-			RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD ) // show hud
+			RemoveCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING ) // show hud
 			player.isSpawning = false
 		}
 	
@@ -449,7 +449,6 @@ void function RespawnAsTitan( entity player, bool manualPosition = false )
 		
 	player.RespawnPlayer( null ) // spawn player as pilot so they get their pilot loadout on embark
 	player.SetOrigin( titan.GetOrigin() )
-	WaitFrame()
 	
 	PilotBecomesTitan( player, titan ) // make player titan
 }
