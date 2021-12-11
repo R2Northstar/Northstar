@@ -60,6 +60,8 @@ void function AddPlayerToHideAndSeekIntro( entity player )
 		
 		if ( GetPlayerArrayOfTeam( HIDEANDSEEK_TEAM_SEEKER ).len() < wantedSeekers )
 			SetTeam( player, HIDEANDSEEK_TEAM_SEEKER )
+		else
+			SetTeam( player, HIDEANDSEEK_TEAM_HIDER )
 	}
 	
 	ScreenFadeFromBlack( player, 1.0, 0.75 )
@@ -67,7 +69,7 @@ void function AddPlayerToHideAndSeekIntro( entity player )
 		
 	if ( player.GetTeam() == HIDEANDSEEK_TEAM_HIDER )
 	{
-		player.kv.visibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY
+		player.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY
 		Highlight_ClearEnemyHighlight( player )
 		
 		thread HiderIntroThread( player )
@@ -100,7 +102,7 @@ void function HiderIntroThread( entity player )
 
 	wait ( file.hidingStartTime + file.hidingTime ) - Time()
 	
-	player.kv.visibilityFlags = ENTITY_VISIBLE_TO_EVERYONE // make sure everyone can see us again
+	player.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE // make sure everyone can see us again
 } 
 
 void function SeekerIntroThread( entity player )
@@ -124,7 +126,6 @@ void function DelayedRoleAnnounce( entity player )
 void function GlobalSeekerIntroThread()
 {
 	wait file.hidingTime
-		
 	
 	PlayMusicToAll( eMusicPieceID.GAMEMODE_1 )
 	foreach ( entity hider in GetPlayerArrayOfTeam( HIDEANDSEEK_TEAM_HIDER ) )
@@ -157,7 +158,7 @@ void function SetupHideAndSeekPlayer( entity player )
 	
 		// set visibility flags if we're hiding, so seekers can't see us on intermission cam
 		if ( Time() - file.hidingStartTime < file.hidingTime )
-			player.kv.visiblityFlags = ENTITY_VISIBLE_TO_FRIENDLY
+			player.kv.VisiblityFlags = ENTITY_VISIBLE_TO_FRIENDLY
 		
 		// remove red outline, ideally should work tm
 		Highlight_ClearEnemyHighlight( player )

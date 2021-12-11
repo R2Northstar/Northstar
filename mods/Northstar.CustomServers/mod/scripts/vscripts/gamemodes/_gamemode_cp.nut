@@ -34,7 +34,10 @@ void function GamemodeCP_Init()
 
 void function RateSpawnpoints_CP( int checkClass, array<entity> spawnpoints, int team, entity player ) 
 {
+	// check hardpoints 
 
+	array<entity> startSpawns = SpawnPoints_GetPilotStart( team )
+	array<entity> enemyStartSpawns = SpawnPoints_GetPilotStart( GetOtherTeam( team ) )
 }
 
 void function SpawnHardpoints()

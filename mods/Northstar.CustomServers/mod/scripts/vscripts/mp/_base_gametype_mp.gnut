@@ -163,9 +163,7 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 
 	// Added via AddCallback_OnClientConnected
 	foreach ( callbackFunc in svGlobal.onClientConnectedCallbacks )
-	{
 		callbackFunc( player )
-	}
 
 	if ( !Flag( "PlayerDidSpawn") )
 		__PlayerDidSpawn( player )
@@ -232,6 +230,7 @@ void function CodeCallback_OnPlayerRespawned( entity player )
 void function CodeCallback_OnPlayerKilled( entity player, var damageInfo )
 {
 	PlayerOrNPCKilled( player, damageInfo )
+	HandleDeathPackage( player, damageInfo )
 	thread PostDeathThread_MP( player, damageInfo )
 }
 
@@ -294,6 +293,12 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 	if ( shouldDoReplay )
 		thread TrackDestroyTimeForReplay( attacker, replayTracker )
 	
+	player.StartObserverMode( OBS_MODE_DEATHCAM )
+	if ( ShouldSetObserverTarget( attacker ) )
+		player.SetObserverTarget( attacker )
+	else
+		player.SetObserverTarget( null )
+	
 	if ( !file.playerDeathsHidden )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_YouDied", attacker.GetEncodedEHandle(), GetHealthFrac( attacker ), methodOfDeath )
 
@@ -310,7 +315,7 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 	}
 
 	// quick note: in cases where player.Die() is called: e.g. for round ends, player == attacker
-	if ( shouldDoReplay && KillcamsEnabled() ) // hack: double check if killcams are enabled here in case gamestate has changed this
+	if ( shouldDoReplay && Replay_IsEnabled() && KillcamsEnabled() && IsValid( attacker ) ) // hack: double check if killcams are enabled and valid here in case gamestate has changed this
 	{	
 		player.watchingKillreplayEndTime = Time() + replayLength		
 		float beforeTime = GetKillReplayBeforeTime( player, methodOfDeath )
@@ -357,13 +362,20 @@ void function PlayerWatchesKillReplayWrapper( entity player, entity attacker, fl
 {
 	player.EndSignal( "RespawnMe" )
 	player.EndSignal( "OnRespawned" )
-	player.EndSignal( "GameStateChanged" )
+	
+	player.EndSignal( "OnDestroy" )
+	attacker.EndSignal( "OnDestroy" )
+	
+	svGlobal.levelEnt.EndSignal( "GameStateChanged" )
 	
 	OnThreadEnd( function() : ( player ) 
 	{	
-		player.ClearReplayDelay()
-		player.ClearViewEntity()
-		player.SetPredictionEnabled( true )
+		if ( IsValid( player ) )
+		{
+			player.ClearReplayDelay()
+			player.ClearViewEntity()
+			player.SetPredictionEnabled( true )
+		}
 	})
 	
 	player.SetPredictionEnabled( false )

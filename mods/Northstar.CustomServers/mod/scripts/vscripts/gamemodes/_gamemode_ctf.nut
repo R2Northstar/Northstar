@@ -40,6 +40,8 @@ void function CaptureTheFlag_Init()
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	AddCallback_OnPilotBecomesTitan( DropFlagForBecomingTitan )
 	
+	AddSpawnpointValidationRule( VerifyCTFSpawnpoint )
+	
 	RegisterSignal( "FlagReturnEnded" )
 	RegisterSignal( "ResetDropTimeout" )
 	
@@ -126,6 +128,32 @@ void function RateSpawnpoints_CTF( int checkClass, array<entity> spawnpoints, in
 		
 		spawn.CalculateRating( checkClass, player.GetTeam(), rating, rating )
 	}
+}
+
+bool function VerifyCTFSpawnpoint( entity spawnpoint, int team )
+{
+	// ensure spawnpoints aren't too close to enemy base
+	
+	if ( HasSwitchedSides() && spawnpoint.GetTeam() >= 2 )
+		team = GetOtherTeam( team )
+	
+	array<entity> startSpawns = SpawnPoints_GetPilotStart( team )
+	array<entity> enemyStartSpawns = SpawnPoints_GetPilotStart( GetOtherTeam( team ) )
+	
+	vector averageFriendlySpawns
+	vector averageEnemySpawns
+	
+	foreach ( entity spawn in startSpawns )
+		averageFriendlySpawns += spawn.GetOrigin()
+	
+	averageFriendlySpawns /= startSpawns.len()
+	
+	foreach ( entity spawn in enemyStartSpawns )
+		averageEnemySpawns += spawn.GetOrigin()
+	
+	averageEnemySpawns /= startSpawns.len()
+	
+	return Distance2D( spawnpoint.GetOrigin(), averageEnemySpawns ) / Distance2D( averageFriendlySpawns, averageEnemySpawns ) > 0.35
 }
 
 void function CTFInitPlayer( entity player )

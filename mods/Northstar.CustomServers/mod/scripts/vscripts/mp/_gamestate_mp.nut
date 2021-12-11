@@ -643,7 +643,7 @@ void function CleanUpEntitiesForRoundEnd()
 		ClearTitanAvailable( player )
 		
 		if ( IsAlive( player ) )
-			player.Die()
+			player.Die( svGlobal.worldspawn, svGlobal.worldspawn, { damageSourceId = eDamageSourceId.round_end } )
 		
 		if ( IsAlive( player.GetPetTitan() ) )
 			player.GetPetTitan().Destroy()
@@ -655,6 +655,9 @@ void function CleanUpEntitiesForRoundEnd()
 			
 	foreach ( entity weapon in GetEntArrayByClass_Expensive( "weaponx" ) )
 		weapon.Destroy()
+		
+	foreach ( entity battery in GetEntArrayByClass_Expensive( "item_titan_battery" ) )
+		battery.Destroy()
 	
 	// allow other scripts to clean stuff up too
 	svGlobal.levelEnt.Signal( "CleanUpEntitiesForRoundEnd" ) 

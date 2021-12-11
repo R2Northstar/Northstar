@@ -1,16 +1,17 @@
 global function RiffFloorIsLava_Init
 
-struct {
-	float pilotDamageMultiplier
-	float titanDamageMultiplier
-} file
-
 void function RiffFloorIsLava_Init()
 {
 	AddCallback_OnPlayerRespawned( FloorIsLava_PlayerRespawned )
 	
 	AddSpawnCallback( "env_fog_controller", InitLavaFogController )
 	AddCallback_EntitiesDidLoad( CreateCustomSpawns )
+	AddSpawnpointValidationRule( VerifyFloorIsLavaSpawnpoint )
+}
+
+bool function VerifyFloorIsLavaSpawnpoint( entity spawnpoint, int team )
+{
+	return spawnpoint.GetOrigin().z > GetLethalFogTop()
 }
 
 void function InitLavaFogController( entity fogController )
@@ -98,14 +99,14 @@ void function FloorIsLava_ThinkForPlayer( entity player )
 		if ( height < GetLethalFogTop() )
 		{
 			// do damage
-			float damageMultiplier = 0.08
+			float damageMultiplier
 			if ( player.IsTitan() )
-				damageMultiplier = 0.04
+				damageMultiplier = 0.0025
+			else
+				damageMultiplier = 0.05
 				
 			// scale damage by time spent in fog and depth
-			damageMultiplier *= 1 - ( height / GetLethalFogTop() )
-
-			player.TakeDamage( player.GetMaxHealth() * damageMultiplier, null, null, { damageSourceId = eDamageSourceId.floor_is_lava } )
+			player.TakeDamage( player.GetMaxHealth() * GraphCapped( ( GetLethalFogTop() - height ) / ( GetLethalFogTop() - GetLethalFogBottom() ), 0.0, 1.0, 0.2, 1.0 ) * damageMultiplier, null, null, { damageSourceId = eDamageSourceId.floor_is_lava } )
 		
 			wait 0.1
 		}
