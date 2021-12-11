@@ -7,6 +7,7 @@ global function SetRespawnsEnabled
 global function RespawnsEnabled
 global function SetSpawnpointGamemodeOverride
 global function GetSpawnpointGamemodeOverride
+global function AddSpawnpointValidationRule
 global function CreateNoSpawnArea
 global function DeleteNoSpawnArea
 
@@ -27,6 +28,7 @@ struct NoSpawnArea
 struct {
 	bool respawnsEnabled = true
 	string spawnpointGamemodeOverride
+	array< bool functionref( entity, int ) > customSpawnpointValidationRules
 
 	table<string, NoSpawnArea> noSpawnAreas
 	
@@ -74,6 +76,11 @@ bool function RespawnsEnabled()
 {
 	return file.respawnsEnabled
 }
+
+void function AddSpawnpointValidationRule( bool functionref( entity spawn, int team ) rule )
+{
+	file.customSpawnpointValidationRules.append( rule )
+} 
 
 string function CreateNoSpawnArea( int blockSpecificTeam, int blockEnemiesOfTeam, vector position, float lifetime, float radius )
 {
@@ -166,7 +173,7 @@ entity function FindSpawnPoint( entity player, bool isTitan, bool useStartSpawnp
 	}
 	
 	entity spawnpoint = GetBestSpawnpoint( player, spawnpoints )
-	
+		
 	spawnpoint.s.lastUsedTime = Time()
 	player.SetLastSpawnPoint( spawnpoint )
 		
@@ -230,21 +237,22 @@ bool function IsSpawnpointValid( entity spawnpoint, int team )
 		else if ( GameModeRemove( spawnpoint ) )
 			return false
 	}
-		
-	if ( Riff_FloorIsLava() && spawnpoint.GetOrigin().z < GetLethalFogTop() )
-		return false
 	
 	int compareTeam = spawnpoint.GetTeam()
 	if ( HasSwitchedSides() && ( compareTeam == TEAM_MILITIA || compareTeam == TEAM_IMC ) )
 		compareTeam = GetOtherTeam( compareTeam )
-	
+		
+	foreach ( bool functionref( entity, int ) customValidationRule in file.customSpawnpointValidationRules )
+		if ( !customValidationRule( spawnpoint, team ) )
+			return false
+		
 	if ( spawnpoint.GetTeam() > 0 && compareTeam != team && !IsFFAGame() )
 		return false
 	
 	if ( spawnpoint.IsOccupied() )
 		return false
 		
-	if ( Time() - spawnpoint.s.lastUsedTime <= 1.0 )
+	if ( Time() - spawnpoint.s.lastUsedTime <= 10.0 )
 		return false
 		
 	foreach ( k, NoSpawnArea noSpawnArea in file.noSpawnAreas )

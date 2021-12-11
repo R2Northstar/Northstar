@@ -31,7 +31,7 @@ bool function ClientCommandCallback_StartPrivateMatchSearch( entity player, arra
 {
 	// open lobby in private match mode
 	SetCurrentPlaylist( "private_match" ) // required for private match lobby to start properly
-	ServerCommand( "changelevel mp_lobby" )
+	GameRules_ChangeMap( "mp_lobby", GAMETYPE )
 	
 	return true
 }
