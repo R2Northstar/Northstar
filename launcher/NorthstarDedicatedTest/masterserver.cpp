@@ -259,6 +259,102 @@ void MasterServerManager::RequestServerList()
 	requestThread.detach();
 }
 
+void MasterServerManager::RequestMainMenuPromos()
+{
+	m_bHasMainMenuPromoData = false;
+
+	std::thread requestThread([this]()
+		{
+			while (m_bOriginAuthWithMasterServerInProgress || !m_bOriginAuthWithMasterServerDone)
+				Sleep(500);
+
+			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);
+			http.set_connection_timeout(20);
+
+			if (auto result = http.Get("/client/mainmenupromos"))
+			{
+				m_successfullyConnected = true;
+
+				rapidjson::Document mainMenuPromoJson;
+				mainMenuPromoJson.Parse(result->body.c_str());
+
+				if (mainMenuPromoJson.HasParseError())
+				{
+					spdlog::error("Failed reading masterserver main menu promos response: encountered parse error \"{}\"", rapidjson::GetParseError_En(mainMenuPromoJson.GetParseError()));
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (!mainMenuPromoJson.IsObject())
+				{
+					spdlog::error("Failed reading masterserver main menu promos response: root object is not an object");
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (mainMenuPromoJson.HasMember("error"))
+				{
+					spdlog::error("Failed reading masterserver response: got fastify error response");
+					spdlog::error(result->body);
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (!mainMenuPromoJson.HasMember("newInfo") || !mainMenuPromoJson["newInfo"].IsObject() ||
+					!mainMenuPromoJson["newInfo"].HasMember("Title1") || !mainMenuPromoJson["newInfo"]["Title1"].IsString() ||
+					!mainMenuPromoJson["newInfo"].HasMember("Title2") || !mainMenuPromoJson["newInfo"]["Title2"].IsString() ||
+					!mainMenuPromoJson["newInfo"].HasMember("Title3") || !mainMenuPromoJson["newInfo"]["Title3"].IsString() ||
+					
+					!mainMenuPromoJson.HasMember("largeButton") || !mainMenuPromoJson["largeButton"].IsObject() ||
+					!mainMenuPromoJson["largeButton"].HasMember("Title") || !mainMenuPromoJson["largeButton"]["Title"].IsString() ||
+					!mainMenuPromoJson["largeButton"].HasMember("Text") || !mainMenuPromoJson["largeButton"]["Text"].IsString() ||
+					!mainMenuPromoJson["largeButton"].HasMember("Url") || !mainMenuPromoJson["largeButton"]["Url"].IsString() ||
+					!mainMenuPromoJson["largeButton"].HasMember("ImageIndex") || !mainMenuPromoJson["largeButton"]["ImageIndex"].IsNumber() ||
+
+					!mainMenuPromoJson.HasMember("smallButton1") || !mainMenuPromoJson["smallButton1"].IsObject() ||
+					!mainMenuPromoJson["smallButton1"].HasMember("Title") || !mainMenuPromoJson["smallButton1"]["Title"].IsString() ||
+					!mainMenuPromoJson["smallButton1"].HasMember("Url") || !mainMenuPromoJson["smallButton1"]["Url"].IsString() ||
+					!mainMenuPromoJson["smallButton1"].HasMember("ImageIndex") || !mainMenuPromoJson["smallButton1"]["ImageIndex"].IsNumber() ||
+
+					!mainMenuPromoJson.HasMember("smallButton2") || !mainMenuPromoJson["smallButton2"].IsObject() ||
+					!mainMenuPromoJson["smallButton2"].HasMember("Title") || !mainMenuPromoJson["smallButton2"]["Title"].IsString() ||
+					!mainMenuPromoJson["smallButton2"].HasMember("Url") || !mainMenuPromoJson["smallButton2"]["Url"].IsString() ||
+					!mainMenuPromoJson["smallButton2"].HasMember("ImageIndex") || !mainMenuPromoJson["smallButton2"]["ImageIndex"].IsNumber())
+				{
+					spdlog::error("Failed reading masterserver main menu promos response: malformed json object");
+					goto REQUEST_END_CLEANUP;
+				}
+
+				m_MainMenuPromoData.newInfoTitle1 = mainMenuPromoJson["newInfo"]["Title1"].GetString();
+				m_MainMenuPromoData.newInfoTitle2 = mainMenuPromoJson["newInfo"]["Title2"].GetString();
+				m_MainMenuPromoData.newInfoTitle3 = mainMenuPromoJson["newInfo"]["Title3"].GetString();
+
+				m_MainMenuPromoData.largeButtonTitle = mainMenuPromoJson["largeButton"]["Title"].GetString();
+				m_MainMenuPromoData.largeButtonText = mainMenuPromoJson["largeButton"]["Text"].GetString();
+				m_MainMenuPromoData.largeButtonUrl = mainMenuPromoJson["largeButton"]["Url"].GetString();
+				m_MainMenuPromoData.largeButtonImageIndex = mainMenuPromoJson["largeButton"]["ImageIndex"].GetInt();
+
+				m_MainMenuPromoData.smallButton1Title = mainMenuPromoJson["smallButton1"]["Title"].GetString();
+				m_MainMenuPromoData.smallButton1Url = mainMenuPromoJson["smallButton1"]["Url"].GetString();
+				m_MainMenuPromoData.smallButton1ImageIndex = mainMenuPromoJson["smallButton1"]["ImageIndex"].GetInt();
+
+				m_MainMenuPromoData.smallButton2Title = mainMenuPromoJson["smallButton2"]["Title"].GetString();
+				m_MainMenuPromoData.smallButton2Url = mainMenuPromoJson["smallButton2"]["Url"].GetString();
+				m_MainMenuPromoData.smallButton2ImageIndex = mainMenuPromoJson["smallButton2"]["ImageIndex"].GetInt();
+
+				m_bHasMainMenuPromoData = true;
+			}
+			else
+			{
+				spdlog::error("Failed requesting main menu promos: error {}", result.error());
+				m_successfullyConnected = false;
+			}
+
+			REQUEST_END_CLEANUP:
+			// nothing lol
+			return;
+		});
+
+	requestThread.detach();
+}
+
 void MasterServerManager::AuthenticateWithOwnServer(char* uid, char* playerToken)
 {
 	// dont wait, just stop if we're trying to do 2 auth requests at once
@@ -620,6 +716,11 @@ void MasterServerManager::WritePlayerPersistentData(char* playerId, char* pdata,
 {
 	// still call this if we don't have a server id, since lobbies that aren't port forwarded need to be able to call it
 	m_savingPersistentData = true;
+	if (!pdataSize)
+	{
+		spdlog::warn("attempted to write pdata of size 0!");
+		return;
+	}
 
 	std::string playerIdTemp(playerId);
 	std::thread requestThread([this, playerIdTemp, pdata, pdataSize] {
@@ -631,7 +732,7 @@ void MasterServerManager::WritePlayerPersistentData(char* playerId, char* pdata,
 			};
 
 			// we dont process this at all atm, maybe do later, but atm not necessary
-			if (auto result = http.Post(fmt::format("/accounts/write_persistence?id={}?serverId={}", playerIdTemp, m_ownServerId).c_str(), requestItems))
+			if (auto result = http.Post(fmt::format("/accounts/write_persistence?id={}&serverId={}", playerIdTemp, m_ownServerId).c_str(), requestItems))
 			{
 				m_successfullyConnected = true;
 			}

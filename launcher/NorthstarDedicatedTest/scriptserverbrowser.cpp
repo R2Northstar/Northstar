@@ -8,7 +8,7 @@
 
 // functions for viewing server browser
 
-// void NSRequestServerList()
+// void function NSRequestServerList()
 SQRESULT SQ_RequestServerList(void* sqvm)
 {
 	g_MasterServerManager->RequestServerList();

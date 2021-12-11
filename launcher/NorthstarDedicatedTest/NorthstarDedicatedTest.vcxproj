@@ -325,6 +325,7 @@
     <ClInclude Include="playlist.h" />
     <ClInclude Include="miscserverscript.h" />
     <ClInclude Include="scriptbrowserhooks.h" />
+    <ClInclude Include="scriptmainmenupromos.h" />
     <ClInclude Include="securitypatches.h" />
     <ClInclude Include="scriptmodmenu.h" />
     <ClInclude Include="scriptserverbrowser.h" />
@@ -364,6 +365,7 @@
     <ClCompile Include="pdef.cpp" />
     <ClCompile Include="playlist.cpp" />
     <ClCompile Include="scriptbrowserhooks.cpp" />
+    <ClCompile Include="scriptmainmenupromos.cpp" />
     <ClCompile Include="securitypatches.cpp" />
     <ClCompile Include="scriptmodmenu.cpp" />
     <ClCompile Include="scriptserverbrowser.cpp" />
