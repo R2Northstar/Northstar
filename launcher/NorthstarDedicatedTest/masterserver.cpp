@@ -618,10 +618,7 @@ void MasterServerManager::UpdateServerPlayerCount(int playerCount)
 
 void MasterServerManager::WritePlayerPersistentData(char* playerId, char* pdata, size_t pdataSize)
 {
-	// dont call this if we don't have a server id
-	if (!*m_ownServerId)
-		return;
-
+	// still call this if we don't have a server id, since lobbies that aren't port forwarded need to be able to call it
 	m_savingPersistentData = true;
 
 	std::string playerIdTemp(playerId);
@@ -634,7 +631,7 @@ void MasterServerManager::WritePlayerPersistentData(char* playerId, char* pdata,
 			};
 
 			// we dont process this at all atm, maybe do later, but atm not necessary
-			if (auto result = http.Post(fmt::format("/accounts/write_persistence?id={}", playerIdTemp).c_str(), requestItems))
+			if (auto result = http.Post(fmt::format("/accounts/write_persistence?id={}?serverId={}", playerIdTemp, m_ownServerId).c_str(), requestItems))
 			{
 				m_successfullyConnected = true;
 			}

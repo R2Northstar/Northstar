@@ -68,7 +68,7 @@ void RunServer(CDedicatedExports* dedicated)
 		if (!maxPlayers)
 			maxPlayers = "6";
 
-		SetConsoleTitleA(fmt::format("Titanfall 2 dedicated server - {} {}/{} players", g_pHostState->m_levelName, g_ServerAuthenticationManager->m_additionalPlayerData.size(), maxPlayers).c_str());
+		SetConsoleTitleA(fmt::format("Titanfall 2 dedicated server - {} {}/{} players ({})", g_pHostState->m_levelName, g_ServerAuthenticationManager->m_additionalPlayerData.size(), maxPlayers, GetCurrentPlaylistName()).c_str());
 		Sleep(1.0 / Cvar_base_tickinterval_mp->m_fValue); // currently only supports mp, doesnt really matter rn though since most sp levels crash on dedi
 	}
 }
