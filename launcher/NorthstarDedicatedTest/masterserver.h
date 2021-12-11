@@ -40,6 +40,27 @@ public:
 	int port;
 };
 
+struct MainMenuPromoData
+{
+public:
+	std::string newInfoTitle1;
+	std::string newInfoTitle2;
+	std::string newInfoTitle3;
+
+	std::string largeButtonTitle;
+	std::string largeButtonText;
+	std::string largeButtonUrl;
+	int largeButtonImageIndex;
+
+	std::string smallButton1Title;
+	std::string smallButton1Url;
+	int smallButton1ImageIndex;
+
+	std::string smallButton2Title;
+	std::string smallButton2Url;
+	int smallButton2ImageIndex;
+};
+
 class MasterServerManager
 {
 private:
@@ -68,9 +89,13 @@ public:
 
 	std::vector<RemoteServerInfo> m_remoteServers;
 
+	bool m_bHasMainMenuPromoData = false;
+	MainMenuPromoData m_MainMenuPromoData;
+
 public:
 	void ClearServerList();
 	void RequestServerList();
+	void RequestMainMenuPromos();
 	void AuthenticateOriginWithMasterServer(char* uid, char* originToken);
 	void AuthenticateWithOwnServer(char* uid, char* playerToken);
 	void AuthenticateWithServer(char* uid, char* playerToken, char* serverId, char* password);

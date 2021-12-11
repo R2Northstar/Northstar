@@ -4,7 +4,7 @@
 #include "squirrel.h"
 #include "dedicated.h"
 
-// array<string> NSGetModNames()
+// array<string> function NSGetModNames()
 SQRESULT SQ_GetModNames(void* sqvm)
 {
 	ClientSq_newarray(sqvm, 0);
@@ -18,7 +18,7 @@ SQRESULT SQ_GetModNames(void* sqvm)
 	return SQRESULT_NOTNULL;
 }
 
-// bool NSIsModEnabled(string modName)
+// bool function NSIsModEnabled(string modName)
 SQRESULT SQ_IsModEnabled(void* sqvm)
 {
 	const SQChar* modName = ClientSq_getstring(sqvm, 1);
@@ -36,7 +36,7 @@ SQRESULT SQ_IsModEnabled(void* sqvm)
 	return SQRESULT_NULL;
 }
 
-// void NSSetModEnabled(string modName, bool enabled)
+// void function NSSetModEnabled(string modName, bool enabled)
 SQRESULT SQ_SetModEnabled(void* sqvm)
 {
 	const SQChar* modName = ClientSq_getstring(sqvm, 1);
@@ -55,7 +55,7 @@ SQRESULT SQ_SetModEnabled(void* sqvm)
 	return SQRESULT_NULL;
 }
 
-// string NSGetModDescriptionByModName(string modName)
+// string function NSGetModDescriptionByModName(string modName)
 SQRESULT SQ_GetModDescription(void* sqvm)
 {
 	const SQChar* modName = ClientSq_getstring(sqvm, 1);
@@ -73,7 +73,7 @@ SQRESULT SQ_GetModDescription(void* sqvm)
 	return SQRESULT_NULL;
 }
 
-// string NSGetModVersionByModName(string modName)
+// string function NSGetModVersionByModName(string modName)
 SQRESULT SQ_GetModVersion(void* sqvm)
 {
 	const SQChar* modName = ClientSq_getstring(sqvm, 1);
@@ -91,7 +91,7 @@ SQRESULT SQ_GetModVersion(void* sqvm)
 	return SQRESULT_NULL;
 }
 
-// string NSGetModDownloadLinkByModName(string modName)
+// string function NSGetModDownloadLinkByModName(string modName)
 SQRESULT SQ_GetModDownloadLink(void* sqvm)
 {
 	const SQChar* modName = ClientSq_getstring(sqvm, 1);
@@ -109,7 +109,7 @@ SQRESULT SQ_GetModDownloadLink(void* sqvm)
 	return SQRESULT_NULL;
 }
 
-// int NSGetModLoadPriority(string modName)
+// int function NSGetModLoadPriority(string modName)
 SQRESULT SQ_GetModLoadPriority(void* sqvm)
 {
 	const SQChar* modName = ClientSq_getstring(sqvm, 1);
@@ -127,7 +127,7 @@ SQRESULT SQ_GetModLoadPriority(void* sqvm)
 	return SQRESULT_NULL;
 }
 
-// bool NSIsModRequiredOnClient(string modName)
+// bool function NSIsModRequiredOnClient(string modName)
 SQRESULT SQ_IsModRequiredOnClient(void* sqvm)
 {
 	const SQChar* modName = ClientSq_getstring(sqvm, 1);
@@ -145,7 +145,7 @@ SQRESULT SQ_IsModRequiredOnClient(void* sqvm)
 	return SQRESULT_NULL;
 }
 
-// array<string> NSGetModConvarsByModName(string modName)
+// array<string> function NSGetModConvarsByModName(string modName)
 SQRESULT SQ_GetModConvars(void* sqvm)
 {
 	const SQChar* modName = ClientSq_getstring(sqvm, 1);
@@ -169,7 +169,7 @@ SQRESULT SQ_GetModConvars(void* sqvm)
 	return SQRESULT_NOTNULL; // return empty array
 }
 
-// void NSReloadMods()
+// void function NSReloadMods()
 SQRESULT SQ_ReloadMods(void* sqvm)
 {
 	g_ModManager->LoadMods();

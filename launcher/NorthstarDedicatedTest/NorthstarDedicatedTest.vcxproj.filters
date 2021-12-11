@@ -588,6 +588,9 @@
     <ClInclude Include="memalloc.h">
       <Filter>Header Files\Shared</Filter>
     </ClInclude>
+    <ClInclude Include="scriptmainmenupromos.h">
+      <Filter>Header Files\Client</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -688,6 +691,9 @@
     </ClCompile>
     <ClCompile Include="memalloc.cpp">
       <Filter>Source Files\Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="scriptmainmenupromos.cpp">
+      <Filter>Source Files\Client</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
