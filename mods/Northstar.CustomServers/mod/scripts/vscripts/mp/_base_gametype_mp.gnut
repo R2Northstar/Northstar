@@ -40,6 +40,8 @@ void function BaseGametype_Init_MPSP()
 	
 	AddDamageCallback( "player", AddToTitanDamageStat )
 	AddDamageCallback( "npc_titan", AddToTitanDamageStat )
+	
+	RegisterSignal( "PlayerRespawnStarted" )
 }
 
 void function SetIntermissionCamera( entity camera )
@@ -394,6 +396,8 @@ void function RespawnAsPilot( entity player, bool manualPosition = false )
 
 void function RespawnAsTitan( entity player, bool manualPosition = false )
 {
+	player.Signal( "PlayerRespawnStarted" )
+
 	player.isSpawning = true
 	entity spawnpoint = FindSpawnPoint( player, true, ShouldStartSpawn( player ) && !IsFFAGame() )
 
@@ -459,8 +463,15 @@ void function PlayerBecomesSpectator( entity player )
 
 	player.EndSignal( "OnRespawned" )
 	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "PlayerRespawnStarted" )
 
 	int targetIndex = 0
+	
+	OnThreadEnd( function() : ( player ) 
+	{
+		if ( IsValid( player ) )
+			player.StopObserverMode()
+	})
 	
 	while ( true )
 	{	

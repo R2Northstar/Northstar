@@ -320,10 +320,11 @@ void function GameStateEnter_WinnerDetermined_Threaded()
 		foreach( entity player in GetPlayerArray() )
 		{
 			player.FreezeControlsOnServer()
-			ScreenFadeToBlackForever( player, 2.0 )
+			ScreenFadeToBlackForever( player, 4.0 )
 		}
 		
-		wait 2.5
+		wait 6.5
+		CleanUpEntitiesForRoundEnd() // fade should be done by this point, so cleanup stuff now when people won't see
 		
 		foreach( entity player in GetPlayerArray() )
 			player.UnfreezeControlsOnServer()

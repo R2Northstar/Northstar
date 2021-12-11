@@ -33,21 +33,17 @@ void function PowerupSpawnerThink( entity spawnpoint, PowerUp powerupDef )
 	svGlobal.levelEnt.EndSignal( "CleanUpEntitiesForRoundEnd" )
 
 	entity base = CreatePropDynamic( powerupDef.baseModel, spawnpoint.GetOrigin(), spawnpoint.GetAngles(), 2 )
-	
-	entity powerup
-	OnThreadEnd( function() : ( base, powerup ) 
+	OnThreadEnd( function() : ( base ) 
 	{
 		base.Destroy()
-		if ( IsValid( powerup ) )
-			powerup.Destroy()
 	})
-
+	
 	while ( true )
 	{
 		if ( !powerupDef.spawnFunc() )
 			return
 						
-		powerup = CreateEntity( "item_powerup" )
+		entity powerup = CreateEntity( "item_powerup" )
 		
 		powerup.SetOrigin( base.GetOrigin() + powerupDef.modelOffset )
 		powerup.SetAngles( base.GetAngles() + powerupDef.modelAngles )
@@ -66,9 +62,20 @@ void function PowerupSpawnerThink( entity spawnpoint, PowerUp powerupDef )
 		PickupGlow glow = CreatePickupGlow( powerup, powerupDef.glowColor.x.tointeger(), powerupDef.glowColor.y.tointeger(), powerupDef.glowColor.z.tointeger() )
 		glow.glowFX.SetOrigin( spawnpoint.GetOrigin() ) // want the glow to be parented to the powerup, but have the position of the spawnpoint
 		
+		thread TrackPowerupCleanup( powerup )
+		
 		powerup.WaitSignal( "OnDestroy" )
 		wait powerupDef.respawnDelay
 	}
+}
+
+void function TrackPowerupCleanup( entity powerup )
+{
+	powerup.EndSignal( "OnDestroy" )
+	
+	svGlobal.levelEnt.WaitSignal( "CleanUpEntitiesForRoundEnd" )
+	if ( IsValid( powerup ) )
+		powerup.Destroy()
 }
 
 bool function OnPowerupCollected( entity player, entity healthpack )
