@@ -46,6 +46,8 @@ void function WaitForThirtySecondsLeftThreaded()
 	
 	// wait until 30sec left 
 	wait ( endTime - 30 ) - Time()
+	PlayMusicToAll( eMusicPieceID.LEVEL_LAST_MINUTE )
+	
 	foreach ( entity player in GetPlayerArray() )
 	{	
 		// warn there's 30 seconds left
