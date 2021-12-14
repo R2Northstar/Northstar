@@ -951,8 +951,10 @@ function TitanEmbark_PlayerEmbarks( entity player, entity titan, table e )
 		}
 	)
 	
+	#if MP
 	if ( GetCurrentPlaylistVarInt( "fp_embark_enabled", 0 ) == 1 && !doFirstPersonAnim )
 		FirstPersonSequenceForce1P( sequence, player, titan  )
+	#endif
 
 	thread FirstPersonSequence( sequence, player, titan )
 	// EmitDifferentSoundsOnEntityForPlayerAndWorld( firstPersonAudio, thirdPersonAudio, titan, player )

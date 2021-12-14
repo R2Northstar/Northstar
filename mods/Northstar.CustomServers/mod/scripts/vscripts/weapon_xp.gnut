@@ -20,7 +20,7 @@ void function AddWeaponXP( entity player, int amount )
 		player.SetPersistentVar( GetItemPersistenceStruct( weaponClassname ) + ".proScreenKills", WeaponGetProScreenKills( player, weaponClassname ) + amount )
 		
 		// not currently used rn, but adding a script var so scripts can handle proscreen values manually if wanted
-		if ( "manualProscreenControl" in activeWeapon.s && activeWeapon.s.manualProscreenControl )
+		if ( !( "manualProscreenControl" in activeWeapon.s && activeWeapon.s.manualProscreenControl ) )
 			activeWeapon.SetProScreenIntValForIndex( 0, WeaponGetProScreenKills( player, weaponClassname ) )
 	}
 }

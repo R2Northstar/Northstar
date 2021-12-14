@@ -834,7 +834,7 @@ void function TryBatteryStyleRodeo( entity rodeoPilot, entity rodeoTitan, entity
 	}
 	#endif
 
-	bool classicRodeo = GetCurrentPlaylistVarInt( "classic_rodeo", 0 ) == 1
+	bool classicRodeo = MP && GetCurrentPlaylistVarInt( "classic_rodeo", 0 ) == 1
 	
 	if ( ShouldThrowGrenadeInHatch( rodeoPilot ) )
 	{
@@ -846,6 +846,7 @@ void function TryBatteryStyleRodeo( entity rodeoPilot, entity rodeoTitan, entity
 		waitthread PlayerRemovesBatteryPack( rodeoPilot, rodeoTitan, titanSoul, rodeoPackage ) //This ends rodeo at the end of the sequence
 	}
 	
+	#if MP
 	if ( classicRodeo )
 	{	
 		RodeoBatteryRemoval_ShowBattery( rodeoPilot ) // hide battery, will be shown at the end of a battery removal rodeo
@@ -876,6 +877,7 @@ void function TryBatteryStyleRodeo( entity rodeoPilot, entity rodeoTitan, entity
 			WaitFrame()
 		}
 	}
+	#endif
 }
 
 struct RodeoRiderSequenceStruct

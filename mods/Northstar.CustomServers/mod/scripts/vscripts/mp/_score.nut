@@ -79,6 +79,8 @@ void function AddPlayerScore( entity targetPlayer, string scoreEventName, entity
 	
 	if ( ScoreEvent_HasConversation( event ) )
 		PlayFactionDialogueToPlayer( event.conversation, targetPlayer )
+		
+	HandleXPGainForScoreEvent( targetPlayer, event )
 }
 
 void function ScoreEvent_PlayerKilled( entity victim, entity attacker, var damageInfo )

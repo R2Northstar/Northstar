@@ -6,9 +6,11 @@ void function CodeCallback_MatchIsOver()
 		SetUIVar( level, "putPlayerInMatchmakingAfterDelay", true )
 	else
 		SetUIVar( level, "putPlayerInMatchmakingAfterDelay", false )
-
+	
+	#if MP
 	AddCreditsForXPGained()
 	PopulatePostgameData()
+	#endif
 
 	if ( ShouldReturnToLobby() )
 	{
@@ -19,6 +21,30 @@ void function CodeCallback_MatchIsOver()
 		else
 			GameRules_ChangeMap( "mp_lobby", GAMETYPE )
 	}
+	else
+	{
+		// iterate over all gamemodes/maps in current playlist, choose map/mode combination that's directly after our current one
+		// if we reach the end, go back to the first map/mode
+		bool changeOnNextIteration = false
+	
+		for ( int i = 0; i < GetCurrentPlaylistGamemodesCount(); i++ )
+		{
+			if ( GetCurrentPlaylistGamemodeByIndex( i ) == GAMETYPE )
+			{
+				for ( int j = 0; j < GetCurrentPlaylistGamemodeByIndexMapsCount( i ); j++ )
+				{
+					if ( changeOnNextIteration )
+						GameRules_ChangeMap( GetCurrentPlaylistGamemodeByIndexMapByIndex( i, j ), GetCurrentPlaylistGamemodeByIndex( i ) )
+				
+					if ( GetCurrentPlaylistGamemodeByIndexMapByIndex( i, j ) == GetMapName() )
+						changeOnNextIteration = true // change to next map/mode we iterate over
+				}
+			}
+		}
+		
+		// go back to first map/mode
+		GameRules_ChangeMap( GetCurrentPlaylistGamemodeByIndexMapByIndex( 0, 0 ), GetCurrentPlaylistGamemodeByIndex( 0 ) )
+	}
 
 #if DEV
 	if ( !IsMatchmakingServer() )
@@ -26,6 +52,7 @@ void function CodeCallback_MatchIsOver()
 #endif // #if DEV
 }
 
+#if MP
 void function PopulatePostgameData()
 {
 	// something's busted here because this isn't showing automatically on match end, ag
@@ -95,3 +122,4 @@ void function PopulatePostgameData()
 		player.SetPersistentVar( "isPostGameScoreboardValid", true )
 	}
 }
+#endif

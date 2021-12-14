@@ -61,8 +61,10 @@ void function FeaturedModeSettingsSetupPilotLoadouts( entity player )
 	
 		shouldChangeLoadout = true
 	
+		// have to set attachments too, otherwise we could give invalid mods for this weapon
 		modifiedLoadout.primary = "mp_weapon_epg"
 		modifiedLoadout.primaryMods = [ "rocket_arena" ]
+		modifiedLoadout.primaryAttachments = [ "" ]
 		
 		// set secondary to whatever one is pistol
 		if ( GetWeaponInfoFileKeyField_Global( player.GetMainWeapons()[ 1 ].GetWeaponClassName(), "menu_category" ) == "at" )
@@ -87,6 +89,7 @@ void function FeaturedModeSettingsSetupPilotLoadouts( entity player )
 		// this one was never released, assuming it just gives you a mastiff and a kraber with quick swap
 		modifiedLoadout.primary = "mp_weapon_sniper"
 		modifiedLoadout.primaryMods = [ "pas_fast_swap", "pas_fast_ads" ]
+		modifiedLoadout.primaryAttachments = [ "" ]
 		
 		// set secondary to whatever one is pistol
 		if ( GetWeaponInfoFileKeyField_Global( player.GetMainWeapons()[ 1 ].GetWeaponClassName(), "menu_category" ) == "at" )

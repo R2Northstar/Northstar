@@ -31,23 +31,20 @@ void function HandleXPGainForScoreEvent( entity player, ScoreEvent event )
 	// note: obviously all xp stuff can be cheated in if people want to on customs, this is mainly just here for fun for those who want it and feature completeness
 	// most score events don't have this, so we'll set this to the xp value of other categories later if needed
 	int xpValue = ScoreEvent_GetXPValue( event )
-	
-	entity activeWeapon = player.GetActiveWeapon()
 	int weaponXp = ScoreEvent_GetXPValueWeapon( event )
-	if ( weaponXp != 0 && ShouldTrackXPForWeapon( activeWeapon.GetWeaponClassName() ) )
-	{
-		AddWeaponXP( player, ScoreEvent_GetXPValueWeapon( event ) )
-		if ( xpValue < weaponXp )
-			xpValue = weaponXp
-	}
-	
 	int titanXp = ScoreEvent_GetXPValueTitan( event )
-	if ( titanXp != 0 && player.IsTitan() )
-	{
-		AddTitanXP( player, ScoreEvent_GetXPValueTitan( event ) )
-		if ( xpValue < titanXp )
-			xpValue = titanXp
-	}
+	
+	if ( xpValue < weaponXp )
+		xpValue = weaponXp
+	else if ( xpValue < titanXp )
+		xpValue = titanXp
+		
+	if ( ShouldTrackXPForWeapon( player.GetActiveWeapon().GetWeaponClassName() ) )
+		AddWeaponXP( player, xpValue )
+	
+	// if we specifically gain titan xp, then give titan xp no matter what, otherwise only give it when we're in a titan
+	if ( titanXp != 0 || player.IsTitan() )
+		AddTitanXP( player, xpValue )
 	
 	// most events don't have faction xp but almost everything should give it
 	int factionXp = ScoreEvent_GetXPValueFaction( event )

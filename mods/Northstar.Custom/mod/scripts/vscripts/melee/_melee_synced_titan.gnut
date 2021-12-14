@@ -1330,6 +1330,7 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 	
 		attackerBodySequence.useAnimatedRefAttachment = true
 		
+		#if MP
 		// could use FirstPersonSequenceForce1P here, but since this uses a propdynamic rather than a player, easier to do it manually
 		if ( GetCurrentPlaylistVarInt( "fp_embark_enabled", 0 ) == 1 )
 		{
@@ -1356,6 +1357,7 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 			ScreenFadeFromBlack( attacker, 1.0, 0.5 )
 			thread Forced1PAttackerViewBodySequence( attackerBodySequence, attackerViewBodyProxy, attacker, camera )
 		}
+		#endif
 		
 		thread FirstPersonSequence( attackerBodySequence, attackerViewBody, attacker )
 	}
@@ -1369,6 +1371,7 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 
 	if ( isAttackerRef )
 	{
+		#if MP
 		if ( GetCurrentPlaylistVarInt( "fp_embark_enabled", 0 ) == 1 )
 		{
 			if ( attacker.IsPlayer() && !attackerDoing1PViewbodyAnim )
@@ -1377,12 +1380,14 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 			if ( target.IsPlayer() )
 				FirstPersonSequenceForce1P( targetSequence, target, attacker )
 		}
+		#endif
 		
 		thread FirstPersonSequence( attackerSequence, attacker )
 		waitthread FirstPersonSequence( targetSequence, target, attacker )
 	}
 	else
 	{
+		#if MP
 		if ( GetCurrentPlaylistVarInt( "fp_embark_enabled", 0 ) == 1 )
 		{
 			if ( target.IsPlayer() )
@@ -1391,6 +1396,7 @@ void function TitanVsTitan_3p( SyncedMelee action, entity attacker, entity targe
 			if ( attacker.IsPlayer() && !attackerDoing1PViewbodyAnim )
 				FirstPersonSequenceForce1P( attackerSequence, attacker, target )
 		}
+		#endif
 	
 		thread FirstPersonSequence( targetSequence, target )
 		waitthread FirstPersonSequence( attackerSequence, attacker, target )

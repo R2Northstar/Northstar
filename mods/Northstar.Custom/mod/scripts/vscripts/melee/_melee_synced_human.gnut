@@ -258,14 +258,20 @@ void function MeleeThread_PilotVsEnemy_Attacker( SyncedMelee action, entity atta
 
 	if ( isAttackerRef )
 	{
+		#if MP
 		if ( GetCurrentPlaylistVarInt( "fp_embark_enabled", 0 ) == 1 )
 			FirstPersonSequenceForce1P( attackerSequence, attacker )
+		#endif
+			
 		thread FirstPersonSequence( attackerSequence, attacker )
 	}
 	else
 	{
+		#if MP
 		if ( GetCurrentPlaylistVarInt( "fp_embark_enabled", 0 ) == 1 )
 			FirstPersonSequenceForce1P( attackerSequence, attacker, target )
+		#endif
+
 		thread FirstPersonSequence( attackerSequence, attacker, target )
 	}
 
@@ -403,15 +409,19 @@ void function MeleeThread_PilotVsEnemy_Target( SyncedMelee action, entity attack
 
 	if ( isAttackerRef )
 	{
+		#if MP
 		if ( GetCurrentPlaylistVarInt( "fp_embark_enabled", 0 ) == 1 )
 			FirstPersonSequenceForce1P( targetSequence, target, attacker )
+		#endif
 		
 		waitthread FirstPersonSequence( targetSequence, target, attacker )
 	}
 	else
 	{
+		#if MP
 		if ( GetCurrentPlaylistVarInt( "fp_embark_enabled", 0 ) == 1 )
 			FirstPersonSequenceForce1P( targetSequence, target )
+		#endif
 		
 		waitthread FirstPersonSequence( targetSequence, target )
 	}
