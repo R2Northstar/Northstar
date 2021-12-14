@@ -21,6 +21,9 @@ struct AdditionalPlayerData
 
 	double lastClientCommandQuotaStart = 0;
 	int numClientCommandsInQuota = 0;
+
+	double lastNetChanProcessingLimitStart = -1.0;
+	double netChanProcessingLimitTime = 0;
 };
 
 class ServerAuthenticationManager

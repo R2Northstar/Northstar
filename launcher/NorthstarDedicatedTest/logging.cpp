@@ -3,6 +3,7 @@
 #include "sourceconsole.h"
 #include "spdlog/sinks/basic_file_sink.h"
 #include "hookutils.h"
+#include "gameutils.h"
 #include <iomanip>
 #include <sstream>
 

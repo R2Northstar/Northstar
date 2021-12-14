@@ -28,6 +28,9 @@ CBaseClient__DisconnectType CBaseClient__Disconnect;
 typedef char(*CGameClient__ExecuteStringCommandType)(void* self, uint32_t unknown, const char* pCommandString);
 CGameClient__ExecuteStringCommandType CGameClient__ExecuteStringCommand;
 
+typedef char(*__fastcall CNetChan___ProcessMessagesType)(void* self, void* buf);
+CNetChan___ProcessMessagesType CNetChan___ProcessMessages;
+
 // global vars
 ServerAuthenticationManager* g_ServerAuthenticationManager;
 
@@ -36,6 +39,8 @@ ConVar* Cvar_ns_erase_auth_info;
 ConVar* CVar_ns_auth_allow_insecure;
 ConVar* CVar_ns_auth_allow_insecure_write;
 ConVar* CVar_sv_quota_stringcmdspersecond;
+ConVar* Cvar_net_chan_limit_mode;
+ConVar* Cvar_net_chan_limit_msec_per_sec;
 
 void ServerAuthenticationManager::StartPlayerAuthServer()
 {
@@ -282,7 +287,7 @@ char CGameClient__ExecuteStringCommandHook(void* self, uint32_t unknown, const c
 	{
 		// note: this isn't super perfect, legit clients can trigger it in lobby, mostly good enough tho imo
 		// https://github.com/perilouswithadollarsign/cstrike15_src/blob/f82112a2388b841d72cb62ca48ab1846dfcc11c8/engine/sv_client.cpp#L1513
-		if (Plat_FloatTime() - g_ServerAuthenticationManager->m_additionalPlayerData[self].lastClientCommandQuotaStart >= 1.0f)
+		if (Plat_FloatTime() - g_ServerAuthenticationManager->m_additionalPlayerData[self].lastClientCommandQuotaStart >= 1.0)
 		{
 			// reset quota
 			g_ServerAuthenticationManager->m_additionalPlayerData[self].lastClientCommandQuotaStart = Plat_FloatTime();
@@ -302,6 +307,46 @@ char CGameClient__ExecuteStringCommandHook(void* self, uint32_t unknown, const c
 	return CGameClient__ExecuteStringCommand(self, unknown, pCommandString);
 }
 
+char __fastcall CNetChan___ProcessMessagesHook(void* self, void* buf)
+{
+	double startTime = Plat_FloatTime();
+	char ret = CNetChan___ProcessMessages(self, buf);
+	
+	// check processing limit
+	if (Cvar_net_chan_limit_mode->m_nValue != 0)
+	{
+		// player that sent the message
+		void* sender = *(void**)((char*)self + 368);
+
+		// if no sender, return
+		// relatively certain this is fine?
+		if (!sender || !g_ServerAuthenticationManager->m_additionalPlayerData.count(sender))
+			return ret;
+
+		// reset every second
+		if (startTime - g_ServerAuthenticationManager->m_additionalPlayerData[sender].lastNetChanProcessingLimitStart >= 1.0 || g_ServerAuthenticationManager->m_additionalPlayerData[sender].lastNetChanProcessingLimitStart == -1.0)
+		{
+			g_ServerAuthenticationManager->m_additionalPlayerData[sender].lastNetChanProcessingLimitStart = startTime;
+			g_ServerAuthenticationManager->m_additionalPlayerData[sender].netChanProcessingLimitTime = 0.0;
+		}
+
+		g_ServerAuthenticationManager->m_additionalPlayerData[sender].netChanProcessingLimitTime += (Plat_FloatTime() * 1000) - (startTime * 1000);
+		if (g_ServerAuthenticationManager->m_additionalPlayerData[sender].netChanProcessingLimitTime >= Cvar_net_chan_limit_msec_per_sec->m_nValue)
+		{
+			spdlog::warn("Client {} hit netchan processing limit with {}ms of processing time this second (max is {})", (char*)sender + 0x16, g_ServerAuthenticationManager->m_additionalPlayerData[sender].netChanProcessingLimitTime, Cvar_net_chan_limit_msec_per_sec->m_nValue);
+			
+			// mode 1 = kick, mode 2 = log without kicking
+			if (Cvar_net_chan_limit_mode->m_nValue == 1)
+			{
+				CBaseClient__Disconnect(sender, 1, "Exceeded net channel processing limit");
+				return false;
+			}
+		}
+	}
+
+	return ret;
+}
+
 void InitialiseServerAuthentication(HMODULE baseAddress)
 {
 	g_ServerAuthenticationManager = new ServerAuthenticationManager;
@@ -311,6 +356,9 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 	CVar_ns_auth_allow_insecure_write = RegisterConVar("ns_auth_allow_insecure_write", "0", FCVAR_GAMEDLL, "Whether the pdata of unauthenticated clients will be written to disk when changed");
 	// literally just stolen from a fix valve used in csgo
 	CVar_sv_quota_stringcmdspersecond = RegisterConVar("sv_quota_stringcmdspersecond", "60", FCVAR_GAMEDLL, "How many string commands per second clients are allowed to submit, 0 to disallow all string commands");
+	// https://blog.counter-strike.net/index.php/2019/07/24922/ but different because idk how to check what current tick number is
+	Cvar_net_chan_limit_mode = RegisterConVar("net_chan_limit_mode", "0", FCVAR_GAMEDLL, "The mode for netchan processing limits: 0 = none, 1 = kick, 2 = log");
+	Cvar_net_chan_limit_msec_per_sec = RegisterConVar("net_chan_limit_msec_per_sec", "0", FCVAR_GAMEDLL, "Netchannel processing is limited to so many milliseconds, abort connection if exceeding budget");
 	Cvar_ns_player_auth_port = RegisterConVar("ns_player_auth_port", "8081", FCVAR_GAMEDLL, "");
 
 	HookEnabler hook;
@@ -319,6 +367,7 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x100F80, &CBaseClient__ActivatePlayerHook, reinterpret_cast<LPVOID*>(&CBaseClient__ActivatePlayer));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1012C0, &CBaseClient__DisconnectHook, reinterpret_cast<LPVOID*>(&CBaseClient__Disconnect));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1022E0, &CGameClient__ExecuteStringCommandHook, reinterpret_cast<LPVOID*>(&CGameClient__ExecuteStringCommand));
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x2140A0, &CNetChan___ProcessMessagesHook, reinterpret_cast<LPVOID*>(&CNetChan___ProcessMessages));
 
 	// patch to disable kicking based on incorrect serverfilter in connectclient, since we repurpose it for use as an auth token
 	{
