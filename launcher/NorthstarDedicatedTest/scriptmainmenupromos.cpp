@@ -96,11 +96,6 @@ SQRESULT SQ_GetCustomMainMenuPromoData(void* sqvm)
 			break;
 		}
 
-		{
-			ClientSq_pushstring(sqvm, g_MasterServerManager->m_MainMenuPromoData.smallButton1Text.c_str(), -1);
-			break;
-		}
-
 		case eMainMenuPromoDataProperty::smallButton1Url:
 		{
 			ClientSq_pushstring(sqvm, g_MasterServerManager->m_MainMenuPromoData.smallButton1Url.c_str(), -1);
@@ -117,11 +112,6 @@ SQRESULT SQ_GetCustomMainMenuPromoData(void* sqvm)
 		case eMainMenuPromoDataProperty::smallButton2Title:
 		{
 			ClientSq_pushstring(sqvm, g_MasterServerManager->m_MainMenuPromoData.smallButton2Title.c_str(), -1);
-			break;
-		}
-
-		{
-			ClientSq_pushstring(sqvm, g_MasterServerManager->m_MainMenuPromoData.smallButton2Text.c_str(), -1);
 			break;
 		}
 
