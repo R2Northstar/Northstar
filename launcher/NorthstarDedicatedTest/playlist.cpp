@@ -47,19 +47,4 @@ void InitialisePlaylistHooks(HMODULE baseAddress)
 		TempReadWrite rw(ptr);
 		*((char*)ptr) = 0xC3; // jmp => ret
 	}
-
-	// on dedicated servers, force SetPlaylistVarOverride to always set the server's override list, irregardless of whether server is running yet
-	if (IsDedicated())
-	{
-		// SetPlaylistVarOverride
-		void* ptr = (char*)baseAddress + 0x18ED17;
-		TempReadWrite rw(ptr);
-
-		*((char*)ptr) = 0x90; // jl => nop
-		*((char*)ptr + 1) = 0x90;
-		*((char*)ptr + 2) = 0x90;
-		*((char*)ptr + 3) = 0x90;
-		*((char*)ptr + 4) = 0x90;
-		*((char*)ptr + 5) = 0x90;
-	}
 }

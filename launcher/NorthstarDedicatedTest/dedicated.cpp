@@ -437,6 +437,24 @@ void InitialiseDedicated(HMODULE engineAddress)
 
 		CommandLine()->AppendParm("-noshaderapi", 0);
 	}
+	else
+	{
+		// for dedis where we still create a window, we can at least hide the window we create
+		// not great since we still run renderthread etc, but better than nothing
+
+		{
+			// IVideoMode::CreateGameWindow
+			char* ptr = (char*)engineAddress + 0x1CD146;
+			TempReadWrite rw(ptr);
+
+			// nop call to ShowWindow
+			*ptr = (char)0x90;
+			*(ptr + 1) = (char)0x90;
+			*(ptr + 2) = (char)0x90;
+			*(ptr + 3) = (char)0x90;
+			*(ptr + 4) = (char)0x90;
+		}
+	}
 
 	CDedicatedExports* dedicatedExports = new CDedicatedExports;
 	dedicatedExports->vtable = dedicatedExports;
