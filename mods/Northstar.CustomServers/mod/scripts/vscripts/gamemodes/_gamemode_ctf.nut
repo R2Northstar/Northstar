@@ -116,8 +116,8 @@ void function RateSpawnpoints_CTF( int checkClass, array<entity> spawnpoints, in
 			vector zonePos = averageFriendlySpawns + Normalize( averageEnemySpawns - averageFriendlySpawns ) * ( i * averageFriendlySpawnDist )
 			
 			float zonePower
-			foreach ( entity player in enemyPlayers )
-				if ( Distance2D( player.GetOrigin(), zonePos ) < averageFriendlySpawnDist )
+			foreach ( entity otherPlayer in enemyPlayers )
+				if ( Distance2D( otherPlayer.GetOrigin(), zonePos ) < averageFriendlySpawnDist )
 					zonePower += 1.0 / enemyPlayers.len()
 			
 			zonePower = min( zonePower, remainingZonePower )
@@ -134,7 +134,7 @@ bool function VerifyCTFSpawnpoint( entity spawnpoint, int team )
 {
 	// ensure spawnpoints aren't too close to enemy base
 	
-	if ( HasSwitchedSides() && spawnpoint.GetTeam() >= 2 )
+	if ( HasSwitchedSides() && spawnpoint.GetTeam() >= TEAM_IMC )
 		team = GetOtherTeam( team )
 	
 	array<entity> startSpawns = SpawnPoints_GetPilotStart( team )

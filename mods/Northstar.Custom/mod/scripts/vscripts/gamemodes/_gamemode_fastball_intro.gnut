@@ -8,8 +8,6 @@ struct {
 	table< int, Point > buddySpawns
 	entity militiaBuddy
 	entity imcBuddy
-	
-	table<entity, bool> playersHoldingJump
 } file
 
 void function GamemodeFastballIntroSetup()
@@ -38,7 +36,6 @@ void function OnPrematchStart()
 	ClassicMP_OnIntroStarted()
 
 	file.introStartTime = Time()
-	file.playersHoldingJump = {} // clear it
 	
 	Point militiaBuddySpawn
 	Point imcBuddySpawn
@@ -198,14 +195,4 @@ void function FastballPlayer( entity player )
 	player.SetVelocity( throwVel )
 	
 	TryGameModeAnnouncement( player )
-}
-
-void function PlayerHoldingJumpInIntro( entity player )
-{
-	file.playersHoldingJump[ player ] <- true
-}
-
-void function PlayerNoLongerHoldingJumpInIntro( entity player )
-{
-	file.playersHoldingJump[ player ] <- false
 }

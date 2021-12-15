@@ -144,7 +144,7 @@ entity function FindSpawnPoint( entity player, bool isTitan, bool useStartSpawnp
 	else
 		spawnpoints = isTitan ? SpawnPoints_GetTitan() : SpawnPoints_GetPilot()
 	
-	InitRatings( player, team )
+	InitRatings( player, player.GetTeam() )
 	
 	// don't think this is necessary since we call discardratings
 	//foreach ( entity spawnpoint in spawnpoints )

@@ -165,6 +165,11 @@ void function EarnMeterMP_BoostEarned( entity player )
 	if ( burncard.extraWeaponMod != "" )
 		mods.append( burncard.extraWeaponMod )
 	
+	// ensure inventory slot isn't full to avoid crash
+	entity preexistingWeapon = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+	if ( IsValid( preexistingWeapon ) )
+		player.TakeWeaponNow( preexistingWeapon.GetWeaponClassName() )
+	
 	player.GiveOffhandWeapon( burncard.weaponName, OFFHAND_INVENTORY, mods )
 	Remote_CallFunction_Replay( player, "ServerCallback_RewardReadyMessage", player.s.respawnTime )
 }
