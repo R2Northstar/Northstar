@@ -96,8 +96,12 @@ void function EvacEpilogue()
 {
 	int winner = GetWinningTeam()		
 
-	// make sure we don't run this on ffa modes if no epilogue was specified or it won't work for current gamestate, since evac is default epilogue
-	if ( GetCurrentPlaylistVarInt( "max_teams", 2 ) == 2 && ( winner == TEAM_MILITIA || winner == TEAM_IMC ) )
+	// make sure we don't run evac if it won't be supported for current map/gamestate
+	bool canRunEvac = GetCurrentPlaylistVarInt( "max_teams", 2 ) == 2 && 
+					  ( winner == TEAM_MILITIA || winner == TEAM_IMC ) &&
+					  ( file.evacNodes.len() > 0 || IsValid( GetEnt( "escape_node1" ) ) ) // code assumes escape_node1 should be first node if automatically registering
+	
+	if ( canRunEvac )
 		thread Evac( GetOtherTeam( winner ), EVAC_INITIAL_WAIT, EVAC_ARRIVAL_TIME, EVAC_WAIT_TIME, EvacEpiloguePlayerCanBoard, EvacEpilogueShouldLeaveEarly, EvacEpilogueCompleted )
 	else
 		thread EvacEpilogueCompleted( null ) // this is hacky but like, this also shouldn't really be hit in normal gameplay
@@ -125,7 +129,7 @@ bool function EvacEpilogueShouldLeaveEarly( entity dropship )
 		if ( IsValid( player ) )
 			numEvacing++
 
-	return GetPlayerArrayOfTeam( dropship.GetTeam() ).len() == numEvacing || numEvacing == dropship.s.evacSlots.len()
+	return GetPlayerArrayOfTeam_Alive( dropship.GetTeam() ).len() == numEvacing || numEvacing == dropship.s.evacSlots.len()
 }
 
 void function EvacEpilogueCompleted( entity dropship )
@@ -283,8 +287,11 @@ void function Evac( int evacTeam, float initialWait, float arrivalTime, float wa
 	wait WARPINFXTIME
 	
 	// go to space 
+	
 	// hardcoded angles here are a hack, spacenode position doesn't face the planet in the skybox, for some reason
-	file.spaceNode.SetAngles( < 30, -75, 20 >)
+	// nvm removing for now
+	//file.spaceNode.SetAngles( < 30, -75, 20 > )
+	
 	dropship.SetOrigin( file.spaceNode.GetOrigin() )
 	dropship.SetAngles( file.spaceNode.GetAngles() )
 	dropship.SetInvulnerable()

@@ -4,7 +4,6 @@ global function NorthstarDevCommands_Init
 void function NorthstarDevCommands_Init()
 {
 	AddClientCommandCallback( "noclip", ClientCommandCallbackToggleNoclip )
-	AddClientCommandCallback( "script", ClientCommandCallbackEvalScript )
 	AddClientCommandCallback( "kill", ClientCommandCallbackKill )
 	AddClientCommandCallback( "explode", ClientCommandCallbackExplode )
 }
@@ -19,30 +18,6 @@ bool function ClientCommandCallbackToggleNoclip( entity player, array<string> ar
 	else
 		player.SetPhysics( MOVETYPE_NOCLIP )
 		
-	return true
-}
-
-bool function ClientCommandCallbackEvalScript( entity player, array<string> args )
-{
-	if ( args.len() < 1  || GetConVarInt( "sv_cheats" ) != 1 )
-		return true
-	
-	// todo: rewrite this at some point to use a concommand because clientcommands can't just take in a single string with spaces, quotes etc
-	// should just have the concommand call a clientcommand manually with properly formatted args
-	string joinedArgs = args[0]
-	for ( int i = 1; i < args.len(); i++ )
-		joinedArgs += " " + args[i]
-
-	try
-	{
-		compilestring( joinedArgs )()
-	}
-	catch (exception)
-	{
-		// should probably send this to the client at some point
-		// no need to log here because compilestring errors already do that
-	}
-
 	return true
 }
 

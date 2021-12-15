@@ -302,7 +302,7 @@ void function GameStateEnter_WinnerDetermined_Threaded()
 		SetServerVar( "roundWinningKillReplayEntHealthFrac", file.roundWinningKillReplayHealthFrac )
 		
 		foreach ( entity player in GetPlayerArray() )
-			thread PlayerWatchesRoundWinningKillReplay( player, doReplay, replayLength )
+			thread PlayerWatchesRoundWinningKillReplay( player, replayLength )
 	
 		wait ROUND_WINNING_KILL_REPLAY_SCREEN_FADE_TIME
 		CleanUpEntitiesForRoundEnd() // fade should be done by this point, so cleanup stuff now when people won't see
@@ -323,7 +323,7 @@ void function GameStateEnter_WinnerDetermined_Threaded()
 			ScreenFadeToBlackForever( player, 4.0 )
 		}
 		
-		wait 6.5
+		wait ROUND_WINNING_KILL_REPLAY_LENGTH_OF_REPLAY
 		CleanUpEntitiesForRoundEnd() // fade should be done by this point, so cleanup stuff now when people won't see
 		
 		foreach( entity player in GetPlayerArray() )
@@ -360,45 +360,39 @@ void function GameStateEnter_WinnerDetermined_Threaded()
 	}
 }
 
-void function PlayerWatchesRoundWinningKillReplay( entity player, bool doReplay, float replayLength )
+void function PlayerWatchesRoundWinningKillReplay( entity player, float replayLength )
 {
-	player.FreezeControlsOnServer()
-		
-	if ( IsRoundBased() || !ClassicMP_ShouldRunEpilogue() ) // if we're doing evac, then no fades or killreplay
-	{
-		ScreenFadeToBlackForever( player, ROUND_WINNING_KILL_REPLAY_SCREEN_FADE_TIME )
-		wait ROUND_WINNING_KILL_REPLAY_SCREEN_FADE_TIME
-		
-		if ( doReplay )
-		{
-			player.SetPredictionEnabled( false ) // prediction fucks with replays
-			
-			entity attacker = file.roundWinningKillReplayAttacker
-			player.SetKillReplayDelay( Time() - replayLength, THIRD_PERSON_KILL_REPLAY_ALWAYS )
-			player.SetKillReplayInflictorEHandle( attacker.GetEncodedEHandle() )
-			player.SetKillReplayVictim( file.roundWinningKillReplayVictim )
-			player.SetViewIndex( attacker.GetIndexForEntity() )
-			player.SetIsReplayRoundWinning( true )
-			
-			if ( replayLength >= ROUND_WINNING_KILL_REPLAY_LENGTH_OF_REPLAY - 0.5 ) // only do fade if close to full length replay
-			{
-				// this doesn't work because fades don't work on players that are in a replay, unsure how official servers do this
-				wait replayLength - 2.0
-				ScreenFadeToBlackForever( player, 2.0 )
+	// end if player dcs 
+	player.EndSignal( "OnDestroy" )
 	
-				wait 2.0
-			}
-			else
-				wait replayLength
-		}
-		else
-			wait replayLength // this will just be extra delay if no replay
-			
-		player.SetPredictionEnabled( true )
-		player.ClearReplayDelay()
-		player.ClearViewEntity()
-		player.UnfreezeControlsOnServer()
+	player.FreezeControlsOnServer()
+	ScreenFadeToBlackForever( player, ROUND_WINNING_KILL_REPLAY_SCREEN_FADE_TIME )
+	wait ROUND_WINNING_KILL_REPLAY_SCREEN_FADE_TIME
+	
+	player.SetPredictionEnabled( false ) // prediction fucks with replays
+	
+	entity attacker = file.roundWinningKillReplayAttacker
+	player.SetKillReplayDelay( Time() - replayLength, THIRD_PERSON_KILL_REPLAY_ALWAYS )
+	player.SetKillReplayInflictorEHandle( attacker.GetEncodedEHandle() )
+	player.SetKillReplayVictim( file.roundWinningKillReplayVictim )
+	player.SetViewIndex( attacker.GetIndexForEntity() )
+	player.SetIsReplayRoundWinning( true )
+	
+	if ( replayLength >= ROUND_WINNING_KILL_REPLAY_LENGTH_OF_REPLAY - 0.5 ) // only do fade if close to full length replay
+	{
+		// this doesn't work because fades don't work on players that are in a replay, unsure how official servers do this
+		wait replayLength - 2.0
+		ScreenFadeToBlackForever( player, 2.0 )
+	
+		wait 2.0
 	}
+	else
+		wait replayLength
+		
+	player.SetPredictionEnabled( true )
+	player.ClearReplayDelay()
+	player.ClearViewEntity()
+	player.UnfreezeControlsOnServer()
 }
 
 
