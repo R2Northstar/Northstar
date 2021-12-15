@@ -641,6 +641,7 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 
 
 				// heartbeat thread
+				// ideally this should actually be done in main thread, rather than on it's own thread, so it'd stop if server freezes
 				std::thread heartbeatThread([this] {
 						httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);
 						http.set_connection_timeout(10);
