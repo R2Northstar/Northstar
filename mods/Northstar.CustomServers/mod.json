@@ -26,6 +26,11 @@
 		{
 			"Name": "ns_private_match_last_map",
 			"DefaultValue": "mp_forwardbase_kodai"
+		},
+		
+		{
+			"Name": "ns_private_match_override_maxplayers",
+			"DefaultValue": "1"
 		}
 	],
 	

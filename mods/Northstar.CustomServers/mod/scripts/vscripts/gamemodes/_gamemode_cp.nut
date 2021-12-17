@@ -34,10 +34,46 @@ void function GamemodeCP_Init()
 
 void function RateSpawnpoints_CP( int checkClass, array<entity> spawnpoints, int team, entity player ) 
 {
-	// check hardpoints 
+	if ( HasSwitchedSides() )
+		team = GetOtherTeam( team )
 
+	// check hardpoints, determine which ones we own
 	array<entity> startSpawns = SpawnPoints_GetPilotStart( team )
-	array<entity> enemyStartSpawns = SpawnPoints_GetPilotStart( GetOtherTeam( team ) )
+	vector averageFriendlySpawns
+	
+	// average out startspawn positions
+	foreach ( entity spawnpoint in startSpawns )
+		averageFriendlySpawns += spawnpoint.GetOrigin()
+		
+	averageFriendlySpawns /= startSpawns.len()
+	
+	entity friendlyHardpoint // determine our furthest out hardpoint
+	foreach ( entity hardpoint in HARDPOINTS )
+	{
+		if ( hardpoint.GetTeam() == player.GetTeam() && GetGlobalNetFloat( "objective" + hardpoint.kv.hardpointGroup + "Progress" ) >= 0.95 )
+		{
+			if ( IsValid( friendlyHardpoint ) )
+			{
+				if ( Distance2D( averageFriendlySpawns, hardpoint.GetOrigin() ) > Distance2D( averageFriendlySpawns, friendlyHardpoint.GetOrigin() ) )
+					friendlyHardpoint = hardpoint
+			}
+			else
+				friendlyHardpoint = hardpoint
+		}
+	}
+	
+	vector ratingPos 
+	if ( IsValid( friendlyHardpoint ) )
+		ratingPos = friendlyHardpoint.GetOrigin()
+	else 
+		ratingPos = averageFriendlySpawns
+		
+	foreach ( entity spawnpoint in spawnpoints )
+	{
+		// idk about magic number here really
+		float rating = 1.0 - ( Distance2D( spawnpoint.GetOrigin(), ratingPos ) / 1000.0 )
+		spawnpoint.CalculateRating( checkClass, player.GetTeam(), rating, rating )
+	}
 }
 
 void function SpawnHardpoints()

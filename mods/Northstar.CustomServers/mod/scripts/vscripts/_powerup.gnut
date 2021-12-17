@@ -48,7 +48,8 @@ void function PowerupSpawnerThink( entity spawnpoint, PowerUp powerupDef )
 		powerup.SetOrigin( base.GetOrigin() + powerupDef.modelOffset )
 		powerup.SetAngles( base.GetAngles() + powerupDef.modelAngles )
 		powerup.SetValueForModelKey( powerupDef.model )
-		
+		powerup.s.powerupRef <- powerupDef.itemRef // this needs to be done before dispatchspawn since OnPowerupCollected will run as soon as we call dispatchspawn if there's a player on battery as it spawns
+	
 		DispatchSpawn( powerup )
 		
 		// unless i'm doing something really dumb, this all has to be done after dispatchspawn to get the powerup to not have gravity
@@ -57,7 +58,6 @@ void function PowerupSpawnerThink( entity spawnpoint, PowerUp powerupDef )
 		powerup.SetAngles( base.GetAngles() + powerupDef.modelAngles )
 		
 		powerup.SetModel( powerupDef.model )
-		powerup.s.powerupRef <- powerupDef.itemRef
 		
 		PickupGlow glow = CreatePickupGlow( powerup, powerupDef.glowColor.x.tointeger(), powerupDef.glowColor.y.tointeger(), powerupDef.glowColor.z.tointeger() )
 		glow.glowFX.SetOrigin( spawnpoint.GetOrigin() ) // want the glow to be parented to the powerup, but have the position of the spawnpoint

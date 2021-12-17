@@ -134,7 +134,7 @@ bool function VerifyCTFSpawnpoint( entity spawnpoint, int team )
 {
 	// ensure spawnpoints aren't too close to enemy base
 	
-	if ( HasSwitchedSides() && spawnpoint.GetTeam() >= TEAM_IMC )
+	if ( HasSwitchedSides() )
 		team = GetOtherTeam( team )
 	
 	array<entity> startSpawns = SpawnPoints_GetPilotStart( team )

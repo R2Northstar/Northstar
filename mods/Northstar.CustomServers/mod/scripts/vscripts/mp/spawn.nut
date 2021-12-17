@@ -302,15 +302,9 @@ bool function IsSpawnpointValid( entity spawnpoint, int team )
 
 void function RateSpawnpoints_Generic( int checkClass, array<entity> spawnpoints, int team, entity player )
 {	
-	// generic spawns v2
-	array<entity> startSpawns = checkClass == TD_TITAN ? SpawnPoints_GetTitanStart( team ) : SpawnPoints_GetPilotStart( team )
+	// i'm not a fan of this func, but i really don't have a better way to do this rn, and it's surprisingly good with los checks implemented now
 	
-	// realistically, this should spawn people fairly spread out across the map, preferring being closer to their startspawns
-	// should spawn like, near fights, but not in them
-	
-	
-	// using old func for tests rq
-		// calculate ratings for preferred nodes
+	// calculate ratings for preferred nodes
 	// this tries to prefer nodes with more teammates, then activity on them
 	// todo: in the future it might be good to have this prefer nodes with enemies up to a limit of some sort
 	// especially in ffa modes i could deffo see this falling apart a bit rn

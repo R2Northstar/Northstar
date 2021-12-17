@@ -38,8 +38,9 @@ void function HandleXPGainForScoreEvent( entity player, ScoreEvent event )
 		xpValue = weaponXp
 	else if ( xpValue < titanXp )
 		xpValue = titanXp
-		
-	if ( ShouldTrackXPForWeapon( player.GetActiveWeapon().GetWeaponClassName() ) )
+	
+	entity weapon = player.GetActiveWeapon()
+	if ( IsValid( weapon ) && ShouldTrackXPForWeapon( weapon.GetWeaponClassName() ) )
 		AddWeaponXP( player, xpValue )
 	
 	// if we specifically gain titan xp, then give titan xp no matter what, otherwise only give it when we're in a titan

@@ -26,6 +26,7 @@ void function GamemodeSpeedball_Init()
 	SetTimeoutWinnerDecisionFunc( TimeoutCheckFlagHolder )
 
 	ClassicMP_SetCustomIntro( ClassicMP_DefaultNoIntro_Setup, ClassicMP_DefaultNoIntro_GetLength() )
+	ClassicMP_ForceDisableEpilogue( true )
 }
 
 void function CreateFlag( entity flagSpawn )

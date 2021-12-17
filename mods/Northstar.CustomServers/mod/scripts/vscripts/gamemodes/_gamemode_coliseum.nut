@@ -36,11 +36,14 @@ void function GamemodeColiseum_Init()
 	ClassicMP_SetCustomIntro( ClassicMP_DefaultNoIntro_Setup, ClassicMP_DefaultNoIntro_GetLength() )
 	AddCallback_GameStateEnter( eGameState.Prematch, ShowColiseumIntroScreen )
 	AddCallback_OnPlayerRespawned( GivePlayerColiseumLoadout )
+	
+	ClassicMP_SetEpilogue( SetupColiseumEpilogue )
 }
 
 // stub function referenced in sh_gamemodes_mp
 void function GamemodeColiseum_CustomIntro( entity player )
-{}
+{
+}
 
 void function ShowColiseumIntroScreen()
 {
@@ -56,7 +59,6 @@ void function ShowColiseumIntroScreenThreaded()
 
 	foreach ( entity player in GetPlayerArray() )
 	{
-		
 		array<entity> otherTeam = GetPlayerArrayOfTeam( GetOtherTeam( player.GetTeam() ) )
 		
 		int winstreak = 0
@@ -106,6 +108,7 @@ void function GivePlayerColiseumLoadout( entity player )
 		
 	coliseumLoadout.primary = GetColiseumItem( "primary" )
 	coliseumLoadout.primaryMods = [ GetColiseumItem( "primary_attachment" ), GetColiseumItem( "primary_mod1" ), GetColiseumItem( "primary_mod2" ), GetColiseumItem( "primary_mod3" ) ]
+	coliseumLoadout.primaryAttachments = [] // will likely crash if we dont do this
 	                                                                         
 	coliseumLoadout.secondary = GetColiseumItem( "secondary" )               
 	coliseumLoadout.secondaryMods = [ GetColiseumItem( "secondary_mod1" ), GetColiseumItem( "secondary_mod2" ), GetColiseumItem( "secondary_mod3" ) ]
@@ -129,4 +132,88 @@ string function GetColiseumItem( string name )
 	return expect string ( GetCurrentPlaylistVar( "coliseum_" + name ) )
 }
 
-// todo this needs the outro: unsure what anims it uses
+void function SetupColiseumEpilogue()
+{
+	AddCallback_GameStateEnter( eGameState.Epilogue, RunColiseumOutro )
+}
+
+void function RunColiseumOutro()
+{
+	entity outroAnimPoint = GetEnt( "intermission" )
+	array<entity> winningPlayers = GetPlayerArrayOfTeam( GetWinningTeam() )
+	
+	if ( GetPlayerArray().len() > 0 && IsValid( outroAnimPoint ) && GetWinningTeam() != -1 && winningPlayers.len() != 0 ) // this will fail if we don't have players or a spot to do it
+		thread RunColiseumOutroThreaded( outroAnimPoint.GetOrigin(), winningPlayers[ 0 ] )
+	else
+		SetGameState( eGameState.Postmatch )
+}
+
+void function RunColiseumOutroThreaded( vector point, entity winningPlayer )
+{
+	OnThreadEnd( function() : ()
+	{
+		SetGameState( eGameState.Postmatch )
+	})
+	
+	winningPlayer.EndSignal( "OnDestroy" )
+
+	// pick winner and loser anims
+	int numLost = GameRules_GetTeamScore( GetOtherTeam( GetWinningTeam() ) )
+	int animIndex = RandomInt( OUTROANIMS_WINNER[ numLost ].len() )
+	string winnerAnim = OUTROANIMS_WINNER[ numLost ][ animIndex ]
+	string loserAnim = OUTROANIMS_LOSER[ numLost ][ animIndex ]
+	
+	foreach ( entity player in GetPlayerArray() )
+	{
+		if ( !IsAlive( player ) )
+			player.RespawnPlayer( null )
+		
+		AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
+		ScreenFadeFromBlack( player, 0.5 )
+		player.SetOrigin( point )
+		player.SetNameVisibleToEnemy( false )
+		player.SetNameVisibleToFriendly( false )
+		// for some reason this just doesn't use the mp music system, so have to manually play this
+		// odd game
+		EmitSoundOnEntityOnlyToPlayer( player, player, "music_mp_speedball_game_win" )
+				
+		FirstPersonSequenceStruct outroSequence
+		outroSequence.thirdPersonCameraAttachments = [ "VDU" ]
+		outroSequence.blendTime = 0.25
+		outroSequence.attachment = "ref"
+		outroSequence.enablePlanting = true
+		outroSequence.playerPushable = false
+		
+		// for when we kill any active weapons if not needed for anim
+		entity playerWeapon = player.GetActiveWeapon()
+		
+		if ( player.GetTeam() == GetWinningTeam() )
+		{
+			if ( IsValid( playerWeapon ) )
+				playerWeapon.Destroy()
+		
+			outroSequence.thirdPersonAnim = winnerAnim
+			outroSequence.noParent = true
+			outroSequence.gravity = true
+			thread FirstPersonSequence( outroSequence, player )
+		}
+		else
+		{
+			// need weapon for this anim in particular
+			if ( IsValid( playerWeapon ) && loserAnim != "pt_coliseum_loser_gunkick" )
+				playerWeapon.Destroy()
+		
+			outroSequence.thirdPersonAnim = loserAnim
+			outroSequence.useAnimatedRefAttachment = true
+			thread FirstPersonSequence( outroSequence, player, winningPlayer )
+		}
+	}
+
+	// all outro anims should be the same length ideally
+	wait winningPlayer.GetSequenceDuration( winnerAnim ) - 0.75
+	
+	foreach ( entity player in GetPlayerArray() )
+		ScreenFadeToBlackForever( player, 0.75 )
+	
+	wait 0.75
+}

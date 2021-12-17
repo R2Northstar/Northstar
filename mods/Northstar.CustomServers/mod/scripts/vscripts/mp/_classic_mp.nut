@@ -30,6 +30,7 @@ struct {
 	float customIntroLength
 	
 	bool epilogueForceDisabled = false
+	bool shouldRunEpilogueInRoundBasedMode = false
 	void functionref() epilogueSetupFunc
 } file
 
@@ -117,5 +118,5 @@ bool function GetClassicMPMode()
 bool function ClassicMP_ShouldRunEpilogue()
 {
 	// note: there is a run_evac playlist var, but it's unused, and default 0, so use a new one
-	return !file.epilogueForceDisabled && GetClassicMPMode() && !IsRoundBased() && GetCurrentPlaylistVarInt( "run_epilogue", 1 ) == 1
+	return !file.epilogueForceDisabled && GetClassicMPMode() && GetCurrentPlaylistVarInt( "run_epilogue", 1 ) == 1
 }

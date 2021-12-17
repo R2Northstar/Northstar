@@ -221,7 +221,7 @@ void function SpawnPlayerIntoDropship( entity player )
 		ClassicMP_OnIntroFinished() // set intro as finished
 		
 	// wait for intro timer to be fully done
-	wait( Time() - ( file.introStartTime + DROPSHIP_INTRO_LENGTH ) )
+	wait ( file.introStartTime + DROPSHIP_INTRO_LENGTH ) - Time()
 	player.MovementDisable() // disable all movement but let them look around still
 	player.ConsumeDoubleJump() // movementdisable doesn't prevent double jumps
 	
@@ -234,6 +234,5 @@ void function SpawnPlayerIntoDropship( entity player )
 	player.EnableWeaponViewModel()
 	RemoveCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING )
 	
-	if ( GetServerVar( "switchedSides" ) != 1 )
-		TryGameModeAnnouncement( player )
+	TryGameModeAnnouncement( player )
 }
