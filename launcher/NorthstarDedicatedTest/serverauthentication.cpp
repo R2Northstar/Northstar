@@ -109,7 +109,7 @@ bool ServerAuthenticationManager::AuthenticatePlayer(void* player, int64_t uid, 
 	{
 		// use stored auth data
 		AuthData authData = m_authData[authToken];
-		if (!strcmp(strUid.c_str(), authData.uid)) // connecting client's uid is different from auth's uid
+		if (!strcmp(strUid.c_str(), authData.uid)) // connecting client's uid is the same as auth's uid
 		{
 			authFail = false;
 			// uuid
@@ -134,13 +134,13 @@ bool ServerAuthenticationManager::AuthenticatePlayer(void* player, int64_t uid, 
 		strcpy((char*)player + 0xF500, strUid.c_str());
 
 		// try reading pdata file for player
-		std::string pdataPath = "playerdata/playerdata_";
+		std::string pdataPath = "R2Northstar/playerdata_";
 		pdataPath += strUid;
 		pdataPath += ".pdata";
 
 		std::fstream pdataStream(pdataPath, std::ios_base::in);
 		if (pdataStream.fail()) // file doesn't exist, use placeholder
-			pdataStream = std::fstream("playerdata/placeholder_playerdata.pdata");
+			pdataStream = std::fstream("R2Northstar/placeholder_playerdata.pdata");
 		
 		// get file length
 		pdataStream.seekg(0, pdataStream.end);
