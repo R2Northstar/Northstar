@@ -30,6 +30,7 @@ void function GamemodeLts_Init()
 	TrackTitanDamageInPlayerGameStat( PGS_ASSAULT_SCORE )
 	
 	ClassicMP_SetCustomIntro( ClassicMP_DefaultNoIntro_Setup, ClassicMP_DefaultNoIntro_GetLength() )
+	ClassicMP_ForceDisableEpilogue( true )
 	AddCallback_GameStateEnter( eGameState.Playing, WaitForThirtySecondsLeft )
 }
 

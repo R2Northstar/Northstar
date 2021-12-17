@@ -63,7 +63,6 @@ void function PIN_GameStart()
 	AddCallback_GameStateEnter( eGameState.WaitingForCustomStart, GameStateEnter_WaitingForCustomStart )
 	AddCallback_GameStateEnter( eGameState.WaitingForPlayers, GameStateEnter_WaitingForPlayers )
 	AddCallback_OnClientConnected( WaitingForPlayers_ClientConnected )
-	AddCallback_OnClientDisconnected( WaitingForPlayers_ClientDisconnected )
 	
 	AddCallback_GameStateEnter( eGameState.PickLoadout, GameStateEnter_PickLoadout )
 	AddCallback_GameStateEnter( eGameState.Prematch, GameStateEnter_Prematch )
@@ -120,27 +119,20 @@ void function GameStateEnter_WaitingForPlayers()
 	foreach ( entity player in GetPlayerArray() )
 		WaitingForPlayers_ClientConnected( player )
 		
-	thread WaitForPlayers( GetPendingClientsCount() + file.numPlayersFullyConnected ) // like 90% sure there should be a way to get number of loading clients on server but idk it
+	thread WaitForPlayers() // like 90% sure there should be a way to get number of loading clients on server but idk it
 }
 
-void function WaitForPlayers( int wantedNum )
+void function WaitForPlayers( )
 {
 	// note: atm if someone disconnects as this happens the game will just wait forever
-	print( "WaitForPlayers(): " + wantedNum + " players" )	
-	float endTime = Time() + 120.0
+	float endTime = Time() + 30.0
 	
-	while ( endTime > Time() )
-	{	
-		if ( file.numPlayersFullyConnected >= wantedNum )
-			break
-			
+	while ( GetPendingClientsCount() != 0 && endTime > Time() )
 		WaitFrame()
-	}
 	
 	print( "done waiting!" )
 	
 	wait 1.0 // bit nicer
-	
 	if ( file.usePickLoadoutScreen )
 		SetGameState( eGameState.PickLoadout )
 	else
@@ -151,15 +143,7 @@ void function WaitingForPlayers_ClientConnected( entity player )
 {
 	if ( GetGameState() == eGameState.WaitingForPlayers )
 		ScreenFadeToBlackForever( player, 0.0 )
-		
-	file.numPlayersFullyConnected++
 }
-
-void function WaitingForPlayers_ClientDisconnected( entity player )
-{
-	file.numPlayersFullyConnected--
-}
-
 
 // eGameState.PickLoadout
 void function GameStateEnter_PickLoadout()
@@ -238,7 +222,10 @@ void function GameStateEnter_Playing_Threaded()
 			if ( file.timeoutWinnerDecisionFunc != null )
 				winningTeam = file.timeoutWinnerDecisionFunc()
 			else
-				winningTeam = GameScore_GetWinningTeam()
+				winningTeam = GetWinningTeam()
+			
+			if ( winningTeam == -1 )
+				winningTeam = TEAM_UNASSIGNED 
 			
 			if ( file.switchSidesBased && !file.hasSwitchedSides && !IsRoundBased() ) // in roundbased modes, we handle this in setwinner
 				SetGameState( eGameState.SwitchingSides )
@@ -269,6 +256,8 @@ void function GameStateEnter_WinnerDetermined_Threaded()
 {
 	// do win announcement
 	int winningTeam = GetWinningTeam()
+	if ( winningTeam == -1 )
+		winningTeam = TEAM_UNASSIGNED
 		
 	foreach ( entity player in GetPlayerArray() )
 	{
@@ -277,15 +266,15 @@ void function GameStateEnter_WinnerDetermined_Threaded()
 			announcementSubstr = player.GetTeam() == winningTeam ? file.announceRoundWinnerWinningSubstr : file.announceRoundWinnerLosingSubstr
 	
 		if ( IsRoundBased() )
-			Remote_CallFunction_NonReplay( player, "ServerCallback_AnnounceRoundWinner", GetWinningTeam(), announcementSubstr, ROUND_WINNING_KILL_REPLAY_SCREEN_FADE_TIME, GameRules_GetTeamScore2( TEAM_MILITIA ), GameRules_GetTeamScore2( TEAM_IMC ) )
+			Remote_CallFunction_NonReplay( player, "ServerCallback_AnnounceRoundWinner", winningTeam, announcementSubstr, ROUND_WINNING_KILL_REPLAY_SCREEN_FADE_TIME, GameRules_GetTeamScore2( TEAM_MILITIA ), GameRules_GetTeamScore2( TEAM_IMC ) )
 		else
-			Remote_CallFunction_NonReplay( player, "ServerCallback_AnnounceWinner", GetWinningTeam(), announcementSubstr, ROUND_WINNING_KILL_REPLAY_SCREEN_FADE_TIME )
+			Remote_CallFunction_NonReplay( player, "ServerCallback_AnnounceWinner", winningTeam, announcementSubstr, ROUND_WINNING_KILL_REPLAY_SCREEN_FADE_TIME )
 	}
 	
 	WaitFrame() // wait a frame so other scripts can setup killreplay stuff
 
 	entity replayAttacker = file.roundWinningKillReplayAttacker
-	bool doReplay = Replay_IsEnabled() && !ClassicMP_ShouldRunEpilogue() && IsRoundWinningKillReplayEnabled() && IsValid( replayAttacker )
+	bool doReplay = Replay_IsEnabled() && IsRoundWinningKillReplayEnabled() && IsValid( replayAttacker )
 				 && Time() - file.roundWinningKillReplayTime <= ROUND_WINNING_KILL_REPLAY_LENGTH_OF_REPLAY
  	
 	float replayLength = 2.0 // extra delay if no replay
@@ -336,11 +325,23 @@ void function GameStateEnter_WinnerDetermined_Threaded()
 		int roundsPlayed = expect int ( GetServerVar( "roundsPlayed" ) )
 		SetServerVar( "roundsPlayed", roundsPlayed + 1 )
 		
-		float highestScore = max( GameRules_GetTeamScore( TEAM_IMC ), GameRules_GetTeamScore( TEAM_MILITIA ) )
+		int winningTeam = GetWinningTeam()
+		if ( winningTeam == -1 )
+			winningTeam = TEAM_UNASSIGNED 
+		
+		int highestScore = GameRules_GetTeamScore( winningTeam )
 		int roundScoreLimit = GameMode_GetRoundScoreLimit( GAMETYPE )
 		
 		if ( highestScore >= roundScoreLimit )
-			SetGameState( eGameState.Postmatch )
+		{
+			if ( ClassicMP_ShouldRunEpilogue() )
+			{
+				ClassicMP_SetupEpilogue()
+				SetGameState( eGameState.Epilogue )
+			}
+			else
+				SetGameState( eGameState.Postmatch )
+		}
 		else if ( file.switchSidesBased && !file.hasSwitchedSides && highestScore >= ( roundScoreLimit.tofloat() / 2.0 ) ) // round up
 			SetGameState( eGameState.SwitchingSides ) // note: switchingsides will handle setting to pickloadout and prematch by itself
 		else if ( file.usePickLoadoutScreen )

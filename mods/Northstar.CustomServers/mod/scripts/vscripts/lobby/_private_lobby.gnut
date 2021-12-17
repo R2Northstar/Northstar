@@ -124,6 +124,10 @@ void function StartMatch()
 		WaitFrame()
 	}
 		
+	// do this before setting playlist
+	if ( GetConVarBool( "ns_private_match_override_maxplayers" ) )
+		SetPlaylistVarOverride( "max_players", GetCurrentPlaylistVarString( "max_players", "16" ) )
+		
 	try
 	{
 		// todo: not every gamemode uses the same playlist as their name! need some code to resolve these manually
