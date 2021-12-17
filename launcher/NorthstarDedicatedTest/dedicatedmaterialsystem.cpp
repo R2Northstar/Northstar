@@ -135,11 +135,48 @@ void* RegisterRpakTypeHook(RpakTypeDefinition* rpakStruct, unsigned int a1, unsi
 	return RegisterRpakType(rpakStruct, a1, a2);
 }
 
+typedef void*(*PakLoadAPI__LoadRpakType)(char* filename, void* unknown, int flags);
+PakLoadAPI__LoadRpakType PakLoadAPI__LoadRpak;
+
+void* PakLoadAPI__LoadRpakHook(char* filename, void* unknown, int flags)
+{
+	spdlog::info("PakLoadAPI__LoadRpakHook {}", filename);
+	
+	// on dedi, don't load any paks that aren't required
+	if (strncmp(filename, "common", 6))
+		return 0;
+	
+	return PakLoadAPI__LoadRpak(filename, unknown, flags);
+}
+
+typedef void* (*PakLoadAPI__LoadRpak2Type)(char* filename, void* unknown, int flags, void* callback, void* callback2);
+PakLoadAPI__LoadRpak2Type PakLoadAPI__LoadRpak2;
+
+void* PakLoadAPI__LoadRpak2Hook(char* filename, void* unknown, int flags, void* callback, void* callback2)
+{
+	spdlog::info("PakLoadAPI__LoadRpak2Hook {}", filename);
+
+	// on dedi, don't load any paks that aren't required
+	if (strncmp(filename, "common", 6))
+		return 0;
+
+	return PakLoadAPI__LoadRpak2(filename, unknown, flags, callback, callback2);
+}
+
 void InitialiseDedicatedRtechGame(HMODULE baseAddress)
 {
-	if (!IsDedicated() || !DisableDedicatedWindowCreation())
+	if (!IsDedicated())
 		return;
 
+	baseAddress = GetModuleHandleA("rtech_game.dll");
+
 	HookEnabler hook;
-	ENABLER_CREATEHOOK(hook, (char*)GetModuleHandleA("rtech_game.dll") + 0x7BE0, &RegisterRpakTypeHook, reinterpret_cast<LPVOID*>(&RegisterRpakType));
+	// unfortunately this is unstable, seems to freeze when changing maps
+	//ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0xB0F0, &PakLoadAPI__LoadRpakHook, reinterpret_cast<LPVOID*>(&PakLoadAPI__LoadRpak));
+	//ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0xB170, &PakLoadAPI__LoadRpak2Hook, reinterpret_cast<LPVOID*>(&PakLoadAPI__LoadRpak2));
+
+	if (DisableDedicatedWindowCreation())
+	{
+		ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x7BE0, &RegisterRpakTypeHook, reinterpret_cast<LPVOID*>(&RegisterRpakType));
+	}
 }
