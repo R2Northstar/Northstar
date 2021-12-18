@@ -317,6 +317,7 @@
     <ClInclude Include="main.h" />
     <ClInclude Include="masterserver.h" />
     <ClInclude Include="memalloc.h" />
+    <ClInclude Include="miscclientfixes.h" />
     <ClInclude Include="misccommands.h" />
     <ClInclude Include="modlocalisation.h" />
     <ClInclude Include="modmanager.h" />
@@ -351,6 +352,7 @@
     <ClCompile Include="hookutils.cpp" />
     <ClCompile Include="keyvalues.cpp" />
     <ClCompile Include="memalloc.cpp" />
+    <ClCompile Include="miscclientfixes.cpp" />
     <ClCompile Include="misccommands.cpp" />
     <ClCompile Include="modlocalisation.cpp" />
     <ClCompile Include="logging.cpp" />
