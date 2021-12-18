@@ -591,6 +591,9 @@
     <ClInclude Include="scriptmainmenupromos.h">
       <Filter>Header Files\Client</Filter>
     </ClInclude>
+    <ClInclude Include="miscclientfixes.h">
+      <Filter>Header Files\Client</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -693,6 +696,9 @@
       <Filter>Source Files\Shared</Filter>
     </ClCompile>
     <ClCompile Include="scriptmainmenupromos.cpp">
+      <Filter>Source Files\Client</Filter>
+    </ClCompile>
+    <ClCompile Include="miscclientfixes.cpp">
       <Filter>Source Files\Client</Filter>
     </ClCompile>
   </ItemGroup>

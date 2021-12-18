@@ -23,6 +23,7 @@
 #include "clientauthhooks.h"
 #include "scriptbrowserhooks.h"
 #include "scriptmainmenupromos.h"
+#include "miscclientfixes.h"
 #include "memalloc.h"
 
 bool initialised = false;
@@ -102,6 +103,7 @@ void InitialiseNorthstar()
         AddDllLoadCallback("engine.dll", InitialiseClientAuthHooks);
         AddDllLoadCallback("engine.dll", InitialiseScriptExternalBrowserHooks);
         AddDllLoadCallback("client.dll", InitialiseScriptMainMenuPromos);
+        AddDllLoadCallback("client.dll", InitialiseMiscClientFixes);
     }
 
     AddDllLoadCallback("server.dll", InitialiseServerSquirrel);
