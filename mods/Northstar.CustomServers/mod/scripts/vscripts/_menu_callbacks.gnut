@@ -11,6 +11,12 @@ bool function ClientCommandCallback_LeaveMatch( entity player, array<string> arg
 	// note: this is imperfect if we have multiple people of the same uid on a server, but that's only a thing in testing
 	if ( NSIsPlayerIndexLocalPlayer( player.GetPlayerIndex() ) )
 	{
+		if ( GetConVarBool( "ns_should_return_to_lobby" ) && GetMapName() != "mp_lobby" )
+		{
+			GameRules_EndMatch()
+			return true
+		}
+	
 		foreach ( entity otherPlayer in GetPlayerArray() )
 			if ( otherPlayer != player )
 				thread WritePersistenceAndLeave( otherPlayer )
