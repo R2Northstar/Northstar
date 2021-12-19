@@ -1,6 +1,6 @@
 #pragma once
 
-enum Context
+enum class ScriptContex : int
 {
 	SERVER,
 	CLIENT,
@@ -8,4 +8,4 @@ enum Context
 	NONE
 };
 
-const char* GetContextName(Context context);
+const char* GetContextName(ScriptContex context);

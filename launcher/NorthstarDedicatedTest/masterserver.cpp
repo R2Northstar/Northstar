@@ -14,7 +14,6 @@
 #include "misccommands.h"
 
 ConVar* Cvar_ns_masterserver_hostname;
-ConVar* Cvar_ns_masterserver_port;
 ConVar* Cvar_ns_report_server_to_masterserver;
 ConVar* Cvar_ns_report_sp_server_to_masterserver;
 
@@ -79,7 +78,7 @@ void MasterServerManager::AuthenticateOriginWithMasterServer(char* uid, char* or
 
 	std::thread requestThread([this, uidStr, tokenStr]()
 		{
-			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);
+			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
 			http.set_connection_timeout(10);
 
 			spdlog::info("Trying to authenticate with northstar masterserver for user {} {}", uidStr, tokenStr);
@@ -142,7 +141,7 @@ void MasterServerManager::RequestServerList()
 			m_requestingServerList = true;
 			m_scriptRequestingServerList = true;
 			
-			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);
+			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
 			http.set_connection_timeout(10);
 
 			spdlog::info("Requesting server list from {}", Cvar_ns_masterserver_hostname->m_pszString);
@@ -267,8 +266,8 @@ void MasterServerManager::RequestMainMenuPromos()
 		{
 			while (m_bOriginAuthWithMasterServerInProgress || !m_bOriginAuthWithMasterServerDone)
 				Sleep(500);
-
-			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);
+			
+			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
 			http.set_connection_timeout(20);
 
 			if (auto result = http.Get("/client/mainmenupromos"))
@@ -367,7 +366,7 @@ void MasterServerManager::AuthenticateWithOwnServer(char* uid, char* playerToken
 	
 	std::thread requestThread([this, uid, playerToken]()
 		{
-			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);
+			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
 			http.set_connection_timeout(20);
 
 			if (auto result = http.Post(fmt::format("/client/auth_with_self?id={}&playerToken={}", uid, playerToken).c_str()))
@@ -475,7 +474,7 @@ void MasterServerManager::AuthenticateWithServer(char* uid, char* playerToken, c
 			while (m_savingPersistentData)
 				Sleep(100);
 
-			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);
+			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
 			http.set_connection_timeout(20);
 
 			spdlog::info("Attempting authentication with server of id \"{}\"", serverId);
@@ -557,7 +556,7 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 	m_bRequireClientAuth = true;
 
 	std::thread requestThread([this, port, authPort, name, description, map, playlist, maxPlayers, password] {
-			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);
+			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
 			http.set_connection_timeout(20);
 
 			m_ownServerId[0] = 0;
@@ -643,7 +642,7 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 				// heartbeat thread
 				// ideally this should actually be done in main thread, rather than on it's own thread, so it'd stop if server freezes
 				std::thread heartbeatThread([this] {
-						httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);
+						httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
 						http.set_connection_timeout(10);
 
 						while (*m_ownServerId)
@@ -672,7 +671,7 @@ void MasterServerManager::UpdateServerMapAndPlaylist(char* map, char* playlist)
 		return;
 
 	std::thread requestThread([this, map, playlist] {
-			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);
+			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
 			http.set_connection_timeout(10);
 
 			// we dont process this at all atm, maybe do later, but atm not necessary
@@ -696,7 +695,7 @@ void MasterServerManager::UpdateServerPlayerCount(int playerCount)
 		return;
 
 	std::thread requestThread([this, playerCount] {
-			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);
+			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
 			http.set_connection_timeout(10);
 
 			// we dont process this at all atm, maybe do later, but atm not necessary
@@ -725,7 +724,7 @@ void MasterServerManager::WritePlayerPersistentData(char* playerId, char* pdata,
 
 	std::string playerIdTemp(playerId);
 	std::thread requestThread([this, playerIdTemp, pdata, pdataSize] {
-			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);
+			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
 			http.set_connection_timeout(10); 
 
 			httplib::MultipartFormDataItems requestItems = {
@@ -755,7 +754,7 @@ void MasterServerManager::RemoveSelfFromServerList()
 		return;
 
 	std::thread requestThread([this] {
-			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString, Cvar_ns_masterserver_port->m_nValue);
+			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
 			http.set_connection_timeout(10);
 
 			// we dont process this at all atm, maybe do later, but atm not necessary
@@ -823,7 +822,8 @@ void CHostState__State_GameShutdownHook(CHostState* hostState)
 void InitialiseSharedMasterServer(HMODULE baseAddress)
 {
 	Cvar_ns_masterserver_hostname = RegisterConVar("ns_masterserver_hostname", "127.0.0.1", FCVAR_NONE, "");
-	Cvar_ns_masterserver_port = RegisterConVar("ns_masterserver_port", "8080", FCVAR_NONE, "");
+	// unfortunately lib doesn't let us specify a port and still have https work
+	//Cvar_ns_masterserver_port = RegisterConVar("ns_masterserver_port", "8080", FCVAR_NONE, "");
 
 	Cvar_ns_server_name = RegisterConVar("ns_server_name", "Unnamed Northstar Server", FCVAR_GAMEDLL, "");
 	Cvar_ns_server_desc = RegisterConVar("ns_server_desc", "Default server description", FCVAR_GAMEDLL, "");
