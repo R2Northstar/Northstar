@@ -62,32 +62,38 @@ void function PowerupSpawnerThink( entity spawnpoint, PowerUp powerupDef )
 		PickupGlow glow = CreatePickupGlow( powerup, powerupDef.glowColor.x.tointeger(), powerupDef.glowColor.y.tointeger(), powerupDef.glowColor.z.tointeger() )
 		glow.glowFX.SetOrigin( spawnpoint.GetOrigin() ) // want the glow to be parented to the powerup, but have the position of the spawnpoint
 		
-		thread TrackPowerupCleanup( powerup )
+		OnThreadEnd( function() : ( powerup )
+		{
+			if ( IsValid( powerup ) )
+				powerup.Destroy()
+		})
 		
 		powerup.WaitSignal( "OnDestroy" )
 		wait powerupDef.respawnDelay
 	}
 }
 
-void function TrackPowerupCleanup( entity powerup )
-{
-	powerup.EndSignal( "OnDestroy" )
-	
-	svGlobal.levelEnt.WaitSignal( "CleanUpEntitiesForRoundEnd" )
-	if ( IsValid( powerup ) )
-		powerup.Destroy()
-}
-
 bool function OnPowerupCollected( entity player, entity healthpack )
 {
 	PowerUp powerup = GetPowerUpFromItemRef( expect string( healthpack.s.powerupRef ) )
 	
-	if ( player.IsTitan() == powerup.titanPickup )
+	if ( powerup.titanPickup == player.IsTitan() )
 	{
 		// hack because i couldn't figure out any other way to do this without modifying sh_powerup
 		// ensure we don't kill the powerup if it's a battery the player can't pickup
-		if ( ( powerup.index == ePowerUps.titanTimeReduction || powerup.index == ePowerUps.LTS_TitanTimeReduction ) && ( player.IsTitan() || PlayerHasMaxBatteryCount( player ) ) )
-			return false
+		if ( powerup.index == ePowerUps.titanTimeReduction || powerup.index == ePowerUps.LTS_TitanTimeReduction )
+		{
+			if ( player.IsTitan() )
+				return false
+			
+			if ( PlayerHasMaxBatteryCount( player ) )
+				return false
+			
+			// this is seemingly innacurate to what fra actually did, but for whatever reason embarking with >1 bat crashes in vanilla code
+			// so idk this is easier 
+			if ( GAMETYPE == FREE_AGENCY && ( IsValid( player.GetPetTitan() ) || IsTitanAvailable( player ) ) && GetPlayerBatteryCount( player ) > 0 )
+				return false
+		}
 	
 		// idk why the powerup.destroyFunc doesn't just return a bool? would mean they could just handle stuff like this in powerup code
 		powerup.destroyFunc( player )
