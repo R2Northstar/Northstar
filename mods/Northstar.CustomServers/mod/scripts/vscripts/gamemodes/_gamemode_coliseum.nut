@@ -31,7 +31,6 @@ void function GamemodeColiseum_Init()
 	Riff_ForceBoostAvailability( eBoostAvailability.Disabled )
 	Riff_ForceSetEliminationMode( eEliminationMode.Pilots )
 	SetLoadoutGracePeriodEnabled( false ) // prevent modifying loadouts with grace period
-	SetWeaponDropsEnabled( false )
 	
 	ClassicMP_SetCustomIntro( ClassicMP_DefaultNoIntro_Setup, ClassicMP_DefaultNoIntro_GetLength() )
 	AddCallback_GameStateEnter( eGameState.Prematch, ShowColiseumIntroScreen )
@@ -139,6 +138,21 @@ void function SetupColiseumEpilogue()
 
 void function RunColiseumOutro()
 {
+	// also since this runs on game end, do winstreak stuff
+	foreach ( entity player in GetPlayerArray() )
+	{
+		if ( GetWinningTeam() == player.GetTeam() )
+		{
+			player.SetPersistentVar( "coliseumTotalWins", player.GetPersistentVarAsInt( "coliseumTotalWins" ) + 1 )
+			player.SetPersistentVar( "coliseumWinStreak", player.GetPersistentVarAsInt( "coliseumWinStreak" ) + 1 )
+		}
+		else
+		{
+			player.SetPersistentVar( "coliseumTotalWins", maxint( player.GetPersistentVarAsInt( "coliseumTotalWins" ) - 1, 0 ) )
+			player.SetPersistentVar( "coliseumWinStreak", 0 )
+		}
+	}
+
 	entity outroAnimPoint = GetEnt( "intermission" )
 	array<entity> winningPlayers = GetPlayerArrayOfTeam( GetWinningTeam() )
 	

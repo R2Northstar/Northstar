@@ -80,7 +80,7 @@ void function OnFlagDestroyed( entity flag )
 
 void function ShowTimeGainOnKill( entity player, float oldVal, float newVal, bool actuallyChanged )
 {	
-	if ( file.isCurrentlyInRace || player != GetLocalViewPlayer() || !actuallyChanged )
+	if ( file.isCurrentlyInRace || player != GetLocalClientPlayer() || !actuallyChanged )
 		return
 
 	if ( newVal > oldVal ) // time increase: likely given on kill
@@ -122,7 +122,7 @@ void function UpdateFullTimeAmountAfterAdditionDone( float previousAdditionTime 
 void function UpdateCurrentTimeAmount( float overrideTime = -1 )
 {
 	if ( overrideTime == -1 )
-		file.currentTimeAmount = GetLocalViewPlayer().GetPlayerNetTime( "killRaceTime" )
+		file.currentTimeAmount = GetLocalClientPlayer().GetPlayerNetTime( "killRaceTime" )
 	else	
 		file.currentTimeAmount = overrideTime
 	
@@ -154,13 +154,13 @@ void function ServerCallback_FlagSpawnIncoming( float x, float y, float z , floa
 	Announcement_SetPriority( announcement, 200 )
 	Announcement_SetSoundAlias( announcement, SFX_HUD_ANNOUNCE_QUICK )
 	Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_QUICK )
-	AnnouncementFromClass( GetLocalViewPlayer(), announcement )
+	AnnouncementFromClass( GetLocalClientPlayer(), announcement )
 	
 	RuiSetFloat3( file.flagRui, "pos", < x, y, z > )
 	RuiSetBool( file.flagRui, "isVisible", true )
 	
 	file.flagIncomingRui = RuiCreate( $"ui/titanfall_timer.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
-	RuiTrackFloat3( file.flagIncomingRui, "playerPos", GetLocalViewPlayer(), RUI_TRACK_ABSORIGIN_FOLLOW )
+	RuiTrackFloat3( file.flagIncomingRui, "playerPos", GetLocalClientPlayer(), RUI_TRACK_ABSORIGIN_FOLLOW )
 	RuiSetFloat3( file.flagIncomingRui, "pos", < x, y, z > + < 0, 0, 48 > )
 	RuiSetGameTime( file.flagIncomingRui, "impactTime", spawnTime )
 }
@@ -171,7 +171,7 @@ void function ServerCallback_NewKillRacer( int playerHandle, float endTime )
 	
 	string announcementMessage = Localize( "#KR_NEW_RACER", player.GetPlayerName() )
 	string announcementSubMessage
-	if ( player == GetLocalViewPlayer() )
+	if ( player == GetLocalClientPlayer() )
 	{
 		file.isCurrentlyInRace = true
 		thread LerpTimeDuringRace( endTime )
@@ -197,7 +197,7 @@ void function ServerCallback_NewKillRacer( int playerHandle, float endTime )
 	Announcement_SetPriority( announcement, 200 )
 	Announcement_SetSoundAlias( announcement, SFX_HUD_ANNOUNCE_QUICK )
 	Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_QUICK )
-	AnnouncementFromClass( GetLocalViewPlayer(), announcement )
+	AnnouncementFromClass( GetLocalClientPlayer(), announcement )
 }
 
 void function LerpTimeDuringRace( float endTime )
@@ -220,9 +220,9 @@ void function ServerCallback_EndKillrace( int playerHandle, int score )
 	vector colour = < 0, 0, 1 >
 	string announcementMessage = Localize( "#KR_ENEMY_KILLRACE_OVER", player.GetPlayerName() )
 	string announcementSubMessage
-	if ( player == GetLocalViewPlayer() )
+	if ( player == GetLocalClientPlayer() )
 	{
-		StartParticleEffectOnEntity( GetLocalViewPlayer().GetCockpit(), GetParticleSystemIndex( $"P_MFD_unmark" ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
+		StartParticleEffectOnEntity( GetLocalClientPlayer().GetCockpit(), GetParticleSystemIndex( $"P_MFD_unmark" ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
 		colour = < 1, 0, 0 >
 		announcementMessage = "#KR_YOUR_KILLRACE_OVER"
 		announcementSubMessage = Localize( "#KR_YOUR_KILLRACE_SCORE", score )
