@@ -20,8 +20,9 @@ const array<string> DROPSHIP_JUMP_ANIMS_POV = [ "Classic_MP_flyin_exit_povA_jump
                                                 "Classic_MP_flyin_exit_povB_jump",
                                                 "Classic_MP_flyin_exit_povC_jump",
                                                 "Classic_MP_flyin_exit_povD_jump" ]
+												
+const int MAX_DROPSHIP_PLAYERS = 4
 
-const array<int> DROPSHIP_ANIMS_YAW = [ -18, 8, 8, -16 ]
 
 global const float DROPSHIP_INTRO_LENGTH = 15.0 // TODO tweak this
 
@@ -30,66 +31,28 @@ struct IntroDropship
 	entity dropship
 
 	int playersInDropship
-	entity[4] players
+	entity[MAX_DROPSHIP_PLAYERS] players
 }
 
 struct {
-	IntroDropship[2] militiaDropships
-	IntroDropship[2] imcDropships
+	// these used to be IntroDropship[2]s but i wanted to be able to use array.getrandom so they have to be actual arrays
+	array<IntroDropship> militiaDropships
+	array<IntroDropship> imcDropships
 	
 	float introStartTime
-	int numPlayersInIntro
 } file
 
 
 void function ClassicMP_DefaultDropshipIntro_Setup()
 {
-	AddCallback_OnClientConnected( DropshipIntro_OnClientConnected )
-	AddCallback_OnClientDisconnected( DropshipIntro_OnClientDisconnected )
-	
+	AddCallback_OnClientConnected( DropshipIntro_OnClientConnected )	
 	AddCallback_GameStateEnter( eGameState.Prematch, OnPrematchStart )
 }
 
 void function DropshipIntro_OnClientConnected( entity player )
 {
-	// find the player's team's dropships
-	IntroDropship[2] teamDropships = player.GetTeam() == TEAM_MILITIA ? file.militiaDropships : file.imcDropships
-
-	// find a dropship with an empty slot
-	foreach ( IntroDropship dropship in teamDropships )
-		if ( dropship.playersInDropship < 4 )
-			// we've found a valid dropship
-			// find an empty player slot
-			for ( int i = 0; i < dropship.players.len(); i++ )
-				if ( dropship.players[ i ] == null ) // empty slot
-				{
-					dropship.players[ i ] = player
-					dropship.playersInDropship++
-					
-					// spawn player into intro if we're already doing intro
-					if ( GetGameState() == eGameState.Prematch )
-						thread SpawnPlayerIntoDropship( player )
-					
-					return
-				}
-}
-
-void function DropshipIntro_OnClientDisconnected( entity player )
-{
-	// find the player's dropship
-	IntroDropship[2] teamDropships = player.GetTeam() == TEAM_MILITIA ? file.militiaDropships : file.imcDropships
-	
-	// find the player
-	foreach ( IntroDropship dropship in teamDropships )
-		for ( int i = 0; i < dropship.players.len(); i++ )
-			if ( dropship.players[ i ] == player )
-			{
-				// we've found the player, remove them
-				dropship.players[ i ] = null
-				dropship.playersInDropship--
-				
-				return
-			}
+	if ( GetGameState() == eGameState.Prematch )
+		thread SpawnPlayerIntoDropship( player )
 }
 
 void function OnPrematchStart()
@@ -99,16 +62,20 @@ void function OnPrematchStart()
 	print( "starting dropship intro!" )
 	file.introStartTime = Time()
 	
+	// make 2 empty dropship structs per team
+	IntroDropship emptyDropship
+	file.militiaDropships = [ clone emptyDropship, clone emptyDropship ]
+	file.imcDropships = [ clone emptyDropship, clone emptyDropship ]
+	
 	// spawn dropships
-	array<entity> dropshipSpawns = GetEntArrayByClass_Expensive( "info_spawnpoint_dropship_start" )
-	foreach ( entity dropshipSpawn in dropshipSpawns )
+	foreach ( entity dropshipSpawn in GetEntArrayByClass_Expensive( "info_spawnpoint_dropship_start" ) )
 	{		
 		if ( GameModeRemove( dropshipSpawn ) || ( GetSpawnpointGamemodeOverride() != GAMETYPE && dropshipSpawn.HasKey( "gamemode_" + GetSpawnpointGamemodeOverride() ) && dropshipSpawn.kv[ "gamemode_" + GetSpawnpointGamemodeOverride() ] == "0" ) )
 			continue
 	
 		// todo: possibly make this only spawn dropships if we've got enough players to need them
-		int createTeam = GetServerVar( "switchedSides" ) != 1 ? dropshipSpawn.GetTeam() : GetOtherTeam( dropshipSpawn.GetTeam() )
-		IntroDropship[2] teamDropships = createTeam == TEAM_MILITIA ? file.militiaDropships : file.imcDropships
+		int createTeam = HasSwitchedSides() ? dropshipSpawn.GetTeam() : GetOtherTeam( dropshipSpawn.GetTeam() )
+		array<IntroDropship> teamDropships = createTeam == TEAM_MILITIA ? file.militiaDropships : file.imcDropships
 		int dropshipIndex = !IsValid( teamDropships[ 0 ].dropship ) ? 0 : 1
 		
 		// create entity
@@ -116,6 +83,8 @@ void function OnPrematchStart()
 		
 		teamDropships[ dropshipIndex ].dropship = dropship
 		AddAnimEvent( dropship, "dropship_warpout", WarpoutEffect )
+		dropship.SetValueForModelKey( $"models/vehicle/crow_dropship/crow_dropship_hero.mdl" )
+		dropship.SetModel( $"models/vehicle/crow_dropship/crow_dropship_hero.mdl" ) 
 		
 		DispatchSpawn( dropship )
 		
@@ -128,6 +97,14 @@ void function OnPrematchStart()
 	
 	foreach ( entity player in GetPlayerArray() )
 		thread SpawnPlayerIntoDropship( player )
+	
+	thread EndIntroWhenFinished()
+}
+
+void function EndIntroWhenFinished()
+{
+	wait 15.0
+	ClassicMP_OnIntroFinished()
 }
 
 void function SpawnPlayerIntoDropship( entity player )
@@ -135,18 +112,37 @@ void function SpawnPlayerIntoDropship( entity player )
 	if ( IsAlive( player ) )
 		player.Die() // kill them so we don't have any issues respawning them later
 	
+	player.s.dropshipIntroIsJumping <- false
+	OnThreadEnd( function() : ( player )
+	{	
+		if ( IsValid( player ) )
+		{
+			player.ClearParent()
+			ClearPlayerAnimViewEntity( player )
+			
+			if ( !player.s.dropshipIntroIsJumping )
+			{
+				player.MovementEnable()
+				player.EnableWeaponViewModel()
+				RemoveCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING )
+			}
+		}
+	})
+	
 	WaitFrame()
 
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "OnDestroy" )
-	player.EndSignal( "Disconnected" )
-	
-	file.numPlayersInIntro++
 	
 	// find the player's dropship and seat
-	IntroDropship[2] teamDropships = player.GetTeam() == TEAM_MILITIA ? file.militiaDropships : file.imcDropships
+	array<IntroDropship> teamDropships
+	if ( player.GetTeam() == TEAM_MILITIA )
+		teamDropships = file.militiaDropships
+	else
+		teamDropships = file.imcDropships
+	
 	IntroDropship playerDropship
-	int playerDropshipIndex
+	int playerDropshipIndex = -1
 	foreach ( IntroDropship dropship in teamDropships )
 		for ( int i = 0; i < dropship.players.len(); i++ )
 			if ( dropship.players[ i ] == player )
@@ -156,29 +152,13 @@ void function SpawnPlayerIntoDropship( entity player )
 				
 				break
 			}
-			
-	if ( playerDropship.dropship == null )
+					
+	if ( true )//if ( playerDropship.dropship == null )
 	{
-		// if we're at this point, we have more players than we do dropships, oh dear
-		ScreenFadeFromBlack( player, 0.0 )
-		RespawnAsPilot( player )
-		
-		file.numPlayersInIntro--
-		return
+		// if we're at this point, we have more players than we do dropships, so just pick a random one
+		playerDropship = teamDropships.getrandom()
+		playerDropshipIndex = RandomInt( MAX_DROPSHIP_PLAYERS )
 	}
-		
-	// figure out what anims we're using for idle
-	string idleAnim = DROPSHIP_IDLE_ANIMS[ playerDropshipIndex ]
-	string idleAnimPov = DROPSHIP_IDLE_ANIMS_POV[ playerDropshipIndex ]
-	
-	FirstPersonSequenceStruct idleSequence
-	idleSequence.firstPersonAnim = idleAnimPov
-	idleSequence.thirdPersonAnim = idleAnim
-	idleSequence.attachment = "ORIGIN"
-	idleSequence.teleport = true
-	idleSequence.viewConeFunction = ViewConeRampFree
-	idleSequence.hideProxy = true
-	idleSequence.setInitialTime = Time() - file.introStartTime
 	
 	// respawn player and holster their weapons so they aren't out
 	player.RespawnPlayer( null )
@@ -189,36 +169,47 @@ void function SpawnPlayerIntoDropship( entity player )
 	ScreenFadeFromBlack( player, 0.5, 0.5 )
 	// faction leaders are done clientside, spawn them here
 	Remote_CallFunction_NonReplay( player, "ServerCallback_SpawnFactionCommanderInDropship", playerDropship.dropship.GetEncodedEHandle(), file.introStartTime )
+	
+	// do firstperson sequence	
+	FirstPersonSequenceStruct idleSequence
+	idleSequence.firstPersonAnim = DROPSHIP_IDLE_ANIMS_POV[ playerDropshipIndex ]
+	idleSequence.thirdPersonAnim = DROPSHIP_IDLE_ANIMS[ playerDropshipIndex ]
+	idleSequence.attachment = "ORIGIN"
+	idleSequence.teleport = true
+	idleSequence.viewConeFunction = ViewConeRampFree
+	idleSequence.hideProxy = true
+	idleSequence.setInitialTime = Time() - file.introStartTime
 	thread FirstPersonSequence( idleSequence, player, playerDropship.dropship )
-		
-	// wait until the anim is done
-	WaittillAnimDone( player ) // unsure if this is the best way to do this
+	WaittillAnimDone( player )
+	
 	// todo: possibly rework this to actually get the time the idle anim takes and start the starttime of the jump sequence for very late joiners using that
-		
-	// honestly go rewrite alot of this too it's messy
-	
-	// figure out what anims we're using for jump
-	string jumpAnim = DROPSHIP_JUMP_ANIMS[ playerDropshipIndex ]
-	string jumpAnimPov = DROPSHIP_JUMP_ANIMS_POV[ playerDropshipIndex ]
-	
+			
+	// jump sequence
 	FirstPersonSequenceStruct jumpSequence
-	jumpSequence.firstPersonAnim = jumpAnimPov
-	jumpSequence.thirdPersonAnim = jumpAnim
+	jumpSequence.firstPersonAnim = DROPSHIP_JUMP_ANIMS_POV[ playerDropshipIndex ]
+	jumpSequence.thirdPersonAnim = DROPSHIP_JUMP_ANIMS[ playerDropshipIndex ]
 	jumpSequence.attachment = "ORIGIN"
-	//jumpSequence.setInitialTime = Time() - ( file.introStartTime + player.GetSequenceDuration( idleAnim ) )
 	jumpSequence.setInitialTime = Time() - ( file.introStartTime + 10.9 ) // pretty sure you should do this with GetScriptedAnimEventCycleFrac?
 	// idk unsure how to use that, all i know is getsequenceduration > the length it actually should be
 	
-	thread FirstPersonSequence( jumpSequence, player, playerDropship.dropship )
-	WaittillAnimDone( player )
+	FirstPersonSequence( jumpSequence, player, playerDropship.dropship )
+	
+	player.s.dropshipIntroIsJumping <- true
+	thread PlayerJumpsFromDropship( player )
+}
 
-	// unparent player and their camera from the dropship
-	player.ClearParent()
-	ClearPlayerAnimViewEntity( player )
-		
-	file.numPlayersInIntro--
-	if ( file.numPlayersInIntro == 0 )
-		ClassicMP_OnIntroFinished() // set intro as finished
+void function PlayerJumpsFromDropship( entity player )
+{
+	OnThreadEnd( function() : ( player )
+	{
+		if ( IsValid( player ) )
+		{
+			// show weapon viewmodel and hud and let them move again
+			player.MovementEnable()
+			player.EnableWeaponViewModel()
+			RemoveCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING )
+		}
+	})
 		
 	// wait for intro timer to be fully done
 	wait ( file.introStartTime + DROPSHIP_INTRO_LENGTH ) - Time()
@@ -228,11 +219,6 @@ void function SpawnPlayerIntoDropship( entity player )
 	// wait for player to hit the ground
 	while ( !player.IsOnGround() && !player.IsWallRunning() && !player.IsWallHanging() ) // todo this needs tweaking
 		WaitFrame()
-	
-	// show weapon viewmodel and hud and let them move again
-	player.MovementEnable()
-	player.EnableWeaponViewModel()
-	RemoveCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING )
 	
 	TryGameModeAnnouncement( player )
 }

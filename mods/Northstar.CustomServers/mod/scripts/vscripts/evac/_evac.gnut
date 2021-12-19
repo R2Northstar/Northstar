@@ -136,19 +136,10 @@ void function EvacEpilogueCompleted( entity dropship )
 {
 	wait 5.0
 	
-	if ( IsValid( dropship ) )
-	{
-		foreach ( entity player in dropship.s.evacSlots )
-		{
-			if ( !IsValid( player ) )
-				continue
-			
-			ScreenFadeToBlackForever( player, 2.0 )
-		}
-	}
+	foreach ( entity player in GetPlayerArray() )
+		ScreenFadeToBlackForever( player, 2.0 )
 	
 	wait 2.0
-	
 	SetGameState( eGameState.Postmatch )
 }
 
@@ -197,6 +188,7 @@ void function Evac( int evacTeam, float initialWait, float arrivalTime, float wa
 	dropship.SetModel( $"models/vehicle/crow_dropship/crow_dropship_hero.mdl" ) 
 	dropship.SetValueForModelKey( $"models/vehicle/crow_dropship/crow_dropship_hero.mdl" )
 	DispatchSpawn( dropship )
+	dropship.SetModel( $"models/vehicle/crow_dropship/crow_dropship_hero.mdl" )
 	
 	dropship.s.evacSlots <- [ null, null, null, null, null, null, null, null ]
 	
@@ -305,7 +297,7 @@ void function Evac( int evacTeam, float initialWait, float arrivalTime, float wa
 			if ( player.GetTeam() == dropship.GetTeam() )
 				SetPlayerActiveObjective( player, "EG_DropshipExtractFailedEscape" )
 				
-			return
+			continue
 		}
 		
 		SetPlayerActiveObjective( player, "EG_DropshipExtractSuccessfulEscape" )

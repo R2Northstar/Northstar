@@ -19,7 +19,7 @@ void function SvLoadoutsMP_Init()
 	RegisterSignal( "EndUpdateCachedLoadouts" )
 	RegisterSignal( "GracePeriodDone" ) // temp to get weapons\_weapon_utility.nut:2271 to behave
 	
-	AddCallback_OnClientConnected( UpdateCallsignOnConnect )
+	AddCallback_OnClientConnected( LoadoutsMPInitPlayer )
 	
 	AddClientCommandCallback( "RequestPilotLoadout", ClientCommandCallback_RequestPilotLoadout )
 	AddClientCommandCallback( "RequestTitanLoadout", ClientCommandCallback_RequestTitanLoadout )
@@ -38,7 +38,7 @@ void function SvLoadoutsMP_Init()
 		AddClientCommandCallback( "InGameMPMenuClosed", ClientCommandCallback_InGameMPMenuClosed )
 		AddClientCommandCallback( "LoadoutMenuClosed", ClientCommandCallback_LoadoutMenuClosed )
 	}
-		
+	
 	AddCallback_OnPlayerKilled( DestroyDroppedWeapon )
 }
 
@@ -70,8 +70,10 @@ TitanLoadoutDef function GetTitanLoadoutForPlayer( entity player )
 	return def
 }
 
-void function UpdateCallsignOnConnect( entity player )
+void function LoadoutsMPInitPlayer( entity player )
 {
+	player.s.loadoutDirty <- false
+
 	// these netints are required for callsigns and such to display correctly on other clients
 	player.SetPlayerNetInt( "activeCallingCardIndex", player.GetPersistentVarAsInt( "activeCallingCardIndex" ) )
 	player.SetPlayerNetInt( "activeCallsignIconIndex", player.GetPersistentVarAsInt( "activeCallsignIconIndex" ) )
@@ -129,6 +131,7 @@ bool function ClientCommandCallback_SetPersistentLoadoutValue( entity player, ar
 	// VERY temp and insecure
 	SetPersistentLoadoutValue( player, args[0], args[1].tointeger(), args[2], val )
 	
+	print( args[ 0 ] )
 	if ( args[0] == "pilot" )
 		SetPlayerLoadoutDirty( player ) 
 	
@@ -227,7 +230,7 @@ bool function ClientCommandCallback_LoadoutMenuClosed( entity player, array<stri
 
 bool function ClientCommandCallback_InGameMPMenuClosed( entity player, array<string> args )
 {
-	//TryGivePilotLoadoutForGracePeriod( player )
+	TryGivePilotLoadoutForGracePeriod( player )
 	return true
 }
 
@@ -238,19 +241,31 @@ bool function IsRefValidAndOfType( string ref, int itemType )
 
 void function SetPlayerLoadoutDirty( entity player )
 {
-	if ( file.loadoutGracePeriodEnabled || player.p.usingLoadoutCrate  )
-		file.dirtyLoadouts.append( player )
+	if ( !IsLobby() )
+		player.s.loadoutDirty = true
 }
 
 void function TryGivePilotLoadoutForGracePeriod( entity player )
 {
-	if ( !IsLobby() && file.dirtyLoadouts.contains( player ) )
+	if ( !IsLobby() && IsAlive( player ) && player.s.loadoutDirty )
 	{
-		file.dirtyLoadouts.remove( file.dirtyLoadouts.find( player ) )
+		player.s.loadoutDirty = false
 	
-		if ( Time() - player.s.respawnTime <= CLASS_CHANGE_GRACE_PERIOD || player.p.usingLoadoutCrate )
+		// for intros
+		float respawnTimeReal
+		if ( GetGameState() == eGameState.Playing && Time() - expect float( GetServerVar( "gameStateChangeTime" ) ) <= CLASS_CHANGE_GRACE_PERIOD )
+			respawnTimeReal = expect float( GetServerVar( "gameStateChangeTime" ) )
+		else
+			respawnTimeReal = expect float( player.s.respawnTime )
+		
+		if ( Time() - respawnTimeReal <= CLASS_CHANGE_GRACE_PERIOD || player.p.usingLoadoutCrate || GetGameState() < eGameState.Playing )
 		{
-			Loadouts_TryGivePilotLoadout( player )
+			// because the game sucks and stuff Loadouts_TryGivePilotLoadout doesn't work in intro so have to do this manually
+			int loadoutIndex = GetPersistentSpawnLoadoutIndex( player, "pilot" )
+			GivePilotLoadout( player, GetPilotLoadoutFromPersistentData( player, loadoutIndex ) )
+			SetActivePilotLoadout( player )
+			SetActivePilotLoadoutIndex( player, loadoutIndex )
+			
 			player.p.usingLoadoutCrate = false
 		}
 		else

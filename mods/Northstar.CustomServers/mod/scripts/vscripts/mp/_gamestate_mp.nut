@@ -648,9 +648,9 @@ void function CleanUpEntitiesForRoundEnd()
 	foreach ( entity npc in GetNPCArray() )
 		if ( IsValid( npc ) )
 			npc.Destroy() // need this because getnpcarray includes the pettitans we just killed at this point
-			
-	foreach ( entity weapon in GetEntArrayByClass_Expensive( "weaponx" ) )
-		weapon.Destroy()
+	
+	// destroy weapons
+	ClearDroppedWeapons()
 		
 	foreach ( entity battery in GetEntArrayByClass_Expensive( "item_titan_battery" ) )
 		battery.Destroy()
