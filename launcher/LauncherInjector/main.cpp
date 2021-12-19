@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
         if (!strcmp(argv[i], "-dedicated"))
             isdedi = true;
 
-    if (!GetProcessByName(L"Origin.exe") && !isdedi)
+    if (!isdedi && !GetProcessByName(L"Origin.exe") && !GetProcessByName(L"EADesktop.exe"))
     {
         // unpacked exe will crash if origin isn't open on launch, so launch it
         // get origin path from registry, code here is reversed from OriginSDK.dll
@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
         CreateProcessA(originPath, (LPSTR)"", NULL, NULL, false, CREATE_DEFAULT_ERROR_MODE | CREATE_NEW_PROCESS_GROUP, NULL, NULL, (LPSTARTUPINFOA)&si, &pi);
 
         // wait for origin to be ready, this process is created when origin is ready enough to launch game without any errors
-        while (!GetProcessByName(L"OriginClientService.exe"))
+        while (!GetProcessByName(L"OriginClientService.exe") && !GetProcessByName(L"EADesktop.exe"))
             Sleep(200);
     }
 
