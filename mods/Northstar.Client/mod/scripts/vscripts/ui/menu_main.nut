@@ -10,6 +10,7 @@ global function LaunchMP
 global function LaunchGame
 global function LaunchSPTrialMission
 global function GetUserSignInState
+global function NorthstarMasterServerAuthDialog
 
 struct
 {
@@ -18,6 +19,9 @@ struct
 	var trialLabel
 } file
 
+global const int NS_NOT_DECIDED_TO_SEND_TOKEN = 0
+global const int NS_AGREED_TO_SEND_TOKEN = 1
+global const int NS_DISAGREED_TO_SEND_TOKEN = 2
 
 void function InitMainMenu()
 {
@@ -90,17 +94,7 @@ void function OnMainMenu_Open()
 	
 	// do agree to ns remote auth dialog
 	if ( !GetConVarBool( "ns_has_agreed_to_send_token" ) )
-	{	
-		// todo: this should be in localisation
-		DialogData dialogData
-		dialogData.header = "Thanks for installing Northstar!"
-		dialogData.image = $"rui/menu/fd_menu/upgrade_northstar_chassis"
-		dialogData.message = "For Northstar to work, it needs to authenticate using the Northstar master server. This will require sending your origin token to the master server, it will not be stored or used for any other purposes.\n" + 
-		"Press Yes if you agree to this. This choice can be changed in the mods menu at any time."
-		AddDialogButton( dialogData, "#YES", void function() { SetConVarInt( "ns_has_agreed_to_send_token", 1 ) } )
-		AddDialogButton( dialogData, "#NO", void function() { SetConVarInt( "ns_has_agreed_to_send_token", 2 ) } )
-		OpenDialog( dialogData )
-	}
+		NorthstarMasterServerAuthDialog()
 
 #if PC_PROG
 	ActivatePanel( GetPanel( "MainMenuPanel" ) )
@@ -134,6 +128,18 @@ void function OnMainMenu_Open()
 
 		WaitFrame()
 	}
+}
+
+void function NorthstarMasterServerAuthDialog()
+{
+	// todo: this should be in localisation
+	DialogData dialogData
+	dialogData.header = "#DIALOG_TITLE_INSTALLED_NORTHSTAR" 
+	dialogData.image = $"rui/menu/fd_menu/upgrade_northstar_chassis"
+	dialogData.message = "#AUTHENTICATION_AGREEMENT_DIALOG_TEXT"
+	AddDialogButton( dialogData, "#YES", void function() { SetConVarInt( "ns_has_agreed_to_send_token", NS_AGREED_TO_SEND_TOKEN ) } )
+	AddDialogButton( dialogData, "#NO", void function() { SetConVarInt( "ns_has_agreed_to_send_token", NS_DISAGREED_TO_SEND_TOKEN ) } )
+	OpenDialog( dialogData )
 }
 
 void function ActivatePanel( var panel )

@@ -1,11 +1,5 @@
 globalize_all_functions
 
-global enum eNorthstarLobbyType
-{
-	PrivateMatchLobby, // normal vanilla private lobby
-	IntermissionLobby, // similar to tf1's intermission lobby, chooses next map automatically, can't change settings unless you're host
-}
-
 // whether the server is a modded, northstar server
 bool function IsNorthstarServer()
 {
@@ -16,12 +10,4 @@ bool function IsNorthstarServer()
 bool function ShouldReturnToLobby()
 {	
 	return GetConVarBool( "ns_should_return_to_lobby" )
-}
-
-int function GetNorthstarLobbyType()
-{
-	if ( !IsNorthstarServer() )
-		return eNorthstarLobbyType.PrivateMatchLobby
-	
-	return GetConVarInt( "ns_lobby_type" )
 }
