@@ -31,6 +31,9 @@ CGameClient__ExecuteStringCommandType CGameClient__ExecuteStringCommand;
 typedef char(*__fastcall CNetChan___ProcessMessagesType)(void* self, void* buf);
 CNetChan___ProcessMessagesType CNetChan___ProcessMessages;
 
+typedef char(*CBaseClient__SendServerInfoType)(void* self);
+CBaseClient__SendServerInfoType CBaseClient__SendServerInfo;
+
 // global vars
 ServerAuthenticationManager* g_ServerAuthenticationManager;
 
@@ -270,10 +273,11 @@ void CBaseClient__DisconnectHook(void* self, uint32_t unknownButAlways1, const c
 	vsprintf(buf, reason, va);
 	va_end(va);
 
-
 	// this reason is used while connecting to a local server, hacky, but just ignore it
 	if (strcmp(reason, "Connection closing"))
 	{
+		spdlog::info("Player {} disconnected: \"{}\"", (char*)self + 0x16, buf);
+
 		// dcing, write persistent data
 		if (g_ServerAuthenticationManager->m_additionalPlayerData[self].needPersistenceWriteOnLeave)
 			g_ServerAuthenticationManager->WritePersistentData(self);
@@ -356,6 +360,16 @@ char __fastcall CNetChan___ProcessMessagesHook(void* self, void* buf)
 	return ret;
 }
 
+bool bWasWritingStringTableSuccessful;
+
+void CBaseClient__SendServerInfoHook(void* self)
+{
+	bWasWritingStringTableSuccessful = true;
+	CBaseClient__SendServerInfo(self);
+	if (!bWasWritingStringTableSuccessful)
+		CBaseClient__Disconnect(self, 1, "Overflowed CNetworkStringTableContainer::WriteBaselines, try restarting your client and reconnecting");
+}
+
 void InitialiseServerAuthentication(HMODULE baseAddress)
 {
 	g_ServerAuthenticationManager = new ServerAuthenticationManager;
@@ -377,6 +391,7 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1012C0, &CBaseClient__DisconnectHook, reinterpret_cast<LPVOID*>(&CBaseClient__Disconnect));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1022E0, &CGameClient__ExecuteStringCommandHook, reinterpret_cast<LPVOID*>(&CGameClient__ExecuteStringCommand));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x2140A0, &CNetChan___ProcessMessagesHook, reinterpret_cast<LPVOID*>(&CNetChan___ProcessMessages));
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x104FB0, &CBaseClient__SendServerInfoHook, reinterpret_cast<LPVOID*>(&CBaseClient__SendServerInfo));
 
 	// patch to disable kicking based on incorrect serverfilter in connectclient, since we repurpose it for use as an auth token
 	{
@@ -401,4 +416,24 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 		*((char*)ptr) = (char)0xEB; // jz => jmp
 	}
 
+	// patch to set bWasWritingStringTableSuccessful in CNetworkStringTableContainer::WriteBaselines if it fails
+	{
+		bool* writeAddress = (bool*)(&bWasWritingStringTableSuccessful - ((bool*)baseAddress + 0x234EDC));
+
+		void* ptr = (char*)baseAddress + 0x234ED2;
+		TempReadWrite rw(ptr);
+		*((char*)ptr) = (char)0xC7;
+		*((char*)ptr + 1) = (char)0x05;
+		*(int*)((char*)ptr + 2) = (int)writeAddress;
+		*((char*)ptr + 6) = (char)0x00;
+		*((char*)ptr + 7) = (char)0x00;
+		*((char*)ptr + 8) = (char)0x00;
+		*((char*)ptr + 9) = (char)0x00;
+
+		*((char*)ptr + 10) = (char)0x90;
+		*((char*)ptr + 11) = (char)0x90;
+		*((char*)ptr + 12) = (char)0x90;
+		*((char*)ptr + 13) = (char)0x90;
+		*((char*)ptr + 14) = (char)0x90;
+	}
 }
