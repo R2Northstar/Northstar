@@ -75,6 +75,9 @@ void function OnPlaying()
 void function OnPlayerRespawned( entity player )
 {
 	thread EarnMeterMP_PlayerLifeThink( player )
+	
+	if ( PlayerEarnMeter_IsRewardAvailable( player ) )
+		EarnMeterMP_BoostEarned( player )
 }
 
 void function EarnMeterMP_PlayerLifeThink( entity player )

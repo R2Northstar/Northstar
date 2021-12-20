@@ -82,6 +82,9 @@ void function InitMainMenuPanel()
 	Hud_AddEventHandler( file.mpButton, UIE_CLICK, OnPlayMPButton_Activate )
 	file.fdButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_LAUNCH_NORTHSTAR" )
 	Hud_AddEventHandler( file.fdButton, UIE_CLICK, OnPlayFDButton_Activate )
+	Hud_SetLocked( file.fdButton, true )
+
+	thread TryUnlockNorthstarButton()
 
 	headerIndex++
 	buttonIndex = 0
@@ -436,17 +439,8 @@ void function UpdatePlayButton( var button )
 
 		ComboButton_SetText( file.mpButton, buttonText )
 
-		//if ( Hud_IsLocked( button ) || buttonText == "#MENU_GET_THE_FULL_GAME" )
-		//{
-		//	ComboButton_SetText( file.fdButton, "" )
-		//	Hud_SetEnabled( file.fdButton, false )
-		//}
-		//else
-		//{
-			//ComboButton_SetText( file.fdButton, "#MULTIPLAYER_LAUNCH_FD" )
-			ComboButton_SetText( file.fdButton, "#MENU_LAUNCH_NORTHSTAR" ) // this needs to use localised text at some point when we have a modular way of doing that
-			Hud_SetEnabled( file.fdButton, true )
-		//}
+		ComboButton_SetText( file.fdButton, "#MENU_LAUNCH_NORTHSTAR" )
+		Hud_SetEnabled( file.fdButton, true )
 
 		if ( file.installing )
 			message = ""
@@ -495,19 +489,26 @@ void function MainMenuButton_Activate( var button )
 		file.buttonData[buttonID].activateFunc.call( this )
 }
 
+void function TryUnlockNorthstarButton()
+{
+	// unlock "Launch Northstar" button until you're authed with masterserver, are allowing insecure auth, or 7.5 seconds have passed
+	float time = Time()
+	
+	while ( Time() < time + 7.5 || GetConVarInt( "ns_has_agreed_to_send_token" ) != NS_AGREED_TO_SEND_TOKEN )
+	{
+		if ( NSIsMasterServerAuthenticated() || GetConVarBool( "ns_auth_allow_insecure" ) )
+			break
+			
+		WaitFrame()
+	}
+	
+	Hud_SetLocked( file.fdButton, false )
+}
+
 void function OnPlayFDButton_Activate( var button ) // repurposed for launching northstar lobby
 {
-	//if ( file.mpButtonActivateFunc == null )
-	//	printt( "file.mpButtonActivateFunc is null" )
-
-	if ( !Hud_IsLocked( button ) )// && file.mpButtonActivateFunc != null )
+	if ( !Hud_IsLocked( button ) )
 	{
-		//Lobby_SetAutoFDOpen( true )
-		//// Lobby_SetFDMode( true )
-		//thread file.mpButtonActivateFunc()
-		
-		//ClientCommand( "setplaylist tdm" )
-		//ClientCommand( "map mp_lobby" )
 		SetConVarBool( "ns_is_modded_server", true )
 		
 		NSTryAuthWithLocalServer()

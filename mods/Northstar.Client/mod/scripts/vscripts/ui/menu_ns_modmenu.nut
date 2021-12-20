@@ -29,6 +29,7 @@ void function InitModMenu()
 	AddMenuEventHandler( menu, eUIEvent.MENU_CLOSE, OnModMenuClosed )
 	AddMenuFooterOption( menu, BUTTON_B, "#B_BUTTON_BACK", "#BACK" )
 	AddMenuFooterOption( menu, BUTTON_Y, "#Y_RELOAD_MODS", "#RELOAD_MODS", OnReloadModsButtonPressed )
+	AddMenuFooterOption( menu, BUTTON_BACK, "#BACK_AUTHENTICATION_AGREEMENT", "#AUTHENTICATION_AGREEMENT", OnAuthenticationAgreementButtonPressed )
 	
 	foreach ( var button in GetElementsByClassname( GetMenu( "ModListMenu" ), "ModButton" ) )
 	{
@@ -156,4 +157,9 @@ void function ReloadMods()
 	
 	// note: the logic for this seems really odd, unsure why it doesn't seem to update, since the same code seems to get run irregardless of whether we've read weapon data before
 	ClientCommand( "uiscript_reset" )
+}
+
+void function OnAuthenticationAgreementButtonPressed( var button )
+{
+	NorthstarMasterServerAuthDialog()
 }

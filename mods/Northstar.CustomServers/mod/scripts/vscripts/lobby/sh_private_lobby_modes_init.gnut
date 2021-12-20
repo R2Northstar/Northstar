@@ -4,8 +4,8 @@ void function PrivateMatchModesInit()
 {
 	// match settings
 	// super temp: do localisation strings later
-	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_MATCH", "classic_mp", [ "Disabled", "Enabled" ], "1" )
-	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_MATCH", "run_epilogue", [ "Disabled", "Enabled" ], "1" )
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_MATCH", "classic_mp", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "1" )
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_MATCH", "run_epilogue", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "1" )
 	AddPrivateMatchModeSettingArbitrary( "#MODE_SETTING_CATEGORY_MATCH", "scorelimit", "5" ) //, "Score Limit" )
 	AddPrivateMatchModeSettingArbitrary( "#MODE_SETTING_CATEGORY_MATCH", "roundscorelimit", "0" ) //, "Score Limit (round-based modes)" )
 	AddPrivateMatchModeSettingArbitrary( "#MODE_SETTING_CATEGORY_MATCH", "timelimit", "12" ) //, "Time Limit" )
@@ -13,30 +13,30 @@ void function PrivateMatchModesInit()
 	
 	AddPrivateMatchModeSettingArbitrary( "#MODE_SETTING_CATEGORY_PILOT", "pilot_health_multiplier", "1.0" )
 	AddPrivateMatchModeSettingArbitrary( "#MODE_SETTING_CATEGORY_PILOT", "respawn_delay", "0.0" )
-	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_PILOT", "boosts_enabled", [ "Default", "Disabled" ], "1" )
-	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_PILOT", "earn_meter_pilot_overdrive", [ "Disabled", "Enabled", "Only" ], "1" )
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_PILOT", "boosts_enabled", [ "#SETTING_DEFAULT", "#SETTING_DISABLED" ], "1" )
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_PILOT", "earn_meter_pilot_overdrive", [ "#SETTING_DISABLED", "#SETTING_ENABLED", "Only" ], "1" )
 	AddPrivateMatchModeSettingArbitrary( "#MODE_SETTING_CATEGORY_PILOT", "earn_meter_pilot_multiplier", "1.0" )
 	
 	AddPrivateMatchModeSettingArbitrary( "#MODE_SETTING_CATEGORY_TITAN", "earn_meter_titan_multiplier", "1.0" )
-	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_TITAN", "aegis_upgrades", [ "Disabled", "Enabled" ], "0" )
-	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_TITAN", "infinite_doomed_state", [ "Disabled", "Enabled" ], "0" )
-	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_TITAN", "titan_shield_regen", [ "Disabled", "Enabled" ], "0" )
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_TITAN", "aegis_upgrades", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_TITAN", "infinite_doomed_state", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_TITAN", "titan_shield_regen", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
 	
-	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "riff_floorislava", [ "Default", "Enabled", "Disabled" ], "0" )
-	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "featured_mode_all_holopilot", [ "Disabled", "Enabled" ], "0" )
-	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "featured_mode_all_grapple", [ "Disabled", "Enabled" ], "0" )
-	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "featured_mode_all_phase", [ "Disabled", "Enabled" ], "0" )
-	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "featured_mode_all_ticks", [ "Disabled", "Enabled" ], "0" )
-	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "featured_mode_tactikill", [ "Disabled", "Enabled" ], "0" )
-	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "featured_mode_amped_tacticals", [ "Disabled", "Enabled" ], "0" )
-	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "featured_mode_rocket_arena", [ "Disabled", "Enabled" ], "0" )
-	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "featured_mode_shotguns_snipers", [ "Disabled", "Enabled" ], "0" )
-	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "iron_rules", [ "Disabled", "Enabled" ], "0" )
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "riff_floorislava", [ "#SETTING_DEFAULT", "#SETTING_ENABLED", "#SETTING_DISABLED" ], "0" )
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "featured_mode_all_holopilot", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "featured_mode_all_grapple", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "featured_mode_all_phase", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "featured_mode_all_ticks", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "featured_mode_tactikill", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "featured_mode_amped_tacticals", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "featured_mode_rocket_arena", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "featured_mode_shotguns_snipers", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "iron_rules", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
 	
 	// gamemode settings
-	AddPrivateMatchModeSettingEnum( "#GAMEMODE_cp", "cp_amped_capture_points", [ "Disabled", "Enabled" ], "1" ) // would've been nice to use amped_capture_points, but this var is already used ingame and its value is default 0
+	AddPrivateMatchModeSettingEnum( "#GAMEMODE_cp", "cp_amped_capture_points", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "1" ) // would've been nice to use amped_capture_points, but this var is already used ingame and its value is default 0
 	
-	AddPrivateMatchModeSettingEnum( "#GAMEMODE_coliseum", "coliseum_loadouts_enabled", [ "Disabled", "Enabled" ], "1" )
+	AddPrivateMatchModeSettingEnum( "#GAMEMODE_coliseum", "coliseum_loadouts_#SETTING_ENABLED", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "1" )
 
 
 	// modes

@@ -9,7 +9,7 @@ struct {
 
 void function RiffInstagib_Init()
 {
-	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "riff_instagib", [ "Disabled", "Enabled" ], "0" )
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "riff_instagib", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
 	
 	#if SERVER
 	if ( GetCurrentPlaylistVarInt( "riff_instagib", 0 ) == 0 )

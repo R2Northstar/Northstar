@@ -199,6 +199,9 @@ void function UseBurnCardWeapon( entity weapon, entity player )
 	// dont remove in RunBurnCardUseFunc because it can be called in non-burn_card_weapon_mod contexts
 	// TODO: currently not sure how burncards can be stacked ( max clipcount for all burncards is 1, so can't just set that )
 	// if this gets figured out, add a conditional check here to prevent removes if they've got burncards left
+	if ( PlayerEarnMeter_IsRewardAvailable( player ) )
+		PlayerEarnMeter_SetRewardUsed( player )
+	
 	player.TakeWeapon( BurnReward_GetByRef( ref ).weaponName )
 }
 

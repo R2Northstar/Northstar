@@ -10,7 +10,7 @@ const asset RODEO_WEAKPOINT_HITBOX_MODEL = $"models/Weapons/ammoboxes/backpack_s
 
 void function ClassicRodeo_InitPlaylistVars()
 {
-	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_TITAN", "classic_rodeo", [ "Disabled", "Enabled" ], "0" )
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_TITAN", "classic_rodeo", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
 }
 
 #if SERVER
