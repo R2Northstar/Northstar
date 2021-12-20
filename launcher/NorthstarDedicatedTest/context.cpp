@@ -1,13 +1,13 @@
 #include "pch.h"
 #include "context.h"
 
-const char* GetContextName(ScriptContex context)
+const char* GetContextName(ScriptContext context)
 {
-	if (context == ScriptContex::CLIENT)
+	if (context == ScriptContext::CLIENT)
 		return "CLIENT";
-	else if (context == ScriptContex::SERVER)
+	else if (context == ScriptContext::SERVER)
 		return "SERVER";
-	else if (context == ScriptContex::UI)
+	else if (context == ScriptContext::UI)
 		return "UI";
 	
 	return "";

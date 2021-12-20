@@ -60,7 +60,7 @@ struct SQFuncRegistration
 };
 
 // core sqvm funcs
-typedef SQRESULT(*sq_compilebufferType)(void* sqvm, CompileBufferState* compileBuffer, const char* file, int a1, ScriptContex a2);
+typedef SQRESULT(*sq_compilebufferType)(void* sqvm, CompileBufferState* compileBuffer, const char* file, int a1, ScriptContext a2);
 extern sq_compilebufferType ClientSq_compilebuffer;
 extern sq_compilebufferType ServerSq_compilebuffer;
 
@@ -126,7 +126,7 @@ typedef SQBool(*sq_getboolType)(void*, SQInteger stackpos);
 extern sq_getboolType ClientSq_getbool;
 extern sq_getboolType ServerSq_getbool;
 
-template<ScriptContex context> class SquirrelManager
+template<ScriptContext context> class SquirrelManager
 {
 private:
 	std::vector<SQFuncRegistration*> m_funcRegistrations;
@@ -148,7 +148,7 @@ public:
 		{
 			spdlog::info("Registering {} function {}", GetContextName(context), funcReg->squirrelFuncName);
 
-			if (context == ScriptContex::CLIENT || context == ScriptContex::UI)
+			if (context == ScriptContext::CLIENT || context == ScriptContext::UI)
 				ClientRegisterSquirrelFunc(sqvm, funcReg, 1);
 			else
 				ServerRegisterSquirrelFunc(sqvm, funcReg, 1);
@@ -176,21 +176,21 @@ public:
 		CompileBufferState bufferState = CompileBufferState(strCode);
 
 		SQRESULT compileResult;
-		if (context == ScriptContex::CLIENT || context == ScriptContex::UI)
+		if (context == ScriptContext::CLIENT || context == ScriptContext::UI)
 			compileResult = ClientSq_compilebuffer(sqvm2, &bufferState, "console", -1, context);
-		else if (context == ScriptContex::SERVER)
+		else if (context == ScriptContext::SERVER)
 			compileResult = ServerSq_compilebuffer(sqvm2, &bufferState, "console", -1, context);
 
 		spdlog::info("sq_compilebuffer returned {}", compileResult);
 		if (compileResult >= 0)
 		{
-			if (context == ScriptContex::CLIENT || context == ScriptContex::UI)
+			if (context == ScriptContext::CLIENT || context == ScriptContext::UI)
 			{
 				ClientSq_pushroottable(sqvm2);
 				SQRESULT callResult = ClientSq_call(sqvm2, 1, false, false);
 				spdlog::info("sq_call returned {}", callResult);
 			}
-			else if (context == ScriptContex::SERVER)
+			else if (context == ScriptContext::SERVER)
 			{
 				ServerSq_pushroottable(sqvm2);
 				SQRESULT callResult = ServerSq_call(sqvm2, 1, false, false);
@@ -222,6 +222,6 @@ public:
 	}
 };
 
-extern SquirrelManager<ScriptContex::CLIENT>* g_ClientSquirrelManager;
-extern SquirrelManager<ScriptContex::SERVER>* g_ServerSquirrelManager;
-extern SquirrelManager<ScriptContex::UI>* g_UISquirrelManager;
+extern SquirrelManager<ScriptContext::CLIENT>* g_ClientSquirrelManager;
+extern SquirrelManager<ScriptContext::SERVER>* g_ServerSquirrelManager;
+extern SquirrelManager<ScriptContext::UI>* g_UISquirrelManager;
