@@ -8,6 +8,13 @@
 
 // functions for viewing server browser
 
+// bool function NSIsMasterServerAuthenticated()
+SQRESULT SQ_IsMasterServerAuthenticated(void* sqvm)
+{
+	ClientSq_pushbool(sqvm, g_MasterServerManager->m_bOriginAuthWithMasterServerDone);
+	return SQRESULT_NOTNULL;
+}
+
 // void function NSRequestServerList()
 SQRESULT SQ_RequestServerList(void* sqvm)
 {
@@ -306,6 +313,7 @@ void InitialiseScriptServerBrowser(HMODULE baseAddress)
 	if (IsDedicated())
 		return;
 
+	g_UISquirrelManager->AddFuncRegistration("bool", "NSIsMasterServerAuthenticated", "", "", SQ_IsMasterServerAuthenticated);
 	g_UISquirrelManager->AddFuncRegistration("void", "NSRequestServerList", "", "", SQ_RequestServerList);
 	g_UISquirrelManager->AddFuncRegistration("bool", "NSIsRequestingServerList", "", "", SQ_IsRequestingServerList);
 	g_UISquirrelManager->AddFuncRegistration("bool", "NSMasterServerConnectionSuccessful", "", "", SQ_MasterServerConnectionSuccessful);

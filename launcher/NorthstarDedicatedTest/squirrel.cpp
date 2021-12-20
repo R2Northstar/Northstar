@@ -13,27 +13,27 @@ typedef SQInteger(*SQPrintType)(void* sqvm, char* fmt, ...);
 SQPrintType ClientSQPrint;
 SQPrintType UISQPrint;
 SQPrintType ServerSQPrint;
-template<ScriptContex context> SQInteger SQPrintHook(void* sqvm, char* fmt, ...);
+template<ScriptContext context> SQInteger SQPrintHook(void* sqvm, char* fmt, ...);
 
-typedef void*(*CreateNewVMType)(void* a1, ScriptContex contextArg);
+typedef void*(*CreateNewVMType)(void* a1, ScriptContext contextArg);
 CreateNewVMType ClientCreateNewVM; // only need a client one since ui doesn't have its own func for this
 CreateNewVMType ServerCreateNewVM;
-template<ScriptContex context> void* CreateNewVMHook(void* a1, ScriptContex contextArg);
+template<ScriptContext context> void* CreateNewVMHook(void* a1, ScriptContext contextArg);
 
 typedef void(*DestroyVMType)(void* a1, void* sqvm);
 DestroyVMType ClientDestroyVM; // only need a client one since ui doesn't have its own func for this
 DestroyVMType ServerDestroyVM;
-template<ScriptContex context> void DestroyVMHook(void* a1, void* sqvm);
+template<ScriptContext context> void DestroyVMHook(void* a1, void* sqvm);
 
 typedef void(*ScriptCompileError)(void* sqvm, const char* error, const char* file, int line, int column);
 ScriptCompileError ClientSQCompileError; // only need a client one since ui doesn't have its own func for this
 ScriptCompileError ServerSQCompileError;
-template<ScriptContex context> void ScriptCompileErrorHook(void* sqvm, const char* error, const char* file, int line, int column);
+template<ScriptContext context> void ScriptCompileErrorHook(void* sqvm, const char* error, const char* file, int line, int column);
 
 typedef char(*CallScriptInitCallbackType)(void* sqvm, const char* callback);
 CallScriptInitCallbackType ClientCallScriptInitCallback;
 CallScriptInitCallbackType ServerCallScriptInitCallback;
-template<ScriptContex context> char CallScriptInitCallbackHook(void* sqvm, const char* callback);
+template<ScriptContext context> char CallScriptInitCallbackHook(void* sqvm, const char* callback);
 
 // core sqvm funcs
 sq_compilebufferType ClientSq_compilebuffer;
@@ -88,12 +88,12 @@ sq_getboolType ClientSq_getbool;
 sq_getboolType ServerSq_getbool;
 
 
-template<ScriptContex context> void ExecuteCodeCommand(const CCommand& args);
+template<ScriptContext context> void ExecuteCodeCommand(const CCommand& args);
 
 // inits
-SquirrelManager<ScriptContex::CLIENT>* g_ClientSquirrelManager;
-SquirrelManager<ScriptContex::SERVER>* g_ServerSquirrelManager;
-SquirrelManager<ScriptContex::UI>* g_UISquirrelManager;
+SquirrelManager<ScriptContext::CLIENT>* g_ClientSquirrelManager;
+SquirrelManager<ScriptContext::SERVER>* g_ServerSquirrelManager;
+SquirrelManager<ScriptContext::UI>* g_UISquirrelManager;
 
 SQInteger NSTestFunc(void* sqvm)
 {
@@ -108,16 +108,16 @@ void InitialiseClientSquirrel(HMODULE baseAddress)
 	HookEnabler hook;
 
 	// client inits
-	g_ClientSquirrelManager = new SquirrelManager<ScriptContex::CLIENT>();
+	g_ClientSquirrelManager = new SquirrelManager<ScriptContext::CLIENT>();
 
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x12B00, &SQPrintHook<ScriptContex::CLIENT>, reinterpret_cast<LPVOID*>(&ClientSQPrint)); // client print function
-	RegisterConCommand("script_client", ExecuteCodeCommand<ScriptContex::CLIENT>, "Executes script code on the client vm", FCVAR_CLIENTDLL);
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x12B00, &SQPrintHook<ScriptContext::CLIENT>, reinterpret_cast<LPVOID*>(&ClientSQPrint)); // client print function
+	RegisterConCommand("script_client", ExecuteCodeCommand<ScriptContext::CLIENT>, "Executes script code on the client vm", FCVAR_CLIENTDLL);
 
 	// ui inits
-	g_UISquirrelManager = new SquirrelManager<ScriptContex::UI>();
+	g_UISquirrelManager = new SquirrelManager<ScriptContext::UI>();
 
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x12BA0, &SQPrintHook<ScriptContex::UI>, reinterpret_cast<LPVOID*>(&UISQPrint)); // ui print function
-	RegisterConCommand("script_ui", ExecuteCodeCommand<ScriptContex::UI>, "Executes script code on the ui vm", FCVAR_CLIENTDLL);
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x12BA0, &SQPrintHook<ScriptContext::UI>, reinterpret_cast<LPVOID*>(&UISQPrint)); // ui print function
+	RegisterConCommand("script_ui", ExecuteCodeCommand<ScriptContext::UI>, "Executes script code on the ui vm", FCVAR_CLIENTDLL);
 
 	// inits for both client and ui, since they share some functions
 	ClientSq_compilebuffer = (sq_compilebufferType)((char*)baseAddress + 0x3110);
@@ -139,15 +139,15 @@ void InitialiseClientSquirrel(HMODULE baseAddress)
 	ClientSq_getfloat = (sq_getfloatType)((char*)baseAddress + 0x6100);
 	ClientSq_getbool = (sq_getboolType)((char*)baseAddress + 0x6130);
 
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x26130, &CreateNewVMHook<ScriptContex::CLIENT>, reinterpret_cast<LPVOID*>(&ClientCreateNewVM)); // client createnewvm function
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x26E70, &DestroyVMHook<ScriptContex::CLIENT>, reinterpret_cast<LPVOID*>(&ClientDestroyVM)); // client destroyvm function
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x79A50, &ScriptCompileErrorHook<ScriptContex::CLIENT>, reinterpret_cast<LPVOID*>(&ClientSQCompileError)); // client compileerror function
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x10190, &CallScriptInitCallbackHook<ScriptContex::CLIENT>, reinterpret_cast<LPVOID*>(&ClientCallScriptInitCallback)); // client callscriptinitcallback function
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x26130, &CreateNewVMHook<ScriptContext::CLIENT>, reinterpret_cast<LPVOID*>(&ClientCreateNewVM)); // client createnewvm function
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x26E70, &DestroyVMHook<ScriptContext::CLIENT>, reinterpret_cast<LPVOID*>(&ClientDestroyVM)); // client destroyvm function
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x79A50, &ScriptCompileErrorHook<ScriptContext::CLIENT>, reinterpret_cast<LPVOID*>(&ClientSQCompileError)); // client compileerror function
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x10190, &CallScriptInitCallbackHook<ScriptContext::CLIENT>, reinterpret_cast<LPVOID*>(&ClientCallScriptInitCallback)); // client callscriptinitcallback function
 }
 
 void InitialiseServerSquirrel(HMODULE baseAddress)
 {
-	g_ServerSquirrelManager = new SquirrelManager<ScriptContex::SERVER>();
+	g_ServerSquirrelManager = new SquirrelManager<ScriptContext::SERVER>();
 
 	HookEnabler hook;
 
@@ -170,19 +170,19 @@ void InitialiseServerSquirrel(HMODULE baseAddress)
 	ServerSq_getfloat = (sq_getfloatType)((char*)baseAddress + 0x60E0);
 	ServerSq_getbool = (sq_getboolType)((char*)baseAddress + 0x6110);
 
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1FE90, &SQPrintHook<ScriptContex::SERVER>, reinterpret_cast<LPVOID*>(&ServerSQPrint)); // server print function
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x260E0, &CreateNewVMHook<ScriptContex::SERVER>, reinterpret_cast<LPVOID*>(&ServerCreateNewVM)); // server createnewvm function
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x26E20, &DestroyVMHook<ScriptContex::SERVER>, reinterpret_cast<LPVOID*>(&ServerDestroyVM)); // server destroyvm function
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x799E0, &ScriptCompileErrorHook<ScriptContex::SERVER>, reinterpret_cast<LPVOID*>(&ServerSQCompileError)); // server compileerror function
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1D5C0, &CallScriptInitCallbackHook<ScriptContex::SERVER>, reinterpret_cast<LPVOID*>(&ServerCallScriptInitCallback)); // server callscriptinitcallback function
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1FE90, &SQPrintHook<ScriptContext::SERVER>, reinterpret_cast<LPVOID*>(&ServerSQPrint)); // server print function
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x260E0, &CreateNewVMHook<ScriptContext::SERVER>, reinterpret_cast<LPVOID*>(&ServerCreateNewVM)); // server createnewvm function
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x26E20, &DestroyVMHook<ScriptContext::SERVER>, reinterpret_cast<LPVOID*>(&ServerDestroyVM)); // server destroyvm function
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x799E0, &ScriptCompileErrorHook<ScriptContext::SERVER>, reinterpret_cast<LPVOID*>(&ServerSQCompileError)); // server compileerror function
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1D5C0, &CallScriptInitCallbackHook<ScriptContext::SERVER>, reinterpret_cast<LPVOID*>(&ServerCallScriptInitCallback)); // server callscriptinitcallback function
 
 	// cheat and clientcmd_can_execute allows clients to execute this, but since it's unsafe we only allow it when cheats are enabled
 	// for script_client and script_ui, we don't use cheats, so clients can execute them on themselves all they want 
-	RegisterConCommand("script", ExecuteCodeCommand<ScriptContex::SERVER>, "Executes script code on the server vm", FCVAR_GAMEDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_CHEAT);
+	RegisterConCommand("script", ExecuteCodeCommand<ScriptContext::SERVER>, "Executes script code on the server vm", FCVAR_GAMEDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_CHEAT);
 }
 
 // hooks
-template<ScriptContex context> SQInteger SQPrintHook(void* sqvm, char* fmt, ...)
+template<ScriptContext context> SQInteger SQPrintHook(void* sqvm, char* fmt, ...)
 {
 	va_list va;
 	va_start(va, fmt);
@@ -202,20 +202,20 @@ template<ScriptContex context> SQInteger SQPrintHook(void* sqvm, char* fmt, ...)
 	return 0;
 }
 
-template<ScriptContex context> void* CreateNewVMHook(void* a1, ScriptContex realContext)
+template<ScriptContext context> void* CreateNewVMHook(void* a1, ScriptContext realContext)
 {	
 	void* sqvm;
 
-	if (context == ScriptContex::CLIENT)
+	if (context == ScriptContext::CLIENT)
 	{
 		sqvm = ClientCreateNewVM(a1, realContext);
 
-		if (realContext == ScriptContex::UI)
+		if (realContext == ScriptContext::UI)
 			g_UISquirrelManager->VMCreated(sqvm);
 		else
 			g_ClientSquirrelManager->VMCreated(sqvm);
 	}
-	else if (context == ScriptContex::SERVER)
+	else if (context == ScriptContext::SERVER)
 	{
 		sqvm = ServerCreateNewVM(a1, context);
 		g_ServerSquirrelManager->VMCreated(sqvm);
@@ -225,23 +225,23 @@ template<ScriptContex context> void* CreateNewVMHook(void* a1, ScriptContex real
 	return sqvm;
 }
 
-template<ScriptContex context> void DestroyVMHook(void* a1, void* sqvm)
+template<ScriptContext context> void DestroyVMHook(void* a1, void* sqvm)
 {
-	ScriptContex realContext = context; // ui and client use the same function so we use this for prints
+	ScriptContext realContext = context; // ui and client use the same function so we use this for prints
 
-	if (context == ScriptContex::CLIENT)
+	if (context == ScriptContext::CLIENT)
 	{
 		if (g_ClientSquirrelManager->sqvm == sqvm)
 			g_ClientSquirrelManager->VMDestroyed();
 		else if (g_UISquirrelManager->sqvm == sqvm)
 		{
 			g_UISquirrelManager->VMDestroyed();
-			realContext = ScriptContex::UI;
+			realContext = ScriptContext::UI;
 		}
 
 		ClientDestroyVM(a1, sqvm);
 	}
-	else if (context == ScriptContex::SERVER)
+	else if (context == ScriptContext::SERVER)
 	{
 		g_ServerSquirrelManager->VMDestroyed();
 		ServerDestroyVM(a1, sqvm);
@@ -250,11 +250,11 @@ template<ScriptContex context> void DestroyVMHook(void* a1, void* sqvm)
 	spdlog::info("DestroyVM {} {}", GetContextName(realContext), sqvm);
 }
 
-template<ScriptContex context> void ScriptCompileErrorHook(void* sqvm, const char* error, const char* file, int line, int column)
+template<ScriptContext context> void ScriptCompileErrorHook(void* sqvm, const char* error, const char* file, int line, int column)
 {
-	ScriptContex realContext = context; // ui and client use the same function so we use this for prints
-	if (context == ScriptContex::CLIENT && sqvm == g_UISquirrelManager->sqvm)
-		realContext = ScriptContex::UI;
+	ScriptContext realContext = context; // ui and client use the same function so we use this for prints
+	if (context == ScriptContext::CLIENT && sqvm == g_UISquirrelManager->sqvm)
+		realContext = ScriptContext::UI;
 
 	spdlog::error("{} SCRIPT COMPILE ERROR {}", GetContextName(realContext), error);
 	spdlog::error("{} line [{}] column [{}]", file, line, column);
@@ -265,19 +265,19 @@ template<ScriptContex context> void ScriptCompileErrorHook(void* sqvm, const cha
 	// though, that also has potential to be REALLY bad if we're compiling ui scripts lol
 }
 
-template<ScriptContex context> char CallScriptInitCallbackHook(void* sqvm, const char* callback)
+template<ScriptContext context> char CallScriptInitCallbackHook(void* sqvm, const char* callback)
 {
 	char ret;
 
-	if (context == ScriptContex::CLIENT)
+	if (context == ScriptContext::CLIENT)
 	{
-		ScriptContex realContext = context; // ui and client use the same function so we use this for prints
+		ScriptContext realContext = context; // ui and client use the same function so we use this for prints
 		bool shouldCallCustomCallbacks = false;
 		
 		// since we don't hook arbitrary callbacks yet, make sure we're only doing callbacks on inits
 		if (!strcmp(callback, "UICodeCallback_UIInit"))
 		{
-			realContext = ScriptContex::UI;
+			realContext = ScriptContext::UI;
 			shouldCallCustomCallbacks = true;
 		}
 		else if (!strcmp(callback, "ClientCodeCallback_MapSpawn"))
@@ -333,7 +333,7 @@ template<ScriptContex context> char CallScriptInitCallbackHook(void* sqvm, const
 			}
 		}
 	}
-	else if (context == ScriptContex::SERVER)
+	else if (context == ScriptContext::SERVER)
 	{
 		// since we don't hook arbitrary callbacks yet, make sure we're only doing callbacks on inits
 		bool shouldCallCustomCallbacks = !strcmp(callback, "CodeCallback_MapSpawn");
@@ -351,7 +351,7 @@ template<ScriptContex context> char CallScriptInitCallbackHook(void* sqvm, const
 				{
 					for (ModScriptCallback modCallback : script.Callbacks)
 					{
-						if (modCallback.Context == ScriptContex::SERVER && modCallback.BeforeCallback.length())
+						if (modCallback.Context == ScriptContext::SERVER && modCallback.BeforeCallback.length())
 						{
 							spdlog::info("Running custom {} script callback \"{}\"", GetContextName(context), modCallback.BeforeCallback);
 							ServerCallScriptInitCallback(sqvm, modCallback.BeforeCallback.c_str());
@@ -378,7 +378,7 @@ template<ScriptContex context> char CallScriptInitCallbackHook(void* sqvm, const
 				{
 					for (ModScriptCallback modCallback : script.Callbacks)
 					{
-						if (modCallback.Context == ScriptContex::SERVER  && modCallback.AfterCallback.length())
+						if (modCallback.Context == ScriptContext::SERVER  && modCallback.AfterCallback.length())
 						{
 							spdlog::info("Running custom {} script callback \"{}\"", GetContextName(context), modCallback.AfterCallback);
 							ServerCallScriptInitCallback(sqvm, modCallback.AfterCallback.c_str());
@@ -392,12 +392,12 @@ template<ScriptContex context> char CallScriptInitCallbackHook(void* sqvm, const
 	return ret;
 }
 
-template<ScriptContex context> void ExecuteCodeCommand(const CCommand& args)
+template<ScriptContext context> void ExecuteCodeCommand(const CCommand& args)
 {
-	if (context == ScriptContex::CLIENT)
+	if (context == ScriptContext::CLIENT)
 		g_ClientSquirrelManager->ExecuteCode(args.ArgS());
-	else if (context == ScriptContex::UI)
+	else if (context == ScriptContext::UI)
 		g_UISquirrelManager->ExecuteCode(args.ArgS());
-	else if (context == ScriptContex::SERVER)
+	else if (context == ScriptContext::SERVER)
 		g_ServerSquirrelManager->ExecuteCode(args.ArgS());
 }

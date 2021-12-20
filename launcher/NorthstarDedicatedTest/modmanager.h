@@ -27,7 +27,7 @@ public:
 	// would've liked to make it possible to hook arbitrary codecallbacks, but couldn't find a function that calls some ui ones
 	//std::string HookedCodeCallback;
 
-	ScriptContex Context;
+	ScriptContext Context;
 
 	// called before the codecallback is executed
 	std::string BeforeCallback;
