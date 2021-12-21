@@ -61,6 +61,7 @@ void RunServer(CDedicatedExports* dedicated)
 
 	while (g_pEngine->m_nQuitting == EngineQuitState::QUIT_NOTQUITTING)
 	{
+		double frameStart = Plat_FloatTime();
 		g_pEngine->Frame();
 
 		// this way of getting playercount/maxplayers honestly really sucks, but not got any other methods of doing it rn
@@ -68,8 +69,8 @@ void RunServer(CDedicatedExports* dedicated)
 		if (!maxPlayers)
 			maxPlayers = "6";
 
-		SetConsoleTitleA(fmt::format("Titanfall 2 dedicated server - {} {}/{} players ({})", g_pHostState->m_levelName, g_ServerAuthenticationManager->m_additionalPlayerData.size(), maxPlayers, GetCurrentPlaylistName()).c_str());
-		Sleep(1.0 / Cvar_base_tickinterval_mp->m_fValue); // currently only supports mp, doesnt really matter rn though since most sp levels crash on dedi
+		SetConsoleTitleA(fmt::format("Titanfall 2 dedicated server - {} {}/{} players ({})", g_pHostState->m_levelName, g_ServerAuthenticationManager->m_additionalPlayerData.size(), maxPlayers, GetCurrentPlaylistName()).c_str());		
+		std::this_thread::sleep_for(std::chrono::duration<double, std::ratio<1>>(Cvar_base_tickinterval_mp->m_fValue - fmin(Plat_FloatTime() - frameStart, 0.25)));
 	}
 }
 
