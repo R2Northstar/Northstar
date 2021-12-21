@@ -3,17 +3,31 @@
 #include "dedicated.h"
 #include "dedicatedmaterialsystem.h"
 #include "hookutils.h"
+#include "gameutils.h"
+
+typedef HRESULT(*__stdcall D3D11CreateDeviceType)(void* pAdapter, int DriverType, HMODULE Software, UINT Flags, int* pFeatureLevels, UINT FeatureLevels, UINT SDKVersion, void** ppDevice, int* pFeatureLevel, void** ppImmediateContext);
+D3D11CreateDeviceType D3D11CreateDevice;
+
+HRESULT __stdcall D3D11CreateDeviceHook(void* pAdapter, int DriverType, HMODULE Software, UINT Flags, int* pFeatureLevels, UINT FeatureLevels, UINT SDKVersion, void** ppDevice, int* pFeatureLevel, void** ppImmediateContext)
+{
+	// note: this is super duper temp pretty much just messing around with it
+	// does run surprisingly well on dedi for a software driver tho if you ignore the +1gb ram usage at times, seems like dedi doesn't really call gpu much even with renderthread still being a thing
+	// will be using this hook for actual d3d stubbing and stuff later
+	if (CommandLine()->CheckParm("-softwared3d11"))
+		DriverType = 5; // D3D_DRIVER_TYPE_WARP
+
+	return D3D11CreateDevice(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, ppDevice, pFeatureLevel, ppImmediateContext);
+}
 
 void InitialiseDedicatedMaterialSystem(HMODULE baseAddress)
 {
 	if (!IsDedicated())
 		return;
 
-	//while (!IsDebuggerPresent())
-	//	Sleep(100);
+	HookEnabler hook;
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0xD9A0E, &D3D11CreateDeviceHook, reinterpret_cast<LPVOID*>(&D3D11CreateDevice));
 
 	// not using these for now since they're related to nopping renderthread/gamewindow i.e. very hard
-	// we use -noshaderapi instead now
 	//{
 	//	// function that launches renderthread
 	//	char* ptr = (char*)baseAddress + 0x87047;
@@ -49,90 +63,8 @@ void InitialiseDedicatedMaterialSystem(HMODULE baseAddress)
 		*(ptr + 3) = (char)0x00;
 	}
 
-	if (DisableDedicatedWindowCreation())
-	{
-		{
-			// materialsystem rpak type registrations
-			char* ptr = (char*)baseAddress + 0x22B5;
-			TempReadWrite rw(ptr);
-
-			// nop a call that crashes, not needed on dedi
-			*ptr = 0x90;
-			*(ptr + 1) = (char)0x90;
-			*(ptr + 2) = (char)0x90;
-			*(ptr + 3) = (char)0x90;
-			*(ptr + 4) = (char)0x90;
-		}
-
-		{
-			// some renderthread stuff
-			char* ptr = (char*)baseAddress + 0x8C10;
-			TempReadWrite rw(ptr);
-
-			// call => nop
-			*ptr = (char)0x90;
-			*(ptr + 1) = (char)0x90;
-		}
-
-		// rpak type callbacks
-		// these need to be nopped for dedi
-		{
-			// materialsystem rpak type: shader
-			char* ptr = (char*)baseAddress + 0x2850;
-			TempReadWrite rw(ptr);
-
-			// ret
-			*ptr = (char)0xC3;
-		}
-
-		{
-			// materialsystem rpak type: texture
-			char* ptr = (char*)baseAddress + 0x2B00;
-			TempReadWrite rw(ptr);
-
-			// ret
-			*ptr = (char)0xC3;
-		}
-
-		{
-			// materialsystem rpak type: material
-			char* ptr = (char*)baseAddress + 0x50AA0;
-			TempReadWrite rw(ptr);
-
-			// ret
-			*ptr = (char)0xC3;
-		}
-	}
-}
-
-// rpak pain
-struct RpakTypeDefinition
-{
-	int64_t magic;
-	char* longName;
-
-	// more fields but they don't really matter for what we use them for
-};
-
-typedef void*(*RegisterRpakTypeType)(RpakTypeDefinition* rpakStruct, unsigned int a1, unsigned int a2);
-RegisterRpakTypeType RegisterRpakType;
-
-typedef void(*RegisterMaterialSystemRpakTypes)();
-
-void* RegisterRpakTypeHook(RpakTypeDefinition* rpakStruct, unsigned int a1, unsigned int a2)
-{
-	// make sure this prints right
-	char magicName[5];
-	memcpy(magicName, &rpakStruct->magic, 4);
-	magicName[4] = 0; // null terminator
-
-	spdlog::info("rpak type {} {} registered", magicName, rpakStruct->longName);
-
-	// reregister rpak types that aren't registered on a windowless dedi
-	if (rpakStruct->magic == 0x64636C72) // rlcd magic, this one is registered last
-		((RegisterMaterialSystemRpakTypes)((char*)GetModuleHandleA("materialsystem_dx11.dll") + 0x22A0))(); // slightly hellish call, registers materialsystem rpak types
-
-	return RegisterRpakType(rpakStruct, a1, a2);
+	// previously had DisableDedicatedWindowCreation stuff here, removing for now since shit and unstable
+	// check commit history if needed
 }
 
 typedef void*(*PakLoadAPI__LoadRpakType)(char* filename, void* unknown, int flags);
@@ -174,9 +106,4 @@ void InitialiseDedicatedRtechGame(HMODULE baseAddress)
 	// unfortunately this is unstable, seems to freeze when changing maps
 	//ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0xB0F0, &PakLoadAPI__LoadRpakHook, reinterpret_cast<LPVOID*>(&PakLoadAPI__LoadRpak));
 	//ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0xB170, &PakLoadAPI__LoadRpak2Hook, reinterpret_cast<LPVOID*>(&PakLoadAPI__LoadRpak2));
-
-	if (DisableDedicatedWindowCreation())
-	{
-		ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x7BE0, &RegisterRpakTypeHook, reinterpret_cast<LPVOID*>(&RegisterRpakType));
-	}
 }
