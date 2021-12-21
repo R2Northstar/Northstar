@@ -72,7 +72,7 @@ void ServerAuthenticationManager::StartPlayerAuthServer()
 						addrPtr = typeStart + 3;
 					hostent* resolvedRemoteAddr = gethostbyname((const char*)addrPtr);
 
-					if (!request.has_param("id") || !request.has_param("authToken") || !resolvedRemoteAddr || ((in_addr**)resolvedRemoteAddr->h_addr_list)[0]->S_un.S_addr != remoteAddr)
+					if (!request.has_param("id") || !request.has_param("authToken") || request.body.size() >= 65335 || !resolvedRemoteAddr || ((in_addr**)resolvedRemoteAddr->h_addr_list)[0]->S_un.S_addr != remoteAddr)
 					{
 						response.set_content("{\"success\":false}", "application/json");
 						return;
@@ -344,7 +344,12 @@ char __fastcall CNetChan___ProcessMessagesHook(void* self, void* buf)
 		}
 
 		g_ServerAuthenticationManager->m_additionalPlayerData[sender].netChanProcessingLimitTime += (Plat_FloatTime() * 1000) - (startTime * 1000);
-		if (g_ServerAuthenticationManager->m_additionalPlayerData[sender].netChanProcessingLimitTime >= Cvar_net_chan_limit_msec_per_sec->m_nValue)
+
+		int32_t limit = Cvar_net_chan_limit_msec_per_sec->m_nValue;
+		if (g_pHostState->m_iCurrentState != HostState_t::HS_RUN)
+			limit *= 2; // give clients more headroom in these states, as alot of clients will tend to time out here
+
+		if (g_ServerAuthenticationManager->m_additionalPlayerData[sender].netChanProcessingLimitTime >= limit)
 		{
 			spdlog::warn("Client {} hit netchan processing limit with {}ms of processing time this second (max is {})", (char*)sender + 0x16, g_ServerAuthenticationManager->m_additionalPlayerData[sender].netChanProcessingLimitTime, Cvar_net_chan_limit_msec_per_sec->m_nValue);
 			

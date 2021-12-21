@@ -73,7 +73,7 @@ void InitialiseServerGameUtilFunctions(HMODULE baseAddress)
 {
 	Server_GetEntityByIndex = (Server_GetEntityByIndexType)((char*)baseAddress + 0xFB820);
 	Cvar_base_tickinterval_mp = (ConVar*)((char*)baseAddress + 0xBFC360);
-	Cvar_base_tickinterval_mp = (ConVar*)((char*)baseAddress + 0xBFBEA0);
+	Cvar_base_tickinterval_sp = (ConVar*)((char*)baseAddress + 0xBFBEA0);
 }
 
 void InitialiseTier0GameUtilFunctions(HMODULE baseAddress)
