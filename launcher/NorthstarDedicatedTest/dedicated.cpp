@@ -9,11 +9,6 @@ bool IsDedicated()
 	return CommandLine()->CheckParm("-dedicated");
 }
 
-bool DisableDedicatedWindowCreation()
-{
-	return !CommandLine()->CheckParm("-windoweddedi");
-}
-
 // CDedidcatedExports defs
 struct CDedicatedExports; // forward declare
 
@@ -343,118 +338,19 @@ void InitialiseDedicated(HMODULE engineAddress)
 		*(ptr + 15) = (char)0x90;
 	}
 
-	// stuff that disables renderer/window creation: unstable atm
-	if (DisableDedicatedWindowCreation())
+	// note: previously had DisableDedicatedWindowCreation patches here, but removing those rn since they're all shit and unstable and bad and such
+	// check commit history if any are needed for reimplementation
 	{
-		{
-			// CEngineAPI::Init
-			char* ptr = (char*)engineAddress + 0x1C60CE;
-			TempReadWrite rw(ptr);
+		// IVideoMode::CreateGameWindow
+		char* ptr = (char*)engineAddress + 0x1CD146;
+		TempReadWrite rw(ptr);
 
-			// remove call to something or other that reads video settings
-			*ptr = (char)0x90;
-			*(ptr + 1) = (char)0x90;
-			*(ptr + 2) = (char)0x90;
-			*(ptr + 3) = (char)0x90;
-			*(ptr + 4) = (char)0x90;
-		}
-
-		{
-			// some inputsystem bullshit
-			char* ptr = (char*)engineAddress + 0x1CEE28;
-			TempReadWrite rw(ptr);
-
-			// nop an accessviolation: temp because we still create game window atm
-			*ptr = (char)0x90;
-			*(ptr + 1) = (char)0x90;
-			*(ptr + 2) = (char)0x90;
-		}
-
-		{
-			// no clue what this is
-			char* ptr = (char*)engineAddress + 0x1CD146;
-			TempReadWrite rw(ptr);
-
-			// nop a crashing call
-			*ptr = (char)0x90;
-			*(ptr + 1) = (char)0x90;
-			*(ptr + 2) = (char)0x90;
-			*(ptr + 3) = (char)0x90;
-			*(ptr + 4) = (char)0x90;
-		}
-
-		//{
-		//	// CEngineAPI::ModInit
-		//	char* ptr = (char*)engineAddress + 0x1C67D1;
-		//	TempReadWrite rw(ptr);
-		//
-		//	// prevent game window from being created
-		//	*ptr = (char)0x90;
-		//	*(ptr + 1) = (char)0x90;
-		//	*(ptr + 2) = (char)0x90;
-		//	*(ptr + 3) = (char)0x90;
-		//	*(ptr + 4) = (char)0x90;
-		//
-		//	*(ptr + 7) = (char)0xEB; // jnz => jmp
-		//}
-
-		// note: this is a different way of nopping window creation, i'm assuming there are like a shitload of inits here we shouldn't skip
-		// i know at the very least it registers datatables which are important
-		{
-			// IVideoMode::CreateGameWindow
-			char* ptr = (char*)engineAddress + 0x1CD0ED;
-			TempReadWrite rw(ptr);
-
-			// prevent game window from being created
-			*ptr = (char)0x90;
-			*(ptr + 1) = (char)0x90;
-			*(ptr + 2) = (char)0x90;
-			*(ptr + 3) = (char)0x90;
-			*(ptr + 4) = (char)0x90;
-		}
-
-		{
-			// IVideoMode::CreateGameWindow
-			char* ptr = (char*)engineAddress + 0x1CD146;
-			TempReadWrite rw(ptr);
-
-			// prevent game from calling a matsystem function that will crash here
-			//*ptr = (char)0x90;
-			//*(ptr + 1) = (char)0x90;
-			//*(ptr + 2) = (char)0x90;
-			//*(ptr + 3) = (char)0x90;
-			//*(ptr + 4) = (char)0x90;
-		}
-
-		{
-			// IVideoMode::CreateGameWindow
-			char* ptr = (char*)engineAddress + 0x1CD160;
-			TempReadWrite rw(ptr);
-
-			// prevent game from complaining about window not being created
-			*ptr = (char)0x90;
-			*(ptr + 1) = (char)0x90;
-		}
-
-		CommandLine()->AppendParm("-noshaderapi", 0);
-	}
-	else
-	{
-		// for dedis where we still create a window, we can at least hide the window we create
-		// not great since we still run renderthread etc, but better than nothing
-
-		{
-			// IVideoMode::CreateGameWindow
-			char* ptr = (char*)engineAddress + 0x1CD146;
-			TempReadWrite rw(ptr);
-
-			// nop call to ShowWindow
-			*ptr = (char)0x90;
-			*(ptr + 1) = (char)0x90;
-			*(ptr + 2) = (char)0x90;
-			*(ptr + 3) = (char)0x90;
-			*(ptr + 4) = (char)0x90;
-		}
+		// nop call to ShowWindow
+		*ptr = (char)0x90;
+		*(ptr + 1) = (char)0x90;
+		*(ptr + 2) = (char)0x90;
+		*(ptr + 3) = (char)0x90;
+		*(ptr + 4) = (char)0x90;
 	}
 
 	CDedicatedExports* dedicatedExports = new CDedicatedExports;
@@ -480,6 +376,7 @@ void InitialiseDedicated(HMODULE engineAddress)
 	// add cmdline args that are good for dedi
 	CommandLine()->AppendParm("-nomenuvid", 0);
 	CommandLine()->AppendParm("-nosound", 0);
+	CommandLine()->AppendParm("-windowed", 0);
 	CommandLine()->AppendParm("+host_preload_shaders", "0");
 	CommandLine()->AppendParm("+net_usesocketsforloopback", "1");
 	CommandLine()->AppendParm("+exec", "autoexec_ns_server");
