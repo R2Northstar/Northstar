@@ -11,4 +11,7 @@ When using a dedicated server, arguments are read from `ns_startup_args_dedi.txt
 **Dedicated Server Caveats**  
 At the moment, dedicated servers still require DirectX 11 to work, which typically requires a physical GPU, though they use almost no GPU processing power while in use, this can be an issue especially on GPU-less setups, so the launch argument -softwared3d11 can be used to force DirectX to run in software mode.  
 While this is absolutely not ideal, it's the best solution for headless dedicated servers at the moment, and surprisingly hardly uses any CPU time, though it can use roughly up to 1GB of RAM.  
-Regarding RAM usage, dedicated servers also use significant amounts of RAM at the moment, often requiring 1.5-2GB, though I expect this to lower as development continues.
+Regarding RAM usage, dedicated servers also use significant amounts of RAM at the moment, often requiring 1.5-2GB, though I expect this to lower as development continues.  
+  
+**Server Configuration**  
+Whether you're running a listen or dedicated server, you'll generally want to mess with the configuration at least a bit. While I do think the default configuration settings are pretty ok, being able to change your server's name or password, or increase your server's tickrate is often something you'll want to do.
