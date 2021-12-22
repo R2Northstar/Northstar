@@ -170,7 +170,8 @@ void function SetLastSurvivor( entity player )
 		Remote_CallFunction_NonReplay( otherPlayer, "ServerCallback_AnnounceLastSurvivor", player.GetEncodedEHandle() )
 
 	Highlight_SetEnemyHighlight( player, "enemy_sonar" )
-	thread CreateTitanForPlayerAndHotdrop( player, GetTitanReplacementPoint( player, false ) )
+	if ( SpawnPoints_GetTitan().len() > 0 )
+		thread CreateTitanForPlayerAndHotdrop( player, GetTitanReplacementPoint( player, false ) )
 	
 	if ( GameTime_TimeLeftSeconds() > 45 )
 		SetServerVar( "gameEndTime", Time() + 45.0 )

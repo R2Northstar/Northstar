@@ -10,6 +10,7 @@ global function ScoreEvent_NPCKilled
 
 global function ScoreEvent_SetEarnMeterValues
 global function ScoreEvent_SetupEarnMeterValuesForMixedModes
+global function ScoreEvent_SetupEarnMeterValuesForTitanModes
 
 struct {
 	bool firstStrikeDone = false
@@ -212,7 +213,7 @@ void function ScoreEvent_SetupEarnMeterValuesForMixedModes() // mixed modes in t
 {
 	// todo needs earn/overdrive values
 	// player-controlled stuff
-	ScoreEvent_SetEarnMeterValues( "KillPilot", 0.0, 0.05 )
+	ScoreEvent_SetEarnMeterValues( "KillPilot", 0.7, 0.15 )
 	ScoreEvent_SetEarnMeterValues( "KillTitan", 0.0, 0.15 )
 	ScoreEvent_SetEarnMeterValues( "TitanKillTitan", 0.0, 0.0 ) // unsure
 	ScoreEvent_SetEarnMeterValues( "PilotBatteryStolen", 0.0, 0.35 )
@@ -227,6 +228,5 @@ void function ScoreEvent_SetupEarnMeterValuesForMixedModes() // mixed modes in t
 
 void function ScoreEvent_SetupEarnMeterValuesForTitanModes()
 {
-	// todo needs earn/overdrive values
-	
+	// relatively sure we don't have to do anything here but leaving this function for consistency
 }

@@ -150,10 +150,11 @@ void function SpawnPlayerIntoDropship( entity player )
 				playerDropship = dropship
 				playerDropshipIndex = i
 				
+				dropship.players[ i ] = player
 				break
 			}
 					
-	if ( true )//if ( playerDropship.dropship == null )
+	if ( playerDropship.dropship == null )
 	{
 		// if we're at this point, we have more players than we do dropships, so just pick a random one
 		playerDropship = teamDropships.getrandom()
@@ -189,10 +190,11 @@ void function SpawnPlayerIntoDropship( entity player )
 	jumpSequence.firstPersonAnim = DROPSHIP_JUMP_ANIMS_POV[ playerDropshipIndex ]
 	jumpSequence.thirdPersonAnim = DROPSHIP_JUMP_ANIMS[ playerDropshipIndex ]
 	jumpSequence.attachment = "ORIGIN"
-	jumpSequence.setInitialTime = Time() - ( file.introStartTime + 10.9 ) // pretty sure you should do this with GetScriptedAnimEventCycleFrac?
+	jumpSequence.setInitialTime = max( 0.0, Time() - ( file.introStartTime + 11.0 ) )  // pretty sure you should do this with GetScriptedAnimEventCycleFrac?
 	// idk unsure how to use that, all i know is getsequenceduration > the length it actually should be
 	
-	FirstPersonSequence( jumpSequence, player, playerDropship.dropship )
+	thread FirstPersonSequence( jumpSequence, player, playerDropship.dropship )
+	WaittillAnimDone( player ) // somehow this is better than just waiting for the blocking FirstPersonSequence call?
 	
 	player.s.dropshipIntroIsJumping <- true
 	thread PlayerJumpsFromDropship( player )
@@ -217,6 +219,7 @@ void function PlayerJumpsFromDropship( entity player )
 	player.ConsumeDoubleJump() // movementdisable doesn't prevent double jumps
 	
 	// wait for player to hit the ground
+	wait 0.1 // assume players will never actually hit ground before this
 	while ( !player.IsOnGround() && !player.IsWallRunning() && !player.IsWallHanging() ) // todo this needs tweaking
 		WaitFrame()
 	

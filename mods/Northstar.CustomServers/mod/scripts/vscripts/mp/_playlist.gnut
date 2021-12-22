@@ -7,6 +7,12 @@ void function Playlist_Init()
 	AddCallback_OnPlayerRespawned( FeaturedModeSettingsSetupPilotLoadouts )
 	AddCallback_OnPilotBecomesTitan( FeaturedModeSettingsSetupTitanLoadouts )
 	
+	if ( IsFeaturedMode( "all_holopilot" ) || IsFeaturedMode( "all_grapple" ) || 
+		 IsFeaturedMode( "all_phase" ) || IsFeaturedMode( "all_ticks" ) || 
+		 IsFeaturedMode( "rocket_arena" ) || IsFeaturedMode( "shotguns_snipers" ) || 
+		 IsFeaturedMode( "tactikill" ) || IsFeaturedMode( "amped_tacticals" ) )
+		 SetLoadoutGracePeriodEnabled( false )
+	
 	// iron lts rules
 	if ( HasIronRules() ) 
 		Riff_ForceTitanExitEnabled( eTitanExitEnabled.Never )
@@ -78,6 +84,8 @@ void function FeaturedModeSettingsSetupPilotLoadouts( entity player )
 			modifiedLoadout.secondaryMods = [ "rocket_arena" ]
 		}
 		
+		modifiedLoadout.meleeMods = [ "rocket_arena" ]
+		
 		player.GiveExtraWeaponMod( "rocket_arena" )
 	}
 	
@@ -120,7 +128,12 @@ void function FeaturedModeSettingsSetupTitanLoadouts( entity player, entity tita
 	if ( IsFeaturedMode( "turbo_titans" ) )
 	{
 		array<string> settingsMods = player.GetPlayerSettingsMods()
-		settingsMods.append( "turbo_titan" )
-		player.SetPlayerSettingsWithMods( player.GetPlayerSettings(), settingsMods )
+		
+		// seems to crash if we set both of these at once? idk odd game
+		if ( !settingsMods.contains( "pas_mobility_dash_capacity" ) )
+		{
+			settingsMods.append( "turbo_titan" )
+			player.SetPlayerSettingsWithMods( player.GetPlayerSettings(), settingsMods )
+		}
 	}
 }

@@ -4,6 +4,7 @@ global function RateSpawnpoints_Directional
 void function GamemodeTdm_Init()
 {
 	AddCallback_OnPlayerKilled( GiveScoreForPlayerKill )
+	ScoreEvent_SetupEarnMeterValuesForMixedModes()
 }
 
 void function GiveScoreForPlayerKill( entity victim, entity attacker, var damageInfo )

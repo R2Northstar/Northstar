@@ -17,6 +17,7 @@ void function GamemodeHideAndSeek_Init()
 	Riff_ForceBoostAvailability( eBoostAvailability.Disabled )
 	SetRespawnsEnabled( false )
 	Riff_ForceSetEliminationMode( eEliminationMode.Pilots )
+	SetLoadoutGracePeriodEnabled( false )
 	
 	SetTimeoutWinnerDecisionFunc( HideAndSeekDecideWinner )
 	ClassicMP_SetCustomIntro( GamemodeHideAndSeekIntroSetup, 0.0 )
@@ -85,12 +86,11 @@ void function HideAndSeekIntroPrematch()
 	ClassicMP_OnIntroStarted()
 	
 	file.hidingStartTime = Time()
-	
 	foreach ( entity player in GetPlayerArray() )
 		AddPlayerToHideAndSeekIntro( player )
 	
 	// this intro is mostly done in playing, so just finish the intro up now and we can do fully custom logic from here
-	WaitFrame()
+	wait 2.5
 	ClassicMP_OnIntroFinished()
 	
 	thread GlobalSeekerIntroThread()
@@ -98,6 +98,9 @@ void function HideAndSeekIntroPrematch()
 
 void function HiderIntroThread( entity player )
 {
+	player.EndSignal( "OnDestroy" )
+	// need to wait a frame in case we're joining after eGameState.Playing, in which case we'll be turned into a spectator on first frame
+	WaitFrame()
 	RespawnAsPilot( player )
 
 	wait ( file.hidingStartTime + file.hidingTime ) - Time()
@@ -107,6 +110,7 @@ void function HiderIntroThread( entity player )
 
 void function SeekerIntroThread( entity player )
 {
+	player.EndSignal( "OnDestroy" )
 	MuteHalfTime( player )
 
 	player.SetObserverModeStaticPosition( file.intermissionCam.GetOrigin() )
@@ -132,7 +136,12 @@ void function GlobalSeekerIntroThread()
 		Remote_CallFunction_NonReplay( hider, "ServerCallback_SeekersIncoming" )
 
 	array<entity> seekers = GetPlayerArrayOfTeam( HIDEANDSEEK_TEAM_SEEKER )
-	entity podSpawn = file.droppodSpawns.getrandom()
+	entity podSpawn
+	if ( file.droppodSpawns.len() != 0 )
+		podSpawn = file.droppodSpawns.getrandom()
+	else
+		podSpawn = SpawnPoints_GetPilot().getrandom()
+	
 	SpawnPlayersInDropPod( seekers, podSpawn.GetOrigin(), podSpawn.GetAngles() )
 	
 	foreach ( entity seeker in seekers )
@@ -162,9 +171,22 @@ void function SetupHideAndSeekPlayer( entity player )
 		
 		// remove red outline, ideally should work tm
 		Highlight_ClearEnemyHighlight( player )
+		thread PlayHintSoundsForHider( player )
 	}
 	else
 		player.TakeWeapon( "mp_weapon_grenade_sonar" ) // seekers should not have pulse blade
+}
+
+void function PlayHintSoundsForHider( entity player )
+{
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+	
+	while ( true )
+	{
+		wait 1.0
+		EmitSoundOnEntity( player, "weapon_chargerifle_fire_3p" )
+	}
 }
 
 void function TryNotifyLastPlayerAlive( entity victim, entity attacker, var damageInfo )

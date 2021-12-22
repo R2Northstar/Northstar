@@ -22,6 +22,8 @@ void function EarnMeterMP_SetTitanLoadout( entity player )
 {
 	if ( EarnMeterMP_IsTitanEarnGametype() )
 		PlayerEarnMeter_SetGoal( player, EarnObject_GetByRef( GetTitanLoadoutForPlayer( player ).titanClass ) )
+	else
+		PlayerEarnMeter_SetGoal( player, EarnObject_GetByRef( GetSelectedBurncardRefFromWeaponOrPlayer( null, player ) ) )
 }
 
 void function EarnMeterMP_SetPassiveMeterGainEnabled( bool enabled )
@@ -46,6 +48,8 @@ void function SetupPlayerEarnMeter( entity player )
 		PlayerEarnMeter_SetGoal( player, EarnObject_GetByRef( GetTitanLoadoutForPlayer( player ).titanClass ) )
 		PlayerEarnMeter_EnableGoal( player ) // prevents goalstate from being set incorrectly
 	}
+	else
+		PlayerEarnMeter_SetGoal( player, EarnObject_GetByRef( GetSelectedBurncardRefFromWeaponOrPlayer( null, player ) ) )
 	
 	// catchup bonus for late joiners
 	// todo: maths on this is fine but for some reason it won't set correctly, could be getting reset somewhere?
@@ -66,10 +70,9 @@ void function OnPlaying()
 	{
 		Riff_ForceTitanAvailability( eTitanAvailability.Custom ) // doesn't seem to affect anything aside from preventing some annoying client stuff
 		svGlobal.titanAvailabilityCheck = IsTitanAvailable
-		SetCallback_EarnMeterGoalEarned( EarnMeterMP_TitanEarned )
 	}
-	else // if no titans from earnmeter in this mode, just reset when we finish meter
-		SetCallback_EarnMeterGoalEarned( PlayerEarnMeter_Reset )
+	
+	SetCallback_EarnMeterGoalEarned( EarnMeterMP_TitanEarned )
 }
 
 void function OnPlayerRespawned( entity player )
@@ -179,6 +182,21 @@ void function EarnMeterMP_BoostEarned( entity player )
 
 void function EarnMeterMP_TitanEarned( entity player )
 {
-	SetTitanAvailable( player )
-	//Remote_CallFunction_Replay( player, "ServerCallback_TitanReadyMessage" ) // broken for some reason
+	if ( EarnMeterMP_IsTitanEarnGametype() )
+	{
+		SetTitanAvailable( player )
+		//Remote_CallFunction_Replay( player, "ServerCallback_TitanReadyMessage" ) // broken for some reason
+	}
+	else
+	{
+		PlayerEarnMeter_Reset( player )
+		// reset rewards
+		string burncardRef = GetSelectedBurncardRefFromWeaponOrPlayer( null, player )
+		PlayerEarnMeter_SetReward( player, EarnObject_GetByRef( burncardRef ) )
+		PlayerEarnMeter_SetRewardFrac( player, BurnReward_GetByRef( burncardRef ).cost )
+		PlayerEarnMeter_EnableReward( player )
+			
+		if ( PlayerEarnMeter_GetRewardFrac( player ) != 0 )
+			PlayerEarnMeter_EnableReward( player )
+	}
 }

@@ -7,6 +7,7 @@ void function GamemodeTTDM_Init()
 	Riff_ForceSetSpawnAsTitan( eSpawnAsTitan.Always )
 	Riff_ForceTitanExitEnabled( eTitanExitEnabled.Never )
 	TrackTitanDamageInPlayerGameStat( PGS_ASSAULT_SCORE )
+	ScoreEvent_SetupEarnMeterValuesForMixedModes()
 	
 	ClassicMP_SetCustomIntro( TTDMIntroSetup, TTDMIntroLength )
 	

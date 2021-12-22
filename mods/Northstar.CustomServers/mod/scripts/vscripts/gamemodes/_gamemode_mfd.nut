@@ -13,6 +13,7 @@ void function GamemodeMfd_Init()
 	GamemodeMfdShared_Init()
 		
 	RegisterSignal( "MarkKilled" )
+	ScoreEvent_SetupEarnMeterValuesForMixedModes()
 	
 	// todo
 	if ( GAMETYPE == MARKED_FOR_DEATH_PRO )
@@ -175,8 +176,9 @@ void function UpdateMarksForKill( entity victim, entity attacker, var damageInfo
 {
 	if ( victim == GetMarked( victim.GetTeam() ) )
 	{
+		MessageToAll( eEventNotifications.MarkedForDeathKill, null, victim, attacker.GetEncodedEHandle() )
 		svGlobal.levelEnt.Signal( "MarkKilled", { mark = victim } )
-	
+		
 		if ( attacker.IsPlayer() )
 			attacker.SetPlayerGameStat( PGS_ASSAULT_SCORE, attacker.GetPlayerGameStat( PGS_ASSAULT_SCORE ) + 1 )
 	}

@@ -208,9 +208,12 @@ var function CodeCallback_ClientCommand( entity player, array<string> args )
 	}
 	else
 	{
-		printl( "############################" )
-		printl( "CommandString: " + commandString  + " was not added via AddClientCommandCallback but is being called in CodeCallback_ClientCommand" )
-		printl( "############################" )
+		if ( GetConVarBool( "ns_should_log_unknown_clientcommands" ) )
+		{
+			printl( "############################" )
+			printl( "CommandString: " + commandString  + " was not added via AddClientCommandCallback but is being called in CodeCallback_ClientCommand" )
+			printl( "############################" )
+		}
 		return false
 	}
 }

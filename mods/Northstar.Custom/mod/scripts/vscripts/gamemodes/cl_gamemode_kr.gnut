@@ -45,6 +45,8 @@ void function ClGamemodeKR_Init()
 	AddCallback_OnClientScriptInit( CreateKRUI )
 	AddCreateCallback( "item_flag", OnFlagCreated )
 	AddDestroyCallback( "item_flag", OnFlagDestroyed )
+	
+	AddCallback_GameStateEnter( eGameState.Postmatch, DisplayPostMatchTop3 )
 }
 
 void function CreateKRUI( entity player )
@@ -66,15 +68,14 @@ void function CreateKRUI( entity player )
 
 void function OnFlagCreated( entity flag )
 {
-	if ( IsValid( file.flagIncomingRui ) )
-		RuiDestroy( file.flagIncomingRui )
-
+	RuiDestroyIfAlive( file.flagIncomingRui )
 	RuiSetBool( file.flagRui, "isVisible", true )
 	RuiTrackFloat3( file.flagRui, "pos", flag, RUI_TRACK_OVERHEAD_FOLLOW )
 }
 
 void function OnFlagDestroyed( entity flag )
 {
+	RuiDestroyIfAlive( file.flagIncomingRui )
 	RuiSetBool( file.flagRui, "isVisible", false )
 }
 
@@ -202,15 +203,20 @@ void function ServerCallback_NewKillRacer( int playerHandle, float endTime )
 
 void function LerpTimeDuringRace( float endTime )
 {
+	GetLocalClientPlayer().EndSignal( "OnDeath" )
+
+	OnThreadEnd( function() : ()
+	{
+		UpdateCurrentTimeAmount( 0.0 )
+		file.isCurrentlyInRace = false
+	})
+
 	while ( Time() < endTime )
 	{
 		// manually update this here so we can get more frequent updates than what we'd get with networked vars
 		UpdateCurrentTimeAmount( endTime - Time() )
 		WaitFrame()
 	}
-	
-	UpdateCurrentTimeAmount( 0.0 )
-	file.isCurrentlyInRace = false
 }
 
 void function ServerCallback_EndKillrace( int playerHandle, int score )
