@@ -9,4 +9,4 @@ First things first: you'll need to download and install Northstar.
 **Additional Stuff**  
 Since Northstar doesn't launch directly through Origin, any startup arguments provided in origin won't transfer over, you'll need to add them to the file ns_startup_args.txt, which should be in the same folder as you extracted the Northstar files to.  
   
-If you get the error 
+If Northstar doesn't appear to be installed, or you have issues entering the lobby, try running vanilla files, I can't personally say what VPK mods could cause issues with Northstar at the moment, so it'd probably be easiest just to try running unmodded.
