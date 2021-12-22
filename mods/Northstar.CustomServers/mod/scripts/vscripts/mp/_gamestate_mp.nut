@@ -127,7 +127,7 @@ void function WaitForPlayers( )
 	// note: atm if someone disconnects as this happens the game will just wait forever
 	float endTime = Time() + 30.0
 	
-	while ( GetPendingClientsCount() != 0 && endTime > Time() )
+	while ( ( GetPendingClientsCount() != 0 && endTime > Time() ) || GetPlayerArray().len() == 0 )
 		WaitFrame()
 	
 	print( "done waiting!" )

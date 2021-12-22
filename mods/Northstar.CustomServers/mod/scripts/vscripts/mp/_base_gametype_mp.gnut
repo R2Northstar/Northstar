@@ -38,8 +38,8 @@ void function BaseGametype_Init_MPSP()
 	AddClientCommandCallback( "spec_prev", ClientCommandCallback_spec_prev )
 	AddClientCommandCallback( "spec_mode", ClientCommandCallback_spec_mode )
 	
-	AddDamageCallback( "player", AddToTitanDamageStat )
-	AddDamageCallback( "npc_titan", AddToTitanDamageStat )
+	AddPostDamageCallback( "player", AddToTitanDamageStat )
+	AddPostDamageCallback( "npc_titan", AddToTitanDamageStat )
 	
 	RegisterSignal( "PlayerRespawnStarted" )
 }
@@ -354,10 +354,8 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 		else // spawn as pilot
 			RespawnAsPilot( player )
 	}
-	else
-	{
+	else if ( GamePlayingOrSuddenDeath() || GetGameState() == eGameState.Epilogue )
 		thread PlayerBecomesSpectator( player )
-	}
 }
 
 void function PlayerWatchesKillReplayWrapper( entity player, entity attacker, float timeSinceAttackerSpawned, float timeOfDeath, float beforeTime, table replayTracker )
@@ -372,7 +370,8 @@ void function PlayerWatchesKillReplayWrapper( entity player, entity attacker, fl
 	
 	OnThreadEnd( function() : ( player ) 
 	{	
-		if ( IsValid( player ) )
+		// don't clear if we're in a roundwinningkillreplay
+		if ( IsValid( player ) && !( ( GetGameState() == eGameState.SwitchingSides || GetGameState() == eGameState.WinnerDetermined ) && IsRoundWinningKillReplayEnabled() ) )
 		{
 			player.ClearReplayDelay()
 			player.ClearViewEntity()
@@ -389,9 +388,9 @@ void function DecideRespawnPlayer( entity player )
 	// this isn't even used atm, could likely be removed if some vanilla code didn't rely on it
 }
 
-void function RespawnAsPilot( entity player, bool manualPosition = false )
+void function RespawnAsPilot( entity player )
 {
-	player.RespawnPlayer( FindSpawnPoint( player, false, ShouldStartSpawn( player ) && !IsFFAGame() ) )
+	player.RespawnPlayer( FindSpawnPoint( player, false, ( ShouldStartSpawn( player ) || Flag( "ForceStartSpawn" ) ) && !IsFFAGame() ) )
 }
 
 void function RespawnAsTitan( entity player, bool manualPosition = false )
@@ -399,7 +398,7 @@ void function RespawnAsTitan( entity player, bool manualPosition = false )
 	player.Signal( "PlayerRespawnStarted" )
 
 	player.isSpawning = true
-	entity spawnpoint = FindSpawnPoint( player, true, ShouldStartSpawn( player ) && !IsFFAGame() )
+	entity spawnpoint = FindSpawnPoint( player, true, ( ShouldStartSpawn( player ) || Flag( "ForceStartSpawn" ) ) && !IsFFAGame() )
 
 	TitanLoadoutDef titanLoadout = GetTitanLoadoutForPlayer( player )
 	
@@ -501,15 +500,23 @@ void function PlayerBecomesSpectator( entity player )
 				targetIndex--
 		}
 		
+		if ( targetIndex >= targets.len() )
+			targetIndex = 0
+		
 		entity target = targets[ targetIndex ]
 		
 		player.StopObserverMode()
-		player.SetSpecReplayDelay( 0.0 ) // clear spectator replay
+		if ( player.IsWatchingSpecReplay() )
+			player.SetSpecReplayDelay( 0.0 ) // clear spectator replay
 		
 		if ( target.IsPlayer() )
 		{
-			player.SetObserverTarget( target )
-			player.StartObserverMode( OBS_MODE_CHASE )
+			try
+			{
+				player.SetObserverTarget( target )
+				player.StartObserverMode( OBS_MODE_CHASE )
+			}
+			catch ( ex ) {}
 		}
 		else
 		{

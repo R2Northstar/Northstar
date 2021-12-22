@@ -27,6 +27,7 @@ void function GamemodeCP_Init()
 	file.ampingEnabled = GetCurrentPlaylistVarInt( "cp_amped_capture_points", 1 ) == 1
 
 	RegisterSignal( "HardpointCaptureStart" )
+	ScoreEvent_SetupEarnMeterValuesForMixedModes()
 
 	AddCallback_EntitiesDidLoad( SpawnHardpoints )
 	AddCallback_GameStateEnter( eGameState.Playing, StartHardpointThink )

@@ -36,7 +36,8 @@ void function OnPlayerRespawned_Threaded( entity player )
 	// bit of a hack, need to rework earnmeter code to have better support for completely disabling it
 	// rn though this just waits for earnmeter code to set the mode before we set it back
 	WaitFrame()
-	PlayerEarnMeter_SetMode( player, eEarnMeterMode.DISABLED )
+	if ( IsValid( player ) )
+		PlayerEarnMeter_SetMode( player, eEarnMeterMode.DISABLED )
 }
 
 void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )

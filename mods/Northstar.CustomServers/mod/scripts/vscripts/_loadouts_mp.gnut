@@ -55,7 +55,14 @@ void function SetWeaponDropsEnabled( bool enabled )
 void function DestroyDroppedWeapon( entity victim, entity attacker, var damageInfo )
 {
 	if ( !file.weaponDropsEnabled && IsValid( victim.GetActiveWeapon() ) )
-		victim.GetActiveWeapon().Destroy()
+		thread DelayDestroyDroppedWeapon( victim.GetActiveWeapon() )
+}
+
+void function DelayDestroyDroppedWeapon( entity weapon )
+{
+	WaitEndFrame()
+	if ( IsValid( weapon ) )
+		weapon.Destroy()
 }
 
 TitanLoadoutDef function GetTitanLoadoutForPlayer( entity player )
@@ -258,7 +265,7 @@ void function TryGivePilotLoadoutForGracePeriod( entity player )
 		else
 			respawnTimeReal = expect float( player.s.respawnTime )
 		
-		if ( Time() - respawnTimeReal <= CLASS_CHANGE_GRACE_PERIOD || player.p.usingLoadoutCrate || GetGameState() < eGameState.Playing )
+		if ( ( ( Time() - respawnTimeReal <= CLASS_CHANGE_GRACE_PERIOD || GetGameState() < eGameState.Playing ) && file.loadoutGracePeriodEnabled ) || player.p.usingLoadoutCrate )
 		{
 			// because the game sucks and stuff Loadouts_TryGivePilotLoadout doesn't work in intro so have to do this manually
 			int loadoutIndex = GetPersistentSpawnLoadoutIndex( player, "pilot" )

@@ -118,26 +118,30 @@ void function AddPlayerToFastballIntro( entity player )
 
 void function FastballPlayer( entity player )
 {
+	player.EndSignal( "OnDestroy" )
+	
 	if ( IsAlive( player ) )
 		player.Die() // kill player if they're alive so there's no issues with that
 		
 	WaitFrame()
 
 	player.EndSignal( "OnDeath" )
-	player.EndSignal( "OnDestroy" )
 		
 	// do this here so it's in OnThreadEnd 
 	var oldVisibility = player.kv.VisibilityFlags 
 		
 	OnThreadEnd( function() : ( player, oldVisibility )
 	{
-		RemoveCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING )
-		player.ClearParent()
-		ClearPlayerAnimViewEntity( player )
-		player.DeployWeapon()
-		player.PlayerCone_Disable()
-		player.ClearInvulnerable()
-		player.kv.VisibilityFlags = oldVisibility // restore visibility
+		if ( IsValid( player ) )
+		{
+			RemoveCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING )
+			player.ClearParent()
+			ClearPlayerAnimViewEntity( player )
+			player.DeployWeapon()
+			player.PlayerCone_Disable()
+			player.ClearInvulnerable()
+			player.kv.VisibilityFlags = oldVisibility // restore visibility
+		}
 	})
 	
 	FirstPersonSequenceStruct throwSequence

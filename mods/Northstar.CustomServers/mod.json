@@ -20,7 +20,7 @@
 		
 		{
 			"Name": "ns_private_match_last_mode",
-			"DefaultValue": "aitdm"
+			"DefaultValue": "tdm"
 		},
 		
 		{
@@ -29,7 +29,13 @@
 		},
 		
 		{
+			// default 0 because broken
 			"Name": "ns_private_match_override_maxplayers",
+			"DefaultValue": "0"
+		},
+		
+		{
+			"Name": "ns_should_log_unknown_clientcommands",
 			"DefaultValue": "1"
 		}
 	],

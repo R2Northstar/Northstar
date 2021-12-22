@@ -18,7 +18,9 @@ void function GamemodeFastball_Init()
 	SetShouldUseRoundWinningKillReplay( true )
 	SetRoundBased( true )
 	SetRespawnsEnabled( false )
+	Riff_ForceTitanAvailability( eTitanAvailability.Never )
 	Riff_ForceSetEliminationMode( eEliminationMode.Pilots )
+	ScoreEvent_SetupEarnMeterValuesForMixedModes()
 	
 	// implementing intro in a different file because it'll likely be big 
 	ClassicMP_SetCustomIntro( GamemodeFastballIntroSetup, 14.5 ) // bit of a guess number

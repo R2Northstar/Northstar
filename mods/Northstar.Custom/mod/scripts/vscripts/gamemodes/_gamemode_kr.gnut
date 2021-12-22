@@ -16,6 +16,7 @@ void function GamemodeKR_Init()
 	ClassicMP_ForceDisableEpilogue( true )
 	Riff_ForceTitanAvailability( eTitanAvailability.Never )
 	Riff_ForceBoostAvailability( eBoostAvailability.Disabled )
+	ScoreEvent_SetupEarnMeterValuesForMixedModes()
 	
 	AddSpawnCallback( "info_hardpoint", AddFlagSpawnPoint )
 	
@@ -40,7 +41,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	attacker.SetPlayerNetTime( "killRaceTime", killRaceTime )
 	if ( killRaceTime > file.currentHighestKillraceAmount )
 		file.currentHighestKillraceAmount = killRaceTime
-	if ( file.currentRacer != null )
+	if ( file.currentRacer != null && attacker == file.currentRacer )
 		file.currentKillraceScore++
 }
 

@@ -102,7 +102,10 @@ void function EvacEpilogue()
 					  ( file.evacNodes.len() > 0 || IsValid( GetEnt( "escape_node1" ) ) ) // code assumes escape_node1 should be first node if automatically registering
 	
 	if ( canRunEvac )
+	{
+		SetRespawnsEnabled( false )
 		thread Evac( GetOtherTeam( winner ), EVAC_INITIAL_WAIT, EVAC_ARRIVAL_TIME, EVAC_WAIT_TIME, EvacEpiloguePlayerCanBoard, EvacEpilogueShouldLeaveEarly, EvacEpilogueCompleted )
+	}
 	else
 		thread EvacEpilogueCompleted( null ) // this is hacky but like, this also shouldn't really be hit in normal gameplay
 }

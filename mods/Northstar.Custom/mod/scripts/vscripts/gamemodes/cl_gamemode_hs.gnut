@@ -17,6 +17,8 @@ void function ClGamemodeHideAndSeek_Init()
 	
 	RegisterLevelMusicForTeam( eMusicPieceID.GAMEMODE_2, "music_skyway_04_smartpistolrun", TEAM_IMC )
 	RegisterLevelMusicForTeam( eMusicPieceID.GAMEMODE_2, "music_skyway_04_smartpistolrun", TEAM_MILITIA )
+	
+	AddCallback_GameStateEnter( eGameState.Postmatch, DisplayPostMatchTop3 )
 }
 
 void function ServerCallback_ShowHideAndSeekCountdown( float endTime )

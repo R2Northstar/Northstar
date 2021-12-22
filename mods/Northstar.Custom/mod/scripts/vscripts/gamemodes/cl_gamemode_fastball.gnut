@@ -17,6 +17,7 @@ void function ClGamemodeFastball_Init()
 	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_INTRO, "Music_Beacon_14_BTThrowThruFirstCrane", TEAM_MILITIA )
 	
 	AddCallback_OnClientScriptInit( FastballCreateRui )
+	AddCallback_GameStateEnter( eGameState.Postmatch, DisplayPostMatchTop3 )
 }
 
 void function FastballCreateRui( entity player )

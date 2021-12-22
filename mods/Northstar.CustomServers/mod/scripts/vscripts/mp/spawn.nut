@@ -267,7 +267,7 @@ bool function IsSpawnpointValid( entity spawnpoint, int team )
 			return false
 	}
 
-	array<entity> projectiles = GetProjectileArrayEx( "any", TEAM_ANY, TEAM_ANY, spawnpoint.GetOrigin(), 400 )
+	array<entity> projectiles = GetProjectileArrayEx( "any", TEAM_ANY, TEAM_ANY, spawnpoint.GetOrigin(), 600 )
 	foreach ( entity projectile in projectiles )
 		if ( projectile.GetTeam() != team )
 			return false
@@ -283,13 +283,14 @@ bool function IsSpawnpointValid( entity spawnpoint, int team )
 	{
 		if ( enemyPlayer.GetTeam() == team || !IsAlive( enemyPlayer ) )
 			continue
+			
+		float dist = 1000.0
+		// check fov, constant here is stolen from every other place this is done
+		if ( VectorDot_PlayerToOrigin( enemyPlayer, spawnpoint.GetOrigin() ) > 0.8 )
+			dist /= 0.75
 		
 		// check distance, constant here is basically arbitrary
-		if ( Distance( enemyPlayer.GetOrigin(), spawnpoint.GetOrigin() ) > 1000.0 )
-			continue
-		
-		// check fov, constant here is stolen from every other place this is done
-		if ( VectorDot_PlayerToOrigin( enemyPlayer, spawnpoint.GetOrigin() ) < 0.8 )
+		if ( Distance( enemyPlayer.GetOrigin(), spawnpoint.GetOrigin() ) > dist )
 			continue
 		
 		// check actual los

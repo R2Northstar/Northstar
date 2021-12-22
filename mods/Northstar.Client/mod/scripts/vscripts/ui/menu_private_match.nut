@@ -666,7 +666,7 @@ function UpdateLobby()
 						if ( setting.playlistVar == varName )
 						{
 							if ( setting.isEnumSetting )
-								playlistOverridesDesc += Localize( setting.localizedName ) + ": `2" + setting.enumNames[ setting.enumValues.find( expect string ( GetCurrentPlaylistVar( varName ) ) ) ] + "`0\n"
+								playlistOverridesDesc += Localize( setting.localizedName ) + ": `2" + Localize( setting.enumNames[ setting.enumValues.find( expect string ( GetCurrentPlaylistVar( varName ) ) ) ] ) + "`0\n"
 							else
 								playlistOverridesDesc += Localize( setting.localizedName ) + ": `2" + GetCurrentPlaylistVar( varName ) + "`0\n"
 							
