@@ -81,7 +81,7 @@ void MasterServerManager::AuthenticateOriginWithMasterServer(char* uid, char* or
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
 			http.set_connection_timeout(10);
 
-			spdlog::info("Trying to authenticate with northstar masterserver for user {} {}", uidStr, tokenStr);
+			spdlog::info("Trying to authenticate with northstar masterserver for user {}", uidStr);
 
 			if (auto result = http.Get(fmt::format("/client/origin_auth?id={}&token={}", uidStr, tokenStr).c_str()))
 			{
