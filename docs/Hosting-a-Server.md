@@ -36,3 +36,4 @@ Below are a series of variables and commands you can use for server configuratio
 | base_tickinterval_mp | The delay between each tick ran on the server, your tickrate will be 1 divided by this value | 0.016666667 |  
 | sv_updaterate_mp | The maximum number of times per second your server will send information to connected players, if a player's cl_updaterate_mp value is lower than this, their rate will be limited to it | 20 |  
 | sv_max_snapshots_multiplayer | The number of snapshots stored locally for use in replays, this should be set to sv_updaterate_mp * 15 | 300 |  
+| host_skip_client_dll_crc | Whether the server should allow clients with modified client.dll files to connect, these are used for visor colour edit mods | 1 |
