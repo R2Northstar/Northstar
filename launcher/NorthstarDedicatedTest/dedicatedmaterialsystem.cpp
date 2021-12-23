@@ -13,6 +13,8 @@ HRESULT __stdcall D3D11CreateDeviceHook(void* pAdapter, int DriverType, HMODULE 
 	// note: this is super duper temp pretty much just messing around with it
 	// does run surprisingly well on dedi for a software driver tho if you ignore the +1gb ram usage at times, seems like dedi doesn't really call gpu much even with renderthread still being a thing
 	// will be using this hook for actual d3d stubbing and stuff later
+
+	// atm, i think the play might be to run d3d in software, and then just stub out any calls that allocate memory/use alot of resources (e.g. createtexture and that sorta thing)
 	if (CommandLine()->CheckParm("-softwared3d11"))
 		DriverType = 5; // D3D_DRIVER_TYPE_WARP
 
