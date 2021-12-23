@@ -31,7 +31,7 @@ Below are a series of variables and commands you can use for server configuratio
 | everything_unlocked | Whether all items, weapons, etc should be unlocked on the server | 1 |  
 | ns_should_return_to_lobby | Whether the server should return to private match lobby after completing a game, if 0, this will go to the next map/mode in the playlist | 1 |  
 | ns_should_log_unknown_clientcommands | Whether unknown clientcommands should be printed in the console, worth disabling if they get on your nerves | 1 |
-| net_chan_limit_mode | If 0, don't limit the netchannel processing time individual clients are allowed. If 1, kick clients that go over the limit. If 2, log clients that go over the limit in console | 1 |  
+| net_chan_limit_mode | If 0, don't limit the netchannel processing time individual clients are allowed. If 1, kick clients that go over the limit. If 2, log clients that go over the limit in console | 2 |  
 | net_chan_limit_msec_per_sec | The number of milliseconds of server netchan processing time clients can use per second before triggering the response set in net_chan_limit_mode | 30 |  
 | base_tickinterval_mp | The delay between each tick ran on the server, your tickrate will be 1 divided by this value | 0.016666667 |  
 | sv_updaterate_mp | The maximum number of times per second your server will send information to connected players, if a player's cl_updaterate_mp value is lower than this, their rate will be limited to it | 20 |  
