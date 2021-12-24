@@ -239,6 +239,7 @@ void function PlayerUsesAmpedWeaponsBurncardThreaded( entity player )
 	//weapons.extend( player.GetOffhandWeapons() ) // idk? unsure of vanilla behaviour here
 	foreach ( entity weapon in weapons )
 	{
+		weapon.RemoveMod( "silencer" ) // both this and the burnmod will override firing fx, if a second one overrides this we crash
 		foreach ( string mod in GetWeaponBurnMods( weapon.GetWeaponClassName() ) )
 			weapon.AddMod( mod )
 	
