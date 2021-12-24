@@ -137,9 +137,41 @@ void function NorthstarMasterServerAuthDialog()
 	dialogData.header = "#DIALOG_TITLE_INSTALLED_NORTHSTAR" 
 	dialogData.image = $"rui/menu/fd_menu/upgrade_northstar_chassis"
 	dialogData.message = "#AUTHENTICATION_AGREEMENT_DIALOG_TEXT"
-	AddDialogButton( dialogData, "#YES", void function() { SetConVarInt( "ns_has_agreed_to_send_token", NS_AGREED_TO_SEND_TOKEN ) } )
-	AddDialogButton( dialogData, "#NO", void function() { SetConVarInt( "ns_has_agreed_to_send_token", NS_DISAGREED_TO_SEND_TOKEN ) } )
+	AddDialogButton( dialogData, "#YES", NorthstarMasterServerAuthDialogAgree )
+	AddDialogButton( dialogData, "#NO", NorthstarMasterServerAuthDialogDisagree )
 	OpenDialog( dialogData )
+}
+
+void function NorthstarMasterServerAuthDialogAgree()
+{
+	int oldValue = GetConVarInt( "ns_has_agreed_to_send_token" )
+	SetConVarInt( "ns_has_agreed_to_send_token", NS_AGREED_TO_SEND_TOKEN )
+	
+	if ( oldValue != 0 && oldValue != NS_AGREED_TO_SEND_TOKEN )
+	{
+		DialogData dialogData
+		dialogData.header = "#DIALOG_TITLE_INSTALLED_NORTHSTAR" 
+		dialogData.image = $"rui/menu/fd_menu/upgrade_northstar_chassis"
+		dialogData.message = "#AUTHENTICATION_AGREEMENT_RESTART"
+		AddDialogButton( dialogData, "#OK" )
+		OpenDialog( dialogData )
+	}
+}
+
+void function NorthstarMasterServerAuthDialogDisagree()
+{
+	int oldValue = GetConVarInt( "ns_has_agreed_to_send_token" )
+	SetConVarInt( "ns_has_agreed_to_send_token", NS_DISAGREED_TO_SEND_TOKEN )
+	
+	if ( oldValue != 0 && oldValue != NS_DISAGREED_TO_SEND_TOKEN )
+	{
+		DialogData dialogData
+		dialogData.header = "#DIALOG_TITLE_INSTALLED_NORTHSTAR" 
+		dialogData.image = $"rui/menu/fd_menu/upgrade_northstar_chassis"
+		dialogData.message = "#AUTHENTICATION_AGREEMENT_RESTART"
+		AddDialogButton( dialogData, "#OK" )
+		OpenDialog( dialogData )
+	}
 }
 
 void function ActivatePanel( var panel )

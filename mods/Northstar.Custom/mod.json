@@ -1,5 +1,7 @@
 {
 	"Name" : "Northstar.Custom",
+	"Description": "(ideally) Polished custom content for Northstar",
+	"Version": "1.0.0",
 	"LoadPriority": 1,
 	"RequiredOnClient": true,
 	
