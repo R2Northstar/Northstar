@@ -5,7 +5,11 @@ This is a repo for packaged Northstar releases and the wiki and as such does not
 Code for the C++ hook DLL can be found [here](https://github.com/R2Northstar/NorthstarLauncher)  
 Code for the squirrel mods responsible for server gamelogic recreation and custom content can be found [here](https://github.com/R2Northstar/NorthstarMods)  
 Code for the master server responsible for server browser, authentication and persistence can be found [here](https://github.com/R2Northstar/NorthstarMasterServer)  
-  
+
+### Download Instructions
+Please check out the [INSTALL.md](INSTALL.md) file for instructions on how to download *Northstar*.
+
+
 The discord can be found [here](https://northstar.tf/discord)  
   
 Thanks to everyone that's put up with me and helped out with this project, it's been a fun passion project i've had throughout 2021 so releasing it is pretty cathartic  
