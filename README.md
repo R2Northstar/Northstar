@@ -1,14 +1,13 @@
 # Northstar
 Northstar is a mod and modding framework allowing users to host their own Titanfall 2 servers using custom scripts and assets to create custom content, as well as being able to host vanilla content  
+
+### Download Instructions
+Please check out the [INSTALL.md](INSTALL.md) file for instructions on how to download *Northstar*.
   
 This is a repo for packaged Northstar releases and the wiki and as such does not contain any code  
 Code for the C++ hook DLL can be found [here](https://github.com/R2Northstar/NorthstarLauncher)  
 Code for the squirrel mods responsible for server gamelogic recreation and custom content can be found [here](https://github.com/R2Northstar/NorthstarMods)  
 Code for the master server responsible for server browser, authentication and persistence can be found [here](https://github.com/R2Northstar/NorthstarMasterServer)  
-
-### Download Instructions
-Please check out the [INSTALL.md](INSTALL.md) file for instructions on how to download *Northstar*.
-
 
 The discord can be found [here](https://northstar.tf/discord)  
   
