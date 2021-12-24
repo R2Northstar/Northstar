@@ -413,6 +413,8 @@ bool ProcessConnectionlessPacketHook(void* a1, netpacket_t* packet)
 
 		if (sendData->packetCount >= Cvar_sv_querylimit_per_sec->m_nValue)
 		{
+			spdlog::warn("Client went over connectionless ratelimit of {} per sec with packet of type {}", Cvar_sv_querylimit_per_sec->m_nValue, packet->data[4]);
+
 			// timeout for a minute
 			sendData->timeoutEnd = Plat_FloatTime() + 60.0;
 			return false;
@@ -435,7 +437,7 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 	Cvar_net_chan_limit_mode = RegisterConVar("net_chan_limit_mode", "0", FCVAR_GAMEDLL, "The mode for netchan processing limits: 0 = none, 1 = kick, 2 = log");
 	Cvar_net_chan_limit_msec_per_sec = RegisterConVar("net_chan_limit_msec_per_sec", "0", FCVAR_GAMEDLL, "Netchannel processing is limited to so many milliseconds, abort connection if exceeding budget");
 	Cvar_ns_player_auth_port = RegisterConVar("ns_player_auth_port", "8081", FCVAR_GAMEDLL, "");
-	Cvar_sv_querylimit_per_sec = RegisterConVar("sv_querylimit_per_sec", "15", FCVAR_GAMEDLL, "");
+	Cvar_sv_querylimit_per_sec = RegisterConVar("sv_querylimit_per_sec", "10", FCVAR_GAMEDLL, "");
 
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x114430, &CBaseServer__ConnectClientHook, reinterpret_cast<LPVOID*>(&CBaseServer__ConnectClient));
