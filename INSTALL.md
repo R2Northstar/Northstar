@@ -22,3 +22,4 @@
 
 6. Launch ![image](https://user-images.githubusercontent.com/31524934/147367891-78e55701-5c03-4fe2-b9d9-37a26b5afd38.png) and you should be good to go!
 
+There's also an instructional video for people to check out [here](https://www.youtube.com/watch?v=bK4pV-AHOHM). The video was made by the YouTuer Olliekay, please show him some support.
