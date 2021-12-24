@@ -70,8 +70,9 @@ void function OnPrematchStart()
 	// spawn dropships
 	foreach ( entity dropshipSpawn in GetEntArrayByClass_Expensive( "info_spawnpoint_dropship_start" ) )
 	{		
-		if ( GameModeRemove( dropshipSpawn ) || ( GetSpawnpointGamemodeOverride() != GAMETYPE && dropshipSpawn.HasKey( "gamemode_" + GetSpawnpointGamemodeOverride() ) && dropshipSpawn.kv[ "gamemode_" + GetSpawnpointGamemodeOverride() ] == "0" ) )
-			continue
+		if ( dropshipSpawn.HasKey( "gamemode_" + GetSpawnpointGamemodeOverride() ) )
+			if ( dropshipSpawn.kv[ "gamemode_" + GetSpawnpointGamemodeOverride() ] == "0" )
+				continue
 	
 		// todo: possibly make this only spawn dropships if we've got enough players to need them
 		int createTeam = HasSwitchedSides() ? dropshipSpawn.GetTeam() : GetOtherTeam( dropshipSpawn.GetTeam() )

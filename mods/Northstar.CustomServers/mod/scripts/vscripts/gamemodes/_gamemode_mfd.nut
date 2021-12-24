@@ -24,9 +24,15 @@ void function GamemodeMfd_Init()
 		SetShouldUseRoundWinningKillReplay( true )
 		Riff_ForceSetEliminationMode( eEliminationMode.Pilots )
 	}
-		
+	
+	AddCallback_OnClientConnected( SetupMFDPlayer )
 	AddCallback_OnPlayerKilled( UpdateMarksForKill )
 	AddCallback_GameStateEnter( eGameState.Playing, CreateInitialMarks )
+}
+
+void function SetupMFDPlayer( entity player )
+{
+	player.s.roundsSincePicked <- 0
 }
 
 void function CreateInitialMarks()
@@ -75,32 +81,11 @@ void function MFDThink()
 			wait MFD_BETWEEN_MARKS_TIME
 	
 		// wait for enough players to spawn
-		array<entity> imcPlayers
-		array<entity> militiaPlayers
-		while ( imcPlayers.len() == 0 || militiaPlayers.len() == 0 )
-		{
-			imcPlayers =  GetPlayerArrayOfTeam( TEAM_IMC )
-			militiaPlayers = GetPlayerArrayOfTeam( TEAM_MILITIA )
-			
+		while ( GetPlayerArrayOfTeam( TEAM_IMC ).len() == 0 || GetPlayerArrayOfTeam( TEAM_MILITIA ).len() == 0 )
 			WaitFrame()
-		}
 		
-		// get marks, wanna increment the mark each mark, reset on player change
-		int imcIndex = imcPlayers.find( imcMark )
-		if ( imcIndex == -1 ) // last mark
-			imcIndex = 0
-		else
-			imcIndex = ( imcIndex + 1 ) % imcPlayers.len()
-			
-		imcMark = imcPlayers[ imcIndex ]
-			
-		int militiaIndex = militiaPlayers.find( imcMark )
-		if ( militiaIndex == -1 ) // last mark
-			militiaIndex = 0
-		else
-			militiaIndex = ( militiaIndex + 1 ) % militiaPlayers.len()
-			
-		militiaMark = militiaPlayers[ militiaIndex ]
+		imcMark = PickTeamMark( TEAM_IMC )
+		militiaMark = PickTeamMark( TEAM_MILITIA )
 		
 		level.mfdPendingMarkedPlayerEnt[ TEAM_IMC ].SetOwner( imcMark )
 		level.mfdPendingMarkedPlayerEnt[ TEAM_MILITIA ].SetOwner( militiaMark )
@@ -130,6 +115,30 @@ void function MFDThink()
 		
 		waitthread MarkPlayers( imcMark, militiaMark )
 	}
+}
+
+entity function PickTeamMark( int team )
+{
+	array<entity> possibleMarks
+
+	int maxRounds
+	foreach ( entity player in GetPlayerArrayOfTeam( team ) )
+	{
+		if ( maxRounds < player.s.roundsSincePicked )
+		{
+			maxRounds = expect int( player.s.roundsSincePicked )
+			possibleMarks = [ player ]
+		}
+		else if ( maxRounds == player.s.roundsSincePicked )
+			possibleMarks.append( player )
+	}
+	
+	entity mark = possibleMarks.getrandom()
+	foreach ( entity player in GetPlayerArrayOfTeam( team ) )
+		if ( player != mark )
+			player.s.roundsSincePicked++
+	
+	return mark
 }
 
 void function MarkPlayers( entity imcMark, entity militiaMark )
