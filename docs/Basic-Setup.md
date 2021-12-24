@@ -8,6 +8,8 @@ First things first: you'll need to download and install Northstar.
 After launching, you should be greeted with something like this:  
 ![](https://raw.githubusercontent.com/R2Northstar/Northstar/main/wiki/titleagreement.png)
 
+Should you notice any issues/warnings/errors while running Northstar, check [the troubleshooting page](Troubleshooting.md).
+
 **Additional Stuff**  
 Since Northstar doesn't launch directly through Origin, any startup arguments provided in origin won't transfer over, you'll need to add them to the file `ns_startup_args.txt`, which should be in the same folder as you extracted the Northstar files to.  
   
