@@ -648,7 +648,7 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 						while (*m_ownServerId)
 						{
 							Sleep(15000);
-							http.Post(fmt::format("/server/heartbeat?id={}", m_ownServerId).c_str());
+							http.Post(fmt::format("/server/heartbeat?id={}&playerCount={}", m_ownServerId, g_ServerAuthenticationManager->m_additionalPlayerData.size()).c_str());
 						}
 					});
 
