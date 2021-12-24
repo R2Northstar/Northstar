@@ -19,11 +19,58 @@ struct AdditionalPlayerData
 	size_t pdataSize;
 	bool needPersistenceWriteOnLeave = true;
 
-	double lastClientCommandQuotaStart = 0;
+	double lastClientCommandQuotaStart = -1.0;
 	int numClientCommandsInQuota = 0;
 
 	double lastNetChanProcessingLimitStart = -1.0;
 	double netChanProcessingLimitTime = 0;
+};
+
+#pragma once
+typedef enum
+{
+	NA_NULL = 0,
+	NA_LOOPBACK,
+	NA_IP,
+} netadrtype_t;
+
+#pragma pack(push, 1)
+typedef struct netadr_s
+{
+	netadrtype_t	type;
+	unsigned char	ip[16]; // IPv6
+	// IPv4's 127.0.0.1 is [::ffff:127.0.0.1], that is:
+	// 00 00 00 00 00 00 00 00    00 00 FF FF 7F 00 00 01
+	unsigned short	port;
+} netadr_t;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct netpacket_s
+{
+	netadr_t		adr;		// sender address
+	//int				source;		// received source
+	char			unk[10];
+	double			received_time;
+	unsigned char* data;		// pointer to raw packet data
+	void* message;	// easy bitbuf data access // 'inpacket.message' etc etc (pointer)
+	char			unk2[16];
+	int				size;
+
+	//bf_read			message;	// easy bitbuf data access // 'inpacket.message' etc etc (pointer)
+	//int				size;		// size in bytes
+	//int				wiresize;   // size in bytes before decompression
+	//bool			stream;		// was send as stream
+	//struct netpacket_s* pNext;	// for internal use, should be NULL in public
+} netpacket_t;
+#pragma pack(pop)
+
+struct UnconnectedPlayerSendData
+{
+	char ip[16];
+	double lastQuotaStart = 0.0;
+	int packetCount = 0;
+	double timeoutEnd = -1.0;
 };
 
 class ServerAuthenticationManager
@@ -35,6 +82,7 @@ public:
 	std::mutex m_authDataMutex;
 	std::unordered_map<std::string, AuthData> m_authData;
 	std::unordered_map<void*, AdditionalPlayerData> m_additionalPlayerData;
+	std::vector<UnconnectedPlayerSendData> m_unconnectedPlayerSendData;
 	bool m_runningPlayerAuthThread = false;
 	bool m_bNeedLocalAuthForNewgame = false;
 

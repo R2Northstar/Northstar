@@ -34,6 +34,9 @@ CNetChan___ProcessMessagesType CNetChan___ProcessMessages;
 typedef char(*CBaseClient__SendServerInfoType)(void* self);
 CBaseClient__SendServerInfoType CBaseClient__SendServerInfo;
 
+typedef bool(*ProcessConnectionlessPacketType)(void* a1, netpacket_t* packet);
+ProcessConnectionlessPacketType ProcessConnectionlessPacket;
+
 // global vars
 ServerAuthenticationManager* g_ServerAuthenticationManager;
 
@@ -44,6 +47,7 @@ ConVar* CVar_ns_auth_allow_insecure_write;
 ConVar* CVar_sv_quota_stringcmdspersecond;
 ConVar* Cvar_net_chan_limit_mode;
 ConVar* Cvar_net_chan_limit_msec_per_sec;
+ConVar* Cvar_sv_querylimit_per_sec;
 
 void ServerAuthenticationManager::StartPlayerAuthServer()
 {
@@ -375,6 +379,49 @@ void CBaseClient__SendServerInfoHook(void* self)
 		CBaseClient__Disconnect(self, 1, "Overflowed CNetworkStringTableContainer::WriteBaselines, try restarting your client and reconnecting");
 }
 
+bool ProcessConnectionlessPacketHook(void* a1, netpacket_t* packet)
+{
+	if (packet->adr.type == NA_IP)
+	{
+		// bad lookup: optimise later tm
+		UnconnectedPlayerSendData* sendData = nullptr;
+		for (UnconnectedPlayerSendData& foundSendData : g_ServerAuthenticationManager->m_unconnectedPlayerSendData)
+		{
+			if (!memcmp(packet->adr.ip, foundSendData.ip, 16))
+			{
+				sendData = &foundSendData;
+				break;
+			}
+		}
+
+		if (!sendData)
+		{
+			sendData = &g_ServerAuthenticationManager->m_unconnectedPlayerSendData.emplace_back();
+			memcpy(sendData->ip, packet->adr.ip, 16);
+		}
+
+		if (Plat_FloatTime() < sendData->timeoutEnd)
+			return false;
+
+		if (Plat_FloatTime() - sendData->lastQuotaStart >= 1.0)
+		{
+			sendData->lastQuotaStart = Plat_FloatTime();
+			sendData->packetCount = 0;
+		}
+
+		sendData->packetCount++;
+
+		if (sendData->packetCount >= Cvar_sv_querylimit_per_sec->m_nValue)
+		{
+			// timeout for a minute
+			sendData->timeoutEnd = Plat_FloatTime() + 60.0;
+			return false;
+		}
+	}
+
+	return ProcessConnectionlessPacket(a1, packet);
+}
+
 void InitialiseServerAuthentication(HMODULE baseAddress)
 {
 	g_ServerAuthenticationManager = new ServerAuthenticationManager;
@@ -388,6 +435,7 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 	Cvar_net_chan_limit_mode = RegisterConVar("net_chan_limit_mode", "0", FCVAR_GAMEDLL, "The mode for netchan processing limits: 0 = none, 1 = kick, 2 = log");
 	Cvar_net_chan_limit_msec_per_sec = RegisterConVar("net_chan_limit_msec_per_sec", "0", FCVAR_GAMEDLL, "Netchannel processing is limited to so many milliseconds, abort connection if exceeding budget");
 	Cvar_ns_player_auth_port = RegisterConVar("ns_player_auth_port", "8081", FCVAR_GAMEDLL, "");
+	Cvar_sv_querylimit_per_sec = RegisterConVar("sv_querylimit_per_sec", "15", FCVAR_GAMEDLL, "");
 
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x114430, &CBaseServer__ConnectClientHook, reinterpret_cast<LPVOID*>(&CBaseServer__ConnectClient));
@@ -397,6 +445,7 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1022E0, &CGameClient__ExecuteStringCommandHook, reinterpret_cast<LPVOID*>(&CGameClient__ExecuteStringCommand));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x2140A0, &CNetChan___ProcessMessagesHook, reinterpret_cast<LPVOID*>(&CNetChan___ProcessMessages));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x104FB0, &CBaseClient__SendServerInfoHook, reinterpret_cast<LPVOID*>(&CBaseClient__SendServerInfo));
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x117800, &ProcessConnectionlessPacketHook, reinterpret_cast<LPVOID*>(&ProcessConnectionlessPacket));
 
 	// patch to disable kicking based on incorrect serverfilter in connectclient, since we repurpose it for use as an auth token
 	{
