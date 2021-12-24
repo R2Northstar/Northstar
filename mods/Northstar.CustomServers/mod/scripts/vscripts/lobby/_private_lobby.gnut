@@ -39,6 +39,10 @@ bool function ClientCommandCallback_PrivateMatchLaunch( entity player, array<str
 {
 	if ( file.startState == ePrivateMatchStartState.STARTING ) 
 	{
+		if ( GetConVarBool( "ns_private_match_only_host_can_start" ) )
+			if ( !NSIsPlayerIndexLocalPlayer( player.GetPlayerIndex() ) )
+				return true
+	
 		// cancel start if we're already mid-countdown
 		file.startState = ePrivateMatchStartState.READY
 		SetUIVar( level, "privatematch_starting", ePrivateMatchStartState.READY )
@@ -62,6 +66,10 @@ bool function ClientCommandCallback_PrivateMatchSetMode( entity player, array<st
 	if ( args.len() != 1 )
 		return true
 	
+	if ( GetConVarInt( "ns_private_match_only_host_can_change_settings" ) == 2 )
+		if ( !NSIsPlayerIndexLocalPlayer( player.GetPlayerIndex() ) )
+			return true
+	
 	// todo: need to verify this value
 	file.mode = args[0]
 	//GameRules_SetGameMode( args[0] ) // can't do this here due to out of sync errors with new clients
@@ -79,6 +87,10 @@ bool function ClientCommandCallback_SetCustomMap( entity player, array<string> a
 		
 	if ( args.len() != 1 )
 		return true
+	
+	if ( GetConVarInt( "ns_private_match_only_host_can_change_settings" ) == 2 )
+		if ( !NSIsPlayerIndexLocalPlayer( player.GetPlayerIndex() ) )
+			return true
 	
 	// todo: need to verify this value
 	file.map = args[0]
@@ -190,6 +202,10 @@ bool function ClientCommandCallback_PrivateMatchSetPlaylistVarOverride( entity p
 {
 	if ( args.len() < 2 )
 		return true
+		
+	if ( GetConVarInt( "ns_private_match_only_host_can_change_settings" ) >= 1 )
+		if ( !NSIsPlayerIndexLocalPlayer( player.GetPlayerIndex() ) )
+			return true
 	
 	bool found = false
 	foreach ( string category in GetPrivateMatchSettingCategories() )
@@ -212,6 +228,10 @@ bool function ClientCommandCallback_PrivateMatchSetPlaylistVarOverride( entity p
 
 bool function ClientCommandCallback_ResetMatchSettingsToDefault( entity player, array<string> args )
 {
+	if ( GetConVarInt( "ns_private_match_only_host_can_change_settings" ) >= 1 )
+		if ( !NSIsPlayerIndexLocalPlayer( player.GetPlayerIndex() ) )
+			return true
+
 	ClearPlaylistVarOverrides()
 	return true
 }
