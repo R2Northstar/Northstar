@@ -8,6 +8,8 @@
 
 typedef char(*Onclc_SetPlaylistVarOverrideType)(void* a1, void* a2);
 Onclc_SetPlaylistVarOverrideType Onclc_SetPlaylistVarOverride;
+// function type defined in gameutils.h
+SetPlaylistVarOverrideType SetPlaylistVarOverrideOriginal;
 
 ConVar* Cvar_ns_use_clc_SetPlaylistVarOverride;
 
@@ -29,6 +31,14 @@ char Onclc_SetPlaylistVarOverrideHook(void* a1, void* a2)
 	return Onclc_SetPlaylistVarOverride(a1, a2);
 }
 
+void SetPlaylistVarOverrideHook(const char* varName, const char* value)
+{
+	if (strlen(value) >= 64)
+		return;
+
+	SetPlaylistVarOverrideOriginal(varName, value);
+}
+
 void InitialisePlaylistHooks(HMODULE baseAddress)
 {
 	RegisterConCommand("setplaylist", SetPlaylistCommand, "Sets the current playlist", FCVAR_NONE);
@@ -39,6 +49,7 @@ void InitialisePlaylistHooks(HMODULE baseAddress)
 
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x222180, &Onclc_SetPlaylistVarOverrideHook, reinterpret_cast<LPVOID*>(&Onclc_SetPlaylistVarOverride));
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x18ED17, &SetPlaylistVarOverrideHook, reinterpret_cast<LPVOID*>(&SetPlaylistVarOverrideOriginal));
 
 	// patch to prevent clc_SetPlaylistVarOverride from being able to crash servers if we reach max overrides due to a call to Error (why is this possible respawn, wtf)
 	// todo: add a warning for this
