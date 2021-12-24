@@ -22,7 +22,7 @@ void function PrivateMatchModesInit()
 	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_TITAN", "infinite_doomed_state", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
 	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_TITAN", "titan_shield_regen", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
 	
-	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "riff_floorislava", [ "#SETTING_DEFAULT", "#SETTING_ENABLED", "#SETTING_DISABLED" ], "0" )
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "riff_floorislava", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
 	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "featured_mode_all_holopilot", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
 	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "featured_mode_all_grapple", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
 	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "featured_mode_all_phase", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )

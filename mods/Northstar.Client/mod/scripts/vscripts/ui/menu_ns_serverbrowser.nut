@@ -15,9 +15,13 @@ void function AddNorthstarServerBrowserMenu()
 
 void function InitServerBrowserMenu()
 {
-	AddMenuEventHandler( GetMenu( "ServerBrowserMenu" ), eUIEvent.MENU_OPEN, OnServerBrowserMenuOpened )
-	AddMenuFooterOption( GetMenu( "ServerBrowserMenu" ), BUTTON_B, "#B_BUTTON_BACK", "#BACK" )
-	AddMenuFooterOption( GetMenu( "ServerBrowserMenu" ), BUTTON_Y, "#Y_REFRESH_SERVERS", "#REFRESH_SERVERS", RefreshServers )
+	var menu = GetMenu( "ServerBrowserMenu" )
+
+	AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, OnServerBrowserMenuOpened )
+	AddMenuFooterOption( menu, BUTTON_B, "#B_BUTTON_BACK", "#BACK" )
+	AddMenuFooterOption( menu, BUTTON_Y, "#Y_REFRESH_SERVERS", "#REFRESH_SERVERS", RefreshServers )
+	AddMenuFooterOption( menu, BUTTON_SHOULDER_LEFT, "#PRIVATE_MATCH_PAGE_PREV", "#PRIVATE_MATCH_PAGE_PREV", CycleServersBack )
+	AddMenuFooterOption( menu, BUTTON_SHOULDER_RIGHT, "#PRIVATE_MATCH_PAGE_NEXT", "#PRIVATE_MATCH_PAGE_NEXT", CycleServersForward )
 	
 	foreach ( var button in GetElementsByClassname( GetMenu( "ServerBrowserMenu" ), "ServerButton" ) )
 	{
@@ -47,10 +51,29 @@ void function RefreshServers( var button )
 	if ( NSIsRequestingServerList() )
 		return
 	
+	file.page = 0
 	NSClearRecievedServerList()
 	NSRequestServerList()
 	
 	thread WaitForServerListRequest()
+}
+
+void function CycleServersBack( var button )
+{
+	if ( file.page == 0 )
+		return
+	
+	file.page--
+	UpdateShownPage()
+}
+
+void function CycleServersForward( var button )
+{
+	if ( ( file.page + 1 ) * BUTTONS_PER_PAGE >= NSGetServerCount() )
+		return
+	
+	file.page++
+	UpdateShownPage()
 }
 
 void function WaitForServerListRequest()
@@ -104,9 +127,9 @@ void function UpdateShownPage()
 	Hud_SetVisible( Hud_GetChild( menu, "NextModeIcon" ), false )
 	Hud_SetVisible( Hud_GetChild( menu, "NextGameModeName" ), false )
 	
-	for ( int i = 0; i < NSGetServerCount() && i < serverButtons.len(); i++ )
+	for ( int i = 0; ( file.page * BUTTONS_PER_PAGE ) + i < NSGetServerCount() - 1 && i < serverButtons.len(); i++ )
 	{
-		int serverIndex = file.page * BUTTONS_PER_PAGE + i
+		int serverIndex = ( file.page * BUTTONS_PER_PAGE ) + i
 		
 		Hud_SetEnabled( serverButtons[ i ], true )
 		Hud_SetVisible( serverButtons[ i ], true )
