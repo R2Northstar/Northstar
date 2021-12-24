@@ -79,9 +79,9 @@ void MasterServerManager::AuthenticateOriginWithMasterServer(char* uid, char* or
 	std::thread requestThread([this, uidStr, tokenStr]()
 		{
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
-			http.set_connection_timeout(10);
+			http.set_connection_timeout(25);
 
-			spdlog::info("Trying to authenticate with northstar masterserver for user {}", uidStr);
+			spdlog::info("Trying to authenticate with northstar masterserver for user {} {}", uidStr);
 
 			if (auto result = http.Get(fmt::format("/client/origin_auth?id={}&token={}", uidStr, tokenStr).c_str()))
 			{
@@ -142,7 +142,7 @@ void MasterServerManager::RequestServerList()
 			m_scriptRequestingServerList = true;
 			
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
-			http.set_connection_timeout(10);
+			http.set_connection_timeout(25);
 
 			spdlog::info("Requesting server list from {}", Cvar_ns_masterserver_hostname->m_pszString);
 
@@ -268,7 +268,7 @@ void MasterServerManager::RequestMainMenuPromos()
 				Sleep(500);
 			
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
-			http.set_connection_timeout(20);
+			http.set_connection_timeout(25);
 
 			if (auto result = http.Get("/client/mainmenupromos"))
 			{
@@ -367,7 +367,7 @@ void MasterServerManager::AuthenticateWithOwnServer(char* uid, char* playerToken
 	std::thread requestThread([this, uid, playerToken]()
 		{
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
-			http.set_connection_timeout(20);
+			http.set_connection_timeout(25);
 
 			if (auto result = http.Post(fmt::format("/client/auth_with_self?id={}&playerToken={}", uid, playerToken).c_str()))
 			{
@@ -475,7 +475,7 @@ void MasterServerManager::AuthenticateWithServer(char* uid, char* playerToken, c
 				Sleep(100);
 
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
-			http.set_connection_timeout(20);
+			http.set_connection_timeout(25);
 
 			spdlog::info("Attempting authentication with server of id \"{}\"", serverId);
 
@@ -557,7 +557,7 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 
 	std::thread requestThread([this, port, authPort, name, description, map, playlist, maxPlayers, password] {
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
-			http.set_connection_timeout(20);
+			http.set_connection_timeout(25);
 
 			m_ownServerId[0] = 0;
 
@@ -643,7 +643,7 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 				// ideally this should actually be done in main thread, rather than on it's own thread, so it'd stop if server freezes
 				std::thread heartbeatThread([this] {
 						httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
-						http.set_connection_timeout(10);
+						http.set_connection_timeout(25);
 
 						while (*m_ownServerId)
 						{
@@ -672,7 +672,7 @@ void MasterServerManager::UpdateServerMapAndPlaylist(char* map, char* playlist)
 
 	std::thread requestThread([this, map, playlist] {
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
-			http.set_connection_timeout(10);
+			http.set_connection_timeout(25);
 
 			// we dont process this at all atm, maybe do later, but atm not necessary
 			if (auto result = http.Post(fmt::format("/server/update_values?id={}&map={}&playlist={}", m_ownServerId, map, playlist).c_str()))
@@ -696,7 +696,7 @@ void MasterServerManager::UpdateServerPlayerCount(int playerCount)
 
 	std::thread requestThread([this, playerCount] {
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
-			http.set_connection_timeout(10);
+			http.set_connection_timeout(25);
 
 			// we dont process this at all atm, maybe do later, but atm not necessary
 			if (auto result = http.Post(fmt::format("/server/update_values?id={}&playerCount={}", m_ownServerId, playerCount).c_str()))
@@ -725,7 +725,7 @@ void MasterServerManager::WritePlayerPersistentData(char* playerId, char* pdata,
 	std::string playerIdTemp(playerId);
 	std::thread requestThread([this, playerIdTemp, pdata, pdataSize] {
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
-			http.set_connection_timeout(10); 
+			http.set_connection_timeout(25); 
 
 			httplib::MultipartFormDataItems requestItems = {
 				{ "pdata", std::string(pdata, pdataSize), "file.pdata", "application/octet-stream"}
@@ -755,7 +755,7 @@ void MasterServerManager::RemoveSelfFromServerList()
 
 	std::thread requestThread([this] {
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
-			http.set_connection_timeout(10);
+			http.set_connection_timeout(25);
 
 			// we dont process this at all atm, maybe do later, but atm not necessary
 			if (auto result = http.Delete(fmt::format("/server/remove_server?id={}", m_ownServerId).c_str()))
