@@ -127,6 +127,14 @@ void function UpdateShownPage()
 	Hud_SetVisible( Hud_GetChild( menu, "NextModeIcon" ), false )
 	Hud_SetVisible( Hud_GetChild( menu, "NextGameModeName" ), false )
 	
+	if ( NSGetServerCount() == 0 )
+	{
+		Hud_SetEnabled( serverButtons[ 0 ], true )
+		Hud_SetVisible( serverButtons[ 0 ], true )
+		SetButtonRuiText( serverButtons[ 0 ], "#NS_SERVERBROWSER_NOSERVERS" )
+		return
+	}
+	
 	for ( int i = 0; ( file.page * BUTTONS_PER_PAGE ) + i < NSGetServerCount() - 1 && i < serverButtons.len(); i++ )
 	{
 		int serverIndex = ( file.page * BUTTONS_PER_PAGE ) + i
@@ -134,13 +142,6 @@ void function UpdateShownPage()
 		Hud_SetEnabled( serverButtons[ i ], true )
 		Hud_SetVisible( serverButtons[ i ], true )
 		SetButtonRuiText( serverButtons[ i ], NSGetServerName( serverIndex ) )
-	}
-	
-	if ( NSGetServerCount() == 0 )
-	{
-		Hud_SetEnabled( serverButtons[ 0 ], true )
-		Hud_SetVisible( serverButtons[ 0 ], true )
-		SetButtonRuiText( serverButtons[ 0 ], "#NS_SERVERBROWSER_NOSERVERS" )
 	}
 }
 

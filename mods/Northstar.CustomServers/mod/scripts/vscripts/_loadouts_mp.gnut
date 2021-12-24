@@ -254,7 +254,7 @@ void function SetPlayerLoadoutDirty( entity player )
 
 void function TryGivePilotLoadoutForGracePeriod( entity player )
 {
-	if ( !IsLobby() && IsAlive( player ) && player.s.loadoutDirty )
+	if ( !IsLobby() && IsAlive( player ) && player.s.loadoutDirty && !player.IsTitan() && !player.ContextAction_IsActive() )
 	{
 		player.s.loadoutDirty = false
 	
