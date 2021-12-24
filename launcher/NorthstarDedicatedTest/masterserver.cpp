@@ -81,7 +81,7 @@ void MasterServerManager::AuthenticateOriginWithMasterServer(char* uid, char* or
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
 			http.set_connection_timeout(25);
 
-			spdlog::info("Trying to authenticate with northstar masterserver for user {} {}", uidStr);
+			spdlog::info("Trying to authenticate with northstar masterserver for user {}", uidStr);
 
 			if (auto result = http.Get(fmt::format("/client/origin_auth?id={}&token={}", uidStr, tokenStr).c_str()))
 			{
@@ -242,6 +242,10 @@ void MasterServerManager::RequestServerList()
 
 					spdlog::info("Server {} on map {} with playlist {} has {}/{} players", serverObj["name"].GetString(), serverObj["map"].GetString(), serverObj["playlist"].GetString(), serverObj["playerCount"].GetInt(), serverObj["maxPlayers"].GetInt());
 				}
+
+				std::sort(m_remoteServers.begin(), m_remoteServers.end(), [](RemoteServerInfo& a, RemoteServerInfo& b) {
+					return a.playerCount > b.playerCount;
+				});
 			}
 			else
 			{
