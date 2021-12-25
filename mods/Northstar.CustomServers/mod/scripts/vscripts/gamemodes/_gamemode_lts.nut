@@ -22,6 +22,7 @@ void function GamemodeLts_Init()
 	SetShouldUseRoundWinningKillReplay( true )
 	SetRoundWinningKillReplayKillClasses( true, true ) // both titan and pilot kills are tracked
 	ScoreEvent_SetupEarnMeterValuesForTitanModes()
+	SetLoadoutGracePeriodEnabled( false )
 	FlagSet( "ForceStartSpawn" )
 
 	AddCallback_OnPilotBecomesTitan( RefreshThirtySecondWallhackHighlight )

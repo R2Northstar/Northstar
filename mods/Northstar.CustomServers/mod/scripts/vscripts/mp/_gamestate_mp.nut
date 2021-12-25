@@ -80,6 +80,9 @@ void function PIN_GameStart()
 
 void function SetGameState( int newState )
 {
+	if ( newState == GetGameState() )
+		return
+
 	SetServerVar( "gameStateChangeTime", Time() )
 	SetServerVar( "gameState", newState )
 	svGlobal.levelEnt.Signal( "GameStateChanged" )

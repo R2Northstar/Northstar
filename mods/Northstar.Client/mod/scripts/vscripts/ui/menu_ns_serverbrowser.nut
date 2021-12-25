@@ -127,7 +127,18 @@ void function UpdateShownPage()
 	Hud_SetVisible( Hud_GetChild( menu, "NextModeIcon" ), false )
 	Hud_SetVisible( Hud_GetChild( menu, "NextGameModeName" ), false )
 	
-	for ( int i = 0; ( file.page * BUTTONS_PER_PAGE ) + i < NSGetServerCount() - 1 && i < serverButtons.len(); i++ )
+	if ( NSGetServerCount() == 0 )
+	{
+		Hud_SetEnabled( serverButtons[ 0 ], true )
+		Hud_SetVisible( serverButtons[ 0 ], true )
+		SetButtonRuiText( serverButtons[ 0 ], "#NS_SERVERBROWSER_NOSERVERS" )
+		return
+	}
+	
+	// this trycatch likely isn't necessary, but i can't test whether this'll error on higher pagecounts and want to go sleep
+	try
+	{
+	for ( int i = 0; ( file.page * BUTTONS_PER_PAGE ) + i < NSGetServerCount() && i < serverButtons.len(); i++ )
 	{
 		int serverIndex = ( file.page * BUTTONS_PER_PAGE ) + i
 		
@@ -135,13 +146,8 @@ void function UpdateShownPage()
 		Hud_SetVisible( serverButtons[ i ], true )
 		SetButtonRuiText( serverButtons[ i ], NSGetServerName( serverIndex ) )
 	}
-	
-	if ( NSGetServerCount() == 0 )
-	{
-		Hud_SetEnabled( serverButtons[ 0 ], true )
-		Hud_SetVisible( serverButtons[ 0 ], true )
-		SetButtonRuiText( serverButtons[ 0 ], "#NS_SERVERBROWSER_NOSERVERS" )
 	}
+	catch(ex) {}
 }
 
 void function OnServerFocused( var button )
