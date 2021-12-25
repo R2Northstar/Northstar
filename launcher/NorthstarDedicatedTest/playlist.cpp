@@ -49,7 +49,7 @@ void InitialisePlaylistHooks(HMODULE baseAddress)
 
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x222180, &Onclc_SetPlaylistVarOverrideHook, reinterpret_cast<LPVOID*>(&Onclc_SetPlaylistVarOverride));
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x18ED17, &SetPlaylistVarOverrideHook, reinterpret_cast<LPVOID*>(&SetPlaylistVarOverrideOriginal));
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x18ED00, &SetPlaylistVarOverrideHook, reinterpret_cast<LPVOID*>(&SetPlaylistVarOverrideOriginal));
 
 	// patch to prevent clc_SetPlaylistVarOverride from being able to crash servers if we reach max overrides due to a call to Error (why is this possible respawn, wtf)
 	// todo: add a warning for this
