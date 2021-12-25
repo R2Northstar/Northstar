@@ -32,6 +32,16 @@
 		},
 		
 		{
+			"Name": "ns_private_match_only_host_can_change_settings",
+			"DefaultValue": "0"
+		},
+		
+		{
+			"Name": "ns_private_match_only_host_can_start",
+			"DefaultValue": "0"
+		},
+		
+		{
 			// default 0 because broken
 			"Name": "ns_private_match_override_maxplayers",
 			"DefaultValue": "0"
