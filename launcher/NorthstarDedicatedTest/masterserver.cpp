@@ -190,19 +190,14 @@ void MasterServerManager::RequestServerList()
 						|| !serverObj.HasMember("description") || !serverObj["description"].IsString()
 						|| !serverObj.HasMember("map") || !serverObj["map"].IsString()
 						|| !serverObj.HasMember("playlist") || !serverObj["playlist"].IsString()
+						|| !serverObj.HasMember("playerCount") || !serverObj["playerCount"].IsNumber()
 						|| !serverObj.HasMember("maxPlayers") || !serverObj["maxPlayers"].IsNumber()
 						|| !serverObj.HasMember("hasPassword") || !serverObj["hasPassword"].IsBool()
 						|| !serverObj.HasMember("modInfo") || !serverObj["modInfo"].HasMember("Mods") || !serverObj["modInfo"]["Mods"].IsArray() )
 					{
 						spdlog::error("Failed reading masterserver response: malformed server object");
-						goto REQUEST_END_CLEANUP;
-					}
-
-					int playerCount = 0;
-					if (!serverObj.HasMember("playerCount") || !serverObj["playerCount"].IsNumber())
-						playerCount = 0;
-					else
-						playerCount = serverObj["playerCount"].GetInt();
+						continue;
+					};
 
 					const char* id = serverObj["id"].GetString();
 
@@ -214,7 +209,7 @@ void MasterServerManager::RequestServerList()
 						// if server already exists, update info rather than adding to it
 						if (!strncmp((const char*)server.id, id, 32))
 						{
-							server = RemoteServerInfo(id, serverObj["name"].GetString(), serverObj["description"].GetString(), serverObj["map"].GetString(), serverObj["playlist"].GetString(), playerCount, serverObj["maxPlayers"].GetInt(), serverObj["hasPassword"].IsTrue());
+							server = RemoteServerInfo(id, serverObj["name"].GetString(), serverObj["description"].GetString(), serverObj["map"].GetString(), serverObj["playlist"].GetString(), serverObj["playerCount"].GetInt(), serverObj["maxPlayers"].GetInt(), serverObj["hasPassword"].IsTrue());
 							newServer = &server;
 							createNewServerInfo = false;
 							break;
