@@ -135,7 +135,10 @@ void function UpdateShownPage()
 		return
 	}
 	
-	for ( int i = 0; ( file.page * BUTTONS_PER_PAGE ) + i < NSGetServerCount() - 1 && i < serverButtons.len(); i++ )
+	// this trycatch likely isn't necessary, but i can't test whether this'll error on higher pagecounts and want to go sleep
+	try
+	{
+	for ( int i = 0; ( file.page * BUTTONS_PER_PAGE ) + i < NSGetServerCount() && i < serverButtons.len(); i++ )
 	{
 		int serverIndex = ( file.page * BUTTONS_PER_PAGE ) + i
 		
@@ -143,6 +146,8 @@ void function UpdateShownPage()
 		Hud_SetVisible( serverButtons[ i ], true )
 		SetButtonRuiText( serverButtons[ i ], NSGetServerName( serverIndex ) )
 	}
+	}
+	catch(ex) {}
 }
 
 void function OnServerFocused( var button )
