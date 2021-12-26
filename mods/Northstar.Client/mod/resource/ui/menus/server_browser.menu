@@ -249,7 +249,7 @@ resource/ui/menus/mods_browse.menu
 		LabelDetails
 		{
 			ControlName				RuiPanel
-			xpos					900
+			xpos					675
 			ypos					160
 			tall					800
 			wide 					950

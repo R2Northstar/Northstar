@@ -39,10 +39,6 @@ bool function ClientCommandCallback_PrivateMatchLaunch( entity player, array<str
 {
 	if ( file.startState == ePrivateMatchStartState.STARTING ) 
 	{
-		if ( GetConVarBool( "ns_private_match_only_host_can_start" ) )
-			if ( !NSIsPlayerIndexLocalPlayer( player.GetPlayerIndex() ) )
-				return true
-	
 		// cancel start if we're already mid-countdown
 		file.startState = ePrivateMatchStartState.READY
 		SetUIVar( level, "privatematch_starting", ePrivateMatchStartState.READY )
@@ -50,6 +46,10 @@ bool function ClientCommandCallback_PrivateMatchLaunch( entity player, array<str
 	}
 	else
 	{
+		if ( GetConVarBool( "ns_private_match_only_host_can_start" ) )
+			if ( !NSIsPlayerIndexLocalPlayer( player.GetPlayerIndex() ) )
+				return true
+	
 		// start match
 		file.startState = ePrivateMatchStartState.STARTING
 		thread StartMatch()
@@ -159,7 +159,7 @@ void function StartMatch()
 	
 	SetConVarString( "ns_private_match_last_map", file.map )
 	SetConVarString( "ns_private_match_last_mode", file.mode )
-	SetConVarBool( "ns_should_return_to_lobby", true ) // potentially temp?
+	//SetConVarBool( "ns_should_return_to_lobby", true ) // potentially temp?
 	
 	string mode = file.mode
 	if ( !( mode in GAMETYPE_TEXT ) )

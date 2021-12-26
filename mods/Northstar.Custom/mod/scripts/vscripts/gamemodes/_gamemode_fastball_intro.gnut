@@ -127,10 +127,7 @@ void function FastballPlayer( entity player )
 
 	player.EndSignal( "OnDeath" )
 		
-	// do this here so it's in OnThreadEnd 
-	var oldVisibility = player.kv.VisibilityFlags 
-		
-	OnThreadEnd( function() : ( player, oldVisibility )
+	OnThreadEnd( function() : ( player )
 	{
 		if ( IsValid( player ) )
 		{
@@ -140,7 +137,7 @@ void function FastballPlayer( entity player )
 			player.DeployWeapon()
 			player.PlayerCone_Disable()
 			player.ClearInvulnerable()
-			player.kv.VisibilityFlags = oldVisibility // restore visibility
+			player.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE // restore visibility
 		}
 	})
 	
