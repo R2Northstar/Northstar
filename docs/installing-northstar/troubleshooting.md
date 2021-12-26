@@ -1,4 +1,6 @@
-# Engine Error
+# Troubleshooting
+
+## Engine Error
 
 ![Engine Error: File corruption detected. Please repair or re-install the game.](https://user-images.githubusercontent.com/39478251/147338706-74797220-7d7f-4c81-9ba0-d88e29a2a1e2.png)
 
