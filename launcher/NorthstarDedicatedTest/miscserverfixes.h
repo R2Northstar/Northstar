@@ -1,0 +1,1 @@
+void InitialiseMiscServerFixes(HMODULE baseAddress);

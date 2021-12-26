@@ -1386,6 +1386,9 @@
     <ClInclude Include="include\internal\unicode.h">
       <Filter>Header Files\include\openssl\internal</Filter>
     </ClInclude>
+    <ClInclude Include="miscserverfixes.h">
+      <Filter>Header Files\Server</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -1492,6 +1495,9 @@
     </ClCompile>
     <ClCompile Include="miscclientfixes.cpp">
       <Filter>Source Files\Client</Filter>
+    </ClCompile>
+    <ClCompile Include="miscserverfixes.cpp">
+      <Filter>Source Files\Server</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
