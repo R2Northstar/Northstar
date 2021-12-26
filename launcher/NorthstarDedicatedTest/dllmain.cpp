@@ -24,6 +24,7 @@
 #include "scriptbrowserhooks.h"
 #include "scriptmainmenupromos.h"
 #include "miscclientfixes.h"
+#include "miscserverfixes.h"
 #include "memalloc.h"
 
 bool initialised = false;
@@ -110,6 +111,7 @@ void InitialiseNorthstar()
     AddDllLoadCallback("engine.dll", InitialiseServerAuthentication);
     AddDllLoadCallback("engine.dll", InitialiseSharedMasterServer);
     AddDllLoadCallback("server.dll", InitialiseMiscServerScriptCommand);
+    AddDllLoadCallback("server.dll", InitialiseMiscServerFixes);
 
     AddDllLoadCallback("engine.dll", InitialisePlaylistHooks);
 
