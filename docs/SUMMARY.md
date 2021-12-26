@@ -24,3 +24,7 @@
 ## FAQ
 
 * [FAQ](faq.md)
+
+## Other
+
+* [Credits](credits.md)
