@@ -34,7 +34,10 @@ void function CodeCallback_MatchIsOver()
 				for ( int j = 0; j < GetCurrentPlaylistGamemodeByIndexMapsCount( i ); j++ )
 				{
 					if ( changeOnNextIteration )
+					{
 						GameRules_ChangeMap( GetCurrentPlaylistGamemodeByIndexMapByIndex( i, j ), GetCurrentPlaylistGamemodeByIndex( i ) )
+						return
+					}
 				
 					if ( GetCurrentPlaylistGamemodeByIndexMapByIndex( i, j ) == GetMapName() )
 						changeOnNextIteration = true // change to next map/mode we iterate over
