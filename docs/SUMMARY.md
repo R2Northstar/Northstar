@@ -17,7 +17,8 @@
 
 ## Hosting a server with Northstar
 
-* [Hosting a Server](hosting-a-server-with-northstar/hosting-a-server.md)
+* [Hosting a Basic Listen Server](hosting-a-server-with-northstar/basic-listen-server.md)
+* [Hosting a Dedicated Server](hosting-a-server-with-northstar/dedicated-server.md)
 
 ## FAQ
 
