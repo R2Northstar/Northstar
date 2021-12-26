@@ -192,8 +192,10 @@ void function Evac( int evacTeam, float initialWait, float arrivalTime, float wa
 	dropship.SetValueForModelKey( $"models/vehicle/crow_dropship/crow_dropship_hero.mdl" )
 	DispatchSpawn( dropship )
 	dropship.SetModel( $"models/vehicle/crow_dropship/crow_dropship_hero.mdl" )
+	AddEntityCallback_OnKilled( dropship, EvacDropshipKilled )
 	
 	dropship.s.evacSlots <- [ null, null, null, null, null, null, null, null ]
+	file.evacDropship = dropship
 	
 	dropship.EndSignal( "OnDestroy" )
 	OnThreadEnd( function() : ( evacTeam, completionCallback, dropship ) 
@@ -372,4 +374,16 @@ bool function PlayerInDropship( entity player, entity dropship )
 			return true
 			
 	return false
+}
+
+void function EvacDropshipKilled( entity dropship, var damageInfo )
+{
+	foreach ( entity player in dropship.s.evacSlots )
+	{
+		if ( IsValid( player ) )
+		{
+			player.ClearParent()
+			player.Die( DamageInfo_GetAttacker( damageInfo ), DamageInfo_GetWeapon( damageInfo ), { damageSourceId = eDamageSourceId.evac_dropship_explosion } )
+		}
+	}
 }

@@ -1,0 +1,316 @@
+
+global function ClDroppedWeaponFlyout_Init
+
+global function ClientCodeCallback_BodyGroupChanged
+
+global function ClientCodeCallback_UseEntGainedFocus
+global function ClientCodeCallback_UseEntLostFocus
+
+global function AddCallback_OnPetTitanChanged
+global function ClientCodeCallback_OnPetTitanModeChanged
+global function AddCallback_OnPetTitanModeChanged
+global function ClientCodeCallback_OnPetTitanChanged
+
+global function DestroyPickupFlyout
+global function HidePickupFlyout
+global function ShowPickupFlyout
+global function IsCurrentlyFocusedWeapon
+global function IsPickupFlyoutValid
+
+#if HAS_WEAPON_PICKUP_HIGHLIGHT
+global function ServerCallback_RefreshWeaponHighlights
+#endif
+
+enum eFlyoutType
+{
+	STANDARD_WEAPON
+	BT_LOADOUT_PICKUP
+}
+
+struct
+{
+	var flyoutRUI
+	var lastWeaponRuiSet
+	int flyoutType
+	entity focusedEnt
+	table<string, asset> modImages
+} file
+
+void function ClDroppedWeaponFlyout_Init()
+{
+	RegisterSignal( "PetTitanChanged" )
+	RegisterSignal( "PetTitanModeChanged" )
+
+	var dataTable = GetDataTable( $"datatable/pilot_weapon_mods_common.rpak" )
+	int numRows = GetDatatableRowCount( dataTable )
+
+	for ( int i = 0; i < numRows; i++ )
+	{
+		string modRef = GetDataTableString( dataTable, i, PILOT_WEAPON_MOD_COMMON_COLUMN )
+		asset modImage = GetDataTableAsset( dataTable, i, PILOT_WEAPON_MOD_COMMON_IMAGE_COLUMN )
+		file.modImages[ modRef ] <- modImage
+	}
+
+	AddCinematicEventFlagChangedCallback( CE_FLAG_HIDE_MAIN_HUD, WeaponPickupFlyout_UpdateVisibility )
+
+	#if HAS_WEAPON_PICKUP_HIGHLIGHT
+	AddCreateCallback( "weaponx", ClWeaponCreationCallback )
+	#endif
+}
+
+void function ClientCodeCallback_BodyGroupChanged( entity ent, int bodyGroupIndex, int oldState, int newState )
+{
+//	PrintFunc( "entity " + ent + " index " + bodyGroupIndex + "newstate " + newState )
+
+	if ( IsSpectre( ent ) || IsStalker( ent ) )
+	{
+		if ( bodyGroupIndex == ent.FindBodyGroup( "removableHead" ) )
+		{
+			ModelFX_DisableGroup( ent, "foe_lights" )
+			ModelFX_DisableGroup( ent, "friend_lights" )
+		}
+	}
+}
+
+void function ClientCodeCallback_UseEntGainedFocus( entity ent )
+{
+	foreach ( callbackFunc in clGlobal.onUseEntGainFocusCallbacks )
+	{
+		callbackFunc( ent )
+	}
+
+	DestroyPickupFlyout()
+
+	int neededType = eFlyoutType.STANDARD_WEAPON
+
+	if ( ent.GetClassName() == "weaponx" )
+	{
+		#if SP
+		int loadoutIndex = GetSPTitanLoadoutIndexForWeapon( ent.GetWeaponClassName() )
+		neededType = (loadoutIndex >= 0) ? eFlyoutType.BT_LOADOUT_PICKUP : eFlyoutType.STANDARD_WEAPON
+		#endif
+
+		if ( neededType == eFlyoutType.STANDARD_WEAPON )
+		{
+			if ( (file.flyoutRUI == null) || file.flyoutType != neededType )
+			{
+				DestroyPickupFlyout()
+				file.flyoutRUI = RuiCreate( $"ui/dropped_weapon_flyout.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
+				file.flyoutType = neededType
+			}
+
+			int modNum = 1
+			array<string> weaponMods = ent.GetMods()
+			foreach ( mod in weaponMods )
+			{
+				if ( modNum >= 5 ) // setting mod5 in the rui crashes client
+					break
+					
+				if ( mod in file.modImages )
+					RuiSetImage( file.flyoutRUI, "mod" + modNum++, file.modImages[ mod ] )
+			}
+
+			RuiSetGameTime( file.flyoutRUI, "startTime", Time() )
+			RuiTrackFloat3( file.flyoutRUI, "pos", ent, RUI_TRACK_ABSORIGIN_FOLLOW )
+			RuiSetString( file.flyoutRUI, "titleText", expect string( ent.GetWeaponInfoFileKeyField( "shortprintname" ) ) )
+			RuiSetString( file.flyoutRUI, "descriptionText", expect string( ent.GetWeaponInfoFileKeyField( "description" ) ) )
+
+			RuiSetBool( file.flyoutRUI, "isOffhandWeapon", ent.IsWeaponOffhand() )
+			RuiSetImage( file.flyoutRUI, "icon", ent.GetWeaponInfoFileKeyFieldAsset( "hud_icon" ) )
+			RuiSetFloat( file.flyoutRUI, "worldOffsetY", GetLocalViewPlayer().IsTitan() ? 98.0 : 32.0 )
+			RuiSetResolutionToScreenSize( file.flyoutRUI )
+
+			if ( ent.GetWeaponSettingBool( eWeaponVar.is_burn_mod ) )
+				RuiSetFloat3( file.flyoutRUI, "color", BURN_CARD_WEAPON_HUD_COLOR_VECTOR )
+
+			var rui = ClWeaponStatus_GetWeaponHudRui( GetLocalViewPlayer(), ent )
+			if ( rui != null )
+			{
+				RuiSetBool( rui, "isHighlighted", true )
+				file.lastWeaponRuiSet = rui
+			}
+		}
+		// #if SP
+		// else if ( neededType == eFlyoutType.BT_LOADOUT_PICKUP )
+		// {
+		// 	// The first one is picked up automatically an dhandled by a different custom system.
+		// 	if ( ent.GetWeaponClassName() == SP_FIRST_TITAN_LOADOUT_KIT )
+		// 		return
+
+		// 	if ( (file.flyoutRUI == null) || file.flyoutType != neededType )
+		// 	{
+		// 		DestroyPickupFlyout()
+		// 		file.flyoutRUI = CreateCockpitRui( $"ui/dropped_weapon_bt_loadout_flyout.rpak", 0 )
+		// 		file.flyoutType = neededType
+		// 	}
+
+		// 	RuiSetGameTime( file.flyoutRUI, "startTime", Time() )
+		// 	RuiSetString( file.flyoutRUI, "titleText", GetSPTitanLoadoutForIndex_MenuItem( loadoutIndex ) )
+		// 	RuiSetImage( file.flyoutRUI, "icon", ent.GetWeaponInfoFileKeyFieldAsset( "hud_icon" ) )
+		// }
+		// #endif
+	}
+
+	file.focusedEnt = ent
+	if ( GetWeaponFlyoutAliveTime() < 0.5 && IsWeaponFlyoutVisible() )
+	{
+		HidePickupFlyout( 2.0 )
+		SetWeaponFlyoutRemainingTime( 2.0 )
+	}
+	else
+	{
+		DestroyWeaponFlyout()
+	}
+
+#if HAS_AMMO_FULL_FLYOUT
+	if ( IsAmmoFullWeapon( ent ) )
+		HideAmmoFullFlyout()
+#endif
+
+#if HAS_WEAPON_PICKUP_HIGHLIGHT
+	ManageHighlightEntity( ent )
+#endif
+
+	#if SP
+	ScriptCallback_UpdateOnscreenHint()
+	#endif
+}
+
+void function ClientCodeCallback_UseEntLostFocus( entity ent )
+{
+	foreach ( callbackFunc in clGlobal.onUseEntLoseFocusCallbacks )
+	{
+		callbackFunc( ent )
+	}
+
+	DestroyPickupFlyout()
+
+	if ( file.lastWeaponRuiSet != null )
+	{
+		RuiSetBool( file.lastWeaponRuiSet, "isHighlighted", false )
+		file.lastWeaponRuiSet = null
+	}
+
+	if ( file.focusedEnt == ent )
+	{
+		file.focusedEnt = null
+	}
+
+#if HAS_WEAPON_PICKUP_HIGHLIGHT
+	if ( IsValid( ent ) )
+		ManageHighlightEntity( ent )
+#endif
+}
+
+bool function IsPickupFlyoutValid()
+{
+	return ( file.flyoutRUI != null )
+}
+
+bool function IsCurrentlyFocusedWeapon( entity ent )
+{
+	return file.focusedEnt == ent
+}
+
+void function DestroyPickupFlyout()
+{
+	if ( file.flyoutRUI == null )
+		return
+
+	RuiDestroy( file.flyoutRUI )
+	file.flyoutRUI = null
+
+	#if SP
+	ScriptCallback_UpdateOnscreenHint()
+	#endif
+}
+
+void function HidePickupFlyout( float hideDuration )
+{
+	if ( file.flyoutRUI == null )
+		return
+
+	RuiSetFloat( file.flyoutRUI, "hideDuration", hideDuration )
+	RuiSetGameTime( file.flyoutRUI, "hideStartTime", Time() )
+}
+
+void function ShowPickupFlyout()
+{
+	if ( file.flyoutRUI == null )
+		return
+
+	RuiSetFloat( file.flyoutRUI, "hideDuration", 0.0 )
+
+	#if SP
+	ScriptCallback_UpdateOnscreenHint()
+	#endif
+}
+
+void function WeaponPickupFlyout_UpdateVisibility( entity player )
+{
+	if ( file.flyoutRUI == null )
+		return
+
+	int ceFlags = player.GetCinematicEventFlags()
+	bool hideHud = ( ceFlags & CE_FLAG_HIDE_MAIN_HUD ) > 0
+	RuiSetBool( file.flyoutRUI, "inCinematic", hideHud )
+}
+
+#if HAS_WEAPON_PICKUP_HIGHLIGHT
+void function ServerCallback_RefreshWeaponHighlights( int eHandle )
+{
+	entity weapon = GetEntityFromEncodedEHandle( eHandle )
+	if ( weapon != null )
+		ManageHighlightEntity( weapon )
+}
+
+void function ClWeaponCreationCallback( entity weapon )
+{
+
+}
+#endif
+
+
+void function AddCallback_OnPetTitanChanged( void functionref( entity ) callbackFunc )
+{
+	clGlobal.onPetTitanChangedCallbacks.append( callbackFunc )
+}
+
+void function ClientCodeCallback_OnPetTitanChanged( entity player )
+{
+	if ( !IsValid( player ) || player != GetLocalViewPlayer() )
+		return
+
+	if ( !IsMenuLevel() )
+		thread PetTitanChanged( player )
+
+	player.Signal( "PetTitanChanged" )
+
+	// Added via AddCallback_OnPetTitanModeChanged
+	foreach ( callbackFunc in clGlobal.onPetTitanChangedCallbacks )
+	{
+		callbackFunc( player )
+	}
+}
+
+void function ClientCodeCallback_OnPetTitanModeChanged( entity player )
+{
+	if ( !IsValid( player ) || player != GetLocalViewPlayer() )
+		return
+
+	if ( !IsValid( player.GetPetTitan() ) ) // should be an assert...
+		return
+
+	player.Signal( "PetTitanModeChanged" )
+
+	// Added via AddCallback_OnPetTitanModeChanged
+	foreach ( callbackFunc in clGlobal.onPetTitanModeChangedCallbacks )
+	{
+		callbackFunc( player )
+	}
+}
+
+void function AddCallback_OnPetTitanModeChanged( void functionref( entity ) callbackFunc )
+{
+	clGlobal.onPetTitanModeChangedCallbacks.append( callbackFunc )
+}
