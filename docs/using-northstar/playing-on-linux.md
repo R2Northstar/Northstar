@@ -29,7 +29,9 @@ Now just launch the game through Lutris and you should be greeted with a Northst
 
 > **Note:** Origin might prompt you to log in and "set an installation folder for future downloads" on first launch. Just do those, close Origin, then launch the game again.
 
-> You might feel the game is stuttering a lot in the first hour of playing. This is normal, it's just DXVK is compiling shaders. The more you play, the less you will stutter in the future. Someone on discord wrote [an in-depth guide](https://i.imgur.com/xzop1lQ.png) on good settings to help the shader cache **and a general performance boost by stopping Origin from writing unnecessary files**. [Link to cache](https://github.com/Cervoxx/DXVKCACHE/raw/master/Titanfall2-cache.tar.xz) - [Link to Origin being slow discussion](https://github.com/ValveSoftware/Proton/issues/4001#issuecomment-647014231)
+> You might feel the game is stuttering a lot in the first hour of playing. This is normal, it's just DXVK is compiling shaders. The more you play, the less you will stutter in the future. Someone on discord wrote [an in-depth guide](https://i.imgur.com/xzop1lQ.png) on good settings to help the shader cache **and a general performance boost by stopping Origin from writing unnecessary files**.\
+> [Link to cache](https://github.com/Cervoxx/DXVKCACHE/raw/master/Titanfall2-cache.tar.xz)\
+> [Link to Origin being slow discussion](https://github.com/ValveSoftware/Proton/issues/4001#issuecomment-647014231)
 
 ---
 
