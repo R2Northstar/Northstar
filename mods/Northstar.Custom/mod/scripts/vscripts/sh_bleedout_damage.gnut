@@ -120,7 +120,7 @@ void function HandleDamageForBleedout( entity player, var damageInfo )
 void function OnPlayerBleedoutBegin( entity player )
 {
 	file.bleedingPlayers.append( player )
-	EmitSoundOnEntity( player, "Player_Death_Begin" )
+	EmitSoundOnEntityOnlyToPlayer( player, player, "Player_Death_Begin" )
 	
 	thread PlayerBleedoutGracePeriod( player )
 
@@ -140,7 +140,7 @@ void function PlayerBleedoutGracePeriod( entity player )
 	})
 	
 	player.SetInvulnerable()
-	wait 2.5
+	wait 0.25
 }
 
 void function TrackPlayerBleedout( entity player )

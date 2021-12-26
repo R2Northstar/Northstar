@@ -123,8 +123,8 @@ void function StartMatch()
 	SetUIVar( level, "privatematch_starting", ePrivateMatchStartState.STARTING )
 	
 	// start countdown
-	SetUIVar( level, "gameStartTime", Time() + 15 ) 
-	float countdownEndTime = Time() + 15.0
+	SetUIVar( level, "gameStartTime", Time() + GetConVarFloat( "ns_private_match_countdown_length" ) ) 
+	float countdownEndTime = Time() + GetConVarFloat( "ns_private_match_countdown_length" )
 	
 	// can't use start here because we need to check stuff
 	while ( Time() < countdownEndTime )
@@ -206,7 +206,7 @@ bool function ClientCommandCallback_PrivateMatchSetPlaylistVarOverride( entity p
 	if ( GetConVarInt( "ns_private_match_only_host_can_change_settings" ) >= 1 )
 		if ( !NSIsPlayerIndexLocalPlayer( player.GetPlayerIndex() ) )
 			return true
-	
+		
 	bool found = false
 	foreach ( string category in GetPrivateMatchSettingCategories() )
 	{

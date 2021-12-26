@@ -42,6 +42,11 @@
 		},
 		
 		{
+			"Name": "ns_private_match_countdown_length",
+			"DefaultValue": "15"
+		},
+		
+		{
 			// default 0 because broken
 			"Name": "ns_private_match_override_maxplayers",
 			"DefaultValue": "0"
