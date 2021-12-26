@@ -706,7 +706,7 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 			}
 			else
 			{
-				spdlog::error("Failed authenticating with server: error {}", HttplibErrorToString(result.error()));
+				spdlog::error("Failed adding self to server list: error {}", HttplibErrorToString(result.error()));
 				m_successfullyConnected = false;
 			}
 		});
