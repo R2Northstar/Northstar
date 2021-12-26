@@ -21,6 +21,8 @@ Don't panic! This warning seems to be caused by Origin and none of your files ar
 
 ## Issues with newest Intel CPU (10th+ gen):
 
+> **TODO:** If you got a screenshot or video of this happening please open an issue or pull request to add it to the wiki.
+
 On newer Intel CPUs you might see a message like this
 
 > "Contacting Respawn servers.../Data Center: Searching..."
