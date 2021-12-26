@@ -14,6 +14,7 @@
 * [Direct Connect](using-northstar/direct-connect.md)
 * [Gamemodes](using-northstar/gamemodes.md)
 * [Commands](using-northstar/commands.md)
+* [Playing on Linux](using-northstar/playing-on-linux.md)
 
 ## Hosting a server with Northstar
 
