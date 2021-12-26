@@ -2,6 +2,8 @@
 
 ## Installing Northstar
 
+> **TODO:** Adding a video showing the process would probably be best.
+
 Firstly note that Northstar client is only available on PC and requires you to **both own the game and have it installed**.
 
 1. Download the latest version of Northstar from the [releases](https://github.com/R2Northstar/Northstar/releases) page
