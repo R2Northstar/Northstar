@@ -1,11 +1,11 @@
 # Table of contents
 
 * [Welcome to Northstar](README.md)
-* [Engine Error](troubleshooting.md)
 
 ## Installing Northstar
 
 * [Basic-Setup](installing-northstar/basic-setup.md)
+* [Troubleshooting](installing-northstar/troubleshooting.md)
 
 ## Hosting a server with Northstar
 
