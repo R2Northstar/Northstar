@@ -278,12 +278,6 @@ void function UpdatePlayButton( var button )
 				message = "#CONTACTING_RESPAWN_SERVERS"
 				file.mpButtonActivateFunc = null
 			}
-			
-			bool hasNonVanillaMods = false
-			if ( hasNonVanillaMods )
-			{
-				// todo: make this disable non-vanilla mods
-			}
 			else
 				file.mpButtonActivateFunc = LaunchMP
 			
@@ -422,7 +416,21 @@ void function UpdatePlayButton( var button )
 			}
 			else
 			{
-				file.mpButtonActivateFunc = LaunchMP
+				// restrict non-vanilla players from accessing official servers
+				bool hasNonVanillaMods = false
+				foreach ( string modName in NSGetModNames() )
+				{
+					if ( NSIsModEnabled( modName ) && NSIsModRequiredOnClient( modName ) )
+					{
+						hasNonVanillaMods = true
+						break
+					}
+				}
+				
+				if ( hasNonVanillaMods )
+					file.mpButtonActivateFunc = null
+				else
+					file.mpButtonActivateFunc = LaunchMP
 			}
 
 			isLocked = file.mpButtonActivateFunc == null ? true : false
