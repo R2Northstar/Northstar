@@ -1,0 +1,255 @@
+
+global function ClWeaponFlyout_Init
+
+global function WeaponFlyoutThink
+global function ShouldShowWeaponFlyout
+global function WeaponFlyoutRefresh
+global function IsWeaponFlyoutVisible
+global function DestroyWeaponFlyout
+global function GetWeaponFlyoutAliveTime
+global function GetWeaponFlyoutAliveTimeLeft
+global function SetWeaponFlyoutRemainingTime
+
+global function WeaponFlyout_SetLevelEnabled
+
+const float FLYOUT_DURATION = 4.0
+const float FLYOUT_DURATION_SHORT = 1.0
+const vector FLYOUT_COLOR = <0.851, 0.976, 1.0>
+
+struct
+{
+	var weaponRUI
+	string weaponClassName
+	float flyoutShowTime = -99.0
+	float lastFlyoutDuration = FLYOUT_DURATION
+
+	bool flyoutLevelEnabled = true
+
+	table<string, asset> modImages
+} file
+
+void function ClWeaponFlyout_Init()
+{
+	AddOnDeathCallback( "player", WeaponFlyout_OnDeathCallback )
+	AddCallback_OnSelectedWeaponChanged( OnSelectedWeaponChanged )
+
+	var dataTable = GetDataTable( $"datatable/pilot_weapon_mods_common.rpak" )
+	int numRows = GetDatatableRowCount( dataTable )
+
+	for ( int i = 0; i < numRows; i++ )
+	{
+		string modRef = GetDataTableString( dataTable, i, PILOT_WEAPON_MOD_COMMON_COLUMN )
+		asset modImage = GetDataTableAsset( dataTable, i, PILOT_WEAPON_MOD_COMMON_IMAGE_COLUMN )
+		file.modImages[ modRef ] <- modImage
+	}
+}
+
+void function WeaponFlyout_OnDeathCallback( entity player )
+{
+	if ( player == GetLocalViewPlayer() )
+		DestroyWeaponFlyout()
+}
+
+void function WeaponFlyoutShow( entity weapon, string weaponClassName )
+{
+	if ( IsWatchingReplay() )
+		return
+
+	file.weaponClassName = weaponClassName
+
+	entity player = GetLocalViewPlayer()
+	if ( !IsValid( player ) )
+		return
+
+	entity viewModel = player.GetViewModelEntity()
+	if ( !IsValid( viewModel ) )
+		return
+
+	if ( GetConVarInt( "hud_setting_showWeaponFlyouts" ) == 0 )
+		return
+
+	//file.weaponRUI = RuiCreate( $"ui/weapon_flyout.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
+	file.weaponRUI = CreateCockpitRui( $"ui/weapon_flyout.rpak" )
+	file.flyoutShowTime = Time()
+
+	float flyoutDuration = IsPickupFlyoutValid() ? FLYOUT_DURATION_SHORT : FLYOUT_DURATION
+	file.lastFlyoutDuration = flyoutDuration
+
+	RuiSetGameTime( file.weaponRUI, "startTime", file.flyoutShowTime )
+	RuiSetFloat( file.weaponRUI, "duration", file.lastFlyoutDuration )
+
+	if ( IsMultiplayer() && file.flyoutLevelEnabled )
+		WeaponFlyoutRefresh()
+
+	if ( weapon.GetWeaponSettingBool( eWeaponVar.is_burn_mod ) )
+		RuiSetFloat3( file.weaponRUI, "color", BURN_CARD_WEAPON_HUD_COLOR_VECTOR )
+
+	string weaponPrintName = Localize( expect string( weapon.GetWeaponInfoFileKeyField( "shortprintname" ) ) )
+	string weaponDescription = weapon.GetWeaponDescription() + "    "
+	RuiSetString( file.weaponRUI, "titleText", weaponPrintName )
+	RuiSetString( file.weaponRUI, "descriptionText", weaponDescription )
+
+	int modNum = 1
+	array<string> weaponMods = weapon.GetMods()
+	foreach ( mod in weaponMods )
+	{
+		if ( modNum >= 5 ) // setting mod5 in the rui crashes client
+			break
+	
+		if ( mod in file.modImages )
+			RuiSetImage( file.weaponRUI, "mod" + modNum++, file.modImages[ mod ] )
+	}
+
+	RuiSetFloat( file.weaponRUI, "underlineHeight", 4.0 )
+	RuiSetFloat( file.weaponRUI, "underlineWidth", 4.0 )
+
+	int attachment = viewModel.LookupAttachment( "flyout" )
+	if ( attachment <= 0 )
+		attachment = viewModel.LookupAttachment( "shell" )
+
+	RuiTrackFloat3( file.weaponRUI, "pos", viewModel, RUI_TRACK_POINT_FOLLOW, attachment )
+
+	HidePickupFlyout( file.lastFlyoutDuration )
+
+	#if SP
+	ScriptCallback_UpdateOnscreenHint()
+	#endif
+}
+
+void function WeaponFlyoutRefresh()
+{
+	entity player = GetLocalViewPlayer()
+	if ( !IsValid( player ) )
+		return
+
+	if ( file.weaponRUI == null )
+		return
+
+	if ( file.flyoutShowTime + ( file.lastFlyoutDuration - 0.2 ) <= Time() )
+		return
+
+#if MP
+	if ( !ShouldTrackXPForWeapon( file.weaponClassName ) )
+		return
+
+	string persistenceVar = GetItemPersistenceStruct( file.weaponClassName ) + ".weaponXP"
+	int currentXP = player.GetPersistentVarAsInt( persistenceVar )
+
+	RuiSetInt( file.weaponRUI, "numPips", WeaponGetNumPipsForXP( file.weaponClassName, currentXP ) )
+	RuiSetInt( file.weaponRUI, "numFilledPips", WeaponGetFilledPipsForXP( file.weaponClassName, currentXP ) )
+	RuiSetString( file.weaponRUI, "currentLevel", WeaponGetDisplayGenAndLevelForXP( file.weaponClassName, currentXP ) )
+	RuiSetBool( file.weaponRUI, "showWeaponXP", true )
+#endif
+}
+
+void function WeaponFlyoutThink( entity player )
+{
+	if ( !WEAPON_FLYOUTS_ENABLED )
+		return
+
+	entity currentWeapon = player.GetActiveWeapon()
+
+	if ( !IsValid( currentWeapon ) )
+		return
+
+	string weaponClassName = currentWeapon.GetWeaponClassName()
+
+	if ( currentWeapon == player.p.previousWeapon )
+		return
+
+	if ( !ShouldShowWeaponFlyout( player, currentWeapon, weaponClassName ) )
+		return
+
+	player.p.previousWeapon = currentWeapon
+
+	WeaponFlyoutShow( currentWeapon, weaponClassName )
+}
+
+bool function ShouldShowWeaponFlyout( entity player, entity weapon, string weaponClassName )
+{
+	// Allow time for weapons to be disabled at level start
+	if ( Time() < 2.0 )
+		return false
+
+	// No weapon
+	if ( !IsValid( weapon ) )
+		return false
+
+	// MP can be dead with new weapon
+	if ( !IsAlive( player ) )
+		return false
+
+	if ( weapon.IsWeaponOffhand() )
+		return false
+
+	if ( GetWeaponInfoFileKeyField_Global( weaponClassName, "flyoutEnabled" ) == 0 )
+		return false
+
+	if ( player.IsWeaponDisabled() )
+		return false
+
+	if ( player.IsInThirdPersonReplay() )
+		return false
+
+	if ( GetGameState() < eGameState.Playing )
+		return false
+
+	if ( player.IsTitan() && GameRules_GetGameMode() == FD )
+		return false
+
+	if( !player.GetPlayerNetBool( "shouldShowWeaponFlyout" ) )
+		return false
+
+	return true
+}
+
+void function OnSelectedWeaponChanged( entity selectedWeapon )
+{
+	DestroyWeaponFlyout()
+}
+
+void function DestroyWeaponFlyout()
+{
+	if ( file.weaponRUI != null )
+	{
+		RuiDestroyIfAlive( file.weaponRUI )
+		file.weaponRUI = null
+		file.flyoutShowTime = -99.0
+	}
+
+	#if SP
+	ScriptCallback_UpdateOnscreenHint()
+	#endif
+}
+
+float function GetWeaponFlyoutAliveTime()
+{
+	return Time() - file.flyoutShowTime
+}
+
+float function GetWeaponFlyoutAliveTimeLeft()
+{
+	return file.flyoutShowTime + file.lastFlyoutDuration - Time()
+}
+
+bool function IsWeaponFlyoutVisible()
+{
+	return ( file.weaponRUI != null && ( file.flyoutShowTime + file.lastFlyoutDuration > Time() ) )
+}
+
+void function WeaponFlyout_SetLevelEnabled( bool state )
+{
+	file.flyoutLevelEnabled = state
+}
+
+void function SetWeaponFlyoutRemainingTime( float time )
+{
+	if ( file.weaponRUI == null	)
+		return
+
+	file.flyoutShowTime = Time()
+	file.lastFlyoutDuration = time
+
+	RuiSetGameTime( file.weaponRUI, "startTime", file.flyoutShowTime )
+	RuiSetFloat( file.weaponRUI, "duration", file.lastFlyoutDuration )
+}

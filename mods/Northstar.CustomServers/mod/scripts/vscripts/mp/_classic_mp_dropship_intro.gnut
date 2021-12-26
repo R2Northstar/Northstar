@@ -146,7 +146,7 @@ void function SpawnPlayerIntoDropship( entity player )
 	int playerDropshipIndex = -1
 	foreach ( IntroDropship dropship in teamDropships )
 		for ( int i = 0; i < dropship.players.len(); i++ )
-			if ( dropship.players[ i ] == player )
+			if ( dropship.players[ i ] == null )
 			{
 				playerDropship = dropship
 				playerDropshipIndex = i

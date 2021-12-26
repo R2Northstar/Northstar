@@ -6,6 +6,7 @@ const int BUTTONS_PER_PAGE = 15
 struct {
 	int page = 0
 	int lastSelectedServer = 0
+	bool serverListRequestFailed = false
 } file
 
 void function AddNorthstarServerBrowserMenu()
@@ -52,6 +53,7 @@ void function RefreshServers( var button )
 		return
 	
 	file.page = 0
+	file.serverListRequestFailed = false
 	NSClearRecievedServerList()
 	NSRequestServerList()
 	
@@ -101,7 +103,8 @@ void function WaitForServerListRequest()
 	while ( NSIsRequestingServerList() )
 		WaitFrame()
 	
-	if ( !NSMasterServerConnectionSuccessful() )
+	file.serverListRequestFailed = !NSMasterServerConnectionSuccessful()
+	if ( file.serverListRequestFailed )
 		SetButtonRuiText( serverButtons[ 0 ], "#NS_SERVERBROWSER_CONNECTIONFAILED" )
 	else
 		UpdateShownPage()
@@ -152,7 +155,7 @@ void function UpdateShownPage()
 
 void function OnServerFocused( var button )
 {
-	if ( NSIsRequestingServerList() || !NSMasterServerConnectionSuccessful() || NSGetServerCount() == 0 )
+	if ( NSIsRequestingServerList() || NSGetServerCount() == 0 || file.serverListRequestFailed )
 		return
 
 	var menu = GetMenu( "ServerBrowserMenu" )
@@ -201,7 +204,7 @@ string function FormatServerDescription( int server )
 
 void function OnServerSelected( var button )
 {
-	if ( NSIsRequestingServerList() || !NSMasterServerConnectionSuccessful() || NSGetServerCount() == 0 )
+	if ( NSIsRequestingServerList() || NSGetServerCount() == 0 || file.serverListRequestFailed )
 		return
 
 	int serverIndex = file.page * BUTTONS_PER_PAGE + int ( Hud_GetScriptID( button ) )
