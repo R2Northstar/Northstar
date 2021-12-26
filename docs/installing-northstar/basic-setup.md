@@ -2,9 +2,9 @@
 
 ## Installing Northstar
 
-First things first: you'll need to download and install Northstar.
+Firstly note that Northstar client is only available on PC and requires you to **both own the game and have it installed**.
 
-1. Download the latest version from the [releases](https://github.com/R2Northstar/Northstar/releases) page
+1. Download the latest version of Northstar from the [releases](https://github.com/R2Northstar/Northstar/releases) page
 2. Copy all the files in the newly downloaded zip folder to your Titanfall folder
 
 * **For Steam** - Right click _Titanfall 2_ > Open _Properties_ > Click _Local Files_ > Click _Browse_
