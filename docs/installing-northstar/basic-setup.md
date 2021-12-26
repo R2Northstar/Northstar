@@ -1,3 +1,5 @@
+# Basic setup
+
 First things first: you'll need to download and install Northstar.
 
 1. Download the latest version from the [releases](https://github.com/R2Northstar/Northstar/releases) page
