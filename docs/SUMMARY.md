@@ -18,3 +18,7 @@
 ## Hosting a server with Northstar
 
 * [Hosting a Server](hosting-a-server-with-northstar/hosting-a-server.md)
+
+## FAQ
+
+* [FAQ](faq.md)
