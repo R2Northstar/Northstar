@@ -1,5 +1,10 @@
 # Frequently Asked Questions
 
+### Q: Where are all levels?
+A: Northstar runs separate from official servers and progress does not carry over.
+
+However your progress on official servers is not lost, so running vanilla client after playing on Northstar you should be back to your old level on official servers.
+
 ## Copied from the Discord FAQ channel
 
 ### Q: Will there be a console version?
