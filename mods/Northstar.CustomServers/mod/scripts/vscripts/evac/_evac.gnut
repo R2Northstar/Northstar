@@ -383,7 +383,7 @@ void function EvacDropshipKilled( entity dropship, var damageInfo )
 		if ( IsValid( player ) )
 		{
 			player.ClearParent()
-			player.Die( DamageInfo_GetAttacker( damageInfo ), DamageInfo_GetWeapon( damageInfo ), { damageSourceId = eDamageSourceId.evac_dropship_explosion } )
+			player.Die( DamageInfo_GetAttacker( damageInfo ), DamageInfo_GetWeapon( damageInfo ), { damageSourceId = eDamageSourceId.evac_dropship_explosion, scriptType = DF_GIB } )
 		}
 	}
 }
