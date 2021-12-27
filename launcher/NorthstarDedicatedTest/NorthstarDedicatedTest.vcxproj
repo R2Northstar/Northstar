@@ -136,7 +136,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>$(ProjectDir)include\MinHook.x64.lib;$(ProjectDir)include\libcrypto_static.lib;$(ProjectDir)include\libssl_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)include\MinHook.x64.lib;$(ProjectDir)include\libcrypto_static.lib;$(ProjectDir)include\libssl_static.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ForceSymbolReferences>
       </ForceSymbolReferences>
     </Link>
@@ -164,7 +164,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>$(ProjectDir)include\MinHook.x64.lib;$(ProjectDir)include\libcrypto_static.lib;$(ProjectDir)include\libssl_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)include\MinHook.x64.lib;$(ProjectDir)include\libcrypto_static.lib;$(ProjectDir)include\libssl_static.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ForceSymbolReferences>
       </ForceSymbolReferences>
     </Link>
@@ -580,6 +580,7 @@
     <ClInclude Include="memalloc.h" />
     <ClInclude Include="miscclientfixes.h" />
     <ClInclude Include="misccommands.h" />
+    <ClInclude Include="miscserverfixes.h" />
     <ClInclude Include="modlocalisation.h" />
     <ClInclude Include="modmanager.h" />
     <ClInclude Include="pch.h" />
@@ -616,6 +617,7 @@
     <ClCompile Include="memalloc.cpp" />
     <ClCompile Include="miscclientfixes.cpp" />
     <ClCompile Include="misccommands.cpp" />
+    <ClCompile Include="miscserverfixes.cpp" />
     <ClCompile Include="modlocalisation.cpp" />
     <ClCompile Include="logging.cpp" />
     <ClCompile Include="masterserver.cpp" />

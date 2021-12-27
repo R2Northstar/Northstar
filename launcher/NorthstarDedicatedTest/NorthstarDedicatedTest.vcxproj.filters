@@ -1386,8 +1386,8 @@
     <ClInclude Include="include\internal\unicode.h">
       <Filter>Header Files\include\openssl\internal</Filter>
     </ClInclude>
-    <ClInclude Include="maxplayers.h">
-      <Filter>Header Files\Shared</Filter>
+    <ClInclude Include="miscserverfixes.h">
+      <Filter>Header Files\Server</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1495,9 +1495,6 @@
     </ClCompile>
     <ClCompile Include="miscclientfixes.cpp">
       <Filter>Source Files\Client</Filter>
-    </ClCompile>
-    <ClCompile Include="maxplayers.cpp">
-      <Filter>Source Files\Shared</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
