@@ -42,6 +42,7 @@ void function BaseGametype_Init_MPSP()
 	AddPostDamageCallback( "npc_titan", AddToTitanDamageStat )
 	
 	RegisterSignal( "PlayerRespawnStarted" )
+	RegisterSignal( "KillCamOver" )
 }
 
 void function SetIntermissionCamera( entity camera )
@@ -316,8 +317,10 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 		player.SetObserverTarget( null )
 	}
 
+	// hack: double check if killcams are enabled and valid here in case gamestate has changed this
+	shouldDoReplay = shouldDoReplay && Replay_IsEnabled() && KillcamsEnabled() && IsValid( attacker )
 	// quick note: in cases where player.Die() is called: e.g. for round ends, player == attacker
-	if ( shouldDoReplay && Replay_IsEnabled() && KillcamsEnabled() && IsValid( attacker ) ) // hack: double check if killcams are enabled and valid here in case gamestate has changed this
+	if ( shouldDoReplay ) 
 	{	
 		player.watchingKillreplayEndTime = Time() + replayLength		
 		float beforeTime = GetKillReplayBeforeTime( player, methodOfDeath )
@@ -355,7 +358,12 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 			RespawnAsPilot( player )
 	}
 	else if ( GamePlayingOrSuddenDeath() || GetGameState() == eGameState.Epilogue )
+	{
+		if ( shouldDoReplay && player.IsWatchingKillReplay() )
+			player.WaitSignal( "KillCamOver" )
+		
 		thread PlayerBecomesSpectator( player )
+	}
 }
 
 void function PlayerWatchesKillReplayWrapper( entity player, entity attacker, float timeSinceAttackerSpawned, float timeOfDeath, float beforeTime, table replayTracker )
@@ -373,6 +381,7 @@ void function PlayerWatchesKillReplayWrapper( entity player, entity attacker, fl
 		// don't clear if we're in a roundwinningkillreplay
 		if ( IsValid( player ) && !( ( GetGameState() == eGameState.SwitchingSides || GetGameState() == eGameState.WinnerDetermined ) && IsRoundWinningKillReplayEnabled() ) )
 		{
+			player.Signal( "KillCamOver" )
 			player.ClearReplayDelay()
 			player.ClearViewEntity()
 			player.SetPredictionEnabled( true )
