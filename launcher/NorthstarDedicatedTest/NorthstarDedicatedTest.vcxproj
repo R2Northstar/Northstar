@@ -43,13 +43,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -576,6 +576,7 @@
     <ClInclude Include="logging.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="masterserver.h" />
+    <ClInclude Include="maxplayers.h" />
     <ClInclude Include="memalloc.h" />
     <ClInclude Include="miscclientfixes.h" />
     <ClInclude Include="misccommands.h" />
@@ -611,6 +612,7 @@
     <ClCompile Include="hooks.cpp" />
     <ClCompile Include="hookutils.cpp" />
     <ClCompile Include="keyvalues.cpp" />
+    <ClCompile Include="maxplayers.cpp" />
     <ClCompile Include="memalloc.cpp" />
     <ClCompile Include="miscclientfixes.cpp" />
     <ClCompile Include="misccommands.cpp" />

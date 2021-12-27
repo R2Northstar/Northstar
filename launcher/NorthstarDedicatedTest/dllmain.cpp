@@ -25,6 +25,7 @@
 #include "scriptmainmenupromos.h"
 #include "miscclientfixes.h"
 #include "memalloc.h"
+#include "maxplayers.h"
 
 bool initialised = false;
 
@@ -115,6 +116,11 @@ void InitialiseNorthstar()
 
     AddDllLoadCallback("filesystem_stdio.dll", InitialiseFilesystem);
     AddDllLoadCallback("engine.dll", InitialiseKeyValues);
+
+    // maxplayers increase
+    AddDllLoadCallback("engine.dll", InitialiseMaxPlayersOverride_Engine);
+    AddDllLoadCallback("client.dll", InitialiseMaxPlayersOverride_Client, true);
+    AddDllLoadCallback("server.dll", InitialiseMaxPlayersOverride_Server, true);
 
     // mod manager after everything else
     AddDllLoadCallback("engine.dll", InitialiseModManager);
