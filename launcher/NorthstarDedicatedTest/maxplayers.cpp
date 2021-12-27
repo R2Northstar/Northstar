@@ -79,6 +79,24 @@ bool DataTable_SetupReceiveTableFromSendTable_Hook(__int64 sendTable, bool needs
 }
 */
 
+typedef void* (*StringTables_CreateStringTable_Type)(__int64 thisptr, const char* name, int maxentries, int userdatafixedsize, int userdatanetworkbits, int flags);
+StringTables_CreateStringTable_Type StringTables_CreateStringTable_Original;
+
+void* StringTables_CreateStringTable_Hook(__int64 thisptr, const char* name, int maxentries, int userdatafixedsize, int userdatanetworkbits, int flags)
+{
+	// Change the amount of entries to account for a bigger player amount
+	if (!strcmp(name, "userinfo"))
+	{
+		int maxPlayersPowerOf2 = 1;
+		while (maxPlayersPowerOf2 < NEW_MAX_PLAYERS)
+			maxPlayersPowerOf2 <<= 1;
+		
+		maxentries = maxPlayersPowerOf2;
+	}
+
+	return StringTables_CreateStringTable_Original(thisptr, name, maxentries, userdatafixedsize, userdatanetworkbits, flags);
+}
+
 void InitialiseMaxPlayersOverride_Engine(HMODULE baseAddress)
 {
 	// patch GetPlayerLimits to ignore the boundary limit
@@ -100,12 +118,14 @@ void InitialiseMaxPlayersOverride_Engine(HMODULE baseAddress)
 	ChangeOffset<unsigned char>((char*)baseAddress + 0x1A162C + 2, NEW_MAX_PLAYERS - 1); // original: 31 (32 - 1)
 
 	// patch max players in userinfo stringtable creation
-	{
+	/*{
 		int maxPlayersPowerOf2 = 1;
 		while (maxPlayersPowerOf2 < NEW_MAX_PLAYERS)
 			maxPlayersPowerOf2 <<= 1;
 		ChangeOffset<unsigned char>((char*)baseAddress + 0x114B79 + 3, maxPlayersPowerOf2); // original: 32
-	}
+	}*/
+	// this is not supposed to work at all but it does on 64 players (how)
+	// proper fix below
 
 	// patch max players in userinfo stringtable creation loop
 	ChangeOffset<unsigned char>((char*)baseAddress + 0x114C48 + 2, NEW_MAX_PLAYERS); // original: 32 
@@ -113,9 +133,12 @@ void InitialiseMaxPlayersOverride_Engine(HMODULE baseAddress)
 	// do not load prebaked SendTable message list
 	ChangeOffset<unsigned char>((char*)baseAddress + 0x75859, 0xEB); // jnz -> jmp 
 
-	// HookEnabler hook;
+	HookEnabler hook;
+	
 	// ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x209000, &MatchRecvPropsToSendProps_R_Hook, reinterpret_cast<LPVOID*>(&MatchRecvPropsToSendProps_R_Original));
 	// ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1FACD0, &DataTable_SetupReceiveTableFromSendTable_Hook, reinterpret_cast<LPVOID*>(&DataTable_SetupReceiveTableFromSendTable_Original));
+
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x22E220, &StringTables_CreateStringTable_Hook, reinterpret_cast<LPVOID*>(&StringTables_CreateStringTable_Original));
 }
 
 typedef void(*RunUserCmds_Type)(bool a1, float a2);
