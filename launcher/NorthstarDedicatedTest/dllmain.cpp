@@ -121,8 +121,8 @@ void InitialiseNorthstar()
 
     // maxplayers increase
     AddDllLoadCallback("engine.dll", InitialiseMaxPlayersOverride_Engine);
-    AddDllLoadCallback("client.dll", InitialiseMaxPlayersOverride_Client, true);
-    AddDllLoadCallback("server.dll", InitialiseMaxPlayersOverride_Server, true);
+    AddDllLoadCallback("client.dll", InitialiseMaxPlayersOverride_Client);
+    AddDllLoadCallback("server.dll", InitialiseMaxPlayersOverride_Server);
 
     // mod manager after everything else
     AddDllLoadCallback("engine.dll", InitialiseModManager);
