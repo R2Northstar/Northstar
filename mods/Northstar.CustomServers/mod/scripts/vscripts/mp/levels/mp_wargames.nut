@@ -191,6 +191,7 @@ void function PlayerWatchesWargamesIntro( entity player )
 			player.ClearParent()
 			player.UnforceStand()
 			player.MovementEnable()
+			player.ClearInvulnerable()
 			Remote_CallFunction_NonReplay( player, "ServerCallback_ClearFactionLeaderIntro" )
 		}
 	})
@@ -224,6 +225,7 @@ void function PlayerWatchesWargamesIntro( entity player )
 	TrainingPod_ViewConeLock_PodClosed( player )
 	player.DisableWeaponViewModel()
 	player.MovementDisable()
+	player.SetInvulnerable()
 	
 	// spawn faction leader
 	// no clue why client subtracts 4.5 from the time we give this, so just add it here instead

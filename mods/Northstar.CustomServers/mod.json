@@ -47,9 +47,8 @@
 		},
 		
 		{
-			// default 0 because broken
 			"Name": "ns_private_match_override_maxplayers",
-			"DefaultValue": "0"
+			"DefaultValue": "1"
 		},
 		
 		{
