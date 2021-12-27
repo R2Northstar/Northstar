@@ -1389,6 +1389,9 @@
     <ClInclude Include="miscserverfixes.h">
       <Filter>Header Files\Server</Filter>
     </ClInclude>
+    <ClInclude Include="maxplayers.h">
+      <Filter>Header Files\Shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
