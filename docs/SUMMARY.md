@@ -21,6 +21,13 @@
 * [Hosting a Basic Listen Server](hosting-a-server-with-northstar/basic-listen-server.md)
 * [Hosting a Dedicated Server](hosting-a-server-with-northstar/dedicated-server.md)
 
+## Modding
+
+* [Getting Started](modding/getting-started.md)
+* [Tutorials](modding/tutorials/modding-tutorials.md)
+* [Cheatsheet](modding/cheatsheet.md)
+* [Squirrel](modding/squirrel/what-is-squirrel.md)
+
 ## FAQ
 
 * [FAQ](faq.md)
