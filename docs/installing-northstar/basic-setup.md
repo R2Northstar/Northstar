@@ -9,6 +9,7 @@ Firstly note that Northstar client is only available on PC and requires you to *
 1. Download the latest version of Northstar from the [releases](https://github.com/R2Northstar/Northstar/releases) page
 2. Copy all the files in the newly downloaded zip folder to your Titanfall folder
 
+> TODO: Method to get to Origin's local files here is incorrect/doesn't exist
 * **For Steam** - Right click _Titanfall 2_ > Open _Properties_ > Click _Local Files_ > Click _Browse_
 * **For Origin** - Click Titanfall 2 in the Library > Click the gear icon > Click _Game Properties_
 
