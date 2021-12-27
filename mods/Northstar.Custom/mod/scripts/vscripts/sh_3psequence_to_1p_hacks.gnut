@@ -148,7 +148,8 @@ void function CleanupForced1PSequenceAfterAnimDone( FirstPersonSequenceStruct se
 
 	OnThreadEnd( function() : ( cleanupData )
 	{
-		CleanupForced1PSequence( cleanupData )
+		if ( IsValid( cleanupData.player ) )
+			CleanupForced1PSequence( cleanupData )
 	})
 
 	FirstPersonSequence( sequence, player, other )

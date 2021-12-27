@@ -11,6 +11,7 @@ void function GamemodeTTDM_Init()
 	SetLoadoutGracePeriodEnabled( false )
 	
 	ClassicMP_SetCustomIntro( TTDMIntroSetup, TTDMIntroLength )
+	ClassicMP_ForceDisableEpilogue( true )
 	
 	AddCallback_OnPlayerKilled( AddTeamScoreForPlayerKilled ) // dont have to track autotitan kills since you cant leave your titan in this mode
 	
