@@ -35,6 +35,39 @@ CHostState__State_ChangeLevelSPType CHostState__State_ChangeLevelSP;
 typedef void(*CHostState__State_GameShutdownType)(CHostState* hostState);
 CHostState__State_GameShutdownType CHostState__State_GameShutdown;
 
+const char* HttplibErrorToString(httplib::Error error)
+{
+	switch (error)
+	{
+	case httplib::Error::Success:
+		return "httplib::Error::Success";
+	case httplib::Error::Unknown:
+		return "httplib::Error::Unknown";
+	case httplib::Error::Connection:
+		return "httplib::Error::Connection";
+	case httplib::Error::BindIPAddress:
+		return "httplib::Error::BindIPAddress";
+	case httplib::Error::Read:
+		return "httplib::Error::Read";
+	case httplib::Error::Write:
+		return "httplib::Error::Write";
+	case httplib::Error::ExceedRedirectCount:
+		return "httplib::Error::ExceedRedirectCount";
+	case httplib::Error::Canceled:
+		return "httplib::Error::Canceled";
+	case httplib::Error::SSLConnection:
+		return "httplib::Error::SSLConnection";
+	case httplib::Error::SSLLoadingCerts:
+		return "httplib::Error::SSLLoadingCerts";
+	case httplib::Error::SSLServerVerification:
+		return "httplib::Error::SSLServerVerification";
+	case httplib::Error::UnsupportedMultipartBoundaryChars:
+		return "httplib::Error::UnsupportedMultipartBoundaryChars";
+	}
+
+	return "";
+}
+
 RemoteServerInfo::RemoteServerInfo(const char* newId, const char* newName, const char* newDescription, const char* newMap, const char* newPlaylist, int newPlayerCount, int newMaxPlayers, bool newRequiresPassword)
 {
 	// passworded servers don't have public ips
@@ -80,6 +113,8 @@ void MasterServerManager::AuthenticateOriginWithMasterServer(char* uid, char* or
 		{
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
 			http.set_connection_timeout(25);
+			http.set_read_timeout(25);
+			http.set_write_timeout(25);
 
 			spdlog::info("Trying to authenticate with northstar masterserver for user {}", uidStr);
 
@@ -113,7 +148,7 @@ void MasterServerManager::AuthenticateOriginWithMasterServer(char* uid, char* or
 			}
 			else
 			{
-				spdlog::error("Failed performing northstar origin auth: error {}", result.error());
+				spdlog::error("Failed performing northstar origin auth: error {}", HttplibErrorToString(result.error()));
 				m_successfullyConnected = false;
 			}
 
@@ -143,6 +178,8 @@ void MasterServerManager::RequestServerList()
 			
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
 			http.set_connection_timeout(25);
+			http.set_read_timeout(25);
+			http.set_write_timeout(25);
 
 			spdlog::info("Requesting server list from {}", Cvar_ns_masterserver_hostname->m_pszString);
 
@@ -248,7 +285,7 @@ void MasterServerManager::RequestServerList()
 			}
 			else
 			{
-				spdlog::error("Failed requesting servers: error {}", result.error());
+				spdlog::error("Failed requesting servers: error {}", HttplibErrorToString(result.error()));
 				m_successfullyConnected = false;
 			}
 
@@ -272,6 +309,8 @@ void MasterServerManager::RequestMainMenuPromos()
 			
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
 			http.set_connection_timeout(25);
+			http.set_read_timeout(25);
+			http.set_write_timeout(25);
 
 			if (auto result = http.Get("/client/mainmenupromos"))
 			{
@@ -345,7 +384,7 @@ void MasterServerManager::RequestMainMenuPromos()
 			}
 			else
 			{
-				spdlog::error("Failed requesting main menu promos: error {}", result.error());
+				spdlog::error("Failed requesting main menu promos: error {}", HttplibErrorToString(result.error()));
 				m_successfullyConnected = false;
 			}
 
@@ -371,6 +410,8 @@ void MasterServerManager::AuthenticateWithOwnServer(char* uid, char* playerToken
 		{
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
 			http.set_connection_timeout(25);
+			http.set_read_timeout(25);
+			http.set_write_timeout(25);
 
 			if (auto result = http.Post(fmt::format("/client/auth_with_self?id={}&playerToken={}", uid, playerToken).c_str()))
 			{
@@ -440,7 +481,7 @@ void MasterServerManager::AuthenticateWithOwnServer(char* uid, char* playerToken
 			}
 			else
 			{
-				spdlog::error("Failed authenticating with own server: error {}", result.error());
+				spdlog::error("Failed authenticating with own server: error {}", HttplibErrorToString(result.error()));
 				m_successfullyConnected = false;
 				m_successfullyAuthenticatedWithGameServer = false;
 				m_scriptAuthenticatingWithGameServer = false;
@@ -479,6 +520,8 @@ void MasterServerManager::AuthenticateWithServer(char* uid, char* playerToken, c
 
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
 			http.set_connection_timeout(25);
+			http.set_read_timeout(25);
+			http.set_write_timeout(25);
 
 			spdlog::info("Attempting authentication with server of id \"{}\"", serverId);
 
@@ -531,7 +574,7 @@ void MasterServerManager::AuthenticateWithServer(char* uid, char* playerToken, c
 			}
 			else
 			{
-				spdlog::error("Failed authenticating with server: error {}", result.error());
+				spdlog::error("Failed authenticating with server: error {}", HttplibErrorToString(result.error()));
 				m_successfullyConnected = false;
 				m_successfullyAuthenticatedWithGameServer = false;
 				m_scriptAuthenticatingWithGameServer = false;
@@ -561,6 +604,8 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 	std::thread requestThread([this, port, authPort, name, description, map, playlist, maxPlayers, password] {
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
 			http.set_connection_timeout(25);
+			http.set_read_timeout(25);
+			http.set_write_timeout(25);
 
 			m_ownServerId[0] = 0;
 
@@ -647,6 +692,8 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 				std::thread heartbeatThread([this] {
 						httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
 						http.set_connection_timeout(25);
+						http.set_read_timeout(25);
+						http.set_write_timeout(25);
 
 						while (*m_ownServerId)
 						{
@@ -659,7 +706,7 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 			}
 			else
 			{
-				spdlog::error("Failed authenticating with server: error {}", result.error());
+				spdlog::error("Failed adding self to server list: error {}", HttplibErrorToString(result.error()));
 				m_successfullyConnected = false;
 			}
 		});
@@ -676,6 +723,8 @@ void MasterServerManager::UpdateServerMapAndPlaylist(char* map, char* playlist, 
 	std::thread requestThread([this, map, playlist, maxPlayers] {
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
 			http.set_connection_timeout(25);
+			http.set_read_timeout(25);
+			http.set_write_timeout(25);
 
 			// we dont process this at all atm, maybe do later, but atm not necessary
 			if (auto result = http.Post(fmt::format("/server/update_values?id={}&map={}&playlist={}&maxPlayers={}", m_ownServerId, map, playlist, maxPlayers).c_str()))
@@ -700,6 +749,8 @@ void MasterServerManager::UpdateServerPlayerCount(int playerCount)
 	std::thread requestThread([this, playerCount] {
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
 			http.set_connection_timeout(25);
+			http.set_read_timeout(25);
+			http.set_write_timeout(25);
 
 			// we dont process this at all atm, maybe do later, but atm not necessary
 			if (auto result = http.Post(fmt::format("/server/update_values?id={}&playerCount={}", m_ownServerId, playerCount).c_str()))
@@ -728,7 +779,9 @@ void MasterServerManager::WritePlayerPersistentData(char* playerId, char* pdata,
 	std::string playerIdTemp(playerId);
 	std::thread requestThread([this, playerIdTemp, pdata, pdataSize] {
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
-			http.set_connection_timeout(25); 
+			http.set_connection_timeout(25);
+			http.set_read_timeout(25);
+			http.set_write_timeout(25); 
 
 			httplib::MultipartFormDataItems requestItems = {
 				{ "pdata", std::string(pdata, pdataSize), "file.pdata", "application/octet-stream"}
@@ -759,6 +812,8 @@ void MasterServerManager::RemoveSelfFromServerList()
 	std::thread requestThread([this] {
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
 			http.set_connection_timeout(25);
+			http.set_read_timeout(25);
+			http.set_write_timeout(25);
 
 			// we dont process this at all atm, maybe do later, but atm not necessary
 			if (auto result = http.Delete(fmt::format("/server/remove_server?id={}", m_ownServerId).c_str()))

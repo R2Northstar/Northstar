@@ -24,6 +24,7 @@
 #include "scriptbrowserhooks.h"
 #include "scriptmainmenupromos.h"
 #include "miscclientfixes.h"
+#include "miscserverfixes.h"
 #include "memalloc.h"
 #include "maxplayers.h"
 
@@ -111,6 +112,7 @@ void InitialiseNorthstar()
     AddDllLoadCallback("engine.dll", InitialiseServerAuthentication);
     AddDllLoadCallback("engine.dll", InitialiseSharedMasterServer);
     AddDllLoadCallback("server.dll", InitialiseMiscServerScriptCommand);
+    AddDllLoadCallback("server.dll", InitialiseMiscServerFixes);
 
     AddDllLoadCallback("engine.dll", InitialisePlaylistHooks);
 
