@@ -4,4 +4,4 @@
 void InstallInitialHooks();
 
 typedef void(*DllLoadCallbackFuncType)(HMODULE moduleAddress);
-void AddDllLoadCallback(std::string dll, DllLoadCallbackFuncType callback);
+void AddDllLoadCallback(std::string dll, DllLoadCallbackFuncType callback, bool preinit = false);
