@@ -427,6 +427,10 @@ void InitialiseMaxPlayersOverride_Server(HMODULE baseAddress)
 	// GameLoop::RunUserCmds - rebuild
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x483D10, &RunUserCmds_Hook, reinterpret_cast<LPVOID*>(&RunUserCmds_Original));
+
+	*(DWORD*)((char*)baseAddress + 0x14E7390) = 0;
+	auto DT_PlayerResource_Construct = (__int64(__fastcall*)())((char*)baseAddress + 0x5C4FE0);
+	DT_PlayerResource_Construct();
 }
 
 void InitialiseMaxPlayersOverride_Client(HMODULE baseAddress)
@@ -579,4 +583,8 @@ void InitialiseMaxPlayersOverride_Client(HMODULE baseAddress)
 
 	// Some other get name func 2 (that seems to be unused too) - change m_bConnected address
 	ChangeOffset<unsigned int>((char*)baseAddress + 0x164834 + 3, C_PlayerResource_OriginalSize + PlayerResource_Connected_Start);
+
+	*(DWORD*)((char*)baseAddress + 0xC35068) = 0;
+	auto DT_PlayerResource_Construct = (__int64(__fastcall*)())((char*)baseAddress + 0x163400);
+	DT_PlayerResource_Construct();
 }
