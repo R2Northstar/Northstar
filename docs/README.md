@@ -12,14 +12,14 @@ Get the newest Northstar release here:
 
 Install instructions can be found here:
 
-{% content-ref url="installing-northstar/basic-setup.md" %}
-[basic-setup.md](installing-northstar/basic-setup.md)
+{% content-ref url="broken-reference" %}
+[Broken link](broken-reference)
 {% endcontent-ref %}
 
 For modding guides, documentation on Northstar API features and documentation on Respawn Squirrel look at:
 
-{% content-ref url="modding/getting-started-with-modding"}
-[basic-setup.md](modding/getting-started-with-modding)
+{% content-ref url="broken-reference" %}
+[Broken link](broken-reference)
 {% endcontent-ref %}
 
 **Please remember:** You should expect to encounter bugs and crashes with Northstar.\
@@ -31,6 +31,3 @@ If you do encounter issues that this guide doesn't have a fix for, you can get s
 All the source code related to Northstar can be found here:
 
 {% embed url="https://northstar.tf" %}
-
-
-
