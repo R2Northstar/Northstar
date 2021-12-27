@@ -9,8 +9,13 @@
 
 typedef char(*Onclc_SetPlaylistVarOverrideType)(void* a1, void* a2);
 Onclc_SetPlaylistVarOverrideType Onclc_SetPlaylistVarOverride;
+
+typedef int(*GetCurrentGamemodeMaxPlayersType)();
+GetCurrentGamemodeMaxPlayersType GetCurrentGamemodeMaxPlayers;
+
 // function type defined in gameutils.h
 SetPlaylistVarOverrideType SetPlaylistVarOverrideOriginal;
+GetCurrentPlaylistVarType GetCurrentPlaylistVarOriginal;
 
 ConVar* Cvar_ns_use_clc_SetPlaylistVarOverride;
 
@@ -49,6 +54,26 @@ void SetPlaylistVarOverrideHook(const char* varName, const char* value)
 	SetPlaylistVarOverrideOriginal(varName, value);
 }
 
+char* GetCurrentPlaylistVarHook(const char* varName, bool useOverrides)
+{
+	if (!useOverrides && !strcmp(varName, "max_players"))
+		useOverrides = true;
+
+	return GetCurrentPlaylistVarOriginal(varName, useOverrides);
+}
+
+int GetCurrentGamemodeMaxPlayersHook()
+{
+	char* maxPlayersStr = GetCurrentPlaylistVar("max_players", 0);
+	if (!maxPlayersStr)
+		return GetCurrentGamemodeMaxPlayers();
+
+	int maxPlayers = atoi(maxPlayersStr);
+	spdlog::info("Overwrote max_players to {}", maxPlayers);
+
+	return maxPlayers;
+}
+
 void InitialisePlaylistHooks(HMODULE baseAddress)
 {
 	RegisterConCommand("setplaylist", SetPlaylistCommand, "Sets the current playlist", FCVAR_NONE);
@@ -61,6 +86,8 @@ void InitialisePlaylistHooks(HMODULE baseAddress)
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x222180, &Onclc_SetPlaylistVarOverrideHook, reinterpret_cast<LPVOID*>(&Onclc_SetPlaylistVarOverride));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x18ED00, &SetPlaylistVarOverrideHook, reinterpret_cast<LPVOID*>(&SetPlaylistVarOverrideOriginal));
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x18C680, &GetCurrentPlaylistVarHook, reinterpret_cast<LPVOID*>(&GetCurrentPlaylistVarOriginal));
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x18C430, &GetCurrentGamemodeMaxPlayersHook, reinterpret_cast<LPVOID*>(&GetCurrentGamemodeMaxPlayers));
 
 	// patch to prevent clc_SetPlaylistVarOverride from being able to crash servers if we reach max overrides due to a call to Error (why is this possible respawn, wtf)
 	// todo: add a warning for this
