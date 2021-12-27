@@ -1499,6 +1499,12 @@
     <ClCompile Include="miscclientfixes.cpp">
       <Filter>Source Files\Client</Filter>
     </ClCompile>
+    <ClCompile Include="maxplayers.cpp">
+      <Filter>Source Files\Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="miscserverfixes.cpp">
+      <Filter>Source Files\Server</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="include\spdlog\fmt\bundled\LICENSE.rst">
