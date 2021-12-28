@@ -105,8 +105,7 @@ void* StringTables_CreateStringTable_Hook(__int64 thisptr, const char* name, int
 
 bool MaxPlayersIncreaseEnabled()
 {
-	// Unrecommended: this will break compatibility with clients/servers that have it enabled.
-	return CommandLine() && !CommandLine()->CheckParm("-nomaxplayersincrease");
+	return CommandLine() && CommandLine()->CheckParm("-experimentalmaxplayersincrease");
 }
 
 void InitialiseMaxPlayersOverride_Engine(HMODULE baseAddress)
