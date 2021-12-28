@@ -37,6 +37,10 @@ void function SetupPrivateMatchUIVarsWhenReady()
 
 bool function ClientCommandCallback_PrivateMatchLaunch( entity player, array<string> args )
 {
+	if ( GetConVarBool( "ns_private_match_only_host_can_start" ) )
+		if ( !NSIsPlayerIndexLocalPlayer( player.GetPlayerIndex() ) )
+			return true
+
 	if ( file.startState == ePrivateMatchStartState.STARTING ) 
 	{
 		// cancel start if we're already mid-countdown
@@ -46,10 +50,6 @@ bool function ClientCommandCallback_PrivateMatchLaunch( entity player, array<str
 	}
 	else
 	{
-		if ( GetConVarBool( "ns_private_match_only_host_can_start" ) )
-			if ( !NSIsPlayerIndexLocalPlayer( player.GetPlayerIndex() ) )
-				return true
-	
 		// start match
 		file.startState = ePrivateMatchStartState.STARTING
 		thread StartMatch()
