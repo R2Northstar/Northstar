@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "maxplayers.h"
+#include "gameutils.h"
 
 // never set this to anything below 32
 #define NEW_MAX_PLAYERS 64
@@ -102,8 +103,17 @@ void* StringTables_CreateStringTable_Hook(__int64 thisptr, const char* name, int
 	return StringTables_CreateStringTable_Original(thisptr, name, maxentries, userdatafixedsize, userdatanetworkbits, flags);
 }
 
+bool MaxPlayersIncreaseEnabled()
+{
+	// Unrecommended: this will break compatibility with clients/servers that have it enabled.
+	return CommandLine() && !CommandLine()->CheckParm("-nomaxplayersincrease");
+}
+
 void InitialiseMaxPlayersOverride_Engine(HMODULE baseAddress)
 {
+	if (!MaxPlayersIncreaseEnabled())
+		return;
+
 	// patch GetPlayerLimits to ignore the boundary limit
 	ChangeOffset<unsigned char>((char*)baseAddress + 0x116458, 0xEB); // jle => jmp
 
@@ -308,6 +318,9 @@ __int64 __fastcall SendPropArray2_Hook(__int64 recvProp, int elements, int flags
 
 void InitialiseMaxPlayersOverride_Server(HMODULE baseAddress)
 {
+	if (!MaxPlayersIncreaseEnabled())
+		return;
+
 	// get required data
 	serverBase = GetModuleHandleA("server.dll");
 	RandomIntZeroMax = (decltype(RandomIntZeroMax))(GetProcAddress(GetModuleHandleA("vstdlib.dll"), "RandomIntZeroMax"));
@@ -483,6 +496,9 @@ __int64 __fastcall RecvPropArray2_Hook(__int64 recvProp, int elements, int flags
 
 void InitialiseMaxPlayersOverride_Client(HMODULE baseAddress)
 {
+	if (!MaxPlayersIncreaseEnabled())
+		return;
+
 	constexpr int C_PlayerResource_OriginalSize = 5768;
 	constexpr int C_PlayerResource_AddedSize = PlayerResource_TotalSize;
 	constexpr int C_PlayerResource_ModifiedSize = C_PlayerResource_OriginalSize + C_PlayerResource_AddedSize;
