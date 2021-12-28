@@ -331,6 +331,21 @@ void Status_ConMsg_Hook(const char* text, ...)
 	spdlog::info(formatted);
 }
 
+typedef bool(*CClientState_ProcessPrint_Type)(__int64 thisptr, __int64 msg);
+CClientState_ProcessPrint_Type CClientState_ProcessPrint_Original;
+
+bool CClientState_ProcessPrint_Hook(__int64 thisptr, __int64 msg)
+{
+	char* text = *(char**)(msg + 0x20);
+	
+	auto endpos = strlen(text);
+	if (text[endpos - 1] == '\n')
+		text[endpos - 1] = '\0'; // cut off repeated newline
+
+	spdlog::info(text);
+	return true;
+}
+
 void InitialiseEngineSpewFuncHooks(HMODULE baseAddress)
 {
 	HookEnabler hook;
@@ -339,4 +354,7 @@ void InitialiseEngineSpewFuncHooks(HMODULE baseAddress)
 
 	// Hook print function that status concmd uses to actually print data
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x15ABD0, Status_ConMsg_Hook, reinterpret_cast<LPVOID*>(&Status_ConMsg_Original));
+
+	// Hook CClientState::ProcessPrint
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1A1530, CClientState_ProcessPrint_Hook, reinterpret_cast<LPVOID*>(&CClientState_ProcessPrint_Original));
 }
