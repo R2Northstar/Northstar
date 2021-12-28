@@ -184,8 +184,8 @@ void function PlayHintSoundsForHider( entity player )
 	
 	while ( true )
 	{
-		wait 1.0
-		EmitSoundOnEntity( player, "weapon_chargerifle_fire_3p" )
+		wait 60.0
+		EmitSoundOnEntityToTeamExceptPlayer( player, "weapon_chargerifle_fire_3p", HIDEANDSEEK_TEAM_SEEKER, null )
 	}
 }
 

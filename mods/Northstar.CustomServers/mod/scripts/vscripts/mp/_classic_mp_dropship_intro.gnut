@@ -203,6 +203,9 @@ void function SpawnPlayerIntoDropship( entity player )
 
 void function PlayerJumpsFromDropship( entity player )
 {
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+
 	OnThreadEnd( function() : ( player )
 	{
 		if ( IsValid( player ) )
