@@ -410,8 +410,6 @@ void InitialiseDedicated(HMODULE engineAddress)
 	// Disable Quick Edit mode to reduce chance of user unintentionally hanging their server by selecting something.
 	if (!CommandLine()->CheckParm("-bringbackquickedit"))
 	{
-		spdlog::info("Quick Edit enabled by user request");
-
 		HANDLE stdIn = GetStdHandle(STD_INPUT_HANDLE);
 		DWORD mode = 0;
 
@@ -425,7 +423,7 @@ void InitialiseDedicated(HMODULE engineAddress)
 				SetConsoleMode(stdIn, mode);
 			}
 		}
-	}
+	} else spdlog::info("Quick Edit enabled by user request");
 
 	// create console input thread
 	if (!CommandLine()->CheckParm("-noconsoleinput"))
