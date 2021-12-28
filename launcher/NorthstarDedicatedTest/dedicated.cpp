@@ -407,8 +407,30 @@ void InitialiseDedicated(HMODULE engineAddress)
 	CommandLine()->AppendParm("+net_usesocketsforloopback", "1");
 	CommandLine()->AppendParm("+exec", "autoexec_ns_server");
 
+	// Disable Quick Edit mode to reduce chance of user unintentionally hanging their server by selecting something.
+	if (!CommandLine()->CheckParm("-bringbackquickedit"))
+	{
+		spdlog::info("Quick Edit enabled by user request");
+
+		HANDLE stdIn = GetStdHandle(STD_INPUT_HANDLE);
+		DWORD mode = 0;
+
+		if (GetConsoleMode(stdIn, &mode)) {
+			if (mode & ENABLE_QUICK_EDIT_MODE) {
+				mode &= ~ENABLE_QUICK_EDIT_MODE;
+				mode &= ~ENABLE_MOUSE_INPUT;
+
+				mode |= ENABLE_PROCESSED_INPUT;
+
+				SetConsoleMode(stdIn, mode);
+			}
+		}
+	}
+
 	// create console input thread
-	consoleInputThreadHandle = CreateThread(0, 0, ConsoleInputThread, 0, 0, NULL);
+	if (!CommandLine()->CheckParm("-noconsoleinput"))
+		consoleInputThreadHandle = CreateThread(0, 0, ConsoleInputThread, 0, 0, NULL);
+	else spdlog::info("Console input disabled by user request");
 }
 
 typedef void(*Tier0_InitOriginType)();
