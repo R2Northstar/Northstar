@@ -892,18 +892,22 @@ void MasterServerManager::WritePlayerPersistentData(char* playerId, char* pdata,
 
 bool MasterServerManager::RemoveSelfFromServerListThread()
 {
+	bool removed = true;
+
 	// we dont process this at all atm, maybe do later, but atm not necessary
 	LazyCreateHttpClient();
 	if (auto result = m_httpClient->Delete(fmt::format("/server/remove_server?id={}", m_ownServerId).c_str()))
 	{
 		m_successfullyConnected = true;
+		m_ownServerId[0] = 0;
 	}
 	else
 	{
 		m_successfullyConnected = false;
+		removed = false;
 	}
 
-	m_ownServerId[0] = 0;
+	return removed;
 }
 
 void MasterServerManager::RemoveSelfFromServerList()
