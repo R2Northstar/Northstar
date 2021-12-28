@@ -76,6 +76,32 @@ bool IsGameActiveWindowHook()
 	return true;
 }
 
+HANDLE consoleInputThreadHandle = NULL;
+
+DWORD WINAPI ConsoleInputThread(PVOID pThreadParameter)
+{
+	while (!g_pEngine || !g_pHostState || g_pHostState->m_iCurrentState != HostState_t::HS_RUN)
+		Sleep(1000);
+
+	// Bind stdin to receive console input.
+	FILE* fp = nullptr;
+	freopen_s(&fp, "CONIN$", "r", stdin);
+
+	spdlog::info("Ready to receive console commands.");
+
+	{
+		// Process console input
+		std::string input;
+		while (g_pEngine && g_pEngine->m_nQuitting == EngineQuitState::QUIT_NOTQUITTING && std::getline(std::cin, input))
+		{
+			input += "\n";
+			Cbuf_AddText(Cbuf_GetCurrentPlayer(), input.c_str(), cmd_source_t::kCommandSrcCode);
+		}
+	}
+
+	return 0;
+}
+
 void InitialiseDedicated(HMODULE engineAddress)
 {
 	if (!IsDedicated())
@@ -380,6 +406,9 @@ void InitialiseDedicated(HMODULE engineAddress)
 	CommandLine()->AppendParm("+host_preload_shaders", "0");
 	CommandLine()->AppendParm("+net_usesocketsforloopback", "1");
 	CommandLine()->AppendParm("+exec", "autoexec_ns_server");
+
+	// create console input thread
+	consoleInputThreadHandle = CreateThread(0, 0, ConsoleInputThread, 0, 0, NULL);
 }
 
 typedef void(*Tier0_InitOriginType)();
