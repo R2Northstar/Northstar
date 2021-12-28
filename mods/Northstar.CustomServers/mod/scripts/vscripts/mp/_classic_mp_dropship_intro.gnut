@@ -64,25 +64,40 @@ void function OnPrematchStart()
 	
 	// make 2 empty dropship structs per team
 	IntroDropship emptyDropship
-	file.militiaDropships = [ clone emptyDropship, clone emptyDropship ]
-	file.imcDropships = [ clone emptyDropship, clone emptyDropship ]
+	file.militiaDropships.clear()
+	file.imcDropships.clear()
 	
-	// spawn dropships
-	foreach ( entity dropshipSpawn in GetEntArrayByClass_Expensive( "info_spawnpoint_dropship_start" ) )
-	{		
+	array<entity> validDropshipSpawns
+	array<entity> dropshipSpawns = GetEntArrayByClass_Expensive( "info_spawnpoint_dropship_start" )
+	foreach ( entity dropshipSpawn in dropshipSpawns )
+	{
 		if ( dropshipSpawn.HasKey( "gamemode_" + GetSpawnpointGamemodeOverride() ) )
 			if ( dropshipSpawn.kv[ "gamemode_" + GetSpawnpointGamemodeOverride() ] == "0" )
 				continue
+		
+		validDropshipSpawns.append( dropshipSpawn )
+	}
 	
+	// if no dropship spawns for this mode, just allow any dropship spawns
+	if ( validDropshipSpawns.len() < 2 )
+		validDropshipSpawns = dropshipSpawns
+	
+	// spawn dropships
+	foreach ( entity dropshipSpawn in validDropshipSpawns )
+	{
 		// todo: possibly make this only spawn dropships if we've got enough players to need them
 		int createTeam = HasSwitchedSides() ? dropshipSpawn.GetTeam() : GetOtherTeam( dropshipSpawn.GetTeam() )
 		array<IntroDropship> teamDropships = createTeam == TEAM_MILITIA ? file.militiaDropships : file.imcDropships
-		int dropshipIndex = !IsValid( teamDropships[ 0 ].dropship ) ? 0 : 1
 		
+		if ( teamDropships.len() >= 2 )
+			continue
+
 		// create entity
 		entity dropship = CreateDropship( createTeam, dropshipSpawn.GetOrigin(), dropshipSpawn.GetAngles() )
 		
-		teamDropships[ dropshipIndex ].dropship = dropship
+		teamDropships.append( clone emptyDropship )
+		teamDropships[ teamDropships.len() - 1 ].dropship = dropship
+		
 		AddAnimEvent( dropship, "dropship_warpout", WarpoutEffect )
 		dropship.SetValueForModelKey( $"models/vehicle/crow_dropship/crow_dropship_hero.mdl" )
 		dropship.SetModel( $"models/vehicle/crow_dropship/crow_dropship_hero.mdl" ) 

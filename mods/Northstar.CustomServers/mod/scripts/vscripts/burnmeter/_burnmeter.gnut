@@ -49,6 +49,7 @@ void function BurnMeter_Init()
 	AddCallback_OnClientConnected( InitBurncardsForLateJoiner )
 	
 	AddCallback_OnPlayerRespawned( StartPhaseRewindLifetime )
+	AddCallback_OnTitanBecomesPilot( RemoveAmpedWeaponsForTitanPilot )
 	
 	// necessary signals
 	RegisterSignal( "StopAmpedWeapons" )
@@ -261,6 +262,13 @@ void function PlayerUsesAmpedWeaponsBurncardThreaded( entity player )
 		
 		weapon.SetScriptFlags0( weapon.GetScriptFlags0() & ~WEAPONFLAG_AMPED )
 	}
+}
+
+void function RemoveAmpedWeaponsForTitanPilot( entity player, entity titan )
+{
+	foreach ( entity weapon in player.GetMainWeapons() )
+		foreach ( string mod in GetWeaponBurnMods( weapon.GetWeaponClassName() ) )
+			weapon.RemoveMod( mod )
 }
 
 void function PlayerUsesSmartPistolBurncard( entity player )
