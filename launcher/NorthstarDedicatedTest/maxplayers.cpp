@@ -3,6 +3,7 @@
 
 // never set this to anything below 32
 #define NEW_MAX_PLAYERS 64
+// dg note: the theoretical limit is actually 100, 76 works without entity issues, and 64 works without clientside prediction issues.
 
 #define PAD_NUMBER(number, boundary) \
 	( ((number) + ((boundary)-1)) / (boundary) ) * (boundary)
@@ -39,6 +40,10 @@ constexpr int PlayerResource_ScoreStats_Size = (PlayerResource_ScoreStats_Length
 
 // must be the usage of the last field to account for any possible paddings
 constexpr int PlayerResource_TotalSize = PlayerResource_ScoreStats_Start + PlayerResource_ScoreStats_Size;
+
+constexpr int Team_PlayerArray_AddedLength = NEW_MAX_PLAYERS - 32;
+constexpr int Team_PlayerArray_AddedSize = PAD_NUMBER(Team_PlayerArray_AddedLength * 8, 4);
+constexpr int Team_AddedSize = Team_PlayerArray_AddedSize;
 
 template<class T>
 void ChangeOffset(void* addr, unsigned int offset)
@@ -289,6 +294,18 @@ void RunUserCmds_Hook(bool a1, float a2)
 	}
 }
 
+typedef __int64(*SendPropArray2_Type)(__int64 recvProp, int elements, int flags, const char* name, __int64 proxyFn, unsigned char unk1);
+SendPropArray2_Type SendPropArray2_Original;
+
+__int64 __fastcall SendPropArray2_Hook(__int64 recvProp, int elements, int flags, const char* name, __int64 proxyFn, unsigned char unk1)
+{
+	// Change the amount of elements to account for a bigger player amount
+	if (!strcmp(name, "\"player_array\""))
+		elements = NEW_MAX_PLAYERS;
+
+	return SendPropArray2_Original(recvProp, elements, flags, name, proxyFn, unk1);
+}
+
 void InitialiseMaxPlayersOverride_Server(HMODULE baseAddress)
 {
 	// get required data
@@ -431,6 +448,37 @@ void InitialiseMaxPlayersOverride_Server(HMODULE baseAddress)
 	*(DWORD*)((char*)baseAddress + 0x14E7390) = 0;
 	auto DT_PlayerResource_Construct = (__int64(__fastcall*)())((char*)baseAddress + 0x5C4FE0);
 	DT_PlayerResource_Construct();
+
+	constexpr int CTeam_OriginalSize = 3336;
+	constexpr int CTeam_AddedSize = Team_AddedSize;
+	constexpr int CTeam_ModifiedSize = CTeam_OriginalSize + CTeam_AddedSize;
+
+	// CTeam class allocation function - allocate a bigger amount to fit all new team player data
+	ChangeOffset<unsigned int>((char*)baseAddress + 0x23924A + 1, CTeam_ModifiedSize);
+
+	// CTeam::CTeam - increase memset length to clean newly allocated data
+	ChangeOffset<unsigned int>((char*)baseAddress + 0x2395AE + 2, 256 + CTeam_AddedSize);
+
+	// hook required to change the size of DT_Team::"player_array"
+	HookEnabler hook2;
+	ENABLER_CREATEHOOK(hook2, (char*)baseAddress + 0x12B130, &SendPropArray2_Hook, reinterpret_cast<LPVOID*>(&SendPropArray2_Original));
+	hook2.~HookEnabler(); // force hook before calling construct function
+
+	*(DWORD*)((char*)baseAddress + 0xC945A0) = 0;
+	auto DT_Team_Construct = (__int64(__fastcall*)())((char*)baseAddress + 0x238F50);
+	DT_Team_Construct();
+}
+
+typedef __int64(*RecvPropArray2_Type)(__int64 recvProp, int elements, int flags, const char* name, __int64 proxyFn);
+RecvPropArray2_Type RecvPropArray2_Original;
+
+__int64 __fastcall RecvPropArray2_Hook(__int64 recvProp, int elements, int flags, const char* name, __int64 proxyFn)
+{
+	// Change the amount of elements to account for a bigger player amount
+	if (!strcmp(name, "\"player_array\""))
+		elements = NEW_MAX_PLAYERS;
+
+	return RecvPropArray2_Original(recvProp, elements, flags, name, proxyFn);
 }
 
 void InitialiseMaxPlayersOverride_Client(HMODULE baseAddress)
@@ -587,4 +635,26 @@ void InitialiseMaxPlayersOverride_Client(HMODULE baseAddress)
 	*(DWORD*)((char*)baseAddress + 0xC35068) = 0;
 	auto DT_PlayerResource_Construct = (__int64(__fastcall*)())((char*)baseAddress + 0x163400);
 	DT_PlayerResource_Construct();
+
+	constexpr int C_Team_OriginalSize = 3200;
+	constexpr int C_Team_AddedSize = Team_AddedSize;
+	constexpr int C_Team_ModifiedSize = C_Team_OriginalSize + C_Team_AddedSize;
+
+	// C_Team class allocation function - allocate a bigger amount to fit all new team player data
+	ChangeOffset<unsigned int>((char*)baseAddress + 0x182321 + 1, C_Team_ModifiedSize);
+
+	// C_Team::C_Team - increase memset length to clean newly allocated data
+	ChangeOffset<unsigned int>((char*)baseAddress + 0x1804A2 + 2, 256 + C_Team_AddedSize);
+
+	// DT_Team size
+	ChangeOffset<unsigned int>((char*)baseAddress + 0xC3AA0C, C_Team_ModifiedSize);
+
+	// hook required to change the size of DT_Team::"player_array"
+	HookEnabler hook;
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1CEDA0, &RecvPropArray2_Hook, reinterpret_cast<LPVOID*>(&RecvPropArray2_Original));
+	hook.~HookEnabler(); // force hook before calling construct function
+
+	*(DWORD*)((char*)baseAddress + 0xC3AFF8) = 0;
+	auto DT_Team_Construct = (__int64(__fastcall*)())((char*)baseAddress + 0x17F950);
+	DT_Team_Construct();
 }
