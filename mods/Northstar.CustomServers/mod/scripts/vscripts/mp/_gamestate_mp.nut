@@ -183,6 +183,10 @@ void function GameStateEnter_Prematch()
 
 void function StartGameWithoutClassicMP()
 {
+	foreach ( entity player in GetPlayerArray() )
+		if ( IsAlive( player ) )
+			player.Die()
+
 	WaitFrame() // wait for callbacks to finish
 	
 	// need these otherwise game will complain
