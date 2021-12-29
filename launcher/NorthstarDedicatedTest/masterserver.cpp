@@ -536,11 +536,18 @@ void MasterServerManager::AuthenticateWithServer(char* uid, char* playerToken, c
 			CURL* curl = curl_easy_init();
 
 			std::string readBuffer;
-			curl_easy_setopt(curl, CURLOPT_URL, fmt::format("{}/client/auth_with_server?id={}&playerToken={}&server={}&password={}", Cvar_ns_masterserver_hostname->m_pszString, uidStr, tokenStr, serverIdStr, passwordStr).c_str());
 			curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
 			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+
+			{
+				char* escapedPassword = curl_easy_escape(curl, passwordStr.c_str(), passwordStr.length());
+
+				curl_easy_setopt(curl, CURLOPT_URL, fmt::format("{}/client/auth_with_server?id={}&playerToken={}&server={}&password={}", Cvar_ns_masterserver_hostname->m_pszString, uidStr, tokenStr, serverIdStr, escapedPassword).c_str());
+			
+				curl_free(escapedPassword);
+			}
 
 			CURLcode result = curl_easy_perform(curl);
 
