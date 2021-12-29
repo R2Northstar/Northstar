@@ -43,9 +43,10 @@ BOOL APIENTRY DllMain( HMODULE hModule,
         break;
     }
 
-    if (!initialised)
-        InitialiseNorthstar();
-    initialised = true;
+    // pls no xD
+    //if (!initialised)
+    //    InitialiseNorthstar();
+    //initialised = true;
 
     return TRUE;
 }
@@ -53,7 +54,8 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 void WaitForDebugger(HMODULE baseAddress)
 {
     // earlier waitfordebugger call than is in vanilla, just so we can debug stuff a little easier
-    if (CommandLine()->CheckParm("-waitfordebugger"))
+    //if (CommandLine()->CheckParm("-waitfordebugger"))
+    if (strstr(GetCommandLineA(), "-waitfordebugger"))
     {
         spdlog::info("waiting for debugger...");
         spdlog::info("{} bytes have been statically allocated", g_iStaticAllocated);
@@ -66,6 +68,13 @@ void WaitForDebugger(HMODULE baseAddress)
 // in the future this will be called from launcher instead of dllmain
 void InitialiseNorthstar()
 {
+    if (initialised)
+    {
+        fprintf(stderr, "[WARN] Called InitialiseNorthstar more than once!\n");
+        return;
+    }
+    initialised = true;
+
     InitialiseLogging();
 
     // apply initial hooks
@@ -73,7 +82,7 @@ void InitialiseNorthstar()
     InitialiseInterfaceCreationHooks();
 
     // adding a callback to tier0 won't work for some reason
-    AddDllLoadCallback("launcher.dll", InitialiseTier0GameUtilFunctions);
+    AddDllLoadCallback("launcher.org.dll", InitialiseTier0GameUtilFunctions);
     AddDllLoadCallback("engine.dll", WaitForDebugger);
     AddDllLoadCallback("engine.dll", InitialiseEngineGameUtilFunctions);
     AddDllLoadCallback("server.dll", InitialiseServerGameUtilFunctions);
@@ -82,7 +91,7 @@ void InitialiseNorthstar()
     // dedi patches
     {
         AddDllLoadCallback("engine.dll", InitialiseDedicated);
-        AddDllLoadCallback("launcher.dll", InitialiseDedicatedOrigin);
+        AddDllLoadCallback("launcher.org.dll", InitialiseDedicatedOrigin);
         AddDllLoadCallback("server.dll", InitialiseDedicatedServerGameDLL);
         AddDllLoadCallback("materialsystem_dx11.dll", InitialiseDedicatedMaterialSystem);
         // this fucking sucks, but seemingly we somehow load after rtech_game???? unsure how, but because of this we have to apply patches here, not on rtech_game load
