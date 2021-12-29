@@ -126,7 +126,7 @@ resource/ui/menus/mods_browse.menu
 			xpos 					-432
 			zpos 					100
 
-			rui 					"ui/knowledgebase_panel.rpak"
+			rui 					"ui/control_options_description.rpak"
 
 			pin_to_sibling					ConnectingAnimation
 			pin_corner_to_sibling		TOP_LEFT
@@ -162,7 +162,7 @@ resource/ui/menus/mods_browse.menu
 			xpos 					-462
 			zpos 					100
 
-			rui 					"ui/knowledgebase_panel.rpak"
+			rui 					"ui/control_options_description.rpak"
 
 			pin_to_sibling					ConnectingAnimation
 			pin_corner_to_sibling		TOP_LEFT
