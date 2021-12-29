@@ -1,7 +1,4 @@
 #include "pch.h"
-#include <cstddef>
-#include <malloc.h>
-#include <stdio.h>
 
 HMODULE hTier0Module;
 IMemAlloc** g_ppMemAllocSingleton;
@@ -35,7 +32,7 @@ void* operator new(size_t n)
         // try to fallback to g_pMemAllocSingleton
         if (!hTier0Module) LoadTier0Handle();
         if (g_ppMemAllocSingleton && *g_ppMemAllocSingleton)
-            (*g_ppMemAllocSingleton)->m_vtable->Alloc(*g_ppMemAllocSingleton, n);
+            return (*g_ppMemAllocSingleton)->m_vtable->Alloc(*g_ppMemAllocSingleton, n);
         else
             throw "Cannot allocate";
     }

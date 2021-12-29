@@ -9,8 +9,6 @@
 
 #include "Memory.h"
 
-#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
-
 // add headers that you want to pre-compile here
 #include "framework.h"
 
