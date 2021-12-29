@@ -79,11 +79,17 @@ void InitialiseServerGameUtilFunctions(HMODULE baseAddress)
 void InitialiseTier0GameUtilFunctions(HMODULE baseAddress)
 {
 	baseAddress = GetModuleHandleA("tier0.dll");
+	if (!baseAddress)
+		throw "tier0.dll is not loaded";
 
-	CreateGlobalMemAlloc = (CreateGlobalMemAllocType)GetProcAddress(baseAddress, "CreateGlobalMemAlloc");
-	g_pMemAllocSingleton = CreateGlobalMemAlloc();
+	CreateGlobalMemAlloc = reinterpret_cast<CreateGlobalMemAllocType>(GetProcAddress(baseAddress, "CreateGlobalMemAlloc"));
+	IMemAlloc** ppMemAllocSingleton = reinterpret_cast<IMemAlloc**>(GetProcAddress(baseAddress, "g_pMemAllocSingleton"));
+	if (!ppMemAllocSingleton || !*ppMemAllocSingleton)
+		g_pMemAllocSingleton = CreateGlobalMemAlloc();
+	else
+		g_pMemAllocSingleton = *ppMemAllocSingleton;
 
-	Error = (ErrorType)GetProcAddress(baseAddress, "Error");
-	CommandLine = (CommandLineType)GetProcAddress(baseAddress, "CommandLine");
-	Plat_FloatTime = (Plat_FloatTimeType)GetProcAddress(baseAddress, "Plat_FloatTime");
+	Error = reinterpret_cast<ErrorType>(GetProcAddress(baseAddress, "Error"));
+	CommandLine = reinterpret_cast<CommandLineType>(GetProcAddress(baseAddress, "CommandLine"));
+	Plat_FloatTime = reinterpret_cast<Plat_FloatTimeType>(GetProcAddress(baseAddress, "Plat_FloatTime"));
 }

@@ -6,7 +6,8 @@
 
 bool IsDedicated()
 {
-	return CommandLine()->CheckParm("-dedicated");
+	//return CommandLine()->CheckParm("-dedicated");
+	return strstr(GetCommandLineA(), "-dedicated");
 }
 
 // CDedidcatedExports defs
@@ -209,7 +210,7 @@ void InitialiseDedicated(HMODULE engineAddress)
 		TempReadWrite rw(ptr);
 
 		// remove call to Shader_Connect
-		*ptr = 0x90;
+		*ptr = (char)0x90;
 		*(ptr + 1) = (char)0x90;
 		*(ptr + 2) = (char)0x90;
 		*(ptr + 3) = (char)0x90;

@@ -35,7 +35,7 @@ CHostState__State_ChangeLevelSPType CHostState__State_ChangeLevelSP;
 typedef void(*CHostState__State_GameShutdownType)(CHostState* hostState);
 CHostState__State_GameShutdownType CHostState__State_GameShutdown;
 
-const char* HttplibErrorToString(httplib::Error error)
+constexpr const char* HttplibErrorToString(httplib::Error error)
 {
 	switch (error)
 	{
@@ -66,6 +66,15 @@ const char* HttplibErrorToString(httplib::Error error)
 	}
 
 	return "";
+}
+
+void MasterServerManager::SetHttpClientOptions(httplib::Client& http)
+{
+	http.set_connection_timeout(25);
+	http.set_read_timeout(25);
+	http.set_write_timeout(25);
+	if (CommandLine()->CheckParm("-msinsecure"))
+		http.enable_server_certificate_verification(false);
 }
 
 RemoteServerInfo::RemoteServerInfo(const char* newId, const char* newName, const char* newDescription, const char* newMap, const char* newPlaylist, int newPlayerCount, int newMaxPlayers, bool newRequiresPassword)
@@ -112,9 +121,7 @@ void MasterServerManager::AuthenticateOriginWithMasterServer(char* uid, char* or
 	std::thread requestThread([this, uidStr, tokenStr]()
 		{
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
-			http.set_connection_timeout(25);
-			http.set_read_timeout(25);
-			http.set_write_timeout(25);
+			SetHttpClientOptions(http);
 
 			spdlog::info("Trying to authenticate with northstar masterserver for user {}", uidStr);
 
@@ -153,7 +160,7 @@ void MasterServerManager::AuthenticateOriginWithMasterServer(char* uid, char* or
 			}
 
 			// we goto this instead of returning so we always hit this
-			REQUEST_END_CLEANUP:
+		REQUEST_END_CLEANUP:
 			m_bOriginAuthWithMasterServerInProgress = false;
 			m_bOriginAuthWithMasterServerDone = true;
 		});
@@ -175,11 +182,9 @@ void MasterServerManager::RequestServerList()
 
 			m_requestingServerList = true;
 			m_scriptRequestingServerList = true;
-			
+
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
-			http.set_connection_timeout(25);
-			http.set_read_timeout(25);
-			http.set_write_timeout(25);
+			SetHttpClientOptions(http);
 
 			spdlog::info("Requesting server list from {}", Cvar_ns_masterserver_hostname->m_pszString);
 
@@ -222,15 +227,15 @@ void MasterServerManager::RequestServerList()
 					}
 
 					// todo: verify json props are fine before adding to m_remoteServers
-					if (!serverObj.HasMember("id") || !serverObj["id"].IsString() 
-						|| !serverObj.HasMember("name") || !serverObj["name"].IsString() 
+					if (!serverObj.HasMember("id") || !serverObj["id"].IsString()
+						|| !serverObj.HasMember("name") || !serverObj["name"].IsString()
 						|| !serverObj.HasMember("description") || !serverObj["description"].IsString()
 						|| !serverObj.HasMember("map") || !serverObj["map"].IsString()
 						|| !serverObj.HasMember("playlist") || !serverObj["playlist"].IsString()
 						|| !serverObj.HasMember("playerCount") || !serverObj["playerCount"].IsNumber()
 						|| !serverObj.HasMember("maxPlayers") || !serverObj["maxPlayers"].IsNumber()
 						|| !serverObj.HasMember("hasPassword") || !serverObj["hasPassword"].IsBool()
-						|| !serverObj.HasMember("modInfo") || !serverObj["modInfo"].HasMember("Mods") || !serverObj["modInfo"]["Mods"].IsArray() )
+						|| !serverObj.HasMember("modInfo") || !serverObj["modInfo"].HasMember("Mods") || !serverObj["modInfo"]["Mods"].IsArray())
 					{
 						spdlog::error("Failed reading masterserver response: malformed server object");
 						continue;
@@ -281,7 +286,7 @@ void MasterServerManager::RequestServerList()
 
 				std::sort(m_remoteServers.begin(), m_remoteServers.end(), [](RemoteServerInfo& a, RemoteServerInfo& b) {
 					return a.playerCount > b.playerCount;
-				});
+					});
 			}
 			else
 			{
@@ -290,7 +295,7 @@ void MasterServerManager::RequestServerList()
 			}
 
 			// we goto this instead of returning so we always hit this
-			REQUEST_END_CLEANUP:
+		REQUEST_END_CLEANUP:
 			m_requestingServerList = false;
 			m_scriptRequestingServerList = false;
 		});
@@ -306,11 +311,9 @@ void MasterServerManager::RequestMainMenuPromos()
 		{
 			while (m_bOriginAuthWithMasterServerInProgress || !m_bOriginAuthWithMasterServerDone)
 				Sleep(500);
-			
+
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
-			http.set_connection_timeout(25);
-			http.set_read_timeout(25);
-			http.set_write_timeout(25);
+			SetHttpClientOptions(http);
 
 			if (auto result = http.Get("/client/mainmenupromos"))
 			{
@@ -342,7 +345,7 @@ void MasterServerManager::RequestMainMenuPromos()
 					!mainMenuPromoJson["newInfo"].HasMember("Title1") || !mainMenuPromoJson["newInfo"]["Title1"].IsString() ||
 					!mainMenuPromoJson["newInfo"].HasMember("Title2") || !mainMenuPromoJson["newInfo"]["Title2"].IsString() ||
 					!mainMenuPromoJson["newInfo"].HasMember("Title3") || !mainMenuPromoJson["newInfo"]["Title3"].IsString() ||
-					
+
 					!mainMenuPromoJson.HasMember("largeButton") || !mainMenuPromoJson["largeButton"].IsObject() ||
 					!mainMenuPromoJson["largeButton"].HasMember("Title") || !mainMenuPromoJson["largeButton"]["Title"].IsString() ||
 					!mainMenuPromoJson["largeButton"].HasMember("Text") || !mainMenuPromoJson["largeButton"]["Text"].IsString() ||
@@ -388,7 +391,7 @@ void MasterServerManager::RequestMainMenuPromos()
 				m_successfullyConnected = false;
 			}
 
-			REQUEST_END_CLEANUP:
+		REQUEST_END_CLEANUP:
 			// nothing lol
 			return;
 		});
@@ -405,13 +408,11 @@ void MasterServerManager::AuthenticateWithOwnServer(char* uid, char* playerToken
 	m_authenticatingWithGameServer = true;
 	m_scriptAuthenticatingWithGameServer = true;
 	m_successfullyAuthenticatedWithGameServer = false;
-	
+
 	std::thread requestThread([this, uid, playerToken]()
 		{
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
-			http.set_connection_timeout(25);
-			http.set_read_timeout(25);
-			http.set_write_timeout(25);
+			SetHttpClientOptions(http);
 
 			if (auto result = http.Post(fmt::format("/client/auth_with_self?id={}&playerToken={}", uid, playerToken).c_str()))
 			{
@@ -469,14 +470,14 @@ void MasterServerManager::AuthenticateWithOwnServer(char* uid, char* playerToken
 						spdlog::error("Failed reading masterserver authentication response: malformed json object");
 						goto REQUEST_END_CLEANUP;
 					}
-					
+
 					newAuthData.pdata[i++] = (char)byte.GetUint();
 				}
 
 				std::lock_guard<std::mutex> guard(g_ServerAuthenticationManager->m_authDataMutex);
 				g_ServerAuthenticationManager->m_authData.clear();
 				g_ServerAuthenticationManager->m_authData.insert(std::make_pair(authInfoJson["authToken"].GetString(), newAuthData));
-			
+
 				m_successfullyAuthenticatedWithGameServer = true;
 			}
 			else
@@ -487,7 +488,7 @@ void MasterServerManager::AuthenticateWithOwnServer(char* uid, char* playerToken
 				m_scriptAuthenticatingWithGameServer = false;
 			}
 
-			REQUEST_END_CLEANUP:
+		REQUEST_END_CLEANUP:
 			m_authenticatingWithGameServer = false;
 			m_scriptAuthenticatingWithGameServer = false;
 
@@ -519,16 +520,14 @@ void MasterServerManager::AuthenticateWithServer(char* uid, char* playerToken, c
 				Sleep(100);
 
 			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
-			http.set_connection_timeout(25);
-			http.set_read_timeout(25);
-			http.set_write_timeout(25);
+			SetHttpClientOptions(http);
 
 			spdlog::info("Attempting authentication with server of id \"{}\"", serverId);
 
 			if (auto result = http.Post(fmt::format("/client/auth_with_server?id={}&playerToken={}&server={}&password={}", uid, playerToken, serverId, password).c_str()))
 			{
 				m_successfullyConnected = true;
-				
+
 				rapidjson::Document connectionInfoJson;
 				connectionInfoJson.Parse(result->body.c_str());
 
@@ -580,7 +579,7 @@ void MasterServerManager::AuthenticateWithServer(char* uid, char* playerToken, c
 				m_scriptAuthenticatingWithGameServer = false;
 			}
 
-			REQUEST_END_CLEANUP:
+		REQUEST_END_CLEANUP:
 			m_authenticatingWithGameServer = false;
 			m_scriptAuthenticatingWithGameServer = false;
 		});
@@ -602,113 +601,109 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 	m_bRequireClientAuth = true;
 
 	std::thread requestThread([this, port, authPort, name, description, map, playlist, maxPlayers, password] {
-			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
-			http.set_connection_timeout(25);
-			http.set_read_timeout(25);
-			http.set_write_timeout(25);
+		httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
+		SetHttpClientOptions(http);
 
-			m_ownServerId[0] = 0;
+		m_ownServerId[0] = 0;
 
-			std::string request;
-			if (*password)
-				request = fmt::format("/server/add_server?port={}&authPort={}&name={}&description={}&map={}&playlist={}&maxPlayers={}&password={}", port, authPort, name, description, map, playlist, maxPlayers, password);
-			else
-				request = fmt::format("/server/add_server?port={}&authPort={}&name={}&description={}&map={}&playlist={}&maxPlayers={}&password=", port, authPort, name, description, map, playlist, maxPlayers);
+		std::string request;
+		if (*password)
+			request = fmt::format("/server/add_server?port={}&authPort={}&name={}&description={}&map={}&playlist={}&maxPlayers={}&password={}", port, authPort, name, description, map, playlist, maxPlayers, password);
+		else
+			request = fmt::format("/server/add_server?port={}&authPort={}&name={}&description={}&map={}&playlist={}&maxPlayers={}&password=", port, authPort, name, description, map, playlist, maxPlayers);
 
-			// build modinfo obj
-			rapidjson::Document modinfoDoc;
-			modinfoDoc.SetObject();
-			modinfoDoc.AddMember("Mods", rapidjson::Value(rapidjson::kArrayType), modinfoDoc.GetAllocator());
+		// build modinfo obj
+		rapidjson::Document modinfoDoc;
+		modinfoDoc.SetObject();
+		modinfoDoc.AddMember("Mods", rapidjson::Value(rapidjson::kArrayType), modinfoDoc.GetAllocator());
 
-			int currentModIndex = 0;
-			for (Mod& mod : g_ModManager->m_loadedMods)
+		int currentModIndex = 0;
+		for (Mod& mod : g_ModManager->m_loadedMods)
+		{
+			if (!mod.Enabled || (!mod.RequiredOnClient && !mod.Pdiff.size()))
+				continue;
+
+			modinfoDoc["Mods"].PushBack(rapidjson::Value(rapidjson::kObjectType), modinfoDoc.GetAllocator());
+			modinfoDoc["Mods"][currentModIndex].AddMember("Name", rapidjson::StringRef(&mod.Name[0]), modinfoDoc.GetAllocator());
+			modinfoDoc["Mods"][currentModIndex].AddMember("Version", rapidjson::StringRef(&mod.Version[0]), modinfoDoc.GetAllocator());
+			modinfoDoc["Mods"][currentModIndex].AddMember("RequiredOnClient", mod.RequiredOnClient, modinfoDoc.GetAllocator());
+			modinfoDoc["Mods"][currentModIndex].AddMember("Pdiff", rapidjson::StringRef(&mod.Pdiff[0]), modinfoDoc.GetAllocator());
+
+			currentModIndex++;
+		}
+
+		rapidjson::StringBuffer buffer;
+		buffer.Clear();
+		rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+		modinfoDoc.Accept(writer);
+		const char* modInfoString = buffer.GetString();
+
+		httplib::MultipartFormDataItems requestItems = {
+			{"modinfo", std::string(modInfoString, buffer.GetSize()), "modinfo.json", "application/octet-stream"}
+		};
+
+		if (auto result = http.Post(request.c_str(), requestItems))
+		{
+			m_successfullyConnected = true;
+
+			rapidjson::Document serverAddedJson;
+			serverAddedJson.Parse(result->body.c_str());
+
+			if (serverAddedJson.HasParseError())
 			{
-				if (!mod.Enabled || (!mod.RequiredOnClient && !mod.Pdiff.size()))
-					continue;
-
-				modinfoDoc["Mods"].PushBack(rapidjson::Value(rapidjson::kObjectType), modinfoDoc.GetAllocator());
-				modinfoDoc["Mods"][currentModIndex].AddMember("Name", rapidjson::StringRef(&mod.Name[0]), modinfoDoc.GetAllocator());
-				modinfoDoc["Mods"][currentModIndex].AddMember("Version", rapidjson::StringRef(&mod.Version[0]), modinfoDoc.GetAllocator());
-				modinfoDoc["Mods"][currentModIndex].AddMember("RequiredOnClient", mod.RequiredOnClient, modinfoDoc.GetAllocator());
-				modinfoDoc["Mods"][currentModIndex].AddMember("Pdiff", rapidjson::StringRef(&mod.Pdiff[0]), modinfoDoc.GetAllocator());
-
-				currentModIndex++;
+				spdlog::error("Failed reading masterserver authentication response: encountered parse error \"{}\"", rapidjson::GetParseError_En(serverAddedJson.GetParseError()));
+				return;
 			}
 
-			rapidjson::StringBuffer buffer;
-			buffer.Clear();
-			rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-			modinfoDoc.Accept(writer);
-			const char* modInfoString = buffer.GetString();
-
-			httplib::MultipartFormDataItems requestItems = {
-				{"modinfo", std::string(modInfoString, buffer.GetSize()), "modinfo.json", "application/octet-stream"}
-			};
-
-			if (auto result = http.Post(request.c_str(), requestItems))
+			if (!serverAddedJson.IsObject())
 			{
-				m_successfullyConnected = true;
-				
-				rapidjson::Document serverAddedJson;
-				serverAddedJson.Parse(result->body.c_str());
-
-				if (serverAddedJson.HasParseError())
-				{
-					spdlog::error("Failed reading masterserver authentication response: encountered parse error \"{}\"", rapidjson::GetParseError_En(serverAddedJson.GetParseError()));
-					return;
-				}
-
-				if (!serverAddedJson.IsObject())
-				{
-					spdlog::error("Failed reading masterserver authentication response: root object is not an object");
-					return;
-				}
-
-				if (serverAddedJson.HasMember("error"))
-				{
-					spdlog::error("Failed reading masterserver response: got fastify error response");
-					spdlog::error(result->body);
-					return;
-				}
-
-				if (!serverAddedJson["success"].IsTrue())
-				{
-					spdlog::error("Adding server to masterserver failed: \"success\" is not true");
-					return;
-				}
-
-				if (!serverAddedJson.HasMember("id") || !serverAddedJson["id"].IsString())
-				{
-					spdlog::error("Failed reading masterserver response: malformed json object");
-					return;
-				}
-
-				strncpy(m_ownServerId, serverAddedJson["id"].GetString(), sizeof(m_ownServerId));
-				m_ownServerId[sizeof(m_ownServerId) - 1] = 0;
-
-
-				// heartbeat thread
-				// ideally this should actually be done in main thread, rather than on it's own thread, so it'd stop if server freezes
-				std::thread heartbeatThread([this] {
-						httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
-						http.set_connection_timeout(25);
-						http.set_read_timeout(25);
-						http.set_write_timeout(25);
-
-						while (*m_ownServerId)
-						{
-							Sleep(15000);
-							http.Post(fmt::format("/server/heartbeat?id={}&playerCount={}", m_ownServerId, g_ServerAuthenticationManager->m_additionalPlayerData.size()).c_str());
-						}
-					});
-
-				heartbeatThread.detach();
+				spdlog::error("Failed reading masterserver authentication response: root object is not an object");
+				return;
 			}
-			else
+
+			if (serverAddedJson.HasMember("error"))
 			{
-				spdlog::error("Failed adding self to server list: error {}", HttplibErrorToString(result.error()));
-				m_successfullyConnected = false;
+				spdlog::error("Failed reading masterserver response: got fastify error response");
+				spdlog::error(result->body);
+				return;
 			}
+
+			if (!serverAddedJson["success"].IsTrue())
+			{
+				spdlog::error("Adding server to masterserver failed: \"success\" is not true");
+				return;
+			}
+
+			if (!serverAddedJson.HasMember("id") || !serverAddedJson["id"].IsString())
+			{
+				spdlog::error("Failed reading masterserver response: malformed json object");
+				return;
+			}
+
+			strncpy(m_ownServerId, serverAddedJson["id"].GetString(), sizeof(m_ownServerId));
+			m_ownServerId[sizeof(m_ownServerId) - 1] = 0;
+
+
+			// heartbeat thread
+			// ideally this should actually be done in main thread, rather than on it's own thread, so it'd stop if server freezes
+			std::thread heartbeatThread([this] {
+				httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
+				SetHttpClientOptions(http);
+
+				while (*m_ownServerId)
+				{
+					Sleep(15000);
+					http.Post(fmt::format("/server/heartbeat?id={}&playerCount={}", m_ownServerId, g_ServerAuthenticationManager->m_additionalPlayerData.size()).c_str());
+				}
+				});
+
+			heartbeatThread.detach();
+		}
+		else
+		{
+			spdlog::error("Failed adding self to server list: error {}", HttplibErrorToString(result.error()));
+			m_successfullyConnected = false;
+		}
 		});
 
 	requestThread.detach();
@@ -721,20 +716,18 @@ void MasterServerManager::UpdateServerMapAndPlaylist(char* map, char* playlist, 
 		return;
 
 	std::thread requestThread([this, map, playlist, maxPlayers] {
-			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
-			http.set_connection_timeout(25);
-			http.set_read_timeout(25);
-			http.set_write_timeout(25);
+		httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
+		SetHttpClientOptions(http);
 
-			// we dont process this at all atm, maybe do later, but atm not necessary
-			if (auto result = http.Post(fmt::format("/server/update_values?id={}&map={}&playlist={}&maxPlayers={}", m_ownServerId, map, playlist, maxPlayers).c_str()))
-			{
-				m_successfullyConnected = true;
-			}
-			else
-			{
-				m_successfullyConnected = false;
-			}
+		// we dont process this at all atm, maybe do later, but atm not necessary
+		if (auto result = http.Post(fmt::format("/server/update_values?id={}&map={}&playlist={}&maxPlayers={}", m_ownServerId, map, playlist, maxPlayers).c_str()))
+		{
+			m_successfullyConnected = true;
+		}
+		else
+		{
+			m_successfullyConnected = false;
+		}
 		});
 
 	requestThread.detach();
@@ -747,20 +740,18 @@ void MasterServerManager::UpdateServerPlayerCount(int playerCount)
 		return;
 
 	std::thread requestThread([this, playerCount] {
-			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
-			http.set_connection_timeout(25);
-			http.set_read_timeout(25);
-			http.set_write_timeout(25);
+		httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
+		SetHttpClientOptions(http);
 
-			// we dont process this at all atm, maybe do later, but atm not necessary
-			if (auto result = http.Post(fmt::format("/server/update_values?id={}&playerCount={}", m_ownServerId, playerCount).c_str()))
-			{
-				m_successfullyConnected = true;
-			}
-			else
-			{
-				m_successfullyConnected = false;
-			}		
+		// we dont process this at all atm, maybe do later, but atm not necessary
+		if (auto result = http.Post(fmt::format("/server/update_values?id={}&playerCount={}", m_ownServerId, playerCount).c_str()))
+		{
+			m_successfullyConnected = true;
+		}
+		else
+		{
+			m_successfullyConnected = false;
+		}
 		});
 
 	requestThread.detach();
@@ -778,26 +769,24 @@ void MasterServerManager::WritePlayerPersistentData(char* playerId, char* pdata,
 
 	std::string playerIdTemp(playerId);
 	std::thread requestThread([this, playerIdTemp, pdata, pdataSize] {
-			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
-			http.set_connection_timeout(25);
-			http.set_read_timeout(25);
-			http.set_write_timeout(25); 
+		httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
+		SetHttpClientOptions(http);
 
-			httplib::MultipartFormDataItems requestItems = {
-				{ "pdata", std::string(pdata, pdataSize), "file.pdata", "application/octet-stream"}
-			};
+		httplib::MultipartFormDataItems requestItems = {
+			{ "pdata", std::string(pdata, pdataSize), "file.pdata", "application/octet-stream"}
+		};
 
-			// we dont process this at all atm, maybe do later, but atm not necessary
-			if (auto result = http.Post(fmt::format("/accounts/write_persistence?id={}&serverId={}", playerIdTemp, m_ownServerId).c_str(), requestItems))
-			{
-				m_successfullyConnected = true;
-			}
-			else
-			{
-				m_successfullyConnected = false;
-			}
+		// we dont process this at all atm, maybe do later, but atm not necessary
+		if (auto result = http.Post(fmt::format("/accounts/write_persistence?id={}&serverId={}", playerIdTemp, m_ownServerId).c_str(), requestItems))
+		{
+			m_successfullyConnected = true;
+		}
+		else
+		{
+			m_successfullyConnected = false;
+		}
 
-			m_savingPersistentData = false;
+		m_savingPersistentData = false;
 		});
 
 	requestThread.detach();
@@ -810,22 +799,20 @@ void MasterServerManager::RemoveSelfFromServerList()
 		return;
 
 	std::thread requestThread([this] {
-			httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
-			http.set_connection_timeout(25);
-			http.set_read_timeout(25);
-			http.set_write_timeout(25);
+		httplib::Client http(Cvar_ns_masterserver_hostname->m_pszString);
+		SetHttpClientOptions(http);
 
-			// we dont process this at all atm, maybe do later, but atm not necessary
-			if (auto result = http.Delete(fmt::format("/server/remove_server?id={}", m_ownServerId).c_str()))
-			{
-				m_successfullyConnected = true;
-			}
-			else
-			{
-				m_successfullyConnected = false;
-			}
+		// we dont process this at all atm, maybe do later, but atm not necessary
+		if (auto result = http.Delete(fmt::format("/server/remove_server?id={}", m_ownServerId).c_str()))
+		{
+			m_successfullyConnected = true;
+		}
+		else
+		{
+			m_successfullyConnected = false;
+		}
 
-			m_ownServerId[0] = 0;
+		m_ownServerId[0] = 0;
 		});
 
 	requestThread.detach();

@@ -1,5 +1,6 @@
 #pragma once
 #include "convar.h"
+#include "httplib.h"
 #include <WinSock2.h>
 
 struct RemoteModInfo
@@ -91,6 +92,9 @@ public:
 
 	bool m_bHasMainMenuPromoData = false;
 	MainMenuPromoData m_MainMenuPromoData;
+
+private:
+	void SetHttpClientOptions(httplib::Client& http);
 
 public:
 	void ClearServerList();
