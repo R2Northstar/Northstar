@@ -16,6 +16,10 @@
 * [Commands](using-northstar/commands.md)
 * [Playing on Linux](using-northstar/playing-on-linux.md)
 
+## FAQ
+
+* [FAQ](faq.md)
+
 ## Hosting a server with Northstar
 
 * [Hosting a Basic Listen Server](hosting-a-server-with-northstar/basic-listen-server.md)
@@ -27,10 +31,6 @@
 * [Tutorials](modding/tutorials/modding-tutorials.md)
 * [Cheatsheet](modding/cheatsheet.md)
 * [Squirrel](modding/squirrel/what-is-squirrel.md)
-
-## FAQ
-
-* [FAQ](faq.md)
 
 ## Other
 
