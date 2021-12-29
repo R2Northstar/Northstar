@@ -16,7 +16,7 @@
 * [Commands](using-northstar/commands.md)
 * [Playing on Linux](using-northstar/playing-on-linux.md)
 
-## FAQ
+***
 
 * [FAQ](faq.md)
 
