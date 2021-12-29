@@ -35,7 +35,8 @@ void function WritePersistenceAndLeaveForLocalPlayerOnly( entity player )
 	while ( GetPlayerArray().len() != 1 && Time() < time + 5.0 )
 		WaitFrame()
 	
-	WritePersistenceAndLeave( player )
+	if ( IsValid( player ) )
+		WritePersistenceAndLeave( player )
 }
 
 void function WritePersistenceAndLeave( entity player )

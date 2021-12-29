@@ -107,6 +107,12 @@ void function AnimateBuddy( entity buddy )
 	
 	buddy.WaitSignal( "fastball_release" )
 	wait 5.0
+	
+	// clear any players off bt to avoid potential crash which can supposedly happen even though i've never seen it happen
+	foreach ( entity player in GetPlayerArray() )
+		if ( player.GetParent() == buddy )
+			player.ClearParent()
+	
 	buddy.Destroy()
 }
 
