@@ -624,7 +624,7 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 	std::string strName(name);
 	std::string strDescription(description);
 	std::string strMap(map);
-	std::string strPlaylist(map);
+	std::string strPlaylist(playlist);
 	std::string strPassword(password);
 
 	std::thread requestThread([this, port, authPort, strName, strDescription, strMap, strPlaylist, maxPlayers, strPassword]
@@ -739,18 +739,25 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 				// heartbeat thread
 				// ideally this should actually be done in main thread, rather than on it's own thread, so it'd stop if server freezes
 				std::thread heartbeatThread([this] {
-					CURL* curl = curl_easy_init();
-					
-					while (*m_ownServerId)
+					Sleep(5000);
+
+					do
 					{
-						Sleep(10000);
-						curl_easy_setopt(curl, CURLOPT_URL, fmt::format("{}/server/heartbeat?id={}&playerCount={}", Cvar_ns_masterserver_hostname->m_pszString, m_ownServerId, g_ServerAuthenticationManager->m_additionalPlayerData.size()).c_str());
+						CURL* curl = curl_easy_init();
+
+						std::string readBuffer;
 						curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
+						curl_easy_setopt(curl, CURLOPT_URL, fmt::format("{}/server/heartbeat?id={}&playerCount={}", Cvar_ns_masterserver_hostname->m_pszString, m_ownServerId, g_ServerAuthenticationManager->m_additionalPlayerData.size()).c_str());
+						curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
+						curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+						
+						CURLcode result = curl_easy_perform(curl);
+						if (result != CURLcode::CURLE_OK)
+							spdlog::warn("Heartbeat failed with error {}", curl_easy_strerror(result));
 
-						curl_easy_perform(curl);
-					}
-
-					curl_easy_cleanup(curl);
+						curl_easy_cleanup(curl);
+						Sleep(10000);
+					} while (*m_ownServerId);
 				});
 
 				heartbeatThread.detach();

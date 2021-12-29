@@ -94,18 +94,6 @@ public:
 	bool m_bHasMainMenuPromoData = false;
 	MainMenuPromoData m_MainMenuPromoData;
 
-private:
-	void LazyCreateHttpClient();
-	bool RequestServerListThread();
-	bool RequestMainMenuPromosThread();
-	bool AuthenticateOriginWithMasterServerThread(std::string uidStr, std::string tokenStr);
-	bool AuthenticateWithOwnServerThread(char* uid, char* playerToken);
-	bool AuthenticateWithServerThread(char* uid, char* playerToken, char* serverId, char* password);
-	bool AddSelfToServerListThread(int port, int authPort, char* name, char* description, char* map, char* playlist, int maxPlayers, char* password);
-	bool UpdateServerMapAndPlaylistThread(char* map, char* playlist, int playerCount);
-	bool WritePlayerPersistentDataThread(std::string playerId, char* pdata, size_t pdataSize);
-	bool RemoveSelfFromServerListThread();
-
 public:
 	MasterServerManager();
 	void ClearServerList();
