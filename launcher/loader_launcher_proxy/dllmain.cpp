@@ -22,7 +22,7 @@ extern "C" _declspec(dllexport) void* __fastcall CreateInterface(const char* pNa
     return res;
 }
 
-bool GetExePathWide(wchar_t* dest, size_t destSize)
+bool GetExePathWide(wchar_t* dest, DWORD destSize)
 {
     if (!dest) return NULL;
     if (destSize < MAX_PATH) return NULL;
@@ -66,45 +66,48 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 wchar_t exePath[4096];
 wchar_t dllPath[4096];
 
-extern "C" _declspec(dllexport) void LauncherMain(__int64, __int64, __int64, uint32_t)
+extern "C" __declspec(dllexport) int LauncherMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
     {
-
         if (!GetExePathWide(exePath, 4096))
         {
             MessageBoxA(GetForegroundWindow(), "Failed getting game directory.\nThe game cannot continue and has to exit.", "Launcher Error", 0);
-            return;
+            return 1;
         }
 
-        FARPROC Hook_Init = nullptr;
+        bool loadNorthstar = !strstr(GetCommandLineA(), "-vanilla");
+        if (loadNorthstar)
         {
-            swprintf_s(dllPath, L"%s\\Northstar.dll", exePath);
-            hHookModule = LoadLibraryExW(dllPath, 0i64, 8u);
-            if (hHookModule) Hook_Init = GetProcAddress(hHookModule, "InitialiseNorthstar");
-            if (!hHookModule || Hook_Init == nullptr)
+            FARPROC Hook_Init = nullptr;
             {
-                LibraryLoadError(GetLastError(), L"Northstar.dll", dllPath);
-                return;
+                swprintf_s(dllPath, L"%s\\Northstar.dll", exePath);
+                hHookModule = LoadLibraryExW(dllPath, 0i64, 8u);
+                if (hHookModule) Hook_Init = GetProcAddress(hHookModule, "InitialiseNorthstar");
+                if (!hHookModule || Hook_Init == nullptr)
+                {
+                    LibraryLoadError(GetLastError(), L"Northstar.dll", dllPath);
+                    return 1;
+                }
             }
+
+            ((bool (*)()) Hook_Init)();
         }
 
-        ((void (*)()) Hook_Init)();
-    }
-
-    {
         swprintf_s(dllPath, L"%s\\bin\\x64_retail\\launcher.org.dll", exePath);
         hLauncherModule = LoadLibraryExW(dllPath, 0i64, 8u);
         if (!hLauncherModule)
         {
             LibraryLoadError(GetLastError(), L"launcher.org.dll", dllPath);
-            return;
+            return 1;
         }
     }
 
     auto LauncherMain = GetLauncherMain();
+    if (!LauncherMain)
+        MessageBoxA(GetForegroundWindow(), "Failed loading launcher.org.dll.\nThe game cannot continue and has to exit.", "Launcher Error", 0);
     //auto result = ((__int64(__fastcall*)())LauncherMain)();
     //auto result = ((signed __int64(__fastcall*)(__int64))LauncherMain)(0i64);
-    auto result = ((signed __int64(__fastcall*)(__int64, __int64, __int64, uint32_t))LauncherMain)(0i64, 0i64, 0i64, 0);
+    return ((int(__fastcall*)(HINSTANCE, HINSTANCE, LPSTR, int))LauncherMain)(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 }
 
 // doubt that will help us here (in launcher.dll) though

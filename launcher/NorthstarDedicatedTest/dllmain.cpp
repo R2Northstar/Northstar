@@ -66,12 +66,12 @@ void WaitForDebugger(HMODULE baseAddress)
 }
 
 // in the future this will be called from launcher instead of dllmain
-void InitialiseNorthstar()
+bool InitialiseNorthstar()
 {
     if (initialised)
     {
         fprintf(stderr, "[WARN] Called InitialiseNorthstar more than once!\n");
-        return;
+        return false;
     }
     initialised = true;
 
@@ -129,4 +129,6 @@ void InitialiseNorthstar()
 
     // mod manager after everything else
     AddDllLoadCallback("engine.dll", InitialiseModManager);
+
+    return true;
 }

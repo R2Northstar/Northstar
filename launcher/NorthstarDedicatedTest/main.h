@@ -1,3 +1,3 @@
 #pragma once
 
-extern "C" __declspec(dllexport) void InitialiseNorthstar();
+extern "C" __declspec(dllexport) bool InitialiseNorthstar();
