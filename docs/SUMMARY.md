@@ -22,6 +22,7 @@
 
 ## Hosting a server with Northstar
 
+* [Prerequisites](hosting-a-server-with-northstar/prerequisites.md)
 * [Hosting a Basic Listen Server](hosting-a-server-with-northstar/basic-listen-server.md)
 * [Hosting a Dedicated Server](hosting-a-server-with-northstar/dedicated-server.md)
 
