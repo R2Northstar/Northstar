@@ -118,7 +118,22 @@ long __stdcall ExceptionFilter(EXCEPTION_POINTERS* exceptionInfo)
 
 		spdlog::error("Northstar has crashed! a minidump has been written and exception info is available below:");
 		spdlog::error(exceptionCause.str());
-		spdlog::error("Address: {} + 0x{0:x}", crashedModuleName, crashedModuleOffset);
+		spdlog::error("At: {} + {}", crashedModuleName, (void*)crashedModuleOffset);
+
+		PVOID framesToCapture[62];
+		int frames = RtlCaptureStackBackTrace(0, 62, framesToCapture, NULL);
+		for (int i = 0; i < frames; i++)
+		{
+			HMODULE backtraceModuleHandle;
+			GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, static_cast<LPCSTR>(framesToCapture[i]), &backtraceModuleHandle);
+
+			char backtraceModuleFullName[MAX_PATH];
+			GetModuleFileNameExA(GetCurrentProcess(), backtraceModuleHandle, backtraceModuleFullName, MAX_PATH);
+			char* backtraceModuleName = strrchr(backtraceModuleFullName, '\\') + 1;
+
+			spdlog::error("    {} + {}", backtraceModuleName, (void*)framesToCapture[i]);
+		}
+
 		spdlog::error("RAX: 0x{0:x}", exceptionContext->Rax);
 		spdlog::error("RBX: 0x{0:x}", exceptionContext->Rbx);
 		spdlog::error("RCX: 0x{0:x}", exceptionContext->Rcx);
