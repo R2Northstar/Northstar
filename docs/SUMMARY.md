@@ -32,6 +32,10 @@
 * [Cheatsheet](modding/cheatsheet.md)
 * [Squirrel](modding/squirrel/what-is-squirrel.md)
 
+***
+
+* [Development](development.md)
+
 ## Other
 
 * [Credits](credits.md)
