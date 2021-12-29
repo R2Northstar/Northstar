@@ -86,6 +86,7 @@ void function GiveFlag( entity player )
 void function DropFlagIfPhased( entity player )
 {
 	player.EndSignal( "StartPhaseShift" )
+	player.EndSignal( "OnDestroy" )
 	
 	OnThreadEnd( function() : ( player ) 
 	{
