@@ -324,12 +324,12 @@ void function PlayerUsesMaphackBurncardThreaded( entity player )
 	for ( int i = 0; i < MAPHACK_PULSE_COUNT; i++ )
 	{
 		EmitSoundOnEntityOnlyToPlayer( player, player, "Burn_Card_Map_Hack_Radar_Pulse_V1_1P" )
-
+		array<entity> aliveplayers = GetPlayerArray()
 		foreach ( entity otherPlayer in GetPlayerArray() )
 		{
 			Remote_CallFunction_Replay( otherPlayer, "ServerCallback_SonarPulseFromPosition", player.GetOrigin().x, player.GetOrigin().y, player.GetOrigin().z, SONAR_GRENADE_RADIUS )
 
-			if ( otherPlayer.GetTeam() != player.GetTeam() )
+			if ( otherPlayer.GetTeam() != player.GetTeam() && aliveplayers.find(otherPlayer) != -1 && aliveplayers.find(player) != -1 )
 			{
 				StatusEffect_AddTimed( otherPlayer, eStatusEffect.maphack_detected, 1.0, MAPHACK_PULSE_DELAY / 2, 0.0 )
 				SonarStart( otherPlayer, player.GetOrigin(), player.GetTeam(), player )
@@ -338,7 +338,7 @@ void function PlayerUsesMaphackBurncardThreaded( entity player )
 		}
 		wait MAPHACK_PULSE_DELAY
 		foreach ( entity otherPlayer in GetPlayerArray() ) {
-			if ( otherPlayer.GetTeam() != player.GetTeam() ) {
+			if ( otherPlayer.GetTeam() != player.GetTeam() && aliveplayers.find(otherPlayer) != -1 && aliveplayers.find(player) != -1 ) {
 				SonarEnd (otherPlayer, player.GetTeam() )
 				DecrementSonarPerTeam( player.GetTeam() )
 			}
