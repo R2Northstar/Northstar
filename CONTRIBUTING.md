@@ -21,7 +21,9 @@ enabling custom server hosting.
 ### Create a new issue 
 
 If you find a bug while using Northstar, before posting it, please ensure that a corresponding issue does not 
-already exists.
+already exists on GitHub.
+
+Afterwards, please check Discord `faq`, `help` and `bug` channels for corresponding threads.
 
 Also, please double-check that you're opening an issue in the correct repository (read carefully `Repositories architecture`
 of this document if you're not sure).
