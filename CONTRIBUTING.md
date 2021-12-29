@@ -4,7 +4,7 @@ Thank you for investing your time in contributing to our project!
 
 ## Repositories architecture
 
-Northstar software is splitted into several repositories:
+Northstar software is split into several repositories:
 
 * [Northstar](https://github.com/R2Northstar/Northstar) is the main repository; it only contains downloadable 
 versions of the client and wiki documentation (it does not contain source code).
@@ -14,7 +14,7 @@ listing.
 * [NorthstarLauncher](https://github.com/R2Northstar/NorthstarLauncher) holds source code responsible for 
 injecting custom content (mods) into original game files.
 * [NorthstarMods](https://github.com/R2Northstar/NorthstarMods) contains mods recreating server gamelogic,
-enabling custom serveurs hosting.
+enabling custom server hosting.
 
 ## Issues
 
