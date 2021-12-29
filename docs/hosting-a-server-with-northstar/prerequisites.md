@@ -2,7 +2,7 @@
 
 # Prerequisites:
 
-Make sure you already installed Northstar [as described here](Installing-Northstar).
+Make sure you already installed Northstar [as described here](installing-northstar/basic-setup.md).
 
 ## Check whether you can port forward:
 
