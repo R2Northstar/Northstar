@@ -107,6 +107,7 @@ private:
 	bool RemoveSelfFromServerListThread();
 
 public:
+	MasterServerManager();
 	void ClearServerList();
 	void RequestServerList();
 	void RequestMainMenuPromos();

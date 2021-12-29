@@ -3,7 +3,7 @@
 #include "concommand.h"
 #include "gameutils.h"
 #include "hookutils.h"
-#include "httplib.h"
+#include "libcurl/include/curl/curl.h"
 #include "serverauthentication.h"
 #include "gameutils.h"
 #include "rapidjson/document.h"
@@ -12,6 +12,9 @@
 #include "rapidjson/error/en.h"
 #include "modmanager.h"
 #include "misccommands.h"
+
+// NOTE for anyone reading this: we used to use httplib for requests here, but it had issues, so we're moving to curl now for masterserver requests
+// so httplib is used exclusively for server stuff now
 
 ConVar* Cvar_ns_masterserver_hostname;
 ConVar* Cvar_ns_report_server_to_masterserver;
@@ -35,39 +38,6 @@ CHostState__State_ChangeLevelSPType CHostState__State_ChangeLevelSP;
 typedef void(*CHostState__State_GameShutdownType)(CHostState* hostState);
 CHostState__State_GameShutdownType CHostState__State_GameShutdown;
 
-const char* HttplibErrorToString(httplib::Error error)
-{
-	switch (error)
-	{
-	case httplib::Error::Success:
-		return "httplib::Error::Success";
-	case httplib::Error::Unknown:
-		return "httplib::Error::Unknown";
-	case httplib::Error::Connection:
-		return "httplib::Error::Connection";
-	case httplib::Error::BindIPAddress:
-		return "httplib::Error::BindIPAddress";
-	case httplib::Error::Read:
-		return "httplib::Error::Read";
-	case httplib::Error::Write:
-		return "httplib::Error::Write";
-	case httplib::Error::ExceedRedirectCount:
-		return "httplib::Error::ExceedRedirectCount";
-	case httplib::Error::Canceled:
-		return "httplib::Error::Canceled";
-	case httplib::Error::SSLConnection:
-		return "httplib::Error::SSLConnection";
-	case httplib::Error::SSLLoadingCerts:
-		return "httplib::Error::SSLLoadingCerts";
-	case httplib::Error::SSLServerVerification:
-		return "httplib::Error::SSLServerVerification";
-	case httplib::Error::UnsupportedMultipartBoundaryChars:
-		return "httplib::Error::UnsupportedMultipartBoundaryChars";
-	}
-
-	return "";
-}
-
 RemoteServerInfo::RemoteServerInfo(const char* newId, const char* newName, const char* newDescription, const char* newMap, const char* newPlaylist, int newPlayerCount, int newMaxPlayers, bool newRequiresPassword)
 {
 	// passworded servers don't have public ips
@@ -89,18 +59,6 @@ RemoteServerInfo::RemoteServerInfo(const char* newId, const char* newName, const
 	maxPlayers = newMaxPlayers;
 }
 
-void MasterServerManager::LazyCreateHttpClient()
-{
-	if (m_httpClient)
-		return;
-
-	m_httpClient = new httplib::Client(Cvar_ns_masterserver_hostname->m_pszString);
-	m_httpClient->set_connection_timeout(25);
-	m_httpClient->set_read_timeout(25);
-	m_httpClient->set_write_timeout(25);
-	m_httpClient->set_tcp_nodelay(true);
-}
-
 void MasterServerManager::ClearServerList()
 {
 	// this doesn't really do anything lol, probably isn't threadsafe
@@ -111,51 +69,10 @@ void MasterServerManager::ClearServerList()
 	m_requestingServerList = false;
 }
 
-bool MasterServerManager::AuthenticateOriginWithMasterServerThread(std::string uidStr, std::string tokenStr)
+size_t CurlWriteToStringBufferCallback(char* contents, size_t size, size_t nmemb, void* userp)
 {
-	spdlog::info("Trying to authenticate with northstar masterserver for user {}", uidStr);
-
-	LazyCreateHttpClient();
-	if (auto result = m_httpClient->Get(fmt::format("/client/origin_auth?id={}&token={}", uidStr, tokenStr).c_str()))
-	{
-		m_successfullyConnected = true;
-
-		rapidjson::Document originAuthInfo;
-		originAuthInfo.Parse(result->body.c_str());
-
-		if (originAuthInfo.HasParseError())
-		{
-			spdlog::error("Failed reading origin auth info response: encountered parse error \{}\"", rapidjson::GetParseError_En(originAuthInfo.GetParseError()));
-			goto REQUEST_END_CLEANUP;
-		}
-
-		if (!originAuthInfo.IsObject() || !originAuthInfo.HasMember("success"))
-		{
-			spdlog::error("Failed reading origin auth info response: malformed response object {}", result->body);
-			goto REQUEST_END_CLEANUP;
-		}
-
-		if (originAuthInfo["success"].IsTrue() && originAuthInfo.HasMember("token") && originAuthInfo["token"].IsString())
-		{
-			strncpy(m_ownClientAuthToken, originAuthInfo["token"].GetString(), sizeof(m_ownClientAuthToken));
-			m_ownClientAuthToken[sizeof(m_ownClientAuthToken) - 1] = 0;
-			spdlog::info("Northstar origin authentication completed successfully!");
-		}
-		else
-			spdlog::error("Northstar origin authentication failed");
-	}
-	else
-	{
-		spdlog::error("Failed performing northstar origin auth: error {}", HttplibErrorToString(result.error()));
-		m_successfullyConnected = false;
-	}
-
-	// we goto this instead of returning so we always hit this
-REQUEST_END_CLEANUP:
-	m_bOriginAuthWithMasterServerInProgress = false;
-	m_bOriginAuthWithMasterServerDone = true;
-
-	return m_successfullyConnected;
+	((std::string*)userp)->append((char*)contents, size * nmemb);
+	return size * nmemb;
 }
 
 void MasterServerManager::AuthenticateOriginWithMasterServer(char* uid, char* originToken)
@@ -170,144 +87,61 @@ void MasterServerManager::AuthenticateOriginWithMasterServer(char* uid, char* or
 
 	std::thread requestThread([this, uidStr, tokenStr]()
 		{
-			for (int i = 0; i < 5; i++)
+			spdlog::info("Trying to authenticate with northstar masterserver for user {}", uidStr);
+
+			CURL* curl = curl_easy_init();
+
+			std::string readBuffer;
+			curl_easy_setopt(curl, CURLOPT_URL, fmt::format("{}/client/origin_auth?id={}&token={}", Cvar_ns_masterserver_hostname->m_pszString, uidStr, tokenStr).c_str());
+			curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "GET");
+			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
+			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+
+			CURLcode result = curl_easy_perform(curl);
+
+			if (result == CURLcode::CURLE_OK)
 			{
-				if (!AuthenticateOriginWithMasterServerThread(uidStr, tokenStr))
-					spdlog::info("retrying...");
+				m_successfullyConnected = true;
+
+				rapidjson::Document originAuthInfo;
+				originAuthInfo.Parse(readBuffer.c_str());
+
+				if (originAuthInfo.HasParseError())
+				{
+					spdlog::error("Failed reading origin auth info response: encountered parse error \{}\"", rapidjson::GetParseError_En(originAuthInfo.GetParseError()));
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (!originAuthInfo.IsObject() || !originAuthInfo.HasMember("success"))
+				{
+					spdlog::error("Failed reading origin auth info response: malformed response object {}", readBuffer);
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (originAuthInfo["success"].IsTrue() && originAuthInfo.HasMember("token") && originAuthInfo["token"].IsString())
+				{
+					strncpy(m_ownClientAuthToken, originAuthInfo["token"].GetString(), sizeof(m_ownClientAuthToken));
+					m_ownClientAuthToken[sizeof(m_ownClientAuthToken) - 1] = 0;
+					spdlog::info("Northstar origin authentication completed successfully!");
+				}
 				else
-					return;
+					spdlog::error("Northstar origin authentication failed");
 			}
+			else
+			{
+				spdlog::error("Failed performing northstar origin auth: error {}", curl_easy_strerror(result));
+				m_successfullyConnected = false;
+			}
+
+			// we goto this instead of returning so we always hit this
+		REQUEST_END_CLEANUP:
+			m_bOriginAuthWithMasterServerInProgress = false;
+			m_bOriginAuthWithMasterServerDone = true;
+			curl_easy_cleanup(curl);
 		});
 
 	requestThread.detach();
-}
-
-bool MasterServerManager::RequestServerListThread()
-{
-	// make sure we never have 2 threads writing at once
-	// i sure do hope this is actually threadsafe
-	while (m_requestingServerList)
-		Sleep(100);
-
-	m_requestingServerList = true;
-	m_scriptRequestingServerList = true;
-
-
-	spdlog::info("Requesting server list from {}", Cvar_ns_masterserver_hostname->m_pszString);
-
-	LazyCreateHttpClient();
-	if (auto result = m_httpClient->Get("/client/servers"))
-	{
-		m_successfullyConnected = true;
-
-		rapidjson::Document serverInfoJson;
-		serverInfoJson.Parse(result->body.c_str());
-
-		if (serverInfoJson.HasParseError())
-		{
-			spdlog::error("Failed reading masterserver response: encountered parse error \"{}\"", rapidjson::GetParseError_En(serverInfoJson.GetParseError()));
-			goto REQUEST_END_CLEANUP;
-		}
-
-		if (serverInfoJson.IsObject() && serverInfoJson.HasMember("error"))
-		{
-			spdlog::error("Failed reading masterserver response: got fastify error response");
-			spdlog::error(result->body);
-			goto REQUEST_END_CLEANUP;
-		}
-
-		if (!serverInfoJson.IsArray())
-		{
-			spdlog::error("Failed reading masterserver response: root object is not an array");
-			goto REQUEST_END_CLEANUP;
-		}
-
-		rapidjson::GenericArray<false, rapidjson::Value> serverArray = serverInfoJson.GetArray();
-
-		spdlog::info("Got {} servers", serverArray.Size());
-
-		for (auto& serverObj : serverArray)
-		{
-			if (!serverObj.IsObject())
-			{
-				spdlog::error("Failed reading masterserver response: member of server array is not an object");
-				goto REQUEST_END_CLEANUP;
-			}
-
-			// todo: verify json props are fine before adding to m_remoteServers
-			if (!serverObj.HasMember("id") || !serverObj["id"].IsString()
-				|| !serverObj.HasMember("name") || !serverObj["name"].IsString()
-				|| !serverObj.HasMember("description") || !serverObj["description"].IsString()
-				|| !serverObj.HasMember("map") || !serverObj["map"].IsString()
-				|| !serverObj.HasMember("playlist") || !serverObj["playlist"].IsString()
-				|| !serverObj.HasMember("playerCount") || !serverObj["playerCount"].IsNumber()
-				|| !serverObj.HasMember("maxPlayers") || !serverObj["maxPlayers"].IsNumber()
-				|| !serverObj.HasMember("hasPassword") || !serverObj["hasPassword"].IsBool()
-				|| !serverObj.HasMember("modInfo") || !serverObj["modInfo"].HasMember("Mods") || !serverObj["modInfo"]["Mods"].IsArray())
-			{
-				spdlog::error("Failed reading masterserver response: malformed server object");
-				continue;
-			};
-
-			const char* id = serverObj["id"].GetString();
-
-			RemoteServerInfo* newServer = nullptr;
-
-			bool createNewServerInfo = true;
-			for (RemoteServerInfo& server : m_remoteServers)
-			{
-				// if server already exists, update info rather than adding to it
-				if (!strncmp((const char*)server.id, id, 32))
-				{
-					server = RemoteServerInfo(id, serverObj["name"].GetString(), serverObj["description"].GetString(), serverObj["map"].GetString(), serverObj["playlist"].GetString(), serverObj["playerCount"].GetInt(), serverObj["maxPlayers"].GetInt(), serverObj["hasPassword"].IsTrue());
-					newServer = &server;
-					createNewServerInfo = false;
-					break;
-				}
-			}
-
-			// server didn't exist
-			if (createNewServerInfo)
-				newServer = &m_remoteServers.emplace_back(id, serverObj["name"].GetString(), serverObj["description"].GetString(), serverObj["map"].GetString(), serverObj["playlist"].GetString(), serverObj["playerCount"].GetInt(), serverObj["maxPlayers"].GetInt(), serverObj["hasPassword"].IsTrue());
-
-			newServer->requiredMods.clear();
-			for (auto& requiredMod : serverObj["modInfo"]["Mods"].GetArray())
-			{
-				RemoteModInfo modInfo;
-
-				if (!requiredMod.HasMember("RequiredOnClient") || !requiredMod["RequiredOnClient"].IsTrue())
-					continue;
-
-				if (!requiredMod.HasMember("Name") || !requiredMod["Name"].IsString())
-					continue;
-				modInfo.Name = requiredMod["Name"].GetString();
-
-				if (!requiredMod.HasMember("Version") || !requiredMod["Version"].IsString())
-					continue;
-				modInfo.Version = requiredMod["Version"].GetString();
-
-				newServer->requiredMods.push_back(modInfo);
-			}
-
-			spdlog::info("Server {} on map {} with playlist {} has {}/{} players", serverObj["name"].GetString(), serverObj["map"].GetString(), serverObj["playlist"].GetString(), serverObj["playerCount"].GetInt(), serverObj["maxPlayers"].GetInt());
-		}
-
-		std::sort(m_remoteServers.begin(), m_remoteServers.end(), [](RemoteServerInfo& a, RemoteServerInfo& b) {
-			return a.playerCount > b.playerCount;
-			});
-	}
-	else
-	{
-		spdlog::error("Failed requesting servers: error {}", HttplibErrorToString(result.error()));
-		m_successfullyConnected = false;
-	}
-
-	// we goto this instead of returning so we always hit this
-REQUEST_END_CLEANUP:
-	m_requestingServerList = false;
-	m_scriptRequestingServerList = false;
-
-	return m_successfullyConnected;
 }
 
 void MasterServerManager::RequestServerList()
@@ -317,103 +151,142 @@ void MasterServerManager::RequestServerList()
 
 	std::thread requestThread([this]()
 		{
-			for (int i = 0; i < 3; i++)
+			// make sure we never have 2 threads writing at once
+			// i sure do hope this is actually threadsafe
+			while (m_requestingServerList)
+				Sleep(100);
+
+			m_requestingServerList = true;
+			m_scriptRequestingServerList = true;
+
+			spdlog::info("Requesting server list from {}", Cvar_ns_masterserver_hostname->m_pszString);
+
+			CURL* curl = curl_easy_init();
+
+			std::string readBuffer;
+			curl_easy_setopt(curl, CURLOPT_URL, fmt::format("{}/client/servers", Cvar_ns_masterserver_hostname->m_pszString).c_str());
+			curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "GET");
+			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
+			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+
+			CURLcode result = curl_easy_perform(curl);
+
+			if (result == CURLcode::CURLE_OK)
 			{
-				if (!RequestServerListThread())
-					spdlog::info("retrying...");
-				else
-					return;
+				m_successfullyConnected = true;
+
+				rapidjson::Document serverInfoJson;
+				serverInfoJson.Parse(readBuffer.c_str());
+
+				if (serverInfoJson.HasParseError())
+				{
+					spdlog::error("Failed reading masterserver response: encountered parse error \"{}\"", rapidjson::GetParseError_En(serverInfoJson.GetParseError()));
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (serverInfoJson.IsObject() && serverInfoJson.HasMember("error"))
+				{
+					spdlog::error("Failed reading masterserver response: got fastify error response");
+					spdlog::error(readBuffer);
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (!serverInfoJson.IsArray())
+				{
+					spdlog::error("Failed reading masterserver response: root object is not an array");
+					goto REQUEST_END_CLEANUP;
+				}
+
+				rapidjson::GenericArray<false, rapidjson::Value> serverArray = serverInfoJson.GetArray();
+
+				spdlog::info("Got {} servers", serverArray.Size());
+
+				for (auto& serverObj : serverArray)
+				{
+					if (!serverObj.IsObject())
+					{
+						spdlog::error("Failed reading masterserver response: member of server array is not an object");
+						goto REQUEST_END_CLEANUP;
+					}
+
+					// todo: verify json props are fine before adding to m_remoteServers
+					if (!serverObj.HasMember("id") || !serverObj["id"].IsString()
+						|| !serverObj.HasMember("name") || !serverObj["name"].IsString()
+						|| !serverObj.HasMember("description") || !serverObj["description"].IsString()
+						|| !serverObj.HasMember("map") || !serverObj["map"].IsString()
+						|| !serverObj.HasMember("playlist") || !serverObj["playlist"].IsString()
+						|| !serverObj.HasMember("playerCount") || !serverObj["playerCount"].IsNumber()
+						|| !serverObj.HasMember("maxPlayers") || !serverObj["maxPlayers"].IsNumber()
+						|| !serverObj.HasMember("hasPassword") || !serverObj["hasPassword"].IsBool()
+						|| !serverObj.HasMember("modInfo") || !serverObj["modInfo"].HasMember("Mods") || !serverObj["modInfo"]["Mods"].IsArray())
+					{
+						spdlog::error("Failed reading masterserver response: malformed server object");
+						continue;
+					};
+
+					const char* id = serverObj["id"].GetString();
+
+					RemoteServerInfo* newServer = nullptr;
+
+					bool createNewServerInfo = true;
+					for (RemoteServerInfo& server : m_remoteServers)
+					{
+						// if server already exists, update info rather than adding to it
+						if (!strncmp((const char*)server.id, id, 32))
+						{
+							server = RemoteServerInfo(id, serverObj["name"].GetString(), serverObj["description"].GetString(), serverObj["map"].GetString(), serverObj["playlist"].GetString(), serverObj["playerCount"].GetInt(), serverObj["maxPlayers"].GetInt(), serverObj["hasPassword"].IsTrue());
+							newServer = &server;
+							createNewServerInfo = false;
+							break;
+						}
+					}
+
+					// server didn't exist
+					if (createNewServerInfo)
+						newServer = &m_remoteServers.emplace_back(id, serverObj["name"].GetString(), serverObj["description"].GetString(), serverObj["map"].GetString(), serverObj["playlist"].GetString(), serverObj["playerCount"].GetInt(), serverObj["maxPlayers"].GetInt(), serverObj["hasPassword"].IsTrue());
+
+					newServer->requiredMods.clear();
+					for (auto& requiredMod : serverObj["modInfo"]["Mods"].GetArray())
+					{
+						RemoteModInfo modInfo;
+
+						if (!requiredMod.HasMember("RequiredOnClient") || !requiredMod["RequiredOnClient"].IsTrue())
+							continue;
+
+						if (!requiredMod.HasMember("Name") || !requiredMod["Name"].IsString())
+							continue;
+						modInfo.Name = requiredMod["Name"].GetString();
+
+						if (!requiredMod.HasMember("Version") || !requiredMod["Version"].IsString())
+							continue;
+						modInfo.Version = requiredMod["Version"].GetString();
+
+						newServer->requiredMods.push_back(modInfo);
+					}
+
+					spdlog::info("Server {} on map {} with playlist {} has {}/{} players", serverObj["name"].GetString(), serverObj["map"].GetString(), serverObj["playlist"].GetString(), serverObj["playerCount"].GetInt(), serverObj["maxPlayers"].GetInt());
+				}
+
+				std::sort(m_remoteServers.begin(), m_remoteServers.end(), [](RemoteServerInfo& a, RemoteServerInfo& b) 
+				{
+					return a.playerCount > b.playerCount;
+				});
 			}
+			else
+			{
+				spdlog::error("Failed requesting servers: error {}", curl_easy_strerror(result));
+				m_successfullyConnected = false;
+			}
+
+			// we goto this instead of returning so we always hit this
+		REQUEST_END_CLEANUP:
+			m_requestingServerList = false;
+			m_scriptRequestingServerList = false;
+			curl_easy_cleanup(curl);
 		});
 
 	requestThread.detach();
-}
-
-bool MasterServerManager::RequestMainMenuPromosThread()
-{
-	while (m_bOriginAuthWithMasterServerInProgress || !m_bOriginAuthWithMasterServerDone)
-		Sleep(500);
-
-	LazyCreateHttpClient();
-	if (auto result = m_httpClient->Get("/client/mainmenupromos"))
-	{
-		m_successfullyConnected = true;
-
-		rapidjson::Document mainMenuPromoJson;
-		mainMenuPromoJson.Parse(result->body.c_str());
-
-		if (mainMenuPromoJson.HasParseError())
-		{
-			spdlog::error("Failed reading masterserver main menu promos response: encountered parse error \"{}\"", rapidjson::GetParseError_En(mainMenuPromoJson.GetParseError()));
-			goto REQUEST_END_CLEANUP;
-		}
-
-		if (!mainMenuPromoJson.IsObject())
-		{
-			spdlog::error("Failed reading masterserver main menu promos response: root object is not an object");
-			goto REQUEST_END_CLEANUP;
-		}
-
-		if (mainMenuPromoJson.HasMember("error"))
-		{
-			spdlog::error("Failed reading masterserver response: got fastify error response");
-			spdlog::error(result->body);
-			goto REQUEST_END_CLEANUP;
-		}
-
-		if (!mainMenuPromoJson.HasMember("newInfo") || !mainMenuPromoJson["newInfo"].IsObject() ||
-			!mainMenuPromoJson["newInfo"].HasMember("Title1") || !mainMenuPromoJson["newInfo"]["Title1"].IsString() ||
-			!mainMenuPromoJson["newInfo"].HasMember("Title2") || !mainMenuPromoJson["newInfo"]["Title2"].IsString() ||
-			!mainMenuPromoJson["newInfo"].HasMember("Title3") || !mainMenuPromoJson["newInfo"]["Title3"].IsString() ||
-
-			!mainMenuPromoJson.HasMember("largeButton") || !mainMenuPromoJson["largeButton"].IsObject() ||
-			!mainMenuPromoJson["largeButton"].HasMember("Title") || !mainMenuPromoJson["largeButton"]["Title"].IsString() ||
-			!mainMenuPromoJson["largeButton"].HasMember("Text") || !mainMenuPromoJson["largeButton"]["Text"].IsString() ||
-			!mainMenuPromoJson["largeButton"].HasMember("Url") || !mainMenuPromoJson["largeButton"]["Url"].IsString() ||
-			!mainMenuPromoJson["largeButton"].HasMember("ImageIndex") || !mainMenuPromoJson["largeButton"]["ImageIndex"].IsNumber() ||
-
-			!mainMenuPromoJson.HasMember("smallButton1") || !mainMenuPromoJson["smallButton1"].IsObject() ||
-			!mainMenuPromoJson["smallButton1"].HasMember("Title") || !mainMenuPromoJson["smallButton1"]["Title"].IsString() ||
-			!mainMenuPromoJson["smallButton1"].HasMember("Url") || !mainMenuPromoJson["smallButton1"]["Url"].IsString() ||
-			!mainMenuPromoJson["smallButton1"].HasMember("ImageIndex") || !mainMenuPromoJson["smallButton1"]["ImageIndex"].IsNumber() ||
-
-			!mainMenuPromoJson.HasMember("smallButton2") || !mainMenuPromoJson["smallButton2"].IsObject() ||
-			!mainMenuPromoJson["smallButton2"].HasMember("Title") || !mainMenuPromoJson["smallButton2"]["Title"].IsString() ||
-			!mainMenuPromoJson["smallButton2"].HasMember("Url") || !mainMenuPromoJson["smallButton2"]["Url"].IsString() ||
-			!mainMenuPromoJson["smallButton2"].HasMember("ImageIndex") || !mainMenuPromoJson["smallButton2"]["ImageIndex"].IsNumber())
-		{
-			spdlog::error("Failed reading masterserver main menu promos response: malformed json object");
-			goto REQUEST_END_CLEANUP;
-		}
-
-		m_MainMenuPromoData.newInfoTitle1 = mainMenuPromoJson["newInfo"]["Title1"].GetString();
-		m_MainMenuPromoData.newInfoTitle2 = mainMenuPromoJson["newInfo"]["Title2"].GetString();
-		m_MainMenuPromoData.newInfoTitle3 = mainMenuPromoJson["newInfo"]["Title3"].GetString();
-
-		m_MainMenuPromoData.largeButtonTitle = mainMenuPromoJson["largeButton"]["Title"].GetString();
-		m_MainMenuPromoData.largeButtonText = mainMenuPromoJson["largeButton"]["Text"].GetString();
-		m_MainMenuPromoData.largeButtonUrl = mainMenuPromoJson["largeButton"]["Url"].GetString();
-		m_MainMenuPromoData.largeButtonImageIndex = mainMenuPromoJson["largeButton"]["ImageIndex"].GetInt();
-
-		m_MainMenuPromoData.smallButton1Title = mainMenuPromoJson["smallButton1"]["Title"].GetString();
-		m_MainMenuPromoData.smallButton1Url = mainMenuPromoJson["smallButton1"]["Url"].GetString();
-		m_MainMenuPromoData.smallButton1ImageIndex = mainMenuPromoJson["smallButton1"]["ImageIndex"].GetInt();
-
-		m_MainMenuPromoData.smallButton2Title = mainMenuPromoJson["smallButton2"]["Title"].GetString();
-		m_MainMenuPromoData.smallButton2Url = mainMenuPromoJson["smallButton2"]["Url"].GetString();
-		m_MainMenuPromoData.smallButton2ImageIndex = mainMenuPromoJson["smallButton2"]["ImageIndex"].GetInt();
-
-		m_bHasMainMenuPromoData = true;
-	}
-	else
-	{
-		spdlog::error("Failed requesting main menu promos: error {}", HttplibErrorToString(result.error()));
-		m_successfullyConnected = false;
-	}
-
-REQUEST_END_CLEANUP:
-	// nothing lol
-	return m_successfullyConnected;
 }
 
 void MasterServerManager::RequestMainMenuPromos()
@@ -422,107 +295,102 @@ void MasterServerManager::RequestMainMenuPromos()
 
 	std::thread requestThread([this]()
 		{
-			for (int i = 0; i < 3; i++)
+			while (m_bOriginAuthWithMasterServerInProgress || !m_bOriginAuthWithMasterServerDone)
+				Sleep(500);
+
+			CURL* curl = curl_easy_init();
+
+			std::string readBuffer;
+			curl_easy_setopt(curl, CURLOPT_URL, fmt::format("{}/client/mainmenupromos", Cvar_ns_masterserver_hostname->m_pszString).c_str());
+			curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "GET");
+			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
+			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+
+			CURLcode result = curl_easy_perform(curl);
+
+			if (result == CURLcode::CURLE_OK)
 			{
-				if (!RequestMainMenuPromosThread())
-					spdlog::info("retrying...");
-				else
-					return;
+				m_successfullyConnected = true;
+
+				rapidjson::Document mainMenuPromoJson;
+				mainMenuPromoJson.Parse(readBuffer.c_str());
+
+				if (mainMenuPromoJson.HasParseError())
+				{
+					spdlog::error("Failed reading masterserver main menu promos response: encountered parse error \"{}\"", rapidjson::GetParseError_En(mainMenuPromoJson.GetParseError()));
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (!mainMenuPromoJson.IsObject())
+				{
+					spdlog::error("Failed reading masterserver main menu promos response: root object is not an object");
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (mainMenuPromoJson.HasMember("error"))
+				{
+					spdlog::error("Failed reading masterserver response: got fastify error response");
+					spdlog::error(readBuffer);
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (!mainMenuPromoJson.HasMember("newInfo") || !mainMenuPromoJson["newInfo"].IsObject() ||
+					!mainMenuPromoJson["newInfo"].HasMember("Title1") || !mainMenuPromoJson["newInfo"]["Title1"].IsString() ||
+					!mainMenuPromoJson["newInfo"].HasMember("Title2") || !mainMenuPromoJson["newInfo"]["Title2"].IsString() ||
+					!mainMenuPromoJson["newInfo"].HasMember("Title3") || !mainMenuPromoJson["newInfo"]["Title3"].IsString() ||
+
+					!mainMenuPromoJson.HasMember("largeButton") || !mainMenuPromoJson["largeButton"].IsObject() ||
+					!mainMenuPromoJson["largeButton"].HasMember("Title") || !mainMenuPromoJson["largeButton"]["Title"].IsString() ||
+					!mainMenuPromoJson["largeButton"].HasMember("Text") || !mainMenuPromoJson["largeButton"]["Text"].IsString() ||
+					!mainMenuPromoJson["largeButton"].HasMember("Url") || !mainMenuPromoJson["largeButton"]["Url"].IsString() ||
+					!mainMenuPromoJson["largeButton"].HasMember("ImageIndex") || !mainMenuPromoJson["largeButton"]["ImageIndex"].IsNumber() ||
+
+					!mainMenuPromoJson.HasMember("smallButton1") || !mainMenuPromoJson["smallButton1"].IsObject() ||
+					!mainMenuPromoJson["smallButton1"].HasMember("Title") || !mainMenuPromoJson["smallButton1"]["Title"].IsString() ||
+					!mainMenuPromoJson["smallButton1"].HasMember("Url") || !mainMenuPromoJson["smallButton1"]["Url"].IsString() ||
+					!mainMenuPromoJson["smallButton1"].HasMember("ImageIndex") || !mainMenuPromoJson["smallButton1"]["ImageIndex"].IsNumber() ||
+
+					!mainMenuPromoJson.HasMember("smallButton2") || !mainMenuPromoJson["smallButton2"].IsObject() ||
+					!mainMenuPromoJson["smallButton2"].HasMember("Title") || !mainMenuPromoJson["smallButton2"]["Title"].IsString() ||
+					!mainMenuPromoJson["smallButton2"].HasMember("Url") || !mainMenuPromoJson["smallButton2"]["Url"].IsString() ||
+					!mainMenuPromoJson["smallButton2"].HasMember("ImageIndex") || !mainMenuPromoJson["smallButton2"]["ImageIndex"].IsNumber())
+				{
+					spdlog::error("Failed reading masterserver main menu promos response: malformed json object");
+					goto REQUEST_END_CLEANUP;
+				}
+
+				m_MainMenuPromoData.newInfoTitle1 = mainMenuPromoJson["newInfo"]["Title1"].GetString();
+				m_MainMenuPromoData.newInfoTitle2 = mainMenuPromoJson["newInfo"]["Title2"].GetString();
+				m_MainMenuPromoData.newInfoTitle3 = mainMenuPromoJson["newInfo"]["Title3"].GetString();
+
+				m_MainMenuPromoData.largeButtonTitle = mainMenuPromoJson["largeButton"]["Title"].GetString();
+				m_MainMenuPromoData.largeButtonText = mainMenuPromoJson["largeButton"]["Text"].GetString();
+				m_MainMenuPromoData.largeButtonUrl = mainMenuPromoJson["largeButton"]["Url"].GetString();
+				m_MainMenuPromoData.largeButtonImageIndex = mainMenuPromoJson["largeButton"]["ImageIndex"].GetInt();
+
+				m_MainMenuPromoData.smallButton1Title = mainMenuPromoJson["smallButton1"]["Title"].GetString();
+				m_MainMenuPromoData.smallButton1Url = mainMenuPromoJson["smallButton1"]["Url"].GetString();
+				m_MainMenuPromoData.smallButton1ImageIndex = mainMenuPromoJson["smallButton1"]["ImageIndex"].GetInt();
+
+				m_MainMenuPromoData.smallButton2Title = mainMenuPromoJson["smallButton2"]["Title"].GetString();
+				m_MainMenuPromoData.smallButton2Url = mainMenuPromoJson["smallButton2"]["Url"].GetString();
+				m_MainMenuPromoData.smallButton2ImageIndex = mainMenuPromoJson["smallButton2"]["ImageIndex"].GetInt();
+
+				m_bHasMainMenuPromoData = true;
 			}
+			else
+			{
+				spdlog::error("Failed requesting main menu promos: error {}", curl_easy_strerror(result));
+				m_successfullyConnected = false;
+			}
+
+		REQUEST_END_CLEANUP:
+			// nothing lol
+			curl_easy_cleanup(curl);
 		});
 
 	requestThread.detach();
-}
-
-bool MasterServerManager::AuthenticateWithOwnServerThread(char* uid, char* playerToken)
-{
-	LazyCreateHttpClient();
-	if (auto result = m_httpClient->Post(fmt::format("/client/auth_with_self?id={}&playerToken={}", uid, playerToken).c_str()))
-	{
-		m_successfullyConnected = true;
-
-		rapidjson::Document authInfoJson;
-		authInfoJson.Parse(result->body.c_str());
-
-		if (authInfoJson.HasParseError())
-		{
-			spdlog::error("Failed reading masterserver authentication response: encountered parse error \"{}\"", rapidjson::GetParseError_En(authInfoJson.GetParseError()));
-			goto REQUEST_END_CLEANUP;
-		}
-
-		if (!authInfoJson.IsObject())
-		{
-			spdlog::error("Failed reading masterserver authentication response: root object is not an object");
-			goto REQUEST_END_CLEANUP;
-		}
-
-		if (authInfoJson.HasMember("error"))
-		{
-			spdlog::error("Failed reading masterserver response: got fastify error response");
-			spdlog::error(result->body);
-			goto REQUEST_END_CLEANUP;
-		}
-
-		if (!authInfoJson["success"].IsTrue())
-		{
-			spdlog::error("Authentication with masterserver failed: \"success\" is not true");
-			goto REQUEST_END_CLEANUP;
-		}
-
-		if (!authInfoJson.HasMember("success") || !authInfoJson.HasMember("id") || !authInfoJson["id"].IsString() || !authInfoJson.HasMember("authToken") || !authInfoJson["authToken"].IsString() || !authInfoJson.HasMember("persistentData") || !authInfoJson["persistentData"].IsArray())
-		{
-			spdlog::error("Failed reading masterserver authentication response: malformed json object");
-			goto REQUEST_END_CLEANUP;
-		}
-
-		AuthData newAuthData;
-		strncpy(newAuthData.uid, authInfoJson["id"].GetString(), sizeof(newAuthData.uid));
-		newAuthData.uid[sizeof(newAuthData.uid) - 1] = 0;
-
-		newAuthData.pdataSize = authInfoJson["persistentData"].GetArray().Size();
-		newAuthData.pdata = new char[newAuthData.pdataSize];
-		//memcpy(newAuthData.pdata, authInfoJson["persistentData"].GetString(), newAuthData.pdataSize);
-
-		int i = 0;
-		// note: persistentData is a uint8array because i had problems getting strings to behave, it sucks but it's just how it be unfortunately
-		// potentially refactor later
-		for (auto& byte : authInfoJson["persistentData"].GetArray())
-		{
-			if (!byte.IsUint() || byte.GetUint() > 255)
-			{
-				spdlog::error("Failed reading masterserver authentication response: malformed json object");
-				goto REQUEST_END_CLEANUP;
-			}
-
-			newAuthData.pdata[i++] = (char)byte.GetUint();
-		}
-
-		std::lock_guard<std::mutex> guard(g_ServerAuthenticationManager->m_authDataMutex);
-		g_ServerAuthenticationManager->m_authData.clear();
-		g_ServerAuthenticationManager->m_authData.insert(std::make_pair(authInfoJson["authToken"].GetString(), newAuthData));
-
-		m_successfullyAuthenticatedWithGameServer = true;
-	}
-	else
-	{
-		spdlog::error("Failed authenticating with own server: error {}", HttplibErrorToString(result.error()));
-		m_successfullyConnected = false;
-		m_successfullyAuthenticatedWithGameServer = false;
-		m_scriptAuthenticatingWithGameServer = false;
-	}
-
-REQUEST_END_CLEANUP:
-	m_authenticatingWithGameServer = false;
-	m_scriptAuthenticatingWithGameServer = false;
-
-	if (m_bNewgameAfterSelfAuth)
-	{
-		// pretty sure this is threadsafe?
-		Cbuf_AddText(Cbuf_GetCurrentPlayer(), "ns_end_reauth_and_leave_to_lobby", cmd_source_t::kCommandSrcCode);
-		m_bNewgameAfterSelfAuth = false;
-	}
-
-	return m_successfullyConnected;
 }
 
 void MasterServerManager::AuthenticateWithOwnServer(char* uid, char* playerToken)
@@ -535,89 +403,111 @@ void MasterServerManager::AuthenticateWithOwnServer(char* uid, char* playerToken
 	m_scriptAuthenticatingWithGameServer = true;
 	m_successfullyAuthenticatedWithGameServer = false;
 	
-	std::thread requestThread([this, uid, playerToken]()
+	std::string uidStr(uid);
+	std::string tokenStr(playerToken);
+
+	std::thread requestThread([this, uidStr, tokenStr]()
 		{
-			for (int i = 0; i < 5; i++)
+			CURL* curl = curl_easy_init();
+
+			std::string readBuffer;
+			curl_easy_setopt(curl, CURLOPT_URL, fmt::format("{}/client/auth_with_self?id={}&playerToken={}", Cvar_ns_masterserver_hostname->m_pszString, uidStr, tokenStr).c_str());
+			curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
+			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
+			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+
+			CURLcode result = curl_easy_perform(curl);
+
+			if (result == CURLcode::CURLE_OK)
 			{
-				if (!AuthenticateWithOwnServerThread(uid, playerToken))
-					spdlog::info("retrying...");
-				else
-					return;
+				m_successfullyConnected = true;
+
+				rapidjson::Document authInfoJson;
+				authInfoJson.Parse(readBuffer.c_str());
+
+				if (authInfoJson.HasParseError())
+				{
+					spdlog::error("Failed reading masterserver authentication response: encountered parse error \"{}\"", rapidjson::GetParseError_En(authInfoJson.GetParseError()));
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (!authInfoJson.IsObject())
+				{
+					spdlog::error("Failed reading masterserver authentication response: root object is not an object");
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (authInfoJson.HasMember("error"))
+				{
+					spdlog::error("Failed reading masterserver response: got fastify error response");
+					spdlog::error(readBuffer);
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (!authInfoJson["success"].IsTrue())
+				{
+					spdlog::error("Authentication with masterserver failed: \"success\" is not true");
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (!authInfoJson.HasMember("success") || !authInfoJson.HasMember("id") || !authInfoJson["id"].IsString() || !authInfoJson.HasMember("authToken") || !authInfoJson["authToken"].IsString() || !authInfoJson.HasMember("persistentData") || !authInfoJson["persistentData"].IsArray())
+				{
+					spdlog::error("Failed reading masterserver authentication response: malformed json object");
+					goto REQUEST_END_CLEANUP;
+				}
+
+				AuthData newAuthData;
+				strncpy(newAuthData.uid, authInfoJson["id"].GetString(), sizeof(newAuthData.uid));
+				newAuthData.uid[sizeof(newAuthData.uid) - 1] = 0;
+
+				newAuthData.pdataSize = authInfoJson["persistentData"].GetArray().Size();
+				newAuthData.pdata = new char[newAuthData.pdataSize];
+				//memcpy(newAuthData.pdata, authInfoJson["persistentData"].GetString(), newAuthData.pdataSize);
+
+				int i = 0;
+				// note: persistentData is a uint8array because i had problems getting strings to behave, it sucks but it's just how it be unfortunately
+				// potentially refactor later
+				for (auto& byte : authInfoJson["persistentData"].GetArray())
+				{
+					if (!byte.IsUint() || byte.GetUint() > 255)
+					{
+						spdlog::error("Failed reading masterserver authentication response: malformed json object");
+						goto REQUEST_END_CLEANUP;
+					}
+
+					newAuthData.pdata[i++] = (char)byte.GetUint();
+				}
+
+				std::lock_guard<std::mutex> guard(g_ServerAuthenticationManager->m_authDataMutex);
+				g_ServerAuthenticationManager->m_authData.clear();
+				g_ServerAuthenticationManager->m_authData.insert(std::make_pair(authInfoJson["authToken"].GetString(), newAuthData));
+
+				m_successfullyAuthenticatedWithGameServer = true;
 			}
+			else
+			{
+				spdlog::error("Failed authenticating with own server: error {}", curl_easy_strerror(result));
+				m_successfullyConnected = false;
+				m_successfullyAuthenticatedWithGameServer = false;
+				m_scriptAuthenticatingWithGameServer = false;
+			}
+
+		REQUEST_END_CLEANUP:
+			m_authenticatingWithGameServer = false;
+			m_scriptAuthenticatingWithGameServer = false;
+
+			if (m_bNewgameAfterSelfAuth)
+			{
+				// pretty sure this is threadsafe?
+				Cbuf_AddText(Cbuf_GetCurrentPlayer(), "ns_end_reauth_and_leave_to_lobby", cmd_source_t::kCommandSrcCode);
+				m_bNewgameAfterSelfAuth = false;
+			}
+
+			curl_easy_cleanup(curl);
 		});
 
 	requestThread.detach();
-}
-
-bool MasterServerManager::AuthenticateWithServerThread(char* uid, char* playerToken, char* serverId, char* password)
-{
-	// esnure that any persistence saving is done, so we know masterserver has newest
-	while (m_savingPersistentData)
-		Sleep(100);
-
-	LazyCreateHttpClient();
-	spdlog::info("Attempting authentication with server of id \"{}\"", serverId);
-
-	if (auto result = m_httpClient->Post(fmt::format("/client/auth_with_server?id={}&playerToken={}&server={}&password={}", uid, playerToken, serverId, password).c_str()))
-	{
-		m_successfullyConnected = true;
-
-		rapidjson::Document connectionInfoJson;
-		connectionInfoJson.Parse(result->body.c_str());
-
-		if (connectionInfoJson.HasParseError())
-		{
-			spdlog::error("Failed reading masterserver authentication response: encountered parse error \"{}\"", rapidjson::GetParseError_En(connectionInfoJson.GetParseError()));
-			goto REQUEST_END_CLEANUP;
-		}
-
-		if (!connectionInfoJson.IsObject())
-		{
-			spdlog::error("Failed reading masterserver authentication response: root object is not an object");
-			goto REQUEST_END_CLEANUP;
-		}
-
-		if (connectionInfoJson.HasMember("error"))
-		{
-			spdlog::error("Failed reading masterserver response: got fastify error response");
-			spdlog::error(result->body);
-			goto REQUEST_END_CLEANUP;
-		}
-
-		if (!connectionInfoJson["success"].IsTrue())
-		{
-			spdlog::error("Authentication with masterserver failed: \"success\" is not true");
-			goto REQUEST_END_CLEANUP;
-		}
-
-		if (!connectionInfoJson.HasMember("success") || !connectionInfoJson.HasMember("ip") || !connectionInfoJson["ip"].IsString() || !connectionInfoJson.HasMember("port") || !connectionInfoJson["port"].IsNumber() || !connectionInfoJson.HasMember("authToken") || !connectionInfoJson["authToken"].IsString())
-		{
-			spdlog::error("Failed reading masterserver authentication response: malformed json object");
-			goto REQUEST_END_CLEANUP;
-		}
-
-		m_pendingConnectionInfo.ip.S_un.S_addr = inet_addr(connectionInfoJson["ip"].GetString());
-		m_pendingConnectionInfo.port = connectionInfoJson["port"].GetInt();
-
-		strncpy(m_pendingConnectionInfo.authToken, connectionInfoJson["authToken"].GetString(), 31);
-		m_pendingConnectionInfo.authToken[31] = 0;
-
-		m_hasPendingConnectionInfo = true;
-		m_successfullyAuthenticatedWithGameServer = true;
-	}
-	else
-	{
-		spdlog::error("Failed authenticating with server: error {}", HttplibErrorToString(result.error()));
-		m_successfullyConnected = false;
-		m_successfullyAuthenticatedWithGameServer = false;
-		m_scriptAuthenticatingWithGameServer = false;
-	}
-
-REQUEST_END_CLEANUP:
-	m_authenticatingWithGameServer = false;
-	m_scriptAuthenticatingWithGameServer = false;
-
-	return m_successfullyConnected;
 }
 
 void MasterServerManager::AuthenticateWithServer(char* uid, char* playerToken, char* serverId, char* password)
@@ -630,129 +520,92 @@ void MasterServerManager::AuthenticateWithServer(char* uid, char* playerToken, c
 	m_scriptAuthenticatingWithGameServer = true;
 	m_successfullyAuthenticatedWithGameServer = false;
 
-	std::thread requestThread([this, uid, playerToken, serverId, password]()
+	std::string uidStr(uid);
+	std::string tokenStr(playerToken);
+	std::string serverIdStr(serverId);
+	std::string passwordStr(password);
+
+	std::thread requestThread([this, uidStr, tokenStr, serverIdStr, passwordStr]()
 		{
-			for (int i = 0; i < 5; i++)
+			// esnure that any persistence saving is done, so we know masterserver has newest
+			while (m_savingPersistentData)
+				Sleep(100);
+
+			spdlog::info("Attempting authentication with server of id \"{}\"", serverIdStr);
+
+			CURL* curl = curl_easy_init();
+
+			std::string readBuffer;
+			curl_easy_setopt(curl, CURLOPT_URL, fmt::format("{}/client/auth_with_server?id={}&playerToken={}&server={}&password={}", Cvar_ns_masterserver_hostname->m_pszString, uidStr, tokenStr, serverIdStr, passwordStr).c_str());
+			curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
+			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
+			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+
+			CURLcode result = curl_easy_perform(curl);
+
+			if (result == CURLcode::CURLE_OK)
 			{
-				if (!AuthenticateWithServerThread(uid, playerToken, serverId, password))
-					spdlog::info("retrying...");
-				else
-					return;
+				m_successfullyConnected = true;
+
+				rapidjson::Document connectionInfoJson;
+				connectionInfoJson.Parse(readBuffer.c_str());
+
+				if (connectionInfoJson.HasParseError())
+				{
+					spdlog::error("Failed reading masterserver authentication response: encountered parse error \"{}\"", rapidjson::GetParseError_En(connectionInfoJson.GetParseError()));
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (!connectionInfoJson.IsObject())
+				{
+					spdlog::error("Failed reading masterserver authentication response: root object is not an object");
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (connectionInfoJson.HasMember("error"))
+				{
+					spdlog::error("Failed reading masterserver response: got fastify error response");
+					spdlog::error(readBuffer);
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (!connectionInfoJson["success"].IsTrue())
+				{
+					spdlog::error("Authentication with masterserver failed: \"success\" is not true");
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (!connectionInfoJson.HasMember("success") || !connectionInfoJson.HasMember("ip") || !connectionInfoJson["ip"].IsString() || !connectionInfoJson.HasMember("port") || !connectionInfoJson["port"].IsNumber() || !connectionInfoJson.HasMember("authToken") || !connectionInfoJson["authToken"].IsString())
+				{
+					spdlog::error("Failed reading masterserver authentication response: malformed json object");
+					goto REQUEST_END_CLEANUP;
+				}
+
+				m_pendingConnectionInfo.ip.S_un.S_addr = inet_addr(connectionInfoJson["ip"].GetString());
+				m_pendingConnectionInfo.port = connectionInfoJson["port"].GetInt();
+
+				strncpy(m_pendingConnectionInfo.authToken, connectionInfoJson["authToken"].GetString(), 31);
+				m_pendingConnectionInfo.authToken[31] = 0;
+
+				m_hasPendingConnectionInfo = true;
+				m_successfullyAuthenticatedWithGameServer = true;
 			}
+			else
+			{
+				spdlog::error("Failed authenticating with server: error {}", curl_easy_strerror(result));
+				m_successfullyConnected = false;
+				m_successfullyAuthenticatedWithGameServer = false;
+				m_scriptAuthenticatingWithGameServer = false;
+			}
+
+		REQUEST_END_CLEANUP:
+			m_authenticatingWithGameServer = false;
+			m_scriptAuthenticatingWithGameServer = false;
+			curl_easy_cleanup(curl);
 		});
 
 	requestThread.detach();
-}
-
-bool MasterServerManager::AddSelfToServerListThread(int port, int authPort, char* name, char* description, char* map, char* playlist, int maxPlayers, char* password)
-{
-	m_ownServerId[0] = 0;
-
-	std::string request;
-	if (*password)
-		request = fmt::format("/server/add_server?port={}&authPort={}&name={}&description={}&map={}&playlist={}&maxPlayers={}&password={}", port, authPort, name, description, map, playlist, maxPlayers, password);
-	else
-		request = fmt::format("/server/add_server?port={}&authPort={}&name={}&description={}&map={}&playlist={}&maxPlayers={}&password=", port, authPort, name, description, map, playlist, maxPlayers);
-
-	// build modinfo obj
-	rapidjson::Document modinfoDoc;
-	modinfoDoc.SetObject();
-	modinfoDoc.AddMember("Mods", rapidjson::Value(rapidjson::kArrayType), modinfoDoc.GetAllocator());
-
-	int currentModIndex = 0;
-	for (Mod& mod : g_ModManager->m_loadedMods)
-	{
-		if (!mod.Enabled || (!mod.RequiredOnClient && !mod.Pdiff.size()))
-			continue;
-
-		modinfoDoc["Mods"].PushBack(rapidjson::Value(rapidjson::kObjectType), modinfoDoc.GetAllocator());
-		modinfoDoc["Mods"][currentModIndex].AddMember("Name", rapidjson::StringRef(&mod.Name[0]), modinfoDoc.GetAllocator());
-		modinfoDoc["Mods"][currentModIndex].AddMember("Version", rapidjson::StringRef(&mod.Version[0]), modinfoDoc.GetAllocator());
-		modinfoDoc["Mods"][currentModIndex].AddMember("RequiredOnClient", mod.RequiredOnClient, modinfoDoc.GetAllocator());
-		modinfoDoc["Mods"][currentModIndex].AddMember("Pdiff", rapidjson::StringRef(&mod.Pdiff[0]), modinfoDoc.GetAllocator());
-
-		currentModIndex++;
-	}
-
-	rapidjson::StringBuffer buffer;
-	buffer.Clear();
-	rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-	modinfoDoc.Accept(writer);
-	const char* modInfoString = buffer.GetString();
-
-	httplib::MultipartFormDataItems requestItems = {
-		{"modinfo", std::string(modInfoString, buffer.GetSize()), "modinfo.json", "application/octet-stream"}
-	};
-
-	LazyCreateHttpClient();
-	if (auto result = m_httpClient->Post(request.c_str(), requestItems))
-	{
-		m_successfullyConnected = true;
-
-		rapidjson::Document serverAddedJson;
-		serverAddedJson.Parse(result->body.c_str());
-
-		if (serverAddedJson.HasParseError())
-		{
-			spdlog::error("Failed reading masterserver authentication response: encountered parse error \"{}\"", rapidjson::GetParseError_En(serverAddedJson.GetParseError()));
-			goto REQUEST_END_CLEANUP;
-		}
-
-		if (!serverAddedJson.IsObject())
-		{
-			spdlog::error("Failed reading masterserver authentication response: root object is not an object");
-			goto REQUEST_END_CLEANUP;
-		}
-
-		if (serverAddedJson.HasMember("error"))
-		{
-			spdlog::error("Failed reading masterserver response: got fastify error response");
-			spdlog::error(result->body);
-			goto REQUEST_END_CLEANUP;
-		}
-
-		if (!serverAddedJson["success"].IsTrue())
-		{
-			spdlog::error("Adding server to masterserver failed: \"success\" is not true");
-			goto REQUEST_END_CLEANUP;
-		}
-
-		if (!serverAddedJson.HasMember("id") || !serverAddedJson["id"].IsString())
-		{
-			spdlog::error("Failed reading masterserver response: malformed json object");
-			goto REQUEST_END_CLEANUP;
-		}
-
-		strncpy(m_ownServerId, serverAddedJson["id"].GetString(), sizeof(m_ownServerId));
-		m_ownServerId[sizeof(m_ownServerId) - 1] = 0;
-
-
-		// heartbeat thread
-		// ideally this should actually be done in main thread, rather than on it's own thread, so it'd stop if server freezes
-		std::thread heartbeatThread([this] {
-			while (*m_ownServerId)
-			{
-				Sleep(10000);
-				for (int i = 0; i < 3; i++)
-				{
-					if (!(int)m_httpClient->Post(fmt::format("/server/heartbeat?id={}&playerCount={}", m_ownServerId, g_ServerAuthenticationManager->m_additionalPlayerData.size()).c_str()).error())
-						break;
-					else
-						spdlog::warn("retrying heartbeat...");
-				}
-			}
-			});
-
-		heartbeatThread.detach();
-	}
-	else
-	{
-		spdlog::error("Failed adding self to server list: error {}", HttplibErrorToString(result.error()));
-		m_successfullyConnected = false;
-	}
-
-REQUEST_END_CLEANUP:
-	return m_successfullyConnected;
 }
 
 void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name, char* description, char* map, char* playlist, int maxPlayers, char* password)
@@ -768,34 +621,152 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 
 	m_bRequireClientAuth = true;
 
-	std::thread requestThread([this, port, authPort, name, description, map, playlist, maxPlayers, password] 
+	std::string strName(name);
+	std::string strDescription(description);
+	std::string strMap(map);
+	std::string strPlaylist(map);
+	std::string strPassword(password);
+
+	std::thread requestThread([this, port, authPort, strName, strDescription, strMap, strPlaylist, maxPlayers, strPassword]
 		{
-			for (int i = 0; i < 5; i++)
+			m_ownServerId[0] = 0;
+
+			// build modinfo obj
+			rapidjson::Document modinfoDoc;
+			modinfoDoc.SetObject();
+			modinfoDoc.AddMember("Mods", rapidjson::Value(rapidjson::kArrayType), modinfoDoc.GetAllocator());
+
+			int currentModIndex = 0;
+			for (Mod& mod : g_ModManager->m_loadedMods)
 			{
-				if (!AddSelfToServerListThread(port, authPort, name, description, map, playlist, maxPlayers, password))
-					spdlog::info("retrying...");
-				else
-					return;
+				if (!mod.Enabled || (!mod.RequiredOnClient && !mod.Pdiff.size()))
+					continue;
+
+				modinfoDoc["Mods"].PushBack(rapidjson::Value(rapidjson::kObjectType), modinfoDoc.GetAllocator());
+				modinfoDoc["Mods"][currentModIndex].AddMember("Name", rapidjson::StringRef(&mod.Name[0]), modinfoDoc.GetAllocator());
+				modinfoDoc["Mods"][currentModIndex].AddMember("Version", rapidjson::StringRef(&mod.Version[0]), modinfoDoc.GetAllocator());
+				modinfoDoc["Mods"][currentModIndex].AddMember("RequiredOnClient", mod.RequiredOnClient, modinfoDoc.GetAllocator());
+				modinfoDoc["Mods"][currentModIndex].AddMember("Pdiff", rapidjson::StringRef(&mod.Pdiff[0]), modinfoDoc.GetAllocator());
+
+				currentModIndex++;
 			}
+
+			rapidjson::StringBuffer buffer;
+			buffer.Clear();
+			rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+			modinfoDoc.Accept(writer);
+			const char* modInfoString = buffer.GetString();
+
+			CURL* curl = curl_easy_init();
+
+			std::string readBuffer;
+			curl_easy_setopt(curl, CURLOPT_POST, 1L);
+			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
+			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+
+			curl_mime* mime = curl_mime_init(curl);
+			curl_mimepart* part = curl_mime_addpart(mime);
+
+			curl_mime_data(part, modInfoString, buffer.GetSize());
+			curl_mime_name(part, "modinfo");
+			curl_mime_filename(part, "modinfo.json");
+			curl_mime_type(part, "application/json");
+
+			curl_easy_setopt(curl, CURLOPT_MIMEPOST, mime);
+
+			// format every paramter because computers hate me
+			{
+				char* nameEscaped = curl_easy_escape(curl, strName.c_str(), strName.length());
+				char* descEscaped = curl_easy_escape(curl, strDescription.c_str(), strDescription.length());
+				char* mapEscaped = curl_easy_escape(curl, strMap.c_str(), strMap.length());
+				char* playlistEscaped = curl_easy_escape(curl, strPlaylist.c_str(), strPlaylist.length());
+				char* passwordEscaped = curl_easy_escape(curl, strPassword.c_str(), strPassword.length());
+
+				curl_easy_setopt(curl, CURLOPT_URL, fmt::format("{}/server/add_server?port={}&authPort={}&name={}&description={}&map={}&playlist={}&maxPlayers={}&password={}", Cvar_ns_masterserver_hostname->m_pszString, port, authPort, nameEscaped, descEscaped, mapEscaped, playlistEscaped, maxPlayers, passwordEscaped).c_str());
+
+				curl_free(nameEscaped);
+				curl_free(descEscaped);
+				curl_free(mapEscaped);
+				curl_free(playlistEscaped);
+				curl_free(passwordEscaped);
+			}
+
+			CURLcode result = curl_easy_perform(curl);
+
+			if (result == CURLcode::CURLE_OK)
+			{
+				m_successfullyConnected = true;
+
+				rapidjson::Document serverAddedJson;
+				serverAddedJson.Parse(readBuffer.c_str());
+
+				if (serverAddedJson.HasParseError())
+				{
+					spdlog::error("Failed reading masterserver authentication response: encountered parse error \"{}\"", rapidjson::GetParseError_En(serverAddedJson.GetParseError()));
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (!serverAddedJson.IsObject())
+				{
+					spdlog::error("Failed reading masterserver authentication response: root object is not an object");
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (serverAddedJson.HasMember("error"))
+				{
+					spdlog::error("Failed reading masterserver response: got fastify error response");
+					spdlog::error(readBuffer);
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (!serverAddedJson["success"].IsTrue())
+				{
+					spdlog::error("Adding server to masterserver failed: \"success\" is not true");
+					goto REQUEST_END_CLEANUP;
+				}
+
+				if (!serverAddedJson.HasMember("id") || !serverAddedJson["id"].IsString())
+				{
+					spdlog::error("Failed reading masterserver response: malformed json object");
+					goto REQUEST_END_CLEANUP;
+				}
+
+				strncpy(m_ownServerId, serverAddedJson["id"].GetString(), sizeof(m_ownServerId));
+				m_ownServerId[sizeof(m_ownServerId) - 1] = 0;
+
+
+				// heartbeat thread
+				// ideally this should actually be done in main thread, rather than on it's own thread, so it'd stop if server freezes
+				std::thread heartbeatThread([this] {
+					CURL* curl = curl_easy_init();
+					
+					while (*m_ownServerId)
+					{
+						Sleep(10000);
+						curl_easy_setopt(curl, CURLOPT_URL, fmt::format("{}/server/heartbeat?id={}&playerCount={}", Cvar_ns_masterserver_hostname->m_pszString, m_ownServerId, g_ServerAuthenticationManager->m_additionalPlayerData.size()).c_str());
+						curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
+
+						curl_easy_perform(curl);
+					}
+
+					curl_easy_cleanup(curl);
+				});
+
+				heartbeatThread.detach();
+			}
+			else
+			{
+				spdlog::error("Failed adding self to server list: error {}", curl_easy_strerror(result));
+				m_successfullyConnected = false;
+			}
+
+		REQUEST_END_CLEANUP:
+			curl_easy_cleanup(curl);
+			curl_mime_free(mime);
 		});
 
 	requestThread.detach();
-}
-
-bool MasterServerManager::UpdateServerMapAndPlaylistThread(char* map, char* playlist, int maxPlayers)
-{
-	// we dont process this at all atm, maybe do later, but atm not necessary
-	LazyCreateHttpClient();
-	if (auto result = m_httpClient->Post(fmt::format("/server/update_values?id={}&map={}&playlist={}&maxPlayers={}", m_ownServerId, map, playlist, maxPlayers).c_str()))
-	{
-		m_successfullyConnected = true;
-	}
-	else
-	{
-		m_successfullyConnected = false;
-	}
-
-	return m_successfullyConnected;
 }
 
 void MasterServerManager::UpdateServerMapAndPlaylist(char* map, char* playlist, int maxPlayers)
@@ -804,15 +775,38 @@ void MasterServerManager::UpdateServerMapAndPlaylist(char* map, char* playlist, 
 	if (!*m_ownServerId)
 		return;
 
-	std::thread requestThread([this, map, playlist, maxPlayers] 
+	std::string strMap(map);
+	std::string strPlaylist(playlist);
+
+	std::thread requestThread([this, strMap, strPlaylist, maxPlayers]
 		{
-			for (int i = 0; i < 3; i++)
+			CURL* curl = curl_easy_init();
+
+			std::string readBuffer;
+			curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
+			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
+			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+
+			// escape params
 			{
-				if (!UpdateServerMapAndPlaylistThread(map, playlist, maxPlayers))
-					spdlog::info("retrying...");
-				else
-					return;
+				char* mapEscaped = curl_easy_escape(curl, strMap.c_str(), strMap.length());
+				char* playlistEscaped = curl_easy_escape(curl, strPlaylist.c_str(), strPlaylist.length());
+
+				curl_easy_setopt(curl, CURLOPT_URL, fmt::format("{}/server/update_values?id={}&map={}&playlist={}&maxPlayers={}", Cvar_ns_masterserver_hostname->m_pszString, m_ownServerId, mapEscaped, playlistEscaped, maxPlayers).c_str());
+				
+				curl_free(mapEscaped);
+				curl_free(playlistEscaped);
 			}
+
+			CURLcode result = curl_easy_perform(curl);
+
+			if (result == CURLcode::CURLE_OK)
+				m_successfullyConnected = true;
+			else
+				m_successfullyConnected = false;
+
+			curl_easy_cleanup(curl);
 		});
 
 	requestThread.detach();
@@ -824,42 +818,28 @@ void MasterServerManager::UpdateServerPlayerCount(int playerCount)
 	if (!*m_ownServerId)
 		return;
 
-	std::thread requestThread([this, playerCount] {
+	std::thread requestThread([this, playerCount] 
+		{
+			CURL* curl = curl_easy_init();
 
-			// we dont process this at all atm, maybe do later, but atm not necessary
-			LazyCreateHttpClient();
-			if (auto result = m_httpClient->Post(fmt::format("/server/update_values?id={}&playerCount={}", m_ownServerId, playerCount).c_str()))
-			{
+			std::string readBuffer;
+			curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
+			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
+			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+			curl_easy_setopt(curl, CURLOPT_URL, fmt::format("{}/server/update_values?id={}&playerCount={}", Cvar_ns_masterserver_hostname->m_pszString, m_ownServerId, playerCount).c_str());
+
+			CURLcode result = curl_easy_perform(curl);
+
+			if (result == CURLcode::CURLE_OK)
 				m_successfullyConnected = true;
-			}
 			else
-			{
 				m_successfullyConnected = false;
-			}		
+
+			curl_easy_cleanup(curl);
 		});
 
 	requestThread.detach();
-}
-
-bool MasterServerManager::WritePlayerPersistentDataThread(std::string playerIdTemp, char* pdata, size_t pdataSize)
-{
-	httplib::MultipartFormDataItems requestItems = {
-	{ "pdata", std::string(pdata, pdataSize), "file.pdata", "application/octet-stream"}
-	};
-
-	// we dont process this at all atm, maybe do later, but atm not necessary
-	LazyCreateHttpClient();
-	if (auto result = m_httpClient->Post(fmt::format("/accounts/write_persistence?id={}&serverId={}", playerIdTemp, m_ownServerId).c_str(), requestItems))
-	{
-		m_successfullyConnected = true;
-	}
-	else
-	{
-		m_successfullyConnected = false;
-	}
-
-	m_savingPersistentData = false;
-	return m_successfullyConnected;
 }
 
 void MasterServerManager::WritePlayerPersistentData(char* playerId, char* pdata, size_t pdataSize)
@@ -872,35 +852,43 @@ void MasterServerManager::WritePlayerPersistentData(char* playerId, char* pdata,
 		return;
 	}
 
-	std::string playerIdTemp(playerId);
-	std::thread requestThread([this, playerIdTemp, pdata, pdataSize] 
+	std::string strPlayerId(playerId);
+	std::string strPdata(pdata, pdataSize);
+
+	std::thread requestThread([this, strPlayerId, strPdata, pdataSize]
 		{
-			for (int i = 0; i < 5; i++)
-			{
-				if (!WritePlayerPersistentDataThread(playerIdTemp, pdata, pdataSize))
-					spdlog::info("retrying...");
-				else
-					return;
-			}
+			CURL* curl = curl_easy_init();
+
+			std::string readBuffer;
+			curl_easy_setopt(curl, CURLOPT_URL, fmt::format("{}/accounts/write_persistence?id={}&serverId={}", Cvar_ns_masterserver_hostname->m_pszString, strPlayerId, m_ownServerId).c_str());
+			curl_easy_setopt(curl, CURLOPT_POST, 1L);
+			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
+			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+
+			curl_mime* mime = curl_mime_init(curl);
+			curl_mimepart* part = curl_mime_addpart(mime);
+
+			curl_mime_data(part, strPdata.c_str(), pdataSize);
+			curl_mime_name(part, "pdata");
+			curl_mime_filename(part, "file.pdata");
+			curl_mime_type(part, "application/octet-stream");
+
+			curl_easy_setopt(curl, CURLOPT_MIMEPOST, mime);
+
+			CURLcode result = curl_easy_perform(curl);
+
+			if (result == CURLcode::CURLE_OK)
+				m_successfullyConnected = true;
+			else
+				m_successfullyConnected = false;
+
+			curl_easy_cleanup(curl);
+
+			m_savingPersistentData = false;
 		});
 
 	requestThread.detach();
-}
-
-bool MasterServerManager::RemoveSelfFromServerListThread()
-{
-	// we dont process this at all atm, maybe do later, but atm not necessary
-	LazyCreateHttpClient();
-	if (auto result = m_httpClient->Delete(fmt::format("/server/remove_server?id={}", m_ownServerId).c_str()))
-	{
-		m_successfullyConnected = true;
-	}
-	else
-	{
-		m_successfullyConnected = false;
-	}
-
-	m_ownServerId[0] = 0;
 }
 
 void MasterServerManager::RemoveSelfFromServerList()
@@ -910,13 +898,23 @@ void MasterServerManager::RemoveSelfFromServerList()
 		return;
 
 	std::thread requestThread([this] {
-			for (int i = 0; i < 5; i++)
-			{
-				if (!RemoveSelfFromServerListThread())
-					spdlog::info("retrying...");
-				else
-					return;
-			}
+			CURL* curl = curl_easy_init();
+
+			std::string readBuffer;
+			curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
+			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+			curl_easy_setopt(curl, CURLOPT_URL, fmt::format("{}/server/remove_server?id={}", Cvar_ns_masterserver_hostname->m_pszString, m_ownServerId).c_str());
+
+			CURLcode result = curl_easy_perform(curl);
+
+			if (result == CURLcode::CURLE_OK)
+				m_successfullyConnected = true;
+			else
+				m_successfullyConnected = false;
+
+			curl_easy_cleanup(curl);
 		});
 
 	requestThread.detach();
@@ -976,6 +974,11 @@ void CHostState__State_GameShutdownHook(CHostState* hostState)
 	g_ServerAuthenticationManager->StopPlayerAuthServer();
 
 	CHostState__State_GameShutdown(hostState);
+}
+
+MasterServerManager::MasterServerManager()
+{
+	curl_global_init(CURL_GLOBAL_DEFAULT);
 }
 
 void InitialiseSharedMasterServer(HMODULE baseAddress)
