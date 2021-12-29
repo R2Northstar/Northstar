@@ -9,7 +9,7 @@ void function GamemodeTdm_Init()
 
 void function GiveScoreForPlayerKill( entity victim, entity attacker, var damageInfo )
 {
-	if ( victim != attacker && victim.IsPlayer() && attacker.IsPlayer() )
+	if ( victim != attacker && victim.IsPlayer() && attacker.IsPlayer() && GetGameState() != eGameState.Epilogue )
 		AddTeamScore( attacker.GetTeam(), 1 )
 }
 
