@@ -10,6 +10,10 @@ A: Northstar runs separate from official servers and progress does not carry ove
 
 However your progress on official servers is not lost, so running vanilla client after playing on Northstar you should be back to your old level on official servers.
 
+### Q: How do I open the console?
+
+A: Check [_Opening the console_](using-northstar/commands.md#opening-the-console).
+
 ## Copied from the Discord FAQ channel
 
 ### Q: Will there be a console version?
