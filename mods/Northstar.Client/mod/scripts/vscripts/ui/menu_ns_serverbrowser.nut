@@ -113,7 +113,7 @@ void function InitServerBrowserMenu()
 		Hud_DialogList_AddListItem( Hud_GetChild( file.menu, "SwtBtnSelectMap" ) , map, string( enum_ ) )
 
 
-	filterArguments.filterGamemodes = GetPrivateMatchModes()
+	filterArguments.filterGamemodes = clone GetPrivateMatchModes()
 	filterArguments.filterGamemodes.insert(0, "SWITCH_ANY")
 
 	// GetGameModeDisplayName( mode ) requires server talk even if it can be entirely client side
