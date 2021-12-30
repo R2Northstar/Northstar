@@ -502,9 +502,9 @@ void function TryUnlockNorthstarButton()
 	// unlock "Launch Northstar" button until you're authed with masterserver, are allowing insecure auth, or 7.5 seconds have passed
 	float time = Time()
 	
-	while ( Time() < time + 7.5 || GetConVarInt( "ns_has_agreed_to_send_token" ) != NS_AGREED_TO_SEND_TOKEN )
+	while ( GetConVarInt( "ns_has_agreed_to_send_token" ) != NS_AGREED_TO_SEND_TOKEN )
 	{
-		if ( NSIsMasterServerAuthenticated() || GetConVarBool( "ns_auth_allow_insecure" ) )
+		if ( ( NSIsMasterServerAuthenticated() && IsStryderAllowingMP() ) || GetConVarBool( "ns_auth_allow_insecure" ) )
 			break
 			
 		WaitFrame()

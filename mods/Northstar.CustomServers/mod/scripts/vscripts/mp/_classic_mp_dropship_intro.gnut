@@ -125,6 +125,8 @@ void function EndIntroWhenFinished()
 
 void function SpawnPlayerIntoDropship( entity player )
 {
+	player.EndSignal( "OnDestroy" )
+
 	if ( IsAlive( player ) )
 		player.Die() // kill them so we don't have any issues respawning them later
 	
@@ -148,7 +150,6 @@ void function SpawnPlayerIntoDropship( entity player )
 	WaitFrame()
 
 	player.EndSignal( "OnDeath" )
-	player.EndSignal( "OnDestroy" )
 	
 	// find the player's dropship and seat
 	array<IntroDropship> teamDropships

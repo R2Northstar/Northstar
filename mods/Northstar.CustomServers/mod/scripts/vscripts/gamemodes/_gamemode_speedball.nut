@@ -103,7 +103,9 @@ void function DropFlag()
 	file.flag.ClearParent()
 	file.flag.SetAngles( < 0, 0, 0 > )
 	SetGlobalNetEnt( "flagCarrier", file.flag )
-	EmitSoundOnEntityOnlyToPlayer( file.flagCarrier, file.flagCarrier, "UI_CTF_1P_FlagDrop" )
+	
+	if ( IsValid( file.flagCarrier ) )
+		EmitSoundOnEntityOnlyToPlayer( file.flagCarrier, file.flagCarrier, "UI_CTF_1P_FlagDrop" )
 	
 	foreach ( entity player in GetPlayerArray() )
 		MessageToPlayer( player, eEventNotifications.SPEEDBALL_FlagDropped, file.flagCarrier )
