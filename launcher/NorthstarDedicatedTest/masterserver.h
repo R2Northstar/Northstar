@@ -67,6 +67,7 @@ class MasterServerManager
 private:
 	bool m_requestingServerList = false;
 	bool m_authenticatingWithGameServer = false;
+	httplib::Client* m_httpClient = nullptr;
 
 public:
 	char m_ownServerId[33];
@@ -97,6 +98,7 @@ private:
 	void SetHttpClientOptions(httplib::Client& http);
 
 public:
+	MasterServerManager();
 	void ClearServerList();
 	void RequestServerList();
 	void RequestMainMenuPromos();
