@@ -364,9 +364,13 @@ void function UpdateServerInfoBasedOnRes()
 ////////////////////////////
 void function OnCloseServerBrowserMenu()
 {
-	DeregisterButtonPressedCallback(MOUSE_WHEEL_UP , OnScrollUp)
-	DeregisterButtonPressedCallback(MOUSE_WHEEL_DOWN , OnScrollDown)
-	DeregisterButtonPressedCallback(KEY_TAB , OnKeyTabPressed)
+	try
+	{
+		DeregisterButtonPressedCallback(MOUSE_WHEEL_UP , OnScrollUp)
+		DeregisterButtonPressedCallback(MOUSE_WHEEL_DOWN , OnScrollDown)
+		DeregisterButtonPressedCallback(KEY_TAB , OnKeyTabPressed)
+	}
+	catch ( ex ) {}
 }
 
 void function OnServerBrowserMenuOpened()
