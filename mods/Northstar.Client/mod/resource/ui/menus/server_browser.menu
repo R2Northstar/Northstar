@@ -2576,7 +2576,7 @@ resource/ui/menus/mods_browse.menu
 			ControlName		Label
 			auto_wide_tocontents 	1
 			tall 					40
-			labelText			"99999"
+			labelText			""
 			font								Default_28_ShadowGlow
 			bgcolor_override		"0 0 0 120"
 			fgcolor_override		"107 166 196 200"
@@ -2613,7 +2613,7 @@ resource/ui/menus/mods_browse.menu
 			ControlName		Label
 			auto_wide_tocontents 	1
 			tall 					40
-			labelText			"9999"
+			labelText			""
 			font								Default_28_ShadowGlow
 			bgcolor_override		"0 0 0 120"
 			fgcolor_override		"196 108 108 200"
