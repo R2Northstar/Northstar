@@ -25,6 +25,7 @@ void function GamemodeSpeedball_Init()
 	AddCallback_OnTouchHealthKit( "item_flag", OnFlagCollected )
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	SetTimeoutWinnerDecisionFunc( TimeoutCheckFlagHolder )
+	AddCallback_OnRoundEndCleanup ( ResetFlag )
 
 	ClassicMP_SetCustomIntro( ClassicMP_DefaultNoIntro_Setup, ClassicMP_DefaultNoIntro_GetLength() )
 	ClassicMP_ForceDisableEpilogue( true )
