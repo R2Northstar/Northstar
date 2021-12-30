@@ -102,7 +102,6 @@ bool LoadNorthstar()
         }
     }
 
-    printf("WILL CALL HOOK INIT\n");
     ((bool (*)()) Hook_Init)();
     return true;
 }
