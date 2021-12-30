@@ -68,15 +68,15 @@ void ServerAuthenticationManager::StartPlayerAuthServer()
 
 			m_playerAuthServer.Post("/authenticate_incoming_player", [this](const httplib::Request& request, httplib::Response& response) {
 					// can't just do request.remote_addr == Cvar_ns_masterserver_hostname->m_pszString because the cvar can be a url, gotta resolve an ip from it for comparisons
-					unsigned long remoteAddr = inet_addr(request.remote_addr.c_str());
+					//unsigned long remoteAddr = inet_addr(request.remote_addr.c_str());
+					//
+					//char* addrPtr = Cvar_ns_masterserver_hostname->m_pszString;
+					//char* typeStart = strstr(addrPtr, "://");
+					//if (typeStart)
+					//	addrPtr = typeStart + 3;
+					//hostent* resolvedRemoteAddr = gethostbyname((const char*)addrPtr);
 
-					char* addrPtr = Cvar_ns_masterserver_hostname->m_pszString;
-					char* typeStart = strstr(addrPtr, "://");
-					if (typeStart)
-						addrPtr = typeStart + 3;
-					hostent* resolvedRemoteAddr = gethostbyname((const char*)addrPtr);
-
-					if (!request.has_param("id") || !request.has_param("authToken") || request.body.size() >= 65335 || !resolvedRemoteAddr || ((in_addr**)resolvedRemoteAddr->h_addr_list)[0]->S_un.S_addr != remoteAddr)
+					if (!request.has_param("id") || !request.has_param("authToken") || request.body.size() >= 65335 || !request.has_param("serverAuthToken") || strcmp(g_MasterServerManager->m_ownServerAuthToken, request.get_param_value("serverAuthToken").c_str()))// || !resolvedRemoteAddr || ((in_addr**)resolvedRemoteAddr->h_addr_list)[0]->S_un.S_addr != remoteAddr)
 					{
 						response.set_content("{\"success\":false}", "application/json");
 						return;
