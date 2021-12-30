@@ -65,7 +65,8 @@ void WaitForDebugger(HMODULE baseAddress)
     }
 }
 
-// in the future this will be called from launcher instead of dllmain
+SourceAllocator* g_SourceAllocator;
+
 bool InitialiseNorthstar()
 {
     if (initialised)
@@ -80,6 +81,8 @@ bool InitialiseNorthstar()
     // apply initial hooks
     InstallInitialHooks();
     InitialiseInterfaceCreationHooks();
+
+    g_SourceAllocator = new SourceAllocator;
 
     AddDllLoadCallback("tier0.dll", InitialiseTier0GameUtilFunctions);
     AddDllLoadCallback("engine.dll", WaitForDebugger);
@@ -128,6 +131,10 @@ bool InitialiseNorthstar()
 
     // mod manager after everything else
     AddDllLoadCallback("engine.dll", InitialiseModManager);
+
+    // TODO: If you wanna make it more flexible and for example injectable with old Icepick injector
+    // in this place you should iterate over all already loaded DLLs and execute their callbacks and mark them as executed
+    // (as they will never get called otherwise and stuff will fail)
 
     return true;
 }

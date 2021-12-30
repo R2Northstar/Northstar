@@ -77,7 +77,7 @@ LPSTR GetCommandLineAHook()
 		}
 
 		auto len = args.length();
-		cmdlineResult = reinterpret_cast<char*>(malloc(len + 1));
+		cmdlineResult = reinterpret_cast<char*>(_malloc_base(len + 1));
 		if (!cmdlineResult)
 		{
 			spdlog::error("malloc failed for command line");

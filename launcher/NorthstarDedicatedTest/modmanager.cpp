@@ -22,7 +22,7 @@ Mod::Mod(fs::path modDir, char* jsonBuf)
 
 	ModDirectory = modDir;
 
-	rapidjson::Document modJson;
+	rapidjson_document modJson;
 	modJson.Parse<rapidjson::ParseFlag::kParseCommentsFlag | rapidjson::ParseFlag::kParseTrailingCommasFlag>(jsonBuf);
 
 	// fail if parse error
@@ -379,7 +379,7 @@ void ModManager::UnloadMods()
 		// should we be doing this here or should scripts be doing this manually?
 		// main issue with doing this here is when we reload mods for connecting to a server, we write enabled mods, which isn't necessarily what we wanna do
 		if (!m_enabledModsCfg.HasMember(mod.Name.c_str()))
-			m_enabledModsCfg.AddMember(rapidjson::StringRef(mod.Name.c_str()), rapidjson::Value(false), m_enabledModsCfg.GetAllocator());
+			m_enabledModsCfg.AddMember(rapidjson_document::StringRefType(mod.Name.c_str()), rapidjson_document::GenericValue(false), m_enabledModsCfg.GetAllocator());
 
 		m_enabledModsCfg[mod.Name.c_str()].SetBool(mod.Enabled);
 	}
