@@ -637,6 +637,7 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 	std::thread requestThread([this, port, authPort, strName, strDescription, strMap, strPlaylist, maxPlayers, strPassword]
 		{
 			m_ownServerId[0] = 0;
+			m_ownServerAuthToken[0] = 0;
 
 			// build modinfo obj
 			rapidjson::Document modinfoDoc;
@@ -733,7 +734,7 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 					goto REQUEST_END_CLEANUP;
 				}
 
-				if (!serverAddedJson.HasMember("id") || !serverAddedJson["id"].IsString())
+				if (!serverAddedJson.HasMember("id") || !serverAddedJson["id"].IsString() || !serverAddedJson.HasMember("serverAuthToken") || !serverAddedJson["serverAuthToken"].IsString())
 				{
 					spdlog::error("Failed reading masterserver response: malformed json object");
 					goto REQUEST_END_CLEANUP;
@@ -742,6 +743,8 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 				strncpy(m_ownServerId, serverAddedJson["id"].GetString(), sizeof(m_ownServerId));
 				m_ownServerId[sizeof(m_ownServerId) - 1] = 0;
 
+				strncpy(m_ownServerAuthToken, serverAddedJson["serverAuthToken"].GetString(), sizeof(m_ownServerAuthToken));
+				m_ownServerAuthToken[sizeof(m_ownServerAuthToken) - 1] = 0;
 
 				// heartbeat thread
 				// ideally this should actually be done in main thread, rather than on it's own thread, so it'd stop if server freezes
