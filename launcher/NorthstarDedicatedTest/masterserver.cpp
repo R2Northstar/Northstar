@@ -142,7 +142,7 @@ void MasterServerManager::AuthenticateOriginWithMasterServer(char* uid, char* or
 
 				if (originAuthInfo.HasParseError())
 				{
-					spdlog::error("Failed reading origin auth info response: encountered parse error \{}\"", rapidjson::GetParseError_En(originAuthInfo.GetParseError()));
+					spdlog::error("Failed reading origin auth info response: encountered parse error \"{}\"", rapidjson::GetParseError_En(originAuthInfo.GetParseError()));
 					goto REQUEST_END_CLEANUP;
 				}
 
@@ -509,7 +509,7 @@ void MasterServerManager::AuthenticateWithOwnServer(char* uid, char* playerToken
 						goto REQUEST_END_CLEANUP;
 					}
 
-					newAuthData.pdata[i++] = (char)byte.GetUint();
+					newAuthData.pdata[i++] = static_cast<char>(byte.GetUint());
 				}
 
 				std::lock_guard<std::mutex> guard(g_ServerAuthenticationManager->m_authDataMutex);
@@ -623,7 +623,7 @@ void MasterServerManager::AuthenticateWithServer(char* uid, char* playerToken, c
 				}
 
 				m_pendingConnectionInfo.ip.S_un.S_addr = inet_addr(connectionInfoJson["ip"].GetString());
-				m_pendingConnectionInfo.port = connectionInfoJson["port"].GetInt();
+				m_pendingConnectionInfo.port = (unsigned short)connectionInfoJson["port"].GetUint();
 
 				strncpy(m_pendingConnectionInfo.authToken, connectionInfoJson["authToken"].GetString(), 31);
 				m_pendingConnectionInfo.authToken[31] = 0;

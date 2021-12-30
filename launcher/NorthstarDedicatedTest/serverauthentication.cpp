@@ -160,7 +160,7 @@ bool ServerAuthenticationManager::AuthenticatePlayer(void* player, int64_t uid, 
 		
 		// get file length
 		pdataStream.seekg(0, pdataStream.end);
-		int length = pdataStream.tellg();
+		auto length = pdataStream.tellg();
 		pdataStream.seekg(0, pdataStream.beg);
 
 		// copy pdata into buffer
