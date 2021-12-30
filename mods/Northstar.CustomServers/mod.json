@@ -116,7 +116,7 @@
 		
 		{
 			"Path": "lobby/sh_private_lobby_modes_init.gnut",
-			"RunOn": "( SERVER || CLIENT ) && MP",
+			"RunOn": "( SERVER || CLIENT ) && MP"
 		}
 	]
 }
