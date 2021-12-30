@@ -2522,7 +2522,7 @@
 
 		while ( !clGlobal.initializedMenuModels )
 			WaitFrame()
-		
+
 		// setting menu camera while our viewentity isn't player will crash
 		// unfortunately no way to close menu if we get our viewentity set while menu is open atm
 		while ( GetViewEntity().GetClassName() == "class C_BaseEntity" )
@@ -2896,10 +2896,12 @@
 	{
 		float screenScaleXModifier = 1920.0 / GetScreenSize()[0] // 1920 is base screen width
 		float mouseXRotateDelta = deltaX * screenScaleXModifier * MOUSE_ROTATE_MULTIPLIER
-		//printt( "deltaX:", deltaX, "screenScaleModifier:", screenScaleModifier, "mouseRotateDelta:", mouseRotateDelta )
+		//printt( "deltaX:", deltaX, "deltaY:", deltaY )
 
 		float screenScaleYModifier = 1080.0 / GetScreenSize()[1] // 1920 is base screen width
 		float mouseYRotationDelta = deltaY * screenScaleYModifier * MOUSE_ROTATE_MULTIPLIER
+
+		UpdateMouseDeltaBuffer( deltaX, deltaY )
 
 		RunMenuClientFunction( "UpdateMouseRotateDelta", mouseXRotateDelta, mouseYRotationDelta )
 	}
