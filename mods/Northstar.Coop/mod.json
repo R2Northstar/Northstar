@@ -20,6 +20,6 @@
 			"ServerCallback": {
 				"After": "SingleplayerCoopLobby_Init"
 			}
-		},
-	],
+		}
+	]
 }
