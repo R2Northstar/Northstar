@@ -78,16 +78,25 @@ void InitialiseServerGameUtilFunctions(HMODULE baseAddress)
 
 void InitialiseTier0GameUtilFunctions(HMODULE baseAddress)
 {
-	baseAddress = GetModuleHandleA("tier0.dll");
-	if (!baseAddress)
-		throw "tier0.dll is not loaded";
-
 	CreateGlobalMemAlloc = reinterpret_cast<CreateGlobalMemAllocType>(GetProcAddress(baseAddress, "CreateGlobalMemAlloc"));
 	IMemAlloc** ppMemAllocSingleton = reinterpret_cast<IMemAlloc**>(GetProcAddress(baseAddress, "g_pMemAllocSingleton"));
-	if (!ppMemAllocSingleton || !*ppMemAllocSingleton)
+	if (!ppMemAllocSingleton)
+	{
+		spdlog::critical("Address of g_pMemAllocSingleton is a null pointer, this should never happen");
+		throw "Address of g_pMemAllocSingleton is a null pointer, this should never happen";
+	}
+	if (!*ppMemAllocSingleton)
+	{
 		g_pMemAllocSingleton = CreateGlobalMemAlloc();
+		*ppMemAllocSingleton = g_pMemAllocSingleton;
+		spdlog::warn("Created new g_pMemAllocSingleton");
+	}
 	else
+	{
 		g_pMemAllocSingleton = *ppMemAllocSingleton;
+		extern size_t g_iStaticAllocated;
+		spdlog::info("Using existing g_pMemAllocSingleton for memory allocations, preallocated {} bytes beforehand", g_iStaticAllocated);
+	}
 
 	Error = reinterpret_cast<ErrorType>(GetProcAddress(baseAddress, "Error"));
 	CommandLine = reinterpret_cast<CommandLineType>(GetProcAddress(baseAddress, "CommandLine"));

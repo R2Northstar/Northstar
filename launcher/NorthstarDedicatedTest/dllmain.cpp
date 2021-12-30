@@ -70,7 +70,7 @@ bool InitialiseNorthstar()
 {
     if (initialised)
     {
-        fprintf(stderr, "[WARN] Called InitialiseNorthstar more than once!\n");
+        fprintf(stderr, "[info] Called InitialiseNorthstar more than once!\n");
         return false;
     }
     initialised = true;
@@ -81,8 +81,7 @@ bool InitialiseNorthstar()
     InstallInitialHooks();
     InitialiseInterfaceCreationHooks();
 
-    // adding a callback to tier0 won't work for some reason
-    AddDllLoadCallback("launcher.org.dll", InitialiseTier0GameUtilFunctions);
+    AddDllLoadCallback("tier0.dll", InitialiseTier0GameUtilFunctions);
     AddDllLoadCallback("engine.dll", WaitForDebugger);
     AddDllLoadCallback("engine.dll", InitialiseEngineGameUtilFunctions);
     AddDllLoadCallback("server.dll", InitialiseServerGameUtilFunctions);
@@ -91,7 +90,7 @@ bool InitialiseNorthstar()
     // dedi patches
     {
         AddDllLoadCallback("engine.dll", InitialiseDedicated);
-        AddDllLoadCallback("launcher.org.dll", InitialiseDedicatedOrigin);
+        AddDllLoadCallback("tier0.dll", InitialiseDedicatedOrigin);
         AddDllLoadCallback("server.dll", InitialiseDedicatedServerGameDLL);
         AddDllLoadCallback("materialsystem_dx11.dll", InitialiseDedicatedMaterialSystem);
         // this fucking sucks, but seemingly we somehow load after rtech_game???? unsure how, but because of this we have to apply patches here, not on rtech_game load
