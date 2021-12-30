@@ -76,6 +76,7 @@ void* realloc(void* old_ptr, size_t size) {
 
     if (g_ppMemAllocSingleton && *g_ppMemAllocSingleton)
         return (*g_ppMemAllocSingleton)->m_vtable->Realloc(*g_ppMemAllocSingleton, old_ptr, size);
+    return nullptr;
 }
 
 void* operator new(size_t n)

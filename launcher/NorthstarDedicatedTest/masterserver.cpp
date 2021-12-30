@@ -3,7 +3,6 @@
 #include "concommand.h"
 #include "gameutils.h"
 #include "hookutils.h"
-#include "libcurl/include/curl/curl.h"
 #include "serverauthentication.h"
 #include "gameutils.h"
 #include "rapidjson/document.h"
@@ -137,7 +136,7 @@ void MasterServerManager::AuthenticateOriginWithMasterServer(char* uid, char* or
 			{
 				m_successfullyConnected = true;
 
-				rapidjson::Document originAuthInfo;
+				rapidjson_document originAuthInfo;
 				originAuthInfo.Parse(readBuffer.c_str());
 
 				if (originAuthInfo.HasParseError())
@@ -209,7 +208,7 @@ void MasterServerManager::RequestServerList()
 			{
 				m_successfullyConnected = true;
 
-				rapidjson::Document serverInfoJson;
+				rapidjson_document serverInfoJson;
 				serverInfoJson.Parse(readBuffer.c_str());
 
 				if (serverInfoJson.HasParseError())
@@ -231,7 +230,7 @@ void MasterServerManager::RequestServerList()
 					goto REQUEST_END_CLEANUP;
 				}
 
-				rapidjson::GenericArray<false, rapidjson::Value> serverArray = serverInfoJson.GetArray();
+				rapidjson::GenericArray<false, rapidjson_document::GenericValue> serverArray = serverInfoJson.GetArray();
 
 				spdlog::info("Got {} servers", serverArray.Size());
 
@@ -346,7 +345,7 @@ void MasterServerManager::RequestMainMenuPromos()
 			{
 				m_successfullyConnected = true;
 
-				rapidjson::Document mainMenuPromoJson;
+				rapidjson_document mainMenuPromoJson;
 				mainMenuPromoJson.Parse(readBuffer.c_str());
 
 				if (mainMenuPromoJson.HasParseError())
@@ -456,7 +455,7 @@ void MasterServerManager::AuthenticateWithOwnServer(char* uid, char* playerToken
 			{
 				m_successfullyConnected = true;
 
-				rapidjson::Document authInfoJson;
+				rapidjson_document authInfoJson;
 				authInfoJson.Parse(readBuffer.c_str());
 
 				if (authInfoJson.HasParseError())
@@ -588,7 +587,7 @@ void MasterServerManager::AuthenticateWithServer(char* uid, char* playerToken, c
 			{
 				m_successfullyConnected = true;
 
-				rapidjson::Document connectionInfoJson;
+				rapidjson_document connectionInfoJson;
 				connectionInfoJson.Parse(readBuffer.c_str());
 
 				if (connectionInfoJson.HasParseError())
@@ -672,9 +671,9 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 			m_ownServerId[0] = 0;
 
 			// build modinfo obj
-			rapidjson::Document modinfoDoc;
+			rapidjson_document modinfoDoc;
 			modinfoDoc.SetObject();
-			modinfoDoc.AddMember("Mods", rapidjson::Value(rapidjson::kArrayType), modinfoDoc.GetAllocator());
+			modinfoDoc.AddMember("Mods", rapidjson_document::GenericValue(rapidjson::kArrayType), modinfoDoc.GetAllocator());
 
 		int currentModIndex = 0;
 		for (Mod& mod : g_ModManager->m_loadedMods)
@@ -682,7 +681,7 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 			if (!mod.Enabled || (!mod.RequiredOnClient && !mod.Pdiff.size()))
 				continue;
 
-			modinfoDoc["Mods"].PushBack(rapidjson::Value(rapidjson::kObjectType), modinfoDoc.GetAllocator());
+			modinfoDoc["Mods"].PushBack(rapidjson_document::GenericValue(rapidjson::kObjectType), modinfoDoc.GetAllocator());
 			modinfoDoc["Mods"][currentModIndex].AddMember("Name", rapidjson::StringRef(&mod.Name[0]), modinfoDoc.GetAllocator());
 			modinfoDoc["Mods"][currentModIndex].AddMember("Version", rapidjson::StringRef(&mod.Version[0]), modinfoDoc.GetAllocator());
 			modinfoDoc["Mods"][currentModIndex].AddMember("RequiredOnClient", mod.RequiredOnClient, modinfoDoc.GetAllocator());
@@ -738,7 +737,7 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 			{
 				m_successfullyConnected = true;
 
-				rapidjson::Document serverAddedJson;
+				rapidjson_document serverAddedJson;
 				serverAddedJson.Parse(readBuffer.c_str());
 
 				if (serverAddedJson.HasParseError())
@@ -1025,7 +1024,7 @@ void CHostState__State_GameShutdownHook(CHostState* hostState)
 
 MasterServerManager::MasterServerManager()
 {
-	curl_global_init(CURL_GLOBAL_DEFAULT);
+	curl_global_init_mem(CURL_GLOBAL_DEFAULT, _malloc_base, _free_base, _realloc_base, _strdup_base, _calloc_base);
 }
 
 void InitialiseSharedMasterServer(HMODULE baseAddress)
