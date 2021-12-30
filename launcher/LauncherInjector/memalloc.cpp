@@ -17,6 +17,7 @@ void LoadTier0Handle()
 const int STATIC_ALLOC_SIZE = 16384;
 
 size_t g_iStaticAllocated = 0;
+void* g_pLastAllocated = nullptr;
 char pStaticAllocBuf[STATIC_ALLOC_SIZE];
 
 // they should never be used here, except in LibraryLoadError // haha not true
@@ -29,6 +30,7 @@ void* malloc(size_t n)
     {
         void* ret = pStaticAllocBuf + g_iStaticAllocated;
         g_iStaticAllocated += n;
+        g_pLastAllocated = ret;
         return ret;
     }
     else
@@ -51,6 +53,29 @@ void free(void* p)
 
     if (g_ppMemAllocSingleton && *g_ppMemAllocSingleton)
         (*g_ppMemAllocSingleton)->m_vtable->Free(*g_ppMemAllocSingleton, p);
+}
+
+void* realloc(void* old_ptr, size_t size) {
+    // it was allocated into the static buffer
+    if (old_ptr >= pStaticAllocBuf && old_ptr <= pStaticAllocBuf + STATIC_ALLOC_SIZE)
+    {
+        if (g_pLastAllocated == old_ptr)
+        {
+            // nothing was allocated after this
+            size_t old_size = g_iStaticAllocated - ((size_t)g_pLastAllocated - (size_t)pStaticAllocBuf);
+            size_t diff = size - old_size;
+            if (diff > 0)
+                g_iStaticAllocated += diff;
+            return old_ptr;
+        }
+        else
+        {
+            return malloc(size);
+        }
+    }
+
+    if (g_ppMemAllocSingleton && *g_ppMemAllocSingleton)
+        return (*g_ppMemAllocSingleton)->m_vtable->Realloc(*g_ppMemAllocSingleton, old_ptr, size);
 }
 
 void* operator new(size_t n)

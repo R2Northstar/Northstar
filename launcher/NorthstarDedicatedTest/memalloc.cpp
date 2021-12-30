@@ -15,6 +15,7 @@
 const int STATIC_ALLOC_SIZE = 100000; // alot more than we need, could reduce to 50k or even 25k later potentially
 
 size_t g_iStaticAllocated = 0;
+void* g_pLastAllocated = nullptr;
 char pStaticAllocBuf[STATIC_ALLOC_SIZE];
 
 // TODO: rename to malloc and free after removing statically compiled .libs
@@ -51,6 +52,29 @@ void free_(void* p)
 
 	//printf("Northstar free (g_pMemAllocSingleton): %p\n", p);
 	g_pMemAllocSingleton->m_vtable->Free(g_pMemAllocSingleton, p);
+}
+
+void* realloc_(void* old_ptr, size_t size) {
+	// it was allocated into the static buffer
+	if (old_ptr >= pStaticAllocBuf && old_ptr <= pStaticAllocBuf + STATIC_ALLOC_SIZE)
+	{
+		if (g_pLastAllocated == old_ptr)
+		{
+			// nothing was allocated after this
+			size_t old_size = g_iStaticAllocated - ((size_t)g_pLastAllocated - (size_t)pStaticAllocBuf);
+			size_t diff = size - old_size;
+			if (diff > 0)
+				g_iStaticAllocated += diff;
+			return old_ptr;
+		}
+		else
+		{
+			return malloc_(size);
+		}
+	}
+
+	if (g_pMemAllocSingleton)
+		return g_pMemAllocSingleton->m_vtable->Realloc(g_pMemAllocSingleton, old_ptr, size);
 }
 
 void* operator new(size_t n)
