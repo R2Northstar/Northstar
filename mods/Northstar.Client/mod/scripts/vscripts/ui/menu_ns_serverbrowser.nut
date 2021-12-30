@@ -83,47 +83,6 @@ bool function floatCompareInRange(float arg1, float arg2, float tolerance)
 }
 
 
-
-// Hard coded for now
-array<string> function GetNorthstarGamemodes()
-{
-	array<string> modes
-
-	//modes.append( "#PL_aitdm" )
-	modes.append( "#PL_pilot_hunter" )
-	modes.append( "#PL_hardpoint" )
-	//modes.append( "#PL_attrition" )
-	modes.append( "#PL_capture_the_flag" )
-	modes.append( "#PL_last_titan_standing" )
-	modes.append( "#PL_pilot_skirmish" )
-	modes.append( "#PL_live_fire" )
-	modes.append( "#PL_marked_for_death" )
-	modes.append( "#PL_titan_brawl" )
-	//modes.append( "#PL_fd_easy" )
-	//modes.append( "#PL_fd_normal" )
-	//modes.append( "#PL_fd_hard" )
-	//modes.append( "#PL_fd_master" )
-	//modes.append( "#PL_fd_insane" )
-	modes.append( "#PL_ffa" )
-	modes.append( "#PL_fra" )
-	modes.append( "#PL_coliseum" )
-	modes.append( "#PL_aegis_titan_brawl" )
-	modes.append( "#PL_titan_brawl_turbo" )
-	modes.append( "#PL_aegis_last_titan_standing" )
-	modes.append( "#PL_turbo_last_titan_standing" )
-	modes.append( "#PL_rocket_arena" )
-	modes.append( "#PL_all_holopilot" )
-	modes.append( "#PL_gg" )
-	modes.append( "#PL_tt" )
-	modes.append( "#PL_inf" )
-	modes.append( "#PL_kr" )
-	modes.append( "#PL_fastball" )
-	modes.append( "#GAMEMODE_hs" )
-	modes.append( "#GAMEMODE_ctf_comp" )
-
-
-	return modes
-}
 ////////////////////////////
 // Init
 ////////////////////////////
@@ -154,7 +113,7 @@ void function InitServerBrowserMenu()
 		Hud_DialogList_AddListItem( Hud_GetChild( file.menu, "SwtBtnSelectMap" ) , map, string( enum_ ) )
 
 
-	filterArguments.filterGamemodes = GetNorthstarGamemodes()
+	filterArguments.filterGamemodes = GetPrivateMatchModes()
 	filterArguments.filterGamemodes.insert(0, "SWITCH_ANY")
 
 	// GetGameModeDisplayName( mode ) requires server talk even if it can be entirely client side
