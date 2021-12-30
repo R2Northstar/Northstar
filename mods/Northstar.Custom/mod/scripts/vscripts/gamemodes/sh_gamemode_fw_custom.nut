@@ -13,8 +13,6 @@ void function SHCreateGamemodeFW_Init()
 
 void function CreateGamemodeFW()
 {
-	//entity e = CreateEntity("npc_turret_mega"); SetAISettingsWrapper( e, "npc_turret_mega_fortwar" ); e.SetOrigin(GetPlayerArray()[0].GetOrigin()); SetTeam(e,3); DispatchSpawn(e)
-
 	// we have to manually add the client/shared scripts to scripts.rson atm so we need to prevent compile errors when they aren't included
 	// best way to do this is to just ignore this whole block for now and wait until we don't have to add them manually
 	

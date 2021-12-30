@@ -3,7 +3,28 @@
 	"Description" : "Various ui and client changes to fix bugs and add better support for mods",
 	"Version": "1.0.0",
 	"LoadPriority": 0,
-
+	"ConVars": [
+		{
+			"Name": "filter_hide_empty",
+			"DefaultValue": "0"
+		},
+		{
+			"Name": "filter_hide_full",
+			"DefaultValue": "0"
+		},
+		{
+			"Name": "filter_hide_protected",
+			"DefaultValue": "0"
+		},
+		{
+			"Name": "filter_map",
+			"DefaultValue": "0"
+		},
+		{
+			"Name": "filter_gamemode",
+			"DefaultValue": "0"
+		}
+	],
 	// ui inits need to happen before so our init callbacks get called
 	"Scripts": [
 		{

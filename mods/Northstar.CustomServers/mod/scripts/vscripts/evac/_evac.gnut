@@ -103,11 +103,20 @@ void function EvacEpilogue()
 	
 	if ( canRunEvac )
 	{
-		SetRespawnsEnabled( false )
+		thread SetRespawnAndWait( false )
 		thread Evac( GetOtherTeam( winner ), EVAC_INITIAL_WAIT, EVAC_ARRIVAL_TIME, EVAC_WAIT_TIME, EvacEpiloguePlayerCanBoard, EvacEpilogueShouldLeaveEarly, EvacEpilogueCompleted )
 	}
 	else
-		thread EvacEpilogueCompleted( null ) // this is hacky but like, this also shouldn't really be hit in normal gameplay
+	{
+		thread SetRespawnAndWait( false ) //prevent respawns during the fade to black, should only be an issue if the match is a draw
+		thread EvacEpilogueCompleted( null ) //this is hacky but like, this also shouldn't really be hit in normal gameplay
+	}
+}
+
+void function SetRespawnAndWait(bool mode)
+{
+	wait GAME_EPILOGUE_PLAYER_RESPAWN_LEEWAY
+	SetRespawnsEnabled( mode )
 }
 
 bool function EvacEpiloguePlayerCanBoard( entity dropship, entity player )
