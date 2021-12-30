@@ -173,9 +173,12 @@ resource/ui/menus/mods_browse.menu
 
 		// PasswordProtected
 
-		// BtnServerPasswordProtected (lock icons) dont pin to specified siblings
+		// BtnServerPasswordProtectedx (lock icons) dont pin to specified siblings
 		// Their 0,0 is the screen 0,0
-		// Too lazy to fix hopefully doesn't break on other resolutions
+		// I have no idea why, current ypos values hold up pretty well, but some users may still notice the missalignment
+		// Tried evrything, if I find a difeerent way to do this will try
+		// - Fifty#8113
+
 		BtnServerPasswordProtectedTab
 		{
 			ControlName				ImagePanel
@@ -184,7 +187,7 @@ resource/ui/menus/mods_browse.menu
 			wide 					48
 			tall					48
 
-			pin_to_sibling				RowButtonsAnchor
+			pin_to_sibling					RowButtonsAnchor
 			pin_corner_to_sibling		TOP_LEFT
 			pin_to_sibling_corner		TOP_LEFT
 		}
@@ -193,16 +196,18 @@ resource/ui/menus/mods_browse.menu
 		{
 			ControlName				ImagePanel
 			classname 				ServerLock
-			image							"ui/menu/common/locked_icon"
+			image					"ui/menu/common/locked_icon"
 			scaleImage				1
 			wide 					48
-			tall 					48
-			xpos 94
-			ypos 200
+			tall					48
+			xpos					94
+			ypos					200
 
-			pin_to_sibling			BtnServer1
+			pin_to_sibling					FilterPanel
 			pin_corner_to_sibling	TOP_LEFT
 			pin_to_sibling_corner	BOTTOM_LEFT
+
+
 		}
 		BtnServerPasswordProtected2
 		{
@@ -348,7 +353,7 @@ resource/ui/menus/mods_browse.menu
 			wide 					48
 			tall 					48
 			xpos 94
-			ypos 399
+			ypos 599
 
 			pin_to_sibling			BtnServer11
 			pin_corner_to_sibling	TOP_LEFT
@@ -2566,7 +2571,6 @@ resource/ui/menus/mods_browse.menu
 			pin_corner_to_sibling		TOP_LEFT
 			pin_to_sibling_corner		BOTTOM_LEFT
 		}
-
 		InGamePlayerCount
 		{
 			ControlName		Label
@@ -2581,6 +2585,43 @@ resource/ui/menus/mods_browse.menu
 			zpos						101
 
 			pin_to_sibling					InGamePlayerLabel
+			pin_corner_to_sibling		TOP_LEFT
+			pin_to_sibling_corner		TOP_RIGHT
+		}
+
+		TotalServerLabel
+		{
+			ControlName		Label
+			auto_wide_tocontents 	1
+			tall 					40
+			labelText			"#TOTAL_SERVERS"
+			xpos						46
+			visible					1
+			zpos						101
+
+			font								Default_28_ShadowGlow
+			bgcolor_override		"0 0 0 120"
+			fgcolor_override		"255 255 255 175"
+			visible					1
+
+			pin_to_sibling					InGamePlayerCount
+			pin_corner_to_sibling		TOP_LEFT
+			pin_to_sibling_corner		TOP_RIGHT
+		}
+		TotalServerCount
+		{
+			ControlName		Label
+			auto_wide_tocontents 	1
+			tall 					40
+			labelText			""
+			font								Default_28_ShadowGlow
+			bgcolor_override		"0 0 0 120"
+			fgcolor_override		"196 108 108 200"
+			xpos						6
+			visible					1
+			zpos						101
+
+			pin_to_sibling					TotalServerLabel
 			pin_corner_to_sibling		TOP_LEFT
 			pin_to_sibling_corner		TOP_RIGHT
 		}
