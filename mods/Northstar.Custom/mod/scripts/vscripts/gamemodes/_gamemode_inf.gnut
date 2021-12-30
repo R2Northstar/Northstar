@@ -2,6 +2,7 @@ global function GamemodeInfection_Init
 
 struct {
 	bool hasHadFirstInfection = false
+	bool hasHadLastInfection = false
 	array<entity> playersToNotifyOfInfection
 } file
 
@@ -10,6 +11,7 @@ void function GamemodeInfection_Init()
 	SetSpawnpointGamemodeOverride( FFA )
 	SetLoadoutGracePeriodEnabled( false ) // prevent modifying loadouts with grace period
 	SetWeaponDropsEnabled( false )
+	SetShouldUseRoundWinningKillReplay( true )
 	Riff_ForceTitanAvailability( eTitanAvailability.Never )
 	Riff_ForceBoostAvailability( eBoostAvailability.Disabled )
 	ClassicMP_ForceDisableEpilogue( true )
@@ -69,7 +71,7 @@ void function InfectPlayer( entity player )
 	array<entity> survivors = GetPlayerArrayOfTeam( INFECTION_TEAM_SURVIVOR )
 	if ( survivors.len() == 0 )
 		SetWinner( INFECTION_TEAM_INFECTED )
-	else if ( survivors.len() == 1 )
+	else if ( survivors.len() == 1 && !file.hasHadLastInfection )
 		SetLastSurvivor( survivors[ 0 ] )
 		
 	if ( !file.hasHadFirstInfection )
@@ -175,6 +177,8 @@ void function SetLastSurvivor( entity player )
 	
 	if ( GameTime_TimeLeftSeconds() > 45 )
 		SetServerVar( "gameEndTime", Time() + 45.0 )
+	
+	file.hasHadLastInfection = true
 }
 
 int function TimeoutCheckSurvivors()

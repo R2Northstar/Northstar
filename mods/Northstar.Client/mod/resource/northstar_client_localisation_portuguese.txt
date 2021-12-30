@@ -1,0 +1,216 @@
+"lang"
+{
+	"Language" "portuguese"
+	"Tokens"
+	{	
+		"MENU_LAUNCH_NORTHSTAR" "Abrir Northstar"
+		"MENU_TITLE_MODS" "Mods"
+		"RELOAD_MODS" "Recarregar Mods"
+
+		"DIALOG_TITLE_INSTALLED_NORTHSTAR" "Obrigado por instalar Northstar!"
+		"AUTHENTICATION_AGREEMENT_DIALOG_TEXT" "Para o Northstar funcionar é necessário autenticar com o servidor mestre Northstar. Isso requer enviar seu token da Origin para o servidor, ele não será utilizado pra outros propósitos.
+Clique em Sim se você concorda. Esta escolha pode ser alterada a qualquer momento no menu de mods."
+		"BACK_AUTHENTICATION_AGREEMENT" "Aceitação de autorização"
+		"AUTHENTICATION_AGREEMENT" "Aceitação de autorização"
+		"AUTHENTICATION_AGREEMENT_RESTART" "Você precisa reiniciar o Titanfall 2 para esta mudança ter efeito."
+		
+		"MENU_TITLE_SERVER_BROWSER" "Lista de servidores"
+		"NS_SERVERBROWSER_NOSERVERS" "Nenhum servidor encontrado"
+		"NS_SERVERBROWSER_WAITINGFORSERVERS" "Aguardando servidores..."
+		"NS_SERVERBROWSER_CONNECTIONFAILED" "Falha de conexão!"
+		"REFRESH_SERVERS" "Atualizar"
+
+		"MENU_TITLE_CONNECT_PASSWORD" "Conectar com senha"
+		"MENU_CONNECT_MENU_CONNECT" "Conectar"
+	
+		"PRIVATE_MATCH_PAGE_PREV" "Página anterior"
+		"PRIVATE_MATCH_PAGE_NEXT" "Próxima página"
+		
+		"MENU_MATCH_SETTINGS" "Configurações de partida"
+		"MENU_MATCH_SETTINGS_SUBMENU" "%s1 Configurações"
+		
+		"PRIVATE_MATCH_SINGLEPLAYER_LEVEL" "%s1 (Um jogador)"
+		
+		// fra hint for private match menu, because fra only has PL_fra_desc in vanilla
+		"PL_fra_hint" "Você está só. Mate inimigos para vencer. Colete 3 baterias para chamar um titã."
+		
+		// mode settings
+		"MODE_SETTING_CATEGORY_PILOT" "Piloto"
+		"MODE_SETTING_CATEGORY_TITAN" "Titã"
+		"MODE_SETTING_CATEGORY_RIFF" "Riffs"
+		"MODE_SETTING_CATEGORY_MATCH" "Partida"
+		
+		"classic_mp" "MP Clássico"
+		"run_epilogue" "Executar epílogo"
+		"scorelimit" "Limite de pontos"
+		"roundscorelimit" "Limite de pontos (por round)"
+		"timelimit" "Tempo limite"
+		"roundtimelimit" "Tempo limite (por round)"
+		
+		"pilot_health_multiplier" "Multiplicador de vida"
+		"respawn_delay" "Delay de reaparecimento"
+		"boosts_enabled" "Bônus"
+		"earn_meter_pilot_overdrive" "Medidor de bônus acelerado"
+		"earn_meter_pilot_multiplier" "Multiplicador de bônus do piloto"
+		
+		"earn_meter_titan_multiplier" "Multiplicador de bônus do titã"
+		"aegis_upgrades" "Upgrades Aegis"
+		"infinite_doomed_state" "Estado condenado infinito"
+		"titan_shield_regen" "Escudos regeneradores"
+		
+		"riff_floorislava" "Deadly Ground"
+		"featured_mode_all_holopilot" "The Great Bamboozle"
+		"featured_mode_all_grapple" "Attack on Titanfall"
+		"featured_mode_all_phase" "The Otherside"
+		"featured_mode_all_ticks" "Spicy"
+		"featured_mode_tactikill" "Tactikill"
+		"featured_mode_amped_tacticals" "Habilidades táticas melhoradas"
+		"featured_mode_rocket_arena" "Arena Foguete"
+		"featured_mode_shotguns_snipers" "Armado e perigoso"
+		"iron_rules" "Titã de ferro"
+		
+		"cp_amped_capture_points" "Pontos de captura melhorados"
+		"coliseum_loadouts_enabled" "Classes do Coliseu"
+		
+		// northstar.custom localisation is just deciding not to work, so putting it here for now
+		"PL_sbox" "Sandbox"
+		"PL_sbox_lobby" "Saguão de Sandbox"
+		"PL_sbox_desc" "gmod só que pior"
+		"PL_sbox_abbr" "SBOX"
+		"GAMEMODE_SBOX" "Sandbox"
+		
+		"PL_gg" "Gun Game"
+		"PL_gg_lobby" "Saguão de Gun Game"
+		"PL_gg_desc" "Mate com todas as armas para vencer"
+		"PL_gg_hint" "Mate com todas as armas para vencer"
+		"PL_gg_abbr" "GG"
+		"GAMEMODE_GG" "Gun Game"
+		
+		"PL_tt" "Titan Tag"
+		"PL_tt_lobby" "Saguão de Titan Tag"
+		"PL_tt_desc" "Ganhe pontos com seu titã. Destrua um para chamar o seu."
+		"PL_tt_hint" "Ganhe pontos com seu titã. Destrua um para chamar o seu."
+		"PL_tt_abbr" "TT"
+		"GAMEMODE_TT" "Titan Tag"
+		
+		"PL_inf" "Infecção"
+		"PL_inf_lobby" "Saguão de Infecção"
+		"PL_inf_desc" "Sobreviva à infecção. Sobreviventes são infectados quando mortos."
+		"PL_inf_hint" "Sobreviva à infecção. Sobreviventes são infectados quando mortos."
+		"PL_inf_abbr" "INF"
+		"GAMEMODE_INF" "Infecção"
+		"INFECTION_YOU_ARE_INFECTED" "Você foi infectado!"
+		"INFECTION_KILL_SURVIVORS" "Infecte todos os sobreviventes restantes."
+		"INFECTION_FIRST_INFECTED" "%s1 é o paciente zero."
+		"INFECTION_LAST_SURVIVOR" "%s1 é o último sobrevivente!"
+		"INFECTION_KILL_LAST_SURVIVOR" "Infecte eles antes que o tempo acabe!"
+		"INFECTION_YOU_ARE_LAST_SURVIVOR" "Você é o último sobrevivente!"
+		"INFECTION_SURVIVE_LAST_SURVIVOR" "Sobreviva."
+		
+		"PL_hs" "Esconde-esconde"
+		"PL_hs_lobby" "Saguão de Esconde-esconde"
+		"PL_hs_desc" "Jogo clássico de esconde-esconde."
+		"PL_hs_hint" "Jogo clássico de esconde-esconde."
+		"PL_hs_abbr" "HS"
+		"GAMEMODE_hs" "Esconde-esconde"
+		"HIDEANDSEEK_YOU_ARE_SEEKER" "VOCÊ PEGA!"
+		"HIDEANDSEEK_SEEKER_DESC" "Ache os outros e bata neles.\nVocê reaparecerá em %s1 segundos"
+		"HIDEANDSEEK_YOU_ARE_HIDER" "VOCÊ ESCONDE"
+		"HIDEANDSEEK_HIDER_DESC" "Esconda-se."
+		"HIDEANDSEEK_SEEKERS_INCOMING" "LÁ VEM ELES"
+		"HIDEANDSEEK_DONT_GET_FOUND" "Não seja encontrado!"
+		"HIDEANDSEEK_GET_LAST_HIDER" "%s1 É O ULTIMO ESCONDIDO"
+		"HIDEANDSEEK_YOU_ARE_LAST_HIDER" "VOCÊ É O ÚLTIMO ESCONDIDO"
+		"HIDEANDSEEK_GOT_STIM" "Você está estimulado! Não seja pego!"
+		"hideandseek_balance_teams" "Rebalanceamento de times"
+		"hideandseek_hiding_time" "Tempo escondido"
+		
+		// these are defined in r1_english but titan war is a shit name so i'm changing it to another one that was referenced in development
+		"GAMEMODE_fw" "Guerra pela Fronteira"
+		"PL_fw" "Guerra pela Fronteira"
+		"PL_fw_lobby" "Saguão de Guerra pela Fronteira"
+		"PL_fw_desc" "Destrua a colheitadeira do inimigo e proteja a sua"
+		"PL_fw_abbr" "FW"
+		
+		"GAMEMODE_kr" "Corrida de Matança"
+		"PL_kr" "Corrida de Matança"
+		"PL_kr_lobby" "Saguão de Matança"
+		"PL_kr_desc" "Acabe com inimigos para aumentar sua matança. Capture a bandeira para começar. Vença matando mais."
+		"PL_kr_hint" "Acabe com inimigos para aumentar sua matança. Capture a bandeira para começar. Vença matando mais."
+		"PL_kr_abbr" "KR"
+		"SCOREBOARD_KR_RECORD" "Recorde de mortes"
+		"KR_NEW_RACER" "%s1 é o matador"
+		"KR_YOU_ARE_NEW_RACER" "Você é o matador"
+		"KR_YOU_SET_NEW_RECORD" "Bateu o recorde!"
+		"KR_FLAG_INCOMING" "Bandeira reaparecerá em breve"
+		"KR_COLLECT_FLAG" "Capture a bandeira para virar um Matador!"
+		"KR_ENEMY_KILLRACE_OVER" "A matança de %s1 acabou"
+		"KR_YOUR_KILLRACE_OVER" "Sua matança acabou"
+		"KR_YOUR_KILLRACE_SCORE" "Você conseguiu %s1 mortes."
+	
+		"GAMEMODE_fastball" "Fastball"
+		"PL_fastball" "Fastball"
+		"PL_fastball_lobby" "Fastball Lobby"
+		"PL_fastball_desc" "Sem reaparecimento. Invada painéis de controle para ganhar rounds e reaparecer seus aliados."
+		"PL_fastball_hint" "Sem reaparecimento. Invada painéis de controle para ganhar rounds e reaparecer seus aliados."
+		"PL_fastball_abbr" "FB"
+		"FASTBALL_PANEL_CAPTURED" "%s1 capturou painel %s2"
+		"SCOREBOARD_FASTBALL_HACKS" "Painéis capturados"
+		
+		"GAMEMODE_ctf_comp" "CTF Competitivo"
+		
+		// mode settings
+		"MODE_SETTING_CATEGORY_PROMODE" "Modo PRO"
+		"MODE_SETTING_CATEGORY_BLEEDOUT" "Sangramento de piloto"
+		
+		"custom_air_accel_pilot" "Aceleração aérea"
+		"promode_enable" "Armas de Modo PRO"
+		"fp_embark_enabled" "Execuções/embarque em 1a pessoa"
+		"classic_rodeo" "Rodeio clássico"
+		"oob_timer_enabled" "Temporizador fora do mapa"
+		"riff_instagib" "Modo Instagib"
+		
+		"riff_player_bleedout" "Sangramento de piloto"
+		"player_bleedout_forceHolster" "Guardar armas ao cair"
+		"player_bleedout_forceDeathOnTeamBleedout" "Morrer ao time cair"
+		"player_bleedout_bleedoutTime" "Tempo de sangramento"
+		"player_bleedout_firstAidTime" "Tempo de recuperação"
+		"player_bleedout_firstAidTimeSelf" "Tempo de auto-recuperação"
+		"player_bleedout_firstAidHealPercent" "Porcentagem de vida recuperada"
+		"player_bleedout_aiBleedingPlayerMissChance" "Chance de erro da IA ao cair"
+		
+		// coop stuff
+		"PL_sp_coop" "(UNFINISHED) Singleplayer Coop"
+		"PL_sp_coop_lobby" "Singleplayer Coop Lobby"
+		"PL_sp_coop_desc" "Play through the singleplayer campaign with friends"
+		"PL_sp_coop_hint" "Play through the singleplayer campaign with friends"
+		"PL_sp_coop_abbr" "SP"
+		
+		"SP_TRAINING" "O Desafio do Piloto"
+		"SP_TRAINING_CLASSIC_DESC" "Simulação de treinamento do Capitão Lastimosa."
+		
+		"SP_CRASHSITE" "BT-7274"
+		"SP_CRASHSITE_CLASSIC_DESC" "Jack Cooper encontra BT-7274."
+		
+		"SP_SEWERS1" "Sangue e Ferrugem"
+		"SP_SEWERS1_CLASSIC_DESC" "Cooper e BT saem para se encontrar com Major Anderson."
+		
+		"SP_BOOMTOWN_START" "Jornada ao abismo"
+		"SP_BOOMTOWN_START_CLASSIC_DESC" "Um atalho debaixo da terra revela consequências inesperadas."
+		
+		"SP_HUB_TIMESHIFT" "Causa e Efeito"
+		"SP_HUB_TIMESHIFT_CLASSIC_DESC" "Um fenônemo não identificado é descoberto nas coordenadas do Major Anderson."
+		
+		"SP_BEACON" "O Sinalizador"
+		"SP_BEACON_CLASSIC_DESC" "Cooper e BT tentam informar o resto da frota sobre os planos da IMC."
+		
+		"SP_TDAY" "Prova de Fogo"
+		"SP_TDAY_CLASSIC_DESC" "As habilidades do tiã de Cooper são postas à prova numa batalha para capturar a Arca"
+		
+		"SP_S2S" "A Arca"
+		"SP_S2S_CLASSIC_DESC" "Cooper e BT vão de nave em nave em busca da Arca."
+		
+		"SP_SKYWAY_V1" "A Arma Quântica"
+		"SP_SKYWAY_V1_CLASSIC_DESC" "BT e Cooper são capturados por Kuben Blisk."
+	}
+}

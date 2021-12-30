@@ -9,12 +9,13 @@ void function GamemodeTTDM_Init()
 	TrackTitanDamageInPlayerGameStat( PGS_ASSAULT_SCORE )
 	ScoreEvent_SetupEarnMeterValuesForMixedModes()
 	SetLoadoutGracePeriodEnabled( false )
-	
+
 	ClassicMP_SetCustomIntro( TTDMIntroSetup, TTDMIntroLength )
 	ClassicMP_ForceDisableEpilogue( true )
-	
+	SetTimeoutWinnerDecisionFunc( CheckScoreForDraw )
+
 	AddCallback_OnPlayerKilled( AddTeamScoreForPlayerKilled ) // dont have to track autotitan kills since you cant leave your titan in this mode
-	
+
 	// probably needs scoreevent earnmeter values
 }
 
@@ -36,9 +37,9 @@ void function TTDMIntroStartThreaded()
 
 	foreach ( entity player in GetPlayerArray() )
 		TTDMIntroShowIntermissionCam( player )
-		
+
 	wait TTDMIntroLength
-	
+
 	ClassicMP_OnIntroFinished()
 }
 
@@ -46,7 +47,7 @@ void function TTDMIntroShowIntermissionCam( entity player )
 {
 	if ( GetGameState() != eGameState.Prematch )
 		return
-	
+
 	thread PlayerWatchesTTDMIntroIntermissionCam( player )
 }
 
@@ -55,22 +56,32 @@ void function PlayerWatchesTTDMIntroIntermissionCam( entity player )
 	ScreenFadeFromBlack( player )
 
 	entity intermissionCam = GetEntArrayByClass_Expensive( "info_intermission" )[ 0 ]
-	
+
 	// the angle set here seems sorta inconsistent as to whether it actually works or just stays at 0 for some reason
 	player.SetObserverModeStaticPosition( intermissionCam.GetOrigin() )
 	player.SetObserverModeStaticAngles( intermissionCam.GetAngles() )
 	player.StartObserverMode( OBS_MODE_STATIC_LOCKED )
 
 	wait TTDMIntroLength
-	
+
 	RespawnAsTitan( player, false )
 	TryGameModeAnnouncement( player )
 }
 
 void function AddTeamScoreForPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
-	if ( victim == attacker || !victim.IsPlayer() || !attacker.IsPlayer() )
+	if ( victim == attacker || !victim.IsPlayer() || !attacker.IsPlayer() || GetGameState() != eGameState.Playing )
 		return
-		
+
 	AddTeamScore( GetOtherTeam( victim.GetTeam() ), 1 )
+}
+
+int function CheckScoreForDraw()
+{
+	if (GameRules_GetTeamScore(TEAM_IMC) > GameRules_GetTeamScore(TEAM_MILITIA))
+		return TEAM_IMC
+	else if (GameRules_GetTeamScore(TEAM_MILITIA) > GameRules_GetTeamScore(TEAM_IMC))
+		return TEAM_MILITIA
+
+	return TEAM_UNASSIGNED
 }
