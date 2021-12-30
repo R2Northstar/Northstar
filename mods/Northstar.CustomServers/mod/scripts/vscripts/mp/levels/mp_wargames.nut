@@ -116,7 +116,6 @@ void function OnPrematchStart()
 	DispatchSpawn( militiaMarvinChillin )
 	thread PlayAnim( militiaMarvinChillin, "mv_idle_unarmed" )
 	
-	
 	// imc grunts
 	entity imcGrunt1 = CreatePropDynamic( $"models/humans/grunts/imc_grunt_rifle.mdl", < -2915, 2867, -1788 >, < 0, -137, 0 > )
 	thread PlayAnim( imcGrunt1, "pt_console_idle" )
@@ -188,6 +187,7 @@ void function PlayerWatchesWargamesIntro( entity player )
 			player.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
 			ClearPlayerAnimViewEntity( player )
 			player.EnableWeaponViewModel()
+			DeployAndEnableWeapons(player)
 			player.ClearParent()
 			player.UnforceStand()
 			player.MovementEnable()
@@ -224,6 +224,7 @@ void function PlayerWatchesWargamesIntro( entity player )
 	player.kv.VisibilityFlags = ENTITY_VISIBLE_TO_OWNER
 	TrainingPod_ViewConeLock_PodClosed( player )
 	player.DisableWeaponViewModel()
+	HolsterAndDisableWeapons(player)
 	player.MovementDisable()
 	player.SetInvulnerable()
 	
