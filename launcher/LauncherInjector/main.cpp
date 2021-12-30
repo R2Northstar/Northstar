@@ -16,6 +16,7 @@ extern "C" {
 
 HMODULE hLauncherModule;
 HMODULE hHookModule;
+HMODULE hTier0Module;
 
 wchar_t exePath[4096];
 wchar_t buffer[8196];
@@ -68,7 +69,106 @@ void LibraryLoadError(DWORD dwMessageId, const wchar_t* libName, const wchar_t* 
     char text[2048];
     std::string message = std::system_category().message(dwMessageId);
     sprintf_s(text, "Failed to load the %ls at \"%ls\" (%lu):\n\n%hs\n\nMake sure you followed the Northstar installation instructions carefully.", libName, location, dwMessageId, message.c_str());
-    MessageBoxA(GetForegroundWindow(), text, "Launcher Error", 0);
+    MessageBoxA(GetForegroundWindow(), text, "Northstar Launcher Error", 0);
+}
+
+void EnsureOriginStarted()
+{
+    if (GetProcessByName(L"Origin.exe") || GetProcessByName(L"EADesktop.exe"))
+        return; // already started
+
+    // unpacked exe will crash if origin isn't open on launch, so launch it
+    // get origin path from registry, code here is reversed from OriginSDK.dll
+    HKEY key;
+    if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, "SOFTWARE\\WOW6432Node\\Origin", 0, KEY_READ, &key) != ERROR_SUCCESS)
+    {
+        MessageBoxA(0, "Error: failed reading origin path!", "", MB_OK);
+        return;
+    }
+
+    char originPath[520];
+    DWORD originPathLength = 520;
+    if (RegQueryValueExA(key, "ClientPath", 0, 0, (LPBYTE)&originPath, &originPathLength) != ERROR_SUCCESS)
+    {
+        MessageBoxA(0, "Error: failed reading origin path!", "", MB_OK);
+        return;
+    }
+
+    PROCESS_INFORMATION pi;
+    memset(&pi, 0, sizeof(pi));
+    STARTUPINFO si;
+    memset(&si, 0, sizeof(si));
+    CreateProcessA(originPath, (char*)"", NULL, NULL, false, CREATE_DEFAULT_ERROR_MODE | CREATE_NEW_PROCESS_GROUP, NULL, NULL, (LPSTARTUPINFOA)&si, &pi);
+
+    printf("[*] Waiting for Origin...\n");
+
+    // wait for origin to be ready, this process is created when origin is ready enough to launch game without any errors
+    while (!GetProcessByName(L"OriginClientService.exe") && !GetProcessByName(L"EADesktop.exe"))
+        Sleep(200);
+
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+}
+
+void PrependPath()
+{
+    wchar_t* pPath;
+    size_t len;
+    errno_t err = _wdupenv_s(&pPath, &len, L"PATH");
+    if (!err)
+    {
+        swprintf_s(buffer, L"PATH=%s\\bin\\x64_retail\\;%s", exePath, pPath);
+        auto result = _wputenv(buffer);
+        if (result == -1)
+        {
+            MessageBoxW(GetForegroundWindow(), L"Warning: could not prepend the current directory to app's PATH environment variable. Something may break because of that.", L"Northstar Launcher Warning", 0);
+        }
+        //free(pPath);
+    }
+    else
+    {
+        MessageBoxW(GetForegroundWindow(), L"Warning: could not get current PATH environment variable in order to prepend the current directory to it. Something may break because of that.", L"Northstar Launcher Warning", 0);
+    }
+}
+
+bool ShouldLoadNorthstar(int argc, char* argv[])
+{
+    bool loadNorthstar = true;
+    for (int i = 0; i < argc; i++)
+        if (!strcmp(argv[i], "-vanilla"))
+            loadNorthstar = false;
+
+    if (!loadNorthstar)
+        return loadNorthstar;
+
+    auto runNorthstarFile = std::ifstream("run_northstar.txt");
+    if (runNorthstarFile)
+    {
+        std::stringstream runNorthstarFileBuffer;
+        runNorthstarFileBuffer << runNorthstarFile.rdbuf();
+        runNorthstarFile.close();
+        if (runNorthstarFileBuffer.str()._Starts_with("0"))
+            loadNorthstar = false;
+    }
+    return loadNorthstar;
+}
+
+bool LoadNorthstar()
+{
+    FARPROC Hook_Init = nullptr;
+    {
+        swprintf_s(buffer, L"%s\\Northstar.dll", exePath);
+        hHookModule = LoadLibraryExW(buffer, 0i64, 8u);
+        if (hHookModule) Hook_Init = GetProcAddress(hHookModule, "InitialiseNorthstar");
+        if (!hHookModule || Hook_Init == nullptr)
+        {
+            LibraryLoadError(GetLastError(), L"Northstar.dll", buffer);
+            return false;
+        }
+    }
+
+    ((bool (*)()) Hook_Init)();
+    return true;
 }
 
 int main(int argc, char* argv[]) {
@@ -84,128 +184,32 @@ int main(int argc, char* argv[]) {
         if (!strcmp(argv[i], "-noOriginStartup"))
             noOriginStartup = true;
 
-    if (!isDedicated && !GetProcessByName(L"Origin.exe") && !GetProcessByName(L"EADesktop.exe") && !noOriginStartup)
+    if (!isDedicated && !noOriginStartup)
     {
-        // unpacked exe will crash if origin isn't open on launch, so launch it
-        // get origin path from registry, code here is reversed from OriginSDK.dll
-        HKEY key;
-        if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, "SOFTWARE\\WOW6432Node\\Origin", 0, KEY_READ, &key) != ERROR_SUCCESS)
-        {
-            MessageBoxA(0, "Error: failed reading origin path!", "", MB_OK);
-            return 1;
-        }
-
-        char originPath[520];
-        DWORD originPathLength = 520;
-        if (RegQueryValueExA(key, "ClientPath", 0, 0, (LPBYTE)&originPath, &originPathLength) != ERROR_SUCCESS)
-        {
-            MessageBoxA(0, "Error: failed reading origin path!", "", MB_OK);
-            return 1;
-        }
-
-        PROCESS_INFORMATION pi;
-        memset(&pi, 0, sizeof(pi));
-        STARTUPINFO si;
-        memset(&si, 0, sizeof(si));
-        CreateProcessA(originPath, (char*)"", NULL, NULL, false, CREATE_DEFAULT_ERROR_MODE | CREATE_NEW_PROCESS_GROUP, NULL, NULL, (LPSTARTUPINFOA)&si, &pi);
-
-        // wait for origin to be ready, this process is created when origin is ready enough to launch game without any errors
-        while (!GetProcessByName(L"OriginClientService.exe") && !GetProcessByName(L"EADesktop.exe"))
-            Sleep(200);
-
-        CloseHandle(pi.hProcess);
-        CloseHandle(pi.hThread);
+        EnsureOriginStarted();
     }
-
-#if 0
-    // TODO: MOVE TO Northstar.dll itself and inject in some place
-    // for example hook GetCommandLineA() before real LauncherMain gets called (ie. during InitialiseNorthstar)
-    // GetCommandLineA() is always used, the parameters passed to LauncherMain are basically ignored
-    // get cmdline args from file
-    std::wstring args;
-    std::ifstream cmdlineArgFile;
-
-    args.append(L" ");
-    for (int i = 0; i < argc; i++)
-    {
-        std::string str = argv[i];
-
-        args.append(std::wstring(str.begin(), str.end()));
-        args.append(L" ");
-    }
-
-    if (!isDedi)
-        cmdlineArgFile = std::ifstream("ns_startup_args.txt");
-    else
-        cmdlineArgFile = std::ifstream("ns_startup_args_dedi.txt");
-
-    if (cmdlineArgFile)
-    {
-        std::stringstream argBuffer;
-        argBuffer << cmdlineArgFile.rdbuf();
-        cmdlineArgFile.close();
-    
-        std::string str = argBuffer.str();
-        args.append(std::wstring(str.begin(), str.end()));
-    }
-
-    //if (isDedicated)
-    //    // copy -dedicated into args if we have it in commandline args
-    //    args.append(L" -dedicated");
-#endif
-
-    //
-
-    bool loadNorthstar = true;
-    for (int i = 0; i < argc; i++)
-        if (!strcmp(argv[i], "-vanilla"))
-            loadNorthstar = false;
 
     {
 
         if (!GetExePathWide(exePath, 4096))
         {
-            MessageBoxA(GetForegroundWindow(), "Failed getting game directory.\nThe game cannot continue and has to exit.", "Launcher Error", 0);
+            MessageBoxA(GetForegroundWindow(), "Failed getting game directory.\nThe game cannot continue and has to exit.", "Northstar Launcher Error", 0);
             return 1;
         }
 
-        {
-            wchar_t* pPath;
-            size_t len;
-            errno_t err = _wdupenv_s(&pPath, &len, L"PATH");
-            if (!err)
-            {
-                swprintf_s(buffer, L"PATH=%s\\bin\\x64_retail\\;%s", exePath, pPath);
-                auto result = _wputenv(buffer);
-                if (result == -1)
-                {
-                    MessageBoxW(GetForegroundWindow(), L"Warning: could not prepend the current directory to app's PATH environment variable. Something may break because of that.", L"Launcher Warning", 0);
-                }
-                free(pPath);
-            }
-            else
-            {
-                MessageBoxW(GetForegroundWindow(), L"Warning: could not get current PATH environment variable in order to prepend the current directory to it. Something may break because of that.", L"Launcher Warning", 0);
-            }
-        }
+        PrependPath();
 
+        bool loadNorthstar = ShouldLoadNorthstar(argc, argv);
         if (loadNorthstar)
         {
-            FARPROC Hook_Init = nullptr;
-            {
-                swprintf_s(buffer, L"%s\\Northstar.dll", exePath);
-                hHookModule = LoadLibraryExW(buffer, 0i64, 8u);
-                if (hHookModule) Hook_Init = GetProcAddress(hHookModule, "InitialiseNorthstar");
-                if (!hHookModule || Hook_Init == nullptr)
-                {
-                    LibraryLoadError(GetLastError(), L"Northstar.dll", buffer);
-                    return 1;
-                }
-            }
-
-            ((bool (*)()) Hook_Init)();
+            printf("[*] Loading Northstar\n");
+            if (!LoadNorthstar())
+                return 1;
         }
+        else
+            printf("[*] Going to load the vanilla game\n");
 
+        printf("[*] Loading launcher.dll\n");
         swprintf_s(buffer, L"%s\\bin\\x64_retail\\launcher.dll", exePath);
         hLauncherModule = LoadLibraryExW(buffer, 0i64, 8u);
         if (!hLauncherModule)
@@ -213,12 +217,24 @@ int main(int argc, char* argv[]) {
             LibraryLoadError(GetLastError(), L"launcher.dll", buffer);
             return 1;
         }
+
+        printf("[*] Loading tier0.dll\n");
+        // this makes zero sense given tier0.dll is already loaded via imports on launcher.dll, but we do it for full consistency with original launcher exe
+        // and to also let load callbacks in Northstar work for tier0.dll
+        swprintf_s(buffer, L"%s\\bin\\x64_retail\\tier0.dll", exePath);
+        hTier0Module = LoadLibraryW(buffer);
+        if (!hTier0Module)
+        {
+            LibraryLoadError(GetLastError(), L"tier0.dll", buffer);
+            return 1;
+        }
     }
 
+    printf("[*] Launching the game...\n");
     auto LauncherMain = GetLauncherMain();
     if (!LauncherMain)
-        MessageBoxA(GetForegroundWindow(), "Failed loading launcher.dll.\nThe game cannot continue and has to exit.", "Launcher Error", 0);
+        MessageBoxA(GetForegroundWindow(), "Failed loading launcher.dll.\nThe game cannot continue and has to exit.", "Northstar Launcher Error", 0);
     //auto result = ((__int64(__fastcall*)())LauncherMain)();
     //auto result = ((signed __int64(__fastcall*)(__int64))LauncherMain)(0i64);
-    return ((int(__fastcall*)(HINSTANCE, HINSTANCE, LPSTR, int))LauncherMain)(NULL, NULL, NULL, 0); // the parameters aren't really used anyways
+    return ((int(/*__fastcall*/*)(HINSTANCE, HINSTANCE, LPSTR, int))LauncherMain)(NULL, NULL, NULL, 0); // the parameters aren't really used anyways
 }

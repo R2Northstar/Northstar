@@ -3,9 +3,12 @@
 #include <string>
 #include <system_error>
 #include <Shlwapi.h>
+#include <sstream>
+#include <fstream>
 
 HMODULE hLauncherModule;
 HMODULE hHookModule;
+HMODULE hTier0Module;
 
 using CreateInterfaceFn = void* (*)(const char* pName, int* pReturnCode);
 
@@ -44,7 +47,7 @@ void LibraryLoadError(DWORD dwMessageId, const wchar_t* libName, const wchar_t* 
     char text[2048];
     std::string message = std::system_category().message(dwMessageId); 
     sprintf_s(text, "Failed to load the %ls at \"%ls\" (%lu):\n\n%hs", libName, location, dwMessageId, message.c_str());
-    MessageBoxA(GetForegroundWindow(), text, "Launcher Error", 0);
+    MessageBoxA(GetForegroundWindow(), text, "Northstar Launcher Proxy Error", 0);
 }
 
 BOOL APIENTRY DllMain( HMODULE hModule,
@@ -66,32 +69,61 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 wchar_t exePath[4096];
 wchar_t dllPath[4096];
 
+bool ShouldLoadNorthstar()
+{
+    bool loadNorthstar = !strstr(GetCommandLineA(), "-vanilla");
+
+    if (!loadNorthstar)
+        return loadNorthstar;
+
+    auto runNorthstarFile = std::ifstream("run_northstar.txt");
+    if (runNorthstarFile)
+    {
+        std::stringstream runNorthstarFileBuffer;
+        runNorthstarFileBuffer << runNorthstarFile.rdbuf();
+        runNorthstarFile.close();
+        if (runNorthstarFileBuffer.str()._Starts_with("0"))
+            loadNorthstar = false;
+    }
+    return loadNorthstar;
+}
+
+bool LoadNorthstar()
+{
+    FARPROC Hook_Init = nullptr;
+    {
+        swprintf_s(dllPath, L"%s\\Northstar.dll", exePath);
+        hHookModule = LoadLibraryExW(dllPath, 0i64, 8u);
+        if (hHookModule) Hook_Init = GetProcAddress(hHookModule, "InitialiseNorthstar");
+        if (!hHookModule || Hook_Init == nullptr)
+        {
+            LibraryLoadError(GetLastError(), L"Northstar.dll", dllPath);
+            return false;
+        }
+    }
+
+    printf("WILL CALL HOOK INIT\n");
+    ((bool (*)()) Hook_Init)();
+    return true;
+}
+
 extern "C" __declspec(dllexport) int LauncherMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
     {
         if (!GetExePathWide(exePath, 4096))
         {
-            MessageBoxA(GetForegroundWindow(), "Failed getting game directory.\nThe game cannot continue and has to exit.", "Launcher Error", 0);
+            MessageBoxA(GetForegroundWindow(), "Failed getting game directory.\nThe game cannot continue and has to exit.", "Northstar Launcher Proxy Error", 0);
             return 1;
         }
 
-        bool loadNorthstar = !strstr(GetCommandLineA(), "-vanilla");
+        bool loadNorthstar = ShouldLoadNorthstar();
+
         if (loadNorthstar)
         {
-            FARPROC Hook_Init = nullptr;
-            {
-                swprintf_s(dllPath, L"%s\\Northstar.dll", exePath);
-                hHookModule = LoadLibraryExW(dllPath, 0i64, 8u);
-                if (hHookModule) Hook_Init = GetProcAddress(hHookModule, "InitialiseNorthstar");
-                if (!hHookModule || Hook_Init == nullptr)
-                {
-                    LibraryLoadError(GetLastError(), L"Northstar.dll", dllPath);
-                    return 1;
-                }
-            }
-
-            ((bool (*)()) Hook_Init)();
+            if (!LoadNorthstar())
+                return 1;
         }
+        //else printf("\n\n WILL !!!NOT!!! LOAD NORTHSTAR\n\n");
 
         swprintf_s(dllPath, L"%s\\bin\\x64_retail\\launcher.org.dll", exePath);
         hLauncherModule = LoadLibraryExW(dllPath, 0i64, 8u);
@@ -100,11 +132,21 @@ extern "C" __declspec(dllexport) int LauncherMain(HINSTANCE hInstance, HINSTANCE
             LibraryLoadError(GetLastError(), L"launcher.org.dll", dllPath);
             return 1;
         }
+
+        // this makes zero sense given tier0.dll is already loaded via imports on launcher.dll, but we do it for full consistency with original launcher exe
+        // and to also let load callbacks in Northstar work for tier0.dll
+        swprintf_s(dllPath, L"%s\\bin\\x64_retail\\tier0.dll", exePath);
+        hTier0Module = LoadLibraryW(dllPath);
+        if (!hTier0Module)
+        {
+            LibraryLoadError(GetLastError(), L"tier0.dll", dllPath);
+            return 1;
+        }
     }
 
     auto LauncherMain = GetLauncherMain();
     if (!LauncherMain)
-        MessageBoxA(GetForegroundWindow(), "Failed loading launcher.org.dll.\nThe game cannot continue and has to exit.", "Launcher Error", 0);
+        MessageBoxA(GetForegroundWindow(), "Failed loading launcher.org.dll.\nThe game cannot continue and has to exit.", "Northstar Launcher Proxy Error", 0);
     //auto result = ((__int64(__fastcall*)())LauncherMain)();
     //auto result = ((signed __int64(__fastcall*)(__int64))LauncherMain)(0i64);
     return ((int(__fastcall*)(HINSTANCE, HINSTANCE, LPSTR, int))LauncherMain)(hInstance, hPrevInstance, lpCmdLine, nCmdShow);

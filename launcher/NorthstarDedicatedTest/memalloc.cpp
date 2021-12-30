@@ -17,24 +17,48 @@ const int STATIC_ALLOC_SIZE = 100000; // alot more than we need, could reduce to
 size_t g_iStaticAllocated = 0;
 char pStaticAllocBuf[STATIC_ALLOC_SIZE];
 
-void* operator new(size_t n)
+// TODO: rename to malloc and free after removing statically compiled .libs
+
+void* malloc_(size_t n)
 {
 	// allocate into static buffer if g_pMemAllocSingleton isn't initialised
 	if (g_pMemAllocSingleton)
+	{
+		//printf("Northstar malloc (g_pMemAllocSingleton): %llu\n", n);
 		return g_pMemAllocSingleton->m_vtable->Alloc(g_pMemAllocSingleton, n);
+	}
 	else
 	{
+		if (g_iStaticAllocated + n > STATIC_ALLOC_SIZE)
+		{
+			throw "Ran out of prealloc space"; // we could log, but spdlog probably does use allocations as well...
+		}
+		//printf("Northstar malloc (prealloc): %llu\n", n);
 		void* ret = pStaticAllocBuf + g_iStaticAllocated;
 		g_iStaticAllocated += n;
 		return ret;
-	}	
+	}
+}
+
+void free_(void* p)
+{
+	// if it was allocated into the static buffer, just do nothing, safest way to deal with it
+	if (p >= pStaticAllocBuf && p <= pStaticAllocBuf + STATIC_ALLOC_SIZE)
+	{
+		//printf("Northstar free (prealloc): %p\n", p);
+		return;
+	}
+
+	//printf("Northstar free (g_pMemAllocSingleton): %p\n", p);
+	g_pMemAllocSingleton->m_vtable->Free(g_pMemAllocSingleton, p);
+}
+
+void* operator new(size_t n)
+{
+	return malloc_(n);
 }
 
 void operator delete(void* p)
 {
-	// if it was allocated into the static buffer, just do nothing, safest way to deal with it
-	if (p >= pStaticAllocBuf && p <= pStaticAllocBuf + STATIC_ALLOC_SIZE)
-		return;
-
-	g_pMemAllocSingleton->m_vtable->Free(g_pMemAllocSingleton, p);
+	free_(p);
 }
