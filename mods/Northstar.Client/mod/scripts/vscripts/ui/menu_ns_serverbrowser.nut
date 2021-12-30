@@ -701,6 +701,7 @@ void function FilterServerList()
 	printt("---------------------------------------------")
 
 	Hud_SetText( Hud_GetChild( file.menu, "InGamePlayerCount" ), string( totalPlayers ) )
+	Hud_SetText( Hud_GetChild( file.menu, "TotalServerCount" ), string( NSGetServerCount() ) )
 }
 
 void function CheckGamemode( serverStruct t )
@@ -776,6 +777,9 @@ void function OnServerButtonClicked(var button)
 
 void function CheckDoubleClick(int scriptID, bool wasClickNav)
 {
+	if ( NSGetServerCount() == 0 ) return
+
+
 	file.focusedServerIndex = file.serversArrayFiltered[ file.scrollOffset + scriptID ].serverIndex
 	int serverIndex = file.scrollOffset + scriptID
 
@@ -807,6 +811,7 @@ void function DisplayFocusedServerInfo( int scriptID)
 	var menu = GetMenu( "ServerBrowserMenu" )
 
 	int serverIndex = file.scrollOffset + scriptID
+	if (serverIndex < 0) serverIndex = 0
 
 
 	Hud_SetVisible( Hud_GetChild( menu, "BtnServerDescription" ), true )
