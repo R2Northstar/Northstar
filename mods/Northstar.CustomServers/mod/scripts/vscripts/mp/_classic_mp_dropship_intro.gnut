@@ -180,6 +180,7 @@ void function SpawnPlayerIntoDropship( entity player )
 	
 	// respawn player and holster their weapons so they aren't out
 	player.RespawnPlayer( null )
+	HolsterAndDisableWeapons(player)
 	player.DisableWeaponViewModel()
 	
 	// hide hud and fade screen out from black
@@ -187,7 +188,7 @@ void function SpawnPlayerIntoDropship( entity player )
 	ScreenFadeFromBlack( player, 0.5, 0.5 )
 	// faction leaders are done clientside, spawn them here
 	Remote_CallFunction_NonReplay( player, "ServerCallback_SpawnFactionCommanderInDropship", playerDropship.dropship.GetEncodedEHandle(), file.introStartTime )
-	
+
 	// do firstperson sequence	
 	FirstPersonSequenceStruct idleSequence
 	idleSequence.firstPersonAnim = DROPSHIP_IDLE_ANIMS_POV[ playerDropshipIndex ]
@@ -229,6 +230,7 @@ void function PlayerJumpsFromDropship( entity player )
 			// show weapon viewmodel and hud and let them move again
 			player.MovementEnable()
 			player.EnableWeaponViewModel()
+			DeployAndEnableWeapons(player)
 			RemoveCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING )
 		}
 	})
