@@ -91,6 +91,36 @@ void function AddNorthstarServerBrowserMenu()
 	AddMenu( "ServerBrowserMenu", $"resource/ui/menus/server_browser.menu", InitServerBrowserMenu, "#MENU_SERVER_BROWSER" )
 }
 
+void function UpdatePrivateMatchModesAndMaps()
+{
+	array<string> realMaps = [ "mp_lobby" ]
+	realMaps.extend( GetPrivateMatchMaps() )
+
+	foreach ( int enum_, string map in realMaps )
+	{
+		if ( filterArguments.filterMaps.find( map ) != -1 )
+			continue
+			
+		filterArguments.filterMaps.append( map )
+		
+		string localized = GetMapDisplayName( map )
+		Hud_DialogList_AddListItem( Hud_GetChild( file.menu, "SwtBtnSelectMap" ) , localized, string( enum_ + 1 ) )
+	}		
+	
+	array<string> realModes = [ "private_match" ]
+	realModes.extend( GetPrivateMatchModes() )
+	
+	foreach( int enum_, string mode in realModes )
+	{
+		string localized = GetGameModeDisplayName( mode )
+		if ( filterArguments.filterGamemodes.find( localized ) != -1 )
+			continue
+		
+		filterArguments.filterGamemodes.append( localized )
+		Hud_DialogList_AddListItem( Hud_GetChild( file.menu, "SwtBtnSelectGamemode" ) , localized, string( enum_ + 1 ) )
+	}
+}
+
 void function InitServerBrowserMenu()
 {
 	file.menu = GetMenu( "ServerBrowserMenu" )
@@ -104,28 +134,14 @@ void function InitServerBrowserMenu()
 	file.serversGamemode = GetElementsByClassname( file.menu, "ServerGamemode" )
 	file.serversLatency = GetElementsByClassname( file.menu, "ServerLatency" )
 
-	// Create filter arrays
-	filterArguments.filterMaps.extend(GetPrivateMatchMaps())
-	filterArguments.filterMaps.insert(0, "SWITCH_ANY")
-	filterArguments.filterMaps.append("mp_lobby")
-
-	foreach ( int enum_, string map in filterArguments.filterMaps )
-		Hud_DialogList_AddListItem( Hud_GetChild( file.menu, "SwtBtnSelectMap" ) , map, string( enum_ ) )
-
-
-	filterArguments.filterGamemodes = clone GetPrivateMatchModes()
-	filterArguments.filterGamemodes.insert(0, "SWITCH_ANY")
-
-	// GetGameModeDisplayName( mode ) requires server talk even if it can be entirely client side
-	foreach ( int enum_, string mode in filterArguments.filterGamemodes )
-		Hud_DialogList_AddListItem( Hud_GetChild( file.menu, "SwtBtnSelectGamemode" ) , mode, string( enum_ ) )
-
+	filterArguments.filterMaps = [ "SWITCH_ANY" ]
+	Hud_DialogList_AddListItem( Hud_GetChild( file.menu, "SwtBtnSelectMap" ), "SWITCH_ANY", "0" )
+	
+	filterArguments.filterGamemodes = [ "SWITCH_ANY" ]
+	Hud_DialogList_AddListItem( Hud_GetChild( file.menu, "SwtBtnSelectGamemode" ), "SWITCH_ANY", "0" )
 
 	// Event handlers
 	AddMenuEventHandler( file.menu, eUIEvent.MENU_CLOSE, OnCloseServerBrowserMenu )
-
-
-
 	AddMenuEventHandler( file.menu, eUIEvent.MENU_OPEN, OnServerBrowserMenuOpened )
 	AddMenuFooterOption( file.menu, BUTTON_B, "#B_BUTTON_BACK", "#BACK" )
 	AddMenuFooterOption( file.menu, BUTTON_Y, "#Y_REFRESH_SERVERS", "#REFRESH_SERVERS", RefreshServers )
@@ -375,6 +391,7 @@ void function OnCloseServerBrowserMenu()
 
 void function OnServerBrowserMenuOpened()
 {
+	UpdatePrivateMatchModesAndMaps()
 	Hud_SetText( Hud_GetChild( file.menu, "Title" ), "#MENU_TITLE_SERVER_BROWSER" )
 	UI_SetPresentationType( ePresentationType.KNOWLEDGEBASE_MAIN )
 
