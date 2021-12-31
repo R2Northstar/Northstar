@@ -65,9 +65,18 @@ FARPROC GetLauncherMain()
 
 void LibraryLoadError(DWORD dwMessageId, const wchar_t* libName, const wchar_t* location)
 {
-    char text[2048];
+    char text[4096];
     std::string message = std::system_category().message(dwMessageId);
+    
     sprintf_s(text, "Failed to load the %ls at \"%ls\" (%lu):\n\n%hs\n\nMake sure you followed the Northstar installation instructions carefully.", libName, location, dwMessageId, message.c_str());
+    
+    if (!fs::exists("Titanfall2.exe") && fs::exists("..\\Titanfall2.exe"))
+    {
+        auto curDir = std::filesystem::current_path().filename().string();
+        auto aboveDir = std::filesystem::current_path().parent_path().filename().string();
+        sprintf_s(text, "%s\n\nWe detected that in your case you have extracted the files into a *subdirectory* of your Titanfall 2 installation.\nPlease move all the files and folders from current folder (\"%s\") into the Titanfall 2 installation directory just above (\"%s\").\n\nPlease try out the above steps by yourself before reaching out to the community for support.", text, curDir.c_str(), aboveDir.c_str());
+    }
+
     MessageBoxA(GetForegroundWindow(), text, "Northstar Launcher Error", 0);
 }
 
@@ -81,7 +90,7 @@ void EnsureOriginStarted()
     HKEY key;
     if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, "SOFTWARE\\WOW6432Node\\Origin", 0, KEY_READ, &key) != ERROR_SUCCESS)
     {
-        MessageBoxA(0, "Error: failed reading Origin path!", "", MB_OK);
+        MessageBoxA(0, "Error: failed reading Origin path!", "Northstar Launcher Error", MB_OK);
         return;
     }
 
@@ -89,7 +98,7 @@ void EnsureOriginStarted()
     DWORD originPathLength = 520;
     if (RegQueryValueExA(key, "ClientPath", 0, 0, (LPBYTE)&originPath, &originPathLength) != ERROR_SUCCESS)
     {
-        MessageBoxA(0, "Error: failed reading Origin path!", "", MB_OK);
+        MessageBoxA(0, "Error: failed reading Origin path!", "Northstar Launcher Error", MB_OK);
         return;
     }
 
