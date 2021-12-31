@@ -45,12 +45,12 @@ void InstallInitialHooks()
 	ENABLER_CREATEHOOK(hook, &LoadLibraryW, &LoadLibraryWHook, reinterpret_cast<LPVOID*>(&LoadLibraryWOriginal));
 }
 
-char* cmdlineResult;
 LPSTR GetCommandLineAHook()
 {
+	static char* cmdlineModified;
 	static char* cmdlineOrg;
 
-	if (cmdlineOrg == nullptr || cmdlineResult == nullptr)
+	if (cmdlineOrg == nullptr || cmdlineModified == nullptr)
 	{
 		cmdlineOrg = GetCommandLineAOriginal();
 		bool isDedi = strstr(cmdlineOrg, "-dedicated"); // well, this one has to be a real argument
@@ -77,18 +77,18 @@ LPSTR GetCommandLineAHook()
 		}
 
 		auto len = args.length();
-		cmdlineResult = reinterpret_cast<char*>(_malloc_base(len + 1));
-		if (!cmdlineResult)
+		cmdlineModified = new char[len + 1];
+		if (!cmdlineModified)
 		{
 			spdlog::error("malloc failed for command line");
 			return cmdlineOrg;
 		}
-		memcpy(cmdlineResult, args.c_str(), len + 1);
+		memcpy(cmdlineModified, args.c_str(), len + 1);
 		
-		spdlog::info("Command line: {}", cmdlineResult);
+		spdlog::info("Command line: {}", cmdlineModified);
 	}
 
-	return cmdlineResult;
+	return cmdlineModified;
 }
 
 // dll load callback stuff
@@ -116,7 +116,7 @@ void CallLoadLibraryACallbacks(LPCSTR lpLibFileName, HMODULE moduleAddress)
 {
 	for (auto& callbackStruct : dllLoadCallbacks)
 	{
-		if (!callbackStruct->called && strstr(lpLibFileName + (strlen(lpLibFileName) - strlen(callbackStruct->dll.c_str())), callbackStruct->dll.c_str()) != nullptr)
+		if (!callbackStruct->called && strstr(lpLibFileName + (strlen(lpLibFileName) - callbackStruct->dll.length()), callbackStruct->dll.c_str()) != nullptr)
 		{
 			callbackStruct->callback(moduleAddress);
 			callbackStruct->called = true;
@@ -130,7 +130,7 @@ void CallLoadLibraryWCallbacks(LPCWSTR lpLibFileName, HMODULE moduleAddress)
 	{
 		std::wstring wcharStrDll = std::wstring(callbackStruct->dll.begin(), callbackStruct->dll.end());
 		const wchar_t* callbackDll = wcharStrDll.c_str();
-		if (!callbackStruct->called && wcsstr(lpLibFileName + (wcslen(lpLibFileName) - wcslen(callbackDll)), callbackDll) != nullptr)
+		if (!callbackStruct->called && wcsstr(lpLibFileName + (wcslen(lpLibFileName) - wcharStrDll.length()), callbackDll) != nullptr)
 		{
 			callbackStruct->callback(moduleAddress);
 			callbackStruct->called = true;

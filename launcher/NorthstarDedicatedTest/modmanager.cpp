@@ -309,7 +309,7 @@ void ModManager::LoadMods()
 				if (fs::is_regular_file(file))
 				{
 					std::string kvStr = file.path().lexically_relative(mod.ModDirectory / "keyvalues").lexically_normal().string();
-					mod.KeyValues.insert(std::make_pair(std::hash<std::string>{}(kvStr), kvStr));
+					mod.KeyValues.emplace(std::hash<std::string>{}(kvStr), kvStr);
 				}
 			}
 		}
