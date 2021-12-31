@@ -166,18 +166,8 @@ void function EarnMeterMP_BoostEarned( entity player )
 	
 	while ( burncard.ref == "burnmeter_random_foil" )
 		burncard = BurnReward_GetRandom()
-	
-	array<string> mods = [ "burn_card_weapon_mod" ]
-	if ( burncard.extraWeaponMod != "" )
-		mods.append( burncard.extraWeaponMod )
-	
-	// ensure inventory slot isn't full to avoid crash
-	entity preexistingWeapon = player.GetOffhandWeapon( OFFHAND_INVENTORY )
-	if ( IsValid( preexistingWeapon ) )
-		player.TakeWeaponNow( preexistingWeapon.GetWeaponClassName() )
-	
-	player.GiveOffhandWeapon( burncard.weaponName, OFFHAND_INVENTORY, mods )
-	Remote_CallFunction_Replay( player, "ServerCallback_RewardReadyMessage", player.s.respawnTime )
+
+	BurnMeter_GiveRewardDirect( player, burncard.ref )
 }
 
 void function EarnMeterMP_TitanEarned( entity player )
