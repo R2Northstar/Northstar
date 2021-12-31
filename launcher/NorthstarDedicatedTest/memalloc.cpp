@@ -23,13 +23,15 @@ extern "C" void _free_base(void* p)
 {
 	if (!g_pMemAllocSingleton)
 	{
+		spdlog::warn("Trying to free something before g_pMemAllocSingleton was ready, this should never happen");
 		InitialiseTier0GameUtilFunctions(GetModuleHandleA("tier0.dll"));
 	}
 	g_pMemAllocSingleton->m_vtable->Free(g_pMemAllocSingleton, p);
 }
 
 
-extern "C" void* _realloc_base(void* oldPtr, size_t size) {
+extern "C" void* _realloc_base(void* oldPtr, size_t size)
+{
 	if (!g_pMemAllocSingleton)
 	{
 		InitialiseTier0GameUtilFunctions(GetModuleHandleA("tier0.dll"));
@@ -56,7 +58,7 @@ extern "C" char* _strdup_base(const char* src)
 
 	while (src[len])
 		len++;
-	str = (char*)(_malloc_base(len + 1));
+	str = reinterpret_cast<char*>(_malloc_base(len + 1));
 	p = str;
 	while (*src)
 		*p++ = *src++;
