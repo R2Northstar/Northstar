@@ -34,13 +34,15 @@ void function BurnMeter_Init()
 	// setup burncard use funcs
 	BurnReward_GetByRef( "burnmeter_amped_weapons" ).rewardAvailableCallback = PlayerUsesAmpedWeaponsBurncard
 	BurnReward_GetByRef( "burnmeter_smart_pistol" ).rewardAvailableCallback = PlayerUsesSmartPistolBurncard
-	BurnReward_GetByRef( "burnmeter_emergency_battery" ).rewardAvailableCallback = PlayerUsesBatteryBurncard
+	BurnReward_GetByRef( "burnmeter_emergency_battery" ).rewardAvailableCallback = Burnmeter_EmergencyBattery
 	BurnReward_GetByRef( "burnmeter_radar_jammer" ).rewardAvailableCallback = PlayerUsesRadarJammerBurncard
 	BurnReward_GetByRef( "burnmeter_maphack" ).rewardAvailableCallback = PlayerUsesMaphackBurncard
 	BurnReward_GetByRef( "burnmeter_phase_rewind" ).rewardAvailableCallback = PlayerUsesPhaseRewindBurncard
 
 	// these ones aren't so important, they're either for fd ( unsupported rn ) or unused
-	//BurnReward_GetByRef( "burnmeter_harvester_shield" ).rewardAvailableCallback =
+	BurnReward_GetByRef( "burnmeter_harvester_shield" ).rewardAvailableCallback = PlayerUsesHarvesterShieldBurncard
+	BurnReward_GetByRef( "burnmeter_amped_weapons_permanent" ).rewardAvailableCallback = PlayerUsesPermanentAmpedWeaponsBurncard
+	BurnReward_GetByRef( "burnmeter_instant_battery" ).rewardAvailableCallback = Burnmeter_AmpedBattery
 	BurnReward_GetByRef( "burnmeter_rodeo_grenade" ).rewardAvailableCallback = PlayerUsesRodeoGrenadeBurncard
 	BurnReward_GetByRef( "burnmeter_nuke_titan" ).rewardAvailableCallback = PlayerUsesNukeTitanBurncard // unused in vanilla, fun though
 
@@ -185,9 +187,13 @@ void function PhaseRewindLifetime( entity player )
 
 void function RunBurnCardUseFunc( entity player, string itemRef )
 {
+	print( itemRef )
+
 	void functionref( entity ) ornull func = BurnReward_GetByRef( itemRef ).rewardAvailableCallback
 	if ( func != null )
 		( expect void functionref( entity ) ( func ) )( player )
+	else
+		print( "tried to call usefunc for burncard " + itemRef + ", but func did not exist!" )
 }
 
 void function UseBurnCardWeapon( entity weapon, entity player )
@@ -214,6 +220,19 @@ void function UseBurnCardWeaponInCriticalSection( entity weapon, entity ownerPla
 
 void function BurnMeter_GiveRewardDirect( entity player, string itemRef )
 {
+	BurnReward burncard = BurnReward_GetByRef( itemRef )
+	
+	array<string> mods = [ "burn_card_weapon_mod" ]
+	if ( burncard.extraWeaponMod != "" )
+		mods.append( burncard.extraWeaponMod )
+	
+	// ensure inventory slot isn't full to avoid crash
+	entity preexistingWeapon = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+	if ( IsValid( preexistingWeapon ) )
+		player.TakeWeaponNow( preexistingWeapon.GetWeaponClassName() )
+	
+	player.GiveOffhandWeapon( burncard.weaponName, OFFHAND_INVENTORY, mods )
+	Remote_CallFunction_Replay( player, "ServerCallback_RewardReadyMessage", player.s.respawnTime )
 
 }
 
@@ -292,11 +311,6 @@ void function PlayerUsesSmartPistolBurncard( entity player )
 	player.SetActiveWeaponByName( "mp_weapon_smart_pistol" )
 
 	// do we need to track the player losing smart pistol, then give their old weapon back? idk not implementing for now, check later
-}
-
-void function PlayerUsesBatteryBurncard( entity player )
-{
-	Rodeo_GiveBatteryToPlayer( player )
 }
 
 void function PlayerUsesRadarJammerBurncard( entity player )
@@ -423,6 +437,35 @@ void function PlayerUsesNukeBurncardThreaded( entity player )
 
 	// restore original earnmeter values, no way to set earned that's exposed unfortunately
 	PlayerEarnMeter_SetOwnedFrac( player, ownedFrac )
+}
+
+void function PlayerUsesPermanentAmpedWeaponsBurncard( entity player )
+{
+	array<entity> weapons = player.GetMainWeapons()
+	//weapons.extend( player.GetOffhandWeapons() ) // idk? unsure of vanilla behaviour here
+	foreach ( entity weapon in weapons )
+	{
+		weapon.RemoveMod( "silencer" ) // both this and the burnmod will override firing fx, if a second one overrides this we crash
+		foreach ( string mod in GetWeaponBurnMods( weapon.GetWeaponClassName() ) )
+		{
+			// catch incompatibilities just in case
+			try
+			{
+				weapon.AddMod( mod )
+			}
+			catch( ex )
+			{
+				weapons.removebyvalue( weapon )
+			}
+		}
+
+		weapon.SetScriptFlags0( weapon.GetScriptFlags0() | WEAPONFLAG_AMPED )
+	}
+}
+
+void function PlayerUsesHarvesterShieldBurncard( entity player )
+{
+	player.SetPlayerNetInt( "numHarvesterShieldBoost", player.GetPlayerNetInt( "numHarvesterShieldBoost" ) + 1 )
 }
 
 void function PlayerUsesRodeoGrenadeBurncard( entity player )
