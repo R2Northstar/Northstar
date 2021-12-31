@@ -18,7 +18,7 @@ HMODULE hHookModule;
 HMODULE hTier0Module;
 
 wchar_t exePath[4096];
-wchar_t buffer[8196];
+wchar_t buffer[8192];
 
 DWORD GetProcessByName(std::wstring processName)
 {
@@ -173,24 +173,18 @@ bool LoadNorthstar()
 int main(int argc, char* argv[]) {
 
     // checked to avoid starting origin, Northstar.dll will check for -dedicated as well on its own
-    bool isDedicated = false;
-    for (int i = 0; i < argc; i++)
-        if (!strcmp(argv[i], "-dedicated"))
-            isDedicated = true;
-
     bool noOriginStartup = false;
     for (int i = 0; i < argc; i++)
-        if (!strcmp(argv[i], "-noOriginStartup"))
+        if (!strcmp(argv[i], "-noOriginStartup") || !strcmp(argv[i], "-dedicated"))
             noOriginStartup = true;
 
-    if (!isDedicated && !noOriginStartup)
+    if (!noOriginStartup)
     {
         EnsureOriginStarted();
     }
 
     {
-
-        if (!GetExePathWide(exePath, 4096))
+        if (!GetExePathWide(exePath, sizeof(exePath)))
         {
             MessageBoxA(GetForegroundWindow(), "Failed getting game directory.\nThe game cannot continue and has to exit.", "Northstar Launcher Error", 0);
             return 1;
