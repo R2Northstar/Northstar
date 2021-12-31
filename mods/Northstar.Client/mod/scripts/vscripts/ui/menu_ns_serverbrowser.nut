@@ -713,14 +713,6 @@ void function FilterServerList()
 		}
 	}
 
-
-	printt("Better.Serverbrowser:------------------------")
-	printt("Server count: ", NSGetServerCount())
-	printt("Filtered count: ", file.serversArrayFiltered.len())
-	printt("Total players: ", totalPlayers)
-	printt("This message gets shown only on full refresh")
-	printt("---------------------------------------------")
-
 	Hud_SetText( Hud_GetChild( file.menu, "InGamePlayerCount" ), string( totalPlayers ) )
 	Hud_SetText( Hud_GetChild( file.menu, "TotalServerCount" ), string( NSGetServerCount() ) )
 }
