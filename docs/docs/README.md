@@ -28,6 +28,12 @@ If you do encounter issues that this guide doesn't have a fix for, you can get s
 
 {% embed url="https://northstar.tf/discord" %}
 
+For contributing check:
+
+{% content-ref url="contributing.md" %}
+[contributing.md](contributing.md)
+{% endcontent-ref %}
+
 All the source code related to Northstar can be found here:
 
 {% embed url="https://northstar.tf" %}

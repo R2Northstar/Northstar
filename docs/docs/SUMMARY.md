@@ -1,6 +1,7 @@
 # Table of contents
 
 * [Welcome to Northstar](README.md)
+* [Contributing](contributing.md)
 
 ## Installing Northstar
 
