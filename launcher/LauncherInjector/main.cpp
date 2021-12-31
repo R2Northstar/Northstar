@@ -81,7 +81,7 @@ void EnsureOriginStarted()
     HKEY key;
     if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, "SOFTWARE\\WOW6432Node\\Origin", 0, KEY_READ, &key) != ERROR_SUCCESS)
     {
-        MessageBoxA(0, "Error: failed reading origin path!", "", MB_OK);
+        MessageBoxA(0, "Error: failed reading Origin path!", "", MB_OK);
         return;
     }
 
@@ -89,7 +89,7 @@ void EnsureOriginStarted()
     DWORD originPathLength = 520;
     if (RegQueryValueExA(key, "ClientPath", 0, 0, (LPBYTE)&originPath, &originPathLength) != ERROR_SUCCESS)
     {
-        MessageBoxA(0, "Error: failed reading origin path!", "", MB_OK);
+        MessageBoxA(0, "Error: failed reading Origin path!", "", MB_OK);
         return;
     }
 
@@ -122,7 +122,7 @@ void PrependPath()
         {
             MessageBoxW(GetForegroundWindow(), L"Warning: could not prepend the current directory to app's PATH environment variable. Something may break because of that.", L"Northstar Launcher Warning", 0);
         }
-        //free(pPath);
+        free(pPath);
     }
     else
     {

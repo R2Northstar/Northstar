@@ -43,11 +43,6 @@ BOOL APIENTRY DllMain( HMODULE hModule,
         break;
     }
 
-    // pls no xD
-    //if (!initialised)
-    //    InitialiseNorthstar();
-    //initialised = true;
-
     return TRUE;
 }
 
@@ -71,9 +66,10 @@ bool InitialiseNorthstar()
         spdlog::warn("Called InitialiseNorthstar more than once!");
         return false;
     }
+
     initialised = true;
 
-    curl_global_init(CURL_GLOBAL_DEFAULT);
+    curl_global_init_mem(CURL_GLOBAL_DEFAULT, _malloc_base, _free_base, _realloc_base, _strdup_base, _calloc_base);
 
     InitialiseLogging();
 
@@ -81,6 +77,7 @@ bool InitialiseNorthstar()
     InstallInitialHooks();
     InitialiseInterfaceCreationHooks();
 
+    AddDllLoadCallback("tier0.dll", InitialiseTier0GameUtilFunctions);
     AddDllLoadCallback("engine.dll", WaitForDebugger);
     AddDllLoadCallback("engine.dll", InitialiseEngineGameUtilFunctions);
     AddDllLoadCallback("server.dll", InitialiseServerGameUtilFunctions);
@@ -88,7 +85,7 @@ bool InitialiseNorthstar()
 
     // dedi patches
     {
-        AddDllLoadCallback("launcher.dll", InitialiseDedicatedOrigin);
+        AddDllLoadCallback("tier0.dll", InitialiseDedicatedOrigin);
         AddDllLoadCallback("engine.dll", InitialiseDedicated);
         AddDllLoadCallback("server.dll", InitialiseDedicatedServerGameDLL);
         AddDllLoadCallback("materialsystem_dx11.dll", InitialiseDedicatedMaterialSystem);
@@ -128,9 +125,8 @@ bool InitialiseNorthstar()
     // mod manager after everything else
     AddDllLoadCallback("engine.dll", InitialiseModManager);
 
-    // TODO: If you wanna make it more flexible and for example injectable with old Icepick injector
-    // in this place you should iterate over all already loaded DLLs and execute their callbacks and mark them as executed
-    // (as they will never get called otherwise and stuff will fail)
+    // run callbacks for any libraries that are already loaded by now
+    CallAllPendingDLLLoadCallbacks();
 
     return true;
 }

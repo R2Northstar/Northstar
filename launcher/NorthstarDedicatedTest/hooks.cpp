@@ -8,11 +8,10 @@
 #include <fstream>
 #include <sstream>
 #include <filesystem>
+#include <Psapi.h>
 
 typedef LPSTR(*GetCommandLineAType)();
 LPSTR GetCommandLineAHook();
-
-// note that these load library callbacks only support explicitly loaded dynamic libraries
 
 typedef HMODULE(*LoadLibraryExAType)(LPCSTR lpLibFileName, HANDLE hFile, DWORD dwFlags);
 HMODULE LoadLibraryExAHook(LPCSTR lpLibFileName, HANDLE hFile, DWORD dwFlags);
@@ -134,6 +133,29 @@ void CallLoadLibraryWCallbacks(LPCWSTR lpLibFileName, HMODULE moduleAddress)
 		{
 			callbackStruct->callback(moduleAddress);
 			callbackStruct->called = true;
+		}
+	}
+}
+
+void CallAllPendingDLLLoadCallbacks()
+{
+	HMODULE hMods[1024];
+	HANDLE hProcess = GetCurrentProcess();
+	DWORD cbNeeded;
+	unsigned int i;
+
+	// Get a list of all the modules in this process.
+	if (EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded))
+	{
+		for (i = 0; i < (cbNeeded / sizeof(HMODULE)); i++)
+		{
+			wchar_t szModName[MAX_PATH];
+
+			// Get the full path to the module's file.
+			if (GetModuleFileNameExW(hProcess, hMods[i], szModName, sizeof(szModName) / sizeof(TCHAR)))
+			{
+				CallLoadLibraryWCallbacks(szModName, hMods[i]);
+			}
 		}
 	}
 }

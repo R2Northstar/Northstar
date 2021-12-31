@@ -78,6 +78,13 @@ void InitialiseServerGameUtilFunctions(HMODULE baseAddress)
 
 void InitialiseTier0GameUtilFunctions(HMODULE baseAddress)
 {
+	if (!baseAddress)
+	{
+		spdlog::critical("tier0 base address is null, but it should be already loaded");
+		throw "tier0 base address is null, but it should be already loaded";
+	}
+	if (g_pMemAllocSingleton)
+		return; // seems this function was already called
 	CreateGlobalMemAlloc = reinterpret_cast<CreateGlobalMemAllocType>(GetProcAddress(baseAddress, "CreateGlobalMemAlloc"));
 	IMemAlloc** ppMemAllocSingleton = reinterpret_cast<IMemAlloc**>(GetProcAddress(baseAddress, "g_pMemAllocSingleton"));
 	if (!ppMemAllocSingleton)
@@ -89,7 +96,7 @@ void InitialiseTier0GameUtilFunctions(HMODULE baseAddress)
 	{
 		g_pMemAllocSingleton = CreateGlobalMemAlloc();
 		*ppMemAllocSingleton = g_pMemAllocSingleton;
-		spdlog::warn("Created new g_pMemAllocSingleton");
+		spdlog::info("Created new g_pMemAllocSingleton");
 	}
 	else
 	{

@@ -394,7 +394,7 @@ void InitialiseDedicatedOrigin(HMODULE baseAddress)
 
 	char* ptr = (char*)GetProcAddress(GetModuleHandleA("tier0.dll"), "Tier0_InitOrigin");
 	TempReadWrite rw(ptr);
-	*ptr = (char)0xC3;
+	*ptr = (char)0xC3; // ret
 }
 
 typedef void(*PrintFatalSquirrelErrorType)(void* sqvm);

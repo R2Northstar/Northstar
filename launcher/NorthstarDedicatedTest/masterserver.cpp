@@ -1022,9 +1022,9 @@ void CHostState__State_GameShutdownHook(CHostState* hostState)
 	CHostState__State_GameShutdown(hostState);
 }
 
-MasterServerManager::MasterServerManager()
+MasterServerManager::MasterServerManager() : m_pendingConnectionInfo{}, m_ownServerId{ "" }, m_ownClientAuthToken{ "" }
 {
-	curl_global_init_mem(CURL_GLOBAL_DEFAULT, _malloc_base, _free_base, _realloc_base, _strdup_base, _calloc_base);
+
 }
 
 void InitialiseSharedMasterServer(HMODULE baseAddress)
