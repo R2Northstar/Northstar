@@ -1,6 +1,6 @@
 # Playing on Linux
 
-Linux is not officially supported currently. However, you can get it working through Proton or Wine by following this guide.
+Linux is not officially supported currently. However, you can get it working through Proton or Wine by following this guide. You should also be aware of some [common issues with Origin](https://github.com/lutris/docs/blob/master/Origin.md) before proceding.
 
 ## Installing Northstar on Steam (Proton)
 
