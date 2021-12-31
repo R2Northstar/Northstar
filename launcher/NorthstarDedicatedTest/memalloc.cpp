@@ -41,7 +41,8 @@ extern "C" void* _calloc_base(size_t n, size_t size)
 {
 	size_t bytes = n * size;
 	void* memory = _malloc_base(bytes);
-	if (memory) {
+	if (memory)
+	{
 		memset(memory, 0, bytes);
 	}
 	return memory;
