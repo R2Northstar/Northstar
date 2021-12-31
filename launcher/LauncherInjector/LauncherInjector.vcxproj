@@ -90,7 +90,6 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="memalloc.h" />
     <ClInclude Include="resource1.h" />
   </ItemGroup>
   <ItemGroup>

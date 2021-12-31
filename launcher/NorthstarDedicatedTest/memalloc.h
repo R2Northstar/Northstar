@@ -35,7 +35,7 @@ public:
     static void Free(void* ptr) { _free_base(ptr); }
 };
 
-extern SourceAllocator* g_SourceAllocator;
+static SourceAllocator g_SourceAllocator;
 
 typedef rapidjson::GenericDocument<rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<SourceAllocator>, SourceAllocator> rapidjson_document;
 //typedef rapidjson::GenericDocument<rapidjson::UTF8<>, SourceAllocator, SourceAllocator> rapidjson_document;
