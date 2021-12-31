@@ -21,6 +21,7 @@ void function GamemodeSpeedball_Init()
 	
 	AddSpawnCallbackEditorClass( "script_ref", "info_speedball_flag", CreateFlag )
 	
+	AddCallback_GameStateEnter( eGameState.Prematch, CreateFlagIfNoFlagSpawnpoint )
 	AddCallback_GameStateEnter( eGameState.Playing, ResetFlag )
 	AddCallback_OnTouchHealthKit( "item_flag", OnFlagCollected )
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
@@ -112,6 +113,21 @@ void function DropFlag()
 		MessageToPlayer( player, eEventNotifications.SPEEDBALL_FlagDropped, file.flagCarrier )
 	
 	file.flagCarrier = null
+}
+
+void function CreateFlagIfNoFlagSpawnpoint()
+{
+	if ( IsValid( file.flag ) )
+		return
+	
+	foreach ( entity hardpoint in GetEntArrayByClass_Expensive( "info_hardpoint" ) )
+	{
+		if ( hardpoint.kv.hardpointGroup == "B" )
+		{
+			CreateFlag( hardpoint )
+			return
+		}
+	}
 }
 
 void function ResetFlag()
