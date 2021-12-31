@@ -3,16 +3,16 @@
 #include "include/rapidjson/document.h"
 //#include "include/rapidjson/allocators.h"
 
-extern size_t g_iStaticAllocated;
-
-extern "C" {
-	char* _strdup_base(const char* src);
-}
+extern "C" void* _malloc_base(size_t size);
+extern "C" void* _calloc_base(size_t const count, size_t const size);
+extern "C" void* _realloc_base(void* block, size_t size);
+extern "C" void* _recalloc_base(void* const block, size_t const count, size_t const size);
+extern "C" void  _free_base(void* const block);
+extern "C" char* _strdup_base(const char* src);
 
 void* operator new(size_t n);
 void operator delete(void* p);
 
-void* _malloc_base(size_t n);
 //void* malloc(size_t n);
 
 class SourceAllocator {
@@ -35,7 +35,7 @@ public:
     static void Free(void* ptr) { _free_base(ptr); }
 };
 
-extern SourceAllocator* g_SourceAllocator;
+static SourceAllocator g_SourceAllocator;
 
 typedef rapidjson::GenericDocument<rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<SourceAllocator>, SourceAllocator> rapidjson_document;
 //typedef rapidjson::GenericDocument<rapidjson::UTF8<>, SourceAllocator, SourceAllocator> rapidjson_document;
