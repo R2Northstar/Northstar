@@ -91,6 +91,17 @@ RemoteServerInfo::RemoteServerInfo(const char* newId, const char* newName, const
 	maxPlayers = newMaxPlayers;
 }
 
+void MasterServerManager::SetCommonHttpClientOptions(CURL* curl)
+{
+	curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+	if (CommandLine()->CheckParm("-msinsecure"))
+	{
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+	}
+}
+
 void MasterServerManager::ClearServerList()
 {
 	// this doesn't really do anything lol, probably isn't threadsafe
@@ -122,12 +133,11 @@ void MasterServerManager::AuthenticateOriginWithMasterServer(char* uid, char* or
 			spdlog::info("Trying to authenticate with northstar masterserver for user {}", uidStr);
 
 			CURL* curl = curl_easy_init();
+			SetCommonHttpClientOptions(curl);
 
 			std::string readBuffer;
 			curl_easy_setopt(curl, CURLOPT_URL, fmt::format("{}/client/origin_auth?id={}&token={}", Cvar_ns_masterserver_hostname->m_pszString, uidStr, tokenStr).c_str());
 			curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "GET");
-			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-			curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
 
@@ -195,12 +205,11 @@ void MasterServerManager::RequestServerList()
 			spdlog::info("Requesting server list from {}", Cvar_ns_masterserver_hostname->m_pszString);
 
 			CURL* curl = curl_easy_init();
+			SetCommonHttpClientOptions(curl);
 
 			std::string readBuffer;
 			curl_easy_setopt(curl, CURLOPT_URL, fmt::format("{}/client/servers", Cvar_ns_masterserver_hostname->m_pszString).c_str());
 			curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "GET");
-			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-			curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
 
@@ -333,12 +342,11 @@ void MasterServerManager::RequestMainMenuPromos()
 				Sleep(500);
 
 			CURL* curl = curl_easy_init();
+			SetCommonHttpClientOptions(curl);
 
 			std::string readBuffer;
 			curl_easy_setopt(curl, CURLOPT_URL, fmt::format("{}/client/mainmenupromos", Cvar_ns_masterserver_hostname->m_pszString).c_str());
 			curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "GET");
-			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-			curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
 
@@ -444,12 +452,11 @@ void MasterServerManager::AuthenticateWithOwnServer(char* uid, char* playerToken
 	std::thread requestThread([this, uidStr, tokenStr]()
 		{
 			CURL* curl = curl_easy_init();
+			SetCommonHttpClientOptions(curl);
 
 			std::string readBuffer;
 			curl_easy_setopt(curl, CURLOPT_URL, fmt::format("{}/client/auth_with_self?id={}&playerToken={}", Cvar_ns_masterserver_hostname->m_pszString, uidStr, tokenStr).c_str());
 			curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
-			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-			curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
 
@@ -570,11 +577,10 @@ void MasterServerManager::AuthenticateWithServer(char* uid, char* playerToken, c
 			spdlog::info("Attempting authentication with server of id \"{}\"", serverIdStr);
 
 			CURL* curl = curl_easy_init();
+			SetCommonHttpClientOptions(curl);
 
 			std::string readBuffer;
 			curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
-			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-			curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
 
@@ -703,11 +709,10 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 		const char* modInfoString = buffer.GetString();
 
 			CURL* curl = curl_easy_init();
+			SetCommonHttpClientOptions(curl);
 
 			std::string readBuffer;
 			curl_easy_setopt(curl, CURLOPT_POST, 1L);
-			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-			curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
 
@@ -792,13 +797,14 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 					do
 					{
 						CURL* curl = curl_easy_init();
+						SetCommonHttpClientOptions(curl);
 
 						std::string readBuffer;
 						curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
 						curl_easy_setopt(curl, CURLOPT_URL, fmt::format("{}/server/heartbeat?id={}&playerCount={}", Cvar_ns_masterserver_hostname->m_pszString, m_ownServerId, g_ServerAuthenticationManager->m_additionalPlayerData.size()).c_str());
-						curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 						curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
 						curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+						curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
 						
 						CURLcode result = curl_easy_perform(curl);
 						if (result != CURLcode::CURLE_OK)
@@ -837,11 +843,10 @@ void MasterServerManager::UpdateServerMapAndPlaylist(char* map, char* playlist, 
 	std::thread requestThread([this, strMap, strPlaylist, maxPlayers]
 		{
 			CURL* curl = curl_easy_init();
+			SetCommonHttpClientOptions(curl);
 
 			std::string readBuffer;
 			curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
-			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-			curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
 
@@ -878,11 +883,10 @@ void MasterServerManager::UpdateServerPlayerCount(int playerCount)
 	std::thread requestThread([this, playerCount] 
 		{
 			CURL* curl = curl_easy_init();
+			SetCommonHttpClientOptions(curl);
 
 			std::string readBuffer;
 			curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
-			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-			curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
 			curl_easy_setopt(curl, CURLOPT_URL, fmt::format("{}/server/update_values?id={}&playerCount={}", Cvar_ns_masterserver_hostname->m_pszString, m_ownServerId, playerCount).c_str());
@@ -916,12 +920,11 @@ void MasterServerManager::WritePlayerPersistentData(char* playerId, char* pdata,
 	std::thread requestThread([this, strPlayerId, strPdata, pdataSize]
 		{
 			CURL* curl = curl_easy_init();
+			SetCommonHttpClientOptions(curl);
 
 			std::string readBuffer;
 			curl_easy_setopt(curl, CURLOPT_URL, fmt::format("{}/accounts/write_persistence?id={}&serverId={}", Cvar_ns_masterserver_hostname->m_pszString, strPlayerId, m_ownServerId).c_str());
 			curl_easy_setopt(curl, CURLOPT_POST, 1L);
-			curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
 
@@ -958,11 +961,10 @@ void MasterServerManager::RemoveSelfFromServerList()
 
 	std::thread requestThread([this] {
 			CURL* curl = curl_easy_init();
+			SetCommonHttpClientOptions(curl);
 
 			std::string readBuffer;
 			curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
-			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-			curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
 			curl_easy_setopt(curl, CURLOPT_URL, fmt::format("{}/server/remove_server?id={}", Cvar_ns_masterserver_hostname->m_pszString, m_ownServerId).c_str());

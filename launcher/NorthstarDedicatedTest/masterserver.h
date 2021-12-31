@@ -96,7 +96,7 @@ public:
 	MainMenuPromoData m_MainMenuPromoData;
 
 private:
-	void SetHttpClientOptions(httplib::Client& http);
+	void SetCommonHttpClientOptions(CURL* curl);
 
 public:
 	MasterServerManager();
