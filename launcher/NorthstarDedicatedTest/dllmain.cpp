@@ -64,8 +64,6 @@ void WaitForDebugger(HMODULE baseAddress)
     }
 }
 
-SourceAllocator* g_SourceAllocator;
-
 bool InitialiseNorthstar()
 {
     if (initialised)
@@ -75,14 +73,13 @@ bool InitialiseNorthstar()
     }
     initialised = true;
 
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+
     InitialiseLogging();
 
     // apply initial hooks
     InstallInitialHooks();
     InitialiseInterfaceCreationHooks();
-
-    g_SourceAllocator = new SourceAllocator;
-    curl_global_init(CURL_GLOBAL_DEFAULT);
 
     AddDllLoadCallback("engine.dll", WaitForDebugger);
     AddDllLoadCallback("engine.dll", InitialiseEngineGameUtilFunctions);
