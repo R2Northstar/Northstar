@@ -83,6 +83,7 @@ bool InitialiseNorthstar()
     InitialiseInterfaceCreationHooks();
 
     g_SourceAllocator = new SourceAllocator;
+    curl_global_init(CURL_GLOBAL_DEFAULT);
 
     AddDllLoadCallback("tier0.dll", InitialiseTier0GameUtilFunctions);
     AddDllLoadCallback("engine.dll", WaitForDebugger);
