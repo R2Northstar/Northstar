@@ -94,8 +94,6 @@ void InitialiseTier0GameUtilFunctions(HMODULE baseAddress)
 	else
 	{
 		g_pMemAllocSingleton = *ppMemAllocSingleton;
-		extern size_t g_iStaticAllocated;
-		spdlog::info("Using existing g_pMemAllocSingleton for memory allocations, preallocated {} bytes beforehand", g_iStaticAllocated);
 	}
 
 	Error = reinterpret_cast<ErrorType>(GetProcAddress(baseAddress, "Error"));

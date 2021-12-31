@@ -192,6 +192,15 @@ int main(int argc, char* argv[]) {
 
         PrependPath();
 
+        printf("[*] Loading tier0.dll\n");
+        swprintf_s(buffer, L"%s\\bin\\x64_retail\\tier0.dll", exePath);
+        hTier0Module = LoadLibraryExW(buffer, 0, LOAD_WITH_ALTERED_SEARCH_PATH);
+        if (!hTier0Module)
+        {
+            LibraryLoadError(GetLastError(), L"tier0.dll", buffer);
+            return 1;
+        }
+
         bool loadNorthstar = ShouldLoadNorthstar(argc, argv);
         if (loadNorthstar)
         {
@@ -204,21 +213,10 @@ int main(int argc, char* argv[]) {
 
         printf("[*] Loading launcher.dll\n");
         swprintf_s(buffer, L"%s\\bin\\x64_retail\\launcher.dll", exePath);
-        hLauncherModule = LoadLibraryExW(buffer, 0i64, 8u);
+        hLauncherModule = LoadLibraryExW(buffer, 0, LOAD_WITH_ALTERED_SEARCH_PATH);
         if (!hLauncherModule)
         {
             LibraryLoadError(GetLastError(), L"launcher.dll", buffer);
-            return 1;
-        }
-
-        printf("[*] Loading tier0.dll\n");
-        // this makes zero sense given tier0.dll is already loaded via imports on launcher.dll, but we do it for full consistency with original launcher exe
-        // and to also let load callbacks in Northstar work for tier0.dll
-        swprintf_s(buffer, L"%s\\bin\\x64_retail\\tier0.dll", exePath);
-        hTier0Module = LoadLibraryW(buffer);
-        if (!hTier0Module)
-        {
-            LibraryLoadError(GetLastError(), L"tier0.dll", buffer);
             return 1;
         }
     }
