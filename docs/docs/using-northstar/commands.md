@@ -33,4 +33,6 @@ In the future this keybind should hopefully be adjustable via `Controls > Settin
 | ----------------------- | -------------- |
 | `sv_cheats 1`           | Enable cheats  |
 | `sv_cheats 0`           | Disable cheats |
-| TODO more commands here |                |
+| `ns_masterserver_hostname` | Masterserver URL, default: `https://northstar.tf` |
+| `ns_auth_allow_insecure 1` | Allows clients to connect without masterserver authorization |
+| `connect <ip address>:<port>` | Directly connect to a Northstar gameserver |

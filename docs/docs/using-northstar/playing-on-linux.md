@@ -1,6 +1,6 @@
 # Playing on Linux
 
-Linux is not officially supported currently. However, you can get it working through Proton or Wine by following this guide.
+Linux is not officially supported currently. However, you can get it working through Proton or Wine by following this guide. You should also be aware of some [common issues with Origin](https://github.com/lutris/docs/blob/master/Origin.md) before proceding.
 
 ## Installing Northstar on Steam (Proton)
 
@@ -32,6 +32,12 @@ Now just launch the game through Lutris and you should be greeted with a Northst
 > You might feel the game is stuttering a lot in the first hour of playing. This is normal, it's just DXVK is compiling shaders. The more you play, the less you will stutter in the future. Someone on discord wrote [an in-depth guide](https://i.imgur.com/xzop1lQ.png) on good settings to help the shader cache **and a general performance boost by stopping Origin from writing unnecessary files**.\
 > [Link to cache](https://github.com/Cervoxx/DXVKCACHE/raw/master/Titanfall2-cache.tar.xz)\
 > [Link to Origin being slow discussion](https://github.com/ValveSoftware/Proton/issues/4001#issuecomment-647014231)
+
+---
+
+## Fullscreen issues
+
+Running the game on fullscreen through Linux might lead to a black screen preventing you from launching the game. Edit your `ns_startup_args.txt` to include `-noborder -window` or edit `"setting.fullscreen"` and `"setting.nowindowborder"` at `<wineprefix>/drive_c/users/<username>/Documents/Respawn/Titanfall2/local/videoconfig.txt` to solve this.
 
 ---
 

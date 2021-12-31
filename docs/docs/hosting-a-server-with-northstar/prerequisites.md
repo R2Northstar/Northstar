@@ -10,7 +10,7 @@ In order for others to join your game they need to be able to reach you. Most li
 
 ## CGNAT
 
-First we want to make sure you're not behind a [CGNAT](https://en.wikipedia.org/wiki/Carrier-grade\_NAT) as this basically means you won't be able to host at all.
+First we want to make sure you're not behind a [CGNAT](https://en.wikipedia.org/wiki/Carrier-grade\_NAT) as this basically means you [won't be able to host at all](https://en.wikipedia.org/wiki/Carrier-grade_NAT#Disadvantages).
 
 For this find out your external IP address [by visiting this site](https://www.whatsmyip.org).
 
