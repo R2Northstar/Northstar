@@ -58,7 +58,6 @@ void WaitForDebugger(HMODULE baseAddress)
     if (strstr(GetCommandLineA(), "-waitfordebugger"))
     {
         spdlog::info("waiting for debugger...");
-        spdlog::info("{} bytes have been statically allocated", g_iStaticAllocated);
 
         while (!IsDebuggerPresent())
             Sleep(100);
@@ -71,7 +70,7 @@ bool InitialiseNorthstar()
 {
     if (initialised)
     {
-        fprintf(stderr, "[info] Called InitialiseNorthstar more than once!\n");
+        spdlog::warn("Called InitialiseNorthstar more than once!");
         return false;
     }
     initialised = true;
@@ -85,7 +84,6 @@ bool InitialiseNorthstar()
     g_SourceAllocator = new SourceAllocator;
     curl_global_init(CURL_GLOBAL_DEFAULT);
 
-    AddDllLoadCallback("tier0.dll", InitialiseTier0GameUtilFunctions);
     AddDllLoadCallback("engine.dll", WaitForDebugger);
     AddDllLoadCallback("engine.dll", InitialiseEngineGameUtilFunctions);
     AddDllLoadCallback("server.dll", InitialiseServerGameUtilFunctions);
@@ -93,8 +91,8 @@ bool InitialiseNorthstar()
 
     // dedi patches
     {
+        AddDllLoadCallback("launcher.dll", InitialiseDedicatedOrigin);
         AddDllLoadCallback("engine.dll", InitialiseDedicated);
-        AddDllLoadCallback("tier0.dll", InitialiseDedicatedOrigin);
         AddDllLoadCallback("server.dll", InitialiseDedicatedServerGameDLL);
         AddDllLoadCallback("materialsystem_dx11.dll", InitialiseDedicatedMaterialSystem);
         // this fucking sucks, but seemingly we somehow load after rtech_game???? unsure how, but because of this we have to apply patches here, not on rtech_game load
