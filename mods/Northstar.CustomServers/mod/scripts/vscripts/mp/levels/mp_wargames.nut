@@ -104,7 +104,8 @@ void function OnPrematchStart()
 	
 	entity militiaIon = CreatePropDynamic( $"models/titans/medium/titan_medium_ajax.mdl", < -1809.98, 2790.39, -1409 >, < 0, 80, 0 > )
 	thread PlayAnim( militiaIon, "at_titan_activation_wargames_intro" )
-	
+	militiaIon.Anim_SetInitialTime( 4.5 )
+
 	entity militiaPilot = CreateElitePilot( TEAM_UNASSIGNED, < 0, 0, 0 >, < 0, 0, 0 > )
 	DispatchSpawn( militiaPilot )
 	militiaPilot.SetParent( militiaIon, "HIJACK" )
@@ -115,7 +116,6 @@ void function OnPrematchStart()
 	entity militiaMarvinChillin = CreateMarvin( TEAM_UNASSIGNED, < -1786, 3060, -1412 >, < 0, -120, 0 > )
 	DispatchSpawn( militiaMarvinChillin )
 	thread PlayAnim( militiaMarvinChillin, "mv_idle_unarmed" )
-	
 	
 	// imc grunts
 	entity imcGrunt1 = CreatePropDynamic( $"models/humans/grunts/imc_grunt_rifle.mdl", < -2915, 2867, -1788 >, < 0, -137, 0 > )
@@ -227,12 +227,12 @@ void function PlayerWatchesWargamesIntro( entity player )
 	player.MovementDisable()
 	player.SetInvulnerable()
 	
-	// spawn faction leader
-	// no clue why client subtracts 4.5 from the time we give this, so just add it here instead
-	if ( factionTeam == TEAM_IMC )
-		Remote_CallFunction_NonReplay( player, "ServerCallback_SpawnIMCFactionLeaderForIntro", file.introStartTime + 4.5, playerPod.GetEncodedEHandle() )
+	if ( factionTeam == TEAM_MILITIA && GetFactionChoice( player ) == "faction_marvin" )
+		Remote_CallFunction_NonReplay( player, "ServerCallback_SpawnMilitiaFactionLeaderForIntro", file.introStartTime, playerPod.GetEncodedEHandle() )
+	else if ( factionTeam == TEAM_MILITIA )
+		Remote_CallFunction_NonReplay( player, "ServerCallback_SpawnMilitiaFactionLeaderForIntro", file.introStartTime + 1.75, playerPod.GetEncodedEHandle() )
 	else
-		Remote_CallFunction_NonReplay( player, "ServerCallback_SpawnMilitiaFactionLeaderForIntro", file.introStartTime + 4.5, playerPod.GetEncodedEHandle() )
+		Remote_CallFunction_NonReplay( player, "ServerCallback_SpawnIMCFactionLeaderForIntro", file.introStartTime + 4.5, playerPod.GetEncodedEHandle() )
 	
 	// idle pod sequence
 	FirstPersonSequenceStruct podIdleSequence
