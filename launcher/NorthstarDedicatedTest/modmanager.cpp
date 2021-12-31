@@ -309,7 +309,7 @@ void ModManager::LoadMods()
 				if (fs::is_regular_file(file))
 				{
 					std::string kvStr = file.path().lexically_relative(mod.ModDirectory / "keyvalues").lexically_normal().string();
-					mod.KeyValues.insert(std::make_pair(std::hash<std::string>{}(kvStr), kvStr));
+					mod.KeyValues.emplace(std::hash<std::string>{}(kvStr), kvStr);
 				}
 			}
 		}
@@ -333,7 +333,7 @@ void ModManager::LoadMods()
 	}
 
 	// in a seperate loop because we register mod files in reverse order, since mods loaded later should have their files prioritised
-	for (size_t i = m_loadedMods.size() - 1; i > -1; i--)
+	for (int64_t i = m_loadedMods.size() - 1; i > -1; i--)
 	{
 		if (!m_loadedMods[i].Enabled)
 			continue;

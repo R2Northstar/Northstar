@@ -38,7 +38,7 @@ void HookEnabler::CreateHook(LPVOID ppTarget, LPVOID ppDetour, LPVOID* ppOrigina
     else
     {
         if (targetName != nullptr)
-            spdlog::error("MH_CreateHook failed for function %s", targetName);
+            spdlog::error("MH_CreateHook failed for function {}", targetName);
         else
             spdlog::error("MH_CreateHook failed for unknown function");
     }
@@ -51,7 +51,7 @@ HookEnabler::~HookEnabler()
         if (MH_EnableHook(hook->targetAddress) != MH_OK)
         {
             if (hook->targetName != nullptr)
-                spdlog::error("MH_EnableHook failed for function %s", hook->targetName);
+                spdlog::error("MH_EnableHook failed for function {}", hook->targetName);
             else
                 spdlog::error("MH_EnableHook failed for unknown function");
         }

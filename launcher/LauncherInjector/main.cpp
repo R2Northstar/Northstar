@@ -18,7 +18,7 @@ HMODULE hHookModule;
 HMODULE hTier0Module;
 
 wchar_t exePath[4096];
-wchar_t buffer[8196];
+wchar_t buffer[8192];
 
 DWORD GetProcessByName(std::wstring processName)
 {
@@ -173,30 +173,33 @@ bool LoadNorthstar()
 int main(int argc, char* argv[]) {
 
     // checked to avoid starting origin, Northstar.dll will check for -dedicated as well on its own
-    bool isDedicated = false;
-    for (int i = 0; i < argc; i++)
-        if (!strcmp(argv[i], "-dedicated"))
-            isDedicated = true;
-
     bool noOriginStartup = false;
     for (int i = 0; i < argc; i++)
-        if (!strcmp(argv[i], "-noOriginStartup"))
+        if (!strcmp(argv[i], "-noOriginStartup") || !strcmp(argv[i], "-dedicated"))
             noOriginStartup = true;
 
-    if (!isDedicated && !noOriginStartup)
+    if (!noOriginStartup)
     {
         EnsureOriginStarted();
     }
 
     {
-
-        if (!GetExePathWide(exePath, 4096))
+        if (!GetExePathWide(exePath, sizeof(exePath)))
         {
             MessageBoxA(GetForegroundWindow(), "Failed getting game directory.\nThe game cannot continue and has to exit.", "Northstar Launcher Error", 0);
             return 1;
         }
 
         PrependPath();
+
+        printf("[*] Loading tier0.dll\n");
+        swprintf_s(buffer, L"%s\\bin\\x64_retail\\tier0.dll", exePath);
+        hTier0Module = LoadLibraryExW(buffer, 0, LOAD_WITH_ALTERED_SEARCH_PATH);
+        if (!hTier0Module)
+        {
+            LibraryLoadError(GetLastError(), L"tier0.dll", buffer);
+            return 1;
+        }
 
         bool loadNorthstar = ShouldLoadNorthstar(argc, argv);
         if (loadNorthstar)
@@ -210,21 +213,10 @@ int main(int argc, char* argv[]) {
 
         printf("[*] Loading launcher.dll\n");
         swprintf_s(buffer, L"%s\\bin\\x64_retail\\launcher.dll", exePath);
-        hLauncherModule = LoadLibraryExW(buffer, 0i64, 8u);
+        hLauncherModule = LoadLibraryExW(buffer, 0, LOAD_WITH_ALTERED_SEARCH_PATH);
         if (!hLauncherModule)
         {
             LibraryLoadError(GetLastError(), L"launcher.dll", buffer);
-            return 1;
-        }
-
-        printf("[*] Loading tier0.dll\n");
-        // this makes zero sense given tier0.dll is already loaded via imports on launcher.dll, but we do it for full consistency with original launcher exe
-        // and to also let load callbacks in Northstar work for tier0.dll
-        swprintf_s(buffer, L"%s\\bin\\x64_retail\\tier0.dll", exePath);
-        hTier0Module = LoadLibraryW(buffer);
-        if (!hTier0Module)
-        {
-            LibraryLoadError(GetLastError(), L"tier0.dll", buffer);
             return 1;
         }
     }

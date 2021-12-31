@@ -119,6 +119,14 @@ extern "C" __declspec(dllexport) int LauncherMain(HINSTANCE hInstance, HINSTANCE
 
         if (loadNorthstar)
         {
+            swprintf_s(dllPath, L"%s\\bin\\x64_retail\\tier0.dll", exePath);
+            hTier0Module = LoadLibraryW(dllPath);
+            if (!hTier0Module)
+            {
+                LibraryLoadError(GetLastError(), L"tier0.dll", dllPath);
+                return 1;
+            }
+
             if (!LoadNorthstar())
                 return 1;
         }
@@ -129,16 +137,6 @@ extern "C" __declspec(dllexport) int LauncherMain(HINSTANCE hInstance, HINSTANCE
         if (!hLauncherModule)
         {
             LibraryLoadError(GetLastError(), L"launcher.org.dll", dllPath);
-            return 1;
-        }
-
-        // this makes zero sense given tier0.dll is already loaded via imports on launcher.dll, but we do it for full consistency with original launcher exe
-        // and to also let load callbacks in Northstar work for tier0.dll
-        swprintf_s(dllPath, L"%s\\bin\\x64_retail\\tier0.dll", exePath);
-        hTier0Module = LoadLibraryW(dllPath);
-        if (!hTier0Module)
-        {
-            LibraryLoadError(GetLastError(), L"tier0.dll", dllPath);
             return 1;
         }
     }
