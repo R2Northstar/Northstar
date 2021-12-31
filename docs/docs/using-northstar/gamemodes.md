@@ -1,4 +1,6 @@
 # Gamemodes
+Northstar comes included with some community made gamemodes.
+
 ## Sandbox
 Like gmod but worse.
 
