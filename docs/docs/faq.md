@@ -27,7 +27,7 @@ A: Not right now, they're being looked into. Give it time. Possibly a lot of tim
 
 ### Q: Can I use Northstar to play singleplayer?
 
-A: No single player is not supported at the moment, so you'll need to use the vanilla client. A co-op single player mod is planned but development is currently halted in favour of focussing on multiplayer content.
+A: No single player is not supported at the moment, so you'll need to use the vanilla client. A [co-op single player mod is planned](https://github.com/R2Northstar/NorthstarMods/tree/main/Northstar.Coop) but development is currently halted in favour of focussing on multiplayer content.
 
 ### Q: I get an error saying "Showing user info for UID 0 on hardware" and can't connect to servers!
 
