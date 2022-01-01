@@ -4,7 +4,7 @@ description: A Titanfall|2 mod to join and host custom servers.
 
 # Welcome to Northstar
 
-Welcome to the Northstar wiki!
+{% embed url="https://www.youtube.com/watch?v=en06Y6CPMQg" %}
 
 ## Releases and installation guide:
 
