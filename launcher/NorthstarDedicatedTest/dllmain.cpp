@@ -26,6 +26,7 @@
 #include "miscclientfixes.h"
 #include "miscserverfixes.h"
 #include "memalloc.h"
+#include "languagehooks.h"
 
 bool initialised = false;
 
@@ -63,7 +64,7 @@ bool InitialiseNorthstar()
 {
     if (initialised)
     {
-        spdlog::warn("Called InitialiseNorthstar more than once!");
+        //spdlog::warn("Called InitialiseNorthstar more than once!");
         return false;
     }
 
@@ -78,6 +79,7 @@ bool InitialiseNorthstar()
     InitialiseInterfaceCreationHooks();
 
     AddDllLoadCallback("tier0.dll", InitialiseTier0GameUtilFunctions);
+    AddDllLoadCallback("tier0.dll", InitialiseTier0LanguageHooks);
     AddDllLoadCallback("engine.dll", WaitForDebugger);
     AddDllLoadCallback("engine.dll", InitialiseEngineGameUtilFunctions);
     AddDllLoadCallback("server.dll", InitialiseServerGameUtilFunctions);
