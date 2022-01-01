@@ -39,11 +39,10 @@ Now just launch the game through Lutris and you should be greeted with a Northst
 
 ### Blank console
 
-This problem is caused due to missing fonts on your wine prefix, fix it by following these steps:
+This problem is caused due to missing fonts on your Titanfall 2 wine prefix, you will need [winetricks](https://github.com/Winetricks/winetricks) or [protontricks](https://github.com/Matoking/protontricks) depending on your installation. Follow these steps to install:
 
-Lutris:
 1. Close all Titanfall/Origin processes.
-2. Select your Titanfall 2 installation and click '▲' -> Winetricks.
+2. If you are using Lutris select your Titanfall 2 installation and click '▲' -> Winetricks. On Proton you can use `protontricks 1237970 --gui`
 3. 'Select the default wineprefix' -> 'Install a font' -> Check the packages `lucida` and `arial`.
 4. Click OK and wait for everything to install, if done correctly winetricks will popup again.
 5. You can now close it and launch the game.
