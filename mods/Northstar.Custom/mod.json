@@ -344,6 +344,18 @@
 			"ServerCallback": {
 				"After": "DisallowedWeapons_Init"
 			}
+		},
+		
+		{
+			"Path": "sh_custom_pilot_collision.gnut",
+			"RunOn": "( CLIENT || SERVER ) && MP",
+			"ClientCallback": {
+				"After": "CustomPilotCollision_InitPlaylistVars"
+			},
+			
+			"ServerCallback": {
+				"After": "CustomPilotCollision_InitPlaylistVars"
+			}
 		}
 	],
 	

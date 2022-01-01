@@ -1,0 +1,32 @@
+global function CustomPilotCollision_InitPlaylistVars
+
+void function CustomPilotCollision_InitPlaylistVars()
+{
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_PILOT", "no_pilot_collision", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
+
+#if SERVER
+	AddCallback_OnPlayerRespawned( SetPilotCollisionFlagsForRespawn )
+	AddCallback_OnPilotBecomesTitan( PilotCollisionOnPilotBecomesTitan )
+	AddCallback_OnTitanBecomesPilot( PilotCollisionOnTitanBecomesPilot )
+#endif
+}
+
+#if SERVER
+void function SetPilotCollisionFlagsForRespawn( entity player )
+{
+	if ( GetCurrentPlaylistVarInt( "no_pilot_collision", 0 ) == 1 )
+		player.kv.CollisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS
+}
+
+void function PilotCollisionOnPilotBecomesTitan( entity player, entity titan )
+{
+	if ( GetCurrentPlaylistVarInt( "no_pilot_collision", 0 ) == 1 )
+		player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+}
+
+void function PilotCollisionOnTitanBecomesPilot( entity player, entity titan )
+{
+	if ( GetCurrentPlaylistVarInt( "no_pilot_collision", 0 ) == 1 )
+		player.kv.CollisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS
+}
+#endif
