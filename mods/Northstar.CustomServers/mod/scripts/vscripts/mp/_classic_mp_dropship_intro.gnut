@@ -86,7 +86,7 @@ void function OnPrematchStart()
 	foreach ( entity dropshipSpawn in validDropshipSpawns )
 	{
 		// todo: possibly make this only spawn dropships if we've got enough players to need them
-		int createTeam = HasSwitchedSides() ? dropshipSpawn.GetTeam() : GetOtherTeam( dropshipSpawn.GetTeam() )
+		int createTeam = HasSwitchedSides() ? GetOtherTeam( dropshipSpawn.GetTeam() ) : dropshipSpawn.GetTeam() 
 		array<IntroDropship> teamDropships = createTeam == TEAM_MILITIA ? file.militiaDropships : file.imcDropships
 		
 		if ( teamDropships.len() >= 2 )
