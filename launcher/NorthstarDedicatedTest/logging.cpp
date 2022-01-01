@@ -186,6 +186,7 @@ void InitialiseLogging()
 
 	AllocConsole();
 	freopen("CONOUT$", "w", stdout);
+	freopen("CONOUT$", "w", stderr);
 
 	spdlog::default_logger()->set_pattern("[%H:%M:%S] [%l] %v");
 	spdlog::flush_on(spdlog::level::info);
