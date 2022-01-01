@@ -25,4 +25,7 @@ Northstar is split over multiple git repositories that fulfil different function
 
 ### Setup
 
-> TODO: Add proper build instructions here
+Build instructions for the launcher can be found here:
+
+{% embed url="https://github.com/R2Northstar/NorthstarLauncher/blob/main/BUILD.md" %}
+
