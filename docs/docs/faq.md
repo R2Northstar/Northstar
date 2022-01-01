@@ -25,6 +25,22 @@ A: No.
 
 A: Not right now, they're being looked into. Give it time. Possibly a lot of time, don't ask for an ETA.
 
+### Q: I'm trying to invite a friend via Steam/Origin but they cannot join me?
+
+A: Due to the way Northstar works, you sadly cannot just create a private match and invite a friend via Steam/Origin. Instead you'll have to host a server.
+
+Check the prerequisites:
+
+{% content-ref url="hosting-a-server-with-northstar/prerequisites.md" %}
+[prerequisites.md](hosting-a-server-with-northstar/prerequisites.md)
+{% endcontent-ref %}
+
+and instructions to host a _listen server_:
+
+{% content-ref url="hosting-a-server-with-northstar/basic-listen-server.md" %}
+[basic-listen-server.md](hosting-a-server-with-northstar/basic-listen-server.md)
+{% endcontent-ref %}
+
 ### Q: Can I use Northstar to play singleplayer?
 
 A: No single player is not supported at the moment, so you'll need to use the vanilla client. A [co-op single player mod is planned](https://github.com/R2Northstar/NorthstarMods/tree/main/Northstar.Coop) but development is currently halted in favour of focussing on multiplayer content.
