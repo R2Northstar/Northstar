@@ -41,6 +41,11 @@ and instructions to host a _listen server_:
 [basic-listen-server.md](hosting-a-server-with-northstar/basic-listen-server.md)
 {% endcontent-ref %}
 
+### Q: My main menu screen is blank or only cinematics show up!
+
+A: Please remove conflicting mods such as `better.serverbrowser` and reinstall _Northstar core mods_ (those that start with `Northstar.`, are in the [NorthstarMods repository](https://github.com/R2Northstar/NorthstarMods), and included in the release zip).\
+Try deleting `enabledmods.json` as well. Otherwise pay attention in console for your errors if you know what you're doing.
+
 ### Q: Can I use Northstar to play singleplayer?
 
 A: No single player is not supported at the moment, so you'll need to use the vanilla client. A [co-op single player mod is planned](https://github.com/R2Northstar/NorthstarMods/tree/main/Northstar.Coop) but development is currently halted in favour of focussing on multiplayer content.
