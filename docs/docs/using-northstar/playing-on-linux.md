@@ -2,7 +2,9 @@
 
 Linux is not officially supported currently. However, you can get it working through Proton or Wine by following this guide. You should also be aware of some [common issues with Origin](https://github.com/lutris/docs/blob/master/Origin.md) before proceding.
 
-## Installing Northstar on Steam (Proton)
+## Installing
+
+### Steam (Proton)
 
 1. Download the latest version of Northstar from the [releases](https://github.com/R2Northstar/Northstar/releases) page
 2. Extract all contents of the file to your Titanfall 2 folder ( Right click _Titanfall 2_ > Open _Properties_ > Click _Local Files_ > Click _Browse_ )
@@ -14,7 +16,7 @@ Now Steam will automatically launch Northstar when you hit play. Just launch the
 
 > If you are still suffering from this bug, try running the game through Lutris. The bug doesn't seem to happen there
 
-## Installing Northstar on Lutris (Wine)
+### Lutris (Wine)
 
 1. If you don't already have the game downloaded, install the game [from here.](https://lutris.net/games/titanfall-2/) 
 2. Download the latest version of Northstar from the [releases](https://github.com/R2Northstar/Northstar/releases) page
@@ -33,12 +35,20 @@ Now just launch the game through Lutris and you should be greeted with a Northst
 > [Link to cache](https://github.com/Cervoxx/DXVKCACHE/raw/master/Titanfall2-cache.tar.xz)\
 > [Link to Origin being slow discussion](https://github.com/ValveSoftware/Proton/issues/4001#issuecomment-647014231)
 
----
+## Troubleshooting
 
-## Fullscreen issues
+### Blank console
+
+This problem is caused due to missing fonts on your Titanfall 2 wine prefix, you will need [winetricks](https://github.com/Winetricks/winetricks) or [protontricks](https://github.com/Matoking/protontricks) depending on your installation. Follow these steps to install:
+
+1. Close all Titanfall/Origin processes.
+2. If you are using Lutris select your Titanfall 2 installation and click '▲' -> Winetricks. On Proton you can use `protontricks 1237970 --gui`
+3. 'Select the default wineprefix' -> 'Install a font' -> Check the packages `lucida` and `arial`.
+4. Click OK and wait for everything to install, if done correctly winetricks will popup again.
+5. You can now close it and launch the game.
+
+### Fullscreen issues
 
 Running the game on fullscreen through Linux might lead to a black screen preventing you from launching the game. Edit your `ns_startup_args.txt` to include `-noborder -window` or edit `"setting.fullscreen"` and `"setting.nowindowborder"` at `<wineprefix>/drive_c/users/<username>/Documents/Respawn/Titanfall2/local/videoconfig.txt` to solve this.
-
----
 
 For more info and proposed fixes, refer to [this issue thread on Github](https://github.com/R2Northstar/Northstar/issues/1)
