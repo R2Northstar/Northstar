@@ -95,7 +95,8 @@ void MasterServerManager::SetCommonHttpClientOptions(CURL* curl)
 {
 	curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-	if (CommandLine()->CheckParm("-msinsecure"))
+	//curl_easy_setopt(curl, CURLOPT_STDERR, stdout);
+	if (CommandLine()->FindParm("-msinsecure")) // TODO: this check doesn't seem to work
 	{
 		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
