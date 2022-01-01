@@ -1422,6 +1422,9 @@
     <ClInclude Include="include\libcurl\include\curl\urlapi.h">
       <Filter>Header Files\include\libcurl</Filter>
     </ClInclude>
+    <ClInclude Include="languagehooks.h">
+      <Filter>Header Files\Client</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -1531,6 +1534,9 @@
     </ClCompile>
     <ClCompile Include="miscserverfixes.cpp">
       <Filter>Source Files\Server</Filter>
+    </ClCompile>
+    <ClCompile Include="languagehooks.cpp">
+      <Filter>Source Files\Client</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

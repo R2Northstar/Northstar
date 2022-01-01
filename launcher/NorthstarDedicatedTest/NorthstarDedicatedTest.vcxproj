@@ -515,6 +515,7 @@
     <ClInclude Include="include\spdlog\tweakme.h" />
     <ClInclude Include="include\spdlog\version.h" />
     <ClInclude Include="keyvalues.h" />
+    <ClInclude Include="languagehooks.h" />
     <ClInclude Include="logging.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="masterserver.h" />
@@ -554,6 +555,7 @@
     <ClCompile Include="hooks.cpp" />
     <ClCompile Include="hookutils.cpp" />
     <ClCompile Include="keyvalues.cpp" />
+    <ClCompile Include="languagehooks.cpp" />
     <ClCompile Include="memalloc.cpp" />
     <ClCompile Include="miscclientfixes.cpp" />
     <ClCompile Include="misccommands.cpp" />
