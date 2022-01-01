@@ -2,7 +2,7 @@
 
 ## Instructions
 
-To host a listen server on Northstar, go to the lobby and press the `Private Match` button to begin a private match.  
+To host a listen server on Northstar, go to the lobby and press the `Private Match` button to begin a private match.
 While this does allow you to host a server, other people won't be able to join it, so you'll need to port forward 2 ports to allow other people to join.\
 The ports you'll need to forward are `37015` UDP, and `8081` TCP by default, if this works as it should, this should result in your server being displayed on the server browser, and other clients being able to connect to it.\
 ![screenshot select private match](https://raw.githubusercontent.com/R2Northstar/Northstar/main/wiki/lobbyprivatematch.png)
@@ -10,7 +10,7 @@ The ports you'll need to forward are `37015` UDP, and `8081` TCP by default, if 
 ## Server Configuration
 Whether you're running a listen or dedicated server, you'll generally want to mess with the configuration at least a bit. While I do think the default configuration settings are pretty ok, being able to change your server's name or password, or increasing your server's tickrate is often something you'll want to do. Server configuration can be modified in the file `R2Northstar/mods/Northstar.CustomServers/mod/cfg/autoexec_ns_server.cfg`, which will be executed on server startup.
 
-Below are a series of variables and commands you can use for server configuration:  
+Below are a series of variables and commands you can use for server configuration:\
 | Name | Description | Default Value |
 | ---- | ----------- | ------------- |
 | `ns_server_name` | Your server's name on the server browser | `"Unnamed Northstar Server"` |
