@@ -6,6 +6,8 @@ description: A Titanfall|2 mod to join and host custom servers.
 
 Welcome to the Northstar wiki!
 
+## Releases and installation guide:
+
 Get the newest Northstar release here:
 
 {% embed url="https://github.com/R2Northstar/Northstar/releases" %}
@@ -16,11 +18,15 @@ Install instructions can be found here:
 [basic-setup.md](installing-northstar/basic-setup.md)
 {% endcontent-ref %}
 
+## Modding instructions
+
 For modding guides, documentation on Northstar API features and documentation on Respawn Squirrel look at:
 
 {% content-ref url="modding/getting-started.md" %}
 [getting-started.md](modding/getting-started.md)
 {% endcontent-ref %}
+
+## Contact and contributing
 
 **Please remember:** You should expect to encounter bugs and crashes with Northstar.\
 Northstar is mostly being developed by a single person as a mod to Titanfall|2.\
