@@ -52,8 +52,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 void WaitForDebugger(HMODULE baseAddress)
 {
     // earlier waitfordebugger call than is in vanilla, just so we can debug stuff a little easier
-    //if (CommandLine()->CheckParm("-waitfordebugger"))
-    if (strstr(GetCommandLineA(), "-waitfordebugger"))
+    if (CommandLine()->CheckParm("-waitfordebugger"))
     {
         spdlog::info("waiting for debugger...");
 
