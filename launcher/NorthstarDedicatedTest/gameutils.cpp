@@ -78,12 +78,32 @@ void InitialiseServerGameUtilFunctions(HMODULE baseAddress)
 
 void InitialiseTier0GameUtilFunctions(HMODULE baseAddress)
 {
-	baseAddress = GetModuleHandleA("tier0.dll");
+	if (!baseAddress)
+	{
+		spdlog::critical("tier0 base address is null, but it should be already loaded");
+		throw "tier0 base address is null, but it should be already loaded";
+	}
+	if (g_pMemAllocSingleton)
+		return; // seems this function was already called
+	CreateGlobalMemAlloc = reinterpret_cast<CreateGlobalMemAllocType>(GetProcAddress(baseAddress, "CreateGlobalMemAlloc"));
+	IMemAlloc** ppMemAllocSingleton = reinterpret_cast<IMemAlloc**>(GetProcAddress(baseAddress, "g_pMemAllocSingleton"));
+	if (!ppMemAllocSingleton)
+	{
+		spdlog::critical("Address of g_pMemAllocSingleton is a null pointer, this should never happen");
+		throw "Address of g_pMemAllocSingleton is a null pointer, this should never happen";
+	}
+	if (!*ppMemAllocSingleton)
+	{
+		g_pMemAllocSingleton = CreateGlobalMemAlloc();
+		*ppMemAllocSingleton = g_pMemAllocSingleton;
+		spdlog::info("Created new g_pMemAllocSingleton");
+	}
+	else
+	{
+		g_pMemAllocSingleton = *ppMemAllocSingleton;
+	}
 
-	CreateGlobalMemAlloc = (CreateGlobalMemAllocType)GetProcAddress(baseAddress, "CreateGlobalMemAlloc");
-	g_pMemAllocSingleton = CreateGlobalMemAlloc();
-
-	Error = (ErrorType)GetProcAddress(baseAddress, "Error");
-	CommandLine = (CommandLineType)GetProcAddress(baseAddress, "CommandLine");
-	Plat_FloatTime = (Plat_FloatTimeType)GetProcAddress(baseAddress, "Plat_FloatTime");
+	Error = reinterpret_cast<ErrorType>(GetProcAddress(baseAddress, "Error"));
+	CommandLine = reinterpret_cast<CommandLineType>(GetProcAddress(baseAddress, "CommandLine"));
+	Plat_FloatTime = reinterpret_cast<Plat_FloatTimeType>(GetProcAddress(baseAddress, "Plat_FloatTime"));
 }

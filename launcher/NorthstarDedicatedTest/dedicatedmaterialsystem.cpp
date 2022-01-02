@@ -59,7 +59,7 @@ void InitialiseDedicatedMaterialSystem(HMODULE baseAddress)
 		TempReadWrite rw(ptr);
 
 		// make the game always use the error material
-		*ptr = 0xE9;
+		*ptr = (char)0xE9;
 		*(ptr + 1) = (char)0x34;
 		*(ptr + 2) = (char)0x03;
 		*(ptr + 3) = (char)0x00;
