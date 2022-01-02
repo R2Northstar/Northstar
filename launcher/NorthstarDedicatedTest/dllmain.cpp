@@ -25,6 +25,8 @@
 #include "scriptmainmenupromos.h"
 #include "miscclientfixes.h"
 #include "miscserverfixes.h"
+#include "rpakfilesystem.h"
+#include "bansystem.h"
 #include "memalloc.h"
 #include "languagehooks.h"
 
@@ -64,7 +66,7 @@ bool InitialiseNorthstar()
 {
     if (initialised)
     {
-        //spdlog::warn("Called InitialiseNorthstar more than once!");
+        //spdlog::warn("Called InitialiseNorthstar more than once!"); // it's actually 100% fine for that to happen
         return false;
     }
 
@@ -79,11 +81,9 @@ bool InitialiseNorthstar()
     InitialiseInterfaceCreationHooks();
 
     AddDllLoadCallback("tier0.dll", InitialiseTier0GameUtilFunctions);
-    AddDllLoadCallback("tier0.dll", InitialiseTier0LanguageHooks);
     AddDllLoadCallback("engine.dll", WaitForDebugger);
     AddDllLoadCallback("engine.dll", InitialiseEngineGameUtilFunctions);
     AddDllLoadCallback("server.dll", InitialiseServerGameUtilFunctions);
-    AddDllLoadCallback("engine.dll", InitialiseEngineSpewFuncHooks);
 
     // dedi patches
     {
@@ -100,6 +100,7 @@ bool InitialiseNorthstar()
 
     // client-exclusive patches
     {
+        AddDllLoadCallback("tier0.dll", InitialiseTier0LanguageHooks);
         AddDllLoadCallback("engine.dll", InitialiseClientEngineSecurityPatches);
         AddDllLoadCallback("client.dll", InitialiseClientSquirrel);
         AddDllLoadCallback("client.dll", InitialiseSourceConsole);
@@ -113,7 +114,9 @@ bool InitialiseNorthstar()
         AddDllLoadCallback("client.dll", InitialiseMiscClientFixes);
     }
 
+    AddDllLoadCallback("engine.dll", InitialiseEngineSpewFuncHooks);
     AddDllLoadCallback("server.dll", InitialiseServerSquirrel);
+    AddDllLoadCallback("engine.dll", InitialiseBanSystem);
     AddDllLoadCallback("engine.dll", InitialiseServerAuthentication);
     AddDllLoadCallback("engine.dll", InitialiseSharedMasterServer);
     AddDllLoadCallback("server.dll", InitialiseMiscServerScriptCommand);
@@ -122,6 +125,7 @@ bool InitialiseNorthstar()
     AddDllLoadCallback("engine.dll", InitialisePlaylistHooks);
 
     AddDllLoadCallback("filesystem_stdio.dll", InitialiseFilesystem);
+    AddDllLoadCallback("engine.dll", InitialiseEngineRpakFilesystem);
     AddDllLoadCallback("engine.dll", InitialiseKeyValues);
 
     // mod manager after everything else

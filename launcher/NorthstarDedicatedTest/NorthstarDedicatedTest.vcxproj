@@ -106,6 +106,7 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="bansystem.h" />
     <ClInclude Include="chatcommand.h" />
     <ClInclude Include="clientauthhooks.h" />
     <ClInclude Include="concommand.h" />
@@ -529,6 +530,7 @@
     <ClInclude Include="pdef.h" />
     <ClInclude Include="playlist.h" />
     <ClInclude Include="miscserverscript.h" />
+    <ClInclude Include="rpakfilesystem.h" />
     <ClInclude Include="scriptbrowserhooks.h" />
     <ClInclude Include="scriptmainmenupromos.h" />
     <ClInclude Include="securitypatches.h" />
@@ -542,6 +544,7 @@
     <ClInclude Include="squirrel.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="bansystem.cpp" />
     <ClCompile Include="chatcommand.cpp" />
     <ClCompile Include="clientauthhooks.cpp" />
     <ClCompile Include="concommand.cpp" />
@@ -570,6 +573,7 @@
     </ClCompile>
     <ClCompile Include="pdef.cpp" />
     <ClCompile Include="playlist.cpp" />
+    <ClCompile Include="rpakfilesystem.cpp" />
     <ClCompile Include="scriptbrowserhooks.cpp" />
     <ClCompile Include="scriptmainmenupromos.cpp" />
     <ClCompile Include="securitypatches.cpp" />

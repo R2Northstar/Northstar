@@ -1,6 +1,5 @@
 #pragma once
 #include "convar.h"
-#include "httplib.h"
 #include <WinSock2.h>
 
 struct RemoteModInfo
@@ -67,7 +66,6 @@ class MasterServerManager
 private:
 	bool m_requestingServerList = false;
 	bool m_authenticatingWithGameServer = false;
-	httplib::Client* m_httpClient = nullptr;
 
 public:
 	char m_ownServerId[33];
