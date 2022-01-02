@@ -1422,6 +1422,12 @@
     <ClInclude Include="include\libcurl\include\curl\urlapi.h">
       <Filter>Header Files\include\libcurl</Filter>
     </ClInclude>
+    <ClInclude Include="rpakfilesystem.h">
+      <Filter>Header Files\Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="bansystem.h">
+      <Filter>Header Files\Server\Authentication</Filter>
+    </ClInclude>
     <ClInclude Include="languagehooks.h">
       <Filter>Header Files\Client</Filter>
     </ClInclude>
@@ -1534,6 +1540,12 @@
     </ClCompile>
     <ClCompile Include="miscserverfixes.cpp">
       <Filter>Source Files\Server</Filter>
+    </ClCompile>
+    <ClCompile Include="rpakfilesystem.cpp">
+      <Filter>Source Files\Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="bansystem.cpp">
+      <Filter>Source Files\Server\Authentication</Filter>
     </ClCompile>
     <ClCompile Include="languagehooks.cpp">
       <Filter>Source Files\Client</Filter>
