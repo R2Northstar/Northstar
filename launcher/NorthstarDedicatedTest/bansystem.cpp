@@ -28,6 +28,15 @@ void ServerBanSystem::OpenBanlist()
 	m_sBanlistStream.open(BANLIST_PATH, std::ofstream::out | std::ofstream::binary | std::ofstream::app);
 }
 
+void ServerBanSystem::ClearBanlist()
+{
+	m_vBannedUids.clear();
+
+	// reopen the file, don't provide std::ofstream::app so it clears on open
+	m_sBanlistStream.close();
+	m_sBanlistStream.open(BANLIST_PATH, std::ofstream::out | std::ofstream::binary);
+}
+
 void ServerBanSystem::BanUID(uint64_t uid)
 {
 	m_vBannedUids.push_back(uid);
@@ -80,6 +89,11 @@ void UnbanPlayerCommand(const CCommand& args)
 	g_ServerBanSystem->UnbanUID(strtoll(args.Arg(1), nullptr, 10));
 }
 
+void ClearBanlistCommand(const CCommand& args)
+{
+	g_ServerBanSystem->ClearBanlist();
+}
+
 void InitialiseBanSystem(HMODULE baseAddress)
 {
 	g_ServerBanSystem = new ServerBanSystem;
@@ -87,4 +101,5 @@ void InitialiseBanSystem(HMODULE baseAddress)
 
 	RegisterConCommand("ban", BanPlayerCommand, "bans a given player by uid or name", FCVAR_GAMEDLL);
 	RegisterConCommand("unban", UnbanPlayerCommand, "unbans a given player by uid", FCVAR_NONE);
+	RegisterConCommand("clearbanlist", ClearBanlistCommand, "clears all uids on the banlist", FCVAR_NONE);
 }
