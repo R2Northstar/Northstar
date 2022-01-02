@@ -181,9 +181,9 @@ Clique em Sim se você concorda. Esta escolha pode ser alterada a qualquer momen
 		
 		// coop stuff
 		"PL_sp_coop" "(UNFINISHED) Singleplayer Coop"
-		"PL_sp_coop_lobby" "Singleplayer Coop Lobby"
-		"PL_sp_coop_desc" "Play through the singleplayer campaign with friends"
-		"PL_sp_coop_hint" "Play through the singleplayer campaign with friends"
+		"PL_sp_coop_lobby" "Saguão de Singleplayer em grupo"
+		"PL_sp_coop_desc" "Jogue através da campanha com seus amigos"
+		"PL_sp_coop_hint" "Jogue através da campanha com seus amigos"
 		"PL_sp_coop_abbr" "SP"
 		
 		"SP_TRAINING" "O Desafio do Piloto"
