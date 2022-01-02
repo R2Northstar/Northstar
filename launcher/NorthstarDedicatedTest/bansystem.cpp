@@ -32,6 +32,19 @@ void ServerBanSystem::BanUID(uint64_t uid)
 {
 	m_vBannedUids.push_back(uid);
 	m_sBanlistStream << std::to_string(uid) << std::endl;
+	spdlog::info("{} was banned", uid);
+}
+
+void ServerBanSystem::UnbanUID(uint64_t uid)
+{
+	auto findResult = std::find(m_vBannedUids.begin(), m_vBannedUids.end(), uid);
+	if (findResult == m_vBannedUids.end())
+		return;
+
+	m_vBannedUids.erase(findResult);
+	spdlog::info("{} was unbanned", uid);
+	// todo: this needs to erase from the banlist file
+	// atm unsure how to do this aside from just clearing and fully rewriting the file
 }
 
 bool ServerBanSystem::IsUIDAllowed(uint64_t uid)
@@ -44,6 +57,7 @@ void BanPlayerCommand(const CCommand& args)
 	if (args.ArgC() < 2)
 		return;
 
+	// assuming maxplayers 32
 	for (int i = 0; i < 32; i++)
 	{
 		void* player = GetPlayerByIndex(i);
@@ -57,10 +71,20 @@ void BanPlayerCommand(const CCommand& args)
 	}
 }
 
+void UnbanPlayerCommand(const CCommand& args)
+{
+	if (args.ArgC() < 2)
+		return;
+
+	// assumedly the player being unbanned here wasn't already connected, so don't need to iterate over players or anything
+	g_ServerBanSystem->UnbanUID(strtoll(args.Arg(1), nullptr, 10));
+}
+
 void InitialiseBanSystem(HMODULE baseAddress)
 {
 	g_ServerBanSystem = new ServerBanSystem;
 	g_ServerBanSystem->OpenBanlist();
 
 	RegisterConCommand("ban", BanPlayerCommand, "bans a given player by uid or name", FCVAR_GAMEDLL);
+	RegisterConCommand("unban", UnbanPlayerCommand, "unbans a given player by uid", FCVAR_NONE);
 }
