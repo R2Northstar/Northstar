@@ -72,8 +72,6 @@ int GetCurrentGamemodeMaxPlayersHook()
 		return GetCurrentGamemodeMaxPlayers();
 
 	int maxPlayers = atoi(maxPlayersStr);
-	spdlog::info("Overwrote max_players to {}", maxPlayers);
-
 	return maxPlayers;
 }
 
