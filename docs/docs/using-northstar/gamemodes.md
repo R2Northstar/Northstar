@@ -38,14 +38,6 @@ Some maps do not feature acontrol panels
 | ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
 | <ul><li>Boomtown</li><li>Exoplanet</li><li>Black Water Canal</li><li>Eden</li><li>Angel City</li><li>War Games</li></ul> | <ul><li>Forwardbase</li><li>Homestead</li><li>Drydock</li><li>Complex</li><li>Colony</li><li>Glitch</li><li>Relic</li><li>Rise</li></ul> | <p></p><ul><li>Crash Site</li></ul> |
 
-* Working:
-  * Boomtown
-  * Exoplanet
-  * Black Water Canal
-  * Eden
-  * Angel City
-  * War Games
-*
 
 ## Competitive CTF
 
