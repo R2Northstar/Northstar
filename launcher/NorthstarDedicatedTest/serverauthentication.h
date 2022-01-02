@@ -23,7 +23,10 @@ struct AdditionalPlayerData
 	int numClientCommandsInQuota = 0;
 
 	double lastNetChanProcessingLimitStart = -1.0;
-	double netChanProcessingLimitTime = 0;
+	double netChanProcessingLimitTime = 0.0;
+
+	double lastSayTextLimitStart = -1.0;
+	int sayTextLimitCount = 0;
 };
 
 #pragma once
@@ -98,6 +101,7 @@ typedef void(*CBaseClient__DisconnectType)(void* self, uint32_t unknownButAlways
 extern CBaseClient__DisconnectType CBaseClient__Disconnect;
 
 void InitialiseServerAuthentication(HMODULE baseAddress);
+void InitialiseServerAuthenticationServerDLL(HMODULE baseAddress);
 
 extern ServerAuthenticationManager* g_ServerAuthenticationManager;
 extern ConVar* Cvar_ns_player_auth_port;
