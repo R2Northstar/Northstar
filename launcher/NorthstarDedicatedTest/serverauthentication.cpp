@@ -6,6 +6,7 @@
 #include "httplib.h"
 #include "gameutils.h"
 #include "bansystem.h"
+#include "miscserverscript.h"
 #include <fstream>
 #include <filesystem>
 #include <thread>
@@ -37,6 +38,10 @@ CBaseClient__SendServerInfoType CBaseClient__SendServerInfo;
 typedef bool(*ProcessConnectionlessPacketType)(void* a1, netpacket_t* packet);
 ProcessConnectionlessPacketType ProcessConnectionlessPacket;
 
+typedef void(*CServerGameDLL__OnRecievedSayTextMessageType)(void* self, unsigned int senderClientIndex, const char* message, char unknown);
+CServerGameDLL__OnRecievedSayTextMessageType CServerGameDLL__OnRecievedSayTextMessage;
+
+
 // global vars
 ServerAuthenticationManager* g_ServerAuthenticationManager;
 
@@ -48,6 +53,7 @@ ConVar* CVar_sv_quota_stringcmdspersecond;
 ConVar* Cvar_net_chan_limit_mode;
 ConVar* Cvar_net_chan_limit_msec_per_sec;
 ConVar* Cvar_sv_querylimit_per_sec;
+ConVar* Cvar_sv_max_chat_messages_per_sec;
 
 void ServerAuthenticationManager::StartPlayerAuthServer()
 {
@@ -425,6 +431,28 @@ bool ProcessConnectionlessPacketHook(void* a1, netpacket_t* packet)
 	return ProcessConnectionlessPacket(a1, packet);
 }
 
+void CServerGameDLL__OnRecievedSayTextMessageHook(void* self, unsigned int senderClientIndex, const char* message, char unknown)
+{
+	void* sender = GetPlayerByIndex(senderClientIndex - 1); // senderClientIndex starts at 1
+
+	// check chat ratelimits
+	if (Plat_FloatTime() - g_ServerAuthenticationManager->m_additionalPlayerData[sender].lastSayTextLimitStart >= 1.0)
+	{
+		g_ServerAuthenticationManager->m_additionalPlayerData[sender].lastSayTextLimitStart = Plat_FloatTime();
+		g_ServerAuthenticationManager->m_additionalPlayerData[sender].sayTextLimitCount = 0;
+	}
+
+	if (g_ServerAuthenticationManager->m_additionalPlayerData[sender].sayTextLimitCount >= Cvar_sv_max_chat_messages_per_sec->m_nValue)
+		return;
+
+	g_ServerAuthenticationManager->m_additionalPlayerData[sender].sayTextLimitCount++;
+
+	// todo: could censor messages here if we have a banned word list, we do not currently have one of these
+	// could possibly make this call a script codecallback, or smth
+
+	CServerGameDLL__OnRecievedSayTextMessage(self, senderClientIndex, message, unknown);
+}
+
 void InitialiseServerAuthentication(HMODULE baseAddress)
 {
 	g_ServerAuthenticationManager = new ServerAuthenticationManager;
@@ -439,6 +467,7 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 	Cvar_net_chan_limit_msec_per_sec = RegisterConVar("net_chan_limit_msec_per_sec", "0", FCVAR_GAMEDLL, "Netchannel processing is limited to so many milliseconds, abort connection if exceeding budget");
 	Cvar_ns_player_auth_port = RegisterConVar("ns_player_auth_port", "8081", FCVAR_GAMEDLL, "");
 	Cvar_sv_querylimit_per_sec = RegisterConVar("sv_querylimit_per_sec", "15", FCVAR_GAMEDLL, "");
+	Cvar_sv_max_chat_messages_per_sec = RegisterConVar("sv_max_chat_messages_per_sec", "5", FCVAR_GAMEDLL, "");
 
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x114430, &CBaseServer__ConnectClientHook, reinterpret_cast<LPVOID*>(&CBaseServer__ConnectClient));
@@ -493,4 +522,10 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 		*((char*)ptr + 13) = (char)0x90;
 		*((char*)ptr + 14) = (char)0x90;
 	}
+}
+
+void InitialiseServerAuthenticationServerDLL(HMODULE baseAddress)
+{
+	HookEnabler hook;
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1595C0, &CServerGameDLL__OnRecievedSayTextMessageHook, reinterpret_cast<LPVOID*>(&CServerGameDLL__OnRecievedSayTextMessage));
 }

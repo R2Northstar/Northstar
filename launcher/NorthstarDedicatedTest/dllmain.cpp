@@ -119,6 +119,7 @@ void InitialiseNorthstar()
     AddDllLoadCallback("server.dll", InitialiseServerSquirrel);
     AddDllLoadCallback("engine.dll", InitialiseBanSystem);
     AddDllLoadCallback("engine.dll", InitialiseServerAuthentication);
+    AddDllLoadCallback("server.dll", InitialiseServerAuthenticationServerDLL);
     AddDllLoadCallback("engine.dll", InitialiseSharedMasterServer);
     AddDllLoadCallback("server.dll", InitialiseMiscServerScriptCommand);
     AddDllLoadCallback("server.dll", InitialiseMiscServerFixes);
