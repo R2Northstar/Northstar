@@ -25,6 +25,7 @@
 #include "scriptmainmenupromos.h"
 #include "miscclientfixes.h"
 #include "miscserverfixes.h"
+#include "rpakfilesystem.h"
 #include "memalloc.h"
 
 bool initialised = false;
@@ -66,6 +67,13 @@ void WaitForDebugger(HMODULE baseAddress)
 // in the future this will be called from launcher instead of dllmain
 void InitialiseNorthstar()
 {
+    if (initialised)
+    {
+        spdlog::error("Called InitialiseNorthstar more than once!");
+        return;
+    }
+    initialised = true;
+
     InitialiseLogging();
 
     // apply initial hooks
@@ -116,6 +124,7 @@ void InitialiseNorthstar()
     AddDllLoadCallback("engine.dll", InitialisePlaylistHooks);
 
     AddDllLoadCallback("filesystem_stdio.dll", InitialiseFilesystem);
+    AddDllLoadCallback("engine.dll", InitialiseEngineRpakFilesystem);
     AddDllLoadCallback("engine.dll", InitialiseKeyValues);
 
     // mod manager after everything else

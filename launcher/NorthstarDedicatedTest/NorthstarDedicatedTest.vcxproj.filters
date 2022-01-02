@@ -1422,6 +1422,9 @@
     <ClInclude Include="include\libcurl\include\curl\urlapi.h">
       <Filter>Header Files\include\libcurl</Filter>
     </ClInclude>
+    <ClInclude Include="rpakfilesystem.h">
+      <Filter>Header Files\Shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -1531,6 +1534,9 @@
     </ClCompile>
     <ClCompile Include="miscserverfixes.cpp">
       <Filter>Source Files\Server</Filter>
+    </ClCompile>
+    <ClCompile Include="rpakfilesystem.cpp">
+      <Filter>Source Files\Shared</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
