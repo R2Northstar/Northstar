@@ -3,6 +3,8 @@
 #include "../NorthstarDedicatedTest/hookutils.h"
 #include <string>
 #include <system_error>
+#include <sstream>
+#include <fstream>
 
 void LibraryLoadError(DWORD dwMessageId, const wchar_t* libName, const wchar_t* location)
 {
@@ -10,6 +12,25 @@ void LibraryLoadError(DWORD dwMessageId, const wchar_t* libName, const wchar_t* 
 	std::string message = std::system_category().message(dwMessageId);
 	sprintf_s(text, "Failed to load the %ls at \"%ls\" (%lu):\n\n%hs", libName, location, dwMessageId, message.c_str());
 	MessageBoxA(GetForegroundWindow(), text, "Northstar Wsock32 Proxy Error", 0);
+}
+
+bool ShouldLoadNorthstar()
+{
+	bool loadNorthstar = !strstr(GetCommandLineA(), "-vanilla");
+
+	if (!loadNorthstar)
+		return loadNorthstar;
+
+	auto runNorthstarFile = std::ifstream("run_northstar.txt");
+	if (runNorthstarFile)
+	{
+		std::stringstream runNorthstarFileBuffer;
+		runNorthstarFileBuffer << runNorthstarFile.rdbuf();
+		runNorthstarFile.close();
+		if (runNorthstarFileBuffer.str()._Starts_with("0"))
+			loadNorthstar = false;
+	}
+	return loadNorthstar;
 }
 
 bool LoadNorthstar()
@@ -35,7 +56,8 @@ LauncherMainType LauncherMainOriginal;
 
 int LauncherMainHook(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	LoadNorthstar();
+	if (ShouldLoadNorthstar())
+		LoadNorthstar();
 	return LauncherMainOriginal(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 }
 
