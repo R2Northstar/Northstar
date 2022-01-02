@@ -94,6 +94,9 @@ public:
 	void WritePersistentData(void* player);
 };
 
+typedef void(*CBaseClient__DisconnectType)(void* self, uint32_t unknownButAlways1, const char* reason, ...);
+extern CBaseClient__DisconnectType CBaseClient__Disconnect;
+
 void InitialiseServerAuthentication(HMODULE baseAddress);
 
 extern ServerAuthenticationManager* g_ServerAuthenticationManager;

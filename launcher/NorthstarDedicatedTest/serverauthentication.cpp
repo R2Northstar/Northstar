@@ -23,7 +23,6 @@ CBaseClient__ConnectType CBaseClient__Connect;
 typedef void(*CBaseClient__ActivatePlayerType)(void* self);
 CBaseClient__ActivatePlayerType CBaseClient__ActivatePlayer;
 
-typedef void(*CBaseClient__DisconnectType)(void* self, uint32_t unknownButAlways1, const char* reason, ...);
 CBaseClient__DisconnectType CBaseClient__Disconnect;
 
 typedef char(*CGameClient__ExecuteStringCommandType)(void* self, uint32_t unknown, const char* pCommandString);
@@ -117,9 +116,6 @@ void ServerAuthenticationManager::StopPlayerAuthServer()
 
 bool ServerAuthenticationManager::AuthenticatePlayer(void* player, int64_t uid, char* authToken)
 {
-	if (!g_ServerBanSystem->IsUIDAllowed(uid))
-		return false;
-
 	std::string strUid = std::to_string(uid);
 	std::lock_guard<std::mutex> guard(m_authDataMutex);
 
@@ -240,6 +236,13 @@ char CBaseClient__ConnectHook(void* self, char* name, __int64 netchan_ptr_arg, c
 	// try to auth player, dc if it fails
 	// we connect irregardless of auth, because returning bad from this function can fuck client state p bad
 	char ret = CBaseClient__Connect(self, name, netchan_ptr_arg, b_fake_player_arg, a5, Buffer, a7);
+
+	if (!g_ServerBanSystem->IsUIDAllowed(nextPlayerUid))
+	{
+		CBaseClient__Disconnect(self, 1, "Banned from server");
+		return ret;
+	}
+
 	if (strlen(name) >= 64) // fix for name overflow bug
 		CBaseClient__Disconnect(self, 1, "Invalid name");
 	else if (!g_ServerAuthenticationManager->AuthenticatePlayer(self, nextPlayerUid, nextPlayerToken) && g_MasterServerManager->m_bRequireClientAuth)
