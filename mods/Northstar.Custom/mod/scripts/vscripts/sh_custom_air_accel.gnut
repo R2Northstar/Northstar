@@ -8,7 +8,9 @@ void function CustomAirAccelVars_Init()
 	
 	#if SERVER
 		AddCallback_OnPlayerRespawned( ApplyCustomPlayerAirAccel )
-		AddCallback_OnPilotBecomesTitan( ApplyCustomPlayerAirAccelFromTitan ) // not sure if necessary but assuming it is
+		AddCallback_OnTitanBecomesPilot( ApplyCustomPlayerAirAccelFromTitan ) // airaccel is reset after player leaves titan
+		AddCallback_OnPilotBecomesTitan( ApplyCustomPlayerAirAccelFromTitan ) // airaccel is also reset after player enters titan
+		AddCallback_OnPlayerGetsNewPilotLoadout( ApplyCustomPlayerAirAccelOnLoadoutChange ) // airaccel is also reset on loadout change for some reason
 	#endif
 }
 
@@ -19,6 +21,11 @@ void function ApplyCustomPlayerAirAccel( entity player )
 }
 
 void function ApplyCustomPlayerAirAccelFromTitan( entity player, entity titan )
+{
+	player.kv.airAcceleration = GetCurrentPlaylistVarInt( "custom_air_accel_pilot", int( player.GetPlayerSettingsField( "airAcceleration" ) ) )
+}
+
+void function ApplyCustomPlayerAirAccelOnLoadoutChange( entity player, PilotLoadoutDef loadout ) 
 {
 	player.kv.airAcceleration = GetCurrentPlaylistVarInt( "custom_air_accel_pilot", int( player.GetPlayerSettingsField( "airAcceleration" ) ) )
 }
