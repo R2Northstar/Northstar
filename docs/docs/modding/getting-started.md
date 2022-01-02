@@ -6,8 +6,8 @@ This guide assumes you have basic understanding with programming and know how to
 
 If you'd like a more lengthy set of tutorials covering many topics. Look at:
 
-{% content-ref url="squirrel/what-is-squirrel.md" %}
-[what-is-squirrel.md](squirrel/what-is-squirrel.md)
+{% content-ref url="modding/tutorials/modding-tutorials.md" %}
+[modding-tutorials.md](modding/tutorials/modding-tutorials.md)
 {% endcontent-ref %}
 
 > TODO: Actually link tools
@@ -24,7 +24,7 @@ In order to get started with making your mod, create a folder in `R2Northstar/mo
 
 After making this folder, inside it add a folder named `mod` and a file named `mod.json`.
 
-Provided is a template `mod.json`, for a detailed list of values read [Cheatsheet](tutorials/modding-tutorials.md)
+Provided is a template `mod.json`, for a detailed list of values read [Cheatsheet](modding/cheatsheet.md)
 
 ```json
 {
@@ -63,4 +63,4 @@ Inside the `mod` folder, existing files found in the engine's virtual file syste
 
 > TODO: Create and link Squirrel VM documentation
 
-`"Path"` indicates where the script is, `"RunOn"` is the Squirrel VM context (see [Squirrel VM](getting-started.md)) as an expression, and `"ClientCallback"` and `"ServerCallback"` specify a function call that can be `"Before"` and/or `"After"` map-spawn.
+`"Path"` indicates where the script is, `"RunOn"` is the Squirrel VM context (see [Squirrel VM](modding/getting-started.md)) as an expression, and `"ClientCallback"` and `"ServerCallback"` specify a function call that can be `"Before"` and/or `"After"` map-spawn.
