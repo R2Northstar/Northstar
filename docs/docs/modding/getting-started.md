@@ -6,8 +6,8 @@ This guide assumes you have basic understanding with programming and know how to
 
 If you'd like a more lengthy set of tutorials covering many topics. Look at:
 
-{% content-ref url="tutorials/modding-tutorials.md" %}
-[modding-tutorials.md](tutorials/modding-tutorials.md)
+{% content-ref url="squirrel/what-is-squirrel.md" %}
+[what-is-squirrel.md](squirrel/what-is-squirrel.md)
 {% endcontent-ref %}
 
 > TODO: Actually link tools
@@ -24,7 +24,7 @@ In order to get started with making your mod, create a folder in `R2Northstar/mo
 
 After making this folder, inside it add a folder named `mod` and a file named `mod.json`.
 
-Provided is a template `mod.json`, for a detailed list of values read [Cheatsheet](cheatsheet.md)
+Provided is a template `mod.json`, for a detailed list of values read [Cheatsheet](tutorials/modding-tutorials.md)
 
 ```json
 {

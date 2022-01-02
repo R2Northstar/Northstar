@@ -7,12 +7,8 @@ To start a dedicated server on Northstar, launch NorthstarLauncher.exe with the 
 When using a dedicated server, arguments are read from `ns_startup_args_dedi.txt`, rather than `ns_startup_args.txt`.
 
 ## Dedicated Server Caveats
+
 At the moment, dedicated servers still require DirectX 11 to work, which typically requires a physical GPU, though they use almost no GPU processing power while in use, this can be an issue especially on GPU-less setups, so the launch argument `-softwared3d11` can be used to force DirectX to run in software mode.\
 While this is absolutely not ideal, it's the best solution for truely headless dedicated servers at the moment, and surprisingly hardly uses any CPU time, though it can use roughly up to 1GB of RAM.\
 Regarding RAM usage, dedicated servers also use significant amounts of RAM at the moment, often requiring 1.5-2GB, though I expect this to lower as development continues.
 
-## Hosting on Linux
-
-> **TODO:** If you got experience with hosting a dedicated server on Linux as well as setting up a dedicated server in container environments please extend this section.
-
-[This issue thread on Github](https://github.com/R2Northstar/Northstar/issues/49) contains some instructions to succesfully host a dedicated server on Linux.
