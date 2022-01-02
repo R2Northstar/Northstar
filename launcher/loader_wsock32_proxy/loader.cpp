@@ -1,0 +1,61 @@
+#include "pch.h"
+#include "loader.h"
+#include "../NorthstarDedicatedTest/hookutils.h"
+#include <string>
+#include <system_error>
+
+void LibraryLoadError(DWORD dwMessageId, const wchar_t* libName, const wchar_t* location)
+{
+	char text[2048];
+	std::string message = std::system_category().message(dwMessageId);
+	sprintf_s(text, "Failed to load the %ls at \"%ls\" (%lu):\n\n%hs", libName, location, dwMessageId, message.c_str());
+	MessageBoxA(GetForegroundWindow(), text, "Northstar Wsock32 Proxy Error", 0);
+}
+
+bool LoadNorthstar()
+{
+	FARPROC Hook_Init = nullptr;
+	{
+		swprintf_s(dllPath, L"%s\\Northstar.dll", exePath);
+		auto hHookModule = LoadLibraryExW(dllPath, 0, LOAD_WITH_ALTERED_SEARCH_PATH);
+		if (hHookModule) Hook_Init = GetProcAddress(hHookModule, "InitialiseNorthstar");
+		if (!hHookModule || Hook_Init == nullptr)
+		{
+			LibraryLoadError(GetLastError(), L"Northstar.dll", dllPath);
+			return false;
+		}
+	}
+
+	((bool (*)()) Hook_Init)();
+	return true;
+}
+
+typedef int(*LauncherMainType)(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow);
+LauncherMainType LauncherMainOriginal;
+
+int LauncherMainHook(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+{
+	LoadNorthstar();
+	return LauncherMainOriginal(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
+}
+
+bool ProvisionNorthstar()
+{
+	if (MH_Initialize() != MH_OK)
+	{
+		MessageBoxA(GetForegroundWindow(), "MH_Initialize failed\nThe game cannot continue and has to exit.", "Northstar Wsock32 Proxy Error", 0);
+		return false;
+	}
+
+	auto launcherHandle = GetModuleHandleA("launcher.dll");
+	if (!launcherHandle)
+	{
+		MessageBoxA(GetForegroundWindow(), "Launcher isn't loaded yet.\nThe game cannot continue and has to exit.", "Northstar Wsock32 Proxy Error", 0);
+		return false;
+	}
+
+	HookEnabler hook;
+	ENABLER_CREATEHOOK(hook, GetProcAddress(launcherHandle, "LauncherMain"), &LauncherMainHook, reinterpret_cast<LPVOID*>(&LauncherMainOriginal));
+
+	return true;
+}

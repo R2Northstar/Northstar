@@ -93,7 +93,7 @@ bool LoadNorthstar()
     FARPROC Hook_Init = nullptr;
     {
         swprintf_s(dllPath, L"%s\\Northstar.dll", exePath);
-        hHookModule = LoadLibraryExW(dllPath, 0i64, 8u);
+        hHookModule = LoadLibraryExW(dllPath, 0, LOAD_WITH_ALTERED_SEARCH_PATH);
         if (hHookModule) Hook_Init = GetProcAddress(hHookModule, "InitialiseNorthstar");
         if (!hHookModule || Hook_Init == nullptr)
         {
@@ -120,7 +120,7 @@ extern "C" __declspec(dllexport) int LauncherMain(HINSTANCE hInstance, HINSTANCE
         if (loadNorthstar)
         {
             swprintf_s(dllPath, L"%s\\bin\\x64_retail\\tier0.dll", exePath);
-            hTier0Module = LoadLibraryW(dllPath);
+            hTier0Module = LoadLibraryExW(dllPath, 0, LOAD_WITH_ALTERED_SEARCH_PATH);
             if (!hTier0Module)
             {
                 LibraryLoadError(GetLastError(), L"tier0.dll", dllPath);
@@ -133,7 +133,7 @@ extern "C" __declspec(dllexport) int LauncherMain(HINSTANCE hInstance, HINSTANCE
         //else printf("\n\n WILL !!!NOT!!! LOAD NORTHSTAR\n\n");
 
         swprintf_s(dllPath, L"%s\\bin\\x64_retail\\launcher.org.dll", exePath);
-        hLauncherModule = LoadLibraryExW(dllPath, 0i64, 8u);
+        hLauncherModule = LoadLibraryExW(dllPath, 0, LOAD_WITH_ALTERED_SEARCH_PATH);
         if (!hLauncherModule)
         {
             LibraryLoadError(GetLastError(), L"launcher.org.dll", dllPath);
