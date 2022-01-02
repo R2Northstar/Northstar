@@ -142,6 +142,9 @@ bool ServerAuthenticationManager::AuthenticatePlayer(void* player, int64_t uid, 
 
 	if (authFail)
 	{
+		// set persistent data as ready, we use 0x3 internally to mark the client as using local persistence
+		*((char*)player + 0x4a0) = (char)0x3;
+
 		if (!CVar_ns_auth_allow_insecure->m_nValue) // no auth data and insecure connections aren't allowed, so dc the client
 			return false;
 
@@ -167,9 +170,6 @@ bool ServerAuthenticationManager::AuthenticatePlayer(void* player, int64_t uid, 
 		pdataStream.read((char*)player + 0x4FA, length);
 
 		pdataStream.close();
-
-		// set persistent data as ready, we use 0x3 internally to mark the client as using local persistence
-		*((char*)player + 0x4a0) = (char)0x3;
 	}
 
 	return true; // auth successful, client stays on
@@ -329,8 +329,8 @@ char __fastcall CNetChan___ProcessMessagesHook(void* self, void* buf)
 	double startTime = Plat_FloatTime();
 	char ret = CNetChan___ProcessMessages(self, buf);
 	
-	// check processing limit
-	if (Cvar_net_chan_limit_mode->m_nValue != 0)
+	// check processing limits, unless we're in a level transition
+	if (g_pHostState->m_iCurrentState == HostState_t::HS_RUN)
 	{
 		// player that sent the message
 		void* sender = *(void**)((char*)self + 368);
@@ -346,19 +346,14 @@ char __fastcall CNetChan___ProcessMessagesHook(void* self, void* buf)
 			g_ServerAuthenticationManager->m_additionalPlayerData[sender].lastNetChanProcessingLimitStart = startTime;
 			g_ServerAuthenticationManager->m_additionalPlayerData[sender].netChanProcessingLimitTime = 0.0;
 		}
-
 		g_ServerAuthenticationManager->m_additionalPlayerData[sender].netChanProcessingLimitTime += (Plat_FloatTime() * 1000) - (startTime * 1000);
 
-		int32_t limit = Cvar_net_chan_limit_msec_per_sec->m_nValue;
-		if (g_pHostState->m_iCurrentState != HostState_t::HS_RUN)
-			limit *= 2; // give clients more headroom in these states, as alot of clients will tend to time out here
-
-		if (g_ServerAuthenticationManager->m_additionalPlayerData[sender].netChanProcessingLimitTime >= limit)
+		if (g_ServerAuthenticationManager->m_additionalPlayerData[sender].netChanProcessingLimitTime >= Cvar_net_chan_limit_msec_per_sec->m_nValue)
 		{
 			spdlog::warn("Client {} hit netchan processing limit with {}ms of processing time this second (max is {})", (char*)sender + 0x16, g_ServerAuthenticationManager->m_additionalPlayerData[sender].netChanProcessingLimitTime, Cvar_net_chan_limit_msec_per_sec->m_nValue);
 			
-			// mode 1 = kick, mode 2 = log without kicking
-			if (Cvar_net_chan_limit_mode->m_nValue == 1)
+			// nonzero = kick, 0 = warn
+			if (Cvar_net_chan_limit_mode->m_nValue)
 			{
 				CBaseClient__Disconnect(sender, 1, "Exceeded net channel processing limit");
 				return false;
@@ -434,7 +429,7 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 	// literally just stolen from a fix valve used in csgo
 	CVar_sv_quota_stringcmdspersecond = RegisterConVar("sv_quota_stringcmdspersecond", "60", FCVAR_GAMEDLL, "How many string commands per second clients are allowed to submit, 0 to disallow all string commands");
 	// https://blog.counter-strike.net/index.php/2019/07/24922/ but different because idk how to check what current tick number is
-	Cvar_net_chan_limit_mode = RegisterConVar("net_chan_limit_mode", "0", FCVAR_GAMEDLL, "The mode for netchan processing limits: 0 = none, 1 = kick, 2 = log");
+	Cvar_net_chan_limit_mode = RegisterConVar("net_chan_limit_mode", "0", FCVAR_GAMEDLL, "The mode for netchan processing limits: 0 = log, 1 = kick");
 	Cvar_net_chan_limit_msec_per_sec = RegisterConVar("net_chan_limit_msec_per_sec", "0", FCVAR_GAMEDLL, "Netchannel processing is limited to so many milliseconds, abort connection if exceeding budget");
 	Cvar_ns_player_auth_port = RegisterConVar("ns_player_auth_port", "8081", FCVAR_GAMEDLL, "");
 	Cvar_sv_querylimit_per_sec = RegisterConVar("sv_querylimit_per_sec", "15", FCVAR_GAMEDLL, "");
