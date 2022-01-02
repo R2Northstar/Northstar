@@ -36,6 +36,7 @@ BOOL WINAPI DllMain(HINSTANCE hInst, DWORD reason, LPVOID)
 		if (!ProvisionNorthstar()) // does not call InitialiseNorthstar yet, will do it on LauncherMain hook
 			return 1;
 
+		// copy the original library for system to our local directory, with changed name so that we can load it
 		swprintf_s(dllPath, L"%s\\bin\\x64_retail\\wsock32.org.dll", exePath);
 		GetSystemDirectoryW(dllPath2, 4096);
 		swprintf_s(dllPath2, L"%s\\wsock32.dll", dllPath2);
@@ -54,6 +55,9 @@ BOOL WINAPI DllMain(HINSTANCE hInst, DWORD reason, LPVOID)
 		hL = LoadLibraryExW(dllPath, 0, LOAD_WITH_ALTERED_SEARCH_PATH);
 		if (!hL) return false;
 
+		// load the functions to proxy
+		// it's only some of them, because in case of wsock32 most of the functions can actually be natively redirected
+		// (see wsock32.def and https://source.winehq.org/WineAPI/wsock32.html)
 		p[1] = GetProcAddress(hL, "EnumProtocolsA");
 		p[2] = GetProcAddress(hL, "EnumProtocolsW");
 		p[4] = GetProcAddress(hL, "GetAddressByNameA");
