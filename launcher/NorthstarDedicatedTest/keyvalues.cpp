@@ -50,7 +50,7 @@ void ModManager::TryBuildKeyValues(const char* filename)
 
 	// copy over patch kv files, and add #bases to new file, last mods' patches should be applied first
 	// note: #include should be identical but it's actually just broken, thanks respawn
-	for (int i = m_loadedMods.size() - 1; i > -1; i--)
+	for (int64_t i = m_loadedMods.size() - 1; i > -1; i--)
 	{
 		if (!m_loadedMods[i].Enabled)
 			continue;
@@ -92,6 +92,7 @@ void ModManager::TryBuildKeyValues(const char* filename)
 
 	char rootName[64];
 	memset(rootName, 0, sizeof(rootName));
+	rootName[63] = '\0';
 
 	// iterate until we hit an ascii char that isn't in a # command or comment to get root obj name
 	int i = 0;

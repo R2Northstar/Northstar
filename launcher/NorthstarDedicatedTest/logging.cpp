@@ -113,7 +113,7 @@ long __stdcall ExceptionFilter(EXCEPTION_POINTERS* exceptionInfo)
 		GetModuleFileNameExA(GetCurrentProcess(), crashedModuleHandle, crashedModuleFullName, MAX_PATH);
 		char* crashedModuleName = strrchr(crashedModuleFullName, '\\') + 1;
 
-		DWORD crashedModuleOffset = ((DWORD)exceptionAddress) - ((DWORD)crashedModuleInfo.lpBaseOfDll);
+		DWORD64 crashedModuleOffset = ((DWORD64)exceptionAddress) - ((DWORD64)crashedModuleInfo.lpBaseOfDll);
 		CONTEXT* exceptionContext = exceptionInfo->ContextRecord;
 
 		spdlog::error("Northstar has crashed! a minidump has been written and exception info is available below:");
@@ -186,6 +186,7 @@ void InitialiseLogging()
 
 	AllocConsole();
 	freopen("CONOUT$", "w", stdout);
+	freopen("CONOUT$", "w", stderr);
 
 	spdlog::default_logger()->set_pattern("[%H:%M:%S] [%l] %v");
 	spdlog::flush_on(spdlog::level::info);

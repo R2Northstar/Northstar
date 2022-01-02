@@ -37,7 +37,7 @@ public:
 	char authToken[32];
 
 	in_addr ip;
-	int port;
+	unsigned short port;
 };
 
 struct MainMenuPromoData
@@ -92,6 +92,9 @@ public:
 
 	bool m_bHasMainMenuPromoData = false;
 	MainMenuPromoData m_MainMenuPromoData;
+
+private:
+	void SetCommonHttpClientOptions(CURL* curl);
 
 public:
 	MasterServerManager();

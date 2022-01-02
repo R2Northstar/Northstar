@@ -28,6 +28,7 @@
 #include "rpakfilesystem.h"
 #include "bansystem.h"
 #include "memalloc.h"
+#include "languagehooks.h"
 
 bool initialised = false;
 
@@ -45,35 +46,33 @@ BOOL APIENTRY DllMain( HMODULE hModule,
         break;
     }
 
-    if (!initialised)
-        InitialiseNorthstar();
-    initialised = true;
-
     return TRUE;
 }
 
 void WaitForDebugger(HMODULE baseAddress)
 {
     // earlier waitfordebugger call than is in vanilla, just so we can debug stuff a little easier
-    if (CommandLine()->CheckParm("-waitfordebugger"))
+    //if (CommandLine()->CheckParm("-waitfordebugger"))
+    if (strstr(GetCommandLineA(), "-waitfordebugger"))
     {
         spdlog::info("waiting for debugger...");
-        spdlog::info("{} bytes have been statically allocated", g_iStaticAllocated);
 
         while (!IsDebuggerPresent())
             Sleep(100);
     }
 }
 
-// in the future this will be called from launcher instead of dllmain
-void InitialiseNorthstar()
+bool InitialiseNorthstar()
 {
     if (initialised)
     {
-        spdlog::error("Called InitialiseNorthstar more than once!");
-        return;
+        //spdlog::warn("Called InitialiseNorthstar more than once!"); // it's actually 100% fine for that to happen
+        return false;
     }
+
     initialised = true;
+
+    curl_global_init_mem(CURL_GLOBAL_DEFAULT, _malloc_base, _free_base, _realloc_base, _strdup_base, _calloc_base);
 
     InitialiseLogging();
 
@@ -81,16 +80,15 @@ void InitialiseNorthstar()
     InstallInitialHooks();
     InitialiseInterfaceCreationHooks();
 
-    // adding a callback to tier0 won't work for some reason
-    AddDllLoadCallback("launcher.dll", InitialiseTier0GameUtilFunctions);
+    AddDllLoadCallback("tier0.dll", InitialiseTier0GameUtilFunctions);
     AddDllLoadCallback("engine.dll", WaitForDebugger);
     AddDllLoadCallback("engine.dll", InitialiseEngineGameUtilFunctions);
     AddDllLoadCallback("server.dll", InitialiseServerGameUtilFunctions);
 
     // dedi patches
     {
+        AddDllLoadCallback("tier0.dll", InitialiseDedicatedOrigin);
         AddDllLoadCallback("engine.dll", InitialiseDedicated);
-        AddDllLoadCallback("launcher.dll", InitialiseDedicatedOrigin);
         AddDllLoadCallback("server.dll", InitialiseDedicatedServerGameDLL);
         AddDllLoadCallback("materialsystem_dx11.dll", InitialiseDedicatedMaterialSystem);
         // this fucking sucks, but seemingly we somehow load after rtech_game???? unsure how, but because of this we have to apply patches here, not on rtech_game load
@@ -102,6 +100,7 @@ void InitialiseNorthstar()
 
     // client-exclusive patches
     {
+        AddDllLoadCallback("tier0.dll", InitialiseTier0LanguageHooks);
         AddDllLoadCallback("engine.dll", InitialiseClientEngineSecurityPatches);
         AddDllLoadCallback("client.dll", InitialiseClientSquirrel);
         AddDllLoadCallback("client.dll", InitialiseSourceConsole);
@@ -132,4 +131,9 @@ void InitialiseNorthstar()
 
     // mod manager after everything else
     AddDllLoadCallback("engine.dll", InitialiseModManager);
+
+    // run callbacks for any libraries that are already loaded by now
+    CallAllPendingDLLLoadCallbacks();
+
+    return true;
 }

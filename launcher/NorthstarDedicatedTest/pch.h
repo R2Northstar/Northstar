@@ -11,10 +11,12 @@
 // httplib ssl
 
 // add headers that you want to pre-compile here
+#include "memalloc.h"
 #include <Windows.h>
 #include "logging.h"
 #include "include/MinHook.h"
 #include "spdlog/spdlog.h"
+#include "libcurl/include/curl/curl.h"
 #include "hookutils.h"
 
 #endif

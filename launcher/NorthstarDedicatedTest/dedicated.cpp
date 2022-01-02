@@ -6,13 +6,14 @@
 
 bool IsDedicated()
 {
-	return CommandLine()->CheckParm("-dedicated");
+	//return CommandLine()->CheckParm("-dedicated");
+	return strstr(GetCommandLineA(), "-dedicated");
 }
 
 // CDedidcatedExports defs
 struct CDedicatedExports; // forward declare
 
-typedef void (*DedicatedSys_PrintfType)(CDedicatedExports* dedicated, char* msg);
+typedef void (*DedicatedSys_PrintfType)(CDedicatedExports* dedicated, const char* msg);
 typedef void (*DedicatedRunServerType)(CDedicatedExports* dedicated);
 
 // would've liked to just do this as a class but have not been able to get it to work
@@ -26,7 +27,7 @@ struct CDedicatedExports
 	DedicatedRunServerType RunServer;
 };
 
-void Sys_Printf(CDedicatedExports* dedicated, char* msg)
+void Sys_Printf(CDedicatedExports* dedicated, const char* msg)
 {
 	spdlog::info("[DEDICATED PRINT] {}", msg);
 }
@@ -35,7 +36,7 @@ typedef void(*CHostState__InitType)(CHostState* self);
 
 void RunServer(CDedicatedExports* dedicated)
 {
-	Sys_Printf(dedicated, (char*)"CDedicatedExports::RunServer(): starting");
+	Sys_Printf(dedicated, "CDedicatedExports::RunServer(): starting");
 
 	// init hoststate, if we don't do this, we get a crash later on
 	CHostState__InitType CHostState__Init = (CHostState__InitType)((char*)GetModuleHandleA("engine.dll") + 0x16E110);
@@ -209,7 +210,7 @@ void InitialiseDedicated(HMODULE engineAddress)
 		TempReadWrite rw(ptr);
 
 		// remove call to Shader_Connect
-		*ptr = 0x90;
+		*ptr = (char)0x90;
 		*(ptr + 1) = (char)0x90;
 		*(ptr + 2) = (char)0x90;
 		*(ptr + 3) = (char)0x90;
@@ -246,7 +247,7 @@ void InitialiseDedicated(HMODULE engineAddress)
 		TempReadWrite rw(ptr);
 
 		// remove call to ui loading stuff
-		*ptr = 0x90;
+		*ptr = (char)0x90;
 		*(ptr + 1) = (char)0x90;
 		*(ptr + 2) = (char)0x90;
 		*(ptr + 3) = (char)0x90;
@@ -382,23 +383,18 @@ void InitialiseDedicated(HMODULE engineAddress)
 	CommandLine()->AppendParm("+exec", "autoexec_ns_server");
 }
 
-typedef void(*Tier0_InitOriginType)();
-Tier0_InitOriginType Tier0_InitOrigin;
-void Tier0_InitOriginHook()
+void InitialiseDedicatedOrigin(HMODULE baseAddress)
 {
 	// disable origin on dedicated
 	// for any big ea lawyers, this can't be used to play the game without origin, game will throw a fit if you try to do anything without an origin id as a client
 	// for dedi it's fine though, game doesn't care if origin is disabled as long as there's only a server
-	Tier0_InitOrigin();
-}
 
-void InitialiseDedicatedOrigin(HMODULE baseAddress)
-{
 	if (!IsDedicated())
 		return;
 
-	HookEnabler hook;
-	ENABLER_CREATEHOOK(hook, GetProcAddress(GetModuleHandleA("tier0.dll"), "Tier0_InitOrigin"), &Tier0_InitOriginHook, reinterpret_cast<LPVOID*>(&Tier0_InitOrigin));
+	char* ptr = (char*)GetProcAddress(GetModuleHandleA("tier0.dll"), "Tier0_InitOrigin");
+	TempReadWrite rw(ptr);
+	*ptr = (char)0xC3; // ret
 }
 
 typedef void(*PrintFatalSquirrelErrorType)(void* sqvm);
