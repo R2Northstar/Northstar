@@ -202,6 +202,8 @@ void InitialiseLogging()
 	spdlog::default_logger()->sinks().push_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>(stream.str(), false));
 }
 
+ConVar* Cvar_spewlog_enable;
+
 enum SpewType_t
 {
 	SPEW_MESSAGE = 0,
@@ -217,6 +219,9 @@ EngineSpewFuncType EngineSpewFunc;
 
 void EngineSpewFuncHook(void* engineServer, SpewType_t type, const char* format, va_list args)
 {
+	if (!Cvar_spewlog_enable->m_nValue)
+		return;
+
 	const char* typeStr;
 	switch (type)
 	{
@@ -326,4 +331,6 @@ void InitialiseEngineSpewFuncHooks(HMODULE baseAddress)
 {
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x11CA80, EngineSpewFuncHook, reinterpret_cast<LPVOID*>(&EngineSpewFunc));
+
+	Cvar_spewlog_enable = RegisterConVar("spewlog_enable", "1", FCVAR_NONE, "Enables/disables whether the engine spewfunc should be logged");
 }

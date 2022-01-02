@@ -26,6 +26,7 @@
 #include "miscclientfixes.h"
 #include "miscserverfixes.h"
 #include "rpakfilesystem.h"
+#include "bansystem.h"
 #include "memalloc.h"
 
 bool initialised = false;
@@ -85,7 +86,6 @@ void InitialiseNorthstar()
     AddDllLoadCallback("engine.dll", WaitForDebugger);
     AddDllLoadCallback("engine.dll", InitialiseEngineGameUtilFunctions);
     AddDllLoadCallback("server.dll", InitialiseServerGameUtilFunctions);
-    AddDllLoadCallback("engine.dll", InitialiseEngineSpewFuncHooks);
 
     // dedi patches
     {
@@ -115,7 +115,9 @@ void InitialiseNorthstar()
         AddDllLoadCallback("client.dll", InitialiseMiscClientFixes);
     }
 
+    AddDllLoadCallback("engine.dll", InitialiseEngineSpewFuncHooks);
     AddDllLoadCallback("server.dll", InitialiseServerSquirrel);
+    AddDllLoadCallback("engine.dll", InitialiseBanSystem);
     AddDllLoadCallback("engine.dll", InitialiseServerAuthentication);
     AddDllLoadCallback("engine.dll", InitialiseSharedMasterServer);
     AddDllLoadCallback("server.dll", InitialiseMiscServerScriptCommand);
