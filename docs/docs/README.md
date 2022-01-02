@@ -1,5 +1,7 @@
 ---
+coverY: 0
 description: A Titanfall|2 mod to join and host custom servers.
+cover: images/northstarbanner.png
 ---
 
 # Welcome to Northstar
