@@ -26,7 +26,7 @@
 * [Prerequisites](hosting-a-server-with-northstar/prerequisites.md)
 * [Hosting a Basic Listen Server](hosting-a-server-with-northstar/basic-listen-server.md)
 * [Hosting a Dedicated Server](hosting-a-server-with-northstar/dedicated-server/README.md)
-  * [Useful Launch arguments](hosting-a-server-with-northstar/dedicated-server/useful-launch-arguments.md)
+  * [Useful Launch arguments](hosting-a-server-with-northstar/dedicated-server/useful-commands.md)
   * [Hosting on Linux](hosting-a-server-with-northstar/dedicated-server/hosting-on-linux.md)
 
 ## Modding
