@@ -16,9 +16,9 @@ void LibraryLoadError(DWORD dwMessageId, const wchar_t* libName, const wchar_t* 
 
 bool ShouldLoadNorthstar()
 {
-	bool loadNorthstar = !strstr(GetCommandLineA(), "-vanilla");
+	bool loadNorthstar = strstr(GetCommandLineA(), "-northstar");
 
-	if (!loadNorthstar)
+	if (loadNorthstar)
 		return loadNorthstar;
 
 	auto runNorthstarFile = std::ifstream("run_northstar.txt");
@@ -27,8 +27,8 @@ bool ShouldLoadNorthstar()
 		std::stringstream runNorthstarFileBuffer;
 		runNorthstarFileBuffer << runNorthstarFile.rdbuf();
 		runNorthstarFile.close();
-		if (runNorthstarFileBuffer.str()._Starts_with("0"))
-			loadNorthstar = false;
+		if (!runNorthstarFileBuffer.str()._Starts_with("0"))
+			loadNorthstar = true;
 	}
 	return loadNorthstar;
 }
@@ -63,6 +63,9 @@ int LauncherMainHook(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 bool ProvisionNorthstar()
 {
+	if (!ShouldLoadNorthstar())
+		return true;
+
 	if (MH_Initialize() != MH_OK)
 	{
 		MessageBoxA(GetForegroundWindow(), "MH_Initialize failed\nThe game cannot continue and has to exit.", "Northstar Wsock32 Proxy Error", 0);
