@@ -1425,6 +1425,9 @@
     <ClInclude Include="rpakfilesystem.h">
       <Filter>Header Files\Shared</Filter>
     </ClInclude>
+    <ClInclude Include="bansystem.h">
+      <Filter>Header Files\Server\Authentication</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -1537,6 +1540,9 @@
     </ClCompile>
     <ClCompile Include="rpakfilesystem.cpp">
       <Filter>Source Files\Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="bansystem.cpp">
+      <Filter>Source Files\Server\Authentication</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

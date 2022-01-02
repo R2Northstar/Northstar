@@ -5,6 +5,7 @@
 #include "masterserver.h"
 #include "httplib.h"
 #include "gameutils.h"
+#include "bansystem.h"
 #include <fstream>
 #include <filesystem>
 #include <thread>
@@ -116,8 +117,10 @@ void ServerAuthenticationManager::StopPlayerAuthServer()
 
 bool ServerAuthenticationManager::AuthenticatePlayer(void* player, int64_t uid, char* authToken)
 {
-	std::string strUid = std::to_string(uid);
+	if (!g_ServerBanSystem->IsUIDAllowed(uid))
+		return false;
 
+	std::string strUid = std::to_string(uid);
 	std::lock_guard<std::mutex> guard(m_authDataMutex);
 
 	bool authFail = true;
@@ -221,7 +224,7 @@ void ServerAuthenticationManager::WritePersistentData(void* player)
 // store these in vars so we can use them in CBaseClient::Connect
 // this is fine because ptrs won't decay by the time we use this, just don't use it outside of cbaseclient::connect
 char* nextPlayerToken;
-int64_t nextPlayerUid;
+uint64_t nextPlayerUid;
 
 void* CBaseServer__ConnectClientHook(void* server, void* a2, void* a3, uint32_t a4, uint32_t a5, int32_t a6, void* a7, void* a8, char* serverFilter, void* a10, char a11, void* a12, char a13, char a14, int64_t uid, uint32_t a16, uint32_t a17)
 {
