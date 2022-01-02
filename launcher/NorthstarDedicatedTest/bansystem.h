@@ -9,6 +9,7 @@ private:
 
 public:
 	void OpenBanlist();
+	void ClearBanlist();
 	void BanUID(uint64_t uid);
 	void UnbanUID(uint64_t uid);
 	bool IsUIDAllowed(uint64_t uid);
