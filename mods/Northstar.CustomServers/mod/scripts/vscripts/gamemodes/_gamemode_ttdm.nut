@@ -53,6 +53,7 @@ void function TTDMIntroShowIntermissionCam( entity player )
 
 void function PlayerWatchesTTDMIntroIntermissionCam( entity player )
 {
+	player.EndSignal( "OnDestroy" )
 	ScreenFadeFromBlack( player )
 
 	entity intermissionCam = GetEntArrayByClass_Expensive( "info_intermission" )[ 0 ]
