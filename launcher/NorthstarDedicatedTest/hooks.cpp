@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "hooks.h"
 #include "hookutils.h"
+#include "sigscanning.h"
 
 #include <wchar.h>
 #include <iostream>

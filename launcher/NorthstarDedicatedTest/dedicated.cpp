@@ -77,6 +77,32 @@ bool IsGameActiveWindowHook()
 	return true;
 }
 
+HANDLE consoleInputThreadHandle = NULL;
+
+DWORD WINAPI ConsoleInputThread(PVOID pThreadParameter)
+{
+	while (!g_pEngine || !g_pHostState || g_pHostState->m_iCurrentState != HostState_t::HS_RUN)
+		Sleep(1000);
+
+	// Bind stdin to receive console input.
+	FILE* fp = nullptr;
+	freopen_s(&fp, "CONIN$", "r", stdin);
+
+	spdlog::info("Ready to receive console commands.");
+
+	{
+		// Process console input
+		std::string input;
+		while (g_pEngine && g_pEngine->m_nQuitting == EngineQuitState::QUIT_NOTQUITTING && std::getline(std::cin, input))
+		{
+			input += "\n";
+			Cbuf_AddText(Cbuf_GetCurrentPlayer(), input.c_str(), cmd_source_t::kCommandSrcCode);
+		}
+	}
+
+	return 0;
+}
+
 void InitialiseDedicated(HMODULE engineAddress)
 {
 	if (!IsDedicated())
@@ -381,6 +407,29 @@ void InitialiseDedicated(HMODULE engineAddress)
 	CommandLine()->AppendParm("+host_preload_shaders", "0");
 	CommandLine()->AppendParm("+net_usesocketsforloopback", "1");
 	CommandLine()->AppendParm("+exec", "autoexec_ns_server");
+
+	// Disable Quick Edit mode to reduce chance of user unintentionally hanging their server by selecting something.
+	if (!CommandLine()->CheckParm("-bringbackquickedit"))
+	{
+		HANDLE stdIn = GetStdHandle(STD_INPUT_HANDLE);
+		DWORD mode = 0;
+
+		if (GetConsoleMode(stdIn, &mode)) {
+			if (mode & ENABLE_QUICK_EDIT_MODE) {
+				mode &= ~ENABLE_QUICK_EDIT_MODE;
+				mode &= ~ENABLE_MOUSE_INPUT;
+
+				mode |= ENABLE_PROCESSED_INPUT;
+
+				SetConsoleMode(stdIn, mode);
+			}
+		}
+	} else spdlog::info("Quick Edit enabled by user request");
+
+	// create console input thread
+	if (!CommandLine()->CheckParm("-noconsoleinput"))
+		consoleInputThreadHandle = CreateThread(0, 0, ConsoleInputThread, 0, 0, NULL);
+	else spdlog::info("Console input disabled by user request");
 }
 
 void InitialiseDedicatedOrigin(HMODULE baseAddress)
