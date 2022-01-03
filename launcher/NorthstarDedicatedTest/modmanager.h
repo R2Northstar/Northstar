@@ -4,6 +4,7 @@
 #include <vector>
 #include <filesystem>
 #include "rapidjson/document.h"
+#include "memalloc.h"
 
 namespace fs = std::filesystem;
 
@@ -100,7 +101,7 @@ class ModManager
 private:
 	bool m_hasLoadedMods = false;
 	bool m_hasEnabledModsCfg;
-	rapidjson::Document m_enabledModsCfg;
+	rapidjson_document m_enabledModsCfg;
 
 	// precalculated hashes
 	size_t m_hScriptsRsonHash;

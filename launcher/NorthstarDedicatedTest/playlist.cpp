@@ -56,7 +56,7 @@ void SetPlaylistVarOverrideHook(const char* varName, const char* value)
 
 char* GetCurrentPlaylistVarHook(const char* varName, bool useOverrides)
 {
-	if (!useOverrides && !strcmp(varName, "max_players"))
+	if (!useOverrides && CommandLine()->CheckParm("-maxplayersplaylist") && !strcmp(varName, "max_players"))
 		useOverrides = true;
 
 	return GetCurrentPlaylistVarOriginal(varName, useOverrides);
@@ -64,13 +64,14 @@ char* GetCurrentPlaylistVarHook(const char* varName, bool useOverrides)
 
 int GetCurrentGamemodeMaxPlayersHook()
 {
+	if (!CommandLine()->CheckParm("-maxplayersplaylist"))
+		return GetCurrentGamemodeMaxPlayers();
+
 	char* maxPlayersStr = GetCurrentPlaylistVar("max_players", 0);
 	if (!maxPlayersStr)
 		return GetCurrentGamemodeMaxPlayers();
 
 	int maxPlayers = atoi(maxPlayersStr);
-	spdlog::info("Overwrote max_players to {}", maxPlayers);
-
 	return maxPlayers;
 }
 
@@ -94,7 +95,7 @@ void InitialisePlaylistHooks(HMODULE baseAddress)
 	{
 		void* ptr = (char*)baseAddress + 0x18ED8D;
 		TempReadWrite rw(ptr);
-		*((char*)ptr) = 0xC3; // jmp => ret
+		*((char*)ptr) = (char)0xC3; // jmp => ret
 	}
 
 	if (IsDedicated())

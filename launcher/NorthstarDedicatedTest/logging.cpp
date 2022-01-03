@@ -113,12 +113,27 @@ long __stdcall ExceptionFilter(EXCEPTION_POINTERS* exceptionInfo)
 		GetModuleFileNameExA(GetCurrentProcess(), crashedModuleHandle, crashedModuleFullName, MAX_PATH);
 		char* crashedModuleName = strrchr(crashedModuleFullName, '\\') + 1;
 
-		DWORD crashedModuleOffset = ((DWORD)exceptionAddress) - ((DWORD)crashedModuleInfo.lpBaseOfDll);
+		DWORD64 crashedModuleOffset = ((DWORD64)exceptionAddress) - ((DWORD64)crashedModuleInfo.lpBaseOfDll);
 		CONTEXT* exceptionContext = exceptionInfo->ContextRecord;
 
 		spdlog::error("Northstar has crashed! a minidump has been written and exception info is available below:");
 		spdlog::error(exceptionCause.str());
-		spdlog::error("Address: {} + 0x{0:x}", crashedModuleName, crashedModuleOffset);
+		spdlog::error("At: {} + {}", crashedModuleName, (void*)crashedModuleOffset);
+
+		PVOID framesToCapture[62];
+		int frames = RtlCaptureStackBackTrace(0, 62, framesToCapture, NULL);
+		for (int i = 0; i < frames; i++)
+		{
+			HMODULE backtraceModuleHandle;
+			GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, static_cast<LPCSTR>(framesToCapture[i]), &backtraceModuleHandle);
+
+			char backtraceModuleFullName[MAX_PATH];
+			GetModuleFileNameExA(GetCurrentProcess(), backtraceModuleHandle, backtraceModuleFullName, MAX_PATH);
+			char* backtraceModuleName = strrchr(backtraceModuleFullName, '\\') + 1;
+
+			spdlog::error("    {} + {}", backtraceModuleName, (void*)framesToCapture[i]);
+		}
+
 		spdlog::error("RAX: 0x{0:x}", exceptionContext->Rax);
 		spdlog::error("RBX: 0x{0:x}", exceptionContext->Rbx);
 		spdlog::error("RCX: 0x{0:x}", exceptionContext->Rcx);
@@ -171,6 +186,7 @@ void InitialiseLogging()
 
 	AllocConsole();
 	freopen("CONOUT$", "w", stdout);
+	freopen("CONOUT$", "w", stderr);
 
 	spdlog::default_logger()->set_pattern("[%H:%M:%S] [%l] %v");
 	spdlog::flush_on(spdlog::level::info);
@@ -187,6 +203,8 @@ void InitialiseLogging()
 	spdlog::default_logger()->sinks().push_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>(stream.str(), false));
 }
 
+ConVar* Cvar_spewlog_enable;
+
 enum SpewType_t
 {
 	SPEW_MESSAGE = 0,
@@ -202,6 +220,9 @@ EngineSpewFuncType EngineSpewFunc;
 
 void EngineSpewFuncHook(void* engineServer, SpewType_t type, const char* format, va_list args)
 {
+	if (!Cvar_spewlog_enable->m_nValue)
+		return;
+
 	const char* typeStr;
 	switch (type)
 	{
@@ -357,4 +378,6 @@ void InitialiseEngineSpewFuncHooks(HMODULE baseAddress)
 
 	// Hook CClientState::ProcessPrint
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1A1530, CClientState_ProcessPrint_Hook, reinterpret_cast<LPVOID*>(&CClientState_ProcessPrint_Original));
+
+	Cvar_spewlog_enable = RegisterConVar("spewlog_enable", "1", FCVAR_NONE, "Enables/disables whether the engine spewfunc should be logged");
 }
