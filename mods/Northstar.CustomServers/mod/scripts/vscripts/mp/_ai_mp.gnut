@@ -13,7 +13,7 @@ void function MpInitAILoadouts()
 void function SetProficiency( entity npc )
 {
 	// unsure what the logic for deciding this should be so just going to default good
-	npc.kv.WeaponProfiency = eWeaponProficiency.VERYGOOD
+	npc.kv.WeaponProficiency = eWeaponProficiency.VERYGOOD
 }
 
 void function SPMP_UpdateNPCProficiency( entity npc )
