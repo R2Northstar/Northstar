@@ -9,14 +9,14 @@
 #define RAPIDJSON_HAS_STDSTRING 1
 
 // httplib ssl
-#define CPPHTTPLIB_OPENSSL_SUPPORT
-#define OPENSSL_API_COMPAT 0x1010100fL
 
 // add headers that you want to pre-compile here
+#include "memalloc.h"
 #include <Windows.h>
 #include "logging.h"
 #include "include/MinHook.h"
 #include "spdlog/spdlog.h"
+#include "libcurl/include/curl/curl.h"
 #include "hookutils.h"
 
 #endif

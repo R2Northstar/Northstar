@@ -57,7 +57,7 @@ std::string ReadVPKFile(const char* path)
 	char data[4096];
 	do
 	{
-		bytesRead = (*g_Filesystem)->m_vtable2->Read(&(*g_Filesystem)->m_vtable2, data, std::size(data), fileHandle);
+		bytesRead = (*g_Filesystem)->m_vtable2->Read(&(*g_Filesystem)->m_vtable2, data, (int)std::size(data), fileHandle);
 		fileStream.write(data, bytesRead);
 	} while (bytesRead == std::size(data));
 

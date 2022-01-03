@@ -20,7 +20,7 @@ ConVar* RegisterConVar(const char* name, const char* defaultValue, int flags, co
 	ConVar* newVar = new ConVar;
 	conVarConstructor(newVar, name, defaultValue, flags, helpString);
 
-	g_CustomConvars.insert(std::make_pair(name, newVar));
+	g_CustomConvars.emplace(name, newVar);
 
 	return newVar;
 }

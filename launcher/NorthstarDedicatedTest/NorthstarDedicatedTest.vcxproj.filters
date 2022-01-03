@@ -118,6 +118,9 @@
     <Filter Include="Header Files\include\openssl\crypto">
       <UniqueIdentifier>{8cc1ae44-9dbf-4719-91a2-82e00b8d78e2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\include\libcurl">
+      <UniqueIdentifier>{ea1e17a6-40b7-4e1b-8edb-e9ae704ce604}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -1392,6 +1395,45 @@
     <ClInclude Include="maxplayers.h">
       <Filter>Header Files\Shared</Filter>
     </ClInclude>
+    <ClInclude Include="include\libcurl\include\curl\curl.h">
+      <Filter>Header Files\include\libcurl</Filter>
+    </ClInclude>
+    <ClInclude Include="include\libcurl\include\curl\curlver.h">
+      <Filter>Header Files\include\libcurl</Filter>
+    </ClInclude>
+    <ClInclude Include="include\libcurl\include\curl\easy.h">
+      <Filter>Header Files\include\libcurl</Filter>
+    </ClInclude>
+    <ClInclude Include="include\libcurl\include\curl\mprintf.h">
+      <Filter>Header Files\include\libcurl</Filter>
+    </ClInclude>
+    <ClInclude Include="include\libcurl\include\curl\multi.h">
+      <Filter>Header Files\include\libcurl</Filter>
+    </ClInclude>
+    <ClInclude Include="include\libcurl\include\curl\options.h">
+      <Filter>Header Files\include\libcurl</Filter>
+    </ClInclude>
+    <ClInclude Include="include\libcurl\include\curl\stdcheaders.h">
+      <Filter>Header Files\include\libcurl</Filter>
+    </ClInclude>
+    <ClInclude Include="include\libcurl\include\curl\system.h">
+      <Filter>Header Files\include\libcurl</Filter>
+    </ClInclude>
+    <ClInclude Include="include\libcurl\include\curl\typecheck-gcc.h">
+      <Filter>Header Files\include\libcurl</Filter>
+    </ClInclude>
+    <ClInclude Include="include\libcurl\include\curl\urlapi.h">
+      <Filter>Header Files\include\libcurl</Filter>
+    </ClInclude>
+    <ClInclude Include="rpakfilesystem.h">
+      <Filter>Header Files\Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="bansystem.h">
+      <Filter>Header Files\Server\Authentication</Filter>
+    </ClInclude>
+    <ClInclude Include="languagehooks.h">
+      <Filter>Header Files\Client</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -1504,6 +1546,15 @@
     </ClCompile>
     <ClCompile Include="miscserverfixes.cpp">
       <Filter>Source Files\Server</Filter>
+    </ClCompile>
+    <ClCompile Include="rpakfilesystem.cpp">
+      <Filter>Source Files\Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="bansystem.cpp">
+      <Filter>Source Files\Server\Authentication</Filter>
+    </ClCompile>
+    <ClCompile Include="languagehooks.cpp">
+      <Filter>Source Files\Client</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
