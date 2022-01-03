@@ -25,14 +25,13 @@
 			"DefaultValue": "0"
 		}
 	],
-	// ui inits need to happen before so our init callbacks get called
 	"Scripts": [
 		{
 			"Path": "ui/menu_ns_modmenu.nut",
 			"RunOn": "UI",
 			"UICallback": {
 				"Before": "AddNorthstarModMenu", 
-				"After": "AddNorthstarModMenu_MainMenuFooter" // need to do this after, so we add footer after mainmenu init
+				"After": "AddNorthstarModMenu_MainMenuFooter"
 			}
 		},
 		

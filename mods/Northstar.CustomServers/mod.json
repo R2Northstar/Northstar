@@ -13,7 +13,7 @@
 		{
 			"Name": "ns_is_modded_server",
 			"DefaultValue": "1",
-			"Flags": 8192 // FCVAR_REPLICATED
+			"Flags": 8192
 		},
 		
 		{
@@ -60,20 +60,20 @@
 	"Scripts": [
 		{
 			"Path": "_misc_stubs.gnut",
-			"RunOn": "SERVER && MP",
+			"RunOn": "SERVER && MP"
 		},
 		{
 			"Path": "_store.gnut",
-			"RunOn": "SERVER && MP",
+			"RunOn": "SERVER && MP"
 		},
 		{
 			"Path": "_script_movers.gnut",
-			"RunOn": "SERVER && MP",
+			"RunOn": "SERVER && MP"
 		},
 		
 		{
 			"Path": "sh_northstar_utils.gnut",
-			"RunOn": "CLIENT || SERVER || UI",
+			"RunOn": "CLIENT || SERVER || UI"
 		},
 		
 		{
@@ -99,7 +99,7 @@
 		
 		{
 			"Path": "mp/_classic_mp_dropship_intro.gnut",
-			"RunOn": "SERVER && MP",
+			"RunOn": "SERVER && MP"
 		},
 		{
 			"Path": "mp/_classic_mp_no_intro.gnut",
@@ -116,7 +116,7 @@
 		
 		{
 			"Path": "lobby/sh_private_lobby_modes_init.gnut",
-			"RunOn": "( SERVER || CLIENT ) && MP",
-		},
+			"RunOn": "( SERVER || CLIENT ) && MP"
+		}
 	]
 }
