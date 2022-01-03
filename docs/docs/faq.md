@@ -15,7 +15,7 @@ However your progress on official servers is not lost, so running vanilla client
 A: Check [_Opening the console_](using-northstar/commands.md#opening-the-console).
 
 ### Q: How can I check if my server is listed on the server browser?
-You can use community-made server browsers like: https://taskinoz.com/northstar/
+You can use community-made server browsers like: [https://taskinoz.com/northstar/](https://taskinoz.com/northstar/)
 
 ### Q: Will there be a console version?
 
