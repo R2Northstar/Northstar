@@ -121,11 +121,10 @@ void function HiddenOnPlayerKilled( entity victim, entity attacker, var damageIn
 		return
 
 	if ( attacker.IsPlayer() )
-    {
+	{
 		// increase kills by 1
 		attacker.SetPlayerGameStat( PGS_ASSAULT_SCORE, attacker.GetPlayerGameStat( PGS_ASSAULT_SCORE ) + 1 )
-    }
-
+	}
 
 }
 
@@ -133,14 +132,14 @@ void function UpdateLoadout( entity player )
 {
 	string p2016 = "mp_weapon_wingman_n"
 	foreach ( entity weapon in player.GetMainWeapons() )
-    {
+	{
 		if (weapon.GetWeaponClassName() == p2016)
 		{
         	weapon.SetWeaponPrimaryAmmoCount(0)
         	weapon.SetWeaponPrimaryClipCount(weapon.GetWeaponPrimaryClipCountMax())
 		}
-    }
-    WaitFrame()
+	}
+	WaitFrame()
 	if ( IsValid( player ) )
 		PlayerEarnMeter_SetMode( player, eEarnMeterMode.DISABLED )
 }
@@ -156,34 +155,35 @@ void function RemoveHidden()
 
 void function PredatorMain()
 {
-    while (true) {
-        WaitFrame()
-        if(!IsLobby())
-        {
-            foreach (entity player in GetPlayerArray())
-            {
-                if (player == null || !IsValid(player) || !IsAlive(player) || player.GetTeam() != TEAM_IMC)
-                    continue
-                vector playerVelV = player.GetVelocity()
-                float playerVel
-                playerVel = sqrt(playerVelV.x * playerVelV.x + playerVelV.y * playerVelV.y + playerVelV.z * playerVelV.z)
-                float playerVelNormal = playerVel * 0.068544
-                if (playerVel/300 < 1.3)
-                {
-                    player.SetCloakFlicker(0, 0)
-                    player.kv.VisibilityFlags = 0
-                }
-                else
-                {
-                    player.SetCloakFlicker(0.2 , 1 )
-                    player.kv.VisibilityFlags = 0
-                    float waittime = RandomFloat(0.5)
-                    wait waittime
-                    player.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
-                }
-            }
-        }
-    }
+	while (true) 
+	{
+		WaitFrame()
+		if(!IsLobby())
+		{
+			foreach (entity player in GetPlayerArray())
+			{
+				if (player == null || !IsValid(player) || !IsAlive(player) || player.GetTeam() != TEAM_IMC)
+					continue
+				vector playerVelV = player.GetVelocity()
+				float playerVel
+				playerVel = sqrt(playerVelV.x * playerVelV.x + playerVelV.y * playerVelV.y + playerVelV.z * playerVelV.z)
+				float playerVelNormal = playerVel * 0.068544
+				if (playerVel/300 < 1.3)
+				{
+					player.SetCloakFlicker(0, 0)
+					player.kv.VisibilityFlags = 0
+				}
+				else
+				{
+					player.SetCloakFlicker(0.2 , 1 )
+					player.kv.VisibilityFlags = 0
+					float waittime = RandomFloat(0.5)
+					wait waittime
+					player.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
+				}
+			}
+		}
+	}
 }
 
 int function TimeoutCheckSurvivors()
