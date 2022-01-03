@@ -29,3 +29,9 @@ This is a good time to edit the code. From the Solution Explorer, you can find a
 12. Back in the build debug directory, **Move NorthstarLauncher.exe and Northstar.dll to your Titanfall2 folder.**
 
 If everything is correct, you should now be able to launch the Northstar client with your changes applied.
+
+### VS Build Tools
+
+Developers who can work a command line may be interested in using [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022) to compile the project, as an alternative to installing the full Visual Studio IDE.
+
+Follow the same steps as above for Visual Studio Build Tools, but instead of opening in Visual Studio, run the Command Prompt for VS 2022 and navigate to the NorthstarLauncher, then run ```msbuild```, which will build the project for you.
