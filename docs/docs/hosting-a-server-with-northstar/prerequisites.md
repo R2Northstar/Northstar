@@ -36,4 +36,4 @@ to your PC that you're running Northstar on.
 ## Final checks
 
 To check whether you set everything up correctly, start the game via Northstar and go into a private match. Another Northstar user should now be able to see your server on the server browser.\
-Note that by default your server is called `Unnamed Northstar Server`. You can change this as described below.
+Note that by default your server is called `Unnamed Northstar Server`. You can change this as described in the next page.
