@@ -15,9 +15,10 @@ Don't panic! This warning seems to be caused by Origin and none of your files ar
 5. Make sure you got the newest version of Northstar
 6. Start vanilla game and see if this works.\
    If vanilla doesn't work either, check [this thread on EA forums](https://answers.ea.com/t5/Titanfall-2/Titanfall-2-Wont-Laumch-DLL-file-issue/td-p/5660909)
-7. Verify game files via Steam/Origin (depending on where you own the game)
-8. Check Github issues if anyone else is experiencing this problem. Maybe current release has a bug.
-9. If you followed all these steps and even launching the vanilla version of the game doesn't work, your final option is to fully remove the game and reinstall it.\
+7. Check [this issue thread on Github](https://github.com/R2Northstar/Northstar/issues/6) to see whether any of the solutions proposed there work for you.
+8. Verify game files via Steam/Origin (depending on where you own the game)
+9. Check Github issues if anyone else is experiencing this problem. Maybe current release has a bug.
+10. If you followed all these steps and even launching the vanilla version of the game doesn't work, your final option is to fully remove the game and reinstall it.\
    Then check if vanilla works before reinstalling Northstar.
 
 ## Issues with newest Intel CPU (10th+ gen):
