@@ -89,6 +89,14 @@ void function GamemodeFastball_Init()
 		< -4429.40, -2001.04, 697.64 >, < 0, -90.00, 0 >,
 		< -5050.00, 811.66, 576.03 >, < 0, 42.0, 0 >
 	])
+
+	FastballAddBuddySpawnForLevel( "mp_forwardbase_kodai", TEAM_MILITIA, < -3200.00, 1461, 1000>, < 0, 0, 0 > )
+	FastballAddBuddySpawnForLevel( "mp_forwardbase_kodai", TEAM_IMC, < 3000, 1243, 944 >, < 0, 180, 0 > )
+	FastballAddPanelSpawnsForLevel( "mp_forwardbase_kodai", [
+		< -830, 2210, 960 >, < 0, 90.00, 0 >,
+		< 8, 825, 1096 >, < 0, -90.00, 0 > ,
+		< 740 , -600, 960 >, < 0, 0, 0 >  
+	])
 }
 
 void function SpawnPanelsForLevel()
