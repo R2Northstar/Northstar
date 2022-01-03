@@ -53,6 +53,6 @@ TODO: Extend and improve
 
 | Value | Description                              |
 |-------|------------------------------------------|
-| 0     | Players can change all match settings    |
-| 1     | Players can only change map and gamemode |
-| 2     | Players can change nothing               |
+| `0`   | Players can change all match settings    |
+| `1`   | Players can only change map and gamemode |
+| `2`   | Players can change nothing               |
