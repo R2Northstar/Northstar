@@ -37,12 +37,3 @@ to your PC that you're running Northstar on.
 
 To check whether you set everything up correctly, start the game via Northstar and go into a private match. Another Northstar user should now be able to see your server on the server browser.\
 Note that by default your server is called `Unnamed Northstar Server`. You can change this as described below.
-
-## Extras:
-
-Northstar uses a config file to set various settings for your custom server. The file is located at `Titanfall2\R2Northstar\mods\Northstar.CustomServers\mod\cfg\autoexec_ns_server.cfg`
-
-In particular:
-
-* `ns_server_name` sets the name of your server on the server browser. You probably want to change this to something the people you play with recognise.
-* `ns_auth_allow_insecure` decides whether to allow players not authenticated with Northstar master server. Change the value from `0` to `1` if you want to play with vanilla clients. To find out what else you need to do for vanilla clients to join, read [the instruction for setting up Northstar for PUGs](Northstar-PUGs-Setup/).
