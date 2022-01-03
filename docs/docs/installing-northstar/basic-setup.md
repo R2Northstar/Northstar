@@ -27,6 +27,11 @@ Should you notice any issues/warnings/errors while running Northstar, check the 
 [troubleshooting.md](troubleshooting.md)
 {% endcontent-ref %}
 
+## Updating Northstar
+
+To update, simply follow the same process you used to install Northstar using the newest zipped release of Northstar. When copying the new files make sure to select "_Overwrite_".\
+Note that if you modified some files like `ns_startup_args.txt`, these will also be overwritten. If you want to keep the changes you made make sure to make a copy of these files beforehand and change them back after applying the update.
+
 ## Additional Stuff
 
 Since Northstar doesn't launch directly through Origin or Steam, any startup arguments provided in either launcher won't transfer over. You'll need to add them to the file `ns_startup_args.txt`, which should be in the same folder as you extracted the Northstar files to.
