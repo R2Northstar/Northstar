@@ -56,7 +56,7 @@ A: Should be fixed soon.
 
 ### Q: I get an error regarding "File Corruption" and can't launch Northstar.
 
-A: Check the Engine Error File Corruption Detected thread.
+A: Check [the troubleshooting section](installing-northstar/troubleshooting.md).
 
 ### Q: Can you host a dedicated server on Linux?
 
