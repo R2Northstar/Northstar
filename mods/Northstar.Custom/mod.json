@@ -56,11 +56,10 @@
 			"Path": "gamemodes/_gamemode_chamber.nut",
 			"RunOn": "SERVER && MP"
 		},
-    {
+		{
 			"Path": "gamemodes/cl_gamemode_chamber.nut",
 			"RunOn": "CLIENT && MP"
 		},
-		
 		{
 			"Path": "gamemodes/sh_gamemode_hidden.nut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
@@ -76,7 +75,7 @@
 			"Path": "gamemodes/_gamemode_hidden.nut",
 			"RunOn": "SERVER && MP"
 		},
-    {
+		{
 			"Path": "gamemodes/cl_gamemode_hidden.nut",
 			"RunOn": "CLIENT && MP"
 		},
