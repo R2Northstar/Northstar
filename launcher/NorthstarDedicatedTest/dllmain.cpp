@@ -28,6 +28,7 @@
 #include "rpakfilesystem.h"
 #include "bansystem.h"
 #include "memalloc.h"
+#include "maxplayers.h"
 #include "languagehooks.h"
 
 bool initialised = false;
@@ -127,6 +128,11 @@ bool InitialiseNorthstar()
     AddDllLoadCallback("filesystem_stdio.dll", InitialiseFilesystem);
     AddDllLoadCallback("engine.dll", InitialiseEngineRpakFilesystem);
     AddDllLoadCallback("engine.dll", InitialiseKeyValues);
+
+    // maxplayers increase
+    AddDllLoadCallback("engine.dll", InitialiseMaxPlayersOverride_Engine);
+    AddDllLoadCallback("client.dll", InitialiseMaxPlayersOverride_Client);
+    AddDllLoadCallback("server.dll", InitialiseMaxPlayersOverride_Server);
 
     // mod manager after everything else
     AddDllLoadCallback("engine.dll", InitialiseModManager);

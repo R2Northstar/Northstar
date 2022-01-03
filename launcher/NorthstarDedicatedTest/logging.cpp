@@ -263,7 +263,7 @@ void EngineSpewFuncHook(void* engineServer, SpewType_t type, const char* format,
 		}
 	}
 
-	char formatted[2048];
+	char formatted[2048] = { 0 };
 	bool shouldFormat = true;
 
 	// because titanfall 2 is quite possibly the worst thing to yet exist, it sometimes gives invalid specifiers which will crash
@@ -325,13 +325,59 @@ void EngineSpewFuncHook(void* engineServer, SpewType_t type, const char* format,
 		spdlog::warn("Failed to format {} \"{}\"", typeStr, format);
 	}
 
+	auto endpos = strlen(formatted);
+	if (formatted[endpos - 1] == '\n')
+		formatted[endpos - 1] = '\0'; // cut off repeated newline
+
 	spdlog::info("[SERVER {}] {}", typeStr, formatted);
+}
+
+
+typedef void(*Status_ConMsg_Type)(const char* text, ...);
+Status_ConMsg_Type Status_ConMsg_Original;
+
+void Status_ConMsg_Hook(const char* text, ...)
+{
+	char formatted[2048];
+	va_list list;
+
+	va_start(list, text);
+	vsprintf_s(formatted, text, list);
+	va_end(list);
+
+	auto endpos = strlen(formatted);
+	if (formatted[endpos - 1] == '\n')
+		formatted[endpos - 1] = '\0'; // cut off repeated newline
+
+	spdlog::info(formatted);
+}
+
+typedef bool(*CClientState_ProcessPrint_Type)(__int64 thisptr, __int64 msg);
+CClientState_ProcessPrint_Type CClientState_ProcessPrint_Original;
+
+bool CClientState_ProcessPrint_Hook(__int64 thisptr, __int64 msg)
+{
+	char* text = *(char**)(msg + 0x20);
+	
+	auto endpos = strlen(text);
+	if (text[endpos - 1] == '\n')
+		text[endpos - 1] = '\0'; // cut off repeated newline
+
+	spdlog::info(text);
+	return true;
 }
 
 void InitialiseEngineSpewFuncHooks(HMODULE baseAddress)
 {
 	HookEnabler hook;
+
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x11CA80, EngineSpewFuncHook, reinterpret_cast<LPVOID*>(&EngineSpewFunc));
+
+	// Hook print function that status concmd uses to actually print data
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x15ABD0, Status_ConMsg_Hook, reinterpret_cast<LPVOID*>(&Status_ConMsg_Original));
+
+	// Hook CClientState::ProcessPrint
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1A1530, CClientState_ProcessPrint_Hook, reinterpret_cast<LPVOID*>(&CClientState_ProcessPrint_Original));
 
 	Cvar_spewlog_enable = RegisterConVar("spewlog_enable", "1", FCVAR_NONE, "Enables/disables whether the engine spewfunc should be logged");
 }

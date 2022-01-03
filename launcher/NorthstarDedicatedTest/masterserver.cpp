@@ -23,6 +23,9 @@ ConVar* Cvar_ns_server_name;
 ConVar* Cvar_ns_server_desc;
 ConVar* Cvar_ns_server_password;
 
+// Source ConVar
+ConVar* Cvar_hostname;
+
 MasterServerManager* g_MasterServerManager;
 
 typedef void(*CHostState__State_NewGameType)(CHostState* hostState);
@@ -948,7 +951,7 @@ void MasterServerManager::WritePlayerPersistentData(char* playerId, char* pdata,
 
 			curl_easy_cleanup(curl);
 
-		m_savingPersistentData = false;
+			m_savingPersistentData = false;
 		});
 
 	requestThread.detach();
@@ -1004,6 +1007,10 @@ void CHostState__State_NewGameHook(CHostState* hostState)
 	if (maxPlayersVar) // GetCurrentPlaylistVar can return null so protect against this
 		maxPlayers = std::stoi(maxPlayersVar);
 
+	// Copy new server name cvar to source
+	Cvar_hostname->m_pszString = Cvar_ns_server_name->m_pszString;
+	Cvar_hostname->m_StringLength = Cvar_ns_server_name->m_StringLength;
+
 	g_MasterServerManager->AddSelfToServerList(Cvar_hostport->m_nValue, Cvar_ns_player_auth_port->m_nValue, Cvar_ns_server_name->m_pszString, Cvar_ns_server_desc->m_pszString, hostState->m_levelName, (char*)GetCurrentPlaylistName(), maxPlayers, Cvar_ns_server_password->m_pszString);
 	g_ServerAuthenticationManager->StartPlayerAuthServer();
 	g_ServerAuthenticationManager->m_bNeedLocalAuthForNewgame = false;
@@ -1055,6 +1062,9 @@ void InitialiseSharedMasterServer(HMODULE baseAddress)
 	Cvar_ns_server_password = RegisterConVar("ns_server_password", "", FCVAR_GAMEDLL, "");
 	Cvar_ns_report_server_to_masterserver = RegisterConVar("ns_report_server_to_masterserver", "1", FCVAR_GAMEDLL, "");
 	Cvar_ns_report_sp_server_to_masterserver = RegisterConVar("ns_report_sp_server_to_masterserver", "0", FCVAR_GAMEDLL, "");
+
+	Cvar_hostname = *(ConVar**)((char*)baseAddress + 0x1315bae8);
+
 	g_MasterServerManager = new MasterServerManager;
 
 	RegisterConCommand("ns_fetchservers", ConCommand_ns_fetchservers, "", FCVAR_CLIENTDLL);
