@@ -81,6 +81,29 @@ void function GamemodeFastball_Init()
 		< 6001.58, -4126.61, 2252.03 >, < 0, -135, 0 >,
 		< 3595.96, -4568.04, 2376.03 >, < 0, -135, 0 >
 	])
+
+	FastballAddBuddySpawnForLevel( "mp_complex3", TEAM_MILITIA, < -7800.67, -800.02, 510.02 >, < 0, 45.00, 0 > )
+	FastballAddBuddySpawnForLevel( "mp_complex3", TEAM_IMC, < -550.95, -1626, 380 >, < 0, -127, 0 > )
+	FastballAddPanelSpawnsForLevel( "mp_complex3", [
+		< -3642.70, -3391.82, 645.00 >, < 0, -135.0, 0 >,
+		< -4429.40, -2001.04, 697.64 >, < 0, -90.00, 0 >,
+		< -5050.00, 811.66, 576.03 >, < 0, 42.0, 0 >
+	])
+
+	FastballAddBuddySpawnForLevel( "mp_forwardbase_kodai", TEAM_MILITIA, < -3200.00, 1461, 1000>, < 0, 0, 0 > )
+	FastballAddBuddySpawnForLevel( "mp_forwardbase_kodai", TEAM_IMC, < 3000, 1243, 944 >, < 0, 180, 0 > )
+	FastballAddPanelSpawnsForLevel( "mp_forwardbase_kodai", [
+		< -830, 2210, 960 >, < 0, 90.00, 0 >,
+		< 8, 825, 1096 >, < 0, -90.00, 0 > ,
+		< 740 , -600, 960 >, < 0, 0, 0 >  
+	])
+
+	//Current BT fast ball points are good
+	FastballAddPanelSpawnsForLevel( "mp_colony02", [
+		< 1374, 559, 60 >, < 0, 0.00, 0 > ,
+		< -87, 1630, 22 >, < 0, 90.00, 0 >,
+		< -2167 , 448, 54 >, <0 , 90, 0 >  
+	])
 }
 
 void function SpawnPanelsForLevel()
