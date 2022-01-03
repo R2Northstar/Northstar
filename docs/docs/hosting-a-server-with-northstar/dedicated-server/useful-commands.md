@@ -8,22 +8,6 @@ TODO: Extend and improve
 
 * For setting gamemode: `+mp_gamemode`
 
-| Variable    | Description         |
-|-------------|---------------------|
-| `tdm`       | Skirmish            |
-| `cp`        | Amped Hardpoint     |
-| `ctf`       | Capture the Flag    |
-| `lsts`      | Last Titan Standing |
-| `ps`        | Pilots v Pilots     |
-| `ffa`       | Free for All        |
-| `speedball` | Fastball?           |
-| `mdf`       | Marked for Death    |
-| `ttdm`      | Titan Brawl         |
-| `fra`       | Free Agents         |
-| `gg`        | Gun Game            |
-
-* For setting map: `+map`
-
 | Value           | Description                  |
 |-----------------|------------------------------|
 | `private_match` | Private Match                |
@@ -46,6 +30,10 @@ TODO: Extend and improve
 | `lf`            | Live Fire                    |
 | `rocket_lf`     | Rocket Arena                 |
 | `mfd`           | Marked for Death             |
+
+
+* For setting map: `+map`
+
 
 * `+setplaylistvaroverride`
 
