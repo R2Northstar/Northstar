@@ -175,7 +175,8 @@ void function GiveWeaponsFromStoredArray( entity player, array<StoredWeapon> sto
 				if ( storedWeapon.isProScreenOwner )
 				{
 					weapon.SetProScreenOwner( player )
-					UpdateProScreen( player, weapon )
+					if ( weapon.HasMod( "pro_screen" ) )
+						UpdateProScreen( player, weapon )
 				}
 
 				string weaponCategory = ""
