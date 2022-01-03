@@ -97,6 +97,13 @@ void function GamemodeFastball_Init()
 		< 8, 825, 1096 >, < 0, -90.00, 0 > ,
 		< 740 , -600, 960 >, < 0, 0, 0 >  
 	])
+
+	//Current BT fast ball points are good
+	FastballAddPanelSpawnsForLevel( "mp_colony02", [
+		< 1374, 559, 60 >, < 0, 0.00, 0 > ,
+		< -87, 1630, 22 >, < 0, 90.00, 0 >,
+		< -2167 , 448, 54 >, <0 , 90, 0 >  
+	])
 }
 
 void function SpawnPanelsForLevel()
