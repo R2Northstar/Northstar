@@ -9,7 +9,8 @@ struct {
 void function DisallowedWeapons_Init()
 {
 	UpdateDisallowedWeaponList()
-	AddCallback_OnPlayerRespawned( ReplacePlayerWeaponsForSpawn )
+	AddCallback_OnPlayerRespawned( ReplacePlayerWeapons )
+	AddCallback_OnPlayerGetsNewPilotLoadout( ReplacePlayerWeaponsForLoadoutChange )
 }
 
 void function UpdateDisallowedWeaponList()
@@ -25,7 +26,7 @@ void function UpdateDisallowedWeaponList()
 	file.disallowedWeaponReplacement = GetConVarString( "ns_disallowed_weapon_primary_replacement" )
 }
 
-void function ReplacePlayerWeaponsForSpawn( entity player )
+void function ReplacePlayerWeapons( entity player )
 {
 	UpdateDisallowedWeaponList()
 	if ( file.disallowedWeapons.len() == 0 )
@@ -45,4 +46,9 @@ void function ReplacePlayerWeaponsForSpawn( entity player )
 	
 	if ( hadDisallowedWeapon )
 		SendHudMessage( player, "Restricted weapons were removed", -1, 0.4, 255, 255, 255, 255, 0.15, 3.0, 0.5 )
+}
+
+void function ReplacePlayerWeaponsForLoadoutChange( entity player, PilotLoadoutDef loadout )
+{
+	ReplacePlayerWeapons( player )
 }
