@@ -148,6 +148,11 @@ void function ScoreEvent_PlayerKilled( entity victim, entity attacker, var damag
 	if ( attacker.p.playerKillStreaks[ victim ] == DOMINATING_KILL_REQUIREMENT )
 		AddPlayerScore( attacker, "Dominating" )
 	
+	if ( Time() - attacker.s.lastKillTime > CASCADINGKILL_REQUIREMENT_TIME )
+	{
+		attacker.s.currentTimedKillstreak = 0 // reset first before kill
+		attacker.s.lastKillTime = Time()
+	}
 	
 	// timed killstreaks
 	if ( Time() - attacker.s.lastKillTime <= CASCADINGKILL_REQUIREMENT_TIME )
@@ -161,8 +166,6 @@ void function ScoreEvent_PlayerKilled( entity victim, entity attacker, var damag
 		else if ( attacker.s.currentTimedKillstreak == MEGAKILL_REQUIREMENT_KILLS )
 			AddPlayerScore( attacker, "MegaKill" )
 	}
-	else
-		attacker.s.currentTimedKillstreak = 0 // reset if a kill took too long
 	
 	attacker.s.lastKillTime = Time()
 }
