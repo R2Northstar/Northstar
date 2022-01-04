@@ -214,6 +214,9 @@ EventOverrideData::EventOverrideData(const std::string& data, const fs::path& pa
 
 bool CustomAudioManager::TryLoadAudioOverride(const fs::path& defPath)
 {
+	if (IsDedicated())
+		return true; // silently fail
+
 	std::ifstream jsonStream(defPath);
 	std::stringstream jsonStringStream;
 
@@ -249,8 +252,24 @@ bool CustomAudioManager::TryLoadAudioOverride(const fs::path& defPath)
 	return true;
 }
 
+typedef void (*MilesStopAll_Type)();
+MilesStopAll_Type MilesStopAll;
+
 void CustomAudioManager::ClearAudioOverrides()
 {
+	if (IsDedicated())
+		return;
+
+	if (m_loadedAudioOverrides.size() > 0 || m_loadedAudioOverridesRegex.size() > 0)
+	{
+		// stop all miles sounds beforehand
+		// miles_stop_all
+		MilesStopAll();
+
+		// this is cancer but it works
+		Sleep(50);
+	}
+
 	m_loadedAudioOverrides.clear();
 	m_loadedAudioOverridesRegex.clear();
 }
@@ -440,4 +459,6 @@ void InitialiseMilesAudioHooks(HMODULE baseAddress)
 	
 	ENABLER_CREATEHOOK(hook, (char*)milesAudioBase + 0xF110, &LoadSampleMetadata_Hook, reinterpret_cast<LPVOID*>(&LoadSampleMetadata_Original));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x57DAD0, &MilesLog_Hook, reinterpret_cast<LPVOID*>(&MilesLog_Original));
+
+	MilesStopAll = (MilesStopAll_Type)((char*)baseAddress + 0x580850);
 }
