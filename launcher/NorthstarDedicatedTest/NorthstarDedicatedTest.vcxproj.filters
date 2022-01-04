@@ -1434,6 +1434,9 @@
     <ClInclude Include="languagehooks.h">
       <Filter>Header Files\Client</Filter>
     </ClInclude>
+    <ClInclude Include="audio.h">
+      <Filter>Header Files\Client</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -1556,6 +1559,9 @@
     <ClCompile Include="languagehooks.cpp">
       <Filter>Source Files\Client</Filter>
     </ClCompile>
+    <ClCompile Include="audio.cpp">
+      <Filter>Source Files\Client</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="include\spdlog\fmt\bundled\LICENSE.rst">
@@ -1642,5 +1648,10 @@
     <None Include="include\crypto\dso_conf.h.in">
       <Filter>Header Files\include\openssl\crypto</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="audio_asm.asm">
+      <Filter>Source Files\Client</Filter>
+    </MASM>
   </ItemGroup>
 </Project>

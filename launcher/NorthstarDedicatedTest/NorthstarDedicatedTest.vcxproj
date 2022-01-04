@@ -34,6 +34,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
@@ -60,6 +61,8 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <BufferSecurityCheck>
+      </BufferSecurityCheck>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -88,6 +91,8 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>
+      </BufferSecurityCheck>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -106,6 +111,7 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="audio.h" />
     <ClInclude Include="bansystem.h" />
     <ClInclude Include="chatcommand.h" />
     <ClInclude Include="clientauthhooks.h" />
@@ -545,6 +551,7 @@
     <ClInclude Include="squirrel.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="audio.cpp" />
     <ClCompile Include="bansystem.cpp" />
     <ClCompile Include="chatcommand.cpp" />
     <ClCompile Include="clientauthhooks.cpp" />
@@ -619,7 +626,11 @@
     <None Include="include\openssl\x509_vfy.h.in" />
     <None Include="include\spdlog\fmt\bundled\LICENSE.rst" />
   </ItemGroup>
+  <ItemGroup>
+    <MASM Include="audio_asm.asm" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
   </ImportGroup>
 </Project>
