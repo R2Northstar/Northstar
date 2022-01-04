@@ -40,4 +40,4 @@ See also [this thread on Steam](https://steamcommunity.com/app/1237970/discussio
 
 ## "I disabled all mods and now I cannot re-enable them as the mods menu is gone":
 
-To to your `Titanfall2` directory. From there go to the `R2Northstar` and delete `enabledmods.json`. This file stores information which mod is enabled and disabled. By deleting this fail Northstar will fall back to the default (all mods enabled) and re-create the file appropriately.
+Go to your `Titanfall2` directory. From there go to the `R2Northstar` and delete `enabledmods.json`. This file stores information about which mods are enabled and disabled. By deleting this file Northstar will fall back to the default (all mods enabled) and re-create the file appropriately.
