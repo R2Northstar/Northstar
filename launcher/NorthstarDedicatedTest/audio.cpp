@@ -165,7 +165,7 @@ EventOverrideData::EventOverrideData(const std::string& data, const fs::path& pa
 		if (file.is_regular_file() && file.path().extension().string() == ".wav")
 		{
 			// Open the file.
-			std::basic_ifstream<uint8_t> wavStream(file, std::ios::binary);
+			std::basic_ifstream<uint8_t> wavStream(file.path().string(), std::ios::binary);
 
 			if (wavStream.fail())
 			{
