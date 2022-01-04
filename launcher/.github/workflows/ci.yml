@@ -1,0 +1,30 @@
+name: Build
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+env:
+  # Change to Release for release builds in CI
+  BUILD_PROFILE: Debug
+
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.1
+      - name: Build
+        run: msbuild /p:Configuration=${{ env.BUILD_PROFILE }}
+      - name: Extract Short Commit Hash
+        id: extract
+        shell: bash
+        run: echo ::set-output name=commit::`git rev-parse --short HEAD`
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: NorthstarLauncher-${{ steps.extract.outputs.commit }}
+          path: x64/${{ env.BUILD_PROFILE }}/
