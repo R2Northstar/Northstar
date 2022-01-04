@@ -27,4 +27,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: NorthstarLauncher-${{ steps.extract.outputs.commit }}
-          path: x64/${{ env.BUILD_PROFILE }}/
+          path: |
+            x64/${{ env.BUILD_PROFILE }}/*.dll
+            x64/${{ env.BUILD_PROFILE }}/*.exe
+            x64/${{ env.BUILD_PROFILE }}/*.pdb
