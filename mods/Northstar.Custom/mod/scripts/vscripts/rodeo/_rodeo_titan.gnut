@@ -2288,7 +2288,7 @@ void function PostRodeoAirControl( entity player )
 	{
 		float elapsedTime = Time() - startTime
 		player.kv.airSpeed = player.GetPlayerSettingsField( "airSpeed" ) * POST_RODEO_AIR_CONTROL_SCALE * (1 - (elapsedTime / POST_RODEO_AIR_CONTROL_DURATION))
-		player.kv.airAcceleration = player.GetPlayerSettingsField( "airAcceleration" ) * POST_RODEO_AIR_CONTROL_SCALE * (1 - (elapsedTime / POST_RODEO_AIR_CONTROL_DURATION))
+		player.kv.airAcceleration = GetCurrentPlaylistVarInt( "custom_air_accel_pilot", int( player.GetPlayerSettingsField( "airAcceleration" ) ) ) * POST_RODEO_AIR_CONTROL_SCALE * (1 - (elapsedTime / POST_RODEO_AIR_CONTROL_DURATION))
 		//printt( "scale", POST_RODEO_AIR_CONTROL_SCALE * (1 - (elapsedTime / POST_RODEO_AIR_CONTROL_DURATION)) )
 
 		WaitFrame()
@@ -2345,7 +2345,7 @@ void function RestorePlayerAirControl( entity player ) //This function should re
 {
 	Assert( player.IsPlayer() )
 	player.kv.airSpeed = player.GetPlayerSettingsField( "airSpeed" )
-	player.kv.airAcceleration = player.GetPlayerSettingsField( "airAcceleration" )
+	player.kv.airAcceleration = GetCurrentPlaylistVarInt( "custom_air_accel_pilot", int( player.GetPlayerSettingsField( "airAcceleration" ) ) )
 }
 
 bool function ShouldThrowGrenadeInHatch( entity rodeoPilot )
