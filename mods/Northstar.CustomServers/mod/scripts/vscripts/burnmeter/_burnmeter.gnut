@@ -1,6 +1,8 @@
 untyped
 
 global function BurnMeter_Init
+global function BurnMeter_SetBoostLimit
+global function BurnMeter_CheckBoostLimit
 global function ForceSetGlobalBurncardOverride
 global function GetSelectedBurncardRefFromWeaponOrPlayer
 global function RunBurnCardUseFunc
@@ -22,6 +24,7 @@ const float MAPHACK_PULSE_DELAY = 2.0
 
 struct {
 	string forcedGlobalBurncardOverride = ""
+	table<string, int> boostLimits
 } file
 
 void function BurnMeter_Init()
@@ -46,6 +49,11 @@ void function BurnMeter_Init()
 	BurnReward_GetByRef( "burnmeter_rodeo_grenade" ).rewardAvailableCallback = PlayerUsesRodeoGrenadeBurncard
 	BurnReward_GetByRef( "burnmeter_nuke_titan" ).rewardAvailableCallback = PlayerUsesNukeTitanBurncard // unused in vanilla, fun though
 
+	BurnMeter_SetBoostLimit( "burnmeter_ticks", 6 )
+	BurnMeter_SetBoostLimit( "burnmeter_ap_turret_weapon", 3 )
+	BurnMeter_SetBoostLimit( "burnmeter_at_turret_weapon", 3 )
+	BurnMeter_SetBoostLimit( "burnmeter_holopilot_nova", 3 )
+
 	// setup player callbacks
 	AddCallback_GameStateEnter( eGameState.Playing, InitBurncardsForIntroPlayers )
 	AddCallback_OnClientConnected( InitBurncardsForLateJoiner )
@@ -55,6 +63,31 @@ void function BurnMeter_Init()
 
 	// necessary signals
 	RegisterSignal( "StopAmpedWeapons" )
+}
+
+void function BurnMeter_SetBoostLimit( string burnRef, int limit )
+{
+	file.boostLimits[burnRef] <- limit
+}
+
+bool function BurnMeter_CheckBoostLimit( entity player )
+{
+	EarnObject earnObject = PlayerEarnMeter_GetReward( player )
+	string burnRef = earnObject.ref
+	int limit = -1
+
+	if ( burnRef in file.boostLimits )
+		limit = file.boostLimits[burnRef]
+
+	if ( limit < 0 )
+		return false
+
+	int current = PlayerInventory_CountBurnRef( player, burnRef )
+
+	if ( current < limit )
+		return false
+
+	return true
 }
 
 void function ForceSetGlobalBurncardOverride( string ref )
@@ -203,13 +236,10 @@ void function UseBurnCardWeapon( entity weapon, entity player )
 	Remote_CallFunction_Replay( player, "ServerCallback_RewardUsed", BurnReward_GetByRef( ref ).id )
 	RunBurnCardUseFunc( player, ref )
 
-	// dont remove in RunBurnCardUseFunc because it can be called in non-burn_card_weapon_mod contexts
-	// TODO: currently not sure how burncards can be stacked ( max clipcount for all burncards is 1, so can't just set that )
-	// if this gets figured out, add a conditional check here to prevent removes if they've got burncards left
 	if ( PlayerEarnMeter_IsRewardAvailable( player ) )
 		PlayerEarnMeter_SetRewardUsed( player )
 
-	player.TakeWeapon( BurnReward_GetByRef( ref ).weaponName )
+	PlayerInventory_PopInventoryItem( player )
 }
 
 void function UseBurnCardWeaponInCriticalSection( entity weapon, entity ownerPlayer )
@@ -220,20 +250,8 @@ void function UseBurnCardWeaponInCriticalSection( entity weapon, entity ownerPla
 
 void function BurnMeter_GiveRewardDirect( entity player, string itemRef )
 {
-	BurnReward burncard = BurnReward_GetByRef( itemRef )
-	
-	array<string> mods = [ "burn_card_weapon_mod" ]
-	if ( burncard.extraWeaponMod != "" )
-		mods.append( burncard.extraWeaponMod )
-	
-	// ensure inventory slot isn't full to avoid crash
-	entity preexistingWeapon = player.GetOffhandWeapon( OFFHAND_INVENTORY )
-	if ( IsValid( preexistingWeapon ) )
-		player.TakeWeaponNow( preexistingWeapon.GetWeaponClassName() )
-	
-	player.GiveOffhandWeapon( burncard.weaponName, OFFHAND_INVENTORY, mods )
+	PlayerInventory_PushInventoryItemByBurnRef( player, itemRef )
 	Remote_CallFunction_Replay( player, "ServerCallback_RewardReadyMessage", player.s.respawnTime )
-
 }
 
 int function GetBurnCardWeaponSkin( entity weapon )
@@ -408,35 +426,27 @@ void function PlayerUsesNukeTitanBurncard( entity player )
 
 void function PlayerUsesNukeBurncardThreaded( entity player )
 {
-	// if this is given manually ( i.e. not the equipped burnreward in inventory ), this will run at bad times
-	// so do this check here, yes, this will cause people to lose their cards and get nothing, but better than free titan regens
-	if ( !BurnMeterPlayer_CanUseReward( player, BurnReward_GetByRef( "burnmeter_nuke_titan" ) ) )
-		return
+	Point spawnpoint = GetTitanReplacementPoint( player, false )
+	entity titan = CreateOgre( TEAM_UNASSIGNED, spawnpoint.origin, spawnpoint.angles )
+	DispatchSpawn( titan )
 
-	float ownedFrac = PlayerEarnMeter_GetOwnedFrac( player )
+	titan.kv.script_hotdrop = "4"
+	thread NPCTitanHotdrops( titan, false, "at_hotdrop_drop_2knee_turbo" )
 
-	// use player's titan loadout, but with warpfall so faster and no dome
-	TitanLoadoutDef titanLoadout = GetTitanLoadoutForPlayer( player )
-	titanLoadout.passive3 = "pas_warpfall"
+	Remote_CallFunction_Replay( player, "ServerCallback_ReplacementTitanSpawnpoint", spawnpoint.origin.x, spawnpoint.origin.y, spawnpoint.origin.z, Time() + GetHotDropImpactTime( titan, "at_hotdrop_drop_2knee_turbo" ) + 1.6 )
 
-	thread CreateTitanForPlayerAndHotdrop( player, GetTitanReplacementPoint( player, false ) )
-
-	entity titan = player.GetPetTitan()
-	SetTeam( titan, TEAM_UNASSIGNED ) // make it so you can kill yourself lol
 	DoomTitan( titan )
+	titan.SetBossPlayer(player) // Do this so that if we crush something we get awarded the kill.
+
+	entity soul = titan.GetTitanSoul()
+	soul.soul.nukeAttacker = player // Use this to get credit for the explosion kills.
+
 	NPC_SetNuclearPayload( titan )
-	// this should get run after the vanilla set_usable's event, so titan is never embarkable
-	// embarking a titan in this state WILL kill the server so uhh, pretty bad
-	AddAnimEvent( titan, "set_usable", void function( entity titan ) { titan.UnsetUsable() } )
 
-	titan.WaitSignal( "TitanHotDropComplete" )
-	AutoTitan_SelfDestruct( titan )
+	titan.WaitSignal( "ClearDisableTitanfall" )
+	titan.ClearBossPlayer() // Stop being the boss so we don't get an award for this titan blowing up.
 
-	while ( PlayerEarnMeter_GetMode( player ) == eEarnMeterMode.PET )
-		WaitFrame()
-
-	// restore original earnmeter values, no way to set earned that's exposed unfortunately
-	PlayerEarnMeter_SetOwnedFrac( player, ownedFrac )
+	thread TitanEjectPlayer( titan, true )
 }
 
 void function PlayerUsesPermanentAmpedWeaponsBurncard( entity player )

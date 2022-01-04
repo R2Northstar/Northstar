@@ -1,0 +1,573 @@
+global function Cl_EarnMeter_Init
+global function Cl_EarnMeter_RegisterNetworkFunctions
+
+global function Cl_EarnMeter_ShowRewardHint
+global function Cl_EarnMeter_SetLastHintTime
+
+global function Cl_EarnMeter_UpdateHint
+
+global function ServerCallback_EarnMeterAwarded
+
+#if SP
+global function Cl_SP_UpdateCoreIcon
+#endif
+
+global function EarnMeter_Update
+
+const float FILL_ANIM_DURATION = 0.7
+
+struct EarnChangeData
+{
+	float startValue = 0.0
+	float endValue = 0.0
+	float updateTime = 0.0
+}
+
+struct
+{
+	EarnChangeData lastEarnedData
+	EarnChangeData lastOwnedData
+
+	var earnMeterRui
+	var rewardRui
+
+	var meterHintRui
+
+	float lastHintTime
+} file
+
+void function Cl_EarnMeter_Init()
+{
+	if ( !EARNMETER_ENABLED )
+		return
+
+	AddCallback_OnClientScriptInit( Cl_EarnMeter_AddClient )
+	AddCallback_KillReplayStarted( KillReplayStarted )
+	AddCallback_KillReplayEnded( KillReplayEnded )
+	AddFirstPersonSpectateStartedCallback( FirstPersonSpectate_UpdateEarnMeter )
+	AddFirstPersonSpectateEndedCallback( FirstPersonSpectate_UpdateEarnMeter )
+	AddCallback_OnPlayerLifeStateChanged( Callback_PlayerLifestateChanged )
+	AddCallback_OnPetTitanModeChanged( Callback_PetTitanModeChanged )
+	AddCallback_OnPetTitanChanged( Callback_PetTitanChanged )
+
+	RegisterSignal( "Callback_PetTitanChanged" )
+
+	var rui = CreateCockpitRui( $"ui/earn_meter.rpak" )
+	RuiSetFloat( rui, "fillAnimDuration", FILL_ANIM_DURATION )
+	RuiSetGameTime( rui, "lastEarnChangeTime", RUI_BADGAMETIME )
+	RuiSetGameTime( rui, "lastOwnChangeTime", RUI_BADGAMETIME )
+	RuiSetFloat( rui, "earnedStartFrac", 0.0 )
+	RuiSetFloat( rui, "ownedStartFrac", 0.0 )
+
+	file.earnMeterRui = rui
+
+	file.meterHintRui = CreateCockpitRui( $"ui/meter_hint.rpak" )
+
+	{
+		//var rui = CreateCockpitRui( $"ui/reward_hud.rpak" )
+		//file.rewardRui = rui
+	}
+}
+
+
+void function Cl_EarnMeter_RegisterNetworkFunctions()
+{
+	RegisterNetworkedVariableChangeCallback_float( EARNMETER_EARNEDFRAC, EarnedFracUpdate )
+	RegisterNetworkedVariableChangeCallback_float( EARNMETER_OWNEDFRAC, OwnedFracUpdate )
+
+	RegisterNetworkedVariableChangeCallback_float( "coreAvailableFrac", CoreFracUpdate )
+
+	RegisterNetworkedVariableChangeCallback_int( EARNMETER_GOALID, GoalIdUpdate )
+	RegisterNetworkedVariableChangeCallback_int( EARNMETER_REWARDID, RewardIdUpdate )
+	RegisterNetworkedVariableChangeCallback_int( EARNMETER_MODE, ModeUpdate )
+	RegisterNetworkedVariableChangeCallback_int( "rewardState", RewardStateUpdate )
+	RegisterNetworkedVariableChangeCallback_int( "goalState", GoalStateUpdate )
+}
+
+
+void function Cl_EarnMeter_AddClient( entity player )
+{
+	EarnMeter_Update()
+	thread EarnMeter_Ping()
+}
+
+
+void function EarnedFracUpdate( entity player, float oldValue, float newValue, bool actuallyChanged )
+{
+	if ( !actuallyChanged )
+		return
+
+	float currentValue = Cl_EarnMeter_GetCurrentMeterValue( file.lastEarnedData )
+	RuiSetGameTime( file.earnMeterRui, "lastEarnChangeTime", Time() )
+	RuiSetFloat( file.earnMeterRui, "earnedStartFrac", currentValue )
+
+	file.lastEarnedData.startValue = oldValue
+	file.lastEarnedData.endValue = newValue
+	file.lastEarnedData.updateTime = Time()
+}
+
+
+void function OwnedFracUpdate( entity player, float oldValue, float newValue, bool actuallyChanged )
+{
+	if ( !actuallyChanged )
+		return
+
+	float currentValue = Cl_EarnMeter_GetCurrentMeterValue( file.lastOwnedData )
+	RuiSetGameTime( file.earnMeterRui, "lastOwnChangeTime", Time() )
+	RuiSetFloat( file.earnMeterRui, "ownedStartFrac", currentValue )
+
+	file.lastOwnedData.startValue = oldValue
+	file.lastOwnedData.endValue = newValue
+	file.lastOwnedData.updateTime = Time()
+}
+
+
+void function CoreFracUpdate( entity player, float oldValue, float newValue, bool actuallyChanged )
+{
+	// net var lives on soul, which is global to all players
+	if ( player != GetLocalViewPlayer() )
+		return
+
+	if ( !actuallyChanged )
+		return
+
+	float currentValue = Cl_EarnMeter_GetCurrentMeterValue( file.lastOwnedData )
+	RuiSetGameTime( file.earnMeterRui, "lastOwnChangeTime", Time() )
+	RuiSetFloat( file.earnMeterRui, "ownedStartFrac", currentValue )
+
+	file.lastOwnedData.startValue = oldValue
+	file.lastOwnedData.endValue = newValue
+	file.lastOwnedData.updateTime = Time()
+}
+
+
+float function Cl_EarnMeter_GetCurrentMeterValue( EarnChangeData earnData )
+{
+	float elapsedTime = Time() - earnData.updateTime
+	float delta = earnData.endValue - earnData.startValue
+	return earnData.endValue - (delta * EaseIn( GraphCapped( elapsedTime, 0.0, FILL_ANIM_DURATION, 1.0, 0.0 ) ) )
+}
+
+
+void function RewardStateUpdate( entity player, int oldValue, int newValue, bool actuallyChanged )
+{
+	if ( player != GetLocalViewPlayer() )
+		return
+
+	//if ( newValue == eRewardState.AVAILABLE )
+	//	RuiSetBool( file.rewardRui, "isVisible", true )
+	//else
+	//	RuiSetBool( file.rewardRui, "isVisible", false )
+
+	file.lastHintTime = 0
+	if ( newValue == eRewardState.AVAILABLE )
+		Cl_EarnMeter_ShowRewardHint()
+
+	RuiSetInt( file.earnMeterRui, "rewardState", newValue )
+}
+
+
+void function GoalStateUpdate( entity player, int oldValue, int newValue, bool actuallyChanged )
+{
+	if ( player != GetLocalViewPlayer() )
+		return
+
+	file.lastHintTime = 0
+	if ( newValue == eRewardState.AVAILABLE )
+		Cl_EarnMeter_ShowRewardHint()
+
+	RuiSetInt( file.earnMeterRui, "goalState", newValue )
+}
+
+
+void function ModeUpdate( entity player, int oldValue, int newValue, bool actuallyChanged )
+{
+	file.lastOwnedData.startValue = 0.0
+	file.lastOwnedData.endValue = 0.0
+	file.lastOwnedData.updateTime = 0.0
+
+	EarnMeter_Update()
+}
+
+void function GoalIdUpdate( entity player, int oldValue, int newValue, bool actuallyChanged )
+{
+	EarnMeter_Update()
+}
+
+void function RewardIdUpdate( entity player, int oldValue, int newValue, bool actuallyChanged )
+{
+	EarnMeter_Update()
+}
+
+void function KillReplayStarted()
+{
+	EarnMeter_Update()
+}
+
+
+void function KillReplayEnded()
+{
+	EarnMeter_Update()
+}
+
+void function FirstPersonSpectate_UpdateEarnMeter( entity clientPlayer, entity observerTarget )
+{
+	EarnMeter_Update()
+}
+
+void function Cl_EarnMeter_ShowRewardHint()
+{
+	entity player = GetLocalViewPlayer()
+
+	if ( player == null )
+		return
+
+	if ( PlayerEarnMeter_GetMode( player ) == eEarnMeterMode.DEFAULT || PlayerEarnMeter_GetMode( player ) == eEarnMeterMode.CORE )
+	{
+		if ( Time() - file.lastHintTime > 30.0 )
+		{
+			RuiSetGameTime( file.earnMeterRui, "lastHintTime", Time() )
+			file.lastHintTime = Time()
+			#if MP
+			if ( PlayerEarnMeter_GetMode( player ) == eEarnMeterMode.DEFAULT )
+			{
+				TitanReadyMessage( 0.0, true )
+			}
+			#endif
+		}
+	}
+}
+
+
+void function EarnMeter_Update()
+{
+	entity player = GetLocalViewPlayer()
+	if ( player == null )
+		return
+
+	if ( file.earnMeterRui == null )
+		return
+
+	switch ( PlayerEarnMeter_GetMode( player ) )
+	{
+		case eEarnMeterMode.DISABLED:
+			break
+
+		case eEarnMeterMode.DEFAULT:
+			EarnObject earnReward = PlayerEarnMeter_GetReward( player )
+			EarnObject earnGoal = PlayerEarnMeter_GetGoal( player )
+
+			//RuiTrackFloat( file.meterHintRui, "earnedFrac", player, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( EARNMETER_EARNEDFRAC ) )
+			//RuiTrackFloat( file.meterHintRui, "ownedFrac", player, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( EARNMETER_OWNEDFRAC ) )
+
+			RuiTrackFloat( file.earnMeterRui, "earnedFrac", player, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( EARNMETER_EARNEDFRAC ) )
+			RuiTrackFloat( file.earnMeterRui, "ownedFrac", player, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( EARNMETER_OWNEDFRAC ) )
+			RuiTrackFloat( file.earnMeterRui, "rewardFrac", player, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( EARNMETER_REWARDFRAC ) )
+			RuiSetImage( file.earnMeterRui, "goalBuildingIcon", earnGoal.buildingImage )
+			RuiSetImage( file.earnMeterRui, "goalReadyIcon", earnGoal.readyImage )
+			RuiSetInt( file.earnMeterRui, "goalState", player.GetPlayerNetInt( "goalState" ) )
+			RuiSetInt( file.earnMeterRui, "goalSubState", 0 )
+
+			RuiSetImage( file.earnMeterRui, "rewardBuildingIcon", earnReward.buildingImage )
+			RuiSetImage( file.earnMeterRui, "rewardReadyIcon", earnReward.readyImage )
+			RuiSetString( file.earnMeterRui, "rewardString", earnReward.localizedName )
+			RuiSetInt( file.earnMeterRui, "rewardState", player.GetPlayerNetInt( "rewardState" ) )
+			break
+
+		case eEarnMeterMode.CORE:
+			if ( !IsValid( player.GetTitanSoul() ) )
+				break
+
+			entity soul = player.GetTitanSoul()
+			entity core = player.GetOffhandWeapons()[3]
+			string coreName = core.GetWeaponClassName()
+			array<string> coreMods = core.GetMods()
+
+			#if SP
+			RuiTrackFloat( file.earnMeterRui, "earnedFrac", soul, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "coreAvailableFrac" ) )
+			RuiTrackFloat( file.earnMeterRui, "ownedFrac", soul, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "coreAvailableFrac" ) )
+			RuiSetFloat( file.earnMeterRui, "rewardFrac", 0.0 )
+			RuiSetString( file.earnMeterRui, "rewardString", "" )
+
+			Cl_SP_UpdateCoreIcon( -1 )
+
+			RuiSetInt( file.earnMeterRui, "rewardState", eRewardState.DISABLED )
+			RuiSetInt( file.earnMeterRui, "goalSubState", 0 )
+			#endif
+
+			#if MP
+			RuiTrackFloat( file.earnMeterRui, "earnedFrac", soul, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "coreAvailableFrac" ) )
+			RuiTrackFloat( file.earnMeterRui, "ownedFrac", soul, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "coreAvailableFrac" ) )
+			RuiTrackFloat( file.earnMeterRui, "rewardFrac", player, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( EARNMETER_REWARDFRAC ) )
+            
+			if ( coreName == "mp_titancore_upgrade" )
+			{
+				RuiSetImage( file.earnMeterRui, "goalBuildingIcon", GetVanguardCoreIcon( player ) )
+				RuiSetImage( file.earnMeterRui, "goalReadyIcon", GetVanguardCoreIcon( player ) )
+			}
+			else
+			{
+				RuiSetImage( file.earnMeterRui, "goalBuildingIcon", GetWeaponInfoFileKeyFieldAsset_WithMods_Global( coreName, coreMods, "hud_icon" ) )
+				RuiSetImage( file.earnMeterRui, "goalReadyIcon", GetWeaponInfoFileKeyFieldAsset_WithMods_Global( coreName, coreMods, "hud_icon" ) )
+			}
+
+			EarnObject earnReward = PlayerEarnMeter_GetReward( player )
+			RuiSetImage( file.earnMeterRui, "rewardBuildingIcon", earnReward.buildingImage )
+			RuiSetImage( file.earnMeterRui, "rewardReadyIcon", earnReward.readyImage )
+			RuiSetString( file.earnMeterRui, "rewardString", earnReward.localizedName )
+			RuiSetInt( file.earnMeterRui, "rewardState", player.GetPlayerNetInt( "rewardState" ) )
+
+			RuiSetInt( file.earnMeterRui, "goalSubState", 0 )
+			#endif
+			break
+
+		case eEarnMeterMode.CORE_ACTIVE:
+			if ( !IsValid( player.GetTitanSoul() ) )
+				break
+
+			entity soul = player.GetTitanSoul()
+			entity core = player.GetOffhandWeapons()[3]
+			string coreName = core.GetWeaponClassName()
+			array<string> coreMods = core.GetMods()
+
+			#if SP
+			Cl_SP_UpdateCoreIcon( -1 )
+			#endif
+
+			#if MP
+			if ( coreName == "mp_titancore_upgrade" )
+			{
+				RuiSetImage( file.earnMeterRui, "goalBuildingIcon", GetVanguardCoreIcon( player, 1 ) )
+				RuiSetImage( file.earnMeterRui, "goalReadyIcon", GetVanguardCoreIcon( player, 1 ) )
+			}
+			else
+			{
+				RuiSetImage( file.earnMeterRui, "goalBuildingIcon", GetWeaponInfoFileKeyFieldAsset_WithMods_Global( coreName, coreMods, "hud_icon" ) )
+				RuiSetImage( file.earnMeterRui, "goalReadyIcon", GetWeaponInfoFileKeyFieldAsset_WithMods_Global( coreName, coreMods, "hud_icon" ) )
+			}
+			#endif
+
+			RuiTrackFloat( file.earnMeterRui, "earnedFrac", soul, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "coreExpireFrac" ) )
+			RuiTrackFloat( file.earnMeterRui, "ownedFrac", soul, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "coreExpireFrac" ) )
+			RuiSetFloat( file.earnMeterRui, "rewardFrac", 0.0 )
+			RuiSetString( file.earnMeterRui, "rewardString", "" )
+			RuiSetInt( file.earnMeterRui, "rewardState", eRewardState.DISABLED )
+			RuiSetInt( file.earnMeterRui, "goalSubState", 0 )
+
+			break
+
+		case eEarnMeterMode.PET:
+			if ( !IsValid( player.GetPetTitan() ) )
+				break
+
+			entity titan = player.GetPetTitan()
+			string settingsName = PlayerSettingsIndexToName( titan.GetTitanSoul().GetPlayerSettingsNum() )
+
+			RuiSetBool( file.earnMeterRui, "isPetDoomed", titan.GetTitanSoul().IsDoomed() )
+			RuiTrackFloat( file.earnMeterRui, "earnedFrac", titan, RUI_TRACK_HEALTH )
+			RuiTrackFloat( file.earnMeterRui, "ownedFrac", titan, RUI_TRACK_HEALTH )
+			RuiSetFloat( file.earnMeterRui, "rewardFrac", 0.0 )
+			RuiSetString( file.earnMeterRui, "rewardString", "" )
+			RuiSetImage( file.earnMeterRui, "goalBuildingIcon", Dev_GetPlayerSettingAssetByKeyField_Global( settingsName, "hud_follow_icon" ) )
+			RuiSetImage( file.earnMeterRui, "goalReadyIcon", Dev_GetPlayerSettingAssetByKeyField_Global( settingsName, "hud_guard_icon" ) )
+			RuiSetInt( file.earnMeterRui, "rewardState", eRewardState.DISABLED )
+			RuiSetInt( file.earnMeterRui, "goalSubState", player.GetPetTitanMode() )
+			break
+	}
+
+	RuiSetInt( file.earnMeterRui, "meterMode", PlayerEarnMeter_GetMode( player ) )
+
+	Cl_EarnMeter_UpdateHint( player )
+}
+
+asset function GetVanguardCoreIcon( entity player, int countOffset = 0 )
+{
+	Assert( player.IsTitan() )
+
+	if ( !IsConnected() ) //Persistence isn't available when we disconnect
+		return $""
+
+	if ( player != GetLocalClientPlayer() ) //Client Persistence doesn't know about other players.
+		return Dev_GetPlayerSettingAssetByKeyField_Global( "titan_atlas_vanguard", "core_building_icon" )
+
+	#if MP
+	TitanLoadoutDef loadout = GetActiveTitanLoadout( player )
+
+	entity soul = player.GetTitanSoul()
+	if ( !IsValid( soul ) )
+		return $""
+
+	int upgradeCount = soul.GetTitanSoulNetInt( "upgradeCount" ) - countOffset
+	if ( upgradeCount == 0 && loadout.passive4 != "" )
+	{
+		return GetItemImage( loadout.passive4 )
+	}
+	else if ( upgradeCount == 1 && loadout.passive5 != "" )
+	{
+		return GetItemImage( loadout.passive5 )
+	}
+	else if ( upgradeCount == 2 && loadout.passive6 != "" )
+	{
+		return GetItemImage( loadout.passive6 )
+	}
+	else
+	{
+		return Dev_GetPlayerSettingAssetByKeyField_Global( "titan_atlas_vanguard", "core_building_icon" )
+	}
+	#endif
+
+	return $""
+}
+
+void function Cl_EarnMeter_UpdateHint( entity player )
+{
+	if ( GetConVarInt( "hud_setting_showButtonHints" ) == 0 )
+		RuiSetString( file.earnMeterRui, "buttonHintText", "" )
+	else
+		RuiSetString( file.earnMeterRui, "buttonHintText", "%ability 1%" )
+}
+
+
+void function Callback_PetTitanModeChanged( entity player )
+{
+	EarnMeter_Update()
+}
+
+void function Callback_PetTitanChanged( entity player )
+{
+	if ( IsValid( player.GetPetTitan() ) )
+		thread PetTitan_MeterUpdateThink( player, player.GetPetTitan() )
+
+	EarnMeter_Update()
+}
+
+
+void  function PetTitan_MeterUpdateThink( entity player, entity titan )
+{
+	titan.EndSignal( "OnDeath" )
+	titan.EndSignal( "OnDestroy" )
+
+	player.Signal( "Callback_PetTitanChanged" )
+	player.EndSignal( "Callback_PetTitanChanged" )
+
+	titan.EnableHealthChangedCallback()
+
+	while ( true )
+	{
+		WaitSignal( titan, "Doomed", "HealthChanged" )
+		EarnMeter_Update()
+	}
+}
+
+
+void function Callback_PlayerLifestateChanged( entity player, int oldLifeState, int newLifeState )
+{
+	if ( player != GetLocalViewPlayer() )
+		return
+
+	if ( newLifeState == LIFE_ALIVE )
+	{
+		EarnMeter_Update()
+		Cl_EarnMeter_ShowRewardHint()
+	}
+}
+
+void function EarnMeter_Ping()
+{
+	while ( true )
+	{
+		entity player = GetLocalClientPlayer()
+
+		switch ( PlayerEarnMeter_GetMode( player ) )
+		{
+			case eEarnMeterMode.DEFAULT:
+				if ( player.GetPlayerNetInt( "rewardState" ) == eRewardState.AVAILABLE || player.GetPlayerNetInt( "goalState" ) == eRewardState.AVAILABLE )
+					Cl_EarnMeter_ShowRewardHint()
+				break
+
+			case eEarnMeterMode.CORE:
+				if ( !IsValid( player.GetTitanSoul() ) )
+					break
+
+				entity soul = player.GetTitanSoul()
+				if ( soul.GetTitanSoulNetFloat( "coreAvailableFrac" ) == 1.0 )
+					Cl_EarnMeter_ShowRewardHint()
+				break
+
+		}
+
+
+		wait 5.0
+	}
+}
+
+void function Cl_EarnMeter_SetLastHintTime( float time )
+{
+	file.lastHintTime = time
+}
+
+
+#if SP
+void function Cl_SP_UpdateCoreIcon( int loadoutIndex )
+{
+	#if SP
+	string primaryWeaponName
+
+	entity player = GetLocalViewPlayer()
+	if ( player == null )
+		return
+
+	if ( !player.IsTitan() )
+		return
+
+	if ( loadoutIndex == -1 )
+	{
+		array<entity> weapons = player.GetMainWeapons()
+
+		if ( weapons.len() <= 0 ) // JFS
+			return
+
+		entity primaryWeapon = weapons[0]
+		primaryWeaponName = primaryWeapon.GetWeaponClassName()
+	}
+	else
+	{
+		primaryWeaponName = GetSPTitanLoadoutForIndex_PrimaryWeapon( loadoutIndex )
+	}
+
+	asset coreBuildingIcon = SP_GetIconForTitanWeapon( primaryWeaponName, "coreBuildingIcon" )
+	asset coreReadyIcon = SP_GetIconForTitanWeapon( primaryWeaponName, "coreReadyIcon" )
+
+	RuiSetImage( file.earnMeterRui, "goalBuildingIcon", coreBuildingIcon )
+	RuiSetImage( file.earnMeterRui, "goalReadyIcon", coreReadyIcon )
+	#endif
+}
+
+
+asset function SP_GetIconForTitanWeapon( string weaponName, string iconName )
+{
+	var dataTable = GetDataTable( $"datatable/titan_properties.rpak" )
+	int row = GetDataTableRowMatchingStringValue( dataTable, GetDataTableColumnByName( dataTable, "primary" ), weaponName )
+
+	#if DEV
+	// Art uses a weapon_cubemap that breaks the Assert below, so just make it a warning in dev
+	if ( row == -1 )
+	{
+		CodeWarning( "No loadout for weapon " + weaponName )
+		return $""
+	}
+	#endif
+
+	Assert( row != -1, "No loadout for weapon " + weaponName )
+
+	asset icon = GetDataTableAsset( dataTable, row, GetDataTableColumnByName( dataTable, iconName ) )
+	return icon
+}
+
+#endif
+
+
+void function ServerCallback_EarnMeterAwarded( float addedEarnedFrac, float addedOwnedFrac )
+{
+	printt( "ServerCallback_EarnMeterAwarded", addedEarnedFrac, addedOwnedFrac )
+}
