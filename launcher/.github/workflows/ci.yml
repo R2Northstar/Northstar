@@ -6,8 +6,7 @@ on:
   pull_request:
 
 env:
-  # Change to Release for release builds in CI
-  BUILD_PROFILE: Debug
+  BUILD_PROFILE: Release
 
 jobs:
   build:
