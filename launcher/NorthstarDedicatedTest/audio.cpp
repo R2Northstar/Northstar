@@ -173,8 +173,18 @@ EventOverrideData::EventOverrideData(const std::string& data, const fs::path& pa
 				continue;
 			}
 
-			// Read file into a vector and add it to the samples list.
-			Samples.push_back(std::vector<uint8_t>((std::istreambuf_iterator<uint8_t>(wavStream)), std::istreambuf_iterator<uint8_t>()));
+			// Get file size.
+			wavStream.seekg(0, std::ios::end);
+			size_t fileSize = wavStream.tellg();
+			wavStream.seekg(0, std::ios::beg);
+
+			// Allocate enough memory for the file.
+			uint8_t* data = new uint8_t[fileSize];
+			
+			// Read the file.
+			wavStream.read(data, fileSize);
+
+			Samples.push_back({ fileSize, std::unique_ptr<uint8_t[]>(data) });
 
 			// Close the file.
 			wavStream.close();
@@ -292,7 +302,7 @@ bool ShouldPlayAudioEvent(const char* eventName, const std::shared_ptr<EventOver
 	return true; // good to go
 }
 
-// DO NOT IMLINE THIS FUNCTION
+// DO NOT INLINE THIS FUNCTION
 // See comment below.
 bool __declspec(noinline) __fastcall LoadSampleMetadata_Internal(uintptr_t parentEvent, void* sample, void* audioBuffer, unsigned int audioBufferLength, int audioType)
 {
@@ -348,27 +358,27 @@ bool __declspec(noinline) __fastcall LoadSampleMetadata_Internal(uintptr_t paren
 	}
 	else
 	{
-		std::vector<uint8_t>* vec = NULL;
+		std::pair<size_t, std::unique_ptr<uint8_t[]>>* dat = NULL;
 
 		switch (overrideData->Strategy)
 		{
 		case AudioSelectionStrategy::RANDOM:
-			vec = &*select_randomly(overrideData->Samples.begin(), overrideData->Samples.end());
+			dat = &*select_randomly(overrideData->Samples.begin(), overrideData->Samples.end());
 			break;
 		case AudioSelectionStrategy::SEQUENTIAL:
 		default:
-			vec = &overrideData->Samples[overrideData->CurrentIndex++];
+			dat = &overrideData->Samples[overrideData->CurrentIndex++];
 			if (overrideData->CurrentIndex >= overrideData->Samples.size())
 				overrideData->CurrentIndex = 0; // reset back to the first sample entry
 			break;
 		}
 
-		if (!vec)
+		if (!dat)
 			spdlog::warn("Could not get sample data from override struct for event {}! Shouldn't happen", eventName);
 		else
 		{
-			data = vec->data();
-			dataLength = vec->size();
+			data = dat->second.get();
+			dataLength = dat->first;
 		}
 	}
 
