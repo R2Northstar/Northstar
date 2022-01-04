@@ -5,19 +5,126 @@ global function PlayerInventory_RefreshEquippedState
 global function PlayerInventory_StartCriticalSection
 global function PlayerInventory_EndCriticalSectionForWeaponOnEndFrame
 
+global function PlayerInventory_PushInventoryItem
+global function PlayerInventory_PushInventoryItemByBurnRef
+global function PlayerInventory_PopInventoryItem
+global function PlayerInventory_CountBurnRef
+
+struct
+{
+	table<entity, array<InventoryItem> > playerInventoryStacks
+} file
+
 void function Sv_ItemInventory_Init()
 {
-
+	AddCallback_OnClientConnected( Sv_ItemInventory_OnClientConnected )
+	AddCallback_OnPlayerRespawned( Sv_ItemInventory_OnPlayerRespawned )
 }
+
+void function Sv_ItemInventory_OnClientConnected( entity player )
+{
+	file.playerInventoryStacks[ player ] <- []
+}
+
+void function Sv_ItemInventory_OnPlayerRespawned( entity player )
+{
+	array<InventoryItem> playerInventoryStack = file.playerInventoryStacks[ player ]
+
+	if (playerInventoryStack.len() > 0) {
+		InventoryItem topInventoryItem = playerInventoryStack[playerInventoryStack.len() - 1]
+		PlayerInventory_GiveInventoryItem(player, topInventoryItem)
+	}
+
+	return
+}
+
 
 int function SvPlayerInventory_ItemCount( entity player )
 {
-	return 0
+	return file.playerInventoryStacks[ player ].len()
 }
 
 int function PlayerInventory_CountTurrets( entity player )
 {
-	return 0
+	int turretCount = 0
+
+	foreach ( inventoryItem in file.playerInventoryStacks[ player ] )
+		if ( inventoryItem.weaponRef == "mp_ability_turretweapon" )
+			turretCount += 1
+
+	return turretCount
+}
+
+int function PlayerInventory_CountBurnRef( entity player, string burnRef )
+{
+	int count = 0
+
+	foreach ( inventoryItem in file.playerInventoryStacks[ player ] )
+		if ( inventoryItem.itemType == eInventoryItemType.burnmeter )
+			if ( inventoryItem.burnReward.ref == burnRef )
+				count += 1
+
+	return count
+}
+
+void function PlayerInventory_TakeInventoryItem( entity player )
+{
+	entity preexistingWeapon = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+	if ( IsValid( preexistingWeapon ) )
+		player.TakeWeaponNow( preexistingWeapon.GetWeaponClassName() )
+}
+
+void function PlayerInventory_GiveInventoryItem( entity player, InventoryItem inventoryItem )
+{
+	array<string> mods = []
+
+	if ( inventoryItem.itemType == eInventoryItemType.burnmeter ) {
+		mods.append( "burn_card_weapon_mod" )
+		if ( inventoryItem.burnReward.extraWeaponMod != "" )
+			mods.append( inventoryItem.burnReward.extraWeaponMod )
+	}
+
+	// ensure inventory slot isn't full to avoid crash
+	PlayerInventory_TakeInventoryItem( player )
+
+	player.GiveOffhandWeapon( inventoryItem.weaponRef, OFFHAND_INVENTORY, mods )
+}
+
+void function PlayerInventory_PushInventoryItem( entity player, InventoryItem inventoryItem )
+{
+	file.playerInventoryStacks[ player ].append(inventoryItem)
+	player.SetPlayerNetInt( "itemInventoryCount", file.playerInventoryStacks[ player ].len() )
+
+	PlayerInventory_GiveInventoryItem(player, inventoryItem)
+}
+
+void function PlayerInventory_PushInventoryItemByBurnRef( entity player, string burnRef )
+{
+	InventoryItem inventoryItem
+	inventoryItem.itemType = eInventoryItemType.burnmeter
+	inventoryItem.burnReward = BurnReward_GetByRef( burnRef )
+	inventoryItem.weaponRef = inventoryItem.burnReward.weaponName
+
+	PlayerInventory_PushInventoryItem(player, inventoryItem)
+}
+
+void function PlayerInventory_PopInventoryItem( entity player )
+{
+	array<InventoryItem> playerInventoryStack = file.playerInventoryStacks[ player ]
+
+	if (playerInventoryStack.len() > 0) {
+		InventoryItem topInventoryItem = playerInventoryStack.pop()
+		player.SetPlayerNetInt( "itemInventoryCount", playerInventoryStack.len() )
+
+		if (playerInventoryStack.len() > 0) {
+			InventoryItem nextInventoryItem = playerInventoryStack[playerInventoryStack.len() - 1]
+			PlayerInventory_GiveInventoryItem(player, nextInventoryItem)
+		} else {
+			PlayerInventory_TakeInventoryItem( player )
+		}
+	}
+
+	return
 }
 
 void function PlayerInventory_RefreshEquippedState( entity player )
@@ -30,7 +137,7 @@ void function PlayerInventory_StartCriticalSection( entity player )
 
 }
 
-void function PlayerInventory_EndCriticalSectionForWeaponOnEndFrame( entity player )
+void function PlayerInventory_EndCriticalSectionForWeaponOnEndFrame( entity weapon )
 {
 
 }

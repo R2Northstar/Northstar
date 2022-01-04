@@ -39,6 +39,8 @@ global function SharedEarnMeter_AddEarnedAndOwned
 global function PlayerEarnMeter_SetEnabled
 global function PlayerEarnMeter_Enabled
 
+global function PlayerEarnMeter_SetBoostByRef
+
 global struct EarnMeterThresholdEarnedStruct
 {
 	float threshold
@@ -505,4 +507,24 @@ void function PlayerEarnMeter_SetEnabled( bool enabled )
 bool function PlayerEarnMeter_Enabled()
 {
 	return file.earnMeterEnabled
+}
+
+void function PlayerEarnMeter_SetBoostByRef( entity player, string boostRef ) {
+	EarnObject earnobject = EarnObject_GetByRef( boostRef )
+	BurnReward burncard = BurnReward_GetByRef( boostRef )
+
+	if ( Riff_BoostAvailability() != eBoostAvailability.Disabled )
+	{
+		PlayerEarnMeter_SetReward( player, earnobject ) // pretty sure this works?
+		PlayerEarnMeter_SetRewardFrac( player, burncard.cost )
+		PlayerEarnMeter_EnableReward( player )
+	}
+
+	if ( EarnMeterMP_IsTitanEarnGametype() )
+	{
+		PlayerEarnMeter_SetGoal( player, EarnObject_GetByRef( GetTitanLoadoutForPlayer( player ).titanClass ) )
+		PlayerEarnMeter_EnableGoal( player ) // prevents goalstate from being set incorrectly
+	}
+	else
+		PlayerEarnMeter_SetGoal( player, earnobject )
 }
