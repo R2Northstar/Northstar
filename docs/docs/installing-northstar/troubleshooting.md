@@ -37,3 +37,7 @@ In System Variables (not user variables) click "New..." and add a new system var
 **Note:** This issue is not exclusive to Northstar client but also affects the vanilla version, so if you only get it on Northstar there might be a different problem at hand as well. In fact it's not even unique to Titanfall 2 either.
 
 See also [this thread on Steam](https://steamcommunity.com/app/1237970/discussions/0/3081016749018656768/)
+
+## "I disabled all mods and no I cannot re-enable them as the mods menu is gone":
+
+To to your `Titanfall2` directory. From there go to the `R2Northstar` and delete `enabledmods.json`. This file stores information which mod is enabled and disabled. By deleting this fail Northstar will fall back to the default (all mods enabled) and re-create the file appropriately.
