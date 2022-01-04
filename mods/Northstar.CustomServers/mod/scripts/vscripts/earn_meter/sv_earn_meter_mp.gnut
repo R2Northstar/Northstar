@@ -23,7 +23,7 @@ void function EarnMeterMP_SetTitanLoadout( entity player )
 	if ( EarnMeterMP_IsTitanEarnGametype() )
 		PlayerEarnMeter_SetGoal( player, EarnObject_GetByRef( GetTitanLoadoutForPlayer( player ).titanClass ) )
 	else
-		PlayerEarnMeter_SetGoal( player, EarnObject_GetByRef( GetSelectedBurncardRefFromWeaponOrPlayer( null, player ) ) )
+		PlayerEarnMeter_SetGoal( player, PlayerEarnMeter_GetReward( player ) )
 }
 
 void function EarnMeterMP_SetPassiveMeterGainEnabled( bool enabled )
@@ -34,23 +34,10 @@ void function EarnMeterMP_SetPassiveMeterGainEnabled( bool enabled )
 void function SetupPlayerEarnMeter( entity player )
 {
 	PlayerEarnMeter_Reset( player )
-	
-	if ( Riff_BoostAvailability() != eBoostAvailability.Disabled ) 
-	{
-		string burncardRef = GetSelectedBurncardRefFromWeaponOrPlayer( null, player )
-		PlayerEarnMeter_SetReward( player, EarnObject_GetByRef( burncardRef ) ) // pretty sure this works?
-		PlayerEarnMeter_SetRewardFrac( player, BurnReward_GetByRef( burncardRef ).cost )
-		PlayerEarnMeter_EnableReward( player )
-	}
-	
-	if ( EarnMeterMP_IsTitanEarnGametype() )
-	{
-		PlayerEarnMeter_SetGoal( player, EarnObject_GetByRef( GetTitanLoadoutForPlayer( player ).titanClass ) )
-		PlayerEarnMeter_EnableGoal( player ) // prevents goalstate from being set incorrectly
-	}
-	else
-		PlayerEarnMeter_SetGoal( player, EarnObject_GetByRef( GetSelectedBurncardRefFromWeaponOrPlayer( null, player ) ) )
-	
+
+	string burncardRef = GetSelectedBurnCardRef( player )
+	PlayerEarnMeter_SetBoostByRef( player, burncardRef )
+
 	// catchup bonus for late joiners
 	// todo: maths on this is fine but for some reason it won't set correctly, could be getting reset somewhere?
 	PlayerEarnMeter_AddOwnedFrac( player, ( ( Time() - file.playingStartTime ) / 4.0 ) * 0.01 )
@@ -61,24 +48,24 @@ void function OnPlaying()
 	file.playingStartTime = Time()
 	foreach ( entity player in GetPlayerArray() )
 		SetupPlayerEarnMeter( player )
-		
+
 	if ( Riff_BoostAvailability() != eBoostAvailability.Disabled )
 		SetCallback_EarnMeterRewardEarned( EarnMeterMP_BoostEarned )
-		
+
 	// do this in playing so that gamemodes/maps can disable and this'll take affect
 	if ( EarnMeterMP_IsTitanEarnGametype() ) // settitanavailable when earnmeter full
 	{
 		Riff_ForceTitanAvailability( eTitanAvailability.Custom ) // doesn't seem to affect anything aside from preventing some annoying client stuff
 		svGlobal.titanAvailabilityCheck = IsTitanAvailable
 	}
-	
+
 	SetCallback_EarnMeterGoalEarned( EarnMeterMP_TitanEarned )
 }
 
 void function OnPlayerRespawned( entity player )
 {
 	thread EarnMeterMP_PlayerLifeThink( player )
-	
+
 	if ( PlayerEarnMeter_IsRewardAvailable( player ) )
 		EarnMeterMP_BoostEarned( player )
 }
@@ -116,14 +103,12 @@ void function EarnMeterMP_PlayerLifeThink( entity player )
 			{
 				if ( !IsTitanAvailable( player ) && PlayerEarnMeter_GetOwnedFrac( player ) == 1.0 ) // this should only be the case after player has dropped their titan
 				{
+					float oldRewardFrac = PlayerEarnMeter_GetRewardFrac( player )
 					PlayerEarnMeter_Reset( player )
-					// reset rewards
-					string burncardRef = GetSelectedBurncardRefFromWeaponOrPlayer( null, player )
-					PlayerEarnMeter_SetReward( player, EarnObject_GetByRef( burncardRef ) )
-					PlayerEarnMeter_SetRewardFrac( player, BurnReward_GetByRef( burncardRef ).cost )
+					PlayerEarnMeter_SetRewardFrac( player, oldRewardFrac )
 					PlayerEarnMeter_EnableReward( player )
 				}
-					
+
 				if ( PlayerEarnMeter_GetRewardFrac( player ) != 0 )
 					PlayerEarnMeter_EnableReward( player )
 			}
@@ -135,7 +120,7 @@ void function EarnMeterMP_PlayerLifeThink( entity player )
 
 			lastEarnMeterMode = desiredEarnMeterMode
 		}
-		
+
 		if ( lastEarnMeterMode == eEarnMeterMode.DEFAULT )
 		{
 			if ( PlayerEarnMeter_GetOwnedFrac( player ) < 1.0 )
@@ -148,26 +133,31 @@ void function EarnMeterMP_PlayerLifeThink( entity player )
 				player.SetPlayerNetInt( "goalState", eRewardState.AVAILABLE )
 				PlayerEarnMeter_RefreshGoal( player )
 			}
-				
+
 			if ( Time() - lastPassiveGainTime > 4.0 && file.passiveMeterGainEnabled ) // this might be 5.0
 			{
 				lastPassiveGainTime = Time()
 				PlayerEarnMeter_AddOwnedFrac( player, 0.01 )
 			}
 		}
-		
+
 		WaitFrame()
 	}
 }
 
 void function EarnMeterMP_BoostEarned( entity player )
 {
-	BurnReward burncard = BurnReward_GetByRef( GetSelectedBurnCardRef( player ) )
-	
+	EarnObject earnobject = PlayerEarnMeter_GetReward( player )
+	BurnReward burncard = BurnReward_GetByRef( earnobject.ref )
+
 	while ( burncard.ref == "burnmeter_random_foil" )
 		burncard = BurnReward_GetRandom()
 
-	BurnMeter_GiveRewardDirect( player, burncard.ref )
+	if ( !BurnMeter_CheckBoostLimit( player ) ) {
+		BurnMeter_GiveRewardDirect( player, burncard.ref )
+	}
+
+	PlayerEarnMeter_DisableReward( player )
 }
 
 void function EarnMeterMP_TitanEarned( entity player )
@@ -179,13 +169,11 @@ void function EarnMeterMP_TitanEarned( entity player )
 	}
 	else
 	{
+		float oldRewardFrac = PlayerEarnMeter_GetRewardFrac( player )
 		PlayerEarnMeter_Reset( player )
-		// reset rewards
-		string burncardRef = GetSelectedBurncardRefFromWeaponOrPlayer( null, player )
-		PlayerEarnMeter_SetReward( player, EarnObject_GetByRef( burncardRef ) )
-		PlayerEarnMeter_SetRewardFrac( player, BurnReward_GetByRef( burncardRef ).cost )
+		PlayerEarnMeter_SetRewardFrac( player, oldRewardFrac )
 		PlayerEarnMeter_EnableReward( player )
-			
+
 		if ( PlayerEarnMeter_GetRewardFrac( player ) != 0 )
 			PlayerEarnMeter_EnableReward( player )
 	}
