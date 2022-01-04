@@ -313,7 +313,7 @@ bool ShouldPlayAudioEvent(const char* eventName, const std::shared_ptr<EventOver
 		{
 			// check for bad sounds I guess?
 			// really feel like this should be an option but whatever
-			if (!!strstr(eventName, "_amb_") || !!strstr(eventName, "_emit_") || !strstr(eventName, "amb_"))
+			if (!!strstr(eventName, "_amb_") || !!strstr(eventName, "_emit_") || !!strstr(eventName, "amb_"))
 				return false; // would play static noise, I hate this
 		}
 	}
