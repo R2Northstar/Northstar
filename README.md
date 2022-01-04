@@ -7,7 +7,7 @@
 Northstar is a modding framework client that allows users to host their own Titanfall 2 servers using custom scripts and assets to create custom content, as well as being able to host vanilla content.
 
 <p align="center"><strong>
-<a href="https://r2northstar.gitbook.io/r2northstar-wiki/installing-northstar/basic-setup">Installation</a> | <a href="https://r2northstar.gitbook.io/r2northstar-wiki/installing-northstar/troubleshooting">Troubleshooting</a>
+<a href="https://r2northstar.gitbook.io/r2northstar-wiki/installing-northstar/basic-setup">Installation</a> | <a href="https://r2northstar.gitbook.io/r2northstar-wiki/installing-northstar/troubleshooting">Troubleshooting</a> | <a href="https://r2northstar.gitbook.io/">Wiki</a>
 </strong></p>
 
 ## Development
