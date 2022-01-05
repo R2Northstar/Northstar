@@ -619,6 +619,9 @@
     <None Include="include\openssl\x509_vfy.h.in" />
     <None Include="include\spdlog\fmt\bundled\LICENSE.rst" />
   </ItemGroup>
+  <ItemGroup>
+	  <None Include="..\Northstar-Legal.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
