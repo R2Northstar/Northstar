@@ -686,32 +686,6 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 			m_ownServerId[0] = 0;
 			m_ownServerAuthToken[0] = 0;
 
-			// build modinfo obj
-			rapidjson_document modinfoDoc;
-			modinfoDoc.SetObject();
-			modinfoDoc.AddMember("Mods", rapidjson_document::GenericValue(rapidjson::kArrayType), modinfoDoc.GetAllocator());
-
-		int currentModIndex = 0;
-		for (Mod& mod : g_ModManager->m_loadedMods)
-		{
-			if (!mod.Enabled || (!mod.RequiredOnClient && !mod.Pdiff.size()))
-				continue;
-
-			modinfoDoc["Mods"].PushBack(rapidjson_document::GenericValue(rapidjson::kObjectType), modinfoDoc.GetAllocator());
-			modinfoDoc["Mods"][currentModIndex].AddMember("Name", rapidjson::StringRef(&mod.Name[0]), modinfoDoc.GetAllocator());
-			modinfoDoc["Mods"][currentModIndex].AddMember("Version", rapidjson::StringRef(&mod.Version[0]), modinfoDoc.GetAllocator());
-			modinfoDoc["Mods"][currentModIndex].AddMember("RequiredOnClient", mod.RequiredOnClient, modinfoDoc.GetAllocator());
-			modinfoDoc["Mods"][currentModIndex].AddMember("Pdiff", rapidjson::StringRef(&mod.Pdiff[0]), modinfoDoc.GetAllocator());
-
-			currentModIndex++;
-		}
-
-		rapidjson::StringBuffer buffer;
-		buffer.Clear();
-		rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-		modinfoDoc.Accept(writer);
-		const char* modInfoString = buffer.GetString();
-
 			CURL* curl = curl_easy_init();
 			SetCommonHttpClientOptions(curl);
 
@@ -723,7 +697,7 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 			curl_mime* mime = curl_mime_init(curl);
 			curl_mimepart* part = curl_mime_addpart(mime);
 
-			curl_mime_data(part, modInfoString, buffer.GetSize());
+			curl_mime_data(part, m_ownModInfoJson.c_str(), m_ownModInfoJson.size());
 			curl_mime_name(part, "modinfo");
 			curl_mime_filename(part, "modinfo.json");
 			curl_mime_type(part, "application/json");
@@ -787,8 +761,8 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 					goto REQUEST_END_CLEANUP;
 				}
 
-			strncpy(m_ownServerId, serverAddedJson["id"].GetString(), sizeof(m_ownServerId));
-			m_ownServerId[sizeof(m_ownServerId) - 1] = 0;
+				strncpy(m_ownServerId, serverAddedJson["id"].GetString(), sizeof(m_ownServerId));
+				m_ownServerId[sizeof(m_ownServerId) - 1] = 0;
 
 				strncpy(m_ownServerAuthToken, serverAddedJson["serverAuthToken"].GetString(), sizeof(m_ownServerAuthToken));
 				m_ownServerAuthToken[sizeof(m_ownServerAuthToken) - 1] = 0;
@@ -805,13 +779,65 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 
 						std::string readBuffer;
 						curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
-						curl_easy_setopt(curl, CURLOPT_URL, fmt::format("{}/server/heartbeat?id={}&playerCount={}", Cvar_ns_masterserver_hostname->m_pszString, m_ownServerId, g_ServerAuthenticationManager->m_additionalPlayerData.size()).c_str());
 						curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
 						curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
 						curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
+
+						// send all registration info so we have all necessary info to reregister our server if masterserver goes down, without a restart
+						// this isn't threadsafe :terror:
+						{
+							char* escapedNameNew = curl_easy_escape(curl, Cvar_ns_server_name->m_pszString, NULL);
+							char* escapedDescNew = curl_easy_escape(curl, Cvar_ns_server_desc->m_pszString, NULL);
+							char* escapedMapNew = curl_easy_escape(curl, g_pHostState->m_levelName, NULL);
+							char* escapedPlaylistNew = curl_easy_escape(curl, GetCurrentPlaylistName(), NULL);
+							char* escapedPasswordNew = curl_easy_escape(curl, Cvar_ns_server_password->m_pszString, NULL);
+
+							int maxPlayers = 6;
+							char* maxPlayersVar = GetCurrentPlaylistVar("max_players", false);
+							if (maxPlayersVar) // GetCurrentPlaylistVar can return null so protect against this
+								maxPlayers = std::stoi(maxPlayersVar);
+
+							curl_easy_setopt(curl, CURLOPT_URL, fmt::format("{}/server/update_values?id={}&port={}&authPort={}&name={}&description={}&map={}&playlist={}&playerCount={}&maxPlayers={}&password={}", Cvar_ns_masterserver_hostname->m_pszString, m_ownServerId, Cvar_hostport->m_nValue, Cvar_ns_player_auth_port->m_nValue, escapedNameNew, escapedDescNew, escapedMapNew, escapedPlaylistNew, g_ServerAuthenticationManager->m_additionalPlayerData.size(), maxPlayers, escapedPasswordNew).c_str());
+
+							curl_free(escapedNameNew);
+							curl_free(escapedDescNew);
+							curl_free(escapedMapNew);
+							curl_free(escapedPlaylistNew);
+							curl_free(escapedPasswordNew);
+						}
+
+						curl_mime* mime = curl_mime_init(curl);
+						curl_mimepart* part = curl_mime_addpart(mime);
+
+						curl_mime_data(part, m_ownModInfoJson.c_str(), m_ownModInfoJson.size());
+						curl_mime_name(part, "modinfo");
+						curl_mime_filename(part, "modinfo.json");
+						curl_mime_type(part, "application/json");
+
+						curl_easy_setopt(curl, CURLOPT_MIMEPOST, mime);
 						
 						CURLcode result = curl_easy_perform(curl);
-						if (result != CURLcode::CURLE_OK)
+						if (result == CURLcode::CURLE_OK)
+						{
+							rapidjson_document serverAddedJson;
+							serverAddedJson.Parse(readBuffer.c_str());
+
+							if (!serverAddedJson.HasParseError() && serverAddedJson.IsObject())
+							{
+								if (serverAddedJson.HasMember("id") && serverAddedJson["id"].IsString())
+								{
+									strncpy(m_ownServerId, serverAddedJson["id"].GetString(), sizeof(m_ownServerId));
+									m_ownServerId[sizeof(m_ownServerId) - 1] = 0;
+								}
+
+								if (serverAddedJson.HasMember("serverAuthToken") && serverAddedJson["serverAuthToken"].IsString())
+								{
+									strncpy(m_ownServerAuthToken, serverAddedJson["serverAuthToken"].GetString(), sizeof(m_ownServerAuthToken));
+									m_ownServerAuthToken[sizeof(m_ownServerAuthToken) - 1] = 0;
+								}
+							}
+						}
+						else
 							spdlog::warn("Heartbeat failed with error {}", curl_easy_strerror(result));
 
 						curl_easy_cleanup(curl);

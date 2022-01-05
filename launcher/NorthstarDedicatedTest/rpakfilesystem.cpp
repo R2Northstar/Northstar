@@ -6,8 +6,8 @@
 typedef void*(*LoadCommonPaksForMapType)(char* map);
 LoadCommonPaksForMapType LoadCommonPaksForMap;
 
-typedef void*(*LoadPakSyncType)(char* path, void* unknownSingleton, int flags);
-typedef void*(*LoadPakAsyncType)(char* path, void* unknownSingleton, int flags, void* callback0, void* callback1);
+typedef void*(*LoadPakSyncType)(const char* path, void* unknownSingleton, int flags);
+typedef void*(*LoadPakAsyncType)(const char* path, void* unknownSingleton, int flags, void* callback0, void* callback1);
 
 // there are more i'm just too lazy to add
 struct PakLoadFuncs
@@ -20,7 +20,7 @@ struct PakLoadFuncs
 PakLoadFuncs* g_pakLoadApi;
 void** pUnknownPakLoadSingleton;
 
-void LoadPakAsync(char* path)
+void LoadPakAsync(const char* path)
 {
 	g_pakLoadApi->LoadPakAsync(path, *pUnknownPakLoadSingleton, 2, nullptr, nullptr);
 }

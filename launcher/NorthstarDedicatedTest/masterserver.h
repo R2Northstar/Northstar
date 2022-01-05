@@ -72,6 +72,8 @@ public:
 	char m_ownServerAuthToken[33];
 	char m_ownClientAuthToken[33];
 
+	std::string m_ownModInfoJson;
+
 	bool m_bOriginAuthWithMasterServerDone = false;
 	bool m_bOriginAuthWithMasterServerInProgress = false;
 

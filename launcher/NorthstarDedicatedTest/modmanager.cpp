@@ -2,7 +2,7 @@
 #include "modmanager.h"
 #include "convar.h"
 #include "concommand.h"
-
+#include "masterserver.h"
 #include "rapidjson/error/en.h"
 #include "rapidjson/document.h"
 #include "rapidjson/ostreamwrapper.h"
@@ -354,6 +354,32 @@ void ModManager::LoadMods()
 			}
 		}
 	}
+
+	// build modinfo obj for masterserver
+	rapidjson_document modinfoDoc;
+	modinfoDoc.SetObject();
+	modinfoDoc.AddMember("Mods", rapidjson_document::GenericValue(rapidjson::kArrayType), modinfoDoc.GetAllocator());
+
+	int currentModIndex = 0;
+	for (Mod& mod : m_loadedMods)
+	{
+		if (!mod.Enabled || (!mod.RequiredOnClient && !mod.Pdiff.size()))
+			continue;
+
+		modinfoDoc["Mods"].PushBack(rapidjson_document::GenericValue(rapidjson::kObjectType), modinfoDoc.GetAllocator());
+		modinfoDoc["Mods"][currentModIndex].AddMember("Name", rapidjson::StringRef(&mod.Name[0]), modinfoDoc.GetAllocator());
+		modinfoDoc["Mods"][currentModIndex].AddMember("Version", rapidjson::StringRef(&mod.Version[0]), modinfoDoc.GetAllocator());
+		modinfoDoc["Mods"][currentModIndex].AddMember("RequiredOnClient", mod.RequiredOnClient, modinfoDoc.GetAllocator());
+		modinfoDoc["Mods"][currentModIndex].AddMember("Pdiff", rapidjson::StringRef(&mod.Pdiff[0]), modinfoDoc.GetAllocator());
+
+		currentModIndex++;
+	}
+
+	rapidjson::StringBuffer buffer;
+	buffer.Clear();
+	rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+	modinfoDoc.Accept(writer);
+	g_MasterServerManager->m_ownModInfoJson = std::string(buffer.GetString());
 
 	m_hasLoadedMods = true;
 }
