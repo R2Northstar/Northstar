@@ -7,6 +7,7 @@ Luckily, [samisalreadytaken has written a squirrel highlighter](https://gist.git
 3. Open Notepad++
 4. Navigate to Language > User Defined Language > Define your language
 5. Click import, and select Squirrel.xml
+
 (If the colors/style are not to your taste)
 6. Select 'Squirrel' in User Language at the top
 7. Navigate through the tabs to find what you want to change
