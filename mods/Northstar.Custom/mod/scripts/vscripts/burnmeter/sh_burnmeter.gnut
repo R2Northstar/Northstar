@@ -1,4 +1,6 @@
 global function ShBurnMeter_Init
+global function BurnMeter_SetNoTitansReplacement
+global function BurnMeter_GetNoTitansReplacement
 global function BurnReward_GetById
 global function BurnReward_GetByRef
 global function BurnReward_GetRandom
@@ -67,9 +69,8 @@ global table< string, bool functionref( entity ) >  burnMeterCanUseFuncTable
 
 struct
 {
-
 	bool shouldCycleOnRelease = false
-
+	table<string, string> noTitansReplacements
 } file
 
 array<string> turretBurnCards = [
@@ -131,6 +132,24 @@ void function ShBurnMeter_Init()
 
 		RegisterConCommandTriggeredCallback( "-offhand4", CycleOnRelease )
 	#endif
+
+	BurnMeter_SetNoTitansReplacement( "burnmeter_emergency_battery", "burnmeter_amped_weapons" )
+	BurnMeter_SetNoTitansReplacement( "burnmeter_at_turret_weapon", "burnmeter_amped_weapons" )
+	BurnMeter_SetNoTitansReplacement( "burnmeter_rodeo_grenade", "burnmeter_amped_weapons" )
+	BurnMeter_SetNoTitansReplacement( "burnmeter_nuke_titan", "burnmeter_amped_weapons" )
+}
+
+void function BurnMeter_SetNoTitansReplacement( string original, string noTitansReplacement )
+{
+	file.noTitansReplacements[original] <- noTitansReplacement
+}
+
+string function BurnMeter_GetNoTitansReplacement( string burnRef )
+{
+	if ( burnRef in file.noTitansReplacements )
+		return file.noTitansReplacements[burnRef]
+
+	return burnRef
 }
 
 #if SERVER || CLIENT
@@ -164,10 +183,20 @@ int function GetBoostSkin( string ref )
 	return reward.skinIndex
 }
 
-
 BurnReward function BurnReward_GetRandom()
 {
-	return burn.allowedCards.getrandom()
+	string ref = burn.allowedCards.getrandom().ref
+
+	#if SERVER || CLIENT
+	if ( !EarnMeterMP_IsTitanEarnGametype() )
+		ref = BurnMeter_GetNoTitansReplacement( ref )
+
+	if ( GetCurrentPlaylistVarInt( "featured_mode_all_ticks", 0 ) >= 1 )
+		if ( ref == "burnmeter_ticks" || ref == "burnmeter_random_foil"  )
+			ref = "burnmeter_amped_weapons"
+	#endif
+
+	return BurnReward_GetByRef( ref )
 }
 
 string function GetSelectedBurnCardRef( entity player )
@@ -182,19 +211,12 @@ string function GetSelectedBurnCardRef( entity player )
 	#endif
 
 	#if SERVER || CLIENT
-
-	if ( Riff_TitanAvailability() == eTitanAvailability.Never )
-	{
-		//JFS: Batteries and Titan turrets are useless in PvP, turn them into amped weapons instead. Not an elegant solution at all. Fix next game. (Make boosts editable mid-match? )
-		if ( ref == "burnmeter_emergency_battery" || ref == "burnmeter_at_turret_weapon"  )
-			ref = "burnmeter_amped_weapons"
-	}
+	if ( !EarnMeterMP_IsTitanEarnGametype() )
+		ref = BurnMeter_GetNoTitansReplacement( ref )
 
 	if ( GetCurrentPlaylistVarInt( "featured_mode_all_ticks", 0 ) >= 1 )
-	{
 		if ( ref == "burnmeter_ticks" || ref == "burnmeter_random_foil"  )
 			ref = "burnmeter_amped_weapons"
-	}
 	#endif
 
 	return ref
