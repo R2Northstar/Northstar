@@ -9,9 +9,9 @@ Luckily, [samisalreadytaken has written a squirrel highlighter](https://gist.git
 5. Click import, and select Squirrel.xml
 
 (If the colors/style are not to your taste)
-6. Select 'Squirrel' in User Language at the top
-7. Navigate through the tabs to find what you want to change
-8. Click its 'Styler' button and make the changes you wish to.
+1. Select 'Squirrel' in User Language at the top
+2. Navigate through the tabs to find what you want to change
+3. Click its 'Styler' button and make the changes you wish to.
 
 ## VSCode
 VSCode has extensions avaliable for working with squirrel, and searching "squirrel" in the extensions marketplace will give you them. 
