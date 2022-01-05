@@ -2,7 +2,8 @@ untyped
 
 global function BurnMeter_Init
 global function BurnMeter_SetBoostLimit
-global function BurnMeter_CheckBoostLimit
+global function BurnMeter_SetBoostRewardCount
+global function BurnMeter_GetLimitedRewardCount
 global function ForceSetGlobalBurncardOverride
 global function GetSelectedBurncardRefFromWeaponOrPlayer
 global function RunBurnCardUseFunc
@@ -22,8 +23,10 @@ const float AMPED_WEAPONS_LENGTH = 30.0
 const int MAPHACK_PULSE_COUNT = 4
 const float MAPHACK_PULSE_DELAY = 2.0
 
-struct {
+struct
+{
 	string forcedGlobalBurncardOverride = ""
+	table<string, int> boostRewardCount
 	table<string, int> boostLimits
 } file
 
@@ -49,6 +52,8 @@ void function BurnMeter_Init()
 	BurnReward_GetByRef( "burnmeter_rodeo_grenade" ).rewardAvailableCallback = PlayerUsesRodeoGrenadeBurncard
 	BurnReward_GetByRef( "burnmeter_nuke_titan" ).rewardAvailableCallback = PlayerUsesNukeTitanBurncard // unused in vanilla, fun though
 
+	BurnMeter_SetBoostRewardCount( "burnmeter_ticks", 2 )
+
 	BurnMeter_SetBoostLimit( "burnmeter_ticks", 6 )
 	BurnMeter_SetBoostLimit( "burnmeter_ap_turret_weapon", 3 )
 	BurnMeter_SetBoostLimit( "burnmeter_at_turret_weapon", 3 )
@@ -70,24 +75,35 @@ void function BurnMeter_SetBoostLimit( string burnRef, int limit )
 	file.boostLimits[burnRef] <- limit
 }
 
-bool function BurnMeter_CheckBoostLimit( entity player )
+
+void function BurnMeter_SetBoostRewardCount( string burnRef, int rewardCount )
+{
+	file.boostRewardCount[burnRef] <- rewardCount
+}
+
+int function BurnMeter_GetLimitedRewardCount( entity player )
 {
 	EarnObject earnObject = PlayerEarnMeter_GetReward( player )
 	string burnRef = earnObject.ref
 	int limit = -1
+	int rewardCount = 1
 
 	if ( burnRef in file.boostLimits )
 		limit = file.boostLimits[burnRef]
 
+	if ( burnRef in file.boostRewardCount )
+		rewardCount = file.boostRewardCount[burnRef]
+
 	if ( limit < 0 )
-		return false
+		return rewardCount
 
 	int current = PlayerInventory_CountBurnRef( player, burnRef )
+	int delta = limit - current
 
-	if ( current < limit )
-		return false
+	if ( delta <= 0 )
+		return 0
 
-	return true
+	return int( min( delta, rewardCount ) )
 }
 
 void function ForceSetGlobalBurncardOverride( string ref )
