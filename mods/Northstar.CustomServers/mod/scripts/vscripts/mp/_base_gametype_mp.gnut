@@ -335,6 +335,7 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 	}
 
 	player.SetPlayerSettings( "spectator" ) // prevent a crash with going from titan => pilot on respawn
+	player.StopPhysics() // need to set this after SetPlayerSettings
 
 	if ( RespawnsEnabled() )
 	{
@@ -467,6 +468,7 @@ void function RespawnAsTitan( entity player, bool manualPosition = false )
 void function PlayerBecomesSpectator( entity player )
 {
 	player.StartObserverMode( OBS_MODE_CHASE )
+	player.StopPhysics()
 
 	player.EndSignal( "OnRespawned" )
 	player.EndSignal( "OnDestroy" )
@@ -533,6 +535,7 @@ void function PlayerBecomesSpectator( entity player )
 			player.SetObserverModeStaticAngles( target.GetAngles() )
 			player.StartObserverMode( OBS_MODE_STATIC )
 		}  
+		player.StopPhysics()
 	}
 }
 
