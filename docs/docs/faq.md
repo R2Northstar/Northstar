@@ -88,3 +88,8 @@ A: You are probably using EA Desktop app and it sets up game installations with 
 - **Solution 1**: Launch EA Desktop and the game as admin once so that it can copy that file.
 - **Solution 2**: If you know how, just copy the mentioned file manually, remembering you need to change its filename (just use some temp dir and rename there).
 - **Solution 3**: If you know how, just change the folder permissions in Properties->Security tab of your Titanfall2 install dir to let your user write.
+
+### Q: Can I use a pirated/cracked copy Titanfall 2 to run Northstar?
+
+A: The answer is obvious, No! Northstar does not support piracy of any kind.\
+If you want to use Northstar you'll have to purchase Titanfall 2 either from Steam/Origin/EA Desktop App or use a subscription service like Gamepass PC and EA Play.
