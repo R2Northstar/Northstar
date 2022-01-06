@@ -30,3 +30,4 @@ jobs:
             x64/${{ env.BUILD_PROFILE }}/*.dll
             x64/${{ env.BUILD_PROFILE }}/*.exe
             x64/${{ env.BUILD_PROFILE }}/*.pdb
+            x64/${{ env.BUILD_PROFILE }}/*.txt
