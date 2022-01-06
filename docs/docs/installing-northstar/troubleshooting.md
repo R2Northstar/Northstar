@@ -2,17 +2,21 @@
 
 ## Engine Error
 
+{% hint style="info" %}
+Make sure you updated [Northstar to version v1.4.0 or higher](https://github.com/R2Northstar/Northstar/releases/) as this version features changes that address this problem.
+{% endhint %}
+
 ![Engine Error: File corruption detected. Please repair or re-install the game.](https://user-images.githubusercontent.com/39478251/147338706-74797220-7d7f-4c81-9ba0-d88e29a2a1e2.png)
 
 Don't panic! This warning seems to be caused by Origin and none of your files are actually corrupted. If you get this warning after launching the game try the following steps, closing the game before and launching it again  after:
 
-1. Restart Origin\
+1. Make sure you got the newest version of Northstar. In particular, [v1.4.0 or higher](https://github.com/R2Northstar/Northstar/releases/) have this problem fixed.
+2. Restart Origin\
    Also check task manager that all Origin processes are gone before restarting it\
    (even if you have the Steam version)
-2. Restart your PC
-3. Start Northstar with Origin already open
-4. Start Northstar with Origin fully closed.
-5. Make sure you got the newest version of Northstar
+3. Restart your PC
+4. Start Northstar with Origin already open
+5. Start Northstar with Origin fully closed.
 6. Start vanilla game and see if this works.\
    If vanilla doesn't work either, check [this thread on EA forums](https://answers.ea.com/t5/Titanfall-2/Titanfall-2-Wont-Laumch-DLL-file-issue/td-p/5660909)
 7. Check [this issue thread on Github](https://github.com/R2Northstar/Northstar/issues/6) to see whether any of the solutions proposed there work for you.
