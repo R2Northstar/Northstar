@@ -35,6 +35,7 @@
 * [Tutorials](modding/tutorials/modding-tutorials.md)
 * [Cheatsheet](modding/cheatsheet.md)
 * [Squirrel](modding/squirrel/what-is-squirrel.md)
+* [Setup Syntax Highlighting](modding/squirrel/setup-syntax-highlighting.md)
 * [Localisation](modding/localisation_files.md)
 
 ***
