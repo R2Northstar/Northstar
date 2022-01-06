@@ -21,8 +21,10 @@ void function GamemodeInfection_Init()
 	AddCallback_OnPlayerKilled( InfectionOnPlayerKilled )
 	AddCallback_OnPlayerRespawned( RespawnInfected )
 	AddCallback_GameStateEnter( eGameState.Playing, SelectFirstInfected )
-	
+
 	SetTimeoutWinnerDecisionFunc( TimeoutCheckSurvivors )
+
+	AddCallback_GameStateEnter( eGameState.WinnerDetermined, OnWinnerDetermined )
 }
 
 void function InfectionInitPlayer( entity player )
@@ -30,7 +32,7 @@ void function InfectionInitPlayer( entity player )
 	if ( GetGameState() < eGameState.Playing )
 		SetTeam( player, INFECTION_TEAM_SURVIVOR )
 	else
-		InfectPlayer( player, player )
+		InfectPlayer( player )
 }
 
 void function SelectFirstInfected()
@@ -44,49 +46,46 @@ void function SelectFirstInfectedDelayed()
 
 	array<entity> players = GetPlayerArray()
 	entity infected = players[ RandomInt( players.len() ) ]
-	
-	InfectPlayer( infected, infected )
+
+	InfectPlayer( infected )
 	RespawnInfected( infected )
 }
 
 void function InfectionOnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
-	if ( !victim.IsPlayer() || !attacker.IsPlayer() || GetGameState() != eGameState.Playing )
+	if ( !victim.IsPlayer() || GetGameState() != eGameState.Playing )
 		return
-		
+
 	if ( victim.GetTeam() == INFECTION_TEAM_SURVIVOR )
-		InfectPlayer( victim, attacker )
-	
-	if ( attacker.IsPlayer() )
+		InfectPlayer( victim )
+
+	if ( attacker.IsPlayer() ) {
 		attacker.SetPlayerGameStat( PGS_ASSAULT_SCORE, attacker.GetPlayerGameStat( PGS_ASSAULT_SCORE ) + 1 )
+		SetRoundWinningKillReplayAttacker(attacker)
+	}
 }
 
-void function InfectPlayer( entity player, entity attacker )
+void function InfectPlayer( entity player )
 {
 	SetTeam( player, INFECTION_TEAM_INFECTED )
 	player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 0 ) // reset kills
 	file.playersToNotifyOfInfection.append( player )
-	
+
 	// check how many survivors there are
 	array<entity> survivors = GetPlayerArrayOfTeam( INFECTION_TEAM_SURVIVOR )
 	if ( survivors.len() == 0 )
-	{
-		SetRespawnsEnabled( false )
-		SetKillcamsEnabled( false )
-		SetRoundWinningKillReplayAttacker(attacker)
 		SetWinner( INFECTION_TEAM_INFECTED )
-	}
 	else if ( survivors.len() == 1 && !file.hasHadLastInfection )
 		SetLastSurvivor( survivors[ 0 ] )
-		
+
 	if ( !file.hasHadFirstInfection )
 	{
 		file.hasHadFirstInfection = true
-	
+
 		foreach ( entity otherPlayer in GetPlayerArray() )
 			if ( player != otherPlayer )
 				Remote_CallFunction_NonReplay( otherPlayer, "ServerCallback_AnnounceFirstInfected", player.GetEncodedEHandle() )
-		
+
 		PlayMusicToAll( eMusicPieceID.GAMEMODE_1 )
 	}
 }
@@ -102,48 +101,54 @@ void function RespawnInfected( entity player )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_YouAreInfected" )
 		file.playersToNotifyOfInfection.remove( file.playersToNotifyOfInfection.find( player ) )
 	}
-	
+
 	// set camo to pond scum
 	player.SetSkin( 1 )
 	player.SetCamo( 110 )
-	
+
 	// if human, remove helmet bodygroup, human models have some weird bloody white thing underneath their helmet that works well for this, imo
 	if ( !player.IsMechanical() )
 		player.SetBodygroup( player.FindBodyGroup( "head" ), 1 )
-	
+
 	// stats for infected
 	StimPlayer( player, 9999.9 ) // can't do endless since we don't get the visual effect in endless
-	player.kv.airAcceleration = 2500
-	
+
 	// scale health with num of infected, with 50 as base health
 	player.SetMaxHealth( ( GetPlayerArrayOfTeam( INFECTION_TEAM_SURVIVOR ).len() + 1 ) * 10 )
-		
-	// set loadout 
+
+	// set loadout
 	foreach ( entity weapon in player.GetMainWeapons() )
 		player.TakeWeaponNow( weapon.GetWeaponClassName() )
-	
+
 	foreach ( entity weapon in player.GetOffhandWeapons() )
 		player.TakeWeaponNow( weapon.GetWeaponClassName() )
-		
+
 	// TEMP: give archer so player so player has a weapon which lets them use offhands
 	// need to replace this with a custom empty weapon at some point
 	//player.GiveWeapon( "mp_weapon_rocket_launcher" )
 	player.GiveWeapon( "mp_weapon_mgl" )
 	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE )
-	
+
+	thread GiveAirAccel(player)
 	thread PlayInfectedSounds( player )
+}
+
+void function GiveAirAccel(entity player)
+{
+	WaitFrame()
+	player.kv.airAcceleration = 2500 // prevents sh_custom_air_accel from not giving infected air acceleration.
 }
 
 void function PlayInfectedSounds( entity player )
 {
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "OnDestroy" )
-	
+
 	float nextRandomSound
 	while ( true )
 	{
 		WaitFrame()
-	
+
 		int meleeState = player.PlayerMelee_GetState()
 		if ( nextRandomSound < Time() || meleeState != 0 )
 		{
@@ -152,18 +157,18 @@ void function PlayInfectedSounds( entity player )
 				selectedSound = "prowler_vocal_attack"
 			else
 				selectedSound = "prowler_vocal_attackmiss"
-			
+
 			bool canSeeSurvivor
 			foreach ( entity survivor in GetPlayerArrayOfTeam( INFECTION_TEAM_SURVIVOR ) )
 				if ( TraceLineSimple( player.GetOrigin(), survivor.GetOrigin(), survivor ) == 1.0 )
 					canSeeSurvivor = true
-					
+
 			// _int sounds are less agressive so only play them if we aren't in some sorta fight
 			if ( player.GetHealth() == player.GetMaxHealth() || !canSeeSurvivor || meleeState != 0 )
 				selectedSound += "_int"
-		
+
 			EmitSoundOnEntity( player, selectedSound )
-		
+
 			nextRandomSound = Time() + max( 2.5, RandomFloat( 12.0 ) )
 			while ( player.PlayerMelee_GetState() != 0 ) // need to ensure this is updated
 				WaitFrame()
@@ -179,28 +184,28 @@ void function SetLastSurvivor( entity player )
 	Highlight_SetEnemyHighlight( player, "enemy_sonar" )
 	if ( SpawnPoints_GetTitan().len() > 0 )
 		thread CreateTitanForPlayerAndHotdrop( player, GetTitanReplacementPoint( player, false ) )
-	
+
 	if ( GameTime_TimeLeftSeconds() > 45 )
 		SetServerVar( "gameEndTime", Time() + 45.0 )
-	
+
 	file.hasHadLastInfection = true
 }
 
 int function TimeoutCheckSurvivors()
 {
-	array<entity> survivors = GetPlayerArrayOfTeam( INFECTION_TEAM_SURVIVOR )
-	if ( survivors.len() > 0 )
-	{
-		SetRespawnsEnabled( false )
-		SetKillcamsEnabled( false )
-		SetRoundWinningKillReplayAttacker(survivors[ 0 ])
+	if ( GetPlayerArrayOfTeam( INFECTION_TEAM_SURVIVOR ).len() > 0 )
 		return INFECTION_TEAM_SURVIVOR
-	}
-		
+
 	return INFECTION_TEAM_INFECTED
 }
 
 bool function InfectionShouldPlayerStartBleedout( entity player, var damageInfo )
 {
 	return player.GetTeam() != INFECTION_TEAM_INFECTED
+}
+
+void function OnWinnerDetermined()
+{
+	SetRespawnsEnabled( false )
+	SetKillcamsEnabled( false )
 }
