@@ -105,6 +105,14 @@ void function GamemodeFastball_Init()
 		< -3967.45, -1616.51, 1255.15 >, < 1.43, 80, 21.5 >,
 		< -6190.25, 1658.51, 1400.03 >, < 0, 144, 0 >  
 	])
+	
+	FastballAddBuddySpawnForLevel( "mp_rise", TEAM_MILITIA, < -3885.97, 35.11, 704.03>, <0, 11.86, 0> ) 
+	FastballAddBuddySpawnForLevel( "mp_rise", TEAM_IMC, < 2206.76, 1869.08, 453.9>, <0, -165.77, 0> )
+	FastballAddPanelSpawnsForLevel( "mp_rise", [
+		< 2189.09, 1841.74, 73.06 >, < 0, 0, 0 >,
+		< -448.54, 1091.42, 545.03 >, < 0, 0, 0 >,
+		< -4083.55, -669.75, 383.03 >, < 0, -90, 0 >  
+	]) 
 
 	//Current BT fast ball points are good
 	FastballAddPanelSpawnsForLevel( "mp_colony02", [
