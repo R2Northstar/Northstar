@@ -31,17 +31,16 @@ Get kills to increase the length of your killrace. Collect the flag to start it.
 Hack control panels to win rounds and respawn your teammates.
 
 {% hint style="info" %}
-Some maps do not feature acontrol panels
+Some maps do not feature control panels yet
 {% endhint %}
 
 {% hint style="info" %}
-Complex, Forwardbase Kodai, and Colony will have control panels with [the next release of Northstar](https://github.com/R2Northstar/NorthstarMods/pull/59)
+Complex, Forwardbase Kodai, and Colony have had control panels added with [the v1.4.0 release of Northstar](https://github.com/R2Northstar/Northstar/releases/tag/v1.4.0)
 {% endhint %}
 
-| No issues                                                                                                                | No control panels                                                                                                                        | Crashes to main menu                |
-| ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| <ul><li>Boomtown</li><li>Exoplanet</li><li>Black Water Canal</li><li>Eden</li><li>Angel City</li><li>War Games</li></ul> | <ul><li>Forwardbase</li><li>Homestead</li><li>Drydock</li><li>Complex</li><li>Colony</li><li>Glitch</li><li>Relic</li><li>Rise</li></ul> | <p></p><ul><li>Crash Site</li></ul> |
-
+| No issues                                                                                                                                                                         | No control panels                                                                            | Crashes to main menu         |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ---------------------------- |
+| <ul><li>Boomtown</li><li>Exoplanet</li><li>Black Water Canal</li><li>Eden</li><li>Angel City</li><li>War Games</li><li>Forwardbase Kodai</li><li>Complex</li><li>Colony</li></ul> | <p></p><ul><li>Homestead</li><li>Complex</li><li>Glitch</li><li>Relic</li><li>Rise</li></ul> | <ul><li>Crash Site</li></ul> |
 
 ## Competitive CTF
 
