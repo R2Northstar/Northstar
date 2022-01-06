@@ -70,3 +70,21 @@ A: Add `+net_usesocketsforloopback 1` in your `ns_startup_args.txt` and `ns_star
 
 `r2` refers to the internal development name of Titanfall 2 given to it by Respawn. Titanfall 1 for example is `r1`, Apex Legends is `r5`, etc.\
 The reason this wiki for example is called `r2northstar.gitbook.io` is due to the fact that "_Northstar_" is a rather common name and as such often already reserved by other organisations and people. "_R2Norhtstar_" is both uncommon and therefore still available and ties "_Northstar_" with Titanfall 2, due to the `r2` part of the name.
+
+### Q: I keep getting “File corruption detected” error
+
+A: You’re most likely running an outdated Northstar version now, please update. (or you really are missing audio files)
+
+### Q: I keep getting the engine error “Failed to initialize Origin: Origin Core seems to be running, but the LSX Authentication Challenge failed. No communication with Core is possible.”
+
+A: If the usual workaround of restarting Origin/rebooting or running the vanilla game first and then Northstar don’t work, try the following:
+- add `-northstar` to your command line arguments/launch options field in Origin/Steam game options
+- run the game with Origin/Steam instead of starting NorthstarLauncher.exe (important)
+- error should be no more 
+
+### Q: I get error "Failed copying wsock32.dll from system32 [...] copy_file: Access is denied."
+
+A: You are probably using EA Desktop app and it sets up game installations with no write permissions contrary to Origin.
+- **Solution 1**: Launch EA Desktop and the game as admin once so that it can copy that file.
+- **Solution 2**: If you know how, just copy the mentioned file manually, remembering you need to change its filename (just use some temp dir and rename there).
+- **Solution 3**: If you know how, just change the folder permissions in Properties->Security tab of your Titanfall2 install dir to let your user write.
