@@ -102,7 +102,7 @@ void function GamemodeFastball_Init()
 	FastballAddBuddySpawnForLevel( "mp_crashsite3", TEAM_IMC, < -2455.29, 821.52, 539.21>, <0, -179.21, 0> )
 	FastballAddPanelSpawnsForLevel( "mp_crashsite3", [
 		< -672.27, -2786, 931.17 >, < 0, -45, 0 >,
-		< -3967.45, -1616.51, 1255.15 >, < 1.43, 80, 21.5 >,
+		< -3770, -990, 985 >, < 10, 80.00, 20 >,
 		< -6190.25, 1658.51, 1400.03 >, < 0, 144, 0 >  
 	])
 	
