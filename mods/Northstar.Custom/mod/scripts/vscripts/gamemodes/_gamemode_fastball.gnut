@@ -112,6 +112,14 @@ void function GamemodeFastball_Init()
 		< -192, 129, -55 >, < 0, 90.00, 0 >,
 		< -3088, -1905, 25 >, < 0, -180.00, 0 >
 	])
+
+	FastballAddBuddySpawnForLevel( "mp_relic02", TEAM_MILITIA, < 4504, -3500, 150 >, < 0, -170, 0 > )
+	FastballAddBuddySpawnForLevel( "mp_relic02", TEAM_IMC, < -4505, -3750, 367>, < 0, 10, 0 > )
+	FastballAddPanelSpawnsForLevel( "mp_relic02", [
+		< -2258, -5286, 356 >, < 0, 0.00, 0 >,
+		< -32, -2600, -75 >, < 0, 90.00, 0 >,
+		< 2028, -5332, 128 >, < 0, 90.00, 0 >
+	])
 }
 
 void function SpawnPanelsForLevel()
