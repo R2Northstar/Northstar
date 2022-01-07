@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "languagehooks.h"
 #include "gameutils.h"
+#include "dedicated.h"
 #include <filesystem>
 #include <regex>
 
@@ -104,6 +105,9 @@ char* GetGameLanguageHook()
 
 void InitialiseTier0LanguageHooks(HMODULE baseAddress)
 {
+	if (IsDedicated())
+		return;
+
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0xF560, &GetGameLanguageHook, reinterpret_cast<LPVOID*>(&GetGameLanguageOriginal));
 }
