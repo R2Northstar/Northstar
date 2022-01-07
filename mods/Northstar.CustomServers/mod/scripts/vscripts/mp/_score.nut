@@ -95,7 +95,7 @@ void function ScoreEvent_PlayerKilled( entity victim, entity attacker, var damag
 	
 	// have to do this early before we reset victim's player killstreaks
 	// nemesis when you kill a player that is dominating you
-	if ( attacker.IsPlayer() && attacker in victim.p.playerKillStreaks && victim.p.playerKillStreaks[ attacker ] == NEMESIS_KILL_REQUIREMENT )
+	if ( attacker.IsPlayer() && attacker in victim.p.playerKillStreaks && victim.p.playerKillStreaks[ attacker ] >= NEMESIS_KILL_REQUIREMENT )
 		AddPlayerScore( attacker, "Nemesis" )
 	
 	// reset killstreaks on specific players
