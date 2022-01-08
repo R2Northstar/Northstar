@@ -1,6 +1,8 @@
 # Hosting on Linux
 
+{% hint style="info" %}
 Hosting in Linux is still WIP.
+{% endhint %}
 
 [This issue thread on Github](https://github.com/R2Northstar/Northstar/issues/49) contains some instructions to succesfully host a dedicated server on Linux.
 
