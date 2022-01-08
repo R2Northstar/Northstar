@@ -15,6 +15,7 @@ global function SetRoundWinningKillReplayAttacker
 global function SetWinner
 global function SetTimeoutWinnerDecisionFunc
 global function AddTeamScore
+global function GetWinningTeamWithFFASupport
 
 global function GameState_GetTimeLimitOverride
 global function IsRoundBasedGameOver
@@ -231,10 +232,7 @@ void function GameStateEnter_Playing_Threaded()
 			if ( file.timeoutWinnerDecisionFunc != null )
 				winningTeam = file.timeoutWinnerDecisionFunc()
 			else
-				winningTeam = GetWinningTeam()
-			
-			if ( winningTeam == -1 )
-				winningTeam = TEAM_UNASSIGNED 
+				winningTeam = GetWinningTeamWithFFASupport()
 			
 			if ( file.switchSidesBased && !file.hasSwitchedSides && !IsRoundBased() ) // in roundbased modes, we handle this in setwinner
 				SetGameState( eGameState.SwitchingSides )
@@ -264,9 +262,7 @@ void function GameStateEnter_WinnerDetermined()
 void function GameStateEnter_WinnerDetermined_Threaded()
 {
 	// do win announcement
-	int winningTeam = GetWinningTeam()
-	if ( winningTeam == -1 )
-		winningTeam = TEAM_UNASSIGNED
+	int winningTeam = GetWinningTeamWithFFASupport()
 		
 	foreach ( entity player in GetPlayerArray() )
 	{
@@ -334,9 +330,7 @@ void function GameStateEnter_WinnerDetermined_Threaded()
 		int roundsPlayed = expect int ( GetServerVar( "roundsPlayed" ) )
 		SetServerVar( "roundsPlayed", roundsPlayed + 1 )
 		
-		int winningTeam = GetWinningTeam()
-		if ( winningTeam == -1 )
-			winningTeam = TEAM_UNASSIGNED 
+		int winningTeam = GetWinningTeamWithFFASupport()
 		
 		int highestScore = GameRules_GetTeamScore( winningTeam )
 		int roundScoreLimit = GameMode_GetRoundScoreLimit( GAMETYPE )
@@ -799,6 +793,35 @@ void function AddTeamScore( int team, int amount )
 void function SetTimeoutWinnerDecisionFunc( int functionref() callback )
 {
 	file.timeoutWinnerDecisionFunc = callback
+}
+
+int function GetWinningTeamWithFFASupport()
+{
+	if ( !IsFFAGame() )
+		return GameScore_GetWinningTeam()
+	else
+	{
+		// custom logic for calculating ffa winner as GameScore_GetWinningTeam doesn't handle this
+		int winningTeam = TEAM_UNASSIGNED
+		int winningScore = 0
+		
+		foreach ( entity player in GetPlayerArray() )
+		{
+			int currentScore = GameRules_GetTeamScore( player.GetTeam() )
+			
+			if ( currentScore == winningScore )
+				winningTeam = TEAM_UNASSIGNED // if 2 teams are equal, return TEAM_UNASSIGNED
+			else if ( currentScore > winningScore )
+			{
+				winningTeam = player.GetTeam()
+				winningScore = currentScore
+			}
+		}
+		
+		return winningTeam
+	}
+	
+	unreachable
 }
 
 // idk
