@@ -21,3 +21,8 @@ While this is absolutely not ideal, it's the best solution for truely headless d
 Regarding RAM usage, dedicated servers also use significant amounts of RAM at the moment, often requiring 1.5-2GB, though I expect this to lower as development continues.
 
 ## <a name="Startup_args">Startup Arguments</a>
+Startup arguments can be added in the `ns_startup_args_dedi.txt` file.
+
+| Value           | Description                          | Values                       |
+|-----------------|--------------------------------------|------------------------------|
+| `+setplaylist`  | Currently needed to make servers work|`private_match`               |
