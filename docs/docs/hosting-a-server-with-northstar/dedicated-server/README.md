@@ -23,6 +23,20 @@ Regarding RAM usage, dedicated servers also use significant amounts of RAM at th
 ## <a name="Startup_args">Startup Arguments</a>
 Startup arguments can be added in the `ns_startup_args_dedi.txt` file.
 
-| Value           | Description                          | Values                       |
-|-----------------|--------------------------------------|------------------------------|
-| `+setplaylist`  | Currently needed to make servers work|`private_match`               |
+| Arguments                                                     | Accepted Values                             | Description                                        |
+|---------------------------------------------------------------|---------------------------------------------|----------------------------------------------------|
+| `+setplaylist`                                                | `private_match`                             | Currently needed to make servers work              |
+| `port`                                                        | int beteween `1-65535`                      | Determines which UDP port the server will listen to|
+|<a name="Startup_args-plstovrd">`+setplaylistvaroverrides`</a> | see [PlaylistOverrides](#PlaylistOverrides) | Edits the behaviour of the server                  |
+
+| Flags                  | Description                                 |
+|------------------------|---------------------------------------------|
+| `-maxplayersplaylist`  | Allows convars to override max player count |
+
+### <a name="PlaylistOverrides">PlaylistOverrides</a>
+PlaylistOverrides determines the behaviour of the server. PlaylistOverrides can be added using the `+setplaylistvaroverrides` argument in the `ns_startup_args_dedi.txt` file.
+
+| PlaylistOverrides      | Accepted Values | Description                                        |
+|------------------------|-----------------|----------------------------------------------------|
+| `+setplaylist`         | `private_match` | Currently needed to make servers work              |
+| `port`                 | `1-65535`       | Determines which UDP port the server will listen to|
