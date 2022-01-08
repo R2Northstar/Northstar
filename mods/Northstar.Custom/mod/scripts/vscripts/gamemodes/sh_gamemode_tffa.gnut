@@ -1,0 +1,39 @@
+global function Sh_GamemodeTFFA_Init
+
+global const string GAMEMODE_TFFA = "tffa"
+
+void function Sh_GamemodeTFFA_Init()
+{
+	AddCallback_OnCustomGamemodesInit( CreateGamemodeTFFA )
+}
+
+void function CreateGamemodeTFFA()
+{
+	GameMode_Create( GAMEMODE_TFFA )
+	GameMode_SetName( GAMEMODE_TFFA, "#GAMEMODE_TFFA" )
+	GameMode_SetDesc( GAMEMODE_TFFA, "#PL_tffa_desc" )
+	GameMode_SetGameModeAnnouncement( GAMEMODE_TFFA, "ffa_modeDesc" )
+	GameMode_SetDefaultTimeLimits( GAMEMODE_TFFA, 10, 0.0 )
+	GameMode_AddScoreboardColumnData( GAMEMODE_TFFA, "#SCOREBOARD_TITAN_KILLS", PGS_TITAN_KILLS, 2 )
+	GameMode_AddScoreboardColumnData( GAMEMODE_TFFA, "#SCOREBOARD_TITAN_DAMAGE", PGS_ASSAULT_SCORE, 6 )
+	GameMode_SetColor( GAMEMODE_TFFA, [147, 204, 57, 255] )
+	
+	AddPrivateMatchMode( GAMEMODE_TFFA )
+
+	GameMode_SetDefaultScoreLimits( GAMEMODE_TFFA, 20, 0)
+
+	#if SERVER
+		GameMode_AddServerInit( GAMEMODE_TFFA, GamemodeTFFA_Init )
+		GameMode_AddServerInit( GAMEMODE_TFFA, GamemodeFFAShared_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( GAMEMODE_TFFA, RateSpawnpoints_Generic )
+		GameMode_SetTitanSpawnpointsRatingFunc( GAMEMODE_TFFA, RateSpawnpoints_Generic )
+	#elseif CLIENT
+		GameMode_AddClientInit( GAMEMODE_TFFA, ClGamemodeTFFA_Init )
+		GameMode_AddClientInit( GAMEMODE_TFFA, GamemodeFFAShared_Init )
+		GameMode_AddClientInit( GAMEMODE_TFFA, ClGamemodeTFFA_Init )
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( GAMEMODE_TFFA, CompareAssaultScore )
+		GameMode_AddSharedInit( GAMEMODE_TFFA, GamemodeFFA_Dialogue_Init )
+	#endif
+}

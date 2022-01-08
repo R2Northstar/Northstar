@@ -241,6 +241,23 @@ playlists
 				gamemode_score_hint #GAMEMODE_SCORE_HINT_TDM
 			}
 		}
+		tffa
+		{
+			inherit defaults
+			vars
+			{
+				name #PL_tffa
+				lobbytitle #PL_tffa_lobby
+				description #PL_tffa_desc
+				abbreviation #PL_sbox_abbr
+				
+				scorelimit 20
+				max_players 10
+				max_teams 10
+				classic_mp 1
+				gamemode_score_hint #GAMEMODE_SCORE_HINT_TDM
+			}
+		}
 	}
 	Playlists
 	{
@@ -776,6 +793,44 @@ playlists
 						mp_rise 1
 						mp_coliseum 1
 						mp_coliseum_column 1
+					}
+				}
+			}
+		}
+		tffa
+		{
+			inherit defaults
+			vars
+			{
+				name #PL_tffa
+				lobbytitle #PL_tffa_lobby
+				description #PL_tffa_desc
+				hint #PL_tffa_hint
+				image lts
+				abbreviation #PL_tffa_abbr
+				visible 0
+			}
+			gamemodes
+			{
+				tffa
+				{
+					maps
+					{
+					    mp_forwardbase_kodai 1
+                        mp_grave 1
+                        mp_homestead 1
+                        mp_thaw 1
+                        mp_black_water_canal 1
+                        mp_eden 1
+                        mp_drydock 1
+                        mp_crashsite3 1
+                        mp_complex3 1
+                        mp_angel_city 1
+                        mp_colony02 1
+                        mp_glitch 1
+						mp_relic02 1
+						mp_wargames 1
+						mp_rise 1
 					}
 				}
 			}
