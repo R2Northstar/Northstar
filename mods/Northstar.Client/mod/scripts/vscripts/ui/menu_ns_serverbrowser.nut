@@ -684,7 +684,8 @@ void function FilterServerList()
 		{
 			if ( filterArguments.useSearch )
 			{
-				string sName = tempServer.serverName.tolower()
+				string sName = tempServer.serverName.tolower() + " " + Localize(GetMapDisplayName(tempServer.serverMap)).tolower() + " " + tempServer.serverMap.tolower() + " " + tempServer.serverGamemode.tolower() + " " + Localize(tempServer.serverGamemode).tolower()
+
 				string sTerm = filterArguments.searchTerm.tolower()
 
 				if ( sName.find(sTerm) != null)
