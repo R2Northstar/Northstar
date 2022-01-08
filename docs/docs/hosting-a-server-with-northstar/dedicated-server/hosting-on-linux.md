@@ -8,7 +8,7 @@ Linux users can launch the server executable using Wine.
 
 As servers currently needs DirectX 11 capabilities, a dedicated hosted on linux will need a graphic card and a working X11 environment to work.
 
-If one of those two conditions are not met, you'll want to know how to host a [Headless Server](#Headless_Servers)
+If one of those two conditions are not met, you'll want to know how to host a [Headless Server](#headless-servers)
 
 # <a name="Headless_Servers">Headless Servers</a>
 
