@@ -25,6 +25,20 @@ Don't panic! This warning seems to be caused by Origin and none of your files ar
 10. If you followed all these steps and even launching the vanilla version of the game doesn't work, your final option is to fully remove the game and reinstall it.\
    Then check if vanilla works before reinstalling Northstar.
 
+## "Failed to initialize Origin: Origin Core seems to be running, but the LSX Authentication Challenge failed. No communication with Core is possible."
+
+If the usual workaround of restarting Origin/rebooting or running the vanilla game first and then Northstar don’t work, try the following:
+- add `-northstar` to your command line arguments/launch options field in Origin/Steam game options
+- run the game with Origin/Steam instead of starting NorthstarLauncher.exe (important)
+- error should be no more 
+
+## "Failed copying wsock32.dll from system32 [...] copy_file: Access is denied."
+
+You are probably using EA Desktop app and it sets up game installations with no write permissions contrary to Origin.
+- **Solution 1**: Launch EA Desktop and the game as admin once so that it can copy that file.
+- **Solution 2**: If you know how, just copy the mentioned file manually, remembering you need to change its filename (just use some temp dir and rename there).
+- **Solution 3**: If you know how, just change the folder permissions in Properties->Security tab of your Titanfall2 install dir to let your user write.
+
 ## Issues with newest Intel CPU (10th+ gen):
 ![Newer Intel CPU error: Data Center: Searching...](https://user-images.githubusercontent.com/18601697/148625000-882bf1db-b9b2-4e9e-88db-6d608e58a35b.png)
 
