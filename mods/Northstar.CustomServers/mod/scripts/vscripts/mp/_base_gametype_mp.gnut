@@ -222,6 +222,7 @@ void function CodeCallback_OnPlayerRespawned( entity player )
 	player.SetPredictionEnabled( true )
 	Loadouts_TryGivePilotLoadout( player )
 	SetHumanRagdollImpactTable( player )
+	ClearLastAttacker( player ) // so dying to anything doesn't credit the same attacker after respawning
 	
 	foreach ( entity weapon in player.GetMainWeapons() )
 		weapon.SetProScreenOwner( player )
@@ -261,7 +262,7 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 	player.SetNoTargetSmartAmmo( false )
 	player.ClearExtraWeaponMods()
 	
-	player.AddToPlayerGameStat( PGS_DEATHS, 1 )
+
 	
 	if ( player.IsTitan() )
 		SoulDies( player.GetTitanSoul(), damageInfo ) // cleanup some titan stuff, no idea where else to put this
@@ -303,7 +304,10 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 		player.SetObserverTarget( null )
 	
 	if ( !file.playerDeathsHidden )
+	{
+		player.AddToPlayerGameStat( PGS_DEATHS, 1 )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_YouDied", attacker.GetEncodedEHandle(), GetHealthFrac( attacker ), methodOfDeath )
+	}
 
 	float deathcamLength = GetDeathCamLength( player )
 	wait deathcamLength
