@@ -13,7 +13,7 @@ void function AddNorthstarModMenu()
 
 void function AddNorthstarModMenu_MainMenuFooter()
 {
-	AddMenuFooterOption( GetMenu( "MainMenu" ), BUTTON_Y, "#Y_MENU_TITLE_MODS", "#MENU_TITLE_MODS", AdvanceToModListMenu )
+	AddMenuFooterOption( GetMenu( "MainMenu" ), BUTTON_Y, "#Y_BUTTON_MENU_TITLE_MODS", "#MENU_TITLE_MODS", AdvanceToModListMenu )
 }
 
 void function AdvanceToModListMenu( var button )
@@ -28,7 +28,7 @@ void function InitModMenu()
 	AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, OnModMenuOpened )
 	AddMenuEventHandler( menu, eUIEvent.MENU_CLOSE, OnModMenuClosed )
 	AddMenuFooterOption( menu, BUTTON_B, "#B_BUTTON_BACK", "#BACK" )
-	AddMenuFooterOption( menu, BUTTON_Y, "#Y_RELOAD_MODS", "#RELOAD_MODS", OnReloadModsButtonPressed )
+	AddMenuFooterOption( menu, BUTTON_Y, "#Y_BUTTON_RELOAD_MODS", "#RELOAD_MODS", OnReloadModsButtonPressed )
 	AddMenuFooterOption( menu, BUTTON_BACK, "#BACK_AUTHENTICATION_AGREEMENT", "#AUTHENTICATION_AGREEMENT", OnAuthenticationAgreementButtonPressed )
 	
 	foreach ( var button in GetElementsByClassname( GetMenu( "ModListMenu" ), "ModButton" ) )
