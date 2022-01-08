@@ -26,8 +26,7 @@ Don't panic! This warning seems to be caused by Origin and none of your files ar
    Then check if vanilla works before reinstalling Northstar.
 
 ## Issues with newest Intel CPU (10th+ gen):
-
-> **TODO:** If you got a screenshot or video of this happening please open an issue or pull request to add it to the wiki.
+![Newer Intel CPU error: Data Center: Searching...](https://user-images.githubusercontent.com/18601697/148625000-882bf1db-b9b2-4e9e-88db-6d608e58a35b.png)
 
 On newer Intel CPUs you might see a message like this
 
