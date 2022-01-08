@@ -35,7 +35,7 @@ TODO: Extend and improve
 * For setting map: `+map`
 
 
-* `+setplaylistvaroverride`
+* `+setplaylistvaroverrides`
 
 * `ns_private_match_only_host_can_change_settings`
 
