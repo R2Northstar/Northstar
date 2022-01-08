@@ -278,6 +278,28 @@
 				"Before": "ShGamemodeCTFComp_Init"
 			}
 		},
+
+		{
+			"Path": "gamemodes/sh_gamemode_tffa.gnut",
+			"RunOn": "( CLIENT || SERVER ) && MP",
+			"ClientCallback": {
+				"Before": "Sh_GamemodeTFFA_Init"
+			},
+			
+			"ServerCallback": {
+				"Before": "Sh_GamemodeTFFA_Init"
+			}
+		},
+
+		{
+			"Path": "gamemodes/_gamemode_tffa.gnut",
+			"RunOn": "SERVER && MP"
+		},
+		
+		{
+			"Path": "gamemodes/cl_gamemode_tffa.gnut",
+			"RunOn": "CLIENT && MP"
+		},
 		
 		{
 			"Path": "sh_3psequence_to_1p_hacks.gnut",
