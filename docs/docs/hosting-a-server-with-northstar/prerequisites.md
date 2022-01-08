@@ -4,6 +4,11 @@
 
 Make sure you already installed Northstar [as described here](../installing-northstar/basic-setup.md).
 
+{% hint style="warning" %}
+Hosting your own server of any kind requires basic knowledge of computer networks!\
+If you for example don't know what "port forwarding" means and just want to play private matches with your friends it is generally recommended to just find an empty public server instead of trying to host your own server.
+{% endhint %}
+
 ## Check whether you can port forward:
 
 In order for others to join your game they need to be able to reach you. Most likely your router acts as a NAT so you need to port forward two ports to your PC for [NAT traversal](https://en.wikipedia.org/wiki/NAT\_traversal).
