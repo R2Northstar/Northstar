@@ -1,0 +1,79 @@
+// literally just ttdm paste
+
+global function GamemodeTFFA_Init
+
+const float TFFAIntroLength = 15.0
+
+void function GamemodeTFFA_Init()
+{
+	Riff_ForceSetSpawnAsTitan( eSpawnAsTitan.Always )
+	Riff_ForceTitanExitEnabled( eTitanExitEnabled.Never )
+	TrackTitanDamageInPlayerGameStat( PGS_ASSAULT_SCORE )
+	ScoreEvent_SetupEarnMeterValuesForMixedModes()
+	SetLoadoutGracePeriodEnabled( false )
+	
+	ClassicMP_SetCustomIntro( TFFAIntroSetup, TFFAIntroLength )
+	
+	AddCallback_OnPlayerKilled( AddTeamScoreForPlayerKilled ) // dont have to track autotitan kills since you cant leave your titan in this mode
+	
+	// probably needs scoreevent earnmeter values
+}
+
+void function TFFAIntroSetup()
+{
+	// this should show intermission cam for 15 sec in prematch, before spawning players as titans
+	AddCallback_GameStateEnter( eGameState.Prematch, TFFAIntroStart )
+	AddCallback_OnClientConnected( TFFAIntroShowIntermissionCam )
+}
+
+void function TFFAIntroStart()
+{
+	thread TFFAIntroStartThreaded()
+}
+
+void function TFFAIntroStartThreaded()
+{
+	ClassicMP_OnIntroStarted()
+
+	foreach ( entity player in GetPlayerArray() )
+		TFFAIntroShowIntermissionCam( player )
+		
+	wait TFFAIntroLength
+	
+	ClassicMP_OnIntroFinished()
+}
+
+void function TFFAIntroShowIntermissionCam( entity player )
+{
+	if ( GetGameState() != eGameState.Prematch )
+		return
+	
+	thread PlayerWatchesTFFAIntroIntermissionCam( player )
+}
+
+void function PlayerWatchesTFFAIntroIntermissionCam( entity player )
+{
+	ScreenFadeFromBlack( player )
+
+	entity intermissionCam = GetEntArrayByClass_Expensive( "info_intermission" )[ 0 ]
+	
+	// the angle set here seems sorta inconsistent as to whether it actually works or just stays at 0 for some reason
+	player.SetObserverModeStaticPosition( intermissionCam.GetOrigin() )
+	player.SetObserverModeStaticAngles( intermissionCam.GetAngles() )
+	player.StartObserverMode( OBS_MODE_STATIC_LOCKED )
+
+	wait TFFAIntroLength
+	
+	RespawnAsTitan( player, false )
+	TryGameModeAnnouncement( player )
+}
+
+void function AddTeamScoreForPlayerKilled( entity victim, entity attacker, var damageInfo )
+{
+	if ( victim != attacker && victim.IsPlayer() && attacker.IsPlayer() && GetGameState() == eGameState.Playing )
+	{
+		AddTeamScore( attacker.GetTeam(), 1 )
+		// why isn't this PGS_SCORE? odd game
+		attacker.AddToPlayerGameStat( PGS_ASSAULT_SCORE, 1 )
+	}
+}
