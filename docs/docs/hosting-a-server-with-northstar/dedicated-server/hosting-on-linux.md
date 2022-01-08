@@ -1,14 +1,14 @@
 # Hosting on Linux
 
 {% hint style="info" %}
-Hosting in Linux is still WIP.
+Hosting on Linux is still WIP.
 {% endhint %}
 
 [This issue thread on Github](https://github.com/R2Northstar/Northstar/issues/49) contains some instructions to succesfully host a dedicated server on Linux.
 
 Linux users can launch the server executable using Wine.
 
-As servers currently needs DirectX 11 capabilities, a dedicated hosted on linux will need a graphic card and a working X11 environment to work.
+As servers currently needs DirectX 11 capabilities, a dedicated hosted on linux will need a graphics card and a working X11 environment to work.
 
 If one of those two conditions are not met, you'll want to know how to host a [Headless Server](#headless-servers)
 
