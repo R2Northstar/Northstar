@@ -10,9 +10,9 @@ When using a dedicated server, arguments are read from `ns_startup_args_dedi.txt
 * `ns_startup_args_dedi.txt`\
    contains the [startup arguments](#startup-arguments)
 * `R2Northstar\mods\Northstar.CustomServers\mod.json`\
-   contains [ConVars](#Convars) default values
+   contains [ConVars](#convars) default values
 * `R2Northstar\mods\Northstar.CustomServers\mod\cfg\autoexec_ns_server.cfg`\
-   contains [ConVars](#Convars) and overrides `R2Northstar\mods\Northstar.CustomServers\mod.json`
+   contains [ConVars](#convars) and overrides `R2Northstar\mods\Northstar.CustomServers\mod.json`
 
 ## Dedicated Server Caveats
 
@@ -27,14 +27,14 @@ Startup arguments can be added in the `ns_startup_args_dedi.txt` file.
 | Arguments                                                     | Accepted Values                             | Description                                        |
 |---------------------------------------------------------------|---------------------------------------------|----------------------------------------------------|
 | `+setplaylist`                                                | `private_match`                             | Currently needed to make servers work              |
-|<a name="Startup_args-plstovrd">`+setplaylistvaroverrides`</a> | see [PlaylistOverrides](#PlaylistOverrides) | Edits the behaviour of the server                  |
+|<a name="Startup_args-plstovrd">`+setplaylistvaroverrides`</a> | see [PlaylistOverrides](#playlist-overrides) | Edits the behaviour of the server                  |
 | `-port`                                                       | int beteween `1-65535`                      | Determines which UDP port the server will listen to|
-| <a name="Startup_args-mpgamemode">`+mpgamemode`</a>           | see [Gamemodes](#Gamemodes)                 | Forces the gamemode of the server                  |
+| <a name="Startup_args-mpgamemode">`+mpgamemode`</a>           | see [Gamemodes](#gamemodes)                 | Forces the gamemode of the server                  |
 
 
 | Flags                                                         | Description                                                                 |
 |---------------------------------------------------------------|-----------------------------------------------------------------------------|
-| <a name="Startup_flags-maxplrplst">`-maxplayersplaylist`</a>  | Allows [PlaylistOverrides](#PlaylistOverrides) to override max player count |
+| <a name="Startup_flags-maxplrplst">`-maxplayersplaylist`</a>  | Allows [PlaylistOverrides](#playlist-overrides) to override max player count |
 
 ## <a name="PlaylistOverrides">Playlist overrides</a>
 Playlist overrides determines the behaviour of the server. PlaylistOverrides can be added using the `+setplaylistvaroverrides` argument in the `ns_startup_args_dedi.txt` file.
@@ -102,10 +102,10 @@ They allow the server admin to set server's properties like the name, TCP port, 
 | <a name="Convars-returntolobby">`ns_should_return_to_lobby`</a> | Whether the server should return to private match lobby after completing a game, if 0, this will go to the next map/mode in the playlist | `1` | `0-1` |
 | `ns_private_match_only_host_can_change_settings` | If 0 Players can change all match settings. If 1 Players can only change map and gamemode. If 2 Players can change nothing | `0` | `0-2` |
 | `ns_private_match_countdown_length` | Length is seconds before the match is started after the start button in the lobby | `15` | `int` |
-| <a name="Convars-lastmode">`ns_private_match_last_mode`</a> | Forces the lobby to a specifig Gamemode | `tdm` | Any [Gamemode](#Gamemodes) |
-| <a name="Convars-lastmap">`ns_private_match_last_map`</a> | Forces the lobby to a specifig map | `mp_forwardbase_kodai` | Any [Map](#Maps) |
-| `ns_disallowed_weapons` | Blacklists weapons |  | List of [Weapons](#Weapons) separated by a comma |
-| `ns_disallowed_weapon_primary_replacement` | Replaces blacklisted weapons by one weapon |  | a [Weapon](#Weapons) |
+| <a name="Convars-lastmode">`ns_private_match_last_mode`</a> | Forces the lobby to a specifig Gamemode | `tdm` | Any [Gamemode](#gamemodes) |
+| <a name="Convars-lastmap">`ns_private_match_last_map`</a> | Forces the lobby to a specifig map | `mp_forwardbase_kodai` | Any [Map](#maps) |
+| `ns_disallowed_weapons` | Blacklists weapons |  | List of [Weapons](#weapons) separated by a comma |
+| `ns_disallowed_weapon_primary_replacement` | Replaces blacklisted weapons by one weapon |  | a [Weapon](#weapons) |
 | `ns_should_log_unknown_clientcommands` | Whether unknown clientcommands should be printed in the console, worth disabling if they get on your nerves | `1` | `0-1` |
 | `net_chan_limit_mode` | If 0, don't limit the netchannel processing time individual clients are allowed. If 1, kick clients that go over the limit. If 2, log clients that go over the limit in console | `2` | `0-2` |
 | `net_chan_limit_msec_per_sec` | The number of milliseconds of server netchan processing time clients can use per second before triggering the response set in net_chan_limit_mode | `30` | `int` |
