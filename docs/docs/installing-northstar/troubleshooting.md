@@ -27,6 +27,8 @@ Don't panic! This warning seems to be caused by Origin and none of your files ar
 
 ## "Failed to initialize Origin: Origin Core seems to be running, but the LSX Authentication Challenge failed. No communication with Core is possible."
 
+![LSX Authentication Challenge failed](https://user-images.githubusercontent.com/97235072/148391447-300e1b47-6148-43f7-8854-b0882e150d12.png)
+
 If the usual workaround of restarting Origin/rebooting or running the vanilla game first and then Northstar don’t work, try the following:
 - add `-northstar` to your command line arguments/launch options field in Origin/Steam game options
 - run the game with Origin/Steam instead of starting NorthstarLauncher.exe (important)
