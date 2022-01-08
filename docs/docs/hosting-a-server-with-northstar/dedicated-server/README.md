@@ -115,9 +115,9 @@ They allow the server admin to set server's properties like the name, TCP port, 
 
 
 # <a name="Gamemodes">Gamemodes</a>
-Gamemodes can be forced by the server using the [`+mpgamemode`](#Startup_args-mpgamemode) [startup arg](#Startup_args)
+Gamemodes can be forced by the server using the [`+mpgamemode`](#Startup_args-mpgamemode) startup arg
 
-If ran on a server with the [`ns_should_return_to_lobby 0`](#Convars-returntolobby) [convar](#Convars), one should also set gamemodes in [`ns_private_match_last_mode`](#Convars-lastmode) [convar](#Convars)
+If ran on a server with the [`ns_should_return_to_lobby 0`](#Convars-returntolobby) convar, one should also set gamemodes in [`ns_private_match_last_mode`](#Convars-lastmode) convar
 
 | Value           | Description                  |
 |-----------------|------------------------------|
