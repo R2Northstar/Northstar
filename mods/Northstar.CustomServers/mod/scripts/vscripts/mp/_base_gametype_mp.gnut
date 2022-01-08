@@ -222,6 +222,7 @@ void function CodeCallback_OnPlayerRespawned( entity player )
 	player.SetPredictionEnabled( true )
 	Loadouts_TryGivePilotLoadout( player )
 	SetHumanRagdollImpactTable( player )
+	ClearLastAttacker( player ) // so dying to anything doesn't credit the same attacker after respawning
 	
 	foreach ( entity weapon in player.GetMainWeapons() )
 		weapon.SetProScreenOwner( player )
