@@ -12,7 +12,7 @@ When using a dedicated server, arguments are read from `ns_startup_args_dedi.txt
 * `R2Northstar\mods\Northstar.CustomServers\mod.json`\
    contains [ConVars](#Convars) default values
 * `R2Northstar\mods\Northstar.CustomServers\mod\cfg\autoexec_ns_server.cfg`\
-   contains [ConVars](#Convars)
+   contains [ConVars](#Convars) and overrides `R2Northstar\mods\Northstar.CustomServers\mod.json`
 
 ## Dedicated Server Caveats
 
