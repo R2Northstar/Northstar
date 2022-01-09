@@ -2142,6 +2142,7 @@ resource/ui/menus/mods_browse.menu
 		wide 1200
 		tall 153
 		xpos	-8
+		classname 			FilterPanelChild
 
 		rui 					"ui/control_options_description.rpak"
 
@@ -2159,6 +2160,8 @@ resource/ui/menus/mods_browse.menu
 		InheritProperties		RuiSmallButton
 		labelText			"#SEARCHBAR_LABEL"
 		textAlignment west
+		classname 			FilterPanelChild
+
 		wide					500
 		xpos -23
 		ypos -16
@@ -2178,6 +2181,7 @@ resource/ui/menus/mods_browse.menu
 	BtnServerSearch
 	{
 		ControlName				TextEntry
+		classname 			FilterPanelChild
 		zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
 		xpos 					-400
 		ypos 					-5
@@ -2204,6 +2208,7 @@ resource/ui/menus/mods_browse.menu
 		InheritProperties		SwitchButton
 		labelText						"#MAP_FILTER"
 		ConVar							"filter_map"
+		classname 			FilterPanelChild
 		wide    						500
 
 		pin_to_sibling BtnSearchLabel
@@ -2220,6 +2225,7 @@ resource/ui/menus/mods_browse.menu
 		InheritProperties		SwitchButton
 		labelText						"#GAMEMODE_FILTER"
 		ConVar							"filter_gamemode"
+		classname 			FilterPanelChild
 		wide    						500
 
 		pin_to_sibling SwtBtnSelectMap
@@ -2236,6 +2242,7 @@ resource/ui/menus/mods_browse.menu
 		InheritProperties		SwitchButton
 		labelText						"#HIDE_FULL_FILTER"
 		ConVar							"filter_hide_full"
+		classname 			FilterPanelChild
 		wide    						500
 
 
@@ -2259,6 +2266,7 @@ resource/ui/menus/mods_browse.menu
 		InheritProperties		SwitchButton
 		labelText						"#HIDE_EMPTY_FILTER"
 		ConVar							"filter_hide_empty"
+		classname 			FilterPanelChild
 		wide    						500
 
 
@@ -2282,6 +2290,7 @@ resource/ui/menus/mods_browse.menu
 		InheritProperties		SwitchButton
 		labelText						"#HIDE_PROT_FILTER"
 		ConVar							"filter_hide_protected"
+		classname 			FilterPanelChild
 		wide    						500
 
 		list
@@ -2303,6 +2312,7 @@ resource/ui/menus/mods_browse.menu
 		ControlName							RuiButton
 		InheritProperties				RuiSmallButton
 		labelText				"#CLEAR_FILTERS"
+		classname 			FilterPanelChild
 		wide 100
 		xpos		-17
 		ypos 		-57
@@ -2322,6 +2332,7 @@ resource/ui/menus/mods_browse.menu
 
 	BtnDummyAfterFilterClear {
 		ControlName	RuiButton
+		classname 			FilterPanelChild
 		width		0
 		height		0
 		visible 	1
