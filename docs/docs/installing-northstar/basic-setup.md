@@ -13,6 +13,9 @@ Firstly, note that the Northstar client is only available on PC and requires you
    * **For Origin** - To find the location of your Origin library go to _Origin_ -> _Application Settings_ -> _Installs & Saves_ -> _On your Computer_ -> _Game Library Location_\
    Go to the directory mentioned there using File Explorer and open the `Titanfall2` folder.\
    Usually: `C:\Program Files (x86)\Origin Games\Titanfall2`
+   * **For EA App** - To find the location of your EA library go to _Settings_ -> _Download_\
+   Go to the directory under "Install location" using File Explorer and open the `Titanfall2` folder.\
+   Usually: `C:\Program Files\EA Games\Titanfall2` 
 3. Launch `NorthstarLauncher.exe` to start Northstar
    * After launching for the first time, you'll be greeted with a popup requesting to authenticate to the master server. Click _Yes_ (This can be changed in the mods menu later if desired)\
    ![](https://raw.githubusercontent.com/R2Northstar/Northstar/main/wiki/titleagreement.png)
