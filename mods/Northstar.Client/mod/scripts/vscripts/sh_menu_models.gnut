@@ -2,9 +2,9 @@
 // Model tracking and save/Clear functions are temp. We already update the client knowledge of loadouts. Derive from that.
 // Move the struct off the player?
 
-#if CLIENT && MP
+//#if CLIENT && MP
 	untyped
-#endif //client && MP
+//#endif //client && MP
 
 #if CLIENT
 	const float CARD_TAG_SCALE = 0.0 // update to match same const in hud_defs.rui
@@ -207,12 +207,18 @@
 #endif // CLIENT && MP
 
 #if UI
+	struct
+	{
+		table MouseMovementCaptureFunctionsTable = {}
+	} file
+
 	const MOUSE_ROTATE_MULTIPLIER = 25.0
 
 	global function UpdateUIMapSupportsMenuModels
 	global function RunMenuClientFunction
 	global function UI_SetPresentationType
 
+	global function AddMouseMovementCaptureHandler
 	global function UICodeCallback_MouseMovementCapture
 #endif // UI
 
@@ -2892,6 +2898,18 @@
 		}
 	}
 
+	void function AddMouseMovementCaptureHandler( var menu, void functionref( int, int ) func )
+	{
+		file.MouseMovementCaptureFunctionsTable.rawset( menu, func )
+	}
+
+	void function UpdateMouseMovementCaptureFunctions( int deltaX, int deltaY )
+	{
+		var activeMenu = GetActiveMenu()
+		if ( file.MouseMovementCaptureFunctionsTable.rawin( activeMenu ) )
+			file.MouseMovementCaptureFunctionsTable.rawget( activeMenu )(deltaX, deltaY)
+	}
+
 	void function UICodeCallback_MouseMovementCapture( var capturePanel, int deltaX, int deltaY )
 	{
 		float screenScaleXModifier = 1920.0 / GetScreenSize()[0] // 1920 is base screen width
@@ -2901,7 +2919,7 @@
 		float screenScaleYModifier = 1080.0 / GetScreenSize()[1] // 1920 is base screen width
 		float mouseYRotationDelta = deltaY * screenScaleYModifier * MOUSE_ROTATE_MULTIPLIER
 
-		UpdateMouseDeltaBuffer( deltaX, deltaY )
+		UpdateMouseMovementCaptureFunctions( deltaX, deltaY )
 
 		RunMenuClientFunction( "UpdateMouseRotateDelta", mouseXRotateDelta, mouseYRotationDelta )
 	}
