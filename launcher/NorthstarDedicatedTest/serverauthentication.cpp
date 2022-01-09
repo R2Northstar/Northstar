@@ -342,7 +342,7 @@ char __fastcall CNetChan___ProcessMessagesHook(void* self, void* buf)
 	char ret = CNetChan___ProcessMessages(self, buf);
 	
 	// check processing limits, unless we're in a level transition
-	if (g_pHostState->m_iCurrentState == HostState_t::HS_RUN)
+	if (g_pHostState->m_iCurrentState == HostState_t::HS_RUN && ThreadInServerFrameThread())
 	{
 		// player that sent the message
 		void* sender = *(void**)((char*)self + 368);

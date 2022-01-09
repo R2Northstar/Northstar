@@ -45,6 +45,7 @@ ConVar* Cvar_communities_hostname;
 ErrorType Error;
 CommandLineType CommandLine;
 Plat_FloatTimeType Plat_FloatTime;
+ThreadInServerFrameThreadType ThreadInServerFrameThread;
 
 void InitialiseEngineGameUtilFunctions(HMODULE baseAddress)
 {
@@ -106,4 +107,5 @@ void InitialiseTier0GameUtilFunctions(HMODULE baseAddress)
 	Error = reinterpret_cast<ErrorType>(GetProcAddress(baseAddress, "Error"));
 	CommandLine = reinterpret_cast<CommandLineType>(GetProcAddress(baseAddress, "CommandLine"));
 	Plat_FloatTime = reinterpret_cast<Plat_FloatTimeType>(GetProcAddress(baseAddress, "Plat_FloatTime"));
+	ThreadInServerFrameThread = reinterpret_cast<ThreadInServerFrameThreadType>(GetProcAddress(baseAddress, "ThreadInServerFrameThread"));
 }
