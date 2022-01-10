@@ -222,6 +222,7 @@ void function CodeCallback_OnPlayerRespawned( entity player )
 	player.SetPredictionEnabled( true )
 	Loadouts_TryGivePilotLoadout( player )
 	SetHumanRagdollImpactTable( player )
+ 	ClearLastAttacker( player ) // so dying to anything doesn't credit the same attacker after respawning
 	
 	foreach ( entity weapon in player.GetMainWeapons() )
 		weapon.SetProScreenOwner( player )
@@ -418,7 +419,7 @@ void function RespawnAsPilot( entity player )
 	player.RespawnPlayer( FindSpawnPoint( player, false, ( ShouldStartSpawn( player ) || Flag( "ForceStartSpawn" ) ) && !IsFFAGame() ) )
 }
 
-void function RespawnAsTitan( entity player, bool manualPosition = false, TitanLoadoutDef ornull titanLoadoutCustom = null )
+void function RespawnAsTitan( entity player, bool manualPosition = false ) 
 {
 	player.Signal( "PlayerRespawnStarted" )
 
@@ -426,7 +427,7 @@ void function RespawnAsTitan( entity player, bool manualPosition = false, TitanL
 	entity spawnpoint = FindSpawnPoint( player, true, ( ShouldStartSpawn( player ) || Flag( "ForceStartSpawn" ) ) && !IsFFAGame() )
 
 	// +ratio this is awesome
-	TitanLoadoutDef titanLoadout = titanLoadoutCustom ? expect TitanLoadoutDef( titanLoadoutCustom ) : GetTitanLoadoutForPlayer( player )
+ 	TitanLoadoutDef titanLoadout = GetTitanLoadoutForPlayer( player )
 	
 	asset model = GetPlayerSettingsAssetForClassName( titanLoadout.setFile, "bodymodel" )
 	Attachment warpAttach = GetAttachmentAtTimeFromModel( model, "at_hotdrop_01", "offset", spawnpoint.GetOrigin(), spawnpoint.GetAngles(), 0 )
