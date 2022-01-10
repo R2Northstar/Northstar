@@ -12,6 +12,13 @@ void function GiveScoreForPlayerKill( entity victim, entity attacker, var damage
 {
 	if ( victim != attacker && victim.IsPlayer() && attacker.IsPlayer() || GetGameState() != eGameState.Playing )
 		AddTeamScore( attacker.GetTeam(), 1 )
+
+	var existingAttackers = []
+	foreach(DamageHistoryStruct attackerInfo in victim.e.recentDamageHistory)
+	{
+		if( attackerInfo.attacker != attacker && !(attackerInfo.attacker in existingAttackers) )
+			attackerInfo.attacker.AddToPlayerGameStat( PGS_ASSISTS, 1 )
+	}
 }
 
 void function RateSpawnpoints_Directional( int checkclass, array<entity> spawnpoints, int team, entity player )

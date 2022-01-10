@@ -190,6 +190,17 @@ void function ScoreEvent_TitanKilled( entity victim, entity attacker, var damage
 		AddPlayerScore( attacker, "TitanKillTitan", victim.GetTitanSoul().GetOwner() )
 	else
 		AddPlayerScore( attacker, "KillTitan", victim.GetTitanSoul().GetOwner() )
+
+	var existingAttackers = []
+	foreach(DamageHistoryStruct attackerInfo in victim.e.recentDamageHistory)
+	{
+		if( attackerInfo.attacker != attacker && !(attackerInfo.attacker in existingAttackers) )
+		{
+			AddPlayerScore(attackerInfo.attacker, "TitanAssist" )
+			existingAttackers.append(attackerInfo.attacker)
+			Remote_CallFunction_NonReplay( attackerInfo.attacker, "ServerCallback_SetAssistInformation", attackerInfo.damageSourceId, attacker.GetEncodedEHandle(), victim.GetEncodedEHandle(), attackerInfo.time ) 
+		}
+	}
 }
 
 void function ScoreEvent_NPCKilled( entity victim, entity attacker, var damageInfo )
