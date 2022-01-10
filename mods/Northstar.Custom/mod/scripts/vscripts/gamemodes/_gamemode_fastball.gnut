@@ -136,6 +136,22 @@ void function GamemodeFastball_Init()
 		< -32, -2600, -75 >, < 0, 90.00, 0 >,
 		< 2028, -5332, 128 >, < 0, 90.00, 0 >
 	])
+
+	FastballAddBuddySpawnForLevel( "mp_homestead", TEAM_MILITIA, < -3848.19.00, -2521, -25>, < 0, 0, 0 > )
+	FastballAddBuddySpawnForLevel( "mp_homestead", TEAM_IMC, < 6000, 1560, -137 >, < 0, -150, 0 > )
+	FastballAddPanelSpawnsForLevel( "mp_homestead", [
+		< 3672, -696, -10 >, < 0, 100.00, 0 > ,
+		< 1101, -911, 145 >, < -8, 40.00, 0 >,
+		< -1585 , -953, -79 >, <0, 135.00, 0 >  
+	])
+
+	FastballAddBuddySpawnForLevel( "mp_drydock", TEAM_MILITIA, < -4, -4350, 144 >, < 0, 80, 0 > )
+	FastballAddBuddySpawnForLevel( "mp_drydock", TEAM_IMC, < 679, 4674, 200>, < 0, -90, 0 > )
+	FastballAddPanelSpawnsForLevel( "mp_drydock", [
+		< 1726, 2290, 256 >, < 0, 0.00, 0 >,
+		< 100, 63, 265 >, < 0, 180.00, 0 >,
+		< -752, -863, 408>, <0, 180.00, 0 >
+	])
 }
 
 void function SpawnPanelsForLevel()
