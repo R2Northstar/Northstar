@@ -31,8 +31,6 @@ In the future this keybind should hopefully be adjustable via `Controls > Settin
 
 | Command                 | Result         |
 | ----------------------- | -------------- |
-| `sv_cheats 1`           | Enable cheats  |
-| `sv_cheats 0`           | Disable cheats |
 | `ns_masterserver_hostname` | Masterserver URL, default: `https://northstar.tf` |
 | `ns_auth_allow_insecure 1` | Allows clients to connect without masterserver authorization |
 | `connect <ip address>:<port>` | Directly connect to a Northstar gameserver |
@@ -41,13 +39,13 @@ In the future this keybind should hopefully be adjustable via `Controls > Settin
 
 | Variable                                    | Description                                                           | Default |
 |---------------------------------------------|-----------------------------------------------------------------------|---------|
+| `sv_cheats`                                 | Wether players can use cheat commands (i.e. noclip) .                 | 0       |
 | `sv_AllWaysSupportsSaveRestore`             |                                                                       | 0       |
 | `sv_allTicksFinal`                          |                                                                       | 0       |
 | `sv_allowSendTableTransmitToClients`        |                                                                       | 1       |
 | `sv_alltalk`                                | Wether both teams can talk to each other over voice chat.             | 0       |
 | `sv_balanceTeams`                           | Wether the server will attempt to keep teams balanced between rounds. | 1       |
 | `sv_bounds_show_errors`                     |                                                                       | 0       |
-| `sv_cheats`                                 | Wether players can use cheat commands (i.e. noclip) .                 | 0       |
 | `sv_clampPlayerFrameTime`                   |                                                                       | 0       |
 | `sv_clockcorrection`                        |                                                                       | 1       |
 | `sv_clockcorrection_msecs`                  |                                                                       | 75      |
