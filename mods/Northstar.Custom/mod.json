@@ -1,6 +1,6 @@
 {
 	"Name" : "Northstar.Custom",
-	"Description": "(ideally) Polished custom content for Northstar",
+	"Description": "Custom content for Northstar: extra weapons, gamemodes, etc.",
 	"Version": "1.1.0",
 	"LoadPriority": 1,
 	"RequiredOnClient": true,
