@@ -34,18 +34,18 @@ void function GiveScoreForPlayerKill( entity victim, entity attacker, var damage
 		AddTeamScore( attacker.GetTeam(), 1 )
 
 	var existingAttackers = []
-	foreach(DamageHistoryStruct attackerInfo in victim.e.recentDamageHistory)
+	foreach( DamageHistoryStruct attackerInfo in victim.e.recentDamageHistory )
 	{
-		if( attackerInfo.attacker != attacker && !(attackerInfo.attacker in existingAttackers) )
+		if( attackerInfo.attacker != attacker && !( attackerInfo.attacker in existingAttackers ) )
 			attackerInfo.attacker.AddToPlayerGameStat( PGS_ASSISTS, 1 )
 	}
 }
 
 int function CheckScoreForDraw()
 {
-	if (GameRules_GetTeamScore(TEAM_IMC) > GameRules_GetTeamScore(TEAM_MILITIA))
+	if (GameRules_GetTeamScore(TEAM_IMC) > GameRules_GetTeamScore( TEAM_MILITIA ))
 		return TEAM_IMC
-	else if (GameRules_GetTeamScore(TEAM_MILITIA) > GameRules_GetTeamScore(TEAM_IMC))
+	else if (GameRules_GetTeamScore(TEAM_MILITIA) > GameRules_GetTeamScore( TEAM_IMC ))
 		return TEAM_MILITIA
 
 	return TEAM_UNASSIGNED
