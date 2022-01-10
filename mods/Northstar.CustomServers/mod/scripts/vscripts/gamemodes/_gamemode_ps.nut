@@ -30,7 +30,7 @@ void function GamemodePs_Init()
 
 void function GiveScoreForPlayerKill( entity victim, entity attacker, var damageInfo )
 {
-	if ( victim != attacker && victim.IsPlayer() && attacker.IsPlayer() || GetGameState() != eGameState.Playing )
+	if ( victim != attacker && victim.IsPlayer() && attacker.IsPlayer() && GetGameState() == eGameState.Playing )
 		AddTeamScore( attacker.GetTeam(), 1 )
 }
 
