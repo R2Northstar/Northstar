@@ -18,6 +18,7 @@ CHostState* g_pHostState;
 
 // cengine stuff
 CEngine* g_pEngine;
+server_state_t* sv_m_State;
 
 // network stuff
 ConVar* Cvar_hostport;
@@ -46,6 +47,7 @@ ErrorType Error;
 CommandLineType CommandLine;
 Plat_FloatTimeType Plat_FloatTime;
 ThreadInServerFrameThreadType ThreadInServerFrameThread;
+GetBaseLocalClientType GetBaseLocalClient;
 
 void InitialiseEngineGameUtilFunctions(HMODULE baseAddress)
 {
@@ -55,6 +57,7 @@ void InitialiseEngineGameUtilFunctions(HMODULE baseAddress)
 
 	g_pHostState = (CHostState*)((char*)baseAddress + 0x7CF180);
 	g_pEngine = *(CEngine**)((char*)baseAddress + 0x7D70C8);
+	sv_m_State = (server_state_t*)((char*)baseAddress + 0x12A53D48);
 
 	Cvar_hostport = (ConVar*)((char*)baseAddress + 0x13FA6070);
 
@@ -68,6 +71,8 @@ void InitialiseEngineGameUtilFunctions(HMODULE baseAddress)
 
 	Cvar_match_defaultMap = (ConVar*)((char*)baseAddress + 0x8AB530);
 	Cvar_communities_hostname = (ConVar*)((char*)baseAddress + 0x13157E50);
+
+	GetBaseLocalClient = (GetBaseLocalClientType)((char*)baseAddress + 0x78200);
 }
 
 void InitialiseServerGameUtilFunctions(HMODULE baseAddress)
