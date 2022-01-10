@@ -1,5 +1,9 @@
 # Troubleshooting
 
+Generally try to first launch the vanilla game (i.e. not Northstar) if you encounter any issue and see if it also occurs there as well. Some problems can occur when the vanilla game was never launched before using Northstar. 
+
+Also note that some solutions described below can also apply to the base game, like issues caused by 10th+ gen Intel CPUs.
+
 ## Engine Error
 
 {% hint style="info" %}
