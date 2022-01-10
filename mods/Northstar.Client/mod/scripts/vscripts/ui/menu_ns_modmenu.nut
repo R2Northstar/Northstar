@@ -4,6 +4,8 @@ global function ReloadMods
 
 struct {
 	bool shouldReloadModsOnEnd
+	string currentMod
+	var currentButton
 } file
 
 void function AddNorthstarModMenu()
@@ -83,9 +85,44 @@ void function SetModMenuNameText( var button )
 void function OnModMenuButtonPressed( var button )
 {
 	string modName = NSGetModNames()[ int ( Hud_GetScriptID( button ) ) ]
-	NSSetModEnabled( modName, !NSIsModEnabled( modName ) )
-	SetModMenuNameText( button )
-	
+	if ( ( modName == "Northstar.Client" ||  modName == "Northstar.Coop" || modName == "Northstar.CustomServers") && NSIsModEnabled( modName ) )
+	{
+		file.currentMod = modName
+		file.currentButton = button
+		CoreModToggleDialog( modName )
+	}
+	else
+	{
+		NSSetModEnabled( modName, !NSIsModEnabled( modName ) )
+
+		SetModMenuNameText( button )
+
+		file.shouldReloadModsOnEnd = true
+	}
+}
+
+void function CoreModToggleDialog( string mod )
+{
+	DialogData dialogData
+	dialogData.header = "#WARNING"
+	dialogData.message = "#CORE_MOD_DISABLE_WARNING"
+
+	AddDialogButton( dialogData, "#CANCEL" )
+	// This can't have any arguments so we use the file struct
+	AddDialogButton( dialogData, "#DISABLE", DisableMod )
+
+	AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
+	AddDialogFooter( dialogData, "#B_BUTTON_CANCEL" )
+
+	OpenDialog( dialogData )
+}
+
+void function DisableMod()
+{
+	NSSetModEnabled( file.currentMod, false )
+
+	SetModMenuNameText( file.currentButton )
+
 	file.shouldReloadModsOnEnd = true
 }
 
