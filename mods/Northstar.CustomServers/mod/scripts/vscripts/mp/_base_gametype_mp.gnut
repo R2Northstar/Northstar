@@ -419,14 +419,13 @@ void function RespawnAsPilot( entity player )
 	player.RespawnPlayer( FindSpawnPoint( player, false, ( ShouldStartSpawn( player ) || Flag( "ForceStartSpawn" ) ) && !IsFFAGame() ) )
 }
 
-void function RespawnAsTitan( entity player, bool manualPosition = false ) 
+void function RespawnAsTitan( entity player, bool manualPosition = false )
 {
 	player.Signal( "PlayerRespawnStarted" )
 
 	player.isSpawning = true
 	entity spawnpoint = FindSpawnPoint( player, true, ( ShouldStartSpawn( player ) || Flag( "ForceStartSpawn" ) ) && !IsFFAGame() )
 
-	// +ratio this is awesome
  	TitanLoadoutDef titanLoadout = GetTitanLoadoutForPlayer( player )
 	
 	asset model = GetPlayerSettingsAssetForClassName( titanLoadout.setFile, "bodymodel" )
