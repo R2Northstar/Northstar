@@ -7,6 +7,8 @@
 #include "gameutils.h"
 #include "bansystem.h"
 #include "miscserverscript.h"
+#include "concommand.h"
+#include "dedicated.h"
 #include <fstream>
 #include <filesystem>
 #include <thread>
@@ -41,6 +43,8 @@ ProcessConnectionlessPacketType ProcessConnectionlessPacket;
 typedef void(*CServerGameDLL__OnRecievedSayTextMessageType)(void* self, unsigned int senderClientIndex, const char* message, char unknown);
 CServerGameDLL__OnRecievedSayTextMessageType CServerGameDLL__OnRecievedSayTextMessage;
 
+typedef void(*ConCommand__DispatchType)(ConCommand* command, const CCommand& args, void* a3);
+ConCommand__DispatchType ConCommand__Dispatch;
 
 // global vars
 ServerAuthenticationManager* g_ServerAuthenticationManager;
@@ -310,8 +314,13 @@ void CBaseClient__DisconnectHook(void* self, uint32_t unknownButAlways1, const c
 }
 
 // maybe this should be done outside of auth code, but effort to refactor rn and it sorta fits
+// hack: store the client that's executing the current stringcmd for pCommand->Dispatch() hook later
+void* pExecutingGameClient;
+
 char CGameClient__ExecuteStringCommandHook(void* self, uint32_t unknown, const char* pCommandString)
 {
+	pExecutingGameClient = self;
+
 	if (CVar_sv_quota_stringcmdspersecond->m_nValue != -1)
 	{
 		// note: this isn't super perfect, legit clients can trigger it in lobby, mostly good enough tho imo
@@ -334,6 +343,22 @@ char CGameClient__ExecuteStringCommandHook(void* self, uint32_t unknown, const c
 
 	// todo later, basically just limit to CVar_sv_quota_stringcmdspersecond->m_nValue stringcmds per client per second
 	return CGameClient__ExecuteStringCommand(self, unknown, pCommandString);
+}
+
+void ConCommand__DispatchHook(ConCommand* command, const CCommand& args, void* a3)
+{
+	// patch to ensure FCVAR_GAMEDLL concommands without FCVAR_CLIENTCMD_CAN_EXECUTE can't be executed by remote clients
+	if (*sv_m_State == server_state_t::ss_active && command->GetFlags() & FCVAR_GAMEDLL && !(command->GetFlags() & FCVAR_CLIENTCMD_CAN_EXECUTE))
+	{
+		if (IsDedicated())
+			return;
+
+		// hack because don't currently have a way to check GetBaseLocalClient().m_nPlayerSlot
+		if (strcmp((char*)pExecutingGameClient + 0xF500, g_LocalPlayerUserID))
+			return;
+	}
+
+	ConCommand__Dispatch(command, args, a3);
 }
 
 char __fastcall CNetChan___ProcessMessagesHook(void* self, void* buf)
@@ -478,6 +503,7 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x2140A0, &CNetChan___ProcessMessagesHook, reinterpret_cast<LPVOID*>(&CNetChan___ProcessMessages));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x104FB0, &CBaseClient__SendServerInfoHook, reinterpret_cast<LPVOID*>(&CBaseClient__SendServerInfo));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x117800, &ProcessConnectionlessPacketHook, reinterpret_cast<LPVOID*>(&ProcessConnectionlessPacket));
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x417440, &ConCommand__DispatchHook, reinterpret_cast<LPVOID*>(&ConCommand__Dispatch));
 
 	// patch to disable kicking based on incorrect serverfilter in connectclient, since we repurpose it for use as an auth token
 	{

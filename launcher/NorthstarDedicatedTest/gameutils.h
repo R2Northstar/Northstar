@@ -193,6 +193,16 @@ public:
 
 extern CEngine* g_pEngine;
 
+enum server_state_t
+{
+	ss_dead = 0,	// Dead
+	ss_loading,		// Spawning
+	ss_active,		// Running
+	ss_paused,		// Running, but paused
+};
+
+extern server_state_t* sv_m_State;
+
 // network stuff
 extern ConVar* Cvar_hostport;
 
@@ -236,6 +246,9 @@ extern Plat_FloatTimeType Plat_FloatTime;
 
 typedef bool(*ThreadInServerFrameThreadType)();
 extern ThreadInServerFrameThreadType ThreadInServerFrameThread;
+
+typedef void*(*GetBaseLocalClientType)();
+extern GetBaseLocalClientType GetBaseLocalClient;
 
 void InitialiseEngineGameUtilFunctions(HMODULE baseAddress);
 void InitialiseServerGameUtilFunctions(HMODULE baseAddress);
