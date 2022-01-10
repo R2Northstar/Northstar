@@ -43,9 +43,9 @@ void function GiveScoreForPlayerKill( entity victim, entity attacker, var damage
 
 int function CheckScoreForDraw()
 {
-	if (GameRules_GetTeamScore( TEAM_IMC ) > GameRules_GetTeamScore( TEAM_MILITIA ))
+	if ( GameRules_GetTeamScore( TEAM_IMC ) > GameRules_GetTeamScore( TEAM_MILITIA ) )
 		return TEAM_IMC
-	else if (GameRules_GetTeamScore( TEAM_MILITIA ) > GameRules_GetTeamScore( TEAM_IMC ))
+	else if ( GameRules_GetTeamScore( TEAM_MILITIA ) > GameRules_GetTeamScore( TEAM_IMC ) )
 		return TEAM_MILITIA
 
 	return TEAM_UNASSIGNED

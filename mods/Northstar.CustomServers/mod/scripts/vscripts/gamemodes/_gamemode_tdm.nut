@@ -29,9 +29,9 @@ void function RateSpawnpoints_Directional( int checkclass, array<entity> spawnpo
 
 int function CheckScoreForDraw()
 {
-	if (GameRules_GetTeamScore( TEAM_IMC ) > GameRules_GetTeamScore( TEAM_MILITIA ))
+	if ( GameRules_GetTeamScore( TEAM_IMC ) > GameRules_GetTeamScore( TEAM_MILITIA ) )
 		return TEAM_IMC
-	else if (GameRules_GetTeamScore( TEAM_MILITIA ) > GameRules_GetTeamScore( TEAM_IMC ))
+	else if ( GameRules_GetTeamScore( TEAM_MILITIA ) > GameRules_GetTeamScore( TEAM_IMC ) )
 		return TEAM_MILITIA
 
 	return TEAM_UNASSIGNED
