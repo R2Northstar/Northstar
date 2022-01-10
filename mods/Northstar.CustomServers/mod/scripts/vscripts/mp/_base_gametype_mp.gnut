@@ -222,7 +222,6 @@ void function CodeCallback_OnPlayerRespawned( entity player )
 	player.SetPredictionEnabled( true )
 	Loadouts_TryGivePilotLoadout( player )
 	SetHumanRagdollImpactTable( player )
-	ClearLastAttacker( player ) // so dying to anything doesn't credit the same attacker after respawning
 	
 	foreach ( entity weapon in player.GetMainWeapons() )
 		weapon.SetProScreenOwner( player )
@@ -277,8 +276,20 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 		player.s.inPostDeath = false
 	})
 
+
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
 	int methodOfDeath = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+
+	var existingAttackers = []
+	foreach(DamageHistoryStruct attackerInfo in player.e.recentDamageHistory)
+	{
+		if( attackerInfo.attacker != attacker && !(attackerInfo.attacker in existingAttackers) )
+		{
+			AddPlayerScore(attackerInfo.attacker, "PilotAssist" )
+			existingAttackers.append(attackerInfo.attacker)
+			Remote_CallFunction_NonReplay( attackerInfo.attacker, "ServerCallback_SetAssistInformation", attackerInfo.damageSourceId, attacker.GetEncodedEHandle(), player.GetEncodedEHandle(), attackerInfo.time ) 
+		}
+	}
 
 	player.p.rematchOrigin = player.p.deathOrigin
 	if ( IsValid( attacker ) && methodOfDeath == eDamageSourceId.titan_execution )
@@ -407,14 +418,15 @@ void function RespawnAsPilot( entity player )
 	player.RespawnPlayer( FindSpawnPoint( player, false, ( ShouldStartSpawn( player ) || Flag( "ForceStartSpawn" ) ) && !IsFFAGame() ) )
 }
 
-void function RespawnAsTitan( entity player, bool manualPosition = false )
+void function RespawnAsTitan( entity player, bool manualPosition = false, TitanLoadoutDef ornull titanLoadoutCustom = null )
 {
 	player.Signal( "PlayerRespawnStarted" )
 
 	player.isSpawning = true
 	entity spawnpoint = FindSpawnPoint( player, true, ( ShouldStartSpawn( player ) || Flag( "ForceStartSpawn" ) ) && !IsFFAGame() )
 
-	TitanLoadoutDef titanLoadout = GetTitanLoadoutForPlayer( player )
+	// +ratio this is awesome
+	TitanLoadoutDef titanLoadout = titanLoadoutCustom ? expect TitanLoadoutDef( titanLoadoutCustom ) : GetTitanLoadoutForPlayer( player )
 	
 	asset model = GetPlayerSettingsAssetForClassName( titanLoadout.setFile, "bodymodel" )
 	Attachment warpAttach = GetAttachmentAtTimeFromModel( model, "at_hotdrop_01", "offset", spawnpoint.GetOrigin(), spawnpoint.GetAngles(), 0 )
