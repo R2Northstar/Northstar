@@ -182,7 +182,7 @@ void function HardpointThink( HardpointStruct hardpoint )
 			if(p.IsTitan()){
 				imcTitanCappers = imcTitanCappers + 1
 			}
-			else if(!p.IsHologram())
+			else if(p.IsPlayer())
 			{
 				imcPilotCappers = imcPilotCappers + 1
 			}
@@ -196,7 +196,7 @@ void function HardpointThink( HardpointStruct hardpoint )
 
 				militiaTitanCappers = militiaTitanCappers + 1
 			}
-			else if(!p.IsHologram())
+			else if(p.IsPlayer())
 			{
 
 				militiaPilotCappers = militiaPilotCappers + 1
