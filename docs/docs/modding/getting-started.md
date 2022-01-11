@@ -43,11 +43,11 @@ Inside the `mod` folder, existing files found in the engine's virtual file syste
 ```json
     "Scripts": [
         {
-            "Path": "path/to/my.nut",
+            "Path": "path/to/file.nut",
             "RunOn": "( CLIENT || SERVER ) && MP"
         },
         {
-            "Path": "path/to/my_second.nut",
+            "Path": "path/to/another_file.nut",
             "RunOn": "( CLIENT || SERVER ) && MP",
             "ClientCallback": {
                 "Before": "ClientPreMapspawnThing",
