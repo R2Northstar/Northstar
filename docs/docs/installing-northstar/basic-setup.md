@@ -18,11 +18,11 @@ Firstly, note that the Northstar client is only available on PC and requires you
    Usually: `C:\Program Files\EA Games\Titanfall2` 
 3. Launch `NorthstarLauncher.exe` to start Northstar
    * After launching for the first time, you'll be greeted with a popup requesting to authenticate to the master server. Click _Yes_ (This can be changed in the mods menu later if desired)\
-   ![](https://raw.githubusercontent.com/R2Northstar/Northstar/main/wiki/titleagreement.png)
+   ![](https://raw.githubusercontent.com/R2Northstar/NorthstarWiki/main/wiki/titleagreement.png)
 4. Select _Launch Northstar_\
-   ![](https://raw.githubusercontent.com/R2Northstar/Northstar/main/wiki/titlelaunchnorthstar.png)
+   ![](https://raw.githubusercontent.com/R2Northstar/NorthstarWiki/main/wiki/titlelaunchnorthstar.png)
 5. From the multiplayer menu, you can use the server browser to select and join any of the public community hosted servers.\
-   ![](https://raw.githubusercontent.com/R2Northstar/Northstar/main/wiki/lobbyserverbrowser.png)
+   ![](https://raw.githubusercontent.com/R2Northstar/NorthstarWiki/main/wiki/lobbyserverbrowser.png)
 
 Should you notice any issues/warnings/errors while running Northstar, check the troubleshooting page.
 
