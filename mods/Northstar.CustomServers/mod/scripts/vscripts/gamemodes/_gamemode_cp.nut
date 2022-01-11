@@ -157,104 +157,220 @@ void function StartHardpointThink()
 void function HardpointThink( HardpointStruct hardpoint )
 {
 	entity hardpointEnt = hardpoint.hardpoint
-	
+
 	float lastTime = Time()
 	float lastScoreTime = Time()
-	
+
 	WaitFrame() // wait a frame so deltaTime is never zero
+
+
+
 	while ( GamePlayingOrSuddenDeath() )
 	{
-		int imcCappers = hardpoint.imcCappers.len()
-		int militiaCappers = hardpoint.militiaCappers.len()
-		
-		float deltaTime = Time() - lastTime
-		
-		int cappingTeam
-		if ( imcCappers > militiaCappers )
-			cappingTeam = TEAM_IMC 
-		else if ( militiaCappers > imcCappers )
-			cappingTeam = TEAM_MILITIA
-		
-		if ( cappingTeam != TEAM_UNASSIGNED )
+		int imcPilotCappers = 0
+		int militiaPilotCappers = 0
+
+		int imcTitanCappers = 0
+		int militiaTitanCappers = 0
+
+		float currentTime = Time()
+		float deltaTime = currentTime - lastTime
+
+
+		foreach(entity p in hardpoint.imcCappers)
 		{
-			// hardpoint is owned by controlling team
-			if ( hardpointEnt.GetTeam() == cappingTeam )
-			{
-				// hardpoint is being neutralised, reverse the neutralisation
-				if ( GetHardpointCappingTeam( hardpoint ) != cappingTeam || GetHardpointCaptureProgress( hardpoint ) < 1.0 )
-				{
-					SetHardpointCappingTeam( hardpoint, cappingTeam )
-					SetHardpointCaptureProgress( hardpoint, min( 1.0, GetHardpointCaptureProgress( hardpoint ) + ( deltaTime / CAPTURE_DURATION_CAPTURE ) ) )
-				}
-				// hardpoint is fully captured, start amping if amping is enabled
-				else if ( file.ampingEnabled && GetHardpointState( hardpoint ) < CAPTURE_POINT_STATE_AMPING )
-					SetHardpointState( hardpoint, CAPTURE_POINT_STATE_AMPING )
-				
-				// amp the hardpoint
-				if ( GetHardpointState( hardpoint ) == CAPTURE_POINT_STATE_AMPING )
-				{
-					SetHardpointCaptureProgress( hardpoint, min( 2.0, GetHardpointCaptureProgress( hardpoint ) + ( deltaTime / HARDPOINT_AMPED_DELAY ) ) )
-					if ( GetHardpointCaptureProgress( hardpoint ) == 2.0 )
-					{
-						SetHardpointState( hardpoint, CAPTURE_POINT_STATE_AMPED )
-						
-						// can't use the dialogue functions here because for some reason GamemodeCP_VO_Amped isn't global?
-						PlayFactionDialogueToTeam( "amphp_youAmped" + hardpointEnt.kv.hardpointGroup, cappingTeam )
-						PlayFactionDialogueToTeam( "amphp_enemyAmped" + hardpointEnt.kv.hardpointGroup, GetOtherTeam( cappingTeam ) )
-					}
-				}
+			if(p.IsTitan()){
+				imcTitanCappers = imcTitanCappers + 1
 			}
-			else // we don't own this hardpoint, cap it
+			else if(!p.IsHologram())
 			{
-				SetHardpointCappingTeam( hardpoint, cappingTeam )
-				GamemodeCP_VO_StartCapping( hardpointEnt ) // this doesn't consistently trigger for some reason
-			
-				SetHardpointCaptureProgress( hardpoint, min( 1.0, GetHardpointCaptureProgress( hardpoint ) + ( deltaTime / CAPTURE_DURATION_CAPTURE ) ) )
-				
-				if ( GetHardpointCaptureProgress( hardpoint ) >= 1.0 )
+				imcPilotCappers = imcPilotCappers + 1
+			}
+
+		}
+		//printt("Militia")
+		foreach(entity p in hardpoint.militiaCappers)
+		{
+
+			if(p.IsTitan()){
+
+				militiaTitanCappers = militiaTitanCappers + 1
+			}
+			else if(!p.IsHologram())
+			{
+
+				militiaPilotCappers = militiaPilotCappers + 1
+			}
+
+
+		}
+		int imcCappers
+		int militiaCappers
+//		if(hardpoint.hardpoint.kv.hardpointGroup == "C"){
+//			printt("melitia pilots",militiaPilotCappers)
+//		}
+
+		bool hardpointBlocked = false
+		if((imcTitanCappers+militiaTitanCappers)>0)
+		{
+			imcCappers = imcTitanCappers
+			militiaCappers = militiaTitanCappers
+		}
+		else
+		{
+			imcCappers = imcPilotCappers
+			militiaCappers = militiaPilotCappers
+		}
+
+
+
+		int cappingTeam
+		int capperAmount = 0
+	//	if(hardpoint.hardpoint.kv.hardpointGroup == "C"){
+	//		printt("melitia",militiaCappers)
+	//	}
+
+		if((imcCappers > 0) && (militiaCappers > 0)){
+			hardpointBlocked = true
+		}
+		else if ( imcCappers > 0 )
+		{
+			cappingTeam = TEAM_IMC
+			capperAmount = imcCappers
+		}
+		else if ( militiaCappers > 0 )
+		{
+			cappingTeam = TEAM_MILITIA
+			capperAmount = militiaCappers
+		}
+		if(capperAmount>3) //is there a function for this because min returns float
+			capperAmount = 3
+
+
+		if(hardpointBlocked)
+		{
+			SetHardpointState(hardpoint,CAPTURE_POINT_STATE_HALTED)
+		}
+		else if(cappingTeam==TEAM_UNASSIGNED)//nobody on point
+		{
+
+			switch(GetHardpointState(hardpoint))
+			{
+				case CAPTURE_POINT_STATE_UNASSIGNED:
+					SetHardpointCaptureProgress(hardpoint,max(0.0,GetHardpointCaptureProgress(hardpoint)-(deltaTime/CAPTURE_DURATION_CAPTURE)))
+					if(GetHardpointCaptureProgress(hardpoint)==0.0)
+						SetHardpointState(hardpoint,CAPTURE_POINT_STATE_UNASSIGNED)
+					break
+				case CAPTURE_POINT_STATE_CAPTURED:
+					SetHardpointCaptureProgress(hardpoint,min(1.0,GetHardpointCaptureProgress(hardpoint)+(deltaTime/CAPTURE_DURATION_CAPTURE)))
+					break
+				case CAPTURE_POINT_STATE_AMPED:
+				case CAPTURE_POINT_STATE_AMPING:
+					SetHardpointCaptureProgress(hardpoint,max(1.0,GetHardpointCaptureProgress(hardpoint)-(deltaTime/HARDPOINT_AMPED_DELAY)))
+					if(GetHardpointCaptureProgress(hardpoint)<=1.001)//Float inaccuacy
+						SetHardpointState(hardpoint,CAPTURE_POINT_STATE_CAPTURED)
+					break;
+			}
+		}
+		else if(hardpointEnt.GetTeam()==TEAM_UNASSIGNED)
+		{
+			if(GetHardpointCappingTeam(hardpoint)==TEAM_UNASSIGNED)
+			{
+				SetHardpointCaptureProgress( hardpoint, min(1.0,GetHardpointCaptureProgress( hardpoint ) + ( deltaTime / CAPTURE_DURATION_CAPTURE * capperAmount) ) )
+				SetHardpointCappingTeam(hardpoint,cappingTeam)
+				if(GetHardpointCaptureProgress(hardpoint)>=1.0)
 				{
+					SetHardpointState(hardpoint,CAPTURE_POINT_STATE_CAPTURED)
 					SetTeam( hardpointEnt, cappingTeam )
 					SetTeam( hardpoint.prop, cappingTeam )
-					SetHardpointState( hardpoint, CAPTURE_POINT_STATE_CAPTURED )
-					
 					EmitSoundOnEntityToTeamExceptPlayer( hardpointEnt, "hardpoint_console_captured", cappingTeam, null )
 					GamemodeCP_VO_Captured( hardpointEnt )
 				}
 			}
+			else if(GetHardpointCappingTeam(hardpoint)==cappingTeam)
+			{
+				SetHardpointCaptureProgress( hardpoint,min(1.0, GetHardpointCaptureProgress( hardpoint ) + ( deltaTime / CAPTURE_DURATION_CAPTURE * capperAmount) ) )
+				if(GetHardpointCaptureProgress(hardpoint)>=1.0)
+				{
+					SetHardpointState(hardpoint,CAPTURE_POINT_STATE_CAPTURED)
+					SetTeam( hardpointEnt, cappingTeam )
+					SetTeam( hardpoint.prop, cappingTeam )
+					EmitSoundOnEntityToTeamExceptPlayer( hardpointEnt, "hardpoint_console_captured", cappingTeam, null )
+					GamemodeCP_VO_Captured( hardpointEnt )
+				}
+			}
+			else
+			{
+				SetHardpointCaptureProgress( hardpoint,max(0.0, GetHardpointCaptureProgress( hardpoint ) - ( deltaTime / CAPTURE_DURATION_CAPTURE * capperAmount) ) )
+				if(GetHardpointCaptureProgress(hardpoint)==0.0)
+				{
+					SetHardpointCappingTeam(hardpoint,cappingTeam)
+					if(GetHardpointCaptureProgress(hardpoint)>=1)
+					{
+						SetHardpointState(hardpoint,CAPTURE_POINT_STATE_CAPTURED)
+						SetTeam( hardpointEnt, cappingTeam )
+						SetTeam( hardpoint.prop, cappingTeam )
+						EmitSoundOnEntityToTeamExceptPlayer( hardpointEnt, "hardpoint_console_captured", cappingTeam, null )
+						GamemodeCP_VO_Captured( hardpointEnt )
+					}
+				}
+
+			}
 		}
-		// capture halting
-		else if ( imcCappers > 0 && imcCappers == militiaCappers )
-			SetHardpointState( hardpoint, CAPTURE_POINT_STATE_HALTED )
-		// amped decay
-		else if ( imcCappers == 0 && militiaCappers == 0 && GetHardpointState( hardpoint ) >= CAPTURE_POINT_STATE_AMPING )
+		else if(hardpointEnt.GetTeam()!=cappingTeam)
 		{
-			// it seems like network vars won't change if they're too similar? often we get situations here where it's tryna change from 1.00098 to 1 which doesn't work
-			// so we need to check the "real" progress manually
-			// have only gotten this issue here so far, but in theory i think this could be an issue in a good few places, worth looking out for
-			// tho, idk might not be, we don't work with numbers at this small of a scale too often
-			float realProgress = max( 1.0, GetHardpointCaptureProgress( hardpoint ) - ( deltaTime / HARDPOINT_AMPED_DELAY ) )
-			SetHardpointCaptureProgress( hardpoint, realProgress )
-			
-			if ( realProgress == 1 )
-				SetHardpointState( hardpoint, CAPTURE_POINT_STATE_CAPTURED )
-			// dont use unamping atm
-			//else
-			//	SetHardpointState( hardpoint, CAPTURE_POINT_STATE_SELF_UNAMPING )
+			SetHardpointCaptureProgress( hardpoint,max(0.0, GetHardpointCaptureProgress( hardpoint ) - ( deltaTime / CAPTURE_DURATION_CAPTURE * capperAmount) ) )
+			if(GetHardpointCaptureProgress(hardpoint)<=1.0)
+			{
+				SetHardpointState(hardpoint,CAPTURE_POINT_STATE_CAPTURED)//unamp
+			}
+			if(GetHardpointCaptureProgress(hardpoint)<=0.0)
+			{
+				SetHardpointCaptureProgress(hardpoint,1.0)
+				SetTeam( hardpointEnt, cappingTeam )
+				SetTeam( hardpoint.prop, cappingTeam )
+				SetHardpointState(hardpoint,CAPTURE_POINT_STATE_CAPTURED)
+				EmitSoundOnEntityToTeamExceptPlayer( hardpointEnt, "hardpoint_console_captured", cappingTeam, null )
+				GamemodeCP_VO_Captured( hardpointEnt )
+			}
 		}
-		
+		else if(hardpointEnt.GetTeam()==cappingTeam)
+		{
+			if(GetHardpointCaptureProgress(hardpoint)<1.0)
+			{
+				SetHardpointCaptureProgress(hardpoint,GetHardpointCaptureProgress(hardpoint)+(deltaTime/CAPTURE_DURATION_CAPTURE*capperAmount))
+			}
+			else if(file.ampingEnabled)//amping or reamping
+			{
+				if(GetHardpointState(hardpoint)<CAPTURE_POINT_STATE_AMPING)
+					SetHardpointState(hardpoint,CAPTURE_POINT_STATE_AMPING)
+				SetHardpointCaptureProgress( hardpoint, min( 2.0, GetHardpointCaptureProgress( hardpoint ) + ( deltaTime / HARDPOINT_AMPED_DELAY * capperAmount ) ) )
+				if(GetHardpointCaptureProgress(hardpoint)==2.0)
+				{
+					SetHardpointState( hardpoint, CAPTURE_POINT_STATE_AMPED )
+
+					// can't use the dialogue functions here because for some reason GamemodeCP_VO_Amped isn't global?
+					PlayFactionDialogueToTeam( "amphp_youAmped" + hardpointEnt.kv.hardpointGroup, cappingTeam )
+					PlayFactionDialogueToTeam( "amphp_enemyAmped" + hardpointEnt.kv.hardpointGroup, GetOtherTeam( cappingTeam ) )
+				}
+			}
+		}
+
+
+
 		// scoring
-		if ( hardpointEnt.GetTeam() != TEAM_UNASSIGNED && GetHardpointState( hardpoint ) >= CAPTURE_POINT_STATE_CAPTURED && Time() - lastScoreTime >= TEAM_OWNED_SCORE_FREQ )
+		if ( hardpointEnt.GetTeam() != TEAM_UNASSIGNED && GetHardpointState( hardpoint ) >= CAPTURE_POINT_STATE_CAPTURED && currentTime - lastScoreTime >= TEAM_OWNED_SCORE_FREQ )
 		{
-			lastScoreTime = Time()
-		
+			lastScoreTime = currentTime
+
 			// 2x score if amped
 			if ( GetHardpointState( hardpoint ) == CAPTURE_POINT_STATE_AMPED )
 				AddTeamScore( hardpointEnt.GetTeam(), 2 )
-			else
+			else if( GetHardpointState( hardpoint) >= CAPTURE_POINT_STATE_CAPTURED)
 				AddTeamScore( hardpointEnt.GetTeam(), 1 )
 		}
-	
-		lastTime = Time()
+
+		lastTime = currentTime
 		WaitFrame()
 	}
 }
@@ -264,33 +380,33 @@ void function HardpointThink( HardpointStruct hardpoint )
 void function TrackChevronStates()
 {
 	// you get 1 amped arrow for chevron / 4, 1 unamped arrow for every 1 the amped chevrons
-	
+
 	while ( true )
 	{
 		int imcChevron
 		int militiaChevron
-		
+
 		foreach ( HardpointStruct hardpoint in file.hardpoints )
 		{
 			if ( hardpoint.hardpoint.GetTeam() == TEAM_IMC )
 			{
 				if ( hardpoint.hardpoint.GetHardpointState() == CAPTURE_POINT_STATE_AMPED )
 					imcChevron += 4
-				else if ( hardpoint.hardpoint.GetHardpointState() >= CAPTURE_POINT_STATE_CAPTURED )
+				else
 					imcChevron++
 			}
 			else if ( hardpoint.hardpoint.GetTeam() == TEAM_MILITIA )
 			{
 				if ( hardpoint.hardpoint.GetHardpointState() == CAPTURE_POINT_STATE_AMPED )
 					militiaChevron += 4
-				else if ( hardpoint.hardpoint.GetHardpointState() >= CAPTURE_POINT_STATE_CAPTURED )
+				else
 					militiaChevron++
 			}
 		}
-		
+
 		SetGlobalNetInt( "imcChevronState", imcChevron )
 		SetGlobalNetInt( "milChevronState", militiaChevron )
-		
+
 		WaitFrame()
 	}
 }
