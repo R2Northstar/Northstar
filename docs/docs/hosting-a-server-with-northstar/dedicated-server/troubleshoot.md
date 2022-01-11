@@ -12,9 +12,9 @@ Check that your server is running on the latest Northstar release as it can some
 
 #### Ports are not the same 
 
-Your gameserver is configured to listen to a given TCP port, masterserver needs to be able to contact your gameserver though that same port.
+Your gameserver is configured to listen to a given TCP port.
 
-If the masterserver can't access your gameserver through the same port
+Masterserver needs to be able to contact your gameserver though that same port.
 
 #### Windows Firewall is blocking tcp ports
 
