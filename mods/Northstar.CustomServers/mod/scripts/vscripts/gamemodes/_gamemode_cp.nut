@@ -345,7 +345,7 @@ void function HardpointThink( HardpointStruct hardpoint )
 				if(GetHardpointState(hardpoint)<CAPTURE_POINT_STATE_AMPING)
 					SetHardpointState(hardpoint,CAPTURE_POINT_STATE_AMPING)
 				SetHardpointCaptureProgress( hardpoint, min( 2.0, GetHardpointCaptureProgress( hardpoint ) + ( deltaTime / HARDPOINT_AMPED_DELAY * capperAmount ) ) )
-				if(GetHardpointCaptureProgress(hardpoint)==2.0)
+				if(GetHardpointCaptureProgress(hardpoint)==2.0&&!(GetHardpointState(hardpoint)==CAPTURE_POINT_STATE_AMPED))
 				{
 					SetHardpointState( hardpoint, CAPTURE_POINT_STATE_AMPED )
 
@@ -359,7 +359,7 @@ void function HardpointThink( HardpointStruct hardpoint )
 
 
 		// scoring
-		if ( hardpointEnt.GetTeam() != TEAM_UNASSIGNED && GetHardpointState( hardpoint ) >= CAPTURE_POINT_STATE_CAPTURED && currentTime - lastScoreTime >= TEAM_OWNED_SCORE_FREQ && !hardpointBlocked&&cappingTeam==GetOtherTeam(hardpointEnt.GetTeam()))
+		if ( hardpointEnt.GetTeam() != TEAM_UNASSIGNED && GetHardpointState( hardpoint ) >= CAPTURE_POINT_STATE_CAPTURED && currentTime - lastScoreTime >= TEAM_OWNED_SCORE_FREQ && !hardpointBlocked&&!(cappingTeam==GetOtherTeam(hardpointEnt.GetTeam())))
 		{
 			lastScoreTime = currentTime
 
