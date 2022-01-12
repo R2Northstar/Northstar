@@ -14,5 +14,5 @@ void function PlaySpectreChatterMPLine( entity spectre, string conversationType 
 	
 	foreach ( entity player in GetPlayerArray() )
 		if ( ShouldPlaySpectreChatterMPLine( conversationType, player, spectre ) )
-			Remote_CallFunction_NonReplay( player, "ServerCallback_PlaySpectreChatterMP", GetConversationIndex( conversationType ), spectre.GetEncodedEHandle() )
+			Remote_CallFunction_Replay( player, "ServerCallback_PlaySpectreChatterMP", GetConversationIndex( conversationType ), spectre.GetEncodedEHandle() )
 }
