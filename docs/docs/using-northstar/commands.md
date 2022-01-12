@@ -27,13 +27,18 @@ In the future this keybind should hopefully be adjustable via `Controls > Settin
 **Note** that if you're using the [Enhanced Menu Mod](https://github.com/taskinoz/Enhanced-Menu-Mod) this might already be the case
 {% endhint %}
 
-### List of commands
+## List of commands
+
+### Northstar Commands
 
 | Command                 | Result         |
 | ----------------------- | -------------- |
 | `ns_masterserver_hostname` | Masterserver URL, default: `https://northstar.tf` |
 | `ns_auth_allow_insecure 1` | Allows clients to connect without masterserver authorization |
 | `connect <ip address>:<port>` | Directly connect to a Northstar gameserver |
+| `reload_mods` | Reload mods |
+| `ns_disallowed_tacticals` | String list of disallowed tactical abilities, ex: `"mp_ability_grapple,mp_ability_heal"` |
+| `ns_disallowed_tactical_replacement` | Optional replacement ability for disallowed tacticals |
 
 ### Server commands
 
@@ -163,3 +168,10 @@ In the future this keybind should hopefully be adjustable via `Controls > Settin
 | `sv_warnAboutCmdNumJumps`                   |                                                                       | 20      |
 | `sv_weapon_despawn_time`                    |                                                                       | 90      |
 | `sv_writeSendTableStreamFile`               |                                                                       |         |
+
+### Useful dev scripts
+
+|Command|Result|
+|-|-|
+|`script CreateTitanForPlayerAndHotdrop( GetPlayerArray()[0], GetTitanReplacementPoint( GetPlayerArray()[0], false ) )`|Sets your titan as available to call for Titanfall|
+|`script ForcePilotToBecomeTitan( GetPlayerArray()[0] )`|Transforms you into a titan|
