@@ -21,6 +21,7 @@ WeaponData
 	"OnWeaponActivate"								"OnWeaponActivate_peacekraber"
 	"OnWeaponDeactivate"							"OnWeaponDeactivate_peacekraber"
 	"OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_peacekraber"
+	"OnWeaponOwnerChanged"							"OnWeaponOwnerChanged_weapon_peacekraber"
 	"OnWeaponChargeLevelIncreased"					"OnWeaponChargeLevelIncreased_titanweapon_sniper"
 	"OnWeaponNpcPrimaryAttack"						"OnWeaponNpcPrimaryAttack_peacekraber"
 
@@ -59,7 +60,8 @@ WeaponData
 	"charge_drain_sound_1p"							"Weapon_Titan_Sniper_WindDown"
 	"charge_drain_sound_stop_when_empty"			"1"
 	"charge_drain_sound_seek_to_charge_fraction"	"1"
-		// Spread
+	"charge_remain_full_when_fired"					"0"
+	// Spread
 	"spread_stand_hip" 								"0"
 	"spread_stand_hip_run" 							"0"
 	"spread_stand_hip_sprint"                       "0"
@@ -73,27 +75,28 @@ WeaponData
 	"damage_type" 									"bullet"
 	"damage_near_distance"							"500"
 	"damage_far_distance" 							"1000"
-	"damage_near_value"   							"11"
-	"damage_far_value"								"11"
-	"damage_near_value_titanarmor"					"20"
-	"damage_far_value_titanarmor" 					"15"
+	"damage_near_value"   							"15"
+	"damage_far_value"								"15"
+	"damage_near_value_titanarmor"					"40"
+	"damage_far_value_titanarmor" 					"30"
 
 		// Ammo
 	"ammo_stockpile_max"							"20"
+	"ammo_no_remove_from_stockpile"					"1"
 	"ammo_default_total"							"25"
 	"ammo_clip_size"   								"5"
 	"ammo_size_segmented_reload"					"5"
 	"ammo_display_as_clips"							"0"
 	"reload_is_segmented"							"0"
 
-	"reload_time" 									"2.45"
-	"reload_time_late1" 							"2.175"
+	"reload_time" 									"2.5"
+	"reload_time_late1" 							"2.2"
 	"reload_time_late2" 							"0"
-	"reloadempty_time"								"3.35"
+	"reloadempty_time"								"3.5"
 	"reloadempty_time_late1"						"2.5"
 	"reloadempty_time_late2"						"1.7"
 	"reloadempty_time_late2"						"1.1"
-	"rechamber_time"								"0.756"
+	"rechamber_time"								"0.924"
 	"viewmodel_offset_ads"							"0 0 0"
 
 
@@ -129,12 +132,13 @@ WeaponData
 	"bolt_hitsize_growfinal_lerptime"				"0.18"
 	"bolt_hitsize_growfinal_size"					"6.0"
 	"bolt_bounce_frac"								"1.0"
-
+   	"titanarmor_critical_hit_required"              "1"
+	"critical_hit"									"1"
 
 	"bolt_gravity_enabled"							"1"
 
 	// Behavior
-	"fire_rate"   									"1.33"
+	"fire_rate"   									"4.0"
 	"zoom_time_in"									"0.2"
 	"zoom_time_out"   								"0.2"
 	"zoom_fov"										"50"
