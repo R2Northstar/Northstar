@@ -13,6 +13,7 @@ void function CodeCallback_MapInit()
 	
 	// there are some really busted titan startspawns that are on the fucking other side of the map from where they should be, so we remove them
 	AddSpawnCallback( "info_spawnpoint_titan_start", TrimBadTitanStartSpawns )
+	AddSpawnCallback( "sky_camera", FixSkycamFog )
 }
 
 void function TrimBadTitanStartSpawns( entity spawn )
@@ -24,4 +25,10 @@ void function TrimBadTitanStartSpawns( entity spawn )
 
 	if ( Distance2D( spawn.GetOrigin(), comparisonOrigin ) >= 2000.0 )
 		spawn.Destroy()
+}
+
+void function FixSkycamFog( entity skycam )
+{
+	if ( skycam.GetTargetName() == "skybox_cam_level" )
+		skycam.kv.useworldfog = 1
 }
