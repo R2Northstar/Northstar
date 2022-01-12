@@ -125,9 +125,27 @@ void function GamemodeFastball_Init()
 	FastballAddBuddySpawnForLevel( "mp_glitch", TEAM_IMC, < 4100, 890, 320>, < 0, 180, 0 > )
 	FastballAddPanelSpawnsForLevel( "mp_glitch", [
 		< 2703, 2170, 25 >, < 0, 0.00, 0 >,
-		< -192, 129, -55 >, < 0, 90.00, 0 >,
+		< -192, 129, -250 >, < 0, 90.00, 0 >,
 		< -3088, -1905, 25 >, < 0, -180.00, 0 >
 	])
+
+	FastballAddPropForLevel("mp_glitch", $"models/containers/plastic_pallet_01.mdl", [
+		< -190, 0, -250 >, < 0, 90.00, 0 >,
+		< -190, 65, -250 >, < 0, 90.00, 0 >,
+		< -190, 130, -250 >, < 0, 90.00, 0 >,
+		< -190, 195, -250 >, < 0, 90.00, 0 >,
+		< -190, 250, -250 >, < 0, 90.00, 0 >,
+		< -125, 0, -250 >, < 0, 90.00, 0 >,
+		< -125, 65, -250 >, < 0, 90.00, 0 >,
+		< -125, 130, -250 >, < 0, 90.00, 0 >,
+		< -125, 195, -250 >, < 0, 90.00, 0 >,
+		< -125, 250, -250 >, < 0, 90.00, 0 >,
+		< -255, 0, -250 >, < 0, 90.00, 0 >,
+		< -255, 65, -250 >, < 0, 90.00, 0 >,
+		< -255, 130, -250 >, < 0, 90.00, 0 >,
+		< -255, 195, -250 >, < 0, 90.00, 0 >,
+		< -255, 250, -250 >, < 0, 90.00, 0 >
+	] )
 
 	FastballAddBuddySpawnForLevel( "mp_relic02", TEAM_MILITIA, < 4504, -3500, 150 >, < 0, -170, 0 > )
 	FastballAddBuddySpawnForLevel( "mp_relic02", TEAM_IMC, < -4505, -3750, 367>, < 0, 10, 0 > )
@@ -189,6 +207,25 @@ void function FastballAddPanelSpawnsForLevel( string level, array<vector> positi
 		
 		file.panelSpawns.append( spawnPoint )
 	}
+}
+
+void function FastballAddPropForLevel( string level, asset model, array<vector> positionsAndOrigins)
+{
+	if ( GetMapName() != level )
+		return
+	
+	for ( int i = 0; i < positionsAndOrigins.len(); i += 2 )
+	{
+		entity prop = CreateEntity( "prop_control_panel" )
+		prop.SetValueForModelKey( model )
+		prop.SetOrigin( positionsAndOrigins[ i ] )
+		prop.SetAngles( positionsAndOrigins[ i + 1 ] )
+		prop.kv.solid = SOLID_VPHYSICS
+		DispatchSpawn( prop )
+	
+		prop.SetModel( model )
+	}
+	
 }
 
 entity function CreatePanel( vector origin, vector angles )
