@@ -359,7 +359,7 @@ void function HardpointThink( HardpointStruct hardpoint )
 
 
 		// scoring
-		if ( hardpointEnt.GetTeam() != TEAM_UNASSIGNED && GetHardpointState( hardpoint ) >= CAPTURE_POINT_STATE_CAPTURED && currentTime - lastScoreTime >= TEAM_OWNED_SCORE_FREQ )
+		if ( hardpointEnt.GetTeam() != TEAM_UNASSIGNED && GetHardpointState( hardpoint ) >= CAPTURE_POINT_STATE_CAPTURED && currentTime - lastScoreTime >= TEAM_OWNED_SCORE_FREQ && !hardpointBlocked&&cappingTeam==GetOtherTeam(hardpointEnt.GetTeam()))
 		{
 			lastScoreTime = currentTime
 
