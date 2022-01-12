@@ -14,5 +14,5 @@ void function PlayGruntChatterMPLine( entity grunt, string conversationType )
 	
 	foreach ( entity player in GetPlayerArray() )
 		if ( ShouldPlayGruntChatterMPLine( conversationType, player, grunt ) )
-			Remote_CallFunction_NonReplay( player, "ServerCallback_PlayGruntChatterMP", GetConversationIndex( conversationType ), grunt.GetEncodedEHandle() )
+			Remote_CallFunction_Replay( player, "ServerCallback_PlayGruntChatterMP", GetConversationIndex( conversationType ), grunt.GetEncodedEHandle() )
 }
