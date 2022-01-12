@@ -146,7 +146,7 @@ If ran on a server with the [`ns_should_return_to_lobby 0`](#Convars-returntolob
 # <a name="Maps">Maps</a>
 Maps can be set on autorotation using [`ns_should_return_to_lobby 0`](#Convars-returntolobby)
 
-First map of autorotation can be set using [`ns_private_match_last_map`](Convars-lastmap)
+First map of autorotation can be set using [`ns_private_match_last_map`](#Convars-lastmap)
 
 A way to blacklist maps with autorotation do not exists.
 
