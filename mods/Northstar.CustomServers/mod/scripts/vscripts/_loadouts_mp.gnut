@@ -267,11 +267,10 @@ void function TryGivePilotLoadoutForGracePeriod( entity player )
 		
 		if ( ( ( Time() - respawnTimeReal <= CLASS_CHANGE_GRACE_PERIOD || GetGameState() < eGameState.Playing ) && file.loadoutGracePeriodEnabled ) || player.p.usingLoadoutCrate )
 		{
-			// because the game sucks and stuff Loadouts_TryGivePilotLoadout doesn't work in intro so have to do this manually
-			int loadoutIndex = GetPersistentSpawnLoadoutIndex( player, "pilot" )
-			GivePilotLoadout( player, GetPilotLoadoutFromPersistentData( player, loadoutIndex ) )
-			SetActivePilotLoadout( player )
-			SetActivePilotLoadoutIndex( player, loadoutIndex )
+			if ( !Loadouts_CanGivePilotLoadout( player ) && player.GetParent() != null && ( HasCinematicFlag( player, CE_FLAG_INTRO ) || HasCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING ) || HasCinematicFlag( player, CE_FLAG_WAVE_SPAWNING ) ) )
+				thread GiveLoadoutWhenIntroOver( player )
+			else
+				Loadouts_TryGivePilotLoadout( player )
 			
 			player.p.usingLoadoutCrate = false
 		}
@@ -279,3 +278,14 @@ void function TryGivePilotLoadoutForGracePeriod( entity player )
 			SendHudMessage( player, "#LOADOUT_CHANGE_NEXT_BOTH", -1, 0.4, 255, 255, 255, 255, 0.15, 3.0, 0.5 ) // like 90% sure this is innacurate lol
 	}
 }
+
+void function GiveLoadoutWhenIntroOver( entity player )
+{
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "OnDeath" )
+	
+	while ( player.GetParent() != null && ( HasCinematicFlag( player, CE_FLAG_INTRO ) || HasCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING ) || HasCinematicFlag( player, CE_FLAG_WAVE_SPAWNING ) ) )
+		WaitFrame()
+	
+	Loadouts_TryGivePilotLoadout( player )
+}	
