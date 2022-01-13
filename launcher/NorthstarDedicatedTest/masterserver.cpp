@@ -1026,6 +1026,14 @@ void CHostState__State_NewGameHook(CHostState* hostState)
 	if (g_ServerAuthenticationManager->m_bNeedLocalAuthForNewgame)
 		SetCurrentPlaylist("tdm");
 
+	// net_data_block_enabled is required for sp, force it if we're on an sp map
+	// sucks for security but just how it be
+	if (!strncmp(g_pHostState->m_levelName, "sp_", 3))
+	{
+		Cbuf_AddText(Cbuf_GetCurrentPlayer(), "net_data_block_enabled 1", cmd_source_t::kCommandSrcCode);
+		Cbuf_Execute();
+	}
+
 	CHostState__State_NewGame(hostState);
 
 	int maxPlayers = 6;
@@ -1049,12 +1057,24 @@ void CHostState__State_ChangeLevelMPHook(CHostState* hostState)
 	if (maxPlayersVar) // GetCurrentPlaylistVar can return null so protect against this
 		maxPlayers = std::stoi(maxPlayersVar);
 
+	// net_data_block_enabled is required for sp, force it if we're on an sp map
+	// sucks for security but just how it be
+	if (!strncmp(g_pHostState->m_levelName, "sp_", 3))
+	{
+		Cbuf_AddText(Cbuf_GetCurrentPlayer(), "net_data_block_enabled 1", cmd_source_t::kCommandSrcCode);
+		Cbuf_Execute();
+	}
+
 	g_MasterServerManager->UpdateServerMapAndPlaylist(hostState->m_levelName, (char*)GetCurrentPlaylistName(), maxPlayers);
 	CHostState__State_ChangeLevelMP(hostState);
 }
 
 void CHostState__State_ChangeLevelSPHook(CHostState* hostState)
 {
+	// is this even called? genuinely i don't think so
+	// from what i can tell, it's not called on mp=>sp change or sp=>sp change
+	// so idk it's fucked
+
 	int maxPlayers = 6;
 	char* maxPlayersVar = GetCurrentPlaylistVar("max_players", false);
 	if (maxPlayersVar) // GetCurrentPlaylistVar can return null so protect against this
@@ -1097,7 +1117,7 @@ void InitialiseSharedMasterServer(HMODULE baseAddress)
 
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x16E7D0, CHostState__State_NewGameHook, reinterpret_cast<LPVOID*>(&CHostState__State_NewGame));
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x16E5D0, CHostState__State_ChangeLevelMPHook, reinterpret_cast<LPVOID*>(&CHostState__State_ChangeLevelMP));
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x16E520, CHostState__State_ChangeLevelSPHook, reinterpret_cast<LPVOID*>(&CHostState__State_ChangeLevelSP));
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x16E520, CHostState__State_ChangeLevelMPHook, reinterpret_cast<LPVOID*>(&CHostState__State_ChangeLevelMP));
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x16E5D0, CHostState__State_ChangeLevelSPHook, reinterpret_cast<LPVOID*>(&CHostState__State_ChangeLevelSP));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x16E640, CHostState__State_GameShutdownHook, reinterpret_cast<LPVOID*>(&CHostState__State_GameShutdown));
 }

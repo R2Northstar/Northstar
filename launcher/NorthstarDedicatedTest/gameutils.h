@@ -205,6 +205,7 @@ extern server_state_t* sv_m_State;
 
 // network stuff
 extern ConVar* Cvar_hostport;
+extern ConVar* Cvar_net_datablock_enabled;
 
 // playlist stuff
 typedef const char*(*GetCurrentPlaylistType)();
