@@ -30,3 +30,16 @@ Below are a series of variables and commands you can use for server configuratio
 | `sv_updaterate_mp` | The maximum number of times per second your server will send information to connected players, if a player's cl_updaterate_mp value is lower than this, their rate will be limited to it | `20` |
 | `sv_max_snapshots_multiplayer` | The number of snapshots stored locally for use in replays, this should be set to sv_updaterate_mp * 15 | `300` |
 | `host_skip_client_dll_crc` | Whether the server should allow clients with modified client.dll files to connect, these are used for visor colour edit mods | `1` |
+
+## Tips and tricks:
+
+To change gamemode and map, run:
+```
+sv_cheats 1; script GameRules_ChangeMap( "mp_forwardbase_kodai", "ctf" ); sv_cheats 0
+```
+replace `mp_forwardbase_kodai` and `ctf` with your desired map and gamemode.
+
+
+If someone keeps messing with the settings, set `ns_private_match_only_host_can_change_settings` to `2`, so that only you can change them.
+
+Set `ns_private_match_countdown_length` to `1` if you don't want to wait for the countdown timer when you start a match.
