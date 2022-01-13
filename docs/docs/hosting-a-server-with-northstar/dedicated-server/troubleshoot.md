@@ -32,11 +32,11 @@ As two programs cannot listen to the same port and IP at the same time, changing
 
 ## If a scan on your external IP isn't successfull
 
-#### Windows Firewall is blocking tcp ports
+#### Firewall is blocking tcp ports
 
-In some cases Windows Firewall can prevent your ports to be exposed to your local network.
+In some cases your Firewall or antivirus can prevent your ports to be exposed to your local network.
 To fix this issue, make a rule to allow your server to listen on your network.
-Disabling the firewall can also work, even if it's not reccomended.
+Disabling the firewall and antivirus can also work, even if it's not reccomended.
 
 #### Router NAT configuration is incorrect
 
@@ -53,5 +53,11 @@ To check if a tcp port is open, you can use online services like [canyouseeme](h
 On Windows using Powershell the following command can detect if a port is accessible. 
 
 `Test-NetConnection -ComputerName IP -Port PORT` 
+
+If powershell isn't an option for you, multiple CLI and GUI tools are available to download.
+
+Here are some examples :
+- (CLI)[nmap](https://nmap.org/download.html)
+- (GUI)[PortQryUI](https://docs.microsoft.com/fr-FR/troubleshoot/windows-server/networking/portqry-command-line-port-scanner-v2)
 
 Your server **must** be running while you scan the port.
