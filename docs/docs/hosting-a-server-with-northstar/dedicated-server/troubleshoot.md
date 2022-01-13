@@ -4,9 +4,17 @@
 The masterserver needs to request your gameserver for it to be authentified and registered.
 This error means that masterserver can't access your server's tcp port.
 
-It can come from many reasons, but you can narrow them down using [Port scanning tools](#check-if-a-tcp-port-is-open).
+It can come from many reasons, but you can narrow them down by checking if your server is reacheable from the outside.
 
-## If a scan on your external IP is successfull
+## Check if server is reachable
+
+One can check if the server is reachable using their browser.
+
+example : `http://{server_ip}:{server_tcp_port}/verify` should answer you `I am a northstar server!`
+
+Your server **must** be running while you check if the port is open.
+
+## If server is reacheable using external IP 
 
 #### Your GameServer is out of date
 
@@ -24,6 +32,37 @@ Your gameserver is configured to listen to a given TCP port.
 
 Masterserver needs to be able to contact your gameserver though that same port.
 
+#### Another Northstar Server is using the port
+
+Shutdown every other server to narrow down the problem
+
+This won't generally help but will allow you to avoid checking for the wrong server.
+
+## If server is not reacheable using external IP 
+
+Check if your server is reacheable from your internal network's IP (often starts with `192.168.x.x`)
+
+#### Firewall is blocking tcp ports
+
+In some cases your Firewall or antivirus can prevent your ports to be exposed to your local network.
+To fix this issue, make a rule to allow your server to listen on your network.
+Disabling the firewall and antivirus can also work, even if it's not reccomended.
+
+## If server is not reacheable using external IP but reacheable using internal IP
+
+#### Router configuration is incorrect
+
+If your port can be accessed from your local IP but not from your public IP, then it's very likely that your NAT rules aren't properly configured.
+
+#### CGNAT
+
+See [CGNAT](https://r2northstar.gitbook.io/r2northstar-wiki/hosting-a-server-with-northstar/prerequisites#cgnat)
+
+
+## If server is not reacheable using external IP nor using internal IP
+
+Try checking your loopback network interface `http://127.0.0.1:{server_tcp_port}/verify`
+
 #### Another program is using the port
 
 Sometimes another program listens to the same tcp port as Northstar.
@@ -32,37 +71,6 @@ You can check if that's the case by running `netstat -a -b` using CMD as admin
 
 As two programs cannot listen to the same port and IP at the same time, changing the TCP listen port can sometimes solve the problem.
 
-## If a scan on your external IP isn't successfull
+#### Server is using the wrong port 
 
-#### Firewall is blocking tcp ports
-
-In some cases your Firewall or antivirus can prevent your ports to be exposed to your local network.
-To fix this issue, make a rule to allow your server to listen on your network.
-Disabling the firewall and antivirus can also work, even if it's not reccomended.
-
-#### Router NAT configuration is incorrect
-
-If your port can be accessed from your local IP but not from your public IP, then it's very likely that your NAT rules aren't properly configured.
-
-#### CGNAT
-
-See [CGNAT](https://r2northstar.gitbook.io/r2northstar-wiki/hosting-a-server-with-northstar/prerequisites#cgnat)
-
-## Check if a tcp port is open
-
-To check if a tcp port is open, you can use online services like [canyouseeme](https://www.canyouseeme.org/) or use a command line tool.
-
-On Windows using Powershell the following command can detect if a port is accessible. 
-
-`Test-NetConnection -ComputerName IP -Port PORT` 
-
-If powershell isn't an option for you, multiple CLI and GUI tools are available to download.
-
-Here are some examples :
-- (CLI)[nmap](https://nmap.org/download.html)
-- (GUI)[PortQryUI](https://docs.microsoft.com/fr-FR/troubleshoot/windows-server/networking/portqry-command-line-port-scanner-v2)
-
-Alternatively, one can check if the server's port is open using their browser.
-(example : `http://127.0.0.1:8081/verify`) should answer you `I am a northstar server!`
-
-Your server **must** be running while you check if the port is open.
+You can use `netstat -a -b` using CMD as admin to check which process listens on which port
