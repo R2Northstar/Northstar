@@ -14,7 +14,9 @@ Check that your server is running on the latest Northstar release as it can some
 
 #### Mastserver is down
 
-Check Northstar's Discord for annoucements. if https://northstar.tf gives you a HTTP 523 error, that means that the masterserver is offline.
+Check Northstar's Discord for annoucements. 
+
+https://northstar.tf giving you a HTTP 523 error means that the masterserver is offline.
 
 #### Ports are not the same 
 
@@ -60,4 +62,7 @@ Here are some examples :
 - (CLI)[nmap](https://nmap.org/download.html)
 - (GUI)[PortQryUI](https://docs.microsoft.com/fr-FR/troubleshoot/windows-server/networking/portqry-command-line-port-scanner-v2)
 
-Your server **must** be running while you scan the port.
+Alternatively, one can check if the server's port is open using their browser.
+(example : `http://127.0.0.1:8081/verify`) should answer you `I am a northstar server!`
+
+Your server **must** be running while you check if the port is open.
