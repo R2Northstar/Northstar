@@ -8,3 +8,5 @@ There are the two files that need to be translated, use the English version as a
 
 1. [Northstar.Client/mod/resource/northstar_client_localisation_english.txt](https://github.com/R2Northstar/NorthstarMods/blob/main/Northstar.Client/mod/resource/northstar_client_localisation_english.txt)
 2. [Northstar.Custom/mod/resource/northstar_custom_english.txt](https://github.com/R2Northstar/NorthstarMods/blob/main/Northstar.Custom/mod/resource/northstar_custom_english.txt)
+
+To test your modifications go to `Origin (My games library) -> Titanfall 2 (right click) -> Game Properties -> Advanced Launch Options` and select the language you modified from the dropdown.
