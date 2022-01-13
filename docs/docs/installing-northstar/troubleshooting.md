@@ -4,6 +4,15 @@ Generally try to first launch the vanilla game (i.e. not Northstar) if you encou
 
 Also note that some solutions described below can also apply to the base game, like issues caused by 10th+ gen Intel CPUs.
 
+## "Failed to initialize Origin: Origin Core seems to be running, but the LSX Authentication Challenge failed. No communication with Core is possible."
+
+![LSX Authentication Challenge failed](https://user-images.githubusercontent.com/97235072/148391447-300e1b47-6148-43f7-8854-b0882e150d12.png)
+
+If the usual workaround of restarting Origin/rebooting or running the vanilla game first and then Northstar don’t work, try the following:
+- add `-northstar` to your command line arguments/launch options field in Origin/Steam game options
+- run the game with Origin/Steam instead of starting NorthstarLauncher.exe (important)
+- error should be no more 
+
 ## Engine Error
 
 {% hint style="info" %}
@@ -28,15 +37,6 @@ Don't panic! This warning seems to be caused by Origin and none of your files ar
 9. Check Github issues if anyone else is experiencing this problem. Maybe current release has a bug.
 10. If you followed all these steps and even launching the vanilla version of the game doesn't work, your final option is to fully remove the game and reinstall it.\
    Then check if vanilla works before reinstalling Northstar.
-
-## "Failed to initialize Origin: Origin Core seems to be running, but the LSX Authentication Challenge failed. No communication with Core is possible."
-
-![LSX Authentication Challenge failed](https://user-images.githubusercontent.com/97235072/148391447-300e1b47-6148-43f7-8854-b0882e150d12.png)
-
-If the usual workaround of restarting Origin/rebooting or running the vanilla game first and then Northstar don’t work, try the following:
-- add `-northstar` to your command line arguments/launch options field in Origin/Steam game options
-- run the game with Origin/Steam instead of starting NorthstarLauncher.exe (important)
-- error should be no more 
 
 ## "Failed copying wsock32.dll from system32 [...] copy_file: Access is denied."
 
