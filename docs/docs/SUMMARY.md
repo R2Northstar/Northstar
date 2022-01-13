@@ -28,6 +28,7 @@
 * [Hosting a Dedicated Server](hosting-a-server-with-northstar/dedicated-server/README.md)
   * [Best practices](hosting-a-server-with-northstar/dedicated-server/best-practices.md)
   * [Hosting on Linux](hosting-a-server-with-northstar/dedicated-server/hosting-on-linux.md)
+  * [Troubleshoot](hosting-a-server-with-northstar/dedicated-server/troubleshoot.md)
 * [Guides](hosting-a-server-with-northstar/hosting-guides.md)
 ## Modding
 
