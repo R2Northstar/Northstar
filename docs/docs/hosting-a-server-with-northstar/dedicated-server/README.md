@@ -20,6 +20,10 @@ At the moment, dedicated servers still require DirectX 11 to work, which typical
 While this is absolutely not ideal, it's the best solution for truely headless dedicated servers at the moment, and surprisingly hardly uses any CPU time, though it can use roughly up to 1GB of RAM.\
 Regarding RAM usage, dedicated servers also use significant amounts of RAM at the moment, often requiring 1.5-2GB, though I expect this to lower as development continues.
 
+## Troubleshoot
+
+See [troubleshoot](../troubleshoot)
+
 # Startup Arguments
 
 Startup arguments can be added in the `ns_startup_args_dedi.txt` file.
