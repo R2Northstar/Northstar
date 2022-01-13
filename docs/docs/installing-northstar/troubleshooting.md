@@ -13,7 +13,7 @@ If the usual workaround of restarting Origin/rebooting or running the vanilla ga
 - run the game with Origin/Steam instead of starting NorthstarLauncher.exe (important)
 - error should be no more 
 
-## Engine Error
+## "Engine Error: File corruption detected. Please repair or re-install the game."
 
 {% hint style="info" %}
 Make sure you updated [Northstar to version v1.4.0 or higher](https://github.com/R2Northstar/Northstar/releases/) as this version features changes that address this problem.
