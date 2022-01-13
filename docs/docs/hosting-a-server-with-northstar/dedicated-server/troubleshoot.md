@@ -1,18 +1,18 @@
 # Document is empty
 `[error] Failed reading masterserver authentification response: encountered parse error 'The document is empty.'`
 
-The masterserver needs to request your gameserver for it to be authentified and registered.
+Masterserver needs to request your gameserver for it to be authentified and registered.
 This error means that masterserver can't access your server's tcp port.
 
-It can come from many reasons, but you can narrow them down by checking if your server is reacheable from the outside.
+Multiple problems can cause this error, but you can narrow it down by checking if your server is reacheable from the outside.
 
 ## Check if server is reachable
 
-One can check if the server is reachable using their browser.
+You can check if the server is reachable using your internet browser.
 
 example : `http://{server_ip}:{server_tcp_port}/verify` should answer you `I am a northstar server!`
 
-Your server **must** be running while you check if the port is open.
+Your server **must** be running while you check if the server is reachable.
 
 ## If server is reacheable using external IP 
 
