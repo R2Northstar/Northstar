@@ -22,6 +22,7 @@ server_state_t* sv_m_State;
 
 // network stuff
 ConVar* Cvar_hostport;
+ConVar* Cvar_net_datablock_enabled;
 
 // playlist stuff
 GetCurrentPlaylistType GetCurrentPlaylistName;
@@ -60,6 +61,7 @@ void InitialiseEngineGameUtilFunctions(HMODULE baseAddress)
 	sv_m_State = (server_state_t*)((char*)baseAddress + 0x12A53D48);
 
 	Cvar_hostport = (ConVar*)((char*)baseAddress + 0x13FA6070);
+	Cvar_net_datablock_enabled = (ConVar*)((char*)baseAddress + 0x12A4F6D0);
 
 	GetCurrentPlaylistName = (GetCurrentPlaylistType)((char*)baseAddress + 0x18C640);
 	SetCurrentPlaylist = (SetCurrentPlaylistType)((char*)baseAddress + 0x18EB20);
