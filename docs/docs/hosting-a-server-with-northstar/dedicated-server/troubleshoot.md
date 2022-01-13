@@ -22,6 +22,14 @@ Your gameserver is configured to listen to a given TCP port.
 
 Masterserver needs to be able to contact your gameserver though that same port.
 
+#### Another program is using the port
+
+Sometimes another program listens to the same tcp port as Northstar.
+
+You can check if that's the case by running `netstat -a -b` using CMD as admin
+
+As two programs cannot listen to the same port and IP at the same time, changing the TCP listen port can sometimes solve the problem.
+
 ## If a scan on your external IP isn't successfull
 
 #### Windows Firewall is blocking tcp ports
