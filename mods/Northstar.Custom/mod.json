@@ -1,12 +1,12 @@
 {
-	"Name" : "Northstar.Custom",
+	"Name": "Northstar.Custom",
 	"Description": "Custom content for Northstar: extra weapons, gamemodes, etc.",
 	"Version": "1.1.0",
 	"LoadPriority": 1,
 	"RequiredOnClient": true,
-
 	"ConVars": [
-		{ 	"Name": "ns_disallowed_tacticals",
+		{
+			"Name": "ns_disallowed_tacticals",
 			"DefaultValue": ""
 		},
 		{
@@ -20,9 +20,12 @@
 		{
 			"Name": "ns_disallowed_weapon_primary_replacement",
 			"DefaultValue": "mp_weapon_rspn101"
+		},
+		{
+			"Name": "ns_force_melee",
+			"DefaultValue": ""
 		}
 	],
-
 	"Scripts": [
 		{
 			"Path": "sh_northstar_custom_precache.gnut",
@@ -30,7 +33,6 @@
 			"ClientCallback": {
 				"After": "NorthstarCustomPrecache"
 			},
-
 			"ServerCallback": {
 				"After": "NorthstarCustomPrecache"
 			}
@@ -42,19 +44,16 @@
 				"After": "NorthstarDevCommands_Init"
 			}
 		},
-
 		{
 			"Path": "weapons/mp_weapon_peacekraber.nut",
 			"RunOn": "( CLIENT || SERVER ) && MP"
 		},
-
 		{
 			"Path": "gamemodes/sh_gamemode_chamber.nut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
 			"ClientCallback": {
 				"Before": "Sh_GamemodeChamber_Init"
 			},
-
 			"ServerCallback": {
 				"Before": "Sh_GamemodeChamber_Init"
 			}
@@ -73,7 +72,6 @@
 			"ClientCallback": {
 				"Before": "Sh_GamemodeHidden_Init"
 			},
-
 			"ServerCallback": {
 				"Before": "Sh_GamemodeHidden_Init"
 			}
@@ -86,7 +84,6 @@
 			"Path": "gamemodes/cl_gamemode_hidden.nut",
 			"RunOn": "CLIENT && MP"
 		},
-
 		{
 			"Path": "gamemodes/sh_gamemode_sns.gnut",
 			"RunOn": "SERVER || CLIENT",
@@ -112,7 +109,6 @@
 			"ClientCallback": {
 				"Before": "SHCreateGamemodeFW_Init"
 			},
-
 			"ServerCallback": {
 				"Before": "SHCreateGamemodeFW_Init"
 			}
@@ -125,14 +121,12 @@
 			"Path": "gamemodes/cl_gamemode_fw.nut",
 			"RunOn": "CLIENT && MP"
 		},
-
 		{
 			"Path": "gamemodes/sh_gamemode_gg.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
 			"ClientCallback": {
 				"Before": "Sh_GamemodeGG_Init"
 			},
-
 			"ServerCallback": {
 				"Before": "Sh_GamemodeGG_Init"
 			}
@@ -145,14 +139,12 @@
 			"Path": "gamemodes/cl_gamemode_gg.gnut",
 			"RunOn": "CLIENT && MP"
 		},
-
 		{
 			"Path": "gamemodes/sh_gamemode_tt.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
 			"ClientCallback": {
 				"Before": "Sh_GamemodeTT_Init"
 			},
-
 			"ServerCallback": {
 				"Before": "Sh_GamemodeTT_Init"
 			}
@@ -165,14 +157,12 @@
 			"Path": "gamemodes/cl_gamemode_tt.gnut",
 			"RunOn": "CLIENT && MP"
 		},
-
 		{
 			"Path": "gamemodes/sh_gamemode_inf.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
 			"ClientCallback": {
 				"Before": "Sh_GamemodeInfection_Init"
 			},
-
 			"ServerCallback": {
 				"Before": "Sh_GamemodeInfection_Init"
 			}
@@ -185,7 +175,6 @@
 			"Path": "gamemodes/cl_gamemode_inf.gnut",
 			"RunOn": "CLIENT && MP"
 		},
-
 		{
 			"Path": "_droppod_spawn.gnut",
 			"RunOn": "SERVER && MP",
@@ -199,7 +188,6 @@
 			"ClientCallback": {
 				"Before": "Sh_GamemodeArena_Init"
 			},
-
 			"ServerCallback": {
 				"Before": "Sh_GamemodeArena_Init"
 			}
@@ -207,15 +195,12 @@
 		{
 			"Path": "gamemodes/sh_arena_loadouts.gnut",
 			"RunOn": "UI || MP",
-
 			"ClientCallback": {
 				"After": "InitialiseArenaLoadouts"
 			},
-
 			"ServerCallback": {
 				"After": "InitialiseArenaLoadouts"
 			},
-
 			"UICallback": {
 				"After": "InitialiseArenaLoadouts"
 			}
@@ -228,14 +213,12 @@
 			"Path": "gamemodes/cl_gamemode_arena.gnut",
 			"RunOn": "CLIENT && MP"
 		},
-
 		{
 			"Path": "gamemodes/sh_gamemode_kr.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
 			"ClientCallback": {
 				"Before": "Sh_GamemodeKR_Init"
 			},
-
 			"ServerCallback": {
 				"Before": "Sh_GamemodeKR_Init"
 			}
@@ -248,14 +231,12 @@
 			"Path": "gamemodes/cl_gamemode_kr.gnut",
 			"RunOn": "CLIENT && MP"
 		},
-
 		{
 			"Path": "gamemodes/sh_gamemode_fastball.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
 			"ClientCallback": {
 				"Before": "Sh_GamemodeFastball_Init"
 			},
-
 			"ServerCallback": {
 				"Before": "Sh_GamemodeFastball_Init"
 			}
@@ -272,14 +253,12 @@
 			"Path": "gamemodes/cl_gamemode_fastball.gnut",
 			"RunOn": "CLIENT && MP"
 		},
-
 		{
 			"Path": "gamemodes/sh_gamemode_hs.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
 			"ClientCallback": {
 				"Before": "Sh_GamemodeHideAndSeek_Init"
 			},
-
 			"ServerCallback": {
 				"Before": "Sh_GamemodeHideAndSeek_Init"
 			}
@@ -292,41 +271,34 @@
 			"Path": "gamemodes/cl_gamemode_hs.gnut",
 			"RunOn": "CLIENT && MP"
 		},
-
 		{
 			"Path": "gamemodes/sh_gamemode_ctf_comp.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
 			"ClientCallback": {
 				"Before": "ShGamemodeCTFComp_Init"
 			},
-
 			"ServerCallback": {
 				"Before": "ShGamemodeCTFComp_Init"
 			}
 		},
-
 		{
 			"Path": "gamemodes/sh_gamemode_tffa.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
 			"ClientCallback": {
 				"Before": "Sh_GamemodeTFFA_Init"
 			},
-
 			"ServerCallback": {
 				"Before": "Sh_GamemodeTFFA_Init"
 			}
 		},
-
 		{
 			"Path": "gamemodes/_gamemode_tffa.gnut",
 			"RunOn": "SERVER && MP"
 		},
-
 		{
 			"Path": "gamemodes/cl_gamemode_tffa.gnut",
 			"RunOn": "CLIENT && MP"
 		},
-
 		{
 			"Path": "sh_3psequence_to_1p_hacks.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
@@ -334,49 +306,41 @@
 				"Before": "FirstPersonSequenceForce1P_Init",
 				"After": "FirstPersonSequenceForce1P_InitPlaylistVars"
 			},
-
 			"ServerCallback": {
 				"Before": "FirstPersonSequenceForce1P_Init",
 				"After": "FirstPersonSequenceForce1P_InitPlaylistVars"
 			}
 		},
-
 		{
 			"Path": "gamemodes/sh_riff_instagib.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
 			"ClientCallback": {
 				"After": "RiffInstagib_Init"
 			},
-
 			"ServerCallback": {
 				"After": "RiffInstagib_Init"
 			}
 		},
-
 		{
 			"Path": "sh_custom_air_accel.gnut",
 			"RunOn": "CLIENT || SERVER",
 			"ClientCallback": {
 				"After": "CustomAirAccelVars_Init"
 			},
-
 			"ServerCallback": {
 				"After": "CustomAirAccelVars_Init"
 			}
 		},
-
 		{
 			"Path": "sh_promode.gnut",
 			"RunOn": "MP",
 			"ClientCallback": {
 				"After": "Promode_Init"
 			},
-
 			"ServerCallback": {
 				"After": "Promode_Init"
 			}
 		},
-
 		{
 			"Path": "sh_bleedout_damage.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
@@ -384,37 +348,31 @@
 				"Before": "BleedoutDamage_PreInit",
 				"After": "BleedoutDamage_Init"
 			},
-
 			"ServerCallback": {
 				"Before": "BleedoutDamage_PreInit",
 				"After": "BleedoutDamage_Init"
 			}
 		},
-
 		{
 			"Path": "sh_custom_oob_timer.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
 			"ClientCallback": {
 				"After": "CustomOOBTimer_Init"
 			},
-
 			"ServerCallback": {
 				"After": "CustomOOBTimer_Init"
 			}
 		},
-
 		{
 			"Path": "rodeo/sh_classic_rodeo.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
 			"ClientCallback": {
 				"After": "ClassicRodeo_InitPlaylistVars"
 			},
-
 			"ServerCallback": {
 				"After": "ClassicRodeo_InitPlaylistVars"
 			}
 		},
-
 		{
 			"Path": "_disallowed_weapons.gnut",
 			"RunOn": "SERVER && MP",
@@ -422,7 +380,6 @@
 				"After": "DisallowedWeapons_Init"
 			}
 		},
-
 		{
 			"Path": "_disallowed_tacticals.gnut",
 			"RunOn": "SERVER && MP",
@@ -430,20 +387,24 @@
 				"After": "DisallowedTacticals_Init"
 			}
 		},
-
+		{
+			"Path": "_force_melee.gnut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+				"After": "ForceMelee_Init"
+			}
+		},
 		{
 			"Path": "sh_custom_pilot_collision.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
 			"ClientCallback": {
 				"After": "CustomPilotCollision_InitPlaylistVars"
 			},
-
 			"ServerCallback": {
 				"After": "CustomPilotCollision_InitPlaylistVars"
 			}
 		}
 	],
-
 	"Maps": [
 		{
 			"Name": "mp_skyway_v1",
@@ -451,7 +412,6 @@
 			"RPak": "sp_skyway_v1"
 		}
 	],
-
 	"Localisation": [
 		"resource/northstar_custom_%language%.txt"
 	]
