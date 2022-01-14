@@ -1,0 +1,36 @@
+global function ForceMelee_Init
+
+struct {
+    string forcedMeleeWeapon
+} file
+
+void function ForceMelee_Init()
+{
+    GetForcedMelee()
+    AddCallback_OnPlayerRespawned( ReplaceMelee )
+    AddCallback_OnPlayerGetsNewPilotLoadout( ReplaceMeleeForLoadoutChange )
+}
+
+void function GetForcedMelee()
+{
+    string cvar = GetConVarString( "ns_force_melee" )
+    if ( cvar == "" || cvar.len() == 0 )
+        return
+
+    file.forcedMeleeWeapon = cvar
+}
+
+void function ReplaceMelee( entity player )
+{
+    GetForcedMelee()
+    if ( file.forcedMeleeWeapon.len() == 0 )
+        return
+
+    player.TakeOffhandWeapon( 5 )
+    player.GiveOffhandWeapon( file.forcedMeleeWeapon, OFFHAND_MELEE )
+}
+
+void function ReplaceMeleeForLoadoutChange( entity player, PilotLoadoutDef loadout )
+{
+    ReplaceMelee( player )
+}
