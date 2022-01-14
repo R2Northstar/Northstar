@@ -10,12 +10,14 @@ void function GamemodeGG_Init()
 	SetWeaponDropsEnabled( false )
 	Riff_ForceTitanAvailability( eTitanAvailability.Never )
 	Riff_ForceBoostAvailability( eBoostAvailability.Disabled )
-	
+
 	AddCallback_OnPlayerRespawned( OnPlayerRespawned )
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
-	
+
 	AddCallback_GameStateEnter( eGameState.WinnerDetermined, OnWinnerDetermined )
-	
+
+	AddCallback_GGEarnMeterFull( OnGGEarnMeterFilled )
+
 	// set scorelimit if it's wrong, sort of a jank way to do it but best i've got rn
 	try
 	{
@@ -44,76 +46,127 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
 	if ( !victim.IsPlayer() || !attacker.IsPlayer() || GetGameState() != eGameState.Playing )
 		return
-		
+
 	if ( attacker == victim ) // suicide
 	{
 		string message = victim.GetPlayerName() + " committed suicide."
 		foreach ( entity player in GetPlayerArray() )
 			SendHudMessage( player, message, -1, 0.4, 255, 0, 0, 0, 0, 3, 0.15 )
-			
-		if ( GameRules_GetTeamScore( victim.GetTeam() ) != 0 )
-		{
-			AddTeamScore( victim.GetTeam(), -1 ) // get absolutely fucking destroyed lol
-			victim.AddToPlayerGameStat( PGS_ASSAULT_SCORE, -1 )
-		}
+
+		DeRank( victim )
 	}
-	else 
+	else
 	{
 		if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) != eDamageSourceId.melee_pilot_emptyhanded )
 		{
-			AddTeamScore( attacker.GetTeam(), 1 )
-			attacker.AddToPlayerGameStat( PGS_ASSAULT_SCORE, 1 )
-			UpdateLoadout( attacker )
-		}
-		
-		if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.human_execution )
-		{
-			string message = victim.GetPlayerName() + " got executed."
-			foreach ( entity player in GetPlayerArray() )
-				SendHudMessage( player, message, -1, 0.4, 255, 0, 0, 0, 0, 3, 0.15 )
-		
-			if ( GameRules_GetTeamScore( victim.GetTeam() ) != 0 )
+			float percentageReward = GetCurrentPlaylistVarFloat( "gg_kill_reward", 1.0 )
+			string scoreEvent = "KillPilot"
+
+			if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.human_execution )
 			{
-				AddTeamScore( victim.GetTeam(), -1 ) // get absolutely fucking destroyed lol
-				victim.AddToPlayerGameStat( PGS_ASSAULT_SCORE, -1 )
+				string message = victim.GetPlayerName() + " got executed."
+				foreach ( entity player in GetPlayerArray() )
+					SendHudMessage( player, message, -1, 0.4, 255, 0, 0, 0, 0, 3, 0.15 )
+
+				DeRank( victim )
+
+				percentageReward = GetCurrentPlaylistVarFloat( "gg_execution_reward", 1.0 )
+				scoreEvent = "Execution"
+			}
+
+			Reward( attacker, victim, scoreEvent, percentageReward )
+		}
+	}
+
+	table<int, bool> alreadyAssisted
+	foreach( DamageHistoryStruct attackerInfo in victim.e.recentDamageHistory )
+	{
+		if( attackerInfo.attacker != attacker && !alreadyAssisted[attackerInfo.attacker.GetEncodedEHandle()] )
+		{
+			if ( attackerInfo.damageSourceId != eDamageSourceId.melee_pilot_emptyhanded ) {
+				alreadyAssisted[attackerInfo.attacker.GetEncodedEHandle()] <- true
+
+				Reward( attackerInfo.attacker, victim, "PilotAssist", GetCurrentPlaylistVarFloat( "gg_assist_reward", 0.0 ) )
 			}
 		}
 	}
 }
 
+void function Reward( entity player, entity victim, string scoreEvent, float percentageReward )
+{
+	percentageReward = clamp(percentageReward, 0.0, 1.0)
+	Sv_GGEarnMeter_AddPercentage( player, percentageReward )
+	Remote_CallFunction_NonReplay( player, "ServerCallback_ScoreEvent", GetScoreEvent(scoreEvent).eventId, 0, eEventDisplayType.MEDAL, victim.GetEncodedEHandle(), 0.0, percentageReward)
+}
+
+void function DeRank( entity player )
+{
+	Sv_GGEarnMeter_SetPercentage( player, 0.0 )
+
+	if ( GameRules_GetTeamScore( player.GetTeam() ) != 0 )
+	{
+		AddTeamScore( player.GetTeam(), -1 ) // get absolutely fucking destroyed lol
+		player.AddToPlayerGameStat( PGS_ASSAULT_SCORE, -1 )
+		UpdateLoadout( player )
+	}
+}
+
+bool function OnGGEarnMeterFilled( entity player )
+{
+	AddTeamScore( player.GetTeam(), 1 )
+	player.AddToPlayerGameStat( PGS_ASSAULT_SCORE, 1 )
+	UpdateLoadout( player )
+
+	int currentScore = GameRules_GetTeamScore( player.GetTeam() )
+	int maxScore = GetGunGameWeapons().len()
+
+	return currentScore >= maxScore
+}
+
 void function UpdateLoadout( entity player )
 {
 	// todo: honestly, this should be reworked to use PilotLoadoutDefs instead of directly modifying weapons and shit
-	
+
 	int currentWeaponIndex = GameRules_GetTeamScore( player.GetTeam() )
 	array<GunGameWeapon> weapons = GetGunGameWeapons()
-	
+
 	if ( currentWeaponIndex >= weapons.len() )
 		currentWeaponIndex = weapons.len() - 1
-		
+
 	if ( currentWeaponIndex > 18 ) // play end of game music for special weapons
 		PlayMusicToAll( eMusicPieceID.LEVEL_LAST_MINUTE ) // this *shouldn't* overlap if done multiple times
-	
+
 	GunGameWeapon weapon = weapons[ currentWeaponIndex ]
-	
+
 	foreach ( entity weapon in player.GetMainWeapons() )
 		player.TakeWeaponNow( weapon.GetWeaponClassName() )
-	
+
 	foreach ( entity weapon in player.GetOffhandWeapons() )
 		player.TakeWeaponNow( weapon.GetWeaponClassName() )
-	
+
 	if ( weapon.offhandSlot != -1 )
 	{
-		// TEMP: give archer so player so player has a weapon which lets them use offhands
-		// need to replace this with a custom empty weapon at some point
-		player.GiveWeapon( "mp_weapon_rocket_launcher" )
-		
 		player.GiveOffhandWeapon( weapon.weapon, weapon.offhandSlot, weapon.mods )
+
+		player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [ "allow_as_primary" ] )
+		player.SetActiveWeaponByName( "melee_pilot_emptyhanded" ) // Let the player use the melee in the primary slot, and then force equip it. Effectively gives them an empty hand.
 	}
 	else
+	{
 		player.GiveWeapon( weapon.weapon, weapon.mods )
-		
-	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE )
+
+		player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE )
+	}
+
+	if ( currentWeaponIndex == weapons.len() - 1 )
+	{
+		Sv_GGEarnMeter_SetFinalIcon( player )
+
+		return
+	}
+
+	GunGameWeapon nextWeapon = weapons[ currentWeaponIndex + 1 ]
+	Sv_GGEarnMeter_SetWeaponIcon( player, nextWeapon.weapon )
 }
 
 void function OnWinnerDetermined()

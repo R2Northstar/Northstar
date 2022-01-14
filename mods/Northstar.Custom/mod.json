@@ -122,6 +122,18 @@
 			"RunOn": "CLIENT && MP"
 		},
 		{
+			"Path": "gamemodes/gg_earn_meter/sh_gg_earn_meter.gnut",
+			"RunOn": "( CLIENT || SERVER ) && MP",
+		},
+		{
+			"Path": "gamemodes/gg_earn_meter/_gg_earn_meter.gnut",
+			"RunOn": "SERVER && MP"
+		},
+		{
+			"Path": "gamemodes/gg_earn_meter/cl_gg_earn_meter.gnut",
+			"RunOn": "CLIENT && MP"
+		},
+		{
 			"Path": "gamemodes/sh_gamemode_gg.gnut",
 			"RunOn": "( CLIENT || SERVER ) && MP",
 			"ClientCallback": {

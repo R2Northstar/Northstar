@@ -23,4 +23,6 @@ void function ClGamemodeGG_Init()
 
 	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LAST_MINUTE, "music_mp_freeagents_lastminute", TEAM_IMC )
 	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LAST_MINUTE, "music_mp_freeagents_lastminute", TEAM_MILITIA )
+
+	Cl_GGEarnMeter_Init()
 }
