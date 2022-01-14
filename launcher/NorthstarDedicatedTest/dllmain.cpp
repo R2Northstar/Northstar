@@ -76,9 +76,8 @@ bool InitialiseNorthstar()
     curl_global_init_mem(CURL_GLOBAL_DEFAULT, _malloc_base, _free_base, _realloc_base, _strdup_base, _calloc_base);
 
     InitialiseLogging();
-
-    // apply initial hooks
     InstallInitialHooks();
+    CreateLogFiles();
     InitialiseInterfaceCreationHooks();
 
     AddDllLoadCallback("tier0.dll", InitialiseTier0GameUtilFunctions);
