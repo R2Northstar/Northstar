@@ -10,6 +10,27 @@
 #include <Psapi.h>
 #include <minidumpapiset.h>
 
+
+// This needs to be called after hooks are loaded so we can access the command line args
+void CreateLogFiles()
+{
+	if (strstr(GetCommandLineA(), "-disablelogs"))
+	{
+		spdlog::default_logger()->set_level(spdlog::level::off);
+	}
+	else
+	{
+		// todo: might be good to delete logs that are too old
+		time_t time = std::time(nullptr);
+		tm currentTime = *std::localtime(&time);
+		std::stringstream stream;
+
+		stream << std::put_time(&currentTime, "R2Northstar/logs/nslog%Y-%m-%d %H-%M-%S.txt");
+		spdlog::default_logger()->sinks().push_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>(stream.str(), false));
+		spdlog::flush_on(spdlog::level::info);
+	}
+}
+
 long __stdcall ExceptionFilter(EXCEPTION_POINTERS* exceptionInfo)
 {
 	static bool logged = false;
@@ -171,8 +192,7 @@ long __stdcall ExceptionFilter(EXCEPTION_POINTERS* exceptionInfo)
 			spdlog::error("Failed to write minidump file {}!", stream.str());
 
 		if (!IsDedicated())
-			MessageBoxA(0, "Northstar has crashed! A crash log and dump can be found in R2Northstar/logs", "Northstar has crashed!", MB_ICONERROR | MB_OK);
-
+			MessageBoxA(0, "Northstar has crashed! Crash info can be found in R2Northstar/logs", "Northstar has crashed!", MB_ICONERROR | MB_OK);
 	}
 
 	logged = true;
@@ -187,20 +207,7 @@ void InitialiseLogging()
 	AllocConsole();
 	freopen("CONOUT$", "w", stdout);
 	freopen("CONOUT$", "w", stderr);
-
 	spdlog::default_logger()->set_pattern("[%H:%M:%S] [%l] %v");
-	spdlog::flush_on(spdlog::level::info);
-
-	// log file stuff
-	// generate log file, format should be nslog%Y-%m-%d %H-%M-%S.txt in gamedir/R2Northstar/logs
-	// todo: might be good to delete logs that are too old
-	time_t time = std::time(nullptr);
-	tm currentTime = *std::localtime(&time);
-	std::stringstream stream;
-	stream << std::put_time(&currentTime, "R2Northstar/logs/nslog%Y-%m-%d %H-%M-%S.txt");
-
-	// create logger
-	spdlog::default_logger()->sinks().push_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>(stream.str(), false));
 }
 
 ConVar* Cvar_spewlog_enable;
