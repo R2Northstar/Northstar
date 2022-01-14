@@ -13,11 +13,14 @@ void function GiveScoreForPlayerKill( entity victim, entity attacker, var damage
 	if ( victim != attacker && victim.IsPlayer() && attacker.IsPlayer() || GetGameState() != eGameState.Playing )
 		AddTeamScore( attacker.GetTeam(), 1 )
 
-	var existingAttackers = []
-	foreach( DamageHistoryStruct attackerInfo in victim.e.recentDamageHistory )
+	table<int, bool> alreadyAssisted
+	foreach( DamageHistoryStruct attackerInfo in player.e.recentDamageHistory )
 	{
-		if( attackerInfo.attacker != attacker && !( attackerInfo.attacker in existingAttackers ) )
+		if( attackerInfo.attacker != attacker && !alreadyAssisted[attackerInfo.attacker.GetEncodedEHandle()] )
+		{
+			alreadyAssisted[attackerInfo.attacker.GetEncodedEHandle()] <- true
 			attackerInfo.attacker.AddToPlayerGameStat( PGS_ASSISTS, 1 )
+		}
 	}
 }
 
