@@ -145,5 +145,10 @@ WeaponData
 			"melee_damage" "5"
 			"impulse_force" "50000"
 		}
+		allow_as_primary
+		{
+			"fire_mode"									"offhand_melee_hybrid"
+			"attack_button_presses_melee"				"1"
+		}
 	}
 }
