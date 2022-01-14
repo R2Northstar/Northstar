@@ -191,13 +191,13 @@ void function ScoreEvent_TitanKilled( entity victim, entity attacker, var damage
 	else
 		AddPlayerScore( attacker, "KillTitan", victim.GetTitanSoul().GetOwner() )
 
-	var existingAttackers = []
-	foreach(DamageHistoryStruct attackerInfo in victim.e.recentDamageHistory)
+	table<int, bool> alreadyAssisted
+	foreach( DamageHistoryStruct attackerInfo in player.e.recentDamageHistory )
 	{
-		if( attackerInfo.attacker != attacker && !(attackerInfo.attacker in existingAttackers) )
+		if( attackerInfo.attacker != attacker && !alreadyAssisted[attackerInfo.attacker.GetEncodedEHandle()] )
 		{
+			alreadyAssisted[attackerInfo.attacker.GetEncodedEHandle()] <- true
 			AddPlayerScore(attackerInfo.attacker, "TitanAssist" )
-			existingAttackers.append(attackerInfo.attacker)
 			Remote_CallFunction_NonReplay( attackerInfo.attacker, "ServerCallback_SetAssistInformation", attackerInfo.damageSourceId, attacker.GetEncodedEHandle(), victim.GetEncodedEHandle(), attackerInfo.time ) 
 		}
 	}
