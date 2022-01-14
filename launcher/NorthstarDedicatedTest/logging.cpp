@@ -154,7 +154,7 @@ long __stdcall ExceptionFilter(EXCEPTION_POINTERS* exceptionInfo)
 		time_t time = std::time(nullptr);
 		tm currentTime = *std::localtime(&time);
 		std::stringstream stream;
-		stream << std::put_time(&currentTime, "R2Northstar/logs/nsdump%d-%m-%Y %H-%M-%S.dmp");
+		stream << std::put_time(&currentTime, "R2Northstar/logs/nsdump%Y-%m-%d %H-%M-%S.dmp");
 
 		auto hMinidumpFile = CreateFileA(stream.str().c_str(), GENERIC_WRITE, FILE_SHARE_READ, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
 		if (hMinidumpFile)
