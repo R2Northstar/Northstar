@@ -39,6 +39,7 @@ In the future this keybind should hopefully be adjustable via `Controls > Settin
 | `reload_mods` | Reload mods |
 | `ns_disallowed_tacticals` | String list of disallowed tactical abilities, ex: `"mp_ability_grapple,mp_ability_heal"` |
 | `ns_disallowed_tactical_replacement` | Optional replacement ability for disallowed tacticals |
+| `give mp_weapon_peacekraber` | Gives you peacekraber |
 
 ### Server commands
 
