@@ -18,6 +18,9 @@ void function Sh_GamemodeGG_Init()
 {
 	// create custom gamemode
 	AddCallback_OnCustomGamemodesInit( CreateGamemodeGG )
+
+	if ( GAMETYPE != GAMEMODE_GG )
+		Sh_GGEarnMeter_Init()
 }
 
 void function CreateGamemodeGG()
@@ -30,119 +33,122 @@ void function CreateGamemodeGG()
 	GameMode_AddScoreboardColumnData( GAMEMODE_GG, "#SCOREBOARD_SCORE", PGS_ASSAULT_SCORE, 2 )
 	GameMode_AddScoreboardColumnData( GAMEMODE_GG, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 )
 	GameMode_SetColor( GAMEMODE_GG, [147, 204, 57, 255] )
-	
+
 	AddPrivateMatchMode( GAMEMODE_GG ) // add to private lobby modes
-	
+	AddPrivateMatchModeSettingArbitrary( "#GAMEMODE_gg", "gg_kill_reward", "1.0" )
+	AddPrivateMatchModeSettingArbitrary( "#GAMEMODE_gg", "gg_assist_reward", "0.0" )
+	AddPrivateMatchModeSettingArbitrary( "#GAMEMODE_gg", "gg_execution_reward", "1.0" )
+
 	// setup guns
-	
+
 	// smgs
 	// car
 	GunGameWeapon ggCar = { weapon = "mp_weapon_car", mods = [ "pas_run_and_gun" ], ... }
 	file.weapons.append( ggCar )
-	
+
 	// alternator
 	GunGameWeapon ggAlternator = { weapon = "mp_weapon_alternator_smg", mods = [ "pas_run_and_gun" ], ... }
 	file.weapons.append( ggAlternator )
-	
+
 	// volt
 	GunGameWeapon ggVolt = { weapon = "mp_weapon_hemlok_smg", ... }
 	file.weapons.append( ggVolt )
-	
-	
+
+
 	// rifles
 	// hemlok
 	GunGameWeapon ggHemlok = { weapon = "mp_weapon_hemlok", mods = [  ], ... }
 	file.weapons.append( ggHemlok )
-	
+
 	// flatline
 	GunGameWeapon ggFlatline = { weapon = "mp_weapon_vinson", mods = [ "hcog" ], ... }
 	file.weapons.append( ggFlatline )
-	
+
 	// r201
 	GunGameWeapon ggR101 = { weapon = "mp_weapon_rspn101", ... }
 	file.weapons.append( ggR101 )
-	
-	
+
+
 	// lmgs
 	// devotion
 	GunGameWeapon ggDevotion = { weapon = "mp_weapon_esaw", ... }
 	file.weapons.append( ggDevotion )
-	
+
 	// l-star
 	GunGameWeapon ggLstar = { weapon = "mp_weapon_lstar", mods = [ "pas_run_and_gun" ], ... }
 	if ( RandomInt( 100 ) <= 5 )
 		ggLstar.mods.append( "rcee" ) // easter egg mod that changes the screen of the lstar
-		
+
 	file.weapons.append( ggLstar )
-	
-	
+
+
 	// shotguns
 	// eva-8
 	GunGameWeapon ggEva = { weapon = "mp_weapon_shotgun", ... }
 	file.weapons.append( ggEva )
-	
+
 	// mastiff
 	GunGameWeapon ggMastiff = { weapon = "mp_weapon_mastiff", ... }
 	file.weapons.append( ggMastiff )
-	
-	
+
+
 	// grenadiers
 	// softball
 	GunGameWeapon ggSoftball = { weapon = "mp_weapon_softball", ... }
 	file.weapons.append( ggSoftball )
-	
+
 	// epg
 	GunGameWeapon ggEpg = { weapon = "mp_weapon_epg", mods = [ "jump_kit" ], ... }
 	file.weapons.append( ggEpg )
-	
-	
+
+
 	// primary pistols
 	// mozambique
 	GunGameWeapon ggMozam = { weapon = "mp_weapon_shotgun_pistol", mods = [ "pas_run_and_gun" ], ... }
 	file.weapons.append( ggMozam )
-	
+
 	// wingman elite
 	GunGameWeapon ggWme = { weapon = "mp_weapon_wingman_n", mods = [ "pas_run_and_gun", "ricochet" ], ... }
 	file.weapons.append( ggWme )
-	
-	
+
+
 	// snipers
 	// double take
 	GunGameWeapon ggTaketake = { weapon = "mp_weapon_doubletake", ... }
 	file.weapons.append( ggTaketake )
-	
+
 	// kraber
 	GunGameWeapon ggKraber = { weapon = "mp_weapon_sniper", mods = [ "pas_fast_ads", "ricochet" ], ... }
 	file.weapons.append( ggKraber )
-	
-	
+
+
 	// secondary pistols
 	// re-45
 	GunGameWeapon ggRe45 = { weapon = "mp_weapon_autopistol", mods = [ "pas_run_and_gun", "temp_sight" ], ... }
 	file.weapons.append( ggRe45 )
-	
+
 	// p2016
 	GunGameWeapon ggP2016 = { weapon = "mp_weapon_semipistol", mods = [ "pas_run_and_gun" ], ... }
 	file.weapons.append( ggP2016 )
-	
+
 	// wingman
 	GunGameWeapon ggWingman = { weapon = "mp_weapon_wingman", mods = [ "pas_run_and_gun" ], ... }
 	file.weapons.append( ggWingman )
-	
-	
+
+
 	// final/special weapons
 	// charge rifle
 	GunGameWeapon ggChargeRifle = { weapon = "mp_weapon_defender", ... }
 	file.weapons.append( ggChargeRifle )
-	
+
 	// pulse blade
 	GunGameWeapon ggPulseBlade = { weapon = "mp_weapon_grenade_sonar", mods = [ "pas_power_cell", "amped_tacticals" ], offhandSlot = 0 }
 	file.weapons.append( ggPulseBlade )
-	
-	
+
+
 	// set this to the number of guns
 	GameMode_SetDefaultScoreLimits( GAMEMODE_GG, file.weapons.len(), 0 )
-	
+
 	#if SERVER
 		GameMode_AddServerInit( GAMEMODE_GG, GamemodeGG_Init )
 		GameMode_AddServerInit( GAMEMODE_GG, GamemodeFFAShared_Init )

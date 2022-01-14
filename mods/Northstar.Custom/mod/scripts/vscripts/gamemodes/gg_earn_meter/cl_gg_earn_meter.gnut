@@ -1,0 +1,82 @@
+global function Cl_GGEarnMeter_Init
+global function Cl_GGEarnMeter_RegisterNetwork
+global function ServerCallback_GGEarnMeter_SetWeaponIcon
+
+const float FILL_ANIM_DURATION = 0.2
+
+struct EarnChangeData
+{
+	float startValue = 0.0
+	float endValue = 0.0
+	float updateTime = 0.0
+}
+
+struct {
+	EarnChangeData lastEarnedData
+	var earnMeterRui
+} file
+
+void function Cl_GGEarnMeter_Init()
+{
+	AddCallback_OnClientScriptInit( CreateGGEarnMeterUI )
+}
+
+void function CreateGGEarnMeterUI( entity player )
+{
+	file.earnMeterRui = CreateCockpitRui( $"ui/earn_meter.rpak" )
+
+	RuiSetFloat( file.earnMeterRui, "fillAnimDuration", FILL_ANIM_DURATION )
+	RuiSetGameTime( file.earnMeterRui, "lastEarnChangeTime", RUI_BADGAMETIME )
+	RuiSetFloat( file.earnMeterRui, "earnedStartFrac", 0.0 )
+	RuiSetInt( file.earnMeterRui, "meterMode", 5 )
+
+	RuiTrackFloat( file.earnMeterRui, "earnedFrac", player, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "gunGameLevelPercentage" ) )
+}
+
+void function Cl_GGEarnMeter_RegisterNetwork()
+{
+	RegisterNetworkedVariableChangeCallback_float( "gunGameLevelPercentage", GunGamePercentageUpdate )
+}
+
+void function GunGamePercentageUpdate( entity player, float oldValue, float newValue, bool actuallyChanged )
+{
+	if ( !actuallyChanged )
+		return
+
+	float currentValue = Cl_GGEarnMeter_GetCurrentMeterValue( file.lastEarnedData )
+	RuiSetGameTime( file.earnMeterRui, "lastEarnChangeTime", Time() )
+	RuiSetFloat( file.earnMeterRui, "earnedStartFrac", currentValue )
+
+	file.lastEarnedData.startValue = oldValue
+	file.lastEarnedData.endValue = newValue
+	file.lastEarnedData.updateTime = Time()
+}
+
+float function Cl_GGEarnMeter_GetCurrentMeterValue( EarnChangeData earnData )
+{
+	float elapsedTime = Time() - earnData.updateTime
+	float delta = earnData.endValue - earnData.startValue
+	return earnData.endValue - (delta * EaseIn( GraphCapped( elapsedTime, 0.0, FILL_ANIM_DURATION, 1.0, 0.0 ) ) )
+}
+
+void function ServerCallback_GGEarnMeter_SetWeaponIcon( int damageSourceId )
+{
+	asset weaponImage
+
+	if ( damageSourceId > -1 )
+	{
+		if ( !DamageSourceIDHasString(damageSourceId) )
+		{
+			return
+		}
+
+		weaponImage = GetItemImage( DamageSourceIDToString( damageSourceId ) )
+	}
+	else
+	{
+		weaponImage = RandomFloat( 1 ) > 0.1 ? $"rui/menu/boosts/boost_icon_random" : $"rui/faction/faction_logo_mrvn"
+	}
+
+	RuiSetImage( file.earnMeterRui, "goalBuildingIcon", weaponImage )
+	RuiSetImage( file.earnMeterRui, "goalReadyIcon", weaponImage )
+}
