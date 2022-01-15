@@ -517,6 +517,7 @@
     <ClInclude Include="include\spdlog\version.h" />
     <ClInclude Include="keyvalues.h" />
     <ClInclude Include="languagehooks.h" />
+    <ClInclude Include="latencyflex.h" />
     <ClInclude Include="logging.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="masterserver.h" />
@@ -559,6 +560,7 @@
     <ClCompile Include="hooks.cpp" />
     <ClCompile Include="hookutils.cpp" />
     <ClCompile Include="keyvalues.cpp" />
+    <ClCompile Include="latencyflex.cpp" />
     <ClCompile Include="maxplayers.cpp" />
     <ClCompile Include="languagehooks.cpp" />
     <ClCompile Include="memalloc.cpp" />
@@ -620,7 +622,7 @@
     <None Include="include\spdlog\fmt\bundled\LICENSE.rst" />
   </ItemGroup>
   <ItemGroup>
-	  <None Include="..\Northstar-Legal.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\Northstar-Legal.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
