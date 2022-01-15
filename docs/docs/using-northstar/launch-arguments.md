@@ -10,3 +10,4 @@ Argument|Description|Value
 `-dedicated`|Starts a dedicated server without video output
 `-waitfordebugger`|Waits for debugger to connect before launching game
 `-language`|Forces loading of client localisation|language string ex: `portuguese`
+`LFX|Enables the use of [LatencyFleX](playing-on-linux#latencyflex) (Linux-only)|`0` or `1`
