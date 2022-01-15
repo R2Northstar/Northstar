@@ -24,7 +24,7 @@ In order to get started with making your mod, create a folder in `R2Northstar/mo
 
 After making this folder, inside it add a folder named `mod` and a file named `mod.json`.
 
-Provided is a template `mod.json`, for a detailed list of values read [Cheatsheet](modding/cheatsheet.md)
+Provided is a template `mod.json`, for a detailed list of values read [Cheatsheet](cheatsheet.md)
 
 ```json
 {
