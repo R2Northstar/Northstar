@@ -2,6 +2,7 @@ untyped
 global function Sv_EarnMeterMP_Init
 global function EarnMeterMP_SetTitanLoadout
 global function EarnMeterMP_SetPassiveMeterGainEnabled
+global function EarnMeterMP_SetBoostByRef
 
 struct {
 	float playingStartTime
@@ -36,7 +37,7 @@ void function SetupPlayerEarnMeter( entity player )
 	PlayerEarnMeter_Reset( player )
 
 	string burncardRef = GetSelectedBurnCardRef( player )
-	PlayerEarnMeter_SetBoostByRef( player, burncardRef )
+	EarnMeterMP_SetBoostByRef( player, burncardRef )
 
 	// catchup bonus for late joiners
 	// todo: maths on this is fine but for some reason it won't set correctly, could be getting reset somewhere?
@@ -176,4 +177,25 @@ void function EarnMeterMP_TitanEarned( entity player )
 		if ( PlayerEarnMeter_GetRewardFrac( player ) != 0 )
 			PlayerEarnMeter_EnableReward( player )
 	}
+}
+
+void function EarnMeterMP_SetBoostByRef( entity player, string boostRef ) 
+{
+	EarnObject earnobject = EarnObject_GetByRef( boostRef )
+	BurnReward burncard = BurnReward_GetByRef( boostRef )
+
+	if ( Riff_BoostAvailability() != eBoostAvailability.Disabled )
+	{
+		PlayerEarnMeter_SetReward( player, earnobject ) // pretty sure this works?
+		PlayerEarnMeter_SetRewardFrac( player, burncard.cost )
+		PlayerEarnMeter_EnableReward( player )
+	}
+
+	if ( EarnMeterMP_IsTitanEarnGametype() )
+	{
+		PlayerEarnMeter_SetGoal( player, EarnObject_GetByRef( GetTitanLoadoutForPlayer( player ).titanClass ) )
+		PlayerEarnMeter_EnableGoal( player ) // prevents goalstate from being set incorrectly
+	}
+	else
+		PlayerEarnMeter_SetGoal( player, earnobject )
 }
