@@ -11,7 +11,8 @@
 #include "rapidjson/error/en.h"
 #include "modmanager.h"
 #include "misccommands.h"
-
+#include <cstring>
+#include <regex>
 // NOTE for anyone reading this: we used to use httplib for requests here, but it had issues, so we're moving to curl now for masterserver requests
 // so httplib is used exclusively for server stuff now
 
@@ -39,6 +40,79 @@ CHostState__State_ChangeLevelSPType CHostState__State_ChangeLevelSP;
 
 typedef void(*CHostState__State_GameShutdownType)(CHostState* hostState);
 CHostState__State_GameShutdownType CHostState__State_GameShutdown;
+
+
+int htod(char c) {
+	if (c >= 'A' && c <= 'F') {
+		return c - 'A' + 10;
+	}
+	else if (c >= 'a' && c <= 'f') {
+		return c - 'a' + 10;
+	}
+	else {
+		return c - '0';
+	}
+}
+// Shoutout to Wtz_LASR for helping me with this:
+// These functions should interprets all unicode strings like \u4e2d\u6587 to UTF8.
+
+void unescape_unicode(std::string& str) {
+	std::regex r("\\\\u([a-f\\d]{4})", std::regex::icase);
+	std::smatch sm;
+	while (regex_search(str, sm, r)) {
+		unsigned int cp = 0;
+		std::string conv;
+		for (int i = 2; i <= 5; ++i) {
+			cp *= 16;
+			cp += htod(sm[0].str()[i]);
+		}
+
+		if (cp >= 0x00 && cp <= 0x7F) {
+			conv.push_back(cp);
+		}
+		else if (cp >= 0x80 && cp <= 0x7FF) {
+			unsigned char c1 = cp >> 6;
+			c1 = c1 | (1 << 7);
+			c1 = c1 | (1 << 6);
+			c1 = c1 & (~(1 << 5));
+			unsigned char c2 = cp & ((1 << 6) - 1);
+			c2 = c2 | (1 << 7);
+			c2 = c2 & (~(1 << 6));
+			conv.push_back(c1);
+			conv.push_back(c2);
+		}
+		else if (cp >= 0x800 && cp <= 0xFFFF) {
+			unsigned char c1 = cp >> 12;
+			c1 = c1 | (1 << 7);
+			c1 = c1 | (1 << 6);
+			c1 = c1 | (1 << 5);
+			c1 = c1 & (~(1 << 4));
+			unsigned char c2 = (cp >> 6) & ((1 << 6) - 1);
+			c2 = c2 | (1 << 7);
+			c2 = c2 & (~(1 << 6));
+			unsigned char c3 = cp & ((1 << 6) - 1);
+			c3 = c3 | (1 << 7);
+			c3 = c3 & (~(1 << 6));
+			conv.push_back(c1);
+			conv.push_back(c2);
+			conv.push_back(c3);
+		}
+		str.replace(sm[0].first, sm[0].second, conv);
+	}
+}
+
+
+void UpdateServerInfoFromUnicodeToUTF8()
+{
+	//This reads server name and desc from convar, interprets all unicode strings to UTF8.
+	g_MasterServerManager->ns_auth_srvName = Cvar_ns_server_name->m_pszString;
+	g_MasterServerManager->ns_auth_srvDesc = Cvar_ns_server_desc->m_pszString;
+	unescape_unicode(g_MasterServerManager->ns_auth_srvName);
+	unescape_unicode(g_MasterServerManager->ns_auth_srvDesc);
+	//std::cout << g_MasterServerManager -> ns_auth_srvName << std::endl;
+
+
+}
 
 const char* HttplibErrorToString(httplib::Error error)
 {
@@ -786,8 +860,8 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 						// send all registration info so we have all necessary info to reregister our server if masterserver goes down, without a restart
 						// this isn't threadsafe :terror:
 						{
-							char* escapedNameNew = curl_easy_escape(curl, Cvar_ns_server_name->m_pszString, NULL);
-							char* escapedDescNew = curl_easy_escape(curl, Cvar_ns_server_desc->m_pszString, NULL);
+							char* escapedNameNew = curl_easy_escape(curl, g_MasterServerManager->ns_auth_srvName.c_str(), NULL);
+							char* escapedDescNew = curl_easy_escape(curl, g_MasterServerManager->ns_auth_srvDesc.c_str(), NULL);
 							char* escapedMapNew = curl_easy_escape(curl, g_pHostState->m_levelName, NULL);
 							char* escapedPlaylistNew = curl_easy_escape(curl, GetCurrentPlaylistName(), NULL);
 							char* escapedPasswordNew = curl_easy_escape(curl, Cvar_ns_server_password->m_pszString, NULL);
@@ -1044,6 +1118,8 @@ void CHostState__State_NewGameHook(CHostState* hostState)
 	// Copy new server name cvar to source
 	Cvar_hostname->m_pszString = Cvar_ns_server_name->m_pszString;
 	Cvar_hostname->m_StringLength = Cvar_ns_server_name->m_StringLength;
+	// This calls the function that converts unicode strings from servername and serverdesc to UTF-8
+	UpdateServerInfoFromUnicodeToUTF8();
 
 	g_MasterServerManager->AddSelfToServerList(Cvar_hostport->m_nValue, Cvar_ns_player_auth_port->m_nValue, Cvar_ns_server_name->m_pszString, Cvar_ns_server_desc->m_pszString, hostState->m_levelName, (char*)GetCurrentPlaylistName(), maxPlayers, Cvar_ns_server_password->m_pszString);
 	g_ServerAuthenticationManager->StartPlayerAuthServer();
