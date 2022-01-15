@@ -142,7 +142,7 @@ void function CreateGamemodeGG()
 	file.weapons.append( ggChargeRifle )
 
 	// pulse blade
-	GunGameWeapon ggPulseBlade = { weapon = "mp_weapon_grenade_sonar", mods = [ "pas_power_cell", "amped_tacticals" ], offhandSlot = 0 }
+	GunGameWeapon ggPulseBlade = { weapon = "mp_weapon_grenade_sonar", mods = [ "pas_power_cell", "amped_tacticals" ], offhandSlot = OFFHAND_SPECIAL }
 	file.weapons.append( ggPulseBlade )
 
 
