@@ -848,5 +848,9 @@ void function GiveTitanToPlayer( entity player )
 
 float function GetTimeLimit_ForGameMode()
 {
-	return 100.0
+	string mode = GameRules_GetGameMode()
+	string playlistString = "timelimit"
+
+	// default to 10 mins, because that seems reasonable
+	return GetCurrentPlaylistVarFloat( playlistString, 10 )
 }
