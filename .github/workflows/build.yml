@@ -5,7 +5,7 @@ on:
       - created
 
 env:
-  NORTHSTAR_VERSION: ${{ secrets.NORTHSTAR_VERSION }}
+  NORTHSTAR_VERSION: ${GITHUB_REF##*/}
 
 jobs:
   build-launcher:
