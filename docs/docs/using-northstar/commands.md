@@ -31,15 +31,16 @@ In the future this keybind should hopefully be adjustable via `Controls > Settin
 
 ### Northstar Commands
 
-| Command                 | Result         |
-| ----------------------- | -------------- |
-| `ns_masterserver_hostname` | Masterserver URL, default: `https://northstar.tf` |
-| `ns_auth_allow_insecure 1` | Allows clients to connect without masterserver authorization |
-| `connect <ip address>:<port>` | Directly connect to a Northstar gameserver |
-| `reload_mods` | Reload mods |
-| `ns_disallowed_tacticals` | String list of disallowed tactical abilities, ex: `"mp_ability_grapple,mp_ability_heal"` |
-| `ns_disallowed_tactical_replacement` | Optional replacement ability for disallowed tacticals |
-| `give mp_weapon_peacekraber` | Gives you peacekraber |
+Command|Description|Value
+-|-|-
+`ns_masterserver_hostname` | Masterserver URL |`https://northstar.tf` by default
+`ns_auth_allow_insecure` | Allows clients to connect without masterserver authorization | `0` / `1`
+`connect` | Directly connect to a Northstar gameserver |` <ip address>:<port>` ex: `localhost:37015`
+`reload_mods`|Reload mods|
+`ns_disallowed_tacticals` | String list of disallowed tactical abilities|example: `"mp_ability_grapple,mp_ability_heal"`
+`ns_disallowed_tactical_replacement` | Name of optional replacement ability for disallowed tacticals | ex: `"mp_ability_grapple"`
+`give mp_weapon_peacekraber` | Gives you peacekraber |
+`r_latencyflex`|Enables [LatencyFleX](playing-on-linux#latencyflex) (Linux-only, enabled by default)| `0` / `1`
 
 ### Server commands
 
