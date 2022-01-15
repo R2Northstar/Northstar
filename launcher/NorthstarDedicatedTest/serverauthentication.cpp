@@ -318,7 +318,7 @@ void CBaseClient__DisconnectHook(void* self, uint32_t unknownButAlways1, const c
 
 // maybe this should be done outside of auth code, but effort to refactor rn and it sorta fits
 // hack: store the client that's executing the current stringcmd for pCommand->Dispatch() hook later
-void* pExecutingGameClient;
+void* pExecutingGameClient = 0;
 
 char CGameClient__ExecuteStringCommandHook(void* self, uint32_t unknown, const char* pCommandString)
 {
@@ -351,7 +351,7 @@ char CGameClient__ExecuteStringCommandHook(void* self, uint32_t unknown, const c
 void ConCommand__DispatchHook(ConCommand* command, const CCommand& args, void* a3)
 {
 	// patch to ensure FCVAR_GAMEDLL concommands without FCVAR_CLIENTCMD_CAN_EXECUTE can't be executed by remote clients
-	if (*sv_m_State == server_state_t::ss_active && command->IsFlagSet(FCVAR_GAMEDLL) && !command->IsFlagSet(FCVAR_CLIENTCMD_CAN_EXECUTE))
+	if (*sv_m_State == server_state_t::ss_active && !command->IsFlagSet(FCVAR_CLIENTCMD_CAN_EXECUTE) && !!pExecutingGameClient)
 	{
 		if (IsDedicated())
 			return;
@@ -362,6 +362,7 @@ void ConCommand__DispatchHook(ConCommand* command, const CCommand& args, void* a
 	}
 
 	ConCommand__Dispatch(command, args, a3);
+	pExecutingGameClient = 0;
 }
 
 char __fastcall CNetChan___ProcessMessagesHook(void* self, void* buf)
