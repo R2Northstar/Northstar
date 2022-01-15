@@ -490,7 +490,7 @@ void function OnHitDummyBottom(var button) {
 }
 
 void function OnHitDummyAfterFilterClear(var button) {
-	Hud_SetFocused(Hud_GetChild(file.menu, "BtnServer1"))
+	Hud_SetFocused(Hud_GetChild(file.menu, "BtnServerNameTab"))
 }
 
 
