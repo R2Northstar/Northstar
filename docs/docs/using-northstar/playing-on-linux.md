@@ -8,11 +8,12 @@ Linux is not officially supported currently. However, you can get it working thr
 
 1. Download the latest version of Northstar from the [releases](https://github.com/R2Northstar/Northstar/releases) page
 2. Extract all contents of the file to your Titanfall 2 folder ( Right click _Titanfall 2_ > Open _Properties_ > Click _Local Files_ > Click _Browse_ )
-3. Rename _Titanfall2.exe_ to anything else ( for example _Titanfall2old.exe_ ), and rename _NorthstarLauncher.exe_ to _Titanfall2.exe_
+3. Rename _Titanfall2.exe_ to anything else ( for example _Titanfall2old.exe_ ), and rename _NorthstarLauncher.exe_ to _Titanfall2.exe_. Alternatively to renaming _NorthStarLauncher.exe_, you can create a symlink to make future Northstar updates easier. This can be done by executing the following in the Titanfall 2 directory:
+> ln NorthstarLauncher.exe Titanfall2.exe
 
 Now Steam will automatically launch Northstar when you hit play. Just launch the game through Steam and you should be greeted with a Northstar welcome message upon entering the main menu.
 
-> **Note:** There is a current bug where the game would sometimes launch vanilla Titanfall 2 instead of Northstar. There is no universal fix for this, but people have reported changing Proton versions to _Proton 5.13_ or _Proton Experimental_ and deleting the Proton prefix folder (`Steam/steamapps/compatdata/1237970/`) could help resolve this issue
+> **Note:** There is a current bug where the game would sometimes launch vanilla Titanfall 2 instead of Northstar. There is no universal fix for this, but people have reported changing Proton versions to _Proton 5.13_ or _Proton Experimental_ and deleting the Proton prefix folder (`Steam/steamapps/compatdata/1237970/`) could help resolve this issue. Using [Proton GE](https://github.com/GloriousEggroll/proton-ge-custom) has also been reported to resolve the issue.
 
 > If you are still suffering from this bug, try running the game through Lutris. The bug doesn't seem to happen there
 
@@ -35,6 +36,22 @@ Now just launch the game through Lutris and you should be greeted with a Northst
 > [Link to cache](https://github.com/Cervoxx/DXVKCACHE/raw/master/Titanfall2-cache.tar.xz)\
 > [Link to Origin being slow discussion](https://github.com/ValveSoftware/Proton/issues/4001#issuecomment-647014231)
 
+## LatencyFleX
+LatencyFleX is a Linux-only input latency reduction alternative to Nvidia Reflex that is supported by Northstar. Currently, LatencyFleX requires manual installation. A full install guide and current releases [can be found on their GitHub](https://github.com/ishitatsuyuki/LatencyFleX).
+
+Northstar only requires the [Vulkan layer](https://github.com/ishitatsuyuki/LatencyFleX#latencyflex-vulkan-layer-essential) and [Wine extensions](https://github.com/ishitatsuyuki/LatencyFleX#latencyflex-wine-extensions-required-for-proton-reflex-integration) steps to be completed.
+
+Once installed, LatencyFleX can be enabled by doing either of the following:
+
+> **If you are using Steam:** Add the following to your Titanfall 2 launch options: `"LFX=1 %command%"`
+
+> **If you are using Lutris:** Right click on Titanfall 2, click 'Configure', navigate to 'System Preferences' / 'System Options' / 'Environmental Variables', and use the following:
+
+> Key: LFX  
+Value: 1
+
+Once in-game, LatencyFleX can be toggled off and on using the `"r_latencyflex"` console variable.
+
 ## Troubleshooting
 
 ### Blank console
@@ -52,3 +69,7 @@ This problem is caused due to missing fonts on your Titanfall 2 wine prefix, you
 Running the game on fullscreen through Linux might lead to a black screen preventing you from launching the game. Edit your `ns_startup_args.txt` to include `-noborder -window` or edit `"setting.fullscreen"` and `"setting.nowindowborder"` at `<wineprefix>/drive_c/users/<username>/Documents/Respawn/Titanfall2/local/videoconfig.txt` to solve this.
 
 For more info and proposed fixes, refer to [this issue thread on Github](https://github.com/R2Northstar/Northstar/issues/1)
+
+### LatencyFleX issues
+
+Some users have reported issues with enabling LatencyFleX. If you see `"Unable to load LatencyFleX library, LatencyFleX disabled."` in your logs, try adding `latencyflex_wine.dll` to your `bin/x64_retail` folder.
