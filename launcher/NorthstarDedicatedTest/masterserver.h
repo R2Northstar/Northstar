@@ -1,7 +1,8 @@
 #pragma once
 #include "convar.h"
 #include <WinSock2.h>
-
+#include <string>
+#include <cstring>
 struct RemoteModInfo
 {
 public:
@@ -73,6 +74,8 @@ public:
 	char m_ownClientAuthToken[33];
 
 	std::string m_ownModInfoJson;
+	std::string ns_auth_srvName; // Unicode unescaped version of Cvar_ns_auth_servername for support in cjk characters
+	std::string ns_auth_srvDesc; // Unicode unescaped version of Cvar_ns_auth_serverdesc for support in cjk characters
 
 	bool m_bOriginAuthWithMasterServerDone = false;
 	bool m_bOriginAuthWithMasterServerInProgress = false;
@@ -112,7 +115,8 @@ public:
 	void WritePlayerPersistentData(char* playerId, char* pdata, size_t pdataSize);
 	void RemoveSelfFromServerList();
 };
-
+void unescape_unicode(std::string& str);
+void UpdateServerInfoFromUnicodeToUTF8();
 void InitialiseSharedMasterServer(HMODULE baseAddress);
 
 extern MasterServerManager* g_MasterServerManager;
