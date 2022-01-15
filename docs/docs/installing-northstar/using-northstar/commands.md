@@ -31,21 +31,21 @@ In the future this keybind should hopefully be adjustable via `Controls > Settin
 
 ### Northstar Commands
 
-Command|Description|Value
--|-|-
-`ns_masterserver_hostname` | Masterserver URL |`https://northstar.tf` by default
-`ns_auth_allow_insecure` | Allows clients to connect without masterserver authorization | `0` / `1`
-`connect` | Directly connect to a Northstar gameserver |` <ip address>:<port>` ex: `localhost:37015`
-`reload_mods`|Reload mods|
-`ns_disallowed_tacticals` | String list of disallowed tactical abilities|example: `"mp_ability_grapple,mp_ability_heal"`
-`ns_disallowed_tactical_replacement` | Name of optional replacement ability for disallowed tacticals | ex: `"mp_ability_grapple"`
-`give mp_weapon_peacekraber` | Gives you peacekraber |
-`r_latencyflex`|Enables [LatencyFleX](playing-on-linux#latencyflex) (Linux-only, enabled by default)| `0` / `1`
+| Command                              | Description                                                                                                 | Value                                           |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `ns_masterserver_hostname`           | Masterserver URL                                                                                            | `https://northstar.tf` by default               |
+| `ns_auth_allow_insecure`             | Allows clients to connect without masterserver authorization                                                | `0` / `1`                                       |
+| `connect`                            | Directly connect to a Northstar gameserver                                                                  | `<ip address>:<port>` ex: `localhost:37015`     |
+| `reload_mods`                        | Reload mods                                                                                                 |                                                 |
+| `ns_disallowed_tacticals`            | String list of disallowed tactical abilities                                                                | example: `"mp_ability_grapple,mp_ability_heal"` |
+| `ns_disallowed_tactical_replacement` | Name of optional replacement ability for disallowed tacticals                                               | ex: `"mp_ability_grapple"`                      |
+| `give mp_weapon_peacekraber`         | Gives you peacekraber                                                                                       |                                                 |
+| `r_latencyflex`                      | Enables [LatencyFleX](../../using-northstar/playing-on-linux/#latencyflex) (Linux-only, enabled by default) | `0` / `1`                                       |
 
 ### Server commands
 
 | Variable                                    | Description                                                           | Default |
-|---------------------------------------------|-----------------------------------------------------------------------|---------|
+| ------------------------------------------- | --------------------------------------------------------------------- | ------- |
 | `sv_cheats`                                 | Wether players can use cheat commands (i.e. noclip) .                 | 0       |
 | `sv_AllWaysSupportsSaveRestore`             |                                                                       | 0       |
 | `sv_allTicksFinal`                          |                                                                       | 0       |
@@ -74,7 +74,7 @@ Command|Description|Value
 | `sv_hibernate_postgame_delay`               |                                                                       | 5       |
 | `sv_hibernate_when_empty`                   | Wether the server should hibernate when empty.                        | 0       |
 | `sv_instancebaselines`                      |                                                                       | 1       |
-| `sv_kickPlayersTooFarInFuture`              | Wether to kick players whose internal time is too far  in the future. | 1       |
+| `sv_kickPlayersTooFarInFuture`              | Wether to kick players whose internal time is too far in the future.  | 1       |
 | `sv_lerpAnims`                              |                                                                       | 1       |
 | `sv_lobbyType`                              |                                                                       | 1       |
 | `sv_massreport`                             |                                                                       | 0       |
@@ -173,7 +173,7 @@ Command|Description|Value
 
 ### Useful dev scripts
 
-|Command|Result|
-|-|-|
-|`script CreateTitanForPlayerAndHotdrop( GetPlayerArray()[0], GetTitanReplacementPoint( GetPlayerArray()[0], false ) )`|Sets your titan as available to call for Titanfall|
-|`script ForcePilotToBecomeTitan( GetPlayerArray()[0] )`|Transforms you into a titan|
+| Command                                                                                                                | Result                                             |
+| ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| `script CreateTitanForPlayerAndHotdrop( GetPlayerArray()[0], GetTitanReplacementPoint( GetPlayerArray()[0], false ) )` | Sets your titan as available to call for Titanfall |
+| `script ForcePilotToBecomeTitan( GetPlayerArray()[0] )`                                                                | Transforms you into a titan                        |
