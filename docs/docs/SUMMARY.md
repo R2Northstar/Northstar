@@ -31,17 +31,16 @@
   * [Hosting on Linux](hosting-a-server-with-northstar/dedicated-server/hosting-on-linux.md)
   * [Troubleshoot](hosting-a-server-with-northstar/dedicated-server/troubleshoot.md)
 * [Guides](hosting-a-server-with-northstar/hosting-guides.md)
-## Modding
-
-* [Getting Started](modding/getting-started.md)
-* [Tutorials](modding/tutorials/modding-tutorials.md)
-* [Cheatsheet](modding/cheatsheet.md)
-* [Squirrel](modding/squirrel/what-is-squirrel.md)
-* [Setup Syntax Highlighting](modding/squirrel/setup-syntax-highlighting.md)
-* [Localisation](modding/localisation_files.md)
 
 ***
 
+* [Modding](modding/README.md)
+  * [Getting Started](modding/getting-started.md)
+  * [Tutorials](modding/tutorials/modding-tutorials.md)
+  * [Cheatsheet](modding/cheatsheet.md)
+  * [Squirrel](modding/squirrel/what-is-squirrel.md)
+  * [Setup Syntax Highlighting](modding/squirrel/setup-syntax-highlighting.md)
+  * [Localisation](modding/localisation\_files.md)
 * [Development](development.md)
 
 ## Other
