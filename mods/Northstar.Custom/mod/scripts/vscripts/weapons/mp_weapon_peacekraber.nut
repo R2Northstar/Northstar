@@ -5,6 +5,7 @@ untyped
 global function OnWeaponPrimaryAttack_peacekraber;
 global function OnWeaponDeactivate_peacekraber
 global function OnWeaponActivate_peacekraber
+global function OnWeaponOwnerChanged_weapon_peacekraber
 
 #if SERVER
 global function OnWeaponNpcPrimaryAttack_peacekraber
@@ -47,8 +48,19 @@ void function OnWeaponActivate_peacekraber (entity weapon) {
 
 void function OnWeaponDeactivate_peacekraber (entity weapon) {
 	#if CLIENT
+	if (!IsValid( weapon.GetWeaponOwner() )) return
 	if (!weapon.GetWeaponOwner().IsPlayer() || weapon.GetWeaponOwner() != GetLocalViewPlayer()) return;
-	isWeaponActive = false;
+		isWeaponActive = false
+	#endif
+}
+
+void function OnWeaponOwnerChanged_weapon_peacekraber (entity weapon, WeaponOwnerChangedParams changeParams)
+{
+	#if CLIENT
+	if (changeParams.oldOwner == GetLocalViewPlayer())
+	{
+		isWeaponActive = false
+	}
 	#endif
 }
 #if CLIENT
@@ -60,7 +72,11 @@ void function CrosshairCycle() {
 	int chargeLevel;
 	float chargeFrac;
 	while (isWeaponActive) {
-		WaitFrame()
+		if (!IsValid( clientWeapon ))
+		{
+			isWeaponActive = false
+			continue
+		}
 		chargeLevel = clientWeapon.GetWeaponChargeLevel();
 		chargeFrac = clientWeapon.GetWeaponChargeFraction();
 		RuiSetFloat3(rui, "teamColor", colors[chargeLevel]);
@@ -89,6 +105,7 @@ void function CrosshairCycle() {
 			default:
 				break;
 		}
+		WaitFrame()
 	}
 
 	RuiDestroy(rui);

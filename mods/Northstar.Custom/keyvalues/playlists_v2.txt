@@ -258,6 +258,26 @@ playlists
 				gamemode_score_hint #GAMEMODE_SCORE_HINT_TDM
 			}
 		}
+		sns
+		{
+			inherit defaults
+			vars
+			{
+				name #PL_sns
+				lobbytitle #PL_sns_lobby
+				description #PL_sns_desc
+				hint #PL_sns_desc
+				abbreviation #PL_sns_abbr
+				image ffa
+				at_turrets_enabled 0
+				max_players 16
+				max_teams 20
+				scorelimit 300
+				classic_mp 1
+
+				gamemode_score_hint #GAMEMODE_SCORE_HINT_FFA
+			}
+		}
 	}
 	Playlists
 	{
@@ -564,18 +584,18 @@ playlists
 				{
 					maps
 					{
-					    	mp_forwardbase_kodai 1
-                        			mp_grave 1
-                        			mp_homestead 1
-                        			mp_thaw 1
-                        			mp_black_water_canal 1
-                        			mp_eden 1
-                        			mp_drydock 1
-                        			mp_crashsite3 1
-                        			mp_complex3 1
-                       				mp_angel_city 1
-                        			mp_colony02 1
-                        			mp_glitch 1
+						mp_forwardbase_kodai 1
+						mp_grave 1
+						mp_homestead 1
+						mp_thaw 1
+						mp_black_water_canal 1
+						mp_eden 1
+						mp_drydock 1
+						mp_crashsite3 1
+						mp_complex3 1
+						mp_angel_city 1
+						mp_colony02 1
+						mp_glitch 1
 						mp_relic02 1
 						mp_wargames 1
 						mp_rise 1
@@ -626,7 +646,7 @@ playlists
 						mp_glitch 1
 						mp_angel_city 1
 						mp_colony02 1
-                        			mp_relic02 1
+						mp_relic02 1
 						mp_grave 1
 						mp_homestead 1
 						mp_drydock 1
@@ -635,7 +655,7 @@ playlists
 						mp_eden 2
 						mp_black_water_canal 1
 						mp_glitch 1
-                        			mp_relic02 1
+						mp_relic02 1
 						mp_wargames 1
 						mp_rise 1
 						mp_crashsite3 1
@@ -819,18 +839,69 @@ playlists
 				{
 					maps
 					{
-					    mp_forwardbase_kodai 1
-                        mp_grave 1
-                        mp_homestead 1
-                        mp_thaw 1
-                        mp_black_water_canal 1
-                        mp_eden 1
-                        mp_drydock 1
-                        mp_crashsite3 1
-                        mp_complex3 1
-                        mp_angel_city 1
-                        mp_colony02 1
-                        mp_glitch 1
+							mp_forwardbase_kodai 1
+									mp_grave 1
+									mp_homestead 1
+									mp_thaw 1
+									mp_black_water_canal 1
+									mp_eden 1
+									mp_drydock 1
+									mp_crashsite3 1
+									mp_complex3 1
+									mp_angel_city 1
+									mp_colony02 1
+									mp_glitch 1
+						mp_relic02 1
+						mp_wargames 1
+						mp_rise 1
+					}
+				}
+			}
+		}
+		sns
+		{
+			inherit defaults
+			vars
+			{
+				name #PL_sns
+				lobbytitle #PL_sns_lobby
+				description #PL_sns_desc
+				hint #PL_sns_desc
+				abbreviation #PL_sns_abbr
+				image ps
+				max_players 16
+				max_teams 20
+				scorelimit 300
+				classic_mp 1
+				mixtape_timeout 120
+				visible 0
+				
+				gamemode_score_hint #GAMEMODE_SCORE_HINT_FFA
+			}	
+			gamemodes
+			{
+				sns
+				{
+					maps
+					{
+						mp_lf_stacks 1
+						mp_lf_deck 1
+						mp_lf_meadow 1
+						mp_lf_traffic 1
+						mp_lf_township 1
+						mp_lf_uma 1
+						mp_forwardbase_kodai 1
+						mp_grave 1
+						mp_homestead 1
+						mp_thaw 1
+						mp_black_water_canal 1
+						mp_eden 1
+						mp_drydock 1
+						mp_crashsite3 1
+						mp_complex3 1
+						mp_angel_city 1
+						mp_colony02 1
+						mp_glitch 1
 						mp_relic02 1
 						mp_wargames 1
 						mp_rise 1

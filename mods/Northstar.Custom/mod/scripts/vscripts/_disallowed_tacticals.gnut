@@ -1,0 +1,51 @@
+global function DisallowedTacticals_Init
+
+struct {
+    array<string> disallowedTacticals
+    string disallowedTacticalsStringLastVal
+    string disallowedTacticalReplacement
+} file
+
+void function DisallowedTacticals_Init()
+{
+    UpdateDisallowedTacticalList()
+    AddCallback_OnPlayerRespawned( ReplacePlayerTactical )
+    AddCallback_OnPlayerGetsNewPilotLoadout( ReplacePlayerTacticalForLoadoutChange )
+}
+
+void function UpdateDisallowedTacticalList()
+{
+    string cvar = GetConVarString( "ns_disallowed_tacticals" )
+    if ( file.disallowedTacticalsStringLastVal == cvar )
+        return
+
+    file.disallowedTacticals = split( cvar, "," )
+    foreach ( string tactical in file.disallowedTacticals )
+        StringReplace( tactical, " ", "" )
+
+    file.disallowedTacticalReplacement = GetConVarString( "ns_disallowed_tactical_replacement")
+}
+
+void function ReplacePlayerTactical( entity player )
+{
+	UpdateDisallowedTacticalList()
+	if ( file.disallowedTacticals.len() == 0 )
+		return
+    array<entity> offhand = player.GetOffhandWeapons()
+
+    if ( file.disallowedTacticals.contains( offhand[1].GetWeaponClassName() ) )
+    {
+        player.TakeOffhandWeapon( 1 )
+        if ( file.disallowedTacticalReplacement != ""){
+            player.GiveOffhandWeapon( file.disallowedTacticalReplacement, OFFHAND_SPECIAL )
+            SendHudMessage( player, "Restricted tactical was replaced", -1, 0.4, 255, 255, 255, 255, 0.15, 3.0, 0.5 )
+        }
+        else { SendHudMessage( player, "Restricted tactical was removed", -1, 0.4, 255, 255, 255, 255, 0.15, 3.0, 0.5 ) }
+    }
+
+}
+
+void function ReplacePlayerTacticalForLoadoutChange( entity player, PilotLoadoutDef loadout )
+{
+	ReplacePlayerTactical( player )
+}

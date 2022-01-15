@@ -1,0 +1,51 @@
+globalize_all_functions
+
+global array<var> consoleVars;
+global const string GAMEMODE_SNS = "sns"
+
+void function SNSMode_Init()
+{
+	AddCallback_OnCustomGamemodesInit( CreateGamemodeSNS )
+	AddCallback_OnRegisteringCustomNetworkVars( SNSRegisterNetworkVars )
+}
+
+
+void function CreateGamemodeSNS()
+{
+ 	GameMode_Create( GAMEMODE_SNS )
+	GameMode_SetName( GAMEMODE_SNS, "#GAMEMODE_SNS" )
+	GameMode_SetDesc( GAMEMODE_SNS, "#PL_sns_desc" )
+	GameMode_SetGameModeAnnouncement( GAMEMODE_SNS, "ffa_modeDesc" )
+	GameMode_SetDefaultTimeLimits( GAMEMODE_SNS, 15, 0.0 )
+	GameMode_AddScoreboardColumnData( GAMEMODE_SNS, "#SCOREBOARD_SCORE", PGS_ASSAULT_SCORE, 2 )
+	GameMode_AddScoreboardColumnData( GAMEMODE_SNS, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 )
+	GameMode_AddScoreboardColumnData( GAMEMODE_SNS, "#SCOREBOARD_BANKRUPTS", PGS_TITAN_KILLS, 2 )
+	GameMode_SetColor( GAMEMODE_SNS, [147, 204, 57, 255] )
+
+	AddPrivateMatchMode( GAMEMODE_SNS ) // add to private lobby modes
+
+	GameMode_SetDefaultScoreLimits( GAMEMODE_SNS, 300, 0 )
+
+	#if SERVER
+		GameMode_AddServerInit( GAMEMODE_SNS, SNS_Init )
+		GameMode_AddServerInit( GAMEMODE_SNS, GamemodeFFAShared_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( GAMEMODE_SNS, RateSpawnpoints_Generic )
+		GameMode_SetTitanSpawnpointsRatingFunc( GAMEMODE_SNS, RateSpawnpoints_Generic )
+	#elseif CLIENT
+		GameMode_AddClientInit( GAMEMODE_SNS, ClGameModeSNS_Init )
+		GameMode_AddClientInit( GAMEMODE_SNS, GamemodeFFAShared_Init )
+		GameMode_AddClientInit( GAMEMODE_SNS, ClGamemodeFFA_Init )
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( GAMEMODE_SNS, CompareAssaultScore )
+		GameMode_AddSharedInit( GAMEMODE_SNS, GamemodeFFA_Dialogue_Init )
+	#endif
+}
+
+void function SNSRegisterNetworkVars()
+{
+	if ( GAMETYPE != GAMEMODE_SNS )
+		return
+	Remote_RegisterFunction( "ServerCallback_AnnounceBankrupt" )
+	Remote_RegisterFunction( "ServerCallback_AnnounceKillLeaderBankrupt" )
+}

@@ -435,6 +435,7 @@ resource/ui/menus/mods_browse.menu
 			pin_to_sibling				BtnServerPasswordProtectedTab
 			pin_corner_to_sibling		TOP_LEFT
 			pin_to_sibling_corner		TOP_RIGHT
+			navUp						BtnFiltersClear
 			navDown						BtnServer1
 			navRight 					BtnServerPlayersTab
 		}
@@ -683,8 +684,9 @@ resource/ui/menus/mods_browse.menu
 			pin_corner_to_sibling		TOP_LEFT
 			pin_to_sibling_corner		TOP_RIGHT
 			navDown						BtnServer1
-			navLeft 		BtnServerNameTab
-			navRight 		BtnServerMapTab
+			navLeft 					BtnServerNameTab
+			navRight 					BtnServerMapTab
+			navUp						BtnFiltersClear
 		}
 
 		BtnServerPlayers1
@@ -929,8 +931,9 @@ resource/ui/menus/mods_browse.menu
 			pin_corner_to_sibling		TOP_LEFT
 			pin_to_sibling_corner		TOP_RIGHT
 			navDown						BtnServer1
-			navLeft BtnServerPlayersTab
-			navRight BtnServerGamemodeTab
+			navLeft 					BtnServerPlayersTab
+			navRight 					BtnServerGamemodeTab
+			navUp						BtnFiltersClear
 		}
 
 		BtnServerMap1
@@ -1174,8 +1177,9 @@ resource/ui/menus/mods_browse.menu
 			pin_corner_to_sibling		TOP_LEFT
 			pin_to_sibling_corner		TOP_RIGHT
 			navDown						BtnServer1
-			navLeft BtnServerMapTab
-			navRight BtnServerLatencyTab
+			navLeft 					BtnServerMapTab
+			navRight 					BtnServerLatencyTab
+			navUp						BtnFiltersClear
 		}
 
 		BtnServerGamemode1
@@ -1419,8 +1423,9 @@ resource/ui/menus/mods_browse.menu
 			pin_corner_to_sibling		TOP_LEFT
 			pin_to_sibling_corner		TOP_RIGHT
 			navDown						BtnServer1
-			navLeft BtnServerGamemodeTab
-			navLeft BtnServerJoin
+			navLeft 					BtnServerGamemodeTab
+			navRight 					BtnServerJoin
+			navUp						BtnFiltersClear
 		}
 
 		BtnServerLatency1
