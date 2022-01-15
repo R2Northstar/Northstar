@@ -1434,6 +1434,9 @@
     <ClInclude Include="languagehooks.h">
       <Filter>Header Files\Client</Filter>
     </ClInclude>
+    <ClInclude Include="latencyflex.h">
+      <Filter>Header Files\Client</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -1556,6 +1559,9 @@
     <ClCompile Include="languagehooks.cpp">
       <Filter>Source Files\Client</Filter>
     </ClCompile>
+    <ClCompile Include="latencyflex.cpp">
+      <Filter>Source Files\Client</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="include\spdlog\fmt\bundled\LICENSE.rst">
@@ -1642,5 +1648,6 @@
     <None Include="include\crypto\dso_conf.h.in">
       <Filter>Header Files\include\openssl\crypto</Filter>
     </None>
+    <None Include="..\Northstar-Legal.txt" />
   </ItemGroup>
 </Project>
