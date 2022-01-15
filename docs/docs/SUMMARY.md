@@ -7,6 +7,9 @@
 
 * [Basic Setup](installing-northstar/basic-setup.md)
 * [Troubleshooting](installing-northstar/troubleshooting.md)
+
+***
+
 * [Using Northstar](installing-northstar/using-northstar/README.md)
   * [Mods](installing-northstar/using-northstar/mods.md)
   * [Server Browser](installing-northstar/using-northstar/server-browser.md)
