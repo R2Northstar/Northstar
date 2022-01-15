@@ -12,9 +12,10 @@ However your progress on official servers is not lost, so running vanilla client
 
 ### Q: How do I open the console?
 
-A: Check [_Opening the console_](using-northstar/commands.md#opening-the-console).
+A: Check [_Opening the console_](installing-northstar/using-northstar/commands.md#opening-the-console).
 
 ### Q: How can I check if my server is listed on the server browser?
+
 You can use community-made server browsers like: [https://taskinoz.com/northstar/](https://taskinoz.com/northstar/)
 
 ### Q: Will there be a console version?
@@ -78,16 +79,18 @@ A: You’re most likely running an outdated Northstar version now, please update
 ### Q: I keep getting the engine error “Failed to initialize Origin: Origin Core seems to be running, but the LSX Authentication Challenge failed. No communication with Core is possible.”
 
 A: If the usual workaround of restarting Origin/rebooting or running the vanilla game first and then Northstar don’t work, try the following:
-- add `-northstar` to your command line arguments/launch options field in Origin/Steam game options
-- run the game with Origin/Steam instead of starting NorthstarLauncher.exe (important)
-- error should be no more 
 
-### Q: I get error "Failed copying wsock32.dll from system32 [...] copy_file: Access is denied."
+* add `-northstar` to your command line arguments/launch options field in Origin/Steam game options
+* run the game with Origin/Steam instead of starting NorthstarLauncher.exe (important)
+* error should be no more
+
+### Q: I get error "Failed copying wsock32.dll from system32 \[...] copy\_file: Access is denied."
 
 A: You are probably using EA Desktop app and it sets up game installations with no write permissions contrary to Origin.
-- **Solution 1**: Launch EA Desktop and the game as admin once so that it can copy that file.
-- **Solution 2**: If you know how, just copy the mentioned file manually, remembering you need to change its filename (just use some temp dir and rename there).
-- **Solution 3**: If you know how, just change the folder permissions in Properties->Security tab of your Titanfall2 install dir to let your user write.
+
+* **Solution 1**: Launch EA Desktop and the game as admin once so that it can copy that file.
+* **Solution 2**: If you know how, just copy the mentioned file manually, remembering you need to change its filename (just use some temp dir and rename there).
+* **Solution 3**: If you know how, just change the folder permissions in Properties->Security tab of your Titanfall2 install dir to let your user write.
 
 ### Q: Can I use a pirated/cracked copy Titanfall 2 to run Northstar?
 
