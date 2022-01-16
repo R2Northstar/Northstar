@@ -46,4 +46,5 @@ The list of gamemodes [here](dedicated-server/#gamemodes).
 
 If someone keeps messing with the settings, set `ns_private_match_only_host_can_change_settings` to `2`, so that only you can change them.
 
-Set `ns_private_match_countdown_length` to `1` if you don't want to wait for the countdown timer when you start a match.
+Set `ns_private_match_countdown_length` to `1` if you don't want to wait for the countdown timer when you start a match. \
+Additionally, set `ns_private_match_only_host_can_start` to `1` so that only you can actually press the _start match_ button.
