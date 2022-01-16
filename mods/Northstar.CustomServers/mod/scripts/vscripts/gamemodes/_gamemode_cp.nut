@@ -2,6 +2,7 @@ untyped
 
 global function GamemodeCP_Init
 global function RateSpawnpoints_CP
+global function DEV_PrintHardpointsInfo
 
 // needed for sh_gamemode_cp_dialogue
 global array<entity> HARDPOINTS
@@ -452,4 +453,35 @@ void function OnHardpointLeft( entity trigger, entity player )
 		hardpoint.imcCappers.remove( hardpoint.imcCappers.find( player ) )
 	else
 		hardpoint.militiaCappers.remove( hardpoint.militiaCappers.find( player ) )
+}
+
+string function CaptureStateToString( int state )
+{
+	switch ( state )
+	{
+		case CAPTURE_POINT_STATE_UNASSIGNED:
+			return "UNASSIGNED"
+		case CAPTURE_POINT_STATE_HALTED:
+			return "HALTED"
+		case CAPTURE_POINT_STATE_CAPTURED:
+			return "CAPTURED"
+		case CAPTURE_POINT_STATE_AMPING:
+			return "AMPING"
+		case CAPTURE_POINT_STATE_AMPED:
+			return "AMPED"
+	}
+	return "UNKNOWN"
+}
+
+void function DEV_PrintHardpointsInfo()
+{
+	foreach (entity hardpoint in HARDPOINTS)
+	{
+		printt(
+			"Hardpoint:", hardpoint.kv.hardpointGroup,
+			"|Team:", Dev_TeamIDToString(hardpoint.GetTeam()),
+			"|State:", CaptureStateToString(hardpoint.GetHardpointState()),
+			"|Progress:", GetGlobalNetFloat("objective" + hardpoint.kv.hardpointGroup + "Progress")
+		)
+	}
 }
