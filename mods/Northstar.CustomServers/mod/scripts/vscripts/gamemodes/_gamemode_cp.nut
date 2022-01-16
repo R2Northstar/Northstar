@@ -250,6 +250,7 @@ void function HardpointThink( HardpointStruct hardpoint )
 		if(hardpointBlocked)
 		{
 			SetHardpointState(hardpoint,CAPTURE_POINT_STATE_HALTED)
+			SetHardpointCappingTeam(hardpoint,GetOtherTeam(hardpointEnt.GetTeam()))
 		}
 		else if(cappingTeam==TEAM_UNASSIGNED)//nobody on point
 		{
@@ -260,12 +261,15 @@ void function HardpointThink( HardpointStruct hardpoint )
 					SetHardpointCaptureProgress(hardpoint,max(0.0,GetHardpointCaptureProgress(hardpoint)-(deltaTime/CAPTURE_DURATION_CAPTURE)))
 					if(GetHardpointCaptureProgress(hardpoint)==0.0)
 						SetHardpointState(hardpoint,CAPTURE_POINT_STATE_UNASSIGNED)
+						SetHardpointCappingTeam(hardpoint,TEAM_UNASSIGNED)
 					break
 				case CAPTURE_POINT_STATE_CAPTURED:
+					SetHardpointCappingTeam(hardpoint,hardpointEnt.GetTeam())
 					SetHardpointCaptureProgress(hardpoint,min(1.0,GetHardpointCaptureProgress(hardpoint)+(deltaTime/CAPTURE_DURATION_CAPTURE)))
 					break
 				case CAPTURE_POINT_STATE_AMPED:
 				case CAPTURE_POINT_STATE_AMPING:
+					SetHardpointCappingTeam(hardpoint,hardpointEnt.GetTeam())
 					SetHardpointCaptureProgress(hardpoint,max(1.0,GetHardpointCaptureProgress(hardpoint)-(deltaTime/HARDPOINT_AMPED_DELAY)))
 					if(GetHardpointCaptureProgress(hardpoint)<=1.001)//Float inaccuacy
 						SetHardpointState(hardpoint,CAPTURE_POINT_STATE_CAPTURED)
@@ -319,6 +323,7 @@ void function HardpointThink( HardpointStruct hardpoint )
 		}
 		else if(hardpointEnt.GetTeam()!=cappingTeam)
 		{
+			SetHardpointCappingTeam(hardpoint,cappingTeam)
 			SetHardpointCaptureProgress( hardpoint,max(0.0, GetHardpointCaptureProgress( hardpoint ) - ( deltaTime / CAPTURE_DURATION_CAPTURE * capperAmount) ) )
 			if(GetHardpointCaptureProgress(hardpoint)<=1.0)
 			{
@@ -336,6 +341,7 @@ void function HardpointThink( HardpointStruct hardpoint )
 		}
 		else if(hardpointEnt.GetTeam()==cappingTeam)
 		{
+			SetHardpointCappingTeam(hardpoint,cappingTeam)
 			if(GetHardpointCaptureProgress(hardpoint)<1.0)
 			{
 				SetHardpointCaptureProgress(hardpoint,GetHardpointCaptureProgress(hardpoint)+(deltaTime/CAPTURE_DURATION_CAPTURE*capperAmount))
