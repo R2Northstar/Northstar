@@ -7,6 +7,8 @@
 #include "gameutils.h"
 #include "bansystem.h"
 #include "miscserverscript.h"
+#include "concommand.h"
+#include "dedicated.h"
 #include <fstream>
 #include <filesystem>
 #include <thread>
@@ -18,7 +20,7 @@ const char* AUTHSERVER_VERIFY_STRING = "I am a northstar server!";
 typedef void*(*CBaseServer__ConnectClientType)(void* server, void* a2, void* a3, uint32_t a4, uint32_t a5, int32_t a6, void* a7, void* a8, char* serverFilter, void* a10, char a11, void* a12, char a13, char a14, int64_t uid, uint32_t a16, uint32_t a17);
 CBaseServer__ConnectClientType CBaseServer__ConnectClient;
 
-typedef char(*CBaseClient__ConnectType)(void* self, char* name, __int64 netchan_ptr_arg, char b_fake_player_arg, __int64 a5, char* Buffer, int a7);
+typedef bool(*CBaseClient__ConnectType)(void* self, char* name, __int64 netchan_ptr_arg, char b_fake_player_arg, __int64 a5, char* Buffer, void* a7);
 CBaseClient__ConnectType CBaseClient__Connect;
 
 typedef void(*CBaseClient__ActivatePlayerType)(void* self);
@@ -41,6 +43,8 @@ ProcessConnectionlessPacketType ProcessConnectionlessPacket;
 typedef void(*CServerGameDLL__OnRecievedSayTextMessageType)(void* self, unsigned int senderClientIndex, const char* message, char unknown);
 CServerGameDLL__OnRecievedSayTextMessageType CServerGameDLL__OnRecievedSayTextMessage;
 
+typedef void(*ConCommand__DispatchType)(ConCommand* command, const CCommand& args, void* a3);
+ConCommand__DispatchType ConCommand__Dispatch;
 
 // global vars
 ServerAuthenticationManager* g_ServerAuthenticationManager;
@@ -237,11 +241,14 @@ void* CBaseServer__ConnectClientHook(void* server, void* a2, void* a3, uint32_t 
 	return CBaseServer__ConnectClient(server, a2, a3, a4, a5, a6, a7, a8, serverFilter, a10, a11, a12, a13, a14, uid, a16, a17);
 }
 
-char CBaseClient__ConnectHook(void* self, char* name, __int64 netchan_ptr_arg, char b_fake_player_arg, __int64 a5, char* Buffer, int a7)
+bool CBaseClient__ConnectHook(void* self, char* name, __int64 netchan_ptr_arg, char b_fake_player_arg, __int64 a5, char* Buffer, void* a7)
 {
 	// try to auth player, dc if it fails
 	// we connect irregardless of auth, because returning bad from this function can fuck client state p bad
-	char ret = CBaseClient__Connect(self, name, netchan_ptr_arg, b_fake_player_arg, a5, Buffer, a7);
+	bool ret = CBaseClient__Connect(self, name, netchan_ptr_arg, b_fake_player_arg, a5, Buffer, a7);
+	
+	if (!ret)
+		return ret;
 
 	if (!g_ServerBanSystem->IsUIDAllowed(nextPlayerUid))
 	{
@@ -310,8 +317,13 @@ void CBaseClient__DisconnectHook(void* self, uint32_t unknownButAlways1, const c
 }
 
 // maybe this should be done outside of auth code, but effort to refactor rn and it sorta fits
+// hack: store the client that's executing the current stringcmd for pCommand->Dispatch() hook later
+void* pExecutingGameClient = 0;
+
 char CGameClient__ExecuteStringCommandHook(void* self, uint32_t unknown, const char* pCommandString)
 {
+	pExecutingGameClient = self;
+
 	if (CVar_sv_quota_stringcmdspersecond->m_nValue != -1)
 	{
 		// note: this isn't super perfect, legit clients can trigger it in lobby, mostly good enough tho imo
@@ -336,13 +348,30 @@ char CGameClient__ExecuteStringCommandHook(void* self, uint32_t unknown, const c
 	return CGameClient__ExecuteStringCommand(self, unknown, pCommandString);
 }
 
+void ConCommand__DispatchHook(ConCommand* command, const CCommand& args, void* a3)
+{
+	// patch to ensure FCVAR_GAMEDLL concommands without FCVAR_CLIENTCMD_CAN_EXECUTE can't be executed by remote clients
+	if (*sv_m_State == server_state_t::ss_active && !command->IsFlagSet(FCVAR_CLIENTCMD_CAN_EXECUTE) && !!pExecutingGameClient)
+	{
+		if (IsDedicated())
+			return;
+
+		// hack because don't currently have a way to check GetBaseLocalClient().m_nPlayerSlot
+		if (strcmp((char*)pExecutingGameClient + 0xF500, g_LocalPlayerUserID))
+			return;
+	}
+
+	ConCommand__Dispatch(command, args, a3);
+	pExecutingGameClient = 0;
+}
+
 char __fastcall CNetChan___ProcessMessagesHook(void* self, void* buf)
 {
 	double startTime = Plat_FloatTime();
 	char ret = CNetChan___ProcessMessages(self, buf);
 	
 	// check processing limits, unless we're in a level transition
-	if (g_pHostState->m_iCurrentState == HostState_t::HS_RUN)
+	if (g_pHostState->m_iCurrentState == HostState_t::HS_RUN && ThreadInServerFrameThread())
 	{
 		// player that sent the message
 		void* sender = *(void**)((char*)self + 368);
@@ -388,7 +417,7 @@ void CBaseClient__SendServerInfoHook(void* self)
 
 bool ProcessConnectionlessPacketHook(void* a1, netpacket_t* packet)
 {
-	if (packet->adr.type == NA_IP)
+	if (packet->adr.type == NA_IP && (!(packet->data[4] == 'N' && Cvar_net_datablock_enabled->m_nValue) || !Cvar_net_datablock_enabled->m_nValue))
 	{
 		// bad lookup: optimise later tm
 		UnconnectedPlayerSendData* sendData = nullptr;
@@ -478,6 +507,7 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x2140A0, &CNetChan___ProcessMessagesHook, reinterpret_cast<LPVOID*>(&CNetChan___ProcessMessages));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x104FB0, &CBaseClient__SendServerInfoHook, reinterpret_cast<LPVOID*>(&CBaseClient__SendServerInfo));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x117800, &ProcessConnectionlessPacketHook, reinterpret_cast<LPVOID*>(&ProcessConnectionlessPacket));
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x417440, &ConCommand__DispatchHook, reinterpret_cast<LPVOID*>(&ConCommand__Dispatch));
 
 	// patch to disable kicking based on incorrect serverfilter in connectclient, since we repurpose it for use as an auth token
 	{
