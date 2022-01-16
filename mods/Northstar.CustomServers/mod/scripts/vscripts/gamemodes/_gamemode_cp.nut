@@ -240,7 +240,6 @@ void function HardpointThink( HardpointStruct hardpoint )
 		if(hardpointBlocked)
 		{
 			SetHardpointState(hardpoint,CAPTURE_POINT_STATE_HALTED)
-			SetHardpointCappingTeam(hardpoint,GetOtherTeam(hardpointEnt.GetTeam()))
 		}
 		else if(cappingTeam==TEAM_UNASSIGNED)//nobody on point
 		{
