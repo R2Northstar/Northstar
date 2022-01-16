@@ -2,6 +2,7 @@
 #include "modmanager.h"
 #include "convar.h"
 #include "concommand.h"
+#include "audio.h"
 #include "masterserver.h"
 #include "rapidjson/error/en.h"
 #include "rapidjson/document.h"
@@ -330,6 +331,22 @@ void ModManager::LoadMods()
 				mod.Pdiff = pdiffStringStream.str();
 			}
 		}
+
+		// try to load audio
+		if (fs::exists(mod.ModDirectory / "audio"))
+		{
+			for (fs::directory_entry file : fs::directory_iterator(mod.ModDirectory / "audio"))
+			{
+				if (fs::is_regular_file(file) && file.path().extension().string() == ".json")
+				{
+					if (!g_CustomAudioManager.TryLoadAudioOverride(file.path()))
+					{
+						spdlog::warn("Mod {} has an invalid audio def {}", mod.Name, file.path().filename().string());
+						continue;
+					}
+				}
+			}
+		}
 	}
 
 	// in a seperate loop because we register mod files in reverse order, since mods loaded later should have their files prioritised
@@ -389,6 +406,8 @@ void ModManager::UnloadMods()
 	// clean up stuff from mods before we unload
 	m_modFiles.clear();
 	fs::remove_all(COMPILED_ASSETS_PATH);
+
+	g_CustomAudioManager.ClearAudioOverrides();
 
 	if (!m_hasEnabledModsCfg)
 		m_enabledModsCfg.SetObject();
