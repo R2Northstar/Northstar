@@ -86,7 +86,7 @@
 		},
 		{
 			"Path": "gamemodes/sh_gamemode_sns.gnut",
-			"RunOn": "SERVER || CLIENT",
+			"RunOn": "( SERVER || CLIENT ) && MP",
 			"ServerCallback": {
 				"Before": "SNSMode_Init"
 			},
@@ -96,11 +96,11 @@
 		},
 		{
 			"Path": "gamemodes/cl_gamemode_sns.gnut",
-			"RunOn": "CLIENT"
+			"RunOn": "CLIENT && MP"
 		},
 		{
 			"Path": "gamemodes/_gamemode_sns.gnut",
-			"RunOn": "SERVER"
+			"RunOn": "SERVER && MP"
 		},
 
 		{
