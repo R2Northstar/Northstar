@@ -179,28 +179,37 @@ void function HardpointThink( HardpointStruct hardpoint )
 
 		foreach(entity p in hardpoint.imcCappers)
 		{
-			if(p.IsTitan()){
-				imcTitanCappers = imcTitanCappers + 1
-			}
-			else if(p.IsPlayer())
+			if(p.IsPlayer())
 			{
-				imcPilotCappers = imcPilotCappers + 1
+				if(p.IsTitan())
+				{
+					imcTitanCappers = imcTitanCappers + 1
+				}
+				else
+				{
+					imcPilotCappers = imcPilotCappers + 1
+				}
 			}
+
 
 		}
 		//printt("Militia")
 		foreach(entity p in hardpoint.militiaCappers)
 		{
-
-			if(p.IsTitan()){
-
-				militiaTitanCappers = militiaTitanCappers + 1
-			}
-			else if(p.IsPlayer())
+			if(p.IsPlayer())
 			{
+				if(p.IsTitan())
+				{
+					militiaTitanCappers = militiaTitanCappers + 1
+				}
+				else
+				{
 
-				militiaPilotCappers = militiaPilotCappers + 1
+					militiaPilotCappers = militiaPilotCappers + 1
+				}
 			}
+
+
 
 
 		}
@@ -260,8 +269,10 @@ void function HardpointThink( HardpointStruct hardpoint )
 				case CAPTURE_POINT_STATE_UNASSIGNED:
 					SetHardpointCaptureProgress(hardpoint,max(0.0,GetHardpointCaptureProgress(hardpoint)-(deltaTime/CAPTURE_DURATION_CAPTURE)))
 					if(GetHardpointCaptureProgress(hardpoint)==0.0)
+					{
 						SetHardpointState(hardpoint,CAPTURE_POINT_STATE_UNASSIGNED)
 						SetHardpointCappingTeam(hardpoint,TEAM_UNASSIGNED)
+					}
 					break
 				case CAPTURE_POINT_STATE_CAPTURED:
 					SetHardpointCappingTeam(hardpoint,hardpointEnt.GetTeam())
