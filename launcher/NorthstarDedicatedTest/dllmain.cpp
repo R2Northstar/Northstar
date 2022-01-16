@@ -31,6 +31,7 @@
 #include "memalloc.h"
 #include "maxplayers.h"
 #include "languagehooks.h"
+#include "audio.h"
 
 bool initialised = false;
 
@@ -135,6 +136,9 @@ bool InitialiseNorthstar()
     AddDllLoadCallback("engine.dll", InitialiseMaxPlayersOverride_Engine);
     AddDllLoadCallback("client.dll", InitialiseMaxPlayersOverride_Client);
     AddDllLoadCallback("server.dll", InitialiseMaxPlayersOverride_Server);
+
+    // audio hooks
+    AddDllLoadCallback("client.dll", InitialiseMilesAudioHooks);
 
     // mod manager after everything else
     AddDllLoadCallback("engine.dll", InitialiseModManager);
