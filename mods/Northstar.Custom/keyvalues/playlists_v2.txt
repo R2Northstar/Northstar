@@ -551,7 +551,6 @@ playlists
 						mp_angel_city 1
 						mp_colony02 1
 						mp_glitch 1
-						mp_lf_stacks 1
 						mp_relic02 1
 						mp_wargames 1
 						mp_rise 1
