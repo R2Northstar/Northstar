@@ -192,9 +192,10 @@ void function ScoreEvent_TitanKilled( entity victim, entity attacker, var damage
 		AddPlayerScore( attacker, "KillTitan", victim.GetTitanSoul().GetOwner() )
 
 	table<int, bool> alreadyAssisted
-	foreach( DamageHistoryStruct attackerInfo in player.e.recentDamageHistory )
+	foreach( DamageHistoryStruct attackerInfo in victim.e.recentDamageHistory )
 	{
-		if( attackerInfo.attacker != attacker && !alreadyAssisted[attackerInfo.attacker.GetEncodedEHandle()] )
+		bool exists = attackerInfo.attacker.GetEncodedEHandle() in alreadyAssisted ? true : false
+		if( attackerInfo.attacker != attacker && !exists )
 		{
 			alreadyAssisted[attackerInfo.attacker.GetEncodedEHandle()] <- true
 			AddPlayerScore(attackerInfo.attacker, "TitanAssist" )

@@ -284,12 +284,15 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 	table<int, bool> alreadyAssisted
 	foreach( DamageHistoryStruct attackerInfo in player.e.recentDamageHistory )
 	{
-		if( attackerInfo.attacker != attacker && !alreadyAssisted[attackerInfo.attacker.GetEncodedEHandle()] )
+		bool exists = attackerInfo.attacker.GetEncodedEHandle() in alreadyAssisted ? true : false
+		if( attackerInfo.attacker != attacker && !exists )
 		{
 			alreadyAssisted[attackerInfo.attacker.GetEncodedEHandle()] <- true
 			Remote_CallFunction_NonReplay( attackerInfo.attacker, "ServerCallback_SetAssistInformation", attackerInfo.damageSourceId, attacker.GetEncodedEHandle(), player.GetEncodedEHandle(), attackerInfo.time ) 
 			AddPlayerScore(attackerInfo.attacker, "PilotAssist" )
 		}
+
+
 	}
 
 	player.p.rematchOrigin = player.p.deathOrigin
