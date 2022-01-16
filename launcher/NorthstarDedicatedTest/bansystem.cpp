@@ -71,7 +71,7 @@ void BanPlayerCommand(const CCommand& args)
 	{
 		void* player = GetPlayerByIndex(i);
 
-		if (!strcmp((char*)player + 0x16, args.Arg(1)) || strcmp((char*)player + 0xF500, args.Arg(1)))
+		if (!strcmp((char*)player + 0x16, args.Arg(1)) || !strcmp((char*)player + 0xF500, args.Arg(1)))
 		{
 			g_ServerBanSystem->BanUID(strtoll((char*)player + 0xF500, nullptr, 10));
 			CBaseClient__Disconnect(player, 1, "Banned from server");

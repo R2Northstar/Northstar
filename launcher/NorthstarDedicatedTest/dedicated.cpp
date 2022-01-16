@@ -50,6 +50,11 @@ void RunServer(CDedicatedExports* dedicated)
 
 	// run initial 2 ticks, 1 to initialise engine and 1 to load initial map
 	g_pEngine->Frame();
+
+	// run server autoexec
+	Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec autoexec_ns_server", cmd_source_t::kCommandSrcCode);
+	Cbuf_Execute();
+
 	g_pEngine->Frame();
 
 	// to fix a bug: set current playlist again, otherwise max_players will be set wrong
@@ -406,7 +411,7 @@ void InitialiseDedicated(HMODULE engineAddress)
 	CommandLine()->AppendParm("-windowed", 0);
 	CommandLine()->AppendParm("+host_preload_shaders", "0");
 	CommandLine()->AppendParm("+net_usesocketsforloopback", "1");
-	CommandLine()->AppendParm("+exec", "autoexec_ns_server");
+	//CommandLine()->AppendParm("+exec", "autoexec_ns_server");
 
 	// Disable Quick Edit mode to reduce chance of user unintentionally hanging their server by selecting something.
 	if (!CommandLine()->CheckParm("-bringbackquickedit"))
