@@ -171,9 +171,11 @@ In the future this keybind should hopefully be adjustable via `Controls > Settin
 | `sv_weapon_despawn_time`                    |                                                                       | 90      |
 | `sv_writeSendTableStreamFile`               |                                                                       |         |
 
-### Useful dev scripts
+### Useful dev commands
+Requires `sv_cheats 1`
 
-| Command                                                                                                                | Result                                             |
-| ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| `script CreateTitanForPlayerAndHotdrop( GetPlayerArray()[0], GetTitanReplacementPoint( GetPlayerArray()[0], false ) )` | Sets your titan as available to call for Titanfall |
-| `script ForcePilotToBecomeTitan( GetPlayerArray()[0] )`                                                                | Transforms you into a titan                        |
+Command|Result
+-|-
+`thirdperson`|Third person mode
+`script ReplacementTitan( GetPlayerArray()[0] )`|Stand by for Titanfall
+`script SetServerVar( "gameEndTime", Time() + 1200.0 )`|Sets remaining match time to 1200 seconds
