@@ -164,8 +164,6 @@ void function HardpointThink( HardpointStruct hardpoint )
 
 	WaitFrame() // wait a frame so deltaTime is never zero
 
-
-
 	while ( GamePlayingOrSuddenDeath() )
 	{
 		int imcPilotCappers = 0
@@ -176,7 +174,6 @@ void function HardpointThink( HardpointStruct hardpoint )
 
 		float currentTime = Time()
 		float deltaTime = currentTime - lastTime
-
 
 		foreach(entity p in hardpoint.imcCappers)
 		{
@@ -191,10 +188,7 @@ void function HardpointThink( HardpointStruct hardpoint )
 					imcPilotCappers = imcPilotCappers + 1
 				}
 			}
-
-
 		}
-		//printt("Militia")
 		foreach(entity p in hardpoint.militiaCappers)
 		{
 			if(p.IsPlayer())
@@ -209,16 +203,9 @@ void function HardpointThink( HardpointStruct hardpoint )
 					militiaPilotCappers = militiaPilotCappers + 1
 				}
 			}
-
-
-
-
 		}
 		int imcCappers
 		int militiaCappers
-//		if(hardpoint.hardpoint.kv.hardpointGroup == "C"){
-//			printt("melitia pilots",militiaPilotCappers)
-//		}
 
 		bool hardpointBlocked = false
 		if((imcTitanCappers+militiaTitanCappers)>0)
@@ -232,13 +219,8 @@ void function HardpointThink( HardpointStruct hardpoint )
 			militiaCappers = militiaPilotCappers
 		}
 
-
-
 		int cappingTeam
 		int capperAmount = 0
-	//	if(hardpoint.hardpoint.kv.hardpointGroup == "C"){
-	//		printt("melitia",militiaCappers)
-	//	}
 
 		if((imcCappers > 0) && (militiaCappers > 0)){
 			hardpointBlocked = true
@@ -253,9 +235,7 @@ void function HardpointThink( HardpointStruct hardpoint )
 			cappingTeam = TEAM_MILITIA
 			capperAmount = militiaCappers
 		}
-		if(capperAmount>3) //is there a function for this because min returns float
-			capperAmount = 3
-
+		capperAmount = int(min(capperAmount, 3))
 
 		if(hardpointBlocked)
 		{
@@ -283,9 +263,9 @@ void function HardpointThink( HardpointStruct hardpoint )
 				case CAPTURE_POINT_STATE_AMPING:
 					SetHardpointCappingTeam(hardpoint,hardpointEnt.GetTeam())
 					SetHardpointCaptureProgress(hardpoint,max(1.0,GetHardpointCaptureProgress(hardpoint)-(deltaTime/HARDPOINT_AMPED_DELAY)))
-					if(GetHardpointCaptureProgress(hardpoint)<=1.001)//Float inaccuacy
+					if(GetHardpointCaptureProgress(hardpoint)<=1.001)
 						SetHardpointState(hardpoint,CAPTURE_POINT_STATE_CAPTURED)
-					break;
+					break
 			}
 		}
 		else if(hardpointEnt.GetTeam()==TEAM_UNASSIGNED)
@@ -366,7 +346,6 @@ void function HardpointThink( HardpointStruct hardpoint )
 				if(GetHardpointCaptureProgress(hardpoint)==2.0&&!(GetHardpointState(hardpoint)==CAPTURE_POINT_STATE_AMPED))
 				{
 					SetHardpointState( hardpoint, CAPTURE_POINT_STATE_AMPED )
-
 					// can't use the dialogue functions here because for some reason GamemodeCP_VO_Amped isn't global?
 					PlayFactionDialogueToTeam( "amphp_youAmped" + hardpointEnt.kv.hardpointGroup, cappingTeam )
 					PlayFactionDialogueToTeam( "amphp_enemyAmped" + hardpointEnt.kv.hardpointGroup, GetOtherTeam( cappingTeam ) )
@@ -374,14 +353,9 @@ void function HardpointThink( HardpointStruct hardpoint )
 			}
 		}
 
-
-
-		// scoring
 		if ( hardpointEnt.GetTeam() != TEAM_UNASSIGNED && GetHardpointState( hardpoint ) >= CAPTURE_POINT_STATE_CAPTURED && currentTime - lastScoreTime >= TEAM_OWNED_SCORE_FREQ && !hardpointBlocked&&!(cappingTeam==GetOtherTeam(hardpointEnt.GetTeam())))
 		{
 			lastScoreTime = currentTime
-
-			// 2x score if amped
 			if ( GetHardpointState( hardpoint ) == CAPTURE_POINT_STATE_AMPED )
 				AddTeamScore( hardpointEnt.GetTeam(), 2 )
 			else if( GetHardpointState( hardpoint) >= CAPTURE_POINT_STATE_CAPTURED)
