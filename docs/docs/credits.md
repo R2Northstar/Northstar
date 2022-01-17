@@ -1,6 +1,12 @@
 # Credits
 
-This wiki contains content from:
+Northstar is being developed by a passionate community that wants to maintain Titanfall 2 and allow everyone to play it forever. Thanks to everyone that contributed to this project in any way.
 
-* BobTheBob9: [https://github.com/R2Northstar/Northstar/wiki](https://github.com/R2Northstar/Northstar/wiki)
-* Taskinoz: [https://gist.github.com/taskinoz/d68fdbc1ec0590d8fe61a85edbb9c44e](https://gist.github.com/taskinoz/d68fdbc1ec0590d8fe61a85edbb9c44e)
+## Contributors
+
+Source code contributors can be found through these links:
+- [Northstar](https://github.com/R2Northstar/Northstar/graphs/contributors)
+- [NorthstarMods](https://github.com/R2Northstar/NorthstarMods/graphs/contributors)
+- [NorthstarWiki](https://github.com/R2Northstar/NorthstarWiki/graphs/contributors)
+- [NorthstarLauncher](https://github.com/R2Northstar/NorthstarLauncher/graphs/contributors)
+- [NorthstarMasterServer](https://github.com/R2Northstar/NorthstarMasterServer/graphs/contributors)
