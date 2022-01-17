@@ -24,6 +24,12 @@ void function CreateGamemodeSNS()
 
 	AddPrivateMatchMode( GAMEMODE_SNS ) // add to private lobby modes
 
+	AddPrivateMatchModeSettingArbitrary( "#PL_sns", "wme_kill_value", "10" )
+	AddPrivateMatchModeSettingArbitrary( "#PL_sns", "offhand_kill_value", "10" )
+	AddPrivateMatchModeSettingArbitrary( "#PL_sns", "reset_kill_value", "5" )
+	AddPrivateMatchModeSettingArbitrary( "#PL_sns", "melee_kill_value", "5" )
+	AddPrivateMatchModeSettingEnum( "#PL_sns", "reset_pulse_blade_cooldown_on_pulse_blade_kill", [ "Disabled", "Enabled" ], "1"  )
+
 	GameMode_SetDefaultScoreLimits( GAMEMODE_SNS, 300, 0 )
 
 	#if SERVER

@@ -4,17 +4,18 @@ struct {
 	string score_leader_highlight = "enemy_boss_bounty" // highlight effect applied to person in 1st place
 	string offhand_weapon = "mp_weapon_thermite_grenade" // offhand weapon
 
-	bool reset_pulse_blade_cooldown_on_pulse_blade_kill = true
+	bool reset_pulse_blade_cooldown_on_pulse_blade_kill
 
-	int wme_kill_value = 10
-	int offhand_kill_value = 10
-	int reset_kill_value = 5
-	int melee_kill_value = 5
+	int wme_kill_value
+	int offhand_kill_value
+	int reset_kill_value
+	int melee_kill_value
 } file
 
 
 void function SNS_Init()
 {
+	SetSpawnpointGamemodeOverride( FFA )
 	SetShouldUseRoundWinningKillReplay( true )
 	ClassicMP_ForceDisableEpilogue( true )
 	SetLoadoutGracePeriodEnabled( false ) // prevent modifying loadouts with grace period
@@ -25,6 +26,12 @@ void function SNS_Init()
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	AddCallback_OnPlayerRespawned( OnPlayerRespawned )
 	AddCallback_GameStateEnter( eGameState.WinnerDetermined, OnWinnerDetermined )
+
+	file.reset_pulse_blade_cooldown_on_pulse_blade_kill = GetCurrentPlaylistVarInt( "reset_pulse_blade_cooldown_on_pulse_blade_kill", 1 ) == 1
+	file.wme_kill_value = GetCurrentPlaylistVarInt( "wme_kill_value", 10 )
+	file.offhand_kill_value = GetCurrentPlaylistVarInt( "offhand_kill_value", 10 )
+	file.reset_kill_value = GetCurrentPlaylistVarInt( "reset_kill_value", 5 )
+	file.melee_kill_value = GetCurrentPlaylistVarInt( "melee_kill_value", 5 )
 }
 
 void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
