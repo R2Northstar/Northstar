@@ -15,7 +15,8 @@ void function AddNorthstarModMenu()
 
 void function AddNorthstarModMenu_MainMenuFooter()
 {
-	AddMenuFooterOption( GetMenu( "MainMenu" ), BUTTON_Y, "#Y_BUTTON_MENU_TITLE_MODS", "#MENU_TITLE_MODS", AdvanceToModListMenu )
+	string controllerStr = PrependControllerPrompts( BUTTON_Y, "#MENU_TITLE_MODS" )
+	AddMenuFooterOption( GetMenu( "MainMenu" ), BUTTON_Y, controllerStr, "#MENU_TITLE_MODS", AdvanceToModListMenu )
 }
 
 void function AdvanceToModListMenu( var button )
@@ -30,8 +31,20 @@ void function InitModMenu()
 	AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, OnModMenuOpened )
 	AddMenuEventHandler( menu, eUIEvent.MENU_CLOSE, OnModMenuClosed )
 	AddMenuFooterOption( menu, BUTTON_B, "#B_BUTTON_BACK", "#BACK" )
-	AddMenuFooterOption( menu, BUTTON_Y, "#Y_BUTTON_RELOAD_MODS", "#RELOAD_MODS", OnReloadModsButtonPressed )
-	AddMenuFooterOption( menu, BUTTON_BACK, "#BACK_AUTHENTICATION_AGREEMENT", "#AUTHENTICATION_AGREEMENT", OnAuthenticationAgreementButtonPressed )
+	AddMenuFooterOption(
+		menu,
+		BUTTON_X,
+		PrependControllerPrompts( BUTTON_X, "#RELOAD_MODS" ),
+		"#RELOAD_MODS",
+		OnReloadModsButtonPressed
+	)
+	AddMenuFooterOption(
+		menu,
+		BUTTON_BACK,
+		PrependControllerPrompts( BUTTON_Y, "#AUTHENTICATION_AGREEMENT" ),
+		"#AUTHENTICATION_AGREEMENT",
+		OnAuthenticationAgreementButtonPressed
+	)
 	
 	foreach ( var button in GetElementsByClassname( GetMenu( "ModListMenu" ), "ModButton" ) )
 	{
