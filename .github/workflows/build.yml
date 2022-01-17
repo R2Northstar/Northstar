@@ -1,11 +1,11 @@
 name: Build
 on:
-  release:
-    types:
-      - created
+  push:
+    tags:
+      - '*'
 
 env:
-  NORTHSTAR_VERSION: ${GITHUB_REF##*/}
+  NORTHSTAR_VERSION: ${{github.ref_name}}
 
 jobs:
   build-launcher:
