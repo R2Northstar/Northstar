@@ -32,6 +32,18 @@ void function GiveScoreForPlayerKill( entity victim, entity attacker, var damage
 {
 	if ( victim != attacker && victim.IsPlayer() && attacker.IsPlayer() && GetGameState() == eGameState.Playing )
 		AddTeamScore( attacker.GetTeam(), 1 )
+
+	table<int, bool> alreadyAssisted
+	foreach( DamageHistoryStruct attackerInfo in victim.e.recentDamageHistory )
+	{
+		bool exists = attackerInfo.attacker.GetEncodedEHandle() in alreadyAssisted ? true : false
+		if( attackerInfo.attacker != attacker && !exists )
+		{
+			alreadyAssisted[attackerInfo.attacker.GetEncodedEHandle()] <- true
+			attackerInfo.attacker.AddToPlayerGameStat( PGS_ASSISTS, 1 )
+		}
+	}
+
 }
 
 int function CheckScoreForDraw()
