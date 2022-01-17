@@ -41,8 +41,8 @@ CHostState__State_ChangeLevelSPType CHostState__State_ChangeLevelSP;
 typedef void(*CHostState__State_GameShutdownType)(CHostState* hostState);
 CHostState__State_GameShutdownType CHostState__State_GameShutdown;
 
-
-int htod(char c) {
+// Convert a hex digit char to integer.
+inline int hctod(char c) {
 	if (c >= 'A' && c <= 'F') {
 		return c - 'A' + 10;
 	}
@@ -53,65 +53,43 @@ int htod(char c) {
 		return c - '0';
 	}
 }
-// Shoutout to Wtz_LASR for helping me with this:
-// These functions should interprets all unicode strings like \u4e2d\u6587 to UTF8.
 
-void unescape_unicode(std::string& str) {
+// This function interprets all 4-hexadecimal-digit unicode codepoint characters like \u4E2D to UTF-8 encoding.
+std::string unescape_unicode(const std::string &str) {
+	std::string result;
 	std::regex r("\\\\u([a-f\\d]{4})", std::regex::icase);
-	std::smatch sm;
-	while (regex_search(str, sm, r)) {
+	auto matches_begin = std::sregex_iterator(str.begin(), str.end(), r);
+	auto matches_end = std::sregex_iterator();
+	std::smatch last_match;
+	for (std::sregex_iterator i = matches_begin; i != matches_end; ++i) {
+		last_match = *i;
+		result.append(last_match.prefix());
 		unsigned int cp = 0;
-		std::string conv;
 		for (int i = 2; i <= 5; ++i) {
 			cp *= 16;
-			cp += htod(sm[0].str()[i]);
+			cp += hctod(last_match.str()[i]);
 		}
-
-		if (cp >= 0x00 && cp <= 0x7F) {
-			conv.push_back(cp);
+		if (cp <= 0x7F) {
+			result.push_back(cp);
 		}
-		else if (cp >= 0x80 && cp <= 0x7FF) {
-			unsigned char c1 = cp >> 6;
-			c1 = c1 | (1 << 7);
-			c1 = c1 | (1 << 6);
-			c1 = c1 & (~(1 << 5));
-			unsigned char c2 = cp & ((1 << 6) - 1);
-			c2 = c2 | (1 << 7);
-			c2 = c2 & (~(1 << 6));
-			conv.push_back(c1);
-			conv.push_back(c2);
+		else if (cp <= 0x7FF) {
+			result.push_back((cp >> 6) | 0b11000000 & (~(1 << 5)));
+			result.push_back(cp & ((1 << 6) - 1) | 0b10000000 & (~(1 << 6)));
 		}
-		else if (cp >= 0x800 && cp <= 0xFFFF) {
-			unsigned char c1 = cp >> 12;
-			c1 = c1 | (1 << 7);
-			c1 = c1 | (1 << 6);
-			c1 = c1 | (1 << 5);
-			c1 = c1 & (~(1 << 4));
-			unsigned char c2 = (cp >> 6) & ((1 << 6) - 1);
-			c2 = c2 | (1 << 7);
-			c2 = c2 & (~(1 << 6));
-			unsigned char c3 = cp & ((1 << 6) - 1);
-			c3 = c3 | (1 << 7);
-			c3 = c3 & (~(1 << 6));
-			conv.push_back(c1);
-			conv.push_back(c2);
-			conv.push_back(c3);
+		else if (cp <= 0xFFFF) {
+			result.push_back((cp >> 12) | 0b11100000 & (~(1 << 4)));
+			result.push_back((cp >> 6) & ((1 << 6) - 1) | 0b10000000 & (~(1 << 6)));
+			result.push_back(cp & ((1 << 6) - 1) | 0b10000000 & (~(1 << 6)));
 		}
-		str.replace(sm[0].first, sm[0].second, conv);
 	}
+	result.append(last_match.suffix());
+	return result;
 }
-
 
 void UpdateServerInfoFromUnicodeToUTF8()
 {
-	//This reads server name and desc from convar, interprets all unicode strings to UTF8.
-	g_MasterServerManager->ns_auth_srvName = Cvar_ns_server_name->m_pszString;
-	g_MasterServerManager->ns_auth_srvDesc = Cvar_ns_server_desc->m_pszString;
-	unescape_unicode(g_MasterServerManager->ns_auth_srvName);
-	unescape_unicode(g_MasterServerManager->ns_auth_srvDesc);
-	//std::cout << g_MasterServerManager -> ns_auth_srvName << std::endl;
-
-
+	g_MasterServerManager->ns_auth_srvName = unescape_unicode(Cvar_ns_server_name->m_pszString);
+	g_MasterServerManager->ns_auth_srvDesc = unescape_unicode(Cvar_ns_server_desc->m_pszString);
 }
 
 const char* HttplibErrorToString(httplib::Error error)

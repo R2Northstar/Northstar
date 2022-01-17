@@ -115,7 +115,7 @@ public:
 	void WritePlayerPersistentData(char* playerId, char* pdata, size_t pdataSize);
 	void RemoveSelfFromServerList();
 };
-void unescape_unicode(std::string& str);
+std::string unescape_unicode(const std::string &str);
 void UpdateServerInfoFromUnicodeToUTF8();
 void InitialiseSharedMasterServer(HMODULE baseAddress);
 
