@@ -1,18 +1,15 @@
 ---
-description: Want to contribute, question, contact, or need help?
+description: Contribution guidelines
 ---
 
 # Contributing
 
-### Contributing <a href="#contributing" id="contributing"></a>
+### Creating an issue <a href="#contributing" id="contributing"></a>
 
-In case you feel like something is out of place, not accurate, biased, or if you just want to contribute, please [open a new issue](https://github.com/R2Northstar/NorthstarWiki/issues/) or [make a pull request](https://github.com/R2Northstar/NorthstarWiki/pulls) to our wiki:\
-[https://github.com/R2Northstar/NorthstarWiki](https://github.com/R2Northstar/NorthstarWiki)
+Read [CONTRIBUTING.md](https://github.com/R2Northstar/Northstar/blob/main/CONTRIBUTING.md) before creating an issue, if you believe that the issue is valid fill the provided template with the requested info.
 
-### Contacting us
+{% hint style="info" %}
+Please remember that issues created in the Northstar repositories should be related to the mod, avoid creating issues asking for tech support or problems unrelated to the project.
+{% endhint %}
 
-You are welcome to create an issue at:\
-[https://github.com/R2Northstar/NorthstarWiki/issues](https://github.com/R2Northstar/NorthstarWiki/issues)
-
-Alternatively feel free to reach out via Discord:\
-[https://northstar.tf/discord](https://northstar.tf/discord)
+Check the [Development](development.md) section if you are unsure of where to open a ticket.

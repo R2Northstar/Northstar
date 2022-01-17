@@ -21,8 +21,6 @@ Northstar is split over multiple git repositories that fulfil different function
 * [NorthstarWiki](https://github.com/R2Northstar/NorthstarWiki):\
   The repository for this wiki.
 
-
-
 ### Setup
 
 Build instructions for the launcher can be found here:
