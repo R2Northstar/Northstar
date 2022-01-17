@@ -31,12 +31,10 @@ For modding guides, documentation on Northstar API features and documentation on
 ## Contact and contributing
 
 **Please remember:** You should expect to encounter bugs and crashes with Northstar.\
-Northstar is mostly being developed by a single person as a mod to Titanfall|2.\
-If you do encounter issues that this guide doesn't have a fix for, you can get support in the Discord linked below.
-
+If you need help troubleshooting, setting up or modifying Northstar try talking to the community on our Discord server:
 {% embed url="https://northstar.tf/discord" %}
 
-For contributing check:
+Before creating issues or contributing changes to the source code please read:
 
 {% content-ref url="contributing.md" %}
 [contributing.md](contributing.md)
