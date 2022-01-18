@@ -8,9 +8,14 @@ The ports you'll need to forward are `37015` UDP, and `8081` TCP by default, if 
 
 ## Server Configuration
 
-Whether you're running a listen or dedicated server, you'll generally want to mess with the configuration at least a bit. While I do think the default configuration settings are pretty ok, being able to change your server's name or password, or increasing your server's tickrate is often something you'll want to do. Server configuration can be modified in the file `R2Northstar/mods/Northstar.CustomServers/mod/cfg/autoexec_ns_server.cfg`, which will be executed on server startup.
+Whether you're running a listen or dedicated server, you'll generally want to mess with the configuration at least a bit. While I do think the default configuration settings are pretty ok, being able to change your server's name or password, or increasing your server's tickrate is often something you'll want to do. Server configuration can be modified in the file `R2Northstar/mods/Northstar.CustomServers/mod/cfg/autoexec_ns_server.cfg`, which will be executed on server startup.\
 
-Below are a series of variables and commands you can use for server configuration:\\
+Additionally dedicated server settings and configs can be used on a listen server.\
+Dedicated server startup arguments can be placed into `Titanfall2/ns_startup_args.txt`\
+Dedicated convars can be placed into `R2Northstar/mods/Northstar.CustomServers/mod/cfg/autoexec_ns_server.cfg`
+The only difference between a listen and dedicated server is that a listen can only run while the host is in the match. 
+
+Below are a series of variables and commands you can use for server configuration:
 
 | Name                                   | Description                                                                                                                                                                                 | Default Value                  |
 | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
