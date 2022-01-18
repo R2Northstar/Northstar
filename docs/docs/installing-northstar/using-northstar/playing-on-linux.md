@@ -1,6 +1,8 @@
-# Playing on Linux
+# Playing on Linux 🐧
 
-Linux is not officially supported currently. However, you can get it working through Proton or Wine by following this guide. You should also be aware of some [common issues with Origin](https://github.com/lutris/docs/blob/master/Origin.md) before proceding.
+Linux is not officially supported currently. However, you can get it working through Proton or Wine by following this guide.
+
+> Please read this section on [common issues with Origin](https://github.com/lutris/docs/blob/master/Origin.md) before proceding.
 
 ## Installing
 
@@ -9,7 +11,8 @@ Linux is not officially supported currently. However, you can get it working thr
 1. Download the latest version of Northstar from the [releases](https://github.com/R2Northstar/Northstar/releases) page
 2. Extract all contents of the file to your Titanfall 2 folder ( Right click _Titanfall 2_ > Open _Properties_ > Click _Local Files_ > Click _Browse_ )
 3. Rename _Titanfall2.exe_ to anything else ( for example _Titanfall2old.exe_ ), and rename _NorthstarLauncher.exe_ to _Titanfall2.exe_. Alternatively to renaming _NorthstarLauncher.exe_, you can create a symlink to make future Northstar updates easier. This can be done by executing the following in the Titanfall 2 directory:
-> ln NorthstarLauncher.exe Titanfall2.exe
+
+`ln NorthstarLauncher.exe Titanfall2.exe`
 
 Now Steam will automatically launch Northstar when you hit play. Just launch the game through Steam and you should be greeted with a Northstar welcome message upon entering the main menu.
 
@@ -43,9 +46,8 @@ Northstar only requires the [Vulkan layer](https://github.com/ishitatsuyuki/Late
 
 Once installed, LatencyFleX can be enabled by doing either of the following:
 
-> **If you are using Steam:** Add the following to your Titanfall 2 launch options: `"LFX=1 %command%"`
-
-> **If you are using Lutris:** Right click on Titanfall 2, click 'Configure', navigate to 'System Preferences' / 'System Options' / 'Environmental Variables', and use the following:
+- **Steam:** Add the following to your Titanfall 2 launch options: `"LFX=1 %command%"`
+- **Lutris:** Right click on Titanfall 2, click 'Configure', navigate to 'System Preferences' / 'System Options' / 'Environmental Variables', and use the following:
 
 > Key: LFX  
 Value: 1
@@ -55,7 +57,6 @@ Once in-game, LatencyFleX can be toggled off and on using the `"r_latencyflex"` 
 While playing with LatencyFleX, **VSync and Adaptive Super Sampling must be disabled**. If you wish to prevent tearing while using LatencyFleX, the following may be added to the end of `ns_startup_args.txt` in the root of your Titanfall 2 install:
 
 > +fps_max_use_refresh 1
-
 
 ## Troubleshooting
 
