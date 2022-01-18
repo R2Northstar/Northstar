@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#include "gameutils.h"
 
 // literally just copied from ttf2sdk definition
 typedef void*(*CreateInterfaceFn)(const char* pName, int* pReturnCode);
@@ -17,7 +16,7 @@ public:
         CreateInterfaceFn createInterface = (CreateInterfaceFn)GetProcAddress(handle, "CreateInterface");
         m_interface = (T*)createInterface(interfaceName.c_str(), NULL);
         if (m_interface == nullptr)
-            Error("Failed to call CreateInterface for %s in %s", interfaceName, moduleName);
+            spdlog::error("Failed to call CreateInterface for %s in %s", interfaceName, moduleName);
     }
 
     T* operator->() const
