@@ -36,30 +36,28 @@ typedef void(*CHostState__InitType)(CHostState* self);
 
 void RunServer(CDedicatedExports* dedicated)
 {
-	Sys_Printf(dedicated, "CDedicatedExports::RunServer(): starting");
-
-	// init hoststate, if we don't do this, we get a crash later on
-	CHostState__InitType CHostState__Init = (CHostState__InitType)((char*)GetModuleHandleA("engine.dll") + 0x16E110);
-	CHostState__Init(g_pHostState);
-
-	// set host state to allow us to enter CHostState::FrameUpdate, with the state HS_NEW_GAME
-	g_pHostState->m_iNextState = HostState_t::HS_NEW_GAME;
-	strncpy(g_pHostState->m_levelName, CommandLine()->ParmValue("+map", Cvar_match_defaultMap->m_pszString), sizeof(g_pHostState->m_levelName)); // set map to load into
-
+	spdlog::info("CDedicatedExports::RunServer(): starting");
 	spdlog::info(CommandLine()->GetCmdLine());
 
-	// run initial 2 ticks, 1 to initialise engine and 1 to load initial map
+	// initialise engine
 	g_pEngine->Frame();
 
-	// run server autoexec
+	// add +map if not present
+	// don't manually execute this from cbuf as users may have it in their startup args anyway, easier just to run from stuffcmds if present
+	if (!CommandLine()->CheckParm("+map"))
+		CommandLine()->AppendParm("+map", Cvar_match_defaultMap->m_pszString);
+
+	// run server autoexec and re-run commandline
 	Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec autoexec_ns_server", cmd_source_t::kCommandSrcCode);
+	Cbuf_AddText(Cbuf_GetCurrentPlayer(), "stuffcmds", cmd_source_t::kCommandSrcCode);
 	Cbuf_Execute();
 
-	g_pEngine->Frame();
-
-	// to fix a bug: set current playlist again, otherwise max_players will be set wrong
+	// ensure playlist initialises right, if we've not explicitly called setplaylist
 	SetCurrentPlaylist(GetCurrentPlaylistName());
+	
+	// note: we no longer manually set map and hoststate to start server in g_pHostState, we just use +map which seems to initialise stuff better
 
+	// main loop
 	while (g_pEngine->m_nQuitting == EngineQuitState::QUIT_NOTQUITTING)
 	{
 		double frameStart = Plat_FloatTime();
@@ -411,7 +409,6 @@ void InitialiseDedicated(HMODULE engineAddress)
 	CommandLine()->AppendParm("-windowed", 0);
 	CommandLine()->AppendParm("+host_preload_shaders", "0");
 	CommandLine()->AppendParm("+net_usesocketsforloopback", "1");
-	//CommandLine()->AppendParm("+exec", "autoexec_ns_server");
 
 	// Disable Quick Edit mode to reduce chance of user unintentionally hanging their server by selecting something.
 	if (!CommandLine()->CheckParm("-bringbackquickedit"))
