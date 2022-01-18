@@ -8,7 +8,7 @@ Linux is not officially supported currently. However, you can get it working thr
 
 1. Download the latest version of Northstar from the [releases](https://github.com/R2Northstar/Northstar/releases) page
 2. Extract all contents of the file to your Titanfall 2 folder ( Right click _Titanfall 2_ > Open _Properties_ > Click _Local Files_ > Click _Browse_ )
-3. Rename _Titanfall2.exe_ to anything else ( for example _Titanfall2old.exe_ ), and rename _NorthstarLauncher.exe_ to _Titanfall2.exe_. Alternatively to renaming _NorthStarLauncher.exe_, you can create a symlink to make future Northstar updates easier. This can be done by executing the following in the Titanfall 2 directory:
+3. Rename _Titanfall2.exe_ to anything else ( for example _Titanfall2old.exe_ ), and rename _NorthstarLauncher.exe_ to _Titanfall2.exe_. Alternatively to renaming _NorthstarLauncher.exe_, you can create a symlink to make future Northstar updates easier. This can be done by executing the following in the Titanfall 2 directory:
 > ln NorthstarLauncher.exe Titanfall2.exe
 
 Now Steam will automatically launch Northstar when you hit play. Just launch the game through Steam and you should be greeted with a Northstar welcome message upon entering the main menu.
@@ -51,6 +51,11 @@ Once installed, LatencyFleX can be enabled by doing either of the following:
 Value: 1
 
 Once in-game, LatencyFleX can be toggled off and on using the `"r_latencyflex"` console variable.
+
+While playing with LatencyFleX, **VSync and Adaptive Super Sampling must be disabled**. If you wish to prevent tearing while using LatencyFleX, the following may be added to the end of `ns_startup_args.txt` in the root of your Titanfall 2 install:
+
+> +fps_max_use_refresh 1
+
 
 ## Troubleshooting
 
