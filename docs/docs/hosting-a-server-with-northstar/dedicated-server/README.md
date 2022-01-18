@@ -54,22 +54,22 @@ The list of playlist overrides needs to be quoted and separated by spaces (examp
 | `custom_air_accel_pilot`                     |                 |               |                                                                                                |
 | `pilot_health_multiplier`                    |                 |               |                                                                                                |
 | `run_epilogue`                               | `0-1`           | `1`           | Enables escape dropship                                                                        |
-| `respawn_delay`                              |                 |               |                                                                                                |
+| `respawn_delay`                              |                 |               | Delay before respawn                                                                            |
 | `boosts_enabled`                             | `0-1`           | `1`           | Enable boosts. Doesn't disables Titanmeter.                                                    |
 | `earn_meter_pilot_overdrive`                 | `0-1`           |               |                                                                                                |
 | `earn_meter_pilot_multiplier`                |                 |               |                                                                                                |
 | `earn_meter_titan_multiplier`                |                 |               |                                                                                                |
-| `aegis_upgrades`                             | `0-1`           | `0`           |                                                                                                |
+| `aegis_upgrades`                             | `0-1`           | `0`           | Enable titan aegis upgrades                                                                    |
 | `infinite_doomed_state`                      | `0-1`           |               |                                                                                                |
-| `titan_shield_regen`                         | `0-1`           | `0`           |                                                                                                |
+| `titan_shield_regen`                         | `0-1`           | `0`           | Enable regenerating titan shields                                                             |
 | `scorelimit`                                 |                 |               |                                                                                                |
 | `roundscorelimit`                            |                 |               |                                                                                                |
 | `timelimit`                                  |                 |               |                                                                                                |
-| `oob_timer_enabled`                          | `0-1`           |               |                                                                                                |
+| `oob_timer_enabled`                          | `0-1`           |               | Out of bounds timer enable                                                                      |
 | `roundtimelimit`                             |                 |               |                                                                                                |
 | `classic_rodeo`                              | `0-1`           |               |                                                                                                |
 | `classic_mp`                                 | `0-1`           | `1`           | Enables intro dropship                                                                         |
-| `fp_embark_enabled`                          |                 |               |                                                                                                |
+| `fp_embark_enabled`                          |                 |               | First person embark and terminations                                                            |
 | `promode_enable`                             | `0-1`           | `0`           |                                                                                                |
 | `riff_floorislava`                           | `0-1`           | `0`           | Covers the whole map with deadly electric smoke                                                |
 | `featured_mode_all_holopilot`                | `0-1`           | `0`           |                                                                                                |
