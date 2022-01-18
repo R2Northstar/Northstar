@@ -1,4 +1,5 @@
 #pragma once
+#include "sourceinterface.h"
 #include <set>
 // taken directly from iconvar.h
 
@@ -90,10 +91,12 @@ class ICvar
 public:
     struct VTable
     {
-        void* unknown[10];
-        void(*UnregisterConCommand) (ICvar* cvar, ConCommand* pCommandBase);
-        void* unknown2[28];
-        ConVar*(*FindVar)(const char* var_name); // offset for this is currently very wrong
+        //void* unknown[10];
+        //void(*UnregisterConCommand) (ICvar* cvar, ConCommand* pCommandBase);
+        //void* unknown2[28];
+        //ConVar*(*FindVar)(const char* var_name); // offset for this is currently very wrong
+        char* unknown[112];
+        ConCommand*(*FindCommandBase)(ICvar* self, const char* varName);
     };
 
     VTable* m_vtable;
@@ -104,3 +107,4 @@ ConVar* RegisterConVar(const char* name, const char* defaultValue, int flags, co
 void InitialiseConVars(HMODULE baseAddress);
 
 extern std::unordered_map<std::string, ConVar*> g_CustomConvars;
+extern SourceInterface<ICvar>* g_pCvar;

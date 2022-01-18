@@ -317,13 +317,11 @@ void CBaseClient__DisconnectHook(void* self, uint32_t unknownButAlways1, const c
 }
 
 // maybe this should be done outside of auth code, but effort to refactor rn and it sorta fits
-// hack: store the client that's executing the current stringcmd for pCommand->Dispatch() hook later
-void* pExecutingGameClient = 0;
+typedef bool(*CCommand__TokenizeType)(CCommand& self, const char* pCommandString, cmd_source_t commandSource);
+CCommand__TokenizeType CCommand__Tokenize;
 
 char CGameClient__ExecuteStringCommandHook(void* self, uint32_t unknown, const char* pCommandString)
 {
-	pExecutingGameClient = self;
-
 	if (CVar_sv_quota_stringcmdspersecond->m_nValue != -1)
 	{
 		// note: this isn't super perfect, legit clients can trigger it in lobby, mostly good enough tho imo
@@ -344,25 +342,32 @@ char CGameClient__ExecuteStringCommandHook(void* self, uint32_t unknown, const c
 		}
 	}
 
-	// todo later, basically just limit to CVar_sv_quota_stringcmdspersecond->m_nValue stringcmds per client per second
-	return CGameClient__ExecuteStringCommand(self, unknown, pCommandString);
-}
+	// verify the command we're trying to execute is FCVAR_CLIENTCMD_CAN_EXECUTE, if it's a concommand
+	char* commandBuf[1040]; // assumedly this is the size of CCommand since we don't have an actual constructor
+	memset(commandBuf, 0, sizeof(commandBuf));
+	CCommand tempCommand = *(CCommand*)&commandBuf;
 
-void ConCommand__DispatchHook(ConCommand* command, const CCommand& args, void* a3)
-{
-	// patch to ensure FCVAR_GAMEDLL concommands without FCVAR_CLIENTCMD_CAN_EXECUTE can't be executed by remote clients
-	if (*sv_m_State == server_state_t::ss_active && !command->IsFlagSet(FCVAR_CLIENTCMD_CAN_EXECUTE) && !!pExecutingGameClient)
+	if (!CCommand__Tokenize(tempCommand, pCommandString, cmd_source_t::kCommandSrcCode) || !tempCommand.ArgC())
+		return false;
+
+	ICvar* icvar = *g_pCvar; // hellish call because i couldn't get icvar vtable stuff in convar.h to get the right offset for whatever reason
+	typedef ConCommand*(*FindCommandBaseType)(ICvar* self, const char* varName);
+	FindCommandBaseType FindCommandBase = *(FindCommandBaseType*)((*(char**)icvar) + 112);
+	ConCommand* command = FindCommandBase(icvar, tempCommand.Arg(0));
+
+	// if the command doesn't exist pass it on to ExecuteStringCommand for script clientcommands and stuff
+	if (command && !command->IsFlagSet(FCVAR_CLIENTCMD_CAN_EXECUTE))
 	{
+		// ensure FCVAR_GAMEDLL concommands without FCVAR_CLIENTCMD_CAN_EXECUTE can't be executed by remote clients
 		if (IsDedicated())
-			return;
+			return false;
 
-		// hack because don't currently have a way to check GetBaseLocalClient().m_nPlayerSlot
-		if (strcmp((char*)pExecutingGameClient + 0xF500, g_LocalPlayerUserID))
-			return;
+		if (strcmp((char*)self + 0xF500, g_LocalPlayerUserID))
+			return false;
 	}
 
-	ConCommand__Dispatch(command, args, a3);
-	pExecutingGameClient = 0;
+	// todo later, basically just limit to CVar_sv_quota_stringcmdspersecond->m_nValue stringcmds per client per second
+	return CGameClient__ExecuteStringCommand(self, unknown, pCommandString);
 }
 
 char __fastcall CNetChan___ProcessMessagesHook(void* self, void* buf)
@@ -507,7 +512,8 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x2140A0, &CNetChan___ProcessMessagesHook, reinterpret_cast<LPVOID*>(&CNetChan___ProcessMessages));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x104FB0, &CBaseClient__SendServerInfoHook, reinterpret_cast<LPVOID*>(&CBaseClient__SendServerInfo));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x117800, &ProcessConnectionlessPacketHook, reinterpret_cast<LPVOID*>(&ProcessConnectionlessPacket));
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x417440, &ConCommand__DispatchHook, reinterpret_cast<LPVOID*>(&ConCommand__Dispatch));
+
+	CCommand__Tokenize = (CCommand__TokenizeType)((char*)baseAddress + 0x418380);
 
 	// patch to disable kicking based on incorrect serverfilter in connectclient, since we repurpose it for use as an auth token
 	{
