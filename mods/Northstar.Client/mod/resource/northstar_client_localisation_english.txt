@@ -4,7 +4,7 @@
 	"Tokens"
 	{
 		// This file needs to be encoded as UTF-16 LE
-		// helloooooooo
+		// GOMA
 		"MENU_LAUNCH_NORTHSTAR" "Launch Northstar"
 		"MENU_TITLE_MODS" "Mods"
 		"RELOAD_MODS" "Reload Mods"
