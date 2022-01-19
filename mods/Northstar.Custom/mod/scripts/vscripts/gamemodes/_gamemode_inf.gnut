@@ -136,7 +136,10 @@ void function RespawnInfected( entity player )
 void function GiveAirAccel(entity player)
 {
 	WaitFrame()
-	player.kv.airAcceleration = 2500 // prevents sh_custom_air_accel from not giving infected air acceleration.
+	if (GetCurrentPlaylistVarInt( "custom_air_accel_pilot", int( player.GetPlayerSettingsField( "airAcceleration" ) ) ) < 2500)
+		player.kv.airAcceleration = 2500 // prevents sh_custom_air_accel from not giving infected air acceleration.
+	else
+		player.kv.airAcceleration = GetCurrentPlaylistVarInt( "custom_air_accel_pilot", int( player.GetPlayerSettingsField( "airAcceleration" ) ) )
 }
 
 void function PlayInfectedSounds( entity player )
