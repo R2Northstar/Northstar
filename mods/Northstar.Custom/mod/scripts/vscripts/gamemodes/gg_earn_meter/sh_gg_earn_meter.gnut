@@ -1,12 +1,22 @@
 global function Sh_GGEarnMeter_Init
 
-void function Sh_GGEarnMeter_Init()
+struct 
 {
+    string gamemode = ""    
+} file
+
+void function Sh_GGEarnMeter_Init(string gamemode)
+{
+    file.gamemode = gamemode
+
 	AddCallback_OnRegisteringCustomNetworkVars( RegisterSharedNetwork )
 }
 
 void function RegisterSharedNetwork()
 {
+    if ( GAMETYPE != file.gamemode )
+        return
+
 	RegisterNetworkedVariable( "gunGameLevelPercentage", SNDC_PLAYER_EXCLUSIVE, SNVT_FLOAT_RANGE, 0.0, 0.0, 1.0 )
     Remote_RegisterFunction( "ServerCallback_GGEarnMeter_SetWeaponIcon" )
 
