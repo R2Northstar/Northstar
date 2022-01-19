@@ -68,7 +68,7 @@ void function ServerCallback_FastballPanelHacked( int panelHandle, int id, int c
 		
 	AnnouncementData announcement = Announcement_Create( Localize( "#FASTBALL_PANEL_CAPTURED", capturingPlayer.GetPlayerName(), panelIdString ) )
 	
-	if ( capturingPlayer.GetTeam() == GetLocalViewPlayer().GetTeam() )
+	if ( capturingPlayer.GetTeam() == GetLocalClientPlayer().GetTeam() )
 		Announcement_SetTitleColor( announcement, < 0, 0, 1 > )
 	else
 		Announcement_SetTitleColor( announcement, < 1, 0, 0 > )
@@ -77,7 +77,7 @@ void function ServerCallback_FastballPanelHacked( int panelHandle, int id, int c
 	Announcement_SetPriority( announcement, 200 ) //Be higher priority than Titanfall ready indicator etc
 	Announcement_SetSoundAlias( announcement, SFX_HUD_ANNOUNCE_QUICK )
 	Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_QUICK )
-	AnnouncementFromClass( GetLocalViewPlayer(), announcement )
+	AnnouncementFromClass( GetLocalClientPlayer(), announcement )
 }
 
 void function ServerCallback_FastballRespawnPlayer()
@@ -88,7 +88,7 @@ void function ServerCallback_FastballRespawnPlayer()
 void function FastballRespawnPlayerEffects_Threaded()
 {
 	// sometimes this seems to get called before the player has respawned clientside, so we just wait until the client thinks they're alive
-	entity player = GetLocalViewPlayer()
+	entity player = GetLocalClientPlayer()
 	
 	while ( !IsAlive( player ) )
 		WaitFrame()
