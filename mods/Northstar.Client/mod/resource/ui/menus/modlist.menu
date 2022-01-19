@@ -43,7 +43,16 @@ resource/ui/menus/mods_browse.menu
 			xpos                    120
             ypos                    160
 		}
+		
+		FilterButtonsRowAnchor
+		{
+			ControlName				Label
+			labelText				""
 
+			xpos              90
+      ypos              848
+		}
+		
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		BtnMod1
@@ -228,9 +237,132 @@ resource/ui/menus/mods_browse.menu
 			navUp					BtnMod14
 			navDown					BtnMod1
 		}
+		BtnMod16
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ModButton
+			scriptID				15
+			pin_to_sibling			BtnMod15
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnMod15
+			navDown					BtnMod17
+		}
+		BtnMod17
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ModButton
+			scriptID				16
+			pin_to_sibling			BtnMod16
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnMod16
+			navDown					BtnMod18
+		}
 		
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		
+		FilterPanel
+		{
+			ControlName				RuiPanel
+			wide 800
+			tall 112
+			xpos	-8
+			classname 			FilterPanelChild
 
+			rui 					"ui/knowledgebase_panel.rpak"
+
+			visible					1
+			zpos					-1
+
+			pin_to_sibling					FilterButtonsRowAnchor
+			pin_corner_to_sibling		TOP_LEFT
+			pin_to_sibling_corner		TOP_LEFT
+		}
+		
+		BtnSearchLabel
+		{
+			ControlName					RuiButton
+			InheritProperties		RuiSmallButton
+			labelText			"#SEARCHBAR_LABEL"
+			textAlignment west
+			classname 			FilterPanelChild
+	
+			wide					500
+			xpos -23
+			ypos -16
+	
+			wrap					1
+			visible				1
+			zpos					0
+	
+			pin_to_sibling				FilterButtonsRowAnchor
+			pin_corner_to_sibling		TOP_LEFT
+			pin_to_sibling_corner		TOP_LEFT
+		}
+	
+		BtnModsSearch
+		{
+			ControlName				TextEntry
+			classname 			FilterPanelChild
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			xpos 					-400
+			ypos 					-5
+			wide					390
+			tall					30
+			textHidden				0
+			editable				1
+			font 					Default_21
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					0
+	
+			pin_to_sibling				BtnSearchLabel
+			pin_corner_to_sibling		TOP_LEFT
+			pin_to_sibling_corner		TOP_RIGHT
+		}
+		
+		SwtBtnShowFilter
+		{
+			ControlName					RuiButton
+			InheritProperties		SwitchButton
+			labelText						"#SHOW"
+			ConVar							"filter_mods"
+			classname 			FilterPanelChild
+			wide    						500
+			
+			list
+			{
+				"#SHOW_ALL"	0
+				"#SHOW_ONLY_ENABLED"	1
+				"#SHOW_ONLY_DISABLED" 2
+			}
+	
+			pin_to_sibling 					BtnSearchLabel
+			pin_corner_to_sibling		TOP_LEFT
+			pin_to_sibling_corner		BOTTOM_LEFT
+		}
+		
+		BtnFiltersClear
+		{
+			ControlName							RuiButton
+			InheritProperties				RuiSmallButton
+			labelText				"#CLEAR_FILTERS"
+			classname 			FilterPanelChild
+			wide 100
+			xpos		-15
+			ypos 		-55
+			zpos 90
+	
+			scriptID			999
+	
+			pin_to_sibling			FilterPanel
+			pin_corner_to_sibling	TOP_RIGHT
+			pin_to_sibling_corner	BOTTOM_RIGHT
+		}
+		
 		LabelDetails
 		{
 			ControlName				RuiPanel
@@ -242,6 +374,133 @@ resource/ui/menus/mods_browse.menu
 			wrap					1
 			visible					1
 			zpos					1
+		}
+		
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		BtnModListUpArrow
+		{
+			ControlName					RuiButton
+			InheritProperties		RuiSmallButton
+			//labelText						"A"
+			wide 40
+			tall 40
+			xpos 2
+			ypos 2
+	
+			image           "vgui/hud/white"
+			drawColor       "255 255 255 128"
+	
+			pin_to_sibling					LabelDetails
+			pin_corner_to_sibling		TOP_RIGHT
+			pin_to_sibling_corner		TOP_LEFT
+		}
+	
+		BtnModListUpArrowPanel
+		{
+			ControlName				RuiPanel
+			wide 40
+			tall 40
+			xpos 2
+			ypos 2
+	
+			rui 					"ui/knowledgebase_panel.rpak"
+	
+			visible					1
+			zpos					-1
+	
+			pin_to_sibling					LabelDetails
+			pin_corner_to_sibling		TOP_RIGHT
+			pin_to_sibling_corner		TOP_LEFT
+		}
+	
+		BtnModListDownArrow
+		{
+			ControlName					RuiButton
+			InheritProperties		RuiSmallButton
+			//labelText						"V"
+			wide 40
+			tall 40
+			xpos 2
+			ypos -646
+	
+			image           "vgui/hud/white"
+			drawColor       "255 255 255 128"
+	
+			pin_to_sibling					LabelDetails
+			pin_corner_to_sibling		TOP_RIGHT
+			pin_to_sibling_corner		TOP_LEFT
+		}
+	
+		BtnModListDownArrowPanel
+		{
+			ControlName				RuiPanel
+			wide 40
+			tall 40
+			xpos 2
+			ypos -646
+	
+			rui 					"ui/knowledgebase_panel.rpak"
+	
+			visible					1
+			zpos					-1
+	
+			pin_to_sibling					LabelDetails
+			pin_corner_to_sibling		TOP_RIGHT
+			pin_to_sibling_corner		TOP_LEFT
+		}
+	
+		BtnModListSlider
+		{
+			ControlName					RuiButton
+			InheritProperties		RuiSmallButton
+			//labelText						"V"
+			wide 					40
+			tall 					604
+			xpos 					2
+			ypos 					-40
+			zpos					0
+	
+			image           "vgui/hud/white"
+			drawColor       "255 255 255 128"
+	
+			pin_to_sibling					LabelDetails
+			pin_corner_to_sibling		TOP_RIGHT
+			pin_to_sibling_corner		TOP_LEFT
+		}
+	
+		BtnModListSliderPanel
+		{
+			ControlName				RuiPanel
+			wide 40
+			tall 604
+			xpos 2
+			ypos -40
+	
+			rui 					"ui/knowledgebase_panel.rpak"
+	
+			visible					1
+			zpos					-1
+	
+			pin_to_sibling					LabelDetails
+			pin_corner_to_sibling		TOP_RIGHT
+			pin_to_sibling_corner		TOP_LEFT
+		}
+	
+		// sh_menu_models.gnut has a global function which gets called when
+		// left mouse button gets called while hovering and has mouse
+		// deltaX; deltaY which we can yoink for ourselfes
+		MouseMovementCapture
+		{
+				ControlName					CMouseMovementCapturePanel
+				wide 								40
+				tall 								604
+				xpos 								2
+				ypos 								-40
+				zpos								1
+	
+				pin_to_sibling					LabelDetails
+				pin_corner_to_sibling		TOP_RIGHT
+				pin_to_sibling_corner		TOP_LEFT
 		}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

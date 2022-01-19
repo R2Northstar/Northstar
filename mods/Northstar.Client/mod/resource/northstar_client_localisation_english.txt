@@ -287,5 +287,14 @@ Press Yes if you agree to this. This choice can be changed in the mods menu at a
 		"CONNECTING" "Connecting..."
 		"INGAME_PLAYERS" "Players:"
 		"TOTAL_SERVERS" "Servers:"
+    
+    // Keybinds
+    "NORTHSTAR" "Northstar"
+    
+    // Mods menu
+    "SHOW" "Show"
+    "SHOW_ALL" "All"
+    "SHOW_ONLY_ENABLED" "Only Enabled"
+    "SHOW_ONLY_DISABLED" "Only Disabled"
 	}
 }

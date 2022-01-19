@@ -23,6 +23,10 @@
 		{
 			"Name": "filter_gamemode",
 			"DefaultValue": "0"
+		},
+		{
+			"Name": "filter_mods",
+			"DefaultValue": "0"
 		}
 	],
 	"Scripts": [
