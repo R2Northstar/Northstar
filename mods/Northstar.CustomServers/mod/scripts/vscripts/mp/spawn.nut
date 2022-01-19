@@ -616,10 +616,6 @@ entity function DecideSpawnZone_Generic( array<entity> spawnzones, int team )
 				}
 			}
 			
-			print( averageFriendlySpawns )
-			print( averageEnemySpawns )
-			print( Distance2D( spawnzone.GetOrigin(), averageFriendlySpawns ) )
-			print( Distance2D( spawnzone.GetOrigin(), averageEnemySpawns ) )
 			// don't choose spawnzones that are closer to enemy base than friendly base
 			if ( !spawnzoneEvil && Distance2D( spawnzone.GetOrigin(), averageFriendlySpawns ) > Distance2D( spawnzone.GetOrigin(), averageEnemySpawns ) )
 				spawnzoneEvil = true
