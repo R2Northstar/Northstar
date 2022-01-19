@@ -18,6 +18,12 @@ jobs:
           ref: ${{ env.NORTHSTAR_VERSION }}
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.1
+      - name: Setup resource file version
+        shell: bash
+        run: |
+          sed -i 's/DEV/${{ env.NORTHSTAR_VERSION }}/g' LauncherInjector/resources.rc
+          FILEVERSION=$(echo ${{ env.NORTHSTAR_VERSION }} | tr '.' ',' | tr -d 'v')
+          sed -i "s/0,0,0,0/${FILEVERSION}/g" LauncherInjector/resources.rc
       - name: Build
         run: msbuild /p:Configuration=Release
       - name: Upload Build Artifact
