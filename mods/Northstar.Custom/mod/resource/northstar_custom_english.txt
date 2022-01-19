@@ -9,7 +9,7 @@
 		"PL_sbox_abbr" "SBOX"
 		"GAMEMODE_SBOX" "Sandbox"
 		
-		"PL_gg" "Gun Game monkey ball"
+		"PL_gg" "Gun Game"
 		"PL_gg_lobby" "Gun Game Lobby"
 		"PL_gg_desc" "Get a kill with each gun to win."
 		"PL_gg_abbr" "GG"
