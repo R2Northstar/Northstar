@@ -2,6 +2,8 @@ untyped
 global function CodeCallback_MapInit
 
 struct {
+	array<entity> marvinSpawners
+
 	float introStartTime
 	entity militiaPod
 	entity imcPod
@@ -20,13 +22,14 @@ void function CodeCallback_MapInit()
 	SetEvacSpaceNode( GetEnt( "end_spacenode" ) )
 	
 	// dissolve effects
-	AddDeathCallback( "player", WargamesDissolveDeadEntity )
+	AddDeathCallback( "player", WargamesDissolveDeadEntity )	
 	AddDeathCallback( "npc_soldier", WargamesDissolveDeadEntity )
 	AddDeathCallback( "npc_spectre", WargamesDissolveDeadEntity )
 	AddDeathCallback( "npc_pilot_elite", WargamesDissolveDeadEntity )
 	AddDeathCallback( "npc_marvin", WargamesDissolveDeadEntity )
 	
-	FlagClear( "Disable_Marvins" )
+	AddSpawnCallback( "info_spawnpoint_marvin", AddMarvinSpawner )
+	AddCallback_GameStateEnter( eGameState.Prematch, SpawnMarvinsForRound )
 	
 	// currently disabled until finished: intro
 	if ( !IsFFAGame() )
@@ -40,6 +43,44 @@ void function WargamesDissolveDeadEntity( entity deadEnt, var damageInfo )
 	{
 		deadEnt.Dissolve( ENTITY_DISSOLVE_CHAR, < 0, 0, 0 >, 0 )
 		EmitSoundAtPosition( TEAM_UNASSIGNED, deadEnt.GetOrigin(), "Object_Dissolve" )
+		
+		if ( deadEnt.IsPlayer() )
+			thread EnsureWargamesDeathEffectIsClearedForPlayer( deadEnt )
+	}
+}
+
+void function EnsureWargamesDeathEffectIsClearedForPlayer( entity player )
+{
+	// this is slightly shit but whatever lol
+	player.EndSignal( "OnDestroy" )
+	
+	float startTime = Time()
+	while ( player.kv.VisibilityFlags != "0" )
+	{
+		if ( Time() > startTime + 4.0 ) // if we wait too long, just ignore
+			return
+	
+		WaitFrame() 
+	}
+	
+	player.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
+}
+
+void function AddMarvinSpawner( entity spawn )
+{
+	file.marvinSpawners.append( spawn )
+}
+
+void function SpawnMarvinsForRound()
+{
+	foreach ( entity spawner in file.marvinSpawners )
+	{
+		entity marvin = CreateMarvin( TEAM_UNASSIGNED, spawner.GetOrigin(), spawner.GetAngles() )
+		marvin.kv.health = 1
+		marvin.kv.max_health = 1
+		marvin.kv.spawnflags = 516	
+		DispatchSpawn( marvin )
+		HideName( marvin )
 	}
 }
 

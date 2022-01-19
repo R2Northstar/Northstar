@@ -1,0 +1,860 @@
+global function ClWeaponStatus_Init
+global function ClWeaponStatus_SetOffhandVisible
+global function ClWeaponStatus_SetWeaponVisible
+global function ClWeaponStatus_GetWeaponHudRui
+global function ClWeaponStatus_RefreshWeaponStatus
+
+struct
+{
+	var ammo_status_hint
+	var ability_left_hud
+	var ability_center_hud
+	var ability_right_hud
+	var dpad_left_hud
+	var ammo_counter
+
+	bool[6] slotVisible = [true, true, true, true, true, true]
+	bool ammo_counter_visible = true
+
+	int lastSelectedIndex
+
+	entity lastCenterWeapon
+} file
+
+void function ClWeaponStatus_Init()
+{
+	AddCallback_OnClientScriptInit( ClWeaponStatus_AddClient )
+	AddCallback_OnSelectedWeaponChanged( OnSelectedWeaponChanged )
+
+	AddCallback_OnPlayerLifeStateChanged( OnLifeStateChanged )
+	AddCallback_PlayerClassChanged( OnPlayerClassChanged )
+
+	AddCallback_KillReplayEnded( OnKillReplayEnded )
+
+	RegisterSignal( "EndTrackOffhandWeaponSlot" )
+	RegisterSignal( "EndTrackCenterStuff" )
+}
+
+void function ClWeaponStatus_RefreshWeaponStatus( entity player )
+{
+	if ( !IsValid( player ) )
+		return
+
+	UpdatePrimaryWeaponHint()
+
+	if ( !IsValid( GetLocalViewPlayer() ) )
+		return
+
+	InitWeaponStatusRuis( GetLocalViewPlayer() )
+}
+
+var function ClWeaponStatus_GetWeaponHudRui( entity player, entity weapon )
+{
+	var index = weapon.GetWeaponInfoFileKeyField( "offhand_default_inventory_slot" )
+
+	if ( index == null )
+		return file.ammo_counter
+
+	expect int( index )
+
+	return GetRuiForIndex( player, index )
+}
+
+void function ClWeaponStatus_AddClient( entity player )
+{
+	{
+		var rui = CreateCockpitRui( $"ui/ammo_status_hint.rpak" )
+		RuiTrackFloat( rui, "ammoFrac", GetLocalClientPlayer(), RUI_TRACK_WEAPON_CLIP_AMMO_FRACTION )
+		RuiTrackFloat( rui, "remainingAmmoFrac", GetLocalClientPlayer(), RUI_TRACK_WEAPON_REMAINING_AMMO_FRACTION )
+		RuiTrackFloat( rui, "readyToFireFrac", GetLocalClientPlayer(), RUI_TRACK_WEAPON_READY_TO_FIRE_FRACTION )
+		RuiTrackFloat( rui, "reloadingFrac", GetLocalClientPlayer(), RUI_TRACK_WEAPON_RELOAD_FRACTION )
+
+		file.ammo_status_hint = rui
+	}
+
+	{
+		var rui = CreateCockpitRui( $"ui/ability_hud.rpak" )
+		RuiSetInt( rui, "xPos", 0 )
+		file.ability_left_hud = rui
+	}
+
+	{
+		var rui = CreateCockpitRui( $"ui/ability_hud.rpak" )
+		RuiSetInt( rui, "xPos", 1 )
+		file.ability_center_hud = rui
+	}
+
+	{
+		var rui = CreateCockpitRui( $"ui/ability_hud.rpak" )
+		RuiSetInt( rui, "xPos", 2 )
+		file.ability_right_hud = rui
+	}
+
+	{
+		var rui = CreateCockpitRui( $"ui/inventory_hud.rpak" )
+		RuiSetInt( rui, "xPos", 1 )
+		RuiSetInt( rui, "yPos", 1 )
+		file.dpad_left_hud = rui
+	}
+
+	{
+		var rui = CreateCockpitRui( $"ui/ammo_counter.rpak" )
+		file.ammo_counter = rui
+	}
+}
+
+
+void function OnSelectedWeaponChanged( entity selectedWeapon )
+{
+	if ( !IsValid( selectedWeapon ) )
+	{
+		RuiSetFloat( file.ammo_status_hint, "lowAmmoFrac", 0.0 )
+		RuiSetBool( file.ammo_counter, "isVisible", false )
+		return
+	}
+
+	if ( GetLocalViewPlayer().PlayerMelee_IsAttackActive() )
+		return
+
+	if ( GetLocalViewPlayer().IsUsingOffhandWeapon() )
+		return
+
+	asset primaryIcon = $""
+	asset secondaryIcon = $""
+	asset tertiaryIcon = $""
+	array<entity> mainWeapons = GetLocalViewPlayer().GetMainWeapons()
+	#if MP
+		int activeIndex
+		foreach ( index, weapon in mainWeapons )
+		{
+			asset hudIcon = GetWeaponInfoFileKeyFieldAsset_WithMods_Global( weapon.GetWeaponClassName(), weapon.GetMods(), "hud_icon" )
+			if ( index == 0 )
+				primaryIcon = hudIcon
+			else if ( index == 1 )
+				secondaryIcon = hudIcon
+			else if ( index == 2 )
+				tertiaryIcon = hudIcon
+
+			if ( weapon == selectedWeapon )
+				activeIndex = index
+		}
+
+		if ( activeIndex == 0 )
+		{
+			RuiSetImage( file.ammo_counter, "tertiaryHudIcon", tertiaryIcon )
+			RuiSetImage( file.ammo_counter, "secondaryHudIcon", secondaryIcon )
+			RuiSetGameTime( file.ammo_counter, "tapPingTime", Time() )
+		}
+		else if ( activeIndex == 1 )
+		{
+			RuiSetImage( file.ammo_counter, "tertiaryHudIcon", tertiaryIcon )
+			RuiSetImage( file.ammo_counter, "secondaryHudIcon", primaryIcon )
+			RuiSetGameTime( file.ammo_counter, "tapPingTime", Time() )
+		}
+		else if ( activeIndex == 2 )
+		{
+			if ( file.lastSelectedIndex == 0 )
+			{
+				RuiSetImage( file.ammo_counter, "tertiaryHudIcon", $"" )
+				RuiSetImage( file.ammo_counter, "secondaryHudIcon", primaryIcon )
+			}
+			else if ( file.lastSelectedIndex == 1 )
+			{
+				RuiSetImage( file.ammo_counter, "tertiaryHudIcon", $"" )
+				RuiSetImage( file.ammo_counter, "secondaryHudIcon", secondaryIcon )
+			}
+		}
+
+		file.lastSelectedIndex = activeIndex
+	#else
+		foreach ( weapon in mainWeapons )
+		{
+			if ( weapon == selectedWeapon )
+				continue
+
+			if ( selectedWeapon.GetWeaponType() == WT_ANTITITAN )
+				continue
+
+			if ( weapon.GetWeaponType() == WT_ANTITITAN )
+				continue
+
+			if ( GetLocalViewPlayer().IsTitan() )
+				continue
+
+			asset hudIcon = GetWeaponInfoFileKeyFieldAsset_WithMods_Global( weapon.GetWeaponClassName(), weapon.GetMods(), "hud_icon" )
+			secondaryIcon = hudIcon
+		}
+		RuiSetImage( file.ammo_counter, "secondaryHudIcon", secondaryIcon )
+		RuiSetImage( file.ammo_counter, "tertiaryHudIcon", $"" )
+	#endif
+
+	InitAmmoCounterRui( file.ammo_counter, GetLocalViewPlayer(), selectedWeapon )
+
+	float lowAmmoFrac = selectedWeapon.GetWeaponSettingFloat( eWeaponVar.low_ammo_fraction )
+	RuiSetFloat( file.ammo_status_hint, "lowAmmoFrac", lowAmmoFrac )
+	RuiSetBool( file.ammo_counter, "isVisible", file.ammo_counter_visible )
+	RuiSetBool( file.ammo_counter, "isTitan", CheckCenterSlotOccupied(GetLocalViewPlayer()) )
+
+	RuiSetBool( file.ammo_counter, "isWeaponAmped", selectedWeapon.GetWeaponSettingBool( eWeaponVar.is_burn_mod ) )
+
+	UpdatePrimaryWeaponHint()
+}
+
+void function UpdatePrimaryWeaponHint()
+{
+	// Show/Hide the BT loudout switch button hint if single player
+	if ( IsSingleplayer() && GetLocalViewPlayer().IsTitan() && GetConVarInt( "hud_setting_showButtonHints" ) != 0 )
+		RuiSetString( file.ammo_counter, "hintText", Localize( "#HUD_SP_BT_LOADOUT_SWAP" ) )
+	else
+		RuiSetString( file.ammo_counter, "hintText", "" )
+}
+
+
+void function InitAmmoCounterRui( var rui, entity player, entity weapon )
+{
+	RuiTrackFloat( rui, "maxMagAmmo", player, RUI_TRACK_WEAPON_CLIP_AMMO_MAX )
+	RuiTrackFloat( rui, "maxStockpileAmmo", player, RUI_TRACK_WEAPON_STOCKPILE_AMMO_MAX )
+	RuiTrackFloat( rui, "clipAmmoFrac", player, RUI_TRACK_WEAPON_CLIP_AMMO_FRACTION )
+	RuiTrackFloat( rui, "remainingAmmoFrac", player, RUI_TRACK_WEAPON_REMAINING_AMMO_FRACTION )
+	RuiTrackFloat( rui, "lifetimeShots", player, RUI_TRACK_WEAPON_LIFETIME_SHOTS )
+	RuiTrackFloat( rui, "ammoRegenRate", player, RUI_TRACK_WEAPON_AMMO_REGEN_RATE )
+
+	RuiTrackImage( rui, "hudIcon", player, RUI_TRACK_WEAPON_HUD_ICON )
+}
+
+
+void function OnPlayerClassChanged( entity player )
+{
+	if ( player != GetLocalViewPlayer() )
+		return
+
+	InitWeaponStatusRuis( player )
+}
+
+
+void function OnLifeStateChanged( entity player, int oldLifeState, int newLifeState )
+{
+	if ( player != GetLocalViewPlayer() )
+		return
+
+	if ( newLifeState != LIFE_ALIVE )
+		return
+
+	InitWeaponStatusRuis( player )
+}
+
+void function OnKillReplayEnded()
+{
+	entity player = GetLocalViewPlayer()
+
+	InitWeaponStatusRuis( player )
+}
+
+void function UpdateOffhandRuis( entity player )
+{
+	UpdateOffhandRuiVisibility( file.ability_left_hud, "%offhand1%" )
+
+	if ( CheckCenterSlotOccupied(player) )
+		UpdateOffhandRuiVisibility( file.ability_center_hud, "%offhand2%" )
+	else
+		UpdateOffhandRuiVisibility( file.ability_center_hud, "%offhand0%" )
+
+	UpdateOffhandRuiVisibility( file.ability_right_hud, "%offhand0%" )
+
+	if ( IsMultiplayer() )
+	{
+		// need to recreate this since RuiTrackInt cannot be undone with RuiSetInt
+		RuiDestroy( file.dpad_left_hud )
+		var rui = CreateCockpitRui( $"ui/inventory_hud.rpak" )
+		RuiSetInt( rui, "xPos", 1 )
+		RuiSetInt( rui, "yPos", 1 )
+		file.dpad_left_hud = rui
+		UpdateOffhandRuiVisibility( file.dpad_left_hud, "%offhand4%" )
+	}
+	else
+	{
+		UpdateOffhandRuiVisibility( file.dpad_left_hud, "%weaponSelectOrdnance%" )
+	}
+}
+
+void function InitWeaponStatusRuis( entity player )
+{
+	player.Signal( "EndTrackOffhandWeaponSlot" )
+
+	UpdateOffhandRuis( player )
+
+	if ( CheckCenterSlotOccupied(player) )
+	{
+		thread TrackOffhandWeaponSlot( player, file.ability_left_hud, OFFHAND_LEFT )
+		thread TrackOffhandWeaponSlot( player, file.ability_center_hud, OFFHAND_TITAN_CENTER )
+		thread TrackOffhandWeaponSlot( player, file.ability_right_hud, OFFHAND_RIGHT )
+		if ( IsMultiplayer() )
+			thread TrackOffhandWeaponSlot( player, file.dpad_left_hud, OFFHAND_INVENTORY )
+	}
+	else
+	{
+		thread TrackOffhandWeaponSlot( player, file.ability_left_hud, OFFHAND_LEFT )
+		thread TrackOffhandWeaponSlot( player, file.ability_center_hud, OFFHAND_RIGHT )
+		if ( IsMultiplayer() )
+		{
+			thread TrackOffhandWeaponSlot( player, file.dpad_left_hud, OFFHAND_INVENTORY )
+			//thread TrackHoldToSwapSlot( player, file.ammo_counter )
+		}
+		else
+		{
+			thread TrackATWeaponSlot( player, file.dpad_left_hud )
+		}
+		RuiSetBool( file.ability_right_hud, "isVisible", false )
+	}
+
+	thread TrackCenterSlot( player )
+}
+
+void function UpdateOffhandRuiVisibility( var rui, string hintText )
+{
+	if ( GetConVarInt( "hud_setting_showButtonHints" ) != 0 )
+		RuiSetString( rui, "hintText", hintText )
+	else
+		RuiSetString( rui, "hintText", "" )
+}
+
+void function UpdateForChangedCenter( entity player )
+{
+	player.Signal( "EndTrackCenterStuff" )
+
+	bool centerOccupied = CheckCenterSlotOccupied(player)
+
+	if ( centerOccupied )
+	{
+		UpdateOffhandRuiVisibility( file.ability_center_hud, "%offhand2%" )
+
+		thread TrackOffhandWeaponSlot( player, file.ability_center_hud, OFFHAND_TITAN_CENTER )
+		thread TrackOffhandWeaponSlot( player, file.ability_right_hud, OFFHAND_RIGHT )
+	}
+	else
+	{
+		UpdateOffhandRuiVisibility( file.ability_center_hud, "%offhand0%" )
+
+		thread TrackOffhandWeaponSlot( player, file.ability_center_hud, OFFHAND_RIGHT )
+	}
+
+	RuiSetBool( file.ammo_counter, "isTitan", centerOccupied )
+}
+
+void function TrackCenterSlot( entity player )
+{
+	player.EndSignal( "EndTrackOffhandWeaponSlot" )
+	player.EndSignal( "OnDeath" )
+
+	entity lastWeapon = null
+	while ( IsAlive( player ) )
+	{
+		entity activeWeapon = player.GetOffhandWeapon( OFFHAND_TITAN_CENTER )
+		if ( activeWeapon != lastWeapon )
+		{
+			UpdateForChangedCenter( player )
+		}
+
+		lastWeapon = activeWeapon
+		WaitFrame()
+	}
+}
+
+void function TrackHoldToSwapSlot( entity player, var rui )
+{
+	player.EndSignal( "EndTrackOffhandWeaponSlot" )
+	player.EndSignal( "OnDeath" )
+
+	OnThreadEnd(
+		function() : ( rui )
+		{
+			//RuiSetBool( rui, "isVisible", false )
+		}
+	)
+
+	float holdWeaponSwapTime = GetConVarFloat( "holdWeaponSwapTime" )
+	RuiSetFloat( rui, "holdWeaponSwapTime", holdWeaponSwapTime )
+	RuiSetFloat( rui, "holdTime", 0.0 )
+	RuiSetBool( rui, "holdHintVisible", false )
+
+	entity lastWeapon = null
+	bool holdWeaponActive = false
+	bool lastIsHolding = false
+	float holdChangeTime = 0.0
+	while ( IsAlive( player ) )
+	{
+		entity activeWeapon = player.GetActiveWeapon()
+		if ( activeWeapon != lastWeapon )
+		{
+			array<entity> mainWeapons = player.GetMainWeapons()
+			if ( mainWeapons.len() > 2 )
+			{
+				if ( mainWeapons[2] == activeWeapon )
+				{
+					holdWeaponActive = true
+				}
+				else
+				{
+					holdWeaponActive = false
+				}
+			}
+		}
+
+		if ( !holdWeaponActive )
+		{
+			bool isHolding = player.IsInputCommandHeld( IN_WEAPON_CYCLE )
+			if ( isHolding != lastIsHolding )
+				holdChangeTime = Time()
+
+			if ( isHolding )
+			{
+				RuiSetFloat( rui, "holdTime", Time() - holdChangeTime )
+			}
+			else
+			{
+				RuiSetFloat( rui, "holdTime", 0.0 )
+			}
+			lastIsHolding = isHolding
+		}
+		else
+		{
+			RuiSetFloat( rui, "holdTime", 0.0 )
+		}
+		RuiSetBool( rui, "holdHintVisible", IsControllerModeActive() )
+
+		lastWeapon = activeWeapon
+		WaitFrame()
+	}
+}
+
+void function TrackOffhandWeaponSlot( entity player, var rui, int slot )
+{
+	if ( slot == OFFHAND_TITAN_CENTER || slot == OFFHAND_RIGHT )
+	{
+		player.EndSignal( "EndTrackCenterStuff" )
+	}
+
+	player.EndSignal( "EndTrackOffhandWeaponSlot" )
+	player.EndSignal( "OnDeath" )
+
+	OnThreadEnd(
+		function() : ( rui )
+		{
+			RuiSetBool( rui, "isVisible", false )
+		}
+	)
+
+	entity lastWeapon = null
+	bool wasVisible = file.slotVisible[slot]
+	while ( IsAlive( player ) )
+	{
+		entity weapon = player.GetOffhandWeapon( slot )
+		if ( weapon != lastWeapon || file.slotVisible[slot] != wasVisible )
+		{
+			if ( IsValid( weapon ) && file.slotVisible[slot] )
+			{
+				InitOffhandRui( rui, player, weapon )
+				#if MP
+					if ( slot == OFFHAND_INVENTORY )
+					{
+						if ( player.IsTitan() )
+						{
+							int segments = player.GetWeaponAmmoStockpile( player.GetOffhandWeapon( OFFHAND_INVENTORY ) )
+							segments += player.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCount()
+							RuiSetInt( rui, "segments", segments )
+							RuiSetFloat( rui, "minFireFrac", 0.01 )
+						}
+						else
+						{
+							//RuiSetInt( rui, "segments", PlayerInventory_ItemCount( player ) )
+							RuiTrackInt( rui, "segments", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "itemInventoryCount" ) )
+							RuiSetFloat( rui, "minFireFrac", 0.01 )
+						}
+					}
+				#elseif SP
+					if ( slot == OFFHAND_INVENTORY )
+					{
+						RuiSetInt( rui, "segments", 1 )
+						RuiSetFloat( rui, "minFireFrac", 0.01 )
+					}
+				#endif
+			}
+			else
+			{
+				RuiSetBool( rui, "isVisible", false )
+			}
+		}
+		#if MP
+		if ( slot == OFFHAND_INVENTORY && file.slotVisible[slot] && player.IsTitan() && IsValid( weapon ) )
+		{
+			int segments = player.GetWeaponAmmoStockpile( player.GetOffhandWeapon( OFFHAND_INVENTORY ) )
+			segments += player.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCount()
+			RuiSetInt( rui, "segments", segments )
+			RuiSetFloat( rui, "minFireFrac", 0.01 )
+		}
+		#endif
+
+		lastWeapon = weapon
+		wasVisible = file.slotVisible[slot]
+		WaitFrame()
+	}
+}
+
+void function TrackATWeaponSlot( entity player, var rui )
+{
+	player.EndSignal( "EndTrackOffhandWeaponSlot" )
+	player.EndSignal( "OnDeath" )
+
+	OnThreadEnd(
+		function() : ( rui )
+		{
+			RuiSetBool( rui, "isVisible", false )
+		}
+	)
+
+	entity lastWeapon = null
+	bool wasVisible = file.slotVisible[OFFHAND_INVENTORY]
+	bool wasHoldingWeapon = player.GetActiveWeapon() == player.GetAntiTitanWeapon()
+	while ( IsAlive( player ) )
+	{
+		entity weapon = player.GetAntiTitanWeapon()
+		entity activeWeapon = player.GetActiveWeapon()
+		bool isHoldingWeapon = weapon == activeWeapon
+		if ( weapon != lastWeapon || file.slotVisible[OFFHAND_INVENTORY] != wasVisible || isHoldingWeapon != wasHoldingWeapon )
+		{
+			if ( IsValid( weapon ) && file.slotVisible[OFFHAND_INVENTORY] && !isHoldingWeapon )
+			{
+				InitOffhandRui( rui, player, weapon )
+				RuiSetFloat2( rui, "iconSizeScale", <1.5,0.75,0> )
+			}
+			else
+			{
+				RuiSetBool( rui, "isVisible", false )
+			}
+		}
+
+		lastWeapon = weapon
+		wasVisible = file.slotVisible[OFFHAND_INVENTORY]
+		wasHoldingWeapon = isHoldingWeapon
+		WaitFrame()
+	}
+}
+/*
+	// VECTOR TYPES
+	RUI_TRACK_ABSORIGIN_FOLLOW,						// Create at absorigin, and update to follow the entity
+	RUI_TRACK_POINT_FOLLOW,							// Create on attachment point, and update to follow the entity
+	RUI_TRACK_OVERHEAD_FOLLOW,						// Create at the top of the entity's bbox
+	RUI_TRACK_EYEANGLES_FOLLOW,
+
+	// FLOAT TYPES
+	RUI_TRACK_HEALTH,								// Health as fraction from 0 to 1
+	RUI_TRACK_FRIENDLINESS,							// 0 if ent is enemy, 1 if it's friendly
+	RUI_TRACK_PLAYER_SUIT_POWER,					// Player's suit power from 0 to 1
+	RUI_TRACK_PLAYER_GRAPPLE_POWER,					// Player's grapple power from 0 to 1
+	RUI_TRACK_PLAYER_SHARED_ENERGY,					// Players shared energy value
+	RUI_TRACK_WEAPON_CHARGE_FRACTION,				// Weapon charge as fraction from 0 to 1
+	RUI_TRACK_WEAPON_SMART_AMMO_LOCK_FRACTION,		// Smart ammo weapon lock fraction from 0 to N
+	RUI_TRACK_WEAPON_READY_TO_FIRE_FRACTION,		// Weapon cooldown as fraction from 0 to 1
+	RUI_TRACK_WEAPON_RELOAD_FRACTION,				// Weapon reloading as fraction from 0 to 1
+	RUI_TRACK_WEAPON_DRYFIRE_FRACTION,				//
+	RUI_TRACK_WEAPON_CLIP_AMMO_FRACTION,			// Weapon clip ammo as fraction from 0 to 1
+	RUI_TRACK_WEAPON_REMAINING_AMMO_FRACTION,		// Weapon remaining ammo as fraction from 0 to 1
+	RUI_TRACK_WEAPON_CLIP_AMMO_MAX,					//
+	RUI_TRACK_WEAPON_STOCKPILE_AMMO_MAX,			//
+	RUI_TRACK_WEAPON_LIFETIME_SHOTS,				//
+	RUI_TRACK_WEAPON_AMMO_REGEN_RATE,				//
+	RUI_TRACK_BOOST_METER_FRACTION,					// Player boost meter as fraction from 0 to 1
+	RUI_TRACK_GLIDE_METER_FRACTION,					// Player glide meter as fraction from 0 to 1
+	RUI_TRACK_SHIELD_FRACTION,						// Shield health as fraction from 0 to 1
+	RUI_TRACK_STATUS_EFFECT_SEVERITY,				// Status effect severity as fraction from 0 to 1; attachmentIndex used as status effect index
+	RUI_TRACK_SCRIPT_NETWORK_VAR,					// Value of a script network variable (use GetNetworkedVariableIndex())
+	RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL,			// Value of a script network variable without an entity (use GetNetworkedVariableIndex())
+	RUI_TRACK_SCRIPT_NETWORK_VAR_LOCAL_VIEW_PLAYER,	// Value of a script network variable on the local view player (changes automatically during kill replay) (use GetNetworkedVariableIndex())
+	RUI_TRACK_FRIENDLY_TEAM_SCORE,					//
+	RUI_TRACK_FRIENDLY_TEAM_ROUND_SCORE,			// The value of score2 for friendlies
+	RUI_TRACK_ENEMY_TEAM_SCORE,						//
+	RUI_TRACK_ENEMY_TEAM_ROUND_SCORE,				// The value of score2 for enemies
+	RUI_TRACK_MINIMAP_SCALE,						//
+	RUI_TRACK_SOUND_METER,							// Sound meter as fraction from 0 to 1.
+
+	// INT TYPES
+	RUI_TRACK_MINIMAP_FLAGS,
+	RUI_TRACK_MINIMAP_CUSTOM_STATE,
+	RUI_TRACK_TEAM_RELATION_VIEWPLAYER,					// ENEMY: -1, NEUTRAL: 0, FRIENDLY: 1
+	RUI_TRACK_TEAM_RELATION_CLIENTPLAYER,				// ENEMY: -1, NEUTRAL: 0, FRIENDLY: 1
+	RUI_TRACK_SCRIPT_NETWORK_VAR_INT,					// Value of a script network variable (use GetNetworkedVariableIndex())
+	RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT,			// Value of a script network variable without an entity (use GetNetworkedVariableIndex())
+	RUI_TRACK_SCRIPT_NETWORK_VAR_LOCAL_VIEW_PLAYER_INT,	// Value of a script network variable on the local view player (changes automatically during kill replay) (use GetNetworkedVariableIndex())
+
+	// GAMETIME TYPES
+	RUI_TRACK_LAST_FIRED_TIME,
+	RUI_TRACK_MINIMAP_THREAT_SECTOR,
+
+	// IMAGE TYPES
+	RUI_TRACK_WEAPON_MENU_ICON,
+	RUI_TRACK_WEAPON_HUD_ICON,
+*/
+
+void function InitOffhandRui( var rui, entity player, entity weapon )
+{
+	RuiSetGameTime( rui, "hintTime", Time() )
+
+	RuiSetBool( rui, "isTitan", player.IsTitan() )
+	RuiSetBool( rui, "isVisible", true )
+	RuiSetBool( rui, "isReverseCharge", false )
+
+	RuiSetFloat( rui, "chargeFrac", 0.0 )
+	RuiSetFloat( rui, "useFrac", 0.0 )
+	RuiSetFloat( rui, "chargeMaxFrac", 1.0 )
+	RuiSetFloat( rui, "minFireFrac", 1.0 )
+	RuiSetInt( rui, "segments", 1 )
+	RuiSetFloat( rui, "refillRate", 1 ) // default to 1 to preserve default behavior. some abilities draw the refillRecharge, even without a rate setting
+
+	RuiTrackImage( rui, "hudIcon", weapon, RUI_TRACK_WEAPON_HUD_ICON )
+
+	RuiTrackFloat( rui, "readyFrac", weapon, RUI_TRACK_WEAPON_READY_TO_FIRE_FRACTION )
+	RuiTrackFloat( rui, "dryfireFrac", weapon, RUI_TRACK_WEAPON_DRYFIRE_FRACTION )
+
+	RuiSetFloat( rui, "chargeFracCaution", 0.0 )
+	RuiSetFloat( rui, "chargeFracAlert", 0.0 )
+	RuiSetFloat( rui, "chargeFracAlertSpeed", 16.0 )
+	RuiSetFloat( rui, "chargeFracAlertScale", 1.0 )
+
+	switch ( weapon.GetWeaponInfoFileKeyField( "cooldown_type" ) )
+	{
+		case "ammo":
+			int ammoClipSize = weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
+			int ammoPerShot = weapon.GetWeaponSettingInt( eWeaponVar.ammo_per_shot )
+			int ammoMinToFire = weapon.GetWeaponSettingInt( eWeaponVar.ammo_min_to_fire )
+
+			RuiSetFloat( rui, "minFireFrac", float (  ammoMinToFire ) / float ( ammoClipSize ) )
+			RuiSetInt( rui, "segments", ammoClipSize / ammoPerShot )
+
+			RuiTrackFloat( rui, "chargeFrac", weapon, RUI_TRACK_WEAPON_CLIP_AMMO_FRACTION )
+
+			RuiSetFloat( rui, "refillRate", weapon.GetWeaponSettingFloat( eWeaponVar.regen_ammo_refill_rate ) )
+			break
+
+		case "ammo_swordblock":
+			RuiTrackFloat( rui, "chargeFrac", weapon, RUI_TRACK_WEAPON_STOCKPILE_REGEN_FRAC )
+			RuiSetFloat( rui, "readyFrac", 0.0 )
+			RuiSetFloat( rui, "minFireFrac", 0.0 )
+
+			RuiSetFloat( rui, "chargeFracCaution", 0.6 )
+			RuiSetFloat( rui, "chargeFracAlert", 0.0 )
+			break
+
+		case "ammo_alert":
+			RuiSetFloat( rui, "chargeFrac", 0.0 )
+			RuiSetFloat( rui, "readyFrac", 0.0 )
+			RuiSetFloat( rui, "minFireFrac", 0.0 )
+
+			RuiSetFloat( rui, "chargeFracCaution", 0.01 )
+			RuiSetFloat( rui, "chargeFracAlert", -1.0 )
+			RuiSetFloat( rui, "chargeFracAlertSpeed", 5.0 )
+			RuiSetFloat( rui, "chargeFracAlertScale", 0.6 )
+			break
+
+		case "ammo_instant":
+		case "ammo_deployed":
+			int ammoClipSize = weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
+			int ammoPerShot = weapon.GetWeaponSettingInt( eWeaponVar.ammo_per_shot )
+			int ammoMinToFire = weapon.GetWeaponSettingInt( eWeaponVar.ammo_min_to_fire )
+
+			RuiSetFloat( rui, "minFireFrac", float (  ammoMinToFire ) / float ( ammoClipSize ) )
+			RuiSetInt( rui, "segments", ammoClipSize / ammoPerShot )
+
+			RuiTrackFloat( rui, "chargeFrac", weapon, RUI_TRACK_WEAPON_CLIP_AMMO_FRACTION )
+			RuiSetFloat( rui, "readyFrac", 0.0 )
+
+			RuiSetFloat( rui, "refillRate", weapon.GetWeaponSettingFloat( eWeaponVar.regen_ammo_refill_rate ) )
+			break
+
+		case "ammo_per_shot":
+			int ammoClipSize = weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
+			int ammoPerShot = weapon.GetWeaponSettingInt( eWeaponVar.ammo_per_shot )
+			int ammoMinToFire = weapon.GetWeaponSettingInt( eWeaponVar.ammo_min_to_fire )
+
+			RuiSetFloat( rui, "minFireFrac", float (  ammoMinToFire ) / float ( ammoClipSize ) )
+			RuiSetInt( rui, "segments", 1 )
+
+			RuiTrackFloat( rui, "chargeFrac", weapon, RUI_TRACK_WEAPON_CLIP_AMMO_FRACTION )
+			RuiSetFloat( rui, "readyFrac", 0.0 )
+
+			RuiSetFloat( rui, "refillRate", weapon.GetWeaponSettingFloat( eWeaponVar.regen_ammo_refill_rate ) )
+			break
+
+		case "ammo_timed":
+			int ammoClipSize = weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
+			int ammoPerShot = weapon.GetWeaponSettingInt( eWeaponVar.ammo_per_shot )
+			int ammoMinToFire = weapon.GetWeaponSettingInt( eWeaponVar.ammo_min_to_fire )
+
+			RuiSetFloat( rui, "minFireFrac", float (  ammoMinToFire ) / float ( ammoClipSize ) )
+			RuiSetInt( rui, "segments", ammoClipSize / ammoPerShot )
+
+			RuiTrackFloat( rui, "chargeFrac", weapon, RUI_TRACK_WEAPON_CLIP_AMMO_FRACTION )
+			RuiSetFloat( rui, "readyFrac", 0.0 )
+
+			RuiTrackFloat( rui, "useFrac", weapon, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.simple_timer )
+
+			RuiSetFloat( rui, "refillRate", weapon.GetWeaponSettingFloat( eWeaponVar.regen_ammo_refill_rate ) )
+			break
+
+		case "shared_energy":
+			int curCost = weapon.GetWeaponCurrentEnergyCost() // 350
+
+			RuiSetFloat( rui, "readyFrac", 0.0 )
+			RuiSetFloat( rui, "chargeMaxFrac", float( curCost ) )
+			RuiTrackFloat( rui, "chargeFrac", player, RUI_TRACK_PLAYER_SHARED_ENERGY )
+			break
+
+		case "shared_energy_drain":
+			RuiSetFloat( rui, "readyFrac", 0.0 )
+			RuiSetFloat( rui, "minFireFrac", 0.0 )
+			RuiTrackFloat( rui, "chargeFrac", player, RUI_TRACK_PLAYER_SHARED_ENERGY )
+			RuiSetFloat( rui, "chargeMaxFrac", float( ION_ENERGY_MAX ) )
+			break
+
+		case "vortex_drain":
+			RuiSetBool( rui, "isReverseCharge", true )
+			RuiSetFloat( rui, "chargeFrac", 1.0 )
+			RuiSetFloat( rui, "readyFrac", 0.0 )
+			RuiSetFloat( rui, "minFireFrac", 0.0 )
+
+			RuiTrackFloat( rui, "chargeFrac", weapon, RUI_TRACK_WEAPON_CHARGE_FRACTION )
+			break
+
+		case "charged_shot":
+			RuiSetBool( rui, "isReverseCharge", true )
+			RuiSetFloat( rui, "chargeFrac", 1.0 )
+			RuiSetFloat( rui, "readyFrac", 0.0 )
+			RuiSetFloat( rui, "minFireFrac", 0.2 )
+
+			RuiTrackFloat( rui, "chargeFrac", weapon, RUI_TRACK_WEAPON_CHARGE_FRACTION )
+			break
+
+		case "chargeFrac":
+			RuiTrackFloat( rui, "chargeFrac", weapon, RUI_TRACK_WEAPON_CHARGE_FRACTION )
+			break
+
+		case "smart":
+			RuiSetBool( rui, "isReverseCharge", true )
+			RuiTrackFloat( rui, "chargeFrac", weapon, RUI_TRACK_WEAPON_CHARGE_FRACTION )
+			RuiSetFloat( rui, "readyFrac", 0.0 )
+			RuiTrackFloat( rui, "dryfireFrac", weapon, RUI_TRACK_WEAPON_DRYFIRE_FRACTION )
+			break
+
+		case "debug":
+			RuiTrackFloat( rui, "chargeFrac", weapon, RUI_TRACK_WEAPON_CHARGE_FRACTION )
+			RuiTrackFloat( rui, "readyFrac", weapon, RUI_TRACK_WEAPON_READY_TO_FIRE_FRACTION )
+			//RuiTrackFloat( rui, "dryfireFrac", weapon, RUI_TRACK_WEAPON_DRYFIRE_FRACTION )
+			RuiTrackFloat( rui, "dryfireFrac", weapon, RUI_TRACK_WEAPON_SMART_AMMO_LOCK_FRACTION )
+			break
+
+		case "grapple":
+			int ammoClipSize = 100
+			float ammoMinToFire = weapon.GetWeaponSettingFloat( eWeaponVar.grapple_power_required )
+
+			RuiSetFloat( rui, "minFireFrac", ammoMinToFire / float ( ammoClipSize ) )
+			RuiSetInt( rui, "segments", int( ammoClipSize / ammoMinToFire ) )
+			RuiTrackFloat( rui, "chargeFrac", player, RUI_TRACK_PLAYER_GRAPPLE_POWER )
+			break
+
+		default:
+			float refillRate = weapon.GetWeaponSettingFloat( eWeaponVar.regen_ammo_refill_rate )
+
+			if ( refillRate > 0 )
+			{
+				//printt( "HUD: ", weapon.GetWeaponClassName(), "using", "refillRate" )
+				int ammoClipSize = weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
+				int ammoPerShot = weapon.GetWeaponSettingInt( eWeaponVar.ammo_per_shot )
+				int ammoMinToFire = weapon.GetWeaponSettingInt( eWeaponVar.ammo_min_to_fire )
+
+				RuiSetFloat( rui, "minFireFrac", float (  ammoMinToFire ) / float ( ammoClipSize ) )
+				RuiSetInt( rui, "segments", ammoClipSize / ammoPerShot )
+
+				RuiTrackFloat( rui, "chargeFrac", weapon, RUI_TRACK_WEAPON_CLIP_AMMO_FRACTION )
+			}
+			else
+			{
+				float chargeTime = weapon.GetWeaponSettingFloat( eWeaponVar.charge_time )
+				if ( chargeTime == 0 )
+				{
+					//printt( "HUD: ", weapon.GetWeaponClassName(), "using", "chargeTime == 0" )
+					float fireDuration = weapon.GetWeaponSettingFloat( eWeaponVar.fire_duration )
+					printt( weapon.GetWeaponClassName(), fireDuration )
+					RuiSetBool( rui, "isReverseCharge", true )
+					RuiTrackFloat( rui, "chargeFrac", weapon, RUI_TRACK_WEAPON_READY_TO_FIRE_FRACTION )
+				}
+				else
+				{
+					//printt( "HUD: ", weapon.GetWeaponClassName(), "using", "chargeTime" )
+					RuiTrackFloat( rui, "chargeFrac", weapon, RUI_TRACK_WEAPON_CHARGE_FRACTION )
+				}
+			}
+			break
+	}
+}
+
+void function ClWeaponStatus_SetOffhandVisible( int offhandIndex, bool newState )
+{
+	entity player = GetLocalClientPlayer()
+
+	var rui = GetRuiForIndex( player, offhandIndex )
+
+	file.slotVisible[offhandIndex] = newState
+	RuiSetBool( rui, "isVisible", newState )
+}
+
+var function GetRuiForIndex( entity player, int offhandIndex )
+{
+	var rui
+
+	if ( CheckCenterSlotOccupied(player) )
+	{
+		switch ( offhandIndex )
+		{
+			case OFFHAND_LEFT:
+				rui = file.ability_left_hud
+				break
+			case OFFHAND_TITAN_CENTER:
+				rui = file.ability_center_hud
+				break
+			case OFFHAND_RIGHT:
+				rui = file.ability_right_hud
+				break
+			case OFFHAND_INVENTORY:
+				rui = file.dpad_left_hud
+				break
+		}
+	}
+	else
+	{
+		switch ( offhandIndex )
+		{
+			case OFFHAND_LEFT:
+				rui = file.ability_left_hud
+				break
+			case OFFHAND_RIGHT:
+				rui = file.ability_center_hud
+				break
+			case OFFHAND_INVENTORY:
+				rui = file.dpad_left_hud
+				break
+		}
+	}
+
+	return rui
+}
+
+void function ClWeaponStatus_SetWeaponVisible( bool newState )
+{
+	RuiSetBool( file.ammo_counter, "isVisible", newState )
+	file.ammo_counter_visible = newState
+}
+
+bool function CheckCenterSlotOccupied( entity player )
+{
+	entity weapon = player.GetOffhandWeapon( OFFHAND_TITAN_CENTER )
+	return IsValid( weapon )
+}
