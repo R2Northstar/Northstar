@@ -123,7 +123,7 @@
 		},
 		{
 			"Path": "gamemodes/gg_earn_meter/sh_gg_earn_meter.gnut",
-			"RunOn": "( CLIENT || SERVER ) && MP",
+			"RunOn": "( CLIENT || SERVER ) && MP"
 		},
 		{
 			"Path": "gamemodes/gg_earn_meter/_gg_earn_meter.gnut",

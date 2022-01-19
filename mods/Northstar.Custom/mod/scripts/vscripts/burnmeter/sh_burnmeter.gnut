@@ -168,11 +168,11 @@ BurnReward function BurnReward_GetById( int id )
 BurnReward function BurnReward_GetByRef( string ref )
 {
 	Assert( ref in burn.burnRewards )
-	
+
 	// more hacks for arena
 	if ( !( ref in burn.burnRewards ) && GetCurrentPlaylistVarString( "boost_store_mode", "off" ) == "arena" )
 		return GetArenaLoadoutItemAsBurnReward( ref )
-	
+
 	return burn.burnRewards[ref]
 }
 
@@ -381,7 +381,8 @@ bool function OnWeaponAttemptOffhandSwitch_burncardweapon( entity weapon )
 	entity ownerPlayer = weapon.GetWeaponOwner()
 	Assert( ownerPlayer.IsPlayer() )
 
-	if ( ownerPlayer.IsUsingOffhandWeapon() )
+	entity activeWeapon = ownerPlayer.GetActiveWeapon()
+	if ( ownerPlayer.IsUsingOffhandWeapon() && !( activeWeapon.GetWeaponInfoFileKeyField( "fire_mode" ) == "offhand_melee" && activeWeapon.IsReadyToFire() ) )
 		return false
 
 	if ( weapon.HasMod( "burn_card_weapon_mod" ) )

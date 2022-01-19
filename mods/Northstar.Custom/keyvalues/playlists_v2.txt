@@ -271,7 +271,7 @@ playlists
 				image ffa
 				at_turrets_enabled 0
 				max_players 16
-				max_teams 20
+				max_teams 16
 				scorelimit 300
 				classic_mp 1
 
@@ -868,11 +868,6 @@ playlists
 				hint #PL_sns_desc
 				abbreviation #PL_sns_abbr
 				image ps
-				max_players 16
-				max_teams 20
-				scorelimit 300
-				classic_mp 1
-				mixtape_timeout 120
 				visible 0
 				
 				gamemode_score_hint #GAMEMODE_SCORE_HINT_FFA
@@ -904,6 +899,8 @@ playlists
 						mp_relic02 1
 						mp_wargames 1
 						mp_rise 1
+						mp_coliseum 1
+						mp_coliseum_column 1
 					}
 				}
 			}
