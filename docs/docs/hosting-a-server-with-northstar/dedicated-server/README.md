@@ -124,7 +124,7 @@ They allow the server admin to set server's properties like the name, TCP port, 
 
 ## Gamemodes
 
-Gamemodes can be forced by the server using the [`+mpgamemode`](./#Startup\_args-mpgamemode) startup arg
+Gamemodes can be forced by the server using the [`+mp_gamemode`](./#Startup\_args-mpgamemode) startup arg
 
 If ran on a server with the [`ns_should_return_to_lobby 0`](./#Convars-returntolobby) convar, one should also set gamemodes in [`ns_private_match_last_mode`](./#Convars-lastmode) convar
 
