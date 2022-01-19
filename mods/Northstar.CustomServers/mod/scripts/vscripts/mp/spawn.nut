@@ -14,6 +14,13 @@ global function DeleteNoSpawnArea
 global function FindSpawnPoint
 
 global function RateSpawnpoints_Generic
+global function RateSpawnpoints_Frontline
+
+global function SetSpawnZoneRatingFunc
+global function SetShouldCreateMinimapSpawnZones
+global function CreateTeamSpawnZoneEntity
+global function RateSpawnpoints_SpawnZones
+global function DecideSpawnZone_Generic
 
 struct NoSpawnArea
 {
@@ -31,8 +38,6 @@ struct {
 	array< bool functionref( entity, int ) > customSpawnpointValidationRules
 
 	table<string, NoSpawnArea> noSpawnAreas
-	
-	array<vector> preferSpawnNodes
 } file
 
 void function Spawn_Init()
@@ -42,24 +47,12 @@ void function Spawn_Init()
 	AddSpawnCallback( "info_spawnpoint_titan", InitSpawnpoint )
 	AddSpawnCallback( "info_spawnpoint_titan_start", InitSpawnpoint )
 	
+	// callbacks for generic spawns
 	AddCallback_EntitiesDidLoad( InitPreferSpawnNodes )
-}
-
-void function InitPreferSpawnNodes()
-{
-	foreach ( entity hardpoint in GetEntArrayByClass_Expensive( "info_hardpoint" ) )
-	{
-		if ( !hardpoint.HasKey( "hardpointGroup" ) )
-			continue
-			
-		if ( hardpoint.kv.hardpointGroup != "A" && hardpoint.kv.hardpointGroup != "B" && hardpoint.kv.hardpointGroup != "C" )
-			continue
-			
-		file.preferSpawnNodes.append( hardpoint.GetOrigin() )
-	}
 	
-	//foreach ( entity frontline in GetEntArrayByClass_Expensive( "info_frontline" ) )
-	//	file.preferSpawnNodes.append( frontline.GetOrigin() )
+	// callbacks for spawnzone spawns
+	AddCallback_GameStateEnter( eGameState.Prematch, ResetSpawnzones )
+	AddSpawnCallbackEditorClass( "trigger_multiple", "trigger_mp_spawn_zone", AddSpawnZoneTrigger )
 }
 
 void function InitSpawnpoint( entity spawnpoint ) 
@@ -273,36 +266,32 @@ bool function IsSpawnpointValid( entity spawnpoint, int team )
 			return false
 	
 	// los check
-	array<entity> enemyLosPlayers
-	if ( IsFFAGame() )
-		enemyLosPlayers = GetPlayerArray()
-	else 
-		enemyLosPlayers = GetPlayerArrayOfTeam( GetOtherTeam( team ) )
-	
-	foreach ( entity enemyPlayer in enemyLosPlayers )
-	{
-		if ( enemyPlayer.GetTeam() == team || !IsAlive( enemyPlayer ) )
-			continue
-			
-		float dist = 1000.0
-		// check fov, constant here is stolen from every other place this is done
-		if ( VectorDot_PlayerToOrigin( enemyPlayer, spawnpoint.GetOrigin() ) > 0.8 )
-			dist /= 0.75
-		
-		// check distance, constant here is basically arbitrary
-		if ( Distance( enemyPlayer.GetOrigin(), spawnpoint.GetOrigin() ) > dist )
-			continue
-		
-		// check actual los
-		if ( TraceLineSimple( enemyPlayer.EyePosition(), spawnpoint.GetOrigin() + < 0, 0, 48 >, enemyPlayer ) == 1.0 )
-			return false
-	}
-		
-	return true
+	return !spawnpoint.IsVisibleToEnemies( team )
 }
+
+
+// SPAWNPOINT RATING FUNCS BELOW
+
+// generic
+struct {
+	array<vector> preferSpawnNodes
+} spawnStateGeneric
 
 void function RateSpawnpoints_Generic( int checkClass, array<entity> spawnpoints, int team, entity player )
 {	
+	if ( !IsFFAGame() )
+	{
+		// use frontline spawns in 2-team modes
+		RateSpawnpoints_Frontline( checkClass, spawnpoints, team, player )
+		return
+	}
+	else
+	{
+		// todo: ffa spawns :terror:
+	}
+
+	// old algo: keeping until we have a better ffa spawn algo
+
 	// i'm not a fan of this func, but i really don't have a better way to do this rn, and it's surprisingly good with los checks implemented now
 	
 	// calculate ratings for preferred nodes
@@ -311,7 +300,7 @@ void function RateSpawnpoints_Generic( int checkClass, array<entity> spawnpoints
 	// especially in ffa modes i could deffo see this falling apart a bit rn
 	// perhaps dead players could be used to calculate some sort of activity rating? so high-activity points with an even balance of friendly/unfriendly players are preferred
 	array<float> preferSpawnNodeRatings
-	foreach ( vector preferSpawnNode in file.preferSpawnNodes )
+	foreach ( vector preferSpawnNode in spawnStateGeneric.preferSpawnNodes )
 	{
 		float currentRating
 		
@@ -354,13 +343,13 @@ void function RateSpawnpoints_Generic( int checkClass, array<entity> spawnpoints
 		float petTitanModifier
 		// scale how much a given spawnpoint matters to us based on how far it is from each node
 		bool spawnHasRecievedInitialBonus = false
-		for ( int i = 0; i < file.preferSpawnNodes.len(); i++ )
+		for ( int i = 0; i < spawnStateGeneric.preferSpawnNodes.len(); i++ )
 		{
 			// bonus if autotitan is nearish
-			if ( IsAlive( player.GetPetTitan() ) && Distance( player.GetPetTitan().GetOrigin(), file.preferSpawnNodes[ i ] ) < 1200.0 )
+			if ( IsAlive( player.GetPetTitan() ) && Distance( player.GetPetTitan().GetOrigin(), spawnStateGeneric.preferSpawnNodes[ i ] ) < 1200.0 )
 				petTitanModifier += 10.0
 			
-			float dist = Distance2D( spawnpoint.GetOrigin(), file.preferSpawnNodes[ i ] )
+			float dist = Distance2D( spawnpoint.GetOrigin(), spawnStateGeneric.preferSpawnNodes[ i ] )
 			if ( dist > 750.0 )
 				continue
 						
@@ -384,4 +373,305 @@ void function RateSpawnpoints_Generic( int checkClass, array<entity> spawnpoints
 		if ( rating != 0.0 || currentRating != 0.0 )
 			print( "rating = " + rating + ", internal rating = " + currentRating )
 	}
+}
+
+void function InitPreferSpawnNodes()
+{
+	foreach ( entity hardpoint in GetEntArrayByClass_Expensive( "info_hardpoint" ) )
+	{
+		if ( !hardpoint.HasKey( "hardpointGroup" ) )
+			continue
+			
+		if ( hardpoint.kv.hardpointGroup != "A" && hardpoint.kv.hardpointGroup != "B" && hardpoint.kv.hardpointGroup != "C" )
+			continue
+			
+		spawnStateGeneric.preferSpawnNodes.append( hardpoint.GetOrigin() )
+	}
+	
+	//foreach ( entity frontline in GetEntArrayByClass_Expensive( "info_frontline" ) )
+	//	spawnStateGeneric.preferSpawnNodes.append( frontline.GetOrigin() )
+}
+
+// frontline
+void function RateSpawnpoints_Frontline( int checkClass, array<entity> spawnpoints, int team, entity player )
+{
+	Frontline frontline = GetFrontline( player.GetTeam() )
+
+	// heavily based on ctf spawn algo iteration 4, only changes it at the end
+	array<entity> startSpawns = SpawnPoints_GetPilotStart( team )
+	array<entity> enemyStartSpawns = SpawnPoints_GetPilotStart( GetOtherTeam( team ) )
+	
+	if ( startSpawns.len() == 0 || enemyStartSpawns.len() == 0 ) // ensure we don't crash
+		return
+	
+	// get average startspawn position and max dist between spawns
+	// could probably cache this, tbh, not like it should change outside of halftimes
+	vector averageFriendlySpawns
+	float maxFriendlySpawnDist
+	
+	foreach ( entity spawn in startSpawns )
+	{
+		foreach ( entity otherSpawn in startSpawns )
+		{
+			float dist = Distance2D( spawn.GetOrigin(), otherSpawn.GetOrigin() )
+			if ( dist > maxFriendlySpawnDist )
+				maxFriendlySpawnDist = dist
+		}
+		
+		averageFriendlySpawns += spawn.GetOrigin()
+	}
+	
+	averageFriendlySpawns /= startSpawns.len()
+	
+	// get average enemy startspawn position
+	vector averageEnemySpawns
+	
+	foreach ( entity spawn in enemyStartSpawns )
+		averageEnemySpawns += spawn.GetOrigin()
+	
+	averageEnemySpawns /= enemyStartSpawns.len()
+	
+	// from here, rate spawns
+	float baseDistance = Distance2D( averageFriendlySpawns, averageEnemySpawns )
+	foreach ( entity spawn in spawnpoints )
+	{
+		// ratings should max/min out at 100 / -100
+		// start by prioritizing closer spawns, but not so much that enemies won't really affect them
+		float rating = 10 * ( 1.0 - Distance2D( averageFriendlySpawns, spawn.GetOrigin() ) / baseDistance )
+		
+		// rate based on distance to frontline, and then prefer spawns in the same dir from the frontline as the combatdir
+		rating += rating * ( 1.0 - ( Distance2D( spawn.GetOrigin(), frontline.friendlyCenter ) / baseDistance ) )
+		rating *= fabs( frontline.combatDir.y - Normalize( spawn.GetOrigin() - averageFriendlySpawns ).y )
+		
+		spawn.CalculateRating( checkClass, player.GetTeam(), rating, rating )
+	}
+}
+
+// spawnzones
+struct {
+	array<entity> mapSpawnzoneTriggers
+	entity functionref( array<entity>, int ) spawnzoneRatingFunc
+	bool shouldCreateMinimapSpawnzones = false
+	
+	// for DecideSpawnZone_Generic
+	table<int, entity> activeTeamSpawnzones
+	table<int, entity> activeTeamSpawnzoneMinimapEnts
+} spawnStateSpawnzones
+
+void function ResetSpawnzones()
+{
+	spawnStateSpawnzones.activeTeamSpawnzones.clear()
+	
+	foreach ( int team, entity minimapEnt in spawnStateSpawnzones.activeTeamSpawnzoneMinimapEnts )
+		if ( IsValid( minimapEnt ) )
+			minimapEnt.Destroy()
+	
+	spawnStateSpawnzones.activeTeamSpawnzoneMinimapEnts.clear()
+}
+
+void function AddSpawnZoneTrigger( entity trigger )
+{
+	trigger.s.spawnzoneRating <- 0.0
+	spawnStateSpawnzones.mapSpawnzoneTriggers.append( trigger )
+}
+
+void function SetSpawnZoneRatingFunc( entity functionref( array<entity>, int ) ratingFunc )
+{
+	spawnStateSpawnzones.spawnzoneRatingFunc = ratingFunc
+}
+
+void function SetShouldCreateMinimapSpawnZones( bool shouldCreateMinimapSpawnzones )
+{
+	spawnStateSpawnzones.shouldCreateMinimapSpawnzones = shouldCreateMinimapSpawnzones
+}
+
+entity function CreateTeamSpawnZoneEntity( entity spawnzone, int team )
+{
+	entity minimapObj = CreatePropScript( $"models/dev/empty_model.mdl", spawnzone.GetOrigin() )
+	SetTeam( minimapObj, team )	
+	minimapObj.Minimap_SetObjectScale( 100.0 / Distance2D( < 0, 0, 0 >, spawnzone.GetBoundingMaxs() ) )
+	minimapObj.Minimap_SetAlignUpright( true )
+	minimapObj.Minimap_AlwaysShow( TEAM_IMC, null )
+	minimapObj.Minimap_AlwaysShow( TEAM_MILITIA, null )
+	minimapObj.Minimap_SetHeightTracking( true )
+	minimapObj.Minimap_SetZOrder( MINIMAP_Z_OBJECT )
+	
+	if ( team == TEAM_IMC )
+		minimapObj.Minimap_SetCustomState( eMinimapObject_prop_script.SPAWNZONE_IMC )
+	else
+		minimapObj.Minimap_SetCustomState( eMinimapObject_prop_script.SPAWNZONE_MIL )
+		
+	minimapObj.DisableHibernation()
+	return minimapObj
+}
+
+void function RateSpawnpoints_SpawnZones( int checkClass, array<entity> spawnpoints, int team, entity player )
+{
+	if ( spawnStateSpawnzones.spawnzoneRatingFunc == null )
+		spawnStateSpawnzones.spawnzoneRatingFunc = DecideSpawnZone_Generic
+
+	// don't use spawnzones if we're using start spawns
+	if ( ShouldStartSpawn( player ) )
+	{
+		RateSpawnpoints_Generic( checkClass, spawnpoints, team, player )
+		return
+	}
+
+	entity spawnzone = spawnStateSpawnzones.spawnzoneRatingFunc( spawnStateSpawnzones.mapSpawnzoneTriggers, player.GetTeam() )	
+	if ( !IsValid( spawnzone ) ) // no spawn zone, use generic algo
+	{
+		RateSpawnpoints_Generic( checkClass, spawnpoints, team, player )
+		return
+	}
+	
+	// rate spawnpoints
+	foreach ( entity spawn in spawnpoints ) 
+	{
+		float rating = 0.0
+		float distance = Distance2D( spawn.GetOrigin(), spawnzone.GetOrigin() )
+		if ( distance < Distance2D( < 0, 0, 0 >, spawnzone.GetBoundingMaxs() ) )
+			rating = 100.0
+		else // max 35 rating if not in zone, rate by closest
+			rating = 35.0 * ( 1 - ( distance / 5000.0 ) )
+			
+		spawn.CalculateRating( checkClass, player.GetTeam(), rating, rating )
+	}
+}
+
+entity function DecideSpawnZone_Generic( array<entity> spawnzones, int team )
+{
+	if ( spawnzones.len() == 0 )
+		return null
+	
+	// get average team startspawn positions
+	int spawnCompareTeam = team
+	if ( HasSwitchedSides() )
+		spawnCompareTeam = GetOtherTeam( team )
+	
+	array<entity> startSpawns = SpawnPoints_GetPilotStart( spawnCompareTeam )
+	array<entity> enemyStartSpawns = SpawnPoints_GetPilotStart( GetOtherTeam( spawnCompareTeam ) )
+	
+	if ( startSpawns.len() == 0 || enemyStartSpawns.len() == 0 ) // ensure we don't crash
+		return null
+	
+	// get average startspawn position and max dist between spawns
+	// could probably cache this, tbh, not like it should change outside of halftimes
+	vector averageFriendlySpawns	
+	foreach ( entity spawn in startSpawns )
+		averageFriendlySpawns += spawn.GetOrigin()
+	
+	averageFriendlySpawns /= startSpawns.len()
+	
+	// get average enemy startspawn position
+	vector averageEnemySpawns
+	foreach ( entity spawn in enemyStartSpawns )
+		averageEnemySpawns += spawn.GetOrigin()
+	
+	averageEnemySpawns /= enemyStartSpawns.len()
+	
+	float baseDistance = Distance2D( averageFriendlySpawns, averageEnemySpawns )
+	
+	bool needNewZone = true
+	if ( team in spawnStateSpawnzones.activeTeamSpawnzones )
+	{
+		foreach ( entity player in GetPlayerArray() )
+		{
+			// couldn't get IsTouching, GetTouchingEntities or enter callbacks to work in testing, so doing this
+			if ( player.GetTeam() != team && spawnStateSpawnzones.activeTeamSpawnzones[ team ].ContainsPoint( player.GetOrigin() ) )
+				break
+		}
+		
+		needNewZone = false
+	}
+	
+	if ( needNewZone )
+	{
+		// find new zone
+		array<entity> possibleZones
+		foreach ( entity spawnzone in spawnStateSpawnzones.mapSpawnzoneTriggers )
+		{
+			// don't remeber if you can do a "value in table.values" sorta thing in squirrel so doing manual lookup
+			bool spawnzoneTaken = false
+			foreach ( int otherTeam, entity otherSpawnzone in spawnStateSpawnzones.activeTeamSpawnzones )
+			{			
+				if ( otherSpawnzone == spawnzone )
+				{
+					spawnzoneTaken = true
+					break
+				}
+			}
+			
+			if ( spawnzoneTaken )
+				continue
+			
+			// check zone validity
+			bool spawnzoneEvil = false
+			foreach ( entity player in GetPlayerArray() )
+			{
+				// couldn't get IsTouching, GetTouchingEntities or enter callbacks to work in testing, so doing this
+				if ( player.GetTeam() != team && spawnzone.ContainsPoint( player.GetOrigin() ) )
+				{
+					spawnzoneEvil = true
+					break
+				}
+			}
+			
+			print( averageFriendlySpawns )
+			print( averageEnemySpawns )
+			print( Distance2D( spawnzone.GetOrigin(), averageFriendlySpawns ) )
+			print( Distance2D( spawnzone.GetOrigin(), averageEnemySpawns ) )
+			// don't choose spawnzones that are closer to enemy base than friendly base
+			if ( !spawnzoneEvil && Distance2D( spawnzone.GetOrigin(), averageFriendlySpawns ) > Distance2D( spawnzone.GetOrigin(), averageEnemySpawns ) )
+				spawnzoneEvil = true
+			
+			if ( spawnzoneEvil )
+				continue
+			
+			// rate spawnzone based on distance to frontline
+			Frontline frontline = GetFrontline( team )
+
+			// prefer spawns close to base pos
+			float rating = 10 * ( 1.0 - Distance2D( averageFriendlySpawns, spawnzone.GetOrigin() ) / baseDistance )
+		
+			if ( frontline.friendlyCenter != < 0, 0, 0 > )
+			{
+				// rate based on distance to frontline, and then prefer spawns in the same dir from the frontline as the combatdir
+				rating += rating * ( 1.0 - ( Distance2D( spawnzone.GetOrigin(), frontline.friendlyCenter ) / baseDistance ) )
+				rating *= fabs( frontline.combatDir.y - Normalize( spawnzone.GetOrigin() - averageFriendlySpawns ).y )
+			}
+			
+			spawnzone.s.spawnzoneRating = rating
+			possibleZones.append( spawnzone )
+		}
+		
+		if ( possibleZones.len() == 0 )
+			return null
+		
+		possibleZones.sort( int function( entity a, entity b ) 
+		{
+			if ( a.s.spawnzoneRating > b.s.spawnzoneRating )
+				return -1
+			
+			if ( b.s.spawnzoneRating > a.s.spawnzoneRating )
+				return 1
+			
+			return 0
+		} )
+		entity chosenZone = possibleZones[ minint( RandomInt( 3 ), possibleZones.len() ) ]
+		
+		if ( spawnStateSpawnzones.shouldCreateMinimapSpawnzones )
+		{
+			entity oldEnt
+			if ( team in spawnStateSpawnzones.activeTeamSpawnzoneMinimapEnts )
+				oldEnt = spawnStateSpawnzones.activeTeamSpawnzoneMinimapEnts[ team ]
+					
+			spawnStateSpawnzones.activeTeamSpawnzoneMinimapEnts[ team ] <- CreateTeamSpawnZoneEntity( chosenZone, team )
+			if ( IsValid( oldEnt ) )
+				oldEnt.Destroy()
+		}
+		
+		spawnStateSpawnzones.activeTeamSpawnzones[ team ] <- chosenZone
+	}
+	
+	return spawnStateSpawnzones.activeTeamSpawnzones[ team ]
 }
