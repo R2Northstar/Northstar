@@ -1,6 +1,5 @@
 untyped
 global function GamemodeMfd_Init
-global function RateSpawnpoints_Frontline
 
 struct {
 	entity imcLastMark
@@ -190,60 +189,5 @@ void function UpdateMarksForKill( entity victim, entity attacker, var damageInfo
 		
 		if ( attacker.IsPlayer() )
 			attacker.SetPlayerGameStat( PGS_ASSAULT_SCORE, attacker.GetPlayerGameStat( PGS_ASSAULT_SCORE ) + 1 )
-	}
-}
-
-// could probably put this in spawn.nut? only here because i believe it's the main mode that uses this func
-void function RateSpawnpoints_Frontline( int checkClass, array<entity> spawnpoints, int team, entity player )
-{
-	Frontline frontline = GetFrontline( player.GetTeam() )
-
-	// heavily based on ctf spawn algo iteration 4, only changes it at the end
-	array<entity> startSpawns = SpawnPoints_GetPilotStart( team )
-	array<entity> enemyStartSpawns = SpawnPoints_GetPilotStart( GetOtherTeam( team ) )
-	array<entity> enemyPlayers = GetPlayerArrayOfTeam_Alive( team )
-	
-	// get average startspawn position and max dist between spawns
-	// could probably cache this, tbh, not like it should change outside of halftimes
-	vector averageFriendlySpawns
-	float maxFriendlySpawnDist
-	
-	foreach ( entity spawn in startSpawns )
-	{
-		foreach ( entity otherSpawn in startSpawns )
-		{
-			float dist = Distance2D( spawn.GetOrigin(), otherSpawn.GetOrigin() )
-			if ( dist > maxFriendlySpawnDist )
-				maxFriendlySpawnDist = dist
-		}
-		
-		averageFriendlySpawns += spawn.GetOrigin()
-	}
-	
-	averageFriendlySpawns /= startSpawns.len()
-	
-	// get average enemy startspawn position
-	vector averageEnemySpawns
-	
-	foreach ( entity spawn in enemyStartSpawns )
-		averageEnemySpawns += spawn.GetOrigin()
-	
-	averageEnemySpawns /= enemyStartSpawns.len()
-	
-	// from here, rate spawns
-	float baseDistance = Distance2D( averageFriendlySpawns, averageEnemySpawns )
-	float spawnIterations = ( baseDistance / maxFriendlySpawnDist ) / 2
-	
-	foreach ( entity spawn in spawnpoints )
-	{
-		// ratings should max/min out at 100 / -100
-		// start by prioritizing closer spawns, but not so much that enemies won't really affect them
-		float rating = 10 * ( 1.0 - Distance2D( averageFriendlySpawns, spawn.GetOrigin() ) / baseDistance )
-		
-		// rate based on distance to frontline, and then prefer spawns in the same dir from the frontline as the combatdir
-		rating += rating * ( 1.0 - ( Distance2D( spawn.GetOrigin(), frontline.friendlyCenter ) / baseDistance ) )
-		rating *= fabs( frontline.combatDir.y - Normalize( spawn.GetOrigin() - averageFriendlySpawns ).y )
-		
-		spawn.CalculateRating( checkClass, player.GetTeam(), rating, rating )
 	}
 }
