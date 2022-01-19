@@ -8,7 +8,7 @@ global function ThreadedAuthAndConnectToServer
 // Stop peeking
 
 const int BUTTONS_PER_PAGE = 15
-const float DOUBLE_CLICK_TIME_MS = 0.3 // unsure what the ideal value is
+const float DOUBLE_CLICK_TIME_MS = 0.4 // unsure what the ideal value is
 
 
 struct {
@@ -785,6 +785,7 @@ void function OnServerButtonFocused( var button )
 {
 	int scriptID = int (Hud_GetScriptID(button))
 	file.serverButtonFocusedID = scriptID
+	file.focusedServerIndex = file.serversArrayFiltered[ file.scrollOffset + scriptID ].serverIndex
 	DisplayFocusedServerInfo(scriptID);
 
 }
@@ -802,7 +803,6 @@ void function CheckDoubleClick(int scriptID, bool wasClickNav)
 	if ( NSGetServerCount() == 0 ) return
 
 
-	file.focusedServerIndex = file.serversArrayFiltered[ file.scrollOffset + scriptID ].serverIndex
 	int serverIndex = file.scrollOffset + scriptID
 
 	bool sameServer = false
