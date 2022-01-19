@@ -19,8 +19,7 @@ void function Sh_GamemodeGG_Init()
 	// create custom gamemode
 	AddCallback_OnCustomGamemodesInit( CreateGamemodeGG )
 
-	if ( GAMETYPE != GAMEMODE_GG )
-		Sh_GGEarnMeter_Init()
+	Sh_GGEarnMeter_Init(GAMEMODE_GG)
 }
 
 void function CreateGamemodeGG()
