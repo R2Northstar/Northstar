@@ -1,0 +1,1585 @@
+untyped
+
+globalize_all_functions
+
+global const DEG_TO_RAD = 0.01745329251994 // PI / 180.0
+global const RAD_TO_DEG = 57.29577951308232 // 180.0 / PI
+
+global array<string> LEGAL_PLAYER_TITAN_SETTINGS
+
+global struct AllModesAndMapsCompleteData
+{
+	int required
+	int progress
+}
+
+struct
+{
+	int lastHostThreadMode
+	int lastScriptPrecacheErrors
+	int lastReportFatal
+	bool devUnlockedSPMissions
+} file
+
+void function ShUtilityAll_Init()
+{
+	#document( "DistanceAlongVector", "" )
+	#document( "GetClosestPointOnLineSegment", "Get the nearest point on a line segment" )
+	#document( "GetDistanceFromLineSegment", "" )
+	#document( "GetDistanceSqrFromLineSegment", "" )
+
+	LEGAL_PLAYER_TITAN_SETTINGS = GetAllowedPlayerTitanSettings() //Function reads from the data table, no point doing it over and over when it shouldn't change mid-match/game
+}
+
+bool function IsMultiplayer()
+{
+	#if UI
+		return GetConVarString( "mp_gamemode" ) != "solo"
+	#else
+		return GAMETYPE != GAMEMODE_SP
+	#endif
+}
+
+bool function IsSingleplayer()
+{
+	#if UI
+		return GetConVarString( "mp_gamemode" ) == "solo"
+	#else
+		return GAMETYPE == GAMEMODE_SP
+	#endif
+}
+
+function PrintObject( obj, indent, depth, maxDepth )
+{
+	if ( IsTable( obj ) )
+	{
+		if ( depth >= maxDepth )
+		{
+			printl( "{...}" )
+			return
+		}
+
+		printl( "{" )
+		foreach ( k, v in obj )
+		{
+			print( TableIndent( indent + 2 ) + k + " = " )
+			PrintObject( v, indent + 2, depth + 1, maxDepth )
+		}
+		printl( TableIndent( indent ) + "}" )
+	}
+	else if ( IsArray( obj ) )
+	{
+		if ( depth >= maxDepth )
+		{
+			printl( "[...]" )
+			return
+		}
+
+		printl( "[" )
+		foreach ( v in obj )
+		{
+			print( TableIndent( indent + 2 ) )
+			PrintObject( v, indent + 2, depth + 1, maxDepth )
+		}
+		printl( TableIndent( indent ) + "]" )
+	}
+	else if ( obj != null )
+	{
+		printl( "" + obj )
+	}
+	else
+	{
+		printl( "<null>" )
+	}
+}
+
+string function FunctionToString( func )
+{
+	Assert( func, "No function passed" )
+	Assert( type( func ) == "function", "Type " + type( func ) + " is not a function" )
+
+	return expect string( func.getinfos().name )
+}
+
+// dump the stack trace to the console
+function DumpStack( int offset = 1 )
+{
+	for ( int i = offset; i < 20; i++ )
+	{
+		if ( !( "src" in getstackinfos(i) ) )
+			break
+		printl( i + " File : " + getstackinfos(i)["src"] + " [" + getstackinfos(i)["line"] + "]\n    Function : " + getstackinfos(i)["func"] + "() " )
+	}
+}
+
+function DumpPreviousFunction()
+{
+	int i = 3
+	if ( !( "src" in getstackinfos(i) ) )
+		return
+	printl( "Called from: " + getstackinfos(i)["src"] + " [" + getstackinfos(i)["line"] + "] : " + getstackinfos(i)["func"] + "() " )
+}
+
+function GetPreviousFunction()
+{
+	int i = 3
+	if ( !( "src" in getstackinfos(i) ) )
+		return ""
+	return "Called from: " + getstackinfos(i)["src"] + " [" + getstackinfos(i)["line"] + "] : " + getstackinfos(i)["func"] + "() "
+}
+
+bool function IsNewThread()
+{
+	//return threads.GetCurrentThread().co == getthread()
+	int i
+	for ( i = 0; i < 20; i++ )
+	{
+		if ( !( "src" in getstackinfos(i) ) )
+			break
+	}
+
+	return i == 3
+}
+
+function AssertParameters( func, paramCount, paramDesc )
+{
+	local funcInfos = func.getinfos()
+	local funcName = funcInfos.name
+	// subtract one from the param count for the hidden "this" object
+	Assert( funcInfos.parameters.len() == (paramCount + 1), "Function \"" + funcName +"\" must have exactly " + paramCount + " parameters (" + paramDesc + ")." )
+}
+
+function PrintTable( tbl, indent = 0, maxDepth = 4 )
+{
+	print( TableIndent( indent ) )
+	PrintObject( tbl, indent, 0, maxDepth )
+}
+
+string function TableIndent( indent )
+{
+	return ("                                            ").slice( 0, indent )
+}
+
+function GetHattID( id )
+{
+	local result = getconsttable()[ id ]
+	//printt( "This is hattID: " + result  )
+	return getconsttable()[ id ]
+}
+
+function GetCurrentPlaylistVar( val, opVal = null )
+{
+	#if UI
+		return Code_GetCurrentPlaylistVar( val )
+	#else
+		if ( opVal == null )
+			return Code_GetCurrentPlaylistVar( val )
+
+		return GetCurrentPlaylistVarOrUseValue( val, opVal )
+	#endif
+}
+
+function GetCurrentPlaylistVarOrUseValue( val, opVal )
+{
+	if ( typeof opVal != "string" )
+		opVal = string( opVal )
+
+	#if !SERVER
+		if ( !IsConnected() )
+			return opVal
+	#endif
+
+	return Code_GetCurrentPlaylistVarOrUseValue( val, opVal ) // HACK
+}
+
+int function GetCurrentPlaylistVarInt( string val, int useVal )
+{
+	local result = GetCurrentPlaylistVarOrUseValue( val, useVal )
+	if ( result == null )
+		return 0
+
+	return int( result )
+}
+
+// Return a random entry from a table
+function RandomTable( Table )
+{
+	Assert( type( Table ) == "table", "Not a table" )
+	if ( Table.len() == 0 )
+		return null
+
+	int index = RandomInt( Table.len() )
+	int i = 0
+	foreach ( entry in Table )
+	{
+		if ( i != index )
+		{
+			i++
+			continue
+		}
+		return entry
+	}
+}
+
+bool function IsMultiplayerPlaylist()
+{
+	return GetCurrentPlaylistVarInt( "classic_mp", 0 ) ? true : false
+}
+
+function SortLowest( a, b )
+{
+	if ( a > b )
+		return 1
+
+	if ( a < b )
+		return -1
+
+	return 0
+}
+
+function SortHighest( a, b )
+{
+	if ( a < b )
+		return 1
+
+	if ( a > b )
+		return -1
+
+	return 0
+}
+
+float function DegToRad( float degrees )
+{
+	return degrees * DEG_TO_RAD
+}
+
+float function RadToDeg( float radians )
+{
+	return radians * RAD_TO_DEG
+}
+
+vector function RotateAroundOrigin2D( vector originToRotate, vector origin, float angRadians )
+{
+	vector rotated = Vector( 0.0, 0.0, originToRotate.z )
+	float sinOffsetAng = sin( angRadians )
+	float cosOffsetAng = cos( angRadians )
+	vector offset = originToRotate - origin
+
+	rotated.x = origin.x + ( offset.x * cosOffsetAng ) - ( offset.y * sinOffsetAng )
+	rotated.y = origin.y + ( offset.x * sinOffsetAng ) + ( offset.y * cosOffsetAng )
+
+	return rotated
+}
+
+bool function IsLobbyMapName( string levelname )
+{
+	if ( levelname == "mp_lobby" )
+		return true
+
+	return false
+}
+
+bool function IsLobby()
+{
+	string mapName
+
+	#if UI
+		mapName = GetActiveLevel()
+	#else
+		mapName = GetMapName()
+	#endif
+
+	return IsLobbyMapName( mapName )
+}
+
+bool function IsFFAGame()
+{
+	return ( MAX_TEAMS > 2 )
+}
+
+int function GetEnemyTeam( int team )
+{
+	if ( IsFFAGame() )
+		return TEAM_UNASSIGNED
+
+	Assert( team == TEAM_IMC || team == TEAM_MILITIA )
+
+	return (TEAM_IMC + TEAM_MILITIA) - team
+}
+
+string function GetTeamName( int team )
+{
+	#if UI
+	Assert( team == TEAM_IMC || team == TEAM_MILITIA )
+	#endif
+
+	if ( team == TEAM_IMC )
+		return "#FACTION_APEX"
+
+	if ( team == TEAM_MILITIA )
+		return "#FACTION_64"
+
+	return ""
+}
+
+string function GetTeamShortName( int team )
+{
+	if ( team == TEAM_IMC )
+		return "APEX"
+
+	if ( team == TEAM_MILITIA )
+		return "6-4"
+
+	return ""
+}
+
+string function GetMapDisplayNameAllCaps( string mapname )
+{
+	return "#" + mapname + "_ALLCAPS"
+}
+
+string function GetMapDisplayName( string mapname )
+{
+	return "#" + mapname
+}
+
+string function GetMapDisplayDesc( string mapname )
+{
+	return "#" + mapname + "_CLASSIC_DESC"
+}
+
+string function StringReplace( string baseString, string searchString, string replaceString )
+{
+	var findResult = baseString.find( searchString )
+
+	if ( findResult != null )
+	{
+		string part1 = baseString.slice( 0, findResult )
+		string part2 = baseString.slice( findResult + searchString.len(), baseString.len() )
+
+		baseString = part1 + replaceString + part2
+	}
+
+	return baseString
+}
+
+// Returns float
+function RoundToNearestInt( value )
+{
+	return floor( value + 0.5 )
+}
+
+float function RoundToNearestMultiplier( float value, float multiplier )
+{
+	float remainder = value % multiplier
+
+	value -= remainder
+
+	if ( remainder >= ( multiplier / 2 ) )
+		value += multiplier
+
+	return value
+}
+
+function DevEverythingUnlocked()
+{
+	return EverythingUnlockedConVarEnabled()
+}
+
+
+table<string, string> function GetByTitanTypes()
+{
+	return {
+		byTitan_ion 	=	"ion"
+		byTitan_scorch		=	"scorch"
+		byTitan_northstar		=	"northstar"
+		byTitan_ronin		=	"ronin"
+		byTitan_tone		=	"tone"
+		byTitan_legion		=	"legion"
+		byTitan_vanguard	=	"vanguard"
+		}
+}
+
+table<string, string> function GetAsTitanTypes()
+{
+	return {
+		asTitan_ion 	=	"ion"
+		asTitan_scorch		=	"scorch"
+		asTitan_northstar		=	"northstar"
+		asTitan_ronin		=	"ronin"
+		asTitan_tone		=	"tone"
+		asTitan_legion		=	"legion"
+		asTitan_vanguard	=	"vanguard"
+		}
+}
+
+table<string, string> function GetAsNPCTitanTypes()
+{
+	return {
+		byNPCTitans_ion 	=	"ion"
+		byNPCTitans_scorch		=	"scorch"
+		byNPCTitans_northstar		=	"northstar"
+		byNPCTitans_ronin		=	"ronin"
+		byNPCTitans_tone		=	"tone"
+		byNPCTitans_legion		=	"legion"
+		byNPCTitans_vanguard	=	"vanguard"
+		}
+}
+
+table<string, string> function GetPluralTitanTypes()
+{
+	return {
+		titans_ion 	=	"ion"
+		titans_scorch	=	"scorch"
+		titans_northstar		=	"northstar"
+		titans_ronin		= 	"ronin"
+		titans_tone		= 	"tone"
+		titans_legion		= 	"legion"
+		titans_vanguard		= 	"vanguard"
+		}
+}
+
+table<string, string> function GetCapitalizedTitanTypes()
+{
+	return {
+		Ion 	=	"ion"
+		Scorch		=	"scorch"
+		Northstar		=	"northstar"
+		Ronin 	= 	"ronin"
+		Tone 	= 	"tone"
+		Legion 	= 	"legion"
+		Vanguard 	= 	"vanguard"
+		}
+}
+
+bool function ValidateTitanType( titanSubClass )
+{
+	switch ( titanSubClass )
+	{
+		case "ion":
+		case "scorch":
+		case "northstar":
+		case "ronin":
+		case "tone":
+		case "legion":
+		case "vanguard":
+			return true
+	}
+
+	return false
+}
+
+function GetWeaponInfoFileKeyField_GlobalNotNull( ref, variable )
+{
+	local val = GetWeaponInfoFileKeyField_Global( ref, variable )
+	Assert( val != null, "Tried to get ref " + ref + " var " + variable + " but it was null" )
+	return val
+}
+
+bool function IsWeaponKeyFieldDefined( string ref, string variable )
+{
+	var val = GetWeaponInfoFileKeyField_Global( ref, variable )
+
+	if ( val != null )
+		return true
+
+	return false
+}
+
+string function GetWeaponInfoFileKeyField_GlobalString( string ref, string variable )
+{
+	var val = GetWeaponInfoFileKeyField_Global( ref, variable )
+	Assert( val != null, "Weapon key \"" + variable + "\" does not exist in weapon \"" + ref + "\" !" )
+	return expect string( val )
+}
+
+int function GetWeaponInfoFileKeyField_GlobalInt( string ref, string variable )
+{
+	var val = GetWeaponInfoFileKeyField_Global( ref, variable )
+	Assert( val != null, "Weapon key \"" + variable + "\" does not exist in weapon \"" + ref + "\" !" )
+	return expect int( val )
+}
+
+float function GetWeaponInfoFileKeyField_GlobalFloat( string ref, string variable )
+{
+	var val = GetWeaponInfoFileKeyField_Global( ref, variable )
+	Assert( val != null, "Weapon key \"" + variable + "\" does not exist in weapon \"" + ref + "\" !" )
+	return expect float( val )
+}
+
+function PrintTimeParts( Table )
+{
+	printt( "    ", Table["month"] + "/" + Table["day"] + "/" + Table["year"], "-", Table["hour"] + ":" + Table["minute"] + ":" + Table["second"] )
+}
+
+function WaitFrame()
+{
+	//Don't use wait 0 since it doesn't actually wait a game frame. For example, if you have a client loop that does wait 0 even if the game is paused the loop will still run
+	wait 0.0001
+}
+
+function TableRemoveInvalidKeys( table Table )
+{
+	array deleteKey = []
+
+	foreach ( key, value in Table )
+	{
+		if ( !IsValid( key ) )
+			deleteKey.append( key )
+	}
+
+	foreach ( key in deleteKey )
+	{
+		// in this search, two things could end up on the same key
+		if ( key in Table )
+			delete Table[ key ]
+	}
+}
+
+string function VectorToString( vector vec )
+{
+	return "Vector( " + vec.x + ", " + vec.y + ", " + vec.z + " )"
+}
+
+bool function PROTO_RTS_HealthDisplay()
+{
+	return SharedPlaylistVarInt( "rts_style_health_bars", 0 ) > 0
+}
+
+int function SharedPlaylistVarInt( string name, int defaultVal )
+{
+	#if UI
+		if ( !IsConnected() )
+			return defaultVal
+	#endif
+
+	return GetCurrentPlaylistVarInt( name, defaultVal )
+}
+
+function DeepClone( data )
+{
+	if ( type( data ) == "table" )
+	{
+		table newTable = {}
+		foreach( key, value in data )
+		{
+			newTable[ key ] <- DeepClone( value )
+		}
+		return newTable
+	}
+	else if ( type( data ) == "array" )
+	{
+		array newArray = []
+		for ( int i = 0; i < data.len(); i++ )
+		{
+			newArray.append( DeepClone( data[ i ] ) )
+		}
+		return newArray
+	}
+	else
+	{
+		return data
+	}
+}
+
+vector function GetClosestPointOnPlane( vector a, vector b, vector c, vector p, bool clampInside = false )
+{
+	vector n = CrossProduct( b - a, c - a )
+	float eqTop = DotProduct( p - a, n )
+	float eqBot = DotProduct( n, n )
+
+	//can't devide by 0 -> this is a degenerate triangle
+	if ( fabs( eqBot ) < 0.001 )
+		return GetClosestPointOnLineSegment( a, b, p )
+
+	float magnitude = eqTop / eqBot
+
+	vector endPoint = p - ( n * magnitude )
+
+	if ( clampInside )
+	{
+		float testAB = DotProduct( CrossProduct( b - a, n ), p - a )
+		float testBC = DotProduct( CrossProduct( c - b, n ), p - b )
+		float testCA = DotProduct( CrossProduct( a - c, n ), p - c )
+
+		//if the results are negative - we're outside the triangle
+		if ( testAB * testBC < 0 || testBC * testCA < 0 )
+		{
+			vector lineAB = GetClosestPointOnLineSegment( a, b, p )
+			vector lineBC = GetClosestPointOnLineSegment( b, c, p )
+			vector lineCA = GetClosestPointOnLineSegment( c, a, p )
+
+			vector closestVector = lineAB
+			float closestDist = DistanceSqr( p, lineAB )
+			float dist = DistanceSqr( p, lineBC )
+			if ( dist < closestDist )
+			{
+				closestDist = dist
+				closestVector = lineBC
+			}
+			dist = DistanceSqr( p, lineCA )
+			if ( dist < closestDist )
+			{
+				closestDist = dist
+				closestVector = lineCA
+			}
+			return closestVector
+		}
+		//if we got this far - there are no outliers
+	}
+
+	return endPoint
+}
+
+float function DistanceAlongVector( vector origin, vector lineStart, vector lineForward )
+{
+	vector originDif = origin - lineStart
+	return DotProduct( originDif, lineForward )
+}
+
+// NearestPointOnLine
+vector function GetClosestPointOnLineSegment( vector a, vector b, vector p )
+{
+	float distanceSqr = LengthSqr( a - b )
+
+	if ( distanceSqr == 0.0 )
+		return a
+
+	float t = DotProduct( p - a, b - a ) / distanceSqr
+	if ( t < 0.0 )
+		return a
+	else if ( t > 1.0 )
+		return b
+
+	return a + t * (b - a)
+}
+
+float function GetDistanceFromLineSegment( vector a, vector b, vector p )
+{
+	vector closestPoint = GetClosestPointOnLineSegment( a, b, p )
+	return Distance( p, closestPoint )
+}
+
+float function GetDistanceSqrFromLineSegment( vector a, vector b, vector p )
+{
+	vector closestPoint = GetClosestPointOnLineSegment( a, b, p )
+	return DistanceSqr( p, closestPoint )
+}
+
+float function GetProgressAlongLineSegment( vector P, vector A, vector B )
+{
+    vector AP = P - A
+    vector AB = B - A
+
+    float ab2 = DotProduct( AB, AB ) // AB.x*AB.x + AB.y*AB.y
+    float ap_ab = DotProduct( AP, AB ) // AP.x*AB.x + AP.y*AB.y
+    float t = ap_ab / ab2
+    return t
+}
+
+array<string> function UntypedArrayToStringArray( array arr )
+{
+	// work around for old arrays in code functions
+	array<string> newArray
+
+	for ( int i = 0; i < arr.len(); i++ )
+	{
+		newArray.append( expect string( arr[i] ) )
+	}
+
+	return newArray
+}
+
+string function PadString( string str, int len )
+{
+	for ( int i = str.len(); i < len; i++ )
+		str += " "
+
+	return str
+}
+
+bool function IsSpawner( entity ent )
+{
+	return ( IsValid( ent ) && ent.GetClassName() == "spawner" )
+}
+
+
+
+
+string function Dev_GetEnumString( table enumTable, int enumValue )
+{
+	foreach ( string k, int v in enumTable )
+	{
+		if ( v == enumValue )
+			return k
+	}
+
+	unreachable
+}
+
+string function GetAllowedTitanAISettingsSearchString()
+{
+	if ( IsSingleplayer() )
+		return "titanLoadoutInSP"
+
+	return "mp_npcUseAllowed"
+}
+
+string function GetAISettingsStringForMode()
+{
+	if ( IsSingleplayer() )
+		return "sp_aiSettingsFile"
+	return "aiSettingsFile"
+}
+
+array<string> function GetAllowedPlayerTitanSettings() //Based off AllowedTItanAISettings, which is based off the titan_properties table
+{
+	string searchString
+
+	if ( IsSingleplayer() )
+		searchString = "titanLoadoutInSP"
+	else
+		searchString = "mp_npcUseAllowed"
+
+	array<string> list = []
+	var dataTable = GetDataTable( $"datatable/titan_properties.rpak" )
+	int numRows = GetDatatableRowCount( dataTable )
+
+	for ( int r=0; r<numRows; r++ )
+	{
+		bool allowed = GetDataTableBool( dataTable, r, GetDataTableColumnByName( dataTable, searchString ) )
+		if ( allowed )
+		{
+			string titanRef = GetDataTableString( dataTable, r, GetDataTableColumnByName( dataTable, "titanRef" ) )
+
+			#if MP
+			if ( IsDisabledRef( titanRef ) )
+				continue
+			#endif
+
+			list.append( GetDataTableString( dataTable, r, GetDataTableColumnByName( dataTable, "setFile" ) ) )
+		}
+	}
+
+	return list
+}
+
+array<string> function GetAllowedTitanAISettings( string settings = "" )
+{
+	if ( settings == "" )
+	{
+		settings = GetAISettingsStringForMode()
+	}
+
+	string searchString = GetAllowedTitanAISettingsSearchString()
+	array<string> list = []
+	var dataTable = GetDataTable( $"datatable/titan_properties.rpak" )
+	int numRows = GetDatatableRowCount( dataTable )
+
+	for ( int r=0; r<numRows; r++ )
+	{
+		bool allowed = GetDataTableBool( dataTable, r, GetDataTableColumnByName( dataTable, searchString ) )
+		if ( allowed )
+		{
+			list.append( GetDataTableString( dataTable, r, GetDataTableColumnByName( dataTable, "setFile" ) ) )
+		}
+	}
+
+	for ( int i=0; i<list.len(); i++ )
+	{
+		string aiSettings = expect string( Dev_GetPlayerSettingByKeyField_Global( list[i], settings ) )
+		list[i] = aiSettings
+	}
+
+	return list
+}
+
+array<string> function GetAllNPCSettings()
+{
+	// should be replaced with a getter that gets the content of classes.txt
+	array<string> aiSettings
+
+	// these npcs appear in the dev menu. Dev menu presence should be changed to a key in the settings file
+	aiSettings.append( "npc_drone" )
+	aiSettings.append( "npc_drone_beam" )
+	aiSettings.append( "npc_drone_plasma" )
+	aiSettings.append( "npc_drone_worker" )
+	aiSettings.append( "npc_dropship" )
+	aiSettings.append( "npc_frag_drone" )
+	aiSettings.append( "npc_frag_drone_throwable" )
+	aiSettings.append( "npc_marvin" )
+	aiSettings.append( "npc_prowler" )
+	aiSettings.append( "npc_soldier" )
+	aiSettings.append( "npc_soldier_hero_bear" )
+	aiSettings.append( "npc_soldier_hero_sarah" )
+	aiSettings.append( "npc_soldier_shield_captain" )
+	aiSettings.append( "npc_soldier_sidearm" )
+	aiSettings.append( "npc_soldier_specialist" )
+	aiSettings.append( "npc_soldier_specialist_militia" )
+	aiSettings.append( "npc_spectre" )
+	aiSettings.append( "npc_stalker" )
+	aiSettings.append( "npc_stalker_zombie" )
+	aiSettings.append( "npc_stalker_zombie_mossy" )
+	aiSettings.append( "npc_super_spectre" )
+	aiSettings.append( "npc_titan_sarah" )
+	aiSettings.append( "npc_titan_vanguard" )
+
+	// insert titans here!
+	aiSettings.extend( GetAllowedTitanAISettings() )
+
+	aiSettings.extend( [
+		"npc_turret_mega"
+		"npc_turret_sentry"
+		"npc_turret_sentry_plasma"
+		"npc_turret_sentry_tday"
+	] )
+
+	return aiSettings
+}
+
+array<string> function GetAllDeprecatedNPCSettings()
+{
+	// this is all the npc settings, then the legal settings are subtracted from it.
+	// also commented out settings that we don't want to have appear in the dev menu
+	table<string,bool> allNpcSettings =
+	{
+		//base_vehicle = true
+		//npc_bullseye = true
+		npc_drone = true
+		npc_drone_beam = true
+		npc_drone_cloaked = true
+		npc_drone_plasma = true
+		npc_drone_rocket = true
+		npc_drone_shield = true
+		npc_drone_worker = true
+		//npc_drone_plasma_fast = true
+		//npc_drone_rocket_fast = true
+		//npc_drone_worker_fast = true
+		npc_dropship = true
+		npc_dropship_dogfighter = true
+		npc_dropship_hero = true
+		npc_frag_drone = true
+		npc_frag_drone_throwable = true
+		npc_gunship = true
+		npc_gunship_scripted = true
+		npc_marvin = true
+		//npc_pilot_elite = true
+		npc_pilot_elite_assassin = true
+		npc_pilot_elite_assassin_cqb = true
+		npc_pilot_elite_assassin_sniper = true
+		//npc_pilot_elite_s2s = true
+		npc_prowler = true
+		npc_soldier = true
+		npc_soldier_bish = true
+		npc_soldier_blisk = true
+		npc_soldier_drone_summoner = true
+		npc_soldier_hero_bear = true
+		npc_soldier_hero_sarah = true
+		npc_soldier_shield_captain = true
+		npc_soldier_sidearm = true
+		npc_soldier_specialist = true
+		npc_soldier_specialist_militia = true
+		npc_soldier_spyglass = true
+		npc_soldier_training_sentry = true
+		npc_soldier_pve_sandbox = true
+		npc_soldier_pve_specialist = true
+		npc_soldier_pve_eliteguard = true
+		npc_spectre = true
+		npc_stalker = true
+		//npc_stalker_crawling = true
+		npc_stalker_zombie = true
+		npc_stalker_zombie_mossy = true
+		npc_super_spectre = true
+		npc_super_spectre_burnmeter = true
+		npc_super_spectre_calmer = true
+		npc_titan = true
+		npc_titan_arc = true
+		npc_titan_atlas = true
+		npc_titan_atlas_stickybomb = true
+		npc_titan_atlas_tracker = true
+		npc_titan_atlas_vanguard = true
+		npc_titan_auto = true
+		npc_titan_auto_atlas = true
+		npc_titan_auto_atlas_rocketeer = true
+		npc_titan_auto_atlas_stickybomb = true
+		npc_titan_auto_atlas_tracker = true
+		npc_titan_auto_atlas_vanguard = true
+		npc_titan_auto_ogre = true
+		npc_titan_auto_ogre_fighter = true
+		npc_titan_auto_ogre_meteor = true
+		npc_titan_auto_ogre_minigun = true
+		npc_titan_auto_stryder = true
+		npc_titan_auto_stryder_arc = true
+		npc_titan_auto_stryder_leadwall = true
+		npc_titan_auto_stryder_sniper = true
+		npc_titan_buddy = true
+		npc_titan_buddy_s2s = true
+		npc_titan_mortar = true
+		npc_titan_nuke = true
+		npc_titan_ogre = true
+		npc_titan_ogre_fighter = true
+		npc_titan_ogre_fighter_berserker_core = true
+		npc_titan_ogre_meteor = true
+		npc_titan_ogre_minigun = true
+		npc_titan_proto_stasisgun = true
+		npc_titan_sarah = true
+		npc_titan_vanguard = true
+		npc_titan_sniper = true
+		npc_titan_stryder = true
+		npc_titan_stryder_arc = true
+		npc_titan_stryder_leadwall = true
+		npc_titan_stryder_leadwall_shift_core = true
+		npc_titan_stryder_rocketeer = true
+		npc_titan_stryder_rocketeer_dash_core = true
+		npc_titan_stryder_sniper = true
+		npc_turret_mega = true
+		npc_turret_mega_nowindup = true
+		//npc_turret_mega_old = true
+		npc_turret_mega_windup = true
+		npc_turret_mega_attrition = true
+		npc_turret_mega_fortwar = true
+		npc_turret_sentry = true
+		npc_turret_sentry_plasma = true
+		npc_turret_sentry_burn_card_at = true
+		npc_turret_sentry_burn_card_ap = true
+		npc_turret_sentry_tactical_ability = true
+		npc_turret_sentry_tday = true
+		npc_turret_sentry_windup = true
+		npc_titan_atlas_stickybomb_bounty = true
+		npc_titan_atlas_tracker_bounty = true
+		npc_titan_atlas_vanguard_bounty = true
+		npc_titan_stryder_leadwall_bounty = true
+		npc_titan_stryder_sniper_bounty = true
+		npc_titan_ogre_meteor_bounty = true
+		npc_titan_ogre_minigun_bounty = true
+	}
+
+	foreach ( aiSettings in GetAllNPCSettings() )
+	{
+		delete allNpcSettings[ aiSettings ]
+	}
+
+	array<string> settings
+	foreach ( aiSettings, _ in allNpcSettings )
+	{
+		settings.append( aiSettings )
+	}
+	settings.sort( SortStringAlphabetize )
+
+	return settings
+}
+
+///////
+// These are Brent's utility functions that match RUI functions of the same name; use these to accurately compute RUI values from script
+float function EaseIn( float val )
+{
+	return AttackDecay( 0, 2, val )
+}
+
+float function EaseOut( float val )
+{
+	return AttackDecay( 2, 0, val )
+}
+
+float function AttackDecay( float attack, float decay, float time )
+{
+	float sum = attack + decay
+	float a = sum - 2.0
+	float b = (3.0 - attack) - sum
+	float c = attack
+	float t = max( min( time, 1.0 ), 0.0 )
+
+	return t * (c + t * (b + t * a))
+}
+
+float function Clamp( float value, float minValue, float maxValue )
+{
+	return max( min( value, maxValue ), minValue )
+}
+///////
+
+string function GetCurrentPlaylistVarString( string varName, string defaultValue )
+{
+	var value = GetCurrentPlaylistVar( varName )
+	if ( value != null )
+		return expect string( value )
+
+	return defaultValue
+}
+
+bool function IsPlayerFemale( entity player )
+{
+	return player.Dev_GetPlayerSettingByKeyField( "raceOrSex" ) == "race_human_female"
+}
+
+bool function IsPlayerPrimeTitan( entity player )
+{
+	if ( !player.IsTitan() )
+		return false
+
+	return player.Dev_GetPlayerSettingByKeyField( "isPrime" ) == 1
+}
+
+int function GetCollectibleLevelIndex( string mapName )
+{
+	foreach( int i, table data in LEVEL_UNLOCKS_COUNT )
+	{
+		if ( data.level == mapName )
+			return i
+	}
+	return -1
+}
+
+int function GetFoundLionsInLevel( string mapName )
+{
+	int saveIndex = GetCollectibleLevelIndex( mapName )
+	Assert( saveIndex >= 0 )
+
+	return 0
+}
+
+int function GetMaxLionsInLevel( string mapName )
+{
+	int saveIndex = GetCollectibleLevelIndex( mapName )
+	Assert( saveIndex >= 0 )
+	return expect int( LEVEL_UNLOCKS_COUNT[ saveIndex ].count )
+}
+
+int function GetCombinedLionsInLevel( string mapName )
+{
+	int saveIndex = GetCollectibleLevelIndex( mapName )
+	Assert( saveIndex >= 0 )
+
+	array<string> bsps = GetBSPsForLevel( mapName )
+	int count = 0
+	foreach( string bsp in bsps )
+		count += GetMaxLionsInLevel( bsp )
+
+	return count
+}
+
+int function GetTotalLionsCollected()
+{
+	array<string> bsps = GetAllR2SPBSPs()
+	int total
+
+	foreach ( mapName in bsps )
+	{
+		total += GetCollectiblesFoundForLevel( mapName )
+	}
+
+	return total
+}
+
+int function GetTotalLionsInGame()
+{
+	array<string> bsps = GetAllR2SPBSPs()
+	int total
+
+	foreach ( mapName in bsps )
+	{
+		total += GetMaxLionsInLevel( mapName )
+	}
+
+	return total
+}
+
+
+
+int function GetCollectiblesFoundForLevel( string mapName )
+{
+	int saveIndex = GetCollectibleLevelIndex( mapName )
+	if ( saveIndex < 0 )
+		return 0
+
+	int numCollectiblesFound = 0
+	int numCollectiblesInLevel = GetMaxLionsInLevel( mapName )
+	string unlockVar = "sp_unlocks_level_" + saveIndex
+	int bitMask = GetConVarInt( unlockVar )
+
+	for ( int i = 0 ; i < numCollectiblesInLevel ; i++ )
+	{
+		int _id = 1 << i
+		if ( bitMask & _id )
+			numCollectiblesFound++
+	}
+	return numCollectiblesFound
+}
+
+int function GetCombinedCollectiblesFoundForLevel( string mapName )
+{
+#if UI || CLIENT
+	if ( Script_IsRunningTrialVersion() )
+		return 0
+#endif
+
+	array<string> bsps = GetBSPsForLevel( mapName )
+	int count = 0
+	foreach( string bsp in bsps )
+		count += GetCollectiblesFoundForLevel( bsp )
+
+	return count
+}
+
+void function ResetCollectiblesProgress_All()
+{
+	#if DEV
+		printt( "RESETTING COLLECTIBLE PROGRESS (ALL)" )
+	#endif
+
+	for ( int i = 0 ; i < 15 ; i++ )
+	{
+		#if DEV
+			printt( "  sp_unlocks_level_" + i, 0 )
+		#endif
+
+		SetConVarInt( "sp_unlocks_level_" + i, 0 )
+	}
+}
+
+void function RemoveDupesFromSorted_String( array<string> data )
+{
+	for ( int i = 0; i < data.len() - 1; i++ )
+	{
+		if ( data[i] == data[i+1] )
+		{
+			data.remove( i )
+			i--
+		}
+	}
+}
+
+
+function SortAlphabetize( a, b )
+{
+	if ( a > b )
+		return 1
+
+	if ( a < b )
+		return -1
+
+	return 0
+}
+
+int function SortStringAlphabetize( string a, string b )
+{
+	if ( a > b )
+		return 1
+
+	if ( a < b )
+		return -1
+
+	return 0
+}
+
+int function SortAssetAlphabetize( asset a, asset b )
+{
+	if ( a > b )
+		return 1
+
+	if ( a < b )
+		return -1
+
+	return 0
+}
+
+
+void function RemoveDupesFromSorted_Asset( array<asset> data )
+{
+	for ( int i = 0; i < data.len() - 1; i++ )
+	{
+		if ( data[i] == data[i+1] )
+		{
+			data.remove( i )
+			i--
+		}
+	}
+}
+
+
+array<string> function GetBSPsForLevel( string mapName )
+{
+	array<string> bsps
+	switch( mapName )
+	{
+		// Levels aren't split, just return the bsp name of the level
+		case "sp_training":
+		case "sp_crashsite":
+		case "sp_sewers1":
+		case "sp_tday":
+		case "sp_s2s":
+		case "sp_skyway_v1":
+		case "sp_chadbox":
+			bsps.append( mapName )
+			break
+
+		// Have to return all bsps that are part of the level
+		case "sp_boomtown_start":
+		case "sp_boomtown":
+		case "sp_boomtown_end":
+			bsps.append( "sp_boomtown_start" )
+			bsps.append( "sp_boomtown" )
+			bsps.append( "sp_boomtown_end" )
+			break
+
+		case "sp_hub_timeshift":
+		case "sp_timeshift_spoke02":
+			bsps.append( "sp_hub_timeshift" )
+			bsps.append( "sp_timeshift_spoke02" )
+			break
+
+		case "sp_beacon":
+		case "sp_beacon_spoke0":
+			bsps.append( "sp_beacon" )
+			bsps.append( "sp_beacon_spoke0" )
+			break
+
+		default:
+			Assert( 0, "Unhandled collectible level " + mapName + " in GetBSPsForLevel" )
+			break
+	}
+
+	return bsps
+}
+
+array<string> function GetAllR2SPBSPs()
+{
+	return [
+		"sp_training"
+		"sp_crashsite"
+		"sp_sewers1"
+		"sp_tday"
+		"sp_s2s"
+		"sp_skyway_v1"
+		"sp_boomtown_start"
+		"sp_boomtown"
+		"sp_boomtown_end"
+		"sp_hub_timeshift"
+		"sp_timeshift_spoke02"
+		"sp_beacon"
+		"sp_beacon_spoke0" ]
+}
+
+//sp_unlocks_level
+
+asset function GetWeaponModel( string weaponName )
+{
+	asset modelName = GetWeaponInfoFileKeyFieldAsset_Global( weaponName, "playermodel" )
+
+	return modelName
+}
+
+asset function GetWeaponViewmodel( string weaponName )
+{
+	asset modelName = GetWeaponInfoFileKeyFieldAsset_Global( weaponName, "viewmodel" )
+
+	// TODO: In the future all weapon models should be made in a way that doesn't require this kind of HACK.
+	switch ( modelName )
+	{
+		case $"models/weapons/shoulder_rocket_SRAM/ptpov_law.mdl":
+			modelName = $"models/weapons/shoulder_rocket_SRAM/ptpov_law_menu.mdl"
+			break
+
+		case $"models/weapons/lstar/ptpov_lstar.mdl":
+			modelName = $"models/weapons/lstar/ptpov_lstar_menu.mdl"
+			break
+
+		case $"models/weapons/softball_at/ptpov_softball_at.mdl":
+			modelName = $"models/weapons/softball_at/ptpov_softball_at_menu.mdl"
+			break
+
+		case $"models/weapons/mastiff_stgn/ptpov_mastiff.mdl":
+			modelName = $"models/weapons/mastiff_stgn/ptpov_mastiff_menu.mdl"
+			break
+	}
+
+	return modelName
+}
+
+string function GetTitanClassFromSetFile( string setFile ) //JFS: As of right now titanClass is really just the same thing as "titanCharacterName". Should change this for next game if needed.
+{
+	var result = Dev_GetPlayerSettingByKeyField_Global( setFile, "titanCharacterName" )
+	expect string( result )
+	return result
+}
+
+
+string function GetTitanCharacterNameFromSetFile( string setFile )
+{
+	var result = Dev_GetPlayerSettingByKeyField_Global( setFile, "titanCharacterName" )
+	if ( result == null )
+	{
+		CodeWarning( "Warning, no field titanCharacterName found for set file: " + setFile + ", returning default of ion" )
+		return "ion"
+	}
+
+	expect string( result )
+	return result
+}
+
+
+string function GetTitanReadyMessageFromSetFile( string setFile )
+{
+	var result = Dev_GetPlayerSettingByKeyField_Global( setFile, "readymessage" )
+	if ( result == null )
+	{
+		CodeWarning( "Warning, no field readymessage found for set file: " + setFile )
+		return "ion"
+	}
+
+	expect string( result )
+	return result
+}
+
+
+
+
+#if CLIENT || UI
+void function DisablePrecacheErrors()
+{
+	file.lastHostThreadMode = GetConVarInt( "host_thread_mode" )
+	file.lastScriptPrecacheErrors = GetConVarInt( "script_precache_errors" )
+	file.lastReportFatal = GetConVarInt( "fs_report_sync_opens_fatal" )
+
+	#if CLIENT
+	entity player = GetLocalClientPlayer()
+	player.ClientCommand( "host_thread_mode 0" )
+	player.ClientCommand( "script_precache_errors 0" )
+	player.ClientCommand( "fs_report_sync_opens_fatal 0" )
+	#endif
+
+	#if UI
+	ClientCommand( "host_thread_mode 0" )
+	ClientCommand( "script_precache_errors 0" )
+	ClientCommand( "fs_report_sync_opens_fatal 0" )
+	#endif
+}
+
+void function RestorePrecacheErrors()
+{
+	#if CLIENT
+	entity player = GetLocalClientPlayer()
+	player.ClientCommand( "host_thread_mode " + file.lastHostThreadMode )
+	player.ClientCommand( "script_precache_errors " + file.lastScriptPrecacheErrors )
+	player.ClientCommand( "fs_report_sync_opens_fatal " + file.lastReportFatal )
+	#endif
+
+	#if UI
+	ClientCommand( "host_thread_mode " + file.lastHostThreadMode )
+	ClientCommand( "script_precache_errors " + file.lastScriptPrecacheErrors )
+	ClientCommand( "fs_report_sync_opens_fatal " + file.lastReportFatal )
+	#endif
+}
+#endif
+
+#if SERVER
+void function DisablePrecacheErrors()
+{
+	foreach ( player in GetPlayerArray() )
+	{
+		Remote_CallFunction_UI( player, "DisablePrecacheErrors" )
+	}
+}
+
+void function RestorePrecacheErrors()
+{
+	foreach ( player in GetPlayerArray() )
+	{
+		Remote_CallFunction_UI( player, "RestorePrecacheErrors" )
+	}
+}
+
+#endif
+
+string function GetTitanReadyHintFromSetFile( string setFile )
+{
+	var result = Dev_GetPlayerSettingByKeyField_Global( setFile, "readyhint" )
+	if ( result == null )
+	{
+		CodeWarning( "Warning, no field readyhint found for set file: " + setFile )
+		return ""
+	}
+
+	expect string( result )
+	return result
+}
+
+
+void function HideHudElem( var hudelem )
+{
+	hudelem.Hide() // sp does not run as much logic, so these elems don't get hidden on player death/spawn.
+}
+
+void function ShowHudElem( var hudelem )
+{
+	hudelem.Show()
+}
+
+int function GetBestCompletedDifficultyForLevelId( string uniqueIdentifier )
+{
+	int bspNum = GetBSPNum( uniqueIdentifier )
+
+	if ( GetCompletedDifficultyForBSPNum( bspNum, "sp_missionMasterCompletion" ) )
+		return DIFFICULTY_MASTER
+	if ( GetCompletedDifficultyForBSPNum( bspNum, "sp_missionHardCompletion" ) )
+		return DIFFICULTY_HARD
+	if ( GetCompletedDifficultyForBSPNum( bspNum, "sp_missionNormalCompletion" ) )
+		return DIFFICULTY_NORMAL
+	if ( GetCompletedDifficultyForBSPNum( bspNum, "sp_missionEasyCompletion" ) )
+		return DIFFICULTY_EASY
+
+	return -1 // not completed
+}
+
+bool function GetCompletedDifficultyForLevelId( string uniqueIdentifier, string pvar )
+{
+	int bspNum = GetBSPNum( uniqueIdentifier )
+
+	Assert ( bspNum >= 0 )
+
+	return GetCompletedDifficultyForBSPNum( bspNum, pvar )
+}
+
+bool function DevStartPoints()
+{
+	#if DEV
+	return true
+	#endif
+
+	return Dev_CommandLineHasParm( "-startpoints" )
+}
+
+int function GetBSPNum( string uniqueIdentifier )
+{
+	var dataTable = GetDataTable( $"datatable/sp_levels.rpak" )
+	int numRows = GetDatatableRowCount( dataTable )
+	int bspCol = GetDataTableColumnByName( dataTable, "levelId" )
+
+	for ( int i = 0; i <numRows; i++ )
+	{
+		string levelBsp = GetDataTableString( dataTable, i, bspCol )
+
+		if ( levelBsp == uniqueIdentifier )
+			return i
+	}
+
+	return -1
+}
+
+bool function GetCompletedDifficultyForBSPNum( int bspNum, string pvar )
+{
+#if UI || CLIENT
+	if ( Script_IsRunningTrialVersion() )
+		return false
+#endif
+
+	int bitfield = GetConVarInt( pvar )
+
+	return (( bitfield & (1 << bspNum) ) >= 1 )
+}
+
+int function GetLastLevelUnlocked()
+{
+	if ( file.devUnlockedSPMissions )
+	{
+		return 9
+	}
+	return GetConVarInt( "sp_unlockedMission" )
+}
+
+void function UnlockSPLocally()
+{
+	file.devUnlockedSPMissions = true
+}
+
+bool function CoinFlip()
+{
+	return RandomInt( 2 ) != 0
+}
+
+bool function EmotesEnabled()
+{
+	return false
+}
+
+
+array<string> function GetAvailableTitanRefs( entity player )
+{
+	array<string> availableTitanRefs
+
+	int enumCount =	PersistenceGetEnumCount( "titanClasses" )
+	for ( int i = 0; i < enumCount; i++ )
+	{
+		string enumName = PersistenceGetEnumItemNameForIndex( "titanClasses", i )
+		if ( enumName == "" )
+			continue
+
+		if ( player.GetPersistentVarAsInt( "titanClassLockState[" + enumName + "]" ) > TITAN_CLASS_LOCK_STATE_AVAILABLE )
+			continue
+
+		availableTitanRefs.append( enumName )
+	}
+
+	return availableTitanRefs
+}
+
+#if MP
+string function GetTitanRefForLoadoutIndex( entity player, int loadoutIndex )
+{
+	TitanLoadoutDef loadout = GetTitanLoadoutFromPersistentData( player, loadoutIndex )
+	return loadout.titanClass
+}
+#endif
+
+bool function DoPrematchWarpSound()
+{
+	return GetCurrentPlaylistVarInt( "pick_loadout_warp_sound", 1 ) == 1
+}
+
+
+int function GetIntFromString( string inString )
+{
+	if ( inString.len() > 0 )
+	{
+		string firstChar = inString.slice( 0, 1 )
+		if ( ( firstChar >= "0" && firstChar <= "9" ) || firstChar == "." )
+			return int( inString )
+		else
+			return expect int( getconsttable()[ inString ] )
+	}
+
+	return 0
+}
+
+//Function returns whether the given mode name is a Frontier Defense mode.
+bool function IsFDMode( string modeName )
+{
+	bool isFD = false
+	switch ( modeName )
+	{
+		case "fd_easy":
+		case "fd_normal":
+		case "fd_hard":
+		case "fd_master":
+		case "fd_insane":
+			isFD = true
+	}
+
+	return isFD
+}
+
+// Join an array of strings with a seperator
+string function JoinStringArray( array<string> strings, string separator )
+{
+	string output;
+
+	foreach( int i, string stringoStarr in strings )
+	{
+		if (i == 0)
+			output = stringoStarr
+		else
+			output = output + separator + stringoStarr
+	}
+
+	return output;
+}

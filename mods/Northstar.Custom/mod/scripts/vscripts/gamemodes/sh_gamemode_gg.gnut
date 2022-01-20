@@ -3,8 +3,6 @@ global function GetGunGameWeapons
 
 global const string GAMEMODE_GG = "gg"
 
-global const string default_weapons = "mp_weapon_car|pas_run_and_gun|-1$mp_weapon_alternator_smg|pas_run_and_gun|-1$mp_weapon_hemlok_smg||-1$mp_weapon_hemlok||-1$mp_weapon_vinson|hcog|-1$mp_weapon_rspn101||-1$mp_weapon_esaw||-1$mp_weapon_lstar|pas_run_and_gun|-1$mp_weapon_shotgun||-1$mp_weapon_mastiff||-1$mp_weapon_softball||-1$mp_weapon_epg|jump_kit|-1$mp_weapon_shotgun_pistol|pas_run_and_gun|-1$mp_weapon_wingman_n|pas_run_and_gun,ricochet|-1$mp_weapon_doubletake||-1$mp_weapon_sniper|pas_fast_ads,ricochet|-1$mp_weapon_autopistol|pas_run_and_gun,temp_sight|-1$mp_weapon_semipistol|pas_run_and_gun|-1$mp_weapon_wingman|pas_run_and_gun|-1$mp_weapon_defender||-1$mp_weapon_grenade_sonar|pas_power_cell,amped_tacticals|1"
-
 global struct GunGameWeapon
 {
 	string weapon
@@ -142,25 +140,10 @@ array<GunGameWeapon> function GetGunGameWeapons()
 	return file.weapons
 }
 
-string function Join( array<string> strings, string separator )
-{
-	string output;
-
-	foreach( int i, string stringoStarr in strings )
-	{
-		if (i == 0)
-			output = stringoStarr
-		else
-			output = output + separator + stringoStarr
-	}
-
-	return output;
-}
-
 string function GGWeaponToString( GunGameWeapon ggWeapon )
 {
 	// We do it in this order because split works weirdly and won't return empty strings for gaps :c
-	return ggWeapon.offhandSlot + "|" + ggWeapon.weapon + "|" + Join( ggWeapon.mods, "," )
+	return ggWeapon.offhandSlot + "|" + ggWeapon.weapon + "|" + JoinStringArray( ggWeapon.mods, "," )
 }
 
 GunGameWeapon function StringToGGWeapon( string ggWeaponString )
