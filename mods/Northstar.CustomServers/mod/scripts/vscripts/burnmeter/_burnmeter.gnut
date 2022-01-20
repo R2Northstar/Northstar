@@ -378,38 +378,23 @@ void function PlayerUsesMaphackBurncardThreaded( entity player )
 		array<entity> aliveplayers = GetPlayerArray()
 		foreach ( entity otherPlayer in GetPlayerArray() )
 		{
-			Remote_CallFunction_Replay( otherPlayer, "ServerCallback_SonarPulseFromPosition", player.GetOrigin().x, player.GetOrigin().y, player.GetOrigin().z, 2000)
+			Remote_CallFunction_Replay( otherPlayer, "ServerCallback_SonarPulseFromPosition", player.GetOrigin().x, player.GetOrigin().y, player.GetOrigin().z, SONAR_GRENADE_RADIUS )
 
-			if ( otherPlayer.GetTeam() != player.GetTeam() && aliveplayers.find(otherPlayer) != -1 )
+			if ( otherPlayer.GetTeam() != player.GetTeam() && aliveplayers.find(otherPlayer) != -1 && aliveplayers.find(player) != -1 )
 			{
-				MapHackSonar(player, otherPlayer)
+				StatusEffect_AddTimed( otherPlayer, eStatusEffect.maphack_detected, 1.0, MAPHACK_PULSE_DELAY / 2, 0.0 )
+				SonarStart( otherPlayer, player.GetOrigin(), player.GetTeam(), player )
+				IncrementSonarPerTeam( player.GetTeam() )
 			}
 		}
 		wait MAPHACK_PULSE_DELAY
-		foreach ( entity otherPlayer in GetPlayerArray() )
-		{
-			if ( otherPlayer.GetTeam() != player.GetTeam() && aliveplayers.find(otherPlayer) != -1 ) {
-				MapHackSonarStop(player, otherPlayer)
+		foreach ( entity otherPlayer in GetPlayerArray() ) {
+			if ( otherPlayer.GetTeam() != player.GetTeam() && aliveplayers.find(otherPlayer) != -1 && aliveplayers.find(player) != -1 ) {
+				SonarEnd (otherPlayer, player.GetTeam() )
+				DecrementSonarPerTeam( player.GetTeam() )
 			}
 		}
 	}
-}
-
-void function MapHackSonar(entity player, entity otherPlayer)
-{
-	// doing this should prevent infinite map hacks
-	StatusEffect_AddTimed( otherPlayer, eStatusEffect.maphack_detected, 1.0, MAPHACK_PULSE_DELAY / 2, 0.0 )
-	Highlight_SetEnemyHighlight( otherPlayer, "enemy_sonar" )
-	Highlight_SetSonarHighlightWithParam1( otherPlayer, "enemy_sonar", player.GetOrigin() )
-	Highlight_SetSonarHighlightOrigin( otherPlayer, player.GetOrigin() )
-	otherPlayer.HighlightEnableForTeam( player.GetTeam() )
-}
-void function MapHackSonarStop(entity player, entity otherPlayer)
-{
-	otherPlayer.HighlightDisableForTeam( player.GetTeam() )
-	otherPlayer.HighlightSetTeamBitField( 0 )
-	if (Hightlight_HasEnemyHighlight( otherPlayer, "enemy_sonar"))
-	Highlight_ClearEnemyHighlight( otherPlayer )
 }
 
 void function PlayerUsesPhaseRewindBurncard( entity player )
