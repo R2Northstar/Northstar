@@ -113,7 +113,13 @@
 				"After": "SvLoadoutsMP_Init"
 			}
 		},
-		
+		{
+			"Path": "burnmeter/cl_maphack.nut",
+			"RunOn": "CLIENT",
+			"ClientCallback": {
+				"Before": "ClMapHack_Init"
+			}
+		},
 		{
 			"Path": "lobby/sh_private_lobby_modes_init.gnut",
 			"RunOn": "( SERVER || CLIENT ) && MP"
