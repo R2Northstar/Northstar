@@ -653,7 +653,7 @@ entity function DecideSpawnZone_Generic( array<entity> spawnzones, int team )
 			
 			return 0
 		} )
-		entity chosenZone = possibleZones[ minint( RandomInt( 3 ), possibleZones.len() ) ]
+		entity chosenZone = possibleZones[ minint( RandomInt( 3 ), possibleZones.len() - 1 ) ]
 		
 		if ( spawnStateSpawnzones.shouldCreateMinimapSpawnzones )
 		{
