@@ -3,10 +3,12 @@ global function GetGunGameWeapons
 
 global const string GAMEMODE_GG = "gg"
 
+global const string default_weapons = "mp_weapon_car|pas_run_and_gun|-1$mp_weapon_alternator_smg|pas_run_and_gun|-1$mp_weapon_hemlok_smg||-1$mp_weapon_hemlok||-1$mp_weapon_vinson|hcog|-1$mp_weapon_rspn101||-1$mp_weapon_esaw||-1$mp_weapon_lstar|pas_run_and_gun|-1$mp_weapon_shotgun||-1$mp_weapon_mastiff||-1$mp_weapon_softball||-1$mp_weapon_epg|jump_kit|-1$mp_weapon_shotgun_pistol|pas_run_and_gun|-1$mp_weapon_wingman_n|pas_run_and_gun,ricochet|-1$mp_weapon_doubletake||-1$mp_weapon_sniper|pas_fast_ads,ricochet|-1$mp_weapon_autopistol|pas_run_and_gun,temp_sight|-1$mp_weapon_semipistol|pas_run_and_gun|-1$mp_weapon_wingman|pas_run_and_gun|-1$mp_weapon_defender||-1$mp_weapon_grenade_sonar|pas_power_cell,amped_tacticals|1"
+
 global struct GunGameWeapon
 {
 	string weapon
-	array<string> mods
+	array<string> mods = []
 	int offhandSlot = -1
 }
 
@@ -38,114 +40,85 @@ void function CreateGamemodeGG()
 	AddPrivateMatchModeSettingArbitrary( "#GAMEMODE_gg", "gg_assist_reward", "0.0" )
 	AddPrivateMatchModeSettingArbitrary( "#GAMEMODE_gg", "gg_execution_reward", "1.0" )
 
-	// setup guns
+	// Custom Weapons
+	int index = 0
+	while ( GetCurrentPlaylistVarString( "gg_weapon_" + index, "NOPE" ) != "NOPE" )
+	{
+		file.weapons.append( StringToGGWeapon( GetCurrentPlaylistVarString( "gg_weapon_" + index, "" ) ) )
+		index++
+	}
 
-	// smgs
-	// car
-	GunGameWeapon ggCar = { weapon = "mp_weapon_car", mods = [ "pas_run_and_gun" ], ... }
-	file.weapons.append( ggCar )
+	// Default Weapons - Don't edit this to make custom lists anymore, please try to use playlist vars so that everything gets synced correctly.
+	if ( file.weapons.len() == 0 )
+	{
+		// SMGs
+			GunGameWeapon ggCar = { weapon = "mp_weapon_car", mods = [ "pas_run_and_gun" ], ... } // CAR
+			GunGameWeapon ggAlternator = { weapon = "mp_weapon_alternator_smg", mods = [ "pas_run_and_gun" ], ... } // Alternator
+			GunGameWeapon ggVolt = { weapon = "mp_weapon_hemlok_smg", ... } // Volt
 
-	// alternator
-	GunGameWeapon ggAlternator = { weapon = "mp_weapon_alternator_smg", mods = [ "pas_run_and_gun" ], ... }
-	file.weapons.append( ggAlternator )
+		// Rifles
+			GunGameWeapon ggHemlok = { weapon = "mp_weapon_hemlok", ... } // Hemlok
+			GunGameWeapon ggFlatline = { weapon = "mp_weapon_vinson", mods = [ "hcog" ], ... } // Flatline
+			GunGameWeapon ggR201 = { weapon = "mp_weapon_rspn101", ... } // R201
 
-	// volt
-	GunGameWeapon ggVolt = { weapon = "mp_weapon_hemlok_smg", ... }
-	file.weapons.append( ggVolt )
+		// LMGs
+			GunGameWeapon ggDevotion = { weapon = "mp_weapon_esaw", ... } // Devotion
+			GunGameWeapon ggLstar = { weapon = "mp_weapon_lstar", mods = [ "pas_run_and_gun" ], ... } // L-Star
 
+		// Shotguns
+			GunGameWeapon ggEva = { weapon = "mp_weapon_shotgun", ... } // Eva-8
+			GunGameWeapon ggMastiff = { weapon = "mp_weapon_mastiff", ... } // Mastiff
 
-	// rifles
-	// hemlok
-	GunGameWeapon ggHemlok = { weapon = "mp_weapon_hemlok", mods = [  ], ... }
-	file.weapons.append( ggHemlok )
+		// Grenadiers
+			GunGameWeapon ggSoftball = { weapon = "mp_weapon_softball", ... } // Softball
+			GunGameWeapon ggEpg = { weapon = "mp_weapon_epg", mods = [ "jump_kit" ], ... } // EPG
 
-	// flatline
-	GunGameWeapon ggFlatline = { weapon = "mp_weapon_vinson", mods = [ "hcog" ], ... }
-	file.weapons.append( ggFlatline )
+		// Primary Pistols
+			GunGameWeapon ggMozam = { weapon = "mp_weapon_shotgun_pistol", mods = [ "pas_run_and_gun" ], ... } // Mozambique
+			GunGameWeapon ggWme = { weapon = "mp_weapon_wingman_n", mods = [ "pas_run_and_gun", "ricochet" ], ... } // Wingman Elite
 
-	// r201
-	GunGameWeapon ggR101 = { weapon = "mp_weapon_rspn101", ... }
-	file.weapons.append( ggR101 )
+		// Snipers
+			GunGameWeapon ggTaketake = { weapon = "mp_weapon_doubletake", ... } // Double Take
+			GunGameWeapon ggKraber = { weapon = "mp_weapon_sniper", mods = [ "pas_fast_ads", "ricochet" ], ... } // Kraber
 
+		// Secondary Pistols
+			GunGameWeapon ggRe45 = { weapon = "mp_weapon_autopistol", mods = [ "pas_run_and_gun", "temp_sight" ], ... } // RE-45
+			GunGameWeapon ggP2016 = { weapon = "mp_weapon_semipistol", mods = [ "pas_run_and_gun" ], ... } // P2016
+			GunGameWeapon ggWingman = { weapon = "mp_weapon_wingman", mods = [ "pas_run_and_gun" ], ... } // Wingman
 
-	// lmgs
-	// devotion
-	GunGameWeapon ggDevotion = { weapon = "mp_weapon_esaw", ... }
-	file.weapons.append( ggDevotion )
+		// Final/Special
+			GunGameWeapon ggChargeRifle = { weapon = "mp_weapon_defender", ... } // Charge Rifle
+			GunGameWeapon ggPulseBlade = { weapon = "mp_weapon_grenade_sonar", mods = [ "pas_power_cell", "amped_tacticals" ], offhandSlot = OFFHAND_SPECIAL } // Pulse Blade
 
-	// l-star
-	GunGameWeapon ggLstar = { weapon = "mp_weapon_lstar", mods = [ "pas_run_and_gun" ], ... }
-	if ( RandomInt( 100 ) <= 5 )
-		ggLstar.mods.append( "rcee" ) // easter egg mod that changes the screen of the lstar
+		file.weapons.append( ggCar )
+		file.weapons.append( ggAlternator )
+		file.weapons.append( ggVolt )
+		file.weapons.append( ggHemlok )
+		file.weapons.append( ggFlatline )
+		file.weapons.append( ggR201 )
+		file.weapons.append( ggDevotion )
+		file.weapons.append( ggLstar )
+		file.weapons.append( ggEva )
+		file.weapons.append( ggMastiff )
+		file.weapons.append( ggSoftball )
+		file.weapons.append( ggEpg )
+		file.weapons.append( ggMozam )
+		file.weapons.append( ggWme )
+		file.weapons.append( ggTaketake )
+		file.weapons.append( ggKraber )
+		file.weapons.append( ggRe45 )
+		file.weapons.append( ggP2016 )
+		file.weapons.append( ggWingman )
+		file.weapons.append( ggChargeRifle )
+		file.weapons.append( ggPulseBlade )
+	}
 
-	file.weapons.append( ggLstar )
+	foreach ( ggWeapon in file.weapons )
+		if ( ggWeapon.weapon == "mp_weapon_lstar" )
+			if ( RandomInt( 100 ) <= 5 )
+				ggWeapon.mods.append( "rcee" ) // Easter egg mod that changes the screen of the lstar.
 
-
-	// shotguns
-	// eva-8
-	GunGameWeapon ggEva = { weapon = "mp_weapon_shotgun", ... }
-	file.weapons.append( ggEva )
-
-	// mastiff
-	GunGameWeapon ggMastiff = { weapon = "mp_weapon_mastiff", ... }
-	file.weapons.append( ggMastiff )
-
-
-	// grenadiers
-	// softball
-	GunGameWeapon ggSoftball = { weapon = "mp_weapon_softball", ... }
-	file.weapons.append( ggSoftball )
-
-	// epg
-	GunGameWeapon ggEpg = { weapon = "mp_weapon_epg", mods = [ "jump_kit" ], ... }
-	file.weapons.append( ggEpg )
-
-
-	// primary pistols
-	// mozambique
-	GunGameWeapon ggMozam = { weapon = "mp_weapon_shotgun_pistol", mods = [ "pas_run_and_gun" ], ... }
-	file.weapons.append( ggMozam )
-
-	// wingman elite
-	GunGameWeapon ggWme = { weapon = "mp_weapon_wingman_n", mods = [ "pas_run_and_gun", "ricochet" ], ... }
-	file.weapons.append( ggWme )
-
-
-	// snipers
-	// double take
-	GunGameWeapon ggTaketake = { weapon = "mp_weapon_doubletake", ... }
-	file.weapons.append( ggTaketake )
-
-	// kraber
-	GunGameWeapon ggKraber = { weapon = "mp_weapon_sniper", mods = [ "pas_fast_ads", "ricochet" ], ... }
-	file.weapons.append( ggKraber )
-
-
-	// secondary pistols
-	// re-45
-	GunGameWeapon ggRe45 = { weapon = "mp_weapon_autopistol", mods = [ "pas_run_and_gun", "temp_sight" ], ... }
-	file.weapons.append( ggRe45 )
-
-	// p2016
-	GunGameWeapon ggP2016 = { weapon = "mp_weapon_semipistol", mods = [ "pas_run_and_gun" ], ... }
-	file.weapons.append( ggP2016 )
-
-	// wingman
-	GunGameWeapon ggWingman = { weapon = "mp_weapon_wingman", mods = [ "pas_run_and_gun" ], ... }
-	file.weapons.append( ggWingman )
-
-
-	// final/special weapons
-	// charge rifle
-	GunGameWeapon ggChargeRifle = { weapon = "mp_weapon_defender", ... }
-	file.weapons.append( ggChargeRifle )
-
-	// pulse blade
-	GunGameWeapon ggPulseBlade = { weapon = "mp_weapon_grenade_sonar", mods = [ "pas_power_cell", "amped_tacticals" ], offhandSlot = OFFHAND_SPECIAL }
-	file.weapons.append( ggPulseBlade )
-
-
-	// set this to the number of guns
+	// Set this to the number of guns.
 	GameMode_SetDefaultScoreLimits( GAMEMODE_GG, file.weapons.len(), 0 )
 
 	#if SERVER
@@ -167,4 +140,39 @@ void function CreateGamemodeGG()
 array<GunGameWeapon> function GetGunGameWeapons()
 {
 	return file.weapons
+}
+
+string function Join( array<string> strings, string separator )
+{
+	string output;
+
+	foreach( int i, string stringoStarr in strings )
+	{
+		if (i == 0)
+			output = stringoStarr
+		else
+			output = output + separator + stringoStarr
+	}
+
+	return output;
+}
+
+string function GGWeaponToString( GunGameWeapon ggWeapon )
+{
+	// We do it in this order because split works weirdly and won't return empty strings for gaps :c
+	return ggWeapon.offhandSlot + "|" + ggWeapon.weapon + "|" + Join( ggWeapon.mods, "," )
+}
+
+GunGameWeapon function StringToGGWeapon( string ggWeaponString )
+{
+	array<string> ggWeaponStringSplit = split( ggWeaponString, "|" )
+
+	GunGameWeapon ggWeapon
+	ggWeapon.offhandSlot = int(ggWeaponStringSplit[0])
+	ggWeapon.weapon = ggWeaponStringSplit[1]
+
+	if ( ggWeaponStringSplit.len() > 2 )
+		ggWeapon.mods = split( ggWeaponStringSplit[2], "," )
+
+	return ggWeapon
 }

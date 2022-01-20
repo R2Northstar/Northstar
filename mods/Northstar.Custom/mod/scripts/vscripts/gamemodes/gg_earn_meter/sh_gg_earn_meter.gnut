@@ -1,8 +1,8 @@
 global function Sh_GGEarnMeter_Init
 
-struct 
+struct
 {
-    string gamemode = ""    
+    string gamemode = ""
 } file
 
 void function Sh_GGEarnMeter_Init(string gamemode)
