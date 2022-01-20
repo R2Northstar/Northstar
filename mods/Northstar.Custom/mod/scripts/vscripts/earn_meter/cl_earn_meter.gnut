@@ -279,9 +279,6 @@ void function EarnMeter_Update()
 				break
 
 			entity soul = player.GetTitanSoul()
-			entity core = player.GetOffhandWeapons()[3]
-			string coreName = core.GetWeaponClassName()
-			array<string> coreMods = core.GetMods()
 
 			#if SP
 			RuiTrackFloat( file.earnMeterRui, "earnedFrac", soul, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "coreAvailableFrac" ) )
@@ -299,16 +296,28 @@ void function EarnMeter_Update()
 			RuiTrackFloat( file.earnMeterRui, "earnedFrac", soul, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "coreAvailableFrac" ) )
 			RuiTrackFloat( file.earnMeterRui, "ownedFrac", soul, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "coreAvailableFrac" ) )
 			RuiTrackFloat( file.earnMeterRui, "rewardFrac", player, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( EARNMETER_REWARDFRAC ) )
-            
-			if ( coreName == "mp_titancore_upgrade" )
+
+			entity core = player.GetOffhandWeapon( OFFHAND_EQUIPMENT )
+			if ( IsValid(core) )
 			{
-				RuiSetImage( file.earnMeterRui, "goalBuildingIcon", GetVanguardCoreIcon( player ) )
-				RuiSetImage( file.earnMeterRui, "goalReadyIcon", GetVanguardCoreIcon( player ) )
+				string coreName = core.GetWeaponClassName()
+				array<string> coreMods = core.GetMods()
+
+				if ( coreName == "mp_titancore_upgrade" )
+				{
+					RuiSetImage( file.earnMeterRui, "goalBuildingIcon", GetVanguardCoreIcon( player ) )
+					RuiSetImage( file.earnMeterRui, "goalReadyIcon", GetVanguardCoreIcon( player ) )
+				}
+				else
+				{
+					RuiSetImage( file.earnMeterRui, "goalBuildingIcon", GetWeaponInfoFileKeyFieldAsset_WithMods_Global( coreName, coreMods, "hud_icon" ) )
+					RuiSetImage( file.earnMeterRui, "goalReadyIcon", GetWeaponInfoFileKeyFieldAsset_WithMods_Global( coreName, coreMods, "hud_icon" ) )
+				}
 			}
 			else
 			{
-				RuiSetImage( file.earnMeterRui, "goalBuildingIcon", GetWeaponInfoFileKeyFieldAsset_WithMods_Global( coreName, coreMods, "hud_icon" ) )
-				RuiSetImage( file.earnMeterRui, "goalReadyIcon", GetWeaponInfoFileKeyFieldAsset_WithMods_Global( coreName, coreMods, "hud_icon" ) )
+				RuiSetImage( file.earnMeterRui, "goalBuildingIcon", $"" )
+				RuiSetImage( file.earnMeterRui, "goalReadyIcon", $"" )
 			}
 
 			EarnObject earnReward = PlayerEarnMeter_GetReward( player )
