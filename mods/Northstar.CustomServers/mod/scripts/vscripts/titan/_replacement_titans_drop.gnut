@@ -1,7 +1,8 @@
 global function ReplacementTitansDrop_Init
 global function GetTitanReplacementPoint
 global function HullTraceDropPoint
-global function DebugTitanSpawn
+global function DebugSpawnTitan
+global function DebugTitanfall
 global function TitanFindDropNodes
 global function TitanHulldropSpawnpoint
 
@@ -41,12 +42,21 @@ void function AddDroppoint( entity ent )
 	AddToScriptManagedEntArray( file.replacementSpawnpointsID, ent )
 }
 
-void function DebugTitanSpawn()
+void function DebugSpawnTitan()
 {
-	thread DebugTitanSpawnThread()
+	entity player = GetPlayerArray()[0]
+	vector spawnpointOrigin = player.GetOrigin()
+	vector spawnpointAngles = VectorToAngles( FlattenVector( GetPlayerArray()[0].GetViewVector() ) * -1 )
+	entity titan = CreateAutoTitanForPlayer_FromTitanLoadout( player, GetTitanLoadoutForPlayer( player ), spawnpointOrigin, spawnpointAngles )
+	DispatchSpawn( titan )
+} 
+
+void function DebugTitanfall()
+{
+	thread DebugTitanfallThread()
 }
 
-void function DebugTitanSpawnThread()
+void function DebugTitanfallThread()
 {
 	entity player = GetPlayerArray()[0]
 
