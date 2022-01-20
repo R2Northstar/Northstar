@@ -785,7 +785,8 @@ void function OnServerButtonFocused( var button )
 {
 	int scriptID = int (Hud_GetScriptID(button))
 	file.serverButtonFocusedID = scriptID
-	file.focusedServerIndex = file.serversArrayFiltered[ file.scrollOffset + scriptID ].serverIndex
+	if ( file.serversArrayFiltered.len() > 0 )
+		file.focusedServerIndex = file.serversArrayFiltered[ file.scrollOffset + scriptID ].serverIndex
 	DisplayFocusedServerInfo(scriptID);
 
 }
