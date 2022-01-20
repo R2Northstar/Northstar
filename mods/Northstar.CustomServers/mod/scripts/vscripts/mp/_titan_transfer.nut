@@ -1,9 +1,9 @@
 untyped
 
 global function TitanTransfer_Init
-
 global function PilotBecomesTitan
 global function TitanBecomesPilot
+global function DevSpawnTitan
 global function CreateAutoTitanForPlayer_ForTitanBecomesPilot
 global function CreateAutoTitanForPlayer_FromTitanLoadout
 global function CopyWeapons
@@ -259,6 +259,15 @@ function TransferHealth( srcEnt, destEnt )
 	destEnt.SetMaxHealth( srcEnt.GetMaxHealth() )
 	destEnt.SetHealth( srcEnt.GetHealth() )
 	//destEnt.SetHealthPerSegment( srcEnt.GetHealthPerSegment() )
+}
+
+void function DevSpawnTitan()
+{
+	entity player = GetPlayerArray()[0]
+	vector spawnpointOrigin = player.GetOrigin()
+	vector spawnpointAngles = VectorToAngles( FlattenVector( GetPlayerArray()[0].GetViewVector() ) * -1 )
+	entity titan = CreateAutoTitanForPlayer_FromTitanLoadout( player, GetTitanLoadoutForPlayer( player ), spawnpointOrigin, spawnpointAngles )
+	DispatchSpawn( titan )
 }
 
 entity function CreateAutoTitanForPlayer_FromTitanLoadout( entity player, TitanLoadoutDef loadout, vector origin, vector angles )
