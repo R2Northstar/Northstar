@@ -627,9 +627,6 @@
   <ItemGroup>
 	  <MASM Include="audio_asm.asm" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\Northstar-Legal.txt" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
