@@ -3957,6 +3957,16 @@ string function ReloadScripts()
 	return ( "reloaded server scripts" )
 }
 
+void function SetGameEndTime(float seconds)
+{
+	SetServerVar( "gameEndTime", Time() + seconds )
+}
+
+void function SetRoundEndTime(float seconds)
+{
+	SetServerVar( "roundEndTime", Time() + seconds )
+}
+
 int function GameTime_TimeLimitSeconds()
 {
 	if ( IsRoundBased() )
