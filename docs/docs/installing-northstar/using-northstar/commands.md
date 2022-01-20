@@ -42,6 +42,15 @@ In the future this keybind should hopefully be adjustable via `Controls > Settin
 | `give mp_weapon_peacekraber`         | Gives you peacekraber                                                                                       |                                                 |
 | `r_latencyflex`                      | Enables [LatencyFleX](../../using-northstar/playing-on-linux/#latencyflex) (Linux-only, enabled by default) | `0` / `1`                                       |
 
+### Useful dev commands
+Requires `sv_cheats 1`
+
+Command|Result
+-|-
+`thirdperson`|Third person mode
+`script DevSpawnTitan()`|Spawns you a Titan
+`script SetGameEndTime(1200.0)`|Sets remaining match time to 1200 seconds
+
 ### Server commands
 
 | Variable                                    | Description                                                           | Default |
@@ -170,12 +179,3 @@ In the future this keybind should hopefully be adjustable via `Controls > Settin
 | `sv_warnAboutCmdNumJumps`                   |                                                                       | 20      |
 | `sv_weapon_despawn_time`                    |                                                                       | 90      |
 | `sv_writeSendTableStreamFile`               |                                                                       |         |
-
-### Useful dev commands
-Requires `sv_cheats 1`
-
-Command|Result
--|-
-`thirdperson`|Third person mode
-`script ReplacementTitan( GetPlayerArray()[0] )`|Stand by for Titanfall
-`script SetServerVar( "gameEndTime", Time() + 1200.0 )`|Sets remaining match time to 1200 seconds
