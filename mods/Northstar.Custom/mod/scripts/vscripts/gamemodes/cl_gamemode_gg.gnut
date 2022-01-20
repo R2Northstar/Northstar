@@ -1,5 +1,9 @@
 global function ClGamemodeGG_Init
 
+struct {
+	int lastScore = -1
+} file
+
 void function ClGamemodeGG_Init()
 {
 	// add ffa gamestate asset
@@ -24,5 +28,32 @@ void function ClGamemodeGG_Init()
 	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LAST_MINUTE, "music_mp_freeagents_lastminute", TEAM_IMC )
 	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LAST_MINUTE, "music_mp_freeagents_lastminute", TEAM_MILITIA )
 
-	Cl_GGEarnMeter_Init()
+	Cl_GGEarnMeter_Init(ClGamemodeGG_GetWeaponIcon, ClGamemodeGG_ShouldChangeWeaponIcon)
+}
+
+asset function ClGamemodeGG_GetWeaponIcon()
+{
+	int weaponIndex = GameRules_GetTeamScore( GetLocalViewPlayer().GetTeam() ) + 1
+
+	array<GunGameWeapon> weapons = GetGunGameWeapons()
+
+	if ( weaponIndex >= weapons.len() )
+		return RandomFloat( 1 ) > 0.1 ? $"rui/menu/boosts/boost_icon_random" : $"rui/faction/faction_logo_mrvn"
+
+	GunGameWeapon nextWeapon = weapons[ weaponIndex ]
+	return GetWeaponInfoFileKeyFieldAsset_WithMods_Global( nextWeapon.weapon, nextWeapon.mods, "hud_icon" )
+}
+
+// Because of our easter egg we have to include the optional test function so that we don't get a flickering icon.
+bool function ClGamemodeGG_ShouldChangeWeaponIcon()
+{
+	int currentScore = GameRules_GetTeamScore( GetLocalViewPlayer().GetTeam() )
+
+	if ( file.lastScore != currentScore )
+	{
+		file.lastScore = currentScore
+		return true
+	}
+
+	return false
 }

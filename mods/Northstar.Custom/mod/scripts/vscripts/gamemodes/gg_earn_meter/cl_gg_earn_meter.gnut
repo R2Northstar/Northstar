@@ -14,11 +14,16 @@ struct EarnChangeData
 struct {
 	EarnChangeData lastEarnedData
 	var earnMeterRui
+	asset functionref() getIconFunction
+	bool functionref() testIconFunction
 } file
 
-void function Cl_GGEarnMeter_Init()
+void function Cl_GGEarnMeter_Init( asset functionref() getIconFunction, bool functionref() testIconFunction = null )
 {
 	AddCallback_OnClientScriptInit( CreateGGEarnMeterUI )
+
+	file.getIconFunction = getIconFunction
+	file.testIconFunction = testIconFunction
 }
 
 void function CreateGGEarnMeterUI( entity player )
@@ -31,6 +36,8 @@ void function CreateGGEarnMeterUI( entity player )
 	RuiSetInt( file.earnMeterRui, "meterMode", 5 )
 
 	RuiTrackFloat( file.earnMeterRui, "earnedFrac", player, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "gunGameLevelPercentage" ) )
+
+	thread Cl_GGEarnMeter_TrackWeaponIcon()
 }
 
 void function Cl_GGEarnMeter_RegisterNetwork()
@@ -57,6 +64,23 @@ float function Cl_GGEarnMeter_GetCurrentMeterValue( EarnChangeData earnData )
 	float elapsedTime = Time() - earnData.updateTime
 	float delta = earnData.endValue - earnData.startValue
 	return earnData.endValue - (delta * EaseIn( GraphCapped( elapsedTime, 0.0, FILL_ANIM_DURATION, 1.0, 0.0 ) ) )
+}
+
+void function Cl_GGEarnMeter_TrackWeaponIcon()
+{
+	int lastScore = -1
+	while ( IsValid( file.earnMeterRui ) )
+	{
+		if ( file.testIconFunction == null || file.testIconFunction() )
+		{
+			asset weaponImage = file.getIconFunction()
+
+			RuiSetImage( file.earnMeterRui, "goalBuildingIcon", weaponImage )
+			RuiSetImage( file.earnMeterRui, "goalReadyIcon", weaponImage )
+		}
+
+		WaitFrame()
+	}
 }
 
 void function ServerCallback_GGEarnMeter_SetWeaponIcon( int damageSourceId )

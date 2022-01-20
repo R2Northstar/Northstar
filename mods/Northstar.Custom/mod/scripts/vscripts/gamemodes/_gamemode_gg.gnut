@@ -133,7 +133,7 @@ void function UpdateLoadout( entity player )
 	if ( currentWeaponIndex >= weapons.len() )
 		currentWeaponIndex = weapons.len() - 1
 
-	if ( currentWeaponIndex > 18 ) // play end of game music for special weapons
+	if ( currentWeaponIndex > weapons.len() - 3 ) // play end of game music for special or last few weapons
 		PlayMusicToAll( eMusicPieceID.LEVEL_LAST_MINUTE ) // this *shouldn't* overlap if done multiple times
 
 	GunGameWeapon weapon = weapons[ currentWeaponIndex ]
@@ -157,16 +157,6 @@ void function UpdateLoadout( entity player )
 
 		player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE )
 	}
-
-	if ( currentWeaponIndex == weapons.len() - 1 )
-	{
-		Sv_GGEarnMeter_SetFinalIcon( player )
-
-		return
-	}
-
-	GunGameWeapon nextWeapon = weapons[ currentWeaponIndex + 1 ]
-	Sv_GGEarnMeter_SetWeaponIcon( player, nextWeapon.weapon )
 }
 
 void function OnWinnerDetermined()
