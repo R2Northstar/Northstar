@@ -19,6 +19,9 @@ Press Yes if you agree to this. This choice can be changed in the mods menu at a
 		"AUTHENTICATION_AGREEMENT" "Authentication Agreement"
 		"AUTHENTICATION_AGREEMENT_RESTART" "You will need to restart Titanfall 2 for this choice to take effect."
 
+		"DIALOG_AUTHENTICATING_MASTERSERVER" "Authenticating to master server."
+		"AUTHENTICATIONAGREEMENT_NO" "You have chosen not to authenticate with Northstar. You can view the agreement in the Mods menu."
+
 		"MENU_TITLE_SERVER_BROWSER" "Server Browser"
 		"NS_SERVERBROWSER_NOSERVERS" "No servers found"
 		"NS_SERVERBROWSER_UNKNOWNMODE" "Unknown mode"
@@ -287,8 +290,8 @@ Press Yes if you agree to this. This choice can be changed in the mods menu at a
 		"CONNECTING" "Connecting..."
 		"INGAME_PLAYERS" "Players:"
 		"TOTAL_SERVERS" "Servers:"
-    
-    
+		
+		 
 		// Mods menu
 		"SHOW" "Show"
 		"SHOW_ALL" "All"
