@@ -151,6 +151,41 @@ If ran on a server with the [`ns_should_return_to_lobby 0`](./#Convars-returntol
 | `rocket_lf`     | Rocket Arena                 |
 | `mfd`           | Marked for Death             |
 
+## Weapons
+
+Weapon Code|Weapon name
+-|-
+mp_weapon_car|CAR
+mp_weapon_alternator_smg|Alternator
+mp_weapon_hemlok_smg|Volt
+mp_weapon_r97|R-97
+mp_weapon_hemlok|Hemlock rifle
+mp_weapon_vinson|Flatline
+mp_weapon_g2|G2
+mp_weapon_rspn101|R-201
+mp_weapon_rspn101_og|R-101
+mp_weapon_esaw|Devotion
+mp_weapon_lstar|L-STAR
+mp_weapon_lmg|Spitfire
+mp_weapon_shotgun|EVA-8 Auto
+mp_weapon_mastiff|Mastiff
+mp_weapon_dmr|DMR
+mp_weapon_sniper|Kraber
+mp_weapon_doubletake|Double Take
+mp_weapon_pulse_lmg|Cold War
+mp_weapon_smr|Sidewinder SMR
+mp_weapon_softball|Softball
+mp_weapon_epg|EPG-1
+mp_weapon_shotgun_pistol|Mozambique
+mp_weapon_wingman_n|Wingman Elite
+mp_weapon_autopistol|RE-45 Auto
+mp_weapon_semipistol|P2016
+mp_weapon_wingman|Wingman
+mp_weapon_mgl|MGL
+mp_weapon_arc_launcher|Thunderbolt
+mp_weapon_rocket_launcher|Archer
+mp_weapon_defender|Charge Rifle
+
 ## Maps
 
 Maps can be set on autorotation using [`ns_should_return_to_lobby 0`](./#Convars-returntolobby)
