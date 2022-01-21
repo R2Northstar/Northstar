@@ -29,6 +29,7 @@ struct
 	array<var> spotlightButtons
 
 	bool installing = false
+	bool stopNSLocalAuth = false
 } file
 
 const DEBUG_PERMISSIONS = false
@@ -83,8 +84,6 @@ void function InitMainMenuPanel()
 	file.fdButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_LAUNCH_NORTHSTAR" )
 	Hud_AddEventHandler( file.fdButton, UIE_CLICK, OnPlayFDButton_Activate )
 	Hud_SetLocked( file.fdButton, true )
-
-	thread TryUnlockNorthstarButton()
 
 	headerIndex++
 	buttonIndex = 0
@@ -165,6 +164,7 @@ void function OnShowMainMenuPanel()
 
 	UpdateSPButtons()
 	thread UpdatePlayButton( file.mpButton )
+	thread UpdatePlayButton( file.fdButton )
 	thread MonitorTrialVersionChange()
 
 	#if DURANGO_PROG
@@ -404,17 +404,22 @@ void function UpdatePlayButton( var button )
 				message = "#CONTACTING_RESPAWN_SERVERS"
 				file.mpButtonActivateFunc = null
 			}
-			else if ( !isMPAllowed )
+			else if ( button == file.mpButton && !isMPAllowed )
 			{
 				message = "#MULTIPLAYER_NOT_AVAILABLE"
 				file.mpButtonActivateFunc = null
 			}
-			else if ( !hasLatestPatch )
+			else if ( button == file.mpButton && !hasLatestPatch )
 			{
 				message = "#ORIGIN_UPDATE_AVAILABLE"
 				file.mpButtonActivateFunc = null
 			}
-			else
+			else if ( button == file.fdButton && GetConVarInt( "ns_has_agreed_to_send_token" ) != NS_AGREED_TO_SEND_TOKEN )
+			{
+				message = "#AUTHENTICATIONAGREEMENT_NO"
+				file.mpButtonActivateFunc = null
+			}
+			else if ( button == file.mpButton )
 			{
 				// restrict non-vanilla players from accessing official servers
 				bool hasNonVanillaMods = false
@@ -434,7 +439,10 @@ void function UpdatePlayButton( var button )
 			}
 
 			isLocked = file.mpButtonActivateFunc == null ? true : false
-			Hud_SetLocked( button, isLocked )
+			if( button == file.fdButton )
+				thread TryUnlockNorthstarButton()
+			else
+				Hud_SetLocked( button, isLocked )
 		#endif
 
 		if ( Script_IsRunningTrialVersion() && !IsTrialPeriodActive() && file.mpButtonActivateFunc != LaunchGamePurchase )
@@ -448,7 +456,7 @@ void function UpdatePlayButton( var button )
 		ComboButton_SetText( file.mpButton, buttonText )
 
 		ComboButton_SetText( file.fdButton, "#MENU_LAUNCH_NORTHSTAR" )
-		Hud_SetEnabled( file.fdButton, true )
+		//Hud_SetEnabled( file.fdButton, false )
 
 		if ( file.installing )
 			message = ""
@@ -501,10 +509,9 @@ void function TryUnlockNorthstarButton()
 {
 	// unlock "Launch Northstar" button until you're authed with masterserver, are allowing insecure auth, or 7.5 seconds have passed
 	float time = Time()
-	
+
 	while ( GetConVarInt( "ns_has_agreed_to_send_token" ) != NS_AGREED_TO_SEND_TOKEN || time + 10.0 > Time() )
 	{
-		Hud_SetLocked( file.fdButton, true )
 		if ( ( NSIsMasterServerAuthenticated() && IsStryderAuthenticated() ) || GetConVarBool( "ns_auth_allow_insecure" ) )
 			break
 			
@@ -527,17 +534,43 @@ void function OnPlayFDButton_Activate( var button ) // repurposed for launching 
 
 void function TryAuthWithLocalServer()
 {
+	DialogData dialogData
+	dialogData.showSpinner = true
+	dialogData.header = "#CONNECTING"
+	dialogData.message = "#DIALOG_AUTHENTICATING_MASTERSERVER" // probably isn't actually what's going on here but makes more sense to the user
+
+	AddDialogButton( dialogData, "#CANCEL", CancelNSLocalAuth )
+	AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
+
+	OpenDialog( dialogData )
+
 	while ( NSIsAuthenticatingWithServer() )
+	{
+		if( file.stopNSLocalAuth )
+		{
+			file.stopNSLocalAuth = false
+			return
+		}
 		WaitFrame()
-		
+	}
+	
 	if ( NSWasAuthSuccessful() )
+	{
 		NSCompleteAuthWithLocalServer()
+	}
 	
 	if ( GetConVarString( "mp_gamemode" ) == "solo" )
 		SetConVarString( "mp_gamemode", "tdm" )
 
+	CloseAllDialogs()
+
 	ClientCommand( "setplaylist tdm" )
 	ClientCommand( "map mp_lobby" )
+}
+
+void function CancelNSLocalAuth()
+{
+	file.stopNSLocalAuth = true
 }
 
 void function OnPlayMPButton_Activate( var button )
