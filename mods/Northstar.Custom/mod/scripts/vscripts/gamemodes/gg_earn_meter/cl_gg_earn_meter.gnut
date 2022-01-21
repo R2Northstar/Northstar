@@ -1,6 +1,5 @@
 global function Cl_GGEarnMeter_Init
 global function Cl_GGEarnMeter_RegisterNetwork
-global function ServerCallback_GGEarnMeter_SetWeaponIcon
 
 const float FILL_ANIM_DURATION = 0.2
 
@@ -81,26 +80,4 @@ void function Cl_GGEarnMeter_TrackWeaponIcon()
 
 		WaitFrame()
 	}
-}
-
-void function ServerCallback_GGEarnMeter_SetWeaponIcon( int damageSourceId )
-{
-	asset weaponImage
-
-	if ( damageSourceId > -1 )
-	{
-		if ( !DamageSourceIDHasString(damageSourceId) )
-		{
-			return
-		}
-
-		weaponImage = GetItemImage( DamageSourceIDToString( damageSourceId ) )
-	}
-	else
-	{
-		weaponImage = RandomFloat( 1 ) > 0.1 ? $"rui/menu/boosts/boost_icon_random" : $"rui/faction/faction_logo_mrvn"
-	}
-
-	RuiSetImage( file.earnMeterRui, "goalBuildingIcon", weaponImage )
-	RuiSetImage( file.earnMeterRui, "goalReadyIcon", weaponImage )
 }

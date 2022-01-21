@@ -2,25 +2,29 @@ global function Sh_GGEarnMeter_Init
 
 struct
 {
-    string gamemode = ""
+	bool callbackAdded = false
+	array<string> gamemodes
 } file
 
 void function Sh_GGEarnMeter_Init(string gamemode)
 {
-    file.gamemode = gamemode
+	file.gamemodes.append(gamemode)
 
-	AddCallback_OnRegisteringCustomNetworkVars( RegisterSharedNetwork )
+	if ( !file.callbackAdded )
+	{
+		file.callbackAdded = true
+		AddCallback_OnRegisteringCustomNetworkVars( RegisterSharedNetwork )
+	}
 }
 
 void function RegisterSharedNetwork()
 {
-    if ( GAMETYPE != file.gamemode )
-        return
+	if ( !( file.gamemodes.contains(GAMETYPE) ) )
+		return
 
 	RegisterNetworkedVariable( "gunGameLevelPercentage", SNDC_PLAYER_EXCLUSIVE, SNVT_FLOAT_RANGE, 0.0, 0.0, 1.0 )
-    Remote_RegisterFunction( "ServerCallback_GGEarnMeter_SetWeaponIcon" )
 
-    #if CLIENT
-    	Cl_GGEarnMeter_RegisterNetwork()
-    #endif
+	#if CLIENT
+		Cl_GGEarnMeter_RegisterNetwork()
+	#endif
 }
