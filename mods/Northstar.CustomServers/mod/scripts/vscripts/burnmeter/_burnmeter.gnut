@@ -433,9 +433,6 @@ void function PlayerUsesPhaseRewindBurncardThreaded( entity player )
 		mover.NonPhysicsRotateTo( positions[ i ].angles, PHASE_REWIND_PATH_SNAPSHOT_INTERVAL, 0, 0 )
 		wait PHASE_REWIND_PATH_SNAPSHOT_INTERVAL
 	}
-
-	// this isn't vanilla but it's cool lol, should prolly remove it tho
-	player.SetVelocity( -positions[ positions.len() - 1 ].velocity )
 }
 
 void function PlayerUsesNukeTitanBurncard( entity player )
