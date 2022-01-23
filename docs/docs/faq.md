@@ -78,11 +78,7 @@ A: You’re most likely running an outdated Northstar version now, please update
 
 ### Q: I keep getting the engine error “Failed to initialize Origin: Origin Core seems to be running, but the LSX Authentication Challenge failed. No communication with Core is possible.”
 
-A: If the usual workaround of restarting Origin/rebooting or running the vanilla game first and then Northstar don’t work, try the following:
-
-* add `-northstar` to your command line arguments/launch options field in Origin/Steam game options
-* run the game with Origin/Steam instead of starting NorthstarLauncher.exe (important)
-* error should be no more
+Check [this section on the troubleshooting page.](installing-northstar/troubleshooting.md#failed-to-initialize-origin-origin-core-seems-to-be-running-but-the-lsx-authentication-challenge-fai)
 
 ### Q: I get error "Failed copying wsock32.dll from system32 \[...] copy\_file: Access is denied."
 
