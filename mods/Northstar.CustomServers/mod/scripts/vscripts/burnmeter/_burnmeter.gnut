@@ -433,6 +433,7 @@ void function PlayerUsesPhaseRewindBurncardThreaded( entity player )
 		mover.NonPhysicsRotateTo( positions[ i ].angles, PHASE_REWIND_PATH_SNAPSHOT_INTERVAL, 0, 0 )
 		wait PHASE_REWIND_PATH_SNAPSHOT_INTERVAL
 	}
+	player.SetVelocity( <0, 0, 0> )
 }
 
 void function PlayerUsesNukeTitanBurncard( entity player )
