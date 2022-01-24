@@ -5,12 +5,17 @@
 #include <system_error>
 #include <sstream>
 #include <fstream>
+#include <filesystem>
 
 void LibraryLoadError(DWORD dwMessageId, const wchar_t* libName, const wchar_t* location)
 {
-	char text[2048];
+	char text[4096];
 	std::string message = std::system_category().message(dwMessageId);
 	sprintf_s(text, "Failed to load the %ls at \"%ls\" (%lu):\n\n%hs", libName, location, dwMessageId, message.c_str());
+	if (dwMessageId == 126 && std::filesystem::exists(location))
+	{
+		sprintf_s(text, "%s\n\nThe file at the specified location DOES exist, so this error indicates that one of its *dependencies* failed to be found.", text);
+	}
 	MessageBoxA(GetForegroundWindow(), text, "Northstar Wsock32 Proxy Error", 0);
 }
 
@@ -37,12 +42,12 @@ bool LoadNorthstar()
 {
 	FARPROC Hook_Init = nullptr;
 	{
-		swprintf_s(dllPath, L"%s\\Northstar.dll", exePath);
-		auto hHookModule = LoadLibraryExW(dllPath, 0, LOAD_WITH_ALTERED_SEARCH_PATH);
+		swprintf_s(buffer1, L"%s\\Northstar.dll", exePath);
+		auto hHookModule = LoadLibraryExW(buffer1, 0, LOAD_WITH_ALTERED_SEARCH_PATH);
 		if (hHookModule) Hook_Init = GetProcAddress(hHookModule, "InitialiseNorthstar");
 		if (!hHookModule || Hook_Init == nullptr)
 		{
-			LibraryLoadError(GetLastError(), L"Northstar.dll", dllPath);
+			LibraryLoadError(GetLastError(), L"Northstar.dll", buffer1);
 			return false;
 		}
 	}
