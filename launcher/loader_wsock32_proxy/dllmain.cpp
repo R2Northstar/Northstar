@@ -18,8 +18,8 @@ bool GetExePathWide(wchar_t* dest, DWORD destSize)
 }
 
 wchar_t exePath[4096];
-wchar_t dllPath[8192];
-wchar_t dllPath2[4096];
+wchar_t buffer1[8192];
+wchar_t buffer2[12288];
 
 BOOL WINAPI DllMain(HINSTANCE hInst, DWORD reason, LPVOID)
 {
@@ -30,30 +30,48 @@ BOOL WINAPI DllMain(HINSTANCE hInst, DWORD reason, LPVOID)
 		if (!GetExePathWide(exePath, 4096))
 		{
 			MessageBoxA(GetForegroundWindow(), "Failed getting game directory.\nThe game cannot continue and has to exit.", "Northstar Wsock32 Proxy Error", 0);
-			return 1;
+			return true;
 		}
 
 		if (!ProvisionNorthstar()) // does not call InitialiseNorthstar yet, will do it on LauncherMain hook
-			return 1;
+			return true;
 
 		// copy the original library for system to our local directory, with changed name so that we can load it
-		swprintf_s(dllPath, L"%s\\bin\\x64_retail\\wsock32.org.dll", exePath);
-		GetSystemDirectoryW(dllPath2, 4096);
-		swprintf_s(dllPath2, L"%s\\wsock32.dll", dllPath2);
+		swprintf_s(buffer1, L"%s\\bin\\x64_retail\\wsock32.org.dll", exePath);
+		GetSystemDirectoryW(buffer2, 4096);
+		swprintf_s(buffer2, L"%s\\wsock32.dll", buffer2);
 		try
 		{
-			std::filesystem::copy_file(dllPath2, dllPath);
+			std::filesystem::copy_file(buffer2, buffer1);
 		}
-		catch (const std::exception& e)
+		catch (const std::exception& e1)
 		{
-			if (!std::filesystem::exists(dllPath))
+			if (!std::filesystem::exists(buffer1))
 			{
-				swprintf_s(dllPath, L"Failed copying wsock32.dll from system32 to \"%s\"\n\n%S", dllPath, e.what());
-				MessageBoxW(GetForegroundWindow(), dllPath, L"Northstar Wsock32 Proxy Error", 0);
+				// fallback by copying to temp dir...
+				// because apparently games installed by EA Desktop app don't have write permissions in their directories
+				auto temp_dir = std::filesystem::temp_directory_path() / L"wsock32.org.dll";
+				try
+				{
+					std::filesystem::copy_file(buffer2, temp_dir);
+				}
+				catch (const std::exception& e2)
+				{
+					if (!std::filesystem::exists(temp_dir))
+					{
+						swprintf_s(buffer2, L"Failed copying wsock32.dll from system32 to \"%s\"\n\n%S\n\nFurthermore, we failed copying wsock32.dll into temporary directory at \"%s\"\n\n%S", buffer1, e1.what(), temp_dir.c_str(), e2.what());
+						MessageBoxW(GetForegroundWindow(), buffer2, L"Northstar Wsock32 Proxy Error", 0);
+						return false;
+					}
+				}
+				swprintf_s(buffer1, L"%s", temp_dir.c_str());
 			}
 		}
-		hL = LoadLibraryExW(dllPath, 0, LOAD_WITH_ALTERED_SEARCH_PATH);
-		if (!hL) return false;
+		hL = LoadLibraryExW(buffer1, 0, LOAD_WITH_ALTERED_SEARCH_PATH);
+		if (!hL) {
+			LibraryLoadError(GetLastError(), L"wsock32.org.dll", buffer1);
+			return false;
+		}
 
 		// load the functions to proxy
 		// it's only some of them, because in case of wsock32 most of the functions can actually be natively redirected
@@ -75,10 +93,10 @@ BOOL WINAPI DllMain(HINSTANCE hInst, DWORD reason, LPVOID)
 	if (reason == DLL_PROCESS_DETACH)
 	{
 		FreeLibrary(hL);
-		return 1;
+		return true;
 	}
 
-	return 1;
+	return true;
 }
 
 extern "C"
