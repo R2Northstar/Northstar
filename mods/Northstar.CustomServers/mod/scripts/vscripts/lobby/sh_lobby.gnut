@@ -12,13 +12,12 @@ global struct CustomMatchSettingContainer
 	// enum setting
 	array< string > enumNames
 	array< string > enumValues
-	//table< string, string > enumValuePairs
 }
 
 struct {
 	array<string> modes = [ // default modes in vanilla
-		"aitdm",
 		"tdm",
+		"aitdm",
 		"cp",
 		"at",
 		"ctf",
@@ -167,7 +166,6 @@ void function AddPrivateMatchModeSettingEnumEx( string category, string playlist
 		setting.defaultValue = defaultValue
 		setting.localizedName = localizedName
 		setting.isEnumSetting = true
-		//setting.enumValuePairs = enumPairs
 		
 		foreach ( string name, string value in enumPairs )
 		{
