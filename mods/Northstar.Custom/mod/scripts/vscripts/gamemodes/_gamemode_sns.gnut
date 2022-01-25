@@ -5,8 +5,10 @@ struct {
 	string offhand_weapon = "mp_weapon_thermite_grenade" // offhand weapon
 
 	bool reset_pulse_blade_cooldown_on_pulse_blade_kill
+	bool softball_enabled
 
 	int wme_kill_value
+	int softball_kill_value
 	int offhand_kill_value
 	int reset_kill_value
 	int melee_kill_value
@@ -27,11 +29,13 @@ void function SNS_Init()
 	AddCallback_OnPlayerRespawned( OnPlayerRespawned )
 	AddCallback_GameStateEnter( eGameState.WinnerDetermined, OnWinnerDetermined )
 
-	file.reset_pulse_blade_cooldown_on_pulse_blade_kill = GetCurrentPlaylistVarInt( "reset_pulse_blade_cooldown_on_pulse_blade_kill", 1 ) == 1
-	file.wme_kill_value = GetCurrentPlaylistVarInt( "wme_kill_value", 10 )
-	file.offhand_kill_value = GetCurrentPlaylistVarInt( "offhand_kill_value", 10 )
-	file.reset_kill_value = GetCurrentPlaylistVarInt( "reset_kill_value", 5 )
-	file.melee_kill_value = GetCurrentPlaylistVarInt( "melee_kill_value", 5 )
+	file.reset_pulse_blade_cooldown_on_pulse_blade_kill = GetCurrentPlaylistVarInt( "sns_reset_pulse_blade_cooldown_on_pulse_blade_kill", 1 ) == 1
+	file.softball_enabled = GetCurrentPlaylistVarInt( "sns_softball_enabled", 0 ) == 1
+	file.wme_kill_value = GetCurrentPlaylistVarInt( "sns_wme_kill_value", 10 )
+	file.softball_kill_value = GetCurrentPlaylistVarInt( "sns_softball_kill_value", 10 )
+	file.offhand_kill_value = GetCurrentPlaylistVarInt( "sns_offhand_kill_value", 10 )
+	file.reset_kill_value = GetCurrentPlaylistVarInt( "sns_reset_kill_value", 5 )
+	file.melee_kill_value = GetCurrentPlaylistVarInt( "sns_melee_kill_value", 5 )
 }
 
 void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
@@ -73,6 +77,11 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 			AddTeamScore( attacker.GetTeam(), file.wme_kill_value )
 			attacker.AddToPlayerGameStat( PGS_ASSAULT_SCORE, file.wme_kill_value )
 		}
+		else if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.mp_weapon_softball ) 
+		{
+			AddTeamScore( attacker.GetTeam(), file.softball_kill_value )
+			attacker.AddToPlayerGameStat( PGS_ASSAULT_SCORE, file.softball_kill_value )
+		}
 		else 
 		{
 			AddTeamScore( attacker.GetTeam(), file.offhand_kill_value )
@@ -110,6 +119,10 @@ void function OnPlayerRespawned( entity player )
 	
 	array<string> mods = ["sns", "pas_fast_ads", "tactical_cdr_on_kill", "pas_run_and_gun", "pas_fast_swap"]
 	player.GiveWeapon( "mp_weapon_wingman_n", mods)
+	if (file.softball_enabled) {
+		mods.append("jump_kit") // the funny
+		player.GiveWeapon( "mp_weapon_softball", mods)
+	}
 	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE )
 	player.GiveOffhandWeapon( file.offhand_weapon, OFFHAND_RIGHT )
 	player.GiveOffhandWeapon( "mp_weapon_grenade_sonar", OFFHAND_LEFT )
