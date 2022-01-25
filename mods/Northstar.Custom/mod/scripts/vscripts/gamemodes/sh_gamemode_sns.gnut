@@ -23,12 +23,14 @@ void function CreateGamemodeSNS()
 	GameMode_SetColor( GAMEMODE_SNS, [147, 204, 57, 255] )
 
 	AddPrivateMatchMode( GAMEMODE_SNS ) // add to private lobby modes
-
-	AddPrivateMatchModeSettingArbitrary( "#PL_sns", "wme_kill_value", "10" )
-	AddPrivateMatchModeSettingArbitrary( "#PL_sns", "offhand_kill_value", "10" )
-	AddPrivateMatchModeSettingArbitrary( "#PL_sns", "reset_kill_value", "5" )
-	AddPrivateMatchModeSettingArbitrary( "#PL_sns", "melee_kill_value", "5" )
-	AddPrivateMatchModeSettingEnum( "#PL_sns", "reset_pulse_blade_cooldown_on_pulse_blade_kill", [ "Disabled", "Enabled" ], "1"  )
+	AddPrivateMatchModeSettingEnum( "#PL_sns", "sns_reset_pulse_blade_cooldown_on_pulse_blade_kill", [ "Disabled", "Enabled" ], "1"  )
+	AddPrivateMatchModeSettingEnum( "#PL_sns", "sns_softball_enabled", [ "False", "True" ], "0"  )
+	AddPrivateMatchModeSettingArbitrary( "#PL_sns", "sns_softball_kill_value", "10" )
+	AddPrivateMatchModeSettingArbitrary( "#PL_sns", "sns_wme_kill_value", "10" )
+	AddPrivateMatchModeSettingArbitrary( "#PL_sns", "sns_offhand_kill_value", "10" )
+	AddPrivateMatchModeSettingArbitrary( "#PL_sns", "sns_reset_kill_value", "5" )
+	AddPrivateMatchModeSettingArbitrary( "#PL_sns", "sns_melee_kill_value", "5" )
+	
 
 	GameMode_SetDefaultScoreLimits( GAMEMODE_SNS, 300, 0 )
 
