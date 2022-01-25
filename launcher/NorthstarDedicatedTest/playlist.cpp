@@ -56,7 +56,7 @@ void SetPlaylistVarOverrideHook(const char* varName, const char* value)
 
 char* GetCurrentPlaylistVarHook(const char* varName, bool useOverrides)
 {
-	if (!useOverrides && CommandLine()->CheckParm("-maxplayersplaylist") && !strcmp(varName, "max_players"))
+	if (!useOverrides && !strcmp(varName, "max_players"))
 		useOverrides = true;
 
 	return GetCurrentPlaylistVarOriginal(varName, useOverrides);
@@ -64,9 +64,6 @@ char* GetCurrentPlaylistVarHook(const char* varName, bool useOverrides)
 
 int GetCurrentGamemodeMaxPlayersHook()
 {
-	if (!CommandLine()->CheckParm("-maxplayersplaylist"))
-		return GetCurrentGamemodeMaxPlayers();
-
 	char* maxPlayersStr = GetCurrentPlaylistVar("max_players", 0);
 	if (!maxPlayersStr)
 		return GetCurrentGamemodeMaxPlayers();
