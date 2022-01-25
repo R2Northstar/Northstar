@@ -14,12 +14,7 @@ struct {
 
 void function CodeCallback_MapInit()
 {
-	AddEvacNode( GetEnt( "evac_location1" ) )
-	AddEvacNode( GetEnt( "evac_location2" ) )
-	AddEvacNode( GetEnt( "evac_location3" ) )
-	AddEvacNode( GetEnt( "evac_location4" ) )
-	
-	SetEvacSpaceNode( GetEnt( "end_spacenode" ) )
+	AddCallback_EntitiesDidLoad( AddEvacNodes )
 	
 	// dissolve effects
 	AddDeathCallback( "player", WargamesDissolveDeadEntity )	
@@ -35,6 +30,16 @@ void function CodeCallback_MapInit()
 	if ( !IsFFAGame() )
 		ClassicMP_SetLevelIntro( WargamesIntroSetup, 20.0 )
 }
+
+void function AddEvacNodes()
+{
+	AddEvacNode( GetEnt( "evac_location1" ) )
+	AddEvacNode( GetEnt( "evac_location2" ) )
+	AddEvacNode( GetEnt( "evac_location3" ) )
+	AddEvacNode( GetEnt( "evac_location4" ) )
+	
+	SetEvacSpaceNode( GetEnt( "end_spacenode" ) )
+}	
 
 // dissolve effects
 void function WargamesDissolveDeadEntity( entity deadEnt, var damageInfo )
