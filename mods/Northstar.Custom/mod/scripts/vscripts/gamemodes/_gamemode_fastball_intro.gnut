@@ -77,13 +77,29 @@ void function OnPrematchStart()
 	}
 			
 	file.militiaBuddy = CreatePropDynamic( $"models/titans/buddy/titan_buddy.mdl" )
-	file.militiaBuddy.SetOrigin( militiaBuddySpawn.origin )
-	file.militiaBuddy.SetAngles( militiaBuddySpawn.angles )
+	if ( HasSwitchedSides() )
+	{
+		file.militiaBuddy.SetOrigin( imcBuddySpawn.origin )
+		file.militiaBuddy.SetAngles( imcBuddySpawn.angles )
+	}
+	else
+	{
+		file.militiaBuddy.SetOrigin( militiaBuddySpawn.origin )
+		file.militiaBuddy.SetAngles( militiaBuddySpawn.angles )
+	}
 	thread AnimateBuddy( file.militiaBuddy )
 	
 	file.imcBuddy = CreatePropDynamic( $"models/titans/buddy/titan_buddy.mdl" )
-	file.imcBuddy.SetOrigin( imcBuddySpawn.origin )
-	file.imcBuddy.SetAngles( imcBuddySpawn.angles )
+	if ( HasSwitchedSides() )
+	{
+		file.imcBuddy.SetOrigin( militiaBuddySpawn.origin )
+		file.imcBuddy.SetAngles( militiaBuddySpawn.angles )
+	}
+	else
+	{
+		file.imcBuddy.SetOrigin( imcBuddySpawn.origin )
+		file.imcBuddy.SetAngles( imcBuddySpawn.angles )
+	}
 	thread AnimateBuddy( file.imcBuddy )
 	
 	foreach ( entity player in GetPlayerArray() )

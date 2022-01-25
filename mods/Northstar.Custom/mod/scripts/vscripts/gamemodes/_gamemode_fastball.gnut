@@ -17,6 +17,7 @@ void function GamemodeFastball_Init()
 	
 	SetShouldUseRoundWinningKillReplay( true )
 	SetRoundBased( true )
+	SetSwitchSidesBased( true )
 	SetRespawnsEnabled( false )
 	Riff_ForceTitanAvailability( eTitanAvailability.Never )
 	Riff_ForceSetEliminationMode( eEliminationMode.Pilots )
