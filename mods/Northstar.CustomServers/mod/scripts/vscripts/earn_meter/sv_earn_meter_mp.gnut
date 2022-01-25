@@ -73,12 +73,12 @@ void function OnPlayerRespawned( entity player )
 
 void function EarnMeterMP_ReplaceReward( entity player, EarnObject reward, float rewardFrac )
 {
-    PlayerEarnMeter_Reset( player )
-    PlayerEarnMeter_SetReward( player, reward )
-    PlayerEarnMeter_SetRewardFrac( player, rewardFrac )
+	PlayerEarnMeter_Reset( player )
+	PlayerEarnMeter_SetReward( player, reward )
+	PlayerEarnMeter_SetRewardFrac( player, rewardFrac )
 
-    if( PlayerEarnMeter_GetRewardFrac( player ) != 0 )
-        PlayerEarnMeter_EnableReward( player )
+	if( PlayerEarnMeter_GetRewardFrac( player ) != 0 )
+		PlayerEarnMeter_EnableReward( player )
 }
 
 void function EarnMeterMP_PlayerLifeThink( entity player )
@@ -86,20 +86,20 @@ void function EarnMeterMP_PlayerLifeThink( entity player )
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "OnDestroy" )
 
-    EarnObject pilotReward
-    float pilotRewardFrac
+	EarnObject pilotReward
+	float pilotRewardFrac
 	int lastEarnMeterMode = PlayerEarnMeter_GetMode( player )
 	float lastPassiveGainTime = Time()
 
-    OnThreadEnd(
-        function() : ( player, pilotReward, pilotRewardFrac )
-        {
-            // Resets the meter to the pilot version if the player dies in a titan (otherwise pilot gets e-smoke earn meter, which is bad)
-            int earnMode = PlayerEarnMeter_GetMode( player )
-            if( earnMode == eEarnMeterMode.CORE || earnMode == eEarnMeterMode.CORE_ACTIVE )
-                EarnMeterMP_ReplaceReward( player, pilotReward, pilotRewardFrac )
-        }
-    )
+	OnThreadEnd(
+		function() : ( player, pilotReward, pilotRewardFrac )
+		{
+			// Resets the meter to the pilot version if the player dies in a titan (otherwise pilot gets e-smoke earn meter, which is bad)
+			int earnMode = PlayerEarnMeter_GetMode( player )
+			if( earnMode == eEarnMeterMode.CORE || earnMode == eEarnMeterMode.CORE_ACTIVE )
+				EarnMeterMP_ReplaceReward( player, pilotReward, pilotRewardFrac )
+		}
+	)
 
 	while ( true )
 	{
@@ -121,11 +121,11 @@ void function EarnMeterMP_PlayerLifeThink( entity player )
 		if ( desiredEarnMeterMode != lastEarnMeterMode )
 		{
 			PlayerEarnMeter_SetMode( player, desiredEarnMeterMode )
-            if ( lastEarnMeterMode == eEarnMeterMode.DEFAULT ) // Set these here in case the player changed boost during the match (e.g. in dropship)
-            {
-                pilotReward = PlayerEarnMeter_GetReward( player ) 
-                pilotRewardFrac = PlayerEarnMeter_GetRewardFrac( player )
-            }
+			if ( lastEarnMeterMode == eEarnMeterMode.DEFAULT ) // Set these here in case the player changed boost during the match (e.g. in dropship)
+			{
+				pilotReward = PlayerEarnMeter_GetReward( player ) 
+				pilotRewardFrac = PlayerEarnMeter_GetRewardFrac( player )
+			}
 
 			if ( desiredEarnMeterMode == eEarnMeterMode.DEFAULT )
 			{
@@ -135,14 +135,14 @@ void function EarnMeterMP_PlayerLifeThink( entity player )
 				if ( PlayerEarnMeter_GetRewardFrac( player ) != 0 )
 					PlayerEarnMeter_EnableReward( player )
 			}
-            else if ( desiredEarnMeterMode == eEarnMeterMode.CORE )
-            {
-                EarnMeterMP_ReplaceReward( player, EarnObject_GetByRef( "core_electric_smoke" ), CORE_SMOKE_FRAC )
-                if( SoulTitanCore_GetNextAvailableTime( player.GetTitanSoul() ) >= CORE_SMOKE_FRAC )
-                    PlayerEarnMeter_SetRewardUsed( player )
-            }
-            else if ( desiredEarnMeterMode == eEarnMeterMode.CORE_ACTIVE ) // Enables smoke after core use (doesn't show up during active, so looks fine)
-                PlayerEarnMeter_EnableReward( player )
+			else if ( desiredEarnMeterMode == eEarnMeterMode.CORE )
+			{
+				EarnMeterMP_ReplaceReward( player, EarnObject_GetByRef( "core_electric_smoke" ), CORE_SMOKE_FRAC )
+				if( SoulTitanCore_GetNextAvailableTime( player.GetTitanSoul() ) >= CORE_SMOKE_FRAC )
+					PlayerEarnMeter_SetRewardUsed( player )
+			}
+			else if ( desiredEarnMeterMode == eEarnMeterMode.CORE_ACTIVE ) // Enables smoke after core use (doesn't show up during active, so looks fine)
+				PlayerEarnMeter_EnableReward( player )
 
 			lastEarnMeterMode = desiredEarnMeterMode
 		}
@@ -173,9 +173,9 @@ void function EarnMeterMP_PlayerLifeThink( entity player )
 
 void function EarnMeterMP_BoostEarned( entity player )
 {
-    // Can't have smoke earned via meter. Otherwise, Auto Titan could hit reward frac and get nothing
-    if( player.IsTitan() )
-        return
+	// Can't have smoke earned via meter. Otherwise, Auto Titan could hit reward frac and get nothing
+	if( player.IsTitan() )
+		return
 
 	EarnObject earnobject = PlayerEarnMeter_GetReward( player )
 	BurnReward burncard = BurnReward_GetByRef( earnobject.ref )
