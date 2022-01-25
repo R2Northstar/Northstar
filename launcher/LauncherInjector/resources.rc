@@ -61,8 +61,8 @@ IDI_ICON1               ICON                    "ns_icon.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,3,0,0
- PRODUCTVERSION 1,3,0,0
+ FILEVERSION 0,0,0,0
+ PRODUCTVERSION 0,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -79,12 +79,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Northstar Developers"
             VALUE "FileDescription", "Northstar Launcher"
-            VALUE "FileVersion", "1.3.0.0"
+            VALUE "FileVersion", "DEV"
             VALUE "InternalName", "NorthstarLauncher.exe"
             VALUE "LegalCopyright", "Copyright (C) 2021"
             VALUE "OriginalFilename", "NorthstarLauncher.exe"
             VALUE "ProductName", "Northstar Launcher"
-            VALUE "ProductVersion", "1.3.0.0"
+            VALUE "ProductVersion", "DEV"
         END
     END
     BLOCK "VarFileInfo"

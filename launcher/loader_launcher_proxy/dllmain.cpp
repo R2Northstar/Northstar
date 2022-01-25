@@ -5,6 +5,7 @@
 #include <Shlwapi.h>
 #include <sstream>
 #include <fstream>
+#include <filesystem>
 
 HMODULE hLauncherModule;
 HMODULE hHookModule;
@@ -44,9 +45,13 @@ FARPROC GetLauncherMain()
 
 void LibraryLoadError(DWORD dwMessageId, const wchar_t* libName, const wchar_t* location)
 {
-    char text[2048];
-    std::string message = std::system_category().message(dwMessageId); 
+    char text[4096];
+    std::string message = std::system_category().message(dwMessageId);
     sprintf_s(text, "Failed to load the %ls at \"%ls\" (%lu):\n\n%hs", libName, location, dwMessageId, message.c_str());
+    if (dwMessageId == 126 && std::filesystem::exists(location))
+    {
+        sprintf_s(text, "%s\n\nThe file at the specified location DOES exist, so this error indicates that one of its *dependencies* failed to be found.", text);
+    }
     MessageBoxA(GetForegroundWindow(), text, "Northstar Launcher Proxy Error", 0);
 }
 

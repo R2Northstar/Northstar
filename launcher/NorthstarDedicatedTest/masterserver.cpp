@@ -11,7 +11,8 @@
 #include "rapidjson/error/en.h"
 #include "modmanager.h"
 #include "misccommands.h"
-
+#include <cstring>
+#include <regex>
 // NOTE for anyone reading this: we used to use httplib for requests here, but it had issues, so we're moving to curl now for masterserver requests
 // so httplib is used exclusively for server stuff now
 
@@ -39,6 +40,57 @@ CHostState__State_ChangeLevelSPType CHostState__State_ChangeLevelSP;
 
 typedef void(*CHostState__State_GameShutdownType)(CHostState* hostState);
 CHostState__State_GameShutdownType CHostState__State_GameShutdown;
+
+// Convert a hex digit char to integer.
+inline int hctod(char c) {
+	if (c >= 'A' && c <= 'F') {
+		return c - 'A' + 10;
+	}
+	else if (c >= 'a' && c <= 'f') {
+		return c - 'a' + 10;
+	}
+	else {
+		return c - '0';
+	}
+}
+
+// This function interprets all 4-hexadecimal-digit unicode codepoint characters like \u4E2D to UTF-8 encoding.
+std::string unescape_unicode(const std::string &str) {
+	std::string result;
+	std::regex r("\\\\u([a-f\\d]{4})", std::regex::icase);
+	auto matches_begin = std::sregex_iterator(str.begin(), str.end(), r);
+	auto matches_end = std::sregex_iterator();
+	std::smatch last_match;
+	for (std::sregex_iterator i = matches_begin; i != matches_end; ++i) {
+		last_match = *i;
+		result.append(last_match.prefix());
+		unsigned int cp = 0;
+		for (int i = 2; i <= 5; ++i) {
+			cp *= 16;
+			cp += hctod(last_match.str()[i]);
+		}
+		if (cp <= 0x7F) {
+			result.push_back(cp);
+		}
+		else if (cp <= 0x7FF) {
+			result.push_back((cp >> 6) | 0b11000000 & (~(1 << 5)));
+			result.push_back(cp & ((1 << 6) - 1) | 0b10000000 & (~(1 << 6)));
+		}
+		else if (cp <= 0xFFFF) {
+			result.push_back((cp >> 12) | 0b11100000 & (~(1 << 4)));
+			result.push_back((cp >> 6) & ((1 << 6) - 1) | 0b10000000 & (~(1 << 6)));
+			result.push_back(cp & ((1 << 6) - 1) | 0b10000000 & (~(1 << 6)));
+		}
+	}
+	result.append(last_match.suffix());
+	return result;
+}
+
+void UpdateServerInfoFromUnicodeToUTF8()
+{
+	g_MasterServerManager->ns_auth_srvName = unescape_unicode(Cvar_ns_server_name->m_pszString);
+	g_MasterServerManager->ns_auth_srvDesc = unescape_unicode(Cvar_ns_server_desc->m_pszString);
+}
 
 const char* HttplibErrorToString(httplib::Error error)
 {
@@ -786,8 +838,8 @@ void MasterServerManager::AddSelfToServerList(int port, int authPort, char* name
 						// send all registration info so we have all necessary info to reregister our server if masterserver goes down, without a restart
 						// this isn't threadsafe :terror:
 						{
-							char* escapedNameNew = curl_easy_escape(curl, Cvar_ns_server_name->m_pszString, NULL);
-							char* escapedDescNew = curl_easy_escape(curl, Cvar_ns_server_desc->m_pszString, NULL);
+							char* escapedNameNew = curl_easy_escape(curl, g_MasterServerManager->ns_auth_srvName.c_str(), NULL);
+							char* escapedDescNew = curl_easy_escape(curl, g_MasterServerManager->ns_auth_srvDesc.c_str(), NULL);
 							char* escapedMapNew = curl_easy_escape(curl, g_pHostState->m_levelName, NULL);
 							char* escapedPlaylistNew = curl_easy_escape(curl, GetCurrentPlaylistName(), NULL);
 							char* escapedPasswordNew = curl_easy_escape(curl, Cvar_ns_server_password->m_pszString, NULL);
@@ -1044,6 +1096,8 @@ void CHostState__State_NewGameHook(CHostState* hostState)
 	// Copy new server name cvar to source
 	Cvar_hostname->m_pszString = Cvar_ns_server_name->m_pszString;
 	Cvar_hostname->m_StringLength = Cvar_ns_server_name->m_StringLength;
+	// This calls the function that converts unicode strings from servername and serverdesc to UTF-8
+	UpdateServerInfoFromUnicodeToUTF8();
 
 	g_MasterServerManager->AddSelfToServerList(Cvar_hostport->m_nValue, Cvar_ns_player_auth_port->m_nValue, Cvar_ns_server_name->m_pszString, Cvar_ns_server_desc->m_pszString, hostState->m_levelName, (char*)GetCurrentPlaylistName(), maxPlayers, Cvar_ns_server_password->m_pszString);
 	g_ServerAuthenticationManager->StartPlayerAuthServer();

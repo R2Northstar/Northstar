@@ -65,16 +65,28 @@ FARPROC GetLauncherMain()
 
 void LibraryLoadError(DWORD dwMessageId, const wchar_t* libName, const wchar_t* location)
 {
-    char text[4096];
+    char text[8192];
     std::string message = std::system_category().message(dwMessageId);
     
-    sprintf_s(text, "Failed to load the %ls at \"%ls\" (%lu):\n\n%hs\n\nMake sure you followed the Northstar installation instructions carefully.", libName, location, dwMessageId, message.c_str());
+    sprintf_s(text, "Failed to load the %ls at \"%ls\" (%lu):\n\n%hs\n\nMake sure you followed the Northstar installation instructions carefully before reaching out for help.", libName, location, dwMessageId, message.c_str());
     
-    if (!fs::exists("Titanfall2.exe") && fs::exists("..\\Titanfall2.exe"))
+    if (dwMessageId == 126 && std::filesystem::exists(location))
+    {
+        sprintf_s(text, "%s\n\nThe file at the specified location DOES exist, so this error indicates that one of its *dependencies* failed to be found.\n\nTry the following steps:\n1. Install Visual C++ 2022 Redistributable: https://aka.ms/vs/17/release/vc_redist.x64.exe\n2. Repair game files", text);
+    }
+    else if (!fs::exists("Titanfall2.exe") && (fs::exists("..\\Titanfall2.exe") || fs::exists("..\\..\\Titanfall2.exe")))
     {
         auto curDir = std::filesystem::current_path().filename().string();
         auto aboveDir = std::filesystem::current_path().parent_path().filename().string();
         sprintf_s(text, "%s\n\nWe detected that in your case you have extracted the files into a *subdirectory* of your Titanfall 2 installation.\nPlease move all the files and folders from current folder (\"%s\") into the Titanfall 2 installation directory just above (\"%s\").\n\nPlease try out the above steps by yourself before reaching out to the community for support.", text, curDir.c_str(), aboveDir.c_str());
+    }
+    else if (!fs::exists("Titanfall2.exe"))
+    {
+        sprintf_s(text, "%s\n\nRemember: you need to unpack the contents of this archive into your Titanfall 2 game installation directory, not just to any random folder.", text);
+    }
+    else if (fs::exists("Titanfall2.exe"))
+    {
+        sprintf_s(text, "%s\n\nTitanfall2.exe has been found in the current directory: is the game installation corrupted or did you not unpack all Northstar files here?", text);
     }
 
     MessageBoxA(GetForegroundWindow(), text, "Northstar Launcher Error", 0);
