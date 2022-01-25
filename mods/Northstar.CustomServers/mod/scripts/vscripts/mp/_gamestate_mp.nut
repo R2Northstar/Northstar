@@ -97,7 +97,7 @@ void function SetGameState( int newState )
 
 void function GameState_EntitiesDidLoad()
 {
-	if ( GetClassicMPMode() )
+	if ( GetClassicMPMode() || ClassicMP_ShouldTryIntroAndEpilogueWithoutClassicMP() )
 		ClassicMP_SetupIntro()
 }
 
@@ -180,7 +180,7 @@ void function GameStateEnter_Prematch()
 	SetServerVar( "gameEndTime", Time() + timeLimit + ClassicMP_GetIntroLength() )
 	SetServerVar( "roundEndTime", Time() + ClassicMP_GetIntroLength() + GameMode_GetRoundTimeLimit( GAMETYPE ) * 60 )
 	
-	if ( !GetClassicMPMode() )
+	if ( !GetClassicMPMode() && !ClassicMP_ShouldTryIntroAndEpilogueWithoutClassicMP() )
 		thread StartGameWithoutClassicMP()
 }
 
