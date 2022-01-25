@@ -1583,3 +1583,8 @@ string function JoinStringArray( array<string> strings, string separator )
 
 	return output;
 }
+
+bool function StartsWith( string target, string startsWith )
+{
+	return target.find( startsWith ) == 0
+}
