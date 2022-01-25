@@ -39,7 +39,7 @@ const bool DEFAULT_DEATH_ON_TEAM_BLEEDOUT = false
 
 void function BleedoutDamage_Init()
 {
-	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_BLEEDOUT", "riff_player_bleedout", [ "#SETTING_DEFAULT", "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
+	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_BLEEDOUT", "riff_player_bleedout", [ "#SETTING_DISABLED", "#SETTING_DEFAULT", "#SETTING_ENABLED" ], "0" )
 	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_BLEEDOUT", "player_bleedout_forceHolster", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], DEFAULT_FORCE_WEAPON_HOLSTER.tostring() )
 	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_BLEEDOUT", "player_bleedout_forceDeathOnTeamBleedout", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], DEFAULT_DEATH_ON_TEAM_BLEEDOUT.tostring() )
 	AddPrivateMatchModeSettingArbitrary( "#MODE_SETTING_CATEGORY_BLEEDOUT", "player_bleedout_bleedoutTime", DEFAULT_BLEEDOUT_TIME.tostring() )
