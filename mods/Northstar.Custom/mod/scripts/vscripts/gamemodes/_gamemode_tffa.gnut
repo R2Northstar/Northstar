@@ -6,6 +6,7 @@ const float TFFAIntroLength = 15.0
 
 void function GamemodeTFFA_Init()
 {
+	SetSpawnpointGamemodeOverride( FFA )
 	Riff_ForceSetSpawnAsTitan( eSpawnAsTitan.Always )
 	Riff_ForceTitanExitEnabled( eTitanExitEnabled.Never )
 	TrackTitanDamageInPlayerGameStat( PGS_ASSAULT_SCORE )
@@ -15,8 +16,6 @@ void function GamemodeTFFA_Init()
 	ClassicMP_SetCustomIntro( TFFAIntroSetup, TFFAIntroLength )
 	
 	AddCallback_OnPlayerKilled( AddTeamScoreForPlayerKilled ) // dont have to track autotitan kills since you cant leave your titan in this mode
-	
-	// probably needs scoreevent earnmeter values
 }
 
 void function TFFAIntroSetup()
