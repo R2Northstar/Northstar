@@ -130,10 +130,7 @@ void function EarnMeterMP_PlayerLifeThink( entity player )
 			if ( desiredEarnMeterMode == eEarnMeterMode.DEFAULT )
 			{
 				if ( !IsTitanAvailable( player ) && lastEarnMeterMode == eEarnMeterMode.PET ) // this should only be the case after player's auto died (or they ejected)
-				{
-					lastPassiveGainTime = Time()
 					EarnMeterMP_ReplaceReward( player, pilotReward, pilotRewardFrac )
-				}
 
 				if ( PlayerEarnMeter_GetRewardFrac( player ) != 0 )
 					PlayerEarnMeter_EnableReward( player )
