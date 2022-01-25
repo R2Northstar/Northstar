@@ -119,29 +119,7 @@ void function AddPrivateMatchModeSettingArbitrary( string category, string playl
 	#endif
 }
 
-void function AddPrivateMatchModeSettingEnum( string category, string playlistVar, array< string > enums, string defaultValue, string localizedName = "" )
-{
-	table< string, string > pairs
-	for ( int i = 0; i < enums.len(); i++ )
-		pairs[ enums[ i ] ] <- i.tostring()
-		
-	AddPrivateMatchModeSettingEnumEx( category, playlistVar, pairs, defaultValue, localizedName )
-}
-
-void function AddPrivateMatchModeSettingEnumUIHack( string category, string playlistVar, string serializedEnumPairs, string defaultValue, string localizedName )
-{
-	// this fucking sucks, but RunUIScript won't take tables, so we serialize to a string
-	// we use \n as a delimeter and basically serialize to an array
-	array< string > serializedArray = split( serializedEnumPairs, "\n" )
-	table< string, string > enumPairs
-
-	for ( int i = 0; i < serializedArray.len(); i += 2 )
-		enumPairs[ serializedArray[ i ] ] <- serializedArray[ i + 1 ]
-		
-	AddPrivateMatchModeSettingEnumEx( category, playlistVar, enumPairs, defaultValue, localizedName )
-}
-
-void function AddPrivateMatchModeSettingEnumEx( string category, string playlistVar, table< string, string > enumPairs, string defaultValue, string localizedName = "" )
+void function AddPrivateMatchModeSettingEnum( string category, string playlistVar, array<string> enums, string defaultValue, string localizedName = "" )
 {
 	if ( localizedName == "" )
 		localizedName = "#" + playlistVar
@@ -167,10 +145,10 @@ void function AddPrivateMatchModeSettingEnumEx( string category, string playlist
 		setting.localizedName = localizedName
 		setting.isEnumSetting = true
 		
-		foreach ( string name, string value in enumPairs )
+		foreach ( int i, value in enums )
 		{
-			setting.enumNames.append( name )
-			setting.enumValues.append( value )
+			setting.enumNames.append( value )
+			setting.enumValues.append( string( i ) )
 		}
 		
 		file.customMatchSettingsByCategory[ category ].append( setting )
@@ -180,11 +158,37 @@ void function AddPrivateMatchModeSettingEnumEx( string category, string playlist
 		// call this on ui too so the client and ui states are the same
 		// note: RunUIScript can't take tables, so manually serialize ( sucks, but just how it is ), using \n as a delimeter since i dont believe its ever used in vars
 		string serializedString
-		foreach ( string k, string v in enumPairs )
-			serializedString += k + "\n" + v + "\n"
+		foreach ( int i, value in enums )
+			serializedString += value + "\n" + string( i ) + "\n"
 		
 		RunUIScript( "AddPrivateMatchModeSettingEnumUIHack", category, playlistVar, serializedString, defaultValue, localizedName )
 	#endif
+}
+
+void function AddPrivateMatchModeSettingEnumUIHack( string category, string playlistVar, string serializedEnumPairs, string defaultValue, string localizedName )
+{
+	// this fucking sucks, but RunUIScript won't take tables, so we serialize to a string
+	// we use \n as a delimeter and basically serialize to an array
+	array<string> serializedArray = split( serializedEnumPairs, "\n" )
+	array<string> enums = []
+
+	for ( int i = 0; i < serializedArray.len(); i += 2 )
+	{
+		enums.append( serializedArray[i] )
+	}
+
+	AddPrivateMatchModeSettingEnum( category, playlistVar, enums, defaultValue, localizedName )
+}
+
+// Sorts specific gamemode settings to the end of the list
+int function SortMatchSettings( string categoryA, string categoryB )
+{
+	// todo: add a 'startswith' string helper function
+	if ( categoryA.find( "#PL_" ) == 0 || categoryA.find( "#GAMEMODE_" ) == 0 )
+		return 1
+	else if (categoryB.find( "#PL_" ) == 0 || categoryB.find( "#GAMEMODE_" ) == 0)
+		return 0
+	return 0
 }
 
 array< string > function GetPrivateMatchSettingCategories( bool uiAllowAllModeCategories = false )
@@ -192,28 +196,16 @@ array< string > function GetPrivateMatchSettingCategories( bool uiAllowAllModeCa
 	array< string > categories
 	foreach ( string k, v in file.customMatchSettingsByCategory )
 	{
-		// can only do this in ui because it relies on GetUIVar
 		#if UI
-			bool gamemode = k.find( "#GAMEMODE_" ) == 0
-			if ( !uiAllowAllModeCategories && ( gamemode || k.find( "#PL_" ) == 0 ) )
-			{
-				if ( gamemode )
-				{
-					if ( k.slice( 10 ) != PrivateMatch_GetSelectedMode() )
-					{	
-						continue
-					}
-				}
-				else if ( k.slice( 4 ) != PrivateMatch_GetSelectedMode() )
-				{
-					continue 
-				}
-			}
+		bool differentPlaylist = k.find( "#PL_" ) == 0 && k.slice( 4 ) != PrivateMatch_GetSelectedMode()
+		bool differentGamemode = k.find( "#GAMEMODE_" ) == 0 && k.slice( 10 ) != PrivateMatch_GetSelectedMode()
+		if ( differentPlaylist || differentGamemode )
+			continue
 		#endif
-	
 		categories.append( k )
 	}
-	
+
+	categories.sort( SortMatchSettings )
 	return categories
 }
 
