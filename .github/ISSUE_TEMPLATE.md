@@ -20,3 +20,5 @@ Replace this line with the bug you've encountered and what is the expected behav
 ### Specifications
   - Northstar version:
   - Platform: <!-- Origin/Steam -->
+
+<!-- You can add log files and screenshots below this line via drag-and-drop -->
