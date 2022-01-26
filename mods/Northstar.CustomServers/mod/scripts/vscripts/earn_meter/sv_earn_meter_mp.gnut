@@ -74,6 +74,8 @@ void function OnPlayerRespawned( entity player )
 void function EarnMeterMP_ReplaceReward( entity player, EarnObject reward, float rewardFrac )
 {
 	PlayerEarnMeter_Reset( player )
+	if ( reward.id < 0 )  // Don't set the reward if it is nonexistent
+		return
 	PlayerEarnMeter_SetReward( player, reward )
 	PlayerEarnMeter_SetRewardFrac( player, rewardFrac )
 
@@ -86,8 +88,8 @@ void function EarnMeterMP_PlayerLifeThink( entity player )
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "OnDestroy" )
 
-	EarnObject pilotReward
-	float pilotRewardFrac
+	EarnObject pilotReward = PlayerEarnMeter_GetReward( player ) 
+	float pilotRewardFrac = PlayerEarnMeter_GetRewardFrac( player )
 	int lastEarnMeterMode = PlayerEarnMeter_GetMode( player )
 	float lastPassiveGainTime = Time()
 
