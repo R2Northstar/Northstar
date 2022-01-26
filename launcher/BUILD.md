@@ -1,7 +1,7 @@
 # Build Instructions
 The following steps will allow you to compile your own NorthstarLauncher executable from the code in this repository. If you still have questions, you may ask in the [Discord Server](https://discord.gg/r2northstar)
 
-*This guide assumes you have already installed Northstar as shown in [this page](https://github.com/R2Northstar/Northstar/wiki/Basic-Setup)*
+*This guide assumes you have already installed Northstar as shown in [this page](https://r2northstar.gitbook.io/r2northstar-wiki/installing-northstar/basic-setup)*
 
 ### Steps
 1. **Download the code** from the [R2Northstar/NorthstarLauncher](https://github.com/R2Northstar/NorthstarLauncher) repo
