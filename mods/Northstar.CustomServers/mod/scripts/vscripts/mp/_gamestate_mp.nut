@@ -670,14 +670,16 @@ void function CleanUpEntitiesForRoundEnd()
 		
 		if ( IsAlive( player ) )
 			player.Die( svGlobal.worldspawn, svGlobal.worldspawn, { damageSourceId = eDamageSourceId.round_end } )
-		
-		if ( IsAlive( player.GetPetTitan() ) )
-			player.GetPetTitan().Destroy()
 	}
 	
 	foreach ( entity npc in GetNPCArray() )
-		if ( IsValid( npc ) )
-			npc.Destroy() // need this because getnpcarray includes the pettitans we just killed at this point
+	{
+		if ( !IsValid( npc ) )
+			continue
+	
+		// kill rather than destroy, as destroying will cause issues with children which is an issue especially for dropships and titans
+		npc.Die( svGlobal.worldspawn, svGlobal.worldspawn, { damageSourceId = eDamageSourceId.round_end } )
+	}
 	
 	// destroy weapons
 	ClearDroppedWeapons()

@@ -318,11 +318,11 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 	else
 		player.SetObserverTarget( null )
 	
-	if ( !file.playerDeathsHidden )
-	{
+	if ( ( GamePlayingOrSuddenDeath() || GetGameState() == eGameState.Epilogue ) && !file.playerDeathsHidden )
 		player.AddToPlayerGameStat( PGS_DEATHS, 1 )
+	
+	if ( !file.playerDeathsHidden )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_YouDied", attacker.GetEncodedEHandle(), GetHealthFrac( attacker ), methodOfDeath )
-	}
 
 	float deathcamLength = GetDeathCamLength( player )
 	wait deathcamLength
@@ -460,6 +460,7 @@ void function RespawnAsTitan( entity player, bool manualPosition = false )
 	camera.Fire( "Enable", "!activator", 0, player )
 	
 	player.EndSignal( "OnDestroy" )
+	titan.EndSignal( "OnDestroy" )
 	OnThreadEnd( function() : ( player, titan, camera )
 	{
 		if ( IsValid( player ) )
@@ -468,7 +469,11 @@ void function RespawnAsTitan( entity player, bool manualPosition = false )
 			player.isSpawning = false
 		}
 	
-		titan.Destroy() // pilotbecomestitan leaves an npc titan that we need to delete
+		if ( IsValid( titan ) )
+			titan.Destroy() // pilotbecomestitan leaves an npc titan that we need to delete
+		else
+			RespawnAsPilot( player ) // this is 100% an edgecase, just avoid softlocking if we ever hit it in playable gamestates
+			
 		camera.Fire( "Disable", "!activator", 0, player )
 		camera.Destroy()
 	})
