@@ -334,7 +334,7 @@ void function DropFlagIfPhased( entity player, entity flag )
 		DropFlag( player, true )
 	})
 	
-	while( flag.GetParent() == player )
+	while( IsValid( flag ) && flag.GetParent() == player )
 		WaitFrame()
 }
 
