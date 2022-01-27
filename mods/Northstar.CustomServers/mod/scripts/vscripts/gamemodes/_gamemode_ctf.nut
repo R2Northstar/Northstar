@@ -221,6 +221,7 @@ void function CreateFlags()
 		flag.SetModel( CTF_FLAG_MODEL )
 		flag.SetOrigin( spawn.GetOrigin() + < 0, 0, base.GetBoundingMaxs().z * 2 > ) // ensure flag doesn't spawn clipped into geometry
 		flag.SetVelocity( < 0, 0, 1 > )
+		SetFlagStateForTeam( flag.GetTeam(), eFlagState.None ) // reset flag state to prevent half-time oddities
 		
 		flag.s.canTake <- true
 		flag.s.playersReturning <- []
