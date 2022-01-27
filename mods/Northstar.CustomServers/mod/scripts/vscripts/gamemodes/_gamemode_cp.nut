@@ -12,15 +12,24 @@ struct HardpointStruct
 	entity hardpoint
 	entity trigger
 	entity prop
-	
+
 	array<entity> imcCappers
 	array<entity> militiaCappers
 }
+struct CP_PlayerStruct
+{
+	entity player
+	bool isOnHardpoint
+	array<float> timeOnPoints //floats sorted same as in hardpoints array not by ID
+
+}
+
 
 struct {
 	bool ampingEnabled = true
-	
+
 	array<HardpointStruct> hardpoints
+	array<CP_PlayerStruct> players
 } file
 
 void function GamemodeCP_Init()
@@ -30,11 +39,97 @@ void function GamemodeCP_Init()
 	RegisterSignal( "HardpointCaptureStart" )
 	ScoreEvent_SetupEarnMeterValuesForMixedModes()
 
+	AddCallback_OnPlayerKilled(GamemodeCP_OnPlayerKilled)
 	AddCallback_EntitiesDidLoad( SpawnHardpoints )
 	AddCallback_GameStateEnter( eGameState.Playing, StartHardpointThink )
-}
+	AddCallback_OnClientConnected(GamemodeCP_InitPlayer)
+	AddCallback_OnClientDisconnected(GamemodeCP_RemovePlayer)
 
-void function RateSpawnpoints_CP( int checkClass, array<entity> spawnpoints, int team, entity player ) 
+
+	ScoreEvent_SetEarnMeterValues("KillPilot",0.1,0.12)
+	ScoreEvent_SetEarnMeterValues("KillTitan",0,0)
+	ScoreEvent_SetEarnMeterValues("TitanKillTitan",0,0)
+	ScoreEvent_SetEarnMeterValues("PilotBatteryStolen",0,35)
+	ScoreEvent_SetEarnMeterValues("Headshot",0,0.02)
+	ScoreEvent_SetEarnMeterValues("FirstStrike",0,0.05)
+
+	ScoreEvent_SetEarnMeterValues("ControlPointCapture",0.1,0.1)
+	ScoreEvent_SetEarnMeterValues("ControlPointHold",0.02,0.02)
+	ScoreEvent_SetEarnMeterValues("ControlPointAmped",0.2,0.15)
+	ScoreEvent_SetEarnMeterValues("ControlPointAmpedHold",0.05,0.05)
+
+	ScoreEvent_SetEarnMeterValues("HardpointAssault",0.10,0.15)
+	ScoreEvent_SetEarnMeterValues("HardpointDefense",0.5,0.10)
+	ScoreEvent_SetEarnMeterValues("HardpointPerimeterDefense",0.1,0.12)
+	ScoreEvent_SetEarnMeterValues("HardpointSiege",0.1,0.15)
+	ScoreEvent_SetEarnMeterValues("HardpointSnipe",0.1,0.15)
+
+}
+void function GamemodeCP_OnPlayerKilled(entity victim, entity attacker, var damageInfo)
+{
+	HardpointStruct attackerCP
+	HardpointStruct victimCP
+
+	if(!attacker.IsPlayer())
+		return
+
+	foreach(HardpointStruct hardpoint in file.hardpoints)
+	{
+		if(hardpoint.imcCappers.contains(victim))
+			victimCP = hardpoint
+		if(hardpoint.militiaCappers.contains(victim))
+			victimCP = hardpoint
+
+		if(hardpoint.imcCappers.contains(attacker))
+			attackerCP = hardpoint
+		if(hardpoint.militiaCappers.contains(attacker))
+			attackerCP = hardpoint
+	}
+
+	if((victimCP.hardpoint!=null)&&(attackerCP.hardpoint!=null))
+	{
+		if(victimCP==attackerCP)
+		{
+			if(victimCP.hardpoint.GetTeam()==attacker.GetTeam())
+			{
+				AddPlayerScore( attacker , "HardpointDefense", victim )
+				attacker.AddToPlayerGameStat(PGS_DEFENSE_SCORE,POINTVALUE_HARDPOINT_DEFENSE)
+			}
+			else if((victimCP.hardpoint.GetTeam()==victim.GetTeam())||(GetHardpointCappingTeam(victimCP)==victim.GetTeam()))
+			{
+				AddPlayerScore( attacker, "HardpointAssault", victim )
+				attacker.AddToPlayerGameStat(PGS_ASSAULT_SCORE,POINTVALUE_HARDPOINT_ASSAULT)
+			}
+		}
+	}
+	else if((victimCP.hardpoint!=null))//siege or snipe
+	{
+
+		if(Distance(victim.GetOrigin(),attacker.GetOrigin())>=1875)//1875 inches(units) are 47.625 meters
+		{
+			AddPlayerScore( attacker , "HardpointSnipe", victim )
+			attacker.AddToPlayerGameStat(PGS_ASSAULT_SCORE,POINTVALUE_HARDPOINT_SNIPE)
+		}
+		else{
+			AddPlayerScore( attacker , "HardpointSiege", victim )
+			attacker.AddToPlayerGameStat(PGS_ASSAULT_SCORE,POINTVALUE_HARDPOINT_SIEGE)
+		}
+	}
+	else if(attackerCP.hardpoint!=null)//Perimeter Defense
+	{
+		if(attackerCP.hardpoint.GetTeam()==attacker.GetTeam())
+			AddPlayerScore( attacker , "HardpointPerimeterDefense", victim)
+			attacker.AddToPlayerGameStat(PGS_DEFENSE_SCORE,POINTVALUE_HARDPOINT_PERIMETER_DEFENSE)
+	}
+
+	foreach(CP_PlayerStruct player in file.players) //Reset Victim Holdtime Counter
+	{
+		if(player.player == victim)
+			player.timeOnPoints = [0.0,0.0,0.0]
+	}
+
+}
+void function RateSpawnpoints_CP( int checkClass, array<entity> spawnpoints, int team, entity player )
 {
 	if ( HasSwitchedSides() )
 		team = GetOtherTeam( team )
@@ -155,12 +250,124 @@ void function StartHardpointThink()
 		thread HardpointThink( hardpoint )
 }
 
+void function CapturePointForTeam(HardpointStruct hardpoint, int Team)
+{
+
+	SetHardpointState(hardpoint,CAPTURE_POINT_STATE_CAPTURED)
+	SetTeam( hardpoint.hardpoint, Team )
+	SetTeam( hardpoint.prop, Team )
+	EmitSoundOnEntityToTeamExceptPlayer( hardpoint.hardpoint, "hardpoint_console_captured", Team, null )
+	GamemodeCP_VO_Captured( hardpoint.hardpoint )
+
+
+	array<entity> allCappers
+	allCappers.extend(hardpoint.militiaCappers)
+	allCappers.extend(hardpoint.imcCappers)
+
+
+	foreach(entity player in allCappers)
+	{
+		if(player.IsPlayer()){
+			AddPlayerScore(player,"ControlPointCapture")
+			player.AddToPlayerGameStat(PGS_ASSAULT_SCORE,POINTVALUE_HARDPOINT_CAPTURE)
+		}
+	}
+
+}
+
+void function GamemodeCP_InitPlayer(entity player)
+{
+	CP_PlayerStruct playerStruct
+	playerStruct.player = player
+	playerStruct.timeOnPoints = [0.0,0.0,0.0]
+	playerStruct.isOnHardpoint = false
+	file.players.append(playerStruct)
+	thread PlayerThink(playerStruct)
+}
+void function GamemodeCP_RemovePlayer(entity player)
+{
+
+	foreach(index,CP_PlayerStruct playerStruct in file.players)
+	{
+		if(playerStruct.player==player)
+			file.players.remove(index)
+	}
+}
+
+void function PlayerThink(CP_PlayerStruct player)
+{
+
+	if(!IsValid(player.player))
+		return
+
+	if(!player.player.IsPlayer())
+		return
+
+	while(!GamePlayingOrSuddenDeath())
+		WaitFrame()
+
+	float lastTime = Time()
+	WaitFrame()
+
+
+
+	while(GamePlayingOrSuddenDeath()&&IsValid(player.player))
+	{
+		float currentTime = Time()
+		float deltaTime = currentTime - lastTime
+
+
+
+		if(player.isOnHardpoint)
+		{
+			bool hardpointBelongsToPlayerTeam = false
+
+			foreach(index,HardpointStruct hardpoint in file.hardpoints)
+			{
+				if(GetHardpointState(hardpoint)>=CAPTURE_POINT_STATE_CAPTURED)
+				{
+					if((hardpoint.hardpoint.GetTeam()==TEAM_MILITIA)&&(hardpoint.militiaCappers.contains(player.player)))
+						hardpointBelongsToPlayerTeam = true
+
+					if((hardpoint.hardpoint.GetTeam()==TEAM_IMC)&&(hardpoint.imcCappers.contains(player.player)))
+						hardpointBelongsToPlayerTeam = true
+
+				}
+				if(hardpointBelongsToPlayerTeam)
+				{
+					player.timeOnPoints[index] += deltaTime
+					if(player.timeOnPoints[index]>=10)
+					{
+						player.timeOnPoints[index] -= 10
+						if(GetHardpointState(hardpoint)==CAPTURE_POINT_STATE_AMPED)
+						{
+							AddPlayerScore(player.player,"ControlPointAmpedHold")
+							player.player.AddToPlayerGameStat( PGS_DEFENSE_SCORE, POINTVALUE_HARDPOINT_AMPED_HOLD )
+						}
+						else
+						{
+							AddPlayerScore(player.player,"ControlPointHold")
+							player.player.AddToPlayerGameStat( PGS_DEFENSE_SCORE, POINTVALUE_HARDPOINT_HOLD )
+						}
+					}
+					break
+				}
+			}
+		}
+
+		lastTime = currentTime
+		WaitFrame()
+	}
+
+}
+
 void function HardpointThink( HardpointStruct hardpoint )
 {
 	entity hardpointEnt = hardpoint.hardpoint
 
 	float lastTime = Time()
 	float lastScoreTime = Time()
+	bool hasBeenAmped = false
 
 	WaitFrame() // wait a frame so deltaTime is never zero
 
@@ -244,28 +451,16 @@ void function HardpointThink( HardpointStruct hardpoint )
 		else if(cappingTeam==TEAM_UNASSIGNED)//nobody on point
 		{
 
-			switch(GetHardpointState(hardpoint))
+			if((GetHardpointState(hardpoint)==CAPTURE_POINT_STATE_AMPED)||(GetHardpointState(hardpoint)==CAPTURE_POINT_STATE_AMPING))
 			{
-				case CAPTURE_POINT_STATE_UNASSIGNED:
-					SetHardpointCaptureProgress(hardpoint,max(0.0,GetHardpointCaptureProgress(hardpoint)-(deltaTime/CAPTURE_DURATION_CAPTURE)))
-					if(GetHardpointCaptureProgress(hardpoint)==0.0)
-					{
-						SetHardpointState(hardpoint,CAPTURE_POINT_STATE_UNASSIGNED)
-						SetHardpointCappingTeam(hardpoint,TEAM_UNASSIGNED)
-					}
-					break
-				case CAPTURE_POINT_STATE_CAPTURED:
-					SetHardpointCappingTeam(hardpoint,hardpointEnt.GetTeam())
-					SetHardpointCaptureProgress(hardpoint,min(1.0,GetHardpointCaptureProgress(hardpoint)+(deltaTime/CAPTURE_DURATION_CAPTURE)))
-					break
-				case CAPTURE_POINT_STATE_AMPED:
-				case CAPTURE_POINT_STATE_AMPING:
-					SetHardpointCappingTeam(hardpoint,hardpointEnt.GetTeam())
-					SetHardpointCaptureProgress(hardpoint,max(1.0,GetHardpointCaptureProgress(hardpoint)-(deltaTime/HARDPOINT_AMPED_DELAY)))
-					if(GetHardpointCaptureProgress(hardpoint)<=1.001)
-						SetHardpointState(hardpoint,CAPTURE_POINT_STATE_CAPTURED)
-					break
+				SetHardpointCappingTeam(hardpoint,hardpointEnt.GetTeam())
+				SetHardpointCaptureProgress(hardpoint,max(1.0,GetHardpointCaptureProgress(hardpoint)-(deltaTime/HARDPOINT_AMPED_DELAY)))
+				if(GetHardpointCaptureProgress(hardpoint)<=1.001)
+					SetHardpointState(hardpoint,CAPTURE_POINT_STATE_CAPTURED)
 			}
+			if(GetHardpointState(hardpoint)>=CAPTURE_POINT_STATE_CAPTURED)
+				SetHardpointCappingTeam(hardpoint,TEAM_UNASSIGNED)
+
 		}
 		else if(hardpointEnt.GetTeam()==TEAM_UNASSIGNED)
 		{
@@ -275,11 +470,8 @@ void function HardpointThink( HardpointStruct hardpoint )
 				SetHardpointCappingTeam(hardpoint,cappingTeam)
 				if(GetHardpointCaptureProgress(hardpoint)>=1.0)
 				{
-					SetHardpointState(hardpoint,CAPTURE_POINT_STATE_CAPTURED)
-					SetTeam( hardpointEnt, cappingTeam )
-					SetTeam( hardpoint.prop, cappingTeam )
-					EmitSoundOnEntityToTeamExceptPlayer( hardpointEnt, "hardpoint_console_captured", cappingTeam, null )
-					GamemodeCP_VO_Captured( hardpointEnt )
+					CapturePointForTeam(hardpoint,cappingTeam)
+					hasBeenAmped = false
 				}
 			}
 			else if(GetHardpointCappingTeam(hardpoint)==cappingTeam)
@@ -287,11 +479,8 @@ void function HardpointThink( HardpointStruct hardpoint )
 				SetHardpointCaptureProgress( hardpoint,min(1.0, GetHardpointCaptureProgress( hardpoint ) + ( deltaTime / CAPTURE_DURATION_CAPTURE * capperAmount) ) )
 				if(GetHardpointCaptureProgress(hardpoint)>=1.0)
 				{
-					SetHardpointState(hardpoint,CAPTURE_POINT_STATE_CAPTURED)
-					SetTeam( hardpointEnt, cappingTeam )
-					SetTeam( hardpoint.prop, cappingTeam )
-					EmitSoundOnEntityToTeamExceptPlayer( hardpointEnt, "hardpoint_console_captured", cappingTeam, null )
-					GamemodeCP_VO_Captured( hardpointEnt )
+					CapturePointForTeam(hardpoint,cappingTeam)
+					hasBeenAmped = false
 				}
 			}
 			else
@@ -302,11 +491,8 @@ void function HardpointThink( HardpointStruct hardpoint )
 					SetHardpointCappingTeam(hardpoint,cappingTeam)
 					if(GetHardpointCaptureProgress(hardpoint)>=1)
 					{
-						SetHardpointState(hardpoint,CAPTURE_POINT_STATE_CAPTURED)
-						SetTeam( hardpointEnt, cappingTeam )
-						SetTeam( hardpoint.prop, cappingTeam )
-						EmitSoundOnEntityToTeamExceptPlayer( hardpointEnt, "hardpoint_console_captured", cappingTeam, null )
-						GamemodeCP_VO_Captured( hardpointEnt )
+						CapturePointForTeam(hardpoint,cappingTeam)
+						hasBeenAmped = false
 					}
 				}
 
@@ -323,11 +509,8 @@ void function HardpointThink( HardpointStruct hardpoint )
 			if(GetHardpointCaptureProgress(hardpoint)<=0.0)
 			{
 				SetHardpointCaptureProgress(hardpoint,1.0)
-				SetTeam( hardpointEnt, cappingTeam )
-				SetTeam( hardpoint.prop, cappingTeam )
-				SetHardpointState(hardpoint,CAPTURE_POINT_STATE_CAPTURED)
-				EmitSoundOnEntityToTeamExceptPlayer( hardpointEnt, "hardpoint_console_captured", cappingTeam, null )
-				GamemodeCP_VO_Captured( hardpointEnt )
+				CapturePointForTeam(hardpoint,cappingTeam)
+				hasBeenAmped = false
 			}
 		}
 		else if(hardpointEnt.GetTeam()==cappingTeam)
@@ -348,6 +531,25 @@ void function HardpointThink( HardpointStruct hardpoint )
 					// can't use the dialogue functions here because for some reason GamemodeCP_VO_Amped isn't global?
 					PlayFactionDialogueToTeam( "amphp_youAmped" + hardpointEnt.kv.hardpointGroup, cappingTeam )
 					PlayFactionDialogueToTeam( "amphp_enemyAmped" + hardpointEnt.kv.hardpointGroup, GetOtherTeam( cappingTeam ) )
+					if(!hasBeenAmped){
+						hasBeenAmped=true
+
+
+						array<entity> allCappers
+						allCappers.extend(hardpoint.militiaCappers)
+						allCappers.extend(hardpoint.imcCappers)
+
+						foreach(entity player in allCappers)
+						{
+							if(player.IsPlayer())
+							{
+								AddPlayerScore(player,"ControlPointAmped")
+								player.AddToPlayerGameStat(PGS_DEFENSE_SCORE,POINTVALUE_HARDPOINT_AMPED)
+							}
+						}
+
+					}
+
 				}
 			}
 		}
@@ -413,6 +615,9 @@ void function OnHardpointEntered( entity trigger, entity player )
 		hardpoint.imcCappers.append( player )
 	else
 		hardpoint.militiaCappers.append( player )
+	foreach(CP_PlayerStruct playerStruct in file.players)
+		if(playerStruct.player == player)
+			playerStruct.isOnHardpoint = true
 }
 
 void function OnHardpointLeft( entity trigger, entity player )
@@ -426,6 +631,9 @@ void function OnHardpointLeft( entity trigger, entity player )
 		hardpoint.imcCappers.remove( hardpoint.imcCappers.find( player ) )
 	else
 		hardpoint.militiaCappers.remove( hardpoint.militiaCappers.find( player ) )
+	foreach(CP_PlayerStruct playerStruct in file.players)
+		if(playerStruct.player == player)
+			playerStruct.isOnHardpoint = false
 }
 
 string function CaptureStateToString( int state )
