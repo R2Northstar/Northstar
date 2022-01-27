@@ -2,9 +2,9 @@
 
 Northstar comes included with some community made gamemodes.
 
-## Sandbox
-
-Like gmod but worse.
+{% hint style="info" %}
+If you are looking for every available gamemode and its corresponding string check [hosting/gamemodes](../../hosting-a-server-with-northstar/dedicated-server/README.md#gamemodes)
+{% endhint %}
 
 ## Gun Game
 
@@ -45,3 +45,7 @@ Complex, Forwardbase Kodai, and Colony have had control panels added with [the v
 ## Competitive CTF
 
 CTF with custom settings for Comp games.
+
+## Sandbox
+
+Like gmod but worse.
