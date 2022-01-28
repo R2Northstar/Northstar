@@ -254,7 +254,7 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 
 		"CONNECTING" "Connessione in corso..."
 
-		"INGAME_PLAYERS" "Players:"
-		"TOTAL_SERVERS" "Server:"
+		"INGAME_PLAYERS" "Players: ^6BA6C400%s1"
+		"TOTAL_SERVERS" "Server: ^C46C6C00%s1"
 	}
 }

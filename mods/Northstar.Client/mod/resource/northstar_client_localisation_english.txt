@@ -290,10 +290,10 @@ Press Yes if you agree to this. This choice can be changed in the mods menu at a
 		"SWITCH_ANY" "Any"
 
 		"CONNECTING" "Connecting..."
-		"INGAME_PLAYERS" "Players:"
-		"TOTAL_SERVERS" "Servers:"
-		
-		 
+		"INGAME_PLAYERS" "Players: ^6BA6C400%s1"
+		"TOTAL_SERVERS" "Servers: ^C46C6C00%s1"
+
+
 		// Mods menu
 		"SHOW" "Show"
 		"SHOW_ALL" "All"

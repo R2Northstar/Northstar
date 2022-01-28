@@ -266,7 +266,7 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 		"SWITCH_ANY" "Tout"
 
 		"CONNECTING" "Connexion..."
-		"INGAME_PLAYERS" "Joueurs :"
-		"TOTAL_SERVERS" "Serveurs :"
+		"INGAME_PLAYERS" "Joueurs : ^6BA6C400%s1"
+		"TOTAL_SERVERS" "Serveurs : ^C46C6C00%s1"
 	}
 }
