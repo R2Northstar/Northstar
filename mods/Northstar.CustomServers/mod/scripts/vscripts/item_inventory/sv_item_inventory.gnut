@@ -18,7 +18,7 @@ struct
 void function Sv_ItemInventory_Init()
 {
 	AddCallback_OnClientConnected( Sv_ItemInventory_OnClientConnected )
-	AddCallback_OnPlayerRespawned( Sv_ItemInventory_OnPlayerRespawned )
+	AddCallback_OnPlayerGetsNewPilotLoadout( Sv_ItemInventory_OnPlayerGetsNewPilotLoadout )
 }
 
 void function Sv_ItemInventory_OnClientConnected( entity player )
@@ -26,7 +26,7 @@ void function Sv_ItemInventory_OnClientConnected( entity player )
 	file.playerInventoryStacks[ player ] <- []
 }
 
-void function Sv_ItemInventory_OnPlayerRespawned( entity player )
+void function Sv_ItemInventory_OnPlayerGetsNewPilotLoadout( entity player, PilotLoadoutDef newPilotLoadout )
 {
 	array<InventoryItem> playerInventoryStack = file.playerInventoryStacks[ player ]
 
@@ -37,7 +37,6 @@ void function Sv_ItemInventory_OnPlayerRespawned( entity player )
 
 	return
 }
-
 
 int function SvPlayerInventory_ItemCount( entity player )
 {
