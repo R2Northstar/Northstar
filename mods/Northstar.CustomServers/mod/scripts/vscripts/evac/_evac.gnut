@@ -11,6 +11,9 @@ const float EVAC_INITIAL_WAIT = 5.0
 const float EVAC_ARRIVAL_TIME = 40.0
 const float EVAC_WAIT_TIME = 18.0
 
+const int EVAC_SHIP_HEALTH = 25000
+const int EVAC_SHIP_SHIELDS = 2000
+
 // we don't use these because they're busted, just keeping them
 const array<string> EVAC_EMBARK_ANIMS_1P = [
 	"ptpov_e3_rescue_side_embark_A",
@@ -199,6 +202,10 @@ void function Evac( int evacTeam, float initialWait, float arrivalTime, float wa
 	entity dropship = CreateDropship( evacTeam, evacNode.GetOrigin(), evacNode.GetAngles() )
 	dropship.SetModel( $"models/vehicle/crow_dropship/crow_dropship_hero.mdl" ) 
 	dropship.SetValueForModelKey( $"models/vehicle/crow_dropship/crow_dropship_hero.mdl" )
+	dropship.SetMaxHealth( EVAC_SHIP_HEALTH )
+	dropship.SetHealth( EVAC_SHIP_HEALTH )
+	dropship.SetShieldHealth( EVAC_SHIP_SHIELDS )
+	dropship.SetTargetName( "#NPC_EVAC_DROPSHIP" )
 	DispatchSpawn( dropship )
 	dropship.SetModel( $"models/vehicle/crow_dropship/crow_dropship_hero.mdl" )
 	AddEntityCallback_OnKilled( dropship, EvacDropshipKilled )
