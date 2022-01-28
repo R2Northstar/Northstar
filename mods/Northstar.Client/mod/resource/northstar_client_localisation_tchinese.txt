@@ -285,8 +285,8 @@
 		"SWITCH_ANY" "任何"
 
 		"CONNECTING" "連線中…"
-		"INGAME_PLAYERS" "線上玩家："
-		"TOTAL_SERVERS" "線上伺服器："
+		"INGAME_PLAYERS" "線上玩家： ^6BA6C400%s1"
+		"TOTAL_SERVERS" "線上伺服器： ^C46C6C00%s1"
     
     
 		// Mods menu

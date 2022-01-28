@@ -285,8 +285,8 @@ Clique em Sim se você concorda. Esta escolha pode ser alterada a qualquer momen
 		"SWITCH_ANY" "Tanto faz"
 
 		"CONNECTING" "Conectando..."
-		"INGAME_PLAYERS" "Jogadores:"
-		"TOTAL_SERVERS" "Servidores:"
+		"INGAME_PLAYERS" "Jogadores: ^6BA6C400%s1"
+		"TOTAL_SERVERS" "Servidores: ^C46C6C00%s1"
 
 		// Mods menu
 		"SHOW" "Mostrar"
