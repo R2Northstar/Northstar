@@ -2,6 +2,8 @@
 
 Generally try to first launch the vanilla game (i.e. not Northstar) if you encounter any issue and see if it also occurs there as well. Some problems can occur when the vanilla game was never launched before using Northstar. 
 
+A lot of problems around the game failing to communicate with Origin can also be prevented by launching Origin before Northstar should you encounter any issues in that regard.
+
 Also note that some solutions described below can also apply to the base game, like issues caused by 10th+ gen Intel CPUs.
 
 ## "Failed to initialize Origin: Origin Core seems to be running, but the LSX Authentication Challenge failed. No communication with Core is possible."
