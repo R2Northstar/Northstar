@@ -1440,6 +1440,9 @@
     <ClInclude Include="audio.h">
       <Filter>Header Files\Client</Filter>
     </ClInclude>
+    <ClInclude Include="buildainfile.h">
+      <Filter>Header Files\Server</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -1567,6 +1570,9 @@
     </ClCompile>
     <ClCompile Include="audio.cpp">
       <Filter>Source Files\Client</Filter>
+    </ClCompile>
+    <ClCompile Include="buildainfile.cpp">
+      <Filter>Source Files\Server</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
