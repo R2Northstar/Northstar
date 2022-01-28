@@ -88,6 +88,7 @@ public:
 	std::vector<UnconnectedPlayerSendData> m_unconnectedPlayerSendData;
 	bool m_runningPlayerAuthThread = false;
 	bool m_bNeedLocalAuthForNewgame = false;
+	bool m_bForceReadLocalPlayerPersistenceFromDisk = false;
 
 public:
 	void StartPlayerAuthServer();
