@@ -28,7 +28,7 @@ Provided is a template `mod.json`, for a detailed list of values read [Cheatshee
 
 ```json
 {
-    "Name": "My.Mod",
+    "Name": "Yourname.Modname",
     "Description": "Woo yeah wooo!",
 
     "LoadPriority": 0,
