@@ -92,3 +92,7 @@ A: You are probably using EA Desktop app and it sets up game installations with 
 
 A: The answer is obvious, No! Northstar does not support piracy of any kind.\
 If you want to use Northstar you'll have to purchase Titanfall 2 either from Steam/Origin/EA Desktop App or use a subscription service like Gamepass PC and EA Play.
+
+### Q: Why are there no Attrition / Frontier Defense servers?
+
+A: AI movement (including grunts, autotitans, etc) currently does not work. Since AI is intrinsic to these modes, they are currently unavailable
