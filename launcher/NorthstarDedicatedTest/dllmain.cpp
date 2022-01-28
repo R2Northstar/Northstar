@@ -32,6 +32,7 @@
 #include "maxplayers.h"
 #include "languagehooks.h"
 #include "audio.h"
+#include "buildainfile.h"
 
 bool initialised = false;
 
@@ -125,6 +126,7 @@ bool InitialiseNorthstar()
     AddDllLoadCallback("engine.dll", InitialiseSharedMasterServer);
     AddDllLoadCallback("server.dll", InitialiseMiscServerScriptCommand);
     AddDllLoadCallback("server.dll", InitialiseMiscServerFixes);
+    AddDllLoadCallback("server.dll", InitialiseBuildAINFileHooks);
 
     AddDllLoadCallback("engine.dll", InitialisePlaylistHooks);
 
