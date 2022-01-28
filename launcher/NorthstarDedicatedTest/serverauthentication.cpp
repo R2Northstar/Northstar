@@ -140,8 +140,29 @@ bool ServerAuthenticationManager::AuthenticatePlayer(void* player, int64_t uid, 
 			// uuid
 			strcpy((char*)player + 0xF500, strUid.c_str());
 
-			// copy pdata into buffer
-			memcpy((char*)player + 0x4FA, authData.pdata, authData.pdataSize);
+			// reset from disk if we're doing that
+			if (m_bForceReadLocalPlayerPersistenceFromDisk && !strcmp(authData.uid, g_LocalPlayerUserID))
+			{
+				std::fstream pdataStream("R2Northstar/placeholder_playerdata.pdata", std::ios_base::in);
+
+				if (!pdataStream.fail())
+				{
+					// get file length
+					pdataStream.seekg(0, pdataStream.end);
+					auto length = pdataStream.tellg();
+					pdataStream.seekg(0, pdataStream.beg);
+
+					// copy pdata into buffer
+					pdataStream.read((char*)player + 0x4FA, length);
+				}
+				else // fallback to remote pdata if no local default
+					memcpy((char*)player + 0x4FA, authData.pdata, authData.pdataSize);
+			}
+			else
+			{
+				// copy pdata into buffer
+				memcpy((char*)player + 0x4FA, authData.pdata, authData.pdataSize);
+			}
 
 			// set persistent data as ready, we use 0x4 internally to mark the client as using remote persistence
 			*((char*)player + 0x4a0) = (char)0x4;
@@ -279,6 +300,7 @@ void CBaseClient__ActivatePlayerHook(void* self)
 	// RemovePlayerAuthData returns true if it removed successfully, i.e. on first call only, and we only want to write on >= second call (since this func is called on map loads)
 	if (*((char*)self + 0x4A0) >= (char)0x3 && !g_ServerAuthenticationManager->RemovePlayerAuthData(self))
 	{
+		g_ServerAuthenticationManager->m_bForceReadLocalPlayerPersistenceFromDisk = false;
 		g_ServerAuthenticationManager->WritePersistentData(self);
 		g_MasterServerManager->UpdateServerPlayerCount(g_ServerAuthenticationManager->m_additionalPlayerData.size());
 	}
@@ -487,6 +509,18 @@ void CServerGameDLL__OnRecievedSayTextMessageHook(void* self, unsigned int sende
 	CServerGameDLL__OnRecievedSayTextMessage(self, senderClientIndex, message, unknown);
 }
 
+void ResetPdataCommand(const CCommand& args)
+{
+	if (*sv_m_State == server_state_t::ss_active)
+	{
+		spdlog::error("ns_resetpersistence must be entered from the main menu");
+		return;
+	}
+
+	spdlog::info("resetting persistence on next lobby load...");
+	g_ServerAuthenticationManager->m_bForceReadLocalPlayerPersistenceFromDisk = true;
+}
+
 void InitialiseServerAuthentication(HMODULE baseAddress)
 {
 	g_ServerAuthenticationManager = new ServerAuthenticationManager;
@@ -502,6 +536,8 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 	Cvar_ns_player_auth_port = RegisterConVar("ns_player_auth_port", "8081", FCVAR_GAMEDLL, "");
 	Cvar_sv_querylimit_per_sec = RegisterConVar("sv_querylimit_per_sec", "15", FCVAR_GAMEDLL, "");
 	Cvar_sv_max_chat_messages_per_sec = RegisterConVar("sv_max_chat_messages_per_sec", "5", FCVAR_GAMEDLL, "");
+
+	RegisterConCommand("ns_resetpersistence", ResetPdataCommand, "resets your pdata when you next enter the lobby", FCVAR_NONE);
 
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x114430, &CBaseServer__ConnectClientHook, reinterpret_cast<LPVOID*>(&CBaseServer__ConnectClient));
