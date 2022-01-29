@@ -109,6 +109,7 @@
   <ItemGroup>
     <ClInclude Include="audio.h" />
     <ClInclude Include="bansystem.h" />
+    <ClInclude Include="bitbuf.h" />
     <ClInclude Include="buildainfile.h" />
     <ClInclude Include="chatcommand.h" />
     <ClInclude Include="clientauthhooks.h" />

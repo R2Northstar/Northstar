@@ -116,6 +116,7 @@ bool InitialiseNorthstar()
         AddDllLoadCallback("engine.dll", InitialiseScriptExternalBrowserHooks);
         AddDllLoadCallback("client.dll", InitialiseScriptMainMenuPromos);
         AddDllLoadCallback("client.dll", InitialiseMiscClientFixes);
+        AddDllLoadCallback("client.dll", InitialiseClientPrintHooks);
     }
 
     AddDllLoadCallback("engine.dll", InitialiseEngineSpewFuncHooks);
