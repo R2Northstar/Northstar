@@ -126,7 +126,7 @@ void function GamemodeFastball_Init()
 	FastballAddBuddySpawnForLevel( "mp_glitch", TEAM_IMC, < 4100, 890, 320>, < 0, 180, 0 > )
 	FastballAddPanelSpawnsForLevel( "mp_glitch", [
 		< 2703, 2170, 25 >, < 0, 0.00, 0 >,
-		< -192, 129, -250 >, < 0, 90.00, 0 >,
+		< -192, 129, -245.998 >, < 0, 90.00, 0 >,
 		< -3088, -1905, 25 >, < 0, -180.00, 0 >
 	])
 
@@ -186,7 +186,10 @@ void function SpawnPanelsForLevel()
 void function ResetPanels()
 {
 	foreach ( entity panel in GetAllControlPanels() )
+	{
+		panel.SetUsableByGroup( "enemies pilot" )
 		SetTeam( panel, TEAM_UNASSIGNED )
+	}
 }
 
 void function FastballInitPlayer( entity player )
@@ -239,36 +242,49 @@ entity function CreatePanel( vector origin, vector angles )
 	DispatchSpawn( panel )
 	
 	panel.SetModel( $"models/communication/terminal_usable_imc_01.mdl" )
-	panel.s.onPlayerFinishesUsing_func = FastballOnPanelHacked
+	panel.s.scriptedPanel <- true
+	
+	// HACK: need to use a custom useFunction here as control panel exposes no way to get the player's position before hacking it, or a way to run code before the hacking animation actually starts
+	panel.s.startOrigin <- < 0, 0, 0 >
+	panel.useFunction = FastballControlPanelCanUse
+	
+	SetControlPanelUseFunc( panel, FastballOnPanelHacked )
 	
 	Highlight_SetNeutralHighlight( panel, "sp_enemy_pilot" )
 	
 	return panel
 }
 
+function FastballControlPanelCanUse( playerUser, controlPanel )
+{
+	// just run ControlPanel_CanUseFunction, but save hacking player's origin to controlPanel.s.startOrigin beforehand
+	expect entity( playerUser )
+	expect entity( controlPanel )
+	controlPanel.s.startOrigin <- playerUser.GetOrigin()
+	
+	return ControlPanel_CanUseFunction( playerUser, controlPanel )
+}
+
 // control panel code isn't very statically typed, pain
-function FastballOnPanelHacked( panel, player, success )
+function FastballOnPanelHacked( panel, player )
 {
 	expect entity( panel )
 	expect entity( player )
-	expect bool( success )
-	
-	if ( !success )
-		return
 		
 	print( panel + " was hacked by " + player )
-	PanelFlipsToPlayerTeamAndUsableByEnemies( panel, player )
+	SetTeam( panel, player.GetTeam() )
+	
 	player.SetPlayerGameStat( PGS_ASSAULT_SCORE, player.GetPlayerGameStat( PGS_ASSAULT_SCORE ) + 1 )
 	
 	foreach ( entity otherPlayer in GetPlayerArray() )
 		Remote_CallFunction_NonReplay( otherPlayer, "ServerCallback_FastballPanelHacked", panel.GetEncodedEHandle(), panel.s.panelId, player.GetEncodedEHandle() )
-	
+
 	// respawn dead players
 	foreach ( entity deadPlayer in GetPlayerArrayOfTeam( player.GetTeam() ) )
 	{
 		if ( !IsAlive( deadPlayer ) )
 		{
-			deadPlayer.SetOrigin( player.GetOrigin() )
+			deadPlayer.SetOrigin( panel.s.startOrigin )
 			deadPlayer.RespawnPlayer( null )
 			Remote_CallFunction_NonReplay( deadPlayer, "ServerCallback_FastballRespawnPlayer" ) 
 		}
