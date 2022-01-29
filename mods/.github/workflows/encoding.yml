@@ -1,0 +1,14 @@
+name: Build
+on:
+  push:
+
+jobs:
+  check-loc-encoding:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Check localization files encoding
+        run: |
+          files=$(ls Northstar.Client/mod/resource/*.txt)
+          IFS=$'\n'; files=($files); unset IFS; ! file --mime "${files[@]}" | grep -v "charset=utf-16le"
