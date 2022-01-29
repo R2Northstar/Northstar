@@ -388,3 +388,62 @@ void InitialiseEngineSpewFuncHooks(HMODULE baseAddress)
 
 	Cvar_spewlog_enable = RegisterConVar("spewlog_enable", "1", FCVAR_NONE, "Enables/disables whether the engine spewfunc should be logged");
 }
+
+#include "bitbuf.h"
+
+ConVar* Cvar_cl_showtextmsg;
+
+typedef void(*TextMsg_Type)(__int64);
+TextMsg_Type TextMsg_Original;
+
+class ICenterPrint
+{
+public:
+	virtual void		ctor() = 0;
+	virtual void		Clear(void) = 0;
+	virtual void		ColorPrint(int r, int g, int b, int a, wchar_t* text) = 0;
+	virtual void		ColorPrint(int r, int g, int b, int a, char* text) = 0;
+	virtual void		Print(wchar_t* text) = 0;
+	virtual void		Print(char* text) = 0;
+	virtual void		SetTextColor(int r, int g, int b, int a) = 0;
+};
+
+ICenterPrint* internalCenterPrint = NULL;
+
+void TextMsgHook(BFRead* msg)
+{
+	int msg_dest = msg->ReadByte();
+
+	char text[256];
+	msg->ReadString(text, sizeof(text));
+
+	if (!Cvar_cl_showtextmsg->m_nValue)
+		return;
+
+	switch (msg_dest) {
+	case 4: // HUD_PRINTCENTER
+		internalCenterPrint->Print(text);
+		break;
+	default:
+		spdlog::warn("Unimplemented TextMsg type {}! printing to console", msg_dest);
+		[[fallthrough]];
+	case 2: // HUD_PRINTCONSOLE
+		auto endpos = strlen(text);
+		if (text[endpos - 1] == '\n')
+			text[endpos - 1] = '\0'; // cut off repeated newline
+		spdlog::info(text);
+		break;
+	}
+}
+
+void InitialiseClientPrintHooks(HMODULE baseAddress)
+{
+	HookEnabler hook;
+
+	internalCenterPrint = (ICenterPrint*)((char*)baseAddress + 0x216E940);
+
+	// "TextMsg" usermessage
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x198710, TextMsgHook, reinterpret_cast<LPVOID*>(&TextMsg_Original));
+
+	Cvar_cl_showtextmsg = RegisterConVar("cl_showtextmsg", "1", FCVAR_NONE, "Enable/disable text messages printing on the screen.");
+}
