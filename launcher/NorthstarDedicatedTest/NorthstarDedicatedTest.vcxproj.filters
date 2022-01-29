@@ -1443,6 +1443,9 @@
     <ClInclude Include="buildainfile.h">
       <Filter>Header Files\Server</Filter>
     </ClInclude>
+    <ClInclude Include="bitbuf.h">
+      <Filter>Header Files\Shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -1665,6 +1668,5 @@
     <None Include="include\crypto\dso_conf.h.in">
       <Filter>Header Files\include\openssl\crypto</Filter>
     </None>
-    <None Include="..\Northstar-Legal.txt" />
   </ItemGroup>
 </Project>
