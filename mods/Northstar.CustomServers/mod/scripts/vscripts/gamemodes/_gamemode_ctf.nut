@@ -179,6 +179,13 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	}
 }
 
+void function SetupFlagMinimapIcon( entity flag )
+{
+	flag.Minimap_AlwaysShow( TEAM_IMC, null )
+	flag.Minimap_AlwaysShow( TEAM_MILITIA, null )
+	flag.Minimap_SetAlignUpright( true )
+}
+
 void function CreateFlags()
 {	
 	if ( IsValid( file.imcFlagSpawn ) )
@@ -245,6 +252,7 @@ void function CreateFlags()
 		{
 			file.imcFlagSpawn = base
 			file.imcFlag = flag
+			SetupFlagMinimapIcon( file.imcFlag )
 			file.imcFlagReturnTrigger = returnTrigger
 			
 			SetGlobalNetEnt( "imcFlag", file.imcFlag )
@@ -254,6 +262,7 @@ void function CreateFlags()
 		{
 			file.militiaFlagSpawn = base
 			file.militiaFlag = flag
+			SetupFlagMinimapIcon( file.militiaFlag )
 			file.militiaFlagReturnTrigger = returnTrigger
 			
 			SetGlobalNetEnt( "milFlag", file.militiaFlag )
