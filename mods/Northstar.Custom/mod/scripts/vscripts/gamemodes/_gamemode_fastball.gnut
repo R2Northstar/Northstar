@@ -239,8 +239,7 @@ entity function CreatePanel( vector origin, vector angles )
 	DispatchSpawn( panel )
 	
 	panel.SetModel( $"models/communication/terminal_usable_imc_01.mdl" )
-	panel.s.scriptedPanel <- true
-	SetControlPanelUseFunc( panel, FastballOnPanelHacked )
+	panel.s.onPlayerFinishesUsing_func = FastballOnPanelHacked
 	
 	Highlight_SetNeutralHighlight( panel, "sp_enemy_pilot" )
 	
@@ -248,10 +247,14 @@ entity function CreatePanel( vector origin, vector angles )
 }
 
 // control panel code isn't very statically typed, pain
-function FastballOnPanelHacked( panel, player )
+function FastballOnPanelHacked( panel, player, success )
 {
 	expect entity( panel )
 	expect entity( player )
+	expect bool( success )
+	
+	if ( !success )
+		return
 		
 	print( panel + " was hacked by " + player )
 	PanelFlipsToPlayerTeamAndUsableByEnemies( panel, player )
@@ -260,15 +263,12 @@ function FastballOnPanelHacked( panel, player )
 	foreach ( entity otherPlayer in GetPlayerArray() )
 		Remote_CallFunction_NonReplay( otherPlayer, "ServerCallback_FastballPanelHacked", panel.GetEncodedEHandle(), panel.s.panelId, player.GetEncodedEHandle() )
 	
-	// calculate respawn pos rather than using respawning player's position
-	vector respawnPos = panel.GetOrigin() + panel.GetForwardVector() * 50.0
-	
 	// respawn dead players
 	foreach ( entity deadPlayer in GetPlayerArrayOfTeam( player.GetTeam() ) )
 	{
 		if ( !IsAlive( deadPlayer ) )
 		{
-			deadPlayer.SetOrigin( respawnPos )
+			deadPlayer.SetOrigin( player.GetOrigin() )
 			deadPlayer.RespawnPlayer( null )
 			Remote_CallFunction_NonReplay( deadPlayer, "ServerCallback_FastballRespawnPlayer" ) 
 		}
