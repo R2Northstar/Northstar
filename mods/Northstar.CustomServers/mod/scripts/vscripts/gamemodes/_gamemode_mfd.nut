@@ -153,6 +153,8 @@ void function MarkPlayers( entity imcMark, entity militiaMark )
 		// clear marks
 		level.mfdActiveMarkedPlayerEnt[ TEAM_IMC ].SetOwner( null )
 		level.mfdActiveMarkedPlayerEnt[ TEAM_MILITIA ].SetOwner( null )
+		imcMark.Minimap_Hide( TEAM_MILITIA, null )
+		militiaMark.Minimap_Hide( TEAM_IMC, null )
 		
 		foreach ( entity player in GetPlayerArray() )
 			Remote_CallFunction_NonReplay( player, "SCB_MarkedChanged" )
@@ -165,6 +167,8 @@ void function MarkPlayers( entity imcMark, entity militiaMark )
 	// set marks
 	level.mfdActiveMarkedPlayerEnt[ TEAM_IMC ].SetOwner( imcMark )
 	level.mfdActiveMarkedPlayerEnt[ TEAM_MILITIA ].SetOwner( militiaMark )
+	imcMark.Minimap_AlwaysShow( TEAM_MILITIA, null )
+	militiaMark.Minimap_AlwaysShow( TEAM_IMC, null )
 	
 	foreach ( entity player in GetPlayerArray() )
 		Remote_CallFunction_NonReplay( player, "SCB_MarkedChanged" )
