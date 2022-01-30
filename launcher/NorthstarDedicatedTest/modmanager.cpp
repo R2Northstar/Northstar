@@ -14,6 +14,7 @@
 #include <sstream>
 #include <vector>
 #include "filesystem.h"
+#include "configurables.h"
 
 ModManager* g_ModManager;
 
@@ -201,11 +202,11 @@ void ModManager::LoadMods()
 	std::vector<fs::path> modDirs;
 
 	// ensure dirs exist
-	fs::remove_all(COMPILED_ASSETS_PATH);
-	fs::create_directories(MOD_FOLDER_PATH);
+	fs::remove_all(GetCompiledAssetsPath());
+	fs::create_directories(GetModFolderPath());
 
 	// read enabled mods cfg
-	std::ifstream enabledModsStream("R2Northstar/enabledmods.json");
+	std::ifstream enabledModsStream(GetNorthstarPrefix() + "/enabledmods.json");
 	std::stringstream enabledModsStringStream;
 
 	if (!enabledModsStream.fail())
@@ -220,7 +221,7 @@ void ModManager::LoadMods()
 	}
 
 	// get mod directories
-	for (fs::directory_entry dir : fs::directory_iterator(MOD_FOLDER_PATH))
+	for (fs::directory_entry dir : fs::directory_iterator(GetModFolderPath()))
 		if (fs::exists(dir.path() / "mod.json"))
 			modDirs.push_back(dir.path());
 
@@ -405,7 +406,7 @@ void ModManager::UnloadMods()
 {
 	// clean up stuff from mods before we unload
 	m_modFiles.clear();
-	fs::remove_all(COMPILED_ASSETS_PATH);
+	fs::remove_all(GetCompiledAssetsPath());
 
 	g_CustomAudioManager.ClearAudioOverrides();
 
@@ -416,7 +417,7 @@ void ModManager::UnloadMods()
 	{	
 		// remove all built kvs
 		for (std::pair<size_t, std::string> kvPaths : mod.KeyValues)
-			fs::remove(COMPILED_ASSETS_PATH / fs::path(kvPaths.second).lexically_relative(mod.ModDirectory));
+			fs::remove(GetCompiledAssetsPath() / fs::path(kvPaths.second).lexically_relative(mod.ModDirectory));
 
 		mod.KeyValues.clear();
 
@@ -429,7 +430,7 @@ void ModManager::UnloadMods()
 		m_enabledModsCfg[mod.Name.c_str()].SetBool(mod.Enabled);
 	}
 
-	std::ofstream writeStream("R2Northstar/enabledmods.json");
+	std::ofstream writeStream(GetNorthstarPrefix() + "/enabledmods.json");
 	rapidjson::OStreamWrapper writeStreamWrapper(writeStream);
 	rapidjson::Writer<rapidjson::OStreamWrapper> writer(writeStreamWrapper);
 	m_enabledModsCfg.Accept(writer);
@@ -473,4 +474,11 @@ void InitialiseModManager(HMODULE baseAddress)
 	g_ModManager = new ModManager;
 
 	RegisterConCommand("reload_mods", ReloadModsCommand, "idk", FCVAR_NONE);
+}
+
+fs::path GetModFolderPath() {
+	return fs::path(GetNorthstarPrefix() + MOD_FOLDER_SUFFIX);
+}
+fs::path GetCompiledAssetsPath() {
+	return fs::path(GetNorthstarPrefix() + COMPILED_ASSETS_SUFFIX);
 }

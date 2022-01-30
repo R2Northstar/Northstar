@@ -90,7 +90,7 @@ void SetNewModSearchPaths(Mod* mod)
 		}
 	}
 	else // push compiled to head
-		addSearchPathOriginal(&*(*g_Filesystem), fs::absolute(COMPILED_ASSETS_PATH).string().c_str(), "GAME", PATH_ADD_TO_HEAD);
+		addSearchPathOriginal(&*(*g_Filesystem), fs::absolute(GetCompiledAssetsPath()).string().c_str(), "GAME", PATH_ADD_TO_HEAD);
 
 }
 
@@ -148,7 +148,7 @@ void AddSearchPathHook(IFileSystem* fileSystem, const char* pPath, const char* p
 	if (!strcmp(pathID, "GAME") && currentModPath.compare(pPath) && addType == PATH_ADD_TO_HEAD)
 	{
 		addSearchPathOriginal(fileSystem, currentModPath.c_str(), "GAME", PATH_ADD_TO_HEAD);
-		addSearchPathOriginal(fileSystem, COMPILED_ASSETS_PATH.string().c_str(), "GAME", PATH_ADD_TO_HEAD);
+		addSearchPathOriginal(fileSystem, GetCompiledAssetsPath().string().c_str(), "GAME", PATH_ADD_TO_HEAD);
 	}
 }
 
