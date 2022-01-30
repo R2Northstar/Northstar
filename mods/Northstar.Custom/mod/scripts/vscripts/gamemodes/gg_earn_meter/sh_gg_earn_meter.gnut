@@ -15,6 +15,10 @@ void function Sh_GGEarnMeter_Init(string gamemode)
 		file.callbackAdded = true
 		AddCallback_OnRegisteringCustomNetworkVars( RegisterSharedNetwork )
 	}
+
+	#if SERVER
+		Sv_GGEarnMeter_Init()
+	#endif
 }
 
 void function RegisterSharedNetwork()
