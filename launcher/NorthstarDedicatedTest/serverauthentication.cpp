@@ -372,10 +372,7 @@ char CGameClient__ExecuteStringCommandHook(void* self, uint32_t unknown, const c
 	if (!CCommand__Tokenize(tempCommand, pCommandString, cmd_source_t::kCommandSrcCode) || !tempCommand.ArgC())
 		return false;
 
-	ICvar* icvar = *g_pCvar; // hellish call because i couldn't get icvar vtable stuff in convar.h to get the right offset for whatever reason
-	typedef ConCommand*(*FindCommandBaseType)(ICvar* self, const char* varName);
-	FindCommandBaseType FindCommandBase = *(FindCommandBaseType*)((*(char**)icvar) + 112);
-	ConCommand* command = FindCommandBase(icvar, tempCommand.Arg(0));
+	ConCommand* command = FindConCommand(tempCommand.Arg(0));
 
 	// if the command doesn't exist pass it on to ExecuteStringCommand for script clientcommands and stuff
 	if (command && !command->IsFlagSet(FCVAR_CLIENTCMD_CAN_EXECUTE))
