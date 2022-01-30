@@ -16,6 +16,14 @@ void RegisterConCommand(const char* name, void(*callback)(const CCommand&), cons
 	conCommandConstructor(newCommand, name, callback, helpString, flags, nullptr);
 }
 
+ConCommand* FindConCommand(const char* name)
+{
+	ICvar* icvar = *g_pCvar; // hellish call because i couldn't get icvar vtable stuff in convar.h to get the right offset for whatever reason
+	typedef ConCommand* (*FindCommandBaseType)(ICvar* self, const char* varName);
+	FindCommandBaseType FindCommandBase = *(FindCommandBaseType*)((*(char**)icvar) + 112);
+	return FindCommandBase(icvar, name);
+}
+
 void InitialiseConCommands(HMODULE baseAddress)
 {
 	conCommandConstructor = (ConCommandConstructorType)((char*)baseAddress + 0x415F60);

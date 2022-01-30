@@ -27,10 +27,18 @@ ConVar* RegisterConVar(const char* name, const char* defaultValue, int flags, co
 	return newVar;
 }
 
+ConVar* FindConVar(const char* name)
+{
+	ICvar* icvar = *g_pCvar; // hellish call because i couldn't get icvar vtable stuff in convar.h to get the right offset for whatever reason
+	typedef ConVar* (*FindConVarType)(ICvar* self, const char* varName);
+	FindConVarType FindConVarInternal = *(FindConVarType*)((*(char**)icvar) + 128);
+	return FindConVarInternal(icvar, name);
+}
+
 bool CvarIsFlagSetHook(ConVar* self, int flags)
 {
 	// unrestrict FCVAR_DEVELOPMENTONLY and FCVAR_HIDDEN
-	if (self && flags == FCVAR_DEVELOPMENTONLY || flags == FCVAR_HIDDEN)
+	if (self && (flags == FCVAR_DEVELOPMENTONLY || flags == FCVAR_HIDDEN))
 		return false;
 
 	return CvarIsFlagSet(self, flags);

@@ -96,7 +96,7 @@ public:
         //void* unknown2[28];
         //ConVar*(*FindVar)(const char* var_name); // offset for this is currently very wrong
         char* unknown[112];
-        ConCommand*(*FindCommandBase)(ICvar* self, const char* varName);
+        ConCommand*(*FindCommandBase)(ICvar* self, const char* varName); // this offset is also wrong for some reason
     };
 
     VTable* m_vtable;
@@ -104,6 +104,7 @@ public:
 
 
 ConVar* RegisterConVar(const char* name, const char* defaultValue, int flags, const char* helpString);
+ConVar* FindConVar(const char* name);
 void InitialiseConVars(HMODULE baseAddress);
 
 extern std::unordered_map<std::string, ConVar*> g_CustomConvars;

@@ -15,14 +15,6 @@ void ConCommand_toggleconsole(const CCommand& arg)
 		(*g_SourceGameConsole)->Activate();
 }
 
-void ConCommand_help(const CCommand& arg)
-{
-	if (arg.ArgC() < 2)
-		return;
-
-	// todo: this should basically just call FindConVar once we have that working, then just print convar.GetHelpString
-}
-
 typedef void(*OnCommandSubmittedType)(CConsoleDialog* consoleDialog, const char* pCommand);
 OnCommandSubmittedType onCommandSubmittedOriginal;
 void OnCommandSubmittedHook(CConsoleDialog* consoleDialog, const char* pCommand)

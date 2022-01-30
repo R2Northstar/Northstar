@@ -89,4 +89,5 @@ inline const char* CCommand::operator[](int nIndex) const
 }
 
 void RegisterConCommand(const char* name, void(*callback)(const CCommand&), const char* helpString, int flags);
+ConCommand* FindConCommand(const char* name);
 void InitialiseConCommands(HMODULE baseAddress);
