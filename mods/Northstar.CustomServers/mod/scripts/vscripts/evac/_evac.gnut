@@ -205,7 +205,7 @@ void function Evac( int evacTeam, float initialWait, float arrivalTime, float wa
 	dropship.SetMaxHealth( EVAC_SHIP_HEALTH )
 	dropship.SetHealth( EVAC_SHIP_HEALTH )
 	dropship.SetShieldHealth( EVAC_SHIP_SHIELDS )
-	dropship.SetTargetName( "#NPC_EVAC_DROPSHIP" )
+	SetTargetName( dropship, "#NPC_EVAC_DROPSHIP" )
 	DispatchSpawn( dropship )
 	dropship.SetModel( $"models/vehicle/crow_dropship/crow_dropship_hero.mdl" )
 	AddEntityCallback_OnKilled( dropship, EvacDropshipKilled )
