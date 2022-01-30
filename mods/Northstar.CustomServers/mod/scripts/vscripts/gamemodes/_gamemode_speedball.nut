@@ -44,7 +44,11 @@ void function CreateFlag( entity flagSpawn )
 	flag.SetModel( CTF_FLAG_MODEL )
 	flag.SetOrigin( flagBase.GetOrigin() + < 0, 0, flagBase.GetBoundingMaxs().z + 1 > )
 	flag.SetVelocity( < 0, 0, 1 > )
-	
+
+	flag.Minimap_AlwaysShow( TEAM_IMC, null )
+	flag.Minimap_AlwaysShow( TEAM_MILITIA, null )
+	flag.Minimap_SetAlignUpright( true )
+
 	file.flag = flag
 	file.flagBase = flagBase
 }	
@@ -73,6 +77,7 @@ void function GiveFlag( entity player )
 {
 	file.flag.SetParent( player, "FLAG" )
 	file.flagCarrier = player
+	SetTeam( file.flag, player.GetTeam() )
 	SetGlobalNetEnt( "flagCarrier", player )
 	thread DropFlagIfPhased( player )
 	
@@ -105,6 +110,7 @@ void function DropFlag()
 {
 	file.flag.ClearParent()
 	file.flag.SetAngles( < 0, 0, 0 > )
+	SetTeam( file.flag, TEAM_UNASSIGNED )
 	SetGlobalNetEnt( "flagCarrier", file.flag )
 	
 	if ( IsValid( file.flagCarrier ) )
@@ -137,6 +143,7 @@ void function ResetFlag()
 	file.flag.SetAngles( < 0, 0, 0 > )
 	file.flag.SetVelocity( < 0, 0, 1 > ) // hack: for some reason flag won't have gravity if i don't do this
 	file.flag.SetOrigin( file.flagBase.GetOrigin() + < 0, 0, file.flagBase.GetBoundingMaxs().z * 2 > )
+	SetTeam( file.flag, TEAM_UNASSIGNED )
 	file.flagCarrier = null
 	SetGlobalNetEnt( "flagCarrier", file.flag )
 }
