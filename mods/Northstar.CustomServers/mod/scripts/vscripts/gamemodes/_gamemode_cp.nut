@@ -21,9 +21,7 @@ struct CP_PlayerStruct
 	entity player
 	bool isOnHardpoint
 	array<float> timeOnPoints //floats sorted same as in hardpoints array not by ID
-
 }
-
 
 struct {
 	bool ampingEnabled = true
@@ -45,7 +43,6 @@ void function GamemodeCP_Init()
 	AddCallback_OnClientConnected(GamemodeCP_InitPlayer)
 	AddCallback_OnClientDisconnected(GamemodeCP_RemovePlayer)
 
-
 	ScoreEvent_SetEarnMeterValues("KillPilot",0.1,0.12)
 	ScoreEvent_SetEarnMeterValues("KillTitan",0,0)
 	ScoreEvent_SetEarnMeterValues("TitanKillTitan",0,0)
@@ -63,8 +60,8 @@ void function GamemodeCP_Init()
 	ScoreEvent_SetEarnMeterValues("HardpointPerimeterDefense",0.1,0.12)
 	ScoreEvent_SetEarnMeterValues("HardpointSiege",0.1,0.15)
 	ScoreEvent_SetEarnMeterValues("HardpointSnipe",0.1,0.15)
-
 }
+
 void function GamemodeCP_OnPlayerKilled(entity victim, entity attacker, var damageInfo)
 {
 	HardpointStruct attackerCP
@@ -129,6 +126,7 @@ void function GamemodeCP_OnPlayerKilled(entity victim, entity attacker, var dama
 	}
 
 }
+
 void function RateSpawnpoints_CP( int checkClass, array<entity> spawnpoints, int team, entity player )
 {
 	if ( HasSwitchedSides() )
@@ -137,13 +135,13 @@ void function RateSpawnpoints_CP( int checkClass, array<entity> spawnpoints, int
 	// check hardpoints, determine which ones we own
 	array<entity> startSpawns = SpawnPoints_GetPilotStart( team )
 	vector averageFriendlySpawns
-	
+
 	// average out startspawn positions
 	foreach ( entity spawnpoint in startSpawns )
 		averageFriendlySpawns += spawnpoint.GetOrigin()
-		
+
 	averageFriendlySpawns /= startSpawns.len()
-	
+
 	entity friendlyHardpoint // determine our furthest out hardpoint
 	foreach ( entity hardpoint in HARDPOINTS )
 	{
@@ -158,13 +156,13 @@ void function RateSpawnpoints_CP( int checkClass, array<entity> spawnpoints, int
 				friendlyHardpoint = hardpoint
 		}
 	}
-	
-	vector ratingPos 
+
+	vector ratingPos
 	if ( IsValid( friendlyHardpoint ) )
 		ratingPos = friendlyHardpoint.GetOrigin()
-	else 
+	else
 		ratingPos = averageFriendlySpawns
-		
+
 	foreach ( entity spawnpoint in spawnpoints )
 	{
 		// idk about magic number here really
@@ -179,7 +177,7 @@ void function SpawnHardpoints()
 	{
 		if ( GameModeRemove( spawnpoint ) )
 			continue
-		
+
 		// spawnpoints are CHardPoint entities
 		// init the hardpoint ent
 		int hardpointID = 0
@@ -189,20 +187,20 @@ void function SpawnHardpoints()
 			hardpointID = 2
 
 		spawnpoint.SetHardpointID( hardpointID )
-	
+
 		HardpointStruct hardpointStruct
 		hardpointStruct.hardpoint = spawnpoint
 		hardpointStruct.prop = CreatePropDynamic( spawnpoint.GetModelName(), spawnpoint.GetOrigin(), spawnpoint.GetAngles(), 6 )
-		
+
 		entity trigger = GetEnt( expect string( spawnpoint.kv.triggerTarget ) )
 		hardpointStruct.trigger = trigger
-		
+
 		file.hardpoints.append( hardpointStruct )
 		HARDPOINTS.append( spawnpoint ) // for vo script
 		spawnpoint.s.trigger <- trigger // also for vo script
-		
-		SetGlobalNetEnt( "objective" + spawnpoint.kv.hardpointGroup + "Ent", spawnpoint ) 
-		
+
+		SetGlobalNetEnt( "objective" + spawnpoint.kv.hardpointGroup + "Ent", spawnpoint )
+
 		// set up trigger functions
 		trigger.SetEnterCallback( OnHardpointEntered )
 		trigger.SetLeaveCallback( OnHardpointLeft )
