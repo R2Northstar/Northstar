@@ -10,7 +10,7 @@ void parseConfigurables() {
     char* clachar = strstr(GetCommandLineA(), "-profile=");
     if (clachar) {
         std::string cla = std::string(clachar);
-        if (strcmp(cla.substr(9, 1).c_str(), "\"")) {
+        if (strncmp(cla.substr(9, 1).c_str(), "\"", 1)) {
             int space = cla.find(" ");
             std::string dirname = cla.substr(9, space - 9);
             spdlog::info("Found profile in command line arguments: " + dirname);
