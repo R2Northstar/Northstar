@@ -8,10 +8,9 @@
 
 namespace fs = std::filesystem;
 
-const fs::path MOD_FOLDER_PATH = "R2Northstar/mods";
+const std::string MOD_FOLDER_SUFFIX = "/mods";
 const fs::path MOD_OVERRIDE_DIR = "mod";
-
-const fs::path COMPILED_ASSETS_PATH = "R2Northstar/runtime/compiled";
+const std::string COMPILED_ASSETS_SUFFIX = "/runtime/compiled";
 
 struct ModConVar
 {
@@ -124,5 +123,7 @@ public:
 };
 
 void InitialiseModManager(HMODULE baseAddress);
+fs::path GetModFolderPath();
+fs::path GetCompiledAssetsPath();
 
 extern ModManager* g_ModManager;

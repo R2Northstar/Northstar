@@ -114,6 +114,7 @@
     <ClInclude Include="chatcommand.h" />
     <ClInclude Include="clientauthhooks.h" />
     <ClInclude Include="concommand.h" />
+    <ClInclude Include="configurables.h" />
     <ClInclude Include="context.h" />
     <ClInclude Include="convar.h" />
     <ClInclude Include="dedicated.h" />
@@ -556,6 +557,7 @@
     <ClCompile Include="chatcommand.cpp" />
     <ClCompile Include="clientauthhooks.cpp" />
     <ClCompile Include="concommand.cpp" />
+    <ClCompile Include="configurables.cpp" />
     <ClCompile Include="context.cpp" />
     <ClCompile Include="convar.cpp" />
     <ClCompile Include="dedicated.cpp" />
