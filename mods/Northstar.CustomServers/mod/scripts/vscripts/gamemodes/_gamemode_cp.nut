@@ -16,6 +16,7 @@ struct HardpointStruct
 	array<entity> imcCappers
 	array<entity> militiaCappers
 }
+
 struct CP_PlayerStruct
 {
 	entity player
@@ -187,6 +188,7 @@ void function SpawnHardpoints()
 			hardpointID = 2
 
 		spawnpoint.SetHardpointID( hardpointID )
+		SpawnHardpointMinimapIcon( spawnpoint )
 
 		HardpointStruct hardpointStruct
 		hardpointStruct.hardpoint = spawnpoint
@@ -205,6 +207,19 @@ void function SpawnHardpoints()
 		trigger.SetEnterCallback( OnHardpointEntered )
 		trigger.SetLeaveCallback( OnHardpointLeft )
 	}
+}
+
+void function SpawnHardpointMinimapIcon( entity spawnpoint )
+{
+	// map hardpoint id to eMinimapObject_info_hardpoint enum id
+	int miniMapObjectHardpoint = spawnpoint.GetHardpointID() + 1
+
+	spawnpoint.Minimap_SetCustomState( miniMapObjectHardpoint )
+	spawnpoint.Minimap_AlwaysShow( TEAM_MILITIA, null )
+	spawnpoint.Minimap_AlwaysShow( TEAM_IMC, null )
+	spawnpoint.Minimap_SetAlignUpright( true )
+
+	SetTeam( spawnpoint, TEAM_UNASSIGNED )
 }
 
 // functions for handling hardpoint netvars
@@ -282,6 +297,7 @@ void function GamemodeCP_InitPlayer(entity player)
 	file.players.append(playerStruct)
 	thread PlayerThink(playerStruct)
 }
+
 void function GamemodeCP_RemovePlayer(entity player)
 {
 
