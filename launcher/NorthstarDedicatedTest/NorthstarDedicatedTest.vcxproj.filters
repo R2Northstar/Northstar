@@ -1446,6 +1446,9 @@
     <ClInclude Include="bitbuf.h">
       <Filter>Header Files\Shared</Filter>
     </ClInclude>
+    <ClInclude Include="configurables.h">
+      <Filter>Header Files\Client</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -1576,6 +1579,9 @@
     </ClCompile>
     <ClCompile Include="buildainfile.cpp">
       <Filter>Source Files\Server</Filter>
+    </ClCompile>
+    <ClCompile Include="configurables.cpp">
+      <Filter>Source Files\Client</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

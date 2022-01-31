@@ -12,6 +12,7 @@
 #include <fstream>
 #include <filesystem>
 #include <thread>
+#include "configurables.h"
 
 const char* AUTHSERVER_VERIFY_STRING = "I am a northstar server!";
 
@@ -143,7 +144,7 @@ bool ServerAuthenticationManager::AuthenticatePlayer(void* player, int64_t uid, 
 			// reset from disk if we're doing that
 			if (m_bForceReadLocalPlayerPersistenceFromDisk && !strcmp(authData.uid, g_LocalPlayerUserID))
 			{
-				std::fstream pdataStream("R2Northstar/placeholder_playerdata.pdata", std::ios_base::in);
+				std::fstream pdataStream(GetNorthstarPrefix() + "/placeholder_playerdata.pdata", std::ios_base::in);
 
 				if (!pdataStream.fail())
 				{
@@ -183,13 +184,13 @@ bool ServerAuthenticationManager::AuthenticatePlayer(void* player, int64_t uid, 
 		strcpy((char*)player + 0xF500, strUid.c_str());
 
 		// try reading pdata file for player
-		std::string pdataPath = "R2Northstar/playerdata_";
+		std::string pdataPath = GetNorthstarPrefix() + "/playerdata_";
 		pdataPath += strUid;
 		pdataPath += ".pdata";
 
 		std::fstream pdataStream(pdataPath, std::ios_base::in);
 		if (pdataStream.fail()) // file doesn't exist, use placeholder
-			pdataStream = std::fstream("R2Northstar/placeholder_playerdata.pdata");
+			pdataStream = std::fstream(GetNorthstarPrefix() + "/placeholder_playerdata.pdata");
 		
 		// get file length
 		pdataStream.seekg(0, pdataStream.end);
