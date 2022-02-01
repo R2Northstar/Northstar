@@ -1,0 +1,16 @@
+Language: Cpp
+Standard: Auto
+IndentWidth: 4
+TabWidth: 4
+UseCRLF: false
+SpacesInSquareBrackets: false
+SpacesInParentheses: false
+SpacesInLineCommentPrefix:
+  Minimum: 1
+  Maximum: 1
+UseTab: Always
+ColumnLimit: 140
+BreakBeforeBraces: Allman
+AlignAfterOpenBracket: AlwaysBreak
+IndentExternBlock: Indent
+PointerAlignment: Left
