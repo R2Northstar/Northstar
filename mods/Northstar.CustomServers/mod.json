@@ -1,62 +1,51 @@
 {
 	"Name": "Northstar.CustomServers",
 	"Description": "Attempts to recreate the behaviour of vanilla Titanfall 2 servers, as well as changing some scripts to allow better support for mods",
-	"Version": "1.0.0",
+	"Version": "1.4.0",
 	"LoadPriority": 0,
-	
 	"ConVars": [
 		{
 			"Name": "ns_lobby_type",
 			"DefaultValue": "0"
 		},
-		
 		{
 			"Name": "ns_is_modded_server",
 			"DefaultValue": "1",
 			"Flags": 8192
 		},
-		
 		{
 			"Name": "ns_should_return_to_lobby",
 			"DefaultValue": "1"
 		},
-		
 		{
 			"Name": "ns_private_match_last_mode",
 			"DefaultValue": "tdm"
 		},
-		
 		{
 			"Name": "ns_private_match_last_map",
 			"DefaultValue": "mp_forwardbase_kodai"
 		},
-		
 		{
 			"Name": "ns_private_match_only_host_can_change_settings",
 			"DefaultValue": "0"
 		},
-		
 		{
 			"Name": "ns_private_match_only_host_can_start",
 			"DefaultValue": "0"
 		},
-		
 		{
 			"Name": "ns_private_match_countdown_length",
 			"DefaultValue": "15"
 		},
-		
 		{
 			"Name": "ns_private_match_override_maxplayers",
 			"DefaultValue": "1"
 		},
-		
 		{
 			"Name": "ns_should_log_unknown_clientcommands",
 			"DefaultValue": "1"
 		}
 	],
-	
 	"Scripts": [
 		{
 			"Path": "_misc_stubs.gnut",
@@ -70,17 +59,14 @@
 			"Path": "_script_movers.gnut",
 			"RunOn": "SERVER && MP"
 		},
-		
 		{
 			"Path": "sh_northstar_utils.gnut",
 			"RunOn": "CLIENT || SERVER || UI"
 		},
-		
 		{
 			"Path": "mp/levels/_lf_maps_shared.gnut",
 			"RunOn": "SERVER && MP"
 		},
-		
 		{
 			"Path": "gamemodes/sh_gamemodes_custom.gnut",
 			"RunOn": "(CLIENT || SERVER) && MP"
@@ -96,7 +82,6 @@
 				"Before": "GamemodeFRA_AddAdditionalInitCallback"
 			}
 		},
-		
 		{
 			"Path": "mp/_classic_mp_dropship_intro.gnut",
 			"RunOn": "SERVER && MP"
@@ -105,7 +90,6 @@
 			"Path": "mp/_classic_mp_no_intro.gnut",
 			"RunOn": "SERVER && MP"
 		},
-		
 		{
 			"Path": "_loadouts_mp.gnut",
 			"RunOn": "SERVER && MP",
@@ -113,7 +97,6 @@
 				"After": "SvLoadoutsMP_Init"
 			}
 		},
-		
 		{
 			"Path": "lobby/sh_private_lobby_modes_init.gnut",
 			"RunOn": "( SERVER || CLIENT ) && MP"

@@ -1,7 +1,7 @@
 {
-	"Name" : "Northstar.Client",
-	"Description" : "Various ui and client changes to fix bugs and add better support for mods",
-	"Version": "1.0.0",
+	"Name": "Northstar.Client",
+	"Description": "Various ui and client changes to fix bugs and add better support for mods",
+	"Version": "1.4.0",
 	"LoadPriority": 0,
 	"ConVars": [
 		{
@@ -34,11 +34,10 @@
 			"Path": "ui/menu_ns_modmenu.nut",
 			"RunOn": "UI",
 			"UICallback": {
-				"Before": "AddNorthstarModMenu", 
+				"Before": "AddNorthstarModMenu",
 				"After": "AddNorthstarModMenu_MainMenuFooter"
 			}
 		},
-		
 		{
 			"Path": "ui/menu_ns_serverbrowser.nut",
 			"RunOn": "UI",
@@ -46,7 +45,6 @@
 				"Before": "AddNorthstarServerBrowserMenu"
 			}
 		},
-		
 		{
 			"Path": "ui/menu_ns_connect_password.nut",
 			"RunOn": "UI",
@@ -54,7 +52,6 @@
 				"Before": "AddNorthstarConnectWithPasswordMenu"
 			}
 		},
-		
 		{
 			"Path": "ui/menu_ns_custom_match_settings_categories.nut",
 			"RunOn": "UI",
@@ -74,7 +71,6 @@
 			"RunOn": "UI"
 		}
 	],
-	
 	"Localisation": [
 		"resource/northstar_client_localisation_%language%.txt"
 	]
