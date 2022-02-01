@@ -50,6 +50,12 @@ Command|Result
 `thirdperson`|Third person mode
 `script DevSpawnTitan()`|Spawns you a Titan
 `script SetGameEndTime(1200.0)`|Sets remaining match time to 1200 seconds
+`ent_create npc_soldier`|Spawns a grunt at your crosshair
+`ent_create npc_stalker`|Spawns a stalker at your crosshair
+`ent_create npc_spectre`|Spawns a spectre at your crosshair
+`ent_create npc_titan`|Spawns a titan at your crosshair (Warning as of v1.4.0, this crashes your game if you don't have your own titan)
+`ent_create npc_marvin`|Spawns a Marvin at your crosshair
+`ent_fire !picker setteam 2`|Sets entity at crosshair to team 2
 
 ### Server commands
 
