@@ -9,6 +9,7 @@
 void ModManager::BuildScriptsRson()
 {
 	spdlog::info("Building custom scripts.rson");
+	fs::path MOD_SCRIPTS_RSON_PATH = fs::path(GetCompiledAssetsPath() / MOD_SCRIPTS_RSON_SUFFIX);
 	fs::remove(MOD_SCRIPTS_RSON_PATH);
 
 	// not really important since it doesn't affect actual functionality at all, but the rson we output is really weird
