@@ -5,7 +5,7 @@ on:
       - '*'
 
 env:
-  NORTHSTAR_VERSION: ${{github.ref_name}}
+  NORTHSTAR_VERSION: ${{ github.ref_name }}
 
 jobs:
   build-launcher:
@@ -56,6 +56,12 @@ jobs:
           repository: R2Northstar/NorthstarMods
           ref: ${{ env.NORTHSTAR_VERSION }}
           path: northstar-mods
+      - name: Update mod version info
+        run: |
+          export MOD_VERSION=$(echo $NORTHSTAR_VERSION | tr -d 'v')
+          cat <<< $(jq ".Version = \"${MOD_VERSION}\"" northstar-mods/Northstar.Client/mod.json) > northstar-mods/Northstar.Client/mod.json
+          cat <<< $(jq ".Version = \"${MOD_VERSION}\"" northstar-mods/Northstar.Custom/mod.json) > northstar-mods/Northstar.Custom/mod.json
+          cat <<< $(jq ".Version = \"${MOD_VERSION}\"" northstar-mods/Northstar.CustomServers/mod.json) > northstar-mods/Northstar.CustomServers/mod.json
       - name: Download repositories
         run: |
           mv northstar/release/* northstar/.
