@@ -31,3 +31,15 @@ jobs:
             x64/${{ env.BUILD_PROFILE }}/*.exe
             x64/${{ env.BUILD_PROFILE }}/*.pdb
             x64/${{ env.BUILD_PROFILE }}/*.txt
+
+  format-check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: DoozyX/clang-format-lint-action@v0.13
+      with:
+        source: 'NorthstarDedicatedTest LauncherInjector'
+        exclude: 'NorthstarDedicatedTest/include loader_launcher_proxy loader_wsock32_proxy'
+        extensions: 'h,cpp'
+        clangFormatVersion: 13
+        style: file
