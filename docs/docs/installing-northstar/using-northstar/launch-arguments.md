@@ -10,4 +10,5 @@ Here's a list of new command line arguments that Northstar introduces, they shou
 | `-dedicated`       | Starts a dedicated server without video output                                                     |                                  |
 | `-waitfordebugger` | Waits for debugger to connect before launching game                                                |                                  |
 | `-language`        | Forces loading of client localisation                                                              | language string ex: `portuguese` |
+| `-profile=`        | Enabled specifying a different profile directory. Default: R2Northstar                             | Example: `-profile="dev mods"`   |
 | \`LFX              | Enables the use of [LatencyFleX](../../using-northstar/playing-on-linux/#latencyflex) (Linux-only) | `0` or `1`                       |
