@@ -1103,7 +1103,7 @@ void function FirstPersonSequence( FirstPersonSequenceStruct sequence, entity pl
 
 	entity soul
 
-	if ( ent )
+	if ( IsValid(ent) )
 	{
 		// the entity we are animating relative to may change during the animation
 		if ( IsSoul( ent ) )
