@@ -61,12 +61,12 @@ Command|Result
 
 | Variable                                    | Description                                                           | Default |
 | ------------------------------------------- | --------------------------------------------------------------------- | ------- |
-| `sv_cheats`                                 | Wether players can use cheat commands (i.e. noclip) .                 | 0       |
+| `sv_cheats`                                 | Whether players can use cheat commands (i.e. noclip) .                 | 0       |
 | `sv_AllWaysSupportsSaveRestore`             |                                                                       | 0       |
 | `sv_allTicksFinal`                          |                                                                       | 0       |
 | `sv_allowSendTableTransmitToClients`        |                                                                       | 1       |
-| `sv_alltalk`                                | Wether both teams can talk to each other over voice chat.             | 0       |
-| `sv_balanceTeams`                           | Wether the server will attempt to keep teams balanced between rounds. | 1       |
+| `sv_alltalk`                                | Whether both teams can talk to each other over voice chat.             | 0       |
+| `sv_balanceTeams`                           | Whether the server will attempt to keep teams balanced between rounds. | 1       |
 | `sv_bounds_show_errors`                     |                                                                       | 0       |
 | `sv_clampPlayerFrameTime`                   |                                                                       | 0       |
 | `sv_clockcorrection`                        |                                                                       | 1       |
@@ -87,9 +87,9 @@ Command|Result
 | `sv_hibernate_ms`                           |                                                                       | 5       |
 | `sv_hibernate_ms_vgui`                      |                                                                       | 5       |
 | `sv_hibernate_postgame_delay`               |                                                                       | 5       |
-| `sv_hibernate_when_empty`                   | Wether the server should hibernate when empty.                        | 0       |
+| `sv_hibernate_when_empty`                   | Whether the server should hibernate when empty.                        | 0       |
 | `sv_instancebaselines`                      |                                                                       | 1       |
-| `sv_kickPlayersTooFarInFuture`              | Wether to kick players whose internal time is too far in the future.  | 1       |
+| `sv_kickPlayersTooFarInFuture`              | Whether to kick players whose internal time is too far in the future.  | 1       |
 | `sv_lerpAnims`                              |                                                                       | 1       |
 | `sv_lobbyType`                              |                                                                       | 1       |
 | `sv_massreport`                             |                                                                       | 0       |
@@ -110,7 +110,7 @@ Command|Result
 | `sv_minrate`                                |                                                                       | 128000  |
 | `sv_minupdaterate`                          |                                                                       | 20      |
 | `sv_noclipaccelerate`                       | The amount of acceleration in noclip.                                 | 10000   |
-| `sv_noclipduringpause`                      | Wether to noclip during server pause.                                 | 0       |
+| `sv_noclipduringpause`                      | Whether to noclip during server pause.                                 | 0       |
 | `sv_noclipspeed`                            | The speed for noclip.                                                 | 5       |
 | `sv_normalSimulationCommandThreshold`       |                                                                       | 3       |
 | `sv_parallel_sendsnapshot`                  |                                                                       | 1       |
@@ -127,7 +127,7 @@ Command|Result
 | `sv_querylimit_per_sec`                     |                                                                       | 10      |
 | `sv_quota_stringcmdspersecond`              |                                                                       | 60      |
 | `sv_rcon_banpenalty`                        |                                                                       | 0       |
-| `sv_rcon_log`                               | Wether to log RCON commands.                                          | 1       |
+| `sv_rcon_log`                               | Whether to log RCON commands.                                          | 1       |
 | `sv_rcon_maxfailures`                       |                                                                       | 10      |
 | `sv_rcon_minfailures`                       |                                                                       | 5       |
 | `sv_rcon_minfailuretime`                    |                                                                       | 30      |
