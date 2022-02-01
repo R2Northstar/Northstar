@@ -521,6 +521,8 @@ function PilotBecomesTitan( entity player, entity titan, bool fullCopy = true )
 	//PROTO_DisplayTitanLoadouts( player, titan, loadout )
 
 	entity soul = titan.GetTitanSoul()
+	if( !IsValid(soul) )
+		return
 	soul.soul.lastOwner = player
 
 	player.s.storedPlayerSettings <- player.GetPlayerSettings()
