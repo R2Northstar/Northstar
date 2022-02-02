@@ -18,10 +18,6 @@ Earn points while in your titan. Destroy a titan to get your own.
 
 Survivors are infected when killed.
 
-## Frontier War
-
-Destroy the enemy's harvester and protect your own.
-
 ## Amped Killrace
 
 Get kills to increase the length of your killrace. Collect the flag to start it. Set the record to win.
@@ -46,6 +42,4 @@ Complex, Forwardbase Kodai, and Colony have had control panels added with [the v
 
 CTF with custom settings for Comp games.
 
-## Sandbox
 
-Like gmod but worse.
