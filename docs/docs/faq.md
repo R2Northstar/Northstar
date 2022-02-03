@@ -4,6 +4,8 @@ description: Frequently asked questions
 
 # FAQ
 
+## **If you have any issues please go to [the troubleshooting page.](installing-northstar/troubleshooting.md)**
+
 ### Q: Where are all my levels and saved loadouts?
 
 A: Northstar runs separate from official servers and progress does not carry over.
@@ -42,28 +44,19 @@ and instructions to host a _listen server_:
 [basic-listen-server.md](hosting-a-server-with-northstar/basic-listen-server.md)
 {% endcontent-ref %}
 
-### Q: My main menu screen is blank or only cinematics show up!
-
-A: Please remove conflicting mods such as `better.serverbrowser` and reinstall _Northstar core mods_ (those that start with `Northstar.`, are in the [NorthstarMods repository](https://github.com/R2Northstar/NorthstarMods), and included in the release zip).\
-Try deleting `enabledmods.json` as well. Otherwise pay attention in console for your errors if you know what you're doing.
-
 ### Q: Can I use Northstar to play singleplayer?
 
 A: No single player is not supported at the moment, so you'll need to use the vanilla client. A [co-op single player mod is planned](https://github.com/R2Northstar/NorthstarMods/tree/main/Northstar.Coop) but development is currently halted in favour of focussing on multiplayer content.
 
-### Q: I get an error saying "Showing user info for UID 0 on hardware" and can't connect to servers!
+### Q: I get an error saying "Showing user info for UID 0 on hardware" and can't connect to servers
 
 A: Should be fixed soon.
-
-### Q: I get an error regarding "File Corruption" and can't launch Northstar.
-
-A: Check [the troubleshooting section](installing-northstar/troubleshooting.md).
 
 ### Q: Can you host a dedicated server on Linux?
 
 A: It works using wine and llvmpipe, a guide is WIP.
 
-### Q: I get an error message saying "Connection timed out" when trying to connect to my own dedicated server.
+### Q: I get an error message saying "Connection timed out" when trying to connect to my own dedicated server
 
 A: Add `+net_usesocketsforloopback 1` in your `ns_startup_args.txt` and `ns_startup_dedi_args.txt`, restart both client and server.
 
@@ -71,22 +64,6 @@ A: Add `+net_usesocketsforloopback 1` in your `ns_startup_args.txt` and `ns_star
 
 `r2` refers to the internal development name of Titanfall 2 given to it by Respawn. Titanfall 1 for example is `r1`, Apex Legends is `r5`, etc.\
 The reason this wiki for example is called `r2northstar.gitbook.io` is due to the fact that "_Northstar_" is a rather common name and as such often already reserved by other organisations and people. "_R2Northstar_" is both uncommon and therefore still available and ties "_Northstar_" with Titanfall 2, due to the `r2` part of the name.
-
-### Q: I keep getting “File corruption detected” error
-
-A: You’re most likely running an outdated Northstar version now, please update. (or you really are missing audio files)
-
-### Q: I keep getting the engine error “Failed to initialize Origin: Origin Core seems to be running, but the LSX Authentication Challenge failed. No communication with Core is possible.”
-
-Check [this section on the troubleshooting page.](installing-northstar/troubleshooting.md#failed-to-initialize-origin-origin-core-seems-to-be-running-but-the-lsx-authentication-challenge-fai)
-
-### Q: I get error "Failed copying wsock32.dll from system32 \[...] copy\_file: Access is denied."
-
-A: You are probably using EA Desktop app and it sets up game installations with no write permissions contrary to Origin.
-
-* **Solution 1**: Launch EA Desktop and the game as admin once so that it can copy that file.
-* **Solution 2**: If you know how, just copy the mentioned file manually, remembering you need to change its filename (just use some temp dir and rename there).
-* **Solution 3**: If you know how, just change the folder permissions in Properties->Security tab of your Titanfall2 install dir to let your user write.
 
 ### Q: Can I use a pirated/cracked copy Titanfall 2 to run Northstar?
 

@@ -4,7 +4,7 @@ description: Contribution guidelines
 
 # Contributing
 
-### Creating an issue <a href="#contributing" id="contributing"></a>
+## Creating an issue <a href="#contributing" id="contributing"></a>
 
 Read [CONTRIBUTING.md](https://github.com/R2Northstar/Northstar/blob/main/CONTRIBUTING.md) before creating an issue, if you believe that the issue is valid fill the provided template with the requested info.
 

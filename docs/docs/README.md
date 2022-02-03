@@ -8,7 +8,7 @@ cover: images/northstarbanner.png
 
 {% embed url="https://www.youtube.com/watch?v=en06Y6CPMQg" %}
 
-## Releases and installation guide:
+## Releases and installation guide
 
 Get the newest Northstar release here:
 
