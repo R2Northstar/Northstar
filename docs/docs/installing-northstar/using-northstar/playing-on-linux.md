@@ -79,3 +79,7 @@ For more info and proposed fixes, refer to [this issue thread on Github](https:/
 ### LatencyFleX issues
 
 Some users have reported issues with enabling LatencyFleX. If you see `"Unable to load LatencyFleX library, LatencyFleX disabled."` in your logs, try adding `latencyflex_wine.dll` to your `bin/x64_retail` folder.
+
+### Game crashes on launch with Cause: Access Violation Data Execution Prevention (DEP) at: 0x00000000
+
+try running with ProtonGE https://github.com/GloriousEggroll/proton-ge-custom/.
