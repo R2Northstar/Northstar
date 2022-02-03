@@ -5,6 +5,7 @@ Northstar is being developed by a passionate community that wants to maintain Ti
 ## Contributors
 
 Source code contributors can be found through these links:
+
 - [Northstar](https://github.com/R2Northstar/Northstar/graphs/contributors)
 - [NorthstarMods](https://github.com/R2Northstar/NorthstarMods/graphs/contributors)
 - [NorthstarWiki](https://github.com/R2Northstar/NorthstarWiki/graphs/contributors)
