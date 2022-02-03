@@ -359,7 +359,7 @@ void function FlushMouseDeltaBuffer()
 
 void function SliderBarUpdate()
 {
-	if ( file.modsArrayFiltered.len() <= 15 )
+	if ( file.modsArrayFiltered.len() <= 17 )
 	{
 		FlushMouseDeltaBuffer()
 		return
