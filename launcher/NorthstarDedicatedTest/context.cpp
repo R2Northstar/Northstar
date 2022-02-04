@@ -9,6 +9,6 @@ const char* GetContextName(ScriptContext context)
 		return "SERVER";
 	else if (context == ScriptContext::UI)
 		return "UI";
-	
+
 	return "";
 }

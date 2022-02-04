@@ -23,7 +23,7 @@ void ServerBanSystem::OpenBanlist()
 			m_vBannedUids.push_back(strtoll(line.c_str(), nullptr, 10));
 
 		enabledModsStream.close();
-	}	
+	}
 
 	// open write stream for banlist
 	m_sBanlistStream.open(GetNorthstarPrefix() + "/banlist.txt", std::ofstream::out | std::ofstream::binary | std::ofstream::app);
@@ -90,10 +90,7 @@ void UnbanPlayerCommand(const CCommand& args)
 	g_ServerBanSystem->UnbanUID(strtoll(args.Arg(1), nullptr, 10));
 }
 
-void ClearBanlistCommand(const CCommand& args)
-{
-	g_ServerBanSystem->ClearBanlist();
-}
+void ClearBanlistCommand(const CCommand& args) { g_ServerBanSystem->ClearBanlist(); }
 
 void InitialiseBanSystem(HMODULE baseAddress)
 {

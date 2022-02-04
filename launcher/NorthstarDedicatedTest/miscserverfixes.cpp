@@ -19,6 +19,6 @@ void InitialiseMiscServerFixes(HMODULE baseAddress)
 		*(ptr++) = 0x90; // nop
 		*(ptr++) = 0x90; // nop
 		*(ptr++) = 0x90; // nop
-		*ptr     = 0x90; // nop
+		*ptr = 0x90;	 // nop
 	}
 }

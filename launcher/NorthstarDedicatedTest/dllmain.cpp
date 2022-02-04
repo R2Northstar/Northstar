@@ -37,123 +37,120 @@
 #include <string.h>
 #include "pch.h"
 
-
 bool initialised = false;
 
-BOOL APIENTRY DllMain( HMODULE hModule,
-                       DWORD  ul_reason_for_call,
-                       LPVOID lpReserved
-                     )
+BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
-    switch (ul_reason_for_call)
-    {
-    case DLL_PROCESS_ATTACH:
-    case DLL_THREAD_ATTACH:
-    case DLL_THREAD_DETACH:
-    case DLL_PROCESS_DETACH:
-        break;
-    }
+	switch (ul_reason_for_call)
+	{
+	case DLL_PROCESS_ATTACH:
+	case DLL_THREAD_ATTACH:
+	case DLL_THREAD_DETACH:
+	case DLL_PROCESS_DETACH:
+		break;
+	}
 
-    return TRUE;
+	return TRUE;
 }
 
 void WaitForDebugger(HMODULE baseAddress)
 {
-    // earlier waitfordebugger call than is in vanilla, just so we can debug stuff a little easier
-    if (CommandLine()->CheckParm("-waitfordebugger"))
-    {
-        spdlog::info("waiting for debugger...");
+	// earlier waitfordebugger call than is in vanilla, just so we can debug stuff a little easier
+	if (CommandLine()->CheckParm("-waitfordebugger"))
+	{
+		spdlog::info("waiting for debugger...");
 
-        while (!IsDebuggerPresent())
-            Sleep(100);
-    }
+		while (!IsDebuggerPresent())
+			Sleep(100);
+	}
 }
 
 bool InitialiseNorthstar()
 {
-    if (initialised)
-    {
-        //spdlog::warn("Called InitialiseNorthstar more than once!"); // it's actually 100% fine for that to happen
-        return false;
-    }
+	if (initialised)
+	{
+		// spdlog::warn("Called InitialiseNorthstar more than once!"); // it's actually 100% fine for that to happen
+		return false;
+	}
 
-    initialised = true;
+	initialised = true;
 
-    parseConfigurables();
+	parseConfigurables();
 
-    SetEnvironmentVariableA("OPENSSL_ia32cap", "~0x200000200000000");
-    curl_global_init_mem(CURL_GLOBAL_DEFAULT, _malloc_base, _free_base, _realloc_base, _strdup_base, _calloc_base);
+	SetEnvironmentVariableA("OPENSSL_ia32cap", "~0x200000200000000");
+	curl_global_init_mem(CURL_GLOBAL_DEFAULT, _malloc_base, _free_base, _realloc_base, _strdup_base, _calloc_base);
 
-    InitialiseLogging();
-    InstallInitialHooks();
-    CreateLogFiles();
-    InitialiseInterfaceCreationHooks();
+	InitialiseLogging();
+	InstallInitialHooks();
+	CreateLogFiles();
+	InitialiseInterfaceCreationHooks();
 
-    AddDllLoadCallback("tier0.dll", InitialiseTier0GameUtilFunctions);
-    AddDllLoadCallback("engine.dll", WaitForDebugger);
-    AddDllLoadCallback("engine.dll", InitialiseEngineGameUtilFunctions);
-    AddDllLoadCallback("server.dll", InitialiseServerGameUtilFunctions);
+	AddDllLoadCallback("tier0.dll", InitialiseTier0GameUtilFunctions);
+	AddDllLoadCallback("engine.dll", WaitForDebugger);
+	AddDllLoadCallback("engine.dll", InitialiseEngineGameUtilFunctions);
+	AddDllLoadCallback("server.dll", InitialiseServerGameUtilFunctions);
 
-    // dedi patches
-    {
-        AddDllLoadCallback("tier0.dll", InitialiseDedicatedOrigin);
-        AddDllLoadCallback("engine.dll", InitialiseDedicated);
-        AddDllLoadCallback("server.dll", InitialiseDedicatedServerGameDLL);
-        AddDllLoadCallback("materialsystem_dx11.dll", InitialiseDedicatedMaterialSystem);
-        // this fucking sucks, but seemingly we somehow load after rtech_game???? unsure how, but because of this we have to apply patches here, not on rtech_game load
-        AddDllLoadCallback("engine.dll", InitialiseDedicatedRtechGame);
-    }
-    
-    AddDllLoadCallback("engine.dll", InitialiseConVars);
-    AddDllLoadCallback("engine.dll", InitialiseConCommands);
+	// dedi patches
+	{
+		AddDllLoadCallback("tier0.dll", InitialiseDedicatedOrigin);
+		AddDllLoadCallback("engine.dll", InitialiseDedicated);
+		AddDllLoadCallback("server.dll", InitialiseDedicatedServerGameDLL);
+		AddDllLoadCallback("materialsystem_dx11.dll", InitialiseDedicatedMaterialSystem);
+		// this fucking sucks, but seemingly we somehow load after rtech_game???? unsure how, but because of this we have to apply patches
+		// here, not on rtech_game load
+		AddDllLoadCallback("engine.dll", InitialiseDedicatedRtechGame);
+	}
 
-    // client-exclusive patches
-    {
-        AddDllLoadCallback("tier0.dll", InitialiseTier0LanguageHooks);
-        AddDllLoadCallback("engine.dll", InitialiseClientEngineSecurityPatches);
-        AddDllLoadCallback("client.dll", InitialiseClientSquirrel);
-        AddDllLoadCallback("client.dll", InitialiseSourceConsole);
-        AddDllLoadCallback("engine.dll", InitialiseChatCommands);
-        AddDllLoadCallback("client.dll", InitialiseScriptModMenu);
-        AddDllLoadCallback("client.dll", InitialiseScriptServerBrowser);
-        AddDllLoadCallback("localize.dll", InitialiseModLocalisation);
-        AddDllLoadCallback("engine.dll", InitialiseClientAuthHooks);
-        AddDllLoadCallback("client.dll", InitialiseLatencyFleX);
-        AddDllLoadCallback("engine.dll", InitialiseScriptExternalBrowserHooks);
-        AddDllLoadCallback("client.dll", InitialiseScriptMainMenuPromos);
-        AddDllLoadCallback("client.dll", InitialiseMiscClientFixes);
-        AddDllLoadCallback("client.dll", InitialiseClientPrintHooks);
-    }
+	AddDllLoadCallback("engine.dll", InitialiseConVars);
+	AddDllLoadCallback("engine.dll", InitialiseConCommands);
 
-    AddDllLoadCallback("engine.dll", InitialiseEngineSpewFuncHooks);
-    AddDllLoadCallback("server.dll", InitialiseServerSquirrel);
-    AddDllLoadCallback("engine.dll", InitialiseBanSystem);
-    AddDllLoadCallback("engine.dll", InitialiseServerAuthentication);
-    AddDllLoadCallback("server.dll", InitialiseServerAuthenticationServerDLL);
-    AddDllLoadCallback("engine.dll", InitialiseSharedMasterServer);
-    AddDllLoadCallback("server.dll", InitialiseMiscServerScriptCommand);
-    AddDllLoadCallback("server.dll", InitialiseMiscServerFixes);
-    AddDllLoadCallback("server.dll", InitialiseBuildAINFileHooks);
+	// client-exclusive patches
+	{
+		AddDllLoadCallback("tier0.dll", InitialiseTier0LanguageHooks);
+		AddDllLoadCallback("engine.dll", InitialiseClientEngineSecurityPatches);
+		AddDllLoadCallback("client.dll", InitialiseClientSquirrel);
+		AddDllLoadCallback("client.dll", InitialiseSourceConsole);
+		AddDllLoadCallback("engine.dll", InitialiseChatCommands);
+		AddDllLoadCallback("client.dll", InitialiseScriptModMenu);
+		AddDllLoadCallback("client.dll", InitialiseScriptServerBrowser);
+		AddDllLoadCallback("localize.dll", InitialiseModLocalisation);
+		AddDllLoadCallback("engine.dll", InitialiseClientAuthHooks);
+		AddDllLoadCallback("client.dll", InitialiseLatencyFleX);
+		AddDllLoadCallback("engine.dll", InitialiseScriptExternalBrowserHooks);
+		AddDllLoadCallback("client.dll", InitialiseScriptMainMenuPromos);
+		AddDllLoadCallback("client.dll", InitialiseMiscClientFixes);
+		AddDllLoadCallback("client.dll", InitialiseClientPrintHooks);
+	}
 
-    AddDllLoadCallback("engine.dll", InitialisePlaylistHooks);
+	AddDllLoadCallback("engine.dll", InitialiseEngineSpewFuncHooks);
+	AddDllLoadCallback("server.dll", InitialiseServerSquirrel);
+	AddDllLoadCallback("engine.dll", InitialiseBanSystem);
+	AddDllLoadCallback("engine.dll", InitialiseServerAuthentication);
+	AddDllLoadCallback("server.dll", InitialiseServerAuthenticationServerDLL);
+	AddDllLoadCallback("engine.dll", InitialiseSharedMasterServer);
+	AddDllLoadCallback("server.dll", InitialiseMiscServerScriptCommand);
+	AddDllLoadCallback("server.dll", InitialiseMiscServerFixes);
+	AddDllLoadCallback("server.dll", InitialiseBuildAINFileHooks);
 
-    AddDllLoadCallback("filesystem_stdio.dll", InitialiseFilesystem);
-    AddDllLoadCallback("engine.dll", InitialiseEngineRpakFilesystem);
-    AddDllLoadCallback("engine.dll", InitialiseKeyValues);
+	AddDllLoadCallback("engine.dll", InitialisePlaylistHooks);
 
-    // maxplayers increase
-    AddDllLoadCallback("engine.dll", InitialiseMaxPlayersOverride_Engine);
-    AddDllLoadCallback("client.dll", InitialiseMaxPlayersOverride_Client);
-    AddDllLoadCallback("server.dll", InitialiseMaxPlayersOverride_Server);
+	AddDllLoadCallback("filesystem_stdio.dll", InitialiseFilesystem);
+	AddDllLoadCallback("engine.dll", InitialiseEngineRpakFilesystem);
+	AddDllLoadCallback("engine.dll", InitialiseKeyValues);
 
-    // audio hooks
-    AddDllLoadCallback("client.dll", InitialiseMilesAudioHooks);
+	// maxplayers increase
+	AddDllLoadCallback("engine.dll", InitialiseMaxPlayersOverride_Engine);
+	AddDllLoadCallback("client.dll", InitialiseMaxPlayersOverride_Client);
+	AddDllLoadCallback("server.dll", InitialiseMaxPlayersOverride_Server);
 
-    // mod manager after everything else
-    AddDllLoadCallback("engine.dll", InitialiseModManager);
+	// audio hooks
+	AddDllLoadCallback("client.dll", InitialiseMilesAudioHooks);
 
-    // run callbacks for any libraries that are already loaded by now
-    CallAllPendingDLLLoadCallbacks();
+	// mod manager after everything else
+	AddDllLoadCallback("engine.dll", InitialiseModManager);
 
-    return true;
+	// run callbacks for any libraries that are already loaded by now
+	CallAllPendingDLLLoadCallbacks();
+
+	return true;
 }

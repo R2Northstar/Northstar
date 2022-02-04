@@ -6,7 +6,7 @@
 #include "masterserver.h"
 bool IsDedicated()
 {
-	//return CommandLine()->CheckParm("-dedicated");
+	// return CommandLine()->CheckParm("-dedicated");
 	return strstr(GetCommandLineA(), "-dedicated");
 }
 
@@ -27,12 +27,9 @@ struct CDedicatedExports
 	DedicatedRunServerType RunServer;
 };
 
-void Sys_Printf(CDedicatedExports* dedicated, const char* msg)
-{
-	spdlog::info("[DEDICATED PRINT] {}", msg);
-}
+void Sys_Printf(CDedicatedExports* dedicated, const char* msg) { spdlog::info("[DEDICATED PRINT] {}", msg); }
 
-typedef void(*CHostState__InitType)(CHostState* self);
+typedef void (*CHostState__InitType)(CHostState* self);
 
 void RunServer(CDedicatedExports* dedicated)
 {
@@ -54,8 +51,9 @@ void RunServer(CDedicatedExports* dedicated)
 
 	// ensure playlist initialises right, if we've not explicitly called setplaylist
 	SetCurrentPlaylist(GetCurrentPlaylistName());
-	
-	// note: we no longer manually set map and hoststate to start server in g_pHostState, we just use +map which seems to initialise stuff better
+
+	// note: we no longer manually set map and hoststate to start server in g_pHostState, we just use +map which seems to initialise stuff
+	// better
 
 	// main loop
 	double frameTitle = 0;
@@ -65,7 +63,8 @@ void RunServer(CDedicatedExports* dedicated)
 		g_pEngine->Frame();
 
 		// only update the title after at least 500ms since the last update
-		if ((frameStart - frameTitle) > 0.5) {
+		if ((frameStart - frameTitle) > 0.5)
+		{
 			frameTitle = frameStart;
 
 			// this way of getting playercount/maxplayers honestly really sucks, but not got any other methods of doing it rn
@@ -73,19 +72,20 @@ void RunServer(CDedicatedExports* dedicated)
 			if (!maxPlayers)
 				maxPlayers = "6";
 
-			SetConsoleTitleA(fmt::format("{} - {} {}/{} players ({})", g_MasterServerManager->ns_auth_srvName, g_pHostState->m_levelName, g_ServerAuthenticationManager->m_additionalPlayerData.size(), maxPlayers, GetCurrentPlaylistName()).c_str());
+			SetConsoleTitleA(fmt::format(
+								 "{} - {} {}/{} players ({})", g_MasterServerManager->ns_auth_srvName, g_pHostState->m_levelName,
+								 g_ServerAuthenticationManager->m_additionalPlayerData.size(), maxPlayers, GetCurrentPlaylistName())
+								 .c_str());
 		}
 
-		std::this_thread::sleep_for(std::chrono::duration<double, std::ratio<1>>(Cvar_base_tickinterval_mp->m_fValue - fmin(Plat_FloatTime() - frameStart, 0.25)));
+		std::this_thread::sleep_for(
+			std::chrono::duration<double, std::ratio<1>>(Cvar_base_tickinterval_mp->m_fValue - fmin(Plat_FloatTime() - frameStart, 0.25)));
 	}
 }
 
-typedef bool(*IsGameActiveWindowType)();
+typedef bool (*IsGameActiveWindowType)();
 IsGameActiveWindowType IsGameActiveWindow;
-bool IsGameActiveWindowHook()
-{
-	return true;
-}
+bool IsGameActiveWindowHook() { return true; }
 
 HANDLE consoleInputThreadHandle = NULL;
 
@@ -212,7 +212,7 @@ void InitialiseDedicated(HMODULE engineAddress)
 		//*(ptr + 13) = (char)0x90;
 		//*(ptr + 14) = (char)0x90;
 
-		* (ptr + 15) = (char)0x90;
+		*(ptr + 15) = (char)0x90;
 		*(ptr + 16) = (char)0x90;
 		*(ptr + 17) = (char)0x90;
 		*(ptr + 18) = (char)0x90;
@@ -258,7 +258,7 @@ void InitialiseDedicated(HMODULE engineAddress)
 	//	// CEngineAPI::Connect
 	//	char* ptr = (char*)engineAddress + 0x1C4E07;
 	//	TempReadWrite rw(ptr);
-	//	
+	//
 	//	// remove calls to register ui rpak asset types
 	//	*ptr = 0x90;
 	//	*(ptr + 1) = (char)0x90;
@@ -375,8 +375,8 @@ void InitialiseDedicated(HMODULE engineAddress)
 		*(ptr + 15) = (char)0x90;
 	}
 
-	// note: previously had DisableDedicatedWindowCreation patches here, but removing those rn since they're all shit and unstable and bad and such
-	// check commit history if any are needed for reimplementation
+	// note: previously had DisableDedicatedWindowCreation patches here, but removing those rn since they're all shit and unstable and bad
+	// and such check commit history if any are needed for reimplementation
 	{
 		// IVideoMode::CreateGameWindow
 		char* ptr = (char*)engineAddress + 0x1CD146;
@@ -423,8 +423,10 @@ void InitialiseDedicated(HMODULE engineAddress)
 		HANDLE stdIn = GetStdHandle(STD_INPUT_HANDLE);
 		DWORD mode = 0;
 
-		if (GetConsoleMode(stdIn, &mode)) {
-			if (mode & ENABLE_QUICK_EDIT_MODE) {
+		if (GetConsoleMode(stdIn, &mode))
+		{
+			if (mode & ENABLE_QUICK_EDIT_MODE)
+			{
 				mode &= ~ENABLE_QUICK_EDIT_MODE;
 				mode &= ~ENABLE_MOUSE_INPUT;
 
@@ -433,19 +435,22 @@ void InitialiseDedicated(HMODULE engineAddress)
 				SetConsoleMode(stdIn, mode);
 			}
 		}
-	} else spdlog::info("Quick Edit enabled by user request");
+	}
+	else
+		spdlog::info("Quick Edit enabled by user request");
 
 	// create console input thread
 	if (!CommandLine()->CheckParm("-noconsoleinput"))
 		consoleInputThreadHandle = CreateThread(0, 0, ConsoleInputThread, 0, 0, NULL);
-	else spdlog::info("Console input disabled by user request");
+	else
+		spdlog::info("Console input disabled by user request");
 }
 
 void InitialiseDedicatedOrigin(HMODULE baseAddress)
 {
 	// disable origin on dedicated
-	// for any big ea lawyers, this can't be used to play the game without origin, game will throw a fit if you try to do anything without an origin id as a client
-	// for dedi it's fine though, game doesn't care if origin is disabled as long as there's only a server
+	// for any big ea lawyers, this can't be used to play the game without origin, game will throw a fit if you try to do anything without
+	// an origin id as a client for dedi it's fine though, game doesn't care if origin is disabled as long as there's only a server
 
 	if (!IsDedicated())
 		return;
@@ -455,7 +460,7 @@ void InitialiseDedicatedOrigin(HMODULE baseAddress)
 	*ptr = (char)0xC3; // ret
 }
 
-typedef void(*PrintFatalSquirrelErrorType)(void* sqvm);
+typedef void (*PrintFatalSquirrelErrorType)(void* sqvm);
 PrintFatalSquirrelErrorType PrintFatalSquirrelError;
 void PrintFatalSquirrelErrorHook(void* sqvm)
 {

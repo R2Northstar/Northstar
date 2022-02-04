@@ -5,7 +5,7 @@
 
 // note: isIngameChat is an int64 because the whole register the arg is stored in needs to be 0'd out to work
 // if isIngameChat is false, we use network chat instead
-typedef void(__fastcall *ClientSayTextType)(void* a1, const char* message, __int64 isIngameChat, bool isTeamChat);
+typedef void(__fastcall* ClientSayTextType)(void* a1, const char* message, __int64 isIngameChat, bool isTeamChat);
 ClientSayTextType ClientSayText;
 
 void ConCommand_say(const CCommand& args)

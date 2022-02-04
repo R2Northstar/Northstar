@@ -4,7 +4,7 @@
 #include "dedicated.h"
 #include "convar.h"
 
-typedef void(*OnRenderStartType)();
+typedef void (*OnRenderStartType)();
 OnRenderStartType OnRenderStart;
 
 ConVar* Cvar_r_latencyflex;
@@ -37,7 +37,8 @@ void InitialiseLatencyFleX(HMODULE baseAddress)
 		return;
 	}
 
-	m_winelfx_WaitAndBeginFrame = reinterpret_cast<PFN_winelfx_WaitAndBeginFrame>(reinterpret_cast<void*>(GetProcAddress(m_lfxModule,"winelfx_WaitAndBeginFrame")));
+	m_winelfx_WaitAndBeginFrame =
+		reinterpret_cast<PFN_winelfx_WaitAndBeginFrame>(reinterpret_cast<void*>(GetProcAddress(m_lfxModule, "winelfx_WaitAndBeginFrame")));
 	spdlog::info("LatencyFleX initialized.");
 
 	Cvar_r_latencyflex = RegisterConVar("r_latencyflex", "1", FCVAR_ARCHIVE, "Whether or not to use LatencyFleX input latency reduction.");

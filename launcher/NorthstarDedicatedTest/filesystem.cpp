@@ -9,19 +9,20 @@
 #include <sstream>
 
 // hook forward declares
-typedef FileHandle_t(*ReadFileFromVPKType)(VPKData* vpkInfo, __int64* b, char* filename);
+typedef FileHandle_t (*ReadFileFromVPKType)(VPKData* vpkInfo, __int64* b, char* filename);
 ReadFileFromVPKType readFileFromVPK;
 FileHandle_t ReadFileFromVPKHook(VPKData* vpkInfo, __int64* b, char* filename);
 
-typedef bool(*ReadFromCacheType)(IFileSystem* filesystem, char* path, void* result);
+typedef bool (*ReadFromCacheType)(IFileSystem* filesystem, char* path, void* result);
 ReadFromCacheType readFromCache;
 bool ReadFromCacheHook(IFileSystem* filesystem, char* path, void* result);
 
-typedef void(*AddSearchPathType)(IFileSystem* fileSystem, const char* pPath, const char* pathID, SearchPathAdd_t addType);
+typedef void (*AddSearchPathType)(IFileSystem* fileSystem, const char* pPath, const char* pathID, SearchPathAdd_t addType);
 AddSearchPathType addSearchPathOriginal;
 void AddSearchPathHook(IFileSystem* fileSystem, const char* pPath, const char* pathID, SearchPathAdd_t addType);
 
-typedef FileHandle_t(*ReadFileFromFilesystemType)(IFileSystem* filesystem, const char* pPath, const char* pOptions, int64_t a4, uint32_t a5);
+typedef FileHandle_t (*ReadFileFromFilesystemType)(
+	IFileSystem* filesystem, const char* pPath, const char* pOptions, int64_t a4, uint32_t a5);
 ReadFileFromFilesystemType readFileFromFilesystem;
 FileHandle_t ReadFileFromFilesystemHook(IFileSystem* filesystem, const char* pPath, const char* pOptions, int64_t a4, uint32_t a5);
 
@@ -42,7 +43,8 @@ void InitialiseFilesystem(HMODULE baseAddress)
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x5CBA0, &ReadFileFromVPKHook, reinterpret_cast<LPVOID*>(&readFileFromVPK));
 	ENABLER_CREATEHOOK(hook, (*g_Filesystem)->m_vtable->ReadFromCache, &ReadFromCacheHook, reinterpret_cast<LPVOID*>(&readFromCache));
-	ENABLER_CREATEHOOK(hook, (*g_Filesystem)->m_vtable->AddSearchPath, &AddSearchPathHook, reinterpret_cast<LPVOID*>(&addSearchPathOriginal));
+	ENABLER_CREATEHOOK(
+		hook, (*g_Filesystem)->m_vtable->AddSearchPath, &AddSearchPathHook, reinterpret_cast<LPVOID*>(&addSearchPathOriginal));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x15F20, &ReadFileFromFilesystemHook, reinterpret_cast<LPVOID*>(&readFileFromFilesystem));
 	ENABLER_CREATEHOOK(hook, (*g_Filesystem)->m_vtable->MountVPK, &MountVPKHook, reinterpret_cast<LPVOID*>(&mountVPK));
 }
@@ -85,13 +87,13 @@ void SetNewModSearchPaths(Mod* mod)
 		{
 			spdlog::info("changing mod search path from {} to {}", currentModPath, mod->ModDirectory.string());
 
-			addSearchPathOriginal(&*(*g_Filesystem), (fs::absolute(mod->ModDirectory) / MOD_OVERRIDE_DIR).string().c_str(), "GAME", PATH_ADD_TO_HEAD);
+			addSearchPathOriginal(
+				&*(*g_Filesystem), (fs::absolute(mod->ModDirectory) / MOD_OVERRIDE_DIR).string().c_str(), "GAME", PATH_ADD_TO_HEAD);
 			currentModPath = (fs::absolute(mod->ModDirectory) / MOD_OVERRIDE_DIR).string();
 		}
 	}
 	else // push compiled to head
 		addSearchPathOriginal(&*(*g_Filesystem), fs::absolute(GetCompiledAssetsPath()).string().c_str(), "GAME", PATH_ADD_TO_HEAD);
-
 }
 
 bool TryReplaceFile(char* path, bool shouldCompile)
@@ -117,9 +119,10 @@ bool TryReplaceFile(char* path, bool shouldCompile)
 FileHandle_t ReadFileFromVPKHook(VPKData* vpkInfo, __int64* b, char* filename)
 {
 	// move this to a convar at some point when we can read them in native
-	//spdlog::info("ReadFileFromVPKHook {} {}", filename, vpkInfo->path);
+	// spdlog::info("ReadFileFromVPKHook {} {}", filename, vpkInfo->path);
 
-	// there is literally never any reason to compile here, since we'll always compile in ReadFileFromFilesystemHook in the same codepath this is called
+	// there is literally never any reason to compile here, since we'll always compile in ReadFileFromFilesystemHook in the same codepath
+	// this is called
 	if (TryReplaceFile(filename, false))
 	{
 		*b = -1;
@@ -132,7 +135,7 @@ FileHandle_t ReadFileFromVPKHook(VPKData* vpkInfo, __int64* b, char* filename)
 bool ReadFromCacheHook(IFileSystem* filesystem, char* path, void* result)
 {
 	// move this to a convar at some point when we can read them in native
-	//spdlog::info("ReadFromCacheHook {}", path);
+	// spdlog::info("ReadFromCacheHook {}", path);
 
 	if (TryReplaceFile(path, true))
 		return false;

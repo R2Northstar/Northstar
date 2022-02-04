@@ -45,19 +45,25 @@ void* EngineCreateInterfaceHook(const char* pName, int* pReturnCode)
 void HookClientCreateInterface(HMODULE baseAddress)
 {
 	HookEnabler hook;
-	ENABLER_CREATEHOOK(hook, GetProcAddress(baseAddress, "CreateInterface"), &ClientCreateInterfaceHook, reinterpret_cast<LPVOID*>(&clientCreateInterfaceOriginal));
+	ENABLER_CREATEHOOK(
+		hook, GetProcAddress(baseAddress, "CreateInterface"), &ClientCreateInterfaceHook,
+		reinterpret_cast<LPVOID*>(&clientCreateInterfaceOriginal));
 }
 
 void HookServerCreateInterface(HMODULE baseAddress)
 {
 	HookEnabler hook;
-	ENABLER_CREATEHOOK(hook, GetProcAddress(baseAddress, "CreateInterface"), &ServerCreateInterfaceHook, reinterpret_cast<LPVOID*>(&serverCreateInterfaceOriginal));
+	ENABLER_CREATEHOOK(
+		hook, GetProcAddress(baseAddress, "CreateInterface"), &ServerCreateInterfaceHook,
+		reinterpret_cast<LPVOID*>(&serverCreateInterfaceOriginal));
 }
 
 void HookEngineCreateInterface(HMODULE baseAddress)
 {
 	HookEnabler hook;
-	ENABLER_CREATEHOOK(hook, GetProcAddress(baseAddress, "CreateInterface"), &EngineCreateInterfaceHook, reinterpret_cast<LPVOID*>(&engineCreateInterfaceOriginal));
+	ENABLER_CREATEHOOK(
+		hook, GetProcAddress(baseAddress, "CreateInterface"), &EngineCreateInterfaceHook,
+		reinterpret_cast<LPVOID*>(&engineCreateInterfaceOriginal));
 }
 
 void InitialiseInterfaceCreationHooks()
@@ -65,6 +71,6 @@ void InitialiseInterfaceCreationHooks()
 	AddDllLoadCallback("client.dll", HookClientCreateInterface);
 
 	// not used atm
-	//AddDllLoadCallback("server.dll", HookServerCreateInterface);
-	//AddDllLoadCallback("engine.dll", HookEngineCreateInterface);
+	// AddDllLoadCallback("server.dll", HookServerCreateInterface);
+	// AddDllLoadCallback("engine.dll", HookEngineCreateInterface);
 }

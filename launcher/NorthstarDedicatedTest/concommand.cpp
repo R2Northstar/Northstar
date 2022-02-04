@@ -4,10 +4,11 @@
 #include "misccommands.h"
 #include <iostream>
 
-typedef void(*ConCommandConstructorType)(ConCommand* newCommand, const char* name, void(*callback)(const CCommand&), const char* helpString, int flags, void* parent);
+typedef void (*ConCommandConstructorType)(
+	ConCommand* newCommand, const char* name, void (*callback)(const CCommand&), const char* helpString, int flags, void* parent);
 ConCommandConstructorType conCommandConstructor;
 
-void RegisterConCommand(const char* name, void(*callback)(const CCommand&), const char* helpString, int flags)
+void RegisterConCommand(const char* name, void (*callback)(const CCommand&), const char* helpString, int flags)
 {
 	spdlog::info("Registering ConCommand {}", name);
 
@@ -18,8 +19,9 @@ void RegisterConCommand(const char* name, void(*callback)(const CCommand&), cons
 
 ConCommand* FindConCommand(const char* name)
 {
-	ICvar* icvar = *g_pCvar; // hellish call because i couldn't get icvar vtable stuff in convar.h to get the right offset for whatever reason
-	typedef ConCommand* (*FindCommandBaseType)(ICvar* self, const char* varName);
+	ICvar* icvar =
+		*g_pCvar; // hellish call because i couldn't get icvar vtable stuff in convar.h to get the right offset for whatever reason
+	typedef ConCommand* (*FindCommandBaseType)(ICvar * self, const char* varName);
 	FindCommandBaseType FindCommandBase = *(FindCommandBaseType*)((*(char**)icvar) + 112);
 	return FindCommandBase(icvar, name);
 }

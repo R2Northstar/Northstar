@@ -16,7 +16,7 @@ const SQRESULT SQRESULT_ERROR = -1;
 const SQRESULT SQRESULT_NULL = 0;
 const SQRESULT SQRESULT_NOTNULL = 1;
 
-typedef SQInteger(*SQFunction)(void* sqvm);
+typedef SQInteger (*SQFunction)(void* sqvm);
 
 struct CompileBufferState
 {
@@ -60,84 +60,81 @@ struct SQFuncRegistration
 };
 
 // core sqvm funcs
-typedef SQRESULT(*sq_compilebufferType)(void* sqvm, CompileBufferState* compileBuffer, const char* file, int a1, ScriptContext a2);
+typedef SQRESULT (*sq_compilebufferType)(void* sqvm, CompileBufferState* compileBuffer, const char* file, int a1, ScriptContext a2);
 extern sq_compilebufferType ClientSq_compilebuffer;
 extern sq_compilebufferType ServerSq_compilebuffer;
 
-typedef void(*sq_pushroottableType)(void* sqvm);
+typedef void (*sq_pushroottableType)(void* sqvm);
 extern sq_pushroottableType ClientSq_pushroottable;
 extern sq_pushroottableType ServerSq_pushroottable;
 
-typedef SQRESULT(*sq_callType)(void* sqvm, SQInteger s1, SQBool a2, SQBool a3);
+typedef SQRESULT (*sq_callType)(void* sqvm, SQInteger s1, SQBool a2, SQBool a3);
 extern sq_callType ClientSq_call;
 extern sq_callType ServerSq_call;
 
-typedef int64_t(*RegisterSquirrelFuncType)(void* sqvm, SQFuncRegistration* funcReg, char unknown);
+typedef int64_t (*RegisterSquirrelFuncType)(void* sqvm, SQFuncRegistration* funcReg, char unknown);
 extern RegisterSquirrelFuncType ClientRegisterSquirrelFunc;
 extern RegisterSquirrelFuncType ServerRegisterSquirrelFunc;
 
 // sq stack array funcs
-typedef void(*sq_newarrayType)(void* sqvm, SQInteger stackpos);
+typedef void (*sq_newarrayType)(void* sqvm, SQInteger stackpos);
 extern sq_newarrayType ClientSq_newarray;
 extern sq_newarrayType ServerSq_newarray;
 
-typedef SQRESULT(*sq_arrayappendType)(void* sqvm, SQInteger stackpos);
+typedef SQRESULT (*sq_arrayappendType)(void* sqvm, SQInteger stackpos);
 extern sq_arrayappendType ClientSq_arrayappend;
 extern sq_arrayappendType ServerSq_arrayappend;
 
-
 // sq stack push funcs
-typedef void(*sq_pushstringType)(void* sqvm, const SQChar* str, SQInteger stackpos);
+typedef void (*sq_pushstringType)(void* sqvm, const SQChar* str, SQInteger stackpos);
 extern sq_pushstringType ClientSq_pushstring;
 extern sq_pushstringType ServerSq_pushstring;
 
 // weird how these don't take a stackpos arg?
-typedef void(*sq_pushintegerType)(void* sqvm, SQInteger i);
+typedef void (*sq_pushintegerType)(void* sqvm, SQInteger i);
 extern sq_pushintegerType ClientSq_pushinteger;
 extern sq_pushintegerType ServerSq_pushinteger;
 
-typedef void(*sq_pushfloatType)(void* sqvm, SQFloat f);
+typedef void (*sq_pushfloatType)(void* sqvm, SQFloat f);
 extern sq_pushfloatType ClientSq_pushfloat;
 extern sq_pushfloatType ServerSq_pushfloat;
 
-typedef void(*sq_pushboolType)(void* sqvm, SQBool b);
+typedef void (*sq_pushboolType)(void* sqvm, SQBool b);
 extern sq_pushboolType ClientSq_pushbool;
 extern sq_pushboolType ServerSq_pushbool;
 
-typedef SQInteger(*sq_pusherrorType)(void* sqvm, const SQChar* error);
+typedef SQInteger (*sq_pusherrorType)(void* sqvm, const SQChar* error);
 extern sq_pusherrorType ClientSq_pusherror;
 extern sq_pusherrorType ServerSq_pusherror;
 
-
 // sq stack get funcs
-typedef const SQChar*(*sq_getstringType)(void* sqvm, SQInteger stackpos);
+typedef const SQChar* (*sq_getstringType)(void* sqvm, SQInteger stackpos);
 extern sq_getstringType ClientSq_getstring;
 extern sq_getstringType ServerSq_getstring;
 
-typedef SQInteger(*sq_getintegerType)(void* sqvm, SQInteger stackpos);
+typedef SQInteger (*sq_getintegerType)(void* sqvm, SQInteger stackpos);
 extern sq_getintegerType ClientSq_getinteger;
 extern sq_getintegerType ServerSq_getinteger;
 
-typedef SQFloat(*sq_getfloatType)(void*, SQInteger stackpos);
+typedef SQFloat (*sq_getfloatType)(void*, SQInteger stackpos);
 extern sq_getfloatType ClientSq_getfloat;
 extern sq_getfloatType ServerSq_getfloat;
 
-typedef SQBool(*sq_getboolType)(void*, SQInteger stackpos);
+typedef SQBool (*sq_getboolType)(void*, SQInteger stackpos);
 extern sq_getboolType ClientSq_getbool;
 extern sq_getboolType ServerSq_getbool;
 
-template<ScriptContext context> class SquirrelManager
+template <ScriptContext context> class SquirrelManager
 {
-private:
+  private:
 	std::vector<SQFuncRegistration*> m_funcRegistrations;
 
-public:
+  public:
 	void* sqvm;
 	void* sqvm2;
 
-public:
-	SquirrelManager() : sqvm(nullptr)
-	{}
+  public:
+	SquirrelManager() : sqvm(nullptr) {}
 
 	void VMCreated(void* newSqvm)
 	{
@@ -155,10 +152,7 @@ public:
 		}
 	}
 
-	void VMDestroyed()
-	{
-		sqvm = nullptr;
-	}
+	void VMDestroyed() { sqvm = nullptr; }
 
 	void ExecuteCode(const char* code)
 	{

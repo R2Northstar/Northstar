@@ -3,7 +3,7 @@
 #include "hookutils.h"
 #include "dedicated.h"
 
-typedef void(*OpenExternalWebBrowserType)(char* url, char flags);
+typedef void (*OpenExternalWebBrowserType)(char* url, char flags);
 OpenExternalWebBrowserType OpenExternalWebBrowser;
 
 bool* bIsOriginOverlayEnabled;
@@ -26,5 +26,6 @@ void InitialiseScriptExternalBrowserHooks(HMODULE baseAddress)
 	bIsOriginOverlayEnabled = (bool*)baseAddress + 0x13978255;
 
 	HookEnabler hook;
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x184E40, &OpenExternalWebBrowserHook, reinterpret_cast<LPVOID*>(&OpenExternalWebBrowser));
+	ENABLER_CREATEHOOK(
+		hook, (char*)baseAddress + 0x184E40, &OpenExternalWebBrowserHook, reinterpret_cast<LPVOID*>(&OpenExternalWebBrowser));
 }

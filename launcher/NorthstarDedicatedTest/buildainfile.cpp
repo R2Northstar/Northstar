@@ -13,20 +13,20 @@ struct CAI_Node
 	float yaw;
 	float hulls[MAX_HULLS];
 
-	int unk0; // always 2 in buildainfile, maps directly to unk0 in disk struct
-	int unk1; // maps directly to unk1 in disk struct
+	int unk0;			 // always 2 in buildainfile, maps directly to unk0 in disk struct
+	int unk1;			 // maps directly to unk1 in disk struct
 	int unk2[MAX_HULLS]; // maps directly to unk2 in disk struct, despite being ints rather than shorts
 
 	// view server.dll+393672 for context and death wish
-	char unk3[MAX_HULLS]; // hell on earth, should map to unk3 on disk
-	char pad[3]; // aligns next bytes
+	char unk3[MAX_HULLS];  // hell on earth, should map to unk3 on disk
+	char pad[3];		   // aligns next bytes
 	float unk4[MAX_HULLS]; // i have no fucking clue, calculated using some kind of demon hell function float magic
 
 	char unk5[32]; // padding until next bits i know
-	short unk6; // should match up to unk4 on disk
+	short unk6;	   // should match up to unk4 on disk
 	char unk7[16]; // padding until next bit
-	short unk8; // should match up to unk5 on disk
-	char unk9[8]; // padding until next bit
+	short unk8;	   // should match up to unk5 on disk
+	char unk9[8];  // padding until next bit
 	char unk10[8]; // should match up to unk6 on disk
 };
 
@@ -55,7 +55,7 @@ struct CAI_Network
 	CAI_Node** nodes;
 };
 
-typedef void(*CAI_NetworkBuilder__BuildType)(void* builder, CAI_Network* aiNetwork, void* unknown);
+typedef void (*CAI_NetworkBuilder__BuildType)(void* builder, CAI_Network* aiNetwork, void* unknown);
 CAI_NetworkBuilder__BuildType CAI_NetworkBuilder__Build;
 
 void CAI_NetworkBuilder__BuildHook(void* builder, CAI_Network* aiNetwork, void* unknown)
@@ -74,18 +74,22 @@ void CAI_NetworkBuilder__BuildHook(void* builder, CAI_Network* aiNetwork, void* 
 	spdlog::info("nodecount: {}", aiNetwork->nodecount);
 	for (int i = 0; i < aiNetwork->nodecount; i++)
 	{
-		//spdlog::info("x = {}", aiNetwork->nodes[i]->x);
-		//spdlog::info("y = {}", aiNetwork->nodes[i]->y);
-		//spdlog::info("z = {}", aiNetwork->nodes[i]->z);
-		//spdlog::info("yaw = {}", aiNetwork->nodes[i]->yaw);
-		//spdlog::info("hulls = {} {} {} {} {}", aiNetwork->nodes[i]->hulls[0], aiNetwork->nodes[i]->hulls[1], aiNetwork->nodes[i]->hulls[2], aiNetwork->nodes[i]->hulls[3], aiNetwork->nodes[i]->hulls[4]);
+		// spdlog::info("x = {}", aiNetwork->nodes[i]->x);
+		// spdlog::info("y = {}", aiNetwork->nodes[i]->y);
+		// spdlog::info("z = {}", aiNetwork->nodes[i]->z);
+		// spdlog::info("yaw = {}", aiNetwork->nodes[i]->yaw);
+		// spdlog::info("hulls = {} {} {} {} {}", aiNetwork->nodes[i]->hulls[0], aiNetwork->nodes[i]->hulls[1],
+		// aiNetwork->nodes[i]->hulls[2], aiNetwork->nodes[i]->hulls[3], aiNetwork->nodes[i]->hulls[4]);
 		//
-		//spdlog::info("unk0 = {} (should always be 2)", aiNetwork->nodes[i]->unk0);
-		//spdlog::info("unk1 = {}", aiNetwork->nodes[i]->unk1);
-		//spdlog::info("unk2 = {} {} {} {} {}", aiNetwork->nodes[i]->unk2[0], aiNetwork->nodes[i]->unk2[1], aiNetwork->nodes[i]->unk2[2], aiNetwork->nodes[i]->unk2[3], aiNetwork->nodes[i]->unk2[4]);
+		// spdlog::info("unk0 = {} (should always be 2)", aiNetwork->nodes[i]->unk0);
+		// spdlog::info("unk1 = {}", aiNetwork->nodes[i]->unk1);
+		// spdlog::info("unk2 = {} {} {} {} {}", aiNetwork->nodes[i]->unk2[0], aiNetwork->nodes[i]->unk2[1], aiNetwork->nodes[i]->unk2[2],
+		// aiNetwork->nodes[i]->unk2[3], aiNetwork->nodes[i]->unk2[4]);
 		//
-		//spdlog::info("unk3 = {} {} {} {} {}", (int)aiNetwork->nodes[i]->unk3[0], (int)aiNetwork->nodes[i]->unk3[1], (int)aiNetwork->nodes[i]->unk3[2], (int)aiNetwork->nodes[i]->unk3[3], (int)aiNetwork->nodes[i]->unk3[4]);
-		//spdlog::info("unk4 = {} {} {} {} {}", aiNetwork->nodes[i]->unk4[0], aiNetwork->nodes[i]->unk4[1], aiNetwork->nodes[i]->unk4[2], aiNetwork->nodes[i]->unk4[3], aiNetwork->nodes[i]->unk4[4]);
+		// spdlog::info("unk3 = {} {} {} {} {}", (int)aiNetwork->nodes[i]->unk3[0], (int)aiNetwork->nodes[i]->unk3[1],
+		// (int)aiNetwork->nodes[i]->unk3[2], (int)aiNetwork->nodes[i]->unk3[3], (int)aiNetwork->nodes[i]->unk3[4]); spdlog::info("unk4 = {}
+		// {} {} {} {}", aiNetwork->nodes[i]->unk4[0], aiNetwork->nodes[i]->unk4[1], aiNetwork->nodes[i]->unk4[2],
+		// aiNetwork->nodes[i]->unk4[3], aiNetwork->nodes[i]->unk4[4]);
 
 		// construct on-disk node struct
 		CAI_NodeDisk diskNode;
@@ -109,22 +113,27 @@ void CAI_NetworkBuilder__BuildHook(void* builder, CAI_Network* aiNetwork, void* 
 		spdlog::info("y = {}", diskNode.y);
 		spdlog::info("z = {}", diskNode.z);
 		spdlog::info("yaw = {}", diskNode.yaw);
-		spdlog::info("hulls = {} {} {} {} {}", diskNode.hulls[0], diskNode.hulls[1], diskNode.hulls[2], diskNode.hulls[3], diskNode.hulls[4]);
+		spdlog::info(
+			"hulls = {} {} {} {} {}", diskNode.hulls[0], diskNode.hulls[1], diskNode.hulls[2], diskNode.hulls[3], diskNode.hulls[4]);
 		spdlog::info("unk0 = {}", (int)diskNode.unk0);
 		spdlog::info("unk1 = {}", diskNode.unk1);
 		spdlog::info("unk2 = {} {} {} {} {}", diskNode.unk2[0], diskNode.unk2[1], diskNode.unk2[2], diskNode.unk2[3], diskNode.unk2[4]);
-		spdlog::info("unk3 = {} {} {} {} {}", (int)diskNode.unk3[0], (int)diskNode.unk3[1], (int)diskNode.unk3[2], (int)diskNode.unk3[3], (int)diskNode.unk3[4]);
+		spdlog::info(
+			"unk3 = {} {} {} {} {}", (int)diskNode.unk3[0], (int)diskNode.unk3[1], (int)diskNode.unk3[2], (int)diskNode.unk3[3],
+			(int)diskNode.unk3[4]);
 		spdlog::info("unk4 = {}", diskNode.unk4);
 		spdlog::info("unk5 = {}", diskNode.unk5);
-		spdlog::info("unk6 = {} {} {} {} {} {} {} {}", (int)diskNode.unk6[0], (int)diskNode.unk6[1], (int)diskNode.unk6[2], (int)diskNode.unk6[3], (int)diskNode.unk6[4], (int)diskNode.unk6[5], (int)diskNode.unk6[6], (int)diskNode.unk6[7]);
-
+		spdlog::info(
+			"unk6 = {} {} {} {} {} {} {} {}", (int)diskNode.unk6[0], (int)diskNode.unk6[1], (int)diskNode.unk6[2], (int)diskNode.unk6[3],
+			(int)diskNode.unk6[4], (int)diskNode.unk6[5], (int)diskNode.unk6[6], (int)diskNode.unk6[7]);
 	}
 }
 
 void InitialiseBuildAINFileHooks(HMODULE baseAddress)
 {
 	HookEnabler hook;
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x385E20, &CAI_NetworkBuilder__BuildHook, reinterpret_cast<LPVOID*>(&CAI_NetworkBuilder__Build));
+	ENABLER_CREATEHOOK(
+		hook, (char*)baseAddress + 0x385E20, &CAI_NetworkBuilder__BuildHook, reinterpret_cast<LPVOID*>(&CAI_NetworkBuilder__Build));
 
 	// remove a check that prevents a logging function in link generation from working
 	// due to the sheer amount of logging this is a massive perf hit to generation, but spewlog_enable 0 exists so whatever

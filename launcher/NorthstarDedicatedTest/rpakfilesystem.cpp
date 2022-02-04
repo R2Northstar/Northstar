@@ -3,11 +3,11 @@
 #include "hookutils.h"
 #include "modmanager.h"
 
-typedef void*(*LoadCommonPaksForMapType)(char* map);
+typedef void* (*LoadCommonPaksForMapType)(char* map);
 LoadCommonPaksForMapType LoadCommonPaksForMap;
 
-typedef void*(*LoadPakSyncType)(const char* path, void* unknownSingleton, int flags);
-typedef void*(*LoadPakAsyncType)(const char* path, void* unknownSingleton, int flags, void* callback0, void* callback1);
+typedef void* (*LoadPakSyncType)(const char* path, void* unknownSingleton, int flags);
+typedef void* (*LoadPakAsyncType)(const char* path, void* unknownSingleton, int flags, void* callback0, void* callback1);
 
 // there are more i'm just too lazy to add
 struct PakLoadFuncs
@@ -20,10 +20,7 @@ struct PakLoadFuncs
 PakLoadFuncs* g_pakLoadApi;
 void** pUnknownPakLoadSingleton;
 
-void LoadPakAsync(const char* path)
-{
-	g_pakLoadApi->LoadPakAsync(path, *pUnknownPakLoadSingleton, 2, nullptr, nullptr);
-}
+void LoadPakAsync(const char* path) { g_pakLoadApi->LoadPakAsync(path, *pUnknownPakLoadSingleton, 2, nullptr, nullptr); }
 
 void LoadCommonPaksForMapHook(char* map)
 {

@@ -9,7 +9,8 @@
 #include <random>
 #include "convar.h"
 
-extern "C" {
+extern "C"
+{
 	// should be called only in LoadSampleMetadata_Hook
 	extern void* __fastcall Audio_GetParentEvent();
 }
@@ -37,7 +38,10 @@ EventOverrideData::EventOverrideData(const std::string& data, const fs::path& pa
 
 	if (!fs::exists(samplesFolder))
 	{
-		spdlog::error("Failed reading audio override file {}: samples folder doesn't exist; should be named the same as the definition file without JSON extension.", path.string());
+		spdlog::error(
+			"Failed reading audio override file {}: samples folder doesn't exist; should be named the same as the definition file without "
+			"JSON extension.",
+			path.string());
 		return;
 	}
 
@@ -47,7 +51,9 @@ EventOverrideData::EventOverrideData(const std::string& data, const fs::path& pa
 	// fail if parse error
 	if (dataJson.HasParseError())
 	{
-		spdlog::error("Failed reading audio override file {}: encountered parse error \"{}\" at offset {}", path.string(), GetParseError_En(dataJson.GetParseError()), dataJson.GetErrorOffset());
+		spdlog::error(
+			"Failed reading audio override file {}: encountered parse error \"{}\" at offset {}", path.string(),
+			GetParseError_En(dataJson.GetParseError()), dataJson.GetErrorOffset());
 		return;
 	}
 
@@ -72,7 +78,8 @@ EventOverrideData::EventOverrideData(const std::string& data, const fs::path& pa
 		{
 			if (!eventId.IsString())
 			{
-				spdlog::error("Failed reading audio override file {}: EventId array has a value of invalid type, all must be strings", path.string());
+				spdlog::error(
+					"Failed reading audio override file {}: EventId array has a value of invalid type, all must be strings", path.string());
 				return;
 			}
 
@@ -87,7 +94,9 @@ EventOverrideData::EventOverrideData(const std::string& data, const fs::path& pa
 	// incorrect type
 	else
 	{
-		spdlog::error("Failed reading audio override file {}: EventId property is of invalid type (must be a string or an array of strings)", path.string());
+		spdlog::error(
+			"Failed reading audio override file {}: EventId property is of invalid type (must be a string or an array of strings)",
+			path.string());
 		return;
 	}
 
@@ -100,15 +109,20 @@ EventOverrideData::EventOverrideData(const std::string& data, const fs::path& pa
 			{
 				if (!eventId.IsString())
 				{
-					spdlog::error("Failed reading audio override file {}: EventIdRegex array has a value of invalid type, all must be strings", path.string());
+					spdlog::error(
+						"Failed reading audio override file {}: EventIdRegex array has a value of invalid type, all must be strings",
+						path.string());
 					return;
 				}
 
 				const std::string& regex = eventId.GetString();
 
-				try {
-					EventIdsRegex.push_back({ regex, std::regex(regex) });
-				} catch (...) {
+				try
+				{
+					EventIdsRegex.push_back({regex, std::regex(regex)});
+				}
+				catch (...)
+				{
 					spdlog::error("Malformed regex \"{}\" in audio override file {}", regex, path.string());
 					return;
 				}
@@ -118,10 +132,12 @@ EventOverrideData::EventOverrideData(const std::string& data, const fs::path& pa
 		else if (dataJson["EventIdRegex"].IsString())
 		{
 			const std::string& regex = dataJson["EventIdRegex"].GetString();
-			try {
-				EventIdsRegex.push_back({ regex, std::regex(regex) });
+			try
+			{
+				EventIdsRegex.push_back({regex, std::regex(regex)});
 			}
-			catch (...) {
+			catch (...)
+			{
 				spdlog::error("Malformed regex \"{}\" in audio override file {}", regex, path.string());
 				return;
 			}
@@ -129,7 +145,9 @@ EventOverrideData::EventOverrideData(const std::string& data, const fs::path& pa
 		// incorrect type
 		else
 		{
-			spdlog::error("Failed reading audio override file {}: EventIdRegex property is of invalid type (must be a string or an array of strings)", path.string());
+			spdlog::error(
+				"Failed reading audio override file {}: EventIdRegex property is of invalid type (must be a string or an array of strings)",
+				path.string());
 			return;
 		}
 	}
@@ -154,7 +172,9 @@ EventOverrideData::EventOverrideData(const std::string& data, const fs::path& pa
 		}
 		else
 		{
-			spdlog::error("Failed reading audio override file {}: AudioSelectionStrategy string must be either \"sequential\" or \"random\"", path.string());
+			spdlog::error(
+				"Failed reading audio override file {}: AudioSelectionStrategy string must be either \"sequential\" or \"random\"",
+				path.string());
 			return;
 		}
 	}
@@ -180,11 +200,11 @@ EventOverrideData::EventOverrideData(const std::string& data, const fs::path& pa
 
 			// Allocate enough memory for the file.
 			uint8_t* data = new uint8_t[fileSize];
-			
+
 			// Read the file.
 			wavStream.read(data, fileSize);
 
-			Samples.push_back({ fileSize, std::unique_ptr<uint8_t[]>(data) });
+			Samples.push_back({fileSize, std::unique_ptr<uint8_t[]>(data)});
 
 			// Close the file.
 			wavStream.close();
@@ -196,8 +216,8 @@ EventOverrideData::EventOverrideData(const std::string& data, const fs::path& pa
 	{
 		if (!dataJson["EnableOnLoopedSounds"].IsBool())
 		{
-			spdlog::error("Failed reading audio override file {}: EnableOnLoopedSounds property is of invalid type (must be a bool)", path.string());
-			return;
+			spdlog::error("Failed reading audio override file {}: EnableOnLoopedSounds property is of invalid type (must be a bool)",
+	path.string()); return;
 		}
 
 		EnableOnLoopedSounds = dataJson["EnableOnLoopedSounds"].GetBool();
@@ -240,13 +260,13 @@ bool CustomAudioManager::TryLoadAudioOverride(const fs::path& defPath)
 	for (const std::string& eventId : data->EventIds)
 	{
 		spdlog::info("Registering sound event {}", eventId);
-		m_loadedAudioOverrides.insert({ eventId, data });
+		m_loadedAudioOverrides.insert({eventId, data});
 	}
 
 	for (const auto& eventIdRegexData : data->EventIdsRegex)
 	{
 		spdlog::info("Registering sound event regex {}", eventIdRegexData.first);
-		m_loadedAudioOverridesRegex.insert({ eventIdRegexData.first, data });
+		m_loadedAudioOverridesRegex.insert({eventIdRegexData.first, data});
 	}
 
 	return true;
@@ -278,22 +298,19 @@ typedef bool (*LoadSampleMetadata_Type)(void* sample, void* audioBuffer, unsigne
 LoadSampleMetadata_Type LoadSampleMetadata_Original;
 
 // Empty stereo 48000 WAVE file
-unsigned char EMPTY_WAVE[45] = {
-	0x52, 0x49, 0x46, 0x46, 0x25, 0x00, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45,
-	0x66, 0x6D, 0x74, 0x20, 0x10, 0x00, 0x00, 0x00, 0x01, 0x00, 0x02, 0x00,
-	0x44, 0xAC, 0x00, 0x00, 0x88, 0x58, 0x01, 0x00, 0x02, 0x00, 0x10, 0x00,
-	0x64, 0x61, 0x74, 0x61, 0x74, 0x00, 0x00, 0x00, 0x00
-};
+unsigned char EMPTY_WAVE[45] = {0x52, 0x49, 0x46, 0x46, 0x25, 0x00, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45, 0x66, 0x6D, 0x74,
+								0x20, 0x10, 0x00, 0x00, 0x00, 0x01, 0x00, 0x02, 0x00, 0x44, 0xAC, 0x00, 0x00, 0x88, 0x58,
+								0x01, 0x00, 0x02, 0x00, 0x10, 0x00, 0x64, 0x61, 0x74, 0x61, 0x74, 0x00, 0x00, 0x00, 0x00};
 
-template<typename Iter, typename RandomGenerator>
-Iter select_randomly(Iter start, Iter end, RandomGenerator& g) {
+template <typename Iter, typename RandomGenerator> Iter select_randomly(Iter start, Iter end, RandomGenerator& g)
+{
 	std::uniform_int_distribution<> dis(0, std::distance(start, end) - 1);
 	std::advance(start, dis(g));
 	return start;
 }
 
-template<typename Iter>
-Iter select_randomly(Iter start, Iter end) {
+template <typename Iter> Iter select_randomly(Iter start, Iter end)
+{
 	static std::random_device rd;
 	static std::mt19937 gen(rd());
 	return select_randomly(start, end, gen);
@@ -323,7 +340,8 @@ bool ShouldPlayAudioEvent(const char* eventName, const std::shared_ptr<EventOver
 
 // DO NOT INLINE THIS FUNCTION
 // See comment below.
-bool __declspec(noinline) __fastcall LoadSampleMetadata_Internal(uintptr_t parentEvent, void* sample, void* audioBuffer, unsigned int audioBufferLength, int audioType)
+bool __declspec(noinline) __fastcall LoadSampleMetadata_Internal(
+	uintptr_t parentEvent, void* sample, void* audioBuffer, unsigned int audioBufferLength, int audioType)
 {
 	char* eventName = (char*)parentEvent + 0x110;
 
@@ -357,9 +375,11 @@ bool __declspec(noinline) __fastcall LoadSampleMetadata_Internal(uintptr_t paren
 				g_CustomAudioManager.m_loadedAudioOverrides[eventName] = overrideData;
 			}
 		}
-		else overrideData = iter->second;
-	} 
-	else overrideData = iter->second;
+		else
+			overrideData = iter->second;
+	}
+	else
+		overrideData = iter->second;
 
 	if (!ShouldPlayAudioEvent(eventName, overrideData))
 		return LoadSampleMetadata_Original(sample, audioBuffer, audioBufferLength, audioType);
@@ -370,7 +390,7 @@ bool __declspec(noinline) __fastcall LoadSampleMetadata_Internal(uintptr_t paren
 	if (overrideData->Samples.size() == 0)
 	{
 		// 0 samples, turn off this particular event.
-		
+
 		// using a dummy empty wave file
 		data = EMPTY_WAVE;
 		dataLength = sizeof(EMPTY_WAVE);
@@ -438,10 +458,7 @@ bool __fastcall LoadSampleMetadata_Hook(void* sample, void* audioBuffer, unsigne
 typedef bool (*MilesLog_Type)(int level, const char* string);
 MilesLog_Type MilesLog_Original;
 
-void __fastcall MilesLog_Hook(int level, const char* string)
-{
-	spdlog::info("[MSS] {} - {}", level, string);
-}
+void __fastcall MilesLog_Hook(int level, const char* string) { spdlog::info("[MSS] {} - {}", level, string); }
 
 void InitialiseMilesAudioHooks(HMODULE baseAddress)
 {
@@ -456,8 +473,9 @@ void InitialiseMilesAudioHooks(HMODULE baseAddress)
 		return spdlog::error("miles audio not found :terror:");
 
 	HookEnabler hook;
-	
-	ENABLER_CREATEHOOK(hook, (char*)milesAudioBase + 0xF110, &LoadSampleMetadata_Hook, reinterpret_cast<LPVOID*>(&LoadSampleMetadata_Original));
+
+	ENABLER_CREATEHOOK(
+		hook, (char*)milesAudioBase + 0xF110, &LoadSampleMetadata_Hook, reinterpret_cast<LPVOID*>(&LoadSampleMetadata_Original));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x57DAD0, &MilesLog_Hook, reinterpret_cast<LPVOID*>(&MilesLog_Original));
 
 	MilesStopAll = (MilesStopAll_Type)((char*)baseAddress + 0x580850);

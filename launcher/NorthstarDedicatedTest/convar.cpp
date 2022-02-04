@@ -6,12 +6,13 @@
 #include <set>
 
 // should this be in modmanager?
-std::unordered_map<std::string, ConVar*> g_CustomConvars; // this is used in modloading code to determine whether we've registered a mod convar already
+std::unordered_map<std::string, ConVar*>
+	g_CustomConvars; // this is used in modloading code to determine whether we've registered a mod convar already
 SourceInterface<ICvar>* g_pCvar;
 
-typedef void(*ConVarConstructorType)(ConVar* newVar, const char* name, const char* defaultValue, int flags, const char* helpString);
+typedef void (*ConVarConstructorType)(ConVar* newVar, const char* name, const char* defaultValue, int flags, const char* helpString);
 ConVarConstructorType conVarConstructor;
-typedef bool(*CvarIsFlagSetType)(ConVar* self, int flags);
+typedef bool (*CvarIsFlagSetType)(ConVar* self, int flags);
 CvarIsFlagSetType CvarIsFlagSet;
 
 ConVar* RegisterConVar(const char* name, const char* defaultValue, int flags, const char* helpString)
@@ -29,8 +30,9 @@ ConVar* RegisterConVar(const char* name, const char* defaultValue, int flags, co
 
 ConVar* FindConVar(const char* name)
 {
-	ICvar* icvar = *g_pCvar; // hellish call because i couldn't get icvar vtable stuff in convar.h to get the right offset for whatever reason
-	typedef ConVar* (*FindConVarType)(ICvar* self, const char* varName);
+	ICvar* icvar =
+		*g_pCvar; // hellish call because i couldn't get icvar vtable stuff in convar.h to get the right offset for whatever reason
+	typedef ConVar* (*FindConVarType)(ICvar * self, const char* varName);
 	FindConVarType FindConVarInternal = *(FindConVarType*)((*(char**)icvar) + 128);
 	return FindConVarInternal(icvar, name);
 }
