@@ -6,17 +6,15 @@ This guide assumes you have basic understanding with programming and know how to
 
 If you'd like a more lengthy set of tutorials covering many topics. Look at:
 
-{% content-ref url="modding/tutorials/modding-tutorials.md" %}
-[modding-tutorials.md](modding/tutorials/modding-tutorials.md)
+{% content-ref url="/docs/modding/tutorials/modding-tutorials.md" %}
+[modding-tutorials.md](/docs/modding/tutorials/modding-tutorials.md)
 {% endcontent-ref %}
 
-> TODO: Actually link tools
+You can check out all the tools for modding Titanfall 2 here:
 
-### Tools
-
-* RSPNVPK
-* Cra0 VPK Tool (Titanfall VPK Tool)
-* Legion by DZXTPorter
+{% content-ref url="/docs/modding/tools.md" %}
+[tools.md](/docs/modding/tools.md)
+{% endcontent-ref %}
 
 ## Quick start
 

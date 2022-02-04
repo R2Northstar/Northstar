@@ -1,6 +1,6 @@
 # Commands
 
-### Opening the Console
+## Opening the Console
 
 Commands are run on the console. To open it, press `` ` `` (the key above `TAB`).\
 Note that this key generally only exists in this form on English keybords (ANSI US, ISO UK, ...).
@@ -12,13 +12,13 @@ To open your console you'll either have to switch to the English (US) layout **b
 To rebind it make sure neither Titanfall nor Northstar are running, then go to `My Documents\Respawn\Titanfall2\local\` and open `settings.cfg`.\
 Look for the line containing `toggleconsole`, i.e.
 
-```
+```txt
 bind "`" "toggleconsole"
 ```
 
 and replace the `` ` `` key with your prefered key to open console. So if you want to open console with `F5`, change the line to
 
-```
+```txt
 bind "F5" "toggleconsole"
 ```
 
@@ -43,6 +43,7 @@ In the future this keybind should hopefully be adjustable via `Controls > Settin
 | `r_latencyflex`                      | Enables [LatencyFleX](../../using-northstar/playing-on-linux/#latencyflex) (Linux-only, enabled by default) | `0` / `1`                                       |
 
 ### Useful dev commands
+
 Requires `sv_cheats 1`
 
 Command|Result

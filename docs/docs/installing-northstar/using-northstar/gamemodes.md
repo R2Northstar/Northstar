@@ -41,5 +41,3 @@ Complex, Forwardbase Kodai, and Colony have had control panels added with [the v
 ## Competitive CTF
 
 CTF with custom settings for Comp games.
-
-

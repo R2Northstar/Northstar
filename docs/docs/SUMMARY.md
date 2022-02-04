@@ -34,6 +34,7 @@
 
 * [Modding](modding/README.md)
   * [Getting Started](modding/getting-started.md)
+  * [Modding Tools](modding/tools.md)
   * [Tutorials](modding/tutorials/modding-tutorials.md)
   * [Cheatsheet](modding/cheatsheet.md)
   * [Squirrel](modding/squirrel/what-is-squirrel.md)
@@ -48,6 +49,7 @@
       * [The JSON](modding/squirrel/setting-mods/the-json.md)
       * [The Language File](modding/squirrel/setting-mods/the-language-file.md)
       * [The mod file](modding/squirrel/setting-mods/the-mod-file.md)
+  * [Keyvalues](modding/keyvalues.md)
   * [Setup Syntax Highlighting](modding/squirrel/setup-syntax-highlighting.md)
   * [Localisation](modding/localisation\_files.md)
   * [Finishing touches](modding/finishing-touches.md)

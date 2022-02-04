@@ -17,29 +17,30 @@ Linux is not officially supported currently. However, you can get it working thr
 Now Steam will automatically launch Northstar when you hit play. Just launch the game through Steam and you should be greeted with a Northstar welcome message upon entering the main menu.
 
 > **Note:** There is a current bug where the game would sometimes launch vanilla Titanfall 2 instead of Northstar. There is no universal fix for this, but people have reported changing Proton versions to _Proton 5.13_ or _Proton Experimental_ and deleting the Proton prefix folder (`Steam/steamapps/compatdata/1237970/`) could help resolve this issue. Using [Proton GE](https://github.com/GloriousEggroll/proton-ge-custom) has also been reported to resolve the issue.
-
+>
 > If you are still suffering from this bug, try running the game through Lutris. The bug doesn't seem to happen there
 
 ### Lutris (Wine)
 
-1. If you don't already have the game downloaded, install the game [from here.](https://lutris.net/games/titanfall-2/) 
+1. If you don't already have the game downloaded, install the game [from here.](https://lutris.net/games/titanfall-2/)
 2. Download the latest version of Northstar from the [releases](https://github.com/R2Northstar/Northstar/releases) page
 3. Extract all contents of the file to your Titanfall 2 folder
 
 4. **If you have the game installed on Lutris:** right click _Titanfall 2_ > _Configure_ > _Game Options_ > Set _Executable path_ to _NorthstarLauncher.exe_
-5. **Otherwise:** click the `+` button in the top left > set the name to whatever and _Runner_ to _Wine_ > click on _Game options_ > set _Executable path_ to _NorthstarLauncher.exe_ then save. 
+5. **Otherwise:** click the `+` button in the top left > set the name to whatever and _Runner_ to _Wine_ > click on _Game options_ > set _Executable path_ to _NorthstarLauncher.exe_ then save.
 
-> **If you're migrating from Steam:** Set _Wine prefix_ to `(your Steam directory)/steamapps/compatdata/1237970/pfx/`. This will save you the hassle of having to re-download Origin. 
+> **If you're migrating from Steam:** Set _Wine prefix_ to `(your Steam directory)/steamapps/compatdata/1237970/pfx/`. This will save you the hassle of having to re-download Origin.
 
 Now just launch the game through Lutris and you should be greeted with a Northstar welcome message upon entering the main menu.
 
 > **Note:** Origin might prompt you to log in and "set an installation folder for future downloads" on first launch. Just do those, close Origin, then launch the game again.
-
+>
 > You might feel the game is stuttering a lot in the first hour of playing. This is normal, it's just DXVK is compiling shaders. The more you play, the less you will stutter in the future. Someone on discord wrote [an in-depth guide](https://i.imgur.com/xzop1lQ.png) on good settings to help the shader cache **and a general performance boost by stopping Origin from writing unnecessary files**.\
 > [Link to cache](https://github.com/Cervoxx/DXVKCACHE/raw/master/Titanfall2-cache.tar.xz)\
 > [Link to Origin being slow discussion](https://github.com/ValveSoftware/Proton/issues/4001#issuecomment-647014231)
 
 ## LatencyFleX
+
 LatencyFleX is a Linux-only input latency reduction alternative to Nvidia Reflex that is supported by Northstar. Currently, LatencyFleX requires manual installation. A full install guide and current releases [can be found on their GitHub](https://github.com/ishitatsuyuki/LatencyFleX).
 
 Northstar only requires the [Vulkan layer](https://github.com/ishitatsuyuki/LatencyFleX#latencyflex-vulkan-layer-essential) and [Wine extensions](https://github.com/ishitatsuyuki/LatencyFleX#latencyflex-wine-extensions-required-for-proton-reflex-integration) steps to be completed.
@@ -49,7 +50,7 @@ Once installed, LatencyFleX can be enabled by doing either of the following:
 - **Steam:** Add the following to your Titanfall 2 launch options: `"LFX=1 %command%"`
 - **Lutris:** Right click on Titanfall 2, click 'Configure', navigate to 'System Preferences' / 'System Options' / 'Environmental Variables', and use the following:
 
-> Key: LFX  
+> Key: LFX
 Value: 1
 
 Once in-game, LatencyFleX can be toggled off and on using the `"r_latencyflex"` console variable.
@@ -82,4 +83,4 @@ Some users have reported issues with enabling LatencyFleX. If you see `"Unable t
 
 ### Game crashes on launch with Cause: Access Violation Data Execution Prevention (DEP) at: 0x00000000
 
-try running with ProtonGE https://github.com/GloriousEggroll/proton-ge-custom/.
+try running with [ProtonGE](https://github.com/GloriousEggroll/proton-ge-custom/).

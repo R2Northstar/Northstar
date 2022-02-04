@@ -9,7 +9,7 @@ Hosting your own server of any kind requires basic knowledge of computer network
 If you for example don't know what "port forwarding" means and just want to play private matches with your friends it is generally recommended to just find an empty public server instead of trying to host your own server.
 {% endhint %}
 
-## Check whether you can port forward:
+## Check whether you can port forward
 
 In order for others to join your game they need to be able to reach you. Most likely your router acts as a NAT so you need to port forward two ports to your PC for [NAT traversal](https://en.wikipedia.org/wiki/NAT\_traversal).
 
@@ -21,7 +21,7 @@ For this find out your external IP address [by visiting this site](https://www.w
 
 Then [open CMD](https://www.lifewire.com/how-to-open-command-prompt-2618089#toc-open-command-prompt-in-windows-10) and type in:
 
-```
+```txt
 tracert <your external IP address here>
 ```
 
