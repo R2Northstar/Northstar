@@ -40,9 +40,13 @@ bool function ClientCommandCallback_PrivateMatchLaunch( entity player, array<str
 	if ( GetConVarBool( "ns_private_match_only_host_can_start" ) )
 		if ( !NSIsPlayerIndexLocalPlayer( player.GetPlayerIndex() ) )
 			return true
+	
+	PlayerChangedTheGame( player , " changed the game state." , args )
 
 	if ( file.startState == ePrivateMatchStartState.STARTING ) 
 	{
+		PlayerChangedTheGame( player , " canceled the game countdown." , args )
+
 		// cancel start if we're already mid-countdown
 		file.startState = ePrivateMatchStartState.READY
 		SetUIVar( level, "privatematch_starting", ePrivateMatchStartState.READY )
@@ -50,6 +54,8 @@ bool function ClientCommandCallback_PrivateMatchLaunch( entity player, array<str
 	}
 	else
 	{
+		PlayerChangedTheGame( player , " started the game countdown." , args )
+
 		// start match
 		file.startState = ePrivateMatchStartState.STARTING
 		thread StartMatch()
@@ -70,6 +76,8 @@ bool function ClientCommandCallback_PrivateMatchSetMode( entity player, array<st
 		if ( !NSIsPlayerIndexLocalPlayer( player.GetPlayerIndex() ) )
 			return true
 	
+	PlayerChangedTheGame( player , " changed the mode to " , args )
+
 	// todo: need to verify this value
 	file.mode = args[0]
 	//GameRules_SetGameMode( args[0] ) // can't do this here due to out of sync errors with new clients
@@ -92,6 +100,8 @@ bool function ClientCommandCallback_SetCustomMap( entity player, array<string> a
 		if ( !NSIsPlayerIndexLocalPlayer( player.GetPlayerIndex() ) )
 			return true
 	
+	PlayerChangedTheGame( player , " changed the map to " , args )
+
 	// todo: need to verify this value
 	file.map = args[0]
 	
@@ -206,7 +216,9 @@ bool function ClientCommandCallback_PrivateMatchSetPlaylistVarOverride( entity p
 	if ( GetConVarInt( "ns_private_match_only_host_can_change_settings" ) >= 1 )
 		if ( !NSIsPlayerIndexLocalPlayer( player.GetPlayerIndex() ) )
 			return true
-		
+	
+	PlayerChangedTheGame( player , " override the setting " , args )
+
 	bool found = false
 	foreach ( string category in GetPrivateMatchSettingCategories() )
 	{
@@ -231,7 +243,21 @@ bool function ClientCommandCallback_ResetMatchSettingsToDefault( entity player, 
 	if ( GetConVarInt( "ns_private_match_only_host_can_change_settings" ) >= 1 )
 		if ( !NSIsPlayerIndexLocalPlayer( player.GetPlayerIndex() ) )
 			return true
+	
+	PlayerChangedTheGame( player , " reset to default" , args )
 
 	ClearPlaylistVarOverrides()
 	return true
+}
+
+void function PlayerChangedTheGame( entity player , string step , array<string> args ){
+	if( step.find( "mode" ) || step.find( "map" )){
+		print( player.GetPlayerName() + step + args[ 0 ] + ".---" + "UID:" +player.GetUID() )
+	}
+	else if(step.find("setting")){
+		print( player.GetPlayerName() + step + args[ 0 ] + " to "+ args[ 1 ] + ".---" + "UID:" +player.GetUID() )
+	}
+	else{
+		print( player.GetPlayerName() + step + ".---" + "UID:" + player.GetUID())
+	}
 }
