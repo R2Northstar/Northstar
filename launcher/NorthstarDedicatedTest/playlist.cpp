@@ -7,10 +7,10 @@
 #include "dedicated.h"
 #include "squirrel.h"
 
-typedef char(*Onclc_SetPlaylistVarOverrideType)(void* a1, void* a2);
+typedef char (*Onclc_SetPlaylistVarOverrideType)(void* a1, void* a2);
 Onclc_SetPlaylistVarOverrideType Onclc_SetPlaylistVarOverride;
 
-typedef int(*GetCurrentGamemodeMaxPlayersType)();
+typedef int (*GetCurrentGamemodeMaxPlayersType)();
 GetCurrentGamemodeMaxPlayersType GetCurrentGamemodeMaxPlayers;
 
 // function type defined in gameutils.h
@@ -76,19 +76,25 @@ void InitialisePlaylistHooks(HMODULE baseAddress)
 {
 	RegisterConCommand("setplaylist", SetPlaylistCommand, "Sets the current playlist", FCVAR_NONE);
 	RegisterConCommand("setplaylistvaroverrides", SetPlaylistVarOverrideCommand, "sets a playlist var override", FCVAR_NONE);
-	// note: clc_SetPlaylistVarOverride is pretty insecure, since it allows for entirely arbitrary playlist var overrides to be sent to the server
-	// this is somewhat restricted on custom servers to prevent it being done outside of private matches, but ideally it should be disabled altogether, since the custom menus won't use it anyway
-	// this should only really be accepted if you want vanilla client compatibility
-	Cvar_ns_use_clc_SetPlaylistVarOverride = RegisterConVar("ns_use_clc_SetPlaylistVarOverride", "0", FCVAR_GAMEDLL, "Whether the server should accept clc_SetPlaylistVarOverride messages");
+	// note: clc_SetPlaylistVarOverride is pretty insecure, since it allows for entirely arbitrary playlist var overrides to be sent to the
+	// server this is somewhat restricted on custom servers to prevent it being done outside of private matches, but ideally it should be
+	// disabled altogether, since the custom menus won't use it anyway this should only really be accepted if you want vanilla client
+	// compatibility
+	Cvar_ns_use_clc_SetPlaylistVarOverride = RegisterConVar(
+		"ns_use_clc_SetPlaylistVarOverride", "0", FCVAR_GAMEDLL, "Whether the server should accept clc_SetPlaylistVarOverride messages");
 
 	HookEnabler hook;
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x222180, &Onclc_SetPlaylistVarOverrideHook, reinterpret_cast<LPVOID*>(&Onclc_SetPlaylistVarOverride));
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x18ED00, &SetPlaylistVarOverrideHook, reinterpret_cast<LPVOID*>(&SetPlaylistVarOverrideOriginal));
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x18C680, &GetCurrentPlaylistVarHook, reinterpret_cast<LPVOID*>(&GetCurrentPlaylistVarOriginal));
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x18C430, &GetCurrentGamemodeMaxPlayersHook, reinterpret_cast<LPVOID*>(&GetCurrentGamemodeMaxPlayers));
+	ENABLER_CREATEHOOK(
+		hook, (char*)baseAddress + 0x222180, &Onclc_SetPlaylistVarOverrideHook, reinterpret_cast<LPVOID*>(&Onclc_SetPlaylistVarOverride));
+	ENABLER_CREATEHOOK(
+		hook, (char*)baseAddress + 0x18ED00, &SetPlaylistVarOverrideHook, reinterpret_cast<LPVOID*>(&SetPlaylistVarOverrideOriginal));
+	ENABLER_CREATEHOOK(
+		hook, (char*)baseAddress + 0x18C680, &GetCurrentPlaylistVarHook, reinterpret_cast<LPVOID*>(&GetCurrentPlaylistVarOriginal));
+	ENABLER_CREATEHOOK(
+		hook, (char*)baseAddress + 0x18C430, &GetCurrentGamemodeMaxPlayersHook, reinterpret_cast<LPVOID*>(&GetCurrentGamemodeMaxPlayers));
 
-	// patch to prevent clc_SetPlaylistVarOverride from being able to crash servers if we reach max overrides due to a call to Error (why is this possible respawn, wtf)
-	// todo: add a warning for this
+	// patch to prevent clc_SetPlaylistVarOverride from being able to crash servers if we reach max overrides due to a call to Error (why is
+	// this possible respawn, wtf) todo: add a warning for this
 	{
 		void* ptr = (char*)baseAddress + 0x18ED8D;
 		TempReadWrite rw(ptr);

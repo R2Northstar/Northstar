@@ -5,14 +5,14 @@
 #include <cstring>
 struct RemoteModInfo
 {
-public:
+  public:
 	std::string Name;
 	std::string Version;
 };
 
 class RemoteServerInfo
 {
-public:
+  public:
 	char id[33]; // 32 bytes + nullterminator
 
 	// server info
@@ -28,13 +28,15 @@ public:
 	// connection stuff
 	bool requiresPassword;
 
-public:
-	RemoteServerInfo(const char* newId, const char* newName, const char* newDescription, const char* newMap, const char* newPlaylist, int newPlayerCount, int newMaxPlayers, bool newRequiresPassword);
+  public:
+	RemoteServerInfo(
+		const char* newId, const char* newName, const char* newDescription, const char* newMap, const char* newPlaylist, int newPlayerCount,
+		int newMaxPlayers, bool newRequiresPassword);
 };
 
 struct RemoteServerConnectionInfo
 {
-public:
+  public:
 	char authToken[32];
 
 	in_addr ip;
@@ -43,7 +45,7 @@ public:
 
 struct MainMenuPromoData
 {
-public:
+  public:
 	std::string newInfoTitle1;
 	std::string newInfoTitle2;
 	std::string newInfoTitle3;
@@ -64,11 +66,11 @@ public:
 
 class MasterServerManager
 {
-private:
+  private:
 	bool m_requestingServerList = false;
 	bool m_authenticatingWithGameServer = false;
 
-public:
+  public:
 	char m_ownServerId[33];
 	char m_ownServerAuthToken[33];
 	char m_ownClientAuthToken[33];
@@ -98,10 +100,10 @@ public:
 	bool m_bHasMainMenuPromoData = false;
 	MainMenuPromoData m_MainMenuPromoData;
 
-private:
+  private:
 	void SetCommonHttpClientOptions(CURL* curl);
 
-public:
+  public:
 	MasterServerManager();
 	void ClearServerList();
 	void RequestServerList();
@@ -109,13 +111,14 @@ public:
 	void AuthenticateOriginWithMasterServer(char* uid, char* originToken);
 	void AuthenticateWithOwnServer(char* uid, char* playerToken);
 	void AuthenticateWithServer(char* uid, char* playerToken, char* serverId, char* password);
-	void AddSelfToServerList(int port, int authPort, char* name, char* description, char* map, char* playlist, int maxPlayers, char* password);
+	void
+	AddSelfToServerList(int port, int authPort, char* name, char* description, char* map, char* playlist, int maxPlayers, char* password);
 	void UpdateServerMapAndPlaylist(char* map, char* playlist, int playerCount);
 	void UpdateServerPlayerCount(int playerCount);
 	void WritePlayerPersistentData(char* playerId, char* pdata, size_t pdataSize);
 	void RemoveSelfFromServerList();
 };
-std::string unescape_unicode(const std::string &str);
+std::string unescape_unicode(const std::string& str);
 void UpdateServerInfoFromUnicodeToUTF8();
 void InitialiseSharedMasterServer(HMODULE baseAddress);
 

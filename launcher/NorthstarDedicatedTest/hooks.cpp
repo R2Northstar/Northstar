@@ -11,19 +11,19 @@
 #include <filesystem>
 #include <Psapi.h>
 
-typedef LPSTR(*GetCommandLineAType)();
+typedef LPSTR (*GetCommandLineAType)();
 LPSTR GetCommandLineAHook();
 
-typedef HMODULE(*LoadLibraryExAType)(LPCSTR lpLibFileName, HANDLE hFile, DWORD dwFlags);
+typedef HMODULE (*LoadLibraryExAType)(LPCSTR lpLibFileName, HANDLE hFile, DWORD dwFlags);
 HMODULE LoadLibraryExAHook(LPCSTR lpLibFileName, HANDLE hFile, DWORD dwFlags);
 
-typedef HMODULE(*LoadLibraryAType)(LPCSTR lpLibFileName);
+typedef HMODULE (*LoadLibraryAType)(LPCSTR lpLibFileName);
 HMODULE LoadLibraryAHook(LPCSTR lpLibFileName);
 
-typedef HMODULE(*LoadLibraryExWType)(LPCWSTR lpLibFileName, HANDLE hFile, DWORD dwFlags);
+typedef HMODULE (*LoadLibraryExWType)(LPCWSTR lpLibFileName, HANDLE hFile, DWORD dwFlags);
 HMODULE LoadLibraryExWHook(LPCWSTR lpLibFileName, HANDLE hFile, DWORD dwFlags);
 
-typedef HMODULE(*LoadLibraryWType)(LPCWSTR lpLibFileName);
+typedef HMODULE (*LoadLibraryWType)(LPCWSTR lpLibFileName);
 HMODULE LoadLibraryWHook(LPCWSTR lpLibFileName);
 
 GetCommandLineAType GetCommandLineAOriginal;
@@ -36,7 +36,7 @@ void InstallInitialHooks()
 {
 	if (MH_Initialize() != MH_OK)
 		spdlog::error("MH_Initialize failed");
-	
+
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, &GetCommandLineA, &GetCommandLineAHook, reinterpret_cast<LPVOID*>(&GetCommandLineAOriginal));
 	ENABLER_CREATEHOOK(hook, &LoadLibraryExA, &LoadLibraryExAHook, reinterpret_cast<LPVOID*>(&LoadLibraryExAOriginal));
@@ -73,9 +73,15 @@ LPSTR GetCommandLineAHook()
 			argBuffer << cmdlineArgFile.rdbuf();
 			cmdlineArgFile.close();
 
-			// if some other command line option includes "-northstar" in the future then you have to refactor this check to check with both either space after or ending with
+			// if some other command line option includes "-northstar" in the future then you have to refactor this check to check with both
+			// either space after or ending with
 			if (!isDedi && argBuffer.str().find("-northstar") != std::string::npos)
-				MessageBoxA(NULL, "The \"-northstar\" command line option is NOT supposed to go into ns_startup_args.txt file!\n\nThis option is supposed to go into Origin/Steam game launch options, and then you are supposed to launch the original Titanfall2.exe rather than NorthstarLauncher.exe to make use of it.", "Northstar Warning", MB_ICONWARNING);
+				MessageBoxA(
+					NULL,
+					"The \"-northstar\" command line option is NOT supposed to go into ns_startup_args.txt file!\n\nThis option is "
+					"supposed to go into Origin/Steam game launch options, and then you are supposed to launch the original Titanfall2.exe "
+					"rather than NorthstarLauncher.exe to make use of it.",
+					"Northstar Warning", MB_ICONWARNING);
 
 			args.append(argBuffer.str());
 		}
@@ -88,7 +94,7 @@ LPSTR GetCommandLineAHook()
 			return cmdlineOrg;
 		}
 		memcpy(cmdlineModified, args.c_str(), len + 1);
-		
+
 		spdlog::info("Command line: {}", cmdlineModified);
 	}
 
@@ -120,7 +126,8 @@ void CallLoadLibraryACallbacks(LPCSTR lpLibFileName, HMODULE moduleAddress)
 {
 	for (auto& callbackStruct : dllLoadCallbacks)
 	{
-		if (!callbackStruct->called && strstr(lpLibFileName + (strlen(lpLibFileName) - callbackStruct->dll.length()), callbackStruct->dll.c_str()) != nullptr)
+		if (!callbackStruct->called &&
+			strstr(lpLibFileName + (strlen(lpLibFileName) - callbackStruct->dll.length()), callbackStruct->dll.c_str()) != nullptr)
 		{
 			callbackStruct->callback(moduleAddress);
 			callbackStruct->called = true;
@@ -168,7 +175,7 @@ void CallAllPendingDLLLoadCallbacks()
 HMODULE LoadLibraryExAHook(LPCSTR lpLibFileName, HANDLE hFile, DWORD dwFlags)
 {
 	HMODULE moduleAddress = LoadLibraryExAOriginal(lpLibFileName, hFile, dwFlags);
-	
+
 	if (moduleAddress)
 	{
 		CallLoadLibraryACallbacks(lpLibFileName, moduleAddress);

@@ -4,7 +4,7 @@
 #include "modmanager.h"
 #include "dedicated.h"
 
-typedef bool(*AddLocalisationFileType)(void* g_pVguiLocalize, const char* path, const char* pathId, char unknown);
+typedef bool (*AddLocalisationFileType)(void* g_pVguiLocalize, const char* path, const char* pathId, char unknown);
 AddLocalisationFileType AddLocalisationFile;
 
 bool loadModLocalisationFiles = true;

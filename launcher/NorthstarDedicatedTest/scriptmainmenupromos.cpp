@@ -15,11 +15,11 @@ enum eMainMenuPromoDataProperty
 	largeButtonText,
 	largeButtonUrl,
 	largeButtonImageIndex,
-	
+
 	smallButton1Title,
 	smallButton1Url,
 	smallButton1ImageIndex,
-	
+
 	smallButton2Title,
 	smallButton2Url,
 	smallButton2ImageIndex
@@ -47,85 +47,83 @@ SQRESULT SQ_GetCustomMainMenuPromoData(void* sqvm)
 
 	switch (ClientSq_getinteger(sqvm, 1))
 	{
-		case eMainMenuPromoDataProperty::newInfoTitle1:
-		{
-			ClientSq_pushstring(sqvm, g_MasterServerManager->m_MainMenuPromoData.newInfoTitle1.c_str(), -1);
-			break;
-		}
+	case eMainMenuPromoDataProperty::newInfoTitle1:
+	{
+		ClientSq_pushstring(sqvm, g_MasterServerManager->m_MainMenuPromoData.newInfoTitle1.c_str(), -1);
+		break;
+	}
 
-		case eMainMenuPromoDataProperty::newInfoTitle2:
-		{
-			ClientSq_pushstring(sqvm, g_MasterServerManager->m_MainMenuPromoData.newInfoTitle2.c_str(), -1);
-			break;
-		}
+	case eMainMenuPromoDataProperty::newInfoTitle2:
+	{
+		ClientSq_pushstring(sqvm, g_MasterServerManager->m_MainMenuPromoData.newInfoTitle2.c_str(), -1);
+		break;
+	}
 
-		case eMainMenuPromoDataProperty::newInfoTitle3:
-		{
-			ClientSq_pushstring(sqvm, g_MasterServerManager->m_MainMenuPromoData.newInfoTitle3.c_str(), -1);
-			break;
-		}
+	case eMainMenuPromoDataProperty::newInfoTitle3:
+	{
+		ClientSq_pushstring(sqvm, g_MasterServerManager->m_MainMenuPromoData.newInfoTitle3.c_str(), -1);
+		break;
+	}
 
-		case eMainMenuPromoDataProperty::largeButtonTitle:
-		{
-			ClientSq_pushstring(sqvm, g_MasterServerManager->m_MainMenuPromoData.largeButtonTitle.c_str(), -1);
-			break;
-		}
+	case eMainMenuPromoDataProperty::largeButtonTitle:
+	{
+		ClientSq_pushstring(sqvm, g_MasterServerManager->m_MainMenuPromoData.largeButtonTitle.c_str(), -1);
+		break;
+	}
 
-		case eMainMenuPromoDataProperty::largeButtonText:
-		{
-			ClientSq_pushstring(sqvm, g_MasterServerManager->m_MainMenuPromoData.largeButtonText.c_str(), -1);
-			break;
-		}
+	case eMainMenuPromoDataProperty::largeButtonText:
+	{
+		ClientSq_pushstring(sqvm, g_MasterServerManager->m_MainMenuPromoData.largeButtonText.c_str(), -1);
+		break;
+	}
 
-		case eMainMenuPromoDataProperty::largeButtonUrl:
-		{
-			ClientSq_pushstring(sqvm, g_MasterServerManager->m_MainMenuPromoData.largeButtonUrl.c_str(), -1);
-			break;
-		}
+	case eMainMenuPromoDataProperty::largeButtonUrl:
+	{
+		ClientSq_pushstring(sqvm, g_MasterServerManager->m_MainMenuPromoData.largeButtonUrl.c_str(), -1);
+		break;
+	}
 
-		case eMainMenuPromoDataProperty::largeButtonImageIndex:
-		{
-			ClientSq_pushinteger(sqvm, g_MasterServerManager->m_MainMenuPromoData.largeButtonImageIndex);
-			break;
-		}
+	case eMainMenuPromoDataProperty::largeButtonImageIndex:
+	{
+		ClientSq_pushinteger(sqvm, g_MasterServerManager->m_MainMenuPromoData.largeButtonImageIndex);
+		break;
+	}
 
+	case eMainMenuPromoDataProperty::smallButton1Title:
+	{
+		ClientSq_pushstring(sqvm, g_MasterServerManager->m_MainMenuPromoData.smallButton1Title.c_str(), -1);
+		break;
+	}
 
-		case eMainMenuPromoDataProperty::smallButton1Title:
-		{
-			ClientSq_pushstring(sqvm, g_MasterServerManager->m_MainMenuPromoData.smallButton1Title.c_str(), -1);
-			break;
-		}
+	case eMainMenuPromoDataProperty::smallButton1Url:
+	{
+		ClientSq_pushstring(sqvm, g_MasterServerManager->m_MainMenuPromoData.smallButton1Url.c_str(), -1);
+		break;
+	}
 
-		case eMainMenuPromoDataProperty::smallButton1Url:
-		{
-			ClientSq_pushstring(sqvm, g_MasterServerManager->m_MainMenuPromoData.smallButton1Url.c_str(), -1);
-			break;
-		}
+	case eMainMenuPromoDataProperty::smallButton1ImageIndex:
+	{
+		ClientSq_pushinteger(sqvm, g_MasterServerManager->m_MainMenuPromoData.smallButton1ImageIndex);
+		break;
+	}
 
-		case eMainMenuPromoDataProperty::smallButton1ImageIndex:
-		{
-			ClientSq_pushinteger(sqvm, g_MasterServerManager->m_MainMenuPromoData.smallButton1ImageIndex);
-			break;
-		}
+	case eMainMenuPromoDataProperty::smallButton2Title:
+	{
+		ClientSq_pushstring(sqvm, g_MasterServerManager->m_MainMenuPromoData.smallButton2Title.c_str(), -1);
+		break;
+	}
 
+	case eMainMenuPromoDataProperty::smallButton2Url:
+	{
+		ClientSq_pushstring(sqvm, g_MasterServerManager->m_MainMenuPromoData.smallButton2Url.c_str(), -1);
+		break;
+	}
 
-		case eMainMenuPromoDataProperty::smallButton2Title:
-		{
-			ClientSq_pushstring(sqvm, g_MasterServerManager->m_MainMenuPromoData.smallButton2Title.c_str(), -1);
-			break;
-		}
-
-		case eMainMenuPromoDataProperty::smallButton2Url:
-		{
-			ClientSq_pushstring(sqvm, g_MasterServerManager->m_MainMenuPromoData.smallButton2Url.c_str(), -1);
-			break;
-		}
-
-		case eMainMenuPromoDataProperty::smallButton2ImageIndex:
-		{
-			ClientSq_pushinteger(sqvm, g_MasterServerManager->m_MainMenuPromoData.smallButton2ImageIndex);
-			break;
-		}
+	case eMainMenuPromoDataProperty::smallButton2ImageIndex:
+	{
+		ClientSq_pushinteger(sqvm, g_MasterServerManager->m_MainMenuPromoData.smallButton2ImageIndex);
+		break;
+	}
 	}
 
 	return SQRESULT_NOTNULL;

@@ -7,22 +7,26 @@
 #include <fstream>
 
 // hook forward defs
-typedef char(*KeyValues__LoadFromBufferType)(void* self, const char* resourceName, const char* pBuffer, void* pFileSystem, void* a5, void* a6, int a7);
+typedef char (*KeyValues__LoadFromBufferType)(
+	void* self, const char* resourceName, const char* pBuffer, void* pFileSystem, void* a5, void* a6, int a7);
 KeyValues__LoadFromBufferType KeyValues__LoadFromBuffer;
-char KeyValues__LoadFromBufferHook(void* self, const char* resourceName, const char* pBuffer, void* pFileSystem, void* a5, void* a6, int a7);
+char KeyValues__LoadFromBufferHook(
+	void* self, const char* resourceName, const char* pBuffer, void* pFileSystem, void* a5, void* a6, int a7);
 
 void InitialiseKeyValues(HMODULE baseAddress)
 {
 	HookEnabler hook;
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x426C30, &KeyValues__LoadFromBufferHook, reinterpret_cast<LPVOID*>(&KeyValues__LoadFromBuffer));
+	ENABLER_CREATEHOOK(
+		hook, (char*)baseAddress + 0x426C30, &KeyValues__LoadFromBufferHook, reinterpret_cast<LPVOID*>(&KeyValues__LoadFromBuffer));
 }
 
 void* savedFilesystemPtr;
 
 char KeyValues__LoadFromBufferHook(void* self, const char* resourceName, const char* pBuffer, void* pFileSystem, void* a5, void* a6, int a7)
 {
-	// this is just to allow playlists to get a valid pFileSystem ptr for kv building, other functions that call this particular overload of LoadFromBuffer seem to get called on network stuff exclusively
-	// not exactly sure what the address wanted here is, so just taking it from a function call that always happens before playlists is loaded
+	// this is just to allow playlists to get a valid pFileSystem ptr for kv building, other functions that call this particular overload of
+	// LoadFromBuffer seem to get called on network stuff exclusively not exactly sure what the address wanted here is, so just taking it
+	// from a function call that always happens before playlists is loaded
 	if (pFileSystem != nullptr)
 		savedFilesystemPtr = pFileSystem;
 	if (!pFileSystem && !strcmp(resourceName, "playlists"))
@@ -76,7 +80,7 @@ void ModManager::TryBuildKeyValues(const char* filename)
 		}
 	}
 
-	// add original #base last, #bases don't override preexisting keys, including the ones we've just done 
+	// add original #base last, #bases don't override preexisting keys, including the ones we've just done
 	newKvs += "#base \"";
 	newKvs += ogFilePath;
 	newKvs += "\"\n";
@@ -102,14 +106,14 @@ void ModManager::TryBuildKeyValues(const char* filename)
 		if (originalFile[i] == '/' || originalFile[i] == '#')
 			while (originalFile[i] != '\n')
 				i++;
-	
+
 		i++;
 	}
-	
+
 	int j = 0;
 	for (int j = 0; originalFile[i] >= 65 && originalFile[i] <= 122; j++)
 		rootName[j] = originalFile[i++];
-	
+
 	// empty kv, all the other stuff gets #base'd
 	newKvs += rootName;
 	newKvs += "\n{\n}\n";

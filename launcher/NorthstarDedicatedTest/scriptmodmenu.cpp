@@ -59,7 +59,7 @@ SQRESULT SQ_SetModEnabled(void* sqvm)
 SQRESULT SQ_GetModDescription(void* sqvm)
 {
 	const SQChar* modName = ClientSq_getstring(sqvm, 1);
-	
+
 	// manual lookup, not super performant but eh not a big deal
 	for (Mod& mod : g_ModManager->m_loadedMods)
 	{
@@ -182,14 +182,23 @@ void InitialiseScriptModMenu(HMODULE baseAddress)
 		return;
 
 	g_UISquirrelManager->AddFuncRegistration("array<string>", "NSGetModNames", "", "Returns the names of all loaded mods", SQ_GetModNames);
-	g_UISquirrelManager->AddFuncRegistration("bool", "NSIsModEnabled", "string modName", "Returns whether a given mod is enabled", SQ_IsModEnabled);
-	g_UISquirrelManager->AddFuncRegistration("void", "NSSetModEnabled", "string modName, bool enabled", "Sets whether a given mod is enabled", SQ_SetModEnabled);
-	g_UISquirrelManager->AddFuncRegistration("string", "NSGetModDescriptionByModName", "string modName", "Returns a given mod's description", SQ_GetModDescription);
-	g_UISquirrelManager->AddFuncRegistration("string", "NSGetModVersionByModName", "string modName", "Returns a given mod's version", SQ_GetModVersion);	
-	g_UISquirrelManager->AddFuncRegistration("string", "NSGetModDownloadLinkByModName", "string modName", "Returns a given mod's download link", SQ_GetModDownloadLink);
-	g_UISquirrelManager->AddFuncRegistration("bool", "NSIsModRequiredOnClient", "string modName", "Returns whether a given mod is required on connecting clients", SQ_IsModRequiredOnClient);
-	g_UISquirrelManager->AddFuncRegistration("int", "NSGetModLoadPriority", "string modName", "Returns a given mod's load priority", SQ_GetModLoadPriority);
-	g_UISquirrelManager->AddFuncRegistration("array<string>", "NSGetModConvarsByModName", "string modName", "Returns the names of all a given mod's cvars", SQ_GetModConvars);
+	g_UISquirrelManager->AddFuncRegistration(
+		"bool", "NSIsModEnabled", "string modName", "Returns whether a given mod is enabled", SQ_IsModEnabled);
+	g_UISquirrelManager->AddFuncRegistration(
+		"void", "NSSetModEnabled", "string modName, bool enabled", "Sets whether a given mod is enabled", SQ_SetModEnabled);
+	g_UISquirrelManager->AddFuncRegistration(
+		"string", "NSGetModDescriptionByModName", "string modName", "Returns a given mod's description", SQ_GetModDescription);
+	g_UISquirrelManager->AddFuncRegistration(
+		"string", "NSGetModVersionByModName", "string modName", "Returns a given mod's version", SQ_GetModVersion);
+	g_UISquirrelManager->AddFuncRegistration(
+		"string", "NSGetModDownloadLinkByModName", "string modName", "Returns a given mod's download link", SQ_GetModDownloadLink);
+	g_UISquirrelManager->AddFuncRegistration(
+		"bool", "NSIsModRequiredOnClient", "string modName", "Returns whether a given mod is required on connecting clients",
+		SQ_IsModRequiredOnClient);
+	g_UISquirrelManager->AddFuncRegistration(
+		"int", "NSGetModLoadPriority", "string modName", "Returns a given mod's load priority", SQ_GetModLoadPriority);
+	g_UISquirrelManager->AddFuncRegistration(
+		"array<string>", "NSGetModConvarsByModName", "string modName", "Returns the names of all a given mod's cvars", SQ_GetModConvars);
 
 	g_UISquirrelManager->AddFuncRegistration("void", "NSReloadMods", "", "Reloads mods", SQ_ReloadMods);
 }

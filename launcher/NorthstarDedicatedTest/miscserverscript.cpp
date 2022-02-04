@@ -52,14 +52,15 @@ SQRESULT SQ_IsPlayerIndexLocalPlayer(void* sqvm)
 		ServerSq_pusherror(sqvm, fmt::format("Invalid playerindex {}", playerIndex).c_str());
 		return SQRESULT_ERROR;
 	}
-	
+
 	ServerSq_pushbool(sqvm, !strcmp(g_LocalPlayerUserID, (char*)player + 0xF500));
 	return SQRESULT_NOTNULL;
 }
 
 void InitialiseMiscServerScriptCommand(HMODULE baseAddress)
 {
-	g_ServerSquirrelManager->AddFuncRegistration("void", "NSEarlyWritePlayerIndexPersistenceForLeave", "int playerIndex", "", SQ_EarlyWritePlayerIndexPersistenceForLeave);
+	g_ServerSquirrelManager->AddFuncRegistration(
+		"void", "NSEarlyWritePlayerIndexPersistenceForLeave", "int playerIndex", "", SQ_EarlyWritePlayerIndexPersistenceForLeave);
 	g_ServerSquirrelManager->AddFuncRegistration("bool", "NSIsWritingPlayerPersistence", "", "", SQ_IsWritingPlayerPersistence);
 	g_ServerSquirrelManager->AddFuncRegistration("bool", "NSIsPlayerIndexLocalPlayer", "int playerIndex", "", SQ_IsPlayerIndexLocalPlayer);
 }

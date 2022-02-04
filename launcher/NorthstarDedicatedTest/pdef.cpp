@@ -15,7 +15,7 @@ void ModManager::BuildPdef()
 
 	fs::remove(MOD_PDEF_PATH);
 	std::string pdef = ReadVPKOriginalFile(VPK_PDEF_PATH);
-	
+
 	for (Mod& mod : m_loadedMods)
 	{
 		if (!mod.Enabled || !mod.Pdiff.size())
@@ -59,7 +59,8 @@ void ModManager::BuildPdef()
 				if (!currentLine.compare(start, 9, "$ENUM_END"))
 					inEnum = false;
 				else
-					enumAdds[currentEnum].push_back(currentLine); // only need to push_back current line, if there's syntax errors then game pdef parser will handle them
+					enumAdds[currentEnum].push_back(currentLine); // only need to push_back current line, if there's syntax errors then game
+																  // pdef parser will handle them
 			}
 			else if (!currentLine.compare(start, 9, "$ENUM_ADD"))
 			{

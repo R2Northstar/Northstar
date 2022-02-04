@@ -6,7 +6,7 @@
 #include "masterserver.h"
 #include "convar.h"
 
-typedef void(*AuthWithStryderType)(void* a1);
+typedef void (*AuthWithStryderType)(void* a1);
 AuthWithStryderType AuthWithStryder;
 
 ConVar* Cvar_ns_has_agreed_to_send_token;
@@ -23,7 +23,8 @@ void AuthWithStryderHook(void* a1)
 	if (!g_MasterServerManager->m_bOriginAuthWithMasterServerDone && Cvar_ns_has_agreed_to_send_token->m_nValue != DISAGREED_TO_SEND_TOKEN)
 	{
 		// if player has agreed to send token and we aren't already authing, try to auth
-		if (Cvar_ns_has_agreed_to_send_token->m_nValue == AGREED_TO_SEND_TOKEN && !g_MasterServerManager->m_bOriginAuthWithMasterServerInProgress)
+		if (Cvar_ns_has_agreed_to_send_token->m_nValue == AGREED_TO_SEND_TOKEN &&
+			!g_MasterServerManager->m_bOriginAuthWithMasterServerInProgress)
 			g_MasterServerManager->AuthenticateOriginWithMasterServer(g_LocalPlayerUserID, g_LocalPlayerOriginToken);
 
 		// invalidate key so auth will fail
@@ -39,7 +40,9 @@ void InitialiseClientAuthHooks(HMODULE baseAddress)
 		return;
 
 	// this cvar will save to cfg once initially agreed with
-	Cvar_ns_has_agreed_to_send_token = RegisterConVar("ns_has_agreed_to_send_token", "0", FCVAR_ARCHIVE_PLAYERPROFILE, "whether the user has agreed to send their origin token to the northstar masterserver");
+	Cvar_ns_has_agreed_to_send_token = RegisterConVar(
+		"ns_has_agreed_to_send_token", "0", FCVAR_ARCHIVE_PLAYERPROFILE,
+		"whether the user has agreed to send their origin token to the northstar masterserver");
 
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1843A0, &AuthWithStryderHook, reinterpret_cast<LPVOID*>(&AuthWithStryder));

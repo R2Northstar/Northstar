@@ -5,20 +5,26 @@
 #include "hookutils.h"
 #include "gameutils.h"
 
-typedef HRESULT(*__stdcall D3D11CreateDeviceType)(void* pAdapter, int DriverType, HMODULE Software, UINT Flags, int* pFeatureLevels, UINT FeatureLevels, UINT SDKVersion, void** ppDevice, int* pFeatureLevel, void** ppImmediateContext);
+typedef HRESULT (*__stdcall D3D11CreateDeviceType)(
+	void* pAdapter, int DriverType, HMODULE Software, UINT Flags, int* pFeatureLevels, UINT FeatureLevels, UINT SDKVersion, void** ppDevice,
+	int* pFeatureLevel, void** ppImmediateContext);
 D3D11CreateDeviceType D3D11CreateDevice;
 
-HRESULT __stdcall D3D11CreateDeviceHook(void* pAdapter, int DriverType, HMODULE Software, UINT Flags, int* pFeatureLevels, UINT FeatureLevels, UINT SDKVersion, void** ppDevice, int* pFeatureLevel, void** ppImmediateContext)
+HRESULT __stdcall D3D11CreateDeviceHook(
+	void* pAdapter, int DriverType, HMODULE Software, UINT Flags, int* pFeatureLevels, UINT FeatureLevels, UINT SDKVersion, void** ppDevice,
+	int* pFeatureLevel, void** ppImmediateContext)
 {
 	// note: this is super duper temp pretty much just messing around with it
-	// does run surprisingly well on dedi for a software driver tho if you ignore the +1gb ram usage at times, seems like dedi doesn't really call gpu much even with renderthread still being a thing
-	// will be using this hook for actual d3d stubbing and stuff later
+	// does run surprisingly well on dedi for a software driver tho if you ignore the +1gb ram usage at times, seems like dedi doesn't
+	// really call gpu much even with renderthread still being a thing will be using this hook for actual d3d stubbing and stuff later
 
-	// atm, i think the play might be to run d3d in software, and then just stub out any calls that allocate memory/use alot of resources (e.g. createtexture and that sorta thing)
+	// atm, i think the play might be to run d3d in software, and then just stub out any calls that allocate memory/use alot of resources
+	// (e.g. createtexture and that sorta thing)
 	if (CommandLine()->CheckParm("-softwared3d11"))
 		DriverType = 5; // D3D_DRIVER_TYPE_WARP
 
-	return D3D11CreateDevice(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, ppDevice, pFeatureLevel, ppImmediateContext);
+	return D3D11CreateDevice(
+		pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, ppDevice, pFeatureLevel, ppImmediateContext);
 }
 
 void InitialiseDedicatedMaterialSystem(HMODULE baseAddress)
@@ -69,17 +75,17 @@ void InitialiseDedicatedMaterialSystem(HMODULE baseAddress)
 	// check commit history if needed
 }
 
-typedef void*(*PakLoadAPI__LoadRpakType)(char* filename, void* unknown, int flags);
+typedef void* (*PakLoadAPI__LoadRpakType)(char* filename, void* unknown, int flags);
 PakLoadAPI__LoadRpakType PakLoadAPI__LoadRpak;
 
 void* PakLoadAPI__LoadRpakHook(char* filename, void* unknown, int flags)
 {
 	spdlog::info("PakLoadAPI__LoadRpakHook {}", filename);
-	
+
 	// on dedi, don't load any paks that aren't required
 	if (strncmp(filename, "common", 6))
 		return 0;
-	
+
 	return PakLoadAPI__LoadRpak(filename, unknown, flags);
 }
 
@@ -106,6 +112,6 @@ void InitialiseDedicatedRtechGame(HMODULE baseAddress)
 
 	HookEnabler hook;
 	// unfortunately this is unstable, seems to freeze when changing maps
-	//ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0xB0F0, &PakLoadAPI__LoadRpakHook, reinterpret_cast<LPVOID*>(&PakLoadAPI__LoadRpak));
-	//ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0xB170, &PakLoadAPI__LoadRpak2Hook, reinterpret_cast<LPVOID*>(&PakLoadAPI__LoadRpak2));
+	// ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0xB0F0, &PakLoadAPI__LoadRpakHook, reinterpret_cast<LPVOID*>(&PakLoadAPI__LoadRpak));
+	// ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0xB170, &PakLoadAPI__LoadRpak2Hook, reinterpret_cast<LPVOID*>(&PakLoadAPI__LoadRpak2));
 }

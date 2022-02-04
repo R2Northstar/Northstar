@@ -62,6 +62,6 @@ void ModManager::BuildScriptsRson()
 	else
 		m_modFiles[VPK_SCRIPTS_RSON_PATH] = overrideFile;
 
-	// todo: for preventing dupe scripts in scripts.rson, we could actually parse when conditions with the squirrel vm, just need a way to get a result out of squirrelmanager.ExecuteCode
-	// this would probably be the best way to do this, imo
+	// todo: for preventing dupe scripts in scripts.rson, we could actually parse when conditions with the squirrel vm, just need a way to
+	// get a result out of squirrelmanager.ExecuteCode this would probably be the best way to do this, imo
 }

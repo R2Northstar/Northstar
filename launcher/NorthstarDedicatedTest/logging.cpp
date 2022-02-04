@@ -11,7 +11,6 @@
 #include <minidumpapiset.h>
 #include "configurables.h"
 
-
 // This needs to be called after hooks are loaded so we can access the command line args
 void CreateLogFiles()
 {
@@ -68,7 +67,8 @@ long __stdcall ExceptionFilter(EXCEPTION_POINTERS* exceptionInfo)
 			else if (exceptionInfo0 == 1)
 				exceptionCause << "Attempted to write to: 0x" << std::setw(8) << std::setfill('0') << std::hex << exceptionInfo1;
 			else if (exceptionInfo0 == 8)
-				exceptionCause << "Data Execution Prevention (DEP) at: 0x" << std::setw(8) << std::setfill('0') << std::hex << exceptionInfo1;
+				exceptionCause << "Data Execution Prevention (DEP) at: 0x" << std::setw(8) << std::setfill('0') << std::hex
+							   << exceptionInfo1;
 			else
 				exceptionCause << "Unknown access violation at: 0x" << std::setw(8) << std::setfill('0') << std::hex << exceptionInfo1;
 
@@ -186,20 +186,22 @@ long __stdcall ExceptionFilter(EXCEPTION_POINTERS* exceptionInfo)
 			dumpExceptionInfo.ExceptionPointers = exceptionInfo;
 			dumpExceptionInfo.ClientPointers = false;
 
-			MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hMinidumpFile, MINIDUMP_TYPE(MiniDumpWithIndirectlyReferencedMemory | MiniDumpScanMemory), &dumpExceptionInfo, nullptr, nullptr);
+			MiniDumpWriteDump(
+				GetCurrentProcess(), GetCurrentProcessId(), hMinidumpFile,
+				MINIDUMP_TYPE(MiniDumpWithIndirectlyReferencedMemory | MiniDumpScanMemory), &dumpExceptionInfo, nullptr, nullptr);
 			CloseHandle(hMinidumpFile);
 		}
 		else
 			spdlog::error("Failed to write minidump file {}!", stream.str());
 
 		if (!IsDedicated())
-			MessageBoxA(0, "Northstar has crashed! Crash info can be found in R2Northstar/logs", "Northstar has crashed!", MB_ICONERROR | MB_OK);
+			MessageBoxA(
+				0, "Northstar has crashed! Crash info can be found in R2Northstar/logs", "Northstar has crashed!", MB_ICONERROR | MB_OK);
 	}
 
 	logged = true;
 	return EXCEPTION_EXECUTE_HANDLER;
 }
-
 
 void InitialiseLogging()
 {
@@ -223,7 +225,7 @@ enum SpewType_t
 	SPEW_TYPE_COUNT
 };
 
-typedef void(*EngineSpewFuncType)();
+typedef void (*EngineSpewFuncType)();
 EngineSpewFuncType EngineSpewFunc;
 
 void EngineSpewFuncHook(void* engineServer, SpewType_t type, const char* format, va_list args)
@@ -234,44 +236,44 @@ void EngineSpewFuncHook(void* engineServer, SpewType_t type, const char* format,
 	const char* typeStr;
 	switch (type)
 	{
-		case SPEW_MESSAGE:
-		{
-			typeStr = "SPEW_MESSAGE";
-			break;
-		}
-
-		case SPEW_WARNING:
-		{
-			typeStr = "SPEW_WARNING";
-			break;
-		}
-
-		case SPEW_ASSERT:
-		{
-			typeStr = "SPEW_ASSERT";
-			break;
-		}
-
-		case SPEW_ERROR:
-		{
-			typeStr = "SPEW_ERROR";
-			break;
-		}
-
-		case SPEW_LOG:
-		{
-			typeStr = "SPEW_LOG";
-			break;
-		}
-
-		default:
-		{
-			typeStr = "SPEW_UNKNOWN";
-			break;
-		}
+	case SPEW_MESSAGE:
+	{
+		typeStr = "SPEW_MESSAGE";
+		break;
 	}
 
-	char formatted[2048] = { 0 };
+	case SPEW_WARNING:
+	{
+		typeStr = "SPEW_WARNING";
+		break;
+	}
+
+	case SPEW_ASSERT:
+	{
+		typeStr = "SPEW_ASSERT";
+		break;
+	}
+
+	case SPEW_ERROR:
+	{
+		typeStr = "SPEW_ERROR";
+		break;
+	}
+
+	case SPEW_LOG:
+	{
+		typeStr = "SPEW_LOG";
+		break;
+	}
+
+	default:
+	{
+		typeStr = "SPEW_UNKNOWN";
+		break;
+	}
+	}
+
+	char formatted[2048] = {0};
 	bool shouldFormat = true;
 
 	// because titanfall 2 is quite possibly the worst thing to yet exist, it sometimes gives invalid specifiers which will crash
@@ -283,45 +285,45 @@ void EngineSpewFuncHook(void* engineServer, SpewType_t type, const char* format,
 		{
 			switch (format[i + 1])
 			{
-				// this is fucking awful lol
-				case 'd':
-				case 'i':
-				case 'u':
-				case 'x':
-				case 'X':
-				case 'f':
-				case 'F':
-				case 'g':
-				case 'G':
-				case 'a':
-				case 'A':
-				case 'c':
-				case 's':
-				case 'p':
-				case 'n':
-				case '%':
-				case '-':
-				case '+':
-				case ' ':
-				case '#':
-				case '*':
-				case '0':
-				case '1':
-				case '2':
-				case '3':
-				case '4':
-				case '5':
-				case '6':
-				case '7':
-				case '8':
-				case '9':
-					break;
-				
-				default:
-				{
-					shouldFormat = false;
-					break;
-				}
+			// this is fucking awful lol
+			case 'd':
+			case 'i':
+			case 'u':
+			case 'x':
+			case 'X':
+			case 'f':
+			case 'F':
+			case 'g':
+			case 'G':
+			case 'a':
+			case 'A':
+			case 'c':
+			case 's':
+			case 'p':
+			case 'n':
+			case '%':
+			case '-':
+			case '+':
+			case ' ':
+			case '#':
+			case '*':
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+				break;
+
+			default:
+			{
+				shouldFormat = false;
+				break;
+			}
 			}
 		}
 	}
@@ -340,8 +342,7 @@ void EngineSpewFuncHook(void* engineServer, SpewType_t type, const char* format,
 	spdlog::info("[SERVER {}] {}", typeStr, formatted);
 }
 
-
-typedef void(*Status_ConMsg_Type)(const char* text, ...);
+typedef void (*Status_ConMsg_Type)(const char* text, ...);
 Status_ConMsg_Type Status_ConMsg_Original;
 
 void Status_ConMsg_Hook(const char* text, ...)
@@ -360,13 +361,13 @@ void Status_ConMsg_Hook(const char* text, ...)
 	spdlog::info(formatted);
 }
 
-typedef bool(*CClientState_ProcessPrint_Type)(__int64 thisptr, __int64 msg);
+typedef bool (*CClientState_ProcessPrint_Type)(__int64 thisptr, __int64 msg);
 CClientState_ProcessPrint_Type CClientState_ProcessPrint_Original;
 
 bool CClientState_ProcessPrint_Hook(__int64 thisptr, __int64 msg)
 {
 	char* text = *(char**)(msg + 0x20);
-	
+
 	auto endpos = strlen(text);
 	if (text[endpos - 1] == '\n')
 		text[endpos - 1] = '\0'; // cut off repeated newline
@@ -385,28 +386,31 @@ void InitialiseEngineSpewFuncHooks(HMODULE baseAddress)
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x15ABD0, Status_ConMsg_Hook, reinterpret_cast<LPVOID*>(&Status_ConMsg_Original));
 
 	// Hook CClientState::ProcessPrint
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1A1530, CClientState_ProcessPrint_Hook, reinterpret_cast<LPVOID*>(&CClientState_ProcessPrint_Original));
+	ENABLER_CREATEHOOK(
+		hook, (char*)baseAddress + 0x1A1530, CClientState_ProcessPrint_Hook,
+		reinterpret_cast<LPVOID*>(&CClientState_ProcessPrint_Original));
 
-	Cvar_spewlog_enable = RegisterConVar("spewlog_enable", "1", FCVAR_NONE, "Enables/disables whether the engine spewfunc should be logged");
+	Cvar_spewlog_enable =
+		RegisterConVar("spewlog_enable", "1", FCVAR_NONE, "Enables/disables whether the engine spewfunc should be logged");
 }
 
 #include "bitbuf.h"
 
 ConVar* Cvar_cl_showtextmsg;
 
-typedef void(*TextMsg_Type)(__int64);
+typedef void (*TextMsg_Type)(__int64);
 TextMsg_Type TextMsg_Original;
 
 class ICenterPrint
 {
-public:
-	virtual void		ctor() = 0;
-	virtual void		Clear(void) = 0;
-	virtual void		ColorPrint(int r, int g, int b, int a, wchar_t* text) = 0;
-	virtual void		ColorPrint(int r, int g, int b, int a, char* text) = 0;
-	virtual void		Print(wchar_t* text) = 0;
-	virtual void		Print(char* text) = 0;
-	virtual void		SetTextColor(int r, int g, int b, int a) = 0;
+  public:
+	virtual void ctor() = 0;
+	virtual void Clear(void) = 0;
+	virtual void ColorPrint(int r, int g, int b, int a, wchar_t* text) = 0;
+	virtual void ColorPrint(int r, int g, int b, int a, char* text) = 0;
+	virtual void Print(wchar_t* text) = 0;
+	virtual void Print(char* text) = 0;
+	virtual void SetTextColor(int r, int g, int b, int a) = 0;
 };
 
 ICenterPrint* internalCenterPrint = NULL;
@@ -421,7 +425,8 @@ void TextMsgHook(BFRead* msg)
 	if (!Cvar_cl_showtextmsg->m_nValue)
 		return;
 
-	switch (msg_dest) {
+	switch (msg_dest)
+	{
 	case 4: // HUD_PRINTCENTER
 		internalCenterPrint->Print(text);
 		break;

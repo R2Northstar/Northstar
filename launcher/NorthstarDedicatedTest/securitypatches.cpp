@@ -5,7 +5,7 @@
 #include "dedicated.h"
 #include "gameutils.h"
 
-typedef bool(*IsValveModType)();
+typedef bool (*IsValveModType)();
 IsValveModType IsValveMod;
 
 bool IsValveModHook()
@@ -25,7 +25,7 @@ void InitialiseClientEngineSecurityPatches(HMODULE baseAddress)
 
 	// note: this could break some things
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1C6360, &IsValveModHook, reinterpret_cast<LPVOID*>(&IsValveMod));
-	
+
 	// patches to make commands run from client/ui script still work
 	// note: this is likely preventable in a nicer way? test prolly
 	{
@@ -49,7 +49,7 @@ void InitialiseClientEngineSecurityPatches(HMODULE baseAddress)
 		// disconnect concommand
 		void* ptr = (char*)baseAddress + 0x5ADA2D;
 		TempReadWrite rw(ptr);
-	
+
 		*((int*)ptr) |= FCVAR_SERVER_CAN_EXECUTE;
 	}
 }

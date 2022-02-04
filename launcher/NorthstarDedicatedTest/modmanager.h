@@ -14,7 +14,7 @@ const std::string COMPILED_ASSETS_SUFFIX = "/runtime/compiled";
 
 struct ModConVar
 {
-public:
+  public:
 	std::string Name;
 	std::string DefaultValue;
 	std::string HelpString;
@@ -23,9 +23,9 @@ public:
 
 struct ModScriptCallback
 {
-public:
+  public:
 	// would've liked to make it possible to hook arbitrary codecallbacks, but couldn't find a function that calls some ui ones
-	//std::string HookedCodeCallback;
+	// std::string HookedCodeCallback;
 
 	ScriptContext Context;
 
@@ -37,7 +37,7 @@ public:
 
 struct ModScript
 {
-public:
+  public:
 	std::string Path;
 	std::string RsonRunOn;
 
@@ -46,7 +46,7 @@ public:
 
 class Mod
 {
-public:
+  public:
 	// runtime stuff
 	fs::path ModDirectory;
 	bool Enabled = true;
@@ -84,20 +84,20 @@ public:
 
 	bool wasReadSuccessfully = false;
 
-public:
+  public:
 	Mod(fs::path modPath, char* jsonBuf);
 };
 
 struct ModOverrideFile
 {
-public:
+  public:
 	Mod* owningMod;
 	fs::path path;
 };
 
 class ModManager
 {
-private:
+  private:
 	bool m_hasLoadedMods = false;
 	bool m_hasEnabledModsCfg;
 	rapidjson_document m_enabledModsCfg;
@@ -106,11 +106,11 @@ private:
 	size_t m_hScriptsRsonHash;
 	size_t m_hPdefHash;
 
-public:
+  public:
 	std::vector<Mod> m_loadedMods;
 	std::unordered_map<std::string, ModOverrideFile> m_modFiles;
 
-public:
+  public:
 	ModManager();
 	void LoadMods();
 	void UnloadMods();

@@ -6,11 +6,10 @@
 #define NEW_MAX_PLAYERS 64
 // dg note: the theoretical limit is actually 100, 76 works without entity issues, and 64 works without clientside prediction issues.
 
-#define PAD_NUMBER(number, boundary) \
-	( ((number) + ((boundary)-1)) / (boundary) ) * (boundary)
+#define PAD_NUMBER(number, boundary) (((number) + ((boundary)-1)) / (boundary)) * (boundary)
 
 // this is horrible
-constexpr int PlayerResource_Name_Start = 0; // Start of modded allocated space.
+constexpr int PlayerResource_Name_Start = 0;						  // Start of modded allocated space.
 constexpr int PlayerResource_Name_Size = ((NEW_MAX_PLAYERS + 1) * 8); // const char* m_szName[MAX_PLAYERS + 1];
 
 constexpr int PlayerResource_Ping_Start = PlayerResource_Name_Start + PlayerResource_Name_Size;
@@ -46,8 +45,7 @@ constexpr int Team_PlayerArray_AddedLength = NEW_MAX_PLAYERS - 32;
 constexpr int Team_PlayerArray_AddedSize = PAD_NUMBER(Team_PlayerArray_AddedLength * 8, 4);
 constexpr int Team_AddedSize = Team_PlayerArray_AddedSize;
 
-template<class T>
-void ChangeOffset(void* addr, unsigned int offset)
+template <class T> void ChangeOffset(void* addr, unsigned int offset)
 {
 	TempReadWrite rw(addr);
 	*((T*)addr) = offset;
@@ -63,7 +61,7 @@ bool MatchRecvPropsToSendProps_R_Hook(__int64 lookup, __int64 tableNameBroken, _
 
 	spdlog::info("MatchRecvPropsToSendProps_R table name {}", tableName);
 
-	bool orig = MatchRecvPropsToSendProps_R_Original(lookup, tableNameBroken, sendTable, recvTable);	
+	bool orig = MatchRecvPropsToSendProps_R_Original(lookup, tableNameBroken, sendTable, recvTable);
 	return orig;
 }
 
@@ -85,10 +83,12 @@ bool DataTable_SetupReceiveTableFromSendTable_Hook(__int64 sendTable, bool needs
 }
 */
 
-typedef void* (*StringTables_CreateStringTable_Type)(__int64 thisptr, const char* name, int maxentries, int userdatafixedsize, int userdatanetworkbits, int flags);
+typedef void* (*StringTables_CreateStringTable_Type)(
+	__int64 thisptr, const char* name, int maxentries, int userdatafixedsize, int userdatanetworkbits, int flags);
 StringTables_CreateStringTable_Type StringTables_CreateStringTable_Original;
 
-void* StringTables_CreateStringTable_Hook(__int64 thisptr, const char* name, int maxentries, int userdatafixedsize, int userdatanetworkbits, int flags)
+void* StringTables_CreateStringTable_Hook(
+	__int64 thisptr, const char* name, int maxentries, int userdatafixedsize, int userdatanetworkbits, int flags)
 {
 	// Change the amount of entries to account for a bigger player amount
 	if (!strcmp(name, "userinfo"))
@@ -96,17 +96,14 @@ void* StringTables_CreateStringTable_Hook(__int64 thisptr, const char* name, int
 		int maxPlayersPowerOf2 = 1;
 		while (maxPlayersPowerOf2 < NEW_MAX_PLAYERS)
 			maxPlayersPowerOf2 <<= 1;
-		
+
 		maxentries = maxPlayersPowerOf2;
 	}
 
 	return StringTables_CreateStringTable_Original(thisptr, name, maxentries, userdatafixedsize, userdatanetworkbits, flags);
 }
 
-bool MaxPlayersIncreaseEnabled()
-{
-	return CommandLine() && CommandLine()->CheckParm("-experimentalmaxplayersincrease");
-}
+bool MaxPlayersIncreaseEnabled() { return CommandLine() && CommandLine()->CheckParm("-experimentalmaxplayersincrease"); }
 
 void InitialiseMaxPlayersOverride_Engine(HMODULE baseAddress)
 {
@@ -142,20 +139,23 @@ void InitialiseMaxPlayersOverride_Engine(HMODULE baseAddress)
 	// proper fix below
 
 	// patch max players in userinfo stringtable creation loop
-	ChangeOffset<unsigned char>((char*)baseAddress + 0x114C48 + 2, NEW_MAX_PLAYERS); // original: 32 
+	ChangeOffset<unsigned char>((char*)baseAddress + 0x114C48 + 2, NEW_MAX_PLAYERS); // original: 32
 
 	// do not load prebaked SendTable message list
-	ChangeOffset<unsigned char>((char*)baseAddress + 0x75859, 0xEB); // jnz -> jmp 
+	ChangeOffset<unsigned char>((char*)baseAddress + 0x75859, 0xEB); // jnz -> jmp
 
 	HookEnabler hook;
-	
-	// ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x209000, &MatchRecvPropsToSendProps_R_Hook, reinterpret_cast<LPVOID*>(&MatchRecvPropsToSendProps_R_Original));
-	// ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1FACD0, &DataTable_SetupReceiveTableFromSendTable_Hook, reinterpret_cast<LPVOID*>(&DataTable_SetupReceiveTableFromSendTable_Original));
 
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x22E220, &StringTables_CreateStringTable_Hook, reinterpret_cast<LPVOID*>(&StringTables_CreateStringTable_Original));
+	// ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x209000, &MatchRecvPropsToSendProps_R_Hook,
+	// reinterpret_cast<LPVOID*>(&MatchRecvPropsToSendProps_R_Original)); ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1FACD0,
+	// &DataTable_SetupReceiveTableFromSendTable_Hook, reinterpret_cast<LPVOID*>(&DataTable_SetupReceiveTableFromSendTable_Original));
+
+	ENABLER_CREATEHOOK(
+		hook, (char*)baseAddress + 0x22E220, &StringTables_CreateStringTable_Hook,
+		reinterpret_cast<LPVOID*>(&StringTables_CreateStringTable_Original));
 }
 
-typedef void(*RunUserCmds_Type)(bool a1, float a2);
+typedef void (*RunUserCmds_Type)(bool a1, float a2);
 RunUserCmds_Type RunUserCmds_Original;
 
 HMODULE serverBase = 0;
@@ -164,27 +164,27 @@ auto RandomIntZeroMax = (__int64(__fastcall*)())0;
 // lazy rebuild
 void RunUserCmds_Hook(bool a1, float a2)
 {
-	unsigned char v3; // bl
-	int v5; // er14
-	int i; // edi
-	__int64 v7; // rax
-	DWORD* v8; // rbx
-	int v9; // edi
-	__int64* v10; // rsi
-	__int64 v11; // rax
-	int v12; // er12
-	__int64 v13; // rdi
-	int v14; // ebx
-	int v15; // eax
-	__int64 v16; // r8
-	int v17; // edx
-	char v18; // r15
-	char v19; // bp
-	int v20; // esi
-	__int64* v21; // rdi
-	__int64 v22; // rcx
-	bool v23; // al
-	__int64 v24; // rax
+	unsigned char v3;			  // bl
+	int v5;						  // er14
+	int i;						  // edi
+	__int64 v7;					  // rax
+	DWORD* v8;					  // rbx
+	int v9;						  // edi
+	__int64* v10;				  // rsi
+	__int64 v11;				  // rax
+	int v12;					  // er12
+	__int64 v13;				  // rdi
+	int v14;					  // ebx
+	int v15;					  // eax
+	__int64 v16;				  // r8
+	int v17;					  // edx
+	char v18;					  // r15
+	char v19;					  // bp
+	int v20;					  // esi
+	__int64* v21;				  // rdi
+	__int64 v22;				  // rcx
+	bool v23;					  // al
+	__int64 v24;				  // rax
 	__int64 v25[NEW_MAX_PLAYERS]; // [rsp+20h] [rbp-138h] BYREF
 
 	uintptr_t base = (__int64)serverBase;
@@ -206,10 +206,10 @@ void RunUserCmds_Hook(bool a1, float a2)
 	auto sub_1805A6C20 = (void(__fastcall*)(__int64))(base + 0x5A6C20);
 
 	v3 = *(unsigned char*)(g_pGlobals + 73);
-	if (*(DWORD*)(qword_1814D9648 + 92)
-		&& ((*(unsigned __int8(__fastcall**)(__int64))(*(__int64*)g_pEngineServer + 32i64))(g_pEngineServer)
-			|| !*(DWORD*)(qword_1814DA408 + 92))
-		&& v3)
+	if (*(DWORD*)(qword_1814D9648 + 92) &&
+		((*(unsigned __int8(__fastcall**)(__int64))(*(__int64*)g_pEngineServer + 32i64))(g_pEngineServer) ||
+		 !*(DWORD*)(qword_1814DA408 + 92)) &&
+		v3)
 	{
 		globals = g_pGlobals;
 		v5 = 1;
@@ -303,7 +303,7 @@ void RunUserCmds_Hook(bool a1, float a2)
 	}
 }
 
-typedef __int64(*SendPropArray2_Type)(__int64 recvProp, int elements, int flags, const char* name, __int64 proxyFn, unsigned char unk1);
+typedef __int64 (*SendPropArray2_Type)(__int64 recvProp, int elements, int flags, const char* name, __int64 proxyFn, unsigned char unk1);
 SendPropArray2_Type SendPropArray2_Original;
 
 __int64 __fastcall SendPropArray2_Hook(__int64 recvProp, int elements, int flags, const char* name, __int64 proxyFn, unsigned char unk1)
@@ -481,7 +481,7 @@ void InitialiseMaxPlayersOverride_Server(HMODULE baseAddress)
 	DT_Team_Construct();
 }
 
-typedef __int64(*RecvPropArray2_Type)(__int64 recvProp, int elements, int flags, const char* name, __int64 proxyFn);
+typedef __int64 (*RecvPropArray2_Type)(__int64 recvProp, int elements, int flags, const char* name, __int64 proxyFn);
 RecvPropArray2_Type RecvPropArray2_Original;
 
 __int64 __fastcall RecvPropArray2_Hook(__int64 recvProp, int elements, int flags, const char* name, __int64 proxyFn)
@@ -509,10 +509,12 @@ void InitialiseMaxPlayersOverride_Client(HMODULE baseAddress)
 	ChangeOffset<unsigned char>((char*)baseAddress + 0x1640C4 + 2, NEW_MAX_PLAYERS - 32);
 
 	// C_PlayerResource::C_PlayerResource - change m_szName address
-	ChangeOffset<unsigned int>((char*)baseAddress + 0x1640D0 + 3, C_PlayerResource_OriginalSize + PlayerResource_Name_Start); // appended to the end of the class
-	
+	ChangeOffset<unsigned int>(
+		(char*)baseAddress + 0x1640D0 + 3, C_PlayerResource_OriginalSize + PlayerResource_Name_Start); // appended to the end of the class
+
 	// C_PlayerResource::C_PlayerResource - change m_szName address
-	ChangeOffset<unsigned int>((char*)baseAddress + 0x1640D0 + 3, C_PlayerResource_OriginalSize + PlayerResource_Name_Start); // appended to the end of the class
+	ChangeOffset<unsigned int>(
+		(char*)baseAddress + 0x1640D0 + 3, C_PlayerResource_OriginalSize + PlayerResource_Name_Start); // appended to the end of the class
 
 	// C_PlayerResource::C_PlayerResource - increase memset length to clean newly allocated data
 	ChangeOffset<unsigned int>((char*)baseAddress + 0x1640D0 + 3, 2244 + C_PlayerResource_AddedSize);

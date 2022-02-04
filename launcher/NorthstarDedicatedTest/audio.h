@@ -15,17 +15,18 @@ enum class AudioSelectionStrategy
 
 class EventOverrideData
 {
-public:
+  public:
 	EventOverrideData(const std::string&, const fs::path&);
 	EventOverrideData();
-public:
+
+  public:
 	bool LoadedSuccessfully = false;
 
 	std::vector<std::string> EventIds = {};
 	std::vector<std::pair<std::string, std::regex>> EventIdsRegex = {};
 
 	std::vector<std::pair<size_t, std::unique_ptr<uint8_t[]>>> Samples = {};
-	
+
 	AudioSelectionStrategy Strategy = AudioSelectionStrategy::SEQUENTIAL;
 	size_t CurrentIndex = 0;
 
@@ -34,7 +35,7 @@ public:
 
 class CustomAudioManager
 {
-public:
+  public:
 	bool TryLoadAudioOverride(const fs::path&);
 	void ClearAudioOverrides();
 
