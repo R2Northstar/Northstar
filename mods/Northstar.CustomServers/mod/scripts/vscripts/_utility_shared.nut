@@ -1191,6 +1191,34 @@ int function GetGameState()
 	return expect int( GetServerVar( "gameState" ) )
 }
 
+string function GameStateToString()
+{
+	switch ( GetGameState() )
+	{
+		case eGameState.WaitingForCustomStart:
+			return "WaitingForCustomStart"
+		case eGameState.WaitingForPlayers:
+			return "WaitingForPlayers"
+		case eGameState.PickLoadout:
+			return "PickLoadout"
+		case eGameState.Prematch:
+			return "Prematch"
+		case eGameState.Playing:
+			return "Playing"
+		case eGameState.SuddenDeath:
+			return "SuddenDeath"
+		case eGameState.SwitchingSides:
+			return "SwitchingSides"
+		case eGameState.WinnerDetermined:
+			return "WinnerDetermined"
+		case eGameState.Epilogue:
+			return "Epilogue"
+		case eGameState.Postmatch:
+			return "Postmatch"
+	}
+	unreachable
+}
+
 bool function GamePlaying()
 {
 	return GetGameState() == eGameState.Playing
