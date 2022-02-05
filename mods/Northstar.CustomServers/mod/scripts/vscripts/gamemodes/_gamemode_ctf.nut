@@ -205,7 +205,7 @@ void function CreateFlags()
 		// likely this is because respawn uses distance checks from spawns to check this in official
 		// but i don't like doing that so just using a list of maps to swap them on lol
 		bool switchedSides = HasSwitchedSides() == 1
-		bool shouldSwap = SWAP_FLAG_MAPS.contains( GetMapName() ) ? !switchedSides : switchedSides 
+		bool shouldSwap = SWAP_FLAG_MAPS.contains( GetMapName() ) || switchedSides
 	
 		int flagTeam = spawn.GetTeam()
 		if ( shouldSwap )
