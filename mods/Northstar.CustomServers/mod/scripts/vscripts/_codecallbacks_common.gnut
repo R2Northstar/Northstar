@@ -35,6 +35,7 @@ global function AddCallback_OnUpdateDerivedPilotLoadout
 global function AddCallback_OnUpdateDerivedTitanLoadout
 global function AddCallback_OnUpdateDerivedPlayerTitanLoadout
 global function AddClientCommandCallback
+global function AddClientCommandNotifyCallback
 global function AddPlayerDropScriptedItemsCallback
 global function AddCallback_OnPlayerInventoryChanged
 
@@ -498,6 +499,20 @@ void function AddClientCommandCallback( string commandString, bool functionref( 
 {
 	Assert( !( commandString in svGlobal.clientCommandCallbacks ), "Already added " + commandString + " with AddClientCommandCallback" )
 	svGlobal.clientCommandCallbacks[ commandString ] <- callbackFunc
+}
+
+void function AddClientCommandNotifyCallback( string commandString, void functionref( entity player, array<string> args ) callbackFunc )
+{
+	if ( !( commandString in svGlobal.notifyClientCommandCallbacks ) )
+	{
+		svGlobal.notifyClientCommandCallbacks[ commandString ] <- [ callbackFunc ]
+		return
+	}
+	else
+	{
+		Assert( !svGlobal.notifyClientCommandCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddClientCommandNotifyCallback" )
+		svGlobal.notifyClientCommandCallbacks[ commandString ].append(callbackFunc)
+	}
 }
 
 void function AddPlayerDropScriptedItemsCallback( void functionref(entity player) callbackFunc )

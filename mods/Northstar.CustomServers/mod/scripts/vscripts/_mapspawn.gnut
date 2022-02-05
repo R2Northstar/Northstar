@@ -94,6 +94,8 @@ global struct SvGlobals
 	table<string, array<void functionref( entity ent )> >onEntityChangedTeamCallbacks
 
 	table<string, bool functionref( entity player, array<string>args )> clientCommandCallbacks
+	table<string, array<void functionref( entity player, array<string>args )> > notifyClientCommandCallbacks
+
 	array<void functionref()>[ eGameState._count_ ] gameStateEnterCallbacks
 
 	bool allowPointsOverLimit = false
@@ -204,7 +206,14 @@ var function CodeCallback_ClientCommand( entity player, array<string> args )
 	//Assert( commandString in svGlobal.clientCommandCallbacks )
 	if ( commandString in svGlobal.clientCommandCallbacks  )
 	{
-		return svGlobal.clientCommandCallbacks[ commandString ]( player, args )
+		var result = svGlobal.clientCommandCallbacks[ commandString ]( player, args )
+		if ( commandString in svGlobal.notifyClientCommandCallbacks  )
+		{
+			foreach ( callbackfunc in svGlobal.notifyClientCommandCallbacks[ commandString ]){
+				callbackfunc(player, args)
+			}
+		}
+		return result
 	}
 	else
 	{
