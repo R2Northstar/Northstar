@@ -487,7 +487,6 @@ void function PlayerWatchesSwitchingSidesKillReplay( entity player, bool doRepla
 	player.SetPredictionEnabled( true )
 	player.ClearReplayDelay()
 	player.ClearViewEntity()
-	player.UnfreezeControlsOnServer()
 }
 
 
