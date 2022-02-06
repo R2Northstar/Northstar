@@ -142,3 +142,16 @@ Campaign is not supported in 1.4, but you could do one of these **"_fixes_"**
     - [If you can't open the console](#i-cant-open-the-console)
 2. Adding `-vanilla` to your launch options
     - [How to add launch options](#adding-launch-options)
+
+## Authentication Failed when clicking Launch Northstar
+
+Before trying this check out [this section](#failed-to-initialize-origin-origin-core-seems-to-be-running-but-the-lsx-authentication-challenge-fai).\
+If that didn't work DM `Petar#0389` on Discord and tell him if it did or did not work.\
+Alternative to that fix:
+
+1. Close the game
+2. Open task manager
+3. End Origin (everything origin related)
+4. Launch Origin as admin
+5. Start the game through Origin with `-northstar` in [launch options](#adding-launch-options)
+6. See if that fixed it
