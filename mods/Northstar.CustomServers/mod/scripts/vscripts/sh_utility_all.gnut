@@ -348,16 +348,23 @@ string function GetMapDisplayDesc( string mapname )
 	return "#" + mapname + "_CLASSIC_DESC"
 }
 
-string function StringReplace( string baseString, string searchString, string replaceString )
+string function StringReplace( string baseString, string searchString, string replaceString, bool replaceAll = false, bool caseInsensitive = false )
 {
-	var findResult = baseString.find( searchString )
-
-	if ( findResult != null )
+	bool loopedOnce = false
+	string source = caseInsensitive ? baseString.tolower() : baseString
+	var findResult = source.find( searchString )
+	while ( findResult != null  && !(loopedOnce && !replaceAll))
 	{
 		string part1 = baseString.slice( 0, findResult )
 		string part2 = baseString.slice( findResult + searchString.len(), baseString.len() )
 
 		baseString = part1 + replaceString + part2
+		source = part1 + replaceString + part2
+
+		loopedOnce = true
+		findResult = source.find( searchString )
+		print("LOOPED ONCE")
+		print(findResult)
 	}
 
 	return baseString

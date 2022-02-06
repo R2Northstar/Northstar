@@ -1,0 +1,44 @@
+untyped
+
+globalize_all_functions
+
+global struct ClServer_MessageStruct {
+	string message
+	entity player
+	int channelId
+	bool shouldBlock
+}
+
+struct {
+	array< ClServer_MessageStruct functionref( ClServer_MessageStruct ) > OnRecievedSayTextMessageCallbacks
+} NsCustomCallbacks
+
+void function CServerGameDLL_ProcessMessageStartThread()
+{
+	thread CServerGameDLL_OnRecievedSayTextMessageCallback()
+}
+
+void function CServerGameDLL_OnRecievedSayTextMessageCallback()
+{
+	ClServer_MessageStruct localMessage
+	localMessage.message =  NSChatGetCurrentMessage()
+	localMessage.player = GetPlayerByIndex(NSChatGetCurrentPlayer())
+	localMessage.channelId = NSChatGetCurrentChannel()
+	localMessage.shouldBlock = false
+
+	foreach ( callbackFunc in NsCustomCallbacks.OnRecievedSayTextMessageCallbacks )
+	{
+		ClServer_MessageStruct returnStruct = callbackFunc(localMessage)
+		localMessage.message = returnStruct.message
+		localMessage.player = returnStruct.player
+		localMessage.channelId = returnStruct.channelId
+		localMessage.shouldBlock = localMessage.shouldBlock || returnStruct.shouldBlock
+	}
+
+	NSSetMessage(localMessage.message, localMessage.player.GetPlayerIndex(), localMessage.channelId, localMessage.shouldBlock)
+}
+
+void function AddCallback_OnRecievedSayTextMessage( ClServer_MessageStruct functionref (ClServer_MessageStruct) callbackFunc )
+{
+	NsCustomCallbacks.OnRecievedSayTextMessageCallbacks.append(callbackFunc)
+}
