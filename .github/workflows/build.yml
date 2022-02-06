@@ -22,7 +22,7 @@ jobs:
         shell: bash
         run: |
           sed -i 's/DEV/${{ env.NORTHSTAR_VERSION }}/g' LauncherInjector/resources.rc
-          FILEVERSION=$(echo ${{ env.NORTHSTAR_VERSION }} | tr '.' ',' | tr -d 'v')
+          FILEVERSION=$(echo ${{ env.NORTHSTAR_VERSION }} | tr '.' ',' | tr -d '[:alpha:]')
           sed -i "s/0,0,0,0/${FILEVERSION}/g" LauncherInjector/resources.rc
       - name: Build
         run: msbuild /p:Configuration=Release
