@@ -92,7 +92,12 @@ std::string unescape_unicode(const std::string& str)
 			result.push_back(cp & ((1 << 6) - 1) | 0b10000000 & (~(1 << 6)));
 		}
 	}
-	result.append(last_match.suffix());
+	if (!last_match.ready()) {
+		return str;
+	}
+	else {
+		result.append(last_match.suffix());
+	}
 	return result;
 }
 
