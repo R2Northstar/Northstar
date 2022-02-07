@@ -52,7 +52,7 @@
   * [Keyvalues](modding/keyvalues.md)
   * [Setup Syntax Highlighting](modding/squirrel/setup-syntax-highlighting.md)
   * [Localisation](modding/localisation\_files.md)
-  * [Finishing touches](modding/finishing-touches.md)
+  * [Publishing](modding/publishing.md)
 * [Development](development.md)
 
 ## Other
