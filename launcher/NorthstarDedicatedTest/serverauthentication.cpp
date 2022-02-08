@@ -45,8 +45,8 @@ CBaseClient__SendServerInfoType CBaseClient__SendServerInfo;
 typedef bool (*ProcessConnectionlessPacketType)(void* a1, netpacket_t* packet);
 ProcessConnectionlessPacketType ProcessConnectionlessPacket;
 
-typedef void (*CServerGameDLL__OnRecievedSayTextMessageType)(void* self, unsigned int senderClientIndex, const char* message, char unknown);
-CServerGameDLL__OnRecievedSayTextMessageType CServerGameDLL__OnRecievedSayTextMessage;
+typedef void (*CServerGameDLL__OnReceivedSayTextMessageType)(void* self, unsigned int senderClientIndex, const char* message, char unknown);
+CServerGameDLL__OnReceivedSayTextMessageType CServerGameDLL__OnReceivedSayTextMessage;
 
 typedef void (*ConCommand__DispatchType)(ConCommand* command, const CCommand& args, void* a3);
 ConCommand__DispatchType ConCommand__Dispatch;
@@ -543,7 +543,7 @@ SQRESULT setMessage(void* sqvm)
 	return SQRESULT_NOTNULL;
 }
 
-void CServerGameDLL__OnRecievedSayTextMessageHook(void* self, unsigned int senderClientIndex, const char* message, int channelId)
+void CServerGameDLL__OnReceivedSayTextMessageHook(void* self, unsigned int senderClientIndex, const char* message, int channelId)
 {
 	void* sender = GetPlayerByIndex(senderClientIndex - 1); // senderClientIndex starts at 1
 
@@ -559,7 +559,7 @@ void CServerGameDLL__OnRecievedSayTextMessageHook(void* self, unsigned int sende
 
 	g_ServerAuthenticationManager->m_additionalPlayerData[sender].sayTextLimitCount++;
 
-	bool shouldDoChathooks = strstr(GetCommandLineA(), "-enableChatHooks");
+	bool shouldDoChathooks = strstr(GetCommandLineA(), "-enablechathooks");
 	if (shouldDoChathooks)
 	{
 
@@ -572,12 +572,12 @@ void CServerGameDLL__OnRecievedSayTextMessageHook(void* self, unsigned int sende
 		g_ServerSquirrelManager->ExecuteCode("CServerGameDLL_ProcessMessageStartThread()");
 		if (!shouldBlock && currentPlayerId + 1 == senderClientIndex) // stop player id spoofing from server
 		{
-			CServerGameDLL__OnRecievedSayTextMessage(self, currentPlayerId + 1, currentMessage.c_str(), currentChannelId);
+			CServerGameDLL__OnReceivedSayTextMessage(self, currentPlayerId + 1, currentMessage.c_str(), currentChannelId);
 		}
 	}
 	else
 	{
-		CServerGameDLL__OnRecievedSayTextMessage(self, senderClientIndex, message, channelId);
+		CServerGameDLL__OnReceivedSayTextMessage(self, senderClientIndex, message, channelId);
 	}
 }
 
@@ -719,8 +719,8 @@ void InitialiseServerAuthenticationServerDLL(HMODULE baseAddress)
 {
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(
-		hook, (char*)baseAddress + 0x1595C0, &CServerGameDLL__OnRecievedSayTextMessageHook,
-		reinterpret_cast<LPVOID*>(&CServerGameDLL__OnRecievedSayTextMessage));
+		hook, (char*)baseAddress + 0x1595C0, &CServerGameDLL__OnReceivedSayTextMessageHook,
+		reinterpret_cast<LPVOID*>(&CServerGameDLL__OnReceivedSayTextMessage));
 
 	g_ServerSquirrelManager->AddFuncRegistration("void", "NSSetMessage", "string message, int playerId, int channelId, bool shouldBlock", "", setMessage);
 
