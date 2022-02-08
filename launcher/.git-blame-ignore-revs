@@ -1,0 +1,4 @@
+# git config --global blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Format commit
+75bf194b2fca06de805a7bc025c6dd8379250fa5
