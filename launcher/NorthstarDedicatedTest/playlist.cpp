@@ -101,16 +101,13 @@ void InitialisePlaylistHooks(HMODULE baseAddress)
 		*((char*)ptr) = (char)0xC3; // jmp => ret
 	}
 
-	if (IsDedicated())
-	{
-		// patch to allow setplaylistvaroverride to be called before map init on dedicated
-		void* ptr = (char*)baseAddress + 0x18ED17;
-		TempReadWrite rw(ptr);
-		*((char*)ptr) = (char)0x90;
-		*((char*)ptr + 1) = (char)0x90;
-		*((char*)ptr + 2) = (char)0x90;
-		*((char*)ptr + 3) = (char)0x90;
-		*((char*)ptr + 4) = (char)0x90;
-		*((char*)ptr + 5) = (char)0x90;
-	}
+	// patch to allow setplaylistvaroverride to be called before map init on dedicated and private match launched through the game
+	void* ptr = (char*)baseAddress + 0x18ED17;
+	TempReadWrite rw(ptr);
+	*((char*)ptr) = (char)0x90;
+	*((char*)ptr + 1) = (char)0x90;
+	*((char*)ptr + 2) = (char)0x90;
+	*((char*)ptr + 3) = (char)0x90;
+	*((char*)ptr + 4) = (char)0x90;
+	*((char*)ptr + 5) = (char)0x90;
 }
