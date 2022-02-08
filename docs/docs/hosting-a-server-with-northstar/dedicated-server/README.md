@@ -133,6 +133,7 @@ If ran on a server with the [`ns_should_return_to_lobby 0`](./#Convars-returntol
 | `private_match` | Private Match                |
 | `ps`            | Pilots vs Pilots             |
 | `gg`            | Gungame                      |
+| `sns`           | Sticks & Stones              |
 | `tt`            | Titan Tag                    |
 | `inf`           | Infected                     |
 | `fastball`      | Fastball                     |
@@ -145,6 +146,7 @@ If ran on a server with the [`ns_should_return_to_lobby 0`](./#Convars-returntol
 | `turbo_ttdm`    | Turbo Titan Brawl            |
 | `attdm`         | Aegis Titan Brawl            |
 | `ffa`           | Free for all                 |
+| `tffa`          | Titan Free for All           |
 | `fra`           | Free Agents                  |
 | `coliseum`      | Coliseum                     |
 | `lf`            | Live Fire                    |
