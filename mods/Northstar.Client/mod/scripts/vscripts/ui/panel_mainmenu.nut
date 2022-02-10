@@ -280,7 +280,7 @@ void function UpdatePlayButton( var button )
 			}
 			else
 				file.mpButtonActivateFunc = LaunchMP
-			
+
 
 			isLocked = file.mpButtonActivateFunc == null ? true : false
 			Hud_SetLocked( button, isLocked )
@@ -431,7 +431,7 @@ void function UpdatePlayButton( var button )
 						break
 					}
 				}
-				
+
 				if ( hasNonVanillaMods )
 					file.mpButtonActivateFunc = null
 				else
@@ -514,10 +514,10 @@ void function TryUnlockNorthstarButton()
 	{
 		if ( ( NSIsMasterServerAuthenticated() && IsStryderAuthenticated() ) || GetConVarBool( "ns_auth_allow_insecure" ) )
 			break
-			
+
 		WaitFrame()
 	}
-	
+
 	Hud_SetLocked( file.fdButton, false )
 }
 
@@ -527,7 +527,6 @@ void function OnPlayFDButton_Activate( var button ) // repurposed for launching 
 	{
 		SetConVarBool( "ns_is_modded_server", true )
 		SetConVarString( "communities_hostname", "" ) // disable communities due to crash exploits that are still possible through it
-		
 		NSTryAuthWithLocalServer()
 		thread TryAuthWithLocalServer()
 	}
@@ -777,7 +776,9 @@ void function TrackInstallProgress()
 
 bool function IsStryderAuthenticated()
 {
-	return GetConVarInt( "mp_allowed" ) != -1
+	// We don't actually need to wait for Stryder response, because we don't care about it anyway
+	return true
+	//return GetConVarInt( "mp_allowed" ) != -1
 }
 
 bool function IsStryderAllowingMP()
@@ -818,11 +819,11 @@ enum eMainMenuPromoDataProperty
 	largeButtonText,
 	largeButtonUrl,
 	largeButtonImageIndex,
-	
+
 	smallButton1Title,
 	smallButton1Url,
 	smallButton1ImageIndex,
-	
+
 	smallButton2Title,
 	smallButton2Url,
 	smallButton2ImageIndex
@@ -831,7 +832,7 @@ enum eMainMenuPromoDataProperty
 void function UpdateCustomMainMenuPromos()
 {
 	NSRequestCustomMainMenuPromos()
-	
+
 	thread UpdateCustomMainMenuPromosThreaded()
 }
 
@@ -839,7 +840,7 @@ void function UpdateCustomMainMenuPromosThreaded()
 {
 	while ( !NSHasCustomMainMenuPromoData() )
 		WaitFrame()
-	
+
 	UpdateWhatsNewData()
 	UpdateSpotlightData()
 }
