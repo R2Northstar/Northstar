@@ -526,6 +526,7 @@ void function OnPlayFDButton_Activate( var button ) // repurposed for launching 
 	if ( !Hud_IsLocked( button ) )
 	{
 		SetConVarBool( "ns_is_modded_server", true )
+		SetConVarString( "communities_hostname", "" ) // disable communities due to crash exploits that are still possible through it
 		
 		NSTryAuthWithLocalServer()
 		thread TryAuthWithLocalServer()
