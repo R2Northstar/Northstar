@@ -1,8 +1,34 @@
 #include "pch.h"
 #include "buildainfile.h"
+#include "convar.h"
 #include "hookutils.h"
+#include <fstream>
 
+const int AINET_VERSION_NUMBER = 57;
+const int AINET_SCRIPT_VERSION_NUMBER = 21;
+const int MAP_VERSION_TEMP = 30;
+const int PLACEHOLDER_CRC = 0;
 const int MAX_HULLS = 5;
+
+struct CAI_NodeLink
+{
+	short srcId;
+	short destId;
+	bool hulls[MAX_HULLS];
+	char unk0;
+	char unk1; // maps => unk0 on disk
+	char unk2[5];
+	int64_t flags;
+};
+
+#pragma pack (push, 1)
+struct CAI_NodeLinkDisk
+{
+	short srcId;
+	short destId;
+	char unk0;
+	bool hulls[MAX_HULLS];
+};
 
 struct CAI_Node
 {
@@ -10,8 +36,8 @@ struct CAI_Node
 	float x;
 	float y;
 	float z;
-	float yaw;
 	float hulls[MAX_HULLS];
+	float yaw;
 
 	int unk0;			 // always 2 in buildainfile, maps directly to unk0 in disk struct
 	int unk1;			 // maps directly to unk1 in disk struct
@@ -22,8 +48,11 @@ struct CAI_Node
 	char pad[3];		   // aligns next bytes
 	float unk4[MAX_HULLS]; // i have no fucking clue, calculated using some kind of demon hell function float magic
 
-	char unk5[32]; // padding until next bits i know
-	short unk6;	   // should match up to unk4 on disk
+	CAI_NodeLink** links;
+	char unk5[16];
+	int linkcount;
+	int unk11; // bad name lmao
+	short unk6; // should match up to unk4 on disk
 	char unk7[16]; // padding until next bit
 	short unk8;	   // should match up to unk5 on disk
 	char unk9[8];  // padding until next bit
@@ -31,6 +60,7 @@ struct CAI_Node
 };
 
 // the way CAI_Nodes are represented in on-disk ain files
+#pragma pack (push, 1)
 struct CAI_NodeDisk
 {
 	float x;
@@ -50,47 +80,58 @@ struct CAI_NodeDisk
 
 struct CAI_Network
 {
-	char unk0[84172];
+	// +0
+	char unk0[8];
+	// +8
+	int linkcount; // this is uninitialised and never set on ain build, fun!
+	// +12
+	char unk1[124];
+	// +136
+	int zonecount;
+	// +140
+	char unk2[24];
+	// +164
+	int hintcount;
+	// +168
+	char unk3[4000];
+	// +4168
+	int scriptnodecount;
+	// +4172
+	char unk4[80000];
+	// +84172
 	int nodecount;
+	// +84176
 	CAI_Node** nodes;
 };
 
-typedef void (*CAI_NetworkBuilder__BuildType)(void* builder, CAI_Network* aiNetwork, void* unknown);
-CAI_NetworkBuilder__BuildType CAI_NetworkBuilder__Build;
+ConVar* Cvar_ns_ai_dumpAINfileFromLoad;
 
-void CAI_NetworkBuilder__BuildHook(void* builder, CAI_Network* aiNetwork, void* unknown)
+void DumpAINInfo(CAI_Network* aiNetwork)
 {
-	CAI_NetworkBuilder__Build(builder, aiNetwork, unknown);
-
 	// dump from memory
-	spdlog::info("DUMPING BUILDAINFILE INFO!!!");
+	spdlog::info("writing .ain to file....");
 	spdlog::info("");
 	spdlog::info("");
 	spdlog::info("");
 	spdlog::info("");
 	spdlog::info("");
+
+	std::ofstream writeStream("dumped_ain.ain", std::ofstream::binary);
+	spdlog::info("writing ainet version: {}", AINET_VERSION_NUMBER);
+	writeStream.write((char*)&AINET_VERSION_NUMBER, sizeof(int));
+	spdlog::info("writing map version: {}", MAP_VERSION_TEMP); // temp
+	writeStream.write((char*)&MAP_VERSION_TEMP, sizeof(int));
+	spdlog::info("writing placeholder crc: {}", PLACEHOLDER_CRC);
+	writeStream.write((char*)&PLACEHOLDER_CRC, sizeof(int));
+
+	int calculatedLinkcount = 0;
 
 	// path nodes
-	spdlog::info("nodecount: {}", aiNetwork->nodecount);
+	spdlog::info("writing nodecount: {}", aiNetwork->nodecount);
+	writeStream.write((char*)&aiNetwork->nodecount, sizeof(int));
+
 	for (int i = 0; i < aiNetwork->nodecount; i++)
 	{
-		// spdlog::info("x = {}", aiNetwork->nodes[i]->x);
-		// spdlog::info("y = {}", aiNetwork->nodes[i]->y);
-		// spdlog::info("z = {}", aiNetwork->nodes[i]->z);
-		// spdlog::info("yaw = {}", aiNetwork->nodes[i]->yaw);
-		// spdlog::info("hulls = {} {} {} {} {}", aiNetwork->nodes[i]->hulls[0], aiNetwork->nodes[i]->hulls[1],
-		// aiNetwork->nodes[i]->hulls[2], aiNetwork->nodes[i]->hulls[3], aiNetwork->nodes[i]->hulls[4]);
-		//
-		// spdlog::info("unk0 = {} (should always be 2)", aiNetwork->nodes[i]->unk0);
-		// spdlog::info("unk1 = {}", aiNetwork->nodes[i]->unk1);
-		// spdlog::info("unk2 = {} {} {} {} {}", aiNetwork->nodes[i]->unk2[0], aiNetwork->nodes[i]->unk2[1], aiNetwork->nodes[i]->unk2[2],
-		// aiNetwork->nodes[i]->unk2[3], aiNetwork->nodes[i]->unk2[4]);
-		//
-		// spdlog::info("unk3 = {} {} {} {} {}", (int)aiNetwork->nodes[i]->unk3[0], (int)aiNetwork->nodes[i]->unk3[1],
-		// (int)aiNetwork->nodes[i]->unk3[2], (int)aiNetwork->nodes[i]->unk3[3], (int)aiNetwork->nodes[i]->unk3[4]); spdlog::info("unk4 = {}
-		// {} {} {} {}", aiNetwork->nodes[i]->unk4[0], aiNetwork->nodes[i]->unk4[1], aiNetwork->nodes[i]->unk4[2],
-		// aiNetwork->nodes[i]->unk4[3], aiNetwork->nodes[i]->unk4[4]);
-
 		// construct on-disk node struct
 		CAI_NodeDisk diskNode;
 		diskNode.x = aiNetwork->nodes[i]->x;
@@ -102,38 +143,101 @@ void CAI_NetworkBuilder__BuildHook(void* builder, CAI_Network* aiNetwork, void* 
 		diskNode.unk1 = aiNetwork->nodes[i]->unk1;
 
 		for (int j = 0; j < MAX_HULLS; j++)
-			diskNode.unk3[j] = (short)aiNetwork->nodes[i]->unk3[j];
+		{
+			diskNode.unk2[j] = (short)aiNetwork->nodes[i]->unk2[j];
+			spdlog::info((short)aiNetwork->nodes[i]->unk2[j]);
+		}
 
+		memcpy(diskNode.unk3, aiNetwork->nodes[i]->unk3, sizeof(diskNode.unk3));
 		diskNode.unk4 = aiNetwork->nodes[i]->unk6;
-		diskNode.unk5 = aiNetwork->nodes[i]->unk8;
+		diskNode.unk5 = -1; // aiNetwork->nodes[i]->unk8; // this field is wrong, however, it's always -1 in vanilla navmeshes anyway, so no biggie
 		memcpy(diskNode.unk6, aiNetwork->nodes[i]->unk10, sizeof(diskNode.unk6));
 
-		spdlog::info("node {} at {} has on-disk fields:", aiNetwork->nodes[i]->index, (void*)aiNetwork->nodes[i]);
-		spdlog::info("x = {}", diskNode.x);
-		spdlog::info("y = {}", diskNode.y);
-		spdlog::info("z = {}", diskNode.z);
-		spdlog::info("yaw = {}", diskNode.yaw);
-		spdlog::info(
-			"hulls = {} {} {} {} {}", diskNode.hulls[0], diskNode.hulls[1], diskNode.hulls[2], diskNode.hulls[3], diskNode.hulls[4]);
-		spdlog::info("unk0 = {}", (int)diskNode.unk0);
-		spdlog::info("unk1 = {}", diskNode.unk1);
-		spdlog::info("unk2 = {} {} {} {} {}", diskNode.unk2[0], diskNode.unk2[1], diskNode.unk2[2], diskNode.unk2[3], diskNode.unk2[4]);
-		spdlog::info(
-			"unk3 = {} {} {} {} {}", (int)diskNode.unk3[0], (int)diskNode.unk3[1], (int)diskNode.unk3[2], (int)diskNode.unk3[3],
-			(int)diskNode.unk3[4]);
-		spdlog::info("unk4 = {}", diskNode.unk4);
-		spdlog::info("unk5 = {}", diskNode.unk5);
-		spdlog::info(
-			"unk6 = {} {} {} {} {} {} {} {}", (int)diskNode.unk6[0], (int)diskNode.unk6[1], (int)diskNode.unk6[2], (int)diskNode.unk6[3],
-			(int)diskNode.unk6[4], (int)diskNode.unk6[5], (int)diskNode.unk6[6], (int)diskNode.unk6[7]);
+		spdlog::info("writing node {} from {} to {:x}", aiNetwork->nodes[i]->index, (void*)aiNetwork->nodes[i], writeStream.tellp());
+		writeStream.write((char*)&diskNode, sizeof(CAI_NodeDisk));
+
+		calculatedLinkcount += aiNetwork->nodes[i]->linkcount;
+	}
+
+	spdlog::info("linkcount: {}", aiNetwork->linkcount);
+	spdlog::info("calculated total linkcount: {}", calculatedLinkcount);
+
+	calculatedLinkcount /= 2;
+	if (Cvar_ns_ai_dumpAINfileFromLoad->m_nValue)
+	{
+		if (aiNetwork->linkcount == calculatedLinkcount)
+			spdlog::info("caculated linkcount is normal!");
+		else
+			spdlog::warn("calculated linkcount has weird value! this is expected on build!");
+	}	
+
+	spdlog::info("writing linkcount: {}", calculatedLinkcount);
+	writeStream.write((char*)&calculatedLinkcount, sizeof(int));
+
+	for (int i = 0; i < aiNetwork->nodecount; i++)
+	{
+		for (int j = 0; j < aiNetwork->nodes[i]->linkcount; j++)
+		{
+			// skip links that don't originate from current node
+			if (aiNetwork->nodes[i]->links[j]->srcId != aiNetwork->nodes[i]->index)
+				continue;
+
+			CAI_NodeLinkDisk diskLink;
+			diskLink.srcId = aiNetwork->nodes[i]->links[j]->srcId;
+			diskLink.destId = aiNetwork->nodes[i]->links[j]->destId;
+			diskLink.unk0 = aiNetwork->nodes[i]->links[j]->unk1;
+			memcpy(diskLink.hulls, aiNetwork->nodes[i]->links[j]->hulls, sizeof(diskLink.hulls));
+
+			spdlog::info("writing link {} => {} to {:x}", diskLink.srcId, diskLink.destId, writeStream.tellp());
+			writeStream.write((char*)&diskLink, sizeof(CAI_NodeLinkDisk));
+		}
+	}
+
+	// don't know what this is, it's likely a block from tf1 that got deprecated?
+	spdlog::info("writing {:x} bytes for unknown block at {:x}", aiNetwork->nodecount * sizeof(uint32_t), writeStream.tellp());
+	uint32_t* unkNodeBlock = new uint32_t[aiNetwork->nodecount];
+	memset(unkNodeBlock, 0, aiNetwork->nodecount * sizeof(uint32_t));
+	writeStream.write((char*)unkNodeBlock, aiNetwork->nodecount * sizeof(uint32_t));
+	delete[] unkNodeBlock;
+
+	spdlog::info("hintcount: {}", aiNetwork->hintcount);
+	spdlog::info("scriptnodecount: {}", aiNetwork->scriptnodecount);
+	spdlog::info("zonecount: {}", aiNetwork->zonecount);
+
+	writeStream.close();
+}
+
+typedef void(*CAI_NetworkBuilder__BuildType)(void* builder, CAI_Network* aiNetwork, void* unknown);
+CAI_NetworkBuilder__BuildType CAI_NetworkBuilder__Build;
+
+void CAI_NetworkBuilder__BuildHook(void* builder, CAI_Network* aiNetwork, void* unknown)
+{
+	CAI_NetworkBuilder__Build(builder, aiNetwork, unknown);
+
+	DumpAINInfo(aiNetwork);
+}
+
+typedef void(*LoadAINFileType)(void* aimanager, void* buf, const char* filename);
+LoadAINFileType LoadAINFile;
+
+void LoadAINFileHook(void* aimanager, void* buf, const char* filename)
+{
+	LoadAINFile(aimanager, buf, filename);
+
+	if (Cvar_ns_ai_dumpAINfileFromLoad->m_nValue)
+	{
+		spdlog::info("running DumpAINInfo for loaded file {}", filename);
+		DumpAINInfo(*(CAI_Network**)((char*)aimanager + 2536));
 	}
 }
 
 void InitialiseBuildAINFileHooks(HMODULE baseAddress)
 {
+	Cvar_ns_ai_dumpAINfileFromLoad = RegisterConVar("ns_ai_dumpAINfileFromLoad", "0", FCVAR_NONE, "For debugging: whether we should dump ain data for ains loaded from disk");
+
 	HookEnabler hook;
-	ENABLER_CREATEHOOK(
-		hook, (char*)baseAddress + 0x385E20, &CAI_NetworkBuilder__BuildHook, reinterpret_cast<LPVOID*>(&CAI_NetworkBuilder__Build));
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x385E20, &CAI_NetworkBuilder__BuildHook, reinterpret_cast<LPVOID*>(&CAI_NetworkBuilder__Build));
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x3933A0, &LoadAINFileHook, reinterpret_cast<LPVOID*>(&LoadAINFile));
 
 	// remove a check that prevents a logging function in link generation from working
 	// due to the sheer amount of logging this is a massive perf hit to generation, but spewlog_enable 0 exists so whatever
