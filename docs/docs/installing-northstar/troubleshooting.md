@@ -153,3 +153,16 @@ Alternative to that fix:
 4. Launch Origin as admin
 5. Start the game through Origin with `-northstar` in [launch options](#launch-opts)
 6. See if that fixed it
+
+## Could't Initialize Sound / DEVICE_IN_USE<a href="#initsound" id="initsound"></a>
+
+![Engine Error: Could't Initialize Sound](https://user-images.githubusercontent.com/2706225/153178714-2a50ac25-59fa-44d6-a47a-910058ec9888.png)
+
+If message contains: `AUDCLNT_E_DEVICE_IN_USE`
+1) Go to Windows Search Bar, type `mmsys.cpl`, press enter.
+2) Make sure you selected the right audio device as default (your headset or speakers usually).
+3) If it still does not work, disable exclusive mode on your default device:
+![Disable exclusive mode](https://user-images.githubusercontent.com/2706225/153179355-01598326-3297-4588-be4b-ed5257e23941.png)
+4) Restart your computer.
+
+This issue could also be caused if you use some sort of audio wrapper to control volume and stuff like Voicemeter Banana. The above fix was tested with Voicemeter Banana.
