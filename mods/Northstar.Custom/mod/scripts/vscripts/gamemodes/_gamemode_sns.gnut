@@ -27,6 +27,7 @@ void function SNS_Init()
 
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	AddCallback_OnPlayerRespawned( OnPlayerRespawned )
+	AddCallback_OnClientDisconnected(OnPlayerDisconnected)
 	AddCallback_GameStateEnter( eGameState.WinnerDetermined, OnWinnerDetermined )
 
 	file.reset_pulse_blade_cooldown_on_pulse_blade_kill = GetCurrentPlaylistVarInt( "sns_reset_pulse_blade_cooldown_on_pulse_blade_kill", 1 ) == 1
@@ -36,6 +37,22 @@ void function SNS_Init()
 	file.offhand_kill_value = GetCurrentPlaylistVarInt( "sns_offhand_kill_value", 10 )
 	file.reset_kill_value = GetCurrentPlaylistVarInt( "sns_reset_kill_value", 5 )
 	file.melee_kill_value = GetCurrentPlaylistVarInt( "sns_melee_kill_value", 5 )
+}
+
+void function OnPlayerDisconnected(entity player)
+{
+	if (GetWinningPlayer() == player)
+		thread CheckNewHighlight(player)
+}
+
+void function CheckNewHighlight(entity player) 
+{
+	while (IsValid(player)) //wait till disconnected player not exist
+		wait 0.25
+	
+	entity winner = GetWinningPlayer()
+	if (IsValid(winner))
+		SetHighlight(winner)
 }
 
 void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
