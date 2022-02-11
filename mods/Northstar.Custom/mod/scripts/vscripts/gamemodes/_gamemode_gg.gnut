@@ -81,7 +81,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	table<int, bool> alreadyAssisted
 	foreach( DamageHistoryStruct attackerInfo in victim.e.recentDamageHistory )
 	{
-		if( attackerInfo.attacker != attacker && !alreadyAssisted[attackerInfo.attacker.GetEncodedEHandle()] )
+		if( attackerInfo.attacker != attacker && !( attackerInfo.attacker.GetEncodedEHandle() in alreadyAssisted ) )
 		{
 			if ( attackerInfo.damageSourceId != eDamageSourceId.melee_pilot_emptyhanded ) {
 				alreadyAssisted[attackerInfo.attacker.GetEncodedEHandle()] <- true
