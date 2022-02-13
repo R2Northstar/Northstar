@@ -363,8 +363,6 @@ string function StringReplace( string baseString, string searchString, string re
 
 		loopedOnce = true
 		findResult = source.find( searchString )
-		print("LOOPED ONCE")
-		print(findResult)
 	}
 
 	return baseString
