@@ -27,16 +27,8 @@ Get kills to increase the length of your killrace. Collect the flag to start it.
 Hack control panels to win rounds and respawn your teammates.
 
 {% hint style="info" %}
-Some maps do not feature control panels yet
+Before `v1.5.0`, some maps did not have control panels yet. These maps include _Homestead_, _Complex_, _Glitch_, _Relic_, _Rise_, and _Crash Site_. Make sure to update to [`v1.5.0` or later](https://github.com/R2Northstar/Northstar/releases) to have Fastball control panels on all maps.
 {% endhint %}
-
-{% hint style="info" %}
-Complex, Forwardbase Kodai, and Colony have had control panels added with [the v1.4.0 release of Northstar](https://github.com/R2Northstar/Northstar/releases/tag/v1.4.0)
-{% endhint %}
-
-| No issues                                                                                                                                                         | No control panels                                                                     | Crashes to main menu         |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ---------------------------- |
-| <ul><li>Boomtown</li><li>Exoplanet</li><li>Black Water Canal</li><li>Eden</li><li>Angel City</li><li>War Games</li><li>Forwardbase Kodai</li><li>Colony</li></ul> | <ul><li>Homestead</li><li>Complex</li><li>Glitch</li><li>Relic</li><li>Rise</li></ul> | <ul><li>Crash Site</li></ul> |
 
 ## Competitive CTF
 
