@@ -124,8 +124,8 @@ float function GetFogHeight()
 	file.lethalFogHeights[ "mp_relic02" ] <- 250.0 // not great, tf1's would honestly be worse though imo
 	
 	// lf maps: overall a bit hit or miss, many likely have spawn issues
-	file.lethalFogHeights[ "mp_lf_stacks" ] <- -9999.0 // entirely nonworking, breaks spawns no matter what from what i can tell, could potentially use safe zones for this?
-	file.lethalFogHeights[ "mp_lf_deck" ] <- -9999.0 // nonworking fogcontroller so fog is invisible
+	file.lethalFogHeights[ "mp_lf_stacks" ] <- 105.0 // nonworking fogcontroller so fog is invisible | 105
+	file.lethalFogHeights[ "mp_lf_deck" ] <- 200.0 // nonworking fogcontroller so fog is invisible | 200
 	file.lethalFogHeights[ "mp_lf_uma" ] <- 64.0
 	file.lethalFogHeights[ "mp_lf_meadow" ] <- 64.0
 	file.lethalFogHeights[ "mp_lf_traffic" ] <- 50.0
