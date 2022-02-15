@@ -65,9 +65,21 @@ Then checking if vanilla works before reinstalling Northstar.
 
 You are probably using EA Desktop app and it sets up game installations with no write permissions contrary to Origin.
 
-* **Solution 1**: Launch EA Desktop and the game as admin once so that it can copy that file.
-* **Solution 2**: If you know how, just copy the mentioned file manually, remembering you need to change its filename (just use some temp dir and rename there).
-* **Solution 3**: If you know how, just change the folder permissions in Properties->Security tab of your Titanfall2 install dir to let your user write.
+### Solution 1
+* Launch EA Desktop and the game as admin once so that it can copy that file.
+
+### Solution 2
+1. Copy `C:\WINDOWS\system32\wsock32.dll` to your Desktop / Temporary folder.
+2. Rename the copied file to `wsock32.org.dll`.
+3. Move `wsock32.org.dll` into `Titanfall2/bin/x64_retail/`.
+4. Delete the copied `wsock32.org.dll` from your Desktop / Temporary folder.
+
+Do NOT make any changes in `system32`, just copy the file.
+
+### Solution 3
+1. Locate your `Titanfall2` folder
+2. Right click it and go `Properties > Security`
+3. Give yourself write permissions
 
 ## Can't Join Servers (Issues with 10th+ gen Intel CPUs)<a href="#intel" id="intel"></a>
 
