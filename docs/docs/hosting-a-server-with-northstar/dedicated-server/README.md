@@ -128,30 +128,64 @@ Gamemodes can be forced by the server using the [`+mp_gamemode`](./#Startup\_arg
 
 If ran on a server with the [`ns_should_return_to_lobby 0`](./#Convars-returntolobby) convar, one should also set gamemodes in [`ns_private_match_last_mode`](./#Convars-lastmode) convar
 
-| Value           | Description                  |
-| --------------- | ---------------------------- |
-| `private_match` | Private Match                |
-| `ps`            | Pilots vs Pilots             |
-| `gg`            | Gungame                      |
-| `sns`           | Sticks & Stones              |
-| `tt`            | Titan Tag                    |
-| `inf`           | Infected                     |
-| `fastball`      | Fastball                     |
-| `ctf_comp`      | Competitive Capture the Flag |
-| `hs`            | Hide and Seek                |
-| `cp`            | Hardpoint                    |
-| `lts`           | Last Titan Standing          |
-| `ctf`           | Capture the Flag             |
-| `ttdm`          | Titan Brawl                  |
-| `turbo_ttdm`    | Turbo Titan Brawl            |
-| `attdm`         | Aegis Titan Brawl            |
-| `ffa`           | Free for all                 |
-| `tffa`          | Titan Free for All           |
-| `fra`           | Free Agents                  |
-| `coliseum`      | Coliseum                     |
-| `lf`            | Live Fire                    |
-| `rocket_lf`     | Rocket Arena                 |
-| `mfd`           | Marked for Death             |
+### Vanilla
+
+| Playlist | Title |
+| --- | --- |
+| private_match | Private Match |
+| ~~aitdm~~ | Attrition |
+| ~~at~~ | Bounty Hunt |
+| coliseum | Coliseum |
+| cp | Amped Hardpoint |
+| ctf | Capture the Flag |
+| ~~fd_easy~~ | Frontier Defense (Easy) |
+| ~~fd_hard~~ | Frontier Defense (Hard) |
+| ~~fd_insane~~ | Frontier Defense (Insane) |
+| ~~fd_master~~ | Frontier Defense (Master) |
+| ~~fd_normal~~ | Frontier Defense (Regular) |
+| lf | Live Fire |
+| lts | Last Titan Standing |
+| mfd | Marked For Death |
+| ps | Pilots vs. Pilots |
+| solo | Campaign |
+| tdm | Skirmish |
+| ttdm | Titan Brawl |
+
+### Vanilla (Featured)
+
+| Playlist | Title |
+| --- | --- |
+| alts | Aegis Last Titan Standing |
+| attdm | Aegis Titan Brawl |
+| ffa | Free For All |
+| fra | Free Agents |
+| holopilot_lf | The Great Bamboozle |
+| rocket_lf | Rocket Arena |
+| turbo_lts | Turbo Last Titan Standing |
+| turbo_ttdm | Turbo Titan Brawl |
+
+### Northstar.Custom
+
+| Playlist | Title |
+| --- | --- |
+| chamber | One in the Chamber |
+| ctf_comp | Competitive CTF |
+| fastball | Fastball |
+| gg | Gun Game |
+| hidden | The Hidden |
+| hs | Hide and Seek |
+| inf | Infection |
+| kr | Amped Killrace |
+| sbox | Sandbox |
+| sns | Sticks and Stones |
+| tffa | Titan FFA |
+| tt | Titan Tag |
+
+### Northstar.Coop
+
+| Playlist | Title |
+| --- | --- |
+| sp_coop | Singleplayer Coop |
 
 ## Weapons
 
