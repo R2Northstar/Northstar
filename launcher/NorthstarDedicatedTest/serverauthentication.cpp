@@ -51,7 +51,6 @@ CServerGameDLL__OnReceivedSayTextMessageType CServerGameDLL__OnReceivedSayTextMe
 typedef void (*ConCommand__DispatchType)(ConCommand* command, const CCommand& args, void* a3);
 ConCommand__DispatchType ConCommand__Dispatch;
 
-
 // global vars
 ServerAuthenticationManager* g_ServerAuthenticationManager;
 
@@ -722,11 +721,13 @@ void InitialiseServerAuthenticationServerDLL(HMODULE baseAddress)
 		hook, (char*)baseAddress + 0x1595C0, &CServerGameDLL__OnReceivedSayTextMessageHook,
 		reinterpret_cast<LPVOID*>(&CServerGameDLL__OnReceivedSayTextMessage));
 
-	g_ServerSquirrelManager->AddFuncRegistration("void", "NSSetMessage", "string message, int playerId, int channelId, bool shouldBlock", "", setMessage);
+	g_ServerSquirrelManager->AddFuncRegistration(
+		"void", "NSSetMessage", "string message, int playerId, int channelId, bool shouldBlock", "", setMessage);
 
 	g_ServerSquirrelManager->AddFuncRegistration("string", "NSChatGetCurrentMessage", "", "", getMessageServer);
 	g_ServerSquirrelManager->AddFuncRegistration("int", "NSChatGetCurrentPlayer", "", "", getPlayerServer);
 	g_ServerSquirrelManager->AddFuncRegistration("int", "NSChatGetCurrentChannel", "", "", getChannelServer);
 	g_ServerSquirrelManager->AddFuncRegistration("bool", "NSShouldProcessMessage", "", "", getShouldProcessMessage);
-	g_ServerSquirrelManager->AddFuncRegistration("void", "NSPushMessage", "string message, int playerId, int channelId, bool shouldBlock", "", pushMessage);
+	g_ServerSquirrelManager->AddFuncRegistration(
+		"void", "NSPushMessage", "string message, int playerId, int channelId, bool shouldBlock", "", pushMessage);
 }
