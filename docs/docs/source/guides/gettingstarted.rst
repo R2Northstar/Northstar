@@ -13,16 +13,12 @@ Basics
 This guide assumes you have basic understanding with programming and know how to use developer environments. Listed below are tools useful for exporting file formats
 
 If you'd like a more lengthy set of tutorials covering many topics. Look at:
-
 :doc:`moddingtutorials`
 
 Tools
 -----
-* RSPNVPK
-* Cra0 VPK Tool (Titanfall VPK Tool)
-* Legion by DZXTPorter
-
-.. TODO actually link the tools here
+To get started with modding for Northstar, we recommend getting yourself some tools.
+Check out the :doc:`tools` section for more information.
 
 
 Quick Start
