@@ -230,29 +230,50 @@ First map of autorotation can be set using [`ns_private_match_last_map`](./#Conv
 
 A way to blacklist maps with autorotation do not exists.
 
-| Value                  | Description        |
-| ---------------------- | ------------------ |
-| `mp_angel_city`        | Angel City         |
-| `mp_black_water_canal` | Black Water Canal  |
-| `mp_grave`             | Boomtown           |
-| `mp_colony02`          | Colony             |
-| `mp_complex3`          | Complex            |
-| `mp_crashsite3`        | Crashsite          |
-| `mp_drydock`           | DryDock            |
-| `mp_eden`              | Eden               |
-| `mp_thaw`              | Exoplanet          |
-| `mp_forwardbase_kodai` | Forward Base Kodai |
-| `mp_glitch`            | Glitch             |
-| `mp_homestead`         | Homestead          |
-| `mp_relic02`           | Relic              |
-| `mp_rise`              | Rise               |
-| `mp_wargames`          | Wargames           |
-| `mp_lobby`             | Lobby              |
-| `mp_lf_deck`           | Deck               |
-| `mp_lf_meadow`         | Meadow             |
-| `mp_lf_stacks`         | Stacks             |
-| `mp_lf_township`       | Township           |
-| `mp_lf_traffic`        | Traffic            |
-| `mp_lf_uma`            | UMA                |
-| `mp_coliseum`          | The Coliseum       |
-| `mp_coliseum_column`   | Pillars            |
+### Vanilla (mp)
+
+| Map | Title |
+| --- | --- |
+| mp_angel_city | Angel City |
+| mp_black_water_canal | Black Water Canal |
+| mp_box | Box |
+| mp_coliseum | Coliseum |
+| mp_coliseum_column | Pillars |
+| mp_colony02 | Colony |
+| mp_complex3 | Complex |
+| mp_crashsite3 | Crash Site |
+| mp_drydock | Drydock |
+| mp_eden | Eden |
+| mp_forwardbase_kodai | Forwardbase Kodai |
+| mp_glitch | Glitch |
+| mp_grave | Boomtown |
+| mp_homestead | Homestead |
+| mp_lf_deck | Deck |
+| mp_lf_meadow | Meadow |
+| mp_lf_stacks | Stacks |
+| mp_lf_township | Township |
+| mp_lf_traffic | Traffic |
+| mp_lf_uma | UMA |
+| mp_lobby | Lobby |
+| mp_relic02 | Relic |
+| mp_rise | Rise |
+| mp_thaw | Exoplanet |
+| mp_wargames | War Games |
+
+### Vanilla (sp)
+
+| Map | Title |
+| --- | --- |
+| sp_training | The Pilot's Gauntlet |
+| sp_crashsite | BT-7274 |
+| sp_sewers1 | Blood and Rust |
+| sp_boomtown_start | Into the Abyss - Part 1 |
+| sp_boomtown | Into the Abyss - Part 2 |
+| sp_boomtown_end | Into the Abyss - Part 2 |
+| sp_hub_timeshift | Effect and Cause - Part 1 or 3 |
+| sp_hub_timeshift_spoke02 | Effect and Cause - Part 2 |
+| sp_beacon | The Beacon - Part 1 or 3 |
+| sp_beacon_spoke0 | The Beacon - Part 2 |
+| sp_tday | Trial by Fire |
+| sp_s2s | The Ark |
+| sp_skyway_v1 | The Fold Weapon |
