@@ -282,20 +282,21 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 	int methodOfDeath = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 
 	table<int, bool> alreadyAssisted
-	foreach( DamageHistoryStruct attackerInfo in player.e.recentDamageHistory )
+	if ( IsValid( attacker ) )
 	{
-		if ( !IsValid( attackerInfo.attacker ) || !attackerInfo.attacker.IsPlayer() || attackerInfo.attacker == player )
-			continue
-
-		bool exists = attackerInfo.attacker.GetEncodedEHandle() in alreadyAssisted ? true : false
-		if( attackerInfo.attacker != attacker && !exists )
+		foreach( DamageHistoryStruct attackerInfo in player.e.recentDamageHistory )
 		{
-			alreadyAssisted[attackerInfo.attacker.GetEncodedEHandle()] <- true
-			Remote_CallFunction_NonReplay( attackerInfo.attacker, "ServerCallback_SetAssistInformation", attackerInfo.damageSourceId, attacker.GetEncodedEHandle(), player.GetEncodedEHandle(), attackerInfo.time ) 
-			AddPlayerScore(attackerInfo.attacker, "PilotAssist" )
+			if ( !IsValid( attackerInfo.attacker ) || !attackerInfo.attacker.IsPlayer() || attackerInfo.attacker == player )
+				continue
+
+			bool exists = attackerInfo.attacker.GetEncodedEHandle() in alreadyAssisted ? true : false
+			if( attackerInfo.attacker != attacker && !exists )
+			{
+				alreadyAssisted[attackerInfo.attacker.GetEncodedEHandle()] <- true
+				Remote_CallFunction_NonReplay( attackerInfo.attacker, "ServerCallback_SetAssistInformation", attackerInfo.damageSourceId, attacker.GetEncodedEHandle(), player.GetEncodedEHandle(), attackerInfo.time ) 
+				AddPlayerScore(attackerInfo.attacker, "PilotAssist" )
+			}
 		}
-
-
 	}
 
 	player.p.rematchOrigin = player.p.deathOrigin
