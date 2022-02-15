@@ -11,7 +11,7 @@ void function RiffFloorIsLava_Init()
 
 bool function VerifyFloorIsLavaSpawnpoint( entity spawnpoint, int team )
 {
-	return spawnpoint.GetOrigin().z > GetLethalFogTop()
+	return ( ( spawnpoint.GetOrigin().z > GetLethalFogTop() + 0 ) && ( (GetLethalFogTop() + 350 ) > spawnpoint.GetOrigin().z ) ) // OG spawnpoint.GetOrigin().z > GetLethalFogTop()
 }
 
 void function InitLavaFogController( entity fogController )
@@ -36,7 +36,17 @@ void function CreateCustomSpawns_Threaded()
 {
 	WaitEndFrame() // wait for spawns to clear
 	
-	float raycastTop = GetLethalFogTop() + 2500.0
+	string thismap = GetMapName()
+	
+	float raycastTop = GetLethalFogTop() // OG 2500, Lf 545, TDM 3500
+	if ( ( thismap.find( "_lf_" ) ) || ( thismap.find( "_coliseum" ) ) ) // coliseum is only there because I can. Maps like boomtown (grave) already let the ray cast through the ceiling
+		raycastTop = raycastTop + 545 // 545
+	else if ( thismap.find( "_grave" ) )
+		raycastTop = raycastTop + 1900
+	else
+		raycastTop = raycastTop + 2650
+
+
 	array< vector > raycastPositions
 	foreach ( entity hardpoint in GetEntArrayByClass_Expensive( "info_hardpoint" ) )
 	{
