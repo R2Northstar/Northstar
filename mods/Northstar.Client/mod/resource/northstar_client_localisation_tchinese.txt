@@ -52,6 +52,7 @@
 		"roundscorelimit" "分數限制（回合制）"
 		"timelimit" "時間限制"
 		"roundtimelimit" "時間限制（回合制）"
+		"respawnprotection" "重生保護時間"
 
 		"pilot_health_multiplier" "生命值加成"
 		"respawn_delay" "重生延遲"
