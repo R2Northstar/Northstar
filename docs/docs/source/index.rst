@@ -17,6 +17,26 @@ Contents
 --------
 
 .. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: Guides
 
-   usage
-   api
+   /guides/gettingstarted
+   /guides/tools
+   /guides/cheatsheet
+   /guides/moddingtutorials
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: Northstar API Documentation
+
+   /native/sqvm
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: Native Documentation
+
+   /native/sqvm
+
