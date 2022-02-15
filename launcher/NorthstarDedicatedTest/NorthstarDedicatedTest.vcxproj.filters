@@ -1449,6 +1449,9 @@
     <ClInclude Include="configurables.h">
       <Filter>Header Files\Client</Filter>
     </ClInclude>
+    <ClInclude Include="logCompression.h">
+      <Filter>Header Files\Shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -1582,6 +1585,9 @@
     </ClCompile>
     <ClCompile Include="configurables.cpp">
       <Filter>Source Files\Client</Filter>
+    </ClCompile>
+    <ClCompile Include="logCompression.cpp">
+      <Filter>Source Files\Shared</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
