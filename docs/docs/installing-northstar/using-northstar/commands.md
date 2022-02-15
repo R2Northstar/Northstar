@@ -9,7 +9,19 @@ If you for example have a German keyboard you'll notice that this key is located
 
 To open your console you'll either have to switch to the English (US) layout **before** starting the game or rebinding the key to open console.
 
-To rebind it make sure neither Titanfall nor Northstar are running, then go to `My Documents\Respawn\Titanfall2\local\` and open `settings.cfg`.\
+### Rebinding the console
+{% hint style="info" %}
+Make sure you updated [Northstar to version v1.5.0](https://github.com/R2Northstar/Northstar/releases) or higher.
+{% endhint %}
+{% hint style="info" %}
+The console can only be bound to ```"`"``` or one of the function keys ```"F1" - "F12"```
+{% endhint %}
+
+To rebind it open Titanfall and navigate to `Controls > Settings > Key Binds` and change the `"Toggle Developer Console"` bind.
+
+If the `"Toggle Developer Console"` field is missing you can either disable all mods that don't start with `Northstar.` or rebind it manually.
+
+To rebind it manually make sure neither Titanfall nor Northstar are running, then go to `My Documents\Respawn\Titanfall2\local\` and open `settings.cfg`.\
 Look for the line containing `toggleconsole`, i.e.
 
 ```txt
@@ -21,11 +33,6 @@ and replace the `` ` `` key with your prefered key to open console. So if you wa
 ```txt
 bind "F5" "toggleconsole"
 ```
-
-{% hint style="info" %}
-In the future this keybind should hopefully be adjustable via `Controls > Settings > Key Binds` from within Titanfall.\
-**Note** that if you're using the [Enhanced Menu Mod](https://github.com/taskinoz/Enhanced-Menu-Mod) this might already be the case
-{% endhint %}
 
 ## List of commands
 
