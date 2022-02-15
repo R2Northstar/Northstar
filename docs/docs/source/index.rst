@@ -35,7 +35,7 @@ Contents
    :hidden:
    :caption: Northstar API Documentation
 
-   /native/sqvm
+   /northstar/chathooks
 
 .. toctree::
    :maxdepth: 2
