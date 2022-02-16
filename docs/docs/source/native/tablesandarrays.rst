@@ -8,7 +8,7 @@ Arrays
 
 Arrays can store large sets of data and are indexed using numbers, starting from 0, and are declared using ``array<type> arrayname`` the <type> identifier can be ignored but will result in the array being of the type ``var``.
   
-.. code-block:: cpp
+.. code-block:: javascript
 
     array<int> numbers = [1,2,3,4,5,6,7,8,9,10]
 
@@ -22,7 +22,7 @@ adding and removing values from arrays can be done using ``.append(value)`` and 
 
 additionally the index of values can be found using the ``.find`` function and the length by using the ``.len()`` function
 
-.. code-block:: cpp
+.. code-block:: javascript
 
     array<int> numbers = [1,2,3,4,5,6,7,8,9,10]
 
@@ -46,13 +46,13 @@ Tables
 Tables are similar to arrays but with one primary difference, rather than use a numerical index system tables allow you do define your own indexes, similar to pythons ``dict`` type.
 Creation of a table is done in a similar way to arrays, however may have 2 types declared for the type of the index and the type of the content, much like arrays this will default to ``var`` if ignored
 
-.. code-block:: cpp
+.. code-block:: javascript
 
     table<string, int> numberofletters = {"hello": 5}
 
 unlike arrays however adding values to tables cannot be done using ``.append`` or similar means, as the index must also be declared, adding to tables is done using the ``<-`` operator like so.
 
-.. code-block:: cpp
+.. code-block:: javascript
 
     table<entity, int> playerkills = {}
     foreach(entity player in GetPlayerArray())
@@ -65,7 +65,7 @@ Another attribute of tables and arrays is that they can store any value type, in
 
 to create a 2d array you simply define the data type as beign an array of arrays like so.
 
-.. code-block:: cpp
+.. code-block:: javascript
 
     array<array<int>> 2darray = [[1,2,3],[4,5,6],[7,8,9]]
     print(2darray[1][1])

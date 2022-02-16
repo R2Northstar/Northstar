@@ -13,26 +13,26 @@ Squirrel as a typed language
 ----------------------------
 All variables and functions in squirrel must have a type defined on declaration
 
-.. code-block:: cpp
+.. code-block:: javascript
 
     function dosomething()
 
 
 is not acceptable and should instead be
 
-.. code-block:: cpp
+.. code-block:: javascript
 
     void function dosomething()
 
 Similarly when declaring a variable
 
-.. code-block:: cpp
+.. code-block:: javascript
 
     funnynumber = 69
 
 will not work, instead use:
 
-.. code-block:: cpp
+.. code-block:: javascript
 
     int funnynumber = 69
 

@@ -86,7 +86,7 @@ the **callbacks** and the **setting buttons** to add the settings to the private
 this might look complicated, but really its just (Category, settingname, [setting options], default value) however we use terms like ``"#MODE_SETTING_CATEGORY_RANDOMISER"`` in place of the category name so that we can create language files for different languages.
 (we will make that later)
 
-.. code-block:: cpp
+.. code-block:: javascript
 
     void function simplerandomiser_init(){
         AddPrivateMatchModeSettingEnum("#MODE_SETTING_CATEGORY_SIMPLERANDOMISER", "SimpleRandomiser", ["#SETTING_ENABLED", "#SETTING_ENABLED"], "0")
@@ -101,7 +101,7 @@ As you may have noticed, checking if it is a server is a special case, so we use
 Now that our initial function is created we now have the game triggering `GiveRandomGun` on spawn, but we dont have any such function, so lets make one. but before we can do that, we need to know what weapons we can equip. 
 for this we define an array 
 
-.. code-block:: cpp
+.. code-block:: javascript
 
     array<string> pilotWeapons = [
             "mp_weapon_alternator_smg",
@@ -113,7 +113,7 @@ here we have defined an array with only 4 weapons in it, you can make this list 
 
 Now lets make a function to check if you enabled the setting    
 
-.. code-block:: cpp
+.. code-block:: javascript
     bool
     Next lets make the randomise function:
         bool function SimpleRandomiserEnabled() 
@@ -125,7 +125,7 @@ Randomise function
 As we already know its going to call ``GiveRandomGun`` on respawn, lets define that now.
 First we strip any existing weapons:
 
-.. code-block:: cpp
+.. code-block:: javascript
 
     void function GiveRandomGun(entity player){
         foreach ( entity weapon in player.GetMainWeapons() )
@@ -135,13 +135,13 @@ this iterates through each weapon and removes them individually.
 
 Then lets give them a new, random weapon by selecting a random item from our previous array:
 
-.. code-block:: cpp
+.. code-block:: javascript
 
     player.GiveWeapon(pilotweapons[RandomInt(pilotweapons.len())])
 
 And done, surprisingly short script huh?
 
-.. code-block:: cpp
+.. code-block:: javascript
 
     void function simplerandomiser_init(){
         AddPrivateMatchModeSettingEnum("#MODE_SETTING_CATEGORY_SIMPLERANDOMISER", "SimpleRandomiser", ["#SETTING_ENABLED", "#SETTING_ENABLED"], "0")
