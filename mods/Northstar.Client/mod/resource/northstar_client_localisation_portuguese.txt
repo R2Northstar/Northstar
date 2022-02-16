@@ -19,6 +19,9 @@ Clique em Sim se você concorda. Esta escolha pode ser alterada a qualquer momen
 		"AUTHENTICATION_AGREEMENT" "Aceitação de autorização"
 		"AUTHENTICATION_AGREEMENT_RESTART" "Você precisa reiniciar o Titanfall 2 para esta mudança ter efeito."
 
+		"DIALOG_AUTHENTICATING_MASTERSERVER" "Autenticando com o servidor mestre."
+		"AUTHENTICATIONAGREEMENT_NO" "Você não autorizou a autenticação com Northstar. Troque a configuração no menu de mods."
+
 		"MENU_TITLE_SERVER_BROWSER" "Servidores"
 		"NS_SERVERBROWSER_NOSERVERS" "Nenhum servidor encontrado"
 		"NS_SERVERBROWSER_UNKNOWNMODE" "Modo desconhecido"
@@ -52,6 +55,7 @@ Clique em Sim se você concorda. Esta escolha pode ser alterada a qualquer momen
 		"roundscorelimit" "Limite de pontos (por round)"
 		"timelimit" "Tempo limite"
 		"roundtimelimit" "Tempo limite (por round)"
+		"respawnprotection" "Proteção de reaparecimento"
 
 		"pilot_health_multiplier" "Multiplicador de vida"
 		"respawn_delay" "Delay de reaparecimento"
@@ -129,11 +133,13 @@ Clique em Sim se você concorda. Esta escolha pode ser alterada a qualquer momen
 		"SNS_LEADER_BANKRUPT_SUB" "%s1 foi zerado por %s2"
 		"SNS_BANKRUPT" "Zerado!"
 		"SNS_BANKRUPT_SUB" "Sua pontuação foi zerada por %s1"
-		"wme_kill_value" "Pts. eliminação de Wingman Elite"
-		"offhand_kill_value" "Pts. eliminação habilidade"
-		"reset_kill_value" "Pts. por Lâmina/Execução"
-		"melee_kill_value" "Pts. por elm. corpo-a-corpo"
-		"reset_pulse_blade_cooldown_on_pulse_blade_kill" "Reset ao matar"
+		"sns_wme_kill_value" "Pts. eliminação de Wingman Elite"
+		"sns_softball_kill_value" "Pts. elim. de Softball"
+		"sns_offhand_kill_value" "Pts. eliminação habilidade"
+		"sns_reset_kill_value" "Pts. por Lâmina/Execução"
+		"sns_melee_kill_value" "Pts. por elm. corpo-a-corpo"
+		"sns_reset_pulse_blade_cooldown_on_pulse_blade_kill" "Reset ao matar"
+		"sns_softball_enabled" "Softball habilitada"
 
 		"PL_inf" "Infecção"
 		"PL_inf_lobby" "Saguão de Infecção"
