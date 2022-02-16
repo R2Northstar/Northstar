@@ -294,7 +294,8 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 			{
 				alreadyAssisted[attackerInfo.attacker.GetEncodedEHandle()] <- true
 				Remote_CallFunction_NonReplay( attackerInfo.attacker, "ServerCallback_SetAssistInformation", attackerInfo.damageSourceId, attacker.GetEncodedEHandle(), player.GetEncodedEHandle(), attackerInfo.time ) 
-				AddPlayerScore(attackerInfo.attacker, "PilotAssist" )
+				AddPlayerScore( attackerInfo.attacker, "PilotAssist" )
+				player.AddToPlayerGameStat( PGS_ASSISTS, 1 )
 			}
 		}
 	}
