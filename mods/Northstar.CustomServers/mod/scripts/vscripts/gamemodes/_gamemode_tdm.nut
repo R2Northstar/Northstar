@@ -16,6 +16,9 @@ void function GiveScoreForPlayerKill( entity victim, entity attacker, var damage
 	table<int, bool> alreadyAssisted
 	foreach( DamageHistoryStruct attackerInfo in victim.e.recentDamageHistory )
 	{
+		if ( !IsValid( attackerInfo.attacker ) || !attackerInfo.attacker.IsPlayer() || attackerInfo.attacker == victim )
+			continue
+			
 		bool exists = attackerInfo.attacker.GetEncodedEHandle() in alreadyAssisted ? true : false
 		if( attackerInfo.attacker != attacker && !exists )
 		{
