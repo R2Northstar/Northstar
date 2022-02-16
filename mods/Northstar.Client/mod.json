@@ -27,6 +27,10 @@
 		{
 			"Name": "filter_mods",
 			"DefaultValue": "0"
+		},
+		{
+			"Name": "filter_map_hide_locked",
+			"DefaultValue": "0"
 		}
 	],
 	"Scripts": [
