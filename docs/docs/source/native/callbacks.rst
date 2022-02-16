@@ -25,7 +25,7 @@ List of callbacks
 -----------------
 This is an **incomplete** list of callbacks, a better list can be found in the list of all functions can be found `here <https://github.com/ScureX/Titanfall2-ModdingDocumentation/blob/main/AllMethodsClean.md>`_.
 
-.. code-block:: cpp
+.. code-block:: javascript
 
     AddCallback_EntitiesDidLoad()
     AddCallback_GameStateEnter(gamestate, function to trigger)

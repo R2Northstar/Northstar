@@ -19,12 +19,12 @@ The same applies to a ``while(true)`` function, for example ``almostover`` a fun
 ``thread almostover()``
 
 Example Script
------------
+--------------
 lets try implement both of our scripts from the previous 2 sections, as well as a callback to trigger the script.
 
 First, lets add our callback to the gamemodes core function. 
 
-.. code-block:: cpp
+.. code-block:: javascript^^
 
     global function GamemodeTag_Init
 
@@ -35,7 +35,7 @@ First, lets add our callback to the gamemodes core function.
 
 Then lets define the function matchstart and have it simply thread our two important functions.
 
-.. code-block:: cpp
+.. code-block:: javascript
 
     void Matchstart{
         thread delayannouncement()
@@ -44,7 +44,7 @@ Then lets define the function matchstart and have it simply thread our two impor
 
 This script waits 10 seconds, picks a player and announces that player as "it" however being ``it`` currently does nothing, we will define that later.
 
-.. code-block:: cpp
+.. code-block:: javascript
 
     void delayannouncement(){
     wait 10.0 
@@ -56,7 +56,7 @@ This script waits 10 seconds, picks a player and announces that player as "it" h
 
 This function will now repeat endlessly, waiting 5 seconds before each repeat. make sure to add a ``return`` or ``break`` statement to prevent the message looping every 5 seconds after, unless you want that
 
-.. code-block:: cpp
+.. code-block:: javascript
 
     void almostover(){
         while(true){

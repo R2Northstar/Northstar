@@ -44,7 +44,7 @@ Initialisation function
 
 first, lets declare our game settings
 
-.. code-block:: cpp
+.. code-block:: javascript
 
     global function SimpleInfection_init
     void function SimpleInfection_init() {
@@ -58,7 +58,7 @@ first, lets declare our game settings
 
 Next lets setup our callbacks:
 
-.. code-block:: cpp
+.. code-block:: javascript
 
         AddCallback_OnClientConnected( PlayerJoined )
         AddCallback_GameStateEnter( eGameState.Playing, StartGame )
@@ -68,7 +68,7 @@ Next lets setup our callbacks:
 
 great, now we have our gamemodes initialisation function we need a way for our callbacks to know some things, such as whether the game has started or not, you will see why later
 
-.. code-block:: cpp
+.. code-block:: javascript
 
     struct {
         bool HasStarted = false
@@ -84,7 +84,7 @@ Main functions
 
 Now it time to start writing our callbacks
 
-.. code-block:: cpp
+.. code-block:: javascript
 
     void function PlayerJoined(entity player){
         if (file.HasStarted){
@@ -98,7 +98,7 @@ Now it time to start writing our callbacks
 
 This manages what happens when a player joins, but it calls a function we dont have yet ``InfectPlayer`` so lets define it now
 
-.. code-block:: cpp
+.. code-block:: javascript
 
     void function InfectPlayer(entity player, entity attacker){
         SetTeam( player, 1)
@@ -113,7 +113,7 @@ This function simply changes the players team, then checks if there are any surv
 
 Now for the script that chooses the first zombie, in order to allow more time for players to join lets put a delay on it using a ``thread``
 
-.. code-block:: cpp
+.. code-block:: javascript
 
     void function StartGame(){
         firstinfected = GetPlayerArray()[RandomInt(GetPlayerArray().len())]
@@ -125,7 +125,7 @@ This function changes the file.HasStarted value to true and randomly selects a p
 
 Next lets create the function that provides the zombies the correct equipment
 
-.. code-block:: cpp
+.. code-block:: javascript
 
     void function RespawnInfected( entity player ){
         if (player.GetTeam() != 1){//this makes sure players dont accidentally get given zombie weapons when first spawning as a survivor
@@ -150,7 +150,7 @@ Next lets create the function that provides the zombies the correct equipment
 
 Finally lets define what occurs when the match ends
 
-.. code-block:: cpp
+.. code-block:: javascript
 
     void function DecideWinners(){
         SetRespawnsEnabled( false )

@@ -32,34 +32,34 @@ Contains details on a chat message to be displayed. You can receive one of these
 
 .. _addcallback_onreceivedsaytextmessage:
 
-``void function AddCallback_OnReceivedSayTextMessage(callbackFunc)``
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-Adds a callback that will be run when a chat message is received from the server. This will only be triggered for
-messages from players, not server messages.
+.. cpp:function:: _void AddCallback_OnReceivedSayTextMessage(callbackFunc)
 
-The provided function should accept a :ref:`ClClient_MessageStruct <clclient_messagestruct>` and return an optionally modified copy of it. When a
-chat message is received, each registered callback is run in sequence to modify or block the message.
+    Adds a callback that will be run when a chat message is received from the server. This will only be triggered for
+    messages from players, not server messages.
 
-**Example:**
+    The provided function should accept a :ref:`ClClient_MessageStruct <clclient_messagestruct>` and return an optionally modified copy of it. When a
+    chat message is received, each registered callback is run in sequence to modify or block the message.
 
-.. code-block:: cpp
+    **Example:**
 
-    ClClient_MessageStruct function MyChatFilter(ClClient_MessageStruct message)
-    {
-        if (message.message.find("nft") != null)
+    .. code-block:: javascript
+
+        ClClient_MessageStruct function MyChatFilter(ClClient_MessageStruct message)
         {
-            message.shouldBlock = true
+            if (message.message.find("nft") != null)
+            {
+                message.shouldBlock = true
+            }
+            
+            message.message = StringReplace(message.message, "yes", "no", true, true)
+            
+            return message
         }
-        
-        message.message = StringReplace(message.message, "yes", "no", true, true)
-        
-        return message
-    }
 
-    void function MyModInit()
-    {
-        AddCallback_OnReceivedSayTextMessage(MyChatFilter)
-    }
+        void function MyModInit()
+        {
+            AddCallback_OnReceivedSayTextMessage(MyChatFilter)
+        }
 
 
 Writing to Chat
@@ -68,76 +68,70 @@ Writing to Chat
 A handful of functions are provided to write messages in local chat windows. These do not send messages to other
 players, they only display them locally.
 
-``void function Chat_GameWriteLine(string text)``
-"""""""""""""""""""""""""""""""""""""""""""""""""
-Writes a line of text in local game chat panels. Supports :ref:`ANSI escape codes <ansi_escape>`.
+.. cpp:function:: void Chat_GameWriteLine(string text)
 
-**Example:**
+    Writes a line of text in local game chat panels. Supports :ref:`ANSI escape codes <ansi_escape>`.
 
-.. code-block:: cpp
+    **Example:**
 
-    void function OnGameStarted()
-    {
-        Chat_GameWriteLine("You got this, " + GetLocalClientPlayer().GetPlayerName() + "!")
-    }
+    .. code-block:: javascript
 
-
-``void function Chat_GameWrite(string text)``
-"""""""""""""""""""""""""""""""""""""""""""""
-Appends text to local game chat panels. Supports :ref:`ANSI escape codes <ansi_escape>`.
-
-**Example:**
-
-.. code-block:: cpp
-    
-    void function InitialiseHEVSuit()
-    {
-        Chat_GameWriteLine("SENSOR ARRAYS-")
-        ActivateSensorArrays()
-        Chat_GameWrite("ACTIVATED")
-        wait 1
-        Chat_GameWriteLine("BIOMETRIC MONITORING SYSTEMS-")
-        ActivateBiometricMonitoringSystems()
-        Chat_GameWrite("ACTIVATED")
-        wait 1
-        Chat_GameWriteLine("HAVE A VERY SAFE DAY.")
-    }
+        void function OnGameStarted()
+        {
+            Chat_GameWriteLine("You got this, " + GetLocalClientPlayer().GetPlayerName() + "!")
+        }
 
 
-``void function Chat_NetworkWriteLine(string text)``
-""""""""""""""""""""""""""""""""""""""""""""""""""""
+.. cpp:function::  void Chat_GameWrite(string text)
 
-Writes a line of text in local network chat panels. Supports :ref:`ANSI escape codes <ansi_escape>`.
+    Appends text to local game chat panels. Supports :ref:`ANSI escape codes <ansi_escape>`.
 
-**Example:**
+    **Example:**
 
-.. code-block:: cpp
+    .. code-block:: javascript
+        
+        void function InitialiseHEVSuit()
+        {
+            Chat_GameWriteLine("SENSOR ARRAYS-")
+            ActivateSensorArrays()
+            Chat_GameWrite("ACTIVATED")
+            wait 1
+            Chat_GameWriteLine("BIOMETRIC MONITORING SYSTEMS-")
+            ActivateBiometricMonitoringSystems()
 
-    void function MyModInit()
-    {
-        Chat_NetworkWriteLine("MyMod v1.0.0 is good to go!")
-    }
+.. cpp:function:: void Chat_NetworkWriteLine(string text)
+
+    Writes a line of text in local network chat panels. Supports :ref:`ANSI escape codes <ansi_escape>`.
+
+    **Example:**
+
+    .. code-block:: javascript
+
+        void function MyModInit()
+        {
+            Chat_NetworkWriteLine("MyMod v1.0.0 is good to go!")
+        }
 
 
-``void function Chat_NetworkWrite(string text)``
-""""""""""""""""""""""""""""""""""""""""""""""""
-Appends text to local network chat panels. Supports :ref:`ANSI escape codes <ansi_escape>`.
+.. cpp:function:: void Chat_NetworkWrite(string text)
 
-**Example:**
+    Appends text to local network chat panels. Supports :ref:`ANSI escape codes <ansi_escape>`.
 
-.. code-block:: cpp
+    **Example:**
 
-    void function OnButtonPressed()
-    {
-        Chat_NetworkWrite("Connecting in 3...")
-        wait 1
-        Chat_NetworkWrite("2...")
-        wait 1
-        Chat_NetworkWrite("1...")
-        wait 1
-        Chat_NetworkWrite("0")
-        Connect()
-    }
+    .. code-block:: javascript
+
+        void function OnButtonPressed()
+        {
+            Chat_NetworkWrite("Connecting in 3...")
+            wait 1
+            Chat_NetworkWrite("2...")
+            wait 1
+            Chat_NetworkWrite("1...")
+            wait 1
+            Chat_NetworkWrite("0")
+            Connect()
+        }
 
 
 
@@ -165,34 +159,34 @@ Contains details on an incoming chat message. You can receive one of these by ad
 
 .. _addcallback_onreceivedsaytextmessage_server:
 
-``void function AddCallback_OnReceivedSayTextMessage(callbackFunc)``
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-Adds a callback that will be run when a chat message is received from a player. This will not be fired for custom
-messages sent by server mods.
+.. cpp:function:: void AddCallback_OnReceivedSayTextMessage(callbackFunc)
 
-The provided function should accept a :ref:`ClServer_MessageStruct <clserver_messagestruct>` and return an
-optionally modified copy of it. When a chat message is received, each registered callback is run in sequence to modify
-or block the message.
+    Adds a callback that will be run when a chat message is received from a player. This will not be fired for custom
+    messages sent by server mods.
 
-**Example:**
+    The provided function should accept a :ref:`ClServer_MessageStruct <clserver_messagestruct>` and return an
+    optionally modified copy of it. When a chat message is received, each registered callback is run in sequence to modify
+    or block the message.
 
-.. code-block:: cpp
+    **Example:**
 
-    ClServer_MessageStruct function MyChatFilter(ClServer_MessageStruct message)
-    {
-        if (message.message.find("nft") != null)
+    .. code-block:: javascript
+
+        ClServer_MessageStruct function MyChatFilter(ClServer_MessageStruct message)
         {
-            message.shouldBlock = true
+            if (message.message.find("nft") != null)
+            {
+                message.shouldBlock = true
+            }
+            
+            message.message = StringReplace(message.message, "yes", "no", true, true)
+            
+            return message
         }
-        
-        message.message = StringReplace(message.message, "yes", "no", true, true)
-        
-        return message
-    }
-    void function MyModInit()
-    {
-        AddCallback_OnReceivedSayTextMessage(MyChatFilter)
-    }
+        void function MyModInit()
+        {
+            AddCallback_OnReceivedSayTextMessage(MyChatFilter)
+        }
 
 
 Custom Messages
@@ -200,110 +194,106 @@ Custom Messages
 
 With custom messages you can send chat messages at any time, to all players or to specific players.
 
-``void function Chat_Impersonate(entity player, string text, bool isTeamChat)``
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.. cpp:function:: void Chat_Impersonate(entity player, string text, bool isTeamChat)
 
-Displays a chat message as if the player sent it. Only use this when the player has performed a clear action to send a
-chat message.
+    Displays a chat message as if the player sent it. Only use this when the player has performed a clear action to send a
+    chat message.
 
-**Parameters:**
+    **Parameters:**
 
- - ``entity player`` - the player that the chat message will appear to be from.
- - ``string text`` - the contents of the chat message. Supports :ref:`ANSI escape codes <ansi_escape>` for colors.
- - ``bool isTeamChat`` - whether this chat is only sent to the player's team.
+    - ``entity player`` - the player that the chat message will appear to be from.
+    - ``string text`` - the contents of the chat message. Supports :ref:`ANSI escape codes <ansi_escape>` for colors.
+    - ``bool isTeamChat`` - whether this chat is only sent to the player's team.
 
-**Example:**
+    **Example:**
 
-.. code-block:: cpp
+    .. code-block:: javascript
 
-    void function OnSayRedCommand(entity player, string text)
-    {
-        Chat_Impersonate(player, "red text -> \x1b[31m" + text)
-    }
-
-
-``void function Chat_PrivateMessage(entity fromPlayer, entity toPlayer, string text, bool whisper)``
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
-Sends a private chat message from a player that is only displayed to one other player. Only use this when the player has
-performed a clear action to send a chat message.
-
-**Parameters:**
-
- - ``entity fromPlayer`` - the player the message will be from.
- - ``entity toPlayer`` - the player that the message will be shown to.
- - ``string text`` - the contents of the chat message. Supports :ref:`ANSI escape codes <ansi_escape>` for colors.
- - ``bool whisper`` - if true, ``[WHISPER]`` will be displayed before the message to indicate the message is private.
-
-**Example:**
-
-.. code-block:: cpp
-
-    void function OnSendToFriendsCommand(entity fromPlayer, string text)
-    {
-        array<entity> friends = GetPlayerFriends(fromPlayer)
-        foreach (friend in friends)
+        void function OnSayRedCommand(entity player, string text)
         {
-            Chat_PrivateMessage(fromPlayer, friend, text, true)
+            Chat_Impersonate(player, "red text -> \x1b[31m" + text)
         }
-    }
 
 
-``void function Chat_ServerBroadcast(string text)``
-"""""""""""""""""""""""""""""""""""""""""""""""""""
+.. cpp:function:: void Chat_PrivateMessage(entity fromPlayer, entity toPlayer, string text, bool whisper)
 
-Displays a server message to all players in the chat.
+    Sends a private chat message from a player that is only displayed to one other player. Only use this when the player has
+    performed a clear action to send a chat message.
 
-**Parameters:**
+    **Parameters:**
 
-- ``string text`` - the contents of the chat message. Supports :ref:`ANSI escape codes <ansi_escape>` for colors.
+    - ``entity fromPlayer`` - the player the message will be from.
+    - ``entity toPlayer`` - the player that the message will be shown to.
+    - ``string text`` - the contents of the chat message. Supports :ref:`ANSI escape codes <ansi_escape>` for colors.
+    - ``bool whisper`` - if true, ``[WHISPER]`` will be displayed before the message to indicate the message is private.
 
-**Example:**
+    **Example:**
 
-.. code-block:: cpp
+    .. code-block:: javascript
 
-    void function RestartServerThread()
-    {
-        // wait one hour
-        wait 3600
-        Chat_ServerBroadcast("Server will be shut down in \x1b[93m5 seconds")
-        wait 1
-        Chat_ServerBroadcast("Server will be shut down in \x1b[93m4 seconds")
-        wait 1
-        Chat_ServerBroadcast("Server will be shut down in \x1b[93m3 seconds")
-        wait 1
-        Chat_ServerBroadcast("Server will be shut down in \x1b[93m2 seconds")
-        wait 1
-        Chat_ServerBroadcast("Server will be shut down in \x1b[93m1 second")
-        wait 1
-        StopServer()
-    }
-
-
-``void function Chat_ServerPrivateMessage(entity toPlayer, string text, bool whisper)``
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
-Sends a server message to a specific player in the chat.
-
-**Parameters:**
-
- - ``entity toPlayer`` - the player that the message will be shown to.
- - ``string text`` - the contents of the chat message. Supports :ref:`ANSI escape codes <ansi_escape>` for colors.
- - ``bool whisper`` - if true, ``[WHISPER]`` will be displayed before the message to indicate the message is private.
-
-**Example:**
-
-.. code-block:: cpp
-    void function OnBanCommand(entity player, array<string> args)
-    {
-        if (!PlayerIsModerator(player))
+        void function OnSendToFriendsCommand(entity fromPlayer, string text)
         {
-            Chat_ServerPrivateMessage(player, "You do not have the permissions to perform this command.", true)
-            return
+            array<entity> friends = GetPlayerFriends(fromPlayer)
+            foreach (friend in friends)
+            {
+                Chat_PrivateMessage(fromPlayer, friend, text, true)
+            }
         }
-        
-        BanPlayerByName(args[0])
-    }
+
+
+.. cpp:function:: void Chat_ServerBroadcast(string text)
+
+    Displays a server message to all players in the chat.
+
+    **Parameters:**
+
+    - ``string text`` - the contents of the chat message. Supports :ref:`ANSI escape codes <ansi_escape>` for colors.
+
+    **Example:**
+
+    .. code-block:: javascript
+
+        void function RestartServerThread()
+        {
+            // wait one hour
+            wait 3600
+            Chat_ServerBroadcast("Server will be shut down in \x1b[93m5 seconds")
+            wait 1
+            Chat_ServerBroadcast("Server will be shut down in \x1b[93m4 seconds")
+            wait 1
+            Chat_ServerBroadcast("Server will be shut down in \x1b[93m3 seconds")
+            wait 1
+            Chat_ServerBroadcast("Server will be shut down in \x1b[93m2 seconds")
+            wait 1
+            Chat_ServerBroadcast("Server will be shut down in \x1b[93m1 second")
+            wait 1
+            StopServer()
+        }
+
+
+.. cpp:function:: void Chat_ServerPrivateMessage(entity toPlayer, string text, bool whisper)
+
+    Sends a server message to a specific player in the chat.
+
+    **Parameters:**
+
+    - ``entity toPlayer`` - the player that the message will be shown to.
+    - ``string text`` - the contents of the chat message. Supports :ref:`ANSI escape codes <ansi_escape>` for colors.
+    - ``bool whisper`` - if true, ``[WHISPER]`` will be displayed before the message to indicate the message is private.
+
+    **Example:**
+
+    .. code-block:: javascript
+        void function OnBanCommand(entity player, array<string> args)
+        {
+            if (!PlayerIsModerator(player))
+            {
+                Chat_ServerPrivateMessage(player, "You do not have the permissions to perform this command.", true)
+                return
+            }
+            
+            BanPlayerByName(args[0])
+        }
 
 
 .. _ansi_escape:
