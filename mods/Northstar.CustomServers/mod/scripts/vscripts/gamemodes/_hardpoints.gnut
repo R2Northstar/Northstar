@@ -15,13 +15,13 @@ void function Hardpoints_Init()
 }
 
 float function CapturePoint_GetStartProgress( entity hardpoint )
-{
-	return GetGlobalNetFloat( "objective" + hardpoint.kv.hardpointGroup + "Progress" )
+{	
+	return GetGlobalNetFloat( "objective" + GetHardpointGroup(hardpoint) + "Progress" )
 }
 
 int function CapturePoint_GetCappingTeam( entity hardpoint )
-{
-	return GetGlobalNetInt( "objective" + hardpoint.kv.hardpointGroup + "CappingTeam" )
+{	
+	return GetGlobalNetInt( "objective" + GetHardpointGroup(hardpoint) + "CappingTeam" )
 }
 
 int function CapturePoint_GetOwningTeam( entity hardpoint )
@@ -30,6 +30,15 @@ int function CapturePoint_GetOwningTeam( entity hardpoint )
 }
 
 float function CapturePoint_GetGoalProgress( entity hardpoint )
+{	
+	
+	return GetGlobalNetFloat( "objective" + GetHardpointGroup(hardpoint) + "Progress" )
+} 
+
+string function GetHardpointGroup(entity hardpoint) //Hardpoint Entity B on Homestead is missing the Hardpoint Group KeyValue
 {
-	return GetGlobalNetFloat( "objective" + hardpoint.kv.hardpointGroup + "Progress" )
+	if((GetMapName()=="mp_homestead")&&(!hardpoint.HasKey("hardpointGroup")))
+		return "B"
+
+	return string(hardpoint.kv.hardpointGroup)
 }

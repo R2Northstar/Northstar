@@ -129,7 +129,7 @@ void function CreateFlagIfNoFlagSpawnpoint()
 	
 	foreach ( entity hardpoint in GetEntArrayByClass_Expensive( "info_hardpoint" ) )
 	{
-		if ( hardpoint.kv.hardpointGroup == "B" )
+		if ( GetHardpointGroup(hardpoint) == "B" )
 		{
 			CreateFlag( hardpoint )
 			return
@@ -160,4 +160,12 @@ void function GamemodeSpeedball_OnWinnerDetermined()
 {
 	if(IsValid(file.flagCarrier))
 		file.flagCarrier.AddToPlayerGameStat( PGS_ASSAULT_SCORE, 1 )
+}
+
+string function GetHardpointGroup(entity hardpoint) //Hardpoint Entity B on Homestead is missing the Hardpoint Group KeyValue
+{
+	if((GetMapName()=="mp_homestead")&&(!hardpoint.HasKey("hardpointGroup")))
+		return "B"
+
+	return string(hardpoint.kv.hardpointGroup)
 }
