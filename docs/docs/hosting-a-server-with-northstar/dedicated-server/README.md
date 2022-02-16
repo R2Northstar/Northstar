@@ -36,7 +36,7 @@ Startup arguments can be added in the `ns_startup_args_dedi.txt` file.
 | `+setplaylist`             | `private_match`                                | Currently needed to make servers work               |
 | `+setplaylistvaroverrides` | see [PlaylistOverrides](./#playlist-overrides) | Edits the behaviour of the server                   |
 | `-port`                    | int beteween `1-65535`                         | Determines which UDP port the server will listen to |
-| `+mpgamemode`              | see [Gamemodes](./#gamemodes)                  | Forces the gamemode of the server                   |
+| `+mp_gamemode`             | see [Gamemodes](./#gamemodes)                  | Forces the gamemode of the server                   |
 
 | Flags                 | Description                                                                    |
 | --------------------- | ------------------------------------------------------------------------------ |
