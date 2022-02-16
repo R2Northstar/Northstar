@@ -2531,7 +2531,7 @@
 
 		// setting menu camera while our viewentity isn't player will crash
 		// unfortunately no way to close menu if we get our viewentity set while menu is open atm
-		while ( GetViewEntity().GetClassName() == "class C_BaseEntity" )
+		while ( IsValid( GetViewEntity() ) && GetViewEntity().GetClassName() == "class C_BaseEntity" )
 			WaitFrame()
 
 		if ( file.presentationTypeInitialized && presentationType == file.presentationType )
