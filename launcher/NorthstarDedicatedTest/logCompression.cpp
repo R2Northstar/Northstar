@@ -17,7 +17,6 @@ using namespace std;
 bool compressFile(const fs::path path)
 {
 	// read log file
-	ofstream output;
 	string filename(path.string());
 	cout << "Compressing : '" + filename + "'" << endl;
 	ifstream input(filename, ios_base::binary);
@@ -31,13 +30,13 @@ bool compressFile(const fs::path path)
 	// compress log file
 	string compressed_data = gzip::compress(log_data.data(), log_data.size());
 	// write log file gzip
-	output.open(filename + ".gz");
-	if (!output.is_open())
+	ofstream output(filename + ".gz", ios::out | ios::binary);
+	if (!output)
 	{
 		cerr << "Could not write : '" + filename + "'" << endl;
 		return false;
 	}
-	output << compressed_data;
+	output.write(compressed_data.c_str(), compressed_data.size());
 	output.close();
 	// delete log file
 	remove(path);
