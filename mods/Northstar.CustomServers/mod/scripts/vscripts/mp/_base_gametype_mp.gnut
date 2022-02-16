@@ -132,7 +132,7 @@ void function CodeCallback_OnClientConnectionStarted( entity player )
 		callbackFunc( player )
 	}
 
-	printl( "Player connect started: " + player )
+	printl( "Player connect started: " + player + "---UID:" + player.GetUID() )
 	
 	InitPassives( player )
 }
