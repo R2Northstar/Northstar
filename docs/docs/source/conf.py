@@ -2,7 +2,7 @@
 
 # -- Project information
 
-project = "Northstar Modding Documentation"
+project = "Northstar Modding"
 copyright = "2022, Northstar Developer Team"
 author = "Northstar Developer Team"
 
@@ -31,7 +31,26 @@ exclude_patterns = ["_build"]
 
 # -- Options for HTML output
 
-html_theme = "sphinx_rtd_theme"
+html_theme = "furo"
+
+html_static_path = ['_static']
+html_css_files = [
+    'styles/main.css',
+]
+
+
+html_theme_options = {
+    "light_css_variables": {
+        "color-brand-primary": "#7C4DFF",
+        "color-brand-content": "#7C4DFF",
+    },
+    "dark_css_variables": {
+        "color-background-primary": "#14141E",
+        "color-background-secondary": "#20202F",
+        "color-background-hover": "#10101F",
+        "color-highlight-on-target": "#10101F",
+    },
+}
 
 # -- Options for EPUB output
 epub_show_urls = "footnote"
