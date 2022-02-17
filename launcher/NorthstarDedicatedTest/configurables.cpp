@@ -29,7 +29,7 @@ void parseConfigurables()
 	}
 	else
 	{
-		spdlog::info("Didnt' find profile in command line arguments. Using default: R2Northstar");
+		spdlog::info("Profile was not found in command line arguments. Using default: R2Northstar");
 		NORTHSTAR_FOLDER_PREFIX = "R2Northstar";
 	}
 }
