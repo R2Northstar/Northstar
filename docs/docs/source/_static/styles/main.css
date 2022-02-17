@@ -1,0 +1,29 @@
+.sidebar-drawer {
+	background: var(--color-sidebar-background);
+	border-right: 1px solid var(--color-sidebar-background-border);
+	box-sizing: border-box;
+	display: flex;
+	justify-content: flex-end;
+	min-width: 15em;
+	width: 0px !important;
+}
+
+.toc-drawer {
+	position: fixed;
+	right: 0;
+}
+
+@media(max-width:82em) {
+	.toc-drawer {
+		border-left: 1px solid var(--color-background-muted);
+		height: 100vh;
+		position: fixed;
+		right: -15em;
+		top: 0
+	}
+}
+
+.sig {
+	border-top: 4px solid rgb(66, 71, 127);
+	background-color: rgba(66, 71, 127,0.1);
+}
