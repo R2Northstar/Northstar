@@ -10,12 +10,10 @@
 #include <Psapi.h>
 #include <minidumpapiset.h>
 #include "configurables.h"
-#include "logCompression.h"
 
 // This needs to be called after hooks are loaded so we can access the command line args
 void CreateLogFiles()
 {
-	CompressLogFiles();
 	if (strstr(GetCommandLineA(), "-disablelogs"))
 	{
 		spdlog::default_logger()->set_level(spdlog::level::off);
