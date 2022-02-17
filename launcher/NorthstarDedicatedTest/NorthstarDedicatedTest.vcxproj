@@ -66,7 +66,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>$(ProjectDir)include\MinHook.x64.lib;$(ProjectDir)include\libcurl\lib\libcurl_a.lib;$(ProjectDir)include\zlib.lib;dbghelp.lib;Wldap32.lib;Normaliz.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)include\MinHook.x64.lib;$(ProjectDir)include\libcurl\lib\libcurl_a.lib;dbghelp.lib;Wldap32.lib;Normaliz.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ForceSymbolReferences>
       </ForceSymbolReferences>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -96,7 +96,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>$(ProjectDir)include\zlib.lib;$(ProjectDir)include\MinHook.x64.lib;$(ProjectDir)include\libcurl\lib\libcurl_a.lib;dbghelp.lib;Wldap32.lib;Normaliz.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)include\MinHook.x64.lib;$(ProjectDir)include\libcurl\lib\libcurl_a.lib;dbghelp.lib;Wldap32.lib;Normaliz.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ForceSymbolReferences>
       </ForceSymbolReferences>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -523,7 +523,6 @@
     <ClInclude Include="keyvalues.h" />
     <ClInclude Include="languagehooks.h" />
     <ClInclude Include="latencyflex.h" />
-    <ClInclude Include="logCompression.h" />
     <ClInclude Include="logging.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="masterserver.h" />
@@ -570,7 +569,6 @@
     <ClCompile Include="hookutils.cpp" />
     <ClCompile Include="keyvalues.cpp" />
     <ClCompile Include="latencyflex.cpp" />
-    <ClCompile Include="logCompression.cpp" />
     <ClCompile Include="maxplayers.cpp" />
     <ClCompile Include="languagehooks.cpp" />
     <ClCompile Include="memalloc.cpp" />
