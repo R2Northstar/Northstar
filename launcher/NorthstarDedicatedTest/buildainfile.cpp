@@ -24,7 +24,7 @@ struct CAI_NodeLink
 	int64_t flags;
 };
 
-#pragma pack (push, 1)
+#pragma pack(push, 1)
 struct CAI_NodeLinkDisk
 {
 	short srcId;
@@ -54,8 +54,8 @@ struct CAI_Node
 	CAI_NodeLink** links;
 	char unk5[16];
 	int linkcount;
-	int unk11; // bad name lmao
-	short unk6; // should match up to unk4 on disk
+	int unk11;	   // bad name lmao
+	short unk6;	   // should match up to unk4 on disk
 	char unk7[16]; // padding until next bit
 	short unk8;	   // should match up to unk5 on disk
 	char unk9[8];  // padding until next bit
@@ -63,7 +63,7 @@ struct CAI_Node
 };
 
 // the way CAI_Nodes are represented in on-disk ain files
-#pragma pack (push, 1)
+#pragma pack(push, 1)
 struct CAI_NodeDisk
 {
 	float x;
@@ -85,14 +85,14 @@ struct UnkNodeStruct0
 {
 	int index;
 	char unk0;
-	char unk1; // maps to unk1 on disk
+	char unk1;	  // maps to unk1 on disk
 	char pad0[2]; // padding to +8
 
 	float x;
 	float y;
 	float z;
-	
-	short* unk2; // maps to unk5 on disk;
+
+	short* unk2;   // maps to unk5 on disk;
 	char pad1[12]; // pad to +48
 	int unkcount0; // maps to unkcount0 on disk
 
@@ -215,7 +215,8 @@ void DumpAINInfo(CAI_Network* aiNetwork)
 
 		memcpy(diskNode.unk3, aiNetwork->nodes[i]->unk3, sizeof(diskNode.unk3));
 		diskNode.unk4 = aiNetwork->nodes[i]->unk6;
-		diskNode.unk5 = -1; // aiNetwork->nodes[i]->unk8; // this field is wrong, however, it's always -1 in vanilla navmeshes anyway, so no biggie
+		diskNode.unk5 =
+			-1; // aiNetwork->nodes[i]->unk8; // this field is wrong, however, it's always -1 in vanilla navmeshes anyway, so no biggie
 		memcpy(diskNode.unk6, aiNetwork->nodes[i]->unk10, sizeof(diskNode.unk6));
 
 		spdlog::info("writing node {} from {} to {:x}", aiNetwork->nodes[i]->index, (void*)aiNetwork->nodes[i], writeStream.tellp());
@@ -235,7 +236,7 @@ void DumpAINInfo(CAI_Network* aiNetwork)
 			spdlog::info("caculated linkcount is normal!");
 		else
 			spdlog::warn("calculated linkcount has weird value! this is expected on build!");
-	}	
+	}
 
 	spdlog::info("writing linkcount: {}", calculatedLinkcount);
 	writeStream.write((char*)&calculatedLinkcount, sizeof(int));
@@ -298,7 +299,7 @@ void DumpAINInfo(CAI_Network* aiNetwork)
 		writeStream.write((char*)&nodeStruct->unkcount0, sizeof(nodeStruct->unkcount0));
 		for (int i = 0; i < nodeStruct->unkcount0; i++)
 			writeStream.write((char*)&nodeStruct->unk2[i], sizeof(nodeStruct->unk2[i]));
-		
+
 		writeStream.write((char*)&nodeStruct->unkcount1, sizeof(nodeStruct->unkcount1));
 		for (int i = 0; i < nodeStruct->unkcount1; i++)
 			writeStream.write((char*)&nodeStruct->unk3[i], sizeof(nodeStruct->unk3[i]));
@@ -340,7 +341,7 @@ void DumpAINInfo(CAI_Network* aiNetwork)
 	writeStream.close();
 }
 
-typedef void(*CAI_NetworkBuilder__BuildType)(void* builder, CAI_Network* aiNetwork, void* unknown);
+typedef void (*CAI_NetworkBuilder__BuildType)(void* builder, CAI_Network* aiNetwork, void* unknown);
 CAI_NetworkBuilder__BuildType CAI_NetworkBuilder__Build;
 
 void CAI_NetworkBuilder__BuildHook(void* builder, CAI_Network* aiNetwork, void* unknown)
@@ -350,7 +351,7 @@ void CAI_NetworkBuilder__BuildHook(void* builder, CAI_Network* aiNetwork, void* 
 	DumpAINInfo(aiNetwork);
 }
 
-typedef void(*LoadAINFileType)(void* aimanager, void* buf, const char* filename);
+typedef void (*LoadAINFileType)(void* aimanager, void* buf, const char* filename);
 LoadAINFileType LoadAINFile;
 
 void LoadAINFileHook(void* aimanager, void* buf, const char* filename)
@@ -366,10 +367,12 @@ void LoadAINFileHook(void* aimanager, void* buf, const char* filename)
 
 void InitialiseBuildAINFileHooks(HMODULE baseAddress)
 {
-	Cvar_ns_ai_dumpAINfileFromLoad = RegisterConVar("ns_ai_dumpAINfileFromLoad", "0", FCVAR_NONE, "For debugging: whether we should dump ain data for ains loaded from disk");
+	Cvar_ns_ai_dumpAINfileFromLoad = RegisterConVar(
+		"ns_ai_dumpAINfileFromLoad", "0", FCVAR_NONE, "For debugging: whether we should dump ain data for ains loaded from disk");
 
 	HookEnabler hook;
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x385E20, &CAI_NetworkBuilder__BuildHook, reinterpret_cast<LPVOID*>(&CAI_NetworkBuilder__Build));
+	ENABLER_CREATEHOOK(
+		hook, (char*)baseAddress + 0x385E20, &CAI_NetworkBuilder__BuildHook, reinterpret_cast<LPVOID*>(&CAI_NetworkBuilder__Build));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x3933A0, &LoadAINFileHook, reinterpret_cast<LPVOID*>(&LoadAINFile));
 
 	pUnkStruct0Count = (int*)((char*)baseAddress + 0x1063BF8);
