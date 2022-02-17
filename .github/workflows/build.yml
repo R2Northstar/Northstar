@@ -48,12 +48,12 @@ jobs:
       - name: Download compiled stubs
         run:
           wget "https://github.com/R2Northstar/NorthstarStubs/releases/download/v1/NorthstarStubs.zip"
-      - name: Checkout
+      - name: Checkout release files
         uses: actions/checkout@v2
         with:
           ref: ${{ env.NORTHSTAR_VERSION }}
           path: northstar
-      - name: Checkout
+      - name: Checkout core mods
         uses: actions/checkout@v2
         with:
           repository: R2Northstar/NorthstarMods
@@ -65,7 +65,7 @@ jobs:
           cat <<< $(jq ".Version = \"${MOD_VERSION}\"" northstar-mods/Northstar.Client/mod.json) > northstar-mods/Northstar.Client/mod.json
           cat <<< $(jq ".Version = \"${MOD_VERSION}\"" northstar-mods/Northstar.Custom/mod.json) > northstar-mods/Northstar.Custom/mod.json
           cat <<< $(jq ".Version = \"${MOD_VERSION}\"" northstar-mods/Northstar.CustomServers/mod.json) > northstar-mods/Northstar.CustomServers/mod.json
-      - name: Download repositories
+      - name: Make folder structure
         run: |
           mv northstar/release/* northstar/.
           mkdir -p northstar/R2Northstar/mods
