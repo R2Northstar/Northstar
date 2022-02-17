@@ -21,6 +21,7 @@ global function SetShouldCreateMinimapSpawnZones
 global function CreateTeamSpawnZoneEntity
 global function RateSpawnpoints_SpawnZones
 global function DecideSpawnZone_Generic
+global function DecideSpawnZone_CTF
 
 struct NoSpawnArea
 {
@@ -590,7 +591,7 @@ entity function DecideSpawnZone_Generic( array<entity> spawnzones, int team )
 		array<entity> possibleZones
 		foreach ( entity spawnzone in spawnStateSpawnzones.mapSpawnzoneTriggers )
 		{
-			// don't remeber if you can do a "value in table.values" sorta thing in squirrel so doing manual lookup
+			// don't remember if you can do a "value in table.values" sorta thing in squirrel so doing manual lookup
 			bool spawnzoneTaken = false
 			foreach ( int otherTeam, entity otherSpawnzone in spawnStateSpawnzones.activeTeamSpawnzones )
 			{			
@@ -668,6 +669,141 @@ entity function DecideSpawnZone_Generic( array<entity> spawnzones, int team )
 		
 		spawnStateSpawnzones.activeTeamSpawnzones[ team ] <- chosenZone
 	}
+	
+	return spawnStateSpawnzones.activeTeamSpawnzones[ team ]
+}
+
+// ideally this should be in the gamemode_ctf file, but would need refactors to expose more stuff that's not available there rn 
+entity function DecideSpawnZone_CTF( array<entity> spawnzones, int team )
+{
+	if ( spawnzones.len() == 0 )
+		return null
+	
+	int otherTeam = GetOtherTeam( team )
+	array<entity> enemyPlayers = GetPlayerArrayOfTeam( otherTeam )
+	
+	// get average team startspawn positions
+	int spawnCompareTeam = team
+	if ( HasSwitchedSides() )
+		spawnCompareTeam = GetOtherTeam( team )
+	
+	array<entity> startSpawns = SpawnPoints_GetPilotStart( spawnCompareTeam )
+	array<entity> enemyStartSpawns = SpawnPoints_GetPilotStart( GetOtherTeam( spawnCompareTeam ) )
+	
+	if ( startSpawns.len() == 0 || enemyStartSpawns.len() == 0 ) // ensure we don't crash
+		return null
+	
+	// get average startspawn position and max dist between spawns
+	// could probably cache this, tbh, not like it should change outside of halftimes
+	vector averageFriendlySpawns	
+	foreach ( entity spawn in startSpawns )
+		averageFriendlySpawns += spawn.GetOrigin()
+	
+	averageFriendlySpawns /= startSpawns.len()
+	
+	// get average enemy startspawn position
+	vector averageEnemySpawns
+	foreach ( entity spawn in enemyStartSpawns )
+		averageEnemySpawns += spawn.GetOrigin()
+	
+	averageEnemySpawns /= enemyStartSpawns.len()
+	
+	float baseDistance = Distance2D( averageFriendlySpawns, averageEnemySpawns )
+	
+	// find new zone
+	array<entity> possibleZones
+	foreach ( entity spawnzone in spawnStateSpawnzones.mapSpawnzoneTriggers )
+	{
+		// can't choose zone if another team has it
+		if ( otherTeam in spawnStateSpawnzones.activeTeamSpawnzones && spawnStateSpawnzones.activeTeamSpawnzones[ otherTeam ] == spawnzone )
+			continue
+		
+		// check zone validity
+		bool spawnzoneEvil = false
+		foreach ( entity player in enemyPlayers )
+		{
+			// couldn't get IsTouching, GetTouchingEntities or enter callbacks to work in testing, so doing this
+			if ( spawnzone.ContainsPoint( player.GetOrigin() ) )
+			{
+				spawnzoneEvil = true
+				break
+			}
+		}
+		
+		// don't choose spawnzones that are closer to enemy base than friendly base
+		if ( !spawnzoneEvil && Distance2D( spawnzone.GetOrigin(), averageFriendlySpawns ) > Distance2D( spawnzone.GetOrigin(), averageEnemySpawns ) )
+			spawnzoneEvil = true
+		
+		if ( spawnzoneEvil )
+			continue
+		
+		// rate spawnzone based on distance to frontline
+		Frontline frontline = GetFrontline( team )
+
+		// prefer spawns close to base pos
+		float rating = 10 * ( 1.0 - Distance2D( averageFriendlySpawns, spawnzone.GetOrigin() ) / baseDistance )
+	
+		if ( frontline.friendlyCenter != < 0, 0, 0 > )
+		{
+			// rate based on distance to frontline, and then prefer spawns in the same dir from the frontline as the combatdir
+			rating += rating * ( 1.0 - ( Distance2D( spawnzone.GetOrigin(), frontline.friendlyCenter ) / baseDistance ) )
+			rating *= fabs( frontline.combatDir.y - Normalize( spawnzone.GetOrigin() - averageFriendlySpawns ).y )
+			
+			// reduce rating based on players that can currently see the zone
+			bool hasAppliedInitialLoss = false
+			foreach ( entity player in enemyPlayers )
+			{
+				// don't trace here, just do an angle check
+				if ( PlayerCanSee( player, spawnzone, false, 65 ) && Distance2D( player.GetOrigin(), spawnzone.GetOrigin() ) <= 2000.0 )
+				{
+					float distFrac = TraceLineSimple( player.GetOrigin(), spawnzone.GetOrigin(), player )
+					
+					if ( distFrac >= 0.65 )
+					{
+						// give a fairly large loss if literally anyone can see it
+						if ( !hasAppliedInitialLoss )
+						{
+							rating *= 0.8
+							hasAppliedInitialLoss = true
+						}
+					
+						rating *= ( 1.0 / enemyPlayers.len() ) * distFrac
+					}
+				}
+			}
+		}
+		
+		spawnzone.s.spawnzoneRating = rating
+		possibleZones.append( spawnzone )
+	}
+	
+	if ( possibleZones.len() == 0 )
+		return null
+	
+	possibleZones.sort( int function( entity a, entity b ) 
+	{
+		if ( a.s.spawnzoneRating > b.s.spawnzoneRating )
+			return -1
+		
+		if ( b.s.spawnzoneRating > a.s.spawnzoneRating )
+			return 1
+		
+		return 0
+	} )
+	entity chosenZone = possibleZones[ minint( RandomInt( 3 ), possibleZones.len() - 1 ) ]
+	
+	if ( spawnStateSpawnzones.shouldCreateMinimapSpawnzones )
+	{
+		entity oldEnt
+		if ( team in spawnStateSpawnzones.activeTeamSpawnzoneMinimapEnts )
+			oldEnt = spawnStateSpawnzones.activeTeamSpawnzoneMinimapEnts[ team ]
+				
+		spawnStateSpawnzones.activeTeamSpawnzoneMinimapEnts[ team ] <- CreateTeamSpawnZoneEntity( chosenZone, team )
+		if ( IsValid( oldEnt ) )
+			oldEnt.Destroy()
+	}
+	
+	spawnStateSpawnzones.activeTeamSpawnzones[ team ] <- chosenZone
 	
 	return spawnStateSpawnzones.activeTeamSpawnzones[ team ]
 }
