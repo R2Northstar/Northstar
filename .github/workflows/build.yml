@@ -45,6 +45,9 @@ jobs:
         with:
           name: northstar-launcher
           path: northstar-launcher
+      - name: Download compiled stubs
+        run:
+          wget "https://github.com/R2Northstar/NorthstarStubs/releases/download/v1/NorthstarStubs.zip"
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -68,6 +71,7 @@ jobs:
           mkdir -p northstar/R2Northstar/mods
           mkdir -p northstar/bin/x64_retail
           mv northstar-launcher/wsock32.dll northstar/bin/x64_retail
+          unzip NorthstarStubs.zip -d northstar/bin/x64_dedi
           mv northstar-launcher/* northstar
           rsync -avr --exclude="Northstar.Coop" --exclude=".git*" northstar-mods/. northstar/R2Northstar/mods
       - name: Cleanup
