@@ -20,6 +20,7 @@ HRESULT __stdcall D3D11CreateDeviceHook(
 
 	// atm, i think the play might be to run d3d in software, and then just stub out any calls that allocate memory/use alot of resources
 	// (e.g. createtexture and that sorta thing)
+	// note: this has been succeeded by the d3d11 and gfsdk stubs, and is only being kept around for posterity and as a fallback option
 	if (CommandLine()->CheckParm("-softwared3d11"))
 		DriverType = 5; // D3D_DRIVER_TYPE_WARP
 

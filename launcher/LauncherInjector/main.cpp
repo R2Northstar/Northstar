@@ -227,29 +227,89 @@ bool LoadNorthstar()
 	return true;
 }
 
+HMODULE LoadDediStub(const char* name)
+{
+	// this works because materialsystem_dx11.dll uses relative imports, and even a DLL loaded with an absolute path will take precedence
+	printf("[*]   Loading %s\n", name);
+	swprintf_s(buffer, L"%s\\bin\\x64_dedi\\%hs", exePath, name);
+	HMODULE h = LoadLibraryExW(buffer, 0, LOAD_WITH_ALTERED_SEARCH_PATH);
+	if (!h)
+	{
+		wprintf(L"[*] Failed to load stub %hs from \"%ls\": %hs\n", name, buffer, std::system_category().message(GetLastError()).c_str());
+	}
+	return h;
+}
+
 int main(int argc, char* argv[])
 {
-
-	// checked to avoid starting origin, Northstar.dll will check for -dedicated as well on its own
-	bool noOriginStartup = false;
-	for (int i = 0; i < argc; i++)
-		if (!strcmp(argv[i], "-noOriginStartup") || !strcmp(argv[i], "-dedicated"))
-			noOriginStartup = true;
-
-	if (!noOriginStartup)
+	if (!GetExePathWide(exePath, sizeof(exePath)))
 	{
+		MessageBoxA(
+			GetForegroundWindow(), "Failed getting game directory.\nThe game cannot continue and has to exit.", "Northstar Launcher Error",
+			0);
+		return 1;
+	}
+
+	bool noOriginStartup = false;
+	bool dedicated = false;
+	bool nostubs = false;
+
+	for (int i = 0; i < argc; i++)
+		if (!strcmp(argv[i], "-noOriginStartup"))
+			noOriginStartup = true;
+		else if (!strcmp(argv[i], "-dedicated")) // also checked by Northstar.dll
+			dedicated = true;
+		else if (!strcmp(argv[i], "-nostubs"))
+			nostubs = true;
+
+	if (!noOriginStartup && !dedicated)
 		EnsureOriginStarted();
+
+	if (dedicated && !nostubs)
+	{
+		// clang-format keeps messing with the easy-to-read if statements, so
+		// clang-format off
+		printf("[*] Loading stubs\n");
+		HMODULE gssao, gtxaa, d3d11;
+		if (!(gssao = GetModuleHandleA("GFSDK_SSAO.win64.dll")) &&
+			!(gtxaa = GetModuleHandleA("GFSDK_TXAA.win64.dll")) &&
+			!(d3d11 = GetModuleHandleA("d3d11.dll")))
+		{
+			if (!(gssao = LoadDediStub("GFSDK_SSAO.win64.dll")) ||
+				!(gtxaa = LoadDediStub("GFSDK_TXAA.win64.dll")) ||
+				!(d3d11 = LoadDediStub("d3d11.dll")))
+			{
+				if ((!gssao || FreeLibrary(gssao)) &&
+					(!gtxaa || FreeLibrary(gtxaa)) &&
+					(!d3d11 || FreeLibrary(d3d11)))
+				{
+					printf(
+						"[*] WARNING: Failed to load d3d11/gfsdk stubs from bin/x64_dedi. "
+						"The stubs have been unloaded and the original libraries will be used instead.\n");
+				}
+				else
+				{
+					// this is highly unlikely
+					MessageBoxA(
+						GetForegroundWindow(),
+						"Failed to load one or more stubs, but could not unload them either.\n"
+						"The game cannot continue and has to exit.",
+						"Northstar Launcher Error", 0);
+					return 1;
+				}
+			}
+		}
+		else
+		{
+			// this should never happen
+			printf(
+				"[*] WARNING: Failed to load stubs because conflicting modules are already loaded, so those will be used instead "
+				"(did Northstar initialize too late?).\n");
+		}
+		// clang-format on
 	}
 
 	{
-		if (!GetExePathWide(exePath, sizeof(exePath)))
-		{
-			MessageBoxA(
-				GetForegroundWindow(), "Failed getting game directory.\nThe game cannot continue and has to exit.",
-				"Northstar Launcher Error", 0);
-			return 1;
-		}
-
 		PrependPath();
 
 		printf("[*] Loading tier0.dll\n");
