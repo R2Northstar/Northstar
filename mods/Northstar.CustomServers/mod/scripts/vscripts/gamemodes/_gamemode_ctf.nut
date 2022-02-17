@@ -40,6 +40,7 @@ void function CaptureTheFlag_Init()
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	AddCallback_OnPilotBecomesTitan( DropFlagForBecomingTitan )
 	
+	SetSpawnZoneRatingFunc( DecideSpawnZone_CTF )
 	AddSpawnpointValidationRule( VerifyCTFSpawnpoint )
 	
 	RegisterSignal( "FlagReturnEnded" )
@@ -65,69 +66,7 @@ void function CaptureTheFlag_Init()
 
 void function RateSpawnpoints_CTF( int checkClass, array<entity> spawnpoints, int team, entity player ) 
 {
-	// ctf spawn algo iteration 4 i despise extistence
-	array<entity> startSpawns = SpawnPoints_GetPilotStart( team )
-	array<entity> enemyStartSpawns = SpawnPoints_GetPilotStart( GetOtherTeam( team ) )
-	array<entity> enemyPlayers = GetPlayerArrayOfTeam_Alive( team )
-	
-	// get average startspawn position and max dist between spawns
-	// could probably cache this, tbh, not like it should change outside of halftimes
-	vector averageFriendlySpawns
-	float averageFriendlySpawnDist
-	
-	int averageDistCount
-	
-	foreach ( entity spawn in startSpawns )
-	{
-		foreach ( entity otherSpawn in startSpawns )
-		{
-			float dist = Distance2D( spawn.GetOrigin(), otherSpawn.GetOrigin() )
-			averageFriendlySpawnDist += dist
-			averageDistCount++
-		}
-		
-		averageFriendlySpawns += spawn.GetOrigin()
-	}
-	
-	averageFriendlySpawns /= startSpawns.len()
-	averageFriendlySpawnDist /= averageDistCount
-	
-	// get average enemy startspawn position
-	vector averageEnemySpawns
-	
-	foreach ( entity spawn in enemyStartSpawns )
-		averageEnemySpawns += spawn.GetOrigin()
-	
-	averageEnemySpawns /= enemyStartSpawns.len()
-	
-	// from here, rate spawns
-	float baseDistance = Distance2D( averageFriendlySpawns, averageEnemySpawns )
-	float spawnIterations = ( baseDistance / averageFriendlySpawnDist ) / 2
-	
-	foreach ( entity spawn in spawnpoints )
-	{
-		// ratings should max/min out at 100 / -100
-		// start by prioritizing closer spawns, but not so much that enemies won't really affect them
-		float rating = 10 * ( 1.0 - Distance2D( averageFriendlySpawns, spawn.GetOrigin() ) / baseDistance )
-		float remainingZonePower = 1.0 // this is used to ensure that players that are in multiple zones at once shouldn't affect all those zones too hard
-	
-		for ( int i = 0; i < spawnIterations; i++ )
-		{
-			vector zonePos = averageFriendlySpawns + Normalize( averageEnemySpawns - averageFriendlySpawns ) * ( i * averageFriendlySpawnDist )
-			
-			float zonePower
-			foreach ( entity otherPlayer in enemyPlayers )
-				if ( Distance2D( otherPlayer.GetOrigin(), zonePos ) < averageFriendlySpawnDist )
-					zonePower += 1.0 / enemyPlayers.len()
-			
-			zonePower = min( zonePower, remainingZonePower )
-			remainingZonePower -= zonePower
-			// scale rating based on distance between spawn and zone, baring in mind max 100 rating
-			rating -= ( zonePower * 100 ) * ( 1.0 - Distance2D( spawn.GetOrigin(), zonePos ) / baseDistance )
-		}
-		
-		spawn.CalculateRating( checkClass, player.GetTeam(), rating, rating )
-	}
+	RateSpawnpoints_SpawnZones( checkClass, spawnpoints, team, player )
 }
 
 bool function VerifyCTFSpawnpoint( entity spawnpoint, int team )
@@ -179,13 +118,6 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	}
 }
 
-void function SetupFlagMinimapIcon( entity flag )
-{
-	flag.Minimap_AlwaysShow( TEAM_IMC, null )
-	flag.Minimap_AlwaysShow( TEAM_MILITIA, null )
-	flag.Minimap_SetAlignUpright( true )
-}
-
 void function CreateFlags()
 {	
 	if ( IsValid( file.imcFlagSpawn ) )
@@ -205,7 +137,7 @@ void function CreateFlags()
 		// likely this is because respawn uses distance checks from spawns to check this in official
 		// but i don't like doing that so just using a list of maps to swap them on lol
 		bool switchedSides = HasSwitchedSides() == 1
-		bool shouldSwap = SWAP_FLAG_MAPS.contains( GetMapName() ) || switchedSides
+		bool shouldSwap = SWAP_FLAG_MAPS.contains( GetMapName() ) ? !switchedSides : switchedSides 
 	
 		int flagTeam = spawn.GetTeam()
 		if ( shouldSwap )
@@ -228,7 +160,6 @@ void function CreateFlags()
 		flag.SetModel( CTF_FLAG_MODEL )
 		flag.SetOrigin( spawn.GetOrigin() + < 0, 0, base.GetBoundingMaxs().z * 2 > ) // ensure flag doesn't spawn clipped into geometry
 		flag.SetVelocity( < 0, 0, 1 > )
-		SetFlagStateForTeam( flag.GetTeam(), eFlagState.None ) // reset flag state to prevent half-time oddities
 		
 		flag.s.canTake <- true
 		flag.s.playersReturning <- []
@@ -252,7 +183,6 @@ void function CreateFlags()
 		{
 			file.imcFlagSpawn = base
 			file.imcFlag = flag
-			SetupFlagMinimapIcon( file.imcFlag )
 			file.imcFlagReturnTrigger = returnTrigger
 			
 			SetGlobalNetEnt( "imcFlag", file.imcFlag )
@@ -262,7 +192,6 @@ void function CreateFlags()
 		{
 			file.militiaFlagSpawn = base
 			file.militiaFlag = flag
-			SetupFlagMinimapIcon( file.militiaFlag )
 			file.militiaFlagReturnTrigger = returnTrigger
 			
 			SetGlobalNetEnt( "milFlag", file.militiaFlag )
@@ -344,7 +273,7 @@ void function DropFlagIfPhased( entity player, entity flag )
 		DropFlag( player, true )
 	})
 	
-	while( IsValid( flag ) && flag.GetParent() == player )
+	while( flag.GetParent() == player )
 		WaitFrame()
 }
 
