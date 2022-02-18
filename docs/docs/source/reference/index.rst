@@ -7,6 +7,7 @@ Northstar API
 
     /reference/northstar/callbacks
     /reference/northstar/chathooks
+    /reference/northstar/clientcommandsnotifications
 
 Respawn API
 -----------
@@ -16,3 +17,4 @@ Respawn API
 
     /reference/respawn/player
     /reference/respawn/weapon
+    /reference/respawn/clientcommands
