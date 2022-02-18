@@ -113,9 +113,9 @@ here we have defined an array with only 4 weapons in it, you can make this list 
 
 Now lets make a function to check if you enabled the setting    
 
+
 .. code-block:: javascript
-    bool
-    Next lets make the randomise function:
+
         bool function SimpleRandomiserEnabled() 
             return GetCurrentPlaylistVarInt("SimpleRandomiser", 0) == 1
 

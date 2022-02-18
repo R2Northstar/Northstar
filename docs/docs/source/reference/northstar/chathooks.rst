@@ -15,20 +15,31 @@ The client chat callbacks allow you to intercept chat messages and modify or blo
 
 .. _clclient_messagestruct:
 
-``struct ClClient_MessageStruct { ... }``
-"""""""""""""""""""""""""""""""""""""""""
+.. cpp:struct:: ClClient_MessageStruct
 
-Contains details on a chat message to be displayed. You can receive one of these by adding a chat callback with
-:ref:`AddCallback_OnReceivedSayTextMessage <addcallback_onreceivedsaytextmessage>`.
+    Contains details on a chat message to be displayed. You can receive one of these by adding a chat callback with
+    :ref:`AddCallback_OnReceivedSayTextMessage <addcallback_onreceivedsaytextmessage>`.
 
-**Fields:**
 
- - ``string message`` - the text sent by the player.
- - ``entity player`` - the player who sent the chat.
- - ``bool isTeam`` - whether this chat has a ``[TEAM]`` tag.
- - ``bool isDead`` - whether this chat has a ``[DEAD]`` tag.
- - ``bool isWhisper`` - whether this chat has a ``[WHISPER]`` tag.
- - ``bool shouldBlock`` - if true, this chat will not be displayed.
+    .. cpp:var:: string message
+
+        the text sent by the player.
+    .. cpp:var:: entity player
+
+        the player who sent the chat.
+    .. cpp:var:: bool isTeam
+
+        whether this chat has a ``[TEAM]`` tag.
+    .. cpp:var:: bool isDead
+
+        whether this chat has a ``[DEAD]`` tag.
+    .. cpp:var:: bool isWhisper
+
+        whether this chat has a ``[WHISPER]`` tag.
+    .. cpp:var:: bool shouldBlock
+
+        if true, this chat will not be displayed.
+
 
 .. _addcallback_onreceivedsaytextmessage:
 
@@ -145,17 +156,23 @@ The server chat callbacks allow you to intercept incoming chat messages and modi
 
 .. _clserver_messagestruct:
 
-``struct ClServer_MessageStruct { ... }``
-"""""""""""""""""""""""""""""""""""""""""
+.. cpp:struct:: ClServer_MessageStruct
 
-Contains details on an incoming chat message. You can receive one of these by adding a chat callback with
-:ref:`AddCallback_OnReceivedSayTextMessage <addcallback_onreceivedsaytextmessage_server>`.
+    Contains details on an incoming chat message. You can receive one of these by adding a chat callback with
+    :ref:`AddCallback_OnReceivedSayTextMessage <addcallback_onreceivedsaytextmessage_server>`.
 
-**Fields:**
- - ``string message`` - the text sent by the player.
- - ``entity player`` - the player who sent the chat.
- - ``bool isTeam`` - whether this chat is only sent to the player's team.
- - ``bool shouldBlock`` - if true, this chat will not be sent.
+    .. cpp:var:: string message
+        
+        the text sent by the player.
+    .. cpp:var:: entity player
+        
+        the player who sent the chat.
+    .. cpp:var:: bool isTeam
+        
+        whether this chat is only sent to the player's team.
+    .. cpp:var:: bool shouldBlock
+        
+        if true, this chat will not be sent.
 
 .. _addcallback_onreceivedsaytextmessage_server:
 
@@ -284,6 +301,7 @@ With custom messages you can send chat messages at any time, to all players or t
     **Example:**
 
     .. code-block:: javascript
+
         void function OnBanCommand(entity player, array<string> args)
         {
             if (!PlayerIsModerator(player))
@@ -314,11 +332,20 @@ reference this will be referred to with ``ESC`` (e.g. setting red text is ``ESC[
 
 The following commands are available:
 
- - ``ESC[0m`` and ``ESC[39m`` - reset text formatting
- - ``ESC[30-37m``, ``ESC[90-97m`` - set to one of `the available color presets <https://en.wikipedia.org/wiki/ANSI_escape_code#3-bit_and_4-bit>`_.
- - ``ESC[38;5;Xm`` - set to one of `the available 8-bit colors <https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit>`_.
- - ``ESC[38;2;R;G;Bm`` - set to an RGB color, with ``R``, ``G`` and ``B`` in the range 0-255.
- - ``ESC[110m`` - set to chat text color
- - ``ESC[111m`` - set to friendly player name color
- - ``ESC[112m`` - set to enemy player name color
- - ``ESC[113m`` - set to network name color
+
+ * - ``ESC[0m`` and ``ESC[39m`` 
+   - reset text formatting
+ * - ``ESC[30-37m``, ``ESC[90-97m`` 
+   - set to one of `the available color presets <https://en.wikipedia.org/wiki/ANSI_escape_code#3-bit_and_4-bit>`_.
+ * - ``ESC[38;5;Xm`` 
+   - set to one of `the available 8-bit colors <https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit>`_.
+ * - ``ESC[38;2;R;G;Bm`` 
+   - set to an RGB color, with ``R``, ``G`` and ``B`` in the range 0-255.
+ * - ``ESC[110m`` 
+   - set to chat text color
+ * - ``ESC[111m`` 
+   - set to friendly player name color
+ * - ``ESC[112m`` 
+   - set to enemy player name color
+ * - ``ESC[113m`` 
+   - set to network name color
