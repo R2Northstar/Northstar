@@ -1,9 +1,8 @@
-Template for the Read the Docs tutorial
+Northstar Modding Docs
 =======================================
 
-This GitHub template includes fictional Python library
-with some basic Sphinx docs.
+This repo contains the technical documentation on all things related to making Northstar mods.
 
-Read the tutorial here:
+Its currently in the early stages of development, so there might be some unpolished things about it.
 
-https://docs.readthedocs.io/en/stable/tutorial/
+If you have some knowledge you want to share, but don't want to write a PR, you can make a issue explaining what you know and we can try to integrate that into the docs.
