@@ -11,60 +11,63 @@ Functions for getting player, and methods of the player object
 
 .. cpp:function:: array<entity> GetPlayerArray()
 
-
 .. cpp:function:: array<entity> GetPlayerArrayOfTeam( int team )
+
+.. cpp:function:: array<entity> GetPlayerArrayOfTeam_Alive( int team )
 
 .. cpp:function:: array<entity> GetPlayerArrayOfEnemies_Alive( int team )
 
-.. cpp:class:: player : public entity	
+.. cpp:function:: array<entity> GetSortedPlayers( IntFromEntityCompare compareFunc, int team)
 
-    .. cpp:function::  unknown GetActivePilotLoadoutIndex( player )
+.. cpp:class:: player : public entity
+
+    .. cpp:function::  int GetActivePilotLoadoutIndex( player )
 
     .. cpp:function::  entity GetActiveWeapon()
 
-    .. cpp:function::  unknown GetActiveWeaponPrimaryAmmoLoaded()
+    .. cpp:function::  int GetActiveWeaponPrimaryAmmoLoaded()
 
-    .. cpp:function::  unknown GetAngles()
+    .. cpp:function::  vector GetAngles()
 
-    .. cpp:function::  unknown GetAntiTitanWeapon()
+    .. cpp:function::  entity GetAntiTitanWeapon()
 
-    .. cpp:function::  unknown GetAttachmentAngles()
+    .. cpp:function::  vector GetAttachmentAngles()
 
-    .. cpp:function::  unknown GetAttachmentOrigin()
+    .. cpp:function::  vector GetAttachmentOrigin()
 
-    .. cpp:function::  unknown GetBodyGroupModelCount()
+    .. cpp:function::  int GetBodyGroupModelCount()
 
-    .. cpp:function::  unknown GetBossPlayerName()
+    .. cpp:function::  string GetBossPlayerName()
 
-    .. cpp:function::  unknown GetCinematicEventFlags()
+    .. cpp:function::  int GetCinematicEventFlags()
 
-    .. cpp:function::  unknown GetCockpit()
+    .. cpp:function::  entity GetCockpit()
 
-    .. cpp:function::  unknown GetFirstPersonProxy()
+    .. cpp:function::  entity GetFirstPersonProxy()
 
-    .. cpp:function::  unknown GetForcedDialogueOnly()
+    .. cpp:function::  bool GetForcedDialogueOnly()
 
-    .. cpp:function::  unknown GetGen()
+    .. cpp:function::  int GetGen()
 
-    .. cpp:function::  unknown GetHealthFrac(player)
+    .. cpp:function::  float GetHealthFrac(player)
 
     .. cpp:function::  unknown GetLastPingTime()
 
-    .. cpp:function::  unknown GetLevel()
+    .. cpp:function::  int GetLevel()
 
-    .. cpp:function::  unknown GetLifeState()
+    .. cpp:function::  int GetLifeState()
 
-    .. cpp:function::  unknown GetLocalClientPlayer()
+    .. cpp:function::  entity GetLocalClientPlayer()
 
-    .. cpp:function::  unknown GetLocalViewPlayer()
+    .. cpp:function::  entity GetLocalViewPlayer()
 
-    .. cpp:function::  unknown GetMainWeapons()
+    .. cpp:function::  array<entity> GetMainWeapons()
 
-    .. cpp:function::  unknown GetMaxHealth()
+    .. cpp:function::  int GetMaxHealth()
 
-    .. cpp:function::  unknown GetModelName()
+    .. cpp:function::  asset GetModelName()
 
-    .. cpp:function::  unknown GetNextTitanRespawnAvailable()
+    .. cpp:function::  float GetNextTitanRespawnAvailable()
 
     .. cpp:function::  unknown GetNumPingsAvailable()
 
@@ -74,41 +77,41 @@ Functions for getting player, and methods of the player object
 
     .. cpp:function::  unknown GetObjectiveIndex()
 
-    .. cpp:function::  unknown GetObserverMode()
+    .. cpp:function::  int GetObserverMode()
 
-    .. cpp:function::  unknown GetOffhandWeapon(slot)
+    .. cpp:function::  entity GetOffhandWeapon(slot)
 
-    .. cpp:function::  unknown GetOffhandWeapons()
+    .. cpp:function::  array<entity> GetOffhandWeapons()
 
-    .. cpp:function::  unknown GetOrigin()
+    .. cpp:function::  vector GetOrigin()
 
-    .. cpp:function::  unknown GetParent()
+    .. cpp:function::  entity GetParent()
 
-    .. cpp:function::  unknown GetPersistentSpawnLoadoutIndex( player, "pilot" )
+    .. cpp:function::  int GetPersistentSpawnLoadoutIndex( player, "pilot" )
 
-    .. cpp:function::  unknown GetPetTitan()
+    .. cpp:function::  entity GetPetTitan()
 
-    .. cpp:function::  unknown GetPilotLoadoutFromPersistentData( player, loadoutIndex )
+    .. cpp:function::  PilotLoadoutDef GetPilotLoadoutFromPersistentData( player, loadoutIndex )
 
     .. cpp:function::  unknown GetPingGroupAccumulator()
 
     .. cpp:function::  unknown GetPingGroupStartTime()
 
-    .. cpp:function::  unknown GetPlayerArray()
+    .. cpp:function::  array<entity> GetPlayerArray()
 
-    .. cpp:function::  unknown GetPlayerArrayOfEnemies_Alive( int team )
+    .. cpp:function::  array<entity> GetPlayerArrayOfEnemies_Alive( int team )
 
-    .. cpp:function::  unknown GetPlayerArrayOfTeam( int team )
+    .. cpp:function::  array<entity> GetPlayerArrayOfTeam( int team )
 
-    .. cpp:function::  unknown GetPlayerClass()
+    .. cpp:function::  string GetPlayerClass()
 
     .. cpp:function::  PGS_ELIMINATED GetPlayerGameStat()
 
-    .. cpp:function::  unknown GetPlayerName()
+    .. cpp:function::  string GetPlayerName()
 
-    .. cpp:function::  unknown GetPlayerNameWithClanTag()
+    .. cpp:function::  string GetPlayerNameWithClanTag()
 
-    .. cpp:function::  unknown GetPlayerNetBool( net_bool_name )
+    .. cpp:function::  bool GetPlayerNetBool( net_bool_name )
 
         example
 
@@ -116,109 +119,109 @@ Functions for getting player, and methods of the player object
 
             GetPlayerNetBool( "shouldShowWeaponFlyout" )
 
-    .. cpp:function::  unknown GetPlayerSettings()
+    .. cpp:function::  string GetPlayerSettings()
 
     .. cpp:function::  unknown GetPlayerSettingsField( "weaponClass" )
 
-    .. cpp:function::  unknown GetShieldHealth()
+    .. cpp:function::  int GetShieldHealth()
 
-    .. cpp:function::  unknown GetShieldHealthFrac( entity )
+    .. cpp:function::  float GetShieldHealthFrac( entity )
 
-    .. cpp:function::  unknown GetShieldHealthMax()
+    .. cpp:function::  int GetShieldHealthMax()
 
     .. cpp:function::  int GetTeam()
 
-    .. cpp:function::  unknown GetTitanSoul()
-        
+    .. cpp:function::  entity GetTitanSoul()
+
         .. code-block:: javascript
-        
+
             if IsTitan() | player.GetPetTitan().GetTitanSoul() if !IsTitan()
 
     .. cpp:function::  vector GetVelocity()
 
-    .. cpp:function::  unknown GetViewForward()
+    .. cpp:function::  vector GetViewForward()
 
-    .. cpp:function::  unknown GetViewModelEntity()
+    .. cpp:function::  entity GetViewModelEntity()
 
-    .. cpp:function::  unknown GetViewRight()
+    .. cpp:function::  vector GetViewRight()
 
-    .. cpp:function::  unknown GetViewUp()
+    .. cpp:function::  vector GetViewUp()
 
-    .. cpp:function::  unknown GetViewVector()
+    .. cpp:function::  vector GetViewVector()
 
-    .. cpp:function::  unknown GetWeaponAmmoStockpile()
+    .. cpp:function::  int GetWeaponAmmoStockpile()
 
     .. cpp:function::  unknown GetXP()
 
-    .. cpp:function::  float GetZoomFrac() 
-    
+    .. cpp:function::  float GetZoomFrac()
+
         0.0 (no zoom) - 1.0 (full zoom)
 
-    .. cpp:function::  unknown GiveArmor( player, int amount )
+    .. cpp:function::  void GiveArmor( player, int amount )
 
-    .. cpp:function::  unknown GiveOffhandWeapon( name, slot )
+    .. cpp:function::  void GiveOffhandWeapon( name, slot )
 
-    .. cpp:function::  unknown GivePilotLoadout( player, loadout )
+    .. cpp:function::  void GivePilotLoadout( player, loadout )
 
-    .. cpp:function::  unknown GiveWeapon()
+    .. cpp:function::  void GiveWeapon()
 
-    .. cpp:function::  unknown GiveWeaponPowerUp( player, string newWeapon )
+    .. cpp:function::  void GiveWeaponPowerUp( player, string newWeapon )
 
-    .. cpp:function::  unknown TakeOffhandWeapon()
+    .. cpp:function::  void TakeOffhandWeapon()
 
-    .. cpp:function::  unknown TakeWeaponNow()
+    .. cpp:function::  void TakeWeaponNow()
 
-    .. cpp:function::  unknown SetActiveWeaponByName()
+    .. cpp:function::  void SetActiveWeaponByName()
 
-    .. cpp:function::  unknown SetBodygroup()
+    .. cpp:function::  void SetBodygroup()
 
-    .. cpp:function::  unknown SetDodgePowerDelayScale()
+    .. cpp:function::  void SetDodgePowerDelayScale()
 
-    .. cpp:function::  unknown SetHealth()
+    .. cpp:function::  void SetHealth()
 
-    .. cpp:function::  unknown SetLastPingTime()
+    .. cpp:function::  void SetLastPingTime()
 
-    .. cpp:function::  unknown SetMaxHealth()
+    .. cpp:function::  void SetMaxHealth()
 
-    .. cpp:function::  unknown SetNumPingsAvailable()
+    .. cpp:function::  void SetNumPingsAvailable()
 
-    .. cpp:function::  unknown SetNumPingsUsed()
+    .. cpp:function::  void SetNumPingsUsed()
 
-    .. cpp:function::  unknown SetOrigin()
+    .. cpp:function::  void SetOrigin()
 
-    .. cpp:function::  unknown SetPowerRegenRateScale()
+    .. cpp:function::  void SetPowerRegenRateScale()
 
-    .. cpp:function::  unknown SetShieldHealth()
+    .. cpp:function::  void SetShieldHealth()
 
-    .. cpp:function::  unknown SetShieldHealthMax()
+    .. cpp:function::  void SetShieldHealthMax()
 
-    .. cpp:function::  unknown SetTitanDisembarkEnabled( bool )
+    .. cpp:function::  void SetTitanDisembarkEnabled( bool )
 
 
 
-    .. cpp:function::  unknown AddThreatScopeColorStatusEffect(weaponOwner)
+    .. cpp:function::  void AddThreatScopeColorStatusEffect(weaponOwner)
 
-    .. cpp:function::  unknown CameraPosition()
+    .. cpp:function::  vector CameraPosition()
 
-    .. cpp:function::  unknown CockpitStartDisembark()
+    .. cpp:function::  void CockpitStartDisembark()
 
-    .. cpp:function::  unknown ContextAction_IsActive()
+    .. cpp:function::  bool ContextAction_IsActive()
 
-    .. cpp:function::  unknown ContextAction_IsBusy()
+    .. cpp:function::  bool ContextAction_IsBusy()
 
-    .. cpp:function::  unknown EyeAngles()
+    .. cpp:function::  vector EyeAngles()
 
-    .. cpp:function::  unknown EyePosition()
+    .. cpp:function::  vector EyePosition()
 
-    .. cpp:function::  unknown FindBodyGroup()
+    .. cpp:function::  int FindBodyGroup()
 
-    .. cpp:function::  unknown LookupAttachment()
+    .. cpp:function::  int LookupAttachment()
 
-    .. cpp:function::  unknown Lunge_ClearTarget()
+    .. cpp:function::  void Lunge_ClearTarget()
 
-    .. cpp:function::  unknown Minimap_GetZOrder()
+    .. cpp:function::  int Minimap_GetZOrder()
 
-    .. cpp:function::  unknown RemoveThreatScopeColorStatusEffect(weaponOwner)
+    .. cpp:function::  int RemoveThreatScopeColorStatusEffect(weaponOwner)
 
     .. cpp:function::  bool HasBadReputation()
 
