@@ -19,6 +19,9 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 		"AUTHENTICATION_AGREEMENT" "Accord d'authentification"
 		"AUTHENTICATION_AGREEMENT_RESTART" "Vous devrez relancer le jeu pour que votre choix soit pris en compte."
 
+		"DIALOG_AUTHENTICATING_MASTERSERVER" "Connexion au serveur maître."
+		"AUTHENTICATIONAGREEMENT_NO" "Vous avez choisi de ne pas vous authentifier à Northstar. Vous pouvez lire l'accord de connexion dans le menu des mods."
+
 		"MENU_TITLE_SERVER_BROWSER" "Navigateur de serveurs"
 		"NS_SERVERBROWSER_NOSERVERS" "Aucun serveur trouvé."
 		"NS_SERVERBROWSER_UNKNOWNMODE" "Mode inconnu"
@@ -52,6 +55,7 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 		"roundscorelimit" "Limite de score (manche)"
 		"timelimit" "Limite de temps"
 		"roundtimelimit" "Limite de temps (manche)"
+		"respawnprotection" "Temps protection réapparition"
 
 		"pilot_health_multiplier" "Multiplicateur de santé"
 		"respawn_delay" "Délai de réapparition"
@@ -91,6 +95,9 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 		"PL_gg_hint" "Obtenez une nouvelle arme à chaque frag.\nTuez un pilote avec chaque arme pour gagner."
 		"PL_gg_abbr" "GG"
 		"GAMEMODE_GG" "Gun game"
+		"gg_kill_reward" "Récompense pourcentage de frags"
+		"gg_assist_reward" "Récompense pourcentage d'assistances"
+		"gg_execution_reward" "Récompense pourcentage d'exécutions"
 
 		"PL_tt" "Titan tag"
 		"PL_tt_lobby" "Lobby: Titan tag"
@@ -115,6 +122,24 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 		"HIDDEN_YOU_ARE_HIDDEN" "Vous êtes le chasseur !"
 		"HIDDEN_KILL_SURVIVORS" "Tuez tous les survivants."
 		"HIDDEN_FIRST_HIDDEN" "%s1 est le chasseur."
+
+		"PL_sns" "Sticks and Stones"
+		"PL_sns_lobby" "Lobby: Sticks and Stones"
+		"PL_sns_desc" "Chacun pour soi.\nLes exécutions et les lames à impulsions réinitialisent le score de vos ennemis."
+		"PL_sns_abbr" "SNS"
+		"GAMEMODE_SNS" "Sticks and Stones"
+		"SCOREBOARD_BANKRUPTS" "Frags de réinitialisation"
+		"SNS_LEADER_BANKRUPT" "Le leader a été réinitialisé !"
+		"SNS_LEADER_BANKRUPT_SUB" "%s1 a été réinitialisé par %s2"
+		"SNS_BANKRUPT" "Reset !"
+		"SNS_BANKRUPT_SUB" "Votre score a été réinitialisé par %s1"
+		"sns_wme_kill_value" "Frags Wingman Elite"
+		"sns_softball_kill_value" "Frags Softball"
+		"sns_offhand_kill_value" "Frags Offhand"
+		"sns_reset_kill_value" "Frags exécutions/impulsion"
+		"sns_melee_kill_value" "Frags mêlée"
+		"sns_reset_pulse_blade_cooldown_on_pulse_blade_kill" "Le cooldown de frag a été réinitialisé"
+		"sns_softball_enabled" "Softball activé"
 
 		"PL_inf" "Infection"
 		"PL_inf_lobby" "Lobby: Infection"
@@ -268,5 +293,14 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 		"CONNECTING" "Connexion..."
 		"INGAME_PLAYERS" "Joueurs : ^6BA6C400%s1"
 		"TOTAL_SERVERS" "Serveurs : ^C46C6C00%s1"
+
+		// Mods menu
+		"SHOW" "Afficher"
+		"SHOW_ALL" "Tous"
+		"SHOW_ONLY_ENABLED" "Mods activés"
+		"SHOW_ONLY_DISABLED" "Mods désactivés"
+    
+		// Maps menu
+		"HIDE_LOCKED" "Cacher les cartes verrouillées"
 	}
 }
