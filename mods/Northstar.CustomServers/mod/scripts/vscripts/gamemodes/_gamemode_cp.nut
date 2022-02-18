@@ -3,6 +3,7 @@ untyped
 global function GamemodeCP_Init
 global function RateSpawnpoints_CP
 global function DEV_PrintHardpointsInfo
+global function DEV_PrintPlayersOnHardpoint
 
 // needed for sh_gamemode_cp_dialogue
 global array<entity> HARDPOINTS
@@ -15,8 +16,6 @@ struct HardpointStruct
 
 	array<entity> imcCappers
 	array<entity> militiaCappers
-
-	
 }
 
 struct CP_PlayerStruct
@@ -69,22 +68,42 @@ void function GamemodeCP_OnPlayerKilled(entity victim, entity attacker, var dama
 {
 	HardpointStruct attackerCP
 	HardpointStruct victimCP
-
+	CP_PlayerStruct victimStruct
 	if(!attacker.IsPlayer())
 		return
+
+	//hardpoint forever capped mitigation
+	
+	foreach(CP_PlayerStruct p in file.players)
+		if(p.player==victim)
+			victimStruct=p
 
 	foreach(HardpointStruct hardpoint in file.hardpoints)
 	{
 		if(hardpoint.imcCappers.contains(victim))
+		{
 			victimCP = hardpoint
+			thread removePlayerFromCapperArray_threaded(hardpoint.imcCappers,victim)
+		}
+			
 		if(hardpoint.militiaCappers.contains(victim))
+		{
 			victimCP = hardpoint
-
+			thread removePlayerFromCapperArray_threaded(hardpoint.militiaCappers,victim)
+		}
+			
 		if(hardpoint.imcCappers.contains(attacker))
 			attackerCP = hardpoint
 		if(hardpoint.militiaCappers.contains(attacker))
 			attackerCP = hardpoint
+
 	}
+	if(victimStruct.isOnHardpoint)
+		victimStruct.isOnHardpoint = false
+
+	//prevent medals form suicide
+	if(attacker==victim)
+		return
 
 	if((victimCP.hardpoint!=null)&&(attackerCP.hardpoint!=null))
 	{
@@ -127,7 +146,13 @@ void function GamemodeCP_OnPlayerKilled(entity victim, entity attacker, var dama
 		if(player.player == victim)
 			player.timeOnPoints = [0.0,0.0,0.0]
 	}
+}
 
+void function removePlayerFromCapperArray_threaded(array<entity> capperArray,entity player)
+{	
+	WaitFrame()
+	if(capperArray.contains(player))
+		capperArray.remove(capperArray.find(player))
 }
 
 void function RateSpawnpoints_CP( int checkClass, array<entity> spawnpoints, int team, entity player )
@@ -189,9 +214,6 @@ void function SpawnHardpoints()
 				hardpointID = 1
 			else if ( group == "C" )
 				hardpointID = 2
-		
-	
-		
 
 		spawnpoint.SetHardpointID( hardpointID )
 		SpawnHardpointMinimapIcon( spawnpoint )
@@ -199,8 +221,6 @@ void function SpawnHardpoints()
 		HardpointStruct hardpointStruct
 		hardpointStruct.hardpoint = spawnpoint
 		hardpointStruct.prop = CreatePropDynamic( spawnpoint.GetModelName(), spawnpoint.GetOrigin(), spawnpoint.GetAngles(), 6 )
-		
-		
 
 		entity trigger = GetEnt( expect string( spawnpoint.kv.triggerTarget ) )
 		hardpointStruct.trigger = trigger
@@ -280,11 +300,9 @@ void function CapturePointForTeam(HardpointStruct hardpoint, int Team)
 	EmitSoundOnEntityToTeamExceptPlayer( hardpoint.hardpoint, "hardpoint_console_captured", Team, null )
 	GamemodeCP_VO_Captured( hardpoint.hardpoint )
 
-
 	array<entity> allCappers
 	allCappers.extend(hardpoint.militiaCappers)
 	allCappers.extend(hardpoint.imcCappers)
-
 
 	foreach(entity player in allCappers)
 	{
@@ -293,7 +311,6 @@ void function CapturePointForTeam(HardpointStruct hardpoint, int Team)
 			player.AddToPlayerGameStat(PGS_ASSAULT_SCORE,POINTVALUE_HARDPOINT_CAPTURE)
 		}
 	}
-
 }
 
 void function GamemodeCP_InitPlayer(entity player)
@@ -331,14 +348,10 @@ void function PlayerThink(CP_PlayerStruct player)
 	float lastTime = Time()
 	WaitFrame()
 
-
-
 	while(GamePlayingOrSuddenDeath()&&IsValid(player.player))
 	{
 		float currentTime = Time()
 		float deltaTime = currentTime - lastTime
-
-
 
 		if(player.isOnHardpoint)
 		{
@@ -353,7 +366,6 @@ void function PlayerThink(CP_PlayerStruct player)
 
 					if((hardpoint.hardpoint.GetTeam()==TEAM_IMC)&&(hardpoint.imcCappers.contains(player.player)))
 						hardpointBelongsToPlayerTeam = true
-
 				}
 				if(hardpointBelongsToPlayerTeam)
 				{
@@ -376,11 +388,9 @@ void function PlayerThink(CP_PlayerStruct player)
 				}
 			}
 		}
-
 		lastTime = currentTime
 		WaitFrame()
 	}
-
 }
 
 void function HardpointThink( HardpointStruct hardpoint )
@@ -472,7 +482,6 @@ void function HardpointThink( HardpointStruct hardpoint )
 		}
 		else if(cappingTeam==TEAM_UNASSIGNED)//nobody on point
 		{
-
 			if((GetHardpointState(hardpoint)==CAPTURE_POINT_STATE_AMPED)||(GetHardpointState(hardpoint)==CAPTURE_POINT_STATE_AMPING))
 			{
 				SetHardpointCappingTeam(hardpoint,hardpointEnt.GetTeam())
@@ -482,7 +491,6 @@ void function HardpointThink( HardpointStruct hardpoint )
 			}
 			if(GetHardpointState(hardpoint)>=CAPTURE_POINT_STATE_CAPTURED)
 				SetHardpointCappingTeam(hardpoint,TEAM_UNASSIGNED)
-
 		}
 		else if(hardpointEnt.GetTeam()==TEAM_UNASSIGNED)
 		{
@@ -517,7 +525,6 @@ void function HardpointThink( HardpointStruct hardpoint )
 						hasBeenAmped = false
 					}
 				}
-
 			}
 		}
 		else if(hardpointEnt.GetTeam()!=cappingTeam)
@@ -556,7 +563,6 @@ void function HardpointThink( HardpointStruct hardpoint )
 					if(!hasBeenAmped){
 						hasBeenAmped=true
 
-
 						array<entity> allCappers
 						allCappers.extend(hardpoint.militiaCappers)
 						allCappers.extend(hardpoint.imcCappers)
@@ -569,9 +575,7 @@ void function HardpointThink( HardpointStruct hardpoint )
 								player.AddToPlayerGameStat(PGS_DEFENSE_SCORE,POINTVALUE_HARDPOINT_AMPED)
 							}
 						}
-
 					}
-
 				}
 			}
 		}
@@ -584,6 +588,18 @@ void function HardpointThink( HardpointStruct hardpoint )
 			else if( GetHardpointState( hardpoint) >= CAPTURE_POINT_STATE_CAPTURED)
 				AddTeamScore( hardpointEnt.GetTeam(), 1 )
 		}
+
+		foreach(entity player in hardpoint.imcCappers)
+		{
+			if(DistanceSqr(player.GetOrigin(),hardpointEnt.GetOrigin())>1200000)
+				hardpoint.imcCappers.remove(hardpoint.imcCappers.find(player))
+		}
+		foreach(entity player in hardpoint.militiaCappers)
+		{
+			if(DistanceSqr(player.GetOrigin(),hardpointEnt.GetOrigin())>1200000)
+				hardpoint.militiaCappers.remove(hardpoint.militiaCappers.find(player))
+		}
+
 
 		lastTime = currentTime
 		WaitFrame()
@@ -687,8 +703,6 @@ void function DEV_PrintHardpointsInfo()
 			"|State:", CaptureStateToString(hardpoint.GetHardpointState()),
 			"|Progress:", GetGlobalNetFloat("objective" + GetHardpointGroup(hardpoint) + "Progress")
 		)
-		
-		
 	}
 }
 
