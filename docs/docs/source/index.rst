@@ -5,10 +5,16 @@ Welcome to the Northstar Modding Documentation!
 
 .. note::
 
-   This project is under active development.
+   This project is under active development. Please PR everything you can!
 
 Contents
 --------
+
+These docs contain info on squirrel usage and northstar/respawn functions. Its very much WIP.
+
+For now we are focusing on moving over things that were documented in other places (discord, pastebin, gists etc.).
+
+If you know anything about any function, object or concept please dont hesitate to contribute it, even if its just a quick and dirty PR.
 
 .. toctree::
    :maxdepth: 2
@@ -47,6 +53,5 @@ Contents
    /native/functions
    /native/tablesandarrays
    /native/async
-   /native/callbacks
    /native/useful
 
