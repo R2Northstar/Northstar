@@ -31,11 +31,11 @@ Contents
    /guides/publishing
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :hidden:
    :caption: Northstar API Documentation
 
-   /northstar/chathooks
+   /reference/index
 
 .. toctree::
    :maxdepth: 2
