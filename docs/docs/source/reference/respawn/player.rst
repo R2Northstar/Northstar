@@ -46,7 +46,7 @@ Functions for getting player, and methods of the player object
 
     .. cpp:function::  unknown GetGen()
 
-    .. cpp:function::  unknown GetHealthFrac(player)
+    .. cpp:function::  float GetHealthFrac(player)
 
     .. cpp:function::  unknown GetLastPingTime()
 
@@ -54,11 +54,11 @@ Functions for getting player, and methods of the player object
 
     .. cpp:function::  unknown GetLifeState()
 
-    .. cpp:function::  unknown GetLocalClientPlayer()
+    .. cpp:function::  entity GetLocalClientPlayer()
 
-    .. cpp:function::  unknown GetLocalViewPlayer()
+    .. cpp:function::  entity GetLocalViewPlayer()
 
-    .. cpp:function::  unknown GetMainWeapons()
+    .. cpp:function::  entity GetMainWeapons()
 
     .. cpp:function::  unknown GetMaxHealth()
 
@@ -76,11 +76,13 @@ Functions for getting player, and methods of the player object
 
     .. cpp:function::  unknown GetObserverMode()
 
-    .. cpp:function::  unknown GetOffhandWeapon(slot)
+    .. cpp:function::  entity GetOffhandWeapon(slot)
 
     .. cpp:function::  unknown GetOffhandWeapons()
 
-    .. cpp:function::  unknown GetOrigin()
+    .. cpp:function::  Vector GetOrigin() 
+            
+            (x, y, z)
 
     .. cpp:function::  unknown GetParent()
 
@@ -94,19 +96,21 @@ Functions for getting player, and methods of the player object
 
     .. cpp:function::  unknown GetPingGroupStartTime()
 
-    .. cpp:function::  unknown GetPlayerArray()
+    .. cpp:function::  array<entity> GetPlayerArray()
 
-    .. cpp:function::  unknown GetPlayerArrayOfEnemies_Alive( int team )
+    .. cpp:function::  array<entity> GetPlayerArrayOfEnemies_Alive( int team )
 
-    .. cpp:function::  unknown GetPlayerArrayOfTeam( int team )
+    .. cpp:function::  array<entity> GetPlayerArrayOfTeam( int team )
 
     .. cpp:function::  unknown GetPlayerClass()
 
     .. cpp:function::  PGS_ELIMINATED GetPlayerGameStat()
 
-    .. cpp:function::  unknown GetPlayerName()
+    .. cpp:function::  string GetPlayerName()
 
-    .. cpp:function::  unknown GetPlayerNameWithClanTag()
+    .. cpp:function::  string GetPlayerNameWithClanTag() 
+    
+        networks are disabled in northstar
 
     .. cpp:function::  unknown GetPlayerNetBool( net_bool_name )
 
@@ -122,7 +126,7 @@ Functions for getting player, and methods of the player object
 
     .. cpp:function::  unknown GetShieldHealth()
 
-    .. cpp:function::  unknown GetShieldHealthFrac( entity )
+    .. cpp:function::  float GetShieldHealthFrac( entity )
 
     .. cpp:function::  unknown GetShieldHealthMax()
 
@@ -144,7 +148,9 @@ Functions for getting player, and methods of the player object
 
     .. cpp:function::  unknown GetViewUp()
 
-    .. cpp:function::  unknown GetViewVector()
+    .. cpp:function::  Vector GetViewVector() 
+    
+        vector representation of your look direction. <0, 0, 1> -> looking straight up
 
     .. cpp:function::  unknown GetWeaponAmmoStockpile()
 
