@@ -1593,3 +1593,12 @@ bool function StartsWith( string target, string startsWith )
 {
 	return target.find( startsWith ) == 0
 }
+
+void function FindAndRemove( array<entity> arr, entity target )
+{
+	int findIndex = arr.find( target )
+	if ( findIndex != -1 )
+	{
+		arr.remove( findIndex )
+	}
+}
