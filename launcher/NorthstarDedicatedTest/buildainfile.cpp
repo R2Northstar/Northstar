@@ -24,7 +24,7 @@ struct CAI_NodeLink
 	int64_t flags;
 };
 
-#pragma pack(push, 1)
+#pragma pack (push, 1)
 struct CAI_NodeLinkDisk
 {
 	short srcId;
@@ -54,8 +54,8 @@ struct CAI_Node
 	CAI_NodeLink** links;
 	char unk5[16];
 	int linkcount;
-	int unk11;	   // bad name lmao
-	short unk6;	   // should match up to unk4 on disk
+	int unk11; // bad name lmao
+	short unk6; // should match up to unk4 on disk
 	char unk7[16]; // padding until next bit
 	short unk8;	   // should match up to unk5 on disk
 	char unk9[8];  // padding until next bit
@@ -63,7 +63,7 @@ struct CAI_Node
 };
 
 // the way CAI_Nodes are represented in on-disk ain files
-#pragma pack(push, 1)
+#pragma pack (push, 1)
 struct CAI_NodeDisk
 {
 	float x;
@@ -85,19 +85,20 @@ struct UnkNodeStruct0
 {
 	int index;
 	char unk0;
-	char unk1;	  // maps to unk1 on disk
+	char unk1; // maps to unk1 on disk
 	char pad0[2]; // padding to +8
 
 	float x;
 	float y;
 	float z;
-
-	short* unk2;   // maps to unk5 on disk;
-	char pad1[12]; // pad to +48
+	
+	char pad5[4];
+	int* unk2; // maps to unk5 on disk;
+	char pad1[16]; // pad to +48
 	int unkcount0; // maps to unkcount0 on disk
 
 	char pad2[4]; // pad to +56
-	short* unk3;
+	int* unk3;
 	char pad3[16]; // pad to +80
 	int unkcount1;
 
@@ -215,8 +216,7 @@ void DumpAINInfo(CAI_Network* aiNetwork)
 
 		memcpy(diskNode.unk3, aiNetwork->nodes[i]->unk3, sizeof(diskNode.unk3));
 		diskNode.unk4 = aiNetwork->nodes[i]->unk6;
-		diskNode.unk5 =
-			-1; // aiNetwork->nodes[i]->unk8; // this field is wrong, however, it's always -1 in vanilla navmeshes anyway, so no biggie
+		diskNode.unk5 = -1; // aiNetwork->nodes[i]->unk8; // this field is wrong, however, it's always -1 in vanilla navmeshes anyway, so no biggie
 		memcpy(diskNode.unk6, aiNetwork->nodes[i]->unk10, sizeof(diskNode.unk6));
 
 		spdlog::info("writing node {} from {} to {:x}", aiNetwork->nodes[i]->index, (void*)aiNetwork->nodes[i], writeStream.tellp());
@@ -297,12 +297,18 @@ void DumpAINInfo(CAI_Network* aiNetwork)
 		writeStream.write((char*)&nodeStruct->z, sizeof(nodeStruct->z));
 
 		writeStream.write((char*)&nodeStruct->unkcount0, sizeof(nodeStruct->unkcount0));
-		for (int i = 0; i < nodeStruct->unkcount0; i++)
-			writeStream.write((char*)&nodeStruct->unk2[i], sizeof(nodeStruct->unk2[i]));
-
+		for (int j = 0; j < nodeStruct->unkcount0; j++)
+		{
+			short unk2Short = (short)nodeStruct->unk2[j];
+			writeStream.write((char*)&unk2Short, sizeof(unk2Short));
+		}
+		
 		writeStream.write((char*)&nodeStruct->unkcount1, sizeof(nodeStruct->unkcount1));
-		for (int i = 0; i < nodeStruct->unkcount1; i++)
-			writeStream.write((char*)&nodeStruct->unk3[i], sizeof(nodeStruct->unk3[i]));
+		for (int j = 0; j < nodeStruct->unkcount1; j++)
+		{
+			short unk3Short = (short)nodeStruct->unk3[j];
+			writeStream.write((char*)&unk3Short, sizeof(unk3Short));
+		}
 
 		writeStream.write((char*)&nodeStruct->unk5, sizeof(nodeStruct->unk5));
 	}
