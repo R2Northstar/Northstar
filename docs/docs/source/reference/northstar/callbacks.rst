@@ -1,58 +1,108 @@
-Callbacks
-======================
+Custom Northstar Callbacks
+==========================
 
-Callbacks within squirrel trigger functions when certain events occur and are defined serverside. 
+Callbacks added by Northstar
 
-They will also often pass arguments to those functions based on the callbacks used
+Callbacks within squirrel trigger functions when certain events occur. 
 
-A few examples
---------------
+They will also often pass arguments to those functions based on the callbacks used.
 
-.. cpp:function:: void AddCallback_OnPlayerRespawned(void functionref(entity))
-
-This script will trigger the function "OnRespawn" when any player respawns, this function can be defined later in the mods file and this callback will pass one argument, the player entity that respawned
-
-
-.. cpp:function:: void AddCallback_OnPlayerKilled(void functionref(entity, entity, var))
-
-This callback triggers the function "AddPoints" when a player is killed. this function passes 3 arguments: an entity (the attacking player), an entity (the killed player), and the damage informtion
-
-.. cpp:function:: void AddCallback_OnClientConnected(void functionref(entity))
-
-This callback triggers the function "Connected" whenever a player joins and passes 1 argument, the player entity.
 
 List of callbacks
 -----------------
-This is an **incomplete** list of callbacks.
+Please refer to Respawn :doc:`../respawn/callbacks` for the list of callbacks defined in respawn code.
 
-.. cpp:function:: void AddCallback_OnTouchHealthKit( string className, bool functionref( entity player, entity healthpack ) )
-.. cpp:function:: void AddCallback_OnPlayerRespawned( void functionref( entity ) )
-.. cpp:function:: void AddCallback_OnPlayerKilled( void functionref( entity victim, entity attacker, var damageInfo ) )
-.. cpp:function:: void AddCallback_OnNPCKilled( void functionref( entity victim, entity attacker, var damageInfo ) )
-.. cpp:function:: void AddCallback_OnTitanDoomed( void functionref( entity victim, var damageInfo ) )
-.. cpp:function:: void AddCallback_OnTitanHealthSegmentLost( void functionref( entity victim, entity attacker ) )
-.. cpp:function:: void AddCallback_OnClientConnecting( void functionref( entity player ) )
-.. cpp:function:: void AddCallback_OnClientConnected( void functionref( entity player ) )
-.. cpp:function:: void AddCallback_OnClientDisconnected( void functionref( entity player ) )
-.. cpp:function:: void AddCallback_OnPilotBecomesTitan( void functionref( entity pilot, entity npc_titan ) )
-.. cpp:function:: void AddCallback_OnTitanBecomesPilot( void functionref( entity pilot, entity npc_titan ) )
-.. cpp:function:: void AddCallback_OnPlayerAssist( void functionref( entity attacker, entity victim ) )
-.. cpp:function:: void AddCallback_EntityChangedTeam( string className, void functionref( entity ent ) )
-.. cpp:function:: void AddCallback_OnTitanGetsNewTitanLoadout( void functionref( entity titan, TitanLoadoutDef newTitanLoadout ) )
-.. cpp:function:: void AddCallback_OnPlayerGetsNewPilotLoadout( void functionref( entity player, PilotLoadoutDef newTitanLoadout ) )
-.. cpp:function:: void AddCallback_OnUpdateDerivedTitanLoadout( void functionref( TitanLoadoutDef newTitanLoadout ) )
-.. cpp:function:: void AddCallback_OnUpdateDerivedPlayerTitanLoadout( void functionref( entity player, TitanLoadoutDef newTitanLoadout ) )
-.. cpp:function:: void AddCallback_OnUpdateDerivedPilotLoadout( void functionref( PilotLoadoutDef newPilotLoadout ) )
-.. cpp:function:: void AddCallback_OnPlayerInventoryChanged( void functionref( entity ) )
-.. cpp:function:: void AddCallback_OnRegisterCustomItems( void functionref() )
-.. cpp:function:: void AddCallback_ScriptTriggerEnter( entity trigger, void functionref( entity, entity ) )
-.. cpp:function:: void AddCallback_ScriptTriggerLeave( entity trigger, void functionref( entity, entity )  )
-.. cpp:function:: void AddCallback_OnUseEntity( entity ent, )
-.. cpp:function:: void AddCallback_EntitiesDidLoad( EntitiesDidLoadCallbackType callback )
-.. cpp:function:: void AddCallback_GameStateEnter( int gameState, void functionref() )
-.. cpp:function:: void AddCallback_NPCLeeched( void functionref( entity, entity ) )
-.. cpp:function:: void AddCallback_OnRegisteringCustomNetworkVars( void functionref() )
-.. cpp:function:: void AddCallback_OnCustomGamemodesInit( void functionref() )
-.. cpp:function:: void AddCallback_OnRoundEndCleanup( void functionref() )
-.. cpp:function:: void AddCallback_ZiplineStart( void functionref(entity,entity) )
-.. cpp:function:: void AddCallback_ZiplineStop( void functionref(entity) )
+_codecallbacks_common.gnut:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. cpp:function:: void AddClientCommandNotifyCallback( string commandString, void functionref( entity player, array<string> args ) callbackFunc )
+
+_custom_codecallbacks.gnut:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. cpp:function:: void CServerGameDLL_OnReceivedSayTextMessageCallback()
+.. cpp:function:: void AddCallback_OnReceivedSayTextMessage( ClServer_MessageStruct functionref (ClServer_MessageStruct) callbackFunc )
+
+_items.nut:
+^^^^^^^^^^^
+
+.. cpp:function:: void AddCallback_OnRegisterCustomItems( void functionref() callback )
+
+
+_loadouts_mp.gnut:
+^^^^^^^^^^^^^^^^^^
+
+.. cpp:function:: bool ClientCommandCallback_RequestPilotLoadout( entity player, array<string> args )
+.. cpp:function:: bool ClientCommandCallback_RequestTitanLoadout( entity player, array<string> args )
+.. cpp:function:: bool ClientCommandCallback_SetPersistentLoadoutValue( entity player, array<string> args )
+.. cpp:function:: bool ClientCommandCallback_SwapSecondaryAndWeapon3PersistentLoadoutData( entity player, array<string> args )
+.. cpp:function:: bool ClientCommandCallback_SetBurnCardPersistenceSlot( entity player, array<string> args )
+.. cpp:function:: bool ClientCommandCallback_SetCallsignIcon( entity player, array<string> args )
+.. cpp:function:: bool ClientCommandCallback_SetCallsignCard( entity player, array<string> args )
+.. cpp:function:: bool ClientCommandCallback_SetFactionChoicePersistenceSlot( entity player, array<string> args )
+.. cpp:function:: bool ClientCommandCallback_LoadoutMenuClosed( entity player, array<string> args )
+.. cpp:function:: bool ClientCommandCallback_InGameMPMenuClosed( entity player, array<string> args )
+
+_menu_callbacks.gnut:
+^^^^^^^^^^^^^^^^^^^^^
+
+.. cpp:function:: void MenuCallbacks_Init()
+.. cpp:function:: bool ClientCommandCallback_LeaveMatch( entity player, array<string> args )
+.. cpp:function:: bool ClientCommandCallback_GenUp( entity player, array<string> args )
+
+sh_remote_functions_mp_custom.gnut:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. cpp:function:: void AddCallback_OnRegisteringCustomNetworkVars( void functionref() callback )
+
+evac\_evac.gnut:
+^^^^^^^^^^^^^^^^
+
+.. cpp:function:: void Evac( int evacTeam, float initialWait, float arrivalTime, float waitTime, bool functionref( entity, entity ) canBoardCallback, bool functionref( entity ) shouldLeaveEarlyCallback, void functionref( entity ) completionCallback, entity customEvacNode = null )
+
+gamemodes\_gamemode_fra.nut:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. cpp:function:: void GamemodeFRA_AddAdditionalInitCallback()
+
+gamemodes\sh_gamemodes_custom.gnut:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. cpp:function:: void AddCallback_OnCustomGamemodesInit( void functionref() callback )
+
+
+lobby\_lobby.gnut:
+^^^^^^^^^^^^^^^^^^
+
+.. cpp:function:: bool ClientCommandCallback_StartPrivateMatchSearch( entity player, array<string> args )
+
+lobby\_private_lobby.gnut:
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. cpp:function:: bool ClientCommandCallback_PrivateMatchLaunch( entity player, array<string> args )
+.. cpp:function:: bool ClientCommandCallback_PrivateMatchSetMode( entity player, array<string> args )
+.. cpp:function:: bool ClientCommandCallback_SetCustomMap( entity player, array<string> args )
+.. cpp:function:: bool ClientCommandCallback_PrivateMatchSwitchTeams( entity player, array<string> args )
+.. cpp:function:: bool ClientCommandCallback_PrivateMatchToggleSpectate( entity player, array<string> args )
+.. cpp:function:: bool ClientCommandCallback_PrivateMatchSetPlaylistVarOverride( entity player, array<string> args )
+.. cpp:function:: bool ClientCommandCallback_ResetMatchSettingsToDefault( entity player, array<string> args )
+
+mp\_ai_mp.gnut:
+^^^^^^^^^^^^^^^
+
+.. cpp:function:: bool SPMP_Callback_ForceAIMissPlayer( entity npc, entity player )
+
+mp\_base_gametype_mp.gnut:
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. cpp:function:: bool ClientCommandCallback_spec_next( entity player, array<string> args )
+.. cpp:function:: bool ClientCommandCallback_spec_prev( entity player, array<string> args )
+.. cpp:function:: bool ClientCommandCallback_spec_mode( entity player, array<string> args )
+
+mp\_gamestate_mp.nut:
+^^^^^^^^^^^^^^^^^^^^^
+
+.. cpp:function:: void AddCallback_OnRoundEndCleanup( void functionref() callback )
+.. cpp:function:: void SetTimeoutWinnerDecisionFunc( int functionref() callback )
+
+    

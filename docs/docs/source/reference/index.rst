@@ -15,6 +15,7 @@ Respawn API
 .. toctree::
     :maxdepth: 2
 
+    /reference/respawn/callbacks
     /reference/respawn/player
     /reference/respawn/weapon
     /reference/respawn/titan
