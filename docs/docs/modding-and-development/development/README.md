@@ -10,7 +10,7 @@ description: >-
 
 Northstar is split over multiple git repositories that fulfill different functions.
 
-* [Northstar](development.md#repositories):\
+* [Northstar](./#repositories):\
   Contains compiled and packaged releases
 * [NorthstarLauncher](https://github.com/R2Northstar/NorthstarLauncher):\
   Contains the source for the launcher used to modify the Titanfall|2 install to allow mods to be loaded.
@@ -21,8 +21,3 @@ Northstar is split over multiple git repositories that fulfill different functio
 * [NorthstarWiki](https://github.com/R2Northstar/NorthstarWiki):\
   The repository for this wiki.
 
-## Setup
-
-Build instructions for the launcher can be found here:
-
-{% embed url="https://github.com/R2Northstar/NorthstarLauncher/blob/main/BUILD.md" %}
