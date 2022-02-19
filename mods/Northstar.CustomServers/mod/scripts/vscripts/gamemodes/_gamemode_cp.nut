@@ -602,29 +602,22 @@ void function TrackChevronStates()
 
 	while ( true )
 	{
-		int imcChevron
-		int militiaChevron
+		table <int, int> chevrons = {
+			[TEAM_IMC] = 0,
+			[TEAM_MILITIA] = 0,
+		}
 
 		foreach ( HardpointStruct hardpoint in file.hardpoints )
 		{
-			if ( hardpoint.hardpoint.GetTeam() == TEAM_IMC )
+			foreach ( k, v in chevrons )
 			{
-				if ( hardpoint.hardpoint.GetHardpointState() == CAPTURE_POINT_STATE_AMPED )
-					imcChevron += 4
-				else
-					imcChevron++
-			}
-			else if ( hardpoint.hardpoint.GetTeam() == TEAM_MILITIA )
-			{
-				if ( hardpoint.hardpoint.GetHardpointState() == CAPTURE_POINT_STATE_AMPED )
-					militiaChevron += 4
-				else
-					militiaChevron++
+				if ( k == hardpoint.hardpoint.GetTeam() )
+					chevrons[k] += ( hardpoint.hardpoint.GetHardpointState() == CAPTURE_POINT_STATE_AMPED ) ? 4 : 1
 			}
 		}
 
-		SetGlobalNetInt( "imcChevronState", imcChevron )
-		SetGlobalNetInt( "milChevronState", militiaChevron )
+		SetGlobalNetInt( "imcChevronState", chevrons[TEAM_IMC] )
+		SetGlobalNetInt( "milChevronState", chevrons[TEAM_MILITIA] )
 
 		WaitFrame()
 	}
