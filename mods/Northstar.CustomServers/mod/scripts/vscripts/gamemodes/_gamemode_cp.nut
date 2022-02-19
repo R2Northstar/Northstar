@@ -3,7 +3,6 @@ untyped
 global function GamemodeCP_Init
 global function RateSpawnpoints_CP
 global function DEV_PrintHardpointsInfo
-global function DEV_PrintPlayersOnHardpoint
 
 // needed for sh_gamemode_cp_dialogue
 global array<entity> HARDPOINTS
