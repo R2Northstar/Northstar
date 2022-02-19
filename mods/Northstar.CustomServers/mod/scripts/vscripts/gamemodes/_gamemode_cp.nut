@@ -667,7 +667,7 @@ void function OnHardpointLeft( entity trigger, entity player )
 	if ( player.GetTeam() == TEAM_IMC )
 		hardpoint.imcCappers.remove( hardpoint.imcCappers.find( player ) )
 	else
-		hardpoint.militiaCappers.remove( hardpoint.militiaCappers.find( player ) )
+		FindAndRemove( hardpoint.militiaCappers, player )
 	foreach(CP_PlayerStruct playerStruct in file.players)
 		if(playerStruct.player == player)
 			playerStruct.isOnHardpoint = false
