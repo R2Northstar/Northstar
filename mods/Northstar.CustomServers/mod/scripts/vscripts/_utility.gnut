@@ -3967,6 +3967,11 @@ void function SetRoundEndTime(float seconds)
 	SetServerVar( "roundEndTime", Time() + seconds )
 }
 
+void function SetScoreLimit(int newLimit)
+{
+	SetPlaylistVarOverride( "scorelimit", string(newLimit) )
+}
+
 int function GameTime_TimeLimitSeconds()
 {
 	if ( IsRoundBased() )
