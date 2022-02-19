@@ -292,7 +292,6 @@ void function StartHardpointThink()
 
 void function CapturePointForTeam(HardpointStruct hardpoint, int Team)
 {
-
 	SetHardpointState(hardpoint,CAPTURE_POINT_STATE_CAPTURED)
 	SetTeam( hardpoint.hardpoint, Team )
 	SetTeam( hardpoint.prop, Team )
@@ -392,6 +391,21 @@ void function PlayerThink(CP_PlayerStruct player)
 	}
 }
 
+void function SetCapperAmount( table<int, table<string, int> > capStrength, array<entity> entities )
+{
+	foreach(entity p in entities)
+	{
+		if ( p.IsPlayer() && p.IsTitan() )
+		{
+			capStrength[p.GetTeam()]["titans"] += 1
+		}
+		else
+		{
+			capStrength[p.GetTeam()]["pilots"] += 1
+		}
+	}
+}
+
 void function HardpointThink( HardpointStruct hardpoint )
 {
 	entity hardpointEnt = hardpoint.hardpoint
@@ -404,63 +418,38 @@ void function HardpointThink( HardpointStruct hardpoint )
 
 	while ( GamePlayingOrSuddenDeath() )
 	{
-		int imcPilotCappers = 0
-		int militiaPilotCappers = 0
-
-		int imcTitanCappers = 0
-		int militiaTitanCappers = 0
+		table<int, table<string, int> > capStrength = {
+			[TEAM_IMC] = {
+				pilots = 0,
+				titans = 0,
+			},
+			[TEAM_MILITIA] = {
+				pilots = 0,
+				titans = 0,
+			}
+		}
 
 		float currentTime = Time()
 		float deltaTime = currentTime - lastTime
 
-		foreach(entity p in hardpoint.imcCappers)
-		{
-			if(p.IsPlayer())
-			{
-				if(p.IsTitan())
-				{
-					imcTitanCappers = imcTitanCappers + 1
-				}
-				else
-				{
-					imcPilotCappers = imcPilotCappers + 1
-				}
-			}
-		}
-		foreach(entity p in hardpoint.militiaCappers)
-		{
-			if(p.IsPlayer())
-			{
-				if(p.IsTitan())
-				{
-					militiaTitanCappers = militiaTitanCappers + 1
-				}
-				else
-				{
-
-					militiaPilotCappers = militiaPilotCappers + 1
-				}
-			}
-		}
-		int imcCappers
-		int militiaCappers
-
-		bool hardpointBlocked = false
-		if((imcTitanCappers+militiaTitanCappers)>0)
-		{
-			imcCappers = imcTitanCappers
-			militiaCappers = militiaTitanCappers
-		}
-		else
-		{
-			imcCappers = imcPilotCappers
-			militiaCappers = militiaPilotCappers
-		}
+		SetCapperAmount( capStrength, hardpoint.militiaCappers )
+		SetCapperAmount( capStrength, hardpoint.imcCappers )
+		
+		int imcPilotCappers = capStrength[TEAM_IMC]["pilots"]
+		int imcTitanCappers = capStrength[TEAM_IMC]["titans"]
+		
+		int militiaPilotCappers = capStrength[TEAM_MILITIA]["pilots"]
+		int militiaTitanCappers = capStrength[TEAM_MILITIA]["titans"]
+		
+		int imcCappers = ( imcTitanCappers + militiaTitanCappers ) > 0 ? imcTitanCappers : imcPilotCappers
+		int militiaCappers = ( imcTitanCappers + militiaTitanCappers ) <= 0 ? militiaPilotCappers : militiaTitanCappers
 
 		int cappingTeam
 		int capperAmount = 0
+		bool hardpointBlocked = false
 
-		if((imcCappers > 0) && (militiaCappers > 0)){
+		if((imcCappers > 0) && (militiaCappers > 0))
+		{
 			hardpointBlocked = true
 		}
 		else if ( imcCappers > 0 )
@@ -473,13 +462,13 @@ void function HardpointThink( HardpointStruct hardpoint )
 			cappingTeam = TEAM_MILITIA
 			capperAmount = militiaCappers
 		}
-		capperAmount = int(min(capperAmount, 3))
+		capperAmount = minint(capperAmount, 3)
 
 		if(hardpointBlocked)
 		{
 			SetHardpointState(hardpoint,CAPTURE_POINT_STATE_HALTED)
 		}
-		else if(cappingTeam==TEAM_UNASSIGNED)//nobody on point
+		else if(cappingTeam==TEAM_UNASSIGNED) // nobody on point
 		{
 			if((GetHardpointState(hardpoint)==CAPTURE_POINT_STATE_AMPED)||(GetHardpointState(hardpoint)==CAPTURE_POINT_STATE_AMPING))
 			{
@@ -493,7 +482,7 @@ void function HardpointThink( HardpointStruct hardpoint )
 		}
 		else if(hardpointEnt.GetTeam()==TEAM_UNASSIGNED)
 		{
-			if(GetHardpointCappingTeam(hardpoint)==TEAM_UNASSIGNED)
+			if(GetHardpointCappingTeam(hardpoint)==TEAM_UNASSIGNED) // uncapped point with no one inside
 			{
 				SetHardpointCaptureProgress( hardpoint, min(1.0,GetHardpointCaptureProgress( hardpoint ) + ( deltaTime / CAPTURE_DURATION_CAPTURE * capperAmount) ) )
 				SetHardpointCappingTeam(hardpoint,cappingTeam)
@@ -503,7 +492,7 @@ void function HardpointThink( HardpointStruct hardpoint )
 					hasBeenAmped = false
 				}
 			}
-			else if(GetHardpointCappingTeam(hardpoint)==cappingTeam)
+			else if(GetHardpointCappingTeam(hardpoint)==cappingTeam) // uncapped point with ally inside
 			{
 				SetHardpointCaptureProgress( hardpoint,min(1.0, GetHardpointCaptureProgress( hardpoint ) + ( deltaTime / CAPTURE_DURATION_CAPTURE * capperAmount) ) )
 				if(GetHardpointCaptureProgress(hardpoint)>=1.0)
@@ -526,7 +515,7 @@ void function HardpointThink( HardpointStruct hardpoint )
 				}
 			}
 		}
-		else if(hardpointEnt.GetTeam()!=cappingTeam)
+		else if(hardpointEnt.GetTeam()!=cappingTeam) // capping enemy point
 		{
 			SetHardpointCappingTeam(hardpoint,cappingTeam)
 			SetHardpointCaptureProgress( hardpoint,max(0.0, GetHardpointCaptureProgress( hardpoint ) - ( deltaTime / CAPTURE_DURATION_CAPTURE * capperAmount) ) )
@@ -541,17 +530,17 @@ void function HardpointThink( HardpointStruct hardpoint )
 				hasBeenAmped = false
 			}
 		}
-		else if(hardpointEnt.GetTeam()==cappingTeam)
+		else if(hardpointEnt.GetTeam()==cappingTeam) // capping allied point
 		{
 			SetHardpointCappingTeam(hardpoint,cappingTeam)
-			if(GetHardpointCaptureProgress(hardpoint)<1.0)
+			if(GetHardpointCaptureProgress(hardpoint)<1.0) // not amped
 			{
 				SetHardpointCaptureProgress(hardpoint,GetHardpointCaptureProgress(hardpoint)+(deltaTime/CAPTURE_DURATION_CAPTURE*capperAmount))
 			}
 			else if(file.ampingEnabled)//amping or reamping
 			{
 				if(GetHardpointState(hardpoint)<CAPTURE_POINT_STATE_AMPING)
-					SetHardpointState(hardpoint,CAPTURE_POINT_STATE_AMPING)
+				SetHardpointState(hardpoint,CAPTURE_POINT_STATE_AMPING)
 				SetHardpointCaptureProgress( hardpoint, min( 2.0, GetHardpointCaptureProgress( hardpoint ) + ( deltaTime / HARDPOINT_AMPED_DELAY * capperAmount ) ) )
 				if(GetHardpointCaptureProgress(hardpoint)==2.0&&!(GetHardpointState(hardpoint)==CAPTURE_POINT_STATE_AMPED))
 				{
