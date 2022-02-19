@@ -54,7 +54,10 @@
   * [Setup Syntax Highlighting](modding/squirrel/setup-syntax-highlighting.md)
   * [Localisation](modding/localisation\_files.md)
   * [Publishing](modding/publishing.md)
-* [Development](development.md)
+* [Development](modding-and-development/development/README.md)
+  * [NorthstarLauncher](modding-and-development/development/northstarlauncher.md)
+  * [NorthstarMasterServer](modding-and-development/development/northstarmasterserver/README.md)
+    * [Deploy](modding-and-development/development/northstarmasterserver/deploy.md)
 
 ## Other
 
