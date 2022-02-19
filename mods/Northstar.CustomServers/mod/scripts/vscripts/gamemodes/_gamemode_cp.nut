@@ -72,7 +72,7 @@ void function GamemodeCP_OnPlayerKilled(entity victim, entity attacker, var dama
 		return
 
 	//hardpoint forever capped mitigation
-	
+
 	foreach(CP_PlayerStruct p in file.players)
 		if(p.player==victim)
 			victimStruct=p
@@ -84,13 +84,13 @@ void function GamemodeCP_OnPlayerKilled(entity victim, entity attacker, var dama
 			victimCP = hardpoint
 			thread removePlayerFromCapperArray_threaded(hardpoint.imcCappers,victim)
 		}
-			
+
 		if(hardpoint.militiaCappers.contains(victim))
 		{
 			victimCP = hardpoint
 			thread removePlayerFromCapperArray_threaded(hardpoint.militiaCappers,victim)
 		}
-			
+
 		if(hardpoint.imcCappers.contains(attacker))
 			attackerCP = hardpoint
 		if(hardpoint.militiaCappers.contains(attacker))
@@ -148,7 +148,7 @@ void function GamemodeCP_OnPlayerKilled(entity victim, entity attacker, var dama
 }
 
 void function removePlayerFromCapperArray_threaded(array<entity> capperArray,entity player)
-{	
+{
 	WaitFrame()
 	if(capperArray.contains(player))
 		capperArray.remove(capperArray.find(player))
@@ -220,6 +220,7 @@ void function SpawnHardpoints()
 		HardpointStruct hardpointStruct
 		hardpointStruct.hardpoint = spawnpoint
 		hardpointStruct.prop = CreatePropDynamic( spawnpoint.GetModelName(), spawnpoint.GetOrigin(), spawnpoint.GetAngles(), 6 )
+		thread PlayAnim( hardpointStruct.prop, "mh_inactive_idle" )
 
 		entity trigger = GetEnt( expect string( spawnpoint.kv.triggerTarget ) )
 		hardpointStruct.trigger = trigger
@@ -227,9 +228,9 @@ void function SpawnHardpoints()
 		file.hardpoints.append( hardpointStruct )
 		HARDPOINTS.append( spawnpoint ) // for vo script
 		spawnpoint.s.trigger <- trigger // also for vo script
-		
-		SetGlobalNetEnt( "objective" + group + "Ent", spawnpoint ) 
-		
+
+		SetGlobalNetEnt( "objective" + group + "Ent", spawnpoint )
+
 		// set up trigger functions
 		trigger.SetEnterCallback( OnHardpointEntered )
 		trigger.SetLeaveCallback( OnHardpointLeft )
@@ -434,13 +435,13 @@ void function HardpointThink( HardpointStruct hardpoint )
 
 		SetCapperAmount( capStrength, hardpoint.militiaCappers )
 		SetCapperAmount( capStrength, hardpoint.imcCappers )
-		
+
 		int imcPilotCappers = capStrength[TEAM_IMC]["pilots"]
 		int imcTitanCappers = capStrength[TEAM_IMC]["titans"]
-		
+
 		int militiaPilotCappers = capStrength[TEAM_MILITIA]["pilots"]
 		int militiaTitanCappers = capStrength[TEAM_MILITIA]["titans"]
-		
+
 		int imcCappers = ( imcTitanCappers + militiaTitanCappers ) > 0 ? imcTitanCappers : imcPilotCappers
 		int militiaCappers = ( imcTitanCappers + militiaTitanCappers ) <= 0 ? militiaPilotCappers : militiaTitanCappers
 
@@ -474,13 +475,17 @@ void function HardpointThink( HardpointStruct hardpoint )
 			{
 				SetHardpointCappingTeam(hardpoint,hardpointEnt.GetTeam())
 				SetHardpointCaptureProgress(hardpoint,max(1.0,GetHardpointCaptureProgress(hardpoint)-(deltaTime/HARDPOINT_AMPED_DELAY)))
-				if(GetHardpointCaptureProgress(hardpoint)<=1.001)
+				if(GetHardpointCaptureProgress(hardpoint)<=1.001) // unamp
+				{
+					if (GetHardpointState(hardpoint) == CAPTURE_POINT_STATE_AMPED) // only play 2inactive animation if we were amped
+						thread PlayAnim( hardpoint.prop, "mh_active_2_inactive" )
 					SetHardpointState(hardpoint,CAPTURE_POINT_STATE_CAPTURED)
+				}
 			}
 			if(GetHardpointState(hardpoint)>=CAPTURE_POINT_STATE_CAPTURED)
 				SetHardpointCappingTeam(hardpoint,TEAM_UNASSIGNED)
 		}
-		else if(hardpointEnt.GetTeam()==TEAM_UNASSIGNED)
+		else if(hardpointEnt.GetTeam()==TEAM_UNASSIGNED) // uncapped point
 		{
 			if(GetHardpointCappingTeam(hardpoint)==TEAM_UNASSIGNED) // uncapped point with no one inside
 			{
@@ -501,7 +506,7 @@ void function HardpointThink( HardpointStruct hardpoint )
 					hasBeenAmped = false
 				}
 			}
-			else
+			else // uncapped point with enemy inside
 			{
 				SetHardpointCaptureProgress( hardpoint,max(0.0, GetHardpointCaptureProgress( hardpoint ) - ( deltaTime / CAPTURE_DURATION_CAPTURE * capperAmount) ) )
 				if(GetHardpointCaptureProgress(hardpoint)==0.0)
@@ -521,7 +526,9 @@ void function HardpointThink( HardpointStruct hardpoint )
 			SetHardpointCaptureProgress( hardpoint,max(0.0, GetHardpointCaptureProgress( hardpoint ) - ( deltaTime / CAPTURE_DURATION_CAPTURE * capperAmount) ) )
 			if(GetHardpointCaptureProgress(hardpoint)<=1.0)
 			{
-				SetHardpointState(hardpoint,CAPTURE_POINT_STATE_CAPTURED)//unamp
+				if (GetHardpointState(hardpoint) == CAPTURE_POINT_STATE_AMPED) // only play 2inactive animation if we were amped
+					thread PlayAnim( hardpoint.prop, "mh_active_2_inactive" )
+				SetHardpointState(hardpoint,CAPTURE_POINT_STATE_CAPTURED) // unamp
 			}
 			if(GetHardpointCaptureProgress(hardpoint)<=0.0)
 			{
@@ -548,6 +555,8 @@ void function HardpointThink( HardpointStruct hardpoint )
 					// can't use the dialogue functions here because for some reason GamemodeCP_VO_Amped isn't global?
 					PlayFactionDialogueToTeam( "amphp_youAmped" + GetHardpointGroup(hardpoint.hardpoint), cappingTeam )
 					PlayFactionDialogueToTeam( "amphp_enemyAmped" + GetHardpointGroup(hardpoint.hardpoint), GetOtherTeam( cappingTeam ) )
+					thread PlayAnim( hardpoint.prop, "mh_inactive_2_active" )
+
 					if(!hasBeenAmped){
 						hasBeenAmped=true
 
@@ -676,8 +685,8 @@ string function CaptureStateToString( int state )
 void function DEV_PrintHardpointsInfo()
 {
 	foreach (entity hardpoint in HARDPOINTS)
-	{	
-		
+	{
+
 		printt(
 			"Hardpoint:", GetHardpointGroup(hardpoint),
 			"|Team:", Dev_TeamIDToString(hardpoint.GetTeam()),
