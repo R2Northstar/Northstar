@@ -1,6 +1,9 @@
 Chathooks
 =========
 
+.. warning::
+    This is a feature in the unreleased `1.6` Northstar
+
 In ``v1.6.0`` we are introducing a completely new chathook API.
 In this document, we provide the usage of this API.
 For an example of chathooks in use, check out EmmaM's `OwOfier mod <https://github.com/emma-miler/OwOfier/>`_
