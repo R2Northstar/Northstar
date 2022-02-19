@@ -1,4 +1,4 @@
-Northstar Modding Docs
+Titanfall 2 + Northstar Modding Docs
 =======================================
 
 This repo contains the technical documentation on all things related to making Northstar mods.
