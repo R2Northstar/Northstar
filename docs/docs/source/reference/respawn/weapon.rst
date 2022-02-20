@@ -5,7 +5,7 @@ Methods of the weapon class
 
 .. cpp:class:: weapon
 
-    .. cpp:function:: unknown GetAllowHeadShots()
+    .. cpp:function:: bool GetAllowHeadShots()
         
     .. cpp:function:: unknown GetAttackDirection()
         
@@ -15,29 +15,29 @@ Methods of the weapon class
         
     .. cpp:function:: unknown GetMods()
         
-    .. cpp:function:: unknown GetProjectilesPerShot()
+    .. cpp:function:: int GetProjectilesPerShot()
         
-    .. cpp:function:: unknown GetProjectileWeaponSettingFloat()
+    .. cpp:function:: float GetProjectileWeaponSettingFloat()
         
-    .. cpp:function:: unknown GetProjectileWeaponSettingInt()
+    .. cpp:function:: int GetProjectileWeaponSettingInt()
         
-    .. cpp:function:: unknown GetWeaponChargeLevel()
+    .. cpp:function:: float GetWeaponChargeLevel()
         
-    .. cpp:function:: unknown GetWeaponChargeLevelMax()
+    .. cpp:function:: float GetWeaponChargeLevelMax()
         
-    .. cpp:function:: unknown GetWeaponClassName()
+    .. cpp:function:: string GetWeaponClassName()
         
     .. cpp:function:: entity GetWeaponOwner()
         
-    .. cpp:function:: unknown GetWeaponPrimaryClipCount()
+    .. cpp:function:: int GetWeaponPrimaryClipCount()
         
-    .. cpp:function:: unknown GetWeaponPrimaryClipCountMax()
+    .. cpp:function:: int GetWeaponPrimaryClipCountMax()
         
-    .. cpp:function:: unknown GetWeaponSettingBool()
+    .. cpp:function:: bool GetWeaponSettingBool()
         
-    .. cpp:function:: unknown GetWeaponSettingFloat()
+    .. cpp:function:: float GetWeaponSettingFloat()
         
-    .. cpp:function:: unknown GetWeaponSettingInt()
+    .. cpp:function:: int GetWeaponSettingInt()
         
     .. cpp:function:: unknown GetWeaponType()
         
@@ -45,9 +45,9 @@ Methods of the weapon class
         
     .. cpp:function:: unknown SetNextAttackAllowedTime()
         
-    .. cpp:function:: unknown SetWeaponChargeFractionForced()
+    .. cpp:function:: float SetWeaponChargeFractionForced()
         
-    .. cpp:function:: unknown SetWeaponPrimaryClipCount()
+    .. cpp:function:: int SetWeaponPrimaryClipCount()
         
     .. cpp:function:: bool HasMod("modname")
         
