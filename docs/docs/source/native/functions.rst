@@ -34,6 +34,14 @@ If statements are also functions however, and can be used to determine true or f
 
   if(RandomInt(5)+1 == 5)
 
+You can also use short if statements to simplify your code. However, if not used carefully this can worsen readability.
+The Syntax is ``condition ? if_condition_true : if_condition_false``. This is especially useful when declaring variables or passing parameters.
+
+.. code-block:: javascript
+
+  // shortenedUsername is "longus..."" if username is "longusername" or "short" if username is "short"
+  string shortenedUsername = username.len() > 9 ? username.slice(0,6) + "..." : username;
+
 Loops
 ------
 Loops fall into a few categories but for our purposes we will be only using ``foreach`` and ``while``. ``foreach`` loops are given a data set, such as a list, and will repeat their asigned script for each entry on that list.
