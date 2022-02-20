@@ -15,6 +15,10 @@ Functions for getting player, and methods of the player object
 
 .. cpp:function:: array<entity> GetPlayerArray()
 
+.. cpp:function:: array<entity> GetPlayerArrayEx( string affected, int team, vector origin, float radius )
+
+    returns a list of every player in radius relative to origin. I only found ``"any"`` to work and assume the first parameter describes the affected types.
+
 .. cpp:function:: array<entity> GetPlayerArrayOfTeam( int team )
 
 .. cpp:function:: array<entity> GetPlayerArrayOfTeam_Alive( int team )
@@ -34,6 +38,10 @@ Functions for getting player, and methods of the player object
                 return -1
 
             return 0 }, 0)
+
+.. cpp:function:: entity GetTitanFromPlayer( entity player)
+
+    if the player is a titan, returns the player. If not, returns the player's pet titan
 
 .. cpp:class:: player : public entity
 
