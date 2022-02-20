@@ -400,7 +400,7 @@ void function SetCapperAmount( table<int, table<string, int> > capStrength, arra
 		{
 			capStrength[p.GetTeam()]["titans"] += 1
 		}
-		else
+		else if ( p.IsPlayer() )
 		{
 			capStrength[p.GetTeam()]["pilots"] += 1
 		}
