@@ -3,8 +3,6 @@ import json
 from pathlib import Path
 import re
 
-from matplotlib.font_manager import json_dump
-
 NS_MODS = Path("PATH_TO/R2Northstar/mods/")
 
 # Layers of vscripts, topmost is overwritten by below
@@ -28,13 +26,13 @@ def get_layer(filename):
         path = layer / filename
         if path.exists():
             return path, name
+    raise FileNotFoundError(f"Could not locate {filename} in any layer.")
 
 
 def openl(filename: str, mode="r", encoding="utf-8"):
     path, name = get_layer(filename)
     if path:
         return name, path.open(mode, encoding=encoding, errors="ignore")
-    raise FileNotFoundError(f"Could not locate {filename} in any layer.")
 
 
 with open("scripts.json") as f:
@@ -42,6 +40,7 @@ with open("scripts.json") as f:
 
 sl_cmnt = re.compile(r"\/\/.*")
 funname_re = re.compile(r"function (\w+)\(")
+global_re = re.compile(r"global function ([1-zA-Z_]\w+)")
 
 
 def runon_parse(inp: str):
@@ -68,6 +67,7 @@ for runon, filelist in scripts.items():
                 ml_comment_depth = 0
                 global_all = False
                 runons_mod = []
+                globalized_funcs = []
                 for line in f:
                     line = line.removesuffix("\n")
                     # globalize all
@@ -96,6 +96,11 @@ for runon, filelist in scripts.items():
                         runon_modifier = ""
                         runons_mod = []
 
+                    # global lines
+                    match = global_re.search(line)
+                    if match:
+                        globalized_funcs.append(match.group(1))
+
                     # function
                     match = funname_re.search(line)
                     if match:
@@ -104,7 +109,7 @@ for runon, filelist in scripts.items():
                         local_params["name"] = name
                         local_params["found_in"] = found_in
                         local_params["file"] = filename
-                        if "global function" in line:
+                        if "global function" in line or name in globalized_funcs:
                             local_params["global"] = True
                         else:
                             local_params["global"] = global_all
