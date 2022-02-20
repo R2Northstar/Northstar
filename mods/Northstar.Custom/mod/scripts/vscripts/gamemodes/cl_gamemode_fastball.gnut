@@ -31,6 +31,8 @@ void function FastballCreateRui( entity player )
 void function ServerCallback_FastballUpdatePanelRui( int panelHandle, int id )
 {
 	entity panel = GetEntityFromEncodedEHandle( panelHandle )
+	if (!IsValid(panel))
+		return
 	var rui
 	if ( id == 0 )
 		rui = file.panelARui
