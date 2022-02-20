@@ -55,7 +55,7 @@ The list of playlist overrides needs to be quoted and separated by spaces (examp
 | `pilot_health_multiplier`                    |                 |               |                                                                                                |
 | `run_epilogue`                               | `0-1`           | `1`           | Enables escape dropship                                                                        |
 | `respawn_delay`                              |                 |               | Delay before respawn                                                                            |
-| `boosts_enabled`                             | `0-1`           | `1`           | Enable boosts. Doesn't disables Titanmeter.                                                    |
+| `boosts_enabled`                             | `0-1`           | `0`           | Disable boosts. Doesn't disable Titanmeter. Note that unlike the name suggests `1` disables boosts |
 | `earn_meter_pilot_overdrive`                 | `0-1`           |               |                                                                                                |
 | `earn_meter_pilot_multiplier`                |                 |               |                                                                                                |
 | `earn_meter_titan_multiplier`                |                 |               |                                                                                                |
