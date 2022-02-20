@@ -109,12 +109,6 @@ Functions for getting player, and methods of the player object
 
     .. cpp:function::  unknown GetPingGroupStartTime()
 
-    .. cpp:function::  array<entity> GetPlayerArray()
-
-    .. cpp:function::  array<entity> GetPlayerArrayOfEnemies_Alive( int team )
-
-    .. cpp:function::  array<entity> GetPlayerArrayOfTeam( int team )
-
     .. cpp:function::  string GetPlayerClass()
 
     .. cpp:function::  PGS_ELIMINATED GetPlayerGameStat()
