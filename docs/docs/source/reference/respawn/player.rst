@@ -3,6 +3,10 @@ Player
 
 Functions for getting player, and methods of the player object
 
+.. cpp:function::  bool IsAlive( entity ent )
+
+.. cpp:function::  bool IsValid( entity ent )
+
 .. cpp:function:: entity GetLocalViewPlayer()
 
     player you're watching (can be replay)
@@ -235,8 +239,6 @@ Functions for getting player, and methods of the player object
 
     .. cpp:function::  bool InPartyChat()
 
-    .. cpp:function::  bool IsAlive(player)
-
     .. cpp:function::  bool IsEjecting()
 
     .. cpp:function::  bool IsHologram()
@@ -272,8 +274,6 @@ Functions for getting player, and methods of the player object
     .. cpp:function::  bool IsTitanAvailable( player )
 
     .. cpp:function::  bool IsUsingOffhandWeapon()
-
-    .. cpp:function::  bool IsValid( player )
 
     .. cpp:function::  bool IsWatchingKillReplay()
 
