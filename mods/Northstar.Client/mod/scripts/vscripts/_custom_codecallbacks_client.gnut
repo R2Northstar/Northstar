@@ -1,0 +1,126 @@
+untyped
+
+global function AddCallback_OnReceivedSayTextMessage
+global function NSSetupChathooksClient
+
+global struct ClClient_MessageStruct {
+	string message
+	entity player
+    string playerName
+	bool isTeam
+    bool isDead
+    bool isWhisper
+	bool shouldBlock
+}
+
+struct {
+	array< ClClient_MessageStruct functionref( ClClient_MessageStruct ) > OnReceivedSayTextMessageCallbacks
+} NsCustomCallbacksClient
+
+void function OnReceivedMessage(ClClient_MessageStruct localMessage) {
+    if (localMessage.player != null)
+    {
+        foreach (callbackFunc in NsCustomCallbacksClient.OnReceivedSayTextMessageCallbacks)
+        {
+            ClClient_MessageStruct returnStruct = callbackFunc(localMessage)
+            localMessage.message = returnStruct.message
+            localMessage.playerName = returnStruct.playerName
+            localMessage.isTeam = returnStruct.isTeam
+            localMessage.isDead = returnStruct.isDead
+            localMessage.isWhisper = returnStruct.isWhisper
+            localMessage.shouldBlock = localMessage.shouldBlock || returnStruct.shouldBlock
+        }
+    }
+
+    if (localMessage.shouldBlock)
+    {
+        return
+    }
+
+    NSChatWriteRaw(1, "\n")
+
+    if (localMessage.player == null) NSChatWrite(1, "\x1b[95m")
+    else
+    {
+        bool isFriendly = localMessage.player.GetTeam() == GetLocalClientPlayer().GetTeam()
+
+        if (isFriendly) NSChatWrite(1, "\x1b[111m")
+        else NSChatWrite(1, "\x1b[112m")
+    }
+
+    if (localMessage.isWhisper) NSChatWriteRaw(1, Localize("#HUD_CHAT_WHISPER_PREFIX"))
+    if (localMessage.isDead) NSChatWriteRaw(1, Localize("#HUD_CHAT_DEAD_PREFIX"))
+    if (localMessage.isTeam) NSChatWriteRaw(1, Localize("#HUD_CHAT_TEAM_PREFIX"))
+
+    if (localMessage.player == null)
+    {
+        NSChatWriteRaw(1, Localize("#HUD_CHAT_SERVER_PREFIX") + " ")
+    }
+    else {
+        NSChatWriteRaw(1, localMessage.playerName)
+        NSChatWriteRaw(1, ": ")
+    }
+
+    NSChatWrite(1, "\x1b[0m")
+
+    NSChatWrite(1, localMessage.message)
+}
+
+void function CHudChat_ProcessMessageStartThread(int playerIndex, string message, bool isTeam, bool isDead, int messageType)
+{
+	thread CHudChat_OnReceivedSayTextMessageCallback(playerIndex, message, isTeam, isDead, messageType)
+}
+
+void function CHudChat_OnReceivedSayTextMessageCallback(int fromPlayerIndex, string message, bool isTeam, bool isDead, int messageType)
+{
+    entity fromPlayer = null
+    string fromPlayerName = ""
+
+    if (fromPlayerIndex >= 0 && fromPlayerIndex < GetPlayerArray().len())
+    {
+        fromPlayer = GetEntByIndex(fromPlayerIndex + 1)
+        if (fromPlayer == null) {
+            print("Ignored chat message from invalid player index " + fromPlayerIndex + ": " + message)
+            return
+        }
+
+        fromPlayerName = fromPlayer.GetPlayerName()
+    }
+
+    if (messageType == 0 || messageType == 1)
+    {
+        ClClient_MessageStruct localMessage
+        localMessage.message = message
+        localMessage.player = fromPlayer
+        localMessage.playerName = fromPlayerName
+        localMessage.isTeam = isTeam
+        localMessage.isDead = isDead
+        localMessage.isWhisper = false
+        localMessage.shouldBlock = false
+        OnReceivedMessage(localMessage)
+        return
+    }
+
+    if (messageType == 2)
+    {
+        ClClient_MessageStruct localMessage
+        localMessage.message = message
+        localMessage.player = fromPlayer
+        localMessage.playerName = fromPlayerName
+        localMessage.isTeam = isTeam
+        localMessage.isDead = isDead
+        localMessage.isWhisper = true
+        localMessage.shouldBlock = false
+        OnReceivedMessage(localMessage)
+        return
+    }
+}
+
+void function AddCallback_OnReceivedSayTextMessage( ClClient_MessageStruct functionref (ClClient_MessageStruct) callbackFunc )
+{
+	NsCustomCallbacksClient.OnReceivedSayTextMessageCallbacks.append(callbackFunc)
+}
+
+void function NSSetupChathooksClient() {
+    getroottable().rawset("CHudChat_ProcessMessageStartThread", CHudChat_ProcessMessageStartThread)
+}
