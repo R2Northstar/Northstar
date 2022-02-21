@@ -1449,6 +1449,15 @@
     <ClInclude Include="configurables.h">
       <Filter>Header Files\Client</Filter>
     </ClInclude>
+    <ClInclude Include="serverchathooks.h">
+      <Filter>Header Files\Server</Filter>
+    </ClInclude>
+    <ClInclude Include="clientchathooks.h">
+      <Filter>Header Files\Client</Filter>
+    </ClInclude>
+    <ClInclude Include="localchatwriter.h">
+      <Filter>Header Files\Client</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -1581,6 +1590,15 @@
       <Filter>Source Files\Server</Filter>
     </ClCompile>
     <ClCompile Include="configurables.cpp">
+      <Filter>Source Files\Client</Filter>
+    </ClCompile>
+    <ClCompile Include="serverchathooks.cpp">
+      <Filter>Source Files\Server</Filter>
+    </ClCompile>
+    <ClCompile Include="clientchathooks.cpp">
+      <Filter>Source Files\Client</Filter>
+    </ClCompile>
+    <ClCompile Include="localchatwriter.cpp">
       <Filter>Source Files\Client</Filter>
     </ClCompile>
   </ItemGroup>

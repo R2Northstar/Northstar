@@ -13,7 +13,6 @@
 #include <filesystem>
 #include <thread>
 #include "configurables.h"
-#include "squirrel.h"
 
 const char* AUTHSERVER_VERIFY_STRING = "I am a northstar server!";
 
@@ -261,6 +260,21 @@ void ServerAuthenticationManager::WritePersistentData(void* player)
 	{
 		// todo: write pdata to disk here
 	}
+}
+
+bool ServerAuthenticationManager::CheckPlayerChatRatelimit(void* player)
+{
+	if (Plat_FloatTime() - m_additionalPlayerData[player].lastSayTextLimitStart >= 1.0)
+	{
+		m_additionalPlayerData[player].lastSayTextLimitStart = Plat_FloatTime();
+		m_additionalPlayerData[player].sayTextLimitCount = 0;
+	}
+
+	if (m_additionalPlayerData[player].sayTextLimitCount >= Cvar_sv_max_chat_messages_per_sec->m_nValue)
+		return false;
+
+	m_additionalPlayerData[player].sayTextLimitCount++;
+	return true;
 }
 
 // auth hooks
@@ -517,69 +531,6 @@ bool ProcessConnectionlessPacketHook(void* a1, netpacket_t* packet)
 	return ProcessConnectionlessPacket(a1, packet);
 }
 
-void ReplaceStringInPlace(std::string& subject, const std::string& search, const std::string& replace)
-{
-	size_t pos = 0;
-	while ((pos = subject.find(search, pos)) != std::string::npos)
-	{
-		subject.replace(pos, search.length(), replace);
-		pos += replace.length();
-	}
-}
-
-std::string currentMessage;
-int currentPlayerId;
-int currentChannelId;
-bool shouldBlock;
-bool isProcessed = true;
-
-SQRESULT setMessage(void* sqvm)
-{
-	currentMessage = ServerSq_getstring(sqvm, 1);
-	currentPlayerId = ServerSq_getinteger(sqvm, 2);
-	currentChannelId = ServerSq_getinteger(sqvm, 3);
-	shouldBlock = ServerSq_getbool(sqvm, 4);
-	return SQRESULT_NOTNULL;
-}
-
-void CServerGameDLL__OnReceivedSayTextMessageHook(void* self, unsigned int senderClientIndex, const char* message, int channelId)
-{
-	void* sender = GetPlayerByIndex(senderClientIndex - 1); // senderClientIndex starts at 1
-
-	// check chat ratelimits
-	if (Plat_FloatTime() - g_ServerAuthenticationManager->m_additionalPlayerData[sender].lastSayTextLimitStart >= 1.0)
-	{
-		g_ServerAuthenticationManager->m_additionalPlayerData[sender].lastSayTextLimitStart = Plat_FloatTime();
-		g_ServerAuthenticationManager->m_additionalPlayerData[sender].sayTextLimitCount = 0;
-	}
-
-	if (g_ServerAuthenticationManager->m_additionalPlayerData[sender].sayTextLimitCount >= Cvar_sv_max_chat_messages_per_sec->m_nValue)
-		return;
-
-	g_ServerAuthenticationManager->m_additionalPlayerData[sender].sayTextLimitCount++;
-
-	bool shouldDoChathooks = strstr(GetCommandLineA(), "-enablechathooks");
-	if (shouldDoChathooks)
-	{
-
-		currentMessage = message;
-		currentPlayerId = senderClientIndex - 1; // Stupid fix cause of index offsets
-		currentChannelId = channelId;
-		shouldBlock = false;
-		isProcessed = false;
-
-		g_ServerSquirrelManager->ExecuteCode("CServerGameDLL_ProcessMessageStartThread()");
-		if (!shouldBlock && currentPlayerId + 1 == senderClientIndex) // stop player id spoofing from server
-		{
-			CServerGameDLL__OnReceivedSayTextMessage(self, currentPlayerId + 1, currentMessage.c_str(), currentChannelId);
-		}
-	}
-	else
-	{
-		CServerGameDLL__OnReceivedSayTextMessage(self, senderClientIndex, message, channelId);
-	}
-}
-
 void ResetPdataCommand(const CCommand& args)
 {
 	if (*sv_m_State == server_state_t::ss_active)
@@ -682,52 +633,4 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 		*((char*)ptr + 13) = (char)0x90;
 		*((char*)ptr + 14) = (char)0x90;
 	}
-}
-
-SQRESULT getMessageServer(void* sqvm)
-{
-	ServerSq_pushstring(sqvm, currentMessage.c_str(), -1);
-	return SQRESULT_NOTNULL;
-}
-SQRESULT getPlayerServer(void* sqvm)
-{
-	ServerSq_pushinteger(sqvm, currentPlayerId);
-	return SQRESULT_NOTNULL;
-}
-SQRESULT getChannelServer(void* sqvm)
-{
-	ServerSq_pushinteger(sqvm, currentChannelId);
-	return SQRESULT_NOTNULL;
-}
-SQRESULT getShouldProcessMessage(void* sqvm)
-{
-	ServerSq_pushbool(sqvm, !isProcessed);
-	return SQRESULT_NOTNULL;
-}
-SQRESULT pushMessage(void* sqvm)
-{
-	currentMessage = ServerSq_getstring(sqvm, 1);
-	currentPlayerId = ServerSq_getinteger(sqvm, 2);
-	currentChannelId = ServerSq_getinteger(sqvm, 3);
-	shouldBlock = ServerSq_getbool(sqvm, 4);
-	isProcessed = true;
-	return SQRESULT_NOTNULL;
-}
-
-void InitialiseServerAuthenticationServerDLL(HMODULE baseAddress)
-{
-	HookEnabler hook;
-	ENABLER_CREATEHOOK(
-		hook, (char*)baseAddress + 0x1595C0, &CServerGameDLL__OnReceivedSayTextMessageHook,
-		reinterpret_cast<LPVOID*>(&CServerGameDLL__OnReceivedSayTextMessage));
-
-	g_ServerSquirrelManager->AddFuncRegistration(
-		"void", "NSSetMessage", "string message, int playerId, int channelId, bool shouldBlock", "", setMessage);
-
-	g_ServerSquirrelManager->AddFuncRegistration("string", "NSChatGetCurrentMessage", "", "", getMessageServer);
-	g_ServerSquirrelManager->AddFuncRegistration("int", "NSChatGetCurrentPlayer", "", "", getPlayerServer);
-	g_ServerSquirrelManager->AddFuncRegistration("int", "NSChatGetCurrentChannel", "", "", getChannelServer);
-	g_ServerSquirrelManager->AddFuncRegistration("bool", "NSShouldProcessMessage", "", "", getShouldProcessMessage);
-	g_ServerSquirrelManager->AddFuncRegistration(
-		"void", "NSPushMessage", "string message, int playerId, int channelId, bool shouldBlock", "", pushMessage);
 }
