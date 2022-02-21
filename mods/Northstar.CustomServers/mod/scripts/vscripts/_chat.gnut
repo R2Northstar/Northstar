@@ -1,0 +1,51 @@
+untyped
+globalize_all_functions
+
+enum eChatMessageType
+{
+    CHAT = 1,
+    WHISPER = 2
+}
+
+// Displays a chat message as if the player sent it.
+void function Chat_Impersonate(entity player, string text, bool isTeamChat) {
+    NSSendMessage(player.GetPlayerIndex(), text, isTeamChat)
+}
+
+// Sends a whisper message from one player that is only shown to another. Will be shown as a whisper if whisper is set.
+void function Chat_PrivateMessage(entity fromPlayer, entity toPlayer, string text, bool whisper) {
+    NSBroadcastMessage(
+        fromPlayer.GetPlayerIndex(),
+        toPlayer.GetPlayerIndex(),
+        text,
+        false,
+        false,
+        whisper ? eChatMessageType.WHISPER : eChatMessageType.CHAT
+    )
+}
+
+// Broadcasts a message from the server to all players.
+void function Chat_ServerBroadcast(string text)
+{
+    NSBroadcastMessage(
+        -1,
+        -1,
+        text,
+        false,
+        false,
+        eChatMessageType.CHAT
+    )
+}
+
+// Sends a message from the server to one player. Will be shown as a whisper if whisper is set.
+void function Chat_ServerPrivateMessage(entity toPlayer, string text, bool whisper)
+{
+    NSBroadcastMessage(
+        -1,
+        toPlayer.GetPlayerIndex(),
+        text,
+        false,
+        false,
+        whisper ? eChatMessageType.WHISPER : eChatMessageType.CHAT
+    )
+}

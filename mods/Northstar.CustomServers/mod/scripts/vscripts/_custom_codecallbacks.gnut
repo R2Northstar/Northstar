@@ -1,11 +1,12 @@
 untyped
 
-globalize_all_functions
+global function AddCallback_OnReceivedSayTextMessage
+global function NSSetupChathooksServer
 
 global struct ClServer_MessageStruct {
 	string message
 	entity player
-	int channelId
+	bool isTeam
 	bool shouldBlock
 }
 
@@ -13,32 +14,45 @@ struct {
 	array< ClServer_MessageStruct functionref( ClServer_MessageStruct ) > OnReceivedSayTextMessageCallbacks
 } NsCustomCallbacks
 
-void function CServerGameDLL_ProcessMessageStartThread()
+void function CServerGameDLL_ProcessMessageStartThread(int playerIndex, string message, bool isTeam)
 {
-	thread CServerGameDLL_OnReceivedSayTextMessageCallback()
+	thread CServerGameDLL_OnReceivedSayTextMessageCallback(playerIndex, message, isTeam)
 }
 
-void function CServerGameDLL_OnReceivedSayTextMessageCallback()
+void function CServerGameDLL_OnReceivedSayTextMessageCallback(int playerIndex, string message, bool isTeam)
 {
-	ClServer_MessageStruct localMessage
-	localMessage.message =  NSChatGetCurrentMessage()
-	localMessage.player = GetPlayerByIndex(NSChatGetCurrentPlayer())
-	localMessage.channelId = NSChatGetCurrentChannel()
-	localMessage.shouldBlock = false
+	entity player = GetPlayerByIndex(playerIndex)
+	if (player == null) {
+		print("Ignored chat message from invalid player index " + playerIndex + ": " + message)
+		return
+	}
 
+	ClServer_MessageStruct localMessage
+	localMessage.message = message
+	localMessage.player = player
+	localMessage.isTeam = isTeam
+	localMessage.shouldBlock = false
 	foreach ( callbackFunc in NsCustomCallbacks.OnReceivedSayTextMessageCallbacks )
 	{
 		ClServer_MessageStruct returnStruct = callbackFunc(localMessage)
 		localMessage.message = returnStruct.message
-		localMessage.player = returnStruct.player
-		localMessage.channelId = returnStruct.channelId
+		localMessage.isTeam = returnStruct.isTeam
 		localMessage.shouldBlock = localMessage.shouldBlock || returnStruct.shouldBlock
 	}
 
-	NSSetMessage(localMessage.message, localMessage.player.GetPlayerIndex(), localMessage.channelId, localMessage.shouldBlock)
+	if (localMessage.shouldBlock)
+	{
+		return
+	}
+
+	NSSendMessage(player.GetPlayerIndex(), localMessage.message, localMessage.isTeam)
 }
 
 void function AddCallback_OnReceivedSayTextMessage( ClServer_MessageStruct functionref (ClServer_MessageStruct) callbackFunc )
 {
 	NsCustomCallbacks.OnReceivedSayTextMessageCallbacks.append(callbackFunc)
+}
+
+void function NSSetupChathooksServer() {
+	getroottable().rawset("CServerGameDLL_ProcessMessageStartThread", CServerGameDLL_ProcessMessageStartThread)
 }
