@@ -32,6 +32,7 @@ If you know anything about any function, object or concept please dont hesitate 
    /guides/cheatsheet
    /guides/moddingtutorials
    /guides/weaponmodding
+   /guides/crosshairmodding
    /guides/settingsmods
    /guides/gamemodemods
    /guides/publishing
