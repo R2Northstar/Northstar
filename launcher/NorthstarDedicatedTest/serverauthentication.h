@@ -96,13 +96,13 @@ class ServerAuthenticationManager
 	bool AuthenticatePlayer(void* player, int64_t uid, char* authToken);
 	bool RemovePlayerAuthData(void* player);
 	void WritePersistentData(void* player);
+	bool CheckPlayerChatRatelimit(void* player);
 };
 
 typedef void (*CBaseClient__DisconnectType)(void* self, uint32_t unknownButAlways1, const char* reason, ...);
 extern CBaseClient__DisconnectType CBaseClient__Disconnect;
 
 void InitialiseServerAuthentication(HMODULE baseAddress);
-void InitialiseServerAuthenticationServerDLL(HMODULE baseAddress);
 
 extern ServerAuthenticationManager* g_ServerAuthenticationManager;
 extern ConVar* Cvar_ns_player_auth_port;

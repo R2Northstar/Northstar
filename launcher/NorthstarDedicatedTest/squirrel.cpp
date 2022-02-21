@@ -84,6 +84,9 @@ sq_getfloatType ServerSq_getfloat;
 sq_getboolType ClientSq_getbool;
 sq_getboolType ServerSq_getbool;
 
+sq_getType ClientSq_sq_get;
+sq_getType ServerSq_sq_get;
+
 template <ScriptContext context> void ExecuteCodeCommand(const CCommand& args);
 
 // inits
@@ -136,6 +139,8 @@ void InitialiseClientSquirrel(HMODULE baseAddress)
 	ClientSq_getfloat = (sq_getfloatType)((char*)baseAddress + 0x6100);
 	ClientSq_getbool = (sq_getboolType)((char*)baseAddress + 0x6130);
 
+	ClientSq_sq_get = (sq_getType)((char*)baseAddress + 0x7C30);
+
 	ENABLER_CREATEHOOK(
 		hook, (char*)baseAddress + 0x26130, &CreateNewVMHook<ScriptContext::CLIENT>,
 		reinterpret_cast<LPVOID*>(&ClientCreateNewVM)); // client createnewvm function
@@ -174,6 +179,8 @@ void InitialiseServerSquirrel(HMODULE baseAddress)
 	ServerSq_getinteger = (sq_getintegerType)((char*)baseAddress + 0x60C0);
 	ServerSq_getfloat = (sq_getfloatType)((char*)baseAddress + 0x60E0);
 	ServerSq_getbool = (sq_getboolType)((char*)baseAddress + 0x6110);
+
+	ServerSq_sq_get = (sq_getType)((char*)baseAddress + 0x7C00);
 
 	ENABLER_CREATEHOOK(
 		hook, (char*)baseAddress + 0x1FE90, &SQPrintHook<ScriptContext::SERVER>,
