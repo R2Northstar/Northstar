@@ -15,9 +15,9 @@ Functions for getting player, and methods of the player object
 
 .. cpp:function:: array<entity> GetPlayerArray()
 
-.. cpp:function:: array<entity> GetPlayerArrayEx( string affected, int team, vector origin, float radius )
+.. cpp:function:: array<entity> GetPlayerArrayEx( string class, int team, vector origin, float radius )
 
-    returns a list of every player in radius relative to origin. I only found ``"any"`` to work and assume the first parameter describes the affected types.
+    returns a list of every player of the specified class in radius relative to origin. The parameter ``class`` must be one of these strings:  ``titan``, ``pilot`` or ``any``.
 
 .. cpp:function:: array<entity> GetPlayerArrayOfTeam( int team )
 
@@ -36,7 +36,7 @@ Functions for getting player, and methods of the player object
 
     .. code-block:: javascript
 
-        GetSortedPlayers(function(entity player1, entity player2) {
+        GetSortedPlayers(int function(entity player1, entity player2) {
             if(player1.GetPlayerGameStat(PGS_PING)>player2.GetPlayerGameStat(PGS_PING))
                 return 1
 
@@ -127,7 +127,7 @@ Functions for getting player, and methods of the player object
 
     .. cpp:function::  int GetPersistentSpawnLoadoutIndex( entity player, string playerClass )
 
-        playerClasses: ``"pilot"`` ``"titan"`` (``"spectator"``)
+        playerClasses: ``"pilot"`` ``"titan"``. This returns null for every other string.
 
     .. cpp:function::  entity GetPetTitan()
 
