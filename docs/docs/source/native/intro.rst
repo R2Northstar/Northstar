@@ -42,10 +42,11 @@ Variable types
 * ``void``: can be used to define functions that do not return a value, but still do things. most of your functions will be void
 * ``integer``: a whole number
 * ``float``: any floating-point number.
-* ``string``: text
+* ``string``: text. Squirrel does not have native chars, so calling an index of a string will return a number in standart ascii format. e.g. "a"[0] = 97
 * ``entity``: an entity and all its associated information
-* ``bool``: ``true`` or ``false`` (Squirrel does not treat 1 as true or 0 as false)
+* ``bool``: ``true`` or ``false`` (Squirrel treats ``null`` and ``0`` as false and every other number or object that's ``!= null`` as true)
 * ``array``: an ordered list of items indexed from 0, increasing with the number of items such as: 0:"hello",1:1000,2:entity player
-* ``table``: a list of items with indexes defined on object entry such as: ``"word":"hello"``, ``"kilo":1000"``, ``"pilot":entity player``
+* | ``table``: a list of items with indexes defined on object entry such as: ``"word":"hello"``, ``"kilo":1000"``, ``"pilot":entity player``.
+  | You have to create new slots with the ``<-`` operator and overwrite values in slots with ``=``. Tables are explained in more detail in the `squirrel documentation <http://www.squirrel-lang.org/squirreldoc/reference/language/tables.html>`_
 * ``struct``: a series of attributes assigned to a structure and accessed through with ``structname.variablename``
 * ``var``: Var typically refers to variables that lack any stated type, this will cause issues with many functions unless you use the ``untyped`` identifier at the start of your file, or if you use ``expect type(variable)`` when passing the variable to that function
