@@ -32,8 +32,16 @@ Conditional operators can also be used to make comparisons, such as ``==`` (equa
 .. code-block:: javascript
 
   if(RandomInt(6)+1 == 5)
-  
+
 Like other languages, if statements can be connected to ``else if`` and ``else`` statements. ``else if`` statements must be used immediately after an ``if`` or ``else if`` and will only check their condition if the preceding statements failed. ``else`` statements behave similarly, but always run if the preceding statements failed and must be last.
+
+Squirrel supports ternary operations like most languages. The value of the expression depends if a condition is truthy or not. However, if not used carefully this can worsen readability.
+The Syntax is ``condition ? if_condition_true : if_condition_false``. This is especially useful when declaring variables or passing parameters.
+
+.. code-block:: javascript
+
+  // shortenedUsername is "longus..."" if username is "longusername" or "short" if username is "short"
+  string shortenedUsername = username.len() > 9 ? username.slice(0,6) + "..." : username;
 
 Loops
 ------
@@ -48,10 +56,10 @@ This script will repeat endlessly until ``ReturnTrueOrFalse`` returns false.
 ``for`` loops are similar to ``while`` loops, but also run code once at the start and after every loop. These are primarily used to loop a specific number of times, such as over the length of a list:
 
 .. code-block:: javascript
-  
+
   array<int> somelist = [0, 5, 6, 4, 11]
   for(int i = 0; i < somelist.len(); i++)
-  
+
 ``int i = 0`` runs immediately; ``i < somelist.len()`` is the test for the loop, only executing the loop if it is true; ``i++`` runs after every loop iteration.
 
 ``foreach`` loops only loop over a set of data, such as a list or table, and will execute for each entry. They don't loop in any order and data should not be added or removed from the set during the loop:
@@ -65,14 +73,14 @@ Implicit conditional behavior
 Conditional statements, such as while loops and if statements, also implictly cast non-boolean inputs to booleans. For numbers, this means 0 is considered false and anything else is considered true. For instance variables like arrays and entities, ``null`` is considered false and anything else is considered true. For example, these inputs are considered true by the if statements:
 
 .. code-block:: javascript
-  
+
   if(2)
-  
+
 .. code-block:: javascript
-  
+
   array somelist = [0, 1]
   if(somelist)
-  
+
 Be aware that empty arrays and strings, ``[]`` and ``""``, are considered true by this logic.
 
 Formatting of actions

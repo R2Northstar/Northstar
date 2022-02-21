@@ -3,6 +3,10 @@ Player
 
 Functions for getting player, and methods of the player object
 
+.. cpp:function::  bool IsAlive( entity ent )
+
+.. cpp:function::  bool IsValid( entity ent )
+
 .. cpp:function:: entity GetLocalViewPlayer()
 
     player you're watching (can be replay)
@@ -11,9 +15,17 @@ Functions for getting player, and methods of the player object
 
 .. cpp:function:: array<entity> GetPlayerArray()
 
+.. cpp:function:: array<entity> GetPlayerArrayEx( string class, int team, vector origin, float radius )
+
+    returns a list of every player of the specified class in radius relative to origin. The parameter ``class`` must be one of these strings:  ``titan``, ``pilot`` or ``any``.
+
 .. cpp:function:: array<entity> GetPlayerArrayOfTeam( int team )
 
+    array of players from team index
+
 .. cpp:function:: array<entity> GetPlayerArrayOfTeam_Alive( int team )
+
+    every player alive in team
 
 .. cpp:function:: array<entity> GetPlayerArrayOfEnemies_Alive( int team )
 
@@ -33,15 +45,21 @@ Functions for getting player, and methods of the player object
 
             return 0 }, 0)
 
+.. cpp:function:: entity GetTitanFromPlayer( entity player)
+
+    if the player is a titan, returns the player. If not, returns the player's pet titan
+
 .. cpp:class:: player : public entity
 
-    .. cpp:function::  int GetActivePilotLoadoutIndex( player )
+    .. cpp:function::  int GetActivePilotLoadoutIndex( entity player )
 
     .. cpp:function::  entity GetActiveWeapon()
 
     .. cpp:function::  int GetActiveWeaponPrimaryAmmoLoaded()
 
     .. cpp:function::  vector GetAngles()
+
+        direction the entity is facing
 
     .. cpp:function::  entity GetAntiTitanWeapon()
 
@@ -63,9 +81,9 @@ Functions for getting player, and methods of the player object
 
     .. cpp:function::  int GetGen()
 
-    .. cpp:function::  float GetHealthFrac(player)
+    .. cpp:function::  float GetHealthFrac( entity player )
 
-    .. cpp:function::  unknown GetLastPingTime()
+    .. cpp:function::  float GetLastPingTime()
 
     .. cpp:function::  int GetLevel()
 
@@ -83,53 +101,59 @@ Functions for getting player, and methods of the player object
 
     .. cpp:function::  float GetNextTitanRespawnAvailable()
 
-    .. cpp:function::  unknown GetNumPingsAvailable()
+    .. cpp:function::  int GetNumPingsAvailable()
 
-    .. cpp:function::  unknown GetObjectiveEndTime()
+    .. cpp:function::  float GetObjectiveEndTime()
 
     .. cpp:function::  unknown GetObjectiveEntity()
 
-    .. cpp:function::  unknown GetObjectiveIndex()
+    .. cpp:function::  int GetObjectiveIndex()
+
+        returns the index of the player objective. ObjIndex 0 means no objective
 
     .. cpp:function::  int GetObserverMode()
 
-    .. cpp:function::  entity GetOffhandWeapon(slot)
+        returns either ``OBS_MODE_IN_EYE`` (first person) or ``OBS_MODE_CHASE`` (third person)
+
+    .. cpp:function::  entity GetOffhandWeapon( int slot )
 
     .. cpp:function::  array<entity> GetOffhandWeapons()
 
     .. cpp:function::  vector GetOrigin()
 
-            (x, y, z)
+        entity position
 
     .. cpp:function::  entity GetParent()
 
-    .. cpp:function::  int GetPersistentSpawnLoadoutIndex( player, "pilot" )
+    .. cpp:function::  int GetPersistentSpawnLoadoutIndex( entity player, string playerClass )
+
+        playerClasses: ``"pilot"`` ``"titan"``. This returns null for every other string.
 
     .. cpp:function::  entity GetPetTitan()
 
-    .. cpp:function::  PilotLoadoutDef GetPilotLoadoutFromPersistentData( player, loadoutIndex )
+        auto titan of player
 
-    .. cpp:function::  unknown GetPingGroupAccumulator()
+    .. cpp:function::  PilotLoadoutDef GetPilotLoadoutFromPersistentData( entity player, int loadoutIndex )
 
-    .. cpp:function::  unknown GetPingGroupStartTime()
+        stored loadout data of player
 
-    .. cpp:function::  array<entity> GetPlayerArray()
+    .. cpp:function::  int GetPingGroupAccumulator()
 
-    .. cpp:function::  array<entity> GetPlayerArrayOfEnemies_Alive( int team )
-
-    .. cpp:function::  array<entity> GetPlayerArrayOfTeam( int team )
+    .. cpp:function::  float GetPingGroupStartTime()
 
     .. cpp:function::  string GetPlayerClass()
+
+        "titan", "spectator" or "pilot"
 
     .. cpp:function::  PGS_ELIMINATED GetPlayerGameStat()
 
     .. cpp:function::  string GetPlayerName()
 
+        player (origin) username
+
     .. cpp:function::  string GetPlayerNameWithClanTag()
 
-        networks are disabled in northstar
-
-    .. cpp:function::  bool GetPlayerNetBool( net_bool_name )
+    .. cpp:function::  bool GetPlayerNetBool( string net_bool_name )
 
         example
 
@@ -139,7 +163,9 @@ Functions for getting player, and methods of the player object
 
     .. cpp:function::  string GetPlayerSettings()
 
-    .. cpp:function::  unknown GetPlayerSettingsField( "weaponClass" )
+    .. cpp:function::  string GetPlayerSettingsField( string )
+
+        some settings: ``"weaponClass"`` ``"gravityscale"`` ``"airSpeed"`` ``"airAcceleration"``
 
     .. cpp:function::  int GetShieldHealth()
 
@@ -167,59 +193,58 @@ Functions for getting player, and methods of the player object
 
     .. cpp:function::  vector GetViewVector()
 
-            vector representation of your look direction. <0, 0, 1> -> looking straight up
-
     .. cpp:function::  int GetWeaponAmmoStockpile()
 
-    .. cpp:function::  unknown GetXP()
+    .. cpp:function::  int GetXP()
 
     .. cpp:function::  float GetZoomFrac()
 
         0.0 (no zoom) - 1.0 (full zoom)
 
-    .. cpp:function::  void GiveArmor( player, int amount )
+    .. cpp:function::  void GiveArmor( entity player, int amount )
 
-    .. cpp:function::  void GiveOffhandWeapon( name, slot )
+    .. cpp:function::  void GiveOffhandWeapon( string name, int slot )
 
-    .. cpp:function::  void GivePilotLoadout( player, loadout )
+    .. cpp:function::  void GivePilotLoadout( entity player, int loadout )
 
-    .. cpp:function::  void GiveWeapon()
+    .. cpp:function::  void GiveWeapon( string weapon )
 
-    .. cpp:function::  void GiveWeaponPowerUp( player, string newWeapon )
+    .. cpp:function::  void GiveWeaponPowerUp( entity player, string newWeapon )
 
-    .. cpp:function::  void TakeOffhandWeapon()
+    .. cpp:function::  void TakeOffhandWeapon( int offhandIndex )
 
-    .. cpp:function::  void TakeWeaponNow()
+        can be used for titans as well.
+        some constants are: ``OFFHAND_ORDNANCE`` ``OFFHAND_SPECIAL`` ``OFFHAND_LEFT`` ``OFFHAND_INVENTORY`` ``OFFHAND_MELEE`` ``OFFHAND_EQUIPMENT`` ``OFFHAND_ANTIRODEO``
 
-    .. cpp:function::  void SetActiveWeaponByName()
+    .. cpp:function::  void TakeWeaponNow( string weaponToSwitch)
 
-    .. cpp:function::  void SetBodygroup()
+    .. cpp:function::  void SetActiveWeaponByName( string newWeapon )
 
-    .. cpp:function::  void SetDodgePowerDelayScale()
+    .. cpp:function::  void SetBodygroup( int bodyGroupIndex, int stateIndex )
 
-    .. cpp:function::  void SetHealth()
+    .. cpp:function::  void SetDodgePowerDelayScale( float delay )
 
-    .. cpp:function::  void SetLastPingTime()
+    .. cpp:function::  void SetHealth(int health)
 
-    .. cpp:function::  void SetMaxHealth()
+    .. cpp:function::  void SetLastPingTime( float time)
 
-    .. cpp:function::  void SetNumPingsAvailable()
+    .. cpp:function::  void SetMaxHealth( int health )
 
-    .. cpp:function::  void SetNumPingsUsed()
+    .. cpp:function::  void SetNumPingsAvailable( int num )
 
-    .. cpp:function::  void SetOrigin()
+    .. cpp:function::  void SetNumPingsUsed( int num )
 
-    .. cpp:function::  void SetPowerRegenRateScale()
+    .. cpp:function::  void SetOrigin( vector origin )
 
-    .. cpp:function::  void SetShieldHealth()
+    .. cpp:function::  void SetPowerRegenRateScale( float scale )
 
-    .. cpp:function::  void SetShieldHealthMax()
+    .. cpp:function::  void SetShieldHealth( float health)
 
-    .. cpp:function::  void SetTitanDisembarkEnabled( bool )
+    .. cpp:function::  void SetShieldHealthMax( float health )
 
+    .. cpp:function::  void SetTitanDisembarkEnabled( bool enabled )
 
-
-    .. cpp:function::  void AddThreatScopeColorStatusEffect(weaponOwner)
+    .. cpp:function::  void AddThreatScopeColorStatusEffect( entity weaponOwner )
 
     .. cpp:function::  vector CameraPosition()
 
@@ -233,15 +258,15 @@ Functions for getting player, and methods of the player object
 
     .. cpp:function::  vector EyePosition()
 
-    .. cpp:function::  int FindBodyGroup()
+    .. cpp:function::  int FindBodyGroup( string bodyGroup )
 
-    .. cpp:function::  int LookupAttachment()
+    .. cpp:function::  int LookupAttachment( string attachment = "" )
 
     .. cpp:function::  void Lunge_ClearTarget()
 
     .. cpp:function::  int Minimap_GetZOrder()
 
-    .. cpp:function::  int RemoveThreatScopeColorStatusEffect(weaponOwner)
+    .. cpp:function::  int RemoveThreatScopeColorStatusEffect( entity player )
 
     .. cpp:function::  bool HasBadReputation()
 
@@ -249,15 +274,13 @@ Functions for getting player, and methods of the player object
 
     .. cpp:function::  bool InPartyChat()
 
-    .. cpp:function::  bool IsAlive(player)
-
     .. cpp:function::  bool IsEjecting()
 
     .. cpp:function::  bool IsHologram()
 
     .. cpp:function::  bool IsHuman()
 
-    .. cpp:function::  bool IsInScoreboard( player )
+    .. cpp:function::  bool IsInScoreboard( entity player )
 
     .. cpp:function::  bool IsInThirdPersonReplay()
 
@@ -265,17 +288,17 @@ Functions for getting player, and methods of the player object
 
     .. cpp:function::  bool IsPartyLeader()
 
-    .. cpp:function::  bool IsPartyMember( player )
+    .. cpp:function::  bool IsPartyMember( entity player )
 
     .. cpp:function::  bool IsPhaseShifted()
 
     .. cpp:function::  bool IsPlayer()
 
-    .. cpp:function::  bool IsPlayerEliminated( player )
+    .. cpp:function::  bool IsPlayerEliminated( entity player )
 
-    .. cpp:function::  bool IsPlayerFemale( player )
+    .. cpp:function::  bool IsPlayerFemale( entity player )
 
-    .. cpp:function::  bool IsRespawnAvailable( player )
+    .. cpp:function::  bool IsRespawnAvailable( entity player )
 
     .. cpp:function::  bool IsScriptMenuOn()
 
@@ -283,11 +306,9 @@ Functions for getting player, and methods of the player object
 
     .. cpp:function::  bool IsTitan()
 
-    .. cpp:function::  bool IsTitanAvailable( player )
+    .. cpp:function::  bool IsTitanAvailable( entity player )
 
     .. cpp:function::  bool IsUsingOffhandWeapon()
-
-    .. cpp:function::  bool IsValid( player )
 
     .. cpp:function::  bool IsWatchingKillReplay()
 
