@@ -66,9 +66,11 @@ Then checking if vanilla works before reinstalling Northstar.
 You are probably using EA Desktop app and it sets up game installations with no write permissions contrary to Origin.
 
 ### Solution 1
+
 * Launch EA Desktop and the game as admin once so that it can copy that file.
 
 ### Solution 2
+
 1. Copy `C:\WINDOWS\system32\wsock32.dll` to your Desktop / Temporary folder.
 2. Rename the copied file to `wsock32.org.dll`.
 3. Move `wsock32.org.dll` into `Titanfall2/bin/x64_retail/`.
@@ -77,6 +79,7 @@ You are probably using EA Desktop app and it sets up game installations with no 
 Do NOT make any changes in `system32`, just copy the file.
 
 ### Solution 3
+
 1. Locate your `Titanfall2` folder
 2. Right click it and go `Properties > Security`
 3. Give yourself write permissions
@@ -136,8 +139,10 @@ Go to Mods at the bottom of your screen on the main menu, then click Authenticat
 Adding `-northstar` will start Northstar when launching from your launcher\
 Adding `-vanilla` will start the normal game when you have Northstar installed
 
-* For Steam `Your library -> Right click TF|2 -> Properties -> Launch Options -> -northstar or -vanilla`
-* For Origin `Your library -> Right click TF|2 -> Game Properties -> Advanced Launch Options -> Command Line Arguments -> northstar or vanilla`
+* For Steam
+  * `Your library > Right click TF|2 > Properties > Launch Options > -northstar or -vanilla`
+* For Origin
+  * `Your library > Right click TF|2 > Game Properties > Advanced Launch Options > Command Line Arguments > -northstar or -vanilla`
 
 ## Access Violation
 
@@ -146,7 +151,7 @@ The real error is most likely slightly higher. Please post that in issues or the
 
 ## I can't play the Campaign <a href="#campaign" id="campaign"></a>
 
-Campaign is not supported in 1.4, but you could do one of these **"**_**fixes**_**"**
+Campaign is not supported in Northstar yet, but you could do one of these "**_fixes_**"
 
 1. Doing `ns_auth_allow_insecure 1` in the console
    * [If you can't open the console](#console)
@@ -156,7 +161,6 @@ Campaign is not supported in 1.4, but you could do one of these **"**_**fixes**_
 ## Authentication Failed when clicking Launch Northstar <a href="#lsx2" id="lsx2"></a>
 
 Before trying this check out [this section](#lsx).\
-If that didn't work DM `Petar#0389` on Discord and tell him if it did or did not work.\
 Alternative to that fix:
 
 1. Close the game
@@ -166,15 +170,16 @@ Alternative to that fix:
 5. Start the game through Origin with `-northstar` in [launch options](#launch-opts)
 6. See if that fixed it
 
-## Could't Initialize Sound / DEVICE_IN_USE<a href="#initsound" id="initsound"></a>
+## Could't Initialize Sound / DEVICE_IN_USE <a href="#initsound" id="initsound"></a>
 
 ![Engine Error: Could't Initialize Sound](https://user-images.githubusercontent.com/2706225/153178714-2a50ac25-59fa-44d6-a47a-910058ec9888.png)
 
 If message contains: `AUDCLNT_E_DEVICE_IN_USE`
-1) Go to Windows Search Bar, type `mmsys.cpl`, press enter.
-2) Make sure you selected the right audio device as default (your headset or speakers usually).
-3) If it still does not work, disable exclusive mode on your default device:
+
+1. Go to Windows Search Bar, type `mmsys.cpl`, press enter.
+2. Make sure you selected the right audio device as default (your headset or speakers usually).
+3. If it still does not work, disable exclusive mode on your default device:
 ![Disable exclusive mode](https://user-images.githubusercontent.com/2706225/153179355-01598326-3297-4588-be4b-ed5257e23941.png)
-4) Restart your computer.
+4. Restart your computer.
 
 This issue could also be caused if you use some sort of audio wrapper to control volume and stuff like Voicemeter Banana. The above fix was tested with Voicemeter Banana.
