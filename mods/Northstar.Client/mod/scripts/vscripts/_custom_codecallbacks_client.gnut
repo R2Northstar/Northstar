@@ -84,7 +84,7 @@ void function CHudChat_OnReceivedSayTextMessageCallback(int fromPlayerIndex, str
             return
         }
 
-        fromPlayerName = fromPlayer.GetPlayerName()
+        fromPlayerName = fromPlayer.GetPlayerNameWithClanTag()
     }
 
     if (messageType == 0 || messageType == 1)
