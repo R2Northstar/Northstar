@@ -1,0 +1,1 @@
+Literally the only reason this project exists is so that VS can automatically copy `discord_game_sdk.dll` into the build folder.

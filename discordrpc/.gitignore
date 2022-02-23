@@ -348,12 +348,3 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
-
-# Added by cargo
-/target
-
-# vscode
-/.vscode
-
-# nix
-/result
