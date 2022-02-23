@@ -284,7 +284,7 @@ void ModManager::LoadMods()
 			if (g_CustomConvars.find(convar->Name) ==
 				g_CustomConvars.end()) // make sure convar isn't registered yet, unsure if necessary but idk what behaviour is for defining
 									   // same convar multiple times
-				RegisterConVar(convar->Name.c_str(), convar->DefaultValue.c_str(), convar->Flags, convar->HelpString.c_str());
+				new ConVar(convar->Name.c_str(), convar->DefaultValue.c_str(), convar->Flags, convar->HelpString.c_str());
 
 		// read vpk paths
 		if (fs::exists(mod.ModDirectory / "vpk"))

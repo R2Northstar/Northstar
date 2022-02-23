@@ -345,7 +345,7 @@ bool __declspec(noinline) __fastcall LoadSampleMetadata_Internal(
 {
 	char* eventName = (char*)parentEvent + 0x110;
 
-	if (Cvar_ns_print_played_sounds->m_nValue > 0)
+	if (Cvar_ns_print_played_sounds->GetInt() > 0)
 		spdlog::info("[AUDIO] Playing event {}", eventName);
 
 	auto iter = g_CustomAudioManager.m_loadedAudioOverrides.find(eventName);
@@ -462,7 +462,7 @@ void __fastcall MilesLog_Hook(int level, const char* string) { spdlog::info("[MS
 
 void InitialiseMilesAudioHooks(HMODULE baseAddress)
 {
-	Cvar_ns_print_played_sounds = RegisterConVar("ns_print_played_sounds", "0", FCVAR_NONE, "");
+	Cvar_ns_print_played_sounds = new ConVar("ns_print_played_sounds", "0", FCVAR_NONE, "");
 
 	if (IsDedicated())
 		return;

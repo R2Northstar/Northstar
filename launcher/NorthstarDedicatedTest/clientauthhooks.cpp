@@ -20,10 +20,10 @@ void AuthWithStryderHook(void* a1)
 {
 	// game will call this forever, until it gets a valid auth key
 	// so, we need to manually invalidate our key until we're authed with northstar, then we'll allow game to auth with stryder
-	if (!g_MasterServerManager->m_bOriginAuthWithMasterServerDone && Cvar_ns_has_agreed_to_send_token->m_nValue != DISAGREED_TO_SEND_TOKEN)
+	if (!g_MasterServerManager->m_bOriginAuthWithMasterServerDone && Cvar_ns_has_agreed_to_send_token->GetInt() != DISAGREED_TO_SEND_TOKEN)
 	{
 		// if player has agreed to send token and we aren't already authing, try to auth
-		if (Cvar_ns_has_agreed_to_send_token->m_nValue == AGREED_TO_SEND_TOKEN &&
+		if (Cvar_ns_has_agreed_to_send_token->GetInt() == AGREED_TO_SEND_TOKEN &&
 			!g_MasterServerManager->m_bOriginAuthWithMasterServerInProgress)
 			g_MasterServerManager->AuthenticateOriginWithMasterServer(g_LocalPlayerUserID, g_LocalPlayerOriginToken);
 
@@ -40,7 +40,7 @@ void InitialiseClientAuthHooks(HMODULE baseAddress)
 		return;
 
 	// this cvar will save to cfg once initially agreed with
-	Cvar_ns_has_agreed_to_send_token = RegisterConVar(
+	Cvar_ns_has_agreed_to_send_token = new ConVar(
 		"ns_has_agreed_to_send_token", "0", FCVAR_ARCHIVE_PLAYERPROFILE,
 		"whether the user has agreed to send their origin token to the northstar masterserver");
 

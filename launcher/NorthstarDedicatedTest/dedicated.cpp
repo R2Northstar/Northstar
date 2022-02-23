@@ -42,7 +42,7 @@ void RunServer(CDedicatedExports* dedicated)
 	// add +map if not present
 	// don't manually execute this from cbuf as users may have it in their startup args anyway, easier just to run from stuffcmds if present
 	if (!CommandLine()->CheckParm("+map"))
-		CommandLine()->AppendParm("+map", Cvar_match_defaultMap->m_pszString);
+		CommandLine()->AppendParm("+map", Cvar_match_defaultMap->GetString());
 
 	// run server autoexec and re-run commandline
 	Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec autoexec_ns_server", cmd_source_t::kCommandSrcCode);
@@ -78,8 +78,8 @@ void RunServer(CDedicatedExports* dedicated)
 								 .c_str());
 		}
 
-		std::this_thread::sleep_for(
-			std::chrono::duration<double, std::ratio<1>>(Cvar_base_tickinterval_mp->m_fValue - fmin(Plat_FloatTime() - frameStart, 0.25)));
+		std::this_thread::sleep_for(std::chrono::duration<double, std::ratio<1>>(
+			Cvar_base_tickinterval_mp->GetFloat() - fmin(Plat_FloatTime() - frameStart, 0.25)));
 	}
 }
 

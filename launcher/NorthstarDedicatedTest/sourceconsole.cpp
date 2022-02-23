@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "convar.h"
 #include "sourceconsole.h"
 #include "sourceinterface.h"
 #include "concommand.h"

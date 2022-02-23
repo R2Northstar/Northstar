@@ -40,7 +40,7 @@ char Onclc_SetPlaylistVarOverrideHook(void* a1, void* a2)
 {
 	// the private_match playlist is the only situation where there should be any legitimate sending of this netmessage
 	// todo: check mp_lobby here too
-	if (!Cvar_ns_use_clc_SetPlaylistVarOverride->m_nValue || strcmp(GetCurrentPlaylistName(), "private_match"))
+	if (!Cvar_ns_use_clc_SetPlaylistVarOverride->GetBool() || strcmp(GetCurrentPlaylistName(), "private_match"))
 		return 1;
 
 	return Onclc_SetPlaylistVarOverride(a1, a2);
@@ -80,7 +80,7 @@ void InitialisePlaylistHooks(HMODULE baseAddress)
 	// server this is somewhat restricted on custom servers to prevent it being done outside of private matches, but ideally it should be
 	// disabled altogether, since the custom menus won't use it anyway this should only really be accepted if you want vanilla client
 	// compatibility
-	Cvar_ns_use_clc_SetPlaylistVarOverride = RegisterConVar(
+	Cvar_ns_use_clc_SetPlaylistVarOverride = new ConVar(
 		"ns_use_clc_SetPlaylistVarOverride", "0", FCVAR_GAMEDLL, "Whether the server should accept clc_SetPlaylistVarOverride messages");
 
 	HookEnabler hook;

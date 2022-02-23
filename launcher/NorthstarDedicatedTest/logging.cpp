@@ -230,7 +230,7 @@ EngineSpewFuncType EngineSpewFunc;
 
 void EngineSpewFuncHook(void* engineServer, SpewType_t type, const char* format, va_list args)
 {
-	if (!Cvar_spewlog_enable->m_nValue)
+	if (!Cvar_spewlog_enable->GetBool())
 		return;
 
 	const char* typeStr;
@@ -390,8 +390,7 @@ void InitialiseEngineSpewFuncHooks(HMODULE baseAddress)
 		hook, (char*)baseAddress + 0x1A1530, CClientState_ProcessPrint_Hook,
 		reinterpret_cast<LPVOID*>(&CClientState_ProcessPrint_Original));
 
-	Cvar_spewlog_enable =
-		RegisterConVar("spewlog_enable", "1", FCVAR_NONE, "Enables/disables whether the engine spewfunc should be logged");
+	Cvar_spewlog_enable = new ConVar("spewlog_enable", "1", FCVAR_NONE, "Enables/disables whether the engine spewfunc should be logged");
 }
 
 #include "bitbuf.h"
@@ -422,7 +421,7 @@ void TextMsgHook(BFRead* msg)
 	char text[256];
 	msg->ReadString(text, sizeof(text));
 
-	if (!Cvar_cl_showtextmsg->m_nValue)
+	if (!Cvar_cl_showtextmsg->GetBool())
 		return;
 
 	switch (msg_dest)
@@ -451,5 +450,5 @@ void InitialiseClientPrintHooks(HMODULE baseAddress)
 	// "TextMsg" usermessage
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x198710, TextMsgHook, reinterpret_cast<LPVOID*>(&TextMsg_Original));
 
-	Cvar_cl_showtextmsg = RegisterConVar("cl_showtextmsg", "1", FCVAR_NONE, "Enable/disable text messages printing on the screen.");
+	Cvar_cl_showtextmsg = new ConVar("cl_showtextmsg", "1", FCVAR_NONE, "Enable/disable text messages printing on the screen.");
 }

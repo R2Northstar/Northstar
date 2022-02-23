@@ -87,11 +87,11 @@ void ServerAuthenticationManager::StartPlayerAuthServer()
 				"/authenticate_incoming_player",
 				[this](const httplib::Request& request, httplib::Response& response)
 				{
-					// can't just do request.remote_addr == Cvar_ns_masterserver_hostname->m_pszString because the cvar can be a url, gotta
+					// can't just do request.remote_addr == Cvar_ns_masterserver_hostname->GetString() because the cvar can be a url, gotta
 					// resolve an ip from it for comparisons
 					// unsigned long remoteAddr = inet_addr(request.remote_addr.c_str());
 					//
-					// char* addrPtr = Cvar_ns_masterserver_hostname->m_pszString;
+					// char* addrPtr = Cvar_ns_masterserver_hostname->GetString();
 					// char* typeStart = strstr(addrPtr, "://");
 					// if (typeStart)
 					//	addrPtr = typeStart + 3;
@@ -123,7 +123,7 @@ void ServerAuthenticationManager::StartPlayerAuthServer()
 					response.set_content("{\"success\":true}", "application/json");
 				});
 
-			m_playerAuthServer.listen("0.0.0.0", Cvar_ns_player_auth_port->m_nValue);
+			m_playerAuthServer.listen("0.0.0.0", Cvar_ns_player_auth_port->GetInt());
 		});
 
 	serverThread.detach();
@@ -191,7 +191,7 @@ bool ServerAuthenticationManager::AuthenticatePlayer(void* player, int64_t uid, 
 		// set persistent data as ready, we use 0x3 internally to mark the client as using local persistence
 		*((char*)player + 0x4a0) = (char)0x3;
 
-		if (!CVar_ns_auth_allow_insecure->m_nValue) // no auth data and insecure connections aren't allowed, so dc the client
+		if (!CVar_ns_auth_allow_insecure->GetBool()) // no auth data and insecure connections aren't allowed, so dc the client
 			return false;
 
 		// insecure connections are allowed, try reading from disk
@@ -223,7 +223,7 @@ bool ServerAuthenticationManager::AuthenticatePlayer(void* player, int64_t uid, 
 
 bool ServerAuthenticationManager::RemovePlayerAuthData(void* player)
 {
-	if (!Cvar_ns_erase_auth_info->m_nValue)
+	if (!Cvar_ns_erase_auth_info->GetBool())
 		return false;
 
 	// hack for special case where we're on a local server, so we erase our own newly created auth data on disconnect
@@ -256,7 +256,7 @@ void ServerAuthenticationManager::WritePersistentData(void* player)
 		g_MasterServerManager->WritePlayerPersistentData(
 			(char*)player + 0xF500, (char*)player + 0x4FA, m_additionalPlayerData[player].pdataSize);
 	}
-	else if (CVar_ns_auth_allow_insecure_write->m_nValue)
+	else if (CVar_ns_auth_allow_insecure_write->GetBool())
 	{
 		// todo: write pdata to disk here
 	}
@@ -270,7 +270,7 @@ bool ServerAuthenticationManager::CheckPlayerChatRatelimit(void* player)
 		m_additionalPlayerData[player].sayTextLimitCount = 0;
 	}
 
-	if (m_additionalPlayerData[player].sayTextLimitCount >= Cvar_sv_max_chat_messages_per_sec->m_nValue)
+	if (m_additionalPlayerData[player].sayTextLimitCount >= Cvar_sv_max_chat_messages_per_sec->GetInt())
 		return false;
 
 	m_additionalPlayerData[player].sayTextLimitCount++;
@@ -380,7 +380,7 @@ CCommand__TokenizeType CCommand__Tokenize;
 
 char CGameClient__ExecuteStringCommandHook(void* self, uint32_t unknown, const char* pCommandString)
 {
-	if (CVar_sv_quota_stringcmdspersecond->m_nValue != -1)
+	if (CVar_sv_quota_stringcmdspersecond->GetInt() != -1)
 	{
 		// note: this isn't super perfect, legit clients can trigger it in lobby, mostly good enough tho imo
 		// https://github.com/perilouswithadollarsign/cstrike15_src/blob/f82112a2388b841d72cb62ca48ab1846dfcc11c8/engine/sv_client.cpp#L1513
@@ -393,7 +393,7 @@ char CGameClient__ExecuteStringCommandHook(void* self, uint32_t unknown, const c
 
 		g_ServerAuthenticationManager->m_additionalPlayerData[self].numClientCommandsInQuota++;
 		if (g_ServerAuthenticationManager->m_additionalPlayerData[self].numClientCommandsInQuota >
-			CVar_sv_quota_stringcmdspersecond->m_nValue)
+			CVar_sv_quota_stringcmdspersecond->GetInt())
 		{
 			// too many stringcmds, dc player
 			CBaseClient__Disconnect(self, 1, "Sent too many stringcmd commands");
@@ -409,7 +409,7 @@ char CGameClient__ExecuteStringCommandHook(void* self, uint32_t unknown, const c
 	if (!CCommand__Tokenize(tempCommand, pCommandString, cmd_source_t::kCommandSrcCode) || !tempCommand.ArgC())
 		return false;
 
-	ConCommand* command = FindConCommand(tempCommand.Arg(0));
+	ConCommand* command = g_pCVar->FindCommand(tempCommand.Arg(0));
 
 	// if the command doesn't exist pass it on to ExecuteStringCommand for script clientcommands and stuff
 	if (command && !command->IsFlagSet(FCVAR_CLIENTCMD_CAN_EXECUTE))
@@ -422,7 +422,7 @@ char CGameClient__ExecuteStringCommandHook(void* self, uint32_t unknown, const c
 			return false;
 	}
 
-	// todo later, basically just limit to CVar_sv_quota_stringcmdspersecond->m_nValue stringcmds per client per second
+	// todo later, basically just limit to CVar_sv_quota_stringcmdspersecond->GetInt() stringcmds per client per second
 	return CGameClient__ExecuteStringCommand(self, unknown, pCommandString);
 }
 
@@ -453,15 +453,15 @@ char __fastcall CNetChan___ProcessMessagesHook(void* self, void* buf)
 			(Plat_FloatTime() * 1000) - (startTime * 1000);
 
 		if (g_ServerAuthenticationManager->m_additionalPlayerData[sender].netChanProcessingLimitTime >=
-			Cvar_net_chan_limit_msec_per_sec->m_nValue)
+			Cvar_net_chan_limit_msec_per_sec->GetInt())
 		{
 			spdlog::warn(
 				"Client {} hit netchan processing limit with {}ms of processing time this second (max is {})", (char*)sender + 0x16,
 				g_ServerAuthenticationManager->m_additionalPlayerData[sender].netChanProcessingLimitTime,
-				Cvar_net_chan_limit_msec_per_sec->m_nValue);
+				Cvar_net_chan_limit_msec_per_sec->GetInt());
 
 			// nonzero = kick, 0 = warn
-			if (Cvar_net_chan_limit_mode->m_nValue)
+			if (Cvar_net_chan_limit_mode->GetInt())
 			{
 				CBaseClient__Disconnect(sender, 1, "Exceeded net channel processing limit");
 				return false;
@@ -486,7 +486,7 @@ void CBaseClient__SendServerInfoHook(void* self)
 bool ProcessConnectionlessPacketHook(void* a1, netpacket_t* packet)
 {
 	if (packet->adr.type == NA_IP &&
-		(!(packet->data[4] == 'N' && Cvar_net_datablock_enabled->m_nValue) || !Cvar_net_datablock_enabled->m_nValue))
+		(!(packet->data[4] == 'N' && Cvar_net_datablock_enabled->GetBool()) || !Cvar_net_datablock_enabled->GetBool()))
 	{
 		// bad lookup: optimise later tm
 		UnconnectedPlayerSendData* sendData = nullptr;
@@ -516,10 +516,10 @@ bool ProcessConnectionlessPacketHook(void* a1, netpacket_t* packet)
 
 		sendData->packetCount++;
 
-		if (sendData->packetCount >= Cvar_sv_querylimit_per_sec->m_nValue)
+		if (sendData->packetCount >= Cvar_sv_querylimit_per_sec->GetInt())
 		{
 			spdlog::warn(
-				"Client went over connectionless ratelimit of {} per sec with packet of type {}", Cvar_sv_querylimit_per_sec->m_nValue,
+				"Client went over connectionless ratelimit of {} per sec with packet of type {}", Cvar_sv_querylimit_per_sec->GetInt(),
 				packet->data[4]);
 
 			// timeout for a minute
@@ -547,26 +547,26 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 {
 	g_ServerAuthenticationManager = new ServerAuthenticationManager;
 
-	Cvar_ns_erase_auth_info = RegisterConVar(
-		"ns_erase_auth_info", "1", FCVAR_GAMEDLL, "Whether auth info should be erased from this server on disconnect or crash");
+	Cvar_ns_erase_auth_info =
+		new ConVar("ns_erase_auth_info", "1", FCVAR_GAMEDLL, "Whether auth info should be erased from this server on disconnect or crash");
 	CVar_ns_auth_allow_insecure =
-		RegisterConVar("ns_auth_allow_insecure", "0", FCVAR_GAMEDLL, "Whether this server will allow unauthenicated players to connect");
-	CVar_ns_auth_allow_insecure_write = RegisterConVar(
+		new ConVar("ns_auth_allow_insecure", "0", FCVAR_GAMEDLL, "Whether this server will allow unauthenicated players to connect");
+	CVar_ns_auth_allow_insecure_write = new ConVar(
 		"ns_auth_allow_insecure_write", "0", FCVAR_GAMEDLL,
 		"Whether the pdata of unauthenticated clients will be written to disk when changed");
 	// literally just stolen from a fix valve used in csgo
-	CVar_sv_quota_stringcmdspersecond = RegisterConVar(
+	CVar_sv_quota_stringcmdspersecond = new ConVar(
 		"sv_quota_stringcmdspersecond", "60", FCVAR_GAMEDLL,
 		"How many string commands per second clients are allowed to submit, 0 to disallow all string commands");
 	// https://blog.counter-strike.net/index.php/2019/07/24922/ but different because idk how to check what current tick number is
 	Cvar_net_chan_limit_mode =
-		RegisterConVar("net_chan_limit_mode", "0", FCVAR_GAMEDLL, "The mode for netchan processing limits: 0 = log, 1 = kick");
-	Cvar_net_chan_limit_msec_per_sec = RegisterConVar(
+		new ConVar("net_chan_limit_mode", "0", FCVAR_GAMEDLL, "The mode for netchan processing limits: 0 = log, 1 = kick");
+	Cvar_net_chan_limit_msec_per_sec = new ConVar(
 		"net_chan_limit_msec_per_sec", "0", FCVAR_GAMEDLL,
 		"Netchannel processing is limited to so many milliseconds, abort connection if exceeding budget");
-	Cvar_ns_player_auth_port = RegisterConVar("ns_player_auth_port", "8081", FCVAR_GAMEDLL, "");
-	Cvar_sv_querylimit_per_sec = RegisterConVar("sv_querylimit_per_sec", "15", FCVAR_GAMEDLL, "");
-	Cvar_sv_max_chat_messages_per_sec = RegisterConVar("sv_max_chat_messages_per_sec", "5", FCVAR_GAMEDLL, "");
+	Cvar_ns_player_auth_port = new ConVar("ns_player_auth_port", "8081", FCVAR_GAMEDLL, "");
+	Cvar_sv_querylimit_per_sec = new ConVar("sv_querylimit_per_sec", "15", FCVAR_GAMEDLL, "");
+	Cvar_sv_max_chat_messages_per_sec = new ConVar("sv_max_chat_messages_per_sec", "5", FCVAR_GAMEDLL, "");
 
 	RegisterConCommand("ns_resetpersistence", ResetPdataCommand, "resets your pdata when you next enter the lobby", FCVAR_NONE);
 

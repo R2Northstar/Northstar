@@ -231,7 +231,7 @@ void DumpAINInfo(CAI_Network* aiNetwork)
 	spdlog::info("calculated total linkcount: {}", calculatedLinkcount);
 
 	calculatedLinkcount /= 2;
-	if (Cvar_ns_ai_dumpAINfileFromLoad->m_nValue)
+	if (Cvar_ns_ai_dumpAINfileFromLoad->GetBool())
 	{
 		if (aiNetwork->linkcount == calculatedLinkcount)
 			spdlog::info("caculated linkcount is normal!");
@@ -365,7 +365,7 @@ void LoadAINFileHook(void* aimanager, void* buf, const char* filename)
 {
 	LoadAINFile(aimanager, buf, filename);
 
-	if (Cvar_ns_ai_dumpAINfileFromLoad->m_nValue)
+	if (Cvar_ns_ai_dumpAINfileFromLoad->GetBool())
 	{
 		spdlog::info("running DumpAINInfo for loaded file {}", filename);
 		DumpAINInfo(*(CAI_Network**)((char*)aimanager + 2536));
@@ -374,7 +374,7 @@ void LoadAINFileHook(void* aimanager, void* buf, const char* filename)
 
 void InitialiseBuildAINFileHooks(HMODULE baseAddress)
 {
-	Cvar_ns_ai_dumpAINfileFromLoad = RegisterConVar(
+	Cvar_ns_ai_dumpAINfileFromLoad = new ConVar(
 		"ns_ai_dumpAINfileFromLoad", "0", FCVAR_NONE, "For debugging: whether we should dump ain data for ains loaded from disk");
 
 	HookEnabler hook;

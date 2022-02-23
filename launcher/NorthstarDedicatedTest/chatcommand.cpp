@@ -1,6 +1,7 @@
 #include "pch.h"
-#include "chatcommand.h"
+#include "convar.h"
 #include "concommand.h"
+#include "chatcommand.h"
 #include "dedicated.h"
 #include "localchatwriter.h"
 
