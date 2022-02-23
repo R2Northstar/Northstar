@@ -60,9 +60,6 @@ void InitialiseEngineGameUtilFunctions(HMODULE baseAddress)
 	g_pEngine = *(CEngine**)((char*)baseAddress + 0x7D70C8);
 	sv_m_State = (server_state_t*)((char*)baseAddress + 0x12A53D48);
 
-	Cvar_hostport = (ConVar*)((char*)baseAddress + 0x13FA6070);
-	Cvar_net_datablock_enabled = (ConVar*)((char*)baseAddress + 0x12A4F6D0);
-
 	GetCurrentPlaylistName = (GetCurrentPlaylistType)((char*)baseAddress + 0x18C640);
 	SetCurrentPlaylist = (SetCurrentPlaylistType)((char*)baseAddress + 0x18EB20);
 	SetPlaylistVarOverride = (SetPlaylistVarOverrideType)((char*)baseAddress + 0x18ED00);
@@ -71,10 +68,26 @@ void InitialiseEngineGameUtilFunctions(HMODULE baseAddress)
 	g_LocalPlayerUserID = (char*)baseAddress + 0x13F8E688;
 	g_LocalPlayerOriginToken = (char*)baseAddress + 0x13979C80;
 
+	GetBaseLocalClient = (GetBaseLocalClientType)((char*)baseAddress + 0x78200);
+
+	/* NOTE:
+		g_pCVar->FindVar("convar_name") now works. These are no longer needed.
+		You can also itterate over every ConVar using CCVarIteratorInternal
+		dump the pointers to a vector and access them from there.
+	Example:
+		std::vector<ConVar*> g_pAllConVars;
+		for (auto& map : g_pCVar->DumpToMap())
+		{
+			ConVar* pConVar = g_pCVar->FindVar(map.first.c_str());
+			if (pConVar)
+			{
+				g_pAllConVars.push_back(pConVar);
+			}
+		}*/
+	Cvar_hostport = (ConVar*)((char*)baseAddress + 0x13FA6070);
+	Cvar_net_datablock_enabled = (ConVar*)((char*)baseAddress + 0x12A4F6D0);
 	Cvar_match_defaultMap = (ConVar*)((char*)baseAddress + 0x8AB530);
 	Cvar_communities_hostname = (ConVar*)((char*)baseAddress + 0x13157E50);
-
-	GetBaseLocalClient = (GetBaseLocalClientType)((char*)baseAddress + 0x78200);
 }
 
 void InitialiseServerGameUtilFunctions(HMODULE baseAddress)

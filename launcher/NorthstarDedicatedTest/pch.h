@@ -12,11 +12,22 @@
 
 // add headers that you want to pre-compile here
 #include "memalloc.h"
+
 #include <Windows.h>
+#include <Psapi.h>
+#include <set>
+#include <filesystem>
+#include <sstream>
+
 #include "logging.h"
 #include "include/MinHook.h"
 #include "spdlog/spdlog.h"
 #include "libcurl/include/curl/curl.h"
 #include "hookutils.h"
+
+template <typename ReturnType, typename... Args> ReturnType CallVFunc(int index, void* thisPtr, Args... args)
+{
+	return (*reinterpret_cast<ReturnType(__fastcall***)(void*, Args...)>(thisPtr))[index](thisPtr, args...);
+}
 
 #endif
