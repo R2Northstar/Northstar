@@ -897,6 +897,10 @@ void MasterServerManager::AddSelfToServerList(
 					{
 						Sleep(5000);
 
+						// defensive check, as m_ownServer could be set to null during the Sleep(5000) above
+						if (!*m_ownServerId)
+							return;
+
 						do
 						{
 							CURL* curl = curl_easy_init();
@@ -952,6 +956,11 @@ void MasterServerManager::AddSelfToServerList(
 							curl_easy_setopt(curl, CURLOPT_MIMEPOST, mime);
 
 							CURLcode result = curl_easy_perform(curl);
+
+							// defensive check, as m_ownServerId could be set to null before this request gets processed
+							if (!*m_ownServerId)
+								return;
+
 							if (result == CURLcode::CURLE_OK)
 							{
 								rapidjson_document serverAddedJson;
@@ -1157,6 +1166,7 @@ void MasterServerManager::RemoveSelfFromServerList()
 				curl, CURLOPT_URL,
 				fmt::format("{}/server/remove_server?id={}", Cvar_ns_masterserver_hostname->GetString(), m_ownServerId).c_str());
 
+			*m_ownServerId = 0;
 			CURLcode result = curl_easy_perform(curl);
 
 			if (result == CURLcode::CURLE_OK)
