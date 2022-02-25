@@ -216,9 +216,6 @@ void ConVar::SetValue(int nValue)
 		return;
 	}
 
-	// Only valid for root ConVars.
-	assert(m_pParent == this);
-
 	float flValue = (float)nValue;
 
 	// Check bounds.
@@ -251,9 +248,6 @@ void ConVar::SetValue(float flValue)
 		return;
 	}
 
-	// Only valid for root ConVars.
-	assert(m_pParent == this);
-
 	// Check bounds.
 	ClampValue(flValue);
 
@@ -284,9 +278,6 @@ void ConVar::SetValue(const char* pszValue)
 
 	char szTempValue[32]{};
 	const char* pszNewValue{};
-
-	// Only valid for root convars.
-	assert(m_pParent == this);
 
 	float flOldValue = m_Value.m_fValue;
 	pszNewValue = (char*)pszValue;
