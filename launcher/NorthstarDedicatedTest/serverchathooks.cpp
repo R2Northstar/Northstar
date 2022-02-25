@@ -15,7 +15,7 @@ class CRecipientFilter
 	char unknown[58];
 };
 
-CServerGameDLL* gServer;
+CServerGameDLL* g_pServerGameDLL;
 
 typedef void(__fastcall* CServerGameDLL__OnReceivedSayTextMessageType)(
 	CServerGameDLL* self, unsigned int senderPlayerId, const char* text, int channelId);
@@ -76,18 +76,22 @@ static void CServerGameDLL__OnReceivedSayTextMessageHook(CServerGameDLL* self, u
 		return;
 	}
 
-	g_ServerSquirrelManager->setupfunc("CServerGameDLL_ProcessMessageStartThread");
-	g_ServerSquirrelManager->pusharg((int)senderPlayerId - 1);
-	g_ServerSquirrelManager->pusharg(text);
-	g_ServerSquirrelManager->pusharg(isTeam);
-	g_ServerSquirrelManager->call(3);
+	if (g_ServerSquirrelManager->setupfunc("CServerGameDLL_ProcessMessageStartThread") != SQRESULT_ERROR)
+	{
+		g_ServerSquirrelManager->pusharg((int)senderPlayerId - 1);
+		g_ServerSquirrelManager->pusharg(text);
+		g_ServerSquirrelManager->pusharg(isTeam);
+		g_ServerSquirrelManager->call(3);
+	}
+	else
+		CServerGameDLL__OnReceivedSayTextMessageHookBase(self, senderPlayerId, text, isTeam);
 }
 
 void ChatSendMessage(unsigned int playerIndex, const char* text, bool isteam)
 {
 	isSkippingHook = true;
 	CServerGameDLL__OnReceivedSayTextMessage(
-		gServer,
+		g_pServerGameDLL,
 		// Ensure the first bit isn't set, since this indicates a custom message
 		(playerIndex + 1) & CUSTOM_MESSAGE_INDEX_MASK, text, isteam);
 }
@@ -164,7 +168,7 @@ SQRESULT SQ_BroadcastMessage(void* sqvm)
 	return SQRESULT_NULL;
 }
 
-void InitialiseServerChatHooks_Engine(HMODULE baseAddress) { gServer = (CServerGameDLL*)((char*)baseAddress + 0x13F0AA98); }
+void InitialiseServerChatHooks_Engine(HMODULE baseAddress) { g_pServerGameDLL = (CServerGameDLL*)((char*)baseAddress + 0x13F0AA98); }
 
 void InitialiseServerChatHooks_Server(HMODULE baseAddress)
 {
