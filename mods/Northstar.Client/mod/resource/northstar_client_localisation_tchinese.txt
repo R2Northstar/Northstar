@@ -19,6 +19,9 @@
 		"AUTHENTICATION_AGREEMENT" "驗證許可"
 		"AUTHENTICATION_AGREEMENT_RESTART" "你需要重啟Titanfall 2來使本選項生效。"
 
+		"DIALOG_AUTHENTICATING_MASTERSERVER" "向主伺服器進行驗證。"
+		"AUTHENTICATIONAGREEMENT_NO" "你選擇了不與Northstar主伺服器進行驗證。你可以在Mod選單查看驗證許可。"
+
 		"MENU_TITLE_SERVER_BROWSER" "瀏覽伺服器"
 		"NS_SERVERBROWSER_NOSERVERS" "查無伺服器"
 		"NS_SERVERBROWSER_UNKNOWNMODE" "未知模式"
@@ -103,14 +106,14 @@
 		"PL_tt_abbr" "TT"
 		"GAMEMODE_TT" "泰坦鬼抓人"
 
-		"PL_chamber" "僅此一發" // WIP
+		"PL_chamber" "僅此一發"
 		"PL_chamber_lobby" "僅此一發大廳"
 		"PL_chamber_desc" "一槍一個。透過擊殺來取得下一發子彈。"
 		"PL_chamber_hint" "一槍一個。透過擊殺來取得下一發子彈。"
 		"PL_chamber_abbr" "CHAMBER"
 		"GAMEMODE_CHAMBER" "僅此一發"
 
-		"PL_hidden" "潛獵" // WIP
+		"PL_hidden" "潛獵"
 		"PL_hidden_lobby" "潛獵大廳"
 		"PL_hidden_desc" "潛獵手將完全隱形，潛伏並獵殺所有倖存者。"
 		"PL_hidden_hint" "潛獵手將完全隱形，潛伏並獵殺所有倖存者。"
@@ -130,11 +133,13 @@
 		"SNS_LEADER_BANKRUPT_SUB" "%s1的分數已被%s2重置"
 		"SNS_BANKRUPT" "破產！"
 		"SNS_BANKRUPT_SUB" "你的分數已被%s1重置"
-		"wme_kill_value" "小幫手菁英擊殺分數"
-		"offhand_kill_value" "重火力擊殺分數"
-		"reset_kill_value" "脈衝刀/處決擊殺分數"
-		"melee_kill_value" "近戰擊殺分數"
-		"reset_pulse_blade_cooldown_on_pulse_blade_kill" "脈衝刀擊殺重置冷卻"
+		"sns_wme_kill_value" "小幫手菁英擊殺分數"
+		"sns_softball_kill_value" "壘球榴彈槍擊殺分數"
+		"sns_offhand_kill_value" "重火力擊殺分數"
+		"sns_reset_kill_value" "脈衝刀/處決擊殺分數"
+		"sns_melee_kill_value" "近戰擊殺分數"
+		"sns_reset_pulse_blade_cooldown_on_pulse_blade_kill" "脈衝刀擊殺重置冷卻"
+		"sns_softball_enabled" "啟用壘球榴彈槍"
 
 		"PL_inf" "感染"
 		"PL_inf_lobby" "感染大廳"
@@ -214,7 +219,7 @@
 		"MODE_SETTING_CATEGORY_BLEEDOUT" "鐵馭倒地"
 
 		"custom_air_accel_pilot" "空中加速"
-		"no_pilot_collision" "取消鐵馭間碰撞" // WIP
+		"no_pilot_collision" "取消鐵馭間碰撞"
 		"promode_enable" "進階平衡武器"
 		"fp_embark_enabled" "第一人稱登機/處決"
 		"classic_rodeo" "經典馴牛術"
@@ -228,7 +233,7 @@
 		"player_bleedout_firstAidTime" "醫療時間"
 		"player_bleedout_firstAidTimeSelf" "自行醫療時間"
 		"player_bleedout_firstAidHealPercent" "醫療生命值佔比"
-		"player_bleedout_aiBleedingPlayerMissChance" "倒地時AI的失誤率" // WIP
+		"player_bleedout_aiBleedingPlayerMissChance" "倒地時AI的失誤率"
 
 		// coop stuff
 		"PL_sp_coop" "(UNFINISHED) Singleplayer Coop"
@@ -286,14 +291,20 @@
 		"SWITCH_ANY" "任何"
 
 		"CONNECTING" "連線中…"
-		"INGAME_PLAYERS" "線上玩家： ^6BA6C400%s1"
-		"TOTAL_SERVERS" "線上伺服器： ^C46C6C00%s1"
-    
-    
+		"INGAME_PLAYERS" "線上玩家：^6BA6C400%s1"
+		"TOTAL_SERVERS" "線上伺服器：^C46C6C00%s1"
+
 		// Mods menu
 		"SHOW" "顯示"
 		"SHOW_ALL" "全部"
 		"SHOW_ONLY_ENABLED" "僅啟用"
 		"SHOW_ONLY_DISABLED" "僅停用"
+
+		// Maps menu
+		"HIDE_LOCKED" "隱藏鎖定地圖"
+
+		// In-game chat
+		"HUD_CHAT_WHISPER_PREFIX" "[悄悄話]"
+		"HUD_CHAT_SERVER_PREFIX" "[伺服器]"
 	}
 }
