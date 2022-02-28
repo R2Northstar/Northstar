@@ -15,7 +15,7 @@ When using a dedicated server, arguments are read from `ns_startup_args_dedi.txt
 * `R2Northstar\mods\Northstar.CustomServers\mod.json`\
   contains [ConVars](./#convars) default values
 * `R2Northstar\mods\Northstar.CustomServers\mod\cfg\autoexec_ns_server.cfg`\
-  contains [ConVars](./#convars) and overrides `R2Northstar\mods\Northstar.CustomServers\mod.json`
+  contains [ConVars](./#convars) and overrides
 
 ### Dedicated Server Caveats
 
@@ -29,24 +29,28 @@ See [troubleshoot](troubleshoot.md)
 
 ## Startup Arguments
 
-Startup arguments can be added in the `ns_startup_args_dedi.txt` file.
+Startup arguments can be added in the `ns_startup_args_dedi.txt` file.\
+Example: `+setplaylist private_match +mp_gamemode ps`
 
-| Arguments                  | Accepted Values                                | Description                                         |
-| -------------------------- | ---------------------------------------------- | --------------------------------------------------- |
-| `+setplaylist`             | `private_match`                                | Currently needed to make servers work               |
-| `+setplaylistvaroverrides` | see [PlaylistOverrides](./#playlist-overrides) | Edits the behaviour of the server                   |
-| `-port`                    | int beteween `1-65535`                         | Determines which UDP port the server will listen to |
-| `+mp_gamemode`             | see [Gamemodes](./#gamemodes)                  | Forces the gamemode of the server                   |
+| Arguments                  | Accepted Values                                                 | Description                                                               |
+| -------------------------- | --------------------------------------------------------------  | ------------------------------------------------------------------------- |
+| `+setplaylist`             | see [Gamemodes](./#gamemodes) (Should be the same as `mp_gamemode` unless you want a private match) | Set the server type (If it is not `private_match`, make sure you have also included `+map` and NOT `mp_lobby` or else you can't search your server in the game) |
+| `+setplaylistvaroverrides` | see [PlaylistOverrides](./#playlist-overrides)                  | Edits the behaviour of the server                                         |
+| `-port`                    | int beteween `1-65535`                                          | Determines which UDP port the server will listen to                       |
+| `+mp_gamemode`             | see [Gamemodes](./#gamemodes)                                   | Forces the gamemode of the server                                         |
+| `+map`                     | see [Maps](./#maps) (`mp_lobby` is the default if not included) | Forces the map of the server at the first start                           |
 
 | Flags                 | Description                                                                    |
 | --------------------- | ------------------------------------------------------------------------------ |
 | `-maxplayersplaylist` | Allows [PlaylistOverrides](./#playlist-overrides) to override max player count |
+| `-enablechathooks`    | Allows send the commands using in-game chat                                    |
 
 ### Playlist overrides
 
 Playlist overrides determines the behaviour of the server. PlaylistOverrides can be added using the `+setplaylistvaroverrides` argument in the `ns_startup_args_dedi.txt` file.
 
-The list of playlist overrides needs to be quoted and separated by spaces (example : `+setplaylistvaroverrides "run_epilogue 0 featured_mode_amped_tacticals 1"`)
+The list of playlist overrides needs to be quoted and separated by spaces.\
+Example: `+setplaylistvaroverrides "run_epilogue 0 featured_mode_amped_tacticals 1"`
 
 | PlaylistOverrides                            | Accepted Values | Default Value | Description                                                                                    |
 | -------------------------------------------- | --------------- | ------------- | ---------------------------------------------------------------------------------------------- |
