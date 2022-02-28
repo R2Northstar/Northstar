@@ -38,6 +38,19 @@ Access your router via it's web interface and port forward
 
 to your PC that you're running Northstar on.
 
+## Firewall
+
+You need to allow the `NorthstarLauncher.exe` in the firewall so that it can connect to the internet. By default, when you launch the server, it should pop up the Windows security alert and let you decide if the application able to connect to the network.
+
+If you accidentally click the deny button, then follow the step to allow it.
+
+* Open windows firewall
+* Select "Allow an app or feature through Windows Defender Firewall
+* Click allow other applications
+* Click browse
+* Locate the NorthstarLauncher.exe and select it
+* Click add
+
 ## Final checks
 
 To check whether you set everything up correctly, start the game via Northstar and go into a private match. Another Northstar user should now be able to see your server on the server browser and join it.\
