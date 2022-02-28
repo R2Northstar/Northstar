@@ -49,14 +49,6 @@
 		pin_to_sibling_corner BOTTOM_RIGHT
 	}
 
-	MapButton
-	{
-		ControlName RuiButton
-		InheritProperties RuiSmallButton
-		wide 286
-		tall 165
-	}
-
 	MapNameLockedForeground
 	{
 		ControlName RuiPanel
