@@ -18,10 +18,14 @@ struct {
 	int mapsPerPage = 21
 	int currentMapPage
 	
+	array< var > gridInfos
 	array< var > gridButtons
+	
 	array< string > mapsArrayFiltered
 	
 	int scrollOffset = 0
+	
+	int lastSelectedID
 	
 	var menu
 } file
@@ -60,12 +64,16 @@ void function InitMapsMenu()
 	
 	RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "SwtBtnhideLocked")), "buttonText", "")
 	
+	file.gridInfos = GetElementsByClassname( file.menu, "MapGridInfo" )
+	
 	file.gridButtons = GetElementsByClassname( file.menu, "MapGridButtons" )
 	
+	AddButtonEventHandler( Hud_GetChild( Hud_GetChild( file.menu , "MapsGridPanel" ), "DummyTop" ), UIE_GET_FOCUS, OnHitDummyTop )
+	AddButtonEventHandler( Hud_GetChild( Hud_GetChild( file.menu , "MapsGridPanel" ), "DummyBottom" ), UIE_GET_FOCUS, OnHitDummyBottom )
+	
 	// uhh
-	foreach ( var mapButton in file.gridButtons )
+	foreach ( var button in file.gridButtons )
 	{
-		var button = Hud_GetChild( mapButton, "MapButton" )
 		AddButtonEventHandler( button, UIE_CLICK, MapButton_Activate )
 		AddButtonEventHandler( button, UIE_GET_FOCUS, MapButton_Focus )
 	}
@@ -94,9 +102,53 @@ void function OnOpenMapsMenu()
 {
 	RefreshList()
 	
+	Hud_SetFocused( file.gridButtons[0] )
+	
 	RegisterButtonPressedCallback(MOUSE_WHEEL_UP , OnScrollUp)
 	RegisterButtonPressedCallback(MOUSE_WHEEL_DOWN , OnScrollDown)
 	//RegisterButtonPressedCallback(KEY_TAB , OnKeyTabPressed)
+}
+
+void function OnHitDummyTop( var button )
+{
+	if( file.scrollOffset == 0 )
+	{
+		Hud_SetFocused( file.gridButtons[ file.lastSelectedID ] )
+		return
+	}
+	
+	file.scrollOffset--
+	
+	UpdateMapsGrid()
+	UpdateListSliderPosition()
+	UpdateNextMapInfo()
+	
+	Hud_SetFocused( file.gridButtons[ file.lastSelectedID ] )
+}
+
+void function OnHitDummyBottom( var button )
+{
+	if ( file.mapsArrayFiltered.len() <= BUTTONS_PER_PAGE || file.mapsArrayFiltered.len() <= 12 )
+		return
+		
+	file.scrollOffset += 1
+	
+	if ((file.scrollOffset + BUTTONS_PER_PAGE) * 3 > file.mapsArrayFiltered.len())
+		file.scrollOffset = (file.mapsArrayFiltered.len() - BUTTONS_PER_PAGE * 3) / 3 + 1
+	
+	UpdateMapsGrid()
+	UpdateListSliderPosition()
+	UpdateNextMapInfo()
+	
+	int scriptID = file.lastSelectedID
+	
+	if( scriptID > file.mapsArrayFiltered.len() - 1 - file.scrollOffset * 3 )
+		scriptID = file.mapsArrayFiltered.len() - file.scrollOffset * 3 - 1
+	
+	
+	var lastButton = file.gridButtons[ scriptID ]
+	
+	Hud_SetFocused( lastButton )
 }
 
 void function RefreshList()
@@ -122,7 +174,7 @@ void function MapButton_Activate( var button )
 	if ( !AmIPartyLeader() && GetPartySize() > 1 )
 		return
 
-	int mapID = int( Hud_GetScriptID( Hud_GetParent( button ) ) )
+	int mapID = int( Hud_GetScriptID(  button  ) )
 	string mapName = file.mapsArrayFiltered[ mapID + file.scrollOffset * 3 ]
 	
 	if ( IsLocked( mapName ) )
@@ -137,9 +189,11 @@ void function MapButton_Activate( var button )
 
 void function MapButton_Focus( var button )
 {
-	int mapID = int( Hud_GetScriptID( Hud_GetParent( button ) ) )
+	int mapID = int( Hud_GetScriptID(  button  ) )
 	string mapName = file.mapsArrayFiltered[ mapID + file.scrollOffset * 3 ]
-
+	
+	file.lastSelectedID = mapID
+	
 	UpdateMapsInfo( mapName )
 }
 
@@ -179,7 +233,7 @@ void function UpdateMapsGrid()
 	
 	int trueOffset = file.scrollOffset * 3
 	
-	foreach ( int _index,  var element in file.gridButtons )
+	foreach ( int _index,  var element in file.gridInfos )
 	{
 		if ( ( _index + trueOffset ) >= mapsArray.len() ) return
 		
@@ -194,6 +248,7 @@ void function UpdateMapsGrid()
 		if ( IsLocked( name ) )
 			LockMapButton( element )
 		
+		Hud_SetVisible( file.gridButtons[ _index ], true )
 		MakeMapButtonVisible( element )
 	}
 }
@@ -225,14 +280,15 @@ void function FilterMapsArray()
 
 void function HideAllMapButtons()
 {
-	foreach ( var element in file.gridButtons )
+	foreach ( _index, var element in file.gridInfos )
 	{
 		Hud_SetVisible( element, false )
 		
-		var mapButton = Hud_GetChild( element, "MapButton" )
+		var mapButton = file.gridButtons[ _index ]
 		var mapFG = Hud_GetChild( element, "MapNameLockedForeground" )
 		
 		Hud_SetLocked( mapButton, false )
+		Hud_SetVisible( mapButton, false )
 		Hud_SetVisible( mapFG, false )
 	}
 }
@@ -245,10 +301,8 @@ void function MakeMapButtonVisible( var element )
 
 void function LockMapButton( var element )
 {
-	var mapButton = Hud_GetChild( element, "MapButton" )
 	var mapFG = Hud_GetChild( element, "MapNameLockedForeground" )
 	
-	Hud_SetVisible( mapButton, true )
 	Hud_SetVisible( mapFG, true )
 }
 
@@ -381,7 +435,6 @@ void function OnDownArrowSelected( var button )
 	}
 	UpdateMapsGrid()
 	UpdateListSliderPosition()
-	printt(file.scrollOffset)
 }
 
 
