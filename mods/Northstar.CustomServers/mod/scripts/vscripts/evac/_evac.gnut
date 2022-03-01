@@ -260,7 +260,7 @@ void function Evac( int evacTeam, float initialWait, float arrivalTime, float wa
 	// have to do this inline since we capture the completionCallback
 	trigger.SetEnterCallback( void function( entity trigger, entity player ) : ( canBoardCallback, dropship ) 
 	{ 	
-		if ( !player.IsPlayer() || !IsAlive( player ) || player.IsTitan() || !canBoardCallback( dropship, player ) || PlayerInDropship( player, dropship ) )
+		if ( !player.IsPlayer() || !IsAlive( player ) || player.IsTitan() || player.ContextAction_IsBusy() || !canBoardCallback( dropship, player ) || PlayerInDropship( player, dropship ) )
 			return
 		
 		thread AddPlayerToEvacDropship( dropship, player )
