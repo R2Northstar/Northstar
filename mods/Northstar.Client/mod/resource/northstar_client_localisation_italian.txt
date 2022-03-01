@@ -79,8 +79,8 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 		"PL_sbox_abbr" "SBOX"
 		"GAMEMODE_SBOX" "Sandbox"
 
-		"PL_gg" "Gioco d'Armi"
-		"PL_gg_lobby" "Lobby: Gioco d'Armi"
+		"PL_gg" "Gioco delle Armi"
+		"PL_gg_lobby" "Lobby: Gioco delle Armi"
 		"PL_gg_desc" "Ottieni un'uccisione con ogni arma per vincere."
 		"PL_gg_hint" "Ottieni una nuova arma ogni uccisione."
 		"PL_gg_abbr" "GG"
@@ -128,7 +128,7 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 		"PL_hs_lobby" "Lobby: Nascondino"
 		"PL_hs_desc" "Nasconditi oppure trova gli avversari."
 		"PL_hs_hint" "Uccidi tutti i giocatori nascosti per vincere oppure cerca di non farti trovare."
-		"PL_hs_abbr" "HS"
+		"PL_hs_abbr" "NS"
 		"GAMEMODE_hs" "Nascondino"
 		"HIDEANDSEEK_YOU_ARE_SEEKER" "TROVA I GIOCATORI NASCOSTI"
 		"HIDEANDSEEK_SEEKER_DESC" "Trova ed uccidi tutti i giocatori nascosti. \nRespawnerai in %s1 secondi."
@@ -177,16 +177,16 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 		"GAMEMODE_ctf_comp" "Cattura Bandiera Competitivo"
 
 		// mode settings
-		"MODE_SETTING_CATEGORY_PROMODE" "Pro-Mode"
+		"MODE_SETTING_CATEGORY_PROMODE" "Modalità Competitiva"
 		"MODE_SETTING_CATEGORY_BLEEDOUT" "Sanguinamento pilota"
 
 		"custom_air_accel_pilot" "Accelerazione Aerea"
 		"no_pilot_collision" "Collisione tra Piloti"
-		"promode_enable" "Armi Pro-Mode"
-		"fp_embark_enabled" "Imbarchi/esecuzioni 1ºpers."
+		"promode_enable" "Armi Modalità Competitiva"
+		"fp_embark_enabled" "Imbarchi/esecuzioni in 1ºpers."
 		"classic_rodeo" "Rodeo classico"
-		"oob_timer_enabled" "Fuori dai Limiti timer"
-		"riff_instagib" "Instagib-Mode"
+		"oob_timer_enabled" "Timer Fuori dai Limiti"
+		"riff_instagib" "Modalità Instagib"
 
 		"riff_player_bleedout" "Sanguinamento pilota"
 		"player_bleedout_forceHolster" "Riponi le armi (sanguinam.)"
@@ -194,7 +194,7 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 		"player_bleedout_bleedoutTime" "Tempo Sanguinamento"
 		"player_bleedout_firstAidTime" "Tempo di Rianimazione"
 		"player_bleedout_firstAidTimeSelf" "Tempo di auto-Rianimazione"
-		"player_bleedout_firstAidHealPercent" "Recupero HP Rianimazione %"
+		"player_bleedout_firstAidHealPercent" "Recupero PS Rianimazione %"
 		"player_bleedout_aiBleedingPlayerMissChance" "AI miss % (sanguinamento)"
 
 		// coop stuff
