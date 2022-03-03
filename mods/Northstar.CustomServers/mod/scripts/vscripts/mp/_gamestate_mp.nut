@@ -198,7 +198,9 @@ void function StartGameWithoutClassicMP()
 	
 	foreach ( entity player in GetPlayerArray() )
 	{
-		RespawnAsPilot( player )
+		if ( !IsPrivateMatchSpectator( player ) )
+			RespawnAsPilot( player )
+			
 		ScreenFadeFromBlack( player, 0 )
 	}
 	

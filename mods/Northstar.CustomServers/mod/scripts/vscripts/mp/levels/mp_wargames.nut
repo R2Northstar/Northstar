@@ -182,7 +182,12 @@ void function OnPrematchStart()
 	
 	// launch players into intro
 	foreach ( entity player in GetPlayerArray() )
-		thread PlayerWatchesWargamesIntro( player )
+	{
+		if ( !IsPrivateMatchSpectator( player ) )
+			thread PlayerWatchesWargamesIntro( player )
+		else
+			RespawnPrivateMatchSpectator( player )
+	}
 	
 	// 7 seconds of nothing until we start the pod sequence
 	wait 7.0

@@ -18,6 +18,11 @@
 			"DefaultValue": "1"
 		},
 		{
+			"Name": "ns_allow_spectators",
+			"DefaultValue": "0",
+			"Flags": 8192
+		},
+		{
 			"Name": "ns_private_match_last_mode",
 			"DefaultValue": "tdm"
 		},
@@ -100,6 +105,13 @@
 		{
 			"Path": "mp/_classic_mp_no_intro.gnut",
 			"RunOn": "SERVER && MP"
+		},
+		{
+			"Path": "mp/_spectator.gnut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+				"After": "Spectator_Init"
+			}
 		},
 		{
 			"Path": "_loadouts_mp.gnut",

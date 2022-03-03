@@ -19,7 +19,8 @@ void function Lobby_Init()
 
 void function Lobby_OnClientConnectionStarted( entity player )
 {
-	
+	if ( !( IsPrivateMatch() || GetCurrentPlaylistName() == "private_match" ) || !GetConVarBool( "ns_allow_spectators" ) )
+		player.SetPersistentVar( "privateMatchState", 0 ) // disable spectator
 }
 
 void function Lobby_OnClientConnectionCompleted( entity player )

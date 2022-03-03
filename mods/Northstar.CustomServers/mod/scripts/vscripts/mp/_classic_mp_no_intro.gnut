@@ -38,8 +38,12 @@ void function ClassicMP_DefaultNoIntro_Start()
 		
 		foreach ( entity player in GetPlayerArray() )
 		{
-			player.UnfreezeControlsOnServer()
-			RemoveCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING )
+			if ( !IsPrivateMatchSpectator( player ) )
+			{
+				player.UnfreezeControlsOnServer()
+				RemoveCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING )
+			}
+			
 			TryGameModeAnnouncement( player )
 		}
 	}
@@ -51,6 +55,12 @@ void function ClassicMP_DefaultNoIntro_SpawnPlayer( entity player )
 {
 	if ( GetGameState() != eGameState.Prematch )
 		return
+	
+	if ( IsPrivateMatchSpectator( player ) ) // private match spectators use custom spawn logic
+	{
+		RespawnPrivateMatchSpectator( player )
+		return
+	}
 	
 	if ( IsAlive( player ) )
 		player.Die()

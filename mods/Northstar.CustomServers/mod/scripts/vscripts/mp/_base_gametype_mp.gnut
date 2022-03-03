@@ -31,12 +31,6 @@ struct {
 void function BaseGametype_Init_MPSP()
 {
 	AddSpawnCallback( "info_intermission", SetIntermissionCamera )
-	AddCallback_EntitiesDidLoad( SetSpecCams )
-	
-	RegisterSignal( "ObserverTargetChanged" )
-	AddClientCommandCallback( "spec_next", ClientCommandCallback_spec_next )
-	AddClientCommandCallback( "spec_prev", ClientCommandCallback_spec_prev )
-	AddClientCommandCallback( "spec_mode", ClientCommandCallback_spec_mode )
 	
 	AddPostDamageCallback( "player", AddToTitanDamageStat )
 	AddPostDamageCallback( "npc_titan", AddToTitanDamageStat )
@@ -48,19 +42,6 @@ void function BaseGametype_Init_MPSP()
 void function SetIntermissionCamera( entity camera )
 {
 	file.intermissionCamera = camera
-}
-
-void function SetSpecCams()
-{
-	// spec cams are called spec_cam1,2,3 etc by default, so this is the easiest way to get them imo
-	int camNum = 1 
-	entity lastCam = null
-	do {
-		lastCam = GetEnt( "spec_cam" + camNum++ )
-		
-		if ( lastCam != null )
-			file.specCams.append( lastCam )
-	} while ( lastCam != null )
 }
 
 void function CodeCallback_OnClientConnectionStarted( entity player )
@@ -172,6 +153,17 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 		__PlayerDidSpawn( player )
 
 	svGlobal.levelEnt.Signal( "PlayerDidSpawn", { player = player } )
+
+	if ( GetConVarBool( "ns_allow_spectators" ) )
+	{
+		if ( IsPrivateMatchSpectator( player ) )
+		{
+			InitialisePrivateMatchSpectatorPlayer( player )
+			return
+		}
+	}
+	else
+		player.SetPersistentVar( "privateMatchState", 0 )
 
 	// handle spawning late joiners
 	if ( GetGameState() == eGameState.Playing )
@@ -491,118 +483,6 @@ void function RespawnAsTitan( entity player, bool manualPosition = false )
 	PilotBecomesTitan( player, titan ) // make player titan
 }
 
-
-// spectator stuff
-
-void function PlayerBecomesSpectator( entity player )
-{
-	player.StartObserverMode( OBS_MODE_CHASE )
-	player.StopPhysics()
-
-	player.EndSignal( "OnRespawned" )
-	player.EndSignal( "OnDestroy" )
-	player.EndSignal( "PlayerRespawnStarted" )
-
-	int targetIndex = 0
-	
-	OnThreadEnd( function() : ( player ) 
-	{
-		if ( IsValid( player ) )
-			player.StopObserverMode()
-	})
-	
-	while ( true )
-	{	
-		table result = player.WaitSignal( "ObserverTargetChanged" )
-		
-		array<entity> targets
-		
-		targets.append( file.intermissionCamera )
-		foreach( entity cam in file.specCams )
-			targets.append( cam )
-			
-		array<entity> targetPlayers
-		if ( IsFFAGame() )
-			targetPlayers = GetPlayerArray_Alive()
-		else
-			targetPlayers = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
-		
-		foreach( entity player in targetPlayers )
-			targets.append( player )
-		
-		if ( result.next )
-			targetIndex = ( targetIndex + 1 ) % targets.len()
-		else
-		{
-			if ( targetIndex == 0 )
-				targetIndex = ( targets.len() - 1 )
-			else
-				targetIndex--
-		}
-		
-		if ( targetIndex >= targets.len() )
-			targetIndex = 0
-		
-		entity target = targets[ targetIndex ]
-		
-		player.StopObserverMode()
-		if ( player.IsWatchingSpecReplay() )
-			player.SetSpecReplayDelay( 0.0 ) // clear spectator replay
-		
-		if ( target.IsPlayer() )
-		{
-			try
-			{
-				player.SetObserverTarget( target )
-				player.StartObserverMode( OBS_MODE_CHASE )
-			}
-			catch ( ex ) {}
-		}
-		else
-		{
-			player.SetObserverModeStaticPosition( target.GetOrigin() )
-			player.SetObserverModeStaticAngles( target.GetAngles() )
-			player.StartObserverMode( OBS_MODE_STATIC )
-		}  
-		player.StopPhysics()
-	}
-}
-
-bool function ClientCommandCallback_spec_next( entity player, array<string> args )
-{
-	if ( player.GetObserverMode() == OBS_MODE_CHASE || player.GetObserverMode() == OBS_MODE_STATIC || player.GetObserverMode() == OBS_MODE_IN_EYE )
-		player.Signal( "ObserverTargetChanged", { next = true } )
-		
-	return true
-}
-
-bool function ClientCommandCallback_spec_prev( entity player, array<string> args )
-{
-	if ( player.GetObserverMode() == OBS_MODE_CHASE || player.GetObserverMode() == OBS_MODE_STATIC || player.GetObserverMode() == OBS_MODE_IN_EYE )
-		player.Signal( "ObserverTargetChanged", { next = false } )
-		
-	return true
-}
-
-bool function ClientCommandCallback_spec_mode( entity player, array<string> args )
-{
-	// currently unsure how this actually gets called on client, works through console and has references in client.dll tho
-	if ( player.GetObserverMode() == OBS_MODE_CHASE )
-	{
-		// set to first person spectate		
-		player.SetSpecReplayDelay( FIRST_PERSON_SPECTATOR_DELAY )
-		player.SetViewEntity( player.GetObserverTarget(), true )
-		player.StartObserverMode( OBS_MODE_IN_EYE )
-	}
-	else if ( player.GetObserverMode() == OBS_MODE_IN_EYE )
-	{	
-		// set to third person spectate
-		player.SetSpecReplayDelay( 0.0 )
-		player.StartObserverMode( OBS_MODE_CHASE )
-	}
-	
-	return true
-}
 
 
 void function TryGameModeAnnouncement( entity player ) // only putting this here because it's here in gametype_sp lol

@@ -36,7 +36,12 @@ void function TTDMIntroStartThreaded()
 	ClassicMP_OnIntroStarted()
 
 	foreach ( entity player in GetPlayerArray() )
-		TTDMIntroShowIntermissionCam( player )
+	{
+		if ( !IsPrivateMatchSpectator( player ) )
+			TTDMIntroShowIntermissionCam( player )
+		else
+			RespawnPrivateMatchSpectator( player )
+	}
 
 	wait TTDMIntroLength
 

@@ -123,7 +123,10 @@ bool function ClientCommandCallback_PrivateMatchSwitchTeams( entity player, arra
 
 bool function ClientCommandCallback_PrivateMatchToggleSpectate( entity player, array<string> args )
 {
-	// not currently working, gotta figure it out at some point
+	if ( file.startState == ePrivateMatchStartState.STARTING || !GetConVarBool( "ns_allow_spectators" ) )
+		return true
+	
+	player.SetPersistentVar( "privateMatchState", player.GetPersistentVarAsInt( "privateMatchState" ) == 0 ? 1 : 0 )
 	return true
 }
 
