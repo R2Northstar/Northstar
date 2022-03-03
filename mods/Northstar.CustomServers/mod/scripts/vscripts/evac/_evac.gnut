@@ -63,6 +63,8 @@ struct {
 	array<entity> evacNodes
 	entity spaceNode
 	
+	// this only supports 1 evac at once atm, is this ideal?
+	entity currentEvacNode
 	entity evacDropship
 	entity evacIcon
 } file
@@ -71,6 +73,7 @@ void function Evac_Init()
 {
 	EvacShared_Init()
 	RegisterSignal( "EvacShipLeaves" )
+	RegisterSignal( "EvacOver" )
 }
 
 void function AddEvacNode( entity evacNode )
@@ -116,7 +119,23 @@ void function EvacEpilogue()
 	}
 }
 
-void function SetRespawnAndWait(bool mode)
+void function EvacSpectatorFunc( entity player )
+{
+	svGlobal.levelEnt.EndSignal( "GameStateChanged" )
+	file.evacDropship.EndSignal( "OnDestroy" )
+	
+	entity cam = GetEnt( expect string( file.currentEvacNode.kv.target ) )
+	if ( !IsValid( cam ) )
+		return
+	
+	player.SetObserverModeStaticPosition( cam.GetOrigin() )
+	player.SetObserverModeStaticAngles( cam.GetAngles() )
+	player.StartObserverMode( OBS_MODE_STATIC )
+	
+	file.evacDropship.WaitSignal( "EvacOver" )
+}
+
+void function SetRespawnAndWait( bool mode )
 {
 	wait GAME_EPILOGUE_PLAYER_RESPAWN_LEEWAY
 	SetRespawnsEnabled( mode )
@@ -180,9 +199,11 @@ void function Evac( int evacTeam, float initialWait, float arrivalTime, float wa
 	if ( !IsValid( file.spaceNode ) )
 		file.spaceNode = GetEnt( "spaceNode" )
 
-	entity evacNode 
+	entity evacNode = customEvacNode
 	if ( !IsValid( customEvacNode ) )
 		evacNode = file.evacNodes.getrandom()
+		
+	file.currentEvacNode = evacNode
 
 	// setup client evac position
 	file.evacIcon = CreateEntity( "info_target" )
@@ -236,6 +257,7 @@ void function Evac( int evacTeam, float initialWait, float arrivalTime, float wa
 	})
 		
 	// flyin
+	Spectator_SetCustomSpectatorFunc( EvacSpectatorFunc )
 	thread PlayAnim( dropship, "cd_dropship_rescue_side_start", evacNode )
 	
 	// calculate time until idle start
@@ -247,7 +269,7 @@ void function Evac( int evacTeam, float initialWait, float arrivalTime, float wa
 	
 	// eta until leave
 	SetTeamActiveObjective( evacTeam, "EG_DropshipExtract2", Time() + EVAC_WAIT_TIME, file.evacIcon )
-	SetTeamActiveObjective( GetOtherTeam( evacTeam ), "EG_StopExtract2", Time() + EVAC_WAIT_TIME, file.evacIcon )
+	SetTeamActiveObjective( GetOtherTeam( evacTeam ), "EG_StopExtract2", Time() + EVAC_WAIT_TIME, file.evacIcon )	
 	
 	// setup evac trigger
 	entity trigger = CreateEntity( "trigger_cylinder" )
@@ -308,6 +330,7 @@ void function Evac( int evacTeam, float initialWait, float arrivalTime, float wa
 	dropship.SetOrigin( file.spaceNode.GetOrigin() )
 	dropship.SetAngles( file.spaceNode.GetAngles() )
 	dropship.SetInvulnerable()
+	dropship.Signal( "EvacOver" )
 	thread PlayAnim( dropship, "ds_space_flyby_dropshipA", file.spaceNode )
 	
 	foreach( entity player in GetPlayerArray() )
@@ -324,7 +347,7 @@ void function Evac( int evacTeam, float initialWait, float arrivalTime, float wa
 		SetPlayerActiveObjective( player, "EG_DropshipExtractSuccessfulEscape" )
 		
 		// skybox
-		player.SetSkyCamera( GetEnt( "skybox_cam_intro" ) )
+		player.SetSkyCamera( GetEnt( SKYBOXSPACE ) )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_DisableHudForEvac" )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_SetClassicSkyScale", dropship.GetEncodedEHandle(), 0.7 )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_SetMapSettings", 4.0, false, 0.4, 0.125 )

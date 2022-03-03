@@ -1,0 +1,223 @@
+global function Spectator_Init
+
+// stuff called by _base_gametype_mp and such
+global function InitialisePrivateMatchSpectatorPlayer
+global function PlayerBecomesSpectator
+global function RespawnPrivateMatchSpectator
+
+// custom spectator state functions
+// yes, GM_SetSpectatorFunc does exist in vanilla and serves roughly the same purpose, but using custom funcs here seemed better
+global function Spectator_SetDefaultSpectatorFunc
+global function Spectator_SetCustomSpectatorFunc
+global function Spectator_ClearCustomSpectatorFunc
+
+// helper funcs
+global function HACKCleanupStaticObserverStuff
+
+global typedef SpectatorFunc void functionref( entity player )
+
+struct {
+	array<entity> staticSpecCams 
+	SpectatorFunc defaultSpectatorFunc
+	SpectatorFunc nextSpectatorFunc = null
+	
+	int newestFuncIndex = 0 // used to track which players have finished the most recent spectator func
+} file
+
+void function Spectator_Init()
+{
+	Spectator_SetDefaultSpectatorFunc( SpectatorFunc_Default )
+
+	AddCallback_EntitiesDidLoad( SetStaticSpecCams )
+
+	RegisterSignal( "ObserverTargetChanged" )
+	RegisterSignal( "SpectatorFuncChanged" )
+	AddClientCommandCallback( "spec_next", ClientCommandCallback_spec_next )
+	AddClientCommandCallback( "spec_prev", ClientCommandCallback_spec_prev )
+	AddClientCommandCallback( "spec_mode", ClientCommandCallback_spec_mode )
+}
+
+void function SetStaticSpecCams()
+{
+	// spec cams are called spec_cam1,2,3 etc by default, so this is the easiest way to get them imo
+	int camNum = 1 
+	entity lastCam = null
+	do {
+		lastCam = GetEnt( "spec_cam" + camNum++ )
+		
+		if ( IsValid( lastCam ) )
+			file.staticSpecCams.append( lastCam )
+	} while ( IsValid( lastCam ) )
+}
+
+void function Spectator_SetDefaultSpectatorFunc( SpectatorFunc func )
+{
+	file.defaultSpectatorFunc = func
+}
+
+// sets the current spectator func, stopping any currently running spectator funcs to start this one
+void function Spectator_SetCustomSpectatorFunc( SpectatorFunc func )
+{
+	file.nextSpectatorFunc = func
+	svGlobal.levelEnt.Signal( "SpectatorFuncChanged" ) // spectator funcs need to listen to this manually
+	file.newestFuncIndex++
+}
+
+void function Spectator_ClearCustomSpectatorFunc()
+{
+	Spectator_SetCustomSpectatorFunc( null )
+}
+
+void function HACKCleanupStaticObserverStuff( entity player )
+{
+	// this may look like horrible awful pointless code at first glance, and while it is horrible and awful, it's not pointless
+	// 3.402823466E38 is 0xFFFF7F7F in memory, which is the value the game uses to determine whether the current static observer pos/angles are valid ( i.e. 0xFFFF7F7F = invalid/not initialised )
+	// in my experience, not cleaning this up after setting static angles will break OBS_MODE_CHASE-ing non-player entities which is bad for custom spectator funcs
+	// this is 100% way lower level than what script stuff should usually be doing, but it's needed here
+	// i sure do hope this won't break in normal use :clueless:
+	player.SetObserverModeStaticPosition( < 3.402823466e38, 3.402823466e38, 3.402823466e38 > )
+	player.SetObserverModeStaticAngles( < 3.402823466e38, 3.402823466e38, 3.402823466e38 > )
+}
+
+void function InitialisePrivateMatchSpectatorPlayer( entity player )
+{
+	thread PlayerBecomesSpectator( player )
+}
+
+// this should be called when intros respawn players normally to handle fades and stuff
+void function RespawnPrivateMatchSpectator( entity player )
+{
+	ScreenFadeFromBlack( player, 0.5, 0.5 )
+}
+
+void function PlayerBecomesSpectator( entity player )
+{
+	player.StopPhysics()
+
+	player.EndSignal( "OnRespawned" )
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "PlayerRespawnStarted" )
+	
+	OnThreadEnd( function() : ( player ) 
+	{
+		if ( IsValid( player ) )
+			player.StopObserverMode()
+	})
+	
+	// keeps track of the most recent func this player has completed
+	// this is to ensure that custom spectator funcs are only run once per player even before being cleared
+	int funcIndex = 0
+	
+	while ( true )
+	{
+		SpectatorFunc nextSpectatorFunc = file.defaultSpectatorFunc
+		if ( file.nextSpectatorFunc != null && funcIndex != file.newestFuncIndex )
+			nextSpectatorFunc = file.nextSpectatorFunc
+
+		waitthread nextSpectatorFunc( player )
+		funcIndex = file.newestFuncIndex // assuming this will be set before file.newestFuncIndex increments when the spectator func is ended by SpectatorFuncChanged
+		// surely this will not end up being false in practice :clueless:
+		
+		// cleanup
+		player.StopObserverMode()
+		HACKCleanupStaticObserverStuff( player ) // un-initialise static observer positions/angles
+		
+		WaitFrame() // always wait at least a frame in case an observer func exits immediately to prevent stuff locking up
+	}
+}
+
+void function SpectatorFunc_Default( entity player )
+{
+	svGlobal.levelEnt.EndSignal( "SpectatorFuncChanged" )
+	int targetIndex
+	
+	table result = { next = false }
+		
+	while ( true )
+	{
+		array<entity> targets
+		targets.extend( file.staticSpecCams )
+			
+		if ( IsFFAGame() )
+			targets.extend( GetPlayerArray_Alive() )
+		else
+			targets.extend( GetPlayerArrayOfTeam_Alive( player.GetTeam() ) )
+		
+		if ( targets.len() > 0 )
+		{
+			if ( result.next )
+				targetIndex = ( targetIndex + 1 ) % targets.len()
+			else
+			{
+				if ( targetIndex == 0 )
+					targetIndex = ( targets.len() - 1 )
+				else
+					targetIndex--
+			}
+			
+			if ( targetIndex >= targets.len() )
+				targetIndex = 0
+			
+			entity target = targets[ targetIndex ]
+			
+			player.StopObserverMode()
+			if ( player.IsWatchingSpecReplay() )
+				player.SetSpecReplayDelay( 0.0 ) // clear spectator replay
+			
+			if ( target.IsPlayer() )
+			{		
+				try
+				{
+					player.SetObserverTarget( target )
+					player.StartObserverMode( OBS_MODE_CHASE )
+				}
+				catch ( ex ) { }
+			}
+			else
+			{
+				player.SetObserverModeStaticPosition( target.GetOrigin() )
+				player.SetObserverModeStaticAngles( target.GetAngles() )
+				player.StartObserverMode( OBS_MODE_STATIC )
+			}
+		}
+		
+		player.StopPhysics()
+		result = player.WaitSignal( "ObserverTargetChanged" )
+	}
+}
+
+bool function ClientCommandCallback_spec_next( entity player, array<string> args )
+{
+	if ( player.GetObserverMode() == OBS_MODE_CHASE || player.GetObserverMode() == OBS_MODE_STATIC || player.GetObserverMode() == OBS_MODE_IN_EYE )
+		player.Signal( "ObserverTargetChanged", { next = true } )
+		
+	return true
+}
+
+bool function ClientCommandCallback_spec_prev( entity player, array<string> args )
+{
+	if ( player.GetObserverMode() == OBS_MODE_CHASE || player.GetObserverMode() == OBS_MODE_STATIC || player.GetObserverMode() == OBS_MODE_IN_EYE )
+		player.Signal( "ObserverTargetChanged", { next = false } )
+		
+	return true
+}
+
+bool function ClientCommandCallback_spec_mode( entity player, array<string> args )
+{
+	// currently unsure how this actually gets called on client, works through console and has references in client.dll tho
+	if ( player.GetObserverMode() == OBS_MODE_CHASE )
+	{
+		// set to first person spectate		
+		player.SetSpecReplayDelay( FIRST_PERSON_SPECTATOR_DELAY )
+		player.SetViewEntity( player.GetObserverTarget(), true )
+		player.StartObserverMode( OBS_MODE_IN_EYE )
+	}
+	else if ( player.GetObserverMode() == OBS_MODE_IN_EYE )
+	{	
+		// set to third person spectate
+		player.SetSpecReplayDelay( 0.0 )
+		player.StartObserverMode( OBS_MODE_CHASE )
+	}
+	
+	return true
+}

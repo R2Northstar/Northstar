@@ -1,0 +1,146 @@
+untyped
+
+globalize_all_functions
+
+struct
+{
+	table<string,table<string,int> > mapModeScoreLimits
+} file
+
+int function GetRoundScoreLimit_FromPlaylist()
+{
+	if ( !GameMode_IsDefined( GAMETYPE ) )
+		return GetCurrentPlaylistVarInt( "roundscorelimit", 10 )
+
+	return GameMode_GetRoundScoreLimit( GAMETYPE )
+}
+
+int function GetScoreLimit_FromPlaylist()
+{
+	if ( GameMode_HasMapSpecificScoreLimits( GAMETYPE ) )
+		return GameMode_GetMapSpecificScoreLimit( GAMETYPE )
+
+	if ( !GameMode_IsDefined( GAMETYPE ) )
+		return GetCurrentPlaylistVarInt( "scorelimit", 10 )
+
+	return GameMode_GetScoreLimit( GAMETYPE )
+}
+
+bool function GameMode_HasMapSpecificScoreLimits( string gameType )
+{
+	if ( gameType in file.mapModeScoreLimits )
+	{
+		if ( GetMapName() in file.mapModeScoreLimits[gameType] )
+			return true
+	}
+	return false
+}
+
+int function GameMode_GetMapSpecificScoreLimit( string gameType )
+{
+	return file.mapModeScoreLimits[gameType][GetMapName()]
+}
+
+void function GameMode_SetMapSpecificScoreLimit( table<string,int> mapModeScoreTable, string gameType )
+{
+	Assert( !( gameType in file.mapModeScoreLimits ), "GAMETYPE has already been added to mapModeScoreLimits" )
+	file.mapModeScoreLimits[gameType] <- mapModeScoreTable
+}
+
+bool function IsSuddenDeathGameMode()
+{
+	return GameMode_GetSuddenDeathEnabled( GameRules_GetGameMode() )
+}
+
+bool function IsCaptureMode()
+{
+	return GameRules_GetGameMode() == CAPTURE_POINT
+}
+
+bool function GameModeWantsToSkipBoostsAndTitanEarning()
+{
+	if ( Riff_TitanAvailability() == eTitanAvailability.Never )
+		return true
+	if ( Riff_BoostAvailability() == eBoostAvailability.Disabled )
+		return true
+
+	return false
+}
+
+IntFromEntityCompare function GetScoreboardCompareFunc()
+{
+	return ScoreboardCompareFuncForGamemode( GameRules_GetGameMode() )
+}
+
+IntFromEntityCompare function ScoreboardCompareFuncForGamemode( string gamemode )
+{
+	IntFromEntityCompare func = GameMode_GetScoreCompareFunc( gamemode )
+	if ( func != null )
+		return func
+
+	return CompareScore
+}
+
+
+bool function IsRoundWinningKillReplayEnabled()
+{
+	return expect bool ( level.nv.roundWinningKillReplayEnabled )
+}
+
+bool function IsRoundWinningKillReplayPlaying()
+{
+	return expect bool ( level.nv.roundWinningKillReplayPlaying )
+}
+
+bool function HasRoundScoreLimitBeenReached() //Different from RoundScoreLimit_Complete in that it only checks to see if the score required has been reached. Allows us to use it on the client to cover 90% of the cases we want
+{
+	if ( !IsRoundBased() )
+		return false
+
+	int roundLimit = GetRoundScoreLimit_FromPlaylist()
+
+	if ( !roundLimit )
+		return false
+
+	int militiaScore = GameRules_GetTeamScore2( TEAM_MILITIA )
+	int imcScore = GameRules_GetTeamScore2( TEAM_IMC )
+
+	if ( ( militiaScore >= roundLimit ) || ( imcScore >= roundLimit ) )
+		return true
+
+	return false
+}
+
+
+bool function IsTitanAvailable( entity player )
+{
+	var shiftIndex = player.GetEntIndex() - 1
+	var elimMask = (1 << shiftIndex)
+
+	return (level.nv.titanAvailableBits & elimMask) != 0
+}
+
+
+
+bool function IsRespawnAvailable( entity player )
+{
+	var shiftIndex = player.GetEntIndex() - 1
+	var elimMask = (1 << shiftIndex)
+
+	return (level.nv.respawnAvailableBits & elimMask) != 0
+}
+
+bool function IsPrivateMatchSpectator( entity player )
+{
+	// JFS
+	#if SERVER
+	if ( !player.p.clientScriptInitialized )
+		return false
+	#endif
+	
+	// NS: allow spectators on non-private_match playlists
+	if ( ( IsPrivateMatch() || GetConVarBool( "ns_allow_spectators" ) ) && player.GetPersistentVarAsInt( "privateMatchState" ) == 1 )
+		return true
+
+	return false
+}
