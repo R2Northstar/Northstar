@@ -282,7 +282,7 @@ function FastballOnPanelHacked( panel, player )
 	// respawn dead players
 	foreach ( entity deadPlayer in GetPlayerArrayOfTeam( player.GetTeam() ) )
 	{
-		if ( !IsAlive( deadPlayer ) )
+		if ( !IsAlive( deadPlayer ) && !IsPrivateMatchSpectator( player ) )
 		{
 			deadPlayer.SetOrigin( panel.s.startOrigin )
 			deadPlayer.RespawnPlayer( null )

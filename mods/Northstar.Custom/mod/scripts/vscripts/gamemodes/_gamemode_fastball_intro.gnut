@@ -103,7 +103,7 @@ void function OnPrematchStart()
 	thread AnimateBuddy( file.imcBuddy )
 	
 	foreach ( entity player in GetPlayerArray() )
-		thread FastballPlayer( player )
+		AddPlayerToFastballIntro( player )
 }
 
 void function AnimateBuddy( entity buddy )
@@ -135,7 +135,12 @@ void function AnimateBuddy( entity buddy )
 void function AddPlayerToFastballIntro( entity player )
 {	
 	if ( GetGameState() == eGameState.Prematch )
-		thread FastballPlayer( player )
+	{
+		if ( !IsPrivateMatchSpectator( player ) )
+			thread FastballPlayer( player )
+		else
+			RespawnPrivateMatchSpectator( player )
+	}
 }
 
 void function FastballPlayer( entity player )
