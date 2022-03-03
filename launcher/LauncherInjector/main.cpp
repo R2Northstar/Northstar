@@ -5,6 +5,7 @@
 #include <sstream>
 #include <fstream>
 #include <Shlwapi.h>
+#include <iostream>
 
 namespace fs = std::filesystem;
 
@@ -20,6 +21,8 @@ HMODULE hTier0Module;
 
 wchar_t exePath[4096];
 wchar_t buffer[8192];
+
+bool noLoadPlugins = false;
 
 DWORD GetProcessByName(std::wstring processName)
 {
@@ -222,8 +225,21 @@ bool LoadNorthstar()
 			return false;
 		}
 	}
-
 	((bool (*)())Hook_Init)();
+
+	FARPROC LoadPlugins = nullptr;
+	if (!noLoadPlugins)
+	{
+		LoadPlugins = GetProcAddress(hHookModule, "LoadPlugins");
+		if (!hHookModule || LoadPlugins == nullptr)
+		{
+			printf("Failed to get function pointer to LoadPlugins of Northstar.dll\n");
+			LibraryLoadError(GetLastError(), L"Northstar.dll", buffer);
+			return false;
+		}
+		((bool (*)())LoadPlugins)();
+	}
+
 	return true;
 }
 
@@ -242,6 +258,7 @@ HMODULE LoadDediStub(const char* name)
 
 int main(int argc, char* argv[])
 {
+
 	if (!GetExePathWide(exePath, sizeof(exePath)))
 	{
 		MessageBoxA(
@@ -261,9 +278,13 @@ int main(int argc, char* argv[])
 			dedicated = true;
 		else if (!strcmp(argv[i], "-nostubs"))
 			nostubs = true;
+		else if (!strcmp(argv[i], "-noplugins"))
+			noLoadPlugins = true;
 
 	if (!noOriginStartup && !dedicated)
+	{
 		EnsureOriginStarted();
+	}
 
 	if (dedicated && !nostubs)
 	{
@@ -364,6 +385,7 @@ int main(int argc, char* argv[])
 			0);
 	// auto result = ((__int64(__fastcall*)())LauncherMain)();
 	// auto result = ((signed __int64(__fastcall*)(__int64))LauncherMain)(0i64);
+
 	return ((int(/*__fastcall*/*)(HINSTANCE, HINSTANCE, LPSTR, int))LauncherMain)(
 		NULL, NULL, NULL, 0); // the parameters aren't really used anyways
 }

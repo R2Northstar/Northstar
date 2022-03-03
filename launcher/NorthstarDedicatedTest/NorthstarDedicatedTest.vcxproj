@@ -115,6 +115,8 @@
     <ClInclude Include="chatcommand.h" />
     <ClInclude Include="clientchathooks.h" />
     <ClInclude Include="localchatwriter.h" />
+    <ClInclude Include="plugins.h" />
+    <ClInclude Include="plugin_abi.h" />
     <ClInclude Include="serverchathooks.h" />
     <ClInclude Include="clientauthhooks.h" />
     <ClInclude Include="color.h" />
@@ -555,6 +557,7 @@
     <ClInclude Include="sourceconsole.h" />
     <ClInclude Include="sourceinterface.h" />
     <ClInclude Include="squirrel.h" />
+    <ClInclude Include="state.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="audio.cpp" />
@@ -595,6 +598,7 @@
     </ClCompile>
     <ClCompile Include="pdef.cpp" />
     <ClCompile Include="playlist.cpp" />
+    <ClCompile Include="plugins.cpp" />
     <ClCompile Include="rpakfilesystem.cpp" />
     <ClCompile Include="scriptbrowserhooks.cpp" />
     <ClCompile Include="scriptmainmenupromos.cpp" />
