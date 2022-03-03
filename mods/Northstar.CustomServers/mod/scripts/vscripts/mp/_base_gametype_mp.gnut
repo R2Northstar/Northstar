@@ -206,21 +206,25 @@ void function CodeCallback_OnClientDisconnected( entity player, string reason )
 
 void function CodeCallback_OnPlayerRespawned( entity player )
 {
-	player.Signal( "OnRespawned" ) // kill any postdeaththreads that could be running
-
-	Remote_CallFunction_NonReplay( player, "ServerCallback_YouRespawned" )
-	player.s.respawnTime = Time()
-	
-	player.SetPredictionEnabled( true )
-	Loadouts_TryGivePilotLoadout( player )
 	SetHumanRagdollImpactTable( player )
- 	ClearLastAttacker( player ) // so dying to anything doesn't credit the same attacker after respawning
+	
+	player.s.respawnCount++
+	player.s.respawnTime = Time()
+	ClearRecentDamageHistory( player )
+	
+	player.Signal( "OnRespawned" ) // kill any postdeaththreads that could be running
+	
+	Loadouts_TryGivePilotLoadout( player )
+	//player.SetPredictionEnabled( true ) doesn't seem needed, as native code seems to set this
 	
 	foreach ( entity weapon in player.GetMainWeapons() )
 		weapon.SetProScreenOwner( player )
 		
 	foreach ( void functionref( entity ) callback in svGlobal.onPlayerRespawnedCallbacks )
 		callback( player )
+		
+	Remote_CallFunction_NonReplay( player, "ServerCallback_YouRespawned" )
+	ClearLastAttacker( player ) // so dying to anything doesn't credit the same attacker after respawning
 }
 
 void function CodeCallback_OnPlayerKilled( entity player, var damageInfo )
@@ -254,7 +258,8 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 	player.SetNoTargetSmartAmmo( false )
 	player.ClearExtraWeaponMods()
 	
-
+	// disable prediction to prevent it messing with ragdoll in some places, as well as killreplay and such
+	player.SetPredictionEnabled( false )
 	
 	if ( player.IsTitan() )
 		SoulDies( player.GetTitanSoul(), damageInfo ) // cleanup some titan stuff, no idea where else to put this
@@ -268,7 +273,6 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 	
 		player.s.inPostDeath = false
 	})
-
 
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
 	int methodOfDeath = DamageInfo_GetDamageSourceIdentifier( damageInfo )
@@ -401,7 +405,7 @@ void function PlayerWatchesKillReplayWrapper( entity player, entity attacker, fl
 			player.Signal( "KillCamOver" )
 			player.ClearReplayDelay()
 			player.ClearViewEntity()
-			player.SetPredictionEnabled( true )
+			//player.SetPredictionEnabled( true ) doesn't seem needed, as native code seems to set this on respawn
 		}
 	})
 	
