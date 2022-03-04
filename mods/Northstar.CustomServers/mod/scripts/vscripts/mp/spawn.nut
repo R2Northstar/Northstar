@@ -582,7 +582,18 @@ entity function DecideSpawnZone_Generic( array<entity> spawnzones, int team )
 				break
 		}
 		
-		needNewZone = false
+		int numDeadInZone = 0
+		array<entity> teamPlayers = GetPlayerArrayOfTeam( team )
+		foreach ( entity player in teamPlayers )
+		{
+			// check if they died in the zone recently, get a new zone if too many died
+			if ( Time() - player.p.postDeathThreadStartTime < 15.0 && spawnStateSpawnzones.activeTeamSpawnzones[ team ].ContainsPoint( player.p.deathOrigin ) )
+				numDeadInZone++
+		}
+		
+		// cast to float so result is float
+		if ( float( numDeadInZone ) / teamPlayers.len() <= 0.1 )
+			needNewZone = false
 	}
 	
 	if ( needNewZone )
@@ -618,6 +629,7 @@ entity function DecideSpawnZone_Generic( array<entity> spawnzones, int team )
 			}
 			
 			// don't choose spawnzones that are closer to enemy base than friendly base
+			// note: vanilla spawns might not necessarily require this, worth checking
 			if ( !spawnzoneEvil && Distance2D( spawnzone.GetOrigin(), averageFriendlySpawns ) > Distance2D( spawnzone.GetOrigin(), averageEnemySpawns ) )
 				spawnzoneEvil = true
 			
