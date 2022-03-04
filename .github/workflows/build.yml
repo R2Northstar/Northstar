@@ -26,7 +26,7 @@ jobs:
           sed -i "s/0,0,0,0/${FILEVERSION}/g" LauncherInjector/resources.rc
       - name: Build
         run: msbuild /p:Configuration=Release
-      - name: Upload Build Artifact
+      - name: Upload launcher build as artifact
         uses: actions/upload-artifact@v2
         with:
           name: northstar-launcher
@@ -35,6 +35,12 @@ jobs:
             x64/Release/wsock32.dll
             x64/Release/NorthstarLauncher.exe
             x64/Release/*.txt
+      - name: Upload debug build artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: launcher-debug-files
+          path: |
+            x64/Release/*.pdb
 
   build-northstar:
     needs: build-launcher
