@@ -83,4 +83,4 @@ Some users have reported issues with enabling LatencyFleX. If you see `"Unable t
 
 ### Game crashes on launch with Cause: Access Violation Data Execution Prevention (DEP) at: 0x00000000
 
-try running with [ProtonGE](https://github.com/GloriousEggroll/proton-ge-custom/).
+Try running with [ProtonGE](https://github.com/GloriousEggroll/proton-ge-custom/).
