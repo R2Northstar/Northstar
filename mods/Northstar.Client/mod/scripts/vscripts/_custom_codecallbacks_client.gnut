@@ -76,7 +76,7 @@ void function CHudChat_OnReceivedSayTextMessageCallback(int fromPlayerIndex, str
     entity fromPlayer = null
     string fromPlayerName = ""
 
-    if (fromPlayerIndex >= 0 && fromPlayerIndex < GetPlayerArray().len())
+    if (fromPlayerIndex >= 0 && fromPlayerIndex <= 128)
     {
         fromPlayer = GetEntByIndex(fromPlayerIndex + 1)
         if (fromPlayer == null) {
