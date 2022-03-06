@@ -460,8 +460,8 @@ char __fastcall CNetChan___ProcessMessagesHook(void* self, void* buf)
 				g_ServerAuthenticationManager->m_additionalPlayerData[sender].netChanProcessingLimitTime,
 				Cvar_net_chan_limit_msec_per_sec->GetInt());
 
-			// nonzero = kick, 0 = warn
-			if (Cvar_net_chan_limit_mode->GetInt())
+			// nonzero = kick, 0 = warn, but never kick local player
+			if (Cvar_net_chan_limit_mode->GetInt() && strcmp(g_LocalPlayerUserID, (char*)sender + 0xF500))
 			{
 				CBaseClient__Disconnect(sender, 1, "Exceeded net channel processing limit");
 				return false;
