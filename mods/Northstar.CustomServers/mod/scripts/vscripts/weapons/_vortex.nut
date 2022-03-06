@@ -5,6 +5,8 @@ global function Vortex_Init
 global function CreateVortexSphere
 global function DestroyVortexSphereFromVortexWeapon
 global function EnableVortexSphere
+global function RegisterNewVortexIgnoreClassname
+global function RegisterNewVortexIgnoreClassnames
 #if SERVER
 global function ValidateVortexImpact
 global function TryVortexAbsorb
@@ -78,12 +80,22 @@ global const VORTEX_REFIRE_ROCKET				= "rocket"
 global const VORTEX_REFIRE_GRENADE				= "grenade"
 global const VORTEX_REFIRE_GRENADE_LONG_FUSE	= "grenade_long_fuse"
 
-const VortexIgnoreClassnames = {
+table<string, bool> VortexIgnoreClassnames = {
 	["mp_titancore_flame_wave"] = true,
 	["mp_ability_grapple"] = true,
 	["mp_ability_shifter"] = true,
 }
-
+void function RegisterNewVortexIgnoreClassnames(table<string, bool> classTable)
+{
+	foreach(string classname, bool shouldignore in classTable)
+	{
+		RegisterNewVortexIgnoreClassname(classname, shouldignore)
+	}
+}
+void function RegisterNewVortexIgnoreClassname(string classname, bool shouldignore)
+{
+	VortexIgnoreClassnames[classname] <- shouldignore
+}
 table vortexImpactWeaponInfo
 
 const DEG_COS_60 = cos( 60 * DEG_TO_RAD )
@@ -477,7 +489,7 @@ function Vortex_HandleElectricDamage( entity ent, entity attacker, damage, entit
 // this function handles all incoming vortex impact events
 bool function TryVortexAbsorb( entity vortexSphere, entity attacker, vector origin, int damageSourceID, entity weapon, string weaponName, string impactType, entity projectile = null, damageType = null, reflect = false )
 {
-	if ( weaponName in VortexIgnoreClassnames )
+	if ( weaponName in VortexIgnoreClassnames && VortexIgnoreClassnames[weaponName] )
 		return false
 
 	entity vortexWeapon = vortexSphere.GetOwnerWeapon()
