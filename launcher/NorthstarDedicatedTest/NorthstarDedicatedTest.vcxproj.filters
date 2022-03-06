@@ -1471,6 +1471,9 @@
       <Filter>Header Files\Client</Filter>
     </ClInclude>
     <ClInclude Include="localchatwriter.h">
+	    <Filter>Header Files\Client</Filter>
+	</ClInclude>
+    <ClInclude Include="scriptservertoclientstringcommand.h">
       <Filter>Header Files\Client</Filter>
     </ClInclude>
     <ClInclude Include="plugins.h">
@@ -1629,6 +1632,9 @@
       <Filter>Source Files\Client</Filter>
     </ClCompile>
     <ClCompile Include="localchatwriter.cpp">
+	  <Filter>Source Files\Client</Filter>
+    </ClCompile>
+    <ClCompile Include="scriptservertoclientstringcommand.cpp">
       <Filter>Source Files\Client</Filter>
     </ClCompile>
     <ClCompile Include="plugins.cpp">
