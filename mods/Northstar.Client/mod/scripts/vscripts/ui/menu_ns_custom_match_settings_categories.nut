@@ -1,4 +1,11 @@
 global function AddNorthstarCustomMatchSettingsCategoryMenu
+global function AddCustomPrivateMatchSettingsCategory
+
+struct {
+	int count = 0
+	array< string > customCategoryMenus
+	array< string > customCategoryLocalization
+} file
 
 void function AddNorthstarCustomMatchSettingsCategoryMenu()
 {
@@ -30,8 +37,15 @@ void function OnNorthstarCustomMatchSettingsCategoryMenuOpened()
 		Hud_SetEnabled( button, false )
 		Hud_SetVisible( button, false )
 	}
+
+	for ( int i = 0; i < file.count && i < buttons.len(); i++ )
+	{
+		Hud_SetText( buttons[ i ], Localize( file.customCategoryLocalization[ i ] ) + " ->" )
+		Hud_SetEnabled( buttons[ i ], true )
+		Hud_SetVisible( buttons[ i ], true )
+	}
 	
-	for ( int i = 0, j = 0; j < categories.len() && i < buttons.len(); i++, j++ )
+	for ( int i = file.count, j = 0; j < categories.len() && i < buttons.len(); i++, j++ )
 	{
 		Hud_SetText( buttons[ i ], Localize( categories[ j ] ) + " ->" )
 		Hud_SetEnabled( buttons[ i ], true )
@@ -41,11 +55,26 @@ void function OnNorthstarCustomMatchSettingsCategoryMenuOpened()
 
 void function SelectPrivateMatchSettingsCategory( var button )
 {
-	SetNextMatchSettingsCategory( GetPrivateMatchSettingCategories()[ int( Hud_GetScriptID( button ) ) ] )
-	AdvanceMenu( GetMenu( "CustomMatchSettingsMenu" ) )
+	int buttonId = int( Hud_GetScriptID( button ) )
+	if (file.count <=  buttonId) 
+	{
+		SetNextMatchSettingsCategory( GetPrivateMatchSettingCategories()[ int( Hud_GetScriptID( button ) ) - file.count ] )
+		AdvanceMenu( GetMenu( "CustomMatchSettingsMenu" ) )
+	} 
+	else 
+	{
+		AdvanceMenu( GetMenu( file.customCategoryMenus[buttonId] ) )
+	}
 }
 
 void function ResetMatchSettingsToDefault( var button )
 {
 	ClientCommand( "ResetMatchSettingsToDefault" )
+}
+
+void function AddCustomPrivateMatchSettingsCategory(string menuLocalization, string menuName) 
+{
+	file.count++
+	file.customCategoryMenus.append(menuName)
+	file.customCategoryLocalization.append(menuLocalization)
 }
