@@ -65,34 +65,11 @@ class CGameFloatVar
 	float value;
 };
 
-class CHudChat
-{
-  public:
-	char unknown1[720];
-
-	vgui_Color m_sameTeamColor;
-	vgui_Color m_enemyTeamColor;
-	vgui_Color m_mainTextColor;
-	vgui_Color m_networkNameColor;
-
-	char unknown2[12];
-
-	int m_unknownContext;
-
-	char unknown3[8];
-
-	vgui_BaseRichText* m_richText;
-
-	CHudChat* next;
-	CHudChat* previous;
-};
-
 CGameSettings** gGameSettings;
 CGameFloatVar** gChatFadeLength;
 CGameFloatVar** gChatFadeSustain;
 
-// Linked list of CHudChats
-CHudChat** gHudChatList;
+CHudChat** CHudChat::allHuds;
 
 typedef void(__fastcall* ConvertANSIToUnicodeType)(LPCSTR ansi, int ansiCharLength, LPWSTR unicode, int unicodeCharLength);
 ConvertANSIToUnicodeType ConvertANSIToUnicode;
@@ -315,7 +292,7 @@ void LocalChatWriter::WriteLine(const char* str)
 
 void LocalChatWriter::InsertChar(wchar_t ch)
 {
-	for (CHudChat* hud = *gHudChatList; hud != NULL; hud = hud->next)
+	for (CHudChat* hud = *CHudChat::allHuds; hud != NULL; hud = hud->next)
 	{
 		if (hud->m_unknownContext != (int)m_context)
 			continue;
@@ -334,7 +311,7 @@ void LocalChatWriter::InsertText(const char* str)
 	WCHAR messageUnicode[288];
 	ConvertANSIToUnicode(str, -1, messageUnicode, 274);
 
-	for (CHudChat* hud = *gHudChatList; hud != NULL; hud = hud->next)
+	for (CHudChat* hud = *CHudChat::allHuds; hud != NULL; hud = hud->next)
 	{
 		if (hud->m_unknownContext != (int)m_context)
 			continue;
@@ -347,7 +324,7 @@ void LocalChatWriter::InsertText(const char* str)
 
 void LocalChatWriter::InsertText(const wchar_t* str)
 {
-	for (CHudChat* hud = *gHudChatList; hud != NULL; hud = hud->next)
+	for (CHudChat* hud = *CHudChat::allHuds; hud != NULL; hud = hud->next)
 	{
 		if (hud->m_unknownContext != (int)m_context)
 			continue;
@@ -360,7 +337,7 @@ void LocalChatWriter::InsertText(const wchar_t* str)
 
 void LocalChatWriter::InsertColorChange(vgui_Color color)
 {
-	for (CHudChat* hud = *gHudChatList; hud != NULL; hud = hud->next)
+	for (CHudChat* hud = *CHudChat::allHuds; hud != NULL; hud = hud->next)
 	{
 		if (hud->m_unknownContext != (int)m_context)
 			continue;
@@ -387,7 +364,7 @@ static vgui_Color GetHudSwatchColor(CHudChat* hud, LocalChatWriter::SwatchColor 
 
 void LocalChatWriter::InsertSwatchColorChange(SwatchColor swatchColor)
 {
-	for (CHudChat* hud = *gHudChatList; hud != NULL; hud = hud->next)
+	for (CHudChat* hud = *CHudChat::allHuds; hud != NULL; hud = hud->next)
 	{
 		if (hud->m_unknownContext != (int)m_context)
 			continue;
@@ -439,7 +416,7 @@ void LocalChatWriter::InsertDefaultFade()
 		fadeSustain = (*gChatFadeSustain)->value;
 	}
 
-	for (CHudChat* hud = *gHudChatList; hud != NULL; hud = hud->next)
+	for (CHudChat* hud = *CHudChat::allHuds; hud != NULL; hud = hud->next)
 	{
 		if (hud->m_unknownContext != (int)m_context)
 			continue;
@@ -447,14 +424,12 @@ void LocalChatWriter::InsertDefaultFade()
 	}
 }
 
-bool IsFirstHud(void* hud) { return hud == *gHudChatList; }
-
 void InitialiseLocalChatWriter(HMODULE baseAddress)
 {
 	gGameSettings = (CGameSettings**)((char*)baseAddress + 0x11BAA48);
 	gChatFadeLength = (CGameFloatVar**)((char*)baseAddress + 0x11BAB78);
 	gChatFadeSustain = (CGameFloatVar**)((char*)baseAddress + 0x11BAC08);
-	gHudChatList = (CHudChat**)((char*)baseAddress + 0x11BA9E8);
+	CHudChat::allHuds = (CHudChat**)((char*)baseAddress + 0x11BA9E8);
 
 	ConvertANSIToUnicode = (ConvertANSIToUnicodeType)((char*)baseAddress + 0x7339A0);
 }
