@@ -205,14 +205,20 @@ template <ScriptContext context> class SquirrelManager
 			ClientSq_pushroottable(sqvm2);
 			ClientSq_pushstring(sqvm2, funcname, -1);
 			result = ClientSq_sq_get(sqvm2, -2);
-			ClientSq_pushroottable(sqvm2);
+			if (result != SQRESULT_ERROR)
+			{
+				ClientSq_pushroottable(sqvm2);
+			}
 		}
 		else if (context == ScriptContext::SERVER)
 		{
 			ServerSq_pushroottable(sqvm2);
 			ServerSq_pushstring(sqvm2, funcname, -1);
 			result = ServerSq_sq_get(sqvm2, -2);
-			ServerSq_pushroottable(sqvm2);
+			if (result != SQRESULT_ERROR)
+			{
+				ServerSq_pushroottable(sqvm2);
+			}
 		}
 		return result;
 	}
