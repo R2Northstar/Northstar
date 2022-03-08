@@ -343,8 +343,6 @@ The following commands are available:
 
 
 .. list-table:: ANSI Codes
-   :widths: 10 50
-   :header-rows: 1
 
  * - Codes
    - Description
