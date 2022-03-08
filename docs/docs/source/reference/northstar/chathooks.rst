@@ -48,7 +48,7 @@ The client chat callbacks allow you to intercept chat messages and modify or blo
 
 .. _addcallback_onreceivedsaytextmessage:
 
-.. cpp:function:: _void AddCallback_OnReceivedSayTextMessage(callbackFunc)
+.. cpp:function:: void AddCallback_OnReceivedSayTextMessage(callbackFunc)
 
     Adds a callback that will be run when a chat message is received from the server. This will only be triggered for
     messages from players, not server messages.
@@ -342,7 +342,8 @@ reference this will be referred to with ``ESC`` (e.g. setting red text is ``ESC[
 The following commands are available:
 
 
-.. list-table::
+.. list-table:: ANSI Codes
+   :widths: 10 50
    :header-rows: 1
 
  * - Codes
