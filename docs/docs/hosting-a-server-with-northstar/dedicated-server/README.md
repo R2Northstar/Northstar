@@ -275,7 +275,7 @@ A way to blacklist maps with autorotation do not exists.
 | sp_boomtown | Into the Abyss - Part 2 |
 | sp_boomtown_end | Into the Abyss - Part 2 |
 | sp_hub_timeshift | Effect and Cause - Part 1 or 3 |
-| sp_hub_timeshift_spoke02 | Effect and Cause - Part 2 |
+| sp_timeshift_spoke02 | Effect and Cause - Part 2 |
 | sp_beacon | The Beacon - Part 1 or 3 |
 | sp_beacon_spoke0 | The Beacon - Part 2 |
 | sp_tday | Trial by Fire |
