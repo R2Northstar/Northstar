@@ -4,7 +4,7 @@ Chathooks
 .. warning::
     This is a feature in the unreleased `1.6` Northstar
 
-This document provides usage of the Chathook API added in Northstar `1.6`.
+This document provides usage of the Chathook API added in Northstar ``v1.6.0``.
 For an example of chathooks in use, check out EmmaM's `OwOfier mod <https://github.com/emma-miler/OwOfier/>`_.
 
 Client chat API
