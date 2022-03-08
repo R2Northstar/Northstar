@@ -4,9 +4,8 @@ Chathooks
 .. warning::
     This is a feature in the unreleased `1.6` Northstar
 
-In ``v1.6.0`` we are introducing a completely new chathook API.
-In this document, we provide the usage of this API.
-For an example of chathooks in use, check out EmmaM's `OwOfier mod <https://github.com/emma-miler/OwOfier/>`_
+This document provides usage of the Chathook API added in Northstar `1.6`.
+For an example of chathooks in use, check out EmmaM's `OwOfier mod <https://github.com/emma-miler/OwOfier/>`_.
 
 Client chat API
 ---------------
@@ -30,6 +29,9 @@ The client chat callbacks allow you to intercept chat messages and modify or blo
     .. cpp:var:: entity player
 
         the player who sent the chat.
+    .. cpp:var:: string playerName
+    
+       the display name of the player who sent the chat.
     .. cpp:var:: bool isTeam
 
         whether this chat has a ``[TEAM]`` tag.
@@ -112,6 +114,10 @@ players, they only display them locally.
             wait 1
             Chat_GameWriteLine("BIOMETRIC MONITORING SYSTEMS-")
             ActivateBiometricMonitoringSystems()
+            Chat_GameWrite("ACTIVATED")
+            wait 1
+            Chat_GameWriteLine("HAVE A VERY SAFE DAY.")
+        }
 
 .. cpp:function:: void Chat_NetworkWriteLine(string text)
 
@@ -336,19 +342,24 @@ reference this will be referred to with ``ESC`` (e.g. setting red text is ``ESC[
 The following commands are available:
 
 
+.. list-table::
+   :header-rows: 1
+
+ * - Codes
+   - Description
  * - ``ESC[0m`` and ``ESC[39m`` 
-   - reset text formatting
+   - Reset text formatting.
  * - ``ESC[30-37m``, ``ESC[90-97m`` 
-   - set to one of `the available color presets <https://en.wikipedia.org/wiki/ANSI_escape_code#3-bit_and_4-bit>`_.
+   - Set to one of `the available color presets <https://en.wikipedia.org/wiki/ANSI_escape_code#3-bit_and_4-bit>`_.
  * - ``ESC[38;5;Xm`` 
-   - set to one of `the available 8-bit colors <https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit>`_.
+   - Set to one of `the available 8-bit colors <https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit>`_.
  * - ``ESC[38;2;R;G;Bm`` 
-   - set to an RGB color, with ``R``, ``G`` and ``B`` in the range 0-255.
+   - Set to an RGB color, with ``R``, ``G`` and ``B`` in the range 0-255.
  * - ``ESC[110m`` 
-   - set to chat text color
+   - Set to chat text color.
  * - ``ESC[111m`` 
-   - set to friendly player name color
+   - Set to friendly player name color.
  * - ``ESC[112m`` 
-   - set to enemy player name color
+   - Set to enemy player name color.
  * - ``ESC[113m`` 
-   - set to network name color
+   - Set to network name color.
