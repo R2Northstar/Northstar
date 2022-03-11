@@ -92,6 +92,13 @@
 			"RunOn": "(CLIENT || SERVER) && MP"
 		},
 		{
+			"Path": "sh_server_to_client_stringcommands.gnut",
+			"RunOn": "CLIENT || SERVER",
+			"ClientCallback": {
+				"After": "ServerToClientStringCommands_Init"
+			}
+		},
+		{
 			"Path": "gamemodes/_gamemode_fra.nut",
 			"RunOn": "SERVER && MP",
 			"ServerCallback": {

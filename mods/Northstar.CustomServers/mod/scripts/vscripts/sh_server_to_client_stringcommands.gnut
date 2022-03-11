@@ -1,0 +1,52 @@
+#if CLIENT
+global function ServerToClientStringCommands_Init
+
+global function AddServerToClientStringCommandCallback
+global function NSClientCodeCallback_RecievedServerToClientStringCommand
+#endif
+
+#if SERVER
+global function ServerToClientStringCommand
+#endif
+
+#if CLIENT
+struct {
+	table< string, array< void functionref( array<string> args ) > > callbacks
+} file
+
+void function ServerToClientStringCommands_Init()
+{
+	getroottable().rawset( "NSClientCodeCallback_RecievedServerToClientStringCommand", NSClientCodeCallback_RecievedServerToClientStringCommand )
+}
+
+void function AddServerToClientStringCommandCallback( string command, void functionref( array<string> args ) callback )
+{
+	if ( !( command in file.callbacks ) )
+		file.callbacks[ command ] <- []
+
+	file.callbacks[ command ].append( callback )
+}
+
+void function NSClientCodeCallback_RecievedServerToClientStringCommand( string cmd )
+{
+	array<string> args = split( cmd, " " )
+	if ( args.len() == 0 )
+		return
+
+	string callbackName = args[ 0 ]
+	args.remove( 0 )
+
+	if ( callbackName in file.callbacks )
+	{
+		foreach ( void functionref( array<string> args ) callback in file.callbacks[ callbackName ] )
+			callback( args )
+	}
+}
+#endif
+
+#if SERVER
+void function ServerToClientStringCommand( entity player, string command )
+{
+	ClientCommand( player, "ns_script_servertoclientstringcommand " + command )
+}
+#endif
