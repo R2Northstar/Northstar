@@ -113,6 +113,9 @@ void ServerAuthenticationManager::StartPlayerAuthServer()
 					strncpy(newAuthData.uid, request.get_param_value("id").c_str(), sizeof(newAuthData.uid));
 					newAuthData.uid[sizeof(newAuthData.uid) - 1] = 0;
 
+					strncpy(newAuthData.username, request.get_param_value("username").c_str(), sizeof(newAuthData.username));
+					newAuthData.username[sizeof(newAuthData.username) - 1] = 0;
+
 					newAuthData.pdataSize = request.body.size();
 					newAuthData.pdata = new char[newAuthData.pdataSize];
 					memcpy(newAuthData.pdata, request.body.c_str(), newAuthData.pdataSize);
@@ -141,6 +144,27 @@ void ServerAuthenticationManager::StopPlayerAuthServer()
 	m_playerAuthServer.stop();
 }
 
+char* ServerAuthenticationManager::VerifyPlayerName(void* player, char* authToken, char* name)
+{
+	std::lock_guard<std::mutex> guard(m_authDataMutex);
+
+	if (!m_authData.empty() && m_authData.count(std::string(authToken)))
+	{
+		AuthData authData = m_authData[authToken];
+
+		bool nameAccepted = (!*authData.username || !strcmp(name, authData.username));
+
+		if (!nameAccepted && g_MasterServerManager->m_bRequireClientAuth && !CVar_ns_auth_allow_insecure->GetInt())
+		{
+			// limit name length to 64 characters just in case something changes, this technically shouldn't be needed given the master
+			// server gets usernames from origin but we have it just in case
+			strncpy(name, authData.username, 64);
+			name[63] = 0;
+		}
+	}
+	return name;
+}
+
 bool ServerAuthenticationManager::AuthenticatePlayer(void* player, int64_t uid, char* authToken)
 {
 	std::string strUid = std::to_string(uid);
@@ -151,6 +175,7 @@ bool ServerAuthenticationManager::AuthenticatePlayer(void* player, int64_t uid, 
 	{
 		// use stored auth data
 		AuthData authData = m_authData[authToken];
+
 		if (!strcmp(strUid.c_str(), authData.uid)) // connecting client's uid is the same as auth's uid
 		{
 			authFail = false;
@@ -297,6 +322,9 @@ void* CBaseServer__ConnectClientHook(
 
 bool CBaseClient__ConnectHook(void* self, char* name, __int64 netchan_ptr_arg, char b_fake_player_arg, __int64 a5, char* Buffer, void* a7)
 {
+	// try changing name before all else
+	name = g_ServerAuthenticationManager->VerifyPlayerName(self, nextPlayerToken, name);
+
 	// try to auth player, dc if it fails
 	// we connect irregardless of auth, because returning bad from this function can fuck client state p bad
 	bool ret = CBaseClient__Connect(self, name, netchan_ptr_arg, b_fake_player_arg, a5, Buffer, a7);
