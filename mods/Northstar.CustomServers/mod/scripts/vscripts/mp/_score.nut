@@ -164,7 +164,7 @@ void function ScoreEvent_PlayerKilled( entity victim, entity attacker, var damag
 		else if ( attacker.s.currentTimedKillstreak == TRIPLEKILL_REQUIREMENT_KILLS )
 			AddPlayerScore( attacker, "TripleKill" )
 		else if ( attacker.s.currentTimedKillstreak >= MEGAKILL_REQUIREMENT_KILLS )
-			AddPlayerScore( attacker, "MegaKill" )
+			AddPlayerScore( attacker, "MegaKill", attacker )
 	}
 	
 	attacker.s.lastKillTime = Time()
@@ -237,12 +237,13 @@ void function ScoreEvent_SetupEarnMeterValuesForMixedModes() // mixed modes in t
 	ScoreEvent_SetEarnMeterValues( "PilotBatteryStolen", 0.0, 0.35 ) // this actually just doesn't have overdrive in vanilla even
 	ScoreEvent_SetEarnMeterValues( "Headshot", 0.0, 0.02 )
 	ScoreEvent_SetEarnMeterValues( "FirstStrike", 0.0, 0.05 )
+	ScoreEvent_SetEarnMeterValues( "PilotBatteryApplied", 0.0, 0.35 )
 	
 	// ai
-	ScoreEvent_SetEarnMeterValues( "KillGrunt", 0.0, 0.02, 0.5 )
-	ScoreEvent_SetEarnMeterValues( "KillSpectre", 0.0, 0.02, 0.5 )
-	ScoreEvent_SetEarnMeterValues( "LeechSpectre", 0.0, 0.02 )
-	ScoreEvent_SetEarnMeterValues( "KillStalker", 0.0, 0.02, 0.5 )
+	ScoreEvent_SetEarnMeterValues( "KillGrunt", 0.02, 0.02, 0.5 )
+	ScoreEvent_SetEarnMeterValues( "KillSpectre", 0.02, 0.02, 0.5 )
+	ScoreEvent_SetEarnMeterValues( "LeechSpectre", 0.02, 0.02 )
+	ScoreEvent_SetEarnMeterValues( "KillStalker", 0.02, 0.02, 0.5 )
 	ScoreEvent_SetEarnMeterValues( "KillSuperSpectre", 0.0, 0.1, 0.5 )
 }
 
