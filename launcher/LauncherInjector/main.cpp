@@ -142,10 +142,15 @@ void EnsureOriginStarted()
 		return;
 	}
 
+	printf("[*] Starting Origin...\n");
+
 	PROCESS_INFORMATION pi;
 	memset(&pi, 0, sizeof(pi));
 	STARTUPINFO si;
 	memset(&si, 0, sizeof(si));
+	si.cb = sizeof(STARTUPINFO);
+	si.dwFlags = STARTF_USESHOWWINDOW;
+	si.wShowWindow = SW_MINIMIZE;
 	CreateProcessA(
 		originPath, (char*)"", NULL, NULL, false, CREATE_DEFAULT_ERROR_MODE | CREATE_NEW_PROCESS_GROUP, NULL, NULL, (LPSTARTUPINFOA)&si,
 		&pi);
