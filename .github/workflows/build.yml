@@ -72,8 +72,8 @@ jobs:
           cat <<< $(jq ".Version = \"${MOD_VERSION}\"" northstar-mods/Northstar.Custom/mod.json) > northstar-mods/Northstar.Custom/mod.json
           cat <<< $(jq ".Version = \"${MOD_VERSION}\"" northstar-mods/Northstar.CustomServers/mod.json) > northstar-mods/Northstar.CustomServers/mod.json
       - name: Generate md5sum file
+        working-directory: northstar-mods
         run: |
-          cd northstar-mods
           echo -e "# Check with 'md5sum -c md5sum.txt' at the root of mods folder\n" > md5sum.txt
           git ls-tree -r $NORTHSTAR_VERSION --name-only | xargs -L1 md5sum >> md5sum.txt
       - name: Make folder structure
