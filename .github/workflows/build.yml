@@ -11,36 +11,48 @@ jobs:
   build-launcher:
     runs-on: windows-2022
     steps:
-      - name: Checkout
+      - name: Setup bundled plugins
+        uses: actions/checkout@v2
+        with:
+          repository: R2Northstar/NorthstarDiscordRPC
+          path: discord-plugin
+      - name: Checkout launcher repository
         uses: actions/checkout@v2
         with:
           repository: R2Northstar/NorthstarLauncher
           ref: ${{ env.NORTHSTAR_VERSION }}
+          path: northstar-launcher
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.1
       - name: Setup resource file version
         shell: bash
+        working-directory: northstar-launcher
         run: |
           sed -i 's/DEV/${{ env.NORTHSTAR_VERSION }}/g' LauncherInjector/resources.rc
           FILEVERSION=$(echo ${{ env.NORTHSTAR_VERSION }} | tr '.' ',' | tr -d '[:alpha:]')
           sed -i "s/0,0,0,0/${FILEVERSION}/g" LauncherInjector/resources.rc
       - name: Build
-        run: msbuild /p:Configuration=Release
+        working-directory: northstar-launcher 
+        run: |
+          cp -r ../discord-plugin/*Discord* .
+          msbuild /p:Configuration=Release R2Northstar.sln
+          msbuild /p:Configuration=Release NorthstarDiscordRPC.sln
       - name: Upload launcher build as artifact
         uses: actions/upload-artifact@v2
         with:
           name: northstar-launcher
           path: |
-            x64/Release/Northstar.dll
-            x64/Release/wsock32.dll
-            x64/Release/NorthstarLauncher.exe
-            x64/Release/*.txt
+            northstar-launcher/x64/Release/Northstar.dll
+            northstar-launcher/x64/Release/wsock32.dll
+            northstar-launcher/x64/Release/NorthstarLauncher.exe
+            northstar-launcher/x64/Release/DiscordRPC.dll
+            northstar-launcher/x64/Release/*.txt
       - name: Upload debug build artifact
         uses: actions/upload-artifact@v2
         with:
           name: launcher-debug-files
           path: |
-            x64/Release/*.pdb
+            northstar-launcher/x64/Release/*.pdb
 
   build-northstar:
     needs: build-launcher
@@ -80,7 +92,9 @@ jobs:
         run: |
           mv northstar/release/* northstar/.
           mkdir -p northstar/R2Northstar/mods
+          mkdir -p northstar/R2Northstar/plugins
           mkdir -p northstar/bin/x64_retail
+          mv northstar-launcher/DiscordRPC.dll northstar/R2Northstar/plugins
           mv northstar-launcher/wsock32.dll northstar/bin/x64_retail
           unzip NorthstarStubs.zip -d northstar/bin/x64_dedi
           mv northstar-launcher/* northstar

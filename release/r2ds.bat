@@ -1,1 +1,0 @@
-NorthstarLauncher.exe -dedicated -multiple
