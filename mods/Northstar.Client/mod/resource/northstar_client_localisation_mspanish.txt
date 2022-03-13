@@ -1,0 +1,310 @@
+"lang"
+{
+	"Language" "mspanish"
+	"Tokens"
+	{
+		// This file needs to be encoded as UTF-16 LE
+
+		"MENU_LAUNCH_NORTHSTAR" "Iniciar Northstar"
+		"MENU_TITLE_MODS" "Mods"
+		"RELOAD_MODS" "Recargar Mods"
+		"WARNING" "Advertencia"
+		"CORE_MOD_DISABLE_WARNING"  "Puedes romper el cliente si deshabilitas los mods principales!"
+		"DISABLE" "Deshabilitar"
+
+		"DIALOG_TITLE_INSTALLED_NORTHSTAR" "Gracias por instalar Northstar!"
+		"AUTHENTICATION_AGREEMENT_DIALOG_TEXT" "Para que Northstar funcione, necesita autenticarse con el servidor maestro de Northstar. Esto requiere enviar tu token de Origin al servidor maestro, no va a ser almacenado o usado para cualquier otro proposito.
+Si estas de acuerdo con esto, presiona SI. Esta decision puede ser cambiada en el menu de mods en cualquier momento."
+		"BACK_AUTHENTICATION_AGREEMENT" "Acuerdo de autenticación"
+		"AUTHENTICATION_AGREEMENT" "Acuerdo de autenticación"
+		"AUTHENTICATION_AGREEMENT_RESTART" "Necesitas reiniciar Titanfall 2 para que esta acción tome efecto."
+
+		"DIALOG_AUTHENTICATING_MASTERSERVER" "Autenticando con el servidor maestro."
+		"AUTHENTICATIONAGREEMENT_NO" "Has escogido no autenticarte con Northstar. Puedes ver el acuerdo en el menú de mods."
+
+		"MENU_TITLE_SERVER_BROWSER" "Navegador de servidores"
+		"NS_SERVERBROWSER_NOSERVERS" "No se encontraron servidores."
+		"NS_SERVERBROWSER_UNKNOWNMODE" "Modo desconocido"
+		"NS_SERVERBROWSER_WAITINGFORSERVERS" "Esperando servidores..."
+		"NS_SERVERBROWSER_CONNECTIONFAILED" "Connexión fallida!"
+		"REFRESH_SERVERS" "Recargar"
+
+		"MENU_TITLE_CONNECT_PASSWORD" "Conectar con contraseña"
+		"MENU_CONNECT_MENU_CONNECT" "Conectar"
+
+		"PRIVATE_MATCH_PAGE_PREV" "Página anterior"
+		"PRIVATE_MATCH_PAGE_NEXT" "Página siguiente"
+
+		"MENU_MATCH_SETTINGS" "Ajustes de partida"
+		"MENU_MATCH_SETTINGS_SUBMENU" "%s1 Configuraciones"
+
+		"PRIVATE_MATCH_SINGLEPLAYER_LEVEL" "%s1 (Campaña)"
+
+		// fra hint for private match menu, because fra only has PL_fra_desc in vanilla
+		"PL_fra_hint" "Estas solo. Mata a tus enemigos para ganar. Recoje 3 baterias para desplegar un titán."
+
+		// mode settings
+		"MODE_SETTING_CATEGORY_PILOT" "Piloto"
+		"MODE_SETTING_CATEGORY_TITAN" "Titán"
+		"MODE_SETTING_CATEGORY_RIFF" "Riffs"
+		"MODE_SETTING_CATEGORY_MATCH" "Partida"
+
+		"classic_mp" "Multijugador Clásico"
+		"run_epilogue" "Habilitar Epílogo"
+		"scorelimit" "Limite de puntos"
+		"roundscorelimit" "Limite de puntos (basado en rondas)"
+		"timelimit" "Tiempo limite"
+		"roundtimelimit" "Tiempo limite (basado en rondas)"
+		"respawnprotection" "Tiempo de proteccion en reaparición"
+
+		"pilot_health_multiplier" "Multiplicador de salud"
+		"respawn_delay" "Tiempo de Respawn"
+		"boosts_enabled" "Potenciadores"
+		"earn_meter_pilot_overdrive" "Sobrecarga de potenciador"
+		"earn_meter_pilot_multiplier" "Multiplicador del potenciador de piloto"
+
+		"earn_meter_titan_multiplier" "Multiplicador del potenciador de titán"
+		"aegis_upgrades" "Augmentaciones Aegis"
+		"infinite_doomed_state" "Estado perdido infinito"
+		"titan_shield_regen" "Regenerando escudos"
+
+		"riff_floorislava" "Campo mortal"
+		"featured_mode_all_holopilot" "El gran engaño"
+		"featured_mode_all_grapple" "Ataque en Titanfall"
+		"featured_mode_all_phase" "El otro lado"
+		"featured_mode_all_ticks" "Picante"
+		"featured_mode_tactikill" "Muerte táctica"
+		"featured_mode_amped_tacticals" "Tácticas potenciadas"
+		"featured_mode_rocket_arena" "Rocket Arena"
+		"featured_mode_shotguns_snipers" "Armado y peligroso"
+		"iron_rules" "Iron Titan Rules"
+
+		"cp_amped_capture_points" "Fortalezas amplificadas"
+		"coliseum_loadouts_enabled" "Equipamientos de coliseo"
+
+		// northstar.custom localisation is just deciding not to work, so putting it here for now
+		"PL_sbox" "Sandbox"
+		"PL_sbox_lobby" "Lobby sandbox"
+		"PL_sbox_desc" "como gmod pero peor"
+		"PL_sbox_abbr" "SBOX"
+		"GAMEMODE_SBOX" "Sandbox"
+
+		"PL_gg" "Juego de armas"
+		"PL_gg_lobby" "Lobby de juego de armas"
+		"PL_gg_desc" "Obten una eliminacion con cada arma para ganar."
+		"PL_gg_hint" "Obten una eliminacion con cada arma para ganar."
+		"PL_gg_abbr" "GG"
+		"GAMEMODE_GG" "Gun Game"
+		"gg_kill_reward" "Porcentaje de recompensa por eliminaciones"
+		"gg_assist_reward" "Porcentaje de recompensa por asistencia"
+		"gg_execution_reward" "Porcentaje de recompensa por ejecucción"
+
+		"PL_tt" "Titan Tag"
+		"PL_tt_lobby" "Lobby Titan Tag"
+		"PL_tt_desc" "Gana puntos mientras estás en tu titán. Destruye un titan para tener uno propio."
+		"PL_tt_hint" "Gana puntos mientras estás en tu titán. Destruye un titan para tener uno propio."
+		"PL_tt_abbr" "TT"
+		"GAMEMODE_TT" "Titan Tag"
+
+		"PL_chamber" "Uno en la camara"
+		"PL_chamber_lobby" "Lobby Uno en la camara"
+		"PL_chamber_desc" "Un disparo, una eliminación. Obtén otra bala en tu cargador al eliminar un contrincante."
+		"PL_chamber_hint" "Un disparo, una eliminación. Obtén otra bala en tu cargador al eliminar un contrincante."
+		"PL_chamber_abbr" "CHAMBER"
+		"GAMEMODE_CHAMBER" "Uno en la camara"
+
+		"PL_hidden" "El oculto"
+		"PL_hidden_lobby" "Lobby El Oculto"
+		"PL_hidden_desc" "Un jugador es invisible. El oculto caza."
+		"PL_hidden_hint" "Un jugador es invisible. El oculto caza."
+		"PL_hidden_abbr" "HIDDEN"
+		"GAMEMODE_HIDDEN" "El oculto"
+		"HIDDEN_YOU_ARE_HIDDEN" "Eres El Oculto!"
+		"HIDDEN_KILL_SURVIVORS" "Mata a todos los sobrevivientes."
+		"HIDDEN_FIRST_HIDDEN" "%s1 es El Oculto."
+
+		"PL_sns" "Piedras y palos"
+		"PL_sns_lobby" "Lobby Piedras y palos"
+		"PL_sns_desc" "Todos contra todos. Usa cuchillas de pulso y ejecucciones para reestablecer el puntaje del enemigo"
+		"PL_sns_abbr" "SNS"
+		"GAMEMODE_SNS" "Piedras y palos"
+		"SCOREBOARD_BANKRUPTS" "Eliminaciones de bancarrota"
+		"SNS_LEADER_BANKRUPT" "Lider de puntaje en bancarrota!"
+		"SNS_LEADER_BANKRUPT_SUB" "%s1 Fue reseteado por %s2"
+		"SNS_BANKRUPT" "Arruinado!"
+		"SNS_BANKRUPT_SUB" "Tu puntaje fue reseteado por %s1"
+		"sns_wme_kill_value" "Valor por eliminacion con Wingman Elite"
+		"sns_softball_kill_value" "Valor por eliminacion con Softball"
+		"sns_offhand_kill_value" "Valor por eliminacion con tacticas"
+		"sns_reset_kill_value" "Valor por eliminacion con Pulse/Ejecucción"
+		"sns_melee_kill_value" "Valor por eliminacion Melee"
+		"sns_reset_pulse_blade_cooldown_on_pulse_blade_kill" "Tiempo de reseteo de eliminación"
+		"sns_softball_enabled" "Softball Habilitada"
+
+		"PL_inf" "Infección"
+		"PL_inf_lobby" "Lobby Infección"
+		"PL_inf_desc" "Sobrevive a la infección. Los sobrevivientes son infectados al ser eliminados."
+		"PL_inf_hint" "Sobrevive a la infección. Los sobrevivientes son infectados al ser eliminados."
+		"PL_inf_abbr" "INF"
+		"GAMEMODE_INF" "Infección"
+		"INFECTION_YOU_ARE_INFECTED" "Has sido infectado!"
+		"INFECTION_KILL_SURVIVORS" "Infecta todos los sobrevivientes restantes."
+		"INFECTION_FIRST_INFECTED" "%s1 es el primer infectado."
+		"INFECTION_LAST_SURVIVOR" "%s1 es el ultimo sobreviviente!"
+		"INFECTION_KILL_LAST_SURVIVOR" "Infectalo antes de que el tiempo se acabe!"
+		"INFECTION_YOU_ARE_LAST_SURVIVOR" "Eres el ultimo sobreviviente!"
+		"INFECTION_SURVIVE_LAST_SURVIVOR" "Sobrevive."
+
+		"PL_tffa" "Titan Todos contra Todos"
+		"PL_tffa_lobby" "Lobby Titan todos contra todos"
+		"PL_tffa_desc" "Cada piloto por su cuenta, destruye todos los titanes enemigos."
+		"PL_tffa_hint" "Cada piloto por su cuenta, destruye todos los titanes enemigos."
+		"PL_tffa_abbr" "TFFA"
+		"GAMEMODE_TFFA" "Titan Todos contra Todos"
+
+		"PL_hs" "Escondite"
+		"PL_hs_lobby" "Lobby de escondite"
+		"PL_hs_desc" "Los escondidos se esconden, los buscadores intentan encontrarlos."
+		"PL_hs_hint" "Los escondidos se esconden, los buscadores intentan encontrarlos."
+		"PL_hs_abbr" "HS"
+		"GAMEMODE_hs" "Escondite"
+		"HIDEANDSEEK_YOU_ARE_SEEKER" "ERES UN BUSCADOR"
+		"HIDEANDSEEK_SEEKER_DESC" "Encuentra escondidos y golpealos.\nAparecerás en %s1 segundos"
+		"HIDEANDSEEK_YOU_ARE_HIDER" "ERES UN ESCONDIDO"
+		"HIDEANDSEEK_HIDER_DESC" "Ocultate de los buscadores."
+		"HIDEANDSEEK_SEEKERS_INCOMING" "BUSCADORES EN CAMINO"
+		"HIDEANDSEEK_DONT_GET_FOUND" "Que no te encuentren!"
+		"HIDEANDSEEK_GET_LAST_HIDER" "%s1 ES EL ULTIMO ESCONDIDO"
+		"HIDEANDSEEK_YOU_ARE_LAST_HIDER" "ERES EL ULTIMO ESCONDIDO"
+		"HIDEANDSEEK_GOT_STIM" "Estás estimulado! No dejes que te atrapen!"
+		"hideandseek_balance_teams" "Autobalancear Buscadores/Escondidos"
+		"hideandseek_hiding_time" "Tiempo para esconderse"
+
+		// these are defined in r1_english but titan war is a shit name so i'm changing it to another one that was referenced in development
+		"GAMEMODE_fw" "Guerra fronteriza"
+		"PL_fw" "Guerra fronteriza"
+		"PL_fw_lobby" "Lobby Guerra fronteriza"
+		"PL_fw_desc" "Destruye el recolector del enemigo y protege el tuyo."
+		"PL_fw_abbr" "FW"
+
+		"GAMEMODE_kr" "Carrera por muertes"
+		"PL_kr" "Carrera por muertes"
+		"PL_kr_lobby" "Lobby de Carrera por muertes"
+		"PL_kr_desc" "Obtén eliminaciones para alargar la duración de tu carrera. Recoje la bandera para empezarla. Marca el record de eliminaciones para ganar."
+		"PL_kr_hint" "Obtén eliminaciones para alargar la duración de tu carrera. Recoje la bandera para empezarla. Marca el record de eliminaciones para ganar."
+		"PL_kr_abbr" "KR"
+		"SCOREBOARD_KR_RECORD" "Record de eliminaciones"
+		"KR_NEW_RACER" "%s1 es el corredor"
+		"KR_YOU_ARE_NEW_RACER" "Eres el corredor"
+		"KR_YOU_SET_NEW_RECORD" "Haz un nuevo record de eliminaciones!"
+		"KR_FLAG_INCOMING" "Bandera entrante"
+		"KR_COLLECT_FLAG" "Recogela para convertirte en el corredor!"
+		"KR_ENEMY_KILLRACE_OVER" "La carrera de %s1 ha terminado"
+		"KR_YOUR_KILLRACE_OVER" "Tu carrera ha terminado"
+		"KR_YOUR_KILLRACE_SCORE" "Has conseguido %s1 eliminaciones."
+
+		"GAMEMODE_fastball" "Bola rapida"
+		"PL_fastball" "Bola rapida"
+		"PL_fastball_lobby" "Lobby Bola rapida"
+		"PL_fastball_desc" "Muerte permanente. Hackea paneles para ganar rondas y reaparecer a tus compañeros."
+		"PL_fastball_hint" "Muerte permanente. Hackea paneles para ganar rondas y reaparecer a tus compañeros."
+		"PL_fastball_abbr" "FB"
+		"FASTBALL_PANEL_CAPTURED" "%s1 capturó el panel %s2"
+		"SCOREBOARD_FASTBALL_HACKS" "Paneles Capturados"
+
+		"GAMEMODE_ctf_comp" "CTF Competitivo"
+
+		// mode settings
+		"MODE_SETTING_CATEGORY_PROMODE" "Modo pro"
+		"MODE_SETTING_CATEGORY_BLEEDOUT" "Desangrado de piloto"
+
+		"custom_air_accel_pilot" "Aceleración aerea"
+		"no_pilot_collision" "Colisión de piloto"
+		"promode_enable" "Armas de modo pro"
+		"fp_embark_enabled" "Embarques/Ejecucciones en primera persona"
+		"classic_rodeo" "Rodeo Clásico"
+		"oob_timer_enabled" "Temporizador de limite de mapa"
+		"riff_instagib" "Modo Instagib"
+
+		"riff_player_bleedout" "Desangrado de piloto"
+		"player_bleedout_forceHolster" "Enfundar armas mientras estas derribado"
+		"player_bleedout_forceDeathOnTeamBleedout" "Morir al estar todos derribados"
+		"player_bleedout_bleedoutTime" "Tiempo de desangrado"
+		"player_bleedout_firstAidTime" "Tiempo de primeros auxilios"
+		"player_bleedout_firstAidTimeSelf" "Tiempo de auto resucitación"
+		"player_bleedout_firstAidHealPercent" "Porcentaje de salud de primeros auxilios"
+		"player_bleedout_aiBleedingPlayerMissChance" "Probabilidad de fallo de IAs derribadas"
+
+		// coop stuff
+		"PL_sp_coop" "(Sin terminar) Campaña cooperativa"
+		"PL_sp_coop_lobby" "Lobby Campaña cooperativa"
+		"PL_sp_coop_desc" "Juega a traves de la campaña junto con amigos"
+		"PL_sp_coop_hint" "Juega a traves de la campaña junto con amigos"
+		"PL_sp_coop_abbr" "SP"
+
+		"SP_TRAINING" "El circuito del piloto"
+		"SP_TRAINING_CLASSIC_DESC" "Simulación de entrenamiento del Capitán Lastimosa."
+
+		"SP_CRASHSITE" "BT-7274"
+		"SP_CRASHSITE_CLASSIC_DESC" "Jack Cooper conoce a BT-7274."
+
+		"SP_SEWERS1" "Sangre y óxido"
+		"SP_SEWERS1_CLASSIC_DESC" "Cooper y BT emprenden el viaje para reunirse con el comandante Anderson."
+
+		"SP_BOOMTOWN_START" "Viaje al abismo"
+		"SP_BOOMTOWN_START_CLASSIC_DESC" "Enfréntate a consecuencias inesperadas al pasar por un atajo subterráneo."
+
+		"SP_HUB_TIMESHIFT" "Causa y efecto"
+		"SP_HUB_TIMESHIFT_CLASSIC_DESC" "Se descubrió un fenómeno extraño en las coordenadas del comandante Anderson."
+
+		"SP_BEACON" "La baliza"
+		"SP_BEACON_CLASSIC_DESC" "Cooper y BT intentan comunicar los planes de la IMC a la flota que queda."
+
+		"SP_TDAY" "Prueba de fuego"
+		"SP_TDAY_CLASSIC_DESC" "Las habilidades del titán de Cooper se ponen a prueba en una gran batalla para capturar el Arca."
+
+		"SP_S2S" "El Arca"
+		"SP_S2S_CLASSIC_DESC" "Cooper y BT van de nave en nave persiguiendo el Arca."
+
+		"SP_SKYWAY_V1" "El Arma moldeadora"
+		"SP_SKYWAY_V1_CLASSIC_DESC" "Kuben Blisk captura a BT y Cooper."
+
+		// Better.Serverbrowser
+		"SERVERS_COLUMN" "Sevidores"
+		"PLAYERS_COLUMN" "Jugadores"
+		"MAP_COLUMN" "Mapa"
+		"GAMEMODE_COLUMN" "Modo de juego"
+		"LATENCY_COLUMN" "Latencia"
+		"SEARCHBAR_LABEL" "Buscar:"
+		"MAP_FILTER" "Mapa"
+		"GAMEMODE_FILTER" "Modo de juego"
+		"HIDE_FULL_FILTER" "Ocultar servidores llenos"
+		"HIDE_EMPTY_FILTER" "Ocultar servidores vacios"
+		"HIDE_PROT_FILTER" "Ocultar servidores protegidos"
+		"SERVER_DESCRIPTION" "Descripcion"
+		"SERVER_MODS" "Mods"
+		"CLEAR_FILTERS" "LIMPIAR"
+		"JOIN_BUTTON" "UNIR"
+
+		"SWITCH_YES" "Si"
+		"SWITCH_NO" "No"
+		"SWITCH_ANY" "Cualquiera"
+
+		"CONNECTING" "Conectando..."
+		"INGAME_PLAYERS" "Jugadores: ^6BA6C400%s1"
+		"TOTAL_SERVERS" "Servidores: ^C46C6C00%s1"
+
+		// Mods menu
+		"SHOW" "Mostrar"
+		"SHOW_ALL" "Todos"
+		"SHOW_ONLY_ENABLED" "Solo activados"
+		"SHOW_ONLY_DISABLED" "Solo desactivados"
+
+		// Maps menu
+		"HIDE_LOCKED" "Ocultar bloqueados"
+
+		// In-game chat
+		"HUD_CHAT_WHISPER_PREFIX" "[SUSURRO]"
+		"HUD_CHAT_SERVER_PREFIX" "[SERVIDOR]"
+	}
+}
