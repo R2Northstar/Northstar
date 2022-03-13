@@ -82,7 +82,7 @@ Some users have reported issues with enabling LatencyFleX. If you see `"Unable t
 
 ### Game crashes on launch with Cause: Access Violation Data Execution Prevention (DEP) at: 0x00000000
 
-Try running with [ProtonGE](https://github.com/GloriousEggroll/proton-ge-custom/).
+Try running with [ProtonGE](https://github.com/GloriousEggroll/proton-ge-custom/). In particular, `Proton-7.3-GE-1` has so far been found to be reliable in this case. Check this [Github issue comment for a guide](https://github.com/R2Northstar/Northstar/issues/1#issuecomment-1062483190).
 
 ### Reducing stuttering (Steam/Proton and Lutris/Wine)
 
