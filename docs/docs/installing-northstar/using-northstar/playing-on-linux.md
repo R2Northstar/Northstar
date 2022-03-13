@@ -34,10 +34,6 @@ Now Steam will automatically launch Northstar when you hit play. Just launch the
 Now just launch the game through Lutris and you should be greeted with a Northstar welcome message upon entering the main menu.
 
 > **Note:** Origin might prompt you to log in and "set an installation folder for future downloads" on first launch. Just do those, close Origin, then launch the game again.
->
-> You might feel the game is stuttering a lot in the first hour of playing. This is normal, it's just DXVK is compiling shaders. The more you play, the less you will stutter in the future. Someone on discord wrote [an in-depth guide](https://i.imgur.com/xzop1lQ.png) on good settings to help the shader cache **and a general performance boost by stopping Origin from writing unnecessary files**.\
-> [Link to cache](https://github.com/Cervoxx/DXVKCACHE/raw/master/Titanfall2-cache.tar.xz)\
-> [Link to Origin being slow discussion](https://github.com/ValveSoftware/Proton/issues/4001#issuecomment-647014231)
 
 ## LatencyFleX
 
@@ -71,6 +67,9 @@ This problem is caused due to missing fonts on your Titanfall 2 wine prefix, you
 4. Click OK and wait for everything to install, if done correctly winetricks will popup again.
 5. You can now close it and launch the game.
 
+### Crackling sound
+Can be fixed by adding [`tsched=0`](https://wiki.archlinux.org/title/PulseAudio/Troubleshooting#Glitches.2C_skips_or_crackling) to `/etc/pulse/default.pa`
+
 ### Fullscreen issues
 
 Running the game on fullscreen through Linux might lead to a black screen preventing you from launching the game. Edit your `ns_startup_args.txt` to include `-noborder -window` or edit `"setting.fullscreen"` and `"setting.nowindowborder"` at `<wineprefix>/drive_c/users/<username>/Documents/Respawn/Titanfall2/local/videoconfig.txt` to solve this.
@@ -84,3 +83,37 @@ Some users have reported issues with enabling LatencyFleX. If you see `"Unable t
 ### Game crashes on launch with Cause: Access Violation Data Execution Prevention (DEP) at: 0x00000000
 
 Try running with [ProtonGE](https://github.com/GloriousEggroll/proton-ge-custom/).
+
+### Reducing stuttering (Steam/Proton and Lutris/Wine)
+
+You may feel that the game stutters frequently during the first hour of play. This is normal, it's just DXVK having to compile shaders at draw time due not having a ready state cache. The more you play, the less stuttering there will be in the future.
+
+However if you don't want to wait you can try precompiled DXVK [_state cache_](https://github.com/doitsujin/dxvk#state-cache): [**Titanfall2.dxvk-cache**](https://github.com/begin-theadventure/dxvk-caches/blob/main/dxvk-caches/Titanfall/Titanfall%202/Titanfall2.dxvk-cache.md)
+
+Proton: extract and put it in `/path/to/steamapps/shadercache/1237970/DXVK_state_cache` default is `~/.local/share/..` or next to .exe if shader pre-caching is turned off.
+
+Wine: extract and put it next to game's .exe. Also remember to rename it if the .exe has a different name.
+
+There are also other (not necessary) tweaks as:
+
+_DXVK-_[_async_](https://github.com/Sporif/dxvk-async#improvements):
+
+Wine: download [**dxvk-async**](https://github.com/Sporif/dxvk-async/releases), extract and put it in `~/.local/share/lutris/runtime/dxvk` then type the name of the folder in `▲` ->  `Configure` -> `Runner Options` -> `DXVK version`, to enable add `DXVK_ASYNC 1` to `System Options` -> `Environment variables`
+
+Proton: can be used with [**Proton-GE**](https://github.com/GloriousEggroll/proton-ge-custom). Type `DXVK_ASYNC 1 %command%` under `Properties..` -> `LAUNCH OPTIONS`
+
+[_Preventing_](https://github.com/ValveSoftware/Proton/issues/4001#issuecomment-647014231) _Origin from writing certain files_:
+
+Path:
+
+Proton: `/path/to/steamapps/compatdata/1237970/pfx/drive_c/users/steamuser/Application Data/Origin` default is `~/.local/share/..`
+
+Wine: `/path/to/drive_c/users/<username>/AppData/Roaming/Origin`
+
+Access can be restricted using a file manager or terminal:
+
+`chmod -R 555` -> access only
+
+`chmod -R 755`  -> access + save
+
+It's also possible to create command aliases to type something short, such as tfoff/tfon.
