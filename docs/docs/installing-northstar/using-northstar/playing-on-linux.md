@@ -1,8 +1,6 @@
 # Playing on Linux 🐧
 
-Linux is not officially supported currently. However, you can get it working through Proton or Wine by following this guide.
-
-> Please read this section on [common issues with Origin](https://github.com/lutris/docs/blob/master/Origin.md) before proceding.
+Northstar is officially supported on Linux, it uses compatibility layers like Proton or Wine to launch the game on POSIX systems.
 
 ## Installing
 
@@ -56,6 +54,8 @@ While playing with LatencyFleX, **VSync and Adaptive Super Sampling must be disa
 > +fps_max_use_refresh 1
 
 ## Troubleshooting
+
+> Read Lutris troubleshooting of [common issues with Origin](https://github.com/lutris/docs/blob/master/Origin.md) first.
 
 ### Blank console
 
