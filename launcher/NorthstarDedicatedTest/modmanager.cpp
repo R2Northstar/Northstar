@@ -14,6 +14,7 @@
 #include <sstream>
 #include <vector>
 #include "filesystem.h"
+#include "rpakfilesystem.h"
 #include "configurables.h"
 
 ModManager* g_ModManager;
@@ -289,6 +290,26 @@ void ModManager::LoadMods()
 		// read vpk paths
 		if (fs::exists(mod.ModDirectory / "vpk"))
 		{
+			// read vpk cfg
+			std::ifstream vpkJsonStream(mod.ModDirectory / "vpk/vpk.json");
+			std::stringstream vpkJsonStringStream;
+
+			bool bUseVPKJson = false;
+			rapidjson::Document dVpkJson;
+
+			if (!vpkJsonStream.fail())
+			{
+				while (vpkJsonStream.peek() != EOF)
+					vpkJsonStringStream << (char)vpkJsonStream.get();
+
+				vpkJsonStream.close();
+				dVpkJson.Parse<rapidjson::ParseFlag::kParseCommentsFlag | rapidjson::ParseFlag::kParseTrailingCommasFlag>(
+					vpkJsonStringStream.str().c_str());
+
+				bUseVPKJson =
+					!dVpkJson.HasParseError() && dVpkJson.IsObject();
+			}
+
 			for (fs::directory_entry file : fs::directory_iterator(mod.ModDirectory / "vpk"))
 			{
 				// a bunch of checks to make sure we're only adding dir vpks and their paths are good
@@ -302,10 +323,67 @@ void ModManager::LoadMods()
 					// this really fucking sucks but it'll work
 					std::string vpkName =
 						(file.path().parent_path() / formattedPath.substr(strlen("english"), formattedPath.find(".bsp") - 3)).string();
-					mod.Vpks.push_back(vpkName);
 
-					if (m_hasLoadedMods)
+					ModVPKEntry& modVpk = mod.Vpks.emplace_back();
+					modVpk.m_bAutoLoad = !bUseVPKJson || (dVpkJson.HasMember("Preload") && dVpkJson["Preload"].IsObject() && dVpkJson["Preload"].HasMember(vpkName) && dVpkJson["Preload"][vpkName].IsTrue());
+					modVpk.m_sVpkPath = vpkName;
+
+					if (m_hasLoadedMods && modVpk.m_bAutoLoad)
 						(*g_Filesystem)->m_vtable->MountVPK(*g_Filesystem, vpkName.c_str());
+				}
+			}
+		}
+
+		// read rpak paths
+		if (fs::exists(mod.ModDirectory / "paks"))
+		{
+			// read rpak cfg
+			std::ifstream rpakJsonStream(mod.ModDirectory / "paks/rpak.json");
+			std::stringstream rpakJsonStringStream;
+
+			bool bUseRpakJson = false;
+			rapidjson::Document dRpakJson;
+
+			if (!rpakJsonStream.fail())
+			{
+				while (rpakJsonStream.peek() != EOF)
+					rpakJsonStringStream << (char)rpakJsonStream.get();
+
+				rpakJsonStream.close();
+				dRpakJson.Parse<rapidjson::ParseFlag::kParseCommentsFlag | rapidjson::ParseFlag::kParseTrailingCommasFlag>(
+					rpakJsonStringStream.str().c_str());
+
+				bUseRpakJson =
+					!dRpakJson.HasParseError() && dRpakJson.IsObject();
+			}
+
+			// read pak aliases
+			if (bUseRpakJson && dRpakJson.HasMember("Aliases") && dRpakJson["Aliases"].IsObject())
+			{
+				for (rapidjson::Value::ConstMemberIterator iterator = dRpakJson["Aliases"].MemberBegin();
+					 iterator != dRpakJson["Aliases"].MemberEnd(); iterator++)
+				{
+					if (!iterator->name.IsString() || !iterator->value.IsString())
+						continue;
+
+					mod.RpakAliases.insert(std::make_pair(iterator->name.GetString(), iterator->value.GetString()));
+				}
+			}
+
+			for (fs::directory_entry file : fs::directory_iterator(mod.ModDirectory / "paks"))
+			{
+				// ensure we're only loading rpaks
+				if (fs::is_regular_file(file) && file.path().extension() == ".rpak")
+				{
+					std::string pakName(file.path().filename().string());
+
+					ModRpakEntry& modPak = mod.Rpaks.emplace_back();
+					modPak.m_bAutoLoad = !bUseRpakJson || (dRpakJson.HasMember("Preload") && dRpakJson["Preload"].IsObject() && dRpakJson["Preload"].HasMember(pakName) && dRpakJson["Preload"][pakName].IsTrue());
+					modPak.m_sPakPath = pakName;
+
+					// not using atm because we need to resolve path to rpak
+					//if (m_hasLoadedMods && modPak.m_bAutoLoad)
+					//	g_PakLoadManager->LoadPakAsync(pakName.c_str());
 				}
 			}
 		}
@@ -338,6 +416,14 @@ void ModManager::LoadMods()
 
 				mod.Pdiff = pdiffStringStream.str();
 			}
+		}
+
+		// read bink video paths
+		if (fs::exists(mod.ModDirectory / "media"))
+		{
+			for (fs::directory_entry file : fs::recursive_directory_iterator(mod.ModDirectory / "media"))
+				if (fs::is_regular_file(file) && file.path().extension() == ".bik")
+					mod.BinkVideos.push_back(file.path().filename().string());
 		}
 
 		// try to load audio

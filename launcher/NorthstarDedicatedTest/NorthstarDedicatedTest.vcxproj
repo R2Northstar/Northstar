@@ -114,6 +114,7 @@
     <ClInclude Include="buildainfile.h" />
     <ClInclude Include="chatcommand.h" />
     <ClInclude Include="clientchathooks.h" />
+    <ClInclude Include="clientvideooverrides.h" />
     <ClInclude Include="localchatwriter.h" />
     <ClInclude Include="plugins.h" />
     <ClInclude Include="plugin_abi.h" />
@@ -568,6 +569,7 @@
     <ClCompile Include="chatcommand.cpp" />
     <ClCompile Include="clientauthhooks.cpp" />
     <ClCompile Include="clientchathooks.cpp" />
+    <ClCompile Include="clientvideooverrides.cpp" />
     <ClCompile Include="concommand.cpp" />
     <ClCompile Include="configurables.cpp" />
     <ClCompile Include="context.cpp" />

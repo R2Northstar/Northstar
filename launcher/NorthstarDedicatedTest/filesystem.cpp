@@ -174,11 +174,22 @@ VPKData* MountVPKHook(IFileSystem* fileSystem, const char* vpkPath)
 		if (!mod.Enabled)
 			continue;
 
-		for (std::string& vpkPath : mod.Vpks)
+		for (ModVPKEntry& vpkEntry : mod.Vpks)
 		{
-			// note: could potentially not mount these if they're already mounted?
-			spdlog::info("MountVPK {}", vpkPath);
-			spdlog::info((void*)mountVPK(fileSystem, vpkPath.c_str()));
+			// if we're autoloading, just load no matter what
+			if (!vpkEntry.m_bAutoLoad)
+			{
+				// resolve vpk name and try to load one with the same name
+				// todo: we should be unloading these on map unload manually
+				std::string mapName(fs::path(vpkPath).filename().string());
+				std::string modMapName(fs::path(vpkEntry.m_sVpkPath.c_str()).filename().string());
+				if (mapName.compare(modMapName))
+					continue;
+			}
+
+			VPKData* loaded = mountVPK(fileSystem, vpkEntry.m_sVpkPath.c_str());
+			if (!ret) // this is primarily for map vpks and stuff, so the map's vpk is what gets returned from here
+				ret = loaded;
 		}
 	}
 
