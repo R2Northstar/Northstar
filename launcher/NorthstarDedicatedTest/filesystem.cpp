@@ -33,7 +33,6 @@ VPKData* MountVPKHook(IFileSystem* fileSystem, const char* vpkPath);
 bool readingOriginalFile;
 std::string currentModPath;
 SourceInterface<IFileSystem>* g_Filesystem;
-void* g_pVGuiLocalize;
 
 void InitialiseFilesystem(HMODULE baseAddress)
 {

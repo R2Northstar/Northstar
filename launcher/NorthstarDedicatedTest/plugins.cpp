@@ -390,21 +390,25 @@ void InitialisePluginCommands(HMODULE baseAddress)
 	// i swear there's a way to make this not have be run in 2 contexts but i can't figure it out
 	// some funcs i need are just not available in UI or CLIENT
 
-	g_UISquirrelManager->AddFuncRegistration(
-		"void", "NSUpdateGameStateUI", "string gamemode, string gamemodeName, string map, string mapName, bool connected, bool loading", "",
-		SQ_UpdateGameStateUI);
-	g_ClientSquirrelManager->AddFuncRegistration(
-		"void", "NSUpdateGameStateClient",
-		"int playerCount, int outScore, int secondHighestScore, int highestScore, bool roundBased, int scoreLimit", "",
-		SQ_UpdateGameStateClient);
-	g_UISquirrelManager->AddFuncRegistration(
-		"void", "NSUpdateServerInfo",
-		"string id, string name, string password, int players, int maxPlayers, string map, string mapDisplayName, string playlist, string "
-		"playlistDisplayName",
-		"", SQ_UpdateServerInfo);
-	g_ClientSquirrelManager->AddFuncRegistration(
-		"void", "NSUpdateServerInfoReload", "int maxPlayers", "", SQ_UpdateServerInfoBetweenRounds);
-	g_ClientSquirrelManager->AddFuncRegistration("void", "NSUpdateTimeInfo", "float timeInFuture", "", SQ_UpdateTimeInfo);
-	g_UISquirrelManager->AddFuncRegistration("void", "NSSetLoading", "bool loading", "", SQ_SetConnected);
-	g_UISquirrelManager->AddFuncRegistration("void", "NSUpdateListenServer", "", "", SQ_UpdateListenServer);
+	if (g_UISquirrelManager && g_ClientSquirrelManager)
+	{
+		g_UISquirrelManager->AddFuncRegistration(
+			"void", "NSUpdateGameStateUI", "string gamemode, string gamemodeName, string map, string mapName, bool connected, bool loading",
+			"", SQ_UpdateGameStateUI);
+		g_ClientSquirrelManager->AddFuncRegistration(
+			"void", "NSUpdateGameStateClient",
+			"int playerCount, int outScore, int secondHighestScore, int highestScore, bool roundBased, int scoreLimit", "",
+			SQ_UpdateGameStateClient);
+		g_UISquirrelManager->AddFuncRegistration(
+			"void", "NSUpdateServerInfo",
+			"string id, string name, string password, int players, int maxPlayers, string map, string mapDisplayName, string playlist, "
+			"string "
+			"playlistDisplayName",
+			"", SQ_UpdateServerInfo);
+		g_ClientSquirrelManager->AddFuncRegistration(
+			"void", "NSUpdateServerInfoReload", "int maxPlayers", "", SQ_UpdateServerInfoBetweenRounds);
+		g_ClientSquirrelManager->AddFuncRegistration("void", "NSUpdateTimeInfo", "float timeInFuture", "", SQ_UpdateTimeInfo);
+		g_UISquirrelManager->AddFuncRegistration("void", "NSSetLoading", "bool loading", "", SQ_SetConnected);
+		g_UISquirrelManager->AddFuncRegistration("void", "NSUpdateListenServer", "", "", SQ_UpdateListenServer);
+	}
 }

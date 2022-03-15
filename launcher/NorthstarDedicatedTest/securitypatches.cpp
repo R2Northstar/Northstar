@@ -4,6 +4,7 @@
 #include "concommand.h"
 #include "dedicated.h"
 #include "gameutils.h"
+#include "convar.h"
 
 typedef bool (*IsValveModType)();
 IsValveModType IsValveMod;
