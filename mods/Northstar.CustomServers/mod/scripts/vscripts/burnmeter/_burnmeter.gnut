@@ -22,6 +22,7 @@ const float AMPED_WEAPONS_LENGTH = 30.0
 
 const int MAPHACK_PULSE_COUNT = 4
 const float MAPHACK_PULSE_DELAY = 2.0
+const float MAPHACK_PULSE_LENGTH = 0.5
 
 struct
 {
@@ -369,31 +370,72 @@ void function PlayerUsesMaphackBurncard( entity player )
 void function PlayerUsesMaphackBurncardThreaded( entity player )
 {
 	player.EndSignal( "OnDestroy" )
-	player.EndSignal( "OnDeath" )
+
+	// If the user disconnects, we need to clean up hanging sonar effects, so hold relevant data here.
+	int playerTeam = player.GetTeam()
+	bool cleanup = false
+	array<entity> entities, affectedEntities
+
+	OnThreadEnd(
+		function() : ( cleanup, playerTeam, affectedEntities )
+		{
+			if ( !cleanup ) // Map hack ended when sonar wasn't active, no cleanup needed
+				return
+			
+			foreach ( entity ent in affectedEntities )
+			{
+				if ( IsValid( ent ) )
+					SonarEnd( ent, playerTeam )
+			}
+			DecrementSonarPerTeam( playerTeam )
+		}
+	)
 
 	// todo: potentially look into ScanMinimap in _passives for doing this better? boost is pretty likely based off it pretty heavily
 	for ( int i = 0; i < MAPHACK_PULSE_COUNT; i++ )
 	{
 		EmitSoundOnEntityOnlyToPlayer( player, player, "Burn_Card_Map_Hack_Radar_Pulse_V1_1P" )
-		array<entity> aliveplayers = GetPlayerArray()
-		foreach ( entity otherPlayer in GetPlayerArray() )
-		{
-			Remote_CallFunction_Replay( otherPlayer, "ServerCallback_SonarPulseFromPosition", player.GetOrigin().x, player.GetOrigin().y, player.GetOrigin().z, SONAR_GRENADE_RADIUS )
 
-			if ( otherPlayer.GetTeam() != player.GetTeam() && aliveplayers.find(otherPlayer) != -1 && aliveplayers.find(player) != -1 )
+		entities = GetPlayerArray()
+		entities.extend( GetNPCArray() )
+		entities.extend( GetPlayerDecoyArray() )
+
+		IncrementSonarPerTeam( playerTeam )
+		foreach ( entity ent in entities )
+		{
+			if ( !IsValid( ent ) ) // Not sure why we can get invalid entities at this point
+				continue
+
+			if ( ent.IsPlayer() )
 			{
-				StatusEffect_AddTimed( otherPlayer, eStatusEffect.maphack_detected, 1.0, MAPHACK_PULSE_DELAY / 2, 0.0 )
-				SonarStart( otherPlayer, player.GetOrigin(), player.GetTeam(), player )
-				IncrementSonarPerTeam( player.GetTeam() )
+				if ( IsAlive( player ) )
+					Remote_CallFunction_Replay( ent, "ServerCallback_SonarPulseFromPosition", player.GetOrigin().x, player.GetOrigin().y, player.GetOrigin().z, SONAR_GRENADE_RADIUS )
+				
+				// Map Hack also gives radar on enemies for longer than the sonar duration.
+				if ( ent.GetTeam() == playerTeam )
+					thread ScanMinimap( ent, false, MAPHACK_PULSE_DELAY - 0.2 )
+			}
+
+			if ( ent.GetTeam() != playerTeam )
+			{
+				StatusEffect_AddTimed( ent, eStatusEffect.maphack_detected, 1.0, MAPHACK_PULSE_DELAY, 0.0 )
+				affectedEntities.append( ent )
+				SonarStart( ent, player.GetOrigin(), playerTeam, player )
 			}
 		}
-		wait MAPHACK_PULSE_DELAY
-		foreach ( entity otherPlayer in GetPlayerArray() ) {
-			if ( otherPlayer.GetTeam() != player.GetTeam() && aliveplayers.find(otherPlayer) != -1 && aliveplayers.find(player) != -1 ) {
-				SonarEnd (otherPlayer, player.GetTeam() )
-				DecrementSonarPerTeam( player.GetTeam() )
-			}
+		cleanup = true
+		wait MAPHACK_PULSE_LENGTH
+
+		DecrementSonarPerTeam( playerTeam )
+		// JFS - loop through entities that were explicitly given sonar in case they switched teams during the wait
+		foreach ( entity ent in affectedEntities )
+		{
+			if ( IsValid( ent ) )
+				SonarEnd( ent, playerTeam )
 		}
+		cleanup = false
+		affectedEntities.clear()
+		wait MAPHACK_PULSE_DELAY - MAPHACK_PULSE_LENGTH
 	}
 }
 
