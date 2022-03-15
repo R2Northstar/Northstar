@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "serverauthentication.h"
+#include "cvar.h"
 #include "convar.h"
 #include "hookutils.h"
 #include "masterserver.h"
@@ -62,6 +63,8 @@ ConVar* Cvar_net_chan_limit_mode;
 ConVar* Cvar_net_chan_limit_msec_per_sec;
 ConVar* Cvar_sv_querylimit_per_sec;
 ConVar* Cvar_sv_max_chat_messages_per_sec;
+
+ConVar* Cvar_net_datablock_enabled;
 
 void ServerAuthenticationManager::StartPlayerAuthServer()
 {
@@ -595,6 +598,8 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 	Cvar_ns_player_auth_port = new ConVar("ns_player_auth_port", "8081", FCVAR_GAMEDLL, "");
 	Cvar_sv_querylimit_per_sec = new ConVar("sv_querylimit_per_sec", "15", FCVAR_GAMEDLL, "");
 	Cvar_sv_max_chat_messages_per_sec = new ConVar("sv_max_chat_messages_per_sec", "5", FCVAR_GAMEDLL, "");
+
+	Cvar_net_datablock_enabled = g_pCVar->FindVar("net_datablock_enabled");
 
 	RegisterConCommand("ns_resetpersistence", ResetPdataCommand, "resets your pdata when you next enter the lobby", FCVAR_NONE);
 

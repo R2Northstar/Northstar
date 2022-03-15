@@ -2,6 +2,7 @@
 #include "clientchathooks.h"
 #include <rapidjson/document.h>
 #include "squirrel.h"
+#include "dedicated.h"
 #include "serverchathooks.h"
 #include "localchatwriter.h"
 
@@ -86,6 +87,9 @@ static SQRESULT SQ_ChatWriteLine(void* sqvm)
 
 void InitialiseClientChatHooks(HMODULE baseAddress)
 {
+	if (IsDedicated())
+		return;
+
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x22E580, &CHudChat__AddGameLineHook, reinterpret_cast<LPVOID*>(&CHudChat__AddGameLine));
 

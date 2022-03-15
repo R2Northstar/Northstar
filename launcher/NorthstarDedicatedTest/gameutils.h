@@ -206,7 +206,6 @@ extern server_state_t* sv_m_State;
 
 // network stuff
 extern ConVar* Cvar_hostport;
-extern ConVar* Cvar_net_datablock_enabled;
 
 // playlist stuff
 typedef const char* (*GetCurrentPlaylistType)();
@@ -225,18 +224,11 @@ extern GetCurrentPlaylistVarType GetCurrentPlaylistVar;
 typedef void* (*Server_GetEntityByIndexType)(int index);
 extern Server_GetEntityByIndexType Server_GetEntityByIndex;
 
-// server tickrate stuff
-extern ConVar* Cvar_base_tickinterval_mp;
-extern ConVar* Cvar_base_tickinterval_sp;
-
 // auth
 extern char* g_LocalPlayerUserID;
 extern char* g_LocalPlayerOriginToken;
 
 // misc stuff
-extern ConVar* Cvar_match_defaultMap;
-extern ConVar* Cvar_communities_hostname;
-
 typedef void (*ErrorType)(const char* fmt, ...);
 extern ErrorType Error;
 
