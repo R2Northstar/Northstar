@@ -44,6 +44,21 @@ struct ModScript
 	std::vector<ModScriptCallback> Callbacks;
 };
 
+// these are pretty much identical, could refactor to use the same stuff?
+struct ModVPKEntry
+{
+  public:
+	bool m_bAutoLoad;
+	std::string m_sVpkPath;
+};
+
+struct ModRpakEntry
+{
+  public:
+	bool m_bAutoLoad;
+	std::string m_sPakPath;
+};
+
 class Mod
 {
   public:
@@ -76,9 +91,13 @@ class Mod
 
 	// other files:
 
-	std::vector<std::string> Vpks;
+	std::vector<ModVPKEntry> Vpks;
 	std::unordered_map<size_t, std::string> KeyValues;
+	std::vector<std::string> BinkVideos;
 	std::string Pdiff; // only need one per mod
+
+	std::vector<ModRpakEntry> Rpaks;
+	std::unordered_map<std::string, std::string> RpakAliases; // paks we alias to other rpaks, e.g. to load sp_crashsite paks on the map mp_crashsite
 
 	// other stuff
 
