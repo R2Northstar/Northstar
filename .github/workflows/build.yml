@@ -90,14 +90,14 @@ jobs:
           git ls-tree -r $NORTHSTAR_VERSION --name-only | xargs -L1 md5sum >> md5sum.txt
       - name: Make folder structure
         run: |
-          mv northstar/release/* northstar/.
+          mv -v northstar/release/* northstar/.
           mkdir -p northstar/R2Northstar/mods
           mkdir -p northstar/R2Northstar/plugins
           mkdir -p northstar/bin/x64_retail
-          mv northstar-launcher/DiscordRPC.dll northstar/R2Northstar/plugins
-          mv northstar-launcher/wsock32.dll northstar/bin/x64_retail
+          mv -v northstar-launcher/DiscordRPC.dll northstar/R2Northstar/plugins
+          mv -v northstar-launcher/wsock32.dll northstar/bin/x64_retail
           unzip NorthstarStubs.zip -d northstar/bin/x64_dedi
-          mv northstar-launcher/* northstar
+          mv -v northstar-launcher/* northstar
           rsync -avr --exclude="Northstar.Coop" --exclude=".git*" northstar-mods/. northstar/R2Northstar/mods
       - name: Cleanup
         run: |
