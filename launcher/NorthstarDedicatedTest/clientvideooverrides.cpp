@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "clientvideooverrides.h"
 #include "modmanager.h"
-#include "dedicated.h"
 
 typedef void*(*BinkOpenType)(const char* path, uint32_t flags);
 BinkOpenType BinkOpen;
@@ -34,9 +33,6 @@ void* BinkOpenHook(const char* path, uint32_t flags)
 
 void InitialiseClientVideoOverrides(HMODULE baseAddress)
 {
-	if (IsDedicated())
-		return;
-
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, GetProcAddress(GetModuleHandleA("bink2w64.dll"), "BinkOpen"), &BinkOpenHook, reinterpret_cast<LPVOID*>(&BinkOpen));
 }

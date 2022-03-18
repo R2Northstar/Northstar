@@ -2,7 +2,6 @@
 #include "scriptmainmenupromos.h"
 #include "squirrel.h"
 #include "masterserver.h"
-#include "dedicated.h"
 
 // mirror this in script
 enum eMainMenuPromoDataProperty
@@ -131,9 +130,6 @@ SQRESULT SQ_GetCustomMainMenuPromoData(void* sqvm)
 
 void InitialiseScriptMainMenuPromos(HMODULE baseAddress)
 {
-	if (IsDedicated())
-		return;
-
 	g_UISquirrelManager->AddFuncRegistration("void", "NSRequestCustomMainMenuPromos", "", "", SQ_RequestCustomMainMenuPromos);
 	g_UISquirrelManager->AddFuncRegistration("bool", "NSHasCustomMainMenuPromoData", "", "", SQ_HasCustomMainMenuPromoData);
 	g_UISquirrelManager->AddFuncRegistration("var", "NSGetCustomMainMenuPromoData", "int promoDataKey", "", SQ_GetCustomMainMenuPromoData);

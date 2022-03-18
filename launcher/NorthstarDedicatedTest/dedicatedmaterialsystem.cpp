@@ -30,9 +30,6 @@ HRESULT __stdcall D3D11CreateDeviceHook(
 
 void InitialiseDedicatedMaterialSystem(HMODULE baseAddress)
 {
-	if (!IsDedicated())
-		return;
-
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0xD9A0E, &D3D11CreateDeviceHook, reinterpret_cast<LPVOID*>(&D3D11CreateDevice));
 
@@ -106,9 +103,6 @@ void* PakLoadAPI__LoadRpak2Hook(char* filename, void* unknown, int flags, void* 
 
 void InitialiseDedicatedRtechGame(HMODULE baseAddress)
 {
-	if (!IsDedicated())
-		return;
-
 	baseAddress = GetModuleHandleA("rtech_game.dll");
 
 	HookEnabler hook;

@@ -7,7 +7,7 @@ typedef void* (*LoadCommonPaksForMapType)(char* map);
 LoadCommonPaksForMapType LoadCommonPaksForMap;
 
 typedef void* (*LoadPakSyncType)(const char* path, void* unknownSingleton, int flags);
-typedef void* (*LoadPakAsyncType)(const char* path, void* unknownSingleton, int flags, void* callback0, void* callback1);
+typedef int(*LoadPakAsyncType)(const char* path, void* unknownSingleton, int flags, void* callback0, void* callback1);
 
 // there are more i'm just too lazy to add
 struct PakLoadFuncs
@@ -76,15 +76,16 @@ void* LoadPakSyncHook(char* path, void* unknownSingleton, int flags)
 }
 
 LoadPakAsyncType LoadPakAsyncOriginal;
-void* LoadPakAsyncHook(char* path, void* unknownSingleton, int flags, void* callback0, void* callback1)
+int LoadPakAsyncHook(char* path, void* unknownSingleton, int flags, void* callback0, void* callback1)
 {
 	HandlePakAliases(&path);
 
 	if (bShouldPreload)
 		LoadPreloadPaks();
 
-	spdlog::info("LoadPakAsync {}", path);
-	return LoadPakAsyncOriginal(path, unknownSingleton, flags, callback0, callback1);
+	int ret = LoadPakAsyncOriginal(path, unknownSingleton, flags, callback0, callback1);
+	spdlog::info("LoadPakAsync {} {}", path, ret);
+	return ret;
 }
 
 void InitialiseEngineRpakFilesystem(HMODULE baseAddress)

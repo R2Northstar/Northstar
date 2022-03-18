@@ -3,8 +3,8 @@
 #include "sourceconsole.h"
 #include "spdlog/sinks/basic_file_sink.h"
 #include "hookutils.h"
-#include "convar.h"
 #include "dedicated.h"
+#include "convar.h"
 #include <iomanip>
 #include <sstream>
 #include <Psapi.h>

@@ -3,7 +3,6 @@
 #include "squirrel.h"
 #include "convar.h"
 #include "concommand.h"
-#include "dedicated.h"
 
 void ConCommand_ns_script_servertoclientstringcommand(const CCommand& arg)
 {
@@ -17,9 +16,6 @@ void ConCommand_ns_script_servertoclientstringcommand(const CCommand& arg)
 
 void InitialiseScriptServerToClientStringCommands(HMODULE baseAddress)
 {
-	if (IsDedicated())
-		return;
-
 	RegisterConCommand(
 		"ns_script_servertoclientstringcommand", ConCommand_ns_script_servertoclientstringcommand, "",
 		FCVAR_CLIENTDLL | FCVAR_SERVER_CAN_EXECUTE);

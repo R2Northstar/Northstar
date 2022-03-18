@@ -2,7 +2,6 @@
 #include "securitypatches.h"
 #include "hookutils.h"
 #include "concommand.h"
-#include "dedicated.h"
 #include "gameutils.h"
 #include "convar.h"
 
@@ -19,9 +18,6 @@ bool IsValveModHook()
 
 void InitialiseClientEngineSecurityPatches(HMODULE baseAddress)
 {
-	if (IsDedicated())
-		return;
-
 	HookEnabler hook;
 
 	// note: this could break some things

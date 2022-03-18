@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "scriptbrowserhooks.h"
 #include "hookutils.h"
-#include "dedicated.h"
 
 typedef void (*OpenExternalWebBrowserType)(char* url, char flags);
 OpenExternalWebBrowserType OpenExternalWebBrowser;
@@ -20,9 +19,6 @@ void OpenExternalWebBrowserHook(char* url, char flags)
 
 void InitialiseScriptExternalBrowserHooks(HMODULE baseAddress)
 {
-	if (IsDedicated())
-		return;
-
 	bIsOriginOverlayEnabled = (bool*)baseAddress + 0x13978255;
 
 	HookEnabler hook;

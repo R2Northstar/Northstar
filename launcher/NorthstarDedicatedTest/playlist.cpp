@@ -4,7 +4,6 @@
 #include "convar.h"
 #include "gameutils.h"
 #include "hookutils.h"
-#include "dedicated.h"
 #include "squirrel.h"
 
 typedef char (*Onclc_SetPlaylistVarOverrideType)(void* a1, void* a2);

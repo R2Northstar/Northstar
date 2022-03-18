@@ -4,6 +4,7 @@
 #include "gameutils.h"
 #include "serverauthentication.h"
 #include "masterserver.h"
+
 bool IsDedicated()
 {
 	// return CommandLine()->CheckParm("-dedicated");
@@ -118,9 +119,6 @@ DWORD WINAPI ConsoleInputThread(PVOID pThreadParameter)
 
 void InitialiseDedicated(HMODULE engineAddress)
 {
-	if (!IsDedicated())
-		return;
-
 	spdlog::info("InitialiseDedicated");
 
 	{
@@ -417,6 +415,7 @@ void InitialiseDedicated(HMODULE engineAddress)
 	CommandLine()->AppendParm("-nomenuvid", 0);
 	CommandLine()->AppendParm("-nosound", 0);
 	CommandLine()->AppendParm("-windowed", 0);
+	CommandLine()->AppendParm("-nomessagebox", 0);
 	CommandLine()->AppendParm("+host_preload_shaders", "0");
 	CommandLine()->AppendParm("+net_usesocketsforloopback", "1");
 
@@ -455,9 +454,6 @@ void InitialiseDedicatedOrigin(HMODULE baseAddress)
 	// for any big ea lawyers, this can't be used to play the game without origin, game will throw a fit if you try to do anything without
 	// an origin id as a client for dedi it's fine though, game doesn't care if origin is disabled as long as there's only a server
 
-	if (!IsDedicated())
-		return;
-
 	char* ptr = (char*)GetProcAddress(GetModuleHandleA("tier0.dll"), "Tier0_InitOrigin");
 	TempReadWrite rw(ptr);
 	*ptr = (char)0xC3; // ret
@@ -473,9 +469,6 @@ void PrintFatalSquirrelErrorHook(void* sqvm)
 
 void InitialiseDedicatedServerGameDLL(HMODULE baseAddress)
 {
-	if (!IsDedicated())
-		return;
-
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, baseAddress + 0x794D0, &PrintFatalSquirrelErrorHook, reinterpret_cast<LPVOID*>(&PrintFatalSquirrelError));
 }

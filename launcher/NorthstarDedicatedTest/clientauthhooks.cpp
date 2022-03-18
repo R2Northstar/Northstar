@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "clientauthhooks.h"
 #include "hookutils.h"
-#include "dedicated.h"
 #include "gameutils.h"
 #include "masterserver.h"
 #include "convar.h"
@@ -36,9 +35,6 @@ void AuthWithStryderHook(void* a1)
 
 void InitialiseClientAuthHooks(HMODULE baseAddress)
 {
-	if (IsDedicated())
-		return;
-
 	// this cvar will save to cfg once initially agreed with
 	Cvar_ns_has_agreed_to_send_token = new ConVar(
 		"ns_has_agreed_to_send_token", "0", FCVAR_ARCHIVE_PLAYERPROFILE,

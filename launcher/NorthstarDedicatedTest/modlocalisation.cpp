@@ -2,7 +2,6 @@
 #include "modlocalisation.h"
 #include "hookutils.h"
 #include "modmanager.h"
-#include "dedicated.h"
 
 typedef bool (*AddLocalisationFileType)(void* g_pVguiLocalize, const char* path, const char* pathId, char unknown);
 AddLocalisationFileType AddLocalisationFile;
@@ -33,9 +32,6 @@ bool AddLocalisationFileHook(void* g_pVguiLocalize, const char* path, const char
 
 void InitialiseModLocalisation(HMODULE baseAddress)
 {
-	if (IsDedicated())
-		return;
-
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x6D80, AddLocalisationFileHook, reinterpret_cast<LPVOID*>(&AddLocalisationFile));
 }

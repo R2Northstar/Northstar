@@ -4,7 +4,6 @@
 #include "sourceinterface.h"
 #include "concommand.h"
 #include "hookutils.h"
-#include "dedicated.h"
 
 SourceInterface<CGameConsole>* g_SourceGameConsole;
 
@@ -48,9 +47,6 @@ void InitialiseConsoleOnInterfaceCreation()
 
 void InitialiseSourceConsole(HMODULE baseAddress)
 {
-	if (IsDedicated())
-		return;
-
 	g_SourceGameConsole = new SourceInterface<CGameConsole>("client.dll", "GameConsole004");
 	RegisterConCommand("toggleconsole", ConCommand_toggleconsole, "toggles the console", FCVAR_NONE);
 }
