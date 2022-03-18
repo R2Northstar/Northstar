@@ -2,7 +2,6 @@
 #include "convar.h"
 #include "concommand.h"
 #include "chatcommand.h"
-#include "dedicated.h"
 #include "localchatwriter.h"
 
 // note: isIngameChat is an int64 because the whole register the arg is stored in needs to be 0'd out to work
@@ -32,9 +31,6 @@ void ConCommand_log(const CCommand& args)
 
 void InitialiseChatCommands(HMODULE baseAddress)
 {
-	if (IsDedicated())
-		return;
-
 	ClientSayText = (ClientSayTextType)((char*)baseAddress + 0x54780);
 	RegisterConCommand("say", ConCommand_say, "Enters a message in public chat", FCVAR_CLIENTDLL);
 	RegisterConCommand("say_team", ConCommand_say_team, "Enters a message in team chat", FCVAR_CLIENTDLL);
