@@ -33,6 +33,34 @@ Now just launch the game through Lutris and you should be greeted with a Northst
 
 > **Note:** Origin might prompt you to log in and "set an installation folder for future downloads" on first launch. Just do those, close Origin, then launch the game again.
 
+## SteamDeck
+
+{% hint style="info" %}
+This guide is really basic and needs fleshing out to make it more accessible. It also assumes you own Titanfall2 on Steam and run it from there.
+{% endhint %}
+
+- Install Titanfall2 via the Steam store on the SteamDeck and run the vanilla game at least once
+- Switch to desktop mode  
+  (A mouse + keyboard plugged into the Deck are recommended for the next few steps)
+- Install Northstar like you would in the Linux+Steam guide.  
+  If you installed Titanfall2 on the Deck's internal storage, it will be located at `/home/deck/.local/share/Steam/steamapps/common/Titanfall2`
+- Like with the Linux guide, rename `Titanfall2.exe` to something else (like `Titanfall2.original.exe`) and rename or link `NorthstarLauncher.exe` to `Titanfall2.exe`.
+
+We now need to configure Steam to use the right Proton version for Northstar due to current incompatibilities on Northstar's side.
+
+- Install [_ProtonUp-Qt_](https://flathub.org/apps/details/net.davidotek.pupgui2) via the _Discover Store_ on the SteamDeck. We'll use it to easily add special Proton versions.
+- Launch ProtonUp-Qt and click on "_Add version_". Wait a bit for it to load. Then for "_Compatibility tool_" select `Proton-GE`, for "_Version_" choose `7.3-GE-1`, and click on "_Install_".
+- Wait a bit for it to install, then go to "_Show game list_", go to _Titanfall2_ and select `7.3-GE-1` as the compatibility tool. Afterwards close the pop-up and ProtonUp-Qt.
+
+At this point we can go back to Deck UI. The mouse and keyboard are also no longer needed.
+
+- In Steam go to Titanfall2 -> settings -> _Properties_ -> _Compatibility_ and make sure "Force the use of a specific Steam Play compatibility tools" is checked and `Proton-7.3-GE-1` is selected. If not, do so.
+- Now go back to the main page of TItanfall2 and hit "_Play_".
+- On the first launch, Titanfall2+Northstar will take a long time to boot (like 5+ minutes, seriously). Do not close the game, just wait until you see the main menu screeen. Subsequent launches should be faster.
+- If you get "Northstar has crashed!" error close out of the game and try again. Make sure you followed the above instructions.
+
+Should you at any point want to play vanilla Titanfall2 again, go back to Desktop mode and change the previously renamed `Titanfall2.exe` (now `Titanfall2.original.exe` if you followed the steps above) back to `Titanfall2.exe`. Additionally you stop forcing the different Proton version in the Deck UI game settings.
+
 ## LatencyFleX
 
 LatencyFleX is a Linux-only input latency reduction alternative to Nvidia Reflex that is supported by Northstar. Currently, LatencyFleX requires manual installation. A full install guide and current releases [can be found on their GitHub](https://github.com/ishitatsuyuki/LatencyFleX).
