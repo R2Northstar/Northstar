@@ -44,3 +44,7 @@ If Northstar doesn't appear to be installed, or you have issues entering the lob
 ## Linux
 
 Install instructions for [Linux can be found here](using-northstar/playing-on-linux.md).
+
+## SteamDeck
+
+Install instructions for [SteamDeck can be found here](using-northstar/playing-on-linux.md#steamdeck).
