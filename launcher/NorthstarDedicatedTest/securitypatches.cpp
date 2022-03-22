@@ -16,12 +16,18 @@ bool IsValveModHook()
 	return !CommandLine()->CheckParm("-norestrictservercommands");
 }
 
+typedef bool (*SVC_CmdKeyValues__ReadFromBufferType)(void* a1, void* a2);
+SVC_CmdKeyValues__ReadFromBufferType SVC_CmdKeyValues__ReadFromBuffer;
+// never parse server=>client keyvalues for clientcommandkeyvalues
+bool SVC_CmdKeyValues__ReadFromBufferHook(void* a1, void* a2) { return false; }
+
 void InitialiseClientEngineSecurityPatches(HMODULE baseAddress)
 {
 	HookEnabler hook;
 
 	// note: this could break some things
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1C6360, &IsValveModHook, reinterpret_cast<LPVOID*>(&IsValveMod));
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x222E70, &SVC_CmdKeyValues__ReadFromBufferHook, reinterpret_cast<LPVOID*>(&SVC_CmdKeyValues__ReadFromBuffer));
 
 	// patches to make commands run from client/ui script still work
 	// note: this is likely preventable in a nicer way? test prolly
