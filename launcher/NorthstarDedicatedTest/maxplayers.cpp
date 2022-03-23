@@ -45,10 +45,9 @@ constexpr int Team_PlayerArray_AddedLength = NEW_MAX_PLAYERS - 32;
 constexpr int Team_PlayerArray_AddedSize = PAD_NUMBER(Team_PlayerArray_AddedLength * 8, 4);
 constexpr int Team_AddedSize = Team_PlayerArray_AddedSize;
 
-template <class T> void ChangeOffset(void* addr, unsigned int offset)
-{
-	TempReadWrite rw(addr);
-	*((T*)addr) = offset;
+#include "NSMem.h"
+template <class T> void ChangeOffset(void* addr, unsigned int offset) {
+	NSMem::BytePatch((uintptr_t)addr, (BYTE*)&offset, sizeof(T));
 }
 
 /*

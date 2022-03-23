@@ -117,278 +117,125 @@ DWORD WINAPI ConsoleInputThread(PVOID pThreadParameter)
 	return 0;
 }
 
+#include "NSMem.h"
 void InitialiseDedicated(HMODULE engineAddress)
 {
 	spdlog::info("InitialiseDedicated");
 
+	uintptr_t ea = (uintptr_t)engineAddress;
+
 	{
 		// Host_Init
 		// prevent a particle init that relies on client dll
-
-		char* ptr = (char*)engineAddress + 0x156799;
-		TempReadWrite rw(ptr);
-
-		*ptr = (char)0x90;
-		*(ptr + 1) = (char)0x90;
-		*(ptr + 2) = (char)0x90;
-		*(ptr + 3) = (char)0x90;
-		*(ptr + 4) = (char)0x90;
+		NSMem::NOP(ea + 0x156799, 5);
 	}
 
 	{
 		// CModAppSystemGroup::Create
 		// force the engine into dedicated mode by changing the first comparison to IsServerOnly to an assignment
-		char* ptr = (char*)engineAddress + 0x1C4EBD;
-		TempReadWrite rw(ptr);
+		auto ptr = ea + 0x1C4EBD;
 
 		// cmp => mov
-		*(ptr + 1) = (char)0xC6;
-		*(ptr + 2) = (char)0x87;
+		NSMem::BytePatch(ptr + 1, {0xC6, 0x87});
 
 		// 00 => 01
-		*((char*)ptr + 7) = (char)0x01;
+		NSMem::BytePatch(ptr + 7, {0x01});
 	}
 
 	{
 		// Some init that i'm not sure of that crashes
-		char* ptr = (char*)engineAddress + 0x156A63;
-		TempReadWrite rw(ptr);
-
 		// nop the call to it
-		*ptr = (char)0x90;
-		*(ptr + 1) = (char)0x90;
-		*(ptr + 2) = (char)0x90;
-		*(ptr + 3) = (char)0x90;
-		*(ptr + 4) = (char)0x90;
+		NSMem::NOP(ea + 0x156A63, 5);
 	}
 
 	{
 		// runframeserver
-		char* ptr = (char*)engineAddress + 0x159819;
-		TempReadWrite rw(ptr);
-
 		// nop some access violations
-		*ptr = (char)0x90;
-		*(ptr + 1) = (char)0x90;
-		*(ptr + 2) = (char)0x90;
-		*(ptr + 3) = (char)0x90;
-		*(ptr + 4) = (char)0x90;
-		*(ptr + 5) = (char)0x90;
-		*(ptr + 6) = (char)0x90;
-		*(ptr + 7) = (char)0x90;
-		*(ptr + 8) = (char)0x90;
-		*(ptr + 9) = (char)0x90;
-		*(ptr + 10) = (char)0x90;
-		*(ptr + 11) = (char)0x90;
-		*(ptr + 12) = (char)0x90;
-		*(ptr + 13) = (char)0x90;
-		*(ptr + 14) = (char)0x90;
-		*(ptr + 15) = (char)0x90;
-		*(ptr + 16) = (char)0x90;
+		NSMem::NOP(ea + 0x159819, 17);
 	}
 
 	{
-		// HostState_State_NewGame
-		char* ptr = (char*)engineAddress + 0x156B4C;
-		TempReadWrite rw(ptr);
-
-		// nop some access violations
-		*ptr = (char)0x90;
-		*(ptr + 1) = (char)0x90;
-		*(ptr + 2) = (char)0x90;
-		*(ptr + 3) = (char)0x90;
-		*(ptr + 4) = (char)0x90;
-		*(ptr + 5) = (char)0x90;
-		*(ptr + 6) = (char)0x90;
+		NSMem::NOP(ea + 0x156B4C, 7);
 
 		// previously patched these, took me a couple weeks to figure out they were the issue
 		// removing these will mess up register state when this function is over, so we'll write HS_RUN to the wrong address
 		// so uhh, don't do that
-		//*(ptr + 7) = (char)0x90;
-		//*(ptr + 8) = (char)0x90;
-		//*(ptr + 9) = (char)0x90;
-		//*(ptr + 10) = (char)0x90;
-		//*(ptr + 11) = (char)0x90;
-		//*(ptr + 12) = (char)0x90;
-		//*(ptr + 13) = (char)0x90;
-		//*(ptr + 14) = (char)0x90;
+		//NSMem::NOP(ea + 0x156B4C + 7, 8);
 
-		*(ptr + 15) = (char)0x90;
-		*(ptr + 16) = (char)0x90;
-		*(ptr + 17) = (char)0x90;
-		*(ptr + 18) = (char)0x90;
-		*(ptr + 19) = (char)0x90;
-		*(ptr + 20) = (char)0x90;
-		*(ptr + 21) = (char)0x90;
-		*(ptr + 22) = (char)0x90;
-		*(ptr + 23) = (char)0x90;
+		NSMem::NOP(ea + 0x156B4C + 15, 9);
 	}
 
 	{
 		// HostState_State_NewGame
-		char* ptr = (char*)engineAddress + 0xB934C;
-		TempReadWrite rw(ptr);
-
 		// nop an access violation
-		*ptr = (char)0x90;
-		*(ptr + 1) = (char)0x90;
-		*(ptr + 2) = (char)0x90;
-		*(ptr + 3) = (char)0x90;
-		*(ptr + 4) = (char)0x90;
-		*(ptr + 5) = (char)0x90;
-		*(ptr + 6) = (char)0x90;
-		*(ptr + 7) = (char)0x90;
-		*(ptr + 8) = (char)0x90;
+		NSMem::NOP(ea + 0xB934C, 9);
 	}
 
 	{
 		// CEngineAPI::Connect
-		char* ptr = (char*)engineAddress + 0x1C4D7D;
-		TempReadWrite rw(ptr);
-
 		// remove call to Shader_Connect
-		*ptr = (char)0x90;
-		*(ptr + 1) = (char)0x90;
-		*(ptr + 2) = (char)0x90;
-		*(ptr + 3) = (char)0x90;
-		*(ptr + 4) = (char)0x90;
+		NSMem::NOP(ea + 0x1C4D7D, 5);
 	}
 
 	// currently does not work, crashes stuff, likely gotta keep this here
 	//{
 	//	// CEngineAPI::Connect
-	//	char* ptr = (char*)engineAddress + 0x1C4E07;
-	//	TempReadWrite rw(ptr);
-	//
-	//	// remove calls to register ui rpak asset types
-	//	*ptr = 0x90;
-	//	*(ptr + 1) = (char)0x90;
-	//	*(ptr + 2) = (char)0x90;
-	//	*(ptr + 3) = (char)0x90;
-	//	*(ptr + 4) = (char)0x90;
+	//  // remove calls to register ui rpak asset types
+	//	NSMem::NOP(ea + 0x1C4E07, 5);
 	//}
 
 	// not sure if this should be done, not loading ui at least is good, but should everything be gone?
 	{
 		// Host_Init
-		char* ptr = (char*)engineAddress + 0x15653B;
-		TempReadWrite rw(ptr);
-
 		// change the number of rpaks to load from 6 to 1, so we only load common.rpak
-		*(ptr + 1) = (char)0x01;
+		NSMem::BytePatch(ea + 0x15653B + 1, {0x01});
 	}
 
 	{
 		// Host_Init
-		char* ptr = (char*)engineAddress + 0x156595;
-		TempReadWrite rw(ptr);
-
 		// remove call to ui loading stuff
-		*ptr = (char)0x90;
-		*(ptr + 1) = (char)0x90;
-		*(ptr + 2) = (char)0x90;
-		*(ptr + 3) = (char)0x90;
-		*(ptr + 4) = (char)0x90;
+		NSMem::NOP(ea + 0x156595, 5);
 	}
 
 	{
 		// some function that gets called from RunFrameServer
-		char* ptr = (char*)engineAddress + 0x15A0BB;
-		TempReadWrite rw(ptr);
-
 		// nop a function that makes requests to stryder, this will eventually access violation if left alone and isn't necessary anyway
-		*ptr = (char)0x90;
-		*(ptr + 1) = (char)0x90;
-		*(ptr + 2) = (char)0x90;
-		*(ptr + 3) = (char)0x90;
-		*(ptr + 4) = (char)0x90;
+		NSMem::NOP(ea + 0x15A0BB, 5);
 	}
 
 	{
 		// RunFrameServer
-		char* ptr = (char*)engineAddress + 0x159BF3;
-		TempReadWrite rw(ptr);
-
 		// nop a function that access violations
-		*ptr = (char)0x90;
-		*(ptr + 1) = (char)0x90;
-		*(ptr + 2) = (char)0x90;
-		*(ptr + 3) = (char)0x90;
-		*(ptr + 4) = (char)0x90;
+		NSMem::NOP(ea + 0x159BF3, 5);
 	}
 
 	{
 		// func that checks if origin is inited
-		char* ptr = (char*)engineAddress + 0x183B70;
-		TempReadWrite rw(ptr);
-
 		// always return 1
-		*ptr = (char)0xB0; // mov al,01
-		*(ptr + 1) = (char)0x01;
-		*(ptr + 2) = (char)0xC3; // ret
+		NSMem::BytePatch(ea + 0x183B70, {
+			0xB0, 0x01, // mov al,01
+			0xC3 // ret
+		});
 	}
 
 	{
 		// HostState_State_ChangeLevel
-		char* ptr = (char*)engineAddress + 0x1552ED;
-		TempReadWrite rw(ptr);
-
 		// nop clientinterface call
-		*ptr = (char)0x90;
-		*(ptr + 1) = (char)0x90;
-		*(ptr + 2) = (char)0x90;
-		*(ptr + 3) = (char)0x90;
-		*(ptr + 4) = (char)0x90;
-		*(ptr + 5) = (char)0x90;
-		*(ptr + 6) = (char)0x90;
-		*(ptr + 7) = (char)0x90;
-		*(ptr + 8) = (char)0x90;
-		*(ptr + 9) = (char)0x90;
-		*(ptr + 10) = (char)0x90;
-		*(ptr + 11) = (char)0x90;
-		*(ptr + 12) = (char)0x90;
-		*(ptr + 13) = (char)0x90;
-		*(ptr + 14) = (char)0x90;
-		*(ptr + 15) = (char)0x90;
+		NSMem::NOP(ea + 0x1552ED, 16);
 	}
 
 	{
 		// HostState_State_ChangeLevel
-		char* ptr = (char*)engineAddress + 0x155363;
-		TempReadWrite rw(ptr);
-
 		// nop clientinterface call
-		*ptr = (char)0x90;
-		*(ptr + 1) = (char)0x90;
-		*(ptr + 2) = (char)0x90;
-		*(ptr + 3) = (char)0x90;
-		*(ptr + 4) = (char)0x90;
-		*(ptr + 5) = (char)0x90;
-		*(ptr + 6) = (char)0x90;
-		*(ptr + 7) = (char)0x90;
-		*(ptr + 8) = (char)0x90;
-		*(ptr + 9) = (char)0x90;
-		*(ptr + 10) = (char)0x90;
-		*(ptr + 11) = (char)0x90;
-		*(ptr + 12) = (char)0x90;
-		*(ptr + 13) = (char)0x90;
-		*(ptr + 14) = (char)0x90;
-		*(ptr + 15) = (char)0x90;
+		NSMem::NOP(ea + 0x155363, 16);
 	}
 
 	// note: previously had DisableDedicatedWindowCreation patches here, but removing those rn since they're all shit and unstable and bad
 	// and such check commit history if any are needed for reimplementation
 	{
 		// IVideoMode::CreateGameWindow
-		char* ptr = (char*)engineAddress + 0x1CD146;
-		TempReadWrite rw(ptr);
-
 		// nop call to ShowWindow
-		*ptr = (char)0x90;
-		*(ptr + 1) = (char)0x90;
-		*(ptr + 2) = (char)0x90;
-		*(ptr + 3) = (char)0x90;
-		*(ptr + 4) = (char)0x90;
+		NSMem::NOP(ea + 0x1CD146, 5);
 	}
 
 	CDedicatedExports* dedicatedExports = new CDedicatedExports;
@@ -454,9 +301,9 @@ void InitialiseDedicatedOrigin(HMODULE baseAddress)
 	// for any big ea lawyers, this can't be used to play the game without origin, game will throw a fit if you try to do anything without
 	// an origin id as a client for dedi it's fine though, game doesn't care if origin is disabled as long as there's only a server
 
-	char* ptr = (char*)GetProcAddress(GetModuleHandleA("tier0.dll"), "Tier0_InitOrigin");
-	TempReadWrite rw(ptr);
-	*ptr = (char)0xC3; // ret
+	NSMem::BytePatch((uintptr_t)GetProcAddress(GetModuleHandleA("tier0.dll"), "Tier0_InitOrigin"), {
+		0xC3 // ret
+	});
 }
 
 typedef void (*PrintFatalSquirrelErrorType)(void* sqvm);

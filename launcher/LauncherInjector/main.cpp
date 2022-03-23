@@ -293,8 +293,6 @@ int main(int argc, char* argv[])
 
 	if (dedicated && !nostubs)
 	{
-		// clang-format keeps messing with the easy-to-read if statements, so
-		// clang-format off
 		printf("[*] Loading stubs\n");
 		HMODULE gssao, gtxaa, d3d11;
 		if (!(gssao = GetModuleHandleA("GFSDK_SSAO.win64.dll")) &&
@@ -332,7 +330,6 @@ int main(int argc, char* argv[])
 				"[*] WARNING: Failed to load stubs because conflicting modules are already loaded, so those will be used instead "
 				"(did Northstar initialize too late?).\n");
 		}
-		// clang-format on
 	}
 
 	{

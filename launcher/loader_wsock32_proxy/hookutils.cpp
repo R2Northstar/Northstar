@@ -3,23 +3,6 @@
 
 #define ERROR(...) { char err[2048]; sprintf_s(err, __VA_ARGS__); MessageBoxA(GetForegroundWindow(), err, "Northstar Wsock32 Proxy Error", 0); }
 
-TempReadWrite::TempReadWrite(void* ptr)
-{
-    m_ptr = ptr;
-    MEMORY_BASIC_INFORMATION mbi;
-    VirtualQuery(m_ptr, &mbi, sizeof(mbi));
-    VirtualProtect(mbi.BaseAddress, mbi.RegionSize, PAGE_EXECUTE_READWRITE, &mbi.Protect);
-    m_origProtection = mbi.Protect;
-}
-
-TempReadWrite::~TempReadWrite()
-{
-    MEMORY_BASIC_INFORMATION mbi;
-    VirtualQuery(m_ptr, &mbi, sizeof(mbi));
-    VirtualProtect(mbi.BaseAddress, mbi.RegionSize, m_origProtection, &mbi.Protect);
-}
-
-
 void HookEnabler::CreateHook(LPVOID ppTarget, LPVOID ppDetour, LPVOID* ppOriginal, const char* targetName)
 {
     // the macro for this uses ppTarget's name as targetName, and this typically starts with &

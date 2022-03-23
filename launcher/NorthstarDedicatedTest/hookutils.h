@@ -1,18 +1,6 @@
 #pragma once
 #include <vector>
 
-// Sets an area of memory as writeable until the TempReadWrite object goes out of scope
-class TempReadWrite
-{
-  private:
-	DWORD m_origProtection;
-	void* m_ptr;
-
-  public:
-	TempReadWrite(void* ptr);
-	~TempReadWrite();
-};
-
 // Enables all hooks created with the HookEnabler object when it goes out of scope and handles hook errors
 class HookEnabler
 {

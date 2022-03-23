@@ -71,6 +71,7 @@ int GetCurrentGamemodeMaxPlayersHook()
 	return maxPlayers;
 }
 
+#include "NSMem.h"
 void InitialisePlaylistHooks(HMODULE baseAddress)
 {
 	RegisterConCommand("setplaylist", SetPlaylistCommand, "Sets the current playlist", FCVAR_NONE);
@@ -92,21 +93,16 @@ void InitialisePlaylistHooks(HMODULE baseAddress)
 	ENABLER_CREATEHOOK(
 		hook, (char*)baseAddress + 0x18C430, &GetCurrentGamemodeMaxPlayersHook, reinterpret_cast<LPVOID*>(&GetCurrentGamemodeMaxPlayers));
 
+	uintptr_t ba = (uintptr_t)baseAddress;
+
 	// patch to prevent clc_SetPlaylistVarOverride from being able to crash servers if we reach max overrides due to a call to Error (why is
 	// this possible respawn, wtf) todo: add a warning for this
 	{
-		void* ptr = (char*)baseAddress + 0x18ED8D;
-		TempReadWrite rw(ptr);
-		*((char*)ptr) = (char)0xC3; // jmp => ret
+		NSMem::BytePatch(ba + 0x18ED8D, {
+			0xC3 // jmp => ret
+		});
 	}
 
 	// patch to allow setplaylistvaroverride to be called before map init on dedicated and private match launched through the game
-	void* ptr = (char*)baseAddress + 0x18ED17;
-	TempReadWrite rw(ptr);
-	*((char*)ptr) = (char)0x90;
-	*((char*)ptr + 1) = (char)0x90;
-	*((char*)ptr + 2) = (char)0x90;
-	*((char*)ptr + 3) = (char)0x90;
-	*((char*)ptr + 4) = (char)0x90;
-	*((char*)ptr + 5) = (char)0x90;
+	NSMem::NOP(ba + 0x18ED17, 6);
 }
