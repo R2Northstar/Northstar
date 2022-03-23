@@ -4,6 +4,7 @@
 #include "hookutils.h"
 #include <fstream>
 #include <filesystem>
+#include "NSMem.h"
 
 namespace fs = std::filesystem;
 
@@ -390,27 +391,10 @@ void InitialiseBuildAINFileHooks(HMODULE baseAddress)
 	pUnkServerMapversionGlobal = (char**)((char*)baseAddress + 0xBFBE08);
 	pMapName = (char*)baseAddress + 0x1053370;
 
+	uintptr_t base = (uintptr_t)baseAddress;
+
 	// remove a check that prevents a logging function in link generation from working
 	// due to the sheer amount of logging this is a massive perf hit to generation, but spewlog_enable 0 exists so whatever
-	{
-		void* ptr = (char*)baseAddress + 0x3889B6;
-		TempReadWrite rw(ptr);
-		*((char*)ptr) = (char)0x90;
-		*((char*)ptr + 1) = (char)0x90;
-		*((char*)ptr + 2) = (char)0x90;
-		*((char*)ptr + 3) = (char)0x90;
-		*((char*)ptr + 4) = (char)0x90;
-		*((char*)ptr + 5) = (char)0x90;
-	}
-
-	{
-		void* ptr = (char*)baseAddress + 0x3889BF;
-		TempReadWrite rw(ptr);
-		*((char*)ptr) = (char)0x90;
-		*((char*)ptr + 1) = (char)0x90;
-		*((char*)ptr + 2) = (char)0x90;
-		*((char*)ptr + 3) = (char)0x90;
-		*((char*)ptr + 4) = (char)0x90;
-		*((char*)ptr + 5) = (char)0x90;
-	}
+	NSMem::NOP(base + 0x3889B6, 6);
+	NSMem::NOP(base + 0x3889BF, 6);
 }

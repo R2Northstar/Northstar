@@ -153,7 +153,10 @@ long __stdcall ExceptionFilter(EXCEPTION_POINTERS* exceptionInfo)
 			GetModuleFileNameExA(GetCurrentProcess(), backtraceModuleHandle, backtraceModuleFullName, MAX_PATH);
 			char* backtraceModuleName = strrchr(backtraceModuleFullName, '\\') + 1;
 
-			spdlog::error("    {} + {}", backtraceModuleName, (void*)framesToCapture[i]);
+			void* actualAddress = (void*)framesToCapture[i];
+			void* relativeAddress = (void*)(uintptr_t(actualAddress) - uintptr_t(backtraceModuleHandle));
+
+			spdlog::error("    {} + {} ({})", backtraceModuleName, relativeAddress, actualAddress);
 		}
 
 		spdlog::error("RAX: 0x{0:x}", exceptionContext->Rax);

@@ -18,7 +18,6 @@
 #include "chatcommand.h"
 #include "modlocalisation.h"
 #include "playlist.h"
-#include "securitypatches.h"
 #include "miscserverscript.h"
 #include "clientauthhooks.h"
 #include "latencyflex.h"
@@ -48,6 +47,7 @@
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/error/en.h"
+#include "ExploitFixes.h"
 
 typedef void (*initPluginFuncPtr)(void* getPluginObject);
 
@@ -225,7 +225,6 @@ bool InitialiseNorthstar()
 	// client-exclusive patches
 	{
 		AddDllLoadCallbackForClient("tier0.dll", InitialiseTier0LanguageHooks);
-		AddDllLoadCallbackForClient("engine.dll", InitialiseClientEngineSecurityPatches);
 		AddDllLoadCallbackForClient("client.dll", InitialiseClientSquirrel);
 		AddDllLoadCallbackForClient("client.dll", InitialiseSourceConsole);
 		AddDllLoadCallbackForClient("engine.dll", InitialiseChatCommands);
@@ -273,6 +272,9 @@ bool InitialiseNorthstar()
 
 	// mod manager after everything else
 	AddDllLoadCallback("engine.dll", InitialiseModManager);
+
+	// activate exploit fixes
+	AddDllLoadCallback("server.dll", ExploitFixes::LoadCallback);
 
 	// run callbacks for any libraries that are already loaded by now
 	CallAllPendingDLLLoadCallbacks();

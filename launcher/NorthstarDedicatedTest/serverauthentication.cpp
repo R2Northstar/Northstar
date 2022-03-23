@@ -14,6 +14,7 @@
 #include <filesystem>
 #include <thread>
 #include "configurables.h"
+#include "NSMem.h"
 
 const char* AUTHSERVER_VERIFY_STRING = "I am a northstar server!";
 
@@ -623,47 +624,39 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 
 	CCommand__Tokenize = (CCommand__TokenizeType)((char*)baseAddress + 0x418380);
 
+	uintptr_t ba = (uintptr_t)baseAddress;
+
 	// patch to disable kicking based on incorrect serverfilter in connectclient, since we repurpose it for use as an auth token
 	{
-		void* ptr = (char*)baseAddress + 0x114655;
-		TempReadWrite rw(ptr);
-		*((char*)ptr) = (char)0xEB; // jz => jmp
+		NSMem::BytePatch(ba + 0x114655, {
+			0xEB // jz => jmp
+		});
 	}
 
 	// patch to disable fairfight marking players as cheaters and kicking them
 	{
-		void* ptr = (char*)baseAddress + 0x101012;
-		TempReadWrite rw(ptr);
-		*((char*)ptr) = (char)0xE9; // jz => jmp
-		*((char*)ptr + 1) = (char)0x90;
-		*((char*)ptr + 2) = (char)0x0;
+		NSMem::BytePatch(ba + 0x101012, {
+			0xE9, // jz => jmp
+			0x90,
+			0x0
+		});
 	}
 
 	// patch to allow same of multiple account
 	{
-		void* ptr = (char*)baseAddress + 0x114510;
-		TempReadWrite rw(ptr);
-		*((char*)ptr) = (char)0xEB; // jz => jmp
+		NSMem::BytePatch(ba + 0x114510, {
+			0xEB, // jz => jmp
+		});
 	}
 
 	// patch to set bWasWritingStringTableSuccessful in CNetworkStringTableContainer::WriteBaselines if it fails
 	{
-		bool* writeAddress = (bool*)(&bWasWritingStringTableSuccessful - ((bool*)baseAddress + 0x234EDC));
+		uintptr_t writeAddress = (uintptr_t)(&bWasWritingStringTableSuccessful - (ba + 0x234EDC));
 
-		void* ptr = (char*)baseAddress + 0x234ED2;
-		TempReadWrite rw(ptr);
-		*((char*)ptr) = (char)0xC7;
-		*((char*)ptr + 1) = (char)0x05;
-		*(int*)((char*)ptr + 2) = (int)writeAddress;
-		*((char*)ptr + 6) = (char)0x00;
-		*((char*)ptr + 7) = (char)0x00;
-		*((char*)ptr + 8) = (char)0x00;
-		*((char*)ptr + 9) = (char)0x00;
-
-		*((char*)ptr + 10) = (char)0x90;
-		*((char*)ptr + 11) = (char)0x90;
-		*((char*)ptr + 12) = (char)0x90;
-		*((char*)ptr + 13) = (char)0x90;
-		*((char*)ptr + 14) = (char)0x90;
+		auto addr = ba + 0x234ED2;
+		NSMem::BytePatch(addr, { 0xC7, 0x05 });
+		NSMem::BytePatch(addr + 2, (BYTE*)&writeAddress, sizeof(writeAddress));
+		NSMem::BytePatch(addr + 6, {0, 0, 0, 0});
+		NSMem::NOP(addr + 10, 5);
 	}
 }

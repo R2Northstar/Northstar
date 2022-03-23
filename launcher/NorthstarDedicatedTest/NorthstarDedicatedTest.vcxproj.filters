@@ -127,6 +127,12 @@
     <Filter Include="Header Files\Shared\Math">
       <UniqueIdentifier>{44a83740-9d70-480d-9a7a-43b81f8eab9e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Shared\Exploit Fixes">
+      <UniqueIdentifier>{4a8a695a-a103-4b1f-b314-0ec19a253119}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Shared\Exploit Fixes\UTF8Parser">
+      <UniqueIdentifier>{b30e08b1-b962-4264-8cbb-a0a31924b93e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -581,9 +587,6 @@
     </ClInclude>
     <ClInclude Include="playlist.h">
       <Filter>Header Files\Server</Filter>
-    </ClInclude>
-    <ClInclude Include="securitypatches.h">
-      <Filter>Header Files\Client</Filter>
     </ClInclude>
     <ClInclude Include="dedicatedmaterialsystem.h">
       <Filter>Header Files\Dedicated</Filter>
@@ -1488,6 +1491,15 @@
     <ClInclude Include="clientvideooverrides.h">
       <Filter>Header Files\Client</Filter>
     </ClInclude>
+    <ClInclude Include="ExploitFixes.h">
+      <Filter>Source Files\Shared\Exploit Fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="NSMem.h">
+      <Filter>Source Files\Shared\Exploit Fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="ExploitFixes_UTF8Parser.h">
+      <Filter>Source Files\Shared\Exploit Fixes\UTF8Parser</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -1564,9 +1576,6 @@
     </ClCompile>
     <ClCompile Include="playlist.cpp">
       <Filter>Source Files\Server</Filter>
-    </ClCompile>
-    <ClCompile Include="securitypatches.cpp">
-      <Filter>Source Files\Client</Filter>
     </ClCompile>
     <ClCompile Include="dedicatedmaterialsystem.cpp">
       <Filter>Source Files\Dedicated</Filter>
@@ -1645,6 +1654,9 @@
     </ClCompile>
     <ClCompile Include="clientvideooverrides.cpp">
       <Filter>Source Files\Client</Filter>
+    </ClCompile>
+    <ClCompile Include="ExploitFixes.cpp">
+      <Filter>Source Files\Shared\Exploit Fixes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

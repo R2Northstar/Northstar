@@ -4,6 +4,7 @@
 #include "dedicatedmaterialsystem.h"
 #include "hookutils.h"
 #include "gameutils.h"
+#include "NSMem.h"
 
 typedef HRESULT (*__stdcall D3D11CreateDeviceType)(
 	void* pAdapter, int DriverType, HMODULE Software, UINT Flags, int* pFeatureLevels, UINT FeatureLevels, UINT SDKVersion, void** ppDevice,
@@ -59,14 +60,10 @@ void InitialiseDedicatedMaterialSystem(HMODULE baseAddress)
 
 	{
 		// CMaterialSystem::FindMaterial
-		char* ptr = (char*)baseAddress + 0x5F0F1;
-		TempReadWrite rw(ptr);
-
 		// make the game always use the error material
-		*ptr = (char)0xE9;
-		*(ptr + 1) = (char)0x34;
-		*(ptr + 2) = (char)0x03;
-		*(ptr + 3) = (char)0x00;
+		NSMem::BytePatch((uintptr_t)baseAddress + 0x5F0F1, {
+			0xE9, 0x34, 0x03, 0x00
+		});
 	}
 
 	// previously had DisableDedicatedWindowCreation stuff here, removing for now since shit and unstable

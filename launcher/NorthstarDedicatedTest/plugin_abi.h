@@ -2,8 +2,6 @@
 #include <string>
 
 #define ABI_VERSION 1
-//clang-format off
-// I hate clang-format
 /// <summary>
 /// This enum is used for referencing the different types of objects we can pass to a plugin
 /// Anything exposed to a plugin must not a be C++ type, as they could break when compiling with a different compiler.
@@ -68,5 +66,3 @@ struct PlayerInfo
 	int (*getPlayerInfoInt)(int* out_ptr, PlayerInfoType var);
 	int (*getPlayerInfoBool)(bool* out_ptr, PlayerInfoType var);
 };
-
-//clang-format on
