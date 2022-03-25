@@ -66,7 +66,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>$(ProjectDir)include\MinHook.x64.lib;$(ProjectDir)include\libcurl\lib\libcurl_a.lib;dbghelp.lib;Wldap32.lib;Normaliz.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)include\MinHook.x64.lib;$(ProjectDir)include\libcurl\lib\libcurl_a.lib;dbghelp.lib;Wldap32.lib;Normaliz.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ForceSymbolReferences>
       </ForceSymbolReferences>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -96,7 +96,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>$(ProjectDir)include\MinHook.x64.lib;$(ProjectDir)include\libcurl\lib\libcurl_a.lib;dbghelp.lib;Wldap32.lib;Normaliz.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)include\MinHook.x64.lib;$(ProjectDir)include\libcurl\lib\libcurl_a.lib;dbghelp.lib;Wldap32.lib;Normaliz.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ForceSymbolReferences>
       </ForceSymbolReferences>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -562,6 +562,7 @@
     <ClInclude Include="ExploitFixes.h" />
     <ClInclude Include="ExploitFixes_UTF8Parser.h" />
     <ClInclude Include="NSMem.h" />
+    <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="audio.cpp" />
@@ -619,6 +620,7 @@
     <ClCompile Include="sourceinterface.cpp" />
     <ClCompile Include="squirrel.cpp" />
     <ClCompile Include="ExploitFixes.cpp" />
+    <ClCompile Include="version.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="include\crypto\bn_conf.h.in" />
