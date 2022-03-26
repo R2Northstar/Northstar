@@ -96,7 +96,7 @@ jobs:
           mkdir -p northstar/R2Northstar/plugins
           mkdir -p northstar/bin/x64_retail
           mv -v northstar-launcher/DiscordRPC.dll northstar/R2Northstar/plugins
-          mv -v northstar-launcher/discord_game_sdk.dll northstar/R2Northstar/plugins
+          mv -v northstar-launcher/discord_game_sdk.dll northstar
           mv -v northstar-launcher/wsock32.dll northstar/bin/x64_retail
           unzip NorthstarStubs.zip -d northstar/bin/x64_dedi
           mv -v northstar-launcher/* northstar
