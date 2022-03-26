@@ -59,7 +59,7 @@ void ModManager::TryBuildKeyValues(const char* filename)
 		if (!m_loadedMods[i].Enabled)
 			continue;
 
-		size_t fileHash = std::hash<std::string>{}(normalisedPath);
+		size_t fileHash = STR_HASH(normalisedPath);
 		auto modKv = m_loadedMods[i].KeyValues.find(fileHash);
 		if (modKv != m_loadedMods[i].KeyValues.end())
 		{

@@ -15,7 +15,7 @@ GetGameLanguageType GetGameLanguageOriginal;
 
 bool CheckLangAudioExists(char* lang)
 {
-	std::string path{"r2\\sound\\general_"};
+	std::string path {"r2\\sound\\general_"};
 	path += lang;
 	path += ".mstr";
 	return fs::exists(path);
@@ -31,7 +31,7 @@ std::vector<std::string> file_list(fs::path dir, std::regex ext_pattern)
 	using iterator = fs::directory_iterator;
 
 	const iterator end;
-	for (iterator iter{dir}; iter != end; ++iter)
+	for (iterator iter {dir}; iter != end; ++iter)
 	{
 		const std::string filename = iter->path().filename().string();
 		std::smatch matches;

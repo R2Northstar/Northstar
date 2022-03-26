@@ -129,7 +129,7 @@ class ConVar
 	};
 
 	ConCommandBase m_ConCommandBase{}; // 0x0000
-	ConVar* m_pParent{};			   // 0x0040
+	const char* defaultVal{};		// 0x0040
 	CVValue_t m_Value{};			   // 0x0048
 	bool m_bHasMin{};				   // 0x005C
 	float m_fMinVal{};				   // 0x0060
@@ -140,4 +140,3 @@ class ConVar
 };									   // Size: 0x0080
 
 void InitialiseConVars(HMODULE baseAddress);
-extern std::unordered_map<std::string, ConVar*> g_CustomConvars;

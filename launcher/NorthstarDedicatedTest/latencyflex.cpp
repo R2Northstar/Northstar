@@ -8,9 +8,9 @@ OnRenderStartType OnRenderStart;
 
 ConVar* Cvar_r_latencyflex;
 
-HMODULE m_lfxModule{};
+HMODULE m_lfxModule {};
 typedef void (*PFN_winelfx_WaitAndBeginFrame)();
-PFN_winelfx_WaitAndBeginFrame m_winelfx_WaitAndBeginFrame{};
+PFN_winelfx_WaitAndBeginFrame m_winelfx_WaitAndBeginFrame {};
 
 void OnRenderStartHook()
 {

@@ -36,7 +36,7 @@ LoadLibraryWType LoadLibraryWOriginal;
 void InstallInitialHooks()
 {
 	if (MH_Initialize() != MH_OK)
-		spdlog::error("MH_Initialize failed");
+		spdlog::error("MH_Initialize (minhook initialization) failed");
 
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, &GetCommandLineA, &GetCommandLineAHook, reinterpret_cast<LPVOID*>(&GetCommandLineAOriginal));

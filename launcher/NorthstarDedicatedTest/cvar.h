@@ -1,5 +1,6 @@
 #pragma once
 #include "convar.h"
+#include "pch.h"
 
 //-----------------------------------------------------------------------------
 // Forward declarations
@@ -25,11 +26,13 @@ class CCVarIteratorInternal // Fully reversed table, just look at the virtual fu
 //-----------------------------------------------------------------------------
 class CCvar
 {
-  public:
-	ConCommandBase* FindCommandBase(const char* pszCommandName);
-	ConVar* FindVar(const char* pszVarName);
-	ConCommand* FindCommand(const char* pszCommandName);
-	CCVarIteratorInternal* FactoryInternalIterator();
+ public:
+
+	M_VMETHOD(ConCommandBase*, FindCommandBase, 14, (const char* pszCommandName), (this, pszCommandName));
+	M_VMETHOD(ConVar*, FindVar, 16, (const char* pszVarName), (this, pszVarName));
+	M_VMETHOD(ConCommand*, FindCommand, 18, (const char* pszCommandName), (this, pszCommandName));
+	M_VMETHOD(CCVarIteratorInternal*, FactoryInternalIterator, 41, (), (this));
+
 	std::unordered_map<std::string, ConCommandBase*> DumpToMap();
 };
 

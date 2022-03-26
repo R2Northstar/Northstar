@@ -52,74 +52,77 @@ long __stdcall ExceptionFilter(EXCEPTION_POINTERS* exceptionInfo)
 			return EXCEPTION_CONTINUE_SEARCH;
 
 		std::stringstream exceptionCause;
+		exceptionCause << "Cause: ";
 		switch (exceptionCode)
 		{
 		case EXCEPTION_ACCESS_VIOLATION:
 		case EXCEPTION_IN_PAGE_ERROR:
 		{
-			exceptionCause << "Cause: Access Violation" << std::endl;
+			exceptionCause << "Access Violation" << std::endl;
 
 			auto exceptionInfo0 = exceptionInfo->ExceptionRecord->ExceptionInformation[0];
 			auto exceptionInfo1 = exceptionInfo->ExceptionRecord->ExceptionInformation[1];
 
 			if (!exceptionInfo0)
-				exceptionCause << "Attempted to read from: 0x" << std::setw(8) << std::setfill('0') << std::hex << exceptionInfo1;
+				exceptionCause << "Attempted to read from: 0x" << (void*)exceptionInfo1;
 			else if (exceptionInfo0 == 1)
-				exceptionCause << "Attempted to write to: 0x" << std::setw(8) << std::setfill('0') << std::hex << exceptionInfo1;
+				exceptionCause << "Attempted to write to: 0x" << (void*)exceptionInfo1;
 			else if (exceptionInfo0 == 8)
-				exceptionCause << "Data Execution Prevention (DEP) at: 0x" << std::setw(8) << std::setfill('0') << std::hex
+				exceptionCause << "Data Execution Prevention (DEP) at: 0x" << (void*)std::hex
 							   << exceptionInfo1;
 			else
-				exceptionCause << "Unknown access violation at: 0x" << std::setw(8) << std::setfill('0') << std::hex << exceptionInfo1;
+				exceptionCause << "Unknown access violation at: 0x" << (void*)exceptionInfo1;
 
 			break;
 		}
 		case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
-			exceptionCause << "Cause: Array bounds exceeded";
+			exceptionCause << "Array bounds exceeded";
 			break;
 		case EXCEPTION_DATATYPE_MISALIGNMENT:
-			exceptionCause << "Cause: Datatype misalignment";
+			exceptionCause << "Datatype misalignment";
 			break;
 		case EXCEPTION_FLT_DENORMAL_OPERAND:
-			exceptionCause << "Cause: Denormal operand";
+			exceptionCause << "Denormal operand";
 			break;
 		case EXCEPTION_FLT_DIVIDE_BY_ZERO:
+			exceptionCause << "Divide by zero (float)";
+			break;
 		case EXCEPTION_INT_DIVIDE_BY_ZERO:
-			exceptionCause << "Cause: Divide by zero";
+			exceptionCause << "Divide by zero (int)";
 			break;
 		case EXCEPTION_FLT_INEXACT_RESULT:
-			exceptionCause << "Cause: Inexact result";
+			exceptionCause << "Inexact result";
 			break;
 		case EXCEPTION_FLT_INVALID_OPERATION:
-			exceptionCause << "Cause: invalid operation";
+			exceptionCause << "Invalid operation";
 			break;
 		case EXCEPTION_FLT_OVERFLOW:
 		case EXCEPTION_INT_OVERFLOW:
-			exceptionCause << "Cause: Numeric overflow";
+			exceptionCause << "Numeric overflow";
 			break;
 		case EXCEPTION_FLT_UNDERFLOW:
-			exceptionCause << "Cause: Numeric underflow";
+			exceptionCause << "Numeric underflow";
 			break;
 		case EXCEPTION_FLT_STACK_CHECK:
-			exceptionCause << "Cause: Stack check";
+			exceptionCause << "Stack check";
 			break;
 		case EXCEPTION_ILLEGAL_INSTRUCTION:
-			exceptionCause << "Cause: Illegal instruction";
+			exceptionCause << "Illegal instruction";
 			break;
 		case EXCEPTION_INVALID_DISPOSITION:
-			exceptionCause << "Cause: Invalid disposition";
+			exceptionCause << "Invalid disposition";
 			break;
 		case EXCEPTION_NONCONTINUABLE_EXCEPTION:
-			exceptionCause << "Cause: Noncontinuable exception";
+			exceptionCause << "Noncontinuable exception";
 			break;
 		case EXCEPTION_PRIV_INSTRUCTION:
-			exceptionCause << "Cause: Priv instruction";
+			exceptionCause << "Priviledged instruction";
 			break;
 		case EXCEPTION_STACK_OVERFLOW:
-			exceptionCause << "Cause: Stack overflow";
+			exceptionCause << "Stack overflow";
 			break;
 		default:
-			exceptionCause << "Cause: Unknown";
+			exceptionCause << "Unknown";
 			break;
 		}
 
@@ -206,14 +209,33 @@ long __stdcall ExceptionFilter(EXCEPTION_POINTERS* exceptionInfo)
 	return EXCEPTION_EXECUTE_HANDLER;
 }
 
+HANDLE hExceptionFilter;
+
+BOOL WINAPI ConsoleHandlerRoutine(DWORD eventCode)
+{
+	switch (eventCode)
+	{
+	case CTRL_CLOSE_EVENT:
+		// User closed console, shut everything down
+		spdlog::info("Exiting due to console close...");
+		RemoveVectoredExceptionHandler(hExceptionFilter);
+		exit(EXIT_SUCCESS);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
 void InitialiseLogging()
 {
-	AddVectoredExceptionHandler(TRUE, ExceptionFilter);
+	hExceptionFilter = AddVectoredExceptionHandler(TRUE, ExceptionFilter);
 
 	AllocConsole();
 	freopen("CONOUT$", "w", stdout);
 	freopen("CONOUT$", "w", stderr);
 	spdlog::default_logger()->set_pattern("[%H:%M:%S] [%l] %v");
+
+	SetConsoleCtrlHandler(ConsoleHandlerRoutine, true);
 }
 
 ConVar* Cvar_spewlog_enable;
@@ -221,10 +243,12 @@ ConVar* Cvar_spewlog_enable;
 enum SpewType_t
 {
 	SPEW_MESSAGE = 0,
+
 	SPEW_WARNING,
 	SPEW_ASSERT,
 	SPEW_ERROR,
 	SPEW_LOG,
+
 	SPEW_TYPE_COUNT
 };
 

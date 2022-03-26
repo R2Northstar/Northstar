@@ -105,3 +105,6 @@ class ConCommand : public ConCommandBase
 
 void RegisterConCommand(const char* name, void (*callback)(const CCommand&), const char* helpString, int flags);
 void InitialiseConCommands(HMODULE baseAddress);
+
+#define MAKE_CONCMD(name, helpStr, flags, fn) \
+RegisterConCommand(name, fn, helpStr, flags);
