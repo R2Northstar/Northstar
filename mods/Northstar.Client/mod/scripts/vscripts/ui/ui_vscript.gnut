@@ -1,0 +1,352 @@
+
+// Events for handlers
+// UIE_CLICK
+// UIE_GET_FOCUS
+// UIE_LOSE_FOCUS
+
+global function UICodeCallback_UIInit
+global function UICodeCallback_ControllerModeChanged
+global function UICodeCallback_OnVideoOver
+global function AddUICallback_OnLevelInit
+
+global struct TabDef
+{
+	var panel
+	string title
+}
+
+global struct InputDef
+{
+	int input
+	string gamepadLabel
+	var vguiElem
+	string mouseLabel
+	bool functionref() conditionCheckFunc
+	bool lastConditionCheckResult
+	void functionref( var ) activateFunc
+	void functionref( InputDef ) updateFunc
+}
+
+global struct DialogButtonData
+{
+	string label
+	void functionref() activateFunc
+	string focusMessage
+	bool startFocused
+}
+
+global struct DialogFooterData
+{
+	string label
+	void functionref() activateFunc
+}
+
+global struct DialogMessageRuiData
+{
+	string message = ""
+	vector style1Color = <1.0, 1.0, 1.0>
+	vector style2Color = <0.5, 0.5, 0.5>
+	vector style3Color = <0.5, 0.5, 0.5>
+
+	float style1FontScale = 1.0
+	float style2FontScale = 1.0
+	float style3FontScale = 1.0
+}
+
+global struct DialogData
+{
+	var menu
+	string header
+	string message
+	DialogMessageRuiData &ruiMessage
+	array messageColor = [161, 161, 161, 255]
+	asset image
+	asset rightImage = $""
+	bool forceChoice = false
+	bool noChoice = false
+	bool noChoiceWithNavigateBack = false
+	bool showSpinner = false
+	bool showPCBackButton = false
+	float inputDisableTime = 0
+	table<int,bool> coloredButton
+	bool darkenBackground = false
+	bool useFullMessageHeight = false
+
+	array<DialogButtonData> buttonData
+	array<DialogFooterData> footerData
+}
+
+global struct MenuDef
+{
+	void functionref() initFunc
+	void functionref() openFunc
+	void functionref() closeFunc
+	void functionref() showFunc // TODO: Needs hooking up
+	void functionref() hideFunc // TODO: Needs hooking up
+	void functionref() thinkFunc
+	void functionref() navBackFunc
+	void functionref() tabChangedFunc
+	void functionref() inputModeChangedFunc
+	void functionref() entitlementsChangedFunc
+
+	array<InputDef> footerData
+	table<int, void functionref( var )> registeredInput
+
+	bool hasTabs = false
+	array<TabDef> tabsData
+	int tabIndex = 0
+
+	bool isDialog = false
+	DialogData& dialogData
+	bool isDynamicHeight = false
+
+	bool isPVEMenu = false
+
+	var lastFocus // Only used for restoring submenu focus so far
+}
+
+global struct PanelDef
+{
+	void functionref() initFunc
+	void functionref() showFunc
+	void functionref() hideFunc
+
+	string tabTitle = "Default"
+
+	array<InputDef> footerData
+	table<int, void functionref( var )> registeredInput
+
+	var defaultFocus
+}
+
+global struct PieChartEntry
+{
+	string displayName
+	float numValue
+	array<int> color = [127, 127, 127, 255]
+	float fracValue = 0.0
+}
+
+global struct PieChartData
+{
+	array<PieChartEntry> entries
+	array<int> labelColor = [46, 49, 51, 255]
+	bool timeBased = false
+	float sum = 0.0
+}
+
+global struct UIGlobals
+{
+	table	menus = {}
+	array	allMenus = []
+	array<var>	menuStack
+	string	loadingLevel = ""
+	string	loadedLevel = ""
+	string	previousLevel = ""
+	string	previousPlaylist = ""
+	var		activeMenu = null
+	bool	lastMenuNavDirection = MENU_NAV_FORWARD
+	bool 	lobbyFromLoadingScreen = false
+	bool	eventHandlersAdded = false
+	bool	loadoutsInitialized = false
+	bool	itemsInitialized = false
+	bool	matchmaking = false
+	var		dialogCloseCallback = null
+	table	signalDummy = {}
+	float	dialogInputEnableTime = 0.0
+	bool	lobbyMenusLeftOpen = false
+	bool	playingMusic = false
+	var		mainMenuFocus = null
+	int 	announcementVersionSeen = -1
+	var		lastCategoryFocus = null
+
+	int		pilotSpawnLoadoutIndex = -1
+	int		titanSpawnLoadoutIndex = -1
+
+	bool	updatePilotSpawnLoadout = false
+	bool	updateTitanSpawnLoadout = false
+
+	string	editingLoadoutType = "pilot"
+	string	editingLoadoutProperty = ""
+	int		editingLoadoutIndex = -1
+	string	editingItemRef = ""
+	int		editingItemType = -1
+	var		editingSubitemRef = null
+	int		editingSubitemType = -1
+	var		editingParentItemRef = null
+	int 	editingWeaponCategory = -1
+
+	int		entitlementId = -1
+	string	testStoreWeaponRef // TODO: Remove when done testing
+
+	bool	EOGAutoAdvance = true
+	bool	EOGOpenInLobby = false
+	string	EOGChallengeFilter = ""
+	var		eogCoopFocusedButton = null
+	var		eogCoopSelectedButton = null
+	var		eogScoreboardFocusedButton = null
+	bool	eogNavigationButtonsRegistered = false
+
+	table<string, var>	ui_ChallengeProgress = {}
+
+	int		decalScrollState = 0
+
+	bool	isLobby
+
+	var		ConfirmMenuMessage
+	var		ConfirmMenuErrorCode
+	array<DialogButtonData> dialogButtonData
+
+	bool	updatingLobbyUI = false
+
+	array	buttonConfigs
+	array	stickConfigs
+
+	var		playlistList
+
+	table< string, array > eog_challengesToShow
+	table< string, array > eog_unlocks
+
+	bool	videoSettingsChanged = false
+
+	bool	playingVideo = false
+	bool	playingCredits = false
+
+	bool	mapSupportsMenuModels = false
+	bool	mapSupportsMenuModelsUpdated = false
+	bool	interpolateCameraMoves = true
+	int		activePresentationType = ePresentationType.INACTIVE
+	bool	rotateCharacterInputRegistered = false
+
+	table<var,MenuDef> menuData
+
+	table<string, int>	intVars
+	table<string, bool>	boolVars
+	table<string, var>	varVars
+	table<string, array<void functionref()> > varChangeFuncs
+
+	array<void functionref()> onLevelInitCallbacks
+
+	bool	tabButtonsRegistered = false
+
+	table	panels = {}
+	array<var>	allPanels
+	table<var,PanelDef> panelData
+
+	bool	sp_showAlternateMissionLog = false
+
+	int 	launching = eLaunching.FALSE
+	bool 	triedNucleusRegistration = false
+	int 	consoleSettingMenu = eConsoleSettingsMenu.FALSE
+
+	bool	updateCachedNewItems = true
+
+	var		menuToOpenFromPromoButton = null
+
+	bool isLoading = false
+
+}
+
+global UIGlobals uiGlobal
+
+global const MAINMENU_MUSIC_DELAY = 4.0
+
+
+void function UICodeCallback_UIInit()
+{
+	ScriptCompilerTest()
+
+	ShUtilityAll_Init()
+	LevelVarInit()
+
+	VPKNotifyFile( "media/intro_captions.txt" )
+
+	UtilityUI_Init()
+
+	Settings_Init() // UI script doesn't need everything in this, reorganize
+	GameModes_Init()
+	UIVars_Init()
+
+	PassivesShared_Init()
+	ChallengesShared_Init()
+	ChallengesContent_Init()
+	XP_Init()
+
+	MenuLobby_Init()
+	MenuPrivateMatch_Init()
+
+	MenuGamepadLayout_Init()
+	MenuChallenges_Init()
+	MenuEOG_Init()
+	MenuUtility_Init()
+	MenuAdvocateLetter_Init()
+	MenuCredits_Init()
+	MenuMapSelect_Init()
+
+	RegisterSignal( "LevelShutdown" )
+	RegisterSignal( "CleanupInGameMenus" )
+	RegisterSignal( "OnCloseLobbyMenu" )
+	RegisterSignal( "OnCancelConnect" )
+	RegisterSignal( "PlayVideoEnded" )
+	RegisterSignal( "ActiveMenuChanged" )
+	RegisterSignal( "LevelFinishedLoading")
+	RegisterSignal( "OpenErrorDialog" )
+	RegisterSignal( "BoughtItem" )
+
+	thread UpdateClientMenuOpenState()
+
+	InitGamepadConfigs()
+	Store_Init()
+	InitMenus()
+
+	if ( !IsSingleplayer() )
+		thread UpdateCachedLoadouts() // Needs to wait for persistent data to ready
+}
+
+void function UICodeCallback_ControllerModeChanged( bool controllerModeEnabled )
+{
+	//printt( "CONTROLLER! " + controllerModeEnabled + ", " + IsControllerModeActive() )
+
+	if ( uiGlobal.activeMenu == null )
+		return
+
+	if ( uiGlobal.menuData[ uiGlobal.activeMenu ].inputModeChangedFunc != null )
+		thread uiGlobal.menuData[ uiGlobal.activeMenu ].inputModeChangedFunc()
+
+	UpdateFooterOptions()
+
+	if ( IsDialog( uiGlobal.activeMenu ) )
+		UpdateDialogFooterVisibility( uiGlobal.activeMenu, controllerModeEnabled )
+}
+
+void function UICodeCallback_OnVideoOver()
+{
+	SetIntroViewed( true )
+
+	Signal( uiGlobal.signalDummy, "PlayVideoEnded" )
+}
+
+void function UpdateClientMenuOpenState()
+{
+	for ( ;; )
+	{
+		WaitSignal( uiGlobal.signalDummy, "ActiveMenuChanged" )
+
+		if ( IsMultiplayer() && !IsLobby() )
+		{
+			int newState = 0
+			if ( IsDialogOnlyActiveMenu() )
+				newState = 2
+			else if ( uiGlobal.activeMenu != null)
+				newState = 1
+
+			RunMenuClientFunction( "SetMenuOpenState", newState )
+		}
+	}
+}
+
+void function AddUICallback_OnLevelInit( void functionref() callbackFunc )
+{
+	Assert( !( uiGlobal.onLevelInitCallbacks.contains( callbackFunc ) ), "Already added " + string( callbackFunc ) + " with AddUICallback_OnLevelInit" )
+	uiGlobal.onLevelInitCallbacks.append( callbackFunc )
+}

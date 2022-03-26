@@ -1,1 +1,266 @@
-"lang"{	"Language" "japanese"	"Tokens"	{			"MENU_LAUNCH_NORTHSTAR" "Northstarを起動"		"MENU_TITLE_MODS" "Modの管理"		"RELOAD_MODS" "Modをリロード"		"MENU_MAIN_AUTHENTICATING" "認証中..."		"MENU_MAIN_CONNECTING" "ローカルサーバーへの接続"		"DIALOG_TITLE_INSTALLED_NORTHSTAR" "Northstarをインストールしていただきありがとうございます！"		"AUTHENTICATION_AGREEMENT_DIALOG_TEXT" "Northstarが動作するために、Northstarのマスターサーバーで認証を行う必要があります。認証を行うとあなたのOriginトークンがNorthstarのマスターサーバーに送信されます。これは保存されたり、認証以外の用途に使用されることはありません。「はい」を押すと認証を開始します。これはModメニューでいつでも変更できます。"		// 要議論: "認証への同意" は別のテキストに差し替える必要があるかも		"BACK_AUTHENTICATION_AGREEMENT" "認証への同意"		"AUTHENTICATION_AGREEMENT" "認証への同意"		"AUTHENTICATION_AGREEMENT_RESTART" "変更を適用するには、一度Titanfall 2を再起動する必要があります。"				"MENU_TITLE_SERVER_BROWSER" "サーバーブラウザー"		"NS_SERVERBROWSER_NOSERVERS" "サーバーが見つかりませんでした。"		"NS_SERVERBROWSER_WAITINGFORSERVERS" "サーバーを待っています..."		"NS_SERVERBROWSER_CONNECTIONFAILED" "接続に失敗しました！"		// 要議論		"NS_SERVERBROWSER_CONFIRMATIONJOIN" "'%s1'に参加してもよろしいですか？"		"NS_SERVERBROWSER_JOIN" "'%s1'に参加しますか？"		"NS_SERVERBROWSER_CONFIRMATIONJOIN_ISPASSWORDPROTECTED" "'%s1'に参加してもよろしいですか？ \nこのサーバーはパスワードで保護されています。"		"NS_SERVERBROWSER_CONNECTING" "マッチに接続中..."		"REFRESH_SERVERS" "更新"		"MENU_TITLE_CONNECT_PASSWORD" "パスワードで接続"		"MENU_CONNECT_MENU_CONNECT" "接続"			"PRIVATE_MATCH_PAGE_PREV" "前のページ"		"PRIVATE_MATCH_PAGE_NEXT" "次のページ"				"MENU_MATCH_SETTINGS" "マッチの設定"		"MENU_MATCH_SETTINGS_SUBMENU" "%s1 の設定"				"PRIVATE_MATCH_SINGLEPLAYER_LEVEL" "%s1 (シングルプレイヤー)"						"PL_fra_hint" "1人きりの戦いに挑戦。敵を倒せば勝利だ。バッテリーを3個回収し、タイタンフォールを要請せよ。"				// mode settings		"MODE_SETTING_CATEGORY_PILOT" "パイロット"		"MODE_SETTING_CATEGORY_TITAN" "タイタン"		"MODE_SETTING_CATEGORY_RIFF" "エクストラ"		"MODE_SETTING_CATEGORY_MATCH" "マッチ"		// controls		//要議論: "コンソールの表示/非表示"のままか、"コンソール表示のトグル"、それ以外への差し替え		"TOGGLE_CONSOLE" "コンソールの表示/非表示"				"classic_mp" "クラシックマルチ"		"run_epilogue" "エピローグの有効化"		"scorelimit" "スコア上限"		"roundscorelimit" "スコア上限 (ラウンドベース)"		// 要議論: "時間制限"のままか、"マッチ時間"、"タイム上限"、それ以外への差し替え		"timelimit" "時間制限"		"roundtimelimit" "時間制限 (ラウンドベース)"				"pilot_health_multiplier" "ヘルス倍率"		// 要議論: "リスポーン遅延" のままか、"リスポーンまでの時間"、それ以外への差し替え		"respawn_delay" "リスポーン遅延"		"boosts_enabled" "ブースト"		// 長いのでなんとかしたい		"earn_meter_pilot_overdrive" "ブーストメーターオーバードライブ"		"earn_meter_pilot_multiplier" "ブーストメーター倍率"				"earn_meter_titan_multiplier" "タイタンブーストメーター倍率"		// 仮翻訳: "イージスアップグレード","無限ドームの状態","シールド再生"		"aegis_upgrades" "イージスアップグレード"		"infinite_doomed_state" "無限ドゥームの状態"		"titan_shield_regen" "シールド再生"				"riff_floorislava" "デッドリー・グラウンド"		"featured_mode_all_holopilot" "華麗なる謀略"		"featured_mode_all_grapple" "進撃のタイタンフォール"		"featured_mode_all_phase" "異次元"		"featured_mode_all_ticks" "辛口消耗戦"		"featured_mode_tactikill" "戦術キル消耗戦"		"featured_mode_amped_tacticals" "戦術強化"		"featured_mode_rocket_arena" "ロケット・アリーナ"		"featured_mode_shotguns_snipers" "危険武装"		"iron_rules" "アイロンルール"				"cp_amped_capture_points" "拠点増幅"		"coliseum_loadouts_enabled" "コロシアムロードアウト"				// northstar.custom localisation is just deciding not to work, so putting it here for now		"PL_sbox" "サンドボックス"		"PL_sbox_lobby" "サンドボックスロビー"		"PL_sbox_desc" "サンドボックス"		"PL_sbox_abbr" "SBOX"		"GAMEMODE_SBOX" "Sandbox"				"PL_gg" "ガン・ゲーム"		"PL_gg_lobby" "ガン・ゲームロビー"		"PL_gg_desc" "全ての銃でキルを取って勝利しろ。"		"PL_gg_hint" "全ての銃でキルを取って勝利しろ。"		"PL_gg_abbr" "GG"		"GAMEMODE_GG" "ガン・ゲーム"				"PL_tt" "タイタン・タグ"		"PL_tt_lobby" "タイタン・タグロビー"		"PL_tt_desc" "タイタンとしてポイントを稼げ。敵のタイタンを破壊し自分のタイタンを確保しろ。"		"PL_tt_hint" "タイタンとしてポイントを稼げ。敵のタイタンを破壊し自分のタイタンを確保しろ。"		"PL_tt_abbr" "TT"		"GAMEMODE_TT" "タイタン・タグ"				"PL_inf" "インフェクション"		"PL_inf_lobby" "インフェクションロビー"		"PL_inf_desc" "生き残りは死亡するとインフェクターになる。"		"PL_inf_hint" "生き残りは死亡するとインフェクターになる。"		"PL_inf_abbr" "INF"		"GAMEMODE_INF" "インフェクション"		"INFECTION_YOU_ARE_INFECTED" "お前はインフェクトされた！"		"INFECTION_KILL_SURVIVORS" "残りの生存者をインフェクトしろ"		"INFECTION_FIRST_INFECTED" "%s1 が最初のインフェクターだ！"		"INFECTION_LAST_SURVIVOR" "%s1 が最後の生存者だ！"		"INFECTION_KILL_LAST_SURVIVOR" "時間切れの前に最後の生存者をインフェクトしろ！"		"INFECTION_YOU_ARE_LAST_SURVIVOR" "お前が最後の生き残りだ！"		"INFECTION_SURVIVE_LAST_SURVIVOR" "生きろ"				"PL_hs" "ハイド・アンド・シーク"		"PL_hs_lobby" "ハイド・アンド・シークロビー"		"PL_hs_desc" "ハイダーは隠れ、シーカーはハイダーを探せ！"		"PL_hs_hint" "ハイダーは隠れ、シーカーはハイダーを探せ！"		"PL_hs_abbr" "HS"		"GAMEMODE_hs" "ハイド・アンド・シーク"		"HIDEANDSEEK_YOU_ARE_SEEKER" "お前はシーカーになった"		"HIDEANDSEEK_SEEKER_DESC" "ハイダーを探し、格闘でしとめろ。\n開始まで %s1 秒"		"HIDEANDSEEK_YOU_ARE_HIDER" "お前はハイダーになった"		"HIDEANDSEEK_HIDER_DESC" "シーカーから隠れろ"		"HIDEANDSEEK_SEEKERS_INCOMING" "間もなくシーカー到来"		"HIDEANDSEEK_DONT_GET_FOUND" "見つかるな！"		"HIDEANDSEEK_GET_LAST_HIDER" "%s1 が最後のハイダーだ！"		"HIDEANDSEEK_YOU_ARE_LAST_HIDER" "お前が最後のハイダーだ！"		"HIDEANDSEEK_GOT_STIM" "興奮剤を得た！捕まるな！"		"hideandseek_balance_teams" "オートバランス"		"hideandseek_hiding_time" "隠れ時間" 				"GAMEMODE_fw" "フロンティア戦争"		"PL_fw" "フロンティア戦争"		"PL_fw_lobby" "フロンティア戦争ロビー"		"PL_fw_desc" "敵のハーベスターを破壊し、自分のを守れ！"		"PL_fw_abbr" "FW"				"GAMEMODE_kr" "強化キルレース"		"PL_kr" "強化キルレース"		"PL_kr_lobby" "強化キルレースロビー"		"PL_kr_desc" "旗を拾い、キルレースを開始しろ。キルでポイントを上げ、キルレースの時間を延ばせ。最高ポイント記録が一番高い者が勝利する"		"PL_kr_hint" "旗を拾い、キルレースを開始しろ。キルでポイントを上げ、キルレースの時間を延ばせ。最高ポイント記録が一番高い者が勝利する"		"PL_kr_abbr" "KR"		"SCOREBOARD_KR_RECORD" "キルレース記録"		"KR_NEW_RACER" "%s1 が新しいキルレーサーだ！"		"KR_YOU_ARE_NEW_RACER" "お前が新しいキルレーサーだ！"		"KR_YOU_SET_NEW_RECORD" "新キルレース記録だ！"		"KR_FLAG_INCOMING" "間もなく旗出現"		"KR_COLLECT_FLAG" "旗を確保しキルレーサーになれ！"		"KR_ENEMY_KILLRACE_OVER" "%s1's のキルレースが終わった"		"KR_YOUR_KILLRACE_OVER" "キルレース終了"		"KR_YOUR_KILLRACE_SCORE" "キルレース記録は %s1"			"GAMEMODE_fastball" "ファストボール"		"PL_fastball" "ファストボール"		"PL_fastball_lobby" "ファストボールロビー"		"PL_fastball_desc" "ライブファイア。パネルをハックし、味方を蘇生できる"		"PL_fastball_hint" "ライブファイア。パネルをハックし、味方を蘇生できる"		"PL_fastball_abbr" "FB"		"FASTBALL_PANEL_CAPTURED" "%s1 がパネル%s2を制圧した"		"SCOREBOARD_FASTBALL_HACKS" "制圧パネル"				"GAMEMODE_ctf_comp" "激化CTF"				// mode settings		"MODE_SETTING_CATEGORY_PROMODE" "Proモード"		// 要議論: Apexなどでは"出血中"になるが、とりあえず"ダウン"で		"MODE_SETTING_CATEGORY_BLEEDOUT" "パイロットのダウン"				"custom_air_accel_pilot" "空中加速度"		"promode_enable" "Proモードの武器"		"fp_embark_enabled" "搭乗と処刑の一人称視点"		"classic_rodeo" "クラシックロデオ"		"oob_timer_enabled" "アウトオブバウンドタイマー"		"riff_instagib" "インスタギブモード"				"riff_player_bleedout" "パイロットのダウン"		"player_bleedout_forceHolster" "ダウン状態では武器をしまう"		"player_bleedout_forceDeathOnTeamBleedout" "チーム全員がダウンしたら死亡"		// "ダウン状態の時間"は"ダウンから死亡までの時間" としたかったが長すぎるので断念		"player_bleedout_bleedoutTime" "ダウン状態の時間"		"player_bleedout_firstAidTime" "応急処置に必要な時間"		"player_bleedout_firstAidTimeSelf" "自己蘇生に必要な時間"		"player_bleedout_firstAidHealPercent" "応急処置時のヘルス"		"player_bleedout_aiBleedingPlayerMissChance" "ダウン時のAI命中率"				// coop stuff		"PL_sp_coop" "(UNFINISHED) Singleplayer Coop"		"PL_sp_coop_lobby" "Singleplayer Coop Lobby"		"PL_sp_coop_desc" "Play through the singleplayer campaign with friends"		"PL_sp_coop_hint" "Play through the singleplayer campaign with friends"		"PL_sp_coop_abbr" "SP"				"SP_TRAINING" "パイロット・ガントレット"		"SP_TRAINING_CLASSIC_DESC" "ラスティモーサ大尉の訓練シミュレーション。"				"SP_CRASHSITE" "BT-7274"		"SP_CRASHSITE_CLASSIC_DESC" "ジャック・クーパーがBT-7274に出会う。"				"SP_SEWERS1" "血と錆び"		"SP_SEWERS1_CLASSIC_DESC" "クーパーとBTは、アンダーソン少佐との合流を目指して出発する。"				"SP_BOOMTOWN_START" "深淵へ"		"SP_BOOMTOWN_START_CLASSIC_DESC" "近道で地下を進んだ2人に、予期せぬ事態が発生する。"				"SP_HUB_TIMESHIFT" "結果と原因"		"SP_HUB_TIMESHIFT_CLASSIC_DESC" "アンダーソン少佐の座標で奇妙な現象が確認された。"				"SP_BEACON" "ビーコン"		"SP_BEACON_CLASSIC_DESC" "クーパーとBTは生き残った艦隊にIMCの計画を伝えようと試みる。"				"SP_TDAY" "火の試練"		"SP_TDAY_CLASSIC_DESC" "アークを奪うための総力戦で、クーパーのタイタン操縦技術が試される。"				"SP_S2S" "アーク"		"SP_S2S_CLASSIC_DESC" "クーパーとBTはアークを求め、激しい追跡劇を繰り広げる。"				"SP_SKYWAY_V1" "フォールド・ウェポン"		"SP_SKYWAY_V1_CLASSIC_DESC" "BTとクーパーがクーベン・ブリスクに捕まってしまう。"		// Better.Serverbrowser		"SERVERS_COLUMN" "サーバー"		"PLAYERS_COLUMN" "プレイヤー"		"MAP_COLUMN" "マップ"		"GAMEMODE_COLUMN" "ゲームモード"		"LATENCY_COLUMN" "レイテンシー"		"SEARCHBAR_LABEL" "検索:"		"MAP_FILTER" "マップ"		"GAMEMODE_FILTER" "ゲームモード"		"HIDE_FULL_FILTER" "満員のサーバーを非表示"		"HIDE_EMPTY_FILTER" "参加者のいないサーバーを非表示"		"HIDE_PROT_FILTER" "保護されたサーバーを非表示"		"SERVER_DESCRIPTION" "概要"		"SERVER_MODS" "Mod"		"CLEAR_FILTERS" "クリア"		"JOIN_BUTTON" "参加"		"SWITCH_YES" "はい"		"SWITCH_NO" "いいえ"		// 要変更: 使われるのはフィルターの表示のみなのでわかりやすさ重視で"全て" としたが、他に使用される箇所が今後できた場合は変更する必要がある		"SWITCH_ANY" "全て"		"CONNECTING" "接続中..."		"INGAME_PLAYERS" "プレイヤー数: ^6BA6C400%s1"		"TOTAL_SERVERS" "サーバー数: ^C46C6C00%s1"		// Translation done by Zetryox and CYakigasi	}}
+"lang"
+{
+	"Language" "japanese"
+	"Tokens"
+	{
+		"MENU_LAUNCH_NORTHSTAR" "Northstarを起動"
+		"MENU_TITLE_MODS" "Modの管理"
+		"RELOAD_MODS" "Modをリロード"
+
+		"MENU_MAIN_AUTHENTICATING" "認証中..."
+		"MENU_MAIN_CONNECTING" "ローカルサーバーへの接続"
+
+		"DIALOG_TITLE_INSTALLED_NORTHSTAR" "Northstarをインストールしていただきありがとうございます！"
+		"AUTHENTICATION_AGREEMENT_DIALOG_TEXT" "Northstarが動作するために、Northstarのマスターサーバーで認証を行う必要があります。認証を行うとあなたのOriginトークンがNorthstarのマスターサーバーに送信されます。これは保存されたり、認証以外の用途に使用されることはありません。「はい」を押すと認証を開始します。これはModメニューでいつでも変更できます。"
+		// 要議論: "認証への同意" は別のテキストに差し替える必要があるかも
+		"BACK_AUTHENTICATION_AGREEMENT" "認証への同意"
+		"AUTHENTICATION_AGREEMENT" "認証への同意"
+		"AUTHENTICATION_AGREEMENT_RESTART" "変更を適用するには、一度Titanfall 2を再起動する必要があります。"
+
+		"MENU_TITLE_SERVER_BROWSER" "サーバーブラウザー"
+		"NS_SERVERBROWSER_NOSERVERS" "サーバーが見つかりませんでした。"
+		"NS_SERVERBROWSER_WAITINGFORSERVERS" "サーバーを待っています..."
+		"NS_SERVERBROWSER_CONNECTIONFAILED" "接続に失敗しました！"
+		// 要議論
+		"NS_SERVERBROWSER_CONFIRMATIONJOIN" "'%s1'に参加してもよろしいですか？"
+		"NS_SERVERBROWSER_JOIN" "'%s1'に参加しますか？"
+		"NS_SERVERBROWSER_CONFIRMATIONJOIN_ISPASSWORDPROTECTED" "'%s1'に参加してもよろしいですか？ \nこのサーバーはパスワードで保護されています。"
+		"NS_SERVERBROWSER_CONNECTING" "マッチに接続中..."
+		"REFRESH_SERVERS" "更新"
+
+		"MENU_TITLE_CONNECT_PASSWORD" "パスワードで接続"
+		"MENU_CONNECT_MENU_CONNECT" "接続"
+
+		"PRIVATE_MATCH_PAGE_PREV" "前のページ"
+		"PRIVATE_MATCH_PAGE_NEXT" "次のページ"
+
+		"MENU_MATCH_SETTINGS" "マッチの設定"
+		"MENU_MATCH_SETTINGS_SUBMENU" "%s1 の設定"
+
+
+		"PRIVATE_MATCH_SINGLEPLAYER_LEVEL" "%s1 (シングルプレイヤー)"
+
+
+		"PL_fra_hint" "1人きりの戦いに挑戦。敵を倒せば勝利だ。バッテリーを3個回収し、タイタンフォールを要請せよ。"
+
+		// mode settings
+		"MODE_SETTING_CATEGORY_PILOT" "パイロット"
+		"MODE_SETTING_CATEGORY_TITAN" "タイタン"
+		"MODE_SETTING_CATEGORY_RIFF" "エクストラ"
+		"MODE_SETTING_CATEGORY_MATCH" "マッチ"
+
+		// controls
+		//要議論: "コンソールの表示/非表示"のままか、"コンソール表示のトグル"、それ以外への差し替え
+		"TOGGLE_CONSOLE" "コンソールの表示/非表示"
+
+		"classic_mp" "クラシックマルチ"
+		"run_epilogue" "エピローグの有効化"
+		"scorelimit" "スコア上限"
+		"roundscorelimit" "スコア上限 (ラウンドベース)"
+		// 要議論: "時間制限"のままか、"マッチ時間"、"タイム上限"、それ以外への差し替え
+		"timelimit" "時間制限"
+		"roundtimelimit" "時間制限 (ラウンドベース)"
+
+		"pilot_health_multiplier" "ヘルス倍率"
+		// 要議論: "リスポーン遅延" のままか、"リスポーンまでの時間"、それ以外への差し替え
+		"respawn_delay" "リスポーン遅延"
+		"boosts_enabled" "ブースト"
+		// 長いのでなんとかしたい
+		"earn_meter_pilot_overdrive" "ブーストメーターオーバードライブ"
+		"earn_meter_pilot_multiplier" "ブーストメーター倍率"
+
+		"earn_meter_titan_multiplier" "タイタンブーストメーター倍率"
+		// 仮翻訳: "イージスアップグレード","無限ドームの状態","シールド再生"
+		"aegis_upgrades" "イージスアップグレード"
+		"infinite_doomed_state" "無限ドゥームの状態"
+		"titan_shield_regen" "シールド再生"
+
+		"riff_floorislava" "デッドリー・グラウンド"
+		"featured_mode_all_holopilot" "華麗なる謀略"
+		"featured_mode_all_grapple" "進撃のタイタンフォール"
+		"featured_mode_all_phase" "異次元"
+		"featured_mode_all_ticks" "辛口消耗戦"
+		"featured_mode_tactikill" "戦術キル消耗戦"
+		"featured_mode_amped_tacticals" "戦術強化"
+		"featured_mode_rocket_arena" "ロケット・アリーナ"
+		"featured_mode_shotguns_snipers" "危険武装"
+		"iron_rules" "アイロンルール"
+
+		"cp_amped_capture_points" "拠点増幅"
+		"coliseum_loadouts_enabled" "コロシアムロードアウト"
+
+		// northstar.custom localisation is just deciding not to work, so putting it here for now
+		"PL_sbox" "サンドボックス"
+		"PL_sbox_lobby" "サンドボックスロビー"
+		"PL_sbox_desc" "サンドボックス"
+		"PL_sbox_abbr" "SBOX"
+		"GAMEMODE_SBOX" "Sandbox"
+
+		"PL_gg" "ガン・ゲーム"
+		"PL_gg_lobby" "ガン・ゲームロビー"
+		"PL_gg_desc" "全ての銃でキルを取って勝利しろ。"
+		"PL_gg_hint" "全ての銃でキルを取って勝利しろ。"
+		"PL_gg_abbr" "GG"
+		"GAMEMODE_GG" "ガン・ゲーム"
+
+		"PL_tt" "タイタン・タグ"
+		"PL_tt_lobby" "タイタン・タグロビー"
+		"PL_tt_desc" "タイタンとしてポイントを稼げ。敵のタイタンを破壊し自分のタイタンを確保しろ。"
+		"PL_tt_hint" "タイタンとしてポイントを稼げ。敵のタイタンを破壊し自分のタイタンを確保しろ。"
+		"PL_tt_abbr" "TT"
+		"GAMEMODE_TT" "タイタン・タグ"
+
+		"PL_inf" "インフェクション"
+		"PL_inf_lobby" "インフェクションロビー"
+		"PL_inf_desc" "生き残りは死亡するとインフェクターになる。"
+		"PL_inf_hint" "生き残りは死亡するとインフェクターになる。"
+		"PL_inf_abbr" "INF"
+
+		"GAMEMODE_INF" "インフェクション"
+		"INFECTION_YOU_ARE_INFECTED" "お前はインフェクトされた！"
+		"INFECTION_KILL_SURVIVORS" "残りの生存者をインフェクトしろ"
+		"INFECTION_FIRST_INFECTED" "%s1 が最初のインフェクターだ！"
+		"INFECTION_LAST_SURVIVOR" "%s1 が最後の生存者だ！"
+		"INFECTION_KILL_LAST_SURVIVOR" "時間切れの前に最後の生存者をインフェクトしろ！"
+		"INFECTION_YOU_ARE_LAST_SURVIVOR" "お前が最後の生き残りだ！"
+		"INFECTION_SURVIVE_LAST_SURVIVOR" "生きろ"
+
+		"PL_hs" "ハイド・アンド・シーク"
+		"PL_hs_lobby" "ハイド・アンド・シークロビー"
+		"PL_hs_desc" "ハイダーは隠れ、シーカーはハイダーを探せ！"
+		"PL_hs_hint" "ハイダーは隠れ、シーカーはハイダーを探せ！"
+		"PL_hs_abbr" "HS"
+		"GAMEMODE_hs" "ハイド・アンド・シーク"
+		"HIDEANDSEEK_YOU_ARE_SEEKER" "お前はシーカーになった"
+		"HIDEANDSEEK_SEEKER_DESC" "ハイダーを探し、格闘でしとめろ。\n開始まで %s1 秒"
+		"HIDEANDSEEK_YOU_ARE_HIDER" "お前はハイダーになった"
+		"HIDEANDSEEK_HIDER_DESC" "シーカーから隠れろ"
+		"HIDEANDSEEK_SEEKERS_INCOMING" "間もなくシーカー到来"
+		"HIDEANDSEEK_DONT_GET_FOUND" "見つかるな！"
+		"HIDEANDSEEK_GET_LAST_HIDER" "%s1 が最後のハイダーだ！"
+		"HIDEANDSEEK_YOU_ARE_LAST_HIDER" "お前が最後のハイダーだ！"
+		"HIDEANDSEEK_GOT_STIM" "興奮剤を得た！捕まるな！"
+		"hideandseek_balance_teams" "オートバランス"
+		"hideandseek_hiding_time" "隠れ時間"
+
+		"GAMEMODE_fw" "フロンティア戦争"
+		"PL_fw" "フロンティア戦争"
+		"PL_fw_lobby" "フロンティア戦争ロビー"
+		"PL_fw_desc" "敵のハーベスターを破壊し、自分のを守れ！"
+		"PL_fw_abbr" "FW"
+
+		"GAMEMODE_kr" "強化キルレース"
+		"PL_kr" "強化キルレース"
+		"PL_kr_lobby" "強化キルレースロビー"
+		"PL_kr_desc" "旗を拾い、キルレースを開始しろ。キルでポイントを上げ、キルレースの時間を延ばせ。最高ポイント記録が一番高い者が勝利する"
+		"PL_kr_hint" "旗を拾い、キルレースを開始しろ。キルでポイントを上げ、キルレースの時間を延ばせ。最高ポイント記録が一番高い者が勝利する"
+		"PL_kr_abbr" "KR"
+		"SCOREBOARD_KR_RECORD" "キルレース記録"
+		"KR_NEW_RACER" "%s1 が新しいキルレーサーだ！"
+		"KR_YOU_ARE_NEW_RACER" "お前が新しいキルレーサーだ！"
+		"KR_YOU_SET_NEW_RECORD" "新キルレース記録だ！"
+		"KR_FLAG_INCOMING" "間もなく旗出現"
+		"KR_COLLECT_FLAG" "旗を確保しキルレーサーになれ！"
+		"KR_ENEMY_KILLRACE_OVER" "%s1's のキルレースが終わった"
+		"KR_YOUR_KILLRACE_OVER" "キルレース終了"
+		"KR_YOUR_KILLRACE_SCORE" "キルレース記録は %s1"
+
+		"GAMEMODE_fastball" "ファストボール"
+		"PL_fastball" "ファストボール"
+		"PL_fastball_lobby" "ファストボールロビー"
+		"PL_fastball_desc" "ライブファイア。パネルをハックし、味方を蘇生できる"
+		"PL_fastball_hint" "ライブファイア。パネルをハックし、味方を蘇生できる"
+		"PL_fastball_abbr" "FB"
+		"FASTBALL_PANEL_CAPTURED" "%s1 がパネル%s2を制圧した"
+		"SCOREBOARD_FASTBALL_HACKS" "制圧パネル"
+
+		"GAMEMODE_ctf_comp" "激化CTF"
+
+		// mode settings
+		"MODE_SETTING_CATEGORY_PROMODE" "Proモード"
+		// 要議論: Apexなどでは"出血中"になるが、とりあえず"ダウン"で
+		"MODE_SETTING_CATEGORY_BLEEDOUT" "パイロットのダウン"
+
+		"custom_air_accel_pilot" "空中加速度"
+		"promode_enable" "Proモードの武器"
+		"fp_embark_enabled" "搭乗と処刑の一人称視点"
+		"classic_rodeo" "クラシックロデオ"
+		"oob_timer_enabled" "アウトオブバウンドタイマー"
+		"riff_instagib" "インスタギブモード"
+
+		"riff_player_bleedout" "パイロットのダウン"
+		"player_bleedout_forceHolster" "ダウン状態では武器をしまう"
+		"player_bleedout_forceDeathOnTeamBleedout" "チーム全員がダウンしたら死亡"
+		// "ダウン状態の時間"は"ダウンから死亡までの時間" としたかったが長すぎるので断念
+		"player_bleedout_bleedoutTime" "ダウン状態の時間"
+		"player_bleedout_firstAidTime" "応急処置に必要な時間"
+		"player_bleedout_firstAidTimeSelf" "自己蘇生に必要な時間"
+		"player_bleedout_firstAidHealPercent" "応急処置時のヘルス"
+		"player_bleedout_aiBleedingPlayerMissChance" "ダウン時のAI命中率"
+
+		// coop stuff
+		"PL_sp_coop" "(UNFINISHED) Singleplayer Coop"
+		"PL_sp_coop_lobby" "Singleplayer Coop Lobby"
+		"PL_sp_coop_desc" "Play through the singleplayer campaign with friends"
+		"PL_sp_coop_hint" "Play through the singleplayer campaign with friends"
+		"PL_sp_coop_abbr" "SP"
+
+		"SP_TRAINING" "パイロット・ガントレット"
+		"SP_TRAINING_CLASSIC_DESC" "ラスティモーサ大尉の訓練シミュレーション。"
+
+		"SP_CRASHSITE" "BT-7274"
+		"SP_CRASHSITE_CLASSIC_DESC" "ジャック・クーパーがBT-7274に出会う。"
+
+		"SP_SEWERS1" "血と錆び"
+		"SP_SEWERS1_CLASSIC_DESC" "クーパーとBTは、アンダーソン少佐との合流を目指して出発する。"
+
+		"SP_BOOMTOWN_START" "深淵へ"
+		"SP_BOOMTOWN_START_CLASSIC_DESC" "近道で地下を進んだ2人に、予期せぬ事態が発生する。"
+
+		"SP_HUB_TIMESHIFT" "結果と原因"
+		"SP_HUB_TIMESHIFT_CLASSIC_DESC" "アンダーソン少佐の座標で奇妙な現象が確認された。"
+
+		"SP_BEACON" "ビーコン"
+		"SP_BEACON_CLASSIC_DESC" "クーパーとBTは生き残った艦隊にIMCの計画を伝えようと試みる。"
+
+		"SP_TDAY" "火の試練"
+		"SP_TDAY_CLASSIC_DESC" "アークを奪うための総力戦で、クーパーのタイタン操縦技術が試される。"
+
+		"SP_S2S" "アーク"
+		"SP_S2S_CLASSIC_DESC" "クーパーとBTはアークを求め、激しい追跡劇を繰り広げる。"
+
+		"SP_SKYWAY_V1" "フォールド・ウェポン"
+		"SP_SKYWAY_V1_CLASSIC_DESC" "BTとクーパーがクーベン・ブリスクに捕まってしまう。"
+
+		// Better.Serverbrowser
+		"SERVERS_COLUMN" "サーバー"
+		"PLAYERS_COLUMN" "プレイヤー"
+		"MAP_COLUMN" "マップ"
+		"GAMEMODE_COLUMN" "ゲームモード"
+		"LATENCY_COLUMN" "レイテンシー"
+		"SEARCHBAR_LABEL" "検索:"
+		"MAP_FILTER" "マップ"
+		"GAMEMODE_FILTER" "ゲームモード"
+		"HIDE_FULL_FILTER" "満員のサーバーを非表示"
+		"HIDE_EMPTY_FILTER" "参加者のいないサーバーを非表示"
+		"HIDE_PROT_FILTER" "保護されたサーバーを非表示"
+		"SERVER_DESCRIPTION" "概要"
+		"SERVER_MODS" "Mod"
+		"CLEAR_FILTERS" "クリア"
+		"JOIN_BUTTON" "参加"
+
+		"SWITCH_YES" "はい"
+		"SWITCH_NO" "いいえ"
+		// 要変更: 使われるのはフィルターの表示のみなのでわかりやすさ重視で"全て" としたが、他に使用される箇所が今後できた場合は変更する必要がある
+		"SWITCH_ANY" "全て"
+
+		"CONNECTING" "接続中..."
+		"INGAME_PLAYERS" "プレイヤー数: ^6BA6C400%s1"
+		"TOTAL_SERVERS" "サーバー数: ^C46C6C00%s1"
+		// Translation done by Zetryox and CYakigasi
+
+		// In-game chat
+		"HUD_CHAT_WHISPER_PREFIX" "[WHISPER]"
+		"HUD_CHAT_SERVER_PREFIX" "[SERVER]"
+	}
+}

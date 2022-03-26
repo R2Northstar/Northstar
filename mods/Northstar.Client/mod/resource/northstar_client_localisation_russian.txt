@@ -1,1 +1,245 @@
-"lang"{	"Language" "russian"	"Tokens"	{			"MENU_LAUNCH_NORTHSTAR" "Запустить Northstar"		"MENU_TITLE_MODS" "Моды"		"RELOAD_MODS" "Перезагрузить моды"		"DIALOG_TITLE_INSTALLED_NORTHSTAR" "Спасибо за установку Northstar!"		"AUTHENTICATION_AGREEMENT_DIALOG_TEXT" "Чтобы Northstar работал, ему необходимо авторизироваться через мастер-сервер Northstar. Это потребует отправку вашего токена Origin на мастер-сервер, он не будет сохранён на сервер или использован в других целях.Нажмите Да, если вы согласны с этим. Ваш выбор может быть изменён в меню модов в любое время."		"BACK_AUTHENTICATION_AGREEMENT" "Соглашение с авторизацией"		"AUTHENTICATION_AGREEMENT" "Соглашение с авторизацией"		"AUTHENTICATION_AGREEMENT_RESTART" "Вам необходимо перезапустить Titanfall 2, чтобы этот выбор вступил в силу."				"MENU_TITLE_SERVER_BROWSER" "Список серверов"		"NS_SERVERBROWSER_NOSERVERS" "Серверов не найдено"		"NS_SERVERBROWSER_WAITINGFORSERVERS" "Ожидание серверов..."		"NS_SERVERBROWSER_CONNECTIONFAILED" "Соединение провалено!"		"REFRESH_SERVERS" "Обновить"		"MENU_TITLE_CONNECT_PASSWORD" "Подключиться с помощью пароля"		"MENU_CONNECT_MENU_CONNECT" "Подключиться"			"PRIVATE_MATCH_PAGE_PREV" "Предыдущая страница"		"PRIVATE_MATCH_PAGE_NEXT" "Следующая страница"				"MENU_MATCH_SETTINGS" "Настройки матча"		"MENU_MATCH_SETTINGS_SUBMENU" "Настройки %s1"				"PRIVATE_MATCH_SINGLEPLAYER_LEVEL" "%s1 (Одиночная игра)"				// fra hint for private match menu, because fra only has PL_fra_desc in vanilla		"PL_fra_hint" "Ты один. Уничтожь противников, чтобы победить. Собери 3 батареи для вызова титана."				// mode settings		"MODE_SETTING_CATEGORY_PILOT" "Пилот"		"MODE_SETTING_CATEGORY_TITAN" "Титан"		"MODE_SETTING_CATEGORY_RIFF" "Рифф"		"MODE_SETTING_CATEGORY_MATCH" "Матч"				"classic_mp" "Классический мультиплеер"		"run_epilogue" "Запустить эпилог"		"scorelimit" "Лимит очков"		"roundscorelimit" "Лимит очков (по раундам)"		"timelimit" "Лимит времени"		"roundtimelimit" "Лимит времени (по раундам)"				"pilot_health_multiplier" "Множитель здоровья"		"respawn_delay" "Задержка возрождения"		"boosts_enabled" "Усиления"		"earn_meter_pilot_overdrive" "Перегрузка шкалы усиления"		"earn_meter_pilot_multiplier" "Множитель шкалы усиления пилота"				"earn_meter_titan_multiplier" "Множитель шкалы ядра титана"		"aegis_upgrades" "Улучшения эгиды"		"infinite_doomed_state" "Бесконечное обречённое состояние"		"titan_shield_regen" "Регенерация щитов"				"riff_floorislava" "Смертельная Земля"		"featured_mode_all_holopilot" "Великий обманщик"		"featured_mode_all_grapple" "Зацепщик"		"featured_mode_all_phase" "Альтернативное пространство"		"featured_mode_all_ticks" "Острый"		"featured_mode_tactikill" "Тактический удар"		"featured_mode_amped_tacticals" "Усиленные тактики"		"featured_mode_rocket_arena" "Ракетная Арена"		"featured_mode_shotguns_snipers" "Вооружён и опасен"		"iron_rules" "Правила Железного Титана"				"cp_amped_capture_points" "Усиленные точки опоры"		"coliseum_loadouts_enabled" "Выгрузка коллизея"				// northstar.custom localisation is just deciding not to work, so putting it here for now		"PL_sbox" "Песочница"		"PL_sbox_lobby" "Лобби песочницы"		"PL_sbox_desc" "Как gmod, только хуже"		"PL_sbox_abbr" "SBOX"		"GAMEMODE_SBOX" "Песочница"				"PL_gg" "Гонка вооружений"		"PL_gg_lobby" "Лобби гонки вооружений"		"PL_gg_desc" "Уничтожьте противника из всех видов оружия чтобы победить."		"PL_gg_hint" "Уничтожьте противника из всех видов оружия чтобы победить."		"PL_gg_abbr" "GG"		"GAMEMODE_GG" "Гонка вооружений"				"PL_tt" "Разборки Титанов"		"PL_tt_lobby" "Лобби разборок титанов"		"PL_tt_desc" "Зарабатывайте очки, пока вы находитесь в своём титане. Уничтожьте титана чтобы получить своего."		"PL_tt_hint" "Зарабатывайте очки, пока вы находитесь в своём титане. Уничтожьте титана чтобы получить своего."		"PL_tt_abbr" "TT"		"GAMEMODE_TT" "Разборки титанов"				"PL_inf" "Заражение"		"PL_inf_lobby" "Лобби Заражения"		"PL_inf_desc" "Переживите инфекцию. Выжившие становятся заражёнными при убийстве."		"PL_inf_hint" "Переживите инфекцию. Выжившие становятся заражёнными при убийстве."		"PL_inf_abbr" "INF"		"GAMEMODE_INF" "Заражение"		"INFECTION_YOU_ARE_INFECTED" "Вы были заражены!"		"INFECTION_KILL_SURVIVORS" "Заразите всех оставшихся выживших."		"INFECTION_FIRST_INFECTED" "%s1 был заражён первым."		"INFECTION_LAST_SURVIVOR" "%s1 выжил последним!"		"INFECTION_KILL_LAST_SURVIVOR" "Зарази их, пока время не вышло!"		"INFECTION_YOU_ARE_LAST_SURVIVOR" "Вы последний выживший!"		"INFECTION_SURVIVE_LAST_SURVIVOR" "Выживите."				"PL_hs" "Прятки"		"PL_hs_lobby" "Лобби пряток"		"PL_hs_desc" "Игра со стандартными правилами пряток."		"PL_hs_hint" "Игра со стандартными правилами пряток."		"PL_hs_abbr" "HS"		"GAMEMODE_hs" "Прятки"		"HIDEANDSEEK_YOU_ARE_SEEKER" "ВЫ ИЩЕТЕ"		"HIDEANDSEEK_SEEKER_DESC" "Найдите прячущихся и ударьте их.\nВы появитесь через %s1 секунд(у)"		"HIDEANDSEEK_YOU_ARE_HIDER" "ВЫ ПРЯЧЕТЕСЬ"		"HIDEANDSEEK_HIDER_DESC" "Спрятайтесь."		"HIDEANDSEEK_SEEKERS_INCOMING" "ИЩУЩИЕ ВЫДВИГАЮТСЯ"		"HIDEANDSEEK_DONT_GET_FOUND" "Не дайте себя найти!"		"HIDEANDSEEK_GET_LAST_HIDER" "%s1 ПОСЛЕДНИЙ СПРЯТАВШИЙСЯ"		"HIDEANDSEEK_YOU_ARE_LAST_HIDER" "ВЫ ПОСЛЕДНИЙ СПРЯТАВШИЙСЯ"		"HIDEANDSEEK_GOT_STIM" "Вас остановили! Не попадитесь!"		"hideandseek_balance_teams" "Автобаланс обеих сторон"		"hideandseek_hiding_time" "Время спрятаться" 				// these are defined in r1_english but titan war is a shit name so i'm changing it to another one that was referenced in development		"GAMEMODE_fw" "Пограничная война"		"PL_fw" "Пограничная война"		"PL_fw_lobby" "Лобби пограничной войны"		"PL_fw_desc" "Уничтожьте харвестер противника и защитите свой"		"PL_fw_abbr" "FW"				"GAMEMODE_kr" "Усиленные гонки убийств"		"PL_kr" "Усиленные гонки убийств"		"PL_kr_lobby"Лобби усиленных гонок убийств"		"PL_kr_desc" "Получайте убийства, чтобы увеличить продолжительность вашей гонки за убийствами. Соберите флаг, чтобы начать его. Установите рекорд убийств, чтобы победить."		"PL_kr_hint" "Получайте убийства, чтобы увеличить продолжительность вашей гонки за убийствами. Соберите флаг, чтобы начать его. Установите рекорд убийств, чтобы победить."		"PL_kr_abbr" "KR"		"SCOREBOARD_KR_RECORD" "Рекорд убийств"		"KR_NEW_RACER" "%s1 усиленный гонщик за убийства"		"KR_YOU_ARE_NEW_RACER" "Вы усиленный гонщик за убийства"		"KR_YOU_SET_NEW_RECORD" "Установите новый рекорд убийств!"		"KR_FLAG_INCOMING" "Флаг прибывает"		"KR_COLLECT_FLAG" "Возьмите его чтобы стать гонщиком за убиства!"		"KR_ENEMY_KILLRACE_OVER" "Гонки убийств у %s1 закончились"		"KR_YOUR_KILLRACE_OVER" "Ваши гонки убийств кончились"		"KR_YOUR_KILLRACE_SCORE" "У вас %s1 убийств."			"GAMEMODE_fastball" "Фастболл"		"PL_fastball" "Фастболл"		"PL_fastball_lobby" "Лобби фастболла"		"PL_fastball_desc" "Перманентная смерть. Взломайте панели управления чтобы побеждать в раундах и возродить своих членов команды."		"PL_fastball_hint" "Перманентная смерть. Взломайте панели управления чтобы побеждать в раундах и возродить своих членов команды."		"PL_fastball_abbr" "FB"		"FASTBALL_PANEL_CAPTURED" "%s1 захватил(а) панель %s2"		"SCOREBOARD_FASTBALL_HACKS" "Панелей захвачено"				"GAMEMODE_ctf_comp" "Соревновательное CTF"				// mode settings		"MODE_SETTING_CATEGORY_PROMODE" "Продвинутое оружие"		"MODE_SETTING_CATEGORY_BLEEDOUT" "Кровотечение пилота"				"custom_air_accel_pilot" "Ускорение в воздухе"		"promode_enable" "Продвинутое оружие"		"fp_embark_enabled" "Отправления/Казни от первого лица"		"classic_rodeo" "Классическое родео"		"oob_timer_enabled" "Таймер уничтожения за пределами карты"		"riff_instagib" "Моментальная смерть при попадании"				"riff_player_bleedout" "Кровотечение пилота"		"player_bleedout_forceHolster" "Использовать оружие из кобуры при кровотечении"		"player_bleedout_forceDeathOnTeamBleedout" "Смерть при кровотечении во всей команде"		"player_bleedout_bleedoutTime" "Кремя кровотечения"		"player_bleedout_firstAidTime" "Время оказания первой помощи"		"player_bleedout_firstAidTimeSelf" "Время оказания помощи самому себе"		"player_bleedout_firstAidHealPercent" "Процент здоровья после лечения"		"player_bleedout_aiBleedingPlayerMissChance" "Шанс промаха ИИ при кровотечении"				// coop stuff		"PL_sp_coop" "(НЕ ЗАВЕРШЕНО) Кооператив кампании"		"PL_sp_coop_lobby" "Лобби кооператива кампании"		"PL_sp_coop_desc" "Сыграть в кампанию с друзьями"		"PL_sp_coop_hint" "Сыграть в кампанию с друзьями"		"PL_sp_coop_abbr" "SP"				"SP_TRAINING" "Тренировачная полоса пилотов"		"SP_TRAINING_CLASSIC_DESC" "Тренировачная имитация капитана Ластимозы."				"SP_CRASHSITE" "БT-7274"		"SP_CRASHSITE_CLASSIC_DESC" "Джек Купер встречает BT-7274."				"SP_SEWERS1" "Кровь и Ржавчина"		"SP_SEWERS1_CLASSIC_DESC" "Купер и БT выходят на встречу с Майором Андерсеном."				"SP_BOOMTOWN_START" "В Бездну"		"SP_BOOMTOWN_START_CLASSIC_DESC" "Подземная срезка приводит к неожиданным последствиям."				"SP_HUB_TIMESHIFT" "Следствие и Причина"		"SP_HUB_TIMESHIFT_CLASSIC_DESC" "Странный феномен был обнаружен на местополжении Майора Андерсена."				"SP_BEACON" "Маяк"		"SP_BEACON_CLASSIC_DESC" "Купер и БТ пытаются известить оставшийся флот о планах IMC."				"SP_TDAY" "Испытание огнём"		"SP_TDAY_CLASSIC_DESC" "Испытание навыков титана Купера в грандиозной битве за захват Ковчега."				"SP_S2S" "Ковчег"		"SP_S2S_CLASSIC_DESC" "Купер и БТ перемещаются по кораблям, преследуя Ковчег."				"SP_SKYWAY_V1" "Сложенное оружие"		"SP_SKYWAY_V1_CLASSIC_DESC" "БT и Купер были захвачены Кубеном Блиском."				// Better.Serverbrowser		"SERVERS_COLUMN" "Сервера"		"PLAYERS_COLUMN" "Игроки"		"MAP_COLUMN" "Карта"		"GAMEMODE_COLUMN" "Режим игры"		"LATENCY_COLUMN" "Задержка"		"SEARCHBAR_LABEL" "Поиск:"		"MAP_FILTER" "Карта"		"GAMEMODE_FILTER" "Режим игры"		"HIDE_FULL_FILTER" "Скрывать полные сервера"		"HIDE_EMPTY_FILTER" "Скрывать пустые сервера"		"HIDE_PROT_FILTER" "Скрывать закрытые сервера"		"SERVER_DESCRIPTION" "Описание"		"SERVER_MODS" "Моды"		"CLEAR_FILTERS" "ОЧИСТИТЬ"		"JOIN_BUTTON" "ПРИСОЕДИНИТЬСЯ"		"SWITCH_YES" "Да"		"SWITCH_NO" "Нет"		"SWITCH_ANY" "Любой"		"CONNECTING" "Соединение..."		"INGAME_PLAYERS" "Игроков: ^6BA6C400%s1"		"TOTAL_SERVERS" "Серверов: ^C46C6C00%s1"	}}
+"lang"
+{
+	"Language" "russian"
+	"Tokens"
+	{
+		"MENU_LAUNCH_NORTHSTAR" "Запустить Northstar"
+		"MENU_TITLE_MODS" "Моды"
+		"RELOAD_MODS" "Перезагрузить моды"
+
+		"DIALOG_TITLE_INSTALLED_NORTHSTAR" "Спасибо за установку Northstar!"
+		"AUTHENTICATION_AGREEMENT_DIALOG_TEXT" "Чтобы Northstar работал, ему необходимо авторизироваться через мастер-сервер Northstar. Это потребует отправку вашего токена Origin на мастер-сервер, он не будет сохранён на сервер или использован в других целях.
+Нажмите Да, если вы согласны с этим. Ваш выбор может быть изменён в меню модов в любое время."
+		"BACK_AUTHENTICATION_AGREEMENT" "Соглашение с авторизацией"
+		"AUTHENTICATION_AGREEMENT" "Соглашение с авторизацией"
+		"AUTHENTICATION_AGREEMENT_RESTART" "Вам необходимо перезапустить Titanfall 2, чтобы этот выбор вступил в силу."
+
+		"MENU_TITLE_SERVER_BROWSER" "Список серверов"
+		"NS_SERVERBROWSER_NOSERVERS" "Серверов не найдено"
+		"NS_SERVERBROWSER_WAITINGFORSERVERS" "Ожидание серверов..."
+		"NS_SERVERBROWSER_CONNECTIONFAILED" "Соединение провалено!"
+		"REFRESH_SERVERS" "Обновить"
+
+		"MENU_TITLE_CONNECT_PASSWORD" "Подключиться с помощью пароля"
+		"MENU_CONNECT_MENU_CONNECT" "Подключиться"
+
+		"PRIVATE_MATCH_PAGE_PREV" "Предыдущая страница"
+		"PRIVATE_MATCH_PAGE_NEXT" "Следующая страница"
+
+		"MENU_MATCH_SETTINGS" "Настройки матча"
+		"MENU_MATCH_SETTINGS_SUBMENU" "Настройки %s1"
+
+		"PRIVATE_MATCH_SINGLEPLAYER_LEVEL" "%s1 (Одиночная игра)"
+
+		// fra hint for private match menu, because fra only has PL_fra_desc in vanilla
+		"PL_fra_hint" "Ты один. Уничтожь противников, чтобы победить. Собери 3 батареи для вызова титана."
+
+		// mode settings
+		"MODE_SETTING_CATEGORY_PILOT" "Пилот"
+		"MODE_SETTING_CATEGORY_TITAN" "Титан"
+		"MODE_SETTING_CATEGORY_RIFF" "Рифф"
+		"MODE_SETTING_CATEGORY_MATCH" "Матч"
+
+		"classic_mp" "Классический мультиплеер"
+		"run_epilogue" "Запустить эпилог"
+		"scorelimit" "Лимит очков"
+		"roundscorelimit" "Лимит очков (по раундам)"
+		"timelimit" "Лимит времени"
+		"roundtimelimit" "Лимит времени (по раундам)"
+
+		"pilot_health_multiplier" "Множитель здоровья"
+		"respawn_delay" "Задержка возрождения"
+		"boosts_enabled" "Усиления"
+		"earn_meter_pilot_overdrive" "Перегрузка шкалы усиления"
+		"earn_meter_pilot_multiplier" "Множитель шкалы усиления пилота"
+
+		"earn_meter_titan_multiplier" "Множитель шкалы ядра титана"
+		"aegis_upgrades" "Улучшения эгиды"
+		"infinite_doomed_state" "Бесконечное обречённое состояние"
+		"titan_shield_regen" "Регенерация щитов"
+
+		"riff_floorislava" "Смертельная Земля"
+		"featured_mode_all_holopilot" "Великий обманщик"
+		"featured_mode_all_grapple" "Зацепщик"
+		"featured_mode_all_phase" "Альтернативное пространство"
+		"featured_mode_all_ticks" "Острый"
+		"featured_mode_tactikill" "Тактический удар"
+		"featured_mode_amped_tacticals" "Усиленные тактики"
+		"featured_mode_rocket_arena" "Ракетная Арена"
+		"featured_mode_shotguns_snipers" "Вооружён и опасен"
+		"iron_rules" "Правила Железного Титана"
+
+		"cp_amped_capture_points" "Усиленные точки опоры"
+		"coliseum_loadouts_enabled" "Выгрузка коллизея"
+
+		// northstar.custom localisation is just deciding not to work, so putting it here for now
+		"PL_sbox" "Песочница"
+		"PL_sbox_lobby" "Лобби песочницы"
+		"PL_sbox_desc" "Как gmod, только хуже"
+		"PL_sbox_abbr" "SBOX"
+		"GAMEMODE_SBOX" "Песочница"
+
+		"PL_gg" "Гонка вооружений"
+		"PL_gg_lobby" "Лобби гонки вооружений"
+		"PL_gg_desc" "Уничтожьте противника из всех видов оружия чтобы победить."
+		"PL_gg_hint" "Уничтожьте противника из всех видов оружия чтобы победить."
+		"PL_gg_abbr" "GG"
+		"GAMEMODE_GG" "Гонка вооружений"
+
+		"PL_tt" "Разборки Титанов"
+		"PL_tt_lobby" "Лобби разборок титанов"
+		"PL_tt_desc" "Зарабатывайте очки, пока вы находитесь в своём титане. Уничтожьте титана чтобы получить своего."
+		"PL_tt_hint" "Зарабатывайте очки, пока вы находитесь в своём титане. Уничтожьте титана чтобы получить своего."
+		"PL_tt_abbr" "TT"
+		"GAMEMODE_TT" "Разборки титанов"
+
+		"PL_inf" "Заражение"
+		"PL_inf_lobby" "Лобби Заражения"
+		"PL_inf_desc" "Переживите инфекцию. Выжившие становятся заражёнными при убийстве."
+		"PL_inf_hint" "Переживите инфекцию. Выжившие становятся заражёнными при убийстве."
+		"PL_inf_abbr" "INF"
+		"GAMEMODE_INF" "Заражение"
+		"INFECTION_YOU_ARE_INFECTED" "Вы были заражены!"
+		"INFECTION_KILL_SURVIVORS" "Заразите всех оставшихся выживших."
+		"INFECTION_FIRST_INFECTED" "%s1 был заражён первым."
+		"INFECTION_LAST_SURVIVOR" "%s1 выжил последним!"
+		"INFECTION_KILL_LAST_SURVIVOR" "Зарази их, пока время не вышло!"
+		"INFECTION_YOU_ARE_LAST_SURVIVOR" "Вы последний выживший!"
+		"INFECTION_SURVIVE_LAST_SURVIVOR" "Выживите."
+
+		"PL_hs" "Прятки"
+		"PL_hs_lobby" "Лобби пряток"
+		"PL_hs_desc" "Игра со стандартными правилами пряток."
+		"PL_hs_hint" "Игра со стандартными правилами пряток."
+		"PL_hs_abbr" "HS"
+		"GAMEMODE_hs" "Прятки"
+		"HIDEANDSEEK_YOU_ARE_SEEKER" "ВЫ ИЩЕТЕ"
+		"HIDEANDSEEK_SEEKER_DESC" "Найдите прячущихся и ударьте их.\nВы появитесь через %s1 секунд(у)"
+		"HIDEANDSEEK_YOU_ARE_HIDER" "ВЫ ПРЯЧЕТЕСЬ"
+		"HIDEANDSEEK_HIDER_DESC" "Спрятайтесь."
+		"HIDEANDSEEK_SEEKERS_INCOMING" "ИЩУЩИЕ ВЫДВИГАЮТСЯ"
+		"HIDEANDSEEK_DONT_GET_FOUND" "Не дайте себя найти!"
+		"HIDEANDSEEK_GET_LAST_HIDER" "%s1 ПОСЛЕДНИЙ СПРЯТАВШИЙСЯ"
+		"HIDEANDSEEK_YOU_ARE_LAST_HIDER" "ВЫ ПОСЛЕДНИЙ СПРЯТАВШИЙСЯ"
+		"HIDEANDSEEK_GOT_STIM" "Вас остановили! Не попадитесь!"
+		"hideandseek_balance_teams" "Автобаланс обеих сторон"
+		"hideandseek_hiding_time" "Время спрятаться"
+
+		// these are defined in r1_english but titan war is a shit name so i'm changing it to another one that was referenced in development
+		"GAMEMODE_fw" "Пограничная война"
+		"PL_fw" "Пограничная война"
+		"PL_fw_lobby" "Лобби пограничной войны"
+		"PL_fw_desc" "Уничтожьте харвестер противника и защитите свой"
+		"PL_fw_abbr" "FW"
+
+		"GAMEMODE_kr" "Усиленные гонки убийств"
+		"PL_kr" "Усиленные гонки убийств"
+		"PL_kr_lobby"Лобби усиленных гонок убийств"
+		"PL_kr_desc" "Получайте убийства, чтобы увеличить продолжительность вашей гонки за убийствами. Соберите флаг, чтобы начать его. Установите рекорд убийств, чтобы победить."
+		"PL_kr_hint" "Получайте убийства, чтобы увеличить продолжительность вашей гонки за убийствами. Соберите флаг, чтобы начать его. Установите рекорд убийств, чтобы победить."
+		"PL_kr_abbr" "KR"
+		"SCOREBOARD_KR_RECORD" "Рекорд убийств"
+		"KR_NEW_RACER" "%s1 усиленный гонщик за убийства"
+		"KR_YOU_ARE_NEW_RACER" "Вы усиленный гонщик за убийства"
+		"KR_YOU_SET_NEW_RECORD" "Установите новый рекорд убийств!"
+		"KR_FLAG_INCOMING" "Флаг прибывает"
+		"KR_COLLECT_FLAG" "Возьмите его чтобы стать гонщиком за убиства!"
+		"KR_ENEMY_KILLRACE_OVER" "Гонки убийств у %s1 закончились"
+		"KR_YOUR_KILLRACE_OVER" "Ваши гонки убийств кончились"
+		"KR_YOUR_KILLRACE_SCORE" "У вас %s1 убийств."
+
+		"GAMEMODE_fastball" "Фастболл"
+		"PL_fastball" "Фастболл"
+		"PL_fastball_lobby" "Лобби фастболла"
+		"PL_fastball_desc" "Перманентная смерть. Взломайте панели управления чтобы побеждать в раундах и возродить своих членов команды."
+		"PL_fastball_hint" "Перманентная смерть. Взломайте панели управления чтобы побеждать в раундах и возродить своих членов команды."
+		"PL_fastball_abbr" "FB"
+		"FASTBALL_PANEL_CAPTURED" "%s1 захватил(а) панель %s2"
+		"SCOREBOARD_FASTBALL_HACKS" "Панелей захвачено"
+
+		"GAMEMODE_ctf_comp" "Соревновательное CTF"
+
+		// mode settings
+		"MODE_SETTING_CATEGORY_PROMODE" "Продвинутое оружие"
+		"MODE_SETTING_CATEGORY_BLEEDOUT" "Кровотечение пилота"
+
+		"custom_air_accel_pilot" "Ускорение в воздухе"
+		"promode_enable" "Продвинутое оружие"
+		"fp_embark_enabled" "Отправления/Казни от первого лица"
+		"classic_rodeo" "Классическое родео"
+		"oob_timer_enabled" "Таймер уничтожения за пределами карты"
+		"riff_instagib" "Моментальная смерть при попадании"
+
+		"riff_player_bleedout" "Кровотечение пилота"
+		"player_bleedout_forceHolster" "Использовать оружие из кобуры при кровотечении"
+		"player_bleedout_forceDeathOnTeamBleedout" "Смерть при кровотечении во всей команде"
+		"player_bleedout_bleedoutTime" "Кремя кровотечения"
+		"player_bleedout_firstAidTime" "Время оказания первой помощи"
+		"player_bleedout_firstAidTimeSelf" "Время оказания помощи самому себе"
+		"player_bleedout_firstAidHealPercent" "Процент здоровья после лечения"
+		"player_bleedout_aiBleedingPlayerMissChance" "Шанс промаха ИИ при кровотечении"
+
+		// coop stuff
+		"PL_sp_coop" "(НЕ ЗАВЕРШЕНО) Кооператив кампании"
+		"PL_sp_coop_lobby" "Лобби кооператива кампании"
+		"PL_sp_coop_desc" "Сыграть в кампанию с друзьями"
+		"PL_sp_coop_hint" "Сыграть в кампанию с друзьями"
+		"PL_sp_coop_abbr" "SP"
+
+		"SP_TRAINING" "Тренировачная полоса пилотов"
+		"SP_TRAINING_CLASSIC_DESC" "Тренировачная имитация капитана Ластимозы."
+
+		"SP_CRASHSITE" "БT-7274"
+		"SP_CRASHSITE_CLASSIC_DESC" "Джек Купер встречает BT-7274."
+
+		"SP_SEWERS1" "Кровь и Ржавчина"
+		"SP_SEWERS1_CLASSIC_DESC" "Купер и БT выходят на встречу с Майором Андерсеном."
+
+		"SP_BOOMTOWN_START" "В Бездну"
+		"SP_BOOMTOWN_START_CLASSIC_DESC" "Подземная срезка приводит к неожиданным последствиям."
+
+		"SP_HUB_TIMESHIFT" "Следствие и Причина"
+		"SP_HUB_TIMESHIFT_CLASSIC_DESC" "Странный феномен был обнаружен на местополжении Майора Андерсена."
+
+		"SP_BEACON" "Маяк"
+		"SP_BEACON_CLASSIC_DESC" "Купер и БТ пытаются известить оставшийся флот о планах IMC."
+
+		"SP_TDAY" "Испытание огнём"
+		"SP_TDAY_CLASSIC_DESC" "Испытание навыков титана Купера в грандиозной битве за захват Ковчега."
+
+		"SP_S2S" "Ковчег"
+		"SP_S2S_CLASSIC_DESC" "Купер и БТ перемещаются по кораблям, преследуя Ковчег."
+
+		"SP_SKYWAY_V1" "Сложенное оружие"
+		"SP_SKYWAY_V1_CLASSIC_DESC" "БT и Купер были захвачены Кубеном Блиском."
+
+		// Better.Serverbrowser
+		"SERVERS_COLUMN" "Сервера"
+		"PLAYERS_COLUMN" "Игроки"
+		"MAP_COLUMN" "Карта"
+		"GAMEMODE_COLUMN" "Режим игры"
+		"LATENCY_COLUMN" "Задержка"
+		"SEARCHBAR_LABEL" "Поиск:"
+		"MAP_FILTER" "Карта"
+		"GAMEMODE_FILTER" "Режим игры"
+		"HIDE_FULL_FILTER" "Скрывать полные сервера"
+		"HIDE_EMPTY_FILTER" "Скрывать пустые сервера"
+		"HIDE_PROT_FILTER" "Скрывать закрытые сервера"
+		"SERVER_DESCRIPTION" "Описание"
+		"SERVER_MODS" "Моды"
+		"CLEAR_FILTERS" "ОЧИСТИТЬ"
+		"JOIN_BUTTON" "ПРИСОЕДИНИТЬСЯ"
+
+		"SWITCH_YES" "Да"
+		"SWITCH_NO" "Нет"
+		"SWITCH_ANY" "Любой"
+
+		"CONNECTING" "Соединение..."
+		"INGAME_PLAYERS" "Игроков: ^6BA6C400%s1"
+		"TOTAL_SERVERS" "Серверов: ^C46C6C00%s1"
+
+		// In-game chat
+		"HUD_CHAT_WHISPER_PREFIX" "[WHISPER]"
+		"HUD_CHAT_SERVER_PREFIX" "[SERVER]"
+	}
+}

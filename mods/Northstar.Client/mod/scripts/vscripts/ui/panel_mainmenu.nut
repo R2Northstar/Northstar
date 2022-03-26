@@ -6,6 +6,8 @@ global function UpdatePromoData
 global function UICodeCallback_GetOnPartyServer
 global function UICodeCallback_MainMenuPromosUpdated
 
+global bool isOnMainMenu = false
+
 // defining this here because it's the only place it's used rn, custom const for a hook in launcher
 global const WEBBROWSER_FLAG_FORCEEXTERNAL = 1 << 1 // 2
 
@@ -526,6 +528,7 @@ void function OnPlayFDButton_Activate( var button ) // repurposed for launching 
 	if ( !Hud_IsLocked( button ) )
 	{
 		SetConVarBool( "ns_is_modded_server", true )
+		SetConVarString( "communities_hostname", "" ) // disable communities due to crash exploits that are still possible through it
 		NSTryAuthWithLocalServer()
 		thread TryAuthWithLocalServer()
 	}
@@ -552,12 +555,12 @@ void function TryAuthWithLocalServer()
 		}
 		WaitFrame()
 	}
-	
+
 	if ( NSWasAuthSuccessful() )
 	{
 		NSCompleteAuthWithLocalServer()
 	}
-	
+
 	if ( GetConVarString( "mp_gamemode" ) == "solo" )
 		SetConVarString( "mp_gamemode", "tdm" )
 
