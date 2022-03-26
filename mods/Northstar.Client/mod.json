@@ -54,14 +54,21 @@
 			}
 		},
 		{
-			"Path": "ui/menu_ns_serverbrowser.nut",
+			"Path": "state_ui.nut",
 			"RunOn": "UI",
 			"UICallback": {
-				"Before": "AddNorthstarServerBrowserMenu"
+				"After": "NSUpdateGameStateUIStart"
 			}
 		},
 		{
-			"Path": "ui/menu_ns_connect_password.nut",
+			"Path": "state_client.nut",
+			"RunOn": "CLIENT",
+			"ClientCallback": {
+				"After": "NSUpdateGameStateClientStart"
+			}
+		},
+		{
+			"Path": "ui/menu_ns_serverbrowser.nut",
 			"RunOn": "UI",
 			"UICallback": {
 				"Before": "AddNorthstarConnectWithPasswordMenu"

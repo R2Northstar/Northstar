@@ -299,8 +299,12 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 		"SHOW_ALL" "Tous"
 		"SHOW_ONLY_ENABLED" "Mods activés"
 		"SHOW_ONLY_DISABLED" "Mods désactivés"
-    
+
 		// Maps menu
 		"HIDE_LOCKED" "Cacher les cartes verrouillées"
+
+		// In-game chat
+		"HUD_CHAT_WHISPER_PREFIX" "[WHISPER]"
+		"HUD_CHAT_SERVER_PREFIX" "[SERVER]"
 	}
 }
