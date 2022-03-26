@@ -6,10 +6,6 @@
 #include "gameutils.h"
 #include "sourceinterface.h"
 
-// should this be in modmanager?
-std::unordered_map<std::string, ConVar*>
-	g_CustomConvars; // this is used in modloading code to determine whether we've registered a mod convar already
-
 typedef void (*ConVarRegisterType)(
 	ConVar* pConVar, const char* pszName, const char* pszDefaultValue, int nFlags, const char* pszHelpString, bool bMin, float fMin,
 	bool bMax, float fMax, void* pCallback);
@@ -40,6 +36,8 @@ void InitialiseConVars(HMODULE baseAddress)
 
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x417FA0, &ConVar::IsFlagSet, reinterpret_cast<LPVOID*>(&CvarIsFlagSet));
+
+	
 }
 
 //-----------------------------------------------------------------------------
@@ -54,8 +52,6 @@ ConVar::ConVar(const char* pszName, const char* pszDefaultValue, int nFlags, con
 
 	conVarMalloc(&this->m_pMalloc, 0, 0); // Allocate new memory for ConVar.
 	conVarRegister(this, pszName, pszDefaultValue, nFlags, pszHelpString, 0, 0, 0, 0, 0);
-
-	g_CustomConvars.emplace(pszName, this);
 }
 
 //-----------------------------------------------------------------------------
@@ -72,8 +68,6 @@ ConVar::ConVar(
 
 	conVarMalloc(&this->m_pMalloc, 0, 0); // Allocate new memory for ConVar.
 	conVarRegister(this, pszName, pszDefaultValue, nFlags, pszHelpString, bMin, fMin, bMax, fMax, pCallback);
-
-	g_CustomConvars.emplace(pszName, this);
 }
 
 //-----------------------------------------------------------------------------
@@ -82,10 +76,7 @@ ConVar::ConVar(
 ConVar::~ConVar(void)
 {
 	if (m_Value.m_pszString)
-	{
 		delete[] m_Value.m_pszString;
-		m_Value.m_pszString = NULL;
-	}
 }
 
 //-----------------------------------------------------------------------------

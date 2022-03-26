@@ -191,9 +191,10 @@ ModManager::ModManager()
 {
 	// precaculated string hashes
 	// note: use backslashes for these, since we use lexically_normal for file paths which uses them
-	m_hScriptsRsonHash = std::hash<std::string>{}("scripts\\vscripts\\scripts.rson");
-	m_hPdefHash = std::hash<std::string>{}(
-		"cfg\\server\\persistent_player_data_version_231.pdef"); // this can have multiple versions, but we use 231 so that's what we hash
+	m_hScriptsRsonHash = STR_HASH("scripts\\vscripts\\scripts.rson");
+	m_hPdefHash = STR_HASH(
+		"cfg\\server\\persistent_player_data_version_231.pdef" // this can have multiple versions, but we use 231 so that's what we hash
+	); 
 
 	LoadMods();
 }
@@ -282,9 +283,7 @@ void ModManager::LoadMods()
 		// preexisting convars note: we don't delete convars if they already exist because they're used for script stuff, unfortunately this
 		// causes us to leak memory on reload, but not much, potentially find a way to not do this at some point
 		for (ModConVar* convar : mod.ConVars)
-			if (g_CustomConvars.find(convar->Name) ==
-				g_CustomConvars.end()) // make sure convar isn't registered yet, unsure if necessary but idk what behaviour is for defining
-									   // same convar multiple times
+			if (!g_pCVar->FindVar(convar->Name.c_str())) // make sure convar isn't registered yet, unsure if necessary but idk what behaviour is for defining same convar multiple times
 				new ConVar(convar->Name.c_str(), convar->DefaultValue.c_str(), convar->Flags, convar->HelpString.c_str());
 
 		// read vpk paths
@@ -396,7 +395,7 @@ void ModManager::LoadMods()
 				if (fs::is_regular_file(file))
 				{
 					std::string kvStr = file.path().lexically_relative(mod.ModDirectory / "keyvalues").lexically_normal().string();
-					mod.KeyValues.emplace(std::hash<std::string>{}(kvStr), kvStr);
+					mod.KeyValues.emplace(STR_HASH(kvStr), kvStr);
 				}
 			}
 		}
@@ -537,7 +536,7 @@ void ModManager::UnloadMods()
 
 void ModManager::CompileAssetsForFile(const char* filename)
 {
-	size_t fileHash = std::hash<std::string>{}(fs::path(filename).lexically_normal().string());
+	size_t fileHash = STR_HASH(fs::path(filename).lexically_normal().string());
 
 	if (fileHash == m_hScriptsRsonHash)
 		BuildScriptsRson();

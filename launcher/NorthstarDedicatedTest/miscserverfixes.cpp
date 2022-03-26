@@ -25,7 +25,4 @@ void InitialiseMiscServerFixes(HMODULE baseAddress)
 	}
 }
 
-void InitialiseMiscEngineServerFixes(HMODULE baseAddress) 
-{
-	
-}
+void InitialiseMiscEngineServerFixes(HMODULE baseAddress) {}

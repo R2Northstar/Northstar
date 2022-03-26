@@ -4,8 +4,10 @@
 // KittenPopo's memory stuff, made for northstar (because I really can't handle working with northstar's original memory stuff tbh)
 
 #pragma region Pattern Scanning
-namespace NSMem {
-	inline void* PatternScan(void* module, const int* pattern, int patternSize, int offset) {
+namespace NSMem
+{
+	inline void* PatternScan(void* module, const int* pattern, int patternSize, int offset)
+	{
 		if (!module)
 			return NULL;
 
@@ -16,16 +18,20 @@ namespace NSMem {
 
 		auto scanBytes = (BYTE*)module;
 
-		for (auto i = 0; i < sizeOfImage - patternSize; ++i) {
+		for (auto i = 0; i < sizeOfImage - patternSize; ++i)
+		{
 			bool found = true;
-			for (auto j = 0; j < patternSize; ++j) {
-				if (scanBytes[i + j] != pattern[j] && pattern[j] != -1) {
+			for (auto j = 0; j < patternSize; ++j)
+			{
+				if (scanBytes[i + j] != pattern[j] && pattern[j] != -1)
+				{
 					found = false;
 					break;
 				}
 			}
 
-			if (found) {
+			if (found)
+			{
 				uintptr_t addressInt = (uintptr_t)(&scanBytes[i]) + offset;
 				return (uint8_t*)addressInt;
 			}
@@ -34,31 +40,42 @@ namespace NSMem {
 		return nullptr;
 	}
 
-	inline void* PatternScan(const char* moduleName, const char* pattern, int offset = 0) {
+	inline void* PatternScan(const char* moduleName, const char* pattern, int offset = 0)
+	{
 		std::vector<int> patternNums;
 
 		bool lastChar = 0;
 		int size = strlen(pattern);
-		for (int i = 0; i < size; i++) {
+		for (int i = 0; i < size; i++)
+		{
 			char c = pattern[i];
 
 			// If this is a space character, ignore it
 			if (c == ' ' || c == '\t')
 				continue;
 
-			if (c == '?') {
+			if (c == '?')
+			{
 				// Add a wildcard (-1)
 				patternNums.push_back(-1);
-			} else if (i < size - 1) {
+			}
+			else if (i < size - 1)
+			{
 				BYTE result = 0;
-				for (int j = 0; j < 2; j++) {
+				for (int j = 0; j < 2; j++)
+				{
 					int val = 0;
 					char c = (pattern + i + j)[0];
-					if (c >= 'a') {
+					if (c >= 'a')
+					{
 						val = c - 'a' + 0xA;
-					} else if (c >= 'A') {
+					}
+					else if (c >= 'A')
+					{
 						val = c - 'A' + 0xA;
-					} else {
+					}
+					else
+					{
 						val = c - '0';
 					}
 
@@ -72,24 +89,28 @@ namespace NSMem {
 		return PatternScan(GetModuleHandleA(moduleName), &patternNums[0], patternNums.size(), offset);
 	}
 
-	inline void BytePatch(uintptr_t address, const BYTE* vals, int size) {
+	inline void BytePatch(uintptr_t address, const BYTE* vals, int size)
+	{
 		WriteProcessMemory(GetCurrentProcess(), (LPVOID)address, vals, size, NULL);
 	}
 
-	inline void BytePatch(uintptr_t address, std::initializer_list<BYTE> vals) {
+	inline void BytePatch(uintptr_t address, std::initializer_list<BYTE> vals)
+	{
 		std::vector<BYTE> bytes = vals;
 		if (!bytes.empty())
 			BytePatch(address, &bytes[0], bytes.size());
 	}
 
-	inline void NOP(uintptr_t address, int size) {
+	inline void NOP(uintptr_t address, int size)
+	{
 		BYTE* buf = (BYTE*)malloc(size);
 		memset(buf, 0x90, size);
 		BytePatch(address, buf, size);
 		free(buf);
 	}
 
-	inline bool IsMemoryReadable(void* ptr, size_t size) {
+	inline bool IsMemoryReadable(void* ptr, size_t size)
+	{
 		BYTE* buffer = (BYTE*)malloc(size);
 
 		size_t numWritten = 0;
@@ -98,18 +119,21 @@ namespace NSMem {
 
 		return numWritten == size;
 	}
-}
+} // namespace NSMem
 
 #pragma region KHOOK
-struct KHookPatternInfo {
-	const char* moduleName, *pattern;
+struct KHookPatternInfo
+{
+	const char *moduleName, *pattern;
 	int offset = 0;
 
-	KHookPatternInfo(const char* moduleName, const char* pattern, int offset = 0) 
-		: moduleName(moduleName), pattern(pattern), offset(offset) {}
+	KHookPatternInfo(const char* moduleName, const char* pattern, int offset = 0) : moduleName(moduleName), pattern(pattern), offset(offset)
+	{
+	}
 };
 
-struct KHook {
+struct KHook
+{
 	KHookPatternInfo targetFunc;
 	void* targetFuncAddr;
 	void* hookFunc;
@@ -117,13 +141,15 @@ struct KHook {
 
 	static inline std::vector<KHook*> _allHooks;
 
-	KHook(KHookPatternInfo targetFunc, void* hookFunc, void** original) : targetFunc(targetFunc) {
+	KHook(KHookPatternInfo targetFunc, void* hookFunc, void** original) : targetFunc(targetFunc)
+	{
 		this->hookFunc = hookFunc;
 		this->original = original;
 		_allHooks.push_back(this);
 	}
 
-	bool Setup() {
+	bool Setup()
+	{
 		targetFuncAddr = NSMem::PatternScan(targetFunc.moduleName, targetFunc.pattern, targetFunc.offset);
 		if (!targetFuncAddr)
 			return false;
@@ -132,11 +158,16 @@ struct KHook {
 	}
 
 	// Returns true if succeeded
-	static bool InitAllHooks() {
-		for (KHook* hook : _allHooks) {
-			if (hook->Setup()) {
+	static bool InitAllHooks()
+	{
+		for (KHook* hook : _allHooks)
+		{
+			if (hook->Setup())
+			{
 				spdlog::info("KHook hooked at {}", hook->targetFuncAddr);
-			} else {
+			}
+			else
+			{
 				return false;
 			}
 		}
@@ -144,9 +175,9 @@ struct KHook {
 		return MH_EnableHook(MH_ALL_HOOKS) == MH_OK;
 	}
 };
-#define KHOOK(name, funcPatternInfo, returnType, convention, args)                                                                             \
+#define KHOOK(name, funcPatternInfo, returnType, convention, args)                                                                         \
 	returnType convention hk##name args;                                                                                                   \
 	auto o##name = (returnType(convention*) args)0;                                                                                        \
-	KHook k##name = KHook(KHookPatternInfo funcPatternInfo, &hk##name, (void**)&o##name);                                                                \
+	KHook k##name = KHook(KHookPatternInfo funcPatternInfo, &hk##name, (void**)&o##name);                                                  \
 	returnType convention hk##name args
 #pragma endregion
