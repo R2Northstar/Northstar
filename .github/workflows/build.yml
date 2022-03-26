@@ -45,6 +45,7 @@ jobs:
             northstar-launcher/x64/Release/Northstar.dll
             northstar-launcher/x64/Release/wsock32.dll
             northstar-launcher/x64/Release/NorthstarLauncher.exe
+            northstar-launcher/x64/Release/discord_game_sdk.dll
             northstar-launcher/x64/Release/DiscordRPC.dll
             northstar-launcher/x64/Release/*.txt
       - name: Upload debug build artifact
@@ -95,6 +96,7 @@ jobs:
           mkdir -p northstar/R2Northstar/plugins
           mkdir -p northstar/bin/x64_retail
           mv -v northstar-launcher/DiscordRPC.dll northstar/R2Northstar/plugins
+          mv -v northstar-launcher/discord_game_sdk.dll northstar/R2Northstar/plugins
           mv -v northstar-launcher/wsock32.dll northstar/bin/x64_retail
           unzip NorthstarStubs.zip -d northstar/bin/x64_dedi
           mv -v northstar-launcher/* northstar
