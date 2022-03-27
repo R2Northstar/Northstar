@@ -18,7 +18,7 @@ However, once you get the hang of it, it should be fairly easy to use.
         "LoadPriority": 1,
 
 
-The script above defines the pubic and listed details of the mod
+The script above defines the pubic and listed details of the mod.
 
 .. code-block:: json
     
@@ -36,7 +36,7 @@ The script above defines the pubic and listed details of the mod
             }
         ],
 
-The script above defines both what functions to run, when to run them and WHERE to run them, in this case it runs your ``simplerandomiser_init``, when on multiplayer and for both the server and the client
+The script above defines both what functions to run, when to run them and WHERE to run them, in this case it runs your ``simplerandomiser_init``, when on multiplayer and for both the server and the client.
 
 .. code-block:: json
 
@@ -45,13 +45,40 @@ The script above defines both what functions to run, when to run them and WHERE 
         ]
     }
 
-this defines the path to the language file
+This defines the path to the language file.
 
-name this file ``mod.json``, and it should go in the mods root folder
+Name this file ``mod.json``, and it should go in the mods root folder, that being /yourmodname.
+
+Here's what the end result would look like:
+
+.. code-block:: json
+
+    {
+        "Name" : "SimpleRandomiser",
+        "Description" : "SimpleRandomiser",
+        "Version": "0.1.0",
+        "LoadPriority": 1,
+        "Scripts": [
+            {
+                "Path": "sh_SimpleRandomiser.gnut",
+                "RunOn": "MP",
+                "ClientCallback": {
+                    "After": "simplerandomiser_init"
+                },
+
+                "ServerCallback": {
+                    "After": "simplerandomiser_init"
+                }
+            }
+        ],
+        "Localisation": [
+            "resource/simplerandomiser_localisation_%language%.txt"
+        ]
+    }
 
 Language file
 -------------
-This follows a fairly simple template, the only thing of note is that you often get strange behaviour using ``utf-8`` when saving the file instead of using ``utf-16 le``
+This follows a fairly simple template, the only thing of note is that you often get strange behaviour using ``UTF-8`` when saving the file instead of using ``UTF-16 LE``.
 
 .. code-block::
 
@@ -65,25 +92,31 @@ This follows a fairly simple template, the only thing of note is that you often 
         }
     }
 
-Name this file ``simplerandomiser_localisation_english.txt`` and place it in the ``yourmodsname/mod/resources/`` folder.
-
+Name this file ``simplerandomiser_localisation_english.txt`` and place it in the ``yourmodsname/mod/resource/`` folder.
 
 Creating the mod
 ----------------
-lets actually get started then on making a setting mod, this will involve the making of 3 things for a simple one. a mod.json, a language file and the mod itself
-lets get started with the mod itself
-To begin with we need to answer the simple question of "what are we making" for our example lets make a simple randomiser than randomises your weapon on each spawn.
-Because this is a setting mod it will only need to be installed on the serverside but it also wont appear in the browser unless the host puts it in the name.
-so lets get started with our **initial function**
+Creating a gamemode mod will involve 3 things primarily, which being: 
+    1. A mod.json, 
+    2. A language file and 
+    3. The mod itself.
+Since we are done with the first two, we need to get started with the mod itself.
+
+To begin with, we need to answer the simple question of "What are we making?"
+
+For our example, let's make a simple randomiser that randomises your weapon on each spawn.
+Because this is a mod that only affects server settings, it will only need to be installed on the serverside but it won't appear in the browser unless the host puts it in the server name.
+So let's get started with our **initial function**
 
 The initial function
 ^^^^^^^^^^^^^^^^^^^^
 The initial function is the function that is called on server startup and contains 2 important things.
-the **callbacks** and the **setting buttons** to add the settings to the private match settings we need to use a new function:
+The **callbacks** and the **settings**. 
+To add settings to the private match settings we need to use a new function:
 
 ``AddPrivateMatchModeSettingEnum("string", "string", ["#SETTING_ENABLED", "#SETTING_ENABLED"], "0")``
 
-this might look complicated, but really its just (Category, settingname, [setting options], default value) however we use terms like ``"#MODE_SETTING_CATEGORY_RANDOMISER"`` in place of the category name so that we can create language files for different languages.
+This might look complicated, but really its just (Category, settingname, [setting options], default value) however we use terms like ``"#MODE_SETTING_CATEGORY_RANDOMISER"`` in place of the category name so that we can create language files for different languages.
 (we will make that later)
 
 .. code-block:: javascript
@@ -99,7 +132,7 @@ this might look complicated, but really its just (Category, settingname, [settin
 As you may have noticed, checking if it is a server is a special case, so we use ``#if SERVER`` and ``#endif`` instead of the usual ``if(thing){stuff}``
 
 Now that our initial function is created we now have the game triggering `GiveRandomGun` on spawn, but we dont have any such function, so lets make one. but before we can do that, we need to know what weapons we can equip. 
-for this we define an array 
+For this we define an array:
 
 .. code-block:: javascript
 
@@ -109,10 +142,9 @@ for this we define an array
             "mp_weapon_car",
             "mp_weapon_dmr"]
     
-here we have defined an array with only 4 weapons in it, you can make this list as long or as short as you like but remember to seperate all but the last item with a ``,``
+Here we have defined an array with only 4 weapons in it, you can make this list however you like but remember to separate all but the last item with a ``,``
 
-Now lets make a function to check if you enabled the setting    
-
+Now let's make a function to check if you enabled the setting:
 
 .. code-block:: javascript
 
@@ -122,7 +154,7 @@ Now lets make a function to check if you enabled the setting
 
 Randomise function
 ^^^^^^^^^^^^^^^^^^
-As we already know its going to call ``GiveRandomGun`` on respawn, lets define that now.
+As we already know its going to call the function ``GiveRandomGun`` when a player respawns, let's define that now.
 First we strip any existing weapons:
 
 .. code-block:: javascript
@@ -131,7 +163,7 @@ First we strip any existing weapons:
         foreach ( entity weapon in player.GetMainWeapons() )
             player.TakeWeaponNow( weapon.GetWeaponClassName() )
 
-this iterates through each weapon and removes them individually. 
+This iterates through each weapon (that being the primary, secondary and anti-titan weapons) and removes them individually. 
 
 Then lets give them a new, random weapon by selecting a random item from our previous array:
 
@@ -163,4 +195,5 @@ And done, surprisingly short script huh?
     player.GiveWeapon(pilotweapons[RandomInt(pilotweapons.len())])
     }
 
-Name this ``sh_SimpleRandomiser.gnut`` and place it in the ``yourmodsname/mod/scripts/vscripts/`` folder
+Name this ``sh_SimpleRandomiser.gnut`` and place it in the ``yourmodsname/mod/scripts/vscripts/`` folder.
+Make sure to double check that all spellings are correct in your mod as everything is case-sensitive.
