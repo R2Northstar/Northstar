@@ -34,6 +34,10 @@
 ## Modding and Development
 
 * [Modding](modding/README.md)
+* [Development](modding-and-development/development/README.md)
+  * [NorthstarLauncher](modding-and-development/development/northstarlauncher.md)
+  * [NorthstarMasterServer](modding-and-development/development/northstarmasterserver/README.md)
+    * [Deploy](modding-and-development/development/northstarmasterserver/deploy.md)
 
 ## Other
 
