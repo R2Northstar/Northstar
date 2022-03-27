@@ -19,7 +19,7 @@ If you know anything about any function, object or concept please dont hesitate 
 .. toctree::
    :maxdepth: 2
    :hidden:
-   
+
    /guides/index
 
 .. toctree::
@@ -32,6 +32,7 @@ If you know anything about any function, object or concept please dont hesitate 
    /guides/cheatsheet
    /guides/moddingtutorials
    /guides/weaponmodding
+   /guides/crosshairmodding
    /guides/settingsmods
    /guides/gamemodemods
    /guides/publishing
@@ -53,5 +54,6 @@ If you know anything about any function, object or concept please dont hesitate 
    /native/functions
    /native/tablesandarrays
    /native/async
+   /native/class
    /native/useful
 

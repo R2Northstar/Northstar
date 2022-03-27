@@ -1,0 +1,11 @@
+Client Command; Arguments; Description
+PrivateMatchSetMode; mode shortname; Player changed the mode in private lobby menu
+SetCustomMap; map name; Player changed the map in private lobby menu 
+PrivateMatchSetPlaylistVarOverride; playlistvaroverride, value; Player changed the playlistvaroverride to value in private lobby menu
+RequestPilotLoadout; index; Player has changed their loadout to index 2
+ClearNewStatus; pilot_loadout_3
+VModEnable; number; unknown, logged with number 0
+vban; number;unknown, logged with number 0
+HoldToRodeo; number0;unknown, logged with number 0
+ClientStatus; number;unknown, logged with number 0
+AllDialogueFinished;;unknown
