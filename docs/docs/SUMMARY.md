@@ -34,30 +34,6 @@
 ## Modding and Development
 
 * [Modding](modding/README.md)
-  * [Getting Started](modding/getting-started.md)
-  * [Modding Tools](modding/tools.md)
-  * [Tutorials](modding/tutorials/modding-tutorials.md)
-  * [Cheatsheet](modding/cheatsheet.md)
-  * [Squirrel](modding/squirrel/what-is-squirrel.md)
-    * [Handling threads](modding/squirrel/handling-threads-and-waits.md)
-    * [Basic control blocks](modding/squirrel/loops-functions-and-if.md)
-    * [Respawn's functions](modding/squirrel/respawns-functions.md)
-    * [Tables and arrays](modding/squirrel/tables-and-arrays.md)
-    * [Callbacks](modding/squirrel/what-are-callbacks.md)
-    * [Gamemode modding](modding/squirrel/gamemode-mods/creatinggamemodes.md)
-      * [The Mod Init](modding/squirrel/gamemode-mods/the-mod-init.md)
-    * [Custom settings](modding/squirrel/setting-mods/settingmodsintro.md)
-      * [The JSON](modding/squirrel/setting-mods/the-json.md)
-      * [The Language File](modding/squirrel/setting-mods/the-language-file.md)
-      * [The mod file](modding/squirrel/setting-mods/the-mod-file.md)
-  * [Keyvalues](modding/keyvalues.md)
-  * [Setup Syntax Highlighting](modding/squirrel/setup-syntax-highlighting.md)
-  * [Localisation](modding/localisation\_files.md)
-  * [Publishing](modding/publishing.md)
-* [Development](modding-and-development/development/README.md)
-  * [NorthstarLauncher](modding-and-development/development/northstarlauncher.md)
-  * [NorthstarMasterServer](modding-and-development/development/northstarmasterserver/README.md)
-    * [Deploy](modding-and-development/development/northstarmasterserver/deploy.md)
 
 ## Other
 
