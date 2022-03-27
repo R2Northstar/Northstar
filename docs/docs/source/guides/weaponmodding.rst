@@ -13,6 +13,7 @@ You can find all the weapon keyvalues `here <https://github.com/BigSpice/TitanFa
 Example for modding crossshairs using keyvalues: :doc:`crosshairmodding`
 
 - Mod Examples:
+
   - `Northstar.Custom <https://github.com/R2Northstar/NorthstarMods/tree/main/Northstar.Custom>`_
   - `Unholy Trinity <https://github.com/xamionex/xamionex.UnholyTrinity>`_
   - `Kraber9K <https://github.com/Steveplays28/kraber9k>`_
