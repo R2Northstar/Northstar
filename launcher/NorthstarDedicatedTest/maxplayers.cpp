@@ -46,9 +46,7 @@ constexpr int Team_PlayerArray_AddedSize = PAD_NUMBER(Team_PlayerArray_AddedLeng
 constexpr int Team_AddedSize = Team_PlayerArray_AddedSize;
 
 #include "NSMem.h"
-template <class T> void ChangeOffset(void* addr, unsigned int offset) {
-	NSMem::BytePatch((uintptr_t)addr, (BYTE*)&offset, sizeof(T));
-}
+template <class T> void ChangeOffset(void* addr, unsigned int offset) { NSMem::BytePatch((uintptr_t)addr, (BYTE*)&offset, sizeof(T)); }
 
 /*
 typedef bool(*MatchRecvPropsToSendProps_R_Type)(__int64 lookup, __int64 tableNameBroken, __int64 sendTable, __int64 recvTable);

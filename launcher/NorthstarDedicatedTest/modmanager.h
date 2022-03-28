@@ -97,7 +97,8 @@ class Mod
 	std::string Pdiff; // only need one per mod
 
 	std::vector<ModRpakEntry> Rpaks;
-	std::unordered_map<std::string, std::string> RpakAliases; // paks we alias to other rpaks, e.g. to load sp_crashsite paks on the map mp_crashsite
+	std::unordered_map<std::string, std::string>
+		RpakAliases; // paks we alias to other rpaks, e.g. to load sp_crashsite paks on the map mp_crashsite
 
 	// other stuff
 

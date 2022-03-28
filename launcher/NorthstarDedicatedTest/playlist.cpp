@@ -98,9 +98,7 @@ void InitialisePlaylistHooks(HMODULE baseAddress)
 	// patch to prevent clc_SetPlaylistVarOverride from being able to crash servers if we reach max overrides due to a call to Error (why is
 	// this possible respawn, wtf) todo: add a warning for this
 	{
-		NSMem::BytePatch(ba + 0x18ED8D, {
-			0xC3 // jmp => ret
-		});
+		NSMem::BytePatch(ba + 0x18ED8D, "C3");
 	}
 
 	// patch to allow setplaylistvaroverride to be called before map init on dedicated and private match launched through the game

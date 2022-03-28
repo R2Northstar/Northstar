@@ -7,8 +7,8 @@
 
 bool IsDedicated()
 {
-	// return CommandLine()->CheckParm("-dedicated");
-	return strstr(GetCommandLineA(), "-dedicated");
+	static bool result = strstr(GetCommandLineA(), "-dedicated");
+	return result;
 }
 
 // CDedidcatedExports defs
@@ -136,10 +136,10 @@ void InitialiseDedicated(HMODULE engineAddress)
 		auto ptr = ea + 0x1C4EBD;
 
 		// cmp => mov
-		NSMem::BytePatch(ptr + 1, {0xC6, 0x87});
+		NSMem::BytePatch(ptr + 1, "C6 87");
 
 		// 00 => 01
-		NSMem::BytePatch(ptr + 7, {0x01});
+		NSMem::BytePatch(ptr + 7, "01");
 	}
 
 	{
@@ -160,7 +160,7 @@ void InitialiseDedicated(HMODULE engineAddress)
 		// previously patched these, took me a couple weeks to figure out they were the issue
 		// removing these will mess up register state when this function is over, so we'll write HS_RUN to the wrong address
 		// so uhh, don't do that
-		//NSMem::NOP(ea + 0x156B4C + 7, 8);
+		// NSMem::NOP(ea + 0x156B4C + 7, 8);
 
 		NSMem::NOP(ea + 0x156B4C + 15, 9);
 	}
@@ -188,7 +188,7 @@ void InitialiseDedicated(HMODULE engineAddress)
 	{
 		// Host_Init
 		// change the number of rpaks to load from 6 to 1, so we only load common.rpak
-		NSMem::BytePatch(ea + 0x15653B + 1, {0x01});
+		NSMem::BytePatch(ea + 0x15653B + 1, "01");
 	}
 
 	{
@@ -212,10 +212,11 @@ void InitialiseDedicated(HMODULE engineAddress)
 	{
 		// func that checks if origin is inited
 		// always return 1
-		NSMem::BytePatch(ea + 0x183B70, {
-			0xB0, 0x01, // mov al,01
-			0xC3 // ret
-		});
+		NSMem::BytePatch(
+			ea + 0x183B70, {
+							   0xB0, 0x01, // mov al,01
+							   0xC3		   // ret
+						   });
 	}
 
 	{
@@ -301,9 +302,10 @@ void InitialiseDedicatedOrigin(HMODULE baseAddress)
 	// for any big ea lawyers, this can't be used to play the game without origin, game will throw a fit if you try to do anything without
 	// an origin id as a client for dedi it's fine though, game doesn't care if origin is disabled as long as there's only a server
 
-	NSMem::BytePatch((uintptr_t)GetProcAddress(GetModuleHandleA("tier0.dll"), "Tier0_InitOrigin"), {
-		0xC3 // ret
-	});
+	NSMem::BytePatch(
+		(uintptr_t)GetProcAddress(GetModuleHandleA("tier0.dll"), "Tier0_InitOrigin"), {
+																						  0xC3 // ret
+																					  });
 }
 
 typedef void (*PrintFatalSquirrelErrorType)(void* sqvm);

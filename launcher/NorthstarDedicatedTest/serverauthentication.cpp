@@ -628,25 +628,26 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 
 	// patch to disable kicking based on incorrect serverfilter in connectclient, since we repurpose it for use as an auth token
 	{
-		NSMem::BytePatch(ba + 0x114655, {
-			0xEB // jz => jmp
-		});
+		NSMem::BytePatch(
+			ba + 0x114655,
+			"EB" // jz => jmp
+		);
 	}
 
 	// patch to disable fairfight marking players as cheaters and kicking them
 	{
-		NSMem::BytePatch(ba + 0x101012, {
-			0xE9, // jz => jmp
-			0x90,
-			0x0
-		});
+		NSMem::BytePatch(
+			ba + 0x101012,
+			"E9 90 00" // jz => jmp
+		);
 	}
 
 	// patch to allow same of multiple account
 	{
-		NSMem::BytePatch(ba + 0x114510, {
-			0xEB, // jz => jmp
-		});
+		NSMem::BytePatch(
+			ba + 0x114510,
+			"EB" // jz => jmp
+		);
 	}
 
 	// patch to set bWasWritingStringTableSuccessful in CNetworkStringTableContainer::WriteBaselines if it fails
@@ -654,9 +655,11 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 		uintptr_t writeAddress = (uintptr_t)(&bWasWritingStringTableSuccessful - (ba + 0x234EDC));
 
 		auto addr = ba + 0x234ED2;
-		NSMem::BytePatch(addr, { 0xC7, 0x05 });
+		NSMem::BytePatch(addr, "C7 05");
 		NSMem::BytePatch(addr + 2, (BYTE*)&writeAddress, sizeof(writeAddress));
-		NSMem::BytePatch(addr + 6, {0, 0, 0, 0});
+
+		NSMem::BytePatch(addr + 6, "00 00 00 00");
+
 		NSMem::NOP(addr + 10, 5);
 	}
 }

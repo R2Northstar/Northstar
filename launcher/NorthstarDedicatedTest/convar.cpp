@@ -36,8 +36,6 @@ void InitialiseConVars(HMODULE baseAddress)
 
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x417FA0, &ConVar::IsFlagSet, reinterpret_cast<LPVOID*>(&CvarIsFlagSet));
-
-	
 }
 
 //-----------------------------------------------------------------------------
