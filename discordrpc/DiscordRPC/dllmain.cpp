@@ -233,7 +233,6 @@ int main(int, char**)
 				details += " (First to " + std::to_string(pluginData.scoreLimit) + ")";
 				activity.SetDetails(details.c_str());
 				const auto p1 = std::chrono::system_clock::now().time_since_epoch();
-				printf("%i\n", pluginData.endTime);
 				if (pluginData.endTime > 0) {
 					activity.GetTimestamps().SetEnd(std::chrono::duration_cast<std::chrono::seconds>(p1).count() + pluginData.endTime);
 					activity.GetTimestamps().SetStart(0);
