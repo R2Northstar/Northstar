@@ -150,8 +150,8 @@ void function GamemodeCP_OnPlayerKilled(entity victim, entity attacker, var dama
 void function removePlayerFromCapperArray_threaded(array<entity> capperArray,entity player)
 {
 	WaitFrame()
-	if(capperArray.contains(player))
-		capperArray.remove(capperArray.find(player))
+	FindAndRemove(capperArray,player)
+
 }
 
 void function RateSpawnpoints_CP( int checkClass, array<entity> spawnpoints, int team, entity player )
@@ -589,12 +589,12 @@ void function HardpointThink( HardpointStruct hardpoint )
 		foreach(entity player in hardpoint.imcCappers)
 		{
 			if(DistanceSqr(player.GetOrigin(),hardpointEnt.GetOrigin())>1200000)
-				hardpoint.imcCappers.remove(hardpoint.imcCappers.find(player))
+				FindAndRemove(hardpoint.imcCappers,player)
 		}
 		foreach(entity player in hardpoint.militiaCappers)
 		{
 			if(DistanceSqr(player.GetOrigin(),hardpointEnt.GetOrigin())>1200000)
-				hardpoint.militiaCappers.remove(hardpoint.militiaCappers.find(player))
+				FindAndRemove(hardpoint.militiaCappers,player)
 		}
 
 
@@ -656,7 +656,7 @@ void function OnHardpointLeft( entity trigger, entity player )
 			hardpoint = hardpointStruct
 
 	if ( player.GetTeam() == TEAM_IMC )
-		hardpoint.imcCappers.remove( hardpoint.imcCappers.find( player ) )
+		FindAndRemove( hardpoint.imcCappers, player )
 	else
 		FindAndRemove( hardpoint.militiaCappers, player )
 	foreach(CP_PlayerStruct playerStruct in file.players)
