@@ -41,7 +41,7 @@ void function NSUpdateGameStateLoopClient()
             ourScore = GameRules_GetTeamScore( GetLocalClientPlayer().GetTeam() )
         }
         int limit = GetServerVar( "roundBased" ) ? GetCurrentPlaylistVarInt( "roundscorelimit", 0 ) : GetCurrentPlaylistVarInt( "scorelimit", 0 )
-        NSUpdateGameStateClient( GetPlayerArray().len(), ourScore, secondHighestScore, highestScore, GetServerVar( "roundBased" ), limit )
+        NSUpdateGameStateClient( GetPlayerArray().len(), GetCurrentPlaylistVarInt( "max_players", 65535 ), ourScore, secondHighestScore, highestScore, GetServerVar( "roundBased" ), limit )
         OnPrematchStart()
         wait 1.0
     }
