@@ -194,7 +194,7 @@ ModManager::ModManager()
 	m_hScriptsRsonHash = STR_HASH("scripts\\vscripts\\scripts.rson");
 	m_hPdefHash = STR_HASH(
 		"cfg\\server\\persistent_player_data_version_231.pdef" // this can have multiple versions, but we use 231 so that's what we hash
-	); 
+	);
 
 	LoadMods();
 }
@@ -283,7 +283,8 @@ void ModManager::LoadMods()
 		// preexisting convars note: we don't delete convars if they already exist because they're used for script stuff, unfortunately this
 		// causes us to leak memory on reload, but not much, potentially find a way to not do this at some point
 		for (ModConVar* convar : mod.ConVars)
-			if (!g_pCVar->FindVar(convar->Name.c_str())) // make sure convar isn't registered yet, unsure if necessary but idk what behaviour is for defining same convar multiple times
+			if (!g_pCVar->FindVar(convar->Name.c_str())) // make sure convar isn't registered yet, unsure if necessary but idk what
+														 // behaviour is for defining same convar multiple times
 				new ConVar(convar->Name.c_str(), convar->DefaultValue.c_str(), convar->Flags, convar->HelpString.c_str());
 
 		// read vpk paths
@@ -305,8 +306,7 @@ void ModManager::LoadMods()
 				dVpkJson.Parse<rapidjson::ParseFlag::kParseCommentsFlag | rapidjson::ParseFlag::kParseTrailingCommasFlag>(
 					vpkJsonStringStream.str().c_str());
 
-				bUseVPKJson =
-					!dVpkJson.HasParseError() && dVpkJson.IsObject();
+				bUseVPKJson = !dVpkJson.HasParseError() && dVpkJson.IsObject();
 			}
 
 			for (fs::directory_entry file : fs::directory_iterator(mod.ModDirectory / "vpk"))
@@ -324,7 +324,8 @@ void ModManager::LoadMods()
 						(file.path().parent_path() / formattedPath.substr(strlen("english"), formattedPath.find(".bsp") - 3)).string();
 
 					ModVPKEntry& modVpk = mod.Vpks.emplace_back();
-					modVpk.m_bAutoLoad = !bUseVPKJson || (dVpkJson.HasMember("Preload") && dVpkJson["Preload"].IsObject() && dVpkJson["Preload"].HasMember(vpkName) && dVpkJson["Preload"][vpkName].IsTrue());
+					modVpk.m_bAutoLoad = !bUseVPKJson || (dVpkJson.HasMember("Preload") && dVpkJson["Preload"].IsObject() &&
+														  dVpkJson["Preload"].HasMember(vpkName) && dVpkJson["Preload"][vpkName].IsTrue());
 					modVpk.m_sVpkPath = vpkName;
 
 					if (m_hasLoadedMods && modVpk.m_bAutoLoad)
@@ -352,8 +353,7 @@ void ModManager::LoadMods()
 				dRpakJson.Parse<rapidjson::ParseFlag::kParseCommentsFlag | rapidjson::ParseFlag::kParseTrailingCommasFlag>(
 					rpakJsonStringStream.str().c_str());
 
-				bUseRpakJson =
-					!dRpakJson.HasParseError() && dRpakJson.IsObject();
+				bUseRpakJson = !dRpakJson.HasParseError() && dRpakJson.IsObject();
 			}
 
 			// read pak aliases
@@ -377,11 +377,13 @@ void ModManager::LoadMods()
 					std::string pakName(file.path().filename().string());
 
 					ModRpakEntry& modPak = mod.Rpaks.emplace_back();
-					modPak.m_bAutoLoad = !bUseRpakJson || (dRpakJson.HasMember("Preload") && dRpakJson["Preload"].IsObject() && dRpakJson["Preload"].HasMember(pakName) && dRpakJson["Preload"][pakName].IsTrue());
+					modPak.m_bAutoLoad =
+						!bUseRpakJson || (dRpakJson.HasMember("Preload") && dRpakJson["Preload"].IsObject() &&
+										  dRpakJson["Preload"].HasMember(pakName) && dRpakJson["Preload"][pakName].IsTrue());
 					modPak.m_sPakPath = pakName;
 
 					// not using atm because we need to resolve path to rpak
-					//if (m_hasLoadedMods && modPak.m_bAutoLoad)
+					// if (m_hasLoadedMods && modPak.m_bAutoLoad)
 					//	g_PakLoadManager->LoadPakAsync(pakName.c_str());
 				}
 			}

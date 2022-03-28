@@ -68,8 +68,7 @@ long __stdcall ExceptionFilter(EXCEPTION_POINTERS* exceptionInfo)
 			else if (exceptionInfo0 == 1)
 				exceptionCause << "Attempted to write to: 0x" << (void*)exceptionInfo1;
 			else if (exceptionInfo0 == 8)
-				exceptionCause << "Data Execution Prevention (DEP) at: 0x" << (void*)std::hex
-							   << exceptionInfo1;
+				exceptionCause << "Data Execution Prevention (DEP) at: 0x" << (void*)std::hex << exceptionInfo1;
 			else
 				exceptionCause << "Unknown access violation at: 0x" << (void*)exceptionInfo1;
 

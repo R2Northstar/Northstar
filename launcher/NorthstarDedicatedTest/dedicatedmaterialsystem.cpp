@@ -61,9 +61,7 @@ void InitialiseDedicatedMaterialSystem(HMODULE baseAddress)
 	{
 		// CMaterialSystem::FindMaterial
 		// make the game always use the error material
-		NSMem::BytePatch((uintptr_t)baseAddress + 0x5F0F1, {
-			0xE9, 0x34, 0x03, 0x00
-		});
+		NSMem::BytePatch((uintptr_t)baseAddress + 0x5F0F1, {0xE9, 0x34, 0x03, 0x00});
 	}
 
 	// previously had DisableDedicatedWindowCreation stuff here, removing for now since shit and unstable
