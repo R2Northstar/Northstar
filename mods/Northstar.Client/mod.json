@@ -71,6 +71,13 @@
 			"Path": "ui/menu_ns_serverbrowser.nut",
 			"RunOn": "UI",
 			"UICallback": {
+				"Before": "AddNorthstarServerBrowserMenu"
+			}
+		},
+		{
+			"Path": "ui/menu_ns_connect_password.nut",
+			"RunOn": "UI",
+			"UICallback": {
 				"Before": "AddNorthstarConnectWithPasswordMenu"
 			}
 		},
