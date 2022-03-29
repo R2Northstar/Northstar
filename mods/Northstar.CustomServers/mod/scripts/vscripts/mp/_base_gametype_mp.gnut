@@ -484,7 +484,12 @@ void function RespawnAsTitan( entity player, bool manualPosition = false )
 	player.RespawnPlayer( null ) // spawn player as pilot so they get their pilot loadout on embark
 	player.SetOrigin( titan.GetOrigin() )
 	
-	PilotBecomesTitan( player, titan ) // make player titan
+	// don't make player titan when entity batteryContainer is not valid.
+	// This will prevent a servercrash that sometimes occur when evac is disabled and somebody is calling a titan in the defeat screen.
+	if( IsValid( titan.GetTitanSoul().soul.batteryContainer ) )
+		PilotBecomesTitan( player, titan ) // make player titan
+	else
+		print( "batteryContainer is not a valid entity in RespawnAsTitan(). Skipping PilotBecomesTitan()." )
 }
 
 
