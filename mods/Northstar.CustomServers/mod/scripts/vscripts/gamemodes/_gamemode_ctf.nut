@@ -36,6 +36,7 @@ void function CaptureTheFlag_Init()
 	AddCallback_OnClientConnected( CTFInitPlayer )
 
 	AddCallback_GameStateEnter( eGameState.Prematch, CreateFlags )
+	AddCallback_GameStateEnter( eGameState.Epilogue, RemoveFlags )
 	AddCallback_OnTouchHealthKit( "item_flag", OnFlagCollected )
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	AddCallback_OnPilotBecomesTitan( DropFlagForBecomingTitan )
@@ -109,6 +110,8 @@ void function CTFInitPlayer( entity player )
 
 void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
+	if ( !IsValid( GetFlagForTeam( GetOtherTeam( victim.GetTeam() ) ) ) ) // getting a crash idk
+		return
 	if ( GetFlagForTeam( GetOtherTeam( victim.GetTeam() ) ).GetParent() == victim )
 	{
 		if ( victim != attacker && attacker.IsPlayer() )
@@ -137,8 +140,13 @@ void function CreateFlags()
 		// likely this is because respawn uses distance checks from spawns to check this in official
 		// but i don't like doing that so just using a list of maps to swap them on lol
 		bool switchedSides = HasSwitchedSides() == 1
-		bool shouldSwap = SWAP_FLAG_MAPS.contains( GetMapName() ) ? !switchedSides : switchedSides 
-	
+
+		// i dont know why this works and whatever we had before didn't, but yeah
+		bool shouldSwap = switchedSides 
+		if (!shouldSwap && SWAP_FLAG_MAPS.contains( GetMapName() ))
+			shouldSwap = !shouldSwap
+		
+
 		int flagTeam = spawn.GetTeam()
 		if ( shouldSwap )
 		{
@@ -199,8 +207,33 @@ void function CreateFlags()
 		}
 	}
 	
+	// reset the flag states, prevents issues where flag is home but doesnt think it's home when halftime goes
+	SetFlagStateForTeam( TEAM_MILITIA, eFlagState.None )
+	SetFlagStateForTeam( TEAM_IMC, eFlagState.None )
+	
 	foreach ( entity player in GetPlayerArray() )
 		CTFInitPlayer( player )
+}
+
+void function RemoveFlags()
+{
+	// destroy all the flag related things
+	if ( IsValid( file.imcFlagSpawn ) )
+	{
+		file.imcFlagSpawn.Destroy()
+		file.imcFlag.Destroy()
+		file.imcFlagReturnTrigger.Destroy()
+	}
+	if ( IsValid( file.militiaFlagSpawn ) )
+	{
+		file.militiaFlagSpawn.Destroy()
+		file.militiaFlag.Destroy()
+		file.militiaFlagReturnTrigger.Destroy()
+	}
+
+	// unsure if this is needed, since the flags are destroyed? idk
+	SetFlagStateForTeam( TEAM_MILITIA, eFlagState.None )
+	SetFlagStateForTeam( TEAM_IMC, eFlagState.None )
 }
 
 void function TrackFlagReturnTrigger( entity flag, entity returnTrigger )
@@ -270,10 +303,11 @@ void function DropFlagIfPhased( entity player, entity flag )
 	
 	OnThreadEnd( function() : ( player ) 
 	{
-		DropFlag( player, true )
+		if (GetGameState() == eGameState.Playing || GetGameState() == eGameState.SuddenDeath)
+			DropFlag( player, true )
 	})
-	
-	while( flag.GetParent() == player )
+	// the IsValid check is purely to prevent a crash due to a destroyed flag (epilogue)
+	while( IsValid(flag) && flag.GetParent() == player )
 		WaitFrame()
 }
 
@@ -331,6 +365,9 @@ void function TrackFlagDropTimeout( entity flag )
 
 void function ResetFlag( entity flag )
 {
+	// prevents crash when flag is reset after it's been destroyed due to epilogue
+	if (!IsValid(flag))
+		return
 	// ensure we can't pickup the flag after it's been dropped but before it's been reset
 	flag.s.canTake = false
 	
@@ -355,6 +392,12 @@ void function ResetFlag( entity flag )
 
 void function CaptureFlag( entity player, entity flag )
 {
+	// can only capture flags during normal play or sudden death
+	if (GetGameState() != eGameState.Playing && GetGameState() != eGameState.SuddenDeath)
+	{
+		printt( player + " tried to capture the flag, but the game state was " + GetGameState() + " not " + eGameState.Playing + " or " + eGameState.SuddenDeath)
+		return
+	}
 	// reset flag
 	ResetFlag( flag )
 	
