@@ -19,7 +19,7 @@ Northstar's development is split into 4 repositories:
 1. [NorthstarMasterServer](https://github.com/R2Northstar/NorthstarMasterServer) (Responsible for server browser, authentication and persistence)
 1. [NorthstarStubs](https://github.com/R2Northstar/NorthstarStubs) (D3D11 and GFSDK stubs for the Northstar dedicated server)
 
-The documentation is split into two repositories:
+The documentation is split into 2 repositories:
 1. [NorthstarWiki](https://github.com/R2Northstar/NorthstarWiki) (Wiki covering installation, hosting and configuration of Northstar)
 1. [ModdingDocs](https://github.com/R2Northstar/ModdingDocs) (Guides and tutorials on how to mod using Northstar)
 
