@@ -118,8 +118,9 @@ int main(int, char**)
 	if (!state.core)
 	{
 		std::cout << "Failed to instantiate discord core! (err " << static_cast<int>(result) << ")\n";
-		std::exit(-1);
+		return -1;
 	}
+	
 	std::cout << "Instantiated discord core!\n";
 
 	state.core->SetLogHook(
