@@ -1,7 +1,9 @@
 Creating gamemodes
 ==================================
 
-Creating a gamemode is significantly more complex than making mutators, but takes on the same form. the main differences are the number of things you must define to make a functioning gamemode, the points system, respawn system and team mechanics must all be considered.
+Creating a gamemode is **significantly** more complex than making mutators. The main differences are the number of things you must define in order to create a functioning gamemode.
+
+For example, the client localisation, the way the gamemode is defined (FFA, TDM, etc), the scoring system, respawn system (FFA or TDM spawnpoints) and team mechanics must all be considered.
 
 The ``mod.json``
 ----------------
@@ -13,7 +15,7 @@ However, once you get the hang of it, it should be fairly easy to use.
 
     {
         "Name" : "SimpleRandomiser",
-        "Description" : "SimpleRandomiser",
+        "Description" : "A randomiser gamemode that randomizes your loadouts!",
         "Version": "0.1.0",
         "LoadPriority": 1,
 
@@ -21,22 +23,39 @@ However, once you get the hang of it, it should be fairly easy to use.
 The script above defines the pubic and listed details of the mod.
 
 .. code-block:: json
-    
-            "Scripts": [
-            {
-                "Path": "sh_SimpleRandomiser.gnut",
-                "RunOn": "MP",
-                "ClientCallback": {
-                    "After": "simplerandomiser_init"
-                },
 
-                "ServerCallback": {
-                    "After": "simplerandomiser_init"
-                }
+    "Scripts": [
+        {
+            "Path": "gamemodes/_gamemode_simplerandomiser.nut",
+	    "RunOn": "SERVER && MP"
+        },
+        {
+            "Path": "gamemodes/cl_gamemode_simplerandomiser.nut",
+            "RunOn": "CLIENT && MP"
+        },
+        {
+            "Path": "sh_gamemode_simplerandomiser.nut",
+            "RunOn": "MP",
+            "ClientCallback": {
+                "Before": "simplerandomiser_init"
+            },
+            "ServerCallback": {
+                "Before": "simplerandomiser_init"
             }
-        ],
+        }
+    ],
 
-The script above defines both what functions to run, when to run them and WHERE to run them, in this case it runs your ``simplerandomiser_init``, when on multiplayer and for both the server and the client.
+The script above defines both what functions to run, when to run them and WHERE to run them, 
+
+The first one being ``_gamemode_simplerandomiser.nut`` runs the server scripts, which handles the portion of everything related to the player, such as taking their weapons and replacing it with a different one.
+
+Second one being ``cl_gamemode_simplerandomiser.nut`` is where the client scripts run to perform stuff locally on the player's game, such as playing music, receiving announcement texts from the server and so on.
+
+Lastly, ``sh_gamemode_simplerandomiser.nut`` is a shared script between server and client, in this case it runs your ``simplerandomiser_init`` in order to assign many variables for the server and client to "know" about this gamemode. 
+
+For example, both server and client needs to know whether if this gamemode exists in the private match settings, the scoring HUD and system, the spawnpoints configuration and many more.
+
+
 
 .. code-block:: json
 
@@ -45,7 +64,7 @@ The script above defines both what functions to run, when to run them and WHERE 
         ]
     }
 
-This defines the path to the language file.
+This defines the path to the language file, and its main use is to localize strings such as the announcement texts, gamemode and so on.
 
 Name this file ``mod.json``, and it should go in the mods root folder, that being /yourmodname.
 
@@ -59,18 +78,25 @@ Here's what the end result would look like:
         "Version": "0.1.0",
         "LoadPriority": 1,
         "Scripts": [
-            {
-                "Path": "sh_SimpleRandomiser.gnut",
-                "RunOn": "MP",
-                "ClientCallback": {
-                    "After": "simplerandomiser_init"
-                },
-
-                "ServerCallback": {
-                    "After": "simplerandomiser_init"
-                }
+        {
+            "Path": "gamemodes/_gamemode_simplerandomiser.nut",
+	    "RunOn": "SERVER && MP"
+        },
+        {
+            "Path": "gamemodes/cl_gamemode_simplerandomiser.nut",
+            "RunOn": "CLIENT && MP"
+        },
+        {
+            "Path": "sh_gamemode_simplerandomiser.nut",
+            "RunOn": "MP",
+            "ClientCallback": {
+                "Before": "simplerandomiser_init"
+            },
+            "ServerCallback": {
+                "Before": "simplerandomiser_init"
             }
-        ],
+        }
+    ],
         "Localisation": [
             "resource/simplerandomiser_localisation_%language%.txt"
         ]
@@ -94,63 +120,108 @@ This follows a fairly simple template, the only thing of note is that you often 
 
 Name this file ``simplerandomiser_localisation_english.txt`` and place it in the ``yourmodsname/mod/resource/`` folder.
 
-Creating the mod
+Shared functions
 ----------------
-Creating a gamemode mod will involve 3 things primarily, which being: 
-    1. A mod.json, 
-    2. A language file and 
-    3. The mod itself.
-Since we are done with the first two, we need to get started with the mod itself.
-
-To begin with, we need to answer the simple question of "What are we making?"
-
-For our example, let's make a simple randomiser that randomises your weapon on each spawn.
-Because this is a mod that only affects server settings, it will only need to be installed on the serverside but it won't appear in the browser unless the host puts it in the server name.
-So let's get started with our **initial function**
-
-The initial function
-^^^^^^^^^^^^^^^^^^^^
-The initial function is the function that is called on server startup and contains 2 important things.
-The **callbacks** and the **settings**. 
-To add settings to the private match settings we need to use a new function:
-
-``AddPrivateMatchModeSettingEnum("string", "string", ["#SETTING_ENABLED", "#SETTING_ENABLED"], "0")``
-
-This might look complicated, but really its just (Category, settingname, [setting options], default value) however we use terms like ``"#MODE_SETTING_CATEGORY_RANDOMISER"`` in place of the category name so that we can create language files for different languages.
-(we will make that later)
+Let's begin the process by first creating the file ``sh_gamemode_simplerandomiser.nut`` and making the core components of the gamemode, which is to define the gamemode properties.
 
 .. code-block:: javascript
 
-    void function simplerandomiser_init(){
-        AddPrivateMatchModeSettingEnum("#MODE_SETTING_CATEGORY_SIMPLERANDOMISER", "SimpleRandomiser", ["#SETTING_ENABLED", "#SETTING_ENABLED"], "0")
-        
+    global function simplerandomiser_init // initializing functions
+    global const string GAMEMODE_SIMPLERANDOMISER = "rand" 
+    // we want a short term to use which allows server owners to 
+    // select our gamemode without typing the entire name
+    // also makes it easier for us lol
+    
+    void function simplerandomiser_init()
+    {
+        // start defining what to do before the map loads on this gamemode
+	AddCallback_OnCustomGamemodesInit( CreateGamemodeRand ) // define various properties such as name, desc, so on
+	AddCallback_OnRegisteringCustomNetworkVars( RandRegisterNetworkVars ) // server callbacks stuff
+    }
+
+    void function CreateGamemodeRand()
+    {
+	GameMode_Create( GAMEMODE_SIMPLERANDOMISER )
+	GameMode_SetName( GAMEMODE_SIMPLERANDOMISER, "#GAMEMODE_SIMPLERANDOMISER" ) // localizations will be handled later
+	GameMode_SetDesc( GAMEMODE_SIMPLERANDOMISER, "#PL_rand_desc" )
+	GameMode_SetGameModeAnnouncement( GAMEMODE_SIMPLERANDOMISER, "grnc_modeDesc" )
+	GameMode_SetDefaultTimeLimits( GAMEMODE_SIMPLERANDOMISER, 10, 0.0 ) // a time limit of 10 minutes
+	GameMode_AddScoreboardColumnData( GAMEMODE_SIMPLERANDOMISER, "#SCOREBOARD_SCORE", PGS_ASSAULT_SCORE, 2 ) // dont fuck with it
+	GameMode_AddScoreboardColumnData( GAMEMODE_SIMPLERANDOMISER, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 ) // dont fuck with it
+	GameMode_SetColor( GAMEMODE_SIMPLERANDOMISER, [147, 204, 57, 255] ) // dont fuck with it
+
+	AddPrivateMatchMode( GAMEMODE_SIMPLERANDOMISER ) // add to private lobby modes
+
+	AddPrivateMatchModeSettingEnum("#PL_rand", "rand_enableannouncements", ["#SETTING_DISABLED", "#SETTING_ENABLED"], "1")
+        // creates a togglable riff whether or not we want to announce a text to the client
+
+	// set this to 25 score limit default
+	GameMode_SetDefaultScoreLimits( GAMEMODE_SIMPLERANDOMISER, 25, 0 )
+
+	#if SERVER
+		GameMode_AddServerInit( GAMEMODE_SIMPLERANDOMISER, GamemodeRand_Init ) // server side initalizing function
+		GameMode_SetPilotSpawnpointsRatingFunc( GAMEMODE_SIMPLERANDOMISER, RateSpawnpoints_Generic )
+		GameMode_SetTitanSpawnpointsRatingFunc( GAMEMODE_SIMPLERANDOMISER, RateSpawnpoints_Generic )
+                // until northstar adds more spawnpoints algorithm, we are using the default.
+	#elseif CLIENT
+		GameMode_AddClientInit( GAMEMODE_SIMPLERANDOMISER, ClGamemodeRand_Init ) // client side initializing function
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( GAMEMODE_TBAG, CompareAssaultScore ) 
+                // usually compares which team's score is higher and places the winning team on top of the losing team in the scoreboard
+	#endif
+    }
+
+    void function RandRegisterNetworkVars()
+    {
+	if ( GAMETYPE != GAMEMODE_SIMPLERANDOMISER )
+		return
+
+	Remote_RegisterFunction( "ServerCallback_Randomiser" )
+        // will come in useful later when we want the server to communicate to the client
+        // for example, making an announcement appear on the client
+    }
+
+The comments should hopefully explain what most of everything does, but just to summarize:
+
+- we defined the gamemode's name and description using a string that we will localize ourselves later.
+- we set the default scoring method, what spawnpoint algorithm to use, as well as the scoreboard size.
+- we defined server callbacks, which we will use later on in the server scripts portion of this gamemode.
+
+Now that we're done, name this file ``sh_gamemode_simplerandomiser.nut`` and place it in the ``yourmodsname/mod/scripts/vscripts/gamemodes`` folder.
+
+Server-side function
+------------------
+Now that we're down with defining the gamemode, its time to focus on the component on what makes the gamemode function in-game. For this, it will be mostly handled by the server scripts, so head into ``_gamemode_simplerandomiser.nut`` to begin writing the randomizing script.
+
+.. code-block:: javascript
+    
+    global function GamemodeRand_Init
+    
+    void function GamemodeRand_Init()
+    {
         #if SERVER
-        AddCallback_OnPlayerRespawned(GiveRandomGun)
+	SetLoadoutGracePeriodEnabled( false ) // prevent modifying loadouts with grace period
+	SetWeaponDropsEnabled( false ) // prevents picking up weapons on the ground
+        AddCallback_OnPlayerRespawned( GiveRandomGun )
         #endif
     }
 
 As you may have noticed, checking if it is a server is a special case, so we use ``#if SERVER`` and ``#endif`` instead of the usual ``if(thing){stuff}``
 
-Now that our initial function is created we now have the game triggering `GiveRandomGun` on spawn, but we dont have any such function, so lets make one. but before we can do that, we need to know what weapons we can equip. 
+Now that our initial function is created, we now have the game triggering `GiveRandomGun` when a player spawns, but we don't have any such function, so let's begin creating one. 
+
+Firstly, we need to know what weapons we can equip. 
 For this we define an array:
 
 .. code-block:: javascript
 
-    array<string> pilotWeapons = [
-            "mp_weapon_alternator_smg",
-            "mp_weapon_autopistol",
-            "mp_weapon_car",
-            "mp_weapon_dmr"]
+    array<string> pilotWeapons = ["mp_weapon_alternator_smg",
+                                  "mp_weapon_autopistol",
+                                  "mp_weapon_car",
+                                  "mp_weapon_dmr"]
     
 Here we have defined an array with only 4 weapons in it, you can make this list however you like but remember to separate all but the last item with a ``,``
-
-Now let's make a function to check if you enabled the setting:
-
-.. code-block:: javascript
-
-        bool function SimpleRandomiserEnabled() 
-            return GetCurrentPlaylistVarInt("SimpleRandomiser", 0) == 1
-
 
 Randomise function
 ^^^^^^^^^^^^^^^^^^
@@ -159,7 +230,8 @@ First we strip any existing weapons:
 
 .. code-block:: javascript
 
-    void function GiveRandomGun(entity player){
+    void function GiveRandomGun(entity player)
+    {
         foreach ( entity weapon in player.GetMainWeapons() )
             player.TakeWeaponNow( weapon.GetWeaponClassName() )
 
@@ -169,31 +241,219 @@ Then lets give them a new, random weapon by selecting a random item from our pre
 
 .. code-block:: javascript
 
-    player.GiveWeapon(pilotweapons[RandomInt(pilotweapons.len())])
+    player.GiveWeapon( pilotWeapons[ RandomInt( pilotWeapons.len() ) ] )
 
-And done, surprisingly short script huh?
+Now, remember the server callback that we defined earlier in ``sh_gamemode_simplerandomiser.nut``? Let's put that to use.
+We are going to make it so the player receives an announcement whenever they have their weapons randomized.
 
 .. code-block:: javascript
 
-    void function simplerandomiser_init(){
-        AddPrivateMatchModeSettingEnum("#MODE_SETTING_CATEGORY_SIMPLERANDOMISER", "SimpleRandomiser", ["#SETTING_ENABLED", "#SETTING_ENABLED"], "0")
+    // checks if the toggle option is set to enabled
+    if ( GetCurrentPlaylistVarInt( "rand_enableannouncements", 1 ) == 1 )
+        Remote_CallFunction_NonReplay( player, "ServerCallback_Randomiser" ) // call the function that will be used client-side
         
+Overall, the server script should look like this.
+
+.. code-block:: javascript
+
+    global function GamemodeRand_Init
+    
+    void function GamemodeRand_Init()
+    {
         #if SERVER
-        AddCallback_OnPlayerRespawned(GiveRandomGun)
+	SetLoadoutGracePeriodEnabled( false ) // prevent modifying loadouts with grace period
+	SetWeaponDropsEnabled( false ) // prevents picking up weapons on the ground
+        AddCallback_OnPlayerRespawned( GiveRandomGun )
         #endif
     }
 
-    array<string> pilotWeapons = [
-            "mp_weapon_alternator_smg",
-            "mp_weapon_autopistol",
-            "mp_weapon_car",
-            "mp_weapon_dmr"]
+    array<string> pilotWeapons = ["mp_weapon_alternator_smg",
+                                  "mp_weapon_autopistol",
+                                  "mp_weapon_car",
+                                  "mp_weapon_dmr"]
 
-    void function GiveRandomGun(entity player){
-    foreach ( entity weapon in player.GetMainWeapons() )
-        player.TakeWeaponNow( weapon.GetWeaponClassName() )
-    player.GiveWeapon(pilotweapons[RandomInt(pilotweapons.len())])
+    void function GiveRandomGun(entity player)
+    {
+        foreach ( entity weapon in player.GetMainWeapons() )
+            player.TakeWeaponNow( weapon.GetWeaponClassName() )
+         
+        player.GiveWeapon( pilotWeapons[ RandomInt( pilotWeapons.len() ) ] )
+        
+        // checks if the toggle option is set to enabled
+        if ( GetCurrentPlaylistVarInt( "rand_enableannouncements", 1 ) == 1 )
+            Remote_CallFunction_NonReplay( player, "ServerCallback_Randomiser" ) // call the function that will be used client-side
     }
 
-Name this ``sh_SimpleRandomiser.gnut`` and place it in the ``yourmodsname/mod/scripts/vscripts/`` folder.
+Name this file ``_gamemode_simplerandomiser.nut`` and place it in the ``yourmodsname/mod/scripts/vscripts/gamemodes`` folder as well.
 Make sure to double check that all spellings are correct in your mod as everything is case-sensitive.
+
+Client-side functions
+------------------
+Lastly, for your ``cl_gamemode_simplerandomiser.nut``, we are going to utilize the callback functions from earlier, as well as add some music to play during the gamemode.
+
+.. code-block:: javascript
+    
+    global function ClGamemodeRand_Init
+    global function ServerCallback_Randomiser
+    
+    void function ClGamemodeRand_Init()
+    {
+        RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_INTRO, "music_mp_freeagents_intro", TEAM_IMC )
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_INTRO, "music_mp_freeagents_intro", TEAM_MILITIA )
+
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_WIN, "music_mp_freeagents_outro_win", TEAM_IMC )
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_WIN, "music_mp_freeagents_outro_win", TEAM_MILITIA )
+
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_DRAW, "music_mp_freeagents_outro_lose", TEAM_IMC )
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_DRAW, "music_mp_freeagents_outro_lose", TEAM_MILITIA )
+
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LOSS, "music_mp_freeagents_outro_lose", TEAM_IMC )
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LOSS, "music_mp_freeagents_outro_lose", TEAM_MILITIA )
+
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_THREE_MINUTE, "music_mp_freeagents_almostdone", TEAM_IMC )
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_THREE_MINUTE, "music_mp_freeagents_almostdone", TEAM_MILITIA )
+
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LAST_MINUTE, "music_mp_freeagents_lastminute", TEAM_IMC )
+	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LAST_MINUTE, "music_mp_freeagents_lastminute", TEAM_MILITIA )
+    }
+
+    void function ServerCallback_Randomiser()
+    {
+        AnnouncementData announcement = Announcement_Create( "#RAND_RANDOMIZED" )
+	Announcement_SetSubText( announcement, "#RAND_RANDOMIZED_DESC" )
+	Announcement_SetTitleColor( announcement, <0,0,1> )
+	Announcement_SetPurge( announcement, true )
+	Announcement_SetPriority( announcement, 200 ) //Be higher priority than Titanfall ready indicator etc
+	Announcement_SetSoundAlias( announcement, SFX_HUD_ANNOUNCE_QUICK )
+	Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_QUICK )
+	AnnouncementFromClass( GetLocalViewPlayer(), announcement )
+    }
+
+What this script does is quite simple. It registers default music to play during the intro portion, when winning, drawing or losing, as well as the event when the timelimit reaches 3 minutes or 1 minute left.
+
+Also, it also displays an announcement towards the player when they have their weapons randomized.
+
+Localization
+------------------
+"So we're all done with the scripting stuff, right? That means we can finally run the gamemode itself!"
+
+Technically, yes, you could. But it wouldn't look pretty. Remember all those strings with the # symbol in front of them? We have to localize them first so it displays correctly.
+
+Hence, open your ``simplerandomiser_localisation_english.txt`` which is located in the ``yourmodsname/mod/resource/`` folder.
+
+.. code-block:: json
+
+    "lang"
+    {
+	"Language" "english"
+	"Tokens"
+	{
+		"PL_rand" "Simple Randomiser" // displays in the lobby settings
+                "rand_enableannouncements" "Toggle announcements" // describe the togglable setting
+		"PL_rand_lobby" "Simple Randomiser Lobby" // displays in lobby
+		"PL_rand_desc" "Your weapons are randomised! Fight and win!" // displays in the description of the gamemode in the lobby
+		"PL_rand_hint" "Your weapons are randomised! Fight and win!" // displays in the scoreboard of the gamemode ingame
+		"PL_rand_abbr" "RAND"
+		"GAMEMODE_TBAG" "Simple Randomiser" // displays in the loading screen
+                "RAND_RANDOMIZED" "Weapons Randomized" // displays in the announcement text
+                "RAND_RANDOMIZED_DESC" "Fight and win!" // displays below the announcement text, as a description
+	}
+    }
+
+Alright, we're finally done! However, there's just one thing missing, which is to let the game know what maps are available for this gamemode to play on.
+
+Maps
+------------------
+We will need to create a file called ``playlist_v2.txt`` and place it in ``yourmodsname/keyvalues`` folder.
+
+Yes, you will need to create a folder called ``keyvalues`` which is separate from the ``mod`` folder that we placed all our scripts and localization inside.
+
+Next, inside this ``playlist_v2.txt``, we will need to allow/disallow what maps can the gamemode be played on.
+
+.. code-block::
+
+    playlists
+    {
+	Gamemodes
+	{
+		rand
+		{
+			inherit defaults
+			vars
+			{
+				name #PL_rand
+				lobbytitle #PL_rand_lobby
+				description #PL_rand_desc
+				hint #PL_rand_hint
+				abbreviation #PL_rand_abbr
+				max_players 12
+				max_teams 2
+				classic_mp 1
+
+				gamemode_score_hint #GAMEMODE_SCORE_HINT_TDM
+			}
+		}
+    	}
+        Playlists
+	{
+		rand
+		{
+			inherit defaults
+			vars
+			{
+				name #PL_rand
+				lobbytitle #PL_rand_lobby
+				description #PL_rand_desc
+				abbreviation #PL_rand_abbr
+				image ps
+				//mixtape_slot 7
+				mixtape_timeout 120
+				visible 0
+			}
+			gamemodes
+			{
+				rand
+				{
+				        maps
+					{
+					        mp_forwardbase_kodai 1
+                                                mp_grave 1
+                                                mp_homestead 1
+                                                mp_thaw 1
+                                                mp_black_water_canal 1
+                                                mp_eden 1
+                                                mp_drydock 1
+                                                mp_crashsite3 1
+                                                mp_complex3 1
+                                                mp_angel_city 1
+                                                mp_colony02 1
+                                                mp_glitch 1
+						mp_lf_stacks 1
+						mp_lf_deck 1
+						mp_lf_meadow 1
+						mp_lf_traffic 1
+						mp_lf_township 1
+						mp_lf_uma 1
+						mp_relic02 1
+						mp_wargames 1
+						mp_rise 1
+                                                mp_coliseum 1
+                                                mp_coliseum_column 1
+					}
+				}
+			}
+		}
+        }
+    }
+
+There isn't much to say here except that we enabled this gamemode to played on all maps. So if this gamemode is set to auto-rotate maps in a server, it will go from one map to the next in order. You could disable certain maps by changing the ``1`` to a ``0``.
+
+Another thing to note is that under the ``Playlists`` tab, there is an ``image`` slot. You could change the image that displays when selecting a gamemode in the private match lobby. You can find out what the keyvalues for the other images by checking out other gamemodes in ``Northstar.Custom/keyvalues/playlist_v2.txt``.
+
+Closing words
+------------------
+And that should be all you need in order to create a gamemode. Thanks for reading all the way to this point, and I hope you have learnt a thing or two.
+
+If you ever have a question or two, feel free to head into the Northstar Discord and ask about in #modding-chat.
+
+- Revised by ``x3Karma#6984``
