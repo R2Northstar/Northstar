@@ -16,7 +16,9 @@ void function OnPrematchStart()
 
 void function NSUpdateGameStateClientStart()
 {
+    #if MP
     AddCallback_GameStateEnter( eGameState.Prematch, OnPrematchStart )
+    #endif
     thread NSUpdateGameStateLoopClient()
     OnPrematchStart()
 }
@@ -25,6 +27,14 @@ void function NSUpdateGameStateLoopClient()
 {
     while ( true )
     {
+	if(GetConVarString( "mp_gamemode" ) == "solo")
+	{
+
+        NSUpdateGameStateClient( GetPlayerArray().len(), GetCurrentPlaylistVarInt( "max_players", 65535 ), 1, 1, 1, GetServerVar( "roundBased" ), 1 )
+        wait 1.0
+	}
+	else
+	{
         foreach ( player in GetPlayerArray() )
         {
             if ( GameRules_GetTeamScore( player.GetTeam() ) >= highestScore )
@@ -44,5 +54,6 @@ void function NSUpdateGameStateLoopClient()
         NSUpdateGameStateClient( GetPlayerArray().len(), GetCurrentPlaylistVarInt( "max_players", 65535 ), ourScore, secondHighestScore, highestScore, GetServerVar( "roundBased" ), limit )
         OnPrematchStart()
         wait 1.0
+    }
     }
 }
