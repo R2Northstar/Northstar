@@ -24,6 +24,13 @@ void function NSUpdateGameStateLoopUI()
             continue
         }
         NSSetLoading( false )
+	if(GetConVarString( "mp_gamemode" ) == "solo")
+	{
+	NSUpdateGameStateUI( "northstar", Localize( GetMapDisplayName( GetActiveLevel()+"_CAMPAIGN_NAME" ) )   , "Campaign", "Campaign", IsFullyConnected(), false )
+		
+	}
+	else{
         NSUpdateGameStateUI( GetActiveLevel(), Localize( GetMapDisplayName( GetActiveLevel() ) ), GetConVarString( "mp_gamemode" ), Localize( GetPlaylistDisplayName( GetConVarString("mp_gamemode") ) ), IsFullyConnected(), false )
-    }
+	}    
+}
 }
