@@ -40,6 +40,7 @@
 #include "plugin_abi.h"
 #include "plugins.h"
 #include "clientvideooverrides.h"
+#include "clientruihooks.h"
 #include <string.h>
 #include "version.h"
 #include "pch.h"
@@ -246,6 +247,7 @@ bool InitialiseNorthstar()
 		AddDllLoadCallbackForClient("client.dll", InitialiseLocalChatWriter);
 		AddDllLoadCallbackForClient("client.dll", InitialiseScriptServerToClientStringCommands);
 		AddDllLoadCallbackForClient("client.dll", InitialiseClientVideoOverrides);
+		AddDllLoadCallbackForClient("engine.dll", InitialiseEngineClientRUIHooks);
 
 		// audio hooks
 		AddDllLoadCallbackForClient("client.dll", InitialiseMilesAudioHooks);
