@@ -25,6 +25,11 @@ EventOverrideData::EventOverrideData()
 	LoadedSuccessfully = false;
 }
 
+// Empty stereo 48000 WAVE file
+unsigned char EMPTY_WAVE[45] = {0x52, 0x49, 0x46, 0x46, 0x25, 0x00, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45, 0x66, 0x6D, 0x74,
+								0x20, 0x10, 0x00, 0x00, 0x00, 0x01, 0x00, 0x02, 0x00, 0x44, 0xAC, 0x00, 0x00, 0x88, 0x58,
+								0x01, 0x00, 0x02, 0x00, 0x10, 0x00, 0x64, 0x61, 0x74, 0x61, 0x74, 0x00, 0x00, 0x00, 0x00};
+
 EventOverrideData::EventOverrideData(const std::string& data, const fs::path& path)
 {
 	if (data.length() <= 0)
@@ -184,8 +189,10 @@ EventOverrideData::EventOverrideData(const std::string& data, const fs::path& pa
 	{
 		if (file.is_regular_file() && file.path().extension().string() == ".wav")
 		{
+			std::string pathString = file.path().string();
+
 			// Open the file.
-			std::basic_ifstream<uint8_t> wavStream(file.path().string(), std::ios::binary);
+			std::basic_ifstream<uint8_t> wavStream(pathString, std::ios::binary);
 
 			if (wavStream.fail())
 			{
@@ -196,18 +203,40 @@ EventOverrideData::EventOverrideData(const std::string& data, const fs::path& pa
 			// Get file size.
 			wavStream.seekg(0, std::ios::end);
 			size_t fileSize = wavStream.tellg();
-			wavStream.seekg(0, std::ios::beg);
+			wavStream.close();
 
 			// Allocate enough memory for the file.
+			// blank out the memory for now, then read it later
 			uint8_t* data = new uint8_t[fileSize];
-
-			// Read the file.
-			wavStream.read(data, fileSize);
-
+			memcpy(data, EMPTY_WAVE, sizeof(EMPTY_WAVE));
 			Samples.push_back({fileSize, std::unique_ptr<uint8_t[]>(data)});
 
-			// Close the file.
-			wavStream.close();
+			// thread off the file read
+			// should we spawn one thread per read? or should there be a cap to the number of reads at once?
+			std::thread readThread(
+				[pathString, fileSize, data] 
+				{
+					std::shared_lock lock(g_CustomAudioManager.m_loadingMutex);
+					std::basic_ifstream<uint8_t> wavStream(pathString, std::ios::binary);
+
+					// would be weird if this got hit, since it would've worked previously
+					if (wavStream.fail())
+					{
+						spdlog::error("Failed async read of audio sample {}", pathString);
+						return;
+					}
+
+					// read from after the header first to preserve the empty header, then read the header last
+					wavStream.seekg(sizeof(EMPTY_WAVE), std::ios::beg);
+					wavStream.read(&data[sizeof(EMPTY_WAVE)], fileSize - sizeof(EMPTY_WAVE));
+					wavStream.seekg(0, std::ios::beg);
+					wavStream.read(data, sizeof(EMPTY_WAVE));
+					wavStream.close();
+
+					spdlog::info("Finished async read of audio sample {}", pathString);
+				});
+
+			readThread.detach();
 		}
 	}
 
@@ -289,6 +318,10 @@ void CustomAudioManager::ClearAudioOverrides()
 		// this is cancer but it works
 		Sleep(50);
 	}
+	
+	// slightly (very) bad
+	// wait for all audio reads to complete so we don't kill preexisting audio buffers as we're writing to them
+	std::unique_lock lock(g_CustomAudioManager.m_loadingMutex);
 
 	m_loadedAudioOverrides.clear();
 	m_loadedAudioOverridesRegex.clear();
@@ -296,11 +329,6 @@ void CustomAudioManager::ClearAudioOverrides()
 
 typedef bool (*LoadSampleMetadata_Type)(void* sample, void* audioBuffer, unsigned int audioBufferLength, int audioType);
 LoadSampleMetadata_Type LoadSampleMetadata_Original;
-
-// Empty stereo 48000 WAVE file
-unsigned char EMPTY_WAVE[45] = {0x52, 0x49, 0x46, 0x46, 0x25, 0x00, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45, 0x66, 0x6D, 0x74,
-								0x20, 0x10, 0x00, 0x00, 0x00, 0x01, 0x00, 0x02, 0x00, 0x44, 0xAC, 0x00, 0x00, 0x88, 0x58,
-								0x01, 0x00, 0x02, 0x00, 0x10, 0x00, 0x64, 0x61, 0x74, 0x61, 0x74, 0x00, 0x00, 0x00, 0x00};
 
 template <typename Iter, typename RandomGenerator> Iter select_randomly(Iter start, Iter end, RandomGenerator& g)
 {
