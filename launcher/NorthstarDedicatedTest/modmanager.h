@@ -56,7 +56,7 @@ struct ModRpakEntry
 {
   public:
 	bool m_bAutoLoad;
-	std::string m_sPakPath;
+	std::string m_sPakName;
 };
 
 class Mod

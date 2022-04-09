@@ -380,7 +380,7 @@ void ModManager::LoadMods()
 					modPak.m_bAutoLoad =
 						!bUseRpakJson || (dRpakJson.HasMember("Preload") && dRpakJson["Preload"].IsObject() &&
 										  dRpakJson["Preload"].HasMember(pakName) && dRpakJson["Preload"][pakName].IsTrue());
-					modPak.m_sPakPath = pakName;
+					modPak.m_sPakName = pakName;
 
 					// not using atm because we need to resolve path to rpak
 					// if (m_hasLoadedMods && modPak.m_bAutoLoad)
