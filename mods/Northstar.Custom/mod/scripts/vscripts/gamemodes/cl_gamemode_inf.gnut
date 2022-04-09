@@ -22,9 +22,17 @@ void function ClGamemodeInfection_Init()
 
 void function ServerCallback_YouAreInfected()
 {
+	thread ServerCallback_YouAreInfected_Threaded()
+}
+
+void function ServerCallback_YouAreInfected_Threaded()
+{
 	// heavily based on mfd code
 	entity localPlayer = GetLocalViewPlayer()
-
+	
+	while ( !IsValid( localPlayer.GetCockpit() ) )
+		WaitFrame()
+	
 	StartParticleEffectOnEntity( localPlayer.GetCockpit(), GetParticleSystemIndex( $"P_MFD" ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
 	EmitSoundOnEntity( localPlayer, "UI_InGame_MarkedForDeath_PlayerMarked"  )
 	HideEventNotification()

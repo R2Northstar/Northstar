@@ -92,7 +92,7 @@ void function FastballRespawnPlayerEffects_Threaded()
 	// sometimes this seems to get called before the player has respawned clientside, so we just wait until the client thinks they're alive
 	entity player = GetLocalClientPlayer()
 	
-	while ( !IsAlive( player ) )
+	while ( !IsAlive( player ) || !IsValid( player.GetCockpit() ) )
 		WaitFrame()
 		
 	StartParticleEffectOnEntity( player.GetCockpit(), GetParticleSystemIndex( $"P_pod_screen_lasers_OUT" ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
