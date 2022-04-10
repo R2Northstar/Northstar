@@ -281,7 +281,7 @@ void function GameStateEnter_WinnerDetermined_Threaded()
 	WaitFrame() // wait a frame so other scripts can setup killreplay stuff
 
 	entity replayAttacker = file.roundWinningKillReplayAttacker
-	bool doReplay = Replay_IsEnabled() && IsRoundWinningKillReplayEnabled() && IsValid( replayAttacker )
+	bool doReplay = Replay_IsEnabled() && IsRoundWinningKillReplayEnabled() && IsValid( replayAttacker ) && !ClassicMP_ShouldRunEpilogue()
 				 && Time() - file.roundWinningKillReplayTime <= ROUND_WINNING_KILL_REPLAY_LENGTH_OF_REPLAY && winningTeam != TEAM_UNASSIGNED
  	
 	float replayLength = 2.0 // extra delay if no replay
