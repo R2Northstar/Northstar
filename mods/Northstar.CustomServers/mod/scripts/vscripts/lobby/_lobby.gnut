@@ -25,6 +25,7 @@ void function Lobby_OnClientConnectionStarted( entity player )
 
 void function Lobby_OnClientConnectionCompleted( entity player )
 {
+	player.hasConnected = true
 	FinishClientScriptInitialization( player )
 }
 
