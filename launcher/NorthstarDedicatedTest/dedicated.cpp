@@ -184,13 +184,6 @@ void InitialiseDedicated(HMODULE engineAddress)
 	//	NSMem::NOP(ea + 0x1C4E07, 5);
 	//}
 
-	// not sure if this should be done, not loading ui at least is good, but should everything be gone?
-	{
-		// Host_Init
-		// change the number of rpaks to load from 6 to 1, so we only load common.rpak
-		NSMem::BytePatch(ea + 0x15653B + 1, "01");
-	}
-
 	{
 		// Host_Init
 		// remove call to ui loading stuff
