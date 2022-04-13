@@ -189,7 +189,10 @@ void InitialiseScriptModMenu(HMODULE baseAddress)
 	g_UISquirrelManager->AddFuncRegistration(
 		"string", "NSGetModDownloadLinkByModName", "string modName", "Returns a given mod's download link", SQ_GetModDownloadLink);
 	g_UISquirrelManager->AddFuncRegistration(
-		"bool", "NSIsModRequiredOnClient", "string modName", "Returns whether a given mod is required on connecting clients",
+		"bool",
+		"NSIsModRequiredOnClient",
+		"string modName",
+		"Returns whether a given mod is required on connecting clients",
 		SQ_IsModRequiredOnClient);
 	g_UISquirrelManager->AddFuncRegistration(
 		"int", "NSGetModLoadPriority", "string modName", "Returns a given mod's load priority", SQ_GetModLoadPriority);

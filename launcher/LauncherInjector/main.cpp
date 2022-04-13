@@ -78,7 +78,10 @@ void LibraryLoadError(DWORD dwMessageId, const wchar_t* libName, const wchar_t* 
 		text,
 		"Failed to load the %ls at \"%ls\" (%lu):\n\n%hs\n\nMake sure you followed the Northstar installation instructions carefully "
 		"before reaching out for help.",
-		libName, location, dwMessageId, message.c_str());
+		libName,
+		location,
+		dwMessageId,
+		message.c_str());
 
 	if (dwMessageId == 126 && std::filesystem::exists(location))
 	{
@@ -98,7 +101,9 @@ void LibraryLoadError(DWORD dwMessageId, const wchar_t* libName, const wchar_t* 
 			"%s\n\nWe detected that in your case you have extracted the files into a *subdirectory* of your Titanfall 2 "
 			"installation.\nPlease move all the files and folders from current folder (\"%s\") into the Titanfall 2 installation directory "
 			"just above (\"%s\").\n\nPlease try out the above steps by yourself before reaching out to the community for support.",
-			text, curDir.c_str(), aboveDir.c_str());
+			text,
+			curDir.c_str(),
+			aboveDir.c_str());
 	}
 	else if (!fs::exists("Titanfall2.exe"))
 	{
@@ -152,7 +157,15 @@ void EnsureOriginStarted()
 	si.dwFlags = STARTF_USESHOWWINDOW;
 	si.wShowWindow = SW_MINIMIZE;
 	CreateProcessA(
-		originPath, (char*)"", NULL, NULL, false, CREATE_DEFAULT_ERROR_MODE | CREATE_NEW_PROCESS_GROUP, NULL, NULL, (LPSTARTUPINFOA)&si,
+		originPath,
+		(char*)"",
+		NULL,
+		NULL,
+		false,
+		CREATE_DEFAULT_ERROR_MODE | CREATE_NEW_PROCESS_GROUP,
+		NULL,
+		NULL,
+		(LPSTARTUPINFOA)&si,
 		&pi);
 
 	printf("[*] Waiting for Origin...\n");
@@ -180,7 +193,8 @@ void PrependPath()
 				GetForegroundWindow(),
 				L"Warning: could not prepend the current directory to app's PATH environment variable. Something may break because of "
 				L"that.",
-				L"Northstar Launcher Warning", 0);
+				L"Northstar Launcher Warning",
+				0);
 		}
 		free(pPath);
 	}
@@ -190,7 +204,8 @@ void PrependPath()
 			GetForegroundWindow(),
 			L"Warning: could not get current PATH environment variable in order to prepend the current directory to it. Something may "
 			L"break because of that.",
-			L"Northstar Launcher Warning", 0);
+			L"Northstar Launcher Warning",
+			0);
 	}
 }
 
@@ -267,7 +282,9 @@ int main(int argc, char* argv[])
 	if (!GetExePathWide(exePath, sizeof(exePath)))
 	{
 		MessageBoxA(
-			GetForegroundWindow(), "Failed getting game directory.\nThe game cannot continue and has to exit.", "Northstar Launcher Error",
+			GetForegroundWindow(),
+			"Failed getting game directory.\nThe game cannot continue and has to exit.",
+			"Northstar Launcher Error",
 			0);
 		return 1;
 	}
@@ -313,7 +330,8 @@ int main(int argc, char* argv[])
 						GetForegroundWindow(),
 						"Failed to load one or more stubs, but could not unload them either.\n"
 						"The game cannot continue and has to exit.",
-						"Northstar Launcher Error", 0);
+						"Northstar Launcher Error",
+						0);
 					return 1;
 				}
 			}
@@ -377,7 +395,9 @@ int main(int argc, char* argv[])
 	auto LauncherMain = GetLauncherMain();
 	if (!LauncherMain)
 		MessageBoxA(
-			GetForegroundWindow(), "Failed loading launcher.dll.\nThe game cannot continue and has to exit.", "Northstar Launcher Error",
+			GetForegroundWindow(),
+			"Failed loading launcher.dll.\nThe game cannot continue and has to exit.",
+			"Northstar Launcher Error",
 			0);
 	// auto result = ((__int64(__fastcall*)())LauncherMain)();
 	// auto result = ((signed __int64(__fastcall*)(__int64))LauncherMain)(0i64);

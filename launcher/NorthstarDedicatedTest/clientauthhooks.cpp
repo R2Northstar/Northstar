@@ -37,7 +37,9 @@ void InitialiseClientAuthHooks(HMODULE baseAddress)
 {
 	// this cvar will save to cfg once initially agreed with
 	Cvar_ns_has_agreed_to_send_token = new ConVar(
-		"ns_has_agreed_to_send_token", "0", FCVAR_ARCHIVE_PLAYERPROFILE,
+		"ns_has_agreed_to_send_token",
+		"0",
+		FCVAR_ARCHIVE_PLAYERPROFILE,
 		"whether the user has agreed to send their origin token to the northstar masterserver");
 
 	HookEnabler hook;

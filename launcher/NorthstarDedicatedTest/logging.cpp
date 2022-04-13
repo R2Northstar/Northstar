@@ -192,8 +192,13 @@ long __stdcall ExceptionFilter(EXCEPTION_POINTERS* exceptionInfo)
 			dumpExceptionInfo.ClientPointers = false;
 
 			MiniDumpWriteDump(
-				GetCurrentProcess(), GetCurrentProcessId(), hMinidumpFile,
-				MINIDUMP_TYPE(MiniDumpWithIndirectlyReferencedMemory | MiniDumpScanMemory), &dumpExceptionInfo, nullptr, nullptr);
+				GetCurrentProcess(),
+				GetCurrentProcessId(),
+				hMinidumpFile,
+				MINIDUMP_TYPE(MiniDumpWithIndirectlyReferencedMemory | MiniDumpScanMemory),
+				&dumpExceptionInfo,
+				nullptr,
+				nullptr);
 			CloseHandle(hMinidumpFile);
 		}
 		else
@@ -413,7 +418,9 @@ void InitialiseEngineSpewFuncHooks(HMODULE baseAddress)
 
 	// Hook CClientState::ProcessPrint
 	ENABLER_CREATEHOOK(
-		hook, (char*)baseAddress + 0x1A1530, CClientState_ProcessPrint_Hook,
+		hook,
+		(char*)baseAddress + 0x1A1530,
+		CClientState_ProcessPrint_Hook,
 		reinterpret_cast<LPVOID*>(&CClientState_ProcessPrint_Original));
 
 	Cvar_spewlog_enable = new ConVar("spewlog_enable", "1", FCVAR_NONE, "Enables/disables whether the engine spewfunc should be logged");

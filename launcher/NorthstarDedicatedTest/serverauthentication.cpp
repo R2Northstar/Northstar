@@ -21,8 +21,23 @@ const char* AUTHSERVER_VERIFY_STRING = "I am a northstar server!";
 // hook types
 
 typedef void* (*CBaseServer__ConnectClientType)(
-	void* server, void* a2, void* a3, uint32_t a4, uint32_t a5, int32_t a6, void* a7, void* a8, char* serverFilter, void* a10, char a11,
-	void* a12, char a13, char a14, int64_t uid, uint32_t a16, uint32_t a17);
+	void* server,
+	void* a2,
+	void* a3,
+	uint32_t a4,
+	uint32_t a5,
+	int32_t a6,
+	void* a7,
+	void* a8,
+	char* serverFilter,
+	void* a10,
+	char a11,
+	void* a12,
+	char a13,
+	char a14,
+	int64_t uid,
+	uint32_t a16,
+	uint32_t a17);
 CBaseServer__ConnectClientType CBaseServer__ConnectClient;
 
 typedef bool (*CBaseClient__ConnectType)(
@@ -84,7 +99,8 @@ void ServerAuthenticationManager::StartPlayerAuthServer()
 			// this is just a super basic way to verify that servers have ports open, masterserver will try to read this before ensuring
 			// server is legit
 			m_playerAuthServer.Get(
-				"/verify", [](const httplib::Request& request, httplib::Response& response)
+				"/verify",
+				[](const httplib::Request& request, httplib::Response& response)
 				{ response.set_content(AUTHSERVER_VERIFY_STRING, "text/plain"); });
 
 			m_playerAuthServer.Post(
@@ -314,8 +330,23 @@ char* nextPlayerToken;
 uint64_t nextPlayerUid;
 
 void* CBaseServer__ConnectClientHook(
-	void* server, void* a2, void* a3, uint32_t a4, uint32_t a5, int32_t a6, void* a7, void* a8, char* serverFilter, void* a10, char a11,
-	void* a12, char a13, char a14, int64_t uid, uint32_t a16, uint32_t a17)
+	void* server,
+	void* a2,
+	void* a3,
+	uint32_t a4,
+	uint32_t a5,
+	int32_t a6,
+	void* a7,
+	void* a8,
+	char* serverFilter,
+	void* a10,
+	char a11,
+	void* a12,
+	char a13,
+	char a14,
+	int64_t uid,
+	uint32_t a16,
+	uint32_t a17)
 {
 	// auth tokens are sent with serverfilter, can't be accessed from player struct to my knowledge, so have to do this here
 	nextPlayerToken = serverFilter;
@@ -488,7 +519,8 @@ char __fastcall CNetChan___ProcessMessagesHook(void* self, void* buf)
 			Cvar_net_chan_limit_msec_per_sec->GetInt())
 		{
 			spdlog::warn(
-				"Client {} hit netchan processing limit with {}ms of processing time this second (max is {})", (char*)sender + 0x16,
+				"Client {} hit netchan processing limit with {}ms of processing time this second (max is {})",
+				(char*)sender + 0x16,
 				g_ServerAuthenticationManager->m_additionalPlayerData[sender].netChanProcessingLimitTime,
 				Cvar_net_chan_limit_msec_per_sec->GetInt());
 
@@ -551,7 +583,8 @@ bool ProcessConnectionlessPacketHook(void* a1, netpacket_t* packet)
 		if (sendData->packetCount >= Cvar_sv_querylimit_per_sec->GetInt())
 		{
 			spdlog::warn(
-				"Client went over connectionless ratelimit of {} per sec with packet of type {}", Cvar_sv_querylimit_per_sec->GetInt(),
+				"Client went over connectionless ratelimit of {} per sec with packet of type {}",
+				Cvar_sv_querylimit_per_sec->GetInt(),
 				packet->data[4]);
 
 			// timeout for a minute
@@ -584,17 +617,23 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 	CVar_ns_auth_allow_insecure =
 		new ConVar("ns_auth_allow_insecure", "0", FCVAR_GAMEDLL, "Whether this server will allow unauthenicated players to connect");
 	CVar_ns_auth_allow_insecure_write = new ConVar(
-		"ns_auth_allow_insecure_write", "0", FCVAR_GAMEDLL,
+		"ns_auth_allow_insecure_write",
+		"0",
+		FCVAR_GAMEDLL,
 		"Whether the pdata of unauthenticated clients will be written to disk when changed");
 	// literally just stolen from a fix valve used in csgo
 	CVar_sv_quota_stringcmdspersecond = new ConVar(
-		"sv_quota_stringcmdspersecond", "60", FCVAR_GAMEDLL,
+		"sv_quota_stringcmdspersecond",
+		"60",
+		FCVAR_GAMEDLL,
 		"How many string commands per second clients are allowed to submit, 0 to disallow all string commands");
 	// https://blog.counter-strike.net/index.php/2019/07/24922/ but different because idk how to check what current tick number is
 	Cvar_net_chan_limit_mode =
 		new ConVar("net_chan_limit_mode", "0", FCVAR_GAMEDLL, "The mode for netchan processing limits: 0 = log, 1 = kick");
 	Cvar_net_chan_limit_msec_per_sec = new ConVar(
-		"net_chan_limit_msec_per_sec", "0", FCVAR_GAMEDLL,
+		"net_chan_limit_msec_per_sec",
+		"0",
+		FCVAR_GAMEDLL,
 		"Netchannel processing is limited to so many milliseconds, abort connection if exceeding budget");
 	Cvar_ns_player_auth_port = new ConVar("ns_player_auth_port", "8081", FCVAR_GAMEDLL, "");
 	Cvar_sv_querylimit_per_sec = new ConVar("sv_querylimit_per_sec", "15", FCVAR_GAMEDLL, "");
@@ -613,7 +652,9 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 	ENABLER_CREATEHOOK(
 		hook, (char*)baseAddress + 0x1012C0, &CBaseClient__DisconnectHook, reinterpret_cast<LPVOID*>(&CBaseClient__Disconnect));
 	ENABLER_CREATEHOOK(
-		hook, (char*)baseAddress + 0x1022E0, &CGameClient__ExecuteStringCommandHook,
+		hook,
+		(char*)baseAddress + 0x1022E0,
+		&CGameClient__ExecuteStringCommandHook,
 		reinterpret_cast<LPVOID*>(&CGameClient__ExecuteStringCommand));
 	ENABLER_CREATEHOOK(
 		hook, (char*)baseAddress + 0x2140A0, &CNetChan___ProcessMessagesHook, reinterpret_cast<LPVOID*>(&CNetChan___ProcessMessages));

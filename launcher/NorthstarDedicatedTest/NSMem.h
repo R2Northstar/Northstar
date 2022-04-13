@@ -6,147 +6,147 @@
 #pragma region Pattern Scanning
 namespace NSMem
 {
-inline std::vector<int> HexBytesToString(const char* str)
-{
-	std::vector<int> patternNums;
-	int size = strlen(str);
-	for (int i = 0; i < size; i++)
+	inline std::vector<int> HexBytesToString(const char* str)
 	{
-		char c = str[i];
-
-		// If this is a space character, ignore it
-		if (c == ' ' || c == '\t')
-			continue;
-
-		if (c == '?')
+		std::vector<int> patternNums;
+		int size = strlen(str);
+		for (int i = 0; i < size; i++)
 		{
-			// Add a wildcard (-1)
-			patternNums.push_back(-1);
-		}
-		else if (i < size - 1)
-		{
-			BYTE result = 0;
-			for (int j = 0; j < 2; j++)
+			char c = str[i];
+
+			// If this is a space character, ignore it
+			if (c == ' ' || c == '\t')
+				continue;
+
+			if (c == '?')
 			{
-				int val = 0;
-				char c = *(str + i + j);
-				if (c >= 'a')
-				{
-					val = c - 'a' + 0xA;
-				}
-				else if (c >= 'A')
-				{
-					val = c - 'A' + 0xA;
-				}
-				else if (isdigit(c))
-				{
-					val = c - '0';
-				}
-				else
-				{
-					assert(false, "Failed to parse invalid hex string.");
-					val = -1;
-				}
-
-				result += (j == 0) ? val * 16 : val;
+				// Add a wildcard (-1)
+				patternNums.push_back(-1);
 			}
-			patternNums.push_back(result);
+			else if (i < size - 1)
+			{
+				BYTE result = 0;
+				for (int j = 0; j < 2; j++)
+				{
+					int val = 0;
+					char c = *(str + i + j);
+					if (c >= 'a')
+					{
+						val = c - 'a' + 0xA;
+					}
+					else if (c >= 'A')
+					{
+						val = c - 'A' + 0xA;
+					}
+					else if (isdigit(c))
+					{
+						val = c - '0';
+					}
+					else
+					{
+						assert(false, "Failed to parse invalid hex string.");
+						val = -1;
+					}
+
+					result += (j == 0) ? val * 16 : val;
+				}
+				patternNums.push_back(result);
+			}
+
+			i++;
 		}
 
-		i++;
+		return patternNums;
 	}
 
-	return patternNums;
-}
-
-inline void* PatternScan(void* module, const int* pattern, int patternSize, int offset)
-{
-	if (!module)
-		return NULL;
-
-	auto dosHeader = (PIMAGE_DOS_HEADER)module;
-	auto ntHeaders = (PIMAGE_NT_HEADERS)((BYTE*)module + dosHeader->e_lfanew);
-
-	auto sizeOfImage = ntHeaders->OptionalHeader.SizeOfImage;
-
-	auto scanBytes = (BYTE*)module;
-
-	for (auto i = 0; i < sizeOfImage - patternSize; ++i)
+	inline void* PatternScan(void* module, const int* pattern, int patternSize, int offset)
 	{
-		bool found = true;
-		for (auto j = 0; j < patternSize; ++j)
+		if (!module)
+			return NULL;
+
+		auto dosHeader = (PIMAGE_DOS_HEADER)module;
+		auto ntHeaders = (PIMAGE_NT_HEADERS)((BYTE*)module + dosHeader->e_lfanew);
+
+		auto sizeOfImage = ntHeaders->OptionalHeader.SizeOfImage;
+
+		auto scanBytes = (BYTE*)module;
+
+		for (auto i = 0; i < sizeOfImage - patternSize; ++i)
 		{
-			if (scanBytes[i + j] != pattern[j] && pattern[j] != -1)
+			bool found = true;
+			for (auto j = 0; j < patternSize; ++j)
 			{
-				found = false;
-				break;
+				if (scanBytes[i + j] != pattern[j] && pattern[j] != -1)
+				{
+					found = false;
+					break;
+				}
+			}
+
+			if (found)
+			{
+				uintptr_t addressInt = (uintptr_t)(&scanBytes[i]) + offset;
+				return (uint8_t*)addressInt;
 			}
 		}
 
-		if (found)
-		{
-			uintptr_t addressInt = (uintptr_t)(&scanBytes[i]) + offset;
-			return (uint8_t*)addressInt;
-		}
+		return nullptr;
 	}
 
-	return nullptr;
-}
+	inline void* PatternScan(const char* moduleName, const char* pattern, int offset = 0)
+	{
+		std::vector<int> patternNums = HexBytesToString(pattern);
 
-inline void* PatternScan(const char* moduleName, const char* pattern, int offset = 0)
-{
-	std::vector<int> patternNums = HexBytesToString(pattern);
+		return PatternScan(GetModuleHandleA(moduleName), &patternNums[0], patternNums.size(), offset);
+	}
 
-	return PatternScan(GetModuleHandleA(moduleName), &patternNums[0], patternNums.size(), offset);
-}
+	inline void BytePatch(uintptr_t address, const BYTE* vals, int size)
+	{
+		WriteProcessMemory(GetCurrentProcess(), (LPVOID)address, vals, size, NULL);
+	}
 
-inline void BytePatch(uintptr_t address, const BYTE* vals, int size)
-{
-	WriteProcessMemory(GetCurrentProcess(), (LPVOID)address, vals, size, NULL);
-}
+	inline void BytePatch(uintptr_t address, std::initializer_list<BYTE> vals)
+	{
+		std::vector<BYTE> bytes = vals;
+		if (!bytes.empty())
+			BytePatch(address, &bytes[0], bytes.size());
+	}
 
-inline void BytePatch(uintptr_t address, std::initializer_list<BYTE> vals)
-{
-	std::vector<BYTE> bytes = vals;
-	if (!bytes.empty())
-		BytePatch(address, &bytes[0], bytes.size());
-}
+	inline void BytePatch(uintptr_t address, const char* bytesStr)
+	{
+		std::vector<int> byteInts = HexBytesToString(bytesStr);
+		std::vector<BYTE> bytes;
+		for (int v : byteInts)
+			bytes.push_back(v);
 
-inline void BytePatch(uintptr_t address, const char* bytesStr)
-{
-	std::vector<int> byteInts = HexBytesToString(bytesStr);
-	std::vector<BYTE> bytes;
-	for (int v : byteInts)
-		bytes.push_back(v);
+		if (!bytes.empty())
+			BytePatch(address, &bytes[0], bytes.size());
+	}
 
-	if (!bytes.empty())
-		BytePatch(address, &bytes[0], bytes.size());
-}
+	inline void NOP(uintptr_t address, int size)
+	{
+		BYTE* buf = (BYTE*)malloc(size);
+		memset(buf, 0x90, size);
+		BytePatch(address, buf, size);
+		free(buf);
+	}
 
-inline void NOP(uintptr_t address, int size)
-{
-	BYTE* buf = (BYTE*)malloc(size);
-	memset(buf, 0x90, size);
-	BytePatch(address, buf, size);
-	free(buf);
-}
+	inline bool IsMemoryReadable(void* ptr, size_t size)
+	{
+		static SYSTEM_INFO sysInfo;
+		if (!sysInfo.dwPageSize)
+			GetSystemInfo(&sysInfo); // This should always be 4096 unless ur playing on NES or some shit but whatever
 
-inline bool IsMemoryReadable(void* ptr, size_t size)
-{
-	static SYSTEM_INFO sysInfo;
-	if (!sysInfo.dwPageSize)
-		GetSystemInfo(&sysInfo); // This should always be 4096 unless ur playing on NES or some shit but whatever
+		MEMORY_BASIC_INFORMATION memInfo;
 
-	MEMORY_BASIC_INFORMATION memInfo;
+		if (!VirtualQuery(ptr, &memInfo, sizeof(memInfo)))
+			return false;
 
-	if (!VirtualQuery(ptr, &memInfo, sizeof(memInfo)))
-		return false;
+		if (memInfo.RegionSize < size)
+			return false;
 
-	if (memInfo.RegionSize < size)
-		return false;
-
-	return (memInfo.State & MEM_COMMIT) && !(memInfo.Protect & PAGE_NOACCESS);
-}
+		return (memInfo.State & MEM_COMMIT) && !(memInfo.Protect & PAGE_NOACCESS);
+	}
 } // namespace NSMem
 
 #pragma region KHOOK

@@ -17,6 +17,8 @@ void ConCommand_ns_script_servertoclientstringcommand(const CCommand& arg)
 void InitialiseScriptServerToClientStringCommands(HMODULE baseAddress)
 {
 	RegisterConCommand(
-		"ns_script_servertoclientstringcommand", ConCommand_ns_script_servertoclientstringcommand, "",
+		"ns_script_servertoclientstringcommand",
+		ConCommand_ns_script_servertoclientstringcommand,
+		"",
 		FCVAR_CLIENTDLL | FCVAR_SERVER_CAN_EXECUTE);
 }

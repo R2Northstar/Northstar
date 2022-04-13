@@ -2,7 +2,10 @@
 #include "pch.h"
 #include "configurables.h"
 
-std::string GetNorthstarPrefix() { return NORTHSTAR_FOLDER_PREFIX; }
+std::string GetNorthstarPrefix()
+{
+	return NORTHSTAR_FOLDER_PREFIX;
+}
 
 void parseConfigurables()
 {

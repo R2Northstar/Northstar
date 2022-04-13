@@ -41,7 +41,9 @@ void InitialiseConsoleOnInterfaceCreation()
 	// hook OnCommandSubmitted so we print inputted commands
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(
-		hook, (void*)((*g_SourceGameConsole)->m_pConsole->m_vtable->OnCommandSubmitted), &OnCommandSubmittedHook,
+		hook,
+		(void*)((*g_SourceGameConsole)->m_pConsole->m_vtable->OnCommandSubmitted),
+		&OnCommandSubmittedHook,
 		reinterpret_cast<LPVOID*>(&onCommandSubmittedOriginal));
 }
 

@@ -156,7 +156,10 @@ template <ScriptContext context> class SquirrelManager
 		}
 	}
 
-	void VMDestroyed() { sqvm = nullptr; }
+	void VMDestroyed()
+	{
+		sqvm = nullptr;
+	}
 
 	void ExecuteCode(const char* code)
 	{

@@ -28,7 +28,10 @@ PakLoadFuncs* g_pakLoadApi;
 void** pUnknownPakLoadSingleton;
 
 PakLoadManager* g_PakLoadManager;
-void PakLoadManager::LoadPakSync(const char* path) { g_pakLoadApi->LoadPakSync(path, *pUnknownPakLoadSingleton, 0); }
+void PakLoadManager::LoadPakSync(const char* path)
+{
+	g_pakLoadApi->LoadPakSync(path, *pUnknownPakLoadSingleton, 0);
+}
 void PakLoadManager::LoadPakAsync(const char* path, bool bMarkForUnload)
 {
 	int handle = g_pakLoadApi->LoadPakAsync(path, *pUnknownPakLoadSingleton, 2, nullptr, nullptr);

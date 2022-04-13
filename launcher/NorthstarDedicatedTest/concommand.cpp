@@ -27,19 +27,28 @@ void InitialiseConCommands(HMODULE baseAddress)
 // Purpose: Returns true if this is a command
 // Output : bool
 //-----------------------------------------------------------------------------
-bool ConCommand::IsCommand(void) const { return true; }
+bool ConCommand::IsCommand(void) const
+{
+	return true;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Returns true if this is a command
 // Output : bool
 //-----------------------------------------------------------------------------
-bool ConCommandBase::IsCommand(void) const { return true; }
+bool ConCommandBase::IsCommand(void) const
+{
+	return true;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Has this cvar been registered
 // Output : Returns true on success, false on failure.
 //-----------------------------------------------------------------------------
-bool ConCommandBase::IsRegistered(void) const { return m_bRegistered; }
+bool ConCommandBase::IsRegistered(void) const
+{
+	return m_bRegistered;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Test each ConCommand query before execution.
@@ -56,37 +65,55 @@ bool ConCommandBase::IsFlagSet(int nFlags) const
 // Input  : nFlags -
 // Output : True if ConCommand has nFlags.
 //-----------------------------------------------------------------------------
-bool ConCommandBase::HasFlags(int nFlags) { return m_nFlags & nFlags; }
+bool ConCommandBase::HasFlags(int nFlags)
+{
+	return m_nFlags & nFlags;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Add's flags to ConCommand.
 // Input  : nFlags -
 //-----------------------------------------------------------------------------
-void ConCommandBase::AddFlags(int nFlags) { m_nFlags |= nFlags; }
+void ConCommandBase::AddFlags(int nFlags)
+{
+	m_nFlags |= nFlags;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Removes flags from ConCommand.
 // Input  : nFlags -
 //-----------------------------------------------------------------------------
-void ConCommandBase::RemoveFlags(int nFlags) { m_nFlags &= ~nFlags; }
+void ConCommandBase::RemoveFlags(int nFlags)
+{
+	m_nFlags &= ~nFlags;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Returns current flags.
 // Output : int
 //-----------------------------------------------------------------------------
-int ConCommandBase::GetFlags(void) const { return m_nFlags; }
+int ConCommandBase::GetFlags(void) const
+{
+	return m_nFlags;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose:
 // Output : const ConCommandBase
 //-----------------------------------------------------------------------------
-ConCommandBase* ConCommandBase::GetNext(void) const { return m_pNext; }
+ConCommandBase* ConCommandBase::GetNext(void) const
+{
+	return m_pNext;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Returns the ConCommandBase help text.
 // Output : const char*
 //-----------------------------------------------------------------------------
-const char* ConCommandBase::GetHelpText(void) const { return m_pszHelpString; }
+const char* ConCommandBase::GetHelpText(void) const
+{
+	return m_pszHelpString;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Copies string using local new/delete operators

@@ -28,7 +28,10 @@ struct CDedicatedExports
 	DedicatedRunServerType RunServer;
 };
 
-void Sys_Printf(CDedicatedExports* dedicated, const char* msg) { spdlog::info("[DEDICATED PRINT] {}", msg); }
+void Sys_Printf(CDedicatedExports* dedicated, const char* msg)
+{
+	spdlog::info("[DEDICATED PRINT] {}", msg);
+}
 
 typedef void (*CHostState__InitType)(CHostState* self);
 
@@ -77,8 +80,12 @@ void RunServer(CDedicatedExports* dedicated)
 				maxPlayers = "6";
 
 			SetConsoleTitleA(fmt::format(
-								 "{} - {} {}/{} players ({})", g_MasterServerManager->ns_auth_srvName, g_pHostState->m_levelName,
-								 g_ServerAuthenticationManager->m_additionalPlayerData.size(), maxPlayers, GetCurrentPlaylistName())
+								 "{} - {} {}/{} players ({})",
+								 g_MasterServerManager->ns_auth_srvName,
+								 g_pHostState->m_levelName,
+								 g_ServerAuthenticationManager->m_additionalPlayerData.size(),
+								 maxPlayers,
+								 GetCurrentPlaylistName())
 								 .c_str());
 		}
 
@@ -89,7 +96,10 @@ void RunServer(CDedicatedExports* dedicated)
 
 typedef bool (*IsGameActiveWindowType)();
 IsGameActiveWindowType IsGameActiveWindow;
-bool IsGameActiveWindowHook() { return true; }
+bool IsGameActiveWindowHook()
+{
+	return true;
+}
 
 HANDLE consoleInputThreadHandle = NULL;
 
@@ -206,10 +216,12 @@ void InitialiseDedicated(HMODULE engineAddress)
 		// func that checks if origin is inited
 		// always return 1
 		NSMem::BytePatch(
-			ea + 0x183B70, {
-							   0xB0, 0x01, // mov al,01
-							   0xC3		   // ret
-						   });
+			ea + 0x183B70,
+			{
+				0xB0,
+				0x01, // mov al,01
+				0xC3 // ret
+			});
 	}
 
 	{
@@ -296,9 +308,10 @@ void InitialiseDedicatedOrigin(HMODULE baseAddress)
 	// an origin id as a client for dedi it's fine though, game doesn't care if origin is disabled as long as there's only a server
 
 	NSMem::BytePatch(
-		(uintptr_t)GetProcAddress(GetModuleHandleA("tier0.dll"), "Tier0_InitOrigin"), {
-																						  0xC3 // ret
-																					  });
+		(uintptr_t)GetProcAddress(GetModuleHandleA("tier0.dll"), "Tier0_InitOrigin"),
+		{
+			0xC3 // ret
+		});
 }
 
 typedef void (*PrintFatalSquirrelErrorType)(void* sqvm);

@@ -50,10 +50,12 @@ SQRESULT SQ_GetServerName(void* sqvm)
 	if (serverIndex >= g_MasterServerManager->m_remoteServers.size())
 	{
 		ClientSq_pusherror(
-			sqvm, fmt::format(
-					  "Tried to get name of server index {} when only {} servers are available", serverIndex,
-					  g_MasterServerManager->m_remoteServers.size())
-					  .c_str());
+			sqvm,
+			fmt::format(
+				"Tried to get name of server index {} when only {} servers are available",
+				serverIndex,
+				g_MasterServerManager->m_remoteServers.size())
+				.c_str());
 		return SQRESULT_ERROR;
 	}
 
@@ -69,10 +71,12 @@ SQRESULT SQ_GetServerDescription(void* sqvm)
 	if (serverIndex >= g_MasterServerManager->m_remoteServers.size())
 	{
 		ClientSq_pusherror(
-			sqvm, fmt::format(
-					  "Tried to get description of server index {} when only {} servers are available", serverIndex,
-					  g_MasterServerManager->m_remoteServers.size())
-					  .c_str());
+			sqvm,
+			fmt::format(
+				"Tried to get description of server index {} when only {} servers are available",
+				serverIndex,
+				g_MasterServerManager->m_remoteServers.size())
+				.c_str());
 		return SQRESULT_ERROR;
 	}
 
@@ -88,10 +92,12 @@ SQInteger SQ_GetServerMap(void* sqvm)
 	if (serverIndex >= g_MasterServerManager->m_remoteServers.size())
 	{
 		ClientSq_pusherror(
-			sqvm, fmt::format(
-					  "Tried to get map of server index {} when only {} servers are available", serverIndex,
-					  g_MasterServerManager->m_remoteServers.size())
-					  .c_str());
+			sqvm,
+			fmt::format(
+				"Tried to get map of server index {} when only {} servers are available",
+				serverIndex,
+				g_MasterServerManager->m_remoteServers.size())
+				.c_str());
 		return SQRESULT_ERROR;
 	}
 
@@ -107,10 +113,12 @@ SQRESULT SQ_GetServerPlaylist(void* sqvm)
 	if (serverIndex >= g_MasterServerManager->m_remoteServers.size())
 	{
 		ClientSq_pusherror(
-			sqvm, fmt::format(
-					  "Tried to get playlist of server index {} when only {} servers are available", serverIndex,
-					  g_MasterServerManager->m_remoteServers.size())
-					  .c_str());
+			sqvm,
+			fmt::format(
+				"Tried to get playlist of server index {} when only {} servers are available",
+				serverIndex,
+				g_MasterServerManager->m_remoteServers.size())
+				.c_str());
 		return SQRESULT_ERROR;
 	}
 
@@ -126,10 +134,12 @@ SQRESULT SQ_GetServerPlayerCount(void* sqvm)
 	if (serverIndex >= g_MasterServerManager->m_remoteServers.size())
 	{
 		ClientSq_pusherror(
-			sqvm, fmt::format(
-					  "Tried to get playercount of server index {} when only {} servers are available", serverIndex,
-					  g_MasterServerManager->m_remoteServers.size())
-					  .c_str());
+			sqvm,
+			fmt::format(
+				"Tried to get playercount of server index {} when only {} servers are available",
+				serverIndex,
+				g_MasterServerManager->m_remoteServers.size())
+				.c_str());
 		return SQRESULT_ERROR;
 	}
 
@@ -145,10 +155,12 @@ SQRESULT SQ_GetServerMaxPlayerCount(void* sqvm)
 	if (serverIndex >= g_MasterServerManager->m_remoteServers.size())
 	{
 		ClientSq_pusherror(
-			sqvm, fmt::format(
-					  "Tried to get max playercount of server index {} when only {} servers are available", serverIndex,
-					  g_MasterServerManager->m_remoteServers.size())
-					  .c_str());
+			sqvm,
+			fmt::format(
+				"Tried to get max playercount of server index {} when only {} servers are available",
+				serverIndex,
+				g_MasterServerManager->m_remoteServers.size())
+				.c_str());
 		return SQRESULT_ERROR;
 	}
 
@@ -164,10 +176,12 @@ SQRESULT SQ_GetServerID(void* sqvm)
 	if (serverIndex >= g_MasterServerManager->m_remoteServers.size())
 	{
 		ClientSq_pusherror(
-			sqvm, fmt::format(
-					  "Tried to get id of server index {} when only {} servers are available", serverIndex,
-					  g_MasterServerManager->m_remoteServers.size())
-					  .c_str());
+			sqvm,
+			fmt::format(
+				"Tried to get id of server index {} when only {} servers are available",
+				serverIndex,
+				g_MasterServerManager->m_remoteServers.size())
+				.c_str());
 		return SQRESULT_ERROR;
 	}
 
@@ -183,10 +197,12 @@ SQRESULT SQ_ServerRequiresPassword(void* sqvm)
 	if (serverIndex >= g_MasterServerManager->m_remoteServers.size())
 	{
 		ClientSq_pusherror(
-			sqvm, fmt::format(
-					  "Tried to get hasPassword of server index {} when only {} servers are available", serverIndex,
-					  g_MasterServerManager->m_remoteServers.size())
-					  .c_str());
+			sqvm,
+			fmt::format(
+				"Tried to get hasPassword of server index {} when only {} servers are available",
+				serverIndex,
+				g_MasterServerManager->m_remoteServers.size())
+				.c_str());
 		return SQRESULT_ERROR;
 	}
 
@@ -202,10 +218,12 @@ SQRESULT SQ_GetServerRequiredModsCount(void* sqvm)
 	if (serverIndex >= g_MasterServerManager->m_remoteServers.size())
 	{
 		ClientSq_pusherror(
-			sqvm, fmt::format(
-					  "Tried to get required mods count of server index {} when only {} servers are available", serverIndex,
-					  g_MasterServerManager->m_remoteServers.size())
-					  .c_str());
+			sqvm,
+			fmt::format(
+				"Tried to get required mods count of server index {} when only {} servers are available",
+				serverIndex,
+				g_MasterServerManager->m_remoteServers.size())
+				.c_str());
 		return SQRESULT_ERROR;
 	}
 
@@ -222,20 +240,24 @@ SQRESULT SQ_GetServerRequiredModName(void* sqvm)
 	if (serverIndex >= g_MasterServerManager->m_remoteServers.size())
 	{
 		ClientSq_pusherror(
-			sqvm, fmt::format(
-					  "Tried to get hasPassword of server index {} when only {} servers are available", serverIndex,
-					  g_MasterServerManager->m_remoteServers.size())
-					  .c_str());
+			sqvm,
+			fmt::format(
+				"Tried to get hasPassword of server index {} when only {} servers are available",
+				serverIndex,
+				g_MasterServerManager->m_remoteServers.size())
+				.c_str());
 		return SQRESULT_ERROR;
 	}
 
 	if (modIndex >= g_MasterServerManager->m_remoteServers[serverIndex].requiredMods.size())
 	{
 		ClientSq_pusherror(
-			sqvm, fmt::format(
-					  "Tried to get required mod name of mod index {} when only {} mod are available", modIndex,
-					  g_MasterServerManager->m_remoteServers[serverIndex].requiredMods.size())
-					  .c_str());
+			sqvm,
+			fmt::format(
+				"Tried to get required mod name of mod index {} when only {} mod are available",
+				modIndex,
+				g_MasterServerManager->m_remoteServers[serverIndex].requiredMods.size())
+				.c_str());
 		return SQRESULT_ERROR;
 	}
 
@@ -252,20 +274,24 @@ SQRESULT SQ_GetServerRequiredModVersion(void* sqvm)
 	if (serverIndex >= g_MasterServerManager->m_remoteServers.size())
 	{
 		ClientSq_pusherror(
-			sqvm, fmt::format(
-					  "Tried to get required mod version of server index {} when only {} servers are available", serverIndex,
-					  g_MasterServerManager->m_remoteServers.size())
-					  .c_str());
+			sqvm,
+			fmt::format(
+				"Tried to get required mod version of server index {} when only {} servers are available",
+				serverIndex,
+				g_MasterServerManager->m_remoteServers.size())
+				.c_str());
 		return SQRESULT_ERROR;
 	}
 
 	if (modIndex >= g_MasterServerManager->m_remoteServers[serverIndex].requiredMods.size())
 	{
 		ClientSq_pusherror(
-			sqvm, fmt::format(
-					  "Tried to get required mod version of mod index {} when only {} mod are available", modIndex,
-					  g_MasterServerManager->m_remoteServers[serverIndex].requiredMods.size())
-					  .c_str());
+			sqvm,
+			fmt::format(
+				"Tried to get required mod version of mod index {} when only {} mod are available",
+				modIndex,
+				g_MasterServerManager->m_remoteServers[serverIndex].requiredMods.size())
+				.c_str());
 		return SQRESULT_ERROR;
 	}
 
@@ -291,10 +317,12 @@ SQRESULT SQ_TryAuthWithServer(void* sqvm)
 	if (serverIndex >= g_MasterServerManager->m_remoteServers.size())
 	{
 		ClientSq_pusherror(
-			sqvm, fmt::format(
-					  "Tried to auth with server index {} when only {} servers are available", serverIndex,
-					  g_MasterServerManager->m_remoteServers.size())
-					  .c_str());
+			sqvm,
+			fmt::format(
+				"Tried to auth with server index {} when only {} servers are available",
+				serverIndex,
+				g_MasterServerManager->m_remoteServers.size())
+				.c_str());
 		return SQRESULT_ERROR;
 	}
 
@@ -305,7 +333,9 @@ SQRESULT SQ_TryAuthWithServer(void* sqvm)
 
 	// do auth
 	g_MasterServerManager->AuthenticateWithServer(
-		g_LocalPlayerUserID, g_MasterServerManager->m_ownClientAuthToken, g_MasterServerManager->m_remoteServers[serverIndex].id,
+		g_LocalPlayerUserID,
+		g_MasterServerManager->m_ownClientAuthToken,
+		g_MasterServerManager->m_remoteServers[serverIndex].id,
 		(char*)password);
 
 	return SQRESULT_NULL;
@@ -342,8 +372,12 @@ SQRESULT SQ_ConnectToAuthedServer(void* sqvm)
 	Cbuf_AddText(
 		Cbuf_GetCurrentPlayer(),
 		fmt::format(
-			"connect {}.{}.{}.{}:{}", info.ip.S_un.S_un_b.s_b1, info.ip.S_un.S_un_b.s_b2, info.ip.S_un.S_un_b.s_b3,
-			info.ip.S_un.S_un_b.s_b4, info.port)
+			"connect {}.{}.{}.{}:{}",
+			info.ip.S_un.S_un_b.s_b1,
+			info.ip.S_un.S_un_b.s_b2,
+			info.ip.S_un.S_un_b.s_b3,
+			info.ip.S_un.S_un_b.s_b4,
+			info.port)
 			.c_str(),
 		cmd_source_t::kCommandSrcCode);
 
@@ -366,7 +400,8 @@ SQRESULT SQ_CompleteAuthWithLocalServer(void* sqvm)
 	// literally just set serverfilter
 	// note: this assumes we have no authdata other than our own
 	Cbuf_AddText(
-		Cbuf_GetCurrentPlayer(), fmt::format("serverfilter {}", g_ServerAuthenticationManager->m_authData.begin()->first).c_str(),
+		Cbuf_GetCurrentPlayer(),
+		fmt::format("serverfilter {}", g_ServerAuthenticationManager->m_authData.begin()->first).c_str(),
 		cmd_source_t::kCommandSrcCode);
 
 	return SQRESULT_NULL;

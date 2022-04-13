@@ -15,9 +15,9 @@ class ConVar;
 class CCVarIteratorInternal // Fully reversed table, just look at the virtual function table and rename the function.
 {
   public:
-	virtual void SetFirst(void) = 0;	   // 0
-	virtual void Next(void) = 0;		   // 1
-	virtual bool IsValid(void) = 0;		   // 2
+	virtual void SetFirst(void) = 0; // 0
+	virtual void Next(void) = 0; // 1
+	virtual bool IsValid(void) = 0; // 2
 	virtual ConCommandBase* Get(void) = 0; // 3
 };
 

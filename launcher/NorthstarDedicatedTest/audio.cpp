@@ -57,8 +57,10 @@ EventOverrideData::EventOverrideData(const std::string& data, const fs::path& pa
 	if (dataJson.HasParseError())
 	{
 		spdlog::error(
-			"Failed reading audio override file {}: encountered parse error \"{}\" at offset {}", path.string(),
-			GetParseError_En(dataJson.GetParseError()), dataJson.GetErrorOffset());
+			"Failed reading audio override file {}: encountered parse error \"{}\" at offset {}",
+			path.string(),
+			GetParseError_En(dataJson.GetParseError()),
+			dataJson.GetErrorOffset());
 		return;
 	}
 
@@ -486,7 +488,10 @@ bool __fastcall LoadSampleMetadata_Hook(void* sample, void* audioBuffer, unsigne
 typedef bool (*MilesLog_Type)(int level, const char* string);
 MilesLog_Type MilesLog_Original;
 
-void __fastcall MilesLog_Hook(int level, const char* string) { spdlog::info("[MSS] {} - {}", level, string); }
+void __fastcall MilesLog_Hook(int level, const char* string)
+{
+	spdlog::info("[MSS] {} - {}", level, string);
+}
 
 void InitialiseMilesAudioHooks(HMODULE baseAddress)
 {
