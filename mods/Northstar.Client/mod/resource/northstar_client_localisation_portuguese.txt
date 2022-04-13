@@ -300,6 +300,9 @@ Clique em Sim se você concorda. Esta escolha pode ser alterada a qualquer momen
 		"SHOW_ONLY_ENABLED" "Apenas ativados"
 		"SHOW_ONLY_DISABLED" "Apenas desativados"
 
+		// Maps menu
+		"HIDE_LOCKED" "Esconder desativados"
+
 		// In-game chat
 		"HUD_CHAT_WHISPER_PREFIX" "[WHISPER]"
 		"HUD_CHAT_SERVER_PREFIX" "[SERVER]"
