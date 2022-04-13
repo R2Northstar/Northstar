@@ -60,6 +60,13 @@
 			}
 		},
 		{
+			"Path": "_northstar_cheatcommands.nut",
+			"RunOn": "SERVER",
+			"ServerCallback": {
+				"After": "NorthstarCheatCommands_Init"
+			}
+		},
+		{
 			"Path": "_chat.gnut",
 			"RunOn": "SERVER"
 		},
