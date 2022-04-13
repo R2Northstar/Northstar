@@ -7,10 +7,22 @@ struct color24
 
 typedef struct color32_s
 {
-	bool operator!=(const struct color32_s& other) const { return r != other.r || g != other.g || b != other.b || a != other.a; }
-	inline unsigned* asInt(void) { return reinterpret_cast<unsigned*>(this); }
-	inline const unsigned* asInt(void) const { return reinterpret_cast<const unsigned*>(this); }
-	inline void Copy(const color32_s& rhs) { *asInt() = *rhs.asInt(); }
+	bool operator!=(const struct color32_s& other) const
+	{
+		return r != other.r || g != other.g || b != other.b || a != other.a;
+	}
+	inline unsigned* asInt(void)
+	{
+		return reinterpret_cast<unsigned*>(this);
+	}
+	inline const unsigned* asInt(void) const
+	{
+		return reinterpret_cast<const unsigned*>(this);
+	}
+	inline void Copy(const color32_s& rhs)
+	{
+		*asInt() = *rhs.asInt();
+	}
 
 	uint8_t r, g, b, a;
 } color32;
@@ -43,22 +55,55 @@ class Color
 		_b = _color[2];
 		_a = _color[3];
 	}
-	int GetValue(int index) const { return _color[index]; }
-	void SetRawColor(int color32) { *((int*)this) = color32; }
-	int GetRawColor(void) const { return *((int*)this); }
+	int GetValue(int index) const
+	{
+		return _color[index];
+	}
+	void SetRawColor(int color32)
+	{
+		*((int*)this) = color32;
+	}
+	int GetRawColor(void) const
+	{
+		return *((int*)this);
+	}
 
-	inline int r() const { return _color[0]; }
-	inline int g() const { return _color[1]; }
-	inline int b() const { return _color[2]; }
-	inline int a() const { return _color[3]; }
+	inline int r() const
+	{
+		return _color[0];
+	}
+	inline int g() const
+	{
+		return _color[1];
+	}
+	inline int b() const
+	{
+		return _color[2];
+	}
+	inline int a() const
+	{
+		return _color[3];
+	}
 
-	unsigned char& operator[](int index) { return _color[index]; }
+	unsigned char& operator[](int index)
+	{
+		return _color[index];
+	}
 
-	const unsigned char& operator[](int index) const { return _color[index]; }
+	const unsigned char& operator[](int index) const
+	{
+		return _color[index];
+	}
 
-	bool operator==(const Color& rhs) const { return (*((int*)this) == *((int*)&rhs)); }
+	bool operator==(const Color& rhs) const
+	{
+		return (*((int*)this) == *((int*)&rhs));
+	}
 
-	bool operator!=(const Color& rhs) const { return !(operator==(rhs)); }
+	bool operator!=(const Color& rhs) const
+	{
+		return !(operator==(rhs));
+	}
 
 	Color& operator=(const Color& rhs)
 	{
@@ -77,7 +122,7 @@ class Color
 
 	color32 ToColor32(void) const
 	{
-		color32 newColor{};
+		color32 newColor {};
 		newColor.r = _color[0];
 		newColor.g = _color[1];
 		newColor.b = _color[2];

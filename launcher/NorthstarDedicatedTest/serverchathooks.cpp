@@ -93,7 +93,9 @@ void ChatSendMessage(unsigned int playerIndex, const char* text, bool isteam)
 	CServerGameDLL__OnReceivedSayTextMessage(
 		g_pServerGameDLL,
 		// Ensure the first bit isn't set, since this indicates a custom message
-		(playerIndex + 1) & CUSTOM_MESSAGE_INDEX_MASK, text, isteam);
+		(playerIndex + 1) & CUSTOM_MESSAGE_INDEX_MASK,
+		text,
+		isteam);
 }
 
 void ChatBroadcastMessage(int fromPlayerIndex, int toPlayerIndex, const char* text, bool isTeam, bool isDead, CustomMessageType messageType)
@@ -168,7 +170,10 @@ SQRESULT SQ_BroadcastMessage(void* sqvm)
 	return SQRESULT_NULL;
 }
 
-void InitialiseServerChatHooks_Engine(HMODULE baseAddress) { g_pServerGameDLL = (CServerGameDLL*)((char*)baseAddress + 0x13F0AA98); }
+void InitialiseServerChatHooks_Engine(HMODULE baseAddress)
+{
+	g_pServerGameDLL = (CServerGameDLL*)((char*)baseAddress + 0x13F0AA98);
+}
 
 void InitialiseServerChatHooks_Server(HMODULE baseAddress)
 {
@@ -188,12 +193,17 @@ void InitialiseServerChatHooks_Server(HMODULE baseAddress)
 
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(
-		hook, CServerGameDLL__OnReceivedSayTextMessage, &CServerGameDLL__OnReceivedSayTextMessageHook,
+		hook,
+		CServerGameDLL__OnReceivedSayTextMessage,
+		&CServerGameDLL__OnReceivedSayTextMessageHook,
 		reinterpret_cast<LPVOID*>(&CServerGameDLL__OnReceivedSayTextMessageHookBase));
 
 	// Chat sending functions
 	g_ServerSquirrelManager->AddFuncRegistration("void", "NSSendMessage", "int playerIndex, string text, bool isTeam", "", SQ_SendMessage);
 	g_ServerSquirrelManager->AddFuncRegistration(
-		"void", "NSBroadcastMessage", "int fromPlayerIndex, int toPlayerIndex, string text, bool isTeam, bool isDead, int messageType", "",
+		"void",
+		"NSBroadcastMessage",
+		"int fromPlayerIndex, int toPlayerIndex, string text, bool isTeam, bool isDead, int messageType",
+		"",
 		SQ_BroadcastMessage);
 }

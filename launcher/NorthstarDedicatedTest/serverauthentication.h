@@ -57,7 +57,7 @@ typedef struct netpacket_s
 	char unk[10];
 	double received_time;
 	unsigned char* data; // pointer to raw packet data
-	void* message;		 // easy bitbuf data access // 'inpacket.message' etc etc (pointer)
+	void* message; // easy bitbuf data access // 'inpacket.message' etc etc (pointer)
 	char unk2[16];
 	int size;
 

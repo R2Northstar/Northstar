@@ -32,8 +32,10 @@ Mod::Mod(fs::path modDir, char* jsonBuf)
 	if (modJson.HasParseError())
 	{
 		spdlog::error(
-			"Failed reading mod file {}: encountered parse error \"{}\" at offset {}", (modDir / "mod.json").string(),
-			GetParseError_En(modJson.GetParseError()), modJson.GetErrorOffset());
+			"Failed reading mod file {}: encountered parse error \"{}\" at offset {}",
+			(modDir / "mod.json").string(),
+			GetParseError_En(modJson.GetParseError()),
+			modJson.GetErrorOffset());
 		return;
 	}
 
@@ -360,7 +362,8 @@ void ModManager::LoadMods()
 			if (bUseRpakJson && dRpakJson.HasMember("Aliases") && dRpakJson["Aliases"].IsObject())
 			{
 				for (rapidjson::Value::ConstMemberIterator iterator = dRpakJson["Aliases"].MemberBegin();
-					 iterator != dRpakJson["Aliases"].MemberEnd(); iterator++)
+					 iterator != dRpakJson["Aliases"].MemberEnd();
+					 iterator++)
 				{
 					if (!iterator->name.IsString() || !iterator->value.IsString())
 						continue;
@@ -521,7 +524,8 @@ void ModManager::UnloadMods()
 		// what we wanna do
 		if (!m_enabledModsCfg.HasMember(mod.Name.c_str()))
 			m_enabledModsCfg.AddMember(
-				rapidjson_document::StringRefType(mod.Name.c_str()), rapidjson_document::GenericValue(false),
+				rapidjson_document::StringRefType(mod.Name.c_str()),
+				rapidjson_document::GenericValue(false),
 				m_enabledModsCfg.GetAllocator());
 
 		m_enabledModsCfg[mod.Name.c_str()].SetBool(mod.Enabled);
@@ -561,7 +565,10 @@ void ModManager::CompileAssetsForFile(const char* filename)
 	}
 }
 
-void ReloadModsCommand(const CCommand& args) { g_ModManager->LoadMods(); }
+void ReloadModsCommand(const CCommand& args)
+{
+	g_ModManager->LoadMods();
+}
 
 void InitialiseModManager(HMODULE baseAddress)
 {
@@ -570,5 +577,11 @@ void InitialiseModManager(HMODULE baseAddress)
 	RegisterConCommand("reload_mods", ReloadModsCommand, "idk", FCVAR_NONE);
 }
 
-fs::path GetModFolderPath() { return fs::path(GetNorthstarPrefix() + MOD_FOLDER_SUFFIX); }
-fs::path GetCompiledAssetsPath() { return fs::path(GetNorthstarPrefix() + COMPILED_ASSETS_SUFFIX); }
+fs::path GetModFolderPath()
+{
+	return fs::path(GetNorthstarPrefix() + MOD_FOLDER_SUFFIX);
+}
+fs::path GetCompiledAssetsPath()
+{
+	return fs::path(GetNorthstarPrefix() + COMPILED_ASSETS_SUFFIX);
+}

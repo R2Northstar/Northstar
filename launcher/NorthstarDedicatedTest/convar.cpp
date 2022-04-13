@@ -7,8 +7,16 @@
 #include "sourceinterface.h"
 
 typedef void (*ConVarRegisterType)(
-	ConVar* pConVar, const char* pszName, const char* pszDefaultValue, int nFlags, const char* pszHelpString, bool bMin, float fMin,
-	bool bMax, float fMax, void* pCallback);
+	ConVar* pConVar,
+	const char* pszName,
+	const char* pszDefaultValue,
+	int nFlags,
+	const char* pszHelpString,
+	bool bMin,
+	float fMin,
+	bool bMax,
+	float fMax,
+	void* pCallback);
 ConVarRegisterType conVarRegister;
 
 typedef void (*ConVarMallocType)(void* pConVarMaloc, int a2, int a3);
@@ -56,7 +64,14 @@ ConVar::ConVar(const char* pszName, const char* pszDefaultValue, int nFlags, con
 // Purpose: constructor
 //-----------------------------------------------------------------------------
 ConVar::ConVar(
-	const char* pszName, const char* pszDefaultValue, int nFlags, const char* pszHelpString, bool bMin, float fMin, bool bMax, float fMax,
+	const char* pszName,
+	const char* pszDefaultValue,
+	int nFlags,
+	const char* pszHelpString,
+	bool bMin,
+	float fMin,
+	bool bMax,
+	float fMax,
 	void* pCallback)
 {
 	spdlog::info("Registering Convar {}", pszName);
@@ -81,43 +96,64 @@ ConVar::~ConVar(void)
 // Purpose: Returns the base ConVar name.
 // Output : const char*
 //-----------------------------------------------------------------------------
-const char* ConVar::GetBaseName(void) const { return m_ConCommandBase.m_pszName; }
+const char* ConVar::GetBaseName(void) const
+{
+	return m_ConCommandBase.m_pszName;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Returns the ConVar help text.
 // Output : const char*
 //-----------------------------------------------------------------------------
-const char* ConVar::GetHelpText(void) const { return m_ConCommandBase.m_pszHelpString; }
+const char* ConVar::GetHelpText(void) const
+{
+	return m_ConCommandBase.m_pszHelpString;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Add's flags to ConVar.
 // Input  : nFlags -
 //-----------------------------------------------------------------------------
-void ConVar::AddFlags(int nFlags) { m_ConCommandBase.m_nFlags |= nFlags; }
+void ConVar::AddFlags(int nFlags)
+{
+	m_ConCommandBase.m_nFlags |= nFlags;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Removes flags from ConVar.
 // Input  : nFlags -
 //-----------------------------------------------------------------------------
-void ConVar::RemoveFlags(int nFlags) { m_ConCommandBase.m_nFlags &= ~nFlags; }
+void ConVar::RemoveFlags(int nFlags)
+{
+	m_ConCommandBase.m_nFlags &= ~nFlags;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Return ConVar value as a boolean.
 // Output : bool
 //-----------------------------------------------------------------------------
-bool ConVar::GetBool(void) const { return !!GetInt(); }
+bool ConVar::GetBool(void) const
+{
+	return !!GetInt();
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Return ConVar value as a float.
 // Output : float
 //-----------------------------------------------------------------------------
-float ConVar::GetFloat(void) const { return m_Value.m_fValue; }
+float ConVar::GetFloat(void) const
+{
+	return m_Value.m_fValue;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Return ConVar value as an integer.
 // Output : int
 //-----------------------------------------------------------------------------
-int ConVar::GetInt(void) const { return m_Value.m_nValue; }
+int ConVar::GetInt(void) const
+{
+	return m_Value.m_nValue;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Return ConVar value as a color.
@@ -170,7 +206,10 @@ bool ConVar::GetMax(float& flMaxVal) const
 // Purpose: returns the min value.
 // Output : float
 //-----------------------------------------------------------------------------
-float ConVar::GetMinValue(void) const { return m_fMinVal; }
+float ConVar::GetMinValue(void) const
+{
+	return m_fMinVal;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: returns the max value.
@@ -186,13 +225,19 @@ float ConVar::GetMaxValue(void) const
 // Purpose: checks if ConVar has min value.
 // Output : bool
 //-----------------------------------------------------------------------------
-bool ConVar::HasMin(void) const { return m_bHasMin; }
+bool ConVar::HasMin(void) const
+{
+	return m_bHasMin;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: checks if ConVar has max value.
 // Output : bool
 //-----------------------------------------------------------------------------
-bool ConVar::HasMax(void) const { return m_bHasMax; }
+bool ConVar::HasMax(void) const
+{
+	return m_bHasMax;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: sets the ConVar int value.
@@ -265,8 +310,8 @@ void ConVar::SetValue(const char* pszValue)
 	}
 	this->m_Value.m_pszString = pszValue;
 
-	char szTempValue[32]{};
-	const char* pszNewValue{};
+	char szTempValue[32] {};
+	const char* pszNewValue {};
 
 	float flOldValue = m_Value.m_fValue;
 	pszNewValue = (char*)pszValue;
@@ -374,7 +419,7 @@ bool ConVar::SetColorFromString(const char* pszValue)
 	bool bColor = false;
 
 	// Try pulling RGBA color values out of the string.
-	int nRGBA[4]{};
+	int nRGBA[4] {};
 	int nParamsRead = sscanf_s(pszValue, "%i %i %i %i", &(nRGBA[0]), &(nRGBA[1]), &(nRGBA[2]), &(nRGBA[3]));
 
 	if (nParamsRead >= 3)
@@ -413,13 +458,19 @@ bool ConVar::SetColorFromString(const char* pszValue)
 // Purpose: Checks if ConVar is registered.
 // Output : bool
 //-----------------------------------------------------------------------------
-bool ConVar::IsRegistered(void) const { return m_ConCommandBase.m_bRegistered; }
+bool ConVar::IsRegistered(void) const
+{
+	return m_ConCommandBase.m_bRegistered;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Returns true if this is a command
 // Output : bool
 //-----------------------------------------------------------------------------
-bool ConVar::IsCommand(void) const { return false; }
+bool ConVar::IsCommand(void) const
+{
+	return false;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Test each ConVar query before setting the value.

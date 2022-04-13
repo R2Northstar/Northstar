@@ -87,7 +87,8 @@ LPSTR GetCommandLineAHook()
 						"supposed to go into Origin/Steam game launch options, and then you are supposed to launch the original "
 						"Titanfall2.exe "
 						"rather than NorthstarLauncher.exe to make use of it.",
-						"Northstar Warning", MB_ICONWARNING);
+						"Northstar Warning",
+						MB_ICONWARNING);
 
 				args.append(argBuffer.str());
 			}

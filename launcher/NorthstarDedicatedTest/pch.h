@@ -4,7 +4,7 @@
 #define WIN32_LEAN_AND_MEAN
 #define _CRT_SECURE_NO_WARNINGS
 #define RAPIDJSON_NOMEMBERITERATORCLASS // need this for rapidjson
-#define NOMINMAX						// this too
+#define NOMINMAX // this too
 #define _WINSOCK_DEPRECATED_NO_WARNINGS // temp because i'm very lazy and want to use inet_addr, remove later
 #define RAPIDJSON_HAS_STDSTRING 1
 
@@ -40,6 +40,9 @@ template <typename T, size_t index, typename... Args> constexpr T CallVFunc_Alt(
 
 // Example usage: M_VMETHOD(int, GetEntityIndex, 8, (CBaseEntity* ent), (this, ent))
 #define M_VMETHOD(returnType, name, index, args, argsRaw)                                                                                  \
-	FORCEINLINE returnType name args noexcept { return CallVFunc_Alt<returnType, index> argsRaw; }
+	FORCEINLINE returnType name args noexcept                                                                                              \
+	{                                                                                                                                      \
+		return CallVFunc_Alt<returnType, index> argsRaw;                                                                                   \
+	}
 
 #endif

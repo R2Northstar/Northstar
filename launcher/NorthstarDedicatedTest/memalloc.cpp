@@ -65,6 +65,12 @@ extern "C" char* _strdup_base(const char* src)
 	return str;
 }
 
-void* operator new(size_t n) { return _malloc_base(n); }
+void* operator new(size_t n)
+{
+	return _malloc_base(n);
+}
 
-void operator delete(void* p) { _free_base(p); } // /FORCE:MULTIPLE
+void operator delete(void* p)
+{
+	_free_base(p);
+} // /FORCE:MULTIPLE

@@ -7,13 +7,29 @@
 #include "NSMem.h"
 
 typedef HRESULT (*__stdcall D3D11CreateDeviceType)(
-	void* pAdapter, int DriverType, HMODULE Software, UINT Flags, int* pFeatureLevels, UINT FeatureLevels, UINT SDKVersion, void** ppDevice,
-	int* pFeatureLevel, void** ppImmediateContext);
+	void* pAdapter,
+	int DriverType,
+	HMODULE Software,
+	UINT Flags,
+	int* pFeatureLevels,
+	UINT FeatureLevels,
+	UINT SDKVersion,
+	void** ppDevice,
+	int* pFeatureLevel,
+	void** ppImmediateContext);
 D3D11CreateDeviceType D3D11CreateDevice;
 
 HRESULT __stdcall D3D11CreateDeviceHook(
-	void* pAdapter, int DriverType, HMODULE Software, UINT Flags, int* pFeatureLevels, UINT FeatureLevels, UINT SDKVersion, void** ppDevice,
-	int* pFeatureLevel, void** ppImmediateContext)
+	void* pAdapter,
+	int DriverType,
+	HMODULE Software,
+	UINT Flags,
+	int* pFeatureLevels,
+	UINT FeatureLevels,
+	UINT SDKVersion,
+	void** ppDevice,
+	int* pFeatureLevel,
+	void** ppImmediateContext)
 {
 	// note: this is super duper temp pretty much just messing around with it
 	// does run surprisingly well on dedi for a software driver tho if you ignore the +1gb ram usage at times, seems like dedi doesn't
