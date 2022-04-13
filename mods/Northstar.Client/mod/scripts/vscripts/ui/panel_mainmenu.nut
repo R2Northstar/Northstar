@@ -926,7 +926,7 @@ void function SpotlightButton_Activate( var button )
 	else
 	{
 		// discord links don't work in origin overlay
-		if ( link.find( "https://discord.gg" ) == 0 || link == "https://northstar.tf/discord" )
+		if ( link.find( "https://discord.gg" ) == 0 || link == "https://northstar.tf/discord" || link == "https://northstar.tf/wiki" )
 			LaunchExternalWebBrowser( link, WEBBROWSER_FLAG_FORCEEXTERNAL )
 		else
 			LaunchExternalWebBrowser( link, WEBBROWSER_FLAG_MUTEGAME )
