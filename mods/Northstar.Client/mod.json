@@ -42,7 +42,7 @@
 			}
 		},
 		{
-			"Path": "chat.gnut",
+			"Path": "client/cl_chat.gnut",
 			"RunOn": "CLIENT"
 		},
 		{
@@ -54,14 +54,14 @@
 			}
 		},
 		{
-			"Path": "state_ui.nut",
+			"Path": "presence/ui_presence.nut",
 			"RunOn": "UI",
 			"UICallback": {
 				"After": "NSUpdateGameStateUIStart"
 			}
 		},
 		{
-			"Path": "state_client.nut",
+			"Path": "presence/cl_presence.nut",
 			"RunOn": "CLIENT",
 			"ClientCallback": {
 				"After": "NSUpdateGameStateClientStart"
