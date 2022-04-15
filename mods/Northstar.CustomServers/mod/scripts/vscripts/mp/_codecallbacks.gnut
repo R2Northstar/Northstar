@@ -6,6 +6,9 @@ global function CodeCallback_DamagePlayerOrNPC
 global function GameModeRulesShouldGiveTimerCredit
 global function SetGameModeRulesShouldGiveTimerCredit
 global function SetGameModeRulesEarnMeterOnDamage
+global function GameModeRulesRegisterTimerCreditExceptions
+global function GameModeRulesRegisterTimerCreditException
+global function	GameModeRulesGetTimerCreditExceptions
 global function GetDamageOrigin
 global function CodeCallBack_ShouldTriggerSniperCam
 global function CodeCallback_ForceAIMissPlayer
@@ -31,6 +34,13 @@ struct
 	float titanMeterGainScale = 0.0001
 	bool functionref( entity, entity, var ) ShouldGiveTimerCreditGameModeRules
 	void functionref( entity, entity, TitanDamage, float ) earnMeterOnDamageGameModeRulesCallback
+	array<int> gameModeRulesTimerCreditExceptions = [
+		eDamageSourceId.mp_titancore_flame_wave,
+		eDamageSourceId.mp_titancore_flame_wave_secondary,
+		eDamageSourceId.mp_titancore_salvo_core,
+		damagedef_titan_fall,
+		damagedef_nuclear_core
+	]
 
 	table<entity, AccumulatedDamageData> playerAccumulatedDamageData
 } file
@@ -582,15 +592,8 @@ bool function ShouldGiveTimerCredit_Default( entity player, entity victim, var d
 		return false
 
 	int damageSourceID = DamageInfo_GetDamageSourceIdentifier( damageInfo )
-	switch ( damageSourceID )
-	{
-		case eDamageSourceId.mp_titancore_flame_wave:
-		case eDamageSourceId.mp_titancore_flame_wave_secondary:
-		case eDamageSourceId.mp_titancore_salvo_core:
-		case damagedef_titan_fall:
-		case damagedef_nuclear_core:
-			return false
-	}
+	if ( file.gameModeRulesTimerCreditExceptions.contains( damageSourceID ) )
+		return false
 
 	return true
 }
@@ -603,6 +606,23 @@ bool function GameModeRulesShouldGiveTimerCredit( entity player, entity victim, 
 void function SetGameModeRulesShouldGiveTimerCredit( bool functionref( entity, entity, var ) rules )
 {
 	file.ShouldGiveTimerCreditGameModeRules = rules
+}
+
+void function GameModeRulesRegisterTimerCreditExceptions( array<int> ids )
+{
+	foreach( id in ids )
+		GameModeRulesRegisterTimerCreditException( id )
+}
+
+void function GameModeRulesRegisterTimerCreditException( int id )
+{
+	if ( !file.gameModeRulesTimerCreditExceptions.contains( id ) )
+		file.gameModeRulesTimerCreditExceptions.append( id )
+}
+
+array<int> function GameModeRulesGetTimerCreditExceptions()
+{
+	return file.gameModeRulesTimerCreditExceptions
 }
 
 function TitanDamageFlinch( entity ent, damageInfo )
