@@ -9,6 +9,7 @@ global function AddCallback_OnRoundEndCleanup
 global function SetShouldUsePickLoadoutScreen
 global function SetSwitchSidesBased
 global function SetSuddenDeathBased
+global function SetTimerBased
 global function SetShouldUseRoundWinningKillReplay
 global function SetRoundWinningKillReplayKillClasses
 global function SetRoundWinningKillReplayAttacker
@@ -28,6 +29,7 @@ struct {
 	bool usePickLoadoutScreen
 	bool switchSidesBased
 	bool suddenDeathBased
+	bool timerBased = true
 	int functionref() timeoutWinnerDecisionFunc
 	
 	// for waitingforplayers
@@ -228,7 +230,7 @@ void function GameStateEnter_Playing_Threaded()
 			endTime = expect float( GetServerVar( "gameEndTime" ) )
 	
 		// time's up!
-		if ( Time() >= endTime )
+		if ( Time() >= endTime && file.timerBased )
 		{
 			int winningTeam
 			if ( file.timeoutWinnerDecisionFunc != null )
@@ -279,6 +281,10 @@ void function GameStateEnter_WinnerDetermined_Threaded()
 	}
 	
 	WaitFrame() // wait a frame so other scripts can setup killreplay stuff
+	
+	// set gameEndTime to current time, so hud doesn't display time left in the match
+	SetServerVar( "gameEndTime", Time() )
+	SetServerVar( "roundEndTime", Time() )
 
 	entity replayAttacker = file.roundWinningKillReplayAttacker
 	bool doReplay = Replay_IsEnabled() && IsRoundWinningKillReplayEnabled() && IsValid( replayAttacker ) && !ClassicMP_ShouldRunEpilogue()
@@ -713,6 +719,11 @@ void function SetSwitchSidesBased( bool switchSides )
 void function SetSuddenDeathBased( bool suddenDeathBased )
 {
 	file.suddenDeathBased = suddenDeathBased
+}
+
+void function SetTimerBased( bool timerBased )
+{
+	file.timerBased = timerBased
 }
 
 void function SetShouldUseRoundWinningKillReplay( bool shouldUse )
