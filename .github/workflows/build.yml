@@ -111,9 +111,6 @@ jobs:
           name: Northstar.release.${{ env.NORTHSTAR_VERSION }}
           path: northstar
 
-  # todo: add manual trigger
-  # todo: add icons and a proper readme
-  # todo: update mod description
   build-thunderstore-package:
     needs: build-northstar # comment out when running locally
     env:
@@ -123,7 +120,7 @@ jobs:
       TS_COMMUNITY: northstar
 
       # Uncomment when testing locally, must be unique
-      # NORTHSTAR_VERSION: 0.1.5
+      # NORTHSTAR_VERSION: 0.1.7
 
       # Thunderstore info and descriptions
       TS_NAMESPACE: northstar
@@ -140,8 +137,8 @@ jobs:
       - name: (DEBUG) Download Northstar package
         if: ${{ env.ACT }} # Download Northstar package when running locally instead of relying on previous jobs
         run: |
-          wget https://github.com/R2Northstar/Northstar/releases/download/v1.6.3/Northstar.release.v1.6.3.zip
-          unzip Northstar.release.v1.6.3.zip -d northstar
+          wget -O northstar.zip https://github.com/R2Northstar/Northstar/releases/download/v1.6.3/Northstar.release.v1.6.3.zip
+          unzip northstar.zip -d northstar
 
       - name: Download built Northstar package
         uses: actions/download-artifact@v2
@@ -152,9 +149,11 @@ jobs:
 
       - name: Make package structure
         run: |
-          rm northstar/ns_startup*.txt
           mkdir -p thunderstore/dist/Northstar
+          rm northstar/ns_startup*.txt
           mv -v northstar/* thunderstore/dist/Northstar
+          wget -O thunderstore/icon.png https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/icon.png
+          wget -O thunderstore/README.md https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/README.md
 
       - name: Setup environment variables
         run: |
@@ -170,6 +169,5 @@ jobs:
           sed -i "s/description = \"Example mod description\"/description = \"$TS_MOD_DESCRIPTION\"/g" thunderstore.toml
           cat thunderstore.toml
 
-          echo $TS_MOD_NAME > README.md
           tcli build
           tcli publish --repository "$TS_REPO" --file build/*.zip
