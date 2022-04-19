@@ -3,6 +3,12 @@ on:
   push:
     tags:
       - '*'
+  workflow_dispatch:
+    inputs:
+      job:
+        description: 'Job to run'
+        required: true
+        default: 'build-thunderstore-package'
 
 env:
   NORTHSTAR_VERSION: ${{ github.ref_name }}
