@@ -113,6 +113,7 @@ jobs:
 
   build-thunderstore-package:
     needs: build-northstar # comment out when running locally
+    if: "!contains(github.ref, 'rc')" # Skip uploading release candidates to Thunderstore
     env:
       # Release envs, comment this out when running locally
       TCLI_AUTH_TOKEN: ${{ secrets.THUNDERSTORE_TOKEN }}
@@ -120,7 +121,7 @@ jobs:
       TS_COMMUNITY: northstar
 
       # Uncomment when testing locally, must be unique
-      # NORTHSTAR_VERSION: 0.1.7
+      # NORTHSTAR_VERSION: 0.1.8
 
       # Thunderstore info and descriptions
       TS_NAMESPACE: northstar
@@ -140,9 +141,9 @@ jobs:
           wget -O northstar.zip https://github.com/R2Northstar/Northstar/releases/download/v1.6.3/Northstar.release.v1.6.3.zip
           unzip northstar.zip -d northstar
 
-      - name: Download built Northstar package
+      - name: Download Northstar package
+        if: ${{ !env.ACT }} # Download artifacts from previous jobs when running on GitHub's infrastructure
         uses: actions/download-artifact@v2
-        if: ${{ !env.ACT }} # Skip this job when running locally
         with:
           name: Northstar.release.${{ env.NORTHSTAR_VERSION }}
           path: northstar
