@@ -1488,6 +1488,9 @@
     <ClInclude Include="plugin_abi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="debugoverlay.h">
+      <Filter>Header Files\Client</Filter>
+    </ClInclude>
     <ClInclude Include="clientvideooverrides.h">
       <Filter>Header Files\Client</Filter>
     </ClInclude>
@@ -1657,6 +1660,9 @@
     </ClCompile>
     <ClCompile Include="plugins.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="debugoverlay.cpp">
+      <Filter>Source Files\Client</Filter>
     </ClCompile>
     <ClCompile Include="clientvideooverrides.cpp">
       <Filter>Source Files\Client</Filter>
