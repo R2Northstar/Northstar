@@ -114,6 +114,7 @@
     <ClInclude Include="buildainfile.h" />
     <ClInclude Include="chatcommand.h" />
     <ClInclude Include="clientchathooks.h" />
+    <ClInclude Include="debugoverlay.h" />
     <ClInclude Include="clientruihooks.h" />
     <ClInclude Include="clientvideooverrides.h" />
     <ClInclude Include="localchatwriter.h" />
@@ -580,6 +581,7 @@
     <ClCompile Include="context.cpp" />
     <ClCompile Include="convar.cpp" />
     <ClCompile Include="cvar.cpp" />
+    <ClCompile Include="debugoverlay.cpp" />
     <ClCompile Include="dedicated.cpp" />
     <ClCompile Include="dedicatedmaterialsystem.cpp" />
     <ClCompile Include="dllmain.cpp" />

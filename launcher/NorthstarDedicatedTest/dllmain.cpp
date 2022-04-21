@@ -39,6 +39,7 @@
 #include "scriptservertoclientstringcommand.h"
 #include "plugin_abi.h"
 #include "plugins.h"
+#include "debugoverlay.h"
 #include "clientvideooverrides.h"
 #include "clientruihooks.h"
 #include <string.h>
@@ -229,6 +230,7 @@ bool InitialiseNorthstar()
 
 	// client-exclusive patches
 	{
+
 		AddDllLoadCallbackForClient("tier0.dll", InitialiseTier0LanguageHooks);
 		AddDllLoadCallbackForClient("client.dll", InitialiseClientSquirrel);
 		AddDllLoadCallbackForClient("client.dll", InitialiseSourceConsole);
@@ -248,7 +250,7 @@ bool InitialiseNorthstar()
 		AddDllLoadCallbackForClient("client.dll", InitialiseScriptServerToClientStringCommands);
 		AddDllLoadCallbackForClient("client.dll", InitialiseClientVideoOverrides);
 		AddDllLoadCallbackForClient("engine.dll", InitialiseEngineClientRUIHooks);
-
+		AddDllLoadCallbackForClient("engine.dll", InitialiseDebugOverlay);
 		// audio hooks
 		AddDllLoadCallbackForClient("client.dll", InitialiseMilesAudioHooks);
 	}
