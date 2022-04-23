@@ -36,16 +36,19 @@ struct OverlayBase_t
 	}
 
 	OverlayType_t m_Type; // What type of overlay is it?
-	int m_nCreationTick;  // Duration -1 means go away after this frame #
-	int m_nServerCount;	  // Latch server count, too
-	float m_flEndTime;	  // When does this box go away
+	int m_nCreationTick; // Duration -1 means go away after this frame #
+	int m_nServerCount; // Latch server count, too
+	float m_flEndTime; // When does this box go away
 	OverlayBase_t* m_pNextOverlay;
 	__int64 m_pUnk;
 };
 
 struct OverlayLine_t : public OverlayBase_t
 {
-	OverlayLine_t() { m_Type = OVERLAY_LINE; }
+	OverlayLine_t()
+	{
+		m_Type = OVERLAY_LINE;
+	}
 
 	Vector3 origin;
 	Vector3 dest;
@@ -58,7 +61,10 @@ struct OverlayLine_t : public OverlayBase_t
 
 struct OverlayBox_t : public OverlayBase_t
 {
-	OverlayBox_t() { m_Type = OVERLAY_BOX; }
+	OverlayBox_t()
+	{
+		m_Type = OVERLAY_BOX;
+	}
 
 	Vector3 origin;
 	Vector3 mins;
@@ -120,14 +126,24 @@ void __fastcall DrawOverlayHook(OverlayBase_t* pOverlay)
 		if (pCurrBox->a > 0)
 		{
 			RenderBox(
-				pCurrBox->origin, pCurrBox->angles, pCurrBox->mins, pCurrBox->maxs,
-				Color(pCurrBox->r, pCurrBox->g, pCurrBox->b, pCurrBox->a), false, false);
+				pCurrBox->origin,
+				pCurrBox->angles,
+				pCurrBox->mins,
+				pCurrBox->maxs,
+				Color(pCurrBox->r, pCurrBox->g, pCurrBox->b, pCurrBox->a),
+				false,
+				false);
 		}
 		if (pCurrBox->a < 255)
 		{
 			RenderWireframeBox(
-				pCurrBox->origin, pCurrBox->angles, pCurrBox->mins, pCurrBox->maxs, Color(pCurrBox->r, pCurrBox->g, pCurrBox->b, 255),
-				false, false);
+				pCurrBox->origin,
+				pCurrBox->angles,
+				pCurrBox->mins,
+				pCurrBox->maxs,
+				Color(pCurrBox->r, pCurrBox->g, pCurrBox->b, 255),
+				false,
+				false);
 		}
 	}
 	break;
