@@ -129,7 +129,7 @@ void ServerAuthenticationManager::StartPlayerAuthServer()
 						return;
 					}
 
-					AuthData newAuthData;
+					AuthData newAuthData {};
 					strncpy(newAuthData.uid, request.get_param_value("id").c_str(), sizeof(newAuthData.uid));
 					newAuthData.uid[sizeof(newAuthData.uid) - 1] = 0;
 
