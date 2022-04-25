@@ -57,7 +57,7 @@ void function InitMainMenu()
 
 #if DEV
 	if ( DevStartPoints() )
-		AddMenuFooterOption( menu, BUTTON_Y, "#Y_BUTTON_DEV_MENU", "#DEV_MENU", OpenSinglePlayerDevMenu )
+		AddMenuFooterOption( menu, BUTTON_SHOULDER_LEFT, "#Y_BUTTON_DEV_MENU", "#DEV_MENU", OpenSinglePlayerDevMenu )
 #endif // DEV
 }
 
