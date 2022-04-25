@@ -207,6 +207,10 @@ bool InitialiseNorthstar()
 	InitialiseLogging();
 	InstallInitialHooks();
 	CreateLogFiles();
+
+	// Write launcher version to log
+	spdlog::info("NorthstarLauncher version: {}", version);
+
 	InitialiseInterfaceCreationHooks();
 
 	AddDllLoadCallback("tier0.dll", InitialiseTier0GameUtilFunctions);
