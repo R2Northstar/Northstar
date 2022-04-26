@@ -54,7 +54,7 @@ Pushers
 Pushers are movers but you make them pushers like this :
 ``mover.SetPusher( true )``
 
-Pushers are great at moving anything and also crushing you(r dreams).
+Pushers are great at moving anything and also can be used as a crusher.
 
 
 Examples
