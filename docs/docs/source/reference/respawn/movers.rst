@@ -7,51 +7,67 @@ movers are entites that move smoothly.
 
 Functions for creating movers and examples.
 
-these function are found in `_utility.nut`
+these function are found in ``_utility.nut``
 
-.. cpp:function:: entity function CreateExpensiveScriptMover( vector origin = <0,0,0>, vector angles = <0,0,0> )
+.. cpp:function:: entity CreateExpensiveScriptMover( vector origin , vector angles )
 
    returns ``script_mover``
     
-.. cpp:function:: entity function CreateExpensiveScriptMover( asset model, vector origin = <0.0, 0.0, 0.0>, vector angles = <0.0, 0.0, 0.0>, int solidType = 0, float fadeDist = -1 )
+.. cpp:function:: entity CreateExpensiveScriptMover( asset model, vector origin, vector angles, int solidType, float fadeDist )
 
     returns ``script_mover`` which has a model
 
-.. cpp:function:: entity function CreateScriptMover( vector origin = <0,0,0>, vector angles = <0,0,0> )
+.. cpp:function:: entity CreateScriptMover( vector origin, vector angles )
 
     returns ``script_mover_lightweight``
 
-.. cpp:function:: entity function CreateScriptMoverModel( asset model, vector origin = <0.0, 0.0, 0.0>, vector angles = <0.0, 0.0, 0.0>, int solidType = 0, float fadeDist = -1 )
+.. cpp:function:: entity CreateScriptMoverModel( asset model, vector origin, vector angles, int solidType, float fadeDist )
 
     returns ``script_mover_lightweight`` which has a model
 
-.. cpp:function:: entity function CreateOwnedScriptMover( entity owner )
+.. cpp:function:: entity CreateOwnedScriptMover( entity owner )
     
      returns ``script_mover`` which will be at the location of the owner
 
-to actually move movers you can use `NonPhysicsMoveTo`
+to actually move movers you can use ``NonPhysicsMoveTo( dest, time, easeIn, easeOut )``
 
 .. code-block:: javascript
-    mover = CreateScriptMover( <0,0,0> ) 
+
+    entity mover = CreateScriptMover( <0,0,0> ) 
+    
+    // moving the mover to <0,0,10> in 1 second
+    mover.NonPhysicsMoveTo( <0,0,10>, 1, 0, 0 )
+    
+    // wating so the mover gets to the destination
+    wait 1
+    
+    // sending it back
+    mover.NonPhysicsMoveTo( <0,0,0>, 1, 0, 0 )
+    
+    // then stoping the mover in 0.5 seconds
+    wait 0.5
+    mover.NonPhysicsStop()
 
 Pushers
 -------
 
 Pushers are movers but you make them pushers like this :
-`mover.SetPusher( true )`
+``mover.SetPusher( true )``
+
 Pushers are great at moving anything and also crushing you(r dreams).
 
 
 Examples
--------
-    
-    this code makes a elevator which going up and down
+--------
 
 .. code-block:: javascript
- 
+    
+    // creating a elevator 
+    // using a mover with a model
     entity mover = CreateScriptMoverModel( $"models/props/turret_base/turret_base.mdl", < -40.5605, -1827.87, -223.944 >, <0,0,0>, SOLID_VPHYSICS, 1000 )
-    mover.SetPusher( true )
-
+    mover.SetPusher( true ) // making it into a pusher
+    
+    // for loop to move the elevator up and down
     for(;;)
     {
         mover.NonPhysicsMoveTo( < -35.4312, -1827.87, 523.046 >, 4.8, 0.1, 0.1 )
@@ -60,26 +76,25 @@ Examples
         mover.NonPhysicsMoveTo( < -35.4312, -1827.87, -223.944 >, 4.8, 0.1, 0.1 )
         wait 6
     }
-    
-    this makes the player PhaseShift to a destination
+
 
 .. code-block:: javascript
- 
+
+    // Phase shifting the player to a destination
+    // checking if the player is valid
     if ( IsValid( player ) )
     {
+        // creating the mover
         entity mover = CreateOwnedScriptMover( player )
-        player.SetParent( mover )
-        mover.NonPhysicsMoveTo( newPos, 0.5, 0, 0 )
-        vector angles = player.GetAngles()
-        PhaseShift( player, 0.1, 1 )
-        player.SetAngles( angles )
-
-        player.SetHealth( player.GetMaxHealth() )
+        player.SetParent( mover ) // parenting the player ( so they move with the mover )
+        mover.NonPhysicsMoveTo( newPos, 0.5, 0, 0 ) // saying to the moveer to move
+        vector angles = player.GetAngles() // angles saved
+        PhaseShift( player, 0.1, 1 ) // phase shifitng the player
+        player.SetAngles( angles ) // setting the player to the original angles
     }
+    wait 0.6 // wating so the mover moves
 
-	wait 0.6
     if ( IsValid( player ) )
     {
-        player.ClearParent()
-        player.SetVelocity( <0,0,50> )
+        player.ClearParent() // removing the player from the mover
     }
