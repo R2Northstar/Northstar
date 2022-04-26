@@ -82,6 +82,7 @@ extern "C" DLLEXPORT void initializePlugin(void* getPluginData_external)
 
 DiscordState state{};
 bool wasInGame;
+bool resetSinglePlayerTimer = true;
 
 static struct PluginData
 {
@@ -178,6 +179,7 @@ int main(int, char**)
 				const auto p1 = std::chrono::system_clock::now().time_since_epoch();
 				activity.GetTimestamps().SetStart(std::chrono::duration_cast<std::chrono::seconds>(p1).count());
 				wasInGame = false;
+				resetSinglePlayerTimer = true;
 			}
 		}
 		else if (!strncmp(pluginData.map, "mp_lobby", 9))
@@ -196,6 +198,7 @@ int main(int, char**)
 				const auto p1 = std::chrono::system_clock::now().time_since_epoch();
 				activity.GetTimestamps().SetStart(std::chrono::duration_cast<std::chrono::seconds>(p1).count());
 				wasInGame = false;
+				resetSinglePlayerTimer = true;
 			}
 		}
 		else
@@ -203,30 +206,46 @@ int main(int, char**)
 			if (!pluginData.loading)
 			{
 				// Hack to make singleplayer work for now
-				activity.GetParty().GetSize().SetCurrentSize(std::clamp(pluginData.players, 1, pluginData.maxPlayers));
+				activity.GetParty().GetSize().SetCurrentSize(pluginData.players);
 				activity.GetParty().GetSize().SetMaxSize(pluginData.maxPlayers);
-				(*gameStatePtr).getGameStateInt(&pluginData.ourScore, GameStateInfoType::ourScore);
-				(*gameStatePtr).getGameStateInt(&pluginData.secondHighestScore, GameStateInfoType::secondHighestScore);
-				(*gameStatePtr).getGameStateInt(&pluginData.highestScore, GameStateInfoType::highestScore);
-				(*serverInfoPtr).getServerInfoInt(&pluginData.scoreLimit, ServerInfoType::scoreLimit);
-				(*serverInfoPtr).getServerInfoInt(&pluginData.endTime, ServerInfoType::endTime);
-				(*gameStatePtr).getGameStateChar(pluginData.playlistDisplayName, sizeof(pluginData.playlistDisplayName), GameStateInfoType::playlistDisplayName);
-				activity.SetState(pluginData.playlistDisplayName);
-				if (pluginData.ourScore == pluginData.highestScore)
-				{
-					details += std::to_string(pluginData.ourScore) + " - " + std::to_string(pluginData.secondHighestScore);
+				if (!strncmp(pluginData.playlist, "Campaign", 32)) {
+					(*gameStatePtr).getGameStateChar(pluginData.playlistDisplayName, sizeof(pluginData.playlistDisplayName), GameStateInfoType::playlistDisplayName);
+					activity.SetState(pluginData.playlistDisplayName);
+					activity.SetDetails(pluginData.mapDisplayName);
+					activity.GetParty().GetSize().SetCurrentSize(0);
+					activity.GetParty().GetSize().SetMaxSize(0);
+					activity.GetTimestamps().SetEnd(0);
+					if (resetSinglePlayerTimer) {
+						const auto p1 = std::chrono::system_clock::now().time_since_epoch();
+						activity.GetTimestamps().SetStart(std::chrono::duration_cast<std::chrono::seconds>(p1).count());
+						resetSinglePlayerTimer = false;
+					}
 				}
-				else
-				{
-					details += std::to_string(pluginData.ourScore) + " - " + std::to_string(pluginData.highestScore);
-				}
+				else {
+					(*gameStatePtr).getGameStateInt(&pluginData.ourScore, GameStateInfoType::ourScore);
+					(*gameStatePtr).getGameStateInt(&pluginData.secondHighestScore, GameStateInfoType::secondHighestScore);
+					(*gameStatePtr).getGameStateInt(&pluginData.highestScore, GameStateInfoType::highestScore);
+					(*serverInfoPtr).getServerInfoInt(&pluginData.scoreLimit, ServerInfoType::scoreLimit);
+					(*serverInfoPtr).getServerInfoInt(&pluginData.endTime, ServerInfoType::endTime);
+					(*gameStatePtr).getGameStateChar(pluginData.playlistDisplayName, sizeof(pluginData.playlistDisplayName), GameStateInfoType::playlistDisplayName);
+					activity.SetState(pluginData.playlistDisplayName);
+					if (pluginData.ourScore == pluginData.highestScore)
+					{
+						details += std::to_string(pluginData.ourScore) + " - " + std::to_string(pluginData.secondHighestScore);
+					}
+					else
+					{
+						details += std::to_string(pluginData.ourScore) + " - " + std::to_string(pluginData.highestScore);
+					}
 
-				details += " (First to " + std::to_string(pluginData.scoreLimit) + ")";
-				activity.SetDetails(details.c_str());
-				const auto p1 = std::chrono::system_clock::now().time_since_epoch();
-				if (pluginData.endTime > 0) {
-					activity.GetTimestamps().SetEnd(std::chrono::duration_cast<std::chrono::seconds>(p1).count() + pluginData.endTime);
-					activity.GetTimestamps().SetStart(0);
+					details += " (First to " + std::to_string(pluginData.scoreLimit) + ")";
+					activity.SetDetails(details.c_str());
+					const auto p1 = std::chrono::system_clock::now().time_since_epoch();
+					if (pluginData.endTime > 0) {
+						activity.GetTimestamps().SetEnd(std::chrono::duration_cast<std::chrono::seconds>(p1).count() + pluginData.endTime);
+						activity.GetTimestamps().SetStart(0);
+					}
+					resetSinglePlayerTimer = true;
 				}
 				wasInGame = true;
 			}
@@ -237,6 +256,7 @@ int main(int, char**)
 				activity.SetDetails("Loading...");
 				if (wasInGame) {
 					wasInGame = false;
+					resetSinglePlayerTimer = true;
 				}
 			}
 		}
