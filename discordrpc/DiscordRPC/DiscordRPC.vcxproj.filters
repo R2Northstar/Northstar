@@ -90,6 +90,9 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="discord_plugin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -142,6 +145,9 @@
     </ClCompile>
     <ClCompile Include="library\pch.cpp">
       <Filter>Source Files\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="discord_plugin.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
