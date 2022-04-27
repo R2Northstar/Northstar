@@ -81,13 +81,15 @@ Examples
 .. code-block:: javascript
 
     // Phase shifting the player to a destination
+    // setting a position
+    vector destination = <250,1000,100>
     // checking if the player is valid
     if ( IsValid( player ) )
     {
         // creating the mover
         entity mover = CreateOwnedScriptMover( player )
         player.SetParent( mover ) // parenting the player ( so they move with the mover )
-        mover.NonPhysicsMoveTo( newPos, 0.5, 0, 0 ) // saying to the moveer to move
+        mover.NonPhysicsMoveTo( destination, 0.5, 0, 0 ) // saying to the moveer to move
         vector angles = player.GetAngles() // angles saved
         PhaseShift( player, 0.1, 1 ) // phase shifitng the player
         player.SetAngles( angles ) // setting the player to the original angles
