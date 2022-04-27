@@ -118,6 +118,7 @@
     <ClInclude Include="clientruihooks.h" />
     <ClInclude Include="clientvideooverrides.h" />
     <ClInclude Include="localchatwriter.h" />
+    <ClInclude Include="ns_version.h" />
     <ClInclude Include="plugins.h" />
     <ClInclude Include="plugin_abi.h" />
     <ClInclude Include="serverchathooks.h" />
