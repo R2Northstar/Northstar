@@ -1509,6 +1509,9 @@
     <ClInclude Include="clientruihooks.h">
       <Filter>Header Files\Client</Filter>
     </ClInclude>
+    <ClInclude Include="ns_version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
