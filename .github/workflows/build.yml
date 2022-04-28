@@ -141,7 +141,7 @@ jobs:
         run: |
           wget -O tcli.tar.gz https://github.com/thunderstore-io/thunderstore-cli/releases/download/0.1.4/tcli-0.1.4-linux-x64.tar.gz
           tar xvf tcli.tar.gz
-          mv -v tcli-0.1.4-linux-x64/tcli /bin
+          sudo mv -v tcli-0.1.4-linux-x64/tcli /bin
 
       - name: (DEBUG) Download Northstar package
         if: ${{ env.ACT }} # Download Northstar package from releases when running locally instead of relying on previous jobs
