@@ -109,10 +109,20 @@ jobs:
 
           mv -v northstar-launcher/* northstar
           rsync -avr --exclude="Northstar.Coop" --exclude=".git*" northstar-mods/. northstar/R2Northstar/mods
-      - name: Cleanup root Northstar repository files
+      - name: Checkout Navmesh repository
+        uses: actions/checkout@v2
+        with:
+          repository: R2Northstar/NorthstarNavs
+          path: northstar-navs
+      - name: Navmeshes setup
         run: |
-          rm -rf northstar-launcher
-          cd northstar && rm -rf .git .github *.md LICENSE thunderstore .ci.env.example
+          mkdir -p northstar/R2Northstar/mods/Northstar.CustomServers/mod/maps
+          mv -v northstar-navs/graphs northstar/R2Northstar/mods/Northstar.CustomServers/mod/maps
+          mv -v northstar-navs/navmesh northstar/R2Northstar/mods/Northstar.CustomServers/mod/maps
+      - name: Cleanup root Northstar repository files
+        working-directory: northstar
+        run: |
+          rm -rf .git .github .gitignore *.md LICENSE thunderstore .ci.env.example
       - name: Upload
         uses: actions/upload-artifact@v2
         with:
