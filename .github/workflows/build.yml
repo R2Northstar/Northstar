@@ -112,7 +112,7 @@ jobs:
       - name: Cleanup root Northstar repository files
         run: |
           rm -rf northstar-launcher
-          cd northstar && rm -rf .git .github *.md LICENSE thunderstore .ci.env.example
+          cd northstar && rm -rf .git .github .gitignore *.md LICENSE thunderstore .ci.env.example
       - name: Upload
         uses: actions/upload-artifact@v2
         with:
