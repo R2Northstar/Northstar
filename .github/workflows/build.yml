@@ -36,7 +36,7 @@ jobs:
         run: |
           sed -i 's/DEV/${{ env.NORTHSTAR_VERSION }}/g' LauncherInjector/resources.rc
           FILEVERSION=$(echo ${{ env.NORTHSTAR_VERSION }} | tr '.' ',' | tr -d '[:alpha:]')
-          sed -i "s/0,0,0,1/${FILEVERSION}/g" NorthstarDedicatedTest/ns_version.h
+          sed -i "s/0,0,0,1/${FILEVERSION}/g" LauncherInjector/resources.rc
       - name: Build
         working-directory: northstar-launcher
         run: |
@@ -137,12 +137,12 @@ jobs:
     steps:
       - name: Setup tcli
         run: |
-          wget https://github.com/thunderstore-io/thunderstore-cli/releases/download/0.1.4/tcli-0.1.4-linux-x64.tar.gz
-          tar xvf tcli-0.1.4-linux-x64.tar.gz
-          mv -v tcli-0.1.4-linux-x64/tcli /bin
+          wget -O tcli.tar.gz https://github.com/thunderstore-io/thunderstore-cli/releases/download/0.1.4/tcli-0.1.4-linux-x64.tar.gz
+          tar xvf tcli.tar.gz
+          mv -v tcli/tcli /bin
 
       - name: (DEBUG) Download Northstar package
-        if: ${{ env.ACT }} # Download Northstar package when running locally instead of relying on previous jobs
+        if: ${{ env.ACT }} # Download Northstar package from releases when running locally instead of relying on previous jobs
         run: |
           wget -O northstar.zip https://github.com/R2Northstar/Northstar/releases/download/v1.6.3/Northstar.release.v1.6.3.zip
           unzip northstar.zip -d northstar
