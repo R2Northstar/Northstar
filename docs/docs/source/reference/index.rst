@@ -22,3 +22,4 @@ Respawn API
     /reference/respawn/rui
     /reference/respawn/topology
     /reference/respawn/clientcommands
+    /reference/respawn/movers
