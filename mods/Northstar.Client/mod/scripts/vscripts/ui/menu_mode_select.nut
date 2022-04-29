@@ -52,7 +52,7 @@ void function UpdateVisibleModes()
 		Hud_SetEnabled( buttons[ i ], true )		
 		Hud_SetVisible( buttons[ i ], true )
 		
-		if ( !ModeSettings_RequiresAI( modesArray[ modeIndex ] ) )
+		if ( !ModeSettings_RequiresAI( modesArray[ modeIndex ] ) || modesArray[ modeIndex ] == "aitdm" )
 			Hud_SetLocked( buttons[ i ], false )
 		else
 			Hud_SetLocked( buttons[ i ], true )

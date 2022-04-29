@@ -38,7 +38,8 @@ void function PrivateMatchModesInit()
 	AddPrivateMatchModeSettingEnum( "#GAMEMODE_cp", "cp_amped_capture_points", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "1" ) // would've been nice to use amped_capture_points, but this var is already used ingame and its value is default 0
 	
 	AddPrivateMatchModeSettingEnum( "#GAMEMODE_coliseum", "coliseum_loadouts_#SETTING_ENABLED", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "1" )
-
+	
+	AddPrivateMatchModeSettingEnum( "#PL_aitdm", "aitdm_archer_grunts", [ "Disabled", "Enabled" ], "0"  )
 
 	// modes
 	AddPrivateMatchMode( "ffa" )
