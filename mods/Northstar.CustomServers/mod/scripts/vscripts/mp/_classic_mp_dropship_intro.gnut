@@ -105,8 +105,12 @@ void function OnPrematchStart()
 		DispatchSpawn( dropship )
 		
 		// have to do this after dispatch otherwise it won't work for some reason
-		dropship.SetModel( $"models/vehicle/crow_dropship/crow_dropship_hero.mdl" )
-		// could also use $"models/vehicle/goblin_dropship/goblin_dropship_hero.mdl", unsure which
+		// weirdly enough, tf2 actually does use different dropships for imc and militia, despite these concepts not really being a thing for players in tf2
+		// probably was just missed by devs, but keeping it in for accuracy
+		if ( dropshipSpawn.GetTeam() == TEAM_IMC )
+			dropship.SetModel( $"models/vehicle/goblin_dropship/goblin_dropship_hero.mdl" )
+		else
+			dropship.SetModel( $"models/vehicle/crow_dropship/crow_dropship_hero.mdl" )
 		
 		thread PlayAnim( dropship, "dropship_classic_mp_flyin" )
 	}
