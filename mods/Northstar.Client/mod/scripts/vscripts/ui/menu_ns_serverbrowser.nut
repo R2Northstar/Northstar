@@ -33,6 +33,7 @@ struct {
 enum sortingBy
 {
 	NONE,
+	DEFAULT,
 	NAME,
 	PLAYERS,
 	MAP,
@@ -48,8 +49,8 @@ struct {
 	bool serverMap = true
 	bool serverGamemode = true
 	bool serverLatency = true
-	// 0 = none; 1 = name; 2 = players; 3 = map; 5 = gamemode; 6 = latency
-	int sortingBy = 0
+	// 0 = none; 1 = default; 2 = name; 3 = players; 4 = map; 5 = gamemode; 6 = latency
+	int sortingBy = 1
 } filterDirection
 
 struct serverStruct {
@@ -425,6 +426,8 @@ void function OnServerBrowserMenuOpened()
 		NSRequestServerList()
 	}
 
+	filterDirection.sortingBy = sortingBy.DEFAULT
+
 	thread WaitForServerListRequest()
 
 
@@ -651,6 +654,10 @@ void function FilterAndUpdateList( var n )
 	{
 		case sortingBy.NONE:
 			UpdateShownPage()
+			break
+		case sortingBy.DEFAULT:
+			filterDirection.serverName = !filterDirection.serverName
+			SortServerListByDefault_Activate(0)
 			break
 		case sortingBy.NAME:
 			filterDirection.serverName = !filterDirection.serverName
@@ -1119,6 +1126,22 @@ int function ServerSortLogic ( serverStruct a, serverStruct b )
 	// We can hard code this cause adding entire columns isn't as easy
 	switch ( filterDirection.sortingBy )
 	{
+		case sortingBy.DEFAULT:
+			aTemp = a.serverPlayers
+			bTemp = b.serverPlayers
+
+			// `1000` is assumed to always be higher than `serverPlayersMax`
+			if (aTemp + 1 < a.serverPlayersMax)
+				aTemp = aTemp+2000
+			if (bTemp + 1 < b.serverPlayersMax)
+				bTemp = bTemp+2000
+			if (aTemp + 1 == a.serverPlayersMax)
+				aTemp = aTemp+1000
+			if (bTemp + 1 == b.serverPlayersMax)
+				bTemp = bTemp+1000
+
+			direction = filterDirection.serverName
+			break;
 		case sortingBy.NAME:
 			aTemp = a.serverName.tolower()
 			bTemp = b.serverName.tolower()
@@ -1158,6 +1181,18 @@ int function ServerSortLogic ( serverStruct a, serverStruct b )
 
 	return 0
 }
+
+void function SortServerListByDefault_Activate ( var button )
+{
+	filterDirection.sortingBy = sortingBy.DEFAULT
+
+	file.serversArrayFiltered.sort( ServerSortLogic )
+
+	filterDirection.serverName = !filterDirection.serverName
+
+	UpdateShownPage()
+}
+
 
 void function SortServerListByName_Activate ( var button )
 {
