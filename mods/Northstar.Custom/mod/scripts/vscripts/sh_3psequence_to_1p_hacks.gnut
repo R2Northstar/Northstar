@@ -123,19 +123,23 @@ Forced1PSequenceData function FirstPersonSequenceForce1P( FirstPersonSequenceStr
 	thread FirstPersonSequence( sequence, thirdPersonProxy, other )
 	
 	// create the viewpoint entity
-	entity camera = CreateEntity( "point_viewcontrol" )
-	camera.SetParent( ownerProxy, attachment )
-	camera.kv.spawnflags = 56
-	DispatchSpawn( camera )
-	player.SetViewEntity( camera, true )
-	cleanupData.camera = camera
-	
+	if ( player.IsPlayer() ) // Check if the victim is an NPC
+	{
+		entity camera = CreateEntity( "point_viewcontrol" )
+		camera.SetParent( ownerProxy, attachment )
+		camera.kv.spawnflags = 56
+		DispatchSpawn( camera )
+		player.SetViewEntity( camera, true )
+		cleanupData.camera = camera
+	}
+
 	// note for potential thing that could be done
 	// entity e = CreatePropDynamic($"models/weapons/arms/pov_titan_light_cockpit.mdl"); e.SetParent(GetPlayerArray()[0].GetPetTitan(), "HATCH_HEAD"); e.SetOrigin(<0.75,0,-195>)
 	// this is so we get a cockpit in these anims, issue with it is that the cockpit seems to break alot of rendering stuff
 	// which really sucks since it'd be awesome to have a cockpit over these anims, really makes them better, even the client func to render through cockpits doesn't seem to work for it, just makes stuff rendering through the cockpit invisible rather than rendering in a broken way
 	
-	Remote_CallFunction_NonReplay( player, "ServerCallback_HideHudForFPHackAnim" )
+	if ( player.IsPlayer() ) // Check if the victim is an NPC
+		Remote_CallFunction_NonReplay( player, "ServerCallback_HideHudForFPHackAnim" )
 	// play this anim now, so we can cleanup after it's done
 	thread CleanupForced1PSequenceAfterAnimDone( sequence, ownerProxy, other, cleanupData )
 	return cleanupData
@@ -148,7 +152,7 @@ void function CleanupForced1PSequenceAfterAnimDone( FirstPersonSequenceStruct se
 
 	OnThreadEnd( function() : ( cleanupData )
 	{
-		if ( IsValid( cleanupData.player ) )
+		if ( IsValid( cleanupData.player ) && cleanupData.player.IsPlayer() )
 			CleanupForced1PSequence( cleanupData )
 	})
 

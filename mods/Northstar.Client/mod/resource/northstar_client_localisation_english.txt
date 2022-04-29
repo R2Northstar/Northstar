@@ -81,7 +81,9 @@ Press Yes if you agree to this. This choice can be changed in the mods menu at a
 
 		"cp_amped_capture_points" "Amped Hardpoints"
 		"coliseum_loadouts_enabled" "Coliseum Loadouts"
-
+    
+		"aitdm_archer_grunts" "Archer Grunts"
+    
 		// northstar.custom localisation is just deciding not to work, so putting it here for now
 		"PL_sbox" "Sandbox"
 		"PL_sbox_lobby" "Sandbox Lobby"
