@@ -1,7 +1,7 @@
 Player
 ------
 
-Functions for getting player, and methods of the player object
+Functions related to the player entity and methods of the player object
 
 .. cpp:function::  bool IsAlive( entity ent )
 
@@ -49,9 +49,43 @@ Functions for getting player, and methods of the player object
 
     if the player is a titan, returns the player. If not, returns the player's pet titan
 
-.. cpp:class:: player : public entity
+.. cpp:function::  int GetActivePilotLoadoutIndex( entity player )
 
-    .. cpp:function::  int GetActivePilotLoadoutIndex( entity player )
+.. cpp:function::  float GetHealthFrac( entity player )
+
+.. cpp:function::  int GetPersistentSpawnLoadoutIndex( entity player, string playerClass )
+
+    playerClasses: ``"pilot"`` ``"titan"``. This returns null for every other string.
+
+.. cpp:function::  PilotLoadoutDef GetPilotLoadoutFromPersistentData( entity player, int loadoutIndex )
+
+    stored loadout data of player
+
+.. cpp:function::  float GetShieldHealthFrac( entity )
+
+.. cpp:function::  void GiveArmor( entity player, int amount )
+
+.. cpp:function::  void GivePilotLoadout( entity player, int loadout )
+
+.. cpp:function::  void GiveWeaponPowerUp( entity player, string newWeapon )
+
+.. cpp:function::  void AddThreatScopeColorStatusEffect( entity weaponOwner )
+
+.. cpp:function::  int RemoveThreatScopeColorStatusEffect( entity player )
+
+.. cpp:function::  bool IsInScoreboard( entity player )
+
+.. cpp:function::  bool IsPartyMember( entity player )
+
+.. cpp:function::  bool IsPlayerEliminated( entity player )
+
+.. cpp:function::  bool IsPlayerFemale( entity player )
+
+.. cpp:function::  bool IsRespawnAvailable( entity player )
+
+.. cpp:function::  bool IsTitanAvailable( entity player )
+
+.. cpp:class:: player : public entity
 
     .. cpp:function::  entity GetActiveWeapon()
 
@@ -81,8 +115,6 @@ Functions for getting player, and methods of the player object
 
     .. cpp:function::  int GetGen()
 
-    .. cpp:function::  float GetHealthFrac( entity player )
-
     .. cpp:function::  float GetLastPingTime()
 
     .. cpp:function::  int GetLevel()
@@ -105,7 +137,7 @@ Functions for getting player, and methods of the player object
 
     .. cpp:function::  float GetObjectiveEndTime()
 
-    .. cpp:function::  unknown GetObjectiveEntity()
+    .. cpp:function::  entity GetObjectiveEntity()
 
     .. cpp:function::  int GetObjectiveIndex()
 
@@ -125,17 +157,9 @@ Functions for getting player, and methods of the player object
 
     .. cpp:function::  entity GetParent()
 
-    .. cpp:function::  int GetPersistentSpawnLoadoutIndex( entity player, string playerClass )
-
-        playerClasses: ``"pilot"`` ``"titan"``. This returns null for every other string.
-
     .. cpp:function::  entity GetPetTitan()
 
         auto titan of player
-
-    .. cpp:function::  PilotLoadoutDef GetPilotLoadoutFromPersistentData( entity player, int loadoutIndex )
-
-        stored loadout data of player
 
     .. cpp:function::  int GetPingGroupAccumulator()
 
@@ -145,7 +169,10 @@ Functions for getting player, and methods of the player object
 
         "titan", "spectator" or "pilot"
 
-    .. cpp:function::  PGS_ELIMINATED GetPlayerGameStat()
+    .. cpp:function::  int GetPlayerGameStat( int PGS )
+
+        returns the score of the player in the provided category.
+        some categories are: ``PGS_KILLS``, ``PGS_DEATHS``, ``PGS_SCORE`` etc.
 
     .. cpp:function::  string GetPlayerName()
 
@@ -168,8 +195,6 @@ Functions for getting player, and methods of the player object
         some settings: ``"weaponClass"`` ``"gravityscale"`` ``"airSpeed"`` ``"airAcceleration"``
 
     .. cpp:function::  int GetShieldHealth()
-
-    .. cpp:function::  float GetShieldHealthFrac( entity )
 
     .. cpp:function::  int GetShieldHealthMax()
 
@@ -201,15 +226,9 @@ Functions for getting player, and methods of the player object
 
         0.0 (no zoom) - 1.0 (full zoom)
 
-    .. cpp:function::  void GiveArmor( entity player, int amount )
-
     .. cpp:function::  void GiveOffhandWeapon( string name, int slot )
 
-    .. cpp:function::  void GivePilotLoadout( entity player, int loadout )
-
     .. cpp:function::  void GiveWeapon( string weapon )
-
-    .. cpp:function::  void GiveWeaponPowerUp( entity player, string newWeapon )
 
     .. cpp:function::  void TakeOffhandWeapon( int offhandIndex )
 
@@ -244,8 +263,6 @@ Functions for getting player, and methods of the player object
 
     .. cpp:function::  void SetTitanDisembarkEnabled( bool enabled )
 
-    .. cpp:function::  void AddThreatScopeColorStatusEffect( entity weaponOwner )
-
     .. cpp:function::  vector CameraPosition()
 
     .. cpp:function::  void CockpitStartDisembark()
@@ -266,8 +283,6 @@ Functions for getting player, and methods of the player object
 
     .. cpp:function::  int Minimap_GetZOrder()
 
-    .. cpp:function::  int RemoveThreatScopeColorStatusEffect( entity player )
-
     .. cpp:function::  bool HasBadReputation()
 
     .. cpp:function::  bool HasMic()
@@ -280,33 +295,21 @@ Functions for getting player, and methods of the player object
 
     .. cpp:function::  bool IsHuman()
 
-    .. cpp:function::  bool IsInScoreboard( entity player )
-
     .. cpp:function::  bool IsInThirdPersonReplay()
 
     .. cpp:function::  bool IsMuted()
 
     .. cpp:function::  bool IsPartyLeader()
 
-    .. cpp:function::  bool IsPartyMember( entity player )
-
     .. cpp:function::  bool IsPhaseShifted()
 
     .. cpp:function::  bool IsPlayer()
-
-    .. cpp:function::  bool IsPlayerEliminated( entity player )
-
-    .. cpp:function::  bool IsPlayerFemale( entity player )
-
-    .. cpp:function::  bool IsRespawnAvailable( entity player )
 
     .. cpp:function::  bool IsScriptMenuOn()
 
     .. cpp:function::  bool IsTalking()
 
     .. cpp:function::  bool IsTitan()
-
-    .. cpp:function::  bool IsTitanAvailable( entity player )
 
     .. cpp:function::  bool IsUsingOffhandWeapon()
 
@@ -319,3 +322,5 @@ Functions for getting player, and methods of the player object
     .. cpp:function::  bool Lunge_IsActive()
 
     .. cpp:function::  bool PlayerMelee_IsAttackActive()
+
+    .. cpp:function:: entity GetMeleeWeapon()
