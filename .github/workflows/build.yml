@@ -35,7 +35,7 @@ jobs:
         working-directory: northstar-launcher
         run: |
           sed -i 's/DEV/${{ env.NORTHSTAR_VERSION }}/g' LauncherInjector/resources.rc
-          FILEVERSION=$(echo ${{ env.NORTHSTAR_VERSION }} | tr '.' ',' | tr -d '[:alpha:]')
+          FILEVERSION=$(echo ${{ env.NORTHSTAR_VERSION }} | tr '.' ',' | sed -E 's/-rc[0-9]+//' | tr -d '[:alpha:]')
           sed -i "s/0,0,0,1/${FILEVERSION}/g" NorthstarDedicatedTest/ns_version.h
       - name: Build
         working-directory: northstar-launcher
