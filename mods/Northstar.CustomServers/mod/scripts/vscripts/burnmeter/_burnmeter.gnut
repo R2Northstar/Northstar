@@ -82,10 +82,16 @@ void function BurnMeter_SetBoostRewardCount( string burnRef, int rewardCount )
 	file.boostRewardCount[burnRef] <- rewardCount
 }
 
-int function BurnMeter_GetLimitedRewardCount( entity player )
+int function BurnMeter_GetLimitedRewardCount( entity player, string burnRef = "" )
 {
-	EarnObject earnObject = PlayerEarnMeter_GetReward( player )
-	string burnRef = earnObject.ref
+	// added burnRef as a parameter, used for dice roll
+	// means we dont call two lots of BurnReward_GetRandom() whilst also being able to give multiple items per dice roll (ticks)
+	if (burnRef == "")
+	{
+		EarnObject earnObject = PlayerEarnMeter_GetReward( player )
+		burnRef = earnObject.ref
+	}
+
 	int limit = -1
 	int rewardCount = 1
 

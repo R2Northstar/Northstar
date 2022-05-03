@@ -182,7 +182,7 @@ void function EarnMeterMP_BoostEarned( entity player )
 	while ( burncard.ref == "burnmeter_random_foil" )
 		burncard = BurnReward_GetRandom()
 
-	for ( int i = 0; i < BurnMeter_GetLimitedRewardCount( player ); i++ )
+	for ( int i = 0; i < BurnMeter_GetLimitedRewardCount( player, burncard.ref ); i++ )
 		BurnMeter_GiveRewardDirect( player, burncard.ref )
 
 	PlayerEarnMeter_DisableReward( player )
