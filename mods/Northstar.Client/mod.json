@@ -1,7 +1,7 @@
 {
 	"Name": "Northstar.Client",
 	"Description": "Various ui and client changes to fix bugs and add better support for mods",
-	"Version": "1.6.0",
+	"Version": "1.7.0",
 	"LoadPriority": 0,
 	"ConVars": [
 		{

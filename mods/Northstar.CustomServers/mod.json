@@ -1,7 +1,7 @@
 {
 	"Name": "Northstar.CustomServers",
 	"Description": "Attempts to recreate the behaviour of vanilla Titanfall 2 servers, as well as changing some scripts to allow better support for mods",
-	"Version": "1.6.0",
+	"Version": "1.7.0",
 	"LoadPriority": 0,
 	"ConVars": [
 		{
