@@ -1,7 +1,7 @@
 {
 	"Name": "Northstar.Custom",
 	"Description": "Custom content for Northstar: extra weapons, gamemodes, etc.",
-	"Version": "1.6.0",
+	"Version": "1.7.0",
 	"LoadPriority": 1,
 	"RequiredOnClient": true,
 	"ConVars": [
