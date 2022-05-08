@@ -18,6 +18,14 @@ Northstar is split over multiple git repositories that fulfill different functio
   Contains the standard mods shipped with Northstar to allow joining and hosting custom servers.
 * [NorthstarMasterServer](https://github.com/R2Northstar/NorthstarMasterServer):\
   Contains the source for the master server used to authenticate clients, display the server browser list, and connect clients to community hosted servers.
+* [NorthstarDiscordRPC](https://github.com/R2Northstar/NorthstarDiscordRPC):\
+  Contains plugin to integrate Northstar with Discord's SDK to enable rich presence.
+* [NorthstarNavs](https://github.com/R2Northstar/NorthstarNavs):\
+  Contains custom navmesh files to use with TItanfall 2 AI
+* [NorthstarStubs](https://github.com/R2Northstar/NorthstarStubs):\
+  Contains D3D11 and GFSDK stubs for the Northstar dedicated server.
 * [NorthstarWiki](https://github.com/R2Northstar/NorthstarWiki):\
   The repository for this wiki.
+* [ModdingDocs](https://github.com/R2Northstar/ModdingDocs):\
+  Contains guides and tutorials on how to mod using Northstar 
 
