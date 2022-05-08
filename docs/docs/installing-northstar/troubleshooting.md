@@ -29,7 +29,7 @@ This error is usually caused by running the `NorthstarLauncher.exe` in the wrong
 
 **If it still appears after trying the fix above:** It's possible that you may have **corrupted or missing** game files
 
-* First check \bin\x64\_retail\ and check if you have these files
+* First check `\bin\x64\_retail\` and check if you have these files
 
 ![bin folder](../images/bin-folder.png)
 
