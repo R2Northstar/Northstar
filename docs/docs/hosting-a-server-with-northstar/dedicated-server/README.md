@@ -137,7 +137,7 @@ If ran on a server with the [`ns_should_return_to_lobby 0`](./#Convars-returntol
 | Playlist | Title |
 | --- | --- |
 | private_match | Private Match |
-| ~~aitdm~~ | Attrition |
+| aitdm | Attrition |
 | ~~at~~ | Bounty Hunt |
 | coliseum | Coliseum |
 | cp | Amped Hardpoint |
