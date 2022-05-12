@@ -720,6 +720,7 @@ void InitialiseServerAuthentication(HMODULE baseAddress)
 	}
 
 	// patch to allow same of multiple account
+	if (CommandLine()->CheckParm("-allowdupeaccounts"))
 	{
 		NSMem::BytePatch(
 			ba + 0x114510,
