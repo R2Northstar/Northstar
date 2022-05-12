@@ -1,6 +1,15 @@
 # Basic Setup
 
-## Installing Northstar
+## Installing Northstar using an installer (recommended):
+
+Head over to the installer page and pick one of the existing installers. All of these take care of both installing and updating Northstar.
+
+{% content-ref url="northstar-installers.md" %}
+[northstar-installers.md](northstar-installers.md)
+{% endcontent-ref %}
+
+
+## Manual installation:
 
 {% embed url="https://www.youtube.com/watch?v=bK4pV-AHOHM" %}
 
