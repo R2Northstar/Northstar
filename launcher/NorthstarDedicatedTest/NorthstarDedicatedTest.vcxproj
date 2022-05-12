@@ -117,6 +117,7 @@
     <ClInclude Include="debugoverlay.h" />
     <ClInclude Include="clientruihooks.h" />
     <ClInclude Include="clientvideooverrides.h" />
+    <ClInclude Include="emit_blocker.h" />
     <ClInclude Include="localchatwriter.h" />
     <ClInclude Include="ns_version.h" />
     <ClInclude Include="plugins.h" />
@@ -586,6 +587,7 @@
     <ClCompile Include="dedicated.cpp" />
     <ClCompile Include="dedicatedmaterialsystem.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="emit_blocker.cpp" />
     <ClCompile Include="filesystem.cpp" />
     <ClCompile Include="gameutils.cpp" />
     <ClCompile Include="hooks.cpp" />
