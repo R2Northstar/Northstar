@@ -23,6 +23,12 @@ Wiki and documentation:
 
 {% embed url="https://github.com/ebkr/r2modmanPlus/wiki/" %}
 
+There's also an alternative version of r2mm called _Thunderstore Mod Manager_ TMM, which can be downloaded from here:\
+(Contains ads to support the development of Thunderstore)
+
+{% embed url="https://www.overwolf.com/app/Thunderstore-Thunderstore_Mod_Manager" %}
+
+
 ## **0neGal:** Viper
 
 ![viper](../images/viper-main-window.png)
