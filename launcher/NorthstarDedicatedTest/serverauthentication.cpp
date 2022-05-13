@@ -203,7 +203,7 @@ bool ServerAuthenticationManager::AuthenticatePlayer(void* player, int64_t uid, 
 		AuthData authData = m_authData[authToken];
 
 		// Log playnername and UID from request
-		spdlog::info("Comparing connecting UID \"{}\" against stored UID from ms auth reguest \"{}\"", strUid.c_str(), authData.uid);
+		spdlog::info("Comparing connecting UID \"{}\" against stored UID from ms auth request \"{}\"", strUid.c_str(), authData.uid);
 
 		if (!strcmp(strUid.c_str(), authData.uid)) // connecting client's uid is the same as auth's uid
 		{
