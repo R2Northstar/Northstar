@@ -42,7 +42,7 @@ Download and source code:
 
 ## **BigSpice:** VTOL
 
-![vtol](../images/vtol-update-window.png)
+![vtol](../images/vtol-main-window.png)
 
 Easy to use and extensive Northstar installer and mod-manager. Supports installing from Thunderstore as well as from outside sources like GitHub/GitLab repositories. Has support for installing custom weapon/pilot skins. Features manager for setting up dedicated servers.
 
