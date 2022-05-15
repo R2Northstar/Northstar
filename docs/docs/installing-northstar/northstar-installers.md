@@ -2,7 +2,7 @@
 
 Since the public release of Northstar, the wider community has created tools to automate mod installation, as well as adding additional features such as auto-updating the current Northstar install and mod management.
 
-Note that none of these tools directly part of the Northstar project and as such any issues with them should be reported to the respective authors instead.
+Note that none of these tools are directly part of the Northstar project and as such any issues with them should be reported to the respective authors instead.
 
 ## **ebkr:** r2modman
 
