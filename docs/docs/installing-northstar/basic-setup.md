@@ -16,7 +16,9 @@ Head over to the installer page and pick one of the existing installers. All of 
 Firstly, note that the Northstar client is only available on PC and requires you to **both own the game and have it installed**.
 
 1. Download the latest version of Northstar from the [releases](https://github.com/R2Northstar/Northstar/releases) page
-2. Copy all the files in the newly downloaded zip folder to your `Titanfall2` folder. This can vary depending on whether you purchased the game off Steam or Origin, and if you set a custom folder for game installs.
+2. Copy all the files in the newly downloaded zip folder to your `Titanfall2` folder.\
+![Drag and drop the contents of the zip into your Titanfall2 folder](/docs/images/manual-install-drag-drop-files.png)\
+The location of the `Titanfall2` folder can vary depending on whether you purchased the game off Steam or Origin, and if you set a custom folder for game installs.
    * **For Steam** - Right click _Titanfall 2_ > Open _Properties_ > Click _Local Files_ > Click _Browse_\
      Usually: `C:\Program Files (x86)\Steam\steamapps\common\Titanfall2`
    * **For Origin** - To find the location of your Origin library go to _Origin_ -> _Application Settings_ -> _Installs & Saves_ -> _On your Computer_ -> _Game Library Location_\
