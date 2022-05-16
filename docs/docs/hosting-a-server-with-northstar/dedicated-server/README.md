@@ -44,6 +44,7 @@ Example: `+setplaylist private_match +mp_gamemode ps`
 | --------------------- | ------------------------------------------------------------------------------ |
 | `-maxplayersplaylist` | Allows [PlaylistOverrides](./#playlist-overrides) to override max player count |
 | `-enablechathooks`    | Allows send the commands using in-game chat                                    |
+| `-allowdupeaccounts`  | Allows the same account joining multiple times                                 |
 
 ### Playlist overrides
 
