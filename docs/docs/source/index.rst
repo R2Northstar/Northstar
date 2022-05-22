@@ -36,6 +36,7 @@ If you know anything about any function, object or concept please dont hesitate 
    /guides/crosshairmodding
    /guides/settingsmods
    /guides/gamemodemods
+   /guides/soundmodding
    /guides/publishing
 
 .. toctree::
