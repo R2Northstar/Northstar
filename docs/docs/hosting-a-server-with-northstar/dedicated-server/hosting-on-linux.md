@@ -10,9 +10,7 @@ If you do not have a DirectX 11 capable GPU in your system (for example if you a
 # <a name="Headless_Servers">Headless Servers</a>
 
 ## Using Docker
-Two docker images are currently available:
-- [pg9182/northstar_dedicated](https://github.com/pg9182/northstar-dedicated) : Advanced image with server management tools and better performance *(recommended)*
-- [legonzaur/northstar-server-headless](https://github.com/Legonzaur/northstar-server-headless) : Basic image without management tools
+[pg9182/northstar_dedicated](https://github.com/pg9182/northstar-dedicated) : Docker image with server management tools and better performance 
 
 Check the `README` page for instructions on the appropriate repository to set up your server.
 
