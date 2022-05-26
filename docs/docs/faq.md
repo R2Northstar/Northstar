@@ -18,7 +18,7 @@ A: Check [_Opening the console_](installing-northstar/using-northstar/commands.m
 
 ### Q: How can I check if my server is listed on the server browser?
 
-You can use community-made server browsers like: [https://taskinoz.com/northstar/](https://taskinoz.com/northstar/)
+You can use community-made server browsers such as: [https://taskinoz.com/northstar/](https://taskinoz.com/northstar/) or [https://cpdt.dev/northstar/](https://cpdt.dev/northstar/)
 
 ### Q: Will there be a console version?
 
@@ -26,7 +26,7 @@ A: No.
 
 ### Q: Does AI work? What about custom maps?
 
-A: Not right now, they're being looked into. Give it time. Possibly a lot of time, don't ask for an ETA.
+A: AI does work! Custom maps however will take time. Possibly a lot of time, don't ask for an ETA.
 
 ### Q: I'm trying to invite a friend via Steam/Origin but they cannot join me?
 
@@ -44,9 +44,9 @@ and instructions to host a _listen server_:
 [basic-listen-server.md](hosting-a-server-with-northstar/basic-listen-server.md)
 {% endcontent-ref %}
 
-### Q: Can I use Northstar to play singleplayer?
+### Q: Can I use Northstar to play the campaign?
 
-A: No single player is not supported at the moment, so you'll need to use the vanilla client. A [co-op single player mod is planned](https://github.com/R2Northstar/NorthstarMods/tree/main/Northstar.Coop) but development is currently halted in favour of focussing on multiplayer content.
+A: The campaign can be played using Northstar but for the best experience it is recommended to use vanilla. A [co-op campaign mod is in development](https://github.com/R2Northstar/NorthstarMods/tree/main/Northstar.Coop) and it will be made available when it is finished.
 
 ### Q: I get an error saying "Showing user info for UID 0 on hardware" and can't connect to servers
 
@@ -70,6 +70,6 @@ The reason this wiki for example is called `r2northstar.gitbook.io` is due to th
 A: The answer is obvious, No! Northstar does not support piracy of any kind.\
 If you want to use Northstar you'll have to purchase Titanfall 2 either from Steam/Origin/EA Desktop App or use a subscription service like Gamepass PC and EA Play.
 
-### Q: Why are there no Attrition / Frontier Defense servers?
+### Q: Where is Frontier Defense?
 
-A: AI movement (including grunts, autotitans, etc) currently does not work. Since AI is intrinsic to these modes, they are currently unavailable
+A: Frontier Defense is currently in development and will be available in a release when it's finished.
