@@ -148,13 +148,17 @@ If ran on a server with the [`ns_should_return_to_lobby 0`](./#Convars-returntol
 | ~~fd_insane~~ | Frontier Defense (Insane) |
 | ~~fd_master~~ | Frontier Defense (Master) |
 | ~~fd_normal~~ | Frontier Defense (Regular) |
-| lf | Live Fire |
 | lts | Last Titan Standing |
 | mfd | Marked For Death |
 | ps | Pilots vs. Pilots |
 | solo | Campaign |
 | tdm | Skirmish |
 | ttdm | Titan Brawl |
+
+Note an exception to the rule of playlist and gamemode names being the same. With Live Fire, startup arguments need to be different for `+setplaylist` and `+mp_gamemode` for a server to run Live Fire.
+| Playlist | Gamemode | Title |
+| --- | --- | --- |
+| lf | speedball | Live Fire |
 
 ### Vanilla (Featured)
 
