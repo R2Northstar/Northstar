@@ -145,3 +145,11 @@ Access can be restricted using a file manager or terminal:
 `chmod -R 755`  -> access + save
 
 It's also possible to create command aliases to type something short, such as tfoff/tfon.
+
+### Steam using incompatible DXVK version for Northstar
+
+When using the Steam version of Titanfall2, Steam will place a version of DXVK into `Titanfall2/bin/x64_retail`. While this version works fine for the vanilla game, Norhtstar has some incompatibilities with it, that are yet to be resolved.
+
+A simple workaround is to use the following script update the DXVK version placed into that directory.
+
+{% embed url="https://github.com/BotchedRPR/NSDXVKFix" %}
