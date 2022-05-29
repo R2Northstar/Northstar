@@ -146,10 +146,13 @@ Access can be restricted using a file manager or terminal:
 
 It's also possible to create command aliases to type something short, such as tfoff/tfon.
 
-### Steam using incompatible DXVK version for Northstar
+### Reshade adding incompatible DXVK version for Northstar
 
-When using the Steam version of Titanfall2, Steam will place a version of DXVK into `Titanfall2/bin/x64_retail`. While this version works fine for the vanilla game, Norhtstar has some incompatibilities with it, that are yet to be resolved.
+If you ever used ReShade together with Titanfall2 in the past it will have created a bunch of DXVK DLLs that are incompatible with Northstar. If Northstar fails to fully initialize with an exeption and you have previously installed ReShade on Windows delete the following files from `Titanfall2/bin/x64_retail/`:
 
-A simple workaround is to use the following script update the DXVK version placed into that directory.
-
-{% embed url="https://github.com/BotchedRPR/NSDXVKFix" %}
+- D3D8.DLL
+- D3D9.DLL
+- D3D10.DLL
+- D3D11.DLL
+- OPENGL.DLL
+- DXGI.DLL
