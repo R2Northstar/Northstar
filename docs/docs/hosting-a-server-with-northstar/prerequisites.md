@@ -13,6 +13,10 @@ If you for example don't know what "port forwarding" means and just want to play
 
 In order for others to join your game they need to be able to reach you. Most likely your router acts as a NAT so you need to port forward two ports to your PC for [NAT traversal](https://en.wikipedia.org/wiki/NAT\_traversal).
 
+An explanation of what port-forwarding is exactly can be found in the following video:
+
+{% embed url="https://www.youtube.com/watch?v=WOZQppVNGvA" %}
+
 ## CGNAT
 
 First we want to make sure you're not behind a [CGNAT](https://en.wikipedia.org/wiki/Carrier-grade\_NAT) as this basically means you [won't be able to host at all](https://en.wikipedia.org/wiki/Carrier-grade_NAT#Disadvantages).
