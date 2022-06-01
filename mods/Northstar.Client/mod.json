@@ -54,6 +54,13 @@
 			}
 		},
 		{
+			"Path": "ui/menu_ns_setversionlabel.nut",
+			"RunOn": "UI",
+			"UICallback": {
+				"After": "NS_SetVersionLabel"
+			}
+		},
+		{
 			"Path": "presence/ui_presence.nut",
 			"RunOn": "UI",
 			"UICallback": {
