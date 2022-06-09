@@ -17,8 +17,7 @@ Respawn API
 
     /reference/respawn/callbacks
     /reference/respawn/player
-    /reference/respawn/weapon
-    /reference/respawn/titan
+    /reference/respawn/entities
     /reference/respawn/rui
     /reference/respawn/topology
     /reference/respawn/clientcommands
