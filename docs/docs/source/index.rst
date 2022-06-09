@@ -37,6 +37,7 @@ If you know anything about any function, object or concept please dont hesitate 
    /guides/settingsmods
    /guides/gamemodemods
    /guides/soundmodding
+   /guides/VTFModding
    /guides/publishing
 
 .. toctree::
