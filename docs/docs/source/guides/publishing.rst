@@ -9,6 +9,8 @@ Note that the Northstar name (``Northstar.Xyz``) is reserved for mods that come 
 
 It is recommended to upload the source code of your mod to a public repository like `Github <https://github.com/>`_ to give your users a place to suggest changes and leave feedback in an organised manner.
 
+If the changes your mod makes can be represented in screenshots, gameplay recordings, or GIFs, consider adding those to your README. This way anyone coming across your mod can tell which aspects of the game it changes even before installing it.
+
 Thunderstore
 ------------
 
