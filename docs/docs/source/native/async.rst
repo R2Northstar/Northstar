@@ -69,4 +69,104 @@ This function will now repeat endlessly, waiting 5 seconds before each repeat. m
             }
         }
 
+You can also set up some code to be executed when a thread ends:
+
+.. code-block:: javascript
+
+    void killPlayerAfterAfewMoments(entity player) {
+        OnThreadEnd(
+            // you have to explicitely capture all variables you want to use inside function
+            function() : ( player )
+            {
+                if ( !IsValid( player ))
+                    return
+
+                SendHudMessage( player, "Time to sleep, fella!", -1, 0.4, 255, 0, 0, 0, 0, 3, 0.15 )
+                player.Die()
+            }
+        )
+
+        // Do something time consuming
+    }
+
+    thread killPlayerAfterAFewMoments( GetPlayerArray()[0] )
+
+
 You have now created and threaded both functions.
+
+Signals and flags
+----------------------
+
+Signals
+^^^^^^^^^^
+
+Signals and flags allow threads to wait for events before running some code.
+
+For example, if we want to tell a player not to give up after being killed several times, we can write it this way:
+
+.. code-block:: javascript
+
+    // First, we register signal we want to use
+    RegisterSignal("OnMultipleDeaths")
+
+
+    void function WatchForDeaths (entity player) 
+    {
+        int deathsCount = 0
+
+        while( GamePlayingOrSuddenDeath() )
+        {
+            if ( player.isDead() )  // This doesn't exist, don't try this at home
+            {
+                deathsCount += 1
+
+                if (deathsCount >= 42)
+                {
+                    // This sends "OnMultipleDeaths" signal on player entity
+                    player.Signal( "OnMultipleDeaths" )
+                } 
+            }
+        }
+    }
+
+
+    void function DontGiveUp (entity player)
+    {
+        // This is a blocking call
+        player.WaitSignal("OnMultipleDeaths");
+
+        // This will not run until entity received "OnMultipleDeaths" signal
+        SendHudMessage( player, "Don't give up!", -1, 0.4, 255, 0, 0, 0, 0, 3, 0.15 )
+    }
+
+    // Launch our methods in dedicated threads
+    entity player = GetPlayerArray()[0]
+    thread WatchForDeaths( player )
+    thread DontGiveUp( player )
+
+In this example, the ``DontGiveUp`` method is launched at the same time as ``WatchForDeaths``; but it will not 
+run until player died 42 times.
+
+When you want your thread to die on a given event, you can use ``entity.EndSignal( "OnMultipleDeaths" )``; when said signal 
+is set, thread will end (after calling any `OnThreadEnd` methods).
+
+Flags
+^^^^^^^^^^
+
+``Flags`` work pretty much the same way as ``Signals``, except they can be set up without target entity:
+
+.. code-block:: javascript
+
+    // create flag
+    FlagInit( "BombHasExploded" )
+
+    // wait for it
+    FlagWait( "BombHasExploded" )
+
+    // update it
+    FlagSet( "BombHasExploded" )
+    FlagClear( "BombHasExploded" )
+    FlagToggle( "BombHasExploded" )
+
+    // get its current value (returns a boolean)
+    Flag( "BombHasExploded" )
