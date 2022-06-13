@@ -309,7 +309,7 @@ void function LockMapButton( var element )
 bool function IsLocked( string map )
 {
 	
-	bool sp = map.find( "sp_" ) == 0
+	bool sp = map.find( "sp_" ) == 0 && PrivateMatch_GetSelectedMode() != "sp_coop"
 	if ( sp )
 		return true
 
