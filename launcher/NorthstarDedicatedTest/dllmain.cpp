@@ -267,6 +267,7 @@ bool InitialiseNorthstar()
 	AddDllLoadCallback("engine.dll", InitialiseSharedMasterServer);
 	AddDllLoadCallback("server.dll", InitialiseMiscServerScriptCommand);
 	AddDllLoadCallback("server.dll", InitialiseMiscServerFixes);
+	AddDllLoadCallback("engine.dll", InitialiseMiscEngineServerFixes);
 	AddDllLoadCallback("server.dll", InitialiseBuildAINFileHooks);
 
 	AddDllLoadCallback("engine.dll", InitialisePlaylistHooks);
