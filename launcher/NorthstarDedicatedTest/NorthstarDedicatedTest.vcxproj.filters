@@ -1685,9 +1685,6 @@
     <ClCompile Include="clientruihooks.cpp">
       <Filter>Source Files\Client</Filter>
     </ClCompile>
-    <ClCompile Include="emit_blocker.cpp">
-      <Filter>Source Files\Shared\Exploit Fixes</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <MASM Include="audio_asm.asm">
