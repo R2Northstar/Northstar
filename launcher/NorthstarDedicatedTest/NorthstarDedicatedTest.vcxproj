@@ -587,7 +587,6 @@
     <ClCompile Include="dedicated.cpp" />
     <ClCompile Include="dedicatedmaterialsystem.cpp" />
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="emit_blocker.cpp" />
     <ClCompile Include="filesystem.cpp" />
     <ClCompile Include="gameutils.cpp" />
     <ClCompile Include="hooks.cpp" />
