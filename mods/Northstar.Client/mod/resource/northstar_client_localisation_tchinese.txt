@@ -310,5 +310,16 @@
 		// In-game chat
 		"HUD_CHAT_WHISPER_PREFIX" "[WHISPER]"
 		"HUD_CHAT_SERVER_PREFIX" "[SERVER]"
+
+		"NO_GAMESERVER_RESPONSE"         "無法連接到遊戲伺服器'"
+		"BAD_GAMESERVER_RESPONSE"         "遊戲伺服器回應無效"
+		"UNAUTHORIZED_GAMESERVER"         "遊戲伺服器無法完成請求，因為它未與主伺服器進行驗證"
+		"UNAUTHORIZED_GAME"                "Stryder 無法確認當前賬戶擁有Titanfall 2"
+		"UNAUTHORIZED_PWD"                 "密碼錯誤"
+		"STRYDER_RESPONSE"                 "無法讀取Stryder回應"
+		"PLAYER_NOT_FOUND"                 "找不到玩家賬戶"
+		"INVALID_MASTERSERVER_TOKEN"     "主伺服器token過期或無效"
+		"JSON_PARSE_ERROR"                 "讀取json回應時發生錯誤"
+		"UNSUPPORTED_VERSION"             "您的遊戲版本過低"
 	}
 }

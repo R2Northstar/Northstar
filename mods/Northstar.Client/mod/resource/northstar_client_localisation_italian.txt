@@ -260,5 +260,16 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 		// In-game chat
 		"HUD_CHAT_WHISPER_PREFIX" "[WHISPER]"
 		"HUD_CHAT_SERVER_PREFIX" "[SERVER]"
+
+		"NO_GAMESERVER_RESPONSE"         "Non è stato possibile raggiungere il server"
+		"BAD_GAMESERVER_RESPONSE"         "Il server ha dato una risposta invalida"
+		"UNAUTHORIZED_GAMESERVER"         "Il server non è autorizzato a fare quella richiesta"
+		"UNAUTHORIZED_GAME"                "Stryder non è riuscito a confermare che questo account possiede Titanfall 2"
+		"UNAUTHORIZED_PWD"                 "Password errata"
+		"STRYDER_RESPONSE"                 "Non è stato possibile analizzare la risposta Stryder"
+		"PLAYER_NOT_FOUND"                 "Non è stato trovato l'account player"
+		"INVALID_MASTERSERVER_TOKEN"     "Token Masterserver invalido o scaduto"
+		"JSON_PARSE_ERROR"                 "Errore nell'analisi di risposta json"
+		"UNSUPPORTED_VERSION"             "La versione che stai usando non è più supportata"
 	}
 }

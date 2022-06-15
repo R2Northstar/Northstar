@@ -269,5 +269,16 @@ Dr체cke Ja, um zuzustimmen. Du kannst diese Entscheidung jederzeit im Modmen체 �
 		// In-game chat
 		"HUD_CHAT_WHISPER_PREFIX" "[WHISPER]"
 		"HUD_CHAT_SERVER_PREFIX" "[SERVER]"
+
+		"NO_GAMESERVER_RESPONSE"         "Konnte den Server nicht erreichen"
+		"BAD_GAMESERVER_RESPONSE"         "Ung체ltige Antwort vom Server erhalten"
+		"UNAUTHORIZED_GAMESERVER"         "Der Server ist nicht autorisiert, diese Anfrage zu machen"
+		"UNAUTHORIZED_GAME"                "Stryder konnte nicht best채tigen, dass dieser Account Titanfall 2 besitzt"
+		"UNAUTHORIZED_PWD"                 "Falsches Passwort"
+		"STRYDER_RESPONSE"                 "Stryder Antwort konnte nicht verarbeitet werden"
+		"PLAYER_NOT_FOUND"                 "Konnte das Spielerprofil nicht finden"
+		"INVALID_MASTERSERVER_TOKEN"     "Ung체ltiger oder abgelaufener Token vom Masterserver"
+		"JSON_PARSE_ERROR"                 "Fehler beim Verarbeiten der JSON-Antwort"
+		"UNSUPPORTED_VERSION"             "Die Version die du benutzt ist nicht l채nger unterst체tzt"
 	}
 }
