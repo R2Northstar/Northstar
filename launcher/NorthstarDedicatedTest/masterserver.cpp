@@ -14,6 +14,7 @@
 #include <cstring>
 #include <regex>
 #include "version.h"
+#include <chrono>
 // NOTE for anyone reading this: we used to use httplib for requests here, but it had issues, so we're moving to curl now for masterserver
 // requests so httplib is used exclusively for server stuff now
 
@@ -836,6 +837,10 @@ void MasterServerManager::AddSelfToServerList(
 	std::thread requestThread(
 		[this, port, authPort, strName, strDescription, strMap, strPlaylist, maxPlayers, strPassword]
 		{
+			// Keep track of attempted connects in case of DUPLICATE_SERVER response
+			int retry_counter = 0;
+
+		START_REQUEST:
 			m_ownServerId[0] = 0;
 			m_ownServerAuthToken[0] = 0;
 
@@ -915,6 +920,29 @@ void MasterServerManager::AddSelfToServerList(
 				{
 					spdlog::error("Failed reading masterserver response: got fastify error response");
 					spdlog::error(readBuffer);
+
+					// Check for enum member in JSON
+					if (serverAddedJson["error"].HasMember("enum"))
+					{
+						// Check for DUPLICATE_SERVER error response, stop if we tried 10 times
+						if (strncmp(serverAddedJson["error"]["enum"].GetString(), "DUPLICATE_SERVER", 17) == 0 && retry_counter < 10)
+						{
+
+							spdlog::info("Retrying request in 10 seconds.");
+							// Incremement retry counter
+							retry_counter++;
+
+							// Sleep for 10 seconds
+							std::this_thread::sleep_for(std::chrono::seconds(10));
+
+							// curl cleanup to retry request
+							curl_easy_cleanup(curl);
+							curl_mime_free(mime);
+
+							// go to beginning and retry
+							goto START_REQUEST;
+						}
+					}
 					goto REQUEST_END_CLEANUP;
 				}
 
@@ -936,6 +964,8 @@ void MasterServerManager::AddSelfToServerList(
 
 				strncpy(m_ownServerAuthToken, serverAddedJson["serverAuthToken"].GetString(), sizeof(m_ownServerAuthToken));
 				m_ownServerAuthToken[sizeof(m_ownServerAuthToken) - 1] = 0;
+
+				spdlog::info("Succesfully added server to the master server.");
 
 				// heartbeat thread
 				// ideally this should actually be done in main thread, rather than on it's own thread, so it'd stop if server freezes
