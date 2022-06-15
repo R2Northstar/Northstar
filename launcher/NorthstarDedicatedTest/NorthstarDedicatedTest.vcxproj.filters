@@ -1515,9 +1515,6 @@
     <ClInclude Include="NSMem.h">
       <Filter>Header Files\Shared\ExploitFixes</Filter>
     </ClInclude>
-    <ClInclude Include="emit_blocker.h">
-      <Filter>Header Files\Shared\ExploitFixes</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
