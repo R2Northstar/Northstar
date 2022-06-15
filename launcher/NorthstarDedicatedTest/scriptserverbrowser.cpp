@@ -355,6 +355,13 @@ SQRESULT SQ_WasAuthSuccessful(void* sqvm)
 	return SQRESULT_NOTNULL;
 }
 
+// bool function NSWasAuthSuccessful()
+SQRESULT SQ_GetAuthFailReason(void* sqvm)
+{
+	ClientSq_pushstring(sqvm, g_MasterServerManager->s_authfail_reason.c_str(), -1);
+	return SQRESULT_NOTNULL;
+}
+
 // void function NSConnectToAuthedServer()
 SQRESULT SQ_ConnectToAuthedServer(void* sqvm)
 {
@@ -438,4 +445,6 @@ void InitialiseScriptServerBrowser(HMODULE baseAddress)
 
 	g_UISquirrelManager->AddFuncRegistration("void", "NSTryAuthWithLocalServer", "", "", SQ_TryAuthWithLocalServer);
 	g_UISquirrelManager->AddFuncRegistration("void", "NSCompleteAuthWithLocalServer", "", "", SQ_CompleteAuthWithLocalServer);
+
+	g_UISquirrelManager->AddFuncRegistration("string", "NSGetAuthFailReason", "", "", SQ_GetAuthFailReason);
 }
