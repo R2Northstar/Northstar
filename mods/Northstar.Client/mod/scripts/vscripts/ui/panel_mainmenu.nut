@@ -559,15 +559,28 @@ void function TryAuthWithLocalServer()
 	if ( NSWasAuthSuccessful() )
 	{
 		NSCompleteAuthWithLocalServer()
+		if ( GetConVarString( "mp_gamemode" ) == "solo" )
+			SetConVarString( "mp_gamemode", "tdm" )
+
+		CloseAllDialogs()
+
+		ClientCommand( "setplaylist tdm" )
+		ClientCommand( "map mp_lobby" )
 	}
+	else 
+	{
+		CloseAllDialogs()
 
-	if ( GetConVarString( "mp_gamemode" ) == "solo" )
-		SetConVarString( "mp_gamemode", "tdm" )
+		var reason = NSGetAuthFailReason()
 
-	CloseAllDialogs()
+		DialogData dialogData
+		dialogData.image = $"ui/menu/common/dialog_error"
+		dialogData.header = "#ERROR"
+		dialogData.message = Localize("#NS_SERVERBROWSER_CONNECTIONFAILED") + "\nERROR: " + reason  + "\n" + Localize("#" + reason)
 
-	ClientCommand( "setplaylist tdm" )
-	ClientCommand( "map mp_lobby" )
+		AddDialogButton( dialogData, "#OK", null )
+		OpenDialog( dialogData )
+	}
 }
 
 void function CancelNSLocalAuth()

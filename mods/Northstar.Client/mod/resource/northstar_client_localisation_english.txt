@@ -308,5 +308,16 @@ Press Yes if you agree to this. This choice can be changed in the mods menu at a
 		// In-game chat
 		"HUD_CHAT_WHISPER_PREFIX" "[WHISPER]"
 		"HUD_CHAT_SERVER_PREFIX" "[SERVER]"
+
+		"NO_GAMESERVER_RESPONSE" 		"Couldn't reach game server"
+		"BAD_GAMESERVER_RESPONSE" 		"Game server gave an invalid response"
+		"UNAUTHORIZED_GAMESERVER" 		"Game server is not authorized to make that request"
+		"UNAUTHORIZED_GAME"				"Stryder couldn't confirm that this account owns Titanfall 2"
+		"UNAUTHORIZED_PWD" 				"Wrong password"
+		"STRYDER_RESPONSE" 				"Couldn't parse stryder response"
+		"PLAYER_NOT_FOUND" 				"Couldn't find player account"
+		"INVALID_MASTERSERVER_TOKEN" 	"Invalid or expired masterserver token"
+		"JSON_PARSE_ERROR" 				"Error parsing json response"
+		"UNSUPPORTED_VERSION" 			"The version you are using is no longer supported"
 	}
 }

@@ -306,5 +306,16 @@ Si estas de acuerdo con esto, presiona SI. Esta decision puede ser cambiada en e
 		// In-game chat
 		"HUD_CHAT_WHISPER_PREFIX" "[SUSURRO]"
 		"HUD_CHAT_SERVER_PREFIX" "[SERVIDOR]"
+
+		"NO_GAMESERVER_RESPONSE"          "No se pudo conectar al servidor"
+		"BAD_GAMESERVER_RESPONSE"         "Servidor dio respuesta invalida"
+		"UNAUTHORIZED_GAMESERVER"         "Servidor no esta autorizado"
+		"UNAUTHORIZED_GAME"               "Stryder no pudo comprobar que esta cuenta posea Titanfall 2"
+		"UNAUTHORIZED_PWD"                "Contraseña incorrecta"
+		"STRYDER_RESPONSE"                "No se pudo procesar la respuesta del servidor"
+		"PLAYER_NOT_FOUND"                "No se encontró la cuenta del jugador"
+		"INVALID_MASTERSERVER_TOKEN"      "Token de jugador expirado o invalido"
+		"JSON_PARSE_ERROR"                "Error procesando respuesta json"
+		"UNSUPPORTED_VERSION"             "La versión que estas usando ya no esta soportada" 
 	}
 }
