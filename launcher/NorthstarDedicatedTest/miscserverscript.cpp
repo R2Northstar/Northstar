@@ -4,6 +4,7 @@
 #include "masterserver.h"
 #include "serverauthentication.h"
 #include "gameutils.h"
+#include "dedicated.h"
 
 // annoying helper function because i can't figure out getting players or entities from sqvm rn
 // wish i didn't have to do it like this, but here we are
@@ -57,10 +58,19 @@ SQRESULT SQ_IsPlayerIndexLocalPlayer(void* sqvm)
 	return SQRESULT_NOTNULL;
 }
 
+// bool function NSIsDedicated()
+
+SQRESULT SQ_IsDedicated(void* sqvm)
+{
+	ServerSq_pushbool(sqvm, IsDedicated());
+	return SQRESULT_NOTNULL;
+}
+
 void InitialiseMiscServerScriptCommand(HMODULE baseAddress)
 {
 	g_ServerSquirrelManager->AddFuncRegistration(
 		"void", "NSEarlyWritePlayerIndexPersistenceForLeave", "int playerIndex", "", SQ_EarlyWritePlayerIndexPersistenceForLeave);
 	g_ServerSquirrelManager->AddFuncRegistration("bool", "NSIsWritingPlayerPersistence", "", "", SQ_IsWritingPlayerPersistence);
 	g_ServerSquirrelManager->AddFuncRegistration("bool", "NSIsPlayerIndexLocalPlayer", "int playerIndex", "", SQ_IsPlayerIndexLocalPlayer);
+	g_ServerSquirrelManager->AddFuncRegistration("bool", "NSIsDedicated", "", "", SQ_IsDedicated);
 }
