@@ -490,6 +490,10 @@ void MasterServerManager::RequestMainMenuPromos()
 				{
 					spdlog::error("Failed reading masterserver response: got fastify error response");
 					spdlog::error(readBuffer);
+					if (mainMenuPromoJson["error"].HasMember("enum"))
+						s_authfail_reason = std::string(mainMenuPromoJson["error"]["enum"].GetString());
+					else
+						s_authfail_reason = std::string("No error message provided");
 					goto REQUEST_END_CLEANUP;
 				}
 
@@ -610,6 +614,10 @@ void MasterServerManager::AuthenticateWithOwnServer(char* uid, char* playerToken
 				{
 					spdlog::error("Failed reading masterserver response: got fastify error response");
 					spdlog::error(readBuffer);
+					if (authInfoJson["error"].HasMember("enum"))
+						s_authfail_reason = std::string(authInfoJson["error"]["enum"].GetString());
+					else
+						s_authfail_reason = std::string("No error message provided");
 					goto REQUEST_END_CLEANUP;
 				}
 
@@ -757,6 +765,10 @@ void MasterServerManager::AuthenticateWithServer(char* uid, char* playerToken, c
 				{
 					spdlog::error("Failed reading masterserver response: got fastify error response");
 					spdlog::error(readBuffer);
+					if (connectionInfoJson["error"].HasMember("enum"))
+						s_authfail_reason = std::string(connectionInfoJson["error"]["enum"].GetString());
+					else
+						s_authfail_reason = std::string("No error message provided");
 					goto REQUEST_END_CLEANUP;
 				}
 
