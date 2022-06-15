@@ -51,7 +51,6 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/error/en.h"
 #include "ExploitFixes.h"
-#include "emit_blocker.h"
 
 typedef void (*initPluginFuncPtr)(void* getPluginObject);
 
