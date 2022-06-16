@@ -47,6 +47,21 @@ git tag v1.8.0
 git push origin v1.8.0
 ```
 
+## Version numbering
+
+In general, Northstar tries to follow [semantic versioning](https://semver.org/). This means version numbers are `MAJOR.MINOR.PATCH`, where
+
+- `MAJOR` is updated for breaking changes
+- `MINOR` is updated for changes that are backwards compatible
+- `PATCH` is updated for fixes that are backwards compatible
+
+Semantic versioning is however not followed exactly. For example, to ship out smaller features faster they have been included in patch releases. Similarly, there have been smaller breaking changes, yet at the time of writing the major version number so far has never been updated.
+
+The reason for this is mostly due to player expectations. Players expect the change from `1.0` to `2.0` to be big. As such, the plan for the near future is to update the major version, once we have a bigger feature ready to release that brings us closer to vanilla in terms of missing features (e.g. _Frontier Defense_).
+
+Once `2.0` has been released, expectations for `3.0` tend to be lower as the number is no longer "doubled". Past `3.0`, proper semver can probably be employed without hampering player expectations.
+
+
 ## Best practices:
 
 - Make at least one release candidate and test it before actual release.
