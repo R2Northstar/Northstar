@@ -259,7 +259,7 @@ bool ServerAuthenticationManager::AuthenticatePlayer(void* player, int64_t uid, 
 
 		std::fstream pdataStream(pdataPath, std::ios_base::in);
 		if (pdataStream.fail()) // file doesn't exist, use placeholder
-			pdataStream = std::fstream(GetNorthstarPrefix() + "/placeholder_playerdata.pdata");
+			pdataStream = std::fstream(GetNorthstarPrefix() + "/placeholder_playerdata.pdata", std::ios_base::in);
 
 		// get file length
 		pdataStream.seekg(0, pdataStream.end);
