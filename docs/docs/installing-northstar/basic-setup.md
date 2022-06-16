@@ -17,6 +17,14 @@ If you prefer to avoid any additional installers and know what you're doing, che
 [manual-installation.md](manual-installation.md)
 {% endcontent-ref %}
 
+## Troubleshooting
+
+Should you notice any issues/warnings/errors while running Northstar, check the troubleshooting page.
+
+{% content-ref url="troubleshooting.md" %}
+[troubleshooting.md](troubleshooting.md)
+{% endcontent-ref %}
+
 ## Additional Stuff
 
 Since Northstar doesn't launch directly through Origin or Steam, any startup arguments provided in either launcher won't transfer over. You'll need to add them to the file `ns_startup_args.txt`, which should be in the same folder as you extracted the Northstar files to.
