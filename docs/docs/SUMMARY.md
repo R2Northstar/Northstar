@@ -29,7 +29,8 @@
   * [Best practices](hosting-a-server-with-northstar/dedicated-server/best-practices.md)
   * [Hosting on Linux](hosting-a-server-with-northstar/dedicated-server/hosting-on-linux.md)
 * [Troubleshooting](hosting-a-server-with-northstar/troubleshooting.md)
-* [Guides](hosting-a-server-with-northstar/hosting-guides.md)
+* [Guides](hosting-a-server-with-northstar/guides/README.md)
+  * [Docker Install](hosting-a-server-with-northstar/guides/pg9182-docker-installation-guide.md)
 
 ## Modding and Development
 
