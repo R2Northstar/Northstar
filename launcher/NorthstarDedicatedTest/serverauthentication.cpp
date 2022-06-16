@@ -245,7 +245,8 @@ bool ServerAuthenticationManager::AuthenticatePlayer(void* player, int64_t uid, 
 		// set persistent data as ready, we use 0x3 internally to mark the client as using local persistence
 		*((char*)player + 0x4a0) = (char)0x3;
 
-		if (!CVar_ns_auth_allow_insecure->GetBool()) // no auth data and insecure connections aren't allowed, so dc the client
+		// no auth data and insecure connections aren't allowed, so dc the client
+		if (!CVar_ns_auth_allow_insecure->GetBool() && strncmp(GetCurrentPlaylistName(), "solo", 5) != 0)
 			return false;
 
 		// insecure connections are allowed, try reading from disk
