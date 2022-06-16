@@ -5,7 +5,7 @@ description: Useful information when contributing to Northstar
 # Contributing code to Northstar
 
 {% hint style="info" %}
-TODO
+WIP
 {% endhint %}
 
 ## Guidelines
@@ -17,3 +17,16 @@ For a pull request to be merged, it has to be reviewed first. In order to make t
 - Please describe the changes you made. The easier it is to understand what you changed, the higher the chances of your PR being merged (in a timely manner).
 - If you made multiple independent changes, please make a new PR for each one. This prevents cases where your PR is being blocked from merging by a bug one of the changes you made.
 
+## Tips and tricks
+
+An example of a well-formatted PR description:
+
+{% embed url="https://github.com/R2Northstar/NorthstarMods/pull/392" %}
+
+To get the cropped GIFs of a screenrecording:
+
+1. Use your screenrecording tool of choice (OBS/ShadowPlay/...) to record the clip
+2. Cut it down to just the moment you want to show using [Avidemux](http://www.avidemux.org/), [VLC](https://www.videolan.org/vlc/), etc.
+3. Use a site like [https://ezgif.com/video-to-gif](https://ezgif.com/video-to-gif) for cropping and turning it into a GIF \
+   (The linked site has not been vetted, use at own risk)
+4. Upload GIF to GitHub pull request description by just pasting it at the appropriate location.
