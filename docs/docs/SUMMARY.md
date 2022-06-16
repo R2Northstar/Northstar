@@ -40,7 +40,9 @@
     * [NorthstarLauncher](modding-and-development/development/northstarlauncher.md)
     * [NorthstarMasterServer](modding-and-development/development/northstarmasterserver/README.md)
       * [Deploy](modding-and-development/development/northstarmasterserver/deploy.md)
+  * [Contributing code to Northstar](modding-and-development/development/contributing-code-to-northstar.md)
   * [Testing](modding-and-development/testing.md)
+  * [Releases](modding-and-development/development/releases.md)
 
 ## Other
 
