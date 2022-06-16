@@ -760,54 +760,53 @@ void function FilterServerList()
 		totalPlayers += tempServer.serverPlayers
 
 
-		// Branchless programming ;)
-		if ( !( filterArguments.hideEmpty && tempServer.serverPlayers == 0 ) && !( filterArguments.hideFull && tempServer.serverPlayers == tempServer.serverPlayersMax ) && !( filterArguments.hideProtected && tempServer.serverProtected ) )
-		{
-			if ( filterArguments.useSearch )
-			{
-				string sName = tempServer.serverName.tolower() + " " + Localize( GetMapDisplayName( tempServer.serverMap ) ).tolower() + " " + tempServer.serverMap.tolower() + " " + tempServer.serverGamemode.tolower() + " " + Localize( tempServer.serverGamemode ).tolower()
+		// Filters
+		if ( filterArguments.hideEmpty && tempServer.serverPlayers == 0 )
+			continue;
+		
+		if ( filterArguments.hideFull && tempServer.serverPlayers == tempServer.serverPlayersMax )
+			continue;
+		
+		if ( filterArguments.hideProtected && tempServer.serverProtected )
+			continue;
+		
+		if ( filterArguments.filterMap != "SWITCH_ANY" && filterArguments.filterMap != tempServer.serverMap )
+			continue;
+		
+		if ( filterArguments.filterGamemode != "SWITCH_ANY" && filterArguments.filterGamemode != tempServer.serverGamemode )
+			continue;
+		
+		// Search
+		if ( filterArguments.useSearch )
+		{	
+			array<string> sName
+			sName.append( tempServer.serverName.tolower() )
+			sName.append( Localize( GetMapDisplayName( tempServer.serverMap ) ).tolower() )
+			sName.append( tempServer.serverMap.tolower() )
+			sName.append( tempServer.serverGamemode.tolower() )
+			sName.append( Localize( tempServer.serverGamemode ).tolower() )
+			sName.append( NSGetServerDescription( i ).tolower() )
 
-				string sTerm = filterArguments.searchTerm.tolower()
-
-				if ( sName.find( sTerm ) != null)
-				{
-					if ( filterArguments.filterMap != "SWITCH_ANY" && filterArguments.filterMap == tempServer.serverMap )
-					{
-						CheckGamemode( tempServer )
-					}
-					else if ( filterArguments.filterMap == "SWITCH_ANY" )
-					{
-						CheckGamemode( tempServer )
-					}
-				}
-			}
-			else
+			string sTerm = filterArguments.searchTerm.tolower()
+			
+			bool found = false
+			for( int j = 0; j < sName.len(); j++ )
 			{
-				if ( filterArguments.filterMap != "SWITCH_ANY" && filterArguments.filterMap == tempServer.serverMap )
-				{
-					CheckGamemode( tempServer )
-				}
-				else if ( filterArguments.filterMap == "SWITCH_ANY" )
-				{
-					CheckGamemode( tempServer )
-				}
+				if ( sName[j].find( sTerm ) != null )
+					found = true
 			}
+			
+			if ( !found )
+				continue;
 		}
-		Hud_SetText( Hud_GetChild( file.menu, "InGamePlayerLabel" ), Localize("#INGAME_PLAYERS", string( totalPlayers ) ) )
-		Hud_SetText( Hud_GetChild( file.menu, "TotalServerLabel" ),  Localize("#TOTAL_SERVERS", string( NSGetServerCount() ) ) )
+		
+		// Server fits our requirements, add it to the list
+		file.serversArrayFiltered.append( tempServer )
 	}
-}
-
-void function CheckGamemode( serverStruct t )
-{
-	if ( filterArguments.filterGamemode != "SWITCH_ANY" && filterArguments.filterGamemode == t.serverGamemode )
-	{
-		file.serversArrayFiltered.append( t )
-	}
-	else if ( filterArguments.filterGamemode == "SWITCH_ANY" )
-	{
-		file.serversArrayFiltered.append( t )
-	}
+	
+	// Update player and server count
+	Hud_SetText( Hud_GetChild( file.menu, "InGamePlayerLabel" ), Localize("#INGAME_PLAYERS", string( totalPlayers ) ) )
+	Hud_SetText( Hud_GetChild( file.menu, "TotalServerLabel" ),  Localize("#TOTAL_SERVERS", string( NSGetServerCount() ) ) )
 }
 
 
