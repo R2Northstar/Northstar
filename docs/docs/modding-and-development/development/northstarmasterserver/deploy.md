@@ -1,4 +1,4 @@
-# Deploying Master Server
+# Deploy
 
 ## Development
 
@@ -7,10 +7,10 @@ A Development Master Server uses http requests, it should be used for developmen
 ### Installation steps
 
 1. Clone [NorthstarMasterServer](https://github.com/R2Northstar/NorthstarMasterServer).
-1. Copy the default [dev.env](https://github.com/R2Northstar/NorthstarMasterServer/blob/main/dev.env) to `.env` replace the ip with `127.0.0.1`.
-1. Run `npm install` && `npm run watch`.
+2. Copy the default [dev.env](https://github.com/R2Northstar/NorthstarMasterServer/blob/main/dev.env) to `.env` replace the ip with `127.0.0.1`.
+3. Run `npm install` && `npm run watch`.
 
-Your master server is now running, to connect to it you need to change some configuration files. 
+Your master server is now running, to connect to it you need to change some configuration files.
 
 Northstar default masterserver is https://northstar.tf, to point to a new location you need to modify this URL in the `autoexec_ns_server.cfg` and `autoexec_ns_client.cfg` config files.
 

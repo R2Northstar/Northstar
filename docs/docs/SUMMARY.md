@@ -37,10 +37,10 @@
 * [Modding](modding/README.md)
 * [Development](modding-and-development/development/README.md)
   * [Repositories](modding-and-development/development/repositories/README.md)
-    * [NorthstarLauncher](modding-and-development/development/repositories/northstarlauncher.md)
-    * [NorthstarMasterServer](modding-and-development/development/repositories/northstarmasterserver/README.md)
-      * [Deploy](modding-and-development/development/repositories/northstarmasterserver/deploy.md)
-* [Testing](modding-and-development/testing.md)
+    * [NorthstarLauncher](modding-and-development/development/northstarlauncher.md)
+    * [NorthstarMasterServer](modding-and-development/development/northstarmasterserver/README.md)
+      * [Deploy](modding-and-development/development/northstarmasterserver/deploy.md)
+  * [Testing](modding-and-development/development/testing.md)
 
 ## Other
 
