@@ -6,6 +6,7 @@
 ## Installing Northstar
 
 * [Basic Setup](installing-northstar/basic-setup.md)
+* [Manual installation](installing-northstar/manual-installation.md)
 * [Troubleshooting](installing-northstar/troubleshooting.md)
 * [Northstar Installers](installing-northstar/northstar-installers.md)
 
