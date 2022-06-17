@@ -29,7 +29,7 @@
 	"Scripts": [
 		{
 			"Path": "sh_northstar_custom_precache.gnut",
-			"RunOn": "( CLIENT || SERVER )",
+			"RunOn": "( CLIENT || SERVER ) && MP",
 			"ClientCallback": {
 				"After": "NorthstarCustomPrecache"
 			},
@@ -39,7 +39,7 @@
 		},
 		{
 			"Path": "weapons/mp_weapon_peacekraber.nut",
-			"RunOn": "( CLIENT || SERVER )"
+			"RunOn": "( CLIENT || SERVER ) && MP"
 		},
 		{
 			"Path": "gamemodes/sh_gamemode_chamber.nut",
