@@ -835,7 +835,7 @@ void function TryBatteryStyleRodeo( entity rodeoPilot, entity rodeoTitan, entity
 	#endif
 
 	bool classicRodeo = MP && GetCurrentPlaylistVarInt( "classic_rodeo", 0 ) == 1
-	
+
 	if ( ShouldThrowGrenadeInHatch( rodeoPilot ) )
 	{
 		if ( !classicRodeo )
@@ -845,12 +845,12 @@ void function TryBatteryStyleRodeo( entity rodeoPilot, entity rodeoTitan, entity
 	{
 		waitthread PlayerRemovesBatteryPack( rodeoPilot, rodeoTitan, titanSoul, rodeoPackage ) //This ends rodeo at the end of the sequence
 	}
-	
+
 	#if MP
 	if ( classicRodeo )
-	{	
+	{
 		RodeoBatteryRemoval_ShowBattery( rodeoPilot ) // hide battery, will be shown at the end of a battery removal rodeo
-	
+
 		//This is default R1 style rodeo, with the panel ripped and ready to be shot at
 		FirstPersonSequenceStruct sequence
 		sequence.attachment = "hijack"
@@ -861,19 +861,19 @@ void function TryBatteryStyleRodeo( entity rodeoPilot, entity rodeoTitan, entity
 
 		RodeoPilotPullsOutWeapon( rodeoPilot, rodeoTitan, rodeoTitanType )
 		entity weakpointHitbox = CreateClassicRodeoWeakpoint( rodeoPilot, rodeoTitan )
-		
+
 		OnThreadEnd( function() : ( weakpointHitbox )
 		{
 			if ( IsValid( weakpointHitbox ) )
 				weakpointHitbox.Destroy()
 		})
-		
-		while ( true ) 
+
+		while ( true )
 		{
 			// the point of no return stuff breaks jumping if you pulled a battery, so do this manually, sucks but whatever
 			if ( rodeoPilot.IsInputCommandHeld( IN_JUMP ) )
 				ThrowRiderOff( rodeoPilot, rodeoTitan, CalculateDirectionToThrowOffBatteryThief( rodeoPilot, rodeoTitan ) ) //This signals RodeoOver
-				
+
 			WaitFrame()
 		}
 	}
@@ -1691,17 +1691,17 @@ void function Rodeo_DropAllBatteries( entity player )
 	if ( !PlayerHasBattery( player ) )
 		return
 
-	while ( GetPlayerBatteryCount( player ) > 1 )
+	float batteryCount = float( GetPlayerBatteryCount( player ) - 1 ) // Floats instead of ints since we need decimal values for the math
+	for ( float i = 1.0; GetPlayerBatteryCount( player ) > 1; i += 1.0 )
 	{
 		entity newBattery = Rodeo_CreateBatteryPack()
 		newBattery.s.touchEnabledTime = Time() + 0.3
-		//look into using the players bounds for placement, instead of hardcoded numbers
-		array<vector> offsets = [<0,0,0>, <30,0,0>, <0,30,0>, <0,-30,0> ]
-		newBattery.SetOrigin( player.GetWorldSpaceCenter() + offsets[ GetPlayerBatteryCount( player ) ] ) //Temp fix, should change the origin
+		vector direction = AnglesToForward( <0, i/batteryCount * 360.0, 0> )
+		newBattery.SetOrigin( player.GetWorldSpaceCenter() + direction * 30 )
 		newBattery.SetAngles( <0, 0, 0 > )
 		vector baseVelocity = player.GetVelocity()
 		baseVelocity.z = 0
-		newBattery.SetVelocity( baseVelocity + AnglesToForward( <0, RandomInt( 360.0 ), 0 > ) * 100 + <0,0,1> )
+		newBattery.SetVelocity( baseVelocity + direction * 100 + <0, 0, 1> )
 		Rodeo_TakeBatteryAwayFromPilot( player )
 	}
 
