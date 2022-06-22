@@ -83,10 +83,12 @@ void function SpawnMarvinsForRound()
 		entity marvin = CreateMarvin( TEAM_UNASSIGNED, spawner.GetOrigin(), spawner.GetAngles() )
 		marvin.kv.health = 1
 		marvin.kv.max_health = 1
-		marvin.kv.spawnflags = 516
-		marvin.kv.contents = (int(marvin.kv.contents) | CONTENTS_NOGRAPPLE)
+		//marvin.kv.spawnflags = 516
+		marvin.kv.contents = ( int( marvin.kv.contents ) | CONTENTS_NOGRAPPLE )
 		DispatchSpawn( marvin )
 		HideName( marvin )
+
+		thread MarvinJobThink( marvin )
 	}
 }
 

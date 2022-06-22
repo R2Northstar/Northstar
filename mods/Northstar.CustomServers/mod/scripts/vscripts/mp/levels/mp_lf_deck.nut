@@ -14,9 +14,11 @@ void function CodeCallback_MapInit()
 
 void function DeckSpawnWorkerDrone( entity spawnpoint )
 {
-
-	entity drone = CreateWorkerDrone( TEAM_UNASSIGNED, spawnpoint.GetOrigin(), spawnpoint.GetAngles() )
+	entity drone = CreateWorkerDrone( TEAM_UNASSIGNED, spawnpoint.GetOrigin() - < 0, 0, 150 >, spawnpoint.GetAngles() )
 	DispatchSpawn( drone )
+	
+	// this seems weird for drones
+	thread AssaultMoveTarget( drone, spawnpoint )
 }
 
 void function DeckSpawnMarvinForIdleNode( entity node )
@@ -24,7 +26,5 @@ void function DeckSpawnMarvinForIdleNode( entity node )
 	entity marvin = CreateMarvin( TEAM_UNASSIGNED, node.GetOrigin(), node.GetAngles() )
 	DispatchSpawn( marvin )
 	
-	// doing this because no ai rn
-	if ( GetAINScriptVersion() == -1 )
-		thread PlayAnim( marvin, node.kv.leveled_animation )
+	thread AssaultMoveTarget( marvin, node )
 }
