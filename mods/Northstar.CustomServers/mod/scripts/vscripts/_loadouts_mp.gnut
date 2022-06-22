@@ -3,11 +3,24 @@ global function SvLoadoutsMP_Init
 
 global function SetLoadoutGracePeriodEnabled
 global function SetWeaponDropsEnabled
+
+global function AddCallback_OnTryGetTitanLoadout
 global function GetTitanLoadoutForPlayer
+
+global struct sTryGetTitanLoadoutCallbackReturn
+{
+	bool wasChanged = false
+	bool runMoreCallbacks = true
+	TitanLoadoutDef& loadout
+}
+
+typedef TryGetTitanLoadoutCallbackType sTryGetTitanLoadoutCallbackReturn functionref( entity player, TitanLoadoutDef loadout, bool wasChanged )
 
 struct {
 	bool loadoutGracePeriodEnabled = true
 	bool weaponDropsEnabled = true
+	array< TryGetTitanLoadoutCallbackType > onTryGetTitanLoadoutCallbacks
+	
 	array<entity> dirtyLoadouts
 } file
 
@@ -65,16 +78,40 @@ void function DelayDestroyDroppedWeapon( entity weapon )
 		weapon.Destroy()
 }
 
+void function AddCallback_OnTryGetTitanLoadout( TryGetTitanLoadoutCallbackType callback )
+{
+	file.onTryGetTitanLoadoutCallbacks.append( callback )
+}
+
 TitanLoadoutDef function GetTitanLoadoutForPlayer( entity player )
 {
 	SetActiveTitanLoadout( player ) // set right loadout
-	
+	TitanLoadoutDef loadout = GetActiveTitanLoadout( player )
+
 	// fix bug with titan weapons having null mods
 	// null mods aren't valid and crash if we try to give them to npc
-	TitanLoadoutDef def = GetActiveTitanLoadout( player )
-	def.primaryMods.removebyvalue( "null" )
+	loadout.primaryMods.removebyvalue( "null" )
+
+	// allow scripts to modify loadouts
+	bool wasChanged = false
+	foreach ( TryGetTitanLoadoutCallbackType callback in file.onTryGetTitanLoadoutCallbacks )
+	{
+		sTryGetTitanLoadoutCallbackReturn callbackRet = callback( player, loadout, wasChanged )
+		
+		// whether the callback has changed the player's titan loadout
+		wasChanged = wasChanged || callbackRet.wasChanged 
+		if ( wasChanged )
+			loadout = callbackRet.loadout
+		
+		// whether the callback has indicated that we should run no more callbacks ( e.g. if we're forcing a given loadout to be chosen, we shouldn't run any more )
+		if ( !callbackRet.runMoreCallbacks )
+			break
+	}
 	
-	return def
+	// do this again just in case
+	loadout.primaryMods.removebyvalue( "null" )
+	
+	return loadout
 }
 
 void function LoadoutsMPInitPlayer( entity player )
