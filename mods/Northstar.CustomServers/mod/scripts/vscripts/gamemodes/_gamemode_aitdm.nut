@@ -267,7 +267,7 @@ void function Spawner_Threaded( int team )
 				if ( RandomInt( points.len() ) )
 				{
 					entity node = points[ GetSpawnPointIndex( points, team ) ]
-					waitthread AiGameModes_SpawnDropShip( node.GetOrigin(), node.GetAngles(), team, 4, SquadHandler )
+					waitthread Aitdm_SpawnDropShip( node, team )
 					continue
 				}
 			}
@@ -279,6 +279,12 @@ void function Spawner_Threaded( int team )
 		
 		WaitFrame()
 	}
+}
+
+void function Aitdm_SpawnDropShip( entity node, int team )
+{
+	thread AiGameModes_SpawnDropShip( node.GetOrigin(), node.GetAngles(), team, 4, SquadHandler )
+	wait 20
 }
 
 // Based on points tries to balance match
