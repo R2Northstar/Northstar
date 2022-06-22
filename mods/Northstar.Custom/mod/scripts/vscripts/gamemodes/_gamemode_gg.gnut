@@ -13,6 +13,7 @@ void function GamemodeGG_Init()
 
 	AddCallback_OnPlayerRespawned( OnPlayerRespawned )
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
+	AddCallback_OnClientDisconnected( OnPlayerDisconnected )
 
 	AddCallback_GameStateEnter( eGameState.WinnerDetermined, OnWinnerDetermined )
 
@@ -25,6 +26,12 @@ void function GamemodeGG_Init()
 			SetPlaylistVarOverride( "scorelimit", GetGunGameWeapons().len().tostring() )
 	}
 	catch ( ex ) {}
+}
+
+void function OnPlayerDisconnected(entity player)
+{
+	// resetting a player's score when they leave prevents a new player to join the leaver's team and having the previous player's points
+	AddTeamScore( player.GetTeam(), -GameRules_GetTeamScore( player.GetTeam() ) )
 }
 
 void function OnPlayerRespawned( entity player )
