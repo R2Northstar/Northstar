@@ -43,9 +43,35 @@ void PakLoadManager::LoadPakAsync(const char* path, bool bMarkForUnload)
 void PakLoadManager::UnloadPaks()
 {
 	for (int pakHandle : m_pakHandlesToUnload)
+	{
 		g_pakLoadApi->UnloadPak(pakHandle, nullptr);
+		// remove pak from loadedPaks and loadedPaksInv
+		RemoveLoadedPak(pakHandle);
+	}
 
 	m_pakHandlesToUnload.clear();
+}
+
+bool PakLoadManager::IsPakLoaded(int32_t pakHandle)
+{
+	return loadedPaks.find(pakHandle) != loadedPaks.end();
+}
+
+bool PakLoadManager::IsPakLoaded(size_t hash)
+{
+	return loadedPaksInv.find(hash) != loadedPaksInv.end();
+}
+
+void PakLoadManager::AddLoadedPak(int32_t pakHandle, size_t hash)
+{
+	loadedPaks[pakHandle] = hash;
+	loadedPaksInv[hash] = pakHandle;
+}
+
+void PakLoadManager::RemoveLoadedPak(int32_t pakHandle)
+{
+	loadedPaksInv.erase(loadedPaks[pakHandle]);
+	loadedPaks.erase(pakHandle);
 }
 
 void HandlePakAliases(char** map)
@@ -152,6 +178,13 @@ void* LoadPakSyncHook(char* path, void* unknownSingleton, int flags)
 LoadPakAsyncType LoadPakAsyncOriginal;
 int LoadPakAsyncHook(char* path, void* unknownSingleton, int flags, void* callback0, void* callback1)
 {
+	size_t hash = STR_HASH(path);
+	// if the hash is already in the map, dont load the pak, it has already been loaded
+	if (g_PakLoadManager->IsPakLoaded(hash))
+	{
+		return -1;
+	}
+
 	HandlePakAliases(&path);
 
 	bool bNeedToFreePakName = false;
@@ -176,6 +209,9 @@ int LoadPakAsyncHook(char* path, void* unknownSingleton, int flags, void* callba
 	int ret = LoadPakAsyncOriginal(path, unknownSingleton, flags, callback0, callback1);
 	spdlog::info("LoadPakAsync {} {}", path, ret);
 
+	// add the hash to the map
+	g_PakLoadManager->AddLoadedPak(ret, hash);
+
 	if (bNeedToFreePakName)
 		delete[] path;
 
@@ -185,6 +221,12 @@ int LoadPakAsyncHook(char* path, void* unknownSingleton, int flags, void* callba
 UnloadPakType UnloadPakOriginal;
 void* UnloadPakHook(int pakHandle, void* callback)
 {
+	if (g_PakLoadManager->IsPakLoaded(pakHandle))
+	{
+		// remove the entry
+		g_PakLoadManager->RemoveLoadedPak(pakHandle);
+	}
+
 	static bool bShouldUnloadPaks = true;
 	if (bShouldUnloadPaks)
 	{
