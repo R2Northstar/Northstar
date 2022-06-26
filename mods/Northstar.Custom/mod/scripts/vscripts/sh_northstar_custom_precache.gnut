@@ -4,8 +4,7 @@ global function NorthstarCustomPrecache
 void function NorthstarCustomPrecache()
 {
 	PrecacheWeapon( "mp_weapon_peacekraber" )
-	// Triple Threat disabled due to compat issues, see #331
-	// PrecacheWeapon( "mp_titanweapon_triplethreat" )
+	PrecacheWeapon( "mp_titanweapon_triplethreat" )
 	PrecacheWeapon( "melee_pilot_kunai" )
 
 	// create kunai damage source so game won't crash when we hit smth with it
