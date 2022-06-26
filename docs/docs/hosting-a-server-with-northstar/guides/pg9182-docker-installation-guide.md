@@ -2,12 +2,12 @@
 description: >-
   pg9182 has provided a complete docker image to run on Linux servers. This
   provides some server management tools and offers better performance. No
-  physical GPU is needed. His github page can be found [
+  physical GPU is needed.
 ---
 
 # Docker Install
 
-The aim of this guide is to show the steps to build a docker-compose container that starts on boot and to show basic configuration
+The aim of this guide is to show the steps to build a docker-compose container that starts on boot and to show basic configuration. Docker image can be found in this GitHub repo: [https://github.com/pg9182/northstar-dedicated](https://github.com/pg9182/northstar-dedicated)
 
 ### Prerequisites
 
