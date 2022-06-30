@@ -35,6 +35,8 @@ Now just launch the game through Lutris and you should be greeted with a Northst
 
 ## SteamDeck
 
+{% embed url="https://www.youtube.com/watch?v=GxQTsOaY0_8" %}
+
 {% hint style="info" %}
 This guide is really basic and needs fleshing out to make it more accessible. It also assumes you own Titanfall2 on Steam and run it from there.
 {% endhint %}
