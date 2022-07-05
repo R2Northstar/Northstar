@@ -285,9 +285,15 @@ bool InitialiseNorthstar()
 	// mod manager after everything else
 	AddDllLoadCallback("engine.dll", InitialiseModManager);
 
-	// activate exploit fixes
-	AddDllLoadCallback("server.dll", ExploitFixes::LoadCallback);
-	AddDllLoadCallback("engine.dll", ExploitFixes::LoadCallbackEngine);
+	{
+		// activate multi-module exploitfixes callbacks
+		constexpr const char* EXPLOITFIXES_MULTICALLBACK_MODS[] = {"client.dll", "engine.dll", "server.dll"};
+		for (const char* mod : EXPLOITFIXES_MULTICALLBACK_MODS)
+			AddDllLoadCallback(mod, ExploitFixes::LoadCallback_MultiModule);
+
+		// activate exploit fixes later
+		AddDllLoadCallback("server.dll", ExploitFixes::LoadCallback_Full);
+	}
 
 	// run callbacks for any libraries that are already loaded by now
 	CallAllPendingDLLLoadCallbacks();

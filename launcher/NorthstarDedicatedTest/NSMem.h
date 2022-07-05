@@ -182,25 +182,7 @@ struct KHook
 		if (!targetFuncAddr)
 			return false;
 
-		return MH_CreateHook(targetFuncAddr, hookFunc, original) == MH_OK;
-	}
-
-	// Returns true if succeeded
-	static bool InitAllHooks()
-	{
-		for (KHook* hook : _allHooks)
-		{
-			if (hook->Setup())
-			{
-				spdlog::info("KHook hooked at {}", hook->targetFuncAddr);
-			}
-			else
-			{
-				return false;
-			}
-		}
-
-		return MH_EnableHook(MH_ALL_HOOKS) == MH_OK;
+		return (MH_CreateHook(targetFuncAddr, hookFunc, original) == MH_OK) && (MH_EnableHook(targetFuncAddr) == MH_OK);
 	}
 };
 #define KHOOK(name, funcPatternInfo, returnType, convention, args)                                                                         \
