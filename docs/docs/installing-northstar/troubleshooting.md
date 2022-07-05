@@ -183,3 +183,9 @@ If message contains: `AUDCLNT_E_DEVICE_IN_USE`
 4. Restart your computer.
 
 This issue could also be caused if you use some sort of audio wrapper to control volume and stuff like Voicemeter Banana. The above fix was tested with Voicemeter Banana.
+
+## Windows 11 AutoHDR disabled while using Northstar
+
+You need to launch Northstar via Titanfall2 with `-northstar` passed as argument. To do this, go go to Steam/Origin (depending on where you bought the game), navigate to the settings where you can set launch arguments for Titanfall2. Add `-northstar` so that it launches Northstar instead. Launch the game via Steam/Origin.
+
+Relevant issue on GitHub: [https://github.com/R2Northstar/Northstar/issues/284](https://github.com/R2Northstar/Northstar/issues/284)
