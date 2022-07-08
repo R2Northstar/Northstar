@@ -108,6 +108,23 @@ void LoadPreloadPaks()
 	}
 }
 
+void LoadPostloadPaks(char** map)
+{
+	// note, loading from ./ is necessary otherwise paks will load from gamedir/r2/paks
+	for (Mod& mod : g_ModManager->m_loadedMods)
+	{
+		if (!mod.Enabled)
+			continue;
+
+		// need to get a relative path of mod to mod folder
+		fs::path modPakPath("./" / mod.ModDirectory / "paks");
+
+		for (ModRpakEntry& pak : mod.Rpaks)
+			if (pak.m_sLoadAfterPak == *map)
+				g_PakLoadManager->LoadPakAsync((modPakPath / pak.m_sPakName).string().c_str(), false);
+	}
+}
+
 void LoadCustomMapPaks(char** pakName, bool* bNeedToFreePakName)
 {
 	// whether the vanilla game has this rpak
@@ -211,6 +228,8 @@ int LoadPakAsyncHook(char* path, void* unknownSingleton, int flags, void* callba
 
 	// add the hash to the map
 	g_PakLoadManager->AddLoadedPak(ret, hash);
+
+	LoadPostloadPaks(&path);
 
 	if (bNeedToFreePakName)
 		delete[] path;
