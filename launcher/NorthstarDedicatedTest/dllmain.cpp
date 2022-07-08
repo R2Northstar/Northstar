@@ -45,6 +45,7 @@
 #include <string.h>
 #include "version.h"
 #include "pch.h"
+#include "scriptutility.h"
 
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
@@ -255,6 +256,7 @@ bool InitialiseNorthstar()
 		AddDllLoadCallbackForClient("client.dll", InitialiseClientVideoOverrides);
 		AddDllLoadCallbackForClient("engine.dll", InitialiseEngineClientRUIHooks);
 		AddDllLoadCallbackForClient("engine.dll", InitialiseDebugOverlay);
+		AddDllLoadCallbackForClient("client.dll", InitialiseClientSquirrelUtilityFunctions);
 		// audio hooks
 		AddDllLoadCallbackForClient("client.dll", InitialiseMilesAudioHooks);
 	}
@@ -267,6 +269,7 @@ bool InitialiseNorthstar()
 	AddDllLoadCallback("server.dll", InitialiseMiscServerScriptCommand);
 	AddDllLoadCallback("server.dll", InitialiseMiscServerFixes);
 	AddDllLoadCallback("server.dll", InitialiseBuildAINFileHooks);
+	AddDllLoadCallback("server.dll", InitialiseServerSquirrelUtilityFunctions);
 
 	AddDllLoadCallback("engine.dll", InitialisePlaylistHooks);
 
