@@ -1,6 +1,7 @@
 # Northstar
 
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/R2Northstar/Northstar)](https://github.com/R2Northstar/Northstar/releases)
+![GitHub release downloads (latest by date)](https://img.shields.io/github/downloads/R2Northstar/Northstar/latest/total)
 [![Join the chat at Discord](https://img.shields.io/badge/chat-on%20discord-7289DA.svg)](https://northstar.tf/discord)
 [![Read the wiki](https://img.shields.io/badge/wiki-GitBook-important)](https://r2northstar.gitbook.io)
 
