@@ -186,6 +186,26 @@ Mod::Mod(fs::path modDir, char* jsonBuf)
 		}
 	}
 
+	if (modJson.HasMember("Dependencies") && modJson["Dependencies"].IsObject())
+	{
+		for (auto v = modJson["Dependencies"].MemberBegin(); v != modJson["Dependencies"].MemberEnd(); v++)
+		{
+			if (!v->name.IsString() || !v->value.IsString())
+				continue;
+
+			spdlog::info("Constant {} defined by {} for mod {}", v->name.GetString(), Name, v->value.GetString());
+			if (DependencyConstants.find(v->name.GetString()) != DependencyConstants.end() &&
+				v->value.GetString() != DependencyConstants[v->name.GetString()])
+			{
+				spdlog::error("A dependency constant with the same name already exists for another mod. Change the constant name.");
+				return;
+			}
+
+			if (DependencyConstants.find(v->name.GetString()) == DependencyConstants.end())
+				DependencyConstants.emplace(v->name.GetString(), v->value.GetString());
+		}
+	}
+
 	wasReadSuccessfully = true;
 }
 
@@ -211,6 +231,8 @@ void ModManager::LoadMods()
 	// ensure dirs exist
 	fs::remove_all(GetCompiledAssetsPath());
 	fs::create_directories(GetModFolderPath());
+
+	DependencyConstants.clear();
 
 	// read enabled mods cfg
 	std::ifstream enabledModsStream(GetNorthstarPrefix() + "/enabledmods.json");
@@ -252,6 +274,18 @@ void ModManager::LoadMods()
 		jsonStream.close();
 
 		Mod mod(modDir, (char*)jsonStringStream.str().c_str());
+
+		for (auto& pair : mod.DependencyConstants)
+		{
+			if (DependencyConstants.find(pair.first) != DependencyConstants.end() && DependencyConstants[pair.first] != pair.second)
+			{
+				spdlog::error("Constant {} in mod {} already exists in another mod.", pair.first, mod.Name);
+				mod.wasReadSuccessfully = false;
+				break;
+			}
+			if (DependencyConstants.find(pair.first) == DependencyConstants.end())
+				DependencyConstants.emplace(pair);
+		}
 
 		if (m_hasEnabledModsCfg && m_enabledModsCfg.HasMember(mod.Name.c_str()))
 			mod.Enabled = m_enabledModsCfg[mod.Name.c_str()].IsTrue();

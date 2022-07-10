@@ -100,6 +100,9 @@ class Mod
 	std::vector<ModRpakEntry> Rpaks;
 	std::unordered_map<std::string, std::string>
 		RpakAliases; // paks we alias to other rpaks, e.g. to load sp_crashsite paks on the map mp_crashsite
+	// iterated over to create squirrel VM constants depending if a mod exists or not.
+	// this only exists because we cannot access g_ModManager whilst mods are being loaded for the first time for some reason.
+	std::unordered_map<std::string, std::string> DependencyConstants;
 
 	// other stuff
 
@@ -130,6 +133,9 @@ class ModManager
   public:
 	std::vector<Mod> m_loadedMods;
 	std::unordered_map<std::string, ModOverrideFile> m_modFiles;
+	// iterated over to create squirrel VM constants depending if a mod exists or not.
+	// here because constants are global anyways.
+	std::unordered_map<std::string, std::string> DependencyConstants;
 
   public:
 	ModManager();
