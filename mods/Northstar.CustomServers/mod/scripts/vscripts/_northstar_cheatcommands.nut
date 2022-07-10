@@ -54,7 +54,7 @@ bool function ClientCommandCallbackToggleDemigod( entity player, array<string> a
 
 bool function ClientCommandCallbackKill( entity player, array<string> args )
 {
-	if ( IsAlive( player ) )
+	if ( IsAlive( player ) && ( GetConVarBool( "sv_cheats" ) || GetConVarBool( "ns_allow_kill_commands" ) ) )
 		player.Die()
 	
 	return true
@@ -62,7 +62,7 @@ bool function ClientCommandCallbackKill( entity player, array<string> args )
 
 bool function ClientCommandCallbackExplode( entity player, array<string> args )
 {
-	if ( IsAlive( player ) )
+	if ( IsAlive( player ) && ( GetConVarBool( "sv_cheats" ) || GetConVarBool( "ns_allow_kill_commands" ) ) )
 		player.Die( null, null, { scriptType = DF_GIB } )
 	
 	return true

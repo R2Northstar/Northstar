@@ -49,6 +49,10 @@
 		{
 			"Name": "ns_should_log_unknown_clientcommands",
 			"DefaultValue": "1"
+		},
+		{
+			"Name": "ns_allow_kill_commands",
+			"DefaultValue": "0"
 		}
 	],
 	"Scripts": [
