@@ -11,6 +11,13 @@ It is recommended to upload the source code of your mod to a public repository l
 
 If the changes your mod makes can be represented in screenshots, gameplay recordings, or GIFs, consider adding those to your README. This way anyone coming across your mod can tell which aspects of the game it changes even before installing it.
 
+To do so, simply upload the image or gif to a host of your choice (Imgur, GitHub, and even Discord all work). To display the image directly on your page in Thunderstore, add the following line to your README:
+
+.. code:: markdown
+
+    ![alt text, this text shows up when image cannot be loaded](https://example.com/image/to/link/to.gif)
+
+
 Thunderstore
 ------------
 
