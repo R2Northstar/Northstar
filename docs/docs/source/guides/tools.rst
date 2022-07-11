@@ -7,6 +7,7 @@ Source engine
 Titanfall
 ^^^^^^^^^
 * `Titanfall VPK Tool <http://cra0kalo.com/public/Titanfall\_VPKTool3.4\_Portable.zip>`_
+* `Harmony VPK Tool <https://github.com/harmonytf/HarmonyVPKTool/>`_
 * `Legion <https://wiki.modme.co/wiki/apps/Legion.html>`_
 
 
