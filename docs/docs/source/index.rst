@@ -7,6 +7,8 @@ Welcome to the Northstar Modding Documentation!
 
    This project is under active development. Please PR everything you can!
 
+   Check :doc:`/guides/contributing` section for getting started with `readthedocs <https://readthedocs.org/>`_ and `reStructuredText <https://en.wikipedia.org/wiki/ReStructuredText>`_.
+
 Contents
 --------
 
@@ -39,6 +41,7 @@ If you know anything about any function, object or concept please dont hesitate 
    /guides/soundmodding
    /guides/VTFModding
    /guides/publishing
+   /guides/contributing
 
 .. toctree::
    :maxdepth: 3
