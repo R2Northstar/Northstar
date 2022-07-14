@@ -39,7 +39,7 @@ Install the Python packages necessary to build the docs
 
 .. code:: bash
 
-    pip install sphinx furo
+    pip install -r docs/requirements.txt
 
 Finally to actually build the docs, go to the ``docs/`` directory and run `make html`, i.e.
 
