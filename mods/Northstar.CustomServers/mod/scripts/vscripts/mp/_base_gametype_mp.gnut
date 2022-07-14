@@ -123,6 +123,8 @@ void function CodeCallback_OnClientConnectionStarted( entity player )
 // playerconnected
 void function CodeCallback_OnClientConnectionCompleted( entity player )
 {
+	InitPersistentData( player )
+
 	if ( IsLobby() )
 	{
 		Lobby_OnClientConnectionCompleted( player )
