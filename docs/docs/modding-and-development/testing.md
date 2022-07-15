@@ -61,3 +61,8 @@ Use `map <map name>` to quickly switch map.\
 Example: `map mp_glitch`
 
 List of maps can be found [here](../hosting-a-server-with-northstar/dedicated-server/README.md#maps)
+
+**Speed-up/slow-down game**
+
+Use `host_timescale <factor>` to speed-up or slow-down the game.\
+For example `host_timescale 10` speeds up game by factor of `10`. Set to `1` to go back to default.
