@@ -54,3 +54,10 @@ After testing, make sure to mention the steps tested in your review.
 **Joining same server multiple times with same accounts**
 
 By default duplicate accounts are blocked by server. Use `-allowdupeaccounts` when starting server to allow duplicate accounts. From there you can launch multiple clients on the same account and connect them to the server.
+
+**Quickly switch map**
+
+Use `map <map name>` to quickly switch map.\
+Example: `map mp_glitch`
+
+List of maps can be found [here](../hosting-a-server-with-northstar/dedicated-server/README.md#maps)
