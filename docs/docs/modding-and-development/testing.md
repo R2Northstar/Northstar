@@ -50,3 +50,7 @@ After testing, make sure to mention the steps tested in your review.
 [info] "net_fakelag_clientOnly" = "1" ( CHEAT ) - Fakelag won't affect the server, only clients
 [info] "net_fakelagjitter" = "0" - Jitter net_fakelag packet time
 ```
+
+**Joining same server multiple times with same accounts**
+
+By default duplicate accounts are blocked by server. Use `-allowdupeaccounts` when starting server to allow duplicate accounts. From there you can launch multiple clients on the same account and connect them to the server.
