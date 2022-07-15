@@ -28,3 +28,12 @@ This section applies to you if you're someone who's able to merge PRs in any of 
 When reviewing pull requests on GitHub, make sure to checkout the changes made by a PR locally and test it there. In particular, test the parts of the code that are touched by a PR.
 
 After testing, make sure to mention the steps tested in your review.
+
+## Tips and toolkits
+
+(might require `sv_cheats 1`)
+
+**Spawn titan/grunt:**
+
+- For titan: `ent_create npc_titan; ent_fire !picker setteam 2`
+- For grunt: `ent_create npc_soldier; ent_fire !picker setteam 2`
