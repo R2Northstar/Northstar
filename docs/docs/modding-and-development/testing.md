@@ -37,3 +37,16 @@ After testing, make sure to mention the steps tested in your review.
 
 - For titan: `ent_create npc_titan; ent_fire !picker setteam 2`
 - For grunt: `ent_create npc_soldier; ent_fire !picker setteam 2`
+
+
+**Add fake lag for network testing**
+
+`net_fakelag 200` -> 200ms network lag
+
+```
+] find net_fake
+[info] "net_fakelag" = "0" ( CHEAT ) - Lag all incoming network data (including loopback) by this many milliseconds.
+[info] "net_fakeloss" = "0" - Simulate packet loss as a percentage (negative means drop 1/n packets)
+[info] "net_fakelag_clientOnly" = "1" ( CHEAT ) - Fakelag won't affect the server, only clients
+[info] "net_fakelagjitter" = "0" - Jitter net_fakelag packet time
+```
