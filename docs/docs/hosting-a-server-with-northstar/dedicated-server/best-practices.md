@@ -26,6 +26,12 @@ The current minimum requirements are as follows:
 
 **Note:** It is recommended to surpass the listed requirements. Currently the number of available servers covers the daily playerbase more than enough. If you're planning to host public servers for the community it is therefore recommended to either fill a niche (like a gamemode that is so popular that all existing servers are full) or provide a better service than existing hosts (less lag, more stable, etc.).
 
+## Monitoring
+
+You can set the Convar `ns_should_log_all_clientcommands` to `1` to log all client commands. This includes both benign things like the command a client sends to server to respawn after death but also nefarious, like a malicious client calling `emit`, a command that before being patched out allowed clients to spam voice lines to other clients.
+
+Due to the increased verbosity `ns_should_log_all_clientcommands` is set to `0` (disabled) by default but should be enabled in cases where you want to investigate suspicious activity on your server.
+
 ## Optimization Commands (Optional)
 
 | Command                          | Description                                                                                                                    |
