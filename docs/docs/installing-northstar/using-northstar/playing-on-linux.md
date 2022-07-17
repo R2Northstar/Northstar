@@ -4,6 +4,23 @@ Northstar is officially supported on Linux, it uses compatibility layers like Pr
 
 ## Installing
 
+### Steam (Proton)
+
+{% hint style="info" %}
+This guide is new, based on recent information, as such any feedback on success using it on either the Northstar Discord or the Wiki GitHub repo is appreciated.
+{% endhint %}
+
+1. Make sure you ran the vanilla version of Titanfall2 at least once on Linux!
+2. Install the latest version of Northstar using [Viper ](../northstar-installers.md#0negal-viper)or do it manually
+   1. For manual install download the latest version of Northstar from the [releases](https://github.com/R2Northstar/Northstar/releases) page
+   2. Then extract all contents of the file to your Titanfall 2 folder ( Right click _Titanfall 2_ > Open _Properties_ > Click _Local Files_ > Click _Browse_ )
+3. In your Titanfall2 folder create a file called `run_northstar.txt` and write a single `1` to it, i.e. `echo 1 > run_northstar.txt`&#x20;
+4. In Steam, set the launch arguments for Titanfall2 to `WINEDLLOVERRIDES="wsock32=n,b" %command%`
+5. Install `Proton-7.3-GE-1` (not `GE-Proton7-3`) and select it as the desired Proton version for Titanfall2
+6. Launch Titanfall2, it should now launch Northstar
+
+Note that removing either the launch arguments set above or the `run_northstar.txt`file will cause Steam to launch the vanilla game again.
+
 ### Steam (Proton) (old guide)
 
 1. Download the latest version of Northstar from the [releases](https://github.com/R2Northstar/Northstar/releases) page
