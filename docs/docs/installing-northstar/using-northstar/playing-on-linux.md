@@ -11,7 +11,7 @@ This guide is new, based on recent information, as such any feedback on success 
 {% endhint %}
 
 1. Make sure you ran the vanilla version of Titanfall2 at least once on Linux!
-2. Install the latest version of Northstar using [Viper ](../northstar-installers.md#0negal-viper)or do it manually
+2. Install the latest version of Northstar using [Viper](../northstar-installers.md#0negal-viper) or do it manually
    1. For manual install download the latest version of Northstar from the [releases](https://github.com/R2Northstar/Northstar/releases) page
    2. Then extract all contents of the file to your Titanfall 2 folder ( Right click _Titanfall 2_ > Open _Properties_ > Click _Local Files_ > Click _Browse_ )
 3. In your Titanfall2 folder create a file called `run_northstar.txt` and write a single `1` to it, i.e. `echo 1 > run_northstar.txt`&#x20;
