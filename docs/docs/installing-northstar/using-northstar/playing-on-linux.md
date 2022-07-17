@@ -49,7 +49,7 @@ Now just launch the game through Lutris and you should be greeted with a Northst
 
 > **Note:** Origin might prompt you to log in and "set an installation folder for future downloads" on first launch. Just do those, close Origin, then launch the game again.
 
-## SteamDeck
+### SteamDeck
 
 {% embed url="https://www.youtube.com/watch?v=GxQTsOaY0_8" %}
 
