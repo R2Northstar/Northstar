@@ -51,6 +51,39 @@ Now just launch the game through Lutris and you should be greeted with a Northst
 
 ### SteamDeck
 
+{% hint style="info" %}
+This guide assumes you own Titanfall2 on Steam and run it from there. If you only own Titanfall2 on Origin refer to the _Lutris (Wine)_ Guide above
+{% endhint %}
+
+* Install Titanfall2 via the Steam store on the SteamDeck and run the vanilla game at least once!
+* Switch to desktop mode\
+  (A mouse + keyboard plugged into the Deck are recommended for the next few steps for easier navigation of menus)
+* To install Northstar, grab the Viper launcher from the Discover Store and launch it. It will auto-detect your Titanfall2 install location and install Northstar to it. \
+  Alternatively you can manually install Northstar by grabbing the newest zip from [the releases page on GitHub](https://github.com/R2Northstar/Northstar/releases) and extracting the contents to your Titanfall2 folder.
+* Regardless which method you used to install Northstar, now go to your Titanfall2 folder. \
+  If you installed Titanfall2 on the Deck's internal storage, it will be located at `/home/deck/.local/share/Steam/steamapps/common/Titanfall2`
+* Create an empty file called `run_northstar.txt` inside your Titanfall2 folder, open it, and change its content to a single `1`.
+
+With Northstar install done we now need to configure Steam to use the right Proton version for Northstar due to current incompatibilities on Northstar's side.
+
+* Install [_ProtonUp-Qt_](https://flathub.org/apps/details/net.davidotek.pupgui2) via the _Discover Store_ on the SteamDeck. We'll use it to easily add special Proton versions.
+* Launch ProtonUp-Qt and click on "_Add version_". Wait a bit for it to load. Then for "_Compatibility tool_" select `Proton-GE`, for "_Version_" choose `7.3-GE-1`, and click on "_Install_".
+* Wait a bit for it to install, then go to "_Show game list_", go to _Titanfall2_ and select `7.3-GE-1` as the compatibility tool. Afterwards close the pop-up and ProtonUp-Qt.
+
+Finally if you used Viper to install Northstar it is recommended to add it to your Steam games library so you can easily open it from Deck UI to update Northstar.
+
+At this point we can go back to Deck UI. The mouse and keyboard are also no longer needed.
+
+* In Steam go to Titanfall2 -> settings -> _Properties_ -> _Compatibility_ and make sure "Force the use of a specific Steam Play compatibility tools" is checked and `Proton-7.3-GE-1` is selected. If not, do so.
+* Then go to the _General_ section above and for _LAUNCH OPTIONS_, enter `WINEDLLOVERRIDES="wsock32=n,b" %command%`
+* Now go back to the main page of TItanfall2 and hit "_Play_".
+* On the first launch, Titanfall2+Northstar will take a long time to boot (like 5+ minutes, seriously). Do not close the game, just wait until you see the main menu screeen. Subsequent launches should be faster.
+* If you get "Northstar has crashed!" error close out of the game and try again. Make sure you followed the above instructions.
+
+Should you at any point want to play vanilla Titanfall2 again, simply remove the added launch options, i.e. the `WINEDLLOVERRIDES="wsock32=n,b" %command%` part. Additionally you can stop forcing the different Proton version in the Deck UI game settings.
+
+### SteamDeck (old guide)
+
 {% embed url="https://www.youtube.com/watch?v=GxQTsOaY0_8" %}
 
 {% hint style="info" %}
