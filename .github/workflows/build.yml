@@ -185,6 +185,8 @@ jobs:
             echo "TS_MOD_NAME=NorthstarReleaseCandidate" >> $GITHUB_ENV
             # And update mod description
             echo "TS_MOD_DESCRIPTION=Release candidate for next Northstar release." >> $GITHUB_ENV
+            # Add disclaimer add the top of README
+            echo -e '> ⚠️ This is a release candidate. Please report bugs or other issues on GitHub ⚠️\n' | cat - thunderstore/README.md > temp && mv temp thunderstore/README.md
           fi
 
       - name: Publish package to Thunderstore
