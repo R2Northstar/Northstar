@@ -182,6 +182,7 @@ jobs:
           # i.e. `NorthstarReleaseCandidate` vs `Northstar`
           if [[ $NORTHSTAR_VERSION == *"-rc"* ]]; then
             echo "TS_MOD_NAME=NorthstarReleaseCandidate" >> $GITHUB_ENV
+            echo "TS_MOD_DESCRIPTION=Release candidate for next Northstar release." >> $GITHUB_ENV
           fi
 
       - name: Publish package to Thunderstore
