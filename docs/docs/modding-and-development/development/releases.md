@@ -15,7 +15,8 @@ WIP
 CI on Northstar release repo builds versioned release if tag is pushed. It checks Launcher and Mods for same tag and builds those versions. \
 Therefore make sure to push tags of Mods and Launcher first.
 
-CI also pushes release directly to Thunderstore if it does not contain the `-rcX` suffix.
+CI also pushes release directly to Thunderstore as a mod called [`Northstar`](https://northstar.thunderstore.io/package/northstar/Northstar/). \
+If it's a release-candidate with the `-rcX` suffix, it will instead get pushed to Thunderstore as [`NorthstarReleaseCandidate`](https://northstar.thunderstore.io/package/northstar/NorthstarReleaseCandidate/).
 
 ### Git commands for tags:
 
