@@ -131,7 +131,6 @@ jobs:
 
   build-thunderstore-package:
     needs: build-northstar # comment out when running locally
-    if: "!contains(github.ref, 'rc')" # Skip uploading release candidates to Thunderstore
     env:
       # Release envs, comment this out when running locally
       TCLI_AUTH_TOKEN: ${{ secrets.THUNDERSTORE_TOKEN }}
@@ -176,7 +175,19 @@ jobs:
 
       - name: Setup environment variables
         run: |
-          echo "MOD_VERSION=$(echo $NORTHSTAR_VERSION | tr -d 'v')" >> $GITHUB_ENV
+          # Strip leading `v` and if exists replace `-rc` with `0` and strip leading zeroes from last semver digit if necessary
+          echo "MOD_VERSION=$(echo $NORTHSTAR_VERSION | tr -d 'v'| sed --expression 's/-rc/0/' | sed -E 's/([0-9])\.([0-9])\.(0*)([0-9])/\1.\2.\4/;')" >> $GITHUB_ENV
+
+          # If it's a release candidate we also want to change a few things
+          if [[ $NORTHSTAR_VERSION == *"-rc"* ]]; then
+            # We want to push to a different package
+            # i.e. `NorthstarReleaseCandidate` vs `Northstar`
+            echo "TS_MOD_NAME=NorthstarReleaseCandidate" >> $GITHUB_ENV
+            # And update mod description
+            echo "TS_MOD_DESCRIPTION=Release candidate for next Northstar release." >> $GITHUB_ENV
+            # Add disclaimer add the top of README
+            echo -e '> ⚠️ This is a release candidate. Please report bugs or other issues on GitHub ⚠️\n' | cat - thunderstore/README.md > temp && mv temp thunderstore/README.md
+          fi
 
       - name: Publish package to Thunderstore
         working-directory: thunderstore
