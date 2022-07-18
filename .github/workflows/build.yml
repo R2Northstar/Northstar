@@ -178,10 +178,12 @@ jobs:
           # Strip leading `v` and if exists replace `-rc` with `0` and strip leading zeroes from last semver digit if necessary
           echo "MOD_VERSION=$(echo $NORTHSTAR_VERSION | tr -d 'v'| sed --expression 's/-rc/0/' | sed -E 's/([0-9])\.([0-9])\.(0*)([0-9])/\1.\2.\4/;')" >> $GITHUB_ENV
 
-          # If it's a release candidate we also want to push to a different package
-          # i.e. `NorthstarReleaseCandidate` vs `Northstar`
+          # If it's a release candidate we also want to change a few things
           if [[ $NORTHSTAR_VERSION == *"-rc"* ]]; then
+            # We want to push to a different package
+            # i.e. `NorthstarReleaseCandidate` vs `Northstar`
             echo "TS_MOD_NAME=NorthstarReleaseCandidate" >> $GITHUB_ENV
+            # And update mod description
             echo "TS_MOD_DESCRIPTION=Release candidate for next Northstar release." >> $GITHUB_ENV
           fi
 
