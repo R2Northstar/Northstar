@@ -29,15 +29,32 @@ When reviewing pull requests on GitHub, make sure to checkout the changes made b
 
 After testing, make sure to mention the steps tested in your review.
 
+## Acquiring necessary files
+
+### NorthstarLauncher
+
+TODO
+
+### NorthstarMods
+
+Click on the source branch of the PR
+
+![](../.gitbook/assets/download-mods-pr1.png)
+
+Click on _"Code"_ and then on _"Download ZIP"_
+
+![](../.gitbook/assets/download-mods-pr2.png)
+
+From there copy over all the `Northstar.XXXXX` folders into your mods folder in your TItnafall2 install the same way you would manually install mods.
+
 ## Tips and toolkits
 
 (might require `sv_cheats 1`)
 
 **Spawn titan/grunt:**
 
-- For titan: `ent_create npc_titan; ent_fire !picker setteam 2`
-- For grunt: `ent_create npc_soldier; ent_fire !picker setteam 2`
-
+* For titan: `ent_create npc_titan; ent_fire !picker setteam 2`
+* For grunt: `ent_create npc_soldier; ent_fire !picker setteam 2`
 
 **Add fake lag for network testing**
 
@@ -60,7 +77,7 @@ By default duplicate accounts are blocked by server. Use `-allowdupeaccounts` wh
 Use `map <map name>` to quickly switch map.\
 Example: `map mp_glitch`
 
-List of maps can be found [here](../hosting-a-server-with-northstar/dedicated-server/README.md#maps)
+List of maps can be found [here](../hosting-a-server-with-northstar/dedicated-server/#maps)
 
 **Speed-up/slow-down game**
 
