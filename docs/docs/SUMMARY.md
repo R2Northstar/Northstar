@@ -43,6 +43,7 @@
       * [Deploy](modding-and-development/development/northstarmasterserver/deploy.md)
   * [Contributing code to Northstar](modding-and-development/development/contributing-code-to-northstar.md)
   * [Testing](modding-and-development/testing.md)
+  * [Reviewing](modding-and-development/development/reviewing.md)
   * [Releases](modding-and-development/development/releases.md)
 
 ## Other
