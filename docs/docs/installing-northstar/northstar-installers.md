@@ -1,6 +1,25 @@
-# Northstar installers
+# Northstar Installers
 
 Since the public release of Northstar, the wider community has created tools to automate mod installation, as well as adding additional features such as auto-updating the current Northstar install and mod management.
+
+Each of these installers covers a different use case. Use the table below to find out which one suits you best:
+
+| Features                        | r2mm | Viper | VTOL |
+| ------------------------------- | ---- | ----- | ---- |
+| Install Northstar               | ✔️   | ✔️    | ✔️   |
+| Update Northstar                | ✔️   | ✔️    | ✔️   |
+| Launch Northstar                | ✔️   | ✔️    | ✔️   |
+| Launch Vanilla                  | ✔️   | ✔️    | ✔️   |
+| Install Mods from Thunderstore  | ✔️   | ✔️    | ✔️   |
+| Update Mods                     | ✔️   | ✔️    | ✔️   |
+|                                 |      |       |      |
+| Set launch arguments            | ❓    | ✔️    | ✔️   |
+| Installing mods for other games | ✔️   | ❌     | ❌    |
+| Install skins                   | ❓    | ❌     | ✔️   |
+| Linux support                   | ❓    | ✔️    | ❌    |
+| Install Mods from GitHub/GitLab | ❌    | ❌     | ✔️   |
+| Server config creator           | ❌    | ❌     | ✔️   |
+| Package mods for Thunderstore   | ❌    | ❌     | ✔️   |
 
 Note that none of these tools are directly part of the Northstar project and as such any issues with them should be reported to the respective authors instead.
 
@@ -27,7 +46,6 @@ There's also an alternative version of r2mm called _Thunderstore Mod Manager_ TM
 (Contains ads to support the development of Thunderstore)
 
 {% embed url="https://www.overwolf.com/app/Thunderstore-Thunderstore_Mod_Manager" %}
-
 
 ## **0neGal:** Viper
 
