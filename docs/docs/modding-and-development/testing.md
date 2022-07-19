@@ -35,20 +35,16 @@ After testing, make sure to mention the steps tested in your review.
 
 Before starting, make sure you have a **working and up-to-date Northstar install** and you're **logged into GitHub with your GitHub account** (downloading files from CI only works while logged into any GitHub account)!
 
-1. Head to the bottom of the page of the PR and click on "_Show all checks_"
-![rcon1](https://user-images.githubusercontent.com/40122905/179726100-48945eb6-3ebe-467f-acef-1c7d56f3e4bd.png)
-
-2. For "_CI / build (pull_request)_" click on "_Details_"
-![rcon2](https://user-images.githubusercontent.com/40122905/179726993-d1cb7849-a2fc-4d0d-9379-cf4e279469a1.png)
-
-
-3. From here click on "_Summary_"
-![rcon3](https://user-images.githubusercontent.com/40122905/179727326-5e6d64c7-6ff0-472a-ac7d-7e4f04d6bac9.png)
-
-4. And then click on "_NorthstarLauncher-XXXXXXX_"
-![rcon4](https://user-images.githubusercontent.com/40122905/179727511-877641f8-e5fc-4a34-bcf1-29bafefc1ad2.png)
-
+1. Head to the bottom of the page of the PR and click on "_Show all checks_" ![rcon1](https://user-images.githubusercontent.com/40122905/179726100-48945eb6-3ebe-467f-acef-1c7d56f3e4bd.png)
+2. For "_CI / build (pull\_request)_" click on "_Details_"\
+   &#x20;![rcon2](https://user-images.githubusercontent.com/40122905/179726993-d1cb7849-a2fc-4d0d-9379-cf4e279469a1.png)
+3. From here click on "_Summary_"\
+   &#x20;![rcon3](https://user-images.githubusercontent.com/40122905/179727326-5e6d64c7-6ff0-472a-ac7d-7e4f04d6bac9.png)
+4. And then click on "_NorthstarLauncher-XXXXXXX_"\
+   &#x20;![rcon4](https://user-images.githubusercontent.com/40122905/179727511-877641f8-e5fc-4a34-bcf1-29bafefc1ad2.png)
 5. Once downloaded, open the zip and copy `Northstar.dll` and `NorthstarLauncher.exe` to your Titanfall2 folder, overwriting the existing DLL and EXE in there.
+
+Alternatively, compiling the PR'd code from source is also an option. For this, refer to [northstarlauncher.md](development/northstarlauncher.md "mention")
 
 ### NorthstarMods
 
