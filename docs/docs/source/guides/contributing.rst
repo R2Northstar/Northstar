@@ -29,7 +29,7 @@ Setup a `Python virtual environment <https://docs.python.org/3/tutorial/venv.htm
 
 .. code:: bash
 
-    # Create virtual environment
+    # Create virtual environment (the second `venv` is the name of the folder of the virtual environment)
     python3 -m venv venv
 
     # Activate it
