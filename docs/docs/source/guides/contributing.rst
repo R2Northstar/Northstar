@@ -32,7 +32,10 @@ Setup a `Python virtual environment <https://docs.python.org/3/tutorial/venv.htm
     # Create virtual environment (the second `venv` is the name of the folder of the virtual environment)
     python3 -m venv venv
 
-    # Activate it
+    # On Windows, activate with:
+    venv\Scripts\activate.bat
+
+    # On Linux, activate with:
     source venv/bin/activate
 
 Install the Python packages necessary to build the docs
@@ -41,14 +44,14 @@ Install the Python packages necessary to build the docs
 
     pip install -r docs/requirements.txt
 
-Finally to actually build the docs, go to the ``docs/`` directory and run `make html`, i.e.
+Finally to actually build the docs, go to the ``docs/`` directory and ``sphinx-build -M html source build``, i.e.
 
 .. code:: bash
 
     cd docs/
-    make html
+    sphinx-build -M html source build
 
-This will create a new folder inside ``docs/`` called ``build/`` where under ``html/`` you can find the rendered HTML files which you can open in the browser of your choice.
+This will create a new folder inside ``docs/`` called ``build/`` where under ``html/`` you can find the rendered HTML files where built based from the ``.rst`` files located in ``source``. You can open the files in a browser of your choice to see what the edited page will look like.
 
 
 Tips and tricks
