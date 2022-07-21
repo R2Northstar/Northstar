@@ -1,0 +1,40 @@
+FontFileTable
+{
+	"Default"					"resource/MetronicPro-Regular.vfont"	[!$JAPANESE && !$TCHINESE]
+	"Default"					"resource/NotoSansJP-Regular.vfont"		[$JAPANESE]
+	"Default"					"resource/NotoSansTC-Regular.vfont"		[$TCHINESE]
+
+	"DefaultBold"				"resource/MetronicPro-SemiBold.vfont"	[!$JAPANESE && !$TCHINESE]
+	"DefaultBold"				"resource/NotoSansJP-Regular.vfont"		[$JAPANESE]
+	"DefaultBold"				"resource/NotoSansTC-Regular.vfont"		[$TCHINESE]
+
+	"Titanfall"					"resource/Titanfall-Regular.vfont"		[!$JAPANESE && !$TCHINESE && !$RUSSIAN]
+	"Titanfall"					"resource/NotoSansJP-Regular.vfont"		[$JAPANESE]
+	"Titanfall"					"resource/NotoSansTC-Regular.vfont"		[$TCHINESE]
+	"Titanfall"					"resource/MetronicPro-SemiBold.vfont"	[$RUSSIAN]
+
+	"marlett"					"vgui/fonts/marlett.ttf"
+
+	// Everything below is DONOTSHIP / Dev only
+
+	"arial unicode ms"			"resource/Lato-Regular.ttf"
+
+	"lucida console"			"resource/NorthstarMono.ttf"			[$PC]
+	"lucida console"			"resource/MetronicPro-Regular.vfont"	[$GAMECONSOLE]
+
+	"tahoma"					"fonts\\tahoma.ttf"						[$PC]
+	"tahoma"					"resource/MetronicPro-Regular.vfont"  	[$GAMECONSOLE]
+
+	"tahoma bold"				"fonts\\tahomabd.ttf" 					[$PC]
+	"tahoma bold"				"resource/MetronicPro-SemiBold.vfont"  	[$GAMECONSOLE]
+
+	"courier new"				"fonts\\cour.ttf"						[$PC]
+	"courier new"				"vgui/fonts/cour.ttf"					[$GAMECONSOLE]
+
+	"times new roman"			"fonts\\times.ttf"						[$PC]
+	"times new roman"			"vgui/fonts/times.ttf" 					[$GAMECONSOLE]
+
+	"arial"						"resource/Lato-Regular.ttf"
+	"arial bold"				"resource/Lato-Regular.ttf"
+	"arial narrow"				"resource/Lato-Regular.ttf"
+}
