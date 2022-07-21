@@ -78,6 +78,10 @@ void function HandleScoreEvent( entity victim, entity attacker, var damageInfo )
 	// Hacked spectre filter
 	if ( victim.GetOwner() == attacker )
 		return
+		
+	// NPC titans without an owner player will not count towards any team's score
+	if ( attacker.IsNPC() && attacker.IsTitan() && !IsValid( GetPetTitanOwner( attacker ) ) )
+		return
 	
 	// Split score so we can check if we are over the score max
 	// without showing the wrong value on client
