@@ -223,6 +223,7 @@ entity function CreateBubbleShieldWithSettings( int team, vector origin, vector 
 		entity neutralColoredFX = StartParticleEffectInWorld_ReturnEntity( BUBBLE_SHIELD_FX_PARTICLE_SYSTEM_INDEX, coloredFXOrigin, <0, 0, 0> )
 		SetTeam( neutralColoredFX, team )
 		bubbleShieldDotS.neutralColoredFX <- neutralColoredFX
+		neutralColoredFX.DisableHibernation()
 		bubbleShieldFXs.append( neutralColoredFX )
 	}
 	else
@@ -232,11 +233,13 @@ entity function CreateBubbleShieldWithSettings( int team, vector origin, vector 
 		SetTeam( friendlyColoredFX, team )
 		friendlyColoredFX.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY
 		EffectSetControlPointVector(  friendlyColoredFX, 1, FRIENDLY_COLOR_FX )
+		friendlyColoredFX.DisableHibernation()
 
 		entity enemyColoredFX = StartParticleEffectInWorld_ReturnEntity( BUBBLE_SHIELD_FX_PARTICLE_SYSTEM_INDEX, coloredFXOrigin, <0, 0, 0> )
 		SetTeam( enemyColoredFX, team )
 		enemyColoredFX.kv.VisibilityFlags = ENTITY_VISIBLE_TO_ENEMY
 		EffectSetControlPointVector(  enemyColoredFX, 1, ENEMY_COLOR_FX )
+		enemyColoredFX.DisableHibernation()
 
 		bubbleShieldDotS.friendlyColoredFX <- friendlyColoredFX
 		bubbleShieldDotS.enemyColoredFX <- enemyColoredFX
