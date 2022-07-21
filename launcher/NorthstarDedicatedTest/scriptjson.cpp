@@ -245,7 +245,7 @@ SQRESULT ClientSq_DecodeJSON(void* sqvm)
 		ClientSq_newTable(sqvm);
 		return SQRESULT_NOTNULL;
 	}
-	ServerSq_newTable(sqvm);
+	ClientSq_newTable(sqvm);
 
 	for (int i = 0; i < doc.MemberCount(); i++)
 	{
