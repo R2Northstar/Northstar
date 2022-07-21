@@ -160,7 +160,7 @@ void InitialiseClientSquirrel(HMODULE baseAddress)
 	ClientSq_defconst = (sq_defconst)((char*)baseAddress + 0x12120);
 
 	// Table functions
-	ClientSq_newTable = (sq_newTableType)((char*)baseAddress + 0x5940);
+	ClientSq_newTable = (sq_newTableType)((char*)baseAddress + 0x3960);
 	ClientSq_newSlot = (sq_newSlotType)((char*)baseAddress + 0x70B0);
 
 	ENABLER_CREATEHOOK(
