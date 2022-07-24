@@ -4,36 +4,23 @@ Northstar is officially supported on Linux, it uses compatibility layers like Pr
 
 ## Installing
 
-### Steam (Proton)
+### Steam & Steam Deck (NorthstarProton)
 
-{% hint style="info" %}
-This guide is new, based on recent information, as such any feedback on success using it on either the Northstar Discord or the Wiki GitHub repo is appreciated.
-{% endhint %}
+On Steam Deck, complete the following in desktop mode. You may return to game mode once completed *(A mouse + keyboard plugged into the Deck are recommended for easier navigation of menus)*
 
 1. Make sure you ran the vanilla version of Titanfall2 at least once on Linux!
 2. Install the latest version of Northstar using [Viper](../northstar-installers.md#0negal-viper) or do it manually
    1. For manual install download the latest version of Northstar from the [releases](https://github.com/R2Northstar/Northstar/releases) page
    2. Then extract all contents of the file to your Titanfall 2 folder ( Right click _Titanfall 2_ > Open _Properties_ > Click _Local Files_ > Click _Browse_ )
 3. In your Titanfall2 folder create a file called `run_northstar.txt` and write a single `1` to it, i.e. `echo 1 > run_northstar.txt`&#x20;
-4. In Steam, set the launch arguments for Titanfall2 to `WINEDLLOVERRIDES="wsock32=n,b" %command%`
-5. Install `Proton-7.3-GE-1` (not `GE-Proton7-3`) and select it as the desired Proton version for Titanfall2
+4. Download the latest release of [NorthstarProton](https://github.com/cyrv6737/NorthstarProton/releases/), extract it, and place the folder in one of the following directories:
+> **Steam (Native Package) & Steam Deck:** `~/.local/share/Steam/compatibilitytools.d`
+
+> **Steam (Flatpak):** `~/.var/app/com.valvesoftware.Steam/data/Steam/compatibilitytools.d/`
+5. Restart Steam. Head to `Properties -> Compatibility` under Titanfall2. Check `Force the use of a specific Steam Play compatibility tool` checkbox, then set the Steam Play compatibility tool to NorthstarProton.
 6. Launch Titanfall2, it should now launch Northstar
 
-Note that removing either the launch arguments set above or the `run_northstar.txt`file will cause Steam to launch the vanilla game again.
-
-### Steam (Proton) (old guide)
-
-1. Download the latest version of Northstar from the [releases](https://github.com/R2Northstar/Northstar/releases) page
-2. Extract all contents of the file to your Titanfall 2 folder ( Right click _Titanfall 2_ > Open _Properties_ > Click _Local Files_ > Click _Browse_ )
-3. Rename _Titanfall2.exe_ to anything else ( for example _Titanfall2old.exe_ ), and rename _NorthstarLauncher.exe_ to _Titanfall2.exe_. Alternatively to renaming _NorthstarLauncher.exe_, you can create a symlink to make future Northstar updates easier. This can be done by executing the following in the Titanfall 2 directory:
-
-`ln NorthstarLauncher.exe Titanfall2.exe`
-
-Now Steam will automatically launch Northstar when you hit play. Just launch the game through Steam and you should be greeted with a Northstar welcome message upon entering the main menu.
-
-> **Note:** There is a current bug where the game would sometimes launch vanilla Titanfall 2 instead of Northstar. There is no universal fix for this, but people have reported changing Proton versions to _Proton 5.13_ or _Proton Experimental_ and deleting the Proton prefix folder (`Steam/steamapps/compatdata/1237970/`) could help resolve this issue. Using [Proton GE](https://github.com/GloriousEggroll/proton-ge-custom) has also been reported to resolve the issue.
->
-> If you are still suffering from this bug, try running the game through Lutris. The bug doesn't seem to happen there
+Note that removing the `run_northstar.txt` file or editing it and changing `1` to be a `0` will cause Steam to launch the vanilla game again.
 
 ### Lutris (Wine)
 
@@ -49,74 +36,13 @@ Now just launch the game through Lutris and you should be greeted with a Northst
 
 > **Note:** Origin might prompt you to log in and "set an installation folder for future downloads" on first launch. Just do those, close Origin, then launch the game again.
 
-### SteamDeck
-
-{% hint style="info" %}
-This guide assumes you own Titanfall2 on Steam and run it from there. If you only own Titanfall2 on Origin refer to the _Lutris (Wine)_ Guide above
-{% endhint %}
-
-* Install Titanfall2 via the Steam store on the SteamDeck and run the vanilla game at least once!
-* Switch to desktop mode\
-  (A mouse + keyboard plugged into the Deck are recommended for the next few steps for easier navigation of menus)
-* To install Northstar, grab the Viper launcher from the Discover Store and launch it. It will auto-detect your Titanfall2 install location and install Northstar to it. \
-  Alternatively you can manually install Northstar by grabbing the newest zip from [the releases page on GitHub](https://github.com/R2Northstar/Northstar/releases) and extracting the contents to your Titanfall2 folder.
-* Regardless which method you used to install Northstar, now go to your Titanfall2 folder. \
-  If you installed Titanfall2 on the Deck's internal storage, it will be located at `/home/deck/.local/share/Steam/steamapps/common/Titanfall2`
-* Create an empty file called `run_northstar.txt` inside your Titanfall2 folder, open it, and change its content to a single `1`.
-
-With Northstar install done we now need to configure Steam to use the right Proton version for Northstar due to current incompatibilities on Northstar's side.
-
-* Install [_ProtonUp-Qt_](https://flathub.org/apps/details/net.davidotek.pupgui2) via the _Discover Store_ on the SteamDeck. We'll use it to easily add special Proton versions.
-* Launch ProtonUp-Qt and click on "_Add version_". Wait a bit for it to load. Then for "_Compatibility tool_" select `Proton-GE`, for "_Version_" choose `7.3-GE-1`, and click on "_Install_".
-* Wait a bit for it to install, then go to "_Show game list_", go to _Titanfall2_ and select `7.3-GE-1` as the compatibility tool. Afterwards close the pop-up and ProtonUp-Qt.
-
-Finally if you used Viper to install Northstar it is recommended to add it to your Steam games library so you can easily open it from Deck UI to update Northstar.
-
-At this point we can go back to Deck UI. The mouse and keyboard are also no longer needed.
-
-* In Steam go to Titanfall2 -> settings -> _Properties_ -> _Compatibility_ and make sure "Force the use of a specific Steam Play compatibility tools" is checked and `Proton-7.3-GE-1` is selected. If not, do so.
-* Then go to the _General_ section above and for _LAUNCH OPTIONS_, enter `WINEDLLOVERRIDES="wsock32=n,b" %command%`
-* Now go back to the main page of TItanfall2 and hit "_Play_".
-* On the first launch, Titanfall2+Northstar will take a long time to boot (like 5+ minutes, seriously). Do not close the game, just wait until you see the main menu screeen. Subsequent launches should be faster.
-* If you get "Northstar has crashed!" error close out of the game and try again. Make sure you followed the above instructions.
-
-Should you at any point want to play vanilla Titanfall2 again, simply remove the added launch options, i.e. the `WINEDLLOVERRIDES="wsock32=n,b" %command%` part. Additionally you can stop forcing the different Proton version in the Deck UI game settings.
-
-### SteamDeck (old guide)
-
-{% embed url="https://www.youtube.com/watch?v=GxQTsOaY0_8" %}
-
-{% hint style="info" %}
-This guide is really basic and needs fleshing out to make it more accessible. It also assumes you own Titanfall2 on Steam and run it from there.
-{% endhint %}
-
-* Install Titanfall2 via the Steam store on the SteamDeck and run the vanilla game at least once
-* Switch to desktop mode\
-  (A mouse + keyboard plugged into the Deck are recommended for the next few steps)
-* Install Northstar like you would in the Linux+Steam guide.\
-  If you installed Titanfall2 on the Deck's internal storage, it will be located at `/home/deck/.local/share/Steam/steamapps/common/Titanfall2`
-* Like with the Linux guide, rename `Titanfall2.exe` to something else (like `Titanfall2.original.exe`) and rename or link `NorthstarLauncher.exe` to `Titanfall2.exe`.
-
-We now need to configure Steam to use the right Proton version for Northstar due to current incompatibilities on Northstar's side.
-
-* Install [_ProtonUp-Qt_](https://flathub.org/apps/details/net.davidotek.pupgui2) via the _Discover Store_ on the SteamDeck. We'll use it to easily add special Proton versions.
-* Launch ProtonUp-Qt and click on "_Add version_". Wait a bit for it to load. Then for "_Compatibility tool_" select `Proton-GE`, for "_Version_" choose `7.3-GE-1`, and click on "_Install_".
-* Wait a bit for it to install, then go to "_Show game list_", go to _Titanfall2_ and select `7.3-GE-1` as the compatibility tool. Afterwards close the pop-up and ProtonUp-Qt.
-
-At this point we can go back to Deck UI. The mouse and keyboard are also no longer needed.
-
-* In Steam go to Titanfall2 -> settings -> _Properties_ -> _Compatibility_ and make sure "Force the use of a specific Steam Play compatibility tools" is checked and `Proton-7.3-GE-1` is selected. If not, do so.
-* Now go back to the main page of TItanfall2 and hit "_Play_".
-* On the first launch, Titanfall2+Northstar will take a long time to boot (like 5+ minutes, seriously). Do not close the game, just wait until you see the main menu screeen. Subsequent launches should be faster.
-* If you get "Northstar has crashed!" error close out of the game and try again. Make sure you followed the above instructions.
-
-Should you at any point want to play vanilla Titanfall2 again, go back to Desktop mode and change the previously renamed `Titanfall2.exe` (now `Titanfall2.original.exe` if you followed the steps above) back to `Titanfall2.exe`. Additionally you stop forcing the different Proton version in the Deck UI game settings.
-
 ## LatencyFleX
 
-LatencyFleX is a Linux-only input latency reduction alternative to Nvidia Reflex that is supported by Northstar. Currently, LatencyFleX requires manual installation. A full install guide and current releases [can be found on their GitHub](https://github.com/ishitatsuyuki/LatencyFleX).
+LatencyFleX is a Linux-only input latency reduction alternative to Nvidia Reflex that is supported by Northstar.
 
-Northstar only requires the [Vulkan layer](https://github.com/ishitatsuyuki/LatencyFleX#latencyflex-vulkan-layer-essential) and [Wine extensions](https://github.com/ishitatsuyuki/LatencyFleX#latencyflex-wine-extensions-required-for-proton-reflex-integration) steps to be completed.
+LatencyFleX's Vulkan layer can be installed with your package manager on supported distributions. On Arch it's available in [AUR](https://aur.archlinux.org/packages/latencyflex-git), and on Fedora/openSUSE Tumbleweed it can be acquired from [Copr](https://copr.fedorainfracloud.org/coprs/kylegospo/LatencyFleX/).
+
+If you're using another distro you will need to install LatencyFleX manually. A full install guide and current releases [can be found on their GitHub](https://github.com/ishitatsuyuki/LatencyFleX). Northstar only requires the [Vulkan layer](https://github.com/ishitatsuyuki/LatencyFleX#latencyflex-vulkan-layer-essential) and [Wine extensions](https://github.com/ishitatsuyuki/LatencyFleX#latencyflex-wine-extensions-required-for-proton-reflex-integration) steps to be completed. **If you are using NorthstarProton, the Wine extensions are automatically installed and only the Vulkan layer is required.**
 
 Once installed, LatencyFleX can be enabled by doing either of the following:
 
@@ -137,13 +63,9 @@ While playing with LatencyFleX, **VSync and Adaptive Super Sampling must be disa
 
 ### Blank console
 
-This problem is caused due to missing fonts on your Titanfall 2 wine prefix, you will need [winetricks](https://github.com/Winetricks/winetricks) or [protontricks](https://github.com/Matoking/protontricks) depending on your installation. Follow these steps to install:
+This issue has been resolved as of [Northstar 1.9.2 and newer.](https://github.com/R2Northstar/Northstar/releases/latest)
 
-1. Close all Titanfall/Origin processes.
-2. If you are using Lutris select your Titanfall 2 installation and click '▲' -> Winetricks. On Proton you can use `protontricks 1237970 --gui`
-3. 'Select the default wineprefix' -> 'Install a font' -> Check the packages `lucida` and `arial`.
-4. Click OK and wait for everything to install, if done correctly winetricks will popup again.
-5. You can now close it and launch the game.
+For older builds of Northstar, please update or see the [legacy guide](installing-northstar/using-northstar/playing-on-linux-legacy-guide.md#blank-console) if the use of an older build is desired.
 
 ### Crackling sound
 
@@ -155,15 +77,15 @@ Running the game on fullscreen through Linux might lead to a black screen preven
 
 For more info and proposed fixes, refer to [this issue thread on Github](https://github.com/R2Northstar/Northstar/issues/1)
 
-### LatencyFleX issues
-
-Some users have reported issues with enabling LatencyFleX. If you see `"Unable to load LatencyFleX library, LatencyFleX disabled."` in your logs, try adding `latencyflex_wine.dll` to your `bin/x64_retail` folder.
-
 ### Game crashes on launch with Cause: Access Violation Data Execution Prevention (DEP) at: 0x00000000
 
-Try running with [ProtonGE](https://github.com/GloriousEggroll/proton-ge-custom/). In particular, `Proton-7.3-GE-1` (not `GE-Proton7-3`) has so far been found to be reliable in this case. Check this [Github issue comment for a guide](https://github.com/R2Northstar/Northstar/issues/1#issuecomment-1062483190).
+**Steam/Steam Deck:** Try the latest release of [NorthstarProton](https://github.com/cyrv6737/NorthstarProton/releases/latest).
 
-### Reducing stuttering (Steam/Proton and Lutris/Wine)
+**Lutris**: Try the latest release of [Wine-TKG](https://github.com/Frogging-Family/wine-tkg-git/releases/latest).
+
+### Reducing stuttering
+
+#### Shader Cache Stutter Fix
 
 You may feel that the game stutters frequently during the first hour of play. This is normal, it's just DXVK having to compile shaders at draw time due not having a ready state cache. The more you play, the less stuttering there will be in the future.
 
@@ -173,13 +95,18 @@ Proton: extract and put it in `/path/to/steamapps/shadercache/1237970/DXVK_state
 
 Wine: extract and put it next to game's .exe. Also remember to rename it if the .exe has a different name.
 
-There are also other (not necessary) tweaks as:
+#### Steam/Steam Deck (dxvk-async)
+DXVK-async is automatically installed and enabled if using the NorthstarProton runner.
 
-_DXVK-_[_async_](https://github.com/Sporif/dxvk-async#improvements):
+#### Lutris (dxvk-async)
 
-Wine: download [**dxvk-async**](https://github.com/Sporif/dxvk-async/releases), extract and put it in `~/.local/share/lutris/runtime/dxvk` then type the name of the folder in `▲` -> `Configure` -> `Runner Options` -> `DXVK version`, to enable add `DXVK_ASYNC 1` to `System Options` -> `Environment variables`
+DXVK-[_async_](https://github.com/Sporif/dxvk-async#improvements) can optionally be used on Lutris to prevent stutter during shader compilation by asynchronously compiling and allowing the frame to render with not-yet-compiled shaders simply not drawn.
 
-Proton: can be used with [**Proton-GE**](https://github.com/GloriousEggroll/proton-ge-custom). Type `DXVK_ASYNC 1 %command%` under `Properties..` -> `LAUNCH OPTIONS`
+Download [**dxvk-async**](https://github.com/Sporif/dxvk-async/releases), extract and put it in `~/.local/share/lutris/runtime/dxvk` then type the name of the folder in `▲` -> `Configure` -> `Runner Options` -> `DXVK version`, to enable add `DXVK_ASYNC 1` to `System Options` -> `Environment variables`
+
+*DXVK-async can also be installed for Lutris with [ProtonUp-Qt](https://davidotek.github.io/protonup-qt/)*
+
+#### Origin Continual File Writing Fix
 
 [_Preventing_](https://github.com/ValveSoftware/Proton/issues/4001#issuecomment-647014231) _Origin from writing certain files_:
 
@@ -207,3 +134,7 @@ If you ever used ReShade together with Titanfall2 in the past it will have creat
 * D3D11.DLL
 * OPENGL.DLL
 * DXGI.DLL
+
+### Northstar 1.9.1 and prior
+
+For older builds of Northstar, please see the [legacy guide](installing-northstar/using-northstar/playing-on-linux-legacy-guide.md).
