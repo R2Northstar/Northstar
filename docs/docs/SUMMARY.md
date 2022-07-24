@@ -20,7 +20,6 @@
   * [Commands](installing-northstar/using-northstar/commands.md)
   * [Launch arguments](installing-northstar/using-northstar/launch-arguments.md)
   * [Playing on Linux](installing-northstar/using-northstar/playing-on-linux.md)
-  * [Legacy Linux Guide for 1.9.1 and older](installing-northstar/using-northstar/playing-on-linux-legacy-guide.md)
 * [FAQ](faq.md)
 
 ## Hosting a server with Northstar
