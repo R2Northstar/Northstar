@@ -6,19 +6,21 @@ Northstar is officially supported on Linux, it uses compatibility layers like Pr
 
 ### Steam & Steam Deck (NorthstarProton)
 
-On Steam Deck, complete the following in desktop mode. You may return to game mode once completed *(A mouse + keyboard plugged into the Deck are recommended for easier navigation of menus)*
+On Steam Deck, complete the following in desktop mode. You may return to game mode once completed _(A mouse + keyboard plugged into the Deck are recommended for easier navigation of menus)_
 
 1. Make sure you ran the vanilla version of Titanfall2 at least once on Linux!
 2. Install the latest version of Northstar using [Viper](../northstar-installers.md#0negal-viper) or do it manually
    1. For manual install download the latest version of Northstar from the [releases](https://github.com/R2Northstar/Northstar/releases) page
    2. Then extract all contents of the file to your Titanfall 2 folder ( Right click _Titanfall 2_ > Open _Properties_ > Click _Local Files_ > Click _Browse_ )
-3. In your Titanfall2 folder create a file called `run_northstar.txt` and write a single `1` to it, i.e. `echo 1 > run_northstar.txt`&#x20;
+3. In your Titanfall2 folder create a file called `run_northstar.txt` and write a single `1` to it, i.e. `echo 1 > run_northstar.txt`
 4. Download the latest release of [NorthstarProton](https://github.com/cyrv6737/NorthstarProton/releases/), extract it, and place the folder in one of the following directories:
+
 > **Steam (Native Package) & Steam Deck:** `~/.local/share/Steam/compatibilitytools.d`
 
 > **Steam (Flatpak):** `~/.var/app/com.valvesoftware.Steam/data/Steam/compatibilitytools.d/`
-5. Restart Steam. Head to `Properties -> Compatibility` under Titanfall2. Check `Force the use of a specific Steam Play compatibility tool` checkbox, then set the Steam Play compatibility tool to NorthstarProton.
-6. Launch Titanfall2, it should now launch Northstar
+
+1. Restart Steam. Head to `Properties -> Compatibility` under Titanfall2. Check `Force the use of a specific Steam Play compatibility tool` checkbox, then set the Steam Play compatibility tool to NorthstarProton.
+2. Launch Titanfall2, it should now launch Northstar
 
 Note that removing the `run_northstar.txt` file or editing it and changing `1` to be a `0` will cause Steam to launch the vanilla game again.
 
@@ -79,9 +81,9 @@ For more info and proposed fixes, refer to [this issue thread on Github](https:/
 
 ### Game crashes on launch with Cause: Access Violation Data Execution Prevention (DEP) at: 0x00000000
 
-**Steam/Steam Deck:** Ensure your installation matches the latest [install guide](#steam-and-steam-deck-northstarproton).
+**Steam/Steam Deck:** Ensure your installation matches the latest [install guide](playing-on-linux.md#steam-and-steam-deck-northstarproton).
 
-**Lutris**: Ensure your installation matches the latest [install guide](#lutris-wine). If that fails, you may optionally try the latest release of [Wine-TKG](https://github.com/Frogging-Family/wine-tkg-git/releases/latest).
+**Lutris**: Ensure your installation matches the latest [install guide](playing-on-linux.md#lutris-wine). If that fails, you may optionally try the latest release of [Wine-TKG](https://github.com/Frogging-Family/wine-tkg-git/releases/latest).
 
 ### Reducing stuttering
 
@@ -96,6 +98,7 @@ Proton: extract and put it in `/path/to/steamapps/shadercache/1237970/DXVK_state
 Wine: extract and put it next to game's .exe. Also remember to rename it if the .exe has a different name.
 
 #### Steam/Steam Deck (dxvk-async)
+
 DXVK-async is automatically installed and enabled if using the NorthstarProton runner.
 
 #### Lutris (dxvk-async)
@@ -104,7 +107,7 @@ DXVK-[_async_](https://github.com/Sporif/dxvk-async#improvements) can optionally
 
 Download [**dxvk-async**](https://github.com/Sporif/dxvk-async/releases), extract and put it in `~/.local/share/lutris/runtime/dxvk` then type the name of the folder in `▲` -> `Configure` -> `Runner Options` -> `DXVK version`, to enable add `DXVK_ASYNC 1` to `System Options` -> `Environment variables`
 
-*DXVK-async can also be installed for Lutris with [ProtonUp-Qt](https://davidotek.github.io/protonup-qt/)*
+_DXVK-async can also be installed for Lutris with_ [_ProtonUp-Qt_](https://davidotek.github.io/protonup-qt/)
 
 #### Origin Continual File Writing Fix
 
@@ -137,4 +140,4 @@ If you ever used ReShade together with Titanfall2 in the past it will have creat
 
 ### Northstar 1.9.1 and prior
 
-For older builds of Northstar, please see the [legacy guide](installing-northstar/using-northstar/playing-on-linux-legacy-guide.md).
+For older builds of Northstar, please see the [legacy guide](playing-on-linux-legacy-guide.md).
