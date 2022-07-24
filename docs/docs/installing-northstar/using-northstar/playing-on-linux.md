@@ -79,9 +79,9 @@ For more info and proposed fixes, refer to [this issue thread on Github](https:/
 
 ### Game crashes on launch with Cause: Access Violation Data Execution Prevention (DEP) at: 0x00000000
 
-**Steam/Steam Deck:** Try the latest release of [NorthstarProton](https://github.com/cyrv6737/NorthstarProton/releases/latest).
+**Steam/Steam Deck:** Ensure your installation matches the latest [install guide](#steam-and-steam-deck-northstarproton).
 
-**Lutris**: Try the latest release of [Wine-TKG](https://github.com/Frogging-Family/wine-tkg-git/releases/latest).
+**Lutris**: Ensure your installation matches the latest [install guide](#lutris-wine). If that fails, you may optionally try the latest release of [Wine-TKG](https://github.com/Frogging-Family/wine-tkg-git/releases/latest).
 
 ### Reducing stuttering
 
