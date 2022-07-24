@@ -85,7 +85,7 @@ For more info and proposed fixes, refer to [this issue thread on Github](https:/
 
 ### Reducing stuttering
 
-#### Shader Cache Stutter Fix
+#### DXVK State Cache Stutter Fix
 
 You may feel that the game stutters frequently during the first hour of play. This is normal, it's just DXVK having to compile shaders at draw time due not having a ready state cache. The more you play, the less stuttering there will be in the future.
 
