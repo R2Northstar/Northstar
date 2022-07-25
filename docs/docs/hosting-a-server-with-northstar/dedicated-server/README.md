@@ -197,7 +197,6 @@ Note an exception to the rule of playlist and gamemode names being the same. Wit
 | hs | Hide and Seek |
 | inf | Infection |
 | kr | Amped Killrace |
-| sbox | Sandbox |
 | sns | Sticks and Stones |
 | tffa | Titan FFA |
 | tt | Titan Tag |
