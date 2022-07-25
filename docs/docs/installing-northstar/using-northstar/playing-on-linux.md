@@ -6,9 +6,9 @@ Northstar is officially supported on Linux, it uses compatibility layers like Pr
 
 ### Steam & Steam Deck (NorthstarProton)
 
-On Steam Deck, complete the following in desktop mode. You may return to game mode once completed _(A mouse + keyboard plugged into the Deck are recommended for easier navigation of menus)_
+> **Check your GLIBC version.** NorthstarProton currently only supports version 2.33 and higher. Verify your installed version with `ldd --version`. If the installed GLIBC is older, use the [legacy guide](playing-on-linux-legacy-guide.md). **Ubuntu 20.04 LTS**, **Debian 11**, and **Void Linux** are known to have outdated GLIBC packages. This check does not need to be completed on Steam Deck or Steam OS.
 
-> **Check your GLIBC version.** NorthstarProton currently only supports version 2.33 and higher. Verify your installed version with `ldd --version`. If the installed GLIBC is older, use the [legacy guide](playing-on-linux-legacy-guide.md). **Ubuntu 20.04 LTS**, **Debian 11**, and **Void Linux** are known to have outdated GLIBC packages.
+On Steam Deck, complete the following in desktop mode. You may return to game mode once completed _(A mouse + keyboard plugged into the Deck are recommended for easier navigation of menus)_
 
 1. Make sure you ran the vanilla version of Titanfall2 at least once on Linux!
 2. Install the latest version of Northstar using [Viper](../northstar-installers.md#0negal-viper) or do it manually
@@ -69,7 +69,7 @@ While playing with LatencyFleX, **VSync and Adaptive Super Sampling must be disa
 
 This issue has been resolved as of [Northstar 1.9.2 and newer.](https://github.com/R2Northstar/Northstar/releases/latest)
 
-For older builds of Northstar, please update or see the [legacy guide](installing-northstar/using-northstar/playing-on-linux-legacy-guide.md#blank-console) if the use of an older build is desired.
+For older builds of Northstar, please update or see the [legacy guide](playing-on-linux-legacy-guide.md#blank-console) if the use of an older build is desired.
 
 ### Crackling sound
 
