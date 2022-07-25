@@ -8,6 +8,9 @@ Northstar is officially supported on Linux, it uses compatibility layers like Pr
 
 On Steam Deck, complete the following in desktop mode. You may return to game mode once completed _(A mouse + keyboard plugged into the Deck are recommended for easier navigation of menus)_
 
+> **Check your GLIBC version.** NorthstarProton currently only supports version 2.33 and higher. Verify your installed version with `ldd --version`. If the installed GLIBC is older, use the [legacy guide](installing-northstar/using-northstar/playing-on-linux-legacy-guide.md#blank-console).
+
+
 1. Make sure you ran the vanilla version of Titanfall2 at least once on Linux!
 2. Install the latest version of Northstar using [Viper](../northstar-installers.md#0negal-viper) or do it manually
    1. For manual install download the latest version of Northstar from the [releases](https://github.com/R2Northstar/Northstar/releases) page
