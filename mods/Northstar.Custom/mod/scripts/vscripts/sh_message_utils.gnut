@@ -1,0 +1,505 @@
+#if SERVER
+global function MessageUtils_ServerInit
+
+global function NSCreatePollOnPlayer
+global function NSGetPlayerResponse
+
+global function NSSendLargeMessageToPlayer
+global function NSSendPopUpMessageToPlayer
+global function NSSendAnnouncementMessageToPlayer
+global function NSSendInfoMessageToPlayer
+
+global function NSCreateStatusMessageOnPlayer
+global function NSEditStatusMessageOnPlayer
+global function NSDeleteStatusMessageOnPlayer
+
+struct
+{
+	table<entity,int> playerPollResponses
+} server
+#endif // SERVER
+
+
+#if CLIENT
+global function MessageUtils_ClientInit
+
+vector ColorSelected = < 0.9, 0.8, 0.5 >
+vector ColorBase = < 0.9, 0.5, 0.1 >
+
+struct tempMessage
+{
+	string title
+	string description
+	float duration
+	string image
+	int priority
+	int style
+	vector color
+}
+
+
+// Nested structs look funny, but are pretty helpful when reading code so I'm keeping them :)
+struct
+{
+	struct
+	{
+		string header
+		array<string> options
+		float duration
+		bool pollActive
+		array<var> ruis
+	} poll
+	
+	string id
+	tempMessage temp
+	
+	array<tempMessage> largeMessageQueue
+	array<tempMessage> popupMessageQueue
+	array<tempMessage> announcementQueue
+	array<tempMessage> infoMessageQueue
+	
+	// table<id,rui>
+	table<string,var> statusMessageList
+} client
+#endif // CLIENT
+
+
+const int STATUS_MESSAGES_MAX = 4
+
+
+enum eMessageType
+{
+	POLL,
+	LARGE,
+	POPUP,
+	ANNOUNCEMENT,
+	INFO,
+	CREATE_STATUS,
+	EDIT_STATUS,
+	DELETE_STATUS
+}
+
+enum eDataType
+{
+	POLL_HEADER,
+	POLL_OPTION,
+	POLL_DURATION,
+	POLL_SELECT,
+	TITLE,
+	DESC,
+	DURATION,
+	ASSET,
+	COLOR,
+	PRIORITY,
+	STYLE,
+	ID
+}
+
+#if SERVER
+void function MessageUtils_ServerInit()
+{
+	AddClientCommandCallback( "vote", ClientCommand_Vote )
+	AddClientCommandCallback( "poll_respond", ClientCommand_PollRespond )
+}
+
+bool function ClientCommand_Vote( entity player, array<string> args )
+{
+	if( args.len() == 0 )
+		return false
+	
+	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.POLL_SELECT + " " + args[0] )
+	return true
+}
+
+bool function ClientCommand_PollRespond( entity player, array<string> args )
+{
+	if( args.len() == 0 )
+		return false
+	
+	server.playerPollResponses[player] <- args[0].tointeger()
+	return true
+}
+
+void function NSCreateStatusMessageOnPlayer( entity player, string title, string description, string id )
+{
+	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.TITLE + " " + title )
+	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.DESC + " " + description )
+	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.ID + " " + id )
+
+	ServerToClientStringCommand( player, "ServerHUDMessageShow " + eMessageType.CREATE_STATUS )
+}
+
+void function NSEditStatusMessageOnPlayer( entity player, string title, string description, string id  )
+{
+	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.TITLE + " " + title )
+	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.DESC + " " + description )
+	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.ID + " " + id )
+
+	ServerToClientStringCommand( player, "ServerHUDMessageShow " + eMessageType.EDIT_STATUS )
+}
+
+void function NSDeleteStatusMessageOnPlayer( entity player, string id  )
+{
+	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.ID + " " + id )
+	
+	ServerToClientStringCommand( player, "ServerHUDMessageShow " + eMessageType.DELETE_STATUS )
+}
+
+void function NSCreatePollOnPlayer( entity player, string header, array<string> options, float duration )
+{
+	foreach ( string option in options )
+		ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.POLL_OPTION + " " + option )
+	
+	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.POLL_DURATION + " " + duration )
+	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.POLL_HEADER + " " + header )
+	
+	server.playerPollResponses[player] <- -1 // Reset poll response table
+	ServerToClientStringCommand( player, "ServerHUDMessageShow " + eMessageType.POLL )
+}
+
+int function NSGetPlayerResponse( entity player )
+{
+	if( !( player in server.playerPollResponses ) )
+		return -1
+	
+	if( server.playerPollResponses[ player ] == -1 )
+		return -1
+	
+	return server.playerPollResponses[ player ] - 1
+}
+
+void function NSSendLargeMessageToPlayer( entity player, string title, string description, float duration, string image )
+{
+	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.TITLE + " " + title )
+	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.DESC + " " + description )
+	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.DURATION + " " + duration )
+	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.ASSET + " " + image )
+	
+	ServerToClientStringCommand( player, "ServerHUDMessageShow " + eMessageType.LARGE )
+}
+
+void function NSSendPopUpMessageToPlayer( entity player, string text )
+{
+	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.DESC + " " + text )
+	
+	ServerToClientStringCommand( player, "ServerHUDMessageShow " + eMessageType.POPUP )
+}
+
+void function NSSendAnnouncementMessageToPlayer( entity player, string title, string description, vector color, int priority, int style )
+{
+	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.TITLE + " " + title )
+	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.DESC + " " + description )
+	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.COLOR + " " + color.x + " " + color.y + " " + color.z )
+	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.PRIORITY + " " + priority )
+	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.STYLE + " " + style )
+	
+	ServerToClientStringCommand( player, "ServerHUDMessageShow " + eMessageType.ANNOUNCEMENT )
+}
+
+void function NSSendInfoMessageToPlayer( entity player, string text )
+{
+	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.DESC + " " + text )
+	
+	ServerToClientStringCommand( player, "ServerHUDMessageShow " + eMessageType.INFO )
+}
+
+#endif // SERVER
+
+#if CLIENT
+void function MessageUtils_ClientInit()
+{
+	// ServerHUDMessageRequest <eMessageType>
+	AddServerToClientStringCommandCallback( "ServerHUDMessageShow", ServerCallback_CreateServerHUDMessage )
+	// ServerHUDMessageRequest <eDataType> <Data>
+	AddServerToClientStringCommandCallback( "ServerHUDMessagePut", ServerCallback_UpdateServerHUDMessage )
+	
+	thread LargeMessageHandler_Threaded()
+	thread PopUpMessageHandler_Threaded()
+	thread AnnouncementMessageHandler_Threaded()
+	thread InfoMessageHandler_Threaded()
+}
+
+string function CombineArgsIntoString( array<string> args )
+{
+	string result
+	
+	// Ignore the first argument
+	for( int i = 1; i < args.len(); i++ )
+		result += args[i] + " "
+	
+	return result
+}
+
+void function ServerCallback_UpdateServerHUDMessage ( array<string> args )
+{
+	switch ( args[0].tointeger() )
+	{
+		case eDataType.POLL_HEADER:
+			client.poll.header = CombineArgsIntoString( args )
+			break
+		case eDataType.POLL_OPTION:
+			client.poll.options.append( CombineArgsIntoString( args ) )
+			break
+		case eDataType.POLL_DURATION:
+			client.poll.duration = args[1].tofloat()
+			break
+		case eDataType.POLL_SELECT:
+			thread SelectPollOption_Threaded( args[1].tointeger() )
+			break
+		case eDataType.TITLE:
+			client.temp.title = CombineArgsIntoString( args )
+			break
+		case eDataType.DESC:
+			client.temp.description = CombineArgsIntoString( args )
+			break
+		case eDataType.DURATION:
+			client.temp.duration = args[1].tofloat()
+			break
+		case eDataType.ASSET:
+			client.temp.image = CombineArgsIntoString( args )
+			break
+		case eDataType.COLOR:
+			client.temp.color = Vector( args[1].tofloat(), args[2].tofloat(), args[3].tofloat())
+			break
+		case eDataType.PRIORITY:
+			client.temp.priority = args[1].tointeger()
+			break
+		case eDataType.STYLE:
+			client.temp.style = args[1].tointeger()
+			break
+		case eDataType.ID:
+			client.id = args[1]
+			break
+	}
+}
+
+void function ServerCallback_CreateServerHUDMessage ( array<string> args )
+{
+	switch ( args[0].tointeger() )
+	{
+		case eMessageType.POLL:
+			thread ShowPollMessage_Threaded()
+			break
+		case eMessageType.LARGE:
+			client.largeMessageQueue.append( client.temp )
+			break
+		case eMessageType.POPUP:
+			client.popupMessageQueue.append( client.temp )
+			break
+		case eMessageType.ANNOUNCEMENT:
+			client.announcementQueue.append( client.temp )
+			break
+		case eMessageType.INFO:
+			client.infoMessageQueue.append( client.temp )
+			break
+		case eMessageType.CREATE_STATUS:
+			CreateStatusMessage( client.id )
+			break
+		case eMessageType.EDIT_STATUS:
+			EditStatusMessage( client.id )
+			break
+		case eMessageType.DELETE_STATUS:
+			thread DeleteStatusMessage( client.id )
+			break
+	}
+}
+
+void function DeleteStatusMessage( string id )
+{
+	if ( id in client.statusMessageList )
+	{
+		var rui = client.statusMessageList[ id ]
+		RuiSetGameTime( rui, "startFadeOutTime", Time() )
+		
+		// Remove it from table
+		delete client.statusMessageList[ id ]
+		
+		// Wait for animation
+		wait 0.6
+		
+		RuiDestroyIfAlive( rui )
+		
+		int i = 0
+		foreach( _id, _rui in client.statusMessageList )
+		{
+			RuiSetInt( _rui, "listPos", i )
+			i++
+		}
+	}
+}
+
+void function EditStatusMessage( string id )
+{
+	if( id in client.statusMessageList )
+	{
+		var rui = client.statusMessageList[ id ]
+		RuiSetString( rui, "titleText", client.temp.title )
+		RuiSetString( rui, "itemText", client.temp.description )
+	}
+}
+
+void function CreateStatusMessage( string id )
+{
+	// Cap at 4 messages at a time
+	if( client.statusMessageList.len() == STATUS_MESSAGES_MAX )
+		return
+
+	var rui = CreatePermanentCockpitRui( $"ui/at_wave_intro.rpak" )
+	RuiSetInt( rui, "listPos", client.statusMessageList.len() )
+	RuiSetGameTime( rui, "startFadeInTime", Time() )
+	RuiSetString( rui, "titleText", client.temp.title )
+	RuiSetString( rui, "itemText", client.temp.description )
+	RuiSetFloat2( rui, "offset", < 0, -250, 0 > )
+
+	client.statusMessageList[ id ] <- rui
+}
+
+void function SelectPollOption_Threaded( int index )
+{
+	if ( index >= client.poll.ruis.len() || index <= 0 )
+		return
+	
+	RuiSetFloat3( client.poll.ruis[ index ], "msgColor", ColorSelected )
+	EmitSoundOnEntity( GetLocalClientPlayer(), "menu_accept" )
+	
+	float endTime = 1 + client.poll.duration
+	while( endTime > Time() && client.poll.pollActive )
+		WaitFrame()
+	
+	GetLocalClientPlayer().ClientCommand( "poll_respond " + index )
+	
+	foreach( var rui in client.poll.ruis )
+		RuiDestroyIfAlive( rui )
+	
+	client.poll.ruis.clear()
+	client.poll.pollActive = false
+}
+
+void function ShowPollMessage_Threaded()
+{
+	if( client.poll.pollActive )
+		return
+	
+	client.poll.pollActive = true
+	
+	for( int i = 0; i < client.poll.options.len() + 1; i++ )
+	{
+		var rui = CreateCockpitRui( $"ui/cockpit_console_text_top_left.rpak" )
+		// This makes it fade and me no likey >:(
+		RuiSetFloat2( rui, "msgPos", < 0, 0.4 + i * 0.025, 0 > )
+		if( i == 0 )
+		{
+			RuiSetFloat3( rui, "msgColor", ColorSelected )
+			RuiSetString( rui, "msgText", client.poll.header )
+		}
+		else
+		{
+			RuiSetFloat3( rui, "msgColor", ColorBase )
+			RuiSetString( rui, "msgText", i + ". " + client.poll.options[i - 1]  )
+		}
+		
+		RuiSetFloat( rui, "msgFontSize", 30.0 )
+		RuiSetFloat( rui, "msgAlpha", 0.9 )
+		RuiSetFloat( rui, "thicken", 0.0 )
+		
+		client.poll.ruis.append( rui )
+	}
+	
+	client.poll.options.clear()
+	
+	float endTime = Time() + client.poll.duration
+	while( endTime > Time() && client.poll.pollActive )
+		WaitFrame()
+	
+	
+	foreach( var rui in client.poll.ruis )
+		RuiDestroyIfAlive( rui )
+	
+	client.poll.ruis.clear()
+	client.poll.pollActive = false
+}
+
+void function InfoMessageHandler_Threaded()
+{
+	while( true )
+	{
+		while( client.infoMessageQueue.len() == 0 )
+			WaitFrame()
+
+		var rui = CreatePermanentCockpitRui( $"ui/death_hint_mp.rpak" )
+		RuiSetString( rui, "hintText", client.infoMessageQueue[0].description )
+		RuiSetGameTime( rui, "startTime", Time() )
+		RuiSetFloat3( rui, "bgColor", < 0, 0, 0 > )
+		RuiSetFloat( rui, "bgAlpha", 0.5 )
+
+		wait 7
+
+		client.infoMessageQueue.remove( 0 )
+		RuiDestroyIfAlive( rui )
+	}
+}
+
+void function AnnouncementMessageHandler_Threaded()
+{
+	while( true )
+	{
+		while( client.announcementQueue.len() == 0 )
+			WaitFrame()
+		
+		AnnouncementData announcement = Announcement_Create( client.announcementQueue[0].title )
+		Announcement_SetSubText( announcement, client.announcementQueue[0].description )
+		Announcement_SetTitleColor( announcement, client.announcementQueue[0].color )
+		Announcement_SetPurge( announcement, true )
+		Announcement_SetPriority( announcement, client.announcementQueue[0].priority )
+		Announcement_SetSoundAlias( announcement, SFX_HUD_ANNOUNCE_QUICK )
+		Announcement_SetStyle( announcement, client.announcementQueue[0].style )
+		AnnouncementFromClass( GetLocalViewPlayer(), announcement )
+
+		wait 5
+
+		client.announcementQueue.remove(0)
+	}
+}
+
+void function LargeMessageHandler_Threaded()
+{
+	while( true )
+	{
+		while( client.largeMessageQueue.len() == 0 )
+			WaitFrame()
+
+		var rui = CreatePermanentCockpitRui( $"ui/fd_tutorial_tip.rpak" )
+		RuiSetImage( rui, "backgroundImage", StringToAsset( strip( client.largeMessageQueue[0].image ) ) )
+		RuiSetString( rui, "titleText", client.largeMessageQueue[0].title )
+		RuiSetString( rui, "descriptionText", client.largeMessageQueue[0].description )
+		RuiSetGameTime( rui, "updateTime", Time() )
+		RuiSetFloat( rui, "duration", client.largeMessageQueue[0].duration )
+
+		wait client.largeMessageQueue[0].duration
+
+		client.largeMessageQueue.remove(0)
+		RuiDestroyIfAlive( rui )
+	}
+}
+
+void function PopUpMessageHandler_Threaded()
+{
+	while( true )
+	{
+		while( client.popupMessageQueue.len() == 0 )
+			WaitFrame()
+
+		var rui = CreateCockpitRui( $"ui/killdeath_info.rpak" )
+		RuiSetGameTime( rui, "startTime", Time() )
+		RuiSetFloat( rui, "duration", 20 ) // It has a weird end animation
+		RuiSetString( rui, "messageText", client.popupMessageQueue[0].description )
+		RuiSetBool( rui, "isBigText", true )
+
+		wait 2.4
+
+		client.popupMessageQueue.remove(0)
+		RuiDestroyIfAlive( rui )
+	}
+}
+
+#endif // CLIENT

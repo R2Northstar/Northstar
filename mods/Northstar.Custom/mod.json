@@ -407,6 +407,16 @@
 			"ServerCallback": {
 				"After": "CustomPilotCollision_InitPlaylistVars"
 			}
+		},
+		{
+			"Path": "sh_message_utils.gnut",
+			"RunOn": "( CLIENT || SERVER ) && MP",
+			"ClientCallback": {
+				"Before": "MessageUtils_ClientInit"
+			},
+			"ServerCallback": {
+				"Before": "MessageUtils_ServerInit"
+			}
 		}
 	],
 
