@@ -167,7 +167,7 @@ You can access configuration variables from squirrel code using ``GetConVarInt``
 Example
 """""""
 
-If I don't want to wait 15 seconds for matchs to start on my server, ``Northstar.CustomServers`` 
+If I don't want to wait 15 seconds for matches to start on my server, ``Northstar.CustomServers`` 
 mod exposes a ConVar named ``ns_private_match_countdown_length`` in its ``mod.json`` manifesto:
 
 .. code-block:: json

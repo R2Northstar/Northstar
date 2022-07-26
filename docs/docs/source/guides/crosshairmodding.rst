@@ -87,7 +87,7 @@ Adjust Crosshair Spread?
        }
    }
 
-* This only affects the visual spread of the crosshair, not the actual bullet spread. Positive Values increase spread while negative decrease it. Be default it is based on the weapon's own stats.
+* This only affects the visual spread of the crosshair, not the actual bullet spread. Positive Values increase spread while negative decrease it. By default it is based on the weapon's own stats.
 
 No Crosshair?
 -------------

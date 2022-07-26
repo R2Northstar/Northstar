@@ -48,7 +48,7 @@ first, lets declare our game settings
 
     global function SimpleInfection_init
     void function SimpleInfection_init() {
-        SetSpawnpoint GamemodeOverrde( FFA )// This line makes the player spawn locations like those from ffa
+        SetSpawnpoint_GamemodeOverride( FFA )// This line makes the player spawn locations like those from ffa
         SetLoadoutGracePeriodEnabled( false )// we dont want the zombies to be able to change loadouts and grab their guns, so lets disable that
         SetWeaponDropsEnabled(false )// we dont want zombies grabbing the weapons for dead survivors, so lets disable that.
         Riff_ForceTitanAvailability( eTitanAvailability.Never )// we dont want zombies to have titans either, so lets disable that
