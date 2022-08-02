@@ -17,3 +17,7 @@ RCON only runs if >=8 password is set in `rcon_password` convar
 
 
 RCON PR download guide: https://github.com/R2Northstar/NorthstarLauncher/pull/100#issuecomment-1188877309
+
+To verify that RCON is working, look for `Remote server access initialised` in console output
+
+https://github.com/GeckoEidechse/northstar-dedicated-rcon
