@@ -16,3 +16,4 @@ RCON only runs if >=8 password is set in `rcon_password` convar
 - cpdt's rust based RCON client: https://github.com/cpdt/northstar-rcon-client
 
 
+RCON PR download guide: https://github.com/R2Northstar/NorthstarLauncher/pull/100#issuecomment-1188877309
