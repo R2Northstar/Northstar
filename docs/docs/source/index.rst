@@ -2,7 +2,6 @@ Welcome to the Northstar Modding Documentation!
 ===============================================
 
 
-
 .. note::
 
    This project is under active development. Please PR everything you can!

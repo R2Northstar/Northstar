@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "moddingdocs"
+version = "0.1.0"
+description = "This repo contains the technical documentation on all things related to making Northstar mods."
+authors = ["R2Northstar"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+Sphinx = "^5.0.2"
+furo = "^2022.6.21"
+sphinx-autobuild = "^2021.3.14"
+
+[tool.poetry.dev-dependencies]
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+build = 'moddingdocs:build'
+view = 'moddingdocs:view'
