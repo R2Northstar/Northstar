@@ -67,6 +67,12 @@ From there copy over all the `Northstar.XXXXX` folders into your mods folder in 
 * For titan: `ent_create npc_titan; ent_fire !picker setteam 2`
 * For grunt: `ent_create npc_soldier; ent_fire !picker setteam 2`
 
+**Give free kill / build up titan/core meter**
+
+`script AddPlayerScore(GetPlayerArray()[0], "KillPilot")`
+
+where `GetPlayerArray()[0]` should point to the player you want to give kill/meter.
+
 **Add fake lag for network testing**
 
 `net_fakelag 200` -> 200ms network lag
