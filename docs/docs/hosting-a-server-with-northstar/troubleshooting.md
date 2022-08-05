@@ -76,3 +76,14 @@ As two programs cannot listen to the same port and IP at the same time, changing
 **Server is using the wrong port**
 
 You can use `netstat -a -b` using CMD as admin to check which process listens on which port
+
+## Cannot join own dedicated server via serverbrowser but others can
+
+If you're hosting the dedicated server on the same network as the PC you're trying to join it from but are unabled to join it, the reason is likely that your router doesn't support [NAT loopback](https://en.wikipedia.org/wiki/Network_address_translation#NAT_loopback).
+
+The TL;DR is that basically when you connect via serverbrowser to your own dedicated gameserver located on the same network, the message goes to your router where it sees that the gameserver IP requested is the same as its IP address. A router that supports NAT loopback will still check forwarding rules, notice that it goes to your server and "turn the packet around" to your server. A router that doesn't support NAT loopback will simply drop the packet, meaning the request to join will never reach your gameserver.
+
+To work around this you can set `ns_auth_allow_insecure 1` on the gameserver in the `autoexec_ns_server.cfg`. This way you can directly connect to your server via `connect <local gameserver ip>:<port>` (e.g. `connect 192.168.123.456:37015`).
+
+Note that this still won't allow you to join your server via serverbrowser. You will always have to use the `connect` command to join it. Also, setting `ns_auth_allow_insecure 1` means that anyone that knows the server IP can join it without authenticating with masterserver, meaning that they can impersonate any player on your server. \
+To resolve this you will have to invest into a router that supports NAT loopback or host your gameserver outside your local network.
