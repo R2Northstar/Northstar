@@ -149,6 +149,13 @@
 			"ServerCallback": {
 				"Before": "RespawnProtection_Init"
 			}
+		},
+		{
+			"Path": "/ai/_ai_turret_sentry.gnut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+				"After": "AiTurretSentry_Init"
+			}
 		}
 	]
 }
