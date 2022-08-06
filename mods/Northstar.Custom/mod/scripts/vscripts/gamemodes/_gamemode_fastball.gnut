@@ -1,5 +1,6 @@
 untyped
 global function GamemodeFastball_Init
+global function FastballAddPanelSpawnsForLevel
 
 struct {
 	// first panel is a, second is b, third is c
