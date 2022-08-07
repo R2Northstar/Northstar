@@ -1,5 +1,9 @@
 global function GamemodeHidden_Init
 
+struct {
+	bool isVisible = false
+	array<entity> hiddens
+} file
 
 void function GamemodeHidden_Init()
 {
@@ -20,8 +24,7 @@ void function GamemodeHidden_Init()
 	AddCallback_GameStateEnter( eGameState.Postmatch, RemoveHidden )
 	SetTimeoutWinnerDecisionFunc( TimeoutCheckSurvivors )
 
-	thread PredatorMain()
-
+	RegisterSignal( "VisibleNotification" )
 }
 
 void function HiddenInitPlayer( entity player )
@@ -78,7 +81,10 @@ void function MakePlayerHidden(entity player)
 
 	SetTeam( player, TEAM_IMC )
 	player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 0 ) // reset kills
+	file.hiddens.append( player )
 	RespawnHidden( player )
+	thread PredatorMain( player )
+	thread VisibleNotification( player )
 	Remote_CallFunction_NonReplay( player, "ServerCallback_YouAreHidden" )
 }
 
@@ -153,35 +159,66 @@ void function RemoveHidden()
 	}
 }
 
-void function PredatorMain()
+void function PredatorMain( entity player )
 {
+        player.EndSignal( "OnDeath" )
+        player.EndSignal( "OnDestroy" )
+	float playerVel
+
 	while (true) 
 	{
 		WaitFrame()
 		if(!IsLobby())
 		{
-			foreach (entity player in GetPlayerArray())
+			if ( !IsValid( player ) || !IsAlive( player ) || player.GetTeam() != TEAM_IMC )
+				continue
+
+			vector playerVelV = player.GetVelocity()
+			playerVel = sqrt( playerVelV.x * playerVelV.x + playerVelV.y * playerVelV.y + playerVelV.z * playerVelV.z )
+
+			if ( playerVel/300 < 1.3 )
 			{
-				if (player == null || !IsValid(player) || !IsAlive(player) || player.GetTeam() != TEAM_IMC)
-					continue
-				vector playerVelV = player.GetVelocity()
-				float playerVel
-				playerVel = sqrt(playerVelV.x * playerVelV.x + playerVelV.y * playerVelV.y + playerVelV.z * playerVelV.z)
-				float playerVelNormal = playerVel * 0.068544
-				if (playerVel/300 < 1.3)
+				player.SetCloakFlicker( 0, 0 )
+				player.kv.VisibilityFlags = 0
+				wait 0.5
+				if ( file.isVisible )
 				{
-					player.SetCloakFlicker(0, 0)
-					player.kv.VisibilityFlags = 0
-				}
-				else
-				{
-					player.SetCloakFlicker(0.2 , 1 )
-					player.kv.VisibilityFlags = 0
-					float waittime = RandomFloat(0.5)
-					wait waittime
-					player.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
+					file.isVisible = false
+					player.Signal( "VisibleNotification" )
 				}
 			}
+			else
+			{
+				player.SetCloakFlicker( 0.2 , 1 )
+				player.kv.VisibilityFlags = 0
+				float waittime = RandomFloat( 0.5 )
+				wait waittime
+				player.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
+				file.isVisible = true
+			}
+		}
+	}
+}
+
+void function VisibleNotification( entity player )
+{
+        player.EndSignal( "OnDeath" )
+        player.EndSignal( "OnDestroy" )
+	while (IsAlive(player))
+	{
+		WaitFrame()
+		if (!file.isVisible)
+		{
+			NSDeleteStatusMessageOnPlayer( player, "visibleTitle" )
+			NSDeleteStatusMessageOnPlayer( player, "visibleDesc" )
+			continue
+		}
+		else
+		{
+			NSCreateStatusMessageOnPlayer( player, "You are visible!", "", "visibleTitle" )
+			NSCreateStatusMessageOnPlayer( player, "Note:", "Slow down to remain invisible!", "visibleDesc" )
+			player.WaitSignal( "VisibleNotification" )
+			continue
 		}
 	}
 }
