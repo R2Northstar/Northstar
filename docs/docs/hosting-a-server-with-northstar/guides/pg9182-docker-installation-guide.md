@@ -31,21 +31,20 @@ Easiest way to do this is copy the entire Titanfall2 folder to your desktop and 
 #### Copy Titanfall Folder over to the Linux Machine
 
 1. Access the files on your Linux machine using tools like [Filezilla](https://filezilla-project.org/) or [WinSCP](https://winscp.net/eng/download.php)
-2. Navigate to `/mnt/Titanfall` (create directory if does not exist)
+2. Navigate to the folder where you want to store the files. You can put them into `~/Titanfall2` for example.
 3. Copy the newly pruned Titanfall folder to the server.
 
-![/mnt/Titanfall/](https://i.postimg.cc/15HbbzFr/image.pnghttps://i.postimg.cc/15HbbzFr/image.png)
+![Game files copied to `/mnt/Titanfall` as an example](https://i.postimg.cc/15HbbzFr/image.pnghttps://i.postimg.cc/15HbbzFr/image.png)
 
-#### Copy mods to /mnt/mods
+#### Copy mods to server
 
-If you have configured some mods,these can be placed at '/mnt/mods\` like below ![/mnt/mods](https://i.postimg.cc/tRD5jnrJ/image.png)
+If you have configured some mods,these can be placed at a similar location, like `~/mods` for example(https://i.postimg.cc/tRD5jnrJ/image.png)
 
 #### Create docker-compose file
 
-We are going to be using Docker-Compose to set up our container, this gives us much more flexibility and allows us to make changes to the start up args much cleaner.
+We are going to be using Docker-Compose to set up our container, this gives us much more flexibility and allows us to make changes to the start up args much cleaner. Create a compose file in the same location you've put your `Titanfall2` and `mods` folder for example.
 
 ```
-mkdir Titanfall
 nano docker-compose.yml
 ```
 
@@ -74,13 +73,16 @@ services:
        +spewlog_enable 0
        +sv_maxrate 127000
    volumes:
-     - /mnt/Titanfall:/mnt/Titanfall:ro
-     - /mnt/mods:/mnt/mods:ro
+     - ./Titanfall2:/mnt/Titanfall:ro
+     - ./mods:/mnt/mods:ro
    ports:
      - '37015:37015/udp'
      - '8081:8081/tcp'
    restart: always
 ```
+
+**Note:** `./<foldername>` in volumes means that the location is relative to your compose file. The general syntax for adding volumes is `<location on host>:<location in container>[:<modifier like read-only>]` (the part in `[...]` is optional).
+
 
 A list of all the CONVARs are [here](../../basic-listen-server/#server-configuration)
 
@@ -88,7 +90,7 @@ A list of all the CONVARs are [here](../../basic-listen-server/#server-configura
 
 #### Run the following command
 
-To run this container type
+To run this container go to the folder you saved the `docker-compose.yaml` in and type
 
 ```
 docker-compose up
