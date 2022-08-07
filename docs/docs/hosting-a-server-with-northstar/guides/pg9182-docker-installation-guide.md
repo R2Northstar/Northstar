@@ -34,7 +34,7 @@ Easiest way to do this is copy the entire Titanfall2 folder to your desktop and 
 2. Navigate to the folder where you want to store the files. You can put them into `~/Titanfall2` for example.
 3. Copy the newly pruned Titanfall folder to the server.
 
-![Game files copied to `/mnt/Titanfall` as an example](https://i.postimg.cc/15HbbzFr/image.pnghttps://i.postimg.cc/15HbbzFr/image.png)
+![Game files copied to `/mnt/Titanfall` as an example](https://i.postimg.cc/15HbbzFr/image.png)
 
 #### Copy mods to server
 
