@@ -339,7 +339,8 @@ void function PlayerWatchesWargamesIntro( entity player )
 void function DelayedGamemodeAnnouncement( entity player )
 {
 	wait 1.0
-	TryGameModeAnnouncement( player )
+	if ( IsValid( player ) && IsAlive( player ) )
+		TryGameModeAnnouncement( player )
 }
 
 void function PlaySound_SimPod_DoorShut( entity playerFirstPersonProxy  ) // stolen from sp_training
