@@ -356,7 +356,6 @@ void function Evac( int evacTeam, float initialWait, float arrivalTime, float wa
 		foreach ( entity otherPlayer in GetPlayerArray() )
 			Remote_CallFunction_NonReplay( otherPlayer, "ServerCallback_EvacObit", player.GetEncodedEHandle() )
 	}
-	
 }
 
 void function AddPlayerToEvacDropship( entity dropship, entity player ) 
@@ -376,7 +375,10 @@ void function AddPlayerToEvacDropship( entity dropship, entity player )
 	// no slots available
 	if ( !PlayerInDropship( player, dropship ) )
 		return
-		
+
+    // need to cancel if the dropship dies
+    dropship.EndSignal( "OnDeath", "OnDestroy" )
+
 	player.SetInvulnerable()
 	player.UnforceCrouch()
 	player.ForceStand()
@@ -391,7 +393,7 @@ void function AddPlayerToEvacDropship( entity dropship, entity player )
 	EmitSoundOnEntityOnlyToPlayer( player, player, SHIFTER_START_SOUND_3P )
 	// should play SHIFTER_START_SOUND_1P when they actually arrive in the ship i think, unsure how this is supposed to be done
 	PlayPhaseShiftDisappearFX( player )
-	waitthread FirstPersonSequence( fp, player, dropship )
+	FirstPersonSequence( fp, player, dropship )
 	
 	FirstPersonSequenceStruct idleFp
 	idleFp.firstPersonAnimIdle = EVAC_IDLE_ANIMS_1P[ slot ]
