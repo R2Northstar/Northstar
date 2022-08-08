@@ -1,3 +1,5 @@
+#include <float.h>
+
 #include "pch.h"
 #include "bits.h"
 #include "cvar.h"

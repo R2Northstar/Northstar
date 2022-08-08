@@ -41,11 +41,19 @@ void InitialiseFilesystem(HMODULE baseAddress)
 	// create hooks
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x5CBA0, &ReadFileFromVPKHook, reinterpret_cast<LPVOID*>(&readFileFromVPK));
-	ENABLER_CREATEHOOK(hook, (*g_Filesystem)->m_vtable->ReadFromCache, &ReadFromCacheHook, reinterpret_cast<LPVOID*>(&readFromCache));
 	ENABLER_CREATEHOOK(
-		hook, (*g_Filesystem)->m_vtable->AddSearchPath, &AddSearchPathHook, reinterpret_cast<LPVOID*>(&addSearchPathOriginal));
+		hook,
+		reinterpret_cast<void*>((*g_Filesystem)->m_vtable->ReadFromCache),
+		&ReadFromCacheHook,
+		reinterpret_cast<LPVOID*>(&readFromCache));
+	ENABLER_CREATEHOOK(
+		hook,
+		reinterpret_cast<void*>((*g_Filesystem)->m_vtable->AddSearchPath),
+		&AddSearchPathHook,
+		reinterpret_cast<LPVOID*>(&addSearchPathOriginal));
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x15F20, &ReadFileFromFilesystemHook, reinterpret_cast<LPVOID*>(&readFileFromFilesystem));
-	ENABLER_CREATEHOOK(hook, (*g_Filesystem)->m_vtable->MountVPK, &MountVPKHook, reinterpret_cast<LPVOID*>(&mountVPK));
+	ENABLER_CREATEHOOK(
+		hook, reinterpret_cast<void*>((*g_Filesystem)->m_vtable->MountVPK), &MountVPKHook, reinterpret_cast<LPVOID*>(&mountVPK));
 }
 
 std::string ReadVPKFile(const char* path)

@@ -11,7 +11,7 @@ extern "C" void _free_base(void* const block);
 extern "C" char* _strdup_base(const char* src);
 
 void* operator new(size_t n);
-void operator delete(void* p);
+void operator delete(void* p) noexcept;
 
 // void* malloc(size_t n);
 

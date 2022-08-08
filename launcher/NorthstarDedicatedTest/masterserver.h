@@ -1,6 +1,6 @@
 #pragma once
 #include "convar.h"
-#include <WinSock2.h>
+#include <winsock2.h>
 #include <string>
 #include <cstring>
 struct RemoteModInfo

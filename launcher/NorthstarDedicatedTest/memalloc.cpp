@@ -70,7 +70,7 @@ void* operator new(size_t n)
 	return _malloc_base(n);
 }
 
-void operator delete(void* p)
+void operator delete(void* p) noexcept
 {
 	_free_base(p);
 } // /FORCE:MULTIPLE

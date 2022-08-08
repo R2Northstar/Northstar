@@ -13,8 +13,8 @@
 // add headers that you want to pre-compile here
 #include "memalloc.h"
 
-#include <Windows.h>
-#include <Psapi.h>
+#include <windows.h>
+#include <psapi.h>
 #include <set>
 #include <map>
 #include <filesystem>

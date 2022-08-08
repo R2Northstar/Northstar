@@ -7,10 +7,10 @@
 #ifndef PCH_H
 #define PCH_H
 
-#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+#define WIN32_LEAN_AND_MEAN // Exclude rarely-used stuff from Windows headers
 // Windows Header Files
 #include <windows.h>
 
 #include "include/MinHook.h"
 
-#endif //PCH_H
+#endif // PCH_H

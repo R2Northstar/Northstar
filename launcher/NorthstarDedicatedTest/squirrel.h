@@ -138,7 +138,7 @@ enum SQObjectType : __int32
 };
 
 /* 156 */
-union __declspec(align(8)) SQObjectValue
+union alignas(8) SQObjectValue
 {
 	SQString* asString;
 	SQTable* asTable;
@@ -153,7 +153,7 @@ union __declspec(align(8)) SQObjectValue
 };
 
 /* 128 */
-struct __declspec(align(8)) SQObject
+struct alignas(8) SQObject
 {
 	SQObjectType _Type;
 	__int32 _structOffset;
@@ -168,7 +168,7 @@ struct tableNode
 };
 
 /* 138 */
-struct __declspec(align(8)) SQString
+struct alignas(8) SQString
 {
 	__int64* vftable;
 	__int32 uiRef;
@@ -182,7 +182,7 @@ struct __declspec(align(8)) SQString
 };
 
 /* 137 */
-struct __declspec(align(8)) SQTable
+struct alignas(8) SQTable
 {
 	__int64* vftable;
 	uint8 gap_08[4];
@@ -203,7 +203,7 @@ struct __declspec(align(8)) SQTable
 };
 
 /* 140 */
-struct __declspec(align(8)) SQClosure
+struct alignas(8) SQClosure
 {
 	void* vftable;
 	uint8 gap_08[4];
@@ -221,7 +221,7 @@ struct __declspec(align(8)) SQClosure
 };
 
 /* 139 */
-struct __declspec(align(8)) SQFunctionProto
+struct alignas(8) SQFunctionProto
 {
 	void* vftable;
 	uint8 gap_08[4];
@@ -262,7 +262,7 @@ struct SQStructInstance
 };
 
 /* 157 */
-struct __declspec(align(8)) SQNativeClosure
+struct alignas(8) SQNativeClosure
 {
 	void* vftable;
 	uint8 gap_08[4];
@@ -289,7 +289,7 @@ struct StringTable
 };
 
 /* 129 */
-struct __declspec(align(8)) HSquirrelVM
+struct alignas(8) HSquirrelVM
 {
 	void* vftable;
 	__int32 uiRef;
@@ -331,7 +331,7 @@ struct __declspec(align(8)) HSquirrelVM
 };
 
 /* 136 */
-struct __declspec(align(8)) CallInfo
+struct alignas(8) CallInfo
 {
 	SQInstruction* ip;
 	SQObject* _literals;
@@ -473,7 +473,7 @@ enum SQOpcode : int
 };
 
 /* 141 */
-struct __declspec(align(8)) SQStackInfos
+struct alignas(8) SQStackInfos
 {
 	char* _name;
 	char* _sourceName;
@@ -481,7 +481,7 @@ struct __declspec(align(8)) SQStackInfos
 };
 
 /* 151 */
-struct __declspec(align(4)) SQInstruction
+struct alignas(4) SQInstruction
 {
 	int op;
 	int arg1;
@@ -804,7 +804,7 @@ template <ScriptContext context> class SquirrelManager
 		reg->argTypes = new char[argTypes.size() + 1];
 		strcpy((char*)reg->argTypes, argTypes.c_str());
 
-		reg->funcPtr = func;
+		reg->funcPtr = reinterpret_cast<void*>(func);
 
 		m_funcRegistrations.push_back(reg);
 	}

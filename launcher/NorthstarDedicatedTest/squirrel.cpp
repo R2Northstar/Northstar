@@ -504,7 +504,7 @@ template <ScriptContext context> int64_t RegisterSquirrelFuncHook(void* sqvm, SQ
 
 	if ((funcReg->devLevel == 1) && (!CommandLine()->CheckParm("-allowSquirrelDevFunctions")) &&
 		(!allowedDevFunctions.count(funcReg->squirrelFuncName)))
-		funcReg->funcPtr = SQ_DevFuncStub;
+		funcReg->funcPtr = reinterpret_cast<void*>(SQ_DevFuncStub);
 
 	if (context == ScriptContext::SERVER)
 		return ServerRegisterSquirrelFunc(sqvm, funcReg, unknown);
