@@ -1,4 +1,3 @@
-#pragma once
 #include "pch.h"
 #include "bansystem.h"
 #include "serverauthentication.h"

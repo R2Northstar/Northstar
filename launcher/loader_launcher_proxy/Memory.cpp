@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "Memory.h"
 
 extern HMODULE hTier0Module;
 IMemAlloc** g_ppMemAllocSingleton;
@@ -77,6 +78,12 @@ void* realloc(void* old_ptr, size_t size)
 	return nullptr;
 }
 
-void* operator new(size_t n) { return malloc(n); }
+void* operator new(size_t n)
+{
+	return malloc(n);
+}
 
-void operator delete(void* p) { return free(p); }
+void operator delete(void* p) noexcept
+{
+	return free(p);
+}

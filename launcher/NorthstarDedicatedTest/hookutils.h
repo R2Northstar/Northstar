@@ -19,4 +19,5 @@ class HookEnabler
 };
 
 // macro to call HookEnabler::CreateHook with the hook's name
-#define ENABLER_CREATEHOOK(enabler, ppTarget, ppDetour, ppOriginal) enabler.CreateHook(ppTarget, ppDetour, ppOriginal, #ppDetour)
+#define ENABLER_CREATEHOOK(enabler, ppTarget, ppDetour, ppOriginal)                                                                        \
+	enabler.CreateHook(ppTarget, reinterpret_cast<void*>(ppDetour), ppOriginal, #ppDetour)

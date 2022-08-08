@@ -35,5 +35,8 @@ void InitialiseClientVideoOverrides(HMODULE baseAddress)
 {
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(
-		hook, GetProcAddress(GetModuleHandleA("bink2w64.dll"), "BinkOpen"), &BinkOpenHook, reinterpret_cast<LPVOID*>(&BinkOpen));
+		hook,
+		reinterpret_cast<void*>(GetProcAddress(GetModuleHandleA("bink2w64.dll"), "BinkOpen")),
+		&BinkOpenHook,
+		reinterpret_cast<LPVOID*>(&BinkOpen));
 }

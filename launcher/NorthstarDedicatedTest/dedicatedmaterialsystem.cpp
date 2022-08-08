@@ -1,4 +1,3 @@
-#pragma once
 #include "pch.h"
 #include "dedicated.h"
 #include "dedicatedmaterialsystem.h"

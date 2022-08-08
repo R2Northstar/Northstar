@@ -212,7 +212,7 @@ void RunUserCmds_Hook(bool a1, float a2)
 
 	v3 = *(unsigned char*)(g_pGlobals + 73);
 	if (*(DWORD*)(qword_1814D9648 + 92) &&
-		((*(unsigned __int8(__fastcall**)(__int64))(*(__int64*)g_pEngineServer + 32i64))(g_pEngineServer) ||
+		((*(unsigned __int8(__fastcall**)(__int64))(*(__int64*)g_pEngineServer + 32))(g_pEngineServer) ||
 		 !*(DWORD*)(qword_1814DA408 + 92)) &&
 		v3)
 	{
@@ -282,7 +282,7 @@ void RunUserCmds_Hook(bool a1, float a2)
 						if (v23)
 							v19 = 1;
 						else
-							*v21 = 0i64;
+							*v21 = 0;
 					}
 					++v20;
 					++v21;

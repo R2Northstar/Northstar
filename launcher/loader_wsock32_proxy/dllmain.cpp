@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "loader.h"
 
-#include <Shlwapi.h>
+#include <shlwapi.h>
 #include <filesystem>
 
 HINSTANCE hLThis = 0;
@@ -10,8 +10,10 @@ HINSTANCE hL = 0;
 
 bool GetExePathWide(wchar_t* dest, DWORD destSize)
 {
-	if (!dest) return NULL;
-	if (destSize < MAX_PATH) return NULL;
+	if (!dest)
+		return NULL;
+	if (destSize < MAX_PATH)
+		return NULL;
 
 	DWORD length = GetModuleFileNameW(NULL, dest, destSize);
 	return length && PathRemoveFileSpecW(dest);
@@ -29,7 +31,11 @@ BOOL WINAPI DllMain(HINSTANCE hInst, DWORD reason, LPVOID)
 
 		if (!GetExePathWide(exePath, 4096))
 		{
-			MessageBoxA(GetForegroundWindow(), "Failed getting game directory.\nThe game cannot continue and has to exit.", "Northstar Wsock32 Proxy Error", 0);
+			MessageBoxA(
+				GetForegroundWindow(),
+				"Failed getting game directory.\nThe game cannot continue and has to exit.",
+				"Northstar Wsock32 Proxy Error",
+				0);
 			return true;
 		}
 
@@ -59,7 +65,14 @@ BOOL WINAPI DllMain(HINSTANCE hInst, DWORD reason, LPVOID)
 				{
 					if (!std::filesystem::exists(temp_dir))
 					{
-						swprintf_s(buffer2, L"Failed copying wsock32.dll from system32 to \"%s\"\n\n%S\n\nFurthermore, we failed copying wsock32.dll into temporary directory at \"%s\"\n\n%S", buffer1, e1.what(), temp_dir.c_str(), e2.what());
+						swprintf_s(
+							buffer2,
+							L"Failed copying wsock32.dll from system32 to \"%s\"\n\n%S\n\nFurthermore, we failed copying wsock32.dll into "
+							L"temporary directory at \"%s\"\n\n%S",
+							buffer1,
+							e1.what(),
+							temp_dir.c_str(),
+							e2.what());
 						MessageBoxW(GetForegroundWindow(), buffer2, L"Northstar Wsock32 Proxy Error", 0);
 						return false;
 					}
@@ -68,7 +81,8 @@ BOOL WINAPI DllMain(HINSTANCE hInst, DWORD reason, LPVOID)
 			}
 		}
 		hL = LoadLibraryExW(buffer1, 0, LOAD_WITH_ALTERED_SEARCH_PATH);
-		if (!hL) {
+		if (!hL)
+		{
 			LibraryLoadError(GetLastError(), L"wsock32.org.dll", buffer1);
 			return false;
 		}
@@ -104,51 +118,63 @@ extern "C"
 	FARPROC PA = NULL;
 	int RunASM();
 
-	void PROXY_EnumProtocolsA() {
+	void PROXY_EnumProtocolsA()
+	{
 		PA = p[1];
 		RunASM();
 	}
-	void PROXY_EnumProtocolsW() {
+	void PROXY_EnumProtocolsW()
+	{
 		PA = p[2];
 		RunASM();
 	}
-	void PROXY_GetAddressByNameA() {
+	void PROXY_GetAddressByNameA()
+	{
 		PA = p[4];
 		RunASM();
 	}
-	void PROXY_GetAddressByNameW() {
+	void PROXY_GetAddressByNameW()
+	{
 		PA = p[5];
 		RunASM();
 	}
-	void PROXY_WEP() {
+	void PROXY_WEP()
+	{
 		PA = p[17];
 		RunASM();
 	}
-	void PROXY_WSARecvEx() {
+	void PROXY_WSARecvEx()
+	{
 		PA = p[30];
 		RunASM();
 	}
-	void PROXY___WSAFDIsSet() {
+	void PROXY___WSAFDIsSet()
+	{
 		PA = p[36];
 		RunASM();
 	}
-	void PROXY_getnetbyname() {
+	void PROXY_getnetbyname()
+	{
 		PA = p[45];
 		RunASM();
 	}
-	void PROXY_getsockopt() {
+	void PROXY_getsockopt()
+	{
 		PA = p[52];
 		RunASM();
 	}
-	void PROXY_inet_network() {
+	void PROXY_inet_network()
+	{
 		PA = p[56];
 		RunASM();
 	}
-	void PROXY_s_perror() {
+	void PROXY_s_perror()
+	{
 		PA = p[67];
 		RunASM();
 	}
-	void PROXY_setsockopt() {
+	void PROXY_setsockopt()
+	{
 		PA = p[72];
 		RunASM();
 	}

@@ -194,7 +194,7 @@ void InitialiseServerChatHooks_Server(HMODULE baseAddress)
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(
 		hook,
-		CServerGameDLL__OnReceivedSayTextMessage,
+		reinterpret_cast<void*>(CServerGameDLL__OnReceivedSayTextMessage),
 		&CServerGameDLL__OnReceivedSayTextMessageHook,
 		reinterpret_cast<LPVOID*>(&CServerGameDLL__OnReceivedSayTextMessageHookBase));
 

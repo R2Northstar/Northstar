@@ -299,9 +299,15 @@ void InitialiseEngineRpakFilesystem(HMODULE baseAddress)
 	pUnknownPakLoadSingleton = (void**)((char*)baseAddress + 0x7C5E20);
 
 	HookEnabler hook;
-	ENABLER_CREATEHOOK(hook, g_pakLoadApi->LoadPakSync, &LoadPakSyncHook, reinterpret_cast<LPVOID*>(&LoadPakSyncOriginal));
-	ENABLER_CREATEHOOK(hook, g_pakLoadApi->LoadPakAsync, &LoadPakAsyncHook, reinterpret_cast<LPVOID*>(&LoadPakAsyncOriginal));
-	ENABLER_CREATEHOOK(hook, g_pakLoadApi->UnloadPak, &UnloadPakHook, reinterpret_cast<LPVOID*>(&UnloadPakOriginal));
 	ENABLER_CREATEHOOK(
-		hook, g_pakLoadApi->ReadFullFileFromDisk, &ReadFullFileFromDiskHook, reinterpret_cast<LPVOID*>(&ReadFullFileFromDiskOriginal));
+		hook, reinterpret_cast<void*>(g_pakLoadApi->LoadPakSync), &LoadPakSyncHook, reinterpret_cast<LPVOID*>(&LoadPakSyncOriginal));
+	ENABLER_CREATEHOOK(
+		hook, reinterpret_cast<void*>(g_pakLoadApi->LoadPakAsync), &LoadPakAsyncHook, reinterpret_cast<LPVOID*>(&LoadPakAsyncOriginal));
+	ENABLER_CREATEHOOK(
+		hook, reinterpret_cast<void*>(g_pakLoadApi->UnloadPak), &UnloadPakHook, reinterpret_cast<LPVOID*>(&UnloadPakOriginal));
+	ENABLER_CREATEHOOK(
+		hook,
+		reinterpret_cast<void*>(g_pakLoadApi->ReadFullFileFromDisk),
+		&ReadFullFileFromDiskHook,
+		reinterpret_cast<LPVOID*>(&ReadFullFileFromDiskOriginal));
 }

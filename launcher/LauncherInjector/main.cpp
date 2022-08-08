@@ -1,10 +1,10 @@
 #define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#include <TlHelp32.h>
+#include <windows.h>
+#include <tlhelp32.h>
 #include <filesystem>
 #include <sstream>
 #include <fstream>
-#include <Shlwapi.h>
+#include <shlwapi.h>
 #include <iostream>
 
 namespace fs = std::filesystem;
@@ -225,7 +225,7 @@ bool ShouldLoadNorthstar(int argc, char* argv[])
 		std::stringstream runNorthstarFileBuffer;
 		runNorthstarFileBuffer << runNorthstarFile.rdbuf();
 		runNorthstarFile.close();
-		if (runNorthstarFileBuffer.str()._Starts_with("0"))
+		if (runNorthstarFileBuffer.str().starts_with("0"))
 			loadNorthstar = false;
 	}
 	return loadNorthstar;
@@ -236,7 +236,7 @@ bool LoadNorthstar()
 	FARPROC Hook_Init = nullptr;
 	{
 		swprintf_s(buffer, L"%s\\Northstar.dll", exePath);
-		hHookModule = LoadLibraryExW(buffer, 0i64, 8u);
+		hHookModule = LoadLibraryExW(buffer, 0, 8u);
 		if (hHookModule)
 			Hook_Init = GetProcAddress(hHookModule, "InitialiseNorthstar");
 		if (!hHookModule || Hook_Init == nullptr)

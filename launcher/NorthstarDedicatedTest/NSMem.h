@@ -44,7 +44,7 @@ namespace NSMem
 					}
 					else
 					{
-						assert(false, "Failed to parse invalid hex string.");
+						assert(false);
 						val = -1;
 					}
 
@@ -188,6 +188,6 @@ struct KHook
 #define KHOOK(name, funcPatternInfo, returnType, convention, args)                                                                         \
 	returnType convention hk##name args;                                                                                                   \
 	auto o##name = (returnType(convention*) args)0;                                                                                        \
-	KHook k##name = KHook(KHookPatternInfo funcPatternInfo, &hk##name, (void**)&o##name);                                                  \
+	KHook k##name = KHook(KHookPatternInfo funcPatternInfo, reinterpret_cast<void*>(&hk##name), (void**)&o##name);                         \
 	returnType convention hk##name args
 #pragma endregion

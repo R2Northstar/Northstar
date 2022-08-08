@@ -10,7 +10,6 @@
 #include <fstream>
 #include <sstream>
 #include <filesystem>
-#include <Psapi.h>
 
 typedef LPSTR (*GetCommandLineAType)();
 LPSTR GetCommandLineAHook();
@@ -39,11 +38,14 @@ void InstallInitialHooks()
 		spdlog::error("MH_Initialize (minhook initialization) failed");
 
 	HookEnabler hook;
-	ENABLER_CREATEHOOK(hook, &GetCommandLineA, &GetCommandLineAHook, reinterpret_cast<LPVOID*>(&GetCommandLineAOriginal));
-	ENABLER_CREATEHOOK(hook, &LoadLibraryExA, &LoadLibraryExAHook, reinterpret_cast<LPVOID*>(&LoadLibraryExAOriginal));
-	ENABLER_CREATEHOOK(hook, &LoadLibraryA, &LoadLibraryAHook, reinterpret_cast<LPVOID*>(&LoadLibraryAOriginal));
-	ENABLER_CREATEHOOK(hook, &LoadLibraryExW, &LoadLibraryExWHook, reinterpret_cast<LPVOID*>(&LoadLibraryExWOriginal));
-	ENABLER_CREATEHOOK(hook, &LoadLibraryW, &LoadLibraryWHook, reinterpret_cast<LPVOID*>(&LoadLibraryWOriginal));
+	ENABLER_CREATEHOOK(
+		hook, reinterpret_cast<void*>(&GetCommandLineA), &GetCommandLineAHook, reinterpret_cast<LPVOID*>(&GetCommandLineAOriginal));
+	ENABLER_CREATEHOOK(
+		hook, reinterpret_cast<void*>(&LoadLibraryExA), &LoadLibraryExAHook, reinterpret_cast<LPVOID*>(&LoadLibraryExAOriginal));
+	ENABLER_CREATEHOOK(hook, reinterpret_cast<void*>(&LoadLibraryA), &LoadLibraryAHook, reinterpret_cast<LPVOID*>(&LoadLibraryAOriginal));
+	ENABLER_CREATEHOOK(
+		hook, reinterpret_cast<void*>(&LoadLibraryExW), &LoadLibraryExWHook, reinterpret_cast<LPVOID*>(&LoadLibraryExWOriginal));
+	ENABLER_CREATEHOOK(hook, reinterpret_cast<void*>(&LoadLibraryW), &LoadLibraryWHook, reinterpret_cast<LPVOID*>(&LoadLibraryWOriginal));
 }
 
 LPSTR GetCommandLineAHook()
