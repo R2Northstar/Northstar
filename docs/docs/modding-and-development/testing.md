@@ -31,7 +31,18 @@ After testing, make sure to mention the steps tested in your review.
 
 ## Acquiring necessary files
 
-### NorthstarLauncher
+### northstar_dev_testing_helper_tool
+
+You can use the creatively named `northstar_dev_testing_helper_tool` to essentially 1-click install any pull request to [NorthstarMods](https://github.com/R2Northstar/NorthstarMods/) and [NorthstarLauncher](https://github.com/R2Northstar/NorthstarLauncher/).
+
+The tool is still WIP albeit in a usable state. Check its README for instructions:
+
+{% embed url="https://github.com/GeckoEidechse/northstar_dev_testing_helper_tool" %}
+
+
+### Manually
+
+#### NorthstarLauncher
 
 Before starting, make sure you have a **working and up-to-date Northstar install** and you're **logged into GitHub with your GitHub account** (downloading files from CI only works while logged into any GitHub account)!
 
@@ -46,7 +57,7 @@ Before starting, make sure you have a **working and up-to-date Northstar install
 
 Alternatively, compiling the PR'd code from source is also an option. For this, refer to [northstarlauncher.md](development/northstarlauncher.md "mention")
 
-### NorthstarMods
+#### NorthstarMods
 
 Click on the source branch of the PR
 
