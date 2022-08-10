@@ -7,6 +7,7 @@
 #include "configurables.h"
 
 const char* BANLIST_PATH_SUFFIX = "/banlist.txt";
+const char BANLIST_COMMENT_CHAR = '#';
 
 ServerBanSystem* g_ServerBanSystem;
 
@@ -19,7 +20,25 @@ void ServerBanSystem::OpenBanlist()
 	{
 		std::string line;
 		while (std::getline(enabledModsStream, line))
-			m_vBannedUids.push_back(strtoull(line.c_str(), nullptr, 10));
+		{
+			// ignore line if first char is # or line is empty
+			if (line == "" || line.front() == BANLIST_COMMENT_CHAR)
+				continue;
+
+			// remove tabs which shouldnt be there but maybe someone did the funny
+			line.erase(std::remove(line.begin(), line.end(), '\t'), line.end());
+			// remove spaces to allow for spaces before uids
+			line.erase(std::remove(line.begin(), line.end(), ' '), line.end());
+
+			// check if line is empty to allow for newlines in the file
+			if (line == "")
+				continue;
+
+			// for inline comments like: 123123123 #banned for unfunny
+			std::string uid = line.substr(0, line.find(BANLIST_COMMENT_CHAR));
+
+			m_vBannedUids.push_back(strtoull(uid.c_str(), nullptr, 10));
+		}
 
 		enabledModsStream.close();
 	}
@@ -39,6 +58,14 @@ void ServerBanSystem::ClearBanlist()
 
 void ServerBanSystem::BanUID(uint64_t uid)
 {
+	// checking if last char is \n to make sure uids arent getting fucked
+	std::ifstream fsBanlist(GetNorthstarPrefix() + "/banlist.txt");
+	std::string content((std::istreambuf_iterator<char>(fsBanlist)), (std::istreambuf_iterator<char>()));
+	fsBanlist.close();
+
+	if (content.back() != '\n')
+		m_sBanlistStream << std::endl;
+
 	m_vBannedUids.push_back(uid);
 	m_sBanlistStream << std::to_string(uid) << std::endl;
 	spdlog::info("{} was banned", uid);
