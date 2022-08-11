@@ -278,6 +278,9 @@ void function GameStateEnter_WinnerDetermined_Threaded()
 			Remote_CallFunction_NonReplay( player, "ServerCallback_AnnounceRoundWinner", winningTeam, announcementSubstr, ROUND_WINNING_KILL_REPLAY_SCREEN_FADE_TIME, GameRules_GetTeamScore2( TEAM_MILITIA ), GameRules_GetTeamScore2( TEAM_IMC ) )
 		else
 			Remote_CallFunction_NonReplay( player, "ServerCallback_AnnounceWinner", winningTeam, announcementSubstr, ROUND_WINNING_KILL_REPLAY_SCREEN_FADE_TIME )
+	
+		if ( player.GetTeam() == winningTeam )
+			UnlockAchievement( player, achievements.MP_WIN )
 	}
 	
 	WaitFrame() // wait a frame so other scripts can setup killreplay stuff
