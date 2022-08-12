@@ -33,8 +33,8 @@ tl:dr;
     git clone https://github.com/R2Northstar/ModdingDocs/
     cd ModdingDocs
     py -m pip install poetry
-    poetry install
-    poetry run build
+    py -m poetry install
+    py -m poetry run build
 
 Explanation
 ^^^^^^^^^^^
@@ -62,16 +62,17 @@ Now, tell poetry to install this project.
 
 .. code:: bash
 
-    poetry install
+    py -m poetry install
 
 After this is done downloading and setting up all the dependencies, you can build it with:
 
 .. code:: bash
 
-    poetry run build
+    py -m poetry run build
 
 This should rebuild the docs on changes and open them in your default browser with live reloading.
 
+Note: if you added python to the PATH you can omit the ``py -m`` or alternatives.
 
 Tips and tricks
 ---------------
