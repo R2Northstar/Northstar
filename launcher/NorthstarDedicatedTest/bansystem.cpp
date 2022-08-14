@@ -44,8 +44,24 @@ void ServerBanSystem::OpenBanlist()
 		enabledModsStream.close();
 	}
 
-	// open write stream for banlist
-	m_sBanlistStream.open(GetNorthstarPrefix() + "/banlist.txt", std::ofstream::out | std::ofstream::binary | std::ofstream::app);
+	// open write stream for banlist // dont do this to allow for all time access
+	// m_sBanlistStream.open(GetNorthstarPrefix() + "/banlist.txt", std::ofstream::out | std::ofstream::binary | std::ofstream::app);
+}
+
+void ServerBanSystem::ReloadBanlist()
+{
+	std::ifstream fsBanlist(GetNorthstarPrefix() + "/banlist.txt");
+
+	if (!fsBanlist.fail())
+	{
+		std::string line;
+		// since we wanna use this as the reload func we need to clear the list
+		m_vBannedUids.clear();
+		while (std::getline(fsBanlist, line))
+			m_vBannedUids.push_back(strtoull(line.c_str(), nullptr, 10));
+
+		fsBanlist.close();
+	}
 }
 
 void ServerBanSystem::ClearBanlist()
@@ -55,6 +71,7 @@ void ServerBanSystem::ClearBanlist()
 	// reopen the file, don't provide std::ofstream::app so it clears on open
 	m_sBanlistStream.close();
 	m_sBanlistStream.open(GetNorthstarPrefix() + "/banlist.txt", std::ofstream::out | std::ofstream::binary);
+	m_sBanlistStream.close();
 }
 
 void ServerBanSystem::BanUID(uint64_t uid)
@@ -64,11 +81,13 @@ void ServerBanSystem::BanUID(uint64_t uid)
 	std::string content((std::istreambuf_iterator<char>(fsBanlist)), (std::istreambuf_iterator<char>()));
 	fsBanlist.close();
 
+	m_sBanlistStream.open(GetNorthstarPrefix() + "/banlist.txt", std::ofstream::out | std::ofstream::binary | std::ofstream::app);
 	if (content.back() != '\n')
 		m_sBanlistStream << std::endl;
 
 	m_vBannedUids.push_back(uid);
 	m_sBanlistStream << std::to_string(uid) << std::endl;
+	m_sBanlistStream.close();
 	spdlog::info("{} was banned", uid);
 }
 
@@ -148,11 +167,13 @@ void ServerBanSystem::UnbanUID(uint64_t uid)
 	for (std::string updatedLine : banlistText)
 		m_sBanlistStream << updatedLine << std::endl;
 
+	m_sBanlistStream.close();
 	spdlog::info("{} was unbanned", uid);
 }
 
 bool ServerBanSystem::IsUIDAllowed(uint64_t uid)
 {
+	ReloadBanlist(); // Reload to have up to date list on join
 	return std::find(m_vBannedUids.begin(), m_vBannedUids.end(), uid) == m_vBannedUids.end();
 }
 

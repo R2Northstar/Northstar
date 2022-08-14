@@ -9,6 +9,7 @@ class ServerBanSystem
 
   public:
 	void OpenBanlist();
+	void ReloadBanlist();
 	void ClearBanlist();
 	void BanUID(uint64_t uid);
 	void UnbanUID(uint64_t uid);
