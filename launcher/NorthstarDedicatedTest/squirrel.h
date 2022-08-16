@@ -13,8 +13,6 @@ typedef char SQChar;
 typedef SQUnsignedInteger SQBool;
 typedef SQInteger SQRESULT;
 
-#define uint8 char
-
 const SQRESULT SQRESULT_ERROR = -1;
 const SQRESULT SQRESULT_NULL = 0;
 const SQRESULT SQRESULT_NOTNULL = 1;
@@ -176,7 +174,7 @@ struct alignas(8) SQString
 	SQString* _next_maybe;
 	SQSharedState* sharedState;
 	__int32 length;
-	uint8 gap_24[4];
+	uint8_t gap_24[4];
 	char _hash[8];
 	char _val[1];
 };
@@ -185,9 +183,9 @@ struct alignas(8) SQString
 struct alignas(8) SQTable
 {
 	__int64* vftable;
-	uint8 gap_08[4];
+	uint8_t gap_08[4];
 	__int32 uiRef;
-	uint8 gap_10[8];
+	uint8_t gap_10[8];
 	void* pointer_18;
 	void* pointer_20;
 	void* _sharedState;
@@ -197,16 +195,16 @@ struct alignas(8) SQTable
 	__int32 size;
 	__int32 field_48;
 	__int32 _usedNodes;
-	uint8 _gap_50[20];
+	uint8_t _gap_50[20];
 	__int32 field_64;
-	uint8 _gap_68[80];
+	uint8_t _gap_68[80];
 };
 
 /* 140 */
 struct alignas(8) SQClosure
 {
 	void* vftable;
-	uint8 gap_08[4];
+	uint8_t gap_08[4];
 	__int32 uiRef;
 	void* pointer_10;
 	void* pointer_18;
@@ -215,8 +213,8 @@ struct alignas(8) SQClosure
 	SQObject obj_30;
 	SQObject _function;
 	SQObject* _outervalues;
-	uint8 gap_58[8];
-	uint8 gap_60[96];
+	uint8_t gap_58[8];
+	uint8_t gap_60[96];
 	SQObject* objectPointer_C0;
 };
 
@@ -224,9 +222,9 @@ struct alignas(8) SQClosure
 struct alignas(8) SQFunctionProto
 {
 	void* vftable;
-	uint8 gap_08[4];
+	uint8_t gap_08[4];
 	__int32 uiRef;
-	uint8 gap_10[8];
+	uint8_t gap_10[8];
 	void* pointer_18;
 	void* pointer_20;
 	void* sharedState;
@@ -234,30 +232,30 @@ struct alignas(8) SQFunctionProto
 	SQObject fileName;
 	SQObject funcName;
 	SQObject obj_58;
-	uint8 gap_68[64];
+	uint8_t gap_68[64];
 	__int32 nParameters;
-	uint8 gap_AC[60];
+	uint8_t gap_AC[60];
 	__int32 nDefaultParams;
-	uint8 gap_EC[200];
+	uint8_t gap_EC[200];
 };
 
 /* 152 */
 struct SQStructDef
 {
-	uint8 gap_0[56];
+	uint8_t gap_0[56];
 	SQString* name;
-	uint8 gap_[300];
+	uint8_t gap_[300];
 };
 
 /* 150 */
 struct SQStructInstance
 {
 	void* vftable;
-	uint8 gap_8[16];
+	uint8_t gap_8[16];
 	void* pointer_18;
-	uint8 gap_20[8];
+	uint8_t gap_20[8];
 	SQSharedState* _sharedState;
-	uint8 gap_30[8];
+	uint8_t gap_30[8];
 	SQObject data[1];
 };
 
@@ -265,27 +263,27 @@ struct SQStructInstance
 struct alignas(8) SQNativeClosure
 {
 	void* vftable;
-	uint8 gap_08[4];
+	uint8_t gap_08[4];
 	__int32 uiRef;
-	uint8 gap_10[88];
+	uint8_t gap_10[88];
 	SQString* _name;
-	uint8 gap_0[300];
+	uint8_t gap_0[300];
 };
 
 /* 148 */
 struct SQSharedState
 {
-	uint8 gap_0[72];
+	uint8_t gap_0[72];
 	StringTable* _stringtable;
-	uint8 gap_50[30000];
+	uint8_t gap_50[30000];
 };
 
 /* 149 */
 struct StringTable
 {
-	uint8 gap_0[12];
+	uint8_t gap_0[12];
 	int _numofslots;
-	uint8 gap_10[200];
+	uint8_t gap_10[200];
 };
 
 /* 129 */
@@ -293,7 +291,7 @@ struct alignas(8) HSquirrelVM
 {
 	void* vftable;
 	__int32 uiRef;
-	uint8 gap_8[12];
+	uint8_t gap_8[12];
 	void* _toString;
 	void* _roottable_pointer;
 	void* pointer_28;
@@ -307,19 +305,19 @@ struct alignas(8) HSquirrelVM
 	void* pointer_60;
 	__int32 _top;
 	SQObject* _stack;
-	uint8 gap_78[8];
+	uint8_t gap_78[8];
 	SQObject* _vargsstack;
-	uint8 gap_88[8];
+	uint8_t gap_88[8];
 	SQObject temp_reg;
-	uint8 gapA0[8];
+	uint8_t gapA0[8];
 	void* pointer_A8;
-	uint8 gap_B0[8];
+	uint8_t gap_B0[8];
 	SQObject _roottable_object;
 	SQObject _lasterror;
 	SQObject _errorHandler;
 	__int64 field_E8;
 	__int32 traps;
-	uint8 gap_F4[12];
+	uint8_t gap_F4[12];
 	__int32 _nnativecalls;
 	__int32 _suspended;
 	__int32 _suspended_root;
@@ -493,24 +491,24 @@ struct alignas(4) SQInstruction
 /* 154 */
 struct SQLexer
 {
-	uint8 gap_0[112];
+	uint8_t gap_0[112];
 };
 
 /* 153 */
 struct SQCompiler
 {
-	uint8 gap_0[4];
+	uint8_t gap_0[4];
 	__int32 _token;
-	uint8 gap_8[8];
+	uint8_t gap_8[8];
 	SQObject object_10;
 	SQLexer lexer;
-	uint8 gap_1[768];
+	uint8_t gap_1[768];
 };
 
 /* 155 */
 struct CSquirrelVM
 {
-	uint8 gap_0[8];
+	uint8_t gap_0[8];
 	HSquirrelVM* sqvm;
 };
 
@@ -526,7 +524,7 @@ struct SQArray
 {
 	void* vftable;
 	__int32 uiRef;
-	uint8 gap_24[36];
+	uint8_t gap_24[36];
 	SQObject* _values;
 	__int32 _usedSlots;
 	__int32 _allocated;
