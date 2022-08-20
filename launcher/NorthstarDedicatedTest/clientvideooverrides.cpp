@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "clientvideooverrides.h"
 #include "modmanager.h"
+#include "nsmem.h"
 
 typedef void* (*BinkOpenType)(const char* path, uint32_t flags);
 BinkOpenType BinkOpen;
@@ -31,8 +32,12 @@ void* BinkOpenHook(const char* path, uint32_t flags)
 		return BinkOpen(path, flags);
 }
 
-void InitialiseClientVideoOverrides(HMODULE baseAddress)
+void InitialiseEngineClientVideoOverrides(HMODULE baseAddress)
 {
+	// remove engine check for whether the bik we're trying to load exists in r2/media, as this will fail for biks in mods
+	// note: the check in engine is actually unnecessary, so it's just useless in practice and we lose nothing by removing it
+	NSMem::NOP((uintptr_t)baseAddress + 0x459AD, 6);
+
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(
 		hook,
