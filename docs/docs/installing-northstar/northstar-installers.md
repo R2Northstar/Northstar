@@ -58,6 +58,8 @@ Download and source code:
 
 {% embed url="https://github.com/0neGal/viper" %}
 
+{% embed url="https://www.youtube.com/watch?v=Aes7V5YOSNY" %}
+
 ## **BigSpice:** VTOL
 
 ![vtol](../images/vtol-main-window.png)
