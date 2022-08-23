@@ -1,7 +1,7 @@
 #include <cstdio>
 
 #include "pch.h"
-#include "../NorthstarDedicatedTest/hookutils.h"
+#include "../NorthstarDLL/hookutils.h"
 
 #define HU_ERROR(...)                                                                                                                      \
 	{                                                                                                                                      \

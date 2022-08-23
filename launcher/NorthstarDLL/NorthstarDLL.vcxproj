@@ -14,7 +14,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{cfad2623-064f-453c-8196-79ee10292e32}</ProjectGuid>
-    <RootNamespace>NorthstarDedicatedTest</RootNamespace>
+    <RootNamespace>NorthstarDLL</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>Northstar</ProjectName>
   </PropertyGroup>

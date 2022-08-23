@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "loader.h"
-#include "../NorthstarDedicatedTest/hookutils.h"
+#include "../NorthstarDLL/hookutils.h"
 #include <string>
 #include <system_error>
 #include <sstream>
