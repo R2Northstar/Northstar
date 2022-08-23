@@ -14,7 +14,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{0ea82cb0-53fe-4d4c-96df-47fa970513d0}</ProjectGuid>
-    <RootNamespace>LauncherInjector</RootNamespace>
+    <RootNamespace>NorthstarLauncher</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>NorthstarLauncher</ProjectName>
   </PropertyGroup>
