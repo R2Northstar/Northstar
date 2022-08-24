@@ -1497,7 +1497,7 @@
     <ClInclude Include="clientvideooverrides.h">
       <Filter>Header Files\Client</Filter>
     </ClInclude>
-    <ClInclude Include="ExploitFixes_UTF8Parser.h">
+    <ClInclude Include="exploitfixes_utf8parser.h">
       <Filter>Source Files\Shared\Exploit Fixes\UTF8Parser</Filter>
     </ClInclude>
     <ClInclude Include="version.h">
@@ -1509,10 +1509,10 @@
     <ClInclude Include="ns_version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ExploitFixes.h">
+    <ClInclude Include="exploitfixes.h">
       <Filter>Header Files\Shared\ExploitFixes</Filter>
     </ClInclude>
-    <ClInclude Include="NSMem.h">
+    <ClInclude Include="nsmem.h">
       <Filter>Header Files\Shared\ExploitFixes</Filter>
     </ClInclude>
     <ClInclude Include="scriptutility.h">
@@ -1679,7 +1679,7 @@
     <ClCompile Include="clientvideooverrides.cpp">
       <Filter>Source Files\Client</Filter>
     </ClCompile>
-    <ClCompile Include="ExploitFixes.cpp">
+    <ClCompile Include="exploitfixes.cpp">
       <Filter>Source Files\Shared\Exploit Fixes</Filter>
     </ClCompile>
     <ClCompile Include="version.cpp">

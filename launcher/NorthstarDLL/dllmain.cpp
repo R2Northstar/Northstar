@@ -51,7 +51,7 @@
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/error/en.h"
-#include "ExploitFixes.h"
+#include "exploitfixes.h"
 #include "scriptjson.h"
 
 typedef void (*initPluginFuncPtr)(void* (*getPluginObject)(PluginObject));

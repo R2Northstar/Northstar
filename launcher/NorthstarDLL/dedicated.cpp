@@ -127,7 +127,7 @@ DWORD WINAPI ConsoleInputThread(PVOID pThreadParameter)
 	return 0;
 }
 
-#include "NSMem.h"
+#include "nsmem.h"
 void InitialiseDedicated(HMODULE engineAddress)
 {
 	spdlog::info("InitialiseDedicated");

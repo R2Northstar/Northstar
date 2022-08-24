@@ -564,9 +564,9 @@
     <ClInclude Include="sourceinterface.h" />
     <ClInclude Include="squirrel.h" />
     <ClInclude Include="state.h" />
-    <ClInclude Include="ExploitFixes.h" />
-    <ClInclude Include="ExploitFixes_UTF8Parser.h" />
-    <ClInclude Include="NSMem.h" />
+    <ClInclude Include="exploitfixes.h" />
+    <ClInclude Include="exploitfixes_utf8parser.h" />
+    <ClInclude Include="nsmem.h" />
     <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
@@ -628,7 +628,7 @@
     <ClCompile Include="sourceconsole.cpp" />
     <ClCompile Include="sourceinterface.cpp" />
     <ClCompile Include="squirrel.cpp" />
-    <ClCompile Include="ExploitFixes.cpp" />
+    <ClCompile Include="exploitfixes.cpp" />
     <ClCompile Include="version.cpp" />
   </ItemGroup>
   <ItemGroup>

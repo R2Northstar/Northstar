@@ -71,7 +71,7 @@ int GetCurrentGamemodeMaxPlayersHook()
 	return maxPlayers;
 }
 
-#include "NSMem.h"
+#include "nsmem.h"
 void InitialisePlaylistHooks(HMODULE baseAddress)
 {
 	RegisterConCommand("setplaylist", SetPlaylistCommand, "Sets the current playlist", FCVAR_NONE);
