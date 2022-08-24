@@ -2,7 +2,7 @@
 #include "miscserverfixes.h"
 #include "hookutils.h"
 
-#include "NSMem.h"
+#include "nsmem.h"
 
 void InitialiseMiscServerFixes(HMODULE baseAddress)
 {

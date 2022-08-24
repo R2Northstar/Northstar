@@ -4,7 +4,7 @@
 #include "hookutils.h"
 #include <fstream>
 #include <filesystem>
-#include "NSMem.h"
+#include "nsmem.h"
 
 namespace fs = std::filesystem;
 

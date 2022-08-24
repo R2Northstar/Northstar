@@ -14,7 +14,7 @@
 #include <filesystem>
 #include <thread>
 #include "configurables.h"
-#include "NSMem.h"
+#include "nsmem.h"
 
 const char* AUTHSERVER_VERIFY_STRING = "I am a northstar server!";
 

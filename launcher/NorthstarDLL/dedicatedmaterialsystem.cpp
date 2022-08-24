@@ -3,7 +3,7 @@
 #include "dedicatedmaterialsystem.h"
 #include "hookutils.h"
 #include "gameutils.h"
-#include "NSMem.h"
+#include "nsmem.h"
 
 typedef HRESULT (*__stdcall D3D11CreateDeviceType)(
 	void* pAdapter,
