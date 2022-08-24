@@ -1,0 +1,11 @@
+# For more info on `.editorconfig` file see https://EditorConfig.org
+
+# top-most EditorConfig file
+root = true
+
+# Newline ending every file
+[*]
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+indent_style = tab
