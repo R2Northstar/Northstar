@@ -1,6 +1,6 @@
 #include <string>
 #include "pch.h"
-#include "configurables.h"
+#include "nsprefix.h"
 
 std::string GetNorthstarPrefix()
 {

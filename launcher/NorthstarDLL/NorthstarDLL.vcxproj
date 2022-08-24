@@ -127,7 +127,7 @@
     <ClInclude Include="clientauthhooks.h" />
     <ClInclude Include="color.h" />
     <ClInclude Include="concommand.h" />
-    <ClInclude Include="configurables.h" />
+    <ClInclude Include="nsprefix.h" />
     <ClInclude Include="context.h" />
     <ClInclude Include="convar.h" />
     <ClInclude Include="cvar.h" />
@@ -580,7 +580,7 @@
     <ClCompile Include="clientruihooks.cpp" />
     <ClCompile Include="clientvideooverrides.cpp" />
     <ClCompile Include="concommand.cpp" />
-    <ClCompile Include="configurables.cpp" />
+    <ClCompile Include="nsprefix.cpp" />
     <ClCompile Include="context.cpp" />
     <ClCompile Include="convar.cpp" />
     <ClCompile Include="cvar.cpp" />

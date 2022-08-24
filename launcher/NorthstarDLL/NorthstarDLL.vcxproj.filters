@@ -1458,7 +1458,7 @@
     <ClInclude Include="bitbuf.h">
       <Filter>Header Files\Shared</Filter>
     </ClInclude>
-    <ClInclude Include="configurables.h">
+    <ClInclude Include="nsprefix.h">
       <Filter>Header Files\Client</Filter>
     </ClInclude>
     <ClInclude Include="cvar.h">
@@ -1649,7 +1649,7 @@
     <ClCompile Include="buildainfile.cpp">
       <Filter>Source Files\Server</Filter>
     </ClCompile>
-    <ClCompile Include="configurables.cpp">
+    <ClCompile Include="nsprefix.cpp">
       <Filter>Source Files\Client</Filter>
     </ClCompile>
     <ClCompile Include="cvar.cpp">

@@ -32,7 +32,7 @@
 #include "languagehooks.h"
 #include "audio.h"
 #include "buildainfile.h"
-#include "configurables.h"
+#include "nsprefix.h"
 #include "serverchathooks.h"
 #include "clientchathooks.h"
 #include "localchatwriter.h"
