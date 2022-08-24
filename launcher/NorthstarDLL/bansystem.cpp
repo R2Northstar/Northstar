@@ -4,7 +4,7 @@
 #include "concommand.h"
 #include "miscserverscript.h"
 #include <filesystem>
-#include "configurables.h"
+#include "nsprefix.h"
 #include <ctime>
 
 const char* BANLIST_PATH_SUFFIX = "/banlist.txt";

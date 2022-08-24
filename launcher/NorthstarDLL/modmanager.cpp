@@ -15,7 +15,7 @@
 #include <vector>
 #include "filesystem.h"
 #include "rpakfilesystem.h"
-#include "configurables.h"
+#include "nsprefix.h"
 
 ModManager* g_ModManager;
 

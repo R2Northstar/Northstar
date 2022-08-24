@@ -7,7 +7,7 @@
 #include "convar.h"
 #include <iomanip>
 #include <sstream>
-#include "configurables.h"
+#include "nsprefix.h"
 #include <dbghelp.h>
 
 // This needs to be called after hooks are loaded so we can access the command line args
