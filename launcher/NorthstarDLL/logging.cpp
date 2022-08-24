@@ -203,7 +203,7 @@ long __stdcall ExceptionFilter(EXCEPTION_POINTERS* exceptionInfo)
 		else
 			spdlog::error("Failed to write minidump file {}!", stream.str());
 
-		if (!IsDedicated())
+		if (!IsDedicatedServer())
 			MessageBoxA(
 				0, "Northstar has crashed! Crash info can be found in R2Northstar/logs", "Northstar has crashed!", MB_ICONERROR | MB_OK);
 	}

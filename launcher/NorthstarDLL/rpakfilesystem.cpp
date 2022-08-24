@@ -219,7 +219,7 @@ int LoadPakAsyncHook(char* path, void* unknownSingleton, int flags, void* callba
 
 		// do this after custom paks load and in bShouldLoadPaks so we only ever call this on the root pakload call
 		// todo: could probably add some way to flag custom paks to not be loaded on dedicated servers in rpak.json
-		if (IsDedicated() && strncmp(path, "common", 6)) // dedicated only needs common and common_mp
+		if (IsDedicatedServer() && strncmp(path, "common", 6)) // dedicated only needs common and common_mp
 			return -1;
 	}
 

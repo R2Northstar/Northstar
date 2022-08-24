@@ -1,6 +1,6 @@
 #pragma once
 
-bool IsDedicated();
+bool IsDedicatedServer();
 
 void InitialiseDedicated(HMODULE moduleAddress);
 void InitialiseDedicatedOrigin(HMODULE baseAddress);

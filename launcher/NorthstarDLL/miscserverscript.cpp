@@ -62,7 +62,7 @@ SQRESULT SQ_IsPlayerIndexLocalPlayer(void* sqvm)
 
 SQRESULT SQ_IsDedicated(void* sqvm)
 {
-	ServerSq_pushbool(sqvm, IsDedicated());
+	ServerSq_pushbool(sqvm, IsDedicatedServer());
 	return SQRESULT_NOTNULL;
 }
 

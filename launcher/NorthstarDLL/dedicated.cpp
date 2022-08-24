@@ -5,7 +5,7 @@
 #include "serverauthentication.h"
 #include "masterserver.h"
 
-bool IsDedicated()
+bool IsDedicatedServer()
 {
 	static bool result = strstr(GetCommandLineA(), "-dedicated");
 	return result;

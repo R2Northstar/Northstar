@@ -27,7 +27,7 @@ void* CrashingWeaponActivityFunc1Hook(void* a1)
 
 void InitialiseMiscClientFixes(HMODULE baseAddress)
 {
-	if (IsDedicated())
+	if (IsDedicatedServer())
 		return;
 
 	HookEnabler hook;

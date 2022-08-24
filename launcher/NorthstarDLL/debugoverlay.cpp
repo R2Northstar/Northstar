@@ -153,7 +153,7 @@ void __fastcall DrawOverlayHook(OverlayBase_t* pOverlay)
 
 void InitialiseDebugOverlay(HMODULE baseAddress)
 {
-	if (IsDedicated())
+	if (IsDedicatedServer())
 		return;
 
 	HookEnabler hook;
