@@ -7,7 +7,7 @@
 
 size_t GetModuleLength(HMODULE moduleHandle)
 {
-	// based on sigscn code from ttf2sdk, which is in turn based on CSigScan from https://wiki.alliedmods.net/Signature_Scanning
+	// based on sigscan code from ttf2sdk, which is in turn based on CSigScan from https://wiki.alliedmods.net/Signature_Scanning
 	MEMORY_BASIC_INFORMATION mem;
 	VirtualQuery(moduleHandle, &mem, sizeof(mem));
 
