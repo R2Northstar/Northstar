@@ -134,7 +134,7 @@ void AddDllLoadCallback(std::string dll, DllLoadCallbackFuncType callback)
 
 void AddDllLoadCallbackForDedicatedServer(std::string dll, DllLoadCallbackFuncType callback)
 {
-	if (!IsDedicated())
+	if (!IsDedicatedServer())
 		return;
 
 	DllLoadCallback* callbackStruct = new DllLoadCallback;
@@ -147,7 +147,7 @@ void AddDllLoadCallbackForDedicatedServer(std::string dll, DllLoadCallbackFuncTy
 
 void AddDllLoadCallbackForClient(std::string dll, DllLoadCallbackFuncType callback)
 {
-	if (IsDedicated())
+	if (IsDedicatedServer())
 		return;
 
 	DllLoadCallback* callbackStruct = new DllLoadCallback;
