@@ -2379,10 +2379,8 @@ bool function IsValidPilotLoadoutProperty( string propertyName )
 		case "weapon3Mod2":
 		case "weapon3Mod3":
 		case "ordnance":
-		case "special":
 		case "passive1":
 		case "passive2":
-		case "melee":
 		case "skinIndex":
 		case "camoIndex":
 		case "primarySkinIndex":
@@ -2403,7 +2401,6 @@ bool function IsValidTitanLoadoutProperty( string propertyName )
 	{
 		case "name":
 		case "titanClass":
-		case "setFile":
 		case "primaryMod":
 		case "special":
 		case "antirodeo":
