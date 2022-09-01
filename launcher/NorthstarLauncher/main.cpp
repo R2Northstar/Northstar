@@ -147,7 +147,7 @@ void EnsureOriginStarted()
 		return;
 	}
 
-	printf("[*] Starting Origin...\n");
+	std::cout << "[*] Starting Origin..." << std::endl;
 
 	PROCESS_INFORMATION pi;
 	memset(&pi, 0, sizeof(pi));
@@ -168,7 +168,7 @@ void EnsureOriginStarted()
 		(LPSTARTUPINFOA)&si,
 		&pi);
 
-	printf("[*] Waiting for Origin...\n");
+	std::cout << "[*] Waiting for Origin..." << std::endl;
 
 	// wait for origin to be ready, this process is created when origin is ready enough to launch game without any errors
 	while (!GetProcessByName(L"OriginClientService.exe") && !GetProcessByName(L"EADesktop.exe"))
@@ -253,7 +253,7 @@ bool LoadNorthstar()
 		LoadPlugins = GetProcAddress(hHookModule, "LoadPlugins");
 		if (!hHookModule || LoadPlugins == nullptr)
 		{
-			printf("Failed to get function pointer to LoadPlugins of Northstar.dll\n");
+			std::cout << "Failed to get function pointer to LoadPlugins of Northstar.dll" << std::endl;
 			LibraryLoadError(GetLastError(), L"Northstar.dll", buffer);
 			return false;
 		}
@@ -266,7 +266,7 @@ bool LoadNorthstar()
 HMODULE LoadDediStub(const char* name)
 {
 	// this works because materialsystem_dx11.dll uses relative imports, and even a DLL loaded with an absolute path will take precedence
-	printf("[*]   Loading %s\n", name);
+	std::cout << "[*]   Loading " << name << std::endl;
 	swprintf_s(buffer, L"%s\\bin\\x64_dedi\\%hs", exePath, name);
 	HMODULE h = LoadLibraryExW(buffer, 0, LOAD_WITH_ALTERED_SEARCH_PATH);
 	if (!h)
@@ -310,7 +310,7 @@ int main(int argc, char* argv[])
 
 	if (dedicated && !nostubs)
 	{
-		printf("[*] Loading stubs\n");
+		std::cout << "[*] Loading stubs" << std::endl;
 		HMODULE gssao, gtxaa, d3d11;
 		if (!(gssao = GetModuleHandleA("GFSDK_SSAO.win64.dll")) && !(gtxaa = GetModuleHandleA("GFSDK_TXAA.win64.dll")) &&
 			!(d3d11 = GetModuleHandleA("d3d11.dll")))
@@ -320,8 +320,9 @@ int main(int argc, char* argv[])
 			{
 				if ((!gssao || FreeLibrary(gssao)) && (!gtxaa || FreeLibrary(gtxaa)) && (!d3d11 || FreeLibrary(d3d11)))
 				{
-					printf("[*] WARNING: Failed to load d3d11/gfsdk stubs from bin/x64_dedi. "
-						   "The stubs have been unloaded and the original libraries will be used instead.\n");
+					std::cout << "[*] WARNING: Failed to load d3d11/gfsdk stubs from bin/x64_dedi. "
+								 "The stubs have been unloaded and the original libraries will be used instead"
+							  << std::endl;
 				}
 				else
 				{
@@ -339,8 +340,9 @@ int main(int argc, char* argv[])
 		else
 		{
 			// this should never happen
-			printf("[*] WARNING: Failed to load stubs because conflicting modules are already loaded, so those will be used instead "
-				   "(did Northstar initialize too late?).\n");
+			std::cout << "[*] WARNING: Failed to load stubs because conflicting modules are already loaded, so those will be used instead "
+						 "(did Northstar initialize too late?)."
+					  << std::endl;
 		}
 	}
 
@@ -362,7 +364,7 @@ int main(int argc, char* argv[])
 			file.close();
 		}
 
-		printf("[*] Loading tier0.dll\n");
+		std::cout << "[*] Loading tier0.dll" << std::endl;
 		swprintf_s(buffer, L"%s\\bin\\x64_retail\\tier0.dll", exePath);
 		hTier0Module = LoadLibraryExW(buffer, 0, LOAD_WITH_ALTERED_SEARCH_PATH);
 		if (!hTier0Module)
@@ -374,14 +376,14 @@ int main(int argc, char* argv[])
 		bool loadNorthstar = ShouldLoadNorthstar(argc, argv);
 		if (loadNorthstar)
 		{
-			printf("[*] Loading Northstar\n");
+			std::cout << "[*] Loading Northstar" << std::endl;
 			if (!LoadNorthstar())
 				return 1;
 		}
 		else
-			printf("[*] Going to load the vanilla game\n");
+			std::cout << "[*] Going to load the vanilla game" << std::endl;
 
-		printf("[*] Loading launcher.dll\n");
+		std::cout << "[*] Loading launcher.dll" << std::endl;
 		swprintf_s(buffer, L"%s\\bin\\x64_retail\\launcher.dll", exePath);
 		hLauncherModule = LoadLibraryExW(buffer, 0, LOAD_WITH_ALTERED_SEARCH_PATH);
 		if (!hLauncherModule)
@@ -391,7 +393,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	printf("[*] Launching the game...\n");
+	std::cout << "[*] Launching the game..." << std::endl;
 	auto LauncherMain = GetLauncherMain();
 	if (!LauncherMain)
 		MessageBoxA(
@@ -399,9 +401,8 @@ int main(int argc, char* argv[])
 			"Failed loading launcher.dll.\nThe game cannot continue and has to exit.",
 			"Northstar Launcher Error",
 			0);
-	// auto result = ((__int64(__fastcall*)())LauncherMain)();
-	// auto result = ((signed __int64(__fastcall*)(__int64))LauncherMain)(0i64);
 
+	std::cout.flush();
 	return ((int(/*__fastcall*/*)(HINSTANCE, HINSTANCE, LPSTR, int))LauncherMain)(
 		NULL, NULL, NULL, 0); // the parameters aren't really used anyways
 }
