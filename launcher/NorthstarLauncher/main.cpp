@@ -7,6 +7,11 @@
 #include <shlwapi.h>
 #include <iostream>
 
+#pragma comment(lib, "Ws2_32.lib")
+
+#include <winsock2.h>
+#include <WS2tcpip.h>
+
 namespace fs = std::filesystem;
 
 extern "C"
@@ -125,6 +130,41 @@ void LibraryLoadError(DWORD dwMessageId, const wchar_t* libName, const wchar_t* 
 	MessageBoxA(GetForegroundWindow(), text, "Northstar Launcher Error", 0);
 }
 
+void AwaitOriginStartup()
+{
+	WSADATA wsaData;
+	WSAStartup(MAKEWORD(2, 2), &wsaData);
+	SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+	if (sock != INVALID_SOCKET)
+	{
+		const int LSX_PORT = 3216;
+
+		sockaddr_in lsxAddr;
+		lsxAddr.sin_family = AF_INET;
+		inet_pton(AF_INET, "127.0.0.1", &(lsxAddr.sin_addr));
+		lsxAddr.sin_port = htons(LSX_PORT);
+
+		std::cout << "LSX: connect()" << std::endl;
+		connect(sock, (struct sockaddr*)&lsxAddr, sizeof(lsxAddr));
+
+		char buf[4096];
+		memset(buf, 0, sizeof(buf));
+
+		do
+		{
+			recv(sock, buf, 4096, 0);
+			std::cout << buf << std::endl;
+
+			// honestly really shit, this isn't needed for origin due to being able to check OriginClientService
+			// but for ea desktop we don't have anything like this, so atm we just have to wait to ensure that we start after logging in
+			Sleep(8000);
+		} while (!strstr(buf, "<LSX>")); // ensure we're actually getting data from lsx
+	}
+
+	WSACleanup(); // cleanup sockets and such so game can contact lsx itself
+}
+
 void EnsureOriginStarted()
 {
 	if (GetProcessByName(L"Origin.exe") || GetProcessByName(L"EADesktop.exe"))
@@ -170,9 +210,14 @@ void EnsureOriginStarted()
 
 	std::cout << "[*] Waiting for Origin..." << std::endl;
 
-	// wait for origin to be ready, this process is created when origin is ready enough to launch game without any errors
-	while (!GetProcessByName(L"OriginClientService.exe") && !GetProcessByName(L"EADesktop.exe"))
-		Sleep(200);
+	// wait for origin process to boot
+	do
+	{
+		Sleep(500);
+	} while (!GetProcessByName(L"OriginClientService.exe") && !GetProcessByName(L"EADesktop.exe"));
+
+	// wait for origin to be ready to start
+	AwaitOriginStartup();
 
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
