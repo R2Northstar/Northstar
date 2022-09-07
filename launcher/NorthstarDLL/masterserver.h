@@ -73,40 +73,40 @@ struct MainMenuPromoData
 class MasterServerManager
 {
   private:
-	bool m_requestingServerList = false;
-	bool m_authenticatingWithGameServer = false;
+	bool m_bRequestingServerList = false;
+	bool m_bAuthenticatingWithGameServer = false;
 
   public:
-	char m_ownServerId[33];
-	char m_ownServerAuthToken[33];
-	char m_ownClientAuthToken[33];
+	char m_sOwnServerId[33];
+	char m_sOwnServerAuthToken[33];
+	char m_sOwnClientAuthToken[33];
 
-	std::string m_ownModInfoJson;
-	std::string ns_auth_srvName; // Unicode unescaped version of Cvar_ns_auth_servername for support in cjk characters
-	std::string ns_auth_srvDesc; // Unicode unescaped version of Cvar_ns_auth_serverdesc for support in cjk characters
+	std::string m_sOwnModInfoJson;
+	std::string m_sUnicodeServerName; // Unicode unescaped version of Cvar_ns_auth_servername for support in cjk characters
+	std::string m_sUnicodeServerDesc; // Unicode unescaped version of Cvar_ns_auth_serverdesc for support in cjk characters
 
 	bool m_bOriginAuthWithMasterServerDone = false;
 	bool m_bOriginAuthWithMasterServerInProgress = false;
 
 	bool m_bRequireClientAuth = false;
-	bool m_savingPersistentData = false;
+	bool m_bSavingPersistentData = false;
 
-	bool m_scriptRequestingServerList = false;
-	bool m_successfullyConnected = true;
+	bool m_bScriptRequestingServerList = false;
+	bool m_bSuccessfullyConnected = true;
 
 	bool m_bNewgameAfterSelfAuth = false;
-	bool m_scriptAuthenticatingWithGameServer = false;
-	bool m_successfullyAuthenticatedWithGameServer = false;
+	bool m_bScriptAuthenticatingWithGameServer = false;
+	bool m_bSuccessfullyAuthenticatedWithGameServer = false;
 
 	std::string s_authfail_reason {};
 
-	bool m_hasPendingConnectionInfo = false;
+	bool m_bHasPendingConnectionInfo = false;
 	RemoteServerConnectionInfo m_pendingConnectionInfo;
 
-	std::vector<RemoteServerInfo> m_remoteServers;
+	std::vector<RemoteServerInfo> m_vRemoteServers;
 
 	bool m_bHasMainMenuPromoData = false;
-	MainMenuPromoData m_MainMenuPromoData;
+	MainMenuPromoData m_sMainMenuPromoData;
 
   private:
 	void SetCommonHttpClientOptions(CURL* curl);

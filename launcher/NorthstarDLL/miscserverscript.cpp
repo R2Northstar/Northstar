@@ -39,7 +39,7 @@ SQRESULT SQ_EarlyWritePlayerIndexPersistenceForLeave(void* sqvm)
 // bool function NSIsWritingPlayerPersistence()
 SQRESULT SQ_IsWritingPlayerPersistence(void* sqvm)
 {
-	ServerSq_pushbool(sqvm, g_MasterServerManager->m_savingPersistentData);
+	ServerSq_pushbool(sqvm, g_MasterServerManager->m_bSavingPersistentData);
 	return SQRESULT_NOTNULL;
 }
 
