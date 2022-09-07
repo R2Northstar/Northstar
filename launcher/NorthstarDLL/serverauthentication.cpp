@@ -123,7 +123,7 @@ void ServerAuthenticationManager::StartPlayerAuthServer()
 					if (!request.has_param("id") || !request.has_param("authToken") || request.body.size() >= 65335 ||
 						!request.has_param("serverAuthToken") ||
 						strcmp(
-							g_MasterServerManager->m_ownServerAuthToken,
+							g_MasterServerManager->m_sOwnServerAuthToken,
 							request.get_param_value("serverAuthToken")
 								.c_str())) // || !resolvedRemoteAddr || ((in_addr**)resolvedRemoteAddr->h_addr_list)[0]->S_un.S_addr !=
 										   // remoteAddr)

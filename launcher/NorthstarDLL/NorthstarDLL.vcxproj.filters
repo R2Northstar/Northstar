@@ -25,9 +25,6 @@
     <Filter Include="Source Files\Shared">
       <UniqueIdentifier>{4f525372-34a8-40b3-8a95-81d77cdfcf7f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Dedicated">
-      <UniqueIdentifier>{947835db-67d6-42c0-870d-62743f85231f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Dedicated">
       <UniqueIdentifier>{8b8ed12a-9269-4dc3-b932-0daefdf6a388}</UniqueIdentifier>
     </Filter>
@@ -132,6 +129,9 @@
     </Filter>
     <Filter Include="Source Files\Shared\Exploit Fixes\UTF8Parser">
       <UniqueIdentifier>{b30e08b1-b962-4264-8cbb-a0a31924b93e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Dedicated">
+      <UniqueIdentifier>{947835db-67d6-42c0-870d-62743f85231f}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\Shared\ExploitFixes">
       <UniqueIdentifier>{7f609cee-d2c0-46a2-b06e-83b9f0511915}</UniqueIdentifier>
@@ -1536,7 +1536,7 @@
       <Filter>Source Files\Shared\Hooks</Filter>
     </ClCompile>
     <ClCompile Include="dedicated.cpp">
-      <Filter>Source Files\Dedicated</Filter>
+      <Filter>Source Files\Server\Dedicated</Filter>
     </ClCompile>
     <ClCompile Include="sourceconsole.cpp">
       <Filter>Source Files\Client</Filter>
@@ -1599,7 +1599,7 @@
       <Filter>Source Files\Server</Filter>
     </ClCompile>
     <ClCompile Include="dedicatedmaterialsystem.cpp">
-      <Filter>Source Files\Dedicated</Filter>
+      <Filter>Source Files\Server\Dedicated</Filter>
     </ClCompile>
     <ClCompile Include="misccommands.cpp">
       <Filter>Source Files\Shared\Convar</Filter>

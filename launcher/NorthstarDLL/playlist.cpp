@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "playlist.h"
+#include "nsmem.h"
 #include "concommand.h"
 #include "convar.h"
 #include "gameutils.h"
@@ -71,7 +72,6 @@ int GetCurrentGamemodeMaxPlayersHook()
 	return maxPlayers;
 }
 
-#include "nsmem.h"
 void InitialisePlaylistHooks(HMODULE baseAddress)
 {
 	RegisterConCommand("setplaylist", SetPlaylistCommand, "Sets the current playlist", FCVAR_NONE);

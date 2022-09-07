@@ -192,7 +192,7 @@ SQRESULT SQ_SetConnected(void* sqvm)
 SQRESULT SQ_UpdateListenServer(void* sqvm)
 {
 	AcquireSRWLockExclusive(&serverInfoLock);
-	serverInfo.id = g_MasterServerManager->m_ownServerId;
+	serverInfo.id = g_MasterServerManager->m_sOwnServerId;
 	serverInfo.password = Cvar_ns_server_password->GetString();
 	ReleaseSRWLockExclusive(&serverInfoLock);
 	return SQRESULT_NOTNULL;
