@@ -29,6 +29,6 @@
 }
 
 body:not([data-theme="light"]) .highlight {
-	background-color: #20202F;
-	color: #d0d0d0;
+	background-color: var(--color-background-secondary);
+	color: var(--color-background-secondary);
 }
