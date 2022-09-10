@@ -20,4 +20,3 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 build = 'moddingdocs:build'
-view = 'moddingdocs:view'
