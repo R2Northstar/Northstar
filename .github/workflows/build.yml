@@ -168,7 +168,6 @@ jobs:
       - name: Make package structure
         run: |
           mkdir -p thunderstore/dist/Northstar
-          rm northstar/ns_startup*.txt
           mv -v northstar/* thunderstore/dist/Northstar
           wget -O thunderstore/icon.png https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/icon.png
           wget -O thunderstore/README.md https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/README.md
