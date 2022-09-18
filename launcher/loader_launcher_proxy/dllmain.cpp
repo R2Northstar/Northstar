@@ -128,6 +128,8 @@ extern "C" __declspec(dllexport) int LauncherMain(HINSTANCE hInstance, HINSTANCE
 			return 1;
 		}
 
+		SetCurrentDirectoryW(exePath);
+
 		bool loadNorthstar = ShouldLoadNorthstar();
 
 		if (loadNorthstar)
