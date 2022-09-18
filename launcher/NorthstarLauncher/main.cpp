@@ -334,6 +334,8 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
+	SetCurrentDirectoryW(exePath);
+
 	bool noOriginStartup = false;
 	bool dedicated = false;
 	bool nostubs = false;

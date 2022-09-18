@@ -39,6 +39,8 @@ BOOL WINAPI DllMain(HINSTANCE hInst, DWORD reason, LPVOID)
 			return true;
 		}
 
+		SetCurrentDirectoryW(exePath);
+
 		if (!ProvisionNorthstar()) // does not call InitialiseNorthstar yet, will do it on LauncherMain hook
 			return true;
 
