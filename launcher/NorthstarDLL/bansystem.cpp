@@ -177,7 +177,7 @@ bool ServerBanSystem::IsUIDAllowed(uint64_t uid)
 	return std::find(m_vBannedUids.begin(), m_vBannedUids.end(), uid) == m_vBannedUids.end();
 }
 
-void BanPlayerCommand(const CCommand& args)
+void ConCommand_ban(const CCommand& args)
 {
 	if (args.ArgC() < 2)
 		return;
@@ -196,7 +196,7 @@ void BanPlayerCommand(const CCommand& args)
 	}
 }
 
-void UnbanPlayerCommand(const CCommand& args)
+void ConCommand_unban(const CCommand& args)
 {
 	if (args.ArgC() < 2)
 		return;
@@ -205,7 +205,7 @@ void UnbanPlayerCommand(const CCommand& args)
 	g_ServerBanSystem->UnbanUID(strtoull(args.Arg(1), nullptr, 10));
 }
 
-void ClearBanlistCommand(const CCommand& args)
+void ConCommand_clearbanlist(const CCommand& args)
 {
 	g_ServerBanSystem->ClearBanlist();
 }
@@ -215,7 +215,7 @@ void InitialiseBanSystem(HMODULE baseAddress)
 	g_ServerBanSystem = new ServerBanSystem;
 	g_ServerBanSystem->OpenBanlist();
 
-	RegisterConCommand("ban", BanPlayerCommand, "bans a given player by uid or name", FCVAR_GAMEDLL);
-	RegisterConCommand("unban", UnbanPlayerCommand, "unbans a given player by uid", FCVAR_NONE);
-	RegisterConCommand("clearbanlist", ClearBanlistCommand, "clears all uids on the banlist", FCVAR_NONE);
+	RegisterConCommand("ban", ConCommand_ban, "bans a given player by uid or name", FCVAR_GAMEDLL);
+	RegisterConCommand("unban", ConCommand_unban, "unbans a given player by uid", FCVAR_NONE);
+	RegisterConCommand("clearbanlist", ConCommand_clearbanlist, "clears all uids on the banlist", FCVAR_NONE);
 }
