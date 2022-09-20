@@ -19,7 +19,7 @@ GetCurrentPlaylistVarType GetCurrentPlaylistVarOriginal;
 
 ConVar* Cvar_ns_use_clc_SetPlaylistVarOverride;
 
-void SetPlaylistCommand(const CCommand& args)
+void ConCommand_playlist(const CCommand& args)
 {
 	if (args.ArgC() < 2)
 		return;
@@ -27,7 +27,7 @@ void SetPlaylistCommand(const CCommand& args)
 	SetCurrentPlaylist(args.Arg(1));
 }
 
-void SetPlaylistVarOverrideCommand(const CCommand& args)
+void ConCommand_setplaylistvaroverride(const CCommand& args)
 {
 	if (args.ArgC() < 3)
 		return;
@@ -74,8 +74,8 @@ int GetCurrentGamemodeMaxPlayersHook()
 
 void InitialisePlaylistHooks(HMODULE baseAddress)
 {
-	RegisterConCommand("setplaylist", SetPlaylistCommand, "Sets the current playlist", FCVAR_NONE);
-	RegisterConCommand("setplaylistvaroverrides", SetPlaylistVarOverrideCommand, "sets a playlist var override", FCVAR_NONE);
+	RegisterConCommand("setplaylist", ConCommand_playlist, "Sets the current playlist", FCVAR_NONE);
+	RegisterConCommand("setplaylistvaroverrides", ConCommand_setplaylistvaroverride, "sets a playlist var override", FCVAR_NONE);
 	// note: clc_SetPlaylistVarOverride is pretty insecure, since it allows for entirely arbitrary playlist var overrides to be sent to the
 	// server this is somewhat restricted on custom servers to prevent it being done outside of private matches, but ideally it should be
 	// disabled altogether, since the custom menus won't use it anyway this should only really be accepted if you want vanilla client
