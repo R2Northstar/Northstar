@@ -1,4 +1,4 @@
-resource/ui/menus/mods_browse.menu
+resource/ui/menus/modlist.menu
 {
 	menu
 	{
@@ -18,497 +18,654 @@ resource/ui/menus/mods_browse.menu
 
 		Vignette
 		{
-			ControlName ImagePanel
-			InheritProperties MenuVignette
+			ControlName			ImagePanel
+			InheritProperties	MenuVignette
 		}
 
 		Title
 		{
-			ControlName Label
-			InheritProperties MenuTitle
-			labelText "#MENU_TITLE_MODS"
+			ControlName			Label
+			InheritProperties	MenuTitle
+			labelText			"#MENU_TITLE_MODS"
 		}
 
 		ImgTopBar
 		{
-			ControlName ImagePanel
-			InheritProperties MenuTopBar
+			ControlName			ImagePanel
+			InheritProperties	MenuTopBar
 		}
-		
+
 		ButtonRowAnchor
 		{
-			ControlName Label
-			labelText ""
+			ControlName	Label
+			labelText	""
 
-			xpos 120
-			ypos 160
+			xpos	120
+			ypos	160
 		}
-		
+
 		FilterButtonsRowAnchor
 		{
-			ControlName Label
-			labelText ""
+			ControlName	Label
+			labelText 	""
 
-			xpos 90
-	 ypos 848
+			xpos	90
+	 		ypos	848
 		}
-		
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//	PANELS
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		BtnMod1
+		Panel1
 		{
-			ControlName RuiButton
-			InheritProperties RuiSmallButton
-			classname ModButton
-			scriptID 0
-			navUp BtnMod15
-			navDown BtnMod2
+			ControlName				CNestedPanel
+			classname				ModSelectorPanel
+			scriptID				1
 
-			pin_to_sibling ButtonRowAnchor
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner TOP_LEFT
+			controlSettingsFile		"resource/ui/menus/panels/modlist_settings.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			ButtonRowAnchor
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
 		}
-		BtnMod2
+
+		Panel2
 		{
-			ControlName RuiButton
-			InheritProperties RuiSmallButton
-			classname ModButton
-			scriptID 1
-			pin_to_sibling BtnMod1
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-			navUp BtnMod1
-			navDown BtnMod3
+			ControlName				"CNestedPanel"
+			classname				ModSelectorPanel
+			scriptID				2
+
+			controlSettingsFile		"resource/ui/menus/panels/modlist_settings.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel1
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
 		}
-		BtnMod3
+
+		Panel3
 		{
-			ControlName RuiButton
-			InheritProperties RuiSmallButton
-			classname ModButton
-			scriptID 2
-			pin_to_sibling BtnMod2
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-			navUp BtnMod2
-			navDown BtnMod4
+			ControlName				"CNestedPanel"
+			classname				ModSelectorPanel
+			scriptID				3
+
+			controlSettingsFile		"resource/ui/menus/panels/modlist_settings.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel2
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
 		}
-		BtnMod4
+
+		Panel4
 		{
-			ControlName RuiButton
-			InheritProperties RuiSmallButton
-			classname ModButton
-			scriptID 3
-			pin_to_sibling BtnMod3
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-			//ypos 11
-			navUp BtnMod3
-			navDown BtnMod5
+			ControlName				"CNestedPanel"
+			classname				ModSelectorPanel
+			scriptID				4
+
+			controlSettingsFile		"resource/ui/menus/panels/modlist_settings.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel3
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
 		}
-		BtnMod5
+
+		Panel5
 		{
-			ControlName RuiButton
-			InheritProperties RuiSmallButton
-			classname ModButton
-			scriptID 4
-			pin_to_sibling BtnMod4
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-			navUp BtnMod4
-			navDown BtnMod6
+			ControlName				"CNestedPanel"
+			classname				ModSelectorPanel
+			scriptID				5
+
+			controlSettingsFile		"resource/ui/menus/panels/modlist_settings.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel4
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
 		}
-		BtnMod6
+
+		Panel6
 		{
-			ControlName RuiButton
-			InheritProperties RuiSmallButton
-			classname ModButton
-			scriptID 5
-			pin_to_sibling BtnMod5
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-			navUp BtnMod5
-			navDown BtnMod7
+			ControlName				"CNestedPanel"
+			classname				ModSelectorPanel
+			scriptID				6
+
+			controlSettingsFile		"resource/ui/menus/panels/modlist_settings.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel5
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
 		}
-		BtnMod7
+
+		Panel7
 		{
-			ControlName RuiButton
-			InheritProperties RuiSmallButton
-			classname ModButton
-			scriptID 6
-			pin_to_sibling BtnMod6
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-			navUp BtnMod6
-			navDown BtnMod8
+			ControlName				"CNestedPanel"
+			classname				ModSelectorPanel
+			scriptID				7
+
+			controlSettingsFile		"resource/ui/menus/panels/modlist_settings.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel6
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
 		}
-		BtnMod8
+
+		Panel8
 		{
-			ControlName RuiButton
-			InheritProperties RuiSmallButton
-			classname ModButton
-			scriptID 7
-			pin_to_sibling BtnMod7
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-			navUp BtnMod7
-			navDown BtnMod9
+			ControlName				"CNestedPanel"
+			classname				ModSelectorPanel
+			scriptID				8
+
+			controlSettingsFile		"resource/ui/menus/panels/modlist_settings.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel7
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
 		}
-		BtnMod9
+
+		Panel9
 		{
-			ControlName RuiButton
-			InheritProperties RuiSmallButton
-			classname ModButton
-			scriptID 8
-			pin_to_sibling BtnMod8
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-			navUp BtnMod8
-			navDown BtnMod10
+			ControlName				"CNestedPanel"
+			classname				ModSelectorPanel
+			scriptID				9
+
+			controlSettingsFile		"resource/ui/menus/panels/modlist_settings.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel8
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
 		}
-		BtnMod10
+
+		Panel10
 		{
-			ControlName RuiButton
-			InheritProperties RuiSmallButton
-			classname ModButton
-			scriptID 9
-			pin_to_sibling BtnMod9
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-			navUp BtnMod9
-			navDown BtnMod11
+			ControlName				"CNestedPanel"
+			classname				ModSelectorPanel
+			scriptID				10
+
+			controlSettingsFile		"resource/ui/menus/panels/modlist_settings.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel9
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
 		}
-		BtnMod11
+
+		Panel11
 		{
-			ControlName RuiButton
-			InheritProperties RuiSmallButton
-			classname ModButton
-			scriptID 10
-			pin_to_sibling BtnMod10
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-			navUp BtnMod10
-			navDown BtnMod12
+			ControlName				"CNestedPanel"
+			classname				ModSelectorPanel
+			scriptID				11
+
+			controlSettingsFile		"resource/ui/menus/panels/modlist_settings.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel10
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
 		}
-		BtnMod12
+
+		Panel12
 		{
-			ControlName RuiButton
-			InheritProperties RuiSmallButton
-			classname ModButton
-			scriptID 11
-			pin_to_sibling BtnMod11
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-			navUp BtnMod11
-			navDown BtnMod13
-		}
-		BtnMod13
-		{
-			ControlName RuiButton
-			InheritProperties RuiSmallButton
-			classname ModButton
-			scriptID 12
-			pin_to_sibling BtnMod12
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-			navUp BtnMod12
-			navDown BtnMod14
-		}
-		BtnMod14
-		{
-			ControlName RuiButton
-			InheritProperties RuiSmallButton
-			classname ModButton
-			scriptID 13
-			pin_to_sibling BtnMod13
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-			navUp BtnMod13
-			navDown BtnMod15
-		}
-		BtnMod15
-		{
-			ControlName RuiButton
-			InheritProperties RuiSmallButton
-			classname ModButton
-			scriptID 14
-			pin_to_sibling BtnMod14
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-			navUp BtnMod14
-			navDown BtnMod1
-		}
-		BtnMod16
-		{
-			ControlName RuiButton
-			InheritProperties RuiSmallButton
-			classname ModButton
-			scriptID 15
-			pin_to_sibling BtnMod15
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-			navUp BtnMod15
-			navDown BtnMod17
-		}
-		BtnMod17
-		{
-			ControlName RuiButton
-			InheritProperties RuiSmallButton
-			classname ModButton
-			scriptID 16
-			pin_to_sibling BtnMod16
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
-			navUp BtnMod16
-			navDown BtnMod18
+			ControlName				"CNestedPanel"
+			classname				ModSelectorPanel
+			scriptID				12
+
+			controlSettingsFile		"resource/ui/menus/panels/modlist_settings.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel11
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
 		}
 		
+		Panel13
+		{
+			ControlName				"CNestedPanel"
+			classname				ModSelectorPanel
+			scriptID				13
+
+			controlSettingsFile		"resource/ui/menus/panels/modlist_settings.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel12
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
+		}
+
+		Panel14
+		{
+			ControlName				"CNestedPanel"
+			classname				ModSelectorPanel
+			scriptID				14
+
+			controlSettingsFile		"resource/ui/menus/panels/modlist_settings.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel13
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
+		}
+
+		Panel15
+		{
+			ControlName				"CNestedPanel"
+			classname				ModSelectorPanel
+			scriptID				15
+
+			controlSettingsFile		"resource/ui/menus/panels/modlist_settings.res"
+			wide 					%100
+			tall 					45
+
+			pin_to_sibling			Panel14
+			pin_corner_to_sibling 	TOP_LEFT
+			pin_to_sibling_corner 	BOTTOM_LEFT
+		}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		
+// FILTERS
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 		FilterPanel
 		{
-			ControlName RuiPanel
-			wide 800
-			tall 112
-			xpos -8
-			classname FilterPanelChild
+			ControlName	RuiPanel
+			classname	FilterPanelChild
+			
+			wide	800
+			tall	112
+			xpos	-8
+			zpos	-1
 
-			rui "ui/knowledgebase_panel.rpak"
+			rui		"ui/knowledgebase_panel.rpak"
+			visible	1
 
-			visible 1
-			zpos -1
-
-			pin_to_sibling FilterButtonsRowAnchor
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner TOP_LEFT
+			pin_to_sibling			FilterButtonsRowAnchor
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP_LEFT
 		}
-		
+
 		BtnSearchLabel
 		{
-			ControlName RuiButton
-			InheritProperties RuiSmallButton
-			labelText "#SEARCHBAR_LABEL"
-			textAlignment west
-			classname FilterPanelChild
-	
-			wide 500
-			xpos -23
-			ypos -16
-	
-			wrap 1
-			visible 1
-			zpos 0
-	
-			pin_to_sibling FilterButtonsRowAnchor
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner TOP_LEFT
+			ControlName			RuiButton
+			InheritProperties	RuiSmallButton
+			classname	FilterPanelChild
+			
+			labelText		#SEARCHBAR_LABEL
+			textAlignment	west
+
+			wide	500
+			xpos	-23
+			ypos	-16
+			zpos	0
+			wrap	1
+			visible	1
+
+
+
+			pin_to_sibling			FilterButtonsRowAnchor
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP_LEFT
 		}
-	
+
 		BtnModsSearch
 		{
-			ControlName TextEntry
-			classname FilterPanelChild
-			zpos 100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
-			xpos -400
-			ypos -5
-			wide 390
-			tall 30
-			textHidden 0
-			editable 1
-			font Default_21
-			allowRightClickMenu 0
-			allowSpecialCharacters 0
-			unicode 0
-	
-			pin_to_sibling BtnSearchLabel
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner TOP_RIGHT
+			ControlName	TextEntry
+			classname	FilterPanelChild
+			
+			zpos	100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			xpos	-400
+			ypos	-5
+			wide	390
+			tall	30
+
+			textHidden	0 // Why?
+			editable	1
+			font		Default_21
+
+			allowRightClickMenu		0
+			allowSpecialCharacters	0
+			unicode					1
+
+			pin_to_sibling			BtnSearchLabel
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP_RIGHT
 		}
-		
+
 		SwtBtnShowFilter
 		{
-			ControlName RuiButton
-			InheritProperties SwitchButton
-			labelText "#SHOW"
-			ConVar "filter_mods"
-			classname FilterPanelChild
+			ControlName			RuiButton
+			InheritProperties	SwitchButton
+			classname			FilterPanelChild
+
+			labelText	"#SHOW"
+			ConVar		"filter_mods"
 			wide 500
-			
+
 			list
 			{
-				"#SHOW_ALL" 0
-				"#SHOW_ONLY_ENABLED" 1
-				"#SHOW_ONLY_DISABLED" 2
+				"#SHOW_ALL"				0
+				"#SHOW_ONLY_ENABLED"	1
+				"#SHOW_ONLY_DISABLED"	2
+				"#SHOW_ONLY_NOT_REQUIRED" 3
+				"#SHOW_ONLY_REQUIRED"	4
 			}
-	
-			pin_to_sibling BtnSearchLabel
-			pin_corner_to_sibling TOP_LEFT
-			pin_to_sibling_corner BOTTOM_LEFT
+
+			pin_to_sibling			BtnSearchLabel
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
 		}
-		
+
+		BtnListReverse
+		{
+			ControlName			RuiButton
+			InheritProperties	SwitchButton
+			classname			FilterPanelChild
+
+			xpos		-15
+			ypos		-15
+
+			labelText	"Reverse"
+			ConVar		"modlist_reverse"
+			wide 260
+
+			list
+			{
+				"low first"		0
+				"high first"	1
+			}
+
+			pin_to_sibling			FilterPanel
+			pin_corner_to_sibling	TOP_RIGHT
+			pin_to_sibling_corner	TOP_RIGHT
+		}
+
 		BtnFiltersClear
 		{
-			ControlName RuiButton
-			InheritProperties RuiSmallButton
-			labelText "#CLEAR_FILTERS"
-			classname FilterPanelChild
-			wide 100
-			xpos -15
-			ypos -55
-			zpos 90
-	
-			scriptID 999
-	
-			pin_to_sibling FilterPanel
-			pin_corner_to_sibling TOP_RIGHT
-			pin_to_sibling_corner BOTTOM_RIGHT
+			ControlName			RuiButton
+			InheritProperties	RuiSmallButton
+			classname			FilterPanelChild
+			
+			labelText	"#CLEAR_FILTERS"
+			wide		100
+			xpos		-15
+			ypos		-55
+			zpos		90
+
+			pin_to_sibling			FilterPanel
+			pin_corner_to_sibling	TOP_RIGHT
+			pin_to_sibling_corner	BOTTOM_RIGHT
 		}
-		
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// MOD INFO
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		ModButtonsPanel
+		{
+			ControlName	RuiPanel
+			classname	FilterPanelChild
+			
+			wide	950
+			tall	112
+
+			rui	"ui/knowledgebase_panel.rpak"
+
+			pin_to_sibling			LabelDetails
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	BOTTOM
+		}
+
+		HideCVButton
+		{
+			ControlName			RuiButton
+			InheritProperties	SwitchButton
+
+			labelText	"ConVars"
+			ConVar		"modlist_show_convars"
+			wide 300
+
+			list
+			{
+				"Hidden"	0
+				"Shown"		1
+			}
+
+			pin_to_sibling			ModButtonsPanel
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+
+		ModPageButton
+		{
+			ControlName			RuiButton
+			InheritProperties	RuiSmallButton
+
+			textAlignment	west
+			visible			0
+
+			pin_to_sibling			HideCVButton
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+
+		WarningLegendImage
+		{
+			ControlName	RuiPanel
+
+			rui		ui/basic_image.rpak
+			wide	30
+			tall	30
+			xpos		-10
+			ypos		-5
+			visible 0
+
+			pin_to_sibling			ModButtonsPanel
+			pin_corner_to_sibling	BOTTOM_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+
+		WarningLegendLabel
+		{
+			ControlName	Label
+
+			labelText	" : This mod gets (un)loaded automatically"
+			wide 500
+			tall 50
+			visible 0
+
+			pin_to_sibling			WarningLegendImage
+			pin_corner_to_sibling	LEFT
+			pin_to_sibling_corner	RIGHT
+		}
+
 		LabelDetails
 		{
-			ControlName RuiPanel
-			xpos 900
-			ypos 160
-			tall 800
-			wide 950
-			rui "ui/knowledgebase_panel.rpak"
-			wrap 1
-			visible 1
-			zpos 1
+			ControlName	RuiPanel
+
+			xpos	900
+			ypos	160
+			zpos	1
+
+			tall	688
+			wide	950
+			rui		"ui/knowledgebase_panel.rpak"
+			wrap	1
+			visible	1
 		}
-		
+
+		ModEnabledBar
+		{
+			ControlName	RuiPanel
+
+			rui		ui/basic_image.rpak
+			wide	950
+			tall	7
+			zpos	2
+			visible	0
+
+			pin_to_sibling			LabelDetails
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SLIDER
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 		BtnModListUpArrow
 		{
-			ControlName RuiButton
-			InheritProperties RuiSmallButton
-			//labelText "A"
-			wide 40
-			tall 40
-			xpos 2
-			ypos 2
-	
-			image "vgui/hud/white"
-			drawColor "255 255 255 128"
-	
-			pin_to_sibling LabelDetails
-			pin_corner_to_sibling TOP_RIGHT
-			pin_to_sibling_corner TOP_LEFT
+			ControlName			RuiButton
+			InheritProperties	RuiSmallButton
+			
+			wide	40
+			tall	40
+			xpos	2
+			ypos	2
+
+			image		"vgui/hud/white"
+			drawColor	"255 255 255 128"
+
+			pin_to_sibling			LabelDetails
+			pin_corner_to_sibling	TOP_RIGHT
+			pin_to_sibling_corner	TOP_LEFT
 		}
-	
+
 		BtnModListUpArrowPanel
 		{
-			ControlName RuiPanel
-			wide 40
-			tall 40
-			xpos 2
-			ypos 2
-	
-			rui "ui/knowledgebase_panel.rpak"
-	
-			visible 1
-			zpos -1
-	
-			pin_to_sibling LabelDetails
-			pin_corner_to_sibling TOP_RIGHT
-			pin_to_sibling_corner TOP_LEFT
+			ControlName	RuiPanel
+			
+			wide	40
+			tall	40
+			xpos	2
+			ypos	2
+
+			rui		"ui/knowledgebase_panel.rpak"
+			visible	1
+			zpos	-1
+
+			pin_to_sibling			LabelDetails
+			pin_corner_to_sibling	TOP_RIGHT
+			pin_to_sibling_corner	TOP_LEFT
 		}
-	
+
 		BtnModListDownArrow
 		{
-			ControlName RuiButton
-			InheritProperties RuiSmallButton
-			//labelText "V"
-			wide 40
-			tall 40
-			xpos 2
-			ypos -646
-	
-			image "vgui/hud/white"
-			drawColor "255 255 255 128"
-	
-			pin_to_sibling LabelDetails
-			pin_corner_to_sibling TOP_RIGHT
-			pin_to_sibling_corner TOP_LEFT
+			ControlName			RuiButton
+			InheritProperties	RuiSmallButton
+			
+			wide	40
+			tall	40
+			xpos	2
+			ypos	-646
+
+			image		"vgui/hud/white"
+			drawColor	"255 255 255 128"
+
+			pin_to_sibling			LabelDetails
+			pin_corner_to_sibling	TOP_RIGHT
+			pin_to_sibling_corner	TOP_LEFT
 		}
-	
+
 		BtnModListDownArrowPanel
 		{
-			ControlName RuiPanel
-			wide 40
-			tall 40
-			xpos 2
-			ypos -646
-	
-			rui "ui/knowledgebase_panel.rpak"
-	
-			visible 1
-			zpos -1
-	
-			pin_to_sibling LabelDetails
-			pin_corner_to_sibling TOP_RIGHT
-			pin_to_sibling_corner TOP_LEFT
+			ControlName	RuiPanel
+			
+			wide	40
+			tall	40
+			xpos	2
+			ypos	-646
+			zpos	-1
+
+			rui	"ui/knowledgebase_panel.rpak"
+			visible	1
+
+			pin_to_sibling			LabelDetails
+			pin_corner_to_sibling	TOP_RIGHT
+			pin_to_sibling_corner	TOP_LEFT
 		}
-	
+
 		BtnModListSlider
 		{
-			ControlName RuiButton
-			InheritProperties RuiSmallButton
-			//labelText "V"
-			wide 40
-			tall 604
-			xpos 2
-			ypos -40
-			zpos 0
-	
-			image "vgui/hud/white"
-			drawColor "255 255 255 128"
-	
-			pin_to_sibling LabelDetails
-			pin_corner_to_sibling TOP_RIGHT
-			pin_to_sibling_corner TOP_LEFT
+			ControlName			RuiButton
+			InheritProperties	RuiSmallButton
+			
+			wide	40
+			tall	604
+			xpos	2
+			ypos	-40
+			zpos	0
+
+			image		"vgui/hud/white"
+			drawColor	"255 255 255 128"
+
+			pin_to_sibling			LabelDetails
+			pin_corner_to_sibling	TOP_RIGHT
+			pin_to_sibling_corner	TOP_LEFT
 		}
-	
+
 		BtnModListSliderPanel
 		{
-			ControlName RuiPanel
-			wide 40
-			tall 604
-			xpos 2
-			ypos -40
-	
-			rui "ui/knowledgebase_panel.rpak"
-	
-			visible 1
-			zpos -1
-	
-			pin_to_sibling LabelDetails
-			pin_corner_to_sibling TOP_RIGHT
-			pin_to_sibling_corner TOP_LEFT
+			ControlName	RuiPanel
+			
+			wide	40
+			tall	604
+			xpos	2
+			ypos	-40
+			zpos	-1
+
+			rui		"ui/knowledgebase_panel.rpak"
+			visible	1
+
+
+			pin_to_sibling			LabelDetails
+			pin_corner_to_sibling	TOP_RIGHT
+			pin_to_sibling_corner	TOP_LEFT
 		}
-	
+
 		// sh_menu_models.gnut has a global function which gets called when
 		// left mouse button gets called while hovering and has mouse
 		// deltaX; deltaY which we can yoink for ourselfes
 		MouseMovementCapture
 		{
-				ControlName CMouseMovementCapturePanel
-				wide 40
-				tall 604
-				xpos 2
-				ypos -40
-				zpos 1
-	
-				pin_to_sibling LabelDetails
-				pin_corner_to_sibling TOP_RIGHT
-				pin_to_sibling_corner TOP_LEFT
+				ControlName	CMouseMovementCapturePanel
+				
+				wide	40
+				tall	604
+				xpos	2
+				ypos	-40
+				zpos	1
+
+				pin_to_sibling			LabelDetails
+				pin_corner_to_sibling	TOP_RIGHT
+				pin_to_sibling_corner	TOP_LEFT
 		}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		FooterButtons
 		{
-			ControlName CNestedPanel
-			InheritProperties FooterButtons
+			ControlName			CNestedPanel
+			InheritProperties	FooterButtons
 		}
 	}
 }

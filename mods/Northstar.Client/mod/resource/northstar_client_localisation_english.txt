@@ -301,6 +301,8 @@ Press Yes if you agree to this. This choice can be changed in the mods menu at a
 		"SHOW_ALL" "All"
 		"SHOW_ONLY_ENABLED" "Only Enabled"
 		"SHOW_ONLY_DISABLED" "Only Disabled"
+		"SHOW_ONLY_NOT_REQUIRED" "Only Optional Mods"
+		"SHOW_ONLY_REQUIRED" "Only Required Mods"
 
 		// Maps menu
 		"HIDE_LOCKED" "Hide locked"
