@@ -73,7 +73,53 @@ For older builds of Northstar, please update or see the [legacy guide](playing-o
 
 ### Crackling sound
 
-Can be fixed by adding [`tsched=0`](https://wiki.archlinux.org/title/PulseAudio/Troubleshooting#Glitches.2C\_skips\_or\_crackling) to `/etc/pulse/default.pa`
+* [PulseAudio](https://wiki.archlinux.org/title/PulseAudio/Troubleshooting#Glitches.2C\_skips\_or\_crackling):
+
+Add `tsched=0` to `~/.pulse/default.pa`
+
+<details><summary>PipeWire:</summary>
+
+[Source](https://forum.manjaro.org/t/howto-troubleshoot-crackling-in-pipewire/82442)
+
+This guide is for pipewire-media-session, not wirepluber which has a different location and is formatted in LUA.
+
+Before, copy all the necessary configuration files:
+
+```
+mkdir -p ~/.config/pipewire/media-session.d/ && cp /usr/share/pipewire/media-session.d/alsa-monitor.conf ~/.config/pipewire/media-session.d && cp /usr/share/pipewire/pipewire.conf ~/.config/pipewire/
+```
+Restart PipeWire after each step.
+
+1. Enable sample rate switching.
+
+Change `#default.clock.allowed-rates = [ 48000 ]` to `default.clock.allowed-rates = [ 44100 48000 ]` in `~/.config/pipewire/pipewire.conf`.
+
+2. Disable suspend.
+
+Change `#session.suspend-timeout-seconds = 5` to `session.suspend-timeout-seconds = 0` in `~/.config/pipewire/media-session.d/alsa-monitor.conf`.
+
+If the above doesn't help, you can also try:
+
+3. Setting alsa headroom (`alsa-monitor.conf`).
+
+Change `#api.alsa.headroom      = 0` to `#api.alsa.headroom      = 1024`.
+
+If it doesn't solve the issue try 2048 however if it does try lower values: 512, 256, 128, 64, 32. Use a lowest value that works.
+
+4. Changing the alsa period size (`alsa-monitor.conf`).
+
+`#api.alsa.period-size   = 1024`
+
+`#api.alsa.headroom      = 0`
+
+to
+
+`api.alsa.period-size   = 256`
+
+`api.alsa.headroom      = 1024`
+
+If it doesn't solve the issue try different values: 2048, 512, 256, 128, 64, 32. Use a lowest values that works.
+</details>
 
 ### Fullscreen issues
 
