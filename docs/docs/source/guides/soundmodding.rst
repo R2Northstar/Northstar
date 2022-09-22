@@ -32,7 +32,7 @@ just in-match ones. For example:
 
 - The sound when you move the cursor to an option it will be ``menu_focus``, and clicking sound will be ``menu_accept`` or menu music ``mainmenu_music``
 
-Check the console often, as it'S easy to miss your sound - there can be a lot of sounds playing.
+Check the console often, as it's easy to miss your sound - there can be a lot of sounds playing.
 
 Step 2 - Creating Folders
 --------------------------
