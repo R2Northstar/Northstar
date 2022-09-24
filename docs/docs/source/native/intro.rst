@@ -5,7 +5,7 @@ Squirrel is a programming language used in Titanfall 2 and Northstar mods, it is
 File format
 -----------
 
-All files using squirrel are saved as ``.nut`` or ``.gnut``
+All files using squirrel are typically saved as ``.nut`` or ``.gnut``, though any extension will be run, as long as it is  in the ``scripts/vscripts/`` directory.
 
 when creating mods your mod will typically be a series of functions and callbacks
 
