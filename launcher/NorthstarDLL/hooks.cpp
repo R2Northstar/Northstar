@@ -210,14 +210,29 @@ void CallAllPendingDLLLoadCallbacks()
 
 HMODULE LoadLibraryExAHook(LPCSTR lpLibFileName, HANDLE hFile, DWORD dwFlags)
 {
-	HMODULE moduleAddress = LoadLibraryExAOriginal(lpLibFileName, hFile, dwFlags);
-
-	if (moduleAddress)
+	if (!strncmp(lpLibFileName, "XInput1_3.dll", 14))
 	{
-		CallLoadLibraryACallbacks(lpLibFileName, moduleAddress);
+		HMODULE moduleAddress = LoadLibraryExAOriginal("XInput9_1_0.dll", hFile, dwFlags);
+		if (moduleAddress)
+		{
+			CallLoadLibraryACallbacks(lpLibFileName, moduleAddress);
+		}
+		else
+		{
+			MessageBoxA(0, "Could not find XInput9_1_0.dll", "Northstar", MB_ICONERROR);
+			exit(-1);
+		}
+		return moduleAddress;
 	}
-
-	return moduleAddress;
+	else
+	{
+		HMODULE moduleAddress = LoadLibraryExAOriginal(lpLibFileName, hFile, dwFlags);
+		if (moduleAddress)
+		{
+			CallLoadLibraryACallbacks(lpLibFileName, moduleAddress);
+		}
+		return moduleAddress;
+	}
 }
 
 HMODULE LoadLibraryAHook(LPCSTR lpLibFileName)
