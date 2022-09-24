@@ -14,6 +14,11 @@ bool function ClientCommandCallbackToggleNoclip( entity player, array<string> ar
 {
 	if ( !GetConVarBool( "sv_cheats" ) )
 		return true
+	if( player.GetParent() ) // change movetype while setparented will crash the server
+	{
+		print( player + " failed noclipping because the entity is parented" )
+		return true
+	}
 	
 	print( player + " TOGGLED NOCLIP" )
 
