@@ -28,13 +28,25 @@ First, you need to have a relatively recent version of Python installed - 3.8 or
 tl:dr;
 ^^^^^^
 
-.. code:: bash
+.. tabs::
 
-    git clone https://github.com/R2Northstar/ModdingDocs/
-    cd ModdingDocs
-    py -m pip install poetry
-    py -m poetry install
-    py -m poetry run build
+    .. code-tab:: powershell Windows
+
+        git clone https://github.com/R2Northstar/ModdingDocs/
+        cd ModdingDocs
+        py -m pip install poetry
+        py -m poetry install
+        py -m poetry run build
+    
+    .. code-tab:: bash Linux
+
+        git clone https://github.com/R2Northstar/ModdingDocs/
+        cd ModdingDocs
+        python3 -m pip install poetry
+        python3 -m poetry install
+        python3 -m poetry run build
+
+
 
 Explanation
 ^^^^^^^^^^^
@@ -49,32 +61,49 @@ Open a terminal wherever you want the files to end up and clone the `ModdingDocs
 
 Your terminal should now be open in the ModdingDocs folder.
 
-Next, on Windows do:
+Next, you need to install `Poetry <https://python-poetry.org/docs/cli/>`_, the dependency management and build tool used:
 
-.. code:: bash
+.. tabs::
 
-    # Install Poetry, the build tool used by ModdingDocs
-    py -m pip install poetry
+    .. code-tab:: powershell Windows
+        
+        py -m pip install poetry
+        
+    .. code-tab:: bash Linux
 
-For other OSs replace ``py`` with ``python3`` or whichever python executable you prefer.
+        python3 -m pip install poetry
 
-Now, tell poetry to install this project.
+Now, tell poetry to install this project and its dependencies.
 
-.. code:: bash
+.. tabs::
 
-    py -m poetry install
+    .. code-tab:: powershell Windows
+        
+        py -m poetry install
+        
+    .. code-tab:: bash Linux
+
+        python3 -m poetry install
+
 
 After this is done downloading and setting up all the dependencies, you can build it with:
 
-.. code:: bash
 
-    py -m poetry run build
+.. tabs::
+
+    .. code-tab:: powershell Windows
+        
+        py -m poetry run build
+        
+    .. code-tab:: bash Linux
+
+        python3 -m poetry run build
+
 
 This should rebuild the docs on changes and open them in your default browser with live reloading.
 
-Note: if you added python to the PATH you can omit the ``py -m`` or alternatives.
 
-Tips and tricks
+VSCode
 ---------------
 
 If you're using `Visual Studio Code <https://code.visualstudio.com/>`_, the following extensions might be of interest:
@@ -82,3 +111,15 @@ If you're using `Visual Studio Code <https://code.visualstudio.com/>`_, the foll
 
 - `snekvik.simple-rst <https://marketplace.visualstudio.com/items?itemName=trond-snekvik.simple-rst>`_: for syntax highlighting
 - `lextudio.restructuredtext <https://marketplace.visualstudio.com/items?itemName=lextudio.restructuredtext>`_: for autocompletion and syntax checks.
+
+.. note::
+    To get the ReStructuredText support working, you will likely need to tell VSCode to use the Poetry environment.
+
+    To do so, open one of the .py files, which should make the python version appear in the bottom right of VSCode.
+
+    Click on it, and select the version with ``(moddingdocs`` after it.
+
+    Then, when looking at a ReStructuredText file there should be ``esbonio:`` in the bottom right.
+
+    Click that to restart the ReStructuredText support. This allows it to see all the dependencies Poetry installed.
+
