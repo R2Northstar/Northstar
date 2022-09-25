@@ -28,7 +28,9 @@
 	background-color: rgba(66, 71, 127,0.1);
 }
 
-body:not([data-theme="light"]) .highlight {
+
+/* disabled due to breaking when the lexer fails and no syntax highlighting happens. */
+/* body:not([data-theme="light"]) .highlight {
 	background-color: var(--color-background-secondary);
 	color: var(--color-background-secondary);
-}
+} */
