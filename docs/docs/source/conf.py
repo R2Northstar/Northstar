@@ -9,6 +9,7 @@ author = "Northstar Developer Team"
 release = "0.1"
 version = "0.1.0"
 
+
 # -- General configuration
 
 extensions = [
@@ -17,6 +18,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
+    "sphinx_tabs.tabs",
 ]
 
 intersphinx_mapping = {

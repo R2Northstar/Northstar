@@ -28,6 +28,13 @@
 	background-color: rgba(66, 71, 127,0.1);
 }
 
+.sphinx-tabs-tab {
+	padding-top: 0.5rem !important;
+	padding-right: 1rem !important;
+	padding-bottom: 0rem !important;
+	padding-left: 1rem !important;
+}
+
 
 /* disabled due to breaking when the lexer fails and no syntax highlighting happens. */
 /* body:not([data-theme="light"]) .highlight {
