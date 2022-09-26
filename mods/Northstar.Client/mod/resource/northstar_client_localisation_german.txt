@@ -8,6 +8,9 @@
 		"MENU_LAUNCH_NORTHSTAR" "Northstar starten"
 		"MENU_TITLE_MODS" "Mods"
 		"RELOAD_MODS" "Mods neu laden"
+		"WARNING" "Warnung"
+		"CORE_MOD_DISABLE_WARNING" "Das Deaktivieren von essentiellen Mods kann die Funktion deines Clients beeinträchtigen!"
+		"DISABLE" "Deaktiviere"
 
 		"DIALOG_TITLE_INSTALLED_NORTHSTAR" "Danke, dass du Northstar installiert hast!"
 		"AUTHENTICATION_AGREEMENT_DIALOG_TEXT" "Damit Northstar funktionieren kann, muss es mithilfe des Northstar Masterservers authentifizieren. Dies setzt ein Weitergeben deines Origin Tokens an den Masterserver voraus, er wird nicht gespeichert oder für andere Zwecke verwendet.
@@ -15,6 +18,9 @@ Drücke Ja, um zuzustimmen. Du kannst diese Entscheidung jederzeit im Modmenü �
 		"BACK_AUTHENTICATION_AGREEMENT" "Authentifizierungs-Einwilligung"
 		"AUTHENTICATION_AGREEMENT" "Authentifizierungs-Einwilligung"
 		"AUTHENTICATION_AGREEMENT_RESTART" "Ein Neustart ist notwendig, um diese Änderung zu übernehmen"
+
+		"DIALOG_AUTHENTICATING_MASTERSERVER" "Authentifizierung mit Master Server"
+		"AUTHENTICATIONAGREEMENT_NO" "Du hast dich gegen die Authentifizierung mit Northstar entschieden. Du kannst die Authentifizierungs-Einwilligung im Modmenü ansehen."
 
 		"MENU_TITLE_SERVER_BROWSER" "Server Browser"
 		"NS_SERVERBROWSER_NOSERVERS" "Keine Server gefunden"
@@ -75,6 +81,8 @@ Drücke Ja, um zuzustimmen. Du kannst diese Entscheidung jederzeit im Modmenü �
 		"cp_amped_capture_points" "Verstärkte Hardpoints"
 		"coliseum_loadouts_enabled" "Coliseum Loadouts"
 
+		"aitdm_archer_grunts" "Archer Frontsoldaten"
+
 		// northstar.custom localisation is just deciding not to work, so putting it here for now
 		"PL_sbox" "Sandbox"
 		"PL_sbox_lobby" "Sandbox Lobby"
@@ -88,6 +96,8 @@ Drücke Ja, um zuzustimmen. Du kannst diese Entscheidung jederzeit im Modmenü �
 		"PL_gg_hint" "Erhalte einen Kill mit jeder Waffe um zu siegen."
 		"PL_gg_abbr" "GG"
 		"GAMEMODE_GG" "Gun Game"
+		"gg_kill_reward" "Killprozentbelohnung"
+		"gg_execution_reward" "Exekutierungsprozentbelohnung"
 
 		"PL_tt" "Titan Tag"
 		"PL_tt_lobby" "Titan Tag Lobby"
@@ -112,6 +122,17 @@ Drücke Ja, um zuzustimmen. Du kannst diese Entscheidung jederzeit im Modmenü �
 		"HIDDEN_YOU_ARE_HIDDEN" "Du bist The Hidden!"
 		"HIDDEN_KILL_SURVIVORS" "Töte alle Überlebenden"
 		"HIDDEN_FIRST_HIDDEN" "%s1 ist the The Hidden."
+
+		"PL_sns" "Stock und Stein"
+		"PL_sns_lobby" "Stock und Stein Lobby"
+		"PL_sns_desc" "Frei für Alle. Erziele Kills mit Impulsklingen und Exekutierungen um die Punktzahl des Gegners zurückzusetzen"
+		"PL_sns_abbr" "SuS"
+		"GAMEMODE_SNS" "Stock und Stein"
+		"sns_wme_kill_value" "Wingman Elite Killwert"
+		"sns_softball_kill_value" "Softball Killwert"
+		"sns_reset_kill_value" "Pulseklinge/Exekutierung Killwert"
+		"sns_melee_kill_value" "Nahkampfkill Killwert"
+		"sns_softball_enabled" "Softball aktiviert"
 
 		"PL_inf" "Infektion"
 		"PL_inf_lobby" "Infektion-Lobby"
@@ -265,6 +286,15 @@ Drücke Ja, um zuzustimmen. Du kannst diese Entscheidung jederzeit im Modmenü �
 		"CONNECTING" "Verbinde..."
 		"INGAME_PLAYERS" "Spieler: ^6BA6C400%s1"
 		"TOTAL_SERVERS" "Server: ^C46C6C00%s1"
+
+		// Mods menu
+		"SHOW" "Anzeigen"
+		"SHOW_ALL" "Alle anzeigen"
+		"SHOW_ONLY_ENABLED" "Nur aktivierte"
+		"SHOW_ONLY_DISABLED" "Nur deaktivierte"
+
+		// Maps menu
+		"HIDE_LOCKED" "Verstecke gesperrte"
 
 		// In-game chat
 		"HUD_CHAT_WHISPER_PREFIX" "[WHISPER]"

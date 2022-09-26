@@ -82,6 +82,8 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 		"cp_amped_capture_points" "Points de capture améliorés"
 		"coliseum_loadouts_enabled" "Equipements du Colisée"
 
+		"aitdm_archer_grunts" "Soldats (Archer)"
+
 		// northstar.custom localisation is just deciding not to work, so putting it here for now
 		"PL_sbox" "Bac à sable"
 		"PL_sbox_lobby" "Lobby: Bac à sable"

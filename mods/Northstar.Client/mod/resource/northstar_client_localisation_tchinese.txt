@@ -82,6 +82,8 @@
 		"cp_amped_capture_points" "強化據點"
 		"coliseum_loadouts_enabled" "競技場裝備"
 
+		"aitdm_archer_grunts" "射手飛彈步兵"
+
 		// northstar.custom localisation is just deciding not to work, so putting it here for now
 		"PL_sbox" "沙盒"
 		"PL_sbox_lobby" "沙盒大廳"

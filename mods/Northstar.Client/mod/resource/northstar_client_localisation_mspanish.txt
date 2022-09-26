@@ -82,6 +82,8 @@ Si estas de acuerdo con esto, presiona SI. Esta decision puede ser cambiada en e
 		"cp_amped_capture_points" "Fortalezas amplificadas"
 		"coliseum_loadouts_enabled" "Equipamientos de coliseo"
 
+		"aitdm_archer_grunts" "Soldado Archer"
+
 		// northstar.custom localisation is just deciding not to work, so putting it here for now
 		"PL_sbox" "Sandbox"
 		"PL_sbox_lobby" "Lobby sandbox"
