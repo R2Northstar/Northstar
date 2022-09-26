@@ -3,9 +3,15 @@
 	"Language" "japanese"
 	"Tokens"
 	{
+		// ファイルはUTF-16 LEでエンコードしてください、メモ帳なら"名前を付けて保存"から
+
 		"MENU_LAUNCH_NORTHSTAR" "Northstarを起動"
 		"MENU_TITLE_MODS" "Modの管理"
 		"RELOAD_MODS" "Modをリロード"
+		"WARNING" "警告"
+		"CORE_MOD_DISABLE_WARNING"  "コアModを無効化すると、クライアントが破損する可能性があります！"
+		// 多分ボタンに使われると思うので「無効化」としたが、今後変更する必要があるかもしれない
+		"DISABLE" "無効化"
 
 		"MENU_MAIN_AUTHENTICATING" "認証中..."
 		"MENU_MAIN_CONNECTING" "ローカルサーバーへの接続"
@@ -17,8 +23,12 @@
 		"AUTHENTICATION_AGREEMENT" "認証への同意"
 		"AUTHENTICATION_AGREEMENT_RESTART" "変更を適用するには、一度Titanfall 2を再起動する必要があります。"
 
+		"DIALOG_AUTHENTICATING_MASTERSERVER" "マスターサーバーへ認証中..."
+		"AUTHENTICATIONAGREEMENT_NO" "Northstarの認証を行わないことを選択しました。Modメニューから再度このダイアログを開くことができます。"
+	
 		"MENU_TITLE_SERVER_BROWSER" "サーバーブラウザー"
 		"NS_SERVERBROWSER_NOSERVERS" "サーバーが見つかりませんでした。"
+		"NS_SERVERBROWSER_UNKNOWNMODE" "不明なモード"
 		"NS_SERVERBROWSER_WAITINGFORSERVERS" "サーバーを待っています..."
 		"NS_SERVERBROWSER_CONNECTIONFAILED" "接続に失敗しました！"
 		// 要議論
@@ -60,6 +70,7 @@
 		// 要議論: "時間制限"のままか、"マッチ時間"、"タイム上限"、それ以外への差し替え
 		"timelimit" "時間制限"
 		"roundtimelimit" "時間制限 (ラウンドベース)"
+		"respawnprotection" "リスポーン保護時間"
 
 		"pilot_health_multiplier" "ヘルス倍率"
 		// 要議論: "リスポーン遅延" のままか、"リスポーンまでの時間"、それ以外への差し替え
@@ -89,29 +100,76 @@
 		"cp_amped_capture_points" "拠点増幅"
 		"coliseum_loadouts_enabled" "コロシアムロードアウト"
 
+		// そのまま「グラント」よりも、Respawn翻訳で使われている
+		//「ミニオン」のほうが伝わりやすいかもしれないのでこっちにする
+		// 「アーチャーを持ったミニオン」とかだと流石によくなさそうなのでとりあえずそのまま日本語に。
+		"aitdm_archer_grunts" "アーチャー持ちミニオン"
+
 		// northstar.custom localisation is just deciding not to work, so putting it here for now
 		"PL_sbox" "サンドボックス"
-		"PL_sbox_lobby" "サンドボックスロビー"
+		"PL_sbox_lobby" "サンドボックス ロビー"
 		"PL_sbox_desc" "サンドボックス"
 		"PL_sbox_abbr" "SBOX"
 		"GAMEMODE_SBOX" "Sandbox"
 
 		"PL_gg" "ガン・ゲーム"
-		"PL_gg_lobby" "ガン・ゲームロビー"
+		"PL_gg_lobby" "ガン・ゲーム ロビー"
 		"PL_gg_desc" "全ての銃でキルを取って勝利しろ。"
 		"PL_gg_hint" "全ての銃でキルを取って勝利しろ。"
 		"PL_gg_abbr" "GG"
 		"GAMEMODE_GG" "ガン・ゲーム"
+		"gg_kill_reward" "キルリワード倍率"
+		"gg_assist_reward" "アシストリワード倍率"
+		"gg_execution_reward" "処刑リワード倍率"
 
 		"PL_tt" "タイタン・タグ"
-		"PL_tt_lobby" "タイタン・タグロビー"
+		"PL_tt_lobby" "タイタン・タグ ロビー"
 		"PL_tt_desc" "タイタンとしてポイントを稼げ。敵のタイタンを破壊し自分のタイタンを確保しろ。"
 		"PL_tt_hint" "タイタンとしてポイントを稼げ。敵のタイタンを破壊し自分のタイタンを確保しろ。"
 		"PL_tt_abbr" "TT"
 		"GAMEMODE_TT" "タイタン・タグ"
 
+		"PL_chamber" "ワン・イン・ザ・チャンバー"
+		"PL_chamber_lobby" "ワン・イン・ザ・チャンバー ロビー"
+		"PL_chamber_desc" "ワンショット・ワンキル。敵をキルして、弾倉に新たな弾丸を込めろ。"
+		"PL_chamber_hint" "ワンショット・ワンキル。敵をキルして、弾倉に新たな弾丸を込めろ。"
+		"PL_chamber_abbr" "CHAMBER"
+		"GAMEMODE_CHAMBER" "ワン・イン・ザ・チャンバー"
+
+		"PL_hidden" "ザ・ヒデゥン"
+		"PL_hidden_lobby" "ザ・ヒデゥン ロビー"
+		"PL_hidden_desc" "透明化しているプレイヤーが一人潜んでいる。ヒデゥンを撃破せよ。"
+		"PL_hidden_hint" "透明化しているプレイヤーが一人潜んでいる。ヒデゥンを撃破せよ。"
+		"PL_hidden_abbr" "HIDDEN"
+		"GAMEMODE_HIDDEN" "ザ・ヒデゥン"
+		"HIDDEN_YOU_ARE_HIDDEN" "ヒデゥンになった！"
+		"HIDDEN_KILL_SURVIVORS" "すべてのサバイバーを撃破せよ。"
+		"HIDDEN_FIRST_HIDDEN" "%s1 はヒデゥンになった。"
+
+		"PL_sns" "スティック・アンド・ストーン"
+		"PL_sns_lobby" "スティック・アンド・ストーン ロビー"
+		"PL_sns_desc" "フリー・フォー・オール。パルスブレードか、処刑を使用して敵のスコアをリセットできる。"
+		"PL_sns_abbr" "SNS"
+		"GAMEMODE_SNS" "スティック・アンド・ストーン"
+		// 要変更: 破産以外の言葉に置き換える
+		"SCOREBOARD_BANKRUPTS" "破産キル"
+		"SNS_LEADER_BANKRUPT" "スコアリーダーが破産した！"
+		"SNS_LEADER_BANKRUPT_SUB" "%s1 は %s2 にスコアをリセットされた"
+		"SNS_BANKRUPT" "破産！"
+		"SNS_BANKRUPT_SUB" "あなたのスコアは %s1 によってリセットされた"
+		// 要議論: value -> "数"？それとも"値"？
+		"sns_wme_kill_value" "ウィングマン・エリートキル数"
+		"sns_softball_kill_value" "ソフトボールキル数"
+		"sns_offhand_kill_value" "オフハンドキル数"
+		"sns_reset_kill_value" "パルスブレード/処刑キル数"
+		"sns_melee_kill_value" "格闘キル数"
+		// 要変更: 「キルリセットまでのクールダウンを有効化するかどうか」なのか、「キルによってクールダウンをリセットするかどうか」なのか。
+		// ひとまずそのまま日本語に直したが、わかりにくいので変更するべき。
+		"sns_reset_pulse_blade_cooldown_on_pulse_blade_kill" "キルクールダウンリセット"
+		"sns_softball_enabled" "ソフトボールを有効化"
+
 		"PL_inf" "インフェクション"
-		"PL_inf_lobby" "インフェクションロビー"
+		"PL_inf_lobby" "インフェクション ロビー"
 		"PL_inf_desc" "生き残りは死亡するとインフェクターになる。"
 		"PL_inf_hint" "生き残りは死亡するとインフェクターになる。"
 		"PL_inf_abbr" "INF"
@@ -125,8 +183,15 @@
 		"INFECTION_YOU_ARE_LAST_SURVIVOR" "お前が最後の生き残りだ！"
 		"INFECTION_SURVIVE_LAST_SURVIVOR" "生きろ"
 
+		"PL_tffa" "タイタン フリー・フォー・オール"
+		"PL_tffa_lobby" "タイタン フリー・フォー・オール ロビー"
+		"PL_tffa_desc" "すべてのパイロットはタイタンに搭乗している。すべての敵タイタンを撃破せよ。"
+		"PL_tffa_hint" "すべてのパイロットはタイタンに搭乗している。すべての敵タイタンを撃破せよ。"
+		"PL_tffa_abbr" "TFFA"
+		"GAMEMODE_TFFA" "タイタン フリー・フォー・オール"
+
 		"PL_hs" "ハイド・アンド・シーク"
-		"PL_hs_lobby" "ハイド・アンド・シークロビー"
+		"PL_hs_lobby" "ハイド・アンド・シーク ロビー"
 		"PL_hs_desc" "ハイダーは隠れ、シーカーはハイダーを探せ！"
 		"PL_hs_hint" "ハイダーは隠れ、シーカーはハイダーを探せ！"
 		"PL_hs_abbr" "HS"
@@ -145,13 +210,13 @@
 
 		"GAMEMODE_fw" "フロンティア戦争"
 		"PL_fw" "フロンティア戦争"
-		"PL_fw_lobby" "フロンティア戦争ロビー"
+		"PL_fw_lobby" "フロンティア戦争 ロビー"
 		"PL_fw_desc" "敵のハーベスターを破壊し、自分のを守れ！"
 		"PL_fw_abbr" "FW"
 
 		"GAMEMODE_kr" "強化キルレース"
 		"PL_kr" "強化キルレース"
-		"PL_kr_lobby" "強化キルレースロビー"
+		"PL_kr_lobby" "強化キルレース ロビー"
 		"PL_kr_desc" "旗を拾い、キルレースを開始しろ。キルでポイントを上げ、キルレースの時間を延ばせ。最高ポイント記録が一番高い者が勝利する"
 		"PL_kr_hint" "旗を拾い、キルレースを開始しろ。キルでポイントを上げ、キルレースの時間を延ばせ。最高ポイント記録が一番高い者が勝利する"
 		"PL_kr_abbr" "KR"
@@ -167,7 +232,7 @@
 
 		"GAMEMODE_fastball" "ファストボール"
 		"PL_fastball" "ファストボール"
-		"PL_fastball_lobby" "ファストボールロビー"
+		"PL_fastball_lobby" "ファストボール ロビー"
 		"PL_fastball_desc" "ライブファイア。パネルをハックし、味方を蘇生できる"
 		"PL_fastball_hint" "ライブファイア。パネルをハックし、味方を蘇生できる"
 		"PL_fastball_abbr" "FB"
@@ -182,6 +247,7 @@
 		"MODE_SETTING_CATEGORY_BLEEDOUT" "パイロットのダウン"
 
 		"custom_air_accel_pilot" "空中加速度"
+		"no_pilot_collision" "パイロット同士の当たり判定"
 		"promode_enable" "Proモードの武器"
 		"fp_embark_enabled" "搭乗と処刑の一人称視点"
 		"classic_rodeo" "クラシックロデオ"
@@ -257,10 +323,31 @@
 		"CONNECTING" "接続中..."
 		"INGAME_PLAYERS" "プレイヤー数: ^6BA6C400%s1"
 		"TOTAL_SERVERS" "サーバー数: ^C46C6C00%s1"
-		// Translation done by Zetryox and CYakigasi
+
+		// Mods menu
+		"SHOW" "表示"
+		"SHOW_ALL" "全て"
+		"SHOW_ONLY_ENABLED" "有効のみ"
+		"SHOW_ONLY_DISABLED" "無効のみ"
+
+		// Maps menu
+		"HIDE_LOCKED" "ロック中を隠す"
 
 		// In-game chat
 		"HUD_CHAT_WHISPER_PREFIX" "[WHISPER]"
 		"HUD_CHAT_SERVER_PREFIX" "[SERVER]"
+
+		"NO_GAMESERVER_RESPONSE" 		"ゲームサーバーに接続できません\n(Couldn't reach game server)"
+		"BAD_GAMESERVER_RESPONSE" 		"ゲームサーバーが不明なレスポンスを返しました\n(Game server gave an invalid response)"
+		"UNAUTHORIZED_GAMESERVER" 		"ゲームサーバーにそのリクエストを作成する許可がありません\n(Game server is not authorized to make that request)"
+		"UNAUTHORIZED_GAME"				"StryderはこのアカウントがTitanfall 2を所持しているかどうかを確認できませんでした\nStryder couldn't confirm that this account owns Titanfall 2"
+		"UNAUTHORIZED_PWD" 				"パスワードが間違っています\n(Wrong password)"
+		"STRYDER_RESPONSE" 				"Stryderからのレスポンスの処理に失敗しました\n(Couldn't parse stryder response)"
+		"PLAYER_NOT_FOUND" 				"プレイヤーのアカウントが見つかりません\n(Couldn't find player account)"
+		"INVALID_MASTERSERVER_TOKEN" 	"マスターサーバーのトークンが不明か期限切れです\n(Invalid or expired masterserver token)"
+		"JSON_PARSE_ERROR" 				"JSONレスポンスの処理に失敗しました\n(Error parsing json response)"
+		"UNSUPPORTED_VERSION" 			"現在使用しているバージョンはサポートされていません\n(The version you are using is no longer supported)"
+
+		// Translation done by Zetryox and CYakigasi
 	}
 }
