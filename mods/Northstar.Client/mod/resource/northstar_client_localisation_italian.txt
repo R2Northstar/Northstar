@@ -6,6 +6,9 @@
 		"MENU_LAUNCH_NORTHSTAR" "Avvia Northstar"
 		"MENU_TITLE_MODS" "Mods"
 		"RELOAD_MODS" "Ricarica Mods"
+		"WARNING", "Attenzione"
+		"CORE_MOD_DISABLE_WARNING", "Disattivare Mods Principali può rompere il tuo Client!"
+		"DISABLE", "Disattiva"
 
 		"DIALOG_TITLE_INSTALLED_NORTHSTAR" "Grazie per aver installato Northstar!"
 		"AUTHENTICATION_AGREEMENT_DIALOG_TEXT" "Affinché Northstar funzioni, è necessario autenticarsi utilizzando il server principale di Northstar. Ciò richiederà l'invio del tuo token di Origin al server principale, non verrà archiviato o utilizzato per altri scopi.
@@ -14,8 +17,12 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 		"AUTHENTICATION_AGREEMENT" "Accordo di autenticazione"
 		"AUTHENTICATION_AGREEMENT_RESTART" "Dovrai riavviare Titanfall 2 affinché questa scelta abbia effetto."
 
+		"DIALOG_AUTHENTICATING_MASTERSERVER", "Autenticazione Sul Master Server in corso"
+		"AUTHENTICATIONAGREEMENT_NO", "Hai Scelto di non autenticarti con Northstar. Puoi vedere l'Accordo nel Menu Mods"
+
 		"MENU_TITLE_SERVER_BROWSER" "Server Browser"
 		"NS_SERVERBROWSER_NOSERVERS" "Nessun server trovato"
+		"NS_SERVERBROWSER_UNKNOWNMODE", "Modalità Sconosciuta"
 		"NS_SERVERBROWSER_WAITINGFORSERVERS" "In attesa dei server..."
 		"NS_SERVERBROWSER_CONNECTIONFAILED" "Connessione fallita!"
 		"REFRESH_SERVERS" "Aggiorna"
@@ -46,6 +53,7 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 		"roundscorelimit" "Limite Punteggio (per round)"
 		"timelimit" "Limite di Tempo"
 		"roundtimelimit" "Limite di Tempo (per round)"
+		"respawnprotection", "Tempo Protezione di Respawn"
 
 		"pilot_health_multiplier" "Moltiplicatore di Salute"
 		"respawn_delay" "Tempo di Respawn"
@@ -72,6 +80,8 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 		"cp_amped_capture_points" "Hardpoints Amplificati"
 		"coliseum_loadouts_enabled" "Equipaggiamento Colosseo"
 
+		"aitdm_archer_grunts", "Schagniozzi Archer"
+
 		// northstar.custom localisation is just deciding not to work, so putting it here for now
 		"PL_sbox" "Sandbox"
 		"PL_sbox_lobby" "Sandbox Lobby"
@@ -85,6 +95,10 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 		"PL_gg_hint" "Ottieni una nuova arma ogni uccisione."
 		"PL_gg_abbr" "GG"
 		"GAMEMODE_GG" "Gioco d'Armi"
+		"aitdm_archer_grunts", "Schagniozzi Archer"
+		"gg_kill_reward", "Punteggio Riconpensa Uccisione"
+		"gg_assist_reward", "Punteggio Ricompensa Assist"
+		"gg_execution_reward", "Punteggio Ricompensa Esecuzione"
 
 		"PL_tt" "Titan Tag"
 		"PL_tt_lobby" "Lobby: Titan Tag"
@@ -110,6 +124,24 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 		"HIDDEN_KILL_SURVIVORS" "Uccidi tutti i giocatori."
 		"HIDDEN_FIRST_HIDDEN" "%s1 è il Cacciatore."
 
+		"PL_sns", "Sticks and Stones"
+		"PL_sns_lobby", "Sticks and Stones Lobby"
+		"PL_sns_desc", "Tutti contro Tutti, Usa la Pulse Blade e Esecuzioni per Resettare il Puntegio Nemico"
+		"PL_sns_abbr", "SNS"
+		"GAMEMODE_SNS", "Sticks and Stones"
+		"SCOREBOARD_BANKRUPTS", "Uccisioni Bancarotta"
+		"SNS_LEADER_BANKRUPT", "Leader Punteggio andato in Bancarotta!"
+		"SNS_LEADER_BANKRUPT_SUB", "%s1 è stato Resettato da %s2"
+		"SNS_BANKRUPT", "Bancarotta!"
+		"SNS_BANKRUPT_SUB", "Il Tuo Punteggio è stato Resettato da %s1"
+		"sns_wme_kill_value", "Valore Uccisione Wingman d'Elite"
+		"sns_softball_kill_value", "Valore Uccisione Softball"
+		"sns_offhand_kill_value", "Valore Uccisione Improvvisa"
+		"sns_reset_kill_value", "Valore Uccisione Pulse/Esecuzione"
+		"sns_melee_kill_value", "Valore Uccisione Corpo a Corpo"
+		"sns_reset_pulse_blade_cooldown_on_pulse_blade_kill", "Reset Cooldown Uccisione"
+		"sns_softball_enabled", "Softball Attivato"
+
 		"PL_inf" "Infetto"
 		"PL_inf_lobby" "Lobby: Infetto"
 		"PL_inf_desc" "Sopravvivi all'infezione. I sopravvissuti vengono infettati quando uccisi."
@@ -123,6 +155,13 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 		"INFECTION_KILL_LAST_SURVIVOR" "Infettalo prima che scada il tempo!"
 		"INFECTION_YOU_ARE_LAST_SURVIVOR" "Sei l'Ultimo Sopravvissuto!"
 		"INFECTION_SURVIVE_LAST_SURVIVOR" "Sopravvivi."
+
+		"PL_tffa", "Titan Free for All"
+		"PL_tffa_lobby", "Titan Free for All Lobby"
+		"PL_tffa_desc", "Ogni Pilota per sè, distruggi tutti i Titan Nemici."
+		"PL_tffa_hint", "Ogni Pilota per sè, distruggi tutti i Titan Nemici."
+		"PL_tffa_abbr", "TFFA"
+		"GAMEMODE_TFFA", "Titan Free for All"
 
 		"PL_hs" "Nascondino"
 		"PL_hs_lobby" "Lobby: Nascondino"
@@ -256,6 +295,15 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 
 		"INGAME_PLAYERS" "Players: ^6BA6C400%s1"
 		"TOTAL_SERVERS" "Server: ^C46C6C00%s1"
+
+		// Mods menu
+		"SHOW", "Mostra"
+		"SHOW_ALL", "Mostra Tutti"
+		"SHOW_ONLY_ENABLED", "Mostra solo Attivi"
+		"SHOW_ONLY_DISABLED", "Mostra solo Inattivi"
+
+		// Maps menu
+		"HIDE_LOCKED" "Nascondi bloccati"
 
 		// In-game chat
 		"HUD_CHAT_WHISPER_PREFIX" "[WHISPER]"
