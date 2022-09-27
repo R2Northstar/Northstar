@@ -15,8 +15,10 @@ global function InitBurnMeterPersistentData
 
 const float PHASE_REWIND_LENGTH = 2.0
 // taken from wraith portal in apex, assuming it's the same as tf2's
-const float PHASE_REWIND_PATH_SNAPSHOT_INTERVAL = 0.1
-const int PHASE_REWIND_MAX_SNAPSHOTS = int( PHASE_REWIND_LENGTH / PHASE_REWIND_PATH_SNAPSHOT_INTERVAL )
+// 0.1 can be too fast for ttf2 scripts
+const float PHASE_REWIND_PATH_SNAPSHOT_INTERVAL = 0.2 // mainly controlled by this const, the higher the rewind path will be longer, assuming this one is like vanilla's
+const int PHASE_REWIND_MAX_SNAPSHOTS = int( PHASE_REWIND_LENGTH / PHASE_REWIND_PATH_SNAPSHOT_INTERVAL ) - 1
+const int PHASE_REWIND_DATA_MAX_POSITIONS = int( PHASE_REWIND_LENGTH * 10 ) + 1 // hardcoded but maybe good
 
 const float AMPED_WEAPONS_LENGTH = 30.0
 
@@ -221,18 +223,18 @@ void function PhaseRewindLifetime( entity player )
 	{
 		PhaseRewindData rewindData
 		rewindData.origin = player.GetOrigin()
-		rewindData.angles = player.GetAngles()
+		rewindData.angles = < 0, player.EyeAngles().y, 0 >
 		rewindData.velocity = player.GetVelocity()
 		rewindData.wasInContextAction = player.ContextAction_IsActive()
 		rewindData.wasCrouched = player.IsCrouched()
 
-		if ( player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions.len() >= PHASE_REWIND_MAX_SNAPSHOTS )
+		if ( player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions.len() >= PHASE_REWIND_DATA_MAX_POSITIONS )
 		{
 			// shift all snapshots left
-			for ( int i = 0; i < PHASE_REWIND_MAX_SNAPSHOTS - 1; i++ )
+			for ( int i = 0; i < PHASE_REWIND_DATA_MAX_POSITIONS - 1; i++ )
 				player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions[ i ] = player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions[ i + 1 ]
 
-			player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions[ PHASE_REWIND_MAX_SNAPSHOTS - 1 ] = rewindData
+			player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions[ PHASE_REWIND_DATA_MAX_POSITIONS - 1 ] = rewindData
 		}
 		else
 			player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions.append( rewindData )
@@ -407,6 +409,10 @@ void function PlayerUsesMaphackBurncardThreaded( entity player )
 		entities.extend( GetPlayerDecoyArray() )
 
 		IncrementSonarPerTeam( playerTeam )
+
+		if ( IsAlive( player ) ) // only owner can see the pulse
+			Remote_CallFunction_Replay( player, "ServerCallback_SonarPulseFromPosition", player.GetOrigin().x, player.GetOrigin().y, player.GetOrigin().z, SONAR_GRENADE_RADIUS )
+		
 		foreach ( entity ent in entities )
 		{
 			if ( !IsValid( ent ) ) // Not sure why we can get invalid entities at this point
@@ -414,9 +420,6 @@ void function PlayerUsesMaphackBurncardThreaded( entity player )
 
 			if ( ent.IsPlayer() )
 			{
-				if ( IsAlive( player ) )
-					Remote_CallFunction_Replay( ent, "ServerCallback_SonarPulseFromPosition", player.GetOrigin().x, player.GetOrigin().y, player.GetOrigin().z, SONAR_GRENADE_RADIUS )
-				
 				// Map Hack also gives radar on enemies for longer than the sonar duration.
 				if ( ent.GetTeam() == playerTeam )
 					thread ScanMinimap( ent, false, MAPHACK_PULSE_DELAY - 0.2 )
@@ -470,18 +473,65 @@ void function PlayerUsesPhaseRewindBurncardThreaded( entity player )
 
 	array<PhaseRewindData> positions = clone player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions
 
+	array<PhaseRewindData> tempArray
+	int segment = positions.len() / PHASE_REWIND_MAX_SNAPSHOTS
+	for( int i = 0; i < PHASE_REWIND_MAX_SNAPSHOTS; i++ )
+	{
+		if( positions.len() <= segment * i )
+			break
+		tempArray.append( positions[ segment * i ] )
+	}
+	positions = tempArray
+
+	vector startOrigin = player.GetOrigin()
 	ViewConeZero( player )
 	player.HolsterWeapon()
 	player.SetPredictionEnabled( false )
 	PhaseShift( player, 0.0, positions.len() * PHASE_REWIND_PATH_SNAPSHOT_INTERVAL * 1.5 )
+	EmitSoundOnEntityOnlyToPlayer( player, player, "pilot_phaserewind_1p" )
+	EmitSoundOnEntityExceptToPlayer( player, player, "pilot_phaserewind_3p" )
 
 	for ( int i = positions.len() - 1; i > -1; i-- )
 	{
-		mover.NonPhysicsMoveTo( positions[ i ].origin, PHASE_REWIND_PATH_SNAPSHOT_INTERVAL, 0, 0 )
-		mover.NonPhysicsRotateTo( positions[ i ].angles, PHASE_REWIND_PATH_SNAPSHOT_INTERVAL, 0, 0 )
+		// should looks better?
+		float moveTime = PHASE_REWIND_PATH_SNAPSHOT_INTERVAL + 0.1
+		player.SetVelocity( -positions[ i ].velocity )
+		mover.NonPhysicsMoveTo( positions[ i ].origin, moveTime, 0, 0 )
+		mover.NonPhysicsRotateTo( positions[ i ].angles, moveTime, 0, 0 )
 		wait PHASE_REWIND_PATH_SNAPSHOT_INTERVAL
 	}
 	player.SetVelocity( <0, 0, 0> )
+	if( positions[0].wasCrouched )
+		player.SetOrigin( player.GetOrigin() + < 0, 0, 20 > )
+
+	// fix position after rewind
+	PutPhaseRewindedPlayerInSafeSpot( player, 1 )
+}
+
+void function PutPhaseRewindedPlayerInSafeSpot( entity player, int severity )
+{
+	vector baseOrigin = player.GetOrigin()
+
+	if ( PutEntityInSafeSpot( player, player, null, < baseOrigin.x, baseOrigin.y + severity, baseOrigin.z >, baseOrigin ) )
+		return
+
+	if ( PutEntityInSafeSpot( player, player, null, < baseOrigin.x, baseOrigin.y - severity, baseOrigin.z >, baseOrigin ) )
+		return
+
+	if ( PutEntityInSafeSpot( player, player, null, < baseOrigin.x + severity, baseOrigin.y, baseOrigin.z >, baseOrigin ) )
+		return
+
+	if ( PutEntityInSafeSpot( player, player, null, < baseOrigin.x - severity, baseOrigin.y, baseOrigin.z >, baseOrigin ) )
+        	return
+
+	if ( PutEntityInSafeSpot( player, player, null, < baseOrigin.x, baseOrigin.y, baseOrigin.z + severity >, baseOrigin ) )
+		return
+
+	if ( PutEntityInSafeSpot( player, player, null, < baseOrigin.x, baseOrigin.y, baseOrigin.z - severity >, baseOrigin ) )
+		return
+
+	return PutPhaseRewindedPlayerInSafeSpot( player, severity + 5 )
+
 }
 
 void function PlayerUsesNukeTitanBurncard( entity player )
