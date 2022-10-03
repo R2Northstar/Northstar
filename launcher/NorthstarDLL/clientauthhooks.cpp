@@ -15,6 +15,11 @@ const int NOT_DECIDED_TO_SEND_TOKEN = 0;
 const int AGREED_TO_SEND_TOKEN = 1;
 const int DISAGREED_TO_SEND_TOKEN = 2;
 
+typedef char* (*Auth3PTokenType)();
+Auth3PTokenType Auth3PToken;
+
+char* token_location = 0x0;
+
 void AuthWithStryderHook(void* a1)
 {
 	// game will call this forever, until it gets a valid auth key
@@ -33,6 +38,17 @@ void AuthWithStryderHook(void* a1)
 	AuthWithStryder(a1);
 }
 
+char* Auth3PTokenHook()
+{
+	if (g_MasterServerManager->m_sOwnClientAuthToken[0] != 0)
+	{
+		memset(token_location, 0x0, 1024);
+		strcpy(token_location, "Protocol 3: Protect the Pilot");
+	}
+
+	return Auth3PToken();
+}
+
 void InitialiseClientAuthHooks(HMODULE baseAddress)
 {
 	// this cvar will save to cfg once initially agreed with
@@ -44,4 +60,6 @@ void InitialiseClientAuthHooks(HMODULE baseAddress)
 
 	HookEnabler hook;
 	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1843A0, &AuthWithStryderHook, reinterpret_cast<LPVOID*>(&AuthWithStryder));
+	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x183760, &Auth3PTokenHook, reinterpret_cast<LPVOID*>(&Auth3PToken));
+	token_location = (char*)baseAddress + 0x13979D80;
 }
