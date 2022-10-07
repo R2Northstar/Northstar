@@ -99,6 +99,33 @@ either ``Speed Multiplier`` to ``0.918`` or ``Percent Change`` to ``-8,200``. Af
 that, export your track as ``wav`` and make sure you don't add any
 metadata.
 
+- White noise after the sound ends.
+
+This is usually because there's some metadata left in the audio.
+
+.. tabs::
+
+   .. tab:: Windows
+
+      You can bulk remove it with `Mp3tag <https://www.mp3tag.de/en/download.html>`_ or individually with Audacity.
+
+   .. tab:: Linux
+
+      You can bulk remove it with `Metadata Cleaner <https://metadatacleaner.romainvigier.fr>`_ or a shell script (requires ffmpeg to be installed) and also individually with Audacity.
+
+      ``metadata_remover.sh`` (WAV only)
+
+      .. tabs::
+
+         .. code-tab:: shell Script
+
+            shopt -s globstar nullglob
+            for f in *.wav **/*.wav
+            do
+              ffmpeg -i "$f" -map 0 -map_metadata -1 -c:v copy -c:a copy "${f%.wav}.new.wav"
+              mv -f "${f%.wav}.new.wav" "$f"
+            done
+
 Installation
 -------------
 -  As with any mod, the folder which contains your ``mod.json`` needs to be inside ``Titanfall 2/r2Northstar/Mods/``.
