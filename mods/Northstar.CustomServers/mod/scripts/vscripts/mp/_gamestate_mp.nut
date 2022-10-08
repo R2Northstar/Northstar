@@ -387,11 +387,14 @@ void function PlayerWatchesRoundWinningKillReplay( entity player, float replayLe
 	player.SetPredictionEnabled( false ) // prediction fucks with replays
 	
 	entity attacker = file.roundWinningKillReplayAttacker
-	player.SetKillReplayDelay( Time() - replayLength, THIRD_PERSON_KILL_REPLAY_ALWAYS )
-	player.SetKillReplayInflictorEHandle( attacker.GetEncodedEHandle() )
-	player.SetKillReplayVictim( file.roundWinningKillReplayVictim )
-	player.SetViewIndex( attacker.GetIndexForEntity() )
-	player.SetIsReplayRoundWinning( true )
+	if ( IsValid( attacker ) )
+	{
+		player.SetKillReplayDelay( Time() - replayLength, THIRD_PERSON_KILL_REPLAY_ALWAYS )
+		player.SetKillReplayInflictorEHandle( attacker.GetEncodedEHandle() )
+		player.SetKillReplayVictim( file.roundWinningKillReplayVictim )
+		player.SetViewIndex( attacker.GetIndexForEntity() )
+		player.SetIsReplayRoundWinning( true )
+	}
 	
 	if ( replayLength >= ROUND_WINNING_KILL_REPLAY_LENGTH_OF_REPLAY - 0.5 ) // only do fade if close to full length replay
 	{
