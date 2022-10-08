@@ -111,7 +111,16 @@ void function AiGameModes_SpawnDropPod( vector pos, vector rot, int team, string
 
 void function AiGameModes_SpawnReaper( vector pos, vector rot, int team, string aiSettings = "", void functionref( entity reaper ) reaperHandler = null )
 {
+	thread Reaper_Spawnpoint( pos, team, 11.2 )
+
+	wait 10
+	// spawn reapers right before it warpfalls, or round_end clean up will crash the game
 	entity reaper = CreateSuperSpectre( team, pos, rot )
+	// reaper highlight
+	Highlight_SetFriendlyHighlight( reaper, "sp_enemy_pilot" )
+	reaper.Highlight_SetParam( 1, 0, < 3,3,3 > )
+	Highlight_SetEnemyHighlight( reaper, "enemy_titan" )
+
 	SetSpawnOption_Titanfall( reaper )
 	SetSpawnOption_Warpfall( reaper )
 	
@@ -123,6 +132,38 @@ void function AiGameModes_SpawnReaper( vector pos, vector rot, int team, string 
 	
 	if ( reaperHandler != null )
 		thread reaperHandler( reaper )
+}
+
+// copied from cl_replacement_titan_hud.gnut
+void function Reaper_Spawnpoint( vector origin, int team, float impactTime, bool hasFriendlyWarning = false )
+{
+	array<entity> targetEffects = []
+	vector surfaceNormal = < 0, 0, 1 >
+
+	int index = GetParticleSystemIndex( $"P_ar_titan_droppoint" )
+
+	if( hasFriendlyWarning )
+	{
+		entity effectFriendly = StartParticleEffectInWorld_ReturnEntity( index, origin, surfaceNormal )
+		SetTeam( effectFriendly, team )
+		EffectSetControlPointVector( effectFriendly, 1, < 128,188,255 > )
+		effectFriendly.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY
+		targetEffects.append( effectFriendly )
+	}
+
+	entity effectEnemy = StartParticleEffectInWorld_ReturnEntity( index, origin, surfaceNormal )
+	SetTeam( effectEnemy, team )
+	EffectSetControlPointVector( effectEnemy, 1, < 255,99,0 > )
+	effectEnemy.kv.VisibilityFlags = ENTITY_VISIBLE_TO_ENEMY
+	targetEffects.append( effectEnemy )
+	
+	wait impactTime
+
+	foreach( entity targetEffect in targetEffects )
+	{
+		if ( IsValid( targetEffect ) )
+			EffectStop( targetEffect )
+	}
 }
 
 // including aisettings stuff specifically for at bounty titans
