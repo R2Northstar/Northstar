@@ -13,12 +13,13 @@ Northstar is a modding framework client that allows users to host their own Tita
 
 ## Development
 
-Northstar's development is split into 4 repositories:
+Northstar's development is split into 5 repositories:
 
 1. [NorthstarLauncher](https://github.com/R2Northstar/NorthstarLauncher) (Code for the C++ hook DLL)
 1. [NorthstarMods](https://github.com/R2Northstar/NorthstarMods) (Code for the squirrel mods responsible for server gamelogic recreation and custom content)
 1. [NorthstarMasterServer](https://github.com/R2Northstar/NorthstarMasterServer) (Responsible for server browser, authentication and persistence)
 1. [NorthstarStubs](https://github.com/R2Northstar/NorthstarStubs) (D3D11 and GFSDK stubs for the Northstar dedicated server)
+1. [NorthstarNavs](https://github.com/R2Northstar/NorthstarNavs) (Custom navmesh files used for AI navigation)
 
 The documentation is split into two repositories:
 1. [NorthstarWiki](https://github.com/R2Northstar/NorthstarWiki) (Wiki covering installation, hosting and configuration of Northstar)
