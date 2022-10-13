@@ -26,85 +26,192 @@ Shared
 
 	.. cpp:function:: void Hide()
 
+		Hides the ent. (invisible)
+
+	.. cpp:function:: void Show()
+
+		Shows the ent. (visible)
+
 	.. cpp:function:: void Destroy()
+
+		Destroys this entity.
 
 	.. cpp:function:: void Signal( string signal )
 
-	.. cpp:function:: vector GetOrigin()
+		:doc: `../../native/async`
 
-	.. cpp:function:: entity GetBossPlayer()
-
-	.. cpp:function:: string GetClassName()
-
-	.. cpp:function:: bool IsNPC()
-
-	.. cpp:function:: bool IsTitan()
-
-	.. cpp:function:: bool IsHuman()
-
-	.. cpp:function:: bool IsPhaseShifted()
-
-	.. cpp:function:: bool IsPlayer()
-
-	.. cpp:function:: bool IsProjectile()
-
-	.. cpp:function:: asset GetModelName()
-
-	.. cpp:function:: void SetParent( entity parent, ..., string type = "" )
-
-	.. cpp:function:: void SetValueForEffectNameKey( asset effect )
-
-	.. cpp:function:: table CreateTableFromModelKeyValues()
+		Signals on this entity
 
 	.. cpp:function:: void EndSignal( string signal )
 
+		Ends this thread when the identifier is signaled on this entity
+
+	.. cpp:function:: void WaitSignal( string signal )
+
+		Halts this thread until a signal is activated for this entity
+
+	.. cpp:function:: vector GetOrigin()
+
+		Returns the Coordinates of this entity
+
+	.. cpp:function:: vector EyeAngles()
+
+		Returns the direction this entity is facing to
+
+	.. cpp:function:: vector EyePosition()
+
+		Returns the position of this entities eyes
+
+	.. cpp:function:: entity GetOwner()
+
+		Returns the owner of this entity. Set the owner with ``SetOwner``
+
+	.. cpp:function:: entity GetBossPlayer()
+
+	.. cpp:function:: void SetBossPlayer( entity boss )
+
+	.. cpp:function:: string GetClassName()
+
+		Internal class name of the parent class. May return the identifier name for some classes
+
+	.. cpp:function:: bool IsNPC()
+
+		Returns ``true`` if this entity is an NPC
+
+	.. cpp:function:: bool IsTitan()
+
+		Returns ``true`` if this entity is a Titan
+
+	.. cpp:function:: bool IsHuman()
+
+		Returns true if this entity is a gameplay-wise a human.
+
+		For example, returns ``true`` if the entity is a grunt but ``false`` if the entity is a Titan or spectre etc.
+
+		However, players will always be Human, even when they are spectating or their playermodel is robotic (for example when playing as stim)
+
+	.. cpp:function:: bool IsMechanical()
+
+		Returns ``true`` if this entity is mechanical. Examples are Titans and spectres
+
+		.. note::
+
+			This returns ``true`` for players that are playing mechanical classes
+
+
+	.. cpp:function:: bool IsPhaseShifted()
+
+		Returns ``true`` if this entity is currently phase shifting
+
+	.. cpp:function:: bool IsPlayer()
+
+		Returns ``true`` if this entity is a player
+
+	.. cpp:function:: bool IsProjectile()
+
+		Returns ``true`` if this entity is a projectile
+
+	.. cpp:function:: asset GetModelName()
+
+		Returns the asset this entity is being rendered with
+
+	.. cpp:function:: void SetParent( entity parent, ..., string type = "" )
+
+		Binds this entity to the parent. The child inherits the position and rotation of the parent
+
+	.. cpp:function:: void ClearParent( entity parent )
+
+		Make this entity independent from its parent
+
+	.. cpp:function:: entity GetParent()
+
+		Returns this entities parent
+
+	.. cpp:function:: void SetValueForModelKey( asset model )
+
+		Set the model of this entity.
+
+	.. cpp:function:: void SetValueForEffectNameKey( asset effect )
+
+		Similar to ``SetValueForModelKey`` but for FX.
+
+	.. cpp:function:: table CreateTableFromModelKeyValues()
+
 	.. cpp:function:: int GetArmorType()
+
+		Returns ``0`` for light armor and ``1`` for heavy armor
+
+		Titans use heavy armor while pilots and similar use light armor
 
 	.. cpp:function:: int GetMaxHealth()
 
+		Returns the max health of this entity
+
+	.. cpp:function:: int GetHealth()
+
+		Returns the current health
+
+	.. cpp:function:: int GetShieldHealth()
+
+		Returns the current shield health
+
+	.. cpp:function:: int GetShieldHealthMax()
+
+		Returns the maximum shield health of this entity
+
 	.. cpp:function:: bool HasGibModel()
+
+		Returns ``true`` if this entity has gib models
 
 	.. cpp:function:: bool HasKey( string key )
 
 	.. cpp:function:: bool IsMarkedForDeletion()
 
-	.. cpp:function:: bool IsMechanical()
-
 	.. cpp:function:: void SetOrigin( vector position )
+
+		Set the position of this entity
 
 	.. cpp:function:: string GetTargetName()
 
 	.. cpp:function:: int GetTeam()
 
+		Returns the team of this entity
+
 	.. cpp:function:: vector GetAngles()
 
-	.. cpp:function:: vector EyePosition()
+		Returns the rotation of this entity
+
+	.. cpp:function:: void SetAngles( vector angle)
+
+		Set the rotation of this entity
 
 	.. cpp:function:: var GetValueForKey( string key )
 
-	.. cpp:function:: void WaitSignal( string signal )
+	.. cpp:function:: var Get( string key )
+
+		The same as ``GetValueForKey``
+
+	.. cpp:function:: void SetValueForKey( var key, var val )
+
+	.. cpp:function:: var Set( string key )
+
+		The same as ``SetValueForKey``
 
 	.. cpp:function:: vector GetVelocity()
 
+		Returns the velocity of this entity
+
 	.. cpp:function:: void Kill_Deprecated_UseDestroyInstead()
 
-		You should use Destroy instead. Both function do exactly the same.
+		Kill this entity: this function is deprecated because it has a one-frame delay; instead, call ent.Destroy()
 
 	.. cpp:function:: vector GetBoundingMaxs()
 
 	.. cpp:function:: vector GetBoundingMins()
 
-	.. cpp:function:: vector SetAngles( vector angle)
-
-	.. cpp:function:: void ClearParent( entity parent )
-
-	.. cpp:function:: void SetValueForModelKey( asset model )
-
-	.. cpp:function:: void Show()
-
 	.. cpp:function:: bool IsInvulnerable()
 
-	.. cpp:function:: entity GetParent()
+		returns ``true`` if this entity is invulnerable
 
 	.. cpp:function:: vector GetWorldSpaceCenter()
 
@@ -144,37 +251,57 @@ Shared
 
 	.. cpp:function:: void Highlight_ShowOutline( float duration )
 
+	.. cpp:function:: void Highlight_SetInheritHighlight( bool set )
+
+	.. cpp:function:: void HighlightDisableForTeam( int team )
+
+	.. cpp:function:: void HighlightEnableForTeam( int team )
+
+	.. cpp:function:: void HighlightSetTeamBitField( int bitField )
+
 	.. cpp:function:: int GetEntIndex()
 
-	.. cpp:function:: entity GetOwner()
-
-	.. cpp:function:: int GetShieldHealth()
-
-	.. cpp:function:: int GetShieldHealthMax()
-
-	.. cpp:function:: void SetScriptName( string name )
+		Returns the index of this entity
 
 	.. cpp:function:: array<entity> GetLinkEntArray()
 
 	.. cpp:function:: entity GetLinkEnt()
 
+	.. cpp:function:: void LinkToEnt( entity ent )
+
+	.. cpp:function:: entity GetLinkParent()
+
 	.. cpp:function:: void Code_SetTeam( int team )
 
-	.. cpp:function:: int GetHealth()
+		Set the team for this entity
+
+		Skins based on team do not get updated. Use `SetSkin` for this
 
 	.. cpp:function:: bool IsCloaked()
 
+		Returns ``true`` if this entity is cloaked
+
 	.. cpp:function:: bool IsEntAlive()
+
+		Returns ``true`` if this entity is alive
 
 	.. cpp:function:: bool IsValidInternal()
 
+		Returns ``true`` if this entity is Valid.
+
+		``IsValid( ent )`` is a good alternative
+
 	.. cpp:function:: vector GetForwardVector()
+
+		Returns a normalized vector pointing forwards away from this entity.
 
 	.. cpp:function:: vector GetRightVector()
 
+		Returns a normalized vector pointing to the right of this entity.
+
 	.. cpp:function:: vector GetUpVector()
 
-	.. cpp:function:: void SetValueForKey( var key, var val )
+		Returns a normalized vector pointing upwards from this entity.
 
 	.. cpp:function:: entity constructor( unknown )
 
@@ -194,27 +321,47 @@ Shared
 
 	.. cpp:function:: void SetCanCloak( bool canCloak )
 
+		Allow or disallow this entity to cloak itself
+
 	.. cpp:function:: bool GetCritsPrevented()
+
+		Returns ``true`` if this entity can't be critted.
 
 	.. cpp:function:: bool IsHologram()
 
+		Returns ``true`` if this entity is a hologram
+
 	.. cpp:function:: bool IsOnGround()
 
+		Returns ``true`` if this entity is touching the ground
+
 	.. cpp:function:: void SetModel( asset model )
+
+		Set the model this entity is being rendered with
 
 	.. cpp:function:: void MarkAsNonMovingAttachment()
 
 	.. cpp:function:: string GetScriptName()
 
-	.. cpp:function:: vector EyeAngles()
+		Returns the script name of this entity. 
+
+	.. cpp:function:: void SetScriptName( string name )
+
+		Set the script name of this entity.
 
 	.. cpp:function:: bool IsBreakableGlass()
 
+		Returns ``true`` if this entity is breakable glass
+
 	.. cpp:function:: bool IsWorld()
+
+		Returns ``true```if this entity is the gameworld
 
 	.. cpp:function:: void DispatchImpactEffects( entity ent, vector startPos, vector endPos, vector hitNormal, enitity prop, int propIndex, int damageType, int impactIndex, entity orig, int impactEffectFlags )
 
 	.. cpp:function:: void IsPlayerDecoy()
+
+		Returns ``true`` if this entity is a decoy
 
 	.. cpp:function:: void SetPassThroughDirection( float dir )
 
@@ -224,17 +371,27 @@ Shared
 
 		``DAMAGE_NO``, ``DAMAGE_YES``, ``DAMAGE_EVENTS_ONLY``
 
+	.. cpp:function:: void SetPreventCrits( bool prevent )
+
+		Set if this entity takes crit damage.
+
 	.. cpp:function:: void SetVelocity( vector vel )
 
+		Set the velocity of this entity.
+
 	.. cpp:function:: void EnableRenderAlways()
+
+		Always render this entity
+
+	.. cpp:function:: void DisableRenderAlways()
+
+		Disable always rendering this entity
 
 	.. cpp:function:: entity GetParentAttachment()
 
 	.. cpp:function:: void SetFadeDistance( int distance )
 
-	.. cpp:function:: void Highlight_SetInheritHighlight( bool set )
-
-	.. cpp:function:: void DisableRenderAlways()
+		Sets the distance between a player and the entity at which the ent will begin to fade out.
 
 	.. cpp:function:: void SetLocalOrigin( vector origin )
 
@@ -242,13 +399,7 @@ Shared
 
 	.. cpp:function:: void StopPhysics()
 
-	.. cpp:function:: void SetPreventCrits( bool prevent )
-
-	.. cpp:function:: void HighlightDisableForTeam( int team )
-
-	.. cpp:function:: void HighlightEnableForTeam( int team )
-
-	.. cpp:function:: void HighlightSetTeamBitField( int bitField )
+		Disable all physics for this entity
 
 	.. cpp:function:: void SetLocalAngles( vector angles )
 
@@ -261,8 +412,6 @@ Shared
 	.. cpp:function:: asset GetValueForModelKey()
 
 	.. cpp:function:: vector GetLocalAngles()
-
-	.. cpp:function:: entity GetLinkParent()
 
 	.. cpp:function:: bool GetNoTarget()
 
@@ -277,25 +426,49 @@ CBaseEntity
 
 	.. cpp:function:: int SetHealth( int health )
 
+		Set current health of this entity
+
 	.. cpp:function:: int SetMaxHealth( int health )
 
+		Set max health of this entity
+
 	.. cpp:function:: void SetOwner( entity owner )
+
+		Set the owner of this entity
 
 	.. cpp:function:: entity GetSpawner()
 
 	.. cpp:function:: void Die()
 
+		Kill this entity in the game sense - all callbacks and signals get triggered
+
 	.. cpp:function:: bool NotSolid()
 
-	.. cpp:function:: void MoveTo( vector pos, float moveTime, int unknown1, int unknown2 )
+		Returns ``false`` if this entity is solid
 
-	.. cpp:function:: void RotateTo( vector pos, float moveTime, int unknown1, int unknown2 )
+	.. cpp:function:: void MoveTo( vector pos, float moveTime, float easeIn = 0, float easeOut = 0 )
+
+		Moves this entity to ``pos`` over the duration of ``moveTime`` with ease in and ease out
+
+		.. note::
+
+			Entites that are not movers get teleported instantly
+
+	.. cpp:function:: void RotateTo( vector pos, float moveTime, float easeIn = 0, float easeOut = 0 )
+
+		Rotate to the specified angles over time with ease in and ease out.
 
 	.. cpp:function:: void ClearInvulnerable()
 
+		Make this entity vulnerable again
+
 	.. cpp:function:: void SetInvulnerable()
 
+		Make this entity invulnerable
+
 	.. cpp:function:: void SetNextThinkNow()
+
+		Trigger AI now
 
 	.. cpp:function:: void SetNoTarget( bool noTarget )
 
@@ -319,19 +492,41 @@ CBaseEntity
 
 	.. cpp:function:: void SetUsable( bool usable )
 
+		Make this entity usable
+
+	.. cpp:function:: void SetUsableByGroup( string group )
+
+		Make this entity usable only for a specific group
+
 	.. cpp:function:: void SetUsableRadius( float distance )
+
+		Set the radius in which this entity can be interacted with
+
+	.. cpp:function:: void UnsetUsable()
+
+		Make this entity unusable
+
+	.. cpp:function:: void SetUsableValue( int val )
 
 	.. cpp:function:: void Solid()
 
-	.. cpp:function:: void Fire( string unknown, string unknown1 = "", int duration )
+		Make this entity solid
 
-	.. cpp:function:: void SetUsableByGroup( string group )
+	.. cpp:function:: void Fire( string output, string param = "", float delay = 0, entity activator = null, entity caller = null )
+
+		Fire an output on this entity, with optional parm and delay
+
+	.. cpp:function:: void FireNow( string output, string param = "", float delay = 0, entity activator = null, entity caller = null )
+
+		Fire an output on this entity, with optional parm and delay (synchronous)
 
 	.. cpp:function:: void DisableHibernation()
 
 	.. cpp:function:: void SetSize( float width, float height )
 
 	.. cpp:function:: void SetCloakFlicker( float intensity, float duration )
+
+		Trigger cloak flicker effect
 
 	.. cpp:function:: void TakeDamage( int damageAmount, entity attacker_1, entity attacker_2, table { int scriptType, int damageType, int damageSourceId, vector origin, vector force } )
 
@@ -363,7 +558,11 @@ CBaseEntity
 
 	.. cpp:function:: void MakeInvisible()
 
+		Make this entity invisible
+
 	.. cpp:function:: void MakeVisible()
+
+		Make this entity visible
 
 	.. cpp:function:: entity GetGroundEntity()
 
@@ -371,37 +570,59 @@ CBaseEntity
 
 	.. cpp:function:: int GetPhysicsSolidMask()
 
-	.. cpp:function:: void SetBossPlayer( entity boss )
-
 	.. cpp:function:: void EnableAttackableByAI( int ai_priority_no_threat, int unknown, int ai_ap_flag )
+
+		Set if this entity can be attacked by AI
 
 	.. cpp:function:: void SetDeathNotifications( bool notifs )
 
 	.. cpp:function:: void SetTitle( string title )
 
-	.. cpp:function:: void LinkToEnt( entity ent )
-
 	.. cpp:function:: void SetAbsAngles( vector angles )
 
 	.. cpp:function:: void SetAbsOrigin( void origin )
-
-	.. cpp:function:: void UnsetUsable()
 
 	.. cpp:function:: void Minimap_AlwaysShow( int team, entity ent )
 
 	.. cpp:function:: void RoundOriginAndAnglesToNearestNetworkValue()
 
-	.. cpp:function:: void ConnectOutput( string event, void functionref( entity self, entity activator, entity caller, var value ) )
+	.. cpp:function:: void ConnectOutput( string event, void functionref( entity trigger, entity activator, entity caller, var value ) callback )
+
+		Executes the callback function when the signal is fired.
+
+	.. cpp:function:: void DisconnectOutput( string event, void functionref( entity trigger, entity activator, entity caller, var value ) callback )
+
+		Disconnects the callback from the signal.
 
 	.. cpp:function:: void ClearBossPlayer()
 
-	.. cpp:function:: void SetUsableValue( int val )
+		Remove boss player reference from this entity.
 
 	.. cpp:function:: void Minimap_DisplayDefault( int team, entity ent )
 
-	.. cpp:function:: void FireNow( string s )
+	.. cpp:function:: void AddOutput( string outputName, string | entity target, string inputName, string parameter = "", float delay = 0, float maxFires = 0 )
 
-		``s`` is either ``"Enable"`` or ``Disable``
+		Connects an output on this entity to an input on another entity via code.  The ``target`` can be a name or a named entity.
+
+	.. cpp:function:: void _typeof()
+
+		Prints ent index, classname and target name of this entity to the console.
+
+	.. cpp:function:: void DisableDraw()
+
+		"consider this the mega hide"
+
+	.. cpp:function:: void EnableDraw()
+
+		"it's back!"
+
+	.. cpp:function:: string CreateStringForFunction( function func )
+
+		this is a general purpose function that returns a string which, when executed, runs the given function on this entity.
+
+		the function must be called (or the entity deleted) at some point to avoid leaking the new slot we make in this Table.
+
+		compile with output with ``compilestring``
 
 C_BaseEntity
 ^^^^^^^^^^^^
@@ -415,6 +636,8 @@ C_BaseEntity
 	.. cpp:function:: void ForceShadowVisible( bool visible )
 
 	.. cpp:function:: void clKill()
+
+		Kill this client side prop.
 
 	.. cpp:function:: float Highlight_GetNearFadeDist()
 
@@ -436,7 +659,7 @@ C_BaseEntity
 
 	.. cpp:function:: void Highlight_StartOn()
 
-		Starts the highlight
+		Starts the highlight with the set configuration
 
 	.. cpp:function:: void DisableRenderWithViewModelsNoZoom()
 
@@ -458,6 +681,8 @@ C_BaseEntity
 
 	.. cpp:function:: int Dev_GetEncodedEHandle()
 
+		Returns the EHandle of this entity.
+
 	.. cpp:function:: int Minimap_GetCustomState()
 
 	.. cpp:function:: int Minimap_GetZOrder()
@@ -468,9 +693,15 @@ C_BaseEntity
 
 	.. cpp:function:: void HideHUD()
 
+		Hide HUD elements
+
 	.. cpp:function:: void ShowHUD()
 
+		Show HUD elements
+
 	.. cpp:function:: bool IsHUDVisible()
+
+		Return ``true`` if HUD is shown on this entity
 
 CDynamicProp / C_DynamicProp
 ----------------------------
@@ -500,20 +731,22 @@ Shared
 
 .. cpp:class:: CScriptProp / C_ScriptProp : extends CDynamicProp / C_DynamicProp
 
-	.. cpp:function:: unknown SetSmartAmmoLockType( unknown )
+	.. cpp:function:: void SetSmartAmmoLockType( int salt )
 
-	.. cpp:function:: unknown GetScriptPropFlags( unknown )
+
+
+	.. cpp:function:: int GetScriptPropFlags()
 
 CScriptProp
 ^^^^^^^^^^^
 
 .. cpp:class:: CScriptProp : extends CDynamicProp
 
-	.. cpp:function:: unknown SetFootstepType( unknown )
+	.. cpp:function:: void SetFootstepType( int type )
 
-	.. cpp:function:: unknown SetArmorType( unknown )
+	.. cpp:function:: void SetArmorType( int armor )
 
-	.. cpp:function:: unknown SetScriptPropFlags( unknown )
+	.. cpp:function:: void SetScriptPropFlags( int flags )
 
 
 C_ScriptProp
@@ -528,6 +761,8 @@ Shared
 .. cpp:class:: CBaseCombatWeapon / C_BaseCombatWeapon : extends CBaseAnimating / C_BaseAnimating
 
 	.. cpp:function:: string GetWeaponDescription()
+
+		Returns the weapon description
 
 CBaseCombatWeapon
 ^^^^^^^^^^^^^^^^^
@@ -551,15 +786,27 @@ Shared
 
 	.. cpp:function:: entity GetWeaponOwner()
 
+		Returns the owner of this weapon
+
 	.. cpp:function:: bool GetAllowHeadShots()
+
+		Returns ``true`` if this weapon can deal crits
 
 	.. cpp:function:: float GetMaxDamageFarDist()
 
+		Returns the max damage at the maximum travel distance
+
 	.. cpp:function:: bool GetWeaponSettingBool( int setting )
+
+		Get a weapon setting
 
 	.. cpp:function:: float GetWeaponSettingFloat( int setting )
 
+		Get a weapon setting
+
 	.. cpp:function:: int GetWeaponSettingInt( int setting )
+
+		Get a weapon setting
 
 	.. cpp:function:: vector GetAttackDirection()
 
@@ -567,11 +814,19 @@ Shared
 
 	.. cpp:function:: int GetWeaponPrimaryAmmoCount()
 
+		Return the amount of ammo in a weapon
+
 	.. cpp:function:: int GetWeaponPrimaryClipCount()
+
+		Returns the amount of clips remaining in a weapon
 
 	.. cpp:function:: int GetWeaponPrimaryClipCountMax()
 
+		Returns the maximum ammo in a clip of a primary weapon
+
 	.. cpp:function:: bool IsChargeWeapon()
+
+		Returns ``true`` if this weapon is a charge weapon
 
 	.. cpp:function:: void SetNextAttackAllowedTime( float time )
 
@@ -583,6 +838,8 @@ Shared
 
 	.. cpp:function:: string GetWeaponClassName()
 
+		Returns the weapon class name
+
 	.. cpp:function:: var GetWeaponInfoFileKeyField( string key )
 
 	.. cpp:function:: float GetCoreDuration()
@@ -591,15 +848,27 @@ Shared
 
 	.. cpp:function:: array<string> GetMods()
 
+		Get all mods of this weapon
+
 	.. cpp:function:: bool IsWeaponOffhand()
+
+		Returns ``true`` if this weapon is equipped as a offhand weapon
 
 	.. cpp:function:: float GetWeaponChargeFraction()
 
+		Returns the percent this weapon has been charged
+
 	.. cpp:function:: float GetWeaponChargeTime()
+
+		Returns the time this weapon needs to be charged
 
 	.. cpp:function:: bool HasMod( string mod )
 
+		Check if the array of mods for this weapon contains ``mod``
+
 	.. cpp:function:: int GetWeaponCurrentEnergyCost()
+
+		Returns the amount of energy consumed per use.
 
 	.. cpp:function:: bool GetMeleeCanHitHumanSized()
 
@@ -617,11 +886,15 @@ Shared
 
 	.. cpp:function:: void SetMods( array<string> mods )
 
+		Set the mods this weapon.
+
 	.. cpp:function:: void EmitWeaponNpcSound( int volume, float duration )
 
 	.. cpp:function:: int GetWeaponDamageFlags()
 
-	.. cpp:function:: bool SmartAmmo_IsEnabled( unknown )
+		Returns a bitflag of damage types this weapon has.
+
+	.. cpp:function:: bool SmartAmmo_IsEnabled( bool enabled )
 
 	.. cpp:function:: int SmartAmmo_GetNumTrackersOnEntity( entity target )
 
@@ -637,9 +910,15 @@ Shared
 
 	.. cpp:function:: int GetScriptFlags0()
 
+		Returns script flags of this weapon.
+
 	.. cpp:function:: bool ShouldPredictProjectiles()
 
+		Returns ``true`` if clients should be predicting the projectiles fired from this weapon.
+
 	.. cpp:function:: float GetScriptTime0()
+
+		Returns the script time of this weapon.
 
 	.. cpp:function:: void SetScriptTime0( float gameTime )
 
@@ -647,7 +926,15 @@ Shared
 
 	.. cpp:function:: bool IsReloading()
 
+		Returns ``true`` if this weapon is currently being reloaded.
+
 	.. cpp:function:: void SetForcedADS()
+
+		Force the holder to ADS this weapon.
+
+	.. cpp:function:: void ClearForcedADS()	
+
+		Allow the holder to hipfire.
 
 	.. cpp:function:: void EmitWeaponSound_1p3p(string sound1P, string sound3P)
 
@@ -661,15 +948,19 @@ Shared
 
 	.. cpp:function:: void SetWeaponPrimaryAmmoCount( int count )
 
+		Set the ammo of a primary weapon.
+
 	.. cpp:function:: void StopWeaponEffect(asset effect1P, asset effect3P)
 
-	.. cpp:function:: void ClearForcedADS()
+		Stops the effects.
 
 	.. cpp:function:: int GetReloadMilestoneIndex()
 
 		Reload progress. Reloading continues from there.
 
 	.. cpp:function:: int GetAmmoPerShot()
+
+		Returns the amount of ammo that is being used per shot.
 
 	.. cpp:function:: bool IsBurstFireInProgress()
 
@@ -687,13 +978,19 @@ Shared
 
 	.. cpp:function:: bool AllowUse()
 
+		Allow entities to use the weapon.
+
 	.. cpp:function:: void RemoveMod( string mod )
 
-	.. cpp:function:: array<table> SmartAmmo_GetTargets()
+		Remove the passed mod from this weapon.
+
+	.. cpp:function:: array<entity> SmartAmmo_GetTargets()
 
 	.. cpp:function:: void SmartAmmo_TrackEntity(entity hitEnt, LMG_SMART_AMMO_TRACKER_TIME)
 
 	.. cpp:function:: void EmitWeaponSound( string sound )
+
+		Play a sound on this weapon.
 
 	.. cpp:function:: float GetWeaponChargeLevel()
 
@@ -711,23 +1008,37 @@ Shared
 
 	.. cpp:function:: bool IsWeaponInAds()
 
+		Returns ``true`` if this weapon is in ADS.
+
 	.. cpp:function:: void ResetWeaponToDefaultEnergyCost()
+
+		Reset the amount of energy consumed per use
 
 	.. cpp:function:: void SetWeaponEnergyCost( int cost )
 
+		Set the amount of energy consumed per use.
+
 	.. cpp:function::  entity FireWeaponBullet( vector origin, vector dir, int numBullets, damageType )
 
+		Fires a hitscan bullet from this weapon.
+
 	.. cpp:function:: bool IsWeaponAdsButtonPressed()
+
+		Returns ``true`` while the ADS button is pressed.
 
 	.. cpp:function:: float GetWeaponChargeLevelMax()
 
 	.. cpp:function:: bool IsReadyToFire()
+
+		Returns ``true`` if the weapon can be fired.
 
 	.. cpp:function:: void SetAttackKickRollScale(float scale)
 
 	.. cpp:function:: int GetShotCount()
 
 	.. cpp:function:: void AddMod( string mod )
+
+		Add a mod to this weapon
 
 	.. cpp:function:: void FireWeaponBullet_Special(vector origin, vector direction, int numShots, int damageType, bool noAntilag, bool noSpread, bool onlyDamageEntitiesOnce, bool unknownPurpose, bool noTracers, bool activeShot, bool doTraceBrushOnly)
 
@@ -776,7 +1087,11 @@ CWeaponX
 
 	.. cpp:function:: void ForceDryfireEvent()
 
+		Force this weapon to dry fire
+
 	.. cpp:function:: void PlayWeaponEffectOnOwner( asset effect, int bodypart )
+
+		Play an effect on the weapon owner
 
 	.. cpp:function:: void ForceReleaseFromServer()
 
@@ -784,12 +1099,16 @@ CWeaponX
 
 	.. cpp:function:: bool IsForceReleaseFromServer()
 
+		returns ``true`` if this weapon has been forced to be released
+
 C_WeaponX
 ^^^^^^^^^
 
 .. cpp:class:: C_WeaponX : extends C_BaseCombatWeapon
 
 	.. cpp:function:: void PlayWeaponEffectReturnViewEffectHandle( asset fpEffect, asset unknown_purpose, string tag )
+
+		the second asset is probably the third person effect played.
 
 	.. cpp:function:: void SetViewmodelAmmoModelIndex( int index )
 
@@ -817,13 +1136,21 @@ Shared
 
 	.. cpp:function:: array<string> ProjectileGetMods()
 
+		Returns an array of every mod this projectile has equipped
+
 	.. cpp:function:: void SetProjectilTrailEffectIndex( int index )
 
+		Set the projectile trail by index
+
 	.. cpp:function:: void SetProjectileLifetime( float lifetime )
+
+		Set the time after which this projectile gets destroyed programmatically
 
 	.. cpp:function:: string ProjectileGetWeaponInfoFileKeyField( string key )
 
 	.. cpp:function:: void SetReducedEffects()
+
+		Only use reduced effects for this projectile
 
 	.. cpp:function:: asset GetProjectileWeaponSettingAsset( string setting )
 
@@ -832,6 +1159,8 @@ Shared
 		Tells the code that the projectile was refired from the vortex so that it uses "projectile_vortex_vscript"
 
 	.. cpp:function:: float GetProjectileCreationTime()
+
+		Get the gametime when this projectile has been created
 
 	.. cpp:function:: asset ProjectileGetWeaponInfoFileKeyFieldAsset( string key )
 
@@ -865,13 +1194,23 @@ Shared
 
 	.. cpp:function:: float GetDamageRadius()
 
+		Get the damage radius
+
 	.. cpp:function:: float GetExplosionRadius()
+
+		Get the explosion radius
 
 	.. cpp:function:: void GrenadeExplode( vector normal )
 
+		Explode this grenade now
+
 	.. cpp:function:: entity GetThrower()
 
+		Get the enitity that has thrown this grenade
+
 	.. cpp:function:: bool GrenadeHasIgnited()
+
+		Returns ``true`` if this grenade has already been ignited
 
 	.. cpp:function:: void GrenadeIgnite()
 
@@ -890,7 +1229,11 @@ CBaseGrenade
 
 	.. cpp:function:: void SetGrenadeTimer( float fuseTime )
 
+		Set fuse time for this grenade
+
 	.. cpp:function:: void SetGrenadeIgnitionDuration( float fuseTime )
+
+		Set the ignition duration for this grenade
 
 C_BaseGrenade
 ^^^^^^^^^^^^^
@@ -907,6 +1250,8 @@ Shared
 
 	.. cpp:function:: void MissileExplode()
 
+		Make this missile explode now
+
 	.. cpp:function:: void InitMissileForRandomDriftFromWeaponSettings( vector pos, vector dir )
 
 	.. cpp:function:: void SetHomingSpeeds( int speed, int speed_for_dodging_player )
@@ -915,9 +1260,9 @@ Shared
 
 	.. cpp:function:: void SetMissileTargetPosition( vector pos )
 
-	.. cpp:function:: void InitMissileSpiral( vector pos, vector dir, int missileNumber, bool slowAndExpand, bool consistentSpacing )
+	.. cpp:function:: void InitMissileSpiral( vector pos, vector dir, int missileNumber, bool unknown_purpose1, bool unknown_purpose2 )
 
-		If both ``slowAndExpand`` and ``consistentSpacing`` are true, missiles fly faster instead of normal ``slowAndExpand`` behavior.
+ 		If both ``slowAndExpand`` and ``consistentSpacing`` are true, missiles fly faster instead of normal ``slowAndExpand`` behavior.
 
 	.. cpp:function:: void SetSpeed( float speed )
 
@@ -949,6 +1294,16 @@ Shared
 
 	.. cpp:function:: int GetGen()
 
+		Returns the gen of the player account.
+
+	.. cpp:function:: int GetLevel()
+
+		Returns the level of the player account.
+
+	.. cpp:function:: int GetXP()
+
+		Returns the xp of the player account.
+
 	.. cpp:function:: entity GetFirstPersonProxy()
 
 	.. cpp:function:: string GetPlayerClass()
@@ -956,6 +1311,8 @@ Shared
 	.. cpp:function:: void Lunge_ClearTarget()
 
 	.. cpp:function:: bool Lunge_IsActive()
+
+		Returns ``true`` if the player is currently lunging to a melee victim.
 
 	.. cpp:function:: bool GetForcedDialogueOnly()
 
@@ -979,11 +1336,15 @@ Shared
 
 	.. cpp:function:: string GetPlayerName()
 
+		Returns the player account name
+
 	.. cpp:function:: int GetPlayerGameStat( int PGS )
 
-		returns the score of the player in the provided category. some categories are: PGS_KILLS, PGS_DEATHS, PGS_SCORE etc.
+		Returns the score of the player in the provided category. some categories are: PGS_KILLS, PGS_DEATHS, PGS_SCORE etc.
 
 	.. cpp:function:: entity GetPetTitan()
+
+		Returns the soul of the player's autotitan.
 
 	.. cpp:function:: bool GetTitanDisembarkEnabled()
 
@@ -999,7 +1360,7 @@ Shared
 
 	.. cpp:function:: int GetActiveBurnCardIndex()
 
-		Selected burn card
+		Returns the index of the selected burn card.
 
 	.. cpp:function:: int Code_GetActiveBurnCardIndex()
 
@@ -1025,13 +1386,11 @@ Shared
 
 	.. cpp:function:: int GetOutOfBoundsDeadTime()
 
-	.. cpp:function:: int GetLevel()
-
 	.. cpp:function:: entity GetTitanSoulBeingRodeoed()
 
-	.. cpp:function:: int GetXP()
-
 	.. cpp:function:: vector CameraAngles()
+
+		Returns the angles of this player's camera.
 
 	.. cpp:function:: float GetObjectiveEndTime()
 
@@ -1044,6 +1403,8 @@ Shared
 	.. cpp:function:: int GetPetTitanMode()
 
 	.. cpp:function:: bool IsWallHanging()
+
+		Returns ``true`` if the player is wall hanging.
 
 	.. cpp:function:: float GetNextTitanRespawnAvailable()
 
@@ -1067,9 +1428,21 @@ Shared
 
 	.. cpp:function:: bool IsCrouched()
 
+		Returns ``true`` if the player is crouching.
+
+	.. cpp:function:: bool IsStanding()
+
+		Returns ``true`` if the player is standing
+
 	.. cpp:function:: void IsTraversing()
 
 	.. cpp:function:: void IsWallRunning()
+
+		Returns ``true`` if the player is wallrunning.
+
+	.. cpp:function:: bool IsZiplining()
+
+		Returns ``true`` if the player is currently attached to a zipline
 
 	.. cpp:function:: vector Lunge_GetStartPositionOffset()
 
@@ -1113,9 +1486,9 @@ Shared
 
 	.. cpp:function:: vector CameraPosition()
 
-	.. cpp:function:: entity GetPlayerNetEnt( string key )
+		Returns the camera position of this player.
 
-	.. cpp:function:: bool IsStanding()
+	.. cpp:function:: entity GetPlayerNetEnt( string key )
 
 	.. cpp:function:: bool HasPassive( int passive )
 
@@ -1133,7 +1506,7 @@ Shared
 
 	.. cpp:function:: int GetSuitGrapplePower()
 
-	.. cpp:function:: bool IsZiplining()
+	.. cpp:function:: void SetSuitGrapplePower( float power )
 
 	.. cpp:function:: array<string> GetPlayerSettingsMods()
 
@@ -1155,11 +1528,15 @@ Shared
 
 	.. cpp:function:: void HolsterWeapon()
 
+		Holsters this weapon. The player can't use it until it's deployed again with ``DeployWeapon``
+
 	.. cpp:function:: void DeployWeapon()
 
 		May not work with ``DeployAndEnableWeapons()`` and ``HolsterAndDisableWeapons()``
 
 	.. cpp:function:: float GetZoomFrac()
+
+		Returns the fractal of the current weapon zoom. 1.0 is fully zoomed in.
 
 	.. cpp:function:: entity GetRemoteTurret()
 
@@ -1183,9 +1560,13 @@ CPlayer
 
 	.. cpp:function:: void ForceStand()
 
-	.. cpp:function:: void SetPlayerNetBool( string key, bool val )
+		Force this player to stand up
 
 	.. cpp:function:: void UnforceStand()
+
+		Allow crouching
+
+	.. cpp:function:: void SetPlayerNetBool( string key, bool val )
 
 	.. cpp:function:: void Anim_StopGesture( int gesture )
 
@@ -1221,9 +1602,15 @@ CPlayer
 
 	.. cpp:function:: void ForceCrouch()
 
+		Force this player to crouch.
+
 	.. cpp:function:: void UnforceCrouch()
 
+		Allow this player to stand.
+
 	.. cpp:function:: bool IsNoclipping()
+
+		Returns ``true`` if noclip is enabled.
 
 	.. cpp:function:: void SetCinematicEventFlags( int flag )
 
@@ -1259,8 +1646,6 @@ CPlayer
 
 	.. cpp:function:: void PlayerCone_SetSpecific( vector viewAngles )
 
-	.. cpp:function:: void SetSuitGrapplePower( float power )
-
 	.. cpp:function:: void GiveExtraWeaponMod( string mod )
 
 C_Player
@@ -1269,6 +1654,8 @@ C_Player
 .. cpp:class:: C_Player : extends C_BaseCombatCharacter
 
 	.. cpp:function:: void ClientCommand( string command )
+
+		Executes a command on the player's client. The command only gets executed when the player has launched Northstar with the ``norestrictservercommands`` launch argument for security reasons.
 
 	.. cpp:function:: entity GetCockpit()
 
@@ -1296,6 +1683,8 @@ C_Player
 
 	.. cpp:function:: void CockpitJolt( vector joltDir, float severity )
 
+		play a jolt effect on the player
+
 	.. cpp:function:: void SetScriptMenuOff()
 
 	.. cpp:function:: void SetScriptMenuOn()
@@ -1304,9 +1693,15 @@ C_Player
 
 	.. cpp:function:: void HideCrosshairNames()
 
+		Disable showing crosshair names of entities when aiming at them.
+
 	.. cpp:function:: void UnhideCrosshairNames()
 
+		Enable showing crosshair names of entities when aiming at them. (default)
+
 	.. cpp:function:: void FreezeControlsOnClient()
+
+		Stop player input.
 
 	.. cpp:function:: void Rodeo_StartCameraSmoothing( float factor )
 
@@ -1330,11 +1725,13 @@ Shared
 
 	.. cpp:function:: bool IsDoomed()
 
+		Returns ``true`` if this soul is in doomed state
+
 	.. cpp:function:: float GetTitanSoulNetFloat( string key )
 
 	.. cpp:function:: entity GetInvalidHealthBarEnt()
 
-		Returns an instance of CNPC_Titan
+		Returns an instance of ``CNPC_Titan``
 
 	.. cpp:function:: int GetTitanSoulNetInt( string key )
 
@@ -1568,7 +1965,9 @@ Shared
 
 	.. cpp:function:: int GetMeleeDamageMaxForTarget( entity target )
 
-	.. cpp:function:: float AISetting_MaxFlyingSpeed( unknown )
+	.. cpp:function:: float AISetting_MaxFlyingSpeed()
+
+		get the current flying speed of the npc.
 
 	.. cpp:function:: string AISetting_LeechAnimSet()
 
@@ -1591,7 +1990,11 @@ CAI_BaseNPC
 
 	.. cpp:function:: void ClearEnemy( entity enemy )
 
+		Clears the enemy of this npc.
+
 	.. cpp:function:: void SetEnemy( entity enemy )
+
+		Sets the enemy this npc will attack.
 
 	.. cpp:function:: void Anim_ScriptedPlay( string anim )
 
@@ -1617,13 +2020,17 @@ CAI_BaseNPC
 
 	.. cpp:function:: void SetAISettings( string settings )
 
-	.. cpp:function:: void SetCapabilityFlag( int flag, bool unknown_purpose )
+	.. cpp:function:: void SetCapabilityFlag( int flag, bool active )
+
+		Sets if a capability is available to the player
 
 	.. cpp:function:: void Anim_ScriptedPlayActivityByName( string activity, bool unknown_purpose1, float unknown_purpose2 )
 
 	.. cpp:function:: entity GetEnemy()
 
 	.. cpp:function:: bool CanSee( entity ent )
+
+		Returns ``true`` if the npc can see the ``ent``.
 
 	.. cpp:function:: bool IsCrouching()
 
@@ -1639,7 +2046,23 @@ CAI_BaseNPC
 
 	.. cpp:function:: void Freeze()
 
+		Freezes all animations and movement of this entity.
+
 	.. cpp:function:: void Unfreeze()
+
+		unfreezes all animations and movement of this entity.
+
+	.. cpp:function:: bool HasXRaySupport()
+
+		Returns if ``this.supportsXRay`` not null.
+
+	.. cpp:function:: void ForceCombat()
+		
+		Force into combat state by updating NPC's memory of the player.
+
+	.. cpp:function:: bool InCombat()
+		
+		Returns true if NPC is in combat.
 
 C_AI_BaseNPC
 ^^^^^^^^^^^^^
@@ -1693,7 +2116,9 @@ CNPC_Drone
 
 .. cpp:class:: CNPC_Drone : extends CAI_BaseNPC
 
-	.. cpp:function:: unknown SetAttackMode( unknown )
+	.. cpp:function:: void SetAttackMode( bool attack )
+
+		Set to ``false`` to not attack enemies.
 
 CNPC_SentryTurret / C_NPC_SentryTurret
 
@@ -1702,16 +2127,16 @@ Shared
 
 .. cpp:class:: CNPC_SentryTurret / C_NPC_SentryTurret : extends CAI_BaseNPC / C_AI_BaseNPC
 
-	.. cpp:function:: unknown GetTurretState( unknown )
+	.. cpp:function:: int GetTurretState()
 
-	.. cpp:function:: unknown GetControlPanel( unknown )
+	.. cpp:function:: entity GetControlPanel()
 
 CNPC_SentryTurret
 ^^^^^^^^^^^^^^^^^
 
 .. cpp:class:: CNPC_SentryTurret : extends CAI_BaseNPC
 
-	.. cpp:function:: unknown StartDeployed( unknown )
+	.. cpp:function:: void StartDeployed()
 
 C_NPC_SentryTurret
 ^^^^^^^^^^^^^^^^^^
@@ -1783,7 +2208,7 @@ Shared
 
 	.. cpp:function:: AnimRefPoint Anim_GetStartForRefPoint( string anim, vector origin, vector angles )
 
-	.. cpp:function:: unknown Anim_GetStartForRefPoint_Old( animation, origin, angles )
+	.. cpp:function:: vector Anim_GetStartForRefPoint_Old( animation, origin, angles )
 
 	.. cpp:function:: void Anim_PlayWithRefPoint( string animation, vector origin, vector angles, float blendTime )
 
@@ -1811,13 +2236,13 @@ CBaseAnimating
 
 	.. cpp:function:: void BecomeRagdoll( vector push, bool skipAnim )
 
-	.. cpp:function:: void Dissolve( int dissolveID, vector unknown_purpose1, int unknown_purpose2 )
+	.. cpp:function:: void Dissolve( int dissolveID, vector normal, int unknown_purpose )
 
 	.. cpp:function:: void Gib( vector forceVec )
 
 	.. cpp:function:: void SetContinueAnimatingAfterRagdoll( bool cont )
 
-	.. cpp:function:: void PlayRecordedAnimation( asset animation, vector unknown_purpose1, vecor unknown_purpose2 )
+	.. cpp:function:: void PlayRecordedAnimation( asset animation, vector unknown_purpose1, vecor unknown_purpose2, float blendTime, entity ref )
 
 	.. cpp:function:: void SetRecordedAnimationPlaybackRate( float rate )
 
@@ -1840,7 +2265,7 @@ C_BaseAnimating
 
 	.. cpp:function:: void SetCycle( float cycle )
 
-	.. cpp:function:: void DoBodyGroupChangeScriptCallback( bool unknown_purpose, int bodygroup )
+	.. cpp:function:: void DoBodyGroupChangeScriptCallback( bool doCallback, int bodygroup )
 
 CPlayerDecoy / C_PlayerDecoy
 ----------------------------
@@ -1857,13 +2282,21 @@ CPlayerDecoy
 
 	.. cpp:function:: void Decoy_Dissolve()
 
-	.. cpp:function:: void SetTimeout( int duration )
+		Dissolve this decoy. You might want to clear decoy fx with ``CleanupFXAndSoundsForDecoy( entity decoy )`` afterwards. 
+
+	.. cpp:function:: void SetTimeout( float duration )
+
+		Set the time after which the decoy gets automatically dissolved.
 
 	.. cpp:function:: void SetDecoyRandomPulseRateMax( float pulse_amount_per_second )
 
-	.. cpp:function:: void SetFriendlyFire( bool ff )
+	.. cpp:function:: void SetFriendlyFire( bool enabled )
+
+		Sets if friendly fire is enabled for this decoy.
 
 	.. cpp:function:: void SetKillOnCollision( bool kill )
+
+		Sets if this decoy gets killed when colliding with props or geometry.
 
 C_PlayerDecoy
 ^^^^^^^^^^^^^
@@ -1892,9 +2325,11 @@ C_Titan_Cockpit
 
 	.. cpp:function:: float GetTimeInCockpit()
 
-		Cockpit booting takes 1.3 seconds.
+		Returns the total time of time spent in this cockpit.
+		
+		Cockpit booting takes 1.3 seconds, so anything less than 1.3 seconds is still playing the booting animation. You can use ``TitanCockpit_IsBooting( entity cockpit )`` to determine this state.
 
-	.. cpp:function:: void SetOpenViewmodelOffset( float a, float b, float c )
+	.. cpp:function:: void SetOpenViewmodelOffset( float x, float y, float z )
 
 CParticleSystem
 ---------------
@@ -1905,7 +2340,7 @@ CParticleSystem
 
 	.. cpp:function:: void SetStopType( string type )
 
-	.. cpp:function:: void SetControlPointEnt( int unknown_purpose, entity destEnt )
+	.. cpp:function:: void SetControlPointEnt( int controlPoint, entity destEnt )
 
 CVortexSphere / C_VortexSphere
 ------------------------------
@@ -1952,5 +2387,6 @@ C_VortexSphere
 .. cpp:class:: C_VortexSphere : extends C_BaseEntity
 
 CEnvExplosion
+-------------
 
 .. cpp:class:: CEnvExplosion : extends CBaseEntity
