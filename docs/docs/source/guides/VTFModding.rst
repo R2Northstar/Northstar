@@ -4,24 +4,94 @@ VTF Modding
 VTF Overview
 ------------
 
-VTF, short for "Valve Texture Format", is a texture type used by valve in the source engine and is semi-used in titanfall. it is used for some fx and other textures. Most things use .dds, but we can change this. The tool used to edit vtfs is `VTFEdit <https://nemstools.github.io/pages/VTFLib-Download.html>`__.
+VTF, short for "Valve Texture Format", is a texture type used by Valve in the source engine and is occasionally in Titanfall. vtf's are used for fx, animation, and other textures. 
+
 
 VMT Overview
 ------------
 
-VMT, short for "Valve Material Type", is a text `material <https://developer.valvesoftware.com/wiki/Material>`__ system that dictates how the game percieves a vtf outside of how it looks. It uses `parameters <https://developer.valvesoftware.com/wiki/Category:List_of_Shader_Parameters>`__ and `proxies <https://developer.valvesoftware.com/wiki/Material_proxies>`__ to dictate how `shaders <https://developer.valvesoftware.com/wiki/Shader>`__ will show the game. We will go into greater detail later.
+VMT, short for "Valve Material Type", is a text `material <https://developer.valvesoftware.com/wiki/Material>`__ system that dictates how the game perceives a vtf outside of how it looks. It uses `parameters <https://developer.valvesoftware.com/wiki/Category:List_of_Shader_Parameters>`__ and `proxies <https://developer.valvesoftware.com/wiki/Material_proxies>`__ to dictate how `shaders <https://developer.valvesoftware.com/wiki/Shader>`__ will show the game. We will go into greater detail later.
 
 Editing FX that use VTFs
 ------------------------
 
-A lot of fx in titanfall use vtfs as textures. Therefore, if the corresponding vtf can be found, we can do almost anything with the fx's appearence.
-Example Mod: `Exrill's Blue L-Star <https://northstar.thunderstore.io/package/EXRILL/Exrills_Blue_Lstar/>`__
+A lot of fx in Titanfall use vtf's as textures. Therefore, if the corresponding vtf can be found, we can do almost anything with the fx's appearence.
+Example Mod: `Exrill's Blue L-Star <https://northstar.thunderstore.io/package/EXRILL/Exrills_Blue_Lstar/>`_.
 Since the L-Star has a physical bullet that is counted as fx, we can edit how it looks.
 
 VTF Skins
 ---------
 
-Though it is more a skins thing, making vtf skins is somewhat complicated, and to do any vtf editing you need to understand it. To get started, extract the .mdl of what you want with the `Titanfall VPK Tool <https://github.com/Wanty5883/Titanfall2/blob/master/tools/Titanfall_VPKTool3.4_Portable.zip>`__. Open `englishclient_mp_common.bsp.pak000_dir.vpk` in the vpk folder. Go to `models\weapons` and find the weapon you want. Not all guns are named the same in files as they are in game. Here is `list of weapon names <https://noskill.gitbook.io/titanfall2/documentation/file-location/weapon/weapon-model>`__ to help you out. Once you've found your gun, extract both the ptpov and w versions. ptpov is the viewmodel and w is the normal model. then extract it anywhere. To change the path to the texture we will need a hex editor. I will use `HxD <https://mh-nexus.de/en/hxd/>`__, but you can also use `ida <https://hex-rays.com/ida-free/>`__ or anything else, its just personal preference. Once you've got that, open your .mdl with it and search (ctrl+f) for skin_31. If that dosent bring anything up, try skn_31 or skin31 or something like that until you find it. The string of text around it should look something like `.models\Weapons_R2\weaponname\weaponname_skin_31`. Near it, there should be the same text, but without the `_skin_31`. This is the path to the default textures. Now, before you edit, you have to realize hex editors are just built different (cant help it). You cant add or delete text with a hex editor, only replace. Go to the start of the path for the default textures, and change the path to anything else, as long as it starts with `.models\weapons_r2`. For this example i will make a kraber skin, so i will change my path to `.models\weapons_r2\vtfkraber\vtfkraber`.once youve done that, save and do the same thing on the ptpov_ or w_ model. now in the same folder you extracted your mdls too, make a `materials` folder. inside that create the path you hex edited, but the last part is a .vmt file not a folder. the path i would make would be `models\weapons_r2\vtfkraber\vtfkraber.vmt`. once you have made your .vmt, open it and paste this in::
+Since vtf modding was originally for introducing custom weapon skins, most of the development on it was focused on that. The same concepts apply to modding other textures though.
+
+Most textures in the game use .dds but we can make them use .vtf. 
+
+What we'll be doing is:
+
+- Extracting the model.
+- Replacing the texture path in the mdl to point to our texture.
+- Creating our directory.
+- Setting up a .vmt file.
+
+.. _VPK Tool: https://github.com/Wanty5883/Titanfall2/blob/master/tools/Titanfall_VPKTool3.4_Portable.zip
+
+VPK Tool
+--------
+.. _cra0 VPKTool: https://github.com/Wanty5883/Titanfall2/blob/master/tools/Titanfall_VPKTool3.4_Portable.zip
+
+.. _Harmony VPKTool: https://github.com/harmonytf/HarmonyVPKTool
+
+You have 2 options for a VPK tool. Pick either the older VPK tool: `cra0 VPKTool`_ or the Newer VPK tool: `Harmony VPKTool`_ (better).
+
+With your VPK tool opened. 'Open' ``englishclient_mp_common.pak000_dir.vpk`` which is located in ``Titanfall2/vpk``. 
+
+Inside of the VPK, not all guns filenames match their ingame names. Here is `list of weapon names <https://noskill.gitbook.io/titanfall2/documentation/file-location/weapon/weapon-model>`_ to help you out. 
+
+Navigate to ``models/weapons/car101``. Extract all the viewmodel versions (ptpov) and normal model (w) mdl's.
+
+Hex Editor
+----------
+
+To change the path in the .mdl to the custom .vmt. 
+We need a hex editor. Before editing with hex editors, you need to be aware that hex editors cannot add or delete data, only replace it. I will use `HxD`_, but you can also use `ida`_, or anything else as its personal preference. 
+
+.. _HxD: https://mh-nexus.de/en/hxd/
+.. _ida: https://hex-rays.com/ida-free/
+
+
+Open your .mdl in your hex editor. 
+
+We want to get closer to the path we need or else you'll be scrolling and searching for hours. Search:(CTRL+F) for skin_31. If you don't get any matches, try skn_31, skin31, elite, or prime. The path should look something like ``.models\Weapons_R2\weaponname\weaponname_skin_31``. 
+Don't change this unless you want to effect skin31 textures.
+
+The path we do need to change is ``.models\Weapons_R2\weaponname\weaponname``. This comes before the ``skin_31`` path. 
+I recommend only changing the last section of the path. We'll change ``.models\Weapons_r2\car_smg\CAR_smg`` to ``.models\weapons_r2\car_smg\car_ctm``. Note the capitalization, as some vpk repacking tools cannot repack properly if the changed path contains capitals. 
+
+Now copy these changes for ``ptpov_`` and/or ``w_`` model(s). As these are the stow (On your back) and main menu models. If don't change these. Your texture will only work when in a match.
+
+Creating VMT
+-------------
+
+In the same folder you extracted your mdl's. Make a ``materials`` folder next to the ``models`` folder. 
+
+Example:
+::
+
+	models
+	materials
+
+Recreate the path you changed in the ``materials`` folder, such that the last section is a .vmt file:
+
+::
+
+	materials
+	└─ models
+	      └─ weapons_r2
+	            └─ car_smg
+	                 └─ car_ctm.vmt
+
+Inside your .vmt paste:
+::
 
 	"UnlitTwoTexture"
 	{
@@ -38,26 +108,72 @@ Though it is more a skins thing, making vtf skins is somewhat complicated, and t
 		"$nocull" "1"
 	}
 
-When we use vtf textures, we can only use the albedo and normal `maps <https://titanfall-skin-group.gitbook.io/titanfall-2-skin-creation/ms/genral-information/texture-maps>`__. Fire up `VTFEdit <https://nemstools.github.io/pages/VTFLib-Download.html>`__ and hit file, import, and grab your texture. then file, save as, and save it in the same folder as your .vmt. In your vmt, put the path to your texture in the parentheces after `"$basetexture"`, treating models as root. So i would put, `models\weapons_r2\vtfkraber\kraber_col`. Then do the same for your normal map, but when you import it, pick volume texture instead of animated texture. In `"$bumpmap"` put the path to your normal texture. Now create another vtf with literally any image. Put its path in `"$texture2"`. As far as i know, this is neccesary even though the texture isnt used. Your root folder should look somewhat like this::
+
+When we use vtf textures, we can only use the albedo and normal. Learn more about `texture maps <https://retryy.gitbook.io/tf2/wiki/create/texturemaps>`_ here.
+
+VTFEdit
+--------
+
+`VTFEdit`_ is a tool to edit, view, and create .vtf files.
+
+.. _VTFEdit: https://nemstools.github.io/pages/VTFLib-Download.html
+
+Launch `VTFEdit`_. Top left, click ``File``, ``Import``, find and Import your custom texture(s). 
+
+When importing your normal map. Choose to import as a ``Volume Map``
+When importing your diffuse map. Choose to import as a ``Animated Map``
+
+More info about .vtf format possibilities `here <https://retryy.gitbook.io/tf2/wiki/create/formats>`_, or the official source docs `here <https://developer.valvesoftware.com/wiki/Valve_Texture_Format>`_.
+
+After that, save your new .vtf's into the same folder as your custom .vmt with a simple name.
+
+Configuring your .vmt
+---------------------
+
+It's highly recommended to read `this <https://retryy.gitbook.io/tf2/wiki/create/texturemaps>`_ wiki to understand what texture maps you might want.
+
+In the ``"$basetexture"`` argument enter your .vtf texture directory. We'll use ``models\weapons_r2\car_ctm\NAMEOFVTF``. This should point to your custom diffuse .vtf with the simple name. The game expects these paths to be without the ``.vtf`` file extension - don't add it.
+
+Do the same for adding your normal map with the ``"$bumpmap"`` argument.
+
+In some cases you might have to create another vtf with literally any image. Put its path in the ``"$texture2"`` argument. As far as i know, this is sometimes necessary even though the texture isn't used.
+
+Final VPK folder
+----------------
+
+Your root folder should look somewhat like this
+
+::
 
 	root
 	├─ materials
 	│  └─ models
 	│     └─ weapons_r2
-	│        └─ vtfkraber
-	│           └─ vtfkraber.vmt
+	│        └─ car_smg
+	│           ├─ YOURTEXTURE.vtf
+	│           ├─ YOURTEXTURE.vtf
+	│           └─ car_ctm.vmt
 	└─ models
 	   └─ weapons
-	      └─at_rifle (name of kraber)
-	        ├─ ptpov_at_rifle.mdl
-	        └─ w_at_rifle.mdl
+	      └─car101
+	        ├─ ptpov_car101.mdl
+	        └─ w_car101.mdl
 
-And you're done! You just need to pack it into a vpk with the vpk tool and put it in a mod.
+Finished.
+---------
+
+You're done! You just need to pack it into a vpk with a vpk tool (for our gun mod, we'd repack to ``englishclient_mp_common.pak000_dir.vpk``), and put the vpk into a Northstar mod inside a ``vpk`` folder. 
+
+Help with repacking `here <https://noskill.gitbook.io/titanfall2/intro/duction/vpk-packpack>`_, and help with Northstar mods `here <https://r2northstar.readthedocs.io/en/latest/guides/gettingstarted.html>`_.
 
 Making your Skin Animated
 -------------------------
 
-To make an animated skin, all we need to do is add a proxie and change our albedo vtf. Once you've made the frames of your skin, import them all at once with ctrl+a and save your vtf. Put it as `"$basecolor"`. At the bottom of your vmt but before the }, add this:
+To add animation functionality, all we need to do is add a Proxie; which is just a modifier inside a ``.vmt``, and change our albedo vtf texture. 
+
+You need to create a .vtf texture with multiple frames imported to one .vtf texture, that's your animated texture. You can do this with `VTFEdit`_. Then assign the texture in ``$basetexture``.
+
+At the bottom of your vmt but before the ``}``, add this:
 ::
 	"Proxies"
 	{
@@ -65,8 +181,8 @@ To make an animated skin, all we need to do is add a proxie and change our albed
 			{
 				animatedTextureVar $basetexture
 				animatedTextureFrameNumVar $frame
-				animatedTextureFrameRate 
+				animatedTextureFrameRate 30
 			}
 	}
 
-Put the fps you want your skin to play at in afet animatedTextureFrameRate, and you're done!
+To change the fps of the texture, change the value after ``animatedTextureFrameRate``, and you'll be done making your texture animated!
