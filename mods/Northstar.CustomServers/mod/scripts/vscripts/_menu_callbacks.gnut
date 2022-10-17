@@ -9,7 +9,7 @@ void function MenuCallbacks_Init()
 bool function ClientCommandCallback_LeaveMatch( entity player, array<string> args )
 {
 	// note: this is imperfect if we have multiple people of the same uid on a server, but that's only a thing in testing
-	if ( NSIsPlayerIndexLocalPlayer( player.GetPlayerIndex() ) )
+	if ( NSIsPlayerLocalPlayer( player ) )
 	{
 		if ( GetConVarBool( "ns_should_return_to_lobby" ) && GetMapName() != "mp_lobby" )
 		{
@@ -41,9 +41,11 @@ void function WritePersistenceAndLeaveForLocalPlayerOnly( entity player )
 
 void function WritePersistenceAndLeave( entity player )
 {
+	player.EndSignal( "OnDestroy" )
+
 	// write player persistence before we leave, since leaving player might load local lobby before server writes persistence, so they won't get newest
 	// not super essential, but a nice qol thing
-	NSEarlyWritePlayerIndexPersistenceForLeave( player.GetPlayerIndex() )
+	NSEarlyWritePlayerPersistenceForLeave( player )
 	while ( NSIsWritingPlayerPersistence() )
 		WaitFrame()
 	
