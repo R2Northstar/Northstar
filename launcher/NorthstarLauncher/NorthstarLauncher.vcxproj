@@ -14,7 +14,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{0ea82cb0-53fe-4d4c-96df-47fa970513d0}</ProjectGuid>
-    <RootNamespace>NorthstarLauncher</RootNamespace>
+    <RootNamespace>LauncherInjector</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>NorthstarLauncher</ProjectName>
   </PropertyGroup>
@@ -65,6 +65,9 @@
       <AdditionalDependencies>shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <StackReserveSize>8000000</StackReserveSize>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\..\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -85,6 +88,9 @@
       <AdditionalDependencies>shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <StackReserveSize>8000000</StackReserveSize>
     </Link>
+    <PostBuildEvent>
+      <Command>IF EXIST "$(SolutionDir)..\..\Titanfall2.exe" del "$(SolutionDir)..\..\NorthstarLauncher.exe" &amp;&amp; copy /Y "$(TargetPath)" "$(SolutionDir)..\..\</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

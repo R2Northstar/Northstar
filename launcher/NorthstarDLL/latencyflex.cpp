@@ -1,76 +1,44 @@
 #include "pch.h"
-#include "latencyflex.h"
-#include "hookutils.h"
 #include "convar.h"
 
-typedef void (*OnRenderStartType)();
-OnRenderStartType OnRenderStart;
+AUTOHOOK_INIT()
 
 ConVar* Cvar_r_latencyflex;
 
-HMODULE m_lfxModule {};
-typedef void (*PFN_lfx_WaitAndBeginFrame)();
-PFN_lfx_WaitAndBeginFrame m_lfx_WaitAndBeginFrame {};
+void (*m_winelfx_WaitAndBeginFrame)();
 
-void OnRenderStartHook()
+// clang-format off
+AUTOHOOK(OnRenderStart, client.dll + 0x1952C0, 
+void, __fastcall, ())
+// clang-format on
 {
-	// Sleep before next frame as needed to reduce latency.
-	if (Cvar_r_latencyflex->GetInt())
-	{
-		if (m_lfx_WaitAndBeginFrame)
-		{
-			m_lfx_WaitAndBeginFrame();
-		}
-	}
+	if (Cvar_r_latencyflex->GetBool() && m_winelfx_WaitAndBeginFrame)
+		m_winelfx_WaitAndBeginFrame();
 
 	OnRenderStart();
 }
 
-void InitialiseLatencyFleX(HMODULE baseAddress)
+ON_DLL_LOAD_CLIENT_RELIESON("client.dll", LatencyFlex, ConVar, (CModule module))
 {
 	// Connect to the LatencyFleX service
 	// LatencyFleX is an open source vendor agnostic replacement for Nvidia Reflex input latency reduction technology.
 	// https://ishitatsuyuki.github.io/post/latencyflex/
-	const auto lfxModuleName = "latencyflex_layer.dll";
-	const auto lfxModuleNameFallback = "latencyflex_wine.dll";
-	auto useFallbackEntrypoints = false;
+	HMODULE pLfxModule;
 
-	// Load LatencyFleX library.
-	m_lfxModule = ::LoadLibraryA(lfxModuleName);
-	if (m_lfxModule == nullptr && ::GetLastError() == ERROR_MOD_NOT_FOUND)
+	if (pLfxModule = LoadLibraryA("latencyflex_layer.dll"))
+		m_winelfx_WaitAndBeginFrame =
+			reinterpret_cast<void (*)()>(reinterpret_cast<void*>(GetProcAddress(pLfxModule, "lfx_WaitAndBeginFrame")));
+	else if (pLfxModule = LoadLibraryA("latencyflex_wine.dll"))
+		m_winelfx_WaitAndBeginFrame =
+			reinterpret_cast<void (*)()>(reinterpret_cast<void*>(GetProcAddress(pLfxModule, "winelfx_WaitAndBeginFrame")));
+	else
 	{
-		spdlog::info("LFX: Primary LatencyFleX library not found, trying fallback.");
-
-		m_lfxModule = ::LoadLibraryA(lfxModuleNameFallback);
-		if (m_lfxModule == nullptr)
-		{
-			if (::GetLastError() == ERROR_MOD_NOT_FOUND)
-			{
-				spdlog::info("LFX: Fallback LatencyFleX library not found.");
-			}
-			else
-			{
-				spdlog::info("LFX: Error loading fallback LatencyFleX library - Code: {}", ::GetLastError());
-			}
-
-			return;
-		}
-
-		useFallbackEntrypoints = true;
-	}
-	else if (m_lfxModule == nullptr)
-	{
-		spdlog::info("LFX: Error loading primary LatencyFleX library - Code: {}", ::GetLastError());
+		spdlog::info("Unable to load LatencyFleX library, LatencyFleX disabled.");
 		return;
 	}
 
-	m_lfx_WaitAndBeginFrame = reinterpret_cast<PFN_lfx_WaitAndBeginFrame>(reinterpret_cast<void*>(
-		GetProcAddress(m_lfxModule, !useFallbackEntrypoints ? "lfx_WaitAndBeginFrame" : "winelfx_WaitAndBeginFrame")));
+	AUTOHOOK_DISPATCH()
 
-	spdlog::info("LFX: Initialized.");
-
+	spdlog::info("LatencyFleX initialized.");
 	Cvar_r_latencyflex = new ConVar("r_latencyflex", "1", FCVAR_ARCHIVE, "Whether or not to use LatencyFleX input latency reduction.");
-
-	HookEnabler hook;
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x1952C0, &OnRenderStartHook, reinterpret_cast<LPVOID*>(&OnRenderStart));
 }

@@ -1,13 +1,13 @@
-#include <string>
 #include "pch.h"
 #include "nsprefix.h"
+#include <string>
 
 std::string GetNorthstarPrefix()
 {
 	return NORTHSTAR_FOLDER_PREFIX;
 }
 
-void parseConfigurables()
+void InitialiseNorthstarPrefix()
 {
 	char* clachar = strstr(GetCommandLineA(), "-profile=");
 	if (clachar)

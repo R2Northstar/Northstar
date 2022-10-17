@@ -1,45 +1,16 @@
 #include "pch.h"
-#include "keyvalues.h"
 #include "modmanager.h"
 #include "filesystem.h"
-#include "hookutils.h"
 
 #include <fstream>
 
-// hook forward defs
-typedef char (*KeyValues__LoadFromBufferType)(
-	void* self, const char* resourceName, const char* pBuffer, void* pFileSystem, void* a5, void* a6, int a7);
-KeyValues__LoadFromBufferType KeyValues__LoadFromBuffer;
-char KeyValues__LoadFromBufferHook(
-	void* self, const char* resourceName, const char* pBuffer, void* pFileSystem, void* a5, void* a6, int a7);
-
-void InitialiseKeyValues(HMODULE baseAddress)
-{
-	HookEnabler hook;
-	ENABLER_CREATEHOOK(
-		hook, (char*)baseAddress + 0x426C30, &KeyValues__LoadFromBufferHook, reinterpret_cast<LPVOID*>(&KeyValues__LoadFromBuffer));
-}
-
-void* savedFilesystemPtr;
-
-char KeyValues__LoadFromBufferHook(void* self, const char* resourceName, const char* pBuffer, void* pFileSystem, void* a5, void* a6, int a7)
-{
-	// this is just to allow playlists to get a valid pFileSystem ptr for kv building, other functions that call this particular overload of
-	// LoadFromBuffer seem to get called on network stuff exclusively not exactly sure what the address wanted here is, so just taking it
-	// from a function call that always happens before playlists is loaded
-	if (pFileSystem != nullptr)
-		savedFilesystemPtr = pFileSystem;
-	if (!pFileSystem && !strcmp(resourceName, "playlists"))
-		pFileSystem = savedFilesystemPtr;
-
-	return KeyValues__LoadFromBuffer(self, resourceName, pBuffer, pFileSystem, a5, a6, a7);
-}
+AUTOHOOK_INIT()
 
 void ModManager::TryBuildKeyValues(const char* filename)
 {
 	spdlog::info("Building KeyValues for file {}", filename);
 
-	std::string normalisedPath = fs::path(filename).lexically_normal().string();
+	std::string normalisedPath = g_pModManager->NormaliseModFilePath(fs::path(filename));
 	fs::path compiledPath = GetCompiledAssetsPath() / filename;
 	fs::path compiledDir = compiledPath.parent_path();
 	fs::create_directories(compiledDir);
@@ -54,14 +25,14 @@ void ModManager::TryBuildKeyValues(const char* filename)
 
 	// copy over patch kv files, and add #bases to new file, last mods' patches should be applied first
 	// note: #include should be identical but it's actually just broken, thanks respawn
-	for (int64_t i = m_loadedMods.size() - 1; i > -1; i--)
+	for (int64_t i = m_LoadedMods.size() - 1; i > -1; i--)
 	{
-		if (!m_loadedMods[i].Enabled)
+		if (!m_LoadedMods[i].m_bEnabled)
 			continue;
 
 		size_t fileHash = STR_HASH(normalisedPath);
-		auto modKv = m_loadedMods[i].KeyValues.find(fileHash);
-		if (modKv != m_loadedMods[i].KeyValues.end())
+		auto modKv = m_LoadedMods[i].KeyValues.find(fileHash);
+		if (modKv != m_LoadedMods[i].KeyValues.end())
 		{
 			// should result in smth along the lines of #include "mod_patch_5_mp_weapon_car.txt"
 
@@ -76,7 +47,7 @@ void ModManager::TryBuildKeyValues(const char* filename)
 
 			fs::remove(compiledDir / patchFilePath);
 
-			fs::copy_file(m_loadedMods[i].ModDirectory / "keyvalues" / filename, compiledDir / patchFilePath);
+			fs::copy_file(m_LoadedMods[i].m_ModDirectory / "keyvalues" / filename, compiledDir / patchFilePath);
 		}
 	}
 
@@ -86,7 +57,7 @@ void ModManager::TryBuildKeyValues(const char* filename)
 	newKvs += "\"\n";
 
 	// load original file, so we can parse out the name of the root obj (e.g. WeaponData for weapons)
-	std::string originalFile = ReadVPKOriginalFile(filename);
+	std::string originalFile = R2::ReadVPKOriginalFile(filename);
 
 	if (!originalFile.length())
 	{
@@ -96,7 +67,6 @@ void ModManager::TryBuildKeyValues(const char* filename)
 
 	char rootName[64];
 	memset(rootName, 0, sizeof(rootName));
-	rootName[63] = '\0';
 
 	// iterate until we hit an ascii char that isn't in a # command or comment to get root obj name
 	int i = 0;
@@ -127,11 +97,36 @@ void ModManager::TryBuildKeyValues(const char* filename)
 	writeStream.close();
 
 	ModOverrideFile overrideFile;
-	overrideFile.owningMod = nullptr;
-	overrideFile.path = normalisedPath;
+	overrideFile.m_pOwningMod = nullptr;
+	overrideFile.m_Path = normalisedPath;
 
-	if (m_modFiles.find(normalisedPath) == m_modFiles.end())
-		m_modFiles.insert(std::make_pair(normalisedPath, overrideFile));
+	if (m_ModFiles.find(normalisedPath) == m_ModFiles.end())
+		m_ModFiles.insert(std::make_pair(normalisedPath, overrideFile));
 	else
-		m_modFiles[normalisedPath] = overrideFile;
+		m_ModFiles[normalisedPath] = overrideFile;
+}
+
+// clang-format off
+AUTOHOOK(KeyValues__LoadFromBuffer, engine.dll + 0x426C30,
+char, __fastcall, (void* self, const char* resourceName, const char* pBuffer, void* pFileSystem, void* a5, void* a6, int a7))
+// clang-format on
+{
+	static void* pSavedFilesystemPtr = nullptr;
+
+	// this is just to allow playlists to get a valid pFileSystem ptr for kv building, other functions that call this particular overload of
+	// LoadFromBuffer seem to get called on network stuff exclusively not exactly sure what the address wanted here is, so just taking it
+	// from a function call that always happens before playlists is loaded
+
+	// note: would be better if we could serialize this to disk for playlists, as this method breaks saving playlists in demos
+	if (pFileSystem != nullptr)
+		pSavedFilesystemPtr = pFileSystem;
+	if (!pFileSystem && !strcmp(resourceName, "playlists"))
+		pFileSystem = pSavedFilesystemPtr;
+
+	return KeyValues__LoadFromBuffer(self, resourceName, pBuffer, pFileSystem, a5, a6, a7);
+}
+
+ON_DLL_LOAD("engine.dll", KeyValues, (CModule module))
+{
+	AUTOHOOK_DISPATCH()
 }

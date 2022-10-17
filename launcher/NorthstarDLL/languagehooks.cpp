@@ -1,17 +1,12 @@
 #include "pch.h"
-#include "languagehooks.h"
-#include "gameutils.h"
+#include "tier0.h"
+
 #include <filesystem>
 #include <regex>
 
-namespace fs = std::filesystem;
-
-typedef char* (*GetGameLanguageType)();
-char* GetGameLanguage();
+AUTOHOOK_INIT()
 
 typedef LANGID (*Tier0_DetectDefaultLanguageType)();
-
-GetGameLanguageType GetGameLanguageOriginal;
 
 bool CheckLangAudioExists(char* lang)
 {
@@ -52,7 +47,10 @@ std::string GetAnyInstalledAudioLanguage()
 	return "NO LANGUAGE DETECTED";
 }
 
-char* GetGameLanguageHook()
+// clang-format off
+AUTOHOOK(GetGameLanguage, tier0.dll + 0xF560,
+char*, __fastcall, ())
+// clang-format on
 {
 	auto tier0Handle = GetModuleHandleA("tier0.dll");
 	auto Tier0_DetectDefaultLanguageType = GetProcAddress(tier0Handle, "Tier0_DetectDefaultLanguage");
@@ -60,7 +58,7 @@ char* GetGameLanguageHook()
 	bool& canOriginDictateLang = *(bool*)((char*)tier0Handle + 0xA9A90);
 
 	const char* forcedLanguage;
-	if (CommandLine()->CheckParm("-language", &forcedLanguage))
+	if (Tier0::CommandLine()->CheckParm("-language", &forcedLanguage))
 	{
 		if (!CheckLangAudioExists((char*)forcedLanguage))
 		{
@@ -79,7 +77,7 @@ char* GetGameLanguageHook()
 
 	canOriginDictateLang = true; // let it try
 	{
-		auto lang = GetGameLanguageOriginal();
+		auto lang = GetGameLanguage();
 		if (!CheckLangAudioExists(lang))
 		{
 			if (strcmp(lang, "russian") !=
@@ -97,7 +95,7 @@ char* GetGameLanguageHook()
 	Tier0_DetectDefaultLanguageType(); // force the global in tier0 to be populated with language inferred from user's system rather than
 									   // defaulting to Russian
 	canOriginDictateLang = false; // Origin has no say anymore, we will fallback to user's system setup language
-	auto lang = GetGameLanguageOriginal();
+	auto lang = GetGameLanguage();
 	spdlog::info("Detected system language: {}", lang);
 	if (!CheckLangAudioExists(lang))
 	{
@@ -112,8 +110,7 @@ char* GetGameLanguageHook()
 	return lang;
 }
 
-void InitialiseTier0LanguageHooks(HMODULE baseAddress)
+ON_DLL_LOAD_CLIENT("tier0.dll", LanguageHooks, (CModule module))
 {
-	HookEnabler hook;
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0xF560, &GetGameLanguageHook, reinterpret_cast<LPVOID*>(&GetGameLanguageOriginal));
+	AUTOHOOK_DISPATCH()
 }

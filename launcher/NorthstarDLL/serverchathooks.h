@@ -23,7 +23,3 @@ void ChatSendMessage(unsigned int playerIndex, const char* text, bool isteam);
 //   messageType: send a specific message type
 void ChatBroadcastMessage(
 	int fromPlayerIndex, int toPlayerIndex, const char* text, bool isTeam, bool isDead, CustomMessageType messageType);
-
-void InitialiseServerChatHooks_Engine(HMODULE baseAddress);
-
-void InitialiseServerChatHooks_Server(HMODULE baseAddress);

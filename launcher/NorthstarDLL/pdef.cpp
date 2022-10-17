@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "modmanager.h"
 #include "filesystem.h"
-#include "hookutils.h"
 #include "pdef.h"
+
 #include <map>
 #include <sstream>
 #include <fstream>
@@ -14,11 +14,11 @@ void ModManager::BuildPdef()
 	fs::path MOD_PDEF_PATH = fs::path(GetCompiledAssetsPath() / MOD_PDEF_SUFFIX);
 
 	fs::remove(MOD_PDEF_PATH);
-	std::string pdef = ReadVPKOriginalFile(VPK_PDEF_PATH);
+	std::string pdef = R2::ReadVPKOriginalFile(VPK_PDEF_PATH);
 
-	for (Mod& mod : m_loadedMods)
+	for (Mod& mod : m_LoadedMods)
 	{
-		if (!mod.Enabled || !mod.Pdiff.size())
+		if (!mod.m_bEnabled || !mod.Pdiff.size())
 			continue;
 
 		// this code probably isn't going to be pretty lol
@@ -107,11 +107,11 @@ void ModManager::BuildPdef()
 	writeStream.close();
 
 	ModOverrideFile overrideFile;
-	overrideFile.owningMod = nullptr;
-	overrideFile.path = VPK_PDEF_PATH;
+	overrideFile.m_pOwningMod = nullptr;
+	overrideFile.m_Path = VPK_PDEF_PATH;
 
-	if (m_modFiles.find(VPK_PDEF_PATH) == m_modFiles.end())
-		m_modFiles.insert(std::make_pair(VPK_PDEF_PATH, overrideFile));
+	if (m_ModFiles.find(VPK_PDEF_PATH) == m_ModFiles.end())
+		m_ModFiles.insert(std::make_pair(VPK_PDEF_PATH, overrideFile));
 	else
-		m_modFiles[VPK_PDEF_PATH] = overrideFile;
+		m_ModFiles[VPK_PDEF_PATH] = overrideFile;
 }

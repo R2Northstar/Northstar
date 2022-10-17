@@ -1,4 +1,7 @@
 #pragma once
-void InitialiseMaxPlayersOverride_Engine(HMODULE baseAddress);
-void InitialiseMaxPlayersOverride_Server(HMODULE baseAddress);
-void InitialiseMaxPlayersOverride_Client(HMODULE baseAddress);
+
+// should we use R2 for this? not sure
+namespace R2 // use R2 namespace for game funcs
+{
+	int GetMaxPlayers();
+} // namespace R2

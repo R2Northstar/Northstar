@@ -1,19 +1,19 @@
 #include "pch.h"
-#include "buildainfile.h"
 #include "convar.h"
-#include "hookutils.h"
+#include "hoststate.h"
+#include "r2engine.h"
+
 #include <fstream>
 #include <filesystem>
-#include "nsmem.h"
 
-namespace fs = std::filesystem;
+AUTOHOOK_INIT()
 
 const int AINET_VERSION_NUMBER = 57;
 const int AINET_SCRIPT_VERSION_NUMBER = 21;
-const int MAP_VERSION_TEMP = 30;
 const int PLACEHOLDER_CRC = 0;
 const int MAX_HULLS = 5;
 
+#pragma pack(push, 1)
 struct CAI_NodeLink
 {
 	short srcId;
@@ -24,6 +24,7 @@ struct CAI_NodeLink
 	char unk2[5];
 	int64_t flags;
 };
+#pragma pack(pop)
 
 #pragma pack(push, 1)
 struct CAI_NodeLinkDisk
@@ -33,7 +34,9 @@ struct CAI_NodeLinkDisk
 	char unk0;
 	bool hulls[MAX_HULLS];
 };
+#pragma pack(pop)
 
+#pragma pack(push, 1)
 struct CAI_Node
 {
 	int index; // not present on disk
@@ -62,6 +65,7 @@ struct CAI_Node
 	char unk9[8]; // padding until next bit
 	char unk10[8]; // should match up to unk6 on disk
 };
+#pragma pack(pop)
 
 // the way CAI_Nodes are represented in on-disk ain files
 #pragma pack(push, 1)
@@ -81,7 +85,9 @@ struct CAI_NodeDisk
 	short unk5;
 	char unk6[8];
 }; // total size of 68 bytes
+#pragma pack(pop)
 
+#pragma pack(push, 1)
 struct UnkNodeStruct0
 {
 	int index;
@@ -106,10 +112,12 @@ struct UnkNodeStruct0
 	char pad4[132];
 	char unk5;
 };
+#pragma pack(pop)
 
 int* pUnkStruct0Count;
 UnkNodeStruct0*** pppUnkNodeStruct0s;
 
+#pragma pack(push, 1)
 struct UnkLinkStruct1
 {
 	short unk0;
@@ -119,10 +127,12 @@ struct UnkLinkStruct1
 	char unk4;
 	char unk5;
 };
+#pragma pack(pop)
 
 int* pUnkLinkStruct1Count;
 UnkLinkStruct1*** pppUnkStruct1s;
 
+#pragma pack(push, 1)
 struct CAI_ScriptNode
 {
 	float x;
@@ -130,7 +140,9 @@ struct CAI_ScriptNode
 	float z;
 	uint64_t scriptdata;
 };
+#pragma pack(pop)
 
+#pragma pack(push, 1)
 struct CAI_Network
 {
 	// +0
@@ -160,16 +172,16 @@ struct CAI_Network
 	// +84176
 	CAI_Node** nodes;
 };
+#pragma pack(pop)
 
 char** pUnkServerMapversionGlobal;
-char* pMapName;
 
 ConVar* Cvar_ns_ai_dumpAINfileFromLoad;
 
 void DumpAINInfo(CAI_Network* aiNetwork)
 {
-	fs::path writePath("r2/maps/graphs");
-	writePath /= pMapName;
+	fs::path writePath(fmt::format("{}/maps/graphs", R2::g_pModName));
+	writePath /= R2::g_pHostState->m_levelName;
 	writePath += ".ain";
 
 	// dump from memory
@@ -349,20 +361,20 @@ void DumpAINInfo(CAI_Network* aiNetwork)
 	writeStream.close();
 }
 
-typedef void (*CAI_NetworkBuilder__BuildType)(void* builder, CAI_Network* aiNetwork, void* unknown);
-CAI_NetworkBuilder__BuildType CAI_NetworkBuilder__Build;
-
-void CAI_NetworkBuilder__BuildHook(void* builder, CAI_Network* aiNetwork, void* unknown)
+// clang-format off
+AUTOHOOK(CAI_NetworkBuilder__Build, server.dll + 0x385E20,
+void, __fastcall, (void* builder, CAI_Network* aiNetwork, void* unknown))
+// clang-format on
 {
 	CAI_NetworkBuilder__Build(builder, aiNetwork, unknown);
 
 	DumpAINInfo(aiNetwork);
 }
 
-typedef void (*LoadAINFileType)(void* aimanager, void* buf, const char* filename);
-LoadAINFileType LoadAINFile;
-
-void LoadAINFileHook(void* aimanager, void* buf, const char* filename)
+// clang-format off
+AUTOHOOK(LoadAINFile, server.dll + 0x3933A0,
+void, __fastcall, (void* aimanager, void* buf, const char* filename))
+// clang-format on
 {
 	LoadAINFile(aimanager, buf, filename);
 
@@ -373,28 +385,16 @@ void LoadAINFileHook(void* aimanager, void* buf, const char* filename)
 	}
 }
 
-void InitialiseBuildAINFileHooks(HMODULE baseAddress)
+ON_DLL_LOAD("server.dll", BuildAINFile, (CModule module))
 {
+	AUTOHOOK_DISPATCH()
+
 	Cvar_ns_ai_dumpAINfileFromLoad = new ConVar(
 		"ns_ai_dumpAINfileFromLoad", "0", FCVAR_NONE, "For debugging: whether we should dump ain data for ains loaded from disk");
 
-	HookEnabler hook;
-	ENABLER_CREATEHOOK(
-		hook, (char*)baseAddress + 0x385E20, &CAI_NetworkBuilder__BuildHook, reinterpret_cast<LPVOID*>(&CAI_NetworkBuilder__Build));
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x3933A0, &LoadAINFileHook, reinterpret_cast<LPVOID*>(&LoadAINFile));
-
-	pUnkStruct0Count = (int*)((char*)baseAddress + 0x1063BF8);
-	pppUnkNodeStruct0s = (UnkNodeStruct0***)((char*)baseAddress + 0x1063BE0);
-
-	pUnkLinkStruct1Count = (int*)((char*)baseAddress + 0x1063AA8);
-	pppUnkStruct1s = (UnkLinkStruct1***)((char*)baseAddress + 0x1063A90);
-	pUnkServerMapversionGlobal = (char**)((char*)baseAddress + 0xBFBE08);
-	pMapName = (char*)baseAddress + 0x1053370;
-
-	uintptr_t base = (uintptr_t)baseAddress;
-
-	// remove a check that prevents a logging function in link generation from working
-	// due to the sheer amount of logging this is a massive perf hit to generation, but spewlog_enable 0 exists so whatever
-	NSMem::NOP(base + 0x3889B6, 6);
-	NSMem::NOP(base + 0x3889BF, 6);
+	pUnkStruct0Count = module.Offset(0x1063BF8).As<int*>();
+	pppUnkNodeStruct0s = module.Offset(0x1063BE0).As<UnkNodeStruct0***>();
+	pUnkLinkStruct1Count = module.Offset(0x1063AA8).As<int*>();
+	pppUnkStruct1s = module.Offset(0x1063A90).As<UnkLinkStruct1***>();
+	pUnkServerMapversionGlobal = module.Offset(0xBFBE08).As<char**>();
 }

@@ -1,13 +1,6 @@
 #pragma once
 #include "pch.h"
-
-struct vgui_Color
-{
-	unsigned char r;
-	unsigned char g;
-	unsigned char b;
-	unsigned char a;
-};
+#include "color.h"
 
 class vgui_BaseRichText;
 
@@ -18,10 +11,10 @@ class CHudChat
 
 	char unknown1[720];
 
-	vgui_Color m_sameTeamColor;
-	vgui_Color m_enemyTeamColor;
-	vgui_Color m_mainTextColor;
-	vgui_Color m_networkNameColor;
+	Color m_sameTeamColor;
+	Color m_enemyTeamColor;
+	Color m_mainTextColor;
+	Color m_networkNameColor;
 
 	char unknown2[12];
 
@@ -61,7 +54,7 @@ class LocalChatWriter
 	void InsertChar(wchar_t ch);
 	void InsertText(const char* str);
 	void InsertText(const wchar_t* str);
-	void InsertColorChange(vgui_Color color);
+	void InsertColorChange(Color color);
 	void InsertSwatchColorChange(SwatchColor color);
 
   private:
@@ -70,5 +63,3 @@ class LocalChatWriter
 	const char* ApplyAnsiEscape(const char* escape);
 	void InsertDefaultFade();
 };
-
-void InitialiseLocalChatWriter(HMODULE baseAddress);

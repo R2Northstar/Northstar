@@ -1,13 +1,11 @@
 #include "pch.h"
 #include "convar.h"
 #include "concommand.h"
-#include "chatcommand.h"
 #include "localchatwriter.h"
 
 // note: isIngameChat is an int64 because the whole register the arg is stored in needs to be 0'd out to work
 // if isIngameChat is false, we use network chat instead
-typedef void(__fastcall* ClientSayTextType)(void* a1, const char* message, __int64 isIngameChat, bool isTeamChat);
-ClientSayTextType ClientSayText;
+void(__fastcall* ClientSayText)(void* a1, const char* message, uint64_t isIngameChat, bool isTeamChat);
 
 void ConCommand_say(const CCommand& args)
 {
@@ -29,9 +27,9 @@ void ConCommand_log(const CCommand& args)
 	}
 }
 
-void InitialiseChatCommands(HMODULE baseAddress)
+ON_DLL_LOAD_CLIENT_RELIESON("engine.dll", ClientChatCommand, ConCommand, (CModule module))
 {
-	ClientSayText = (ClientSayTextType)((char*)baseAddress + 0x54780);
+	ClientSayText = module.Offset(0x54780).As<void(__fastcall*)(void* a1, const char* message, uint64_t isIngameChat, bool isTeamChat)>();
 	RegisterConCommand("say", ConCommand_say, "Enters a message in public chat", FCVAR_CLIENTDLL);
 	RegisterConCommand("say_team", ConCommand_say_team, "Enters a message in team chat", FCVAR_CLIENTDLL);
 	RegisterConCommand("log", ConCommand_log, "Log a message to the local chat window", FCVAR_CLIENTDLL);

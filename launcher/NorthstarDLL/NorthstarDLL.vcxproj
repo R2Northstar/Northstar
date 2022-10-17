@@ -14,9 +14,9 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{cfad2623-064f-453c-8196-79ee10292e32}</ProjectGuid>
-    <RootNamespace>NorthstarDLL</RootNamespace>
+    <RootNamespace>NorthstarDedicatedTest</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>Northstar</ProjectName>
+    <ProjectName>NorthstarDLL</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -47,9 +47,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <TargetName>Northstar</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <TargetName>Northstar</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -75,6 +77,9 @@
       <Command>
       </Command>
     </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)..\..\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -105,38 +110,39 @@
       <Command>
       </Command>
     </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>IF EXIST "$(SolutionDir)..\..\Titanfall2.exe" del "$(SolutionDir)..\..\Northstar.dll" &amp;&amp; copy /Y "$(TargetPath)" "$(SolutionDir)..\..\</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="audio.h" />
     <ClInclude Include="bansystem.h" />
     <ClInclude Include="bitbuf.h" />
     <ClInclude Include="bits.h" />
-    <ClInclude Include="buildainfile.h" />
-    <ClInclude Include="chatcommand.h" />
-    <ClInclude Include="clientchathooks.h" />
-    <ClInclude Include="debugoverlay.h" />
-    <ClInclude Include="clientruihooks.h" />
-    <ClInclude Include="clientvideooverrides.h" />
+    <ClInclude Include="crashhandler.h" />
+    <ClInclude Include="squirreldatatypes.h" />
+    <ClInclude Include="limits.h" />
+    <ClInclude Include="maxplayers.h" />
+    <ClInclude Include="memory.h" />
+    <ClInclude Include="printcommand.h" />
+    <ClInclude Include="hoststate.h" />
     <ClInclude Include="localchatwriter.h" />
+    <ClInclude Include="printmaps.h" />
     <ClInclude Include="ns_version.h" />
     <ClInclude Include="plugins.h" />
     <ClInclude Include="plugin_abi.h" />
-    <ClInclude Include="scriptutility.h" />
-    <ClInclude Include="scriptjson.h" />
+    <ClInclude Include="r2client.h" />
+    <ClInclude Include="r2engine.h" />
+    <ClInclude Include="r2server.h" />
     <ClInclude Include="serverchathooks.h" />
-    <ClInclude Include="clientauthhooks.h" />
     <ClInclude Include="color.h" />
     <ClInclude Include="concommand.h" />
     <ClInclude Include="nsprefix.h" />
-    <ClInclude Include="context.h" />
     <ClInclude Include="convar.h" />
     <ClInclude Include="cvar.h" />
     <ClInclude Include="dedicated.h" />
-    <ClInclude Include="dedicatedmaterialsystem.h" />
     <ClInclude Include="filesystem.h" />
-    <ClInclude Include="gameutils.h" />
     <ClInclude Include="hooks.h" />
-    <ClInclude Include="hookutils.h" />
     <ClInclude Include="include\crypto\aes_platform.h" />
     <ClInclude Include="include\crypto\aria.h" />
     <ClInclude Include="include\crypto\asn1.h" />
@@ -534,39 +540,25 @@
     <ClInclude Include="include\spdlog\stopwatch.h" />
     <ClInclude Include="include\spdlog\tweakme.h" />
     <ClInclude Include="include\spdlog\version.h" />
-    <ClInclude Include="keyvalues.h" />
-    <ClInclude Include="languagehooks.h" />
-    <ClInclude Include="latencyflex.h" />
     <ClInclude Include="logging.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="masterserver.h" />
-    <ClInclude Include="maxplayers.h" />
     <ClInclude Include="memalloc.h" />
-    <ClInclude Include="miscclientfixes.h" />
     <ClInclude Include="misccommands.h" />
-    <ClInclude Include="miscserverfixes.h" />
-    <ClInclude Include="modlocalisation.h" />
     <ClInclude Include="modmanager.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="pdef.h" />
     <ClInclude Include="playlist.h" />
-    <ClInclude Include="miscserverscript.h" />
     <ClInclude Include="rpakfilesystem.h" />
-    <ClInclude Include="scriptbrowserhooks.h" />
-    <ClInclude Include="scriptmainmenupromos.h" />
-    <ClInclude Include="scriptmodmenu.h" />
-    <ClInclude Include="scriptserverbrowser.h" />
     <ClInclude Include="scriptsrson.h" />
     <ClInclude Include="serverauthentication.h" />
-    <ClInclude Include="scriptservertoclientstringcommand.h" />
-    <ClInclude Include="sigscanning.h" />
+    <ClInclude Include="serverpresence.h" />
     <ClInclude Include="sourceconsole.h" />
     <ClInclude Include="sourceinterface.h" />
     <ClInclude Include="squirrel.h" />
-    <ClInclude Include="state.h" />
-    <ClInclude Include="exploitfixes.h" />
-    <ClInclude Include="exploitfixes_utf8parser.h" />
-    <ClInclude Include="nsmem.h" />
+    <ClInclude Include="exploitfixes_utf8parser.cpp" />
+    <ClInclude Include="tier0.h" />
+    <ClInclude Include="vector.h" />
     <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
@@ -580,25 +572,29 @@
     <ClCompile Include="clientruihooks.cpp" />
     <ClCompile Include="clientvideooverrides.cpp" />
     <ClCompile Include="concommand.cpp" />
+    <ClCompile Include="exploitfixes_lzss.cpp" />
+    <ClCompile Include="limits.cpp" />
+    <ClCompile Include="memory.cpp" />
     <ClCompile Include="nsprefix.cpp" />
-    <ClCompile Include="context.cpp" />
     <ClCompile Include="convar.cpp" />
+    <ClCompile Include="crashhandler.cpp" />
     <ClCompile Include="cvar.cpp" />
     <ClCompile Include="debugoverlay.cpp" />
     <ClCompile Include="dedicated.cpp" />
     <ClCompile Include="dedicatedmaterialsystem.cpp" />
+    <ClCompile Include="demofixes.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="filesystem.cpp" />
-    <ClCompile Include="gameutils.cpp" />
     <ClCompile Include="hooks.cpp" />
-    <ClCompile Include="hookutils.cpp" />
+    <ClCompile Include="host.cpp" />
+    <ClCompile Include="hoststate.cpp" />
     <ClCompile Include="keyvalues.cpp" />
     <ClCompile Include="latencyflex.cpp" />
     <ClCompile Include="localchatwriter.cpp" />
+    <ClCompile Include="printmaps.cpp" />
     <ClCompile Include="maxplayers.cpp" />
     <ClCompile Include="languagehooks.cpp" />
     <ClCompile Include="memalloc.cpp" />
-    <ClCompile Include="miscclientfixes.cpp" />
     <ClCompile Include="misccommands.cpp" />
     <ClCompile Include="miscserverfixes.cpp" />
     <ClCompile Include="modlocalisation.cpp" />
@@ -612,9 +608,15 @@
     <ClCompile Include="pdef.cpp" />
     <ClCompile Include="playlist.cpp" />
     <ClCompile Include="plugins.cpp" />
+    <ClCompile Include="printcommands.cpp" />
+    <ClCompile Include="r2client.cpp" />
+    <ClCompile Include="r2engine.cpp" />
+    <ClCompile Include="r2server.cpp" />
     <ClCompile Include="rpakfilesystem.cpp" />
+    <ClCompile Include="runframe.cpp" />
     <ClCompile Include="scriptbrowserhooks.cpp" />
     <ClCompile Include="scriptjson.cpp" />
+    <ClCompile Include="scriptdatatables.cpp" />
     <ClCompile Include="scriptmainmenupromos.cpp" />
     <ClCompile Include="scriptmodmenu.cpp" />
     <ClCompile Include="scriptserverbrowser.cpp" />
@@ -624,11 +626,12 @@
     <ClCompile Include="miscserverscript.cpp" />
     <ClCompile Include="serverchathooks.cpp" />
     <ClCompile Include="scriptservertoclientstringcommand.cpp" />
-    <ClCompile Include="sigscanning.cpp" />
+    <ClCompile Include="serverpresence.cpp" />
     <ClCompile Include="sourceconsole.cpp" />
     <ClCompile Include="sourceinterface.cpp" />
     <ClCompile Include="squirrel.cpp" />
     <ClCompile Include="exploitfixes.cpp" />
+    <ClCompile Include="tier0.cpp" />
     <ClCompile Include="version.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -86,21 +86,24 @@ class CGameConsole
 	CConsoleDialog* m_pConsole;
 };
 
-extern SourceInterface<CGameConsole>* g_SourceGameConsole;
+extern SourceInterface<CGameConsole>* g_pSourceGameConsole;
 
 // spdlog logger
 class SourceConsoleSink : public spdlog::sinks::base_sink<std::mutex>
 {
   private:
-	std::map<spdlog::level::level_enum, SourceColor> logColours;
-
-  public:
-	SourceConsoleSink();
+	std::map<spdlog::level::level_enum, SourceColor> m_LogColours = {
+		{spdlog::level::trace, SourceColor(0, 255, 255, 255)},
+		{spdlog::level::debug, SourceColor(0, 255, 255, 255)},
+		{spdlog::level::info, SourceColor(255, 255, 255, 255)},
+		{spdlog::level::warn, SourceColor(255, 255, 0, 255)},
+		{spdlog::level::err, SourceColor(255, 0, 0, 255)},
+		{spdlog::level::critical, SourceColor(255, 0, 0, 255)},
+		{spdlog::level::off, SourceColor(0, 0, 0, 0)}};
 
   protected:
 	void sink_it_(const spdlog::details::log_msg& msg) override;
 	void flush_() override;
 };
 
-void InitialiseSourceConsole(HMODULE baseAddress);
 void InitialiseConsoleOnInterfaceCreation();

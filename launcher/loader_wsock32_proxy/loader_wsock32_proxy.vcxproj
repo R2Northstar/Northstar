@@ -61,14 +61,14 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>..\NorthstarDLL\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\NorthstarDedicatedTest\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <ModuleDefinitionFile>wsock32.def</ModuleDefinitionFile>
-      <AdditionalDependencies>..\NorthstarDLL\include\MinHook.x64.lib;mswsock.lib;ws2_32.lib;Shlwapi.lib;imagehlp.lib;dbghelp.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>.\include\MinHook.x64.lib;mswsock.lib;ws2_32.lib;Shlwapi.lib;imagehlp.lib;dbghelp.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -81,7 +81,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\NorthstarDLL\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\NorthstarDedicatedTest\</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -91,16 +91,16 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <ModuleDefinitionFile>wsock32.def</ModuleDefinitionFile>
-      <AdditionalDependencies>..\NorthstarDLL\include\MinHook.x64.lib;mswsock.lib;ws2_32.lib;Shlwapi.lib;imagehlp.lib;dbghelp.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;wsock32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>.\include\MinHook.x64.lib;mswsock.lib;ws2_32.lib;Shlwapi.lib;imagehlp.lib;dbghelp.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;wsock32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\MinHook.h" />
     <ClInclude Include="loader.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="hookutils.cpp" />
     <ClCompile Include="loader.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>

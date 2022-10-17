@@ -1,13 +1,15 @@
 #include "pch.h"
 #include "audio.h"
 #include "dedicated.h"
+#include "convar.h"
 
 #include "rapidjson/error/en.h"
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <random>
-#include "convar.h"
+
+AUTOHOOK_INIT()
 
 extern "C"
 {
@@ -229,10 +231,8 @@ EventOverrideData::EventOverrideData(const std::string& data, const fs::path& pa
 					}
 
 					// read from after the header first to preserve the empty header, then read the header last
-					wavStream.seekg(sizeof(EMPTY_WAVE), std::ios::beg);
-					wavStream.read(reinterpret_cast<char*>(&data[sizeof(EMPTY_WAVE)]), fileSize - sizeof(EMPTY_WAVE));
 					wavStream.seekg(0, std::ios::beg);
-					wavStream.read(reinterpret_cast<char*>(data), sizeof(EMPTY_WAVE));
+					wavStream.read(reinterpret_cast<char*>(data), fileSize);
 					wavStream.close();
 
 					spdlog::info("Finished async read of audio sample {}", pathString);
@@ -315,6 +315,7 @@ void CustomAudioManager::ClearAudioOverrides()
 	{
 		// stop all miles sounds beforehand
 		// miles_stop_all
+
 		MilesStopAll();
 
 		// this is cancer but it works
@@ -323,14 +324,11 @@ void CustomAudioManager::ClearAudioOverrides()
 
 	// slightly (very) bad
 	// wait for all audio reads to complete so we don't kill preexisting audio buffers as we're writing to them
-	std::unique_lock lock(g_CustomAudioManager.m_loadingMutex);
+	std::unique_lock lock(m_loadingMutex);
 
 	m_loadedAudioOverrides.clear();
 	m_loadedAudioOverridesRegex.clear();
 }
-
-typedef bool (*LoadSampleMetadata_Type)(void* sample, void* audioBuffer, unsigned int audioBufferLength, int audioType);
-LoadSampleMetadata_Type LoadSampleMetadata_Original;
 
 template <typename Iter, typename RandomGenerator> Iter select_randomly(Iter start, Iter end, RandomGenerator& g)
 {
@@ -368,6 +366,26 @@ bool ShouldPlayAudioEvent(const char* eventName, const std::shared_ptr<EventOver
 	return true; // good to go
 }
 
+// forward declare
+bool __declspec(noinline) __fastcall LoadSampleMetadata_Internal(
+	uintptr_t parentEvent, void* sample, void* audioBuffer, unsigned int audioBufferLength, int audioType);
+
+// DO NOT TOUCH THIS FUNCTION
+// The actual logic of it in a separate function (forcefully not inlined) to preserve the r12 register, which holds the event pointer.
+// clang-format off
+AUTOHOOK(LoadSampleMetadata, mileswin64.dll + 0xF110, 
+bool, __fastcall, (void* sample, void* audioBuffer, unsigned int audioBufferLength, int audioType))
+// clang-format on
+{
+	uintptr_t parentEvent = (uintptr_t)Audio_GetParentEvent();
+
+	// Raw source, used for voice data only
+	if (audioType == 0)
+		return LoadSampleMetadata(sample, audioBuffer, audioBufferLength, audioType);
+
+	return LoadSampleMetadata_Internal(parentEvent, sample, audioBuffer, audioBufferLength, audioType);
+}
+
 // DO NOT INLINE THIS FUNCTION
 // See comment below.
 bool __declspec(noinline) __fastcall LoadSampleMetadata_Internal(
@@ -398,7 +416,7 @@ bool __declspec(noinline) __fastcall LoadSampleMetadata_Internal(
 
 			if (!overrideData)
 				// not found either
-				return LoadSampleMetadata_Original(sample, audioBuffer, audioBufferLength, audioType);
+				return LoadSampleMetadata(sample, audioBuffer, audioBufferLength, audioType);
 			else
 			{
 				// cache found pattern to improve performance
@@ -412,7 +430,7 @@ bool __declspec(noinline) __fastcall LoadSampleMetadata_Internal(
 		overrideData = iter->second;
 
 	if (!ShouldPlayAudioEvent(eventName, overrideData))
-		return LoadSampleMetadata_Original(sample, audioBuffer, audioBufferLength, audioType);
+		return LoadSampleMetadata(sample, audioBuffer, audioBufferLength, audioType);
 
 	void* data = 0;
 	unsigned int dataLength = 0;
@@ -454,7 +472,7 @@ bool __declspec(noinline) __fastcall LoadSampleMetadata_Internal(
 	if (!data)
 	{
 		spdlog::warn("Could not fetch override sample data for event {}! Using original data instead.", eventName);
-		return LoadSampleMetadata_Original(sample, audioBuffer, audioBufferLength, audioType);
+		return LoadSampleMetadata(sample, audioBuffer, audioBufferLength, audioType);
 	}
 
 	audioBuffer = data;
@@ -465,51 +483,25 @@ bool __declspec(noinline) __fastcall LoadSampleMetadata_Internal(
 	*(unsigned int*)((uintptr_t)sample + 0xF0) = audioBufferLength;
 
 	// 64 - Auto-detect sample type
-	bool res = LoadSampleMetadata_Original(sample, audioBuffer, audioBufferLength, 64);
+	bool res = LoadSampleMetadata(sample, audioBuffer, audioBufferLength, 64);
 	if (!res)
 		spdlog::error("LoadSampleMetadata failed! The game will crash :(");
 
 	return res;
 }
 
-// DO NOT TOUCH THIS FUNCTION
-// The actual logic of it in a separate function (forcefully not inlined) to preserve the r12 register, which holds the event pointer.
-bool __fastcall LoadSampleMetadata_Hook(void* sample, void* audioBuffer, unsigned int audioBufferLength, int audioType)
-{
-	uintptr_t parentEvent = (uintptr_t)Audio_GetParentEvent();
-
-	// Raw source, used for voice data only
-	if (audioType == 0)
-		return LoadSampleMetadata_Original(sample, audioBuffer, audioBufferLength, audioType);
-
-	return LoadSampleMetadata_Internal(parentEvent, sample, audioBuffer, audioBufferLength, audioType);
-}
-
-typedef bool (*MilesLog_Type)(int level, const char* string);
-MilesLog_Type MilesLog_Original;
-
-void __fastcall MilesLog_Hook(int level, const char* string)
+// clang-format off
+AUTOHOOK(MilesLog, client.dll + 0x57DAD0, 
+void, __fastcall, (int level, const char* string))
+// clang-format on
 {
 	spdlog::info("[MSS] {} - {}", level, string);
 }
 
-void InitialiseMilesAudioHooks(HMODULE baseAddress)
+ON_DLL_LOAD_CLIENT_RELIESON("client.dll", AudioHooks, ConVar, (CModule module))
 {
+	AUTOHOOK_DISPATCH()
+
 	Cvar_ns_print_played_sounds = new ConVar("ns_print_played_sounds", "0", FCVAR_NONE, "");
-
-	if (IsDedicatedServer())
-		return;
-
-	uintptr_t milesAudioBase = (uintptr_t)GetModuleHandleA("mileswin64.dll");
-
-	if (!milesAudioBase)
-		return spdlog::error("miles audio not found :terror:");
-
-	HookEnabler hook;
-
-	ENABLER_CREATEHOOK(
-		hook, (char*)milesAudioBase + 0xF110, &LoadSampleMetadata_Hook, reinterpret_cast<LPVOID*>(&LoadSampleMetadata_Original));
-	ENABLER_CREATEHOOK(hook, (char*)baseAddress + 0x57DAD0, &MilesLog_Hook, reinterpret_cast<LPVOID*>(&MilesLog_Original));
-
-	MilesStopAll = (MilesStopAll_Type)((char*)baseAddress + 0x580850);
+	MilesStopAll = module.Offset(0x580850).As<MilesStopAll_Type>();
 }
