@@ -3,5 +3,5 @@
 
 static std::string NORTHSTAR_FOLDER_PREFIX;
 
+void InitialiseNorthstarPrefix();
 std::string GetNorthstarPrefix();
-void parseConfigurables();

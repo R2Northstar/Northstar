@@ -58,14 +58,57 @@
 			  // ClientCommand/NET_StringCmd/CBaseClientState::ProcessStringCmd.
 #define FCVAR_SERVER_CANNOT_QUERY                                                                                                          \
 	(1 << 29) // If this is set, then the server is not allowed to query this cvar's value (via IServerPluginHelpers::StartQueryCvarValue).
+
+// !!!NOTE!!! : this is likely incorrect, there are multiple concommands that the vanilla game registers with this flag that 100% should not
+// be remotely executable i.e. multiple commands that only exist on client (screenshot, joystick_initialize) we now use
+// FCVAR_GAMEDLL_FOR_REMOTE_CLIENTS in all places this flag was previously used
 #define FCVAR_CLIENTCMD_CAN_EXECUTE                                                                                                        \
 	(1 << 30) // IVEngineClient::ClientCmd is allowed to execute this command.
 			  // Note: IVEngineClient::ClientCmd_Unrestricted can run any client command.
 
 #define FCVAR_ACCESSIBLE_FROM_THREADS (1 << 25) // used as a debugging tool necessary to check material system thread convars
+
+// TODO: could be cool to repurpose these for northstar use somehow?
 // #define FCVAR_AVAILABLE			(1<<26)
 // #define FCVAR_AVAILABLE			(1<<27)
 // #define FCVAR_AVAILABLE			(1<<31)
+
+// flag => string stuff
+const std::multimap<int, const char*> g_PrintCommandFlags = {
+	{FCVAR_UNREGISTERED, "UNREGISTERED"},
+	{FCVAR_DEVELOPMENTONLY, "DEVELOPMENTONLY"},
+	{FCVAR_GAMEDLL, "GAMEDLL"},
+	{FCVAR_CLIENTDLL, "CLIENTDLL"},
+	{FCVAR_HIDDEN, "HIDDEN"},
+	{FCVAR_PROTECTED, "PROTECTED"},
+	{FCVAR_SPONLY, "SPONLY"},
+	{FCVAR_ARCHIVE, "ARCHIVE"},
+	{FCVAR_NOTIFY, "NOTIFY"},
+	{FCVAR_USERINFO, "USERINFO"},
+
+	// TODO: PRINTABLEONLY and GAMEDLL_FOR_REMOTE_CLIENTS are both 1<<10, one is for vars and one is for commands
+	// this fucking sucks i think
+	{FCVAR_PRINTABLEONLY, "PRINTABLEONLY"},
+	{FCVAR_GAMEDLL_FOR_REMOTE_CLIENTS, "GAMEDLL_FOR_REMOTE_CLIENTS"},
+
+	{FCVAR_UNLOGGED, "UNLOGGED"},
+	{FCVAR_NEVER_AS_STRING, "NEVER_AS_STRING"},
+	{FCVAR_REPLICATED, "REPLICATED"},
+	{FCVAR_CHEAT, "CHEAT"},
+	{FCVAR_SS, "SS"},
+	{FCVAR_DEMO, "DEMO"},
+	{FCVAR_DONTRECORD, "DONTRECORD"},
+	{FCVAR_SS_ADDED, "SS_ADDED"},
+	{FCVAR_RELEASE, "RELEASE"},
+	{FCVAR_RELOAD_MATERIALS, "RELOAD_MATERIALS"},
+	{FCVAR_RELOAD_TEXTURES, "RELOAD_TEXTURES"},
+	{FCVAR_NOT_CONNECTED, "NOT_CONNECTED"},
+	{FCVAR_MATERIAL_SYSTEM_THREAD, "MATERIAL_SYSTEM_THREAD"},
+	{FCVAR_ARCHIVE_PLAYERPROFILE, "ARCHIVE_PLAYERPROFILE"},
+	{FCVAR_SERVER_CAN_EXECUTE, "SERVER_CAN_EXECUTE"},
+	{FCVAR_SERVER_CANNOT_QUERY, "SERVER_CANNOT_QUERY"},
+	{FCVAR_CLIENTCMD_CAN_EXECUTE, "UNKNOWN"},
+	{FCVAR_ACCESSIBLE_FROM_THREADS, "ACCESSIBLE_FROM_THREADS"}};
 
 //-----------------------------------------------------------------------------
 // Forward declarations
@@ -73,6 +116,8 @@
 class ConCommandBase;
 class ConCommand;
 class ConVar;
+
+typedef void (*FnChangeCallback_t)(ConVar* var, const char* pOldValue, float flOldValue);
 
 //-----------------------------------------------------------------------------
 // Purpose: A console variable
@@ -91,7 +136,7 @@ class ConVar
 		float fMin,
 		bool bMax,
 		float fMax,
-		void* pCallback);
+		FnChangeCallback_t pCallback);
 	~ConVar(void);
 
 	const char* GetBaseName(void) const;
@@ -125,7 +170,7 @@ class ConVar
 
 	bool IsRegistered(void) const;
 	bool IsCommand(void) const;
-	static bool IsFlagSet(ConVar* pConVar, int nFlags);
+	bool IsFlagSet(int nFlags) const;
 
 	struct CVValue_t
 	{
@@ -145,5 +190,3 @@ class ConVar
 	void* m_pMalloc {}; // 0x0070
 	char m_pPad80[10] {}; // 0x0080
 }; // Size: 0x0080
-
-void InitialiseConVars(HMODULE baseAddress);

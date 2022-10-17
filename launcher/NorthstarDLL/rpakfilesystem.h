@@ -1,24 +1,39 @@
 #pragma once
 
-void InitialiseEngineRpakFilesystem(HMODULE baseAddress);
+enum class ePakLoadSource
+{
+	UNTRACKED = -1, // not a pak we loaded, we shouldn't touch this one
+
+	CONSTANT, // should be loaded at all times
+	MAP // loaded from a map, should be unloaded when the map is unloaded
+};
+
+struct LoadedPak
+{
+	ePakLoadSource m_nLoadSource;
+	int m_nPakHandle;
+	size_t m_nPakNameHash;
+};
 
 class PakLoadManager
 {
-  public:
-	void LoadPakSync(const char* path);
-	void LoadPakAsync(const char* path, bool bMarkForUnload);
-	void UnloadPaks();
-
-	bool IsPakLoaded(int32_t pakHandle);
-	bool IsPakLoaded(size_t hash);
-	void AddLoadedPak(int32_t pakHandle, size_t hash);
-	void RemoveLoadedPak(int32_t pakHandle);
-
   private:
-	std::vector<int> m_pakHandlesToUnload;
-	// these size_t s are the asset path hashed with STR_HASH
-	std::unordered_map<int32_t, size_t> loadedPaks {};
-	std::unordered_map<size_t, int32_t> loadedPaksInv {};
+	std::map<int, LoadedPak> m_vLoadedPaks {};
+	std::unordered_map<size_t, int> m_HashToPakHandle {};
+
+  public:
+	int LoadPakAsync(const char* pPath, const ePakLoadSource nLoadSource);
+	void UnloadPak(const int nPakHandle);
+	void UnloadMapPaks();
+	void* LoadFile(const char* path); // this is a guess
+
+	LoadedPak* TrackLoadedPak(ePakLoadSource nLoadSource, int nPakHandle, size_t nPakNameHash);
+	void RemoveLoadedPak(int nPakHandle);
+
+	LoadedPak* GetPakInfo(const int nPakHandle);
+
+	int GetPakHandle(const size_t nPakNameHash);
+	int GetPakHandle(const char* pPath);
 };
 
-extern PakLoadManager* g_PakLoadManager;
+extern PakLoadManager* g_pPakLoadManager;

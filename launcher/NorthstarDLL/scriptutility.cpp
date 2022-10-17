@@ -1,29 +1,23 @@
 #include "pch.h"
-#include "scriptutility.h"
 #include "squirrel.h"
 
-template <ScriptContext context> SQRESULT SQ_StringToAsset(void* sqvm)
+// asset function StringToAsset( string assetName )
+template <ScriptContext context> SQRESULT SQ_StringToAsset(HSquirrelVM* sqvm)
 {
-	if (context == ScriptContext::SERVER)
-	{
-		const char* asset = ServerSq_getstring(sqvm, 1);
-		ServerSq_pushAsset(sqvm, asset, -1);
-	}
-	else
-	{
-		const char* asset = ClientSq_getstring(sqvm, 1);
-		ClientSq_pushAsset(sqvm, asset, -1);
-	}
+	g_pSquirrel<context>->pushasset(sqvm, g_pSquirrel<context>->getstring(sqvm, 1), -1);
 	return SQRESULT_NOTNULL;
 }
 
-void InitialiseClientSquirrelUtilityFunctions(HMODULE baseAddress)
+ON_DLL_LOAD_CLIENT_RELIESON("client.dll", ClientSharedScriptUtility, ClientSquirrel, (CModule module))
 {
-	g_ClientSquirrelManager->AddFuncRegistration("asset", "StringToAsset", "string assetName", "", SQ_StringToAsset<ScriptContext::CLIENT>);
-	g_UISquirrelManager->AddFuncRegistration("asset", "StringToAsset", "string assetName", "", SQ_StringToAsset<ScriptContext::UI>);
+	g_pSquirrel<ScriptContext::CLIENT>->AddFuncRegistration(
+		"asset", "StringToAsset", "string assetName", "converts a given string to an asset", SQ_StringToAsset<ScriptContext::CLIENT>);
+	g_pSquirrel<ScriptContext::UI>->AddFuncRegistration(
+		"asset", "StringToAsset", "string assetName", "converts a given string to an asset", SQ_StringToAsset<ScriptContext::UI>);
 }
 
-void InitialiseServerSquirrelUtilityFunctions(HMODULE baseAddress)
+ON_DLL_LOAD_RELIESON("server.dll", ServerSharedScriptUtility, ServerSquirrel, (CModule module))
 {
-	g_ServerSquirrelManager->AddFuncRegistration("asset", "StringToAsset", "string assetName", "", SQ_StringToAsset<ScriptContext::SERVER>);
+	g_pSquirrel<ScriptContext::SERVER>->AddFuncRegistration(
+		"asset", "StringToAsset", "string assetName", "converts a given string to an asset", SQ_StringToAsset<ScriptContext::SERVER>);
 }

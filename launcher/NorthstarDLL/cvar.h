@@ -35,5 +35,9 @@ class CCvar
 	std::unordered_map<std::string, ConCommandBase*> DumpToMap();
 };
 
-extern SourceInterface<CCvar>* g_pCVarInterface;
-extern CCvar* g_pCVar;
+// use the R2 namespace for game funcs
+namespace R2
+{
+	extern SourceInterface<CCvar>* g_pCVarInterface;
+	extern CCvar* g_pCVar;
+} // namespace R2

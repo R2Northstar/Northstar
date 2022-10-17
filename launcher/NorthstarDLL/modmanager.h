@@ -1,14 +1,15 @@
 #pragma once
 #include "convar.h"
+#include "memalloc.h"
+#include "squirrel.h"
+
+#include "rapidjson/document.h"
 #include <string>
 #include <vector>
 #include <filesystem>
-#include "rapidjson/document.h"
-#include "memalloc.h"
-
-namespace fs = std::filesystem;
 
 const std::string MOD_FOLDER_SUFFIX = "/mods";
+const std::string REMOTE_MOD_FOLDER_SUFFIX = "/runtime/remote/mods";
 const fs::path MOD_OVERRIDE_DIR = "mod";
 const std::string COMPILED_ASSETS_SUFFIX = "/runtime/compiled";
 
@@ -24,9 +25,6 @@ struct ModConVar
 struct ModScriptCallback
 {
   public:
-	// would've liked to make it possible to hook arbitrary codecallbacks, but couldn't find a function that calls some ui ones
-	// std::string HookedCodeCallback;
-
 	ScriptContext Context;
 
 	// called before the codecallback is executed
@@ -39,7 +37,7 @@ struct ModScript
 {
   public:
 	std::string Path;
-	std::string RsonRunOn;
+	std::string RunOn;
 
 	std::vector<ModScriptCallback> Callbacks;
 };
@@ -64,8 +62,10 @@ class Mod
 {
   public:
 	// runtime stuff
-	fs::path ModDirectory;
-	bool Enabled = true;
+	bool m_bEnabled = true;
+	bool m_bWasReadSuccessfully = false;
+	fs::path m_ModDirectory;
+	// bool m_bIsRemote;
 
 	// mod.json stuff:
 
@@ -100,13 +100,8 @@ class Mod
 	std::vector<ModRpakEntry> Rpaks;
 	std::unordered_map<std::string, std::string>
 		RpakAliases; // paks we alias to other rpaks, e.g. to load sp_crashsite paks on the map mp_crashsite
-	// iterated over to create squirrel VM constants depending if a mod exists or not.
-	// this only exists because we cannot access g_ModManager whilst mods are being loaded for the first time for some reason.
+
 	std::unordered_map<std::string, std::string> DependencyConstants;
-
-	// other stuff
-
-	bool wasReadSuccessfully = false;
 
   public:
 	Mod(fs::path modPath, char* jsonBuf);
@@ -115,42 +110,40 @@ class Mod
 struct ModOverrideFile
 {
   public:
-	Mod* owningMod;
-	fs::path path;
+	Mod* m_pOwningMod;
+	fs::path m_Path;
 };
 
 class ModManager
 {
   private:
-	bool m_hasLoadedMods = false;
-	bool m_hasEnabledModsCfg;
-	rapidjson_document m_enabledModsCfg;
+	bool m_bHasLoadedMods = false;
+	bool m_bHasEnabledModsCfg;
+	rapidjson_document m_EnabledModsCfg;
 
 	// precalculated hashes
 	size_t m_hScriptsRsonHash;
 	size_t m_hPdefHash;
 
   public:
-	std::vector<Mod> m_loadedMods;
-	std::unordered_map<std::string, ModOverrideFile> m_modFiles;
-	// iterated over to create squirrel VM constants depending if a mod exists or not.
-	// here because constants are global anyways.
-	std::unordered_map<std::string, std::string> DependencyConstants;
+	std::vector<Mod> m_LoadedMods;
+	std::unordered_map<std::string, ModOverrideFile> m_ModFiles;
+	std::unordered_map<std::string, std::string> m_DependencyConstants;
 
   public:
 	ModManager();
 	void LoadMods();
 	void UnloadMods();
+	std::string NormaliseModFilePath(const fs::path path);
 	void CompileAssetsForFile(const char* filename);
 
-	// compile asset type stuff, these are done in files under Mods/Compiled/
+	// compile asset type stuff, these are done in files under runtime/compiled/
 	void BuildScriptsRson();
 	void TryBuildKeyValues(const char* filename);
 	void BuildPdef();
 };
 
-void InitialiseModManager(HMODULE baseAddress);
 fs::path GetModFolderPath();
 fs::path GetCompiledAssetsPath();
 
-extern ModManager* g_ModManager;
+extern ModManager* g_pModManager;
