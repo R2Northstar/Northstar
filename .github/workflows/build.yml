@@ -175,7 +175,7 @@ jobs:
       - name: Setup environment variables
         run: |
           # Strip leading `v` and if exists replace `-rc` with `0` and strip leading zeroes from last semver digit if necessary
-          echo "MOD_VERSION=$(echo $NORTHSTAR_VERSION | tr -d 'v'| sed --expression 's/-rc/0/' | sed -E 's/([0-9])\.([0-9])\.(0*)([0-9])/\1.\2.\4/;')" >> $GITHUB_ENV
+          echo "MOD_VERSION=$(echo $NORTHSTAR_VERSION | tr -d 'v'| sed --expression 's/-rc/0/' | sed -E 's/([0-9]+)\.([0-9]+)\.(0*)([0-9])/\1.\2.\4/;')" >> $GITHUB_ENV
 
           # If it's a release candidate we also want to change a few things
           if [[ $NORTHSTAR_VERSION == *"-rc"* ]]; then
