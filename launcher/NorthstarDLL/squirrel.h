@@ -335,7 +335,7 @@ template <ScriptContext context> class SquirrelManager
 		__sq_getobject(sqvm, iStackPos, &obj);
 
 		// there are entity constants for other types, but seemingly CBaseEntity's is the only one needed
-		return (T*) __sq_getentityfrominstance(m_pSQVM, &obj, __sq_GetEntityConstant_CBaseEntity());
+		return (T*)__sq_getentityfrominstance(m_pSQVM, &obj, __sq_GetEntityConstant_CBaseEntity());
 	}
 #pragma endregion
 };
