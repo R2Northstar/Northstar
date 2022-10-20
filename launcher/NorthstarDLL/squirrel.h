@@ -122,11 +122,15 @@ typedef SQRESULT (*sq_getassetType)(HSquirrelVM* sqvm, SQInteger iStackpos, cons
 typedef SQRESULT (*sq_getuserdataType)(HSquirrelVM* sqvm, SQInteger iStackpos, void** pData, uint64_t* pTypeId);
 typedef SQFloat* (*sq_getvectorType)(HSquirrelVM* sqvm, SQInteger iStackpos);
 typedef SQBool (*sq_getthisentityType)(HSquirrelVM*, void** ppEntity);
-typedef void* (*sq_getentityType)(HSquirrelVM*, SQInteger iStackPos);
+typedef void (*sq_getobjectType)(HSquirrelVM*, SQInteger iStackPos, SQObject* pOutObj);
 
 // sq stack userpointer funcs
 typedef void* (*sq_createuserdataType)(HSquirrelVM* sqvm, SQInteger iSize);
 typedef SQRESULT (*sq_setuserdatatypeidType)(HSquirrelVM* sqvm, SQInteger iStackpos, uint64_t iTypeId);
+
+// sq misc entity funcs
+typedef void* (*sq_getentityfrominstanceType)(CSquirrelVM* sqvm, SQObject* pInstance, char** ppEntityConstant);
+typedef char** (*sq_GetEntityConstantType)();
 
 template <ScriptContext context> class SquirrelManager
 {
@@ -171,10 +175,13 @@ template <ScriptContext context> class SquirrelManager
 	sq_getuserdataType __sq_getuserdata;
 	sq_getvectorType __sq_getvector;
 	sq_getthisentityType __sq_getthisentity;
-	sq_getentityType __sq_getentity;
+	sq_getobjectType __sq_getobject;
 
 	sq_createuserdataType __sq_createuserdata;
 	sq_setuserdatatypeidType __sq_setuserdatatypeid;
+
+	sq_getentityfrominstanceType __sq_getentityfrominstance;
+	sq_GetEntityConstantType __sq_GetEntityConstant_CBaseEntity;
 #pragma endregion
 
   public:
@@ -324,7 +331,11 @@ template <ScriptContext context> class SquirrelManager
 
 	template <typename T> inline T* getentity(HSquirrelVM* sqvm, SQInteger iStackPos)
 	{
-		return (T*)__sq_getentity(sqvm, iStackPos);
+		SQObject obj;
+		__sq_getobject(sqvm, iStackPos, &obj);
+
+		// there are entity constants for other types, but seemingly CBaseEntity's is the only one needed
+		return (T*) __sq_getentityfrominstance(m_pSQVM, &obj, __sq_GetEntityConstant_CBaseEntity());
 	}
 #pragma endregion
 };

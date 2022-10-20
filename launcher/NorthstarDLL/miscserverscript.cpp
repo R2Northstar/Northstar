@@ -20,7 +20,7 @@ SQRESULT SQ_EarlyWritePlayerPersistenceForLeave(HSquirrelVM* sqvm)
 		return SQRESULT_NOTNULL;
 	}
 
-	R2::CBaseClient* pClient = &R2::g_pClientArray[pPlayer->m_nPlayerIndex];
+	R2::CBaseClient* pClient = &R2::g_pClientArray[pPlayer->m_nPlayerIndex - 1];
 	if (g_pServerAuthentication->m_PlayerAuthenticationData.find(pClient) == g_pServerAuthentication->m_PlayerAuthenticationData.end())
 	{
 		g_pSquirrel<ScriptContext::SERVER>->pushbool(sqvm, false);
@@ -51,7 +51,7 @@ SQRESULT SQ_IsPlayerLocalPlayer(HSquirrelVM* sqvm)
 		return SQRESULT_NOTNULL;
 	}
 
-	R2::CBaseClient* pClient = &R2::g_pClientArray[pPlayer->m_nPlayerIndex];
+	R2::CBaseClient* pClient = &R2::g_pClientArray[pPlayer->m_nPlayerIndex - 1];
 	g_pSquirrel<ScriptContext::SERVER>->pushbool(sqvm, !strcmp(R2::g_pLocalPlayerUserID, pClient->m_UID));
 	return SQRESULT_NOTNULL;
 }
