@@ -489,7 +489,7 @@ ON_DLL_LOAD_RELIESON("client.dll", ClientSquirrel, ConCommand, (CModule module))
 	g_pSquirrel<ScriptContext::CLIENT>->__sq_getuserdata = module.Offset(0x63D0).As<sq_getuserdataType>();
 	g_pSquirrel<ScriptContext::CLIENT>->__sq_getvector = module.Offset(0x6140).As<sq_getvectorType>();
 	g_pSquirrel<ScriptContext::CLIENT>->__sq_getthisentity = module.Offset(0x12F80).As<sq_getthisentityType>();
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_getentity = module.Offset(0x6140).As<sq_getentityType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_getobject = module.Offset(0x6160).As<sq_getobjectType>();
 	g_pSquirrel<ScriptContext::UI>->__sq_getstring = g_pSquirrel<ScriptContext::CLIENT>->__sq_getstring;
 	g_pSquirrel<ScriptContext::UI>->__sq_getinteger = g_pSquirrel<ScriptContext::CLIENT>->__sq_getinteger;
 	g_pSquirrel<ScriptContext::UI>->__sq_getfloat = g_pSquirrel<ScriptContext::CLIENT>->__sq_getfloat;
@@ -499,12 +499,19 @@ ON_DLL_LOAD_RELIESON("client.dll", ClientSquirrel, ConCommand, (CModule module))
 	g_pSquirrel<ScriptContext::UI>->__sq_getuserdata = g_pSquirrel<ScriptContext::CLIENT>->__sq_getuserdata;
 	g_pSquirrel<ScriptContext::UI>->__sq_getvector = g_pSquirrel<ScriptContext::CLIENT>->__sq_getvector;
 	g_pSquirrel<ScriptContext::UI>->__sq_getthisentity = g_pSquirrel<ScriptContext::CLIENT>->__sq_getthisentity;
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_getentity = g_pSquirrel<ScriptContext::CLIENT>->__sq_getentity;
+	g_pSquirrel<ScriptContext::UI>->__sq_getobject = g_pSquirrel<ScriptContext::CLIENT>->__sq_getobject;
 
 	g_pSquirrel<ScriptContext::CLIENT>->__sq_createuserdata = module.Offset(0x38D0).As<sq_createuserdataType>();
 	g_pSquirrel<ScriptContext::CLIENT>->__sq_setuserdatatypeid = module.Offset(0x6490).As<sq_setuserdatatypeidType>();
 	g_pSquirrel<ScriptContext::UI>->__sq_createuserdata = g_pSquirrel<ScriptContext::CLIENT>->__sq_createuserdata;
 	g_pSquirrel<ScriptContext::UI>->__sq_setuserdatatypeid = g_pSquirrel<ScriptContext::CLIENT>->__sq_setuserdatatypeid;
+
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_GetEntityConstant_CBaseEntity = module.Offset(0x3E49B0).As<sq_GetEntityConstantType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_getentityfrominstance = module.Offset(0x114F0).As<sq_getentityfrominstanceType>();
+	g_pSquirrel<ScriptContext::UI>->__sq_GetEntityConstant_CBaseEntity =
+		g_pSquirrel<ScriptContext::CLIENT>->__sq_GetEntityConstant_CBaseEntity;
+	g_pSquirrel<ScriptContext::UI>->__sq_getentityfrominstance = g_pSquirrel<ScriptContext::CLIENT>->__sq_getentityfrominstance;
+
 
 	MAKEHOOK(
 		module.Offset(0x108E0),
@@ -568,10 +575,13 @@ ON_DLL_LOAD_RELIESON("server.dll", ServerSquirrel, ConCommand, (CModule module))
 	g_pSquirrel<ScriptContext::SERVER>->__sq_getvector = module.Offset(0x6120).As<sq_getvectorType>();
 	g_pSquirrel<ScriptContext::SERVER>->__sq_get = module.Offset(0x7C00).As<sq_getType>();
 	g_pSquirrel<ScriptContext::SERVER>->__sq_getthisentity = module.Offset(0x203B0).As<sq_getthisentityType>();
-	g_pSquirrel<ScriptContext::SERVER>->__sq_getentity = module.Offset(0x6120).As<sq_getentityType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_getobject = module.Offset(0x6140).As<sq_getobjectType>();
 
 	g_pSquirrel<ScriptContext::SERVER>->__sq_createuserdata = module.Offset(0x38D0).As<sq_createuserdataType>();
 	g_pSquirrel<ScriptContext::SERVER>->__sq_setuserdatatypeid = module.Offset(0x6470).As<sq_setuserdatatypeidType>();
+
+	g_pSquirrel<ScriptContext::SERVER>->__sq_GetEntityConstant_CBaseEntity = module.Offset(0x418AF0).As<sq_GetEntityConstantType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_getentityfrominstance = module.Offset(0x1E920).As<sq_getentityfrominstanceType>();
 
 	MAKEHOOK(
 		module.Offset(0x1DD10),
