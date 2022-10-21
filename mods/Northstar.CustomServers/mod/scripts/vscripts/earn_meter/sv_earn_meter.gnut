@@ -315,12 +315,12 @@ void function PlayerEarnMeter_Empty( entity player )
 	PlayerEarnMeter_SetRewardFrac( player, 0.0 )
 }
 
-
 void function EarnMeterDecayThink( entity player )
 {
 	player.EndSignal( "OnDeath" )
 	player.Signal( "EarnMeterDecayThink" )
 	player.EndSignal( "EarnMeterDecayThink" )
+	thread OverDriveClearOnDeath( player )
 
 	if ( EarnMeter_DecayHold() < 0 )
 		return
@@ -348,6 +348,12 @@ void function EarnMeterDecayThink( entity player )
 	}
 }
 
+void function OverDriveClearOnDeath( entity player )
+{
+	player.EndSignal( "OnDestroy" )
+	player.WaitSignal( "OnDeath" )
+	PlayerEarnMeter_SetEarnedFrac( player, PlayerEarnMeter_GetOwnedFrac( player ) )
+}
 
 bool function PlayerEarnMeter_TryMakeGoalAvailable( entity player )
 {
