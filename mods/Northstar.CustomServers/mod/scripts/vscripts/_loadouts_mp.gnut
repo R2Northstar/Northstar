@@ -179,6 +179,8 @@ bool function ClientCommandCallback_SetPersistentLoadoutValue( entity player, ar
 	if ( args[0] == "pilot" )
 		SetPlayerLoadoutDirty( player ) 
 	
+	UnlockAchievement( player, achievements.CUSTOMIZE_LOADOUT )
+	
 	return true
 }
 
