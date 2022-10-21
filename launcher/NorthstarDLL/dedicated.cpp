@@ -224,6 +224,7 @@ ON_DLL_LOAD_DEDI_RELIESON("engine.dll", DedicatedServer, ServerPresence, (CModul
 	Tier0::CommandLine()->AppendParm("-nomessagebox", 0);
 	Tier0::CommandLine()->AppendParm("+host_preload_shaders", "0");
 	Tier0::CommandLine()->AppendParm("+net_usesocketsforloopback", "1");
+	Tier0::CommandLine()->AppendParm("+community_frame_run", "0");
 
 	// use presence reporter for console title
 	DedicatedConsoleServerPresence* presenceReporter = new DedicatedConsoleServerPresence;
@@ -274,6 +275,7 @@ void, __fastcall, (void* sqvm))
 	PrintSquirrelError(sqvm);
 
 	// close dedicated server if a fatal error is hit
+	// atm, this will crash if not aborted, so this just closes more gracefully
 	static ConVar* Cvar_fatal_script_errors = g_pCVar->FindVar("fatal_script_errors");
 	if (Cvar_fatal_script_errors->GetBool())
 		abort();
