@@ -222,7 +222,6 @@ bool function ClientCommandCallback_SetBurnCardPersistenceSlot( entity player, a
 	
 	print( player + " SetBurnCardPersistenceSlot " + args[0] )
 	
-	// insecure, could be used to set invalid burnmeterslot potentially
 	if ( IsRefValidAndOfType( args[0], eItemTypes.BURN_METER_REWARD ) )
 		player.SetPersistentVar( "burnmeterSlot", BurnReward_GetByRef( args[0] ).id )
 	else
