@@ -14,7 +14,10 @@ void function DropPodSpawn_Init()
 void function CleanupSpawningDropPods()
 {
 	foreach ( entity pod in file.droppods )
-		pod.Destroy()
+	{
+		if( IsValid( pod ) )
+			pod.Destroy()
+	}
 	
 	file.droppods.clear()
 }
@@ -22,6 +25,7 @@ void function CleanupSpawningDropPods()
 void function SpawnPlayersInDropPod( array< entity > players, vector targetOrigin, vector angles, float destructionTime = -1 )
 {
 	entity pod = CreateDropPod( targetOrigin, angles )
+	pod.EndSignal( "OnDestroy" )
 	
 	file.droppods.append( pod )
 	svGlobal.levelEnt.EndSignal( "CleanUpEntitiesForRoundEnd" )
@@ -35,9 +39,11 @@ void function SpawnPlayersInDropPod( array< entity > players, vector targetOrigi
 	
 	foreach ( entity player in players )
 	{
+		if( !IsValid( player ) )
+			continue
 		if ( !IsAlive( player ) )
 			player.RespawnPlayer( null )
-	
+			
 		player.SetOrigin( pod.GetOrigin() )
 		player.SetAngles( pod.GetAngles() )
 		player.SetParent( pod )
@@ -49,8 +55,12 @@ void function SpawnPlayersInDropPod( array< entity > players, vector targetOrigi
 	// wait for this
 	LaunchAnimDropPod( pod, "pod_testpath", targetOrigin, angles )
 	
+	if( !GamePlaying() )
+		return
 	foreach ( entity player in players )
 	{
+		if( !IsValid( player ) )
+			continue
 		player.ClearParent()
 		player.ClearViewEntity()
 		player.UnfreezeControlsOnServer()
@@ -61,8 +71,12 @@ void function SpawnPlayersInDropPod( array< entity > players, vector targetOrigi
 	WaitFrame()
 	vector doorPos = pod.GetAttachmentOrigin( pod.LookupAttachment( "hatch" ) )
 	
+	if( !GamePlaying() )
+		return
 	foreach ( entity player in players )
 	{
+		if( !IsValid( player ) )
+			continue
 		vector viewAngles = doorPos - player.GetOrigin()
 		viewAngles.x = 3.0
 		
