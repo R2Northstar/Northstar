@@ -1010,7 +1010,7 @@ void function AddCreditToTitanCoreBuilder( entity titan, float credit )
 
 	if ( IsValid( bossPlayer ) && !coreWasAvailable && IsCoreChargeAvailable( bossPlayer, soul ) )
 	{
-		AddPlayerScore( bossPlayer, "TitanCoreEarned" )
+		AddPlayerScore( bossPlayer, "TitanCoreEarned", bossPlayer ) // this will show the "Core Earned" callsign event
 		#if MP
 			UpdateTitanCoreEarnedStat( bossPlayer, titan )
 			PIN_PlayerAbilityReady( bossPlayer, "core" )
