@@ -258,30 +258,69 @@ void*, __fastcall, (const char* pPath, void* pCallback))
 // clang-format on
 {
 	fs::path path(pPath);
-	char* allocatedNewPath = nullptr;
+	std::string newPath = "";
+	fs::path filename = path.filename();
 
 	if (path.extension() == ".stbsp")
 	{
-		fs::path filename = path.filename();
 		spdlog::info("LoadStreamBsp: {}", filename.string());
 
 		// resolve modded stbsp path so we can load mod stbsps
 		auto modFile = g_pModManager->m_ModFiles.find(g_pModManager->NormaliseModFilePath(fs::path("maps" / filename)));
 		if (modFile != g_pModManager->m_ModFiles.end())
 		{
-			// need to allocate a new string for this
-			std::string newPath = (modFile->second.m_pOwningMod->m_ModDirectory / "mod" / modFile->second.m_Path).string();
-			allocatedNewPath = new char[newPath.size() + 1];
-			strncpy_s(allocatedNewPath, newPath.size() + 1, newPath.c_str(), newPath.size());
-			pPath = allocatedNewPath;
+			newPath = (modFile->second.m_pOwningMod->m_ModDirectory / "mod" / modFile->second.m_Path).string();
+			pPath = newPath.c_str();
 		}
 	}
+	else if (path.extension() == ".starpak")
+	{
+		// code for this is mostly stolen from above
 
-	void* ret = ReadFileAsync(pPath, pCallback);
-	if (allocatedNewPath)
-		delete[] allocatedNewPath;
+		// unfortunately I can't find a way to get the rpak that is causing this function call, so I have to
+		// store them on mod init and then compare the current path with the stored paths
 
-	return ret;
+		// game adds r2\ to every path, so assume that a starpak path that begins with r2\paks\ is a vanilla one
+		// modded starpaks will be in the mod's paks folder (but can be in folders within the paks folder)
+
+		// this might look a bit confusing, but its just an iterator over the various directories in a path.
+		// path.begin() being the first directory, r2 in this case, which is guaranteed anyway,
+		// so increment the iterator with ++ to get the first actual directory, * just gets the actual value
+		// then we compare to "paks" to determine if it's a vanilla rpak or not
+		if (*++path.begin() != "paks")
+		{
+			// remove the r2\ from the start used for path lookups
+			std::string starpakPath = path.string().substr(3);
+			// hash the starpakPath to compare with stored entries
+			size_t hashed = STR_HASH(starpakPath);
+
+			// loop through all loaded mods
+			for (Mod& mod : g_pModManager->m_LoadedMods)
+			{
+				// ignore non-loaded mods
+				if (!mod.m_bEnabled)
+					continue;
+
+				// loop through the stored starpak paths
+				for (size_t hash : mod.StarpakPaths)
+				{
+					if (hash == hashed)
+					{
+						// construct new path
+						newPath = (mod.m_ModDirectory / "paks" / starpakPath).string();
+						// set path to the new path
+						pPath = newPath.c_str();
+						goto LOG_STARPAK;
+					}
+				}
+			}
+		}
+
+	LOG_STARPAK:
+		spdlog::info("LoadStreamPak: {}", filename.string());
+	}
+
+	return ReadFileAsync(pPath, pCallback);
 }
 
 ON_DLL_LOAD("engine.dll", RpakFilesystem, (CModule module))
