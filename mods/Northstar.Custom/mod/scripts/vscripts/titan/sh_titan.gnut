@@ -219,7 +219,7 @@ void function AddArmBadgeToTitan( entity soul )
 
 void function AddArmBadgeToTitan_Internal( entity soul )
 {
-	soul.EndSignal( "OnDeath" )
+	soul.EndSignal( "OnDestroy" )
 
 	// wait until the end of the frame to allow the soul to become owned by a boss player
 	WaitEndFrame()
