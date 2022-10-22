@@ -100,6 +100,9 @@ class Mod
 	std::vector<ModRpakEntry> Rpaks;
 	std::unordered_map<std::string, std::string>
 		RpakAliases; // paks we alias to other rpaks, e.g. to load sp_crashsite paks on the map mp_crashsite
+	std::vector<size_t> StarpakPaths; // starpaks that this mod contains
+	// there seems to be no nice way to get the rpak that is causing the load of a starpak?
+	// hashed with STR_HASH
 
 	std::unordered_map<std::string, std::string> DependencyConstants;
 

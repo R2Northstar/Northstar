@@ -469,6 +469,46 @@ void ModManager::LoadMods()
 
 					modPak.m_sPakName = pakName;
 
+					// read header of file and get the starpak paths
+					// this is done here as opposed to on starpak load because multiple rpaks can load a starpak
+					// and there is seemingly no good way to tell which rpak is causing the load of a starpak :/
+
+					std::ifstream rpakStream(file.path(), std::ios::binary);
+
+					// seek to the point in the header where the starpak reference size is
+					rpakStream.seekg(0x38, std::ios::beg);
+					int starpaksSize = 0;
+					rpakStream.read((char*)&starpaksSize, 2);
+
+					// seek to just after the header
+					rpakStream.seekg(0x58, std::ios::beg);
+					// read the starpak reference(s)
+					std::vector<char> buf(starpaksSize);
+					rpakStream.read(buf.data(), starpaksSize);
+
+					rpakStream.close();
+
+					// split the starpak reference(s) into strings to hash
+					std::string str = "";
+					for (int i = 0; i < starpaksSize; i++)
+					{
+						// if the current char is null, that signals the end of the current starpak path
+						if (buf[i] != 0x00)
+						{
+							str += buf[i];
+						}
+						else
+						{
+							// only add the string we are making if it isnt empty
+							if (!str.empty())
+							{
+								mod.StarpakPaths.push_back(STR_HASH(str));
+								spdlog::info("Mod {} registered starpak '{}'", mod.Name, str);
+								str = "";
+							}
+						}
+					}
+
 					// not using atm because we need to resolve path to rpak
 					// if (m_hasLoadedMods && modPak.m_bAutoLoad)
 					//	g_pPakLoadManager->LoadPakAsync(pakName.c_str());
