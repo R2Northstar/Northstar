@@ -32,7 +32,7 @@ void*, __fastcall, (const char* path, uint32_t flags))
 		return BinkOpen(path, flags);
 }
 
-ON_DLL_LOAD_CLIENT("client.dll", BinkVideo, (CModule module))
+ON_DLL_LOAD_CLIENT("engine.dll", BinkVideo, (CModule module))
 {
 	AUTOHOOK_DISPATCH()
 
