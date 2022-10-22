@@ -1,0 +1,942 @@
+global function ClMinimap_Init
+
+global function ClientCodeCallback_MinimapEntitySpawned
+
+global function Minimap_AddLayer
+global function Minimap_AddCustomLayer
+
+global function RegisterMinimapPackage
+
+global function Minimap_SetZoomScale
+global function Minimap_SetSizeScale
+global function Minimap_GetZoomScale
+global function Minimap_GetSizeScale
+global function Minimap_IsUsingLargeMinimap
+
+global function Minimap_Ping
+global function ServerCallback_PingMinimap
+
+global function Minimap_EnableDraw
+global function Minimap_DisableDraw
+
+#if DEV
+global function DumpMinimapHandles
+#endif
+
+struct {
+	var minimap_base
+	var minimap_wedges
+
+	int activeMinimapObjectCount
+
+	var minimap_you
+	var minimap_jammed_layer
+
+	var minimap_indicator
+
+	#if DEV
+	table< int, entity > minimapHandles
+	#endif
+
+	array<var> minimapOtherRuis
+
+	float threatMaxDist
+
+	float minimapZoomScale = 1
+	float minimapSizeScale = 1
+
+	bool minimapEnabled = true
+} file
+
+
+struct MinmapPackage
+{
+	asset minimapAsset = $""
+	void functionref( entity, var ) initFunction
+}
+
+table< string, array<MinmapPackage> > minimapAssetMap = {}
+
+const int OF_IS_VISIBLE						= 1 << 0
+const int OF_TEAM_SAME						= 1 << 1
+const int OF_TEAM_ENEMY						= 1 << 2
+const int OF_IN_OUR_PARTY					= 1 << 3
+const int OF_IS_OWNED_BY_US					= 1 << 4
+const int OF_IS_PLAYER						= 1 << 5
+const int OF_IS_NPC							= 1 << 6
+const int OF_IS_TITAN						= 1 << 7
+const int OF_ORIENT_UP						= 1 << 8
+const int OF_NO_TEAM_COLOR					= 1 << 9
+
+
+void function RegisterMinimapPackage( string entityClassname, int customStateIndex, asset minimapAsset, void functionref( entity, var ) initFunction )
+{
+	Assert ( (entityClassname in minimapAssetMap), "minimap is not currently setup to handle this type of entity: " + entityClassname )
+
+	MinmapPackage minimapPackage
+	minimapPackage.minimapAsset = minimapAsset
+	minimapPackage.initFunction = initFunction
+
+	switch ( entityClassname )
+	{
+		case "npc_soldier":
+		case "npc_spectre":
+		case "npc_stalker":
+		case "npc_drone":
+		case "npc_frag_drone":
+		case "npc_super_spectre":
+		case "npc_turret_sentry":
+			Assert( customStateIndex > 0 && customStateIndex < eMinimapObject_npc.COUNT )
+			minimapAssetMap[entityClassname].resize( eMinimapObject_npc.COUNT )
+			minimapAssetMap[entityClassname][customStateIndex] = minimapPackage
+			break
+		case "npc_titan":
+			Assert( customStateIndex > 0 && customStateIndex < eMinimapObject_npc_titan.COUNT )
+			minimapAssetMap[entityClassname].resize( eMinimapObject_npc_titan.COUNT )
+			minimapAssetMap[entityClassname][customStateIndex] = minimapPackage
+			break
+
+		case "prop_script":
+			Assert( customStateIndex > 0 && customStateIndex < eMinimapObject_prop_script.COUNT )
+			minimapAssetMap[entityClassname].resize( eMinimapObject_prop_script.COUNT )
+			minimapAssetMap[entityClassname][customStateIndex] = minimapPackage
+			break
+
+		case "info_hardpoint":
+			Assert( customStateIndex > 0 && customStateIndex < eMinimapObject_info_hardpoint.COUNT )
+			minimapAssetMap[entityClassname].resize( eMinimapObject_info_hardpoint.COUNT )
+			minimapAssetMap[entityClassname][customStateIndex] = minimapPackage
+			break
+
+		default:
+			Assert( false, "minimap is not currently setup to handle this type of entity: " + entityClassname )
+	}
+}
+
+void function RegisterDefaultMinimapPackage( string entityClassname, asset minimapAsset, void functionref( entity, var ) initFunction )
+{
+	Assert ( !(entityClassname in minimapAssetMap) )
+
+	MinmapPackage minimapPackage
+	minimapPackage.minimapAsset = minimapAsset
+	minimapPackage.initFunction = initFunction
+
+	minimapAssetMap[entityClassname] <- [minimapPackage]
+}
+
+void function ClMinimap_Init()
+{
+	RegisterDefaultMinimapPackage( "player", $"ui/minimap_player.rpak", MinimapPackage_PlayerInit )
+	RegisterDefaultMinimapPackage( "npc_titan", $"ui/minimap_object.rpak", MinimapPackage_NPCTitanInit )
+	RegisterDefaultMinimapPackage( "npc_soldier", $"ui/minimap_object.rpak", MinimapPackage_NPCHumanSizedInit )
+	RegisterDefaultMinimapPackage( "npc_spectre", $"ui/minimap_object.rpak", MinimapPackage_NPCHumanSizedInit )
+	RegisterDefaultMinimapPackage( "npc_stalker", $"ui/minimap_object.rpak", MinimapPackage_NPCHumanSizedInit )
+	RegisterDefaultMinimapPackage( "npc_super_spectre", $"ui/minimap_object.rpak", MinimapPackage_NPCHumanSizedInit )
+	RegisterDefaultMinimapPackage( "npc_drone_rocket", $"ui/minimap_object.rpak", MinimapPackage_NPCHumanSizedInit )
+	RegisterDefaultMinimapPackage( "npc_frag_drone", $"ui/minimap_object.rpak", MinimapPackage_NPCHumanSizedInit )
+	RegisterDefaultMinimapPackage( "npc_drone", $"ui/minimap_object.rpak", MinimapPackage_NPCHumanSizedInit )
+	RegisterDefaultMinimapPackage( "npc_dropship", $"ui/minimap_object.rpak", MinimapPackage_NPCDropShipInit )
+	RegisterDefaultMinimapPackage( "npc_turret_sentry", $"ui/minimap_object.rpak", MinimapPackage_NPCSentryTurretInit )
+	RegisterDefaultMinimapPackage( "prop_script", $"", MinimapPackage_DummyInit )
+	RegisterDefaultMinimapPackage( "item_titan_battery", $"ui/minimap_fw_battery.rpak", MinimapPackage_BatteryInit )
+	RegisterDefaultMinimapPackage( "item_flag", $"ui/minimap_object.rpak", MinimapPackage_FlagInit )
+	RegisterDefaultMinimapPackage( "item_bomb", $"ui/minimap_object.rpak", MinimapPackage_LTSBomb )
+	RegisterDefaultMinimapPackage( "info_hardpoint", $"", MinimapPackage_DummyInit )
+	RegisterDefaultMinimapPackage( "item_powerup", $"ui/minimap_object.rpak", MinimapPackage_PowerUp )
+
+	RegisterMinimapPackage( "npc_titan", eMinimapObject_npc_titan.AT_BOUNTY_BOSS, $"ui/minimap_object.rpak", MinimapPackage_BossTitanInit )
+
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.AT_DROPZONE_A, $"ui/minimap_obj_area.rpak", MinimapPackage_ATAreaInit )
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.AT_DROPZONE_B, $"ui/minimap_obj_area.rpak", MinimapPackage_ATAreaInit )
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.AT_DROPZONE_C, $"ui/minimap_obj_area.rpak", MinimapPackage_ATAreaInit )
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.AT_BANK, $"ui/minimap_object.rpak", MinimapPackage_ATBank )
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FW_BUILDSITE, $"ui/minimap_fw_build_site.rpak", MinimapPackage_FWBuildSite )
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FW_BUILDSITE_TURRET, $"ui/minimap_fw_build_site.rpak", MinimapPackage_FWBuildSite )
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FW_BUILDSITE_SHIELDED, $"ui/minimap_fw_build_site.rpak", MinimapPackage_FWBuildSite )
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FD_HARVESTER, $"ui/minimap_obj_area.rpak", MinimapPackage_FDHarvester )
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FD_LOADOUT_CHEST, $"ui/minimap_obj_area.rpak", MinimapPackage_FDLoadoutChest )
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FD_BATTERY_EXCHANGE, $"ui/minimap_obj_area.rpak", MinimapPackage_FDBatteryExchange )
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.BOOST_STORE, $"ui/minimap_obj_area.rpak", MinimapPackage_BoostStore )
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FD_MORTAR_POSITION, $"ui/minimap_mortar_spectre.rpak", MinimapPackage_MortarPosition )
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.ARC_TRAP, $"ui/minimap_obj_area.rpak", MinimapPackage_ArcTrap )
+
+	//RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FW_CAMP_A, $"ui/minimap_fw_camp.rpak", MinimapPackage_FWCampA )
+	//RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FW_CAMP_B, $"ui/minimap_fw_camp.rpak", MinimapPackage_FWCampB )
+	//RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FW_CAMP_C, $"ui/minimap_fw_camp.rpak", MinimapPackage_FWCampC )
+
+	RegisterMinimapPackage( "info_hardpoint", eMinimapObject_info_hardpoint.HARDPOINT_A, $"ui/minimap_obj_area.rpak", MinimapPackage_HardpointA )
+	RegisterMinimapPackage( "info_hardpoint", eMinimapObject_info_hardpoint.HARDPOINT_B, $"ui/minimap_obj_area.rpak", MinimapPackage_HardpointB )
+	RegisterMinimapPackage( "info_hardpoint", eMinimapObject_info_hardpoint.HARDPOINT_C, $"ui/minimap_obj_area.rpak", MinimapPackage_HardpointC )
+
+	//if ( IsPlayingDemo() )
+	{
+		RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.SPAWNZONE_IMC, $"ui/minimap_obj_area.rpak", MinimapPackage_SpawnZoneAreaInit )
+		RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.SPAWNZONE_MIL, $"ui/minimap_obj_area.rpak", MinimapPackage_SpawnZoneAreaInit )
+	}
+	//else
+	//{
+	//	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.SPAWNZONE_IMC, $"", MinimapPackage_SpawnZoneAreaInit )
+	//	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.SPAWNZONE_MIL, $"", MinimapPackage_SpawnZoneAreaInit )
+	//}
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.LTS_SITE_A, $"ui/minimap_object.rpak", MinimapPackage_LTSBombSiteA )
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.LTS_SITE_B, $"ui/minimap_object.rpak", MinimapPackage_LTSBombSiteB )
+	/*
+	{
+		MinmapPackage atAreaPacakage
+		atAreaPacakage.minimapAsset = $"ui/minimap_obj_area.rpak"
+		atAreaPacakage.initFunction = MinimapPackage_ATAreaInit
+		MinmapPackage spawnZonePacakage
+		spawnZonePacakage.minimapAsset = $"ui/minimap_obj_area.rpak"
+		spawnZonePacakage.initFunction = MinimapPackage_SpawnZoneAreaInit
+		MinmapPackage fwBuildSitePackage
+		fwBuildSitePackage.minimapAsset = $"ui/minimap_fw_build_site.rpak"
+		fwBuildSitePackage.initFunction = MinimapPackage_FWBuildSite
+		MinmapPackage fwCampAPackage
+		fwCampAPackage.minimapAsset = $"ui/minimap_fw_camp.rpak"
+		fwCampAPackage.initFunction = MinimapPackage_FWCampA
+		MinmapPackage fwCampBPackage
+		fwCampBPackage.minimapAsset = $"ui/minimap_fw_camp.rpak"
+		fwCampBPackage.initFunction = MinimapPackage_FWCampB
+		MinmapPackage fwCampCPackage
+		fwCampCPackage.minimapAsset = $"ui/minimap_fw_camp.rpak"
+		fwCampCPackage.initFunction = MinimapPackage_FWCampC
+		minimapAssetMap["prop_script"] <-[blankPackage, atAreaPacakage, atAreaPacakage, atAreaPacakage, spawnZonePacakage, spawnZonePacakage,
+											fwCampAPackage, fwCampBPackage, fwCampCPackage,
+											fwBuildSitePackage, fwBuildSitePackage, fwBuildSitePackage ]
+	}
+*/
+
+	AddCreateCallback( "player", OnPlayerCreate )
+
+	float threatMaxDist = Minimap_GetFloatForKey( "threatMaxDist" )
+	float threatDistNear = Minimap_GetFloatForKey( "threatNearDist" )
+	float threatDistFar = Minimap_GetFloatForKey( "threatFarDist" )
+
+	if ( GameRules_GetGameMode() == FORT_WAR )
+		file.threatMaxDist = max( threatMaxDist, 2200 )
+	else
+		file.threatMaxDist = max( threatMaxDist, 1800 )
+
+	file.minimap_base = CreateCockpitRui( $"ui/minimap_base.rpak", MINIMAP_Z_BASE )
+
+	RuiSetFloat( file.minimap_base, "minimapZoomScale", file.minimapZoomScale )
+	RuiSetFloat( file.minimap_base, "minimapSizeScale", file.minimapSizeScale )
+
+	file.minimap_wedges = CreateCockpitRui( $"ui/minimap_wedges.rpak", MINIMAP_Z_THREAT_WEDGES )
+
+	RuiSetFloat( file.minimap_wedges, "minimapZoomScale", file.minimapZoomScale )
+	RuiSetFloat( file.minimap_wedges, "minimapSizeScale", file.minimapSizeScale )
+	RuiSetBool( file.minimap_wedges, "isVisible", file.minimapZoomScale == 1.0 )
+
+	file.minimap_you = CreateCockpitRui( $"ui/minimap_you.rpak", MINIMAP_Z_YOU )
+
+	RuiSetFloat( file.minimap_you, "minimapZoomScale", file.minimapZoomScale )
+	RuiSetFloat( file.minimap_you, "minimapSizeScale", file.minimapSizeScale )
+
+	file.minimap_jammed_layer = null
+
+	file.minimap_indicator = CreateCockpitRui( $"ui/minimap_indicator.rpak", -1 )
+
+	RuiSetFloat( file.minimap_indicator, "minimapZoomScale", file.minimapZoomScale )
+	RuiSetFloat( file.minimap_indicator, "minimapSizeScale", file.minimapSizeScale )
+
+	StatusEffect_RegisterEnabledCallback( eStatusEffect.minimap_jammed, MinimapJammed_Enabled )
+	StatusEffect_RegisterDisabledCallback( eStatusEffect.minimap_jammed, MinimapJammed_Disabled )
+	RegisterSignal( "LoopRadarJammerSounds" )
+}
+
+#if DEV
+void function DumpMinimapHandles()
+{
+	int index = 0
+	foreach ( handle, ent in file.minimapHandles )
+	{
+		printt( index, handle, ent )
+		++index
+	}
+}
+#endif
+
+
+void function Minimap_DisableDraw()
+{
+	file.minimapEnabled = false
+
+	RuiSetDrawGroup( file.minimap_base, RUI_DRAW_NONE )
+	RuiSetDrawGroup( file.minimap_wedges, RUI_DRAW_NONE )
+	RuiSetDrawGroup( file.minimap_you, RUI_DRAW_NONE )
+	RuiSetDrawGroup( file.minimap_indicator, RUI_DRAW_NONE )
+
+	foreach ( var rui in file.minimapOtherRuis )
+	{
+		RuiSetDrawGroup( rui, RUI_DRAW_NONE )
+	}
+}
+
+void function Minimap_EnableDraw()
+{
+	file.minimapEnabled = true
+
+	RuiSetDrawGroup( file.minimap_base, RUI_DRAW_COCKPIT )
+	RuiSetDrawGroup( file.minimap_wedges, RUI_DRAW_COCKPIT )
+	RuiSetDrawGroup( file.minimap_you, RUI_DRAW_COCKPIT )
+	RuiSetDrawGroup( file.minimap_indicator, RUI_DRAW_COCKPIT )
+
+	foreach ( var rui in file.minimapOtherRuis )
+	{
+		RuiSetDrawGroup( rui, RUI_DRAW_COCKPIT )
+	}
+}
+
+
+void function ClientCodeCallback_MinimapEntitySpawned( entity ent )
+{
+	foreach ( callbackFunc in clGlobal.onMinimapEntSpawnedCallbacks )
+	{
+		callbackFunc( ent )
+	}
+
+	if ( ent == GetLocalViewPlayer() )
+		return
+
+	thread AddMinimapObject( ent )
+}
+
+
+asset function GetMinimapAsset( string className, int customState )
+{
+	if ( !(className in minimapAssetMap) )
+		return $""
+
+	if ( customState > minimapAssetMap[className].len() - 1 )
+		return $""
+
+	return minimapAssetMap[className][customState].minimapAsset
+}
+
+
+void function AddMinimapObject( entity ent ) //TODO: If we want radar jammer boost to hide friendly players we need to be able to get the rui handles back.
+{
+	Assert( IsValid( ent ) )
+
+	string className = expect string( ent.GetSignifierName() )
+	int customState = ent.Minimap_GetCustomState()
+
+	asset minimapAsset = GetMinimapAsset( className, customState )
+	if ( minimapAsset == $"" )
+	{
+		return
+	}
+
+	int zOrder = ent.Minimap_GetZOrder()
+	entity viewPlayer = GetLocalViewPlayer()
+
+	ent.SetDoDestroyCallback( true )
+
+	#if DEV
+		int eHandle = ent.Dev_GetEncodedEHandle()
+
+		{
+			array< int > eHandlesToRemove
+			foreach ( eHandleIter, entIter in file.minimapHandles )
+			{
+				if ( !IsValid( entIter ) )
+				{
+					eHandlesToRemove.append( eHandleIter )
+				}
+			}
+
+			foreach ( eHandleIter in eHandlesToRemove )
+			{
+				delete file.minimapHandles[eHandleIter]
+			}
+		}
+
+		if ( eHandle in file.minimapHandles )
+		{
+			// Should have been removed in above loop
+			Assert( IsValid( file.minimapHandles[eHandle] ) )
+
+			DumpMinimapHandles()
+			Assert( false, "Duplicate minimap entity added - " + ent )
+		}
+
+		file.minimapHandles[eHandle] <- ent
+	#endif
+
+	var rui = CreateCockpitRui( minimapAsset, MINIMAP_Z_BASE + zOrder )
+
+	//RuiTrackGameTime( rui, "lastFireTime", ent, RUI_TRACK_LAST_FIRED_TIME )
+
+	RuiTrackFloat3( rui, "playerPos", viewPlayer, RUI_TRACK_ABSORIGIN_FOLLOW )
+	RuiTrackFloat3( rui, "playerAngles", viewPlayer, RUI_TRACK_EYEANGLES_FOLLOW )
+
+	RuiTrackFloat3( rui, "objectPos", ent, RUI_TRACK_ABSORIGIN_FOLLOW )
+	RuiTrackFloat3( rui, "objectAngles", ent, RUI_TRACK_EYEANGLES_FOLLOW )
+	RuiTrackInt( rui, "objectFlags", ent, RUI_TRACK_MINIMAP_FLAGS )
+	RuiTrackInt( rui, "customState", ent, RUI_TRACK_MINIMAP_CUSTOM_STATE )
+	RuiSetFloat( rui, "displayDist", file.threatMaxDist )
+	RuiSetFloat( rui, "minimapZoomScale", file.minimapZoomScale )
+	RuiSetFloat( rui, "minimapSizeScale", file.minimapSizeScale )
+
+	minimapAssetMap[className][customState].initFunction( ent, rui )
+
+	file.minimapOtherRuis.append( rui )
+
+	RuiSetDrawGroup( rui, file.minimapEnabled ? RUI_DRAW_COCKPIT : RUI_DRAW_NONE )
+	OnThreadEnd(
+		function() : ( rui )
+		{
+			file.minimapOtherRuis.removebyvalue( rui )
+			RuiDestroy( rui )
+		}
+	)
+
+	ent.EndSignal( "OnDestroy" )
+
+	if ( ent.IsPlayer() )
+	{
+		while ( IsValid( ent ) )
+		{
+			WaitSignal( ent, "SettingsChanged", "OnDeath" )
+		}
+	}
+	else
+	{
+		ent.WaitSignal( "OnDestroy" )
+	}
+}
+
+
+void function Minimap_PingCount( vector origin, float radius, float duration, vector color, int count, bool reverse = false )
+{
+	float delay = duration / count
+
+	while ( count )
+	{
+		count--
+
+		Minimap_Ping( origin, radius, delay + (delay * 0.25), color, reverse )
+		wait delay
+	}
+}
+
+
+void function Minimap_Ping( vector origin, float radius, float duration, vector color, bool reverse = false )
+{
+	entity viewPlayer = GetLocalViewPlayer()
+	int zOrder = viewPlayer.Minimap_GetZOrder()
+
+	if ( !file.minimapEnabled )
+		return
+
+	var rui = CreateCockpitRui( $"ui/minimap_ping.rpak", MINIMAP_Z_BASE + zOrder )
+
+	RuiTrackFloat3( rui, "playerPos", viewPlayer, RUI_TRACK_ABSORIGIN_FOLLOW )
+	RuiTrackFloat3( rui, "playerAngles", viewPlayer, RUI_TRACK_EYEANGLES_FOLLOW )
+
+	RuiSetFloat3( rui, "objColor", color )
+	RuiSetFloat3( rui, "objectPos", origin )
+	RuiSetFloat3( rui, "objectAngles", <0,0,0> )
+
+	RuiSetFloat( rui, "objectRadius", radius / ( file.threatMaxDist * file.minimapZoomScale ) )
+
+	RuiSetFloat( rui, "displayDist", file.threatMaxDist )
+	RuiSetFloat( rui, "minimapZoomScale", file.minimapZoomScale )
+	RuiSetFloat( rui, "minimapSizeScale", file.minimapSizeScale )
+
+	RuiSetGameTime( rui, "startTime", Time() )
+	RuiSetGameTime( rui, "endTime", Time() + duration )
+
+	RuiSetBool( rui, "reverse", reverse )
+}
+
+
+
+var function Minimap_AddLayer( asset layerImage, bool isFriendly )
+{
+	entity player = GetLocalViewPlayer()
+
+	var rui = CreateCockpitRui( $"ui/minimap_layer.rpak", MINIMAP_Z_LAYER )
+
+	RuiTrackFloat3( rui, "playerPos", player, RUI_TRACK_ABSORIGIN_FOLLOW )
+	RuiTrackFloat3( rui, "playerAngles", player, RUI_TRACK_EYEANGLES_FOLLOW )
+
+	asset mapImage = Minimap_GetAssetForKey( "minimap" )
+	float mapCornerX = Minimap_GetFloatForKey( "pos_x" )
+	float mapCornerY = Minimap_GetFloatForKey( "pos_y" )
+	float displayDist = Minimap_GetFloatForKey( "displayDist" )
+	float threatDistNear = Minimap_GetFloatForKey( "threatNearDist" )
+	float threatDistFar = Minimap_GetFloatForKey( "threatFarDist" )
+
+	float mapScale = Minimap_GetFloatForKey( "scale" )
+
+	RuiSetImage( rui, "layerImage", layerImage )
+	RuiSetFloat3( rui, "mapCorner", <mapCornerX, mapCornerY, 0> )
+	RuiSetFloat( rui, "displayDist", file.threatMaxDist )
+	RuiSetFloat( rui, "mapScale", mapScale )
+	RuiSetFloat( rui, "minimapZoomScale", file.minimapZoomScale )
+	RuiSetFloat( rui, "minimapSizeScale", file.minimapSizeScale )
+
+	RuiSetBool( rui, "isFriendly", isFriendly )
+
+	return rui
+}
+
+var function Minimap_AddCustomLayer( asset ruiAsset, int sortKey = MINIMAP_Z_LAYER )
+{
+	entity player = GetLocalViewPlayer()
+
+	var rui = CreateCockpitRui( ruiAsset, sortKey )
+
+	RuiTrackFloat3( rui, "playerPos", player, RUI_TRACK_ABSORIGIN_FOLLOW )
+	RuiTrackFloat3( rui, "playerAngles", player, RUI_TRACK_EYEANGLES_FOLLOW )
+
+	asset mapImage = Minimap_GetAssetForKey( "minimap" )
+	float mapCornerX = Minimap_GetFloatForKey( "pos_x" )
+	float mapCornerY = Minimap_GetFloatForKey( "pos_y" )
+	float displayDist = Minimap_GetFloatForKey( "displayDist" )
+	float threatDistNear = Minimap_GetFloatForKey( "threatNearDist" )
+	float threatDistFar = Minimap_GetFloatForKey( "threatFarDist" )
+
+	float mapScale = Minimap_GetFloatForKey( "scale" )
+
+	RuiSetFloat3( rui, "mapCorner", <mapCornerX, mapCornerY, 0> )
+	RuiSetFloat( rui, "displayDist", file.threatMaxDist )
+	RuiSetFloat( rui, "mapScale", mapScale )
+	RuiSetFloat( rui, "minimapZoomScale", file.minimapZoomScale )
+	RuiSetFloat( rui, "minimapSizeScale", file.minimapSizeScale )
+
+	return rui
+}
+
+
+void function OnPlayerCreate( entity player )
+{
+	if ( player != GetLocalViewPlayer() )
+		return
+
+	RuiTrackFloat3( file.minimap_base, "playerPos", player, RUI_TRACK_ABSORIGIN_FOLLOW )
+	RuiTrackFloat3( file.minimap_base, "playerAngles", player, RUI_TRACK_EYEANGLES_FOLLOW )
+
+	RuiTrackInt( file.minimap_indicator, "indicatorId", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "indicatorId" ) )
+
+	asset mapImage = Minimap_GetAssetForKey( "minimap" )
+	float mapCornerX = Minimap_GetFloatForKey( "pos_x" )
+	float mapCornerY = Minimap_GetFloatForKey( "pos_y" )
+	float displayDist = Minimap_GetFloatForKey( "displayDist" )
+	float threatDistNear = Minimap_GetFloatForKey( "threatNearDist" )
+	float threatDistFar = Minimap_GetFloatForKey( "threatFarDist" )
+
+	float mapScale = Minimap_GetFloatForKey( "scale" )
+
+	RuiSetImage( file.minimap_base, "mapImage", mapImage )
+	RuiSetFloat3( file.minimap_base, "mapCorner", <mapCornerX, mapCornerY, 0> )
+	RuiSetFloat( file.minimap_base, "displayDist", file.threatMaxDist )
+	RuiSetFloat( file.minimap_base, "mapScale", mapScale )
+
+	RuiTrackFloat3( file.minimap_wedges, "playerPos", player, RUI_TRACK_ABSORIGIN_FOLLOW )
+	RuiTrackFloat3( file.minimap_wedges, "playerAngles", player, RUI_TRACK_EYEANGLES_FOLLOW )
+	RuiSetFloat3( file.minimap_wedges, "distances", <threatDistNear / file.threatMaxDist, 1.0 - (threatDistFar / file.threatMaxDist), 1.0> )
+	RuiSetBool( file.minimap_wedges, "isVisible", file.minimapZoomScale == 1.0 )
+
+	RuiTrackGameTime( file.minimap_wedges, "lastFireTimeCenter", player, RUI_TRACK_MINIMAP_THREAT_SECTOR, MOTS_CENTER )
+
+	RuiTrackGameTime( file.minimap_wedges, "lastFireTimeMid0", player, RUI_TRACK_MINIMAP_THREAT_SECTOR, MOTS_NEAR_N )
+	RuiTrackGameTime( file.minimap_wedges, "lastFireTimeMid1", player, RUI_TRACK_MINIMAP_THREAT_SECTOR, MOTS_NEAR_NE )
+	RuiTrackGameTime( file.minimap_wedges, "lastFireTimeMid2", player, RUI_TRACK_MINIMAP_THREAT_SECTOR, MOTS_NEAR_E )
+	RuiTrackGameTime( file.minimap_wedges, "lastFireTimeMid3", player, RUI_TRACK_MINIMAP_THREAT_SECTOR, MOTS_NEAR_SE )
+	RuiTrackGameTime( file.minimap_wedges, "lastFireTimeMid4", player, RUI_TRACK_MINIMAP_THREAT_SECTOR, MOTS_NEAR_S )
+	RuiTrackGameTime( file.minimap_wedges, "lastFireTimeMid5", player, RUI_TRACK_MINIMAP_THREAT_SECTOR, MOTS_NEAR_SW )
+	RuiTrackGameTime( file.minimap_wedges, "lastFireTimeMid6", player, RUI_TRACK_MINIMAP_THREAT_SECTOR, MOTS_NEAR_W )
+	RuiTrackGameTime( file.minimap_wedges, "lastFireTimeMid7", player, RUI_TRACK_MINIMAP_THREAT_SECTOR, MOTS_NEAR_NW )
+
+	RuiTrackGameTime( file.minimap_wedges, "lastFireTimeOuter0", player, RUI_TRACK_MINIMAP_THREAT_SECTOR, MOTS_FAR_N )
+	RuiTrackGameTime( file.minimap_wedges, "lastFireTimeOuter1", player, RUI_TRACK_MINIMAP_THREAT_SECTOR, MOTS_FAR_NE )
+	RuiTrackGameTime( file.minimap_wedges, "lastFireTimeOuter2", player, RUI_TRACK_MINIMAP_THREAT_SECTOR, MOTS_FAR_E )
+	RuiTrackGameTime( file.minimap_wedges, "lastFireTimeOuter3", player, RUI_TRACK_MINIMAP_THREAT_SECTOR, MOTS_FAR_SE )
+	RuiTrackGameTime( file.minimap_wedges, "lastFireTimeOuter4", player, RUI_TRACK_MINIMAP_THREAT_SECTOR, MOTS_FAR_S )
+	RuiTrackGameTime( file.minimap_wedges, "lastFireTimeOuter5", player, RUI_TRACK_MINIMAP_THREAT_SECTOR, MOTS_FAR_SW )
+	RuiTrackGameTime( file.minimap_wedges, "lastFireTimeOuter6", player, RUI_TRACK_MINIMAP_THREAT_SECTOR, MOTS_FAR_W )
+	RuiTrackGameTime( file.minimap_wedges, "lastFireTimeOuter7", player, RUI_TRACK_MINIMAP_THREAT_SECTOR, MOTS_FAR_NW )
+
+
+	RuiSetFloat( file.minimap_wedges, "minimapZoomScale", file.minimapZoomScale )
+	RuiSetFloat( file.minimap_wedges, "minimapSizeScale", file.minimapSizeScale )
+
+	RuiSetFloat( file.minimap_base, "minimapZoomScale", file.minimapZoomScale )
+	RuiSetFloat( file.minimap_base, "minimapSizeScale", file.minimapSizeScale )
+
+	RuiTrackInt( file.minimap_you, "objectFlags", player, RUI_TRACK_MINIMAP_FLAGS )
+	RuiTrackInt( file.minimap_you, "customState", player, RUI_TRACK_MINIMAP_CUSTOM_STATE )
+
+}
+
+
+void function MinimapPackage_DummyInit( entity ent, var rui )
+{
+
+}
+
+void function MinimapPackage_PlayerInit( entity ent, var rui )
+{
+	RuiTrackGameTime( rui, "lastFireTime", ent, RUI_TRACK_LAST_FIRED_TIME )
+	if ( !IsFFAGame() ) //JFS: Too much work to get FFA to work correctly with Minimap logic, so disabling it for FFA
+	{
+		RuiTrackFloat( rui, "sonarDetectedFrac", ent, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.sonar_detected )
+		RuiTrackFloat( rui, "maphackDetectedFrac", ent, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.maphack_detected )
+	}
+}
+
+void function MinimapPackage_NPCTitanInit( entity ent, var rui )
+{
+	entity player = GetLocalClientPlayer()
+
+	RuiSetBool( rui, "useTeamColor", false )
+
+	RuiTrackGameTime( rui, "lastFireTime", ent, RUI_TRACK_LAST_FIRED_TIME )
+	if ( !IsFFAGame() )  //JFS: Too much work to get FFA to work correctly with Minimap logic, so disabling it for FFA
+		RuiTrackFloat( rui, "sonarDetectedFrac", ent, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.sonar_detected )
+}
+
+void function MinimapPackage_NPCHumanSizedInit( entity ent, var rui )
+{
+	entity player = GetLocalClientPlayer()
+
+	RuiSetImage( rui, "defaultIcon", $"rui/hud/minimap/compass_icon_small_dot" )
+	RuiSetImage( rui, "clampedDefaultIcon", $""  )
+
+	//if ( ent == GetLocalClientPlayer().GetPetTitan() )
+	//{
+	//	RuiSetBool( rui, "useTeamColor", false )
+	//	RuiSetFloat3( rui, "iconColor", TEAM_COLOR_YOU / 255.0 )
+	//}
+	RuiTrackGameTime( rui, "lastFireTime", ent, RUI_TRACK_LAST_FIRED_TIME )
+	//if ( !IsFFAGame() )  //JFS: Too much work to get FFA to work correctly with Minimap logic, so disabling it for FFA
+	//	RuiTrackFloat( rui, "sonarDetectedFrac", ent, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.sonar_detected )
+}
+
+void function MinimapPackage_NPCDropShipInit( entity ent, var rui )
+{
+	RuiSetImage( rui, "defaultIcon", $"rui/hud/scoreboard/status_evac" )
+}
+
+void function MinimapPackage_NPCSentryTurretInit( entity ent, var rui )
+{
+	RuiSetImage( rui, "defaultIcon", $"" )
+	RuiSetImage( rui, "clampedDefaultIcon", $"" )
+}
+
+void function MinimapPackage_BossTitanInit( entity ent, var rui )
+{
+	RuiSetImage( rui, "defaultIcon", $"rui/hud/gametype_icons/bounty_hunt/bh_titan" )
+	RuiSetImage( rui, "clampedDefaultIcon", $"rui/hud/gametype_icons/bounty_hunt/bh_titan" )
+	RuiSetBool( rui, "useTeamColor", false )
+}
+
+void function MinimapPackage_BatteryInit( entity ent, var rui )
+{
+	entity player = GetLocalViewPlayer()
+	RuiTrackInt( rui, "batteryCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "batteryCount" ) )
+	RuiSetBool( rui, "useTeamColor", false )
+	RuiTrackFloat( rui, "batteryCarried", ent, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.battery_carried )
+}
+
+void function MinimapPackage_ATAreaInit( entity ent, var rui )
+{
+	RuiTrackFloat( rui, "objectRadius", ent, RUI_TRACK_MINIMAP_SCALE )
+}
+
+void function MinimapPackage_ATBank( entity ent, var rui )
+{
+	RuiSetImage( rui, "defaultIcon", $"rui/hud/gametype_icons/bounty_hunt/bh_bank_icon" )
+	RuiSetImage( rui, "clampedDefaultIcon", $"rui/hud/gametype_icons/bounty_hunt/bh_bank_icon"  )
+	RuiSetBool( rui, "useTeamColor", false )
+}
+
+void function MinimapPackage_SpawnZoneAreaInit( entity ent, var rui )
+{
+	RuiTrackFloat( rui, "objectRadius", ent, RUI_TRACK_MINIMAP_SCALE )
+	if ( !IsPlayingDemo() )
+	{
+		RuiSetImage( rui, "centerImage", $""  ) // hide diamond
+		RuiSetImage( rui, "clampedImage", $"rui/hud/gametype_icons/obj_foreground_diamond" )
+	}
+}
+
+void function MinimapPackage_FWBuildSite( entity ent, var rui )
+{
+	entity player = GetLocalViewPlayer()
+	RuiTrackInt( rui, "batteryCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "batteryCount" ) )
+	//RuiTrackFloat( rui, "objectRadius", ent, RUI_TRACK_MINIMAP_SCALE )
+}
+
+void function MinimapPackage_HardpointA( entity ent, var rui )
+{
+	RuiSetFloat( rui, "objectRadius", 0.001 )
+}
+
+void function MinimapPackage_HardpointB( entity ent, var rui )
+{
+	RuiSetFloat( rui, "objectRadius", 0.001 )
+}
+
+void function MinimapPackage_HardpointC( entity ent, var rui )
+{
+	RuiSetFloat( rui, "objectRadius", 0.001 )
+}
+
+void function MinimapPackage_FDHarvester( entity ent, var rui )
+{
+	RuiSetImage( rui, "centerImage", $"rui/hud/gametype_icons/fd/coop_harvester" )
+	RuiSetImage( rui, "clampedImage", $"rui/hud/gametype_icons/fd/coop_harvester" )
+	RuiSetFloat( rui, "objectRadius", 0.01 )
+	RuiSetBool( rui, "useOverrideColor", true )
+	RuiSetColorAlpha( rui, "overrideColor", <1.0,1.0,1.0>, 1.0 )
+}
+
+void function MinimapPackage_FDLoadoutChest( entity ent, var rui )
+{
+	RuiSetImage( rui, "centerImage", $"rui/hud/gametype_icons/fd/coop_ammo_locker_icon" )
+	RuiSetImage( rui, "clampedImage", $"rui/hud/gametype_icons/fd/coop_ammo_locker_icon" )
+	RuiSetFloat( rui, "objectRadius", 0.01 )
+	RuiSetBool( rui, "useOverrideColor", true )
+	RuiSetColorAlpha( rui, "overrideColor", <1.0,1.0,1.0>, 1.0 )
+}
+
+void function MinimapPackage_FDBatteryExchange( entity ent, var rui )
+{
+	RuiSetImage( rui, "centerImage", $"rui/hud/gametype_icons/bounty_hunt/bh_bank_icon" )
+	RuiSetImage( rui, "clampedImage", $"rui/hud/gametype_icons/bounty_hunt/bh_bank_icon" )
+	RuiSetFloat( rui, "objectRadius", 0.01 )
+	RuiSetBool( rui, "useOverrideColor", true )
+	RuiSetColorAlpha( rui, "overrideColor", <1.0,1.0,1.0>, 1.0 )
+}
+
+void function MinimapPackage_BoostStore( entity ent, var rui )
+{
+	RuiSetImage( rui, "centerImage", $"rui/hud/gametype_icons/bounty_hunt/bh_bonus_icon" )
+	RuiSetImage( rui, "clampedImage", $"rui/hud/gametype_icons/bounty_hunt/bh_bonus_icon" )
+	RuiSetFloat( rui, "objectRadius", 0.01 )
+	RuiSetBool( rui, "useOverrideColor", true )
+	RuiSetColorAlpha( rui, "overrideColor", <1.0,1.0,1.0>, 1.0 )
+}
+
+void function MinimapPackage_MortarPosition( entity ent, var rui )
+{
+	RuiSetImage( rui, "bgImage", $"rui/hud/gametype_icons/fd/fd_icon_spectre_mortar_bg" )
+	RuiSetImage( rui, "centerImage", $"rui/hud/gametype_icons/fd/fd_icon_spectre_mortar" )
+	RuiSetImage( rui, "clampedImage", $"rui/hud/gametype_icons/fd/fd_icon_spectre_mortar" )
+	RuiTrackFloat( rui, "arcPercent", ent, RUI_TRACK_SHIELD_FRACTION )
+}
+
+void function MinimapPackage_ArcTrap( entity ent, var rui )
+{
+	RuiSetImage( rui, "centerImage", $"rui/hud/minimap/compass_icon_arc_trap" )
+	RuiSetImage( rui, "clampedImage", $"" )
+	RuiTrackFloat( rui, "objectRadius", ent, RUI_TRACK_MINIMAP_SCALE )
+}
+
+void function MinimapPackage_FWCampA( entity ent, var rui )
+{
+	RuiTrackInt( rui, "alertLevel", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "fwCampAlertA" ) )
+	RuiTrackFloat( rui, "objectRadius", ent, RUI_TRACK_MINIMAP_SCALE )
+}
+
+void function MinimapPackage_FWCampB( entity ent, var rui )
+{
+	RuiTrackInt( rui, "alertLevel", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "fwCampAlertB" ) )
+	RuiTrackFloat( rui, "objectRadius", ent, RUI_TRACK_MINIMAP_SCALE )
+}
+
+void function MinimapPackage_FWCampC( entity ent, var rui )
+{
+	RuiTrackInt( rui, "alertLevel", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "fwCampAlertC" ) )
+	RuiTrackFloat( rui, "objectRadius", ent, RUI_TRACK_MINIMAP_SCALE )
+}
+
+void function MinimapPackage_LTSBombSiteA( entity ent, var rui )
+{
+	RuiSetImage( rui, "defaultIcon", $"rui/hud/gametype_icons/last_titan_standing/bomb_site_a_attacking" )
+	RuiSetImage( rui, "clampedDefaultIcon", $"rui/hud/gametype_icons/last_titan_standing/bomb_site_a_attacking"  )
+}
+
+void function MinimapPackage_LTSBombSiteB( entity ent, var rui )
+{
+	RuiSetImage( rui, "defaultIcon", $"rui/hud/gametype_icons/last_titan_standing/bomb_site_b_attacking" )
+	RuiSetImage( rui, "clampedDefaultIcon", $"rui/hud/gametype_icons/last_titan_standing/bomb_site_b_attacking"  )
+}
+
+void function MinimapPackage_LTSBomb( entity ent, var rui )
+{
+	RuiSetImage( rui, "defaultIcon", $"rui/hud/gametype_icons/last_titan_standing/bomb_neutral" )
+	RuiSetImage( rui, "clampedDefaultIcon", $"rui/hud/gametype_icons/last_titan_standing/bomb_neutral" )
+	RuiSetBool( rui, "useTeamColor", false )
+}
+
+void function MinimapPackage_FlagInit( entity ent, var rui )
+{
+	RuiSetImage( rui, "defaultIcon", $"rui/hud/gametype_icons/ctf/ctf_flag_neutral" )
+	RuiSetImage( rui, "clampedDefaultIcon", $"rui/hud/gametype_icons/ctf/ctf_flag_neutral" )
+	RuiSetBool( rui, "useTeamColor", true )
+}
+
+void function MinimapPackage_PowerUp( entity ent, var rui )
+{
+	//Battery spawners are the only power ups in use atm. This would need to be updated if we use them differently.
+	RuiSetImage( rui, "defaultIcon", $"rui/hud/battery/battery_capture_friendly" )
+	RuiSetImage( rui, "clampedDefaultIcon", $"rui/hud/battery/battery_capture_friendly" )
+	RuiSetBool( rui, "useTeamColor", false )
+}
+
+
+void function MinimapJammed_Enabled( entity ent, int statusEffect, bool actuallyChanged )
+{
+	if ( !actuallyChanged )
+		return
+
+	if ( ent != GetLocalClientPlayer() )
+		return
+
+	thread LoopRadarJammerSounds( ent )
+	thread FadeOutStaticSoundAfterDelay( ent, BURN_METER_RADAR_JAMMER_PULSE_DURATION - BURN_METER_RADAR_JAMMER_EASE_OFF_TIME )
+
+	if ( file.minimap_jammed_layer != null )
+		RuiDestroy( file.minimap_jammed_layer )
+
+	file.minimap_jammed_layer = Minimap_AddCustomLayer( $"ui/minimap_jammer_layer.rpak", MINIMAP_Z_YOU + 1 )
+	if ( actuallyChanged )
+		RuiSetGameTime( file.minimap_jammed_layer, "startTime", Time() )
+
+	RuiSetFloat( file.minimap_jammed_layer, "minimapZoomScale", file.minimapZoomScale )
+	RuiSetFloat( file.minimap_jammed_layer, "minimapSizeScale", file.minimapSizeScale )
+	RuiTrackFloat( file.minimap_jammed_layer, "scriptAlphaVar", ent, RUI_TRACK_STATUS_EFFECT_SEVERITY, statusEffect )
+
+	RuiTrackFloat( file.minimap_wedges, "scriptInverseAlphaVar", ent, RUI_TRACK_STATUS_EFFECT_SEVERITY, statusEffect )
+
+}
+
+void function MinimapJammed_Disabled( entity ent, int statusEffect, bool actuallyChanged )
+{
+	if ( !actuallyChanged )
+		return
+
+	if ( ent != GetLocalClientPlayer() )
+		return
+
+	clGlobal.levelEnt.Signal( "LoopRadarJammerSounds" )
+
+	if ( file.minimap_jammed_layer != null )
+	{
+		RuiDestroy( file.minimap_jammed_layer )
+		file.minimap_jammed_layer = null
+	}
+}
+
+void function LoopRadarJammerSounds( entity ent )
+{
+	clGlobal.levelEnt.Signal( "LoopRadarJammerSounds" )
+	clGlobal.levelEnt.EndSignal( "LoopRadarJammerSounds" )
+	ent.EndSignal( "OnDeath" )
+
+	OnThreadEnd(
+	function() : ( ent )
+		{
+			StopSoundOnEntity( ent, "HUD_Boost_Card_Radar_Jammer_RedTextBeep_1P" )
+		}
+	)
+
+	float currentTime = Time()
+	float fractionalComponent = currentTime - floor( currentTime )
+	float timeToWait
+	if ( fractionalComponent <= 0.5 )
+		timeToWait = 0.5 - fractionalComponent
+	else
+		timeToWait = 1.5 - fractionalComponent
+
+	wait (	timeToWait  ) //Red text flashes in with regards to game time, so we need to wait till the appropriate time (0.5) to play the next sound
+
+	while( true )
+	{
+		if ( IsValid( ent ) )
+			EmitSoundOnEntity( ent, "HUD_Boost_Card_Radar_Jammer_RedTextBeep_1P" )
+
+		wait 1.0 //This is dependent on the rui logic, and will need to be changed if the rui logic changes
+	}
+}
+
+void function FadeOutStaticSoundAfterDelay( entity ent, float delay )
+{
+	EmitSoundOnEntity( ent, "HUD_Boost_Card_Radar_Jammer_Signal_Static_1P" )
+
+	ent.EndSignal( "OnDeath" )
+
+	OnThreadEnd(
+	function() : ( ent )
+		{
+			clGlobal.levelEnt.Signal( "LoopRadarJammerSounds" ) //stop red text beeping sounds
+			if ( IsValid( ent ) )
+				StopSoundOnEntity( ent, "HUD_Boost_Card_Radar_Jammer_Signal_Static_1P" )
+
+		}
+	)
+	wait delay
+}
+void function Minimap_SetZoomScale( float scale )
+{
+	file.minimapZoomScale = scale
+	if(file.minimap_you != null)
+		RuiSetFloat( file.minimap_you, "minimapZoomScale", file.minimapZoomScale )
+	if(file.minimap_indicator != null)
+		RuiSetFloat( file.minimap_indicator, "minimapZoomScale", file.minimapZoomScale )
+	if(file.minimap_base != null)
+		RuiSetFloat( file.minimap_base, "minimapZoomScale", file.minimapZoomScale )
+    
+	if ( file.minimap_wedges != null )
+	{
+		RuiSetBool( file.minimap_wedges, "isVisible", file.minimapZoomScale == 1.0 )
+		RuiSetFloat( file.minimap_wedges, "minimapZoomScale", file.minimapZoomScale )
+    }
+	foreach ( var rui in file.minimapOtherRuis )
+	{
+		RuiSetFloat( rui, "minimapZoomScale", file.minimapZoomScale )
+	}
+}
+
+void function Minimap_SetSizeScale( float scale )
+{
+	file.minimapSizeScale = scale
+	if(file.minimap_base != null)
+		RuiSetFloat( file.minimap_base, "minimapSizeScale", file.minimapSizeScale )
+	if(file.minimap_indicator != null)
+		RuiSetFloat( file.minimap_indicator, "minimapSizeScale", file.minimapSizeScale )
+	if(file.minimap_you != null)
+		RuiSetFloat( file.minimap_you, "minimapSizeScale", file.minimapSizeScale )
+	if(file.minimap_wedges != null)
+		RuiSetFloat( file.minimap_wedges, "minimapSizeScale", file.minimapSizeScale )
+	foreach ( var rui in file.minimapOtherRuis )
+	{
+		RuiSetFloat( rui, "minimapSizeScale", file.minimapSizeScale )
+	}
+
+}
+float function Minimap_GetZoomScale()
+{
+	return file.minimapZoomScale
+}
+float function Minimap_GetSizeScale()
+{
+	return file.minimapSizeScale
+}
+bool function Minimap_IsUsingLargeMinimap()
+{
+	return file.minimapSizeScale > 1.0
+}
+
+void function ServerCallback_PingMinimap( float originX, float originY, float originZ, float radius, float duration, float colorR, float colorG, float colorB, int count, bool reverse )
+{
+	if ( count > 1 )
+		thread Minimap_PingCount( <originX, originY, originZ>, radius, duration, <colorR, colorG, colorB>, count, reverse )
+	else
+		Minimap_Ping( <originX, originY, originZ>, radius, duration, <colorR, colorG, colorB>, reverse )
+}
