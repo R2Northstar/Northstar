@@ -279,9 +279,9 @@ void FixupCvarFlags()
 		{"_playerSettings_reparse_Server", FCVAR_DEVELOPMENTONLY},
 	};
 
-	const std::vector<std::tuple<const char*, int>> CVAR_FIXUP_DEFAULT_VALUES = {
-		{"sv_stressbots", 0}, // not currently used but this is probably a bad default if we get bots working
-		{"cl_pred_optimize", 0} // fixes issues with animation prediction in thirdperson
+	const std::vector<std::tuple<const char*, const char*>> CVAR_FIXUP_DEFAULT_VALUES = {
+		{"sv_stressbots", "0"}, // not currently used but this is probably a bad default if we get bots working
+		{"cl_pred_optimize", "0"} // fixes issues with animation prediction in thirdperson
 	};
 
 	for (auto& fixup : CVAR_FIXUP_ADD_FLAGS)
@@ -304,10 +304,7 @@ void FixupCvarFlags()
 		if (cvar && !strcmp(cvar->GetString(), cvar->m_pszDefaultValue))
 		{
 			cvar->SetValue(std::get<1>(fixup));
-
-			int nLen = strlen(cvar->GetString());
-			cvar->m_pszDefaultValue = new char[nLen];
-			memcpy((void*)cvar->m_pszDefaultValue, cvar->GetString(), nLen + 1);
+			cvar->m_pszDefaultValue = std::get<1>(fixup);
 		}
 	}
 }

@@ -299,10 +299,7 @@ void ConVar::SetValue(float flValue)
 void ConVar::SetValue(const char* pszValue)
 {
 	if (strcmp(this->m_Value.m_pszString, pszValue) == 0)
-	{
 		return;
-	}
-	this->m_Value.m_pszString = pszValue;
 
 	char szTempValue[32] {};
 	const char* pszNewValue {};
@@ -382,13 +379,7 @@ void ConVar::ChangeStringValue(const char* pszTempVal, float flOldValue)
 		if (len > m_Value.m_iStringLength)
 		{
 			if (m_Value.m_pszString)
-			{
-				// !TODO: Causes issues in tier0.dll, but doesn't in apex.
-				// Not a big issue since we are creating a new string below
-				// anyways to prevent buffer overflow if string is longer
-				// then the old string.
-				// delete[] m_Value.m_pszString;
-			}
+				delete[] m_Value.m_pszString;
 
 			m_Value.m_pszString = new char[len];
 			m_Value.m_iStringLength = len;
