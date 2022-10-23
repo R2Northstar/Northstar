@@ -180,7 +180,7 @@ namespace R2
 		// +0x4FA
 		char m_PersistenceBuffer[PERSISTENCE_MAX_SIZE];
 
-		char pad4[0x2006];
+		char pad4[0x1239];
 
 		// +0xF500
 		char m_UID[32];
