@@ -13,8 +13,6 @@ AUTOHOOK_INIT()
 
 ServerLimitsManager* g_pServerLimits;
 
-ConVar* Cvar_net_datablock_enabled;
-
 // todo: make this work on higher timescales, also possibly disable when sv_cheats is set
 void ServerLimitsManager::RunFrame(double flCurrentTime, float flFrameTime)
 {
@@ -148,8 +146,11 @@ AUTOHOOK(ProcessConnectionlessPacket, engine.dll + 0x117800,
 bool, , (void* a1, R2::netpacket_t* packet))
 // clang-format on
 {
+	static const ConVar* Cvar_net_data_block_enabled = R2::g_pCVar->FindVar("net_data_block_enabled");
+
+	// don't ratelimit datablock packets as long as datablock is enabled
 	if (packet->adr.type == R2::NA_IP &&
-		(!(packet->data[4] == 'N' && Cvar_net_datablock_enabled->GetBool()) || !Cvar_net_datablock_enabled->GetBool()))
+		(!(packet->data[4] == 'N' && Cvar_net_data_block_enabled->GetBool()) || !Cvar_net_data_block_enabled->GetBool()))
 	{
 		// bad lookup: optimise later tm
 		UnconnectedPlayerLimitData* sendData = nullptr;
@@ -289,8 +290,6 @@ ON_DLL_LOAD_RELIESON("engine.dll", ServerLimits, ConVar, (CModule module))
 		"1.2",
 		FCVAR_GAMEDLL,
 		"Increase usercmd processing budget by tickinterval * value per tick");
-
-	Cvar_net_datablock_enabled = R2::g_pCVar->FindVar("net_datablock_enabled");
 }
 
 ON_DLL_LOAD("server.dll", ServerLimitsServer, (CModule module))
