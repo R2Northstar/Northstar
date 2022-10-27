@@ -124,7 +124,7 @@ void ServerAuthenticationManager::VerifyPlayerName(R2::CBaseClient* player, char
 
 		bool nameAccepted = (!*authData.username || !strcmp(name, authData.username));
 
-		if (!nameAccepted && g_pMasterServerManager->m_bRequireClientAuth && !CVar_ns_auth_allow_insecure->GetInt())
+		if (!nameAccepted && !CVar_ns_auth_allow_insecure->GetInt())
 		{
 			// limit name length to 64 characters just in case something changes, this technically shouldn't be needed given the master
 			// server gets usernames from origin but we have it just in case
