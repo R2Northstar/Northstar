@@ -28,6 +28,7 @@ const char* AUTHSERVER_VERIFY_STRING = "I am a northstar server!";
 
 // global vars
 ServerAuthenticationManager* g_pServerAuthentication;
+CBaseServer__RejectConnectionType CBaseServer__RejectConnection;
 
 void ServerAuthenticationManager::StartPlayerAuthServer()
 {
@@ -114,23 +115,58 @@ void ServerAuthenticationManager::RemovePlayer(R2::CBaseClient* player)
 		m_PlayerAuthenticationData.erase(player);
 }
 
-void ServerAuthenticationManager::VerifyPlayerName(R2::CBaseClient* player, char* authToken, char* name)
+bool checkIsPlayerNameValid(const char* name)
+{
+	int len = strlen(name);
+	// Restricts name to max 63 characters
+	if (len >= 64)
+		return false;
+	for (int i = 0; i < len; i++)
+	{
+		// Restricts the characters in the name to a restricted range in ASCII
+		if (static_cast<int>(name[i]) < 32 || static_cast<int>(name[i]) > 126)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+bool ServerAuthenticationManager::VerifyPlayerName(const char* authToken, const char* name)
 {
 	std::lock_guard<std::mutex> guard(m_AuthDataMutex);
 
-	if (!m_RemoteAuthenticationData.empty() && m_RemoteAuthenticationData.count(std::string(authToken)))
+	if (CVar_ns_auth_allow_insecure->GetInt())
 	{
-		RemoteAuthData authData = m_RemoteAuthenticationData[authToken];
-
-		bool nameAccepted = (!*authData.username || !strcmp(name, authData.username));
-
-		if (!nameAccepted && !CVar_ns_auth_allow_insecure->GetInt())
-		{
-			// limit name length to 64 characters just in case something changes, this technically shouldn't be needed given the master
-			// server gets usernames from origin but we have it just in case
-			strncpy_s(name, 64, authData.username, 63);
-		}
+		spdlog::info("Allowing player with name '{}' because ns_auth_allow_insecure is enabled", name);
+		return true;
 	}
+
+	if (!checkIsPlayerNameValid(name))
+	{
+		spdlog::info("Rejecting player with name '{}' because the name contains forbidden characters", name);
+		return false;
+	}
+	// TODO: We should really have a better way of doing this for singleplayer
+	// Best way of doing this would be to check if server is actually in singleplayer mode, or just running a SP map in multiplayer
+	// Currently there's not an easy way of checking this, so we just disable this check if mapname starts with `sp_`
+	// This means that player names are not checked on singleplayer
+	if ((m_RemoteAuthenticationData.empty() || m_RemoteAuthenticationData.count(std::string(authToken)) == 0) &&
+		strncmp(R2::g_pHostState->m_levelName, "sp_", 3) != 0)
+	{
+		spdlog::info("Rejecting player with name '{}' because authToken '{}' was not found", name, authToken);
+		return false;
+	}
+
+	const RemoteAuthData& authData = m_RemoteAuthenticationData[authToken];
+
+	if (*authData.username && strncmp(name, authData.username, 64) != 0)
+	{
+		spdlog::info("Rejecting player with name '{}' because name does not match expected name '{}'", name, authData.username);
+		return false;
+	}
+
+	return true;
 }
 
 bool ServerAuthenticationManager::CheckDuplicateAccounts(R2::CBaseClient* player)
@@ -150,6 +186,9 @@ bool ServerAuthenticationManager::AuthenticatePlayer(R2::CBaseClient* player, ui
 {
 	std::string strUid = std::to_string(uid);
 	std::lock_guard<std::mutex> guard(m_AuthDataMutex);
+
+	if (!strncmp(R2::g_pHostState->m_levelName, "sp_", 3))
+		return true;
 
 	// copy uuid
 	strcpy(player->m_UID, strUid.c_str());
@@ -244,14 +283,14 @@ uint64_t iNextPlayerUid;
 // clang-format off
 AUTOHOOK(CBaseServer__ConnectClient, engine.dll + 0x114430,
 void*,, (
-	void* server,
-	void* a2,
+	void* self,
+	void* addr,
 	void* a3,
 	uint32_t a4,
 	uint32_t a5,
 	int32_t a6,
 	void* a7,
-	void* a8,
+	char* playerName,
 	char* serverFilter,
 	void* a10,
 	char a11,
@@ -267,7 +306,21 @@ void*,, (
 	pNextPlayerToken = serverFilter;
 	iNextPlayerUid = uid;
 
-	return CBaseServer__ConnectClient(server, a2, a3, a4, a5, a6, a7, a8, serverFilter, a10, a11, a12, a13, a14, uid, a16, a17);
+	spdlog::info(
+		"CBaseServer__ClientConnect attempted connection with uid {}, playerName '{}', serverFilter '{}'", uid, playerName, serverFilter);
+
+	if (!g_pServerAuthentication->VerifyPlayerName(pNextPlayerToken, playerName))
+	{
+		CBaseServer__RejectConnection(self, *((int*)self + 3), addr, "Invalid Name.\n");
+		return nullptr;
+	}
+	if (!g_pBanSystem->IsUIDAllowed(uid))
+	{
+		CBaseServer__RejectConnection(self, *((int*)self + 3), addr, "Banned From server.\n");
+		return nullptr;
+	}
+
+	return CBaseServer__ConnectClient(self, addr, a3, a4, a5, a6, a7, playerName, serverFilter, a10, a11, a12, a13, a14, uid, a16, a17);
 }
 
 // clang-format off
@@ -275,27 +328,27 @@ AUTOHOOK(CBaseClient__Connect, engine.dll + 0x101740,
 bool,, (R2::CBaseClient* self, char* name, void* netchan_ptr_arg, char b_fake_player_arg, void* a5, char* Buffer, void* a7))
 // clang-format on
 {
-	// try changing name before all else
-	g_pServerAuthentication->VerifyPlayerName(self, pNextPlayerToken, name);
-
 	// try to auth player, dc if it fails
 	// we connect regardless of auth, because returning bad from this function can fuck client state p bad
 	bool ret = CBaseClient__Connect(self, name, netchan_ptr_arg, b_fake_player_arg, a5, Buffer, a7);
 	if (!ret)
 		return ret;
 
+	if (!g_pServerAuthentication->VerifyPlayerName(pNextPlayerToken, name))
+	{
+		R2::CBaseClient__Disconnect(self, 1, "Invalid Name.\n");
+		return false;
+	}
 	if (!g_pBanSystem->IsUIDAllowed(iNextPlayerUid))
 	{
-		R2::CBaseClient__Disconnect(self, 1, "Banned from server");
-		return ret;
+		R2::CBaseClient__Disconnect(self, 1, "Banned From server.\n");
+		return false;
 	}
-
-	if (strlen(name) >= 64) // fix for name overflow bug
-		R2::CBaseClient__Disconnect(self, 1, "Invalid name");
-	else if (
-		!g_pServerAuthentication->AuthenticatePlayer(self, iNextPlayerUid, pNextPlayerToken) &&
-		g_pServerAuthentication->m_bRequireClientAuth)
-		R2::CBaseClient__Disconnect(self, 1, "Authentication Failed");
+	if (!g_pServerAuthentication->AuthenticatePlayer(self, iNextPlayerUid, pNextPlayerToken))
+	{
+		R2::CBaseClient__Disconnect(self, 1, "Authentication Failed.\n");
+		return false;
+	}
 
 	g_pServerAuthentication->AddPlayer(self, pNextPlayerToken);
 	g_pServerLimits->AddPlayer(self);
@@ -390,6 +443,8 @@ ON_DLL_LOAD_RELIESON("engine.dll", ServerAuthentication, (ConCommand, ConVar), (
 
 	// patch to disable fairfight marking players as cheaters and kicking them
 	module.Offset(0x101012).Patch("E9 90 00");
+
+	CBaseServer__RejectConnection = module.Offset(0x1182E0).As<CBaseServer__RejectConnectionType>();
 
 	if (Tier0::CommandLine()->CheckParm("-allowdupeaccounts"))
 	{

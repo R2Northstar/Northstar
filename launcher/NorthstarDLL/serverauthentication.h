@@ -22,6 +22,9 @@ struct PlayerAuthenticationData
 	bool needPersistenceWriteOnLeave = true;
 };
 
+typedef int64_t (*CBaseServer__RejectConnectionType)(void* a1, unsigned int a2, void* a3, const char* a4, ...);
+extern CBaseServer__RejectConnectionType CBaseServer__RejectConnection;
+
 class ServerAuthenticationManager
 {
   private:
@@ -36,7 +39,6 @@ class ServerAuthenticationManager
 	std::mutex m_AuthDataMutex;
 	std::unordered_map<std::string, RemoteAuthData> m_RemoteAuthenticationData;
 	std::unordered_map<R2::CBaseClient*, PlayerAuthenticationData> m_PlayerAuthenticationData;
-	bool m_bRequireClientAuth = true;
 	bool m_bAllowDuplicateAccounts = false;
 	bool m_bRunningPlayerAuthThread = false;
 	bool m_bNeedLocalAuthForNewgame = false;
@@ -49,7 +51,7 @@ class ServerAuthenticationManager
 	void RemovePlayer(R2::CBaseClient* player);
 	bool CheckDuplicateAccounts(R2::CBaseClient* player);
 	bool AuthenticatePlayer(R2::CBaseClient* player, uint64_t uid, char* authToken);
-	void VerifyPlayerName(R2::CBaseClient* player, char* authToken, char* name);
+	bool VerifyPlayerName(const char* authToken, const char* name);
 	bool RemovePlayerAuthData(R2::CBaseClient* player);
 	void WritePersistentData(R2::CBaseClient* player);
 };
