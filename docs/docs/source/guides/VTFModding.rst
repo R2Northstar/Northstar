@@ -130,9 +130,7 @@ After that, save your new .vtf's into the same folder as your custom .vmt with a
 Configuring your .vmt
 ---------------------
 
-It's highly recommended to read `this <https://retryy.gitbook.io/tf2/wiki/create/texturemaps>`_ wiki to understand what texture maps you might want.
-
-In the ``"$basetexture"`` argument enter your .vtf texture directory. We'll use ``models\weapons_r2\car_ctm\NAMEOFVTF``. This should point to your custom diffuse .vtf with the simple name. The game expects these paths to be without the ``.vtf`` file extension - don't add it.
+In the ``"$basetexture"`` argument enter your .vtf texture directory. We'll use ``models\weapons_r2\car_smg\car_ctm\NAMEOFVTF``. This should point to your custom diffuse .vtf with the simple name. The game expects these paths to be without the ``.vtf`` file extension - don't add it.
 
 Do the same for adding your normal map with the ``"$bumpmap"`` argument.
 
@@ -171,7 +169,7 @@ Making your Skin Animated
 
 To add animation functionality, all we need to do is add a Proxie; which is just a modifier inside a ``.vmt``, and change our albedo vtf texture. 
 
-You need to create a .vtf texture with multiple frames imported to one .vtf texture, that's your animated texture. You can do this with `VTFEdit`_. Then assign the texture in ``$basetexture``.
+You need to create a .vtf texture with multiple frames imported to a single .vtf texture, that's your animated texture. You can do this with `VTFEdit`_. Then assign the texture in ``$basetexture``.
 
 At the bottom of your vmt but before the ``}``, add this:
 ::
