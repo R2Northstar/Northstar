@@ -1,11 +1,13 @@
 #include "pch.h"
 #include "modmanager.h"
 #include "filesystem.h"
-#include "pdef.h"
 
 #include <map>
 #include <sstream>
 #include <fstream>
+
+const fs::path MOD_PDEF_SUFFIX = "cfg/server/persistent_player_data_version_231.pdef";
+const char* VPK_PDEF_PATH = "cfg/server/persistent_player_data_version_231.pdef";
 
 void ModManager::BuildPdef()
 {

@@ -1446,9 +1446,6 @@
     <ClInclude Include="modmanager.h">
       <Filter>Header Files\Mods</Filter>
     </ClInclude>
-    <ClInclude Include="pdef.h">
-      <Filter>Header Files\Mods\Compiled Assets</Filter>
-    </ClInclude>
     <ClInclude Include="printcommand.h">
       <Filter>Header Files\Console</Filter>
     </ClInclude>
@@ -1463,9 +1460,6 @@
     </ClInclude>
     <ClInclude Include="r2server.h">
       <Filter>Header Files\Game Functions</Filter>
-    </ClInclude>
-    <ClInclude Include="scriptsrson.h">
-      <Filter>Header Files\Mods\Compiled Assets</Filter>
     </ClInclude>
     <ClInclude Include="tier0.h">
       <Filter>Header Files\Game Functions</Filter>
@@ -1494,6 +1488,9 @@
     <ClInclude Include="vector.h">
       <Filter>Header Files\Math</Filter>
     </ClInclude>
+    <ClInclude Include="keyvalues.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1508,13 +1505,13 @@
     <ClCompile Include="modmanager.cpp">
       <Filter>Source Files\Mods</Filter>
     </ClCompile>
-    <ClCompile Include="scriptsrson.cpp">
+    <ClCompile Include="modscriptsrson.cpp">
       <Filter>Source Files\Mods\Compiled Assets</Filter>
     </ClCompile>
     <ClCompile Include="serverauthentication.cpp">
       <Filter>Source Files\Server\Authentication</Filter>
     </ClCompile>
-    <ClCompile Include="keyvalues.cpp">
+    <ClCompile Include="modkeyvalues.cpp">
       <Filter>Source Files\Mods\Compiled Assets</Filter>
     </ClCompile>
     <ClCompile Include="chatcommand.cpp">
@@ -1526,7 +1523,7 @@
     <ClCompile Include="dedicatedmaterialsystem.cpp">
       <Filter>Source Files\Dedicated Server</Filter>
     </ClCompile>
-    <ClCompile Include="pdef.cpp">
+    <ClCompile Include="modpdef.cpp">
       <Filter>Source Files\Mods\Compiled Assets</Filter>
     </ClCompile>
     <ClCompile Include="clientauthhooks.cpp">
@@ -1699,6 +1696,9 @@
     </ClCompile>
     <ClCompile Include="scriptdatatables.cpp">
       <Filter>Source Files\Scripted</Filter>
+    </ClCompile>
+    <ClCompile Include="keyvalues.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
