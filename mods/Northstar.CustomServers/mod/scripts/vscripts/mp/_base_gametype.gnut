@@ -1412,15 +1412,28 @@ void function CodeCallback_WeaponFireInCloak( entity player )
 		//player.SetCloakFlicker( 1.0, 2.0 )
 
 		DisableCloak( player, 0.5 )
-		entity weapon = player.GetOffhandWeapon( OFFHAND_LEFT )
-		//printt( "weapon", weapon.GetWeaponClassName() )
-		// JFS; need code feature to properly reset next attack time/cooldown stuff
-		if ( IsValid( weapon ) && weapon.GetWeaponClassName() == "mp_ability_cloak" )
+		entity cloakWeapon
+		int offhandSlot
+		for ( int i = 0; i <= OFFHAND_MELEE; i++ ) // OFFHAND_MELEE is the largest
 		{
-			player.TakeOffhandWeapon( OFFHAND_LEFT )
-			player.GiveOffhandWeapon( "mp_ability_cloak", OFFHAND_LEFT )
-			weapon = player.GetOffhandWeapon( OFFHAND_LEFT )
-			weapon.SetWeaponPrimaryClipCountAbsolute( 0 )
+			entity nowWeapon = player.GetOffhandWeapon( i )
+			if( IsValid( nowWeapon ))
+			{
+				if( nowWeapon.GetWeaponClassName() == "mp_ability_cloak" )
+				{
+					cloakWeapon = nowWeapon
+					offhandSlot = i
+				}
+			}
+		}
+		if( IsValid( cloakWeapon ) )
+		{
+			array<string> mods = cloakWeapon.GetMods()
+			// can't reset cooldown properly in script, let's give player a empty one
+			player.TakeWeapon( "mp_ability_cloak" ) // not using TakeWeaponNow() to fit vanilla behavior
+			player.GiveOffhandWeapon( "mp_ability_cloak", offhandSlot, mods )
+			cloakWeapon = player.GetOffhandWeapon( offhandSlot )
+			cloakWeapon.SetWeaponPrimaryClipCountAbsolute( 0 )
 		}
 	}
 	else
