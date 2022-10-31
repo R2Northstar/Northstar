@@ -1105,8 +1105,16 @@ void function DisplayPostMatchTop3()
 			RuiSetBool( rui, "isFriendly" + i, localTeam == players[i].GetTeam() )
 		}
 	}
+	
+	if ( GetConVarBool( "hud_takesshots" ) )
+		thread TakeScoreboardScreenshot_Delayed()
 }
 
+void function TakeScoreboardScreenshot_Delayed()
+{
+	wait 1.5
+	GetLocalClientPlayer().ClientCommand( "jpeg" )
+}
 
 float function GetGameStartTime()
 {
