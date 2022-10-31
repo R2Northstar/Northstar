@@ -265,6 +265,8 @@ void FixupCvarFlags()
 
 		{"ai_ainRebuildOnMapStart", FCVAR_DEVELOPMENTONLY},
 
+		{"save_enable", FCVAR_DEVELOPMENTONLY},
+
 		// cheat commands
 		{"switchclass", FCVAR_DEVELOPMENTONLY},
 		{"set", FCVAR_DEVELOPMENTONLY},
@@ -277,6 +279,7 @@ void FixupCvarFlags()
 		{"damagedefs_reparse_client", FCVAR_DEVELOPMENTONLY},
 		{"playerSettings_reparse", FCVAR_DEVELOPMENTONLY},
 		{"_playerSettings_reparse_Server", FCVAR_DEVELOPMENTONLY},
+
 	};
 
 	const std::vector<std::tuple<const char*, const char*>> CVAR_FIXUP_DEFAULT_VALUES = {
