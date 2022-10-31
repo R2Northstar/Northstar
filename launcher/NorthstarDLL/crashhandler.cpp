@@ -122,6 +122,7 @@ long __stdcall ExceptionFilter(EXCEPTION_POINTERS* exceptionInfo)
 
 		PVOID framesToCapture[62];
 		int frames = RtlCaptureStackBackTrace(0, 62, framesToCapture, NULL);
+		bool haveSkippedErrorHandlingFrames = false;
 		for (int i = 0; i < frames; i++)
 		{
 			HMODULE backtraceModuleHandle;
@@ -130,6 +131,19 @@ long __stdcall ExceptionFilter(EXCEPTION_POINTERS* exceptionInfo)
 			char backtraceModuleFullName[MAX_PATH];
 			GetModuleFileNameExA(GetCurrentProcess(), backtraceModuleHandle, backtraceModuleFullName, MAX_PATH);
 			char* backtraceModuleName = strrchr(backtraceModuleFullName, '\\') + 1;
+
+			if (!haveSkippedErrorHandlingFrames)
+			{
+				if (!strncmp(backtraceModuleFullName, crashedModuleFullName, MAX_PATH) &&
+					!strncmp(backtraceModuleName, crashedModuleName, MAX_PATH))
+				{
+					haveSkippedErrorHandlingFrames = true;
+				}
+				else
+				{
+					continue;
+				}
+			}
 
 			void* actualAddress = (void*)framesToCapture[i];
 			void* relativeAddress = (void*)(uintptr_t(actualAddress) - uintptr_t(backtraceModuleHandle));
