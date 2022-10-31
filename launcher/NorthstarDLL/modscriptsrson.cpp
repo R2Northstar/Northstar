@@ -1,10 +1,12 @@
 #include "pch.h"
 #include "modmanager.h"
-#include "scriptsrson.h"
 #include "filesystem.h"
 #include "squirrel.h"
 
 #include <fstream>
+
+const std::string MOD_SCRIPTS_RSON_SUFFIX = "scripts/vscripts/scripts.rson";
+const char* VPK_SCRIPTS_RSON_PATH = "scripts\\vscripts\\scripts.rson";
 
 void ModManager::BuildScriptsRson()
 {

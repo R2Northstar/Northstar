@@ -94,6 +94,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <Optimization>Disabled</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -120,6 +121,7 @@
     <ClInclude Include="bitbuf.h" />
     <ClInclude Include="bits.h" />
     <ClInclude Include="crashhandler.h" />
+    <ClInclude Include="keyvalues.h" />
     <ClInclude Include="squirreldatatypes.h" />
     <ClInclude Include="limits.h" />
     <ClInclude Include="maxplayers.h" />
@@ -547,10 +549,8 @@
     <ClInclude Include="misccommands.h" />
     <ClInclude Include="modmanager.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="pdef.h" />
     <ClInclude Include="playlist.h" />
     <ClInclude Include="rpakfilesystem.h" />
-    <ClInclude Include="scriptsrson.h" />
     <ClInclude Include="serverauthentication.h" />
     <ClInclude Include="serverpresence.h" />
     <ClInclude Include="sourceconsole.h" />
@@ -573,6 +573,7 @@
     <ClCompile Include="clientvideooverrides.cpp" />
     <ClCompile Include="concommand.cpp" />
     <ClCompile Include="exploitfixes_lzss.cpp" />
+    <ClCompile Include="keyvalues.cpp" />
     <ClCompile Include="limits.cpp" />
     <ClCompile Include="memory.cpp" />
     <ClCompile Include="nsprefix.cpp" />
@@ -588,7 +589,7 @@
     <ClCompile Include="hooks.cpp" />
     <ClCompile Include="host.cpp" />
     <ClCompile Include="hoststate.cpp" />
-    <ClCompile Include="keyvalues.cpp" />
+    <ClCompile Include="modkeyvalues.cpp" />
     <ClCompile Include="latencyflex.cpp" />
     <ClCompile Include="localchatwriter.cpp" />
     <ClCompile Include="printmaps.cpp" />
@@ -605,7 +606,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="pdef.cpp" />
+    <ClCompile Include="modpdef.cpp" />
     <ClCompile Include="playlist.cpp" />
     <ClCompile Include="plugins.cpp" />
     <ClCompile Include="printcommands.cpp" />
@@ -620,7 +621,7 @@
     <ClCompile Include="scriptmainmenupromos.cpp" />
     <ClCompile Include="scriptmodmenu.cpp" />
     <ClCompile Include="scriptserverbrowser.cpp" />
-    <ClCompile Include="scriptsrson.cpp" />
+    <ClCompile Include="modscriptsrson.cpp" />
     <ClCompile Include="scriptutility.cpp" />
     <ClCompile Include="serverauthentication.cpp" />
     <ClCompile Include="miscserverscript.cpp" />
