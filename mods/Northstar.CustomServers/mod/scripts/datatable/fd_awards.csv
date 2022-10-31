@@ -1,0 +1,15 @@
+ref,priority,displayString,subText,awardDisplayString,displayStyle,image,validityCheck,validityCheckValue,comparisonCheck,needsToBeBest
+"harvesterHeals",5,"#FD_AWARD_0","#FD_AWARD_SUBTEXT_0","#FD_AWARD_VALUE_DISPLAY_BLANK","FD_DISPLAY_STYLE_NUMBER","rui/medals/shielded_harvester","greater_than",1.000000,"highest",1
+"mortarUnitsKilled",3,"#FD_AWARD_1","#FD_AWARD_SUBTEXT_1","#FD_AWARD_VALUE_DISPLAY_BLANK","FD_DISPLAY_STYLE_NUMBER","rui/medals/mortar_units","greater_than",1.000000,"highest",1
+"moneySpent",4,"#FD_AWARD_2","#FD_AWARD_SUBTEXT_2","#FD_AWARD_VALUE_DISPLAY_MONEY","FD_DISPLAY_STYLE_NUMBER","rui/medals/cash_spent","greater_than",2000.000000,"highest",1
+"coresUsed",8,"#FD_AWARD_3","#FD_AWARD_SUBTEXT_3","#FD_AWARD_VALUE_DISPLAY_BLANK","FD_DISPLAY_STYLE_NUMBER","rui/medals/titan_core","greater_than",1.000000,"highest",1
+"longestTitanLife",9,"#FD_AWARD_4","#FD_AWARD_SUBTEXT_4","#FD_AWARD_VALUE_DISPLAY_SECONDS","FD_DISPLAY_STYLE_TIME","rui/medals/least_lost","greater_than",100.000000,"highest",1
+"turretsRepaired",7,"#FD_AWARD_5","#FD_AWARD_SUBTEXT_5","#FD_AWARD_VALUE_DISPLAY_BLANK","FD_DISPLAY_STYLE_NUMBER","rui/medals/turrets_healed","greater_than",5.000000,"highest",1
+"moneyShared",6,"#FD_AWARD_6","#FD_AWARD_SUBTEXT_6","#FD_AWARD_VALUE_DISPLAY_MONEY","FD_DISPLAY_STYLE_NUMBER","rui/medals/cash_shared","greater_than",100.000000,"highest",1
+"damageDealt",1,"#FD_AWARD_7","#FD_AWARD_SUBTEXT_7","#FD_AWARD_VALUE_DISPLAY_POINTS","FD_DISPLAY_STYLE_NUMBER","rui/medals/most_damage","greater_than",-1.000000,"highest",0
+"timeNearHarvester",2,"#FD_AWARD_8","#FD_AWARD_SUBTEXT_8","#FD_AWARD_VALUE_DISPLAY_SECONDS","FD_DISPLAY_STYLE_TIME","rui/medals/harvester_protect","greater_than",200.000000,"highest",1
+"longestLife",0,"#FD_AWARD_9","#FD_AWARD_SUBTEXT_9","#FD_AWARD_VALUE_DISPLAY_SECONDS","FD_DISPLAY_STYLE_TIME","rui/medals/long_life","greater_than",200.000000,"highest",1
+"heals",11,"#FD_AWARD_10","#FD_AWARD_SUBTEXT_10","#FD_AWARD_VALUE_DISPLAY_POINTS","FD_DISPLAY_STYLE_NUMBER","rui/medals/heal","greater_than",5000.000000,"highest",1
+"turretKills",10,"#FD_AWARD_11","#FD_AWARD_SUBTEXT_11","#FD_AWARD_VALUE_DISPLAY_BLANK","FD_DISPLAY_STYLE_NUMBER","rui/medals/turret_damage","greater_than",10.000000,"highest",1
+"mvp",13,"#FD_AWARD_12","#FD_AWARD_SUBTEXT_12","#FD_AWARD_VALUE_DISPLAY_BLANK","FD_DISPLAY_STYLE_NUMBER","rui/medals/mvp","greater_than",2.000000,"highest",1
+"titanKills",12,"#FD_AWARD_13","#FD_AWARD_SUBTEXT_13","#FD_AWARD_VALUE_DISPLAY_BLANK","FD_DISPLAY_STYLE_NUMBER","rui/medals/titans_killed","greater_than",30.000000,"highest",1

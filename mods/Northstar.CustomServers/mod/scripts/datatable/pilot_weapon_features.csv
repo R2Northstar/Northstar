@@ -1,0 +1,5 @@
+featureRef,featureName,featureDesc,featureIcon,cost
+"primarymod2","#EXTRA_MOD","","rui/hud/common/feature_icon",0
+"secondarymod2","#EXTRA_MOD","","rui/hud/common/feature_icon",0
+"primarymod3","#MOD_PRO_SCREEN_NAME","","rui/hud/common/feature_icon",0
+"secondarymod3","#MOD_PRO_SCREEN_NAME","","rui/hud/common/feature_icon",0
