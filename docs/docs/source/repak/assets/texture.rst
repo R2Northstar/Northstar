@@ -23,8 +23,8 @@ The image used by a texture must be in the .dds format and must be in one of the
 Examples:
 =========
 
-1. Basic Texture Asset
-----------------------
+1. Basic Texture Asset - No streaming
+-------------------------------------
 
 .. code-block:: json
 
@@ -38,7 +38,25 @@ Examples:
     The image file in this texture asset will be called ``test_texture.dds`` and will be at ``<ASSETSDIR>/textures/models/humans/test_texture.dds``
 
 .. note::
-    This texture will not be stored in a .starpak file, and all mip levels will be stored in the .rpak file
+    Because ``disableStreaming`` is ``true``, this texture will not be stored in a .starpak file, and all mip levels will be stored in the .rpak file
+
+2. Streamed Texture Asset
+-------------------------------------
+
+.. code-block:: json
+
+    {
+        "$type": "txtr",
+        "path": "textures/models/humans/test_texture_2",
+        "starpakPath": "test_texture_2.starpak"
+    }
+
+.. note::
+    The image file in this texture asset will be called ``test_texture_2.dds`` and will be at ``<ASSETSDIR>/textures/models/humans/test_texture_2.dds``
+
+.. note::
+    Because ``disableStreaming`` is not present, this texture will have it's higher resolution mip levels stored in ``test_texture_2.starpak``, as defined by the ``starpakPath``.
+    It will not use the default ``starpakPath`` if one is defined outside of the ``files`` array
 
 Asset Structure:
 ================
@@ -74,6 +92,28 @@ The ``path`` field must start with ``textures/`` and must not end with a file ex
 
     ``Attempted to add txtr asset '%s' that was not using a supported DDS type. Exiting...``
     where ``%s`` is the ``path`` field of the texture.
+
+``starpakPath``
+---------------
+
+The ``starpakPath`` field of a texture asset determines the path of the starpak in which the higher resolution mip levels should be stored.
+
+If no ``starpakPath`` value is specified, RePak will default to using the default ``starpakPath``, defined at file scope in the map file.
+
+The ``starpakPath`` field should be a string, and importantly, should end in ``.starpak``. 
+
+.. note::
+    If the starpak name ends in ``_hotswap.starpak`` (e.g. ``my_thing_hotswap.starpak``) then Titanfall 2 will view it as optional.
+    This allows the starpak to be moved, removed, or replaced while the game is running and streaming the texture.
+    This can be useful for debugging.
+
+.. error::
+    If the ``starpakPath`` is not present, and no ``starpakPath`` is defined at file scope, RePak will output the following error to the console.
+
+    ``attempted to add asset '%s' as a streaming asset, but no starpak files were available.
+    to fix: add 'starpakPath' as an rpak-wide variable
+    or: add 'starpakPath' as an asset specific variable``
+    where %s is the ``path`` of the texture asset
 
 ``disableStreaming``
 --------------------
