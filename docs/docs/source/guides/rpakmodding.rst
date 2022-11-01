@@ -1,6 +1,21 @@
 RPak Modding
 ============
 
+What Are RPaks/Starpaks?
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+.rpak files are a file format created by Respawn as the main way to store and load in-game assets,
+such as textures, materials, datatables, animation recordings, etc. The assets in the .rpak file are kept stored in memory
+as long as the .rpak file is loaded.
+
+.starpak files are another file format created by Respawn to complement the .rpak file format.
+They contain streamed asset data, saving hardware resources by only loading the data when needed.
+The most common example of streamed asset data is high resolution textures. The low resolution versions are kept permanently loaded
+in a .rpak file, whilst the higher resolution versions are loaded as needed.
+
+What can RPak mods do?
+----------------------
+
 RPak mods can be used for the following:
 
 * Custom UI
@@ -119,6 +134,7 @@ Below is an example of a map file that creates an RPak called ``example.rpak`` w
         "name":"example",
         "assetsDir":"../assets",
         "outputDir":"../rpaks",
+        "starpakPath": "example.starpak"
         "version": 7,
         "files":[
             {
@@ -131,6 +147,7 @@ Below is an example of a map file that creates an RPak called ``example.rpak`` w
 - ``name``: the name of the file that gets created by RePak.
 - ``assetsDir``: the folder that RePak bases the file path on when looking for textures.
 - ``outputDir``: the folder that RePak will put the files that it creates in.
+- ``starpakPath``: the path of the starpak file for streaming textures.
 - ``version``: the RPak version RePak will use when creating the RPaks. **Version 7 is Titanfall 2, version 8 is Apex Legends.**
 - ``files``: an array of all of the assets that RePak will create in the RPak.
 - ``$type``: the type of asset that this asset is, use ``txtr`` for textures.
@@ -228,6 +245,7 @@ The file structure of your ``paks`` folder should be similar to this:
 
     paks
     ├── example.rpak
+    ├── example.starpak
     └── rpak.json
 
 - ``example.rpak``: this is the RPak file that you made.
