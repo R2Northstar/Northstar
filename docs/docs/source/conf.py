@@ -19,6 +19,8 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
     "sphinx_tabs.tabs",
+    "sphinxcontrib.youtube",
+    "sphinx_copybutton",
 ]
 
 intersphinx_mapping = {
