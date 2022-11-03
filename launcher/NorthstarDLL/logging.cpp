@@ -252,7 +252,7 @@ void InitialiseLogging()
 	spdlog::default_logger()->set_pattern("[%H:%M:%S] [%l] %v");
 }
 
-ON_DLL_LOAD_CLIENT_RELIESON("engine.dll", EngineSpewFuncHooks, ConVar, (CModule module))
+ON_DLL_LOAD_RELIESON("engine.dll", EngineSpewFuncHooks, ConVar, (CModule module))
 {
 	AUTOHOOK_DISPATCH_MODULE(engine.dll)
 
