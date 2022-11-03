@@ -293,6 +293,21 @@ sphinx = ">=4.0,<6.0"
 docs = ["furo", "myst-parser", "sphinx-copybutton", "sphinx-inline-tabs", "ipython"]
 
 [[package]]
+name = "sphinx-copybutton"
+version = "0.5.0"
+description = "Add a copy button to each of your code cells."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+sphinx = ">=1.8"
+
+[package.extras]
+code_style = ["pre-commit (==2.12.1)"]
+rtd = ["sphinx", "ipython", "myst-nb", "sphinx-book-theme"]
+
+[[package]]
 name = "sphinx-tabs"
 version = "3.4.1"
 description = "Tabbed views for Sphinx"
@@ -381,6 +396,21 @@ lint = ["flake8", "mypy", "docutils-stubs"]
 test = ["pytest"]
 
 [[package]]
+name = "sphinxcontrib-youtube"
+version = "1.2.0"
+description = "Sphinx \"youtube\" extension"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+requests = "*"
+Sphinx = ">=0.6"
+
+[package.extras]
+doc = ["sphinx-copybutton", "furo"]
+
+[[package]]
 name = "tornado"
 version = "6.2"
 description = "Tornado is a Python web framework and asynchronous networking library, originally developed at FriendFeed."
@@ -416,7 +446,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "1d015545c2bdcbaaa1d8360e0a9e3a85d6012c99af7395449844a0d8b100a806"
+content-hash = "98ddd72bf098607992a8fa2d32eaf11dd0e915b6935742f7f49ba4d54cdfbabd"
 
 [metadata.files]
 alabaster = []
@@ -462,6 +492,7 @@ soupsieve = []
 sphinx = []
 sphinx-autobuild = []
 sphinx-basic-ng = []
+sphinx-copybutton = []
 sphinx-tabs = []
 sphinxcontrib-applehelp = []
 sphinxcontrib-devhelp = []
@@ -469,6 +500,7 @@ sphinxcontrib-htmlhelp = []
 sphinxcontrib-jsmath = []
 sphinxcontrib-qthelp = []
 sphinxcontrib-serializinghtml = []
+sphinxcontrib-youtube = []
 tornado = []
 urllib3 = []
 zipp = []
