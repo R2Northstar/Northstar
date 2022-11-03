@@ -126,7 +126,7 @@ ON_DLL_LOAD_DEDI_RELIESON("engine.dll", DedicatedServer, ServerPresence, (CModul
 {
 	spdlog::info("InitialiseDedicated");
 
-	AUTOHOOK_DISPATCH_MODULE("engine.dll")
+	AUTOHOOK_DISPATCH_MODULE(engine.dll)
 
 	// Host_Init
 	// prevent a particle init that relies on client dll
