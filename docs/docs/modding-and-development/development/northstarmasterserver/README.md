@@ -1,5 +1,9 @@
 # NorthstarMasterServer
 
+{% hint style="warning" %}
+The old NodeJS master server has been replaced in favour of the Go rewrite called Atlas.
+{% endhint %}
+
 ## Introduction
 
 The master server is responsible for centralizing game servers created by players, it also verifies that connecting players own an Origin account with Titanfall 2.
