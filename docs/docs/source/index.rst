@@ -78,3 +78,10 @@ If you know anything about any function, object or concept please dont hesitate 
    :caption: Reverse Engineering Titanfall2
 
    /reverse-engineering/introduction
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: Mapping Tools
+
+   /mapping/info-dump
