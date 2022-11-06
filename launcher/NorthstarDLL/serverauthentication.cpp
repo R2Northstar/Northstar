@@ -398,8 +398,11 @@ void,, (R2::CBaseClient* self, uint32_t unknownButAlways1, const char* pReason, 
 		g_pServerAuthentication->RemovePlayerAuthData(self); // won't do anything 99% of the time, but just in case
 	}
 
-	g_pServerAuthentication->RemovePlayer(self);
-	g_pServerLimits->RemovePlayer(self);
+	if (g_pServerAuthentication->m_RemoteAuthenticationData.count(self->m_Name))
+	{
+		g_pServerAuthentication->RemovePlayer(self);
+		g_pServerLimits->RemovePlayer(self);
+	}
 
 	g_pServerPresence->SetPlayerCount(g_pServerAuthentication->m_PlayerAuthenticationData.size());
 
