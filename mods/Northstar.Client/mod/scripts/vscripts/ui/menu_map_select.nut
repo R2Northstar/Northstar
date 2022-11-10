@@ -43,7 +43,7 @@ void function InitMapsMenu()
 {
 	file.menu = GetMenu( "MapsMenu" )
 	
-	AddMouseMovementCaptureHandler( file.menu, UpdateMouseDeltaBuffer )
+	AddMouseMovementCaptureHandler( Hud_GetChild(file.menu, "MouseMovementCapture"), UpdateMouseDeltaBuffer )
 	
 
 	AddMenuEventHandler( file.menu, eUIEvent.MENU_CLOSE, OnCloseMapsMenu )

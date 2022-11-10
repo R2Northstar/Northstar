@@ -83,7 +83,7 @@ void function InitModMenu()
 		RuiSetImage( rui, "basicImage", $"ui/menu/common/dialog_error" )
 	}
 
-	AddMouseMovementCaptureHandler( file.menu, UpdateMouseDeltaBuffer )
+	AddMouseMovementCaptureHandler( Hud_GetChild(file.menu, "MouseMovementCapture"), UpdateMouseDeltaBuffer )
 
 	// UI Events
 	AddMenuEventHandler( file.menu, eUIEvent.MENU_OPEN, OnModMenuOpened )
