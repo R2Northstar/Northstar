@@ -115,6 +115,10 @@
 		{
 			"Path": "ui/controller_prompts.nut",
 			"RunOn": "UI"
+		},
+		{
+			"Path": "ui/ui_mouse_capture.nut",
+			"RunOn": "UI"
 		}
 	],
 	"Localisation": [

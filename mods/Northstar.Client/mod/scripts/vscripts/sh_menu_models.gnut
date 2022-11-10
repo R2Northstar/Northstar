@@ -207,19 +207,9 @@
 #endif // CLIENT && MP
 
 #if UI
-	struct
-	{
-		table MouseMovementCaptureFunctionsTable = {}
-	} file
-
-	const MOUSE_ROTATE_MULTIPLIER = 25.0
-
 	global function UpdateUIMapSupportsMenuModels
 	global function RunMenuClientFunction
 	global function UI_SetPresentationType
-
-	global function AddMouseMovementCaptureHandler
-	global function UICodeCallback_MouseMovementCapture
 #endif // UI
 
 	global const STORE_BG_DEFAULT = 0
@@ -2896,31 +2886,5 @@
 				)
 				RunClientScript( "UpdateMenuToHarvester" )
 		}
-	}
-
-	void function AddMouseMovementCaptureHandler( var menu, void functionref( int, int ) func )
-	{
-		file.MouseMovementCaptureFunctionsTable.rawset( menu, func )
-	}
-
-	void function UpdateMouseMovementCaptureFunctions( int deltaX, int deltaY )
-	{
-		var activeMenu = GetActiveMenu()
-		if ( file.MouseMovementCaptureFunctionsTable.rawin( activeMenu ) )
-			file.MouseMovementCaptureFunctionsTable.rawget( activeMenu )(deltaX, deltaY)
-	}
-
-	void function UICodeCallback_MouseMovementCapture( var capturePanel, int deltaX, int deltaY )
-	{
-		float screenScaleXModifier = 1920.0 / GetScreenSize()[0] // 1920 is base screen width
-		float mouseXRotateDelta = deltaX * screenScaleXModifier * MOUSE_ROTATE_MULTIPLIER
-		//printt( "deltaX:", deltaX, "deltaY:", deltaY )
-
-		float screenScaleYModifier = 1080.0 / GetScreenSize()[1] // 1920 is base screen width
-		float mouseYRotationDelta = deltaY * screenScaleYModifier * MOUSE_ROTATE_MULTIPLIER
-
-		UpdateMouseMovementCaptureFunctions( deltaX, deltaY )
-
-		RunMenuClientFunction( "UpdateMouseRotateDelta", mouseXRotateDelta, mouseYRotationDelta )
 	}
 #endif // UI
