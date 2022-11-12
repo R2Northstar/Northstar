@@ -36,6 +36,11 @@ global function UpdateEjectHud_SetButtonPressTime
 global function UpdateEjectHud_SetButtonPressCount
 
 global function SetUnlimitedDash
+
+// Added by northstar
+global function AddCommonEjectMessage
+global function AddRareEjectMessage
+
 #if MP
 global function NetworkedVarChangedCallback_UpdateVanguardRUICoreStatus
 global function DisplayFrontierRank
@@ -71,6 +76,9 @@ struct
 
 	bool isFirstBoot = true
 	var scorchHotstreakRui
+	// Added by northstar
+	array<string> moddedRareEjectMessages
+	array<string> moddedCommonEjectMessages
 } file
 
 function ClTitanCockpit_Init()
@@ -1007,6 +1015,16 @@ void function PlayerPressed_Eject( entity player )
 	PlayerEjects( player, cockpit )
 }
 
+void function AddCommonEjectMessage( string message )
+{
+	file.moddedCommonEjectMessages.append( message )
+}
+
+void function AddRareEjectMessage( string message )
+{
+	file.moddedRareEjectMessages.append( message )
+}
+
 string function RollRandomEjectString()
 {
 	const int COCKPIT_EJECT_COMMON_COUNT = 6
@@ -1016,14 +1034,19 @@ string function RollRandomEjectString()
 	float randForType = RandomFloat( 1.0 )
 	if ( randForType < CHANCE_FOR_RARE )
 	{
-		int index = RandomInt( COCKPIT_EJECT_RARE_COUNT )
-		string result = "#COCKPIT_EJECT_RARE_" + index
-		return result
+		int index = RandomInt( COCKPIT_EJECT_RARE_COUNT + file.moddedRareEjectMessages.len() )
+		if ( index < COCKPIT_EJECT_RARE_COUNT )
+			return "#COCKPIT_EJECT_RARE_" + index
+		else
+			return file.moddedRareEjectMessages[index - COCKPIT_EJECT_RARE_COUNT]
 	}
 
-	int index = RandomInt( COCKPIT_EJECT_COMMON_COUNT )
-	string result = "#COCKPIT_EJECT_COMMON_" + index
-	return result
+	int index = RandomInt( COCKPIT_EJECT_COMMON_COUNT + file.moddedCommonEjectMessages.len() )
+	if ( index < COCKPIT_EJECT_COMMON_COUNT )
+		return "#COCKPIT_EJECT_COMMON_" + index
+	else
+		return file.moddedCommonEjectMessages[index - COCKPIT_EJECT_COMMON_COUNT]
+
 }
 
 void function PlayerEjects( entity player, entity cockpit ) //Note that this can be run multiple times in a frame, e.g. get damaged by 4 pellets of a shotgun that brings the Titan into a doomed state with auto eject. Not ideal
