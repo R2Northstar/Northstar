@@ -204,6 +204,7 @@ void FixupCvarFlags()
 		{"cam_ideallag", FCVAR_DEVELOPMENTONLY},
 
 		// graphics/visual settings
+		{"mat_colorcorrection", FCVAR_DEVELOPMENTONLY},
 		{"r_hbaoRadius", FCVAR_DEVELOPMENTONLY},
 		{"r_hbaoDepthMax", FCVAR_DEVELOPMENTONLY},
 		{"r_hbaoBlurSharpness", FCVAR_DEVELOPMENTONLY},
