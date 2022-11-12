@@ -206,8 +206,12 @@ int, __fastcall, (char* pPath, void* unknownSingleton, int flags, void* pCallbac
 
 		// do this after custom paks load and in bShouldLoadPaks so we only ever call this on the root pakload call
 		// todo: could probably add some way to flag custom paks to not be loaded on dedicated servers in rpak.json
+
+		// dedicated only needs common, common_mp, common_sp, and sp_<map> rpaks
+		// sp_<map> rpaks contain tutorial ghost data
+		// sucks to have to load the entire rpak for that but sp was never meant to be done on dedi
 		if (IsDedicatedServer() && (Tier0::CommandLine()->CheckParm("-nopakdedi") ||
-									strncmp(&originalPath[0], "common", 6))) // dedicated only needs common and common_mp
+									strncmp(&originalPath[0], "common", 6) && strncmp(&originalPath[0], "sp_", 3)))
 		{
 			if (bNeedToFreePakName)
 				delete[] pPath;
