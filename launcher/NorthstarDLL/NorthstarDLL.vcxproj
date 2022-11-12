@@ -572,6 +572,7 @@
     <ClCompile Include="clientruihooks.cpp" />
     <ClCompile Include="clientvideooverrides.cpp" />
     <ClCompile Include="concommand.cpp" />
+    <ClCompile Include="diskvmtfixes.cpp" />
     <ClCompile Include="exploitfixes_lzss.cpp" />
     <ClCompile Include="keyvalues.cpp" />
     <ClCompile Include="limits.cpp" />
