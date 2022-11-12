@@ -8,6 +8,35 @@
 
 AUTOHOOK_INIT()
 
+std::shared_ptr<ColoredLogger> getSquirrelLoggerByContext(ScriptContext context)
+{
+	switch (context)
+	{
+	case ScriptContext::UI:
+		return NS::log::SCRIPT_UI;
+	case ScriptContext::CLIENT:
+		return NS::log::SCRIPT_CL;
+	case ScriptContext::SERVER:
+		return NS::log::SCRIPT_SV;
+	default:
+		throw std::runtime_error("getSquirrelLoggerByContext called with invalid context");
+		return nullptr;
+	}
+}
+
+namespace NS::log
+{
+	template <ScriptContext context> std::shared_ptr<spdlog::logger> squirrel_logger()
+	{
+		// Switch statements can't be constexpr afaik
+		// clang-format off
+		if constexpr (context == ScriptContext::UI) { return SCRIPT_UI; }
+		if constexpr (context == ScriptContext::CLIENT) { return SCRIPT_CL; }
+		if constexpr (context == ScriptContext::SERVER) { return SCRIPT_SV; }
+		// clang-format on
+	}
+}; // namespace NS::log
+
 const char* GetContextName(ScriptContext context)
 {
 	switch (context)
@@ -20,6 +49,21 @@ const char* GetContextName(ScriptContext context)
 		return "UI";
 	default:
 		return "UNKNOWN";
+	}
+}
+
+const char* GetContextName_Short(ScriptContext context)
+{
+	switch (context)
+	{
+	case ScriptContext::CLIENT:
+		return "CL";
+	case ScriptContext::SERVER:
+		return "SV";
+	case ScriptContext::UI:
+		return "UI";
+	default:
+		return "??";
 	}
 }
 
@@ -230,8 +274,7 @@ template <ScriptContext context> SQInteger SQPrintHook(HSquirrelVM* sqvm, const 
 	{
 		if (buf[charsWritten - 1] == '\n')
 			buf[charsWritten - 1] = '\0';
-
-		spdlog::info("[{} SCRIPT] {}", GetContextName(context), buf);
+		g_pSquirrel<context>->logger->info("{}", buf);
 	}
 
 	va_end(va);
@@ -279,8 +322,10 @@ void __fastcall ScriptCompileErrorHook(HSquirrelVM* sqvm, const char* error, con
 		bIsFatalError = g_pSquirrel<ScriptContext::UI>->m_bFatalCompilationErrors;
 	}
 
-	spdlog::error("{} SCRIPT COMPILE ERROR {}", GetContextName(realContext), error);
-	spdlog::error("{} line [{}] column [{}]", file, line, column);
+	auto logger = getSquirrelLoggerByContext(realContext);
+
+	logger->error("COMPILE ERROR {}", error);
+	logger->error("{} line [{}] column [{}]", file, line, column);
 
 	// use disconnect to display an error message for the compile error, but only if the compilation error was fatal
 	// todo, we could get this from sqvm itself probably, rather than hooking sq_compiler_create
@@ -518,6 +563,9 @@ ON_DLL_LOAD_RELIESON("client.dll", ClientSquirrel, ConCommand, (CModule module))
 		&g_pSquirrel<ScriptContext::CLIENT>->RegisterSquirrelFunc);
 	g_pSquirrel<ScriptContext::UI>->RegisterSquirrelFunc = g_pSquirrel<ScriptContext::CLIENT>->RegisterSquirrelFunc;
 
+	g_pSquirrel<ScriptContext::CLIENT>->logger = NS::log::SCRIPT_CL;
+	g_pSquirrel<ScriptContext::UI>->logger = NS::log::SCRIPT_UI;
+
 	// uiscript_reset concommand: don't loop forever if compilation fails
 	module.Offset(0x3C6E4C).NOP(6);
 
@@ -581,6 +629,8 @@ ON_DLL_LOAD_RELIESON("server.dll", ServerSquirrel, ConCommand, (CModule module))
 
 	g_pSquirrel<ScriptContext::SERVER>->__sq_GetEntityConstant_CBaseEntity = module.Offset(0x418AF0).As<sq_GetEntityConstantType>();
 	g_pSquirrel<ScriptContext::SERVER>->__sq_getentityfrominstance = module.Offset(0x1E920).As<sq_getentityfrominstanceType>();
+
+	g_pSquirrel<ScriptContext::SERVER>->logger = NS::log::SCRIPT_SV;
 
 	MAKEHOOK(
 		module.Offset(0x1DD10),

@@ -83,6 +83,7 @@ enum class ScriptContext : int
 };
 
 const char* GetContextName(ScriptContext context);
+const char* GetContextName_Short(ScriptContext context);
 eSQReturnType SQReturnTypeFromString(const char* pReturnType);
 const char* SQTypeNameFromID(const int iTypeId);
 
@@ -143,6 +144,8 @@ template <ScriptContext context> class SquirrelManager
 	std::map<std::string, SQFunction> m_funcOriginals = {};
 
 	bool m_bFatalCompilationErrors = false;
+
+	std::shared_ptr<spdlog::logger> logger;
 
 #pragma region SQVM funcs
 	RegisterSquirrelFuncType RegisterSquirrelFunc;

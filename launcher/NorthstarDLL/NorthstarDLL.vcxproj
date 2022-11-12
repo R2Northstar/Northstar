@@ -122,6 +122,7 @@
     <ClInclude Include="bits.h" />
     <ClInclude Include="crashhandler.h" />
     <ClInclude Include="keyvalues.h" />
+    <ClInclude Include="loghooks.h" />
     <ClInclude Include="squirreldatatypes.h" />
     <ClInclude Include="limits.h" />
     <ClInclude Include="maxplayers.h" />
@@ -576,6 +577,8 @@
     <ClCompile Include="exploitfixes_lzss.cpp" />
     <ClCompile Include="keyvalues.cpp" />
     <ClCompile Include="limits.cpp" />
+    <ClCompile Include="color.cpp" />
+    <ClCompile Include="loghooks.cpp" />
     <ClCompile Include="memory.cpp" />
     <ClCompile Include="nsprefix.cpp" />
     <ClCompile Include="convar.cpp" />

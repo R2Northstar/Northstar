@@ -11,30 +11,6 @@ class EditablePanel
 	unsigned char unknown[0x2B0];
 };
 
-struct SourceColor
-{
-	unsigned char R;
-	unsigned char G;
-	unsigned char B;
-	unsigned char A;
-
-	SourceColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
-	{
-		R = r;
-		G = g;
-		B = b;
-		A = a;
-	}
-
-	SourceColor()
-	{
-		R = 0;
-		G = 0;
-		B = 0;
-		A = 0;
-	}
-};
-
 class IConsoleDisplayFunc
 {
   public:
@@ -89,19 +65,20 @@ class CGameConsole
 extern SourceInterface<CGameConsole>* g_pSourceGameConsole;
 
 // spdlog logger
-class SourceConsoleSink : public spdlog::sinks::base_sink<std::mutex>
+class SourceConsoleSink : public CustomSink
 {
   private:
 	std::map<spdlog::level::level_enum, SourceColor> m_LogColours = {
-		{spdlog::level::trace, SourceColor(0, 255, 255, 255)},
-		{spdlog::level::debug, SourceColor(0, 255, 255, 255)},
-		{spdlog::level::info, SourceColor(255, 255, 255, 255)},
-		{spdlog::level::warn, SourceColor(255, 255, 0, 255)},
-		{spdlog::level::err, SourceColor(255, 0, 0, 255)},
-		{spdlog::level::critical, SourceColor(255, 0, 0, 255)},
-		{spdlog::level::off, SourceColor(0, 0, 0, 0)}};
+		{spdlog::level::trace, NS::Colors::TRACE.ToSourceColor()},
+		{spdlog::level::debug, NS::Colors::DEBUG.ToSourceColor()},
+		{spdlog::level::info, NS::Colors::INFO.ToSourceColor()},
+		{spdlog::level::warn, NS::Colors::WARN.ToSourceColor()},
+		{spdlog::level::err, NS::Colors::ERR.ToSourceColor()},
+		{spdlog::level::critical, NS::Colors::CRIT.ToSourceColor()},
+		{spdlog::level::off, NS::Colors::OFF.ToSourceColor()}};
 
   protected:
+	void custom_sink_it_(const custom_log_msg& msg);
 	void sink_it_(const spdlog::details::log_msg& msg) override;
 	void flush_() override;
 };

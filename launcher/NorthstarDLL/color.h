@@ -27,6 +27,30 @@ typedef struct color32_s
 	uint8_t r, g, b, a;
 } color32;
 
+struct SourceColor
+{
+	unsigned char R;
+	unsigned char G;
+	unsigned char B;
+	unsigned char A;
+
+	SourceColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+	{
+		R = r;
+		G = g;
+		B = b;
+		A = a;
+	}
+
+	SourceColor()
+	{
+		R = 0;
+		G = 0;
+		B = 0;
+		A = 0;
+	}
+};
+
 //-----------------------------------------------------------------------------
 // Purpose: Basic handler for an rgb set of colors
 //			This class is fully inline
@@ -34,7 +58,7 @@ typedef struct color32_s
 class Color
 {
   public:
-	Color(int r, int g, int b, int a)
+	Color(int r, int g, int b, int a = 255)
 	{
 		_color[0] = (unsigned char)r;
 		_color[1] = (unsigned char)g;
@@ -130,6 +154,44 @@ class Color
 		return newColor;
 	}
 
+	std::string ToANSIColor()
+	{
+		std::string out = "\033[38;2;";
+		out += std::to_string(_color[0]) + ";";
+		out += std::to_string(_color[1]) + ";";
+		out += std::to_string(_color[2]) + ";";
+		out += "49m";
+		return out;
+	}
+
+	SourceColor ToSourceColor()
+	{
+		return SourceColor(_color[0], _color[1], _color[2], _color[3]);
+	}
+
   private:
 	unsigned char _color[4];
 };
+
+namespace NS::Colors
+{
+	extern Color SCRIPT_UI;
+	extern Color SCRIPT_CL;
+	extern Color SCRIPT_SV;
+	extern Color NATIVE_UI;
+	extern Color NATIVE_CL;
+	extern Color NATIVE_SV;
+	extern Color NATIVE_ENGINE;
+	extern Color FILESYSTEM;
+	extern Color RPAK;
+	extern Color NORTHSTAR;
+	extern Color ECHO;
+
+	extern Color TRACE;
+	extern Color DEBUG;
+	extern Color INFO;
+	extern Color WARN;
+	extern Color ERR;
+	extern Color CRIT;
+	extern Color OFF;
+}; // namespace NS::Colors
