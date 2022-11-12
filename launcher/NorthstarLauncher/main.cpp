@@ -324,6 +324,15 @@ HMODULE LoadDediStub(const char* name)
 int main(int argc, char* argv[])
 {
 
+	if (strstr(GetCommandLineA(), "-waitfordebugger"))
+	{
+		while (!IsDebuggerPresent())
+		{
+			// Sleep 100ms to give debugger time to attach.
+			Sleep(100);
+		}
+	}
+
 	if (!GetExePathWide(exePath, sizeof(exePath)))
 	{
 		MessageBoxA(
