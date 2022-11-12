@@ -264,7 +264,7 @@ void function UseBurnCardWeapon( entity weapon, entity player )
 	if ( PlayerEarnMeter_IsRewardAvailable( player ) )
 		PlayerEarnMeter_SetRewardUsed( player )
 
-	PlayerInventory_PopInventoryItem( player )
+	thread PlayerInventory_PopInventoryItem( player )
 }
 
 void function UseBurnCardWeaponInCriticalSection( entity weapon, entity ownerPlayer )

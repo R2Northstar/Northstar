@@ -32,7 +32,7 @@ void function Sv_ItemInventory_OnPlayerGetsNewPilotLoadout( entity player, Pilot
 
 	if (playerInventoryStack.len() > 0) {
 		InventoryItem topInventoryItem = playerInventoryStack[playerInventoryStack.len() - 1]
-		PlayerInventory_GiveInventoryItem(player, topInventoryItem)
+		thread PlayerInventory_GiveInventoryItem(player, topInventoryItem)
 	}
 
 	return
@@ -68,13 +68,25 @@ int function PlayerInventory_CountBurnRef( entity player, string burnRef )
 
 void function PlayerInventory_TakeInventoryItem( entity player )
 {
+	player.EndSignal( "OnDestroy" )
 	entity preexistingWeapon = player.GetOffhandWeapon( OFFHAND_INVENTORY )
-	if ( IsValid( preexistingWeapon ) )
-		player.TakeWeaponNow( preexistingWeapon.GetWeaponClassName() )
+
+	if( !IsValid( preexistingWeapon ) )
+		return
+	preexistingWeapon.EndSignal( "OnDestroy" )
+	if( preexistingWeapon.GetWeaponClassName() == "mp_ability_burncardweapon" )
+	{
+		var fireTime = preexistingWeapon.GetWeaponInfoFileKeyField( "fire_anim_rate" )
+		if( fireTime )
+			wait fireTime
+	}
+	player.TakeWeaponNow( preexistingWeapon.GetWeaponClassName() )
 }
 
 void function PlayerInventory_GiveInventoryItem( entity player, InventoryItem inventoryItem )
 {
+	player.EndSignal( "OnDestroy" )
+
 	array<string> mods = []
 
 	if ( inventoryItem.itemType == eInventoryItemType.burnmeter ) {
@@ -84,7 +96,10 @@ void function PlayerInventory_GiveInventoryItem( entity player, InventoryItem in
 	}
 
 	// ensure inventory slot isn't full to avoid crash
-	PlayerInventory_TakeInventoryItem( player )
+	waitthread PlayerInventory_TakeInventoryItem( player )
+	entity preexistingWeapon = player.GetOffhandWeapon( OFFHAND_INVENTORY ) // defensive fix
+	if( IsValid( preexistingWeapon ) )
+		player.TakeWeaponNow( preexistingWeapon.GetWeaponClassName() )
 
 	player.GiveOffhandWeapon( inventoryItem.weaponRef, OFFHAND_INVENTORY, mods )
 }
@@ -94,7 +109,7 @@ void function PlayerInventory_PushInventoryItem( entity player, InventoryItem in
 	file.playerInventoryStacks[ player ].append(inventoryItem)
 	player.SetPlayerNetInt( "itemInventoryCount", file.playerInventoryStacks[ player ].len() )
 
-	PlayerInventory_GiveInventoryItem(player, inventoryItem)
+	thread PlayerInventory_GiveInventoryItem(player, inventoryItem)
 }
 
 void function PlayerInventory_PushInventoryItemByBurnRef( entity player, string burnRef )
@@ -117,9 +132,9 @@ void function PlayerInventory_PopInventoryItem( entity player )
 
 		if (playerInventoryStack.len() > 0) {
 			InventoryItem nextInventoryItem = playerInventoryStack[playerInventoryStack.len() - 1]
-			PlayerInventory_GiveInventoryItem(player, nextInventoryItem)
+			thread PlayerInventory_GiveInventoryItem( player, nextInventoryItem )
 		} else {
-			PlayerInventory_TakeInventoryItem( player )
+			waitthread PlayerInventory_TakeInventoryItem( player )
 		}
 	}
 
