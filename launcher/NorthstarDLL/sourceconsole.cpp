@@ -25,14 +25,30 @@ void ConCommand_hideconsole(const CCommand& arg)
 	(*g_pSourceGameConsole)->Hide();
 }
 
-void SourceConsoleSink::sink_it_(const spdlog::details::log_msg& msg)
+void SourceConsoleSink::custom_sink_it_(const custom_log_msg& msg)
 {
 	if (!(*g_pSourceGameConsole)->m_bInitialized)
 		return;
 
 	spdlog::memory_buf_t formatted;
 	spdlog::sinks::base_sink<std::mutex>::formatter_->format(msg, formatted);
-	(*g_pSourceGameConsole)->m_pConsole->m_pConsolePanel->ColorPrint(m_LogColours[msg.level], fmt::to_string(formatted).c_str());
+
+	// get message string
+	std::string str = fmt::to_string(formatted);
+
+	SourceColor levelColor = m_LogColours[msg.level];
+	std::string name {msg.logger_name.begin(), msg.logger_name.end()};
+
+	(*g_pSourceGameConsole)->m_pConsole->m_pConsolePanel->ColorPrint(msg.origin->SRCColor, ("[" + name + "]").c_str());
+	(*g_pSourceGameConsole)->m_pConsole->m_pConsolePanel->Print(" ");
+	(*g_pSourceGameConsole)->m_pConsole->m_pConsolePanel->ColorPrint(levelColor, ("[" + std::string(level_names[msg.level]) + "]").c_str());
+	(*g_pSourceGameConsole)->m_pConsole->m_pConsolePanel->Print(" ");
+	(*g_pSourceGameConsole)->m_pConsole->m_pConsolePanel->Print(fmt::to_string(formatted).c_str());
+}
+
+void SourceConsoleSink::sink_it_(const spdlog::details::log_msg& msg)
+{
+	throw std::runtime_error("sink_it_ called on SourceConsoleSink with pure log_msg. This is an error!");
 }
 
 void SourceConsoleSink::flush_() {}
@@ -58,9 +74,12 @@ void InitialiseConsoleOnInterfaceCreation()
 	// hook OnCommandSubmitted so we print inputted commands
 	OnCommandSubmittedHook.Dispatch((*g_pSourceGameConsole)->m_pConsole->m_vtable->OnCommandSubmitted);
 
-	auto consoleLogger = std::make_shared<SourceConsoleSink>();
-	consoleLogger->set_pattern("[%l] %v");
-	spdlog::default_logger()->sinks().push_back(consoleLogger);
+	auto consoleSink = std::make_shared<SourceConsoleSink>();
+	if (g_bSpdLog_UseAnsiColor)
+		consoleSink->set_pattern("%v"); // no need to include the level in the game console, the text colour signifies it anyway
+	else
+		consoleSink->set_pattern("[%n] [%l] %v"); // no colour, so we should show the level for colourblind people
+	RegisterCustomSink(consoleSink);
 }
 
 ON_DLL_LOAD_CLIENT_RELIESON("client.dll", SourceConsole, ConCommand, (CModule module))

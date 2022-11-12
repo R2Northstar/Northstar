@@ -35,4 +35,7 @@ void InitialiseNorthstarPrefix()
 		spdlog::info("Profile was not found in command line arguments. Using default: R2Northstar");
 		NORTHSTAR_FOLDER_PREFIX = "R2Northstar";
 	}
+
+	// set the console title to show the current profile
+	SetConsoleTitleA((std::string("NorthstarLauncher | ") + NORTHSTAR_FOLDER_PREFIX).c_str());
 }

@@ -1491,6 +1491,9 @@
     <ClInclude Include="keyvalues.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="loghooks.h">
+      <Filter>Header Files\Console</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -1702,6 +1705,12 @@
     </ClCompile>
     <ClCompile Include="keyvalues.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="color.cpp">
+      <Filter>Source Files\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="loghooks.cpp">
+      <Filter>Source Files\Console</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
