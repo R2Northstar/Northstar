@@ -25,26 +25,26 @@ void function Chat_PrivateMessage(entity fromPlayer, entity toPlayer, string tex
 }
 
 // Broadcasts a message from the server to all players.
-void function Chat_ServerBroadcast(string text)
+void function Chat_ServerBroadcast(string text, bool withServerTag = true)
 {
     NSBroadcastMessage(
         -1,
         -1,
         text,
-        false,
+        !withServerTag,
         false,
         eChatMessageType.CHAT
     )
 }
 
 // Sends a message from the server to one player. Will be shown as a whisper if whisper is set.
-void function Chat_ServerPrivateMessage(entity toPlayer, string text, bool whisper)
+void function Chat_ServerPrivateMessage(entity toPlayer, string text, bool whisper, bool withServerTag = true)
 {
     NSBroadcastMessage(
         -1,
         toPlayer.GetPlayerIndex(),
         text,
-        false,
+        !withServerTag,
         false,
         whisper ? eChatMessageType.WHISPER : eChatMessageType.CHAT
     )
