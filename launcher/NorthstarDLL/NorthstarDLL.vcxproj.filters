@@ -1700,6 +1700,9 @@
     <ClCompile Include="scriptdatatables.cpp">
       <Filter>Source Files\Scripted</Filter>
     </ClCompile>
+    <ClCompile Include="kb_act.cpp">
+      <Filter>Source Files\Mods\Compiled Assets</Filter>
+    </ClCompile>
     <ClCompile Include="diskvmtfixes.cpp">
       <Filter>Source Files\Client</Filter>
     </ClCompile>

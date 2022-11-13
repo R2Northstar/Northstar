@@ -575,6 +575,7 @@
     <ClCompile Include="concommand.cpp" />
     <ClCompile Include="diskvmtfixes.cpp" />
     <ClCompile Include="exploitfixes_lzss.cpp" />
+    <ClCompile Include="kb_act.cpp" />
     <ClCompile Include="keyvalues.cpp" />
     <ClCompile Include="limits.cpp" />
     <ClCompile Include="color.cpp" />
