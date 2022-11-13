@@ -1490,6 +1490,7 @@
     </ClInclude>
     <ClInclude Include="squirrelautobind.h">
       <Filter>Header Files\Squirrel</Filter>
+	</ClInclude>
     <ClInclude Include="keyvalues.h">
       <Filter>Header Files</Filter>
     </ClInclude>
