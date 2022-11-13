@@ -115,8 +115,7 @@ void ChatBroadcastMessage(int fromPlayerIndex, int toPlayerIndex, const char* te
 	CRecipientFilter__Destruct(&filter);
 }
 
-// void function NSSendMessage( int playerIndex, string text, bool isTeam )
-SQRESULT SQ_SendMessage(HSquirrelVM* sqvm)
+ADD_SQFUNC("void", NSSendMessage, "int playerIndex, string text, bool isTeam", "", ScriptContext::SERVER)
 {
 	int playerIndex = g_pSquirrel<ScriptContext::SERVER>->getinteger(sqvm, 1);
 	const char* text = g_pSquirrel<ScriptContext::SERVER>->getstring(sqvm, 2);
@@ -127,8 +126,12 @@ SQRESULT SQ_SendMessage(HSquirrelVM* sqvm)
 	return SQRESULT_NULL;
 }
 
-// void function NSBroadcastMessage( int fromPlayerIndex, int toPlayerIndex, string text, bool isTeam, bool isDead, int messageType )
-SQRESULT SQ_BroadcastMessage(HSquirrelVM* sqvm)
+ADD_SQFUNC(
+	"void",
+	NSBroadcastMessage,
+	"int fromPlayerIndex, int toPlayerIndex, string text, bool isTeam, bool isDead, int messageType",
+	"",
+	ScriptContext::SERVER)
 {
 	int fromPlayerIndex = g_pSquirrel<ScriptContext::SERVER>->getinteger(sqvm, 1);
 	int toPlayerIndex = g_pSquirrel<ScriptContext::SERVER>->getinteger(sqvm, 2);
@@ -170,14 +173,4 @@ ON_DLL_LOAD_RELIESON("server.dll", ServerChatHooks, ServerSquirrel, (CModule mod
 	MessageWriteByte = module.Offset(0x158A90).As<void(__fastcall*)(int)>();
 	MessageWriteString = module.Offset(0x158D00).As<void(__fastcall*)(const char*)>();
 	MessageWriteBool = module.Offset(0x158A00).As<void(__fastcall*)(bool)>();
-
-	// Chat sending functions
-	g_pSquirrel<ScriptContext::SERVER>->AddFuncRegistration(
-		"void", "NSSendMessage", "int playerIndex, string text, bool isTeam", "", SQ_SendMessage);
-	g_pSquirrel<ScriptContext::SERVER>->AddFuncRegistration(
-		"void",
-		"NSBroadcastMessage",
-		"int fromPlayerIndex, int toPlayerIndex, string text, bool isTeam, bool isDead, int messageType",
-		"",
-		SQ_BroadcastMessage);
 }
