@@ -264,13 +264,14 @@ With custom messages you can send chat messages at any time, to all players or t
         }
 
 
-.. cpp:function:: void Chat_ServerBroadcast(string text)
+.. cpp:function:: void Chat_ServerBroadcast(string text, bool withServerTag = true)
 
     Displays a server message to all players in the chat.
 
     **Parameters:**
 
     - ``string text`` - the contents of the chat message. Supports :ref:`ANSI escape codes <ansi_escape>` for colors.
+    - ``bool withServerTag`` - if true, ``[SERVER]`` will appear before the message in chat. Defaults to true.
 
     **Example:**
 
@@ -294,7 +295,7 @@ With custom messages you can send chat messages at any time, to all players or t
         }
 
 
-.. cpp:function:: void Chat_ServerPrivateMessage(entity toPlayer, string text, bool whisper)
+.. cpp:function:: void Chat_ServerPrivateMessage(entity toPlayer, string text, bool whisper, bool withServerTag = true)
 
     Sends a server message to a specific player in the chat.
 
@@ -303,6 +304,7 @@ With custom messages you can send chat messages at any time, to all players or t
     - ``entity toPlayer`` - the player that the message will be shown to.
     - ``string text`` - the contents of the chat message. Supports :ref:`ANSI escape codes <ansi_escape>` for colors.
     - ``bool whisper`` - if true, ``[WHISPER]`` will be displayed before the message to indicate the message is private.
+    - ``bool withServerTag`` - if true, ``[SERVER]`` will appear before the message in chat. Defaults to true.
 
     **Example:**
 
@@ -312,7 +314,7 @@ With custom messages you can send chat messages at any time, to all players or t
         {
             if (!PlayerIsModerator(player))
             {
-                Chat_ServerPrivateMessage(player, "You do not have the permissions to perform this command.", true)
+                Chat_ServerPrivateMessage(player, "You do not have the permissions to perform this command.", true, false)
                 return
             }
             
