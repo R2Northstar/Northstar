@@ -22,23 +22,19 @@ enum eMainMenuPromoDataProperty
 	smallButton2Url,
 	smallButton2ImageIndex
 };
-
-// void function NSRequestCustomMainMenuPromos()
-SQRESULT SQ_RequestCustomMainMenuPromos(HSquirrelVM* sqvm)
+ADD_SQFUNC("void", NSRequestCustomMainMenuPromos, "", "", ScriptContext::UI)
 {
 	g_pMasterServerManager->RequestMainMenuPromos();
 	return SQRESULT_NULL;
 }
 
-// bool function NSHasCustomMainMenuPromoData()
-SQRESULT SQ_HasCustomMainMenuPromoData(HSquirrelVM* sqvm)
+ADD_SQFUNC("bool", NSHasCustomMainMenuPromoData, "", "", ScriptContext::UI)
 {
 	g_pSquirrel<ScriptContext::UI>->pushbool(sqvm, g_pMasterServerManager->m_bHasMainMenuPromoData);
 	return SQRESULT_NOTNULL;
 }
 
-// var function NSGetCustomMainMenuPromoData( int promoDataKey )
-SQRESULT SQ_GetCustomMainMenuPromoData(HSquirrelVM* sqvm)
+ADD_SQFUNC("var", NSGetCustomMainMenuPromoData, "int promoDataKey", "", ScriptContext::UI)
 {
 	if (!g_pMasterServerManager->m_bHasMainMenuPromoData)
 		return SQRESULT_NULL;
@@ -125,12 +121,4 @@ SQRESULT SQ_GetCustomMainMenuPromoData(HSquirrelVM* sqvm)
 	}
 
 	return SQRESULT_NOTNULL;
-}
-
-ON_DLL_LOAD_CLIENT_RELIESON("client.dll", ScriptMainMenuPromos, ClientSquirrel, (CModule module))
-{
-	g_pSquirrel<ScriptContext::UI>->AddFuncRegistration("void", "NSRequestCustomMainMenuPromos", "", "", SQ_RequestCustomMainMenuPromos);
-	g_pSquirrel<ScriptContext::UI>->AddFuncRegistration("bool", "NSHasCustomMainMenuPromoData", "", "", SQ_HasCustomMainMenuPromoData);
-	g_pSquirrel<ScriptContext::UI>->AddFuncRegistration(
-		"var", "NSGetCustomMainMenuPromoData", "int promoDataKey", "", SQ_GetCustomMainMenuPromoData);
 }

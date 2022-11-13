@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "squirrel.h"
+
 #include "serverchathooks.h"
 #include "localchatwriter.h"
 
@@ -43,41 +44,29 @@ void, __fastcall, (void* self, const char* message, int inboxId, bool isTeam, bo
 			CHudChat__AddGameLine(hud, message, inboxId, isTeam, isDead);
 }
 
-// void NSChatWrite( int context, string str )
-SQRESULT SQ_ChatWrite(HSquirrelVM* sqvm)
+ADD_SQFUNC("void", NSChatWrite, "int context, string text", "", ScriptContext::CLIENT)
 {
-	int context = g_pSquirrel<ScriptContext::CLIENT>->getinteger(sqvm, 1);
+	int chatContext = g_pSquirrel<ScriptContext::CLIENT>->getinteger(sqvm, 1);
 	const char* str = g_pSquirrel<ScriptContext::CLIENT>->getstring(sqvm, 2);
 
-	LocalChatWriter((LocalChatWriter::Context)context).Write(str);
+	LocalChatWriter((LocalChatWriter::Context)chatContext).Write(str);
 	return SQRESULT_NULL;
 }
 
-// void NSChatWriteRaw( int context, string str )
-SQRESULT SQ_ChatWriteRaw(HSquirrelVM* sqvm)
+ADD_SQFUNC("void", NSChatWriteRaw, "int context, string text", "", ScriptContext::CLIENT)
 {
-	int context = g_pSquirrel<ScriptContext::CLIENT>->getinteger(sqvm, 1);
+	int chatContext = g_pSquirrel<ScriptContext::CLIENT>->getinteger(sqvm, 1);
 	const char* str = g_pSquirrel<ScriptContext::CLIENT>->getstring(sqvm, 2);
 
-	LocalChatWriter((LocalChatWriter::Context)context).InsertText(str);
+	LocalChatWriter((LocalChatWriter::Context)chatContext).InsertText(str);
 	return SQRESULT_NULL;
 }
 
-// void NSChatWriteLine( int context, string str )
-SQRESULT SQ_ChatWriteLine(HSquirrelVM* sqvm)
+ADD_SQFUNC("void", NSChatWriteLine, "int context, string text", "", ScriptContext::CLIENT)
 {
-	int context = g_pSquirrel<ScriptContext::CLIENT>->getinteger(sqvm, 1);
+	int chatContext = g_pSquirrel<ScriptContext::CLIENT>->getinteger(sqvm, 1);
 	const char* str = g_pSquirrel<ScriptContext::CLIENT>->getstring(sqvm, 2);
 
-	LocalChatWriter((LocalChatWriter::Context)context).WriteLine(str);
+	LocalChatWriter((LocalChatWriter::Context)chatContext).WriteLine(str);
 	return SQRESULT_NULL;
-}
-
-ON_DLL_LOAD_CLIENT_RELIESON("client.dll", ClientChatHooks, ClientSquirrel, (CModule module))
-{
-	AUTOHOOK_DISPATCH()
-
-	g_pSquirrel<ScriptContext::CLIENT>->AddFuncRegistration("void", "NSChatWrite", "int context, string text", "", SQ_ChatWrite);
-	g_pSquirrel<ScriptContext::CLIENT>->AddFuncRegistration("void", "NSChatWriteRaw", "int context, string text", "", SQ_ChatWriteRaw);
-	g_pSquirrel<ScriptContext::CLIENT>->AddFuncRegistration("void", "NSChatWriteLine", "int context, string text", "", SQ_ChatWriteLine);
 }
