@@ -157,39 +157,17 @@ namespace R2
 		READY_REMOTE
 	};
 
-#pragma pack(push, 1)
-	struct CBaseClient // 0x2D728 bytes
+	// clang-format off
+	OFFSET_STRUCT(CBaseClient)
 	{
-		char pad0[0x16];
-
-		// +0x16
-		char m_Name[64];
-
-		// +0x56
-		char pad1[0x202];
-
-		KeyValues* m_ConVars; // this is a KeyValues* object but not got that struct mapped out atm
-
-		char pad2[0x240];
-
-		// +0x4A0
-		ePersistenceReady m_iPersistenceReady;
-		// +0x4A1
-
-		char pad3[0x59];
-
-		// +0x4FA
-		char m_PersistenceBuffer[PERSISTENCE_MAX_SIZE];
-
-		char pad4[0x1239];
-
-		// +0xF500
-		char m_UID[32];
-		// +0xF520
-
-		char pad5[0x1E208];
+		STRUCT_SIZE(0x2D728)
+		FIELD(0x16, char m_Name[64])
+		FIELD(0x258, KeyValues* m_ConVars)
+		FIELD(0x4A0, ePersistenceReady m_iPersistenceReady)
+		FIELD(0x4FA, char m_PersistenceBuffer[PERSISTENCE_MAX_SIZE])
+		FIELD(0xF500, char m_UID[32])
 	};
-#pragma pack(pop)
+	// clang-format on
 
 	extern CBaseClient* g_pClientArray;
 
