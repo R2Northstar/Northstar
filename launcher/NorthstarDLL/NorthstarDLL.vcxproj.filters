@@ -1494,6 +1494,9 @@
     <ClInclude Include="keyvalues.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="structs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="loghooks.h">
       <Filter>Header Files\Console</Filter>
     </ClInclude>
