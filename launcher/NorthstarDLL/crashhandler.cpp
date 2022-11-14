@@ -31,12 +31,15 @@ void PrintExceptionLog(ExceptionLog& exc)
 	// General crash message
 	spdlog::error("Northstar version: {}", version);
 	spdlog::error("Northstar has crashed! a minidump has been written and exception info is available below:");
-	spdlog::error("Loaded mods: ");
-	for (const auto& mod : g_pModManager->m_LoadedMods)
+	if (g_pModManager)
 	{
-		if (mod.m_bEnabled)
+		spdlog::error("Loaded mods: ");
+		for (const auto& mod : g_pModManager->m_LoadedMods)
 		{
-			spdlog::error("{} {}", mod.Name, mod.Version);
+			if (mod.m_bEnabled)
+			{
+				spdlog::error("{} {}", mod.Name, mod.Version);
+			}
 		}
 	}
 	spdlog::error(exc.cause);
@@ -73,15 +76,15 @@ void PrintExceptionLog(ExceptionLog& exc)
 
 std::string GetExceptionName(ExceptionLog& exc)
 {
-	const DWORD exceptionCode = exc.exceptionRecord->ExceptionCode;
+	const DWORD exceptionCode = exc.exceptionRecord.ExceptionCode;
 	auto name = ExceptionNames[exceptionCode];
 	if (exceptionCode == EXCEPTION_ACCESS_VIOLATION || exceptionCode == EXCEPTION_IN_PAGE_ERROR)
 	{
 		std::stringstream returnString;
 		returnString << name << ": ";
 
-		auto exceptionInfo0 = exc.exceptionRecord->ExceptionInformation[0];
-		auto exceptionInfo1 = exc.exceptionRecord->ExceptionInformation[1];
+		auto exceptionInfo0 = exc.exceptionRecord.ExceptionInformation[0];
+		auto exceptionInfo1 = exc.exceptionRecord.ExceptionInformation[1];
 
 		if (!exceptionInfo0)
 			returnString << "Attempted to read from: 0x" << (void*)exceptionInfo1;
@@ -130,7 +133,7 @@ void GenerateTrace(ExceptionLog& exc, bool skipErrorHandlingFrames = true, int n
 	GetModuleFileNameExA(GetCurrentProcess(), exc.crashedModule, crashedModuleFullName, MAX_PATH);
 	char* crashedModuleName = strrchr(crashedModuleFullName, '\\') + 1;
 
-	DWORD64 crashedModuleOffset = ((DWORD64)exc.exceptionRecord->ExceptionAddress) - ((DWORD64)crashedModuleInfo.lpBaseOfDll);
+	DWORD64 crashedModuleOffset = ((DWORD64)exc.exceptionRecord.ExceptionAddress) - ((DWORD64)crashedModuleInfo.lpBaseOfDll);
 
 	PVOID framesToCapture[62];
 	int frames = RtlCaptureStackBackTrace(0, 62, framesToCapture, NULL);
@@ -182,7 +185,7 @@ void GenerateTrace(ExceptionLog& exc, bool skipErrorHandlingFrames = true, int n
 		exc.trace.push_back(BacktraceModule {s_moduleName, s_relativeAddress, fmt::format("{}", actualAddress)});
 	}
 
-	CONTEXT* exceptionContext = exc.contextRecord;
+	CONTEXT* exceptionContext = &exc.contextRecord;
 
 	exc.registerDump.push_back(fmt::format("Flags: 0b{0:b}", exceptionContext->ContextFlags));
 	exc.registerDump.push_back(fmt::format("RIP: 0x{0:x}", exceptionContext->Rip));
@@ -259,33 +262,32 @@ void CreateMiniDump(EXCEPTION_POINTERS* exceptionInfo)
 
 long GenerateExceptionLog(EXCEPTION_POINTERS* exceptionInfo)
 {
+	storedException->exceptionRecord = *exceptionInfo->ExceptionRecord;
+	storedException->contextRecord = *exceptionInfo->ContextRecord;
 	const DWORD exceptionCode = exceptionInfo->ExceptionRecord->ExceptionCode;
 
 	void* exceptionAddress = exceptionInfo->ExceptionRecord->ExceptionAddress;
 
-	auto exc = std::make_shared<ExceptionLog>();
-	exc->exceptionRecord = exceptionInfo->ExceptionRecord;
-	exc->contextRecord = exceptionInfo->ContextRecord;
-	exc->cause = GetExceptionName(*exc);
+	storedException->cause = GetExceptionName(*storedException);
 
 	HMODULE crashedModuleHandle;
 	GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, static_cast<LPCSTR>(exceptionAddress), &crashedModuleHandle);
 
-	exc->crashedModule = crashedModuleHandle;
+	storedException->crashedModule = crashedModuleHandle;
 
 	// When encountering a runtime exception, we store the exception to be displayed later
 	// We then have to return EXCEPTION_CONTINUE_SEARCH so that our runtime handler may be called
 	// This might possibly cause some issues if client and server are crashing at the same time, but honestly i don't care
 	if (exceptionCode == RUNTIME_EXCEPTION)
 	{
-		GenerateTrace(*exc, false, 2);
-		storedException = exc;
+		GenerateTrace(*storedException, false, 2);
+		storedException = storedException;
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
 
-	GenerateTrace(*exc, true, 0);
+	GenerateTrace(*storedException, true, 0);
 	CreateMiniDump(exceptionInfo);
-	PrintExceptionLog(*exc);
+	PrintExceptionLog(*storedException);
 	return EXCEPTION_EXECUTE_HANDLER;
 }
 
@@ -296,8 +298,17 @@ long __stdcall ExceptionFilter(EXCEPTION_POINTERS* exceptionInfo)
 		// Check if we are capable of handling this type of exception
 		if (ExceptionNames.find(exceptionInfo->ExceptionRecord->ExceptionCode) == ExceptionNames.end())
 			return EXCEPTION_CONTINUE_SEARCH;
-		CreateMiniDump(exceptionInfo);
-		return GenerateExceptionLog(exceptionInfo);
+		if (exceptionInfo->ExceptionRecord->ExceptionCode == RUNTIME_EXCEPTION)
+		{
+			storedException = std::make_shared<ExceptionLog>();
+			storedException->exceptionRecord = *exceptionInfo->ExceptionRecord;
+			storedException->contextRecord = *exceptionInfo->ContextRecord;
+		}
+		else
+		{
+			CreateMiniDump(exceptionInfo);
+			return GenerateExceptionLog(exceptionInfo);
+		}
 	}
 
 	return EXCEPTION_EXECUTE_HANDLER;
@@ -321,6 +332,11 @@ void RuntimeExceptionHandler()
 		{
 			storedException->runtimeInfo = "Unknown runtime exception type";
 		}
+		EXCEPTION_POINTERS test {};
+		test.ContextRecord = &storedException->contextRecord;
+		test.ExceptionRecord = &storedException->exceptionRecord;
+		CreateMiniDump(&test);
+		GenerateExceptionLog(&test);
 		PrintExceptionLog(*storedException);
 		exit(-1);
 	}
