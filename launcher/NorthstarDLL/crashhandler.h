@@ -14,8 +14,8 @@ struct ExceptionLog
 {
 	std::string cause;
 	HMODULE crashedModule;
-	PEXCEPTION_RECORD exceptionRecord;
-	PCONTEXT contextRecord;
+	EXCEPTION_RECORD exceptionRecord;
+	CONTEXT contextRecord;
 	std::vector<BacktraceModule> trace;
 	std::vector<std::string> registerDump;
 
