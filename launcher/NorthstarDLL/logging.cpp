@@ -50,7 +50,10 @@ void CreateLogFiles()
 			stream << std::put_time(&currentTime, (GetNorthstarPrefix() + "/logs/nslog%Y-%m-%d %H-%M-%S.txt").c_str());
 			auto sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(stream.str(), false);
 			sink->set_pattern("[%H:%M:%S] [%n] [%l] %v");
-			spdlog::default_logger()->sinks().push_back(sink);
+			for (auto& logger : loggers)
+			{
+				logger->sinks().push_back(sink);
+			}
 			spdlog::flush_on(spdlog::level::info);
 		}
 		catch (...)
