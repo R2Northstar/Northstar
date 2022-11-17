@@ -70,3 +70,8 @@ ADD_SQFUNC("void", NSChatWriteLine, "int context, string text", "", ScriptContex
 	LocalChatWriter((LocalChatWriter::Context)chatContext).WriteLine(str);
 	return SQRESULT_NULL;
 }
+
+ON_DLL_LOAD_CLIENT("client.dll", ClientChatHooks, (CModule module))
+{
+	AUTOHOOK_DISPATCH()
+}
