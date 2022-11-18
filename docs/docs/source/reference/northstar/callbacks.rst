@@ -55,28 +55,28 @@ sh_remote_functions_mp_custom.gnut:
 
 .. cpp:function:: void AddCallback_OnRegisteringCustomNetworkVars( void functionref() callback )
 
-evac\_evac.gnut:
+evac\\_evac.gnut:
 ^^^^^^^^^^^^^^^^
 
 .. cpp:function:: void Evac( int evacTeam, float initialWait, float arrivalTime, float waitTime, bool functionref( entity, entity ) canBoardCallback, bool functionref( entity ) shouldLeaveEarlyCallback, void functionref( entity ) completionCallback, entity customEvacNode = null )
 
-gamemodes\_gamemode_fra.nut:
+gamemodes\\_gamemode_fra.nut:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. cpp:function:: void GamemodeFRA_AddAdditionalInitCallback()
 
-gamemodes\sh_gamemodes_custom.gnut:
+gamemodes\\sh_gamemodes_custom.gnut:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. cpp:function:: void AddCallback_OnCustomGamemodesInit( void functionref() callback )
 
 
-lobby\_lobby.gnut:
+lobby\\_lobby.gnut:
 ^^^^^^^^^^^^^^^^^^
 
 .. cpp:function:: bool ClientCommandCallback_StartPrivateMatchSearch( entity player, array<string> args )
 
-lobby\_private_lobby.gnut:
+lobby\\_private_lobby.gnut:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. cpp:function:: bool ClientCommandCallback_PrivateMatchLaunch( entity player, array<string> args )
@@ -87,22 +87,25 @@ lobby\_private_lobby.gnut:
 .. cpp:function:: bool ClientCommandCallback_PrivateMatchSetPlaylistVarOverride( entity player, array<string> args )
 .. cpp:function:: bool ClientCommandCallback_ResetMatchSettingsToDefault( entity player, array<string> args )
 
-mp\_ai_mp.gnut:
+mp\\_ai_mp.gnut:
 ^^^^^^^^^^^^^^^
 
 .. cpp:function:: bool SPMP_Callback_ForceAIMissPlayer( entity npc, entity player )
 
-mp\_base_gametype_mp.gnut:
+mp\\_base_gametype_mp.gnut:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. cpp:function:: bool ClientCommandCallback_spec_next( entity player, array<string> args )
 .. cpp:function:: bool ClientCommandCallback_spec_prev( entity player, array<string> args )
 .. cpp:function:: bool ClientCommandCallback_spec_mode( entity player, array<string> args )
 
-mp\_gamestate_mp.nut:
+mp\\_gamestate_mp.nut:
 ^^^^^^^^^^^^^^^^^^^^^
 
 .. cpp:function:: void AddCallback_OnRoundEndCleanup( void functionref() callback )
 .. cpp:function:: void SetTimeoutWinnerDecisionFunc( int functionref() callback )
 
-    
+ui\\ui_mouse_capture.nut:
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. cpp:function:: void AddMouseMovementCaptureHandler( var capturePanelOrMenu, void functionref( int deltaX, int deltaY ) func )
