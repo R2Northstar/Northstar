@@ -6,6 +6,10 @@ Northstar is officially supported on Linux, it uses compatibility layers like Pr
 
 ### Steam & Steam Deck (NorthstarProton)
 
+{% hint style="warning" %}
+With the switch-over from Origin to EA App, Linux compatibility broke for Titanfall2. Proton experimental has a fix. A fix for NorthstarProton is being worked on.
+{% endhint %}
+
 > **Check your GLIBC version.** NorthstarProton currently only supports version 2.33 and higher. Verify your installed version with `ldd --version`. If the installed GLIBC is older, use the [legacy guide](playing-on-linux-legacy-guide.md). **Ubuntu 20.04 LTS**, **Debian 11**, and **Void Linux** are known to have outdated GLIBC packages. This check does not need to be completed on Steam Deck or Steam OS.
 
 On Steam Deck, complete the following in desktop mode. You may return to game mode once completed _(A mouse + keyboard plugged into the Deck are recommended for easier navigation of menus)_
