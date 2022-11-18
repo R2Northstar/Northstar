@@ -6,32 +6,32 @@ Before working on HUD, it's recommended to `extract <https://noskill.gitbook.io/
 Registering a menu
 ----
 
-In your ``mod.json``, add a ``before`` UI callback like this:
+In your ``mod.json``, add a ``Before`` UI callback like this:
 
 .. code-block::
 
         {
             "Path": "ui/profiles_menu.nut",
             "RunOn": "UI",
-	"UICallback": {
-		"Before": "InitProfilesMenu",
-	}
+            "UICallback": {
+                "Before": "InitProfilesMenu",
+            }
         }
 
-In the script you referenced, create a global function in which you register your menu with the ``AddMenu`` function like this:
+In the script you referenced, create a global in which you register your menu with the ``AddMenu`` like this:
 
 .. code-block:: javascript
 
-    global function InitProfilesMenu
+    global InitProfilesMenu
 
-    void function InitProfilesMenu()
+    void InitProfilesMenu()
     {
         AddMenu( "MenuName", $"path/to/menu.menu"  )
     }
 
-If you want to, you can add a init function to ``AddMenu`` like this: ``AddMenu( "MenuName", $"path/to/menu.menu", func )``
+If you want to, you can add a init to ``AddMenu`` like this: ``AddMenu( "MenuName", $"path/to/menu.menu", func )``
 
-The function returns ``void`` and takes no parameters. It gets called once the menu is initialized.
+The returns ``void`` and takes no parameters. It gets called once the menu is initialized.
 
 It's recommended to create a file struct in which you store menu states:
 
@@ -41,10 +41,13 @@ It's recommended to create a file struct in which you store menu states:
         var menu
     } file
 
-    void function MenuInitCallback()
+    void MenuInitCallback()
     {
         file.menu = GetMenu( "MenuName" )
     }
+
+Registering a Submenu
+----
 
 Menu Functions
 ^^^^
@@ -53,12 +56,31 @@ Useless functions have been left out. From ``_menus.nut``
 
 .. cpp:function:: UICodeCallback_ActivateMenus
 
+Register Menus
+~~~~
+
+.. cpp:function:: var AddMenu( string blockName, asset resourceFile, void functionref() initFunc = null, string displayName = "" )
+
+    Register a normal HUD menu. The init function will be called once all menus are registered and created.
+
+.. cpp:function:: var AddMenu_WithCreateFunc( string blockName, asset resourceFile, void functionref() initFunc, var functionref( ... ) createMenuFunc )
+
+    Registers a normal HUD menu with a custom function to create the menu. The create function needs to be native since scripts can't create HUD elements.
+
+.. cpp:function:: var AddPanel( var menu, string panelName, void functionref() initFunc = null )
+
+.. cpp:function:: var AddSubmenu( blockName, asset resourceFile, void functionref() initFunc = null )
+
 Open Menus
 ~~~~
 
 .. cpp:function:: void AdvanceMenu( string name )
 
     Push a menu to the stack / open a menu
+
+.. cpp:function:: void OpenSubmenu( var menu, bool updateMenuPos = true )
+
+    if ``updateMenuPos`` is not ``null``, the menu is required to have a ``ButtonFrame`` element that is the main content reference. 
 
 Retrieve Menus
 ~~~~
@@ -86,17 +108,9 @@ Close Menus
 
     Close until the menu is the most recent opened.
 
+.. cpp:function:: void CloseSubmenu( bool openStackMenu = true )
+
 .. cpp:function:: void CleanupInGameMenus()
-
-.. cpp:function:: void AddMenuElementsByClassname( var menu, string classname )
-
-.. cpp:function:: void FocusDefaultMenuItem( var menu )
-
-    Set the default focus element to be focused
-
-.. cpp:function:: void FocusDefault( var menu )
-
-    Like ``FocusDefaultMenuItem`` but excludes some menus.
 
 Callbacks
 ~~~~
@@ -127,7 +141,7 @@ Callbacks
 
     * ``eUIEvent.PANEL_SHOW``
 
-    *  ``eUIEvent.PANEL_HIDE``
+    * ``eUIEvent.PANEL_HIDE``
 
 .. cpp:function:: void AddButtonEventHandler( var button, int event, void functionref( var ) func )
 
@@ -171,6 +185,16 @@ Other
 
     Debugging
 
+.. cpp:function:: void AddMenuElementsByClassname( var menu, string classname )
+
+.. cpp:function:: void FocusDefaultMenuItem( var menu )
+
+    Set the default focus element to be focused
+
+.. cpp:function:: void FocusDefault( var menu )
+
+    Like ``FocusDefaultMenuItem`` but excludes some menus.
+
 Footers
 ^^^^
 
@@ -184,11 +208,11 @@ To use footers, add this element to your menu:
 		InheritProperties	FooterButtons
 	}
 
-.. cpp:function:: void function AddMenuFooterOption( var menu, int input, string gamepadLabel, string mouseLabel = "", void functionref( var ) activateFunc = null, bool functionref() conditionCheckFunc = null, void functionref( InputDef ) updateFunc = null )
+.. cpp:function:: void AddMenuFooterOption( var menu, int input, string gamepadLabel, string mouseLabel = "", void functionref( var ) activateFunc = null, bool functionref() conditionCheckFunc = null, void functionref( InputDef ) updateFunc = null )
 
     Adds a footer to a menu.
 
-.. cpp:function:: void function AddPanelFooterOption( var panel, int input, string gamepadLabel, string mouseLabel = "", void functionref( var ) activateFunc = null, bool functionref() conditionCheckFunc = null, void functionref( InputDef ) updateFunc = null )
+.. cpp:function:: void AddPanelFooterOption( var panel, int input, string gamepadLabel, string mouseLabel = "", void functionref( var ) activateFunc = null, bool functionref() conditionCheckFunc = null, void functionref( InputDef ) updateFunc = null )
 
     Adds a footer to a panel
 
