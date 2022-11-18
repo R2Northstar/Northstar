@@ -38,7 +38,7 @@ Shared
 
 	.. cpp:function:: void Signal( string signal )
 
-		:doc: `../../native/async`
+		:doc:`../../native/async`
 
 		Signals on this entity
 
@@ -49,6 +49,18 @@ Shared
 	.. cpp:function:: void WaitSignal( string signal )
 
 		Halts this thread until a signal is activated for this entity
+
+	.. cpp:function:: void ConnectOutput( string event, void functionref( entity trigger, entity activator, entity caller, var value ) callback )
+
+		Executes the callback function when the signal is fired.
+
+	.. cpp:function:: void DisconnectOutput( string event, void functionref( entity trigger, entity activator, entity caller, var value ) callback )
+
+		Disconnects the callback from the signal.
+
+	.. cpp:function:: void AddOutput( string outputName, string | entity target, string inputName, string parameter = "", float delay = 0, float maxFires = 0 )
+
+		Connects an output on this entity to an input on another entity via code.  The ``target`` can be a name or a named entity.
 
 	.. cpp:function:: vector GetOrigin()
 
@@ -586,23 +598,11 @@ CBaseEntity
 
 	.. cpp:function:: void RoundOriginAndAnglesToNearestNetworkValue()
 
-	.. cpp:function:: void ConnectOutput( string event, void functionref( entity trigger, entity activator, entity caller, var value ) callback )
-
-		Executes the callback function when the signal is fired.
-
-	.. cpp:function:: void DisconnectOutput( string event, void functionref( entity trigger, entity activator, entity caller, var value ) callback )
-
-		Disconnects the callback from the signal.
-
 	.. cpp:function:: void ClearBossPlayer()
 
 		Remove boss player reference from this entity.
 
 	.. cpp:function:: void Minimap_DisplayDefault( int team, entity ent )
-
-	.. cpp:function:: void AddOutput( string outputName, string | entity target, string inputName, string parameter = "", float delay = 0, float maxFires = 0 )
-
-		Connects an output on this entity to an input on another entity via code.  The ``target`` can be a name or a named entity.
 
 	.. cpp:function:: void _typeof()
 
@@ -1044,7 +1044,7 @@ Shared
 
 	.. cpp:function:: string GetWeaponSettingString( string setting )
 
-	.. cpp:function:: void SmartAmmo_UntrackEntity(entity target)
+	.. cpp:function:: void SmartAmmo_UntrackEntity( entity target )
 
 	.. cpp:function:: string GetSmartAmmoWeaponType()
 
@@ -1054,7 +1054,7 @@ Shared
 
 	.. cpp:function:: void SmartAmmo_Clear( bool unknown_purpose, bool clearPartialLocks )
 
-	.. cpp:function:: vector SmartAmmo_GetFirePosition(entity target, int burstIndex)
+	.. cpp:function:: vector SmartAmmo_GetFirePosition( entity target, int burstIndex )
 
 	.. cpp:function:: array<entity> SmartAmmo_GetStoredTargets()
 
