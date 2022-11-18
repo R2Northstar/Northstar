@@ -55580,21 +55580,21 @@
     {
       "name": "AddMouseMovementCaptureHandler",
       "found_in": "Northstar.Client",
-      "file": "sh_menu_models.gnut",
+      "file": "ui/ui_mouse_capture.nut",
       "global": true,
-      "line": "\tvoid function AddMouseMovementCaptureHandler( var menu, void functionref( int, int ) func )"
+      "line": "\tvoid function AddMouseMovementCaptureHandler( var capturePanelOrMenu, void functionref( int deltaX, int deltaY ) func )"
     },
     {
-      "name": "UpdateMouseMovementCaptureFunctions",
+      "name": "RunMouseMovementCallbacks",
       "found_in": "Northstar.Client",
-      "file": "sh_menu_models.gnut",
+      "file": "ui/ui_mouse_capture.nut",
       "global": false,
-      "line": "\tvoid function UpdateMouseMovementCaptureFunctions( int deltaX, int deltaY )"
+      "line": "\tvoid function RunMouseMovementCallbacks( var capturePanelOrMenu, int deltaX, int deltaY )"
     },
     {
       "name": "UICodeCallback_MouseMovementCapture",
       "found_in": "Northstar.Client",
-      "file": "sh_menu_models.gnut",
+      "file": "ui/ui_mouse_capture.nut",
       "global": true,
       "line": "\tvoid function UICodeCallback_MouseMovementCapture( var capturePanel, int deltaX, int deltaY )"
     },
