@@ -150,23 +150,125 @@ run until player died 42 times.
 When you want your thread to die on a given event, you can use ``entity.EndSignal( "OnMultipleDeaths" )``; when said signal 
 is set, thread will end (after calling any `OnThreadEnd` methods).
 
+
+.. cpp:function:: void RegisterSignal( string signal )
+
+    Registers a Signals to use on any entity
+
+.. cpp:class:: CBaseEntity
+
+    :doc:`../reference/respawn/entities`
+
+    .. cpp:function:: void ConnectOutput( string signal, void functionref( entity trigger, entity activator, entity caller, var value ) callback )
+
+        Register a callback that executes when the ``signal`` has been fired on this Entity
+
+    .. cpp:function:: void DisconnectOutput( string event, void functionref( entity trigger, entity activator, entity caller, var value ) callback )
+
+        Disconnects the callback from the signal.
+
+	.. cpp:function:: void AddOutput( string outputName, string | entity target, string inputName, string parameter = "", float delay = 0, float maxFires = 0 )
+
+		Connects an output on this entity to an input on another entity via code.  The ``target`` can be a name or a named entity.
+        
+	.. cpp:function:: void Fire( string signal, string param = "", float delay = 0, entity activator = null, entity caller = null )
+
+		Fire a signal on this entity, with optional parm and delay
+
+	.. cpp:function:: void FireNow( string output, string param = "", float delay = 0, entity activator = null, entity caller = null )
+
+		Fire a signal on this entity, with optional parm and delay (synchronous)
+
+
 Flags
 ^^^^^^^^^^
 
 ``Flags`` work pretty much the same way as ``Signals``, except they can be set up without target entity:
 
+.. cpp:function:: void FlagInit( string flag, bool isSet = false )
+
+    Create a flag
+
+.. cpp:function:: void FlagWait( string flag )
+
+    Halts a thread until a flag is set. Callee must be threaded off.
+
+.. cpp:function:: void FlagWaitAll( ... )
+
+    Halts until every passed flag is set. Callee must be threaded off.
+
+.. cpp:function:: void FlagWaitWithTimeout( string flag, float timeOut )
+
+    Halts until the passed flag is set or the timer runs out. Callee must be threaded off.
+
+.. cpp:function:: void FlagSet( string flag )
+
+    Raise a flag
+
+.. cpp:function:: void FlagSetOnFlag( string flagset, string flagwait, float delay = 0 )
+
+    Set ``flagset`` after ``flagwait`` is set and the delay is met.
+
+.. cpp:function:: void FlagClear( string flag )
+
+    Reset a flag
+
+.. cpp:function:: void FlagWaitClearAll( ... )
+
+    Resets all passed flags.
+
+.. cpp:function:: void FlagClearOnFlag( string flagclear, string flagwait )
+
+    Reset ``flagclear`` when ``flagwait`` is set. 
+
+.. cpp:function:: void FlagWaitClearWithTimeout( string flag, float timeOut )
+
+    Resets a flag after the timer runs out.
+
+.. cpp:function:: void FlagWaitClearAny( ... )
+
+    Wait until any passed flag is cleared.
+
+.. cpp:function:: void FlagClearEnd( string flag )
+
+.. cpp:function:: void FlagToggle( string flag )
+
+    Raise a flag if it is reset, or reset it if it's raised.
+
+.. cpp:function:: void FlagEnd( string flag )
+
+.. cpp:function:: bool Flag( string flag )
+
+    Returns the current state of a flag.
+
+.. cpp:function:: bool FlagExists( string flag )
+
+    Returns ``true`` if the flag is initialized
+
+.. cpp:function:: array<string> GetFlagsFromString( string str )
+
+    Splits the flag on ``" "``
+
+.. cpp:function:: array<string> GetFlagsFromField( entity ent, var field )
+
+    Splits the value of the keyvalues of the entity on the index ``field`` on ``" "``
+
+
 .. code-block:: javascript
 
-    // create flag
-    FlagInit( "BombHasExploded" )
+    void function FlagExample()
+    {
+        FlagInit( "BombHasExploded" )
 
-    // wait for it
-    FlagWait( "BombHasExploded" )
+        thread BombTicker()
 
-    // update it
-    FlagSet( "BombHasExploded" )
-    FlagClear( "BombHasExploded" )
-    FlagToggle( "BombHasExploded" )
+        FlagWait( "BombHasExploded" )
+        print( "bomb just exploded" )
+    }
 
-    // get its current value (returns a boolean)
-    Flag( "BombHasExploded" )
+    void function BombTicker()
+    {
+        Assert( IsNewThread(), "BombTicker must be threaded off" )
+        wait RandomFloatRange( 3, 9 )
+        FlagSet( "BombHasExploded" )
+    }
