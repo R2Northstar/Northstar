@@ -238,6 +238,7 @@ ADD_SQFUNC(
 	}
 
 	DecodeJsonTable<context>(sqvm, (rapidjson::GenericValue<rapidjson::UTF8<char>, rapidjson::MemoryPoolAllocator<SourceAllocator>>*)&doc);
+	return SQRESULT_NOTNULL;
 }
 
 ADD_SQFUNC(
