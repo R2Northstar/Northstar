@@ -4,7 +4,7 @@ Generally try to first launch the vanilla game (i.e. not Northstar) if you encou
 
 A lot of problems around the game failing to communicate with Origin can also be prevented by launching Origin before Northstar should you encounter any issues in that regard.
 
-Also note that some solutions described below can also apply to the base game, like issues caused by [10th+ gen Intel CPUs](#intel).
+Also note that some solutions described below can also apply to the base game, like issues caused by [10th+ gen Intel CPUs](troubleshooting.md#intel).
 
 ## LSX Authentication Failed <a href="#lsx" id="lsx"></a>
 
@@ -13,7 +13,7 @@ Also note that some solutions described below can also apply to the base game, l
 If the usual workaround of restarting Origin/rebooting or running the vanilla game first and then Northstar don’t work, try the following:
 
 * First and foremost, double check that you are _logged in_ on Origin. Titanfall will _not_ run if you are not connected to EA servers first (and neither will Titanfall + Northstar).
-* [Add the northstar commandline option in your launcher](#launch-opts)
+* [Add the northstar commandline option in your launcher](troubleshooting.md#launch-opts)
 * Run the game with Origin/Steam instead of starting NorthstarLauncher.exe (important)
 * Sign out and exit Origin, then start Northstar. It will prompt you for a login, _hopefully_ fixing it if nothing else worked
 * Start normal Titanfall 2 and then Northstar (_ONLY WORKS SOMETIMES_)
@@ -84,7 +84,7 @@ Do NOT make any changes in `system32`, just copy the file.
 2. Right click it and go `Properties > Security`
 3. Give yourself write permissions
 
-## Can't Join Servers (Issues with 10th+ gen Intel CPUs)<a href="#intel" id="intel"></a>
+## Can't Join Servers (Issues with 10th+ gen Intel CPUs) <a href="#intel" id="intel"></a>
 
 ![Newer Intel CPU error: Data Center: Searching...](https://user-images.githubusercontent.com/18601697/148625000-882bf1db-b9b2-4e9e-88db-6d608e58a35b.png)
 
@@ -151,26 +151,26 @@ The real error is most likely slightly higher. Please post that in issues or the
 
 ## I can't play the Campaign <a href="#campaign" id="campaign"></a>
 
-Campaign is not supported in Northstar yet, but you could do one of these "**_fixes_**"
+Campaign is not supported in Northstar yet, but you could do one of these "_**fixes**_"
 
 1. Doing `ns_auth_allow_insecure 1` in the console
-   * [If you can't open the console](#console)
+   * [If you can't open the console](troubleshooting.md#console)
 2. Adding `-vanilla` to your launch options
-   * [How to add launch options](#launch-opts)
+   * [How to add launch options](troubleshooting.md#launch-opts)
 
 ## Authentication Failed when clicking Launch Northstar <a href="#lsx2" id="lsx2"></a>
 
-Before trying this check out [this section](#lsx).\
+Before trying this check out [this section](troubleshooting.md#lsx).\
 Alternative to that fix:
 
 1. Close the game
 2. Open task manager
 3. End Origin (everything origin related)
 4. Launch Origin as admin
-5. Start the game through Origin with `-northstar` in [launch options](#launch-opts)
+5. Start the game through Origin with `-northstar` in [launch options](troubleshooting.md#launch-opts)
 6. See if that fixed it
 
-## Could't Initialize Sound / DEVICE_IN_USE <a href="#initsound" id="initsound"></a>
+## Could't Initialize Sound / DEVICE\_IN\_USE <a href="#initsound" id="initsound"></a>
 
 ![Engine Error: Could't Initialize Sound](https://user-images.githubusercontent.com/2706225/153178714-2a50ac25-59fa-44d6-a47a-910058ec9888.png)
 
@@ -178,8 +178,7 @@ If message contains: `AUDCLNT_E_DEVICE_IN_USE`
 
 1. Go to Windows Search Bar, type `mmsys.cpl`, press enter.
 2. Make sure you selected the right audio device as default (your headset or speakers usually).
-3. If it still does not work, disable exclusive mode on your default device:
-![Disable exclusive mode](https://user-images.githubusercontent.com/2706225/153179355-01598326-3297-4588-be4b-ed5257e23941.png)
+3. If it still does not work, disable exclusive mode on your default device: ![Disable exclusive mode](https://user-images.githubusercontent.com/2706225/153179355-01598326-3297-4588-be4b-ed5257e23941.png)
 4. Restart your computer.
 
 This issue could also be caused if you use some sort of audio wrapper to control volume and stuff like Voicemeter Banana. The above fix was tested with Voicemeter Banana.
@@ -197,3 +196,11 @@ The following command will reset all your loadouts and levels!
 {% endhint %}
 
 Open console in-game in main menu, type in `ns_resetpersistence` and press enter. Close console again and click on "Launch Northstar". All your stuff should now be reset.
+
+## Cannot write log file when using Northstar on EA App
+
+The default install location for EA App `C:\Program Files\EA Games\Titanfall2` is not writeable by non-admin processes. This messes with Northstar trying to write log files as well as mod-managers trying to install mods.
+
+Therefore the recommended solution is to move the install to another location (can even be on the same drive). This prevents the non-admin issue and as such should solve the issue of Northstar being unable to write logs and failing.
+
+See also [https://www.pcmag.com/how-to/how-to-move-pc-games-to-a-different-hard-drive](https://www.pcmag.com/how-to/how-to-move-pc-games-to-a-different-hard-drive) (scroll down to "_EA: Move the Folder and Reinstall_")
