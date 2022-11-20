@@ -1721,6 +1721,9 @@
     <ClCompile Include="keyvalues.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="scriptuserinfo.cpp">
+      <Filter>Source Files\Server\Scripted</Filter>
+    </ClCompile>
     <ClCompile Include="color.cpp">
       <Filter>Source Files\Math</Filter>
     </ClCompile>
