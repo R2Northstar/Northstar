@@ -630,6 +630,7 @@
     <ClCompile Include="scriptmodmenu.cpp" />
     <ClCompile Include="scriptserverbrowser.cpp" />
     <ClCompile Include="modscriptsrson.cpp" />
+    <ClCompile Include="scriptuserinfo.cpp" />
     <ClCompile Include="scriptutility.cpp" />
     <ClCompile Include="serverauthentication.cpp" />
     <ClCompile Include="miscserverscript.cpp" />
