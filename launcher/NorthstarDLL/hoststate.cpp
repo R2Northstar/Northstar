@@ -7,6 +7,7 @@
 #include "tier0.h"
 #include "r2engine.h"
 #include "limits.h"
+#include "squirrel.h"
 
 AUTOHOOK_INIT()
 
@@ -102,6 +103,16 @@ void, __fastcall, (CHostState* self, double flCurrentTime, float flFrameTime))
 		// update limits for frame
 		g_pServerLimits->RunFrame(flCurrentTime, flFrameTime);
 	}
+
+	// Run Squirrel message buffer
+	if (g_pSquirrel<ScriptContext::UI>->m_pSQVM != nullptr && g_pSquirrel<ScriptContext::UI>->m_pSQVM->sqvm != nullptr)
+		g_pSquirrel<ScriptContext::UI>->ProcessMessageBuffer();
+
+	if (g_pSquirrel<ScriptContext::CLIENT>->m_pSQVM != nullptr && g_pSquirrel<ScriptContext::CLIENT>->m_pSQVM->sqvm != nullptr)
+		g_pSquirrel<ScriptContext::CLIENT>->ProcessMessageBuffer();
+
+	if (g_pSquirrel<ScriptContext::SERVER>->m_pSQVM != nullptr && g_pSquirrel<ScriptContext::SERVER>->m_pSQVM->sqvm != nullptr)
+		g_pSquirrel<ScriptContext::SERVER>->ProcessMessageBuffer();
 }
 
 ON_DLL_LOAD_RELIESON("engine.dll", HostState, ConVar, (CModule module))

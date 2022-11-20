@@ -37,7 +37,7 @@ void(__fastcall* MessageWriteBool)(bool bValue);
 bool bShouldCallSayTextHook = false;
 // clang-format off
 AUTOHOOK(_CServerGameDLL__OnReceivedSayTextMessage, server.dll + 0x1595C0,
-void, __fastcall, (CServerGameDLL* self, unsigned int nSenderPlayerIndex, const char* text, bool isTeam))
+void, __fastcall, (CServerGameDLL* self, unsigned int senderPlayerId, const char* text, bool isTeam))
 // clang-format on
 {
 	// MiniHook doesn't allow calling the base function outside of anywhere but the hook function.
@@ -45,23 +45,19 @@ void, __fastcall, (CServerGameDLL* self, unsigned int nSenderPlayerIndex, const 
 	if (bShouldCallSayTextHook)
 	{
 		bShouldCallSayTextHook = false;
-		_CServerGameDLL__OnReceivedSayTextMessage(self, nSenderPlayerIndex, text, isTeam);
+		_CServerGameDLL__OnReceivedSayTextMessage(self, senderPlayerId, text, isTeam);
 		return;
 	}
 
 	// check chat ratelimits
-	if (!g_pServerLimits->CheckChatLimits(&R2::g_pClientArray[nSenderPlayerIndex - 1]))
+	if (!g_pServerLimits->CheckChatLimits(&R2::g_pClientArray[senderPlayerId - 1]))
 		return;
 
-	if (g_pSquirrel<ScriptContext::SERVER>->setupfunc("CServerGameDLL_ProcessMessageStartThread") != SQRESULT_ERROR)
-	{
-		g_pSquirrel<ScriptContext::SERVER>->pushinteger(g_pSquirrel<ScriptContext::SERVER>->m_pSQVM->sqvm, (int)nSenderPlayerIndex - 1);
-		g_pSquirrel<ScriptContext::SERVER>->pushstring(g_pSquirrel<ScriptContext::SERVER>->m_pSQVM->sqvm, text);
-		g_pSquirrel<ScriptContext::SERVER>->pushbool(g_pSquirrel<ScriptContext::SERVER>->m_pSQVM->sqvm, isTeam);
-		g_pSquirrel<ScriptContext::SERVER>->call(g_pSquirrel<ScriptContext::SERVER>->m_pSQVM->sqvm, 3);
-	}
-	else
-		_CServerGameDLL__OnReceivedSayTextMessage(self, nSenderPlayerIndex, text, isTeam);
+	SQRESULT result = g_pSquirrel<ScriptContext::SERVER>->Call(
+		"CServerGameDLL_ProcessMessageStartThread", static_cast<int>(senderPlayerId) - 1, text, isTeam);
+
+	if (result == SQRESULT_ERROR)
+		_CServerGameDLL__OnReceivedSayTextMessage(self, senderPlayerId, text, isTeam);
 }
 
 void ChatSendMessage(unsigned int playerIndex, const char* text, bool isTeam)

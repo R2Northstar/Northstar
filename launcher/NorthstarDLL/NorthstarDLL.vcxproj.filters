@@ -1499,6 +1499,9 @@
     </ClInclude>
     <ClInclude Include="loghooks.h">
       <Filter>Header Files\Console</Filter>
+	 </ClInclude>
+    <ClInclude Include="squirrelclasstypes.h">
+      <Filter>Header Files\Squirrel</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
