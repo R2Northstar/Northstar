@@ -328,6 +328,26 @@ function CodeCallback_RegisterClass_CPlayer()
 			}
 		}
 	}
+	
+    function CPlayer::GetUserInfoString( key, defaultValue = "" )
+    {
+        return GetUserInfoKVString_Internal( this, key, defaultValue )
+    }
+	
+    function CPlayer::GetUserInfoInt( key, defaultValue = 0 )
+    {
+        return GetUserInfoKVInt_Internal( this, key, defaultValue )
+    }
+
+    function CPlayer::GetUserInfoFloat( key, defaultValue = 0 )
+    {
+        return GetUserInfoKVFloat_Internal( this, key, defaultValue )
+    }
+
+    function CPlayer::GetUserInfoBool( key, defaultValue = false )
+    {
+        return GetUserInfoKVBool_Internal( this, key, defaultValue )
+    }
 }
 
 void function PlayerDropsScriptedItems( entity player )
