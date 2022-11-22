@@ -9,7 +9,7 @@ jobs:
     runs-on: windows-2022
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.1
       - name: Build
@@ -19,7 +19,7 @@ jobs:
         shell: bash
         run: echo ::set-output name=commit::`git rev-parse --short HEAD`
       - name: Upload Build Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: NorthstarLauncher-${{ steps.extract.outputs.commit }}
           path: |
@@ -31,7 +31,7 @@ jobs:
   format-check:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - uses: DoozyX/clang-format-lint-action@v0.13
       with:
         source: 'NorthstarDLL NorthstarLauncher'
