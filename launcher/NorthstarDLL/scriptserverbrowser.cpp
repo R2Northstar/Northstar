@@ -217,6 +217,26 @@ ADD_SQFUNC("int", NSGetServerRequiredModsCount, "int serverIndex", "", ScriptCon
 	return SQRESULT_NOTNULL;
 }
 
+ADD_SQFUNC("string", NSGetServerRegion, "int serverIndex", "", ScriptContext::UI)
+{
+	SQInteger serverIndex = g_pSquirrel<context>->getinteger(sqvm, 1);
+
+	if (serverIndex >= g_pMasterServerManager->m_vRemoteServers.size())
+	{
+		g_pSquirrel<context>->raiseerror(
+			sqvm,
+			fmt::format(
+				"Tried to get region of server index {} when only {} servers are available",
+				serverIndex,
+				g_pMasterServerManager->m_vRemoteServers.size())
+				.c_str());
+		return SQRESULT_ERROR;
+	}
+
+	g_pSquirrel<context>->pushstring(sqvm, g_pMasterServerManager->m_vRemoteServers[serverIndex].region, -1);
+	return SQRESULT_NOTNULL;
+}
+
 ADD_SQFUNC("string", NSGetServerRequiredModName, "int serverIndex, int modIndex", "", ScriptContext::UI)
 {
 	SQInteger serverIndex = g_pSquirrel<context>->getinteger(sqvm, 1);
