@@ -30,6 +30,7 @@ RemoteServerInfo::RemoteServerInfo(
 	const char* newDescription,
 	const char* newMap,
 	const char* newPlaylist,
+	const char* newRegion,
 	int newPlayerCount,
 	int newMaxPlayers,
 	bool newRequiresPassword)
@@ -44,6 +45,9 @@ RemoteServerInfo::RemoteServerInfo(
 
 	strncpy_s((char*)map, sizeof(map), newMap, sizeof(map) - 1);
 	strncpy_s((char*)playlist, sizeof(playlist), newPlaylist, sizeof(playlist) - 1);
+
+	strncpy((char*)region, newRegion, sizeof(region));
+	region[sizeof(region) - 1] = 0;
 
 	playerCount = newPlayerCount;
 	maxPlayers = newMaxPlayers;
@@ -256,6 +260,7 @@ void MasterServerManager::RequestServerList()
 								serverObj["description"].GetString(),
 								serverObj["map"].GetString(),
 								serverObj["playlist"].GetString(),
+								(serverObj.HasMember("region") && serverObj["region"].IsString()) ? serverObj["region"].GetString() : "",
 								serverObj["playerCount"].GetInt(),
 								serverObj["maxPlayers"].GetInt(),
 								serverObj["hasPassword"].IsTrue());
@@ -273,6 +278,7 @@ void MasterServerManager::RequestServerList()
 							serverObj["description"].GetString(),
 							serverObj["map"].GetString(),
 							serverObj["playlist"].GetString(),
+							(serverObj.HasMember("region") && serverObj["region"].IsString()) ? serverObj["region"].GetString() : "",
 							serverObj["playerCount"].GetInt(),
 							serverObj["maxPlayers"].GetInt(),
 							serverObj["hasPassword"].IsTrue());
