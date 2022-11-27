@@ -18,12 +18,12 @@ jobs:
     runs-on: windows-2022
     steps:
       - name: Setup bundled plugins
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: R2Northstar/NorthstarDiscordRPC
           path: discord-plugin
       - name: Checkout launcher repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: R2Northstar/NorthstarLauncher
           ref: ${{ env.NORTHSTAR_VERSION }}
@@ -44,7 +44,7 @@ jobs:
           msbuild /p:Configuration=Release R2Northstar.sln
           msbuild /p:Configuration=Release NorthstarDiscordRPC.sln
       - name: Upload launcher build as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: northstar-launcher
           path: |
@@ -55,7 +55,7 @@ jobs:
             northstar-launcher/x64/Release/DiscordRPC.dll
             northstar-launcher/x64/Release/*.txt
       - name: Upload debug build artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: launcher-debug-files
           path: |
@@ -74,12 +74,12 @@ jobs:
         run:
           wget "https://github.com/R2Northstar/NorthstarStubs/releases/download/v1/NorthstarStubs.zip"
       - name: Checkout release files
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ env.NORTHSTAR_VERSION }}
           path: northstar
       - name: Checkout core mods
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: R2Northstar/NorthstarMods
           ref: ${{ env.NORTHSTAR_VERSION }}
@@ -110,7 +110,7 @@ jobs:
           mv -v northstar-launcher/* northstar
           rsync -avr --exclude="Northstar.Coop" --exclude=".git*" northstar-mods/. northstar/R2Northstar/mods
       - name: Checkout Navmesh repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: R2Northstar/NorthstarNavs
           path: northstar-navs
@@ -124,7 +124,7 @@ jobs:
         run: |
           rm -rf .git .github .gitignore *.md LICENSE thunderstore .ci.env.example
       - name: Upload
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: Northstar.release.${{ env.NORTHSTAR_VERSION }}
           path: northstar
