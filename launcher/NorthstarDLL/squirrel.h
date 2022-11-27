@@ -355,6 +355,8 @@ template <ScriptContext context> class SquirrelManager : public virtual Squirrel
 
 template <ScriptContext context> SquirrelManager<context>* g_pSquirrel;
 
+void InitialiseSquirrelManagers();
+
 /*
 	Beware all ye who enter below.
 	This place is not a place of honor... no highly esteemed deed is commemorated here... nothing valued is here.
