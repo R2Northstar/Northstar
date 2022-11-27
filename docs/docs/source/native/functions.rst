@@ -5,33 +5,148 @@ The vast majority of GNUT modding within northstar will be done through function
 
 Declaring Functions
 --------------------
+
 Functions in squirrel are first defined by stating the **output** followed by the keyword **function**. For example, if you wanted to define a function that returns TRUE or FALSE you would type:
+
+It is not possible to override a function with different parameters or return types. Every function needs a unique name from every function in the same script and every global function or variable.
 
 .. code-block:: javascript
 
   bool function ReturnTrueOrFalse()
+  {
+    return bool( RandomInt( 2 ) )
+  }
 
 
-But what if I want my function not to give stuff, but only DO stuff? For that you can define your function as ``void``, this indicates that your function does not return anything. For example:
+If you don't want to return anything, use ``void`` as the return type. This indicates that your function returns ``null``.
+
+If a function is lacking a ``return`` statement or a return value, it will return ``null``. For example:
 
 .. code-block:: javascript
 
   void function ThisDoesStuff()
+  {
+    switch( RandomInt( 3 ) )
+    {
+      case 0:
+        return
+      case 1:
+        return null
+      case 2:
+        break
+    }
+    // only if a 2 was rolled, code here will be executed.
+    // because the function ends without a return statement, null is getting returned implicitly 
+  }
 
+Optional Parameters
+-----
+
+Optional parameters aren't required to call the function and will be assigned a default value if nothing was passed.
+
+To make a parameter optional, add a default after the parameter
+
+.. code-block:: javascript
+
+  void function OptionalExample( string msg = "default parameter", optional2 = 1 )
+  {
+    printt( msg )
+  }
+
+  OptionalExample( "passed parameter" ) // passed parameter
+  OptionalExample() // default parameter
+
+Optional parameters must be declared after all required parameters.
+
+Passing Functions as parameters
+-----
+
+If you want to pass a function as a parameter to another function, for example as a callback set their type as ``functionref( [parameters] )``.
+
+.. code-block:: javascript
+
+  void function FnLiteral( int req, int opt = 2 )
+  {
+    print( req + opt )
+  }
+
+  void function CallLiteral( functionref( int, int ) literal )
+  {
+    literal( RandomInt( 5 ) )
+  }
+
+  CallLiteral( FnLiteral )
+
+Calling Functions
+-----
+
+You can call functions with opening and closing brackets containing all parameters or with the call function.
+
+You can also call functions with an array of parameters
+
+.. code-block:: javascript
+
+  void function FnLiteral( int opt = 2, int opt2 = 2 )
+  {
+    print( opt + opt2 )
+  }
+
+  FnLiteral() // 4
+  FnLiteral( 1, 2 ) // 3
+  FnLiteral.call( 3, 4 ) // 7
+
+  array<int> args = [ 6, 7 ]
+  FnLiteral.acall( args ) // 13
+
+Implicit parameters
+-----
+
+If you don't know how many parameters you get at compile time, you can use implicit parameters.
+
+.. code-block:: javascript
+
+  void function XParameters( string required, string optional = "", ... )
+  {
+    for( int i; i < vargc, i++)
+    {
+      var parameter = vargv[i]
+      print( parameter )
+    }
+  }
+
+  XParameters( "req", "optional", 1, 2, [ 3, 4, 5 ], { tableKey = "string" } ) // prints 1, 2, [array instance], [table instance]
+  XParameters( "req", "opt" )
+
+Implicit Capture
+-----
+
+It's not possible to use locals from a parent function, but it is possible to capture them in anonymous functions. 
+
+.. code-block:: javascript
+
+  void function ParentFunc()
+  {
+    var capture = Hud_GetChild( GetMenu( "ModListMenu" ), "MouseMovementCapture" )
+    AddMouseMovementCaptureHandler( capture, void function( int x, int y ) : ( capture ) { print( format( "registered mouse input from capture %s in x: %i; y: %i", capture.tostring(), x, y ) ) } )
+  }
+
+Statements
+====
 
 If statements
 ---------------
+
 If statements use a similar style to most programming languages and will execute their asigned code if the test placed inside returns the boolean value true. If I wanted to have something occur if, and only if, our previous ``ReturnTrueOrFalse`` function returned true, then you can use:
 
 .. code-block:: javascript
 
-  if(ReturnTrueOrFalse())
+  if( ReturnTrueOrFalse() )
 
 Conditional operators can also be used to make comparisons, such as ``==`` (equals), ``<`` (less than), ``<=`` (less than or equal), ``!=`` (not equal), etc., returning true if their condition is satisfied. For example, to execute code if a dice roll landed on 5:
 
 .. code-block:: javascript
 
-  if(RandomInt(6)+1 == 5)
+  if( RandomInt( 6 ) + 1 == 5 )
 
 Like other languages, if statements can be connected to ``else if`` and ``else`` statements. ``else if`` statements must be used immediately after an ``if`` or ``else if`` and will only check their condition if the preceding statements failed. ``else`` statements behave similarly, but always run if the preceding statements failed and must be last.
 
@@ -45,28 +160,88 @@ The Syntax is ``condition ? if_condition_true : if_condition_false``. This is es
 
 Loops
 ------
-There are three primary loops: ``while``, ``for``, and ``foreach``. ``while`` loops are similar to ``if`` statements, but repeat endlessly so long as the test remains true:
+
+Loops are used to execute the same code n times.
+
+While Loops
+~~~~
+
+A while loop runs as long as the condition evaluates to a truthy value.
 
 .. code-block:: javascript
 
-  while(ReturnTrueOrFalse())
+  while( true )
+  {
+    // this will result in an endless loop because the probe condition will never be false 
+  }
 
-This script will repeat endlessly until ``ReturnTrueOrFalse`` returns false.
+  while( RandomInt( 2 ) )
+  {
+    // This will run until a 1 is generated by chance, because squirrel treats 0 as a falsy value and 1 as truthy.
+  }
 
-``for`` loops are similar to ``while`` loops, but also run code once at the start and after every loop. These are primarily used to loop a specific number of times, such as over the length of a list:
+Do While Loop
+~~~~
 
+A do while loop is the same as a while loop but the condition is checked **after** the body is executed.
+
+.. code-block:: javascript
+
+  do
+  {
+    // this will execute only one time
+  } while( false )
+
+For Loop
+~~~~
+
+A for loop also runs until a condition is met however it provides you with a counter variable.
+
+The Syntax is as follows: ``for( int counter; condition; behaviour_after_body_execution )``
+
+.. code-block:: javascript
+
+  // prints 0, 1, 2, 3, 4
+  for( int i; i < 5; i++ )
+  {
+    print( i )
+  }
+
+  array<int> arr = [ 14, 2, 18, 9 ]
+  // prints 14, 2, 18, 9
+  for( int i; i < arr.len() * 2; i += 2 )
+  {
+    print( arr[i] )
+  }
+
+Foreach Loop
+~~~~
+
+A foreach loop iterates over a ``table`` or an ``array`` and executes for each entry. The loop provides you with an optional counter for arrays or key for tables.
+
+.. code-block:: javascript
+
+  array<int> arr = [ 1, 2, 3, 4 ]
+  table<string, string> map = {
+    key1 = "mapped value 1",
+    key2 = "mapped value 2"
+  }
+
+  // prints 0 1, 1 2, 2 3, 3 4
+  foreach( int i; int v in arr )
+  {
+    printt( i, v )
+  }
+
+  // prints key1 mapped value 1, key2 mapped value 2
+  foreach( string k, string v in map )
+  {
+    printt( k, v )
+  }
 .. code-block:: javascript
 
   array<int> somelist = [0, 5, 6, 4, 11]
   for(int i = 0; i < somelist.len(); i++)
-
-``int i = 0`` runs immediately; ``i < somelist.len()`` is the test for the loop, only executing the loop if it is true; ``i++`` runs after every loop iteration.
-
-``foreach`` loops only loop over a set of data, such as a list or table, and will execute for each entry. They don't loop in any order and data should not be added or removed from the set during the loop:
-
-.. code-block:: javascript
-
-  foreach( number in somelist)
 
 Implicit conditional behavior
 -----------------
