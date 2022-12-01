@@ -1,6 +1,4 @@
 #if CLIENT
-global function ServerToClientStringCommands_Init
-
 global function AddServerToClientStringCommandCallback
 global function NSClientCodeCallback_RecievedServerToClientStringCommand
 #endif
@@ -13,11 +11,6 @@ global function ServerToClientStringCommand
 struct {
 	table< string, array< void functionref( array<string> args ) > > callbacks
 } file
-
-void function ServerToClientStringCommands_Init()
-{
-	getroottable().rawset( "NSClientCodeCallback_RecievedServerToClientStringCommand", NSClientCodeCallback_RecievedServerToClientStringCommand )
-}
 
 void function AddServerToClientStringCommandCallback( string command, void functionref( array<string> args ) callback )
 {
