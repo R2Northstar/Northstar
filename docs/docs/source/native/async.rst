@@ -1,106 +1,193 @@
-Threading, Async, and timers
+Threads, Signals and Flags
 ============================
-When using timers or infinite statements such as ``while(true)`` or ``wait`` it is important to use ``thread`` before the function in order to prevent crashes or freezes.
 
-What is ``thread``?
--------------------
-The ``thread`` term is used to tell squirrel to run the following function **separately** from the rest of the game, while in a simple scripts code is run sequentially(line 1,2,3 etc)
-if a line of code would last forever or need to function in parallel to normal gameplay, such as a  ``wait`` command, it is important to use ``thread`` or the game will get stuck processing that line indefinitely
-and will not move to the next lines, causing crashes or freezes. 
+Threads
+----
 
-How do i use ``thread``?
-------------------------
-Using thread is fairly simple, if we have a function called ``delayannouncement`` that chooses one player as "it" 10 seconds after spawning we cannot use this function on its own, instead calling it with a thread by simply calling
+Squirrel allows scripts to spin off function calls in a thread. All subsequential function calls will be threaded as well.
 
-``thread delayannouncement()``
+In threaded functions, it's possible to halt a threaded function with ``wait`` statements, signals, flags and by suspending a thread object.
 
-The same applies to a ``while(true)`` function, for example ``almostover`` a function that checks every 5 seconds to see if the game has 2 or less minutes left and announces it if so.
+You can use the ``IsNewThread()`` function to determine if the current function is threaded off.
 
-``thread almostover()``
+For more information, check out the `squirrel documentation on threads <http://www.squirrel-lang.org/squirreldoc/reference/language/threads.html>`_ and `sq functions of threads <http://www.squirrel-lang.org/squirreldoc/reference/language/builtin_functions.html#thread>`_. rsquirrel is very similar to vanilla squirrel in this regard.
 
-Example Script
---------------
-lets try implement both of our scripts from the previous 2 sections, as well as a callback to trigger the script.
+A thread is considered finished, after the threaded function returned a value. This may be ``null``.
 
-First, lets add our callback to the gamemodes core function. 
+Spinning off a thread
+^^^^
 
-.. code-block:: javascript^^
-
-    global function GamemodeTag_Init
-
-
-    void function GamemodeTag_Init(){
-    AddCallback_GameStateEnter( eGameState.Playing, MatchStart )
-    }
-
-Then lets define the function matchstart and have it simply thread our two important functions.
+To create a new coroutine, call a function with the ``thread`` keyword before.
 
 .. code-block:: javascript
 
-    void Matchstart{
-        thread delayannouncement()
-        thread almostover()
-    }
+    thread void function(){}()
+    thread MyFunction()
 
-This script waits 10 seconds, picks a player and announces that player as "it" however being ``it`` currently does nothing, we will define that later.
+To get a thread object, use the ``newthread`` function.
 
 .. code-block:: javascript
 
-    void delayannouncement(){
-    wait 10.0 
-    string chosenplayer = GetPlayerArray()[RandomInt(GetPlayerArray().len())]
-    string message = chosenplayer + " is it!"
-    foreach ( entity player in GetPlayerArray() )
-        SendHudMessage( player, message, -1, 0.4, 255, 0, 0, 0, 0, 3, 0.15 )
+    void function CoroutineExample()
+    {
+        suspend( "passback" ) // passback is optional
+        print( "threaded statement" )
     }
 
-This function will now repeat endlessly, waiting 5 seconds before each repeat. make sure to add a ``return`` or ``break`` statement to prevent the message looping every 5 seconds after, unless you want that
+    var co = newthread( CoroutineExample )
+    var suspendedReturn = co.call() // you NEED to use .call, invoking the function with () won't work
+    co.wakeup() // continue thread
+
+wait
+^^^^
+
+The ``wait`` statement halts threads for a set amount of time specified after the ``wait`` keyword. Integers and floats are accepted as times in seconds.
 
 .. code-block:: javascript
 
-    void almostover(){
-        while(true){
-            if(GameTime_TimeLeftSeconds() < 120){
-                foreach ( entity player in GetPlayerArray() )
-                    SendHudMessage( player, "Two minutes left!", -1, 0.4, 255, 0, 0, 0, 0, 3, 0.15 )
-                    break
-                }
-                wait 5.0
-            }
+    void function WaitExample( float n )
+    {
+        wait 1 // wait 1 second
+        wait n // wait n seconds
+    }
+
+    thread WaitExample( 0.5 ) // thread will halt for a total 1.5 seconds
+
+To wait a single frame, don't use ``wait 0`` since it doesn't actually wait a game frame. For example, if you have a client loop that does wait 0 even if the game is paused the loop will still run. Use ``WaitFrame()`` instead.
+
+When using infinite loops it's important to work with ``wait`` statements to avoid the game freezing.
+
+If you want to wait until a thread is finished, you can spin off the thread that you wait for with the ``waitthread`` keyword.
+
+.. code-block:: javascript
+
+    void function ParentThread()
+    {
+        printt( "pre spinoff " + string( Time() ) )
+        waitthread void function()
+        {
+            printt( "mid spinoff " + string( Time() ) )
+            wait 1
         }
+        printt( "post spinoff" + string( Time() ) )
+    }
 
-You can also set up some code to be executed when a thread ends:
+OnThreadEnd
+^^^^
+
+Use the ``OnThreadEnd`` function to execute a callback after a thread has ended. This is useful for cleanup functions that remove entities after they're used or similar.
 
 .. code-block:: javascript
 
-    void killPlayerAfterAfewMoments(entity player) {
-        OnThreadEnd(
-            // you have to explicitely capture all variables you want to use inside function
-            function() : ( player )
-            {
-                if ( !IsValid( player ))
-                    return
+    void function PlayIncomingFX( vector origin, int teamNum )
+    {
+        wait 1.50
+        EmitSoundAtPosition( teamNum, origin, "Titan_1P_Warpfall_Start" )
 
-                SendHudMessage( player, "Time to sleep, fella!", -1, 0.4, 255, 0, 0, 0, 0, 3, 0.15 )
-                player.Die()
+        local colorVec = Vector( 0, 255, 0 )
+        entity cpoint = CreateEntity( "info_placement_helper" )
+        SetTargetName( cpoint, UniqueString( "pickup_controlpoint" ) )
+        DispatchSpawn( cpoint )
+        cpoint.SetOrigin( colorVec )
+        entity glowFX = PlayFXWithControlPoint( INCOMING_SPAWN_FX, origin, cpoint, -1, null, null, C_PLAYFX_LOOP )
+
+        OnThreadEnd(
+            function() : ( glowFX, cpoint )
+            {
+                if ( IsValid( glowFX ) )
+                    glowFX.Destroy()
+                if ( IsValid( cpoint ) )
+                    cpoint.Destroy()
             }
         )
 
-        // Do something time consuming
+        wait 1.25
     }
 
-    thread killPlayerAfterAFewMoments( GetPlayerArray()[0] )
+Example Script
+^^^^
 
+.. code-block:: javascript
 
-You have now created and threaded both functions.
+    void function SetPositionDelayed( entity ent, vector pos, float delay )
+    {
+        wait delay
+        ent.SetOrigin( pos )
+    }
+
+    SetPositionDelayed( player, <0, 0, 100>, 5.0 )
+    SetPositionDelayed( player, <0, 0, 50>, 2.5 ) // this will finish sooner.
+
 
 Signals and flags
 ----------------------
 
+Signals and flags allow threads to wait for events before running some code.
+
 Signals
 ^^^^^^^^^^
 
-Signals and flags allow threads to wait for events before running some code.
+.. cpp:function:: void RegisterSignal( string signal )
+
+    Registers a Signals to use on any entity. It's required to register signals before using them.
+
+.. cpp:class:: CBaseEntity
+
+    :doc:`../reference/respawn/entities`
+
+    .. cpp:function:: void Signal( string signal, table<var, var> results = null )
+
+	Trigger a signal on this entity. The passed ``results`` will be returned by ``WaitSignal``.
+
+    .. cpp:function:: void EndSignal( string signal )
+
+	Ends this thread when the identifier is signaled on this entity
+
+    .. cpp:function:: table<var, var> WaitSignal( string signal )
+
+	Halts this thread until a signal is activated for this entity
+
+    .. cpp:function:: void ConnectOutput( string signal, void functionref( entity trigger, entity activator, entity caller, var value ) callback )
+
+        Register a callback that executes when the ``signal`` has been fired on this Entity
+
+    .. cpp:function:: void DisconnectOutput( string event, void functionref( entity trigger, entity activator, entity caller, var value ) callback )
+
+        Disconnects the callback from the signal.
+
+    .. cpp:function:: void AddOutput( string outputName, string | entity target, string inputName, string parameter = "", float delay = 0, float maxFires = 0 )
+
+	Connects an output on this entity to an input on another entity via code.  The ``target`` can be a name or a named entity.
+        
+    .. cpp:function:: void Fire( string signal, string param = "", float delay = 0, entity activator = null, entity caller = null )
+
+	Fire a signal on this entity, with optional parm and delay
+
+    .. cpp:function:: void FireNow( string output, string param = "", float delay = 0, entity activator = null, entity caller = null )
+
+	Fire a signal on this entity, with optional parm and delay (synchronous)
+
+It's also possible to trigger and catch signals with methods that aren't properties of an entity.
+
+.. cpp:function:: void Signal( var obj, string signal, table<var, var> results = null )
+
+    Trigger a signal on ``ent``. The passed ``results`` will be returned by ``WaitSignal``.
+
+.. cpp:function:: table<var, var> WaitSignal( entity ent, ... )
+
+    Wait for any of the passed signals to be triggered.
+
+    .. code-block:: javascript
+
+        // Wait for the NPC to die, delete, or get leeched, then remove the npc from the array
+	    WaitSignal( ent, "OnDeath", "OnDestroy", "OnLeeched" )
+
+.. cpp:function:: void EndSignal( var obj, string signal )
+
+    Ends this thread when the identifier is signaled on ``ent``
+
+Example
+~~~~
 
 For example, if we want to tell a player not to give up after being killed several times, we can write it this way:
 
@@ -149,36 +236,6 @@ run until player died 42 times.
 
 When you want your thread to die on a given event, you can use ``entity.EndSignal( "OnMultipleDeaths" )``; when said signal 
 is set, thread will end (after calling any `OnThreadEnd` methods).
-
-
-.. cpp:function:: void RegisterSignal( string signal )
-
-    Registers a Signals to use on any entity
-
-.. cpp:class:: CBaseEntity
-
-    :doc:`../reference/respawn/entities`
-
-    .. cpp:function:: void ConnectOutput( string signal, void functionref( entity trigger, entity activator, entity caller, var value ) callback )
-
-        Register a callback that executes when the ``signal`` has been fired on this Entity
-
-    .. cpp:function:: void DisconnectOutput( string event, void functionref( entity trigger, entity activator, entity caller, var value ) callback )
-
-        Disconnects the callback from the signal.
-
-	.. cpp:function:: void AddOutput( string outputName, string | entity target, string inputName, string parameter = "", float delay = 0, float maxFires = 0 )
-
-		Connects an output on this entity to an input on another entity via code.  The ``target`` can be a name or a named entity.
-        
-	.. cpp:function:: void Fire( string signal, string param = "", float delay = 0, entity activator = null, entity caller = null )
-
-		Fire a signal on this entity, with optional parm and delay
-
-	.. cpp:function:: void FireNow( string output, string param = "", float delay = 0, entity activator = null, entity caller = null )
-
-		Fire a signal on this entity, with optional parm and delay (synchronous)
-
 
 Flags
 ^^^^^^^^^^
@@ -253,6 +310,8 @@ Flags
 
     Splits the value of the keyvalues of the entity on the index ``field`` on ``" "``
 
+Example
+~~~~
 
 .. code-block:: javascript
 
