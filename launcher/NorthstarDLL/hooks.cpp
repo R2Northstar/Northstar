@@ -364,7 +364,7 @@ HMODULE, WINAPI, (LPCSTR lpLibFileName, HANDLE hFile, DWORD dwFlags))
 		if (!moduleAddress)
 		{
 			MessageBoxA(0, "Could not find XInput9_1_0.dll", "Northstar", MB_ICONERROR);
-			exit(-1);
+			exit(EXIT_FAILURE);
 
 			return nullptr;
 		}
