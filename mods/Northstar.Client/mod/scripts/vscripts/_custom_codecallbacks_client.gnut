@@ -1,7 +1,10 @@
 untyped
 
 global function AddCallback_OnReceivedSayTextMessage
-global function NSSetupChathooksClient
+
+// this is global due to squirrel bridge v3 making native not be able to find non-global funcs properly
+// temp fix (surely it will get replaced), do not use this function please (although there isnt rly a downside to it?)
+global function CHudChat_ProcessMessageStartThread
 
 global struct ClClient_MessageStruct {
 	string message
@@ -134,8 +137,4 @@ void function CHudChat_OnReceivedSayTextMessageCallback(int fromPlayerIndex, str
 void function AddCallback_OnReceivedSayTextMessage( ClClient_MessageStruct functionref (ClClient_MessageStruct) callbackFunc )
 {
 	NsCustomCallbacksClient.OnReceivedSayTextMessageCallbacks.append(callbackFunc)
-}
-
-void function NSSetupChathooksClient() {
-    getroottable().rawset("CHudChat_ProcessMessageStartThread", CHudChat_ProcessMessageStartThread)
 }

@@ -1,7 +1,10 @@
 untyped
 
 global function AddCallback_OnReceivedSayTextMessage
-global function NSSetupChathooksServer
+
+// this is global due to squirrel bridge v3 making native not be able to find non-global funcs properly
+// temp fix (surely it will get replaced), do not use this function please
+global function CServerGameDLL_ProcessMessageStartThread
 
 global struct ClServer_MessageStruct {
 	string message
@@ -52,8 +55,4 @@ void function CServerGameDLL_OnReceivedSayTextMessageCallback(int playerIndex, s
 void function AddCallback_OnReceivedSayTextMessage( ClServer_MessageStruct functionref (ClServer_MessageStruct) callbackFunc )
 {
 	NsCustomCallbacks.OnReceivedSayTextMessageCallbacks.append(callbackFunc)
-}
-
-void function NSSetupChathooksServer() {
-	getroottable().rawset("CServerGameDLL_ProcessMessageStartThread", CServerGameDLL_ProcessMessageStartThread)
 }
