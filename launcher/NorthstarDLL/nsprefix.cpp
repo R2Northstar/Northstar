@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "nsprefix.h"
+#include "dedicated.h"
 #include <string>
 
 std::string GetNorthstarPrefix()
@@ -37,5 +38,7 @@ void InitialiseNorthstarPrefix()
 	}
 
 	// set the console title to show the current profile
-	SetConsoleTitleA((std::string("NorthstarLauncher | ") + NORTHSTAR_FOLDER_PREFIX).c_str());
+	// dont do this on dedi as title contains useful information on dedi and setting title breaks it as well
+	if (!IsDedicatedServer())
+		SetConsoleTitleA((std::string("NorthstarLauncher | ") + NORTHSTAR_FOLDER_PREFIX).c_str());
 }
