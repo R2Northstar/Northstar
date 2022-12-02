@@ -58,6 +58,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/F8000000 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -79,6 +80,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/F8000000 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -96,6 +98,41 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\rapidjson\allocators.h" />
+    <ClInclude Include="..\include\rapidjson\document.h" />
+    <ClInclude Include="..\include\rapidjson\encodedstream.h" />
+    <ClInclude Include="..\include\rapidjson\encodings.h" />
+    <ClInclude Include="..\include\rapidjson\error\en.h" />
+    <ClInclude Include="..\include\rapidjson\error\error.h" />
+    <ClInclude Include="..\include\rapidjson\filereadstream.h" />
+    <ClInclude Include="..\include\rapidjson\filewritestream.h" />
+    <ClInclude Include="..\include\rapidjson\fwd.h" />
+    <ClInclude Include="..\include\rapidjson\internal\biginteger.h" />
+    <ClInclude Include="..\include\rapidjson\internal\diyfp.h" />
+    <ClInclude Include="..\include\rapidjson\internal\dtoa.h" />
+    <ClInclude Include="..\include\rapidjson\internal\ieee754.h" />
+    <ClInclude Include="..\include\rapidjson\internal\itoa.h" />
+    <ClInclude Include="..\include\rapidjson\internal\meta.h" />
+    <ClInclude Include="..\include\rapidjson\internal\pow10.h" />
+    <ClInclude Include="..\include\rapidjson\internal\regex.h" />
+    <ClInclude Include="..\include\rapidjson\internal\stack.h" />
+    <ClInclude Include="..\include\rapidjson\internal\strfunc.h" />
+    <ClInclude Include="..\include\rapidjson\internal\strtod.h" />
+    <ClInclude Include="..\include\rapidjson\internal\swap.h" />
+    <ClInclude Include="..\include\rapidjson\istreamwrapper.h" />
+    <ClInclude Include="..\include\rapidjson\memorybuffer.h" />
+    <ClInclude Include="..\include\rapidjson\memorystream.h" />
+    <ClInclude Include="..\include\rapidjson\msinttypes\inttypes.h" />
+    <ClInclude Include="..\include\rapidjson\msinttypes\stdint.h" />
+    <ClInclude Include="..\include\rapidjson\ostreamwrapper.h" />
+    <ClInclude Include="..\include\rapidjson\pointer.h" />
+    <ClInclude Include="..\include\rapidjson\prettywriter.h" />
+    <ClInclude Include="..\include\rapidjson\rapidjson.h" />
+    <ClInclude Include="..\include\rapidjson\reader.h" />
+    <ClInclude Include="..\include\rapidjson\schema.h" />
+    <ClInclude Include="..\include\rapidjson\stream.h" />
+    <ClInclude Include="..\include\rapidjson\stringbuffer.h" />
+    <ClInclude Include="..\include\rapidjson\writer.h" />
     <ClInclude Include="resource1.h" />
   </ItemGroup>
   <ItemGroup>
