@@ -219,7 +219,7 @@
 		"PLAYERS_COLUMN" "Игроки"
 		"MAP_COLUMN" "Карта"
 		"GAMEMODE_COLUMN" "Режим игры"
-		"LATENCY_COLUMN" "Задержка"
+		"REGION_COLUMN" "Регион"
 		"SEARCHBAR_LABEL" "Поиск:"
 		"MAP_FILTER" "Карта"
 		"GAMEMODE_FILTER" "Режим игры"

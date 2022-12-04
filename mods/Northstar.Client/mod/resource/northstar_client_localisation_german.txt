@@ -267,7 +267,7 @@ Drücke Ja, um zuzustimmen. Du kannst diese Entscheidung jederzeit im Modmenü �
 		"PLAYERS_COLUMN" "Spieler"
 		"MAP_COLUMN" "Karte"
 		"GAMEMODE_COLUMN" "Modus"
-		"LATENCY_COLUMN" "Ping"
+		"REGION_COLUMN" "Region"
 		"SEARCHBAR_LABEL" "Suche:"
 		"MAP_FILTER" "Karte"
 		"GAMEMODE_FILTER" "Modus"

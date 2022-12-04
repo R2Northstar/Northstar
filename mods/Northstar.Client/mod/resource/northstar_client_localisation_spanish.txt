@@ -276,7 +276,7 @@ Presiona Sí al estar de acuerdo. Esta opcion se puede cambiar en el menú de mo
 		"PLAYERS_COLUMN" "Jugadores"
 		"MAP_COLUMN" "Mapa"
 		"GAMEMODE_COLUMN" "Modo de juego"
-		"LATENCY_COLUMN" "Latencia"
+		"REGION_COLUMN" "Región"
 		"SEARCHBAR_LABEL" "Buscar:"
 		"MAP_FILTER" "Mapa"
 		"GAMEMODE_FILTER" "Modo de juego"
