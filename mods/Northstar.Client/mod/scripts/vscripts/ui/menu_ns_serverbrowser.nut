@@ -38,7 +38,7 @@ enum sortingBy
 	PLAYERS,
 	MAP,
 	GAMEMODE,
-	LATENCY
+	REGION
 }
 
 // Column sort direction, only one of these can be aplied at once
@@ -48,8 +48,8 @@ struct {
 	bool serverPlayers = true
 	bool serverMap = true
 	bool serverGamemode = true
-	bool serverLatency = true
-	// 0 = none; 1 = default; 2 = name; 3 = players; 4 = map; 5 = gamemode; 6 = latency
+	bool serverRegion = true
+	// 0 = none; 1 = default; 2 = name; 3 = players; 4 = map; 5 = gamemode; 6 = region
 	int sortingBy = 1
 } filterDirection
 
@@ -61,7 +61,7 @@ struct serverStruct {
 	int serverPlayersMax
 	string serverMap
 	string serverGamemode
-	int serverLatency
+	string serverRegion
 }
 
 struct {
@@ -87,7 +87,7 @@ struct {
 	array<var> serversProtected
 	array<var> serversMap
 	array<var> serversGamemode
-	array<var> serversLatency
+	array<var> serversRegion
 } file
 
 
@@ -151,7 +151,7 @@ void function InitServerBrowserMenu()
 	file.serversProtected = GetElementsByClassname( file.menu, "ServerLock" )
 	file.serversMap = GetElementsByClassname( file.menu, "ServerMap" )
 	file.serversGamemode = GetElementsByClassname( file.menu, "ServerGamemode" )
-	file.serversLatency = GetElementsByClassname( file.menu, "ServerLatency" )
+	file.serversRegion = GetElementsByClassname( file.menu, "Serverregion" )
 
 	filterArguments.filterMaps = [ "SWITCH_ANY" ]
 	Hud_DialogList_AddListItem( Hud_GetChild( file.menu, "SwtBtnSelectMap" ), "SWITCH_ANY", "0" )
@@ -194,7 +194,7 @@ void function InitServerBrowserMenu()
 	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnServerPlayersTab"), UIE_CLICK, SortServerListByPlayers_Activate )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnServerMapTab"), UIE_CLICK, SortServerListByMap_Activate )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnServerGamemodeTab"), UIE_CLICK, SortServerListByGamemode_Activate )
-	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnServerLatencyTab"), UIE_CLICK, SortServerListByLatency_Activate )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnServerRegionTab"), UIE_CLICK, SortServerListByRegion_Activate )
 
 
 	AddButtonEventHandler( Hud_GetChild( file.menu, "SwtBtnSelectMap"), UIE_CHANGE, FilterAndUpdateList )
@@ -218,8 +218,6 @@ void function InitServerBrowserMenu()
 	Hud_SetText( Hud_GetChild( file.menu, "BtnServerDescription"), "" )
 	Hud_SetText( Hud_GetChild( file.menu, "BtnServerMods"), "" )
 
-	// Unfinished features
-	Hud_SetLocked( Hud_GetChild( file.menu, "BtnServerLatencyTab" ), true )
 
 	// Rui is a pain
 	RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "SwtBtnHideFull") ), "buttonText", "" )
@@ -675,9 +673,9 @@ void function FilterAndUpdateList( var n )
 			filterDirection.serverGamemode = !filterDirection.serverGamemode
 			SortServerListByGamemode_Activate(0)
 			break
-		case sortingBy.LATENCY:
-			filterDirection.serverLatency = !filterDirection.serverLatency
-			SortServerListByLatency_Activate(0)
+		case sortingBy.REGION:
+			filterDirection.serverRegion = !filterDirection.serverRegion
+			SortServerListByRegion_Activate(0)
 			break
 		default:
 			printt( "How the f did you get here" )
@@ -715,7 +713,7 @@ void function WaitForServerListRequest()
 		Hud_SetText( file.playerCountLabels[ i ], "" )
 		Hud_SetText( file.serversMap[ i ], "" )
 		Hud_SetText( file.serversGamemode[ i ], "" )
-		Hud_SetText( file.serversLatency[ i ], "" )
+		Hud_SetText( file.serversRegion[ i ], "" )
 	}
 
 	HideServerInfo()
@@ -756,6 +754,7 @@ void function FilterServerList()
 		tempServer.serverPlayersMax = NSGetServerMaxPlayerCount( i )
 		tempServer.serverMap = NSGetServerMap( i )
 		tempServer.serverGamemode = GetGameModeDisplayName( NSGetServerPlaylist ( i ) )
+		tempServer.serverRegion = NSGetServerRegion( i )
 
 		totalPlayers += tempServer.serverPlayers
 
@@ -786,6 +785,7 @@ void function FilterServerList()
 			sName.append( tempServer.serverGamemode.tolower() )
 			sName.append( Localize( tempServer.serverGamemode ).tolower() )
 			sName.append( NSGetServerDescription( i ).tolower() )
+			sName.append( NSGetServerRegion( i ).tolower() )
 
 			string sTerm = filterArguments.searchTerm.tolower()
 			
@@ -821,7 +821,7 @@ void function UpdateShownPage()
 		Hud_SetText( file.playerCountLabels[ i ], "" )
 		Hud_SetText( file.serversMap[ i ], "" )
 		Hud_SetText( file.serversGamemode[ i ], "" )
-		Hud_SetText( file.serversLatency[ i ], "" )
+		Hud_SetText( file.serversRegion[ i ], "" )
 	}
 
 	int j = file.serversArrayFiltered.len() > BUTTONS_PER_PAGE ? BUTTONS_PER_PAGE : file.serversArrayFiltered.len()
@@ -840,6 +840,7 @@ void function UpdateShownPage()
 		Hud_SetText( file.playerCountLabels[ i ], format( "%i/%i", file.serversArrayFiltered[ buttonIndex ].serverPlayers, file.serversArrayFiltered[ buttonIndex ].serverPlayersMax ) )
 		Hud_SetText( file.serversMap[ i ], GetMapDisplayName( file.serversArrayFiltered[ buttonIndex ].serverMap ) )
 		Hud_SetText( file.serversGamemode[ i ], file.serversArrayFiltered[ buttonIndex ].serverGamemode )
+		Hud_SetText( file.serversRegion[ i ], file.serversArrayFiltered[ buttonIndex ].serverRegion )
 	}
 
 
@@ -1161,10 +1162,10 @@ int function ServerSortLogic ( serverStruct a, serverStruct b )
 			bTemp = Localize( b.serverGamemode ).tolower()
 			direction = filterDirection.serverGamemode
 			break;
-		case sortingBy.LATENCY:
-			aTemp = a.serverLatency
-			bTemp = b.serverLatency
-			direction = filterDirection.serverLatency
+		case sortingBy.REGION:
+			aTemp = a.serverRegion
+			bTemp = b.serverRegion
+			direction = filterDirection.serverRegion
 			break;
 		default:
 			return 0
@@ -1238,13 +1239,13 @@ void function SortServerListByGamemode_Activate( var button )
 	UpdateShownPage()
 }
 
-void function SortServerListByLatency_Activate( var button )
+void function SortServerListByRegion_Activate( var button )
 {
-	filterDirection.sortingBy = sortingBy.LATENCY
+	filterDirection.sortingBy = sortingBy.REGION
 
 	file.serversArrayFiltered.sort( ServerSortLogic )
 
-	filterDirection.serverLatency = !filterDirection.serverLatency
+	filterDirection.serverRegion = !filterDirection.serverRegion
 
 	UpdateShownPage()
 }

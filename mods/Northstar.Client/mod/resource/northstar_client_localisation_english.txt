@@ -276,7 +276,7 @@ Press Yes if you agree to this. This choice can be changed in the mods menu at a
 		"PLAYERS_COLUMN" "Players"
 		"MAP_COLUMN" "Map"
 		"GAMEMODE_COLUMN" "Gamemode"
-		"LATENCY_COLUMN" "Latency"
+		"REGION_COLUMN" "Region"
 		"SEARCHBAR_LABEL" "Search:"
 		"MAP_FILTER" "Map"
 		"GAMEMODE_FILTER" "Gamemode"

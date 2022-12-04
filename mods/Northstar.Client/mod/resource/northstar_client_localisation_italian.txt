@@ -275,7 +275,7 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 		"PLAYERS_COLUMN" "Players"
 		"MAP_COLUMN" "Mappa"
 		"GAMEMODE_COLUMN" "Modalità"
-		"LATENCY_COLUMN" "Latenza"
+		"REGION_COLUMN" "Regione"
 		"SEARCHBAR_LABEL" "Cerca:"
 		"MAP_FILTER" "Mappa"
 		"GAMEMODE_FILTER" "Modalità"

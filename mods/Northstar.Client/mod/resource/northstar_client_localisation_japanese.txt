@@ -303,7 +303,7 @@
 		"PLAYERS_COLUMN" "プレイヤー"
 		"MAP_COLUMN" "マップ"
 		"GAMEMODE_COLUMN" "ゲームモード"
-		"LATENCY_COLUMN" "レイテンシー"
+		"REGION_COLUMN" "領域"
 		"SEARCHBAR_LABEL" "検索:"
 		"MAP_FILTER" "マップ"
 		"GAMEMODE_FILTER" "ゲームモード"

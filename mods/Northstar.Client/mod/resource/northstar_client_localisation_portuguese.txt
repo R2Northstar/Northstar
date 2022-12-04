@@ -274,7 +274,7 @@ Clique em Sim se você concorda. Esta escolha pode ser alterada a qualquer momen
 		"PLAYERS_COLUMN" "Jogadores"
 		"MAP_COLUMN" "Mapa"
 		"GAMEMODE_COLUMN" "Modo"
-		"LATENCY_COLUMN" "Latência"
+		"REGION_COLUMN" "Região"
 		"SEARCHBAR_LABEL" "Buscar:"
 		"MAP_FILTER" "Mapa"
 		"GAMEMODE_FILTER" "Modo"
