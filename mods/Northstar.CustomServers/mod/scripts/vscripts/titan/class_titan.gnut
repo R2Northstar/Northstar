@@ -68,6 +68,11 @@ bool function ClientCommand_TitanEject( entity player, array<string> args )
 	if ( !PlayerCanEject( player ) )
 		return true
 
+	// check array length before accessing index to avoid oob access
+	// prevents crashing a server by just calling `TitanEject` without arguments
+	if( args.len() < 1 ) 
+		return true
+
 	int ejectPressCount = args[ 0 ].tointeger()
 	if ( ejectPressCount < 3 )
 		return true
