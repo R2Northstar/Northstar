@@ -317,18 +317,20 @@ template <ScriptContext context> CSquirrelVM* __fastcall CreateNewVMHook(void* a
 	return sqvm;
 }
 
-template <ScriptContext context> void (*__fastcall DestroyVM)(void* a1, HSquirrelVM* sqvm);
-template <ScriptContext context> void __fastcall DestroyVMHook(void* a1, HSquirrelVM* sqvm)
+template <ScriptContext context> void (*__fastcall DestroyVM)(void* a1, CSquirrelVM* sqvm);
+template <ScriptContext context> void __fastcall DestroyVMHook(void* a1, CSquirrelVM* sqvm)
 {
 	ScriptContext realContext = context; // ui and client use the same function so we use this for prints
-	if (IsUIVM(context, sqvm))
+	if (IsUIVM(context, sqvm->sqvm))
 	{
 		realContext = ScriptContext::UI;
 		g_pSquirrel<ScriptContext::UI>->VMDestroyed();
+		// Don't call DestroyVM here because it crashes.
+		// Respawn Code :tm:
 	}
 	else
 	{
-		g_pSquirrel<context>->m_pSQVM = nullptr; // Fixes a race-like bug
+		g_pSquirrel<context>->VMDestroyed();
 		DestroyVM<context>(a1, sqvm);
 	}
 
