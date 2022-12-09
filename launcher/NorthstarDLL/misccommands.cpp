@@ -202,6 +202,7 @@ void FixupCvarFlags()
 		{"cam_collision", FCVAR_DEVELOPMENTONLY},
 		{"cam_idealdelta", FCVAR_DEVELOPMENTONLY},
 		{"cam_ideallag", FCVAR_DEVELOPMENTONLY},
+		{"r_drawviewmodel", FCVAR_CHEAT}, // this is a cheat command, but shouldn't be as you can achieve similar effects through mods
 
 		// graphics/visual settings
 		{"mat_colorcorrection", FCVAR_DEVELOPMENTONLY},
