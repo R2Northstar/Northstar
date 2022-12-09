@@ -225,7 +225,7 @@ string function CombineArgsIntoString( array<string> args )
 	
 	// Ignore the first argument
 	for( int i = 1; i < args.len(); i++ )
-		result += args[i] + " "
+		result += Localize( args[i] ) + " "
 	
 	return result
 }
