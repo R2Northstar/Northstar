@@ -1,13 +1,10 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Northstar", "NorthstarDLL\NorthstarDLL.vcxproj", "{CFAD2623-064F-453C-8196-79EE10292E32}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NorthstarDLL", "NorthstarDLL\NorthstarDLL.vcxproj", "{CFAD2623-064F-453C-8196-79EE10292E32}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NorthstarLauncher", "NorthstarLauncher\NorthstarLauncher.vcxproj", "{0EA82CB0-53FE-4D4C-96DF-47FA970513D0}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "loader_launcher_proxy", "loader_launcher_proxy\loader_launcher_proxy.vcxproj", "{F65C322D-66DF-4AF1-B650-70221DE334C0}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "loader_wsock32_proxy", "loader_wsock32_proxy\loader_wsock32_proxy.vcxproj", "{CF55F3B5-F348-450A-9CCB-C269F21D629D}"
 EndProject
@@ -25,10 +22,6 @@ Global
 		{0EA82CB0-53FE-4D4C-96DF-47FA970513D0}.Debug|x64.Build.0 = Debug|x64
 		{0EA82CB0-53FE-4D4C-96DF-47FA970513D0}.Release|x64.ActiveCfg = Release|x64
 		{0EA82CB0-53FE-4D4C-96DF-47FA970513D0}.Release|x64.Build.0 = Release|x64
-		{F65C322D-66DF-4AF1-B650-70221DE334C0}.Debug|x64.ActiveCfg = Debug|x64
-		{F65C322D-66DF-4AF1-B650-70221DE334C0}.Debug|x64.Build.0 = Debug|x64
-		{F65C322D-66DF-4AF1-B650-70221DE334C0}.Release|x64.ActiveCfg = Release|x64
-		{F65C322D-66DF-4AF1-B650-70221DE334C0}.Release|x64.Build.0 = Release|x64
 		{CF55F3B5-F348-450A-9CCB-C269F21D629D}.Debug|x64.ActiveCfg = Debug|x64
 		{CF55F3B5-F348-450A-9CCB-C269F21D629D}.Debug|x64.Build.0 = Debug|x64
 		{CF55F3B5-F348-450A-9CCB-C269F21D629D}.Release|x64.ActiveCfg = Release|x64
