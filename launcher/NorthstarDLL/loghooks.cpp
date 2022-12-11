@@ -6,6 +6,7 @@
 #include "bitbuf.h"
 #include "nsprefix.h"
 #include "tier0.h"
+#include "squirrel.h"
 
 #include <iomanip>
 #include <sstream>
