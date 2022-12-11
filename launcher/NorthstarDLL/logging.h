@@ -2,7 +2,6 @@
 #include "pch.h"
 #include "spdlog/sinks/base_sink.h"
 #include "spdlog/logger.h"
-#include "squirrel.h"
 #include "color.h"
 
 void CreateLogFiles();

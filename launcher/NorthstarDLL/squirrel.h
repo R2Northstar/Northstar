@@ -3,6 +3,7 @@
 #include "squirrelclasstypes.h"
 #include "squirrelautobind.h"
 #include "vector.h"
+#include "logging.h"
 
 // stolen from ttf2sdk: sqvm types
 typedef float SQFloat;
@@ -35,6 +36,13 @@ const char* GetContextName(ScriptContext context);
 const char* GetContextName_Short(ScriptContext context);
 eSQReturnType SQReturnTypeFromString(const char* pReturnType);
 const char* SQTypeNameFromID(const int iTypeId);
+
+std::shared_ptr<ColoredLogger> getSquirrelLoggerByContext(ScriptContext context);
+
+namespace NS::log
+{
+	template <ScriptContext context> std::shared_ptr<spdlog::logger> squirrel_logger();
+}; // namespace NS::log
 
 void schedule_call_external(ScriptContext context, const char* func_name, SquirrelMessage_External_Pop function);
 
@@ -297,6 +305,7 @@ template <ScriptContext context> class SquirrelManager : public virtual Squirrel
 		int result = sq_getfunction(m_pSQVM->sqvm, funcname, &functionobj, 0);
 		if (result != 0) // This func returns 0 on success for some reason
 		{
+			NS::log::squirrel_logger<context>()->error("Call was unable to find function with name '{}'. Is it global?", funcname);
 			return SQRESULT_ERROR;
 		}
 		pushobject(m_pSQVM->sqvm, &functionobj); // Push the function object
@@ -319,6 +328,7 @@ template <ScriptContext context> class SquirrelManager : public virtual Squirrel
 		int result = sq_getfunction(m_pSQVM->sqvm, funcname, &functionobj, 0);
 		if (result != 0) // This func returns 0 on success for some reason
 		{
+			NS::log::squirrel_logger<context>()->error("Call was unable to find function with name '{}'. Is it global?", funcname);
 			return SQRESULT_ERROR;
 		}
 		pushobject(m_pSQVM->sqvm, &functionobj); // Push the function object
