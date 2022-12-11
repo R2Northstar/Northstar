@@ -104,16 +104,24 @@ Creating Your Sound
 --------------------
 - **Recommended tool:** `Audacity <https://www.audacityteam.org/download/>`_
 
-Open/Add your audio as a track to Audacity and set your sample rate to
-either ``48000hz`` or ``44100hz``. In Audacity, select your entire track, open
-the effects dropdown menu, then click ``Change Speed``. In the dialog set
-either ``Speed Multiplier`` to ``0.918`` or ``Percent Change`` to ``-8,200``. After
-that, export your track as ``wav`` and make sure you don't add any
-metadata.
+Open/Add your audio as a track to Audacity and set the project rate accordingly.
+Either ``48000hz`` or ``44100hz`` can work well in most cases, but a few sounds don't use either. Which sampling rate you should use depends on the original sound's sampling rate.
 
+For example: if you use ``44100khz`` and the sound is slightly too high pitched in game, use ``48000khz``. If you use ``48000khz`` and it's slightly low pitched in game, use ``44100khz``.
+
+If you're unsure which to use, or the sound still seems too high, or low pitched, you can use  `LegionPlus <https://github.com/r-ex/LegionPlus>`_ to determine the original rate.
+
+After that, export your track as a 16-bit ``wav`` file (any other bit-depth will cause Northstar to crash).
+Make sure you don't add any metadata as this will cause white noise to be at the end of the sound.
+
+
+.. _issues_with_sounds:
+
+Issues With Sounds
+--------------------
 - White noise after the sound ends.
 
-This is usually because there's some metadata left in the audio.
+This is usually because there's some metadata left in the audio. Remove it to fix this issue.
 
 .. tabs::
 
@@ -137,7 +145,17 @@ This is usually because there's some metadata left in the audio.
               ffmpeg -i "$f" -map 0 -map_metadata -1 -c:v copy -c:a copy "${f%.wav}.new.wav"
               mv -f "${f%.wav}.new.wav" "$f"
             done
+            
+- Sound is slightly higher/lower pitched in game.
+ 
+ This is usually because the sampling rate of your sound doesn't match the original sound's sampling rate.
+ 
+ You can use a tool like Audacity to resample your sound to match the original rate. Consult :ref:`_creating_your_sound` for more information.
 
+.. _sound_tools:
+
+Sound Tools
+--------------------
 - Converters
 
 .. tabs::
