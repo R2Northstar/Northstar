@@ -1,0 +1,235 @@
+globalize_all_functions
+
+global enum HttpRequestMethod
+{
+	GET = 0,
+	POST = 1
+	HEAD = 2,
+	PUT = 3,
+	DELETE = 4,
+	PATCH = 5,
+	OPTIONS = 6,
+}
+
+global struct HttpRequest
+{
+	/** Method used for this http request. */
+	int method
+	/** Base URL of this http request. */
+	string url
+	/** Headers used for this http request. Some may get overridden or ignored. */
+	table< string, array< string > > headers
+	/** Query parameters for this http request. */
+	table< string, array< string > > queryParameters
+	/** The content type of this http request. Defaults to application/json & UTF-8 charset. */
+	string contentType = "application/json; charset=utf-8"
+	/** The body of this http request. If set, will override queryParameters.*/
+	string body
+	/** The timeout for the http request in seconds. Must be between 1 and 60. */
+	int timeout = 60
+	/** If set, the override to use for the User-Agent header. */
+	string userAgent
+}
+
+global struct HttpRequestResponse
+{
+	/** The status code returned by the remote the call was made to. */
+	int statusCode
+	/** The body of the response. */
+	string body
+	/** The raw headers returned by the remote. */
+	string rawHeaders
+	/** A key -> values table of headers returned by the remote. */
+	table< string, array< string > > headers
+}
+
+global struct HttpRequestFailure
+{
+	/** The error code returned by native for this failure. */
+	int errorCode
+	/** The reason why this http request failed. */
+	string errorMessage
+}
+
+struct HttpRequestCallbacks
+{
+	/** 
+	 * The function to call if the HTTP request was a success.
+	 * Passes in the response received from the remote.
+	 */
+	void functionref( HttpRequestResponse ) onSuccess
+
+	/**
+	 * The function to call if the HTTP request failed.
+	 */
+	void functionref( HttpRequestFailure ) onFailure
+}
+
+table< int, HttpRequestCallbacks > pendingCallbacks
+
+/**
+ * Called from native when a HTTP request is successful.
+ * This is internal and shouldn't be used.
+ * Keep in mind that the success can be successful, but have a non-success status code.
+ * @param handle The handle of the request we got a response for. 
+ * @param statusCode The status code returned in the response.
+ * @param body The body returned for GET requests.
+ * @param headers The headers that were returned in the response.
+ */
+void function NSHandleSuccessfulHttpRequest( int handle, int statusCode, string body, string headers )
+{
+	if ( !( handle in pendingCallbacks ) )
+	{
+		return
+	}
+
+	if ( pendingCallbacks[ handle ].onSuccess != null )
+	{
+		HttpRequestResponse response
+		response.statusCode = statusCode
+		response.body = body
+		response.rawHeaders = headers
+
+		// Parse the raw headers into key -> values
+		array<string> values = split( headers, "\n" )
+
+		foreach ( string header in values )
+		{
+			var index = header.find( ":" )
+			if ( index == null )
+			{
+				continue
+			}
+
+			expect int( index )
+
+			string name = strip( header.slice( 0, index ) )
+			string value = strip( header.slice( index + 1 ) )
+
+			if ( name in response.headers )
+			{
+				response.headers[ name ].append( value )
+			}
+			else
+			{
+				response.headers[ name ] <- [ value ]
+			}
+		}
+
+		pendingCallbacks[ handle ].onSuccess( response )
+	}
+
+	delete pendingCallbacks[ handle ]
+}
+
+/**
+ * Called from native when a HTTP request has failed.
+ * This is internal and shouldn't be used.
+ * @param handle The handle of the request that failed.
+ * @param errorCode The error code returned by curl.
+ * @param errorMessage The error message returned by curl.
+ */
+void function NSHandleFailedHttpRequest( int handle, int errorCode, string errorMessage )
+{
+	if ( handle in pendingCallbacks )
+	{
+		if ( pendingCallbacks[ handle ].onFailure != null )
+		{
+			HttpRequestFailure failure
+			failure.errorCode = errorCode
+			failure.errorMessage = errorMessage
+
+			pendingCallbacks[ handle ].onFailure( failure )
+		}
+
+		delete pendingCallbacks[ handle ]
+	}
+}
+
+/**
+ * Launch a HTTP request with the given request data.
+ * This function is async, and the provided callbacks will be called when it is completed.
+ * @param requestParameters The parameters to use for this request.
+ * @param onSuccess The callback to execute if the request is successful.
+ * @param onFailure The callback to execute if the request has failed.
+ * @returns Whether or not the request has been successfully started.
+ */
+bool function NSHttpRequest( HttpRequest requestParameters, void functionref( HttpRequestResponse ) onSuccess = null, void functionref( HttpRequestFailure ) onFailure = null )
+{
+	int handle = NS_InternalMakeHttpRequest( requestParameters.method, requestParameters.url, requestParameters.headers,
+		requestParameters.queryParameters, requestParameters.contentType, requestParameters.body, requestParameters.timeout, requestParameters.userAgent )
+
+	if ( handle != -1 && ( onSuccess != null || onFailure != null ) )
+	{
+		HttpRequestCallbacks callback
+		callback.onSuccess = onSuccess
+		callback.onFailure = onFailure
+
+		pendingCallbacks[ handle ] <- callback
+	}
+
+	return handle != -1
+}
+
+/**
+ * Launches an HTTP GET request at the specified URL with the given query parameters.
+ * This function is async, and the provided callbacks will be called when it is completed.
+ * @param url The url to make the http request for.
+ * @param queryParameters A table of key value parameters to insert in the url. 
+ * @param onSuccess The callback to execute if the request is successful.
+ * @param onFailure The callback to execute if the request has failed.
+ * @returns Whether or not the request has been successfully started.
+ */
+bool function NSHttpGet( string url, table< string, array< string > > queryParameters = {}, void functionref( HttpRequestResponse ) onSuccess = null, void functionref( HttpRequestFailure ) onFailure = null )
+{
+	HttpRequest request
+	request.method = HttpRequestMethod.GET
+	request.url = url
+	request.queryParameters = queryParameters
+
+	return NSHttpRequest( request, onSuccess, onFailure )
+}
+
+/**
+ * Launches an HTTP POST request at the specified URL with the given query parameters.
+ * This function is async, and the provided callbacks will be called when it is completed.
+ * @param url The url to make the http request for.
+ * @param queryParameters A table of key value parameters to insert in the url. 
+ * @param onSuccess The callback to execute if the request is successful.
+ * @param onFailure The callback to execute if the request has failed.
+ * @returns Whether or not the request has been successfully started.
+ */
+bool function NSHttpPostQuery( string url, table< string, array< string > > queryParameters, void functionref( HttpRequestResponse ) onSuccess = null, void functionref( HttpRequestFailure ) onFailure = null )
+{
+	HttpRequest request
+	request.method = HttpRequestMethod.POST
+	request.url = url
+	request.queryParameters = queryParameters
+
+	return NSHttpRequest( request, onSuccess, onFailure )
+}
+
+/**
+ * Launches an HTTP POST request at the specified URL with the given body.
+ * This function is async, and the provided callbacks will be called when it is completed.
+ * @param url The url to make the http request for.
+ * @param queryParameters A table of key value parameters to insert in the url. 
+ * @param onSuccess The callback to execute if the request is successful.
+ * @param onFailure The callback to execute if the request has failed.
+ * @returns Whether or not the request has been successfully started.
+ */
+bool function NSHttpPostBody( string url, string body, void functionref( HttpRequestResponse ) onSuccess = null, void functionref( HttpRequestFailure ) onFailure = null )
+{
+	HttpRequest request
+	request.method = HttpRequestMethod.POST
+	request.url = url
+	request.body = body
+
+	return NSHttpRequest( request, onSuccess, onFailure )
+}
+
+/** Whether or not the given status code is considered successful. */
+bool function NSIsSuccessHttpCode( int statusCode )
+{
+	return statusCode >= 200 && statusCode <= 299
+}
