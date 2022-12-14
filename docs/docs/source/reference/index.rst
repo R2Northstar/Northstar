@@ -10,6 +10,7 @@ Northstar API
     /reference/northstar/dependencyconstants.rst
     /reference/northstar/customdamagesources.rst
     /reference/northstar/serversiderui.rst
+    /reference/northstar/httprequests.rst
 
 Respawn API
 -----------
