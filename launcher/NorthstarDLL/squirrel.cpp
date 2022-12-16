@@ -325,8 +325,7 @@ template <ScriptContext context> void __fastcall DestroyVMHook(void* a1, CSquirr
 	{
 		realContext = ScriptContext::UI;
 		g_pSquirrel<ScriptContext::UI>->VMDestroyed();
-		// Don't call DestroyVM here because it crashes.
-		// Respawn Code :tm:
+		DestroyVM<ScriptContext::CLIENT>(a1, sqvm); // If we pass UI here it crashes
 	}
 	else
 	{
