@@ -23,10 +23,8 @@ This should take you to a online version of the docs with your PRs changes.
 Building locally
 ----------------
 
-First, you need to have a relatively recent version of Python installed - 3.8 or higher. `Download here <https://www.python.org/downloads/>`_
+You need to have a relatively recent version of Python installed - 3.8 or higher. `Download here <https://www.python.org/downloads/>`_
 
-tl:dr;
-^^^^^^
 
 .. tabs::
 
@@ -34,73 +32,18 @@ tl:dr;
 
         git clone https://github.com/R2Northstar/ModdingDocs/
         cd ModdingDocs
-        py -m pip install poetry
-        py -m poetry install
-        py -m poetry run build
+        ./run.ps1
     
     .. code-tab:: bash Linux
 
         git clone https://github.com/R2Northstar/ModdingDocs/
         cd ModdingDocs
-        python3 -m pip install poetry
-        python3 -m poetry install
-        python3 -m poetry run build
+        ./run.sh
 
+.. warning::
+    On Windows, if you are not able to run the script by running `./run.ps1`, try running it with: `powershell.exe -ExecutionPolicy Bypass -File .\run.ps1`
 
-
-Explanation
-^^^^^^^^^^^
-
-Open a terminal wherever you want the files to end up and clone the `ModdingDocs repo <https://github.com/R2Northstar/ModdingDocs/>`_, e.g.
-
-
-.. code:: bash
-
-    git clone https://github.com/R2Northstar/ModdingDocs/
-    cd ModdingDocs
-
-Your terminal should now be open in the ModdingDocs folder.
-
-Next, you need to install `Poetry <https://python-poetry.org/docs/cli/>`_, the dependency management and build tool used:
-
-.. tabs::
-
-    .. code-tab:: powershell Windows
-        
-        py -m pip install poetry
-        
-    .. code-tab:: bash Linux
-
-        python3 -m pip install poetry
-
-Now, tell poetry to install this project and its dependencies.
-
-.. tabs::
-
-    .. code-tab:: powershell Windows
-        
-        py -m poetry install
-        
-    .. code-tab:: bash Linux
-
-        python3 -m poetry install
-
-
-After this is done downloading and setting up all the dependencies, you can build it with:
-
-
-.. tabs::
-
-    .. code-tab:: powershell Windows
-        
-        py -m poetry run build
-        
-    .. code-tab:: bash Linux
-
-        python3 -m poetry run build
-
-
-This should rebuild the docs on changes and open them in your default browser with live reloading.
+    After this you should be able to run with just `./run.ps1`.
 
 
 VSCode
