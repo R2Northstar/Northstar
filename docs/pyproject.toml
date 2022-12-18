@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "This repo contains the technical documentation on all things related to making Northstar mods."
 authors = ["R2Northstar"]
 license = "MIT"
+packages = [{ include = "docs/source/**/*.py" }]
 
 [tool.poetry.dependencies]
 python = "^3.8"
