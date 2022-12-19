@@ -41,7 +41,6 @@
 
 * [Modding](modding/README.md)
 * [Development](modding-and-development/development/README.md)
-  * [Repos](modding-and-development/development/repos.md)
   * [Repositories](modding-and-development/development/repositories/README.md)
     * [Atlas](modding-and-development/development/repositories/atlas.md)
     * [NorthstarMods](modding-and-development/development/repositories/northstarmods.md)
