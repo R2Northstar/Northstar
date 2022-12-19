@@ -16,12 +16,6 @@
     <Filter Include="Header Files\include">
       <UniqueIdentifier>{d4199e4b-10d2-43ce-af9c-e1fa79e1e64e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Client">
-      <UniqueIdentifier>{b6f79919-9735-476d-8798-067a75cbeca0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Client">
-      <UniqueIdentifier>{ca657be5-c2d8-4322-a689-1154aaafe57b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\include\spdlog">
       <UniqueIdentifier>{8596cc1c-0492-4467-91e3-1f03b7e19f77}</UniqueIdentifier>
     </Filter>
@@ -52,257 +46,143 @@
     <Filter Include="Header Files\include\rapidjson\msinttypes">
       <UniqueIdentifier>{85aacdee-0f92-4ec4-b20c-0739c1175055}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Server">
-      <UniqueIdentifier>{3d41d3fc-8a3b-4358-b3e8-4f06dc96abfe}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Server\Authentication">
-      <UniqueIdentifier>{d69760a9-d5ec-4f3e-8f43-f74041654d44}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Server">
-      <UniqueIdentifier>{365e5c1f-4b2f-4d8b-a1d8-cdef401ca689}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Server\Authentication">
-      <UniqueIdentifier>{24fd0855-9288-4129-93ba-c6cafdc98d1b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\include\openssl">
       <UniqueIdentifier>{4cb0dd89-5f16-4549-a864-34ca3075352a}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\include\libcurl">
       <UniqueIdentifier>{ea1e17a6-40b7-4e1b-8edb-e9ae704ce604}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Client\Scripted">
-      <UniqueIdentifier>{51910ba0-2ff8-461d-9f67-8d7907b57d22}</UniqueIdentifier>
+    <Filter Include="Source Files\client">
+      <UniqueIdentifier>{757f33f0-f17b-4ecd-8b95-2157b2d2f03c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Server\Scripted">
-      <UniqueIdentifier>{325e0d7d-6832-496d-8d8e-968fdfa5dd40}</UniqueIdentifier>
+    <Filter Include="Source Files\config">
+      <UniqueIdentifier>{7f9657c5-d4c7-464f-b2f6-d9afbbe0bb42}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Server\Scripted">
-      <UniqueIdentifier>{802d0771-62f1-4733-89f9-57a4d8864b8d}</UniqueIdentifier>
+    <Filter Include="Source Files\dedicated">
+      <UniqueIdentifier>{e45d18f7-8992-47ac-837c-4cb99f5a0487}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Console">
-      <UniqueIdentifier>{04fd662a-6e70-494c-b720-c694a5cc2fb1}</UniqueIdentifier>
+    <Filter Include="Source Files\masterserver">
+      <UniqueIdentifier>{62167757-13c1-4f57-a8f5-15a3c800997b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Convar">
-      <UniqueIdentifier>{a18afb37-5fdd-4340-a6b4-a6541593e398}</UniqueIdentifier>
+    <Filter Include="Source Files\mods">
+      <UniqueIdentifier>{25e33568-4125-406d-8661-01ae2abf61a5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Exploit Fixes">
-      <UniqueIdentifier>{4a8a695a-a103-4b1f-b314-0ec19a253119}</UniqueIdentifier>
+    <Filter Include="Source Files\mods\compiled">
+      <UniqueIdentifier>{008e67ce-bf6a-4792-9ded-69a434edea00}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Filesystem">
-      <UniqueIdentifier>{d8a83b5e-9a23-4124-824f-eab37880cb08}</UniqueIdentifier>
+    <Filter Include="Source Files\plugins">
+      <UniqueIdentifier>{dbf03bda-dd0a-44ce-a6b1-361f7f21a10e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Game Functions">
-      <UniqueIdentifier>{2cbddb28-0b17-4881-847d-8773da52b268}</UniqueIdentifier>
+    <Filter Include="Source Files\server">
+      <UniqueIdentifier>{d83e1c5c-c9c7-47a2-b406-9b5a93e3cc29}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Hooks">
-      <UniqueIdentifier>{4db0d1e9-9035-457f-87f1-5dc3f13b6b9e}</UniqueIdentifier>
+    <Filter Include="Source Files\scripts">
+      <UniqueIdentifier>{57fb0fa6-7665-4d37-bb2b-6f5570023d83}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Math">
-      <UniqueIdentifier>{59b0f68f-daa7-4641-b6fa-8464b56da2bb}</UniqueIdentifier>
+    <Filter Include="Source Files\server\auth">
+      <UniqueIdentifier>{08436037-e86f-4410-8db6-37c8b10ca5a1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Mods">
-      <UniqueIdentifier>{3e892d07-2239-44da-9cf3-c288a34cf9a2}</UniqueIdentifier>
+    <Filter Include="Source Files\squirrel">
+      <UniqueIdentifier>{e8fb33f4-47b5-4fd9-b6c0-2ca1bd8cac81}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Mods\Compiled Assets">
-      <UniqueIdentifier>{14fc0931-acad-46ec-a55e-94f4469d4235}</UniqueIdentifier>
+    <Filter Include="Source Files\util">
+      <UniqueIdentifier>{d60e54d0-b4e4-4210-af6b-59bdd84bed0f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Dedicated Server">
-      <UniqueIdentifier>{947835db-67d6-42c0-870d-62743f85231f}</UniqueIdentifier>
+    <Filter Include="Header Files\client">
+      <UniqueIdentifier>{06c7928e-bf66-446e-9cde-c8135c79d14b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Console">
-      <UniqueIdentifier>{bf0769d8-40fd-4701-85e9-7ed94aab2283}</UniqueIdentifier>
+    <Filter Include="Header Files\config">
+      <UniqueIdentifier>{0b8b4a41-6131-4388-85d2-f5754a304610}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Convar">
-      <UniqueIdentifier>{9751b551-5886-45d4-a039-cbd10445263d}</UniqueIdentifier>
+    <Filter Include="Header Files\dedicated">
+      <UniqueIdentifier>{9ccd8616-d961-4c37-96e0-3219bd293afb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Exploit Fixes">
-      <UniqueIdentifier>{96101d42-72af-4fd1-8559-8d1d1ff66240}</UniqueIdentifier>
+    <Filter Include="Header Files\exploit_fixes">
+      <UniqueIdentifier>{a9390f6a-5031-4c65-a636-82cf90899435}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Filesystem">
-      <UniqueIdentifier>{ee3ba13a-3061-41d7-981d-328ac2596fd2}</UniqueIdentifier>
+    <Filter Include="Header Files\hooks">
+      <UniqueIdentifier>{acf049ba-358a-4520-8813-2f802ce7167e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Game Functions">
-      <UniqueIdentifier>{0c93d909-e0d6-4c35-a8a4-a13f681a1012}</UniqueIdentifier>
+    <Filter Include="Header Files\masterserver">
+      <UniqueIdentifier>{0075910c-80c9-490f-a0d4-f9e410e4a918}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Hooks">
-      <UniqueIdentifier>{94259c8c-5411-48bf-af4f-46ca32b7d0bb}</UniqueIdentifier>
+    <Filter Include="Header Files\mods">
+      <UniqueIdentifier>{31143dec-abe6-477a-9cae-045c5b57380b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Math">
-      <UniqueIdentifier>{44a83740-9d70-480d-9a7a-43b81f8eab9e}</UniqueIdentifier>
+    <Filter Include="Header Files\plugins">
+      <UniqueIdentifier>{c6c4746d-d6e1-4dba-a3fc-e645b28ac83f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Mods">
-      <UniqueIdentifier>{6bbce8a5-38b4-4763-a7cb-4e98012ec245}</UniqueIdentifier>
+    <Filter Include="Header Files\scripts">
+      <UniqueIdentifier>{3fba68ef-d715-4e18-b4a2-05d3fee00e2d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Mods\Compiled Assets">
-      <UniqueIdentifier>{826d5193-3ad0-434b-ba7c-dd24ed4bbd0c}</UniqueIdentifier>
+    <Filter Include="Header Files\server">
+      <UniqueIdentifier>{ae9c5353-a3ab-44a9-a328-91df6aa8c80e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Dedicated Server">
-      <UniqueIdentifier>{0f1ba4c4-78ee-4b05-afa5-6f598063f5c1}</UniqueIdentifier>
+    <Filter Include="Header Files\server\auth">
+      <UniqueIdentifier>{87869634-fa0f-48f8-a306-94d5a8157e1e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Squirrel">
-      <UniqueIdentifier>{ca669b16-b8bb-4654-993f-fffa44c914f1}</UniqueIdentifier>
+    <Filter Include="Header Files\squirrel">
+      <UniqueIdentifier>{0ad64562-eb98-4015-a4fc-6fdc63ac9322}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Squirrel">
-      <UniqueIdentifier>{26365f16-ff52-4e80-a01b-2ca020376c93}</UniqueIdentifier>
+    <Filter Include="Header Files\util">
+      <UniqueIdentifier>{13d0affc-1b4d-4090-8ad6-e9ae8fc56599}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Scripted">
-      <UniqueIdentifier>{7263403a-7550-4aa2-a724-f622ab200eed}</UniqueIdentifier>
+    <Filter Include="Source Files\engine">
+      <UniqueIdentifier>{b264a27d-619b-49b3-acbb-4e138ba29daf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\engine">
+      <UniqueIdentifier>{35658430-465d-433c-aa2d-b8266edb205a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\shared">
+      <UniqueIdentifier>{0517ea0b-2eca-4b1c-a0d1-766d4d1d19d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\shared">
+      <UniqueIdentifier>{6d3f7657-6e58-4007-acd3-0b787f35406a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\logging">
+      <UniqueIdentifier>{b9c0cfad-46d4-41ea-806e-daef3d66c381}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\logging">
+      <UniqueIdentifier>{a4f7d529-0b21-48af-82ef-9fb971b802f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\core">
+      <UniqueIdentifier>{7ee4b436-a5d3-4680-bf99-bc6d7640ded3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\core\convar">
+      <UniqueIdentifier>{53a84980-9a1c-46b0-9b6d-06ec35781297}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\core\filesystem">
+      <UniqueIdentifier>{01e215c3-9fa2-4de1-a3e0-b6a27396c68c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\core\math">
+      <UniqueIdentifier>{0fa069c9-302b-4be5-ba47-37e13e181d78}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\scripts\client">
+      <UniqueIdentifier>{08a9ca37-8a6e-458c-9da8-6f3dc917ddf7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\scripts\server">
+      <UniqueIdentifier>{2c0b196e-3a11-4655-a158-8a1c84be4471}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\core">
+      <UniqueIdentifier>{122e2230-0605-40ef-8963-6e339d2c725e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\core\convar">
+      <UniqueIdentifier>{4e0d0f0e-c8f2-4fe1-a787-57060c610553}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\core\math">
+      <UniqueIdentifier>{9e67fc99-0e20-4155-a167-5d251ea36581}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\core\filesystem">
+      <UniqueIdentifier>{62b3cff9-b2d8-4c1c-a2a6-1e2138c0ff88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\shared\exploit_fixes">
+      <UniqueIdentifier>{9a819cdd-ebca-4cba-b231-76b6f98ed6ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\shared\exploit_fixes">
+      <UniqueIdentifier>{1a377c09-bd3d-4757-b3bc-9cd0a1e6ac0d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="main.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sourceconsole.h">
-      <Filter>Header Files\Client</Filter>
-    </ClInclude>
-    <ClInclude Include="serverauthentication.h">
-      <Filter>Header Files\Server\Authentication</Filter>
-    </ClInclude>
-    <ClInclude Include="bansystem.h">
-      <Filter>Header Files\Server\Authentication</Filter>
-    </ClInclude>
-    <ClInclude Include="audio.h">
-      <Filter>Header Files\Client</Filter>
-    </ClInclude>
-    <ClInclude Include="localchatwriter.h">
-      <Filter>Header Files\Client</Filter>
-    </ClInclude>
-    <ClInclude Include="plugins.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plugin_abi.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="version.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ns_version.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="serverchathooks.h">
-      <Filter>Header Files\Server\Scripted</Filter>
-    </ClInclude>
-    <ClInclude Include="dedicated.h">
-      <Filter>Header Files\Dedicated Server</Filter>
-    </ClInclude>
-    <ClInclude Include="nsprefix.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="exploitfixes_utf8parser.cpp">
-      <Filter>Source Files\Exploit Fixes</Filter>
-    </ClInclude>
-    <ClInclude Include="crashhandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="hoststate.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="masterserver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="memalloc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="playlist.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sourceinterface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="bits.h">
-      <Filter>Header Files\Math</Filter>
-    </ClInclude>
-    <ClInclude Include="bitbuf.h">
-      <Filter>Header Files\Math</Filter>
-    </ClInclude>
-    <ClInclude Include="convar.h">
-      <Filter>Header Files\Convar</Filter>
-    </ClInclude>
-    <ClInclude Include="concommand.h">
-      <Filter>Header Files\Convar</Filter>
-    </ClInclude>
-    <ClInclude Include="cvar.h">
-      <Filter>Header Files\Convar</Filter>
-    </ClInclude>
-    <ClInclude Include="filesystem.h">
-      <Filter>Header Files\Filesystem</Filter>
-    </ClInclude>
-    <ClInclude Include="hooks.h">
-      <Filter>Header Files\Hooks</Filter>
-    </ClInclude>
-    <ClInclude Include="limits.h">
-      <Filter>Header Files\Exploit Fixes</Filter>
-    </ClInclude>
-    <ClInclude Include="logging.h">
-      <Filter>Header Files\Console</Filter>
-    </ClInclude>
-    <ClInclude Include="misccommands.h">
-      <Filter>Header Files\Convar</Filter>
-    </ClInclude>
-    <ClInclude Include="modmanager.h">
-      <Filter>Header Files\Mods</Filter>
-    </ClInclude>
-    <ClInclude Include="printcommand.h">
-      <Filter>Header Files\Console</Filter>
-    </ClInclude>
-    <ClInclude Include="printmaps.h">
-      <Filter>Header Files\Console</Filter>
-    </ClInclude>
-    <ClInclude Include="r2client.h">
-      <Filter>Header Files\Game Functions</Filter>
-    </ClInclude>
-    <ClInclude Include="r2engine.h">
-      <Filter>Header Files\Game Functions</Filter>
-    </ClInclude>
-    <ClInclude Include="r2server.h">
-      <Filter>Header Files\Game Functions</Filter>
-    </ClInclude>
-    <ClInclude Include="tier0.h">
-      <Filter>Header Files\Game Functions</Filter>
-    </ClInclude>
-    <ClInclude Include="rpakfilesystem.h">
-      <Filter>Header Files\Filesystem</Filter>
-    </ClInclude>
-    <ClInclude Include="color.h">
-      <Filter>Header Files\Math</Filter>
-    </ClInclude>
-    <ClInclude Include="serverpresence.h">
-      <Filter>Header Files\Server</Filter>
-    </ClInclude>
-    <ClInclude Include="memory.h">
-      <Filter>Header Files\Hooks</Filter>
-    </ClInclude>
-    <ClInclude Include="maxplayers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="squirrel.h">
-      <Filter>Header Files\Squirrel</Filter>
-    </ClInclude>
-    <ClInclude Include="squirreldatatypes.h">
-      <Filter>Header Files\Squirrel</Filter>
-    </ClInclude>
-    <ClInclude Include="vector.h">
-      <Filter>Header Files\Math</Filter>
-    </ClInclude>
-    <ClInclude Include="squirrelautobind.h">
-      <Filter>Header Files\Squirrel</Filter>
-    </ClInclude>
-    <ClInclude Include="keyvalues.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="structs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="loghooks.h">
-      <Filter>Header Files\Console</Filter>
-	 </ClInclude>
-    <ClInclude Include="squirrelclasstypes.h">
-      <Filter>Header Files\Squirrel</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\httplib.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
@@ -1116,274 +996,410 @@
     <ClInclude Include="..\include\spdlog\sinks\tcp_sink.h">
       <Filter>Header Files\include\spdlog\sinks</Filter>
     </ClInclude>
-
-    <ClInclude Include="squirrelautobind.h">
-      <Filter>Header Files\Squirrel</Filter>
-    </ClInclude>
-    <ClInclude Include="keyvalues.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-
     <ClInclude Include="..\include\spdlog\sinks\win_eventlog_sink.h">
       <Filter>Header Files\include\spdlog\sinks</Filter>
-
     </ClInclude>
     <ClInclude Include="..\include\spdlog\sinks\wincolor_sink.h">
       <Filter>Header Files\include\spdlog\sinks</Filter>
     </ClInclude>
-
-    <ClInclude Include="loghooks.h">
-      <Filter>Header Files\Console</Filter>
-    </ClInclude>
-    <ClInclude Include="squirrelclasstypes.h">
-      <Filter>Header Files\Squirrel</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\spdlog\sinks\wincolor_sink-inl.h">
       <Filter>Header Files\include\spdlog\sinks</Filter>
-
     </ClInclude>
-    <ClInclude Include="httprequesthandler.h">
+    <ClInclude Include="client\audio.h">
+      <Filter>Header Files\client</Filter>
+    </ClInclude>
+    <ClInclude Include="client\localchatwriter.h">
+      <Filter>Header Files\client</Filter>
+    </ClInclude>
+    <ClInclude Include="dedicated\dedicated.h">
+      <Filter>Header Files\dedicated</Filter>
+    </ClInclude>
+    <ClInclude Include="exploit_fixes\ns_limits.h">
+      <Filter>Header Files\exploit_fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="hooks\hooks.h">
+      <Filter>Header Files\hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="hooks\memory.h">
+      <Filter>Header Files\hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="hooks\sourceinterface.h">
+      <Filter>Header Files\hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="masterserver\masterserver.h">
+      <Filter>Header Files\masterserver</Filter>
+    </ClInclude>
+    <ClInclude Include="mods\modmanager.h">
+      <Filter>Header Files\mods</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins\plugin_abi.h">
+      <Filter>Header Files\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins\plugins.h">
+      <Filter>Header Files\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="server\serverpresence.h">
+      <Filter>Header Files\server</Filter>
+    </ClInclude>
+    <ClInclude Include="server\auth\bansystem.h">
+      <Filter>Header Files\server\auth</Filter>
+    </ClInclude>
+    <ClInclude Include="server\auth\serverauthentication.h">
+      <Filter>Header Files\server\auth</Filter>
+    </ClInclude>
+    <ClInclude Include="squirrel\squirrel.h">
+      <Filter>Header Files\squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="squirrel\squirrelautobind.h">
+      <Filter>Header Files\squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="squirrel\squirrelclasstypes.h">
+      <Filter>Header Files\squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="squirrel\squirreldatatypes.h">
+      <Filter>Header Files\squirrel</Filter>
+    </ClInclude>
+    <ClInclude Include="util\version.h">
+      <Filter>Header Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="dllmain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="pch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="dedicated.cpp">
-      <Filter>Source Files\Dedicated Server</Filter>
-    </ClCompile>
-    <ClCompile Include="sourceconsole.cpp">
-      <Filter>Source Files\Client</Filter>
-    </ClCompile>
-    <ClCompile Include="modmanager.cpp">
-      <Filter>Source Files\Mods</Filter>
-    </ClCompile>
-    <ClCompile Include="modscriptsrson.cpp">
-      <Filter>Source Files\Mods\Compiled Assets</Filter>
-    </ClCompile>
-    <ClCompile Include="serverauthentication.cpp">
-      <Filter>Source Files\Server\Authentication</Filter>
-    </ClCompile>
-    <ClCompile Include="modkeyvalues.cpp">
-      <Filter>Source Files\Mods\Compiled Assets</Filter>
-    </ClCompile>
-    <ClCompile Include="chatcommand.cpp">
-      <Filter>Source Files\Client</Filter>
-    </ClCompile>
-    <ClCompile Include="modlocalisation.cpp">
-      <Filter>Source Files\Client</Filter>
-    </ClCompile>
-    <ClCompile Include="dedicatedmaterialsystem.cpp">
-      <Filter>Source Files\Dedicated Server</Filter>
-    </ClCompile>
-    <ClCompile Include="modpdef.cpp">
-      <Filter>Source Files\Mods\Compiled Assets</Filter>
-    </ClCompile>
-    <ClCompile Include="clientauthhooks.cpp">
-      <Filter>Source Files\Client</Filter>
-    </ClCompile>
-    <ClCompile Include="miscserverfixes.cpp">
-      <Filter>Source Files\Server</Filter>
-    </ClCompile>
-    <ClCompile Include="bansystem.cpp">
-      <Filter>Source Files\Server\Authentication</Filter>
-    </ClCompile>
-    <ClCompile Include="languagehooks.cpp">
-      <Filter>Source Files\Client</Filter>
-    </ClCompile>
-    <ClCompile Include="latencyflex.cpp">
-      <Filter>Source Files\Client</Filter>
-    </ClCompile>
-    <ClCompile Include="audio.cpp">
-      <Filter>Source Files\Client</Filter>
-    </ClCompile>
-    <ClCompile Include="buildainfile.cpp">
-      <Filter>Source Files\Server</Filter>
-    </ClCompile>
-    <ClCompile Include="localchatwriter.cpp">
-      <Filter>Source Files\Client</Filter>
-    </ClCompile>
-    <ClCompile Include="plugins.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="debugoverlay.cpp">
-      <Filter>Source Files\Client</Filter>
-    </ClCompile>
-    <ClCompile Include="clientvideooverrides.cpp">
-      <Filter>Source Files\Client</Filter>
-    </ClCompile>
-    <ClCompile Include="version.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="clientruihooks.cpp">
-      <Filter>Source Files\Client</Filter>
-    </ClCompile>
-    <ClCompile Include="scriptmainmenupromos.cpp">
-      <Filter>Source Files\Client\Scripted</Filter>
-    </ClCompile>
-    <ClCompile Include="clientchathooks.cpp">
-      <Filter>Source Files\Client\Scripted</Filter>
-    </ClCompile>
-    <ClCompile Include="scriptmodmenu.cpp">
-      <Filter>Source Files\Client\Scripted</Filter>
-    </ClCompile>
-    <ClCompile Include="scriptservertoclientstringcommand.cpp">
-      <Filter>Source Files\Client\Scripted</Filter>
-    </ClCompile>
-    <ClCompile Include="scriptserverbrowser.cpp">
-      <Filter>Source Files\Client\Scripted</Filter>
-    </ClCompile>
-    <ClCompile Include="scriptbrowserhooks.cpp">
-      <Filter>Source Files\Client\Scripted</Filter>
-    </ClCompile>
-    <ClCompile Include="serverchathooks.cpp">
-      <Filter>Source Files\Server\Scripted</Filter>
-    </ClCompile>
-    <ClCompile Include="miscserverscript.cpp">
-      <Filter>Source Files\Server\Scripted</Filter>
-    </ClCompile>
-    <ClCompile Include="demofixes.cpp">
-      <Filter>Source Files\Client</Filter>
-    </ClCompile>
-    <ClCompile Include="nsprefix.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="dllmain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="crashhandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="host.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="hoststate.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="masterserver.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="maxplayers.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="memalloc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="playlist.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="sourceinterface.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="r2server.cpp">
-      <Filter>Source Files\Game Functions</Filter>
-    </ClCompile>
-    <ClCompile Include="r2client.cpp">
-      <Filter>Source Files\Game Functions</Filter>
-    </ClCompile>
-    <ClCompile Include="r2engine.cpp">
-      <Filter>Source Files\Game Functions</Filter>
-    </ClCompile>
-    <ClCompile Include="rpakfilesystem.cpp">
-      <Filter>Source Files\Filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="filesystem.cpp">
-      <Filter>Source Files\Filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="exploitfixes.cpp">
-      <Filter>Source Files\Exploit Fixes</Filter>
-    </ClCompile>
-    <ClCompile Include="limits.cpp">
-      <Filter>Source Files\Exploit Fixes</Filter>
-    </ClCompile>
-    <ClCompile Include="hooks.cpp">
-      <Filter>Source Files\Hooks</Filter>
-    </ClCompile>
-    <ClCompile Include="bits.cpp">
-      <Filter>Source Files\Math</Filter>
-    </ClCompile>
-    <ClCompile Include="convar.cpp">
-      <Filter>Source Files\Convar</Filter>
-    </ClCompile>
-    <ClCompile Include="concommand.cpp">
-      <Filter>Source Files\Convar</Filter>
-    </ClCompile>
-    <ClCompile Include="printcommands.cpp">
-      <Filter>Source Files\Console</Filter>
-    </ClCompile>
-    <ClCompile Include="printmaps.cpp">
-      <Filter>Source Files\Console</Filter>
-    </ClCompile>
-    <ClCompile Include="cvar.cpp">
-      <Filter>Source Files\Convar</Filter>
-    </ClCompile>
-    <ClCompile Include="misccommands.cpp">
-      <Filter>Source Files\Convar</Filter>
-    </ClCompile>
-    <ClCompile Include="tier0.cpp">
-      <Filter>Source Files\Game Functions</Filter>
-    </ClCompile>
-    <ClCompile Include="logging.cpp">
-      <Filter>Source Files\Console</Filter>
-    </ClCompile>
-    <ClCompile Include="serverpresence.cpp">
-      <Filter>Source Files\Server</Filter>
-    </ClCompile>
-    <ClCompile Include="runframe.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="memory.cpp">
-      <Filter>Source Files\Hooks</Filter>
-    </ClCompile>
-    <ClCompile Include="exploitfixes_lzss.cpp">
-      <Filter>Source Files\Exploit Fixes</Filter>
-    </ClCompile>
-    <ClCompile Include="scriptutility.cpp">
-      <Filter>Source Files\Scripted</Filter>
-    </ClCompile>
-    <ClCompile Include="scriptjson.cpp">
-      <Filter>Source Files\Scripted</Filter>
-    </ClCompile>
-    <ClCompile Include="squirrel.cpp">
-      <Filter>Source Files\Squirrel</Filter>
-    </ClCompile>
-    <ClCompile Include="scriptdatatables.cpp">
-      <Filter>Source Files\Scripted</Filter>
-    </ClCompile>
-    <ClCompile Include="squirrelautobind.cpp">
-      <Filter>Source Files\Squirrel</Filter>
-    </ClCompile>
-    <ClCompile Include="kb_act.cpp">
-      <Filter>Source Files\Mods\Compiled Assets</Filter>
-    </ClCompile>
-    <ClCompile Include="diskvmtfixes.cpp">
-      <Filter>Source Files\Client</Filter>
-    </ClCompile>
-    <ClCompile Include="keyvalues.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="scriptuserinfo.cpp">
-      <Filter>Source Files\Server\Scripted</Filter>
-    </ClCompile>
-    <ClCompile Include="color.cpp">
-      <Filter>Source Files\Math</Filter>
-    </ClCompile>
-    <ClCompile Include="loghooks.cpp">
-      <Filter>Source Files\Console</Filter>
-    </ClCompile>
-    <ClCompile Include="httprequesthandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <MASM Include="audio_asm.asm">
-      <Filter>Source Files\Client</Filter>
-    </MASM>
+    <ClInclude Include="ns_version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="config\profile.h">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\hoststate.h">
+      <Filter>Header Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="hooks\maxplayers.h">
+      <Filter>Header Files\hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="shared\keyvalues.h">
+      <Filter>Header Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="shared\playlist.h">
+      <Filter>Header Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="client\r2client.h">
+      <Filter>Header Files\client</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\r2engine.h">
+      <Filter>Header Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="server\r2server.h">
+      <Filter>Header Files\server</Filter>
+    </ClInclude>
+    <ClInclude Include="hooks\tier0.h">
+      <Filter>Header Files\hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="hooks\memalloc.h">
+      <Filter>Header Files\hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="core\convar\concommand.h">
+      <Filter>Header Files\core\convar</Filter>
+    </ClInclude>
+    <ClInclude Include="core\convar\convar.h">
+      <Filter>Header Files\core\convar</Filter>
+    </ClInclude>
+    <ClInclude Include="core\convar\cvar.h">
+      <Filter>Header Files\core\convar</Filter>
+    </ClInclude>
+    <ClInclude Include="core\filesystem\filesystem.h">
+      <Filter>Header Files\core\filesystem</Filter>
+    </ClInclude>
+    <ClInclude Include="core\filesystem\rpakfilesystem.h">
+      <Filter>Header Files\core\filesystem</Filter>
+    </ClInclude>
+    <ClInclude Include="core\math\bitbuf.h">
+      <Filter>Header Files\core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="core\math\bits.h">
+      <Filter>Header Files\core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="core\math\color.h">
+      <Filter>Header Files\core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="core\math\vector.h">
+      <Filter>Header Files\core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="core\hooks.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\memalloc.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\memory.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\structs.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\tier0.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="logging\crashhandler.h">
+      <Filter>Header Files\logging</Filter>
+    </ClInclude>
+    <ClInclude Include="logging\logging.h">
+      <Filter>Header Files\logging</Filter>
+    </ClInclude>
+    <ClInclude Include="logging\loghooks.h">
+      <Filter>Header Files\logging</Filter>
+    </ClInclude>
+    <ClInclude Include="logging\sourceconsole.h">
+      <Filter>Header Files\logging</Filter>
+    </ClInclude>
+    <ClInclude Include="server\serverchathooks.h">
+      <Filter>Header Files\server</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\scripthttprequesthandler.h">
+      <Filter>Header Files\scripts</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\include\spdlog\fmt\bundled\LICENSE.rst">
       <Filter>Header Files\include\spdlog\fmt\bundled</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="client\audio.cpp">
+      <Filter>Source Files\client</Filter>
+    </ClCompile>
+    <ClCompile Include="client\chatcommand.cpp">
+      <Filter>Source Files\client</Filter>
+    </ClCompile>
+    <ClCompile Include="client\clientauthhooks.cpp">
+      <Filter>Source Files\client</Filter>
+    </ClCompile>
+    <ClCompile Include="client\clientruihooks.cpp">
+      <Filter>Source Files\client</Filter>
+    </ClCompile>
+    <ClCompile Include="client\clientvideooverrides.cpp">
+      <Filter>Source Files\client</Filter>
+    </ClCompile>
+    <ClCompile Include="client\debugoverlay.cpp">
+      <Filter>Source Files\client</Filter>
+    </ClCompile>
+    <ClCompile Include="client\demofixes.cpp">
+      <Filter>Source Files\client</Filter>
+    </ClCompile>
+    <ClCompile Include="client\diskvmtfixes.cpp">
+      <Filter>Source Files\client</Filter>
+    </ClCompile>
+    <ClCompile Include="client\languagehooks.cpp">
+      <Filter>Source Files\client</Filter>
+    </ClCompile>
+    <ClCompile Include="client\latencyflex.cpp">
+      <Filter>Source Files\client</Filter>
+    </ClCompile>
+    <ClCompile Include="client\localchatwriter.cpp">
+      <Filter>Source Files\client</Filter>
+    </ClCompile>
+    <ClCompile Include="client\modlocalisation.cpp">
+      <Filter>Source Files\client</Filter>
+    </ClCompile>
+    <ClCompile Include="dedicated\dedicated.cpp">
+      <Filter>Source Files\dedicated</Filter>
+    </ClCompile>
+    <ClCompile Include="dedicated\dedicatedmaterialsystem.cpp">
+      <Filter>Source Files\dedicated</Filter>
+    </ClCompile>
+    <ClCompile Include="masterserver\masterserver.cpp">
+      <Filter>Source Files\masterserver</Filter>
+    </ClCompile>
+    <ClCompile Include="mods\modmanager.cpp">
+      <Filter>Source Files\mods</Filter>
+    </ClCompile>
+    <ClCompile Include="mods\compiled\kb_act.cpp">
+      <Filter>Source Files\mods\compiled</Filter>
+    </ClCompile>
+    <ClCompile Include="mods\compiled\modkeyvalues.cpp">
+      <Filter>Source Files\mods\compiled</Filter>
+    </ClCompile>
+    <ClCompile Include="mods\compiled\modpdef.cpp">
+      <Filter>Source Files\mods\compiled</Filter>
+    </ClCompile>
+    <ClCompile Include="mods\compiled\modscriptsrson.cpp">
+      <Filter>Source Files\mods\compiled</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins\plugins.cpp">
+      <Filter>Source Files\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\scriptdatatables.cpp">
+      <Filter>Source Files\scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\scriptjson.cpp">
+      <Filter>Source Files\scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\scriptutility.cpp">
+      <Filter>Source Files\scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="server\buildainfile.cpp">
+      <Filter>Source Files\server</Filter>
+    </ClCompile>
+    <ClCompile Include="server\serverpresence.cpp">
+      <Filter>Source Files\server</Filter>
+    </ClCompile>
+    <ClCompile Include="server\auth\bansystem.cpp">
+      <Filter>Source Files\server\auth</Filter>
+    </ClCompile>
+    <ClCompile Include="server\auth\serverauthentication.cpp">
+      <Filter>Source Files\server\auth</Filter>
+    </ClCompile>
+    <ClCompile Include="squirrel\squirrel.cpp">
+      <Filter>Source Files\squirrel</Filter>
+    </ClCompile>
+    <ClCompile Include="squirrel\squirrelautobind.cpp">
+      <Filter>Source Files\squirrel</Filter>
+    </ClCompile>
+    <ClCompile Include="util\version.cpp">
+      <Filter>Source Files\util</Filter>
+    </ClCompile>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="config\profile.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\host.cpp">
+      <Filter>Source Files\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\hoststate.cpp">
+      <Filter>Source Files\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\runframe.cpp">
+      <Filter>Source Files\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="shared\keyvalues.cpp">
+      <Filter>Source Files\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="shared\playlist.cpp">
+      <Filter>Source Files\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="client\r2client.cpp">
+      <Filter>Source Files\client</Filter>
+    </ClCompile>
+    <ClCompile Include="server\r2server.cpp">
+      <Filter>Source Files\server</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\r2engine.cpp">
+      <Filter>Source Files\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="logging\crashhandler.cpp">
+      <Filter>Source Files\logging</Filter>
+    </ClCompile>
+    <ClCompile Include="logging\logging.cpp">
+      <Filter>Source Files\logging</Filter>
+    </ClCompile>
+    <ClCompile Include="logging\loghooks.cpp">
+      <Filter>Source Files\logging</Filter>
+    </ClCompile>
+    <ClCompile Include="logging\sourceconsole.cpp">
+      <Filter>Source Files\logging</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\client\clientchathooks.cpp">
+      <Filter>Source Files\scripts\client</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\client\scriptbrowserhooks.cpp">
+      <Filter>Source Files\scripts\client</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\client\scriptmainmenupromos.cpp">
+      <Filter>Source Files\scripts\client</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\client\scriptmodmenu.cpp">
+      <Filter>Source Files\scripts\client</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\client\scriptserverbrowser.cpp">
+      <Filter>Source Files\scripts\client</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\client\scriptservertoclientstringcommand.cpp">
+      <Filter>Source Files\scripts\client</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\server\miscserverfixes.cpp">
+      <Filter>Source Files\scripts\server</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\server\miscserverscript.cpp">
+      <Filter>Source Files\scripts\server</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\server\scriptuserinfo.cpp">
+      <Filter>Source Files\scripts\server</Filter>
+    </ClCompile>
+    <ClCompile Include="server\serverchathooks.cpp">
+      <Filter>Source Files\server</Filter>
+    </ClCompile>
+    <ClCompile Include="core\convar\concommand.cpp">
+      <Filter>Source Files\core\convar</Filter>
+    </ClCompile>
+    <ClCompile Include="core\convar\convar.cpp">
+      <Filter>Source Files\core\convar</Filter>
+    </ClCompile>
+    <ClCompile Include="core\convar\cvar.cpp">
+      <Filter>Source Files\core\convar</Filter>
+    </ClCompile>
+    <ClCompile Include="core\filesystem\filesystem.cpp">
+      <Filter>Source Files\core\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="core\filesystem\rpakfilesystem.cpp">
+      <Filter>Source Files\core\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="core\math\bits.cpp">
+      <Filter>Source Files\core\math</Filter>
+    </ClCompile>
+    <ClCompile Include="core\math\color.cpp">
+      <Filter>Source Files\core\math</Filter>
+    </ClCompile>
+    <ClCompile Include="core\hooks.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\memalloc.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\memory.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\tier0.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="shared\exploit_fixes\exploitfixes.cpp">
+      <Filter>Source Files\shared\exploit_fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="shared\exploit_fixes\exploitfixes_lzss.cpp">
+      <Filter>Source Files\shared\exploit_fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="shared\exploit_fixes\exploitfixes_utf8parser.cpp">
+      <Filter>Source Files\shared\exploit_fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="shared\exploit_fixes\ns_limits.cpp">
+      <Filter>Source Files\shared\exploit_fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="shared\maxplayers.cpp">
+      <Filter>Source Files\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="shared\misccommands.cpp">
+      <Filter>Source Files\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="util\printcommands.cpp">
+      <Filter>Source Files\util</Filter>
+    </ClCompile>
+    <ClCompile Include="util\printmaps.cpp">
+      <Filter>Source Files\util</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\scripthttprequesthandler.cpp">
+      <Filter>Source Files\scripts</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="audio_asm.asm">
+      <Filter>Source Files</Filter>
+    </MASM>
   </ItemGroup>
 </Project>
