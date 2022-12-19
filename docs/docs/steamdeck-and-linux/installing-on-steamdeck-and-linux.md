@@ -16,14 +16,11 @@ On Steam Deck, complete the following in desktop mode. You may return to game mo
    2. Then extract all contents of the file to your Titanfall 2 folder ( Right click _Titanfall 2_ > Open _Properties_ > Click _Local Files_ > Click _Browse_ )
 3. In your Titanfall2 folder create a file called `run_northstar.txt` and write a single `1` to it, i.e. `echo 1 > run_northstar.txt`
 4. Install NorthstarProton
-   1. **Protonup-QT**: Click *About*, then tick the box to enable *advanced mode*. You should be able to select and install NorthstarProton from the *Add version* menu.
+   1. **Protonup-QT**: Click _About_, then tick the box to enable _advanced mode_. You should be able to select and install NorthstarProton from the _Add version_ menu.
    2. **ProtonPlus**: NorthstarProton can also be installed via ProtonPlus.
-   3. **Manual**: Download the latest release of [NorthstarProton](https://github.com/cyrv6737/NorthstarProton/releases/), extract it, and place the folder in one of the following directories:
-
-> **Steam (Native Package) & Steam Deck:** `~/.local/share/Steam/compatibilitytools.d`
-
-> **Steam (Flatpak):** `~/.var/app/com.valvesoftware.Steam/data/Steam/compatibilitytools.d/`
-
+   3. **Manual**: Download the latest release of [NorthstarProton](https://github.com/cyrv6737/NorthstarProton/releases/), extract it, and place the folder in one of the following directories:\
+      **Steam (Native Package) & Steam Deck:** `~/.local/share/Steam/compatibilitytools.d`\
+      ``**Steam (Flatpak):** `~/.var/app/com.valvesoftware.Steam/data/Steam/compatibilitytools.d/`
 5. Restart Steam. Head to `Properties -> Compatibility` under Titanfall2. Check `Force the use of a specific Steam Play compatibility tool` checkbox, then set the Steam Play compatibility tool to NorthstarProton.
 6. Launch Titanfall2, it should now launch Northstar
 

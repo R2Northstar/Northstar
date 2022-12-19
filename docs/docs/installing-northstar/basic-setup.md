@@ -8,7 +8,6 @@ Head over to the installer page and pick one of the existing installers. All of 
 [northstar-installers.md](northstar-installers.md)
 {% endcontent-ref %}
 
-
 ## Manual installation
 
 If you prefer to avoid any additional installers and know what you're doing, check out the guide for manual installation:
@@ -33,14 +32,12 @@ If Northstar doesn't appear to be installed, or you have issues entering the lob
 
 Northstar can be launched through Steam or Origin using the "add a game" feature. This allows you to register any .exe as a game. To set up Northstar, navigate to your Titanfall 2 folder and choose `NorthstarLaucher.exe`.
 
-![steamaddgame](/docs/images/steam-addgame.png) ![originaddgame](/docs/images/origin-addgame.png)
-
-
+![steamaddgame](../images/steam-addgame.png) ![originaddgame](../images/origin-addgame.png)
 
 ## Linux
 
-Install instructions for [Linux can be found here](using-northstar/playing-on-linux.md).
+Install instructions for [Linux can be found here](broken-reference).
 
 ## SteamDeck
 
-Install instructions for [SteamDeck can be found here](using-northstar/playing-on-linux.md#steamdeck).
+Install instructions for [SteamDeck can be found here](broken-reference).
