@@ -8,6 +8,10 @@
 * [Basic Setup](installing-northstar/basic-setup.md)
 * [Northstar Installers](installing-northstar/northstar-installers.md)
 * [Manual installation](installing-northstar/manual-installation.md)
+* [SteamDeck and Linux](steamdeck-and-linux/README.md)
+  * [Installing on SteamDeck and Linux](steamdeck-and-linux/installing-on-steamdeck-and-linux.md)
+  * [Troubleshooting](steamdeck-and-linux/linux-troubleshooting.md)
+  * [Legacy Linux Guide for 1.9.1 and older](steamdeck-and-linux/playing-on-linux-legacy-guide.md)
 * [Troubleshooting](installing-northstar/troubleshooting.md)
 
 ***
@@ -19,8 +23,6 @@
   * [Gamemodes](installing-northstar/using-northstar/gamemodes.md)
   * [Commands](installing-northstar/using-northstar/commands.md)
   * [Launch arguments](installing-northstar/using-northstar/launch-arguments.md)
-  * [Playing on Linux](installing-northstar/using-northstar/playing-on-linux.md)
-  * [Legacy Linux Guide for 1.9.1 and older](installing-northstar/using-northstar/playing-on-linux-legacy-guide.md)
 * [FAQ](faq.md)
 
 ## Hosting a server with Northstar
