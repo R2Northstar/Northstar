@@ -62,7 +62,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -92,7 +92,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
     </ClCompile>
@@ -390,145 +390,147 @@
     <ClInclude Include="..\include\spdlog\stopwatch.h" />
     <ClInclude Include="..\include\spdlog\tweakme.h" />
     <ClInclude Include="..\include\spdlog\version.h" />
-    <ClInclude Include="audio.h" />
-    <ClInclude Include="bansystem.h" />
-    <ClInclude Include="bitbuf.h" />
-    <ClInclude Include="bits.h" />
-    <ClInclude Include="crashhandler.h" />
-    <ClInclude Include="httprequesthandler.h" />
-    <ClInclude Include="keyvalues.h" />
-    <ClInclude Include="loghooks.h" />
-    <ClInclude Include="squirrelclasstypes.h" />
-    <ClInclude Include="squirreldatatypes.h" />
-    <ClInclude Include="limits.h" />
-    <ClInclude Include="maxplayers.h" />
-    <ClInclude Include="memory.h" />
-    <ClInclude Include="printcommand.h" />
-    <ClInclude Include="hoststate.h" />
-    <ClInclude Include="localchatwriter.h" />
-    <ClInclude Include="printmaps.h" />
+    <ClInclude Include="client\audio.h" />
+    <ClInclude Include="client\localchatwriter.h" />
+    <ClInclude Include="client\r2client.h" />
+    <ClInclude Include="config\profile.h" />
+    <ClInclude Include="core\convar\concommand.h" />
+    <ClInclude Include="core\convar\convar.h" />
+    <ClInclude Include="core\convar\cvar.h" />
+    <ClInclude Include="core\filesystem\filesystem.h" />
+    <ClInclude Include="core\filesystem\rpakfilesystem.h" />
+    <ClInclude Include="core\hooks.h" />
+    <ClInclude Include="core\math\bitbuf.h" />
+    <ClInclude Include="core\math\bits.h" />
+    <ClInclude Include="core\math\color.h" />
+    <ClInclude Include="core\math\vector.h" />
+    <ClInclude Include="core\memalloc.h" />
+    <ClInclude Include="core\memory.h" />
+    <ClInclude Include="core\structs.h" />
+    <ClInclude Include="core\tier0.h" />
+    <ClInclude Include="dedicated\dedicated.h" />
+    <ClInclude Include="dllmain.h" />
+    <ClInclude Include="engine\hoststate.h" />
+    <ClInclude Include="engine\r2engine.h" />
+    <ClInclude Include="exploit_fixes\ns_limits.h" />
+    <ClInclude Include="hooks\hooks.h" />
+    <ClInclude Include="hooks\maxplayers.h" />
+    <ClInclude Include="hooks\memalloc.h" />
+    <ClInclude Include="hooks\memory.h" />
+    <ClInclude Include="hooks\sourceinterface.h" />
+    <ClInclude Include="hooks\tier0.h" />
+    <ClInclude Include="logging\crashhandler.h" />
+    <ClInclude Include="logging\logging.h" />
+    <ClInclude Include="logging\loghooks.h" />
+    <ClInclude Include="logging\sourceconsole.h" />
+    <ClInclude Include="masterserver\masterserver.h" />
+    <ClInclude Include="mods\modmanager.h" />
     <ClInclude Include="ns_version.h" />
-    <ClInclude Include="plugins.h" />
-    <ClInclude Include="plugin_abi.h" />
-    <ClInclude Include="r2client.h" />
-    <ClInclude Include="r2engine.h" />
-    <ClInclude Include="r2server.h" />
-    <ClInclude Include="serverchathooks.h" />
-    <ClInclude Include="color.h" />
-    <ClInclude Include="concommand.h" />
-    <ClInclude Include="nsprefix.h" />
-    <ClInclude Include="convar.h" />
-    <ClInclude Include="cvar.h" />
-    <ClInclude Include="dedicated.h" />
-    <ClInclude Include="filesystem.h" />
-    <ClInclude Include="hooks.h" />
-    <ClInclude Include="logging.h" />
-    <ClInclude Include="main.h" />
-    <ClInclude Include="masterserver.h" />
-    <ClInclude Include="memalloc.h" />
-    <ClInclude Include="misccommands.h" />
-    <ClInclude Include="modmanager.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="playlist.h" />
-    <ClInclude Include="rpakfilesystem.h" />
-    <ClInclude Include="serverauthentication.h" />
-    <ClInclude Include="serverpresence.h" />
-    <ClInclude Include="sourceconsole.h" />
-    <ClInclude Include="sourceinterface.h" />
-    <ClInclude Include="squirrel.h" />
-    <ClInclude Include="exploitfixes_utf8parser.cpp" />
-    <ClInclude Include="structs.h" />
-    <ClInclude Include="squirrelautobind.h" />
-    <ClInclude Include="tier0.h" />
-    <ClInclude Include="vector.h" />
-    <ClInclude Include="version.h" />
+    <ClInclude Include="plugins\plugins.h" />
+    <ClInclude Include="plugins\plugin_abi.h" />
+    <ClInclude Include="scripts\scripthttprequesthandler.h" />
+    <ClInclude Include="server\auth\bansystem.h" />
+    <ClInclude Include="server\auth\serverauthentication.h" />
+    <ClInclude Include="server\r2server.h" />
+    <ClInclude Include="server\serverchathooks.h" />
+    <ClInclude Include="server\serverpresence.h" />
+    <ClInclude Include="shared\keyvalues.h" />
+    <ClInclude Include="shared\playlist.h" />
+    <ClInclude Include="squirrel\squirrel.h" />
+    <ClInclude Include="squirrel\squirrelautobind.h" />
+    <ClInclude Include="squirrel\squirrelclasstypes.h" />
+    <ClInclude Include="squirrel\squirreldatatypes.h" />
+    <ClInclude Include="util\version.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="audio.cpp" />
-    <ClCompile Include="bansystem.cpp" />
-    <ClCompile Include="bits.cpp" />
-    <ClCompile Include="buildainfile.cpp" />
-    <ClCompile Include="chatcommand.cpp" />
-    <ClCompile Include="clientauthhooks.cpp" />
-    <ClCompile Include="clientchathooks.cpp" />
-    <ClCompile Include="clientruihooks.cpp" />
-    <ClCompile Include="clientvideooverrides.cpp" />
-    <ClCompile Include="concommand.cpp" />
-    <ClCompile Include="diskvmtfixes.cpp" />
-    <ClCompile Include="exploitfixes_lzss.cpp" />
-    <ClCompile Include="httprequesthandler.cpp" />
-    <ClCompile Include="kb_act.cpp" />
-    <ClCompile Include="keyvalues.cpp" />
-    <ClCompile Include="limits.cpp" />
-    <ClCompile Include="color.cpp" />
-    <ClCompile Include="loghooks.cpp" />
-    <ClCompile Include="memory.cpp" />
-    <ClCompile Include="nsprefix.cpp" />
-    <ClCompile Include="convar.cpp" />
-    <ClCompile Include="crashhandler.cpp" />
-    <ClCompile Include="cvar.cpp" />
-    <ClCompile Include="debugoverlay.cpp" />
-    <ClCompile Include="dedicated.cpp" />
-    <ClCompile Include="dedicatedmaterialsystem.cpp" />
-    <ClCompile Include="demofixes.cpp" />
-    <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="filesystem.cpp" />
-    <ClCompile Include="hooks.cpp" />
-    <ClCompile Include="host.cpp" />
-    <ClCompile Include="hoststate.cpp" />
-    <ClCompile Include="modkeyvalues.cpp" />
-    <ClCompile Include="latencyflex.cpp" />
-    <ClCompile Include="localchatwriter.cpp" />
-    <ClCompile Include="printmaps.cpp" />
-    <ClCompile Include="maxplayers.cpp" />
-    <ClCompile Include="languagehooks.cpp" />
-    <ClCompile Include="memalloc.cpp" />
-    <ClCompile Include="misccommands.cpp" />
-    <ClCompile Include="miscserverfixes.cpp" />
-    <ClCompile Include="modlocalisation.cpp" />
-    <ClCompile Include="logging.cpp" />
-    <ClCompile Include="masterserver.cpp" />
-    <ClCompile Include="modmanager.cpp" />
+    <None Include="..\include\spdlog\fmt\bundled\LICENSE.rst" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="client\audio.cpp" />
+    <ClCompile Include="client\chatcommand.cpp" />
+    <ClCompile Include="client\clientauthhooks.cpp" />
+    <ClCompile Include="client\clientruihooks.cpp" />
+    <ClCompile Include="client\clientvideooverrides.cpp" />
+    <ClCompile Include="client\debugoverlay.cpp" />
+    <ClCompile Include="client\demofixes.cpp" />
+    <ClCompile Include="client\diskvmtfixes.cpp" />
+    <ClCompile Include="client\languagehooks.cpp" />
+    <ClCompile Include="client\latencyflex.cpp" />
+    <ClCompile Include="client\localchatwriter.cpp" />
+    <ClCompile Include="client\modlocalisation.cpp" />
+    <ClCompile Include="client\r2client.cpp" />
+    <ClCompile Include="config\profile.cpp" />
+    <ClCompile Include="core\convar\concommand.cpp" />
+    <ClCompile Include="core\convar\convar.cpp" />
+    <ClCompile Include="core\convar\cvar.cpp" />
+    <ClCompile Include="core\filesystem\filesystem.cpp" />
+    <ClCompile Include="core\filesystem\rpakfilesystem.cpp" />
+    <ClCompile Include="core\hooks.cpp" />
+    <ClCompile Include="core\math\bits.cpp" />
+    <ClCompile Include="core\math\color.cpp" />
+    <ClCompile Include="core\memalloc.cpp" />
+    <ClCompile Include="core\memory.cpp" />
+    <ClCompile Include="core\tier0.cpp" />
+    <ClCompile Include="dedicated\dedicated.cpp" />
+    <ClCompile Include="dedicated\dedicatedmaterialsystem.cpp" />
+    <ClCompile Include="dllmain.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="engine\host.cpp" />
+    <ClCompile Include="engine\hoststate.cpp" />
+    <ClCompile Include="engine\r2engine.cpp" />
+    <ClCompile Include="engine\runframe.cpp" />
+    <ClCompile Include="logging\crashhandler.cpp" />
+    <ClCompile Include="logging\logging.cpp" />
+    <ClCompile Include="logging\loghooks.cpp" />
+    <ClCompile Include="logging\sourceconsole.cpp" />
+    <ClCompile Include="masterserver\masterserver.cpp" />
+    <ClCompile Include="mods\compiled\kb_act.cpp" />
+    <ClCompile Include="mods\compiled\modkeyvalues.cpp" />
+    <ClCompile Include="mods\compiled\modpdef.cpp" />
+    <ClCompile Include="mods\compiled\modscriptsrson.cpp" />
+    <ClCompile Include="mods\modmanager.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="modpdef.cpp" />
-    <ClCompile Include="playlist.cpp" />
-    <ClCompile Include="plugins.cpp" />
-    <ClCompile Include="printcommands.cpp" />
-    <ClCompile Include="r2client.cpp" />
-    <ClCompile Include="r2engine.cpp" />
-    <ClCompile Include="r2server.cpp" />
-    <ClCompile Include="rpakfilesystem.cpp" />
-    <ClCompile Include="runframe.cpp" />
-    <ClCompile Include="scriptbrowserhooks.cpp" />
-    <ClCompile Include="scriptjson.cpp" />
-    <ClCompile Include="scriptdatatables.cpp" />
-    <ClCompile Include="scriptmainmenupromos.cpp" />
-    <ClCompile Include="scriptmodmenu.cpp" />
-    <ClCompile Include="scriptserverbrowser.cpp" />
-    <ClCompile Include="modscriptsrson.cpp" />
-    <ClCompile Include="scriptuserinfo.cpp" />
-    <ClCompile Include="scriptutility.cpp" />
-    <ClCompile Include="serverauthentication.cpp" />
-    <ClCompile Include="miscserverscript.cpp" />
-    <ClCompile Include="serverchathooks.cpp" />
-    <ClCompile Include="scriptservertoclientstringcommand.cpp" />
-    <ClCompile Include="serverpresence.cpp" />
-    <ClCompile Include="sourceconsole.cpp" />
-    <ClCompile Include="sourceinterface.cpp" />
-    <ClCompile Include="squirrel.cpp" />
-    <ClCompile Include="exploitfixes.cpp" />
-    <ClCompile Include="squirrelautobind.cpp" />
-    <ClCompile Include="tier0.cpp" />
-    <ClCompile Include="version.cpp" />
+    <ClCompile Include="plugins\plugins.cpp" />
+    <ClCompile Include="scripts\client\clientchathooks.cpp" />
+    <ClCompile Include="scripts\client\scriptbrowserhooks.cpp" />
+    <ClCompile Include="scripts\client\scriptmainmenupromos.cpp" />
+    <ClCompile Include="scripts\client\scriptmodmenu.cpp" />
+    <ClCompile Include="scripts\client\scriptserverbrowser.cpp" />
+    <ClCompile Include="scripts\client\scriptservertoclientstringcommand.cpp" />
+    <ClCompile Include="scripts\scriptdatatables.cpp" />
+    <ClCompile Include="scripts\scripthttprequesthandler.cpp" />
+    <ClCompile Include="scripts\scriptjson.cpp" />
+    <ClCompile Include="scripts\scriptutility.cpp" />
+    <ClCompile Include="scripts\server\miscserverfixes.cpp" />
+    <ClCompile Include="scripts\server\miscserverscript.cpp" />
+    <ClCompile Include="scripts\server\scriptuserinfo.cpp" />
+    <ClCompile Include="server\auth\bansystem.cpp" />
+    <ClCompile Include="server\auth\serverauthentication.cpp" />
+    <ClCompile Include="server\buildainfile.cpp" />
+    <ClCompile Include="server\r2server.cpp" />
+    <ClCompile Include="server\serverchathooks.cpp" />
+    <ClCompile Include="server\serverpresence.cpp" />
+    <ClCompile Include="shared\exploit_fixes\exploitfixes.cpp" />
+    <ClCompile Include="shared\exploit_fixes\exploitfixes_lzss.cpp" />
+    <ClCompile Include="shared\exploit_fixes\exploitfixes_utf8parser.cpp" />
+    <ClCompile Include="shared\exploit_fixes\ns_limits.cpp" />
+    <ClCompile Include="shared\keyvalues.cpp" />
+    <ClCompile Include="shared\maxplayers.cpp" />
+    <ClCompile Include="shared\misccommands.cpp" />
+    <ClCompile Include="shared\playlist.cpp" />
+    <ClCompile Include="squirrel\squirrel.cpp" />
+    <ClCompile Include="squirrel\squirrelautobind.cpp" />
+    <ClCompile Include="util\printcommands.cpp" />
+    <ClCompile Include="util\printmaps.cpp" />
+    <ClCompile Include="util\version.cpp" />
   </ItemGroup>
   <ItemGroup>
     <MASM Include="audio_asm.asm" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\include\spdlog\fmt\bundled\LICENSE.rst" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
