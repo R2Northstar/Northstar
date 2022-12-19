@@ -1,4 +1,4 @@
-# Playing on Linux (Legacy guide for Northstar 1.9.1 and older)
+# Legacy Linux Guide for 1.9.1 and older
 
 Northstar is officially supported on Linux, it uses compatibility layers like Proton or Wine to launch the game on POSIX systems.
 
@@ -11,10 +11,10 @@ This guide is new, based on recent information, as such any feedback on success 
 {% endhint %}
 
 1. Make sure you ran the vanilla version of Titanfall2 at least once on Linux!
-2. Install the latest version of Northstar using [Viper](../northstar-installers.md#0negal-viper) or do it manually
+2. Install the latest version of Northstar using [Viper](../installing-northstar/northstar-installers.md#0negal-viper) or do it manually
    1. For manual install download the latest version of Northstar from the [releases](https://github.com/R2Northstar/Northstar/releases) page
    2. Then extract all contents of the file to your Titanfall 2 folder ( Right click _Titanfall 2_ > Open _Properties_ > Click _Local Files_ > Click _Browse_ )
-3. In your Titanfall2 folder create a file called `run_northstar.txt` and write a single `1` to it, i.e. `echo 1 > run_northstar.txt`&#x20;
+3. In your Titanfall2 folder create a file called `run_northstar.txt` and write a single `1` to it, i.e. `echo 1 > run_northstar.txt`
 4. In Steam, set the launch arguments for Titanfall2 to `WINEDLLOVERRIDES="wsock32=n,b" %command%`
 5. Install `Proton-7.3-GE-1` (not `GE-Proton7-3`) and select it as the desired Proton version for Titanfall2
 6. Launch Titanfall2, it should now launch Northstar
@@ -58,9 +58,9 @@ This guide assumes you own Titanfall2 on Steam and run it from there. If you onl
 * Install Titanfall2 via the Steam store on the SteamDeck and run the vanilla game at least once!
 * Switch to desktop mode\
   (A mouse + keyboard plugged into the Deck are recommended for the next few steps for easier navigation of menus)
-* To install Northstar, grab the Viper launcher from the Discover Store and launch it. It will auto-detect your Titanfall2 install location and install Northstar to it. \
+* To install Northstar, grab the Viper launcher from the Discover Store and launch it. It will auto-detect your Titanfall2 install location and install Northstar to it.\
   Alternatively you can manually install Northstar by grabbing the newest zip from [the releases page on GitHub](https://github.com/R2Northstar/Northstar/releases) and extracting the contents to your Titanfall2 folder.
-* Regardless which method you used to install Northstar, now go to your Titanfall2 folder. \
+* Regardless which method you used to install Northstar, now go to your Titanfall2 folder.\
   If you installed Titanfall2 on the Deck's internal storage, it will be located at `/home/deck/.local/share/Steam/steamapps/common/Titanfall2`
 * Create an empty file called `run_northstar.txt` inside your Titanfall2 folder, open it, and change its content to a single `1`.
 

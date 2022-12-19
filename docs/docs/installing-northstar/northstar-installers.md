@@ -5,21 +5,21 @@ Since the public release of Northstar, the wider community has created tools to 
 Each of these installers covers a different use case. Use the table below to find out which one suits you best:
 
 | Features                        | r2mm | Viper | VTOL | Papa |
-| ------------------------------- | ---- | ----- | ---- |------|
-| Install Northstar               | ✔️   | ✔️    | ✔️   | ✔️ |
-| Update Northstar                | ✔️   | ✔️    | ✔️   | ✔️ |
-| Launch Northstar                | ✔️   | ✔️    | ✔️   | ❌ |
-| Launch Vanilla                  | ✔️   | ✔️    | ✔️   | ❌ |
-| Install Mods from Thunderstore  | ✔️   | ✔️    | ✔️   | ✔️ |
-| Update Mods                     | ✔️   | ✔️    | ✔️   | ✔️ |
-|                                 |      |       |      |    |
-| Set launch arguments            | ❓    | ✔️    | ✔️   | ❌ |
-| Installing mods for other games | ✔️   | ❌     | ❌    | ❌ |
-| Install skins                   | ❓    | ❌     | ✔️   | ❌ |
-| Linux support                   | ❓    | ✔️    | ❌    | ✔️ |
-| Install Mods from GitHub/GitLab | ❌    | ❌     | ✔️   | ❌ |
-| Server config creator           | ❌    | ❌     | ✔️   | ❌ |
-| Package mods for Thunderstore   | ❌    | ❌     | ✔️   | ❌ |
+| ------------------------------- | ---- | ----- | ---- | ---- |
+| Install Northstar               | ✔️   | ✔️    | ✔️   | ✔️   |
+| Update Northstar                | ✔️   | ✔️    | ✔️   | ✔️   |
+| Launch Northstar                | ✔️   | ✔️    | ✔️   | ❌    |
+| Launch Vanilla                  | ✔️   | ✔️    | ✔️   | ❌    |
+| Install Mods from Thunderstore  | ✔️   | ✔️    | ✔️   | ✔️   |
+| Update Mods                     | ✔️   | ✔️    | ✔️   | ✔️   |
+|                                 |      |       |      |      |
+| Set launch arguments            | ❓    | ✔️    | ✔️   | ❌    |
+| Installing mods for other games | ✔️   | ❌     | ❌    | ❌    |
+| Install skins                   | ❓    | ❌     | ✔️   | ❌    |
+| Linux support                   | ❓    | ✔️    | ❌    | ✔️   |
+| Install Mods from GitHub/GitLab | ❌    | ❌     | ✔️   | ❌    |
+| Server config creator           | ❌    | ❌     | ✔️   | ❌    |
+| Package mods for Thunderstore   | ❌    | ❌     | ✔️   | ❌    |
 
 Note that none of these tools are directly part of the Northstar project and as such any issues with them should be reported to the respective authors instead.
 
@@ -62,7 +62,7 @@ Download and source code:
 
 ## **BigSpice:** VTOL
 
-![vtol](../images/vtol-main-window.png)
+![vtol](../.gitbook/assets/vtol-main-window.png)
 
 Easy to use and extensive Northstar installer and mod-manager. Supports installing from Thunderstore as well as from outside sources like GitHub/GitLab repositories. Has support for installing custom weapon/pilot skins. Features manager for setting up dedicated servers.
 
