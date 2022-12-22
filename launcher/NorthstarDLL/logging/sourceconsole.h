@@ -1,6 +1,6 @@
 #pragma once
 #include "pch.h"
-#include "shared/sourceinterface.h"
+#include "core/sourceinterface.h"
 #include "spdlog/sinks/base_sink.h"
 #include <map>
 

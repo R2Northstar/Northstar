@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "filesystem.h"
-#include "shared/sourceinterface.h"
+#include "core/sourceinterface.h"
 #include "mods/modmanager.h"
 
 #include <iostream>

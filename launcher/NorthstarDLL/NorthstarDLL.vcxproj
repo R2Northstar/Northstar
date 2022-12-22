@@ -406,6 +406,7 @@
     <ClInclude Include="core\math\vector.h" />
     <ClInclude Include="core\memalloc.h" />
     <ClInclude Include="core\memory.h" />
+    <ClInclude Include="core\sourceinterface.h" />
     <ClInclude Include="core\structs.h" />
     <ClInclude Include="core\tier0.h" />
     <ClInclude Include="dedicated\dedicated.h" />
@@ -436,6 +437,8 @@
     <ClInclude Include="server\serverchathooks.h" />
     <ClInclude Include="server\serverpresence.h" />
     <ClInclude Include="shared\keyvalues.h" />
+    <ClInclude Include="shared\maxplayers.h" />
+    <ClInclude Include="shared\misccommands.h" />
     <ClInclude Include="shared\playlist.h" />
     <ClInclude Include="squirrel\squirrel.h" />
     <ClInclude Include="squirrel\squirrelautobind.h" />
@@ -471,6 +474,7 @@
     <ClCompile Include="core\math\color.cpp" />
     <ClCompile Include="core\memalloc.cpp" />
     <ClCompile Include="core\memory.cpp" />
+    <ClCompile Include="core\sourceinterface.cpp" />
     <ClCompile Include="core\tier0.cpp" />
     <ClCompile Include="dedicated\dedicated.cpp" />
     <ClCompile Include="dedicated\dedicatedmaterialsystem.cpp" />
