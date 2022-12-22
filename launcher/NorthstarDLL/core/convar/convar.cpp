@@ -2,7 +2,7 @@
 #include "bits.h"
 #include "cvar.h"
 #include "convar.h"
-#include "shared/sourceinterface.h"
+#include "core/sourceinterface.h"
 
 #include <float.h>
 

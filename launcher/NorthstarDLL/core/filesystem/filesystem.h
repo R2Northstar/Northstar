@@ -1,5 +1,5 @@
 #pragma once
-#include "shared/sourceinterface.h"
+#include "core/sourceinterface.h"
 
 // taken from ttf2sdk
 typedef void* FileHandle_t;

@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "core/convar/convar.h"
 #include "sourceconsole.h"
-#include "shared/sourceinterface.h"
+#include "core/sourceinterface.h"
 #include "core/convar/concommand.h"
 #include "util/printcommands.h"
 

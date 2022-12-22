@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "sourceinterface.h"
-#include "console/sourceconsole.h"
+#include "logging/sourceconsole.h"
 
 AUTOHOOK_INIT()
 
