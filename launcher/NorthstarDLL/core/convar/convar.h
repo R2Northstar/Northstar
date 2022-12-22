@@ -190,3 +190,5 @@ class ConVar
 	void* m_pMalloc {}; // 0x0070
 	char m_pPad80[10] {}; // 0x0080
 }; // Size: 0x0080
+
+int ParseConVarFlagsString(std::string modName, std::string flags);

@@ -88,6 +88,18 @@ eSQReturnType SQReturnTypeFromString(const char* pReturnType)
 		return eSQReturnType::Default; // previous default value
 }
 
+ScriptContext ScriptContextFromString(std::string string)
+{
+	if (string == "UI")
+		return ScriptContext::UI;
+	if (string == "CLIENT")
+		return ScriptContext::CLIENT;
+	if (string == "SERVER")
+		return ScriptContext::SERVER;
+	else
+		return ScriptContext::INVALID;
+}
+
 const char* SQTypeNameFromID(int type)
 {
 	switch (type)

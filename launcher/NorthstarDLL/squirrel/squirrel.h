@@ -37,6 +37,8 @@ const char* GetContextName_Short(ScriptContext context);
 eSQReturnType SQReturnTypeFromString(const char* pReturnType);
 const char* SQTypeNameFromID(const int iTypeId);
 
+ScriptContext ScriptContextFromString(std::string string);
+
 std::shared_ptr<ColoredLogger> getSquirrelLoggerByContext(ScriptContext context);
 
 namespace NS::log
