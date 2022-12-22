@@ -400,6 +400,7 @@
     <ClInclude Include="core\filesystem\filesystem.h" />
     <ClInclude Include="core\filesystem\rpakfilesystem.h" />
     <ClInclude Include="core\hooks.h" />
+    <ClInclude Include="core\macros.h" />
     <ClInclude Include="core\math\bitbuf.h" />
     <ClInclude Include="core\math\bits.h" />
     <ClInclude Include="core\math\color.h" />

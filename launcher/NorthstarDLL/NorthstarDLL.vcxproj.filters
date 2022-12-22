@@ -1170,6 +1170,9 @@
     <ClInclude Include="core\sourceinterface.h">
       <Filter>Header Files\core</Filter>
     </ClInclude>
+    <ClInclude Include="core\macros.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\include\spdlog\fmt\bundled\LICENSE.rst">

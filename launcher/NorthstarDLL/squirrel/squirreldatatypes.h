@@ -251,7 +251,7 @@ struct alignas(8) HSquirrelVM
 	void* pointer_28;
 	CallInfo* ci;
 	CallInfo* _callstack;
-	int _callsstacksize;
+	int _callstacksize;
 	int _stackbase;
 	SQObject* _stackOfCurrentFunction;
 	SQSharedState* sharedState;
@@ -275,7 +275,7 @@ struct alignas(8) HSquirrelVM
 	int _nnativecalls;
 	int _suspended;
 	int _suspended_root;
-	int _callstacksize;
+	int _unk;
 	int _suspended_target;
 	int trapAmount;
 	int _suspend_varargs;

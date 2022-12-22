@@ -1,6 +1,5 @@
 #pragma once
 #include "convar.h"
-#include "pch.h"
 
 //-----------------------------------------------------------------------------
 // Forward declarations

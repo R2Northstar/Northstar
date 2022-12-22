@@ -224,6 +224,8 @@ typedef SQFloat* (*sq_getvectorType)(HSquirrelVM* sqvm, SQInteger iStackpos);
 typedef SQBool (*sq_getthisentityType)(HSquirrelVM*, void** ppEntity);
 typedef void (*sq_getobjectType)(HSquirrelVM*, SQInteger iStackPos, SQObject* pOutObj);
 
+typedef long long (*sq_stackinfosType)(HSquirrelVM* sqvm, int iLevel, SQStackInfos* pOutObj, int iCallStackSize);
+
 // sq stack userpointer funcs
 typedef void* (*sq_createuserdataType)(HSquirrelVM* sqvm, SQInteger iSize);
 typedef SQRESULT (*sq_setuserdatatypeidType)(HSquirrelVM* sqvm, SQInteger iStackpos, uint64_t iTypeId);

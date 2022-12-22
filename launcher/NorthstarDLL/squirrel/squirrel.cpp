@@ -561,6 +561,45 @@ template <ScriptContext context> void SquirrelManager<context>::ProcessMessageBu
 	_call(m_pSQVM->sqvm, message.args.size());
 }
 
+ADD_SQFUNC(
+	"string",
+	NSGetCurrentModName,
+	"",
+	"Returns the mod name of the script running this function",
+	ScriptContext::UI | ScriptContext::CLIENT | ScriptContext::SERVER)
+{
+	int depth = g_pSquirrel<context>->getinteger(sqvm, 1);
+	if (auto mod = g_pSquirrel<context>->getcallingmod(sqvm, depth); mod == nullptr)
+	{
+		g_pSquirrel<context>->raiseerror(sqvm, "NSGetModName was called from a non-mod script. This shouldn't be possible");
+		return SQRESULT_ERROR;
+	}
+	else
+	{
+		g_pSquirrel<context>->pushstring(sqvm, mod->Name.c_str());
+	}
+	return SQRESULT_NOTNULL;
+}
+
+ADD_SQFUNC(
+	"string",
+	NSGetCallingModName,
+	"int depth = 0",
+	"Returns the mod name of the script running this function",
+	ScriptContext::UI | ScriptContext::CLIENT | ScriptContext::SERVER)
+{
+	int depth = g_pSquirrel<context>->getinteger(sqvm, 1);
+	if (auto mod = g_pSquirrel<context>->getcallingmod(sqvm, depth); mod == nullptr)
+	{
+		g_pSquirrel<context>->pushstring(sqvm, "Unknown");
+	}
+	else
+	{
+		g_pSquirrel<context>->pushstring(sqvm, mod->Name.c_str());
+	}
+	return SQRESULT_NOTNULL;
+}
+
 ON_DLL_LOAD_RELIESON("client.dll", ClientSquirrel, ConCommand, (CModule module))
 {
 	AUTOHOOK_DISPATCH_MODULE(client.dll)
@@ -637,6 +676,8 @@ ON_DLL_LOAD_RELIESON("client.dll", ClientSquirrel, ConCommand, (CModule module))
 	g_pSquirrel<ScriptContext::UI>->messageBuffer = g_pSquirrel<ScriptContext::CLIENT>->messageBuffer;
 	g_pSquirrel<ScriptContext::CLIENT>->__sq_getfunction = module.Offset(0x572FB0).As<sq_getfunctionType>();
 	g_pSquirrel<ScriptContext::UI>->__sq_getfunction = g_pSquirrel<ScriptContext::CLIENT>->__sq_getfunction;
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_stackinfos = module.Offset(0x35970).As<sq_stackinfosType>();
+	g_pSquirrel<ScriptContext::UI>->__sq_stackinfos = g_pSquirrel<ScriptContext::CLIENT>->__sq_stackinfos;
 
 	MAKEHOOK(
 		module.Offset(0x108E0),
@@ -718,6 +759,7 @@ ON_DLL_LOAD_RELIESON("server.dll", ServerSquirrel, ConCommand, (CModule module))
 	g_pSquirrel<ScriptContext::SERVER>->logger = NS::log::SCRIPT_SV;
 	// Message buffer stuff
 	g_pSquirrel<ScriptContext::SERVER>->__sq_getfunction = module.Offset(0x6C85).As<sq_getfunctionType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_stackinfos = module.Offset(0x35920).As<sq_stackinfosType>();
 
 	MAKEHOOK(
 		module.Offset(0x1DD10),
