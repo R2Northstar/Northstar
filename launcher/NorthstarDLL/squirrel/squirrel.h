@@ -1,9 +1,9 @@
 #pragma once
 
-#include "logging/logging.h"
 #include "squirrelclasstypes.h"
 #include "squirrelautobind.h"
 #include "core/math/vector.h"
+#include "mods/modmanager.h"
 
 // stolen from ttf2sdk: sqvm types
 typedef float SQFloat;
@@ -38,8 +38,6 @@ eSQReturnType SQReturnTypeFromString(const char* pReturnType);
 const char* SQTypeNameFromID(const int iTypeId);
 
 ScriptContext ScriptContextFromString(std::string string);
-
-std::shared_ptr<ColoredLogger> getSquirrelLoggerByContext(ScriptContext context);
 
 namespace NS::log
 {
@@ -97,6 +95,8 @@ class SquirrelManagerBase
 	sq_getvectorType __sq_getvector;
 	sq_getthisentityType __sq_getthisentity;
 	sq_getobjectType __sq_getobject;
+
+	sq_stackinfosType __sq_stackinfos;
 
 	sq_createuserdataType __sq_createuserdata;
 	sq_setuserdatatypeidType __sq_setuserdatatypeid;
@@ -230,6 +230,28 @@ class SquirrelManagerBase
 		return __sq_getasset(sqvm, stackpos, result);
 	}
 
+	inline long long sq_stackinfos(HSquirrelVM* sqvm, int level, SQStackInfos& out)
+	{
+		return __sq_stackinfos(sqvm, level, &out, sqvm->_callstacksize);
+	}
+
+	inline Mod* getcallingmod(HSquirrelVM* sqvm, int depth = 0)
+	{
+		SQStackInfos stackInfo {};
+		if (1 + depth >= sqvm->_callstacksize)
+		{
+			return nullptr;
+		}
+		sq_stackinfos(sqvm, 1 + depth, stackInfo);
+		std::string sourceName = stackInfo._sourceName;
+		std::replace(sourceName.begin(), sourceName.end(), '/', '\\');
+		std::string filename = "scripts\\vscripts\\" + sourceName;
+		if (auto res = g_pModManager->m_ModFiles.find(filename); res != g_pModManager->m_ModFiles.end())
+		{
+			return res->second.m_pOwningMod;
+		}
+		return nullptr;
+	}
 	template <typename T> inline SQRESULT getuserdata(HSquirrelVM* sqvm, const SQInteger stackpos, T* data, uint64_t* typeId)
 	{
 		return __sq_getuserdata(sqvm, stackpos, (void**)data, typeId); // this sometimes crashes idk
