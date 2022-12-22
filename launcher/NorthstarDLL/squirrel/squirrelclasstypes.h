@@ -73,6 +73,7 @@ struct SQFuncRegistration
 
 enum class ScriptContext : int
 {
+	INVALID = -1,
 	SERVER,
 	CLIENT,
 	UI,

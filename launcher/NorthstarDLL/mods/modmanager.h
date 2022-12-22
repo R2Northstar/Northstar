@@ -22,6 +22,16 @@ struct ModConVar
 	int Flags;
 };
 
+struct ModConCommand
+{
+  public:
+	std::string Name;
+	std::string Function;
+	std::string HelpString;
+	ScriptContext Context;
+	int Flags;
+};
+
 struct ModScriptCallback
 {
   public:
@@ -87,6 +97,8 @@ class Mod
 	std::vector<ModScript> Scripts;
 	// convars created by the mod
 	std::vector<ModConVar*> ConVars;
+	// concommands created by the mod
+	std::vector<ModConCommand*> ConCommands;
 	// custom localisation files created by the mod
 	std::vector<std::string> LocalisationFiles;
 

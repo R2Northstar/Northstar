@@ -488,3 +488,43 @@ bool ConVar::ClampValue(float& flValue)
 
 	return false;
 }
+
+int ParseConVarFlagsString(std::string modName, std::string sFlags)
+{
+	sFlags += '|'; // add additional | so we register the last flag
+	std::string sCurrentFlag;
+
+	for (int i = 0; i < sFlags.length(); i++)
+	{
+		if (isspace(sFlags[i]))
+			continue;
+
+		// if we encounter a |, add current string as a flag
+		if (sFlags[i] == '|')
+		{
+			bool bHasFlags = false;
+			int iCurrentFlags;
+
+			for (auto& flagPair : g_PrintCommandFlags)
+			{
+				if (!sCurrentFlag.compare(flagPair.second))
+				{
+					iCurrentFlags = flagPair.first;
+					bHasFlags = true;
+					break;
+				}
+			}
+
+			if (bHasFlags)
+				return iCurrentFlags;
+			else
+				spdlog::warn("Mod ConCommand {} has unknown flag {}", modName, sCurrentFlag);
+
+			sCurrentFlag = "";
+		}
+		else
+		{
+			sCurrentFlag += sFlags[i];
+		}
+	}
+}
