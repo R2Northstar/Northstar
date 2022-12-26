@@ -164,10 +164,13 @@ void AsyncCall_External(ScriptContext context, const char* func_name, SquirrelMe
 	{
 	case ScriptContext::CLIENT:
 		g_pSquirrel<ScriptContext::CLIENT>->messageBuffer->push(message);
+		break;
 	case ScriptContext::SERVER:
 		g_pSquirrel<ScriptContext::SERVER>->messageBuffer->push(message);
+		break;
 	case ScriptContext::UI:
 		g_pSquirrel<ScriptContext::UI>->messageBuffer->push(message);
+		break;
 	}
 }
 
