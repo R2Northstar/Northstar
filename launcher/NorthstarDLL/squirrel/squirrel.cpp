@@ -527,38 +527,37 @@ template <ScriptContext context> void StubUnsafeSQFuncs()
 
 template <ScriptContext context> void SquirrelManager<context>::ProcessMessageBuffer()
 {
-	auto maybeMessage = messageBuffer->pop();
-	if (!maybeMessage)
+	while (std::optional<SquirrelMessage> maybeMessage = messageBuffer->pop())
 	{
-		return;
-	}
+		SquirrelMessage message = maybeMessage.value();
 
-	SquirrelMessage message = maybeMessage.value();
-
-	SQObject functionobj {};
-	int result = sq_getfunction(m_pSQVM->sqvm, message.functionName.c_str(), &functionobj, 0);
-	if (result != 0) // This func returns 0 on success for some reason
-	{
-		NS::log::squirrel_logger<context>()->error(
-			"ProcessMessageBuffer was unable to find function with name '{}'. Is it global?", message.functionName);
-		return;
-	}
-	pushobject(m_pSQVM->sqvm, &functionobj); // Push the function object
-	pushroottable(m_pSQVM->sqvm);
-	if (message.isExternal)
-	{
-		message.externalFunc(m_pSQVM->sqvm);
-	}
-	else
-	{
-		for (auto& v : message.args)
+		SQObject functionobj {};
+		int result = sq_getfunction(m_pSQVM->sqvm, message.functionName.c_str(), &functionobj, 0);
+		if (result != 0) // This func returns 0 on success for some reason
 		{
-			// Execute lambda to push arg to stack
-			v();
+			NS::log::squirrel_logger<context>()->error(
+				"ProcessMessageBuffer was unable to find function with name '{}'. Is it global?", message.functionName);
+			continue;
 		}
-	}
 
-	_call(m_pSQVM->sqvm, message.args.size());
+		pushobject(m_pSQVM->sqvm, &functionobj); // Push the function object
+		pushroottable(m_pSQVM->sqvm);
+
+		if (message.isExternal)
+		{
+			message.externalFunc(m_pSQVM->sqvm);
+		}
+		else
+		{
+			for (auto& v : message.args)
+			{
+				// Execute lambda to push arg to stack
+				v();
+			}
+		}
+
+		_call(m_pSQVM->sqvm, message.args.size());
+	}
 }
 
 ADD_SQFUNC(
