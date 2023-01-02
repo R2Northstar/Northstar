@@ -1,1 +1,67 @@
-//fuck
+global function SpawnHarvester
+global function generateBeamFX
+global function generateShieldFX
+
+global struct HarvesterStruct {
+	entity harvester
+	entity particleBeam
+	entity particleShield
+	entity rings
+	float lastDamage
+	bool shieldBoost
+	
+}
+
+HarvesterStruct function SpawnHarvester( vector origin, vector angles, int health, int shieldHealth, int team )
+{
+    entity harvester = CreateEntity( "prop_script" )
+    harvester.SetValueForModelKey( $"models/props/generator_coop/generator_coop.mdl" )
+    harvester.SetOrigin( origin )
+    harvester.SetAngles( angles )
+    harvester.kv.solid = SOLID_VPHYSICS
+    
+    harvester.SetMaxHealth( health )
+    harvester.SetHealth( health )
+    harvester.SetShieldHealthMax( shieldHealth )
+    harvester.SetShieldHealth( shieldHealth )
+    harvester.EnableAttackableByAI( 30, 0, AI_AP_FLAG_NONE )
+    SetObjectCanBeMeleed( harvester, false )
+    SetTeam(harvester,team)
+
+    DispatchSpawn( harvester )
+    
+    
+    entity blackbox = CreatePropDynamic( MODEL_HARVESTER_TOWER_COLLISION, origin, angles, 0 )
+    blackbox.Hide()
+    blackbox.Solid()
+    // blackbox.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+    
+    entity rings = CreatePropDynamic( MODEL_HARVESTER_TOWER_RINGS, origin, angles, 6 )
+    thread PlayAnim( rings, "generator_cycle_fast" )
+    
+    
+    
+    HarvesterStruct ret
+    ret.harvester = harvester
+    ret.lastDamage = Time()
+    ret.rings = rings
+    
+    return ret
+}
+
+HarvesterStruct function generateBeamFX( HarvesterStruct harvester )
+{
+    entity Harvester_Beam = StartParticleEffectOnEntity_ReturnEntity( harvester.harvester, GetParticleSystemIndex( FX_HARVESTER_BEAM ), FX_PATTACH_ABSORIGIN_FOLLOW ,0 )
+    EffectSetControlPointVector( Harvester_Beam, 1, GetShieldTriLerpColor( 0.0 ) )
+    harvester.particleBeam = Harvester_Beam
+    Harvester_Beam.DisableHibernation()
+    return harvester
+}
+
+HarvesterStruct function generateShieldFX( HarvesterStruct harvester )
+{
+    entity Harvester_Shield = StartParticleEffectOnEntity_ReturnEntity( harvester.harvester, GetParticleSystemIndex( FX_HARVESTER_OVERSHIELD ), FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
+    EffectSetControlPointVector( Harvester_Shield, 1, GetShieldTriLerpColor( 0.0 ) )
+    harvester.particleShield = Harvester_Shield
+    return harvester
+}
