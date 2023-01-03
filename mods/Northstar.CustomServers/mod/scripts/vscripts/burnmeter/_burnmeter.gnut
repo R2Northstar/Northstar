@@ -294,10 +294,14 @@ void function InitBurnMeterPersistentData( entity player )
 void function PlayerUsesAmpedWeaponsBurncard( entity player )
 {
 	thread PlayerUsesAmpedWeaponsBurncardThreaded( player )
+	
 }
 
 void function PlayerUsesAmpedWeaponsBurncardThreaded( entity player )
 {
+	player.Signal( "StopAmpedWeapons" ) 
+	player.EndSignal("StopAmpedWeapons")
+	
 	array<entity> weapons = player.GetMainWeapons()
 	//weapons.extend( player.GetOffhandWeapons() ) // idk? unsure of vanilla behaviour here
 	foreach ( entity weapon in weapons )
