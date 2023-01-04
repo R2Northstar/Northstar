@@ -19,6 +19,7 @@ struct SQNativeClosure;
 struct SQArray;
 struct tableNode;
 struct SQUserData;
+struct CSquirrelVM;
 
 typedef void (*releasehookType)(void* val, int size);
 
@@ -395,7 +396,7 @@ struct SQSharedState
 	SQString* _SpinOffStringValue;
 	SQObjectType _SpinOffDelayedStringType;
 	SQString* _SpinOffDelayedStringValue;
-	unsigned char gap_43E8[8];
+	CSquirrelVM* cSquirrelVM;
 	bool enableDebugInfo; // functionality stripped
 	unsigned char gap_43F1[23];
 };
@@ -470,11 +471,16 @@ struct SQCompiler
 /* 155 */
 struct CSquirrelVM
 {
-	unsigned char gap_0[8];
+	BYTE gap_0[8];
 	HSquirrelVM* sqvm;
-	unsigned char gap_10[44];
-	int loadEnumFromFileMaybe;
-	unsigned char gap_40[200];
+	BYTE gap_10[8];
+	SQObject unknownObject_18;
+	__int64 unknown_28;
+	BYTE gap_30[12];
+	__int32 vmContext;
+	BYTE gap_40[648];
+	char* (*formatString)(__int64 a1, const char* format, ...);
+	BYTE gap_2D0[24];
 };
 
 struct SQUserData
