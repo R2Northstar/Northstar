@@ -157,12 +157,29 @@ namespace R2
 		READY_REMOTE
 	};
 
+	enum class eSignonState : int
+	{
+		NONE = 0, // no state yet; about to connect
+		CHALLENGE = 1, // client challenging server; all OOB packets
+		CONNECTED = 2, // client is connected to server; netchans ready
+		NEW = 3, // just got serverinfo and string tables
+		PRESPAWN = 4, // received signon buffers
+		GETTINGDATA = 5, // respawn-defined signonstate, assumedly this is for persistence
+		SPAWN = 6, // ready to receive entity packets
+		FIRSTSNAP = 7, // another respawn-defined one
+		FULL = 8, // we are fully connected; first non-delta packet received
+		CHANGELEVEL = 9, // server is changing level; please wait
+	};
+
 	// clang-format off
 	OFFSET_STRUCT(CBaseClient)
 	{
 		STRUCT_SIZE(0x2D728)
 		FIELD(0x16, char m_Name[64])
 		FIELD(0x258, KeyValues* m_ConVars)
+		FIELD(0x2A0, eSignonState m_Signon)
+		FIELD(0x358, char m_ClanTag[16])
+		FIELD(0x484, bool m_bFakePlayer)
 		FIELD(0x4A0, ePersistenceReady m_iPersistenceReady)
 		FIELD(0x4FA, char m_PersistenceBuffer[PERSISTENCE_MAX_SIZE])
 		FIELD(0xF500, char m_UID[32])

@@ -100,152 +100,139 @@ void ServerAuthenticationManager::StopPlayerAuthServer()
 	m_PlayerAuthServer.stop();
 }
 
-void ServerAuthenticationManager::AddPlayer(R2::CBaseClient* player, const char* pToken)
+void ServerAuthenticationManager::AddPlayer(R2::CBaseClient* pPlayer, const char* pToken)
 {
 	PlayerAuthenticationData additionalData;
-	additionalData.pdataSize = m_RemoteAuthenticationData[pToken].pdataSize;
-	additionalData.usingLocalPdata = player->m_iPersistenceReady == R2::ePersistenceReady::READY_INSECURE;
 
-	m_PlayerAuthenticationData.insert(std::make_pair(player, additionalData));
+	auto remoteAuthData = m_RemoteAuthenticationData.find(pToken);
+	if (remoteAuthData != m_RemoteAuthenticationData.end())
+		additionalData.pdataSize = remoteAuthData->second.pdataSize;
+	else
+		additionalData.pdataSize = R2::PERSISTENCE_MAX_SIZE;
+
+	additionalData.usingLocalPdata = pPlayer->m_iPersistenceReady == R2::ePersistenceReady::READY_INSECURE;
+
+	m_PlayerAuthenticationData.insert(std::make_pair(pPlayer, additionalData));
 }
 
-void ServerAuthenticationManager::RemovePlayer(R2::CBaseClient* player)
+void ServerAuthenticationManager::RemovePlayer(R2::CBaseClient* pPlayer)
 {
-	if (m_PlayerAuthenticationData.count(player))
-		m_PlayerAuthenticationData.erase(player);
+	if (m_PlayerAuthenticationData.count(pPlayer))
+		m_PlayerAuthenticationData.erase(pPlayer);
 }
 
-bool checkIsPlayerNameValid(const char* name)
-{
-	int len = strlen(name);
-	// Restricts name to max 63 characters
-	if (len >= 64)
-		return false;
-	for (int i = 0; i < len; i++)
-	{
-		// Restricts the characters in the name to a restricted range in ASCII
-		if (static_cast<int>(name[i]) < 32 || static_cast<int>(name[i]) > 126)
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
-bool ServerAuthenticationManager::VerifyPlayerName(const char* authToken, const char* name)
+bool ServerAuthenticationManager::VerifyPlayerName(const char* pAuthToken, const char* pName, char pOutVerifiedName[64])
 {
 	std::lock_guard<std::mutex> guard(m_AuthDataMutex);
 
-	if (CVar_ns_auth_allow_insecure->GetInt())
-	{
-		spdlog::info("Allowing player with name '{}' because ns_auth_allow_insecure is enabled", name);
-		return true;
-	}
+	// always use name from masterserver if available
+	// use of strncpy_s here should verify that this is always nullterminated within valid buffer size
+	auto authData = m_RemoteAuthenticationData.find(pAuthToken);
+	if (authData != m_RemoteAuthenticationData.end() && *authData->second.username)
+		strncpy_s(pOutVerifiedName, 64, authData->second.username, 63);
+	else
+		strncpy_s(pOutVerifiedName, 64, pName, 63);
 
-	if (!checkIsPlayerNameValid(name))
-	{
-		spdlog::info("Rejecting player with name '{}' because the name contains forbidden characters", name);
+	// now, check that whatever name we have is actually valid
+	// first, make sure it's >1 char
+	if (!*pOutVerifiedName)
 		return false;
-	}
-	// TODO: We should really have a better way of doing this for singleplayer
-	// Best way of doing this would be to check if server is actually in singleplayer mode, or just running a SP map in multiplayer
-	// Currently there's not an easy way of checking this, so we just disable this check if mapname starts with `sp_`
-	// This means that player names are not checked on singleplayer
-	if ((m_RemoteAuthenticationData.empty() || m_RemoteAuthenticationData.count(std::string(authToken)) == 0) &&
-		strncmp(R2::g_pHostState->m_levelName, "sp_", 3) != 0)
-	{
-		spdlog::info("Rejecting player with name '{}' because authToken '{}' was not found", name, authToken);
-		return false;
-	}
 
-	const RemoteAuthData& authData = m_RemoteAuthenticationData[authToken];
-
-	if (*authData.username && strncmp(name, authData.username, 64) != 0)
+	// next, make sure it's within a valid range of ascii characters
+	for (int i = 0; pOutVerifiedName[i]; i++)
 	{
-		spdlog::info("Rejecting player with name '{}' because name does not match expected name '{}'", name, authData.username);
-		return false;
+		if (pOutVerifiedName[i] < 32 || pOutVerifiedName[i] > 126)
+			return false;
 	}
 
 	return true;
 }
 
-bool ServerAuthenticationManager::CheckDuplicateAccounts(R2::CBaseClient* player)
+bool ServerAuthenticationManager::IsDuplicateAccount(R2::CBaseClient* pPlayer, const char* pPlayerUid)
 {
 	if (m_bAllowDuplicateAccounts)
-		return true;
+		return false;
 
 	bool bHasUidPlayer = false;
 	for (int i = 0; i < R2::GetMaxPlayers(); i++)
-		if (&R2::g_pClientArray[i] != player && !strcmp(R2::g_pClientArray[i].m_UID, player->m_UID))
-			return false;
+		if (&R2::g_pClientArray[i] != pPlayer && !strcmp(pPlayerUid, R2::g_pClientArray[i].m_UID))
+			return true;
 
-	return true;
+	return false;
 }
 
-bool ServerAuthenticationManager::AuthenticatePlayer(R2::CBaseClient* player, uint64_t uid, char* authToken)
+bool ServerAuthenticationManager::CheckAuthentication(R2::CBaseClient* pPlayer, uint64_t iUid, char* pAuthToken)
 {
-	std::string strUid = std::to_string(uid);
-	std::lock_guard<std::mutex> guard(m_AuthDataMutex);
+	std::string sUid = std::to_string(iUid);
 
-	if (!strncmp(R2::g_pHostState->m_levelName, "sp_", 3))
+	// check whether this player's authentication is valid but don't actually write anything to the player, we'll do that later
+	// if we don't need auth this is valid
+	if (Cvar_ns_auth_allow_insecure->GetBool())
 		return true;
 
-	// copy uuid
-	strcpy(player->m_UID, strUid.c_str());
+	// local server that doesn't need auth (probably sp) and local player
+	if (m_bStartingLocalSPGame && !strcmp(sUid.c_str(), R2::g_pLocalPlayerUserID))
+		return true;
 
-	bool authFail = true;
-	if (!m_RemoteAuthenticationData.empty() && m_RemoteAuthenticationData.count(std::string(authToken)))
-	{
-		if (!CheckDuplicateAccounts(player))
-			return false;
+	// don't allow duplicate accounts
+	if (IsDuplicateAccount(pPlayer, sUid.c_str()))
+		return false;
 
-		// use stored auth data
-		RemoteAuthData authData = m_RemoteAuthenticationData[authToken];
+	std::lock_guard<std::mutex> guard(m_AuthDataMutex);
+	auto authData = m_RemoteAuthenticationData.find(pAuthToken);
+	if (authData != m_RemoteAuthenticationData.end() && !strcmp(sUid.c_str(), authData->second.uid))
+		return true;
 
-		if (!strcmp(strUid.c_str(), authData.uid)) // connecting client's uid is the same as auth's uid
-		{
-			// if we're resetting let script handle the reset
-			if (!m_bForceResetLocalPlayerPersistence || strcmp(authData.uid, R2::g_pLocalPlayerUserID))
-			{
-				// copy pdata into buffer
-				memcpy(player->m_PersistenceBuffer, authData.pdata, authData.pdataSize);
-			}
-
-			// set persistent data as ready
-			player->m_iPersistenceReady = R2::ePersistenceReady::READY_REMOTE;
-			authFail = false;
-		}
-	}
-
-	if (authFail)
-	{
-		if (CVar_ns_auth_allow_insecure->GetBool())
-		{
-			// set persistent data as ready
-			// note: actual placeholder persistent data is populated in script with InitPersistentData()
-			player->m_iPersistenceReady = R2::ePersistenceReady::READY_INSECURE;
-			return true;
-		}
-		else
-			return false;
-	}
-
-	return true; // auth successful, client stays on
+	return false;
 }
 
-bool ServerAuthenticationManager::RemovePlayerAuthData(R2::CBaseClient* player)
+void ServerAuthenticationManager::AuthenticatePlayer(R2::CBaseClient* pPlayer, uint64_t iUid, char* pAuthToken)
+{
+	// for bot players, generate a new uid
+	if (pPlayer->m_bFakePlayer)
+		iUid = 0; // is this a good way of doing things :clueless:
+
+	std::string sUid = std::to_string(iUid);
+
+	// copy uuid
+	strcpy(pPlayer->m_UID, sUid.c_str());
+
+	std::lock_guard<std::mutex> guard(m_AuthDataMutex);
+	auto authData = m_RemoteAuthenticationData.find(pAuthToken);
+	if (authData != m_RemoteAuthenticationData.end())
+	{
+		// if we're resetting let script handle the reset with InitPersistentData() on connect
+		if (!m_bForceResetLocalPlayerPersistence || strcmp(sUid.c_str(), R2::g_pLocalPlayerUserID))
+		{
+			// copy pdata into buffer
+			memcpy(pPlayer->m_PersistenceBuffer, authData->second.pdata, authData->second.pdataSize);
+		}
+
+		// set persistent data as ready
+		pPlayer->m_iPersistenceReady = R2::ePersistenceReady::READY_REMOTE;
+	}
+	// we probably allow insecure at this point, but make sure not to write anyway if not insecure
+	else if (Cvar_ns_auth_allow_insecure->GetBool() || pPlayer->m_bFakePlayer)
+	{
+		// set persistent data as ready
+		// note: actual placeholder persistent data is populated in script with InitPersistentData()
+		pPlayer->m_iPersistenceReady = R2::ePersistenceReady::READY_INSECURE;
+	}
+}
+
+bool ServerAuthenticationManager::RemovePlayerAuthData(R2::CBaseClient* pPlayer)
 {
 	if (!Cvar_ns_erase_auth_info->GetBool()) // keep auth data forever
 		return false;
 
 	// hack for special case where we're on a local server, so we erase our own newly created auth data on disconnect
-	if (m_bNeedLocalAuthForNewgame && !strcmp(player->m_UID, R2::g_pLocalPlayerUserID))
+	if (m_bNeedLocalAuthForNewgame && !strcmp(pPlayer->m_UID, R2::g_pLocalPlayerUserID))
 		return false;
 
 	// we don't have our auth token at this point, so lookup authdata by uid
 	for (auto& auth : m_RemoteAuthenticationData)
 	{
-		if (!strcmp(player->m_UID, auth.second.uid))
+		if (!strcmp(pPlayer->m_UID, auth.second.uid))
 		{
 			// pretty sure this is fine, since we don't iterate after the erase
 			// i think if we iterated after it'd be undefined behaviour tho
@@ -260,14 +247,14 @@ bool ServerAuthenticationManager::RemovePlayerAuthData(R2::CBaseClient* player)
 	return false;
 }
 
-void ServerAuthenticationManager::WritePersistentData(R2::CBaseClient* player)
+void ServerAuthenticationManager::WritePersistentData(R2::CBaseClient* pPlayer)
 {
-	if (player->m_iPersistenceReady == R2::ePersistenceReady::READY_REMOTE)
+	if (pPlayer->m_iPersistenceReady == R2::ePersistenceReady::READY_REMOTE)
 	{
 		g_pMasterServerManager->WritePlayerPersistentData(
-			player->m_UID, (const char*)player->m_PersistenceBuffer, m_PlayerAuthenticationData[player].pdataSize);
+			pPlayer->m_UID, (const char*)pPlayer->m_PersistenceBuffer, m_PlayerAuthenticationData[pPlayer].pdataSize);
 	}
-	else if (CVar_ns_auth_allow_insecure_write->GetBool())
+	else if (Cvar_ns_auth_allow_insecure_write->GetBool())
 	{
 		// todo: write pdata to disk here
 	}
@@ -306,54 +293,50 @@ void*,, (
 	pNextPlayerToken = serverFilter;
 	iNextPlayerUid = uid;
 
-	spdlog::info(
-		"CBaseServer__ClientConnect attempted connection with uid {}, playerName '{}', serverFilter '{}'", uid, playerName, serverFilter);
-
-	if (!g_pServerAuthentication->VerifyPlayerName(pNextPlayerToken, playerName))
-	{
-		CBaseServer__RejectConnection(self, *((int*)self + 3), addr, "Invalid Name.\n");
-		return nullptr;
-	}
-	if (!g_pBanSystem->IsUIDAllowed(uid))
-	{
-		CBaseServer__RejectConnection(self, *((int*)self + 3), addr, "Banned From server.\n");
-		return nullptr;
-	}
-
 	return CBaseServer__ConnectClient(self, addr, a3, a4, a5, a6, a7, playerName, serverFilter, a10, a11, a12, a13, a14, uid, a16, a17);
 }
 
+ConVar* Cvar_ns_allowuserclantags;
+
 // clang-format off
 AUTOHOOK(CBaseClient__Connect, engine.dll + 0x101740,
-bool,, (R2::CBaseClient* self, char* name, void* netchan_ptr_arg, char b_fake_player_arg, void* a5, char* Buffer, void* a7))
+bool,, (R2::CBaseClient* self, char* pName, void* pNetChannel, char bFakePlayer, void* a5, char pDisconnectReason[256], void* a7))
 // clang-format on
 {
-	// try to auth player, dc if it fails
-	// we connect regardless of auth, because returning bad from this function can fuck client state p bad
-	bool ret = CBaseClient__Connect(self, name, netchan_ptr_arg, b_fake_player_arg, a5, Buffer, a7);
-	if (!ret)
-		return ret;
+	const char* pAuthenticationFailure = nullptr;
+	char pVerifiedName[64];
 
-	if (!g_pServerAuthentication->VerifyPlayerName(pNextPlayerToken, name))
+	if (!bFakePlayer)
 	{
-		R2::CBaseClient__Disconnect(self, 1, "Invalid Name.\n");
+		if (!g_pServerAuthentication->VerifyPlayerName(pNextPlayerToken, pName, pVerifiedName))
+			pAuthenticationFailure = "Invalid Name.";
+		else if (!g_pBanSystem->IsUIDAllowed(iNextPlayerUid))
+			pAuthenticationFailure = "Banned From server.";
+		else if (!g_pServerAuthentication->CheckAuthentication(self, iNextPlayerUid, pNextPlayerToken))
+			pAuthenticationFailure = "Authentication Failed.";
+	}
+	else // need to copy name for bots still
+		strncpy_s(pVerifiedName, pName, 63);
+
+	if (pAuthenticationFailure)
+	{
+		spdlog::info("{}'s (uid {}) connection was rejected: \"{}\"", pName, iNextPlayerUid, pAuthenticationFailure);
+
+		strncpy_s(pDisconnectReason, 256, pAuthenticationFailure, 255);
 		return false;
 	}
-	if (!g_pBanSystem->IsUIDAllowed(iNextPlayerUid))
-	{
-		R2::CBaseClient__Disconnect(self, 1, "Banned From server.\n");
+
+	// try to actually connect the player
+	if (!CBaseClient__Connect(self, pVerifiedName, pNetChannel, bFakePlayer, a5, pDisconnectReason, a7))
 		return false;
-	}
-	if (!g_pServerAuthentication->AuthenticatePlayer(self, iNextPlayerUid, pNextPlayerToken))
-	{
-		R2::CBaseClient__Disconnect(self, 1, "Authentication Failed.\n");
-		return false;
-	}
+
+	// we already know this player's authentication data is legit, actually write it to them now
+	g_pServerAuthentication->AuthenticatePlayer(self, iNextPlayerUid, pNextPlayerToken);
 
 	g_pServerAuthentication->AddPlayer(self, pNextPlayerToken);
 	g_pServerLimits->AddPlayer(self);
 
-	return ret;
+	return true;
 }
 
 // clang-format off
@@ -395,14 +378,10 @@ void,, (R2::CBaseClient* self, uint32_t unknownButAlways1, const char* pReason, 
 		// dcing, write persistent data
 		if (g_pServerAuthentication->m_PlayerAuthenticationData[self].needPersistenceWriteOnLeave)
 			g_pServerAuthentication->WritePersistentData(self);
+
+		memset(self->m_PersistenceBuffer, 0, g_pServerAuthentication->m_PlayerAuthenticationData[self].pdataSize);
 		g_pServerAuthentication->RemovePlayerAuthData(self); // won't do anything 99% of the time, but just in case
 
-		g_pServerAuthentication->RemovePlayer(self);
-		g_pServerLimits->RemovePlayer(self);
-	}
-
-	else if (g_pServerAuthentication->m_RemoteAuthenticationData.count(self->m_Name))
-	{
 		g_pServerAuthentication->RemovePlayer(self);
 		g_pServerLimits->RemovePlayer(self);
 	}
@@ -433,9 +412,9 @@ ON_DLL_LOAD_RELIESON("engine.dll", ServerAuthentication, (ConCommand, ConVar), (
 	g_pServerAuthentication->Cvar_ns_player_auth_port = new ConVar("ns_player_auth_port", "8081", FCVAR_GAMEDLL, "");
 	g_pServerAuthentication->Cvar_ns_erase_auth_info =
 		new ConVar("ns_erase_auth_info", "1", FCVAR_GAMEDLL, "Whether auth info should be erased from this server on disconnect or crash");
-	g_pServerAuthentication->CVar_ns_auth_allow_insecure =
+	g_pServerAuthentication->Cvar_ns_auth_allow_insecure =
 		new ConVar("ns_auth_allow_insecure", "0", FCVAR_GAMEDLL, "Whether this server will allow unauthenicated players to connect");
-	g_pServerAuthentication->CVar_ns_auth_allow_insecure_write = new ConVar(
+	g_pServerAuthentication->Cvar_ns_auth_allow_insecure_write = new ConVar(
 		"ns_auth_allow_insecure_write",
 		"0",
 		FCVAR_GAMEDLL,

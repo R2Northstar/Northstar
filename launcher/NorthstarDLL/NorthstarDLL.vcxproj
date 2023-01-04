@@ -456,6 +456,7 @@
     <ClCompile Include="client\clientauthhooks.cpp" />
     <ClCompile Include="client\clientruihooks.cpp" />
     <ClCompile Include="client\clientvideooverrides.cpp" />
+    <ClCompile Include="client\rejectconnectionfixes.cpp" />
     <ClCompile Include="client\debugoverlay.cpp" />
     <ClCompile Include="client\demofixes.cpp" />
     <ClCompile Include="client\diskvmtfixes.cpp" />
