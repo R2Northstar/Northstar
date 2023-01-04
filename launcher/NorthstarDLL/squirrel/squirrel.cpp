@@ -283,8 +283,7 @@ template <ScriptContext context> void SquirrelManager<context>::AddFuncOverride(
 // hooks
 bool IsUIVM(ScriptContext context, HSquirrelVM* pSqvm)
 {
-	return context != ScriptContext::SERVER && g_pSquirrel<ScriptContext::UI>->m_pSQVM &&
-		   g_pSquirrel<ScriptContext::UI>->m_pSQVM->sqvm == pSqvm;
+	return ScriptContext(pSqvm->sharedState->cSquirrelVM->vmContext) == ScriptContext::UI;
 }
 
 template <ScriptContext context> void* (*__fastcall sq_compiler_create)(HSquirrelVM* sqvm, void* a2, void* a3, SQBool bShouldThrowError);
@@ -376,6 +375,7 @@ void __fastcall ScriptCompileErrorHook(HSquirrelVM* sqvm, const char* error, con
 		// kill dedicated server if we hit this
 		if (IsDedicatedServer())
 		{
+			logger->error("Exiting dedicated server, compile error is fatal");
 			// flush the logger before we exit so debug things get saved to log file
 			logger->flush();
 			exit(EXIT_FAILURE);
