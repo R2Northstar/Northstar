@@ -143,7 +143,7 @@ resource/ui/menus/mods_browse.menu
 			wide 100
 			tall 40
 			ypos -220
-			xpos -422
+			xpos -462
 			zpos 101
 
 			//fgcolor_override "107 166 196 255"
@@ -159,7 +159,7 @@ resource/ui/menus/mods_browse.menu
 			wide 100
 			tall 40
 			ypos -220
-			xpos -422
+			xpos -462
 			zpos 100
 
 			rui "ui/control_options_description.rpak"
