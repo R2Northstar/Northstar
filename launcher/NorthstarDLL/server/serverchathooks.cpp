@@ -34,12 +34,39 @@ void(__fastcall* MessageWriteByte)(int iValue);
 void(__fastcall* MessageWriteString)(const char* sz);
 void(__fastcall* MessageWriteBool)(bool bValue);
 
+static char* skip_valid_ansi_csi_sgr(char* str)
+{
+	if (*str++ != '\x1B')
+		return NULL;
+	if (*str++ != '[') // CSI
+		return NULL;
+	for (char* c = str; *c; c++)
+	{
+		if (*c >= '0' && *c <= '9')
+			continue;
+		if (*c == ';')
+			continue;
+		if (*c == 'm') // SGR
+			break;
+		return NULL;
+	}
+	return str;
+}
+
 bool bShouldCallSayTextHook = false;
 // clang-format off
 AUTOHOOK(_CServerGameDLL__OnReceivedSayTextMessage, server.dll + 0x1595C0,
 void, __fastcall, (CServerGameDLL* self, unsigned int senderPlayerId, const char* text, bool isTeam))
 // clang-format on
 {
+	for (char* c = const_cast<char*>(text); *c; c++)
+	{
+		if (*c == '\x1B' && (c = skip_valid_ansi_csi_sgr(c)))
+			c--;
+		else if (*c <= 9 || (*c >= 12 && *c <= 31))
+			*c = ' ';
+	}
+
 	// MiniHook doesn't allow calling the base function outside of anywhere but the hook function.
 	// To allow bypassing the hook, isSkippingHook can be set.
 	if (bShouldCallSayTextHook)
