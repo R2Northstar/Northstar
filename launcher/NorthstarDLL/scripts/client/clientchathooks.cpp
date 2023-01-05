@@ -8,6 +8,25 @@
 
 AUTOHOOK_INIT()
 
+static char* skip_valid_ansi_csi_sgr(char* str)
+{
+	if (*str++ != '\x1B')
+		return NULL;
+	if (*str++ != '[') // CSI
+		return NULL;
+	for (char* c = str; *c; c++)
+	{
+		if (*c >= '0' && *c <= '9')
+			continue;
+		if (*c == ';')
+			continue;
+		if (*c == 'm') // SGR
+			break;
+		return NULL;
+	}
+	return str;
+}
+
 // clang-format off
 AUTOHOOK(CHudChat__AddGameLine, client.dll + 0x22E580,
 void, __fastcall, (void* self, const char* message, int inboxId, bool isTeam, bool isDead))
@@ -28,6 +47,14 @@ void, __fastcall, (void* self, const char* message, int inboxId, bool isTeam, bo
 	{
 		type = message[0];
 		payload = message + 1;
+	}
+
+	for (char* c = const_cast<char*>(message); *c; c++)
+	{
+		if (*c == '\x1B' && (c = skip_valid_ansi_csi_sgr(c)))
+			c--;
+		else if (*c <= 9 || (*c >= 12 && *c <= 31))
+			*c = ' ';
 	}
 
 	SQRESULT result = g_pSquirrel<ScriptContext::CLIENT>->Call(
