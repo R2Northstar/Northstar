@@ -1,0 +1,292 @@
+global function SH_PowerUp_Init
+global function GetPowerUpFromIndex
+global function GetPowerUpFromItemRef
+
+//Proto Use Functions
+global function PowerUp_Func_GiveEPG
+global function PowerUp_Func_GiveHELL
+global function PowerUp_Func_GiveLSTAR
+global function PowerUp_Func_GiveSHOTGUN
+global function PowerUp_Func_GiveArmorSmall
+global function PowerUp_Func_GiveArmorMedium
+global function PowerUp_Func_GiveArmorLarge
+global function PowerUp_Func_TitanBuildTime
+global function PowerUp_Func_PilotUpgrade
+global function PowerUp_Func_GiveTicks
+
+global struct PowerUp
+{
+	int index
+	string name
+	asset icon
+	asset model
+	asset baseModel
+	string itemRef
+	vector modelOffset
+	vector modelAngles
+	float respawnDelay
+	vector glowColor
+	bool titanPickup
+	int maxInWorld
+	void functionref( entity ) destroyFunc
+	bool functionref() spawnFunc
+}
+
+const bool TITAN_PICKUP = true
+const bool PILOT_PICKUP = false
+
+struct
+{
+	array<PowerUp> powerUps
+}file
+
+const TEST_MODEL = $"models/communication/terminal_com_station.mdl"
+const TEST_ICON = $"vgui/HUD/coop/minimap_coop_nuke_titan"
+
+void function SH_PowerUp_Init()
+{
+	#if SERVER || CLIENT
+	PrecacheWeapon( "mp_weapon_epg" )
+	PrecacheWeapon( "mp_weapon_arena1" )
+	PrecacheWeapon( "mp_weapon_arena2" )
+	PrecacheWeapon( "mp_weapon_arena3" )
+	PrecacheWeapon( "mp_weapon_lstar" )
+	PrecacheWeapon( "mp_weapon_shotgun_doublebarrel" )
+	PrecacheWeapon( "mp_weapon_frag_drone" )
+	#endif
+
+	file.powerUps.resize( ePowerUps.count )
+	CreatePowerUp( ePowerUps.weaponEPG, 			 "mp_weapon_epg",					"EPG", 				60.0, 	0, DefaultShouldSpawnPowerUp, PowerUp_Func_GiveEPG, 			<255,0,0>, PILOT_PICKUP, $"vgui/HUD/op_ammo_mini", $"models/weapons/auto_rocket_launcher_ARL/w_ARL.mdl", 	$"models/communication/flag_base.mdl", < 0, 0, 32 >, < 0, 0, 0 > )
+	CreatePowerUp( ePowerUps.weaponHELL, 			 "mp_weapon_arena3",				"HELL", 			90.0, 	0, DefaultShouldSpawnPowerUp, PowerUp_Func_GiveHELL, 			<255,0,0>, PILOT_PICKUP, $"vgui/HUD/op_ammo_mini", $"models/weapons/defender/w_defender.mdl", 				$"models/communication/flag_base.mdl", < 0, 0, 32 >, < 0, 0, 0 > )
+	CreatePowerUp( ePowerUps.weaponLSTAR, 			 "mp_weapon_lstar",					"LSTAR", 			45.0, 	0, DefaultShouldSpawnPowerUp, PowerUp_Func_GiveLSTAR, 			<255,0,0>, PILOT_PICKUP, $"vgui/HUD/op_ammo_mini", $"models/weapons/lstar/w_lstar.mdl", 					$"models/communication/flag_base.mdl", < 0, 0, 32 >, < 0, 0, 0 > )
+	CreatePowerUp( ePowerUps.weaponSHOTGUN, 		 "mp_weapon_shotgun_doublebarrel",	"Shrapnel Shotgun", 30.0, 	0, DefaultShouldSpawnPowerUp, PowerUp_Func_GiveSHOTGUN, 		<255,0,0>, PILOT_PICKUP, $"vgui/HUD/op_ammo_mini", $"models/weapons/mastiff_stgn/w_mastiff.mdl", 			$"models/communication/flag_base.mdl", < 0, 0, 32 >, < 0, 0, 0 > )
+	CreatePowerUp( ePowerUps.armorSmall, 			 "mp_loot_armor_small", 			"Armor +5", 		30.0, 	0, DefaultShouldSpawnPowerUp, PowerUp_Func_GiveArmorSmall, 	<0,0,255>, PILOT_PICKUP, $"vgui/HUD/op_health_mini", $"models/gameplay/health_pickup_small.mdl",				$"models/containers/plastic_pallet_01.mdl", < 0, 0, 32 >, < 0, 0, 0 > )
+	CreatePowerUp( ePowerUps.armorMedium, 			 "mp_loot_armor_medium", 			"Armor +25", 		60.0, 	0, DefaultShouldSpawnPowerUp, PowerUp_Func_GiveArmorMedium,	<0,0,255>, PILOT_PICKUP, $"vgui/HUD/op_health_mini", $"models/gameplay/health_pickup_small.mdl",				$"models/containers/plastic_pallet_01.mdl", < 0, 0, 32 >, < 0, 0, 0 > )
+	CreatePowerUp( ePowerUps.armorLarge, 			 "mp_loot_armor_large", 			"Armor +50", 		120.0, 	0, DefaultShouldSpawnPowerUp, PowerUp_Func_GiveArmorLarge, 	<0,0,255>, PILOT_PICKUP, $"vgui/HUD/op_health_mini", $"models/gameplay/health_pickup_large.mdl",				$"models/containers/plastic_pallet_01.mdl", < 0, 0, 32 >, < 0, 0, 0 > )
+	CreatePowerUp( ePowerUps.titanTimeReduction,	 "mp_loot_titan_build_credit",		"Titan Build Time",	20.0, 	2, FRAShouldSpawnPowerUp, 	  PowerUp_Func_TitanBuildTime, 	<0,255,0>, PILOT_PICKUP, $"vgui/HUD/op_drone_mini", $"models/titans/medium/titan_medium_battery_static.mdl", $"models/communication/flag_base.mdl", < 0, 0, 32 >, < 0, 0, 0 > )
+	CreatePowerUp( ePowerUps.LTS_TitanTimeReduction, "mp_loot_titan_build_credit_lts",	"Titan Build Time",	60.0, 	0, LTSShouldSpawnPowerUp, 	  PowerUp_Func_TitanBuildTime, 	<0,255,0>, PILOT_PICKUP, $"vgui/HUD/op_drone_mini", $"models/titans/medium/titan_medium_battery_static.mdl", $"models/communication/flag_base.mdl", < 0, 0, 32 >, < 0, 0, 0 > )
+	CreatePowerUp( ePowerUps.pilotUpgrade, 			 "mp_loot_pilot_upgrade", 			"Can of Spinach",	120.0,	0, DefaultShouldSpawnPowerUp, PowerUp_Func_PilotUpgrade, 		<0,255,0>, PILOT_PICKUP, $"vgui/HUD/op_drone_mini", $"models/humans/pilots/pilot_light_ged_m.mdl", 			$"models/communication/flag_base.mdl", 	< 0, 0, 32 >, < 0, 0, 0 > )
+	CreatePowerUp( ePowerUps.ticks, 				 "mp_weapon_frag_drone", 			"Ticks",			60.0,	0, DefaultShouldSpawnPowerUp, PowerUp_Func_GiveTicks, 			<255,0,0>, PILOT_PICKUP, $"vgui/HUD/op_ammo_mini", $"models/robots/drone_frag/frag_drone_proj.mdl", 		$"models/robots/drone_frag/frag_drone_proj.mdl", < 0, 0, 32 >, < 0, 0, 0 > )
+}
+
+bool function FRAShouldSpawnPowerUp()
+{
+	return GAMETYPE == FREE_AGENCY
+}
+
+bool function LTSShouldSpawnPowerUp()
+{
+	if ( HasIronRules() )
+		return false
+
+	return ( GAMETYPE == LAST_TITAN_STANDING || GAMETYPE == LTS_BOMB )
+}
+
+bool function DefaultShouldSpawnPowerUp()
+{
+	return GetCurrentPlaylistVarInt( "power_ups_enabled", 0 ) == 1
+}
+
+void function CreatePowerUp( int enumIndex, string item, string displayName, float respawnTime, int worldLimit, bool functionref() shouldSpawnFunction, void functionref( entity ) destroyFunction, vector color, bool canTitanPickup, asset worldIcon, asset worldModel, asset worldBase, vector worldModelOffset, vector worldModelAngle )
+{
+	PowerUp power
+	power.index = enumIndex
+	power.name = displayName
+	power.icon = worldIcon
+	power.model = worldModel
+	power.baseModel = worldBase
+	power.itemRef = item
+	power.modelOffset = worldModelOffset
+	power.modelAngles = worldModelAngle
+	power.respawnDelay = respawnTime
+	power.destroyFunc = destroyFunction
+	power.spawnFunc = shouldSpawnFunction
+	power.glowColor = color
+	power.titanPickup = canTitanPickup
+	power.maxInWorld = worldLimit
+	file.powerUps[enumIndex] = power
+
+	#if CLIENT
+		PrecacheHUDMaterial( worldIcon )
+	#else
+		PrecacheModel( worldModel )
+		PrecacheModel( worldBase )
+	#if R1_VGUI_MINIMAP
+		Minimap_PrecacheMaterial( worldIcon )
+	#endif
+	#endif
+}
+
+PowerUp function GetPowerUpFromIndex( int index )
+{
+	return file.powerUps[index]
+}
+
+PowerUp function GetPowerUpFromItemRef( string ref )
+{
+	foreach( power in file.powerUps )
+	{
+		if ( power.itemRef == ref )
+			return power
+	}
+
+	Assert( false, "Power Up not found")
+	unreachable
+}
+
+//////////////////////////////////////////////
+// PROTO USE FUNCTIONS - Maybe should be a bunch of new item_ classes with their own healthkit callbacks?
+//////////////////////////////////////////////
+void function PowerUp_Func_GiveEPG( entity player )
+{
+	#if SERVER
+		if ( player.IsTitan() )
+			return
+		GiveWeaponPowerUp( player, "mp_weapon_arena2" )
+	#endif
+}
+
+void function PowerUp_Func_GiveHELL( entity player )
+{
+	#if SERVER
+		if ( player.IsTitan() )
+			return
+		GiveWeaponPowerUp( player, "mp_weapon_arena3" )
+	#endif
+}
+
+void function PowerUp_Func_GiveLSTAR( entity player )
+{
+	#if SERVER
+		if ( player.IsTitan() )
+			return
+		GiveWeaponPowerUp( player, "mp_weapon_arena1" )
+	#endif
+}
+
+void function PowerUp_Func_GiveSHOTGUN( entity player )
+{
+	#if SERVER
+		if ( player.IsTitan() )
+			return
+		GiveWeaponPowerUp( player, "mp_weapon_shotgun_doublebarrel" )
+	#endif
+}
+
+void function PowerUp_Func_GiveTicks( entity player )
+{
+	#if SERVER
+		if ( player.IsTitan() )
+			return
+		player.TakeOffhandWeapon( OFFHAND_ORDNANCE )
+		player.GiveOffhandWeapon( "mp_weapon_frag_drone", OFFHAND_ORDNANCE )
+		thread RestoreDefaultOffhandWeapon( player )
+	#endif
+}
+
+#if SERVER
+void function RestoreDefaultOffhandWeapon( entity player )
+{
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+
+	while( true )
+	{
+		player.WaitSignal( "ThrowGrenade" )
+
+		if ( player.IsTitan() )
+			continue
+
+		entity weapon = player.GetOffhandWeapon( OFFHAND_ORDNANCE )
+		if ( weapon.GetWeaponPrimaryClipCount() == 0 )
+		{
+			player.TakeOffhandWeapon( OFFHAND_ORDNANCE )
+			int loadoutIndex = GetActivePilotLoadoutIndex( player )
+			PilotLoadoutDef loadout = GetPilotLoadoutFromPersistentData( player, loadoutIndex )
+			player.GiveOffhandWeapon( loadout.ordnance, OFFHAND_ORDNANCE )
+			return
+		}
+	}
+}
+
+void function GiveWeaponPowerUp( entity player, string newWeapon )
+{
+	array<entity> weapons = player.GetMainWeapons()
+	string weaponToSwitch = player.GetLatestPrimaryWeapon().GetWeaponClassName()
+
+	if ( player.GetActiveWeapon() != player.GetAntiTitanWeapon() )
+	{
+		foreach ( weapon in weapons )
+		{
+			string weaponClassName = weapon.GetWeaponClassName()
+			if ( weaponClassName == newWeapon )
+			{
+				weaponToSwitch = weaponClassName
+				break
+			}
+		}
+	}
+
+	player.TakeWeaponNow( weaponToSwitch )
+	player.GiveWeapon( newWeapon )
+	player.SetActiveWeaponByName( newWeapon )
+}
+#endif
+
+void function PowerUp_Func_GiveArmorSmall( entity player )
+{
+	GiveArmor( player, 5 )
+}
+
+void function PowerUp_Func_GiveArmorMedium( entity player )
+{
+	GiveArmor( player, 25 )
+}
+
+void function PowerUp_Func_GiveArmorLarge( entity player )
+{
+	GiveArmor( player, 50 )
+}
+
+void function GiveArmor( entity player, int amount )
+{
+	#if SERVER
+		if ( player.IsTitan() )
+			return
+		int currentShieldHealth = player.GetShieldHealth()
+		int currentMaxShieldHealth = player.GetShieldHealthMax()
+		player.SetShieldHealth( min( 200, amount + currentShieldHealth ) )
+		player.SetShieldHealthMax( min( 200, amount + currentMaxShieldHealth ) )
+	#endif
+}
+
+void function PowerUp_Func_TitanBuildTime( entity player )
+{
+	#if SERVER
+	entity battery = Rodeo_CreateBatteryPack()
+	battery.SetOrigin( player.GetOrigin() )
+	#endif
+}
+
+
+
+void function PowerUp_Func_PilotUpgrade( entity player )
+{
+	#if SERVER
+		if ( player.IsTitan() )
+			return
+
+		int loadoutIndex = GetPersistentSpawnLoadoutIndex( player, "pilot" )
+
+		PilotLoadoutDef loadout = GetPilotLoadoutFromPersistentData( player, loadoutIndex )
+
+		loadout.primary = "mp_weapon_arena2"
+		loadout.secondary = "mp_weapon_mgl"
+		loadout.ordnance = "mp_weapon_grenade_emp"
+
+		UpdateDerivedPilotLoadoutData( loadout )
+
+		GivePilotLoadout( player, loadout )
+		SetActivePilotLoadoutIndex( player, loadoutIndex )
+	#endif
+}
