@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "squirrel/squirrel.h"
+#include "util/utils.h"
 
 #include "server/serverchathooks.h"
 #include "client/localchatwriter.h"
@@ -7,25 +8,6 @@
 #include <rapidjson/document.h>
 
 AUTOHOOK_INIT()
-
-static char* skip_valid_ansi_csi_sgr(char* str)
-{
-	if (*str++ != '\x1B')
-		return NULL;
-	if (*str++ != '[') // CSI
-		return NULL;
-	for (char* c = str; *c; c++)
-	{
-		if (*c >= '0' && *c <= '9')
-			continue;
-		if (*c == ';')
-			continue;
-		if (*c == 'm') // SGR
-			break;
-		return NULL;
-	}
-	return str;
-}
 
 // clang-format off
 AUTOHOOK(CHudChat__AddGameLine, client.dll + 0x22E580,
@@ -49,13 +31,7 @@ void, __fastcall, (void* self, const char* message, int inboxId, bool isTeam, bo
 		payload = message + 1;
 	}
 
-	for (char* c = const_cast<char*>(message); *c; c++)
-	{
-		if (*c == '\x1B' && (c = skip_valid_ansi_csi_sgr(c)))
-			c--;
-		else if (*c <= 9 || (*c >= 12 && *c <= 31))
-			*c = ' ';
-	}
+	NS::Utils::RemoveAsciiControlSequences(const_cast<char*>(message), true);
 
 	SQRESULT result = g_pSquirrel<ScriptContext::CLIENT>->Call(
 		"CHudChat_ProcessMessageStartThread", static_cast<int>(senderId) - 1, payload, isTeam, isDead, type);
