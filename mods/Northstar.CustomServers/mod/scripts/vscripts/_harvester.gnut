@@ -9,6 +9,9 @@ global struct HarvesterStruct {
 	entity rings
 	float lastDamage
 	bool shieldBoost
+	bool harvesterShieldDown
+	float harvesterDamageTaken
+	bool havesterWasDamaged
 	
 }
 

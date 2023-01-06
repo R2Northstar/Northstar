@@ -41,6 +41,9 @@ global function Battery_StopFXAndHideIconForPlayer
 global function RemovePlayerAirControl //This function should really be in a server only SP & MP utility script file. No such file exists as of right now.
 global function RestorePlayerAirControl //This function should really be in a server only SP & MP utility script file. No such file exists as of right now.
 
+// fort war needs these
+global function Rodeo_TakeBatteryAwayFromPilot
+
 #if DEV
 global function SetDebugRodeoPrint
 global function GetDebugRodeoPrint

@@ -4,6 +4,7 @@ global function HullTraceDropPoint
 global function DebugTitanfall
 global function TitanFindDropNodes
 global function TitanHulldropSpawnpoint
+global function SetRecalculateTitanReplacementPointCallback
 
 global const TITANDROP_LOS_DIST = 2000 // 2D distance at which we do the line of sight check to see where the player wants to call in the titan
 global const TITANDROP_MIN_FOV = 10
@@ -19,7 +20,14 @@ global const TITANDROP_FALLBACK_DIST = 150 // if the ground search hits, we go t
 struct
 {
 	int replacementSpawnpointsID
+	Point functionref(Point originalPoint, entity player) recalculateTitanReplacementPointCallback
 } file
+
+
+void function SetRecalculateTitanReplacementPointCallback(Point functionref(Point originalPoint, entity player) recalculateTitanReplacementPointCallback)
+{
+	file.recalculateTitanReplacementPointCallback = recalculateTitanReplacementPointCallback
+}
 
 void function ReplacementTitansDrop_Init()
 {
@@ -117,7 +125,10 @@ Point function GetTitanReplacementPoint( entity player, bool forDebugging = fals
 	vector playerEyeAngles = player.EyeAngles()
 	vector playerOrg = player.GetOrigin()
 
-	return CalculateTitanReplacementPoint( playerOrg, playerEyePos, playerEyeAngles, forDebugging )
+	Point tempPoint = CalculateTitanReplacementPoint( playerOrg, playerEyePos, playerEyeAngles, forDebugging)
+	if( file.recalculateTitanReplacementPointCallback != null )
+		tempPoint = file.recalculateTitanReplacementPointCallback( tempPoint, player )
+	return tempPoint
 }
 
 Point function CalculateTitanReplacementPoint( vector playerOrg, vector playerEyePos, vector playerEyeAngles, bool forDebugging = false )
@@ -165,6 +176,7 @@ Point function CalculateTitanReplacementPoint( vector playerOrg, vector playerEy
 					Point point
 					point.origin = dropPoint
 					point.angles = yawAngles
+
 					return point
 				}
 			}
@@ -215,7 +227,8 @@ Point function CalculateTitanReplacementPoint( vector playerOrg, vector playerEy
 	Point point
 	point.origin = nodeOrigin
 	point.angles = Vector( 0, yaw, 0 )
- 	return point
+
+	return point
 }
 
 vector function GetPathNodeSearchPosWithLookPos( vector playerOrg, vector playerEyePos, vector playerEyeForward, vector playerLookPos, bool debug )
