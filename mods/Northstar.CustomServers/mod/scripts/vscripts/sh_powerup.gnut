@@ -79,7 +79,9 @@ bool function LTSShouldSpawnPowerUp()
 	if ( HasIronRules() )
 		return false
 
-	return ( GAMETYPE == LAST_TITAN_STANDING || GAMETYPE == LTS_BOMB )
+	// modified for fw
+	//return ( GAMETYPE == LAST_TITAN_STANDING || GAMETYPE == LTS_BOMB )
+	return ( GAMETYPE == LAST_TITAN_STANDING || GAMETYPE == LTS_BOMB || GAMETYPE == FORT_WAR )
 }
 
 bool function DefaultShouldSpawnPowerUp()

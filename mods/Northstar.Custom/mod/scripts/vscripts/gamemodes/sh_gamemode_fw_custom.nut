@@ -5,8 +5,35 @@
 
 global function SHCreateGamemodeFW_Init
 
+// object settings, changable through playlist vars
+// default havester settings
+global const int FW_DEFAULT_HARVESTER_HEALTH = 25000
+global const int FW_DEFAULT_HARVESTER_SHIELD = 5000
+// default turret settings
+global const int FW_DEFAULT_TURRET_HEALTH = 12500
+global const int FW_DEFAULT_TURRET_SHIELD = 4000
+
+// fix a turret
+global const float TURRET_FIXED_HEALTH_PERCENTAGE = 0.33
+global const float TURRET_FIXED_SHIELD_PERCENTAGE = 1.0 // default is regen all shield
+// hack a turret
+global const float TURRET_HACKED_HEALTH_PERCENTAGE = 0.5
+global const float TURRET_HACKED_SHIELD_PERCENTAGE = 0.5
+
 void function SHCreateGamemodeFW_Init()
 {
+	// harvester playlistvar
+	AddPrivateMatchModeSettingArbitrary( "#PL_fw", "fw_harvester_health", FW_DEFAULT_HARVESTER_HEALTH.tostring() )
+	AddPrivateMatchModeSettingArbitrary( "#PL_fw", "fw_harvester_shield", FW_DEFAULT_HARVESTER_SHIELD.tostring() )
+	// turret playlistvar
+	AddPrivateMatchModeSettingArbitrary( "#PL_fw", "fw_turret_health", FW_DEFAULT_TURRET_HEALTH.tostring() )
+	AddPrivateMatchModeSettingArbitrary( "#PL_fw", "fw_turret_shield", FW_DEFAULT_TURRET_SHIELD.tostring() )
+	// battery port playlistvar
+	AddPrivateMatchModeSettingArbitrary( "#PL_fw", "fw_turret_fixed_health", TURRET_FIXED_HEALTH_PERCENTAGE.tostring() )
+	AddPrivateMatchModeSettingArbitrary( "#PL_fw", "fw_turret_fixed_shield", TURRET_FIXED_SHIELD_PERCENTAGE.tostring() )
+	AddPrivateMatchModeSettingArbitrary( "#PL_fw", "fw_turret_hacked_health", TURRET_HACKED_HEALTH_PERCENTAGE.tostring() )
+	AddPrivateMatchModeSettingArbitrary( "#PL_fw", "fw_turret_hacked_shield", TURRET_HACKED_SHIELD_PERCENTAGE.tostring() )
+
 	AddCallback_OnCustomGamemodesInit( CreateGamemodeFW )
 	AddCallback_OnRegisteringCustomNetworkVars( FWOnRegisteringNetworkVars )
 }
@@ -19,16 +46,27 @@ void function CreateGamemodeFW()
 	GameMode_Create( FORT_WAR )
 	GameMode_SetName( FORT_WAR, "#GAMEMODE_fw" )
 	GameMode_SetDesc( FORT_WAR, "#PL_fw_desc" )
-	GameMode_SetGameModeAnnouncement( FORT_WAR, "ffa_modeDesc" ) // fw lines are unfortunately not registered to faction dialogue
+
+	// fw lines are unfortunately not registered to faction dialogue, maybe do it in gamemode script manually, current using it's modeName
+	GameMode_SetGameModeAnnouncement( FORT_WAR, "fortwar_modeName" ) 
 	
-		#if SERVER
-			//GameMode_AddServerInit( FORT_WAR, GamemodeFW_Init ) // doesn't exist yet lol
-		#elseif CLIENT
-			GameMode_AddClientInit( FORT_WAR, CLGamemodeFW_Init )
-		#endif
-		#if !UI
-			GameMode_AddSharedInit( FORT_WAR, SHGamemodeFW_Init )
-		#endif
+	// waiting to be synced with client
+	GameMode_AddScoreboardColumnData( FORT_WAR, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
+	GameMode_AddScoreboardColumnData( FORT_WAR, "#SCOREBOARD_SUPPORT_SCORE", PGS_DEFENSE_SCORE, 4 )
+	GameMode_AddScoreboardColumnData( FORT_WAR, "#SCOREBOARD_COOP_POINTS", PGS_ASSAULT_SCORE, 6 )
+
+	AddPrivateMatchMode( FORT_WAR )
+
+	#if SERVER
+		GameMode_AddServerInit( FORT_WAR, GamemodeFW_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( FORT_WAR, RateSpawnpoints_FW )
+		GameMode_SetTitanSpawnpointsRatingFunc( FORT_WAR, RateSpawnpoints_FW )
+	#elseif CLIENT
+		GameMode_AddClientInit( FORT_WAR, CLGamemodeFW_Init )
+	#endif
+	#if !UI
+		GameMode_AddSharedInit( FORT_WAR, SHGamemodeFW_Init )
+	#endif
 }
 
 void function FWOnRegisteringNetworkVars()

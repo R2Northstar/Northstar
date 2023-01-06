@@ -419,6 +419,10 @@
 			}
 		},
 		{
+			"Path": "gamemodes/_gamemode_fw.nut",
+			"RunOn": "SERVER && MP"
+		},
+		{
 			"Path":  "sh_northstar_http_requests.gnut",
 			"RunOn": "CLIENT || SERVER || UI"
 		}

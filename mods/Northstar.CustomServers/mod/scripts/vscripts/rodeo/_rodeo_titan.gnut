@@ -41,6 +41,9 @@ global function Battery_StopFXAndHideIconForPlayer
 global function RemovePlayerAirControl //This function should really be in a server only SP & MP utility script file. No such file exists as of right now.
 global function RestorePlayerAirControl //This function should really be in a server only SP & MP utility script file. No such file exists as of right now.
 
+// needs these
+global function Rodeo_TakeBatteryAwayFromPilot
+
 #if DEV
 global function SetDebugRodeoPrint
 global function GetDebugRodeoPrint
@@ -336,7 +339,7 @@ void function RodeoBatteryRemoval( entity pilot )
 
 	if ( !playerHadBattery )
 	{
-		AddPlayerScore( pilot, "PilotBatteryStolen" )
+		AddPlayerScore( pilot, "PilotBatteryStolen", pilot )
 		entity battery = Rodeo_CreateBatteryPack( titan )
 		Rodeo_PilotPicksUpBattery( pilot, battery )
 		thread BatteryThiefHighlight( pilot )
@@ -1853,7 +1856,7 @@ void function Rodeo_OnTouchBatteryPack_Internal( entity player, entity batteryPa
 			Battery_StopFX( batteryPack ) //Will be turned on again when player loses cloak
 
 		Rodeo_PilotPicksUpBattery( player, batteryPack )
-		AddPlayerScore( player, "PilotBatteryPickup" )
+		AddPlayerScore( player, "PilotBatteryPickup", player )
 //		MessageToPlayer( player, eEventNotifications.Rodeo_PilotPickedUpBattery )
 		return
 	}
@@ -1878,7 +1881,7 @@ void function Rodeo_PilotAddsBatteryToFriendlyTitan( entity rider, entity titan 
 
 	Rodeo_ApplyBatteryToTitan( battery, titan ) //This destroys the battery
 
-	AddPlayerScore( rider, "PilotBatteryApplied" )
+	AddPlayerScore( rider, "PilotBatteryApplied", rider )
 
 	EmitSoundOnEntityOnlyToPlayer( rider, rider, PILOT_APPLIES_BATTERY_TO_TITAN_HEALTH_RESTORED_SOUND )
 
