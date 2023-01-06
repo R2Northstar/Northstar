@@ -1710,6 +1710,7 @@ void function FW_createHarvester()
 	fw_harvesterMlt.harvester.Minimap_SetZOrder( MINIMAP_Z_OBJECT )
 	fw_harvesterMlt.harvester.Minimap_SetCustomState( eMinimapObject_prop_script.FD_HARVESTER )
 	AddEntityCallback_OnDamaged( fw_harvesterMlt.harvester, OnHarvesterDamaged )
+	AddEntityCallback_OnPostDamaged( fw_harvesterMlt.harvester, OnHarvesterPostDamaged )
 
 	// mlt havester settings
 	// don't set this, or sonar pulse will try to find it and failed to set highlight
