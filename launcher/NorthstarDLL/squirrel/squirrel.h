@@ -181,7 +181,7 @@ class SquirrelManagerBase
 
 	inline void pushvector(HSquirrelVM* sqvm, const Vector3 pVal)
 	{
-		__sq_pushvector(sqvm, *(float**)&pVal);
+		__sq_pushvector(sqvm, (float*)&pVal);
 	}
 
 	inline void pushobject(HSquirrelVM* sqvm, SQObject* obj)
