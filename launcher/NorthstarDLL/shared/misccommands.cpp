@@ -45,6 +45,72 @@ void ConCommand_ns_end_reauth_and_leave_to_lobby(const CCommand& arg)
 	}
 }
 
+void ConCommand_cvar_setdefaultvalue(const CCommand& arg)
+{
+	if (arg.ArgC() < 3)
+	{
+		spdlog::info("usage: cvar_setdefaultvalue mp_gamemode tdm");
+		return;
+	}
+
+	ConVar* pCvar = R2::g_pCVar->FindVar(arg.Arg(1));
+	if (!pCvar)
+	{
+		spdlog::info("usage: cvar_setdefaultvalue mp_gamemode tdm");
+		return;
+	}
+
+	// unfortunately no way for us to not leak memory here, as default value might not be in writeable memory by default
+	int nLen = strlen(arg.Arg(2));
+	char* pBuf = new char[nLen + 1];
+	strncpy_s(pBuf, nLen + 1, arg.Arg(2), nLen);
+
+	pCvar->m_pszDefaultValue = pBuf;
+}
+
+void ConCommand_cvar_setvalueanddefaultvalue(const CCommand& arg)
+{
+	if (arg.ArgC() < 3)
+	{
+		spdlog::info("usage: cvar_setvalueanddefaultvalue mp_gamemode tdm");
+		return;
+	}
+
+	ConVar* pCvar = R2::g_pCVar->FindVar(arg.Arg(1));
+	if (!pCvar)
+	{
+		spdlog::info("usage: cvar_setvalueanddefaultvalue mp_gamemode tdm");
+		return;
+	}
+
+	// unfortunately no way for us to not leak memory here, as default value might not be in writeable memory by default
+	int nLen = strlen(arg.Arg(2));
+	char* pBuf = new char[nLen + 1];
+	strncpy_s(pBuf, nLen + 1, arg.Arg(2), nLen);
+
+	pCvar->m_pszDefaultValue = pBuf;
+	pCvar->SetValue(pCvar->m_pszDefaultValue);
+}
+
+void ConCommand_cvar_reset(const CCommand& arg)
+{
+	if (arg.ArgC() < 2)
+	{
+		spdlog::info("usage: cvar_reset mp_gamemode");
+		return;
+	}
+
+	ConVar* pCvar = R2::g_pCVar->FindVar(arg.Arg(1));
+	if (!pCvar)
+	{
+		spdlog::info("usage: cvar_reset mp_gamemode");
+		return;
+	}
+
+	// reset cvar
+	pCvar->SetValue(pCvar->m_pszDefaultValue);
+}
+
 void AddMiscConCommands()
 {
 	RegisterConCommand(
@@ -61,6 +127,18 @@ void AddMiscConCommands()
 
 	// this is a concommand because we make a deferred call to it from another thread
 	RegisterConCommand("ns_end_reauth_and_leave_to_lobby", ConCommand_ns_end_reauth_and_leave_to_lobby, "", FCVAR_NONE);
+
+	RegisterConCommand(
+		"cvar_setdefaultvalue",
+		ConCommand_cvar_setdefaultvalue,
+		"overwrites the default value of a cvar, for use with script and cvar_reset",
+		FCVAR_NONE);
+	RegisterConCommand(
+		"cvar_setvalueanddefaultvalue",
+		ConCommand_cvar_setvalueanddefaultvalue,
+		"overwrites the current value and default value of a cvar, for use with script and cvar_reset",
+		FCVAR_NONE);
+	RegisterConCommand("cvar_reset", ConCommand_cvar_reset, "resets a cvar's value to its default value", FCVAR_NONE);
 }
 
 // fixes up various cvar flags to have more sane values

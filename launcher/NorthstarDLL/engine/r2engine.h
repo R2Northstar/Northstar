@@ -59,6 +59,8 @@ namespace R2
 	typedef void (*Cbuf_ExecuteType)();
 	extern Cbuf_ExecuteType Cbuf_Execute;
 
+	extern bool (*CCommand__Tokenize)(CCommand& self, const char* pCommandString, R2::cmd_source_t commandSource);
+
 	// CEngine
 
 	enum EngineQuitState
