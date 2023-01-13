@@ -9,6 +9,8 @@ global function SHCreateGamemodeFW_Init
 // default havester settings
 global const int FW_DEFAULT_HARVESTER_HEALTH = 25000
 global const int FW_DEFAULT_HARVESTER_SHIELD = 5000
+global const float FW_DEFAULT_HARVESTER_REGEN_DELAY = 12.0
+global const float FW_DEFAULT_HARVESTER_REGEN_TIME = 10.0
 // default turret settings
 global const int FW_DEFAULT_TURRET_HEALTH = 12500
 global const int FW_DEFAULT_TURRET_SHIELD = 4000
@@ -25,6 +27,8 @@ void function SHCreateGamemodeFW_Init()
 	// harvester playlistvar
 	AddPrivateMatchModeSettingArbitrary( "#PL_fw", "fw_harvester_health", FW_DEFAULT_HARVESTER_HEALTH.tostring() )
 	AddPrivateMatchModeSettingArbitrary( "#PL_fw", "fw_harvester_shield", FW_DEFAULT_HARVESTER_SHIELD.tostring() )
+	AddPrivateMatchModeSettingArbitrary( "#PL_fw", "fw_harvester_regen_delay", FW_DEFAULT_HARVESTER_REGEN_DELAY.tostring() )
+	AddPrivateMatchModeSettingArbitrary( "#PL_fw", "fw_harvester_regen_time", FW_DEFAULT_HARVESTER_REGEN_TIME.tostring() )
 	// turret playlistvar
 	AddPrivateMatchModeSettingArbitrary( "#PL_fw", "fw_turret_health", FW_DEFAULT_TURRET_HEALTH.tostring() )
 	AddPrivateMatchModeSettingArbitrary( "#PL_fw", "fw_turret_shield", FW_DEFAULT_TURRET_SHIELD.tostring() )
@@ -59,8 +63,8 @@ void function CreateGamemodeFW()
 
 	#if SERVER
 		GameMode_AddServerInit( FORT_WAR, GamemodeFW_Init )
-		GameMode_SetPilotSpawnpointsRatingFunc( FORT_WAR, RateSpawnpoints_FW )
-		GameMode_SetTitanSpawnpointsRatingFunc( FORT_WAR, RateSpawnpoints_FW )
+		GameMode_SetPilotSpawnpointsRatingFunc( FORT_WAR, RateSpawnpointsPilot_FW )
+		GameMode_SetTitanSpawnpointsRatingFunc( FORT_WAR, RateSpawnpointsTitan_FW )
 	#elseif CLIENT
 		GameMode_AddClientInit( FORT_WAR, CLGamemodeFW_Init )
 	#endif
@@ -73,6 +77,8 @@ void function FWOnRegisteringNetworkVars()
 {
 	if ( GAMETYPE != FORT_WAR )
 		return
+	
+	Remote_RegisterFunction( "ServerCallback_FW_NotifyNeedsEnterEnemyArea" )
 	
 	RegisterNetworkedVariable( "turretSite1", SNDC_GLOBAL, SNVT_ENTITY )
 	RegisterNetworkedVariable( "turretSite2", SNDC_GLOBAL, SNVT_ENTITY )

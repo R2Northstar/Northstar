@@ -1,6 +1,10 @@
 untyped
 global function GamemodeFW_Init
-global function RateSpawnpoints_FW
+
+// spawn points
+global function RateSpawnpointsPilot_FW
+global function RateSpawnpointsTitan_FW
+//global function RateSpawnpoints_FW
 
 // for battery_port.gnut to work
 global function FW_ReplaceMegaTurret
@@ -96,7 +100,8 @@ struct
     
 	// this is for saving territory's connecting time, try not to make faction dialogues play together
 	table< int, float > teamTerrLastConnectTime // team, time
-
+	
+	// unused
 	array<entity> etitaninmlt
 	array<entity> etitaninimc
 
@@ -120,17 +125,18 @@ void function GamemodeFW_Init()
 	AddCallback_GameStateEnter( eGameState.Playing, OnFWGamePlaying )
 
 	AddSpawnCallback( "item_powerup", FWAddPowerUpIcon )
-	// check spawn point, WIP
-	AddSpawnCallback( "npc_titan", FWForcedTitanSpawnPoint )
+	AddSpawnCallback( "npc_turret_mega", FWTurretHighlight )
 
 	AddCallback_OnClientConnected( OnFWPlayerConnected )
+	AddCallback_PlayerClassChanged( OnFWPlayerClassChanged )
 	AddCallback_OnPlayerKilled( OnFWPlayerKilled )
 	AddCallback_OnPilotBecomesTitan( OnFWPilotBecomesTitan )
 	AddCallback_OnTitanBecomesPilot( OnFWTitanBecomesPilot )
 
 	ScoreEvent_SetupEarnMeterValuesForMixedModes()
-	SetRecalculateTitanReplacementPointCallback(FW_ReCalculateTitanReplacementPoint)
-	SetRequestTitanAllowedCallback(FW_RequestTitanAllowed)
+	SetRecalculateRespawnAsTitanStartPointCallback( FW_ForcedTitanStartPoint )
+	SetRecalculateTitanReplacementPointCallback( FW_ReCalculateTitanReplacementPoint )
+	SetRequestTitanAllowedCallback( FW_RequestTitanAllowed )
 }
 
 
@@ -222,16 +228,25 @@ void function HACK_ForceDestroyNPCs_Threaded()
 ///// SPAWNPOINT FUNCTIONS /////
 ////////////////////////////////
 
-void function RateSpawnpoints_FW( int checkClass, array<entity> spawnpoints, int team, entity player )
+void function RateSpawnpointsPilot_FW( int checkClass, array<entity> spawnpoints, int team, entity player )
+{
+	array<entity> startSpawns = SpawnPoints_GetPilotStart( team )
+	RateSpawnpoints_FW( startSpawns, checkClass, spawnpoints, team, player )
+}
+
+void function RateSpawnpointsTitan_FW( int checkClass, array<entity> spawnpoints, int team, entity player )
+{
+	array<entity> startSpawns = SpawnPoints_GetTitanStart( team )
+	RateSpawnpoints_FW( startSpawns, checkClass, spawnpoints, team, player )
+}
+
+void function RateSpawnpoints_FW( array<entity> startSpawns, int checkClass, array<entity> spawnpoints, int team, entity player )
 {
 	if ( HasSwitchedSides() )
 		team = GetOtherTeam( team )
 
-	// check hardpoints, determine which ones we own
-	array<entity> startSpawns = SpawnPoints_GetPilotStart( team )
-	vector averageFriendlySpawns
-
 	// average out startspawn positions
+	vector averageFriendlySpawns
 	foreach ( entity spawnpoint in startSpawns )
 		averageFriendlySpawns += spawnpoint.GetOrigin()
 
@@ -293,6 +308,12 @@ void function OnFWGamePlaying()
 void function OnFWPlayerConnected( entity player )
 {
 	InitFWPlayers( player )
+}
+
+void function OnFWPlayerClassChanged( entity player )
+{
+    // give player a friendly highlight
+    Highlight_SetFriendlyHighlight( player, "fw_friendly" )
 }
 
 void function OnFWPlayerKilled( entity victim, entity attacker, var damageInfo )
@@ -562,6 +583,7 @@ void function LoadEntities()
 					entity turret = CreateNPC( "npc_turret_mega", TEAM_UNASSIGNED, info_target.GetOrigin(), info_target.GetAngles() )
 					SetSpawnOption_AISettings( turret, "npc_turret_mega_fortwar" )
 					SetDefaultMPEnemyHighlight( turret ) // for sonar highlights to work
+					Highlight_SetFriendlyHighlight( turret, "fw_friendly" )
 					AddEntityCallback_OnDamaged( turret, OnMegaTurretDamaged )
 					DispatchSpawn( turret )
 
@@ -1144,16 +1166,19 @@ bool function FW_IsPlayerInEnemyTerritory( entity player )
 ////////////////////////////////
 
 // territory trigger don't have a kv.radius, let's use a const
-// 1800 will pretty much get harvester's near titan startpoints
-const float FW_SPAWNPOINT_SEARCH_RADIUS = 1800.0
+// 2800 will pretty much get harvester's near titan startpoints
+const float FW_SPAWNPOINT_SEARCH_RADIUS = 2800.0
 
 
-Point function FW_ReCalculateTitanReplacementPoint( Point basePoint, entity player)
+Point function FW_ReCalculateTitanReplacementPoint( Point basePoint, entity player )
 {
 	int team = player.GetTeam()
 	// find team's harvester
 	entity teamHarvester = FW_GetTeamHarvesterProp( team )
 
+	if ( !IsValid( teamHarvester ) ) // team's havester has been destroyed!
+        return basePoint // return given value
+		
 	if( Distance2D( basePoint.origin, teamHarvester.GetOrigin() ) <= FW_SPAWNPOINT_SEARCH_RADIUS ) // close enough!
 		return basePoint // this origin is good enough
 
@@ -1171,10 +1196,23 @@ bool function FW_RequestTitanAllowed( entity player, array< string > args )
 		PlayFactionDialogueToPlayer( "tw_territoryNag", player ) // notify player
 		TryPlayTitanfallNegativeSoundToPlayer( player )
 		int objectiveID = 101 // which means "#FW_OBJECTIVE_TITANFALL"
-		//CreateCustomMessageForRefusingTitanfall( player )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_FW_SetObjective", objectiveID ) 
 		return false
 	}
+	return true
+}
+
+bool function TryPlayTitanfallNegativeSoundToPlayer( entity player )
+{
+	if( !( "lastNegativeSound" in player.s ) )
+		player.s.lastNegativeSound <- 0.0 // float
+	if( player.s.lastNegativeSound + 1.0 > Time() ) // in sound cooldown
+		return false
+
+	// use a sound to notify player they can't titanfall here
+	EmitSoundOnEntityOnlyToPlayer( player, player, "titan_dryfire" )
+	player.s.lastNegativeSound = Time()
+	
 	return true
 }
 
@@ -1200,10 +1238,13 @@ array<entity> function FW_GetTitanSpawnPointsForTeam( int team )
 	return validSpawnPoints
 }
 
-// WORKING IN PROGRESS
-void function FWForcedTitanSpawnPoint( entity titan )
+// "Respawn as Titan" don't follow the rateSpawnPoints, fix it manually
+entity function FW_ForcedTitanStartPoint( entity player, entity basePoint )
 {
-
+	int team = player.GetTeam()
+	array<entity> startPoints = SpawnPoints_GetTitanStart( team )
+	entity validPoint = startPoints[ RandomInt( startPoints.len() ) ] // choose a random( maybe not safe ) start point
+	return validPoint
 }
 
 ////////////////////////////////////
@@ -1342,6 +1383,21 @@ void function FWAreaThreatLevelThink_Threaded()
 ////////////////////////////
 ///// TURRET FUNCTIONS /////
 ////////////////////////////
+
+void function FWTurretHighlight( entity turret )
+{
+    thread FWTurretHighlightThink( turret )
+}
+
+// this will clear turret's highlight upon their death, for notifying players to fix them
+void function FWTurretHighlightThink( entity turret )
+{
+    turret.EndSignal( "OnDestroy" )
+    Highlight_SetFriendlyHighlight( turret, "fw_friendly" )
+
+    turret.WaitSignal( "OnDeath" )
+    Highlight_ClearFriendlyHighlight( turret )
+}
 
 // for battery_port, replace the turret with new one
 entity function FW_ReplaceMegaTurret( entity perviousTurret )
@@ -1673,7 +1729,7 @@ entity function FW_GetTeamHarvesterProp( int team )
 
 void function FW_createHarvester()
 {
-	// mlt havester spawn
+	// imc havester spawn
 	fw_harvesterImc = SpawnHarvester( file.harvesterImc_info.GetOrigin(), file.harvesterImc_info.GetAngles(), GetCurrentPlaylistVarInt( "fw_harvester_health", FW_DEFAULT_HARVESTER_HEALTH ), GetCurrentPlaylistVarInt( "fw_harvester_shield", FW_DEFAULT_HARVESTER_SHIELD ), TEAM_IMC )
 	fw_harvesterImc.harvester.Minimap_SetAlignUpright( true )
 	fw_harvesterImc.harvester.Minimap_AlwaysShow( TEAM_IMC, null )
@@ -1683,6 +1739,7 @@ void function FW_createHarvester()
 	fw_harvesterImc.harvester.Minimap_SetCustomState( eMinimapObject_prop_script.FD_HARVESTER )
 	AddEntityCallback_OnDamaged( fw_harvesterImc.harvester, OnHarvesterDamaged )
 	AddEntityCallback_OnPostDamaged( fw_harvesterImc.harvester, OnHarvesterPostDamaged )
+	
 	// imc havester settings
 	// don't set this, or sonar pulse will try to find it and failed to set highlight
 	//fw_harvesterMlt.harvester.SetScriptName("fw_team_tower")
@@ -1721,6 +1778,8 @@ void function FW_createHarvester()
 	GameRules_SetTeamScore( TEAM_IMC , 100 )
 	GameRules_SetTeamScore2( TEAM_IMC , 100 )
 }
+
+// this function can't handle specific damageSourceID, such as plasma railgun, but is the best to scale both shield and health damage
 void function OnHarvesterDamaged( entity harvester, var damageInfo )
 {
 	if ( !IsValid( harvester ) )
@@ -1728,7 +1787,8 @@ void function OnHarvesterDamaged( entity harvester, var damageInfo )
 
 	int friendlyTeam = harvester.GetTeam()
 	int enemyTeam = GetOtherTeam( friendlyTeam )
-	
+	int damageSourceID = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+		
 	HarvesterStruct harvesterstruct // current harveter's struct
 	if( friendlyTeam == TEAM_MILITIA )
 		harvesterstruct = fw_harvesterMlt
@@ -1748,6 +1808,53 @@ void function OnHarvesterDamaged( entity harvester, var damageInfo )
 
 	// always reset harvester's recharge delay
 	harvesterstruct.lastDamage = Time()
+
+	
+	// done damage adjustments here, since harvester prop's health is setting manually through damageAmount
+	if ( damageSourceID == eDamageSourceId.mp_titancore_laser_cannon )
+		DamageInfo_SetDamage( damageInfo, DamageInfo_GetDamage( damageInfo ) / 50 ) // laser core shreds super well for some reason
+
+    // plasma railgun can always do no-charge shots and deal same damage
+    if ( damageSourceID == eDamageSourceId.mp_titanweapon_sniper ) // nerf northstar
+    {
+		DamageInfo_SetDamage( damageInfo, DamageInfo_GetDamage( damageInfo ) / 3 )
+		entity inflictor = DamageInfo_GetInflictor( damageInfo )
+		if( IsValid( inflictor ) && inflictor.IsProjectile() )
+		{
+			inflictor.s.extraDamagePerBullet = expect int( inflictor.s.extraDamagePerBullet ) / 3
+		}
+	}
+
+    // leadwall have high pilot damage so works really well aginst harvester
+    if ( damageSourceID == eDamageSourceId.mp_titanweapon_leadwall ) // nerf ronin
+        DamageInfo_SetDamage( damageInfo, DamageInfo_GetDamage( damageInfo ) / 2 )
+
+    // missiles mostly have high pilot damage so works really well aginst harvester
+	if ( damageSourceID == eDamageSourceId.mp_titanweapon_salvo_rockets ||
+		damageSourceID == eDamageSourceId.mp_titanweapon_shoulder_rockets ||
+        damageSourceID == eDamageSourceId.mp_titancore_salvo_core
+	) // titan missiles
+		DamageInfo_SetDamage( damageInfo, DamageInfo_GetDamage( damageInfo ) / 3 )
+
+	if ( damageSourceID == eDamageSourceId.mp_titanweapon_sticky_40mm ) // 40mm trakcer cannon
+		DamageInfo_SetDamage( damageInfo, DamageInfo_GetDamage( damageInfo ) / 2 )
+
+    if ( damageSourceID == eDamageSourceId.mp_titanweapon_flightcore_rockets ) // flight core shreds well
+        DamageInfo_SetDamage( damageInfo, DamageInfo_GetDamage( damageInfo ) / 5 ) 
+
+    // cluster missle is very effective against non-moving targets
+    if ( damageSourceID == eDamageSourceId.mp_titanweapon_dumbfire_rockets ) // cluster missile shreds super well
+        DamageInfo_SetDamage( damageInfo, DamageInfo_GetDamage( damageInfo ) / 10 ) 
+
+    // scorch's thermites is very effective against non-moving targets
+	if ( damageSourceID == eDamageSourceId.mp_titanweapon_heat_shield || 
+        damageSourceID == eDamageSourceId.mp_titanweapon_meteor_thermite ||
+		damageSourceID == eDamageSourceId.mp_titanweapon_flame_wall ||
+		damageSourceID == eDamageSourceId.mp_titanability_slow_trap ||
+		damageSourceID == eDamageSourceId.mp_titancore_flame_wave_secondary
+	) // scorch's thermite damages, nerf scorch
+		DamageInfo_SetDamage( damageInfo, DamageInfo_GetDamage( damageInfo ) / 5 )
+
 }
 void function OnHarvesterPostDamaged( entity harvester, var damageInfo )
 {
@@ -1761,53 +1868,30 @@ void function OnHarvesterPostDamaged( entity harvester, var damageInfo )
 
 	int damageSourceID = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	int scriptType = DamageInfo_GetCustomDamageType( damageInfo )
 	float damageAmount = DamageInfo_GetDamage( damageInfo )
+
 	if(damageAmount == 0)
 		return
-	printt("Harvester damage", damageAmount,attacker, damageSourceID)
+
 	if ( !damageSourceID && !damageAmount && !attacker ) // actually not dealing any damage?
 		return
-
-	// done damage adjustments here, since harvester prop's health is setting manually through damageAmount
-	if ( damageSourceID == eDamageSourceId.mp_titancore_laser_cannon )
-		DamageInfo_SetDamage( damageInfo, DamageInfo_GetDamage( damageInfo ) / 50 ) // laser core shreds super well for some reason
-
-	// plasma railgun can always do no-charge shots and deal same damage
-	if ( damageSourceID == eDamageSourceId.mp_titanweapon_sniper ) // nerf northstar
-		DamageInfo_SetDamage( damageInfo, DamageInfo_GetDamage( damageInfo ) / 3 )
-
-	// leadwall have high pilot damage so works really well aginst harvester
-	if ( damageSourceID == eDamageSourceId.mp_titanweapon_leadwall ) // nerf ronin
-		DamageInfo_SetDamage( damageInfo, DamageInfo_GetDamage( damageInfo ) / 2 )
-
-	// missiles mostly have high pilot damage so works really well aginst harvester
-	if ( damageSourceID == eDamageSourceId.mp_titanweapon_salvo_rockets ||
-		damageSourceID == eDamageSourceId.mp_titanweapon_shoulder_rockets ||
-		damageSourceID == eDamageSourceId.mp_titancore_salvo_core
-	) // titan missiles
-		DamageInfo_SetDamage( damageInfo, DamageInfo_GetDamage( damageInfo ) / 3 )
-
-	if ( damageSourceID == eDamageSourceId.mp_titanweapon_flightcore_rockets ) // flight core shreds well
-		DamageInfo_SetDamage( damageInfo, DamageInfo_GetDamage( damageInfo ) / 5 ) 
-
-	// cluster missle is very effective against non-moving targets
-	if ( damageSourceID == eDamageSourceId.mp_titanweapon_dumbfire_rockets ) // cluster missile shreds super well
-		DamageInfo_SetDamage( damageInfo, DamageInfo_GetDamage( damageInfo ) / 10 ) 
-
-	// scorch's thermites is very effective against non-moving targets
-	if ( damageSourceID == eDamageSourceId.mp_titanweapon_heat_shield || 
-        damageSourceID == eDamageSourceId.mp_titanweapon_meteor_thermite ||
-		damageSourceID == eDamageSourceId.mp_titanweapon_flame_wall ||
-		damageSourceID == eDamageSourceId.mp_titanability_slow_trap ||
-		damageSourceID == eDamageSourceId.mp_titancore_flame_wave_secondary
-	) // scorch's thermite damages, nerf scorch
-		DamageInfo_SetDamage( damageInfo, DamageInfo_GetDamage( damageInfo ) / 5 )
+	
+	// prevent player from sniping the harvester cross-map
+	if ( attacker.IsPlayer() && !FW_IsPlayerInEnemyTerritory( attacker ) )
+	{
+		Remote_CallFunction_NonReplay( attacker , "ServerCallback_FW_NotifyNeedsEnterEnemyArea" )
+		DamageInfo_SetDamage( damageInfo, 0 )
+		DamageInfo_SetCustomDamageType( damageInfo, scriptType | DF_NO_INDICATOR ) // hide the hitmarker
+		return // these damage won't do anything to the harvester
+	}
 
 	HarvesterStruct harvesterstruct // current harveter's struct
 	if( friendlyTeam == TEAM_MILITIA )
 		harvesterstruct = fw_harvesterMlt
 	if( friendlyTeam == TEAM_IMC )
 		harvesterstruct = fw_harvesterImc
+
 
 	damageAmount = DamageInfo_GetDamage( damageInfo ) // get damageAmount again after all damage adjustments
 
@@ -1819,12 +1903,18 @@ void function OnHarvesterPostDamaged( entity harvester, var damageInfo )
 		damageAmount = 0 // never damage haveter's prop
 	}
 
+	if( !harvesterstruct.harvesterShieldDown )
+	{
+		PlayFactionDialogueToTeam( "fortwar_baseShieldDownFriendly", friendlyTeam )
+		PlayFactionDialogueToTeam( "fortwar_baseShieldDownEnemy", enemyTeam )
+		harvesterstruct.harvesterShieldDown = true // prevent shield dialogues from repeating
+	}
+
 	harvesterstruct.harvesterDamageTaken = harvesterstruct.harvesterDamageTaken + damageAmount // track damage for wave recaps
 	float newHealth = harvester.GetHealth() - damageAmount
 	float oldhealthpercent = ( ( harvester.GetHealth().tofloat() / harvester.GetMaxHealth() ) * 100 )
-
 	float healthpercent = ( ( newHealth / harvester.GetMaxHealth() ) * 100 )
-	
+
 	if (healthpercent <= 75 && oldhealthpercent > 75) // we don't want the dialogue to keep saying "Harvester is below 75% health" everytime they take additional damage
 	{
 		PlayFactionDialogueToTeam( "fortwar_baseDmgFriendly75", friendlyTeam )
@@ -1854,48 +1944,48 @@ void function OnHarvesterPostDamaged( entity harvester, var damageInfo )
 	harvester.SetHealth( newHealth )
 	harvesterstruct.havesterWasDamaged = true
 
-
 	if ( attacker.IsPlayer() )
 	{
-		// dialogue for enemy attackers
-		if( !harvesterstruct.harvesterShieldDown )
-			PlayFactionDialogueToTeam( "fortwar_baseEnemyAllyAttacking", enemyTeam )
+        // dialogue for enemy attackers
+        if( !harvesterstruct.harvesterShieldDown )
+            PlayFactionDialogueToTeam( "fortwar_baseEnemyAllyAttacking", enemyTeam )
 
 		attacker.NotifyDidDamage( harvester, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamagePosition( damageInfo ), DamageInfo_GetCustomDamageType( damageInfo ), DamageInfo_GetDamage( damageInfo ), DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
 
-		// get newest damage for adding score!
-		int scoreDamage = int( DamageInfo_GetDamage( damageInfo ) )
-		// score events
-		attacker.AddToPlayerGameStat( PGS_ASSAULT_SCORE, scoreDamage )
+        // get newest damage for adding score!
+        int scoreDamage = int( DamageInfo_GetDamage( damageInfo ) )
+        // score events
+        attacker.AddToPlayerGameStat( PGS_ASSAULT_SCORE, scoreDamage )
 
-		// add to player structs
-		file.playerDamageHarvester[ attacker ].recentDamageTime = Time()
-		file.playerDamageHarvester[ attacker ].storedDamage += scoreDamage
+        // add to player structs
+        file.playerDamageHarvester[ attacker ].recentDamageTime = Time()
+        file.playerDamageHarvester[ attacker ].storedDamage += scoreDamage
 
-		// enough to earn score?
-		if( file.playerDamageHarvester[ attacker ].storedDamage >= FW_HARVESTER_DAMAGE_SEGMENT )
-		{
-			AddPlayerScore( attacker, "FortWarTowerDamage", attacker )
-			attacker.AddToPlayerGameStat( PGS_DEFENSE_SCORE, POINTVALUE_FW_TOWER_DAMAGE )
-			file.playerDamageHarvester[ attacker ].storedDamage -= FW_HARVESTER_DAMAGE_SEGMENT // reset stored damage
-		}
+        // enough to earn score?
+        if( file.playerDamageHarvester[ attacker ].storedDamage >= FW_HARVESTER_DAMAGE_SEGMENT )
+        {
+            AddPlayerScore( attacker, "FortWarTowerDamage", attacker )
+            attacker.AddToPlayerGameStat( PGS_DEFENSE_SCORE, POINTVALUE_FW_TOWER_DAMAGE )
+            file.playerDamageHarvester[ attacker ].storedDamage -= FW_HARVESTER_DAMAGE_SEGMENT // reset stored damage
+        }
 	}
 
 
-
-	if ( harvester.GetHealth() == 0 )
-	{
-		SetWinner( enemyTeam )
-		//PlayFactionDialogueToTeam( "scoring_wonMercy", enemyTeam )
-		//PlayFactionDialogueToTeam( "fortwar_matchLoss", friendlyTeam )
-		GameRules_SetTeamScore2( friendlyTeam, 0 ) // force set score2 to 0( shield bar will empty )
-		GameRules_SetTeamScore( friendlyTeam, 0 ) // force set score to 0( health 0% )
-	}
+	// harvester down!
+    if ( harvester.GetHealth() == 0 )
+    {
+		// force deciding winner
+        SetWinner( enemyTeam )
+        //PlayFactionDialogueToTeam( "scoring_wonMercy", enemyTeam )
+        //PlayFactionDialogueToTeam( "fortwar_matchLoss", friendlyTeam )
+        GameRules_SetTeamScore2( friendlyTeam, 0 ) // force set score2 to 0( shield bar will empty )
+        GameRules_SetTeamScore( friendlyTeam, 0 ) // force set score to 0( health 0% )
+    }
 }
 
-void function HarvesterThink( HarvesterStruct fd_harvester )
+void function HarvesterThink( HarvesterStruct fw_harvester )
 {
-	entity harvester = fd_harvester.harvester
+	entity harvester = fw_harvester.harvester
 
 
 	EmitSoundOnEntity( harvester, "coop_generator_startup" )
@@ -1903,8 +1993,8 @@ void function HarvesterThink( HarvesterStruct fd_harvester )
 	float lastTime = Time()
 	wait 4
 	int lastShieldHealth = harvester.GetShieldHealth()
-	generateBeamFX( fd_harvester )
-	generateShieldFX( fd_harvester )
+	generateBeamFX( fw_harvester )
+	generateShieldFX( fw_harvester )
 
 	EmitSoundOnEntity( harvester, "coop_generator_ambient_healthy" )
 
@@ -1915,26 +2005,26 @@ void function HarvesterThink( HarvesterStruct fd_harvester )
 		float currentTime = Time()
 		float deltaTime = currentTime -lastTime
 
-		if ( IsValid( fd_harvester.particleShield ) )
+		if ( IsValid( fw_harvester.particleShield ) )
 		{
 			vector shieldColor = GetShieldTriLerpColor( 1.0 - ( harvester.GetShieldHealth().tofloat() / harvester.GetShieldHealthMax().tofloat() ) )
-			EffectSetControlPointVector( fd_harvester.particleShield, 1, shieldColor )
+			EffectSetControlPointVector( fw_harvester.particleShield, 1, shieldColor )
 		}
 
-		if( IsValid( fd_harvester.particleBeam ) )
+		if( IsValid( fw_harvester.particleBeam ) )
 		{
 			vector beamColor = GetShieldTriLerpColor( 1.0 - ( harvester.GetHealth().tofloat() / harvester.GetMaxHealth().tofloat() ) )
-			EffectSetControlPointVector( fd_harvester.particleBeam, 1, beamColor )
+			EffectSetControlPointVector( fw_harvester.particleBeam, 1, beamColor )
 		}
 
-		if ( fd_harvester.harvester.GetShieldHealth() == 0 )
-			if( IsValid( fd_harvester.particleShield ) )
-				fd_harvester.particleShield.Destroy()
+		if ( fw_harvester.harvester.GetShieldHealth() == 0 )
+			if( IsValid( fw_harvester.particleShield ) )
+				fw_harvester.particleShield.Destroy()
 
-		if ( ( ( currentTime-fd_harvester.lastDamage ) >= GENERATOR_SHIELD_REGEN_DELAY ) && ( harvester.GetShieldHealth() < harvester.GetShieldHealthMax() ) )
+		if ( ( ( currentTime-fw_harvester.lastDamage ) >= GetCurrentPlaylistVarFloat( "fw_harvester_regen_delay", FW_DEFAULT_HARVESTER_REGEN_DELAY ) ) && ( harvester.GetShieldHealth() < harvester.GetShieldHealthMax() ) )
 		{
-			if( !IsValid( fd_harvester.particleShield ) )
-				generateShieldFX( fd_harvester )
+			if( !IsValid( fw_harvester.particleShield ) )
+				generateShieldFX( fw_harvester )
 
 			if( harvester.GetShieldHealth() == 0 )
 				EmitSoundOnEntity( harvester, "coop_generator_shieldrecharge_start" )
@@ -1942,15 +2032,16 @@ void function HarvesterThink( HarvesterStruct fd_harvester )
 			if (!isRegening)
 			{
 				EmitSoundOnEntity( harvester, "coop_generator_shieldrecharge_resume" )
-				fd_harvester.harvesterShieldDown = false
+				fw_harvester.harvesterShieldDown = false
 				isRegening = true
 			}
 
-			float newShieldHealth = ( harvester.GetShieldHealthMax() / GENERATOR_SHIELD_REGEN_TIME * deltaTime ) + harvester.GetShieldHealth()
+			float newShieldHealth = ( harvester.GetShieldHealthMax() / GetCurrentPlaylistVarFloat( "fw_harvester_regen_time", FW_DEFAULT_HARVESTER_REGEN_TIME ) * deltaTime ) + harvester.GetShieldHealth()
 
+			// shield full
 			if ( newShieldHealth >= harvester.GetShieldHealthMax() )
 			{
-			StopSoundOnEntity( harvester, "coop_generator_shieldrecharge_resume" )
+				StopSoundOnEntity( harvester, "coop_generator_shieldrecharge_resume" )
 				harvester.SetShieldHealth( harvester.GetShieldHealthMax() )
 				EmitSoundOnEntity( harvester, "coop_generator_shieldrecharge_end" )
 				PlayFactionDialogueToTeam( "fortwar_baseShieldUpFriendly", harvester.GetTeam() )
@@ -1961,7 +2052,7 @@ void function HarvesterThink( HarvesterStruct fd_harvester )
 				harvester.SetShieldHealth( newShieldHealth )
 			}
 		}
-		else if ( ( ( currentTime-fd_harvester.lastDamage ) < GENERATOR_SHIELD_REGEN_DELAY ) && ( harvester.GetShieldHealth() < harvester.GetShieldHealthMax() ) )
+		else if ( ( ( currentTime-fw_harvester.lastDamage ) < GENERATOR_SHIELD_REGEN_DELAY ) && ( harvester.GetShieldHealth() < harvester.GetShieldHealthMax() ) )
 		{
 			isRegening = false
 		}
@@ -1978,13 +2069,13 @@ void function HarvesterThink( HarvesterStruct fd_harvester )
 	}
 }
 
-void function HarvesterAlarm( HarvesterStruct fd_harvester )
+void function HarvesterAlarm( HarvesterStruct fw_harvester )
 {
-	while( IsAlive( fd_harvester.harvester ) )
+	while( IsAlive( fw_harvester.harvester ) )
 	{
-		if( fd_harvester.harvester.GetShieldHealth() == 0 )
+		if( fw_harvester.harvester.GetShieldHealth() == 0 )
 		{
-			wait EmitSoundOnEntity( fd_harvester.harvester, "coop_generator_underattack_alarm" )
+			wait EmitSoundOnEntity( fw_harvester.harvester, "coop_generator_underattack_alarm" )
 		}
 		else
 		{
