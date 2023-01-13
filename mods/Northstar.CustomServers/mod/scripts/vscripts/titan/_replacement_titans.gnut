@@ -20,7 +20,6 @@ global function req
 global function ReplacementTitan
 global function TryAnnounceTitanfallWarningToEnemyTeam
 global function GetTitanForPlayer
-global function TryPlayTitanfallNegativeSoundToPlayer
 
 global function ShouldSetTitanRespawnTimer
 
@@ -538,32 +537,6 @@ bool function ClientCommand_RequestTitan( entity player, array<string> args )
 	ReplacementTitan( player ) //Separate function because other functions will call ReplacementTitan
 	return true
 }
-
-bool function TryPlayTitanfallNegativeSoundToPlayer( entity player )
-{
-	if( !( "lastNegativeSound" in player.s ) )
-		player.s.lastNegativeSound <- 0.0 // float
-	if( player.s.lastNegativeSound + 3.0 > Time() ) // in sound cooldown
-		return false
-
-	EmitSoundOnEntityOnlyToPlayer( player, player, "titan_dryfire" )
-	player.s.lastNegativeSound = Time()
-	
-	return true
-}
-
-/* // serverSideRUI can't handle localized strings
-void function CreateCustomMessageForRefusingTitanfall( entity player )
-{
-	if( !( "lastMessageSend" in player.s ) )
-		player.s.lastMessageSend <- 0.0 // float
-	if( player.s.lastMessageSend + 10 > Time() ) // in message cooldown
-		return
- 
-	NSSendInfoMessageToPlayer( player, "#FW_OBJECTIVE_TITANFALL" )
-	player.s.lastMessageSend = Time()
-}
-*/
 
 // This a baseline titan request function; the only things that prevent this from happening are
 // common cases; wrong gamestate, already has a titan, is currently dead, etc...

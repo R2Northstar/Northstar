@@ -19,6 +19,8 @@ global function ShouldEntTakeDamage_SPMP
 global function GetTitanBuildTime
 global function TitanPlayerHotDropsIntoLevel
 
+global function SetRecalculateRespawnAsTitanStartPointCallback
+
 struct {
 	bool killcamsEnabled = true
 	bool playerDeathsHidden = false
@@ -26,6 +28,8 @@ struct {
 	
 	entity intermissionCamera
 	array<entity> specCams 
+	
+	entity functionref( entity player, entity basePoint ) recalculateRespawnAsTitanStartPointCallback
 } file
 
 void function BaseGametype_Init_MPSP()
@@ -443,6 +447,9 @@ void function RespawnAsTitan( entity player, bool manualPosition = false )
 	player.isSpawning = true
 	entity spawnpoint = FindSpawnPoint( player, true, ( ShouldStartSpawn( player ) || Flag( "ForceStartSpawn" ) ) && !IsFFAGame() )
 
+	if ( file.recalculateRespawnAsTitanStartPointCallback != null )
+		spawnpoint = file.recalculateRespawnAsTitanStartPointCallback( player, spawnpoint )
+
  	TitanLoadoutDef titanLoadout = GetTitanLoadoutForPlayer( player )
 	
 	asset model = GetPlayerSettingsAssetForClassName( titanLoadout.setFile, "bodymodel" )
@@ -500,7 +507,7 @@ void function RespawnAsTitan( entity player, bool manualPosition = false )
 			titan.Destroy() // pilotbecomestitan leaves an npc titan that we need to delete
 		else
 			RespawnAsPilot( player ) // this is 100% an edgecase, just avoid softlocking if we ever hit it in playable gamestates
-			
+		
 		camera.Fire( "Disable", "!activator", 0, player )
 		camera.Destroy()
 	})
@@ -509,6 +516,7 @@ void function RespawnAsTitan( entity player, bool manualPosition = false )
 		
 	player.RespawnPlayer( null ) // spawn player as pilot so they get their pilot loadout on embark
 	player.SetOrigin( titan.GetOrigin() )
+	ClearTitanAvailable( player ) // titanfall succeed, clear titan availability
 	
 	// don't make player titan when entity batteryContainer is not valid.
 	// This will prevent a servercrash that sometimes occur when evac is disabled and somebody is calling a titan in the defeat screen.
@@ -575,6 +583,11 @@ void function CheckForAutoTitanDeath( entity victim, entity attacker, var damage
 			foreach(player in GetPlayerArray())
 				Remote_CallFunction_NonReplay( player, "ServerCallback_OnTitanKilled", attacker.GetEncodedEHandle(), victim.GetEncodedEHandle(), DamageInfo_GetCustomDamageType( damageInfo ), DamageInfo_GetDamageSourceIdentifier( damageInfo ) )
 	}
+}
+
+void function SetRecalculateRespawnAsTitanStartPointCallback( entity functionref( entity player, entity basePoint ) callbackFunc )
+{
+	file.recalculateRespawnAsTitanStartPointCallback = callbackFunc
 }
 
 // stuff to change later
