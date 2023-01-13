@@ -160,6 +160,7 @@ If ran on a server with the [`ns_should_return_to_lobby 0`](./#Convars-returntol
 | ~~fd_insane~~ | Frontier Defense (Insane) |
 | ~~fd_master~~ | Frontier Defense (Master) |
 | ~~fd_normal~~ | Frontier Defense (Regular) |
+| fw | Frontier War |
 | lts | Last Titan Standing |
 | mfd | Marked For Death |
 | ps | Pilots vs. Pilots |
