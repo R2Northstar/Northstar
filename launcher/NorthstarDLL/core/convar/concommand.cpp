@@ -1,8 +1,11 @@
 #include "pch.h"
 #include "concommand.h"
 #include "shared/misccommands.h"
+#include "engine/r2engine.h"
 
 #include <iostream>
+
+bool (*CCommand__Tokenize)(CCommand& self, const char* pCommandString, R2::cmd_source_t commandSource);
 
 //-----------------------------------------------------------------------------
 // Purpose: Returns true if this is a command

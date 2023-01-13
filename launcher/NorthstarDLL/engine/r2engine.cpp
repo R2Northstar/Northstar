@@ -10,6 +10,8 @@ namespace R2
 	Cbuf_AddTextType Cbuf_AddText;
 	Cbuf_ExecuteType Cbuf_Execute;
 
+	bool (*CCommand__Tokenize)(CCommand& self, const char* pCommandString, R2::cmd_source_t commandSource);
+
 	CEngine* g_pEngine;
 
 	void (*CBaseClient__Disconnect)(void* self, uint32_t unknownButAlways1, const char* reason, ...);
@@ -26,6 +28,8 @@ ON_DLL_LOAD("engine.dll", R2Engine, (CModule module))
 	Cbuf_GetCurrentPlayer = module.Offset(0x120630).As<Cbuf_GetCurrentPlayerType>();
 	Cbuf_AddText = module.Offset(0x1203B0).As<Cbuf_AddTextType>();
 	Cbuf_Execute = module.Offset(0x1204B0).As<Cbuf_ExecuteType>();
+
+	CCommand__Tokenize = module.Offset(0x418380).As<bool (*)(CCommand&, const char*, R2::cmd_source_t)>();
 
 	g_pEngine = module.Offset(0x7D70C8).Deref().As<CEngine*>();
 
