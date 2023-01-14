@@ -20,7 +20,7 @@ When using a dedicated server, arguments are read from `ns_startup_args_dedi.txt
 ### Dedicated Server Caveats
 
 At the moment, dedicated servers still require DirectX 11 to work, which typically requires a physical GPU, though they use almost no GPU processing power while in use, this can be an issue especially on GPU-less setups, so the launch argument `-softwared3d11` can be used to force DirectX to run in software mode.\
-While this is absolutely not ideal, it's the best solution for truely headless dedicated servers at the moment, and surprisingly hardly uses any CPU time, though it can use roughly up to 1GB of RAM.\
+While this is absolutely not ideal, it's the best solution for truly headless dedicated servers at the moment, and surprisingly hardly uses any CPU time, though it can use roughly up to 1GB of RAM.\
 Regarding RAM usage, dedicated servers also use significant amounts of RAM at the moment, often requiring 1.5-2GB, though I expect this to lower as development continues.
 
 ### Troubleshoot
@@ -127,8 +127,8 @@ They allow the server admin to set server's properties like the name, TCP port, 
 | `ns_should_return_to_lobby`                      | Whether the server should return to private match lobby after completing a game, if 0, this will go to the next map/mode in the playlist                                                    | `1`                            | `0-1`                                              |
 | `ns_private_match_only_host_can_change_settings` | If 0 Players can change all match settings. If 1 Players can only change map and gamemode. If 2 Players can change nothing                                                                  | `0`                            | `0-2`                                              |
 | `ns_private_match_countdown_length`              | Length is seconds before the match is started after the start button in the lobby                                                                                                           | `15`                           | `int`                                              |
-| `ns_private_match_last_mode`                     | Forces the lobby to a specifig Gamemode                                                                                                                                                     | `tdm`                          | Any [Gamemode](./#gamemodes)                       |
-| `ns_private_match_last_map`                      | Forces the lobby to a specifig map                                                                                                                                                          | `mp_forwardbase_kodai`         | Any [Map](./#maps)                                 |
+| `ns_private_match_last_mode`                     | Forces the lobby to a specific Gamemode                                                                                                                                                     | `tdm`                          | Any [Gamemode](./#gamemodes)                       |
+| `ns_private_match_last_map`                      | Forces the lobby to a specific map                                                                                                                                                          | `mp_forwardbase_kodai`         | Any [Map](./#maps)                                 |
 | `ns_disallowed_weapons`                          | Blacklists weapons                                                                                                                                                                          |                                | List of [Weapons](./#weapons) separated by a comma |
 | `ns_disallowed_weapon_primary_replacement`       | Replaces blacklisted weapons by one weapon                                                                                                                                                  |                                | a [Weapon](./#weapons)                             |
 | `ns_should_log_unknown_clientcommands`           | Whether unknown clientcommands should be printed in the console, worth disabling if they get on your nerves                                                                                 | `1`                            | `0-1`                                              |
@@ -249,7 +249,7 @@ Maps can be set on autorotation using [`ns_should_return_to_lobby 0`](./#Convars
 
 First map of autorotation can be set using [`ns_private_match_last_map`](./#Convars-lastmap)
 
-A way to blacklist maps with autorotation do not exists.
+A way to blacklist maps with autorotation does not exist.
 
 ### Vanilla (mp)
 
