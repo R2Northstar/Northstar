@@ -29,13 +29,13 @@ void NS::Utils::RemoveAsciiControlSequences(char* str, bool allow_color_codes)
 		int bytesToSkip = 0;
 		if ((c & 0xE0) == 0xC0)
 			bytesToSkip = 1; // skip 2-byte UTF-8 sequence
-		if ((c & 0xF0) == 0xE0)
+		else if ((c & 0xF0) == 0xE0)
 			bytesToSkip = 2; // skip 3-byte UTF-8 sequence
-		if ((c & 0xF8) == 0xF0)
+		else if ((c & 0xF8) == 0xF0)
 			bytesToSkip = 3; // skip 4-byte UTF-8 sequence
-		if ((c & 0xFC) == 0xF8)
+		else if ((c & 0xFC) == 0xF8)
 			bytesToSkip = 4; // skip 5-byte UTF-8 sequence
-		if ((c & 0xFE) == 0xFC)
+		else if ((c & 0xFE) == 0xFC)
 			bytesToSkip = 5; // skip 6-byte UTF-8 sequence
 
 		bool invalid = false;
