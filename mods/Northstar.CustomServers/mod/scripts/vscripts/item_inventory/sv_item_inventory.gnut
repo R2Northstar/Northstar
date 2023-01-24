@@ -8,6 +8,7 @@ global function PlayerInventory_EndCriticalSectionForWeaponOnEndFrame
 global function PlayerInventory_PushInventoryItem
 global function PlayerInventory_PushInventoryItemByBurnRef
 global function PlayerInventory_PopInventoryItem
+global function PlayerInventory_TakeAllInventoryItems
 global function PlayerInventory_CountBurnRef
 
 struct
@@ -138,6 +139,14 @@ void function PlayerInventory_PopInventoryItem( entity player )
 		}
 	}
 
+	return
+}
+
+void function PlayerInventory_TakeAllInventoryItems( entity player )
+{
+	file.playerInventoryStacks[ player ].clear()
+	waitthread PlayerInventory_TakeInventoryItem( player )
+	player.SetPlayerNetInt( "itemInventoryCount", 0 )
 	return
 }
 
