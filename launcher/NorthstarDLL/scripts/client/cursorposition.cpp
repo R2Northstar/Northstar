@@ -8,7 +8,6 @@ ADD_SQFUNC("vector ornull", NSGetCursorPosition, "", "", ScriptContext::UI)
 	POINT p;
 	if (GetCursorPos(&p) && ScreenToClient(*g_gameHWND, &p) && GetClientRect(*g_gameHWND, &rcClient))
 	{
-		std::cout << rcClient.right << " : " << rcClient.bottom << "\n";
 		if (GetAncestor(GetForegroundWindow(), GA_ROOTOWNER) != *g_gameHWND)
 			return SQRESULT_NULL;
 
