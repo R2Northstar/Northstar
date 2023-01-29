@@ -1175,6 +1175,7 @@
     </ClInclude>
 		<ClInclude Include="util\wininfo.h">
     	<Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="util\utils.h">
       <Filter>Header Files\util</Filter>
     </ClInclude>
