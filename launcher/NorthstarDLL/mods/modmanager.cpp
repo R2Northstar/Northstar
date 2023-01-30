@@ -354,6 +354,7 @@ void ModManager::LoadMods()
 	// ensure dirs exist
 	fs::remove_all(GetCompiledAssetsPath());
 	fs::create_directories(GetModFolderPath());
+	fs::create_directories(GetRemoteModFolderPath());
 
 	m_DependencyConstants.clear();
 
@@ -374,9 +375,13 @@ void ModManager::LoadMods()
 	}
 
 	// get mod directories
-	for (fs::directory_entry dir : fs::directory_iterator(GetModFolderPath()))
-		if (fs::exists(dir.path() / "mod.json"))
-			modDirs.push_back(dir.path());
+	std::filesystem::directory_iterator classicModsDir = fs::directory_iterator(GetModFolderPath());
+	std::filesystem::directory_iterator remoteModsDir = fs::directory_iterator(GetRemoteModFolderPath());
+
+	for (std::filesystem::directory_iterator modIterator : {classicModsDir, remoteModsDir})
+		for (fs::directory_entry dir : modIterator)
+			if (fs::exists(dir.path() / "mod.json"))
+				modDirs.push_back(dir.path());
 
 	for (fs::path modDir : modDirs)
 	{
@@ -804,6 +809,10 @@ void ConCommand_reload_mods(const CCommand& args)
 fs::path GetModFolderPath()
 {
 	return fs::path(GetNorthstarPrefix() + MOD_FOLDER_SUFFIX);
+}
+fs::path GetRemoteModFolderPath()
+{
+	return fs::path(GetNorthstarPrefix() + REMOTE_MOD_FOLDER_SUFFIX);
 }
 fs::path GetCompiledAssetsPath()
 {
