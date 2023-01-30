@@ -11,7 +11,7 @@
 #include "rapidjson/error/en.h"
 #include "rapidjson/document.h"
 #include "rapidjson/ostreamwrapper.h"
-#include "rapidjson/writer.h"
+#include "rapidjson/prettywriter.h"
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -750,7 +750,7 @@ void ModManager::UnloadMods()
 
 	std::ofstream writeStream(GetNorthstarPrefix() + "/enabledmods.json");
 	rapidjson::OStreamWrapper writeStreamWrapper(writeStream);
-	rapidjson::Writer<rapidjson::OStreamWrapper> writer(writeStreamWrapper);
+	rapidjson::PrettyWriter<rapidjson::OStreamWrapper> writer(writeStreamWrapper);
 	m_EnabledModsCfg.Accept(writer);
 
 	// do we need to dealloc individual entries in m_loadedMods? idk, rework
