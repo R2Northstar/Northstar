@@ -29,3 +29,7 @@ Hack control panels to win rounds and respawn your teammates.
 ## Competitive CTF
 
 CTF with custom settings for Comp games.
+
+## Frontier War
+
+Kill enemies to earn your titan, and use it to destroy the enemies Harvester.
