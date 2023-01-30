@@ -22,8 +22,6 @@ Install both `d3dcompiler_43` and `d3dcompiler_47` through Winetricks.
 
 This issue has been resolved as of [Northstar 1.9.2 and newer.](https://github.com/R2Northstar/Northstar/releases/latest)
 
-For older builds of Northstar, please update or see the [legacy guide](playing-on-linux-legacy-guide.md#blank-console) if the use of an older build is desired.
-
 ## Crackling sound
 
 * [PulseAudio](https://wiki.archlinux.org/title/PulseAudio/Troubleshooting#Glitches.2C\_skips\_or\_crackling):
@@ -138,7 +136,3 @@ If you ever used ReShade together with Titanfall2 in the past it will have creat
 * D3D11.DLL
 * OPENGL.DLL
 * DXGI.DLL
-
-## Northstar 1.9.1 and prior
-
-For older builds of Northstar, please see the [legacy guide](playing-on-linux-legacy-guide.md).
