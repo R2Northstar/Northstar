@@ -26,10 +26,6 @@ Get kills to increase the length of your killrace. Collect the flag to start it.
 
 Hack control panels to win rounds and respawn your teammates.
 
-{% hint style="info" %}
-Before `v1.5.0`, some maps did not have control panels yet. These maps include _Homestead_, _Complex_, _Glitch_, _Relic_, _Rise_, and _Crash Site_. Make sure to update to [`v1.5.0` or later](https://github.com/R2Northstar/Northstar/releases) to have Fastball control panels on all maps.
-{% endhint %}
-
 ## Competitive CTF
 
 CTF with custom settings for Comp games.
