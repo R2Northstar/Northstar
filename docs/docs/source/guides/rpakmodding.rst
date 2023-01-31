@@ -134,7 +134,7 @@ Below is an example of a map file that creates an RPak called ``example.rpak`` w
         "name":"example",
         "assetsDir":"../assets",
         "outputDir":"../rpaks",
-        "starpakPath": "example.starpak"
+        "starpakPath": "example.starpak",
         "version": 7,
         "files":[
             {
