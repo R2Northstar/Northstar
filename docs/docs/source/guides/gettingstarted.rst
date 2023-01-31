@@ -154,8 +154,7 @@ ConVars
 This field lists configuration variables, that can be set by servers owners to modify 
 behaviour of your mod.
 
-Each configuration variable must have a ``"Name"`` and a ``"DefaultValue"``; it can also
-feature a ``"Flags"`` field (optional).
+Each configuration variable must have a ``"Name"`` and a ``"DefaultValue"``. ConVars can also have an optional ``"Flags"`` field which specifies special behaviour and an optional ``"HelpString"`` field which specifies the usage of the ConVar which can be view in-game by running ``help <convar>``.
 
 You can access configuration variables from squirrel code using ``GetConVarInt``, 
 ``GetConVarFloat``, ``GetConVarBool`` or ``GetConVarString`` calls.
