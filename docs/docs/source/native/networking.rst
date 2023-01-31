@@ -19,7 +19,7 @@ Northstar provides the ``AddCallback_OnRegisteringCustomNetworkVars( void functi
 
 .. warning::
 
-	You can only pass parameters of the types ``null``, ``string``, ``int``, ``float`` or ``bool``.
+	You can only pass parameters of the types ``null``, ``int``, ``float`` or ``bool``.
 	
 	It is possible to communicate entities using eHandles. To get an eHandle, use the ``entity.GetEncodedEHandle()`` function. To get the corresponding entity of a handle, use ``entity ent = GetEntityFromEncodedEHandle( eHandle )``. eHandles are of type ``int``.
 
