@@ -34,7 +34,6 @@
   * [RCON](hosting-a-server-with-northstar/dedicated-server/rcon.md)
 * [Troubleshooting](hosting-a-server-with-northstar/troubleshooting.md)
 * [Guides](hosting-a-server-with-northstar/guides/README.md)
-  * [Docker Install](hosting-a-server-with-northstar/guides/pg9182-docker-installation-guide.md)
 
 ## Modding and Development
 
