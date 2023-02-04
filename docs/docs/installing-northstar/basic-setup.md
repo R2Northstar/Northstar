@@ -26,18 +26,14 @@ Should you notice any issues/warnings/errors while running Northstar, check the 
 
 ## Additional Stuff
 
-Since Northstar doesn't launch directly through Origin or Steam, any startup arguments provided in either launcher won't transfer over. You'll need to add them to the file `ns_startup_args.txt`, which should be in the same folder as you extracted the Northstar files to.
+You can launch Northstar via Steam, Origin, or EA using [launch options](troubleshooting.md#launch-opts). 
 
 If Northstar doesn't appear to be installed, or you have issues entering the lobby, try running vanilla files. It's hard to say what VPK mods could cause issues with Northstar at the moment, so it'd probably be easiest just to try running unmodded.
 
-Northstar can be launched through Steam or Origin using the "add a game" feature. This allows you to register any .exe as a game. To set up Northstar, navigate to your Titanfall 2 folder and choose `NorthstarLaucher.exe`.
+Northstar can also be launched through Steam or Origin using the "add a game" feature. This allows you to register any .exe as a game. To set up Northstar, navigate to your Titanfall 2 folder and choose `NorthstarLaucher.exe`.
 
 ![steamaddgame](../images/steam-addgame.png) ![originaddgame](../images/origin-addgame.png)
 
-## Linux
+## Linux and Steam Deck
 
-Install instructions for [Linux can be found here](broken-reference).
-
-## SteamDeck
-
-Install instructions for [SteamDeck can be found here](broken-reference).
+Install instructions for [Linux and Steam Deck can be found here](steamdeck-and-linux/installing-on-steamdeck-and-linux.md)
