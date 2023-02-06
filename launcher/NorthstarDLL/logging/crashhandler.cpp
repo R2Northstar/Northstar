@@ -72,6 +72,8 @@ void PrintExceptionLog(ExceptionLog& exc)
 			"Northstar has crashed! Crash info can be found in R2Northstar/logs",
 			"Northstar has crashed!",
 			MB_ICONERROR | MB_OK | MB_SYSTEMMODAL);
+
+	NS::log::FlushLoggers();
 }
 
 std::string GetExceptionName(ExceptionLog& exc)

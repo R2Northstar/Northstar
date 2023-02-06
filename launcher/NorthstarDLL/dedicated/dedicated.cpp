@@ -278,7 +278,10 @@ void, __fastcall, (void* sqvm))
 	// atm, this will crash if not aborted, so this just closes more gracefully
 	static ConVar* Cvar_fatal_script_errors = g_pCVar->FindVar("fatal_script_errors");
 	if (Cvar_fatal_script_errors->GetBool())
+	{
+		NS::log::FlushLoggers();
 		abort();
+	}
 }
 
 ON_DLL_LOAD_DEDI("server.dll", DedicatedServerGameDLL, (CModule module))
