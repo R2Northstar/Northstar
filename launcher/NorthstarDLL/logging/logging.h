@@ -100,6 +100,8 @@ namespace NS::log
 	extern std::shared_ptr<ColoredLogger> echo;
 
 	extern std::shared_ptr<ColoredLogger> NORTHSTAR;
+
+	void FlushLoggers();
 }; // namespace NS::log
 
 void RegisterCustomSink(std::shared_ptr<CustomSink> sink);
