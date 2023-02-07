@@ -267,6 +267,9 @@ void*, __fastcall, (const char* pPath, void* pCallback))
 
 	if (path.extension() == ".stbsp")
 	{
+		if (IsDedicatedServer())
+			return nullptr;
+
 		NS::log::rpak->info("LoadStreamBsp: {}", filename.string());
 
 		// resolve modded stbsp path so we can load mod stbsps
@@ -279,6 +282,9 @@ void*, __fastcall, (const char* pPath, void* pCallback))
 	}
 	else if (path.extension() == ".starpak")
 	{
+		if (IsDedicatedServer())
+			return nullptr;
+
 		// code for this is mostly stolen from above
 
 		// unfortunately I can't find a way to get the rpak that is causing this function call, so I have to
