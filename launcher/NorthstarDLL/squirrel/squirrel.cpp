@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "squirrel.h"
+#include "logging/logging.h"
 #include "core/convar/concommand.h"
 #include "mods/modmanager.h"
 #include "dedicated/dedicated.h"
@@ -212,7 +213,34 @@ template <ScriptContext context> void SquirrelManager<context>::VMCreated(CSquir
 
 template <ScriptContext context> void SquirrelManager<context>::VMDestroyed()
 {
+	// Call all registered mod Destroy callbacks.
+	if (g_pModManager)
+	{
+		NS::log::squirrel_logger<context>()->info("Calling Destroy callbacks for all loaded mods.");
+
+		for (const Mod& loadedMod : g_pModManager->m_LoadedMods)
+		{
+			for (const ModScript& script : loadedMod.Scripts)
+			{
+				for (const ModScriptCallback& callback : script.Callbacks)
+				{
+					if (callback.Context != context || callback.DestroyCallback.length() == 0)
+					{
+						continue;
+					}
+
+					Call(callback.DestroyCallback.c_str());
+					NS::log::squirrel_logger<context>()->info("Executed Destroy callback {}.", callback.DestroyCallback);
+				}
+			}
+		}
+	}
+
+	// Discard the previous vm and delete the message buffer.
 	m_pSQVM = nullptr;
+
+	delete g_pSquirrel<context>->messageBuffer;
+	g_pSquirrel<context>->messageBuffer = nullptr;
 }
 
 template <ScriptContext context> void SquirrelManager<context>::ExecuteCode(const char* pCode)

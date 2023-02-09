@@ -41,6 +41,8 @@ struct ModScriptCallback
 	std::string BeforeCallback;
 	// called after the codecallback has finished executing
 	std::string AfterCallback;
+	// called right before the vm is destroyed.
+	std::string DestroyCallback;
 };
 
 struct ModScript
