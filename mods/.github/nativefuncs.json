@@ -1,0 +1,644 @@
+{
+	"SERVER":[
+		{
+			"name":"NSGetModNames",
+			"helpText":"",
+			"returnTypeString":"array<string>",
+			"argTypes":""
+		},
+		{
+			"name":"NSIsModEnabled",
+			"helpText":"",
+			"returnTypeString":"bool",
+			"argTypes":"string modName"
+		},
+		{
+			"name":"NSSetModEnabled",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"string modName, bool enabled"
+		},
+		{
+			"name":"NSGetModDescriptionByModName",
+			"helpText":"",
+			"returnTypeString":"string",
+			"argTypes":"string modName"
+		},
+		{
+			"name":"NSGetModVersionByModName",
+			"helpText":"",
+			"returnTypeString":"string",
+			"argTypes":"string modName"
+		},
+		{
+			"name":"NSGetModDownloadLinkByModName",
+			"helpText":"",
+			"returnTypeString":"string",
+			"argTypes":"string modName"
+		},
+		{
+			"name":"NSGetModLoadPriority",
+			"helpText":"",
+			"returnTypeString":"int",
+			"argTypes":"string modName"
+		},
+		{
+			"name":"NSIsModRequiredOnClient",
+			"helpText":"",
+			"returnTypeString":"bool",
+			"argTypes":"string modName"
+		},
+		{
+			"name":"NSGetModConvarsByModName",
+			"helpText":"",
+			"returnTypeString":"array<string>",
+			"argTypes":"string modName"
+		},
+		{
+			"name":"DecodeJSON",
+			"helpText":"converts a json string to a squirrel table",
+			"returnTypeString":"table",
+			"argTypes":"string json, bool fatalParseErrors = false"
+		},
+		{
+			"name":"EncodeJSON",
+			"helpText":"converts a squirrel table to a json string",
+			"returnTypeString":"string",
+			"argTypes":"table data"
+		},
+		{
+			"name":"StringToAsset",
+			"helpText":"converts a given string to an asset",
+			"returnTypeString":"asset",
+			"argTypes":"string assetName"
+		},
+		{
+			"name":"NSGetLocalPlayerUID",
+			"helpText":"Returns the local player's uid.",
+			"returnTypeString":"string",
+			"argTypes":""
+		},
+		{
+			"name":"NSEarlyWritePlayerPersistenceForLeave",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"entity player"
+		},
+		{
+			"name":"NSIsWritingPlayerPersistence",
+			"helpText":"",
+			"returnTypeString":"bool",
+			"argTypes":""
+		},
+		{
+			"name":"NSIsPlayerLocalPlayer",
+			"helpText":"",
+			"returnTypeString":"bool",
+			"argTypes":"entity player"
+		},
+		{
+			"name":"NSIsDedicated",
+			"helpText":"",
+			"returnTypeString":"bool",
+			"argTypes":""
+		},
+		{
+			"name":"NSDisconnectPlayer",
+			"helpText":"Disconnects the player from the server with the given reason",
+			"returnTypeString":"bool",
+			"argTypes":"entity player, string reason"
+		},
+		{
+			"name":"GetUserInfoKVString_Internal",
+			"helpText":"Gets the string value of a given player's userinfo convar by name",
+			"returnTypeString":"string",
+			"argTypes":"entity player, string key, string defaultValue = \"\""
+		},
+		{
+			"name":"GetUserInfoKVAsset_Internal",
+			"helpText":"Gets the asset value of a given player's userinfo convar by name",
+			"returnTypeString":"asset",
+			"argTypes":"entity player, string key, asset defaultValue = $\"\""
+		},
+		{
+			"name":"GetUserInfoKVInt_Internal",
+			"helpText":"Gets the int value of a given player's userinfo convar by name",
+			"returnTypeString":"int",
+			"argTypes":"entity player, string key, int defaultValue = 0"
+		},
+		{
+			"name":"GetUserInfoKVFloat_Internal",
+			"helpText":"Gets the float value of a given player's userinfo convar by name",
+			"returnTypeString":"float",
+			"argTypes":"entity player, string key, float defaultValue = 0"
+		},
+		{
+			"name":"GetUserInfoKVBool_Internal",
+			"helpText":"Gets the bool value of a given player's userinfo convar by name",
+			"returnTypeString":"bool",
+			"argTypes":"entity player, string key, bool defaultValue = false"
+		},
+		{
+			"name":"NSSendMessage",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"int playerIndex, string text, bool isTeam"
+		},
+		{
+			"name":"NSBroadcastMessage",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"int fromPlayerIndex, int toPlayerIndex, string text, bool isTeam, bool isDead, int messageType"
+		},
+		{
+			"name":"NSGetCurrentModName",
+			"helpText":"Returns the mod name of the script running this function",
+			"returnTypeString":"string",
+			"argTypes":""
+		},
+		{
+			"name":"NSGetCallingModName",
+			"helpText":"Returns the mod name of the script running this function",
+			"returnTypeString":"string",
+			"argTypes":"int depth = 0"
+		},
+		{
+			"name":"NS_InternalMakeHttpRequest",
+			"helpText":"[Internal use only] Passes the HttpRequest struct fields to be reconstructed in native and used for an http request",
+			"returnTypeString":"int",
+			"argTypes":"int method, string baseUrl, table<string, array<string> > headers, table<string, array<string> > queryParams, string contentType, string body, int timeout, string userAgent"
+		},
+		{
+			"name":"NSIsHttpEnabled",
+			"helpText":"Whether or not HTTP requests are enabled. You can opt-out by starting the game with -disablehttprequests.",
+			"returnTypeString":"bool",
+			"argTypes":""
+		},
+		{
+			"name":"NSIsLocalHttpAllowed",
+			"helpText":"Whether or not HTTP requests can be made to a private network address. You can enable this by starting the game with -allowlocalhttp.",
+			"returnTypeString":"bool",
+			"argTypes":""
+		}
+	],
+	"CLIENT":[
+		{
+			"name":"NSChatWrite",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"int context, string text"
+		},
+		{
+			"name":"NSChatWriteRaw",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"int context, string text"
+		},
+		{
+			"name":"NSChatWriteLine",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"int context, string text"
+		},
+		{
+			"name":"NSGetModNames",
+			"helpText":"",
+			"returnTypeString":"array<string>",
+			"argTypes":""
+		},
+		{
+			"name":"NSIsModEnabled",
+			"helpText":"",
+			"returnTypeString":"bool",
+			"argTypes":"string modName"
+		},
+		{
+			"name":"NSSetModEnabled",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"string modName, bool enabled"
+		},
+		{
+			"name":"NSGetModDescriptionByModName",
+			"helpText":"",
+			"returnTypeString":"string",
+			"argTypes":"string modName"
+		},
+		{
+			"name":"NSGetModVersionByModName",
+			"helpText":"",
+			"returnTypeString":"string",
+			"argTypes":"string modName"
+		},
+		{
+			"name":"NSGetModDownloadLinkByModName",
+			"helpText":"",
+			"returnTypeString":"string",
+			"argTypes":"string modName"
+		},
+		{
+			"name":"NSGetModLoadPriority",
+			"helpText":"",
+			"returnTypeString":"int",
+			"argTypes":"string modName"
+		},
+		{
+			"name":"NSIsModRequiredOnClient",
+			"helpText":"",
+			"returnTypeString":"bool",
+			"argTypes":"string modName"
+		},
+		{
+			"name":"NSGetModConvarsByModName",
+			"helpText":"",
+			"returnTypeString":"array<string>",
+			"argTypes":"string modName"
+		},
+		{
+			"name":"DecodeJSON",
+			"helpText":"converts a json string to a squirrel table",
+			"returnTypeString":"table",
+			"argTypes":"string json, bool fatalParseErrors = false"
+		},
+		{
+			"name":"EncodeJSON",
+			"helpText":"converts a squirrel table to a json string",
+			"returnTypeString":"string",
+			"argTypes":"table data"
+		},
+		{
+			"name":"StringToAsset",
+			"helpText":"converts a given string to an asset",
+			"returnTypeString":"asset",
+			"argTypes":"string assetName"
+		},
+		{
+			"name":"NSGetLocalPlayerUID",
+			"helpText":"Returns the local player's uid.",
+			"returnTypeString":"string",
+			"argTypes":""
+		},
+		{
+			"name":"NSGetCurrentModName",
+			"helpText":"Returns the mod name of the script running this function",
+			"returnTypeString":"string",
+			"argTypes":""
+		},
+		{
+			"name":"NSGetCallingModName",
+			"helpText":"Returns the mod name of the script running this function",
+			"returnTypeString":"string",
+			"argTypes":"int depth = 0"
+		},
+		{
+			"name":"NSUpdateGameStateClient",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"int playerCount, int maxPlayers, int outScore, int secondHighestScore, int highestScore, bool roundBased, int scoreLimit"
+		},
+		{
+			"name":"NSUpdateServerInfoReload",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"int maxPlayers"
+		},
+		{
+			"name":"NSUpdateTimeInfo",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"float timeInFuture"
+		},
+		{
+			"name":"NS_InternalMakeHttpRequest",
+			"helpText":"[Internal use only] Passes the HttpRequest struct fields to be reconstructed in native and used for an http request",
+			"returnTypeString":"int",
+			"argTypes":"int method, string baseUrl, table<string, array<string> > headers, table<string, array<string> > queryParams, string contentType, string body, int timeout, string userAgent"
+		},
+		{
+			"name":"NSIsHttpEnabled",
+			"helpText":"Whether or not HTTP requests are enabled. You can opt-out by starting the game with -disablehttprequests.",
+			"returnTypeString":"bool",
+			"argTypes":""
+		},
+		{
+			"name":"NSIsLocalHttpAllowed",
+			"helpText":"Whether or not HTTP requests can be made to a private network address. You can enable this by starting the game with -allowlocalhttp.",
+			"returnTypeString":"bool",
+			"argTypes":""
+		}
+	],
+	"UI":[
+		{
+			"name":"NSGetCursorPosition",
+			"helpText":"",
+			"returnTypeString":"vector ornull",
+			"argTypes":""
+		},
+		{
+			"name":"NSRequestCustomMainMenuPromos",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":""
+		},
+		{
+			"name":"NSHasCustomMainMenuPromoData",
+			"helpText":"",
+			"returnTypeString":"bool",
+			"argTypes":""
+		},
+		{
+			"name":"NSGetCustomMainMenuPromoData",
+			"helpText":"",
+			"returnTypeString":"var",
+			"argTypes":"int promoDataKey"
+		},
+		{
+			"name":"NSGetModNames",
+			"helpText":"",
+			"returnTypeString":"array<string>",
+			"argTypes":""
+		},
+		{
+			"name":"NSIsModEnabled",
+			"helpText":"",
+			"returnTypeString":"bool",
+			"argTypes":"string modName"
+		},
+		{
+			"name":"NSSetModEnabled",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"string modName, bool enabled"
+		},
+		{
+			"name":"NSGetModDescriptionByModName",
+			"helpText":"",
+			"returnTypeString":"string",
+			"argTypes":"string modName"
+		},
+		{
+			"name":"NSGetModVersionByModName",
+			"helpText":"",
+			"returnTypeString":"string",
+			"argTypes":"string modName"
+		},
+		{
+			"name":"NSGetModDownloadLinkByModName",
+			"helpText":"",
+			"returnTypeString":"string",
+			"argTypes":"string modName"
+		},
+		{
+			"name":"NSGetModLoadPriority",
+			"helpText":"",
+			"returnTypeString":"int",
+			"argTypes":"string modName"
+		},
+		{
+			"name":"NSIsModRequiredOnClient",
+			"helpText":"",
+			"returnTypeString":"bool",
+			"argTypes":"string modName"
+		},
+		{
+			"name":"NSGetModConvarsByModName",
+			"helpText":"",
+			"returnTypeString":"array<string>",
+			"argTypes":"string modName"
+		},
+		{
+			"name":"NSReloadMods",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":""
+		},
+		{
+			"name":"NSIsMasterServerAuthenticated",
+			"helpText":"",
+			"returnTypeString":"bool",
+			"argTypes":""
+		},
+		{
+			"name":"NSRequestServerList",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":""
+		},
+		{
+			"name":"NSIsRequestingServerList",
+			"helpText":"",
+			"returnTypeString":"bool",
+			"argTypes":""
+		},
+		{
+			"name":"NSMasterServerConnectionSuccessful",
+			"helpText":"",
+			"returnTypeString":"bool",
+			"argTypes":""
+		},
+		{
+			"name":"NSGetServerCount",
+			"helpText":"",
+			"returnTypeString":"int",
+			"argTypes":""
+		},
+		{
+			"name":"NSGetServerName",
+			"helpText":"",
+			"returnTypeString":"string",
+			"argTypes":"int serverIndex"
+		},
+		{
+			"name":"NSGetServerDescription",
+			"helpText":"",
+			"returnTypeString":"string",
+			"argTypes":"int serverIndex"
+		},
+		{
+			"name":"NSGetServerMap",
+			"helpText":"",
+			"returnTypeString":"string",
+			"argTypes":"int serverIndex"
+		},
+		{
+			"name":"NSGetServerPlaylist",
+			"helpText":"",
+			"returnTypeString":"string",
+			"argTypes":"int serverIndex"
+		},
+		{
+			"name":"NSGetServerPlayerCount",
+			"helpText":"",
+			"returnTypeString":"int",
+			"argTypes":"int serverIndex"
+		},
+		{
+			"name":"NSGetServerMaxPlayerCount",
+			"helpText":"",
+			"returnTypeString":"int",
+			"argTypes":"int serverIndex"
+		},
+		{
+			"name":"NSGetServerID",
+			"helpText":"",
+			"returnTypeString":"string",
+			"argTypes":"int serverIndex"
+		},
+		{
+			"name":"NSServerRequiresPassword",
+			"helpText":"",
+			"returnTypeString":"bool",
+			"argTypes":"int serverIndex"
+		},
+		{
+			"name":"NSGetServerRequiredModsCount",
+			"helpText":"",
+			"returnTypeString":"int",
+			"argTypes":"int serverIndex"
+		},
+		{
+			"name":"NSGetServerRegion",
+			"helpText":"",
+			"returnTypeString":"string",
+			"argTypes":"int serverIndex"
+		},
+		{
+			"name":"NSGetServerRequiredModName",
+			"helpText":"",
+			"returnTypeString":"string",
+			"argTypes":"int serverIndex, int modIndex"
+		},
+		{
+			"name":"NSGetServerRequiredModVersion",
+			"helpText":"",
+			"returnTypeString":"string",
+			"argTypes":"int serverIndex, int modIndex"
+		},
+		{
+			"name":"NSClearRecievedServerList",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":""
+		},
+		{
+			"name":"NSTryAuthWithServer",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"int serverIndex, string password = ''"
+		},
+		{
+			"name":"NSIsAuthenticatingWithServer",
+			"helpText":"",
+			"returnTypeString":"bool",
+			"argTypes":""
+		},
+		{
+			"name":"NSWasAuthSuccessful",
+			"helpText":"",
+			"returnTypeString":"bool",
+			"argTypes":""
+		},
+		{
+			"name":"NSConnectToAuthedServer",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":""
+		},
+		{
+			"name":"NSTryAuthWithLocalServer",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":""
+		},
+		{
+			"name":"NSCompleteAuthWithLocalServer",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":""
+		},
+		{
+			"name":"NSGetAuthFailReason",
+			"helpText":"",
+			"returnTypeString":"string",
+			"argTypes":""
+		},
+		{
+			"name":"DecodeJSON",
+			"helpText":"converts a json string to a squirrel table",
+			"returnTypeString":"table",
+			"argTypes":"string json, bool fatalParseErrors = false"
+		},
+		{
+			"name":"EncodeJSON",
+			"helpText":"converts a squirrel table to a json string",
+			"returnTypeString":"string",
+			"argTypes":"table data"
+		},
+		{
+			"name":"StringToAsset",
+			"helpText":"converts a given string to an asset",
+			"returnTypeString":"asset",
+			"argTypes":"string assetName"
+		},
+		{
+			"name":"NSGetLocalPlayerUID",
+			"helpText":"Returns the local player's uid.",
+			"returnTypeString":"string",
+			"argTypes":""
+		},
+		{
+			"name":"NSGetCurrentModName",
+			"helpText":"Returns the mod name of the script running this function",
+			"returnTypeString":"string",
+			"argTypes":""
+		},
+		{
+			"name":"NSGetCallingModName",
+			"helpText":"Returns the mod name of the script running this function",
+			"returnTypeString":"string",
+			"argTypes":"int depth = 0"
+		},
+		{
+			"name":"NSUpdateGameStateUI",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"string gamemode, string gamemodeName, string map, string mapName, bool connected, bool loading"
+		},
+		{
+			"name":"NSUpdateServerInfo",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"string id, string name, string password, int players, int maxPlayers, string map, string mapDisplayName, string playlist, string playlistDisplayName"
+		},
+		{
+			"name":"NSSetLoading",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"bool loading"
+		},
+		{
+			"name":"NSUpdateListenServer",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":""
+		},
+		{
+			"name":"NS_InternalMakeHttpRequest",
+			"helpText":"[Internal use only] Passes the HttpRequest struct fields to be reconstructed in native and used for an http request",
+			"returnTypeString":"int",
+			"argTypes":"int method, string baseUrl, table<string, array<string> > headers, table<string, array<string> > queryParams, string contentType, string body, int timeout, string userAgent"
+		},
+		{
+			"name":"NSIsHttpEnabled",
+			"helpText":"Whether or not HTTP requests are enabled. You can opt-out by starting the game with -disablehttprequests.",
+			"returnTypeString":"bool",
+			"argTypes":""
+		},
+		{
+			"name":"NSIsLocalHttpAllowed",
+			"helpText":"Whether or not HTTP requests can be made to a private network address. You can enable this by starting the game with -allowlocalhttp.",
+			"returnTypeString":"bool",
+			"argTypes":""
+		}
+	]
+}
