@@ -198,6 +198,9 @@ Mod::Mod(fs::path modDir, char* jsonBuf)
 				if (scriptObj["ServerCallback"].HasMember("After") && scriptObj["ServerCallback"]["After"].IsString())
 					callback.AfterCallback = scriptObj["ServerCallback"]["After"].GetString();
 
+				if (scriptObj["ServerCallback"].HasMember("Destroy") && scriptObj["ServerCallback"]["Destroy"].IsString())
+					callback.DestroyCallback = scriptObj["ServerCallback"]["Destroy"].GetString();
+
 				script.Callbacks.push_back(callback);
 			}
 
@@ -212,6 +215,9 @@ Mod::Mod(fs::path modDir, char* jsonBuf)
 				if (scriptObj["ClientCallback"].HasMember("After") && scriptObj["ClientCallback"]["After"].IsString())
 					callback.AfterCallback = scriptObj["ClientCallback"]["After"].GetString();
 
+				if (scriptObj["ClientCallback"].HasMember("Destroy") && scriptObj["ClientCallback"]["Destroy"].IsString())
+					callback.DestroyCallback = scriptObj["ClientCallback"]["Destroy"].GetString();
+
 				script.Callbacks.push_back(callback);
 			}
 
@@ -225,6 +231,9 @@ Mod::Mod(fs::path modDir, char* jsonBuf)
 
 				if (scriptObj["UICallback"].HasMember("After") && scriptObj["UICallback"]["After"].IsString())
 					callback.AfterCallback = scriptObj["UICallback"]["After"].GetString();
+
+				if (scriptObj["UICallback"].HasMember("Destroy") && scriptObj["UICallback"]["Destroy"].IsString())
+					callback.DestroyCallback = scriptObj["UICallback"]["Destroy"].GetString();
 
 				script.Callbacks.push_back(callback);
 			}
