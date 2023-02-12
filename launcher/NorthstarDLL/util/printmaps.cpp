@@ -115,10 +115,10 @@ int, __fastcall, (const char const* cmdname, const char const* partial, char com
 	// don't update our map list often from this func, only refresh every 10 seconds so we avoid constantly reading fs
 	static double flLastAutocompleteRefresh = -999;
 
-	if (flLastAutocompleteRefresh + 10.0 < Tier0::Plat_FloatTime())
+	if (flLastAutocompleteRefresh + 10.0 < R2::g_pGlobals->m_flRealTime)
 	{
 		RefreshMapList();
-		flLastAutocompleteRefresh = Tier0::Plat_FloatTime();
+		flLastAutocompleteRefresh = R2::g_pGlobals->m_flRealTime;
 	}
 
 	// use a custom autocomplete func for all map loading commands

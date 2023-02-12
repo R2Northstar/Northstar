@@ -201,4 +201,64 @@ namespace R2
 	extern server_state_t* g_pServerState;
 
 	extern char* g_pModName;
+
+	// clang-format off
+	OFFSET_STRUCT(CGlobalVars)
+	{
+		FIELD(0x0,
+			// Absolute time (per frame still - Use Plat_FloatTime() for a high precision real time 
+			//  perf clock, but not that it doesn't obey host_timescale/host_framerate)
+			double m_flRealTime);
+
+		FIELDS(0x8,
+			// Absolute frame counter - continues to increase even if game is paused
+			int m_nFrameCount;
+		
+			// Non-paused frametime
+			float m_flAbsoluteFrameTime;
+		
+			// Current time 
+			//
+			// On the client, this (along with tickcount) takes a different meaning based on what
+			// piece of code you're in:
+			// 
+			//   - While receiving network packets (like in PreDataUpdate/PostDataUpdate and proxies),
+			//     this is set to the SERVER TICKCOUNT for that packet. There is no interval between
+			//     the server ticks.
+			//     [server_current_Tick * tick_interval]
+			//
+			//   - While rendering, this is the exact client clock 
+			//     [client_current_tick * tick_interval + interpolation_amount]
+			//
+			//   - During prediction, this is based on the client's current tick:
+			//     [client_current_tick * tick_interval]
+			float m_flCurTime;
+		)
+
+		FIELDS(0x30,
+			// Time spent on last server or client frame (has nothing to do with think intervals)
+			float m_flFrameTime;
+
+			// current maxplayers setting
+			int m_nMaxClients;
+		)
+
+		FIELDS(0x3C,
+			// Simulation ticks - does not increase when game is paused
+			uint32_t m_nTickCount; // this is weird and doesn't seem to increase once per frame?
+
+			// Simulation tick interval
+			float m_flTickInterval;
+		)
+
+		FIELDS(0x60,
+			const char* m_pMapName;
+			int m_nMapVersion;
+		)
+
+		//FIELD(0x98, double m_flRealTime); // again?
+	};
+	// clang-format on
+
+	extern CGlobalVars* g_pGlobals;
 } // namespace R2

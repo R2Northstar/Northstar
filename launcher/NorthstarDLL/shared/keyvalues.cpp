@@ -211,8 +211,15 @@ KeyValues* KeyValues::FindKey(const char* pszKeyName, bool bCreate)
 		return this;
 
 	const char* pSubStr = strchr(pszKeyName, '/');
+	const char* pSearchStr = pszKeyName;
+	if (pSubStr && !*(pSubStr + 1))
+	{
+		// if key name is just '/', then use it as a key directly
+		pSearchStr = pSubStr;
+		pSubStr = nullptr;
+	}
 
-	HKeySymbol iSearchStr = KeyValuesSystem()->m_pVtable->GetSymbolForString(KeyValuesSystem(), pszKeyName, bCreate);
+	HKeySymbol iSearchStr = KeyValuesSystem()->m_pVtable->GetSymbolForString(KeyValuesSystem(), pSearchStr, bCreate);
 	if (iSearchStr == INVALID_KEY_SYMBOL)
 	{
 		// not found, couldn't possibly be in key value list
@@ -222,7 +229,7 @@ KeyValues* KeyValues::FindKey(const char* pszKeyName, bool bCreate)
 	KeyValues* pLastKVs = nullptr;
 	KeyValues* pCurrentKVs;
 	// find the searchStr in the current peer list
-	for (pCurrentKVs = m_pSub; pCurrentKVs != NULL; pCurrentKVs = pCurrentKVs->m_pPeer)
+	for (pCurrentKVs = m_pSub; pCurrentKVs != nullptr; pCurrentKVs = pCurrentKVs->m_pPeer)
 	{
 		pLastKVs = pCurrentKVs; // record the last item looked at (for if we need to append to the end of the list)
 
@@ -232,7 +239,7 @@ KeyValues* KeyValues::FindKey(const char* pszKeyName, bool bCreate)
 	}
 
 	if (!pCurrentKVs && m_pChain)
-		pCurrentKVs = m_pChain->FindKey(pszKeyName, false);
+		pCurrentKVs = m_pChain->FindKey(pSearchStr, false);
 
 	// make sure a key was found
 	if (!pCurrentKVs)
@@ -240,7 +247,7 @@ KeyValues* KeyValues::FindKey(const char* pszKeyName, bool bCreate)
 		if (bCreate)
 		{
 			// we need to create a new key
-			pCurrentKVs = new KeyValues(pszKeyName);
+			pCurrentKVs = new KeyValues(pSearchStr);
 			//			Assert(dat != NULL);
 
 			// insert new key at end of list
@@ -249,7 +256,7 @@ KeyValues* KeyValues::FindKey(const char* pszKeyName, bool bCreate)
 			else
 				m_pSub = pCurrentKVs;
 
-			pCurrentKVs->m_pPeer = NULL;
+			pCurrentKVs->m_pPeer = nullptr;
 
 			// a key graduates to be a submsg as soon as it's m_pSub is set
 			// this should be the only place m_pSub is set
@@ -257,7 +264,7 @@ KeyValues* KeyValues::FindKey(const char* pszKeyName, bool bCreate)
 		}
 		else
 		{
-			return NULL;
+			return nullptr;
 		}
 	}
 
