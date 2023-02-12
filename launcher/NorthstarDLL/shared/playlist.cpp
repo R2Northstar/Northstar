@@ -4,6 +4,7 @@
 #include "core/convar/convar.h"
 #include "squirrel/squirrel.h"
 #include "engine/hoststate.h"
+#include "engine/r2engine.h"
 #include "server/serverpresence.h"
 
 AUTOHOOK_INIT()
@@ -26,7 +27,7 @@ char, __fastcall, (void* a1, void* a2))
 {
 	// the private_match playlist on mp_lobby is the only situation where there should be any legitimate sending of this netmessage
 	if (!Cvar_ns_use_clc_SetPlaylistVarOverride->GetBool() || strcmp(R2::GetCurrentPlaylistName(), "private_match") ||
-		strcmp(R2::g_pHostState->m_levelName, "mp_lobby"))
+		strcmp(R2::g_pGlobals->m_pMapName, "mp_lobby"))
 		return 1;
 
 	return clc_SetPlaylistVarOverride__Process(a1, a2);
