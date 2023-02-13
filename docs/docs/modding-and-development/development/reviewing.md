@@ -45,11 +45,11 @@ The TL;DR is to test the aspect that has been changed.
 
 #### Finishing up
 
-After you performed the testing and/or code review leave I final comment by clicking on _"Finish your review"_ on the top right of the _"Files changed"_ page of the PR.
+After you performed the testing and/or code review leave a final comment by clicking on _"Finish your review"_ on the top right of the _"Files changed"_ page of the PR.
 
 ![](../../.gitbook/assets/review4.png)
 
-In your final comment make sure to mention what you did, e.g. which aspects of the change you tested for or what you considered during code review (format, edge cases, ...). The more detailed this part is the easier it is for other reviewers to tell which aspects they can skip during reviewing to speed up the process.
+In your final comment make sure to mention what you did, e.g. which aspects of the change you tested for or what you considered during code review (formatting, edge cases, ...). The more detailed this part is the easier it is for other reviewers to tell which aspects they can skip during reviewing to speed up the process.
 
 After leaving your comment, select the type of feedback.
 
