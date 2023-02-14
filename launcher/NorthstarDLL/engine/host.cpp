@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "core/convar/convar.h"
 #include "mods/modmanager.h"
 #include "util/printcommands.h"

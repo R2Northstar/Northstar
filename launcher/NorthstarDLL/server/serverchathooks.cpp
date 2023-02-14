@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "serverchathooks.h"
 #include "shared/exploit_fixes/ns_limits.h"
 #include "squirrel/squirrel.h"

@@ -1,4 +1,3 @@
-#include "pch.h"
 #include <ctype.h>
 #include "utils.h"
 

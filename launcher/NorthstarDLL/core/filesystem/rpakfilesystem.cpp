@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "rpakfilesystem.h"
 #include "mods/modmanager.h"
 #include "dedicated/dedicated.h"

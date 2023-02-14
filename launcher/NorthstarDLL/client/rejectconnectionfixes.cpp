@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "engine/r2engine.h"
 
 AUTOHOOK_INIT()

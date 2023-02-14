@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "logging.h"
 #include "loghooks.h"
 #include "core/convar/convar.h"

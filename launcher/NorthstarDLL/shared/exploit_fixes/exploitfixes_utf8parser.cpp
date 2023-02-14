@@ -1,4 +1,3 @@
-#include "pch.h"
 
 AUTOHOOK_INIT()
 

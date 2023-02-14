@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "squirrel/squirrel.h"
 #include "util/wininfo.h"
 

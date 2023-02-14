@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "core/convar/convar.h"
 #include "engine/hoststate.h"
 #include "engine/r2engine.h"

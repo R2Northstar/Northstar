@@ -1,5 +1,4 @@
 #pragma once
-#include "pch.h"
 #include "bansystem.h"
 #include "serverauthentication.h"
 #include "core/convar/concommand.h"

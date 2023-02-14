@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "squirrel.h"
 #include "logging/logging.h"
 #include "core/convar/concommand.h"

@@ -1,5 +1,3 @@
-#include "pch.h"
-
 AUTOHOOK_INIT()
 
 HWND* g_gameHWND;

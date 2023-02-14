@@ -1,4 +1,3 @@
-#include "pch.h"
 
 ON_DLL_LOAD_CLIENT("materialsystem_dx11.dll", DiskVMTFixes, (CModule module))
 {

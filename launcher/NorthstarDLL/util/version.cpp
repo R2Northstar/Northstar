@@ -1,5 +1,4 @@
 #include "util/version.h"
-#include "pch.h"
 #include "ns_version.h"
 #include "dedicated/dedicated.h"
 

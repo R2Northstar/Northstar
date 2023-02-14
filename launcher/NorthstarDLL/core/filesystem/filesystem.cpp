@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "filesystem.h"
 #include "core/sourceinterface.h"
 #include "mods/modmanager.h"

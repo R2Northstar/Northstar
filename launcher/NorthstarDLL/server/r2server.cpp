@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "r2server.h"
 
 using namespace R2;
