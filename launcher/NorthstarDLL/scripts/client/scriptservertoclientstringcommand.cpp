@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "squirrel/squirrel.h"
 #include "core/convar/convar.h"
 #include "core/convar/concommand.h"

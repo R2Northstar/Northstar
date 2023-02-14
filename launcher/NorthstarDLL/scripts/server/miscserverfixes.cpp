@@ -1,4 +1,3 @@
-#include "pch.h"
 
 ON_DLL_LOAD("server.dll", MiscServerFixes, (CModule module))
 {

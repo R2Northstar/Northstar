@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "sourceinterface.h"
 #include "logging/sourceconsole.h"
 

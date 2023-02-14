@@ -1,4 +1,3 @@
-#include "pch.h"
 
 // clang-format off
 namespace NS::Colors

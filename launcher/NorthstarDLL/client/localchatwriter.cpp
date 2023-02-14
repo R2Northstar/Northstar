@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "localchatwriter.h"
 
 class vgui_BaseRichText_vtable;

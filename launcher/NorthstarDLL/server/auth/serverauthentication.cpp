@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "serverauthentication.h"
 #include "shared/exploit_fixes/ns_limits.h"
 #include "core/convar/cvar.h"

@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "core/convar/convar.h"
 #include "sourceconsole.h"
 #include "core/sourceinterface.h"

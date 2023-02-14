@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "dedicated/dedicated.h"
 
 #include <iostream>

@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "mods/modmanager.h"
 #include "core/filesystem/filesystem.h"
 #include "squirrel/squirrel.h"

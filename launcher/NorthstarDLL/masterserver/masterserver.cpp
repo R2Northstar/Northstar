@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "masterserver/masterserver.h"
 #include "core/convar/concommand.h"
 #include "playlist.h"

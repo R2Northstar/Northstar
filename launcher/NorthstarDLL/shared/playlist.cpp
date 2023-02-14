@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "playlist.h"
 #include "core/convar/concommand.h"
 #include "core/convar/convar.h"

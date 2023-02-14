@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "core/tier0.h"
 
 #include <filesystem>

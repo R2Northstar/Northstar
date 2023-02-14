@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "scripthttprequesthandler.h"
 #include "util/version.h"
 #include "squirrel/squirrel.h"

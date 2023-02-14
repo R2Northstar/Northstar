@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "squirrel/squirrel.h"
 #include "masterserver/masterserver.h"
 #include "server/auth/serverauthentication.h"

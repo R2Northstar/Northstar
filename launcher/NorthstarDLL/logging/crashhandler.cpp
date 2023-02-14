@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "crashhandler.h"
 #include "dedicated/dedicated.h"
 #include "config/profile.h"

@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "tier0.h"
 
 // use the Tier0 namespace for tier0 funcs

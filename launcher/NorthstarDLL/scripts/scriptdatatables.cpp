@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "squirrel/squirrel.h"
 #include "core/filesystem/rpakfilesystem.h"
 #include "core/convar/convar.h"
