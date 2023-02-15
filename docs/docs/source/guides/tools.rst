@@ -37,6 +37,10 @@ File editors
 * `Visual Studio Code <https://code.visualstudio.com>`_
 * `VSCodium <https://vscodium.com>`_
 * `Notepad++ <https://notepad-plus-plus.org/downloads/>`_
+  
+* `Kate <https://kate-editor.org/>`_
+
+  * `Kate syntax highlighting for Squirrel <https://gist.github.com/CTalvio/6de535f9258cfebd71ab64d7e6af4ee6>`_
 
 Graphics / animation / color editors
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
