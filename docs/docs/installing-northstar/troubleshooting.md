@@ -143,7 +143,11 @@ This is a small guide to help you understand how to verify the files of your gam
 
 ## Controller Not Working <a href="#controller" id="controller"></a>
 
-If you're having issues with your controller working on Northstar, you can add Northstar to Steam to make it use Steam's controller settings.\ 
+If your controller isn't working on Northstar, there are a couple ways you can make it work via Steam's controller settings.
+
+If you own Titanfall 2 on Steam, you'll want to add [launch options](troubleshooting.md#launch-opts) and open Titanfall 2 on Steam to launch Northstar.
+
+If you _don't_ own Titanfall 2 on Steam, you'll want to add Northstar as a Non-Steam game and launch the added game via Steam.\
 To do this, go to Steam, then in the bottom left corner, hit `ADD A GAME` > `Add a Non-Steam Game...` > `BROWSE...` > Find `NorthstarLauncher` in your [titanfall2 directory](troubleshooting.md#game-location)
 
 ## Access Violation
