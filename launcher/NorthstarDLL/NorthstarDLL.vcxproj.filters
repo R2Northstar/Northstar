@@ -1173,11 +1173,14 @@
     <ClInclude Include="core\macros.h">
       <Filter>Header Files\core</Filter>
     </ClInclude>
-		<ClInclude Include="util\wininfo.h">
-    	<Filter>Header Files</Filter>
+    <ClInclude Include="util\wininfo.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="util\utils.h">
       <Filter>Header Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="dedicated\dedicatedlogtoclient.h">
+      <Filter>Header Files\dedicated</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1429,10 +1432,13 @@
     <ClCompile Include="util\utils.cpp">
       <Filter>Source Files\util</Filter>
     </ClCompile>
+    <ClCompile Include="dedicated\dedicatedlogtoclient.cpp">
+      <Filter>Source Files\dedicated</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <MASM Include="audio_asm.asm">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\client</Filter>
     </MASM>
   </ItemGroup>
 </Project>
