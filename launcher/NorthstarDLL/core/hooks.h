@@ -63,15 +63,19 @@ class __dllLoadCallback
 
 // new macro hook stuff
 class __autohook;
+class __autovar;
 
 class __fileAutohook
 {
   public:
 	std::vector<__autohook*> hooks;
+	std::vector<__autovar*> vars;
 
 	void Dispatch();
 	void DispatchForModule(const char* pModuleName);
 };
+
+uintptr_t ParseDLLOffsetString(const char* pAddrString);
 
 // initialise autohooks for this file
 #define AUTOHOOK_INIT()                                                                                                                    \
@@ -187,39 +191,7 @@ class __autohook
 
 		case OFFSET_STRING:
 		{
-			// in the format server.dll + 0xDEADBEEF
-			int iDllNameEnd = 0;
-			for (; !isspace(pAddrString[iDllNameEnd]) && pAddrString[iDllNameEnd] != '+'; iDllNameEnd++)
-				;
-
-			char* pModuleName = new char[iDllNameEnd + 1];
-			memcpy(pModuleName, pAddrString, iDllNameEnd);
-			pModuleName[iDllNameEnd] = '\0';
-
-			// get the module address
-			const HMODULE pModuleAddr = GetModuleHandleA(pModuleName);
-
-			if (!pModuleAddr)
-				break;
-
-			// get the offset string
-			uintptr_t iOffset = 0;
-
-			int iOffsetBegin = iDllNameEnd;
-			int iOffsetEnd = strlen(pAddrString);
-
-			// seek until we hit the start of the number offset
-			for (; !(pAddrString[iOffsetBegin] >= '0' && pAddrString[iOffsetBegin] <= '9') && pAddrString[iOffsetBegin]; iOffsetBegin++)
-				;
-
-			bool bIsHex =
-				pAddrString[iOffsetBegin] == '0' && (pAddrString[iOffsetBegin + 1] == 'X' || pAddrString[iOffsetBegin + 1] == 'x');
-			if (bIsHex)
-				iOffset = std::stoi(pAddrString + iOffsetBegin + 2, 0, 16);
-			else
-				iOffset = std::stoi(pAddrString + iOffsetBegin);
-
-			targetAddr = (LPVOID)((uintptr_t)pModuleAddr + iOffset);
+			targetAddr = (LPVOID)ParseDLLOffsetString(pAddrString);
 			break;
 		}
 
@@ -309,3 +281,51 @@ class ManualHook
 
 void MakeHook(LPVOID pTarget, LPVOID pDetour, void* ppOriginal, const char* pFuncName = "");
 #define MAKEHOOK(pTarget, pDetour, ppOriginal) MakeHook(pTarget, pDetour, ppOriginal, __STR(pDetour))
+
+class __autovar
+{
+  public:
+	char* m_pAddrString;
+	void** m_pTarget;
+
+  public:
+	__autovar(__fileAutohook* pAutohook, const char* pAddrString, void** pTarget)
+	{
+		m_pTarget = pTarget;
+
+		const int iAddrStrlen = strlen(pAddrString) + 1;
+		m_pAddrString = new char[iAddrStrlen];
+		memcpy(m_pAddrString, pAddrString, iAddrStrlen);
+
+		pAutohook->vars.push_back(this);
+	}
+
+	void Dispatch()
+	{
+		*m_pTarget = (void*)ParseDLLOffsetString(m_pAddrString);
+	}
+};
+
+// VAR_AT(engine.dll+0x404, ConVar*, Cvar_host_timescale)
+#define VAR_AT(addrString, type, name)                                                                                                     \
+	type name;                                                                                                                             \
+	namespace                                                                                                                              \
+	{                                                                                                                                      \
+		__autovar CONCAT2(__autovar, __LINE__)(&__FILEAUTOHOOK, __STR(addrString), (void**)&name);                                         \
+	}
+
+// FUNCTION_AT(engine.dll + 0xDEADBEEF, void, __fastcall, SomeFunc, (void* a1))
+#define FUNCTION_AT(addrString, type, callingConvention, name, args)                                                                       \
+	type(*callingConvention name) args;                                                                                                    \
+	namespace                                                                                                                              \
+	{                                                                                                                                      \
+		__autovar CONCAT2(__autovar, __LINE__)(&__FILEAUTOHOOK, __STR(addrString), (void**)&name);                                         \
+	}
+
+// int* g_pSomeInt;
+// DEFINED_VAR_AT(engine.dll + 0x5005, g_pSomeInt)
+#define DEFINED_VAR_AT(addrString, name)                                                                                                   \
+	namespace                                                                                                                              \
+	{                                                                                                                                      \
+		__autovar CONCAT2(__autovar, __LINE__)(&__FILEAUTOHOOK, __STR(addrString), (void**)&name);                                         \
+	}

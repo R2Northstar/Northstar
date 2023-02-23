@@ -65,6 +65,9 @@ __dllLoadCallback::__dllLoadCallback(
 
 void __fileAutohook::Dispatch()
 {
+	for (__autovar* var : vars)
+		var->Dispatch();
+
 	for (__autohook* hook : hooks)
 		hook->Dispatch();
 }
@@ -112,6 +115,42 @@ bool ManualHook::Dispatch(LPVOID addr, LPVOID* orig)
 		spdlog::error("MH_CreateHook failed for function {}", pFuncName);
 
 	return false;
+}
+
+uintptr_t ParseDLLOffsetString(const char* pAddrString)
+{
+	// in the format server.dll + 0xDEADBEEF
+	int iDllNameEnd = 0;
+	for (; !isspace(pAddrString[iDllNameEnd]) && pAddrString[iDllNameEnd] != '+'; iDllNameEnd++)
+		;
+
+	char* pModuleName = new char[iDllNameEnd + 1];
+	memcpy(pModuleName, pAddrString, iDllNameEnd);
+	pModuleName[iDllNameEnd] = '\0';
+
+	// get the module address
+	const HMODULE pModuleAddr = GetModuleHandleA(pModuleName);
+
+	if (!pModuleAddr)
+		return 0;
+
+	// get the offset string
+	uintptr_t iOffset = 0;
+
+	int iOffsetBegin = iDllNameEnd;
+	int iOffsetEnd = strlen(pAddrString);
+
+	// seek until we hit the start of the number offset
+	for (; !(pAddrString[iOffsetBegin] >= '0' && pAddrString[iOffsetBegin] <= '9') && pAddrString[iOffsetBegin]; iOffsetBegin++)
+		;
+
+	bool bIsHex = pAddrString[iOffsetBegin] == '0' && (pAddrString[iOffsetBegin + 1] == 'X' || pAddrString[iOffsetBegin + 1] == 'x');
+	if (bIsHex)
+		iOffset = std::stoi(pAddrString + iOffsetBegin + 2, 0, 16);
+	else
+		iOffset = std::stoi(pAddrString + iOffsetBegin);
+
+	return ((uintptr_t)pModuleAddr + iOffset);
 }
 
 // dll load callback stuff
