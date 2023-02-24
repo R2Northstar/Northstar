@@ -15,7 +15,6 @@ Each of these installers covers a different use case. Use the table below to fin
 |                                 |      |       |      |      |
 | Set launch arguments            | ❓    | ✔️    | ✔️   | ❌    |
 | Installing mods for other games | ✔️   | ❌     | ❌    | ❌    |
-| Install skins                   | ❓    | ❌     | ✔️   | ❌    |
 | Linux support                   | ❓    | ✔️    | ❌    | ✔️   |
 | Install Mods from GitHub/GitLab | ❌    | ❌     | ✔️   | ❌    |
 | Server config creator           | ❌    | ❌     | ✔️   | ❌    |
