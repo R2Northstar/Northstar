@@ -7,6 +7,7 @@
 
 * [Basic Setup](installing-northstar/basic-setup.md)
 * [Northstar Installers](installing-northstar/northstar-installers/README.md)
+  * [FlightCore Guide](installing-northstar/northstar-installers/flightcore-guide.md)
   * [VTOL Guide](installing-northstar/northstar-installers/vtol-guide.md)
 * [Manual installation](installing-northstar/manual-installation.md)
 * [SteamDeck and Linux](steamdeck-and-linux/README.md)
