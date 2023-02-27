@@ -4,23 +4,36 @@ Since the public release of Northstar, the wider community has created tools to 
 
 Each of these installers covers a different use case. Use the table below to find out which one suits you best:
 
-| Features                        | r2mm | Viper | VTOL | Papa |
-| ------------------------------- | ---- | ----- | ---- | ---- |
-| Install Northstar               | ✔️   | ✔️    | ✔️   | ✔️   |
-| Update Northstar                | ✔️   | ✔️    | ✔️   | ✔️   |
-| Launch Northstar                | ✔️   | ✔️    | ✔️   | ❌    |
-| Launch Vanilla                  | ✔️   | ✔️    | ✔️   | ❌    |
-| Install Mods from Thunderstore  | ✔️   | ✔️    | ✔️   | ✔️   |
-| Update Mods                     | ✔️   | ✔️    | ✔️   | ✔️   |
-|                                 |      |       |      |      |
-| Set launch arguments            | ❓    | ✔️    | ✔️   | ❌    |
-| Installing mods for other games | ✔️   | ❌     | ❌    | ❌    |
-| Linux support                   | ❓    | ✔️    | ❌    | ✔️   |
-| Install Mods from GitHub/GitLab | ❌    | ❌     | ✔️   | ❌    |
-| Server config creator           | ❌    | ❌     | ✔️   | ❌    |
-| Package mods for Thunderstore   | ❌    | ❌     | ✔️   | ❌    |
+| Features                        | FlightCore | r2mm | Viper | VTOL | Papa |
+| ------------------------------- | ---------- | ---- | ----- | ---- | ---- |
+| Install Northstar               | ✔️          | ✔️   | ✔️    | ✔️   | ✔️   |
+| Update Northstar                | ✔️          | ✔️   | ✔️    | ✔️   | ✔️   |
+| Launch Northstar                | ✔️          | ✔️   | ✔️    | ✔️   | ❌    |
+| Launch Vanilla                  | ❌          | ✔️   | ✔️    | ✔️   | ❌    |
+| Install Mods from Thunderstore  | ✔️          | ✔️   | ✔️    | ✔️   | ✔️   |
+| Update Mods                     | ✔️          | ✔️   | ✔️    | ✔️   | ✔️   |
+|                                 |            |      |       |      |      |
+| Set launch arguments            | ❌          | ❓    | ✔️    | ✔️   | ❌    |
+| Installing mods for other games | ❌          | ✔️   | ❌     | ❌    | ❌    |
+| Linux support                   | ✔️          | ❓    | ✔️    | ❌    | ✔️   |
+| Install Mods from GitHub/GitLab | ❌          | ❌    | ❌     | ✔️   | ❌    |
+| Server config creator           | ❌          | ❌    | ❌     | ✔️   | ❌    |
+| Package mods for Thunderstore   | ❌          | ❌    | ❌     | ✔️   | ❌    |
 
 Note that none of these tools are directly part of the Northstar project and as such any issues with them should be reported to the respective authors instead.
+
+## **GeckoEidechse:** FlightCore
+
+![FlightCore Main Window](../../images/flightcore-main-window.png)
+![FlightCore Mod browser](../../images/flightcore-mod-browser-window.png)
+
+Fast and easy to use Northstar installer, updater, launcher, and mod-manager. Features built-in mod browser and allows for easy installation of pre-release versions of Northstar.\
+Supports Windows and Linux. 
+
+
+Download and source code:
+
+{% embed url="https://github.com/R2NorthstarTools/FlightCore" %}
 
 ## **ebkr:** r2modman
 
