@@ -14,17 +14,22 @@ On Steam Deck, complete the following in desktop mode. You may return to game mo
 2. Install the latest version of Northstar using [Viper](../installing-northstar/northstar-installers.md#0negal-viper) or do it manually
    1. For manual install download the latest version of Northstar from the [releases](https://github.com/R2Northstar/Northstar/releases) page
    2. Then extract all contents of the file to your Titanfall 2 folder ( Right click _Titanfall 2_ > Open _Properties_ > Click _Local Files_ > Click _Browse_ )
-3. In your Titanfall2 folder create a file called `run_northstar.txt` and write a single `1` to it, i.e. `echo 1 > run_northstar.txt`
-4. Install NorthstarProton
+3. Install NorthstarProton
    1. **Protonup-QT**: Click _About_, then tick the box to enable _advanced mode_. You should be able to select and install NorthstarProton from the _Add version_ menu.
    2. **ProtonPlus**: NorthstarProton can also be installed via ProtonPlus.
    3. **Manual**: Download the latest release of [NorthstarProton](https://github.com/cyrv6737/NorthstarProton/releases/), extract it, and place the folder in one of the following directories:
       * **Steam (Native Package) & Steam Deck:** `~/.local/share/Steam/compatibilitytools.d`
       * **Steam (Flatpak):** `~/.var/app/com.valvesoftware.Steam/data/Steam/compatibilitytools.d/`
-5. Restart Steam. Head to `Properties -> Compatibility` under Titanfall2. Check `Force the use of a specific Steam Play compatibility tool` checkbox, then set the Steam Play compatibility tool to NorthstarProton.
+4. Restart Steam. Head to `Properties -> Compatibility` under Titanfall2. Check `Force the use of a specific Steam Play compatibility tool` checkbox, then set the Steam Play compatibility tool to NorthstarProton.
+5. Add `%command% -northstar` as a [launch option](../installing-northstar/troubleshooting.md#launch-opts) to Titanfall2
 6. Launch Titanfall2, it should now launch Northstar
 
-Note that removing the `run_northstar.txt` file or editing it and changing `1` to be a `0` will cause Steam to launch the vanilla game again.
+Note that removing the `%command% -northstar` will cause Steam to launch the vanilla game again.
+
+{% hint style="info" %}
+This guide assumes you're *up to date with NorthstarProton*, as the method used to launch Northstar changed in NorthstarProton-8.1-1 which was released on 2023-02-22.\
+If you're using an older version of NorthstarProton, replace the information about launch options with a text file called `run_northstar.txt` in your Titanfall2 directory. This text file should have a single character `1` inside.
+{% endhint %}
 
 ## Lutris (Wine)
 
