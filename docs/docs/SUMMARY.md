@@ -6,7 +6,7 @@
 ## Installing Northstar
 
 * [Basic Setup](installing-northstar/basic-setup.md)
-* [Northstar Installers](installing-northstar/northstar-installers.md)
+* [Northstar Installers](installing-northstar/northstar-installers/README.md)
 * [Manual installation](installing-northstar/manual-installation.md)
 * [SteamDeck and Linux](steamdeck-and-linux/README.md)
   * [Installing on SteamDeck and Linux](steamdeck-and-linux/installing-on-steamdeck-and-linux.md)

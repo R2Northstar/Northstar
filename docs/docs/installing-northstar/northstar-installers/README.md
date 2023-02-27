@@ -24,7 +24,7 @@ Note that none of these tools are directly part of the Northstar project and as 
 
 ## **ebkr:** r2modman
 
-![r2modman](../images/r2modman-main-window.png)
+![r2modman](../../images/r2modman-main-window.png)
 
 General mod-manager for multiple games including Titanfall|2+Northstar. Allows for separate profiles to keep your game install folder clean. Features mod-manager and built-in mod browser for Thunderstore.\
 Supports Windows and Linux.
@@ -48,7 +48,7 @@ There's also an alternative version of r2mm called _Thunderstore Mod Manager_ TM
 
 ## **0neGal:** Viper
 
-![viper](../images/viper-main-window.png)
+![viper](../../images/viper-main-window.png)
 
 Simple and easy to use Northstar installer and auto-updater. Allows launching both Northstar and vanilla Titanfall 2. Features mod-manager and built-in mod browser for Thunderstore.\
 Supports Windows and Linux.
@@ -61,7 +61,7 @@ Download and source code:
 
 ## **BigSpice:** VTOL
 
-![vtol](../images/vtol-main-window.png)
+![vtol](../../images/vtol-main-window.png)
 
 Easy to use and extensive Northstar installer and mod-manager. Supports installing from Thunderstore as well as from outside sources like GitHub/GitLab repositories. Has support for installing custom weapon/pilot skins. Features manager for setting up dedicated servers.
 
