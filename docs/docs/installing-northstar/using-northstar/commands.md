@@ -48,6 +48,7 @@ bind "F5" "toggleconsole"
 | `ns_disallowed_tactical_replacement` | Name of optional replacement ability for disallowed tacticals                                               | ex: `"mp_ability_grapple"`                      |
 | `give mp_weapon_peacekraber`         | Gives you peacekraber                                                                                       |                                                 |
 | `r_latencyflex`                      | Enables [LatencyFleX](../../using-northstar/playing-on-linux/#latencyflex) (Linux-only, enabled by default) | `0` / `1`                                       |
+| `rui_drawEnable`                     | Enables or disables the HUD                                                                                 | `0` / `1`                                       |
 
 ### Useful dev commands
 
