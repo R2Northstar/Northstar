@@ -450,6 +450,7 @@ void MasterServerManager::AuthenticateWithOwnServer(const char* uid, const char*
 	m_bAuthenticatingWithGameServer = true;
 	m_bScriptAuthenticatingWithGameServer = true;
 	m_bSuccessfullyAuthenticatedWithGameServer = false;
+	m_sAuthFailureReason = "Authentication Failed";
 
 	std::string uidStr(uid);
 	std::string tokenStr(playerToken);
@@ -584,6 +585,7 @@ void MasterServerManager::AuthenticateWithServer(const char* uid, const char* pl
 	m_bAuthenticatingWithGameServer = true;
 	m_bScriptAuthenticatingWithGameServer = true;
 	m_bSuccessfullyAuthenticatedWithGameServer = false;
+	m_sAuthFailureReason = "Authentication Failed";
 
 	std::string uidStr(uid);
 	std::string tokenStr(playerToken);
