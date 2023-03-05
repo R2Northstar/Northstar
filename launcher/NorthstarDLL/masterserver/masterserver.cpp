@@ -763,6 +763,31 @@ void MasterServerManager::WritePlayerPersistentData(const char* playerId, const 
 	requestThread.detach();
 }
 
+void MasterServerManager::ProcessConnectionlessPacketSigreq1(std::string data)
+{
+	rapidjson_document obj;
+	obj.Parse(data);
+
+	if (obj.HasParseError())
+	{
+		// note: it's okay to print the data as-is since we've already checked that it actually came from Atlas
+		spdlog::error("invalid Atlas connectionless packet request ({}): {}", data, GetParseError_En(obj.GetParseError()));
+		return;
+	}
+
+	if (!obj.HasMember("type") || !obj["type"].IsString())
+	{
+		spdlog::error("invalid Atlas connectionless packet request ({}): missing type", data);
+		return;
+	}
+
+	std::string type = obj["type"].GetString();
+
+	// TODO
+
+	spdlog::error("invalid Atlas connectionless packet request: unknown type {}", type);
+}
+
 void ConCommand_ns_fetchservers(const CCommand& args)
 {
 	g_pMasterServerManager->RequestServerList();
