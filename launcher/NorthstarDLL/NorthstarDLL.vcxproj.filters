@@ -1453,6 +1453,9 @@
     <ClCompile Include="server\alltalk.cpp">
       <Filter>Source Files\server</Filter>
     </ClCompile>
+    <ClCompile Include="server\servernethooks.cpp">
+      <Filter>Source Files\server</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <MASM Include="audio_asm.asm">
