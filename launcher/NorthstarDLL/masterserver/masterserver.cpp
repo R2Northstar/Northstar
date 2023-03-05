@@ -498,7 +498,9 @@ void MasterServerManager::AuthenticateWithOwnServer(const char* uid, const char*
 					spdlog::error("Failed reading masterserver response: got fastify error response");
 					spdlog::error(readBuffer);
 
-					if (authInfoJson["error"].HasMember("enum"))
+					if (authInfoJson["error"].HasMember("msg"))
+						m_sAuthFailureReason = authInfoJson["error"]["msg"].GetString();
+					else if (authInfoJson["error"].HasMember("enum"))
 						m_sAuthFailureReason = authInfoJson["error"]["enum"].GetString();
 					else
 						m_sAuthFailureReason = "No error message provided";
@@ -651,7 +653,9 @@ void MasterServerManager::AuthenticateWithServer(const char* uid, const char* pl
 					spdlog::error("Failed reading masterserver response: got fastify error response");
 					spdlog::error(readBuffer);
 
-					if (connectionInfoJson["error"].HasMember("enum"))
+					if (connectionInfoJson["error"].HasMember("msg"))
+						m_sAuthFailureReason = connectionInfoJson["error"]["msg"].GetString();
+					else if (connectionInfoJson["error"].HasMember("enum"))
 						m_sAuthFailureReason = connectionInfoJson["error"]["enum"].GetString();
 					else
 						m_sAuthFailureReason = "No error message provided";
