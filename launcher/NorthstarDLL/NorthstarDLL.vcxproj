@@ -530,6 +530,7 @@
     <ClCompile Include="server\buildainfile.cpp" />
     <ClCompile Include="server\r2server.cpp" />
     <ClCompile Include="server\serverchathooks.cpp" />
+    <ClCompile Include="server\servernethooks.cpp" />
     <ClCompile Include="server\serverpresence.cpp" />
     <ClCompile Include="shared\exploit_fixes\exploitfixes.cpp" />
     <ClCompile Include="shared\exploit_fixes\exploitfixes_lzss.cpp" />
