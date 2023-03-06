@@ -130,6 +130,12 @@ jobs:
         with:
           name: Northstar.release.${{ env.NORTHSTAR_VERSION }}
           path: northstar
+      - name: Upload zip to release draft
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          draft: true
+          files: northstar/Northstar.release.${{ env.NORTHSTAR_VERSION }}
 
   build-thunderstore-package:
     needs: build-northstar # comment out when running locally
