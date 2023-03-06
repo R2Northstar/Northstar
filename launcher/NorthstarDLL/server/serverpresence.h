@@ -5,7 +5,6 @@ struct ServerPresence
 {
   public:
 	int m_iPort;
-	int m_iAuthPort;
 
 	std::string m_sServerId;
 
@@ -28,7 +27,6 @@ struct ServerPresence
 	ServerPresence(const ServerPresence* obj)
 	{
 		m_iPort = obj->m_iPort;
-		m_iAuthPort = obj->m_iAuthPort;
 
 		m_sServerId = obj->m_sServerId;
 
@@ -83,7 +81,6 @@ class ServerPresenceManager
 	void RunFrame(double flCurrentTime);
 
 	void SetPort(const int iPort);
-	void SetAuthPort(const int iPort);
 
 	void SetName(const std::string sServerNameUnicode);
 	void SetDescription(const std::string sServerDescUnicode);

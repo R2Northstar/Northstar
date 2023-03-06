@@ -1,6 +1,5 @@
 #pragma once
 #include "core/convar/convar.h"
-#include "httplib.h"
 #include "engine/r2engine.h"
 #include <unordered_map>
 #include <string>
@@ -27,11 +26,7 @@ extern CBaseServer__RejectConnectionType CBaseServer__RejectConnection;
 
 class ServerAuthenticationManager
 {
-  private:
-	httplib::Server m_PlayerAuthServer;
-
   public:
-	ConVar* Cvar_ns_player_auth_port;
 	ConVar* Cvar_ns_erase_auth_info;
 	ConVar* Cvar_ns_auth_allow_insecure;
 	ConVar* Cvar_ns_auth_allow_insecure_write;
@@ -41,14 +36,12 @@ class ServerAuthenticationManager
 	std::unordered_map<R2::CBaseClient*, PlayerAuthenticationData> m_PlayerAuthenticationData;
 
 	bool m_bAllowDuplicateAccounts = false;
-	bool m_bRunningPlayerAuthThread = false;
 	bool m_bNeedLocalAuthForNewgame = false;
 	bool m_bForceResetLocalPlayerPersistence = false;
 	bool m_bStartingLocalSPGame = false;
 
   public:
-	void StartPlayerAuthServer();
-	void StopPlayerAuthServer();
+	void AddRemotePlayer(std::string token, uint64_t uid, std::string username, std::string pdata);
 
 	void AddPlayer(R2::CBaseClient* pPlayer, const char* pAuthToken);
 	void RemovePlayer(R2::CBaseClient* pPlayer);

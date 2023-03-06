@@ -87,7 +87,6 @@ void, __fastcall, (CHostState* self))
 	g_pServerPresence->SetPlaylist(GetCurrentPlaylistName());
 	g_pServerPresence->SetPort(Cvar_hostport->GetInt());
 
-	g_pServerAuthentication->StartPlayerAuthServer();
 	g_pServerAuthentication->m_bNeedLocalAuthForNewgame = false;
 }
 
@@ -115,7 +114,6 @@ void, __fastcall, (CHostState* self))
 	// no server presence, can't do it because no map name in hoststate
 	// and also not super important for sp saves really
 
-	g_pServerAuthentication->StartPlayerAuthServer();
 	g_pServerAuthentication->m_bNeedLocalAuthForNewgame = false;
 }
 
@@ -143,7 +141,6 @@ void, __fastcall, (CHostState* self))
 	spdlog::info("HostState: GameShutdown");
 
 	g_pServerPresence->DestroyPresence();
-	g_pServerAuthentication->StopPlayerAuthServer();
 
 	CHostState__State_GameShutdown(self);
 

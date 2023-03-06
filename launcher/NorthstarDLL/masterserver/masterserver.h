@@ -6,6 +6,7 @@
 #include <string>
 #include <cstring>
 #include <future>
+#include <unordered_set>
 
 extern ConVar* Cvar_ns_masterserver_hostname;
 extern ConVar* Cvar_ns_curl_log_enable;
@@ -115,6 +116,8 @@ class MasterServerManager
 
 	std::optional<RemoteServerInfo> m_currentServer;
 	std::string m_sCurrentServerPassword;
+
+	std::unordered_set<std::string> m_handledServerConnections;
 
   public:
 	MasterServerManager();

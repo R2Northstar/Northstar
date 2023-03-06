@@ -7,6 +7,7 @@
 #include "mods/modmanager.h"
 #include "shared/misccommands.h"
 #include "util/version.h"
+#include "server/auth/bansystem.h"
 
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
@@ -783,7 +784,171 @@ void MasterServerManager::ProcessConnectionlessPacketSigreq1(std::string data)
 
 	std::string type = obj["type"].GetString();
 
-	// TODO
+	if (type == "connect")
+	{
+		if (!obj.HasMember("token") || !obj["token"].IsString())
+		{
+			spdlog::error("failed to handle Atlas connect request: missing or invalid connection token field");
+			return;
+		}
+		std::string token = obj["token"].GetString();
+
+		if (!m_handledServerConnections.contains(token))
+			m_handledServerConnections.insert(token);
+		else
+			return; // already handled
+
+		spdlog::info("handling Atlas connect request {}", data);
+
+		if (!obj.HasMember("uid") || !obj["uid"].IsUint64())
+		{
+			spdlog::error("failed to handle Atlas connect request {}: missing or invalid uid field", token);
+			return;
+		}
+		uint64_t uid = obj["uid"].GetUint64();
+
+		std::string username;
+		if (obj.HasMember("username") && obj["username"].IsString())
+			username = obj["username"].GetString();
+
+		std::string reject;
+		if (!g_pBanSystem->IsUIDAllowed(uid))
+			reject = "Banned from this server.";
+
+		std::string pdata;
+		if (reject == "")
+		{
+			spdlog::info("getting pdata for connection {} (uid={} username={})", token, uid, username);
+
+			CURL* curl = curl_easy_init();
+			SetCommonHttpClientOptions(curl);
+
+			curl_easy_setopt(
+				curl,
+				CURLOPT_URL,
+				fmt::format("{}/server/connect?serverId={}&token={}", Cvar_ns_masterserver_hostname->GetString(), m_sOwnServerId, token)
+					.c_str());
+
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
+			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &pdata);
+
+			CURLcode result = curl_easy_perform(curl);
+			if (result != CURLcode::CURLE_OK)
+			{
+				spdlog::error("failed to make Atlas connect pdata request {}: {}", token, curl_easy_strerror(result));
+				curl_easy_cleanup(curl);
+				return;
+			}
+
+			long respStatus = -1;
+			curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &respStatus);
+
+			curl_easy_cleanup(curl);
+
+			if (respStatus != 200)
+			{
+				rapidjson_document obj;
+				obj.Parse(pdata.c_str());
+
+				if (!obj.HasParseError() && obj.HasMember("error") && obj["error"].IsObject())
+					spdlog::error(
+						"failed to make Atlas connect pdata request {}: response status {}, error: {} ({})",
+						token,
+						respStatus,
+						((obj["error"].HasMember("enum") && obj["error"]["enum"].IsString()) ? obj["error"]["enum"].GetString() : ""),
+						((obj["error"].HasMember("msg") && obj["error"]["msg"].IsString()) ? obj["error"]["msg"].GetString() : ""));
+				else
+					spdlog::error("failed to make Atlas connect pdata request {}: response status {}", token, respStatus);
+				return;
+			}
+
+			if (!pdata.length())
+			{
+				spdlog::error("failed to make Atlas connect pdata request {}: pdata response is empty", token);
+				return;
+			}
+
+			if (pdata.length() > R2::PERSISTENCE_MAX_SIZE)
+			{
+				spdlog::error(
+					"failed to make Atlas connect pdata request {}: pdata is too large (max={} len={})",
+					token,
+					R2::PERSISTENCE_MAX_SIZE,
+					pdata.length());
+				return;
+			}
+		}
+
+		if (reject == "")
+			spdlog::info("accepting connection {} (uid={} username={}) with {} bytes of pdata", token, uid, username, pdata.length());
+		else
+			spdlog::info("rejecting connection {} (uid={} username={}) with reason \"{}\"", token, uid, username, reject);
+
+		if (reject == "")
+			g_pServerAuthentication->AddRemotePlayer(token, uid, username, pdata);
+
+		{
+			CURL* curl = curl_easy_init();
+			SetCommonHttpClientOptions(curl);
+
+			char* rejectEnc = curl_easy_escape(curl, reject.c_str(), reject.length());
+			if (!rejectEnc)
+			{
+				spdlog::error("failed to handle Atlas connect request {}: failed to escape reject", token);
+				return;
+			}
+			curl_easy_setopt(
+				curl,
+				CURLOPT_URL,
+				fmt::format(
+					"{}/server/connect?serverId={}&token={}&reject={}",
+					Cvar_ns_masterserver_hostname->GetString(),
+					m_sOwnServerId,
+					token,
+					rejectEnc)
+					.c_str());
+			curl_free(rejectEnc);
+
+			// note: we don't actually have any POST data, so we can't use CURLOPT_POST or the behavior is undefined (e.g., hangs in wine)
+			curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
+
+			std::string buf;
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWriteToStringBufferCallback);
+			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buf);
+
+			CURLcode result = curl_easy_perform(curl);
+			if (result != CURLcode::CURLE_OK)
+			{
+				spdlog::error("failed to respond to Atlas connect request {}: {}", token, curl_easy_strerror(result));
+				curl_easy_cleanup(curl);
+				return;
+			}
+
+			long respStatus = -1;
+			curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &respStatus);
+
+			curl_easy_cleanup(curl);
+
+			if (respStatus != 200)
+			{
+				rapidjson_document obj;
+				obj.Parse(buf.c_str());
+
+				if (!obj.HasParseError() && obj.HasMember("error") && obj["error"].IsObject())
+					spdlog::error(
+						"failed to respond to Atlas connect request {}: response status {}, error: {} ({})",
+						token,
+						respStatus,
+						((obj["error"].HasMember("enum") && obj["error"]["enum"].IsString()) ? obj["error"]["enum"].GetString() : ""),
+						((obj["error"].HasMember("msg") && obj["error"]["msg"].IsString()) ? obj["error"]["msg"].GetString() : ""));
+				else
+					spdlog::error("failed to respond to Atlas connect request {}: response status {}", token, respStatus);
+				return;
+			}
+		}
+
+		return;
+	}
 
 	spdlog::error("invalid Atlas connectionless packet request: unknown type {}", type);
 }
@@ -1037,10 +1202,9 @@ void MasterServerPresenceReporter::InternalAddServer(const ServerPresence* pServ
 					CURLOPT_URL,
 					fmt::format(
 						"{}/server/"
-						"add_server?port={}&authPort={}&name={}&description={}&map={}&playlist={}&maxPlayers={}&password={}",
+						"add_server?port={}&authPort=udp&name={}&description={}&map={}&playlist={}&maxPlayers={}&password={}",
 						hostname.c_str(),
 						threadedPresence.m_iPort,
-						threadedPresence.m_iAuthPort,
 						nameEscaped,
 						descEscaped,
 						mapEscaped,
@@ -1185,12 +1349,11 @@ void MasterServerPresenceReporter::InternalUpdateServer(const ServerPresence* pS
 					CURLOPT_URL,
 					fmt::format(
 						"{}/server/"
-						"update_values?id={}&port={}&authPort={}&name={}&description={}&map={}&playlist={}&playerCount={}&"
+						"update_values?id={}&port={}&authPort=udp&name={}&description={}&map={}&playlist={}&playerCount={}&"
 						"maxPlayers={}&password={}",
 						hostname.c_str(),
 						serverId.c_str(),
 						threadedPresence.m_iPort,
-						threadedPresence.m_iAuthPort,
 						nameEscaped,
 						descEscaped,
 						mapEscaped,
