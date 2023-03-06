@@ -118,7 +118,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\httplib.h" />
     <ClInclude Include="..\include\libcurl\include\curl\curl.h" />
     <ClInclude Include="..\include\libcurl\include\curl\curlver.h" />
     <ClInclude Include="..\include\libcurl\include\curl\easy.h" />

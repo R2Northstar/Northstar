@@ -183,9 +183,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\httplib.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\MinHook.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
