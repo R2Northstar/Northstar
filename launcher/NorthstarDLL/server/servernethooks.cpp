@@ -12,8 +12,8 @@ AUTOHOOK_INIT()
 static ConVar* Cvar_net_debug_atlas_packet;
 static ConVar* Cvar_net_debug_atlas_packet_insecure;
 
-#define HMACSHA256_LEN (256 / 8)
-BCRYPT_ALG_HANDLE HMACSHA256;
+static BCRYPT_ALG_HANDLE HMACSHA256;
+constexpr size_t HMACSHA256_LEN = 256 / 8;
 
 static bool InitHMACSHA256()
 {
@@ -42,13 +42,10 @@ static bool InitHMACSHA256()
 	return true;
 }
 
-// note: all Atlas connectionless packets should be idempotent so multiple attempts can be made to mitigate packet loss
-// note: all long-running Atlas connectionless packet handlers should be started in a new thread (with copies of the data) to avoid blocking
-// networking
-
+// compare the HMAC-SHA256(data, key) against sig (note: all strings are treated as raw binary data)
 static bool VerifyHMACSHA256(std::string key, std::string sig, std::string data)
 {
-	bool result = false;
+	uint8_t invalid = 1;
 	char hash[HMACSHA256_LEN];
 
 	NTSTATUS status;
@@ -72,18 +69,21 @@ static bool VerifyHMACSHA256(std::string key, std::string sig, std::string data)
 		goto cleanup;
 	}
 
-	if (std::string(hash, sizeof(hash)) == sig)
+	// constant-time compare
+	if (sig.length() == sizeof(hash))
 	{
-		result = true;
-		goto cleanup;
+		invalid = 0;
+		for (size_t i = 0; i < sizeof(hash); i++)
+			invalid |= (uint8_t)(sig[i]) ^ (uint8_t)(hash[i]);
 	}
 
 cleanup:
 	if (h)
 		BCryptDestroyHash(h);
-	return result;
+	return !invalid;
 }
 
+// v1 HMACSHA256-signed masterserver request (HMAC-SHA256(JSONData, MasterServerToken) + JSONData)
 static void ProcessAtlasConnectionlessPacketSigreq1(R2::netpacket_t* packet, bool dbg, std::string pType, std::string pData)
 {
 	if (pData.length() < HMACSHA256_LEN)
@@ -129,7 +129,7 @@ static void ProcessAtlasConnectionlessPacketSigreq1(R2::netpacket_t* packet, boo
 	if (dbg)
 		spdlog::info("got Atlas connectionless packet (size={} type={} data={})", packet->size, pType, pData);
 
-	std::thread t([pData] { g_pMasterServerManager->ProcessConnectionlessPacketSigreq1(pData); });
+	std::thread t(&MasterServerManager::ProcessConnectionlessPacketSigreq1, g_pMasterServerManager, pData);
 	t.detach();
 
 	return;
@@ -152,6 +152,10 @@ static void ProcessAtlasConnectionlessPacket(R2::netpacket_t* packet)
 		}
 	}
 
+	// note: all Atlas connectionless packets should be idempotent so multiple attempts can be made to mitigate packet loss
+	// note: all long-running Atlas connectionless packet handlers should be started in a new thread (with copies of the data) to avoid
+	// blocking networking
+
 	// v1 HMACSHA256-signed masterserver request
 	if (pType == "sigreq1")
 	{
@@ -166,13 +170,22 @@ static void ProcessAtlasConnectionlessPacket(R2::netpacket_t* packet)
 
 AUTOHOOK(ProcessConnectionlessPacket, engine.dll + 0x117800, bool, , (void* a1, R2::netpacket_t* packet))
 {
+	// packet->data consists of 0xFFFFFFFF (int32 -1) to indicate packets aren't split, followed by a header consisting of a single
+	// character, which is used to uniquely identify the packet kind. Most kinds follow this with a null-terminated string payload
+	// then an arbitrary amoount of data.
+
+	// T (no rate limits since we authenticate packets before doing anything expensive)
 	if (4 < packet->size && packet->data[4] == 'T')
 	{
 		ProcessAtlasConnectionlessPacket(packet);
 		return false;
 	}
+
+	// check rate limits for the original unconnected packets
 	if (!g_pServerLimits->CheckConnectionlessPacketLimits(packet))
 		return false;
+
+	// A, H, I, N
 	return ProcessConnectionlessPacket(a1, packet);
 }
 
@@ -202,7 +215,4 @@ ON_DLL_LOAD_RELIESON("engine.dll", ServerNetHooks, ConVar, (CModule module))
 		"0",
 		FCVAR_NONE,
 		"Whether to disable signature verification for Atlas connectionless packets (DANGEROUS: this allows anyone to impersonate Atlas)");
-
-	if (Cvar_net_debug_atlas_packet_insecure->GetBool())
-		spdlog::warn("DANGEROUS: Atlas connectionless packet signature verification disabled; anyone will be able to impersonate Atlas");
 }

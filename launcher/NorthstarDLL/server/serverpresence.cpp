@@ -106,9 +106,8 @@ void ServerPresenceManager::AddPresenceReporter(ServerPresenceReporter* reporter
 void ServerPresenceManager::CreatePresence()
 {
 	// reset presence fields that rely on runtime server state
-	// these being: port/auth port, map/playlist name, and playercount/maxplayers
+	// these being: port, map/playlist name, and playercount/maxplayers
 	m_ServerPresence.m_iPort = 0;
-	m_ServerPresence.m_iAuthPort = 0;
 
 	m_ServerPresence.m_iPlayerCount = 0; // this should actually be 0 at this point, so shouldn't need updating later
 	m_ServerPresence.m_iMaxPlayers = 0;
@@ -168,12 +167,6 @@ void ServerPresenceManager::SetPort(const int iPort)
 {
 	// update port
 	m_ServerPresence.m_iPort = iPort;
-}
-
-void ServerPresenceManager::SetAuthPort(const int iAuthPort)
-{
-	// update authport
-	m_ServerPresence.m_iAuthPort = iAuthPort;
 }
 
 void ServerPresenceManager::SetName(const std::string sServerNameUnicode)
