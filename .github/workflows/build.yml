@@ -140,7 +140,7 @@ jobs:
           mv Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip ../
       - name: Upload zip to release draft
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/') && !contains(github.ref, '-rc')
+        if: startsWith(github.ref, 'refs/tags/') && !contains(env.NORTHSTAR_VERSION, '-rc')
         with:
           draft: true
           files: Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip
