@@ -10,6 +10,9 @@ on:
         required: true
         default: 'build-thunderstore-package'
 
+permissions:
+  contents: write # Needed to write to GitHub draft release
+
 env:
   NORTHSTAR_VERSION: ${{ github.ref_name }}
 
@@ -130,6 +133,17 @@ jobs:
         with:
           name: Northstar.release.${{ env.NORTHSTAR_VERSION }}
           path: northstar
+      - name: Create zip to upload
+        run: |
+          cd northstar/
+          zip --recurse-paths --quiet Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip .
+          mv Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip ../
+      - name: Upload zip to release draft
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v') && !contains(env.NORTHSTAR_VERSION, '-rc')
+        with:
+          draft: true
+          files: Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip
 
   build-thunderstore-package:
     needs: build-northstar # comment out when running locally
