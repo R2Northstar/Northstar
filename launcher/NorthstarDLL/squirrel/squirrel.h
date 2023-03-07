@@ -245,7 +245,7 @@ class SquirrelManagerBase
 		sq_stackinfos(sqvm, 1 + depth, stackInfo);
 		std::string sourceName = stackInfo._sourceName;
 		std::replace(sourceName.begin(), sourceName.end(), '/', '\\');
-		std::string filename = "scripts\\vscripts\\" + sourceName;
+		std::string filename = g_pModManager->NormaliseModFilePath(fs::path("scripts\\vscripts\\" + sourceName));
 		if (auto res = g_pModManager->m_ModFiles.find(filename); res != g_pModManager->m_ModFiles.end())
 		{
 			return res->second.m_pOwningMod;
