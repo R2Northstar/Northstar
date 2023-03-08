@@ -1435,6 +1435,9 @@
     <ClCompile Include="dedicated\dedicatedlogtoclient.cpp">
       <Filter>Source Files\dedicated</Filter>
     </ClCompile>
+    <ClCompile Include="server\alltalk.cpp">
+      <Filter>Source Files\server</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <MASM Include="audio_asm.asm">

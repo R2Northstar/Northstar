@@ -522,6 +522,7 @@
     <ClCompile Include="scripts\server\miscserverfixes.cpp" />
     <ClCompile Include="scripts\server\miscserverscript.cpp" />
     <ClCompile Include="scripts\server\scriptuserinfo.cpp" />
+    <ClCompile Include="server\alltalk.cpp" />
     <ClCompile Include="server\auth\bansystem.cpp" />
     <ClCompile Include="server\auth\serverauthentication.cpp" />
     <ClCompile Include="server\buildainfile.cpp" />
