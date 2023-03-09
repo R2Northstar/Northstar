@@ -232,6 +232,7 @@ global struct ServerEntityStruct
 	SpawnPointData spawnPointData
 
 	array<void functionref( entity ent, var damageInfo )> entDamageCallbacks
+	array<void functionref( entity ent, var damageInfo )> entFinalDamageCallbacks
 	array<void functionref( entity ent, var damageInfo )> entPostDamageCallbacks
 	array<void functionref( entity titan, entity attacker )> entSegmentLostCallbacks
 	array<void functionref( entity ent, var damageInfo, float actualShieldDamage )> entPostShieldDamageCallbacks
