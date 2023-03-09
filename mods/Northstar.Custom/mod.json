@@ -29,10 +29,7 @@
 	"Scripts": [
 		{
 			"Path": "sh_northstar_custom_precache.gnut",
-			"RunOn": "( CLIENT || SERVER ) && MP",
-			"ClientCallback": {
-				"After": "NorthstarCustomPrecache"
-			},
+			"RunOn": "SERVER && MP",
 			"ServerCallback": {
 				"After": "NorthstarCustomPrecache"
 			}
