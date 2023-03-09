@@ -283,9 +283,23 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 		return
 
 	RunClassDamageFinalCallbacks( ent, damageInfo )
+
 	#if VERBOSE_DAMAGE_PRINTOUTS
 		printt( "    after class damage final callbacks:", DamageInfo_GetDamage( damageInfo ) )
 	#endif
+	if ( DamageInfo_GetDamage( damageInfo ) == 0 )
+		return
+
+	// Added via AddEntityCallback_OnFinalDamaged
+	foreach ( callbackFunc in ent.e.entFinalDamageCallbacks )
+	{
+		callbackFunc( ent, damageInfo )
+	}
+
+	#if VERBOSE_DAMAGE_PRINTOUTS
+		printt( "    afterAddEntityCallback_OnFinalDamaged callbacks:", DamageInfo_GetDamage( damageInfo ) )
+	#endif
+
 	if ( DamageInfo_GetDamage( damageInfo ) == 0 )
 		return
 
