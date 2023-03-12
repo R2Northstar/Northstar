@@ -34,6 +34,34 @@ Northstar can also be launched through Steam or Origin using the "add a game" fe
 
 ![steamaddgame](../images/steam-addgame.png) ![originaddgame](../images/origin-addgame.png)
 
+### Adding Alternate Launch Option for Steam
+
+Steam can be configured to prompt for starting either Northstar or vanilla when Titanfall 2 is launched. This example uses [SteamEdit](https://steamedit.tg-software.com/), however another `appinfo.vdf`/`packageinfo.vdf` editor can be used.
+
+Download [SteamEdit](https://steamedit.tg-software.com/), extract it, and run `SteamEdit.exe`. Select **Titanfall® 2** from the dropdown.
+
+![steameditselecttitanfall2](../images/steamedit-select-titanfall2.png)
+
+Click on **Edit Launch**.
+
+![steamediteditlaunch](../images/steamedit-editlaunch.png)
+
+Click on **Add New**.
+
+![steameditaddnew](../images/steamedit-addnew.png)
+
+Enter a name for Northstar and enter `NorthstarLauncher.exe` as the executable.
+
+![steameditlauncheditor](../images/steamedit-launcheditor.png)
+
+Click **OK** to close LaunchEditor, and click **Save & Refresh** to save your new configuration and restart Steam.
+
+![steameditsaveandrefresh](../images/steamedit-saveandrefresh.png)
+
+Launching Titanfall 2 will now display a prompt for vanilla and Northstar.
+
+![steameditlaunchoption](../images/steamedit-launchoption.png)
+
 ## Linux and Steam Deck
 
 Install instructions for [Linux and Steam Deck can be found here](steamdeck-and-linux/installing-on-steamdeck-and-linux.md)
