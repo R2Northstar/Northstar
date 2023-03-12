@@ -228,20 +228,16 @@ A foreach loop iterates over a ``table`` or an ``array`` and executes for each e
   }
 
   // prints 0 1, 1 2, 2 3, 3 4
-  foreach( int i; int v in arr )
+  foreach( int index, int value in arr )
   {
-    printt( i, v )
+    printt( index, value )
   }
 
   // prints key1 mapped value 1, key2 mapped value 2
-  foreach( string k, string v in map )
+  foreach( string key, string value in map )
   {
-    printt( k, v )
+    printt( key, value )
   }
-.. code-block:: javascript
-
-  array<int> somelist = [0, 5, 6, 4, 11]
-  for(int i = 0; i < somelist.len(); i++)
 
 Implicit conditional behavior
 -----------------
@@ -276,7 +272,7 @@ Note that while functions always need ``{}``, single-line ``if``/``else`` statem
 .. code-block:: javascript
 
   if(ReturnTrueOrFalse())
-    print("Only called if true")
+    printt("Only called if true")
 
 Now let's make a more complicated function that will use the previous script to determine true or false, printing a list each time it returns true:
 
@@ -286,7 +282,7 @@ Now let's make a more complicated function that will use the previous script to 
   void function ThisDoesStuff(){
     while(ReturnTrueOrFalse()){
       foreach( int information in someinformation){
-        print(information)
+        printt(information)
       }
     }
   }
