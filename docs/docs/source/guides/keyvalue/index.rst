@@ -1,8 +1,9 @@
-Weapon Modding
-==============
+Weapon and key value modding
+===========================
 
-Changing keyvalues
-----------------------------
+
+Weapon Modding
+--------------
 
 Do keep in mind that these are usually changed server-side.
 
@@ -21,3 +22,12 @@ Example for modding crossshairs using keyvalues: :doc:`crosshairmodding`
 
 .. note::
     This project is under active development, and this section needs expanding
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: Squirrel
+   
+   /guides/keyvalue/crosshairmodding
+   /guides/keyvalue/localisation
+   /guides/keyvalue/weaponkeyvalues

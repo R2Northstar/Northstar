@@ -13,8 +13,6 @@ Contents
 
 These docs contain info on squirrel usage and northstar/respawn functions. Its very much WIP.
 
-For now we are focusing on moving over things that were documented in other places (discord, pastebin, gists etc.).
-
 If you know anything about any function, object or concept please dont hesitate to contribute it, even if its just a quick and dirty PR.
 
 Cheatsheet
@@ -44,41 +42,27 @@ Cheatsheet
    :caption: Guides
 
    /guides/gettingstarted
-   /guides/tools
+   /guides/keyvalue/index
+   /guides/scripting/index
+   /guides/tools/index
    /guides/moddingtutorials
-   /guides/weaponmodding
-   /guides/weaponkeyvalues
-   /guides/rpakmodding
-   /guides/localisation
-   /guides/crosshairmodding
-   /guides/settingsmods
-   /guides/gamemodemods
-   /guides/soundmodding
-   /guides/customejectmessages
-   /guides/VTFModding
    /guides/publishing
    /guides/contributing
 
 .. toctree::
    :maxdepth: 3
    :hidden:
-   :caption: Northstar API Documentation
+   :caption: API Documentation
 
    /reference/index
 
+
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 5
    :hidden:
    :caption: Squirrel Documentation
 
-   /native/intro
-   /native/syntax
-   /native/functions
-   /native/tablesandarrays
-   /native/async
-   /native/networking
-   /native/class
-   /native/useful
+   /squirrel/index
 
 .. toctree::
    :maxdepth: 3
@@ -88,12 +72,6 @@ Cheatsheet
    /repak/map
    /repak/index
 
-.. toctree::
-   :maxdepth: 2
-   :hidden:
-   :caption: Reverse Engineering Titanfall2
-
-   /reverse-engineering/introduction
 
 .. toctree::
    :maxdepth: 2

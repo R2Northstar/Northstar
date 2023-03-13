@@ -13,7 +13,7 @@ List of KeyValues
 ------------------------
 
 .. csv-table:: Weapon Key Value List
-  :file: ../_static/keyvaluetable.csv
+  :file: ../../../_static/keyvaluetable.csv
   :delim: |
   :widths: 15, 20, 5, 30, 30
   :header-rows: 1
