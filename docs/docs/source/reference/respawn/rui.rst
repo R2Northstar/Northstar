@@ -1,5 +1,5 @@
 Rui
-------
+---
 
 Functions for creating a rui, and methods of the rui object
 

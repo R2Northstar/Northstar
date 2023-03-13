@@ -5,7 +5,7 @@ Examples:
 =========
 
 1. Example Datatable Asset
-------------------------
+--------------------------
 
 .. code-block:: json
 
@@ -15,7 +15,7 @@ Examples:
     }
 
 2. Example Datatable ``.csv`` File
-------------------------
+----------------------------------
 
 .. csv-table:: 
    :header: "setFile", "titanRef", "difficulty", "isPrime", "coreBuildingIcon"

@@ -1,7 +1,7 @@
 Modding Tools
--------------
+=============
 
-.. toctree:: 
+.. toctree::
 
     /guides/tools/rpakmodding
     /guides/tools/soundmodding

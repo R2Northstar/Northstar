@@ -1,7 +1,6 @@
 Scripting tutorials
---------------------
+===================
 
-.. toctree:: 
+.. toctree::
 
     /guides/scripting/gamemodemods
-

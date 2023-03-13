@@ -191,7 +191,7 @@ The comments should hopefully explain what most of everything does, but just to 
 Now that we're done, name this file ``sh_gamemode_simplerandomiser.nut`` and place it in the ``yourmodsname/mod/scripts/vscripts/gamemodes`` folder.
 
 Server-side function
-------------------
+--------------------
 Now that we're down with defining the gamemode, its time to focus on the component on what makes the gamemode function in-game. For this, it will be mostly handled by the server scripts, so head into ``_gamemode_simplerandomiser.nut`` to begin writing the randomizing script.
 
 .. code-block:: javascript

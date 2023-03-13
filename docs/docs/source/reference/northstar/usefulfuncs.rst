@@ -3,17 +3,17 @@ Useful Functions
 
 
 Custom Ejection Messages
--------------------
+------------------------
 How ejection messages are chosen
-~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 When ejecting the game selects a random number between 0 and 1, if this number is greater than 0.15 then a random common eject message is returned, if it is less than 0.15 then a rare ejection message is returned.
 
 Adding new messages
-~~~~~
+~~~~~~~~~~~~~~~~~~~
 Using ``AddCommonEjectMessage( String message )`` and ``AddRareEjectMessage( String message )`` in script additional messages can be added to the pool of potential ejection messages
 
 Localisation
-~~~~~~~
+~~~~~~~~~~~~
 Like most things custom ejection messages can be localised through keyvalues
 
 There are no functions to remove ejection messages, however existing ones can be altered by modifying localisation files
@@ -21,7 +21,7 @@ There are no functions to remove ejection messages, however existing ones can be
 Below are a list of useful functions added by Northstar.
 
 Player functions
----------
+----------------
 
 Check for different weapon types on a player
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -122,7 +122,7 @@ Change a players invincibility
 .. cpp:function:: void function ScaleHealth( entity ent, float scale )
 
 Entity functions
------------
+----------------
 
 .. cpp:function:: float function GetEntHeight( entity ent )
 
@@ -146,7 +146,7 @@ Turret functions
 .. cpp:function:: void function UpdateTurretClientSideParticleEffects( entity turret )
 
 Rest so far to be sorted
-~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. cpp:function:: array<entity> function GetAllMinions()
 
@@ -186,7 +186,7 @@ Titans
 
 
 Gamemode functions
--------------
+------------------
 
 .. cpp:function:: int function GetCurrentWinner( int defaultWinner = TEAM_MILITIA )
 
@@ -230,7 +230,7 @@ Threaded conditonals
 
 
 Random functions
-------------------
+----------------
 
 .. cpp:function:: bool function IsPlayerMalePilot( entity player )
 
@@ -254,10 +254,10 @@ Random functions
 
 
 Type Utilities 
---------
+--------------
 
 Table
-~~~~~~
+~~~~~
 
 .. cpp:function:: void function TableRemoveInvalid( table<entity, entity> Table )
 
@@ -324,7 +324,7 @@ Arrays
     .. note:: Returns a section of the array as new array. Copies from start to the end (not included). If start is negative the index is calculated as length + start, if end is negative the index is calculated as length + end. If end is omitted end is equal to the array length.
 
 String
-~~~~~
+~~~~~~
 
 .. cpp:function:: var function UniqueString( titleString = "" )
 
@@ -369,19 +369,19 @@ String
 
 
 Float
-~~~~~~
+~~~~~
 
 .. cpp:function:: float function RandomFloatRange( float min, float max)
 
 Integer
-~~~~
+~~~~~~~
 
 .. cpp:function:: int function RandomIntRange( int min, int max )
 
 .. cpp:function:: int function RandomIntRangeInclusive( int min, int max )
 
 Vectors
-~~~~~~
+~~~~~~~
 
 .. cpp:function:: vector function RandomVec( float range )
 

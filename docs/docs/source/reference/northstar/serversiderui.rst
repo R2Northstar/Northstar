@@ -1,5 +1,5 @@
 Serverside RUI
-======
+==============
 
 Server-side Rui provides a set of functions enabling servers to display complex hud elements on clients without requiring a client-side mod. These functions were introduced in Northstar ``1.10.0``.
 
@@ -32,7 +32,7 @@ Creates a poll on ``player``.
       }
 
 Getting Response
------
+----------------
 
 **Definition:**
 
@@ -51,7 +51,7 @@ Returns the index of the item from ``options`` the player voted for. If the play
     }
 
 Large Message
-^^^^^
+^^^^^^^^^^^^^
 
 Sends a large message to ``player`` which will appear in the top right corner.
 
@@ -75,7 +75,7 @@ Sends a large message to ``player`` which will appear in the top right corner.
     }
 
 Info Message
-^^^^^
+^^^^^^^^^^^^
 
 Sends a smaller message to ``player`` which will appear from the center right.
 
@@ -123,7 +123,7 @@ Send a small popup to ``player`` which will appear in the lower half of their sc
     }
 
 Announcement
-^^^^^
+^^^^^^^^^^^^
 
 Sends a large announcement to ``player``.
 
@@ -147,7 +147,7 @@ Sends a large announcement to ``player``.
       }
 
 Status
-^^^^^
+^^^^^^
 
 Status messages allow you to show live data to the player.
 Currently status messages are limited to 4 and there's no way to know if the player can see your message.

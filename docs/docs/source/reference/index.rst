@@ -1,5 +1,5 @@
 Northstar API
--------------
+=============
 
 .. toctree::
     :maxdepth: 2
@@ -13,7 +13,7 @@ Northstar API
     /reference/northstar/usefulfuncs
 
 Respawn API
------------
+===========
 
 .. toctree::
     :maxdepth: 2
@@ -27,7 +27,7 @@ Respawn API
     /reference/respawn/movers
 
 HUD
----
+===
 
 .. toctree::
     :maxdepth: 1

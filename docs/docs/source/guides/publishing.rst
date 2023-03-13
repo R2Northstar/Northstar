@@ -54,7 +54,7 @@ When uploading, it will verify your package structure and you can publish after 
 To update a mod, change the version in ``mod.json`` and ``manifest.json``, and upload again. If the mod name is the same, it will update the previous version.
 
 Github Workflows
------
+----------------
 
 If you want to create a Github repository for your mod, you can use a `template <https://github.com/GreenTF/NSModTemplate>`_ that automatically packages and uploads your mod to Thunderstore when you create a Github release of your mod.
 
