@@ -1,8 +1,8 @@
 Statements
-====
+==========
 
 If statements
----------------
+-------------
 
 If statements use a similar style to most programming languages and will execute their asigned code if the test placed inside returns the boolean value true. If I wanted to have something occur if, and only if, our previous ``ReturnTrueOrFalse`` function returned true, then you can use:
 
@@ -27,12 +27,12 @@ The Syntax is ``condition ? if_condition_true : if_condition_false``. This is es
   string shortenedUsername = username.len() > 9 ? username.slice(0,6) + "..." : username;
 
 Loops
-------
+-----
 
 Loops are used to execute the same code n times.
 
 While Loops
-~~~~
+~~~~~~~~~~~
 
 A while loop runs as long as the condition evaluates to a truthy value.
 
@@ -61,7 +61,7 @@ A do while loop is the same as a while loop but the condition is checked **after
   } while( false )
 
 For Loop
-~~~~
+~~~~~~~~
 
 A for loop also runs until a condition is met however it provides you with a counter variable.
 
@@ -83,7 +83,7 @@ The Syntax is as follows: ``for( int counter; condition; behaviour_after_body_ex
   }
 
 Foreach Loop
-~~~~
+~~~~~~~~~~~~
 
 A foreach loop iterates over a ``table`` or an ``array`` and executes for each entry. The loop provides you with an optional counter for arrays or key for tables.
 
@@ -108,7 +108,7 @@ A foreach loop iterates over a ``table`` or an ``array`` and executes for each e
   }
 
 Implicit conditional behavior
------------------
+-----------------------------
 Conditional statements, such as while loops and if statements, also implictly cast non-boolean inputs to booleans. For numbers, this means 0 is considered false and anything else is considered true. For instance variables like arrays and entities, ``null`` is considered false and anything else is considered true. For example, these inputs are considered true by the if statements:
 
 .. code-block:: javascript

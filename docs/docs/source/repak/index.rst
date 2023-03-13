@@ -1,6 +1,5 @@
-
 Asset Types
------------
+===========
 
 .. toctree::
     :maxdepth: 4

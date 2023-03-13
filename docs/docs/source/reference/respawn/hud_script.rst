@@ -1,10 +1,10 @@
 HUD elements in Scripts
-====
+=======================
 
 Script methods to manipulate hud elements.
 
 Element Tree & Locating Elements
-----
+--------------------------------
 
 .. cpp:function:: string Hud_GetHudName( var menu )
 
@@ -39,7 +39,7 @@ Element Tree & Locating Elements
 	Returns the currently focused element.
 
 Element Position
-^^^^
+^^^^^^^^^^^^^^^^
 
 .. cpp:function:: void Hud_SetPos( var elem, int x, int y )
 
@@ -126,7 +126,7 @@ Element Position
 	Set the angles of the element
 
 Visibility & Color
-----
+------------------
 
 .. cpp:function:: void Hud_Show( var elem )
 
@@ -175,7 +175,7 @@ Visibility & Color
 	Change the opacity of the element over time after a delay
 
 Element Dimensions
-----
+------------------
 
 .. cpp:function:: int Hud_GetWidth( var elem )
 
@@ -251,7 +251,7 @@ Text
 .. cpp:function:: string Hud_GetUTF8Text( var elem )
 
 Element Status
-----
+--------------
 
 .. cpp:function:: bool Hud_IsLocked( var elem )
 
@@ -300,7 +300,7 @@ Element Status
 	Returns ``true`` if the element is a label
 
 Element RUI
-----
+-----------
 
 .. cpp:function:: bool Hud_IsRuiPanel( var elem )
 
@@ -311,7 +311,7 @@ Element RUI
 	Returns the rui instance of this element.
 
 Navigation
-----
+----------
 
 .. cpp:function:: void Hud_SetNavUp( var elem, var navTo )
 
@@ -330,7 +330,7 @@ Navigation
 	Set the element that will be selected when navigating right (arrow right) from this selected element.
 
 Events
-----
+------
 
 .. cpp:function:: void Hud_HandleEvent( var elem, int event )
 
@@ -351,7 +351,7 @@ Events
 	* ``UIE_CHANGE``
 
 Other Visuals
-----
+-------------
 
 .. cpp:function:: void Hud_SetNew( var elem, bool isNew )
 
@@ -364,7 +364,7 @@ Other Visuals
 .. cpp:function:: void Hud_RunAnimationScript( var elem, string animation )
 
 Slider
-----
+------
 
 .. cpp:function:: void Hud_SliderControl_SetStepSize( var elem, float size )
 
@@ -375,19 +375,19 @@ Slider
 .. cpp:function:: float Hud_SliderControl_GetCurrentValue( var elem )
 
 Graphs
-----
+------
 
 .. cpp:function:: void Hud_SetBarProgress( var elem, float progress )
 
 Client Settings
-----
+---------------
 
 .. cpp:function:: void Hud_SetGamemodeIdx( var elem, int index )
 
 .. cpp:function:: void Hud_SetPlaylistVarName( var elem, string playlist )
 
 Uncategorized
-----
+-------------
 
 .. cpp:function:: void Hud_DialogList_AddListItem( var elem, string val, string enum_ )
 

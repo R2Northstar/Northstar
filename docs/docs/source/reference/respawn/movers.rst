@@ -6,7 +6,7 @@ Movers are entites that move and rotate smoothly.
 ``script_mover`` allows for smooth movement and rotation contrary to ``script_mover_lightweight`` which is not able to rotate.
 
 Create a Mover
------
+--------------
 
 .. cpp:function:: entity CreateExpensiveScriptMover( vector origin , vector angles )
 
@@ -29,7 +29,7 @@ Create a Mover
      returns ``script_mover`` which will be at the location of the owner
 
 Moving
------
+------
 
     .. cpp:function:: void NonPhysicsMoveTo( vector position, float time, float easeIn, float easeOut )
 
@@ -50,7 +50,7 @@ Moving
         Immediately stop this mover from moving
 
 Behaviour
------
+---------
 
 .. cpp:function:: void ChangeNPCPathsOnMove( bool recalculate )
 

@@ -2,7 +2,7 @@ Threads, Signals and Flags
 ============================
 
 Threads
-----
+------- 
 
 Squirrel allows scripts to spin off function calls in a thread. All subsequential function calls will be threaded as well.
 
@@ -15,7 +15,7 @@ For more information, check out the `squirrel documentation on threads <http://w
 A thread is considered finished, after the threaded function returned a value. This may be ``null``.
 
 Spinning off a thread
-^^^^
+^^^^^^^^^^^^^^^^^^^^^
 
 To create a new coroutine, call a function with the ``thread`` keyword before.
 
@@ -73,7 +73,7 @@ If you want to wait until a thread is finished, you can spin off the thread that
     }
 
 OnThreadEnd
-^^^^
+^^^^^^^^^^^
 
 Use the ``OnThreadEnd`` function to execute a callback after a thread has ended. This is useful for cleanup functions that remove entities after they're used or similar.
 
@@ -105,7 +105,7 @@ Use the ``OnThreadEnd`` function to execute a callback after a thread has ended.
     }
 
 Example Script
-^^^^
+^^^^^^^^^^^^^^
 
 .. code-block:: javascript
 
@@ -120,12 +120,12 @@ Example Script
 
 
 Signals and flags
-----------------------
+-----------------
 
 Signals and flags allow threads to wait for events before running some code.
 
 Signals
-^^^^^^^^^^
+^^^^^^^
 
 .. cpp:function:: void RegisterSignal( string signal )
 
@@ -187,7 +187,7 @@ It's also possible to trigger and catch signals with methods that aren't propert
     Ends this thread when the identifier is signaled on ``ent``
 
 Example
-~~~~
+~~~~~~~
 
 For example, if we want to tell a player not to give up after being killed several times, we can write it this way:
 
@@ -238,7 +238,7 @@ When you want your thread to die on a given event, you can use ``entity.EndSigna
 is set, thread will end (after calling any `OnThreadEnd` methods).
 
 Flags
-^^^^^^^^^^
+^^^^^
 
 ``Flags`` work pretty much the same way as ``Signals``, except they can be set up without target entity:
 
@@ -311,7 +311,7 @@ Flags
     Splits the value of the keyvalues of the entity on the index ``field`` on ``" "``
 
 Example
-~~~~
+~~~~~~~
 
 .. code-block:: javascript
 
