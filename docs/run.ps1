@@ -9,6 +9,7 @@ else {
     py -m pip install -U poetry
 }
 py -m poetry install
+docstrfmt .
 Set-Location ./docs
 py -m poetry run sphinx-autobuild source build/html --open-browser --ignore *build/**
 Set-Location ../
