@@ -15,7 +15,15 @@ Remote functions allow the ``SERVER`` vm to call a function from the ``CLIENT`` 
 
 To use remote functions, you have to make a registration on both the ``CLIENT`` and the ``SERVER`` vm with ``Remote_RegisterFunction``.
 
-Northstar provides the ``AddCallback_OnRegisteringCustomNetworkVars( void functionref() )`` callback in which you can use the ``Remote_RegisterFunction`` function. It's not possible to register remote functions after ``Remote_EndRegisteringFunctions`` has been called. The callback exists to allow multiple mods to register remote vars.
+Northstar provides the 
+
+.. cpp:function:: AddCallback_OnRegisteringCustomNetworkVars( void functionref() identifierFn)
+
+callback in which you can use the 
+
+.. cpp:function:: Remote_RegisterFunction(string identifier)
+	
+function. It's not possible to register remote functions after ``Remote_EndRegisteringFunctions`` has been called. The callback exists to allow multiple mods to register remote vars.
 
 .. warning::
 
@@ -52,7 +60,7 @@ The networked ``CLIENT`` function has to be global
 
 	#if CLIENT
 	global function Server_GetNetworkedVariable // make the networked function only global on CLIENT
-	#endif
+	#endif //CLIENT
 
 	global function Spaceship_Network // this gets executed on both CLIENT & SERVER
 
@@ -72,7 +80,7 @@ The networked ``CLIENT`` function has to be global
 	{
 		printt("got integer", number)
 	}
-	#endif
+	#endif //CLIENT
 
 Calling the ``CLIENT`` function ``Server_GetNetworkedVariable`` on ``SERVER`` vm:
 
@@ -102,7 +110,15 @@ Register a server command
 
 	the formatting for the server command is like a normal console command. Arguments are seperated by spaces
 
-Register with the ``AddServerToClientStringCommandCallback( string func, void functionref( array<string> ) reference )`` function clientside and execute with the ``ServerToClientStringCommand( entity player /*CPlayer*/, string command )`` function server side
+Register with the function clientside:
+
+.. cpp:function:: AddServerToClientStringCommandCallback( string func, void functionref( array<string> ) reference )
+	
+
+and execute with the function serverside:
+
+.. cpp:function:: ServerToClientStringCommand( entity player /*CPlayer*/, string command )
+
 
 Example:
 ^^^^^^^^
@@ -126,17 +142,48 @@ Example:
 Client to Server command callbacks
 ----------------------------------
 
-Register a client command callback serverside with ``AddClientCommandCallback( string command, bool functionref( entity player /*CPlayer*/, array<string> args ) callback )``
+Register a client command callback serverside with 
 
-``player`` is the player that called the command client side. The callback function should return ``true`` if the command was accepted and ``false`` if it was invalid.
+.. cpp:function:: AddClientCommandCallback( string command, bool functionref( entity player /*CPlayer*/, array<string> args ) callback )
 
-The ``CLIENT`` vm can execute commands with the ``player.ClientCommand( string command )`` function. These will be handled by the ``SERVER`` if the command is registered.
+``player`` is the player that called the command clientside. The callback function should return ``true`` if the command was accepted and ``false`` if it was invalid.
 
+The ``CLIENT`` vm can execute commands with the function:
+
+.. cpp:function:: player.ClientCommand( string command )
+	
+These will be handled by the ``SERVER`` if the command is registered.
+
+ClientCommand Notifications
+---------------------------
+
+Since version 1.5 mods can receive notifications when a client command has been handled. This is different from :cpp:func:`AddClientCommandCallback`
+
+.. cpp:function:: void AddClientCommandNotifyCallback( string, void functionref( entity, array<string>))
+
+    Example usage with the :doc:`PrivateMatchLaunch` clientcommand
+
+    .. code-block:: javascript
+
+        void function init(){
+            AddClientCommandNotifyCallback("PrivateMatchLaunch", started)
+        }
+
+        void function started(entity player, array<string> args){
+            print(player + " started the match")
+        }
+
+Please refer to :ref:`list_client_commands` for a list of native client commands you could catch.
 
 ``CLIENT`` to ``UI`` vm
 =======================
 
-Create a global function in the ``UI`` vm and call it in the ``CLIENT`` vm with the ``RunUIScript( string identifier, ... )`` function. You can also pass parameters to the function. ``identifier`` is the name of the function you want to call.
+Create a global function in the ``UI`` vm and call it in the ``CLIENT`` vm with the function:
+
+.. cpp:function:: RunUIScript( string identifier, ... ) 
+
+
+You can also pass parameters to the function. ``identifier`` is the name of the function you want to call.
 
 Example:
 ^^^^^^^^
@@ -157,7 +204,12 @@ Example:
 ``UI`` to ``CLIENT`` vm
 =======================
 
-Create a global function in the ``CLIENT`` vm and call it in the ``UI`` vm with the ``RunClientScript( string identifier, ... )`` function. You can also pass parameters to the function. ``identifier`` is the name of the function you want to call.
+Create a global function in the ``CLIENT`` vm and call it in the ``UI`` vm with the function:
+
+.. cpp:function:: RunClientScript( string identifier, ... )
+
+
+You can also pass parameters to the function. ``identifier`` is the name of the function you want to call.
 
 Example:
 ^^^^^^^^
@@ -174,3 +226,5 @@ Example:
 	#elseif UI
 	RunClientScript( "CallMe", 1, 2 ) // 3
 	#endif
+
+
