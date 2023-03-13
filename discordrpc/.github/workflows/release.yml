@@ -1,0 +1,68 @@
+name: Release
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write # Needed to write to GitHub draft release
+
+env:
+  RPC_VERSION: ${{ github.ref_name }}
+
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.1
+      - name: Build
+        run: |
+          msbuild /p:Configuration=Release
+      - name: Upload RPC build as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: northstar-discord-rpc
+          path: |
+            x64/Release/*.dll
+            x64/Release/*.exe
+            x64/Release/*.txt
+      - name: Upload debug build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: discord-rpc-debug-files
+          path: |
+            x64/Release/*.pdb
+
+  upload-rpc-to-release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Download compiled RPC
+        uses: actions/download-artifact@v3
+        with:
+          name: northstar-discord-rpc
+          path: northstar-discord-rpc
+      - name: Download debug files
+        uses: actions/download-artifact@v3
+        with:
+          name: discord-rpc-debug-files
+          path: discord-rpc-debug-files
+      - name: Create zip to upload
+        run: |
+          ls -alh
+          ls -alh northstar-discord-rpc/
+          ls -alh discord-rpc-debug-files/
+          zip --recurse-paths --junk-paths northstar-discord-rpc.zip northstar-discord-rpc/*
+          zip --recurse-paths --junk-paths discord-rpc-debug-files.zip discord-rpc-debug-files/*
+      - name: Upload files to release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: ":warning: These are development files! If you want to download Northstar, [go here instead](https://github.com/R2Northstar/Northstar/releases) :warning:"
+          draft: false
+          files: |
+            northstar-discord-rpc.zip
+            discord-rpc-debug-files.zip
