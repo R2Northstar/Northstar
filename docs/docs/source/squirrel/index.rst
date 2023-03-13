@@ -1,5 +1,10 @@
+rSquirrel
+=========
+Squirrel is the programming language used by Respawn to code Titanfall 2, however it was heavily modified fron the original version, it was roughly forked at version 2.3 .
+The most notable change is the additon of types to the language.
+
 Syntax Highlighting
-===================
+-------------------
 
 Notepad++
 ---------
@@ -28,3 +33,23 @@ To fix this:
 2. Do CTRL+K, M (not CTRL+K, CTRL+M)
 3. Select ``Configure File Association for .gnut``
 4. Select ``Squirrel`` (only appears if you have the extension)
+
+
+Kate
+-----
+
+`Kate syntax highlighting for Squirrel <https://gist.github.com/CTalvio/6de535f9258cfebd71ab64d7e6af4ee6>`_
+
+
+.. toctree::
+    :maxdepth: 2
+    :hidden:
+    :caption: Squirrel
+
+    /squirrel/intro
+    /squirrel/complex_types
+    /squirrel/functions
+    /squirrel/statements
+    /squirrel/class
+    /squirrel/async
+    /squirrel/networking
