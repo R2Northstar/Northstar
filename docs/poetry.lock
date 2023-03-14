@@ -157,14 +157,14 @@ files = [
 
 [[package]]
 name = "docutils"
-version = "0.18.1"
+version = "0.19"
 description = "Docutils -- Python Documentation Utilities"
 category = "main"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+python-versions = ">=3.7"
 files = [
-    {file = "docutils-0.18.1-py2.py3-none-any.whl", hash = "sha256:23010f129180089fbcd3bc08cfefccb3b890b0050e1ca00c867036e9d161b98c"},
-    {file = "docutils-0.18.1.tar.gz", hash = "sha256:679987caf361a7539d76e584cbeddc311e3aee937877c87346f31debc63e9d06"},
+    {file = "docutils-0.19-py3-none-any.whl", hash = "sha256:5e1de4d849fee02c63b040a4a3fd567f4ab104defd8a5511fbbc24a8a017efbc"},
+    {file = "docutils-0.19.tar.gz", hash = "sha256:33995a6753c30b7f577febfc2c50411fec6aac7f7ffeb7c4cfe5991072dcf9e6"},
 ]
 
 [[package]]
@@ -514,25 +514,28 @@ code-style = ["pre-commit (==2.12.1)"]
 rtd = ["ipython", "myst-nb", "sphinx", "sphinx-book-theme", "sphinx-examples"]
 
 [[package]]
-name = "sphinx-tabs"
-version = "3.4.1"
-description = "Tabbed views for Sphinx"
+name = "sphinx-design"
+version = "0.3.0"
+description = "A sphinx extension for designing beautiful, view size responsive web components."
 category = "main"
 optional = false
-python-versions = "~=3.7"
+python-versions = ">=3.7"
 files = [
-    {file = "sphinx-tabs-3.4.1.tar.gz", hash = "sha256:d2a09f9e8316e400d57503f6df1c78005fdde220e5af589cc79d493159e1b832"},
-    {file = "sphinx_tabs-3.4.1-py3-none-any.whl", hash = "sha256:7cea8942aeccc5d01a995789c01804b787334b55927f29b36ba16ed1e7cb27c6"},
+    {file = "sphinx_design-0.3.0-py3-none-any.whl", hash = "sha256:823c1dd74f31efb3285ec2f1254caefed29d762a40cd676f58413a1e4ed5cc96"},
+    {file = "sphinx_design-0.3.0.tar.gz", hash = "sha256:7183fa1fae55b37ef01bda5125a21ee841f5bbcbf59a35382be598180c4cefba"},
 ]
 
 [package.dependencies]
-docutils = ">=0.18.0,<0.19.0"
-pygments = "*"
-sphinx = "*"
+sphinx = ">=4,<6"
 
 [package.extras]
-code-style = ["pre-commit (==2.13.0)"]
-testing = ["bs4", "coverage", "pygments", "pytest (>=7.1,<8)", "pytest-cov", "pytest-regressions", "rinohtype", "sphinx-testing"]
+code-style = ["pre-commit (>=2.12,<3.0)"]
+rtd = ["myst-parser (>=0.18.0,<0.19.0)"]
+testing = ["myst-parser (>=0.18.0,<0.19.0)", "pytest (>=7.1,<8.0)", "pytest-cov", "pytest-regressions"]
+theme-furo = ["furo (>=2022.06.04,<2022.07)"]
+theme-pydata = ["pydata-sphinx-theme (>=0.9.0,<0.10.0)"]
+theme-rtd = ["sphinx-rtd-theme (>=1.0,<2.0)"]
+theme-sbt = ["sphinx-book-theme (>=0.3.0,<0.4.0)"]
 
 [[package]]
 name = "sphinxcontrib-applehelp"
@@ -705,4 +708,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "98ddd72bf098607992a8fa2d32eaf11dd0e915b6935742f7f49ba4d54cdfbabd"
+content-hash = "0b61b16490cffd1bce067bce3566dc9b50d26f13b87dcb1fd7664bcc4ede5be6"

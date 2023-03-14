@@ -123,34 +123,30 @@ Issues With Sounds
 
 This is usually because there's some metadata left in the audio. Remove it to fix this issue.
 
-.. tabs::
+.. tab-set::
 
-   .. tab:: Windows
+   .. tab-item:: Windows
 
       You can bulk remove it with `Mp3tag <https://www.mp3tag.de/en/download.html>`_ or individually with Audacity.
 
-   .. tab:: Linux
+   .. tab-item:: Linux
 
       You can bulk remove it with `Metadata Cleaner <https://metadatacleaner.romainvigier.fr>`_ or a shell script (requires ffmpeg to be installed) and also individually with Audacity.
 
       ``metadata_remover.sh`` (WAV only)
 
-      .. tabs::
+      .. dropdown:: Script
 
-         .. code-tab:: shell Script
+         .. code-block:: shell
 
             shopt -s globstar nullglob
             for f in *.wav **/*.wav
             do
-              ffmpeg -i "$f" -map 0 -map_metadata -1 -c:v copy -c:a copy "${f%.wav}.new.wav"
-              mv -f "${f%.wav}.new.wav" "$f"
+            ffmpeg -i "$f" -map 0 -map_metadata -1 -c:v copy -c:a copy "${f%.wav}.new.wav"
+            mv -f "${f%.wav}.new.wav" "$f"
             done
             
-- Sound is slightly higher/lower pitched in game.
- 
- This is usually because the sampling rate of your sound doesn't match the original sound's sampling rate.
- 
- You can use a tool like Audacity to resample your sound to match the original rate. Consult :ref:`_creating_your_sound` for more information.
+- Sound is slightly higher/lower pitched in game. This is usually because the sampling rate of your sound doesn't match the original sound's sampling rate. You can use a tool like Audacity to resample your sound to match the original rate. Consult :ref:`_creating_your_sound` for more information.
 
 .. _sound_tools:
 
@@ -158,53 +154,59 @@ Sound Tools
 --------------------
 - Converters
 
-.. tabs::
+.. tab-set::
 
-   .. tab:: Windows
+   .. tab-item:: Windows
 
       # todo
 
-   .. tab:: Linux
+   .. tab-item:: Linux
 
       On Linux you can use shell scripts that convert all WAV or MP3 audio files from the current directory (including folders) to WAV 48000Hz 16-bit. They require ffmpeg to be installed.
 
       MP3 and other formats scripts don't delete previous files, so just search for them (.format) and delete after conversion. WAV script automatically replaces old files.
 
-      .. tabs::
+      .. tab-set::
 
-         .. code-tab:: shell WAV script
-            
-            #WAV to WAV 16-bit 48000 Hz.
-            #wav_converter.sh
-            
-            shopt -s globstar nullglob
-            for f in *.wav **/*.wav
-            do
-              ffmpeg -i "$f" -acodec pcm_s16le -ar 48000 "${f%.wav}.new.wav"
-              mv -f "${f%.wav}.new.wav" "$f"
-            done
+         .. tab-item:: WAV script
 
-         .. code-tab:: shell MP3 Script
-            
-            #MP3 to WAV 16-bit 48000 Hz.
-            #mp3-wav_converter.sh
-            
-            shopt -s globstar nullglob
-            for f in *.mp3
-            do
-              ffmpeg -i "${f}" -vn -c:a pcm_s16le  -ar 48000 "${f%.*}.wav"
-            done
+            .. code-block:: shell
+               
+               #WAV to WAV 16-bit 48000 Hz.
+               #wav_converter.sh
+               
+               shopt -s globstar nullglob
+               for f in *.wav **/*.wav
+               do
+               ffmpeg -i "$f" -acodec pcm_s16le -ar 48000 "${f%.wav}.new.wav"
+               mv -f "${f%.wav}.new.wav" "$f"
+               done
 
-         .. code-tab:: shell Script for other formats
-            
-            #Replace .format with the one you want to convert.
-            #format-wav_converter.sh
-            
-            shopt -s globstar nullglob
-            for f in *.format
-            do
-              ffmpeg -i "${f}" -vn -c:a pcm_s16le  -ar 48000 "${f%.*}.wav"
-            done
+         .. tab-item:: MP3 Script
+
+            .. code-block:: shell
+               
+               #MP3 to WAV 16-bit 48000 Hz.
+               #mp3-wav_converter.sh
+               
+               shopt -s globstar nullglob
+               for f in *.mp3
+               do
+               ffmpeg -i "${f}" -vn -c:a pcm_s16le  -ar 48000 "${f%.*}.wav"
+               done
+
+         .. tab-item:: Script for other formats
+
+            .. code-block:: shell
+               
+               #Replace .format with the one you want to convert.
+               #format-wav_converter.sh
+               
+               shopt -s globstar nullglob
+               for f in *.format
+               do
+               ffmpeg -i "${f}" -vn -c:a pcm_s16le  -ar 48000 "${f%.*}.wav"
+               done
 
 Installation
 -------------
