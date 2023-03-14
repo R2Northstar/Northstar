@@ -122,6 +122,16 @@ To read a value from a table you use the array syntax but instead of an index yo
     
     printt(playerKills[player]) // 5
 
+To check if the table has a certain key, you can use the "in" keyword:
+
+.. code-block:: javascript
+    
+    table<string, int> playerNames = {}
+    if( "key" in playerNames ) 
+    {
+       //Do stuff
+    }
+
 The built in functions for arrays can be found `here <http://www.squirrel-lang.org/squirreldoc/reference/language/builtin_functions.html#table>`_
 
 .. warning:: 
