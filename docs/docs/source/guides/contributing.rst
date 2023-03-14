@@ -25,20 +25,23 @@ Building locally
 
 You need to have a relatively recent version of Python installed - 3.8 or higher. `Download here <https://www.python.org/downloads/>`_
 
+.. tab-set::
 
-.. tabs::
+    .. tab-item:: Windows
 
-    .. code-tab:: powershell Windows
+        .. code-block:: powershell
 
-        git clone https://github.com/R2Northstar/ModdingDocs/
-        cd ModdingDocs
-        ./run.ps1
+            git clone https://github.com/R2Northstar/ModdingDocs/
+            cd ModdingDocs
+            ./run.ps1
     
-    .. code-tab:: bash Linux
+    .. tab-item:: Linux
 
-        git clone https://github.com/R2Northstar/ModdingDocs/
-        cd ModdingDocs
-        ./run.sh
+        .. code-block:: bash
+
+            git clone https://github.com/R2Northstar/ModdingDocs/
+            cd ModdingDocs
+            ./run.sh
 
 .. warning::
     On Windows, if you are not able to run the script by running `./run.ps1`, try running it with: `powershell.exe -ExecutionPolicy Bypass -File .\run.ps1`
