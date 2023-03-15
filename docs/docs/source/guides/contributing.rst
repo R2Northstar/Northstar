@@ -1,11 +1,20 @@
 Contributing to ModdingDocs
 ===========================
 
-All contributions to ModdingDocs are welcome. To add a change simply make a pull request to the `ModdingDocs repo <https://github.com/R2Northstar/ModdingDocs/>`_.
+**How can I contribute?**
+
+All contributions to ModdingDocs are welcome. 
+
+Including:
+
+- GitHub Issues containing any knowledge you want to share
+- Pull Requests with changes to the docs, even small ones
+  
+**What do I need to know to contribute?**
 
 ModdingDocs uses `reStructuredText <https://en.wikipedia.org/wiki/ReStructuredText>`_.
 
-A cheatsheet for reStructuredText syntax can be found here: https://docs.generic-mapping-tools.org/6.2/rst-cheatsheet.html
+Cheatsheet for reStructuredText syntax: https://docs.generic-mapping-tools.org/6.2/rst-cheatsheet.html.
 
 The ``.rst`` files can be found in the ``docs/source`` directory. If you're adding a new file, make sure to link it in ``index.rst``
 
