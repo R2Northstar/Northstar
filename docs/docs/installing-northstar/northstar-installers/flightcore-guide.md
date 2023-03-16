@@ -22,25 +22,25 @@ For Linux, you want to download `flight-core_X.Y.Z_amd64.AppImage` (X Y Z being 
 
 ![FlightCore Main Window](../../images/flightcore-main-window.png)
 
-This is the *Main Menu* of FlightCore. It includes the *Play*, *Changelog*, *Mods*, and *Settings* tabs, all of which will be covered in the guide.
+This is the _Main Menu_ of FlightCore. It includes the _Play_, _Changelog_, _Mods_, and _Settings_ tabs, all of which will be covered in the guide.
 
 ## Play 
 
 ![Play tab's information](../../images/flightcore-main-window-information.png)
 
-The *Play* tab is actually the main window that FlightCore opens to. It includes some useful information in the bottom left, such as the version of Northstar you have installed, how many players are online, how many servers are online, and a button to launch Northstar.
+The _Play_ tab is actually the main window that FlightCore opens to. It includes some useful information in the bottom left, such as the version of Northstar you have installed, how many players are online, how many servers are online, and a button to launch Northstar.
 
 ## Changelog
 
 ![FlightCore's Changelog tab](../../images/flightcore-changelog.png)
 
-The *Changelog* tab displays information from Northstar's [GitHub page for releases](https://github.com/R2Northstar/Northstar/releases), detailing what a new update to Northstar brings.
+The _Changelog_ tab displays information from Northstar's [GitHub page for releases](https://github.com/R2Northstar/Northstar/releases), detailing what a new update to Northstar brings.
 
 ## Mods
 
 ![FlightCore's Mods browser](../../images/flightcore-mod-browser-window.png)
 
-The *Mods* tab of Flightcore can display either mods installed locally, or a browser for installing mods from [Northstar's Thunderstore page](https://northstar.thunderstore.io/). The default option it opens to when clicking the tab is displaying the mods you have installed.
+The _Mods_ tab of Flightcore can display either mods installed locally, or a browser for installing mods from [Northstar's Thunderstore page](https://northstar.thunderstore.io/). The default option it opens to when clicking the tab is displaying the mods you have installed.
 
 `Local` displays mods you have installed currently, with options to toggle them on or off or delete them.
 
@@ -50,4 +50,10 @@ The *Mods* tab of Flightcore can display either mods installed locally, or a bro
 
 ![FlightCore's Settings tab](../../images/flightcore-settings.png)
 
-The *Settings* tab is the fourth and final tab of FlightCore. This tab allows you to view and choose your Titanfall2 directory (default directories can be found in the [Default Directories](../troubleshooting.md#game-location) section), select how many mods you want to see per page on the online browser in FlightCore, the version of FlightCore you're running, as well as a toggle to enable testing release channels.
+The _Settings_ tab is the fourth and final tab of FlightCore. This tab allows you to view and choose your Titanfall2 directory (default directories can be found in the [Default Directories](../troubleshooting.md#game-location) section), select how many mods you want to see per page on the online browser in FlightCore, the version of FlightCore you're running, a toggle to enable testing release channels, and an option to see a tab for quick access to options designed to help you troubleshoot NorthStar, labeled _Repair_.
+
+![FlightCore's Repair tab](../../images/flightcore-repair.png)
+
+This tab is very useful to both you and anyone that might be trying to help you, with both general Northstar options and FlightCore specific options. The _"Disable all but core mods"_ button allows you to quickly disable all mods that are installed after installing Northstar, allowing you to quickly see if a mod you have installed is causing issues. _"Force reinstall Northstar"_ does what the name implies, completely reinstalling Northstar in the event of something going wrong with your Northstar files.
+
+The FlightCore specific options include _"Force delete temp download folder"_, which will forcibly delete a folder that FlightCore creates to place a mod before it finishes fully installing. This process is normally automatically done, but the option is there in the event of the automatic feature failing, and as a way to clean things up manually. The last option of the Repair screen is the _"Delete FlightCore persistent store"_ button. This button may sound complicated, but it essentially just resets FlightCore settings such as install path, in case you ever want to/need to "reset" FlightCore.
