@@ -1,0 +1,71 @@
+name: Build
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write # Needed to write to GitHub draft release
+
+env:
+  NORTHSTAR_VERSION: ${{ github.ref_name }}
+
+jobs:
+  build-launcher:
+    runs-on: windows-2022
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.1
+      - name: Setup resource file version
+        shell: bash
+        run: |
+          sed -i 's/DEV/${{ env.NORTHSTAR_VERSION }}/g' NorthstarLauncher/resources.rc
+          FILEVERSION=$(echo ${{ env.NORTHSTAR_VERSION }} | tr '.' ',' | sed -E 's/-rc[0-9]+//' | tr -d '[:alpha:]')
+          sed -i "s/0,0,0,1/${FILEVERSION}/g" NorthstarDLL/ns_version.h
+      - name: Build
+        run: |
+          msbuild /p:Configuration=Release R2Northstar.sln
+      - name: Upload launcher build as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: northstar-launcher
+          path: |
+            x64/Release/*.dll
+            x64/Release/*.exe
+            x64/Release/*.txt
+      - name: Upload debug build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: launcher-debug-files
+          path: |
+            x64/Release/*.pdb
+
+  upload-launcher-to-release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build-launcher
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Download compiled launcher
+        uses: actions/download-artifact@v2
+        with:
+          name: northstar-launcher
+          path: northstar-launcher
+      - name: Download compiled launcher
+        uses: actions/download-artifact@v2
+        with:
+          name: launcher-debug-files
+          path: launcher-debug-files
+      - name: Create zip to upload
+        run: |
+          zip --recurse-paths --quiet --junk-paths northstar-launcher.zip northstar-launcher/
+          zip --recurse-paths --quiet --junk-paths launcher-debug-files.zip launcher-debug-files/
+      - name: Upload files to release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: ":warning: These are development files! If you want to download Northstar, [go here instead](https://github.com/R2Northstar/Northstar/releases) :warning:"
+          draft: false
+          files: |
+            northstar-launcher.zip
+            launcher-debug-files.zip
