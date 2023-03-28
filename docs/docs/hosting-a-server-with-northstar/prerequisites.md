@@ -48,12 +48,12 @@ You need to allow the `NorthstarLauncher.exe` in the firewall so that it can con
 
 If you accidentally click the deny button, then follow the step to allow it.
 
-* Open windows firewall
-* Select "Allow an app or feature through Windows Defender Firewall
-* Click allow other applications
-* Click browse
-* Locate the NorthstarLauncher.exe and select it
-* Click add
+* Open Windows Firewall
+* Select "Allow an app or feature through Windows Defender Firewall"
+* Click "Allow other applications"
+* Click "Browse"
+* Locate `NorthstarLauncher.exe` and select it
+* Click "Add"
 
 ## Final checks
 
