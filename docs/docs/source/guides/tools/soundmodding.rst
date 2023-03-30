@@ -53,7 +53,7 @@ When you successfully identified your event and have the audio file/s
 ready it's time to set up the folder structure.
 Assuming the event name is ``pilot_grapple_fire``, the folder structure of your mod should look like this:
 
-.. code-block::
+.. code-block:: text
    
    author.mod/
    ├── audio/

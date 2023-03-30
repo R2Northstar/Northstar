@@ -9,19 +9,19 @@ Integer
 The type for an interger (whole number) in squirrel is ``int``. It represents a 32-bit whole number.
 It is declared like this:
 
-.. code-block:: javascript
+.. code-block::
 
     int number = 5
 
 They can be assigned expressions
 
-.. code-block:: javascript
+.. code-block::
 
     number = 5 + 10 - 5
 
 Alternatively you can also write the number in HEX code or as a single ASCII character with ``''``
 
-.. code-block:: javascript
+.. code-block::
 
     number = 'c' // IS VALID
     number = "c" // NOT VALID
@@ -42,13 +42,13 @@ Float
 
 Floating-point numbers are numbers with decimal places, they are declared with the ``float`` keyword.
 
-.. code-block:: javascript
+.. code-block::
 
     float number = 5.69420
 
 You can also assign fractions but you need to use decimal points:
 
-.. code-block:: javascript
+.. code-block::
 
     float number = 5.0/2.0 // has the value 2.5
     float number = 5/2 // Will compile BUT with value 2
@@ -66,13 +66,13 @@ Boolean
 
 Booleans are a value that either represent ``true`` or ``false`` and are declared with the keyword ``bool``
 
-.. code-block:: javascript
+.. code-block::
 
     bool TrueOrFalse = true
 
 They can also accept comnparison expressions, which return a boolean
 
-.. code-block:: javascript
+.. code-block::
 
     bool TrueOrFalse = 1 == 2
 
@@ -97,7 +97,7 @@ Variables that can represent any type (complex or primitive) can be initialized 
 
 There are no build-in function to cast to var.
 
-.. code-block:: javascript
+.. code-block::
 
     var anyValue = "String"
     var two = 2
@@ -110,13 +110,13 @@ Easy casting
 
 For all previous types you can also cast them by using the ``type( variable )`` notation:
 
-.. code-block:: javascript
+.. code-block::
 
     int number = int ( "5" ) 
 
 To convert a ``var`` to other types you need use the ``expect`` keyword:
 
-.. code-block:: javascript
+.. code-block::
 
     var numberVar = 2
     int numberInt = expect int(numberVar)
@@ -128,7 +128,7 @@ Global variables and functions
 When creating a mod, you might want to allow other files or mods to access a ``variable`` or a ``function``, this can be achieved by declaring them using the ``global`` keyword.
 They act like any other variable or function, but can be accessed from any other file or mod. They should be declared at the top of your file, and have a unique name which doesn't appear as a global in any other file, mod, or built-in squirrel code.
 
-.. code-block:: javascript
+.. code-block::
 
     global int GlobalInt 
     global array<int> GlobalArray

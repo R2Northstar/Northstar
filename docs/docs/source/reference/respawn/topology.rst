@@ -7,7 +7,7 @@ The position of topologies are relative to the position of their parent.
 
 Since the number of topologies that can be created is very limited and Vanilla uses most of the slots already, try to minimize your topology uses. Instead of creating new ones, check if you can use one that already exists:
 
-.. code-block:: javascript
+.. code-block::
 
             clGlobal.topoFullScreen
             clGlobal.topoCockpitHudPermanent
@@ -61,7 +61,7 @@ Drawcalls determine how and where RUIs on a topology are being rendered.
 HUD Topology example
 ^^^^^^
 
-.. code-block:: javascript
+.. code-block::
 
 	// Cover the top left quadrant of the screen with a basic image
 	float[2] s = GetScreenSize()
@@ -71,7 +71,7 @@ HUD Topology example
 Worldspace Topology example
 ^^^^^^
 
-.. code-block:: javascript
+.. code-block::
 
 	// REMEMBER TO DESTROY ALL TOPOS, RUIS AND PROPS YOU CREATE WHEN YOU NO LONGER NEED THEM
 	// ripped from respawn

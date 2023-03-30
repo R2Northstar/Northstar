@@ -445,7 +445,7 @@ Usable conditions are:
 
     the game's language.
     
-    .. code-block::
+    .. code-block:: text
     
             // use allcaps only in russian
     		allCaps 				0 	[!$RUSSIAN]
@@ -458,7 +458,7 @@ On top of that, logical operators like ``!``, ``&&`` and ``||`` are available as
 Example:
 ^^^^
 
-.. code-block::
+.. code-block:: text
 
     // This element only shows on pc
 	IngameTextChat [$WINDOWS]

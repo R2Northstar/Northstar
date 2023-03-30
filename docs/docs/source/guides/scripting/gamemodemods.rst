@@ -124,7 +124,7 @@ Shared functions
 ----------------
 Let's begin the process by first creating the file ``sh_gamemode_simplerandomiser.nut`` and making the core components of the gamemode, which is to define the gamemode properties.
 
-.. code-block:: javascript
+.. code-block::
 
     global function simplerandomiser_init // initializing functions
     global const string GAMEMODE_SIMPLERANDOMISER = "rand" 
@@ -194,7 +194,7 @@ Server-side function
 --------------------
 Now that we're down with defining the gamemode, its time to focus on the component on what makes the gamemode function in-game. For this, it will be mostly handled by the server scripts, so head into ``_gamemode_simplerandomiser.nut`` to begin writing the randomizing script.
 
-.. code-block:: javascript
+.. code-block::
     
     global function GamemodeRand_Init
     
@@ -214,7 +214,7 @@ Now that our initial function is created, we now have the game triggering `GiveR
 Firstly, we need to know what weapons we can equip. 
 For this we define an array:
 
-.. code-block:: javascript
+.. code-block::
 
     array<string> pilotWeapons = ["mp_weapon_alternator_smg",
                                   "mp_weapon_autopistol",
@@ -228,7 +228,7 @@ Randomise function
 As we already know its going to call the function ``GiveRandomGun`` when a player respawns, let's define that now.
 First we strip any existing weapons:
 
-.. code-block:: javascript
+.. code-block::
 
     void function GiveRandomGun(entity player)
     {
@@ -239,14 +239,14 @@ This iterates through each weapon (that being the primary, secondary and anti-ti
 
 Then lets give them a new, random weapon by selecting a random item from our previous array:
 
-.. code-block:: javascript
+.. code-block::
 
     player.GiveWeapon( pilotWeapons[ RandomInt( pilotWeapons.len() ) ] )
 
 Now, remember the server callback that we defined earlier in ``sh_gamemode_simplerandomiser.nut``? Let's put that to use.
 We are going to make it so the player receives an announcement whenever they have their weapons randomized.
 
-.. code-block:: javascript
+.. code-block::
 
     // checks if the toggle option is set to enabled
     if ( GetCurrentPlaylistVarInt( "rand_enableannouncements", 1 ) == 1 )
@@ -254,7 +254,7 @@ We are going to make it so the player receives an announcement whenever they hav
         
 Overall, the server script should look like this.
 
-.. code-block:: javascript
+.. code-block::
 
     global function GamemodeRand_Init
     
@@ -291,7 +291,7 @@ Client-side functions
 ------------------
 Lastly, for your ``cl_gamemode_simplerandomiser.nut``, we are going to utilize the callback functions from earlier, as well as add some music to play during the gamemode.
 
-.. code-block:: javascript
+.. code-block::
     
     global function ClGamemodeRand_Init
     global function ServerCallback_Randomiser
@@ -370,7 +370,7 @@ Yes, you will need to create a folder called ``keyvalues`` which is separate fro
 
 Next, inside this ``playlist_v2.txt``, we will need to allow/disallow what maps can the gamemode be played on.
 
-.. code-block::
+.. code-block:: text
 
     playlists
     {

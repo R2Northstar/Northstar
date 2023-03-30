@@ -36,7 +36,7 @@ Example
 
 mod.json extract:
 
-.. code-block:: javascript
+.. code-block:: json
 	
 		"Scripts": [
 		{
@@ -56,7 +56,7 @@ sh_spaceships.nut:
 
 The networked ``CLIENT`` function has to be global
 
-.. code-block:: javascript
+.. code-block::
 
 	#if CLIENT
 	global function Server_GetNetworkedVariable // make the networked function only global on CLIENT
@@ -84,7 +84,7 @@ The networked ``CLIENT`` function has to be global
 
 Calling the ``CLIENT`` function ``Server_GetNetworkedVariable`` on ``SERVER`` vm:
 
-.. code-block:: javascript
+.. code-block::
 
 	// player: CPlayer entity that should execute the function
 	// func: function identifier string
@@ -123,7 +123,7 @@ and execute with the function serverside:
 Example:
 ^^^^^^^^
 
-.. code-block:: javascript
+.. code-block::
 
 	void function MessageUtils_ClientInit()
 	{
@@ -163,7 +163,7 @@ Since version 1.5 mods can receive notifications when a client command has been 
 
     Example usage with the :doc:`PrivateMatchLaunch` clientcommand
 
-    .. code-block:: javascript
+    .. code-block::
 
         void function init(){
             AddClientCommandNotifyCallback("PrivateMatchLaunch", started)
@@ -188,7 +188,7 @@ You can also pass parameters to the function. ``identifier`` is the name of the 
 Example:
 ^^^^^^^^
 
-.. code-block:: javascript
+.. code-block::
 
 	#if UI
 	global function CallMe
@@ -214,7 +214,7 @@ You can also pass parameters to the function. ``identifier`` is the name of the 
 Example:
 ^^^^^^^^
 
-.. code-block:: javascript
+.. code-block::
 
 	#if CLIENT
 	global function CallMe

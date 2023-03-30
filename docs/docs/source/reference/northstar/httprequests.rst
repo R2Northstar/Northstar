@@ -195,7 +195,7 @@ Functions
 	Lambdas are particularly useful as they let you capture local variables of the functions to re-use later
 	such as ``callback`` in this example. 
 
-	.. code-block:: javascript
+	.. code-block::
 
 		HttpRequest request
 		request.method = HttpRequestMethod.GET
@@ -239,7 +239,7 @@ Functions
 
 	This is the same example as NSHttpRequest()'s example. However, it uses this function instead.
 	
-	.. code-block:: javascript
+	.. code-block::
 
 		table<string, array<string> > params
 		params[ "id" ] <- [ id.tostring() ]
@@ -302,7 +302,7 @@ Functions
 
 	In this example, we'll convert a table to JSON, and send it over to a web API.
 
-	.. code-block:: javascript
+	.. code-block::
 
 		table myData = {}
 		myData[ "uid" ] <- player.GetUID()

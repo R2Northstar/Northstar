@@ -7,7 +7,7 @@ Client commands are how the clients communicate with the server. Mods can define
 
     Registers a function as a callback for a client command. This can only be done once per client command string.
 
-    .. code-block:: javascript
+    .. code-block::
 
         AddClientCommandCallback("commandname", commandcallback)
 

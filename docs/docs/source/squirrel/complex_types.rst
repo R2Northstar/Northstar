@@ -8,14 +8,15 @@ Strings
 
 Strings in squirrel represent an array of chars, however chars are not their own type in squirrel, as they are represent by integers. To initialize a string, use the ``string`` keyword:
 
-.. code-block:: javascript
+.. code-block::
 
   string Hello = "World"
 
 You can get the integer value of any char with the ``[index]`` like in arrays, however this only returns the ASCII value of that character.
 To get the string of the char, you need to:
 
-.. code-block:: javascript
+.. code-block::
+  :force:
 
   int charInt = Hello[0]
   string charString = charInt.tochar()
@@ -29,13 +30,13 @@ Assets are strings that describe a path to a resource like models or RUI assets.
 
 You can declare asset literals with a $ symbol
 
-.. code-block:: javascript
+.. code-block::
 
   asset m = $"path/to/my/model.mdl"
 
 You can convert strings to assets with the ``StringToAsset`` method added by Northstar.
 
-.. code-block:: javascript
+.. code-block::
 
   string s = format( "path/to/my/%s", "model.mdl" )
   asset m = StringToAsset( s )
@@ -45,7 +46,7 @@ Arrays
 
 Arrays can store large sets of data and are indexed using numbers, starting from 0, and are declared using ``array<type> arrayname`` the <type> identifier can be ignored but will result in the array being of the type ``var``.
   
-.. code-block:: javascript
+.. code-block::
 
     array<int> numbers = [1,2,3,4,5,6,7,8,9,10]
 
@@ -57,7 +58,7 @@ adding and removing values from arrays can be done using ``.append(value)`` and 
 
 additionally the index of values can be found using the ``.find()`` function and the length by using the ``.len()`` function:
 
-.. code-block:: javascript
+.. code-block::
 
     array<int> numbers = [1,2,3,4,5,6,7,8,9,10]
 
@@ -80,7 +81,7 @@ If you know the exact length of the array ahead of time, you can use static arra
 
 The syntax for static arrays is ``type[size]``.
 
-.. code-block:: javascript
+.. code-block::
 
   int[3] stArr
   printt( stArr[2] ) // note that this index isn't explicitly initialized
@@ -96,7 +97,7 @@ Creation of a table is done in a similar way to arrays, however may have 2 types
 
 There are multiple ways to define a table with the ``[]`` when declaring a key you type a literal
 
-.. code-block:: javascript
+.. code-block::
 
     table<string, int> numberofletters = {
       ["hello"] = 5,
@@ -110,7 +111,7 @@ There are multiple ways to define a table with the ``[]`` when declaring a key y
 
 unlike arrays however adding values to tables cannot be done using ``.append`` or similar means, as the index must also be declared, adding to tables is done using the ``<-`` operator like so.
 
-.. code-block:: javascript
+.. code-block::
 
     table<entity, int> playerkills = {}
     foreach(entity player in GetPlayerArray())
@@ -118,13 +119,13 @@ unlike arrays however adding values to tables cannot be done using ``.append`` o
 
 To read a value from a table you use the array syntax but instead of an index you write your key:
 
-.. code-block:: javascript
+.. code-block::
     
     printt(playerKills[player]) // 5
 
 To check if the table has a certain key, you can use the "in" keyword:
 
-.. code-block:: javascript
+.. code-block::
     
     table<string, int> playerNames = {}
     if( "key" in playerNames ) 
@@ -143,13 +144,13 @@ Structs
 --------
 Structs are a way of storing multiple variables in one object. To create a struct type you just write:
 
-.. code-block:: javascript
+.. code-block::
 
     struct ExampleStruct {}
     
 Inside the brackets you can declare all the variables your struct should contain, you can also directly assign a standard value to a variable, if you dont override this value it will automatically be assigned.
 
-.. code-block:: javascript
+.. code-block::
   
     struct ExampleStruct {
       int VariableInt
@@ -163,7 +164,7 @@ Inside the brackets you can declare all the variables your struct should contain
     
 You then need to create instances of your struct to use it, like this:
 
-.. code-block:: javascript
+.. code-block::
       
       //functions we need to assign, they are placeholders
       void function VoidFuntion(){
@@ -196,7 +197,7 @@ You then need to create instances of your struct to use it, like this:
 For values that we do not declare like ``Optional`` in the case of ``structOne`` we just add a ``...`` as an argument.
 Now that we have two instances we can get the values out of it like this:
 
-.. code-block:: javascript
+.. code-block::
 
       printt(structOne.VariableInt) // 1
       printt(structOne.VariableString) // "Hello World"
@@ -214,7 +215,7 @@ In struct one we have defined that ``ExampleStringFunction`` is assigned to ``St
       
 We can do the same thing for ``structTwo``:
 
-.. code-block:: javascript
+.. code-block::
 
       printt(structTwo.VariableInt)
       >> 2
@@ -234,7 +235,7 @@ We can do the same thing for ``structTwo``:
 
 Now that we have a struct we can also pass it as an argument in functions or return the struct from a function:
 
-.. code-block:: javascript 
+.. code-block:: 
 
     ExampleStruct function ChangeTheStruct(ExampleStruct struct){
         if(struct.VariableInt == 1)
@@ -248,7 +249,7 @@ Now that we have a struct we can also pass it as an argument in functions or ret
 
 You can also nest structs like this:
 
-.. code-block:: javascript
+.. code-block::
 
     struct NewStruct{
       Examplestruct CoolStruct
@@ -267,7 +268,7 @@ You can also nest structs like this:
 
 In the same way you can also use it as a type for arrays or tables:
 
-.. code-block:: javascript 
+.. code-block:: 
 
     array<ExampleStruct> StructArray = []
     StructArray.append( structOne )
@@ -282,7 +283,7 @@ Alternatively you can define a struct and directly have it as an instance, the d
 This might be particularly useful when you want to share multiple variables at once between multiple files.
 You create one just like a regular struct, but the name is behind the closing bracket, like this:
 
-.. code-block:: javascript
+.. code-block::
 
     struct {
       int CoolInt
@@ -291,7 +292,7 @@ You create one just like a regular struct, but the name is behind the closing br
     
 Now you do not need to create an instance to give the struct a value:
 
-.. code-block:: javascript
+.. code-block::
 
     file.CoolInt = 5
     printt(file.CoolInt)
@@ -309,14 +310,14 @@ Vectors
 Vectors are a type that store three floats in one object. They are declared using the ``< >`` operators. The values are seperated with a ``,``.
 Here the first number represents the X, the 2nd the Y, and the 3rd the Z coordinate.
 
-.. code-block:: javascript
+.. code-block::
 
   vector myFirstVector = <0, 120, 40>
   
 
 We can then get the coordinates out of the vector with:
 
-.. code-block:: javascript
+.. code-block::
 
   float x = myFirstVector.x
   float y = myFirstVector.y 
@@ -334,7 +335,7 @@ Most in game entities inherit from the ``CBaseEntity`` or ``C_BaseEntity`` class
 A fast way to create an entity is to use:
 
 
-.. code-block:: javascript
+.. code-block::
   
   entity myFisrtNPC = CreateNPC( NpcName, team, origin, angles )
   
@@ -351,14 +352,14 @@ You declare a functionref with the return type, the ``functionref`` key word, th
 
 That variable will be of type ``functionref``
 
-.. code-block:: javascript
+.. code-block::
 
   void functionref(string) MyReference = void function(string str){ /* your code could be here */}
 
 
 You can then just call the fucntion by its functionref name.
 
-.. code-block:: javascript
+.. code-block::
 
   void CallFunction(void functionref(string) func ){
     func("hello")
@@ -369,7 +370,7 @@ ornull
 
 To declare a type to contain a value or ``null``, declare the variable like this: ``type ornull identifier``.
 
-.. code-block:: javascript
+.. code-block::
   
   int ornull number = CoinFlip() ? null : 0
   if( number == null )
@@ -381,7 +382,7 @@ typedef
 
 To alias a type, use ``typedef``. Typedefs can optionally be global as well
 
-.. code-block:: javascript
+.. code-block::
   
   global typedef DontDoThis var
   typedef crazyArray array<MyStruct[1]>[2] ornull

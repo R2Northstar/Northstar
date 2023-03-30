@@ -65,7 +65,7 @@ Behaviour
 Examples
 --------
 
-.. code-block:: javascript
+.. code-block::
 
     entity mover = CreateScriptMover( <0,0,0> ) 
     
@@ -82,7 +82,7 @@ Examples
     wait 0.5
     mover.NonPhysicsStop()
 
-.. code-block:: javascript
+.. code-block::
     
     // creating a elevator 
     // using a mover with a model
@@ -100,7 +100,7 @@ Examples
     }
 
 
-.. code-block:: javascript
+.. code-block::
 
     // Phase shifting the player to a destination
     // setting a position

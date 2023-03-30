@@ -33,7 +33,7 @@ Once it has been downloaded, it is recommended to set up your file structure as 
 
     Depending on the version of RePak, some of these folders and files might be already there for you
 
-.. code-block::
+.. code-block:: text
 
     RePak
     ├── RePak.exe
@@ -241,7 +241,7 @@ The file structure of your ``paks`` folder should be similar to this:
 
 |PaksStructure|
 
-.. code-block::
+.. code-block:: text
 
     paks
     ├── example.rpak
