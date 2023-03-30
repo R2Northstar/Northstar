@@ -19,14 +19,14 @@ Spinning off a thread
 
 To create a new coroutine, call a function with the ``thread`` keyword before.
 
-.. code-block:: javascript
+.. code-block::
 
     thread void function(){}()
     thread MyFunction()
 
 To get a thread object, use the ``newthread`` function.
 
-.. code-block:: javascript
+.. code-block::
 
     void function CoroutineExample()
     {
@@ -43,7 +43,7 @@ wait
 
 The ``wait`` statement halts threads for a set amount of time specified after the ``wait`` keyword. Integers and floats are accepted as times in seconds.
 
-.. code-block:: javascript
+.. code-block::
 
     void function WaitExample( float n )
     {
@@ -59,7 +59,7 @@ When using infinite loops it's important to work with ``wait`` statements to avo
 
 If you want to wait until a thread is finished, you can spin off the thread that you wait for with the ``waitthread`` keyword.
 
-.. code-block:: javascript
+.. code-block::
 
     void function ParentThread()
     {
@@ -77,7 +77,7 @@ OnThreadEnd
 
 Use the ``OnThreadEnd`` function to execute a callback after a thread has ended. This is useful for cleanup functions that remove entities after they're used or similar.
 
-.. code-block:: javascript
+.. code-block::
 
     void function PlayIncomingFX( vector origin, int teamNum )
     {
@@ -107,7 +107,7 @@ Use the ``OnThreadEnd`` function to execute a callback after a thread has ended.
 Example Script
 ^^^^^^^^^^^^^^
 
-.. code-block:: javascript
+.. code-block::
 
     void function SetPositionDelayed( entity ent, vector pos, float delay )
     {
@@ -177,7 +177,7 @@ It's also possible to trigger and catch signals with methods that aren't propert
 
     Wait for any of the passed signals to be triggered.
 
-    .. code-block:: javascript
+    .. code-block::
 
         // Wait for the NPC to die, delete, or get leeched, then remove the npc from the array
 	    WaitSignal( ent, "OnDeath", "OnDestroy", "OnLeeched" )
@@ -191,7 +191,7 @@ Example
 
 For example, if we want to tell a player not to give up after being killed several times, we can write it this way:
 
-.. code-block:: javascript
+.. code-block::
 
     // First, we register signal we want to use
     RegisterSignal("OnMultipleDeaths")
@@ -313,7 +313,7 @@ Flags
 Example
 ~~~~~~~
 
-.. code-block:: javascript
+.. code-block::
 
     void function FlagExample()
     {

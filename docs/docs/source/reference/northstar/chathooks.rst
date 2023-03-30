@@ -55,7 +55,7 @@ The client chat callbacks allow you to intercept chat messages and modify or blo
 
     **Example:**
 
-    .. code-block:: javascript
+    .. code-block::
 
         ClClient_MessageStruct function MyChatFilter(ClClient_MessageStruct message)
         {
@@ -87,7 +87,7 @@ players, they only display them locally.
 
     **Example:**
 
-    .. code-block:: javascript
+    .. code-block::
 
         void function OnGameStarted()
         {
@@ -101,7 +101,7 @@ players, they only display them locally.
 
     **Example:**
 
-    .. code-block:: javascript
+    .. code-block::
         
         void function InitialiseHEVSuit()
         {
@@ -122,7 +122,7 @@ players, they only display them locally.
 
     **Example:**
 
-    .. code-block:: javascript
+    .. code-block::
 
         void function MyModInit()
         {
@@ -136,7 +136,7 @@ players, they only display them locally.
 
     **Example:**
 
-    .. code-block:: javascript
+    .. code-block::
 
         void function OnButtonPressed()
         {
@@ -193,7 +193,7 @@ The server chat callbacks allow you to intercept incoming chat messages and modi
 
     **Example:**
 
-    .. code-block:: javascript
+    .. code-block::
 
         ClServer_MessageStruct function MyChatFilter(ClServer_MessageStruct message)
         {
@@ -230,7 +230,7 @@ With custom messages you can send chat messages at any time, to all players or t
 
     **Example:**
 
-    .. code-block:: javascript
+    .. code-block::
 
         void function OnSayRedCommand(entity player, string text)
         {
@@ -252,7 +252,7 @@ With custom messages you can send chat messages at any time, to all players or t
 
     **Example:**
 
-    .. code-block:: javascript
+    .. code-block::
 
         void function OnSendToFriendsCommand(entity fromPlayer, string text)
         {
@@ -275,7 +275,7 @@ With custom messages you can send chat messages at any time, to all players or t
 
     **Example:**
 
-    .. code-block:: javascript
+    .. code-block::
 
         void function RestartServerThread()
         {
@@ -308,7 +308,7 @@ With custom messages you can send chat messages at any time, to all players or t
 
     **Example:**
 
-    .. code-block:: javascript
+    .. code-block::
 
         void function OnBanCommand(entity player, array<string> args)
         {
@@ -330,7 +330,7 @@ ANSI Escape Codes
 All messages support ANSI escape codes for customising text color. These are commands in strings that have special
 meaning. For example, the string:
 
-.. code-block::
+.. code-block:: text
 
     Hello world, \x1b[31mthis text is red\x1b[0m. And \x1b[34mthis text is blue\x1b[0m.
 

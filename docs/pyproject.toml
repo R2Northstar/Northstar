@@ -4,7 +4,10 @@ version = "0.1.0"
 description = "This repo contains the technical documentation on all things related to making Northstar mods."
 authors = ["R2Northstar"]
 license = "MIT"
-packages = [{ include = "docs/source/**/*.py" }]
+packages = [
+    { include = "docs/source/**/*.py" },
+    { include = "sphinx_rsquirrel" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -14,9 +17,12 @@ sphinx-autobuild = "^2021.3.14"
 sphinxcontrib-youtube = "^1.2.0"
 sphinx-copybutton = "^0.5.0"
 sphinx-design = "^0.3.0"
+pygments = { extras = ["plugins"], version = "^2.14.0" }
 
 [tool.poetry.dev-dependencies]
 
+[tool.poetry.plugins."pygments.lexers"]
+"squirrel" = "squirrel_support:SquirrelLexer"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

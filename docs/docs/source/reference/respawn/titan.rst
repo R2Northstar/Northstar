@@ -3,7 +3,7 @@ Titan
 
 Functions for getting titan, and methods of the titan object
 
-.. code-block:: javascript
+.. code-block::
         
             entity soul = player.IsTitan() ? player.GetTitanSoul() : player.GetPetTitan().GetTitanSoul() 
             // getting the titan depends on wether the player is in the titan or not

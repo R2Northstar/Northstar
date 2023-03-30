@@ -22,7 +22,7 @@ Creates a poll on ``player``.
 
 **Example:**
 
-.. code-block:: javascript
+.. code-block::
 
     void function CreateDummyPoll()
      {
@@ -42,7 +42,7 @@ Returns the index of the item from ``options`` the player voted for. If the play
 
 **Example:**
 
-.. code-block:: javascript
+.. code-block::
 
     void function CheckResponseToDummyPoll(entity player)
     {
@@ -67,7 +67,7 @@ Sends a large message to ``player`` which will appear in the top right corner.
 
 **Example:**
 
-.. code-block:: javascript
+.. code-block::
 
     void function SendDummyLargeMessage(entity player)
     {
@@ -91,7 +91,7 @@ Sends a smaller message to ``player`` which will appear from the center right.
 
 **Example:**
 
-.. code-block:: javascript
+.. code-block::
   
     void function SendDummyInfoMessage(entity player)
     {
@@ -115,7 +115,7 @@ Send a small popup to ``player`` which will appear in the lower half of their sc
 
 **Example:**
 
-.. code-block:: javascript
+.. code-block::
 
     void funcions SendDummyPopUp(entity player)
     {
@@ -139,7 +139,7 @@ Sends a large announcement to ``player``.
 
 **Example:**
 
-.. code-block:: javascript
+.. code-block::
 
       void function SendDummyAnnouncement(entity player)
       {
@@ -175,7 +175,7 @@ Deletes the status message which was created with ``id``
 
 **Examples:**
 
-.. code-block:: javascript
+.. code-block::
   
     void function TestStatusMessage_Threaded(entity player)
     {

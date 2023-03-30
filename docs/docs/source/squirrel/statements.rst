@@ -6,13 +6,13 @@ If statements
 
 If statements use a similar style to most programming languages and will execute their asigned code if the test placed inside returns the boolean value true. If I wanted to have something occur if, and only if, our previous ``ReturnTrueOrFalse`` function returned true, then you can use:
 
-.. code-block:: javascript
+.. code-block::
 
   if( ReturnTrueOrFalse() )
 
 Conditional operators can also be used to make comparisons, such as ``==`` (equals), ``<`` (less than), ``<=`` (less than or equal), ``!=`` (not equal), etc., returning true if their condition is satisfied. For example, to execute code if a dice roll landed on 5:
 
-.. code-block:: javascript
+.. code-block::
 
   if( RandomInt( 6 ) + 1 == 5 )
 
@@ -21,7 +21,7 @@ Like other languages, if statements can be connected to ``else if`` and ``else``
 Squirrel supports ternary operations like most languages. The value of the expression depends if a condition is truthy or not. However, if not used carefully this can worsen readability.
 The Syntax is ``condition ? if_condition_true : if_condition_false``. This is especially useful when declaring variables or passing parameters.
 
-.. code-block:: javascript
+.. code-block::
 
   // shortenedUsername is "longus..."" if username is "longusername" or "short" if username is "short"
   string shortenedUsername = username.len() > 9 ? username.slice(0,6) + "..." : username;
@@ -36,7 +36,7 @@ While Loops
 
 A while loop runs as long as the condition evaluates to a truthy value.
 
-.. code-block:: javascript
+.. code-block::
 
   while( true )
   {
@@ -53,7 +53,7 @@ Do While Loop
 
 A do while loop is the same as a while loop but the condition is checked **after** the body is executed.
 
-.. code-block:: javascript
+.. code-block::
 
   do
   {
@@ -67,7 +67,7 @@ A for loop also runs until a condition is met however it provides you with a cou
 
 The Syntax is as follows: ``for( int counter; condition; behaviour_after_body_execution )``
 
-.. code-block:: javascript
+.. code-block::
 
   // prints 0, 1, 2, 3, 4
   for( int i; i < 5; i++ )
@@ -81,13 +81,13 @@ The Syntax is as follows: ``for( int counter; condition; behaviour_after_body_ex
   {
     print( arr[i] )
   }
-
+  
 Foreach Loop
 ~~~~~~~~~~~~
 
 A foreach loop iterates over a ``table`` or an ``array`` and executes for each entry. The loop provides you with an optional counter for arrays or key for tables.
 
-.. code-block:: javascript
+.. code-block::
 
   array<int> arr = [ 1, 2, 3, 4 ]
   table<string, string> map = {
@@ -111,11 +111,11 @@ Implicit conditional behavior
 -----------------------------
 Conditional statements, such as while loops and if statements, also implictly cast non-boolean inputs to booleans. For numbers, this means 0 is considered false and anything else is considered true. For instance variables like arrays and entities, ``null`` is considered false and anything else is considered true. For example, these inputs are considered true by the if statements:
 
-.. code-block:: javascript
+.. code-block::
 
   if(2)
 
-.. code-block:: javascript
+.. code-block::
 
   array somelist = [0, 1]
   if(somelist)
@@ -128,7 +128,7 @@ So great, we can loop and check things, but what can we do with this information
 
 For example, lets make our ``ReturnTrueOrFalse`` function, that randomly picks either true or false, first:
 
-.. code-block:: javascript
+.. code-block::
 
   bool function ReturnTrueOrFalse() {
     return RandomInt(2) == 1
@@ -137,14 +137,14 @@ For example, lets make our ``ReturnTrueOrFalse`` function, that randomly picks e
 Note that while functions always need ``{}``, single-line ``if``/``else`` statements and loops do not:
 
 
-.. code-block:: javascript
+.. code-block::
 
   if(ReturnTrueOrFalse())
     printt("Only called if true")
 
 Now let's make a more complicated function that will use the previous script to determine true or false, printing a list each time it returns true:
 
-.. code-block:: javascript
+.. code-block::
 
   array<int> someinformation = [1,2,3,4,5,6]
   void function ThisDoesStuff(){

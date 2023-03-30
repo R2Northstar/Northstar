@@ -82,19 +82,19 @@ translation keys, preceded by a ``#``.
 For example, to translate the "Launch Northstar" button on main menu, instead of
 calling:
 
-.. code-block:: javascript
+.. code-block::
 
     AddComboButton( comboStruct, headerIndex, buttonIndex++, "Launch Northstar" )
 
 We'll use:
 
-.. code-block:: javascript
+.. code-block::
 
     AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_LAUNCH_NORTHSTAR" )
 
 You can also use the ``Localize`` method client-side:
 
-.. code-block:: javascript
+.. code-block::
 
     Localize( "#MENU_LAUNCH_NORTHSTAR" )
 

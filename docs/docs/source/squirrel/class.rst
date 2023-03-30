@@ -14,7 +14,7 @@ Declaring Classes
 To declare a class, first add the ``untyped`` keyword and the class as a variable at
 file level.
 
-.. code-block:: javascript
+.. code-block::
 
     untyped
     var ExampleClass
@@ -35,7 +35,7 @@ class inside of a function.
 Most classes use a constructor. A constructor is a function of the instance that gets
 executed on object creation.
 
-.. code-block:: javascript
+.. code-block::
 
     void function initClient() {
         class ExampleClass {
@@ -50,7 +50,7 @@ Function parameters are passed as type ``var``, but the type keyword is not requ
 ``constructor( parameter ){}; func( parameter ){};`` and ``constructor( var parameter
 ){}; func( var parameter ){};`` are both correct.
 
-.. code-block:: javascript
+.. code-block::
 
     class ExampleClass {
             propertyString = null // Actual type is var
@@ -73,7 +73,7 @@ required to set a default value of a property. This may be ``null``.
 Every object has a reference to itself called ``this``. You can change parameters of an
 object by reference.
 
-.. code-block:: javascript
+.. code-block::
 
     void function initClient() {
         class ExampleClass {
@@ -93,7 +93,7 @@ Declaring Functions of Classes
 Functions of a class have to return a value of type ``var``. This may be ``null``.
 Define functions like this:
 
-.. code-block:: javascript
+.. code-block::
 
     global var ExampleClass;
     void function initClassF(){
@@ -122,7 +122,7 @@ Inserting Properties Into Classes
 It's possible to insert more properties into a class at runtime. To achieve this, use
 the ``<-`` operator.
 
-.. code-block:: javascript
+.. code-block::
 
     // Using ``ExampleClass`` and ``exampleObject`` from example above
     ExampleClass.newProperty <- "New property in class"
@@ -134,7 +134,7 @@ the ``<-`` operator.
     It is not possible to insert new fields into an instance or a class *after
     instantiation*
 
-    .. code-block:: javascript
+    .. code-block::
 
         var ExampleErrorClass;
 
@@ -147,7 +147,7 @@ the ``<-`` operator.
 
 Inserting functions is also possible using the ``::`` operator
 
-.. code-block:: javascript
+.. code-block::
 
     function ExampleClass::AddOne( var param /* parameters have to be var */ ){ return expect int( param ) + 1 }
     var e = ExampleClass()
@@ -158,7 +158,7 @@ mods that have already been loaded.
 
 For example, extending functionality of the CPlayer class might look like this:
 
-.. code-block:: javascript
+.. code-block::
 
     global function InitCPlayerInsert
 
@@ -193,7 +193,7 @@ Instantiating Objects
 
 To create an instance, do:
 
-.. code-block:: javascript
+.. code-block::
 
     class ExampleClass {
         property = null
@@ -209,7 +209,7 @@ To create an instance, do:
 
 It's also possible to create an instance without calling the constructor.
 
-.. code-block:: javascript
+.. code-block::
 
     // Using 'ExampleClass' from previous examples
     var e = ExampleClass.instance()
@@ -222,7 +222,7 @@ Methods from a class can be accessed without an instance. Note that the class it
 doesn't have a reference to itself, meaning that the ``this`` keyword refers to the root
 table.
 
-.. code-block:: javascript
+.. code-block::
 
     var class = ExampleClass
     var instance = class.constructor()
@@ -234,7 +234,7 @@ Unlike other types, passing an object does not pass a copy of the object, but a
 reference to itself. This means that any modifications inside of a function are applied
 to the original object.
 
-.. code-block:: javascript
+.. code-block::
 
     void function initClass(){
         class Container {
@@ -255,7 +255,7 @@ to the original object.
 You can avoid this by using cloned objects. Use the ``clone`` keyword to create a copy
 of an object.
 
-.. code-block:: javascript
+.. code-block::
 
     // Assumes the 'Container' class from the previous example has already been declared
     void function initClass(){
@@ -278,7 +278,7 @@ Instead of declaring classes as a global var, you can use other types such as ta
 hold multiple class objects that emulate the behaviour of namespaces to a certain
 extend.
 
-.. code-block:: javascript
+.. code-block::
 
     global table<string, var> fakeNamespace = {
             class1 = null,
@@ -289,7 +289,7 @@ This allows you to group classes together in a single global variable.
 
 You can use the classes inside of the table like this:
 
-.. code-block:: javascript
+.. code-block::
 
     // Create a class object in field
     class fakeNamespace.class1 { constructor(){ print("constructing instance of class1") } }
@@ -304,7 +304,7 @@ You can use the classes inside of the table like this:
 
 You can also declare classes in an array:
 
-.. code-block:: javascript
+.. code-block::
 
     array<var> classes // This has to be at file level
 
@@ -314,7 +314,7 @@ You can also declare classes in an array:
 
 And in a similar fashion in structs:
 
-.. code-block:: javascript
+.. code-block::
 
     struct {
             var class1 = null
@@ -332,7 +332,7 @@ And in a similar fashion in structs:
     Respawn's fork doesn't appear to support inheritance. Using the ``extend`` keyword
     won't compile.
 
-    .. code-block:: javascript
+    .. code-block::
 
         class Child extends Parent{}
 

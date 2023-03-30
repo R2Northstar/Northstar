@@ -3,7 +3,7 @@ Rui
 
 Functions for creating a rui, and methods of the rui object
 
-.. code-block:: javascript
+.. code-block::
         
             // To create one, do:
             rui = RuiCreate( $"ui/assetname.rpak", topology, drawGroup, sortKey ) // sortkey = int to prevent z-fighting. higher -> in front
@@ -23,7 +23,7 @@ Functions for creating a rui, and methods of the rui object
      
 Drawgroups
 
-.. code-block:: javascript
+.. code-block::
 
         RUI_DRAW_WORLD
         RUI_DRAW_HUD
@@ -32,7 +32,7 @@ Drawgroups
 
 Trackers
 
-.. code-block:: javascript
+.. code-block::
 
         // VECTOR TYPES
         RUI_TRACK_ABSORIGIN_FOLLOW                   // Create at absorigin, and update to follow the entity
@@ -92,7 +92,7 @@ Trackers
 
     .. cpp:function:: void RuiSetResolution(rui, screenSizeX, screenSizey)
     
-        .. code-block:: javascript
+        .. code-block::
         
                 screenSizeX = GetScreenSize()[0]
                 screenSizeY = GetScreenSize()[1]

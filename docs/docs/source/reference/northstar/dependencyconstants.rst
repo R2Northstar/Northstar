@@ -18,13 +18,13 @@ Contditons you can check for are
 
 These conditions can also be combined with the regular squirrel boolean expressions
 
-.. code-block:: javascript
+.. code-block::
 
     #if SERVER
     Chat_ServerBroadcast("Message from the server VM")
     #endif
 
-.. code-block:: javascript
+.. code-block::
 
     #if (CLIENT && MP) || DEV
     ...
@@ -40,7 +40,7 @@ loaded, these use the Compiler directives syntax.
 
 Inside your ``mod.json`` define a constant as:
 
-.. code-block:: javascript
+.. code-block::
 
     {
         // mod.json stuff
@@ -52,14 +52,14 @@ Inside your ``mod.json`` define a constant as:
 
 For Example:
 
-.. code-block:: javascript
+.. code-block::
 
     "PLAYER_HAS_ROGUELIKE_MOD": "TF|Roguelike"
 
 Will define a constant ``PLAYER_HAS_ROGUELIKE_MOD`` that is set to ``0`` or ``1``
 depending if the mod is enabled. It then can be used as a constant/compiler flag.
 
-.. code-block:: csharp
+.. code-block::
 
     #if PLAYER_HAS_ROGUELIKE_MOD
     print("player has roguelike mod")

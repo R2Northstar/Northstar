@@ -15,7 +15,7 @@ Examples:
         "version": 7
     }
 
-.. code-block::
+.. code-block:: text
 
     root
     ├── RePak.exe
@@ -53,7 +53,7 @@ Examples:
         ]
     }
 
-.. code-block::
+.. code-block:: text
 
     root
     ├── RePak.exe
@@ -111,7 +111,7 @@ Examples:
         ]
     }
 
-.. code-block::
+.. code-block:: text
 
     root
     ├── RePak.exe

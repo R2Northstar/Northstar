@@ -199,7 +199,7 @@ configuration file.
 When starting a match, ``Northstar.CustomServers`` mod will retrieve the configuration
 variable value, or its default value if it hasn't been specified in configuration file:
 
-.. code-block:: javascript
+.. code-block::
 
     // start countdown
     SetUIVar( level, "gameStartTime", Time() + GetConVarFloat( "ns_private_match_countdown_length" ) )

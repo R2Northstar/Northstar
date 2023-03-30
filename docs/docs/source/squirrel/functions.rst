@@ -8,7 +8,7 @@ Declaring Functions
 
 Functions in squirrel are first defined by stating the **return type** (output) followed by the keyword **function**. For example, if you wanted to define a function that returns TRUE or FALSE you would type:
 
-.. code-block:: javascript
+.. code-block::
 
   bool function ReturnTrueOrFalse()
   {
@@ -21,7 +21,7 @@ If you don't want to return anything, use ``void`` as the return type. This indi
 
 If a function is lacking a ``return`` statement or a return value, it will return ``null``. For example:
 
-.. code-block:: javascript
+.. code-block::
 
   void function ThisDoesStuff()
   {
@@ -45,7 +45,7 @@ Optional parameters aren't required to call the function and will be assigned a 
 
 To make a parameter optional, add a default after the parameter
 
-.. code-block:: javascript
+.. code-block::
 
   void function OptionalExample( string msg = "default parameter", optional2 = 1 )
   {
@@ -62,7 +62,7 @@ Passing Functions as parameters
 
 If you want to pass a function as a parameter to another function, for example as a callback set their type as ``functionref( [parameters] )``.
 
-.. code-block:: javascript
+.. code-block::
 
   void function FnLiteral( int req, int opt = 2 )
   {
@@ -83,7 +83,7 @@ You can call functions with opening and closing brackets containing all paramete
 
 You can also call functions with an array of parameters
 
-.. code-block:: javascript
+.. code-block::
 
   void function FnLiteral( int opt = 2, int opt2 = 2 )
   {
@@ -102,7 +102,7 @@ Implicit parameters
 
 If you don't know how many parameters you get at compile time, you can use implicit parameters.
 
-.. code-block:: javascript
+.. code-block::
 
   void function XParameters( string required, string optional = "", ... )
   {
@@ -121,7 +121,7 @@ Implicit Capture
 
 It's not possible to use locals from a parent function, but it is possible to capture them in an anonymous functions. 
 
-.. code-block:: javascript
+.. code-block::
 
   void function ParentFunc()
   {

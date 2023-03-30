@@ -75,14 +75,14 @@ Creating VMT
 In the same folder you extracted your mdl's. Make a ``materials`` folder next to the ``models`` folder. 
 
 Example:
-::
+.. code-block:: text
 
 	models
 	materials
 
 Recreate the path you changed in the ``materials`` folder, such that the last section is a .vmt file:
 
-::
+.. code-block:: text
 
 	materials
 	└─ models
@@ -91,7 +91,7 @@ Recreate the path you changed in the ``materials`` folder, such that the last se
 	                 └─ car_ctm.vmt
 
 Inside your .vmt paste:
-::
+.. code-block:: text
 
 	"UnlitTwoTexture"
 	{
@@ -141,7 +141,7 @@ Final VPK folder
 
 Your root folder should look somewhat like this
 
-::
+.. code-block:: text
 
 	root
 	├─ materials
@@ -172,7 +172,8 @@ To add animation functionality, all we need to do is add a Proxie; which is just
 You need to create a .vtf texture with multiple frames imported to a single .vtf texture, that's your animated texture. You can do this with `VTFEdit`_. Then assign the texture in ``$basetexture``.
 
 At the bottom of your vmt but before the ``}``, add this:
-::
+.. code-block:: text
+	
 	"Proxies"
 	{
 			AnimatedTexture
@@ -182,5 +183,6 @@ At the bottom of your vmt but before the ``}``, add this:
 				animatedTextureFrameRate 30
 			}
 	}
+
 
 To change the fps of the texture, change the value after ``animatedTextureFrameRate``, and you'll be done making your texture animated!

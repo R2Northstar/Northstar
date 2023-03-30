@@ -378,7 +378,7 @@ String
 
         replaces text that should be localzied on the client
 
-        .. code-block:: javascript
+        .. code-block::
 
             string localized = Localize( token )
 
@@ -390,7 +390,7 @@ String
         
         You can eliminate the possibility of the returned index being null by casting like this:
 
-        .. code-block:: javascript
+        .. code-block::
 
             int ornull index = GetMapName().find( "mp" )
 
