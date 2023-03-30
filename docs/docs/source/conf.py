@@ -61,3 +61,7 @@ html_theme_options = {
 epub_show_urls = "footnote"
 
 highlight_language = "squirrel"
+
+# furo theme specific
+pygments_dark_style = "one-dark"
+
