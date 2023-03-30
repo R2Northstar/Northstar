@@ -361,13 +361,41 @@ where your script files should go).
 RunOn
 +++++
 
-Squirrel VM context in which this script should be run.
+A boolean expression which tells the game when and in which context to compile the script.
 
-Expression examples:
 
-- ``"SP"``
-- ``"SERVER && MP"``
-- ``"( CLIENT || SERVER ) && MP"``
+.. list-table:: Avalible flags
+   :widths: 50 50
+   :header-rows: 1
+
+   * - Name
+     - Description
+   * - SERVER
+     - Server script VM, recompiles on map change
+   * - CLIENT
+     - Client script VM, recompiles on map change
+   * - UI
+     - UI script VM, recompiles on when `uiscript_reset` is ran
+   * - SP
+     - Singleplayer
+   * - MP
+     - Multiplayer
+   * - DEV
+     - Value of developer convar
+   * - LOBBY
+     - True in mp_lobby. (Server and client VMs only)
+   * - MAP_mp_box
+     - True if the given map name is being loaded
+   * - GAMEMODE_at
+     - True if the given game mode is being loaded
+
+
+``( CLIENT || SERVER ) && MP`` - Compiles on both client and server only in multiplayer.
+
+``CLIENT && SP && MAP_sp_boomtown`` - Compiles only on client in singleplayer only when the map ``sp_boomtown`` is loaded. ( Here ``SP`` isn't needed as ``sp_boomtown`` is singleplayer only )
+
+``CLIENT && GAMEMODE_aitdm`` - Compiles on client on both singleplayer and multiplayer only when the ``aitdm`` gamemode is set. ( ``aitdm`` is attrition which is multiplayer only so this script only compiles on multiplayer )
+
 
 ClientCallback / ServerCallback
 +++++++++++++++++++++++++++++++
