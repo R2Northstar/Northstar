@@ -48,12 +48,12 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Download compiled launcher
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: northstar-launcher
           path: northstar-launcher
       - name: Download compiled launcher
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: launcher-debug-files
           path: launcher-debug-files
