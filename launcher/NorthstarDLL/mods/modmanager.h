@@ -103,6 +103,8 @@ class Mod
 	std::vector<ModConCommand*> ConCommands;
 	// custom localisation files created by the mod
 	std::vector<std::string> LocalisationFiles;
+	// custom script init.nut
+	std::string initScript;
 
 	// other files:
 

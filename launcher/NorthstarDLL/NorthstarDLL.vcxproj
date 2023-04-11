@@ -430,8 +430,8 @@
     <ClInclude Include="logging\sourceconsole.h" />
     <ClInclude Include="masterserver\masterserver.h" />
     <ClInclude Include="mods\modmanager.h" />
-    <ClInclude Include="ns_version.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="plugins\pluginbackend.h" />
     <ClInclude Include="plugins\plugins.h" />
     <ClInclude Include="plugins\plugin_abi.h" />
     <ClInclude Include="scripts\scripthttprequesthandler.h" />
@@ -440,6 +440,7 @@
     <ClInclude Include="server\r2server.h" />
     <ClInclude Include="server\serverchathooks.h" />
     <ClInclude Include="server\serverpresence.h" />
+    <ClInclude Include="shared\gamepresence.h" />
     <ClInclude Include="shared\keyvalues.h" />
     <ClInclude Include="shared\maxplayers.h" />
     <ClInclude Include="shared\misccommands.h" />
@@ -507,6 +508,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="plugins\pluginbackend.cpp" />
     <ClCompile Include="plugins\plugins.cpp" />
     <ClCompile Include="scripts\client\clientchathooks.cpp" />
     <ClCompile Include="scripts\client\cursorposition.cpp" />
@@ -533,6 +535,7 @@
     <ClCompile Include="shared\exploit_fixes\exploitfixes_lzss.cpp" />
     <ClCompile Include="shared\exploit_fixes\exploitfixes_utf8parser.cpp" />
     <ClCompile Include="shared\exploit_fixes\ns_limits.cpp" />
+    <ClCompile Include="shared\gamepresence.cpp" />
     <ClCompile Include="shared\keyvalues.cpp" />
     <ClCompile Include="shared\maxplayers.cpp" />
     <ClCompile Include="shared\misccommands.cpp" />

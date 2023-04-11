@@ -336,7 +336,7 @@ ADD_SQFUNC("void", NSTryAuthWithServer, "int serverIndex, string password = ''",
 	g_pMasterServerManager->AuthenticateWithServer(
 		R2::g_pLocalPlayerUserID,
 		g_pMasterServerManager->m_sOwnClientAuthToken,
-		g_pMasterServerManager->m_vRemoteServers[serverIndex].id,
+		g_pMasterServerManager->m_vRemoteServers[serverIndex],
 		(char*)password);
 
 	return SQRESULT_NULL;

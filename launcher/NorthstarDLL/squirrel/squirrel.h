@@ -3,6 +3,7 @@
 #include "squirrelclasstypes.h"
 #include "squirrelautobind.h"
 #include "core/math/vector.h"
+#include "plugins/plugin_abi.h"
 #include "mods/modmanager.h"
 
 // stolen from ttf2sdk: sqvm types
@@ -37,14 +38,14 @@ const char* GetContextName_Short(ScriptContext context);
 eSQReturnType SQReturnTypeFromString(const char* pReturnType);
 const char* SQTypeNameFromID(const int iTypeId);
 
+void AsyncCall_External(ScriptContext context, const char* func_name, SquirrelMessage_External_Pop function);
+
 ScriptContext ScriptContextFromString(std::string string);
 
 namespace NS::log
 {
 	template <ScriptContext context> std::shared_ptr<spdlog::logger> squirrel_logger();
 }; // namespace NS::log
-
-void schedule_call_external(ScriptContext context, const char* func_name, SquirrelMessage_External_Pop function);
 
 // This base class means that only the templated functions have to be rebuilt for each template instance
 // Cuts down on compile time by ~5 seconds
@@ -69,6 +70,7 @@ class SquirrelManagerBase
 	sq_compilebufferType __sq_compilebuffer;
 	sq_callType __sq_call;
 	sq_raiseerrorType __sq_raiseerror;
+	sq_compilefileType __sq_compilefile;
 
 	sq_newarrayType __sq_newarray;
 	sq_arrayappendType __sq_arrayappend;
@@ -127,6 +129,11 @@ class SquirrelManagerBase
 	inline SQInteger raiseerror(HSquirrelVM* sqvm, const SQChar* sError)
 	{
 		return __sq_raiseerror(sqvm, sError);
+	}
+
+	inline bool compilefile(CSquirrelVM* sqvm, const char* path, const char* name, int a4)
+	{
+		return __sq_compilefile(sqvm, path, name, a4);
 	}
 
 	inline void newarray(HSquirrelVM* sqvm, const SQInteger stackpos = 0)
@@ -385,6 +392,7 @@ template <ScriptContext context> class SquirrelManager : public virtual Squirrel
 	SQRESULT setupfunc(const SQChar* funcname);
 	void AddFuncOverride(std::string name, SQFunction func);
 	void ProcessMessageBuffer();
+	void GenerateSquirrelFunctionsStruct(SquirrelFunctions* s);
 };
 
 template <ScriptContext context> SquirrelManager<context>* g_pSquirrel;

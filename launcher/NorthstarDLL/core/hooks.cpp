@@ -274,8 +274,6 @@ AUTOHOOK_ABSOLUTEADDR(_GetCommandLineA, GetCommandLineA, LPSTR, WINAPI, ())
 			return cmdlineOrg;
 		}
 		memcpy(cmdlineModified, args.c_str(), len + 1);
-
-		spdlog::info("Command line: {}", cmdlineModified);
 	}
 
 	return cmdlineModified;

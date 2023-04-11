@@ -1,17 +1,57 @@
 #pragma once
 #include "plugin_abi.h"
 
-int getServerInfoChar(char* out_buf, size_t out_buf_len, ServerInfoType var);
-int getServerInfoInt(int* out_ptr, ServerInfoType var);
-int getServerInfoBool(bool* out_ptr, ServerInfoType var);
+const int IDR_RCDATA1 = 101;
 
-int getGameStateChar(char* out_buf, size_t out_buf_len, GameStateInfoType var);
-int getGameStateInt(int* out_ptr, GameStateInfoType var);
-int getGameStateBool(bool* out_ptr, GameStateInfoType var);
+class Plugin
+{
+  public:
+	std::string name;
+	std::string displayName;
+	std::string dependencyName;
+	std::string description;
 
-int getPlayerInfoChar(char* out_buf, size_t out_buf_len, PlayerInfoType var);
-int getPlayerInfoInt(int* out_ptr, PlayerInfoType var);
-int getPlayerInfoBool(bool* out_ptr, PlayerInfoType var);
+	std::string api_version;
+	std::string version;
 
-void initGameState();
-void* getPluginObject(PluginObject var);
+	// For now this is just implemented as the index into the plugins array
+	// Maybe a bit shit but it works
+	int handle;
+
+	std::shared_ptr<ColoredLogger> logger;
+
+	bool run_on_client = false;
+	bool run_on_server = false;
+
+  public:
+	PLUGIN_INIT_TYPE init;
+	PLUGIN_INIT_SQVM_TYPE init_sqvm_client;
+	PLUGIN_INIT_SQVM_TYPE init_sqvm_server;
+	PLUGIN_INFORM_SQVM_CREATED_TYPE inform_sqvm_created;
+	PLUGIN_INFORM_SQVM_DESTROYED_TYPE inform_sqvm_destroyed;
+
+	PLUGIN_PUSH_PRESENCE_TYPE push_presence;
+	PLUGIN_INFORM_DLL_LOAD_TYPE inform_dll_load;
+};
+
+class PluginManager
+{
+  public:
+	std::vector<Plugin> m_vLoadedPlugins;
+
+  public:
+	bool LoadPlugins();
+	std::optional<Plugin> LoadPlugin(fs::path path, PluginInitFuncs* funcs, PluginNorthstarData* data);
+
+	void InformSQVMLoad(ScriptContext context, SquirrelFunctions* s);
+	void InformSQVMCreated(ScriptContext context, CSquirrelVM* sqvm);
+	void InformSQVMDestroyed(ScriptContext context);
+	void PushPresence(PluginGameStatePresence* data);
+
+	void InformDLLLoad(PluginLoadDLL dll, void* data);
+
+  private:
+	std::string pluginPath;
+};
+
+extern PluginManager* g_pPluginManager;
