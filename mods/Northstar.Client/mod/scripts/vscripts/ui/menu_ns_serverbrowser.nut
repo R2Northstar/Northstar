@@ -1058,18 +1058,6 @@ void function ThreadedAuthAndConnectToServer( string password = "" )
 	}
 
 	file.cancelConnection = false
-	NSSetLoading( true )
-	NSUpdateServerInfo(
-		NSGetServerID( file.lastSelectedServer ),
-		NSGetServerName( file.lastSelectedServer ),
-		password,
-		NSGetServerPlayerCount( file.lastSelectedServer ),
-		NSGetServerMaxPlayerCount( file.lastSelectedServer ),
-		NSGetServerMap( file.lastSelectedServer ),
-		Localize( GetMapDisplayName( NSGetServerMap( file.lastSelectedServer ) ) ),
-		NSGetServerPlaylist( file.lastSelectedServer ),
-		Localize( GetPlaylistDisplayName( NSGetServerPlaylist( file.lastSelectedServer ) ) )
-	)
 
 	if ( NSWasAuthSuccessful() )
 	{
