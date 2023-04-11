@@ -3,6 +3,7 @@
 	"Description": "Various ui and client changes to fix bugs and add better support for mods",
 	"Version": "1.12.0",
 	"LoadPriority": 0,
+	"InitScript": "cl_northstar_client_init.nut",
 	"ConVars": [
 		{
 			"Name": "filter_hide_empty",
