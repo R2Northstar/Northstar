@@ -572,7 +572,7 @@ void MasterServerManager::AuthenticateWithOwnServer(const char* uid, const char*
 	requestThread.detach();
 }
 
-void MasterServerManager::AuthenticateWithServer(const char* uid, const char* playerToken, const char* serverId, const char* password)
+void MasterServerManager::AuthenticateWithServer(const char* uid, const char* playerToken, RemoteServerInfo server, const char* password)
 {
 	// dont wait, just stop if we're trying to do 2 auth requests at once
 	if (m_bAuthenticatingWithGameServer)
@@ -584,11 +584,11 @@ void MasterServerManager::AuthenticateWithServer(const char* uid, const char* pl
 
 	std::string uidStr(uid);
 	std::string tokenStr(playerToken);
-	std::string serverIdStr(serverId);
+	std::string serverIdStr(server.id);
 	std::string passwordStr(password);
 
 	std::thread requestThread(
-		[this, uidStr, tokenStr, serverIdStr, passwordStr]()
+		[this, uidStr, tokenStr, serverIdStr, passwordStr, server]()
 		{
 			// esnure that any persistence saving is done, so we know masterserver has newest
 			while (m_bSavingPersistentData)
@@ -684,6 +684,9 @@ void MasterServerManager::AuthenticateWithServer(const char* uid, const char* pl
 
 				m_bHasPendingConnectionInfo = true;
 				m_bSuccessfullyAuthenticatedWithGameServer = true;
+
+				m_currentServer = server;
+				m_sCurrentServerPassword = passwordStr;
 			}
 			else
 			{

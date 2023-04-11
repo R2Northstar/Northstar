@@ -186,6 +186,8 @@ namespace NS::Colors
 	extern Color RPAK;
 	extern Color NORTHSTAR;
 	extern Color ECHO;
+	extern Color PLUGINSYS;
+	extern Color PLUGIN;
 
 	extern Color TRACE;
 	extern Color DEBUG;

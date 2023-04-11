@@ -192,6 +192,7 @@ typedef SQRESULT (*sq_compilebufferType)(
 	HSquirrelVM* sqvm, CompileBufferState* compileBuffer, const char* file, int a1, SQBool bShouldThrowError);
 typedef SQRESULT (*sq_callType)(HSquirrelVM* sqvm, SQInteger iArgs, SQBool bShouldReturn, SQBool bThrowError);
 typedef SQInteger (*sq_raiseerrorType)(HSquirrelVM* sqvm, const SQChar* pError);
+typedef bool (*sq_compilefileType)(CSquirrelVM* sqvm, const char* path, const char* name, int a4);
 
 // sq stack array funcs
 typedef void (*sq_newarrayType)(HSquirrelVM* sqvm, SQInteger iStackpos);

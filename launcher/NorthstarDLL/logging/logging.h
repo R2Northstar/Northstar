@@ -100,10 +100,13 @@ namespace NS::log
 
 	extern std::shared_ptr<ColoredLogger> NORTHSTAR;
 
+	extern std::shared_ptr<ColoredLogger> PLUGINSYS;
+
 	void FlushLoggers();
 }; // namespace NS::log
 
 void RegisterCustomSink(std::shared_ptr<CustomSink> sink);
+void RegisterLogger(std::shared_ptr<ColoredLogger> logger);
 
 inline bool g_bSpdLog_UseAnsiColor = true;
 
