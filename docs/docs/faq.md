@@ -14,7 +14,7 @@ However your progress on official servers is not lost, so running vanilla client
 
 ### Q: I get an error message saying "Player Not Found" or "Invalid Master Server Token"
 
-These two errors can commonly be fixed for the average user by following the guide [here](installing-northstar/troubleshooting.md#player-not-foundinvalid-master-server-token). "Invalid Master Server Token" can also be caused by the Northstar master server being offline, however this is normally not the cause of the error.
+These two errors can commonly be fixed for the average user by following the guide [here](installing-northstar/troubleshooting.md#player-not-found-invalid-master-server-token). "Invalid Master Server Token" can also be caused by the Northstar master server being offline, however this is normally not the cause of the error.
 
 ### Q: How do I open the console?
 
