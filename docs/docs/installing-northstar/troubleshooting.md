@@ -198,6 +198,16 @@ The following command will reset all your loadouts and levels!
 
 Open console in-game in main menu, type in `ns_resetpersistence` and press enter. Close console again and click on "Launch Northstar". All your stuff should now be reset.
 
+## Player Not Found/Invalid Master Server Token
+
+This is an error commonly caused by EA not properly updating players' names when launching Northstar, especially prevalent for people who have changed their EA username before.
+
+The current solution to this is signing out of the EA App, then _without signing back into the EA App_,open **Vanilla** Titanfall 2. This should prompt EA App to pop up and ask you to sign in again, sign in on that prompt. Close Vanilla Titanfall 2 and open **Northstar**, and the error should be fixed.
+
+If that solution doesn't work, you can try logging out of the EA App, closing all EA related proccesses (including background ones) using task manager. After this, manually reopen the EA App, log in, and try to launch Northstar again. (If you don't know how to use task manager, press `"ctrl + alt + delete"`, select Task Manager, and hit `"More Info"` on the bottom right. If you can't see more info, then you've already clicked it before and don't need to do it again. After this, when you right click on a process it will open a small pop up with`"End Task"`as an option, which is what you want to use).
+
+This error can also appear if you are pirating the game, which we neither condone nor support as stated [here](../faq.md#q-can-i-use-a-pirated-cracked-copy-titanfall-2-to-run-northstar)
+
 ## Cannot write log file when using Northstar on EA App
 
 The default install location for EA App `C:\Program Files\EA Games\Titanfall2` is not writeable by non-admin processes. This messes with Northstar trying to write log files as well as mod-managers trying to install mods.
