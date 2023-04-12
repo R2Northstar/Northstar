@@ -12,6 +12,10 @@ A: Northstar runs separate from official servers and progress does not carry ove
 
 However your progress on official servers is not lost, so running vanilla client after playing on Northstar you should be back to your old level on official servers.
 
+### Q: I get an error message saying "Player Not Found" or "Invalid Master Server Token"
+
+These two errors can commonly be fixed for the average user by following the guide [here](installing-northstar/troubleshooting.md#player-not-foundinvalid-master-server-token). "Invalid Master Server Token" can also be caused by the Northstar master server being offline, however this is normally not the cause of the error.
+
 ### Q: How do I open the console?
 
 A: Check [_Opening the console_](installing-northstar/using-northstar/commands.md#opening-the-console).
