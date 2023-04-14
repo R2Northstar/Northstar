@@ -1,0 +1,933 @@
+
+global function Store_Init
+global function Store_GetCustomizationRefs
+global function Store_GetPatchRefs
+global function Store_GetBannerRefs
+global function Store_GetCamoRefs
+
+global struct CamoRef
+{
+	string ref
+	string pilotRef
+	string titanRef
+}
+
+struct RefData
+{
+	string ref
+	string parentRef
+}
+
+struct
+{
+	table< int, array<string> > customizationRefs
+	table< int, array<string> > patchRefs
+	table< int, array<string> > bannerRefs
+	table< int, array<CamoRef> > camoRefs
+	table< int, array<RefData> > limitedEditionFDRefData
+} file
+
+void function Store_Init()
+{
+	#if SERVER
+		AddClientCommandCallback( "SetHasSeenStore", ClientCommand_SetHasSeenStore )
+		AddClientCommandCallback( "StoreSetNewItemStatus", ClientCommand_StoreSetNewItemStatus )
+	#endif
+
+	file.customizationRefs[ ET_DLC1_ION ] <- []
+	file.customizationRefs[ ET_DLC1_ION ].append( "ion_skin_10" )
+	file.customizationRefs[ ET_DLC1_ION ].append( "ion_nose_art_17" )
+	file.customizationRefs[ ET_DLC1_ION ].append( "ion_nose_art_18" )
+	file.customizationRefs[ ET_DLC1_ION ].append( "ion_nose_art_19" )
+	file.customizationRefs[ ET_DLC1_ION ].append( "ion_nose_art_20" )
+	file.customizationRefs[ ET_DLC1_ION ].append( "ion_nose_art_21" )
+	file.customizationRefs[ ET_DLC3_ION ] <- []
+	file.customizationRefs[ ET_DLC3_ION ].append( "ion_skin_11" )
+	file.customizationRefs[ ET_DLC3_ION ].append( "ion_nose_art_22" )
+	file.customizationRefs[ ET_DLC3_ION ].append( "ion_nose_art_23" )
+	file.customizationRefs[ ET_DLC3_ION ].append( "ion_nose_art_24" )
+	file.customizationRefs[ ET_DLC3_ION ].append( "ion_nose_art_25" )
+	file.customizationRefs[ ET_DLC3_ION ].append( "ion_nose_art_26" )
+	file.customizationRefs[ ET_DLC5_ION ] <- []
+	file.customizationRefs[ ET_DLC5_ION ].append( "ion_skin_07" )
+	file.customizationRefs[ ET_DLC5_ION ].append( "ion_nose_art_27" )
+	file.customizationRefs[ ET_DLC5_ION ].append( "ion_nose_art_28" )
+	file.customizationRefs[ ET_DLC5_ION ].append( "ion_nose_art_29" )
+	file.customizationRefs[ ET_DLC5_ION ].append( "ion_nose_art_30" )
+	file.customizationRefs[ ET_DLC5_ION ].append( "ion_nose_art_31" )
+
+	file.customizationRefs[ ET_DLC1_SCORCH ] <- []
+	file.customizationRefs[ ET_DLC1_SCORCH ].append( "scorch_skin_07" )
+	file.customizationRefs[ ET_DLC1_SCORCH ].append( "scorch_nose_art_15" )
+	file.customizationRefs[ ET_DLC1_SCORCH ].append( "scorch_nose_art_16" )
+	file.customizationRefs[ ET_DLC1_SCORCH ].append( "scorch_nose_art_17" )
+	file.customizationRefs[ ET_DLC1_SCORCH ].append( "scorch_nose_art_18" )
+	file.customizationRefs[ ET_DLC1_SCORCH ].append( "scorch_nose_art_19" )
+	file.customizationRefs[ ET_DLC3_SCORCH ] <- []
+	file.customizationRefs[ ET_DLC3_SCORCH ].append( "scorch_skin_08" )
+	file.customizationRefs[ ET_DLC3_SCORCH ].append( "scorch_nose_art_20" )
+	file.customizationRefs[ ET_DLC3_SCORCH ].append( "scorch_nose_art_21" )
+	file.customizationRefs[ ET_DLC3_SCORCH ].append( "scorch_nose_art_22" )
+	file.customizationRefs[ ET_DLC3_SCORCH ].append( "scorch_nose_art_23" )
+	file.customizationRefs[ ET_DLC3_SCORCH ].append( "scorch_nose_art_24" )
+	file.customizationRefs[ ET_DLC5_SCORCH ] <- []
+	file.customizationRefs[ ET_DLC5_SCORCH ].append( "scorch_skin_06" )
+	file.customizationRefs[ ET_DLC5_SCORCH ].append( "scorch_nose_art_25" )
+	file.customizationRefs[ ET_DLC5_SCORCH ].append( "scorch_nose_art_26" )
+	file.customizationRefs[ ET_DLC5_SCORCH ].append( "scorch_nose_art_27" )
+	file.customizationRefs[ ET_DLC5_SCORCH ].append( "scorch_nose_art_28" )
+	file.customizationRefs[ ET_DLC5_SCORCH ].append( "scorch_nose_art_29" )
+
+	file.customizationRefs[ ET_DLC1_NORTHSTAR ] <- []
+	file.customizationRefs[ ET_DLC1_NORTHSTAR ].append( "northstar_skin_10" )
+	file.customizationRefs[ ET_DLC1_NORTHSTAR ].append( "northstar_nose_art_18" )
+	file.customizationRefs[ ET_DLC1_NORTHSTAR ].append( "northstar_nose_art_19" )
+	file.customizationRefs[ ET_DLC1_NORTHSTAR ].append( "northstar_nose_art_20" )
+	file.customizationRefs[ ET_DLC1_NORTHSTAR ].append( "northstar_nose_art_21" )
+	file.customizationRefs[ ET_DLC1_NORTHSTAR ].append( "northstar_nose_art_22" )
+	file.customizationRefs[ ET_DLC3_NORTHSTAR ] <- []
+	file.customizationRefs[ ET_DLC3_NORTHSTAR ].append( "northstar_skin_11" )
+	file.customizationRefs[ ET_DLC3_NORTHSTAR ].append( "northstar_nose_art_23" )
+	file.customizationRefs[ ET_DLC3_NORTHSTAR ].append( "northstar_nose_art_24" )
+	file.customizationRefs[ ET_DLC3_NORTHSTAR ].append( "northstar_nose_art_25" )
+	file.customizationRefs[ ET_DLC3_NORTHSTAR ].append( "northstar_nose_art_26" )
+	file.customizationRefs[ ET_DLC3_NORTHSTAR ].append( "northstar_nose_art_27" )
+	file.customizationRefs[ ET_DLC5_NORTHSTAR ] <- []
+	file.customizationRefs[ ET_DLC5_NORTHSTAR ].append( "northstar_skin_06" )
+	file.customizationRefs[ ET_DLC5_NORTHSTAR ].append( "northstar_nose_art_28" )
+	file.customizationRefs[ ET_DLC5_NORTHSTAR ].append( "northstar_nose_art_29" )
+	file.customizationRefs[ ET_DLC5_NORTHSTAR ].append( "northstar_nose_art_30" )
+	file.customizationRefs[ ET_DLC5_NORTHSTAR ].append( "northstar_nose_art_31" )
+	file.customizationRefs[ ET_DLC5_NORTHSTAR ].append( "northstar_nose_art_32" )
+
+	file.customizationRefs[ ET_DLC1_RONIN ] <- []
+	file.customizationRefs[ ET_DLC1_RONIN ].append( "ronin_skin_10" )
+	file.customizationRefs[ ET_DLC1_RONIN ].append( "ronin_nose_art_16" )
+	file.customizationRefs[ ET_DLC1_RONIN ].append( "ronin_nose_art_17" )
+	file.customizationRefs[ ET_DLC1_RONIN ].append( "ronin_nose_art_18" )
+	file.customizationRefs[ ET_DLC1_RONIN ].append( "ronin_nose_art_19" )
+	file.customizationRefs[ ET_DLC1_RONIN ].append( "ronin_nose_art_20" )
+	file.customizationRefs[ ET_DLC3_RONIN ] <- []
+	file.customizationRefs[ ET_DLC3_RONIN ].append( "ronin_skin_11" )
+	file.customizationRefs[ ET_DLC3_RONIN ].append( "ronin_nose_art_21" )
+	file.customizationRefs[ ET_DLC3_RONIN ].append( "ronin_nose_art_22" )
+	file.customizationRefs[ ET_DLC3_RONIN ].append( "ronin_nose_art_23" )
+	file.customizationRefs[ ET_DLC3_RONIN ].append( "ronin_nose_art_24" )
+	file.customizationRefs[ ET_DLC3_RONIN ].append( "ronin_nose_art_25" )
+	file.customizationRefs[ ET_DLC5_RONIN ] <- []
+	file.customizationRefs[ ET_DLC5_RONIN ].append( "ronin_skin_07" )
+	file.customizationRefs[ ET_DLC5_RONIN ].append( "ronin_nose_art_26" )
+	file.customizationRefs[ ET_DLC5_RONIN ].append( "ronin_nose_art_27" )
+	file.customizationRefs[ ET_DLC5_RONIN ].append( "ronin_nose_art_28" )
+	file.customizationRefs[ ET_DLC5_RONIN ].append( "ronin_nose_art_29" )
+	file.customizationRefs[ ET_DLC5_RONIN ].append( "ronin_nose_art_30" )
+
+	file.customizationRefs[ ET_DLC1_TONE ] <- []
+	file.customizationRefs[ ET_DLC1_TONE ].append( "tone_skin_06" )
+	file.customizationRefs[ ET_DLC1_TONE ].append( "tone_nose_art_17" )
+	file.customizationRefs[ ET_DLC1_TONE ].append( "tone_nose_art_18" )
+	file.customizationRefs[ ET_DLC1_TONE ].append( "tone_nose_art_19" )
+	file.customizationRefs[ ET_DLC1_TONE ].append( "tone_nose_art_20" )
+	file.customizationRefs[ ET_DLC1_TONE ].append( "tone_nose_art_21" )
+	file.customizationRefs[ ET_DLC3_TONE ] <- []
+	file.customizationRefs[ ET_DLC3_TONE ].append( "tone_skin_07" )
+	file.customizationRefs[ ET_DLC3_TONE ].append( "tone_nose_art_22" )
+	file.customizationRefs[ ET_DLC3_TONE ].append( "tone_nose_art_23" )
+	file.customizationRefs[ ET_DLC3_TONE ].append( "tone_nose_art_24" )
+	file.customizationRefs[ ET_DLC3_TONE ].append( "tone_nose_art_25" )
+	file.customizationRefs[ ET_DLC3_TONE ].append( "tone_nose_art_26" )
+	file.customizationRefs[ ET_DLC5_TONE ] <- []
+	file.customizationRefs[ ET_DLC5_TONE ].append( "tone_skin_08" )
+	file.customizationRefs[ ET_DLC5_TONE ].append( "tone_nose_art_27" )
+	file.customizationRefs[ ET_DLC5_TONE ].append( "tone_nose_art_28" )
+	file.customizationRefs[ ET_DLC5_TONE ].append( "tone_nose_art_29" )
+	file.customizationRefs[ ET_DLC5_TONE ].append( "tone_nose_art_30" )
+	file.customizationRefs[ ET_DLC5_TONE ].append( "tone_nose_art_31" )
+
+	file.customizationRefs[ ET_DLC1_LEGION ] <- []
+	file.customizationRefs[ ET_DLC1_LEGION ].append( "legion_skin_07" )
+	file.customizationRefs[ ET_DLC1_LEGION ].append( "legion_nose_art_17" )
+	file.customizationRefs[ ET_DLC1_LEGION ].append( "legion_nose_art_18" )
+	file.customizationRefs[ ET_DLC1_LEGION ].append( "legion_nose_art_19" )
+	file.customizationRefs[ ET_DLC1_LEGION ].append( "legion_nose_art_20" )
+	file.customizationRefs[ ET_DLC1_LEGION ].append( "legion_nose_art_21" )
+	file.customizationRefs[ ET_DLC3_LEGION ] <- []
+	file.customizationRefs[ ET_DLC3_LEGION ].append( "legion_skin_08" )
+	file.customizationRefs[ ET_DLC3_LEGION ].append( "legion_nose_art_22" )
+	file.customizationRefs[ ET_DLC3_LEGION ].append( "legion_nose_art_23" )
+	file.customizationRefs[ ET_DLC3_LEGION ].append( "legion_nose_art_24" )
+	file.customizationRefs[ ET_DLC3_LEGION ].append( "legion_nose_art_25" )
+	file.customizationRefs[ ET_DLC3_LEGION ].append( "legion_nose_art_26" )
+	file.customizationRefs[ ET_DLC5_LEGION ] <- []
+	file.customizationRefs[ ET_DLC5_LEGION ].append( "legion_skin_09" )
+	file.customizationRefs[ ET_DLC5_LEGION ].append( "legion_nose_art_27" )
+	file.customizationRefs[ ET_DLC5_LEGION ].append( "legion_nose_art_28" )
+	file.customizationRefs[ ET_DLC5_LEGION ].append( "legion_nose_art_29" )
+	file.customizationRefs[ ET_DLC5_LEGION ].append( "legion_nose_art_30" )
+	file.customizationRefs[ ET_DLC5_LEGION ].append( "legion_nose_art_31" )
+
+	file.patchRefs[ ET_DLC1_CALLSIGN ] <- []
+	file.patchRefs[ ET_DLC3_CALLSIGN ] <- []
+	file.patchRefs[ ET_DLC5_CALLSIGN ] <- []
+
+	file.patchRefs[ ET_DLC1_CALLSIGN ].append( "gc_icon_64" )
+	file.patchRefs[ ET_DLC1_CALLSIGN ].append( "gc_icon_aces" )
+	file.patchRefs[ ET_DLC1_CALLSIGN ].append( "gc_icon_alien" )
+	file.patchRefs[ ET_DLC1_CALLSIGN ].append( "gc_icon_apex" )
+	file.patchRefs[ ET_DLC1_CALLSIGN ].append( "gc_icon_ares" )
+	file.patchRefs[ ET_DLC1_CALLSIGN ].append( "gc_icon_controller" )
+	file.patchRefs[ ET_DLC1_CALLSIGN ].append( "gc_icon_drone" )
+	file.patchRefs[ ET_DLC1_CALLSIGN ].append( "gc_icon_heartbreaker" )
+	file.patchRefs[ ET_DLC1_CALLSIGN ].append( "gc_icon_hexes" )
+	file.patchRefs[ ET_DLC1_CALLSIGN ].append( "gc_icon_kodai" )
+	file.patchRefs[ ET_DLC1_CALLSIGN ].append( "gc_icon_lastimosa" )
+	file.patchRefs[ ET_DLC1_CALLSIGN ].append( "gc_icon_lawai" )
+	file.patchRefs[ ET_DLC1_CALLSIGN ].append( "gc_icon_mcor" )
+	file.patchRefs[ ET_DLC1_CALLSIGN ].append( "gc_icon_phoenix" )
+	file.patchRefs[ ET_DLC1_CALLSIGN ].append( "gc_icon_pilot" )
+	file.patchRefs[ ET_DLC1_CALLSIGN ].append( "gc_icon_robot" )
+	file.patchRefs[ ET_DLC1_CALLSIGN ].append( "gc_icon_sentry" )
+	file.patchRefs[ ET_DLC1_CALLSIGN ].append( "gc_icon_super_spectre" )
+	file.patchRefs[ ET_DLC1_CALLSIGN ].append( "gc_icon_vinson" )
+	file.patchRefs[ ET_DLC1_CALLSIGN ].append( "gc_icon_wonyeon" )
+
+	file.patchRefs[ ET_DLC3_CALLSIGN ].append( "gc_icon_balance" )
+	file.patchRefs[ ET_DLC3_CALLSIGN ].append( "gc_icon_boot" )
+	file.patchRefs[ ET_DLC3_CALLSIGN ].append( "gc_icon_bt_eye" )
+	file.patchRefs[ ET_DLC3_CALLSIGN ].append( "gc_icon_buzzsaw" )
+	file.patchRefs[ ET_DLC3_CALLSIGN ].append( "gc_icon_crossed_lighting" )
+	file.patchRefs[ ET_DLC3_CALLSIGN ].append( "gc_icon_flying_bullet" )
+	file.patchRefs[ ET_DLC3_CALLSIGN ].append( "gc_icon_hammer2" )
+	file.patchRefs[ ET_DLC3_CALLSIGN ].append( "gc_icon_keyboard" )
+	file.patchRefs[ ET_DLC3_CALLSIGN ].append( "gc_icon_lightbulb" )
+	file.patchRefs[ ET_DLC3_CALLSIGN ].append( "gc_icon_narwhal" )
+	file.patchRefs[ ET_DLC3_CALLSIGN ].append( "gc_icon_peace" )
+	file.patchRefs[ ET_DLC3_CALLSIGN ].append( "gc_icon_pilot2" )
+	file.patchRefs[ ET_DLC3_CALLSIGN ].append( "gc_icon_robot_eye" )
+	file.patchRefs[ ET_DLC3_CALLSIGN ].append( "gc_icon_srs" )
+	file.patchRefs[ ET_DLC3_CALLSIGN ].append( "gc_icon_starline" )
+	file.patchRefs[ ET_DLC3_CALLSIGN ].append( "gc_icon_taco" )
+	file.patchRefs[ ET_DLC3_CALLSIGN ].append( "gc_icon_thumbdown" )
+	file.patchRefs[ ET_DLC3_CALLSIGN ].append( "gc_icon_thumbup" )
+	file.patchRefs[ ET_DLC3_CALLSIGN ].append( "gc_icon_treble" )
+	file.patchRefs[ ET_DLC3_CALLSIGN ].append( "gc_icon_vanguard" )
+
+	file.patchRefs[ ET_DLC5_CALLSIGN ].append( "gc_icon_monarch_dlc5" )
+	file.patchRefs[ ET_DLC5_CALLSIGN ].append( "gc_icon_militia" )
+	file.patchRefs[ ET_DLC5_CALLSIGN ].append( "gc_icon_militia_alt" )
+	file.patchRefs[ ET_DLC5_CALLSIGN ].append( "gc_icon_imc" )
+	file.patchRefs[ ET_DLC5_CALLSIGN ].append( "gc_icon_hammond" )
+	file.patchRefs[ ET_DLC5_CALLSIGN ].append( "gc_icon_tri_chevron" )
+	file.patchRefs[ ET_DLC5_CALLSIGN ].append( "gc_icon_pilot_circle" )
+	file.patchRefs[ ET_DLC5_CALLSIGN ].append( "gc_icon_x" )
+	file.patchRefs[ ET_DLC5_CALLSIGN ].append( "gc_icon_nessie" )
+	file.patchRefs[ ET_DLC5_CALLSIGN ].append( "gc_icon_spicy" )
+	file.patchRefs[ ET_DLC5_CALLSIGN ].append( "gc_icon_crown" )
+	file.patchRefs[ ET_DLC5_CALLSIGN ].append( "gc_icon_pawn" )
+	file.patchRefs[ ET_DLC5_CALLSIGN ].append( "gc_icon_excite" )
+	file.patchRefs[ ET_DLC5_CALLSIGN ].append( "gc_icon_duck" )
+	file.patchRefs[ ET_DLC5_CALLSIGN ].append( "gc_icon_sock" )
+	file.patchRefs[ ET_DLC5_CALLSIGN ].append( "gc_icon_rabbit" )
+	file.patchRefs[ ET_DLC5_CALLSIGN ].append( "gc_icon_peanut" )
+	file.patchRefs[ ET_DLC5_CALLSIGN ].append( "gc_icon_clock" )
+	file.patchRefs[ ET_DLC5_CALLSIGN ].append( "gc_icon_shamrock" )
+	file.patchRefs[ ET_DLC5_CALLSIGN ].append( "gc_icon_trident" )
+
+	file.bannerRefs[ ET_DLC1_CALLSIGN ] <- []
+	file.bannerRefs[ ET_DLC3_CALLSIGN ] <- []
+	file.bannerRefs[ ET_DLC5_CALLSIGN ] <- []
+
+	file.bannerRefs[ ET_DLC1_CALLSIGN ].append( "callsign_106_col" )
+	file.bannerRefs[ ET_DLC1_CALLSIGN ].append( "callsign_107_col" )
+	file.bannerRefs[ ET_DLC1_CALLSIGN ].append( "callsign_108_col" )
+	file.bannerRefs[ ET_DLC1_CALLSIGN ].append( "callsign_109_col" )
+	file.bannerRefs[ ET_DLC1_CALLSIGN ].append( "callsign_110_col" )
+	file.bannerRefs[ ET_DLC1_CALLSIGN ].append( "callsign_111_col" )
+	file.bannerRefs[ ET_DLC1_CALLSIGN ].append( "callsign_112_col" )
+	file.bannerRefs[ ET_DLC1_CALLSIGN ].append( "callsign_113_col" )
+	file.bannerRefs[ ET_DLC1_CALLSIGN ].append( "callsign_114_col" )
+	file.bannerRefs[ ET_DLC1_CALLSIGN ].append( "callsign_115_col" )
+	file.bannerRefs[ ET_DLC1_CALLSIGN ].append( "callsign_116_col" )
+	file.bannerRefs[ ET_DLC1_CALLSIGN ].append( "callsign_117_col" )
+	file.bannerRefs[ ET_DLC1_CALLSIGN ].append( "callsign_118_col" )
+	file.bannerRefs[ ET_DLC1_CALLSIGN ].append( "callsign_119_col" )
+	file.bannerRefs[ ET_DLC1_CALLSIGN ].append( "callsign_120_col" )
+	file.bannerRefs[ ET_DLC1_CALLSIGN ].append( "callsign_121_col" )
+	file.bannerRefs[ ET_DLC1_CALLSIGN ].append( "callsign_122_col" )
+	file.bannerRefs[ ET_DLC1_CALLSIGN ].append( "callsign_123_col" )
+	file.bannerRefs[ ET_DLC1_CALLSIGN ].append( "callsign_124_col" )
+	file.bannerRefs[ ET_DLC1_CALLSIGN ].append( "callsign_125_col" )
+
+	file.bannerRefs[ ET_DLC3_CALLSIGN ].append( "callsign_143_col" )
+	file.bannerRefs[ ET_DLC3_CALLSIGN ].append( "callsign_144_col" )
+	file.bannerRefs[ ET_DLC3_CALLSIGN ].append( "callsign_145_col" )
+	file.bannerRefs[ ET_DLC3_CALLSIGN ].append( "callsign_146_col" )
+	file.bannerRefs[ ET_DLC3_CALLSIGN ].append( "callsign_147_col" )
+	file.bannerRefs[ ET_DLC3_CALLSIGN ].append( "callsign_148_col" )
+	file.bannerRefs[ ET_DLC3_CALLSIGN ].append( "callsign_149_col" )
+	file.bannerRefs[ ET_DLC3_CALLSIGN ].append( "callsign_150_col" )
+	file.bannerRefs[ ET_DLC3_CALLSIGN ].append( "callsign_151_col" )
+	file.bannerRefs[ ET_DLC3_CALLSIGN ].append( "callsign_152_col" )
+	file.bannerRefs[ ET_DLC3_CALLSIGN ].append( "callsign_153_col" )
+	file.bannerRefs[ ET_DLC3_CALLSIGN ].append( "callsign_154_col" )
+	file.bannerRefs[ ET_DLC3_CALLSIGN ].append( "callsign_155_col" )
+	file.bannerRefs[ ET_DLC3_CALLSIGN ].append( "callsign_156_col" )
+	file.bannerRefs[ ET_DLC3_CALLSIGN ].append( "callsign_157_col" )
+	file.bannerRefs[ ET_DLC3_CALLSIGN ].append( "callsign_158_col" )
+	file.bannerRefs[ ET_DLC3_CALLSIGN ].append( "callsign_159_col" )
+	file.bannerRefs[ ET_DLC3_CALLSIGN ].append( "callsign_160_col" )
+	file.bannerRefs[ ET_DLC3_CALLSIGN ].append( "callsign_161_col" )
+	file.bannerRefs[ ET_DLC3_CALLSIGN ].append( "callsign_162_col" )
+
+	file.bannerRefs[ ET_DLC5_CALLSIGN ].append( "callsign_166_col" )
+	file.bannerRefs[ ET_DLC5_CALLSIGN ].append( "callsign_167_col" )
+	file.bannerRefs[ ET_DLC5_CALLSIGN ].append( "callsign_168_col" )
+	file.bannerRefs[ ET_DLC5_CALLSIGN ].append( "callsign_169_col" )
+	file.bannerRefs[ ET_DLC5_CALLSIGN ].append( "callsign_170_col" )
+	file.bannerRefs[ ET_DLC5_CALLSIGN ].append( "callsign_171_col" )
+	file.bannerRefs[ ET_DLC5_CALLSIGN ].append( "callsign_172_col" )
+	file.bannerRefs[ ET_DLC5_CALLSIGN ].append( "callsign_173_col" )
+	file.bannerRefs[ ET_DLC5_CALLSIGN ].append( "callsign_174_col" )
+	file.bannerRefs[ ET_DLC5_CALLSIGN ].append( "callsign_175_col" )
+	file.bannerRefs[ ET_DLC5_CALLSIGN ].append( "callsign_176_col" )
+	file.bannerRefs[ ET_DLC5_CALLSIGN ].append( "callsign_177_col" )
+	file.bannerRefs[ ET_DLC5_CALLSIGN ].append( "callsign_178_col" )
+	file.bannerRefs[ ET_DLC5_CALLSIGN ].append( "callsign_179_col" )
+	file.bannerRefs[ ET_DLC5_CALLSIGN ].append( "callsign_180_col" )
+	file.bannerRefs[ ET_DLC5_CALLSIGN ].append( "callsign_181_col" )
+	file.bannerRefs[ ET_DLC5_CALLSIGN ].append( "callsign_182_col" )
+	file.bannerRefs[ ET_DLC5_CALLSIGN ].append( "callsign_183_col" )
+	file.bannerRefs[ ET_DLC5_CALLSIGN ].append( "callsign_184_col" )
+	file.bannerRefs[ ET_DLC5_CALLSIGN ].append( "callsign_185_col" )
+
+	file.camoRefs[ ET_DLC1_CAMO ] <- []
+	file.camoRefs[ ET_DLC3_CAMO ] <- []
+	file.camoRefs[ ET_DLC5_CAMO ] <- []
+
+	for ( int i = 101; i <= 120; i++ )
+	{
+		AddCamoRef( ET_DLC1_CAMO, i )
+	}
+
+	for ( int i = 121; i <= 140; i++ )
+	{
+		AddCamoRef( ET_DLC3_CAMO, i )
+	}
+
+	// You did it reddit!
+	int numRefs = file.camoRefs[ ET_DLC3_CAMO ].len()
+	CamoRef tempRef = file.camoRefs[ ET_DLC3_CAMO ][numRefs - 1]
+	file.camoRefs[ ET_DLC3_CAMO ][numRefs - 1] = file.camoRefs[ ET_DLC3_CAMO ][numRefs - 2]
+	file.camoRefs[ ET_DLC3_CAMO ][numRefs - 2] = tempRef
+
+	for ( int i = 141; i <= 160; i++ )
+	{
+		AddCamoRef( ET_DLC5_CAMO, i )
+	}
+
+	file.limitedEditionFDRefData[ ET_DLC7_ION_WARPAINT ] <- []
+	file.limitedEditionFDRefData[ ET_DLC7_ION_WARPAINT ].append( CreateRefData( "ion_skin_fd", "ion" ) )
+	file.limitedEditionFDRefData[ ET_DLC7_ION_WARPAINT ].append( CreateRefData( "callsign_fd_ion_dynamic" ) )
+
+	file.limitedEditionFDRefData[ ET_DLC7_SCORCH_WARPAINT ] <- []
+	file.limitedEditionFDRefData[ ET_DLC7_SCORCH_WARPAINT ].append( CreateRefData( "scorch_skin_fd", "scorch" ) )
+	file.limitedEditionFDRefData[ ET_DLC7_SCORCH_WARPAINT ].append( CreateRefData( "callsign_fd_scorch_dynamic" ) )
+
+	file.limitedEditionFDRefData[ ET_DLC7_NORTHSTAR_WARPAINT ] <- []
+	file.limitedEditionFDRefData[ ET_DLC7_NORTHSTAR_WARPAINT ].append( CreateRefData( "northstar_skin_fd", "northstar" ) )
+	file.limitedEditionFDRefData[ ET_DLC7_NORTHSTAR_WARPAINT ].append( CreateRefData( "callsign_fd_northstar_dynamic" ) )
+
+	file.limitedEditionFDRefData[ ET_DLC7_RONIN_WARPAINT ] <- []
+	file.limitedEditionFDRefData[ ET_DLC7_RONIN_WARPAINT ].append( CreateRefData( "ronin_skin_fd", "ronin" ) )
+	file.limitedEditionFDRefData[ ET_DLC7_RONIN_WARPAINT ].append( CreateRefData( "callsign_fd_ronin_dynamic" ) )
+
+	file.limitedEditionFDRefData[ ET_DLC7_TONE_WARPAINT ] <- []
+	file.limitedEditionFDRefData[ ET_DLC7_TONE_WARPAINT ].append( CreateRefData( "tone_skin_fd", "tone" ) )
+	file.limitedEditionFDRefData[ ET_DLC7_TONE_WARPAINT ].append( CreateRefData( "callsign_fd_tone_dynamic" ) )
+
+	file.limitedEditionFDRefData[ ET_DLC7_LEGION_WARPAINT ] <- []
+	file.limitedEditionFDRefData[ ET_DLC7_LEGION_WARPAINT ].append( CreateRefData( "legion_skin_fd", "legion" ) )
+	file.limitedEditionFDRefData[ ET_DLC7_LEGION_WARPAINT ].append( CreateRefData( "callsign_fd_legion_dynamic" ) )
+
+	file.limitedEditionFDRefData[ ET_DLC7_MONARCH_WARPAINT ] <- []
+	file.limitedEditionFDRefData[ ET_DLC7_MONARCH_WARPAINT ].append( CreateRefData( "monarch_skin_fd", "vanguard" ) )
+	file.limitedEditionFDRefData[ ET_DLC7_MONARCH_WARPAINT ].append( CreateRefData( "callsign_fd_monarch_dynamic" ) )
+}
+
+RefData function CreateRefData( string ref, string parentRef = "" )
+{
+	RefData data
+	data.ref = ref
+	data.parentRef = parentRef
+
+	return data
+}
+
+array<string> function Store_GetCustomizationRefs( int entitlementId )
+{
+	return file.customizationRefs[ entitlementId ]
+}
+
+array<string> function Store_GetPatchRefs( int entitlementId )
+{
+	return file.patchRefs[ entitlementId ]
+}
+
+array<string> function Store_GetBannerRefs( int entitlementId )
+{
+	return file.bannerRefs[ entitlementId ]
+}
+
+array<CamoRef> function Store_GetCamoRefs( int entitlementId )
+{
+	return file.camoRefs[ entitlementId ]
+}
+
+void function AddCamoRef( int entitlementId, int index )
+{
+	CamoRef cref
+	cref.ref = "camo_skin" + index
+	cref.pilotRef = "pilot_camo_skin" + index
+	cref.titanRef = "titan_camo_skin" + index
+	file.camoRefs[ entitlementId ].append( cref )
+}
+
+#if SERVER
+bool function ClientCommand_SetHasSeenStore( entity player, array<string> args )
+{
+	player.SetPersistentVar( "hasSeenStore", true )
+
+	return true
+}
+
+// TODO: refParam is problematic, because it assumes an entitlement maps to a single ref which is not the case for limited edition frontier defense entitlements
+void function StoreUpdatePIN( entity player, int entitlementId, string refParam )
+{
+	printt( "StoreUpdatePIN", entitlementId, refParam)
+
+	switch ( entitlementId )
+	{
+		case ET_DLC1_BUNDLE:
+			PIN_BuyItemWithRealMoney( player, false, "dlc1_bundle", 0 )
+			break
+
+		case ET_DLC3_BUNDLE:
+			PIN_BuyItemWithRealMoney( player, false, "dlc3_bundle", 0 )
+			break
+
+		case ET_DLC5_BUNDLE:
+			PIN_BuyItemWithRealMoney( player, false, "dlc5_bundle", 0 )
+			break
+
+		case ET_PRIME_TITANS_BUNDLE:
+			PIN_BuyItemWithRealMoney( player, false, "sprime_titans_bundle", 0 )
+			break
+
+		case ET_DLC1_PRIME_ION:
+		case ET_DLC1_PRIME_SCORCH:
+		case ET_DLC3_PRIME_NORTHSTAR:
+		case ET_DLC3_PRIME_LEGION:
+		case ET_DLC5_PRIME_TONE:
+		case ET_DLC5_PRIME_RONIN:
+			Assert( refParam != "" )
+			if ( refParam == "" || !ItemDefined( refParam ) )
+				return
+
+			PIN_BuyItemWithRealMoney( player, false, refParam, 0 )
+			break
+
+		case ET_DLC1_ION:
+		case ET_DLC1_SCORCH:
+		case ET_DLC1_NORTHSTAR:
+		case ET_DLC1_RONIN:
+		case ET_DLC1_TONE:
+		case ET_DLC1_LEGION:
+			Assert( refParam != "" )
+			if ( refParam == "" )
+				return
+
+			PIN_BuyItemWithRealMoney( player, false, "customization_" + refParam, 0 )
+			break
+
+		case ET_DLC3_ION:
+		case ET_DLC3_SCORCH:
+		case ET_DLC3_NORTHSTAR:
+		case ET_DLC3_RONIN:
+		case ET_DLC3_TONE:
+		case ET_DLC3_LEGION:
+			Assert( refParam != "" )
+			if ( refParam == "" )
+				return
+
+			PIN_BuyItemWithRealMoney( player, false, "dlc3_customization_" + refParam, 0 )
+			break
+
+		case ET_DLC5_ION:
+		case ET_DLC5_SCORCH:
+		case ET_DLC5_NORTHSTAR:
+		case ET_DLC5_RONIN:
+		case ET_DLC5_TONE:
+		case ET_DLC5_LEGION:
+			Assert( refParam != "" )
+			if ( refParam == "" )
+				return
+
+			PIN_BuyItemWithRealMoney( player, false, "dlc5_customization_" + refParam, 0 )
+			break
+
+		case ET_DLC1_CAMO:
+			PIN_BuyItemWithRealMoney( player, false, "dlc_camos", 0 )
+			break
+
+		case ET_DLC3_CAMO:
+			PIN_BuyItemWithRealMoney( player, false, "dlc3_camos", 0 )
+			break
+
+		case ET_DLC5_CAMO:
+			PIN_BuyItemWithRealMoney( player, false, "dlc5_camos", 0 )
+			break
+
+		case ET_DLC1_CALLSIGN:
+			PIN_BuyItemWithRealMoney( player, false, "dlc_callsigns", 0 )
+			break
+
+		case ET_DLC3_CALLSIGN:
+			PIN_BuyItemWithRealMoney( player, false, "dlc3_callsigns", 0 )
+			break
+
+		case ET_DLC5_CALLSIGN:
+			PIN_BuyItemWithRealMoney( player, false, "dlc5_callsigns", 0 )
+			break
+
+		case ET_DLC7_TITAN_WARPAINT_BUNDLE:
+			PIN_BuyItemWithRealMoney( player, false, "dlc7_frontier_titan_warpaint_bundle", 0 )
+			break
+
+		case ET_DLC7_ION_WARPAINT:
+		case ET_DLC7_SCORCH_WARPAINT:
+		case ET_DLC7_NORTHSTAR_WARPAINT:
+		case ET_DLC7_RONIN_WARPAINT:
+		case ET_DLC7_TONE_WARPAINT:
+		case ET_DLC7_LEGION_WARPAINT:
+		case ET_DLC7_MONARCH_WARPAINT:
+			PIN_BuyItemWithRealMoney( player, false, "dlc7_frontier_titan_warpaint_" + file.limitedEditionFDRefData[ entitlementId ][0].ref, 0 )
+			break
+
+		case ET_DLC7_WEAPON_BUNDLE:
+			PIN_BuyItemWithRealMoney( player, false, "dlc7_weapon_warpaint_bundle", 0 )
+			break
+
+		case ET_DLC7_R201_WARPAINT:
+		case ET_DLC7_G2A5_WARPAINT:
+		case ET_DLC7_FLATLINE_WARPAINT:
+		case ET_DLC7_CAR_WARPAINT:
+		case ET_DLC7_ALTERNATOR_WARPAINT:
+		case ET_DLC7_EVA8_WARPAINT:
+		case ET_DLC7_WINGMAN_WARPAINT:
+		case ET_DLC7_ARCHER_WARPAINT:
+			Assert( refParam != "" )
+			if ( refParam == "" )
+				return
+
+			PIN_BuyItemWithRealMoney( player, false, "dlc7_weapon_warpaint_" + refParam, 0 )
+			break
+
+		case ET_DLC8_WEAPON_WARPAINT_BUNDLE:
+			PIN_BuyItemWithRealMoney( player, false, "dlc8_weapon_warpaint_bundle", 0 )
+			break
+
+		case ET_DLC8_R201_WARPAINT:
+		case ET_DLC8_HEMLOK_WARPAINT:
+		case ET_DLC8_R97_WARPAINT:
+		case ET_DLC8_KRABER_WARPAINT:
+		case ET_DLC8_SPITFIRE_WARPAINT:
+		case ET_DLC8_DEVOTION_WARPAINT:
+		case ET_DLC8_MOZAMBIQUE_WARPAINT:
+		case ET_DLC8_THUNDERBOLT_WARPAINT:
+			Assert( refParam != "" )
+			if ( refParam == "" )
+				return
+		
+			PIN_BuyItemWithRealMoney( player, false, "dlc8_weapon_warpaint_" + refParam, 0 )
+			break
+
+		case ET_JUMPSTARTERBUNDLE:
+			PIN_BuyItemWithRealMoney( player, false, "dlc10_jump_starter_pack", 0 )
+
+		case ET_DLC9_WEAPON_WARPAINT_BUNDLE:
+			PIN_BuyItemWithRealMoney( player, false, "dlc9_weapon_warpaint_bundle", 0 )
+			break
+
+		case ET_DLC9_LSTAR_WARPAINT:
+		case ET_DLC9_MASTIFF_WARPAINT:
+		case ET_DLC9_SIDEWINDER_WARPAINT:
+		case ET_DLC9_R201_WARPAINT:
+		case ET_DLC9_CAR_WARPAINT:
+		case ET_DLC9_SPITFIRE_WARPAINT:
+			Assert( refParam != "" )
+			if ( refParam == "" )
+				return
+
+			PIN_BuyItemWithRealMoney( player, false, "dlc9_weapon_warpaint_" + refParam, 0 )
+			break
+
+		case ET_DLC10_WEAPON_WARPAINT_BUNDLE:
+			PIN_BuyItemWithRealMoney( player, false, "dlc10_weapon_warpaint_bundle", 0 )
+			break
+
+		case ET_DLC10_R101_WARPAINT:
+		case ET_DLC10_FLATLINE_WARPAINT:
+		case ET_DLC10_VOLT_WARPAINT:
+		case ET_DLC10_ALTERNATOR_WARPAINT:
+		case ET_DLC10_SOFTBALL_WARPAINT:
+		case ET_DLC10_EPG1_WARPAINT:
+			Assert( refParam != "" )
+			if ( refParam == "" )
+				return
+
+			PIN_BuyItemWithRealMoney( player, false, "dlc10_weapon_warpaint_" + refParam, 0 )
+			break
+
+		case ET_DLC11_WEAPON_WARPAINT_BUNDLE:
+			PIN_BuyItemWithRealMoney( player, false, "dlc11_weapon_warpaint_bundle", 0 )
+			break
+
+		case ET_DLC11_DMR_WARPAINT:
+		case ET_DLC11_DOUBLETAKE_WARPAINT:
+		case ET_DLC11_G2A5_WARPAINT:
+		case ET_DLC11_COLDWAR_WARPAINT:
+		case ET_DLC11_R97_WARPAINT:
+		case ET_DLC11_R101_WARPAINT:
+			Assert( refParam != "" )
+			if ( refParam == "" )
+				return
+
+			PIN_BuyItemWithRealMoney( player, false, "dlc11_weapon_warpaint_" + refParam, 0 )
+			break
+	}
+}
+
+bool function ClientCommand_StoreSetNewItemStatus( entity player, array<string> args )
+{
+	// fix crash 
+	if( args.len() < 1 ) 
+		return true
+	
+	int entitlementId = int( args[0] )
+	string refParam
+	string parentRefParam
+
+	if ( args.len() >= 2 )
+		refParam = args[1]
+
+	if ( args.len() >= 3 )
+		parentRefParam = args[2]
+
+	StoreUpdatePIN( player, entitlementId, refParam )
+	StoreSetNewItemStatus( player, entitlementId, refParam, parentRefParam )
+
+	return true
+}
+
+bool function StoreSetNewItemStatus( entity player, int entitlementId, string refParam, string parentRefParam )
+{
+	string e = entitlementId == ET_JUMPSTARTERBUNDLE ? "ET_JUMPSTARTERBUNDLE" : string( entitlementId )
+	printt( "!!!!!!!!!!! StoreSetNewItemStatus() running for entitlement:", e )
+
+	switch ( entitlementId )
+	{
+		case 3:
+			// Prime Titans
+			SetItemNewStatus( player, "ion_prime", "", true )
+			SetItemNewStatus( player, "scorch_prime", "", true )
+
+			// Customization Packs
+			table< string, array<string> > dlc1BundleCustomizationRefs
+			dlc1BundleCustomizationRefs[ "ion" ] <-			file.customizationRefs[ ET_DLC1_ION ]
+			dlc1BundleCustomizationRefs[ "tone" ] <-		file.customizationRefs[ ET_DLC1_TONE ]
+			dlc1BundleCustomizationRefs[ "scorch" ] <-		file.customizationRefs[ ET_DLC1_SCORCH ]
+			dlc1BundleCustomizationRefs[ "legion" ] <-		file.customizationRefs[ ET_DLC1_LEGION ]
+			dlc1BundleCustomizationRefs[ "ronin" ] <-		file.customizationRefs[ ET_DLC1_RONIN ]
+			dlc1BundleCustomizationRefs[ "northstar" ] <-	file.customizationRefs[ ET_DLC1_NORTHSTAR ]
+
+			foreach ( parentRef, childRefs in dlc1BundleCustomizationRefs )
+			{
+				foreach ( ref in childRefs )
+				{
+					if ( !SubitemDefined( parentRef, ref ) )
+						return false
+
+					SetItemNewStatus( player, ref, parentRef, true )
+				}
+			}
+
+			// Callsigns
+			foreach ( ref in file.patchRefs[ ET_DLC1_CALLSIGN ] )
+			{
+				SetItemNewStatus( player, ref, "", true )
+			}
+
+			break
+
+		case ET_DLC3_BUNDLE:
+			// Prime Titans
+			SetItemNewStatus( player, "northstar_prime", "", true )
+			SetItemNewStatus( player, "legion_prime", "", true )
+
+			// Customization Packs
+			table< string, array<string> > dlc3BundleCustomizationRefs
+			dlc3BundleCustomizationRefs[ "ion" ] <-			file.customizationRefs[ ET_DLC3_ION ]
+			dlc3BundleCustomizationRefs[ "tone" ] <-		file.customizationRefs[ ET_DLC3_TONE ]
+			dlc3BundleCustomizationRefs[ "scorch" ] <-		file.customizationRefs[ ET_DLC3_SCORCH ]
+			dlc3BundleCustomizationRefs[ "legion" ] <-		file.customizationRefs[ ET_DLC3_LEGION ]
+			dlc3BundleCustomizationRefs[ "ronin" ] <-		file.customizationRefs[ ET_DLC3_RONIN ]
+			dlc3BundleCustomizationRefs[ "northstar" ] <-	file.customizationRefs[ ET_DLC3_NORTHSTAR ]
+
+			foreach ( parentRef, childRefs in dlc3BundleCustomizationRefs )
+			{
+				foreach ( ref in childRefs )
+				{
+					if ( !SubitemDefined( parentRef, ref ) )
+						return false
+
+					SetItemNewStatus( player, ref, parentRef, true )
+				}
+			}
+
+			// Callsigns
+			foreach ( ref in file.patchRefs[ ET_DLC3_CALLSIGN ] )
+			{
+				SetItemNewStatus( player, ref, "", true )
+			}
+
+			break
+
+		case ET_DLC5_BUNDLE:
+			// Prime Titans
+			SetItemNewStatus( player, "ronin_prime", "", true )
+			SetItemNewStatus( player, "tone_prime", "", true )
+
+			// Customization Packs
+			table< string, array<string> > dlc5BundleCustomizationRefs
+			dlc5BundleCustomizationRefs[ "ion" ] <-			file.customizationRefs[ ET_DLC5_ION ]
+			dlc5BundleCustomizationRefs[ "tone" ] <-		file.customizationRefs[ ET_DLC5_TONE ]
+			dlc5BundleCustomizationRefs[ "scorch" ] <-		file.customizationRefs[ ET_DLC5_SCORCH ]
+			dlc5BundleCustomizationRefs[ "legion" ] <-		file.customizationRefs[ ET_DLC5_LEGION ]
+			dlc5BundleCustomizationRefs[ "ronin" ] <-		file.customizationRefs[ ET_DLC5_RONIN ]
+			dlc5BundleCustomizationRefs[ "northstar" ] <-	file.customizationRefs[ ET_DLC5_NORTHSTAR ]
+
+			foreach ( parentRef, childRefs in dlc5BundleCustomizationRefs )
+			{
+				foreach ( ref in childRefs )
+				{
+					if ( !SubitemDefined( parentRef, ref ) )
+						return false
+
+					SetItemNewStatus( player, ref, parentRef, true )
+				}
+			}
+
+			// Callsigns
+			foreach ( ref in file.patchRefs[ ET_DLC5_CALLSIGN ] )
+			{
+				SetItemNewStatus( player, ref, "", true )
+			}
+
+			break
+
+		case ET_PRIME_TITANS_BUNDLE:
+			SetItemNewStatus( player, "ion_prime", "", true )
+			SetItemNewStatus( player, "scorch_prime", "", true )
+			SetItemNewStatus( player, "northstar_prime", "", true )
+			SetItemNewStatus( player, "legion_prime", "", true )
+			SetItemNewStatus( player, "ronin_prime", "", true )
+			SetItemNewStatus( player, "tone_prime", "", true )
+			break
+
+		case ET_DLC1_PRIME_ION:
+		case ET_DLC1_PRIME_SCORCH:
+		case ET_DLC3_PRIME_NORTHSTAR:
+		case ET_DLC3_PRIME_LEGION:
+		case ET_DLC5_PRIME_TONE:
+		case ET_DLC5_PRIME_RONIN:
+			Assert( refParam != "" )
+			if ( refParam == "" || !ItemDefined( refParam ) )
+				return false
+
+			SetItemNewStatus( player, refParam, "", true )
+			break
+
+		case ET_DLC1_ION:
+		case ET_DLC3_ION:
+		case ET_DLC5_ION:
+		case ET_DLC1_SCORCH:
+		case ET_DLC3_SCORCH:
+		case ET_DLC5_SCORCH:
+		case ET_DLC1_NORTHSTAR:
+		case ET_DLC3_NORTHSTAR:
+		case ET_DLC5_NORTHSTAR:
+		case ET_DLC1_RONIN:
+		case ET_DLC3_RONIN:
+		case ET_DLC5_RONIN:
+		case ET_DLC1_TONE:
+		case ET_DLC3_TONE:
+		case ET_DLC5_TONE:
+		case ET_DLC1_LEGION:
+		case ET_DLC3_LEGION:
+		case ET_DLC5_LEGION:
+			Assert( refParam != "" )
+			if ( refParam == "" )
+				return false
+
+			foreach ( ref in file.customizationRefs[ entitlementId ] )
+			{
+				if ( !SubitemDefined( refParam, ref ) )
+					return false
+
+				SetItemNewStatus( player, ref, refParam, true )
+			}
+			break
+
+		case ET_DLC1_CAMO:
+		case ET_DLC3_CAMO:
+		case ET_DLC5_CAMO:
+			// Not implemented, way too many camos would show as new
+			break
+
+		case ET_DLC1_CALLSIGN:
+		case ET_DLC3_CALLSIGN:
+		case ET_DLC5_CALLSIGN:
+			foreach ( ref in file.patchRefs[ entitlementId ] )
+			{
+				SetItemNewStatus( player, ref, "", true )
+			}
+
+			foreach ( ref in file.bannerRefs[ entitlementId ] )
+			{
+				SetItemNewStatus( player, ref, "", true )
+			}
+			break
+
+		case ET_DLC7_TITAN_WARPAINT_BUNDLE:
+			array<int> childEntitlements = GetChildEntitlements( entitlementId )
+
+			foreach ( entitlement in childEntitlements )
+			{
+				foreach ( data in file.limitedEditionFDRefData[ entitlement ] )
+					SetItemNewStatus( player, data.ref, data.parentRef, true )
+			}
+			break
+
+		case ET_DLC7_ION_WARPAINT:
+		case ET_DLC7_SCORCH_WARPAINT:
+		case ET_DLC7_NORTHSTAR_WARPAINT:
+		case ET_DLC7_RONIN_WARPAINT:
+		case ET_DLC7_TONE_WARPAINT:
+		case ET_DLC7_LEGION_WARPAINT:
+		case ET_DLC7_MONARCH_WARPAINT:
+			foreach ( data in file.limitedEditionFDRefData[ entitlementId ] )
+				SetItemNewStatus( player, data.ref, data.parentRef, true )
+			break
+
+		case ET_DLC7_R201_WARPAINT:
+		case ET_DLC7_G2A5_WARPAINT:
+		case ET_DLC7_FLATLINE_WARPAINT:
+		case ET_DLC7_CAR_WARPAINT:
+		case ET_DLC7_ALTERNATOR_WARPAINT:
+		case ET_DLC7_EVA8_WARPAINT:
+		case ET_DLC7_WINGMAN_WARPAINT:
+		case ET_DLC7_ARCHER_WARPAINT:
+		case ET_DLC8_R201_WARPAINT:
+		case ET_DLC8_HEMLOK_WARPAINT:
+		case ET_DLC8_R97_WARPAINT:
+		case ET_DLC8_KRABER_WARPAINT:
+		case ET_DLC8_SPITFIRE_WARPAINT:
+		case ET_DLC8_DEVOTION_WARPAINT:
+		case ET_DLC8_MOZAMBIQUE_WARPAINT:
+		case ET_DLC8_THUNDERBOLT_WARPAINT:
+		case ET_DLC9_LSTAR_WARPAINT:
+		case ET_DLC9_MASTIFF_WARPAINT:
+		case ET_DLC9_SIDEWINDER_WARPAINT:
+		case ET_DLC9_R201_WARPAINT:
+		case ET_DLC9_CAR_WARPAINT:
+		case ET_DLC9_SPITFIRE_WARPAINT:
+		case ET_DLC10_R101_WARPAINT:
+		case ET_DLC10_FLATLINE_WARPAINT:
+		case ET_DLC10_VOLT_WARPAINT:
+		case ET_DLC10_ALTERNATOR_WARPAINT:
+		case ET_DLC10_SOFTBALL_WARPAINT:
+		case ET_DLC10_EPG1_WARPAINT:
+		case ET_DLC11_DMR_WARPAINT:
+		case ET_DLC11_DOUBLETAKE_WARPAINT:
+		case ET_DLC11_G2A5_WARPAINT:
+		case ET_DLC11_COLDWAR_WARPAINT:
+		case ET_DLC11_R97_WARPAINT:
+		case ET_DLC11_R101_WARPAINT:
+			Assert( refParam != "" )
+			if ( refParam == "" || !ItemDefined( refParam ) )
+				return false
+
+			Assert( parentRefParam != "" )
+			if ( parentRefParam == "" || !ItemDefined( parentRefParam ) )
+				return false
+
+			SetItemNewStatus( player, refParam, parentRefParam, true )
+			break
+
+		case ET_DLC7_WEAPON_BUNDLE:
+			SetItemNewStatus( player, "skin_rspn101_wasteland", "mp_weapon_rspn101", true )
+			SetItemNewStatus( player, "skin_g2_masterwork", "mp_weapon_g2", true )
+			SetItemNewStatus( player, "skin_vinson_blue_fade", "mp_weapon_vinson", true )
+			SetItemNewStatus( player, "skin_car_crimson_fury", "mp_weapon_car", true )
+			SetItemNewStatus( player, "skin_alternator_patriot", "mp_weapon_alternator_smg", true )
+			SetItemNewStatus( player, "skin_shotgun_badlands", "mp_weapon_shotgun", true )
+			SetItemNewStatus( player, "skin_wingman_aqua_fade", "mp_weapon_wingman", true )
+			SetItemNewStatus( player, "skin_rocket_launcher_psych_spectre", "mp_weapon_rocket_launcher", true )
+			break
+
+		case ET_DLC8_WEAPON_WARPAINT_BUNDLE:
+			SetItemNewStatus( player, "skin_rspn101_patriot", "mp_weapon_rspn101", true )
+			SetItemNewStatus( player, "skin_hemlok_mochi", "mp_weapon_hemlok", true )
+			SetItemNewStatus( player, "skin_r97_purple_fade", "mp_weapon_r97", true )
+			SetItemNewStatus( player, "skin_kraber_masterwork", "mp_weapon_sniper", true )
+			SetItemNewStatus( player, "skin_spitfire_lead_farmer", "mp_weapon_lmg", true )
+			SetItemNewStatus( player, "skin_devotion_rspn_customs", "mp_weapon_esaw", true )
+			SetItemNewStatus( player, "skin_mozambique_crimson_fury", "mp_weapon_shotgun_pistol", true )
+			SetItemNewStatus( player, "skin_thunderbolt_8bit", "mp_weapon_arc_launcher", true )
+			break
+
+		case ET_DLC9_WEAPON_WARPAINT_BUNDLE:
+			SetItemNewStatus( player, "skin_lstar_heatsink", "mp_weapon_lstar", true )
+			SetItemNewStatus( player, "skin_mastiff_crimson_fury", "mp_weapon_mastiff", true )
+			SetItemNewStatus( player, "skin_sidewinder_masterwork", "mp_weapon_smr", true )
+			SetItemNewStatus( player, "skin_rspn101_halloween", "mp_weapon_rspn101", true )
+			SetItemNewStatus( player, "skin_car_halloween", "mp_weapon_car", true )
+			SetItemNewStatus( player, "skin_spitfire_halloween", "mp_weapon_lmg", true )
+			break
+
+		case ET_DLC10_WEAPON_WARPAINT_BUNDLE:
+			SetItemNewStatus( player, "skin_rspn101_og_blue_fade", "mp_weapon_rspn101_og", true )
+			SetItemNewStatus( player, "skin_vinson_badlands", "mp_weapon_vinson", true )
+			SetItemNewStatus( player, "skin_volt_heatsink", "mp_weapon_hemlok_smg", true )
+			SetItemNewStatus( player, "skin_alternator_headhunter", "mp_weapon_alternator_smg", true )
+			SetItemNewStatus( player, "skin_softball_masterwork", "mp_weapon_softball", true )
+			SetItemNewStatus( player, "skin_epg_mrvn", "mp_weapon_epg", true )
+			break
+
+		case ET_DLC11_WEAPON_WARPAINT_BUNDLE:
+			SetItemNewStatus( player, "skin_dmr_phantom", "mp_weapon_dmr", true )
+			SetItemNewStatus( player, "skin_doubletake_masterwork", "mp_weapon_doubletake", true )
+			SetItemNewStatus( player, "skin_g2_purple_fade", "mp_weapon_g2", true )
+			SetItemNewStatus( player, "skin_coldwar_heatsink", "mp_weapon_pulse_lmg", true )
+			SetItemNewStatus( player, "skin_r97_sky", "mp_weapon_r97", true )
+			SetItemNewStatus( player, "skin_rspn101_crimson_fury", "mp_weapon_rspn101", true )
+			break
+
+		case ET_JUMPSTARTERBUNDLE:
+			UnlockUltimateEdition( player )
+			break
+	}
+
+	return true
+}
+#endif
