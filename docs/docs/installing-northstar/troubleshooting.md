@@ -208,6 +208,14 @@ If that solution doesn't work, you can try logging out of the EA App, closing al
 
 This error can also appear if you are pirating the game, which we neither condone nor support as stated [here](../faq.md#q-can-i-use-a-pirated-cracked-copy-titanfall-2-to-run-northstar)
 
+## Disable EA App overlay <a href="#ea-overlay" id="ea-overlay"></a>
+
+The purpose of disabling the EA App overlay is to increase performance, as it can be very taxing even on high end hardware. You can disable it by clicking on your profile in the top right of the EA App, clicking on the drop down arrow, going to settings, going to `Application`, then scrolling down and disabling the EA App overlay.
+This will also disable invites, however [Northstar does not use these](../faq.md#q-im-trying-to-invite-a-friend-via-steam-origin-but-they-cannot-join-me)
+
+![Applications settings](../images/ea-application-settings.png)
+![Toggling EA Overlay to OFF](../images/ea-overlay-disable.png)
+
 ## Cannot write log file when using Northstar on EA App
 
 The default install location for EA App `C:\Program Files\EA Games\Titanfall2` is not writeable by non-admin processes. This messes with Northstar trying to write log files as well as mod-managers trying to install mods.
