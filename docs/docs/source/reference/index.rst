@@ -25,6 +25,7 @@ Respawn API
     /reference/respawn/topology
     /reference/respawn/clientcommands
     /reference/respawn/movers
+    /reference/respawn/damageinfo
 
 HUD
 ===
