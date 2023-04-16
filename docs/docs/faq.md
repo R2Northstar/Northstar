@@ -81,3 +81,7 @@ A: Frontier Defense is currently in development and will be available in a relea
 ### Q: I get an error message saying something along the lines of "SSL connect error" 
 
 A: We are unsure of what causes this, and are trying to figure out a solution for it. If you experience this, please reach out to us via a ticket on the Northstar Discord server to allow us to get more information on the issue
+
+### Q: Why is my game running so bad?
+
+A: This usually lies behind your computer's specs not being high enough in order to run the game, but can also be affected by EA App's overlay. You can disable this by going to and following the [disable EA overlay section](installing-northstar/troubleshooting.md#ea-overlay).
