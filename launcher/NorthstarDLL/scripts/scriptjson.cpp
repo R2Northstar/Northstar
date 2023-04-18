@@ -212,10 +212,12 @@ ADD_SQFUNC(
 			doc.GetErrorOffset());
 
 		if (bFatalParseErrors)
+		{
 			g_pSquirrel<context>->raiseerror(sqvm, sErrorString.c_str());
-		else
-			spdlog::warn(sErrorString);
+			return SQRESULT_ERROR;
+		}
 
+		spdlog::warn(sErrorString);
 		return SQRESULT_NOTNULL;
 	}
 
