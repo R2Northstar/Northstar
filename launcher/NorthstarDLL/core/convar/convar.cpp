@@ -497,40 +497,36 @@ bool ConVar::ClampValue(float& flValue)
 
 int ParseConVarFlagsString(std::string modName, std::string sFlags)
 {
-	sFlags += '|'; // add additional | so we register the last flag
-	std::string sCurrentFlag;
+	int iFlags = 0;
+	std::stringstream stFlags(sFlags);
+	std::string sFlag;
 
-	for (int i = 0; i < sFlags.length(); i++)
+	while (std::getline(stFlags, sFlag, '|'))
 	{
-		if (isspace(sFlags[i]))
+		// trim the flag
+		sFlag.erase(sFlag.find_last_not_of(" \t\n\f\v\r") + 1);
+		sFlag.erase(0, sFlag.find_first_not_of(" \t\n\f\v\r"));
+
+		// skip if empty
+		if (sFlag.empty())
 			continue;
 
-		// if we encounter a |, add current string as a flag
-		if (sFlags[i] == '|')
+		// find the matching flag value
+		bool ok = false;
+		for (auto const& flagPair : g_PrintCommandFlags)
 		{
-			bool bHasFlags = false;
-			int iCurrentFlags;
-
-			for (auto& flagPair : g_PrintCommandFlags)
+			if (sFlag == flagPair.second)
 			{
-				if (!sCurrentFlag.compare(flagPair.second))
-				{
-					iCurrentFlags = flagPair.first;
-					bHasFlags = true;
-					break;
-				}
+				iFlags |= flagPair.first;
+				ok = true;
+				break;
 			}
-
-			if (bHasFlags)
-				return iCurrentFlags;
-			else
-				spdlog::warn("Mod ConCommand {} has unknown flag {}", modName, sCurrentFlag);
-
-			sCurrentFlag = "";
 		}
-		else
+		if (!ok)
 		{
-			sCurrentFlag += sFlags[i];
+			spdlog::warn("Mod ConCommand {} has unknown flag {}", modName, sFlag);
 		}
 	}
+
+	return iFlags;
 }
