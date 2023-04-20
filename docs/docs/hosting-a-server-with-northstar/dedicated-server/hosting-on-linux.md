@@ -61,33 +61,33 @@ Example `docker-compose.yml` \
 (Note that you will have to adjust some lines to make it work on your machine)
 
 ```yaml
-version: '3'
+version: "3"
 services:
- northstar-attrition: 
-   image: ghcr.io/pg9182/northstar-dedicated:1-tf2.0.11.0 
-   pull_policy: always 
-   environment:
-     - NS_PORT=37015
-     - NS_PORT_AUTH=8081
-     - 'NS_SERVER_NAME=Enter Server Name here'
-     - 'NS_SERVER_DESC=Enter your description here'
-     - NS_EXTRA_ARGUMENTS=
-       +setplaylist aitdm # Attrition
-       +mp_gamemode aitdm # Attrition
-       +map mp_angel_city
-       +ns_private_match_countdown_length 0
-       +ns_should_return_to_lobby 0
-       +net_compresspackets_minsize 64
-       +net_compresspackets 1
-       +spewlog_enable 0
-       +sv_maxrate 127000
-   volumes:
-     - /home/YOUR_USERNAME_HERE/Titanfall2:/mnt/titanfall:ro
-     - /home/YOUR_USERNAME_HERE/Titanfall2/mods:/mnt/mods:ro
-   ports:
-     - '37015:37015/udp'
-     - '8081:8081/tcp'
-   restart: always
+  northstar-attrition:
+    image: ghcr.io/pg9182/northstar-dedicated:1-tf2.0.11.0
+    pull_policy: always
+    environment:
+      NS_PORT: 37015
+      NS_PORT_AUTH: 8081
+      NS_SERVER_NAME: "Enter Server Name here"
+      NS_SERVER_DESC: "Enter your description here"
+      NS_EXTRA_ARGUMENTS: |
+        +setplaylist aitdm # Attrition
+        +mp_gamemode aitdm # Attrition
+        +map mp_angel_city
+        +ns_private_match_countdown_length 0
+        +ns_should_return_to_lobby 0
+        +net_compresspackets_minsize 64
+        +net_compresspackets 1
+        +spewlog_enable 0
+        +sv_maxrate 127000
+    volumes:
+      - /home/YOUR_USERNAME_HERE/Titanfall2:/mnt/titanfall:ro
+      - /home/YOUR_USERNAME_HERE/Titanfall2/mods:/mnt/mods:ro
+    ports:
+      - "37015:37015/udp"
+      - "8081:8081/tcp"
+    restart: always
 ```
 
 A list of all the CONVARs are [here](../../hosting-a-server-with-northstar/dedicated-server#convars)
