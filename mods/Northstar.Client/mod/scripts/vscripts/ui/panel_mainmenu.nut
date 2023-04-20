@@ -571,12 +571,12 @@ void function TryAuthWithLocalServer()
 	{
 		CloseAllDialogs()
 
-		var reason = NSGetAuthFailReason()
+		string reason = NSGetAuthFailReason()
 
 		DialogData dialogData
 		dialogData.image = $"ui/menu/common/dialog_error"
 		dialogData.header = "#ERROR"
-		dialogData.message = Localize("#NS_SERVERBROWSER_CONNECTIONFAILED") + "\nERROR: " + reason  + "\n" + Localize("#" + reason)
+		dialogData.message = reason
 
 		AddDialogButton( dialogData, "#OK", null )
 		OpenDialog( dialogData )
