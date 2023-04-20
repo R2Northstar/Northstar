@@ -31,13 +31,13 @@ After testing, make sure to mention the steps tested in your review.
 
 ## Acquiring necessary files
 
-### northstar_dev_testing_helper_tool
+### FlightCore developer tools
 
-You can use the creatively named `northstar_dev_testing_helper_tool` to essentially 1-click install any pull request to [NorthstarMods](https://github.com/R2Northstar/NorthstarMods/) and [NorthstarLauncher](https://github.com/R2Northstar/NorthstarLauncher/).
+You can use FlightCore to essentially 1-click install any pull request to [NorthstarMods](https://github.com/R2Northstar/NorthstarMods/) and [NorthstarLauncher](https://github.com/R2Northstar/NorthstarLauncher/).
 
-The tool is still WIP albeit in a usable state. Check its README for instructions:
+The tool is still being improved upon but already more than usable. Check its README for instructions:
 
-{% embed url="https://github.com/GeckoEidechse/northstar_dev_testing_helper_tool" %}
+{% embed url="https://github.com/R2NorthstarTools/FlightCore/blob/main/docs/DEV-TOOLS.md" %}
 
 
 ### Manually
