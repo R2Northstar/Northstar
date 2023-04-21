@@ -1,0 +1,18 @@
+[package]
+name = "northstar-discord-rpc"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rrplug = { version = "2.0.0", features = ["presence"] }
+discord-sdk = "0.3.2"
+tokio = "1.26.0"
+
+[build-dependencies]
+windres = "0.2.2"
+
+[lib]
+# name = "DiscordRPCV" # not if we really need this also ignore non snake case should be added to lib.rs then
+crate-type = ["cdylib"]

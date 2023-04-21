@@ -1,19 +1,17 @@
 name: CI
 on: [push, pull_request]
 
-env:
-  BUILD_PROFILE: Release
-
 jobs:
   build:
     runs-on: windows-2022
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1.1
       - name: Build
-        run: msbuild /p:Configuration=${{ env.BUILD_PROFILE }}
+        run: | 
+          $Env:DISCORD_GAME_SDK_PATH = "${{ github.workspace }}/discord_game_sdk"
+          $Env:CARGO_BIN_NAME = "DiscordRPCV"
+          cargo build --release --verbose
       - name: Extract Short Commit Hash
         id: extract
         shell: bash
@@ -23,7 +21,5 @@ jobs:
         with:
           name: NorthstarDiscordRPC-${{ steps.extract.outputs.commit }}
           path: |
-            x64/${{ env.BUILD_PROFILE }}/*.dll
-            x64/${{ env.BUILD_PROFILE }}/*.exe
-            x64/${{ env.BUILD_PROFILE }}/*.pdb
-            x64/${{ env.BUILD_PROFILE }}/*.txt
+            target/release/*.dll
+            target/release/*.pdb
