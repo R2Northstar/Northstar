@@ -17,7 +17,7 @@ jobs:
       - name: Extract Short Commit Hash
         id: extract
         shell: bash
-        run: echo ::set-output name=commit::`git rev-parse --short HEAD`
+        run: echo commit=$(git rev-parse --short HEAD) >> $GITHUB_OUTPUT
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v3
         with:
