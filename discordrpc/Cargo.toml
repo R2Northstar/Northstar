@@ -14,5 +14,5 @@ tokio = "1.26.0"
 windres = "0.2.2"
 
 [lib]
-# name = "DiscordRPCV" # not if we really need this also ignore non snake case should be added to lib.rs then
+name = "DiscordRPC"
 crate-type = ["cdylib"]
