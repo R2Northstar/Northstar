@@ -95,7 +95,7 @@ jobs:
       - name: Make folder structure
         run: |
           mv -v northstar/release/* northstar/.
-          rm -d release
+          rm -d northstar/release
           mkdir -p northstar/R2Northstar/mods
           mkdir -p northstar/R2Northstar/plugins
           mkdir -p northstar/bin/x64_retail
