@@ -133,6 +133,9 @@ jobs:
           cd northstar/
           zip --recurse-paths --quiet Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip .
           mv Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip ../
+      - name: Compute SHA-512 checksum
+        run: |
+          sha512sum Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip
       - name: Upload zip to release draft
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/v') && !contains(env.NORTHSTAR_VERSION, '-rc')
