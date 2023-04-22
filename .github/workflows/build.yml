@@ -66,7 +66,7 @@ jobs:
           path: northstar-launcher
       - name: Download DiscordRPC plugin
         run:
-          wget "https://github.com/R2Northstar/NorthstarDiscordRPC/releases/download/v2/northstar-discord-rpc.zip"
+          wget "https://github.com/R2Northstar/NorthstarDiscordRPC/releases/download/v4/northstar-discord-rpc.zip"
       - name: Download compiled stubs
         run:
           wget "https://github.com/R2Northstar/NorthstarStubs/releases/download/v1/NorthstarStubs.zip"
@@ -101,7 +101,6 @@ jobs:
 
           unzip northstar-discord-rpc.zip
           mv -v DiscordRPC.dll northstar/R2Northstar/plugins
-          mv -v discord_game_sdk.dll northstar
 
           mv -v northstar-launcher/wsock32.dll northstar/bin/x64_retail
           unzip NorthstarStubs.zip -d northstar/bin/x64_dedi
