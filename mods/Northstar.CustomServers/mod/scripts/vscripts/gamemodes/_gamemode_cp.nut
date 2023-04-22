@@ -471,8 +471,10 @@ void function HardpointThink( HardpointStruct hardpoint )
 		}
 		else if(cappingTeam==TEAM_UNASSIGNED) // nobody on point
 		{
-			if((GetHardpointState(hardpoint)==CAPTURE_POINT_STATE_AMPED)||(GetHardpointState(hardpoint)==CAPTURE_POINT_STATE_AMPING))
+			if((GetHardpointState(hardpoint)>=CAPTURE_POINT_STATE_AMPED) || (GetHardpointState(hardpoint)==CAPTURE_POINT_STATE_SELF_UNAMPING))
 			{
+				if (GetHardpointState(hardpoint) == CAPTURE_POINT_STATE_AMPED)
+					SetHardpointState(hardpoint,CAPTURE_POINT_STATE_SELF_UNAMPING) // plays a pulsating effect on the UI only when the hardpoint is amped
 				SetHardpointCappingTeam(hardpoint,hardpointEnt.GetTeam())
 				SetHardpointCaptureProgress(hardpoint,max(1.0,GetHardpointCaptureProgress(hardpoint)-(deltaTime/HARDPOINT_AMPED_DELAY)))
 				if(GetHardpointCaptureProgress(hardpoint)<=1.001) // unamp
@@ -546,8 +548,10 @@ void function HardpointThink( HardpointStruct hardpoint )
 			}
 			else if(file.ampingEnabled)//amping or reamping
 			{
-				if(GetHardpointState(hardpoint)<CAPTURE_POINT_STATE_AMPING)
-				SetHardpointState(hardpoint,CAPTURE_POINT_STATE_AMPING)
+				// i have no idea why but putting it CAPTURE_POINT_STATE_AMPING will say 'CONTESTED' on the UI
+				// since whether the point is contested is checked above, putting the hardpoint state to a value of 8 fixes it somehow
+				if(GetHardpointState(hardpoint)<=CAPTURE_POINT_STATE_AMPING)
+					SetHardpointState( hardpoint, 8 ) 
 				SetHardpointCaptureProgress( hardpoint, min( 2.0, GetHardpointCaptureProgress( hardpoint ) + ( deltaTime / HARDPOINT_AMPED_DELAY * capperAmount ) ) )
 				if(GetHardpointCaptureProgress(hardpoint)==2.0&&!(GetHardpointState(hardpoint)==CAPTURE_POINT_STATE_AMPED))
 				{
@@ -645,7 +649,10 @@ void function OnHardpointEntered( entity trigger, entity player )
 		hardpoint.militiaCappers.append( player )
 	foreach(CP_PlayerStruct playerStruct in file.players)
 		if(playerStruct.player == player)
+		{
 			playerStruct.isOnHardpoint = true
+			player.SetPlayerNetInt( "playerHardpointID", hardpoint.hardpoint.GetHardpointID() )
+		}
 }
 
 void function OnHardpointLeft( entity trigger, entity player )
@@ -661,7 +668,10 @@ void function OnHardpointLeft( entity trigger, entity player )
 		FindAndRemove( hardpoint.militiaCappers, player )
 	foreach(CP_PlayerStruct playerStruct in file.players)
 		if(playerStruct.player == player)
+		{
 			playerStruct.isOnHardpoint = false
+			player.SetPlayerNetInt( "playerHardpointID", 69 ) // an arbitary number to remove the hud from the player
+		}
 }
 
 string function CaptureStateToString( int state )
@@ -675,6 +685,7 @@ string function CaptureStateToString( int state )
 		case CAPTURE_POINT_STATE_CAPTURED:
 			return "CAPTURED"
 		case CAPTURE_POINT_STATE_AMPING:
+		case 8:
 			return "AMPING"
 		case CAPTURE_POINT_STATE_AMPED:
 			return "AMPED"
