@@ -13,20 +13,22 @@ Northstar is a modding framework client that allows users to host their own Tita
 
 ## Development
 
-Northstar's development is split into 5 repositories:
+Northstar's development is split into 6 repositories:
 
 1. [NorthstarLauncher](https://github.com/R2Northstar/NorthstarLauncher) (Code for the C++ hook DLL)
 1. [NorthstarMods](https://github.com/R2Northstar/NorthstarMods) (Code for the squirrel mods responsible for server gamelogic recreation and custom content)
-1. [NorthstarMasterServer](https://github.com/R2Northstar/NorthstarMasterServer) (Responsible for server browser, authentication and persistence)
 1. [NorthstarStubs](https://github.com/R2Northstar/NorthstarStubs) (D3D11 and GFSDK stubs for the Northstar dedicated server)
 1. [NorthstarNavs](https://github.com/R2Northstar/NorthstarNavs) (Custom navmesh files used for AI navigation)
+1. [NorthstarDiscordRPC](https://github.com/R2Northstar/NorthstarDiscordRPC) (Discord RPC plugin)
+1. [Atlas](https://github.com/R2Northstar/Atlas) (Backend API for server browser, player authentication, and persistence)
 
-The documentation is split into two repositories:
+The documentation is split into three repositories:
+1. [NorthstarTF](https://github.com/R2Northstar/NorthstarTF) (Main website)
 1. [NorthstarWiki](https://github.com/R2Northstar/NorthstarWiki) (Wiki covering installation, hosting and configuration of Northstar)
 1. [ModdingDocs](https://github.com/R2Northstar/ModdingDocs) (Guides and tutorials on how to mod using Northstar)
 
 ## Special Thanks
-  
+
 Thanks to everyone that's put up with me and helped out with this project, it's been a fun passion project I've had throughout 2021 so releasing it is pretty cathartic. Specifically: 
 
 - Thanks to the Icepick developers for making the Icepick, I initially forked it for earlier versions of Northstar and it was a great base to experiment with stuff on before moving to the custom launcher.
