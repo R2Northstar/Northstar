@@ -8,9 +8,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Build
-        run: | 
-          $Env:DISCORD_GAME_SDK_PATH = "${{ github.workspace }}/discord_game_sdk"
-          $Env:CARGO_BIN_NAME = "DiscordRPCV"
+        env:
+          DISCORD_GAME_SDK_PATH: ${{ github.workspace }}/discord_game_sdk
+          CARGO_BIN_NAME: DiscordRPCV
+        run: |
           cargo build --release --verbose
       - name: Extract Short Commit Hash
         id: extract
