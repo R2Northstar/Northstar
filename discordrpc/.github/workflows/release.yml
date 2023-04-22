@@ -19,9 +19,6 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.1
       - name: Build
-        env:
-          DISCORD_GAME_SDK_PATH: ${{ github.workspace }}/discord_game_sdk
-          CARGO_BIN_NAME: DiscordRPCV
         run: |
           cargo build --release --verbose
       - name: Upload RPC build as artifact
