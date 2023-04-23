@@ -58,7 +58,7 @@ A: Should be fixed soon.
 
 ### Q: Can you host a dedicated server on Linux?
 
-A: It works using wine and llvmpipe, a guide is WIP.
+A: Check the [Linux dedicated server hosting section](hosting-a-server-with-northstar/dedicated-server/hosting-on-linux.md)
 
 ### Q: I get an error message saying "Connection timed out" when trying to connect to my own dedicated server
 
