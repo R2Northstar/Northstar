@@ -415,7 +415,7 @@ template <ScriptContext context> bool __fastcall CSquirrelVM_initHook(CSquirrelV
 	bool ret = CSquirrelVM_init<context>(vm, realContext, time);
 	for (Mod mod : g_pModManager->m_LoadedMods)
 	{
-		if (mod.initScript.size() != 0)
+		if (mod.m_bEnabled && mod.initScript.size() != 0)
 		{
 			std::string name = mod.initScript.substr(mod.initScript.find_last_of('/') + 1);
 			std::string path = std::string("scripts/vscripts/") + mod.initScript;
