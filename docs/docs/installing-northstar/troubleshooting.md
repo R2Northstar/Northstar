@@ -206,12 +206,12 @@ The current solution to this is signing out of the EA App, then _without signing
 
 If that solution doesn't work, you can try logging out of the EA App, closing all EA related proccesses (including background ones) using task manager. After this, manually reopen the EA App, log in, and try to launch Northstar again. (If you don't know how to use task manager, press `"ctrl + alt + delete"`, select Task Manager, and hit `"More Info"` on the bottom right. If you can't see more info, then you've already clicked it before and don't need to do it again. After this, when you right click on a process it will open a small pop up with`"End Task"`as an option, which is what you want to use).
 
-This error can also appear if you are pirating the game, which we neither condone nor support as stated [here](../faq.md#q-can-i-use-a-pirated-cracked-copy-titanfall-2-to-run-northstar)
+This error can also appear if you are pirating the game, which we neither condone nor support as stated [here](../faq.md#faq-piracy)
 
 ## Disable EA App overlay <a href="#ea-overlay" id="ea-overlay"></a>
 
 The purpose of disabling the EA App overlay is to increase performance, as it can be very taxing even on high end hardware. You can disable it by clicking on your profile in the top right of the EA App, clicking on the drop down arrow, going to settings, going to `Application`, then scrolling down and disabling the EA App overlay.
-This will also disable invites, however [Northstar does not use these](../faq.md#q-im-trying-to-invite-a-friend-via-steam-origin-but-they-cannot-join-me)
+This will also disable invites, however [Northstar does not use these](../faq.md#faq-invite-friends)
 
 ![Applications settings](../images/ea-application-settings.png)
 ![Toggling EA Overlay to OFF](../images/ea-overlay-disable.png)
