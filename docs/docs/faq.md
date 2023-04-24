@@ -16,6 +16,10 @@ However your progress on official servers is not lost, so running vanilla client
 
 These two errors can commonly be fixed for the average user by following the guide [here](installing-northstar/troubleshooting.md#player-not-found-invalid-master-server-token). "Invalid Master Server Token" can also be caused by the Northstar master server being offline, however this is normally not the cause of the error.
 
+### Q: I get an error message saying "Failed creating log file! Make sure the profile directory is writable." <a href="#faq-failed-log" id="faq-failed-log"></a>
+
+Most of the time, this is due to the fact that EA App's default install location is read-only, which does not allow for Northstar to write logs in that location. You can fix it by following the [default EA location section](installing-northstar/troubleshooting.md#cannot-write-log-file-when-using-northstar-on-ea-app)
+
 ### Q: How do I open the console? <a href="#faq-devconsole" id="faq-devconsole"></a>
 
 A: Check [_Opening the console_](installing-northstar/using-northstar/commands.md#opening-the-console).
