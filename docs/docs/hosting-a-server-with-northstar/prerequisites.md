@@ -1,6 +1,6 @@
 # Prerequisites
 
-**TL;DR:** Port forward `37015` (UDP) and `8081` (TCP)
+**TL;DR:** Port forward `37015` (UDP). If using Northstar v1.12 or older, also port forward `8081` (TCP).
 
 Make sure you already installed Northstar [as described here](../installing-northstar/basic-setup.md).
 
@@ -38,7 +38,7 @@ If you get 2 entries or more you're likely behind a [CGNAT](https://en.wikipedia
 Access your router via it's web interface and port forward
 
 * `37015` (UDP) for game logic
-* `8081` (TCP) for Northstar auth so your server shows up in server browser
+* `8081` (TCP) for Northstar auth on Northstar v1.12 and older so your server shows up in server browser
 
 to your PC that you're running Northstar on.
 
