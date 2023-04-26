@@ -61,7 +61,7 @@ To expand the smaller version of the tab list, press the button with 3 bars as s
 
 ![Mods page](../../images/vtol-mods.png)
 
-The first tab of VTOL is the _"Mods"_ tab. This is a list of your currently installed mods, with the ability to disable any of them quickly.
+The first tab of VTOL is the _"Mods"_ tab. This is a list of your currently installed mods, with the ability to disable any of them quickly. Note that core mods (those that come installed with Northstar/those that start with `Northstar`) have a yellow border to differentiate them from normal mods.
 
 You can also right click on a specific mod to get the option to either delete it, or look at the mod's information (Mod Name, Author Name, Description, etc.)
 
@@ -102,31 +102,42 @@ For the dedicated server option, you can scroll through this tab to set many dif
 
 The fifth tab called _"Tools"_ is meant to help those trying to create mods for Northsar. 
 
-## ThunderStore Packer
+### ThunderStore Packer
 
 ![ThunderStore packer](../../images/vtol-thunderstore-packer.png)
 
 The first screen is an area where you can locate a folder for a mod you've created, and easily set up things such as the Name, Description, and Icon to be shown on the Thunderstore page when you go to upload your mod.
 
-## Skin Tool
+### Skin Tool
 
 ![VTOL's Skin Tool implementation](../../images/vtol-skintool.png)
 
 The second screen is an area where you can drag and drop images to the different maps of a skin to make your own skin. This is an implementaion of the [skin tool](https://github.com/zxcPandora/Titanfall2-SkinTool).
 
-## Advocate
+### Advocate
 
 ![VTOL's Advocate implementation](../../images/vtol-advocate.png)
 
 The third screen is an implementation of Spoon's [Advocate Tool](https://github.com/ASpoonPlaysGames/Advocate), where you can convert an old style skin mod to a mod that can be installed by everyone like a normal mod. Please give credit to the original skin owner while doing this. (If confused, following the earlier link to Github describes how to set up Advocate)
 
-## External Tools
+### External Tools
 
 ![Tools for Modders](../../images/vtol-external-tools.png)
+
 The fourth screen lists a lot of commonly used tools by modders to help create mods easier. You can get more info about each tool by clicking the information icon in the top right of the image for each respective tool.
+
+## Profiles
+
+![VTOL's Profiles menu](../../images/vtol-profiles.png)
+
+The sixth tab is the _"Profiles"_ tab, allowing you to create profiles for Northstar. Profiles are seperate Northstar installs, each with their own set of mods and seperated by folders. For example, you can have one profile with your normal set of mods, and another profile for only using core mods (those that common with Northstar/the ones that start with `Northstar.`).
+
+![The Export Profile menu in VTOL](../../images/vtol-export-profile.png)
+
+Hitting `Export Profile` will save your current profile to a `.vbp` file, which you can easily switch to by clicking `IMPORT` on the desired profile inside of VTOL. You can also share your profile or download someone else's profile if they send you this file by hitting `Add Profile` and selecting the downloaded file. These files get saved to `Titanfall2/VTOL_profiles`.
 
 ## About
 
 ![VTOL About section](../../images/vtol-about.png)
 
-The last section of the VTOL client is the 6th tab of VTOL, the _"About"_ section. This screen shows you what VTOL can do, as well as a button to configure updates, and a button to check for updates for the VTOL client.
+The last section of the VTOL client is the seventh tab of VTOL, the _"About"_ section. This screen shows you what VTOL can do, as well as a button to configure updates, and a button to check for updates for the VTOL client.
