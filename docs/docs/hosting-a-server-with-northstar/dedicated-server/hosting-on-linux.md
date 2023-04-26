@@ -68,7 +68,8 @@ services:
     pull_policy: always
     environment:
       NS_PORT: 37015
-      NS_PORT_AUTH: 8081
+      # uncomment for Northstar v1.12 and older
+      #NS_PORT_AUTH: 8081
       NS_SERVER_NAME: "Enter Server Name here"
       NS_SERVER_DESC: "Enter your description here"
       NS_EXTRA_ARGUMENTS: |
@@ -86,7 +87,8 @@ services:
       - /home/YOUR_USERNAME_HERE/Titanfall2/mods:/mnt/mods:ro
     ports:
       - "37015:37015/udp"
-      - "8081:8081/tcp"
+      # uncomment for Northstar v1.12 and older
+      #- "8081:8081/tcp"
     restart: always
 ```
 
