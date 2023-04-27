@@ -107,6 +107,9 @@ class SquirrelManagerBase
 	sq_getentityfrominstanceType __sq_getentityfrominstance;
 	sq_GetEntityConstantType __sq_GetEntityConstant_CBaseEntity;
 
+	sq_pushnewstructinstanceType __sq_pushnewstructinstance;
+	sq_sealstructslotType __sq_sealstructslot;
+
 #pragma endregion
 
 #pragma region SQVM func wrappers
@@ -287,6 +290,16 @@ class SquirrelManagerBase
 
 		// there are entity constants for other types, but seemingly CBaseEntity's is the only one needed
 		return (T*)__sq_getentityfrominstance(m_pSQVM, &obj, __sq_GetEntityConstant_CBaseEntity());
+	}
+
+	inline SQRESULT pushnewstructinstance(HSquirrelVM* sqvm, const int fieldCount)
+	{
+		return __sq_pushnewstructinstance(sqvm, fieldCount);
+	}
+
+	inline SQRESULT sealstructslot(HSquirrelVM* sqvm, const int fieldIndex)
+	{
+		return __sq_sealstructslot(sqvm, fieldIndex);
 	}
 #pragma endregion
 };
