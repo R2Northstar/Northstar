@@ -73,6 +73,7 @@ Cheatsheet
     :caption: Squirrel Documentation
 
     /squirrel/index
+    /squirrel/cpp_api/index
 
 .. toctree::
     :maxdepth: 3
