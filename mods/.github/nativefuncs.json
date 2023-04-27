@@ -449,76 +449,10 @@
 			"argTypes":""
 		},
 		{
-			"name":"NSGetServerName",
-			"helpText":"",
-			"returnTypeString":"string",
-			"argTypes":"int serverIndex"
-		},
-		{
-			"name":"NSGetServerDescription",
-			"helpText":"",
-			"returnTypeString":"string",
-			"argTypes":"int serverIndex"
-		},
-		{
-			"name":"NSGetServerMap",
-			"helpText":"",
-			"returnTypeString":"string",
-			"argTypes":"int serverIndex"
-		},
-		{
-			"name":"NSGetServerPlaylist",
-			"helpText":"",
-			"returnTypeString":"string",
-			"argTypes":"int serverIndex"
-		},
-		{
-			"name":"NSGetServerPlayerCount",
-			"helpText":"",
-			"returnTypeString":"int",
-			"argTypes":"int serverIndex"
-		},
-		{
-			"name":"NSGetServerMaxPlayerCount",
-			"helpText":"",
-			"returnTypeString":"int",
-			"argTypes":"int serverIndex"
-		},
-		{
-			"name":"NSGetServerID",
-			"helpText":"",
-			"returnTypeString":"string",
-			"argTypes":"int serverIndex"
-		},
-		{
-			"name":"NSServerRequiresPassword",
-			"helpText":"",
-			"returnTypeString":"bool",
-			"argTypes":"int serverIndex"
-		},
-		{
-			"name":"NSGetServerRequiredModsCount",
-			"helpText":"",
-			"returnTypeString":"int",
-			"argTypes":"int serverIndex"
-		},
-		{
-			"name":"NSGetServerRegion",
-			"helpText":"",
-			"returnTypeString":"string",
-			"argTypes":"int serverIndex"
-		},
-		{
-			"name":"NSGetServerRequiredModName",
-			"helpText":"",
-			"returnTypeString":"string",
-			"argTypes":"int serverIndex, int modIndex"
-		},
-		{
-			"name":"NSGetServerRequiredModVersion",
-			"helpText":"",
-			"returnTypeString":"string",
-			"argTypes":"int serverIndex, int modIndex"
+			"name": "NSGetGameServers",
+			"helpText": "Gets all fetched servers",
+			"returnTypeString": "array<ServerInfo>",
+			"argTypes": ""
 		},
 		{
 			"name":"NSClearRecievedServerList",
