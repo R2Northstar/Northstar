@@ -20,3 +20,24 @@ global struct UIPresenceStruct {
 	string loadingLevel
 	string loadedLevel
 }
+
+global struct RequiredModInfo
+{
+    string name
+    string version
+}
+
+global struct ServerInfo
+{
+    int index
+    string id
+    string name
+    string description
+    string map
+    string playlist
+    int playerCount
+    int maxPlayerCount
+    bool requiresPassword
+    string region
+    array< RequiredModInfo > requiredMods
+}

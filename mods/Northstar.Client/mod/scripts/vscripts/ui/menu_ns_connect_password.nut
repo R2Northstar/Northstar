@@ -54,5 +54,8 @@ void function OnConnectWithPasswordMenuOpened()
 void function ConnectWithPassword( var button )
 {
 	if ( GetTopNonDialogMenu() == file.menu )
+	{
+		TriggerConnectToServerCallbacks()
 		thread ThreadedAuthAndConnectToServer( Hud_GetUTF8Text( Hud_GetChild( file.menu, "EnterPasswordBox" ) ) )
+	}
 }
