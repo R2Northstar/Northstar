@@ -780,6 +780,12 @@ ON_DLL_LOAD_RELIESON("client.dll", ClientSquirrel, ConCommand, (CModule module))
 	g_pSquirrel<ScriptContext::CLIENT>->__sq_stackinfos = module.Offset(0x35970).As<sq_stackinfosType>();
 	g_pSquirrel<ScriptContext::UI>->__sq_stackinfos = g_pSquirrel<ScriptContext::CLIENT>->__sq_stackinfos;
 
+	// Structs
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_pushnewstructinstance = module.Offset(0x5400).As<sq_pushnewstructinstanceType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_sealstructslot = module.Offset(0x5530).As<sq_sealstructslotType>();
+	g_pSquirrel<ScriptContext::UI>->__sq_pushnewstructinstance = g_pSquirrel<ScriptContext::CLIENT>->__sq_pushnewstructinstance;
+	g_pSquirrel<ScriptContext::UI>->__sq_sealstructslot = g_pSquirrel<ScriptContext::CLIENT>->__sq_sealstructslot;
+
 	MAKEHOOK(
 		module.Offset(0x108E0),
 		&RegisterSquirrelFunctionHook<ScriptContext::CLIENT>,
@@ -868,6 +874,10 @@ ON_DLL_LOAD_RELIESON("server.dll", ServerSquirrel, ConCommand, (CModule module))
 	// Message buffer stuff
 	g_pSquirrel<ScriptContext::SERVER>->__sq_getfunction = module.Offset(0x6C85).As<sq_getfunctionType>();
 	g_pSquirrel<ScriptContext::SERVER>->__sq_stackinfos = module.Offset(0x35920).As<sq_stackinfosType>();
+
+	// Structs
+	g_pSquirrel<ScriptContext::SERVER>->__sq_pushnewstructinstance = module.Offset(0x53e0).As<sq_pushnewstructinstanceType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_sealstructslot = module.Offset(0x5510).As<sq_sealstructslotType>();
 
 	MAKEHOOK(
 		module.Offset(0x1DD10),

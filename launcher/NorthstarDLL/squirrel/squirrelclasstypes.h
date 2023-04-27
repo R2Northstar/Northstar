@@ -236,6 +236,10 @@ typedef char** (*sq_GetEntityConstantType)();
 
 typedef int (*sq_getfunctionType)(HSquirrelVM* sqvm, const char* name, SQObject* returnObj, const char* signature);
 
+// structs
+typedef SQRESULT (*sq_pushnewstructinstanceType)(HSquirrelVM* sqvm, int fieldCount);
+typedef SQRESULT (*sq_sealstructslotType)(HSquirrelVM* sqvm, int slotIndex);
+
 #pragma endregion
 
 // These "external" versions of the types are for plugins
