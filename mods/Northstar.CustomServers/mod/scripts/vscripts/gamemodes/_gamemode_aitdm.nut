@@ -1,22 +1,36 @@
 untyped
 global function GamemodeAITdm_Init
 
-const SQUADS_PER_TEAM = 3
+// these are now default settings
+const int SQUADS_PER_TEAM = 4
 
-const REAPERS_PER_TEAM = 2
+const int REAPERS_PER_TEAM = 2
 
-const LEVEL_SPECTRES = 125
-const LEVEL_STALKERS = 380
-const LEVEL_REAPERS = 500
+const int LEVEL_SPECTRES = 125
+const int LEVEL_STALKERS = 380
+const int LEVEL_REAPERS = 500
+
+// add settings
+global function AITdm_SetSquadsPerTeam
+global function AITdm_SetReapersPerTeam
+global function AITdm_SetLevelSpectres
+global function AITdm_SetLevelStalkers
+global function AITdm_SetLevelReapers
 
 struct
 {
 	// Due to team based escalation everything is an array
-	array< int > levels = [ LEVEL_SPECTRES, LEVEL_SPECTRES ]
+	array< int > levels = [] // Initilazed in `Spawner_Threaded`
 	array< array< string > > podEntities = [ [ "npc_soldier" ], [ "npc_soldier" ] ]
 	array< bool > reapers = [ false, false ]
-} file
 
+	// default settings
+	int squadsPerTeam = SQUADS_PER_TEAM 
+	int reapersPerTeam = REAPERS_PER_TEAM
+	int levelSpectres = LEVEL_SPECTRES
+	int levelStalkers = LEVEL_STALKERS
+	int levelReapers = LEVEL_REAPERS
+} file
 
 void function GamemodeAITdm_Init()
 {
@@ -34,17 +48,46 @@ void function GamemodeAITdm_Init()
 	
 	if ( GetCurrentPlaylistVarInt( "aitdm_archer_grunts", 0 ) == 0 )
 	{
-		AiGameModes_SetGruntWeapons( [ "mp_weapon_rspn101", "mp_weapon_dmr", "mp_weapon_r97", "mp_weapon_lmg" ] )
-		AiGameModes_SetSpectreWeapons( [ "mp_weapon_hemlok_smg", "mp_weapon_doubletake", "mp_weapon_mastiff" ] )
+		AiGameModes_SetNPCWeapons( "npc_soldier", [ "mp_weapon_rspn101", "mp_weapon_dmr", "mp_weapon_r97", "mp_weapon_lmg" ] )
+		AiGameModes_SetNPCWeapons( "npc_spectre", [ "mp_weapon_hemlok_smg", "mp_weapon_doubletake", "mp_weapon_mastiff" ] )
+		AiGameModes_SetNPCWeapons( "npc_stalker", [ "mp_weapon_hemlok_smg", "mp_weapon_lstar", "mp_weapon_mastiff" ] )
 	}
 	else
 	{
-		AiGameModes_SetGruntWeapons( [ "mp_weapon_rocket_launcher" ] )
-		AiGameModes_SetSpectreWeapons( [ "mp_weapon_rocket_launcher" ] )
+		AiGameModes_SetNPCWeapons( "npc_soldier", [ "mp_weapon_rocket_launcher" ] )
+		AiGameModes_SetNPCWeapons( "npc_spectre", [ "mp_weapon_rocket_launcher" ] )
+		AiGameModes_SetNPCWeapons( "npc_stalker", [ "mp_weapon_rocket_launcher" ] )
 	}
 	
 	ScoreEvent_SetupEarnMeterValuesForMixedModes()
 }
+
+// add settings
+void function AITdm_SetSquadsPerTeam( int squads )
+{
+	file.squadsPerTeam = squads
+}
+
+void function AITdm_SetReapersPerTeam( int reapers )
+{
+	file.reapersPerTeam = reapers
+}
+
+void function AITdm_SetLevelSpectres( int level )
+{
+	file.levelSpectres = level
+}
+
+void function AITdm_SetLevelStalkers( int level )
+{
+	file.levelStalkers = level
+}
+
+void function AITdm_SetLevelReapers( int level )
+{
+	file.levelReapers = level
+}
+//
 
 // Starts skyshow, this also requiers AINs but doesn't crash if they're missing
 void function OnPrematchStart()
@@ -74,11 +117,9 @@ void function HandleScoreEvent( entity victim, entity attacker, var damageInfo )
 	// Basic checks
 	if ( victim == attacker || !( attacker.IsPlayer() || attacker.IsTitan() ) || GetGameState() != eGameState.Playing )
 		return
-	
 	// Hacked spectre filter
 	if ( victim.GetOwner() == attacker )
 		return
-		
 	// NPC titans without an owner player will not count towards any team's score
 	if ( attacker.IsNPC() && attacker.IsTitan() && !IsValid( GetPetTitanOwner( attacker ) ) )
 		return
@@ -193,7 +234,7 @@ void function SpawnIntroBatch_Threaded( int team )
 	
 	int ships = shipNodes.len()
 	
-	for ( int i = 0; i < SQUADS_PER_TEAM; i++ )
+	for ( int i = 0; i < file.squadsPerTeam; i++ )
 	{
 		if ( pods != 0 || ships == 0 )
 		{
@@ -238,6 +279,7 @@ void function Spawner_Threaded( int team )
 	// used to index into escalation arrays
 	int index = team == TEAM_MILITIA ? 0 : 1
 	
+	file.levels = [ file.levelSpectres, file.levelSpectres ] // due we added settings, should init levels here!
 	
 	while( true )
 	{
@@ -252,7 +294,7 @@ void function Spawner_Threaded( int team )
 		if ( file.reapers[ index ] )
 		{
 			array< entity > points = SpawnPoints_GetDropPod()
-			if ( reaperCount < REAPERS_PER_TEAM )
+			if ( reaperCount < file.reapersPerTeam )
 			{
 				entity node = points[ GetSpawnPointIndex( points, team ) ]
 				waitthread AiGameModes_SpawnReaper( node.GetOrigin(), node.GetAngles(), team, "npc_super_spectre_aitdm", ReaperHandler )
@@ -260,7 +302,7 @@ void function Spawner_Threaded( int team )
 		}
 		
 		// NORMAL SPAWNS
-		if ( count < SQUADS_PER_TEAM * 4 - 2 )
+		if ( count < file.squadsPerTeam * 4 - 2 )
 		{
 			string ent = file.podEntities[ index ][ RandomInt( file.podEntities[ index ].len() ) ]
 			
@@ -306,19 +348,19 @@ void function Escalate( int team )
 	// Based on score escalate a team
 	switch ( file.levels[ index ] )
 	{
-		case LEVEL_SPECTRES:
-			file.levels[ index ] = LEVEL_STALKERS
+		case file.levelSpectres:
+			file.levels[ index ] = file.levelStalkers
 			file.podEntities[ index ].append( "npc_spectre" )
 			SetGlobalNetInt( defcon, 2 )
 			return
 		
-		case LEVEL_STALKERS:
-			file.levels[ index ] = LEVEL_REAPERS
+		case file.levelStalkers:
+			file.levels[ index ] = file.levelReapers
 			file.podEntities[ index ].append( "npc_stalker" )
 			SetGlobalNetInt( defcon, 3 )
 			return
 		
-		case LEVEL_REAPERS:
+		case file.levelReapers:
 			file.reapers[ index ] = true
 			SetGlobalNetInt( defcon, 4 )
 			return
@@ -355,30 +397,47 @@ int function GetSpawnPointIndex( array< entity > points, int team )
 // AI can also flee deeper into their zone suggesting someone spent way too much time on this
 void function SquadHandler( array<entity> guys )
 {
+	int team = guys[0].GetTeam()
+	// show the squad enemy radar
+	array<entity> players = GetPlayerArrayOfEnemies( team )
+	foreach ( entity guy in guys )
+	{
+		if ( IsAlive( guy ) )
+		{
+			foreach ( player in players )
+				guy.Minimap_AlwaysShow( 0, player )
+		}
+	}
+
 	// Not all maps have assaultpoints / have weird assault points ( looking at you ac )
 	// So we use enemies with a large radius
-	array< entity > points = GetNPCArrayOfEnemies( guys[0].GetTeam() )
-	
-	if ( points.len()  == 0 )
+	while ( GetNPCArrayOfEnemies( team ).len() == 0 ) // if we can't find any enemy npcs, keep waiting
+		WaitFrame()
+
+	// our waiting is end, check if any soldiers left
+	bool squadAlive = false
+	foreach ( entity guy in guys )
+	{
+		if ( IsAlive( guy ) )
+			squadAlive = true
+		else
+			guys.removebyvalue( guy )
+	}
+	if ( !squadAlive )
 		return
+
+	array<entity> points = GetNPCArrayOfEnemies( team )
 	
 	vector point
 	point = points[ RandomInt( points.len() ) ].GetOrigin()
 	
-	array<entity> players = GetPlayerArrayOfEnemies( guys[0].GetTeam() )
-	
-	// Setup AI
+	// Setup AI, first assault point
 	foreach ( guy in guys )
 	{
 		guy.EnableNPCFlag( NPC_ALLOW_PATROL | NPC_ALLOW_INVESTIGATE | NPC_ALLOW_HAND_SIGNALS | NPC_ALLOW_FLEE )
 		guy.AssaultPoint( point )
 		guy.AssaultSetGoalRadius( 1600 ) // 1600 is minimum for npc_stalker, works fine for others
-		
-		// show on enemy radar
-		foreach ( player in players )
-			guy.Minimap_AlwaysShow( 0, player )
-		
-		
+
 		//thread AITdm_CleanupBoredNPCThread( guy )
 	}
 	
@@ -396,16 +455,21 @@ void function SquadHandler( array<entity> guys )
 			// Stop func if our squad has been killed off
 			if ( guys.len() == 0 )
 				return
-			
-			// Get point and send guy to it
-			points = GetNPCArrayOfEnemies( guy.GetTeam() )
-			if ( points.len() == 0 )
-				continue
-				
-			point = points[ RandomInt( points.len() ) ].GetOrigin()
-			
-			guy.AssaultPoint( point )
 		}
+
+		// Get point and send our whole squad to it
+		points = GetNPCArrayOfEnemies( team )
+		if ( points.len() == 0 ) // can't find any points here
+			continue
+			
+		point = points[ RandomInt( points.len() ) ].GetOrigin()
+		
+		foreach ( guy in guys )
+		{
+			if ( IsAlive( guy ) )
+				guy.AssaultPoint( point )
+		}
+
 		wait RandomFloatRange(5.0,15.0)
 	}
 }
