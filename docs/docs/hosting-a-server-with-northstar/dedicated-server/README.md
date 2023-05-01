@@ -153,7 +153,7 @@ If ran on a server with the [`ns_should_return_to_lobby 0`](./#Convars-returntol
 | --- | --- |
 | private_match | Private Match |
 | aitdm | Attrition |
-| ~~at~~ | Bounty Hunt |
+| at | Bounty Hunt |
 | coliseum | Coliseum |
 | cp | Amped Hardpoint |
 | ctf | Capture the Flag |
