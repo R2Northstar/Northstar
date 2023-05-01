@@ -1235,10 +1235,18 @@ array<entity> function FW_GetTitanSpawnPointsForTeam( int team )
 	return validSpawnPoints
 }
 
+// some maps have reversed startpoints! we need a hack
+const array<string> TITAN_POINT_REVERSED_MAPS =
+[
+	"mp_grave"
+]
+
 // "Respawn as Titan" don't follow the rateSpawnPoints, fix it manually
 entity function FW_ForcedTitanStartPoint( entity player, entity basePoint )
 {
 	int team = player.GetTeam()
+	if ( TITAN_POINT_REVERSED_MAPS.contains( GetMapName() ) )
+		team = GetOtherTeam( player.GetTeam() )
 	array<entity> startPoints = SpawnPoints_GetTitanStart( team )
 	entity validPoint = startPoints[ RandomInt( startPoints.len() ) ] // choose a random( maybe not safe ) start point
 	return validPoint
