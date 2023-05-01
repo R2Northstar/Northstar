@@ -89,3 +89,8 @@ A: We are unsure of what causes this, and are trying to figure out a solution fo
 ### Q: Why is my game running so bad? <a href="#faq-performance" id="faq-performance"></a>
 
 A: This usually lies behind your computer's specs not being high enough in order to run the game, but can also be affected by EA App's overlay. You can disable this by going to and following the [disable EA overlay section](installing-northstar/troubleshooting.md#ea-overlay).
+
+### Q: Why does my game tell me there's an issue with Origin when I don't have Origin? <a href="#ea-replaced-origin" id="faq-ea-replaced-origin"></a>
+
+A: Titanfall2 (and other EA games) used to use a program called [Origin](<https://en.wikipedia.org/wiki/Origin_(service)>) to play games, however this has since been replaced by the EA App. 
+This change, however, did not update the game's error messages to say "EA App" instead of "Origin", so any time you see that there's an issue with Origin, you can replace mention of "Origin" with the "EA App".
