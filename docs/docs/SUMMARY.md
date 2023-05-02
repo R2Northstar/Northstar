@@ -19,7 +19,7 @@
 ***
 
 * [Using Northstar](using-northstar/README.md)
-  * [Mods](installing-northstar/using-northstar/mods.md)
+  * [Mods](using-northstar/mods.md)
   * [Server Browser](installing-northstar/using-northstar/server-browser.md)
   * [Direct Connect](installing-northstar/using-northstar/direct-connect.md)
   * [Gamemodes](installing-northstar/using-northstar/gamemodes.md)
