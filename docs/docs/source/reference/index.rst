@@ -12,6 +12,7 @@ Northstar API
     /reference/northstar/httprequests
     /reference/northstar/msinterface
     /reference/northstar/usefulfuncs
+    /reference/northstar/modsettings.rst
 
 Respawn API
 ===========
