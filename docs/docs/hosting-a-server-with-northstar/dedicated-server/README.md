@@ -25,7 +25,7 @@ Regarding RAM usage, dedicated servers also use significant amounts of RAM at th
 
 ### Troubleshoot
 
-See [troubleshoot](troubleshoot.md)
+See [troubleshoot](../troubleshooting.md)
 
 ## Startup Arguments
 
