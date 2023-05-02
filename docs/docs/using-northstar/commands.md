@@ -47,7 +47,7 @@ bind "F5" "toggleconsole"
 | `ns_disallowed_tacticals`            | String list of disallowed tactical abilities                                                                | example: `"mp_ability_grapple,mp_ability_heal"` |
 | `ns_disallowed_tactical_replacement` | Name of optional replacement ability for disallowed tacticals                                               | ex: `"mp_ability_grapple"`                      |
 | `give mp_weapon_peacekraber`         | Gives you peacekraber                                                                                       |                                                 |
-| `r_latencyflex`                      | Enables [LatencyFleX](../../using-northstar/playing-on-linux/#latencyflex) (Linux-only, enabled by default) | `0` / `1`                                       |
+| `r_latencyflex`                      | Enables [LatencyFleX](../steamdeck-and-linux/installing-on-steamdeck-and-linux.md#latencyflex) (Linux-only, enabled by default) | `0` / `1`                                       |
 | `rui_drawEnable`                     | Enables or disables the HUD                                                                                 | `0` / `1`                                       |
 | `r_drawviewmodel`                    | Enables or disables viewing of the player's hands and weapons                                                | `0` / `1`                                       |
 
