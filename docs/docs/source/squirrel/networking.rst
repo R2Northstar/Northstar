@@ -120,8 +120,8 @@ and execute with the function serverside:
 .. cpp:function:: ServerToClientStringCommand( entity player /*CPlayer*/, string command )
 
 
-Example:
-^^^^^^^^
+Example
+^^^^^^^
 
 .. code-block::
 
@@ -135,6 +135,19 @@ Example:
 		// client side command handle logic ...
 	}
 
+``SERVER`` to ``UI`` vm
+=======================
+
+.. cpp:function:: Remote_CallFunction_UI( entity player, string functionName, ... )
+
+	Given a player, function name, and optional parameters, call function in UI script. Allowed var types are null, bool, int, and float.
+
+Example
+^^^^^^^
+
+.. code-block::
+
+	Remote_CallFunction_UI( player, "ScriptCallback_UnlockAchievement", achievementID )
 
 ``CLIENT`` to ``SERVER`` vm
 ===========================
@@ -185,8 +198,8 @@ Create a global function in the ``UI`` vm and call it in the ``CLIENT`` vm with 
 
 You can also pass parameters to the function. ``identifier`` is the name of the function you want to call.
 
-Example:
-^^^^^^^^
+Example
+^^^^^^^
 
 .. code-block::
 
@@ -211,8 +224,8 @@ Create a global function in the ``CLIENT`` vm and call it in the ``UI`` vm with 
 
 You can also pass parameters to the function. ``identifier`` is the name of the function you want to call.
 
-Example:
-^^^^^^^^
+Example
+^^^^^^^
 
 .. code-block::
 
