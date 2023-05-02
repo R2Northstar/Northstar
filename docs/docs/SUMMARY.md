@@ -23,7 +23,7 @@
   * [Server Browser](installing-northstar/using-northstar/server-browser.md)
   * [Direct Connect](installing-northstar/using-northstar/direct-connect.md)
   * [Gamemodes](installing-northstar/using-northstar/gamemodes.md)
-  * [Commands](installing-northstar/using-northstar/commands.md)
+  * [Commands](using-northstar/commands.md)
   * [Launch arguments](installing-northstar/using-northstar/launch-arguments.md)
   * [Advanced](using-northstar/advanced.md)
 * [FAQ](faq.md)
