@@ -18,7 +18,7 @@
 
 ***
 
-* [Using Northstar](installing-northstar/using-northstar/README.md)
+* [Using Northstar](using-northstar/README.md)
   * [Mods](installing-northstar/using-northstar/mods.md)
   * [Server Browser](installing-northstar/using-northstar/server-browser.md)
   * [Direct Connect](installing-northstar/using-northstar/direct-connect.md)
