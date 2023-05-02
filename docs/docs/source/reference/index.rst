@@ -10,6 +10,7 @@ Northstar API
     /reference/northstar/customdamagesources
     /reference/northstar/serversiderui
     /reference/northstar/httprequests
+    /reference/northstar/msinterface
     /reference/northstar/usefulfuncs
 
 Respawn API

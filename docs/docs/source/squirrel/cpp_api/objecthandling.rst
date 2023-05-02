@@ -206,9 +206,9 @@ Getting Objects from the stack
 
     :param CSquirrelVM* sqvm: The target vm
     :param SQObject* pInstance: Instance holding an entity
-    :param char** ppEntityConstant: Entity constant like `_sq_GetEntityConstant_CBaseEntity`_
+    :param char** ppEntityConstant: Entity constant like :ref:`__sq_GetEntityConstant_CBaseEntity <sq-GetEntityConstant-CBaseEntity>`
 
-.. _sq_GetEntityConstant_CBaseEntity:
+.. _sq-GetEntityConstant-CBaseEntity:
 
 .. cpp:function:: char** __sq_GetEntityConstant_CBaseEntity()
 
