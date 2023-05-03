@@ -21,7 +21,7 @@
 * [Using Northstar](using-northstar/README.md)
   * [Mods](using-northstar/mods.md)
   * [Server Browser](installing-northstar/using-northstar/server-browser.md)
-  * [Direct Connect](installing-northstar/using-northstar/direct-connect.md)
+  * [Direct Connect](using-northstar/direct-connect.md)
   * [Gamemodes](using-northstar/gamemodes.md)
   * [Commands](using-northstar/commands.md)
   * [Launch arguments](installing-northstar/using-northstar/launch-arguments.md)
