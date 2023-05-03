@@ -17,7 +17,7 @@ You'll want to rename the `R2Northstar` folder to whatever you prefer it to be c
 
 In order to create the `.bat` to launch this profile, you'll need to first create a `.txt` file inside of your Titanfall2 directory, and name it whatever you would like. Inside of this `.txt` file, you'll want to put in `NorthstarLauncher.exe -profile=PROFILE FOLDER NAME HERE`, replacing all of `PROFILE FOLDER NAME HERE` with the name that you gave the folder you installed your mods to. After this, rename the file to `yourFileName.bat`. Double clicking or right clicking on the `.bat` file then hitting `open` will launch Northstar with the assigned profile.
 
-You can set up profiles in an even more advanced way by setting up a way to use Steam to launch multiple different profiles from their newer launch menu that appears when you can launch a game in more ways than one. This is also covered [here](installing-northstar/basic-setup.mdbasic-setup#adding-alternate-launch-option-for-steam), and can be set up for profiles by simply adding the `-profile=PROFILE FOLDER NAME HERE` to the arguments of the new option for NorthstarLauncher, as seen below
+You can set up profiles in an even more advanced way by setting up a way to use Steam to launch multiple different profiles from their newer launch menu that appears when you can launch a game in more ways than one. This is also covered [here](../installing-northstar/basic-setup.md#adding-alternate-launch-option-for-steam), and can be set up for profiles by simply adding the `-profile=PROFILE FOLDER NAME HERE` to the arguments of the new option for NorthstarLauncher, as seen below
 
 ![SteamEdit using Northstar Profiles](../images/steamedit-profiles.png)
 
@@ -41,7 +41,7 @@ With everything unlocked, there is no need to set your level to a higher level, 
 
 `script GetPlayerArray()[0].SetPersistentVar("xp", INSERT_XP_COUNT)` this command sets the xp count of the player (meaning, the amount of kills required per level in order to level up). You want to replace `INSERT_XP_COUNT` with the number you want. Setting this number lower than 472 is recommended, as to not encounter issues.
 
-If you experience strange issues after using these, you probably set something too high, and should follow the [resetting levels wiki section](installing-northstar/troubleshooting.md#i-used-a-command-to-set-my-playergun-xp-level-and-i-set-it-too-high-so-now-my-game-crashes-when-trying-to-join-multiplayer).
+If you experience strange issues after using these, you probably set something too high, and should follow the [resetting levels wiki section](../installing-northstar/troubleshooting.md#i-used-a-command-to-set-my-playergun-xp-level-and-i-set-it-too-high-so-now-my-game-crashes-when-trying-to-join-multiplayer).
 
 ## Playing Vanilla via NorthstarLauncher <a href="#vanilla-on-northstar" id="vanilla-on-northstar"></a>
 
@@ -54,12 +54,12 @@ This method assumes you're launching Northstar via Titanfall 2 on EA or Steam us
 2. Click `"Mods"` on the bottom of the menu
 3. Disable **ALL** of your mods
 4. Close Northstar
-5. Add `-norestrictservercommands` and `-northstar` as a [launch option](installing-northstar/troubleshooting.md#launch-opts)
+5. Add `-norestrictservercommands` and `-northstar` as a [launch option](../installing-northstar/troubleshooting.md#launch-opts)
 6. Launch Titanfall 2 and you should be able to play on vanilla servers using Northstar's security fixes
 
 **TO PLAY ON NORTHSTAR AGAIN**
 
-1. Go to your [Titanfall2 directory](installing-northstar/troubleshooting.md#game-location)
+1. Go to your [Titanfall2 directory](../installing-northstar/troubleshooting.md#game-location)
 2. Open your `R2Northstar` folder
 3. Delete `enabledmods.json`
 4. Launch Northstar
