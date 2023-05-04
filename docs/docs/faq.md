@@ -22,7 +22,7 @@ Most of the time, this is due to the fact that EA App's default install location
 
 ### Q: How do I open the console? <a href="#faq-devconsole" id="faq-devconsole"></a>
 
-A: Check [_Opening the console_](installing-northstar/using-northstar/commands.md#opening-the-console).
+A: Check [_Opening the console_](using-northstar/commands.md#opening-the-console).
 
 ### Q: How can I check if my server is listed on the server browser? <a href="#faq-is-my-server-listed" id="faq-is-my-server-listed"></a>
 
