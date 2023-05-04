@@ -771,7 +771,7 @@ void function FilterServerList()
 		if ( filterArguments.filterMap != "SWITCH_ANY" && filterArguments.filterMap != server.map )
 			continue;
 		
-		if ( filterArguments.filterGamemode != "SWITCH_ANY" && filterArguments.filterGamemode != server.playlist )
+		if ( filterArguments.filterGamemode != "SWITCH_ANY" && filterArguments.filterGamemode != GetGameModeDisplayName(server.playlist) )
 			continue;
 	
 		// Search
