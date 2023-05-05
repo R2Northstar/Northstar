@@ -52,8 +52,8 @@ std::optional<Plugin> PluginManager::LoadPlugin(fs::path path, PluginInitFuncs* 
 
 	Plugin plugin {};
 
-	std::string pathstring = (pluginPath / path).string();
-	std::wstring wpath = (pluginPath / path).wstring();
+	std::string pathstring = path.string();
+	std::wstring wpath = path.wstring();
 
 	LPCWSTR wpptr = wpath.c_str();
 	HMODULE datafile = LoadLibraryExW(wpptr, 0, LOAD_LIBRARY_AS_DATAFILE | LOAD_LIBRARY_AS_IMAGE_RESOURCE); // Load the DLL as a data file
@@ -222,7 +222,7 @@ bool PluginManager::LoadPlugins()
 	for (auto const& entry : iterator)
 	{
 		if (fs::is_regular_file(entry) && entry.path().extension() == ".dll")
-			paths.emplace_back(entry.path().filename());
+			paths.emplace_back(entry.path());
 	}
 	for (fs::path path : paths)
 	{
