@@ -24,4 +24,4 @@ Here's a list of command line arguments from the base game.
 # Environment Variables
 | Variable name      | Description                                                                                        | Value                            |
 | ------------------ | -------------------------------------------------------------------------------------------------- | -------------------------------- |
-| `LFX`              | Enables the use of [LatencyFleX](../../using-northstar/playing-on-linux/#latencyflex) (Linux-only) | `0` or `1`                       |
+| `LFX`              | Enables the use of [LatencyFleX](../steamdeck-and-linux/installing-on-steamdeck-and-linux.md#latencyflex) (Linux-only) | `0` or `1`                       |
