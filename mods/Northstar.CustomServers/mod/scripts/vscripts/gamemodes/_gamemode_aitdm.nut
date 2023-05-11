@@ -460,7 +460,18 @@ void function SquadHandler( array<entity> guys )
 		// Get point and send our whole squad to it
 		points = GetNPCArrayOfEnemies( team )
 		if ( points.len() == 0 ) // can't find any points here
+		{
+			// Have to wait some amount of time before continuing
+			// because if we don't the server will continue checking this
+			// forever, aren't loops fun?
+			// This definitely didn't waste ~8 hours of my time reverting various
+			// launcher PRs before finding this mods PR that caused servers to
+			// freeze forever before having their process killed by the dedi watchdog
+			// without any logging. If anyone reads this, PLEASE add logging to your scripts
+			// for when weird edge cases happen, it can literally only help debugging. -Spoon
+			WaitFrame()
 			continue
+		}
 			
 		point = points[ RandomInt( points.len() ) ].GetOrigin()
 		
