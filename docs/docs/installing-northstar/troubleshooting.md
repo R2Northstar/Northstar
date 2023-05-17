@@ -51,7 +51,7 @@ You are probably using EA Desktop app and it sets up game installations with no 
 
 1. Copy `C:\WINDOWS\system32\wsock32.dll` to your Desktop / Temporary folder.
 2. Rename the copied file to `wsock32.org.dll`.
-3. Move `wsock32.org.dll` into `Titanfall2/bin/x64_retail/`.
+3. Move `wsock32.org.dll` into `Titanfall2\bin\x64_retail\`.
 4. Delete the copied `wsock32.org.dll` from your Desktop / Temporary folder.
 
 Do NOT make any changes in `system32`, just copy the file.
@@ -115,7 +115,7 @@ Go to Mods at the bottom of your screen on the main menu, then click Authenticat
 ## Default Game Locations <a href="#game-location" id="game-location"></a>
 
 * Default Steam Location: `%ProgramFiles(x86)%\Steam\steamapps\common\Titanfall2\`
-* Default EA Location: `%ProgramFiles%\EA Games\Titanfall2`
+* Default EA Location: `%ProgramFiles%\EA Games\Titanfall2\`
 * Default Origin Location: `%ProgramFiles(x86)%\Origin Games\Titanfall2\`
 
 ## Adding Launch Options <a href="#launch-opts" id="launch-opts"></a>
@@ -202,7 +202,7 @@ Open console in-game in main menu, type in `ns_resetpersistence` and press enter
 
 This is an error commonly caused by EA not properly updating players' names when launching Northstar, especially prevalent for people who have changed their EA username before.
 
-The current solution to this is signing out of the EA App, then _without signing back into the EA App_,open **Vanilla** Titanfall 2. This should prompt EA App to pop up and ask you to sign in again, sign in on that prompt. Close Vanilla Titanfall 2 and open **Northstar**, and the error should be fixed.
+The current solution to this is signing out of the EA App, then _without signing back into the EA App_, open **Vanilla** Titanfall 2. This should prompt EA App to pop up and ask you to sign in again, sign in on that prompt. Close Vanilla Titanfall 2 and open **Northstar**, and the error should be fixed.
 
 If that solution doesn't work, you can try logging out of the EA App, closing all EA related proccesses (including background ones) using task manager. After this, manually reopen the EA App, log in, and try to launch Northstar again. (If you don't know how to use task manager, press `"ctrl + alt + delete"`, select Task Manager, and hit `"More Info"` on the bottom right. If you can't see more info, then you've already clicked it before and don't need to do it again. After this, when you right click on a process it will open a small pop up with`"End Task"`as an option, which is what you want to use).
 
@@ -218,11 +218,11 @@ This will also disable invites, however [Northstar does not use these](../faq.md
 
 ## Cannot write log file when using Northstar on EA App
 
-The default install location for EA App `C:\Program Files\EA Games\Titanfall2` is not writeable by non-admin processes. This messes with Northstar trying to write log files as well as mod-managers trying to install mods.
+The default install location for EA App `C:\Program Files\EA Games\Titanfall2\` is not writeable by non-admin processes. This messes with Northstar trying to write log files as well as mod-managers trying to install mods.
 
 Therefore the recommended solution is to move the install to another location (can even be on the same drive). This prevents the non-admin issue and as such should solve the issue of Northstar being unable to write logs and failing.
 
-The recommended solution can be done by moving the Titanfall 2 folder from the default location to something like `C:\Games\Titanfall2`. After doing this, you will need to open the EA App, go to Settings, go to Downloads and change the install directory in the settings. Click _"Edit"_ next to _"Install Location"_ and navigate to your new directory that you put Titanfall 2 into.
+The recommended solution can be done by moving the Titanfall 2 folder from the default location to something like `C:\Games\Titanfall2\`. After doing this, you will need to open the EA App, go to Settings, go to Downloads and change the install directory in the settings. Click _"Edit"_ next to _"Install Location"_ and navigate to your new directory that you put Titanfall 2 into.
 
 ![EA App Settings](../images/ea-app.png)
 
