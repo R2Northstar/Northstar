@@ -9,7 +9,7 @@ also when Squirrel calls a native function the parameters will be in the stack a
 Stack Indexes
 -------------
 
-Many API functions can arbitrarily refer to any element in the stack through an index. The stack indexes follow those conventions:
+Many API functions can arbitrarily refer to any element in the stack through an index. The stack indexes follow these conventions:
 
 - 1 is the stack base
 - Negative indexes are considered an offset from top of the stack. For instance -1 is always the last item pushed to the stack
@@ -30,12 +30,16 @@ Stack manipulation
 
 The Squirrel API offers several functions to push and retrieve data from the Stack.
 
-Currently there are no more functions implemented in ``squirrel.h``.
-
 .. _removefromstack:
 
 .. cpp:function:: __int64 removeFromStack(HSquirrelVM* sqvm)
 
+    .. note::
+
+        This function (``server.dll+0x7000```) is not available in the launcher or plugins at the moment.
+
+        You can open a PR if you need it now.
+
     :param HSquirrelVM* sqvm: the target vm
 
-    pops the topmost item of the stack.
+    pops the top item of the stack.
