@@ -87,6 +87,50 @@ Tables
             }
         */
 
+Structs
+~~~~~~~
+
+.. note::
+
+    These functions aren't available for plugins yet.
+
+.. _pushnewstructinstance:
+
+.. cpp:function:: SQRESULT::SQRESULT_NULL pushnewstructinstance(HSquirrelVM* sqvm, int fieldCount)
+
+    :param HSquirrelVM* sqvm: The target vm
+    :param int fieldCount: total number of fields the struct contains
+    
+    Creates and pushes a struct instance with ``fieldCount`` to the stack.
+
+.. _sealstructslot:
+
+.. cpp:function:: SQRESULT::SQRESULT_NULL sealstructslot(HSquirrelVM* sqvm, int fieldIndex)
+
+    :param HSquirrelVM* sqvm: The target vm
+    :param int fieldIndex: Index of the field to fill
+
+    Pops a value from the stack and fills the field at ``fieldIndex`` from the struct object that needs to be at the top of the stack.
+
+    .. code-block:: cpp
+
+        pushnewstructinstance(sqvm, 2); // create a struct instance with 2 slots
+        pushinteger(sqvm, 12);
+        sealstructslot(sqvm, 0);
+        pushstring(sqvm, "example", -1);
+        sealstructslot(sqvm, 1);
+
+        /*
+            Assuming the compiler expects this slot:
+            struct ExStruct { int i, string s }
+            , the struct on the stack looks like this
+
+            ExStruct {
+                i = 12,
+                s = "example"
+            }
+        */
+
 Userdata
 ~~~~~~~~
 
