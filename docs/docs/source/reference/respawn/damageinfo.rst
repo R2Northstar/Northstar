@@ -1,5 +1,5 @@
-DamageInfo & damageSourceId
-===========================
+DamageInfo
+=========================
 
 DamageInfo is a specific, data type, though of instance ``var`` used in :doc:`rSquirrel <../../squirrel/index>` by Respawn to store information about an attack in one variable.
 
@@ -12,6 +12,15 @@ Getter functions
 .. cpp:function:: int DamageInfo_GetDamageSourceIdentifier( var damageInfo )
 
     returns the ``eDamageSourceId``
+    
+    ``damageSourceId`` is an ``int`` that references an ``enum`` and can be used to identify what source damage came from. 
+
+    ``damageSourceId`` is mostly found as an argument in some kill and damage related functions. Respawn has created a function that will attempt to localise the damageSourceId inputed.
+    To add your own custom ``damageSourceID`` , see: :doc:`customdamagesources`
+
+    Other useful functions can be found in the ``damageinfo`` section of this page and in :doc:`entities`
+
+    ``GetObitFromdamageSourceId`` is a global function that attempts to localise the ``damageSourceId`` inputed, if it cannot get a localised string it will simply return the localisation string of the source.
 
 
 .. cpp:function:: float DamageInfo_GetDamage( var damageInfo )
@@ -55,6 +64,8 @@ Getter functions
 
 
 .. cpp:function:: float GetCriticalScaler( entity ent, var damageInfo )
+
+.. cpp:function:: int DamageInfo_GetDamageType( damageInfo ) 
 
 
 Setter functions
@@ -110,19 +121,100 @@ Global
 
 .. cpp:function:: bool IsSuicide( entity attacker, entity victim, int damageSourceId )
 
-damageSourceId
-==============
-
-``damageSourceId`` is an ``int`` that references an ``enum`` and can be used to identify what source damage came from. 
-
-``damageSourceId`` is mostly found as an argument in some kill and damage related functions. Respawn has created a function that will attempt to localise the damageSourceId inputed.
-To add your own custom ``damageSourceID`` , see: :doc:`customdamagesources`
-
-Other useful functions can be found in the ``damageinfo`` section of this page and in :doc:`entities`
-
-GetObitFromdamageSourceId
--------------------------
-
-``GetObitFromdamageSourceId`` is a global function that attempts to localise the ``damageSourceId`` inputed, if it cannot get a localised string it will simply return the localisation string of the source.
 
 .. cpp:function:: string GetObitFromdamageSourceId( int damageSourceId )
+
+
+Extracting information
+----------------------
+
+You are able to get additional information about the damage dealt useing ``damageTypes``, you can get those either directly or with the ``DamageInfo_GetDamageType( damageInfo )``.
+You are then able to check for certain information using the damageFlags 
+
+.. dropdown:: Damage flags 
+
+    List of all Damage flags
+
+
+    ======================    =======
+    Variable name             Value
+    ======================    =======
+    DF_GIB					  1
+    DF_DISSOLVE				  2
+    DF_INSTANT				  3
+    DF_NO_SELF_DAMAGE		  4
+    DF_IMPACT				  5
+    DF_BYPASS_SHIELD		  6
+    DF_RAGDOLL				  7
+    DF_TITAN_STEP 			  8
+    DF_RADIUS_DAMAGE 	      9
+    DF_ELECTRICAL 			  10
+    DF_BULLET 				  11
+    DF_EXPLOSION			  12
+    DF_MELEE				  13
+    DF_NO_INDICATOR			  14
+    DF_KNOCK_BACK			  15
+    DF_STOPS_TITAN_REGEN	  16
+    DF_DISMEMBERMENT		  17
+    DF_MAX_RANGE			  18
+    DF_SHIELD_DAMAGE		  19
+    DF_CRITICAL				  20
+    DF_SKIP_DAMAGE_PROT		  21
+    DF_HEADSHOT				  22
+    DF_VORTEX_REFIRE		  23
+    DF_RODEO				  24
+    DF_BURN_CARD_WEAPON		  25
+    DF_KILLSHOT				  26
+    DF_SHOTGUN				  27
+    DF_SKIPS_DOOMED_STATE	  28
+    DF_DOOMED_HEALTH_LOSS	  29
+    DF_DOOM_PROTECTED		  30
+    DF_DOOM_FATALITY		  31
+    DF_NO_HITBEEP			  32
+    ======================    =======
+    
+
+
+.. dropdown:: Damage types
+
+
+    .. code-block:: 
+
+
+        global enum damageTypes
+        {
+            gibs 				= (DF_GIB)
+            largeCaliberExp		= (DF_BULLET | DF_GIB | DF_EXPLOSION)
+            gibBullet			= (DF_BULLET | DF_GIB)
+            instant				= (DF_INSTANT)
+            dissolve			= (DF_DISSOLVE)
+            projectileImpact	= (DF_GIB)
+            pinkMist 			= (DF_GIB) //If updated from DF_GIB, change the DF_GIB in Arc Cannon to match.
+            ragdoll				= (DF_RAGDOLL)
+            titanStepCrush		= (DF_TITAN_STEP)
+            arcCannon			= (DF_DISSOLVE | DF_GIB | DF_ELECTRICAL )
+            electric			= (DF_ELECTRICAL) //Only increases Vortex Shield decay for bullet weapons atm.
+            explosive			= (DF_RAGDOLL | DF_EXPLOSION )
+            bullet				= (DF_BULLET)
+            largeCaliber		= (DF_BULLET | DF_KNOCK_BACK)
+            shotgun				= (DF_BULLET | DF_GIB | DF_SHOTGUN )
+            titanMelee			= (DF_MELEE | DF_RAGDOLL)
+            titanBerserkerMelee	= (DF_MELEE | DF_RAGDOLL)
+            titanEjectExplosion	= (DF_GIB | DF_EXPLOSION)
+            dissolveForce		= (DF_DISSOLVE | DF_KNOCK_BACK | DF_EXPLOSION)
+            rodeoBatteryRemoval	= (DF_RODEO | DF_EXPLOSION | DF_STOPS_TITAN_REGEN )
+        }
+
+
+
+Now you can check for any of these by using the bitwise and operator ``&``
+
+.. code-block::
+
+    bool isHeadshot = bool( damageType & DF_HEADSHOT )
+
+you can also combine two with the bitwise or operator ``|`` like this:
+
+.. code-block::
+
+    bool isHeadshotWithShotgun = bool( damageType & DF_HEADSHOT ) | bool( damageType & DF_SHOTGUN )
