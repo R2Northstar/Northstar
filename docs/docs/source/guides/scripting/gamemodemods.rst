@@ -153,7 +153,11 @@ Let's begin the process by first creating the file ``sh_gamemode_simplerandomise
 	AddPrivateMatchMode( GAMEMODE_SIMPLERANDOMISER ) // add to private lobby modes
 
 	AddPrivateMatchModeSettingEnum("#PL_rand", "rand_enableannouncements", ["#SETTING_DISABLED", "#SETTING_ENABLED"], "1")
-        // creates a togglable riff whether or not we want to announce a text to the client
+	// creates a togglable riff whether or not we want to announce a text to the client
+	AddPrivateMatchModeSettingArbitrary("#PL_rand", "rand_announcementduration", 3)
+	// Creates a riff with an arbitrary numerican value for how long the announcement text remains on screen
+	// These riffs can be accessed from server configs or from the private match settings screen, under the "Simple Randomiser" category
+        
 
 	// set this to 25 score limit default
 	GameMode_SetDefaultScoreLimits( GAMEMODE_SIMPLERANDOMISER, 25, 0 )
@@ -281,7 +285,7 @@ Overall, the server script should look like this.
         
         // checks if the toggle option is set to enabled
         if ( GetCurrentPlaylistVarInt( "rand_enableannouncements", 1 ) == 1 )
-            Remote_CallFunction_NonReplay( player, "ServerCallback_Randomiser" ) // call the function that will be used client-side
+            Remote_CallFunction_NonReplay( player, "ServerCallback_Randomiser", GetCurrentPlaylistVarFloat( "rand_announcementduration", 3 ) ) // call the function that will be used client-side
     }
 
 Name this file ``_gamemode_simplerandomiser.nut`` and place it in the ``yourmodsname/mod/scripts/vscripts/gamemodes`` folder as well.
@@ -317,7 +321,7 @@ Lastly, for your ``cl_gamemode_simplerandomiser.nut``, we are going to utilize t
 	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LAST_MINUTE, "music_mp_freeagents_lastminute", TEAM_MILITIA )
     }
 
-    void function ServerCallback_Randomiser()
+    void function ServerCallback_Randomiser( float duration )
     {
         AnnouncementData announcement = Announcement_Create( "#RAND_RANDOMIZED" )
 	Announcement_SetSubText( announcement, "#RAND_RANDOMIZED_DESC" )
@@ -325,6 +329,7 @@ Lastly, for your ``cl_gamemode_simplerandomiser.nut``, we are going to utilize t
 	Announcement_SetPurge( announcement, true )
 	Announcement_SetPriority( announcement, 200 ) //Be higher priority than Titanfall ready indicator etc
 	Announcement_SetSoundAlias( announcement, SFX_HUD_ANNOUNCE_QUICK )
+	Announcement_SetDuration( announcement, duration )
 	Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_QUICK )
 	AnnouncementFromClass( GetLocalViewPlayer(), announcement )
     }
@@ -350,6 +355,7 @@ Hence, open your ``simplerandomiser_localisation_english.txt`` which is located 
 	{
 		"PL_rand" "Simple Randomiser" // displays in the lobby settings
                 "rand_enableannouncements" "Toggle announcements" // describe the togglable setting
+		"rand_announcementduration" "Announcement duration" // describe the numerical setting
 		"PL_rand_lobby" "Simple Randomiser Lobby" // displays in lobby
 		"PL_rand_desc" "Your weapons are randomised! Fight and win!" // displays in the description of the gamemode in the lobby
 		"PL_rand_hint" "Your weapons are randomised! Fight and win!" // displays in the scoreboard of the gamemode ingame
