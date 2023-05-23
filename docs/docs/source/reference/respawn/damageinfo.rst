@@ -1,5 +1,5 @@
-DamageInfo
-==========
+DamageInfo & damageSourceId
+===========================
 
 DamageInfo is a specific, data type, though of instance ``var`` used in :doc:`rSquirrel <../../squirrel/index>` by Respawn to store information about an attack in one variable.
 
@@ -109,3 +109,20 @@ Global
 
 
 .. cpp:function:: bool IsSuicide( entity attacker, entity victim, int damageSourceId )
+
+damageSourceId
+==============
+
+``damageSourceId`` is an ``int`` that references an ``enum`` and can be used to identify what source damage came from. 
+
+``damageSourceId`` is mostly found as an argument in some kill and damage related functions. Respawn has created a function that will attempt to localise the damageSourceId inputed.
+To add your own custom ``damageSourceID`` , see: :doc:`customdamagesources`
+
+Other useful functions can be found in the ``damageinfo`` section of this page and in :doc:`entities`
+
+GetObitFromdamageSourceId
+-------------------------
+
+``GetObitFromdamageSourceId`` is a global function that attempts to localise the ``damageSourceId`` inputed, if it cannot get a localised string it will simply return the localisation string of the source.
+
+.. cpp:function:: string GetObitFromdamageSourceId( int damageSourceId )
