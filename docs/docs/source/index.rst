@@ -56,6 +56,7 @@ Cheatsheet
     /guides/keyvalue/index
     /guides/scripting/index
     /guides/tools/index
+    /guides/reversing/index
     /guides/moddingtutorials
     /guides/publishing
     /guides/contributing
