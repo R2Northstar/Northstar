@@ -1,6 +1,8 @@
 Squirrel Functions
 ==================
 
+.. _sq-api-register-native-functions-c-macro:
+
 Adding Squirrel Functions
 -------------------------
 
@@ -32,12 +34,14 @@ Return a string from a native registered function:
         return SQRESULT_NOTNULL; // Signal that the topmost item on the stack is returned by this function
     }
 
+Return a complex ``ornull`` type:
+
 .. code-block:: cpp
 
-    ADD_SQFUNC("array ornull", CPlugComplex, "int n", "returns null", ScriptContext::CLIENT | ScriptContext::SERVER | ScriptContext::UI)
+    ADD_SQFUNC("array<int> ornull", CPlugComplex, "int n", "returns null", ScriptContext::CLIENT | ScriptContext::SERVER | ScriptContext::UI)
     {
         SQInteger n = g_pSquirrel<context>->getinteger(sqvm, 1);
-
+        
         if (n == 0)
             return SQRESULT_NULL;
 
@@ -47,27 +51,7 @@ Return a string from a native registered function:
         g_pSquirrel<context>->pushinteger(sqvm, n * 2);
         g_pSquirrel<context>->arrayappend(sqvm, 2);
 
-        return SQRESULT_NOTNULL; // return the array [ n, n * 2 ]
-    }
-
-Return a complex ``ornull`` type:
-
-.. code-block:: cpp
-
-    ADD_SQFUNC("int ornull", CPlugComplex, "int n", "returns null", ScriptContext::CLIENT | ScriptContext::SERVER | ScriptContext::UI)
-    {
-        SQInteger n = g_pSquirrel<context>->getinteger(sqvm, 1);
-        
-        if (n == 0)
-            return SQRESULT_NULL;
-
-        g_pSquirrel<context>->newarray(sqvm);
-        g_pSquirrel<context>->pushinteger(sqvm, n);
-        g_pSquirrel<context>->arrayappend(sqvm, 2);
-        g_pSquirrel<context>->pushinteger(sqvm, n * 2);
-        g_pSquirrel<context>->arrayappend(sqvm, 2);
-
-        return SQRESULT_NOTNULL; // return the array [ n, n * 2 ]
+        return SQRESULT_NOTNULL; // return the array [ n, n * 2 ] or NULL if n == 0
     }
 
 Replacing Squirrel Functions
@@ -116,6 +100,8 @@ Squirrel functions need to return a ``SQRESULT``. Valid results are
 - ``SQRESULT_NOTNULL`` - This functions returns the last item on the stack.
 - ``SQRESULT_ERROR`` - This function has thrown an error.
 
+.. _sq-api-calling-functions:
+
 Calling
 -------
 
@@ -124,6 +110,11 @@ Calling
 .. cpp:function:: SQRESULT Call(const char* funcname)
 
     :param char* funcname: Name of the function to call
+
+    .. note::
+
+        This is a squirrel API wrapper added by northstar. It's not available for plugins and is supposed to abstract squirrel calls.
+
     
     This function assumes the squirrel VM is stopped/blocked at the moment of call
 
@@ -135,12 +126,16 @@ Calling
 
         Call("PluginCallbackTest"); // PluginCallbackTest()
 
-.. _Call_args:
+.. _Call-args:
 
 .. cpp:function:: SQRESULT Call(const char* funcname, Args... args)
 
     :param char* funcname: Name of the function to call
     :param Args... args: vector of args to pass to the function
+
+    .. note::
+
+        This is a squirrel API wrapper added by northstar. It's not available for plugins and is supposed to abstract squirrel calls.
 
     .. code-block:: cpp
 
@@ -152,18 +147,27 @@ Calling
 
     :param char* funcname: Name of the function to call
 
+    .. note::
+
+        This is a squirrel API wrapper added by northstar. It's not available for plugins and is supposed to abstract squirrel calls.
+
     This function schedules a call to be executed on the next frame
 
     This is useful for things like threads and plugins, which do not run on the main thread.
 
-.. _AsyncCall_args:
+.. _AsyncCall-args:
 
 .. cpp:function:: SquirrelMessage AsyncCall(std::string funcname, Args... args)
 
     :param char* funcname: Name of the function to call
     :param Args... args: vector of args to pass to the function
 
-.. __call:
+    .. note::
+
+        This is a squirrel API wrapper added by northstar. It's not available for plugins and is supposed to abstract squirrel calls.
+
+
+.. _ns-call:
 
 .. cpp:function:: SQRESULT _call(HSquirrelVM* sqvm, const SQInteger args)
 
@@ -172,12 +176,16 @@ Calling
 
     ``_call`` adds one to the ``args`` count for ``this``.
 
+    .. note::
+
+        This is a squirrel API wrapper added by northstar. It's not available for plugins and is supposed to abstract squirrel calls.
+
     .. code-block:: cpp
 
         SQObject functionobj {};
-        int result = g_pSquirrel<context>->sq_getfunction(sqvm, "PluginCallbackTest", &functionobj, 0);
+        SQRESULT result = g_pSquirrel<context>->sq_getfunction(sqvm, "PluginCallbackTest", &functionobj, 0); // Get a global squirrel function called "PluginCallbackTest"
 
-        if (result != 0)
+        if (result == SQRESULT_ERROR)
         {
             spdlog::error("Unable to find function. Is it global?");
             return SQRESULT_ERROR;
@@ -187,6 +195,19 @@ Calling
         g_pSquirrel<context>->pushroottable(sqvm);
         g_pSquirrel<context>->pushstring(sqvm, "param");
         return g_pSquirrel<context>->_call(sqvm, 1); // PluginCallbackTest("param")
+
+.. _sq-call:
+
+.. cpp:function:: SQRESULT __sq_call(HSquirrelVM* sqvm, SQInteger iArgs, SQBool bShouldReturn, SQBool bThrowError)
+
+    :param HSquirrelVM* sqvm: the target vm
+    :param SQInteger iArgs: number of parameters of the function
+    :param SQBool bShouldReturn: if true the function will push the return value to the stack
+    :param SQBool bThrowError: if true, if a runtime error occurs during the execution of the call, the vm will invoke the error handler
+
+    calls a closure or a native closure. The function pops all the parameters and leave the closure in the stack; if retval is true the return value of the closure is pushed. If the execution of the function is suspended through sq_suspendvm(), the closure and the arguments will not be automatically popped from the stack.
+
+    When using to create an instance, push a dummy parameter to be filled with the newly-created instance for the constructor's ``this`` parameter.
 
 Errors
 ------
