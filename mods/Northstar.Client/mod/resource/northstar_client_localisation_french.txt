@@ -319,5 +319,23 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 		"INVALID_MASTERSERVER_TOKEN"     "Jeton du server maître invalide ou expiré"
 		"JSON_PARSE_ERROR"                 "Une erreur est survenue durant l'analyse JSON"
 		"UNSUPPORTED_VERSION"             "La version que vous utilisez n'est plus supportée"
+
+		"MOD_SETTINGS"                    "Paramètres de mod"
+		"NORTHSTAR_BASE_SETTINGS"        "Paramètres de base de Northstar"
+		"ONLY_HOST_MATCH_SETTINGS"        "Seul l'hôte peut changer les paramètres de match privé"
+		"ONLY_HOST_CAN_START_MATCH"        "Seul l'hôte peut lancer le match"
+		"MATCH_COUNTDOWN_LENGTH"        "Durée du compte à rebours de match privé"
+		"LOG_UNKNOWN_CLIENTCOMMANDS"    "Enregistrer les commandes client inconnues"
+		"DISALLOWED_TACTICALS"            "Capacités interdites"
+		"TACTICAL_REPLACEMENT"            "Capacités de remplacement"
+		"DISALLOWED_WEAPONS"            "Armes interdites"
+		"REPLACEMENT_WEAPON"            "Armes de remplacement"
+		"SHOULD_RETURN_TO_LOBBY"        "Retour au lobby après la fin du match"
+		"ARE_YOU_SURE"                    "Êtes-vous certain ?"
+		"WILL_RESET_ALL_SETTINGS"        "Ceci réinitialisera tous les paramètres de cette catégorie.\n\nCette action est irréversible."
+		"WILL_RESET_SETTING"            "Ceci réinitialisera le paramètre %s1 à sa valeur par défaut.\n\nCette action est irréversible."
+		"MOD_SETTINGS_SERVER"            "Serveur"
+		"MOD_SETTINGS_RESET"            "Réinitialiser"
+		"MOD_SETTINGS_RESET_ALL"        "Tout réinitialiser"
 	}
 }

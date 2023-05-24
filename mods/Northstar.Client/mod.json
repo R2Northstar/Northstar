@@ -115,6 +115,17 @@
 			"RunOn": "UI"
 		},
 		{
+			"Path": "ui/ns_slider.nut",
+			"RunOn": "UI"
+		},
+		{
+			"Path": "ui/menu_mod_settings.nut",
+			"RunOn": "UI",
+			"UICallback":{
+				"Before": "AddModSettingsMenu"
+      		}
+    	},
+    	{
 			"Path": "ui/ui_mouse_capture.nut",
 			"RunOn": "UI"
 		}
