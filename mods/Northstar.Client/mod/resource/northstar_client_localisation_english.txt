@@ -321,5 +321,26 @@ Press Yes if you agree to this. This choice can be changed in the mods menu at a
 		"INVALID_MASTERSERVER_TOKEN" 	"Invalid or expired masterserver token"
 		"JSON_PARSE_ERROR" 				"Error parsing json response"
 		"UNSUPPORTED_VERSION" 			"The version you are using is no longer supported"
+		
+		// Mod Settings
+		"MOD_SETTINGS"					"Mod Settings"
+		"NORTHSTAR_BASE_SETTINGS"		"Northstar Base Settings"
+		"ONLY_HOST_MATCH_SETTINGS"		"Only Host can change Private Match settings"
+		"ONLY_HOST_CAN_START_MATCH"		"Only Host can Start the Match"
+		"MATCH_COUNTDOWN_LENGTH"		"Private Match Countdown Duration"
+		"LOG_UNKNOWN_CLIENTCOMMANDS"	"Log Unknown Client Commands"
+		"DISALLOWED_TACTICALS"			"Prohibited Tacticals"
+		"TACTICAL_REPLACEMENT"			"Replacement Tactical"
+		"DISALLOWED_WEAPONS"			"Prohibited Weapons"
+		"REPLACEMENT_WEAPON"			"Replacement Weapon"
+		"SHOULD_RETURN_TO_LOBBY"		"Return To Lobby After Match End"
+		"ARE_YOU_SURE"					"Are you sure?"
+		"WILL_RESET_ALL_SETTINGS"		"This will reset ALL settings that belong to this category.\n\nThis is not revertable."
+		"WILL_RESET_SETTING"			"This will reset the %s1 setting to it's default value.\n\nThis is not revertable."
+		"MOD_SETTINGS_SERVER"			"Server"
+		"MOD_SETTINGS_RESET"			"Reset"
+		"MOD_SETTINGS_RESET_ALL"		"Reset All"
+		"NO_RESULTS"					"No results."
+		"NO_MODS"						"No settings available! Install more mods at ^5588FF00northstar.thunderstore.io^0."
 	}
 }

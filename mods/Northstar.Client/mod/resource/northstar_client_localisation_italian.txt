@@ -319,5 +319,23 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 		"INVALID_MASTERSERVER_TOKEN"     "Token Masterserver invalido o scaduto"
 		"JSON_PARSE_ERROR"                 "Errore nell'analisi di risposta json"
 		"UNSUPPORTED_VERSION"             "La versione che stai usando non è più supportata"
+
+		"MOD_SETTINGS"				"Impostazioni Mod"
+		"NORTHSTAR_BASE_SETTINGS"		"Impostazioni base Northstar"
+		"ONLY_HOST_MATCH_SETTINGS"		"Solo l'Host può modificare le impostazioni della Partita Privata"
+		"ONLY_HOST_CAN_START_MATCH"		"Solo l'Host può Iniziare la Partita"
+		"MATCH_COUNTDOWN_LENGTH"		"Durata Countdown della Partita Privata"
+		"LOG_UNKNOWN_CLIENTCOMMANDS"		"Registra Comandi Client Sconosciuti"
+		"DISALLOWED_TACTICALS"			"Abilità Proibite"
+		"TACTICAL_REPLACEMENT"			"Sostituzione Abilità"
+		"DISALLOWED_WEAPONS"			"Armi Proibite"
+		"REPLACEMENT_WEAPON"			"Sostituzione Armi"
+		"SHOULD_RETURN_TO_LOBBY"		"Ritorna alla Lobby dopo Fine Partita"
+		"ARE_YOU_SURE"				"Sei sicuro?"
+		"WILL_RESET_ALL_SETTINGS"		"Questo ripristinerà TUTTE le impostazioni che appartengono a questa categoria.\n\nNON può essere annullato."
+		"WILL_RESET_SETTING"			"Questo ripristinerà l'impostazione %s1 al suo valore predefinito.\n\nNON può essere annullato" // obviously, don't translate %s1.
+		"MOD_SETTINGS_SERVER"			"Server"
+		"MOD_SETTINGS_RESET"			"Ripristina"
+		"MOD_SETTINGS_RESET_ALL"		"Ripristina Tutto"
 	}
 }
