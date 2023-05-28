@@ -7,18 +7,18 @@
 		"MENU_TITLE_MODS" "Mods"
 		"RELOAD_MODS" "Ricarica Mods"
 		"WARNING", "Attenzione"
-		"CORE_MOD_DISABLE_WARNING", "Disattivare Mods Principali può rompere il tuo Client!"
+		"CORE_MOD_DISABLE_WARNING", "Disattivare le Mods Principali può rompere il tuo Client!"
 		"DISABLE", "Disattiva"
 
 		"DIALOG_TITLE_INSTALLED_NORTHSTAR" "Grazie per aver installato Northstar!"
 		"AUTHENTICATION_AGREEMENT_DIALOG_TEXT" "Affinché Northstar funzioni, è necessario autenticarsi utilizzando il server principale di Northstar. Ciò richiederà l'invio del tuo token di Origin al server principale, non verrà archiviato o utilizzato per altri scopi.
-Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi momento nel menu mods."
+Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi momento nel Menu delle Mods."
 		"BACK_AUTHENTICATION_AGREEMENT" "Accordo di autenticazione"
 		"AUTHENTICATION_AGREEMENT" "Accordo di autenticazione"
 		"AUTHENTICATION_AGREEMENT_RESTART" "Dovrai riavviare Titanfall 2 affinché questa scelta abbia effetto."
 
 		"DIALOG_AUTHENTICATING_MASTERSERVER", "Autenticazione Sul Master Server in corso"
-		"AUTHENTICATIONAGREEMENT_NO", "Hai Scelto di non autenticarti con Northstar. Puoi vedere l'Accordo nel Menu Mods"
+		"AUTHENTICATIONAGREEMENT_NO", "Hai Scelto di non autenticarti con Northstar. Puoi vedere l'Accordo nel Menu delle Mods"
 
 		"MENU_TITLE_SERVER_BROWSER" "Server Browser"
 		"NS_SERVERBROWSER_NOSERVERS" "Nessun server trovato"
@@ -39,7 +39,7 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 		"PRIVATE_MATCH_SINGLEPLAYER_LEVEL" "%s1 (Single-Player)"
 
 		// fra hint for private match menu, because fra only has PL_fra_desc in vanilla
-		"PL_fra_hint" "Tutti contro tutti. Uccidi nemici per vincere. Raccogli 3 batterie per chiamare il Titan."
+		"PL_fra_hint" "Tutti contro tutti. Uccidi i nemici per vincere. Raccogli 3 batterie per chiamare il tuo Titan."
 
 		// mode settings
 		"MODE_SETTING_CATEGORY_PILOT" "Pilota"
@@ -63,7 +63,7 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 
 		"earn_meter_titan_multiplier" "Moltiplicatore nucleo Titan"
 		"aegis_upgrades" "Upgrade Aegis"
-		"infinite_doomed_state" "Doom state Infinito"
+		"infinite_doomed_state" "Stato Doom Infinito"
 		"titan_shield_regen" "Rigenerazione Scudi"
 
 		"riff_floorislava" "Terreno Mortale"
@@ -80,12 +80,12 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 		"cp_amped_capture_points" "Hardpoints Amplificati"
 		"coliseum_loadouts_enabled" "Equipaggiamento Colosseo"
 
-		"aitdm_archer_grunts", "Schagniozzi Archer"
+		"aitdm_archer_grunts", "Scagnozzi Archer"
 
 		// northstar.custom localisation is just deciding not to work, so putting it here for now
 		"PL_sbox" "Sandbox"
 		"PL_sbox_lobby" "Sandbox Lobby"
-		"PL_sbox_desc" "come gmod ma peggio."
+		"PL_sbox_desc" "Come gmod ma peggio."
 		"PL_sbox_abbr" "SBOX"
 		"GAMEMODE_SBOX" "Sandbox"
 
@@ -94,9 +94,9 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 		"PL_gg_desc" "Ottieni un'uccisione con ogni arma per vincere."
 		"PL_gg_hint" "Ottieni una nuova arma ogni uccisione."
 		"PL_gg_abbr" "GG"
-		"GAMEMODE_GG" "Gioco d'Armi"
-		"aitdm_archer_grunts", "Schagniozzi Archer"
-		"gg_kill_reward", "Punteggio Riconpensa Uccisione"
+		"GAMEMODE_GG" "Gioco delle Armi"
+		"aitdm_archer_grunts", "Scagnozzi Archer"
+		"gg_kill_reward", "Punteggio Ricompensa Uccisione"
 		"gg_assist_reward", "Punteggio Ricompensa Assist"
 		"gg_execution_reward", "Punteggio Ricompensa Esecuzione"
 
@@ -126,11 +126,11 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 
 		"PL_sns", "Sticks and Stones"
 		"PL_sns_lobby", "Sticks and Stones Lobby"
-		"PL_sns_desc", "Tutti contro Tutti, Usa la Pulse Blade e Esecuzioni per Resettare il Puntegio Nemico"
+		"PL_sns_desc", "Tutti contro Tutti, Usa la Pulse Blade e le Esecuzioni per Resettare il Punteggio Nemico"
 		"PL_sns_abbr", "SNS"
 		"GAMEMODE_SNS", "Sticks and Stones"
 		"SCOREBOARD_BANKRUPTS", "Uccisioni Bancarotta"
-		"SNS_LEADER_BANKRUPT", "Leader Punteggio andato in Bancarotta!"
+		"SNS_LEADER_BANKRUPT", "Il Leader punteggio è andato in Bancarotta!"
 		"SNS_LEADER_BANKRUPT_SUB", "%s1 è stato Resettato da %s2"
 		"SNS_BANKRUPT", "Bancarotta!"
 		"SNS_BANKRUPT_SUB", "Il Tuo Punteggio è stato Resettato da %s1"
@@ -156,12 +156,12 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 		"INFECTION_YOU_ARE_LAST_SURVIVOR" "Sei l'Ultimo Sopravvissuto!"
 		"INFECTION_SURVIVE_LAST_SURVIVOR" "Sopravvivi."
 
-		"PL_tffa", "Titan Free for All"
-		"PL_tffa_lobby", "Titan Free for All Lobby"
+		"PL_tffa", "Titan Tutti contro Tutti"
+		"PL_tffa_lobby", "Lobby: Titan Tutti contro Tutti"
 		"PL_tffa_desc", "Ogni Pilota per sè, distruggi tutti i Titan Nemici."
 		"PL_tffa_hint", "Ogni Pilota per sè, distruggi tutti i Titan Nemici."
 		"PL_tffa_abbr", "TFFA"
-		"GAMEMODE_TFFA", "Titan Free for All"
+		"GAMEMODE_TFFA", "Titan Tutti contro Tutti"
 
 		"PL_hs" "Nascondino"
 		"PL_hs_lobby" "Lobby: Nascondino"
@@ -177,14 +177,14 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 		"HIDEANDSEEK_DONT_GET_FOUND" "Non farti trovare!"
 		"HIDEANDSEEK_GET_LAST_HIDER" "%s1 è L'ULTIMO CERCATORE"
 		"HIDEANDSEEK_YOU_ARE_LAST_HIDER" "SEI L'ULTIMO NASCOSTO"
-		"HIDEANDSEEK_GOT_STIM" "Sei stimmato! Non farti prendere!"
+		"HIDEANDSEEK_GOT_STIM" "Sei stimolato! Non farti prendere!"
 		"hideandseek_balance_teams" "Bilanciamento Squadre..."
 		"hideandseek_hiding_time" "Tempo per Nascondersi"
 
 		// these are defined in r1_english but titan war is a shit name so i'm changing it to another one that was referenced in development
-		"GAMEMODE_fw" "Frontier War"
-		"PL_fw" "Frontier War"
-		"PL_fw_lobby" "Lobby: Frontier War"
+		"GAMEMODE_fw" "Guerra di Frontiera"
+		"PL_fw" "Guerra di Frontiera"
+		"PL_fw_lobby" "Lobby: Guerra di Frontiera"
 		"PL_fw_desc" "Distruggi il mietiore nemico e proteggi il tuo."
 		"PL_fw_abbr" "FW"
 
@@ -250,7 +250,7 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 		"SP_CRASHSITE_CLASSIC_DESC" "Jack Cooper incontra BT-7274."
 
 		"SP_SEWERS1" "Sangue e Ruggine"
-		"SP_SEWERS1_CLASSIC_DESC" "Cooper e BT cercano di raggiungere il Major Anderson."
+		"SP_SEWERS1_CLASSIC_DESC" "Cooper e BT cercano di raggiungere il Maggiore Anderson."
 
 		"SP_BOOMTOWN_START" "Nell'abisso"
 		"SP_BOOMTOWN_START_CLASSIC_DESC" "Una scorciatoia sotterranea porta a conseguenze impreviste."
@@ -272,7 +272,7 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 
 		// Better.Serverbrowser
 		"SERVERS_COLUMN" "Server"
-		"PLAYERS_COLUMN" "Players"
+		"PLAYERS_COLUMN" "Giocatori"
 		"MAP_COLUMN" "Mappa"
 		"GAMEMODE_COLUMN" "Modalità"
 		"REGION_COLUMN" "Regione"
@@ -306,18 +306,18 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 		"HIDE_LOCKED" "Nascondi bloccati"
 
 		// In-game chat
-		"HUD_CHAT_WHISPER_PREFIX" "[WHISPER]"
+		"HUD_CHAT_WHISPER_PREFIX" [BISBIGLIO]"
 		"HUD_CHAT_SERVER_PREFIX" "[SERVER]"
 
 		"NO_GAMESERVER_RESPONSE"         "Non è stato possibile raggiungere il server"
 		"BAD_GAMESERVER_RESPONSE"         "Il server ha dato una risposta invalida"
 		"UNAUTHORIZED_GAMESERVER"         "Il server non è autorizzato a fare quella richiesta"
-		"UNAUTHORIZED_GAME"                "Stryder non è riuscito a confermare che questo account possiede Titanfall 2"
+		"UNAUTHORIZED_GAME"                "Stryder non è riuscito a confermare che questo account possieda Titanfall 2"
 		"UNAUTHORIZED_PWD"                 "Password errata"
-		"STRYDER_RESPONSE"                 "Non è stato possibile analizzare la risposta Stryder"
+		"STRYDER_RESPONSE"                 "Non è stato possibile analizzare la risposta di Stryder"
 		"PLAYER_NOT_FOUND"                 "Non è stato trovato l'account player"
 		"INVALID_MASTERSERVER_TOKEN"     "Token Masterserver invalido o scaduto"
-		"JSON_PARSE_ERROR"                 "Errore nell'analisi di risposta json"
+		"JSON_PARSE_ERROR"                 "Errore nell'analisi della risposta json"
 		"UNSUPPORTED_VERSION"             "La versione che stai usando non è più supportata"
 
 		"MOD_SETTINGS"				"Impostazioni Mod"
