@@ -27,7 +27,7 @@ API
   
   All Mod Settings functions have a ``stackPos`` paramter. This parameter should only be changed if you're writing custom wrappers for the settings.
 
-.. cpp:function:: void NSModSettingsAddModTitle( string modName, int stackPos = 2 )
+.. cpp:function:: void ModSettings_AddModTitle( string modName, int stackPos = 2 )
 
   Adds a new category in the settings for your mod
   
@@ -35,7 +35,7 @@ API
   
     It's mandatory to register a mod before you can add any settings
     
-.. cpp:function:: void NSModSettingsAddModCategory( string categoryName )
+.. cpp:function:: void ModSettings_AddModCategory( string categoryName )
 
   Adds a new category to your mod
   
@@ -43,7 +43,7 @@ API
   
     It's mandatory to register a category for your mod. A mod may have multiple categories
     
-.. cpp:function:: void NSModSettingsAddConVarSetting( string conVar, string displayName, string type = "", int stackPos = 2 )
+.. cpp:function:: void ModSettings_AddSetting( string conVar, string displayName, string type = "", int stackPos = 2 )
 
   Adds a basic setting to the last declared category.
 
@@ -63,7 +63,7 @@ API
   
   other types will default to setting a string for the ConVar.
   
-.. cpp:function:: void NSModSettingsAddConVarSettingEnum( string conVar, string displayName, array<string> values, int stackPos = 2 )
+.. cpp:function:: void ModSettings_AddEnumSetting( string conVar, string displayName, array<string> values, int stackPos = 2 )
 
   Adds a setting to the menu that uses an enum. Users can navigate with buttons next to the input between possible values.
   
@@ -74,7 +74,7 @@ API
   * ``array<string> values`` - all possible values of this enum. The ConVar value will be set to the index of the selected value.
   * ``int stackPos = 2``
 
-.. cpp:function:: void NSModSettingsAddConVarSettingSlider( string conVar, string displayName, float min = 0.0, float max = 1.0, float stepSize = 0.1, bool forceClamp = false )
+.. cpp:function:: void ModSettings_AddSliderSetting( string conVar, string displayName, float min = 0.0, float max = 1.0, float stepSize = 0.1, bool forceClamp = false )
 
   Adds a ConVar setting to the menu that has a slider.
 
@@ -91,7 +91,7 @@ API
   
     Whenever Mod Settings is used, the value will be clamped to the nearest value available in the slider.
   
-.. cpp:function:: void NSModSettingsAddButton( string buttonLabel, void functionref() onPress, int stackPos = 2 )
+.. cpp:function:: void ModSettings_AddButton( string buttonLabel, void functionref() onPress, int stackPos = 2 )
   
   Adds a button to the menu that has a custom click callback.
     
