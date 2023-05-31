@@ -411,6 +411,7 @@ Damage scales linearly between near to far distances and far to very far (if it 
 ``OnWeaponStartZoomIn``|``void functionref( entity weapon )``|False|Callback ran when the user starts aiming down sights.|
 ``OnWeaponStartZoomOut``|``void functionref( entity weapon )``|False|Callback ran when the user stops aiming down sights.|
 ``OnWeaponSustainedDischargeBegin``|``bool functionref( entity weapon )``|False|Callback ran when sustained discharge begins. Returns true if successful or returns false otherwise and denies the sustained discharge.|
+``OnWeaponSustainedDischargePulse``|``bool functionref( entity weapon, WeaponPrimaryAttackParams attackParams )``|False|Callback ran when the sustained discharge pulses. Returns true if successful or false otherwise and stops the sustained discharge.|Only used when ``sustained_discharge_want_pulse_callbacks`` is enabled.
 ``OnWeaponSustainedDischargeEnd``|``void functionref( entity weapon )``|False|Callback ran when sustained discharge emds.|
 ``OnWeaponTossCancelDrop``|``void functionref( entity weapon, WeaponPrimaryAttackParams attackParams )``|False|Callback ran when a toss-able object is dropped by swapping.|
 ``OnWeaponTossPrep``|``void functionref( entity weapon, WeaponTossPrepParams prepParams )``|False|Callback ran when a toss-able object is pulled out.|
@@ -627,8 +628,8 @@ Not the time before firing is allowed. Animations can allow firing sooner at var
 ``sustained_discharge_allow_melee``|``bool``|True|Allows the user to melee in the middle of a sustained discharge.|
 ``sustained_discharge_duration``|``float``|True|The time in seconds that a sustained discharge lasts.|
 ``sustained_discharge_pulse_frequency``|``float``|True|The number of attacks made per second during a sustained discharge.|
-``sustained_discharge_require_input``|``bool``|True|unknown.|
-``sustained_discharge_want_pulse_callbacks``|``bool``|True|unknown.|
+``sustained_discharge_require_input``|``bool``|True|Whether or not to stop the sustained discharge when the attack button is let go.|
+``sustained_discharge_want_pulse_callbacks``|``bool``|True|Determines whether to use the ``OnWeaponSustainedDischargePulse`` callback or not.|
 ``sustained_laser_attachment``|``string``|True|The weapon part to attach the sustained laser effect to.|
 ``sustained_laser_effect_1p``|``asset``|True|The visual effect shown to the user when the sustained laser attacks.|
 ``sustained_laser_effect_3p``|``asset``|True|The visual effect shown to others when the sustained laser attacks.|
