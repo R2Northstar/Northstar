@@ -4,6 +4,7 @@
 #include "mods/modmanager.h"
 #include "core/tier0.h"
 #include "engine/r2engine.h"
+#include "squirrel/squirrel.h"
 
 #include <filesystem>
 #include <regex>
@@ -32,6 +33,15 @@ std::vector<MapVPKInfo> vMapList;
 
 void RefreshMapList()
 {
+	// Only update the maps list every 10 seconds max to we avoid constantly reading fs
+	static double fLastRefresh = -999;
+
+	if (fLastRefresh + 10.0 > R2::g_pGlobals->m_flRealTime)
+		return;
+
+	fLastRefresh = R2::g_pGlobals->m_flRealTime;
+
+	// Rebuild map list
 	vMapList.clear();
 
 	// get modded maps
@@ -55,7 +65,7 @@ void RefreshMapList()
 			"englishclient_frontend.bsp.pak000_dir.vpk"}; // don't include mp_common here as it contains mp_lobby
 
 		// matches directory vpks, and captures their map name in the first group
-		static const std::regex rVpkMapRegex("englishclient_([a-zA-Z_]+)\\.bsp\\.pak000_dir\\.vpk", std::regex::icase);
+		static const std::regex rVpkMapRegex("englishclient_([a-zA-Z0-9_]+)\\.bsp\\.pak000_dir\\.vpk", std::regex::icase);
 
 		for (fs::directory_entry file : fs::directory_iterator("./vpk"))
 		{
@@ -111,14 +121,7 @@ AUTOHOOK(_Host_Map_f_CompletionFunc, engine.dll + 0x161AE0,
 int, __fastcall, (const char const* cmdname, const char const* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]))
 // clang-format on
 {
-	// don't update our map list often from this func, only refresh every 10 seconds so we avoid constantly reading fs
-	static double flLastAutocompleteRefresh = -999;
-
-	if (flLastAutocompleteRefresh + 10.0 < R2::g_pGlobals->m_flRealTime)
-	{
-		RefreshMapList();
-		flLastAutocompleteRefresh = R2::g_pGlobals->m_flRealTime;
-	}
+	RefreshMapList();
 
 	// use a custom autocomplete func for all map loading commands
 	const int cmdLength = strlen(cmdname);
@@ -140,6 +143,27 @@ int, __fastcall, (const char const* cmdname, const char const* partial, char com
 	}
 
 	return numMaps;
+}
+
+ADD_SQFUNC(
+	"array<string>",
+	NSGetLoadedMapNames,
+	"",
+	"Returns a string array of loaded map file names",
+	ScriptContext::UI | ScriptContext::CLIENT | ScriptContext::SERVER)
+{
+	// Maybe we should call this on mods reload instead
+	RefreshMapList();
+
+	g_pSquirrel<context>->newarray(sqvm, 0);
+
+	for (MapVPKInfo& map : vMapList)
+	{
+		g_pSquirrel<context>->pushstring(sqvm, map.name.c_str());
+		g_pSquirrel<context>->arrayappend(sqvm, -2);
+	}
+
+	return SQRESULT_NOTNULL;
 }
 
 void ConCommand_maps(const CCommand& args)
