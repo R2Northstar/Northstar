@@ -207,6 +207,11 @@ bool PluginManager::LoadPlugins()
 	data.version = ns_version.c_str();
 	data.northstarModule = g_NorthstarModule;
 
+	if (strstr(GetCommandLineA(), "-noplugins") != NULL)
+	{
+		NS::log::PLUGINSYS->warn("-noplugins detected; skipping loading plugins");
+		return false;
+	}
 	if (!fs::exists(pluginPath))
 	{
 		NS::log::PLUGINSYS->warn("Could not find a plugins directory. Skipped loading plugins");
