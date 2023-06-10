@@ -25,6 +25,7 @@ VTF & VMT
 - `VTF Shell Extensions
   <https://www.wunderboy.org/valve-hl2source-sdk-tools/#vtf_shell>`_ - `Info
   <https://developer.valvesoftware.com/wiki/VTF_Shell_Extensions>`_
+- `VMT Editor <https://developer.valvesoftware.com/wiki/VMT_Editor>`_
 
 Other utilities
 ---------------
@@ -67,7 +68,8 @@ Graphics / animation / color editors
 - `GIF splitter <https://ezgif.com/split>`_
 - `Rad Tools Bik <http://www.radgametools.com/bnkdown.htm>`_ (needs `Quicktime 7.6
   <https://support.apple.com/downloads/quicktime>`_)
-
+- `TexFactory easy DDS conversion <https://otherbenji.gitlab.io/TexFactory/>`_
+- `Substance Painter to TF2 <https://github.com/EM4Volts/tf-2_substance_maker>`_
 Archives
 ~~~~~~~~
 
