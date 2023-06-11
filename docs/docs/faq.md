@@ -25,8 +25,8 @@ Most of the time, this is due to the fact that EA App's default install location
 A: Check [_Opening the console_](using-northstar/commands.md#opening-the-console).
 
 ### Q: How can I check if my server is listed on the server browser? <a href="#faq-is-my-server-listed" id="faq-is-my-server-listed"></a>
-
-You can use community-made server browsers such as: [https://taskinoz.com/northstar/](https://taskinoz.com/northstar/) or [https://cpdt.dev/northstar/](https://cpdt.dev/northstar/)
+You can use the official server browser on [https://northstar.tf/servers/](https://northstar.tf/servers/)\
+Alternatively, you can use a community-made server browser such as: [https://taskinoz.com/northstar/](https://taskinoz.com/northstar/)
 
 ### Q: Will there be a console version? <a href="#faq-console" id="faq-console"></a>
 
