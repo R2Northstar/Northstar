@@ -64,4 +64,4 @@ Launching Titanfall 2 will now display a prompt for vanilla and Northstar.
 
 ## Linux and Steam Deck
 
-Install instructions for [Linux and Steam Deck can be found here](steamdeck-and-linux/installing-on-steamdeck-and-linux.md)
+Install instructions for [Linux and Steam Deck can be found here](../steamdeck-and-linux/installing-on-steamdeck-and-linux.md)
