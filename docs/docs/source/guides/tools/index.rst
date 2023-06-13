@@ -7,3 +7,4 @@ Modding Tools
     /guides/tools/soundmodding
     /guides/tools/tools
     /guides/tools/VTFModding
+    /guides/tools/MDLModding
