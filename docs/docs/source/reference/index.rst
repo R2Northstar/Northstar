@@ -28,6 +28,7 @@ Respawn API
     /reference/respawn/clientcommands
     /reference/respawn/movers
     /reference/respawn/damageinfo
+    /reference/respawn/debugdraw
 
 HUD
 ===
