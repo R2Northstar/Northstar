@@ -70,6 +70,7 @@ Graphics / animation / color editors
   <https://support.apple.com/downloads/quicktime>`_)
 - `TexFactory easy DDS conversion <https://otherbenji.gitlab.io/TexFactory/>`_
 - `Substance Painter to TF2 <https://github.com/EM4Volts/tf-2_substance_maker>`_
+- `Tacent View <https://github.com/bluescan/tacentview>`_ - DDS viewer.
 Archives
 ~~~~~~~~
 
