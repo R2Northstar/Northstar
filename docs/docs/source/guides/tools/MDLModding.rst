@@ -58,6 +58,14 @@ The workflow for editing a model is as follows:
 •	Converting the MDL file with other output files using `MDLSHIT <#mdlshit>`__
 
 
+Short Video Guide
+-----------------
+
+This is a short video guide on MDL Editing, there are some discrepancies between the video and this guide but the general workflow is the same.
+Its relatively quick but shows the process quite well.
+
+.. youtube:: mZg5AlWvXZs
+
 Blender
 -------
 
@@ -87,7 +95,7 @@ We will use it to combine the MDL file with the other output files from Crowbar.
 Harmony VPK
 -----------
 
-Harmony VPK is a tool written by headassbtw. It is used to extract the model from the game files.
+Harmony VPK is a tool written by the Harmony Team. It's an electron-based GUI for VPKTool, and is used to extract files from VPK files.
 
 We will use it to extract the model from the game files.
 
