@@ -9,7 +9,7 @@ Titanfall
 
 - `Titanfall VPK Tool <http://cra0kalo.com/public/Titanfall_VPKTool3.4_Portable.zip>`_
 - `Harmony VPK Tool <https://github.com/harmonytf/HarmonyVPKTool/>`_
-- `Legion <https://wiki.modme.co/wiki/apps/Legion.html>`_
+- `Legion+ <https://github.com/r-ex/LegionPlus>`_
 
 RPSNVPK's
 ~~~~~~~~~
