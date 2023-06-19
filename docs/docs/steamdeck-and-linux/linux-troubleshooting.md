@@ -99,7 +99,7 @@ For more info and proposed fixes, refer to [this issue thread on Github](https:/
 
 You may feel that the game stutters frequently during the first hour of play. This is normal, it's just DXVK having to compile shaders at draw time due not having a ready state cache. The more you play, the less stuttering there will be in the future.
 
-However if you don't want to wait you can try precompiled DXVK [_state cache_](https://github.com/doitsujin/dxvk#state-cache): [**Titanfall2.dxvk-cache**](https://github.com/begin-theadventure/dxvk-caches/blob/main/dxvk-caches/Titanfall/Titanfall%202/Titanfall2.dxvk-cache.md)
+However if you don't want to wait you can try precompiled DXVK [_state cache_](https://github.com/doitsujin/dxvk#state-cache): [**Titanfall2.dxvk-cache**](https://github.com/begin-theadventure/dxvk-caches/blob/v10/dxvk-caches/Titanfall/Titanfall%202/Titanfall2.dxvk-cache.md)
 
 Proton: extract and put it in `/path/to/steamapps/shadercache/1237970/DXVK_state_cache` default is `~/.local/share/..` or next to .exe if shader pre-caching is turned off.
 
