@@ -102,6 +102,8 @@ WeaponData
 	// Damage - When Used by Players
 	"damage_type" 									"burn"
 
+	"show_grenade_indicator"						"1"
+
 	"crosshair"							"crosshair_t"
 	"explosion_damage"								"350"		// 150
 	"explosion_damage_heavy_armor"					"550"		// 150
