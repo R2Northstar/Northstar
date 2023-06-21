@@ -94,3 +94,8 @@ A: This usually lies behind your computer's specs not being high enough in order
 
 A: Titanfall2 (and other EA games) used to use a program called [Origin](<https://en.wikipedia.org/wiki/Origin_(service)>) to play games, however this has since been replaced by the EA App. 
 This change, however, did not update the game's error messages to say "EA App" instead of "Origin", so any time you see that there's an issue with Origin, you can replace mention of "Origin" with the "EA App".
+
+### Q: When I launch Northstar, a small command prompt appears for a few seconds then closes as nothing else happens!
+
+A: Delete `R2Northstar/plugins`, which disables any currently installed plugins, the only default plugin being Northstar's Discord Rich Presence. Alternatively, you could insert `-noplugins` in your `ns_startup_args.txt` in the [titanfall2 directory](installing-northstar/troubleshooting.md#game-location), which would simply disable plugins instead of deleting them.
+
