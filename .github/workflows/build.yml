@@ -21,11 +21,8 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Download compiled launcher
-        uses: dsaltares/fetch-gh-release-asset@master
-        with:
-          repo: 'R2Northstar/NorthstarLauncher'
-          file: northstar-launcher.zip
-          token: ${{ secrets.GITHUB_TOKEN }}
+        run:
+          wget "https://github.com/R2Northstar/NorthstarLauncher/releases/download/${{ env.NORTHSTAR_VERSION }}/northstar-launcher.zip"
       - name: Download DiscordRPC plugin
         run:
           wget "https://github.com/R2Northstar/NorthstarDiscordRPC/releases/download/v4/northstar-discord-rpc.zip"
