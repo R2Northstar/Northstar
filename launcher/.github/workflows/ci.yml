@@ -10,10 +10,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1.1
+      - name: Setup msvc
+        uses: ilammy/msvc-dev-cmd@v1
+      - name: Configure cmake
+        run: cmake -G "Ninja" -DCMAKE_BUILD_TYPE:STRING="${{ env.BUILD_PROFILE }}"
       - name: Build
-        run: msbuild /p:Configuration=${{ env.BUILD_PROFILE }}
+        run: cmake --build .
       - name: Extract Short Commit Hash
         id: extract
         shell: bash
@@ -23,10 +25,7 @@ jobs:
         with:
           name: NorthstarLauncher-${{ steps.extract.outputs.commit }}
           path: |
-            x64/${{ env.BUILD_PROFILE }}/*.dll
-            x64/${{ env.BUILD_PROFILE }}/*.exe
-            x64/${{ env.BUILD_PROFILE }}/*.pdb
-            x64/${{ env.BUILD_PROFILE }}/*.txt
+            game/
 
   format-check:
     runs-on: ubuntu-latest

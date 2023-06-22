@@ -16,8 +16,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1.1
+      - name: Setup msvc
+        uses: ilammy/msvc-dev-cmd@v1
+      - name: Configure cmake
+        run: cmake -G "Ninja" -DCMAKE_BUILD_TYPE:STRING="Release"
       - name: Setup resource file version
         shell: bash
         run: |
@@ -25,22 +27,20 @@ jobs:
           FILEVERSION=$(echo ${{ env.NORTHSTAR_VERSION }} | tr '.' ',' | sed -E 's/-rc[0-9]+//' | tr -d '[:alpha:]')
           sed -i "s/0,0,0,1/${FILEVERSION}/g" NorthstarDLL/ns_version.h
       - name: Build
-        run: |
-          msbuild /p:Configuration=Release R2Northstar.sln
+        run: cmake --build .
       - name: Upload launcher build as artifact
         uses: actions/upload-artifact@v3
         with:
           name: northstar-launcher
           path: |
-            x64/Release/*.dll
-            x64/Release/*.exe
-            x64/Release/*.txt
+            game/
       - name: Upload debug build artifact
         uses: actions/upload-artifact@v3
         with:
           name: launcher-debug-files
           path: |
-            x64/Release/*.pdb
+            game/*.pdb
+            game/bin/x64_retail/*.pdb
 
   upload-launcher-to-release:
     if: startsWith(github.ref, 'refs/tags/v')

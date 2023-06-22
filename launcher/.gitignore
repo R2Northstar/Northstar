@@ -16,6 +16,31 @@
 # Mono auto generated files
 mono_crash.*
 
+# CMake output
+out/
+game/
+build/
+CMakeFiles/
+cmake_install.cmake
+CMakeCache.txt
+CopyOfCMakeCache.txt
+
+# Ninja build files
+.ninja_deps
+.ninja_log
+build.ninja
+
+# Visual studio build files
+*.vcxproj
+*.vcxproj.filters
+*.sln
+
+# Build results
+# These ignore *.lib and *.exp in the specified
+loader_wsock32_proxy/wsock32.*
+NorthstarDLL/Northstar.*
+NorthstarLauncher/NorthstarLauncher.*
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
