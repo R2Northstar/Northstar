@@ -22,7 +22,8 @@ jobs:
     steps:
       - name: Download compiled launcher
         run:
-          wget "https://github.com/R2Northstar/NorthstarLauncher/releases/download/$NORTHSTAR_VERSION/northstar-launcher.zip"
+          export LAUNCHER_VERSION=$(echo $NORTHSTAR_VERSION | tr -d 'v')
+          wget "https://github.com/R2Northstar/NorthstarLauncher/releases/download/${LAUNCHER_VERSION}/northstar-launcher.zip"
       - name: Download DiscordRPC plugin
         run:
           wget "https://github.com/R2Northstar/NorthstarDiscordRPC/releases/download/v4/northstar-discord-rpc.zip"
