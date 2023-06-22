@@ -56,6 +56,8 @@ jobs:
           git ls-tree -r $NORTHSTAR_VERSION --name-only | xargs -L1 md5sum >> md5sum.txt
       - name: Make folder structure
         run: |
+          mv -v northstar/release/* northstar/.
+          rm -d northstar/release
           mkdir -p northstar/R2Northstar/mods
           mkdir -p northstar/R2Northstar/plugins
           mkdir -p northstar/bin/x64_dedi
