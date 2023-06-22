@@ -63,8 +63,7 @@ jobs:
 
           unzip northstar-discord-rpc.zip
           mv -v DiscordRPC.dll northstar/R2Northstar/plugins
-
-          mv -v northstar-launcher/wsock32.dll northstar/bin/x64_retail
+          
           unzip NorthstarStubs.zip -d northstar/bin/x64_dedi
           
           unzip -v northstar-launcher.zip northstar
