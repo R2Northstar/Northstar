@@ -22,7 +22,7 @@ jobs:
     steps:
       - name: Download compiled launcher
         run:
-          export LAUNCHER_VERSION=$(echo $NORTHSTAR_VERSION | tr -d 'v')
+          export LAUNCHER_VERSION=$(echo ${{ env.NORTHSTAR_VERSION }})
           wget "https://github.com/R2Northstar/NorthstarLauncher/releases/download/${LAUNCHER_VERSION}/northstar-launcher.zip"
       - name: Download DiscordRPC plugin
         run:
