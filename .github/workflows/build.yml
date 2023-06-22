@@ -61,7 +61,6 @@ jobs:
           mkdir -p northstar/bin/x64_dedi
 
           unzip northstar-discord-rpc.zip -d northstar/R2Northstar/plugins
-          #mv -v DiscordRPC.dll northstar/R2Northstar/plugins
           
           #unzip NorthstarStubs.zip -d northstar/bin/x64_dedi
           
