@@ -1,14 +1,14 @@
 name: Build
-on:
-  push:
-    tags:
-      - 'v*'
-  workflow_dispatch:
-    inputs:
-      job:
-        description: 'Job to run'
-        required: true
-        default: 'build-thunderstore-package'
+on: [push]
+#  push:
+#    tags:
+#      - 'v*'
+#  workflow_dispatch:
+#    inputs:
+#      job:
+#        description: 'Job to run'
+#        required: true
+#        default: 'build-thunderstore-package'
 
 permissions:
   contents: write # Needed to write to GitHub draft release
@@ -17,53 +17,15 @@ env:
   NORTHSTAR_VERSION: ${{ github.ref_name }}
 
 jobs:
-  build-launcher:
-    runs-on: windows-2022
-    steps:
-      - name: Checkout launcher repository
-        uses: actions/checkout@v3
-        with:
-          repository: R2Northstar/NorthstarLauncher
-          ref: ${{ env.NORTHSTAR_VERSION }}
-          path: northstar-launcher
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1.1
-      - name: Setup resource file version
-        shell: bash
-        working-directory: northstar-launcher
-        run: |
-          sed -i 's/DEV/${{ env.NORTHSTAR_VERSION }}/g' NorthstarLauncher/resources.rc
-          FILEVERSION=$(echo ${{ env.NORTHSTAR_VERSION }} | tr '.' ',' | sed -E 's/-rc[0-9]+//' | tr -d '[:alpha:]')
-          sed -i "s/0,0,0,1/${FILEVERSION}/g" NorthstarDLL/ns_version.h
-      - name: Build Launcher
-        working-directory: northstar-launcher
-        run: |
-          msbuild /p:Configuration=Release R2Northstar.sln
-      - name: Upload launcher build as artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: northstar-launcher
-          path: |
-            northstar-launcher/x64/Release/Northstar.dll
-            northstar-launcher/x64/Release/wsock32.dll
-            northstar-launcher/x64/Release/NorthstarLauncher.exe
-            northstar-launcher/x64/Release/*.txt
-      - name: Upload debug build artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: launcher-debug-files
-          path: |
-            northstar-launcher/x64/Release/*.pdb
-
   build-northstar:
-    needs: build-launcher
     runs-on: ubuntu-20.04
     steps:
       - name: Download compiled launcher
-        uses: actions/download-artifact@v3
+        uses: dsaltares/fetch-gh-release-asset@master
         with:
-          name: northstar-launcher
-          path: northstar-launcher
+          repo: 'R2Northstar/NorthstarLauncher'
+          file: northstar-launcher.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Download DiscordRPC plugin
         run:
           wget "https://github.com/R2Northstar/NorthstarDiscordRPC/releases/download/v4/northstar-discord-rpc.zip"
@@ -98,15 +60,14 @@ jobs:
           rm -d northstar/release
           mkdir -p northstar/R2Northstar/mods
           mkdir -p northstar/R2Northstar/plugins
-          mkdir -p northstar/bin/x64_retail
 
           unzip northstar-discord-rpc.zip
           mv -v DiscordRPC.dll northstar/R2Northstar/plugins
 
           mv -v northstar-launcher/wsock32.dll northstar/bin/x64_retail
           unzip NorthstarStubs.zip -d northstar/bin/x64_dedi
-
-          mv -v northstar-launcher/* northstar
+          
+          unzip -v northstar-launcher.zip northstar
           rsync -avr --exclude="Northstar.Coop" --exclude=".git*" northstar-mods/. northstar/R2Northstar/mods
       - name: Checkout Navmesh repository
         uses: actions/checkout@v3
