@@ -33,7 +33,9 @@ jobs:
         with:
           name: northstar-launcher
           path: |
-            game/
+            game/*.exe
+            game/*.dll
+            game/bin/x64_retail/*.dll
       - name: Upload debug build artifact
         uses: actions/upload-artifact@v3
         with:
@@ -57,10 +59,14 @@ jobs:
         with:
           name: launcher-debug-files
           path: launcher-debug-files
-      - name: Create zip to upload
+      - name: Create zip with binaries
         run: |
-          zip --recurse-paths --quiet --junk-paths northstar-launcher.zip northstar-launcher/
-          zip --recurse-paths --quiet --junk-paths launcher-debug-files.zip launcher-debug-files/
+          cd northstar-launcher
+          zip --recurse-paths --quiet ../northstar-launcher.zip *
+      - name: Create zip with debug symbols
+        run: |
+          cd launcher-debug-files
+          zip --recurse-paths --quiet ../launcher-debug-files.zip *
       - name: Upload files to release
         uses: softprops/action-gh-release@v1
         with:
