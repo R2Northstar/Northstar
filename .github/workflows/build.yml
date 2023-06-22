@@ -1,14 +1,14 @@
 name: Build
 on: [push]
-#  push:
-#    tags:
-#      - 'v*'
-#  workflow_dispatch:
-#    inputs:
-#      job:
-#        description: 'Job to run'
-#        required: true
-#        default: 'build-thunderstore-package'
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      job:
+        description: 'Job to run'
+        required: true
+        default: 'build-thunderstore-package'
 
 permissions:
   contents: write # Needed to write to GitHub draft release
