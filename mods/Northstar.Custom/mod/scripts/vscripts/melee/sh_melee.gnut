@@ -27,6 +27,7 @@ global function IsInExecutionMeleeState
 global function GetLungeTargetForPlayer
 global function Melee_IsAllowed
 global function IsAttackerRef
+global function AddCallback_IsValidMeleeExecutionTarget
 
 #if SERVER
 	global function Melee_Enable
@@ -88,7 +89,7 @@ struct
 	table<string, table<string,SyncedMeleeChooser> > syncedMeleeChoosers
 	table<SyncedMeleeChooser, array<void functionref( SyncedMeleeChooser actions, SyncedMelee action, entity player, entity target )> > syncedMeleeServerCallbacks
 	table<SyncedMeleeChooser, bool functionref( SyncedMelee action, entity player, entity target ) > syncedMeleeServerThink
-
+	array<bool functionref(entity attacker, entity target)> isValidMeleeExecutionTargetCallBacks
 	string lastExecutionUsed = ""
 } file
 
@@ -181,6 +182,11 @@ SyncedMeleeChooser function CreateSyncedMeleeChooser( string attackerType, strin
 vector function GetEyeOrigin( entity ent )
 {
 	return ent.EyePosition()
+}
+
+void function AddCallback_IsValidMeleeExecutionTarget( bool functionref( entity attacker, entity target ) callbackFunc )
+{
+	file.isValidMeleeExecutionTargetCallBacks.append( callbackFunc )
 }
 
 //Called after pressing the melee button to recheck for targets
@@ -309,6 +315,14 @@ bool function CodeCallback_IsValidMeleeExecutionTarget( entity attacker, entity 
 
 	if ( !PlayerMelee_IsExecutionReachable( attacker, target, 0.3 ) )
 		return false
+
+	foreach ( callbackFunc in file.isValidMeleeExecutionTargetCallBacks )
+	{
+		if ( !callbackFunc( attacker, target ) )
+		{
+			return false
+		}
+	}
 
 	return true
 }
