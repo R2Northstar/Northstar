@@ -310,5 +310,6 @@ Dr체cke Ja, um zuzustimmen. Du kannst diese Entscheidung jederzeit im Modmen체 �
 		"INVALID_MASTERSERVER_TOKEN"     "Ung체ltiger oder abgelaufener Token vom Masterserver"
 		"JSON_PARSE_ERROR"                 "Fehler beim Verarbeiten der JSON-Antwort"
 		"UNSUPPORTED_VERSION"             "Die Version die du benutzt ist nicht l채nger unterst체tzt"
+		"SNS_LEADER_BANKRUPT_SUB"             "%s1 Wurde Von %s2 Zur체ckgesetzt"
 	}
 }
