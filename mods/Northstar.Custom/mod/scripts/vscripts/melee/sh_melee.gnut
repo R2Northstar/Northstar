@@ -1,0 +1,1212 @@
+untyped
+
+global function MeleeShared_Init
+
+global function CodeCallback_OnMeleePressed
+//global function CodeCallback_OnMeleeHeld
+//global function CodeCallback_OnMeleeReleased
+global function CodeCallback_IsValidMeleeExecutionTarget
+global function CodeCallback_IsValidMeleeAttackTarget
+global function CodeCallback_OnMeleeAttackAnimEvent
+global function AddSyncedMeleeServerCallback
+global function AddSyncedMeleeServerThink
+
+global function GetSyncedMeleeChooser
+global function CreateSyncedMeleeChooser
+global function PlayerTriesSyncedMelee
+global function FindBestSyncedMelee
+global function GetSyncedMeleeChooserForPlayerVsTarget
+global function AddSyncedMelee
+global function GetEyeOrigin
+global function SetObjectCanBeMeleed
+global function ObjectCanBeMeleed
+global function ShouldClampTargetVelocity
+global function ClampVerticalVelocity
+global function IsInExecutionMeleeState
+
+global function GetLungeTargetForPlayer
+global function Melee_IsAllowed
+global function IsAttackerRef
+
+#if SERVER
+	global function Melee_Enable
+	global function Melee_Disable
+	global function SyncedMelee_Enable
+	global function SyncedMelee_Disable
+	global function InitMeleeAnimEventCallbacks
+	global function GetRefAnglesBetweenEnts
+	global function CreateMeleeScriptMoverBetweenEnts
+	global function ShouldHolsterWeaponForMelee
+	global function ShouldHolsterWeaponForSyncedMelee
+	global function NPCTriesSyncedMeleeVsPlayer
+#endif
+
+const SMOOTH_TIME = 0.2
+const INSTA_KILL_TIME_THRESHOLD = 0.35
+const BUG_REPRO_MOVEMELEE = 19114
+
+global struct SyncedMelee
+{
+	string ref
+	bool enabled = true
+	vector direction = < 1, 0, 0 >
+	float distance
+	float distanceSqr
+	string attackerAnimation1p
+	string attackerAnimation3p
+//	void function AddAnimEvent( entity ent, string eventName, void functionref( entity ent ) func, var optionalVar = null )
+	array<AnimEventData> attacker3pAnimEvents
+	array<AnimEventData> target3pAnimEvents
+	string targetAnimation1p
+	string targetAnimation3p
+	string thirdPersonCameraAttachment
+	asset attachModel1p
+	string attachTag1p
+	float minDot = -1.0 // always happens
+	string animRefPos = "target"
+	bool canTargetNPCs = true
+	float percentDamageDealtPerHit = 1.0
+	bool usableByPlayers = true
+
+	float targetMinHealthRatio = 0.0 // target health ratio must be at least this high
+	float targetMaxHealthRatio = 1.0 // target health ratio must be at or below this
+	bool onlyIfLethal // only if the strike would be lethal
+	bool isAttackerRef = true
+
+}
+
+global struct SyncedMeleeChooser
+{
+	vector functionref( entity ) attackerOriginFunc
+	vector functionref( entity ) targetOriginFunc
+	array<SyncedMelee> syncedMelees
+	bool displayMeleePrompt = true
+}
+
+struct
+{
+	table<string, table<string,SyncedMeleeChooser> > syncedMeleeChoosers
+	table<SyncedMeleeChooser, array<void functionref( SyncedMeleeChooser actions, SyncedMelee action, entity player, entity target )> > syncedMeleeServerCallbacks
+	table<SyncedMeleeChooser, bool functionref( SyncedMelee action, entity player, entity target ) > syncedMeleeServerThink
+
+	string lastExecutionUsed = ""
+} file
+
+function MeleeShared_Init()
+{
+	FlagInit( "ForceSyncedMelee" )
+
+	level.HUMAN_VS_TITAN_MELEE <- 1
+	level.titan_attack_anim_event_count <- 0
+	level.titan_attack_push_button_count <- 0
+
+	MeleeHumanShared_Init()
+	MeleeTitanShared_Init()
+	MeleeSyncedHumanShared_Init()
+	MeleeSyncedTitanShared_Init()
+
+	#if SERVER
+		VerifySyncedMelee()
+		MeleeSyncedServer_Init()
+	#endif
+
+	RegisterSignal( "SyncedMeleeComplete" )
+	RegisterSignal( "OnSyncedMelee" )
+	RegisterSignal( "OnSyncedMeleeVictim" )
+	RegisterSignal( "OnSyncedMeleeAttacker" )
+}
+
+int function GetPlayerMeleeDamage( entity player )
+{
+	Assert( player.IsPlayer() )
+	foreach ( weapon in player.GetMainWeapons() )
+	{
+		switch ( weapon.GetWeaponInfoFileKeyField( "fire_mode" ) )
+		{
+			case "offhand_melee":
+				return expect int( weapon.GetWeaponInfoFileKeyField( "melee_damage" ) )
+		}
+	}
+
+	return 0
+}
+
+void function AddSyncedMeleeServerCallback( SyncedMeleeChooser chooser, void functionref( SyncedMeleeChooser actions, SyncedMelee action, entity player, entity target ) func )
+{
+	if ( !( chooser in file.syncedMeleeServerCallbacks ) )
+		file.syncedMeleeServerCallbacks[ chooser ] <- []
+
+	file.syncedMeleeServerCallbacks[ chooser ].append( func )
+}
+
+void function AddSyncedMeleeServerThink( SyncedMeleeChooser chooser, bool functionref( SyncedMelee action, entity player, entity target ) func )
+{
+	file.syncedMeleeServerThink[ chooser ] <- func
+}
+
+
+function VerifySyncedMelee()
+{
+	foreach ( attackerChoosers in file.syncedMeleeChoosers )
+	{
+		foreach ( chooser in attackerChoosers )
+		{
+			//Assert( chooser in file.syncedMeleeServerCallbacks, "Need to add synced server melee callback for synced melee chooser" )
+			//Assert( file.syncedMeleeServerCallbacks[ chooser ].len() > 0, "Need to create a callback for chooser" )
+			Assert( chooser in file.syncedMeleeServerThink, "Need to add synced server melee callback for synced melee chooser" )
+		}
+	}
+}
+
+SyncedMeleeChooser function GetSyncedMeleeChooser( string attackerType, string victimType )
+{
+	return file.syncedMeleeChoosers[ attackerType ][ victimType ]
+}
+
+SyncedMeleeChooser function CreateSyncedMeleeChooser( string attackerType, string victimType )
+{
+	SyncedMeleeChooser chooser
+
+	chooser.attackerOriginFunc = GetEyeOrigin
+	chooser.targetOriginFunc = GetEyeOrigin
+
+	if ( !( attackerType in file.syncedMeleeChoosers ) )
+		file.syncedMeleeChoosers[ attackerType ] <- {}
+
+	Assert( !( victimType in file.syncedMeleeChoosers[ attackerType ] ), "Already has " + victimType )
+	file.syncedMeleeChoosers[ attackerType ][ victimType ] <- chooser
+	return chooser
+}
+
+vector function GetEyeOrigin( entity ent )
+{
+	return ent.EyePosition()
+}
+
+//Called after pressing the melee button to recheck for targets
+bool function CodeCallback_IsValidMeleeExecutionTarget( entity attacker, entity target )
+{
+	if ( attacker == target )
+		return false
+
+	if ( !ShouldPlayerExecuteTarget( attacker, target ) )
+		return false
+
+	if ( !attacker.IsOnGround() && attacker.IsHuman() )
+		return false
+
+	if ( !IsAlive( target ) )
+		return false
+
+	if ( target.IsInvulnerable() )
+		return false
+
+	if ( !CanBeMeleed( target ) )
+		return false
+
+	if ( target.IsNPC() && !target.CanBeMeleeExecuted() )
+		return false
+
+	// Disallow executing someone that is already in execution. That road leads to script errors and asserts.
+	if ( target.ContextAction_IsMeleeExecution() )
+		return false
+
+	if ( attacker.IsTitan() && target.IsTitan() )
+	{
+		// no melee execute for berserker
+		if ( PlayerHasPassive( attacker, ePassives.PAS_BERSERKER ) )
+			return false
+
+		if ( PlayerHasPassive( attacker, ePassives.PAS_SHIFT_CORE ) )
+			return false
+
+		if ( HasSoul( target ) && target.GetTitanSoul().IsEjecting() )
+			return false
+
+		if ( attacker.ContextAction_IsActive() )
+			return false
+
+		if ( target.ContextAction_IsActive() )
+			return false
+
+		if ( GetCurrentPlaylistVarInt( "vortex_blocks_melee", 0 ) == 1 )
+		{
+			vector traceStartPos = attacker.EyePosition()
+			vector traceEndPos = target.EyePosition()
+			VortexBulletHit ornull vortexHit = VortexBulletHitCheck( attacker, traceStartPos, traceEndPos )
+			if ( vortexHit != null )
+			{
+				return false
+			}
+		}
+	}
+
+	if ( !CheckVerticallyCloseEnough( attacker, target ) )
+		return false
+
+	//No necksnaps while wall running or mantling
+	if ( attacker.IsWallRunning() )
+		return false
+
+	if ( attacker.IsTraversing() )
+		return false
+
+	if ( target.IsPlayer() ) //Disallow execution on a bunch of player-only actions
+	{
+
+		if ( target.IsHuman() )
+		{
+			if ( target.IsWallRunning() )
+				return false
+
+			if ( target.IsTraversing() )
+				return false
+
+			if ( !target.IsOnGround() ) //disallow mid-air necksnaps. Can't really do that for Titan executions since dash puts them in mid air... will have visual glitches unfortunately.
+				return false
+
+			if ( target.IsCrouched() )
+				return false
+
+			if ( Rodeo_IsAttached( target ) )
+				return false
+		}
+	}
+
+	if ( target.IsPhaseShifted() )
+		return false
+
+	//Disallow executions on contextActions marked Busy. Note that this allows
+	//execution on melee and leeching context actions!
+	if ( target.ContextAction_IsBusy() )
+		return false
+
+	if ( target.IsNPC() ) //NPC only checks
+	{
+		if ( target.ContextAction_IsActive() )
+			return false
+
+		if ( !target.IsInterruptable() )
+			return false
+	}
+
+	if ( attacker.GetTeam() == target.GetTeam() )
+		return false
+
+#if SERVER
+	if ( "syncedMeleeAttacker" in target.s ) //Don't allow necksnap on a guy who'se already getting necksnapped
+		return false
+#endif // #if SERVER
+
+	SyncedMeleeChooser ornull actions = GetSyncedMeleeChooserForPlayerVsTarget( attacker, target )
+	if ( actions == null )
+		return false
+	expect SyncedMeleeChooser( actions )
+
+	SyncedMelee ornull action = FindBestSyncedMelee( attacker, target, actions )
+	if ( action == null )
+		return false
+
+	if ( !PlayerMelee_IsExecutionReachable( attacker, target, 0.3 ) )
+		return false
+
+	return true
+}
+
+bool function CodeCallback_IsValidMeleeAttackTarget( entity attacker, entity target )
+{
+	if ( attacker == target )
+		return false
+
+	if ( target.IsBreakableGlass() )
+		return true
+
+	if ( !CanBeMeleed( target ) )
+		return false
+
+	if ( attacker.GetTeam() == target.GetTeam() )
+		return false
+
+#if SERVER
+	if ( target.IsPlayer() )
+	{
+		//Make titans not able to melee the pilot who is doing the embark animation
+		if ( GetTitanBeingRodeoed( target ) == attacker )
+			return false
+	}
+#endif // #if SERVER
+
+	if ( target.IsPhaseShifted() )
+		return false
+
+	if ( target.GetParent() == attacker )
+		return false
+
+	#if SERVER //Awkward, needed because it's CBaseCombatCharacter on server and C_BaseCombatCharacter on client, and because we allow melee on non BaseCombatCharacters like props that don't have ContextActions defined
+		if ( target instanceof CBaseCombatCharacter && target.ContextAction_IsMeleeExecutionTarget() ) //Don't lunge towards a victim that is already being executed )
+			return false
+	#elseif CLIENT
+		if ( target instanceof C_BaseCombatCharacter && target.ContextAction_IsMeleeExecutionTarget() ) //Don't lunge towards a victim that is already being executed )
+			return false
+	#endif
+
+	entity meleeWeapon = attacker.GetMeleeWeapon()
+	if ( !IsValid( meleeWeapon ) )
+		return false;
+
+	if ( !meleeWeapon.GetMeleeCanHitHumanSized() && IsHumanSized( target ) )
+		return false;
+	if ( !meleeWeapon.GetMeleeCanHitTitans() && target.IsTitan() )
+		return false;
+
+	return true
+}
+
+void function CodeCallback_OnMeleePressed( entity player )
+{
+#if SERVER
+	print( "SERVER: " + player + " pressed melee\n" )
+#else
+	print( "CLIENT: " + player + " pressed melee\n" )
+#endif
+
+	if ( !Melee_IsAllowed( player ) )
+	{
+#if SERVER
+		print( "SERVER: Melee_IsAllowed() for " + player + " is false\n" )
+#else
+		print( "CLIENT: Melee_IsAllowed() for " + player + " is false\n" )
+#endif
+		return
+	}
+
+#if SERVER
+	if ( svGlobal.cloakBreaksOnMelee && IsCloaked( player ) )
+		player.SetCloakFlicker( 1.0, 2.0 )
+#endif // #if SERVER
+
+	if ( player.IsWeaponDisabled() )
+	{
+#if SERVER
+		print( "SERVER: IsWeaponDisabled() for " + player + " is true\n" )
+#else
+		print( "CLIENT: IsWeaponDisabled() for " + player + " is true\n" )
+#endif
+		return
+	}
+
+	if ( player.PlayerMelee_GetState() != PLAYER_MELEE_STATE_NONE )
+	{
+#if SERVER
+		print( "SERVER: PlayerMelee_GetState() for " + player + " is " + player.PlayerMelee_GetState() + "\n" )
+#else
+		print( "CLIENT: PlayerMelee_GetState() for " + player + " is " + player.PlayerMelee_GetState() + "\n" )
+#endif
+		return
+	}
+
+	if ( !IsAlive( player ) )
+	{
+#if SERVER
+		print( "SERVER: " + player + " is dead\n" )
+#else
+		print( "CLIENT: " + player + " is dead\n" )
+#endif
+		return
+	}
+
+	thread CodeCallback_OnMeleePressed_InternalThread( player )
+}
+
+void function CodeCallback_OnMeleePressed_InternalThread( entity player )
+{
+	if ( player.IsTitan() )
+	{
+		TitanUnsyncedMelee( player )
+	}
+	else if ( player.IsHuman() )
+	{
+		const float STUN_EFFECT_CUTOFF = 0.05
+		float movestunEffect = StatusEffect_Get( player, eStatusEffect.move_slow )
+		bool movestunBlocked = (movestunEffect > STUN_EFFECT_CUTOFF)
+
+		HumanUnsyncedMelee( player, movestunBlocked )
+	}
+}
+
+//void function CodeCallback_OnMeleeHeld( entity player )
+//{
+//}
+
+//void function CodeCallback_OnMeleeReleased( entity player )
+//{
+//}
+
+bool function ShouldHolsterWeaponForSyncedMelee( entity player )
+{
+	if ( player.GetPlayerSettings() == "titan_ogre_minigun" )
+		return false
+
+	return ShouldHolsterWeaponForMelee( player )
+}
+
+bool function ShouldHolsterWeaponForMelee( entity player )
+{
+	#if !SERVER
+		return true
+	#endif
+
+	if ( !player.IsTitan() )
+		return true
+
+	return Time() - player.s.startDashMeleeTime > 1.0 //Fix issue with gun being out when it shouldn't, according to Mackey...
+}
+
+#if SERVER
+bool function NPCTriesSyncedMeleeVsPlayer( entity npc, entity player )
+{
+	Assert( npc.IsNPC() )
+	Assert( player.IsPlayer() )
+	Assert( IsAlive( player ) )
+	Assert( player.IsPlayer() )
+	Assert( IsPilot( player ) )
+	if ( player.ContextAction_IsBusy() )
+		return false
+
+	//#if SERVER
+	//player.PlayerMelee_SetState( PLAYER_MELEE_STATE_HUMAN_EXECUTION )
+	//#else
+	//player.PlayerMelee_SetState( PLAYER_MELEE_STATE_HUMAN_EXECUTION_PREDICTED )
+	//#endif
+
+	return DoSyncedMelee( npc, player )
+}
+#endif
+
+
+
+bool function PlayerTriesSyncedMelee( entity player, entity target )
+{
+	if ( !target )
+		return false
+	if ( !IsAlive( target ) )
+		return false
+
+	if ( target.ContextAction_IsBusy() )
+		return false
+
+	if ( player.IsTitan() )
+	{
+#if SERVER
+		player.PlayerMelee_SetState( PLAYER_MELEE_STATE_TITAN_EXECUTION )
+#else
+		player.PlayerMelee_SetState( PLAYER_MELEE_STATE_TITAN_EXECUTION_PREDICTED )
+#endif
+	}
+	else
+	{
+#if SERVER
+		player.PlayerMelee_SetState( PLAYER_MELEE_STATE_HUMAN_EXECUTION )
+#else
+		player.PlayerMelee_SetState( PLAYER_MELEE_STATE_HUMAN_EXECUTION_PREDICTED )
+#endif
+	}
+
+	if ( !player.Lunge_IsActive() || !player.Lunge_IsGroundExecute() || !player.Lunge_IsLungingToEntity() || (player.Lunge_GetTargetEntity() != target) )
+	{
+#if SERVER
+		print( "SERVER: " + player + " is calling Lunge_SetTargetEntity() from PlayerTriesSyncedMelee()\n" )
+#else
+		print( "CLIENT: " + player + " is calling Lunge_SetTargetEntity() from PlayerTriesSyncedMelee()\n" )
+#endif
+		player.Lunge_SetTargetEntity( target, false )
+	}
+
+#if SERVER
+	OnThreadEnd(
+		function() : ( player, target )
+		{
+			if ( IsValid( player ) && player.IsPlayer() )
+			{
+				RemoveCinematicFlag( player, CE_FLAG_TITAN_3P_CAM )
+				RemoveCinematicFlag( player, CE_FLAG_EXECUTION )
+			}
+			if ( IsValid( target ) && target.IsPlayer() )
+			{
+				RemoveCinematicFlag( target, CE_FLAG_TITAN_3P_CAM )
+				RemoveCinematicFlag( target, CE_FLAG_EXECUTION )
+			}
+		}
+	)
+
+	if ( player.IsTitan() )
+		TransferDamageHistoryToTarget( target )
+	if ( player.IsPlayer() )
+	{
+		AddCinematicFlag( player, CE_FLAG_TITAN_3P_CAM )
+		AddCinematicFlag( player, CE_FLAG_EXECUTION )
+	}
+	if ( IsValid( target ) && target.IsPlayer() )
+	{
+		AddCinematicFlag( target, CE_FLAG_TITAN_3P_CAM )
+		AddCinematicFlag( player, CE_FLAG_EXECUTION )
+	}
+#endif
+
+	bool success = DoSyncedMelee( player, target )
+	if ( !success )
+	{
+		player.Lunge_ClearTarget()
+	}
+
+	return success
+}
+
+function TransferDamageHistoryToTarget( entity target )
+{
+	entity titanSoul = target.GetTitanSoul()
+	target.e.recentDamageHistory = titanSoul.e.recentDamageHistory
+}
+
+bool function DoSyncedMelee( entity player, entity target )
+{
+	SyncedMeleeChooser ornull actions = GetSyncedMeleeChooserForPlayerVsTarget( player, target )
+
+	Assert( actions != null, "No melee action for " + player + " vs " + target )
+	expect SyncedMeleeChooser( actions )
+
+#if SERVER
+	if ( player.IsPlayer() )
+	{
+		PlayerMelee_StartLagCompensateTargetForLunge( player, target )
+	}
+#endif // #if SERVER
+
+	SyncedMelee ornull action = FindBestSyncedMelee( player, target, actions )
+
+#if SERVER
+	if ( player.IsPlayer() )
+	{
+
+		player.ForceStand()
+		player.UnforceStand()
+		PlayerMelee_FinishLagCompensateTarget( player )
+	}
+#endif // #if SERVER
+
+	if ( action == null )
+		return false
+
+	expect SyncedMelee( action )
+
+
+
+	player.Signal( "OnSyncedMelee" )
+	target.Signal( "OnSyncedMelee" )
+	player.Signal( "OnSyncedMeleeAttacker" )
+	target.Signal( "OnSyncedMeleeVictim" )
+
+#if SERVER
+	player.p.lastExecutionUsed = action.ref
+
+	if ( actions in file.syncedMeleeServerCallbacks )
+		thread SyncedMeleeServerCallbacks( actions, action, player, target )
+	bool functionref( SyncedMelee action, entity player, entity target ) think = file.syncedMeleeServerThink[ actions ]
+	return think( action, player, target )
+#endif // #if SERVER
+
+	return true
+}
+
+void function SyncedMeleeServerCallbacks( SyncedMeleeChooser actions, SyncedMelee action, entity player, entity target )
+{
+	// Added via AddSyncedMeleeServerCallback
+	foreach ( index, _ in file.syncedMeleeServerCallbacks[ actions ] )
+	{
+		void functionref( SyncedMeleeChooser actions, SyncedMelee action, entity player, entity target ) item = file.syncedMeleeServerCallbacks[ actions ][ index ]
+		item( actions, action, player, target )
+	}
+}
+
+/*
+void function CodeCallback_OnMeleeReleased( entity player )
+{
+}
+*/
+
+function TextDebug( string msg )
+{
+	wait 0.5
+	printt( msg )
+}
+
+bool function ShouldClampTargetVelocity( vector targetVelocity, vector pushBackVelocity, float clampRatio )
+{
+	float dot = DotProduct( targetVelocity, pushBackVelocity )
+	if ( dot < 0 )
+		return true
+
+	if ( dot <= 0 )
+		return false
+
+	float velRatio = LengthSqr( targetVelocity ) / LengthSqr( pushBackVelocity )
+
+	return velRatio < clampRatio
+}
+
+bool function CanBeMeleed( entity target )
+{
+	if ( target.IsPlayer() )
+		return true
+	if ( target.IsNPC() )
+		return true
+
+	if ( ObjectCanBeMeleed( target ) )
+		return true
+
+	return false
+}
+
+// IMPORTANT: Only used for non-player, non-living special cases like prop_dynamics we want to be able to melee (drones, etc)
+bool function ObjectCanBeMeleed( entity ent )
+{
+	if ( !( "canBeMeleed" in ent.s ) )
+		return false
+
+	return expect bool( ent.s.canBeMeleed )
+}
+
+// IMPORTANT: Only used for non-player, non-living special cases like prop_dynamics we want to be able to melee (drones, etc)
+function SetObjectCanBeMeleed( entity ent, bool value )
+{
+	Assert( !ent.IsPlayer(), ent + " should not be a player. This is for non-player, non-NPC entities.")
+	Assert( !ent.IsNPC(), ent + " should not be an NPC. This is for non-player, non-NPC entities.")
+
+	if ( !( "canBeMeleed" in ent.s ) )
+		ent.s.canBeMeleed <- false
+
+	ent.s.canBeMeleed = value
+}
+
+//function TitanExposionDeath( entity titan, entity attacker )
+//{
+//	if ( !IsAlive( titan ) )
+//		return
+//
+//	ExplodeTitanBits( titan )
+//	// and your pretty titan too!
+//
+//	//TitanEjectExplosion
+//	table deathTable = { scriptType = damageTypes.titanMelee, forceKill = true, damageType = DMG_MELEE_EXECUTION, damageSourceId = eDamageSourceId.titan_execution }
+//	titan.TakeDamage( titan.GetMaxHealth() + 1, attacker, attacker, deathTable )
+//}
+
+#if SERVER
+vector function GetRefAnglesBetweenEnts( entity attacker, entity target )
+{
+	vector endOrigin = target.GetOrigin()
+	vector startOrigin = attacker.GetOrigin()
+	vector refVec = endOrigin - startOrigin
+	vector refAng = VectorToAngles( refVec )
+	if ( fabs( AngleNormalize( refAng.x ) ) > 35 ) //If pitch is too much, use angles from either attacker or target
+	{
+		if ( attacker.IsTitan() )
+			refAng = attacker.GetAngles()  //Doing titan synced kill from front, so use attacker's origin
+		else
+			refAng = target.GetAngles()  // Doing rear necksnap, so use target's angles
+	}
+	return refAng
+}
+
+entity function CreateMeleeScriptMoverBetweenEnts( entity attacker, entity target )
+{
+	vector refAng = GetRefAnglesBetweenEnts( attacker, target )
+
+	vector endOrigin = target.GetOrigin()
+	vector startOrigin = attacker.GetOrigin()
+	vector refVec = endOrigin - startOrigin
+	vector refPos = endOrigin - refVec * 0.5
+
+	entity ref = CreateOwnedScriptMover( attacker )
+	ref.SetOrigin( refPos )
+	ref.SetAngles( refAng )
+
+	return ref
+}
+#endif // SERVER
+
+void function AddSyncedMelee( SyncedMeleeChooser chooser, SyncedMelee melee )
+{
+	// sqr the distance
+	melee.distanceSqr = melee.distance * melee.distance
+
+	chooser.syncedMelees.append( melee )
+}
+
+SyncedMelee ornull function FindBestSyncedMelee( entity attacker, entity target, SyncedMeleeChooser actions )
+{
+	#if CLIENT
+		Assert( attacker == GetLocalViewPlayer() )
+	#endif // CLIENT
+
+	vector absTargetToPlayerDir
+	if ( attacker.IsPlayer() && attacker.Lunge_IsActive() && (attacker.Lunge_GetTargetEntity() == target) )
+	{
+		absTargetToPlayerDir = attacker.Lunge_GetStartPositionOffset()
+		absTargetToPlayerDir = Normalize( absTargetToPlayerDir )
+	}
+	else
+	{
+		vector attackerPos = actions.attackerOriginFunc( attacker ) // + ( attacker.GetVelocity() * SMOOTH_TIME )
+		vector targetPos = actions.targetOriginFunc( target )
+
+		if ( attackerPos == targetPos )
+		{
+			absTargetToPlayerDir = < 1, 0, 0 >
+		}
+		else
+		{
+			absTargetToPlayerDir = Normalize( attackerPos - targetPos )
+		}
+	}
+
+	vector angles = attacker.EyeAngles()
+	vector forward = AnglesToForward( angles )
+
+	vector relTargetToPlayerDir = CalcRelativeVector( < 0, target.EyeAngles().y, 0 >, absTargetToPlayerDir )
+
+	array<SyncedMelee> bestActions
+	float bestDot = -2.0
+	float distSqr = LengthSqr( actions.attackerOriginFunc( attacker ) - actions.targetOriginFunc( target ) )
+
+	bool npcTarget = target.IsNPC()
+	bool playerAttacker = attacker.IsPlayer()
+
+	int health = target.GetHealth()
+	float healthRatio = HealthRatio( target )
+	int meleeDamage
+	if ( attacker.IsNPC() )
+	{
+		meleeDamage = attacker.GetMeleeDamageMaxForTarget( target )
+	}
+	else if ( attacker.IsPlayer() )
+	{
+		meleeDamage = GetPlayerMeleeDamage( attacker )
+	}
+
+	SyncedMelee ornull returnVal = null
+
+#if MP
+	if ( IsPilot( attacker ) )
+	{
+		PilotLoadoutDef loadout = GetActivePilotLoadout( attacker )
+
+		foreach ( action in actions.syncedMelees )
+		{
+			if ( action.ref != loadout.execution )
+				continue
+
+			if ( npcTarget && !action.canTargetNPCs )
+				break
+
+			if ( playerAttacker && !action.usableByPlayers )
+				break
+
+			if ( healthRatio < action.targetMinHealthRatio )
+				break
+
+			if ( healthRatio > action.targetMaxHealthRatio )
+				break
+
+			if ( action.onlyIfLethal && health > meleeDamage )
+				break
+
+			if ( distSqr > action.distanceSqr )
+				break
+
+			float dot = relTargetToPlayerDir.Dot( action.direction )
+			if ( dot < action.minDot )
+				break
+
+#if SERVER
+			//Random Execution
+			if ( string( attacker.GetPersistentVar( "activePilotLoadout.execution" )) == "execution_random")
+			{
+				returnVal = PickRandomExecution(actions, attacker)
+				break
+			}
+#endif
+
+			returnVal = action
+			break
+		}
+	}
+	else
+	{
+#endif
+		foreach ( action in actions.syncedMelees )
+		{
+			if ( !action.enabled )
+				continue
+
+			if ( npcTarget && !action.canTargetNPCs )
+				continue
+
+			if ( playerAttacker && !action.usableByPlayers )
+				continue
+
+			if ( healthRatio < action.targetMinHealthRatio )
+				continue
+
+			if ( healthRatio > action.targetMaxHealthRatio )
+				continue
+
+			if ( action.onlyIfLethal && health > meleeDamage )
+				continue
+
+			if ( distSqr > action.distanceSqr )
+				continue
+
+			float dot = relTargetToPlayerDir.Dot( action.direction )
+
+			//printt( "Dot: " + dot )
+
+			if ( dot < action.minDot )
+				continue
+
+			if ( dot == bestDot )
+			{
+				bestActions.append( action )
+				continue
+			}
+
+			if ( dot > bestDot )
+			{
+				// found new best dot
+				bestActions.clear()
+				bestDot = dot
+				bestActions.append( action )
+			}
+		}
+
+		if ( bestActions.len() )
+			returnVal = bestActions.getrandom()
+#if MP
+	}
+#endif
+
+	return returnVal
+}
+
+string function GetAttackerSyncedMelee( entity ent )
+{
+	if ( ent.IsPlayer() )
+	{
+		// TODO: for MP, change this to be based on loadout choice
+		string bodyType = GetPlayerBodyType( ent )
+		if ( bodyType == "human" )
+		{
+			entity weapon = ent.GetActiveWeapon()
+			var weaponSyncedMelee
+
+			if ( IsValid( weapon ) )
+				weaponSyncedMelee = weapon.GetWeaponInfoFileKeyField( "synced_melee_action" )
+
+			if ( weaponSyncedMelee )
+				return string( weaponSyncedMelee )
+		}
+
+		return bodyType
+
+	}
+	else if ( IsProwler( ent ) )
+	{
+		return "prowler"
+	}
+	else if ( IsPilotElite( ent ) )
+	{
+		return "pilotelite"
+	}
+	else if ( IsSpectre( ent ) )
+	{
+		return "spectre"
+	}
+	else if ( ent.IsNPC() )
+	{
+		return ent.GetBodyType()
+	}
+	else if ( ent.IsTitan() )
+	{
+		return "titan"
+	}
+
+	unreachable
+}
+
+string function GetVictimSyncedMeleeTargetType( entity ent )
+{
+	string targetType
+
+	if ( ent.IsPlayer() && GetPlayerBodyType( ent ) == "human" )
+	{
+		targetType = "human"
+	}
+	else if ( IsProwler( ent ) )
+	{
+		targetType = "prowler"
+	}
+	else if ( IsPilotElite( ent ) )
+	{
+		targetType = "pilotelite"
+	}
+	else if ( ent.IsNPC() )
+	{
+		targetType = ent.GetBodyType()
+	}
+	else if ( ent.IsTitan() )
+	{
+		targetType = "titan"
+	}
+	else
+	{
+		Assert( 0, "Unknown ent type" )
+	}
+
+	return targetType
+}
+
+SyncedMeleeChooser ornull function GetSyncedMeleeChooserForPlayerVsTarget( entity attacker, entity target )
+{
+	string attackerType = GetAttackerSyncedMelee( attacker )
+	string targetType = GetVictimSyncedMeleeTargetType( target )
+
+	if ( !( attackerType in file.syncedMeleeChoosers ) )
+		return null
+
+	if ( !( targetType in file.syncedMeleeChoosers[ attackerType ] ) )
+		return null
+
+	return file.syncedMeleeChoosers[ attackerType ][ targetType ]
+}
+
+void function CodeCallback_OnMeleeAttackAnimEvent( entity player )
+{
+	Assert( IsValid( player ) )
+#if SERVER
+	print( "SERVER: " + player + " is calling CodeCallback_OnMeleeAttackAnimEvent()\n" )
+#else
+	print( "CLIENT: " + player + " is calling CodeCallback_OnMeleeAttackAnimEvent()\n" )
+#endif
+	if ( player.PlayerMelee_IsAttackActive() )
+	{
+		if ( player.IsTitan() )
+			TitanMeleeAttack( player )
+		else if ( player.IsHuman() )
+			HumanMeleeAttack( player )
+	}
+}
+
+bool function IsInExecutionMeleeState( entity player )
+{
+	local meleeState = player.PlayerMelee_GetState()
+	switch ( meleeState )
+	{
+		case PLAYER_MELEE_STATE_HUMAN_EXECUTION_PREDICTED:
+		case PLAYER_MELEE_STATE_HUMAN_EXECUTION:
+		case PLAYER_MELEE_STATE_TITAN_EXECUTION_PREDICTED:
+		case PLAYER_MELEE_STATE_TITAN_EXECUTION:
+			return true
+
+		default:
+			return false
+	}
+
+	unreachable
+}
+
+#if SERVER
+void function InitMeleeAnimEventCallbacks( entity player )
+{
+	AddAnimEvent( player, "screen_blackout", MeleeBlackoutScreen_AE )
+}
+
+void function MeleeBlackoutScreen_AE( entity player )
+{
+	ScreenFadeToBlack( player, 0.7, 1.2 )
+}
+#endif
+
+bool function ShouldPlayerExecuteTarget( entity player, entity target )
+{
+	if ( player.IsTitan() )
+	{
+		if ( !target.IsTitan() )
+			return false
+
+		if ( Flag( "ForceSyncedMelee" )  )
+			return true
+
+		if ( !GetDoomedState( target ) )
+			return false
+
+		entity soul = target.GetTitanSoul()
+		if ( soul != null )
+		{
+			if ( soul.GetShieldHealth() > 0 && GetCurrentPlaylistVarInt( "titan_shield_blocks_execution", 0 ) != 0 )
+				return false
+		}
+
+		if ( !SyncedMelee_IsAllowed( player ) )
+			return false
+
+		return true
+	}
+
+	if ( player.IsHuman() )
+	{
+		if ( !IsHumanSized( target ) )
+			return false
+
+#if SERVER
+		if ( Flag( "ForceSyncedMelee" )  )
+			return true
+#endif // #if SERVER
+
+		if ( !SyncedMelee_IsAllowed( player ) )
+			return false
+	}
+
+	return true
+}
+
+vector function ClampVerticalVelocity( vector targetVelocity, float maxVerticalVelocity )
+{
+	vector clampedVelocity = targetVelocity
+	if ( clampedVelocity.z > maxVerticalVelocity )
+	{
+		printt( "clampedVelocity.z: " + clampedVelocity.z +", maxVerticalVelocity:" + maxVerticalVelocity )
+		clampedVelocity = Vector( targetVelocity.x, targetVelocity.y, maxVerticalVelocity )
+	}
+
+	return clampedVelocity
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+bool function CheckVerticallyCloseEnough( entity attacker, entity target )
+{
+	vector attackerOrigin = attacker.GetOrigin()
+	vector targetOrigin = target.GetOrigin()
+
+	float verticalDistance = fabs( attackerOrigin.z - targetOrigin.z )
+	float halfHeight = 0
+
+	if ( attacker.IsTitan() )
+		halfHeight = 92.5
+	else if ( attacker.IsHuman() )
+		halfHeight = 30
+
+	Assert( halfHeight, "Attacker is neither Titan nor Human" )
+
+	//printt( "vertical distance: " + verticalDistance )
+	return verticalDistance < halfHeight
+}
+
+
+entity function GetLungeTargetForPlayer( entity player )
+{
+	// Titan melee does not lunge
+	if ( player.IsTitan() )
+		return null
+
+	if ( player.IsPhaseShifted() )
+		return null
+
+	entity lungeTarget = PlayerMelee_LungeConeTrace( player, SHARED_CB_IS_VALID_MELEE_ATTACK_TARGET )
+	return lungeTarget
+}
+
+#if SERVER
+void function Melee_Enable( entity player )
+{
+	player.SetPlayerNetBool( "playerAllowedToMelee", true )
+}
+
+void function Melee_Disable( entity player )
+{
+	player.SetPlayerNetBool( "playerAllowedToMelee", false )
+}
+
+void function SyncedMelee_Enable( entity player )
+{
+	player.SetPlayerNetBool( "playerAllowedToSyncedMelee", true )
+}
+
+void function SyncedMelee_Disable( entity player )
+{
+	player.SetPlayerNetBool( "playerAllowedToSyncedMelee", false )
+}
+#endif
+
+bool function Melee_IsAllowed( entity player )
+{
+	return player.GetPlayerNetBool( "playerAllowedToMelee" )
+}
+
+bool function SyncedMelee_IsAllowed( entity player )
+{
+	return player.GetPlayerNetBool( "playerAllowedToSyncedMelee" )
+}
+
+bool function IsAttackerRef( SyncedMelee ornull action, entity target )
+{
+	if ( action != null )
+	{
+		expect SyncedMelee( action )
+		if ( action.isAttackerRef )
+		{
+			return true
+		}
+	}
+
+	if ( !target )
+		return true
+
+	if ( !IsValid( target ) )
+		return true
+
+	if ( !target.IsPlayer() )
+		return true
+
+	return false
+}
+
+#if MP
+#if SERVER
+SyncedMelee ornull function PickRandomExecution( SyncedMeleeChooser actions, entity attacker )
+{
+	array<SyncedMelee> possibleExecutions = []
+
+	SyncedMelee neckSnap
+
+	foreach ( action in actions.syncedMelees )
+	{
+		if (action.ref == "execution_neck_snap")
+			neckSnap = action
+
+		if(!IsItemLocked( attacker, action.ref ) && action.ref != "execution_random" && action.ref != attacker.p.lastExecutionUsed)
+
+			possibleExecutions.append(action)
+	}
+
+	if (possibleExecutions.len() == 0)
+		return neckSnap
+
+	possibleExecutions.randomize()
+
+	return possibleExecutions[0]
+}
+#endif
+#endif
