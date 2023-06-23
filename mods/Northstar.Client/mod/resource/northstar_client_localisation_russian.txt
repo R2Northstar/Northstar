@@ -253,5 +253,11 @@
 		"INVALID_MASTERSERVER_TOKEN"    "Срок действия жетона главного сервера истек или не является правильным"
 		"JSON_PARSE_ERROR"                              "Ошибка разбора ответа json"
 		"UNSUPPORTED_VERSION"                    "Используемая вами версия больше не поддерживается"
+		"DISABLE"                    "Выключить"
+		"DIALOG_AUTHENTICATING_MASTERSERVER"                    "Аутентификация на главном сервере."
+		"WARNING"                    "Предупреждение"
+		"CORE_MOD_DISABLE_WARNING"                    "Выключение главных модов может сломать ваш клиент!"
+		"AUTHENTICATIONAGREEMENT_NO"                    "Вы выбрали не аутентифицироваться с Northstar-ом. Вы можете посмотреть соглашение в меню модов."
+		"NS_SERVERBROWSER_UNKNOWNMODE"                    "Неизвестный режим"
 	}
 }

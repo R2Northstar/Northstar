@@ -127,7 +127,7 @@
 
 		"PL_sns" "冷兵器"
 		"PL_sns_lobby" "冷兵器大廳"
-		"PL_sns_desc" "模擬十字弓和飛斧的作戰模式。使用脈衝刀及處決擊殺來重置敵人的分數。"
+		"PL_sns_desc" "无规则. 使用脈衝刀及處決擊殺來重置敵人的分數"
 		"PL_sns_abbr" "SNS"
 		"GAMEMODE_SNS" "冷兵器"
 		"SCOREBOARD_BANKRUPTS" "破產次數"
@@ -155,7 +155,7 @@
 		"INFECTION_LAST_SURVIVOR" "%s1是最後的倖存者！"
 		"INFECTION_KILL_LAST_SURVIVOR" "在時間用盡前感染他！"
 		"INFECTION_YOU_ARE_LAST_SURVIVOR" "你是最後的倖存者！"
-		"INFECTION_SURVIVE_LAST_SURVIVOR" "倖存"
+		"INFECTION_SURVIVE_LAST_SURVIVOR" "最後幸存者."
 
 		"PL_tffa" "泰坦混戰"
 		"PL_tffa_lobby" "泰坦混戰大廳"
@@ -238,38 +238,38 @@
 		"player_bleedout_aiBleedingPlayerMissChance" "倒地時AI的失誤率"
 
 		// coop stuff
-		"PL_sp_coop" "(UNFINISHED) Singleplayer Coop"
-		"PL_sp_coop_lobby" "Singleplayer Coop Lobby"
-		"PL_sp_coop_desc" "Play through the singleplayer campaign with friends"
-		"PL_sp_coop_hint" "Play through the singleplayer campaign with friends"
+		"PL_sp_coop" "(未完成) 單人合作"
+		"PL_sp_coop_lobby" "單人合作模式大廳"
+		"PL_sp_coop_desc" "與朋友一起遊玩單人戰役"
+		"PL_sp_coop_hint" "與朋友一起遊玩單人戰役"
 		"PL_sp_coop_abbr" "SP"
 
-		"SP_TRAINING" "The Pilot's Gauntlet"
-		"SP_TRAINING_CLASSIC_DESC" "Captain Lastimosa's training simulation."
+		"SP_TRAINING" "鐵御的試煉"
+		"SP_TRAINING_CLASSIC_DESC" "拉絲提莫沙上尉的模擬訓練."
 
 		"SP_CRASHSITE" "BT-7274"
-		"SP_CRASHSITE_CLASSIC_DESC" "Jack Cooper meets BT-7274."
+		"SP_CRASHSITE_CLASSIC_DESC" "傑克庫博預見BT-7274."
 
-		"SP_SEWERS1" "Blood and Rust"
-		"SP_SEWERS1_CLASSIC_DESC" "Cooper and BT set out to rendezvous with Major Anderson."
+		"SP_SEWERS1" "鮮血與鐵鏽"
+		"SP_SEWERS1_CLASSIC_DESC" "庫博和BT一起出發前往與安德森上尉回合."
 
-		"SP_BOOMTOWN_START" "Into the Abyss"
-		"SP_BOOMTOWN_START_CLASSIC_DESC" "An underground shortcut yields unexpected consequences."
+		"SP_BOOMTOWN_START" "踏入虛空"
+		"SP_BOOMTOWN_START_CLASSIC_DESC" "一個地下捷徑造成了不可預見的後果."
 
-		"SP_HUB_TIMESHIFT" "Effect and Cause"
-		"SP_HUB_TIMESHIFT_CLASSIC_DESC" "A strange phenomenon is discovered at Major Anderson's coordinates."
+		"SP_HUB_TIMESHIFT" "因果報應"
+		"SP_HUB_TIMESHIFT_CLASSIC_DESC" "在安德森上尉的坐標處發現了奇異的現象."
 
-		"SP_BEACON" "The Beacon"
-		"SP_BEACON_CLASSIC_DESC" "Cooper and BT attempt to inform the remaining fleet of the IMC's plans."
+		"SP_BEACON" "信號台"
+		"SP_BEACON_CLASSIC_DESC" "庫博和BT嘗試將IMC的計劃通知給剩餘反抗軍艦隊."
 
-		"SP_TDAY" "Trial by Fire"
-		"SP_TDAY_CLASSIC_DESC" "Cooper's Titan skills are put to the test in an all-out battle to capture the Ark"
+		"SP_TDAY" "烈火審判"
+		"SP_TDAY_CLASSIC_DESC" "庫博驾馭泰坦的技術在爭奪聖櫃的全面戰爭中得到考驗"
 
-		"SP_S2S" "The Ark"
-		"SP_S2S_CLASSIC_DESC" "Cooper and BT go ship to ship in pursuit of the Ark."
+		"SP_S2S" "聖櫃"
+		"SP_S2S_CLASSIC_DESC" "庫博和BT在艦艇中穿梭追尋聖櫃."
 
-		"SP_SKYWAY_V1" "The Fold Weapon"
-		"SP_SKYWAY_V1_CLASSIC_DESC" "BT and Cooper are captured by Kuben Blisk."
+		"SP_SKYWAY_V1" "折疊時空武器"
+		"SP_SKYWAY_V1_CLASSIC_DESC" "BT和庫博被庫本布里斯克擒拿."
 
 		// Better.Serverbrowser
 		"SERVERS_COLUMN" "伺服器"
@@ -310,8 +310,8 @@
 		"HUD_CHAT_SERVER_PREFIX" "[伺服器]"
 
 		// In-game chat
-		"HUD_CHAT_WHISPER_PREFIX" "[WHISPER]"
-		"HUD_CHAT_SERVER_PREFIX" "[SERVER]"
+		"HUD_CHAT_WHISPER_PREFIX" "[悄悄話]"
+		"HUD_CHAT_SERVER_PREFIX" "[伺服器]"
 
 		"NO_GAMESERVER_RESPONSE"         "無法連接到遊戲伺服器'"
 		"BAD_GAMESERVER_RESPONSE"         "遊戲伺服器回應無效"
@@ -323,5 +323,26 @@
 		"INVALID_MASTERSERVER_TOKEN"     "主伺服器token過期或無效"
 		"JSON_PARSE_ERROR"                 "讀取json回應時發生錯誤"
 		"UNSUPPORTED_VERSION"             "您的遊戲版本過低"
+		"NORTHSTAR_BASE_SETTINGS"             "北极星基础设置"
+		"ONLY_HOST_CAN_START_MATCH"             "只有服主可以開始對局"
+		"MATCH_COUNTDOWN_LENGTH"             "私人對局倒計時時間"
+		"DISALLOWED_TACTICALS"             "禁用的技能"
+		"TACTICAL_REPLACEMENT"             "替換的技能"
+		"NO_RESULTS"             "無結果."
+		"LOG_UNKNOWN_CLIENTCOMMANDS"             "登記未知客戶端指令"
+		"SHOULD_RETURN_TO_LOBBY"             "對局結束後返回大廳"
+		"ARE_YOU_SURE"             "確定？"
+		"WILL_RESET_SETTING"             "這將會重置 %s1 的設置為默認值.\n\n此操作不可復原."
+		"MOD_SETTINGS_SERVER"             "服務器"
+		"MOD_SETTINGS_RESET"             "重置"
+		"MOD_SETTINGS_RESET_ALL"             "重置所有"
+		"SHOW_ONLY_NOT_REQUIRED"             "僅展示非必需模組"
+		"SHOW_ONLY_REQUIRED"             "僅展示必須模組"
+		"MOD_SETTINGS"             "模组设置"
+		"ONLY_HOST_MATCH_SETTINGS"             "只有服主可以修改私人對局設置"
+		"DISALLOWED_WEAPONS"             "禁用的武器"
+		"REPLACEMENT_WEAPON"             "替换的武器"
+		"WILL_RESET_ALL_SETTINGS"             "這將會重置所有屬於改條目的設置.\n\n此操作不可復原."
+		"NO_MODS"             "無可用模組! 前往 ^5588FF00northstar.thunderstore.io^0 下載更多."
 	}
 }
