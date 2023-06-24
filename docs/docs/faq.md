@@ -99,3 +99,6 @@ This change, however, did not update the game's error messages to say "EA App" i
 
 A: Delete `R2Northstar/plugins`, which disables any currently installed plugins, the only default plugin being Northstar's Discord Rich Presence. Alternatively, you could insert `-noplugins` in your `ns_startup_args.txt` in the [titanfall2 directory](installing-northstar/troubleshooting.md#game-location), which would simply disable plugins instead of deleting them.
 
+### Q: Does Northstar work via EA Play or Xbox Gamepass (PC)? <a href="#faq-eaplay" id="faq-eaplay"></a>
+
+A: Yes, it does! It works by these because EA Play just installs the game on the EA App, and installing Titanfall 2 via Xbox Gamepass (PC) is done via EA Play. Simply install Titanfall 2, and install Northstar. Note that you'll need to do [this fix to move the game location](installing-northstar/troubleshooting.md#cannot-write-log-file-when-using-northstar-on-ea-app) (make sure you carefully read and follow the ENTIRE section) as the default EA install causes issues with Northstar, notably with the log writing process and mod manager installing Northstar and mods properly.
