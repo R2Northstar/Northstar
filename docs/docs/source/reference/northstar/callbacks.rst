@@ -87,6 +87,18 @@ lobby\\_private_lobby.gnut:
 .. cpp:function:: bool ClientCommandCallback_PrivateMatchSetPlaylistVarOverride( entity player, array<string> args )
 .. cpp:function:: bool ClientCommandCallback_ResetMatchSettingsToDefault( entity player, array<string> args )
 
+melee\\sh_melee.gnut:
+^^^^^^^^^^^^^^^^^^^^
+
+.. cpp:function:: void AddCallback_IsValidMeleeExecutionTarget( bool functionref( entity attacker, entity target ) callbackFunc )
+
+   This callback gets triggered after the melee button is pressed to check if the action to execute the target is still valid. 
+   If one of the added callbacks return false the target won't be executed and will just be meleed.
+
+   .. note::
+
+      The execution prompt still pops up.
+
 mp\\_ai_mp.gnut:
 ^^^^^^^^^^^^^^^
 
