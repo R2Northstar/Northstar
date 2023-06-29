@@ -1,4 +1,3 @@
-#pragma once
 #include "bansystem.h"
 #include "serverauthentication.h"
 #include "core/convar/concommand.h"
