@@ -197,7 +197,7 @@ class __autohook
 
 		case PROCADDRESS:
 		{
-			targetAddr = GetProcAddress(GetModuleHandleA(pModuleName), pProcName);
+			targetAddr = (LPVOID)GetProcAddress(GetModuleHandleA(pModuleName), pProcName);
 			break;
 		}
 		}

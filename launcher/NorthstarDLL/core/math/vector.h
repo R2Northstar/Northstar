@@ -1,3 +1,5 @@
+#include <cmath>
+
 #pragma once
 
 union Vector3
@@ -21,7 +23,7 @@ union Vector3
 	void MakeValid()
 	{
 		for (auto& fl : raw)
-			if (isnan(fl))
+			if (std::isnan(fl))
 				fl = 0;
 	}
 

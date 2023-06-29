@@ -82,14 +82,14 @@ namespace R2
 	class CEngine
 	{
 	  public:
-		virtual void unknown() {} // unsure if this is where
-		virtual bool Load(bool dedicated, const char* baseDir) {}
-		virtual void Unload() {}
-		virtual void SetNextState(EngineState_t iNextState) {}
-		virtual EngineState_t GetState() {}
-		virtual void Frame() {}
-		virtual double GetFrameTime() {}
-		virtual float GetCurTime() {}
+		virtual void unknown() = 0; // unsure if this is where
+		virtual bool Load(bool dedicated, const char* baseDir) = 0;
+		virtual void Unload() = 0;
+		virtual void SetNextState(EngineState_t iNextState) = 0;
+		virtual EngineState_t GetState() = 0;
+		virtual void Frame() = 0;
+		virtual double GetFrameTime() = 0;
+		virtual float GetCurTime() = 0;
 
 		EngineQuitState m_nQuitting;
 		EngineState_t m_nDllState;

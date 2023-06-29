@@ -148,7 +148,7 @@ add_library(NorthstarDLL SHARED
 target_link_libraries(NorthstarDLL PRIVATE
                       ${CMAKE_SOURCE_DIR}/include/MinHook.x64.lib
                       ${CMAKE_SOURCE_DIR}/include/libcurl/lib/libcurl_a.lib
-                      Ws2_32.lib
+                      WS2_32.lib
                       Crypt32.lib
                       Cryptui.lib
                       dbghelp.lib

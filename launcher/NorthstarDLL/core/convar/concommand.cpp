@@ -151,5 +151,5 @@ ON_DLL_LOAD("engine.dll", ConCommand, (CModule module))
 	ConCommandConstructor = module.Offset(0x415F60).As<ConCommandConstructorType>();
 	AddMiscConCommands();
 
-	g_pPluginCommunicationhandler->m_sEngineData.ConCommandConstructor = ConCommandConstructor;
+	g_pPluginCommunicationhandler->m_sEngineData.ConCommandConstructor = (void*)ConCommandConstructor;
 }

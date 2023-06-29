@@ -14,7 +14,7 @@ target_link_libraries(loader_wsock32_proxy PRIVATE
                       ${CMAKE_CURRENT_SOURCE_DIR}/include/MinHook.x64.lib
                       mswsock.lib
                       ws2_32.lib
-                      Shlwapi.lib
+                      ShLwApi.lib
                       imagehlp.lib
                       dbghelp.lib
                       kernel32.lib

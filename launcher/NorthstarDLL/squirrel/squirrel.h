@@ -6,6 +6,19 @@
 #include "plugins/plugin_abi.h"
 #include "mods/modmanager.h"
 
+/*
+	definitions from hell
+	required to function
+*/
+
+template <ScriptContext context, typename T> inline void SqRecurseArgs(FunctionVector& v, T& arg);
+
+template <ScriptContext context, typename T, typename... Args> inline void SqRecurseArgs(FunctionVector& v, T& arg, Args... args);
+
+/*
+	sanity below
+*/
+
 // stolen from ttf2sdk: sqvm types
 typedef float SQFloat;
 typedef long SQInteger;
@@ -280,7 +293,7 @@ class SquirrelManagerBase
 
 	template <typename T> inline SQBool getthisentity(HSquirrelVM* sqvm, T* ppEntity)
 	{
-		return __sq_getentity(sqvm, (void**)ppEntity);
+		return __sq_getthisentity(sqvm, (void**)ppEntity);
 	}
 
 	template <typename T> inline T* getentity(HSquirrelVM* sqvm, SQInteger iStackPos)
