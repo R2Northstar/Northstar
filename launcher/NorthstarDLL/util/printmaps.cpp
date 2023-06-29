@@ -118,7 +118,7 @@ void RefreshMapList()
 
 // clang-format off
 AUTOHOOK(_Host_Map_f_CompletionFunc, engine.dll + 0x161AE0,
-int, __fastcall, (const char const* cmdname, const char const* partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]))
+int, __fastcall, (const char *const cmdname, const char *const partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]))
 // clang-format on
 {
 	RefreshMapList();
