@@ -18,8 +18,8 @@ constexpr size_t HMACSHA256_LEN = 256 / 8;
 static bool InitHMACSHA256()
 {
 	NTSTATUS status;
-	DWORD hashLength = NULL;
-	ULONG hashLengthSz = NULL;
+	DWORD hashLength = 0;
+	ULONG hashLengthSz = 0;
 
 	if ((status = BCryptOpenAlgorithmProvider(&HMACSHA256, BCRYPT_SHA256_ALGORITHM, NULL, BCRYPT_ALG_HANDLE_HMAC_FLAG)))
 	{

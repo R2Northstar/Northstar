@@ -134,7 +134,7 @@ void InitialiseConsole()
 	if (!strstr(GetCommandLineA(), "-noansiclr"))
 	{
 		g_bSpdLog_UseAnsiColor = true;
-		DWORD dwMode = NULL;
+		DWORD dwMode = 0;
 		HANDLE hOutput = GetStdHandle(STD_OUTPUT_HANDLE);
 
 		GetConsoleMode(hOutput, &dwMode);
