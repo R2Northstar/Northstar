@@ -280,7 +280,7 @@ class ManualHook
 	args
 
 void MakeHook(LPVOID pTarget, LPVOID pDetour, void* ppOriginal, const char* pFuncName = "");
-#define MAKEHOOK(pTarget, pDetour, ppOriginal) MakeHook(pTarget, pDetour, ppOriginal, __STR(pDetour))
+#define MAKEHOOK(pTarget, pDetour, ppOriginal) MakeHook((LPVOID)pTarget, (LPVOID)pDetour, (void*)ppOriginal, __STR(pDetour))
 
 class __autovar
 {
