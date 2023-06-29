@@ -24,7 +24,7 @@ target_link_libraries(NorthstarLauncher PRIVATE
                       uuid.lib
                       odbc32.lib
                       odbccp32.lib
-                      Ws2_32.lib
+                      WS2_32.lib
 )
 
 set_target_properties(NorthstarLauncher PROPERTIES

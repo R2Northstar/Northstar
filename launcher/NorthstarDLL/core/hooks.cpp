@@ -218,7 +218,7 @@ void MakeHook(LPVOID pTarget, LPVOID pDetour, void* ppOriginal, const char* pFun
 		spdlog::error("MH_CreateHook failed for function {}", pStrippedFuncName);
 }
 
-AUTOHOOK_ABSOLUTEADDR(_GetCommandLineA, GetCommandLineA, LPSTR, WINAPI, ())
+AUTOHOOK_ABSOLUTEADDR(_GetCommandLineA, (LPVOID)GetCommandLineA, LPSTR, WINAPI, ())
 {
 	static char* cmdlineModified;
 	static char* cmdlineOrg;
@@ -386,7 +386,7 @@ void CallAllPendingDLLLoadCallbacks()
 }
 
 // clang-format off
-AUTOHOOK_ABSOLUTEADDR(_LoadLibraryExA, LoadLibraryExA,
+AUTOHOOK_ABSOLUTEADDR(_LoadLibraryExA, (LPVOID)LoadLibraryExA,
 HMODULE, WINAPI, (LPCSTR lpLibFileName, HANDLE hFile, DWORD dwFlags))
 // clang-format on
 {
@@ -415,7 +415,7 @@ HMODULE, WINAPI, (LPCSTR lpLibFileName, HANDLE hFile, DWORD dwFlags))
 }
 
 // clang-format off
-AUTOHOOK_ABSOLUTEADDR(_LoadLibraryA, LoadLibraryA,
+AUTOHOOK_ABSOLUTEADDR(_LoadLibraryA, (LPVOID)LoadLibraryA,
 HMODULE, WINAPI, (LPCSTR lpLibFileName))
 // clang-format on
 {
@@ -428,7 +428,7 @@ HMODULE, WINAPI, (LPCSTR lpLibFileName))
 }
 
 // clang-format off
-AUTOHOOK_ABSOLUTEADDR(_LoadLibraryExW, LoadLibraryExW,
+AUTOHOOK_ABSOLUTEADDR(_LoadLibraryExW, (LPVOID)LoadLibraryExW,
 HMODULE, WINAPI, (LPCWSTR lpLibFileName, HANDLE hFile, DWORD dwFlags))
 // clang-format on
 {
@@ -441,7 +441,7 @@ HMODULE, WINAPI, (LPCWSTR lpLibFileName, HANDLE hFile, DWORD dwFlags))
 }
 
 // clang-format off
-AUTOHOOK_ABSOLUTEADDR(_LoadLibraryW, LoadLibraryW,
+AUTOHOOK_ABSOLUTEADDR(_LoadLibraryW, (LPVOID)LoadLibraryW,
 HMODULE, WINAPI, (LPCWSTR lpLibFileName))
 // clang-format on
 {

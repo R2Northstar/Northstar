@@ -1,6 +1,6 @@
 #include "masterserver/masterserver.h"
 #include "core/convar/concommand.h"
-#include "playlist.h"
+#include "shared/playlist.h"
 #include "server/auth/serverauthentication.h"
 #include "core/tier0.h"
 #include "engine/r2engine.h"
@@ -1197,11 +1197,11 @@ void MasterServerPresenceReporter::InternalAddServer(const ServerPresence* pServ
 
 			// format every paramter because computers hate me
 			{
-				char* nameEscaped = curl_easy_escape(curl, threadedPresence.m_sServerName.c_str(), NULL);
-				char* descEscaped = curl_easy_escape(curl, threadedPresence.m_sServerDesc.c_str(), NULL);
-				char* mapEscaped = curl_easy_escape(curl, threadedPresence.m_MapName, NULL);
-				char* playlistEscaped = curl_easy_escape(curl, threadedPresence.m_PlaylistName, NULL);
-				char* passwordEscaped = curl_easy_escape(curl, threadedPresence.m_Password, NULL);
+				char* nameEscaped = curl_easy_escape(curl, threadedPresence.m_sServerName.c_str(), 0);
+				char* descEscaped = curl_easy_escape(curl, threadedPresence.m_sServerDesc.c_str(), 0);
+				char* mapEscaped = curl_easy_escape(curl, threadedPresence.m_MapName, 0);
+				char* playlistEscaped = curl_easy_escape(curl, threadedPresence.m_PlaylistName, 0);
+				char* passwordEscaped = curl_easy_escape(curl, threadedPresence.m_Password, 0);
 
 				curl_easy_setopt(
 					curl,
@@ -1344,11 +1344,11 @@ void MasterServerPresenceReporter::InternalUpdateServer(const ServerPresence* pS
 			// send all registration info so we have all necessary info to reregister our server if masterserver goes down,
 			// without a restart this isn't threadsafe :terror:
 			{
-				char* nameEscaped = curl_easy_escape(curl, threadedPresence.m_sServerName.c_str(), NULL);
-				char* descEscaped = curl_easy_escape(curl, threadedPresence.m_sServerDesc.c_str(), NULL);
-				char* mapEscaped = curl_easy_escape(curl, threadedPresence.m_MapName, NULL);
-				char* playlistEscaped = curl_easy_escape(curl, threadedPresence.m_PlaylistName, NULL);
-				char* passwordEscaped = curl_easy_escape(curl, threadedPresence.m_Password, NULL);
+				char* nameEscaped = curl_easy_escape(curl, threadedPresence.m_sServerName.c_str(), 0);
+				char* descEscaped = curl_easy_escape(curl, threadedPresence.m_sServerDesc.c_str(), 0);
+				char* mapEscaped = curl_easy_escape(curl, threadedPresence.m_MapName, 0);
+				char* playlistEscaped = curl_easy_escape(curl, threadedPresence.m_PlaylistName, 0);
+				char* passwordEscaped = curl_easy_escape(curl, threadedPresence.m_Password, 0);
 
 				curl_easy_setopt(
 					curl,
