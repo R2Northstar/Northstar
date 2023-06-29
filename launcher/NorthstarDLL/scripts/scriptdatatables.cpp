@@ -116,7 +116,7 @@ REPLACE_SQFUNC(GetDataTable, (ScriptContext::UI | ScriptContext::CLIENT | Script
 		// first, check the cache
 		if (CSVCache.find(pAssetName) != CSVCache.end())
 		{
-			CSVData** pUserdata = g_pSquirrel<context>->createuserdata<CSVData*>(sqvm, sizeof(CSVData*));
+			CSVData** pUserdata = g_pSquirrel<context>->template createuserdata<CSVData*>(sqvm, sizeof(CSVData*));
 			g_pSquirrel<context>->setuserdatatypeid(sqvm, -1, USERDATA_TYPE_DATATABLE_CUSTOM);
 			*pUserdata = &CSVCache[pAssetName];
 
@@ -251,7 +251,7 @@ REPLACE_SQFUNC(GetDataTable, (ScriptContext::UI | ScriptContext::CLIENT | Script
 			}
 
 			// add to cache and return
-			CSVData** pUserdata = g_pSquirrel<context>->createuserdata<CSVData*>(sqvm, sizeof(CSVData*));
+			CSVData** pUserdata = g_pSquirrel<context>->template createuserdata<CSVData*>(sqvm, sizeof(CSVData*));
 			g_pSquirrel<context>->setuserdatatypeid(sqvm, -1, USERDATA_TYPE_DATATABLE_CUSTOM);
 			CSVCache[pAssetName] = csv;
 			*pUserdata = &CSVCache[pAssetName];
