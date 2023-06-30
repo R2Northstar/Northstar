@@ -146,8 +146,8 @@ add_library(NorthstarDLL SHARED
 )
 
 target_link_libraries(NorthstarDLL PRIVATE
-                      ${CMAKE_SOURCE_DIR}/include/MinHook.x64.lib
-                      ${CMAKE_SOURCE_DIR}/include/libcurl/lib/libcurl_a.lib
+                      ${CMAKE_SOURCE_DIR}/thirdparty/minhook/MinHook.x64.lib
+                      ${CMAKE_SOURCE_DIR}/thirdparty/libcurl/lib/libcurl_a.lib
                       WS2_32.lib
                       Crypt32.lib
                       Cryptui.lib
@@ -160,7 +160,7 @@ target_link_libraries(NorthstarDLL PRIVATE
 
 target_include_directories(NorthstarDLL PRIVATE
                            ${CMAKE_SOURCE_DIR}/NorthstarDLL
-                           ${CMAKE_SOURCE_DIR}/include
+                           ${CMAKE_SOURCE_DIR}/thirdparty
 )
 
 target_precompile_headers(NorthstarDLL PRIVATE pch.h)

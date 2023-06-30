@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "loader.h"
-#include "include/MinHook.h"
 #include <string>
 #include <system_error>
 #include <sstream>
