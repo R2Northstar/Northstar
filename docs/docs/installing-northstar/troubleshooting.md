@@ -135,7 +135,7 @@ Adding `-vanilla` or removing the `-northstar` will start the normal game when y
 This is a small guide to help you understand how to verify the files of your game
 
 * For Steam
-  * `Your library > Right click TF|2 > Properties > Local Files > Verify integrity of game files...`
+  * `Your library > Right click TF|2 > Properties > Installed Files > Verify integrity of game files...`
 * For EA app
   * `My collection > Click the three dots on TF|2 > Repair`
 * For Origin
