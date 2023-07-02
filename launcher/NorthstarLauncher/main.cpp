@@ -254,13 +254,9 @@ void PrependPath()
 
 bool ShouldLoadNorthstar(int argc, char* argv[])
 {
-	bool loadNorthstar = true;
 	for (int i = 0; i < argc; i++)
 		if (!strcmp(argv[i], "-vanilla"))
-			loadNorthstar = false;
-
-	if (!loadNorthstar)
-		return loadNorthstar;
+			return false;
 
 	auto runNorthstarFile = std::ifstream("run_northstar.txt");
 	if (runNorthstarFile)
@@ -269,9 +265,9 @@ bool ShouldLoadNorthstar(int argc, char* argv[])
 		runNorthstarFileBuffer << runNorthstarFile.rdbuf();
 		runNorthstarFile.close();
 		if (runNorthstarFileBuffer.str().starts_with("0"))
-			loadNorthstar = false;
+			return false;
 	}
-	return loadNorthstar;
+	return true;
 }
 
 bool LoadNorthstar()
