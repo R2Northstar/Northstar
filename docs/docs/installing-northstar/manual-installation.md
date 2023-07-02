@@ -35,3 +35,28 @@ Should you notice any issues/warnings/errors while running Northstar, check the 
 
 To update, simply follow the same process you used to install Northstar using the newest zipped release of Northstar. When copying the new files make sure to select "_Overwrite_".\
 Note that if you modified some files like `ns_startup_args.txt`, these will also be overwritten. If you want to keep the changes you made make sure to make a copy of these files beforehand and change them back after applying the update.
+
+## Installing Northstar mods manually
+
+Alongside installing Northstar, many users choose to install additional mods to replace/add any number of things in Titanfall 2. This guide will go over how to do this manually.
+
+A quick image guide to installing mods can be found below:
+
+![Quick guide to install mods manually](../images/manual-mod-install.png)
+
+If this doesn't make sense to you, you can follow the text guide below.
+
+First, you'll want to find a mod you want from [Northstar's Thunderstore page](https://northstar.thunderstore.io/).
+
+Once you find your mod, hit the `Manual Download` button near the top of the page. This will download the mod's Thunderstore package (note: NOT the mod itself).
+While you're doing this, check if the mod requires any additional dependencies, which you can see in the area circled below:
+
+![Where required dependencies are shown on a mod's page](../images/mod-page-dependencies.png)
+
+If a mod says it has required dependencies (apart from Northstar), download them as well.
+
+After this, open the folder that gets downloaded. Inside of here, you should normally see a folder called `mods`, and a few files called `icon.png`, `manifest.json`, and `README.md`.
+From here, open the `mods` folder. Inside of here, you will find the actual folder for the mod. Move this folder to `Titanfall2/R2Northstar/mods`. Make sure to repeat this process for any and all dependencies the mod has.
+
+Note that there are variants of these. Some mods you download from Thunderstore are actually packages of mods stored inside the `mods` folder in the Thunderstore package.
+Some mods are formatted "improperly" (when following modding guides; though these aren't exactly "wrong") and won't have a `mods` folder, instead they just have the mod folder itself in the downloaded Thunderstore package.
