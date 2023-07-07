@@ -1,93 +1,93 @@
 #include "memory.h"
 
-MemoryAddress::MemoryAddress() : m_nAddress(0) {}
-MemoryAddress::MemoryAddress(const uintptr_t nAddress) : m_nAddress(nAddress) {}
-MemoryAddress::MemoryAddress(const void* pAddress) : m_nAddress(reinterpret_cast<uintptr_t>(pAddress)) {}
+CMemoryAddress::CMemoryAddress() : m_nAddress(0) {}
+CMemoryAddress::CMemoryAddress(const uintptr_t nAddress) : m_nAddress(nAddress) {}
+CMemoryAddress::CMemoryAddress(const void* pAddress) : m_nAddress(reinterpret_cast<uintptr_t>(pAddress)) {}
 
 // operators
-MemoryAddress::operator uintptr_t() const
+CMemoryAddress::operator uintptr_t() const
 {
 	return m_nAddress;
 }
 
-MemoryAddress::operator void*() const
+CMemoryAddress::operator void*() const
 {
 	return reinterpret_cast<void*>(m_nAddress);
 }
 
-MemoryAddress::operator bool() const
+CMemoryAddress::operator bool() const
 {
 	return m_nAddress != 0;
 }
 
-bool MemoryAddress::operator==(const MemoryAddress& other) const
+bool CMemoryAddress::operator==(const CMemoryAddress& other) const
 {
 	return m_nAddress == other.m_nAddress;
 }
 
-bool MemoryAddress::operator!=(const MemoryAddress& other) const
+bool CMemoryAddress::operator!=(const CMemoryAddress& other) const
 {
 	return m_nAddress != other.m_nAddress;
 }
 
-bool MemoryAddress::operator==(const uintptr_t& addr) const
+bool CMemoryAddress::operator==(const uintptr_t& addr) const
 {
 	return m_nAddress == addr;
 }
 
-bool MemoryAddress::operator!=(const uintptr_t& addr) const
+bool CMemoryAddress::operator!=(const uintptr_t& addr) const
 {
 	return m_nAddress != addr;
 }
 
-MemoryAddress MemoryAddress::operator+(const MemoryAddress& other) const
+CMemoryAddress CMemoryAddress::operator+(const CMemoryAddress& other) const
 {
 	return Offset(other.m_nAddress);
 }
 
-MemoryAddress MemoryAddress::operator-(const MemoryAddress& other) const
+CMemoryAddress CMemoryAddress::operator-(const CMemoryAddress& other) const
 {
-	return MemoryAddress(m_nAddress - other.m_nAddress);
+	return CMemoryAddress(m_nAddress - other.m_nAddress);
 }
 
-MemoryAddress MemoryAddress::operator+(const uintptr_t& addr) const
+CMemoryAddress CMemoryAddress::operator+(const uintptr_t& addr) const
 {
 	return Offset(addr);
 }
 
-MemoryAddress MemoryAddress::operator-(const uintptr_t& addr) const
+CMemoryAddress CMemoryAddress::operator-(const uintptr_t& addr) const
 {
-	return MemoryAddress(m_nAddress - addr);
+	return CMemoryAddress(m_nAddress - addr);
 }
 
-MemoryAddress MemoryAddress::operator*() const
+CMemoryAddress CMemoryAddress::operator*() const
 {
 	return Deref();
 }
 
 // traversal
-MemoryAddress MemoryAddress::Offset(const uintptr_t nOffset) const
+CMemoryAddress CMemoryAddress::Offset(const uintptr_t nOffset) const
 {
-	return MemoryAddress(m_nAddress + nOffset);
+	return CMemoryAddress(m_nAddress + nOffset);
 }
 
-MemoryAddress MemoryAddress::Deref(const int nNumDerefs) const
+CMemoryAddress CMemoryAddress::Deref(const int nNumDerefs) const
 {
 	uintptr_t ret = m_nAddress;
 	for (int i = 0; i < nNumDerefs; i++)
 		ret = *reinterpret_cast<uintptr_t*>(ret);
 
-	return MemoryAddress(ret);
+	return CMemoryAddress(ret);
 }
 
 // patching
-void MemoryAddress::Patch(const uint8_t* pBytes, const size_t nSize)
+void CMemoryAddress::Patch(const uint8_t* pBytes, const size_t nSize)
 {
 	if (nSize)
 		WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<LPVOID>(m_nAddress), pBytes, nSize, NULL);
 }
 
-void MemoryAddress::Patch(const std::initializer_list<uint8_t> bytes)
+void CMemoryAddress::Patch(const std::initializer_list<uint8_t> bytes)
 {
 	uint8_t* pBytes = new uint8_t[bytes.size()];
 
@@ -146,13 +146,13 @@ inline std::vector<uint8_t> HexBytesToString(const char* pHexString)
 	return ret;
 }
 
-void MemoryAddress::Patch(const char* pBytes)
+void CMemoryAddress::Patch(const char* pBytes)
 {
 	std::vector<uint8_t> vBytes = HexBytesToString(pBytes);
 	Patch(vBytes.data(), vBytes.size());
 }
 
-void MemoryAddress::NOP(const size_t nSize)
+void CMemoryAddress::NOP(const size_t nSize)
 {
 	uint8_t* pBytes = new uint8_t[nSize];
 
@@ -162,7 +162,7 @@ void MemoryAddress::NOP(const size_t nSize)
 	delete[] pBytes;
 }
 
-bool MemoryAddress::IsMemoryReadable(const size_t nSize)
+bool CMemoryAddress::IsMemoryReadable(const size_t nSize)
 {
 	static SYSTEM_INFO sysInfo;
 	if (!sysInfo.dwPageSize)
@@ -218,15 +218,15 @@ CModule::CModule(const HMODULE pModule)
 
 CModule::CModule(const char* pModuleName) : CModule(GetModuleHandleA(pModuleName)) {}
 
-MemoryAddress CModule::GetExport(const char* pExportName)
+CMemoryAddress CModule::GetExport(const char* pExportName)
 {
-	return MemoryAddress(reinterpret_cast<uintptr_t>(GetProcAddress(reinterpret_cast<HMODULE>(m_nAddress), pExportName)));
+	return CMemoryAddress(reinterpret_cast<uintptr_t>(GetProcAddress(reinterpret_cast<HMODULE>(m_nAddress), pExportName)));
 }
 
-MemoryAddress CModule::FindPattern(const uint8_t* pPattern, const char* pMask)
+CMemoryAddress CModule::FindPattern(const uint8_t* pPattern, const char* pMask)
 {
 	if (!m_ExecutableCode.IsSectionValid())
-		return MemoryAddress();
+		return CMemoryAddress();
 
 	uint64_t nBase = static_cast<uint64_t>(m_ExecutableCode.m_pSectionBase);
 	uint64_t nSize = static_cast<uint64_t>(m_ExecutableCode.m_nSectionSize);
@@ -267,21 +267,21 @@ MemoryAddress CModule::FindPattern(const uint8_t* pPattern, const char* pMask)
 					{
 						if ((i + 1) == iNumMasks)
 						{
-							return MemoryAddress(const_cast<uint8_t*>(pData));
+							return CMemoryAddress(const_cast<uint8_t*>(pData));
 						}
 					}
 					else
 						goto CONTINUE;
 				}
 
-				return MemoryAddress((&*(const_cast<uint8_t*>(pData))));
+				return CMemoryAddress((&*(const_cast<uint8_t*>(pData))));
 			}
 		}
 
 	CONTINUE:;
 	}
 
-	return MemoryAddress();
+	return CMemoryAddress();
 }
 
 inline std::pair<std::vector<uint8_t>, std::string> MaskedBytesFromPattern(const char* pPatternString)
@@ -340,7 +340,7 @@ inline std::pair<std::vector<uint8_t>, std::string> MaskedBytesFromPattern(const
 	return std::make_pair(vRet, sMask);
 }
 
-MemoryAddress CModule::FindPattern(const char* pPattern)
+CMemoryAddress CModule::FindPattern(const char* pPattern)
 {
 	const auto pattern = MaskedBytesFromPattern(pPattern);
 	return FindPattern(pattern.first.data(), pattern.second.c_str());

@@ -172,7 +172,7 @@ void FixupCvarFlags()
 	// make all engine client commands FCVAR_GAMEDLL_FOR_REMOTE_CLIENTS
 	// these are usually checked through CGameClient::IsEngineClientCommand, but we get more control over this if we just do it through
 	// cvar flags
-	const char** ppEngineClientCommands = CModule("engine.dll").Offset(0x7C5EF0).As<const char**>();
+	const char** ppEngineClientCommands = CModule("engine.dll").Offset(0x7C5EF0).RCast<const char**>();
 
 	int i = 0;
 	do

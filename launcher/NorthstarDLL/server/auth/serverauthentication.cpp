@@ -368,7 +368,7 @@ ON_DLL_LOAD_RELIESON("engine.dll", ServerAuthentication, (ConCommand, ConVar), (
 	// patch to disable fairfight marking players as cheaters and kicking them
 	module.Offset(0x101012).Patch("E9 90 00");
 
-	CBaseServer__RejectConnection = module.Offset(0x1182E0).As<CBaseServer__RejectConnectionType>();
+	CBaseServer__RejectConnection = module.Offset(0x1182E0).RCast<CBaseServer__RejectConnectionType>();
 
 	if (Tier0::CommandLine()->CheckParm("-allowdupeaccounts"))
 	{

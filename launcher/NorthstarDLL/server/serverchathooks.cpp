@@ -151,7 +151,7 @@ ADD_SQFUNC(
 
 ON_DLL_LOAD("engine.dll", EngineServerChatHooks, (CModule module))
 {
-	g_pServerGameDLL = module.Offset(0x13F0AA98).As<CServerGameDLL*>();
+	g_pServerGameDLL = module.Offset(0x13F0AA98).RCast<CServerGameDLL*>();
 }
 
 ON_DLL_LOAD_RELIESON("server.dll", ServerChatHooks, ServerSquirrel, (CModule module))
@@ -159,16 +159,16 @@ ON_DLL_LOAD_RELIESON("server.dll", ServerChatHooks, ServerSquirrel, (CModule mod
 	AUTOHOOK_DISPATCH_MODULE(server.dll)
 
 	CServerGameDLL__OnReceivedSayTextMessage =
-		module.Offset(0x1595C0).As<void(__fastcall*)(CServerGameDLL*, unsigned int, const char*, int)>();
-	CRecipientFilter__Construct = module.Offset(0x1E9440).As<void(__fastcall*)(CRecipientFilter*)>();
-	CRecipientFilter__Destruct = module.Offset(0x1E9700).As<void(__fastcall*)(CRecipientFilter*)>();
-	CRecipientFilter__AddAllPlayers = module.Offset(0x1E9940).As<void(__fastcall*)(CRecipientFilter*)>();
-	CRecipientFilter__AddRecipient = module.Offset(0x1E9B30).As<void(__fastcall*)(CRecipientFilter*, const R2::CBasePlayer*)>();
-	CRecipientFilter__MakeReliable = module.Offset(0x1EA4E0).As<void(__fastcall*)(CRecipientFilter*)>();
+		module.Offset(0x1595C0).RCast<void(__fastcall*)(CServerGameDLL*, unsigned int, const char*, int)>();
+	CRecipientFilter__Construct = module.Offset(0x1E9440).RCast<void(__fastcall*)(CRecipientFilter*)>();
+	CRecipientFilter__Destruct = module.Offset(0x1E9700).RCast<void(__fastcall*)(CRecipientFilter*)>();
+	CRecipientFilter__AddAllPlayers = module.Offset(0x1E9940).RCast<void(__fastcall*)(CRecipientFilter*)>();
+	CRecipientFilter__AddRecipient = module.Offset(0x1E9B30).RCast<void(__fastcall*)(CRecipientFilter*, const R2::CBasePlayer*)>();
+	CRecipientFilter__MakeReliable = module.Offset(0x1EA4E0).RCast<void(__fastcall*)(CRecipientFilter*)>();
 
-	UserMessageBegin = module.Offset(0x15C520).As<void(__fastcall*)(CRecipientFilter*, const char*)>();
-	MessageEnd = module.Offset(0x158880).As<void(__fastcall*)()>();
-	MessageWriteByte = module.Offset(0x158A90).As<void(__fastcall*)(int)>();
-	MessageWriteString = module.Offset(0x158D00).As<void(__fastcall*)(const char*)>();
-	MessageWriteBool = module.Offset(0x158A00).As<void(__fastcall*)(bool)>();
+	UserMessageBegin = module.Offset(0x15C520).RCast<void(__fastcall*)(CRecipientFilter*, const char*)>();
+	MessageEnd = module.Offset(0x158880).RCast<void(__fastcall*)()>();
+	MessageWriteByte = module.Offset(0x158A90).RCast<void(__fastcall*)(int)>();
+	MessageWriteString = module.Offset(0x158D00).RCast<void(__fastcall*)(const char*)>();
+	MessageWriteBool = module.Offset(0x158A00).RCast<void(__fastcall*)(bool)>();
 }

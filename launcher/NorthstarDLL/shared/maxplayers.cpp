@@ -64,7 +64,7 @@ namespace R2 // use R2 namespace for game funcs
 	}
 } // namespace R2
 
-template <class T> void ChangeOffset(MemoryAddress addr, unsigned int offset)
+template <class T> void ChangeOffset(CMemoryAddress addr, unsigned int offset)
 {
 	addr.Patch((BYTE*)&offset, sizeof(T));
 }
@@ -432,8 +432,8 @@ ON_DLL_LOAD("server.dll", MaxPlayersOverride_Server, (CModule module))
 	ChangeOffset<unsigned int>(module.Offset(0x5C6654 + 3), CPlayerResource_OriginalSize + PlayerResource_KillStats_Start);
 	ChangeOffset<unsigned int>(module.Offset(0x5C665B + 3), CPlayerResource_OriginalSize + PlayerResource_KillStats_Start);
 
-	*module.Offset(0x14E7390).As<DWORD*>() = 0;
-	auto DT_PlayerResource_Construct = module.Offset(0x5C4FE0).As<__int64(__fastcall*)()>();
+	*module.Offset(0x14E7390).RCast<DWORD*>() = 0;
+	auto DT_PlayerResource_Construct = module.Offset(0x5C4FE0).RCast<__int64(__fastcall*)()>();
 	DT_PlayerResource_Construct();
 
 	constexpr int CTeam_OriginalSize = 3336;
@@ -446,8 +446,8 @@ ON_DLL_LOAD("server.dll", MaxPlayersOverride_Server, (CModule module))
 	// CTeam::CTeam - increase memset length to clean newly allocated data
 	ChangeOffset<unsigned int>(module.Offset(0x2395AE + 2), 256 + CTeam_AddedSize);
 
-	*module.Offset(0xC945A0).As<DWORD*>() = 0;
-	auto DT_Team_Construct = module.Offset(0x238F50).As<__int64(__fastcall*)()>();
+	*module.Offset(0xC945A0).RCast<DWORD*>() = 0;
+	auto DT_Team_Construct = module.Offset(0x238F50).RCast<__int64(__fastcall*)()>();
 	DT_Team_Construct();
 }
 
@@ -621,8 +621,8 @@ ON_DLL_LOAD("client.dll", MaxPlayersOverride_Client, (CModule module))
 	// Some other get name func 2 (that seems to be unused too) - change m_bConnected address
 	ChangeOffset<unsigned int>(module.Offset(0x164834 + 3), C_PlayerResource_OriginalSize + PlayerResource_Connected_Start);
 
-	*module.Offset(0xC35068).As<DWORD*>() = 0;
-	auto DT_PlayerResource_Construct = module.Offset(0x163400).As<__int64(__fastcall*)()>();
+	*module.Offset(0xC35068).RCast<DWORD*>() = 0;
+	auto DT_PlayerResource_Construct = module.Offset(0x163400).RCast<__int64(__fastcall*)()>();
 	DT_PlayerResource_Construct();
 
 	constexpr int C_Team_OriginalSize = 3200;
@@ -638,7 +638,7 @@ ON_DLL_LOAD("client.dll", MaxPlayersOverride_Client, (CModule module))
 	// DT_Team size
 	ChangeOffset<unsigned int>(module.Offset(0xC3AA0C), C_Team_ModifiedSize);
 
-	*module.Offset(0xC3AFF8).As<DWORD*>() = 0;
-	auto DT_Team_Construct = module.Offset(0x17F950).As<__int64(__fastcall*)()>();
+	*module.Offset(0xC3AFF8).RCast<DWORD*>() = 0;
+	auto DT_Team_Construct = module.Offset(0x17F950).RCast<__int64(__fastcall*)()>();
 	DT_Team_Construct();
 }

@@ -1289,9 +1289,9 @@ KeyValues* KeyValues::MakeCopy(void) const
 
 ON_DLL_LOAD("vstdlib.dll", KeyValues, (CModule module))
 {
-	V_UTF8ToUnicode = module.GetExport("V_UTF8ToUnicode").As<int (*)(const char*, wchar_t*, int)>();
-	V_UnicodeToUTF8 = module.GetExport("V_UnicodeToUTF8").As<int (*)(const wchar_t*, char*, int)>();
-	KeyValuesSystem = module.GetExport("KeyValuesSystem").As<CKeyValuesSystem* (*)()>();
+	V_UTF8ToUnicode = module.GetExport("V_UTF8ToUnicode").RCast<int (*)(const char*, wchar_t*, int)>();
+	V_UnicodeToUTF8 = module.GetExport("V_UnicodeToUTF8").RCast<int (*)(const wchar_t*, char*, int)>();
+	KeyValuesSystem = module.GetExport("KeyValuesSystem").RCast<CKeyValuesSystem* (*)()>();
 }
 
 AUTOHOOK_INIT()

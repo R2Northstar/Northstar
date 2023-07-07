@@ -701,37 +701,37 @@ ON_DLL_LOAD_RELIESON("client.dll", ClientSquirrel, ConCommand, (CModule module))
 {
 	AUTOHOOK_DISPATCH_MODULE(client.dll)
 
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_defconst = module.Offset(0x12120).As<sq_defconstType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_defconst = module.Offset(0x12120).RCast<sq_defconstType>();
 	g_pSquirrel<ScriptContext::UI>->__sq_defconst = g_pSquirrel<ScriptContext::CLIENT>->__sq_defconst;
 
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_compilebuffer = module.Offset(0x3110).As<sq_compilebufferType>();
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_pushroottable = module.Offset(0x5860).As<sq_pushroottableType>();
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_compilefile = module.Offset(0xF950).As<sq_compilefileType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_compilebuffer = module.Offset(0x3110).RCast<sq_compilebufferType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_pushroottable = module.Offset(0x5860).RCast<sq_pushroottableType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_compilefile = module.Offset(0xF950).RCast<sq_compilefileType>();
 	g_pSquirrel<ScriptContext::UI>->__sq_compilebuffer = g_pSquirrel<ScriptContext::CLIENT>->__sq_compilebuffer;
 	g_pSquirrel<ScriptContext::UI>->__sq_pushroottable = g_pSquirrel<ScriptContext::CLIENT>->__sq_pushroottable;
 	g_pSquirrel<ScriptContext::UI>->__sq_compilefile = g_pSquirrel<ScriptContext::CLIENT>->__sq_compilefile;
 
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_call = module.Offset(0x8650).As<sq_callType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_call = module.Offset(0x8650).RCast<sq_callType>();
 	g_pSquirrel<ScriptContext::UI>->__sq_call = g_pSquirrel<ScriptContext::CLIENT>->__sq_call;
 
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_newarray = module.Offset(0x39F0).As<sq_newarrayType>();
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_arrayappend = module.Offset(0x3C70).As<sq_arrayappendType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_newarray = module.Offset(0x39F0).RCast<sq_newarrayType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_arrayappend = module.Offset(0x3C70).RCast<sq_arrayappendType>();
 	g_pSquirrel<ScriptContext::UI>->__sq_newarray = g_pSquirrel<ScriptContext::CLIENT>->__sq_newarray;
 	g_pSquirrel<ScriptContext::UI>->__sq_arrayappend = g_pSquirrel<ScriptContext::CLIENT>->__sq_arrayappend;
 
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_newtable = module.Offset(0x3960).As<sq_newtableType>();
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_newslot = module.Offset(0x70B0).As<sq_newslotType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_newtable = module.Offset(0x3960).RCast<sq_newtableType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_newslot = module.Offset(0x70B0).RCast<sq_newslotType>();
 	g_pSquirrel<ScriptContext::UI>->__sq_newtable = g_pSquirrel<ScriptContext::CLIENT>->__sq_newtable;
 	g_pSquirrel<ScriptContext::UI>->__sq_newslot = g_pSquirrel<ScriptContext::CLIENT>->__sq_newslot;
 
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_pushstring = module.Offset(0x3440).As<sq_pushstringType>();
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_pushinteger = module.Offset(0x36A0).As<sq_pushintegerType>();
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_pushfloat = module.Offset(0x3800).As<sq_pushfloatType>();
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_pushbool = module.Offset(0x3710).As<sq_pushboolType>();
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_pushasset = module.Offset(0x3560).As<sq_pushassetType>();
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_pushvector = module.Offset(0x3780).As<sq_pushvectorType>();
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_pushobject = module.Offset(0x83D0).As<sq_pushobjectType>();
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_raiseerror = module.Offset(0x8470).As<sq_raiseerrorType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_pushstring = module.Offset(0x3440).RCast<sq_pushstringType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_pushinteger = module.Offset(0x36A0).RCast<sq_pushintegerType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_pushfloat = module.Offset(0x3800).RCast<sq_pushfloatType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_pushbool = module.Offset(0x3710).RCast<sq_pushboolType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_pushasset = module.Offset(0x3560).RCast<sq_pushassetType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_pushvector = module.Offset(0x3780).RCast<sq_pushvectorType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_pushobject = module.Offset(0x83D0).RCast<sq_pushobjectType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_raiseerror = module.Offset(0x8470).RCast<sq_raiseerrorType>();
 	g_pSquirrel<ScriptContext::UI>->__sq_pushstring = g_pSquirrel<ScriptContext::CLIENT>->__sq_pushstring;
 	g_pSquirrel<ScriptContext::UI>->__sq_pushinteger = g_pSquirrel<ScriptContext::CLIENT>->__sq_pushinteger;
 	g_pSquirrel<ScriptContext::UI>->__sq_pushfloat = g_pSquirrel<ScriptContext::CLIENT>->__sq_pushfloat;
@@ -741,16 +741,16 @@ ON_DLL_LOAD_RELIESON("client.dll", ClientSquirrel, ConCommand, (CModule module))
 	g_pSquirrel<ScriptContext::UI>->__sq_pushobject = g_pSquirrel<ScriptContext::CLIENT>->__sq_pushobject;
 	g_pSquirrel<ScriptContext::UI>->__sq_raiseerror = g_pSquirrel<ScriptContext::CLIENT>->__sq_raiseerror;
 
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_getstring = module.Offset(0x60C0).As<sq_getstringType>();
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_getinteger = module.Offset(0x60E0).As<sq_getintegerType>();
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_getfloat = module.Offset(0x6100).As<sq_getfloatType>();
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_getbool = module.Offset(0x6130).As<sq_getboolType>();
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_get = module.Offset(0x7C30).As<sq_getType>();
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_getasset = module.Offset(0x6010).As<sq_getassetType>();
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_getuserdata = module.Offset(0x63D0).As<sq_getuserdataType>();
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_getvector = module.Offset(0x6140).As<sq_getvectorType>();
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_getthisentity = module.Offset(0x12F80).As<sq_getthisentityType>();
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_getobject = module.Offset(0x6160).As<sq_getobjectType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_getstring = module.Offset(0x60C0).RCast<sq_getstringType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_getinteger = module.Offset(0x60E0).RCast<sq_getintegerType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_getfloat = module.Offset(0x6100).RCast<sq_getfloatType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_getbool = module.Offset(0x6130).RCast<sq_getboolType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_get = module.Offset(0x7C30).RCast<sq_getType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_getasset = module.Offset(0x6010).RCast<sq_getassetType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_getuserdata = module.Offset(0x63D0).RCast<sq_getuserdataType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_getvector = module.Offset(0x6140).RCast<sq_getvectorType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_getthisentity = module.Offset(0x12F80).RCast<sq_getthisentityType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_getobject = module.Offset(0x6160).RCast<sq_getobjectType>();
 	g_pSquirrel<ScriptContext::UI>->__sq_getstring = g_pSquirrel<ScriptContext::CLIENT>->__sq_getstring;
 	g_pSquirrel<ScriptContext::UI>->__sq_getinteger = g_pSquirrel<ScriptContext::CLIENT>->__sq_getinteger;
 	g_pSquirrel<ScriptContext::UI>->__sq_getfloat = g_pSquirrel<ScriptContext::CLIENT>->__sq_getfloat;
@@ -762,27 +762,27 @@ ON_DLL_LOAD_RELIESON("client.dll", ClientSquirrel, ConCommand, (CModule module))
 	g_pSquirrel<ScriptContext::UI>->__sq_getthisentity = g_pSquirrel<ScriptContext::CLIENT>->__sq_getthisentity;
 	g_pSquirrel<ScriptContext::UI>->__sq_getobject = g_pSquirrel<ScriptContext::CLIENT>->__sq_getobject;
 
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_createuserdata = module.Offset(0x38D0).As<sq_createuserdataType>();
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_setuserdatatypeid = module.Offset(0x6490).As<sq_setuserdatatypeidType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_createuserdata = module.Offset(0x38D0).RCast<sq_createuserdataType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_setuserdatatypeid = module.Offset(0x6490).RCast<sq_setuserdatatypeidType>();
 	g_pSquirrel<ScriptContext::UI>->__sq_createuserdata = g_pSquirrel<ScriptContext::CLIENT>->__sq_createuserdata;
 	g_pSquirrel<ScriptContext::UI>->__sq_setuserdatatypeid = g_pSquirrel<ScriptContext::CLIENT>->__sq_setuserdatatypeid;
 
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_GetEntityConstant_CBaseEntity = module.Offset(0x3E49B0).As<sq_GetEntityConstantType>();
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_getentityfrominstance = module.Offset(0x114F0).As<sq_getentityfrominstanceType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_GetEntityConstant_CBaseEntity = module.Offset(0x3E49B0).RCast<sq_GetEntityConstantType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_getentityfrominstance = module.Offset(0x114F0).RCast<sq_getentityfrominstanceType>();
 	g_pSquirrel<ScriptContext::UI>->__sq_GetEntityConstant_CBaseEntity =
 		g_pSquirrel<ScriptContext::CLIENT>->__sq_GetEntityConstant_CBaseEntity;
 	g_pSquirrel<ScriptContext::UI>->__sq_getentityfrominstance = g_pSquirrel<ScriptContext::CLIENT>->__sq_getentityfrominstance;
 
 	// Message buffer stuff
 	g_pSquirrel<ScriptContext::UI>->messageBuffer = g_pSquirrel<ScriptContext::CLIENT>->messageBuffer;
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_getfunction = module.Offset(0x572FB0).As<sq_getfunctionType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_getfunction = module.Offset(0x572FB0).RCast<sq_getfunctionType>();
 	g_pSquirrel<ScriptContext::UI>->__sq_getfunction = g_pSquirrel<ScriptContext::CLIENT>->__sq_getfunction;
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_stackinfos = module.Offset(0x35970).As<sq_stackinfosType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_stackinfos = module.Offset(0x35970).RCast<sq_stackinfosType>();
 	g_pSquirrel<ScriptContext::UI>->__sq_stackinfos = g_pSquirrel<ScriptContext::CLIENT>->__sq_stackinfos;
 
 	// Structs
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_pushnewstructinstance = module.Offset(0x5400).As<sq_pushnewstructinstanceType>();
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_sealstructslot = module.Offset(0x5530).As<sq_sealstructslotType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_pushnewstructinstance = module.Offset(0x5400).RCast<sq_pushnewstructinstanceType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_sealstructslot = module.Offset(0x5530).RCast<sq_sealstructslotType>();
 	g_pSquirrel<ScriptContext::UI>->__sq_pushnewstructinstance = g_pSquirrel<ScriptContext::CLIENT>->__sq_pushnewstructinstance;
 	g_pSquirrel<ScriptContext::UI>->__sq_sealstructslot = g_pSquirrel<ScriptContext::CLIENT>->__sq_sealstructslot;
 
@@ -817,7 +817,7 @@ ON_DLL_LOAD_RELIESON("client.dll", ClientSquirrel, ConCommand, (CModule module))
 	StubUnsafeSQFuncs<ScriptContext::CLIENT>();
 	StubUnsafeSQFuncs<ScriptContext::UI>();
 
-	g_pSquirrel<ScriptContext::CLIENT>->__sq_getfunction = module.Offset(0x6CB0).As<sq_getfunctionType>();
+	g_pSquirrel<ScriptContext::CLIENT>->__sq_getfunction = module.Offset(0x6CB0).RCast<sq_getfunctionType>();
 	g_pSquirrel<ScriptContext::UI>->__sq_getfunction = g_pSquirrel<ScriptContext::CLIENT>->__sq_getfunction;
 
 	SquirrelFunctions s = {};
@@ -829,55 +829,55 @@ ON_DLL_LOAD_RELIESON("server.dll", ServerSquirrel, ConCommand, (CModule module))
 {
 	AUTOHOOK_DISPATCH_MODULE(server.dll)
 
-	g_pSquirrel<ScriptContext::SERVER>->__sq_defconst = module.Offset(0x1F550).As<sq_defconstType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_defconst = module.Offset(0x1F550).RCast<sq_defconstType>();
 
-	g_pSquirrel<ScriptContext::SERVER>->__sq_compilebuffer = module.Offset(0x3110).As<sq_compilebufferType>();
-	g_pSquirrel<ScriptContext::SERVER>->__sq_pushroottable = module.Offset(0x5840).As<sq_pushroottableType>();
-	g_pSquirrel<ScriptContext::SERVER>->__sq_call = module.Offset(0x8620).As<sq_callType>();
-	g_pSquirrel<ScriptContext::SERVER>->__sq_compilefile = module.Offset(0x1CD80).As<sq_compilefileType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_compilebuffer = module.Offset(0x3110).RCast<sq_compilebufferType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_pushroottable = module.Offset(0x5840).RCast<sq_pushroottableType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_call = module.Offset(0x8620).RCast<sq_callType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_compilefile = module.Offset(0x1CD80).RCast<sq_compilefileType>();
 
-	g_pSquirrel<ScriptContext::SERVER>->__sq_newarray = module.Offset(0x39F0).As<sq_newarrayType>();
-	g_pSquirrel<ScriptContext::SERVER>->__sq_arrayappend = module.Offset(0x3C70).As<sq_arrayappendType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_newarray = module.Offset(0x39F0).RCast<sq_newarrayType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_arrayappend = module.Offset(0x3C70).RCast<sq_arrayappendType>();
 
-	g_pSquirrel<ScriptContext::SERVER>->__sq_newtable = module.Offset(0x3960).As<sq_newtableType>();
-	g_pSquirrel<ScriptContext::SERVER>->__sq_newslot = module.Offset(0x7080).As<sq_newslotType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_newtable = module.Offset(0x3960).RCast<sq_newtableType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_newslot = module.Offset(0x7080).RCast<sq_newslotType>();
 
-	g_pSquirrel<ScriptContext::SERVER>->__sq_pushstring = module.Offset(0x3440).As<sq_pushstringType>();
-	g_pSquirrel<ScriptContext::SERVER>->__sq_pushinteger = module.Offset(0x36A0).As<sq_pushintegerType>();
-	g_pSquirrel<ScriptContext::SERVER>->__sq_pushfloat = module.Offset(0x3800).As<sq_pushfloatType>();
-	g_pSquirrel<ScriptContext::SERVER>->__sq_pushbool = module.Offset(0x3710).As<sq_pushboolType>();
-	g_pSquirrel<ScriptContext::SERVER>->__sq_pushasset = module.Offset(0x3560).As<sq_pushassetType>();
-	g_pSquirrel<ScriptContext::SERVER>->__sq_pushvector = module.Offset(0x3780).As<sq_pushvectorType>();
-	g_pSquirrel<ScriptContext::SERVER>->__sq_pushobject = module.Offset(0x83A0).As<sq_pushobjectType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_pushstring = module.Offset(0x3440).RCast<sq_pushstringType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_pushinteger = module.Offset(0x36A0).RCast<sq_pushintegerType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_pushfloat = module.Offset(0x3800).RCast<sq_pushfloatType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_pushbool = module.Offset(0x3710).RCast<sq_pushboolType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_pushasset = module.Offset(0x3560).RCast<sq_pushassetType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_pushvector = module.Offset(0x3780).RCast<sq_pushvectorType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_pushobject = module.Offset(0x83A0).RCast<sq_pushobjectType>();
 
-	g_pSquirrel<ScriptContext::SERVER>->__sq_raiseerror = module.Offset(0x8440).As<sq_raiseerrorType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_raiseerror = module.Offset(0x8440).RCast<sq_raiseerrorType>();
 
-	g_pSquirrel<ScriptContext::SERVER>->__sq_getstring = module.Offset(0x60A0).As<sq_getstringType>();
-	g_pSquirrel<ScriptContext::SERVER>->__sq_getinteger = module.Offset(0x60C0).As<sq_getintegerType>();
-	g_pSquirrel<ScriptContext::SERVER>->__sq_getfloat = module.Offset(0x60E0).As<sq_getfloatType>();
-	g_pSquirrel<ScriptContext::SERVER>->__sq_getbool = module.Offset(0x6110).As<sq_getboolType>();
-	g_pSquirrel<ScriptContext::SERVER>->__sq_getasset = module.Offset(0x5FF0).As<sq_getassetType>();
-	g_pSquirrel<ScriptContext::SERVER>->__sq_getuserdata = module.Offset(0x63B0).As<sq_getuserdataType>();
-	g_pSquirrel<ScriptContext::SERVER>->__sq_getvector = module.Offset(0x6120).As<sq_getvectorType>();
-	g_pSquirrel<ScriptContext::SERVER>->__sq_get = module.Offset(0x7C00).As<sq_getType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_getstring = module.Offset(0x60A0).RCast<sq_getstringType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_getinteger = module.Offset(0x60C0).RCast<sq_getintegerType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_getfloat = module.Offset(0x60E0).RCast<sq_getfloatType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_getbool = module.Offset(0x6110).RCast<sq_getboolType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_getasset = module.Offset(0x5FF0).RCast<sq_getassetType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_getuserdata = module.Offset(0x63B0).RCast<sq_getuserdataType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_getvector = module.Offset(0x6120).RCast<sq_getvectorType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_get = module.Offset(0x7C00).RCast<sq_getType>();
 
-	g_pSquirrel<ScriptContext::SERVER>->__sq_getthisentity = module.Offset(0x203B0).As<sq_getthisentityType>();
-	g_pSquirrel<ScriptContext::SERVER>->__sq_getobject = module.Offset(0x6140).As<sq_getobjectType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_getthisentity = module.Offset(0x203B0).RCast<sq_getthisentityType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_getobject = module.Offset(0x6140).RCast<sq_getobjectType>();
 
-	g_pSquirrel<ScriptContext::SERVER>->__sq_createuserdata = module.Offset(0x38D0).As<sq_createuserdataType>();
-	g_pSquirrel<ScriptContext::SERVER>->__sq_setuserdatatypeid = module.Offset(0x6470).As<sq_setuserdatatypeidType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_createuserdata = module.Offset(0x38D0).RCast<sq_createuserdataType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_setuserdatatypeid = module.Offset(0x6470).RCast<sq_setuserdatatypeidType>();
 
-	g_pSquirrel<ScriptContext::SERVER>->__sq_GetEntityConstant_CBaseEntity = module.Offset(0x418AF0).As<sq_GetEntityConstantType>();
-	g_pSquirrel<ScriptContext::SERVER>->__sq_getentityfrominstance = module.Offset(0x1E920).As<sq_getentityfrominstanceType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_GetEntityConstant_CBaseEntity = module.Offset(0x418AF0).RCast<sq_GetEntityConstantType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_getentityfrominstance = module.Offset(0x1E920).RCast<sq_getentityfrominstanceType>();
 
 	g_pSquirrel<ScriptContext::SERVER>->logger = NS::log::SCRIPT_SV;
 	// Message buffer stuff
-	g_pSquirrel<ScriptContext::SERVER>->__sq_getfunction = module.Offset(0x6C85).As<sq_getfunctionType>();
-	g_pSquirrel<ScriptContext::SERVER>->__sq_stackinfos = module.Offset(0x35920).As<sq_stackinfosType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_getfunction = module.Offset(0x6C85).RCast<sq_getfunctionType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_stackinfos = module.Offset(0x35920).RCast<sq_stackinfosType>();
 
 	// Structs
-	g_pSquirrel<ScriptContext::SERVER>->__sq_pushnewstructinstance = module.Offset(0x53e0).As<sq_pushnewstructinstanceType>();
-	g_pSquirrel<ScriptContext::SERVER>->__sq_sealstructslot = module.Offset(0x5510).As<sq_sealstructslotType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_pushnewstructinstance = module.Offset(0x53e0).RCast<sq_pushnewstructinstanceType>();
+	g_pSquirrel<ScriptContext::SERVER>->__sq_sealstructslot = module.Offset(0x5510).RCast<sq_sealstructslotType>();
 
 	MAKEHOOK(
 		module.Offset(0x1DD10),

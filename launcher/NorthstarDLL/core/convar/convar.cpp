@@ -31,8 +31,8 @@ void* g_pIConVar_Vtable = nullptr;
 //-----------------------------------------------------------------------------
 ON_DLL_LOAD("engine.dll", ConVar, (CModule module))
 {
-	conVarMalloc = module.Offset(0x415C20).As<ConVarMallocType>();
-	conVarRegister = module.Offset(0x417230).As<ConVarRegisterType>();
+	conVarMalloc = module.Offset(0x415C20).RCast<ConVarMallocType>();
+	conVarRegister = module.Offset(0x417230).RCast<ConVarRegisterType>();
 
 	g_pConVar_Vtable = module.Offset(0x67FD28);
 	g_pIConVar_Vtable = module.Offset(0x67FDC8);

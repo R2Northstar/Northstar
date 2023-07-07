@@ -338,8 +338,8 @@ ON_DLL_LOAD("engine.dll", RpakFilesystem, (CModule module))
 
 	g_pPakLoadManager = new PakLoadManager;
 
-	g_pakLoadApi = module.Offset(0x5BED78).Deref().As<PakLoadFuncs*>();
-	pUnknownPakLoadSingleton = module.Offset(0x7C5E20).As<void**>();
+	g_pakLoadApi = module.Offset(0x5BED78).Deref().RCast<PakLoadFuncs*>();
+	pUnknownPakLoadSingleton = module.Offset(0x7C5E20).RCast<void**>();
 
 	LoadPakAsyncHook.Dispatch((LPVOID*)g_pakLoadApi->LoadPakAsync);
 	UnloadPakHook.Dispatch((LPVOID*)g_pakLoadApi->UnloadPak);
