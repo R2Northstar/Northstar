@@ -28,6 +28,8 @@ Mod::Mod(fs::path modDir, char* jsonBuf)
 	rapidjson_document modJson;
 	modJson.Parse<rapidjson::ParseFlag::kParseCommentsFlag | rapidjson::ParseFlag::kParseTrailingCommasFlag>(jsonBuf);
 
+	spdlog::info("Loading mod file at path '{}'", modDir.string());
+
 	// fail if parse error
 	if (modJson.HasParseError())
 	{
@@ -55,6 +57,7 @@ Mod::Mod(fs::path modDir, char* jsonBuf)
 	}
 
 	Name = modJson["Name"].GetString();
+	spdlog::info("Loading mod '{}'", Name);
 
 	// Don't load blacklisted mods
 	if (!strstr(GetCommandLineA(), "-nomodblacklist") && MODS_BLACKLIST.find(Name) != std::end(MODS_BLACKLIST))
@@ -94,197 +97,400 @@ Mod::Mod(fs::path modDir, char* jsonBuf)
 		LoadPriority = 0;
 	}
 
-	// mod convars
-	if (modJson.HasMember("ConVars") && modJson["ConVars"].IsArray())
+	// Parse all array fields
+	ParseConVars(modJson);
+	ParseConCommands(modJson);
+	ParseScripts(modJson);
+	ParseLocalization(modJson);
+	ParseDependencies(modJson);
+	ParseInitScript(modJson);
+
+	m_bWasReadSuccessfully = true;
+}
+
+void Mod::ParseConVars(rapidjson_document& json)
+{
+	if (!json.HasMember("ConVars"))
+		return;
+
+	if (!json["ConVars"].IsArray())
 	{
-		for (auto& convarObj : modJson["ConVars"].GetArray())
-		{
-			if (!convarObj.IsObject() || !convarObj.HasMember("Name") || !convarObj.HasMember("DefaultValue"))
-				continue;
-
-			// have to allocate this manually, otherwise convar registration will break
-			// unfortunately this causes us to leak memory on reload, unsure of a way around this rn
-			ModConVar* convar = new ModConVar;
-			convar->Name = convarObj["Name"].GetString();
-			convar->DefaultValue = convarObj["DefaultValue"].GetString();
-
-			if (convarObj.HasMember("HelpString"))
-				convar->HelpString = convarObj["HelpString"].GetString();
-			else
-				convar->HelpString = "";
-
-			convar->Flags = FCVAR_NONE;
-
-			if (convarObj.HasMember("Flags"))
-			{
-				// read raw integer flags
-				if (convarObj["Flags"].IsInt())
-					convar->Flags = convarObj["Flags"].GetInt();
-				else if (convarObj["Flags"].IsString())
-				{
-					// parse cvar flags from string
-					// example string: ARCHIVE_PLAYERPROFILE | GAMEDLL
-					convar->Flags |= ParseConVarFlagsString(convar->Name, convarObj["Flags"].GetString());
-				}
-			}
-
-			ConVars.push_back(convar);
-		}
+		spdlog::warn("'ConVars' field is not an array, skipping...");
+		return;
 	}
 
-	if (modJson.HasMember("ConCommands") && modJson["ConCommands"].IsArray())
+	for (auto& convarObj : json["ConVars"].GetArray())
 	{
-		for (auto& concommandObj : modJson["ConCommands"].GetArray())
+		if (!convarObj.IsObject())
 		{
-			if (!concommandObj.IsObject() || !concommandObj.HasMember("Name") || !concommandObj.HasMember("Function") ||
-				!concommandObj.HasMember("Context"))
-			{
-				continue;
-			}
-
-			// have to allocate this manually, otherwise concommand registration will break
-			// unfortunately this causes us to leak memory on reload, unsure of a way around this rn
-			ModConCommand* concommand = new ModConCommand;
-			concommand->Name = concommandObj["Name"].GetString();
-			concommand->Function = concommandObj["Function"].GetString();
-			concommand->Context = ScriptContextFromString(concommandObj["Context"].GetString());
-			if (concommand->Context == ScriptContext::INVALID)
-			{
-				spdlog::warn("Mod ConCommand {} has invalid context {}", concommand->Name, concommandObj["Context"].GetString());
-				continue;
-			}
-
-			if (concommandObj.HasMember("HelpString"))
-				concommand->HelpString = concommandObj["HelpString"].GetString();
-			else
-				concommand->HelpString = "";
-
-			concommand->Flags = FCVAR_NONE;
-
-			if (concommandObj.HasMember("Flags"))
-			{
-				// read raw integer flags
-				if (concommandObj["Flags"].IsInt())
-				{
-					concommand->Flags = concommandObj["Flags"].GetInt();
-				}
-				else if (concommandObj["Flags"].IsString())
-				{
-					// parse cvar flags from string
-					// example string: ARCHIVE_PLAYERPROFILE | GAMEDLL
-					concommand->Flags |= ParseConVarFlagsString(concommand->Name, concommandObj["Flags"].GetString());
-				}
-			}
-
-			ConCommands.push_back(concommand);
+			spdlog::warn("ConVar is not an object, skipping...");
+			continue;
 		}
+		if (!convarObj.HasMember("Name"))
+		{
+			spdlog::warn("ConVar does not have a Name, skipping...");
+			continue;
+		}
+		// from here on, the ConVar can be referenced by name in logs
+		if (!convarObj.HasMember("DefaultValue"))
+		{
+			spdlog::warn("ConVar '{}' does not have a DefaultValue, skipping...", convarObj["Name"].GetString());
+			continue;
+		}
+
+		// have to allocate this manually, otherwise convar registration will break
+		// unfortunately this causes us to leak memory on reload, unsure of a way around this rn
+		ModConVar* convar = new ModConVar;
+		convar->Name = convarObj["Name"].GetString();
+		convar->DefaultValue = convarObj["DefaultValue"].GetString();
+
+		if (convarObj.HasMember("HelpString"))
+			convar->HelpString = convarObj["HelpString"].GetString();
+		else
+			convar->HelpString = "";
+
+		convar->Flags = FCVAR_NONE;
+
+		if (convarObj.HasMember("Flags"))
+		{
+			// read raw integer flags
+			if (convarObj["Flags"].IsInt())
+				convar->Flags = convarObj["Flags"].GetInt();
+			else if (convarObj["Flags"].IsString())
+			{
+				// parse cvar flags from string
+				// example string: ARCHIVE_PLAYERPROFILE | GAMEDLL
+				convar->Flags |= ParseConVarFlagsString(convar->Name, convarObj["Flags"].GetString());
+			}
+		}
+
+		ConVars.push_back(convar);
+
+		spdlog::info("'{}' contains ConVar '{}'", Name, convar->Name);
+	}
+}
+
+void Mod::ParseConCommands(rapidjson_document& json)
+{
+	if (!json.HasMember("ConCommands"))
+		return;
+
+	if (!json["ConCommands"].IsArray())
+	{
+		spdlog::warn("'ConCommands' field is not an array, skipping...");
+		return;
 	}
 
-	// mod scripts
-	if (modJson.HasMember("Scripts") && modJson["Scripts"].IsArray())
+	for (auto& concommandObj : json["ConCommands"].GetArray())
 	{
-		for (auto& scriptObj : modJson["Scripts"].GetArray())
+		if (!concommandObj.IsObject())
 		{
-			if (!scriptObj.IsObject() || !scriptObj.HasMember("Path") || !scriptObj.HasMember("RunOn"))
-				continue;
+			spdlog::warn("ConCommand is not an object, skipping...");
+			continue;
+		}
+		if (!concommandObj.HasMember("Name"))
+		{
+			spdlog::warn("ConCommand does not have a Name, skipping...");
+			continue;
+		}
+		// from here on, the ConCommand can be referenced by name in logs
+		if (!concommandObj.HasMember("Function"))
+		{
+			spdlog::warn("ConCommand '{}' does not have a Function, skipping...", concommandObj["Name"].GetString());
+			continue;
+		}
+		if (!concommandObj.HasMember("Context"))
+		{
+			spdlog::warn("ConCommand '{}' does not have a Context, skipping...", concommandObj["Name"].GetString());
+			continue;
+		}
 
-			ModScript script;
+		// have to allocate this manually, otherwise concommand registration will break
+		// unfortunately this causes us to leak memory on reload, unsure of a way around this rn
+		ModConCommand* concommand = new ModConCommand;
+		concommand->Name = concommandObj["Name"].GetString();
+		concommand->Function = concommandObj["Function"].GetString();
+		concommand->Context = ScriptContextFromString(concommandObj["Context"].GetString());
+		if (concommand->Context == ScriptContext::INVALID)
+		{
+			spdlog::warn("ConCommand '{}' has invalid context '{}', skipping...", concommand->Name, concommandObj["Context"].GetString());
+			continue;
+		}
 
-			script.Path = scriptObj["Path"].GetString();
-			script.RunOn = scriptObj["RunOn"].GetString();
+		if (concommandObj.HasMember("HelpString"))
+			concommand->HelpString = concommandObj["HelpString"].GetString();
+		else
+			concommand->HelpString = "";
 
-			if (scriptObj.HasMember("ServerCallback") && scriptObj["ServerCallback"].IsObject())
+		concommand->Flags = FCVAR_NONE;
+
+		if (concommandObj.HasMember("Flags"))
+		{
+			// read raw integer flags
+			if (concommandObj["Flags"].IsInt())
+			{
+				concommand->Flags = concommandObj["Flags"].GetInt();
+			}
+			else if (concommandObj["Flags"].IsString())
+			{
+				// parse cvar flags from string
+				// example string: ARCHIVE_PLAYERPROFILE | GAMEDLL
+				concommand->Flags |= ParseConVarFlagsString(concommand->Name, concommandObj["Flags"].GetString());
+			}
+		}
+
+		ConCommands.push_back(concommand);
+
+		spdlog::info("'{}' contains ConCommand '{}'", Name, concommand->Name);
+	}
+}
+
+void Mod::ParseScripts(rapidjson_document& json)
+{
+	if (!json.HasMember("Scripts"))
+		return;
+
+	if (!json["Scripts"].IsArray())
+	{
+		spdlog::warn("'Scripts' field is not an array, skipping...");
+		return;
+	}
+
+	for (auto& scriptObj : json["Scripts"].GetArray())
+	{
+		if (!scriptObj.IsObject())
+		{
+			spdlog::warn("Script is not an object, skipping...");
+			continue;
+		}
+		if (!scriptObj.HasMember("Path"))
+		{
+			spdlog::warn("Script does not have a Path, skipping...");
+			continue;
+		}
+		// from here on, the Path for a script is used as it's name in logs
+		if (!scriptObj.HasMember("RunOn"))
+		{
+			// "a RunOn" sounds dumb but anything else doesn't match the format of the warnings...
+			// this is the best i could think of within 20 seconds
+			spdlog::warn("Script '{}' does not have a RunOn field, skipping...", scriptObj["Path"].GetString());
+			continue;
+		}
+
+		ModScript script;
+
+		script.Path = scriptObj["Path"].GetString();
+		script.RunOn = scriptObj["RunOn"].GetString();
+
+		if (scriptObj.HasMember("ServerCallback"))
+		{
+			if (scriptObj["ServerCallback"].IsObject())
 			{
 				ModScriptCallback callback;
 				callback.Context = ScriptContext::SERVER;
 
-				if (scriptObj["ServerCallback"].HasMember("Before") && scriptObj["ServerCallback"]["Before"].IsString())
-					callback.BeforeCallback = scriptObj["ServerCallback"]["Before"].GetString();
+				if (scriptObj["ServerCallback"].HasMember("Before"))
+				{
+					if (scriptObj["ServerCallback"]["Before"].IsString())
+						callback.BeforeCallback = scriptObj["ServerCallback"]["Before"].GetString();
+					else
+						spdlog::warn("'Before' ServerCallback for script '{}' is not a string, skipping...", scriptObj["Path"].GetString());
+				}
 
-				if (scriptObj["ServerCallback"].HasMember("After") && scriptObj["ServerCallback"]["After"].IsString())
-					callback.AfterCallback = scriptObj["ServerCallback"]["After"].GetString();
+				if (scriptObj["ServerCallback"].HasMember("After"))
+				{
+					if (scriptObj["ServerCallback"]["After"].IsString())
+						callback.AfterCallback = scriptObj["ServerCallback"]["After"].GetString();
+					else
+						spdlog::warn("'After' ServerCallback for script '{}' is not a string, skipping...", scriptObj["Path"].GetString());
+				}
 
-				if (scriptObj["ServerCallback"].HasMember("Destroy") && scriptObj["ServerCallback"]["Destroy"].IsString())
-					callback.DestroyCallback = scriptObj["ServerCallback"]["Destroy"].GetString();
+				if (scriptObj["ServerCallback"].HasMember("Destroy"))
+				{
+					if (scriptObj["ServerCallback"]["Destroy"].IsString())
+						callback.DestroyCallback = scriptObj["ServerCallback"]["Destroy"].GetString();
+					else
+						spdlog::warn(
+							"'Destroy' ServerCallback for script '{}' is not a string, skipping...", scriptObj["Path"].GetString());
+				}
 
 				script.Callbacks.push_back(callback);
 			}
+			else
+			{
+				spdlog::warn("ServerCallback for script '{}' is not an object, skipping...", scriptObj["Path"].GetString());
+			}
+		}
 
-			if (scriptObj.HasMember("ClientCallback") && scriptObj["ClientCallback"].IsObject())
+		if (scriptObj.HasMember("ClientCallback"))
+		{
+			if (scriptObj["ClientCallback"].IsObject())
 			{
 				ModScriptCallback callback;
 				callback.Context = ScriptContext::CLIENT;
 
-				if (scriptObj["ClientCallback"].HasMember("Before") && scriptObj["ClientCallback"]["Before"].IsString())
-					callback.BeforeCallback = scriptObj["ClientCallback"]["Before"].GetString();
+				if (scriptObj["ClientCallback"].HasMember("Before"))
+				{
+					if (scriptObj["ClientCallback"]["Before"].IsString())
+						callback.BeforeCallback = scriptObj["ClientCallback"]["Before"].GetString();
+					else
+						spdlog::warn("'Before' ClientCallback for script '{}' is not a string, skipping...", scriptObj["Path"].GetString());
+				}
 
-				if (scriptObj["ClientCallback"].HasMember("After") && scriptObj["ClientCallback"]["After"].IsString())
-					callback.AfterCallback = scriptObj["ClientCallback"]["After"].GetString();
+				if (scriptObj["ClientCallback"].HasMember("After"))
+				{
+					if (scriptObj["ClientCallback"]["After"].IsString())
+						callback.AfterCallback = scriptObj["ClientCallback"]["After"].GetString();
+					else
+						spdlog::warn("'After' ClientCallback for script '{}' is not a string, skipping...", scriptObj["Path"].GetString());
+				}
 
-				if (scriptObj["ClientCallback"].HasMember("Destroy") && scriptObj["ClientCallback"]["Destroy"].IsString())
-					callback.DestroyCallback = scriptObj["ClientCallback"]["Destroy"].GetString();
+				if (scriptObj["ClientCallback"].HasMember("Destroy"))
+				{
+					if (scriptObj["ClientCallback"]["Destroy"].IsString())
+						callback.DestroyCallback = scriptObj["ClientCallback"]["Destroy"].GetString();
+					else
+						spdlog::warn(
+							"'Destroy' ClientCallback for script '{}' is not a string, skipping...", scriptObj["Path"].GetString());
+				}
 
 				script.Callbacks.push_back(callback);
 			}
+			else
+			{
+				spdlog::warn("ClientCallback for script '{}' is not an object, skipping...", scriptObj["Path"].GetString());
+			}
+		}
 
-			if (scriptObj.HasMember("UICallback") && scriptObj["UICallback"].IsObject())
+		if (scriptObj.HasMember("UICallback"))
+		{
+			if (scriptObj["UICallback"].IsObject())
 			{
 				ModScriptCallback callback;
 				callback.Context = ScriptContext::UI;
 
-				if (scriptObj["UICallback"].HasMember("Before") && scriptObj["UICallback"]["Before"].IsString())
-					callback.BeforeCallback = scriptObj["UICallback"]["Before"].GetString();
+				if (scriptObj["UICallback"].HasMember("Before"))
+				{
+					if (scriptObj["UICallback"]["Before"].IsString())
+						callback.BeforeCallback = scriptObj["UICallback"]["Before"].GetString();
+					else
+						spdlog::warn("'Before' UICallback for script '{}' is not a string, skipping...", scriptObj["Path"].GetString());
+				}
 
-				if (scriptObj["UICallback"].HasMember("After") && scriptObj["UICallback"]["After"].IsString())
-					callback.AfterCallback = scriptObj["UICallback"]["After"].GetString();
+				if (scriptObj["UICallback"].HasMember("After"))
+				{
+					if (scriptObj["UICallback"]["After"].IsString())
+						callback.AfterCallback = scriptObj["UICallback"]["After"].GetString();
+					else
+						spdlog::warn("'After' UICallback for script '{}' is not a string, skipping...", scriptObj["Path"].GetString());
+				}
 
-				if (scriptObj["UICallback"].HasMember("Destroy") && scriptObj["UICallback"]["Destroy"].IsString())
-					callback.DestroyCallback = scriptObj["UICallback"]["Destroy"].GetString();
+				if (scriptObj["UICallback"].HasMember("Destroy"))
+				{
+					if (scriptObj["UICallback"]["Destroy"].IsString())
+						callback.DestroyCallback = scriptObj["UICallback"]["Destroy"].GetString();
+					else
+						spdlog::warn("'Destroy' UICallback for script '{}' is not a string, skipping...", scriptObj["Path"].GetString());
+				}
 
 				script.Callbacks.push_back(callback);
 			}
-
-			Scripts.push_back(script);
-		}
-	}
-
-	if (modJson.HasMember("InitScript") && modJson["InitScript"].IsString())
-	{
-		initScript = modJson["InitScript"].GetString();
-	}
-
-	if (modJson.HasMember("Localisation") && modJson["Localisation"].IsArray())
-	{
-		for (auto& localisationStr : modJson["Localisation"].GetArray())
-		{
-			if (!localisationStr.IsString())
-				continue;
-
-			LocalisationFiles.push_back(localisationStr.GetString());
-		}
-	}
-
-	if (modJson.HasMember("Dependencies") && modJson["Dependencies"].IsObject())
-	{
-		for (auto v = modJson["Dependencies"].MemberBegin(); v != modJson["Dependencies"].MemberEnd(); v++)
-		{
-			if (!v->name.IsString() || !v->value.IsString())
-				continue;
-
-			spdlog::info("Constant {} defined by {} for mod {}", v->name.GetString(), Name, v->value.GetString());
-			if (DependencyConstants.find(v->name.GetString()) != DependencyConstants.end() &&
-				v->value.GetString() != DependencyConstants[v->name.GetString()])
+			else
 			{
-				spdlog::error("A dependency constant with the same name already exists for another mod. Change the constant name.");
-				return;
+				spdlog::warn("UICallback for script '{}' is not an object, skipping...", scriptObj["Path"].GetString());
 			}
-
-			if (DependencyConstants.find(v->name.GetString()) == DependencyConstants.end())
-				DependencyConstants.emplace(v->name.GetString(), v->value.GetString());
 		}
+
+		Scripts.push_back(script);
+
+		spdlog::info("'{}' contains Script '{}'", Name, script.Path);
+	}
+}
+
+void Mod::ParseLocalization(rapidjson_document& json)
+{
+	if (!json.HasMember("Localisation"))
+		return;
+
+	if (!json["Localisation"].IsArray())
+	{
+		spdlog::warn("'Localisation' field is not an array, skipping...");
+		return;
 	}
 
-	m_bWasReadSuccessfully = true;
+	for (auto& localisationStr : json["Localisation"].GetArray())
+	{
+		if (!localisationStr.IsString())
+		{
+			// not a string but we still GetString() to log it :trol:
+			spdlog::warn("Localisation '{}' is not a string, skipping...", localisationStr.GetString());
+			continue;
+		}
+
+		LocalisationFiles.push_back(localisationStr.GetString());
+
+		spdlog::info("'{}' registered Localisation '{}'", Name, localisationStr.GetString());
+	}
+}
+
+void Mod::ParseDependencies(rapidjson_document& json)
+{
+	if (!json.HasMember("Dependencies"))
+		return;
+
+	if (!json["Dependencies"].IsObject())
+	{
+		spdlog::warn("'Dependencies' field is not an object, skipping...");
+		return;
+	}
+
+	for (auto v = json["Dependencies"].MemberBegin(); v != json["Dependencies"].MemberEnd(); v++)
+	{
+		if (!v->name.IsString())
+		{
+			spdlog::warn("Dependency constant '{}' is not a string, skipping...", v->name.GetString());
+			continue;
+		}
+		if (!v->value.IsString())
+		{
+			spdlog::warn("Dependency constant '{}' is not a string, skipping...", v->value.GetString());
+			continue;
+		}
+
+		if (DependencyConstants.find(v->name.GetString()) != DependencyConstants.end() &&
+			v->value.GetString() != DependencyConstants[v->name.GetString()])
+		{
+			// this is fatal because otherwise the mod will probably try to use functions that dont exist,
+			// which will cause errors further down the line that are harder to debug
+			spdlog::error(
+				"'{}' attempted to register a dependency constant '{}' for '{}' that already exists for '{}'. "
+				"Change the constant name.",
+				Name,
+				v->name.GetString(),
+				v->value.GetString(),
+				DependencyConstants[v->name.GetString()]);
+			return;
+		}
+
+		if (DependencyConstants.find(v->name.GetString()) == DependencyConstants.end())
+			DependencyConstants.emplace(v->name.GetString(), v->value.GetString());
+
+		spdlog::info("'{}' registered dependency constant '{}' for mod '{}'", Name, v->name.GetString(), v->value.GetString());
+	}
+}
+
+void Mod::ParseInitScript(rapidjson_document& json)
+{
+	if (!json.HasMember("InitScript"))
+		return;
+
+	if (!json["InitScript"].IsString())
+	{
+		spdlog::warn("'InitScript' field is not a string, skipping...");
+		return;
+	}
+
+	initScript = json["InitScript"].GetString();
 }
 
 ModManager::ModManager()
@@ -419,7 +625,8 @@ void ModManager::LoadMods()
 		// fail if no mod json
 		if (jsonStream.fail())
 		{
-			spdlog::warn("Mod {} has a directory but no mod.json", modDir.string());
+			spdlog::warn(
+				"Mod file at '{}' does not exist or could not be read, is it installed correctly?", (modDir / "mod.json").string());
 			continue;
 		}
 
@@ -434,7 +641,13 @@ void ModManager::LoadMods()
 		{
 			if (m_DependencyConstants.find(pair.first) != m_DependencyConstants.end() && m_DependencyConstants[pair.first] != pair.second)
 			{
-				spdlog::error("Constant {} in mod {} already exists in another mod.", pair.first, mod.Name);
+				spdlog::error(
+					"'{}' attempted to register a dependency constant '{}' for '{}' that already exists for '{}'. "
+					"Change the constant name.",
+					mod.Name,
+					pair.first,
+					pair.second,
+					m_DependencyConstants[pair.first]);
 				mod.m_bWasReadSuccessfully = false;
 				break;
 			}
@@ -449,16 +662,15 @@ void ModManager::LoadMods()
 
 		if (mod.m_bWasReadSuccessfully)
 		{
-			spdlog::info("Loaded mod {} successfully", mod.Name);
 			if (mod.m_bEnabled)
-				spdlog::info("Mod {} is enabled", mod.Name);
+				spdlog::info("'{}' loaded successfully", mod.Name);
 			else
-				spdlog::info("Mod {} is disabled", mod.Name);
+				spdlog::info("'{}' loaded successfully (DISABLED)", mod.Name);
 
 			m_LoadedMods.push_back(mod);
 		}
 		else
-			spdlog::warn("Skipping loading mod file {}", (modDir / "mod.json").string());
+			spdlog::warn("Mod file at '{}' failed to load", (modDir / "mod.json").string());
 	}
 
 	// sort by load prio, lowest-highest
