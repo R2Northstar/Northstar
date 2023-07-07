@@ -126,6 +126,14 @@ class Mod
 
   public:
 	Mod(fs::path modPath, char* jsonBuf);
+
+  private:
+	void ParseConVars(rapidjson_document& json);
+	void ParseConCommands(rapidjson_document& json);
+	void ParseScripts(rapidjson_document& json);
+	void ParseLocalization(rapidjson_document& json);
+	void ParseDependencies(rapidjson_document& json);
+	void ParseInitScript(rapidjson_document& json);
 };
 
 struct ModOverrideFile
