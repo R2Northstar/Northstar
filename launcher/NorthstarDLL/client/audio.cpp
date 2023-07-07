@@ -502,5 +502,5 @@ ON_DLL_LOAD_CLIENT_RELIESON("client.dll", AudioHooks, ConVar, (CModule module))
 	AUTOHOOK_DISPATCH()
 
 	Cvar_ns_print_played_sounds = new ConVar("ns_print_played_sounds", "0", FCVAR_NONE, "");
-	MilesStopAll = module.Offset(0x580850).As<MilesStopAll_Type>();
+	MilesStopAll = module.Offset(0x580850).RCast<MilesStopAll_Type>();
 }

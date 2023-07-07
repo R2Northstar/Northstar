@@ -887,12 +887,12 @@ void ConCommand_dump_datatables(const CCommand& args)
 
 ON_DLL_LOAD_RELIESON("server.dll", ServerScriptDatatables, ServerSquirrel, (CModule module))
 {
-	SQ_GetDatatableInternal<ScriptContext::SERVER> = module.Offset(0x1250f0).As<Datatable* (*)(HSquirrelVM*)>();
+	SQ_GetDatatableInternal<ScriptContext::SERVER> = module.Offset(0x1250f0).RCast<Datatable* (*)(HSquirrelVM*)>();
 }
 
 ON_DLL_LOAD_RELIESON("client.dll", ClientScriptDatatables, ClientSquirrel, (CModule module))
 {
-	SQ_GetDatatableInternal<ScriptContext::CLIENT> = module.Offset(0x1C9070).As<Datatable* (*)(HSquirrelVM*)>();
+	SQ_GetDatatableInternal<ScriptContext::CLIENT> = module.Offset(0x1C9070).RCast<Datatable* (*)(HSquirrelVM*)>();
 	SQ_GetDatatableInternal<ScriptContext::UI> = SQ_GetDatatableInternal<ScriptContext::CLIENT>;
 }
 

@@ -1,39 +1,39 @@
 #pragma once
 
-class MemoryAddress
+class CMemoryAddress
 {
   public:
 	uintptr_t m_nAddress;
 
   public:
-	MemoryAddress();
-	MemoryAddress(const uintptr_t nAddress);
-	MemoryAddress(const void* pAddress);
+	CMemoryAddress();
+	CMemoryAddress(const uintptr_t nAddress);
+	CMemoryAddress(const void* pAddress);
 
 	// operators
 	operator uintptr_t() const;
 	operator void*() const;
 	operator bool() const;
 
-	bool operator==(const MemoryAddress& other) const;
-	bool operator!=(const MemoryAddress& other) const;
+	bool operator==(const CMemoryAddress& other) const;
+	bool operator!=(const CMemoryAddress& other) const;
 	bool operator==(const uintptr_t& addr) const;
 	bool operator!=(const uintptr_t& addr) const;
 
-	MemoryAddress operator+(const MemoryAddress& other) const;
-	MemoryAddress operator-(const MemoryAddress& other) const;
-	MemoryAddress operator+(const uintptr_t& other) const;
-	MemoryAddress operator-(const uintptr_t& other) const;
-	MemoryAddress operator*() const;
+	CMemoryAddress operator+(const CMemoryAddress& other) const;
+	CMemoryAddress operator-(const CMemoryAddress& other) const;
+	CMemoryAddress operator+(const uintptr_t& other) const;
+	CMemoryAddress operator-(const uintptr_t& other) const;
+	CMemoryAddress operator*() const;
 
-	template <typename T> T As()
+	template <typename T> T RCast()
 	{
 		return reinterpret_cast<T>(m_nAddress);
 	}
 
 	// traversal
-	MemoryAddress Offset(const uintptr_t nOffset) const;
-	MemoryAddress Deref(const int nNumDerefs = 1) const;
+	CMemoryAddress Offset(const uintptr_t nOffset) const;
+	CMemoryAddress Deref(const int nNumDerefs = 1) const;
 
 	// patching
 	void Patch(const uint8_t* pBytes, const size_t nSize);
@@ -45,7 +45,7 @@ class MemoryAddress
 };
 
 // based on https://github.com/Mauler125/r5sdk/blob/master/r5dev/public/include/module.h
-class CModule : public MemoryAddress
+class CModule : public CMemoryAddress
 {
   public:
 	struct ModuleSections_t
@@ -84,7 +84,7 @@ class CModule : public MemoryAddress
 	CModule(const HMODULE pModule);
 	CModule(const char* pModuleName);
 
-	MemoryAddress GetExport(const char* pExportName);
-	MemoryAddress FindPattern(const uint8_t* pPattern, const char* pMask);
-	MemoryAddress FindPattern(const char* pPattern);
+	CMemoryAddress GetExport(const char* pExportName);
+	CMemoryAddress FindPattern(const uint8_t* pPattern, const char* pMask);
+	CMemoryAddress FindPattern(const char* pPattern);
 };

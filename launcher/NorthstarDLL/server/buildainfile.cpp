@@ -388,8 +388,8 @@ ON_DLL_LOAD("server.dll", BuildAINFile, (CModule module))
 	Cvar_ns_ai_dumpAINfileFromLoad = new ConVar(
 		"ns_ai_dumpAINfileFromLoad", "0", FCVAR_NONE, "For debugging: whether we should dump ain data for ains loaded from disk");
 
-	pUnkStruct0Count = module.Offset(0x1063BF8).As<int*>();
-	pppUnkNodeStruct0s = module.Offset(0x1063BE0).As<UnkNodeStruct0***>();
-	pUnkLinkStruct1Count = module.Offset(0x1063AA8).As<int*>();
-	pppUnkStruct1s = module.Offset(0x1063A90).As<UnkLinkStruct1***>();
+	pUnkStruct0Count = module.Offset(0x1063BF8).RCast<int*>();
+	pppUnkNodeStruct0s = module.Offset(0x1063BE0).RCast<UnkNodeStruct0***>();
+	pUnkLinkStruct1Count = module.Offset(0x1063AA8).RCast<int*>();
+	pppUnkStruct1s = module.Offset(0x1063A90).RCast<UnkLinkStruct1***>();
 }

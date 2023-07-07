@@ -257,5 +257,5 @@ ON_DLL_LOAD_CLIENT_RELIESON("client.dll", ClientPrintHooks, ConVar, (CModule mod
 	AUTOHOOK_DISPATCH_MODULE(client.dll)
 
 	Cvar_cl_showtextmsg = new ConVar("cl_showtextmsg", "1", FCVAR_NONE, "Enable/disable text messages printing on the screen.");
-	pInternalCenterPrint = module.Offset(0x216E940).As<ICenterPrint*>();
+	pInternalCenterPrint = module.Offset(0x216E940).RCast<ICenterPrint*>();
 }
