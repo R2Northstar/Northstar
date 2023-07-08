@@ -22,9 +22,9 @@ In the script you referenced, create a global in which you register your menu wi
 
 .. code-block::
 
-    global InitProfilesMenu
+    global function InitProfilesMenu
 
-    void InitProfilesMenu()
+    void function InitProfilesMenu()
     {
         AddMenu( "MenuName", $"path/to/menu.menu"  )
     }
@@ -41,7 +41,7 @@ It's recommended to create a file struct in which you store menu states:
         var menu
     } file
 
-    void MenuInitCallback()
+    void function MenuInitCallback()
     {
         file.menu = GetMenu( "MenuName" )
     }
