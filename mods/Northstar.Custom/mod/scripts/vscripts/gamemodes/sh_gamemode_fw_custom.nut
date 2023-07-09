@@ -69,6 +69,7 @@ void function CreateGamemodeFW()
 		GameMode_AddClientInit( FORT_WAR, CLGamemodeFW_Init )
 	#endif
 	#if !UI
+		GameMode_SetScoreCompareFunc( FORT_WAR, CompareAssaultScore )
 		GameMode_AddSharedInit( FORT_WAR, SHGamemodeFW_Init )
 	#endif
 }
