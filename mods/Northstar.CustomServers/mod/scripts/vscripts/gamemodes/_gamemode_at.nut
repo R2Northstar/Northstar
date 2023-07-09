@@ -107,7 +107,6 @@ void function GamemodeAt_Init()
 
 	// Set-up score callbacks
 	ScoreEvent_SetupEarnMeterValuesForMixedModes()
-	AddDamageFinalCallback( "npc_titan", OnNPCTitanFinalDamaged )
 	AddCallback_OnPlayerKilled( AT_PlayerOrNPCKilledScoreEvent )
 	AddCallback_OnNPCKilled( AT_PlayerOrNPCKilledScoreEvent )
 
@@ -1658,9 +1657,10 @@ void function AT_HandleBossTitanSpawn( entity titan, AT_WaveOrigin campData, int
 	titan.Minimap_AlwaysShow( TEAM_MILITIA, null )
 	thread BountyBossHighlightThink( titan )
 
-	// set up titan-specific death callbacks, mark it as bounty boss for finalDamageCallbacks to work
+	// set up titan-specific death callbacks, mark it as bounty boss
 	file.titanIsBountyBoss[ titan ] <- true
 	file.bountyTitanRewards[ titan ] <- ATTRITION_SCORE_BOSS_DAMAGE
+	AddEntityCallback_OnPostDamaged( titan, OnBountyTitanPostDamage )
 	AddEntityCallback_OnKilled( titan, OnBountyTitanKilled )
 	
 	titan.GetTitanSoul().soul.skipDoomState = true
@@ -1684,13 +1684,7 @@ void function BountyBossHighlightThink( entity titan )
 	}
 }
 
-void function OnNPCTitanFinalDamaged( entity titan, var damageInfo )
-{
-	if ( titan in file.titanIsBountyBoss )
-		OnBountyTitanDamaged( titan, damageInfo )
-}
-
-void function OnBountyTitanDamaged( entity titan, var damageInfo )
+void function OnBountyTitanPostDamage( entity titan, var damageInfo )
 {
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
 	if ( !IsValid( attacker ) ) // delayed by projectile shots
@@ -1702,14 +1696,6 @@ void function OnBountyTitanDamaged( entity titan, var damageInfo )
 		if ( !IsValid( attacker ) || !attacker.IsPlayer() )
 			return
 	}
-
-	// respawn FUCKED UP pilot weapon against titan's damage calculation, have to copy-paste this check from Titan_NPCTookDamage()
-	if ( HeavyArmorCriticalHitRequired( damageInfo ) && 
-		 CritWeaponInDamageInfo( damageInfo ) && 
-		 !IsCriticalHit( attacker, titan, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamage( damageInfo ), DamageInfo_GetDamageType( damageInfo ) ) && 
-		 IsValid( attacker ) && 
-		 !attacker.IsTitan() )
-		return
 
 	int rewardSegment = ATTRITION_SCORE_BOSS_DAMAGE
 	int healthSegment = titan.GetMaxHealth() / rewardSegment
