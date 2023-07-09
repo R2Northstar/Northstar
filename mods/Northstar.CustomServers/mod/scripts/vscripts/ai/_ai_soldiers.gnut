@@ -60,6 +60,19 @@ function AiSoldiers_Init()
 	level.COOP_AT_WEAPON_RATES[ "mp_weapon_smr" ] <- 0.4
 	level.COOP_AT_WEAPON_RATES[ "mp_weapon_mgl" ] <- 0.1
 
+	// add stub death callback, because in _codecallbacks_common.gnut there is
+	// CodeCallback_OnEntityKilled which is only called when an entity is being tracked. An
+	// entity is set to be tracked if it has a death callback for it's class, unfortunately this
+	// is then relayed to clients and used for client side death callbacks. The end result of
+	// not having this function called is that clients become completely unaware of any grunt
+	// deaths. A noticeable difference here is that grunts do not play the kill confirmed audio
+	// except on War Games, which does register a callback for grunt deaths to make them dissolve.
+	//
+	// Whilst this may seem like a bit of a hacky solution, it is generally better than simply
+	// tracking all entities. If a different callback is created in the future for grunt deaths
+	// that is not specific to a gamemode, map, etc. then this could be removed
+	AddDeathCallback( "npc_soldier", void function( entity guy, var damageInfo ){} )
+
 	PrecacheSprite( $"sprites/glow_05.vmt" )
 	FlagInit( "disable_npcs" )
 	FlagInit( "Disable_IMC" )
