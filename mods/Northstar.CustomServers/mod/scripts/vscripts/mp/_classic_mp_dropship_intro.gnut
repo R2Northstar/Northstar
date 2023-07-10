@@ -188,7 +188,8 @@ void function SpawnPlayerIntoDropship( entity player )
 	}
 	
 	// respawn player and holster their weapons so they aren't out
-	player.RespawnPlayer( null )
+	if ( !IsAlive( player ) )
+		player.RespawnPlayer( null )
 	HolsterAndDisableWeapons(player)
 	player.DisableWeaponViewModel()
 	
