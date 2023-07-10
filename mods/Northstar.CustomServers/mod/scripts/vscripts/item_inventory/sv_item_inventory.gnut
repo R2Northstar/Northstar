@@ -20,11 +20,20 @@ void function Sv_ItemInventory_Init()
 {
 	AddCallback_OnClientConnected( Sv_ItemInventory_OnClientConnected )
 	AddCallback_OnPlayerGetsNewPilotLoadout( Sv_ItemInventory_OnPlayerGetsNewPilotLoadout )
+	AddCallback_GameStateEnter( eGameState.Prematch, PrematchClearInventory )
 }
 
 void function Sv_ItemInventory_OnClientConnected( entity player )
 {
 	file.playerInventoryStacks[ player ] <- []
+}
+
+void function PrematchClearInventory() // vanilla behavior
+{
+	foreach( entity player in GetPlayerArray() )
+	{
+		PlayerInventory_TakeAllInventoryItems( player )
+	}
 }
 
 void function Sv_ItemInventory_OnPlayerGetsNewPilotLoadout( entity player, PilotLoadoutDef newPilotLoadout )
