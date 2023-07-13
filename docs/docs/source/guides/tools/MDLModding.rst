@@ -161,7 +161,7 @@ Setup Crowbar (one time only)
 
 - Uppon first launch select the ``Set Up Games`` tab on the top left.
 - Select either ``Portal 2`` or ``Source Filmmaker`` in the dropdown menu on the top.
-- Make sure your Lirary Path is set to the location of the Steam library you have the game installed in on the bottom.
+- Make sure your Library Path is set to the location of the Steam library you have the game installed in on the bottom.
 - The ``Game Setup`` section should now be filled with the correct paths.
 
 - Select the ``Decompile`` tab on the top.
