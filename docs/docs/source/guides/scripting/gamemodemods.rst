@@ -155,7 +155,7 @@ Let's begin the process by first creating the file ``sh_gamemode_simplerandomise
 	AddPrivateMatchModeSettingEnum("#PL_rand", "rand_enableannouncements", ["#SETTING_DISABLED", "#SETTING_ENABLED"], "1")
 	// creates a togglable riff whether or not we want to announce a text to the client
 	AddPrivateMatchModeSettingArbitrary("#PL_rand", "rand_announcementduration", 3)
-	// Creates a riff with an arbitrary numerican value for how long the announcement text remains on screen
+	// Creates a riff with an arbitrary numerical value for how long the announcement text remains on screen
 	// These riffs can be accessed from server configs or from the private match settings screen, under the "Simple Randomiser" category
         
 
