@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 3.15)
 
 project(Northstar CXX ASM_MASM)
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING
+        "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
+endif()
+
 # Language specs
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 17)
@@ -16,7 +21,8 @@ set(NS_BINARY_DIR ${CMAKE_BINARY_DIR}/game)
 # and then link binaries in ${CMAKE_BINARY_DIR}/game. This means you can copy your
 # game into ${CMAKE_BINARY_DIR}/game without it being cluttered up by cmake files.
 
-message("NS: Building to ${NS_BINARY_DIR}")
+message(STATUS "NS: Building to ${NS_BINARY_DIR}")
+
 
 # Targets
 add_subdirectory(loader_wsock32_proxy)
