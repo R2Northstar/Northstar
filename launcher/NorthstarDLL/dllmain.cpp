@@ -52,9 +52,7 @@ bool InitialiseNorthstar()
 	InitialiseCrashHandler();
 
 	// Write launcher version to log
-	spdlog::info("NorthstarLauncher version: {}", version);
-	spdlog::info("Command line: {}", GetCommandLineA());
-	spdlog::info("Using profile: {}", GetNorthstarPrefix());
+	StartupLog();
 
 	InstallInitialHooks();
 

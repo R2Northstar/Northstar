@@ -3,8 +3,11 @@
 #include "core/convar/concommand.h"
 #include "config/profile.h"
 #include "core/tier0.h"
+#include "util/version.h"
 #include "spdlog/sinks/basic_file_sink.h"
 
+#include <winternl.h>
+#include <cstdlib>
 #include <iomanip>
 #include <sstream>
 
@@ -219,4 +222,71 @@ void NS::log::FlushLoggers()
 		logger->flush();
 
 	spdlog::default_logger()->flush();
+}
+
+// Wine specific functions
+typedef const char*(CDECL* wine_get_host_version_type)(const char**, const char**);
+wine_get_host_version_type wine_get_host_version;
+
+typedef const char*(CDECL* wine_get_build_id_type)(void);
+wine_get_build_id_type wine_get_build_id;
+
+// Not exported Winapi methods
+typedef NTSTATUS(WINAPI* RtlGetVersion_type)(PRTL_OSVERSIONINFOW);
+RtlGetVersion_type RtlGetVersion;
+
+void StartupLog()
+{
+	spdlog::info("NorthstarLauncher version: {}", version);
+	spdlog::info("Command line: {}", GetCommandLineA());
+	spdlog::info("Using profile: {}", GetNorthstarPrefix());
+
+	HMODULE ntdll = GetModuleHandleA("ntdll.dll");
+	if (!ntdll)
+	{
+		// How did we get here
+		spdlog::info("Operating System: Unknown");
+		return;
+	}
+
+	wine_get_host_version = (wine_get_host_version_type)GetProcAddress(ntdll, "wine_get_host_version");
+	if (wine_get_host_version)
+	{
+		// Load the rest of the functions we need
+		wine_get_build_id = (wine_get_build_id_type)GetProcAddress(ntdll, "wine_get_build_id");
+
+		const char* sysname;
+		wine_get_host_version(&sysname, NULL);
+
+		spdlog::info("Operating System: {} (Wine)", sysname);
+		spdlog::info("Wine build: {}", wine_get_build_id());
+
+		char* compatToolPtr = std::getenv("STEAM_COMPAT_TOOL_PATHS");
+		if (compatToolPtr)
+		{
+			std::string compatToolPath(compatToolPtr);
+
+			spdlog::info("Proton build: {}", compatToolPath.substr(compatToolPath.rfind("/") + 1));
+		}
+	}
+	else
+	{
+		// We are real Windows (hopefully)
+		const char* win_ver = "Unknown";
+
+		RTL_OSVERSIONINFOW osvi;
+		osvi.dwOSVersionInfoSize = sizeof(osvi);
+
+		RtlGetVersion = (RtlGetVersion_type)GetProcAddress(ntdll, "RtlGetVersion");
+		if (RtlGetVersion && !RtlGetVersion(&osvi))
+		{
+			// Version reference table
+			// https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-osversioninfoa#remarks
+			spdlog::info("Operating System: Windows (NT{}.{})", osvi.dwMajorVersion, osvi.dwMinorVersion);
+		}
+		else
+		{
+			spdlog::info("Operating System: Windows");
+		}
+	}
 }
