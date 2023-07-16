@@ -7,6 +7,7 @@
 void CreateLogFiles();
 void InitialiseLogging();
 void InitialiseConsole();
+void StartupLog();
 
 class ColoredLogger;
 
