@@ -4,6 +4,7 @@ void function NorthstarCustomPrecache()
 {
 	PrecacheWeapon( "mp_weapon_peacekraber" )
 	PrecacheWeapon( "mp_titanweapon_triplethreat" )
+	PrecacheWeapon( "mp_titanweapon_arc_cannon" )
 	PrecacheWeapon( "melee_pilot_kunai" )
 
 	RegisterWeaponDamageSources(
