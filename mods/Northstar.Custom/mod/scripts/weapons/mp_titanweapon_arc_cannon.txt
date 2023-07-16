@@ -7,8 +7,6 @@ WeaponData
 	"longdesc"										"#WPN_TITAN_ARC_CANNON_LONGDESC"
 	"weaponClass" 									"titan"
 	"fire_mode"   									"semi-auto"
-	"server_vscript"  								"weapons/mp_titanweapon_arc_cannon"
-	"client_vscript"  								"weapons/mp_titanweapon_arc_cannon"
 	"pickup_hold_prompt"  							"Hold [USE] [WEAPONNAME]"
 	"pickup_press_prompt" 							"[USE] [WEAPONNAME]"
 	"minimap_reveal_distance"						"32000"
@@ -23,12 +21,30 @@ WeaponData
 	"viewmodel"   									"models/weapons/titan_arc_rifle/atpov_titan_arc_rifle.mdl"
 	"playermodel" 									"models/weapons/titan_arc_rifle/w_titan_arc_rifle.mdl"
 	"anim_prefix" 									"ar2"
+	
 
+	"OnWeaponActivate" 							"OnWeaponActivate_titanweapon_arc_cannon" 		
+	"OnWeaponDeactivate"							"OnWeaponDeactivate_titanweapon_arc_cannon"
+	"OnWeaponReload"							"OnWeaponReload_titanweapon_arc_cannon"
+	"OnWeaponOwnerChanged"							"OnWeaponOwnerChanged_titanweapon_arc_cannon"
+	"OnWeaponChargeBegin"							"OnWeaponChargeBegin_titanweapon_arc_cannon"
+	"OnWeaponChargeEnd"							"OnWeaponChargeEnd_titanweapon_arc_cannon"
+	"OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_titanweapon_arc_cannon"
+	"OnWeaponNpcPrimaryAttack"						"OnWeaponNpcPrimaryAttack_titanweapon_arc_cannon"
+//	"OnWeaponCooldown"								"OnWeaponCooldown_titanweapon_particle_accelerator"
+
+
+	
 	// Effects
 	//"tracer_effect"   								"weapon_tracers_xo16"
 	//Impact Table used for visuals at the top of arc_cannon.nut
-	"impact_effect_table" 							"exp_arc_cannon_whiz_by"
+	"tracer_effect"   							"P_wpn_arcball_beam"
+	"tracer_effect_first_person"  						"P_wpn_arcball_beam"
+	"impact_effect_table" 							"exp_arc_cannon"
 	"adjust_to_gun_barrel"							"1"
+	"fx_muzzle_flash_view"							"wpn_arc_cannon_electricity_fp"
+	"fx_muzzle_flash_world"							"wpn_arc_cannon_electricity"
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 
 	// Damage - When Used by Players
 	"damage_type" 									"bullet"
@@ -42,14 +58,22 @@ WeaponData
 	// Damage - When Used by NPCs
 
 	"critical_hit"									"0"
+	"critical_hit_damage_scale"						"1.5"
 
 	// Ammo
-	"ammo_stockpile_max"							"1000"
-	"ammo_clip_size"   								"1000"
-	"ammo_default_total"							"1000"
+	"ammo_min_to_fire"								"1"
+	"ammo_no_remove_from_stockpile"					"1"
 
 	// Behavior
 	"fire_rate"   									"1"
+//	"rechamber_time"  									"0.25" //"1.30"
+	"cooldown_time"									"0.6"
+	"reloadempty_time"								"6.03"
+	"reloadempty_time_late1"						"4.7"
+	"reloadempty_time_late2"						"3.5"
+	"reloadempty_time_late3"						"2.5"
+	"reloadempty_time_late4"						"1.43"
+	"reloadempty_time_late5"						"0.56"
 	"zoom_time_in"									"0.1"
 	"zoom_time_out"   								"0.1"
 	"zoom_fov"										"33"
@@ -60,20 +84,27 @@ WeaponData
 	"lower_time"  									".1"
 	"raise_time"  									".4"
 	"charge_time" 									"3.7"
+	"charge_cooldown_time"							"1.0"
 	"charge_end_forces_fire"						"0"
-	"allow_empty_fire"								"0"
-	"reload_enabled"  								"1"
+	"allow_empty_fire"								"1"
+	"reload_enabled"  								"0"
 	"allow_empty_click"   							"1"
 	"empty_reload_only"   							"0"
 	"trigger_snipercam"   							"1"
 	"allow_headshots" 								"0"
 	"bypass_semiauto_hold_protection"				"1"
 	"vortex_drain"									".15"
+	"charge_effect_1p"								"wpn_arc_cannon_charge_fp"
+	"charge_effect_3p"								"wpn_arc_cannon_charge"
+	"charge_effect_attachment"						"muzzle_flash"	
+
+
 
 	// Spread
 	"spread_stand_hip"  							"10"
 	"spread_npc"  									"2"
 
+	"ammo_suck_behavior"							"primary_weapons"
 
 	// View Kick
 	"viewkick_spring" 								"titan_arc"
@@ -203,7 +234,7 @@ WeaponData
 			"charge_time" 									"2.5" //for reference was 3 in 10/15 evening playtest
 			"charge_cooldown_time"							"1.0"
 			"charge_cooldown_delay"   						"0.0"
-			"crosshair_index"								"1"
+			//"crosshair_index"								"1"
 			"spread_stand_hip"  							"15"
 			"damage_far_distance" 							"2700"
 			"damage_near_value_titanarmor"					"2000"
@@ -215,8 +246,9 @@ WeaponData
 		}
 		burn_mod_titan_arc_cannon
 		{
-			"crosshair_index"								"2"
-
+			//"crosshair_index"								"2"
+			"tracer_effect"   							"wpn_arc_cannon_beam_mod"
+			"tracer_effect_first_person"  						"wpn_arc_cannon_beam_mod"
 			"damage_near_value"   							"*1.1"
 			"damage_far_value"								"*1.1"
 			"damage_near_value_titanarmor"					"*1.1"
@@ -225,130 +257,86 @@ WeaponData
 		}
 	}
 
-	CrosshairData
+	active_crosshair_count				"2"
+//	rui_crosshair_index								"1"
+	"ui1_enable"		"1"
+	"ui1_draw_cloaked"	"0"
+	UiData1
 	{
-		BaseWeapon
+		"ui"							"ui/crosshair_charge_rifle"
+		"mesh"							"models/weapons/attachments/alternator_rui_upper"
+		Args
 		{
-			DefaultElementBehavior
+			adjustedSpread				weapon_spread
+			adsFrac 					player_zoomFrac
+			isSprinting					player_is_sprinting
+			isReloading					weapon_is_reloading
+			readyFrac                   progress_ready_to_fire_frac
+			teamColor					crosshair_team_color
+			isAmped						weapon_is_amped
+			chargeFrac                  player_chargeFrac
+			crosshairMovementX          crosshair_movement_x
+			crosshairMovementY          crosshair_movement_y
+		}
+	}
+	RUI_CrosshairData
+	{
+		DefaultArgs
+		{
+			adjustedSpread				weapon_spread
+			adsFrac 					player_zoomFrac
+			isSprinting					player_is_sprinting
+			isReloading					weapon_is_reloading
+			readyFrac                   progress_ready_to_fire_frac
+			teamColor					crosshair_team_color
+			isAmped						weapon_is_amped
+			chargeFrac                  player_chargeFrac
+			crosshairMovementX          crosshair_movement_x
+			crosshairMovementY          crosshair_movement_y
+		}
+
+		Crosshair_1
+		{
+			"ui"						"ui/crosshair_charge_rifle"
+//			"ui"						"ui/alternator_reticle"
+			"base_spread"				"10.0"
+			Args
 			{
-				"fade_while_sprinting"	"1"
-				"fade_while_reloading"	"1"
-				"stationary"			"1"
+				isFiring				weapon_is_firing
 			}
 			Element0
-			{
-				"type"						"static"
-				"material"					"/hud/crosshairs/arc_cannon_charge"
-				"size_x"					"80"
-				"size_y"					"80"
-				"scale_ads"					"1.5"
-			}
-			Element1
-			{
-				"type"						"static"
-				"material"					"/hud/crosshairs/arc_cannon_shadow_horizontal"
-				"size_x"					"80"
-				"size_y"					"80"
-				"scale_ads"					"1.5"
-			}
-			Element2
-			{
-				"type"						"static"
-				"material"					"hud/crosshairs/titan_shotgun_circle_single"
-				"size_x"					"16"
-				"size_y"					"16"
-				"scale_ads"					"2.2"
-			}
-			Element3
-			{
-				"type"						"static"
-				"material"					"hud/crosshairs/titan_shotgun_circle_single_shadow"
-				"size_x"					"16"
-				"size_y"					"16"
-				"scale_ads"					"2.2"
-			}
-		}
-		CapacitorWeapon
-		{
-			DefaultElementBehavior
-			{
-				"fade_while_sprinting"	"1"
-				"fade_while_reloading"	"1"
-				"stationary"			"1"
-			}
-			Element0
-			{
-				"type"						"static"
-				"material"					"/hud/crosshairs/arc_cannon_charge"
-				"size_x"					"80"
-				"size_y"					"80"
-				"scale_ads"					"1.5"
-			}
-			Element1
-			{
-				"type"						"static"
-				"material"					"/hud/crosshairs/arc_cannon_shadow_horizontal"
-				"size_x"					"80"
-				"size_y"					"80"
-				"scale_ads"					"1.5"
-			}
-			Element2
-			{
-				"type"						"static"
-				"material"					"hud/crosshairs/titan_shotgun_circle_single"
-				"size_x"					"24"
-				"size_y"					"24"
-				"scale_ads"					"2.2"
-			}
-			Element3
-			{
-				"type"						"static"
-				"material"					"hud/crosshairs/titan_shotgun_circle_single_shadow"
-				"size_x"					"24"
-				"size_y"					"24"
-				"scale_ads"					"2.2"
-			}
-		}
-		Burn_Card_Mod
-		{
-			DefaultElementBehavior
 			{
 				"fade_while_sprinting"	"1"
 				"fade_while_reloading"	"1"
 				"stationary"			"1"
 				"default_color"			"246 134 40 255"
-			}
-			Element0
-			{
 				"type"						"static"
-				"material"					"/hud/crosshairs/arc_cannon_charge"
+				"material"					$"vgui/hud/arc_cannon_charge/arc_cannon_charge"
 				"size_x"					"80"
 				"size_y"					"80"
 				"scale_ads"					"1.5"
 			}
 			Element1
 			{
+				"fade_while_sprinting"	"1"
+				"fade_while_reloading"	"1"
+				"stationary"			"1"
+				"default_color"			"246 134 40 255"
 				"type"						"static"
-				"material"					"/hud/crosshairs/arc_cannon_shadow_horizontal"
+				"material"					"vgui/hud/arc_cannon_charge/arc_cannon_shadow_horizontal"
 				"size_x"					"80"
 				"size_y"					"80"
 				"scale_ads"					"1.5"
 			}
-			Element2
+		}
+
+		Crosshair_2
+		{
+			"ui"						"ui/crosshair_circle2"
+			"base_spread"				"0.0"
+			Args
 			{
-				"type"						"static"
-				"material"					"hud/crosshairs/titan_shotgun_circle_single"
-				"size_x"					"16"
-				"size_y"					"16"
-				"scale_ads"					"2.2"
-			}
-			Element3
-			{
-				"type"						"static"
-				"material"					"hud/crosshairs/titan_shotgun_circle_single_shadow"
-				"size_x"					"16"
-				"size_y"					"16"
-				"scale_ads"					"2.2"
+				isFiring				weapon_is_firing
 			}
 		}
 	}
