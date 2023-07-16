@@ -587,6 +587,7 @@ void ModManager::LoadMods()
 	// ensure dirs exist
 	fs::remove_all(GetCompiledAssetsPath());
 	fs::create_directories(GetModFolderPath());
+	fs::create_directories(GetThunderstoreModFolderPath());
 	fs::create_directories(GetRemoteModFolderPath());
 
 	m_DependencyConstants.clear();
@@ -615,6 +616,31 @@ void ModManager::LoadMods()
 		for (fs::directory_entry dir : modIterator)
 			if (fs::exists(dir.path() / "mod.json"))
 				modDirs.push_back(dir.path());
+
+	// Special case for Thunderstore mods dir
+	std::filesystem::directory_iterator thunderstoreModsDir = fs::directory_iterator(GetThunderstoreModFolderPath());
+	// Set up regex for `AUTHOR-MOD-VERSION` pattern
+	std::regex pattern(R"(.*\\([a-zA-Z0-9_]+)-([a-zA-Z0-9_]+)-(\d+\.\d+\.\d+))");
+	for (fs::directory_entry dir : thunderstoreModsDir)
+	{
+		fs::path modsDir = dir.path() / "mods"; // Check for mods folder in the Thunderstore mod
+		// Use regex to match `AUTHOR-MOD-VERSION` pattern
+		if (!std::regex_match(dir.path().string(), pattern))
+		{
+			spdlog::warn("The following directory did not match 'AUTHOR-MOD-VERSION': {}", modsDir.string());
+			continue; // skip loading mod that doesn't match
+		}
+		if (fs::exists(modsDir) && fs::is_directory(modsDir))
+		{
+			for (fs::directory_entry subDir : fs::directory_iterator(modsDir))
+			{
+				if (fs::exists(subDir.path() / "mod.json"))
+				{
+					modDirs.push_back(subDir.path());
+				}
+			}
+		}
+	}
 
 	for (fs::path modDir : modDirs)
 	{
@@ -1048,6 +1074,10 @@ void ConCommand_reload_mods(const CCommand& args)
 fs::path GetModFolderPath()
 {
 	return fs::path(GetNorthstarPrefix() + MOD_FOLDER_SUFFIX);
+}
+fs::path GetThunderstoreModFolderPath()
+{
+	return fs::path(GetNorthstarPrefix() + THUNDERSTORE_MOD_FOLDER_SUFFIX);
 }
 fs::path GetRemoteModFolderPath()
 {
