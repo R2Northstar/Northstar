@@ -9,6 +9,7 @@
 #include <filesystem>
 
 const std::string MOD_FOLDER_SUFFIX = "/mods";
+const std::string THUNDERSTORE_MOD_FOLDER_SUFFIX = "/packages";
 const std::string REMOTE_MOD_FOLDER_SUFFIX = "/runtime/remote/mods";
 const fs::path MOD_OVERRIDE_DIR = "mod";
 const std::string COMPILED_ASSETS_SUFFIX = "/runtime/compiled";
@@ -176,6 +177,7 @@ class ModManager
 
 fs::path GetModFolderPath();
 fs::path GetRemoteModFolderPath();
+fs::path GetThunderstoreModFolderPath();
 fs::path GetCompiledAssetsPath();
 
 extern ModManager* g_pModManager;
