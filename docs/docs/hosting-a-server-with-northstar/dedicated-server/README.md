@@ -140,6 +140,7 @@ They allow the server admin to set server's properties like the name, port, and 
 | `sv_updaterate_mp`                               | The maximum number of times per second your server will send information to connected players, if a player's cl\_updaterate\_mp value is lower than this, their rate will be limited to it  | `20`                           | `int`                                              |
 | `sv_max_snapshots_multiplayer`                   | The number of snapshots stored locally for use in replays, this should be set to sv\_updaterate\_mp \* 15                                                                                   | `300`                          | `int`                                              |
 | `host_skip_client_dll_crc`                       | Whether the server should allow clients with modified client.dll files to connect, these are used for visor colour edit mods                                                                | `1`                            | `0-1`                                              |
+| `dedi_sendPrintsToClient`                        | Whether the dedicated server should forward all logs to connected clients, which is useful for testing/debugging on a dedicated server. If `-1`, send no prints to clients. If `0`, send prints to the first client connected only. If `1`, send prints to all clients                                                                   | `-1`                            | `-1-1`                                             |
 
 ## Gamemodes
 
