@@ -20,6 +20,7 @@
 
 * [Using Northstar](using-northstar/README.md)
   * [Mods](using-northstar/mods.md)
+  * [Packages](using-northstar/packages.md)
   * [Server Browser](using-northstar/server-browser.md)
   * [Direct Connect](using-northstar/direct-connect.md)
   * [Gamemodes](using-northstar/gamemodes.md)
