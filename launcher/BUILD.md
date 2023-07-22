@@ -4,11 +4,10 @@ The following steps will allow you to compile your own NorthstarLauncher executa
 *This guide assumes you have already installed Northstar as shown in [this page](https://r2northstar.gitbook.io/r2northstar-wiki/installing-northstar/basic-setup)*
 
 ### Steps
-1. **Download the code** from the [R2Northstar/NorthstarLauncher](https://github.com/R2Northstar/NorthstarLauncher) repo
-2. **Unzip the file.**
-3. **Place the file somewhere memorable,** such as in your Documents directory
-4. **Install Visual Studio 2022** from [this link](https://visualstudio.microsoft.com/downloads/). Northstar uses the vc2022 compiler, which is provided with Visual Studio. *You only need to download the Community edition.*
-5. If you are prompted to download Workloads, check "Desktop Development with C++" If you are not prompted, don't worry, you'll be able to install this later on as well.
+1. **Install Git** from [this link](https://git-scm.com)
+2. **Clone** the [R2Northstar/NorthstarLauncher](https://github.com/R2Northstar/NorthstarLauncher) repo with submodules using this command `git clone --recurse-submodules https://github.com/R2Northstar/NorthstarLauncher.git`
+3. **Install Visual Studio 2022** from [this link](https://visualstudio.microsoft.com/downloads/). Northstar uses the vc2022 compiler, which is provided with Visual Studio. *You only need to download the Community edition.*
+4. If you are prompted to download Workloads, check "Desktop Development with C++" If you are not prompted, don't worry, you'll be able to install this later on as well.
 
 ![Desktop Development Workload](https://user-images.githubusercontent.com/40443620/147722260-b6ec90e9-7b74-4fb7-b512-680c039afaef.png)
 

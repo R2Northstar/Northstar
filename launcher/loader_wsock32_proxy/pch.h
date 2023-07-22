@@ -11,6 +11,6 @@
 // Windows Header Files
 #include <windows.h>
 
-#include "minhook/MinHook.h"
+#include "MinHook.h"
 
 #endif // PCH_H

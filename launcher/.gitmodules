@@ -1,0 +1,8 @@
+[submodule "thirdparty/libcurl"]
+	path = thirdparty/libcurl
+	url = https://github.com/curl/curl
+	ignore = untracked
+[submodule "thirdparty/minhook"]
+	path = thirdparty/minhook
+	url = https://github.com/TsudaKageyu/minhook
+	ignore = untracked
