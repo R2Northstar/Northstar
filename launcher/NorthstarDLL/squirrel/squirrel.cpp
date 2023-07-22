@@ -1,4 +1,5 @@
 #include "squirrel.h"
+#include "mods/modsavefiles.h"
 #include "logging/logging.h"
 #include "core/convar/concommand.h"
 #include "mods/modmanager.h"
@@ -255,6 +256,7 @@ template <ScriptContext context> void SquirrelManager<context>::VMCreated(CSquir
 
 		defconst(m_pSQVM, pair.first.c_str(), bWasFound);
 	}
+	defconst(m_pSQVM, "MAX_FOLDER_SIZE", GetMaxSaveFolderSize() / 1024);
 	g_pSquirrel<context>->messageBuffer = new SquirrelMessageBuffer();
 	g_pPluginManager->InformSQVMCreated(context, newSqvm);
 }
