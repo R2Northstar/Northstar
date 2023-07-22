@@ -430,6 +430,10 @@
 		{
 			"Path":  "sh_northstar_http_requests.gnut",
 			"RunOn": "CLIENT || SERVER || UI"
+		},
+		{
+			"Path": "sh_northstar_safe_io.gnut",
+			"RunOn": "CLIENT || SERVER || UI"
 		}
 	],
 

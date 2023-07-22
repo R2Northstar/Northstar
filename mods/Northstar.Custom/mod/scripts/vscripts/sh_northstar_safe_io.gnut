@@ -1,0 +1,83 @@
+globalize_all_functions
+
+table< int, void functionref( string ) > pendingCallbacks
+table< int, void functionref( table ) > pendingJSONCallbacks
+table< int, void functionref() > failedCallbacks
+
+
+void function NSLoadFile( string file, void functionref( string ) onSuccess, void functionref() onFailure = null )
+{
+    int handle = NS_InternalLoadFile( file )
+
+    pendingCallbacks[handle] <- onSuccess
+    if (onFailure != null)
+        failedCallbacks[handle] <- onFailure
+}
+
+void function NSLoadJSONFile( string file, void functionref( table ) onSuccess, void functionref() onFailure = null )
+{
+    int handle = NS_InternalLoadFile( file )
+
+    pendingJSONCallbacks[handle] <- onSuccess
+    if (onFailure != null)
+        failedCallbacks[handle] <- onFailure
+}
+
+void function NSHandleLoadResult( int handle, bool success, string result )
+{
+    bool hasFailedCallback = handle in failedCallbacks
+    bool isJSONRequest = handle in pendingJSONCallbacks
+    bool isValid = isJSONRequest || handle in pendingCallbacks
+
+    if (!isValid)
+        throw "Invalid IO callback handle"
+
+    if (success)
+    {
+        if (isJSONRequest)
+        {
+            try
+            {
+                table result = DecodeJSON(result, true)
+                pendingJSONCallbacks[handle](result)
+            }
+            catch (ex)
+            {
+                print(ex)
+                // parsing failed, setting 'success' to false, since we
+                // consider this a failure.
+                success = false
+            }
+        }
+        else
+        {
+            pendingCallbacks[handle](result)
+        }
+    }
+    // don't use 'else', json might fail parsing and set 'success' to false.
+    if (!success)
+    {
+        if (hasFailedCallback)
+            failedCallbacks[handle]()
+        else
+        {
+            if (isJSONRequest)
+                pendingJSONCallbacks[handle]({})
+            else
+                pendingCallbacks[handle]("")
+        }
+    }
+
+    if (isJSONRequest)
+        delete pendingJSONCallbacks[handle]
+    else
+        delete pendingCallbacks[handle]
+
+    if (hasFailedCallback)
+        delete failedCallbacks[handle]
+}
+
+array<string> function NSGetAllFiles( string path = "" )
+{
+    return NS_InternalGetAllFiles(path)
+}
