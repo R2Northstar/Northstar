@@ -64,7 +64,7 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 		"earn_meter_pilot_multiplier" "Multiplicateur de boost pilote"
 
 		"earn_meter_titan_multiplier" "Multiplicateur de boost titan"
-		"aegis_upgrades" "Aegis Upgrades"
+		"aegis_upgrades" "Upgrades Aegis"
 		"infinite_doomed_state" "Etat condamné infini"
 		"titan_shield_regen" "Régénération des boucliers"
 
@@ -86,13 +86,13 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 
 		// northstar.custom localisation is just deciding not to work, so putting it here for now
 		"PL_sbox" "Bac à sable"
-		"PL_sbox_lobby" "Lobby: Bac à sable"
-		"PL_sbox_desc" "GMod, mais en pire..."
+		"PL_sbox_lobby" "Lobby : Bac à sable"
+		"PL_sbox_desc" "GMod, mais en pire"
 		"PL_sbox_abbr" "SBOX"
 		"GAMEMODE_SBOX" "Bac à sable"
 
 		"PL_gg" "Gun game"
-		"PL_gg_lobby" "Lobby: Gun game"
+		"PL_gg_lobby" "Lobby : Gun game"
 		"PL_gg_desc" "Obtenez une nouvelle arme à chaque frag.\nTuez un pilote avec chaque arme pour gagner."
 		"PL_gg_hint" "Obtenez une nouvelle arme à chaque frag.\nTuez un pilote avec chaque arme pour gagner."
 		"PL_gg_abbr" "GG"
@@ -102,21 +102,21 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 		"gg_execution_reward" "Récompense pourcentage d'exécutions"
 
 		"PL_tt" "Titan tag"
-		"PL_tt_lobby" "Lobby: Titan tag"
+		"PL_tt_lobby" "Lobby : Titan tag"
 		"PL_tt_desc" "Gagnez des points lorsque vous êtes dans votre titan.\nDétruisez un titan pour obtenir le vôtre."
 		"PL_tt_hint" "Gagnez des points lorsque vous êtes dans votre titan.\nDétruisez un titan pour obtenir le vôtre."
 		"PL_tt_abbr" "TT"
 		"GAMEMODE_TT" "Titan tag"
 
 		"PL_chamber" "Le professionnel"
-		"PL_chamber_lobby" "Lobby: Le professionnel"
+		"PL_chamber_lobby" "Lobby : Le professionnel"
 		"PL_chamber_desc" "Un tir, un mort.\nObtenez une balle en tuant un pilote."
 		"PL_chamber_hint" "Un tir, un mort.\nObtenez une balle en tuant un pilote."
 		"PL_chamber_abbr" "CHAMBER"
 		"GAMEMODE_CHAMBER" "Le professionnel"
 
 		"PL_hidden" "Chasse"
-		"PL_hidden_lobby" "Lobby: Chasse"
+		"PL_hidden_lobby" "Lobby : Chasse"
 		"PL_hidden_desc" "Un pilote est invisible et chasse les autres."
 		"PL_hidden_hint" "Un pilote est invisible et chasse les autres."
 		"PL_hidden_abbr" "HIDDEN"
@@ -126,7 +126,7 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 		"HIDDEN_FIRST_HIDDEN" "%s1 est le chasseur."
 
 		"PL_sns" "Sticks and Stones"
-		"PL_sns_lobby" "Lobby: Sticks and Stones"
+		"PL_sns_lobby" "Lobby : Sticks and Stones"
 		"PL_sns_desc" "Chacun pour soi.\nLes exécutions et les lames à impulsions réinitialisent le score de vos ennemis."
 		"PL_sns_abbr" "SNS"
 		"GAMEMODE_SNS" "Sticks and Stones"
@@ -144,7 +144,7 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 		"sns_softball_enabled" "Softball activé"
 
 		"PL_inf" "Infection"
-		"PL_inf_lobby" "Lobby: Infection"
+		"PL_inf_lobby" "Lobby : Infection"
 		"PL_inf_desc" "Les pilotes survivants deviennent infectés lorsque tués."
 		"PL_inf_hint" "Les pilotes survivants deviennent infectés lorsque tués."
 		"PL_inf_abbr" "INF"
@@ -158,14 +158,14 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 		"INFECTION_SURVIVE_LAST_SURVIVOR" "Survivez."
 
 		"PL_tffa" "Chacun pour soi (titans)"
-		"PL_tffa_lobby" "Lobby: Chacun pour soi (titans)"
+		"PL_tffa_lobby" "Lobby : Chacun pour soi (titans)"
 		"PL_tffa_desc" "Chacun pour soi.\nDétruisez les titans ennemis."
 		"PL_tffa_hint" "Chacun pour soi.\nDétruisez les titans ennemis."
 		"PL_tffa_abbr" "TFFA"
 		"GAMEMODE_TFFA" "Chacun pour soi (titans)"
 
 		"PL_hs" "Cache-cache"
-		"PL_hs_lobby" "Lobby: Cache-cache"
+		"PL_hs_lobby" "Lobby : Cache-cache"
 		"PL_hs_desc" "Les pilotes doivent se cacher pour ne pas être trouvés par l'un d'eux."
 		"PL_hs_hint" "Les pilotes doivent se cacher pour ne pas être trouvés par l'un d'eux."
 		"PL_hs_abbr" "HS"
@@ -185,13 +185,13 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 		// these are defined in r1_english but titan war is a shit name so i'm changing it to another one that was referenced in development
 		"GAMEMODE_fw" "Guerre pour la Frontière"
 		"PL_fw" "Guerre pour la Frontière"
-		"PL_fw_lobby" "Lobby: Guerre pour la Frontière"
+		"PL_fw_lobby" "Lobby : Guerre pour la Frontière"
 		"PL_fw_desc" "Détruisez le collecteur ennemi et protégez le vôtre."
 		"PL_fw_abbr" "FW"
 
 		"GAMEMODE_kr" "Course aux frags"
 		"PL_kr" "Course aux frags"
-		"PL_kr_lobby" "Lobby: Course aux frags"
+		"PL_kr_lobby" "Lobby : Course aux frags"
 		"PL_kr_desc" "Capturez le drapeau pour devenir le prédateur.\nFaites des victimes pour établir un nouveau record de frags.\nLe pilote ayant le plus de frags à la fin de la partie l'emporte."
 		"PL_kr_hint" "Capturez le drapeau pour devenir le prédateur.\nFaites des victimes pour établir un nouveau record de frags.\nLe pilote ayant le plus de frags à la fin de la partie l'emporte."
 		"PL_kr_abbr" "KR"
@@ -207,12 +207,12 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 
 		"GAMEMODE_fastball" "Fastball"
 		"PL_fastball" "Fastball"
-		"PL_fastball_lobby" "Lobby: Fastball"
+		"PL_fastball_lobby" "Lobby : Fastball"
 		"PL_fastball_desc" "Mort permanente.\nPiratez les panneaux de contrôle pour faire réapparaître vos équipiers."
 		"PL_fastball_hint" "Mort permanente.\nPiratez les panneaux de contrôle pour faire réapparaître vos équipiers."
 		"PL_fastball_abbr" "FB"
 		"FASTBALL_PANEL_CAPTURED" "%s1 a piraté le panneau de contrôle %s2 !"
-		"SCOREBOARD_FASTBALL_HACKS" "Panneaux de\ncontrôle capturés"
+		"SCOREBOARD_FASTBALL_HACKS" "Panneaux de contrôle capturés"
 
 		"GAMEMODE_ctf_comp" "Capture de drapeau - Compétitif"
 
@@ -239,7 +239,7 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 
 		// coop stuff
 		"PL_sp_coop" "(ALPHA) Campagne (coop)"
-		"PL_sp_coop_lobby" "Lobby: Campagne (coop)"
+		"PL_sp_coop_lobby" "Lobby : Campagne (coop)"
 		"PL_sp_coop_desc" "Jouez la campagne avec des amis."
 		"PL_sp_coop_hint" "Jouez la campagne avec des amis."
 		"PL_sp_coop_abbr" "SP"
@@ -337,5 +337,9 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 		"MOD_SETTINGS_SERVER"            "Serveur"
 		"MOD_SETTINGS_RESET"            "Réinitialiser"
 		"MOD_SETTINGS_RESET_ALL"        "Tout réinitialiser"
+		"SHOW_ONLY_REQUIRED"        "Afficher les mods requis"
+		"SHOW_ONLY_NOT_REQUIRED"        "Uniquement les mods optionnels"
+		"NO_RESULTS"        "Aucun résultat."
+		"NO_MODS"        "Aucun paramètre trouvé ! Installez d'autres mods depuis ^5588FF00northstar.thunderstore.io^0."
 	}
 }
