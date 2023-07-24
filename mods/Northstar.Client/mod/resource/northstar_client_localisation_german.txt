@@ -311,5 +311,6 @@ Dr체cke Ja, um zuzustimmen. Du kannst diese Entscheidung jederzeit im Modmen체 �
 		"JSON_PARSE_ERROR"                 "Fehler beim Verarbeiten der JSON-Antwort"
 		"UNSUPPORTED_VERSION"             "Die Version die du benutzt ist nicht l채nger unterst체tzt"
 		"SNS_LEADER_BANKRUPT_SUB"             "%s1 Wurde Von %s2 Zur체ckgesetzt"
+		"SNS_BANKRUPT_SUB"             "Dein Punkestand wurde von %s1 zur체ckgesetzt"
 	}
 }
