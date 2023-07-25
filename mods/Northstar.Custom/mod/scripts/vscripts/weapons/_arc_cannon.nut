@@ -552,12 +552,16 @@ function ZapTarget( zapInfo, target, beamStartPos, beamEndPos, chainNum = 1 )
 		int damageNearValue = eWeaponVar.damage_near_value
 		int damageFarValueTitanArmor = eWeaponVar.damage_far_value_titanarmor
 		int damageNearValueTitanArmor = eWeaponVar.damage_near_value_titanarmor
+		int damageFarDistance = eWeaponVar.damage_far_distance
+		int damageNearDistance = eWeaponVar.damage_near_distance
 		if ( zapInfo.player.IsNPC() )
 		{
 			damageFarValue = eWeaponVar.npc_damage_far_value
 			damageNearValue = eWeaponVar.npc_damage_near_value
 			damageFarValueTitanArmor = eWeaponVar.npc_damage_far_value_titanarmor
 			damageNearValueTitanArmor = eWeaponVar.npc_damage_near_value_titanarmor
+			damageFarDistance = eWeaponVar.npc_damage_far_distance
+			damageNearDistance = eWeaponVar.npc_damage_near_distance
 		}
 
 		if ( IsValid( target ) && IsValid( zapInfo.player ) )
@@ -613,8 +617,8 @@ function ZapTarget( zapInfo, target, beamStartPos, beamEndPos, chainNum = 1 )
 			{
 				// use distance for damage if the weapon auto-fires
 				entity weapon = expect entity( zapInfo.weapon )
-				float nearDist = weapon.GetWeaponSettingFloat( eWeaponVar.damage_near_distance )
-				float farDist = weapon.GetWeaponSettingFloat( eWeaponVar.damage_far_distance )
+				float nearDist = weapon.GetWeaponSettingFloat( damageNearDistance )
+				float farDist = weapon.GetWeaponSettingFloat( damageFarDistance )
 
 				float dist = Distance( weapon.GetOrigin(), target.GetOrigin() )
 				damageAmount = GraphCapped( dist, farDist, nearDist, damageMin, damageMax )
