@@ -765,8 +765,8 @@ std::string DataTableToString(Datatable* datatable)
 
 			case DatatableType::VECTOR:
 			{
-				Vector3 pVector((float*)pUntypedVal);
-				sCSVString += fmt::format("<{},{},{}>", pVector.x, pVector.y, pVector.z);
+				Vector3* pVector = (Vector3*)(pUntypedVal);
+				sCSVString += fmt::format("<{},{},{}>", pVector->x, pVector->y, pVector->z);
 				break;
 			}
 
