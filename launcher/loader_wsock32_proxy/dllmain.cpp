@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "loader.h"
 
 #include <shlwapi.h>

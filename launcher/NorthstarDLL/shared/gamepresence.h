@@ -1,6 +1,5 @@
-
 #pragma once
-#include "pch.h"
+
 #include "server/serverpresence.h"
 
 class GameStateServerPresenceReporter : public ServerPresenceReporter

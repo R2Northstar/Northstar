@@ -6,8 +6,6 @@ add_library(loader_wsock32_proxy SHARED
             "dllmain.cpp"
             "loader.cpp"
             "loader.h"
-            "pch.cpp"
-            "pch.h"
             "wsock32.asm"
             "wsock32.def"
 )
