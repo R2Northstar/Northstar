@@ -1,5 +1,3 @@
-#include "pch.h"
-
 #include "gamepresence.h"
 #include "plugins/pluginbackend.h"
 #include "plugins/plugins.h"

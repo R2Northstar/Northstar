@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "pluginbackend.h"
 #include "plugin_abi.h"
 #include "server/serverpresence.h"

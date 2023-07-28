@@ -1,5 +1,4 @@
 #pragma once
-#include "pch.h"
 #include "plugin_abi.h"
 #include "shared/gamepresence.h"
 
