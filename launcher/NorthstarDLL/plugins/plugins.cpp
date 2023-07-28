@@ -196,14 +196,7 @@ inline void FindPlugins(fs::path pluginPath, std::vector<fs::path>& paths)
 		return;
 	}
 
-	fs::recursive_directory_iterator iterator(pluginPath);
-	// ensure iterator is not empty
-	if (std::filesystem::begin(iterator) != std::filesystem::end(iterator))
-	{
-		return;
-	}
-
-	for (auto const& entry : iterator)
+	for (const fs::directory_entry& entry : fs::recursive_directory_iterator(pluginPath))
 	{
 		if (fs::is_regular_file(entry) && entry.path().extension() == ".dll")
 			paths.emplace_back(entry.path());
