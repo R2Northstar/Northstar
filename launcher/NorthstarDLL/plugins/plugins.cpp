@@ -211,6 +211,8 @@ bool PluginManager::LoadPlugins()
 		return false;
 	}
 
+	fs::create_directories(GetThunderstoreModFolderPath());
+
 	std::vector<fs::path> paths;
 
 	pluginPath = GetNorthstarPrefix() + "/plugins";
