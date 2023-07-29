@@ -19,19 +19,7 @@ OFFSET_STRUCT(VPKFileEntry)
 // clang-format on
 #pragma pack(pop)
 
-#pragma pack(push, 1)
-// clang-format off
-struct VPKData
-{
-	STRUCT_SIZE(0x50);
-	FIELDS(0x0,
-		char* directory;
-		char* filename;
-		char* extension;
-	)
-};
-// clang-format on
-#pragma pack(pop)
+struct VPKData;
 
 enum SearchPathAdd_t
 {
