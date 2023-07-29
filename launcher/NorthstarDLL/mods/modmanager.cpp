@@ -16,6 +16,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <regex>
 
 ModManager* g_pModManager;
 
