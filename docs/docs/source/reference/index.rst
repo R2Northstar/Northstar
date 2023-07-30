@@ -20,6 +20,7 @@ Respawn API
 .. toctree::
     :maxdepth: 2
 
+    /reference/respawn/native_server/index
     /reference/respawn/callbacks
     /reference/respawn/player
     /reference/respawn/entities
@@ -27,8 +28,6 @@ Respawn API
     /reference/respawn/topology
     /reference/respawn/clientcommands
     /reference/respawn/movers
-    /reference/respawn/damageinfo
-    /reference/respawn/debugdraw
 
 HUD
 ===

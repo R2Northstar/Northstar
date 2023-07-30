@@ -1,3 +1,5 @@
+.. _serverside-rui-doc:
+
 Serverside RUI
 ==============
 

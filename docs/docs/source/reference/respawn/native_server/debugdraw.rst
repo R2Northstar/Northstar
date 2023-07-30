@@ -1,9 +1,17 @@
-Debug drawing
+Debug Drawing
 =============
+
+.. note::
+
+  Only :ref:`DebugDrawLine <DebugDrawLine>`, :ref:`DebugDrawBox <DebugDrawBox>` and :ref:`DebugDrawScreenText <DebugDrawScreenText>` are native functions.
+
+  The rest are defined in scripts using these.
 
 In Titanfall it is possible to draw shapes in 3D, from the SERVER and CLIENT VM, using the debug draw functions, however in order for them to actually render you will need to set ``enable_debug_overlays 1`` in your launch config or console.
 
 These debug drawing functions are available:
+
+.. _DebugDrawLine:
 
 .. cpp:function:: void DebugDrawLine( vector start, vector end, int r, int b, int g, bool drawThroughObject, float time)
 
@@ -20,6 +28,8 @@ These debug drawing functions are available:
 .. cpp:function:: void DrawStar( vector origin, int size, float time = 1.0, bool throughWorld = false )
 
 .. cpp:function:: void DebugDrawBoxSimple( vector origin, vector min = < -4.0, -4.0, -4.0>, vector max = <4.0, 4.0, 4.0>, int r = 255, int g = 255, int b = 100, int alpha = 255, float time = 0.2 )
+
+.. _DebugDrawBox:
 
 .. cpp:function:: void DrawBox( vector org, vector mins, vector maxs, int r, int g, int b, bool throughSolid, float time )
 
@@ -84,3 +94,11 @@ These debug drawing functions are available:
 .. cpp:function:: void DrawLineFromVecToEntForTime( vector vec, entity ent, float duration, int r = 255, int g = 255, int b = 0 )
 
 .. cpp:function:: void DrawLineForPoints( array<vector> points, vector color, float duration )
+
+.. _DebugDrawScreenText:
+
+.. cpp:function:: void DebugScreenText( float posX, float posY, string text )
+
+  .. error::
+
+    This function is stripped. It does nothing.
