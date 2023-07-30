@@ -176,7 +176,6 @@ Setup Crowbar (one time only)
   - ``Include $definebones lines (typical for view models)``
   - ``Use MixedCase for keywords``
   - ``Reference mesh SMD file``
-  - ``LOD mesh SMD files``
   - ``Physics mesh SMD file``
   - ``Vertex animation VTA file (flexes)``
   - ``Procedural bones VRD file``
@@ -228,12 +227,13 @@ Before editing let me explain how the model is structured in Blender.
 By selecting a qc file in the import menu we told Blender to import all SMD files referenced in that qc file.
 This means that the model is split into multiple collections based on the SMD files referenced in the qc file.
 For example the ``ptpov_vinson.qc`` file references the ``ptpov_vinson_v_vinson.smd`` file which contains the model for the Flatline.
+For now the smd file will be imported into blender when you import the qc file, later we will change this to be an dmx file instead.
 
 - Select the ``ptpov_vinson_v_vinson.smd`` mesh in the outliner.
 - Enter ``EDIT Mode``.
 - In ``EDIT Mode`` add a cube to the side of the Flatline.
 - Exit ``EDIT Mode``.
-- This cube should now be part of the ``ptpov_vinson_v_vinson.smd`` mesh.
+- This cube should now be part of the ``ptpov_vinson_v_vinson`` mesh.
 - Make sure that you now weight paint the cube to the correct bones.
 - 
   .. note::
@@ -247,6 +247,13 @@ For example the ``ptpov_vinson.qc`` file references the ``ptpov_vinson_v_vinson.
 Step 5: Assigning Materials
 ---------------------------
 
+This step has two ways of being done, using a ``qc`` file that references ``smd`` files or references ``dmx`` files.
+Usually the ``smd`` way is what you will want todo when first importing and editing a model, however if you want to reimport a EDITED model you will need to use the ``dmx`` way.
+
+Assigning Materials (smd)
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is the way you will usually do it when first importing a vanilla model that you have not edited yet.
 - Enter ``EDIT Mode``.
 - Select the cube.
 - In the ``Material Properties`` tab on the right click on the ``New`` button.
@@ -254,21 +261,78 @@ Step 5: Assigning Materials
 - Exit ``EDIT Mode``.
 - Your cube should now have the material assigned to it ingame after compiling.
 
+Assigning Materials (dmx)
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is the way you will usually do it when reimporting a model that you have edited.
+- Enter ``EDIT Mode``.
+- Select the cube.
+- In the ``Material Properties`` tab on the right click on the ``New`` button.
+- Set the name of the material to its NAME in the game files
+
+    .. note::
+    with dmx files you can set the material path later on in the export menu. If you have multiple needed paths we will talk about that in the next step `Multiple Material Paths  <#step-5-5-multiple-material-paths-dmx>`__.
+    This is why we set the name of the material to its name in the game files instead of its path.
+
+- Exit ``EDIT Mode``.
+- Your cube should now have the material assigned to it ingame after compiling.
+ 
     .. note:: 
     To clearify: the material of a mesh or individual faces in the game will be associated using the name of the assigned material in Blender.
 
+
+Step 5.5: Multiple Material Paths (dmx)
+---------------------------------------
+
+If you have materials with multiple paths (different folders in the game files) you will want to use the ``$renamematerial`` command in the qc file.
+Usage:
+
+    .. code-block:: text
+
+        $renamematerial	<current material>	<new material>
+
+Example:
+
+    .. code-block:: text
+
+        $renamematerial	"models\weapons_r2\coolmaterial\cool_material"	"models\amazing\uncoolmaterial\cool_material2"
+
+Command docs: `VALVe developer docs $renamematerial <https://developer.valvesoftware.com/wiki/$renamematerial>`__
 
 Step 6: Exporting from Blender
 ------------------------------
 
 - In the ``Source Engine Export`` Menu in the ``Scene Properties`` select an ``Export Path`` usually the same folder as the original qc file.
-- Set the ``Export Format`` to ``SMD``.
-- Press the ``Export`` button and select ``Scene Export`` (this will export all meshes in the scene to SMD files, you can also individually export meshes by selecting them in the outliner and then pressing the ``Export`` button and selecting the mesh in the Export Menu).
-- Your SMD files are now exported and you can close Blender.
+- Set the ``Export Format`` to ``DMX``.
+
+    .. note::
+    This is important since we want to export the model as a dmx file instead of an smd file, this is because of limitation in the smd format that we want to avoid.
+    dmx by default will, uppon importing set a "material path" which is the path to the material in the game files, if you reimport this model later on you will need to 
+
+- Press the ``Export`` button and select ``Scene Export`` (this will export all meshes in the scene to DMX files, you can also individually export meshes by selecting them in the outliner and then pressing the ``Export`` button and selecting the mesh in the Export Menu).
+- Your DMX files are now exported and you can close Blender.
 
 
 Step 7: Compiling the model
 -----------------------------------------------------
+
+- Open your ``.qc`` file in a text editor of your choice.
+- On the top of the file you will see so called "bodygroup" lines, these are used to define the bodygroups of the model. They look a bit like this:
+  
+    .. code-block::
+    
+            $bodygroup "body"
+            {
+                studio "ptpov_vinson_v_vinson.smd"
+                blank
+            }
+
+- For each bodygroup you will want to change the files to be the dmx files you exported in the previous step. (in most cases its gonna be just renaming all the files to ``.dmx`` instead of ``.smd``).
+
+    .. note::
+
+    If you have multiple bodygroups you will need to do this for each bodygroup, if you have multiple meshes in a bodygroup you will need to do this for each mesh in the bodygroup.
+    We do this so Crowbar uses the dmx files instead of the smd files when compiling the model.
 
 - Open Crowbar.
 - Select the ``Compile`` tab on the top.
@@ -280,6 +344,8 @@ Step 7: Compiling the model
     .. note::
     Usually the error is self explainatory and you can fix it by yourself. 
     By default Crowbar will not output a compiled file if any errors occur during the compilation process.
+
+    If you have Visual Studio Code installed you can also use the ``Valve KeyValue Files Support`` extension to have a better overview of the qc file, extension id: ``GEEKiDoS.vdf``
 
 Step 8: Combining model files
 -----------------------------
