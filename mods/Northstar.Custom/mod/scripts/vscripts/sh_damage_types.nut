@@ -630,7 +630,9 @@ void function DamageTypes_Init()
 		[ eDamageSourceId.melee_titan_punch_fighter ]		 		= "#DEATH_TITAN_MELEE",
 		[ eDamageSourceId.melee_titan_punch_vanguard ] 				= "#DEATH_TITAN_MELEE",
 		[ eDamageSourceId.melee_titan_sword ]						= "#DEATH_TITAN_SWORD",
-		[ eDamageSourceId.melee_titan_sword_aoe ]					= "#DEATH_TITAN_SWORD"
+		[ eDamageSourceId.melee_titan_sword_aoe ]					= "#DEATH_TITAN_SWORD",
+		[ eDamageSourceId.mp_titanweapon_arc_cannon ]				= "#WPN_TITAN_ARC_CANNON_SHORT",
+		[ eDamageSourceId.mp_weapon_shotgun_doublebarrel ]			= "#WPN_SHOTGUN_DBLBARREL_SHORT"
 	}
 
 	#if DEV
