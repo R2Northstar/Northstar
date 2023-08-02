@@ -3,7 +3,7 @@
 ## Instructions
 
 To host a listen server on Northstar, go to the lobby and press the `Private Match` button to begin a private match. While this does allow you to host a server, other people won't be able to join it, so you'll need to port forward UDP port `37015` to allow other people to join.\
-On Northstar v1.12 and older, you'll need to also forward TCP port `8081`. If this works correctly, this should result in your server being displayed on the server browser, and other clients being able to connect to it.\
+If this works correctly, this should result in your server being displayed on the server browser, and other clients being able to connect to it.\
 ![screenshot select private match](https://raw.githubusercontent.com/R2Northstar/NorthstarWiki/main/docs/images/lobbyprivatematch.png)
 
 ## Server Configuration
@@ -26,7 +26,6 @@ Below are a series of variables and commands you can use for server configuratio
 | `ns_report_sp_server_to_masterserver`            | Whether your server should report itself to the masterserver if started on a singleplayer map, for use in auth and the serverbrowser                                                        | `0`                            |
 | `ns_auth_allow_insecure`                         | Allows clients to join your server without authenticating with the masterserver, currently required to allow clients to connect directly to your IP, rather than through the server browser | `0`                            |
 | `ns_erase_auth_info`                             | Whether your server should erase authentication information after it is used, this is useful for development but should normally be kept at 1                                               | `1`                            |
-| `ns_player_auth_port`                            | Northstar v1.12 and older only. The port used for the server's local authentication server, this is the TCP port we forwarded earlier                                                       | `8081`                         |
 | `everything_unlocked`                            | Whether all items, weapons, etc should be unlocked on the server                                                                                                                            | `1`                            |
 | `ns_should_return_to_lobby`                      | Whether the server should return to private match lobby after completing a game, if 0, this will go to the next map/mode in the playlist                                                    | `1`                            |
 | `ns_private_match_only_host_can_change_settings` | If 0 Players can change all match settings. If 1 Players can only change map and gamemode. If 2 Players can change nothing                                                                  | `0`                            |

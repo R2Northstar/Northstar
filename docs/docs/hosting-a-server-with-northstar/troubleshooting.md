@@ -46,8 +46,6 @@ See [CGNAT](https://r2northstar.gitbook.io/r2northstar-wiki/hosting-a-server-wit
 
 ### If server is not reachable using external IP nor using internal IP
 
-Try checking your loopback network interface `http://127.0.0.1:{server_tcp_port}/verify`
-
 **Another program is using the port**
 
 Sometimes another program listens to the same port as Northstar.
