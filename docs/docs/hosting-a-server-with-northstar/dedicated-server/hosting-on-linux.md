@@ -87,8 +87,6 @@ services:
       - /home/YOUR_USERNAME_HERE/Titanfall2/mods:/mnt/mods:ro
     ports:
       - "37015:37015/udp"
-      # uncomment for Northstar v1.12 and older
-      #- "8081:8081/tcp"
     restart: always
 ```
 
