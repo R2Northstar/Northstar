@@ -47,6 +47,8 @@ Getters
 
 .. cpp:function:: int DamageInfo_GetCustomDamageType( var damageInfo )
 
+.. _damage-source-id-overview:
+
 .. cpp:function:: int DamageInfo_GetDamageSourceIdentifier( var damageInfo )
 
     Returns the ``eDamageSourceId``
@@ -179,6 +181,8 @@ Helpers
 
 .. cpp:function:: string GetObitFromdamageSourceId( int damageSourceId )
 
+
+.. _damage-flag-overview:
 
 Damage Flags
 ------------
