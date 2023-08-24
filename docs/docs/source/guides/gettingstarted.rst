@@ -389,6 +389,9 @@ A boolean expression which tells the game when and in which context to compile t
    * - GAMEMODE_at
      - True if the given game mode is being loaded
 
+``CLIENT && !LOBBY`` - Compiles on client and not in the lobby. So during actual singeplayer and multiplayer gameplay.
+
+``CLIENT && MP && !LOBBY`` - Compiles on client, only in multiplayer and not in the lobby.
 
 ``( CLIENT || SERVER ) && MP`` - Compiles on both client and server only in multiplayer.
 
