@@ -57,6 +57,7 @@ API
   **Types:**
   
   * ``int``
+  * ``bool``
   * ``float``
   * ``float2``
   * ``float3`` / ``vector``
