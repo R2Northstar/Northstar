@@ -11,7 +11,7 @@ Basics
 ------
 
 This guide assumes you have basic understanding with programming and know how to use
-developer environments. Listed below are tools useful for exporting file formats
+developer environments. Listed below are tools useful for exporting file formats.
 
 If you'd like a more lengthy set of tutorials covering many topics. Look at: `NoSkill
 modding guide <https://noskill.gitbook.io/titanfall2/>`_
