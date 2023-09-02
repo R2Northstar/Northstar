@@ -274,6 +274,9 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 	
 	ClearRespawnAvailable( player )
 
+	// reset this so that we default to pilot spawn
+	player.SetPersistentVar( "spawnAsTitan", false )
+
 	OnThreadEnd( function() : ( player )
 	{
 		if ( !IsValid( player ) )
@@ -379,6 +382,13 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 		SetRespawnAvailable( player )
 		
 		wait respawnDelay
+
+		int forceRespawn = GetCurrentPlaylistVarInt( "player_force_respawn", -1 )
+
+		// -1 is disabled, anything over is the time we wait in seconds
+		// before respawning the player
+		if( forceRespawn >= 0 )
+			thread ForceRespawnMeSignalAfterDelay( player, forceRespawn )
 				
 		player.WaitSignal( "RespawnMe" ) // set in base_gametype: ClientCommand_RespawnPlayer
 		
@@ -396,6 +406,21 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 		
 		thread PlayerBecomesSpectator( player )
 	}
+}
+
+// idk if this is a good delay or if it matches vanilla
+void function ForceRespawnMeSignalAfterDelay( entity player, int delay = 5 )
+{
+	player.EndSignal( "RespawnMe" )
+	player.EndSignal( "OnDestroy" )
+
+	if( player.IsWatchingKillReplay() )
+		player.WaitSignal( "KillCamOver" )
+
+	wait delay
+
+	printt( format( "Forcing player respawn for player %s (took >%d seconds to respawn)", player.GetPlayerName(), delay ) )
+	player.Signal( "RespawnMe" )
 }
 
 void function PlayerWatchesKillReplayWrapper( entity player, entity attacker, float timeSinceAttackerSpawned, float timeOfDeath, float beforeTime, table replayTracker )

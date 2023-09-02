@@ -227,6 +227,7 @@ Press Yes if you agree to this. This choice can be changed in the mods menu at a
 		"classic_rodeo" "Classic Rodeo"
 		"oob_timer_enabled" "Out of Bounds Timer"
 		"riff_instagib" "Instagib Mode"
+		"player_force_respawn" "Forced Respawn"
 
 		"riff_player_bleedout" "Pilot Bleedout"
 		"player_bleedout_forceHolster" "Holster weapons when downed"

@@ -1,0 +1,13 @@
+playlists
+{
+	Gamemodes
+	{
+		defaults
+		{
+			vars
+			{
+				player_force_respawn 5
+			}
+		}
+	}
+}
