@@ -261,9 +261,12 @@ bool function IsSpawnpointValid( entity spawnpoint, int team )
 			return false
 	}
 
-	array<entity> projectiles = GetProjectileArrayEx( "any", TEAM_ANY, TEAM_ANY, spawnpoint.GetOrigin(), 600 )
-	foreach ( entity projectile in projectiles )
-		if ( projectile.GetTeam() != team )
+    const minEnemyDist = 1000.0 // about 20 meters?
+    // in rsquirrel extend returns null unlike in vanilla squirrel
+    array< entity > spawnBlockers = GetPlayerArrayEx( "any", TEAM_ANY, TEAM_ANY, spawnpoint.GetOrigin(), minEnemyDist )
+    spawnBlockers.extend( GetProjectileArrayEx( "any", TEAM_ANY, TEAM_ANY, spawnpoint.GetOrigin(), minEnemyDist ) )
+	foreach ( entity blocker in spawnBlockers )
+		if ( blocker.GetTeam() != team )
 			return false
 	
 	// los check
