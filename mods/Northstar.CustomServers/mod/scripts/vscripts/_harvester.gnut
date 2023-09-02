@@ -28,7 +28,9 @@ HarvesterStruct function SpawnHarvester( vector origin, vector angles, int healt
     harvester.SetShieldHealthMax( shieldHealth )
     harvester.SetShieldHealth( shieldHealth )
     harvester.EnableAttackableByAI( 30, 0, AI_AP_FLAG_NONE )
-    SetObjectCanBeMeleed( harvester, false )
+    SetCustomSmartAmmoTarget( harvester, true )
+    SetObjectCanBeMeleed( harvester, true )
+    SetVisibleEntitiesInConeQueriableEnabled( harvester, true )
     SetTeam(harvester,team)
 
     DispatchSpawn( harvester )
