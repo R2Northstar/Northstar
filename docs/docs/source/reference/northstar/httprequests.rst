@@ -170,6 +170,11 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
 Functions
 ^^^^^^^^^
 
+.. warning::
+	
+	Your mod needs to be load priority 1 or above to use ``HttpRequest`` and ``HttpRequestResponse`` in your script.
+	
+
 .. _httpapi_funcs_nshttprequest:
 
 .. cpp:function:: bool NSHttpRequest( HttpRequest requestParameters, void functionref( HttpRequestResponse ) onSuccess = null, void functionref( HttpRequestFailure ) onFailure = null )
