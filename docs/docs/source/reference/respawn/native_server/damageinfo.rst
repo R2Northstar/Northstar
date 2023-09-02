@@ -56,7 +56,7 @@ Getters
     ``damageSourceId`` is an ``int`` that references an ``enum`` and can be used to identify what source damage came from. 
 
     ``damageSourceId`` is mostly found as an argument in some kill and damage related functions. Respawn has created a function that will attempt to localise the damageSourceId inputed.
-    To add your own custom ``damageSourceID`` , see: :doc:`../northstar/customdamagesources`
+    To add your own custom ``damageSourceID`` , see: :doc:`../../northstar/customdamagesources`
 
     Other useful functions can be found in the ``damageinfo`` section of this page and in :doc:`entities`
 
