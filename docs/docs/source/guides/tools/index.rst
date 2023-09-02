@@ -8,3 +8,4 @@ Modding Tools
     /guides/tools/tools
     /guides/tools/VTFModding
     /guides/tools/MDLModding
+    /guides/tools/BIKVideoModding
