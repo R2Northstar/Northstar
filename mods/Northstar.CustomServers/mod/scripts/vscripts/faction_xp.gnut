@@ -3,8 +3,11 @@ global function AddFactionXP
 void function AddFactionXP( entity player, int amount )
 {
 	string faction = GetFactionChoice( player )
+	int oldLevel = FactionGetLevel( player, faction )
 	// increment xp
 	player.SetPersistentVar( "factionXP[" + faction + "]", min( FactionGetXP( player, faction ) + amount, FactionGetMaxXP( faction ) ) )
 	
 	// note: no notif for faction level up
+	if ( FactionGetLevel( player, faction ) != oldLevel )
+		AddPlayerScore( player, "FactionLevelUp" )
 }

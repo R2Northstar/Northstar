@@ -14,6 +14,7 @@ void function Lobby_Init()
 	{
 		// non-private lobby clientcommands
 		AddClientCommandCallback( "StartPrivateMatchSearch", ClientCommandCallback_StartPrivateMatchSearch )
+		AddClientCommandCallback( "SetAnnouncementVersionSeen", ClientCommandCallback_SetAnnouncementVersionSeen )
 	}
 }
 
@@ -35,5 +36,16 @@ bool function ClientCommandCallback_StartPrivateMatchSearch( entity player, arra
 	SetCurrentPlaylist( "private_match" ) // required for private match lobby to start properly
 	GameRules_ChangeMap( "mp_lobby", GAMETYPE )
 	
+	return true
+}
+
+bool function ClientCommandCallback_SetAnnouncementVersionSeen( entity player, array<string> args )
+{
+	if ( args.len() < 1 )
+		return false
+	
+	int version = int( args[0] )
+
+	player.SetPersistentVar( "announcementVersionSeen", version )
 	return true
 }

@@ -785,7 +785,7 @@ bool function IsSettingPrimeTitanWithoutSetFile( entity player, string loadoutTy
 
 bool function SkipItemLockedCheck( entity player, string ref, string parentRef, string loadoutProperty ) //Hack: Skip entitlement related unlock checks for now. Can fail.
 {
-	if ( DevEverythingUnlocked() )
+	if ( DevEverythingUnlocked( player ) )
 		return true
 
 	//if ( IsItemInEntitlementUnlock( ref ) && IsLobby()  ) //TODO: Look into restricting this to lobby only? But entitlement checks can fail randomly...
@@ -3993,7 +3993,7 @@ bool function IsValidTitanLoadoutIndex( int loadoutIndex )
 
 bool function HasPrimeToMatchExecutionType( entity player, int itemType )
 {
-	if ( DevEverythingUnlocked() )
+	if ( DevEverythingUnlocked( player ) )
 		return true
 
 	switch( itemType )

@@ -58,7 +58,9 @@ void function CodeCallback_MatchIsOver()
 #if MP
 void function PopulatePostgameData()
 {
-	// something's busted here because this isn't showing automatically on match end, ag
+	// show the postgame scoreboard summary
+	SetUIVar( level, "showGameSummary", true )
+
 	foreach ( entity player in GetPlayerArray() )
 	{
 		int teams = GetCurrentPlaylistVarInt( "max_teams", 2 )

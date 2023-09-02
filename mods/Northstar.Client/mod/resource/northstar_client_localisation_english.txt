@@ -343,5 +343,23 @@ Press Yes if you agree to this. This choice can be changed in the mods menu at a
 		"MOD_SETTINGS_RESET_ALL"		"Reset All"
 		"NO_RESULTS"					"No results."
 		"NO_MODS"						"No settings available! Install more mods at ^5588FF00northstar.thunderstore.io^0."
+
+		// Toggleable progression
+		"TOGGLE_PROGRESSION"			"Toggle Progression"
+		"Y_BUTTON_TOGGLE_PROGRESSION"	"%[Y_BUTTON]% Toggle Progression"
+
+		"PROGRESSION_TOGGLE_ENABLED_HEADER" "Disable Progression?"
+		"PROGRESSION_TOGGLE_ENABLED_BODY" "Titans, Weapons, Factions, Skins, etc. will all be unlocked and usable at any time.\n\nThis can be changed at any time in the multiplayer lobby."
+
+		"PROGRESSION_TOGGLE_DISABLED_HEADER" "Enable Progression?"
+		"PROGRESSION_TOGGLE_DISABLED_BODY" "Titans, Weapons, Factions, Skins, etc. will need to be unlocked by levelling up, or bought with Merits.\n\nThis can be changed at any time in the multiplayer lobby.\n\n^CC000000Warning: if you have currently equipped any items that you do not have unlocked, they will be reset!"
+
+		"PROGRESSION_ENABLED_HEADER"	"Progression Enabled!"
+		"PROGRESSION_ENABLED_BODY"		"^CCCC0000Progression has been enabled.^\n\nTitans, Weapons, Factions, Skins, etc. will need to be unlocked by levelling up, or bought with Merits.\n\nThis can be changed at any time in the multiplayer lobby."
+
+		"PROGRESSION_DISABLED_HEADER"	"Progression Disabled!"
+		"PROGRESSION_DISABLED_BODY"		"^CCCC0000Progression has been disabled.^\n\nTitans, Weapons, Factions, Skins, etc. will all be unlocked and usable at any time.\n\nThis can be changed at any time in the multiplayer lobby."
+	
+		"PROGRESSION_ANNOUNCEMENT_BODY"	"^CCCC0000Progression can now be enabled!^\n\nNorthstar now supports vanilla progression, meaning you can choose to unlock Weapons, Skins, Titans, etc. through levelling up and completing challenges.\n\nYou can enable progression using the button at the bottom of the lobby screen.\n\nThis can be changed at any time."
 	}
 }

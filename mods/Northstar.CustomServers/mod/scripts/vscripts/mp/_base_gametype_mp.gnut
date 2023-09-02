@@ -134,6 +134,15 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 		Lobby_OnClientConnectionCompleted( player )
 		return
 	}
+	else if ( !IsFDMode( GAMETYPE ) )
+	{
+		// reset this for non-fd modes
+		// for some reason the postgame scoreboard uses this to
+		// determine if it should show the FD aegis rank one
+		// FD should either set this in their own mode, or add an else
+		// to this if statement when it releases
+		player.SetPersistentVar( "lastFDTitanRef", "" )
+	}
 
 	player.hasConnected = true
 
