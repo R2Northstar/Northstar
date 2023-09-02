@@ -17,6 +17,7 @@ void function PrivateMatchModesInit()
 	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_PILOT", "boosts_enabled", [ "#SETTING_DEFAULT", "#SETTING_DISABLED" ], "1" )
 	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_PILOT", "earn_meter_pilot_overdrive", [ "#SETTING_DISABLED", "#SETTING_ENABLED", "Only" ], "1" )
 	AddPrivateMatchModeSettingArbitrary( "#MODE_SETTING_CATEGORY_PILOT", "earn_meter_pilot_multiplier", "1.0" )
+	AddPrivateMatchModeSettingArbitrary( "#MODE_SETTING_CATEGORY_PILOT", "player_force_respawn", "5" )
 	
 	AddPrivateMatchModeSettingArbitrary( "#MODE_SETTING_CATEGORY_TITAN", "earn_meter_titan_multiplier", "1.0" )
 	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_TITAN", "aegis_upgrades", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
