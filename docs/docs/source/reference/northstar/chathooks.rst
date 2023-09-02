@@ -4,6 +4,12 @@ Chathooks
 This document provides usage of the Chathook API added in Northstar ``v1.6.0``.
 For an example of chathooks in use, check out EmmaM's `OwOfier mod <https://github.com/emma-miler/OwOfier/>`_.
 
+
+.. warning::
+	
+	Your mod needs to be load priority 1 or above to use the structs and callbacks in your script.
+
+
 Client chat API
 ---------------
 
