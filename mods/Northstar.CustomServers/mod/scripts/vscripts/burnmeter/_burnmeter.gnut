@@ -265,6 +265,8 @@ void function UseBurnCardWeapon( entity weapon, entity player )
 		PlayerEarnMeter_SetRewardUsed( player )
 
 	thread PlayerInventory_PopInventoryItem( player )
+
+	UpdatePlayerStat( player, "misc_stats", "boostsActivated" )
 }
 
 void function UseBurnCardWeaponInCriticalSection( entity weapon, entity ownerPlayer )

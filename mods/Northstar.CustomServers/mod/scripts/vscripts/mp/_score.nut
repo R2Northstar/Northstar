@@ -7,6 +7,7 @@ global function ScoreEvent_PlayerKilled
 global function ScoreEvent_TitanDoomed
 global function ScoreEvent_TitanKilled
 global function ScoreEvent_NPCKilled
+global function ScoreEvent_MatchComplete
 
 global function ScoreEvent_SetEarnMeterValues
 global function ScoreEvent_SetupEarnMeterValuesForMixedModes
@@ -230,7 +231,15 @@ void function ScoreEvent_NPCKilled( entity victim, entity attacker, var damageIn
 	catch ( ex ) {}
 }
 
-
+void function ScoreEvent_MatchComplete( int winningTeam )
+{
+	foreach( entity player in GetPlayerArray() )
+	{
+		AddPlayerScore( player, "MatchComplete" )
+		if ( player.GetTeam() == winningTeam )
+			AddPlayerScore( player, "MatchVictory" )
+	}
+}
 
 void function ScoreEvent_SetEarnMeterValues( string eventName, float earned, float owned, float coreScale = 1.0 )
 {

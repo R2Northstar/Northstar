@@ -65,6 +65,8 @@ bool function ClientCommandCallback_GenUp( entity player, array<string> args )
 		player.GenChanged()
 		player.XPChanged()
 	}
+
+	RegenPersistentLoadouts(player)
 	
 	return true
 }

@@ -178,6 +178,8 @@ void function InitLobbyMenu()
 	AddMenuFooterOption( menu, BUTTON_B, "#B_BUTTON_BACK", "#BACK" )
 	AddMenuFooterOption( menu, BUTTON_BACK, "#BACK_BUTTON_POSTGAME_REPORT", "#POSTGAME_REPORT", OpenPostGameMenu, IsPostGameMenuValid )
 	AddMenuFooterOption( menu, BUTTON_TRIGGER_RIGHT, "#R_TRIGGER_CHAT", "", null, IsVoiceChatPushToTalk )
+	// Client side progression toggle
+	AddMenuFooterOption( menu, BUTTON_Y, "#Y_BUTTON_TOGGLE_PROGRESSION", "#TOGGLE_PROGRESSION", ShowToggleProgressionDialog )
 
 	InitChatroom( menu )
 
@@ -224,6 +226,57 @@ void function InitLobbyMenu()
 	RegisterSignal( "PutPlayerInMatchmakingAfterDelay" )
 	RegisterSignal( "CancelRestartingMatchmaking" )
 	RegisterSignal( "LeaveParty" )
+}
+
+void function ShowToggleProgressionDialog( var button )
+{
+	bool enabled = Progression_GetPreference()
+
+	DialogData dialogData
+	dialogData.menu = GetMenu( "AnnouncementDialog" )
+	dialogData.header = enabled ? "#PROGRESSION_TOGGLE_ENABLED_HEADER" : "#PROGRESSION_TOGGLE_DISABLED_HEADER"
+	dialogData.message = enabled ? "#PROGRESSION_TOGGLE_ENABLED_BODY" : "#PROGRESSION_TOGGLE_DISABLED_BODY"
+	dialogData.image = $"ui/menu/common/dialog_announcement_1"
+
+	AddDialogButton( dialogData, "#NO" )
+	AddDialogButton( dialogData, "#YES", enabled ? DisableProgression : EnableProgression )
+
+	OpenDialog( dialogData )
+}
+
+void function EnableProgression()
+{
+	Progression_SetPreference( true )
+
+	// update the cache just in case something changed
+	UpdateCachedLoadouts_Delayed()
+
+	DialogData dialogData
+	dialogData.menu = GetMenu( "AnnouncementDialog" )
+	dialogData.header = "#PROGRESSION_ENABLED_HEADER"
+	dialogData.message = "#PROGRESSION_ENABLED_BODY"
+	dialogData.image = $"ui/menu/common/dialog_announcement_1"
+
+	AddDialogButton( dialogData, "#OK" )
+
+	EmitUISound( "UI_Menu_Item_Purchased_Stinger" )
+
+	OpenDialog( dialogData )
+}
+
+void function DisableProgression()
+{
+	Progression_SetPreference( false )
+
+	DialogData dialogData
+	dialogData.menu = GetMenu( "AnnouncementDialog" )
+	dialogData.header = "#PROGRESSION_DISABLED_HEADER"
+	dialogData.message = "#PROGRESSION_DISABLED_BODY"
+	dialogData.image = $"ui/menu/common/dialog_announcement_1"
+
+	AddDialogButton( dialogData, "#OK" )
+	
+	OpenDialog( dialogData )
 }
 
 void function SetupComboButtonTest( var menu )

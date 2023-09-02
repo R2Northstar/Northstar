@@ -422,6 +422,40 @@ void function Evac( int evacTeam, float initialWait, float arrivalTime, float wa
 		foreach ( entity otherPlayer in GetPlayerArray() )
 			Remote_CallFunction_NonReplay( otherPlayer, "ServerCallback_EvacObit", player.GetEncodedEHandle() )
 	}
+
+	// award player score to evacing team
+	int evacCount = 0
+	array<entity> evacingPlayers = GetPlayerArrayOfTeam( dropship.GetTeam() ) // all players that are supposed to evac in the dropship
+
+	// count how many players are in the dropship
+	foreach ( entity player in evacingPlayers )
+	{
+		if ( !PlayerInDropship( player, dropship ) )
+			continue
+		
+		evacCount++
+	}
+
+	bool allEvac = evacCount == evacingPlayers.len()
+
+	foreach(entity player in evacingPlayers)
+	{
+		if ( !PlayerInDropship( player, dropship ) )
+			continue
+
+		AddPlayerScore( player, "HotZoneExtract" )
+		UpdatePlayerStat( player, "misc_stats", "evacsSurvived" )
+
+		if ( allEvac )
+			AddPlayerScore( player, "TeamBonusFullEvac" )
+	}
+
+	// sole survivor (but not the only one on the team)
+	if ( evacCount == 1 && !allEvac )
+	{
+		// we can assume there is one player in the array because otherwise evacCount wouldn't be 1
+		AddPlayerScore( evacingPlayers[0], "SoleSurvivor" )
+	}
 }
 
 void function AddPlayerToEvacDropship( entity dropship, entity player ) 
@@ -441,6 +475,8 @@ void function AddPlayerToEvacDropship( entity dropship, entity player )
 	// no slots available
 	if ( !PlayerInDropship( player, dropship ) )
 		return
+
+	UpdatePlayerStat( player, "misc_stats", "evacsAttempted" )
 
     // need to cancel if the dropship dies
     dropship.EndSignal( "OnDeath", "OnDestroy" )
@@ -507,6 +543,15 @@ void function CheckIfAnyPlayerLeft( int evacTeam )
 			SetTeamActiveObjective( evacTeam, "EG_DropshipExtractEvacPlayersKilled" )
 			SetTeamActiveObjective( GetOtherTeam( evacTeam ), "EG_StopExtractEvacPlayersKilled" )
 			thread EvacEpilogueCompleted( null )
+
+			// score for killing the entire evacing team
+			foreach ( entity player in GetPlayerArray() )
+			{
+				if ( player.GetTeam() == evacTeam )
+					continue
+
+				AddPlayerScore( player, "TeamBonusKilledAll")
+			}
 		}
 	)
 	while( true )
