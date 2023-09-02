@@ -29,6 +29,7 @@ Respawn API
     /reference/respawn/topology
     /reference/respawn/clientcommands
     /reference/respawn/movers
+    /reference/respawn/dialog
     /reference/respawn/damagehistory
 
 HUD
