@@ -6,6 +6,7 @@ Native Server Functions
 
     /reference/respawn/native_server/collision
     /reference/respawn/native_server/convars
+    /reference/respawn/native_server/codecallback
     /reference/respawn/native_server/createent
     /reference/respawn/native_server/damagedef
     /reference/respawn/native_server/damageinfo
