@@ -1274,10 +1274,16 @@ void function RemoveConnectToServerCallback( void functionref( ServerInfo ) call
 	file.connectCallbacks.fastremovebyvalue( callback )
 }
 
-void function TriggerConnectToServerCallbacks()
+void function TriggerConnectToServerCallbacks( ServerInfo ornull targetServer = null )
 {
+	ServerInfo server;
+	if (targetServer == null)
+	{
+		targetServer = file.lastSelectedServer
+	}
+
 	foreach( callback in file.connectCallbacks )
 	{
-		callback( file.lastSelectedServer )
+		callback( expect ServerInfo( targetServer ) )
 	}
 }
