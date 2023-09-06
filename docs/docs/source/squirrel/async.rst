@@ -296,6 +296,8 @@ Flags
 
 .. cpp:function:: void FlagEnd( string flag )
 
+    Ends this thread when the flag is set
+
 .. cpp:function:: bool Flag( string flag )
 
     Returns the current state of a flag.
