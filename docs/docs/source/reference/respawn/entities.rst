@@ -17,7 +17,7 @@ For a graphic reprasentation of the Server and Client class inheritance, refer t
 CBaseEntity / C_BaseEntity
 --------------------------
 
-Basic enitity that most other entities inherit from.
+Basic entity that most other entities inherit from.
 
 Shared
 ^^^^^^
@@ -369,7 +369,7 @@ Shared
 
 		Returns ``true```if this entity is the gameworld
 
-	.. cpp:function:: void DispatchImpactEffects( entity ent, vector startPos, vector endPos, vector hitNormal, enitity prop, int propIndex, int damageType, int impactIndex, entity orig, int impactEffectFlags )
+	.. cpp:function:: void DispatchImpactEffects( entity ent, vector startPos, vector endPos, vector hitNormal, entity prop, int propIndex, int damageType, int impactIndex, entity orig, int impactEffectFlags )
 
 	.. cpp:function:: void IsPlayerDecoy()
 
@@ -1206,7 +1206,7 @@ Shared
 
 	.. cpp:function:: entity GetThrower()
 
-		Get the enitity that has thrown this grenade
+		Get the entity that has thrown this grenade
 
 	.. cpp:function:: bool GrenadeHasIgnited()
 
@@ -1398,7 +1398,7 @@ Shared
 
 	.. cpp:function:: int GetObjectiveIndex()
 
-	.. cpp:function:: enitity GetPredictedFirstPersonProxy()
+	.. cpp:function:: entity GetPredictedFirstPersonProxy()
 
 	.. cpp:function:: int GetPetTitanMode()
 
@@ -1548,7 +1548,7 @@ CPlayer
 
 	.. cpp:function:: void CockpitStartDisembark()
 
-	.. cpp:function:: void NotifyDidDamage( entity damagedEnt, int hitbox, vector damagePosition, int customDamageType, float damage, int damageFlags, int hitGroup, enitity weapon, float distanceFromAttackOrigin )
+	.. cpp:function:: void NotifyDidDamage( entity damagedEnt, int hitbox, vector damagePosition, int customDamageType, float damage, int damageFlags, int hitGroup, entity weapon, float distanceFromAttackOrigin )
 
 	.. cpp:function:: void Server_SetDodgePower( float dodgePower )
 
@@ -1810,7 +1810,7 @@ Shared
 
 	.. cpp:function:: entity GetOffhandWeapon( int slot )
 
-	.. cpp:function:: enitity GetActiveWeapon()
+	.. cpp:function:: entity GetActiveWeapon()
 
 	.. cpp:function:: entity GetLatestPrimaryWeapon()
 
@@ -1842,7 +1842,7 @@ Shared
 
 	.. cpp:function:: bool ContextAction_IsMeleeExecutionTarget()
 
-	.. cpp:function:: enitity GetFirstRodeoRider()
+	.. cpp:function:: entity GetFirstRodeoRider()
 
 		Returns the first rodeo rider found or null if there are none.
 
@@ -2313,7 +2313,7 @@ CTurret
 
 	.. cpp:function:: entity GetDriver()
 
-	.. cpp:function:: voit SetDriver( enitity driver )
+	.. cpp:function:: voit SetDriver( entity driver )
 
 C_Titan_Cockpit
 ---------------
@@ -2370,7 +2370,7 @@ CVortexSphere
 
 	.. cpp:function:: void DisableVortexBlockLOS()
 
-	.. cpp:function:: enitity GetOwnerWeapon()
+	.. cpp:function:: entity GetOwnerWeapon()
 
 	.. cpp:function:: void AddBulletToSphere()
 
