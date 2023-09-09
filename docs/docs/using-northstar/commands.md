@@ -11,9 +11,6 @@ To open your console you'll either have to switch to the English (US) layout **b
 
 ### Rebinding the console
 {% hint style="info" %}
-Make sure you updated [Northstar to version v1.5.0](https://github.com/R2Northstar/Northstar/releases) or higher.
-{% endhint %}
-{% hint style="info" %}
 The console can only be bound to ```"`"``` or one of the function keys ```"F1" - "F12"```
 {% endhint %}
 
