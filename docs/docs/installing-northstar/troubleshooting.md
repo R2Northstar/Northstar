@@ -198,7 +198,7 @@ The following command will reset all your loadouts and levels!
 
 Open console in-game in main menu, type in `ns_resetpersistence` and press enter. Close console again and click on "Launch Northstar". All your stuff should now be reset.
 
-## Couldn't find player account/Invalid Master Server Token <a href="#playeraccount" id="playeraccount"></a>
+## Couldn't find player account/Invalid Master Server Token <a href="#PLAYER_NOT_FOUND" id="PLAYER_NOT_FOUND"></a>
 
 This is an error commonly caused by EA not properly updating players' names when launching Northstar, especially prevalent for people who have changed their EA username before.
 
