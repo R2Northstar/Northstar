@@ -17,6 +17,13 @@ If the usual workarounds of restarting EA/Origin, rebooting your pc, or running 
 * Sign out and exit EA/Origin, then start Northstar. It will prompt you for a login, _hopefully_ fixing it if nothing else worked
 * Start normal Titanfall 2 and then Northstar (_ONLY WORKS SOMETIMES_)
 
+## Origin Offline/ORIGIN_LOGGED_OUT <a href="#origin-offline" id="origin-offline"></a>
+
+This error usually happens when the EA App fails to connect to EA servers properly. To fix this, you can:
+
+1. Make sure you're signed into the EA App and can see Titanfall2 in your EA Library (only applies to Steam owners. If you can't, check [EA's official guide for linking accounts](https://help.ea.com/en/help/pc/link-ea-and-steam/).
+2. Use task manager to end the `EA App` and `EA Background service` tasks, open the EA App, then launch Northstar.
+
 ## Tier0.dll Not found <a href="#tier0" id="tier0"></a>
 
 ![Failed to load the tier0.dll](../images/northstar-launcher-error-wrong-location.png)
