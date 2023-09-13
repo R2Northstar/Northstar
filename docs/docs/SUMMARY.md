@@ -57,4 +57,4 @@
 
 ## Other
 
-* [Credits](credits.md)
+* [Credits](other/credits.md)
