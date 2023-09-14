@@ -4,6 +4,7 @@ find_package(minhook REQUIRED)
 find_package(libcurl REQUIRED)
 
 add_library(NorthstarDLL SHARED
+            "resources.rc"
             "client/audio.cpp"
             "client/audio.h"
             "client/chatcommand.cpp"
