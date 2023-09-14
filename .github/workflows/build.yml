@@ -2,7 +2,7 @@ name: Build
 on:
   push:
     tags:
-      - '*'
+      - 'v*'
   workflow_dispatch:
     inputs:
       job:
@@ -10,76 +10,32 @@ on:
         required: true
         default: 'build-thunderstore-package'
 
+permissions:
+  contents: write # Needed to write to GitHub draft release
+
 env:
   NORTHSTAR_VERSION: ${{ github.ref_name }}
 
 jobs:
-  build-launcher:
-    runs-on: windows-2022
-    steps:
-      - name: Setup bundled plugins
-        uses: actions/checkout@v2
-        with:
-          repository: R2Northstar/NorthstarDiscordRPC
-          path: discord-plugin
-      - name: Checkout launcher repository
-        uses: actions/checkout@v2
-        with:
-          repository: R2Northstar/NorthstarLauncher
-          ref: ${{ env.NORTHSTAR_VERSION }}
-          path: northstar-launcher
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1.1
-      - name: Setup resource file version
-        shell: bash
-        working-directory: northstar-launcher
-        run: |
-          sed -i 's/DEV/${{ env.NORTHSTAR_VERSION }}/g' LauncherInjector/resources.rc
-          FILEVERSION=$(echo ${{ env.NORTHSTAR_VERSION }} | tr '.' ',' | sed -E 's/-rc[0-9]+//' | tr -d '[:alpha:]')
-          sed -i "s/0,0,0,1/${FILEVERSION}/g" NorthstarDedicatedTest/ns_version.h
-      - name: Build
-        working-directory: northstar-launcher
-        run: |
-          cp -r ../discord-plugin/*Discord* .
-          msbuild /p:Configuration=Release R2Northstar.sln
-          msbuild /p:Configuration=Release NorthstarDiscordRPC.sln
-      - name: Upload launcher build as artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: northstar-launcher
-          path: |
-            northstar-launcher/x64/Release/Northstar.dll
-            northstar-launcher/x64/Release/wsock32.dll
-            northstar-launcher/x64/Release/NorthstarLauncher.exe
-            northstar-launcher/x64/Release/discord_game_sdk.dll
-            northstar-launcher/x64/Release/DiscordRPC.dll
-            northstar-launcher/x64/Release/*.txt
-      - name: Upload debug build artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: launcher-debug-files
-          path: |
-            northstar-launcher/x64/Release/*.pdb
-
   build-northstar:
-    needs: build-launcher
     runs-on: ubuntu-20.04
     steps:
       - name: Download compiled launcher
-        uses: actions/download-artifact@v2
-        with:
-          name: northstar-launcher
-          path: northstar-launcher
+        run:
+          wget "https://github.com/R2Northstar/NorthstarLauncher/releases/download/${{ env.NORTHSTAR_VERSION }}/northstar-launcher.zip"
+      - name: Download DiscordRPC plugin
+        run:
+          wget "https://github.com/R2Northstar/NorthstarDiscordRPC/releases/download/v4/northstar-discord-rpc.zip"
       - name: Download compiled stubs
         run:
           wget "https://github.com/R2Northstar/NorthstarStubs/releases/download/v1/NorthstarStubs.zip"
       - name: Checkout release files
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ env.NORTHSTAR_VERSION }}
           path: northstar
       - name: Checkout core mods
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: R2Northstar/NorthstarMods
           ref: ${{ env.NORTHSTAR_VERSION }}
@@ -98,21 +54,21 @@ jobs:
       - name: Make folder structure
         run: |
           mv -v northstar/release/* northstar/.
+          rm -d northstar/release
           mkdir -p northstar/R2Northstar/mods
           mkdir -p northstar/R2Northstar/plugins
-          mkdir -p northstar/bin/x64_retail
+          mkdir -p northstar/bin/x64_dedi
 
-          mv -v northstar-launcher/DiscordRPC.dll northstar/R2Northstar/plugins
-          mv -v northstar-launcher/discord_game_sdk.dll northstar
-          mv -v northstar-launcher/wsock32.dll northstar/bin/x64_retail
+          unzip northstar-discord-rpc.zip -d northstar/R2Northstar/plugins
+          
           unzip NorthstarStubs.zip -d northstar/bin/x64_dedi
-
-          mv -v northstar-launcher/* northstar
+          unzip northstar-launcher.zip -d northstar
           rsync -avr --exclude="Northstar.Coop" --exclude=".git*" northstar-mods/. northstar/R2Northstar/mods
       - name: Checkout Navmesh repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: R2Northstar/NorthstarNavs
+          ref: 'v2'
           path: northstar-navs
       - name: Navmeshes setup
         run: |
@@ -124,10 +80,24 @@ jobs:
         run: |
           rm -rf .git .github .gitignore *.md LICENSE thunderstore .ci.env.example
       - name: Upload
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: Northstar.release.${{ env.NORTHSTAR_VERSION }}
           path: northstar
+      - name: Create zip to upload
+        run: |
+          cd northstar/
+          zip --recurse-paths --quiet Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip .
+          mv Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip ../
+      - name: Compute SHA-512 checksum
+        run: |
+          sha512sum Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip
+      - name: Upload zip to release draft
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v') && !contains(env.NORTHSTAR_VERSION, '-rc')
+        with:
+          draft: true
+          files: Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip
 
   build-thunderstore-package:
     needs: build-northstar # comment out when running locally
@@ -160,7 +130,7 @@ jobs:
 
       - name: Download Northstar package
         if: ${{ !env.ACT }} # Download artifacts from previous jobs when running on GitHub's infrastructure
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: Northstar.release.${{ env.NORTHSTAR_VERSION }}
           path: northstar
@@ -168,7 +138,6 @@ jobs:
       - name: Make package structure
         run: |
           mkdir -p thunderstore/dist/Northstar
-          rm northstar/ns_startup*.txt
           mv -v northstar/* thunderstore/dist/Northstar
           wget -O thunderstore/icon.png https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/icon.png
           wget -O thunderstore/README.md https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/README.md
@@ -176,7 +145,7 @@ jobs:
       - name: Setup environment variables
         run: |
           # Strip leading `v` and if exists replace `-rc` with `0` and strip leading zeroes from last semver digit if necessary
-          echo "MOD_VERSION=$(echo $NORTHSTAR_VERSION | tr -d 'v'| sed --expression 's/-rc/0/' | sed -E 's/([0-9])\.([0-9])\.(0*)([0-9])/\1.\2.\4/;')" >> $GITHUB_ENV
+          echo "MOD_VERSION=$(echo $NORTHSTAR_VERSION | tr -d 'v'| sed --expression 's/-rc/0/' | sed -E 's/([0-9]+)\.([0-9]+)\.(0*)([0-9])/\1.\2.\4/;')" >> $GITHUB_ENV
 
           # If it's a release candidate we also want to change a few things
           if [[ $NORTHSTAR_VERSION == *"-rc"* ]]; then
