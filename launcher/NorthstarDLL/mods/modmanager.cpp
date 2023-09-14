@@ -612,32 +612,35 @@ void ModManager::LoadMods()
 	// get mod directories
 	std::filesystem::directory_iterator classicModsDir = fs::directory_iterator(GetModFolderPath());
 	std::filesystem::directory_iterator remoteModsDir = fs::directory_iterator(GetRemoteModFolderPath());
-
-	for (std::filesystem::directory_iterator modIterator : {classicModsDir, remoteModsDir})
-		for (fs::directory_entry dir : modIterator)
-			if (fs::exists(dir.path() / "mod.json"))
-				modDirs.push_back(dir.path());
-
-	// Special case for Thunderstore mods dir
 	std::filesystem::directory_iterator thunderstoreModsDir = fs::directory_iterator(GetThunderstoreModFolderPath());
+
+	for (fs::directory_entry dir : classicModsDir)
+		if (fs::exists(dir.path() / "mod.json"))
+			modDirs.push_back(dir.path());
+
+	// Special case for Thunderstore and remote mods directories
 	// Set up regex for `AUTHOR-MOD-VERSION` pattern
 	std::regex pattern(R"(.*\\([a-zA-Z0-9_]+)-([a-zA-Z0-9_]+)-(\d+\.\d+\.\d+))");
-	for (fs::directory_entry dir : thunderstoreModsDir)
+
+	for (fs::directory_iterator dirIterator : {thunderstoreModsDir, remoteModsDir})
 	{
-		fs::path modsDir = dir.path() / "mods"; // Check for mods folder in the Thunderstore mod
-		// Use regex to match `AUTHOR-MOD-VERSION` pattern
-		if (!std::regex_match(dir.path().string(), pattern))
+		for (fs::directory_entry dir : dirIterator)
 		{
-			spdlog::warn("The following directory did not match 'AUTHOR-MOD-VERSION': {}", dir.path().string());
-			continue; // skip loading mod that doesn't match
-		}
-		if (fs::exists(modsDir) && fs::is_directory(modsDir))
-		{
-			for (fs::directory_entry subDir : fs::directory_iterator(modsDir))
+			fs::path modsDir = dir.path() / "mods"; // Check for mods folder in the Thunderstore mod
+			// Use regex to match `AUTHOR-MOD-VERSION` pattern
+			if (!std::regex_match(dir.path().string(), pattern))
 			{
-				if (fs::exists(subDir.path() / "mod.json"))
+				spdlog::warn("The following directory did not match 'AUTHOR-MOD-VERSION': {}", dir.path().string());
+				continue; // skip loading mod that doesn't match
+			}
+			if (fs::exists(modsDir) && fs::is_directory(modsDir))
+			{
+				for (fs::directory_entry subDir : fs::directory_iterator(modsDir))
 				{
-					modDirs.push_back(subDir.path());
+					if (fs::exists(subDir.path() / "mod.json"))
+					{
+						modDirs.push_back(subDir.path());
+					}
 				}
 			}
 		}
