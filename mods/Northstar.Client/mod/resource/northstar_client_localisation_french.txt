@@ -341,5 +341,17 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 		"SHOW_ONLY_NOT_REQUIRED"        "Uniquement les mods optionnels"
 		"NO_RESULTS"        "Aucun résultat."
 		"NO_MODS"        "Aucun paramètre trouvé ! Installez d'autres mods depuis ^5588FF00northstar.thunderstore.io^0."
+		"player_force_respawn"        "Réapparition forcée"
+		"PROGRESSION_TOGGLE_ENABLED_HEADER"        "Désactiver la progression ?"
+		"PROGRESSION_TOGGLE_ENABLED_BODY"        "Les Titans, Armes, Factions, Skins, et autres seront débloqués et utilisables en tout temps.\n\nPeut être changé à n'importe que moment dans le salon multijoueurs."
+		"PROGRESSION_TOGGLE_DISABLED_HEADER"        "Activer la progression ?"
+		"PROGRESSION_ENABLED_HEADER"        "Progression activée !"
+		"PROGRESSION_DISABLED_HEADER"        "Progression désactivée !"
+		"PROGRESSION_DISABLED_BODY"        "^CCCC0000La progression a été désactivée.^\n\nLes Titans, Armes, Factions, Skins, et autres seront débloqués et utilisables en tout temps.\n\nPeut être changé à n'importe que moment dans le salon multijoueurs."
+		"PROGRESSION_TOGGLE_DISABLED_BODY"        "Les Titans, Armes, Factions, Skins et autres seront débloqués par la monté en niveau ou par leur achats en mérites.\n\nPeut être changé à n'importe que moment dans le salon multijoueurs.\n\n^CC000000Warning : Si vous équiper des objets que vous n'avez pas encore débloqués, ils seront déséquipés !"
+		"PROGRESSION_ENABLED_BODY"        "^CCCC0000La progression a été activée.^\n\nLes Titans, Armes, Factions, Skins et autres seront débloqués par la monté en niveau ou par leur achats en mérites.\n\nPeut être changé à n'importe que moment dans le salon multijoueurs."
+		"TOGGLE_PROGRESSION"        "Activer la progression"
+		"Y_BUTTON_TOGGLE_PROGRESSION"        "%[Y_BUTTON]% Activer la progression"
+		"PROGRESSION_ANNOUNCEMENT_BODY"        "^CCCC0000Le système de progression peut être activé !^\n\nNorthstar supporte désormais le système de progression du jeu original, vous permettant de choisir si vous souhaitez débloquer les armes, skins, titans etc. en gagnant des niveaux et en complétant des défis.\n\nVous pouvez activer la progression en utilisant le bouton en bas de l'écran d'accueil.\n\nCeci peut être changé à tout moment."
 	}
 }
