@@ -26,6 +26,7 @@
   * [Gamemodes](using-northstar/gamemodes.md)
   * [Commands](using-northstar/commands.md)
   * [Launch arguments](using-northstar/launch-arguments.md)
+  * [Progression System](using-northstar/progression.md)
   * [Advanced](using-northstar/advanced.md)
 * [FAQ](faq.md)
 
