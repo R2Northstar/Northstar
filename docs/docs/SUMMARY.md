@@ -41,7 +41,7 @@
 * [Server settings](hosting-a-server-with-northstar/server-settings/README.md)
   * [Startup arguments](hosting-a-server-with-northstar/server-settings/startup-args.md)
   * [ConVars](hosting-a-server-with-northstar/server-settings/convars.md)
-  * [Playlistvars](hosting-a-server-with-northstar/server-settings/playlistvars.md)
+  * [Playlistvars](hosting-a-server-with-northstar/server-settings/playlistvar.md)
   * [Name in the files](hosting-a-server-with-northstar/server-settings/file-names.md)
 * [Troubleshooting](hosting-a-server-with-northstar/troubleshooting.md)
 * [Guides](hosting-a-server-with-northstar/guides/README.md)
