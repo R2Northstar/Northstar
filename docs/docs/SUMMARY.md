@@ -38,6 +38,11 @@
   * [Best practices](hosting-a-server-with-northstar/dedicated-server/best-practices.md)
   * [Hosting on Linux](hosting-a-server-with-northstar/dedicated-server/hosting-on-linux.md)
   * [RCON](hosting-a-server-with-northstar/dedicated-server/rcon.md)
+* [Server settings](hosting-a-server-with-northstar/server-settings/README.md)
+  * [Startup arguments](hosting-a-server-with-northstar/server-settings/startup-args.md)
+  * [ConVars](hosting-a-server-with-northstar/server-settings/convars.md)
+  * [Playlistvars](hosting-a-server-with-northstar/server-settings/playlistvars.md)
+  * [Name in the files](hosting-a-server-with-northstar/server-settings/file-names.md)
 * [Troubleshooting](hosting-a-server-with-northstar/troubleshooting.md)
 * [Guides](hosting-a-server-with-northstar/guides/README.md)
 
