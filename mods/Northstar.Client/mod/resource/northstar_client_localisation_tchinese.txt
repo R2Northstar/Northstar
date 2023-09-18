@@ -344,5 +344,17 @@
 		"REPLACEMENT_WEAPON"             "替换的武器"
 		"WILL_RESET_ALL_SETTINGS"             "這將會重置所有屬於改條目的設置.\n\n此操作不可復原."
 		"NO_MODS"             "無可用模組! 前往 ^5588FF00northstar.thunderstore.io^0 下載更多."
+		"player_force_respawn"             "強制重生"
+		"PROGRESSION_TOGGLE_DISABLED_HEADER"             "啟用個人進度？"
+		"PROGRESSION_ENABLED_HEADER"             "個人進度已開啟！"
+		"PROGRESSION_TOGGLE_DISABLED_BODY"             "泰坦，武器， 陣營，皮膚以及其他一切需要解鎖的物品將通過升級或是使用點數購買來進行解鎖。.\n\n您可以隨時在多人大廳中更改此項。\n\n^CC000000警告：如果您已經裝備了尚未解鎖的物品，它們將會被重置！"
+		"PROGRESSION_TOGGLE_ENABLED_BODY"             "泰坦，武器，陣營，皮膚及所有其他一切需要解鎖的物品都將隨時可以進行解鎖並使用。\n\n您可以隨時在多人大廳中更改此項。"
+		"TOGGLE_PROGRESSION"             "遊戲進度"
+		"Y_BUTTON_TOGGLE_PROGRESSION"             "%[Y_BUTTON]% 遊戲進度"
+		"PROGRESSION_TOGGLE_ENABLED_HEADER"             "停用個人進度？"
+		"PROGRESSION_DISABLED_HEADER"             "個人進度已關閉！"
+		"PROGRESSION_DISABLED_BODY"             "^CCCC0000個人進度已停用^\n\n泰坦，武器，陣營，皮膚及所有其他一切需要解鎖的物品將隨時可以進行解鎖並使用。\n\n您可以隨時在多人大廳中更改此項。"
+		"PROGRESSION_ENABLED_BODY"             "^CCCC0000個人進度已啟用^\n\n泰坦，武器， 陣營，皮膚以及其他一切需要解鎖的物品將通過升級或是使用點數購買來進行解鎖。.\n\n您可以隨時在多人大廳中更改此項。"
+		"PROGRESSION_ANNOUNCEMENT_BODY"             "^CCCC0000現在可以隨時開啟個人進度！^\n\nNorthstar 現在支持類似官服的進度系統, 这意味着你可以选择通过升级和完成挑战来解锁武器、皮肤、泰坦等。\n\n您可以通過多人大廳底部的“遊戲進度”按鈕來進行開啟。\n\n您可以隨時在多人大廳中更改此項。"
 	}
 }
