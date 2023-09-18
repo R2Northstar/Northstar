@@ -58,3 +58,12 @@ Example: `+setplaylistvaroverrides "run_epilogue 0 featured_mode_amped_tacticals
 | sns_reset_kill_value                       | int           | 5           |                                                                                                |
 | sns_melee_kill_value                       | int           | 5           |                                                                                                |
 | sns_reset_pulse_blade_cooldown_on_pulse_blade_kill | 0-1   | 1           | Enables getting Pulse Blade back after a Pulse Blade kill                                 |
+
+### Gun game playlist overrides 
+
+| PlaylistOverrides for GG                   | Accepted Values | Default Value | Description                                                                                    |
+| ------------------------------------------ | --------------- | ------------- | ---------------------------------------------------------------------------------------------- |
+| gg_kill_reward                             | float           | 1.0           | Amount of points you get for killing a player                                                  |
+| gg_execution_reward                        | float           | 1.0           | Amount of points you get for executing a player                                                |
+| gg_assist_reward                           | float           | 0.0           | Amount of points you get for getting an assist on a player                                     |
+| gg_weapon_                                 | string          |               | Allows you to override the guns with the formatting `+setplaylistvaroverrides scorelimit <weaponCount> gg_weapon_<index> <offhandSlotOr-1>|<weaponClassName>|<weaponMods>`. Syncs with client   |
