@@ -6,6 +6,18 @@ global function Progression_GetPreference
 global function UpdateCachedLoadouts_Delayed
 #endif
 
+#if SP // literally just stub the global functions and call it a day
+
+void function Progression_Init() {}
+bool function ProgressionEnabledForPlayer( entity player ) { return false }
+#if CLIENT || UI
+void function Progression_SetPreference( bool enabled ) {}
+bool function Progression_GetPreference() { return false }
+void function UpdateCachedLoadouts_Delayed() {}
+#endif // CLIENT || UI
+
+#else // MP || UI basically
+
 // SO FOR SOME GOD DAMN REASON, PUTTING THESE INTO ONE STRUCT
 // AND PUTTING THE #if STUFF AROUND THE VARS CAUSES A COMPILE
 // ERROR, SO I HAVE TO DO THIS AWFULNESS
@@ -1088,4 +1100,6 @@ string function GetWeaponWarpaintRefByIndex( int skinIndex, string parentRef )
 
 	return INVALID_REF
 }
-#endif
+#endif // SERVER
+
+#endif // MP
