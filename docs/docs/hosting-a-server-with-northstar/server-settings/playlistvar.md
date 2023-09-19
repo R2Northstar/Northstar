@@ -50,15 +50,15 @@ Example: `+setplaylistvaroverrides "run_epilogue 0 featured_mode_amped_tacticals
 
 ### Sticks and Stones playlist overrides
 
-| PlaylistOverrides for SNS                    | Accepted Values | Default Value | Description                                                                                    |
-| -------------------------------------------- | --------------- | ------------- | ---------------------------------------------------------------------------------------------- |
-| sns_softball_enabled                       | 0-1           | 0           | Enables Softball usage                                                                        |
-| sns_softball_kill_value                    | int           | 10          |                                                                                                |
-| sns_wme_kill_value                         | int           | 10          |                                                                                                |
-| sns_offhand_kill_value                     | int           | 10          |                                                                                                |
-| sns_reset_kill_value                       | int           | 5           |                                                                                                |
-| sns_melee_kill_value                       | int           | 5           |                                                                                                |
-| sns_reset_pulse_blade_cooldown_on_pulse_blade_kill | 0-1   | 1           | Enables getting Pulse Blade back after a Pulse Blade kill                                 |
+| PlaylistOverrides for SNS                          | Accepted Values | Default Value | Description                                                                                    |
+| -------------------------------------------------- | --------------- | ------------- | ---------------------------------------------------------------------------------------------- |
+| sns_softball_enabled                               | 0-1             | 0             | Enables Softball usage                                                                         |
+| sns_softball_kill_value                            | int             | 10            |                                                                                                |
+| sns_wme_kill_value                                 | int             | 10            |                                                                                                |
+| sns_offhand_kill_value                             | int             | 10            |                                                                                                |
+| sns_reset_kill_value                               | int             | 5             |                                                                                                |
+| sns_melee_kill_value                               | int             | 5             |                                                                                                |
+| sns_reset_pulse_blade_cooldown_on_pulse_blade_kill | 0-1             | 1             | Enables getting Pulse Blade back after a Pulse Blade kill                                      |
 
 ### Gun game playlist overrides 
 
