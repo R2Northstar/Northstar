@@ -27,6 +27,7 @@ Example: `+setplaylistvaroverrides "run_epilogue 0 featured_mode_amped_tacticals
 | `classic_rodeo`                              | `0-1`           |               |                                                                                                |
 | `classic_mp`                                 | `0-1`           | `1`           | Enables intro dropship                                                                         |
 | `fp_embark_enabled`                          |                 |               | First person embark and terminations                                                            |
+| `player_force_respawn`                       | `int`           | `5`           | Forces players to respawn after the respawn button has been shown for x seconds. `-1` to disable forced respawning. |
 | `promode_enable`                             | `0-1`           | `0`           |                                                                                                |
 | `riff_floorislava`                           | `0-1`           | `0`           | Covers the whole map with deadly electric smoke                                                |
 | `featured_mode_all_holopilot`                | `0-1`           | `0`           |                                                                                                |
