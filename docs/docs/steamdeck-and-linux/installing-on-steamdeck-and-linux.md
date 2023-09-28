@@ -15,6 +15,7 @@ NorthstarProton has some problems and may stop working at any point, if this hap
 On Steam Deck, complete the following in desktop mode. You may return to game mode once completed _(A mouse + keyboard plugged into the Deck are recommended for easier navigation of menus)_
 
 1. Make sure you ran the vanilla version of Titanfall2 at least once on Linux!
+   * If you use an Nvidia GPU you may need to start the game using Proton 6.3-8 for the first time
 2. Install the latest version of Northstar using [FlightCore](../installing-northstar/northstar-installers#geckoeidechse-flightcore), [Viper](../installing-northstar/northstar-installers#0negal-viper), or do it manually
    1. For manual install download the latest version of Northstar from the [releases](https://github.com/R2Northstar/Northstar/releases) page
    2. Then extract all contents of the file to your Titanfall 2 folder ( Right click _Titanfall 2_ > Open _Properties_ > Click _Local Files_ > Click _Browse_ )
