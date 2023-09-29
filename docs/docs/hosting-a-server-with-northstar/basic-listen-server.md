@@ -48,8 +48,8 @@ sv_cheats 1; script GameRules_ChangeMap( "mp_forwardbase_kodai", "ctf" ); sv_che
 ```
 
 replace `mp_forwardbase_kodai` and `ctf` with your desired map and gamemode.\
-The list of maps can be found [here](dedicated-server/#maps).\
-The list of gamemodes [here](dedicated-server/#gamemodes).
+The list of maps can be found [here](server-settings/file-names.md#maps).\
+The list of gamemodes [here](server-settings/file-names.md#vanilla).
 
 If someone keeps messing with the settings, set `ns_private_match_only_host_can_change_settings` to `2`, so that only you can change them.
 
