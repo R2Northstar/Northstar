@@ -32,7 +32,7 @@
 
 ## Hosting a server with Northstar
 
-* [Prerequisites](hosting-a-server-with-northstar/prerequisites.md)
+* [Getting started](hosting-a-server-with-northstar/getting-started.md)
 * [Hosting a Basic Listen Server](hosting-a-server-with-northstar/basic-listen-server.md)
 * [Hosting a Dedicated Server](hosting-a-server-with-northstar/dedicated-server/README.md)
   * [Best practices](hosting-a-server-with-northstar/dedicated-server/best-practices.md)
