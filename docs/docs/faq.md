@@ -42,8 +42,8 @@ A: Due to the way Northstar works, you sadly cannot just create a private match 
 
 Check the prerequisites:
 
-{% content-ref url="hosting-a-server-with-northstar/prerequisites.md" %}
-[prerequisites.md](hosting-a-server-with-northstar/prerequisites.md)
+{% content-ref url="hosting-a-server-with-northstar/getting-started.md" %}
+[getting-started.md](hosting-a-server-with-northstar/getting-started.md)
 {% endcontent-ref %}
 
 and instructions to host a _listen server_:
