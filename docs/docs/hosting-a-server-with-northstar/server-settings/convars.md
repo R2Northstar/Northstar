@@ -1,4 +1,4 @@
-## Convars
+# Convars
 
 Convars are located inside the `R2Northstar\mods\Northstar.CustomServers\mod\cfg\autoexec_ns_server.cfg` file.
 
