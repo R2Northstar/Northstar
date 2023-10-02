@@ -1,5 +1,11 @@
 # Hosting a Basic Listen Server
 
+## Requirements
+
+Make sure to check that your server is reachable as [described here](./getting-started.md)
+
+Make sure you already installed Northstar [as described here](../installing-northstar/basic-setup.md).
+
 ## Instructions
 
 To host a listen server on Northstar, go to the lobby and press the `Private Match` button to begin a private match. While this does allow you to host a server, other people won't be able to join it, so you'll need to port forward UDP port `37015` to allow other people to join.\
