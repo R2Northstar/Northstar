@@ -32,3 +32,9 @@ They allow the server admin to set server's properties like the name, port, and 
 | `sv_max_snapshots_multiplayer`                   | The number of snapshots stored locally for use in replays, this should be set to sv\_updaterate\_mp \* 15                                                                                   | `300`                          | `int`                                              |
 | `host_skip_client_dll_crc`                       | Whether the server should allow clients with modified client.dll files to connect, these are used for visor colour edit mods                                                                | `1`                            | `0-1`                                              |
 | `dedi_sendPrintsToClient`                        | Whether the dedicated server should forward all logs to connected clients, which is useful for testing/debugging on a dedicated server. If `-1`, send no prints to clients. If `0`, send prints to the first client connected only. If `1`, send prints to all clients                                                                   | `-1`                            | `-1-1`                                             |
+
+## Monitoring
+
+You can set the Convar `ns_should_log_all_clientcommands` to `1` to log all client commands. This includes both benign things like the command a client sends to server to respawn after death but also nefarious, like a malicious client calling `emit`, a command that before being patched out allowed clients to spam voice lines to other clients.
+
+Due to the increased verbosity `ns_should_log_all_clientcommands` is set to `0` (disabled) by default but should be enabled in cases where you want to investigate suspicious activity on your server.
