@@ -25,7 +25,7 @@ void,, (bool a1, const char* fmt, ...))
 		R2::Cbuf_AddText(R2::Cbuf_GetCurrentPlayer(), "disconnect", R2::cmd_source_t::kCommandSrcCode);
 	}
 
-	return COM_ExplainDisconnection(a1, buf);
+	return COM_ExplainDisconnection(a1, "%s", buf);
 }
 
 ON_DLL_LOAD_CLIENT("engine.dll", RejectConnectionFixes, (CModule module))
