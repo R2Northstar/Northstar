@@ -31,12 +31,6 @@ struct MapVPKInfo
 // our current list of maps in the game
 std::vector<MapVPKInfo> vMapList;
 
-typedef void (*Host_Map_helperType)(const CCommand&, void*);
-typedef void (*Host_Changelevel_fType)(const CCommand&);
-
-Host_Map_helperType Host_Map_helper;
-Host_Changelevel_fType Host_Changelevel_f;
-
 void RefreshMapList()
 {
 	// Only update the maps list every 10 seconds max to we avoid constantly reading fs
@@ -188,40 +182,10 @@ void ConCommand_maps(const CCommand& args)
 			spdlog::info("({}) {}", PrintMapSource.at(map.source), map.name);
 }
 
-// clang-format off
-AUTOHOOK(Host_Map_f, engine.dll + 0x15B340, void, __fastcall, (const CCommand& args))
-// clang-format on
-{
-	RefreshMapList();
-
-	if (args.ArgC() > 1 &&
-		std::find_if(vMapList.begin(), vMapList.end(), [&](MapVPKInfo map) -> bool { return map.name == args.Arg(1); }) == vMapList.end())
-	{
-		spdlog::warn("Map load failed: {} not found or invalid", args.Arg(1));
-		return;
-	}
-	else if (args.ArgC() == 1)
-	{
-		spdlog::warn("Map load failed: no map name provided");
-		return;
-	}
-
-	if (*R2::g_pServerState >= R2::server_state_t::ss_active)
-		return Host_Changelevel_f(args);
-	else
-		return Host_Map_helper(args, nullptr);
-}
-
 void InitialiseMapsPrint()
 {
 	AUTOHOOK_DISPATCH()
 
 	ConCommand* mapsCommand = R2::g_pCVar->FindCommand("maps");
 	mapsCommand->m_pCommandCallback = ConCommand_maps;
-}
-
-ON_DLL_LOAD("engine.dll", Host_Map_f, (CModule module))
-{
-	Host_Map_helper = module.Offset(0x15AEF0).RCast<Host_Map_helperType>();
-	Host_Changelevel_f = module.Offset(0x15AAD0).RCast<Host_Changelevel_fType>();
 }
