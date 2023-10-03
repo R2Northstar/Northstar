@@ -949,6 +949,7 @@ void function SendTextPanelChanges( var textPanel )
 					ThrowInvalidValue( "This setting is an integer, and only accepts whole numbers." )
 					Hud_SetText( textPanel, GetConVarString( c.conVar ) )
 				}
+				break
 			case "bool":
 				if ( newSetting != "0" && newSetting != "1" )
 				{
