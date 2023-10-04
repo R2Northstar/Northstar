@@ -3,7 +3,7 @@
 // use the Tier0 namespace for tier0 funcs
 namespace Tier0
 {
-	IMemAlloc* g_pMemAllocSingleton;
+	IMemAlloc* g_pMemAllocSingleton = nullptr;
 
 	ErrorType Error;
 	CommandLineType CommandLine;
