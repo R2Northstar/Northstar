@@ -52,7 +52,7 @@ void CreateLogFiles()
 
 			stream << std::put_time(&currentTime, (GetNorthstarPrefix() + "/logs/nslog%Y-%m-%d %H-%M-%S.txt").c_str());
 			auto sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(stream.str(), false);
-			sink->set_pattern("[%H:%M:%S] [%n] [%l] %v");
+			sink->set_pattern("[%Y-%m-%d] [%H:%M:%S] [%n] [%l] %v");
 			for (auto& logger : loggers)
 			{
 				logger->sinks().push_back(sink);
