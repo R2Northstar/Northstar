@@ -322,6 +322,11 @@ Press Yes if you agree to this. This choice can be changed in the mods menu at a
 		"INVALID_MASTERSERVER_TOKEN" 	"Invalid or expired masterserver token"
 		"JSON_PARSE_ERROR" 				"Error parsing json response"
 		"UNSUPPORTED_VERSION" 			"The version you are using is no longer supported"
+
+		"AUTHENTICATION_FAILED_HEADER"		"Authentication Failed"
+		"AUTHENTICATION_FAILED_BODY"		"Failed to authenticate with Atlas!"
+		"AUTHENTICATION_FAILED_ERROR_CODE"	"Error code: ^DB6F2C00%s1^"
+		"AUTHENTICATION_FAILED_HELP"		"Help"
 		
 		// Mod Settings
 		"MOD_SETTINGS"					"Mod Settings"

@@ -729,6 +729,12 @@
 			"helpText":"",
 			"returnTypeString":"void",
 			"argTypes":"struct presence"
+		},
+		{
+			"name":"NSGetMasterServerAuthResult",
+			"helpText":"",
+			"returnTypeString":"MasterServerAuthResult",
+			"argTypes":""
 		}
 	]
 }
