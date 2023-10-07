@@ -282,7 +282,7 @@ void,, (bool a1, float a2))
 
 // clang-format off
 AUTOHOOK(SendPropArray2, server.dll + 0x12B130,
-__int64, __fastcall, (__int64 recvProp, int elements, int flags, const char* name, __int64 proxyFn, unsigned char unk1))
+__int64,, (__int64 recvProp, int elements, int flags, const char* name, __int64 proxyFn, unsigned char unk1))
 // clang-format on
 {
 	// Change the amount of elements to account for a bigger player amount
@@ -453,7 +453,7 @@ ON_DLL_LOAD("server.dll", MaxPlayersOverride_Server, (CModule module))
 
 // clang-format off
 AUTOHOOK(RecvPropArray2, client.dll + 0x1CEDA0,
-__int64, __fastcall, (__int64 recvProp, int elements, int flags, const char* name, __int64 proxyFn))
+__int64,, (__int64 recvProp, int elements, int flags, const char* name, __int64 proxyFn))
 // clang-format on
 {
 	// Change the amount of elements to account for a bigger player amount
