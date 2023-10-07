@@ -219,7 +219,7 @@ class __autohook
 	type callingConvention CONCAT2(__autohookfunc, name) args;                                                                             \
 	namespace                                                                                                                              \
 	{                                                                                                                                      \
-		type(*callingConvention name) args;                                                                                                \
+		type(*name) args;                                                                                                                  \
 		__autohook CONCAT2(__autohook, __LINE__)(                                                                                          \
 			&__FILEAUTOHOOK, __STR(name), __STR(addrString), (LPVOID*)&name, (LPVOID)CONCAT2(__autohookfunc, name));                       \
 	}                                                                                                                                      \
@@ -230,7 +230,7 @@ class __autohook
 	type callingConvention CONCAT2(__autohookfunc, name) args;                                                                             \
 	namespace                                                                                                                              \
 	{                                                                                                                                      \
-		type(*callingConvention name) args;                                                                                                \
+		type(*name) args;                                                                                                                  \
 		__autohook                                                                                                                         \
 			CONCAT2(__autohook, __LINE__)(&__FILEAUTOHOOK, __STR(name), addr, (LPVOID*)&name, (LPVOID)CONCAT2(__autohookfunc, name));      \
 	}                                                                                                                                      \
@@ -241,7 +241,7 @@ class __autohook
 	type callingConvention CONCAT2(__autohookfunc, name) args;                                                                             \
 	namespace                                                                                                                              \
 	{                                                                                                                                      \
-		type(*callingConvention name) args;                                                                                                \
+		type(*name) args;                                                                                                                  \
 		__autohook CONCAT2(__autohook, __LINE__)(                                                                                          \
 			&__FILEAUTOHOOK, __STR(name), __STR(moduleName), __STR(procName), (LPVOID*)&name, (LPVOID)CONCAT2(__autohookfunc, name));      \
 	}                                                                                                                                      \
@@ -267,7 +267,7 @@ class ManualHook
 #define HOOK(varName, originalFunc, type, callingConvention, args)                                                                         \
 	namespace                                                                                                                              \
 	{                                                                                                                                      \
-		type(*callingConvention originalFunc) args;                                                                                        \
+		type(*originalFunc) args;                                                                                                          \
 	}                                                                                                                                      \
 	type callingConvention CONCAT2(__manualhookfunc, varName) args;                                                                        \
 	ManualHook varName = ManualHook(__STR(varName), (LPVOID*)&originalFunc, (LPVOID)CONCAT2(__manualhookfunc, varName));                   \
@@ -316,7 +316,7 @@ class __autovar
 
 // FUNCTION_AT(engine.dll + 0xDEADBEEF, void, __fastcall, SomeFunc, (void* a1))
 #define FUNCTION_AT(addrString, type, callingConvention, name, args)                                                                       \
-	type(*callingConvention name) args;                                                                                                    \
+	type(*name) args;                                                                                                                      \
 	namespace                                                                                                                              \
 	{                                                                                                                                      \
 		__autovar CONCAT2(__autovar, __LINE__)(&__FILEAUTOHOOK, __STR(addrString), (void**)&name);                                         \
