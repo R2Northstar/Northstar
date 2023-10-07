@@ -96,6 +96,10 @@ class MasterServerManager
 	bool m_bOriginAuthWithMasterServerDone = false;
 	bool m_bOriginAuthWithMasterServerInProgress = false;
 
+	bool m_bOriginAuthWithMasterServerSuccessful = false;
+	std::string m_sOriginAuthWithMasterServerErrorCode = "";
+	std::string m_sOriginAuthWithMasterServerErrorMessage = "";
+
 	bool m_bSavingPersistentData = false;
 
 	bool m_bScriptRequestingServerList = false;

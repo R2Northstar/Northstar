@@ -95,6 +95,10 @@ void MasterServerManager::AuthenticateOriginWithMasterServer(const char* uid, co
 	std::string uidStr(uid);
 	std::string tokenStr(originToken);
 
+	m_bOriginAuthWithMasterServerSuccessful = false;
+	m_sOriginAuthWithMasterServerErrorCode = "";
+	m_sOriginAuthWithMasterServerErrorMessage = "";
+
 	std::thread requestThread(
 		[this, uidStr, tokenStr]()
 		{
@@ -142,9 +146,26 @@ void MasterServerManager::AuthenticateOriginWithMasterServer(const char* uid, co
 						originAuthInfo["token"].GetString(),
 						sizeof(m_sOwnClientAuthToken) - 1);
 					spdlog::info("Northstar origin authentication completed successfully!");
+					m_bOriginAuthWithMasterServerSuccessful = true;
 				}
 				else
+				{
 					spdlog::error("Northstar origin authentication failed");
+
+					if (originAuthInfo.HasMember("error") && originAuthInfo["error"].IsObject())
+					{
+
+						if (originAuthInfo["error"].HasMember("enum") && originAuthInfo["error"]["enum"].IsString())
+						{
+							m_sOriginAuthWithMasterServerErrorCode = originAuthInfo["error"]["enum"].GetString();
+						}
+
+						if (originAuthInfo["error"].HasMember("msg") && originAuthInfo["error"]["msg"].IsString())
+						{
+							m_sOriginAuthWithMasterServerErrorMessage = originAuthInfo["error"]["msg"].GetString();
+						}
+					}
+				}
 			}
 			else
 			{
