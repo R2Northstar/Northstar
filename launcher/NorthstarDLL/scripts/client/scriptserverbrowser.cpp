@@ -6,12 +6,6 @@
 
 // functions for viewing server browser
 
-ADD_SQFUNC("bool", NSIsMasterServerAuthenticated, "", "", ScriptContext::UI)
-{
-	g_pSquirrel<context>->pushbool(sqvm, g_pMasterServerManager->m_bOriginAuthWithMasterServerDone);
-	return SQRESULT_NOTNULL;
-}
-
 ADD_SQFUNC("void", NSRequestServerList, "", "", ScriptContext::UI)
 {
 	g_pMasterServerManager->RequestServerList();
