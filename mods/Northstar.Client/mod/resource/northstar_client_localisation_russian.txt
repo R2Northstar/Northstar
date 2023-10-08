@@ -330,7 +330,7 @@
 		"sns_reset_pulse_blade_cooldown_on_pulse_blade_kill"                    "Сброс перезарядки пульс. клинка при убийстве им"
 		"gg_assist_reward"                    "Множитель награды за помощь в убийстве"
 		"TOGGLE_PROGRESSION"                    "Вкл/выкл прогресс"
-		"Y_BUTTON_TOGGLE_PROGRESSION"                    "%[Y_BUTTON]% Вкл/выкл прогресс"
+		"Y_BUTTON_TOGGLE_PROGRESSION"                    "%[Y_BUTTON|]% Вкл/выкл прогресс"
 		"PROGRESSION_TOGGLE_DISABLED_HEADER"                    "Включить прогресс?"
 		"PROGRESSION_ENABLED_HEADER"                    "Прогресс включён!"
 		"PROGRESSION_ENABLED_BODY"                    "^CCCC0000Прогресс включён.^\n\nНедоступных титанов, оружие, фракции, раскраски, и т.п. теперь нужно разблокировать, или купить за Заслуги.\n\nЭту настройку всегда можно изменить в лобби сетевой игры."
