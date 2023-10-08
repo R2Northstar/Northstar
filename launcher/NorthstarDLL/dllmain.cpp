@@ -49,7 +49,9 @@ bool InitialiseNorthstar()
 	InitialiseVersion();
 	CreateLogFiles();
 
-	InitialiseCrashHandler();
+	g_pCrashHandler = new CCrashHandler();
+	bool bAllFatal = strstr(GetCommandLineA(), "-crash_handle_all") != NULL;
+	g_pCrashHandler->SetAllFatal(bAllFatal);
 
 	// Write launcher version to log
 	StartupLog();
