@@ -188,7 +188,7 @@ BurnReward function BurnReward_GetRandom()
 	string ref = burn.allowedCards.getrandom().ref
 
 	#if SERVER || CLIENT
-	if ( !EarnMeterMP_IsTitanEarnGametype() )
+	if ( Riff_TitanAvailability() == eTitanAvailability.Never )
 		ref = BurnMeter_GetNoTitansReplacement( ref )
 
 	if ( GetCurrentPlaylistVarInt( "featured_mode_all_ticks", 0 ) >= 1 )
@@ -211,7 +211,7 @@ string function GetSelectedBurnCardRef( entity player )
 	#endif
 
 	#if SERVER || CLIENT
-	if ( !EarnMeterMP_IsTitanEarnGametype() )
+	if ( Riff_TitanAvailability() == eTitanAvailability.Never )
 		ref = BurnMeter_GetNoTitansReplacement( ref )
 
 	if ( GetCurrentPlaylistVarInt( "featured_mode_all_ticks", 0 ) >= 1 )
