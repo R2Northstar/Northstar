@@ -1,161 +1,391 @@
 #include "crashhandler.h"
-#include "dedicated/dedicated.h"
 #include "config/profile.h"
+#include "dedicated/dedicated.h"
 #include "util/version.h"
 #include "mods/modmanager.h"
+#include "plugins/plugins.h"
 
 #include <minidumpapiset.h>
 
-HANDLE hExceptionFilter;
+#define CRASHHANDLER_MAX_FRAMES 32
+#define CRASHHANDLER_GETMODULEHANDLE_FAIL "GetModuleHandleExA failed!"
 
-std::shared_ptr<ExceptionLog> storedException {};
-
-#define RUNTIME_EXCEPTION 3765269347
-// clang format did this :/
-std::map<int, std::string> ExceptionNames = {
-	{EXCEPTION_ACCESS_VIOLATION, "Access Violation"},			{EXCEPTION_IN_PAGE_ERROR, "Access Violation"},
-	{EXCEPTION_ARRAY_BOUNDS_EXCEEDED, "Array bounds exceeded"}, {EXCEPTION_DATATYPE_MISALIGNMENT, "Datatype misalignment"},
-	{EXCEPTION_FLT_DENORMAL_OPERAND, "Denormal operand"},		{EXCEPTION_FLT_DIVIDE_BY_ZERO, "Divide by zero (float)"},
-	{EXCEPTION_FLT_INEXACT_RESULT, "Inexact float result"},		{EXCEPTION_FLT_INVALID_OPERATION, "Invalid operation"},
-	{EXCEPTION_FLT_OVERFLOW, "Numeric overflow (float)"},		{EXCEPTION_FLT_STACK_CHECK, "Stack check"},
-	{EXCEPTION_FLT_UNDERFLOW, "Numeric underflow (float)"},		{EXCEPTION_ILLEGAL_INSTRUCTION, "Illegal instruction"},
-	{EXCEPTION_INT_DIVIDE_BY_ZERO, "Divide by zero (int)"},		{EXCEPTION_INT_OVERFLOW, "Numeric overfloat (int)"},
-	{EXCEPTION_INVALID_DISPOSITION, "Invalid disposition"},		{EXCEPTION_NONCONTINUABLE_EXCEPTION, "Non-continuable exception"},
-	{EXCEPTION_PRIV_INSTRUCTION, "Priviledged instruction"},	{EXCEPTION_STACK_OVERFLOW, "Stack overflow"},
-	{RUNTIME_EXCEPTION, "Uncaught runtime exception:"},
-};
-
-void PrintExceptionLog(ExceptionLog& exc)
+//-----------------------------------------------------------------------------
+// Purpose: Vectored exception callback
+//-----------------------------------------------------------------------------
+LONG WINAPI ExceptionFilter(EXCEPTION_POINTERS* pExceptionInfo)
 {
-	// General crash message
-	spdlog::error("Northstar version: {}", version);
-	spdlog::error("Northstar has crashed! a minidump has been written and exception info is available below:");
-	if (g_pModManager)
+	g_pCrashHandler->Lock();
+
+	g_pCrashHandler->SetExceptionInfos(pExceptionInfo);
+
+	// Check if we should handle this
+	// NOTE [Fifty]: This gets called before even a try{} catch() {} can handle an exception
+	//               we don't handle these unless "-crash_handle_all" is passed as a launch arg
+	if (!g_pCrashHandler->IsExceptionFatal() && !g_pCrashHandler->GetAllFatal())
 	{
-		spdlog::error("Loaded mods: ");
-		for (const auto& mod : g_pModManager->m_LoadedMods)
+		g_pCrashHandler->Unlock();
+		return EXCEPTION_CONTINUE_SEARCH;
+	}
+
+	// Don't run if a debbuger is attached
+	if (IsDebuggerPresent())
+	{
+		g_pCrashHandler->Unlock();
+		return EXCEPTION_CONTINUE_SEARCH;
+	}
+
+	// Prevent recursive calls
+	if (g_pCrashHandler->GetState())
+	{
+		g_pCrashHandler->Unlock();
+		ExitProcess(1);
+	}
+
+	g_pCrashHandler->SetState(true);
+
+	// Needs to be called first as we use the members this sets later on
+	g_pCrashHandler->SetCrashedModule();
+
+	// Format
+	g_pCrashHandler->FormatException();
+	g_pCrashHandler->FormatCallstack();
+	g_pCrashHandler->FormatRegisters();
+	g_pCrashHandler->FormatLoadedMods();
+	g_pCrashHandler->FormatLoadedPlugins();
+	g_pCrashHandler->FormatModules();
+
+	// Flush
+	NS::log::FlushLoggers();
+
+	// Write minidump
+	g_pCrashHandler->WriteMinidump();
+
+	// Show message box
+	g_pCrashHandler->ShowPopUpMessage();
+
+	g_pCrashHandler->Unlock();
+
+	// We showed the "Northstar has crashed" message box
+	// make sure we terminate
+	if (!g_pCrashHandler->IsExceptionFatal())
+		ExitProcess(1);
+
+	return EXCEPTION_EXECUTE_HANDLER;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: console control signal handler
+//-----------------------------------------------------------------------------
+BOOL WINAPI ConsoleCtrlRoutine(DWORD dwCtrlType)
+{
+	// NOTE [Fifty]: When closing the process by closing the console we don't want
+	//               to trigger the crash handler so we remove it
+	switch (dwCtrlType)
+	{
+	case CTRL_CLOSE_EVENT:
+		spdlog::info("Exiting due to console close...");
+		delete g_pCrashHandler;
+		g_pCrashHandler = nullptr;
+		std::exit(EXIT_SUCCESS);
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Constructor
+//-----------------------------------------------------------------------------
+CCrashHandler::CCrashHandler()
+	: m_hExceptionFilter(nullptr), m_pExceptionInfos(nullptr), m_bHasSetConsolehandler(false), m_bAllExceptionsFatal(false),
+	  m_bHasShownCrashMsg(false), m_bState(false)
+{
+	Init();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Destructor
+//-----------------------------------------------------------------------------
+CCrashHandler::~CCrashHandler()
+{
+	Shutdown();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Initilazes crash handler
+//-----------------------------------------------------------------------------
+void CCrashHandler::Init()
+{
+	m_hExceptionFilter = AddVectoredExceptionHandler(TRUE, ExceptionFilter);
+	m_bHasSetConsolehandler = SetConsoleCtrlHandler(ConsoleCtrlRoutine, TRUE);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Shutdowns crash handler
+//-----------------------------------------------------------------------------
+void CCrashHandler::Shutdown()
+{
+	if (m_hExceptionFilter)
+	{
+		RemoveVectoredExceptionHandler(m_hExceptionFilter);
+		m_hExceptionFilter = nullptr;
+	}
+
+	if (m_bHasSetConsolehandler)
+	{
+		SetConsoleCtrlHandler(ConsoleCtrlRoutine, FALSE);
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Sets the exception info
+//-----------------------------------------------------------------------------
+void CCrashHandler::SetExceptionInfos(EXCEPTION_POINTERS* pExceptionPointers)
+{
+	m_pExceptionInfos = pExceptionPointers;
+}
+//-----------------------------------------------------------------------------
+// Purpose: Sets the exception stirngs for message box
+//-----------------------------------------------------------------------------
+void CCrashHandler::SetCrashedModule()
+{
+	LPCSTR pCrashAddress = static_cast<LPCSTR>(m_pExceptionInfos->ExceptionRecord->ExceptionAddress);
+	HMODULE hCrashedModule;
+	if (!GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, pCrashAddress, &hCrashedModule))
+	{
+		m_svCrashedModule = CRASHHANDLER_GETMODULEHANDLE_FAIL;
+		m_svCrashedOffset = "";
+
+		DWORD dwErrorID = GetLastError();
+		if (dwErrorID != 0)
 		{
-			if (mod.m_bEnabled)
+			LPSTR pszBuffer;
+			DWORD dwSize = FormatMessageA(
+				FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+				NULL,
+				dwErrorID,
+				MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+				(LPSTR)&pszBuffer,
+				0,
+				NULL);
+
+			if (dwSize > 0)
 			{
-				spdlog::error("{} {}", mod.Name, mod.Version);
+				m_svError = pszBuffer;
+				LocalFree(pszBuffer);
 			}
 		}
+
+		return;
 	}
-	spdlog::error(exc.cause);
-	// If this was a runtime error, print the message
-	if (exc.runtimeInfo.length() != 0)
-		spdlog::error("\"{}\"", exc.runtimeInfo);
-	spdlog::error("At: {} + {}", exc.trace[0].name, exc.trace[0].relativeAddress);
-	spdlog::error("");
-	spdlog::error("Stack trace:");
 
-	// Generate format string for stack trace
-	std::stringstream formatString;
-	formatString << "    {:<" << exc.longestModuleNameLength + 2 << "} {:<" << exc.longestRelativeAddressLength << "} {}";
-	std::string guide = fmt::format(formatString.str(), "Module Name", "Offset", "Full Address");
-	std::string line(guide.length() + 2, '-');
-	spdlog::error(guide);
-	spdlog::error(line);
+	// Get module filename
+	CHAR szCrashedModulePath[MAX_PATH];
+	GetModuleFileNameExA(GetCurrentProcess(), hCrashedModule, szCrashedModulePath, sizeof(szCrashedModulePath));
 
-	for (const auto& module : exc.trace)
-		spdlog::error(formatString.str(), module.name, module.relativeAddress, module.address);
+	const CHAR* pszCrashedModuleFileName = strrchr(szCrashedModulePath, '\\') + 1;
 
-	// Print dump of most CPU registers
-	spdlog::error("");
-	for (const auto& reg : exc.registerDump)
-		spdlog::error(reg);
+	// Get relative address
+	LPCSTR pModuleBase = reinterpret_cast<LPCSTR>(pCrashAddress - reinterpret_cast<LPCSTR>(hCrashedModule));
+
+	m_svCrashedModule = pszCrashedModuleFileName;
+	m_svCrashedOffset = fmt::format("{:#x}", reinterpret_cast<DWORD64>(pModuleBase));
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Gets the exception null terminated stirng
+//-----------------------------------------------------------------------------
+
+const CHAR* CCrashHandler::GetExceptionString() const
+{
+	return GetExceptionString(m_pExceptionInfos->ExceptionRecord->ExceptionCode);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Gets the exception null terminated stirng
+//-----------------------------------------------------------------------------
+const CHAR* CCrashHandler::GetExceptionString(DWORD dwExceptionCode) const
+{
+	// clang-format off
+	switch (dwExceptionCode)
+	{
+	case EXCEPTION_ACCESS_VIOLATION:         return "EXCEPTION_ACCESS_VIOLATION";
+	case EXCEPTION_DATATYPE_MISALIGNMENT:    return "EXCEPTION_DATATYPE_MISALIGNMENT";
+	case EXCEPTION_BREAKPOINT:               return "EXCEPTION_BREAKPOINT";
+	case EXCEPTION_SINGLE_STEP:              return "EXCEPTION_SINGLE_STEP";
+	case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:    return "EXCEPTION_ARRAY_BOUNDS_EXCEEDED";
+	case EXCEPTION_FLT_DENORMAL_OPERAND:     return "EXCEPTION_FLT_DENORMAL_OPERAND";
+	case EXCEPTION_FLT_DIVIDE_BY_ZERO:       return "EXCEPTION_FLT_DIVIDE_BY_ZERO";
+	case EXCEPTION_FLT_INEXACT_RESULT:       return "EXCEPTION_FLT_INEXACT_RESULT";
+	case EXCEPTION_FLT_INVALID_OPERATION:    return "EXCEPTION_FLT_INVALID_OPERATION";
+	case EXCEPTION_FLT_OVERFLOW:             return "EXCEPTION_FLT_OVERFLOW";
+	case EXCEPTION_FLT_STACK_CHECK:          return "EXCEPTION_FLT_STACK_CHECK";
+	case EXCEPTION_FLT_UNDERFLOW:            return "EXCEPTION_FLT_UNDERFLOW";
+	case EXCEPTION_INT_DIVIDE_BY_ZERO:       return "EXCEPTION_INT_DIVIDE_BY_ZERO";
+	case EXCEPTION_INT_OVERFLOW:             return "EXCEPTION_INT_OVERFLOW";
+	case EXCEPTION_PRIV_INSTRUCTION:         return "EXCEPTION_PRIV_INSTRUCTION";
+	case EXCEPTION_IN_PAGE_ERROR:            return "EXCEPTION_IN_PAGE_ERROR";
+	case EXCEPTION_ILLEGAL_INSTRUCTION:      return "EXCEPTION_ILLEGAL_INSTRUCTION";
+	case EXCEPTION_NONCONTINUABLE_EXCEPTION: return "EXCEPTION_NONCONTINUABLE_EXCEPTION";
+	case EXCEPTION_STACK_OVERFLOW:           return "EXCEPTION_STACK_OVERFLOW";
+	case EXCEPTION_INVALID_DISPOSITION:      return "EXCEPTION_INVALID_DISPOSITION";
+	case EXCEPTION_GUARD_PAGE:               return "EXCEPTION_GUARD_PAGE";
+	case EXCEPTION_INVALID_HANDLE:           return "EXCEPTION_INVALID_HANDLE";
+	case 3765269347:                         return "RUNTIME_EXCEPTION";
+	}
+	// clang-format on
+	return "UNKNOWN_EXCEPTION";
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Returns true if exception is known
+//-----------------------------------------------------------------------------
+bool CCrashHandler::IsExceptionFatal() const
+{
+	return IsExceptionFatal(m_pExceptionInfos->ExceptionRecord->ExceptionCode);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Returns true if exception is known
+//-----------------------------------------------------------------------------
+bool CCrashHandler::IsExceptionFatal(DWORD dwExceptionCode) const
+{
+	// clang-format off
+	switch (dwExceptionCode)
+	{
+	case EXCEPTION_ACCESS_VIOLATION:
+	case EXCEPTION_DATATYPE_MISALIGNMENT:
+	case EXCEPTION_BREAKPOINT:
+	case EXCEPTION_SINGLE_STEP:
+	case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
+	case EXCEPTION_FLT_DENORMAL_OPERAND:
+	case EXCEPTION_FLT_DIVIDE_BY_ZERO:
+	case EXCEPTION_FLT_INEXACT_RESULT:
+	case EXCEPTION_FLT_INVALID_OPERATION:
+	case EXCEPTION_FLT_OVERFLOW:
+	case EXCEPTION_FLT_STACK_CHECK:
+	case EXCEPTION_FLT_UNDERFLOW:
+	case EXCEPTION_INT_DIVIDE_BY_ZERO:
+	case EXCEPTION_INT_OVERFLOW:
+	case EXCEPTION_PRIV_INSTRUCTION:
+	case EXCEPTION_IN_PAGE_ERROR:
+	case EXCEPTION_ILLEGAL_INSTRUCTION:
+	case EXCEPTION_NONCONTINUABLE_EXCEPTION:
+	case EXCEPTION_STACK_OVERFLOW:
+	case EXCEPTION_INVALID_DISPOSITION:
+	case EXCEPTION_GUARD_PAGE:
+	case EXCEPTION_INVALID_HANDLE:
+		return true;
+	}
+	// clang-format on
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Shows a message box
+//-----------------------------------------------------------------------------
+void CCrashHandler::ShowPopUpMessage()
+{
+	if (m_bHasShownCrashMsg)
+		return;
+
+	m_bHasShownCrashMsg = true;
 
 	if (!IsDedicatedServer())
-		MessageBoxA(
-			0,
-			"Northstar has crashed! Crash info can be found in R2Northstar/logs",
-			"Northstar has crashed!",
-			MB_ICONERROR | MB_OK | MB_SYSTEMMODAL);
+	{
+		std::string svMessage = fmt::format(
+			"Northstar has crashed! Crash info can be found at {}/logs!\n\n{}\n{} + {}",
+			GetNorthstarPrefix(),
+			GetExceptionString(),
+			m_svCrashedModule,
+			m_svCrashedOffset);
 
-	NS::log::FlushLoggers();
+		MessageBoxA(GetForegroundWindow(), svMessage.c_str(), "Northstar has crashed!", MB_ICONERROR | MB_OK);
+	}
 }
 
-std::string GetExceptionName(ExceptionLog& exc)
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CCrashHandler::FormatException()
 {
-	const DWORD exceptionCode = exc.exceptionRecord.ExceptionCode;
-	auto name = ExceptionNames[exceptionCode];
-	if (exceptionCode == EXCEPTION_ACCESS_VIOLATION || exceptionCode == EXCEPTION_IN_PAGE_ERROR)
+	spdlog::error("-------------------------------------------");
+	spdlog::error("Northstar has crashed!");
+	spdlog::error("\tVersion: {}", version);
+	if (!m_svError.empty())
 	{
-		std::stringstream returnString;
-		returnString << name << ": ";
+		spdlog::info("\tEncountered an error when gathering crash information!");
+		spdlog::info("\tWinApi Error: {}", m_svError.c_str());
+	}
+	spdlog::error("\t{}", GetExceptionString());
 
-		auto exceptionInfo0 = exc.exceptionRecord.ExceptionInformation[0];
-		auto exceptionInfo1 = exc.exceptionRecord.ExceptionInformation[1];
+	DWORD dwExceptionCode = m_pExceptionInfos->ExceptionRecord->ExceptionCode;
+	if (dwExceptionCode == EXCEPTION_ACCESS_VIOLATION || dwExceptionCode == EXCEPTION_IN_PAGE_ERROR)
+	{
+		ULONG_PTR uExceptionInfo0 = m_pExceptionInfos->ExceptionRecord->ExceptionInformation[0];
+		ULONG_PTR uExceptionInfo1 = m_pExceptionInfos->ExceptionRecord->ExceptionInformation[1];
 
-		if (!exceptionInfo0)
-			returnString << "Attempted to read from: 0x" << (void*)exceptionInfo1;
-		else if (exceptionInfo0 == 1)
-			returnString << "Attempted to write to: 0x" << (void*)exceptionInfo1;
-		else if (exceptionInfo0 == 8)
-			returnString << "Data Execution Prevention (DEP) at: 0x" << (void*)std::hex << exceptionInfo1;
+		if (!uExceptionInfo0)
+			spdlog::error("\tAttempted to read from: {:#x}", uExceptionInfo1);
+		else if (uExceptionInfo0 == 1)
+			spdlog::error("\tAttempted to write to: {:#x}", uExceptionInfo1);
+		else if (uExceptionInfo0 == 8)
+			spdlog::error("\tData Execution Prevention (DEP) at: {:#x}", uExceptionInfo1);
 		else
-			returnString << "Unknown access violation at: 0x" << (void*)exceptionInfo1;
-		return returnString.str();
+			spdlog::error("\tUnknown access violation at: {:#x}", uExceptionInfo1);
 	}
-	return name;
+
+	spdlog::error("\tAt: {} + {}", m_svCrashedModule, m_svCrashedOffset);
 }
 
-// Custom formatter for the Xmm registers
-template <> struct fmt::formatter<M128A> : fmt::formatter<string_view>
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CCrashHandler::FormatCallstack()
 {
-	template <typename FormatContext> auto format(const M128A& obj, FormatContext& ctx)
+	spdlog::error("Callstack:");
+
+	PVOID pFrames[CRASHHANDLER_MAX_FRAMES];
+
+	int iFrames = RtlCaptureStackBackTrace(0, CRASHHANDLER_MAX_FRAMES, pFrames, NULL);
+
+	// Above call gives us frames after the crash occured, we only want to print the ones starting from where
+	// the exception was called
+	bool bSkipExceptionHandlingFrames = true;
+
+	// We ran into an error when getting the offset, just print all frames
+	if (m_svCrashedOffset.empty())
+		bSkipExceptionHandlingFrames = false;
+
+	for (int i = 0; i < iFrames; i++)
 	{
-		// Masking the top and bottom half of the long long
-		int v1 = obj.Low & INT_MAX;
-		int v2 = obj.Low >> 32;
-		int v3 = obj.High & INT_MAX;
-		int v4 = obj.High >> 32;
-		return fmt::format_to(
-			ctx.out(),
-			"[ {:G}, {:G}, {:G}, {:G}], [ 0x{:x}, 0x{:x}, 0x{:x}, 0x{:x} ]",
-			*reinterpret_cast<float*>(&v1),
-			*reinterpret_cast<float*>(&v2),
-			*reinterpret_cast<float*>(&v3),
-			*reinterpret_cast<float*>(&v4),
-			v1,
-			v2,
-			v3,
-			v4);
-	}
-};
+		const CHAR* pszModuleFileName;
 
-void GenerateTrace(ExceptionLog& exc, bool skipErrorHandlingFrames = true, int numSkipFrames = 0)
-{
-
-	MODULEINFO crashedModuleInfo;
-	GetModuleInformation(GetCurrentProcess(), exc.crashedModule, &crashedModuleInfo, sizeof(crashedModuleInfo));
-
-	char crashedModuleFullName[MAX_PATH];
-	GetModuleFileNameExA(GetCurrentProcess(), exc.crashedModule, crashedModuleFullName, MAX_PATH);
-	char* crashedModuleName = strrchr(crashedModuleFullName, '\\') + 1;
-
-	DWORD64 crashedModuleOffset = ((DWORD64)exc.exceptionRecord.ExceptionAddress) - ((DWORD64)crashedModuleInfo.lpBaseOfDll);
-
-	PVOID framesToCapture[62];
-	int frames = RtlCaptureStackBackTrace(0, 62, framesToCapture, NULL);
-	bool haveSkippedErrorHandlingFrames = false;
-
-	for (int i = 0; i < frames; i++)
-	{
-
-		HMODULE backtraceModuleHandle;
-		GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, static_cast<LPCSTR>(framesToCapture[i]), &backtraceModuleHandle);
-
-		char backtraceModuleFullName[MAX_PATH];
-		GetModuleFileNameExA(GetCurrentProcess(), backtraceModuleHandle, backtraceModuleFullName, MAX_PATH);
-		char* backtraceModuleName = strrchr(backtraceModuleFullName, '\\') + 1;
-
-		if (!haveSkippedErrorHandlingFrames)
+		LPCSTR pAddress = static_cast<LPCSTR>(pFrames[i]);
+		HMODULE hModule;
+		if (!GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, pAddress, &hModule))
 		{
-			if (!strncmp(backtraceModuleFullName, crashedModuleFullName, MAX_PATH) &&
-				!strncmp(backtraceModuleName, crashedModuleName, MAX_PATH))
+			pszModuleFileName = CRASHHANDLER_GETMODULEHANDLE_FAIL;
+			// If we fail here it's too late to do any damage control
+		}
+		else
+		{
+			CHAR szModulePath[MAX_PATH];
+			GetModuleFileNameExA(GetCurrentProcess(), hModule, szModulePath, sizeof(szModulePath));
+			pszModuleFileName = strrchr(szModulePath, '\\') + 1;
+		}
+
+		// Get relative address
+		LPCSTR pCrashOffset = reinterpret_cast<LPCSTR>(pAddress - reinterpret_cast<LPCSTR>(hModule));
+		std::string svCrashOffset = fmt::format("{:#x}", reinterpret_cast<DWORD64>(pCrashOffset));
+
+		// Should we log this frame
+		if (bSkipExceptionHandlingFrames)
+		{
+			if (m_svCrashedModule == pszModuleFileName && m_svCrashedOffset == svCrashOffset)
 			{
-				haveSkippedErrorHandlingFrames = true;
+				bSkipExceptionHandlingFrames = false;
 			}
 			else
 			{
@@ -163,88 +393,179 @@ void GenerateTrace(ExceptionLog& exc, bool skipErrorHandlingFrames = true, int n
 			}
 		}
 
-		if (numSkipFrames > 0)
-		{
-			numSkipFrames--;
-			continue;
-		}
-
-		void* actualAddress = (void*)framesToCapture[i];
-		void* relativeAddress = (void*)(uintptr_t(actualAddress) - uintptr_t(backtraceModuleHandle));
-		std::string s_moduleName {backtraceModuleName};
-		std::string s_relativeAddress {fmt::format("{}", relativeAddress)};
-		// These are used for formatting later on
-		if (s_moduleName.length() > exc.longestModuleNameLength)
-		{
-			exc.longestModuleNameLength = s_moduleName.length();
-		}
-		if (s_relativeAddress.length() > exc.longestRelativeAddressLength)
-		{
-			exc.longestRelativeAddressLength = s_relativeAddress.length();
-		}
-
-		exc.trace.push_back(BacktraceModule {s_moduleName, s_relativeAddress, fmt::format("{}", actualAddress)});
+		// Log module + offset
+		spdlog::error("\t{} + {:#x}", pszModuleFileName, reinterpret_cast<DWORD64>(pCrashOffset));
 	}
-
-	CONTEXT* exceptionContext = &exc.contextRecord;
-
-	exc.registerDump.push_back(fmt::format("Flags: 0b{0:b}", exceptionContext->ContextFlags));
-	exc.registerDump.push_back(fmt::format("RIP: 0x{0:x}", exceptionContext->Rip));
-	exc.registerDump.push_back(fmt::format("CS : 0x{0:x}", exceptionContext->SegCs));
-	exc.registerDump.push_back(fmt::format("DS : 0x{0:x}", exceptionContext->SegDs));
-	exc.registerDump.push_back(fmt::format("ES : 0x{0:x}", exceptionContext->SegEs));
-	exc.registerDump.push_back(fmt::format("SS : 0x{0:x}", exceptionContext->SegSs));
-	exc.registerDump.push_back(fmt::format("FS : 0x{0:x}", exceptionContext->SegFs));
-	exc.registerDump.push_back(fmt::format("GS : 0x{0:x}", exceptionContext->SegGs));
-
-	exc.registerDump.push_back(fmt::format("RAX: 0x{0:x}", exceptionContext->Rax));
-	exc.registerDump.push_back(fmt::format("RBX: 0x{0:x}", exceptionContext->Rbx));
-	exc.registerDump.push_back(fmt::format("RCX: 0x{0:x}", exceptionContext->Rcx));
-	exc.registerDump.push_back(fmt::format("RDX: 0x{0:x}", exceptionContext->Rdx));
-	exc.registerDump.push_back(fmt::format("RSI: 0x{0:x}", exceptionContext->Rsi));
-	exc.registerDump.push_back(fmt::format("RDI: 0x{0:x}", exceptionContext->Rdi));
-	exc.registerDump.push_back(fmt::format("RBP: 0x{0:x}", exceptionContext->Rbp));
-	exc.registerDump.push_back(fmt::format("RSP: 0x{0:x}", exceptionContext->Rsp));
-	exc.registerDump.push_back(fmt::format("R8 : 0x{0:x}", exceptionContext->R8));
-	exc.registerDump.push_back(fmt::format("R9 : 0x{0:x}", exceptionContext->R9));
-	exc.registerDump.push_back(fmt::format("R10: 0x{0:x}", exceptionContext->R10));
-	exc.registerDump.push_back(fmt::format("R11: 0x{0:x}", exceptionContext->R11));
-	exc.registerDump.push_back(fmt::format("R12: 0x{0:x}", exceptionContext->R12));
-	exc.registerDump.push_back(fmt::format("R13: 0x{0:x}", exceptionContext->R13));
-	exc.registerDump.push_back(fmt::format("R14: 0x{0:x}", exceptionContext->R14));
-	exc.registerDump.push_back(fmt::format("R15: 0x{0:x}", exceptionContext->R15));
-
-	exc.registerDump.push_back(fmt::format("Xmm0 : {}", exceptionContext->Xmm0));
-	exc.registerDump.push_back(fmt::format("Xmm1 : {}", exceptionContext->Xmm1));
-	exc.registerDump.push_back(fmt::format("Xmm2 : {}", exceptionContext->Xmm2));
-	exc.registerDump.push_back(fmt::format("Xmm3 : {}", exceptionContext->Xmm3));
-	exc.registerDump.push_back(fmt::format("Xmm4 : {}", exceptionContext->Xmm4));
-	exc.registerDump.push_back(fmt::format("Xmm5 : {}", exceptionContext->Xmm5));
-	exc.registerDump.push_back(fmt::format("Xmm6 : {}", exceptionContext->Xmm6));
-	exc.registerDump.push_back(fmt::format("Xmm7 : {}", exceptionContext->Xmm7));
-	exc.registerDump.push_back(fmt::format("Xmm8 : {}", exceptionContext->Xmm8));
-	exc.registerDump.push_back(fmt::format("Xmm9 : {}", exceptionContext->Xmm9));
-	exc.registerDump.push_back(fmt::format("Xmm10: {}", exceptionContext->Xmm10));
-	exc.registerDump.push_back(fmt::format("Xmm11: {}", exceptionContext->Xmm11));
-	exc.registerDump.push_back(fmt::format("Xmm12: {}", exceptionContext->Xmm12));
-	exc.registerDump.push_back(fmt::format("Xmm13: {}", exceptionContext->Xmm13));
-	exc.registerDump.push_back(fmt::format("Xmm14: {}", exceptionContext->Xmm14));
-	exc.registerDump.push_back(fmt::format("Xmm15: {}", exceptionContext->Xmm15));
 }
 
-void CreateMiniDump(EXCEPTION_POINTERS* exceptionInfo)
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CCrashHandler::FormatFlags(const CHAR* pszRegister, DWORD nValue)
+{
+	spdlog::error("\t{}: {:#b}", pszRegister, nValue);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CCrashHandler::FormatIntReg(const CHAR* pszRegister, DWORD64 nValue)
+{
+	spdlog::error("\t{}: {:#x}", pszRegister, nValue);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CCrashHandler::FormatFloatReg(const CHAR* pszRegister, M128A nValue)
+{
+	DWORD nVec[4] = {
+		static_cast<DWORD>(nValue.Low & UINT_MAX),
+		static_cast<DWORD>(nValue.Low >> 32),
+		static_cast<DWORD>(nValue.High & UINT_MAX),
+		static_cast<DWORD>(nValue.High >> 32)};
+
+	spdlog::error(
+		"\t{}: [ {:G}, {:G}, {:G}, {:G} ]; [ {:#x}, {:#x}, {:#x}, {:#x} ]",
+		pszRegister,
+		static_cast<float>(nVec[0]),
+		static_cast<float>(nVec[1]),
+		static_cast<float>(nVec[2]),
+		static_cast<float>(nVec[3]),
+		nVec[0],
+		nVec[1],
+		nVec[2],
+		nVec[3]);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CCrashHandler::FormatRegisters()
+{
+	spdlog::error("Registers:");
+
+	PCONTEXT pContext = m_pExceptionInfos->ContextRecord;
+
+	FormatFlags("Flags:", pContext->ContextFlags);
+
+	FormatIntReg("Rax", pContext->Rax);
+	FormatIntReg("Rcx", pContext->Rcx);
+	FormatIntReg("Rdx", pContext->Rdx);
+	FormatIntReg("Rbx", pContext->Rbx);
+	FormatIntReg("Rsp", pContext->Rsp);
+	FormatIntReg("Rbp", pContext->Rbp);
+	FormatIntReg("Rsi", pContext->Rsi);
+	FormatIntReg("Rdi", pContext->Rdi);
+	FormatIntReg("R8 ", pContext->R8);
+	FormatIntReg("R9 ", pContext->R9);
+	FormatIntReg("R10", pContext->R10);
+	FormatIntReg("R11", pContext->R11);
+	FormatIntReg("R12", pContext->R12);
+	FormatIntReg("R13", pContext->R13);
+	FormatIntReg("R14", pContext->R14);
+	FormatIntReg("R15", pContext->R15);
+	FormatIntReg("Rip", pContext->Rip);
+
+	FormatFloatReg("Xmm0 ", pContext->Xmm0);
+	FormatFloatReg("Xmm1 ", pContext->Xmm1);
+	FormatFloatReg("Xmm2 ", pContext->Xmm2);
+	FormatFloatReg("Xmm3 ", pContext->Xmm3);
+	FormatFloatReg("Xmm4 ", pContext->Xmm4);
+	FormatFloatReg("Xmm5 ", pContext->Xmm5);
+	FormatFloatReg("Xmm6 ", pContext->Xmm6);
+	FormatFloatReg("Xmm7 ", pContext->Xmm7);
+	FormatFloatReg("Xmm8 ", pContext->Xmm8);
+	FormatFloatReg("Xmm9 ", pContext->Xmm9);
+	FormatFloatReg("Xmm10", pContext->Xmm10);
+	FormatFloatReg("Xmm11", pContext->Xmm11);
+	FormatFloatReg("Xmm12", pContext->Xmm12);
+	FormatFloatReg("Xmm13", pContext->Xmm13);
+	FormatFloatReg("Xmm14", pContext->Xmm14);
+	FormatFloatReg("Xmm15", pContext->Xmm15);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CCrashHandler::FormatLoadedMods()
+{
+	if (g_pModManager)
+	{
+		spdlog::error("Enabled mods:");
+		for (const Mod& mod : g_pModManager->m_LoadedMods)
+		{
+			if (!mod.m_bEnabled)
+				continue;
+
+			spdlog::error("\t{}", mod.Name);
+		}
+
+		spdlog::error("Disabled mods:");
+		for (const Mod& mod : g_pModManager->m_LoadedMods)
+		{
+			if (mod.m_bEnabled)
+				continue;
+
+			spdlog::error("\t{}", mod.Name);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CCrashHandler::FormatLoadedPlugins()
+{
+	if (g_pPluginManager)
+	{
+		spdlog::error("Loaded Plugins:");
+		for (const Plugin& plugin : g_pPluginManager->m_vLoadedPlugins)
+		{
+			spdlog::error("\t{}", plugin.name);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CCrashHandler::FormatModules()
+{
+	spdlog::error("Loaded modules:");
+	HMODULE hModules[1024];
+	DWORD cbNeeded;
+
+	if (EnumProcessModules(GetCurrentProcess(), hModules, sizeof(hModules), &cbNeeded))
+	{
+		for (DWORD i = 0; i < (cbNeeded / sizeof(HMODULE)); i++)
+		{
+			CHAR szModulePath[MAX_PATH];
+			if (GetModuleFileNameExA(GetCurrentProcess(), hModules[i], szModulePath, sizeof(szModulePath)))
+			{
+				const CHAR* pszModuleFileName = strrchr(szModulePath, '\\') + 1;
+				spdlog::error("\t{}", pszModuleFileName);
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Writes minidump to disk
+//-----------------------------------------------------------------------------
+void CCrashHandler::WriteMinidump()
 {
 	time_t time = std::time(nullptr);
 	tm currentTime = *std::localtime(&time);
 	std::stringstream stream;
 	stream << std::put_time(&currentTime, (GetNorthstarPrefix() + "/logs/nsdump%Y-%m-%d %H-%M-%S.dmp").c_str());
 
-	auto hMinidumpFile = CreateFileA(stream.str().c_str(), GENERIC_WRITE, FILE_SHARE_READ, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+	HANDLE hMinidumpFile = CreateFileA(stream.str().c_str(), GENERIC_WRITE, FILE_SHARE_READ, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
 	if (hMinidumpFile)
 	{
 		MINIDUMP_EXCEPTION_INFORMATION dumpExceptionInfo;
 		dumpExceptionInfo.ThreadId = GetCurrentThreadId();
-		dumpExceptionInfo.ExceptionPointers = exceptionInfo;
+		dumpExceptionInfo.ExceptionPointers = m_pExceptionInfos;
 		dumpExceptionInfo.ClientPointers = false;
 
 		MiniDumpWriteDump(
@@ -261,117 +582,5 @@ void CreateMiniDump(EXCEPTION_POINTERS* exceptionInfo)
 		spdlog::error("Failed to write minidump file {}!", stream.str());
 }
 
-long GenerateExceptionLog(EXCEPTION_POINTERS* exceptionInfo)
-{
-	storedException->exceptionRecord = *exceptionInfo->ExceptionRecord;
-	storedException->contextRecord = *exceptionInfo->ContextRecord;
-	const DWORD exceptionCode = exceptionInfo->ExceptionRecord->ExceptionCode;
-
-	void* exceptionAddress = exceptionInfo->ExceptionRecord->ExceptionAddress;
-
-	storedException->cause = GetExceptionName(*storedException);
-
-	HMODULE crashedModuleHandle;
-	GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, static_cast<LPCSTR>(exceptionAddress), &crashedModuleHandle);
-
-	storedException->crashedModule = crashedModuleHandle;
-
-	// When encountering a runtime exception, we store the exception to be displayed later
-	// We then have to return EXCEPTION_CONTINUE_SEARCH so that our runtime handler may be called
-	// This might possibly cause some issues if client and server are crashing at the same time, but honestly i don't care
-	if (exceptionCode == RUNTIME_EXCEPTION)
-	{
-		GenerateTrace(*storedException, false, 2);
-		storedException = storedException;
-		return EXCEPTION_CONTINUE_SEARCH;
-	}
-
-	GenerateTrace(*storedException, true, 0);
-	CreateMiniDump(exceptionInfo);
-	PrintExceptionLog(*storedException);
-	return EXCEPTION_EXECUTE_HANDLER;
-}
-
-long __stdcall ExceptionFilter(EXCEPTION_POINTERS* exceptionInfo)
-{
-	if (!IsDebuggerPresent())
-	{
-		// Check if we are capable of handling this type of exception
-		if (ExceptionNames.find(exceptionInfo->ExceptionRecord->ExceptionCode) == ExceptionNames.end())
-			return EXCEPTION_CONTINUE_SEARCH;
-		if (exceptionInfo->ExceptionRecord->ExceptionCode == RUNTIME_EXCEPTION)
-		{
-			storedException = std::make_shared<ExceptionLog>();
-			storedException->exceptionRecord = *exceptionInfo->ExceptionRecord;
-			storedException->contextRecord = *exceptionInfo->ContextRecord;
-		}
-		else
-		{
-			CreateMiniDump(exceptionInfo);
-			return GenerateExceptionLog(exceptionInfo);
-		}
-	}
-
-	return EXCEPTION_EXECUTE_HANDLER;
-}
-
-void RuntimeExceptionHandler()
-{
-	auto ptr = std::current_exception();
-	if (ptr)
-	{
-		try
-		{
-			// This is to generate an actual std::exception object that we can then inspect
-			std::rethrow_exception(ptr);
-		}
-		catch (std::exception& e)
-		{
-			storedException->runtimeInfo = e.what();
-		}
-		catch (...)
-		{
-			storedException->runtimeInfo = "Unknown runtime exception type";
-		}
-		EXCEPTION_POINTERS test {};
-		test.ContextRecord = &storedException->contextRecord;
-		test.ExceptionRecord = &storedException->exceptionRecord;
-		CreateMiniDump(&test);
-		GenerateExceptionLog(&test);
-		PrintExceptionLog(*storedException);
-		exit(-1);
-	}
-	else
-	{
-		spdlog::error(
-			"std::current_exception() returned nullptr while being handled by RuntimeExceptionHandler. This should never happen!");
-		std::abort();
-	}
-}
-
-BOOL WINAPI ConsoleHandlerRoutine(DWORD eventCode)
-{
-	switch (eventCode)
-	{
-	case CTRL_CLOSE_EVENT:
-		// User closed console, shut everything down
-		spdlog::info("Exiting due to console close...");
-		RemoveCrashHandler();
-		exit(EXIT_SUCCESS);
-		return FALSE;
-	}
-
-	return TRUE;
-}
-
-void InitialiseCrashHandler()
-{
-	hExceptionFilter = AddVectoredExceptionHandler(TRUE, ExceptionFilter);
-	SetConsoleCtrlHandler(ConsoleHandlerRoutine, true);
-	std::set_terminate(RuntimeExceptionHandler);
-}
-
-void RemoveCrashHandler()
-{
-	RemoveVectoredExceptionHandler(hExceptionFilter);
-}
+//-----------------------------------------------------------------------------
+CCrashHandler* g_pCrashHandler = nullptr;
