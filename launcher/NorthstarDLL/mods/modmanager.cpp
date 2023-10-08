@@ -106,6 +106,9 @@ Mod::Mod(fs::path modDir, char* jsonBuf)
 	ParseDependencies(modJson);
 	ParseInitScript(modJson);
 
+	// A mod is remote if it's located in the remote mods folder
+	m_bIsRemote = m_ModDirectory.generic_string().find(GetRemoteModFolderPath().generic_string()) != std::string::npos;
+
 	m_bWasReadSuccessfully = true;
 }
 
@@ -706,10 +709,20 @@ void ModManager::LoadMods()
 	// sort by load prio, lowest-highest
 	std::sort(m_LoadedMods.begin(), m_LoadedMods.end(), [](Mod& a, Mod& b) { return a.LoadPriority < b.LoadPriority; });
 
+	// This is used to check if some mods have a folder but no entry in enabledmods.json
+	bool newModsDetected = false;
+
 	for (Mod& mod : m_LoadedMods)
 	{
 		if (!mod.m_bEnabled)
 			continue;
+
+		// Add mod entry to enabledmods.json if it doesn't exist
+		if (!mod.m_bIsRemote && !m_EnabledModsCfg.HasMember(mod.Name.c_str()))
+		{
+			m_EnabledModsCfg.AddMember(rapidjson_document::StringRefType(mod.Name.c_str()), true, m_EnabledModsCfg.GetAllocator());
+			newModsDetected = true;
+		}
 
 		// register convars
 		// for reloads, this is sorta barebones, when we have a good findconvar method, we could probably reset flags and stuff on
@@ -938,6 +951,15 @@ void ModManager::LoadMods()
 				}
 			}
 		}
+	}
+
+	// If there are new mods, we write entries accordingly in enabledmods.json
+	if (newModsDetected)
+	{
+		std::ofstream writeStream(GetNorthstarPrefix() + "/enabledmods.json");
+		rapidjson::OStreamWrapper writeStreamWrapper(writeStream);
+		rapidjson::PrettyWriter<rapidjson::OStreamWrapper> writer(writeStreamWrapper);
+		m_EnabledModsCfg.Accept(writer);
 	}
 
 	// in a seperate loop because we register mod files in reverse order, since mods loaded later should have their files prioritised
