@@ -342,7 +342,7 @@ Presiona Sí al estar de acuerdo. Esta opcion se puede cambiar en el menú de mo
 		"PROGRESSION_ENABLED_HEADER"             "¡Progreso habilitado!" 
 		"PROGRESSION_DISABLED_HEADER"             "¡Progreso deshabilitado!" 
 		"TOGGLE_PROGRESSION"             "Cambiar modo de progresión" 
-		"Y_BUTTON_TOGGLE_PROGRESSION"             "%[Y_BUTTON]% Cambiar modo de progresión" 
+		"Y_BUTTON_TOGGLE_PROGRESSION"             "%[Y_BUTTON|]% Cambiar modo de progresión" 
 		"PROGRESSION_TOGGLE_DISABLED_BODY"             "Titanes, Armas, Facciones, Aspectos y otros serán desbloqueados sólo al subir de nivel, o a través de Logros.\n\nÉsta opción puede ser cambiada cuando quieras en la sala de espera.\n\n^CC000000Advertencia: ¡Cualquier equipamiento o utensilio será reiniciado si no lo tienes desbloqueado!" 
 		"MOD_SETTINGS_SERVER"             "Servidor" 
 		"MOD_SETTINGS_RESET_ALL"             "Reiniciar completamente" 
