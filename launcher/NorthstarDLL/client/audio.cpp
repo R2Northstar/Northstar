@@ -16,6 +16,7 @@ extern "C"
 	extern void* __fastcall Audio_GetParentEvent();
 }
 
+ConVar* Cvar_mileslog_enable;
 ConVar* Cvar_ns_print_played_sounds;
 
 CustomAudioManager g_CustomAudioManager;
@@ -494,7 +495,15 @@ AUTOHOOK(MilesLog, client.dll + 0x57DAD0,
 void, __fastcall, (int level, const char* string))
 // clang-format on
 {
+	if (!Cvar_mileslog_enable->GetBool())
+		return;
+
 	spdlog::info("[MSS] {} - {}", level, string);
+}
+
+ON_DLL_LOAD_RELIESON("engine.dll", MilesLogFuncHooks, ConVar, (CModule module))
+{
+	Cvar_mileslog_enable = new ConVar("mileslog_enable", "0", FCVAR_NONE, "Enables/disables whether the mileslog func should be logged");
 }
 
 ON_DLL_LOAD_CLIENT_RELIESON("client.dll", AudioHooks, ConVar, (CModule module))
