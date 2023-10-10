@@ -18,6 +18,7 @@ extensions = [
     "sphinxcontrib.youtube",
     "sphinx_copybutton",
     "sphinx_rsquirrel",
+    "sphinxext.opengraph",
 ]
 
 intersphinx_mapping = {
@@ -53,6 +54,9 @@ html_theme_options = {
     },
 }
 
+ogp_site_url = "https://r2northstar.readthedocs.io/"
+ogp_image = "https://northstar.tf/assets/logo_1k.png"
+
 # -- Options for EPUB output
 epub_show_urls = "footnote"
 
@@ -60,4 +64,3 @@ highlight_language = "squirrel"
 
 # furo theme specific
 pygments_dark_style = "one-dark"
-
