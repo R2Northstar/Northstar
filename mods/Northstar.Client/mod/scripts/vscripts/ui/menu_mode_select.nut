@@ -18,8 +18,8 @@ void function InitModesMenu()
 	AddMenuFooterOption( menu, BUTTON_A, "#A_BUTTON_SELECT" )
 	AddMenuFooterOption( menu, BUTTON_B, "#B_BUTTON_BACK", "#BACK" )
 	
-	AddMenuFooterOption( menu, BUTTON_SHOULDER_LEFT, "#PRIVATE_MATCH_PAGE_PREV", "#PRIVATE_MATCH_PAGE_PREV", CycleModesBack, IsNorthstarServer )
-	AddMenuFooterOption( menu, BUTTON_SHOULDER_RIGHT, "#PRIVATE_MATCH_PAGE_NEXT", "#PRIVATE_MATCH_PAGE_NEXT", CycleModesForward, IsNorthstarServer )
+	AddMenuFooterOption( menu, BUTTON_SHOULDER_LEFT, "#PRIVATE_MATCH_PAGE_PREV", "#PRIVATE_MATCH_PAGE_PREV", CycleModesBack )
+	AddMenuFooterOption( menu, BUTTON_SHOULDER_RIGHT, "#PRIVATE_MATCH_PAGE_NEXT", "#PRIVATE_MATCH_PAGE_NEXT", CycleModesForward )
 }
 
 void function OnOpenModesMenu()
@@ -56,13 +56,7 @@ void function UpdateVisibleModes()
 		if ( !ModeSettings_RequiresAI( modesArray[ modeIndex ] ) || modesArray[ modeIndex ] == "aitdm" || modesArray[ modeIndex ] == "at" )
 			Hud_SetLocked( buttons[ i ], false )
 		else
-			Hud_SetLocked( buttons[ i ], true )
-		
-		if ( !PrivateMatch_IsValidMapModeCombo( PrivateMatch_GetSelectedMap(), modesArray[ modeIndex ] ) && !IsNorthstarServer() )
-		{
-			Hud_SetLocked( buttons[ i ], true )
-			SetButtonRuiText( buttons[ i ], Localize( "#PRIVATE_MATCH_UNAVAILABLE", Localize( GetGameModeDisplayName( modesArray[ modeIndex ] ) ) ) )
-		}		
+			Hud_SetLocked( buttons[ i ], true )	
 	}
 }
 
@@ -90,9 +84,7 @@ void function ModeButton_GetFocus( var button )
 
 	string mapName = PrivateMatch_GetSelectedMap()
 	bool mapSupportsMode = PrivateMatch_IsValidMapModeCombo( mapName, modeName )
-	if ( !mapSupportsMode && !IsNorthstarServer() )
-		Hud_SetText( nextModeDesc, Localize( "#PRIVATE_MATCH_MODE_NO_MAP_SUPPORT", Localize( GetGameModeDisplayName( modeName ) ), Localize( GetMapDisplayName( mapName ) ) ) )
-	else if ( IsFDMode( modeName ) ) // HACK!
+	if ( IsFDMode( modeName ) ) // HACK!
 		Hud_SetText( nextModeDesc, Localize( "#FD_PLAYERS_DESC", Localize( GetGameModeDisplayHint( modeName ) ) ) )
 	else
 		Hud_SetText( nextModeDesc, GetGameModeDisplayHint( modeName ) )
@@ -114,7 +106,7 @@ void function ModeButton_Click( var button )
 
 	// on modded servers set us to the first map for that mode automatically
 	// need this for coliseum mainly which is literally impossible to select without this
-	if ( IsNorthstarServer() && !PrivateMatch_IsValidMapModeCombo( PrivateMatch_GetSelectedMap(), modesArray[ modeID ] ) )
+	if ( !PrivateMatch_IsValidMapModeCombo( PrivateMatch_GetSelectedMap(), modesArray[ modeID ] ) )
 		ClientCommand( "SetCustomMap " + GetPrivateMatchMapsForMode( modeName )[ 0 ] )
 		
 	// set it

@@ -5,15 +5,6 @@
 	"LoadPriority": 0,
 	"ConVars": [
 		{
-			"Name": "ns_lobby_type",
-			"DefaultValue": "0"
-		},
-		{
-			"Name": "ns_is_modded_server",
-			"DefaultValue": "1",
-			"Flags": 8192
-		},
-		{
 			"Name": "ns_should_return_to_lobby",
 			"DefaultValue": "1"
 		},
