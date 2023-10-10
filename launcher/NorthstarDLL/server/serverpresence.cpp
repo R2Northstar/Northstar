@@ -78,14 +78,14 @@ void ServerPresenceManager::CreateConVars()
 	Cvar_ns_server_presence_update_rate = new ConVar(
 		"ns_server_presence_update_rate", "5000", FCVAR_GAMEDLL, "How often we update our server's presence on server lists in ms");
 
-	Cvar_ns_server_name = new ConVar("ns_server_name", "Unnamed Northstar Server", FCVAR_GAMEDLL, "This server's description", false, 0, false, 0, [](ConVar* cvar, const char* pOldValue, float flOldValue) {
+	Cvar_ns_server_name = new ConVar("ns_server_name", "Unnamed Northstar Server", FCVAR_GAMEDLL, "This server's name", false, 0, false, 0, [](ConVar* cvar, const char* pOldValue, float flOldValue) {
 			g_pServerPresence->SetName(UnescapeUnicode(g_pServerPresence->Cvar_ns_server_name->GetString()));
 
 			// update engine hostname cvar
 			Cvar_hostname->SetValue(g_pServerPresence->Cvar_ns_server_name->GetString());
 		});
 
-	Cvar_ns_server_desc = new ConVar("ns_server_desc", "Default server description", FCVAR_GAMEDLL, "This server's name", false, 0, false, 0, [](ConVar* cvar, const char* pOldValue, float flOldValue) {
+	Cvar_ns_server_desc = new ConVar("ns_server_desc", "Default server description", FCVAR_GAMEDLL, "This server's description", false, 0, false, 0, [](ConVar* cvar, const char* pOldValue, float flOldValue) {
 			g_pServerPresence->SetDescription(UnescapeUnicode(g_pServerPresence->Cvar_ns_server_desc->GetString()));
 		});
 
