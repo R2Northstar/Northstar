@@ -247,10 +247,7 @@ void function OnSelectMatchSettings_Activate( var button )
 	if ( Hud_IsLocked( button ) )
 		return
 
-	if ( !IsNorthstarServer() )
-		AdvanceMenu( GetMenu( "MatchSettingsMenu" ) )
-	else
-		AdvanceMenu( GetMenu( "CustomMatchSettingsCategoryMenu" ) )
+	AdvanceMenu( GetMenu( "CustomMatchSettingsCategoryMenu" ) )
 }
 
 void function SetupComboButtons( var menu, var navUpButton, var navDownButton  )
@@ -273,13 +270,6 @@ void function SetupComboButtons( var menu, var navUpButton, var navDownButton  )
 
 	file.matchSettingsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_MATCH_SETTINGS" )
 	Hud_AddEventHandler( file.matchSettingsButton, UIE_CLICK, OnSelectMatchSettings_Activate )
-
-	if ( !IsNorthstarServer() )
-	{
-		var friendsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_INVITE_FRIENDS" )
-		file.inviteFriendsButton = friendsButton
-		Hud_AddEventHandler( friendsButton, UIE_CLICK, InviteFriendsIfAllowed )
-	}
 
 	headerIndex++
 	buttonIndex = 0
@@ -575,17 +565,12 @@ function UpdatePrivateMatchButtons()
 		Hud_SetLocked( file.selectMapButton, true )
 		Hud_SetLocked( file.selectModeButton, true )
 		Hud_SetLocked( file.matchSettingsButton, true )
-		
-		if ( !IsNorthstarServer() )
-			Hud_SetLocked( file.inviteFriendsButton, true )
 	}
 	else
 	{
 		RHud_SetText( file.startMatchButton, "#START_MATCH" )
 		Hud_SetLocked( file.selectMapButton, false )
 		Hud_SetLocked( file.selectModeButton, false )
-		if ( !IsNorthstarServer() )
-			Hud_SetLocked( file.inviteFriendsButton, false )
 
 		string modeName = PrivateMatch_GetSelectedMode()
 		bool settingsLocked = IsFDMode( modeName )
@@ -648,7 +633,7 @@ function UpdateLobby()
 			{
 				float varOrigVal = float( GetCurrentPlaylistGamemodeByIndexVar( gamemodeIdx, varName, false ) )
 				float varOverrideVal = float( GetCurrentPlaylistGamemodeByIndexVar( gamemodeIdx, varName, true ) )
-				if ( varOrigVal == varOverrideVal && !IsNorthstarServer() ) // stuff seems to break outside of northstar servers since we dont always use private_match playlist
+				if ( varOrigVal == varOverrideVal ) // stuff seems to break outside of northstar servers since we dont always use private_match playlist
 					continue
 	
 				string label = Localize( MatchSettings_PlaylistVarLabels[varName] ) + ": "

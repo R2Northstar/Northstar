@@ -1,11 +1,5 @@
 globalize_all_functions
 
-// whether the server is a modded, northstar server
-bool function IsNorthstarServer()
-{
-	return GetConVarBool( "ns_is_modded_server" )
-}
-
 // whether the game should return to the lobby on GameRules_EndMatch()
 bool function ShouldReturnToLobby()
 {	
