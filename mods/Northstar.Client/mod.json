@@ -36,12 +36,12 @@
 		{
 			"Name": "modlist_show_convars",
 			"DefaultValue": "0",
-			"Flags": 16777216
+			"Flags": "ARCHIVE_PLAYERPROFILE"
 		},
 		{
 			"Name": "modlist_reverse",
 			"DefaultValue": "0",
-			"Flags": 16777216
+			"Flags": "ARCHIVE_PLAYERPROFILE"
 		}
 	],
 	"Scripts": [

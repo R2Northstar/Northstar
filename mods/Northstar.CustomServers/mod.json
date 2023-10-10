@@ -20,7 +20,7 @@
 		{
 			"Name": "ns_allow_spectators",
 			"DefaultValue": "0",
-			"Flags": 8192
+			"Flags": "REPLICATED"
 		},
 		{
 			"Name": "ns_private_match_last_mode",
