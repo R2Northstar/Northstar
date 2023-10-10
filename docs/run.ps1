@@ -10,5 +10,9 @@ else {
 }
 py -m poetry install
 Set-Location ./docs
-py -m poetry run sphinx-autobuild source build/html --open-browser --ignore *build/**
-Set-Location ../
+
+try {
+    py -m poetry run sphinx-autobuild source build/html --open-browser --ignore *build/**
+} finally {
+    Set-Location ../
+}
