@@ -5,7 +5,7 @@ function(check_init_submodule path)
     list(LENGTH RESULT CONTENT_COUNT)
     if (CONTENT_COUNT EQUAL 0)
         if (NOT EXISTS "${PROJECT_SOURCE_DIR}/.git")
-            message(FATAL_ERROR "Failed to find third party dependency in '${path}'")			
+            message(FATAL_ERROR "Failed to find third party dependency in '${path}'")
         endif()
 
         find_package(Git QUIET)
