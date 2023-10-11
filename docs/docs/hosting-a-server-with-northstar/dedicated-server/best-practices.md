@@ -17,7 +17,7 @@ The current minimum requirements are as follows:
 - 5GB free disk space (+3 GB if you're on windows due to origin and deps)
 - 3+ cores (2 might work, though)
 - 3GB+ total memory (RAM or swap will do)
-- Windows 8.1 (and built-in WARP [use `-softwared3d11`] or a graphics card) + or wine 6.0.0+ (and dxvk+lavapipe+x11, wined3d+llvmpipe+x11, or a working graphics setup with dxvk or llvmpipe) (see [this](https://github.com/pg9182/northstar-dedicated) for more)
+- Windows 8.1 (and built-in WARP \[use `-softwared3d11`\] or a graphics card) + or wine 6.0.0+ (and dxvk+lavapipe+x11, wined3d+llvmpipe+x11, or a working graphics setup with dxvk or llvmpipe) (see [this](https://github.com/pg9182/northstar-dedicated) for more)
 
 **Per instance:**
 
