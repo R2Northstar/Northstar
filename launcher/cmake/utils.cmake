@@ -1,8 +1,8 @@
 
 # Check if a dependency exist before trying to init git submodules
 function(check_init_submodule path)
-    file(GLOB DIR_CONTENT path)
-    list(LENGTH RESULT CONTENT_COUNT)
+    file(GLOB DIR_CONTENT "${path}/*")
+    list(LENGTH DIR_CONTENT CONTENT_COUNT)
     if (CONTENT_COUNT EQUAL 0)
         if (NOT EXISTS "${PROJECT_SOURCE_DIR}/.git")
             message(FATAL_ERROR "Failed to find third party dependency in '${path}'")
