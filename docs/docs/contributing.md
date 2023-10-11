@@ -12,4 +12,4 @@ Read [CONTRIBUTING.md](https://github.com/R2Northstar/Northstar/blob/main/CONTRI
 Please remember that issues created in the Northstar repositories should be related to the mod, avoid creating issues asking for tech support or problems unrelated to the project.
 {% endhint %}
 
-Check the [Development](modding-and-development/development/README.md) section if you are unsure of where to open a ticket.
+Check the [Development](development/README.md) section if you are unsure of where to open a ticket.

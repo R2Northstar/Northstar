@@ -55,7 +55,7 @@ Before starting, make sure you have a **working and up-to-date Northstar install
    &#x20;![rcon4](https://user-images.githubusercontent.com/40122905/179727511-877641f8-e5fc-4a34-bcf1-29bafefc1ad2.png)
 5. Once downloaded, open the zip and copy `Northstar.dll` and `NorthstarLauncher.exe` to your Titanfall2 folder, overwriting the existing DLL and EXE in there.
 
-Alternatively, compiling the PR'd code from source is also an option. For this, refer to [northstarlauncher.md](development/northstarlauncher.md "mention")
+Alternatively, compiling the PR'd code from source is also an option. For this, refer to [northstarlauncher.md](northstarlauncher.md "mention")
 
 #### NorthstarMods
 
