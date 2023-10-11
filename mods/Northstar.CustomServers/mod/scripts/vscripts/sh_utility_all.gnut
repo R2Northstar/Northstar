@@ -362,7 +362,7 @@ string function StringReplace( string baseString, string searchString, string re
 		source = part1 + replaceString + part2
 
 		loopedOnce = true
-		findResult = source.find( searchString )
+		findResult = source.find( searchString, findResult + replaceString.len() )
 	}
 
 	return baseString
