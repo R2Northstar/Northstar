@@ -6,3 +6,8 @@ language = "en"
 multilingual = false
 src = "docs"
 title = "Northstar Wiki"
+
+[output.html]
+
+[output.linkcheck]
+optional = true
