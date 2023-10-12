@@ -82,6 +82,11 @@ void function OnLoadoutButton_Focused( var button )
 {
 	int index = expect int( button.s.rowIndex )
 
+	// update the editingLoadoutIndex on focus so that it always matches
+	// with the pilot loadout panel
+	uiGlobal.editingLoadoutIndex = index
+	uiGlobal.editingLoadoutType = "pilot"
+
 	UpdatePilotLoadout( index )
 
 	string pilotLoadoutRef = "pilot_loadout_" + ( index + 1 )
