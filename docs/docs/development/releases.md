@@ -12,8 +12,10 @@ WIP
 
 ## General
 
-CI on Northstar release repo builds versioned release if tag is pushed. It checks Launcher and Mods for same tag and builds those versions. \
-Therefore make sure to push tags of Mods and Launcher first.
+CI on Northstar release repo builds versioned release if tag is pushed. It checks Launcher and Mods for the same tag.
+It then downloads the related build for Launcher from releases and the Squirrel related source files from the mods repo.
+It then combines the files together with DiscordRPC and navmeshes to build the final release. \
+Therefore make sure to push tags of Mods and Launcher first (and make sure Launcher has finished building).
 
 CI also pushes release directly to Thunderstore as a mod called [`Northstar`](https://northstar.thunderstore.io/package/northstar/Northstar/). \
 If it's a release-candidate with the `-rcX` suffix, it will instead get pushed to Thunderstore as [`NorthstarReleaseCandidate`](https://northstar.thunderstore.io/package/northstar/NorthstarReleaseCandidate/).
