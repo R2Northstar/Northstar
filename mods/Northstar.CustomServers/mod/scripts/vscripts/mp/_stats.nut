@@ -136,12 +136,12 @@ float function PlayerStat_GetCurrentFloat( entity player, string statCategory, s
 	return 0
 }
 
-void function UpdatePlayerStat( entity player, string statCategory, string subStat, int count = 1 )
+void function UpdatePlayerStat( entity player, string statCategory, string subStat, int count = 1, string statAlias = "" )
 {
 	if ( !IsValid( player ) )
 		return
 
-	Stats_IncrementStat( player, statCategory, subStat, "", count.tofloat() )
+	Stats_IncrementStat( player, statCategory, subStat, statAlias, count.tofloat() )
 }
 
 void function IncrementPlayerDidPilotExecutionWhileCloaked( entity player )
