@@ -54,7 +54,7 @@ jobs:
       - name: Make folder structure
         run: |
           mv -v northstar/release/* northstar/.
-          rm -d northstar/release
+          rm --dir northstar/release
           mkdir --parents northstar/R2Northstar/mods
           mkdir --parents northstar/R2Northstar/plugins
           mkdir --parents northstar/bin/x64_dedi
