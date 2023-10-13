@@ -53,7 +53,7 @@ jobs:
           git ls-tree -r $NORTHSTAR_VERSION --name-only | xargs -L1 md5sum >> md5sum.txt
       - name: Make folder structure
         run: |
-          mv -v northstar/release/* northstar/.
+          mv --verbose northstar/release/* northstar/.
           rm --dir northstar/release
           mkdir --parents northstar/R2Northstar/mods
           mkdir --parents northstar/R2Northstar/plugins
@@ -73,8 +73,8 @@ jobs:
       - name: Navmeshes setup
         run: |
           mkdir --parents northstar/R2Northstar/mods/Northstar.CustomServers/mod/maps
-          mv -v northstar-navs/graphs northstar/R2Northstar/mods/Northstar.CustomServers/mod/maps
-          mv -v northstar-navs/navmesh northstar/R2Northstar/mods/Northstar.CustomServers/mod/maps
+          mv --verbose northstar-navs/graphs northstar/R2Northstar/mods/Northstar.CustomServers/mod/maps
+          mv --verbose northstar-navs/navmesh northstar/R2Northstar/mods/Northstar.CustomServers/mod/maps
       - name: Cleanup root Northstar repository files
         working-directory: northstar
         run: |
@@ -120,7 +120,7 @@ jobs:
         run: |
           wget -O tcli.tar.gz https://github.com/thunderstore-io/thunderstore-cli/releases/download/0.1.4/tcli-0.1.4-linux-x64.tar.gz
           tar xvf tcli.tar.gz
-          sudo mv -v tcli-0.1.4-linux-x64/tcli /bin
+          sudo mv --verbose tcli-0.1.4-linux-x64/tcli /bin
 
       - name: (DEBUG) Download Northstar package
         if: ${{ env.ACT }} # Download Northstar package from releases when running locally instead of relying on previous jobs
@@ -138,7 +138,7 @@ jobs:
       - name: Make package structure
         run: |
           mkdir --parents thunderstore/dist/Northstar
-          mv -v northstar/* thunderstore/dist/Northstar
+          mv --verbose northstar/* thunderstore/dist/Northstar
           wget -O thunderstore/icon.png https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/icon.png
           wget -O thunderstore/README.md https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/README.md
 
