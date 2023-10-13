@@ -118,14 +118,14 @@ jobs:
     steps:
       - name: Setup tcli
         run: |
-          wget -O tcli.tar.gz https://github.com/thunderstore-io/thunderstore-cli/releases/download/0.1.4/tcli-0.1.4-linux-x64.tar.gz
+          wget --output-document tcli.tar.gz https://github.com/thunderstore-io/thunderstore-cli/releases/download/0.1.4/tcli-0.1.4-linux-x64.tar.gz
           tar xvf tcli.tar.gz
           sudo mv --verbose tcli-0.1.4-linux-x64/tcli /bin
 
       - name: (DEBUG) Download Northstar package
         if: ${{ env.ACT }} # Download Northstar package from releases when running locally instead of relying on previous jobs
         run: |
-          wget -O northstar.zip https://github.com/R2Northstar/Northstar/releases/download/v1.6.3/Northstar.release.v1.6.3.zip
+          wget --output-document northstar.zip https://github.com/R2Northstar/Northstar/releases/download/v1.6.3/Northstar.release.v1.6.3.zip
           unzip northstar.zip -d northstar
 
       - name: Download Northstar package
@@ -139,8 +139,8 @@ jobs:
         run: |
           mkdir --parents thunderstore/dist/Northstar
           mv --verbose northstar/* thunderstore/dist/Northstar
-          wget -O thunderstore/icon.png https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/icon.png
-          wget -O thunderstore/README.md https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/README.md
+          wget --output-document thunderstore/icon.png https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/icon.png
+          wget --output-document thunderstore/README.md https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/README.md
 
       - name: Setup environment variables
         run: |
