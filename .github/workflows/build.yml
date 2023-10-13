@@ -55,9 +55,9 @@ jobs:
         run: |
           mv -v northstar/release/* northstar/.
           rm -d northstar/release
-          mkdir -p northstar/R2Northstar/mods
-          mkdir -p northstar/R2Northstar/plugins
-          mkdir -p northstar/bin/x64_dedi
+          mkdir --parents northstar/R2Northstar/mods
+          mkdir --parents northstar/R2Northstar/plugins
+          mkdir --parents northstar/bin/x64_dedi
 
           unzip northstar-discord-rpc.zip -d northstar/R2Northstar/plugins
           
@@ -72,7 +72,7 @@ jobs:
           path: northstar-navs
       - name: Navmeshes setup
         run: |
-          mkdir -p northstar/R2Northstar/mods/Northstar.CustomServers/mod/maps
+          mkdir --parents northstar/R2Northstar/mods/Northstar.CustomServers/mod/maps
           mv -v northstar-navs/graphs northstar/R2Northstar/mods/Northstar.CustomServers/mod/maps
           mv -v northstar-navs/navmesh northstar/R2Northstar/mods/Northstar.CustomServers/mod/maps
       - name: Cleanup root Northstar repository files
@@ -137,7 +137,7 @@ jobs:
 
       - name: Make package structure
         run: |
-          mkdir -p thunderstore/dist/Northstar
+          mkdir --parents thunderstore/dist/Northstar
           mv -v northstar/* thunderstore/dist/Northstar
           wget -O thunderstore/icon.png https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/icon.png
           wget -O thunderstore/README.md https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/README.md
