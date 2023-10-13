@@ -163,9 +163,9 @@ jobs:
         run: |
           tcli init --package-name=$TS_MOD_NAME --package-namespace=$TS_NAMESPACE --package-version $MOD_VERSION
 
-          sed -i "s/communities = \[\]/communities = [\"$TS_COMMUNITY\"]/g" thunderstore.toml
-          sed -i "s/Example-Dependency = \"1.0.0\"//g" thunderstore.toml
-          sed -i "s/description = \"Example mod description\"/description = \"$TS_MOD_DESCRIPTION\"/g" thunderstore.toml
+          sed --in-place "s/communities = \[\]/communities = [\"$TS_COMMUNITY\"]/g" thunderstore.toml
+          sed --in-place "s/Example-Dependency = \"1.0.0\"//g" thunderstore.toml
+          sed --in-place "s/description = \"Example mod description\"/description = \"$TS_MOD_DESCRIPTION\"/g" thunderstore.toml
           cat thunderstore.toml
 
           tcli build
