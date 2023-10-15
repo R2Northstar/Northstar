@@ -15,12 +15,6 @@ PluginCommunicationHandler* g_pPluginCommunicationhandler;
 
 static PluginDataRequest storedRequest {PluginDataRequestType::END, (PluginRespondDataCallable) nullptr};
 
-void init_plugincommunicationhandler()
-{
-	g_pPluginCommunicationhandler = new PluginCommunicationHandler;
-	g_pPluginCommunicationhandler->requestQueue = {};
-}
-
 void PluginCommunicationHandler::RunFrame()
 {
 	std::lock_guard<std::mutex> lock(requestMutex);

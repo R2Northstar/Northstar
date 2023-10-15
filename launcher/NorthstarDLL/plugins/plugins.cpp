@@ -226,8 +226,6 @@ bool PluginManager::LoadPlugins()
 	funcs.relayInviteFunc = nullptr;
 	funcs.createObject = CreateObject;
 
-	init_plugincommunicationhandler();
-
 	data.version = ns_version.c_str();
 	data.northstarModule = g_NorthstarModule;
 

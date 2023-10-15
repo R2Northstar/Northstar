@@ -5,6 +5,7 @@
 #include "config/profile.h"
 #include "plugins/plugin_abi.h"
 #include "plugins/plugins.h"
+#include "plugins/pluginbackend.h"
 #include "util/version.h"
 #include "squirrel/squirrel.h"
 #include "shared/gamepresence.h"
@@ -62,6 +63,7 @@ bool InitialiseNorthstar()
 
 	g_pGameStatePresence = new GameStatePresence();
 	g_pPluginManager = new PluginManager();
+	g_pPluginCommunicationhandler = new PluginCommunicationHandler();
 	g_pPluginManager->LoadPlugins();
 
 	InitialiseSquirrelManagers();
