@@ -261,12 +261,22 @@ void StartupLog()
 		spdlog::info("Operating System: {} (Wine)", sysname);
 		spdlog::info("Wine build: {}", wine_get_build_id());
 
+		// STEAM_COMPAT_TOOL_PATHS is a colon separated lists of all compat tool paths used
+		// The first one tends to be the Proton path itself
+		// We extract the basename out of it to get the name used
 		char* compatToolPtr = std::getenv("STEAM_COMPAT_TOOL_PATHS");
 		if (compatToolPtr)
 		{
-			std::string compatToolPath(compatToolPtr);
+			std::string_view compatToolPath(compatToolPtr);
 
-			spdlog::info("Proton build: {}", compatToolPath.substr(compatToolPath.rfind("/") + 1));
+			auto protonBasenameEnd = compatToolPath.find(":");
+			if (protonBasenameEnd == std::string_view::npos)
+				protonBasenameEnd = 0;
+			auto protonBasenameStart = compatToolPath.rfind("/", protonBasenameEnd) + 1;
+			if (protonBasenameStart == std::string_view::npos)
+				protonBasenameStart = 0;
+
+			spdlog::info("Proton build: {}", compatToolPath.substr(protonBasenameStart, protonBasenameEnd - protonBasenameStart));
 		}
 	}
 	else
