@@ -628,6 +628,10 @@ void function SetRecalculateRespawnAsTitanStartPointCallback( entity functionref
 
 bool function ShouldEntTakeDamage_SPMP( entity ent, var damageInfo )
 {
+	// dropships are immune to being crushed
+	if ( ( IsDropship( ent ) || IsEvacDropship( ent ) ) && IsTitanCrushDamage( damageInfo ) )
+		return false
+
 	return true
 }
 
