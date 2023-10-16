@@ -3,6 +3,7 @@ on: [push, pull_request]
 
 env:
   BUILD_PROFILE: Release
+  NORTHSTAR_VERSION: 0.0.0.${{github.run_number}}
 
 jobs:
   build:
@@ -16,6 +17,13 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
       - name: Configure cmake
         run: cmake -G "Ninja" -DCMAKE_BUILD_TYPE:STRING="${{ env.BUILD_PROFILE }}"
+      - name: Setup resource file version
+        shell: bash
+        run: |
+          sed -i 's/DEV/${{ env.NORTHSTAR_VERSION }}/g' NorthstarLauncher/resources.rc
+          sed -i 's/DEV/${{ env.NORTHSTAR_VERSION }}/g' NorthstarDLL/resources.rc
+          FILEVERSION=$(echo ${{ env.NORTHSTAR_VERSION }} | tr '.' ',' | sed -E 's/-rc[0-9]+//' | tr -d '[:alpha:]')
+          sed -i "s/0,0,0,1/${FILEVERSION}/g" NorthstarDLL/ns_version.h
       - name: Build
         run: cmake --build .
       - name: Extract Short Commit Hash

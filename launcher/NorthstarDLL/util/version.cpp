@@ -11,9 +11,9 @@ void InitialiseVersion()
 	int ua_len = 0;
 
 	// We actually use the rightmost integer do determine whether or not we're a debug/dev build
-	// If it is set to 1, we are a dev build
-	// On github CI, we set this 1 to a 0 automatically as we replace the 0,0,0,1 with the real version number
-	if (northstar_version[3] == 1)
+	// If it is set to a non-zero value, we are a dev build
+	// On github CI, we set this to a 0 automatically as we replace the 0,0,0,1 with the real version number
+	if (northstar_version[3])
 	{
 		sprintf(version, "%d.%d.%d.%d+dev", northstar_version[0], northstar_version[1], northstar_version[2], northstar_version[3]);
 		ua_len += snprintf(
