@@ -1,0 +1,18 @@
+name: Post-to-Mastodon
+on: [push]
+
+env:
+  NORTHSTAR_VERSION: ${{ github.ref_name }}
+
+jobs:
+  build-northstar:
+    runs-on: ubuntu-22.04
+    steps:
+        - name: Send toot to Mastodon
+          id: mastodon
+          uses: cbrgm/mastodon-github-action@v1
+          with:
+            message: "Hello from GitHub Actions!"
+          env:
+            MASTODON_URL: ${{ secrets.MASTODON_URL }}
+            MASTODON_ACCESS_TOKEN: ${{ secrets.MASTODON_ACCESS_TOKEN }}
