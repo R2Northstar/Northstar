@@ -536,12 +536,6 @@ function ZapTarget( zapInfo, target, beamStartPos, beamEndPos, chainNum = 1 )
 	thread CreateArcCannonBeam( zapInfo.weapon, target, beamStartPos, beamEndPos, zapInfo.player, ARC_CANNON_BEAM_LIFETIME, zapInfo.radius, boltWidth, 5, true, firstBeam )
 
 	#if SERVER
-		local isMissile = ( target.GetClassName() == "rpg_missile" )
-		if ( !isMissile )
-			wait ARC_CANNON_FORK_DELAY
-		else
-			wait 0.05
-
 		local deathPackage = damageTypes.arcCannon
 
 		float damageAmount
@@ -569,40 +563,20 @@ function ZapTarget( zapInfo, target, beamStartPos, beamEndPos, chainNum = 1 )
 			bool hasFastPacitor = false
 			bool noArcing = false
 
-			if ( IsValid( zapInfo.weapon ) )
-			{
-				entity weap = expect entity( zapInfo.weapon )
-				hasFastPacitor = weap.GetWeaponInfoFileKeyField( "push_apart" ) != null && weap.GetWeaponInfoFileKeyField( "push_apart" ) == 1
-				noArcing = weap.GetWeaponInfoFileKeyField( "no_arcing" ) != null && weap.GetWeaponInfoFileKeyField( "no_arcing" ) == 1
-			}
+			entity weapon = expect entity( zapInfo.weapon )
+			hasFastPacitor = weapon.GetWeaponInfoFileKeyField( "push_apart" ) != null && weapon.GetWeaponInfoFileKeyField( "push_apart" ) == 1
+			noArcing = weapon.GetWeaponInfoFileKeyField( "no_arcing" ) != null && weapon.GetWeaponInfoFileKeyField( "no_arcing" ) == 1
+			float critScale = weapon.GetWeaponSettingFloat( eWeaponVar.critical_hit_damage_scale )
 
 			if ( target.GetArmorType() == ARMOR_TYPE_HEAVY )
 			{
-				if ( IsValid( zapInfo.weapon ) )
-				{
-					entity weapon = expect entity( zapInfo.weapon )
-					damageMin = weapon.GetWeaponSettingInt( damageFarValueTitanArmor )
-					damageMax = weapon.GetWeaponSettingInt( damageNearValueTitanArmor )
-				}
-				else
-				{
-					damageMin = 100
-					damageMax = zapInfo.player.IsNPC() ? 1200 : 800
-				}
+				damageMin = weapon.GetWeaponSettingInt( damageFarValueTitanArmor )
+				damageMax = weapon.GetWeaponSettingInt( damageNearValueTitanArmor )
 			}
 			else
 			{
-				if ( IsValid( zapInfo.weapon ) )
-				{
-					entity weapon = expect entity( zapInfo.weapon )
-					damageMin = weapon.GetWeaponSettingInt( damageFarValue )
-					damageMax = weapon.GetWeaponSettingInt( damageNearValue )
-				}
-				else
-				{
-					damageMin = 120
-					damageMax = zapInfo.player.IsNPC() ? 140 : 275
-				}
+				damageMin = weapon.GetWeaponSettingInt( damageFarValue )
+				damageMax = weapon.GetWeaponSettingInt( damageNearValue )
 
 				if ( target.IsNPC() )
 				{
@@ -612,11 +586,10 @@ function ZapTarget( zapInfo, target, beamStartPos, beamEndPos, chainNum = 1 )
 			}
 
 
-			local chargeRatio = GetArcCannonChargeFraction( zapInfo.weapon )
-			if  ( IsValid( zapInfo.weapon ) && !zapInfo.weapon.GetWeaponSettingBool( eWeaponVar.charge_require_input ) )
+			local chargeRatio = GetArcCannonChargeFraction( weapon )
+			if  ( !weapon.GetWeaponSettingBool( eWeaponVar.charge_require_input ) )
 			{
 				// use distance for damage if the weapon auto-fires
-				entity weapon = expect entity( zapInfo.weapon )
 				float nearDist = weapon.GetWeaponSettingFloat( damageNearDistance )
 				float farDist = weapon.GetWeaponSettingFloat( damageFarDistance )
 
@@ -629,9 +602,18 @@ function ZapTarget( zapInfo, target, beamStartPos, beamEndPos, chainNum = 1 )
 				damageAmount = GraphCapped( zapInfo.chargeFrac, 0, chargeRatio, damageMin, damageMax )
 			}
 			local damageFalloff = ARC_CANNON_DAMAGE_FALLOFF_SCALER
-			if ( IsValid( zapInfo.weapon ) && zapInfo.weapon.HasMod( "splitter" ) )
+			if ( weapon.HasMod( "splitter" ) )
 				damageFalloff = SPLITTER_DAMAGE_FALLOFF_SCALER
 			damageAmount *= pow( damageFalloff, chainNum - 1 )
+
+			local isMissile = ( target.GetClassName() == "rpg_missile" )
+			if ( !isMissile )
+				wait ARC_CANNON_FORK_DELAY
+			else
+				wait 0.05
+
+			if ( !IsValid( target ) || !IsValid( zapInfo.player ) )
+				return
 
 			local dmgSourceID = zapInfo.dmgSourceID
 
@@ -660,13 +642,13 @@ function ZapTarget( zapInfo, target, beamStartPos, beamEndPos, chainNum = 1 )
 				// Do 3rd person effect on the body
 				asset effect
 				string tag
-				target.TakeDamage( damageAmount, zapInfo.player, zapInfo.player, { origin = beamEndPos, force = Vector(0,0,0), scriptType = deathPackage, weapon = zapInfo.weapon, damageSourceId = dmgSourceID,criticalHitScale = zapInfo.weapon.GetWeaponSettingFloat( eWeaponVar.critical_hit_damage_scale ) } )
+				target.TakeDamage( damageAmount, zapInfo.player, zapInfo.player, { origin = beamEndPos, force = Vector(0,0,0), scriptType = deathPackage, weapon = zapInfo.weapon, damageSourceId = dmgSourceID,criticalHitScale = critScale } )
 				//vector dir = Normalize( beamEndPos - beamStartPos )
 				//vector velocity = dir * 600
 				//PushPlayerAway( target, velocity )
 				//PushPlayerAway( expect entity( zapInfo.player ), -velocity )
 
-				if ( IsValid( zapInfo.weapon ) && hasFastPacitor )
+				if ( IsValid( weapon ) && hasFastPacitor )
 				{
 					if ( IsAlive( target ) && IsAlive( expect entity( zapInfo.player ) ) && target.IsTitan() )
 					{
