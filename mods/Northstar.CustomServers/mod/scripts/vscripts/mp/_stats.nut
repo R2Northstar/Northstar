@@ -571,9 +571,11 @@ void function HandleKillStats( entity victim, entity attacker, var damageInfo )
 	// assistsTotal ( weapon_kill_stats )
 	// note: eww
 	table<int, bool> alreadyAssisted
-	foreach( DamageHistoryStruct attackerInfo in victim.e.recentDamageHistory )
+	// titans store their recentDamageHistory in the soul
+	entity assistVictim = ( victim.IsTitan() && IsValid( victim.GetTitanSoul() ) ) ? victim.GetTitanSoul() : victim 
+	foreach( DamageHistoryStruct attackerInfo in assistVictim.e.recentDamageHistory )
 	{
-		if ( !IsValid( attackerInfo.attacker ) || !attackerInfo.attacker.IsPlayer() || attackerInfo.attacker == victim )
+		if ( !IsValid( attackerInfo.attacker ) || !attackerInfo.attacker.IsPlayer() || attackerInfo.attacker == assistVictim )
 			continue
 
 		bool exists = attackerInfo.attacker.GetEncodedEHandle() in alreadyAssisted ? true : false
