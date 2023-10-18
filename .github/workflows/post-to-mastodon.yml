@@ -3,9 +3,6 @@ on:
   release:
     types: [published]
 
-env:
-  NORTHSTAR_VERSION: ${{ github.ref_name }}
-
 jobs:
   toot:
     runs-on: ubuntu-22.04
