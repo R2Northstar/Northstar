@@ -14,7 +14,7 @@ jobs:
           id: mastodon
           uses: cbrgm/mastodon-github-action@v1
           with:
-            message: "Hello from GitHub Actions!"
+            message: "We just released a new Northstar version: ${{github.event.release.tag_name}}"
           env:
             MASTODON_URL: ${{ secrets.MASTODON_URL }}
             MASTODON_ACCESS_TOKEN: ${{ secrets.MASTODON_ACCESS_TOKEN }}
