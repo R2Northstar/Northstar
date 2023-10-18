@@ -1,7 +1,7 @@
 name: Post-to-Mastodon
 on:
   release:
-    types: [ published ]
+    types: [published]
 
 env:
   NORTHSTAR_VERSION: ${{ github.ref_name }}
