@@ -202,18 +202,23 @@ void function ScoreEvent_TitanKilled( entity victim, entity attacker, var damage
 			AddPlayerScore( attacker, "KillTitan" )
 	}
 
-	table<int, bool> alreadyAssisted
-	foreach( DamageHistoryStruct attackerInfo in victim.e.recentDamageHistory )
+	entity soul = victim.GetTitanSoul()
+	if ( IsValid( soul ) )
 	{
-		if ( !IsValid( attackerInfo.attacker ) || !attackerInfo.attacker.IsPlayer() || attackerInfo.attacker == victim )
-			continue
-			
-		bool exists = attackerInfo.attacker.GetEncodedEHandle() in alreadyAssisted ? true : false
-		if( attackerInfo.attacker != attacker && !exists )
+		table<int, bool> alreadyAssisted
+		
+		foreach( DamageHistoryStruct attackerInfo in soul.e.recentDamageHistory )
 		{
-			alreadyAssisted[attackerInfo.attacker.GetEncodedEHandle()] <- true
-			AddPlayerScore(attackerInfo.attacker, "TitanAssist" )
-			Remote_CallFunction_NonReplay( attackerInfo.attacker, "ServerCallback_SetAssistInformation", attackerInfo.damageSourceId, attacker.GetEncodedEHandle(), victim.GetEncodedEHandle(), attackerInfo.time ) 
+			if ( !IsValid( attackerInfo.attacker ) || !attackerInfo.attacker.IsPlayer() || attackerInfo.attacker == soul )
+				continue
+			
+			bool exists = attackerInfo.attacker.GetEncodedEHandle() in alreadyAssisted ? true : false
+			if( attackerInfo.attacker != attacker && !exists )
+			{
+				alreadyAssisted[attackerInfo.attacker.GetEncodedEHandle()] <- true
+				AddPlayerScore(attackerInfo.attacker, "TitanAssist" )
+				Remote_CallFunction_NonReplay( attackerInfo.attacker, "ServerCallback_SetAssistInformation", attackerInfo.damageSourceId, attacker.GetEncodedEHandle(), soul.GetEncodedEHandle(), attackerInfo.time ) 
+			}
 		}
 	}
 
