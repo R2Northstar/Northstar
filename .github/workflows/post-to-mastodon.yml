@@ -7,7 +7,7 @@ env:
   NORTHSTAR_VERSION: ${{ github.ref_name }}
 
 jobs:
-  build-northstar:
+  toot:
     runs-on: ubuntu-22.04
     steps:
         - name: Send toot to Mastodon
