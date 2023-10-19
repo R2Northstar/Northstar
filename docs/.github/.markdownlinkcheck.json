@@ -1,0 +1,7 @@
+{
+    "ignorePatterns": [
+        {
+            "pattern": "https://help.ea.com/en/help/pc/link-ea-and-steam/"
+        }
+    ]
+}
