@@ -58,6 +58,9 @@
   * [Testing](development/testing.md)
   * [Reviewing](development/reviewing.md)
   * [Releases](development/releases.md)
+  * [Debugging](development/debugging/README.md)
+    * [Visual Studio](development/debugging/visualstudio.md)
+    * [x64dbg](development/debugging/x64dbg.md)
 
 ## Other
 
