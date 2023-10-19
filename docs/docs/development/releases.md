@@ -81,7 +81,14 @@ The current process of making release (includinging release candidate) is:
 
 12. Update main menu promos version on Atlas
 
-13. Observe version roll-out via [Grafana dashboard](https://northstar-stats.frontier.tf/).
+13. Push Docker image
+    1. Get SHA512 checksum of zip from release CI
+    2. Make PR to [Docker repo](https://github.com/pg9182/northstar-dedicated) to update Docker image to newest Northstar release
+    3. Merge PR
+    4. Wait for Docker repo CI to finish
+    5. Approve image
+
+14. Observe version roll-out via [Grafana dashboard](https://northstar-stats.frontier.tf/).
 
 ### Git commands for tags:
 
