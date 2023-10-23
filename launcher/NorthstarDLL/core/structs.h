@@ -35,28 +35,43 @@ OFFSET_STRUCT(Name)
 // Special case for a 0-offset field
 #define STRUCT_FIELD_NOOFFSET(offset, signature) signature;
 
-// Based on: https://stackoverflow.com/questions/11632219/c-preprocessor-macro-specialisation-based-on-an-argument
-// Yes, this is hacky, but it works quite well actually
-// This basically makes sure that when the offset is 0x0, no padding field gets generated
-#define OFFSET_0x0 ()
+// Just puts two tokens next to each other, but
+// allows us to force the preprocessor to do another pass
+#define FX(f, x) f x
 
-#define IIF(c) CONCAT2(IIF_, c)
-#define IIF_0(t, ...) __VA_ARGS__
-#define IIF_1(t, ...) t
+// Macro used to detect if the given offset is 0 or not
+#define TEST_0 ,
+// MSVC does no preprocessing of integer literals.
+// On other compilers `0x0` gets processed into `0`
+#define TEST_0x0 ,
 
-#define PROBE(x) x, 1
-#define MSVC_VA_ARGS_WORKAROUND(define, args) define args
-#define CHECK(...) MSVC_VA_ARGS_WORKAROUND(CHECK_N, (__VA_ARGS__, 0))
-#define DO_PROBE(offset) PROBE_PROXY(OFFSET_##offset) // concatenate prefix with offset
-#define PROBE_PROXY(...) PROBE_PRIMITIVE(__VA_ARGS__) // expand arguments
-#define PROBE_PRIMITIVE(x) PROBE_COMBINE_##x // merge
-#define PROBE_COMBINE_(...) PROBE(~) // if merge successful, expand to probe
+// Concats the first and third argument and drops everything else
+// Used with preprocessor expansion in later passes to move the third argument to the fourth and change the value
+#define ZERO_P_I(a, b, c, ...) a##c
 
-#define CHECK_N(x, n, ...) n
+// We use FX to prepare to use ZERO_P_I.
+// The right block contains 3 arguments:
+// NIF_
+// CONCAT2(TEST_, offset)
+// 1
+//
+// If offset is not 0 (or 0x0) the preprocessor replaces
+// it with nothing and the third argument stays 1
+//
+// If the offset is 0, TEST_0 expands to , and 1 becomes the fourth argument
+//
+// With those arguments we call ZERO_P_I and the first and third arugment get concat.
+// We either end up with:
+// NIF_ (if offset is 0) or
+// NIF_1 (if offset is not 0)
+#define IF_ZERO(m) FX(ZERO_P_I, (NIF_, CONCAT2(TEST_, m), 1))
 
-#define IS_0(offset) CHECK(DO_PROBE(offset))
+// These macros are used to branch after we processed if the offset is zero or not
+#define NIF_(t, ...) t
+#define NIF_1(t, ...) __VA_ARGS__
 
-#define FIELD(offset, signature) IIF(IS_0(offset))(STRUCT_FIELD_NOOFFSET, STRUCT_FIELD_OFFSET)(offset, signature)
+// FIELD(S), generates an anonymous struct when a non 0 offset is given, otherwise just a signature
+#define FIELD(offset, signature) IF_ZERO(offset)(STRUCT_FIELD_NOOFFSET, STRUCT_FIELD_OFFSET)(offset, signature)
 #define FIELDS FIELD
 
 //clang-format on
