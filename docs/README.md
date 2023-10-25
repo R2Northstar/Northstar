@@ -24,10 +24,10 @@ To install mdBook use the following link if:
 - [you **DON'T** have Rust toolchain installed](https://rust-lang.github.io/mdBook/guide/installation.html#pre-compiled-binaries)
 
 #### mdBook-linkcheck
-Additionally there's a community-made package that you can use alongside mdBook to show you some potentially broken links in markdown files called [mdBook-linkcheck](https://github.com/Michael-F-Bryan/mdbook-linkcheck)
+Additionally there's a community-made package that you can use alongside mdBook to show you some potentially broken links in markdown files called [`mdBook-linkcheck`](https://github.com/Michael-F-Bryan/mdbook-linkcheck)
 
 Although not required, you may find it helpful to use alongside mdBook to ensure you've linked things properly
 
 To install mdBook-linkcheck use the following link if:
 - [you have Rust toolchain installed](https://github.com/Michael-F-Bryan/mdbook-linkcheck#getting-started)
-- [you DON'T have Rust toolchain installed](https://github.com/Michael-F-Bryan/mdbook-linkcheck/releases/latest) (add `mdBook-linkcheck.exe` to the same folder `mdBook.exe` is located)
+- [you **DON'T** have Rust toolchain installed](https://github.com/Michael-F-Bryan/mdbook-linkcheck/releases/latest) (add `mdBook-linkcheck.exe` to the same folder `mdBook.exe` is located)
