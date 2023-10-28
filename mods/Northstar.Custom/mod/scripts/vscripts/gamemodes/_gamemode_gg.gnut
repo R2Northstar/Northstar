@@ -18,14 +18,6 @@ void function GamemodeGG_Init()
 	AddCallback_GameStateEnter( eGameState.WinnerDetermined, OnWinnerDetermined )
 
 	AddCallback_GGEarnMeterFull( OnGGEarnMeterFilled )
-
-	// set scorelimit if it's wrong, sort of a jank way to do it but best i've got rn
-	try
-	{
-		if ( GetCurrentPlaylistVarInt( "scorelimit", GetGunGameWeapons().len() ) != GetGunGameWeapons().len() )
-			SetPlaylistVarOverride( "scorelimit", GetGunGameWeapons().len().tostring() )
-	}
-	catch ( ex ) {}
 }
 
 void function OnPlayerDisconnected(entity player)
