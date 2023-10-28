@@ -23,7 +23,7 @@ Cheatsheet
 
 - `NoSkill modding guide (highly recommended to check out)
   <https://noskill.gitbook.io/titanfall2/>`_
-- `Tools for modding <tools.md>`_
+- :doc:`Tools for modding <./guides/tools/index>`
 - `All the Squirrel Constants
   <https://gist.github.com/laundmo/825c4708663a179b23e144402b09244f>`_
 - `Modding Documentation
