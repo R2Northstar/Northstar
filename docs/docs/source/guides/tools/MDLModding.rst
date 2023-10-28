@@ -26,8 +26,6 @@ Prequisites
         - `Portal 2 <https://store.steampowered.com/app/620/Portal_2/>`__ (and its Authoring Tools `Portal 2 SDK <https://developer.valvesoftware.com/wiki/Authoring_Tools/SDK_(Portal_2)>`__)  
 
         - `SourceFilmMaker <https://store.steampowered.com/app/1840/Source_Filmmaker/>`__ (FREE)
-
-        - `Alien Swarm <https://store.steampowered.com/app/630/Alien_Swarm/>`__ (FREE) (and its Authoring Tools `Alien Swarm SDK <https://developer.valvesoftware.com/wiki/Authoring_Tools/SDK_(Alien_Swarm)>`__)
               
 •	`mdlshit <https://github.com/headassbtw/mdlshit>`__ 
 •	`Harmony VPK <https://github.com/harmonytf/HarmonyVPKTool>`__ (optional if you want to extract the model yourself)
