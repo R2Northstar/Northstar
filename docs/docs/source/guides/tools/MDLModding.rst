@@ -338,6 +338,7 @@ Step 7: Compiling the model
 - Select the ``Compile`` tab on the top.
 - Click on the ``Browse`` button on the top right.
 - Select the ``.qc`` file you want to compile (for example ``ptpov_vinson.qc``).
+- Choose your game from the dropdown labeled ``Games that has the model compiler`` (for example ``Portal 2``)
 - Press the ``Compile`` button.
 - Crowbar now compiles the model and outputs the files to the ``compiled`` folder in the same folder as the ``.qc`` file, inside the ``compiled`` folder you will find the full folder path of the model (for example ``models\weapons\vinson\``).
   
@@ -378,4 +379,4 @@ The following words correspond to the following:
 ``Crowbar ERROR: The model compiler, "<filename>", does not exist.``
 
 ``Crowbar ERROR: The game's "<filename>" file does not exist.``
-    Mostly happens if you did not properly set up Crowbar, make sure you followed the steps in `Setup Crowbar </guides/tools/mdlmodding.html#setup-crowbar-one-time-only>`__.
+    Mostly happens if you did not properly set up Crowbar, make sure you set the ``Game that has the model compiler`` to `your prerequisite game <https://r2northstar.readthedocs.io/en/latest/guides/tools/MDLModding.html#prequisites>`__.
