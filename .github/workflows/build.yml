@@ -60,7 +60,7 @@ jobs:
           mkdir -p northstar/bin/x64_dedi
 
           unzip northstar-discord-rpc.zip -d northstar/R2Northstar/plugins
-          
+
           unzip NorthstarStubs.zip -d northstar/bin/x64_dedi
           unzip northstar-launcher.zip -d northstar
           rsync -avr --exclude="Northstar.Coop" --exclude=".git*" northstar-mods/. northstar/R2Northstar/mods
