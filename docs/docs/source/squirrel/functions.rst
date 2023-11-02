@@ -1,136 +1,148 @@
-Functions
-=========
+Functions & Closures
+====================
 
-The vast majority of GNUT modding within northstar will be done through functions, so understanding the syntax of functions is important.
+Functions are an integral part of any programming language. They allow to repeat blocks of code whenever and however often is needed.
 
 Declaring Functions
 -------------------
 
-Functions in squirrel are first defined by stating the **return type** (output) followed by the keyword **function**. For example, if you wanted to define a function that returns TRUE or FALSE you would type:
+Functions in squirrel are defined with this syntax: ``<return type> function <name>(<parameters>) <body>``
+
+For example, a simple function that returns either ``true`` or ``false`` would look like this:
 
 .. code-block::
 
-  bool function ReturnTrueOrFalse()
+  bool function CoinFlip()
   {
-    return bool( RandomInt( 2 ) ) // generate a number from 0 - 1
+    return RandomInt( 2 ) == 0 // generate a random number from 0 - 1
   }
 
-It is not possible to override a function with different parameters or return types. Every function needs a unique name from every function in the same script and every global function or variable.
+It is not possible to have multiple functions that share the same name (often called "overriding" functions). Every function needs to have an unique name from any global or local variable or function.
 
-If you don't want to return anything, use ``void`` as the return type. This indicates that your function returns ``null``.
+Returning Data
+--------------
 
-If a function is lacking a ``return`` statement or a return value, it will return ``null``. For example:
+If you need some data after a function is finished (for example after a calculation), you need to return that data.
+
+You can return anything, however the type of the returned variable needs to match with the return type of the function.
 
 .. code-block::
 
-  void function ThisDoesStuff()
+   string function GetNorthstarName()
+   {
+    return "Northstar" // this would be valid
+    return 1 // this would be invalid because the function needs to return a string
+   }
+
+Keep in mind that no code after a return statement will get executed.
+
+If you don't want to return any value, use ``void`` as the return type. This indicates that your function returns ``null``.
+
+If nothing is returned by a function, ``null`` will get returned implicitly.
+
+.. code-block::
+
+  void function ReturnNull()
   {
+    // return null regardless what happens, this all does the same
     switch( RandomInt( 3 ) )
     {
       case 0:
         return
       case 1:
         return null
-      case 2:
-        break
     }
-    // only if a 2 was rolled, code here will be executed.
-    // because the function ends without a return statement, null is getting returned implicitly 
+
+    // only if a 2 was rolled, code here will be executed before the other paths already returned.
+    // because a return statement is lacking, null is getting returned implicitly.
   }
 
-Optional Parameters
+In ``untyped`` files you may leave out the return type. In those cases the return type will default to ``var``.
+
+Parameters
+----------
+
+Parameters are the input a function gets when called. They are local variables whose values come from the calling function.
+
+.. code-block::
+
+   void function main()
+   {
+    int refcount = 0
+    refcount = IncreaseRefcount( refcount )
+    Assert( refcount == 1 )
+   }
+
+   int function IncreaseRefcount( int n )
+   {
+    return n + 1
+   }
+
+Optional parameters
 -------------------
 
-Optional parameters aren't required to call the function and will be assigned a default value if nothing was passed.
+Sometimes you need parameters that are optional for a function, like extra options. If a parameter name is followed by ``= <default-value>``, that parameter is not required to call the function.
 
-To make a parameter optional, add a default after the parameter
-
-.. code-block::
-
-  void function OptionalExample( string msg = "default parameter", optional2 = 1 )
-  {
-    printt( msg )
-  }
-
-  OptionalExample( "passed parameter" ) // prints: "passed parameter"
-  OptionalExample() // prints "default parameter"
-
-Optional parameters must be declared after all required parameters.
-
-Passing Functions as parameters
--------------------------------
-
-If you want to pass a function as a parameter to another function, for example as a callback set their type as ``[return type] functionref( [parameters] )``.
+Optional parameters need to be the last parameters of a function.
 
 .. code-block::
 
-  void function FnLiteral( int req, int opt = 2 )
-  {
-    printt( req + opt )
-  }
+   void function main()
+   {
+    array a = [ 1, 2, 3, 4 ]
+    PopN( a )
+    PopN( a, 2 )
 
-  void function CallLiteral( void functionref( int, int ) literal )
-  {
-    literal( RandomInt( 5 ) )
-  }
+    Assert( a.len() == 1 )
+   }
 
-  CallLiteral( FnLiteral )
-
-
-.. note ::
-
-  In ``untyped`` files you may leave out the return type of the function reference. Like in function declarations this will default to ``var`` being the return type.
-
-Calling Functions
------------------
-
-You can call functions with opening and closing brackets containing all parameters or with the call function.
-
-You can also call functions with an array of parameters
-
-.. code-block::
-
-  void function FnLiteral( int opt = 2, int opt2 = 2 )
-  {
-    print( opt + opt2 )
-  }
-
-  FnLiteral() // 4
-  FnLiteral( 1, 2 ) // 3
-  FnLiteral.call( 3, 4 ) // 7
-
-  array<int> args = [ 6, 7 ]
-  FnLiteral.acall( args ) // 13
-
-Implicit parameters
--------------------
-
-If you don't know how many parameters you get at compile time, you can use implicit parameters.
-
-.. code-block::
-
-  void function XParameters( string required, string optional = "", ... )
-  {
-    for( int i; i < vargc, i++)
+   void function PopN( array arr, int n = 1 )
+   {
+    for ( int i; i < n; i++ )
     {
-      var parameter = vargv[i]
-      print( parameter )
+      arr.pop()
     }
-  }
+   }
 
-  XParameters( "req", "optional", 1, 2, [ 3, 4, 5 ], { tableKey = "string" } ) // prints 1, 2, [array instance], [table instance]
-  XParameters( "req", "opt" )
+vargs
+-----
 
-Implicit Capture
-----------------
+With vargs you can pass a function an unlimited amount of parameters. The parameters will be inside a pseudo array called ``vargv``. The length of the vargs the function receives will be stored inside a variable called ``vargc``.
 
-It's not possible to use locals from a parent function, but it is possible to capture them in an anonymous functions. 
+You can denote a function to have vargs with adding ``...`` to the end of the parameter list.
 
 .. code-block::
 
-  void function ParentFunc()
-  {
-    var capture = Hud_GetChild( GetMenu( "ModListMenu" ), "MouseMovementCapture" )
-    AddMouseMovementCaptureHandler( capture, void function( int x, int y ) : ( capture ) { print( format( "registered mouse input from capture %s in x: %i; y: %i", capture.tostring(), x, y ) ) } )
-  }
+   string function CombineStuff( string base, ... )
+   {
+    string s = base
+    for ( int i; i < argc; i++ )
+    {
+      base += vargv[i].tostring()
+    }
+   }
 
+Closures
+--------
+
+Closures are functions that are anonymous (unnamed) functions created in a specific script context that can use variables from the parent scope.
+
+.. code-block::
+
+   void function main()
+   {
+    void functionref() fn = void function(){ print( "I'm a closure" ) } // create a closure
+    fn() // call the closure
+   }
+
+Closures can capture variables from their parent scope.
+
+.. code-block::
+
+   void function PlayFXOnEntity( entity ent )
+   {
+      int fxHandle = StartParticleEffectOnEntity( ent, PILOT_THROWN_TICK_WARNING, FX_ATTACH_POINT_FOLLOW, ent.LookupAttachment( "head_base" )
+      OnThreadEnd( void function() : ( fxHandle ){ EffectStop( fxHandle, false, true ) } ) // create a function to stop the fx effect and give it the fx handle it needs
+      ent.EndSignal( "OnDestroy" ) // stop the thread when the entity dies
+      WaitForever()
+   }
