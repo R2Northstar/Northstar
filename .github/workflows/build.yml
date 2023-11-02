@@ -20,6 +20,9 @@ jobs:
   build-northstar:
     runs-on: ubuntu-20.04
     steps:
+      - name: Wait for launcher release build to be ready
+        run:
+          bash wait_dl.sh
       - name: Download compiled launcher
         run:
           wget "https://github.com/R2Northstar/NorthstarLauncher/releases/download/${{ env.NORTHSTAR_VERSION }}/northstar-launcher.zip"
