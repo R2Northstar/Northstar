@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Wait for launcher release build to be ready
+        timeout-minutes: 30 # Only wait for 30 minutes. If we take longer, something probably broke
         run:
           bash wait_dl.sh
       - name: Download compiled launcher
