@@ -82,7 +82,7 @@ jobs:
       - name: Cleanup root Northstar repository files
         working-directory: northstar
         run: |
-          rm -rf .git .github .gitignore *.md LICENSE thunderstore .ci.env.example
+          rm -rf .git .github .gitignore *.md LICENSE thunderstore .ci.env.example *.sh
       - name: Upload
         uses: actions/upload-artifact@v3
         with:
