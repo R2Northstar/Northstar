@@ -1,9 +1,14 @@
 rSquirrel
 =========
 
-Squirrel is the programming language used by Respawn to code Titanfall 2, however it was
-heavily modified fron the original version, it was roughly forked at version 2.3 . The
-most notable change is the additon of types to the language.
+Squirrel is the programming language used by Respawn. A lot of the logic for the game is written in squirrel scripts because of how convenient it is, even for people with little programming knowledge.
+
+Squirrel is an dynamically typed interpreted language that is compiled to bytecode when loading.
+The version of squirrel used by Respawn is heavily modified. Most notable is the added optional static typing of the language.
+
+Respawn's fork branched off at version 2.3 of vanilla squirrel so newer features do not exist, like generators.
+
+Because of how different Respawn's fork of squirrel is, the language is often called "rSquirrel" or "squirrel_re" (the official name found in Apex Legends).
 
 Syntax Highlighting
 -------------------
@@ -29,16 +34,8 @@ the top 2. Navigate through the tabs to find what you want to change 3. Click it
 VSCode
 ------
 
-VSCode has extensions avaliable for working with squirrel, and searching "squirrel" in
-the extensions marketplace will give you them.
-
-However, installing this will only create an associastion for .nut files, and not .gnut
-files. To fix this:
-
-1. Open a .gnut file
-2. Do CTRL+K, M (not CTRL+K, CTRL+M)
-3. Select ``Configure File Association for .gnut``
-4. Select ``Squirrel`` (only appears if you have the extension)
+1. Download the [extension](https://discord.com/channels/920776187884732556/950322078945538058/1144711876123574392)
+2. Unpack the zip in the extension folder in your vscode install location
 
 Kate
 ----
@@ -52,7 +49,7 @@ Kate
     :caption: Squirrel
 
     /squirrel/intro
-    /squirrel/complex_types
+    /squirrel/types/index
     /squirrel/functions
     /squirrel/statements
     /squirrel/class
