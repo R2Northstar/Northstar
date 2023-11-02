@@ -20,10 +20,15 @@ jobs:
   build-northstar:
     runs-on: ubuntu-20.04
     steps:
+      - name: Checkout release files
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ env.NORTHSTAR_VERSION }}
+          path: northstar
       - name: Wait for launcher release build to be ready
         timeout-minutes: 30 # Only wait for 30 minutes. If we take longer, something probably broke
         run:
-          bash wait_for_launcher_dl.sh
+          bash northstar/wait_for_launcher_dl.sh
       - name: Download compiled launcher
         run:
           wget "https://github.com/R2Northstar/NorthstarLauncher/releases/download/${{ env.NORTHSTAR_VERSION }}/northstar-launcher.zip"
@@ -33,11 +38,6 @@ jobs:
       - name: Download compiled stubs
         run:
           wget "https://github.com/R2Northstar/NorthstarStubs/releases/download/v1/NorthstarStubs.zip"
-      - name: Checkout release files
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ env.NORTHSTAR_VERSION }}
-          path: northstar
       - name: Checkout core mods
         uses: actions/checkout@v3
         with:
