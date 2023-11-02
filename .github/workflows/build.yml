@@ -57,17 +57,15 @@ jobs:
           git ls-tree -r $NORTHSTAR_VERSION --name-only | xargs -L1 md5sum >> md5sum.txt
       - name: Make folder structure
         run: |
-          mv -v northstar/release/* northstar/.
-          rm -d northstar/release
-          mkdir -p northstar/R2Northstar/mods
-          mkdir -p northstar/R2Northstar/plugins
-          mkdir -p northstar/bin/x64_dedi
+          mkdir -p northstar/release/R2Northstar/mods
+          mkdir -p northstar/release/R2Northstar/plugins
+          mkdir -p northstar/release/bin/x64_dedi
 
-          unzip northstar-discord-rpc.zip -d northstar/R2Northstar/plugins
+          unzip northstar-discord-rpc.zip -d northstar/release/R2Northstar/plugins
 
-          unzip NorthstarStubs.zip -d northstar/bin/x64_dedi
+          unzip NorthstarStubs.zip -d northstar/release/bin/x64_dedi
           unzip northstar-launcher.zip -d northstar
-          rsync -avr --exclude="Northstar.Coop" --exclude=".git*" northstar-mods/. northstar/R2Northstar/mods
+          rsync -avr --exclude="Northstar.Coop" --exclude=".git*" northstar-mods/. northstar/release/R2Northstar/mods
       - name: Checkout Navmesh repository
         uses: actions/checkout@v3
         with:
@@ -76,9 +74,9 @@ jobs:
           path: northstar-navs
       - name: Navmeshes setup
         run: |
-          mkdir -p northstar/R2Northstar/mods/Northstar.CustomServers/mod/maps
-          mv -v northstar-navs/graphs northstar/R2Northstar/mods/Northstar.CustomServers/mod/maps
-          mv -v northstar-navs/navmesh northstar/R2Northstar/mods/Northstar.CustomServers/mod/maps
+          mkdir -p northstar/release/R2Northstar/mods/Northstar.CustomServers/mod/maps
+          mv -v northstar-navs/graphs northstar/release/R2Northstar/mods/Northstar.CustomServers/mod/maps
+          mv -v northstar-navs/navmesh northstar/release/R2Northstar/mods/Northstar.CustomServers/mod/maps
       - name: Cleanup root Northstar repository files
         working-directory: northstar
         run: |
@@ -90,7 +88,7 @@ jobs:
           path: northstar
       - name: Create zip to upload
         run: |
-          cd northstar/
+          cd northstar/release/
           zip --recurse-paths --quiet Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip .
           mv Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip ../
       - name: Compute SHA-512 checksum
@@ -142,7 +140,7 @@ jobs:
       - name: Make package structure
         run: |
           mkdir -p thunderstore/dist/Northstar
-          mv -v northstar/* thunderstore/dist/Northstar
+          mv -v northstar/release/* thunderstore/dist/Northstar
           wget -O thunderstore/icon.png https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/icon.png
           wget -O thunderstore/README.md https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/README.md
 
