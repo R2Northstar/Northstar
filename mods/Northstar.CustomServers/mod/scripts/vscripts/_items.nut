@@ -10231,6 +10231,10 @@ void function StatUnlock_Unlocked( entity player, string itemRef, string parentR
 	if ( IsItemNew( player, itemRef, parentRef ) )
 		return
 
+	// early out if the player has progression disabled
+	if ( !ProgressionEnabledForPlayer( player ) )
+		return
+
 	int refGuid = file.itemRefToGuid[itemRef]
 	int parentRefGuid = parentRef == "" ? 0 : file.itemRefToGuid[parentRef]
 
