@@ -587,7 +587,7 @@ void function HandleKillStats( entity victim, entity attacker, var damageInfo )
 			string source = DamageSourceIDToString( attackerInfo.damageSourceId )
 
 			if ( IsValidStatItemString( source ) )
-				Stats_IncrementStat( attacker, "weapon_kill_stats", "assistsTotal", source, 1.0 )
+				Stats_IncrementStat( attackerInfo.attacker, "weapon_kill_stats", "assistsTotal", source, 1.0 )
 		}
 	}
 
