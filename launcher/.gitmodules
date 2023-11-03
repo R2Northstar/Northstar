@@ -6,3 +6,6 @@
 	path = thirdparty/minhook
 	url = https://github.com/TsudaKageyu/minhook
 	ignore = untracked
+[submodule "thirdparty/minizip"]
+	path = thirdparty/minizip
+	url = https://github.com/zlib-ng/minizip-ng.git

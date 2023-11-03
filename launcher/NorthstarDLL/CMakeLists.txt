@@ -2,6 +2,7 @@
 
 find_package(minhook REQUIRED)
 find_package(libcurl REQUIRED)
+find_package(minizip REQUIRED)
 
 add_library(NorthstarDLL SHARED
             "resources.rc"
@@ -73,6 +74,8 @@ add_library(NorthstarDLL SHARED
             "logging/sourceconsole.h"
             "masterserver/masterserver.cpp"
             "masterserver/masterserver.h"
+            "mods/autodownload/moddownloader.h"
+            "mods/autodownload/moddownloader.cpp"
             "mods/compiled/kb_act.cpp"
             "mods/compiled/modkeyvalues.cpp"
             "mods/compiled/modpdef.cpp"
@@ -156,6 +159,7 @@ add_library(NorthstarDLL SHARED
 target_link_libraries(NorthstarDLL PRIVATE
                       minhook
                       libcurl
+                      minizip
                       WS2_32.lib
                       Crypt32.lib
                       Cryptui.lib
