@@ -268,7 +268,7 @@ void function ValidateEquippedItems( entity player )
 		// camoIndex
 		if ( loadout.skinIndex == TITAN_SKIN_INDEX_CAMO )
 		{
-			array<ItemData> camoSkins = GetAllItemsOfType( eItemTypes.CAMO_SKIN )
+			array<ItemData> camoSkins = GetAllItemsOfType( eItemTypes.CAMO_SKIN_TITAN )
 			if ( loadout.camoIndex >= camoSkins.len() || loadout.camoIndex < 0 )
 			{
 				printt( "  - INVALID TITAN CAMO/SKIN, RESETTING" )
@@ -363,7 +363,7 @@ void function ValidateEquippedItems( entity player )
 		// primeCamoIndex
 		if ( loadout.primeSkinIndex == TITAN_SKIN_INDEX_CAMO )
 		{
-			array<ItemData> camoSkins = GetAllItemsOfType( eItemTypes.CAMO_SKIN )
+			array<ItemData> camoSkins = GetAllItemsOfType( eItemTypes.CAMO_SKIN_TITAN )
 			if ( loadout.primeCamoIndex >= camoSkins.len() || loadout.primeCamoIndex < 0 )
 			{
 				printt( "  - INVALID TITAN CAMO/SKIN, RESETTING" )
