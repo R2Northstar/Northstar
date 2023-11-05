@@ -8,6 +8,7 @@
 #include "core/tier0.h"
 #include "plugins/plugin_abi.h"
 #include "plugins/plugins.h"
+#include "ns_version.h"
 
 #include <any>
 
@@ -256,7 +257,16 @@ template <ScriptContext context> void SquirrelManager<context>::VMCreated(CSquir
 
 		defconst(m_pSQVM, pair.first.c_str(), bWasFound);
 	}
+
 	defconst(m_pSQVM, "MAX_FOLDER_SIZE", GetMaxSaveFolderSize() / 1024);
+
+	// define squirrel constants for northstar(.dll) version
+	constexpr int version[4] {NORTHSTAR_VERSION};
+	defconst(m_pSQVM, "NS_VERSION_MAJOR", version[0]);
+	defconst(m_pSQVM, "NS_VERSION_MINOR", version[1]);
+	defconst(m_pSQVM, "NS_VERSION_PATCH", version[2]);
+	defconst(m_pSQVM, "NS_VERSION_DEV", version[3]);
+
 	g_pSquirrel<context>->messageBuffer = new SquirrelMessageBuffer();
 	g_pPluginManager->InformSQVMCreated(context, newSqvm);
 }
