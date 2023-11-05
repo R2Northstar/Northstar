@@ -129,7 +129,7 @@ std::optional<Plugin> PluginManager::LoadPlugin(fs::path path, PluginInitFuncs* 
 	if (strcmp(manifestJSON["api_version"].GetString(), std::to_string(ABI_VERSION).c_str()))
 	{
 		NS::log::PLUGINSYS->error(
-			"'{}' has an incompatible API version number '{}' in its manifest. Current ABI version is '{}'", pathstring, ABI_VERSION);
+			"'{}' has an incompatible API version number in its manifest. Current ABI version is '{}'", pathstring, ABI_VERSION);
 		return std::nullopt;
 	}
 	// Passed all checks, going to actually load it now
