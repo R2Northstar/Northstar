@@ -295,6 +295,10 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 	})
 
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	entity inflictor = DamageInfo_GetInflictor( damageInfo )
+	int eHandle = attacker.GetEncodedEHandle()
+	if ( inflictor && ShouldTryUseProjectileReplay( player, attacker, damageInfo, false ) )
+		eHandle = inflictor.GetEncodedEHandle()
 	int methodOfDeath = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 
 	table<int, bool> alreadyAssisted
@@ -374,7 +378,7 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 		if ( "respawnTime" in attacker.s )
 			respawnTime = Time() - expect float ( attacker.s.respawnTime )
 		
-		thread PlayerWatchesKillReplayWrapper( player, attacker, respawnTime, timeOfDeath, beforeTime, replayTracker )		
+		thread PlayerWatchesKillReplayWrapper( player, attacker, eHandle, respawnTime, timeOfDeath, beforeTime, replayTracker )		
 	}
 
 	player.SetPlayerSettings( "spectator" ) // prevent a crash with going from titan => pilot on respawn
@@ -432,7 +436,7 @@ void function ForceRespawnMeSignalAfterDelay( entity player, int delay = 5 )
 	player.Signal( "RespawnMe" )
 }
 
-void function PlayerWatchesKillReplayWrapper( entity player, entity attacker, float timeSinceAttackerSpawned, float timeOfDeath, float beforeTime, table replayTracker )
+void function PlayerWatchesKillReplayWrapper( entity player, entity attacker, int eHandle, float timeSinceAttackerSpawned, float timeOfDeath, float beforeTime, table replayTracker )
 {
 	player.EndSignal( "RespawnMe" )
 	player.EndSignal( "OnRespawned" )
@@ -455,7 +459,7 @@ void function PlayerWatchesKillReplayWrapper( entity player, entity attacker, fl
 	})
 	
 	player.SetPredictionEnabled( false )
-	PlayerWatchesKillReplay( player, attacker.GetEncodedEHandle(), attacker.GetIndexForEntity(), timeSinceAttackerSpawned, timeOfDeath, beforeTime, replayTracker )
+	PlayerWatchesKillReplay( player, eHandle, attacker.GetIndexForEntity(), timeSinceAttackerSpawned, timeOfDeath, beforeTime, replayTracker )
 }
 
 void function DecideRespawnPlayer( entity player )
