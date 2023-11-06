@@ -7,6 +7,8 @@
 
 #include "core/convar/concommand.h"
 
+#include <filesystem>
+
 #define EXPORT extern "C" __declspec(dllexport)
 
 AUTOHOOK_INIT()
@@ -36,52 +38,13 @@ void PluginCommunicationHandler::PushRequest(PluginDataRequestType type, PluginR
 	requestQueue.push(PluginDataRequest {type, func});
 }
 
-void PluginCommunicationHandler::GeneratePresenceObjects()
+void InformPluginsDLLLoad(fs::path dllPath, void* address)
 {
-	PluginGameStatePresence presence {};
+	std::string dllName = dllPath.filename().string();
 
-	presence.id = g_pGameStatePresence->id.c_str();
-	presence.name = g_pGameStatePresence->name.c_str();
-	presence.description = g_pGameStatePresence->description.c_str();
-	presence.password = g_pGameStatePresence->password.c_str();
+	void* data = NULL;
+	if (strncmp(dllName.c_str(), "engine.dll", 10) == 0)
+		data = &g_pPluginCommunicationhandler->m_sEngineData;
 
-	presence.isServer = g_pGameStatePresence->isServer;
-	presence.isLocal = g_pGameStatePresence->isLocal;
-
-	if (g_pGameStatePresence->isLoading)
-		presence.state = GameState::LOADING;
-	else if (g_pGameStatePresence->uiMap == "")
-		presence.state = GameState::MAINMENU;
-	else if (g_pGameStatePresence->map == "mp_lobby" && g_pGameStatePresence->isLocal && g_pGameStatePresence->isLobby)
-		presence.state = GameState::LOBBY;
-	else
-		presence.state = GameState::INGAME;
-
-	presence.map = g_pGameStatePresence->map.c_str();
-	presence.mapDisplayname = g_pGameStatePresence->mapDisplayname.c_str();
-	presence.playlist = g_pGameStatePresence->playlist.c_str();
-	presence.playlistDisplayname = g_pGameStatePresence->playlistDisplayname.c_str();
-
-	presence.currentPlayers = g_pGameStatePresence->currentPlayers;
-	presence.maxPlayers = g_pGameStatePresence->maxPlayers;
-	presence.ownScore = g_pGameStatePresence->ownScore;
-	presence.otherHighestScore = g_pGameStatePresence->otherHighestScore;
-	presence.maxScore = g_pGameStatePresence->maxScore;
-	presence.timestampEnd = g_pGameStatePresence->timestampEnd;
-	g_pPluginManager->PushPresence(&presence);
-}
-
-ON_DLL_LOAD_RELIESON("engine.dll", PluginBackendEngine, ConCommand, (CModule module))
-{
-	g_pPluginManager->InformDLLLoad(PluginLoadDLL::ENGINE, &g_pPluginCommunicationhandler->m_sEngineData);
-}
-
-ON_DLL_LOAD_RELIESON("client.dll", PluginBackendClient, ConCommand, (CModule module))
-{
-	g_pPluginManager->InformDLLLoad(PluginLoadDLL::CLIENT, nullptr);
-}
-
-ON_DLL_LOAD_RELIESON("server.dll", PluginBackendServer, ConCommand, (CModule module))
-{
-	g_pPluginManager->InformDLLLoad(PluginLoadDLL::SERVER, nullptr);
+	g_pPluginManager->InformDLLLoad(dllName.c_str(), data, address);
 }

@@ -164,6 +164,7 @@ template <ScriptContext context> void SquirrelManager<context>::GenerateSquirrel
 	s->__sq_compilebuffer = __sq_compilebuffer;
 	s->__sq_call = __sq_call;
 	s->__sq_raiseerror = __sq_raiseerror;
+	s->__sq_compilefile = __sq_compilefile;
 
 	s->__sq_newarray = __sq_newarray;
 	s->__sq_arrayappend = __sq_arrayappend;
@@ -179,12 +180,8 @@ template <ScriptContext context> void SquirrelManager<context>::GenerateSquirrel
 	s->__sq_pushasset = __sq_pushasset;
 	s->__sq_pushvector = __sq_pushvector;
 	s->__sq_pushobject = __sq_pushobject;
+
 	s->__sq_getstring = __sq_getstring;
-	s->__sq_getthisentity = __sq_getthisentity;
-	s->__sq_getobject = __sq_getobject;
-
-	s->__sq_stackinfos = __sq_stackinfos;
-
 	s->__sq_getinteger = __sq_getinteger;
 	s->__sq_getfloat = __sq_getfloat;
 	s->__sq_getbool = __sq_getbool;
@@ -192,24 +189,32 @@ template <ScriptContext context> void SquirrelManager<context>::GenerateSquirrel
 	s->__sq_getasset = __sq_getasset;
 	s->__sq_getuserdata = __sq_getuserdata;
 	s->__sq_getvector = __sq_getvector;
+	s->__sq_getthisentity = __sq_getthisentity;
+	s->__sq_getobject = __sq_getobject;
+
+	s->__sq_stackinfos = __sq_stackinfos;
+
 	s->__sq_createuserdata = __sq_createuserdata;
 	s->__sq_setuserdatatypeid = __sq_setuserdatatypeid;
 	s->__sq_getfunction = __sq_getfunction;
 
+	s->__sq_schedule_call_external = AsyncCall_External;
+
 	s->__sq_getentityfrominstance = __sq_getentityfrominstance;
 	s->__sq_GetEntityConstant_CBaseEntity = __sq_GetEntityConstant_CBaseEntity;
 
-	s->__sq_schedule_call_external = AsyncCall_External;
+	s->__sq_pushnewstructinstance = __sq_pushnewstructinstance;
+	s->__sq_sealstructslot = __sq_sealstructslot;
 }
 
 // Allows for generating squirrelmessages from plugins.
-// Not used in this version, but will be used later
-void AsyncCall_External(ScriptContext context, const char* func_name, SquirrelMessage_External_Pop function)
+void AsyncCall_External(ScriptContext context, const char* func_name, SquirrelMessage_External_Pop function, void* userdata)
 {
 	SquirrelMessage message {};
 	message.functionName = func_name;
 	message.isExternal = true;
 	message.externalFunc = function;
+	message.userdata = userdata;
 	switch (context)
 	{
 	case ScriptContext::CLIENT:
@@ -651,9 +656,11 @@ template <ScriptContext context> void SquirrelManager<context>::ProcessMessageBu
 		pushobject(m_pSQVM->sqvm, &functionobj); // Push the function object
 		pushroottable(m_pSQVM->sqvm);
 
-		if (message.isExternal)
+		int argsAmount = message.args.size();
+
+		if (message.isExternal && message.externalFunc != NULL)
 		{
-			message.externalFunc(m_pSQVM->sqvm);
+			argsAmount = message.externalFunc(m_pSQVM->sqvm, message.userdata);
 		}
 		else
 		{
@@ -664,7 +671,7 @@ template <ScriptContext context> void SquirrelManager<context>::ProcessMessageBu
 			}
 		}
 
-		_call(m_pSQVM->sqvm, message.args.size());
+		_call(m_pSQVM->sqvm, argsAmount);
 	}
 }
 

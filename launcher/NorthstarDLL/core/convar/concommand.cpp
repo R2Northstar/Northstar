@@ -3,6 +3,7 @@
 #include "engine/r2engine.h"
 
 #include "plugins/pluginbackend.h"
+#include "plugins/plugin_abi.h"
 
 #include <iostream>
 
@@ -151,5 +152,6 @@ ON_DLL_LOAD("engine.dll", ConCommand, (CModule module))
 	ConCommandConstructor = module.Offset(0x415F60).RCast<ConCommandConstructorType>();
 	AddMiscConCommands();
 
-	g_pPluginCommunicationhandler->m_sEngineData.ConCommandConstructor = (void*)ConCommandConstructor;
+	g_pPluginCommunicationhandler->m_sEngineData.ConCommandConstructor =
+		reinterpret_cast<PluginConCommandConstructorType>(ConCommandConstructor);
 }

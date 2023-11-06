@@ -124,8 +124,6 @@ add_library(NorthstarDLL SHARED
             "shared/exploit_fixes/exploitfixes_utf8parser.cpp"
             "shared/exploit_fixes/ns_limits.cpp"
             "shared/exploit_fixes/ns_limits.h"
-            "shared/gamepresence.cpp"
-            "shared/gamepresence.h"
             "shared/keyvalues.cpp"
             "shared/keyvalues.h"
             "shared/maxplayers.cpp"

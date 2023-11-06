@@ -174,9 +174,9 @@ std::optional<Plugin> PluginManager::LoadPlugin(fs::path path, PluginInitFuncs* 
 	plugin.inform_sqvm_created = (PLUGIN_INFORM_SQVM_CREATED_TYPE)GetProcAddress(pluginLib, "PLUGIN_INFORM_SQVM_CREATED");
 	plugin.inform_sqvm_destroyed = (PLUGIN_INFORM_SQVM_DESTROYED_TYPE)GetProcAddress(pluginLib, "PLUGIN_INFORM_SQVM_DESTROYED");
 
-	plugin.push_presence = (PLUGIN_PUSH_PRESENCE_TYPE)GetProcAddress(pluginLib, "PLUGIN_RECEIVE_PRESENCE");
-
 	plugin.inform_dll_load = (PLUGIN_INFORM_DLL_LOAD_TYPE)GetProcAddress(pluginLib, "PLUGIN_INFORM_DLL_LOAD");
+
+	plugin.run_frame = (PLUGIN_RUNFRAME)GetProcAddress(pluginLib, "PLUGIN_RUNFRAME");
 
 	plugin.handle = m_vLoadedPlugins.size();
 	plugin.logger = std::make_shared<ColoredLogger>(plugin.displayName.c_str(), NS::Colors::PLUGIN);
@@ -298,24 +298,24 @@ void PluginManager::InformSQVMDestroyed(ScriptContext context)
 	}
 }
 
-void PluginManager::PushPresence(PluginGameStatePresence* data)
-{
-	for (auto plugin : m_vLoadedPlugins)
-	{
-		if (plugin.push_presence != NULL)
-		{
-			plugin.push_presence(data);
-		}
-	}
-}
-
-void PluginManager::InformDLLLoad(PluginLoadDLL dll, void* data)
+void PluginManager::InformDLLLoad(const char* dll, void* data, void* dllPtr)
 {
 	for (auto plugin : m_vLoadedPlugins)
 	{
 		if (plugin.inform_dll_load != NULL)
 		{
-			plugin.inform_dll_load(dll, data);
+			plugin.inform_dll_load(dll, (PluginEngineData*)data, dllPtr);
+		}
+	}
+}
+
+void PluginManager::RunFrame()
+{
+	for (auto plugin : m_vLoadedPlugins)
+	{
+		if (plugin.run_frame != NULL)
+		{
+			plugin.run_frame();
 		}
 	}
 }

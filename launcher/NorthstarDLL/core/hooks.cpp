@@ -1,4 +1,5 @@
 #include "dedicated/dedicated.h"
+#include "plugins/pluginbackend.h"
 
 #include <iostream>
 #include <wchar.h>
@@ -409,7 +410,10 @@ HMODULE, WINAPI, (LPCSTR lpLibFileName, HANDLE hFile, DWORD dwFlags))
 		moduleAddress = _LoadLibraryExA(lpLibFileName, hFile, dwFlags);
 
 	if (moduleAddress)
+	{
 		CallLoadLibraryACallbacks(lpLibFileName, moduleAddress);
+		InformPluginsDLLLoad(fs::path(lpLibFileName), moduleAddress);
+	}
 
 	return moduleAddress;
 }
@@ -448,7 +452,10 @@ HMODULE, WINAPI, (LPCWSTR lpLibFileName))
 	HMODULE moduleAddress = _LoadLibraryW(lpLibFileName);
 
 	if (moduleAddress)
+	{
 		CallLoadLibraryWCallbacks(lpLibFileName, moduleAddress);
+		InformPluginsDLLLoad(fs::path(lpLibFileName), moduleAddress);
+	}
 
 	return moduleAddress;
 }

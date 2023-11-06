@@ -1,16 +1,7 @@
 #pragma once
-#include <string>
 #include "squirrel/squirrelclasstypes.h"
 
-#define ABI_VERSION 2
-
-enum GameState
-{
-	LOADING = 0,
-	MAINMENU = 1,
-	LOBBY = 2,
-	INGAME = 3
-};
+#define ABI_VERSION 3
 
 enum PluginLoadDLL
 {
@@ -33,6 +24,7 @@ struct SquirrelFunctions
 	sq_compilebufferType __sq_compilebuffer;
 	sq_callType __sq_call;
 	sq_raiseerrorType __sq_raiseerror;
+	sq_compilefileType __sq_compilefile;
 
 	sq_newarrayType __sq_newarray;
 	sq_arrayappendType __sq_arrayappend;
@@ -48,10 +40,6 @@ struct SquirrelFunctions
 	sq_pushassetType __sq_pushasset;
 	sq_pushvectorType __sq_pushvector;
 	sq_pushobjectType __sq_pushobject;
-	sq_getthisentityType __sq_getthisentity;
-	sq_getobjectType __sq_getobject;
-
-	sq_stackinfosType __sq_stackinfos;
 
 	sq_getstringType __sq_getstring;
 	sq_getintegerType __sq_getinteger;
@@ -61,14 +49,22 @@ struct SquirrelFunctions
 	sq_getassetType __sq_getasset;
 	sq_getuserdataType __sq_getuserdata;
 	sq_getvectorType __sq_getvector;
+	sq_getthisentityType __sq_getthisentity;
+	sq_getobjectType __sq_getobject;
+
+	sq_stackinfosType __sq_stackinfos;
 
 	sq_createuserdataType __sq_createuserdata;
 	sq_setuserdatatypeidType __sq_setuserdatatypeid;
 	sq_getfunctionType __sq_getfunction;
 
 	sq_schedule_call_externalType __sq_schedule_call_external;
+
 	sq_getentityfrominstanceType __sq_getentityfrominstance;
 	sq_GetEntityConstantType __sq_GetEntityConstant_CBaseEntity;
+
+	sq_pushnewstructinstanceType __sq_pushnewstructinstance;
+	sq_sealstructslotType __sq_sealstructslot;
 };
 
 struct MessageSource
@@ -89,9 +85,28 @@ struct LogMsg
 	int pluginHandle;
 };
 
-typedef void (*loggerfunc_t)(LogMsg* msg);
-typedef void (*PLUGIN_RELAY_INVITE_TYPE)(const char* invite);
-typedef void* (*CreateObjectFunc)(ObjectType type);
+extern "C"
+{
+	typedef void (*loggerfunc_t)(LogMsg* msg);
+	typedef void (*PLUGIN_RELAY_INVITE_TYPE)(const char* invite);
+	typedef void* (*CreateObjectFunc)(ObjectType type);
+
+	typedef void (*PluginFnCommandCallback_t)(void* command);
+	typedef void (*PluginConCommandConstructorType)(
+		void* newCommand, const char* name, PluginFnCommandCallback_t callback, const char* helpString, int flags, void* parent);
+	typedef void (*PluginConVarRegisterType)(
+		void* pConVar,
+		const char* pszName,
+		const char* pszDefaultValue,
+		int nFlags,
+		const char* pszHelpString,
+		bool bMin,
+		float fMin,
+		bool bMax,
+		float fMax,
+		void* pCallback);
+	typedef void (*PluginConVarMallocType)(void* pConVarMaloc, int a2, int a3);
+}
 
 struct PluginNorthstarData
 {
@@ -109,37 +124,12 @@ struct PluginInitFuncs
 
 struct PluginEngineData
 {
-	void* ConCommandConstructor;
-	void* conVarMalloc;
-	void* conVarRegister;
+	PluginConCommandConstructorType ConCommandConstructor;
+	PluginConVarMallocType conVarMalloc;
+	PluginConVarRegisterType conVarRegister;
 	void* ConVar_Vtable;
 	void* IConVar_Vtable;
-};
-
-struct PluginGameStatePresence
-{
-	const char* id;
-	const char* name;
-	const char* description;
-	const char* password;
-
-	bool isServer;
-	bool isLocal;
-	GameState state;
-
-	const char* map;
-	const char* mapDisplayname;
-	const char* playlist;
-	const char* playlistDisplayname;
-
-	int currentPlayers;
-	int maxPlayers;
-
-	int ownScore;
-	int otherHighestScore; // NOTE: The highest score OR the second highest score if we have the highest
-	int maxScore;
-
-	int timestampEnd;
+	void* g_pCVar;
 };
 
 /// <summary> Async communication within the plugin system
@@ -157,8 +147,5 @@ typedef void (*PLUGIN_INIT_SQVM_TYPE)(SquirrelFunctions* funcs);
 typedef void (*PLUGIN_INFORM_SQVM_CREATED_TYPE)(ScriptContext context, CSquirrelVM* sqvm);
 typedef void (*PLUGIN_INFORM_SQVM_DESTROYED_TYPE)(ScriptContext context);
 
-// Async Communication types
-
-// Northstar -> Plugin
-typedef void (*PLUGIN_PUSH_PRESENCE_TYPE)(PluginGameStatePresence* data);
-typedef void (*PLUGIN_INFORM_DLL_LOAD_TYPE)(PluginLoadDLL dll, void* data);
+typedef void (*PLUGIN_INFORM_DLL_LOAD_TYPE)(const char* dll, PluginEngineData* data, void* dllPtr);
+typedef void (*PLUGIN_RUNFRAME)();
