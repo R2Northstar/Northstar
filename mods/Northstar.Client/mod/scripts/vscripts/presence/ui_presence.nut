@@ -1,12 +1,16 @@
 untyped
 globalize_all_functions
 
-void function NorthstarCodeCallback_GenerateUIPresence() {
-	UIPresenceStruct uis
+UIPresenceStruct function DiscordRPC_GenerateUIPresence( UIPresenceStruct uis )
+{
+	if ( uiGlobal.isLoading )
+		uis.gameState = eDiscordGameState.LOADING;
+	else if ( uiGlobal.loadedLevel == "" )
+		uis.gameState = eDiscordGameState.MAINMENU;
+	else if ( IsLobby() || uiGlobal.loadedLevel == "mp_lobby" )
+		uis.gameState = eDiscordGameState.LOBBY;
+	else
+		uis.gameState = eDiscordGameState.INGAME;
 
-	uis.isLoading = uiGlobal.isLoading
-	uis.isLobby = IsLobby()
-	uis.loadingLevel = uiGlobal.loadingLevel
-	uis.loadedLevel = uiGlobal.loadedLevel
-	NSPushUIPresence(uis)
+	return uis
 }
