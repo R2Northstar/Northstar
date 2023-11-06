@@ -1,6 +1,5 @@
 #pragma once
 #include "plugin_abi.h"
-#include "shared/gamepresence.h"
 
 #include <queue>
 #include <mutex>
@@ -30,8 +29,6 @@ class PluginCommunicationHandler
 	void RunFrame();
 	void PushRequest(PluginDataRequestType type, PluginRespondDataCallable func);
 
-	void GeneratePresenceObjects();
-
   public:
 	std::queue<PluginDataRequest> requestQueue = {};
 	std::mutex requestMutex;
@@ -39,4 +36,5 @@ class PluginCommunicationHandler
 	PluginEngineData m_sEngineData {};
 };
 
+void InformPluginsDLLLoad(fs::path dllPath, void* address);
 extern PluginCommunicationHandler* g_pPluginCommunicationhandler;

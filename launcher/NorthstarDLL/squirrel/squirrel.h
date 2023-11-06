@@ -51,7 +51,7 @@ const char* GetContextName_Short(ScriptContext context);
 eSQReturnType SQReturnTypeFromString(const char* pReturnType);
 const char* SQTypeNameFromID(const int iTypeId);
 
-void AsyncCall_External(ScriptContext context, const char* func_name, SquirrelMessage_External_Pop function);
+void AsyncCall_External(ScriptContext context, const char* func_name, SquirrelMessage_External_Pop function, void* userdata);
 
 ScriptContext ScriptContextFromString(std::string string);
 
