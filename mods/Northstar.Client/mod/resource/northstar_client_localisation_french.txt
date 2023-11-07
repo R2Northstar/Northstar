@@ -353,5 +353,9 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 		"TOGGLE_PROGRESSION"        "Activer la progression"
 		"Y_BUTTON_TOGGLE_PROGRESSION"        "%[Y_BUTTON|]% Activer la progression"
 		"PROGRESSION_ANNOUNCEMENT_BODY"        "^CCCC0000Le système de progression peut être activé !^\n\nNorthstar supporte désormais le système de progression du jeu original, vous permettant de choisir si vous souhaitez débloquer les armes, skins, titans etc. en gagnant des niveaux et en complétant des défis.\n\nVous pouvez activer la progression en utilisant le bouton en bas de l'écran d'accueil.\n\nCeci peut être changé à tout moment."
+		"AUTHENTICATION_FAILED_HEADER"        "Échec de l'authentification"
+		"AUTHENTICATION_FAILED_HELP"        "Aide"
+		"AUTHENTICATION_FAILED_ERROR_CODE"        "Code d'erreur : ^DB6F2C00%s1^"
+		"AUTHENTICATION_FAILED_BODY"        "L'authentification avec Atlas a échoué."
 	}
 }
