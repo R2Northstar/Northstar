@@ -6,8 +6,8 @@ use tokio::runtime::Runtime;
 
 use crate::{
     discord::async_main,
-    presense_bindings::{GameStateStruct, UIPresenceStruct,GameState},
     presence::run_presence_updates,
+    presense_bindings::{GameState, GameStateStruct, UIPresenceStruct},
 };
 
 pub(crate) mod discord;
