@@ -34,7 +34,7 @@ jobs:
           wget "https://github.com/R2Northstar/NorthstarLauncher/releases/download/${{ env.NORTHSTAR_VERSION }}/northstar-launcher.zip"
       - name: Download DiscordRPC plugin
         run:
-          wget "https://github.com/R2Northstar/NorthstarDiscordRPC/releases/download/v5/northstar-discord-rpc.zip"
+          wget "https://github.com/R2Northstar/NorthstarDiscordRPC/releases/download/v6/northstar-discord-rpc.zip"
       - name: Download compiled stubs
         run:
           wget "https://github.com/R2Northstar/NorthstarStubs/releases/download/v1/NorthstarStubs.zip"
