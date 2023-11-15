@@ -4,7 +4,7 @@ use rrplug::prelude::*;
 use rrplug::{
     bindings::squirrelclasstypes::ScriptContext,
     call_sq_function,
-    high::{squirrel::compile_string, Handle},
+    high::{squirrel::compile_string, UnsafeHandle},
 };
 use std::{
     ops::DerefMut,
@@ -14,7 +14,7 @@ use std::{
 use crate::presense_bindings::{GameState, GameStateStruct, UIPresenceStruct};
 
 // heartbeat for pulling presence
-pub fn run_presence_updates(sqvm: Handle<*mut HSquirrelVM>) {
+pub fn run_presence_updates(sqvm: UnsafeHandle<*mut HSquirrelVM>) {
     let sqvm = *sqvm.get();
     let sq_functions = SQFUNCTIONS.client.wait();
 
@@ -38,7 +38,7 @@ pub fn run_presence_updates(sqvm: Handle<*mut HSquirrelVM>) {
 
 /// function to pull presence from the sqvm since in runframe it's impossibke to get the output of a function back
 #[rrplug::sqfunction(VM = "UiClient", ExportName = "FetchPresence")]
-pub fn fetch_presence() {
+pub fn fetch_presence() -> Result<(), String> {
     let plugin = crate::PLUGIN.wait();
     let mut presence_lock = plugin.presence_data.lock();
     let (cl_presence, ui_presence) = presence_lock.deref_mut();
@@ -68,7 +68,11 @@ pub fn fetch_presence() {
                 #[cfg(not(debug_assertions))]
                 drop(err);
             } else {
-                *cl_presence = GameStateStruct::get_from_sqvm(sqvm, sq_functions, sqvm._stackbase);
+                *cl_presence = GameStateStruct::get_from_sqvm(
+                    sqvm,
+                    SQFUNCTIONS.client.wait(),
+                    sqvm._stackbase,
+                );
             }
         }
         ScriptContext::UI => {
@@ -85,8 +89,11 @@ pub fn fetch_presence() {
                     drop(err);
                 }
                 Ok(_) => {
-                    *ui_presence =
-                        UIPresenceStruct::get_from_sqvm(sqvm, sq_functions, sqvm._stackbase);
+                    *ui_presence = UIPresenceStruct::get_from_sqvm(
+                        sqvm,
+                        SQFUNCTIONS.client.wait(),
+                        sqvm._stackbase,
+                    );
                 }
             }
         }

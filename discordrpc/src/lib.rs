@@ -46,21 +46,19 @@ impl Plugin for DiscordRpcPlugin {
             state: "Loading...".to_string(),
             ..Default::default()
         });
-        Self {
-            activity,
-            presence_data: Mutex::new((GameStateStruct::default(), UIPresenceStruct::default())),
-        }
-    }
 
-    fn main(&self) {
-        let runtime = match Runtime::new() {
-            Ok(rt) => rt,
+        std::thread::spawn(|| match Runtime::new() {
+            Ok(rt) => rt.block_on(async_main()),
             Err(err) => {
                 log::error!("failed to create a runtime; {:?}", err);
                 return;
             }
-        };
-        runtime.block_on(async_main());
+        });
+
+        Self {
+            activity,
+            presence_data: Mutex::new((GameStateStruct::default(), UIPresenceStruct::default())),
+        }
     }
 
     fn on_sqvm_created(&self, sqvm_handle: &CSquirrelVMHandle) {
