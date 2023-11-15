@@ -2,6 +2,15 @@ name: CI
 on: [push, pull_request]
 
 jobs:
+  # Ensure correct Rust code formatting
+  formatting:
+    name: format-check
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v3
+      - name: Format check
+        run: cargo fmt --all -- --check
+
   build:
     runs-on: windows-2022
     steps:
