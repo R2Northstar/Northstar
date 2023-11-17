@@ -4,7 +4,7 @@ class ModDownloader
 	const char* VERIFICATION_FLAG = "-disablemodverification";
 	const char* CUSTOM_MODS_URL_FLAG = "-customverifiedurl=";
 	const char* STORE_URL = "https://gcdn.thunderstore.io/live/repository/packages/";
-	const char* DEFAULT_MODS_LIST_URL = "https://raw.githubusercontent.com/R2Northstar/VerifiedMods/master/mods.json";
+	const char* DEFAULT_MODS_LIST_URL = "https://raw.githubusercontent.com/R2Northstar/VerifiedMods/master/verified-mods.json";
 	char* modsListUrl;
 
 	struct VerifiedModVersion
@@ -83,7 +83,7 @@ class ModDownloader
 	 * The Northstar auto-downloading feature does NOT allow automatically installing
 	 * all mods for various (notably security) reasons; mods that are candidate to
 	 * auto-downloading are rather listed on a GitHub repository
-	 * (https://raw.githubusercontent.com/R2Northstar/VerifiedMods/master/mods.json),
+	 * (https://raw.githubusercontent.com/R2Northstar/VerifiedMods/master/verified-mods.json),
 	 * which this method gets via a HTTP call to load into local state.
 	 *
 	 * If list fetching fails, local mods list will be initialized as empty, thus
