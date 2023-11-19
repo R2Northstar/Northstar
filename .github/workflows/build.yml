@@ -95,10 +95,9 @@ jobs:
           mv Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip ../
       - name: Compute SHA-512 checksum
         run: |
-          ZIP_CHECKSUM=$(sha512sum Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip)
-          echo $ZIP_CHECKSUM
+          sha512sum Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip
           echo "```" >> $GITHUB_STEP_SUMMARY
-          echo $ZIP_CHECKSUM >> $GITHUB_STEP_SUMMARY
+          sha512sum Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip >> $GITHUB_STEP_SUMMARY
           echo "```" >> $GITHUB_STEP_SUMMARY
       - name: Upload zip to release draft
         uses: softprops/action-gh-release@v1
