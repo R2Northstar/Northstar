@@ -696,9 +696,9 @@ void ModManager::LoadMods()
 		if (mod.m_bWasReadSuccessfully)
 		{
 			if (mod.m_bEnabled)
-				spdlog::info("'{}' loaded successfully", mod.Name);
+				spdlog::info("'{}' loaded successfully, version {}", mod.Name, mod.Version);
 			else
-				spdlog::info("'{}' loaded successfully (DISABLED)", mod.Name);
+				spdlog::info("'{}' loaded successfully, version {} (DISABLED)", mod.Name, mod.Version);
 
 			m_LoadedMods.push_back(mod);
 		}
