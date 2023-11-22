@@ -39,7 +39,7 @@ The current process of making release (includinging release candidate) is:
    Push tags ending in `-rcX` where `X` is integer for
     1. Launcher
     2. Mods
-    3. Release (wait until launcher has finished building)
+    3. Release
 
 4. Make draft notes\
    You can use FlightCore to generate them and then format them manually.\
@@ -61,7 +61,7 @@ The current process of making release (includinging release candidate) is:
    Push tags for
     1. Launcher
     2. Mods
-    3. Release (wait until launcher has finished building)
+    3. Release
 
 10. Once release has finished building
     1. Go to GitHub release and select the new unpublished release
