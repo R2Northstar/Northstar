@@ -25,6 +25,9 @@ AUTOHOOK_INIT()
 ServerAuthenticationManager* g_pServerAuthentication;
 CBaseServer__RejectConnectionType CBaseServer__RejectConnection;
 
+typedef void (*CBaseServer__PushDisconnectReasonType)(void*, int32_t, void*, const char*);
+CBaseServer__PushDisconnectReasonType CBaseServer__PushDisconnectReason;
+
 void ServerAuthenticationManager::AddRemotePlayer(std::string token, uint64_t uid, std::string username, std::string pdata)
 {
 	std::string uidS = std::to_string(uid);
@@ -101,7 +104,7 @@ bool ServerAuthenticationManager::IsDuplicateAccount(R2::CBaseClient* pPlayer, c
 	return false;
 }
 
-bool ServerAuthenticationManager::CheckAuthentication(R2::CBaseClient* pPlayer, uint64_t iUid, char* pAuthToken)
+bool ServerAuthenticationManager::CheckAuthentication(R2::CBaseClient* pPlayer, uint64_t iUid, const char* pAuthToken)
 {
 	std::string sUid = std::to_string(iUid);
 
@@ -126,7 +129,7 @@ bool ServerAuthenticationManager::CheckAuthentication(R2::CBaseClient* pPlayer, 
 	return false;
 }
 
-void ServerAuthenticationManager::AuthenticatePlayer(R2::CBaseClient* pPlayer, uint64_t iUid, char* pAuthToken)
+void ServerAuthenticationManager::AuthenticatePlayer(R2::CBaseClient* pPlayer, uint64_t iUid, const char* pAuthToken)
 {
 	// for bot players, generate a new uid
 	if (pPlayer->m_bFakePlayer)
@@ -202,14 +205,9 @@ void ServerAuthenticationManager::WritePersistentData(R2::CBaseClient* pPlayer)
 
 // auth hooks
 
-// store these in vars so we can use them in CBaseClient::Connect
-// this is fine because ptrs won't decay by the time we use this, just don't use it outside of calls from cbaseclient::connectclient
-char* pNextPlayerToken;
-uint64_t iNextPlayerUid;
-
 // clang-format off
 AUTOHOOK(CBaseServer__ConnectClient, engine.dll + 0x114430,
-void*,, (
+R2::CBaseClient*,, (
 	void* self,
 	void* addr,
 	void* a3,
@@ -229,11 +227,49 @@ void*,, (
 	uint32_t a17))
 // clang-format on
 {
-	// auth tokens are sent with serverfilter, can't be accessed from player struct to my knowledge, so have to do this here
-	pNextPlayerToken = serverFilter;
-	iNextPlayerUid = uid;
+	// try to connect the client to get a client object
+	R2::CBaseClient* client =
+		CBaseServer__ConnectClient(self, addr, a3, a4, a5, a6, a7, playerName, serverFilter, a10, a11, a12, a13, a14, uid, a16, a17);
+	if (!client)
+		return nullptr;
 
-	return CBaseServer__ConnectClient(self, addr, a3, a4, a5, a6, a7, playerName, serverFilter, a10, a11, a12, a13, a14, uid, a16, a17);
+	const char* pAuthenticationFailure = nullptr;
+	char pVerifiedName[64];
+	const char* authToken = serverFilter;
+
+	if (!client->m_bFakePlayer)
+	{
+		if (!g_pServerAuthentication->VerifyPlayerName(authToken, playerName, pVerifiedName))
+			pAuthenticationFailure = "Invalid Name.";
+		else if (!g_pBanSystem->IsUIDAllowed(uid))
+			pAuthenticationFailure = "Banned From server.";
+		else if (!g_pServerAuthentication->CheckAuthentication(client, uid, authToken))
+			pAuthenticationFailure = "Authentication Failed.";
+	}
+	else
+	{
+		spdlog::error("A bot called CBaseServer__ConnectClient, should be impossible!");
+
+		CBaseServer__PushDisconnectReason(self, (int32_t)((uintptr_t)self + 0xc), addr, "A bot was init in CServer__ConnectClient");
+		return nullptr;
+	}
+
+	if (pAuthenticationFailure)
+	{
+		spdlog::info("{}'s (uid {}) connection was rejected: \"{}\"", playerName, uid, pAuthenticationFailure);
+
+		CBaseServer__PushDisconnectReason(self, (int32_t)((uintptr_t)self + 0xc), addr, pAuthenticationFailure);
+		return nullptr;
+	}
+
+	// write name into the client
+	strncpy_s(pVerifiedName, client->m_Name, 63);
+
+	// we already know this player's authentication data is legit, actually write it to them now
+	g_pServerAuthentication->AuthenticatePlayer(client, uid, authToken);
+
+	g_pServerAuthentication->AddPlayer(client, authToken);
+	g_pServerLimits->AddPlayer(client);
 }
 
 ConVar* Cvar_ns_allowuserclantags;
@@ -243,37 +279,19 @@ AUTOHOOK(CBaseClient__Connect, engine.dll + 0x101740,
 bool,, (R2::CBaseClient* self, char* pName, void* pNetChannel, char bFakePlayer, void* a5, char pDisconnectReason[256], void* a7))
 // clang-format on
 {
-	const char* pAuthenticationFailure = nullptr;
-	char pVerifiedName[64];
+	// only remains to count bots in player count,
+	// since bots take player slots and it will give if not counted a false player count on the server browser.
 
 	if (!bFakePlayer)
-	{
-		if (!g_pServerAuthentication->VerifyPlayerName(pNextPlayerToken, pName, pVerifiedName))
-			pAuthenticationFailure = "Invalid Name.";
-		else if (!g_pBanSystem->IsUIDAllowed(iNextPlayerUid))
-			pAuthenticationFailure = "Banned From server.";
-		else if (!g_pServerAuthentication->CheckAuthentication(self, iNextPlayerUid, pNextPlayerToken))
-			pAuthenticationFailure = "Authentication Failed.";
-	}
-	else // need to copy name for bots still
-		strncpy_s(pVerifiedName, pName, 63);
+		return CBaseClient__Connect(self, pName, pNetChannel, bFakePlayer, a5, pDisconnectReason, a7);
 
-	if (pAuthenticationFailure)
-	{
-		spdlog::info("{}'s (uid {}) connection was rejected: \"{}\"", pName, iNextPlayerUid, pAuthenticationFailure);
-
-		strncpy_s(pDisconnectReason, 256, pAuthenticationFailure, 255);
-		return false;
-	}
-
-	// try to actually connect the player
-	if (!CBaseClient__Connect(self, pVerifiedName, pNetChannel, bFakePlayer, a5, pDisconnectReason, a7))
+	// try to actually connect the bot
+	if (!CBaseClient__Connect(self, pName, pNetChannel, bFakePlayer, a5, pDisconnectReason, a7))
 		return false;
 
-	// we already know this player's authentication data is legit, actually write it to them now
-	g_pServerAuthentication->AuthenticatePlayer(self, iNextPlayerUid, pNextPlayerToken);
+	g_pServerAuthentication->AuthenticatePlayer(self, 0, "0");
 
-	g_pServerAuthentication->AddPlayer(self, pNextPlayerToken);
+	g_pServerAuthentication->AddPlayer(self, "0");
 	g_pServerLimits->AddPlayer(self);
 
 	return true;
@@ -369,6 +387,7 @@ ON_DLL_LOAD_RELIESON("engine.dll", ServerAuthentication, (ConCommand, ConVar), (
 	module.Offset(0x101012).Patch("E9 90 00");
 
 	CBaseServer__RejectConnection = module.Offset(0x1182E0).RCast<CBaseServer__RejectConnectionType>();
+	CBaseServer__PushDisconnectReason = module.Offset(0x1155D0).RCast<CBaseServer__PushDisconnectReasonType>();
 
 	if (Tier0::CommandLine()->CheckParm("-allowdupeaccounts"))
 	{
