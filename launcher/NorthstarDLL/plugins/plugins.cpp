@@ -134,7 +134,8 @@ std::optional<Plugin> PluginManager::LoadPlugin(fs::path path, PluginInitFuncs* 
 	}
 	// Passed all checks, going to actually load it now
 
-	HMODULE pluginLib = LoadLibraryW(wpptr); // Load the DLL as a data file
+	HMODULE pluginLib =
+		LoadLibraryExW(wpptr, 0, LOAD_LIBRARY_SEARCH_USER_DIRS | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS); // Load the DLL with lib folders
 	if (pluginLib == NULL)
 	{
 		NS::log::PLUGINSYS->info("Failed to load library '{}': ", std::system_category().message(GetLastError()));
@@ -197,7 +198,7 @@ inline void FindPlugins(fs::path pluginPath, std::vector<fs::path>& paths)
 		return;
 	}
 
-	for (const fs::directory_entry& entry : fs::recursive_directory_iterator(pluginPath))
+	for (const fs::directory_entry& entry : fs::directory_iterator(pluginPath))
 	{
 		if (fs::is_regular_file(entry) && entry.path().extension() == ".dll")
 			paths.emplace_back(entry.path());
@@ -229,6 +230,10 @@ bool PluginManager::LoadPlugins()
 	data.version = ns_version.c_str();
 	data.northstarModule = g_NorthstarModule;
 
+	fs::path libPath = fs::absolute(pluginPath + "\\lib");
+	if (fs::exists(libPath) && fs::is_directory(libPath))
+		AddDllDirectory(libPath.wstring().c_str());
+
 	FindPlugins(pluginPath, paths);
 
 	// Special case for Thunderstore mods dir
@@ -244,6 +249,11 @@ bool PluginManager::LoadPlugins()
 			spdlog::warn("The following directory did not match 'AUTHOR-MOD-VERSION': {}", dir.path().string());
 			continue; // skip loading package that doesn't match
 		}
+
+		fs::path libDir = fs::absolute(pluginsDir / "lib");
+		if (fs::exists(libDir) && fs::is_directory(libDir))
+			AddDllDirectory(libDir.wstring().c_str());
+
 		FindPlugins(pluginsDir, paths);
 	}
 
