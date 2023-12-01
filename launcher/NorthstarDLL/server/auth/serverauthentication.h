@@ -48,9 +48,9 @@ class ServerAuthenticationManager
 
 	bool VerifyPlayerName(const char* pAuthToken, const char* pName, char pOutVerifiedName[64]);
 	bool IsDuplicateAccount(R2::CBaseClient* pPlayer, const char* pUid);
-	bool CheckAuthentication(R2::CBaseClient* pPlayer, uint64_t iUid, const char* pAuthToken);
+	bool CheckAuthentication(R2::CBaseClient* pPlayer, uint64_t iUid, char* pAuthToken);
 
-	void AuthenticatePlayer(R2::CBaseClient* pPlayer, uint64_t iUid, const char* pAuthToken);
+	void AuthenticatePlayer(R2::CBaseClient* pPlayer, uint64_t iUid, char* pAuthToken);
 	bool RemovePlayerAuthData(R2::CBaseClient* pPlayer);
 	void WritePersistentData(R2::CBaseClient* pPlayer);
 };
