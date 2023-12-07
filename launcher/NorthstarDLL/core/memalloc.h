@@ -1,7 +1,7 @@
 #pragma once
 
 #include "rapidjson/document.h"
-//#include "include/rapidjson/allocators.h"
+// #include "include/rapidjson/allocators.h"
 
 extern "C" void* _malloc_base(size_t size);
 extern "C" void* _calloc_base(size_t const count, size_t const size);
