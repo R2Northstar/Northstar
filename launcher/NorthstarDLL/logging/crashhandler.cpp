@@ -98,8 +98,12 @@ BOOL WINAPI ConsoleCtrlRoutine(DWORD dwCtrlType)
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
 CCrashHandler::CCrashHandler()
-	: m_hExceptionFilter(nullptr), m_pExceptionInfos(nullptr), m_bHasSetConsolehandler(false), m_bAllExceptionsFatal(false),
-	  m_bHasShownCrashMsg(false), m_bState(false)
+	: m_hExceptionFilter(nullptr)
+	, m_pExceptionInfos(nullptr)
+	, m_bHasSetConsolehandler(false)
+	, m_bAllExceptionsFatal(false)
+	, m_bHasShownCrashMsg(false)
+	, m_bState(false)
 {
 	Init();
 }
