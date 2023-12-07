@@ -34,3 +34,5 @@ IndentExternBlock: Indent
 PointerAlignment: Left
 SortIncludes: false
 NamespaceIndentation: All
+PackConstructorInitializers: NextLine
+BreakConstructorInitializersBeforeComma: true
