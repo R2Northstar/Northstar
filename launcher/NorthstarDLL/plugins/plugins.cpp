@@ -170,6 +170,15 @@ std::optional<Plugin> PluginManager::LoadPlugin(fs::path path, PluginInitFuncs* 
 		plugin.dependencyName = plugin.name;
 	}
 
+	if (std::find_if(
+			plugin.dependencyName.begin(),
+			plugin.dependencyName.end(),
+			[&](char c) -> bool { return !((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_'); }) !=
+		plugin.dependencyName.end())
+	{
+		NS::log::PLUGINSYS->warn("Dependency string \"{}\" in {} is not valid a squirrel constant!", plugin.dependencyName, plugin.name);
+	}
+
 	plugin.init_sqvm_client = (PLUGIN_INIT_SQVM_TYPE)GetProcAddress(pluginLib, "PLUGIN_INIT_SQVM_CLIENT");
 	plugin.init_sqvm_server = (PLUGIN_INIT_SQVM_TYPE)GetProcAddress(pluginLib, "PLUGIN_INIT_SQVM_SERVER");
 	plugin.inform_sqvm_created = (PLUGIN_INFORM_SQVM_CREATED_TYPE)GetProcAddress(pluginLib, "PLUGIN_INFORM_SQVM_CREATED");
