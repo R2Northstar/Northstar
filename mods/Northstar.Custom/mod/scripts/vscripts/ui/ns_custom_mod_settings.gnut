@@ -1,0 +1,8 @@
+global function NSCustomModSettings
+
+void function NSCustomModSettings()
+{
+	ModSettings_AddModTitle( "Northstar Custom" , 2 )
+	ModSettings_AddModCategory( "Event Models" )
+	ModSettings_AddEnumSetting( "ns_show_event_models", "Show Event Models", [ "#SETTING_OFF", "#SETTING_ON" ], 2 )
+}

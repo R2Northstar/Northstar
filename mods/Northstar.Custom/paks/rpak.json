@@ -1,5 +1,10 @@
 {
 	"Postload": {
-		"mp_weapon_shotgun_doublebarrel.rpak": "common.rpak"
+		"mp_weapon_shotgun_doublebarrel.rpak": "common.rpak",
+		"leaves.rpak": "common.rpak",
+		"tree_stump.rpak": "common.rpak",
+		"bt.rpak": "common.rpak",
+		"giftwrap.rpak": "common.rpak",
+		"snow.rpak": "common.rpak"
 	}
 }
