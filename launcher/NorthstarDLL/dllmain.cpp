@@ -2,6 +2,7 @@
 #include "logging/logging.h"
 #include "logging/crashhandler.h"
 #include "core/memalloc.h"
+#include "core/vanilla.h"
 #include "config/profile.h"
 #include "plugins/plugin_abi.h"
 #include "plugins/plugins.h"
@@ -52,6 +53,10 @@ bool InitialiseNorthstar()
 	g_pCrashHandler = new CCrashHandler();
 	bool bAllFatal = strstr(GetCommandLineA(), "-crash_handle_all") != NULL;
 	g_pCrashHandler->SetAllFatal(bAllFatal);
+
+	// determine if we are in vanilla-compatibility mode
+	g_pVanillaCompatibility = new VanillaCompatibility();
+	g_pVanillaCompatibility->SetVanillaCompatibility(strstr(GetCommandLineA(), "-vanilla") != NULL);
 
 	// Write launcher version to log
 	StartupLog();
