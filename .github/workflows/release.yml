@@ -34,7 +34,7 @@ jobs:
           wget "https://github.com/R2Northstar/NorthstarLauncher/releases/download/${{ env.NORTHSTAR_VERSION }}/northstar-launcher.zip"
       - name: Download DiscordRPC plugin
         run:
-          wget "https://github.com/R2Northstar/NorthstarDiscordRPC/releases/download/v5/northstar-discord-rpc.zip"
+          wget "https://github.com/R2Northstar/NorthstarDiscordRPC/releases/download/v6/northstar-discord-rpc.zip"
       - name: Download compiled stubs
         run:
           wget "https://github.com/R2Northstar/NorthstarStubs/releases/download/v1/NorthstarStubs.zip"
@@ -57,11 +57,11 @@ jobs:
           git ls-tree -r $NORTHSTAR_VERSION --name-only | xargs -L1 md5sum >> md5sum.txt
       - name: Make folder structure
         run: |
-          mv -v northstar/release/* northstar/.
-          rm -d northstar/release
-          mkdir -p northstar/R2Northstar/mods
-          mkdir -p northstar/R2Northstar/plugins
-          mkdir -p northstar/bin/x64_dedi
+          mv --verbose northstar/release/* northstar/.
+          rm --dir northstar/release
+          mkdir --parents northstar/R2Northstar/mods
+          mkdir --parents northstar/R2Northstar/plugins
+          mkdir --parents northstar/bin/x64_dedi
 
           unzip northstar-discord-rpc.zip -d northstar/R2Northstar/plugins
 
@@ -76,9 +76,9 @@ jobs:
           path: northstar-navs
       - name: Navmeshes setup
         run: |
-          mkdir -p northstar/R2Northstar/mods/Northstar.CustomServers/mod/maps
-          mv -v northstar-navs/graphs northstar/R2Northstar/mods/Northstar.CustomServers/mod/maps
-          mv -v northstar-navs/navmesh northstar/R2Northstar/mods/Northstar.CustomServers/mod/maps
+          mkdir --parents northstar/R2Northstar/mods/Northstar.CustomServers/mod/maps
+          mv --verbose northstar-navs/graphs northstar/R2Northstar/mods/Northstar.CustomServers/mod/maps
+          mv --verbose northstar-navs/navmesh northstar/R2Northstar/mods/Northstar.CustomServers/mod/maps
       - name: Cleanup root Northstar repository files
         working-directory: northstar
         run: |
@@ -96,6 +96,9 @@ jobs:
       - name: Compute SHA-512 checksum
         run: |
           sha512sum Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip
+          echo "```" >> $GITHUB_STEP_SUMMARY
+          sha512sum Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip >> $GITHUB_STEP_SUMMARY
+          echo "```" >> $GITHUB_STEP_SUMMARY
       - name: Upload zip to release draft
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/v') && !contains(env.NORTHSTAR_VERSION, '-rc')
@@ -122,14 +125,14 @@ jobs:
     steps:
       - name: Setup tcli
         run: |
-          wget -O tcli.tar.gz https://github.com/thunderstore-io/thunderstore-cli/releases/download/0.1.4/tcli-0.1.4-linux-x64.tar.gz
+          wget --output-document tcli.tar.gz https://github.com/thunderstore-io/thunderstore-cli/releases/download/0.1.4/tcli-0.1.4-linux-x64.tar.gz
           tar xvf tcli.tar.gz
-          sudo mv -v tcli-0.1.4-linux-x64/tcli /bin
+          sudo mv --verbose tcli-0.1.4-linux-x64/tcli /bin
 
       - name: (DEBUG) Download Northstar package
         if: ${{ env.ACT }} # Download Northstar package from releases when running locally instead of relying on previous jobs
         run: |
-          wget -O northstar.zip https://github.com/R2Northstar/Northstar/releases/download/v1.6.3/Northstar.release.v1.6.3.zip
+          wget --output-document northstar.zip https://github.com/R2Northstar/Northstar/releases/download/v1.6.3/Northstar.release.v1.6.3.zip
           unzip northstar.zip -d northstar
 
       - name: Download Northstar package
@@ -141,10 +144,10 @@ jobs:
 
       - name: Make package structure
         run: |
-          mkdir -p thunderstore/dist/Northstar
-          mv -v northstar/* thunderstore/dist/Northstar
-          wget -O thunderstore/icon.png https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/icon.png
-          wget -O thunderstore/README.md https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/README.md
+          mkdir --parents thunderstore/dist/Northstar
+          mv --verbose northstar/* thunderstore/dist/Northstar
+          wget --output-document thunderstore/icon.png https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/icon.png
+          wget --output-document thunderstore/README.md https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/README.md
 
       - name: Setup environment variables
         run: |
@@ -167,9 +170,9 @@ jobs:
         run: |
           tcli init --package-name=$TS_MOD_NAME --package-namespace=$TS_NAMESPACE --package-version $MOD_VERSION
 
-          sed -i "s/communities = \[\]/communities = [\"$TS_COMMUNITY\"]/g" thunderstore.toml
-          sed -i "s/Example-Dependency = \"1.0.0\"//g" thunderstore.toml
-          sed -i "s/description = \"Example mod description\"/description = \"$TS_MOD_DESCRIPTION\"/g" thunderstore.toml
+          sed --in-place "s/communities = \[\]/communities = [\"$TS_COMMUNITY\"]/g" thunderstore.toml
+          sed --in-place "s/Example-Dependency = \"1.0.0\"//g" thunderstore.toml
+          sed --in-place "s/description = \"Example mod description\"/description = \"$TS_MOD_DESCRIPTION\"/g" thunderstore.toml
           cat thunderstore.toml
 
           tcli build
