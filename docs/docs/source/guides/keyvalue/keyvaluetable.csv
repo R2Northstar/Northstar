@@ -342,8 +342,8 @@ Damage scales linearly between near to far distances and far to very far (if it 
 ``npc_dangerous_to_heavy_armor``|``bool``|True|Unknown.|
 ``npc_dangerous_to_normal_armor``|``bool``|True|Unknown.|
 ``npc_directed_fire_ang_limit_cos``|``float``|True|Unknown.|
-``npc_explosion_damage``|``int``|True|Maximum explosion damage dealt to non-heavily armored targets for NPCs. Optional.|
-``npc_explosion_damage_heavy_armor``|``int``|True|Maximum explosion damage dealt to heavily armored targets for NPCs. Optional.|"For each ``npc_explosion_damage`` value, if it is unused, the corresponding player value is applied instead."
+``npc_explosion_damage``|``int``|True|Maximum explosion damage dealt to non-heavily armored targets for NPCs.|
+``npc_explosion_damage_heavy_armor``|``int``|True|Maximum explosion damage dealt to heavily armored targets for NPCs.|"Unlike ``npc_damage_`` values, ``npc_explosion_damage`` values are set to 0 if unused."
 ``npc_fire_at_enemy_defense_time``|``float``|True|The time in seconds that an NPC will fire at a defensive before holding their shots.|
 ``npc_full_auto_vs_heavy_armor``|``bool``|True|Unknown.|
 ``npc_lead_time_max_dist``|``float``|True|Unknown.|
