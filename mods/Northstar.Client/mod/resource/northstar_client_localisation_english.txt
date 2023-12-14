@@ -366,5 +366,25 @@ Press Yes if you agree to this. This choice can be changed in the mods menu at a
 		"PROGRESSION_DISABLED_BODY"		"^CCCC0000Progression has been disabled.^\n\nTitans, Weapons, Factions, Skins, etc. will all be unlocked and usable at any time.\n\nThis can be changed at any time in the multiplayer lobby."
 	
 		"PROGRESSION_ANNOUNCEMENT_BODY"	"^CCCC0000Progression can now be enabled!^\n\nNorthstar now supports vanilla progression, meaning you can choose to unlock Weapons, Skins, Titans, etc. through levelling up and completing challenges.\n\nYou can enable progression using the button at the bottom of the lobby screen.\n\nThis can be changed at any time."
+	
+		// Mod downloading
+		"MISSING_MOD"						"Missing mod \"%s1\" v%s2"
+		"MOD_NOT_VERIFIED"					"(mod is not verified, and couldn't be downloaded automatically)"
+		"MOD_DL_DISABLED"					"(automatic mod downloading is disabled)"
+		"DOWNLOADING_MOD_TITLE"				"Downloading mod"
+		"DOWNLOADING_MOD_TITLE_W_PROGRESS" 	"Downloading mod (%s1%)"
+		"DOWNLOADING_MOD_TEXT"				"Downloading %s1 v%s2..."
+		"DOWNLOADING_MOD_TEXT_W_PROGRESS"	"Downloading %s1 v%s2...\n(%s3/%s4 MB)"
+		"CHECKSUMING_TITLE"					"Checksuming mod"
+		"CHECKSUMING_TEXT"					"Verifying contents of %s1 v%s2..."
+		"EXTRACTING_MOD_TITLE"				"Extracting mod (%s1%)"
+		"EXTRACTING_MOD_TEXT"				"Extracting %s1 v%s2...\n(%s3/%s4 MB)"
+		"FAILED_DOWNLOADING"				"Failed downloading mod"
+		"FAILED_READING_ARCHIVE"			"An error occurred while reading mod archive."
+		"FAILED_WRITING_TO_DISK"			"An error occurred while extracting mod files to the filesystem."
+		"MOD_FETCHING_FAILED"				"Mod archive could not be downloaded from Thunderstore."
+		"MOD_CORRUPTED"						"Downloaded archive checksum does not match verified signature."
+		"NO_DISK_SPACE_AVAILABLE"			"There is not enough space on your disk."
+		"MOD_FETCHING_FAILED_GENERAL"		"Mod extraction failed. Check logs for more details."
 	}
 }

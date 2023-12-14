@@ -952,32 +952,64 @@ string function FillInServerModsLabel( array<RequiredModInfo> mods )
 
 void function OnServerSelected( var button )
 {
+	thread OnServerSelected_Threaded( button )
+}
+
+void function OnServerSelected_Threaded( var button )
+{
 	if ( NSIsRequestingServerList() || NSGetServerCount() == 0 || file.serverListRequestFailed )
 		return
 
 	ServerInfo server = file.focusedServer
-
 	file.lastSelectedServer = server
+
+	// Count mods that have been successfully downloaded
+	bool autoDownloadAllowed = GetConVarBool( "allow_mod_auto_download" )
+	int downloadedMods = 0;
 
 	foreach ( RequiredModInfo mod in server.requiredMods )
 	{
 		if ( !NSGetModNames().contains( mod.name ) )
 		{
-			DialogData dialogData
-			dialogData.header = "#ERROR"
-			dialogData.message = format( "Missing mod \"%s\" v%s", mod.name, mod.version )
-			dialogData.image = $"ui/menu/common/dialog_error"
+			// Check if mod can be auto-downloaded
+			bool modIsVerified = NSIsModDownloadable( mod.name, mod.version )
 
-			#if PC_PROG
+			// Display an error message if not
+			if ( !modIsVerified || !autoDownloadAllowed )
+			{
+				DialogData dialogData
+				dialogData.header = "#ERROR"
+				dialogData.message = Localize( "#MISSING_MOD", mod.name, mod.version )
+				dialogData.image = $"ui/menu/common/dialog_error"
+
+				// Specify error (only if autoDownloadAllowed is set)
+				if ( autoDownloadAllowed )
+				{
+					dialogData.message += "\n" + Localize( "#MOD_NOT_VERIFIED" )
+				}
+
 				AddDialogButton( dialogData, "#DISMISS" )
 
 				AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
-			#endif // PC_PROG
-			AddDialogFooter( dialogData, "#B_BUTTON_DISMISS_RUI" )
+				AddDialogFooter( dialogData, "#B_BUTTON_DISMISS_RUI" )
 
-			OpenDialog( dialogData )
+				OpenDialog( dialogData )
 
-			return
+				return
+			}
+
+			else // Launch download
+			{
+				if ( DownloadMod( mod ) )
+				{
+					downloadedMods++
+				}
+				else
+				{
+					DisplayModDownloadErrorDialog( mod.name )
+					return
+				}
+			}
 		}
 		else
 		{
@@ -1016,6 +1048,13 @@ void function OnServerSelected( var button )
 				return
 			}
 		}
+	}
+
+	// Make Northstar aware new mods have been added
+	if ( downloadedMods > 0 )
+	{
+		print( "Some new mods have been downloaded or enabled, reloading mods." )
+		NSReloadMods();
 	}
 
 	if ( server.requiresPassword )

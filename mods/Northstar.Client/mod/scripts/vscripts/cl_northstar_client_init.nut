@@ -53,3 +53,11 @@ global struct MasterServerAuthResult
     string errorCode
     string errorMessage
 }
+
+global struct ModInstallState
+{
+    int status
+    int progress
+    int total
+    float ratio
+}

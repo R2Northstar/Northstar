@@ -6,6 +6,10 @@
 	"InitScript": "cl_northstar_client_init.nut",
 	"ConVars": [
 		{
+			"Name": "allow_mod_auto_download",
+			"DefaultValue": "0"
+		},
+		{
 			"Name": "filter_hide_empty",
 			"DefaultValue": "0"
 		},
@@ -81,6 +85,10 @@
 			"ClientCallback": {
 				"After": "NSUpdateGameStateClientStart"
 			}
+		},
+		{
+			"Path": "ui/menu_ns_moddownload.nut",
+			"RunOn": "UI"
 		},
 		{
 			"Path": "ui/menu_ns_serverbrowser.nut",

@@ -503,6 +503,25 @@
 			"argTypes":"string modName"
 		},
 		{
+			"name": "NSIsModDownloadable",
+			"helpText": "checks whether a mod is verified and can be auto-downloaded",
+			"returnTypeString": "bool",
+			"argTypes": "string name, string version"
+
+		},
+		{
+			"name": "NSDownloadMod",
+			"helpText": "downloads a given mod from distant API to local game profile",
+			"returnTypeString": "void",
+			"argTypes": "string name, string version"
+		},
+		{
+			"name": "NSGetModInstallState",
+			"helpText": "get status of the mod currently being installed",
+			"returnTypeString": "ModInstallState",
+			"argTypes": ""
+		},
+		{
 			"name":"NSReloadMods",
 			"helpText":"",
 			"returnTypeString":"void",
