@@ -124,19 +124,51 @@ size_t WriteData(void* ptr, size_t size, size_t nmemb, FILE* stream)
 	return written;
 }
 
-void FetchModSync(std::promise<std::optional<fs::path>>&& p, std::string_view url, fs::path downloadPath)
+int ModDownloader::ModFetchingProgressCallback(
+	void* ptr, curl_off_t totalDownloadSize, curl_off_t finishedDownloadSize, curl_off_t totalToUpload, curl_off_t nowUploaded)
 {
+	if (totalDownloadSize != 0 && finishedDownloadSize != 0)
+	{
+		ModDownloader* instance = static_cast<ModDownloader*>(ptr);
+		auto currentDownloadProgress = roundf(static_cast<float>(finishedDownloadSize) / totalDownloadSize * 100);
+		instance->modState.progress = finishedDownloadSize;
+		instance->modState.total = totalDownloadSize;
+		instance->modState.ratio = currentDownloadProgress;
+	}
+
+	return 0;
+}
+
+std::optional<fs::path> ModDownloader::FetchModFromDistantStore(std::string_view modName, std::string_view modVersion)
+{
+	// Retrieve mod prefix from local mods list, or use mod name as mod prefix if bypass flag is set
+	std::string modPrefix = strstr(GetCommandLineA(), VERIFICATION_FLAG) ? modName.data() : verifiedMods[modName.data()].dependencyPrefix;
+	// Build archive distant URI
+	std::string archiveName = std::format("{}-{}.zip", modPrefix, modVersion.data());
+	std::string url = STORE_URL + archiveName;
+	spdlog::info(std::format("Fetching mod archive from {}", url));
+
+	// Download destination
+	std::filesystem::path downloadPath = std::filesystem::temp_directory_path() / archiveName;
+	spdlog::info(std::format("Downloading archive to {}", downloadPath.generic_string()));
+
+	// Update state
+	modState.state = DOWNLOADING;
+
+	// Download the actual archive
 	bool failed = false;
 	FILE* fp = fopen(downloadPath.generic_string().c_str(), "wb");
 	CURLcode result;
 	CURL* easyhandle;
 	easyhandle = curl_easy_init();
 
-	curl_easy_setopt(easyhandle, CURLOPT_TIMEOUT, 30L);
 	curl_easy_setopt(easyhandle, CURLOPT_URL, url.data());
 	curl_easy_setopt(easyhandle, CURLOPT_FAILONERROR, 1L);
 	curl_easy_setopt(easyhandle, CURLOPT_WRITEDATA, fp);
 	curl_easy_setopt(easyhandle, CURLOPT_WRITEFUNCTION, WriteData);
+	curl_easy_setopt(easyhandle, CURLOPT_NOPROGRESS, 0L);
+	curl_easy_setopt(easyhandle, CURLOPT_XFERINFOFUNCTION, ModDownloader::ModFetchingProgressCallback);
+	curl_easy_setopt(easyhandle, CURLOPT_XFERINFODATA, this);
 	result = curl_easy_perform(easyhandle);
 
 	if (result == CURLcode::CURLE_OK)
@@ -154,28 +186,7 @@ void FetchModSync(std::promise<std::optional<fs::path>>&& p, std::string_view ur
 REQUEST_END_CLEANUP:
 	curl_easy_cleanup(easyhandle);
 	fclose(fp);
-	p.set_value(failed ? std::optional<fs::path>() : std::optional<fs::path>(downloadPath));
-}
-
-std::optional<fs::path> ModDownloader::FetchModFromDistantStore(std::string_view modName, std::string_view modVersion)
-{
-	// Retrieve mod prefix from local mods list, or use mod name as mod prefix if bypass flag is set
-	std::string modPrefix = strstr(GetCommandLineA(), VERIFICATION_FLAG) ? modName.data() : verifiedMods[modName.data()].dependencyPrefix;
-	// Build archive distant URI
-	std::string archiveName = std::format("{}-{}.zip", modPrefix, modVersion.data());
-	std::string url = STORE_URL + archiveName;
-	spdlog::info(std::format("Fetching mod archive from {}", url));
-
-	// Download destination
-	std::filesystem::path downloadPath = std::filesystem::temp_directory_path() / archiveName;
-	spdlog::info(std::format("Downloading archive to {}", downloadPath.generic_string()));
-
-	// Download the actual archive
-	std::promise<std::optional<fs::path>> promise;
-	auto f = promise.get_future();
-	std::thread t(&FetchModSync, std::move(promise), std::string_view(url), downloadPath);
-	t.join();
-	return f.get();
+	return failed ? std::optional<fs::path>() : std::optional<fs::path>(downloadPath);
 }
 
 bool ModDownloader::IsModLegit(fs::path modPath, std::string_view expectedChecksum)
@@ -185,6 +196,9 @@ bool ModDownloader::IsModLegit(fs::path modPath, std::string_view expectedChecks
 		spdlog::info("Bypassing mod verification due to flag set up.");
 		return true;
 	}
+
+	// Update state
+	modState.state = CHECKSUMING;
 
 	NTSTATUS status;
 	BCRYPT_ALG_HANDLE algorithmHandle = NULL;
@@ -207,6 +221,7 @@ bool ModDownloader::IsModLegit(fs::path modPath, std::string_view expectedChecks
 		BCRYPT_HASH_REUSABLE_FLAG); // Flags; Loads a provider which supports reusable hash
 	if (!NT_SUCCESS(status))
 	{
+		modState.state = MOD_CORRUPTED;
 		goto cleanup;
 	}
 
@@ -221,6 +236,7 @@ bool ModDownloader::IsModLegit(fs::path modPath, std::string_view expectedChecks
 	if (!NT_SUCCESS(status))
 	{
 		// goto cleanup;
+		modState.state = MOD_CORRUPTED;
 		return false;
 	}
 
@@ -235,6 +251,7 @@ bool ModDownloader::IsModLegit(fs::path modPath, std::string_view expectedChecks
 		0); // Flags
 	if (!NT_SUCCESS(status))
 	{
+		modState.state = MOD_CORRUPTED;
 		goto cleanup;
 	}
 
@@ -242,6 +259,7 @@ bool ModDownloader::IsModLegit(fs::path modPath, std::string_view expectedChecks
 	if (!fp.is_open())
 	{
 		spdlog::error("Unable to open archive.");
+		modState.state = FAILED_READING_ARCHIVE;
 		return false;
 	}
 	fp.seekg(0, fp.beg);
@@ -254,6 +272,7 @@ bool ModDownloader::IsModLegit(fs::path modPath, std::string_view expectedChecks
 			status = BCryptHashData(hashHandle, (PBYTE)buffer.data(), bytesRead, 0);
 			if (!NT_SUCCESS(status))
 			{
+				modState.state = MOD_CORRUPTED;
 				goto cleanup;
 			}
 		}
@@ -269,6 +288,7 @@ bool ModDownloader::IsModLegit(fs::path modPath, std::string_view expectedChecks
 		0); // Flags
 	if (!NT_SUCCESS(status))
 	{
+		modState.state = MOD_CORRUPTED;
 		goto cleanup;
 	}
 
@@ -316,6 +336,30 @@ bool ModDownloader::IsModAuthorized(std::string_view modName, std::string_view m
 	return versions.count(modVersion.data()) != 0;
 }
 
+int GetModArchiveSize(unzFile file, unz_global_info64 info)
+{
+	int totalSize = 0;
+
+	for (int i = 0; i < info.number_entry; i++)
+	{
+		char zipFilename[256];
+		unz_file_info64 fileInfo;
+		unzGetCurrentFileInfo64(file, &fileInfo, zipFilename, sizeof(zipFilename), NULL, 0, NULL, 0);
+
+		totalSize += fileInfo.uncompressed_size;
+
+		if ((i + 1) < info.number_entry)
+		{
+			unzGoToNextFile(file);
+		}
+	}
+
+	// Reset file pointer for archive extraction
+	unzGoToFirstFile(file);
+
+	return totalSize;
+}
+
 void ModDownloader::ExtractMod(fs::path modPath)
 {
 	unzFile file;
@@ -326,6 +370,7 @@ void ModDownloader::ExtractMod(fs::path modPath)
 	if (file == NULL)
 	{
 		spdlog::error("Cannot open archive located at {}.", modPath.generic_string());
+		modState.state = FAILED_READING_ARCHIVE;
 		goto EXTRACTION_CLEANUP;
 	}
 
@@ -335,8 +380,14 @@ void ModDownloader::ExtractMod(fs::path modPath)
 	if (status != UNZ_OK)
 	{
 		spdlog::error("Failed getting information from archive (error code: {})", status);
+		modState.state = FAILED_READING_ARCHIVE;
 		goto EXTRACTION_CLEANUP;
 	}
+
+	// Update state
+	modState.state = EXTRACTING;
+	modState.total = GetModArchiveSize(file, gi);
+	modState.progress = 0;
 
 	// Mod directory name (removing the ".zip" fom the archive name)
 	name = modPath.filename().string();
@@ -362,6 +413,7 @@ void ModDownloader::ExtractMod(fs::path modPath)
 				if (!std::filesystem::create_directories(fileDestination.parent_path(), ec) && ec.value() != 0)
 				{
 					spdlog::error("Parent directory ({}) creation failed.", fileDestination.parent_path().generic_string());
+					modState.state = FAILED_WRITING_TO_DISK;
 					goto EXTRACTION_CLEANUP;
 				}
 			}
@@ -373,6 +425,7 @@ void ModDownloader::ExtractMod(fs::path modPath)
 				if (!std::filesystem::create_directory(fileDestination, ec) && ec.value() != 0)
 				{
 					spdlog::error("Directory creation failed: {}", ec.message());
+					modState.state = FAILED_WRITING_TO_DISK;
 					goto EXTRACTION_CLEANUP;
 				}
 			}
@@ -383,6 +436,7 @@ void ModDownloader::ExtractMod(fs::path modPath)
 				if (unzLocateFile(file, zipFilename, 0) != UNZ_OK)
 				{
 					spdlog::error("File \"{}\" was not found in archive.", zipFilename);
+					modState.state = FAILED_READING_ARCHIVE;
 					goto EXTRACTION_CLEANUP;
 				}
 
@@ -397,6 +451,7 @@ void ModDownloader::ExtractMod(fs::path modPath)
 				if (status != UNZ_OK)
 				{
 					spdlog::error("Could not open file {} from archive.", zipFilename);
+					modState.state = FAILED_READING_ARCHIVE;
 					goto EXTRACTION_CLEANUP;
 				}
 
@@ -405,6 +460,7 @@ void ModDownloader::ExtractMod(fs::path modPath)
 				if (fout == NULL)
 				{
 					spdlog::error("Failed creating destination file.");
+					modState.state = FAILED_WRITING_TO_DISK;
 					goto EXTRACTION_CLEANUP;
 				}
 
@@ -413,6 +469,7 @@ void ModDownloader::ExtractMod(fs::path modPath)
 				if (buffer == NULL)
 				{
 					spdlog::error("Error while allocating memory.");
+					modState.state = FAILED_WRITING_TO_DISK;
 					goto EXTRACTION_CLEANUP;
 				}
 
@@ -434,11 +491,16 @@ void ModDownloader::ExtractMod(fs::path modPath)
 							break;
 						}
 					}
+
+					// Update extraction stats
+					modState.progress += bufferSize;
+					modState.ratio = roundf(static_cast<float>(modState.progress) / modState.total * 100);
 				} while (err > 0);
 
 				if (err != UNZ_OK)
 				{
 					spdlog::error("An error occurred during file extraction (code: {})", err);
+					modState.state = FAILED_WRITING_TO_DISK;
 					goto EXTRACTION_CLEANUP;
 				}
 				err = unzCloseCurrentFile(file);
@@ -492,12 +554,14 @@ void ModDownloader::DownloadMod(std::string modName, std::string modVersion)
 			if (!fetchingResult.has_value())
 			{
 				spdlog::error("Something went wrong while fetching archive, aborting.");
+				modState.state = MOD_FETCHING_FAILED;
 				goto REQUEST_END_CLEANUP;
 			}
 			archiveLocation = fetchingResult.value();
 			if (!IsModLegit(archiveLocation, std::string_view(expectedHash)))
 			{
 				spdlog::warn("Archive hash does not match expected checksum, aborting.");
+				modState.state = MOD_CORRUPTED;
 				goto REQUEST_END_CLEANUP;
 			}
 
@@ -514,39 +578,61 @@ void ModDownloader::DownloadMod(std::string modName, std::string modVersion)
 				spdlog::error("Error while removing downloaded archive: {}", a.what());
 			}
 
+			modState.state = DONE;
 			spdlog::info("Done downloading {}.", modName);
 		});
 
 	requestThread.detach();
 }
 
-void ConCommandFetchVerifiedMods(const CCommand& args)
-{
-	g_pModDownloader->FetchModsListFromAPI();
-}
-
-void ConCommandDownloadMod(const CCommand& args)
-{
-	if (args.ArgC() < 3)
-	{
-		return;
-	}
-
-	// Split arguments string by whitespaces (https://stackoverflow.com/a/5208977)
-	std::string buffer;
-	std::stringstream ss(args.ArgS());
-	std::vector<std::string> tokens;
-	while (ss >> buffer)
-		tokens.push_back(buffer);
-
-	std::string modName = tokens[0];
-	std::string modVersion = tokens[1];
-	g_pModDownloader->DownloadMod(modName, modVersion);
-}
-
 ON_DLL_LOAD_RELIESON("engine.dll", ModDownloader, (ConCommand), (CModule module))
 {
 	g_pModDownloader = new ModDownloader();
-	RegisterConCommand("fetch_verified_mods", ConCommandFetchVerifiedMods, "fetches verified mods list from GitHub repository", FCVAR_NONE);
-	RegisterConCommand("download_mod", ConCommandDownloadMod, "downloads a mod from remote store", FCVAR_NONE);
+	g_pModDownloader->FetchModsListFromAPI();
+}
+
+ADD_SQFUNC(
+	"bool", NSIsModDownloadable, "string name, string version", "", ScriptContext::SERVER | ScriptContext::CLIENT | ScriptContext::UI)
+{
+	g_pSquirrel<context>->newarray(sqvm, 0);
+
+	const SQChar* modName = g_pSquirrel<context>->getstring(sqvm, 1);
+	const SQChar* modVersion = g_pSquirrel<context>->getstring(sqvm, 2);
+
+	bool result = g_pModDownloader->IsModAuthorized(modName, modVersion);
+	g_pSquirrel<context>->pushbool(sqvm, result);
+
+	return SQRESULT_NOTNULL;
+}
+
+ADD_SQFUNC("void", NSDownloadMod, "string name, string version", "", ScriptContext::SERVER | ScriptContext::CLIENT | ScriptContext::UI)
+{
+	const SQChar* modName = g_pSquirrel<context>->getstring(sqvm, 1);
+	const SQChar* modVersion = g_pSquirrel<context>->getstring(sqvm, 2);
+	g_pModDownloader->DownloadMod(modName, modVersion);
+
+	return SQRESULT_NOTNULL;
+}
+
+ADD_SQFUNC("ModInstallState", NSGetModInstallState, "", "", ScriptContext::SERVER | ScriptContext::CLIENT | ScriptContext::UI)
+{
+	g_pSquirrel<context>->pushnewstructinstance(sqvm, 4);
+
+	// state
+	g_pSquirrel<context>->pushinteger(sqvm, g_pModDownloader->modState.state);
+	g_pSquirrel<context>->sealstructslot(sqvm, 0);
+
+	// progress
+	g_pSquirrel<context>->pushinteger(sqvm, g_pModDownloader->modState.progress);
+	g_pSquirrel<context>->sealstructslot(sqvm, 1);
+
+	// total
+	g_pSquirrel<context>->pushinteger(sqvm, g_pModDownloader->modState.total);
+	g_pSquirrel<context>->sealstructslot(sqvm, 2);
+
+	// ratio
+	g_pSquirrel<context>->pushfloat(sqvm, g_pModDownloader->modState.ratio);
+	g_pSquirrel<context>->sealstructslot(sqvm, 3);
+
+	return SQRESULT_NOTNULL;
 }
