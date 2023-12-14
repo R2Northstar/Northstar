@@ -38,6 +38,7 @@ void function Progression_Init()
 	#if SERVER
 	AddCallback_OnClientDisconnected( OnClientDisconnected )
 	AddClientCommandCallback( "ns_progression", ClientCommand_SetProgression )
+	AddClientCommandCallback( "ns_resettitanaegis", ClientCommand_ResetTitanAegis )
 	AddCallback_GameStateEnter( eGameState.Playing, OnPlaying )
 	#elseif CLIENT
 	AddCallback_OnClientScriptInit( OnClientScriptInit )
@@ -82,6 +83,28 @@ bool function ClientCommand_SetProgression( entity player, array<string> args )
 	if ( file.progressionEnabled[player] )
 		ValidateEquippedItems( player )
 
+	return true
+}
+
+/// Resets a specific Titan's Aegis rank back to `0`
+/// * `player` - The player entity to perform the action on
+/// * `args` - The arguments passed from the client command. `args[0]` should be an integer corresponding to the index of the Titan to reset.
+///
+/// Returns `true` on success and `false` on missing args.
+bool function ClientCommand_ResetTitanAegis( entity player, array<string> args )
+{
+	if ( !args.len() )
+		return false
+	
+	int suitIndex = args[0].tointeger()
+	player.SetPersistentVar( "titanFDUnlockPoints[" + suitIndex + "]", 0 )
+	player.SetPersistentVar( "previousFDUnlockPoints[" + suitIndex + "]", 0 )
+	player.SetPersistentVar( "fdTitanXP[" + suitIndex + "]", 0 )
+	player.SetPersistentVar( "fdPreviousTitanXP[" + suitIndex + "]", 0 )
+	
+	// Refresh Highest Aegis Titan since we might get all of them back to 1 if players wants
+	RecalculateHighestTitanFDLevel( player )
+	
 	return true
 }
 #endif
