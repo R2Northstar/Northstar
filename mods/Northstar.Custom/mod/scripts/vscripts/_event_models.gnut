@@ -1,0 +1,21 @@
+global function EventModelsInit
+
+void function EventModelsInit()
+{
+	if( !GetConVarBool( "ns_show_event_models" ) )
+		return
+	
+	table timeParts = GetUnixTimeParts()
+	int month = expect int( timeParts[ "month" ] )
+	int day = expect int( timeParts[ "day" ] )
+
+	// 18th December to 6th January
+	if( ( ( month == 12 ) && ( day >= 18 ) ) || ( ( month == 1 ) && ( day <= 6 ) ) )
+	{
+		PrecacheModel( $"models/northstartee/winter_holiday_tree.mdl" )
+		PrecacheModel( $"models/northstartree/winter_holiday_floor.mdl" )
+
+		CreatePropDynamic( $"models/northstartree/winter_holiday_tree.mdl", < -60, 740, 30 >, < 0, 0, 0 >, SOLID_VPHYSICS, 1000 )
+		CreatePropDynamic( $"models/northstartree/winter_holiday_floor.mdl", < -60, 740, 30 >, < 0, 0, 0 >, SOLID_VPHYSICS, 1000 )
+	}
+}
