@@ -264,6 +264,13 @@ template <ScriptContext context> void SquirrelManager<context>::VMCreated(CSquir
 		defconst(m_pSQVM, pair.first.c_str(), bWasFound);
 	}
 
+	auto loadedPlugins = &g_pPluginManager->m_vLoadedPlugins;
+	for (const auto& pluginName : g_pModManager->m_PluginDependencyConstants)
+	{
+		auto f = [&](Plugin plugin) -> bool { return plugin.dependencyName == pluginName; };
+		defconst(m_pSQVM, pluginName.c_str(), std::find_if(loadedPlugins->begin(), loadedPlugins->end(), f) != loadedPlugins->end());
+	}
+
 	defconst(m_pSQVM, "MAX_FOLDER_SIZE", GetMaxSaveFolderSize() / 1024);
 
 	// define squirrel constants for northstar(.dll) version

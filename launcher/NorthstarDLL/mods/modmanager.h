@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <filesystem>
+#include <unordered_set>
 
 const std::string MOD_FOLDER_SUFFIX = "\\mods";
 const std::string THUNDERSTORE_MOD_FOLDER_SUFFIX = "\\packages";
@@ -124,6 +125,7 @@ class Mod
 	// hashed with STR_HASH
 
 	std::unordered_map<std::string, std::string> DependencyConstants;
+	std::vector<std::string> PluginDependencyConstants;
 
   public:
 	Mod(fs::path modPath, char* jsonBuf);
@@ -134,6 +136,7 @@ class Mod
 	void ParseScripts(rapidjson_document& json);
 	void ParseLocalization(rapidjson_document& json);
 	void ParseDependencies(rapidjson_document& json);
+	void ParsePluginDependencies(rapidjson_document& json);
 	void ParseInitScript(rapidjson_document& json);
 };
 
@@ -160,6 +163,7 @@ class ModManager
 	std::vector<Mod> m_LoadedMods;
 	std::unordered_map<std::string, ModOverrideFile> m_ModFiles;
 	std::unordered_map<std::string, std::string> m_DependencyConstants;
+	std::unordered_set<std::string> m_PluginDependencyConstants;
 
   public:
 	ModManager();

@@ -104,6 +104,7 @@ Mod::Mod(fs::path modDir, char* jsonBuf)
 	ParseScripts(modJson);
 	ParseLocalization(modJson);
 	ParseDependencies(modJson);
+	ParsePluginDependencies(modJson);
 	ParseInitScript(modJson);
 
 	// A mod is remote if it's located in the remote mods folder
@@ -483,6 +484,28 @@ void Mod::ParseDependencies(rapidjson_document& json)
 	}
 }
 
+void Mod::ParsePluginDependencies(rapidjson_document& json)
+{
+	if (!json.HasMember("PluginDependencies"))
+		return;
+
+	if (!json["PluginDependencies"].IsArray())
+	{
+		spdlog::warn("'PluginDependencies' field is not an object, skipping...");
+		return;
+	}
+
+	for (auto& name : json["PluginDependencies"].GetArray())
+	{
+		if (!name.IsString())
+			continue;
+
+		spdlog::info("Plugin Constant {} defined by {}", name.GetString(), Name);
+
+		PluginDependencyConstants.push_back(name.GetString());
+	}
+}
+
 void Mod::ParseInitScript(rapidjson_document& json)
 {
 	if (!json.HasMember("InitScript"))
@@ -686,6 +709,11 @@ void ModManager::LoadMods()
 			}
 			if (m_DependencyConstants.find(pair.first) == m_DependencyConstants.end())
 				m_DependencyConstants.emplace(pair);
+		}
+
+		for (std::string& dependency : mod.PluginDependencyConstants)
+		{
+			m_PluginDependencyConstants.insert(dependency);
 		}
 
 		if (m_bHasEnabledModsCfg && m_EnabledModsCfg.HasMember(mod.Name.c_str()))
