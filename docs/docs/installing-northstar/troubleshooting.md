@@ -128,14 +128,14 @@ Go to Mods at the bottom of your screen on the main menu, then click Authenticat
 ## Adding Launch Options <a href="#launch-opts" id="launch-opts"></a>
 
 Adding `-northstar` will start Northstar when launching from your library\
-Adding `-vanilla` or removing the `-northstar` will start the normal game when you have Northstar installed
+Adding `-nonorthstardll` or removing the `-northstar` will start the normal game when you have Northstar installed
 
 * For Steam
-  * `Your library > Right click TF|2 > Properties > General > Launch Options > -northstar or -vanilla`
+  * `Your library > Right click TF|2 > Properties > General > Launch Options > -northstar or -nonorthstardll`
 * For EA app
-  * `My collection > Click the three dots on TF|2 > Properties > Advanced launch options > -northstar or -vanilla`
+  * `My collection > Click the three dots on TF|2 > Properties > Advanced launch options > -northstar or -nonorthstardll`
 * For Origin
-  * `Your library > Right click TF|2 > Game Properties > Advanced Launch Options > Command Line Arguments > -northstar or -vanilla`
+  * `Your library > Right click TF|2 > Game Properties > Advanced Launch Options > Command Line Arguments > -northstar or -nonorthstardll`
 
 ## Verifying Game Files <a href="#verify-files" id="verify-files"></a>
 
