@@ -5,8 +5,9 @@ Here's a list of new command line arguments that Northstar introduces, they shou
 | Argument           | Description                                                                                        | Value                            |
 | ------------------ | -------------------------------------------------------------------------------------------------- | -------------------------------- |
 | `-disablelogs`     | Disable logging and creation of log files                                                          |                                  |
-| `-vanilla`         | Disables Northstar loading                                                                         |                                  |
+| `-nonorthstardll`  | Disables Northstar loading                                                                         |                                  |
 | `-northstar`       | Enables Northstar loading                                                                          |                                  |
+| `-vanilla`         | Enables vanilla compatibility                                                                      |                                  |
 | `-dedicated`       | Starts a dedicated server without video output                                                     |                                  |
 | `-waitfordebugger` | Waits for debugger to connect before launching game                                                |                                  |
 | `-language`        | Forces loading of client localisation                                                              | language string ex: `portuguese` |
