@@ -170,6 +170,9 @@ void function SpectatorFunc_Default( entity player )
 				{
 					player.SetObserverTarget( target )
 					player.StartObserverMode( OBS_MODE_CHASE )
+					// the delay of 0.1 seems to fix the spec_mode command not working
+					// when using the keybind
+					player.SetSpecReplayDelay( 0.1 )
 				}
 				catch ( ex ) { }
 			}
@@ -215,7 +218,10 @@ bool function ClientCommandCallback_spec_mode( entity player, array<string> args
 	else if ( player.GetObserverMode() == OBS_MODE_IN_EYE )
 	{	
 		// set to third person spectate
-		player.SetSpecReplayDelay( 0.0 )
+
+		// the delay of 0.1 seems to fix the spec_mode command not working
+		// when using the keybind
+		player.SetSpecReplayDelay( 0.1 )
 		player.StartObserverMode( OBS_MODE_CHASE )
 	}
 	
