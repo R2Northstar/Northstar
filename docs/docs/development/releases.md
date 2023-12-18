@@ -139,3 +139,15 @@ Once `2.0` has been released, expectations for `3.0` tend to be lower as the num
 
 - Make at least one release candidate and test it before actual release.
 - Release should also only ever be latest release candidate but tagged as release to avoid introducing new bugs.
+
+
+## Other repos
+
+Repos like navmeshes and DiscordRPC get their release unrelated to main Northstar release numbering as they usually only see a few release per year due to 
+
+
+### DiscordRPC
+
+Push new tag which in turn will generate a release. Tags are formatted as `vN` where `N` is an always increasing integer, i.e. `v4`, `v5`, `v6`, etc.
+
+Once a new DiscordRPC release has been made, the version number needs to be bumped in the [release repo](https://github.com/R2Northstar/Northstar) to pull the new release.
