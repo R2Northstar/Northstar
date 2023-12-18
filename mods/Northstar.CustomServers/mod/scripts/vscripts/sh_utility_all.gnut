@@ -1542,6 +1542,7 @@ array<string> function GetAvailableTitanRefs( entity player )
 
 /// Gets the highest Titan FD level and stores it in the corresponding persistent var.
 /// * `player` - The player entity to perform the action on
+#if MP
 void function RecalculateHighestTitanFDLevel( entity player )
 {
 	int enumCount = PersistenceGetEnumCount( "titanClasses" )
@@ -1556,7 +1557,6 @@ void function RecalculateHighestTitanFDLevel( entity player )
 	player.SetPersistentVar( "fdStats.highestTitanFDLevel", highestAegis )
 }
 
-#if MP
 string function GetTitanRefForLoadoutIndex( entity player, int loadoutIndex )
 {
 	TitanLoadoutDef loadout = GetTitanLoadoutFromPersistentData( player, loadoutIndex )
