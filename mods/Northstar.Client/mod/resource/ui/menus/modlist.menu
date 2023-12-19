@@ -488,8 +488,8 @@ resource/ui/menus/modlist.menu
 		{
 			ControlName	Label
 
-			labelText	" : This mod gets (un)loaded automatically"
-			wide 500
+			labelText	"#MOD_REQUIRED_WARNING"
+			auto_wide_tocontents 1
 			tall 50
 			visible 0
 
