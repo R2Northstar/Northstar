@@ -104,7 +104,7 @@ It is normal for the _"Restart_As_Admin"_ button to appear untoggled. This is al
 The third settings tab on VTOL is the _"Skins"_ tab. VTOL has support for DDS format skins (the skins with the numbered folders in them), which are commonly used for Vanilla Titanfall 2, with Northstar generally opting to convert them to mods.
 
 This format is older and less consistent than converting them to a mod to be used with Northstar (see [Advocate](./#advocate)).
-It can still be used on Vanilla by making use of a [vanilla profile](../../using-northstar/advanced.md#vanilla-profile).
+It can still be used on Vanilla by playing [Vanilla via Northstar](../../using-northstar/vanilla.md#vanilla-with-mods).
 
 However, if you want you can still install skins like this for use with Northstar.
 All you need to do is drag the folder of a DDS format skin onto the Skins screen of VTOL to install it automatically.
