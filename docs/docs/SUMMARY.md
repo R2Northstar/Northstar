@@ -27,6 +27,7 @@
   * [Commands](using-northstar/commands.md)
   * [Launch arguments](using-northstar/launch-arguments.md)
   * [Progression System](using-northstar/progression.md)
+  * [Vanilla via Northstar](using-northstar/vanilla.md)
   * [Advanced](using-northstar/advanced.md)
 * [FAQ](faq.md)
 
