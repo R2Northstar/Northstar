@@ -4,6 +4,9 @@
             "pattern": "https://help.ea.com/en/help/pc/link-ea-and-steam/"
         },
         {
+            "pattern": "https://panel.ticketsbot.net/manage/920776187884732556/tags"
+        },
+        {
             "pattern": "https://forum.manjaro.org/t/howto-troubleshoot-crackling-in-pipewire/82442"
         },
         {
