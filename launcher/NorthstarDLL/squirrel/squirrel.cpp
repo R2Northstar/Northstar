@@ -504,17 +504,17 @@ void __fastcall ScriptCompileErrorHook(HSquirrelVM* sqvm, const char* error, con
 		}
 		else
 		{
-			R2::Cbuf_AddText(
-				R2::Cbuf_GetCurrentPlayer(),
+			Cbuf_AddText(
+				Cbuf_GetCurrentPlayer(),
 				fmt::format("disconnect \"Encountered {} script compilation error, see console for details.\"", GetContextName(realContext))
 					.c_str(),
-				R2::cmd_source_t::kCommandSrcCode);
+				cmd_source_t::kCommandSrcCode);
 
 			// likely temp: show console so user can see any errors, as error message wont display if ui is dead
 			// maybe we could disable all mods other than the coremods and try a reload before doing this?
 			// could also maybe do some vgui bullshit to show something visually rather than console
 			if (realContext == ScriptContext::UI)
-				R2::Cbuf_AddText(R2::Cbuf_GetCurrentPlayer(), "showconsole", R2::cmd_source_t::kCommandSrcCode);
+				Cbuf_AddText(Cbuf_GetCurrentPlayer(), "showconsole", cmd_source_t::kCommandSrcCode);
 		}
 	}
 
@@ -638,7 +638,7 @@ template <ScriptContext context, TemplateStringLiteral funcName> SQRESULT SQ_Stu
 
 template <ScriptContext context> void StubUnsafeSQFuncs()
 {
-	if (!Tier0::CommandLine()->CheckParm("-allowunsafesqfuncs"))
+	if (!CommandLine()->CheckParm("-allowunsafesqfuncs"))
 	{
 		g_pSquirrel<context>->AddFuncOverride("DevTextBufferWrite", SQ_StubbedFunc<context, "DevTextBufferWrite">);
 		g_pSquirrel<context>->AddFuncOverride("DevTextBufferClear", SQ_StubbedFunc<context, "DevTextBufferClear">);

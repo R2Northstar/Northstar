@@ -132,9 +132,9 @@ REPLACE_SQFUNC(GetDataTable, (ScriptContext::UI | ScriptContext::CLIENT | Script
 			diskAssetPath /= fs::path(pAssetName);
 
 		std::string sDiskAssetPath(diskAssetPath.string());
-		if ((*R2::g_pFilesystem)->m_vtable2->FileExists(&(*R2::g_pFilesystem)->m_vtable2, sDiskAssetPath.c_str(), "GAME"))
+		if ((*g_pFilesystem)->m_vtable2->FileExists(&(*g_pFilesystem)->m_vtable2, sDiskAssetPath.c_str(), "GAME"))
 		{
-			std::string sTableCSV = R2::ReadVPKFile(sDiskAssetPath.c_str());
+			std::string sTableCSV = ReadVPKFile(sDiskAssetPath.c_str());
 			if (!sTableCSV.size())
 			{
 				g_pSquirrel<context>->raiseerror(sqvm, fmt::format("Datatable \"{}\" is empty", pAssetName).c_str());
@@ -793,7 +793,7 @@ void DumpDatatable(const char* pDatatablePath)
 		return;
 	}
 
-	std::string sOutputPath(fmt::format("{}/scripts/datatable/{}.csv", R2::g_pModName, fs::path(pDatatablePath).stem().string()));
+	std::string sOutputPath(fmt::format("{}/scripts/datatable/{}.csv", g_pModName, fs::path(pDatatablePath).stem().string()));
 	std::string sDatatableContents(DataTableToString(pDatatable));
 
 	fs::create_directories(fs::path(sOutputPath).remove_filename());
@@ -900,7 +900,7 @@ ON_DLL_LOAD_RELIESON("engine.dll", SharedScriptDataTables, ConVar, (CModule modu
 {
 	Cvar_ns_prefer_datatable_from_disk = new ConVar(
 		"ns_prefer_datatable_from_disk",
-		IsDedicatedServer() && Tier0::CommandLine()->CheckParm("-nopakdedi") ? "1" : "0",
+		IsDedicatedServer() && CommandLine()->CheckParm("-nopakdedi") ? "1" : "0",
 		FCVAR_NONE,
 		"whether to prefer loading datatables from disk, rather than rpak");
 

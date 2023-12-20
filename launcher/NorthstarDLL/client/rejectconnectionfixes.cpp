@@ -22,7 +22,7 @@ void,, (bool a1, const char* fmt, ...))
 		// not doing this gets our client in a pretty weird state so we need to shut it down manually here
 
 		// don't call Cbuf_Execute because we don't need this called immediately
-		R2::Cbuf_AddText(R2::Cbuf_GetCurrentPlayer(), "disconnect", R2::cmd_source_t::kCommandSrcCode);
+		Cbuf_AddText(Cbuf_GetCurrentPlayer(), "disconnect", cmd_source_t::kCommandSrcCode);
 	}
 
 	return COM_ExplainDisconnection(a1, "%s", buf);

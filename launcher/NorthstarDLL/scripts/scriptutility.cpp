@@ -18,9 +18,9 @@ ADD_SQFUNC(
 ADD_SQFUNC(
 	"string", NSGetLocalPlayerUID, "", "Returns the local player's uid.", ScriptContext::UI | ScriptContext::CLIENT | ScriptContext::SERVER)
 {
-	if (R2::g_pLocalPlayerUserID)
+	if (g_pLocalPlayerUserID)
 	{
-		g_pSquirrel<context>->pushstring(sqvm, R2::g_pLocalPlayerUserID);
+		g_pSquirrel<context>->pushstring(sqvm, g_pLocalPlayerUserID);
 		return SQRESULT_NOTNULL;
 	}
 

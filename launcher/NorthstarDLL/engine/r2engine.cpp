@@ -1,28 +1,22 @@
 #include "r2engine.h"
 
-using namespace R2;
+Cbuf_GetCurrentPlayerType Cbuf_GetCurrentPlayer;
+Cbuf_AddTextType Cbuf_AddText;
+Cbuf_ExecuteType Cbuf_Execute;
 
-// use the R2 namespace for game funcs
-namespace R2
-{
-	Cbuf_GetCurrentPlayerType Cbuf_GetCurrentPlayer;
-	Cbuf_AddTextType Cbuf_AddText;
-	Cbuf_ExecuteType Cbuf_Execute;
+bool (*CCommand__Tokenize)(CCommand& self, const char* pCommandString, cmd_source_t commandSource);
 
-	bool (*CCommand__Tokenize)(CCommand& self, const char* pCommandString, R2::cmd_source_t commandSource);
+CEngine* g_pEngine;
 
-	CEngine* g_pEngine;
+void (*CBaseClient__Disconnect)(void* self, uint32_t unknownButAlways1, const char* reason, ...);
+CBaseClient* g_pClientArray;
 
-	void (*CBaseClient__Disconnect)(void* self, uint32_t unknownButAlways1, const char* reason, ...);
-	CBaseClient* g_pClientArray;
+server_state_t* g_pServerState;
 
-	server_state_t* g_pServerState;
+char* g_pModName =
+	nullptr; // we cant set this up here atm since we dont have an offset to it in engine, instead we store it in IsRespawnMod
 
-	char* g_pModName =
-		nullptr; // we cant set this up here atm since we dont have an offset to it in engine, instead we store it in IsRespawnMod
-
-	CGlobalVars* g_pGlobals;
-} // namespace R2
+CGlobalVars* g_pGlobals;
 
 ON_DLL_LOAD("engine.dll", R2Engine, (CModule module))
 {
@@ -30,7 +24,7 @@ ON_DLL_LOAD("engine.dll", R2Engine, (CModule module))
 	Cbuf_AddText = module.Offset(0x1203B0).RCast<Cbuf_AddTextType>();
 	Cbuf_Execute = module.Offset(0x1204B0).RCast<Cbuf_ExecuteType>();
 
-	CCommand__Tokenize = module.Offset(0x418380).RCast<bool (*)(CCommand&, const char*, R2::cmd_source_t)>();
+	CCommand__Tokenize = module.Offset(0x418380).RCast<bool (*)(CCommand&, const char*, cmd_source_t)>();
 
 	g_pEngine = module.Offset(0x7D70C8).Deref().RCast<CEngine*>();
 

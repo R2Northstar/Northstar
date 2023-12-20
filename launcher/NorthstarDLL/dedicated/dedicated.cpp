@@ -10,8 +10,6 @@
 
 AUTOHOOK_INIT()
 
-using namespace R2;
-
 bool IsDedicatedServer()
 {
 	static bool result = strstr(GetCommandLineA(), "-dedicated");
@@ -43,15 +41,15 @@ void Sys_Printf(CDedicatedExports* dedicated, const char* msg)
 void RunServer(CDedicatedExports* dedicated)
 {
 	spdlog::info("CDedicatedExports::RunServer(): starting");
-	spdlog::info(Tier0::CommandLine()->GetCmdLine());
+	spdlog::info(CommandLine()->GetCmdLine());
 
 	// initialise engine
 	g_pEngine->Frame();
 
 	// add +map if no map loading command is present
 	// don't manually execute this from cbuf as users may have it in their startup args anyway, easier just to run from stuffcmds if present
-	if (!Tier0::CommandLine()->CheckParm("+map") && !Tier0::CommandLine()->CheckParm("+launchplaylist"))
-		Tier0::CommandLine()->AppendParm("+map", g_pCVar->FindVar("match_defaultMap")->GetString());
+	if (!CommandLine()->CheckParm("+map") && !CommandLine()->CheckParm("+launchplaylist"))
+		CommandLine()->AppendParm("+map", g_pCVar->FindVar("match_defaultMap")->GetString());
 
 	// re-run commandline
 	Cbuf_AddText(Cbuf_GetCurrentPlayer(), "stuffcmds", cmd_source_t::kCommandSrcCode);
@@ -61,11 +59,11 @@ void RunServer(CDedicatedExports* dedicated)
 	double frameTitle = 0;
 	while (g_pEngine->m_nQuitting == EngineQuitState::QUIT_NOTQUITTING)
 	{
-		double frameStart = Tier0::Plat_FloatTime();
+		double frameStart = Plat_FloatTime();
 		g_pEngine->Frame();
 
 		std::this_thread::sleep_for(
-			std::chrono::duration<double, std::ratio<1>>(g_pGlobals->m_flTickInterval - fmin(Tier0::Plat_FloatTime() - frameStart, 0.25)));
+			std::chrono::duration<double, std::ratio<1>>(g_pGlobals->m_flTickInterval - fmin(Plat_FloatTime() - frameStart, 0.25)));
 	}
 }
 
@@ -215,13 +213,13 @@ ON_DLL_LOAD_DEDI_RELIESON("engine.dll", DedicatedServer, ServerPresence, (CModul
 	// make sure it still gets registered
 
 	// add cmdline args that are good for dedi
-	Tier0::CommandLine()->AppendParm("-nomenuvid", 0);
-	Tier0::CommandLine()->AppendParm("-nosound", 0);
-	Tier0::CommandLine()->AppendParm("-windowed", 0);
-	Tier0::CommandLine()->AppendParm("-nomessagebox", 0);
-	Tier0::CommandLine()->AppendParm("+host_preload_shaders", "0");
-	Tier0::CommandLine()->AppendParm("+net_usesocketsforloopback", "1");
-	Tier0::CommandLine()->AppendParm("+community_frame_run", "0");
+	CommandLine()->AppendParm("-nomenuvid", 0);
+	CommandLine()->AppendParm("-nosound", 0);
+	CommandLine()->AppendParm("-windowed", 0);
+	CommandLine()->AppendParm("-nomessagebox", 0);
+	CommandLine()->AppendParm("+host_preload_shaders", "0");
+	CommandLine()->AppendParm("+net_usesocketsforloopback", "1");
+	CommandLine()->AppendParm("+community_frame_run", "0");
 
 	// use presence reporter for console title
 	DedicatedConsoleServerPresence* presenceReporter = new DedicatedConsoleServerPresence;
@@ -231,7 +229,7 @@ ON_DLL_LOAD_DEDI_RELIESON("engine.dll", DedicatedServer, ServerPresence, (CModul
 	RegisterCustomSink(std::make_shared<DedicatedServerLogToClientSink>());
 
 	// Disable Quick Edit mode to reduce chance of user unintentionally hanging their server by selecting something.
-	if (!Tier0::CommandLine()->CheckParm("-bringbackquickedit"))
+	if (!CommandLine()->CheckParm("-bringbackquickedit"))
 	{
 		HANDLE stdIn = GetStdHandle(STD_INPUT_HANDLE);
 		DWORD mode = 0;
@@ -253,7 +251,7 @@ ON_DLL_LOAD_DEDI_RELIESON("engine.dll", DedicatedServer, ServerPresence, (CModul
 		spdlog::info("Quick Edit enabled by user request");
 
 	// create console input thread
-	if (!Tier0::CommandLine()->CheckParm("-noconsoleinput"))
+	if (!CommandLine()->CheckParm("-noconsoleinput"))
 		consoleInputThreadHandle = CreateThread(0, 0, ConsoleInputThread, 0, 0, NULL);
 	else
 		spdlog::info("Console input disabled by user request");
@@ -288,7 +286,7 @@ ON_DLL_LOAD_DEDI("server.dll", DedicatedServerGameDLL, (CModule module))
 {
 	AUTOHOOK_DISPATCH_MODULE(server.dll)
 
-	if (Tier0::CommandLine()->CheckParm("-nopakdedi"))
+	if (CommandLine()->CheckParm("-nopakdedi"))
 	{
 		module.Offset(0x6BA350).Patch("C3"); // dont load skins.rson from rpak if we don't have rpaks, as loading it will cause a crash
 		module.Offset(0x6BA300).Patch(

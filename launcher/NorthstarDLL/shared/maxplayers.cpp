@@ -48,21 +48,17 @@ constexpr int Team_AddedSize = Team_PlayerArray_AddedSize;
 
 bool MaxPlayersIncreaseEnabled()
 {
-	static bool bMaxPlayersIncreaseEnabled = Tier0::CommandLine()->CheckParm("-experimentalmaxplayersincrease");
+	static bool bMaxPlayersIncreaseEnabled = CommandLine()->CheckParm("-experimentalmaxplayersincrease");
 	return bMaxPlayersIncreaseEnabled;
 }
 
-// should we use R2 for this? not sure
-namespace R2 // use R2 namespace for game funcs
+int GetMaxPlayers()
 {
-	int GetMaxPlayers()
-	{
-		if (MaxPlayersIncreaseEnabled())
-			return NEW_MAX_PLAYERS;
+	if (MaxPlayersIncreaseEnabled())
+		return NEW_MAX_PLAYERS;
 
-		return 32;
-	}
-} // namespace R2
+	return 32;
+}
 
 template <class T> void ChangeOffset(CMemoryAddress addr, unsigned int offset)
 {

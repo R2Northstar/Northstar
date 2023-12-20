@@ -15,7 +15,7 @@ void ModManager::BuildPdef()
 	fs::path MOD_PDEF_PATH = fs::path(GetCompiledAssetsPath() / MOD_PDEF_SUFFIX);
 
 	fs::remove(MOD_PDEF_PATH);
-	std::string pdef = R2::ReadVPKOriginalFile(VPK_PDEF_PATH);
+	std::string pdef = ReadVPKOriginalFile(VPK_PDEF_PATH);
 
 	for (Mod& mod : m_LoadedMods)
 	{

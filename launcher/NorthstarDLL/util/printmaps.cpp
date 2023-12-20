@@ -42,10 +42,10 @@ void RefreshMapList()
 	// Only update the maps list every 10 seconds max to we avoid constantly reading fs
 	static double fLastRefresh = -999;
 
-	if (fLastRefresh + 10.0 > R2::g_pGlobals->m_flRealTime)
+	if (fLastRefresh + 10.0 > g_pGlobals->m_flRealTime)
 		return;
 
-	fLastRefresh = R2::g_pGlobals->m_flRealTime;
+	fLastRefresh = g_pGlobals->m_flRealTime;
 
 	// Rebuild map list
 	vMapList.clear();
@@ -110,7 +110,7 @@ void RefreshMapList()
 	}
 
 	// get maps in game dir
-	std::string gameDir = fmt::format("{}/maps", R2::g_pModName);
+	std::string gameDir = fmt::format("{}/maps", g_pModName);
 	if (!std::filesystem::exists(gameDir))
 	{
 		return;
@@ -212,7 +212,7 @@ AUTOHOOK(Host_Map_f, engine.dll + 0x15B340, void, __fastcall, (const CCommand& a
 		return;
 	}
 
-	if (*R2::g_pServerState >= R2::server_state_t::ss_active)
+	if (*g_pServerState >= server_state_t::ss_active)
 		return Host_Changelevel_f(args);
 	else
 		return Host_Map_helper(args, nullptr);
@@ -222,7 +222,7 @@ void InitialiseMapsPrint()
 {
 	AUTOHOOK_DISPATCH()
 
-	ConCommand* mapsCommand = R2::g_pCVar->FindCommand("maps");
+	ConCommand* mapsCommand = g_pCVar->FindCommand("maps");
 	mapsCommand->m_pCommandCallback = ConCommand_maps;
 }
 

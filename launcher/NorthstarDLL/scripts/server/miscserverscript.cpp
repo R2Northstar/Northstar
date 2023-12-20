@@ -9,7 +9,7 @@
 
 ADD_SQFUNC("void", NSEarlyWritePlayerPersistenceForLeave, "entity player", "", ScriptContext::SERVER)
 {
-	const R2::CBasePlayer* pPlayer = g_pSquirrel<context>->template getentity<R2::CBasePlayer>(sqvm, 1);
+	const CBasePlayer* pPlayer = g_pSquirrel<context>->template getentity<CBasePlayer>(sqvm, 1);
 	if (!pPlayer)
 	{
 		spdlog::warn("NSEarlyWritePlayerPersistenceForLeave got null player");
@@ -18,7 +18,7 @@ ADD_SQFUNC("void", NSEarlyWritePlayerPersistenceForLeave, "entity player", "", S
 		return SQRESULT_NOTNULL;
 	}
 
-	R2::CBaseClient* pClient = &R2::g_pClientArray[pPlayer->m_nPlayerIndex - 1];
+	CBaseClient* pClient = &g_pClientArray[pPlayer->m_nPlayerIndex - 1];
 	if (g_pServerAuthentication->m_PlayerAuthenticationData.find(pClient) == g_pServerAuthentication->m_PlayerAuthenticationData.end())
 	{
 		g_pSquirrel<context>->pushbool(sqvm, false);
@@ -38,7 +38,7 @@ ADD_SQFUNC("bool", NSIsWritingPlayerPersistence, "", "", ScriptContext::SERVER)
 
 ADD_SQFUNC("bool", NSIsPlayerLocalPlayer, "entity player", "", ScriptContext::SERVER)
 {
-	const R2::CBasePlayer* pPlayer = g_pSquirrel<ScriptContext::SERVER>->template getentity<R2::CBasePlayer>(sqvm, 1);
+	const CBasePlayer* pPlayer = g_pSquirrel<ScriptContext::SERVER>->template getentity<CBasePlayer>(sqvm, 1);
 	if (!pPlayer)
 	{
 		spdlog::warn("NSIsPlayerLocalPlayer got null player");
@@ -47,8 +47,8 @@ ADD_SQFUNC("bool", NSIsPlayerLocalPlayer, "entity player", "", ScriptContext::SE
 		return SQRESULT_NOTNULL;
 	}
 
-	R2::CBaseClient* pClient = &R2::g_pClientArray[pPlayer->m_nPlayerIndex - 1];
-	g_pSquirrel<context>->pushbool(sqvm, !strcmp(R2::g_pLocalPlayerUserID, pClient->m_UID));
+	CBaseClient* pClient = &g_pClientArray[pPlayer->m_nPlayerIndex - 1];
+	g_pSquirrel<context>->pushbool(sqvm, !strcmp(g_pLocalPlayerUserID, pClient->m_UID));
 	return SQRESULT_NOTNULL;
 }
 
@@ -65,7 +65,7 @@ ADD_SQFUNC(
 	"Disconnects the player from the server with the given reason",
 	ScriptContext::SERVER)
 {
-	const R2::CBasePlayer* pPlayer = g_pSquirrel<context>->template getentity<R2::CBasePlayer>(sqvm, 1);
+	const CBasePlayer* pPlayer = g_pSquirrel<context>->template getentity<CBasePlayer>(sqvm, 1);
 	const char* reason = g_pSquirrel<context>->getstring(sqvm, 2);
 
 	if (!pPlayer)
@@ -77,7 +77,7 @@ ADD_SQFUNC(
 	}
 
 	// Shouldn't happen but I like sanity checks.
-	R2::CBaseClient* pClient = &R2::g_pClientArray[pPlayer->m_nPlayerIndex - 1];
+	CBaseClient* pClient = &g_pClientArray[pPlayer->m_nPlayerIndex - 1];
 	if (!pClient)
 	{
 		spdlog::warn("NSDisconnectPlayer(): player entity has null CBaseClient!");
@@ -88,11 +88,11 @@ ADD_SQFUNC(
 
 	if (reason)
 	{
-		R2::CBaseClient__Disconnect(pClient, 1, reason);
+		CBaseClient__Disconnect(pClient, 1, reason);
 	}
 	else
 	{
-		R2::CBaseClient__Disconnect(pClient, 1, "Disconnected by the server.");
+		CBaseClient__Disconnect(pClient, 1, "Disconnected by the server.");
 	}
 
 	g_pSquirrel<context>->pushbool(sqvm, true);

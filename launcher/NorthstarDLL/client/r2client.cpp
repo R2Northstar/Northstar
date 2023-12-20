@@ -1,14 +1,8 @@
 #include "r2client.h"
 
-using namespace R2;
-
-// use the R2 namespace for game funcs
-namespace R2
-{
-	char* g_pLocalPlayerUserID;
-	char* g_pLocalPlayerOriginToken;
-	GetBaseLocalClientType GetBaseLocalClient;
-} // namespace R2
+char* g_pLocalPlayerUserID;
+char* g_pLocalPlayerOriginToken;
+GetBaseLocalClientType GetBaseLocalClient;
 
 ON_DLL_LOAD("engine.dll", R2EngineClient, (CModule module))
 {

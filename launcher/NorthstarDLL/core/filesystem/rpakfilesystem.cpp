@@ -209,8 +209,8 @@ int, __fastcall, (char* pPath, void* unknownSingleton, int flags, void* pCallbac
 		// dedicated only needs common, common_mp, common_sp, and sp_<map> rpaks
 		// sp_<map> rpaks contain tutorial ghost data
 		// sucks to have to load the entire rpak for that but sp was never meant to be done on dedi
-		if (IsDedicatedServer() && (Tier0::CommandLine()->CheckParm("-nopakdedi") ||
-									strncmp(&originalPath[0], "common", 6) && strncmp(&originalPath[0], "sp_", 3)))
+		if (IsDedicatedServer() &&
+			(CommandLine()->CheckParm("-nopakdedi") || strncmp(&originalPath[0], "common", 6) && strncmp(&originalPath[0], "sp_", 3)))
 		{
 			if (bNeedToFreePakName)
 				delete[] pPath;

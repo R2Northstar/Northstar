@@ -12,7 +12,7 @@ void PrintCommandHelpDialogue(const ConCommandBase* command, const char* name)
 	}
 
 	// temp because command->IsCommand does not currently work
-	ConVar* cvar = R2::g_pCVar->FindVar(command->m_pszName);
+	ConVar* cvar = g_pCVar->FindVar(command->m_pszName);
 
 	// build string for flags if not FCVAR_NONE
 	std::string flagString;
@@ -66,7 +66,7 @@ void TryPrintCvarHelpForCommand(const char* pCommand)
 	}
 
 	// check if we're inputting a cvar, but not setting it at all
-	ConVar* cvar = R2::g_pCVar->FindVar(pCvarStr);
+	ConVar* cvar = g_pCVar->FindVar(pCvarStr);
 	if (cvar)
 		PrintCommandHelpDialogue(&cvar->m_ConCommandBase, pCvarStr);
 
@@ -81,7 +81,7 @@ void ConCommand_help(const CCommand& arg)
 		return;
 	}
 
-	PrintCommandHelpDialogue(R2::g_pCVar->FindCommandBase(arg.Arg(1)), arg.Arg(1));
+	PrintCommandHelpDialogue(g_pCVar->FindCommandBase(arg.Arg(1)), arg.Arg(1));
 }
 
 void ConCommand_find(const CCommand& arg)
@@ -96,7 +96,7 @@ void ConCommand_find(const CCommand& arg)
 	char pTempSearchTerm[256];
 
 	ConCommandBase* var;
-	CCVarIteratorInternal* itint = R2::g_pCVar->FactoryInternalIterator();
+	CCVarIteratorInternal* itint = g_pCVar->FactoryInternalIterator();
 	std::map<std::string, ConCommandBase*> sorted;
 	for (itint->SetFirst(); itint->IsValid(); itint->Next())
 	{
@@ -165,7 +165,7 @@ void ConCommand_findflags(const CCommand& arg)
 	}
 
 	ConCommandBase* var;
-	CCVarIteratorInternal* itint = R2::g_pCVar->FactoryInternalIterator();
+	CCVarIteratorInternal* itint = g_pCVar->FactoryInternalIterator();
 	std::map<std::string, ConCommandBase*> sorted;
 	for (itint->SetFirst(); itint->IsValid(); itint->Next())
 	{
@@ -189,7 +189,7 @@ void ConCommand_findflags(const CCommand& arg)
 void ConCommand_list(const CCommand& arg)
 {
 	ConCommandBase* var;
-	CCVarIteratorInternal* itint = R2::g_pCVar->FactoryInternalIterator();
+	CCVarIteratorInternal* itint = g_pCVar->FactoryInternalIterator();
 	std::map<std::string, ConCommandBase*> sorted;
 	for (itint->SetFirst(); itint->IsValid(); itint->Next())
 	{
@@ -210,7 +210,7 @@ void ConCommand_list(const CCommand& arg)
 
 void ConCommand_differences(const CCommand& arg)
 {
-	CCVarIteratorInternal* itint = R2::g_pCVar->FactoryInternalIterator();
+	CCVarIteratorInternal* itint = g_pCVar->FactoryInternalIterator();
 	std::map<std::string, ConCommandBase*> sorted;
 
 	for (itint->SetFirst(); itint->IsValid(); itint->Next())
@@ -225,7 +225,7 @@ void ConCommand_differences(const CCommand& arg)
 
 	for (auto& map : sorted)
 	{
-		ConVar* cvar = R2::g_pCVar->FindVar(map.second->m_pszName);
+		ConVar* cvar = g_pCVar->FindVar(map.second->m_pszName);
 
 		if (!cvar)
 		{
@@ -267,19 +267,19 @@ void InitialiseCommandPrint()
 
 	// these commands already exist, so we need to modify the preexisting command to use our func instead
 	// and clear the flags also
-	ConCommand* helpCommand = R2::g_pCVar->FindCommand("help");
+	ConCommand* helpCommand = g_pCVar->FindCommand("help");
 	helpCommand->m_nFlags = FCVAR_NONE;
 	helpCommand->m_pCommandCallback = ConCommand_help;
 
-	ConCommand* findCommand = R2::g_pCVar->FindCommand("convar_findByFlags");
+	ConCommand* findCommand = g_pCVar->FindCommand("convar_findByFlags");
 	findCommand->m_nFlags = FCVAR_NONE;
 	findCommand->m_pCommandCallback = ConCommand_findflags;
 
-	ConCommand* listCommand = R2::g_pCVar->FindCommand("convar_list");
+	ConCommand* listCommand = g_pCVar->FindCommand("convar_list");
 	listCommand->m_nFlags = FCVAR_NONE;
 	listCommand->m_pCommandCallback = ConCommand_list;
 
-	ConCommand* diffCommand = R2::g_pCVar->FindCommand("convar_differences");
+	ConCommand* diffCommand = g_pCVar->FindCommand("convar_differences");
 	diffCommand->m_nFlags = FCVAR_NONE;
 	diffCommand->m_pCommandCallback = ConCommand_differences;
 }

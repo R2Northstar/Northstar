@@ -20,7 +20,7 @@ bool skip_valid_ansi_csi_sgr(char*& str)
 	return true;
 }
 
-void NS::Utils::RemoveAsciiControlSequences(char* str, bool allow_color_codes)
+void RemoveAsciiControlSequences(char* str, bool allow_color_codes)
 {
 	for (char *pc = str, c = *pc; c = *pc; pc++)
 	{

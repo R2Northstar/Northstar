@@ -32,10 +32,10 @@ void, __fastcall, (void* a1))
 		// if player has agreed to send token and we aren't already authing, try to auth
 		if (Cvar_ns_has_agreed_to_send_token->GetInt() == AGREED_TO_SEND_TOKEN &&
 			!g_pMasterServerManager->m_bOriginAuthWithMasterServerInProgress)
-			g_pMasterServerManager->AuthenticateOriginWithMasterServer(R2::g_pLocalPlayerUserID, R2::g_pLocalPlayerOriginToken);
+			g_pMasterServerManager->AuthenticateOriginWithMasterServer(g_pLocalPlayerUserID, g_pLocalPlayerOriginToken);
 
 		// invalidate key so auth will fail
-		*R2::g_pLocalPlayerOriginToken = 0;
+		*g_pLocalPlayerOriginToken = 0;
 	}
 
 	AuthWithStryder(a1);

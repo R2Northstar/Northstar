@@ -7,48 +7,42 @@
 
 AUTOHOOK_INIT()
 
-using namespace R2;
-
 bool bReadingOriginalFile = false;
 std::string sCurrentModPath;
 
 ConVar* Cvar_ns_fs_log_reads;
 
-// use the R2 namespace for game funcs
-namespace R2
+SourceInterface<IFileSystem>* g_pFilesystem;
+
+std::string ReadVPKFile(const char* path)
 {
-	SourceInterface<IFileSystem>* g_pFilesystem;
+	// read scripts.rson file, todo: check if this can be overwritten
+	FileHandle_t fileHandle = (*g_pFilesystem)->m_vtable2->Open(&(*g_pFilesystem)->m_vtable2, path, "rb", "GAME", 0);
 
-	std::string ReadVPKFile(const char* path)
+	std::stringstream fileStream;
+	int bytesRead = 0;
+	char data[4096];
+	do
 	{
-		// read scripts.rson file, todo: check if this can be overwritten
-		FileHandle_t fileHandle = (*g_pFilesystem)->m_vtable2->Open(&(*g_pFilesystem)->m_vtable2, path, "rb", "GAME", 0);
+		bytesRead = (*g_pFilesystem)->m_vtable2->Read(&(*g_pFilesystem)->m_vtable2, data, (int)std::size(data), fileHandle);
+		fileStream.write(data, bytesRead);
+	} while (bytesRead == std::size(data));
 
-		std::stringstream fileStream;
-		int bytesRead = 0;
-		char data[4096];
-		do
-		{
-			bytesRead = (*g_pFilesystem)->m_vtable2->Read(&(*g_pFilesystem)->m_vtable2, data, (int)std::size(data), fileHandle);
-			fileStream.write(data, bytesRead);
-		} while (bytesRead == std::size(data));
+	(*g_pFilesystem)->m_vtable2->Close(*g_pFilesystem, fileHandle);
 
-		(*g_pFilesystem)->m_vtable2->Close(*g_pFilesystem, fileHandle);
+	return fileStream.str();
+}
 
-		return fileStream.str();
-	}
+std::string ReadVPKOriginalFile(const char* path)
+{
+	// todo: should probably set search path to be g_pModName here also
 
-	std::string ReadVPKOriginalFile(const char* path)
-	{
-		// todo: should probably set search path to be g_pModName here also
+	bReadingOriginalFile = true;
+	std::string ret = ReadVPKFile(path);
+	bReadingOriginalFile = false;
 
-		bReadingOriginalFile = true;
-		std::string ret = ReadVPKFile(path);
-		bReadingOriginalFile = false;
-
-		return ret;
-	}
-} // namespace R2
+	return ret;
+}
 
 // clang-format off
 HOOK(AddSearchPathHook, AddSearchPath,
@@ -175,7 +169,7 @@ ON_DLL_LOAD("filesystem_stdio.dll", Filesystem, (CModule module))
 {
 	AUTOHOOK_DISPATCH()
 
-	R2::g_pFilesystem = new SourceInterface<IFileSystem>("filesystem_stdio.dll", "VFileSystem017");
+	g_pFilesystem = new SourceInterface<IFileSystem>("filesystem_stdio.dll", "VFileSystem017");
 
 	AddSearchPathHook.Dispatch((LPVOID)(*g_pFilesystem)->m_vtable->AddSearchPath);
 	ReadFromCacheHook.Dispatch((LPVOID)(*g_pFilesystem)->m_vtable->ReadFromCache);
