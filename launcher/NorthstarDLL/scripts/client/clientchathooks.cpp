@@ -30,7 +30,7 @@ void, __fastcall, (void* self, const char* message, int inboxId, bool isTeam, bo
 		payload = message + 1;
 	}
 
-	NS::Utils::RemoveAsciiControlSequences(const_cast<char*>(message), true);
+	RemoveAsciiControlSequences(const_cast<char*>(message), true);
 
 	SQRESULT result = g_pSquirrel<ScriptContext::CLIENT>->Call(
 		"CHudChat_ProcessMessageStartThread", static_cast<int>(senderId) - 1, payload, isTeam, isDead, type);

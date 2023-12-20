@@ -760,7 +760,7 @@ void ModManager::LoadMods()
 		{
 			// make sure convar isn't registered yet, unsure if necessary but idk what
 			// behaviour is for defining same convar multiple times
-			if (!R2::g_pCVar->FindVar(convar->Name.c_str()))
+			if (!g_pCVar->FindVar(convar->Name.c_str()))
 			{
 				new ConVar(convar->Name.c_str(), convar->DefaultValue.c_str(), convar->Flags, convar->HelpString.c_str());
 			}
@@ -769,7 +769,7 @@ void ModManager::LoadMods()
 		for (ModConCommand* command : mod.ConCommands)
 		{
 			// make sure command isnt't registered multiple times.
-			if (!R2::g_pCVar->FindCommand(command->Name.c_str()))
+			if (!g_pCVar->FindCommand(command->Name.c_str()))
 			{
 				ConCommand* newCommand = new ConCommand();
 				std::string funcName = command->Function;
@@ -818,7 +818,7 @@ void ModManager::LoadMods()
 					modVpk.m_sVpkPath = (file.path().parent_path() / vpkName).string();
 
 					if (m_bHasLoadedMods && modVpk.m_bAutoLoad)
-						(*R2::g_pFilesystem)->m_vtable->MountVPK(*R2::g_pFilesystem, vpkName.c_str());
+						(*g_pFilesystem)->m_vtable->MountVPK(*g_pFilesystem, vpkName.c_str());
 				}
 			}
 		}

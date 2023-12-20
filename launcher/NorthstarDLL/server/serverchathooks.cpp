@@ -25,7 +25,7 @@ void(__fastcall* CServerGameDLL__OnReceivedSayTextMessage)(
 void(__fastcall* CRecipientFilter__Construct)(CRecipientFilter* self);
 void(__fastcall* CRecipientFilter__Destruct)(CRecipientFilter* self);
 void(__fastcall* CRecipientFilter__AddAllPlayers)(CRecipientFilter* self);
-void(__fastcall* CRecipientFilter__AddRecipient)(CRecipientFilter* self, const R2::CBasePlayer* player);
+void(__fastcall* CRecipientFilter__AddRecipient)(CRecipientFilter* self, const CBasePlayer* player);
 void(__fastcall* CRecipientFilter__MakeReliable)(CRecipientFilter* self);
 
 void(__fastcall* UserMessageBegin)(CRecipientFilter* filter, const char* messagename);
@@ -40,7 +40,7 @@ AUTOHOOK(_CServerGameDLL__OnReceivedSayTextMessage, server.dll + 0x1595C0,
 void, __fastcall, (CServerGameDLL* self, unsigned int senderPlayerId, const char* text, bool isTeam))
 // clang-format on
 {
-	NS::Utils::RemoveAsciiControlSequences(const_cast<char*>(text), true);
+	RemoveAsciiControlSequences(const_cast<char*>(text), true);
 
 	// MiniHook doesn't allow calling the base function outside of anywhere but the hook function.
 	// To allow bypassing the hook, isSkippingHook can be set.
@@ -52,7 +52,7 @@ void, __fastcall, (CServerGameDLL* self, unsigned int senderPlayerId, const char
 	}
 
 	// check chat ratelimits
-	if (!g_pServerLimits->CheckChatLimits(&R2::g_pClientArray[senderPlayerId - 1]))
+	if (!g_pServerLimits->CheckChatLimits(&g_pClientArray[senderPlayerId - 1]))
 		return;
 
 	SQRESULT result = g_pSquirrel<ScriptContext::SERVER>->Call(
@@ -75,10 +75,10 @@ void ChatSendMessage(unsigned int playerIndex, const char* text, bool isTeam)
 
 void ChatBroadcastMessage(int fromPlayerIndex, int toPlayerIndex, const char* text, bool isTeam, bool isDead, CustomMessageType messageType)
 {
-	R2::CBasePlayer* toPlayer = NULL;
+	CBasePlayer* toPlayer = NULL;
 	if (toPlayerIndex >= 0)
 	{
-		toPlayer = R2::UTIL_PlayerByIndex(toPlayerIndex + 1);
+		toPlayer = UTIL_PlayerByIndex(toPlayerIndex + 1);
 		if (toPlayer == NULL)
 			return;
 	}
@@ -163,7 +163,7 @@ ON_DLL_LOAD_RELIESON("server.dll", ServerChatHooks, ServerSquirrel, (CModule mod
 	CRecipientFilter__Construct = module.Offset(0x1E9440).RCast<void(__fastcall*)(CRecipientFilter*)>();
 	CRecipientFilter__Destruct = module.Offset(0x1E9700).RCast<void(__fastcall*)(CRecipientFilter*)>();
 	CRecipientFilter__AddAllPlayers = module.Offset(0x1E9940).RCast<void(__fastcall*)(CRecipientFilter*)>();
-	CRecipientFilter__AddRecipient = module.Offset(0x1E9B30).RCast<void(__fastcall*)(CRecipientFilter*, const R2::CBasePlayer*)>();
+	CRecipientFilter__AddRecipient = module.Offset(0x1E9B30).RCast<void(__fastcall*)(CRecipientFilter*, const CBasePlayer*)>();
 	CRecipientFilter__MakeReliable = module.Offset(0x1EA4E0).RCast<void(__fastcall*)(CRecipientFilter*)>();
 
 	UserMessageBegin = module.Offset(0x15C520).RCast<void(__fastcall*)(CRecipientFilter*, const char*)>();

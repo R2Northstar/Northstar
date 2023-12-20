@@ -22,9 +22,9 @@ void, __fastcall, (bool bDedicated))
 	// client/server autoexecs on necessary platforms
 	// dedi needs autoexec_ns_server on boot, while non-dedi will run it on on listen server start
 	if (bDedicated)
-		R2::Cbuf_AddText(R2::Cbuf_GetCurrentPlayer(), "exec autoexec_ns_server", R2::cmd_source_t::kCommandSrcCode);
+		Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec autoexec_ns_server", cmd_source_t::kCommandSrcCode);
 	else
-		R2::Cbuf_AddText(R2::Cbuf_GetCurrentPlayer(), "exec autoexec_ns_client", R2::cmd_source_t::kCommandSrcCode);
+		Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec autoexec_ns_client", cmd_source_t::kCommandSrcCode);
 }
 
 ON_DLL_LOAD("engine.dll", Host_Init, (CModule module))

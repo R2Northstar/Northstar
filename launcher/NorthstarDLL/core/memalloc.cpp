@@ -1,8 +1,6 @@
 #include "core/memalloc.h"
 #include "core/tier0.h"
 
-using namespace Tier0;
-
 // TODO: rename to malloc and free after removing statically compiled .libs
 
 extern "C" void* _malloc_base(size_t n)

@@ -13,7 +13,7 @@ void ModManager::BuildScriptsRson()
 	fs::path MOD_SCRIPTS_RSON_PATH = fs::path(GetCompiledAssetsPath() / MOD_SCRIPTS_RSON_SUFFIX);
 	fs::remove(MOD_SCRIPTS_RSON_PATH);
 
-	std::string scriptsRson = R2::ReadVPKOriginalFile(VPK_SCRIPTS_RSON_PATH);
+	std::string scriptsRson = ReadVPKOriginalFile(VPK_SCRIPTS_RSON_PATH);
 	scriptsRson += "\n\n// START MODDED SCRIPT CONTENT\n\n"; // newline before we start custom stuff
 
 	for (Mod& mod : m_LoadedMods)

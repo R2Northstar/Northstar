@@ -561,9 +561,9 @@ ON_DLL_LOAD("engine.dll", ModSaveFFiles_Init, (CModule module))
 {
 	savePath = fs::path(GetNorthstarPrefix()) / "save_data";
 	g_pSaveFileManager = new SaveFileManager;
-	int parm = Tier0::CommandLine()->FindParm("-maxfoldersize");
+	int parm = CommandLine()->FindParm("-maxfoldersize");
 	if (parm)
-		MAX_FOLDER_SIZE = std::stoi(Tier0::CommandLine()->GetParm(parm));
+		MAX_FOLDER_SIZE = std::stoi(CommandLine()->GetParm(parm));
 }
 
 int GetMaxSaveFolderSize()

@@ -62,7 +62,7 @@ ADD_SQFUNC("void", NSTryAuthWithServer, "int serverIndex, string password = ''",
 
 	// do auth
 	g_pMasterServerManager->AuthenticateWithServer(
-		R2::g_pLocalPlayerUserID,
+		g_pLocalPlayerUserID,
 		g_pMasterServerManager->m_sOwnClientAuthToken,
 		g_pMasterServerManager->m_vRemoteServers[serverIndex],
 		(char*)password);
@@ -95,9 +95,9 @@ ADD_SQFUNC("void", NSConnectToAuthedServer, "", "", ScriptContext::UI)
 
 	// set auth token, then try to connect
 	// i'm honestly not entirely sure how silentconnect works regarding ports and encryption so using connect for now
-	R2::g_pCVar->FindVar("serverfilter")->SetValue(info.authToken);
-	R2::Cbuf_AddText(
-		R2::Cbuf_GetCurrentPlayer(),
+	g_pCVar->FindVar("serverfilter")->SetValue(info.authToken);
+	Cbuf_AddText(
+		Cbuf_GetCurrentPlayer(),
 		fmt::format(
 			"connect {}.{}.{}.{}:{}",
 			info.ip.S_un.S_un_b.s_b1,
@@ -106,7 +106,7 @@ ADD_SQFUNC("void", NSConnectToAuthedServer, "", "", ScriptContext::UI)
 			info.ip.S_un.S_un_b.s_b4,
 			info.port)
 			.c_str(),
-		R2::cmd_source_t::kCommandSrcCode);
+		cmd_source_t::kCommandSrcCode);
 
 	g_pMasterServerManager->m_bHasPendingConnectionInfo = false;
 	return SQRESULT_NULL;
@@ -115,7 +115,7 @@ ADD_SQFUNC("void", NSConnectToAuthedServer, "", "", ScriptContext::UI)
 ADD_SQFUNC("void", NSTryAuthWithLocalServer, "", "", ScriptContext::UI)
 {
 	// do auth request
-	g_pMasterServerManager->AuthenticateWithOwnServer(R2::g_pLocalPlayerUserID, g_pMasterServerManager->m_sOwnClientAuthToken);
+	g_pMasterServerManager->AuthenticateWithOwnServer(g_pLocalPlayerUserID, g_pMasterServerManager->m_sOwnClientAuthToken);
 
 	return SQRESULT_NULL;
 }
@@ -125,7 +125,7 @@ ADD_SQFUNC("void", NSCompleteAuthWithLocalServer, "", "", ScriptContext::UI)
 	// literally just set serverfilter
 	// note: this assumes we have no authdata other than our own
 	if (g_pServerAuthentication->m_RemoteAuthenticationData.size())
-		R2::g_pCVar->FindVar("serverfilter")->SetValue(g_pServerAuthentication->m_RemoteAuthenticationData.begin()->first.c_str());
+		g_pCVar->FindVar("serverfilter")->SetValue(g_pServerAuthentication->m_RemoteAuthenticationData.begin()->first.c_str());
 
 	return SQRESULT_NULL;
 }

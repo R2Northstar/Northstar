@@ -23,7 +23,7 @@ HRESULT, __stdcall, (
 	// really call gpu much even with renderthread still being a thing will be using this hook for actual d3d stubbing and stuff later
 
 	// note: this has been succeeded by the d3d11 and gfsdk stubs, and is only being kept around for posterity and as a fallback option
-	if (Tier0::CommandLine()->CheckParm("-softwared3d11"))
+	if (CommandLine()->CheckParm("-softwared3d11"))
 		DriverType = 5; // D3D_DRIVER_TYPE_WARP
 
 	return D3D11CreateDevice(

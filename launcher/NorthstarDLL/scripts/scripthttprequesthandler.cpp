@@ -7,19 +7,19 @@ HttpRequestHandler* g_httpRequestHandler;
 
 bool IsHttpDisabled()
 {
-	const static bool bIsHttpDisabled = Tier0::CommandLine()->FindParm("-disablehttprequests");
+	const static bool bIsHttpDisabled = CommandLine()->FindParm("-disablehttprequests");
 	return bIsHttpDisabled;
 }
 
 bool IsLocalHttpAllowed()
 {
-	const static bool bIsLocalHttpAllowed = Tier0::CommandLine()->FindParm("-allowlocalhttp");
+	const static bool bIsLocalHttpAllowed = CommandLine()->FindParm("-allowlocalhttp");
 	return bIsLocalHttpAllowed;
 }
 
 bool DisableHttpSsl()
 {
-	const static bool bDisableHttpSsl = Tier0::CommandLine()->FindParm("-disablehttpssl");
+	const static bool bDisableHttpSsl = CommandLine()->FindParm("-disablehttpssl");
 	return bDisableHttpSsl;
 }
 

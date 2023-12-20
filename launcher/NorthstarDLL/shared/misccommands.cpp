@@ -15,21 +15,21 @@ void ConCommand_force_newgame(const CCommand& arg)
 	if (arg.ArgC() < 2)
 		return;
 
-	R2::g_pHostState->m_iNextState = R2::HostState_t::HS_NEW_GAME;
-	strncpy(R2::g_pHostState->m_levelName, arg.Arg(1), sizeof(R2::g_pHostState->m_levelName));
+	g_pHostState->m_iNextState = HostState_t::HS_NEW_GAME;
+	strncpy(g_pHostState->m_levelName, arg.Arg(1), sizeof(g_pHostState->m_levelName));
 }
 
 void ConCommand_ns_start_reauth_and_leave_to_lobby(const CCommand& arg)
 {
 	// hack for special case where we're on a local server, so we erase our own newly created auth data on disconnect
 	g_pMasterServerManager->m_bNewgameAfterSelfAuth = true;
-	g_pMasterServerManager->AuthenticateWithOwnServer(R2::g_pLocalPlayerUserID, g_pMasterServerManager->m_sOwnClientAuthToken);
+	g_pMasterServerManager->AuthenticateWithOwnServer(g_pLocalPlayerUserID, g_pMasterServerManager->m_sOwnClientAuthToken);
 }
 
 void ConCommand_ns_end_reauth_and_leave_to_lobby(const CCommand& arg)
 {
 	if (g_pServerAuthentication->m_RemoteAuthenticationData.size())
-		R2::g_pCVar->FindVar("serverfilter")->SetValue(g_pServerAuthentication->m_RemoteAuthenticationData.begin()->first.c_str());
+		g_pCVar->FindVar("serverfilter")->SetValue(g_pServerAuthentication->m_RemoteAuthenticationData.begin()->first.c_str());
 
 	// weird way of checking, but check if client script vm is initialised, mainly just to allow players to cancel this
 	if (g_pSquirrel<ScriptContext::CLIENT>->m_pSQVM)
@@ -39,8 +39,8 @@ void ConCommand_ns_end_reauth_and_leave_to_lobby(const CCommand& arg)
 		// this won't set playlist correctly on remote clients, don't think they can set playlist until they've left which sorta
 		// fucks things should maybe set this in HostState_NewGame?
 		R2::SetCurrentPlaylist("tdm");
-		strcpy(R2::g_pHostState->m_levelName, "mp_lobby");
-		R2::g_pHostState->m_iNextState = R2::HostState_t::HS_NEW_GAME;
+		strcpy(g_pHostState->m_levelName, "mp_lobby");
+		g_pHostState->m_iNextState = HostState_t::HS_NEW_GAME;
 	}
 }
 
@@ -52,7 +52,7 @@ void ConCommand_cvar_setdefaultvalue(const CCommand& arg)
 		return;
 	}
 
-	ConVar* pCvar = R2::g_pCVar->FindVar(arg.Arg(1));
+	ConVar* pCvar = g_pCVar->FindVar(arg.Arg(1));
 	if (!pCvar)
 	{
 		spdlog::info("usage: cvar_setdefaultvalue mp_gamemode tdm");
@@ -75,7 +75,7 @@ void ConCommand_cvar_setvalueanddefaultvalue(const CCommand& arg)
 		return;
 	}
 
-	ConVar* pCvar = R2::g_pCVar->FindVar(arg.Arg(1));
+	ConVar* pCvar = g_pCVar->FindVar(arg.Arg(1));
 	if (!pCvar)
 	{
 		spdlog::info("usage: cvar_setvalueanddefaultvalue mp_gamemode tdm");
@@ -99,7 +99,7 @@ void ConCommand_cvar_reset(const CCommand& arg)
 		return;
 	}
 
-	ConVar* pCvar = R2::g_pCVar->FindVar(arg.Arg(1));
+	ConVar* pCvar = g_pCVar->FindVar(arg.Arg(1));
 	if (!pCvar)
 	{
 		spdlog::info("usage: cvar_reset mp_gamemode");
@@ -143,11 +143,11 @@ void AddMiscConCommands()
 // fixes up various cvar flags to have more sane values
 void FixupCvarFlags()
 {
-	if (Tier0::CommandLine()->CheckParm("-allowdevcvars"))
+	if (CommandLine()->CheckParm("-allowdevcvars"))
 	{
 		// strip hidden and devonly cvar flags
 		int iNumCvarsAltered = 0;
-		for (auto& pair : R2::g_pCVar->DumpToMap())
+		for (auto& pair : g_pCVar->DumpToMap())
 		{
 			// strip flags
 			int flags = pair.second->GetFlags();
@@ -177,7 +177,7 @@ void FixupCvarFlags()
 	int i = 0;
 	do
 	{
-		ConCommandBase* pCommand = R2::g_pCVar->FindCommandBase(ppEngineClientCommands[i]);
+		ConCommandBase* pCommand = g_pCVar->FindCommandBase(ppEngineClientCommands[i]);
 		if (pCommand) // not all the commands in this array actually exist in respawn source
 			pCommand->m_nFlags |= FCVAR_GAMEDLL_FOR_REMOTE_CLIENTS;
 	} while (ppEngineClientCommands[++i]);
@@ -367,21 +367,21 @@ void FixupCvarFlags()
 
 	for (auto& fixup : CVAR_FIXUP_ADD_FLAGS)
 	{
-		ConCommandBase* command = R2::g_pCVar->FindCommandBase(std::get<0>(fixup));
+		ConCommandBase* command = g_pCVar->FindCommandBase(std::get<0>(fixup));
 		if (command)
 			command->m_nFlags |= std::get<1>(fixup);
 	}
 
 	for (auto& fixup : CVAR_FIXUP_REMOVE_FLAGS)
 	{
-		ConCommandBase* command = R2::g_pCVar->FindCommandBase(std::get<0>(fixup));
+		ConCommandBase* command = g_pCVar->FindCommandBase(std::get<0>(fixup));
 		if (command)
 			command->m_nFlags &= ~std::get<1>(fixup);
 	}
 
 	for (auto& fixup : CVAR_FIXUP_DEFAULT_VALUES)
 	{
-		ConVar* cvar = R2::g_pCVar->FindVar(std::get<0>(fixup));
+		ConVar* cvar = g_pCVar->FindVar(std::get<0>(fixup));
 		if (cvar && !strcmp(cvar->GetString(), cvar->m_pszDefaultValue))
 		{
 			cvar->SetValue(std::get<1>(fixup));

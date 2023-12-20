@@ -57,7 +57,7 @@ char*, __fastcall, ())
 	bool& canOriginDictateLang = *(bool*)((char*)tier0Handle + 0xA9A90);
 
 	const char* forcedLanguage;
-	if (Tier0::CommandLine()->CheckParm("-language", &forcedLanguage))
+	if (CommandLine()->CheckParm("-language", &forcedLanguage))
 	{
 		if (!CheckLangAudioExists((char*)forcedLanguage))
 		{

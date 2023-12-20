@@ -12,13 +12,7 @@
 
 AUTOHOOK_INIT()
 
-using namespace R2;
-
-// use the R2 namespace for game funcs
-namespace R2
-{
-	CHostState* g_pHostState;
-} // namespace R2
+CHostState* g_pHostState;
 
 std::string sLastMode;
 
@@ -35,15 +29,14 @@ void ServerStartingOrChangingMap()
 	memset(commandBuf, 0, sizeof(commandBuf));
 	CCommand tempCommand = *(CCommand*)&commandBuf;
 	if (sLastMode.length() &&
-		CCommand__Tokenize(
-			tempCommand, fmt::format("exec server/cleanup_gamemode_{}", sLastMode).c_str(), R2::cmd_source_t::kCommandSrcCode))
+		CCommand__Tokenize(tempCommand, fmt::format("exec server/cleanup_gamemode_{}", sLastMode).c_str(), cmd_source_t::kCommandSrcCode))
 		_Cmd_Exec_f(tempCommand, false, false);
 
 	memset(commandBuf, 0, sizeof(commandBuf));
 	if (CCommand__Tokenize(
 			tempCommand,
 			fmt::format("exec server/setup_gamemode_{}", sLastMode = Cvar_mp_gamemode->GetString()).c_str(),
-			R2::cmd_source_t::kCommandSrcCode))
+			cmd_source_t::kCommandSrcCode))
 	{
 		_Cmd_Exec_f(tempCommand, false, false);
 	}
@@ -73,18 +66,18 @@ void, __fastcall, (CHostState* self))
 
 	// need to do this to ensure we don't go to private match
 	if (g_pServerAuthentication->m_bNeedLocalAuthForNewgame)
-		SetCurrentPlaylist("tdm");
+		R2::SetCurrentPlaylist("tdm");
 
 	ServerStartingOrChangingMap();
 
-	double dStartTime = Tier0::Plat_FloatTime();
+	double dStartTime = Plat_FloatTime();
 	CHostState__State_NewGame(self);
-	spdlog::info("loading took {}s", Tier0::Plat_FloatTime() - dStartTime);
+	spdlog::info("loading took {}s", Plat_FloatTime() - dStartTime);
 
 	// setup server presence
 	g_pServerPresence->CreatePresence();
 	g_pServerPresence->SetMap(g_pHostState->m_levelName, true);
-	g_pServerPresence->SetPlaylist(GetCurrentPlaylistName());
+	g_pServerPresence->SetPlaylist(R2::GetCurrentPlaylistName());
 	g_pServerPresence->SetPort(Cvar_hostport->GetInt());
 
 	g_pServerAuthentication->m_bNeedLocalAuthForNewgame = false;
@@ -107,9 +100,9 @@ void, __fastcall, (CHostState* self))
 	g_pCVar->FindVar("net_data_block_enabled")->SetValue(true);
 	g_pServerAuthentication->m_bStartingLocalSPGame = true;
 
-	double dStartTime = Tier0::Plat_FloatTime();
+	double dStartTime = Plat_FloatTime();
 	CHostState__State_LoadGame(self);
-	spdlog::info("loading took {}s", Tier0::Plat_FloatTime() - dStartTime);
+	spdlog::info("loading took {}s", Plat_FloatTime() - dStartTime);
 
 	// no server presence, can't do it because no map name in hoststate
 	// and also not super important for sp saves really
@@ -126,9 +119,9 @@ void, __fastcall, (CHostState* self))
 
 	ServerStartingOrChangingMap();
 
-	double dStartTime = Tier0::Plat_FloatTime();
+	double dStartTime = Plat_FloatTime();
 	CHostState__State_ChangeLevelMP(self);
-	spdlog::info("loading took {}s", Tier0::Plat_FloatTime() - dStartTime);
+	spdlog::info("loading took {}s", Plat_FloatTime() - dStartTime);
 
 	g_pServerPresence->SetMap(g_pHostState->m_levelName);
 }
@@ -151,7 +144,7 @@ void, __fastcall, (CHostState* self))
 		memset(commandBuf, 0, sizeof(commandBuf));
 		CCommand tempCommand = *(CCommand*)&commandBuf;
 		if (CCommand__Tokenize(
-				tempCommand, fmt::format("exec server/cleanup_gamemode_{}", sLastMode).c_str(), R2::cmd_source_t::kCommandSrcCode))
+				tempCommand, fmt::format("exec server/cleanup_gamemode_{}", sLastMode).c_str(), cmd_source_t::kCommandSrcCode))
 		{
 			_Cmd_Exec_f(tempCommand, false, false);
 			Cbuf_Execute();
@@ -168,7 +161,7 @@ void, __fastcall, (CHostState* self, double flCurrentTime, float flFrameTime))
 {
 	CHostState__FrameUpdate(self, flCurrentTime, flFrameTime);
 
-	if (*R2::g_pServerState == R2::server_state_t::ss_active)
+	if (*g_pServerState == server_state_t::ss_active)
 	{
 		// update server presence
 		g_pServerPresence->RunFrame(flCurrentTime);

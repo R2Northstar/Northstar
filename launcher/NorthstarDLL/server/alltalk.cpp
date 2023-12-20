@@ -4,12 +4,12 @@
 size_t __fastcall ShouldAllowAlltalk()
 {
 	// this needs to return a 64 bit integer where 0 = true and 1 = false
-	static ConVar* Cvar_sv_alltalk = R2::g_pCVar->FindVar("sv_alltalk");
+	static ConVar* Cvar_sv_alltalk = g_pCVar->FindVar("sv_alltalk");
 	if (Cvar_sv_alltalk->GetBool())
 		return 0;
 
 	// lobby should default to alltalk, otherwise don't allow it
-	return strcmp(R2::g_pGlobals->m_pMapName, "mp_lobby");
+	return strcmp(g_pGlobals->m_pMapName, "mp_lobby");
 }
 
 ON_DLL_LOAD_RELIESON("engine.dll", ServerAllTalk, ConVar, (CModule module))
