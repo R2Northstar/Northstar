@@ -4,13 +4,13 @@ class vgui_BaseRichText_vtable;
 
 class vgui_BaseRichText
 {
-  public:
+public:
 	vgui_BaseRichText_vtable* vtable;
 };
 
 class vgui_BaseRichText_vtable
 {
-  public:
+public:
 	char unknown1[1880];
 
 	void(__fastcall* InsertChar)(vgui_BaseRichText* self, wchar_t ch);
@@ -49,7 +49,7 @@ class vgui_BaseRichText_vtable
 
 class CGameSettings
 {
-  public:
+public:
 	char unknown1[92];
 	int isChatEnabled;
 };
@@ -58,7 +58,7 @@ class CGameSettings
 // have their value at the same offset
 class CGameFloatVar
 {
-  public:
+public:
 	char unknown1[88];
 	float value;
 };
@@ -101,7 +101,7 @@ Color lightColors[8] = {
 
 class AnsiEscapeParser
 {
-  public:
+public:
 	explicit AnsiEscapeParser(LocalChatWriter* writer) : m_writer(writer) {}
 
 	void HandleVal(unsigned long val)
@@ -129,7 +129,7 @@ class AnsiEscapeParser
 		}
 	}
 
-  private:
+private:
 	enum class Next
 	{
 		ControlType,

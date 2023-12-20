@@ -122,7 +122,7 @@ typedef void (*sq_schedule_call_externalType)(
 
 class SquirrelMessage
 {
-  public:
+public:
 	std::string functionName;
 	FunctionVector args;
 	bool isExternal = false;
@@ -133,10 +133,10 @@ class SquirrelMessage
 class SquirrelMessageBuffer
 {
 
-  private:
+private:
 	std::queue<SquirrelMessage> messages = {};
 
-  public:
+public:
 	std::mutex mutex;
 	std::optional<SquirrelMessage> pop()
 	{
@@ -179,7 +179,7 @@ class SquirrelMessageBuffer
 // Super simple wrapper class to allow pushing Assets via call
 class SquirrelAsset
 {
-  public:
+public:
 	std::string path;
 	SquirrelAsset(std::string path) : path(path) {};
 };

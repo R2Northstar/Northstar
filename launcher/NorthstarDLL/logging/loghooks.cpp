@@ -24,7 +24,7 @@ enum class TextMsgPrintType_t
 
 class ICenterPrint
 {
-  public:
+public:
 	virtual void ctor() = 0;
 	virtual void Clear(void) = 0;
 	virtual void ColorPrint(int r, int g, int b, int a, wchar_t* text) = 0;

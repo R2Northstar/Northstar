@@ -89,13 +89,13 @@ enum EBitCoordType
 
 class BitBufferBase
 {
-  protected:
+protected:
 	INLINE void SetName(const char* name)
 	{
 		m_BufferName = name;
 	}
 
-  public:
+public:
 	INLINE bool IsOverflowed()
 	{
 		return m_Overflow;
@@ -110,16 +110,16 @@ class BitBufferBase
 		return m_BufferName;
 	}
 
-  private:
+private:
 	const char* m_BufferName = "";
 
-  protected:
+protected:
 	u8 m_Overflow = false;
 };
 
 class BFRead : public BitBufferBase
 {
-  public:
+public:
 	BFRead() = default;
 
 	INLINE BFRead(uptr data, size_t byteLength, size_t startPos = 0, const char* bufferName = 0)
@@ -130,7 +130,7 @@ class BFRead : public BitBufferBase
 			SetName(bufferName);
 	}
 
-  public:
+public:
 	INLINE void StartReading(uptr data, size_t byteLength, size_t startPos = 0)
 	{
 		m_Data = reinterpret_cast<u32 const*>(data);
@@ -706,7 +706,7 @@ class BFRead : public BitBufferBase
 		return GetNumBitsLeft() >> 3;
 	}
 
-  private:
+private:
 	size_t m_DataBits; // 0x0010
 	size_t m_DataBytes; // 0x0018
 
@@ -720,7 +720,7 @@ class BFRead : public BitBufferBase
 
 class BFWrite : public BitBufferBase
 {
-  public:
+public:
 	BFWrite() = default;
 
 	INLINE BFWrite(uptr data, size_t byteLength, const char* bufferName = 0)
@@ -731,7 +731,7 @@ class BFWrite : public BitBufferBase
 			SetName(bufferName);
 	}
 
-  public:
+public:
 	INLINE void StartWriting(uptr data, size_t byteLength)
 	{
 		m_Data = reinterpret_cast<u32*>(data);
@@ -1131,7 +1131,7 @@ class BFWrite : public BitBufferBase
 		WriteBitVec3Coord(tmp);
 	}*/
 
-  private:
+private:
 	size_t m_DataBits = 0;
 	size_t m_DataBytes = 0;
 

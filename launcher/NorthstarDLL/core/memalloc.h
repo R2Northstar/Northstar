@@ -17,7 +17,7 @@ void operator delete(void* p) noexcept;
 
 class SourceAllocator
 {
-  public:
+public:
 	static const bool kNeedFree = true;
 	void* Malloc(size_t size)
 	{

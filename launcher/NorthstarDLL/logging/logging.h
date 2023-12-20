@@ -13,7 +13,7 @@ class ColoredLogger;
 
 struct custom_log_msg : spdlog::details::log_msg
 {
-  public:
+public:
 	custom_log_msg(ColoredLogger* origin, spdlog::details::log_msg msg) : origin(origin), spdlog::details::log_msg(msg) {}
 
 	ColoredLogger* origin;
@@ -21,7 +21,7 @@ struct custom_log_msg : spdlog::details::log_msg
 
 class CustomSink : public spdlog::sinks::base_sink<std::mutex>
 {
-  public:
+public:
 	void custom_log(const custom_log_msg& msg);
 	virtual void custom_sink_it_(const custom_log_msg& msg)
 	{
@@ -31,7 +31,7 @@ class CustomSink : public spdlog::sinks::base_sink<std::mutex>
 
 class ColoredLogger : public spdlog::logger
 {
-  public:
+public:
 	std::string ANSIColor;
 	SourceColor SRCColor;
 
@@ -117,7 +117,7 @@ static const char* level_names[] {"trac", "dbug", "info", "warn", "errr", "crit"
 // spdlog logger, for cool colour things
 class ExternalConsoleSink : public CustomSink
 {
-  private:
+private:
 	std::map<spdlog::level::level_enum, std::string> m_LogColours = {
 		{spdlog::level::trace, NS::Colors::TRACE.ToANSIColor()},
 		{spdlog::level::debug, NS::Colors::DEBUG.ToANSIColor()},
@@ -129,7 +129,7 @@ class ExternalConsoleSink : public CustomSink
 
 	std::string default_color = "\033[39;49m";
 
-  protected:
+protected:
 	void sink_it_(const spdlog::details::log_msg& msg) override;
 	void custom_sink_it_(const custom_log_msg& msg);
 	void flush_() override;

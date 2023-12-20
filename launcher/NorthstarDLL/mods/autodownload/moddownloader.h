@@ -1,6 +1,6 @@
 class ModDownloader
 {
-  private:
+private:
 	const char* VERIFICATION_FLAG = "-disablemodverification";
 	const char* CUSTOM_MODS_URL_FLAG = "-customverifiedurl=";
 	const char* STORE_URL = "https://gcdn.thunderstore.io/live/repository/packages/";
@@ -70,7 +70,7 @@ class ModDownloader
 	 */
 	void ExtractMod(fs::path modPath);
 
-  public:
+public:
 	ModDownloader();
 
 	/**

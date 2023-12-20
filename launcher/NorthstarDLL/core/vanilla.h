@@ -6,7 +6,7 @@
 /// as well as various other small changes for compatibility
 class VanillaCompatibility
 {
-  public:
+public:
 	void SetVanillaCompatibility(bool isVanilla)
 	{
 		static bool bInitialised = false;
@@ -22,7 +22,7 @@ class VanillaCompatibility
 		return m_bIsVanillaCompatible;
 	}
 
-  private:
+private:
 	bool m_bIsVanillaCompatible = false;
 };
 

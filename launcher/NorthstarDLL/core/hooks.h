@@ -25,7 +25,7 @@ enum class eDllLoadCallbackSide
 
 class __dllLoadCallback
 {
-  public:
+public:
 	__dllLoadCallback() = delete;
 	__dllLoadCallback(
 		eDllLoadCallbackSide side,
@@ -67,7 +67,7 @@ class __autovar;
 
 class __fileAutohook
 {
-  public:
+public:
 	std::vector<__autohook*> hooks;
 	std::vector<__autovar*> vars;
 
@@ -91,7 +91,7 @@ uintptr_t ParseDLLOffsetString(const char* pAddrString);
 
 class __autohook
 {
-  public:
+public:
 	enum AddressResolutionMode
 	{
 		OFFSET_STRING, // we're using a string that of the format dllname.dll + offset
@@ -111,7 +111,7 @@ class __autohook
 	char* pModuleName; // for PROCADDRESS
 	char* pProcName; // for PROCADDRESS
 
-  public:
+public:
 	__autohook() = delete;
 
 	__autohook(__fileAutohook* autohook, const char* funcName, LPVOID absoluteAddress, LPVOID* orig, LPVOID func)
@@ -250,13 +250,13 @@ class __autohook
 
 class ManualHook
 {
-  public:
+public:
 	char* pFuncName;
 
 	LPVOID pHookFunc;
 	LPVOID* ppOrigFunc;
 
-  public:
+public:
 	ManualHook() = delete;
 	ManualHook(const char* funcName, LPVOID func);
 	ManualHook(const char* funcName, LPVOID* orig, LPVOID func);
@@ -284,11 +284,11 @@ void MakeHook(LPVOID pTarget, LPVOID pDetour, void* ppOriginal, const char* pFun
 
 class __autovar
 {
-  public:
+public:
 	char* m_pAddrString;
 	void** m_pTarget;
 
-  public:
+public:
 	__autovar(__fileAutohook* pAutohook, const char* pAddrString, void** pTarget)
 	{
 		m_pTarget = pTarget;

@@ -26,7 +26,7 @@ extern CBaseServer__RejectConnectionType CBaseServer__RejectConnection;
 
 class ServerAuthenticationManager
 {
-  public:
+public:
 	ConVar* Cvar_ns_erase_auth_info;
 	ConVar* Cvar_ns_auth_allow_insecure;
 	ConVar* Cvar_ns_auth_allow_insecure_write;
@@ -40,7 +40,7 @@ class ServerAuthenticationManager
 	bool m_bForceResetLocalPlayerPersistence = false;
 	bool m_bStartingLocalSPGame = false;
 
-  public:
+public:
 	void AddRemotePlayer(std::string token, uint64_t uid, std::string username, std::string pdata);
 
 	void AddPlayer(CBaseClient* pPlayer, const char* pAuthToken);
