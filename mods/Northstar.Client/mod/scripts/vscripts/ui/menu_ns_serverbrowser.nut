@@ -1033,7 +1033,7 @@ void function OnServerSelected_Threaded( var button )
 			{
 				DialogData dialogData
 				dialogData.header = "#ERROR"
-				dialogData.message = format( "Server has mod \"%s\" v%s while we have v%s", mod.name, mod.version, NSGetModVersionByModName( mod.name ) )
+				dialogData.message = Localize( "#WRONG_MOD_VERSION", mod.name, mod.version, NSGetModVersionByModName( mod.name ) )
 				dialogData.image = $"ui/menu/common/dialog_error"
 
 				#if PC_PROG

@@ -370,6 +370,7 @@ Press Yes if you agree to this. This choice can be changed in the mods menu at a
 	
 		// Mod downloading
 		"MISSING_MOD"						"Missing mod \"%s1\" v%s2"
+		"WRONG_MOD_VERSION"					"Server has mod \"%s1\" v%s2 while you have v%s3"
 		"MOD_NOT_VERIFIED"					"(mod is not verified, and couldn't be downloaded automatically)"
 		"MOD_DL_DISABLED"					"(automatic mod downloading is disabled)"
 		"DOWNLOADING_MOD_TITLE"				"Downloading mod"
