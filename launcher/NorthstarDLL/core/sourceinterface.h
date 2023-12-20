@@ -6,10 +6,10 @@ typedef void* (*CreateInterfaceFn)(const char* pName, int* pReturnCode);
 
 template <typename T> class SourceInterface
 {
-  private:
+private:
 	T* m_interface;
 
-  public:
+public:
 	SourceInterface(const std::string& moduleName, const std::string& interfaceName)
 	{
 		HMODULE handle = GetModuleHandleA(moduleName.c_str());

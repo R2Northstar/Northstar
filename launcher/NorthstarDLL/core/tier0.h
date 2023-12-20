@@ -2,7 +2,7 @@
 
 class IMemAlloc
 {
-  public:
+public:
 	struct VTable
 	{
 		void* unknown[1]; // alloc debug
@@ -25,7 +25,7 @@ class IMemAlloc
 
 class CCommandLine
 {
-  public:
+public:
 	// based on the defs in the 2013 source sdk, but for some reason has an extra function (may be another CreateCmdLine overload?)
 	// these seem to line up with what they should be though
 	virtual void CreateCmdLine(const char* commandline) = 0;

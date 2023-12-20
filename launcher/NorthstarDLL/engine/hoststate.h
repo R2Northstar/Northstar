@@ -14,7 +14,7 @@ enum class HostState_t
 
 struct CHostState
 {
-  public:
+public:
 	HostState_t m_iCurrentState;
 	HostState_t m_iNextState;
 

@@ -14,11 +14,11 @@ enum class AudioSelectionStrategy
 
 class EventOverrideData
 {
-  public:
+public:
 	EventOverrideData(const std::string&, const fs::path&);
 	EventOverrideData();
 
-  public:
+public:
 	bool LoadedSuccessfully = false;
 
 	std::vector<std::string> EventIds = {};
@@ -34,7 +34,7 @@ class EventOverrideData
 
 class CustomAudioManager
 {
-  public:
+public:
 	bool TryLoadAudioOverride(const fs::path&);
 	void ClearAudioOverrides();
 

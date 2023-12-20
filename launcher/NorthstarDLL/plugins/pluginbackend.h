@@ -17,7 +17,7 @@ union PluginRespondDataCallable
 
 class PluginDataRequest
 {
-  public:
+public:
 	PluginDataRequestType type;
 	PluginRespondDataCallable func;
 	PluginDataRequest(PluginDataRequestType type, PluginRespondDataCallable func) : type(type), func(func) {}
@@ -25,11 +25,11 @@ class PluginDataRequest
 
 class PluginCommunicationHandler
 {
-  public:
+public:
 	void RunFrame();
 	void PushRequest(PluginDataRequestType type, PluginRespondDataCallable func);
 
-  public:
+public:
 	std::queue<PluginDataRequest> requestQueue = {};
 	std::mutex requestMutex;
 

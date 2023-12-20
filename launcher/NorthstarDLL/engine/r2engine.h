@@ -78,7 +78,7 @@ enum class EngineState_t
 
 class CEngine
 {
-  public:
+public:
 	virtual void unknown() = 0; // unsure if this is where
 	virtual bool Load(bool dedicated, const char* baseDir) = 0;
 	virtual void Unload() = 0;

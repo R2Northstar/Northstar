@@ -4,7 +4,7 @@
 class ConCommandBase;
 class IConCommandBaseAccessor
 {
-  public:
+public:
 	// Flags is a combination of FCVAR flags in cvar.h.
 	// hOut is filled in with a handle to the variable.
 	virtual bool RegisterConCommandBase(ConCommandBase* pVar) = 0;
@@ -12,7 +12,7 @@ class IConCommandBaseAccessor
 
 class CCommand
 {
-  public:
+public:
 	CCommand() = delete;
 
 	int64_t ArgC() const;
@@ -24,7 +24,7 @@ class CCommand
 
 	static int MaxCommandLength();
 
-  private:
+private:
 	enum
 	{
 		COMMAND_MAX_ARGC = 64,
@@ -88,7 +88,7 @@ typedef int (*FnCommandCompletionCallback)(const char* partial, char commands[CO
 // From r5reloaded
 class ConCommandBase
 {
-  public:
+public:
 	bool HasFlags(int nFlags);
 	void AddFlags(int nFlags);
 	void RemoveFlags(int nFlags);
@@ -120,7 +120,7 @@ class ConCommand : public ConCommandBase
 {
 	friend class CCVar;
 
-  public:
+public:
 	ConCommand(void) {}; // !TODO: Rebuild engine constructor in SDK instead.
 	ConCommand(const char* szName, const char* szHelpString, int nFlags, void* pCallback, void* pCommandCompletionCallback);
 	void Init(void);

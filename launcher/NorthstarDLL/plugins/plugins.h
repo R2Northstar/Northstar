@@ -5,7 +5,7 @@ const int IDR_RCDATA1 = 101;
 
 class Plugin
 {
-  public:
+public:
 	std::string name;
 	std::string displayName;
 	std::string dependencyName;
@@ -23,7 +23,7 @@ class Plugin
 	bool run_on_client = false;
 	bool run_on_server = false;
 
-  public:
+public:
 	PLUGIN_INIT_TYPE init;
 	PLUGIN_INIT_SQVM_TYPE init_sqvm_client;
 	PLUGIN_INIT_SQVM_TYPE init_sqvm_server;
@@ -37,10 +37,10 @@ class Plugin
 
 class PluginManager
 {
-  public:
+public:
 	std::vector<Plugin> m_vLoadedPlugins;
 
-  public:
+public:
 	bool LoadPlugins();
 	std::optional<Plugin> LoadPlugin(fs::path path, PluginInitFuncs* funcs, PluginNorthstarData* data);
 
@@ -52,7 +52,7 @@ class PluginManager
 
 	void RunFrame();
 
-  private:
+private:
 	std::string pluginPath;
 };
 

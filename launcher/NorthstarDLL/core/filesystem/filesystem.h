@@ -29,14 +29,14 @@ enum SearchPathAdd_t
 
 class CSearchPath
 {
-  public:
+public:
 	unsigned char unknown[0x18];
 	const char* debugPath;
 };
 
 class IFileSystem
 {
-  public:
+public:
 	struct VTable
 	{
 		void* unknown[10];

@@ -5,7 +5,7 @@ typedef void (*SqAutoBindFunc)();
 
 class SquirrelAutoBindContainer
 {
-  public:
+public:
 	std::vector<std::function<void()>> clientSqAutoBindFuncs;
 	std::vector<std::function<void()>> serverSqAutoBindFuncs;
 };
@@ -61,7 +61,7 @@ class __squirrelautobind;
 
 class __squirrelautobind
 {
-  public:
+public:
 	__squirrelautobind() = delete;
 
 	__squirrelautobind(std::function<void()> clientAutoBindFunc, std::function<void()> serverAutoBindFunc)

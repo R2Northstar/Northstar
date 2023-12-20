@@ -17,11 +17,11 @@ struct LoadedPak
 
 class PakLoadManager
 {
-  private:
+private:
 	std::map<int, LoadedPak> m_vLoadedPaks {};
 	std::unordered_map<size_t, int> m_HashToPakHandle {};
 
-  public:
+public:
 	int LoadPakAsync(const char* pPath, const ePakLoadSource nLoadSource);
 	void UnloadPak(const int nPakHandle);
 	void UnloadMapPaks();

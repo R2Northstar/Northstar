@@ -48,10 +48,10 @@ enum MergeKeyValuesOp_t
 //-----------------------------------------------------------------------------
 class KeyValues
 {
-  private:
+private:
 	KeyValues(); // for internal use only
 
-  public:
+public:
 	// Constructors/destructors
 	KeyValues(const char* pszSetName);
 	KeyValues(const char* pszSetName, const char* pszFirstKey, const char* pszFirstValue);
@@ -112,7 +112,7 @@ class KeyValues
 	void CopySubkeys(KeyValues* pParent) const;
 	KeyValues* MakeCopy(void) const;
 
-  public:
+public:
 	uint32_t m_iKeyName : 24; // 0x0000
 	uint32_t m_iKeyNameCaseSensitive1 : 8; // 0x0003
 	char* m_sValue; // 0x0008

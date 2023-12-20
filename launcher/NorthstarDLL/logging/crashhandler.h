@@ -7,7 +7,7 @@
 //-----------------------------------------------------------------------------
 class CCrashHandler
 {
-  public:
+public:
 	CCrashHandler();
 	~CCrashHandler();
 
@@ -77,7 +77,7 @@ class CCrashHandler
 	//-----------------------------------------------------------------------------
 	void WriteMinidump();
 
-  private:
+private:
 	PVOID m_hExceptionFilter;
 	EXCEPTION_POINTERS* m_pExceptionInfos;
 

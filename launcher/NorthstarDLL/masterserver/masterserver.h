@@ -13,14 +13,14 @@ extern ConVar* Cvar_ns_curl_log_enable;
 
 struct RemoteModInfo
 {
-  public:
+public:
 	std::string Name;
 	std::string Version;
 };
 
 class RemoteServerInfo
 {
-  public:
+public:
 	char id[33]; // 32 bytes + nullterminator
 
 	// server info
@@ -37,7 +37,7 @@ class RemoteServerInfo
 	// connection stuff
 	bool requiresPassword;
 
-  public:
+public:
 	RemoteServerInfo(
 		const char* newId,
 		const char* newName,
@@ -52,7 +52,7 @@ class RemoteServerInfo
 
 struct RemoteServerConnectionInfo
 {
-  public:
+public:
 	char authToken[32];
 
 	in_addr ip;
@@ -61,7 +61,7 @@ struct RemoteServerConnectionInfo
 
 struct MainMenuPromoData
 {
-  public:
+public:
 	std::string newInfoTitle1;
 	std::string newInfoTitle2;
 	std::string newInfoTitle3;
@@ -82,11 +82,11 @@ struct MainMenuPromoData
 
 class MasterServerManager
 {
-  private:
+private:
 	bool m_bRequestingServerList = false;
 	bool m_bAuthenticatingWithGameServer = false;
 
-  public:
+public:
 	char m_sOwnServerId[33];
 	char m_sOwnServerAuthToken[33];
 	char m_sOwnClientAuthToken[33];
@@ -123,7 +123,7 @@ class MasterServerManager
 
 	std::unordered_set<std::string> m_handledServerConnections;
 
-  public:
+public:
 	MasterServerManager();
 
 	void ClearServerList();
@@ -156,7 +156,7 @@ enum class MasterServerReportPresenceResult
 
 class MasterServerPresenceReporter : public ServerPresenceReporter
 {
-  public:
+public:
 	/** Full data returned in the std::future of a MasterServerPresenceReporter::ReportPresence() call. */
 	struct ReportPresenceResultData
 	{
@@ -180,7 +180,7 @@ class MasterServerPresenceReporter : public ServerPresenceReporter
 	// Called every frame.
 	void RunFrame(double flCurrentTime, const ServerPresence* pServerPresence) override;
 
-  protected:
+protected:
 	// Contains the async logic to add the server to the MS.
 	void InternalAddServer(const ServerPresence* pServerPresence);
 

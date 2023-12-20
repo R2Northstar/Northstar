@@ -17,7 +17,7 @@ typedef int HKeySymbol;
 
 struct CKeyValuesSystem
 {
-  public:
+public:
 	struct __VTable
 	{
 		char pad0[8 * 3]; // 2 methods

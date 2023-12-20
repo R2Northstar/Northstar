@@ -5,7 +5,7 @@ class vgui_BaseRichText;
 
 class CHudChat
 {
-  public:
+public:
 	static CHudChat** allHuds;
 
 	char unknown1[720];
@@ -29,7 +29,7 @@ class CHudChat
 
 class LocalChatWriter
 {
-  public:
+public:
 	enum Context
 	{
 		NetworkContext = 0,
@@ -56,7 +56,7 @@ class LocalChatWriter
 	void InsertColorChange(Color color);
 	void InsertSwatchColorChange(SwatchColor color);
 
-  private:
+private:
 	Context m_context;
 
 	const char* ApplyAnsiEscape(const char* escape);

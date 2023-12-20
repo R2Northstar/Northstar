@@ -3,11 +3,11 @@
 
 class ServerBanSystem
 {
-  private:
+private:
 	std::ofstream m_sBanlistStream;
 	std::vector<uint64_t> m_vBannedUids;
 
-  public:
+public:
 	void OpenBanlist();
 	void ReloadBanlist();
 	void ClearBanlist();

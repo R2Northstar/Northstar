@@ -2,10 +2,10 @@
 
 class CMemoryAddress
 {
-  public:
+public:
 	uintptr_t m_nAddress;
 
-  public:
+public:
 	CMemoryAddress();
 	CMemoryAddress(const uintptr_t nAddress);
 	CMemoryAddress(const void* pAddress);
@@ -47,7 +47,7 @@ class CMemoryAddress
 // based on https://github.com/Mauler125/r5sdk/blob/master/r5dev/public/include/module.h
 class CModule : public CMemoryAddress
 {
-  public:
+public:
 	struct ModuleSections_t
 	{
 		ModuleSections_t(void) = default;
@@ -71,7 +71,7 @@ class CModule : public CMemoryAddress
 	ModuleSections_t m_RunTimeData;
 	ModuleSections_t m_ReadOnlyData;
 
-  private:
+private:
 	std::string m_svModuleName;
 	uintptr_t m_pModuleBase {};
 	DWORD m_nModuleSize {};
@@ -79,7 +79,7 @@ class CModule : public CMemoryAddress
 	IMAGE_DOS_HEADER* m_pDOSHeader = nullptr;
 	std::vector<ModuleSections_t> m_vModuleSections;
 
-  public:
+public:
 	CModule() = delete; // no default, we need a module name
 	CModule(const HMODULE pModule);
 	CModule(const char* pModuleName);

@@ -99,7 +99,7 @@ struct HttpRequest
  */
 class HttpRequestHandler
 {
-  public:
+public:
 	HttpRequestHandler();
 
 	// Start/Stop the HTTP request handler. Right now this doesn't do much.
@@ -122,7 +122,7 @@ class HttpRequestHandler
 	/** Registers the HTTP request Squirrel functions for the given script context. */
 	template <ScriptContext context> void RegisterSQFuncs();
 
-  private:
+private:
 	int m_iLastRequestHandle = 0;
 	std::atomic_bool m_bIsHttpRequestHandlerRunning = false;
 };

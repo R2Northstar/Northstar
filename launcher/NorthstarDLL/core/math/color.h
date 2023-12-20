@@ -57,7 +57,7 @@ struct SourceColor
 //-----------------------------------------------------------------------------
 class Color
 {
-  public:
+public:
 	Color(int r, int g, int b, int a = 255)
 	{
 		_color[0] = (unsigned char)r;
@@ -169,7 +169,7 @@ class Color
 		return SourceColor(_color[0], _color[1], _color[2], _color[3]);
 	}
 
-  private:
+private:
 	unsigned char _color[4];
 };
 

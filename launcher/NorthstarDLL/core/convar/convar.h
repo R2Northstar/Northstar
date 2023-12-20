@@ -124,7 +124,7 @@ typedef void (*FnChangeCallback_t)(ConVar* var, const char* pOldValue, float flO
 //-----------------------------------------------------------------------------
 class ConVar
 {
-  public:
+public:
 	ConVar(void) {};
 	ConVar(const char* pszName, const char* pszDefaultValue, int nFlags, const char* pszHelpString);
 	ConVar(
