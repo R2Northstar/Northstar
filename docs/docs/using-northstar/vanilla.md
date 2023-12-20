@@ -6,7 +6,7 @@ Northstar can also be used to load mods on vanilla more easily and with more sta
 ## Launching vanilla Titanfall 2 via Northstar (no mods) <a href="#vanilla-without-mods" id="vanilla-without-mods"></a>
 
 This method of launching Titanfall 2 is generally done when some part of Steam/EA launching Titanfall 2 doesn't work properly.
-You can do this by going to your [Titanfall2 directory](../installing-northstar/troubleshooting.md#game-location), creating a `Vanilla.bat` file, right clicking the `Vanilla.bat` file, hitting `Edit`, then entering `NorthstarLauncher.exe -vanilla`.
+You can do this by going to your [Titanfall2 directory](../installing-northstar/troubleshooting.md#game-location), creating a `Vanilla.bat` file, right clicking the `Vanilla.bat` file, hitting `Edit`, then entering `NorthstarLauncher.exe -nonorthstardll`.
 
 Once you do this, double click the `Vanilla.bat` file to load vanilla Titanfall 2 via Northstar without mods.
 
