@@ -1,8 +1,8 @@
 # NorthstarLauncher
 
 add_executable(NorthstarLauncher
-               "main.cpp"
-               "resources.rc"
+               "primelauncher/main.cpp"
+               "primelauncher/resources.rc"
 )
 
 target_compile_definitions(NorthstarLauncher PRIVATE

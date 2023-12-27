@@ -167,11 +167,6 @@ target_link_libraries(NorthstarDLL PRIVATE
                       version.lib
 )
 
-target_include_directories(NorthstarDLL PRIVATE
-                           ${CMAKE_SOURCE_DIR}/NorthstarDLL
-                           ${CMAKE_SOURCE_DIR}/thirdparty
-)
-
 target_precompile_headers(NorthstarDLL PRIVATE pch.h)
 
 target_compile_definitions(NorthstarDLL PRIVATE

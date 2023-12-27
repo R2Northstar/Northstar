@@ -24,10 +24,11 @@ set(NS_BINARY_DIR ${CMAKE_BINARY_DIR}/game)
 message(STATUS "NS: Building to ${NS_BINARY_DIR}")
 
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/primedev/cmake")
 include(utils)
 
+include_directories(primedev)
+include_directories(primedev/thirdparty)
+
 # Targets
-add_subdirectory(loader_wsock32_proxy)
-add_subdirectory(NorthstarDLL)
-add_subdirectory(NorthstarLauncher)
+add_subdirectory(primedev)
