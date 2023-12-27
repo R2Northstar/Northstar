@@ -1,11 +1,11 @@
 [submodule "thirdparty/libcurl"]
-	path = thirdparty/libcurl
+	path = primedev/thirdparty/libcurl
 	url = https://github.com/curl/curl
 	ignore = untracked
 [submodule "thirdparty/minhook"]
-	path = thirdparty/minhook
+	path = primedev/thirdparty/minhook
 	url = https://github.com/TsudaKageyu/minhook
 	ignore = untracked
 [submodule "thirdparty/minizip"]
-	path = thirdparty/minizip
+	path = primedev/thirdparty/minizip
 	url = https://github.com/zlib-ng/minizip-ng.git

@@ -1,6 +1,6 @@
 
 if(NOT minizip_FOUND)
-	check_init_submodule(${PROJECT_SOURCE_DIR}/thirdparty/minizip)
+	check_init_submodule(${PROJECT_SOURCE_DIR}/primedev/thirdparty/minizip)
 
 	set(MZ_ZLIB ON CACHE BOOL "Enable ZLIB compression, needed for DEFLATE")
 	set(MZ_BZIP2 OFF CACHE BOOL "Disable BZIP2 compression")
@@ -10,7 +10,7 @@ if(NOT minizip_FOUND)
 	set(MZ_ZSTD OFF CACHE BOOL "Disable ZSTD compression")
 	set(MZ_SIGNING OFF CACHE BOOL "Disable zip signing support")
 
-	add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/minizip minizip)
+	add_subdirectory(${PROJECT_SOURCE_DIR}/primedev/thirdparty/minizip minizip)
 	set(minizip_FOUND 1 PARENT_SCOPE)
 endif()
 

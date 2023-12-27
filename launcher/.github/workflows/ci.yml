@@ -20,10 +20,10 @@ jobs:
       - name: Setup resource file version
         shell: bash
         run: |
-          sed -i 's/DEV/${{ env.NORTHSTAR_VERSION }}/g' NorthstarLauncher/resources.rc
-          sed -i 's/DEV/${{ env.NORTHSTAR_VERSION }}/g' NorthstarDLL/resources.rc
+          sed -i 's/DEV/${{ env.NORTHSTAR_VERSION }}/g' primedev/primelauncher/resources.rc
+          sed -i 's/DEV/${{ env.NORTHSTAR_VERSION }}/g' primedev/resources.rc
           FILEVERSION=$(echo ${{ env.NORTHSTAR_VERSION }} | tr '.' ',' | sed -E 's/-rc[0-9]+//' | tr -d '[:alpha:]')
-          sed -i "s/0,0,0,1/${FILEVERSION}/g" NorthstarDLL/ns_version.h
+          sed -i "s/0,0,0,1/${FILEVERSION}/g" primedev/ns_version.h
       - name: Build
         run: cmake --build .
       - name: Extract Short Commit Hash
@@ -43,8 +43,8 @@ jobs:
     - uses: actions/checkout@v3
     - uses: DoozyX/clang-format-lint-action@v0.16.2
       with:
-        source: 'NorthstarDLL NorthstarLauncher'
-        exclude: 'NorthstarDLL/include loader_launcher_proxy loader_wsock32_proxy'
+        source: 'primedev'
+        exclude: 'primedev/include primedev/thirdparty primedev/wsockproxy'
         extensions: 'h,cpp'
         clangFormatVersion: 16
         style: file
