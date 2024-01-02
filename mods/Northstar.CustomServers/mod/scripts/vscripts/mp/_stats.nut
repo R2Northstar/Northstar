@@ -1035,7 +1035,10 @@ void function SaveStatsPeriodically_Threaded()
 	while( true )
 	{
 		foreach( entity player in GetPlayerArray() )
-			Stats_SaveAllStats( player )
+		{
+			if ( IsValid( player ) )
+				Stats_SaveAllStats( player )
+		}
 		wait 5
 	}
 }
