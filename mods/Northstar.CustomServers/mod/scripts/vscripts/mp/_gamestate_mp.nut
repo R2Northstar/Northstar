@@ -201,6 +201,14 @@ void function GameStateEnter_Prematch()
 	
 	if ( !GetClassicMPMode() && !ClassicMP_ShouldTryIntroAndEpilogueWithoutClassicMP() )
 		thread StartGameWithoutClassicMP()
+
+	// Initialise any spectators. Hopefully they are all initialised already in CodeCallback_OnClientConnectionCompleted
+	// (_base_gametype_mp.gnut) but for modes like LTS this doesn't seem to happen late enough to work properly.
+	foreach ( player in GetPlayerArray() )
+	{
+		if ( IsPrivateMatchSpectator( player ) )
+			InitialisePrivateMatchSpectatorPlayer( player )
+	}
 }
 
 void function StartGameWithoutClassicMP()
