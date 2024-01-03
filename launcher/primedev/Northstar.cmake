@@ -150,8 +150,8 @@ add_library(
     "util/wininfo.cpp"
     "util/wininfo.h"
     "dllmain.cpp"
-    "dllmain.h"
     "ns_version.h"
+    "Northstar.def"
     )
 
 target_link_libraries(
