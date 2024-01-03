@@ -48,3 +48,13 @@ jobs:
         extensions: 'h,cpp'
         clangFormatVersion: 16
         style: file
+
+  format-check-cmake-files:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: puneetmatharu/cmake-format-lint-action@v1.0.4
+      with:
+        args: "--in-place"
+    - run: |
+        git diff --exit-code
