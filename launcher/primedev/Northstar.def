@@ -1,0 +1,4 @@
+LIBRARY dedicated
+
+EXPORTS
+    InitialiseNorthstar @1

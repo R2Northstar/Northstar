@@ -1,4 +1,3 @@
-#include "dllmain.h"
 #include "logging/logging.h"
 #include "logging/crashhandler.h"
 #include "core/memalloc.h"
