@@ -145,6 +145,7 @@ void RegisterConCommand(
 	ConCommand* newCommand = new ConCommand;
 	ConCommandConstructor(newCommand, name, callback, helpString, flags, nullptr);
 	newCommand->m_pCompletionCallback = completionCallback;
+	newCommand->m_nCallbackFlags |= 0x3; // seems to be correct?; derived from client.dll + 0x737267
 }
 
 ON_DLL_LOAD("engine.dll", ConCommand, (CModule module))
