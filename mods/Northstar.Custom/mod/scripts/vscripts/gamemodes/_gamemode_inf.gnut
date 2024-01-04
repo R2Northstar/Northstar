@@ -54,7 +54,7 @@ void function SelectFirstInfectedDelayed()
 		return
 	}
 
-	entity infected = players[ RandomInt( players.len() ) ]
+	entity infected = players.getrandom()
 
 	InfectPlayer( infected )
 	RespawnInfected( infected )
