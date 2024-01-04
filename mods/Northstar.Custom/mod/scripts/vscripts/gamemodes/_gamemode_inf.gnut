@@ -45,6 +45,15 @@ void function SelectFirstInfectedDelayed()
 	wait 10.0 + RandomFloat( 5.0 )
 
 	array<entity> players = GetPlayerArray()
+
+	// End game if server empty on selecting infected
+	if ( !players.len() )
+	{
+		printt( "Couldn't select first infected: player array was empty" )
+		SetWinner( INFECTION_TEAM_SURVIVOR )
+		return
+	}
+
 	entity infected = players[ RandomInt( players.len() ) ]
 
 	InfectPlayer( infected )
