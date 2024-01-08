@@ -53,7 +53,7 @@
   * [Repositories](development/repositories/README.md)
     * [Atlas](development/repositories/atlas.md)
     * [NorthstarMods](development/repositories/northstarmods.md)
-    * [NorthstarLauncher](development/northstarlauncher.md)
+    * [NorthstarLauncher](development/repositories/northstarlauncher.md)
     * [NorthstarMasterServer (old)](development/northstarmasterserver/README.md)
       * [Deploy](development/northstarmasterserver/deploy.md)
   * [Contributing code to Northstar](development/contributing-code-to-northstar.md)
