@@ -145,3 +145,11 @@ If you ever used ReShade together with Titanfall2 in the past it will have creat
 * D3D11.DLL
 * OPENGL.DLL
 * DXGI.DLL
+
+## Archive
+
+{% hint style="info" %}
+The following issues should no longer occur in the latest Northstar releases.
+{% endhint %}
+
+TODO
