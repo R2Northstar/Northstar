@@ -5,10 +5,6 @@
 
 Firstly, note that the Northstar client is only available on PC and requires you to **both own the game and have it installed**.
 
-{% hint style="info" %}
-If you're looking to update Northstar, read [this](./manual-installation.md#updating-northstar) instead.
-{% endhint %}
-
 1. Download the latest version of Northstar from the [releases](https://github.com/R2Northstar/Northstar/releases) page
 2. Copy all the files in the newly downloaded zip folder to your `Titanfall2` folder.\
    ![Drag and drop the contents of the zip into your Titanfall2 folder](../images/manual-install-drag-drop-files.png)\
@@ -38,8 +34,10 @@ Should you notice any issues/warnings/errors while running Northstar, check the 
 ## Updating Northstar
 
 To update, first delete the core mods (`Northstar.Client`, `Northstar.Custom`, and `Northstar.CustomServers`) from `Titanfall2/R2Northstar/mods`.
-Then, simply follow the same process you used to install Northstar using the newest zipped release of Northstar.\
-When copying the new files, if prompted, make sure to select "_Overwrite_".\
+Then, simply follow the same process you used to install Northstar using the newest zipped release of Northstar.
+
+When copying the new files, if prompted, make sure to select "_Overwrite_".
+
 Note that if you modified some files like `ns_startup_args.txt`, these will also be overwritten. If you want to keep the changes you made make sure to make a copy of these files beforehand and change them back after applying the update.
 
 ## Installing Northstar mods manually
