@@ -1050,13 +1050,6 @@ void function OnServerSelected_Threaded( var button )
 		}
 	}
 
-	// Make Northstar aware new mods have been added
-	if ( downloadedMods > 0 )
-	{
-		print( "Some new mods have been downloaded or enabled, reloading mods." )
-		NSReloadMods();
-	}
-
 	if ( server.requiresPassword )
 	{
 		OnCloseServerBrowserMenu()
@@ -1065,12 +1058,12 @@ void function OnServerSelected_Threaded( var button )
 	else
 	{
 		TriggerConnectToServerCallbacks()
-		thread ThreadedAuthAndConnectToServer()
+		thread ThreadedAuthAndConnectToServer( "", downloadedMods != 0 )
 	}
 }
 
 
-void function ThreadedAuthAndConnectToServer( string password = "" )
+void function ThreadedAuthAndConnectToServer( string password = "", bool modsChanged = false )
 {
 	if ( NSIsAuthenticatingWithServer() )
 		return
@@ -1098,8 +1091,6 @@ void function ThreadedAuthAndConnectToServer( string password = "" )
 
 	if ( NSWasAuthSuccessful() )
 	{
-		bool modsChanged = false
-
 		// disable all RequiredOnClient mods that are not required by the server and are currently enabled
 		foreach ( string modName in NSGetModNames() )
 		{
