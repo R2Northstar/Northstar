@@ -27,10 +27,6 @@ If you have already logged in to EA App with Proton Experimental, the blank EA A
 
 Install both `d3dcompiler_43` and `d3dcompiler_47` through Winetricks.
 
-## Blank console
-
-This issue has been resolved as of [Northstar 1.9.2 and newer.](https://github.com/R2Northstar/Northstar/releases/latest)
-
 ## Crackling sound
 
 * [PulseAudio](https://wiki.archlinux.org/title/PulseAudio/Troubleshooting#Glitches.2C\_skips\_or\_crackling):
@@ -152,4 +148,7 @@ If you ever used ReShade together with Titanfall2 in the past it will have creat
 The following issues should no longer occur in the latest Northstar releases.
 {% endhint %}
 
-TODO
+### Blank console
+
+This issue has been resolved as of Northstar 1.9.2 and newer.
+
