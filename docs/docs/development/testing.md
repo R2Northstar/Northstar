@@ -105,7 +105,7 @@ By default duplicate accounts are blocked by server. Use `-allowdupeaccounts` wh
 Use `map <map name>` to quickly switch map.\
 Example: `map mp_glitch`
 
-List of maps can be found [here](../hosting-a-server-with-northstar/dedicated-server/#maps)
+List of maps can be found [here](../hosting-a-server-with-northstar/server-settings/file-names.md#maps)
 
 **Speed-up/slow-down game**
 
