@@ -46,7 +46,8 @@ The tool is still being improved upon but already more than usable. Check its RE
 
 Before starting, make sure you have a **working and up-to-date Northstar install** and you're **logged into GitHub with your GitHub account** (downloading files from CI only works while logged into any GitHub account)!
 
-1. Head to the bottom of the page of the PR and click on "_Show all checks_" ![rcon1](https://user-images.githubusercontent.com/40122905/179726100-48945eb6-3ebe-467f-acef-1c7d56f3e4bd.png)
+1. Head to the bottom of the page of the PR and click on "_Show all checks_"\
+   &#x20;![rcon1](https://user-images.githubusercontent.com/40122905/179726100-48945eb6-3ebe-467f-acef-1c7d56f3e4bd.png)
 2. For "_CI / build (pull\_request)_" click on "_Details_"\
    &#x20;![rcon2](https://user-images.githubusercontent.com/40122905/179726993-d1cb7849-a2fc-4d0d-9379-cf4e279469a1.png)
 3. From here click on "_Summary_"\
