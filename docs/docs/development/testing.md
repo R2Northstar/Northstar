@@ -67,7 +67,7 @@ Click on _"Code"_ and then on _"Download ZIP"_
 
 ![](../.gitbook/assets/download-mods-pr2.png)
 
-From there copy over all the `Northstar.XXXXX` folders into your mods folder in your TItnafall2 install the same way you would manually install mods.
+From there copy over all the `Northstar.XXXXX` folders into your mods folder in your Titanfall2 install the same way you would manually install mods.
 
 ## Tips and toolkits
 
