@@ -169,7 +169,10 @@ The real error is most likely slightly higher. Please post that in issues or the
 
 ## I can't play the Campaign <a href="#campaign" id="campaign"></a>
 
-If you're having trouble playing the campaign, update your Northstar install to the [newest release](https://github.com/R2Northstar/Northstar/releases) as this issue was resolved in `v1.11.2` of Northstar.
+Northstar does allow you to play campaign since version `1.11.2`, however it should be noted that certain mods will attempt to run while playing the campaign, leading to it breaking.
+If you experience a compile error when trying to play the campaign, try to see if the error mentions a file related to a mod that you can recognize. Otherwise, join the Northstar Discord server and create a ticket in the `#help` channel.
+
+An alternative solution is simply playing Vanilla Titanfall 2 for the campaign.
 
 ## Authentication Failed when clicking Launch Northstar <a href="#lsx2" id="lsx2"></a>
 
