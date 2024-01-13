@@ -306,7 +306,10 @@ void, __fastcall, (bool bRender))
 
 			if (bShouldDraw && bRender && (Cvar_enable_debug_overlays->GetBool() || pCurrOverlay->m_Type == OVERLAY_SMARTAMMO))
 			{
-				DrawOverlay(pCurrOverlay);
+				// call the new function, not the original
+				// note: if there is a beter way to call the hooked version of an
+				// autohook func then that would be better than this
+				__autohookfuncDrawOverlay(pCurrOverlay);
 			}
 
 			pPrevOverlay = pCurrOverlay;
