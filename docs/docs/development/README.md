@@ -6,6 +6,8 @@ description: >-
 
 # Development
 
+Check the subpages on the sidebar for various aspects of Northstar development.
+
 ## Repositories
 
 Check the following page for information about different code repositories Northstar uses
