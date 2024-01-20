@@ -163,6 +163,11 @@ std::optional<fs::path> ModDownloader::FetchModFromDistantStore(std::string_view
 
 	curl_easy_setopt(easyhandle, CURLOPT_URL, url.data());
 	curl_easy_setopt(easyhandle, CURLOPT_FAILONERROR, 1L);
+
+	// abort if slower than 30 bytes/sec during 10 seconds
+	curl_easy_setopt(easyhandle, CURLOPT_LOW_SPEED_TIME, 10L);
+	curl_easy_setopt(easyhandle, CURLOPT_LOW_SPEED_LIMIT, 30L);
+
 	curl_easy_setopt(easyhandle, CURLOPT_WRITEDATA, fp);
 	curl_easy_setopt(easyhandle, CURLOPT_WRITEFUNCTION, WriteData);
 	curl_easy_setopt(easyhandle, CURLOPT_NOPROGRESS, 0L);
