@@ -170,20 +170,50 @@ enum class eSignonState : int
 	CHANGELEVEL = 9, // server is changing level; please wait
 };
 
-// clang-format off
-OFFSET_STRUCT(CBaseClient)
+class CBaseClient
 {
-	STRUCT_SIZE(0x2D728)
-	FIELD(0x16, char m_Name[64])
-	FIELD(0x258, KeyValues* m_ConVars)
-	FIELD(0x2A0, eSignonState m_Signon)
-	FIELD(0x358, char m_ClanTag[16])
-	FIELD(0x484, bool m_bFakePlayer)
-	FIELD(0x4A0, ePersistenceReady m_iPersistenceReady)
-	FIELD(0x4FA, char m_PersistenceBuffer[PERSISTENCE_MAX_SIZE])
-	FIELD(0xF500, char m_UID[32])
+public:
+	char _unk_0x0[22]; // 0x0 ( Size: 22 )
+	char m_Name[64]; // 0x16 ( Size: 64 )
+	char _unk_0x56[514]; // 0x56 ( Size: 514 )
+	KeyValues* m_ConVars; // 0x258 ( Size: 8 )
+	char _unk_0x260[64]; // 0x260 ( Size: 64 )
+	eSignonState m_Signon; // 0x2a0 ( Size: 4 )
+	int32_t m_nDeltaTick; // 0x2a4 ( Size: 4 )
+	uint64_t m_nOriginID; // 0x2a8 ( Size: 8 )
+	int32_t m_nStringTableAckTick; // 0x2b0 ( Size: 4 )
+	int32_t m_nSignonTick; // 0x2b4 ( Size: 4 )
+	char _unk_0x2b8[160]; // 0x2b8 ( Size: 180 )
+	char m_ClanTag[16]; // 0x358 ( Size: 16 )
+	char _unk_0x368[284]; // 0x368 ( Size: 284 )
+	bool m_bFakePlayer; // 0x484 ( Size: 1 )
+	bool m_bReceivedPacket; // 0x485 ( Size: 1 )
+	bool m_bLowViolence; // 0x486 ( Size: 1 )
+	bool m_bFullyAuthenticated; // 0x487 ( Size: 1 )
+	char _unk_0x488[24]; // 0x488 ( Size: 24 )
+	ePersistenceReady m_iPersistenceReady; // 0x4a0 ( Size: 1 )
+	char _unk_0x4a1[89]; // 0x4a1 ( Size: 89 )
+	char m_PersistenceBuffer[PERSISTENCE_MAX_SIZE]; // 0x4fa ( Size: 56781 )
+	char _unk_0xe2c7[4665]; // 0xe2c7 ( Size: 4665 )
+	char m_UID[32]; // 0xf500 ( Size: 32 )
+	char _unk_0xf520[123400]; // 0xf520 ( Size: 123400 )
 };
-// clang-format on
+static_assert(sizeof(CBaseClient) == 0x2D728);
+static_assert(offsetof(CBaseClient, m_Name) == 0x16);
+static_assert(offsetof(CBaseClient, m_ConVars) == 0x258);
+static_assert(offsetof(CBaseClient, m_Signon) == 0x2A0);
+static_assert(offsetof(CBaseClient, m_nDeltaTick) == 0x2A4);
+static_assert(offsetof(CBaseClient, m_nOriginID) == 0x2A8);
+static_assert(offsetof(CBaseClient, m_nStringTableAckTick) == 0x2B0);
+static_assert(offsetof(CBaseClient, m_nSignonTick) == 0x2B4);
+static_assert(offsetof(CBaseClient, m_ClanTag) == 0x358);
+static_assert(offsetof(CBaseClient, m_bFakePlayer) == 0x484);
+static_assert(offsetof(CBaseClient, m_bReceivedPacket) == 0x485);
+static_assert(offsetof(CBaseClient, m_bLowViolence) == 0x486);
+static_assert(offsetof(CBaseClient, m_bFullyAuthenticated) == 0x487);
+static_assert(offsetof(CBaseClient, m_iPersistenceReady) == 0x4A0);
+static_assert(offsetof(CBaseClient, m_PersistenceBuffer) == 0x4FA);
+static_assert(offsetof(CBaseClient, m_UID) == 0xF500);
 
 extern CBaseClient* g_pClientArray;
 
@@ -199,62 +229,73 @@ extern server_state_t* g_pServerState;
 
 extern char* g_pModName;
 
-// clang-format off
-OFFSET_STRUCT(CGlobalVars)
+enum class GameMode_t : int
 {
-	FIELD(0x0,
-		// Absolute time (per frame still - Use Plat_FloatTime() for a high precision real time 
-		//  perf clock, but not that it doesn't obey host_timescale/host_framerate)
-		double m_flRealTime);
-
-	FIELDS(0x8,
-		// Absolute frame counter - continues to increase even if game is paused
-		int m_nFrameCount;
-		
-		// Non-paused frametime
-		float m_flAbsoluteFrameTime;
-		
-		// Current time 
-		//
-		// On the client, this (along with tickcount) takes a different meaning based on what
-		// piece of code you're in:
-		// 
-		//   - While receiving network packets (like in PreDataUpdate/PostDataUpdate and proxies),
-		//     this is set to the SERVER TICKCOUNT for that packet. There is no interval between
-		//     the server ticks.
-		//     [server_current_Tick * tick_interval]
-		//
-		//   - While rendering, this is the exact client clock 
-		//     [client_current_tick * tick_interval + interpolation_amount]
-		//
-		//   - During prediction, this is based on the client's current tick:
-		//     [client_current_tick * tick_interval]
-		float m_flCurTime;
-	)
-
-	FIELDS(0x30,
-		// Time spent on last server or client frame (has nothing to do with think intervals)
-		float m_flFrameTime;
-
-		// current maxplayers setting
-		int m_nMaxClients;
-	)
-
-	FIELDS(0x3C,
-		// Simulation ticks - does not increase when game is paused
-		uint32_t m_nTickCount; // this is weird and doesn't seem to increase once per frame?
-
-		// Simulation tick interval
-		float m_flTickInterval;
-	)
-
-	FIELDS(0x60,
-		const char* m_pMapName;
-		int m_nMapVersion;
-	)
-
-	//FIELD(0x98, double m_flRealTime); // again?
+	NO_MODE = 0,
+	MP_MODE,
+	SP_MODE,
 };
-// clang-format on
+
+class CGlobalVars
+{
+public:
+	// Absolute time (per frame still - Use Plat_FloatTime() for a high precision real time
+	//  perf clock, but not that it doesn't obey host_timescale/host_framerate)
+	double m_flRealTime; // 0x0 ( Size: 8 )
+
+	// Absolute frame counter - continues to increase even if game is paused
+	int m_nFrameCount; // 0x8 ( Size: 4 )
+
+	// Non-paused frametime
+	float m_flAbsoluteFrameTime; // 0xc ( Size: 4 )
+
+	// Current time
+	//
+	// On the client, this (along with tickcount) takes a different meaning based on what
+	// piece of code you're in:
+	//
+	//   - While receiving network packets (like in PreDataUpdate/PostDataUpdate and proxies),
+	//     this is set to the SERVER TICKCOUNT for that packet. There is no interval between
+	//     the server ticks.
+	//     [server_current_Tick * tick_interval]
+	//
+	//   - While rendering, this is the exact client clock
+	//     [client_current_tick * tick_interval + interpolation_amount]
+	//
+	//   - During prediction, this is based on the client's current tick:
+	//     [client_current_tick * tick_interval]
+	float m_flCurTime; // 0x10 ( Size: 4 )
+
+	char _unk_0x14[28]; // 0x14 ( Size: 28 )
+
+	// Time spent on last server or client frame (has nothing to do with think intervals)
+	float m_flFrameTime; // 0x30 ( Size: 4 )
+
+	// current maxplayers setting
+	int m_nMaxClients; // 0x34 ( Size: 4 )
+	GameMode_t m_nGameMode; // 0x38 ( Size: 4 )
+
+	// Simulation ticks - does not increase when game is paused
+	//   this is weird and doesn't seem to increase once per frame?
+	uint32_t m_nTickCount; // 0x3c ( Size: 4 )
+
+	// Simulation tick interval
+	float m_flTickInterval; // 0x40 ( Size: 4 )
+	char _unk_0x44[28]; // 0x44 ( Size: 28 )
+
+	const char* m_pMapName; // 0x60 ( Size: 8 )
+	int m_nMapVersion; // 0x68 ( Size: 4 )
+};
+static_assert(offsetof(CGlobalVars, m_flRealTime) == 0x0);
+static_assert(offsetof(CGlobalVars, m_nFrameCount) == 0x8);
+static_assert(offsetof(CGlobalVars, m_flAbsoluteFrameTime) == 0xc);
+static_assert(offsetof(CGlobalVars, m_flCurTime) == 0x10);
+static_assert(offsetof(CGlobalVars, m_flFrameTime) == 0x30);
+static_assert(offsetof(CGlobalVars, m_nMaxClients) == 0x34);
+static_assert(offsetof(CGlobalVars, m_nGameMode) == 0x38);
+static_assert(offsetof(CGlobalVars, m_nTickCount) == 0x3c);
+static_assert(offsetof(CGlobalVars, m_flTickInterval) == 0x40);
+static_assert(offsetof(CGlobalVars, m_pMapName) == 0x60);
+static_assert(offsetof(CGlobalVars, m_nMapVersion) == 0x68);
 
 extern CGlobalVars* g_pGlobals;
