@@ -31,7 +31,6 @@ typedef void (*callable_v)(void* v);
 
 #include "core/macros.h"
 
-#include "core/structs.h"
 #include "core/math/color.h"
 
 #include "spdlog/spdlog.h"

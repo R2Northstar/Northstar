@@ -51,7 +51,6 @@ add_library(
     "core/memory.h"
     "core/sourceinterface.cpp"
     "core/sourceinterface.h"
-    "core/structs.h"
     "core/tier0.cpp"
     "core/tier0.h"
     "dedicated/dedicated.cpp"

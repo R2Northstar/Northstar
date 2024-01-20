@@ -4,21 +4,6 @@
 // taken from ttf2sdk
 typedef void* FileHandle_t;
 
-#pragma pack(push, 1)
-
-// clang-format off
-OFFSET_STRUCT(VPKFileEntry)
-{
-    STRUCT_SIZE(0x44);
-    FIELDS(0x0, 
-          char* directory;
-          char* filename;
-          char* extension;
-        )
-};
-// clang-format on
-#pragma pack(pop)
-
 struct VPKData;
 
 enum SearchPathAdd_t
