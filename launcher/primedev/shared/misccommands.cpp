@@ -60,7 +60,7 @@ void ConCommand_cvar_setdefaultvalue(const CCommand& arg)
 	}
 
 	// unfortunately no way for us to not leak memory here, as default value might not be in writeable memory by default
-	int nLen = strlen(arg.Arg(2));
+	size_t nLen = strlen(arg.Arg(2));
 	char* pBuf = new char[nLen + 1];
 	strncpy_s(pBuf, nLen + 1, arg.Arg(2), nLen);
 
@@ -83,7 +83,7 @@ void ConCommand_cvar_setvalueanddefaultvalue(const CCommand& arg)
 	}
 
 	// unfortunately no way for us to not leak memory here, as default value might not be in writeable memory by default
-	int nLen = strlen(arg.Arg(2));
+	size_t nLen = strlen(arg.Arg(2));
 	char* pBuf = new char[nLen + 1];
 	strncpy_s(pBuf, nLen + 1, arg.Arg(2), nLen);
 

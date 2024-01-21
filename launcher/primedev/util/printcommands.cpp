@@ -52,12 +52,12 @@ void PrintCommandHelpDialogue(const ConCommandBase* command, const char* name)
 void TryPrintCvarHelpForCommand(const char* pCommand)
 {
 	// try to display help text for an inputted command string from the console
-	int pCommandLen = strlen(pCommand);
+	size_t pCommandLen = strlen(pCommand);
 	char* pCvarStr = new char[pCommandLen];
 	strcpy(pCvarStr, pCommand);
 
 	// trim whitespace from right
-	for (int i = pCommandLen - 1; i; i--)
+	for (size_t i = pCommandLen - 1; i; i--)
 	{
 		if (isspace(pCvarStr[i]))
 			pCvarStr[i] = '\0';

@@ -103,7 +103,7 @@ inline std::vector<uint8_t> HexBytesToString(const char* pHexString)
 {
 	std::vector<uint8_t> ret;
 
-	int size = strlen(pHexString);
+	size_t size = strlen(pHexString);
 	for (int i = 0; i < size; i++)
 	{
 		// If this is a space character, ignore it
@@ -289,7 +289,7 @@ inline std::pair<std::vector<uint8_t>, std::string> MaskedBytesFromPattern(const
 	std::vector<uint8_t> vRet;
 	std::string sMask;
 
-	int size = strlen(pPatternString);
+	size_t size = strlen(pPatternString);
 	for (int i = 0; i < size; i++)
 	{
 		// If this is a space character, ignore it

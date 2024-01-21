@@ -659,7 +659,7 @@ template <ScriptContext context> void SquirrelManager<context>::ProcessMessageBu
 		pushobject(m_pSQVM->sqvm, &functionobj); // Push the function object
 		pushroottable(m_pSQVM->sqvm);
 
-		int argsAmount = message.args.size();
+		size_t argsAmount = message.args.size();
 
 		if (message.isExternal && message.externalFunc != NULL)
 		{
@@ -674,7 +674,7 @@ template <ScriptContext context> void SquirrelManager<context>::ProcessMessageBu
 			}
 		}
 
-		_call(m_pSQVM->sqvm, argsAmount);
+		_call(m_pSQVM->sqvm, (SQInteger)argsAmount);
 	}
 }
 

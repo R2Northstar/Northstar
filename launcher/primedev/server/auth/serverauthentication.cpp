@@ -291,7 +291,7 @@ void,, (CBaseClient* self))
 	{
 		g_pServerAuthentication->m_bForceResetLocalPlayerPersistence = false;
 		g_pServerAuthentication->WritePersistentData(self);
-		g_pServerPresence->SetPlayerCount(g_pServerAuthentication->m_PlayerAuthenticationData.size());
+		g_pServerPresence->SetPlayerCount((int)g_pServerAuthentication->m_PlayerAuthenticationData.size());
 	}
 
 	CBaseClient__ActivatePlayer(self);
@@ -326,7 +326,7 @@ void,, (CBaseClient* self, uint32_t unknownButAlways1, const char* pReason, ...)
 		g_pServerLimits->RemovePlayer(self);
 	}
 
-	g_pServerPresence->SetPlayerCount(g_pServerAuthentication->m_PlayerAuthenticationData.size());
+	g_pServerPresence->SetPlayerCount((int)g_pServerAuthentication->m_PlayerAuthenticationData.size());
 
 	_CBaseClient__Disconnect(self, unknownButAlways1, buf);
 }

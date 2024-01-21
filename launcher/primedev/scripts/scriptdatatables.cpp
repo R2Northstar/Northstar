@@ -308,7 +308,7 @@ REPLACE_SQFUNC(GetDataTableRowCount, (ScriptContext::UI | ScriptContext::CLIENT 
 		return g_pSquirrel<context>->m_funcOriginals["GetDatatableRowCount"](sqvm);
 
 	CSVData* csv = *pData;
-	g_pSquirrel<context>->pushinteger(sqvm, csv->dataPointers.size());
+	g_pSquirrel<context>->pushinteger(sqvm, (SQInteger)csv->dataPointers.size());
 	return SQRESULT_NOTNULL;
 }
 

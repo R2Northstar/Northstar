@@ -445,7 +445,7 @@ bool, __fastcall, (void* sample, void* audioBuffer, unsigned int audioBufferLeng
 		else
 		{
 			data = dat->second.get();
-			dataLength = dat->first;
+			dataLength = (unsigned int)dat->first;
 		}
 	}
 
