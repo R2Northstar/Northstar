@@ -399,7 +399,7 @@ public:
 			v();
 		}
 
-		return _call(m_pSQVM->sqvm, functionVector.size());
+		return _call(m_pSQVM->sqvm, (SQInteger)functionVector.size());
 	}
 
 #pragma endregion
@@ -470,7 +470,7 @@ template <ScriptContext context, typename T>
 requires (std::convertible_to<T, std::string> || std::is_constructible_v<std::string, T>)
 inline VoidFunction SQMessageBufferPushArg(T& arg) {
 	auto converted = std::string(arg);
-	return [converted]{ g_pSquirrel<context>->pushstring(g_pSquirrel<context>->m_pSQVM->sqvm, converted.c_str(), converted.length()); };
+	return [converted]{ g_pSquirrel<context>->pushstring(g_pSquirrel<context>->m_pSQVM->sqvm, converted.c_str(), (int)converted.length()); };
 }
 // Assets
 template <ScriptContext context>

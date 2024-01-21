@@ -77,7 +77,7 @@ void __fileAutohook::Dispatch()
 
 void __fileAutohook::DispatchForModule(const char* pModuleName)
 {
-	const int iModuleNameLen = strlen(pModuleName);
+	const size_t iModuleNameLen = strlen(pModuleName);
 
 	for (__autohook* hook : hooks)
 		if ((hook->iAddressResolutionMode == __autohook::OFFSET_STRING && !strncmp(pModuleName, hook->pAddrString, iModuleNameLen)) ||
@@ -87,14 +87,14 @@ void __fileAutohook::DispatchForModule(const char* pModuleName)
 
 ManualHook::ManualHook(const char* funcName, LPVOID func) : pHookFunc(func), ppOrigFunc(nullptr)
 {
-	const int iFuncNameStrlen = strlen(funcName);
+	const size_t iFuncNameStrlen = strlen(funcName);
 	pFuncName = new char[iFuncNameStrlen];
 	memcpy(pFuncName, funcName, iFuncNameStrlen);
 }
 
 ManualHook::ManualHook(const char* funcName, LPVOID* orig, LPVOID func) : pHookFunc(func), ppOrigFunc(orig)
 {
-	const int iFuncNameStrlen = strlen(funcName);
+	const size_t iFuncNameStrlen = strlen(funcName);
 	pFuncName = new char[iFuncNameStrlen];
 	memcpy(pFuncName, funcName, iFuncNameStrlen);
 }
@@ -141,7 +141,7 @@ uintptr_t ParseDLLOffsetString(const char* pAddrString)
 	uintptr_t iOffset = 0;
 
 	int iOffsetBegin = iDllNameEnd;
-	int iOffsetEnd = strlen(pAddrString);
+	size_t iOffsetEnd = strlen(pAddrString);
 
 	// seek until we hit the start of the number offset
 	for (; !(pAddrString[iOffsetBegin] >= '0' && pAddrString[iOffsetBegin] <= '9') && pAddrString[iOffsetBegin]; iOffsetBegin++)

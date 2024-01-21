@@ -630,7 +630,7 @@ public:
 		// at the head to make reading and detecting the end efficient.
 		int nHead = m_DataBytes & 3;
 
-		int posBytes = startPos / 8;
+		size_t posBytes = startPos / 8;
 		if ((m_DataBytes < 4) || (nHead && (posBytes < nHead)))
 		{
 			// partial first dword
@@ -652,7 +652,7 @@ public:
 		}
 		else
 		{
-			int adjustedPos = startPos - (nHead << 3);
+			size_t adjustedPos = startPos - (nHead << 3);
 
 			m_DataIn = reinterpret_cast<u32 const*>(reinterpret_cast<u8 const*>(m_Data) + ((adjustedPos / 32) << 2) + nHead);
 

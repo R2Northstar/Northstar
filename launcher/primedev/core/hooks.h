@@ -119,7 +119,7 @@ public:
 	{
 		iAddressResolutionMode = ABSOLUTE_ADDR;
 
-		const int iFuncNameStrlen = strlen(funcName) + 1;
+		const size_t iFuncNameStrlen = strlen(funcName) + 1;
 		pFuncName = new char[iFuncNameStrlen];
 		memcpy(pFuncName, funcName, iFuncNameStrlen);
 
@@ -131,11 +131,11 @@ public:
 	{
 		iAddressResolutionMode = OFFSET_STRING;
 
-		const int iFuncNameStrlen = strlen(funcName) + 1;
+		const size_t iFuncNameStrlen = strlen(funcName) + 1;
 		pFuncName = new char[iFuncNameStrlen];
 		memcpy(pFuncName, funcName, iFuncNameStrlen);
 
-		const int iAddrStrlen = strlen(addrString) + 1;
+		const size_t iAddrStrlen = strlen(addrString) + 1;
 		pAddrString = new char[iAddrStrlen];
 		memcpy(pAddrString, addrString, iAddrStrlen);
 
@@ -147,15 +147,15 @@ public:
 	{
 		iAddressResolutionMode = PROCADDRESS;
 
-		const int iFuncNameStrlen = strlen(funcName) + 1;
+		const size_t iFuncNameStrlen = strlen(funcName) + 1;
 		pFuncName = new char[iFuncNameStrlen];
 		memcpy(pFuncName, funcName, iFuncNameStrlen);
 
-		const int iModuleNameStrlen = strlen(moduleName) + 1;
+		const size_t iModuleNameStrlen = strlen(moduleName) + 1;
 		pModuleName = new char[iModuleNameStrlen];
 		memcpy(pModuleName, moduleName, iModuleNameStrlen);
 
-		const int iProcNameStrlen = strlen(procName) + 1;
+		const size_t iProcNameStrlen = strlen(procName) + 1;
 		pProcName = new char[iProcNameStrlen];
 		memcpy(pProcName, procName, iProcNameStrlen);
 
@@ -293,7 +293,7 @@ public:
 	{
 		m_pTarget = pTarget;
 
-		const int iAddrStrlen = strlen(pAddrString) + 1;
+		const size_t iAddrStrlen = strlen(pAddrString) + 1;
 		m_pAddrString = new char[iAddrStrlen];
 		memcpy(m_pAddrString, pAddrString, iAddrStrlen);
 

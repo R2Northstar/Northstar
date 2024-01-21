@@ -382,7 +382,7 @@ void ConVar::ChangeStringValue(const char* pszTempVal, float flOldValue)
 
 	if (pszTempVal)
 	{
-		int len = strlen(pszTempVal) + 1;
+		size_t len = strlen(pszTempVal) + 1;
 
 		if (len > m_Value.m_iStringLength)
 		{

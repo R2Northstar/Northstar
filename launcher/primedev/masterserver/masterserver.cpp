@@ -635,7 +635,7 @@ void MasterServerManager::AuthenticateWithServer(const char* uid, const char* pl
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
 
 			{
-				char* escapedPassword = curl_easy_escape(curl, passwordStr.c_str(), passwordStr.length());
+				char* escapedPassword = curl_easy_escape(curl, passwordStr.c_str(), (int)passwordStr.length());
 
 				curl_easy_setopt(
 					curl,
@@ -924,7 +924,7 @@ void MasterServerManager::ProcessConnectionlessPacketSigreq1(std::string data)
 			CURL* curl = curl_easy_init();
 			SetCommonHttpClientOptions(curl);
 
-			char* rejectEnc = curl_easy_escape(curl, reject.c_str(), reject.length());
+			char* rejectEnc = curl_easy_escape(curl, reject.c_str(), (int)reject.length());
 			if (!rejectEnc)
 			{
 				spdlog::error("failed to handle Atlas connect request {}: failed to escape reject", token);

@@ -26,7 +26,7 @@ ADD_SQFUNC("bool", NSMasterServerConnectionSuccessful, "", "", ScriptContext::UI
 
 ADD_SQFUNC("int", NSGetServerCount, "", "", ScriptContext::UI)
 {
-	g_pSquirrel<context>->pushinteger(sqvm, g_pMasterServerManager->m_vRemoteServers.size());
+	g_pSquirrel<context>->pushinteger(sqvm, (SQInteger)g_pMasterServerManager->m_vRemoteServers.size());
 	return SQRESULT_NOTNULL;
 }
 
@@ -146,7 +146,7 @@ ADD_SQFUNC("array<ServerInfo>", NSGetGameServers, "", "", ScriptContext::UI)
 		g_pSquirrel<context>->pushnewstructinstance(sqvm, 11);
 
 		// index
-		g_pSquirrel<context>->pushinteger(sqvm, i);
+		g_pSquirrel<context>->pushinteger(sqvm, (SQInteger)i);
 		g_pSquirrel<context>->sealstructslot(sqvm, 0);
 
 		// id

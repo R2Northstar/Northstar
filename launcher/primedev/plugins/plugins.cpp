@@ -188,7 +188,7 @@ std::optional<Plugin> PluginManager::LoadPlugin(fs::path path, PluginInitFuncs* 
 
 	plugin.run_frame = (PLUGIN_RUNFRAME)GetProcAddress(pluginLib, "PLUGIN_RUNFRAME");
 
-	plugin.handle = m_vLoadedPlugins.size();
+	plugin.handle = (int)m_vLoadedPlugins.size();
 	plugin.logger = std::make_shared<ColoredLogger>(plugin.displayName.c_str(), NS::Colors::PLUGIN);
 	RegisterLogger(plugin.logger);
 	NS::log::PLUGINSYS->info("Loading plugin {} version {}", plugin.displayName, plugin.version);

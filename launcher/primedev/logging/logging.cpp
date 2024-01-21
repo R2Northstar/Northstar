@@ -95,18 +95,18 @@ void ExternalConsoleSink::custom_sink_it_(const custom_log_msg& msg)
 		std::string name {msg.logger_name.begin(), msg.logger_name.end()};
 
 		std::string name_str = "[NAME]";
-		int name_pos = str.find(name_str);
+		size_t name_pos = str.find(name_str);
 		str.replace(name_pos, name_str.length(), msg.origin->ANSIColor + "[" + name + "]" + default_color);
 
 		std::string level_str = "[LVL]";
-		int level_pos = str.find(level_str);
+		size_t level_pos = str.find(level_str);
 		str.replace(level_pos, level_str.length(), levelColor + "[" + std::string(level_names[msg.level]) + "]" + default_color);
 
 		out += str;
 	}
 	// print the string to the console - this is definitely bad i think
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
-	auto ignored = WriteConsoleA(handle, out.c_str(), std::strlen(out.c_str()), nullptr, nullptr);
+	auto ignored = WriteConsoleA(handle, out.c_str(), (DWORD)std::strlen(out.c_str()), nullptr, nullptr);
 	(void)ignored;
 }
 

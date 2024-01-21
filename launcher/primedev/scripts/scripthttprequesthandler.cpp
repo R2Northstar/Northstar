@@ -320,11 +320,11 @@ template <ScriptContext context> int HttpRequestHandler::MakeHttpRequest(const H
 				bool isFirstValue = true;
 				for (const auto& kv : requestParameters.queryParameters)
 				{
-					char* key = curl_easy_escape(curl, kv.first.c_str(), kv.first.length());
+					char* key = curl_easy_escape(curl, kv.first.c_str(), (int)kv.first.length());
 
 					for (const std::string& queryValue : kv.second)
 					{
-						char* value = curl_easy_escape(curl, queryValue.c_str(), queryValue.length());
+						char* value = curl_easy_escape(curl, queryValue.c_str(), (int)queryValue.length());
 
 						if (isFirstValue && !bUrlContainsQuery)
 						{

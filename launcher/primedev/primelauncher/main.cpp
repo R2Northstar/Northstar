@@ -281,7 +281,7 @@ bool LoadNorthstar()
 			std::string cla = std::string(clachar);
 			if (strncmp(cla.substr(9, 1).c_str(), "\"", 1))
 			{
-				int space = cla.find(" ");
+				size_t space = cla.find(" ");
 				std::string dirname = cla.substr(9, space - 9);
 				std::cout << "[*] Found profile in command line arguments: " << dirname << std::endl;
 				strProfile = dirname.c_str();
@@ -289,8 +289,8 @@ bool LoadNorthstar()
 			else
 			{
 				std::string quote = "\"";
-				int quote1 = cla.find(quote);
-				int quote2 = (cla.substr(quote1 + 1)).find(quote);
+				size_t quote1 = cla.find(quote);
+				size_t quote2 = (cla.substr(quote1 + 1)).find(quote);
 				std::string dirname = cla.substr(quote1 + 1, quote2);
 				std::cout << "[*] Found profile in command line arguments: " << dirname << std::endl;
 				strProfile = dirname;

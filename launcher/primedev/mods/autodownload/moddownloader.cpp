@@ -23,18 +23,18 @@ ModDownloader::ModDownloader()
 	if (clachar)
 	{
 		std::string url;
-		int iFlagStringLength = strlen(CUSTOM_MODS_URL_FLAG);
+		size_t iFlagStringLength = strlen(CUSTOM_MODS_URL_FLAG);
 		std::string cla = std::string(clachar);
 		if (strncmp(cla.substr(iFlagStringLength, 1).c_str(), "\"", 1))
 		{
-			int space = cla.find(" ");
+			size_t space = cla.find(" ");
 			url = cla.substr(iFlagStringLength, space - iFlagStringLength);
 		}
 		else
 		{
 			std::string quote = "\"";
-			int quote1 = cla.find(quote);
-			int quote2 = (cla.substr(quote1 + 1)).find(quote);
+			size_t quote1 = cla.find(quote);
+			size_t quote2 = (cla.substr(quote1 + 1)).find(quote);
 			url = cla.substr(quote1 + 1, quote2);
 		}
 		spdlog::info("Found custom verified mods URL in command line argument: {}", url);
