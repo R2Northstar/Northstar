@@ -1,4 +1,9 @@
 if(NOT minizip_FOUND)
+
+    # zlib 1.3.1 had a cmake change that broke stuff, so this branch on our fork reverts that one commit :)
+    set(ZLIB_TAG "fix-things")
+    set(ZLIB_REPOSITORY "https://github.com/R2Northstar/zlib")
+
     check_init_submodule(${PROJECT_SOURCE_DIR}/primedev/thirdparty/minizip)
 
     set(MZ_ZLIB
