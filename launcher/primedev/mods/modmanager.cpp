@@ -771,7 +771,6 @@ void ModManager::LoadMods()
 			// make sure command isnt't registered multiple times.
 			if (!g_pCVar->FindCommand(command->Name.c_str()))
 			{
-				ConCommand* newCommand = new ConCommand();
 				std::string funcName = command->Function;
 				RegisterConCommand(command->Name.c_str(), ModConCommandCallback, command->HelpString.c_str(), command->Flags);
 			}
