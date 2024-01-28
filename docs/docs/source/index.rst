@@ -90,3 +90,11 @@ Cheatsheet
     :caption: Mapping Tools
 
     /mapping/info-dump
+
+.. toctree::
+    :maxdepth: 2
+    :hidden:
+    :caption: Plugins
+
+    /plugins/interfacesapi
+    /plugins/resources
