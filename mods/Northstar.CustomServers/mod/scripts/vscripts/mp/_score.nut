@@ -304,7 +304,7 @@ void function ScoreEvent_SetupEarnMeterValuesForMixedModes() // mixed modes in t
 {
 	// todo needs earn/overdrive values
 	// player-controlled stuff
-	ScoreEvent_SetEarnMeterValues( "KillPilot", 0.07, 0.15 )
+	ScoreEvent_SetEarnMeterValues( "KillPilot", 0.07, 0.15, 0.33 ) // 5% for titan cores
 	ScoreEvent_SetEarnMeterValues( "KillTitan", 0.0, 0.15 )
 	ScoreEvent_SetEarnMeterValues( "TitanKillTitan", 0.0, 0.0 ) // unsure
 	ScoreEvent_SetEarnMeterValues( "PilotBatteryStolen", 0.0, 0.35 ) // this actually just doesn't have overdrive in vanilla even
