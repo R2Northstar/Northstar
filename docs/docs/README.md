@@ -24,7 +24,7 @@ Install instructions can be found here:
 
 For modding guides, documentation on Northstar API features and documentation on Respawn Squirrel look at:
 
-[ReadTheDocs](https://r2northstar.readthedocs.io/en/latest/guides/gettingstarted.html)
+{% embed url="https://r2northstar.readthedocs.io/" %}
 
 ## Contact and contributing
 
