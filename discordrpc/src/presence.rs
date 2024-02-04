@@ -33,11 +33,11 @@ pub fn run_presence_updates(sqvm: UnsafeHandle<*mut HSquirrelVM>) {
     "#,
     ) {
         err.log()
-    }
+    };
 }
 
 /// function to pull presence from the sqvm since in runframe it's impossibke to get the output of a function back
-#[rrplug::sqfunction(VM = "UiClient", ExportName = "FetchPresence")]
+#[rrplug::sqfunction(VM = "UI | CLIENT", ExportName = "FetchPresence")]
 pub fn fetch_presence() -> Result<(), String> {
     let plugin = crate::PLUGIN.wait();
     let mut presence_lock = plugin.presence_data.lock();
