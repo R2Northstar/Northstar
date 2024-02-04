@@ -1,6 +1,13 @@
 #pragma once
 #include <string>
 
+// interface return status
+enum class InterfaceStatus : int
+{
+	IFACE_OK = 0,
+	IFACE_FAILED,
+};
+
 // literally just copied from ttf2sdk definition
 typedef void* (*CreateInterfaceFn)(const char* pName, int* pReturnCode);
 

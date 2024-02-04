@@ -7,8 +7,7 @@
 #include "engine/r2engine.h"
 #include "shared/exploit_fixes/ns_limits.h"
 #include "squirrel/squirrel.h"
-#include "plugins/plugins.h"
-#include "plugins/pluginbackend.h"
+#include "plugins/pluginmanager.h"
 
 AUTOHOOK_INIT()
 
