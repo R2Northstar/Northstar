@@ -22,13 +22,13 @@ jobs:
         run: |
           cargo build --release --verbose
       - name: Upload RPC build as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: northstar-discord-rpc
           path: |
             target/release/*.dll
       - name: Upload debug build artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: discord-rpc-debug-files
           path: |
