@@ -7,7 +7,7 @@ jobs:
     name: format-check
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Format check
         run: cargo fmt --all -- --check
 
@@ -15,7 +15,7 @@ jobs:
     runs-on: windows-2022
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Build
         run: |
           cargo build --release --verbose
