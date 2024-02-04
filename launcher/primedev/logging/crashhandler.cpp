@@ -4,6 +4,7 @@
 #include "util/version.h"
 #include "mods/modmanager.h"
 #include "plugins/plugins.h"
+#include "plugins/pluginmanager.h"
 
 #include <minidumpapiset.h>
 
@@ -524,9 +525,9 @@ void CCrashHandler::FormatLoadedPlugins()
 	if (g_pPluginManager)
 	{
 		spdlog::error("Loaded Plugins:");
-		for (const Plugin& plugin : g_pPluginManager->m_vLoadedPlugins)
+		for (const Plugin& plugin : g_pPluginManager->GetLoadedPlugins())
 		{
-			spdlog::error("\t{}", plugin.name);
+			spdlog::error("\t{}", plugin.GetName());
 		}
 	}
 }

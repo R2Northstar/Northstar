@@ -3,9 +3,6 @@
 #include "convar.h"
 #include "core/sourceinterface.h"
 
-#include "plugins/pluginbackend.h"
-#include "plugins/plugin_abi.h"
-
 #include <float.h>
 
 typedef void (*ConVarRegisterType)(
@@ -40,12 +37,6 @@ ON_DLL_LOAD("engine.dll", ConVar, (CModule module))
 
 	g_pCVarInterface = new SourceInterface<CCvar>("vstdlib.dll", "VEngineCvar007");
 	g_pCVar = *g_pCVarInterface;
-
-	g_pPluginCommunicationhandler->m_sEngineData.conVarMalloc = reinterpret_cast<PluginConVarMallocType>(conVarMalloc);
-	g_pPluginCommunicationhandler->m_sEngineData.conVarRegister = reinterpret_cast<PluginConVarRegisterType>(conVarRegister);
-	g_pPluginCommunicationhandler->m_sEngineData.ConVar_Vtable = reinterpret_cast<void*>(g_pConVar_Vtable);
-	g_pPluginCommunicationhandler->m_sEngineData.IConVar_Vtable = reinterpret_cast<void*>(g_pIConVar_Vtable);
-	g_pPluginCommunicationhandler->m_sEngineData.g_pCVar = reinterpret_cast<void*>(g_pCVar);
 }
 
 //-----------------------------------------------------------------------------
