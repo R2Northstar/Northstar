@@ -40,12 +40,12 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Download compiled RPC
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: northstar-discord-rpc
           path: northstar-discord-rpc
       - name: Download debug files
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: discord-rpc-debug-files
           path: discord-rpc-debug-files
