@@ -1,6 +1,9 @@
+#include "debugoverlay.h"
+
 #include "dedicated/dedicated.h"
 #include "core/convar/cvar.h"
 #include "core/math/vector.h"
+#include "server/ai_helper.h"
 
 AUTOHOOK_INIT()
 
@@ -122,47 +125,12 @@ struct OverlaySphere_t : public OverlayBase_t
 	bool m_bWireframe;
 };
 
-typedef bool (*OverlayBase_t__IsDeadType)(OverlayBase_t* a1);
-static OverlayBase_t__IsDeadType OverlayBase_t__IsDead;
-typedef void (*OverlayBase_t__DestroyOverlayType)(OverlayBase_t* a1);
-static OverlayBase_t__DestroyOverlayType OverlayBase_t__DestroyOverlay;
+static bool (*OverlayBase_t__IsDead)(OverlayBase_t* a1);
+static void (*OverlayBase_t__DestroyOverlay)(OverlayBase_t* a1);
 
 static ConVar* Cvar_enable_debug_overlays;
 
 LPCRITICAL_SECTION s_OverlayMutex;
-
-// Render Line
-typedef void (*RenderLineType)(const Vector3& v1, const Vector3& v2, Color c, bool bZBuffer);
-static RenderLineType RenderLine;
-
-// Render box
-typedef void (*RenderBoxType)(
-	const Vector3& vOrigin, const QAngle& angles, const Vector3& vMins, const Vector3& vMaxs, Color c, bool bZBuffer, bool bInsideOut);
-static RenderBoxType RenderBox;
-
-// Render wireframe box
-static RenderBoxType RenderWireframeBox;
-
-// Render swept box
-typedef void (*RenderWireframeSweptBoxType)(
-	const Vector3& vStart, const Vector3& vEnd, const QAngle& angles, const Vector3& vMins, const Vector3& vMaxs, Color c, bool bZBuffer);
-RenderWireframeSweptBoxType RenderWireframeSweptBox;
-
-// Render Triangle
-typedef void (*RenderTriangleType)(const Vector3& p1, const Vector3& p2, const Vector3& p3, Color c, bool bZBuffer);
-static RenderTriangleType RenderTriangle;
-
-// Render Axis
-typedef void (*RenderAxisType)(const Vector3& vOrigin, float flScale, bool bZBuffer);
-static RenderAxisType RenderAxis;
-
-// I dont know
-typedef void (*RenderUnknownType)(const Vector3& vUnk, float flUnk, bool bUnk);
-static RenderUnknownType RenderUnknown;
-
-// Render Sphere
-typedef void (*RenderSphereType)(const Vector3& vCenter, float flRadius, int nTheta, int nPhi, Color c, bool bZBuffer);
-static RenderSphereType RenderSphere;
 
 OverlayBase_t** s_pOverlays;
 
@@ -317,6 +285,11 @@ void, __fastcall, (bool bRender))
 		}
 	}
 
+	if (bRender && Cvar_enable_debug_overlays->GetBool())
+	{
+		g_pAIHelper->DrawNavmeshPolys();
+	}
+
 	LeaveCriticalSection(s_OverlayMutex);
 }
 
@@ -324,17 +297,17 @@ ON_DLL_LOAD_CLIENT_RELIESON("engine.dll", DebugOverlay, ConVar, (CModule module)
 {
 	AUTOHOOK_DISPATCH()
 
-	OverlayBase_t__IsDead = module.Offset(0xACAC0).RCast<OverlayBase_t__IsDeadType>();
-	OverlayBase_t__DestroyOverlay = module.Offset(0xAB680).RCast<OverlayBase_t__DestroyOverlayType>();
+	OverlayBase_t__IsDead = module.Offset(0xACAC0).RCast<decltype(OverlayBase_t__IsDead)>();
+	OverlayBase_t__DestroyOverlay = module.Offset(0xAB680).RCast<decltype(OverlayBase_t__DestroyOverlay)>();
 
-	RenderLine = module.Offset(0x192A70).RCast<RenderLineType>();
-	RenderBox = module.Offset(0x192520).RCast<RenderBoxType>();
-	RenderWireframeBox = module.Offset(0x193DA0).RCast<RenderBoxType>();
-	RenderWireframeSweptBox = module.Offset(0x1945A0).RCast<RenderWireframeSweptBoxType>();
-	RenderTriangle = module.Offset(0x193940).RCast<RenderTriangleType>();
-	RenderAxis = module.Offset(0x1924D0).RCast<RenderAxisType>();
-	RenderSphere = module.Offset(0x194170).RCast<RenderSphereType>();
-	RenderUnknown = module.Offset(0x1924E0).RCast<RenderUnknownType>();
+	RenderLine = module.Offset(0x192A70).RCast<decltype(RenderLine)>();
+	RenderBox = module.Offset(0x192520).RCast<decltype(RenderBox)>();
+	RenderWireframeBox = module.Offset(0x193DA0).RCast<decltype(RenderWireframeBox)>();
+	RenderWireframeSweptBox = module.Offset(0x1945A0).RCast<decltype(RenderWireframeSweptBox)>();
+	RenderTriangle = module.Offset(0x193940).RCast<decltype(RenderTriangle)>();
+	RenderAxis = module.Offset(0x1924D0).RCast<decltype(RenderAxis)>();
+	RenderSphere = module.Offset(0x194170).RCast<decltype(RenderSphere)>();
+	RenderUnknown = module.Offset(0x1924E0).RCast<decltype(RenderUnknown)>();
 
 	s_OverlayMutex = module.Offset(0x10DB0A38).RCast<LPCRITICAL_SECTION>();
 
