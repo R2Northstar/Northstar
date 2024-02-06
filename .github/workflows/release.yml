@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout release files
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ env.NORTHSTAR_VERSION }}
           path: northstar
@@ -39,7 +39,7 @@ jobs:
         run:
           wget "https://github.com/R2Northstar/NorthstarStubs/releases/download/v1/NorthstarStubs.zip"
       - name: Checkout core mods
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: R2Northstar/NorthstarMods
           ref: ${{ env.NORTHSTAR_VERSION }}
@@ -69,7 +69,7 @@ jobs:
           unzip northstar-launcher.zip -d northstar
           rsync -avr --exclude="Northstar.Coop" --exclude=".git*" northstar-mods/. northstar/R2Northstar/mods
       - name: Checkout Navmesh repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: R2Northstar/NorthstarNavs
           ref: 'v3'
