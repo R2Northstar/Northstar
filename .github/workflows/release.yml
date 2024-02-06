@@ -18,7 +18,7 @@ env:
 
 jobs:
   build-northstar:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout release files
         uses: actions/checkout@v4
@@ -121,7 +121,7 @@ jobs:
       TS_NAMESPACE: northstar
       TS_MOD_NAME: Northstar
       TS_MOD_DESCRIPTION: Titanfall 2 modding and custom server framework.
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Setup tcli
         run: |
