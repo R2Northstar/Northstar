@@ -69,15 +69,8 @@ The current process of making release (includinging release candidate) is:
     3. Click checkbox for creating discussion and select _Release_ as category
     4. Publish
 
-11. Post announcements on Discord
-    1. Post message in `#server-hosting-announcements` channel.\
-       Make sure to highlight server hosting specific changes.\
-       Make thread for bug reports.
-    2. Post message in `#modding-announcements`.\
-       Make sure to highlight modding specific changes (API changes etc).
-    3. Post message in `#announcements`.\
-       Make sure to highlight end-user specific changes (new features, certainn fixes, etc).
-
+11. Post release announcement on Discord in `#releases` channel.
+    Make sure to highlight aspects relevant for server hosters, modders, and end-users.
 
 12. Update main menu promos version on Atlas
 
