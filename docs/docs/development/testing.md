@@ -112,3 +112,9 @@ List of maps can be found [here](../hosting-a-server-with-northstar/server-setti
 
 Use `host_timescale <factor>` to speed-up or slow-down the game.\
 For example `host_timescale 10` speeds up game by factor of `10`. Set to `1` to go back to default.
+
+**Viewing Navmeshes**
+
+Requires `sv_cheats 1` and `enable_debug_overlays 1`.
+
+Use `navmesh_debug_hull 1` to view navmeshes.
