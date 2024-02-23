@@ -395,7 +395,6 @@ playlists
 						mp_colony02 1
 						mp_glitch 1
 						mp_lf_stacks 1
-						mp_lf_stacks 1
 						mp_lf_deck 1
 						mp_lf_meadow 1
 						mp_lf_traffic 1
@@ -449,7 +448,6 @@ playlists
 						mp_colony02 1
 						mp_glitch 1
 						mp_lf_stacks 1
-						mp_lf_stacks 1
 						mp_lf_deck 1
 						mp_lf_meadow 1
 						mp_lf_traffic 1
@@ -497,7 +495,6 @@ playlists
 						mp_angel_city 1
 						mp_colony02 1
 						mp_glitch 1
-						mp_lf_stacks 1
 						mp_lf_stacks 1
 						mp_lf_deck 1
 						mp_lf_meadow 1
@@ -747,7 +744,6 @@ playlists
 						mp_colony02 1
 						mp_glitch 1
 						mp_lf_stacks 1
-						mp_lf_stacks 1
 						mp_lf_deck 1
 						mp_lf_meadow 1
 						mp_lf_traffic 1
@@ -794,7 +790,6 @@ playlists
 						mp_angel_city 1
 						mp_colony02 1
 						mp_glitch 1
-						mp_lf_stacks 1
 						mp_lf_stacks 1
 						mp_lf_deck 1
 						mp_lf_meadow 1
