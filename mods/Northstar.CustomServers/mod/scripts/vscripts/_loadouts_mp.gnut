@@ -51,8 +51,6 @@ void function SvLoadoutsMP_Init()
 		AddClientCommandCallback( "InGameMPMenuClosed", ClientCommandCallback_InGameMPMenuClosed )
 		AddClientCommandCallback( "LoadoutMenuClosed", ClientCommandCallback_LoadoutMenuClosed )
 	}
-	
-	AddCallback_OnPlayerKilled( DestroyDroppedWeapon )
 }
 
 void function SetLoadoutGracePeriodEnabled( bool enabled )
@@ -62,20 +60,10 @@ void function SetLoadoutGracePeriodEnabled( bool enabled )
 
 void function SetWeaponDropsEnabled( bool enabled )
 {
-	file.weaponDropsEnabled = enabled
-}
-
-void function DestroyDroppedWeapon( entity victim, entity attacker, var damageInfo )
-{
-	if ( !file.weaponDropsEnabled && IsValid( victim.GetActiveWeapon() ) )
-		thread DelayDestroyDroppedWeapon( victim.GetActiveWeapon() )
-}
-
-void function DelayDestroyDroppedWeapon( entity weapon )
-{
-	WaitEndFrame()
-	if ( IsValid( weapon ) )
-		weapon.Destroy()
+	if( enabled )
+		FlagSet( "WeaponDropsAllowed" )
+	else 
+		FlagClear( "WeaponDropsAllowed" )
 }
 
 void function AddCallback_OnTryGetTitanLoadout( TryGetTitanLoadoutCallbackType callback )
