@@ -43,6 +43,8 @@ void function BaseGametype_Init_MPSP()
 	AddCallback_OnPlayerKilled( CheckForAutoTitanDeath )
 	RegisterSignal( "PlayerRespawnStarted" )
 	RegisterSignal( "KillCamOver" )
+
+	FlagInit( "WeaponDropsAllowed", true )
 }
 
 void function SetIntermissionCamera( entity camera )
