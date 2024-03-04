@@ -213,6 +213,7 @@ void ConCommand_unban(const CCommand& args)
 
 void ConCommand_clearbanlist(const CCommand& args)
 {
+	NOTE_UNUSED(args);
 	g_pBanSystem->ClearBanlist();
 }
 

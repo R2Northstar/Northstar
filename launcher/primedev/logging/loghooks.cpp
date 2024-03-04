@@ -108,6 +108,8 @@ AUTOHOOK(Hook_fprintf, engine.dll + 0x51B1F0,
 int,, (void* const stream, const char* const format, ...))
 // clang-format on
 {
+	NOTE_UNUSED(stream);
+
 	va_list va;
 	va_start(va, format);
 
@@ -139,6 +141,7 @@ AUTOHOOK(EngineSpewFunc, engine.dll + 0x11CA80,
 void, __fastcall, (void* pEngineServer, SpewType_t type, const char* format, va_list args))
 // clang-format on
 {
+	NOTE_UNUSED(pEngineServer);
 	if (!Cvar_spewlog_enable->GetBool())
 		return;
 
@@ -235,6 +238,8 @@ AUTOHOOK(CClientState_ProcessPrint, engine.dll + 0x1A1530,
 bool,, (void* thisptr, uintptr_t msg))
 // clang-format on
 {
+	NOTE_UNUSED(thisptr);
+
 	char* text = *(char**)(msg + 0x20);
 
 	auto endpos = strlen(text);

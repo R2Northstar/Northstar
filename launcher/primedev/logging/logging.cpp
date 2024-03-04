@@ -70,6 +70,7 @@ void CreateLogFiles()
 
 void ExternalConsoleSink::sink_it_(const spdlog::details::log_msg& msg)
 {
+	NOTE_UNUSED(msg);
 	throw std::runtime_error("sink_it_ called on SourceConsoleSink with pure log_msg. This is an error!");
 }
 

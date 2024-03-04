@@ -45,10 +45,10 @@ public:
 class ServerPresenceReporter
 {
 public:
-	virtual void CreatePresence(const ServerPresence* pServerPresence) {}
-	virtual void ReportPresence(const ServerPresence* pServerPresence) {}
-	virtual void DestroyPresence(const ServerPresence* pServerPresence) {}
-	virtual void RunFrame(double flCurrentTime, const ServerPresence* pServerPresence) {}
+	virtual void CreatePresence(const ServerPresence* /*pServerPresence*/) {}
+	virtual void ReportPresence(const ServerPresence* /*pServerPresence*/) {}
+	virtual void DestroyPresence(const ServerPresence* /*pServerPresence*/) {}
+	virtual void RunFrame(double /*flCurrentTime*/, const ServerPresence* /*pServerPresence*/) {}
 };
 
 class ServerPresenceManager

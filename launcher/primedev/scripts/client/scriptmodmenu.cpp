@@ -160,6 +160,7 @@ ADD_SQFUNC(
 
 ADD_SQFUNC("void", NSReloadMods, "", "", ScriptContext::UI)
 {
+	NOTE_UNUSED(sqvm);
 	g_pModManager->LoadMods();
 	return SQRESULT_NULL;
 }

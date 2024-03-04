@@ -23,6 +23,7 @@ enum eMainMenuPromoDataProperty
 };
 ADD_SQFUNC("void", NSRequestCustomMainMenuPromos, "", "", ScriptContext::UI)
 {
+	NOTE_UNUSED(sqvm);
 	g_pMasterServerManager->RequestMainMenuPromos();
 	return SQRESULT_NULL;
 }
