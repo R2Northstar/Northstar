@@ -363,6 +363,7 @@ void ConVar::SetValue(Color clValue)
 //-----------------------------------------------------------------------------
 void ConVar::ChangeStringValue(const char* pszTempVal, float flOldValue)
 {
+	NOTE_UNUSED(flOldValue);
 	assert(!(m_ConCommandBase.m_nFlags & FCVAR_NEVER_AS_STRING));
 
 	char* pszOldValue = (char*)_malloca(m_Value.m_iStringLength);

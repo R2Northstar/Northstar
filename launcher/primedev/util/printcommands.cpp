@@ -188,6 +188,7 @@ void ConCommand_findflags(const CCommand& arg)
 
 void ConCommand_list(const CCommand& arg)
 {
+	NOTE_UNUSED(arg);
 	ConCommandBase* var;
 	CCVarIteratorInternal* itint = g_pCVar->FactoryInternalIterator();
 	std::map<std::string, ConCommandBase*> sorted;
@@ -210,6 +211,7 @@ void ConCommand_list(const CCommand& arg)
 
 void ConCommand_differences(const CCommand& arg)
 {
+	NOTE_UNUSED(arg);
 	CCVarIteratorInternal* itint = g_pCVar->FactoryInternalIterator();
 	std::map<std::string, ConCommandBase*> sorted;
 

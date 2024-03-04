@@ -25,6 +25,7 @@ public:
 	void custom_log(const custom_log_msg& msg);
 	virtual void custom_sink_it_(const custom_log_msg& msg)
 	{
+		NOTE_UNUSED(msg);
 		throw std::runtime_error("Pure virtual call to CustomSink::custom_sink_it_");
 	}
 };

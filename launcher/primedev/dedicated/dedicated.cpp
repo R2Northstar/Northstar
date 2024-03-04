@@ -35,11 +35,14 @@ struct CDedicatedExports
 
 void Sys_Printf(CDedicatedExports* dedicated, const char* msg)
 {
+	NOTE_UNUSED(dedicated);
 	spdlog::info("[DEDICATED SERVER] {}", msg);
 }
 
 void RunServer(CDedicatedExports* dedicated)
 {
+	NOTE_UNUSED(dedicated);
+
 	spdlog::info("CDedicatedExports::RunServer(): starting");
 	spdlog::info(CommandLine()->GetCmdLine());
 
@@ -86,6 +89,8 @@ class DedicatedConsoleServerPresence : public ServerPresenceReporter
 HANDLE consoleInputThreadHandle = NULL;
 DWORD WINAPI ConsoleInputThread(PVOID pThreadParameter)
 {
+	NOTE_UNUSED(pThreadParameter);
+
 	while (!g_pEngine || !g_pHostState || g_pHostState->m_iCurrentState != HostState_t::HS_RUN)
 		Sleep(1000);
 

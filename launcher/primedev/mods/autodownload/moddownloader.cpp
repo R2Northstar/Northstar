@@ -126,6 +126,8 @@ size_t WriteData(void* ptr, size_t size, size_t nmemb, FILE* stream)
 int ModDownloader::ModFetchingProgressCallback(
 	void* ptr, curl_off_t totalDownloadSize, curl_off_t finishedDownloadSize, curl_off_t totalToUpload, curl_off_t nowUploaded)
 {
+	NOTE_UNUSED(totalToUpload);
+	NOTE_UNUSED(nowUploaded);
 	if (totalDownloadSize != 0 && finishedDownloadSize != 0)
 	{
 		ModDownloader* instance = static_cast<ModDownloader*>(ptr);

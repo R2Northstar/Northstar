@@ -781,6 +781,7 @@ void ConCommand_dump_datatable(const CCommand& args)
 
 void ConCommand_dump_datatables(const CCommand& args)
 {
+	NOTE_UNUSED(args);
 	// likely not a comprehensive list, might be missing a couple?
 	static const std::vector<const char*> VANILLA_DATATABLE_PATHS = {
 		"datatable/burn_meter_rewards.rpak",
