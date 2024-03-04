@@ -3,6 +3,7 @@
 find_package(minhook REQUIRED)
 find_package(libcurl REQUIRED)
 find_package(minizip REQUIRED)
+find_package(silver-bun REQUIRED)
 
 add_library(
     NorthstarDLL SHARED
@@ -50,8 +51,6 @@ add_library(
     "core/macros.h"
     "core/memalloc.cpp"
     "core/memalloc.h"
-    "core/memory.cpp"
-    "core/memory.h"
     "core/sourceinterface.cpp"
     "core/sourceinterface.h"
     "core/tier0.cpp"
@@ -172,6 +171,7 @@ target_link_libraries(
     PRIVATE minhook
             libcurl
             minizip
+            silver-bun
             WS2_32.lib
             Crypt32.lib
             Cryptui.lib

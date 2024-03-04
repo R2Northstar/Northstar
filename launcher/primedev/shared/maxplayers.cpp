@@ -60,7 +60,7 @@ int GetMaxPlayers()
 	return 32;
 }
 
-template <class T> void ChangeOffset(CMemoryAddress addr, unsigned int offset)
+template <class T> void ChangeOffset(CMemory addr, unsigned int offset)
 {
 	addr.Patch((BYTE*)&offset, sizeof(T));
 }
@@ -296,7 +296,7 @@ ON_DLL_LOAD("server.dll", MaxPlayersOverride_Server, (CModule module))
 	AUTOHOOK_DISPATCH_MODULE(server.dll)
 
 	// get required data
-	serverBase = (HMODULE)module.m_nAddress;
+	serverBase = (HMODULE)module.GetModuleBase();
 	RandomIntZeroMax = (decltype(RandomIntZeroMax))(GetProcAddress(GetModuleHandleA("vstdlib.dll"), "RandomIntZeroMax"));
 
 	// patch max players amount

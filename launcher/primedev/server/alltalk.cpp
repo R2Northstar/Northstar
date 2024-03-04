@@ -15,7 +15,7 @@ size_t __fastcall ShouldAllowAlltalk()
 ON_DLL_LOAD_RELIESON("engine.dll", ServerAllTalk, ConVar, (CModule module))
 {
 	// replace strcmp function called in CClient::ProcessVoiceData with our own code that calls ShouldAllowAllTalk
-	CMemoryAddress base = module.Offset(0x1085FA);
+	CMemory base = module.Offset(0x1085FA);
 
 	base.Patch("48 B8"); // mov rax, 64 bit int
 	// (uint8_t*)&ShouldAllowAlltalk doesn't work for some reason? need to make it a uint64 first

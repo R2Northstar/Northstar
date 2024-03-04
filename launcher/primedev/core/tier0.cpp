@@ -24,7 +24,7 @@ ON_DLL_LOAD("tier0.dll", Tier0GameFuncs, (CModule module))
 	TryCreateGlobalMemAlloc();
 
 	// setup tier0 funcs
-	CommandLine = module.GetExport("CommandLine").RCast<CommandLineType>();
-	Plat_FloatTime = module.GetExport("Plat_FloatTime").RCast<Plat_FloatTimeType>();
-	ThreadInServerFrameThread = module.GetExport("ThreadInServerFrameThread").RCast<ThreadInServerFrameThreadType>();
+	CommandLine = module.GetExportedFunction("CommandLine").RCast<CommandLineType>();
+	Plat_FloatTime = module.GetExportedFunction("Plat_FloatTime").RCast<Plat_FloatTimeType>();
+	ThreadInServerFrameThread = module.GetExportedFunction("ThreadInServerFrameThread").RCast<ThreadInServerFrameThreadType>();
 }
