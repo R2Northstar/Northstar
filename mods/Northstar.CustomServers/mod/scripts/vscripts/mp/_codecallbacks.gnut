@@ -18,11 +18,11 @@ global function CodeCallback_OnProjectileGrappled
 global function DamageInfo_ScaleDamage
 global function CodeCallback_CheckPassThroughAddsMods
 global function SetTitanMeterGainScale
-global function CodeCallback_WeaponDropped
-global function AddCallback_OnWeaponDropped
 
 #if MP
 global function CodeCallback_OnServerAnimEvent
+global function CodeCallback_WeaponDropped
+global function AddCallback_OnWeaponDropped
 #endif
 
 struct AccumulatedDamageData
