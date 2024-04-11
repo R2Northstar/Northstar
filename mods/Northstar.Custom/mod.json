@@ -441,6 +441,19 @@
 			"RunOn": "CLIENT || SERVER || UI"
 		},
 		{
+			"Path": "_testing.nut",
+			"RunOn": "CLIENT || SERVER || UI",
+			"ClientCallback": {
+				"Before": "Testing_Init"
+			},
+			"ServerCallback": {
+				"Before": "Testing_Init"
+			},
+			"UICallback": {
+				"Before": "Testing_Init"
+			}
+		},
+		{
 			"Path": "_event_models.gnut",
 			"RunOn": "SERVER && LOBBY",
 			"ServerCallback": {
