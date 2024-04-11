@@ -224,11 +224,12 @@ void function ValidateEquippedItems( entity player )
 	}
 
 	// titan loadouts
+	int selectedTitanLoadoutIndex = player.GetPersistentVarAsInt( "titanSpawnLoadout.index" )
 	for ( int titanLoadoutIndex = 0; titanLoadoutIndex < NUM_PERSISTENT_TITAN_LOADOUTS; titanLoadoutIndex++ )
 	{
 		printt( "- VALIDATING TITAN LOADOUT: " + titanLoadoutIndex )
 
-		bool isSelected = titanLoadoutIndex == player.GetPersistentVarAsInt( "titanSpawnLoadout.index" )
+		bool isSelected = titanLoadoutIndex == selectedTitanLoadoutIndex
 		TitanLoadoutDef loadout = GetTitanLoadout( player, titanLoadoutIndex )
 		TitanLoadoutDef defaultLoadout = shGlobal.defaultTitanLoadouts[titanLoadoutIndex]
 
@@ -446,11 +447,18 @@ void function ValidateEquippedItems( entity player )
 		{
 			printt( "  - SELECTED TITAN CLASS IS LOCKED, RESETTING" )
 			player.SetPersistentVar( "titanSpawnLoadout.index", 0 )
-			Remote_CallFunction_NonReplay( player, "ServerCallback_UpdateTitanModel", 0 )
+			selectedTitanLoadoutIndex = 0
 		}
 	}
 
-	Remote_CallFunction_NonReplay( player, "ServerCallback_UpdateTitanModel", player.GetPersistentVarAsInt( "titanSpawnLoadout.index" ) )
+	if ( selectedTitanLoadoutIndex < 0 || selectedTitanLoadoutIndex >= NUM_PERSISTENT_TITAN_LOADOUTS )
+	{
+		printt( "- SELECTED TITAN CLASS IS INVALID, RESETTING" )
+		player.SetPersistentVar( "titanSpawnLoadout.index", 0 )
+		selectedTitanLoadoutIndex = 0
+	}
+
+	Remote_CallFunction_NonReplay( player, "ServerCallback_UpdateTitanModel", selectedTitanLoadoutIndex )
 
 	// pilot loadouts
 	for ( int pilotLoadoutIndex = 0; pilotLoadoutIndex < NUM_PERSISTENT_PILOT_LOADOUTS; pilotLoadoutIndex++ )
