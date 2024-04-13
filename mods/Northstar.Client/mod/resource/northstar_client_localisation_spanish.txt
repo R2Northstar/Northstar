@@ -352,5 +352,6 @@ Presiona Sí al estar de acuerdo. Esta opcion se puede cambiar en el menú de mo
 		"WILL_RESET_SETTING"             "Ésta acción reiniciará %s1 a su valor por defecto.\n\nNo se podrá revertir el proceso." 
 		"PROGRESSION_ANNOUNCEMENT_BODY"             "^CCCC0000El progreso puede ser habilitado desde ahora^\n\nNorthstar ahora es compatible con el progreso normal del juego, esto significa que puedes elegir desbloquear Armas, Aspectos, Titanes y otros a través de desafíos y subiendo de nivel.\n\nPuedes habilitar el progreso normal del juego en la opción ubicada al final de la pantalla de la sala de espera.\n\nÉsta opción puede ser cambiada en cualquier momento." 
 		"player_force_respawn"             "Reaparición Forzada" 
+		"MOD_REQUIRED_WARNING"             " : Esta modificacion puede ser desactivada al entrar a un servidor" 
 	}
 }
