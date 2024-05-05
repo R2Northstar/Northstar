@@ -69,10 +69,6 @@ Plugin::Plugin(std::string path) : m_location(path)
 	m_runOnServer = context & PluginContext::DEDICATED;
 	m_runOnClient = context & PluginContext::CLIENT;
 
-	m_name = std::string(name);
-	m_logName = std::string(logName);
-	m_dependencyName = std::string(dependencyName);
-
 	if (!name)
 	{
 		NS::log::PLUGINSYS->error("Could not load name of plugin at '{}'", path);
@@ -90,6 +86,10 @@ Plugin::Plugin(std::string path) : m_location(path)
 		NS::log::PLUGINSYS->error("Could not load dependencyName of plugin {}", name);
 		return;
 	}
+
+	m_name = std::string(name);
+	m_logName = std::string(logName);
+	m_dependencyName = std::string(dependencyName);
 
 	if (!isValidSquirrelIdentifier(m_dependencyName))
 	{
