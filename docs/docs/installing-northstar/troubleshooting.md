@@ -77,7 +77,7 @@ On newer Intel CPUs you might see a message like this
 
 > "Contacting Respawn servers.../Data Center: Searching..."
 
-If you are seeing this in the main menu of TF|2 and have a 10th or 11th generation Intel CPU this is a bug which has a simple fix:
+If you are seeing this in the main menu of TF|2 and have a 10th generation or newer Intel CPU this is a bug which has a simple fix:
 
 In the Windows Start menu on the bottom left search for "Edit the system environment variables" and open the program. In the "advanced" tab click on "Environment Variables..." near the bottom.\
 In System Variables (not user variables) click "New..." and add a new system variable where the variable name is `OPENSSL_ia32cap` and the value is `~0x200000200000000`. Make sure to click OK to apply the changes. Finally restart your device and you should be good to go.
