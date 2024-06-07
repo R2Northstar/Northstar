@@ -133,7 +133,7 @@ It's also possible to create command aliases to type something short, such as tf
 
 ## Reshade adding incompatible DXVK version for Northstar
 
-If you ever used ReShade together with Titanfall2 in the past it will have created a bunch of DXVK DLLs that are incompatible with Northstar. If Northstar fails to fully initialize with an exeption and you have previously installed ReShade on Windows delete the following files from `Titanfall2/bin/x64_retail/`:
+If you ever used ReShade together with Titanfall2 in the past it will have created a bunch of DXVK DLLs that are incompatible with Northstar. If Northstar fails to fully initialize with an exception and you have previously installed ReShade on Windows delete the following files from `Titanfall2/bin/x64_retail/`:
 
 * D3D8.DLL
 * D3D9.DLL
