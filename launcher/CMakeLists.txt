@@ -20,6 +20,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_VS_PLATFORM_TOOLSET v143)
+# Deal with MSVC incompatiblity
+add_compile_definitions(_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR)
 
 # This determines the real binary root directory
 set(NS_BINARY_DIR ${CMAKE_BINARY_DIR}/game)
