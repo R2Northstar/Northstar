@@ -45,15 +45,15 @@ Plugin::Plugin(std::string path) : m_location(path)
 
 	m_initData = {.pluginHandle = m_handle};
 
-	CreateInterfaceFn CreatePluginInterface = (CreateInterfaceFn)GetProcAddress(m_handle, "CreateInterface");
+	m_pCreateInterface = (CreateInterfaceFn)GetProcAddress(m_handle, "CreateInterface");
 
-	if (!CreatePluginInterface)
+	if (!m_pCreateInterface)
 	{
 		NS::log::PLUGINSYS->error("Plugin at '{}' does not expose CreateInterface()", path);
 		return;
 	}
 
-	m_pluginId = (IPluginId*)CreatePluginInterface(PLUGIN_ID_VERSION, 0);
+	m_pluginId = (IPluginId*)m_pCreateInterface(PLUGIN_ID_VERSION, 0);
 
 	if (!m_pluginId)
 	{
@@ -97,7 +97,7 @@ Plugin::Plugin(std::string path) : m_location(path)
 		return;
 	}
 
-	m_callbacks = (IPluginCallbacks*)CreatePluginInterface("PluginCallbacks001", 0);
+	m_callbacks = (IPluginCallbacks*)m_pCreateInterface("PluginCallbacks001", 0);
 
 	if (!m_callbacks)
 	{
