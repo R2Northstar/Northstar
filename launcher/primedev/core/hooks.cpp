@@ -104,7 +104,9 @@ bool ManualHook::Dispatch(LPVOID addr, LPVOID* orig)
 	if (orig)
 		ppOrigFunc = orig;
 
-	if (MH_CreateHook(addr, pHookFunc, ppOrigFunc) == MH_OK)
+	if (!addr)
+		spdlog::error("Address for hook {} is invalid", pFuncName);
+	else if (MH_CreateHook(addr, pHookFunc, ppOrigFunc) == MH_OK)
 	{
 		if (MH_EnableHook(addr) == MH_OK)
 		{
