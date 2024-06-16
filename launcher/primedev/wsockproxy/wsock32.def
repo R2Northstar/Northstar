@@ -69,7 +69,6 @@ EXPORTS
 	rresvport=ws2_32.rresvport
 	s_perror=PROXY_s_perror
 	select=ws2_32.select @18
-	select=ws2_32.select @18
 	send=ws2_32.send @19
 	sendto=ws2_32.sendto @20
 	sethostname=ws2_32.sethostname
