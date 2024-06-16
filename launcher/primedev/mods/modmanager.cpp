@@ -601,6 +601,8 @@ auto ModConCommandCallback(const CCommand& command)
 	case ScriptContext::UI:
 		ModConCommandCallback_Internal<ScriptContext::UI>(found->Function, command);
 		break;
+	default:
+		spdlog::error("ModConCommandCallback on invalid Context {}", found->Context);
 	};
 }
 
