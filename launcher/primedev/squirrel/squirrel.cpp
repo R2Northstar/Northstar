@@ -157,11 +157,6 @@ const char* SQTypeNameFromID(int type)
 	return "";
 }
 
-// needed to define implementations for squirrelmanager outside of squirrel.h without compiler errors
-template class SquirrelManager<ScriptContext::SERVER>;
-template class SquirrelManager<ScriptContext::CLIENT>;
-template class SquirrelManager<ScriptContext::UI>;
-
 template <ScriptContext context> void SquirrelManager<context>::VMCreated(CSquirrelVM* newSqvm)
 {
 	m_pSQVM = newSqvm;
@@ -845,3 +840,12 @@ void InitialiseSquirrelManagers()
 	g_pSquirrel<ScriptContext::UI> = new SquirrelManager<ScriptContext::UI>;
 	g_pSquirrel<ScriptContext::SERVER> = new SquirrelManager<ScriptContext::SERVER>;
 }
+
+// needed to define implementations for squirrelmanager outside of squirrel.h without compiler errors
+template class SquirrelManager<ScriptContext::SERVER>;
+template class SquirrelManager<ScriptContext::CLIENT>;
+template class SquirrelManager<ScriptContext::UI>;
+
+template std::shared_ptr<spdlog::logger> NS::log::squirrel_logger<ScriptContext::SERVER>();
+template std::shared_ptr<spdlog::logger> NS::log::squirrel_logger<ScriptContext::CLIENT>();
+template std::shared_ptr<spdlog::logger> NS::log::squirrel_logger<ScriptContext::UI>();
