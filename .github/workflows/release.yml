@@ -84,7 +84,7 @@ jobs:
         run: |
           rm -rf .git .github .gitignore *.md LICENSE thunderstore .ci.env.example *.sh
       - name: Upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Northstar.release.${{ env.NORTHSTAR_VERSION }}
           path: northstar
@@ -137,7 +137,7 @@ jobs:
 
       - name: Download Northstar package
         if: ${{ !env.ACT }} # Download artifacts from previous jobs when running on GitHub's infrastructure
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: Northstar.release.${{ env.NORTHSTAR_VERSION }}
           path: northstar
