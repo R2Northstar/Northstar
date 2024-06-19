@@ -39,7 +39,7 @@ jobs:
         shell: bash
         run: echo commit=$(git rev-parse --short HEAD) >> $GITHUB_OUTPUT
       - name: Upload Build Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: NorthstarLauncher-${{ matrix.config.name }}-${{ steps.extract.outputs.commit }}
           path: |
