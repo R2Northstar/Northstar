@@ -42,6 +42,8 @@ DecodeJsonArray(HSquirrelVM* sqvm, rapidjson::GenericValue<rapidjson::UTF8<char>
 				g_pSquirrel<context>->pushinteger(sqvm, itr.GetInt());
 			g_pSquirrel<context>->arrayappend(sqvm, -2);
 			break;
+		case rapidjson::kNullType:
+			break;
 		}
 	}
 }
@@ -91,6 +93,8 @@ DecodeJsonTable(HSquirrelVM* sqvm, rapidjson::GenericValue<rapidjson::UTF8<char>
 				g_pSquirrel<context>->pushinteger(sqvm, itr->value.GetInt());
 			}
 			g_pSquirrel<context>->newslot(sqvm, -3, false);
+			break;
+		case rapidjson::kNullType:
 			break;
 		}
 	}
