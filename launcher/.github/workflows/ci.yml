@@ -8,6 +8,14 @@ env:
 jobs:
   build:
     runs-on: windows-2022
+    strategy:
+      matrix:
+        config:
+          - { name: "MSVC", cc: cl }
+          - { name: "LLVM", cc: clang-cl  }
+    env:
+      CC: ${{ matrix.config.cc }}
+      CXX: ${{ matrix.config.cc }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,7 +41,7 @@ jobs:
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: NorthstarLauncher-${{ steps.extract.outputs.commit }}
+          name: NorthstarLauncher-${{ matrix.config.name }}-${{ steps.extract.outputs.commit }}
           path: |
             game/
 
