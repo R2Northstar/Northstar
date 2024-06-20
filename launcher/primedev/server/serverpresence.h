@@ -19,10 +19,7 @@ public:
 	int m_iPlayerCount;
 	int m_iMaxPlayers;
 
-	ServerPresence()
-	{
-		memset(this, 0, sizeof(this));
-	}
+	ServerPresence() {}
 
 	ServerPresence(const ServerPresence* obj)
 	{
