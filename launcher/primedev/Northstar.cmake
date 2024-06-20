@@ -172,13 +172,13 @@ target_link_libraries(
             libcurl
             minizip
             silver-bun
-            WS2_32.lib
-            Crypt32.lib
-            Cryptui.lib
+            ws2_32.lib
+            crypt32.lib
+            cryptui.lib
             dbghelp.lib
-            Wldap32.lib
-            Normaliz.lib
-            Bcrypt.lib
+            wldap32.lib
+            normaliz.lib
+            bcrypt.lib
             version.lib
     )
 

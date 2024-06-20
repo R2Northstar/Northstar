@@ -15,7 +15,7 @@ target_link_libraries(
     PRIVATE minhook
             mswsock.lib
             ws2_32.lib
-            ShLwApi.lib
+            shlwapi.lib
             imagehlp.lib
             dbghelp.lib
             kernel32.lib

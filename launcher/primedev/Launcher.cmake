@@ -19,7 +19,7 @@ target_link_libraries(
             uuid.lib
             odbc32.lib
             odbccp32.lib
-            WS2_32.lib
+            ws2_32.lib
     )
 
 set_target_properties(
