@@ -1,3 +1,3 @@
 include(Northstar.cmake)
-include(Launcher.cmake)
+add_subdirectory(primelauncher)
 add_subdirectory(wsockproxy)
