@@ -1,14 +1,18 @@
 #pragma once
 
+#include <malloc.h>
+
 #include "rapidjson/document.h"
 // #include "include/rapidjson/allocators.h"
 
-extern "C" void* _malloc_base(size_t size);
-extern "C" void* _calloc_base(size_t const count, size_t const size);
-extern "C" void* _realloc_base(void* block, size_t size);
-extern "C" void* _recalloc_base(void* const block, size_t const count, size_t const size);
-extern "C" void _free_base(void* const block);
-extern "C" char* _strdup_base(const char* src);
+// The prelude is needed for these to be usable by the CRT
+extern "C" __declspec(noinline) void* __cdecl _malloc_base(size_t const size);
+extern "C" __declspec(noinline) void* __cdecl _calloc_base(size_t const count, size_t const size);
+extern "C" __declspec(noinline) void* __cdecl _realloc_base(void* const block, size_t const size);
+extern "C" __declspec(noinline) void* __cdecl _recalloc_base(void* const block, size_t const count, size_t const size);
+extern "C" __declspec(noinline) void __cdecl _free_base(void* const block);
+extern "C" __declspec(noinline) size_t __cdecl _msize(void* const block);
+extern "C" __declspec(noinline) char* __cdecl _strdup_base(const char* src);
 
 void* operator new(size_t n);
 void operator delete(void* p) noexcept;
