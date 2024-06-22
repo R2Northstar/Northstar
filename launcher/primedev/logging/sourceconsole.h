@@ -77,7 +77,7 @@ private:
 		{spdlog::level::off, NS::Colors::OFF.ToSourceColor()}};
 
 protected:
-	void custom_sink_it_(const custom_log_msg& msg);
+	void custom_sink_it_(const custom_log_msg& msg) override;
 	void sink_it_(const spdlog::details::log_msg& msg) override;
 	void flush_() override;
 };
