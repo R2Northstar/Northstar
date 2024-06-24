@@ -3,7 +3,7 @@ on: [push, pull_request]
 
 jobs:
   check-loc-encoding:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -12,7 +12,7 @@ jobs:
           files=$(ls Northstar.Client/mod/resource/northstar_client_localisation_*.txt)
           IFS=$'\n'; files=($files); unset IFS; ! file --mime "${files[@]}" | grep -v "charset=utf-16le"
   check-missing-translations:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
