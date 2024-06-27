@@ -34,6 +34,6 @@ public:
 	static className __g_##className##_singleton;                                                                                          \
 	EXPOSE_SINGLE_INTERFACE_GLOBALVAR(className, interfaceName, versionName, __g_##className##_singleton)
 
-EXPORT void* CreateInterface(const char* pName, InterfaceStatus* pReturnCode);
+extern "C" __declspec(dllexport) void* CreateInterface(const char* pName, InterfaceStatus* pReturnCode);
 
 #endif
