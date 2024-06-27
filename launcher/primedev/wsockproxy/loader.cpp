@@ -7,6 +7,8 @@
 #include <filesystem>
 #include <iostream>
 
+#include "MinHook.h"
+
 namespace fs = std::filesystem;
 
 static wchar_t northstarPath[8192];
