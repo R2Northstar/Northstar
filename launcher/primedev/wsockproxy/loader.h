@@ -1,5 +1,7 @@
 #pragma once
 
+#include <windows.h>
+
 extern wchar_t exePath[4096];
 extern wchar_t buffer1[8192];
 extern wchar_t buffer2[12288];

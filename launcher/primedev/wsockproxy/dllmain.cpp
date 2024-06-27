@@ -1,5 +1,6 @@
 #include "loader.h"
 
+#include <windows.h>
 #include <filesystem>
 
 FARPROC p[73];

@@ -32,13 +32,12 @@ target_link_libraries(
             odbccp32.lib
     )
 
-target_precompile_headers(
+target_compile_definitions(
     loader_wsock32_proxy
-    PRIVATE
-    pch.h
+    PRIVATE UNICODE
+            _UNICODE
+            WIN32_LEAN_AND_MEAN
     )
-
-target_compile_definitions(loader_wsock32_proxy PRIVATE UNICODE _UNICODE)
 
 set_target_properties(
     loader_wsock32_proxy
