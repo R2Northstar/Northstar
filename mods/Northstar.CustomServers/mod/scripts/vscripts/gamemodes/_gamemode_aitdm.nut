@@ -60,6 +60,7 @@ void function GamemodeAITdm_Init()
 	}
 	
 	ScoreEvent_SetupEarnMeterValuesForMixedModes()
+	SetupGenericTDMChallenge()
 }
 
 // add settings

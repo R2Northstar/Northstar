@@ -421,14 +421,27 @@ void function CaptureFlag( entity player, entity flag )
 		assistList = file.militiaCaptureAssistList
 	
 	foreach( entity assistPlayer in assistList )
+	{
 		if ( player != assistPlayer )
 			AddPlayerScore( assistPlayer, "FlagCaptureAssist", player )
+		if( !HasPlayerCompletedMeritScore( assistPlayer ) )
+		{
+			AddPlayerScore( assistPlayer, "ChallengeCTFCapAssist" )
+			SetPlayerChallengeMeritScore( assistPlayer )
+		}
+	}
 		
 	assistList.clear()
 
 	// notifs
 	MessageToPlayer( player, eEventNotifications.YouCapturedTheEnemyFlag )
 	EmitSoundOnEntityOnlyToPlayer( player, player, "UI_CTF_1P_PlayerScore" )
+	
+	if( !HasPlayerCompletedMeritScore( player ) )
+	{
+		AddPlayerScore( player, "ChallengeCTFRetAssist" )
+		SetPlayerChallengeMeritScore( player )
+	}
 	
 	MessageToTeam( team, eEventNotifications.PlayerCapturedEnemyFlag, player, player )
 	EmitSoundOnEntityToTeamExceptPlayer( flag, "UI_CTF_3P_TeamScore", player.GetTeam(), player )
@@ -502,6 +515,12 @@ void function TryReturnFlag( entity player, entity flag )
 	MessageToPlayer( player, eEventNotifications.YouReturnedFriendlyFlag )
 	AddPlayerScore( player, "FlagReturn", player )
 	player.AddToPlayerGameStat( PGS_DEFENSE_SCORE, 1 )
+	
+	if( !HasPlayerCompletedMeritScore( player ) )
+	{
+		AddPlayerScore( player, "ChallengeCTFRetAssist" )
+		SetPlayerChallengeMeritScore( player )
+	}
 	
 	MessageToTeam( flag.GetTeam(), eEventNotifications.PlayerReturnedFriendlyFlag, null, player )
 	EmitSoundOnEntityToTeam( flag, "UI_CTF_3P_TeamReturnsFlag", flag.GetTeam() )

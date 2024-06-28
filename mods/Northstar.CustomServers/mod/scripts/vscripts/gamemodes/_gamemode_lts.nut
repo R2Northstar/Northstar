@@ -8,6 +8,8 @@ struct {
 	float lastDamageInfoTime
 	
 	bool shouldDoHighlights
+	
+	table< entity, int > pilotstreak
 } file
 
 void function GamemodeLts_Init()
@@ -34,6 +36,37 @@ void function GamemodeLts_Init()
 	ClassicMP_SetCustomIntro( ClassicMP_DefaultNoIntro_Setup, ClassicMP_DefaultNoIntro_GetLength() )
 	ClassicMP_ForceDisableEpilogue( true )
 	AddCallback_GameStateEnter( eGameState.Playing, WaitForThirtySecondsLeft )
+	
+	AddCallback_OnClientConnected( SetupPlayerLTSChallenges ) //Just to make up the Match Goals tracking
+	AddCallback_OnClientDisconnected( RemovePlayerLTSChallenges ) //Safety removal of data to prevent crashes
+	AddCallback_OnPlayerKilled( LTSChallengeForPlayerKilled )
+}
+
+void function SetupPlayerLTSChallenges( entity player )
+{
+	file.pilotstreak[ player ] <- 0
+}
+
+void function RemovePlayerLTSChallenges( entity player )
+{
+	if( player in file.pilotstreak )
+		delete file.pilotstreak[ player ]
+}
+
+void function LTSChallengeForPlayerKilled( entity victim, entity attacker, var damageInfo )
+{
+	if ( victim == attacker || !attacker.IsPlayer() || GetGameState() != eGameState.Playing )
+		return
+	
+	if ( victim.IsPlayer() && attacker in file.pilotstreak )
+	{
+		file.pilotstreak[attacker]++
+		if( file.pilotstreak[attacker] >= 2 && !HasPlayerCompletedMeritScore( attacker ) )
+		{
+			AddPlayerScore( attacker, "ChallengeLTS" )
+			SetPlayerChallengeMeritScore( attacker )
+		}
+	}
 }
 
 void function WaitForThirtySecondsLeft()

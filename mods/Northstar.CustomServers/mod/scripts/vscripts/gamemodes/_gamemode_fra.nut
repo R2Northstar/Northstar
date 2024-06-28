@@ -17,6 +17,7 @@ void function GamemodeFRA_Init()
 	ScoreEvent_SetEarnMeterValues( "PilotBatteryPickup", 0.0, 0.34 )
 	EarnMeterMP_SetPassiveMeterGainEnabled( false )
 	PilotBattery_SetMaxCount( 3 )
+	SetupGenericFFAChallenge()
 
 	AddCallback_OnPlayerKilled( FRARemoveEarnMeter )
 }

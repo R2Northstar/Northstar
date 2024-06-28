@@ -18,6 +18,7 @@ void function GamemodeSpeedball_Init()
 	Riff_ForceTitanAvailability( eTitanAvailability.Never )
 	Riff_ForceSetEliminationMode( eEliminationMode.Pilots )
 	ScoreEvent_SetupEarnMeterValuesForMixedModes()
+	SetupGenericFFAChallenge()
 	
 	AddSpawnCallbackEditorClass( "script_ref", "info_speedball_flag", CreateFlag )
 	

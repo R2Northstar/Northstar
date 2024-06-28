@@ -8,6 +8,7 @@ global function ScoreEvent_TitanDoomed
 global function ScoreEvent_TitanKilled
 global function ScoreEvent_NPCKilled
 global function ScoreEvent_MatchComplete
+global function ScoreEvent_RoundComplete
 
 global function ScoreEvent_SetEarnMeterValues
 global function ScoreEvent_SetupEarnMeterValuesForMixedModes
@@ -287,8 +288,24 @@ void function ScoreEvent_MatchComplete( int winningTeam )
 	foreach( entity player in GetPlayerArray() )
 	{
 		AddPlayerScore( player, "MatchComplete" )
+		SetPlayerChallengeMatchComplete( player )
 		if ( player.GetTeam() == winningTeam )
+		{
 			AddPlayerScore( player, "MatchVictory" )
+			SetPlayerChallengeMatchWon( player, true )
+		}
+		else
+			SetPlayerChallengeMatchWon( player, false )
+	}
+}
+
+void function ScoreEvent_RoundComplete( int winningTeam )
+{
+	foreach( entity player in GetPlayerArray() )
+	{
+		AddPlayerScore( player, "RoundComplete" )
+		if ( player.GetTeam() == winningTeam )
+			AddPlayerScore( player, "RoundVictory" )
 	}
 }
 
