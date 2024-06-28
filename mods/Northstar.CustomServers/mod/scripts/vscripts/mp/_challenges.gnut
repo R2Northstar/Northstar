@@ -1,6 +1,274 @@
 global function InitChallenges
+global function SetPlayerChallengeEvacState 					//Hooked in _evac.gnut
+global function SetPlayerChallengeMatchWon 						//Hooked in _score.nut
+global function SetPlayerChallengeMatchComplete					//Hooked in _score.nut
+global function SetPlayerChallengeMeritScore					//Up to gamemodes to use this directly if needed
+global function IncrementPlayerChallengeTitanLeveledUp			//Hooked in titan_xp.gnut
+global function IncrementPlayerChallengeWeaponLeveledUp			//Hooked in weapon_xp.gnut
+global function IncrementPlayerChallengeFactionLeveledUp		//Hooked in faction_xp.gnut (invisible but necessary for post-summary menu)
+global function RegisterChallenges_OnMatchEnd					//Hooked in _gamestate_mp.gnut
+
+global function HasPlayerCompletedMeritScore					//Check from gamemodes to not reapply SetPlayerChallengeMeritScore
+global function SetupGenericTDMChallenge						//Used by gamemodes which simply adopts the: "Kill 3 Pilots without dying." Challenge
+global function SetupGenericFFAChallenge						//Used by gamemodes which simply adopts the: "Kill 5 Pilots." Challenge
+
+struct
+{
+	table< entity, int > playerTotalMeritCount
+	table< entity, bool > playerChallenge
+	table< entity, int > pilotstreak
+	bool isHappyHourActive
+} file
+
+
+
+
+
+
+/*=============================================================================================================
+  __  __         _         _        ____  _             _  _                                
+ |  \/  |  __ _ | |_  ___ | |__    / ___|| |__    __ _ | || |  ___  _ __    __ _   ___  ___ 
+ | |\/| | / _` || __|/ __|| '_ \  | |    | '_ \  / _` || || | / _ \| '_ \  / _` | / _ \/ __|
+ | |  | || (_| || |_| (__ | | | | | |___ | | | || (_| || || ||  __/| | | || (_| ||  __/\__ \
+ |_|  |_| \__,_| \__|\___||_| |_|  \____||_| |_| \__,_||_||_| \___||_| |_| \__, | \___||___/
+                                                                           |___/            
+=============================================================================================================*/
 
 void function InitChallenges()
 {
+#if (UI && CLIENT)
 
+	SCB_SetCompleteMeritState( 4 )
+	SCB_SetEvacMeritState( 4 )
+	SCB_SetMeritCount( 4 )
+	SCB_SetScoreMeritState( 4 )
+	SCB_SetWinMeritState( 4 )
+	SCB_SetWeaponMeritCount( -1 )
+	SCB_SetTitanMeritCount( -1 )
+	
+#elseif (SERVER && MP)
+
+	AddCallback_OnClientConnected( SetupPlayerMenuChallenges )
+	AddCallback_OnClientDisconnected( RemovePlayerFromChallengePool )
+	
+#endif
+}
+
+void function SetupPlayerMenuChallenges( entity player )
+{
+	file.playerTotalMeritCount[ player ] <- 0
+	file.pilotstreak[ player ] <- 0
+	file.playerChallenge[ player ] <- false
+	
+	thread SetupChallenges_Threaded( player )
+}
+
+void function SetupChallenges_Threaded( entity player )
+{
+	WaitFrame()
+	
+	Remote_CallFunction_UI( player, "SCB_SetCompleteMeritState", 0 )
+	Remote_CallFunction_UI( player, "SCB_SetEvacMeritState", 4 ) //4 tells RUI to hide it
+	Remote_CallFunction_UI( player, "SCB_SetMeritCount", 0 )
+	Remote_CallFunction_UI( player, "SCB_SetScoreMeritState", 0 )
+	Remote_CallFunction_UI( player, "SCB_SetWinMeritState", 0 )
+	Remote_CallFunction_UI( player, "SCB_SetWeaponMeritCount", 0 )
+	Remote_CallFunction_UI( player, "SCB_SetTitanMeritCount", 0 )
+}
+
+void function SetupGenericTDMChallenge()
+{
+	AddCallback_OnPlayerKilled( TDMChallenges_OnPlayerKilled )
+}
+
+void function SetupGenericFFAChallenge()
+{
+	AddCallback_OnPlayerKilled( FFAChallenges_OnPlayerKilled )
+}
+
+void function RemovePlayerFromChallengePool( entity player )
+{
+	if( player in file.playerChallenge )
+		delete file.playerChallenge[ player ]
+	if( player in file.playerTotalMeritCount )
+		delete file.playerTotalMeritCount[ player ]
+	if( player in file.pilotstreak )
+		delete file.pilotstreak[ player ]
+}
+
+void function RegisterChallenges_OnMatchEnd()
+{
+	bool eliteWarpaintRNG = false
+	
+	if( RandomIntRange( 0, 100 ) <= 30 ) //30% Chance to trigger akin to vanilla, apply always since all players have paid cosmetics unlocked
+		eliteWarpaintRNG = true
+	
+	foreach( player in GetPlayerArray() )
+	{
+		player.SetPersistentVar( "isPostGameScoreboardValid", true )
+		player.SetPersistentVar( "isFDPostGameScoreboardValid", false ) //FD itself overrides this right after when match ends
+		SetUIVar( level, "showGameSummary", true )
+		
+		if( eliteWarpaintRNG )
+			SetPlayerChallengeSquadLeader( player )
+		
+		if( ShouldAwardHappyHourBonus( player ) )
+		{
+			AddPlayerScore( player, "HappyHourBonus" )
+			player.SetPersistentVar( "xp_match[" + XP_TYPE.HAPPY_HOUR + "]", 5 ) //The XP Given from Happy Hour Score is 5 merits
+		}
+	}
+}
+
+void function TDMChallenges_OnPlayerKilled( entity victim, entity attacker, var damageInfo )
+{
+	if ( victim == attacker || !attacker.IsPlayer() || GetGameState() != eGameState.Playing )
+		return
+	
+	if ( victim.IsPlayer() )
+	{
+		if( victim in file.pilotstreak )
+			file.pilotstreak[victim] = 0
+		if( attacker in file.pilotstreak )
+		{
+			file.pilotstreak[attacker]++
+			if( file.pilotstreak[attacker] >= 3 && !HasPlayerCompletedMeritScore( attacker ) )
+			{
+				AddPlayerScore( attacker, "ChallengeTDM" )
+				SetPlayerChallengeMeritScore( attacker )
+			}
+		}
+	}
+}
+
+void function FFAChallenges_OnPlayerKilled( entity victim, entity attacker, var damageInfo )
+{
+	if ( victim == attacker || !attacker.IsPlayer() || GetGameState() != eGameState.Playing )
+		return
+	
+	if ( victim.IsPlayer() && attacker in file.pilotstreak )
+	{
+		file.pilotstreak[attacker]++
+		if( file.pilotstreak[attacker] >= 5 && !HasPlayerCompletedMeritScore( attacker ) )
+		{
+			AddPlayerScore( attacker, "ChallengePVPKillCount" )
+			SetPlayerChallengeMeritScore( attacker )
+		}
+	}
+}
+
+bool function HasPlayerCompletedMeritScore( entity player )
+{
+	Assert( player in file.playerChallenge, player + " is not registered in the challenge pool hooks." )
+	return file.playerChallenge[ player ]
+}
+
+
+
+
+
+
+
+/*=============================================================================================================
+   ____                                                _            _   _                _         
+  / ___|  __ _  _ __ ___    ___  _ __ ___    ___    __| |  ___     | | | |  ___    ___  | | __ ___ 
+ | |  _  / _` || '_ ` _ \  / _ \| '_ ` _ \  / _ \  / _` | / _ \    | |_| | / _ \  / _ \ | |/ // __|
+ | |_| || (_| || | | | | ||  __/| | | | | || (_) || (_| ||  __/    |  _  || (_) || (_) ||   < \__ \
+  \____| \__,_||_| |_| |_| \___||_| |_| |_| \___/  \__,_| \___|    |_| |_| \___/  \___/ |_|\_\|___/
+                                                                                                   
+=============================================================================================================*/
+
+void function SetPlayerChallengeEvacState( entity player, int successEvac = 0 )
+{
+	if( successEvac == 0 ) //Evac Ship destroyed
+		Remote_CallFunction_UI( player, "SCB_SetEvacMeritState", 2 )
+	
+	else if( successEvac == 1 ) //Player itself managed to evac
+	{
+		file.playerTotalMeritCount[ player ]++
+		Remote_CallFunction_UI( player, "SCB_SetEvacMeritState", 1 )
+		player.SetPersistentVar( "xp_match[" + XP_TYPE.EVAC + "]", 1 )
+		Remote_CallFunction_UI( player, "SCB_SetMeritCount", file.playerTotalMeritCount[ player ] )
+	}
+	
+	else if( successEvac == 2 ) //Team managed to evac
+		Remote_CallFunction_UI( player, "SCB_SetEvacMeritState", 3 )
+}
+
+void function SetPlayerChallengeMatchWon( entity player, bool playerWon )
+{
+	if( playerWon )
+	{
+		file.playerTotalMeritCount[ player ]++
+		Remote_CallFunction_UI( player, "SCB_SetWinMeritState", 1 )
+		player.SetPersistentVar( "xp_match[" + XP_TYPE.MATCH_VICTORY + "]", 1 )
+		player.SetPersistentVar( "matchWin", true )
+		Remote_CallFunction_UI( player, "SCB_SetMeritCount", file.playerTotalMeritCount[ player ] )
+	}
+	else
+		Remote_CallFunction_UI( player, "SCB_SetWinMeritState", -1 )
+}
+
+void function SetPlayerChallengeMatchComplete( entity player )
+{
+	file.playerTotalMeritCount[ player ]++
+	Remote_CallFunction_UI( player, "SCB_SetCompleteMeritState", 1 )
+	player.SetPersistentVar( "xp_match[" + XP_TYPE.MATCH_COMPLETED + "]", 1 )
+	player.SetPersistentVar( "matchComplete", true )
+	Remote_CallFunction_UI( player, "SCB_SetMeritCount", file.playerTotalMeritCount[ player ] )
+}
+
+void function SetPlayerChallengeSquadLeader( entity player )
+{
+	if( !ProgressionEnabledForPlayer( player ) )
+		return
+	
+	Remote_CallFunction_NonReplay( player, "ServerCallback_SquadLeaderDoubleXP" )
+	Remote_CallFunction_NonReplay( player, "ServerCallback_SquadLeaderBonus", player.GetEncodedEHandle() )
+	player.SetPersistentVar( "matchSquadBonus", true )
+	Player_GiveDoubleXP( player, 1 )
+	foreach( entity teamplayer in GetPlayerArrayOfTeam( player.GetTeam() ) )
+	{
+		if( teamplayer == player )
+			continue
+		
+		Remote_CallFunction_NonReplay( player, "ServerCallback_SquadLeaderBonus", teamplayer.GetEncodedEHandle() )
+	}
+}
+
+void function SetPlayerChallengeMeritScore( entity player )
+{
+	if( !HasPlayerCompletedMeritScore( player ) )
+	{
+		file.playerChallenge[ player ] = true
+		file.playerTotalMeritCount[ player ]++
+		Remote_CallFunction_UI( player, "SCB_SetScoreMeritState", 1 )
+		player.SetPersistentVar( "xp_match[" + XP_TYPE.SCORE_MILESTONE + "]", 1 )
+		player.SetPersistentVar( "matchScoreEvent", true )
+		Remote_CallFunction_UI( player, "SCB_SetMeritCount", file.playerTotalMeritCount[ player ] )
+	}
+}
+
+void function IncrementPlayerChallengeTitanLeveledUp( entity player )
+{
+	player.p.meritData.titanMerits++
+	file.playerTotalMeritCount[ player ]++
+	
+	Remote_CallFunction_UI( player, "SCB_SetTitanMeritCount", player.p.meritData.titanMerits++ )
+	Remote_CallFunction_UI( player, "SCB_SetMeritCount", file.playerTotalMeritCount[ player ] )
+}
+
+void function IncrementPlayerChallengeWeaponLeveledUp( entity player )
+{
+	player.p.meritData.weaponMerits++
+	file.playerTotalMeritCount[ player ]++
+		
+	Remote_CallFunction_UI( player, "SCB_SetWeaponMeritCount", player.p.meritData.weaponMerits )
+	Remote_CallFunction_UI( player, "SCB_SetMeritCount", file.playerTotalMeritCount[ player ] )
+}
+
+void function IncrementPlayerChallengeFactionLeveledUp( entity player )
+{
+	file.playerTotalMeritCount[ player ]++
+	Remote_CallFunction_UI( player, "SCB_SetMeritCount", file.playerTotalMeritCount[ player ] )
 }

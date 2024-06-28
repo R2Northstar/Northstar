@@ -19,6 +19,7 @@ void function GamemodePs_Init()
 	AddCallback_OnPlayerKilled( GiveScoreForPlayerKill )
 	ScoreEvent_SetupEarnMeterValuesForMixedModes()
 	SetTimeoutWinnerDecisionFunc( CheckScoreForDraw )
+	SetupGenericFFAChallenge()
 
 	// spawnzone stuff
 	SetShouldCreateMinimapSpawnZones( true )

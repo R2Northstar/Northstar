@@ -16,7 +16,10 @@ void function SetupPlayerPreviousXPValues( entity player )
 		player.SetPersistentVar( "previousFactionXP[" + xpFaction + "]", FactionGetXP( player, xpFaction ) )
 
 	foreach ( string xpTitan in shTitanXP.titanClasses )
+	{
 		player.SetPersistentVar( "previousTitanXP[" + xpTitan + "]", TitanGetXP( player, xpTitan ) )
+		player.SetPersistentVar( "fdPreviousTitanXP[" + xpTitan + "]", FD_TitanGetXP( player, xpTitan ) )
+	}
 
 	foreach ( string xpWeapon in shWeaponXP.weaponClassNames )
 		player.SetPersistentVar( GetItemPersistenceStruct( xpWeapon ) + ".previousWeaponXP", WeaponGetXP( player, xpWeapon ) )
@@ -35,6 +38,14 @@ void function HandleXPGainForScoreEvent( entity player, ScoreEvent event )
 	int weaponXp = ScoreEvent_GetXPValueWeapon( event )
 	int titanXp = ScoreEvent_GetXPValueTitan( event )
 	int factionXp = ScoreEvent_GetXPValueFaction( event )
+	
+	if ( player.GetPlayerNetInt( "xpMultiplier" ) > 0 || GetCurrentPlaylistVarInt( "double_xp_enabled", 0 ) == 1 )
+	{
+		xpValue *= 2
+		weaponXp *= 2
+		titanXp *= 2
+		factionXp *= 2
+	}
 
 	entity weapon = player.GetActiveWeapon()
 	if ( IsValid( weapon ) && ShouldTrackXPForWeapon( weapon.GetWeaponClassName() ) && weaponXp != 0 )
@@ -63,5 +74,10 @@ void function AddXP( entity player, int amount )
 	int newXp = player.GetPersistentVarAsInt( "xp" )
 	int newLevel = GetLevelForXP( newXp )
 	if ( newLevel != oldLevel )
+	{
 		Remote_CallFunction_NonReplay( player, "ServerCallback_PlayerLeveledUp", player.GetPersistentVarAsInt( "gen" ), newLevel )
+		
+		if( ProgressionEnabledForPlayer( player ) )
+			AwardRandomItemsForPlayerLevels( player, player.GetPersistentVarAsInt( "gen" ), newLevel )
+	}
 }

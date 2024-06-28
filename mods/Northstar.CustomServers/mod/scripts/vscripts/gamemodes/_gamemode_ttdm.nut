@@ -2,6 +2,11 @@ global function GamemodeTTDM_Init
 
 const float TTDMIntroLength = 15.0
 
+struct
+{
+	table< entity, int > challengeCount
+} file
+
 void function GamemodeTTDM_Init()
 {
 	Riff_ForceSetSpawnAsTitan( eSpawnAsTitan.Always )
@@ -14,6 +19,8 @@ void function GamemodeTTDM_Init()
 	ClassicMP_ForceDisableEpilogue( true )
 	SetTimeoutWinnerDecisionFunc( CheckScoreForDraw )
 
+	AddCallback_OnClientConnected( SetupPlayerTTDMChallenges ) //Just to make up the Match Goals tracking
+	AddCallback_OnClientDisconnected( RemovePlayerTTDMChallenges ) //Safety removal of data to prevent crashes
 	AddCallback_OnPlayerKilled( AddTeamScoreForPlayerKilled ) // dont have to track autotitan kills since you cant leave your titan in this mode
 
 	// probably needs scoreevent earnmeter values
@@ -56,6 +63,17 @@ void function TTDMIntroShowIntermissionCam( entity player )
 	thread PlayerWatchesTTDMIntroIntermissionCam( player )
 }
 
+void function SetupPlayerTTDMChallenges( entity player )
+{
+	file.challengeCount[ player ] <- 0
+}
+
+void function RemovePlayerTTDMChallenges( entity player )
+{
+	if( player in file.challengeCount )
+		delete file.challengeCount[ player ]
+}
+
 void function PlayerWatchesTTDMIntroIntermissionCam( entity player )
 {
 	player.EndSignal( "OnDestroy" )
@@ -78,6 +96,19 @@ void function AddTeamScoreForPlayerKilled( entity victim, entity attacker, var d
 {
 	if ( victim == attacker || !victim.IsPlayer() || !attacker.IsPlayer() && GetGameState() == eGameState.Playing )
 		return
+
+	if( victim in file.challengeCount )
+		file.challengeCount[victim] = 0
+	
+	if( attacker in file.challengeCount )
+	{
+		file.challengeCount[attacker]++
+		if( file.challengeCount[attacker] >= 2 && !HasPlayerCompletedMeritScore( attacker ) )
+		{
+			AddPlayerScore( attacker, "ChallengeTTDM" )
+			SetPlayerChallengeMeritScore( attacker )
+		}
+	}
 
 	AddTeamScore( GetOtherTeam( victim.GetTeam() ), 1 )
 }

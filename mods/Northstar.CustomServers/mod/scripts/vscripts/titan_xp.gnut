@@ -1,17 +1,39 @@
 global function AddTitanXP
+global function AddFDTitanXP
 
 void function AddTitanXP( entity player, int amount )
 {
 	string titan = GetActiveTitanLoadout( player ).titanClass
 	int oldLevel = TitanGetLevel( player, titan )
+	int TitanXPMatch = player.GetPersistentVarAsInt( "xp_match[" + XP_TYPE.TITAN_LEVELED + "]" )
 	
 	// increment xp
 	player.SetPersistentVar( "titanXP[" + titan + "]", min( TitanGetXP( player, titan ) + amount, TitanGetMaxXP( titan ) ) )
+	Remote_CallFunction_NonReplay( player, "ServerCallback_TitanXPAdded", shTitanXP.titanClasses.find( titan ), TitanGetXP( player, titan ), amount )
 	
 	// level up notif
 	if ( TitanGetLevel( player, titan ) != oldLevel )
 	{
 		Remote_CallFunction_NonReplay( player, "ServerCallback_TitanLeveledUp", shTitanXP.titanClasses.find( titan ), TitanGetGen( player, titan ), TitanGetLevel( player, titan ) )
 		AddPlayerScore( player, "TitanLevelUp" )
+		IncrementPlayerChallengeTitanLeveledUp( player )
+		player.SetPersistentVar( "xp_match[" + XP_TYPE.TITAN_LEVELED + "]", TitanXPMatch + 1 )
+		
+		if( ProgressionEnabledForPlayer( player ) )
+			AwardRandomItemsForTitanLevels( player, titan, oldLevel, TitanGetLevel( player, titan ) )
 	}
+}
+
+void function AddFDTitanXP( entity player, int fdXPamount )
+{
+	string titanRef = GetActiveTitanLoadout( player ).titanClass
+	
+	player.SetPersistentVar( "fdTitanXP[" + titanRef + "]", FD_TitanGetPreviousXP( player, titanRef ) + fdXPamount )
+	int startingLevel = FD_TitanGetLevelForXP( titanRef, FD_TitanGetPreviousXP( player, titanRef ) )
+	int endingLevel = FD_TitanGetLevelForXP( titanRef, FD_TitanGetXP( player, titanRef ) )
+	
+	Player_GiveFDUnlockPoints( player, endingLevel - startingLevel )
+	
+	if( ProgressionEnabledForPlayer( player ) )
+		AwardRandomItemsForFDTitanLevels( player, titanRef, startingLevel, endingLevel )
 }

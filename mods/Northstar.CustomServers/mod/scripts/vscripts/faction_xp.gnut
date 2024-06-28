@@ -4,10 +4,19 @@ void function AddFactionXP( entity player, int amount )
 {
 	string faction = GetFactionChoice( player )
 	int oldLevel = FactionGetLevel( player, faction )
+	int FactionXPMatch = player.GetPersistentVarAsInt( "xp_match[" + XP_TYPE.FACTION_LEVELED + "]" )
+	
 	// increment xp
 	player.SetPersistentVar( "factionXP[" + faction + "]", min( FactionGetXP( player, faction ) + amount, FactionGetMaxXP( faction ) ) )
 	
 	// note: no notif for faction level up
 	if ( FactionGetLevel( player, faction ) != oldLevel )
+	{
 		AddPlayerScore( player, "FactionLevelUp" )
+		IncrementPlayerChallengeFactionLeveledUp( player )
+		player.SetPersistentVar( "xp_match[" + XP_TYPE.FACTION_LEVELED + "]", FactionXPMatch + 1 )
+		
+		if( ProgressionEnabledForPlayer( player ) )
+			AwardRandomItemsForFactionLevels( player, faction, oldLevel, FactionGetLevel( player, faction ) )
+	}
 }

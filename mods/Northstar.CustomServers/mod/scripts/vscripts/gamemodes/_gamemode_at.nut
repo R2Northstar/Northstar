@@ -178,6 +178,12 @@ void function AT_PlayerTitleThink( entity player )
 		{
 			// Set player money count
 			player.SetTitle( "$" + string( AT_GetPlayerBonusPoints( player ) ) )
+			
+			if( AT_GetPlayerBonusPoints( player ) >= 600 && !HasPlayerCompletedMeritScore( player ) ) //Challenge is: "Earn $600."
+			{
+				AddPlayerScore( player, "ChallengeATAssault" )
+				SetPlayerChallengeMeritScore( player )
+			}
 		}
 		else if ( GetGameState() >= eGameState.WinnerDetermined )
 		{

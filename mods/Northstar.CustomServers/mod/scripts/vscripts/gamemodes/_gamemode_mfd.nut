@@ -180,6 +180,12 @@ void function MarkPlayers( entity imcMark, entity militiaMark )
 	entity livingMark = GetMarked( GetOtherTeam( deadMark.GetTeam() ) )
 	livingMark.SetPlayerGameStat( PGS_DEFENSE_SCORE, livingMark.GetPlayerGameStat( PGS_DEFENSE_SCORE ) + 1 )
 	
+	if( !HasPlayerCompletedMeritScore( livingMark ) )
+	{
+		AddPlayerScore( livingMark, "ChallengeMFD" )
+		SetPlayerChallengeMeritScore( livingMark )
+	}
+	
 	// thread this so we don't kill our own thread
 	thread AddTeamScore( livingMark.GetTeam(), 1 )
 }
@@ -195,8 +201,15 @@ void function UpdateMarksForKill( entity victim, entity attacker, var damageInfo
 
 		MessageToAll( eEventNotifications.MarkedForDeathKill, null, victim, actualAttacker.GetEncodedEHandle() )
 		svGlobal.levelEnt.Signal( "MarkKilled", { mark = victim } )
-
+		
 		if ( !isSuicide && attacker.IsPlayer() )
+		{
 			attacker.SetPlayerGameStat( PGS_ASSAULT_SCORE, attacker.GetPlayerGameStat( PGS_ASSAULT_SCORE ) + 1 )
+			if( !HasPlayerCompletedMeritScore( attacker ) )
+			{
+				AddPlayerScore( attacker, "ChallengeMFD" )
+				SetPlayerChallengeMeritScore( attacker )
+			}
+		}
 	}
 }

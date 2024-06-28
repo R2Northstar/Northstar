@@ -246,6 +246,9 @@ void function Evac( int evacTeam, float initialWait, float arrivalTime, float wa
 	SetTeamActiveObjective( evacTeam, "EG_DropshipExtract", Time() + arrivalTime, file.evacIcon )
 	SetTeamActiveObjective( GetOtherTeam( evacTeam ), "EG_StopExtract", Time() + arrivalTime, file.evacIcon )
 	
+	foreach( entity player in GetPlayerArrayOfTeam( evacTeam ) ) //Show the Evac Match Goal for players of the team that lost the match
+		Remote_CallFunction_UI( player, "SCB_SetEvacMeritState", 0 )
+	
 	// would've liked to use cd_dropship_rescue_side_start length here, but can't since this is done before dropship spawn, can't
 	wait arrivalTime - 4.33333
 	
@@ -280,6 +283,9 @@ void function Evac( int evacTeam, float initialWait, float arrivalTime, float wa
 		{
 			SetTeamActiveObjective( evacTeam, "EG_DropshipExtractDropshipDestroyed" )
 			SetTeamActiveObjective( GetOtherTeam( evacTeam ), "EG_DropshipExtractDropshipDestroyed" )
+			
+			foreach( entity player in GetPlayerArrayOfTeam( evacTeam ) )
+				SetPlayerChallengeEvacState( player, 0 )
 		}
 		
 		foreach ( entity player in dropship.s.evacSlots )
@@ -402,7 +408,10 @@ void function Evac( int evacTeam, float initialWait, float arrivalTime, float wa
 		if ( !PlayerInDropship( player, dropship ) )
 		{
 			if ( player.GetTeam() == dropship.GetTeam() )
+			{
 				SetPlayerActiveObjective( player, "EG_DropshipExtractFailedEscape" )
+				SetPlayerChallengeEvacState( player, 2 )
+			}
 				
 			continue
 		}
@@ -417,6 +426,7 @@ void function Evac( int evacTeam, float initialWait, float arrivalTime, float wa
 		Remote_CallFunction_NonReplay( player, "ServerCallback_DisableHudForEvac" )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_SetClassicSkyScale", dropship.GetEncodedEHandle(), 0.7 )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_SetMapSettings", 4.0, false, 0.4, 0.125 )
+		SetPlayerChallengeEvacState( player, 1 )
 		
 		// display player [Evacuated] in killfeed
 		foreach ( entity otherPlayer in GetPlayerArray() )
