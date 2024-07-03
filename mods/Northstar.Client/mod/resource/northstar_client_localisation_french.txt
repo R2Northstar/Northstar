@@ -357,5 +357,7 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 		"AUTHENTICATION_FAILED_HELP"        "Aide"
 		"AUTHENTICATION_FAILED_ERROR_CODE"        "Code d'erreur : ^DB6F2C00%s1^"
 		"AUTHENTICATION_FAILED_BODY"        "L'authentification avec Atlas a échoué."
+		"MISSING_MOD"        "Mod manquant \"%s1\" v%s2"
+		"MOD_REQUIRED_WARNING"        " : Ce mod peut être (dé)chargé automatiquement en rejoignant un serveur"
 	}
 }
