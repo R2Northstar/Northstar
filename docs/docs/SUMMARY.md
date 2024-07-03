@@ -39,6 +39,7 @@
   * [Best practices](hosting-a-server-with-northstar/dedicated-server/best-practices.md)
   * [Hosting on Windows](hosting-a-server-with-northstar/dedicated-server/hosting-on-windows.md)
   * [Hosting on Linux](hosting-a-server-with-northstar/dedicated-server/hosting-on-linux.md)
+* [Hosting a Local-only Server](hosting-a-server-with-northstar/local-only-server.md)
 * [Server settings](hosting-a-server-with-northstar/server-settings/README.md)
   * [Startup arguments](hosting-a-server-with-northstar/server-settings/startup-args.md)
   * [ConVars](hosting-a-server-with-northstar/server-settings/convars.md)
