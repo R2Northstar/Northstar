@@ -136,7 +136,7 @@ public:
 
 	inline SQRESULT _call(HSquirrelVM* sqvm, const SQInteger args)
 	{
-		return __sq_call(sqvm, args + 1, false, false);
+		return __sq_call(sqvm, args + 1, false, true);
 	}
 
 	inline SQInteger raiseerror(HSquirrelVM* sqvm, const SQChar* sError)
