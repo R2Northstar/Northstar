@@ -130,7 +130,7 @@ entity function FindSpawnPoint( entity player, bool isTitan, bool useStartSpawnp
 {
 	int team = player.GetTeam()
 	if ( HasSwitchedSides() )
-		team = GetOtherTeam( team )
+		team = ( team == TEAM_MILITIA ) ? TEAM_IMC : TEAM_MILITIA
 
 	array<entity> spawnpoints
 	if ( useStartSpawnpoint )
@@ -181,29 +181,19 @@ entity function GetBestSpawnpoint( entity player, array<entity> spawnpoints )
 	foreach ( entity spawnpoint in spawnpoints )
 	{
 		if ( IsSpawnpointValid( spawnpoint, player.GetTeam() ) )
-		{
 			validSpawns.append( spawnpoint )
-			
-			if ( validSpawns.len() == 3 ) // arbitrary small sample size
-				break
-		}
 	}
 	
-	if ( validSpawns.len() == 0 )
+	if ( !validSpawns.len() )
 	{
 		// no valid spawns, very bad, so dont care about spawns being valid anymore
 		print( "found no valid spawns! spawns may be subpar!" )
 		foreach ( entity spawnpoint in spawnpoints )
-		{
 			validSpawns.append( spawnpoint )
-			
-			if ( validSpawns.len() == 3 ) // arbitrary small sample size
-				break
-		}
 	}
 	
 	// last resort
-	if ( validSpawns.len() == 0 )
+	if ( !validSpawns.len() )
 	{
 		print( "map has literally 0 spawnpoints, as such everything is fucked probably, attempting to use info_player_start if present" )
 		entity start = GetEnt( "info_player_start" )
@@ -215,7 +205,7 @@ entity function GetBestSpawnpoint( entity player, array<entity> spawnpoints )
 		}
 	}
 	
-	return validSpawns[ RandomInt( validSpawns.len() ) ] // slightly randomize it
+	return validSpawns.getrandom() // slightly randomize it
 }
 
 bool function IsSpawnpointValid( entity spawnpoint, int team )
@@ -232,15 +222,18 @@ bool function IsSpawnpointValid( entity spawnpoint, int team )
 			return false
 	}
 	
+	if( IsFFAGame() && !spawnpoint.IsVisibleToEnemies( team ) )
+		return true
+	
 	int compareTeam = spawnpoint.GetTeam()
-	if ( HasSwitchedSides() && ( compareTeam == TEAM_MILITIA || compareTeam == TEAM_IMC ) )
-		compareTeam = GetOtherTeam( compareTeam )
-		
+	if ( HasSwitchedSides() )
+		compareTeam = ( compareTeam == TEAM_MILITIA ) ? TEAM_IMC : TEAM_MILITIA
+	
 	foreach ( bool functionref( entity, int ) customValidationRule in file.customSpawnpointValidationRules )
 		if ( !customValidationRule( spawnpoint, team ) )
 			return false
 		
-	if ( spawnpoint.GetTeam() > 0 && compareTeam != team && !IsFFAGame() )
+	if ( spawnpoint.GetTeam() > 0 && compareTeam != team )
 		return false
 	
 	if ( spawnpoint.IsOccupied() )
@@ -261,13 +254,12 @@ bool function IsSpawnpointValid( entity spawnpoint, int team )
 			return false
 	}
 
-    const minEnemyDist = 1000.0 // about 20 meters?
-    // in rsquirrel extend returns null unlike in vanilla squirrel
-    array< entity > spawnBlockers = GetPlayerArrayEx( "any", TEAM_ANY, TEAM_ANY, spawnpoint.GetOrigin(), minEnemyDist )
-    spawnBlockers.extend( GetProjectileArrayEx( "any", TEAM_ANY, TEAM_ANY, spawnpoint.GetOrigin(), minEnemyDist ) )
-	foreach ( entity blocker in spawnBlockers )
-		if ( blocker.GetTeam() != team )
-			return false
+    const minEnemyDist = 1200.0
+    array< entity > spawnBlockers = GetPlayerArrayEx( "any", TEAM_ANY, spawnpoint.GetTeam(), spawnpoint.GetOrigin(), minEnemyDist )
+    spawnBlockers.extend( GetProjectileArrayEx( "any", TEAM_ANY, spawnpoint.GetTeam(), spawnpoint.GetOrigin(), minEnemyDist ) )
+    spawnBlockers.extend( GetNPCArrayEx( "any", TEAM_ANY, spawnpoint.GetTeam(), spawnpoint.GetOrigin(), minEnemyDist ) )
+	if ( spawnBlockers.len() )
+		return false
 	
 	// los check
 	return !spawnpoint.IsVisibleToEnemies( team )
@@ -399,11 +391,9 @@ void function InitPreferSpawnNodes()
 // frontline
 void function RateSpawnpoints_Frontline( int checkClass, array<entity> spawnpoints, int team, entity player )
 {
+	float rating = RandomFloatRange( 0.0, 100.0 )
 	foreach ( entity spawnpoint in spawnpoints )
-	{
-		float rating = spawnpoint.CalculateFrontlineRating()
-		spawnpoint.CalculateRating( checkClass, player.GetTeam(), rating, rating > 0 ? rating * 0.25 : rating )
-	}
+		spawnpoint.CalculateRating( checkClass, player.GetTeam(), rating, rating )
 }
 
 // spawnzones
