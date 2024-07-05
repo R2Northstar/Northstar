@@ -75,27 +75,20 @@ void function RateSpawnpoints_CTF( int checkClass, array<entity> spawnpoints, in
 bool function VerifyCTFSpawnpoint( entity spawnpoint, int team )
 {
 	// ensure spawnpoints aren't too close to enemy base
+	vector allyFlagSpot
+	vector enemyFlagSpot
+	foreach ( entity spawn in GetEntArrayByClass_Expensive( "info_spawnpoint_flag" ) )
+	{
+		if( spawn.GetTeam() == team )
+			allyFlagSpot = spawn.GetOrigin()
+		else
+			enemyFlagSpot = spawn.GetOrigin()
+	}
 	
-	if ( HasSwitchedSides() )
-		team = GetOtherTeam( team )
+	if( Distance2D( spawnpoint.GetOrigin(), allyFlagSpot ) > Distance2D( spawnpoint.GetOrigin(), enemyFlagSpot ) )
+		return false
 	
-	array<entity> startSpawns = SpawnPoints_GetPilotStart( team )
-	array<entity> enemyStartSpawns = SpawnPoints_GetPilotStart( GetOtherTeam( team ) )
-	
-	vector averageFriendlySpawns
-	vector averageEnemySpawns
-	
-	foreach ( entity spawn in startSpawns )
-		averageFriendlySpawns += spawn.GetOrigin()
-	
-	averageFriendlySpawns /= startSpawns.len()
-	
-	foreach ( entity spawn in enemyStartSpawns )
-		averageEnemySpawns += spawn.GetOrigin()
-	
-	averageEnemySpawns /= startSpawns.len()
-	
-	return Distance2D( spawnpoint.GetOrigin(), averageEnemySpawns ) / Distance2D( averageFriendlySpawns, averageEnemySpawns ) > 0.35
+	return true
 }
 
 void function CTFInitPlayer( entity player )
