@@ -189,6 +189,7 @@ void function SpawnPlayerIntoDropship( entity player, int playerDropshipIndex, e
 	
 	HolsterAndDisableWeapons( player )
 	player.DisableWeaponViewModel()
+	UnMuteAll( player )
 	
 	// hide hud and fade screen out from black
 	AddCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING )
