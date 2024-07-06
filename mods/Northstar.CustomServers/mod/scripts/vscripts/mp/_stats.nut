@@ -334,6 +334,10 @@ void function OnPlayerOrNPCKilled( entity victim, entity attacker, var damageInf
 		thread SetLastPosForDistanceStatValid_Threaded( victim, false )
 
 	HandleDeathStats( victim, attacker, damageInfo )
+	
+	if( victim == attacker ) //Suicides are registering stats, afaik vanilla ignores them
+		return
+	
 	HandleKillStats( victim, attacker, damageInfo )
 	HandleWeaponKillStats( victim, attacker, damageInfo )
 	HandleTitanStats( victim, attacker, damageInfo )
