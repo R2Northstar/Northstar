@@ -861,6 +861,7 @@ void function SetWinner( int team, string winningReason = "", string losingReaso
 					{
 						case 1:
 							UpdatePlayerStat( players[i], "game_stats", "mvp" )
+							UpdatePlayerStat( players[i], "game_stats", "mvp_total" )
 							UpdatePlayerStat( players[i], "game_stats", "top3OnTeam" )
 							break
 						case 2:
