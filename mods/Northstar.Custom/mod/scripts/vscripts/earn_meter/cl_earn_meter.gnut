@@ -335,7 +335,11 @@ void function EarnMeter_Update()
 				break
 
 			entity soul = player.GetTitanSoul()
-			entity core = player.GetOffhandWeapons()[3]
+			entity core = player.GetOffhandWeapon( OFFHAND_EQUIPMENT )
+
+			if ( !IsValid( core ) )
+				break
+
 			string coreName = core.GetWeaponClassName()
 			array<string> coreMods = core.GetMods()
 
