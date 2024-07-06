@@ -190,6 +190,7 @@ void function SpawnPlayerIntoDropship( entity player, int playerDropshipIndex, e
 	HolsterAndDisableWeapons( player )
 	player.DisableWeaponViewModel()
 	UnMuteAll( player )
+	StopSoundOnEntity( player, "Duck_For_FrontierDefenseTitanSelectScreen" )
 	
 	// hide hud and fade screen out from black
 	AddCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING )
