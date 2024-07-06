@@ -217,6 +217,11 @@ void function SpawnPlayerIntoDropship( entity player, int playerDropshipIndex, e
 	jumpSequence.setInitialTime = max( 0.0, Time() - ( file.introStartTime + 11.0 ) )  // pretty sure you should do this with GetScriptedAnimEventCycleFrac?
 	// idk unsure how to use that, all i know is getsequenceduration > the length it actually should be
 	
+	#if BATTLECHATTER_ENABLED
+	if( playerDropshipIndex == 0 )
+		PlayBattleChatterLine( player, "bc_pIntroChat" )
+	#endif
+	
 	waitthread FirstPersonSequence( jumpSequence, player, playerDropship )
 	
 	thread PlayerJumpsFromDropship( player )
