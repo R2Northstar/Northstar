@@ -7,6 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include <random>
+#include <ranges>
 
 AUTOHOOK_INIT()
 
@@ -28,7 +29,7 @@ unsigned char EMPTY_WAVE[45] = {0x52, 0x49, 0x46, 0x46, 0x25, 0x00, 0x00, 0x00, 
 								0x20, 0x10, 0x00, 0x00, 0x00, 0x01, 0x00, 0x02, 0x00, 0x44, 0xAC, 0x00, 0x00, 0x88, 0x58,
 								0x01, 0x00, 0x02, 0x00, 0x10, 0x00, 0x64, 0x61, 0x74, 0x61, 0x74, 0x00, 0x00, 0x00, 0x00};
 
-EventOverrideData::EventOverrideData(const std::string& data, const fs::path& path)
+EventOverrideData::EventOverrideData(const std::string& data, const fs::path& path, const std::vector<std::string>& registeredEvents)
 {
 	if (data.length() <= 0)
 	{
@@ -191,6 +192,14 @@ EventOverrideData::EventOverrideData(const std::string& data, const fs::path& pa
 		{
 			std::string pathString = file.path().string();
 
+			// Retrieve event id from path (standard?)
+			std::string eventId = file.path().parent_path().filename().string();
+			if (std::find(registeredEvents.begin(), registeredEvents.end(), eventId) != registeredEvents.end())
+			{
+				spdlog::warn("{} couldn't be loaded because {} event has already been overrided, skipping.", pathString, eventId);
+				continue;
+			}
+
 			// Open the file.
 			std::ifstream wavStream(pathString, std::ios::binary);
 
@@ -259,7 +268,7 @@ EventOverrideData::EventOverrideData(const std::string& data, const fs::path& pa
 	LoadedSuccessfully = true;
 }
 
-bool CustomAudioManager::TryLoadAudioOverride(const fs::path& defPath)
+bool CustomAudioManager::TryLoadAudioOverride(const fs::path& defPath, std::string modName)
 {
 	if (IsDedicatedServer())
 		return true; // silently fail
@@ -279,19 +288,35 @@ bool CustomAudioManager::TryLoadAudioOverride(const fs::path& defPath)
 
 	jsonStream.close();
 
-	std::shared_ptr<EventOverrideData> data = std::make_shared<EventOverrideData>(jsonStringStream.str(), defPath);
+	// Pass the list of overriden events to avoid multiple event registrations crash
+	auto kv = std::views::keys(m_loadedAudioOverrides);
+	std::vector<std::string> keys {kv.begin(), kv.end()};
+	std::shared_ptr<EventOverrideData> data = std::make_shared<EventOverrideData>(jsonStringStream.str(), defPath, keys);
 
 	if (!data->LoadedSuccessfully)
 		return false; // no logging, the constructor has probably already logged
 
 	for (const std::string& eventId : data->EventIds)
 	{
+		if (m_loadedAudioOverrides.contains(eventId))
+		{
+			spdlog::warn("\"{}\" mod tried to override sound event \"{}\" but it is already overriden, skipping.", modName, eventId);
+			continue;
+		}
 		spdlog::info("Registering sound event {}", eventId);
 		m_loadedAudioOverrides.insert({eventId, data});
 	}
 
 	for (const auto& eventIdRegexData : data->EventIdsRegex)
 	{
+		if (m_loadedAudioOverridesRegex.contains(eventIdRegexData.first))
+		{
+			spdlog::warn(
+				"\"{}\" mod tried to override sound event regex \"{}\" but it is already overriden, skipping.",
+				modName,
+				eventIdRegexData.first);
+			continue;
+		}
 		spdlog::info("Registering sound event regex {}", eventIdRegexData.first);
 		m_loadedAudioOverridesRegex.insert({eventIdRegexData.first, data});
 	}

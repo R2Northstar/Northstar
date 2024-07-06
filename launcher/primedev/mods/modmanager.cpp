@@ -972,7 +972,7 @@ void ModManager::LoadMods()
 			{
 				if (fs::is_regular_file(file) && file.path().extension().string() == ".json")
 				{
-					if (!g_CustomAudioManager.TryLoadAudioOverride(file.path()))
+					if (!g_CustomAudioManager.TryLoadAudioOverride(file.path(), mod.Name))
 					{
 						spdlog::warn("Mod {} has an invalid audio def {}", mod.Name, file.path().filename().string());
 						continue;
