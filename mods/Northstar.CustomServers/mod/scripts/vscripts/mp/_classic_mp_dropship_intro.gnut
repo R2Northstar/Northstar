@@ -187,7 +187,7 @@ void function SpawnPlayerIntoDropship( entity player, int playerDropshipIndex, e
 		}
 	})
 	
-	HolsterAndDisableWeapons(player)
+	HolsterAndDisableWeapons( player )
 	player.DisableWeaponViewModel()
 	
 	// hide hud and fade screen out from black
@@ -234,7 +234,7 @@ void function PlayerJumpsFromDropship( entity player )
 			// show weapon viewmodel and hud and let them move again
 			player.MovementEnable()
 			player.EnableWeaponViewModel()
-			DeployAndEnableWeapons(player)
+			DeployAndEnableWeapons( player )
 			RemoveCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING )
 		}
 	})
