@@ -1,11 +1,11 @@
 #![deny(non_snake_case)]
 
+use rrplug::mid::squirrel::sqvm_to_context;
 use rrplug::prelude::*;
 use rrplug::{
-    bindings::squirrelclasstypes::ScriptContext,
-    call_sq_function,
-    high::{squirrel::compile_string, UnsafeHandle},
+    bindings::squirrelclasstypes::ScriptContext, call_sq_function, high::squirrel::compile_string,
 };
+use std::ptr::NonNull;
 use std::{
     ops::DerefMut,
     time::{SystemTime, UNIX_EPOCH},
@@ -14,8 +14,7 @@ use std::{
 use crate::presense_bindings::{GameState, GameStateStruct, UIPresenceStruct};
 
 // heartbeat for pulling presence
-pub fn run_presence_updates(sqvm: UnsafeHandle<*mut HSquirrelVM>) {
-    let sqvm = *sqvm.get();
+pub fn run_presence_updates(sqvm: NonNull<HSquirrelVM>) {
     let sq_functions = SQFUNCTIONS.client.wait();
 
     if let Err(err) = compile_string(
@@ -42,18 +41,7 @@ pub fn fetch_presence() -> Result<(), String> {
     let plugin = crate::PLUGIN.wait();
     let mut presence_lock = plugin.presence_data.lock();
     let (cl_presence, ui_presence) = presence_lock.deref_mut();
-    let sqvm = unsafe { sqvm.as_mut().ok_or_else(|| "None sqvm".to_string())? };
-    let context = unsafe {
-        std::mem::transmute::<_, ScriptContext>(
-            sqvm.sharedState
-                .as_ref()
-                .ok_or_else(|| "None shared state".to_string())?
-                .cSquirrelVM
-                .as_ref()
-                .ok_or_else(|| "None csqvm".to_string())?
-                .vmContext,
-        )
-    };
+    let context = unsafe { sqvm_to_context(sqvm) };
 
     match context {
         ScriptContext::CLIENT => {
@@ -68,11 +56,10 @@ pub fn fetch_presence() -> Result<(), String> {
                 #[cfg(not(debug_assertions))]
                 drop(err);
             } else {
-                *cl_presence = GameStateStruct::get_from_sqvm(
-                    sqvm,
-                    SQFUNCTIONS.client.wait(),
-                    sqvm._stackbase,
-                );
+                *cl_presence =
+                    GameStateStruct::get_from_sqvm(sqvm, SQFUNCTIONS.client.wait(), unsafe {
+                        sqvm.as_ref()._stackbase
+                    });
             }
         }
         ScriptContext::UI => {
@@ -89,11 +76,10 @@ pub fn fetch_presence() -> Result<(), String> {
                     drop(err);
                 }
                 Ok(_) => {
-                    *ui_presence = UIPresenceStruct::get_from_sqvm(
-                        sqvm,
-                        SQFUNCTIONS.client.wait(),
-                        sqvm._stackbase,
-                    );
+                    *ui_presence =
+                        UIPresenceStruct::get_from_sqvm(sqvm, SQFUNCTIONS.client.wait(), unsafe {
+                            sqvm.as_ref()._stackbase
+                        });
                 }
             }
         }

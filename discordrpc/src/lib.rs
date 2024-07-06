@@ -41,9 +41,9 @@ pub struct DiscordRpcPlugin {
 #[deny(non_snake_case)]
 impl Plugin for DiscordRpcPlugin {
     const PLUGIN_INFO: PluginInfo = PluginInfo::new(
-        "DISCORDRPC\0",
-        "DSCRD-RPC\0",
-        "DISCORDRPC\0",
+        c"DISCORDRPC",
+        c"DSCRD-RPC",
+        c"DISCORDRPC",
         PluginContext::CLIENT,
     );
 
@@ -72,7 +72,7 @@ impl Plugin for DiscordRpcPlugin {
     fn on_sqvm_created(&self, sqvm_handle: &CSquirrelVMHandle, _: EngineToken) {
         match sqvm_handle.get_context() {
             ScriptContext::CLIENT | ScriptContext::UI => {
-                run_presence_updates(unsafe { sqvm_handle.get_sqvm() })
+                run_presence_updates(unsafe { sqvm_handle.get_sqvm().take() })
             }
             _ => {}
         }
