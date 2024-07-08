@@ -196,7 +196,7 @@ void function SpawnPlayerIntoDropship( entity player, int playerDropshipIndex, e
 	AddCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING )
 	ScreenFadeFromBlack( player, 0.5, 0.5 )
 	// faction leaders are done clientside, spawn them here
-	Remote_CallFunction_NonReplay( player, "ServerCallback_SpawnFactionCommanderInDropship", playerDropship.dropship.GetEncodedEHandle(), file.introStartTime )
+	Remote_CallFunction_NonReplay( player, "ServerCallback_SpawnFactionCommanderInDropship", playerDropship.GetEncodedEHandle(), file.introStartTime )
 
 	// do firstperson sequence	
 	FirstPersonSequenceStruct idleSequence
