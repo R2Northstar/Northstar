@@ -326,7 +326,7 @@ Clique em Sim se você concorda. Esta escolha pode ser alterada a qualquer momen
 		"UNAUTHORIZED_GAMESERVER" "Servidor da partida não está autorizado a fazer tal requisição"
 		"UNAUTHORIZED_PWD" "Senha inválida"
 		"PLAYER_NOT_FOUND" "Não foi possível encontrar conta do jogador"
-		"INVALID_MASTERSERVER_TOKEN" "Token do servidor mestre inválido ou vencido"
+		"INVALID_MASTERSERVER_TOKEN" "Token do servidor mestre inválido ou vencido, por favor reinicie o EA App para atualizar o Token."
 		"JSON_PARSE_ERROR" "Erro ao ler a resposta json"
 		"SHOW_ONLY_REQUIRED" "Somente Mods Mandatórios"
 		"UNAUTHORIZED_GAME" "Stryder não pode confirmar que esta conta possui Titanfall 2"
