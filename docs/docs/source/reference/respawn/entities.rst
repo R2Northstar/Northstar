@@ -1040,7 +1040,7 @@ Shared
 
 		Add a mod to this weapon
 
-	.. cpp:function:: void FireWeaponBullet_Special(vector origin, vector direction, int numShots, int damageType, bool noAntilag, bool noSpread, bool onlyDamageEntitiesOnce, bool unknownPurpose, bool noTracers, bool activeShot, bool doTraceBrushOnly)
+	.. cpp:function:: void FireWeaponBullet_Special(vector origin, vector direction, int numShots, int damageType, bool noAntilag, bool noSpread, bool onlyDamageEntitiesOnce, bool noImpactFX, bool noTracers, bool activeShot, bool doTraceBrushOnly)
 
 	.. cpp:function:: string GetWeaponSettingString( string setting )
 
