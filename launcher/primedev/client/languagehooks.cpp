@@ -3,6 +3,8 @@
 #include <filesystem>
 #include <regex>
 
+namespace fs = std::filesystem;
+
 AUTOHOOK_INIT()
 
 typedef LANGID (*Tier0_DetectDefaultLanguageType)();

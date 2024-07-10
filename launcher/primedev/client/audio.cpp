@@ -9,6 +9,8 @@
 #include <random>
 #include <ranges>
 
+namespace fs = std::filesystem;
+
 AUTOHOOK_INIT()
 
 static const char* pszAudioEventName;

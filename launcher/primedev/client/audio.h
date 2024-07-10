@@ -5,6 +5,8 @@
 #include <regex>
 #include <shared_mutex>
 
+namespace fs = std::filesystem;
+
 enum class AudioSelectionStrategy
 {
 	INVALID = -1,

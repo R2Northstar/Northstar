@@ -12,6 +12,8 @@
 
 #define XINPUT1_3_DLL "XInput1_3.dll"
 
+namespace fs = std::filesystem;
+
 AUTOHOOK_INIT()
 
 // called from the ON_DLL_LOAD macros

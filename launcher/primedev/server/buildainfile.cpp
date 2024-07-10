@@ -5,6 +5,8 @@
 #include <fstream>
 #include <filesystem>
 
+namespace fs = std::filesystem;
+
 AUTOHOOK_INIT()
 
 const int AINET_VERSION_NUMBER = 57;
