@@ -447,7 +447,7 @@ inline VoidFunction SQMessageBufferPushArg(Vector3& arg) {
 // Vectors
 template <ScriptContext context>
 inline VoidFunction SQMessageBufferPushArg(SQObject* arg) {
-	return [arg]{ g_pSquirrel<context>->pushSQObject(g_pSquirrel<context>->m_pSQVM->sqvm, arg); };
+	return [arg]{ g_pSquirrel<context>->pushobject(g_pSquirrel<context>->m_pSQVM->sqvm, arg); };
 }
 // Ints
 template <ScriptContext context, typename T>
