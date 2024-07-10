@@ -5,6 +5,8 @@
 #include "config/profile.h"
 #include "core/convar/concommand.h"
 
+namespace fs = std::filesystem;
+
 PluginManager* g_pPluginManager;
 
 const std::vector<Plugin>& PluginManager::GetLoadedPlugins() const

@@ -3,6 +3,8 @@
 
 #include <windows.h>
 
+namespace fs = std::filesystem;
+
 class Plugin;
 
 class PluginManager

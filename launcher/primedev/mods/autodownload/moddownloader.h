@@ -1,3 +1,5 @@
+namespace fs = std::filesystem;
+
 class ModDownloader
 {
 private:

@@ -5,6 +5,8 @@
 #include "core/math/vector.h"
 #include "mods/modmanager.h"
 
+namespace fs = std::filesystem;
+
 /*
 	definitions from hell
 	required to function
