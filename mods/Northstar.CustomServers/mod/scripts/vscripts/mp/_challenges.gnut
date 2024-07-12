@@ -65,10 +65,9 @@ void function SetupPlayerMenuChallenges( entity player )
 
 void function SetupChallenges_Threaded( entity player )
 {
+	player.EndSignal( "OnDestroy" )
+	
 	WaitFrame()
-
-        if ( !IsValid( player ) )
-            return
 	
 	Remote_CallFunction_UI( player, "SCB_SetCompleteMeritState", 0 )
 	Remote_CallFunction_UI( player, "SCB_SetEvacMeritState", 4 ) //4 tells RUI to hide it
