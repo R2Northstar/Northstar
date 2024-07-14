@@ -70,4 +70,5 @@
 
 * [Helping](other/helping.md)
 * [Discord moderation](other/moderation/README.md)
+  * [Rules](other/moderation/rules.md)
 * [Credits](other/credits.md)
