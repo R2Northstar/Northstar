@@ -6,7 +6,8 @@ They are copied here for transparency reasons so any change to them can be track
 In particular you can check changes to the rules on GitHub using the following link: https://github.com/R2Northstar/NorthstarWiki/commits/main/docs/other/moderation/rules.md
 
 ```markdown
-This is a public server that anyone is welcome to join. As such, we expect everybody who participates to keep things civil. To that end, we've established some guidelines for this server. Failing to follow these rules may result in your posts being removed, limitations of your permissions in channels, or removal from this server. ──────────────────────────────────────────────────────────────────────────────────────────────────────
+This is a public server that anyone is welcome to join. As such, we expect everybody who participates to keep things civil. To that end, we've established some guidelines for this server. Failing to follow these rules may result in your posts being removed, limitations of your permissions in channels, or removal from this server.
+──────────────────────────────────────────────────────────────────────────────────────────────────────
 
 **1. Be respectful.** This includes insults, harassment, or otherwise hateful conduct. If you disagree with somebody, don't be uncivilized about it.
 **2. No NSF(W/L) content.** We all have to sleep at night. If you post content that would get you fired at work, you're going to get the boot.
@@ -22,15 +23,15 @@ This is a public server that anyone is welcome to join. As such, we expect every
 **12. No unnecessary pinging.** Ping if absolutely necessary, especially if you're going to ping staff.
 **13. Please use English.** It's known as the most used international language.
 **14. Good manners.** This means strictly no topics that would divert or derail the current conversation being held, especially those of sexual innuendos.
-**15. No hating/flaming about moderation decisions**. If you want to discuss moderation decisions (bans, mutes, changes, ...) please open a staff only ticket in ⁠help . Harassing a mod will get you banned.
+**15. No hating/flaming about moderation decisions**. If you want to discuss moderation decisions (bans, mutes, changes, ...) please open a staff only ticket in #help . Harassing a mod will get you banned.
 **16. Follow discord ToS**. We don't enforce it as much but if we find you worthy of a ban we won't hesitate.
 ──────────────────────────────────────────────────────────────────────────────────────────────────────
 
 **Ban Guidelines**
 
-> 1) If you don't follow the rules we will first warn you using Dyno. This creates a modlog of your user on this server.
-> 2) After 3 warnings this will result into a 24 hour mute. In that time we kindly ask you to reflect on your messages/actions and hope you will be back after your timeout.
-> 3) If you insist on not following the rules we will then proceed to ban you.
+> 1) __If you don't follow the rules we will first warn you__ using Dyno. This creates a modlog of your user on this server.
+> 2) After __3 warnings this will result into a 24 hour mute__. In that time we kindly ask you to reflect on your messages/actions and hope you will be back after your timeout.
+> 3) If you __insist on not following the rules__ we will then proceed to __ban__ you.
 > 4) If you think your ban is not justified or reflected on your behaviour, you can file a ban appeal so we can overthink your permanent ban.
 
 **Immediate Bans**
@@ -46,9 +47,10 @@ Please note:
 > **These rules are not comprehensive.** Moderators and staff may remove content, administer reprimands, or warn users for violations not codified here at their discretion. If a moderator or staff member asks you to stop doing something, please respect their request.
 **Staff and Other VIPs may be exempt** (to some extent) from any of these rules due to their reputation in the community, if you feel like they should be warned for a violation you should report to staff
 
-For questions regarding Discord's Privacy Policy or Terms of Use, please refer to the documents here (https://discord.com/terms)
+For questions regarding Discord's Privacy Policy or Terms of Use, please refer to the documents here (<https://discord.com/terms>)
 `Last Updated` 6 July 2022 17:52`, All rights reserved`
-https://discord.gg/northstar
-New users, **you can go to #⁠installation to find out how to install Northstar** as well as read the FAQ if you have any questions
-**If you get an issue whilst installing/playing please open a ticket in ⁠#help** (Do not go to ⁠#general to fix it)
+<https://discord.gg/northstar>
+
+New users, **you can go to #installation to find out how to install Northstar** as well as read the FAQ if you have any questions
+**If you get an issue whilst installing/playing please open a ticket in #help** (Do not go to #general to fix it)
 ```
