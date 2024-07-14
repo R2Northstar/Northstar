@@ -1,7 +1,7 @@
 # Helping
 
 This section is meant mostly for those that will be actively helping others in the Northstar Discord server or otherwise.
-If you've somehow stumbled upon this page trying to fix an issue for yourself, you should try checking the [troubleshooting page](installing-northstar/troubleshooting.md) instead. 
+If you've somehow stumbled upon this page trying to fix an issue for yourself, you should try checking the [troubleshooting page](../installing-northstar/troubleshooting.md) instead. 
 If you're a helper, it also isn't a bad idea to look at this page a few times and try to have a rough idea of the things that are on it.
 
 When helping a user, please try to move them to the `#help` channel to create a ticket in order to keep public channels less cluttered. 
@@ -34,13 +34,13 @@ This entire section only applies to users with `ticket-staff`+ roles who can see
 
 The tickets have a fairly straightforward way of operating.
 When a user clicks on a button to open a ticket they're greeted with the following screen:\
-![The information fields for opening a ticket](images/ticket-information-popup.png)
+![The information fields for opening a ticket](../images/ticket-information-popup.png)
 
 If you or the end user are curious about the difference, a staff ticket can be viewed by anyone with the helper role or above, while a public ticket can be viewed by anyone with the ticket-staff role or above
 
 Once they hit a button to open a ticket, they will fill out the popup with information which will later be shared in their ticket as a message sent as an embed by the ticket bot. 
 This will be the first message in the channel and will look something similar to this:\
-![The embed sent in a ticket with the information filled out by the user](images/ticket-open-message.png)
+![The embed sent in a ticket with the information filled out by the user](../images/ticket-open-message.png)
 
 Note the buttons below the embed.\
 Hitting `Close` will close the ticket without a reason for closing it.\
@@ -59,7 +59,7 @@ There are 3 major slash commands used for tickets. These are `/close`, `/closere
 You may have noticed that `/closerequest` has been skipped. That's because there's sort of a "etiquette" surrounding it.
 
 Generally, you _should_ use `/closerequest` for closing a ticket. There's much less chance the end user gets upset, and it can be denied last minute if another issue comes up.\
-![What using the `/closerequest` command looks like](images/closerequest.png)
+![What using the `/closerequest` command looks like](../images/closerequest.png)
 
 From here, the user can accept the close request, which in turn closes the ticket, or deny the close request, while results in an edited embed telling you they denied it.
 
