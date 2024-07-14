@@ -68,6 +68,6 @@
 
 ## Other
 
-* [Helping](helping.md)
+* [Helping](other/helping.md)
 * [Discord moderation](other/moderation/README.md)
 * [Credits](other/credits.md)
