@@ -10,6 +10,9 @@
             "pattern": "https://forum.manjaro.org/t/howto-troubleshoot-crackling-in-pipewire/82442"
         },
         {
+            "pattern": "https://taskinoz.com/northstar/"
+        },
+        {
             "pattern": "https://wiki.archlinux.org/title/PulseAudio/Troubleshooting#Glitches.2C\\_skips\\_or\\_crackling"
         }
     ]
