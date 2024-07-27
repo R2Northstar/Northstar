@@ -24,7 +24,7 @@ This is a public server that anyone is welcome to join. As such, we expect every
 **13. Please use English.** It's known as the most used international language.
 **14. Good manners.** This means strictly no topics that would divert or derail the current conversation being held, especially those of sexual innuendos.
 **15. No hating/flaming about moderation decisions**. If you want to discuss moderation decisions (bans, mutes, changes, ...) please open a staff only ticket in #help . Harassing a mod will get you banned.
-**16. Follow discord ToS**. We don't enforce it as much but if we find you worthy of a ban we won't hesitate.
+**16. Follow Discord ToS**. If Discord doesn't allow it, we won't allow it either.
 ──────────────────────────────────────────────────────────────────────────────────────────────────────
 
 **Ban Guidelines**
@@ -48,7 +48,7 @@ Please note:
 **Staff and Other VIPs may be exempt** (to some extent) from any of these rules due to their reputation in the community, if you feel like they should be warned for a violation you should report to staff
 
 For questions regarding Discord's Privacy Policy or Terms of Use, please refer to the documents here (<https://discord.com/terms>)
-`Last Updated` 6 July 2022 17:52`, All rights reserved`
+`Last Updated: 2024-07-14`
 <https://discord.gg/northstar>
 
 New users, **you can go to #installation to find out how to install Northstar** as well as read the FAQ if you have any questions
