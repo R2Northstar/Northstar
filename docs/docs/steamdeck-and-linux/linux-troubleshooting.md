@@ -1,7 +1,5 @@
 # Troubleshooting
 
-> Read Lutris troubleshooting of [common issues with Origin](https://github.com/lutris/docs/blob/master/Origin.md) first.
-
 ## Northstar not launching with Steam
 
 If you're encountering issues with Northstar launching on Steam, a very quick fix that usually works is deleting the compatdata for Titanfall2.
