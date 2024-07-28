@@ -1,0 +1,10 @@
+FontFileTable
+{
+	"arial unicode ms"			"resource/Lato-Regular.ttf"
+
+	"lucida console"			"resource/NorthstarMono.ttf"			[$PC]
+
+	"arial"						"resource/Lato-Regular.ttf"
+	"arial bold"				"resource/Lato-Regular.ttf"
+	"arial narrow"				"resource/Lato-Regular.ttf"
+}
