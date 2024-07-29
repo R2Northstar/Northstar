@@ -55,6 +55,8 @@ size_t WriteToString(void* ptr, size_t size, size_t count, void* stream)
 
 void ModDownloader::FetchModsListFromAPI()
 {
+	modState.state = MANIFESTO_FETCHING;
+
 	std::thread requestThread(
 		[this]()
 		{
@@ -62,6 +64,9 @@ void ModDownloader::FetchModsListFromAPI()
 			CURL* easyhandle;
 			rapidjson::Document verifiedModsJson;
 			std::string url = modsListUrl;
+
+			// Empty verified mods manifesto
+			verifiedMods = {};
 
 			curl_global_init(CURL_GLOBAL_ALL);
 			easyhandle = curl_easy_init();
@@ -75,7 +80,12 @@ void ModDownloader::FetchModsListFromAPI()
 			curl_easy_setopt(easyhandle, CURLOPT_WRITEDATA, &readBuffer);
 			curl_easy_setopt(easyhandle, CURLOPT_WRITEFUNCTION, WriteToString);
 			result = curl_easy_perform(easyhandle);
-			ScopeGuard cleanup([&] { curl_easy_cleanup(easyhandle); });
+			ScopeGuard cleanup(
+				[&]
+				{
+					curl_easy_cleanup(easyhandle);
+					modState.state = DOWNLOADING;
+				});
 
 			if (result == CURLcode::CURLE_OK)
 			{
@@ -614,7 +624,12 @@ void ModDownloader::DownloadMod(std::string modName, std::string modVersion)
 ON_DLL_LOAD_RELIESON("engine.dll", ModDownloader, (ConCommand), (CModule module))
 {
 	g_pModDownloader = new ModDownloader();
+}
+
+ADD_SQFUNC("void", NSFetchVerifiedModsManifesto, "", "", ScriptContext::SERVER | ScriptContext::CLIENT | ScriptContext::UI)
+{
 	g_pModDownloader->FetchModsListFromAPI();
+	return SQRESULT_NULL;
 }
 
 ADD_SQFUNC(
