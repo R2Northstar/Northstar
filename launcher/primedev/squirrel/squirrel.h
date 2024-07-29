@@ -117,6 +117,7 @@ public:
 	sq_getfunctionType __sq_getfunction;
 
 	sq_getentityfrominstanceType __sq_getentityfrominstance;
+	sq_createscriptinstanceType __sq_createscriptinstance;
 	sq_GetEntityConstantType __sq_GetEntityConstant_CBaseEntity;
 
 	sq_pushnewstructinstanceType __sq_pushnewstructinstance;
