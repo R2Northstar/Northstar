@@ -503,6 +503,13 @@
 			"argTypes":"string modName"
 		},
 		{
+			"name": "NSFetchVerifiedModsManifesto",
+			"helpText": "Retrieves the verified mods list from the central authority (GitHub).",
+			"returnTypeString": "void",
+			"argTypes": ""
+
+		},
+		{
 			"name": "NSIsModDownloadable",
 			"helpText": "checks whether a mod is verified and can be auto-downloaded",
 			"returnTypeString": "bool",

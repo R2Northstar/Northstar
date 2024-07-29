@@ -967,48 +967,92 @@ void function OnServerSelected_Threaded( var button )
 	bool autoDownloadAllowed = GetConVarBool( "allow_mod_auto_download" )
 	int downloadedMods = 0;
 
+	// Check out if there's any server-required mod that is not locally installed
+	array<string> modNames = NSGetModNames()
+	bool uninstalledModFound = false
+	foreach ( requiredModInfo in server.requiredMods )
+	{
+		// Tolerate core mods having different versions
+		if ( requiredModInfo.name.len() > 10 && requiredModInfo.name.slice(0, 10) == "Northstar." )
+			continue
+
+		if ( !modNames.contains( requiredModInfo.name ) )
+		{
+			print( format ( "\"%s\" was not found locally, triggering manifesto fetching.", requiredModInfo.name ) )
+			uninstalledModFound = true
+			break
+		} else if ( NSGetModVersionByModName( requiredModInfo.name ) != requiredModInfo.version ) {
+			print( format ( "\"%s\" was found locally but has version \"%s\" while server requires \"%s\", triggering manifesto fetching.", requiredModInfo.name, NSGetModVersionByModName( requiredModInfo.name ), requiredModInfo.version ) )
+			uninstalledModFound = true
+			break
+		}
+	}
+	
+	// If yes, we fetch the verified mods manifesto, to check whether uninstalled
+	// mods can be installed through auto-download
+	if ( uninstalledModFound && autoDownloadAllowed )
+	{
+		print("Auto-download is allowed, checking if missing mods can be installed automatically.")
+		FetchVerifiedModsManifesto()
+	}
+
 	foreach ( RequiredModInfo mod in server.requiredMods )
 	{
-		if ( !NSGetModNames().contains( mod.name ) )
-		{
-			// Check if mod can be auto-downloaded
-			bool modIsVerified = NSIsModDownloadable( mod.name, mod.version )
+		// Tolerate core mods having different versions
+		if ( mod.name.len() > 10 && mod.name.slice(0, 10) == "Northstar." )
+			continue
 
-			// Display an error message if not
-			if ( !modIsVerified || !autoDownloadAllowed )
+		if ( !NSGetModNames().contains( mod.name ) || NSGetModVersionByModName( mod.name ) != mod.version )
+		{
+			// Auto-download mod
+			if ( autoDownloadAllowed )
+			{
+				bool modIsVerified = NSIsModDownloadable( mod.name, mod.version )
+
+				// Display error message if mod is not verified
+				if ( !modIsVerified )
+				{
+					DialogData dialogData
+					dialogData.header = "#ERROR"
+					dialogData.message = Localize( "#MISSING_MOD", mod.name, mod.version )
+					dialogData.message += "\n" + Localize( "#MOD_NOT_VERIFIED" )
+					dialogData.image = $"ui/menu/common/dialog_error"
+
+					AddDialogButton( dialogData, "#DISMISS" )
+					AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
+					AddDialogFooter( dialogData, "#B_BUTTON_DISMISS_RUI" )
+
+					OpenDialog( dialogData )
+					return
+				}
+				else
+				{
+					if ( DownloadMod( mod, server.name ) )
+					{
+						downloadedMods++
+					}
+					else
+					{
+						DisplayModDownloadErrorDialog( mod.name )
+						return
+					}
+				}
+			}
+
+			// Mod not found, display error message
+			else
 			{
 				DialogData dialogData
 				dialogData.header = "#ERROR"
 				dialogData.message = Localize( "#MISSING_MOD", mod.name, mod.version )
 				dialogData.image = $"ui/menu/common/dialog_error"
 
-				// Specify error (only if autoDownloadAllowed is set)
-				if ( autoDownloadAllowed )
-				{
-					dialogData.message += "\n" + Localize( "#MOD_NOT_VERIFIED" )
-				}
-
 				AddDialogButton( dialogData, "#DISMISS" )
-
 				AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
 				AddDialogFooter( dialogData, "#B_BUTTON_DISMISS_RUI" )
 
 				OpenDialog( dialogData )
-
 				return
-			}
-
-			else // Launch download
-			{
-				if ( DownloadMod( mod ) )
-				{
-					downloadedMods++
-				}
-				else
-				{
-					DisplayModDownloadErrorDialog( mod.name )
-					return
-				}
 			}
 		}
 		else
