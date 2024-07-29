@@ -373,6 +373,8 @@ Press Yes if you agree to this. This choice can be changed in the mods menu at a
 		"WRONG_MOD_VERSION"					"Server has mod \"%s1\" v%s2 while you have v%s3"
 		"MOD_NOT_VERIFIED"					"(mod is not verified, and couldn't be downloaded automatically)"
 		"MOD_DL_DISABLED"					"(automatic mod downloading is disabled)"
+		"MANIFESTO_FETCHING_TITLE"			"Setting up mod download"
+		"MANIFESTO_FETCHING_TEXT"			"Retrieving the list of verified mods..."
 		"DOWNLOADING_MOD_TITLE"				"Downloading mod"
 		"DOWNLOADING_MOD_TITLE_W_PROGRESS" 	"Downloading mod (%s1%)"
 		"DOWNLOADING_MOD_TEXT"				"Downloading %s1 v%s2..."
