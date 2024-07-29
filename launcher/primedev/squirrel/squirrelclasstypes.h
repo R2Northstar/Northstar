@@ -227,6 +227,7 @@ typedef SQRESULT (*sq_setuserdatatypeidType)(HSquirrelVM* sqvm, SQInteger iStack
 
 // sq misc entity funcs
 typedef void* (*sq_getentityfrominstanceType)(CSquirrelVM* sqvm, SQObject* pInstance, char** ppEntityConstant);
+typedef SQObject* (*sq_createscriptinstanceType)(void* ent);
 typedef char** (*sq_GetEntityConstantType)();
 
 typedef int (*sq_getfunctionType)(HSquirrelVM* sqvm, const char* name, SQObject* returnObj, const char* signature);
