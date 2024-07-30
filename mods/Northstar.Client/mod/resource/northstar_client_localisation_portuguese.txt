@@ -374,5 +374,7 @@ Clique em Sim se você concorda. Esta escolha pode ser alterada a qualquer momen
 		"WRONG_MOD_VERSION" "O servidor tem o mod \"%s1\" v%s2 enquanto você possui v%s3"
 		"FAILED_WRITING_TO_DISK" "Um erro ocorreu enquanto se extraía o conteúdo do mod para o sistema."
 		"MOD_FETCHING_FAILED_GENERAL" "Extração do mod falhou. Verifique os logs para mais detalhes."
+		"MANIFESTO_FETCHING_TEXT" "Retornando a lista de mods verificados..."
+		"MANIFESTO_FETCHING_TITLE" "Preparando o download do mod"
 	}
 }
