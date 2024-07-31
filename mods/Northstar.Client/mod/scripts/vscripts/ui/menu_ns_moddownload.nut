@@ -49,7 +49,7 @@ void function FetchVerifiedModsManifesto()
 	CloseActiveMenu()
 }
 
-bool function DownloadMod( RequiredModInfo mod, string serverName )
+bool function DownloadMod( RequiredModInfo mod )
 {
 	// Downloading mod UI
 	DialogData dialogData
