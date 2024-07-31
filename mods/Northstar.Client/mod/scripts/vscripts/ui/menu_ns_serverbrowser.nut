@@ -1030,7 +1030,7 @@ void function OnServerSelected_Threaded( var button )
 				}
 				else
 				{
-					if ( DownloadMod( mod, server.name ) )
+					if ( DownloadMod( mod ) )
 					{
 						downloadedMods++
 					}
