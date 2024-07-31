@@ -2,10 +2,7 @@ untyped
 // Only way to get Hud_GetPos(sliderButton) working was to use untyped
 
 global function AddNorthstarServerBrowserMenu
-
-global function JoinServer
-global function JoinServerByName
-global function CancelJoinServer
+global function ThreadedAuthAndConnectToServer
 
 global function AddConnectToServerCallback
 global function RemoveConnectToServerCallback
@@ -373,7 +370,7 @@ void function ToggleConnectingHUD( bool vis )
 
 void function ConnectingButton_Activate( var button )
 {
-	CancelJoinServer()
+	file.cancelConnection = true
 }
 
 ////////////////////////////
@@ -1100,18 +1097,17 @@ void function OnServerSelected_Threaded( var button )
 	if ( server.requiresPassword )
 	{
 		OnCloseServerBrowserMenu()
-		SetPasswordTargetServer( file.lastSelectedServer )
 		AdvanceMenu( GetMenu( "ConnectWithPasswordMenu" ) )
 	}
 	else
 	{
 		TriggerConnectToServerCallbacks()
-		thread ThreadedAuthAndConnectToServer()
+		thread ThreadedAuthAndConnectToServer( "", downloadedMods != 0 )
 	}
 }
 
 
-void function ThreadedAuthAndConnectToServer( string password = "" )
+void function ThreadedAuthAndConnectToServer( string password = "", bool modsChanged = false )
 {
 	if ( NSIsAuthenticatingWithServer() )
 		return
@@ -1139,8 +1135,6 @@ void function ThreadedAuthAndConnectToServer( string password = "" )
 
 	if ( NSWasAuthSuccessful() )
 	{
-		bool modsChanged = false
-
 		// disable all RequiredOnClient mods that are not required by the server and are currently enabled
 		foreach ( string modName in NSGetModNames() )
 		{
@@ -1356,138 +1350,14 @@ void function RemoveConnectToServerCallback( void functionref( ServerInfo ) call
 
 void function TriggerConnectToServerCallbacks( ServerInfo ornull targetServer = null )
 {
-	if ( !targetServer )
+	ServerInfo server;
+	if (targetServer == null)
+	{
 		targetServer = file.lastSelectedServer
-
-	expect ServerInfo( targetServer )
+	}
 
 	foreach( callback in file.connectCallbacks )
 	{
-		callback( targetServer )
+		callback( expect ServerInfo( targetServer ) )
 	}
-}
-
-//////////////////////////////////////
-// Join server
-//////////////////////////////////////
-
-void function CancelJoinServer()
-{
-	file.cancelConnection = true
-}
-
-bool function JoinServerByName( string serverName, string password = "" )
-{
-	// Request list of online servers.
-	NSRequestServerList()
-	while ( NSIsRequestingServerList() )
-	{
-		WaitFrame() 
-	}
-
-	// Go through all servers that are currently online
-	foreach ( server in NSGetGameServers() )
-	{
-		// Join the server if it has the correct server name.
-		if ( server.name == serverName )
-		{
-			return JoinServer( server )
-		}
-	}
-
-	print( format( "Failed to connect to server %s: No such server", serverName ) )
-
-	return false
-}
-
-bool function JoinServer( ServerInfo server, string password = "" )
-{
-	if ( NSIsAuthenticatingWithServer() )
-		return false
-
-	printt( format( "Connecting to server %s with id of %s", server.name, server.id ) )
-
-	TriggerConnectToServerCallbacks( server )
-	NSTryAuthWithServer( server.index, password )
-
-	ToggleConnectingHUD( true )
-
-	while ( NSIsAuthenticatingWithServer() && !file.cancelConnection )
-		WaitFrame()
-
-	ToggleConnectingHUD( false )
-
-	if ( file.cancelConnection )
-	{
-		file.cancelConnection = false
-		return false
-	}
-
-	file.cancelConnection = false
-
-	if ( NSWasAuthSuccessful() )
-	{
-		bool modsChanged = false
-
-		// disable all RequiredOnClient mods that are not required by the server and are currently enabled
-		foreach ( string modName in NSGetModNames() )
-		{
-			if ( NSIsModRequiredOnClient( modName ) && NSIsModEnabled( modName ) )
-			{
-				// find the mod name in the list of server required mods
-				bool found = false
-				foreach ( RequiredModInfo mod in server.requiredMods )
-				{
-					if ( mod.name == modName )
-					{
-						found = true
-						break
-					}
-				}
-				// if we didnt find the mod name, disable the mod
-				if ( !found )
-				{
-					modsChanged = true
-					NSSetModEnabled( modName, false )
-				}
-			}
-		}
-
-		// enable all RequiredOnClient mods that are required by the server and are currently disabled
-		foreach ( RequiredModInfo mod in server.requiredMods )
-		{
-			if ( NSIsModRequiredOnClient( mod.name ) && !NSIsModEnabled( mod.name ) )
-			{
-				modsChanged = true
-				NSSetModEnabled( mod.name, true )
-			}
-		}
-
-		// only actually reload if we need to since the uiscript reset on reload lags hard
-		if ( modsChanged )
-			ReloadMods()
-
-		NSConnectToAuthedServer()
-		return true
-	}
-	else
-	{
-		string reason = NSGetAuthFailReason()
-
-		DialogData dialogData
-		dialogData.header = "#ERROR"
-		dialogData.message = reason
-		dialogData.image = $"ui/menu/common/dialog_error"
-
-		#if PC_PROG
-			AddDialogButton( dialogData, "#DISMISS" )
-
-			AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
-		#endif // PC_PROG
-		AddDialogFooter( dialogData, "#B_BUTTON_DISMISS_RUI" )
-
-		OpenDialog( dialogData )
-		return false
-	}
-	return false
 }
