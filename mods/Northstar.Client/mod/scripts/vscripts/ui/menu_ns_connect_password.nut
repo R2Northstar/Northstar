@@ -1,5 +1,4 @@
 global function AddNorthstarConnectWithPasswordMenu
-global function SetPasswordTargetServer
 
 struct
 {
@@ -7,7 +6,6 @@ struct
 	var enterPasswordBox
 	var enterPasswordDummy
 	var connectButton
-	ServerInfo& targetServer
 } file
 
 void function AddNorthstarConnectWithPasswordMenu()
@@ -53,16 +51,11 @@ void function OnConnectWithPasswordMenuOpened()
 
 }
 
-void function SetPasswordTargetServer( ServerInfo server )
-{
-	file.targetServer = server
-}
-
 void function ConnectWithPassword( var button )
 {
 	if ( GetTopNonDialogMenu() == file.menu )
 	{
 		TriggerConnectToServerCallbacks()
-		thread JoinServer( file.targetServer, Hud_GetUTF8Text( Hud_GetChild( file.menu, "EnterPasswordBox" ) ) )
+		thread ThreadedAuthAndConnectToServer( Hud_GetUTF8Text( Hud_GetChild( file.menu, "EnterPasswordBox" ) ), true )
 	}
 }
