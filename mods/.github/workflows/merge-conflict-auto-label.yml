@@ -1,5 +1,6 @@
 name: Merge Conflict Auto Label
 on:
+  workflow_dispatch: # Manual run
   push:
     branches:
       - main
