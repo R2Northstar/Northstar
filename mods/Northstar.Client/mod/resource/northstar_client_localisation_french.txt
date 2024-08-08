@@ -316,7 +316,7 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 		"UNAUTHORIZED_PWD"                 "Mot de passe incorrect"
 		"STRYDER_RESPONSE"                 "Impossible d'analyser la réponse de Stryder"
 		"PLAYER_NOT_FOUND"                 "Impossible de trouver le compte du joueur"
-		"INVALID_MASTERSERVER_TOKEN"     "Jeton du server maître invalide ou expiré"
+		"INVALID_MASTERSERVER_TOKEN"     "Token du server maître invalide ou expiré, veuillez relancer l'application EA."
 		"JSON_PARSE_ERROR"                 "Une erreur est survenue durant l'analyse JSON"
 		"UNSUPPORTED_VERSION"             "La version que vous utilisez n'est plus supportée"
 
@@ -377,5 +377,7 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 		"MOD_CORRUPTED"        "La somme de contrôle de l'archive ne correspond pas à la signature vérifiée."
 		"NO_DISK_SPACE_AVAILABLE"        "L'espace restant sur votre disque est insuffisant."
 		"MOD_FETCHING_FAILED_GENERAL"        "L'extraction du mod a échoué. Consultez le journal pour plus d'informations."
+		"MANIFESTO_FETCHING_TITLE"        "Préparation du téléchargement du mod"
+		"MANIFESTO_FETCHING_TEXT"        "Récupération de la liste des mods vérifiés..."
 	}
 }
