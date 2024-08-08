@@ -4,7 +4,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: "10 21 * * *"
+    - cron: "10 21 * * *" # Runs at 21:10; time was chosen based on contributor activity and low GitHub Actions cron load.
 
 jobs:
   triage:
