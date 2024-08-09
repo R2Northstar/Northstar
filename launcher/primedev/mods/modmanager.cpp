@@ -866,16 +866,24 @@ void ModManager::LoadMods()
 				if (fs::is_regular_file(file) && file.path().extension() == ".rpak")
 				{
 					std::string pakName(file.path().filename().string());
-
 					ModRpakEntry& modPak = mod.Rpaks.emplace_back();
-					modPak.m_bAutoLoad =
-						!bUseRpakJson || (dRpakJson.HasMember("Preload") && dRpakJson["Preload"].IsObject() &&
-										  dRpakJson["Preload"].HasMember(pakName) && dRpakJson["Preload"][pakName].IsTrue());
 
-					// postload things
-					if (!bUseRpakJson ||
-						(dRpakJson.HasMember("Postload") && dRpakJson["Postload"].IsObject() && dRpakJson["Postload"].HasMember(pakName)))
-						modPak.m_sLoadAfterPak = dRpakJson["Postload"][pakName].GetString();
+					if (!bUseRpakJson)
+					{
+						spdlog::warn("Mod {} contains rpaks without valid rpak.json, rpaks might not be loaded", mod.Name);
+					}
+					else
+					{
+						modPak.m_bAutoLoad =
+							(dRpakJson.HasMember("Preload") && dRpakJson["Preload"].IsObject() && dRpakJson["Preload"].HasMember(pakName) &&
+							 dRpakJson["Preload"][pakName].IsTrue());
+
+						// postload things
+						if (dRpakJson.HasMember("Postload") && dRpakJson["Postload"].IsObject() && dRpakJson["Postload"].HasMember(pakName))
+						{
+							modPak.m_sLoadAfterPak = dRpakJson["Postload"][pakName].GetString();
+						}
+					}
 
 					modPak.m_sPakName = pakName;
 
