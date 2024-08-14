@@ -727,7 +727,7 @@ bool function RegisterWeaponDamageSourceInternal( int id, string newVal, string 
 	damageSourceID[ newVal ] <- id
 	file.damageSourceIDToString[ id ] <- newVal
 	file.damageSourceIDToName[ id ] <- stringVal
-	file.customDamageSourceIDList.extend( [ id.tostring(), newVal, StringReplace( stringVal, " ", MESSAGE_SPACE_PADDING ) ] )
+	file.customDamageSourceIDList.extend( [ id.tostring(), newVal, StringReplace( stringVal, " ", MESSAGE_SPACE_PADDING, true ) ] )
 	return true
 }
 
@@ -773,6 +773,6 @@ void function ReceiveNewDamageSourceIDs( array<string> args )
 {
 	// IDs are inserted to the custom list in triplets, so we can trust these indices exist and the loop will end properly
 	for ( int i = 0; i < args.len(); i += 3 )
-		RegisterWeaponDamageSourceInternal( args[ i ].tointeger(), args[ i + 1 ], StringReplace( args[ i + 2 ], MESSAGE_SPACE_PADDING, " " ) )
+		RegisterWeaponDamageSourceInternal( args[ i ].tointeger(), args[ i + 1 ], StringReplace( args[ i + 2 ], MESSAGE_SPACE_PADDING, " ", true ) )
 }
 #endif
