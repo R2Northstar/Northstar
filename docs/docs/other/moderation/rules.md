@@ -52,6 +52,5 @@ For questions regarding Discord's Privacy Policy or Terms of Use, please refer t
 `Last Updated: 2024-08-15`
 <https://discord.gg/northstar>
 
-New users, **you can go to #installation to find out how to install Northstar** as well as read the FAQ if you have any questions
-**If you get an issue whilst installing/playing please open a ticket in #help** (Do not go to #general to fix it)
+**If you have any issues regarding Northstar during your time playing or installing**, please open a support ticket in #⁠get-support-here. This channel is dedicated to helping users and should be used for this purpose instead of #⁠general and other similar chats.
 ```
