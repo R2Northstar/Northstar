@@ -10,6 +10,8 @@
 #include "squirrel/squirrel.h"
 #include "server/serverpresence.h"
 
+#include "windows/libsys.h"
+
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
@@ -64,7 +66,11 @@ bool InitialiseNorthstar()
 	// Write launcher version to log
 	StartupLog();
 
-	InstallInitialHooks();
+	// Init minhook
+	HookSys_Init();
+
+	// Init loadlibrary callbacks
+	LibSys_Init();
 
 	g_pServerPresence = new ServerPresenceManager();
 
