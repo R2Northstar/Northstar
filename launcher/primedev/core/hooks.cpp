@@ -10,8 +10,6 @@
 #include <filesystem>
 #include <Psapi.h>
 
-#define XINPUT1_3_DLL "XInput1_3.dll"
-
 namespace fs = std::filesystem;
 
 AUTOHOOK_INIT()
@@ -392,87 +390,12 @@ void CallAllPendingDLLLoadCallbacks()
 	}
 }
 
-// clang-format off
-AUTOHOOK_ABSOLUTEADDR(_LoadLibraryExA, (LPVOID)LoadLibraryExA,
-HMODULE, WINAPI, (LPCSTR lpLibFileName, HANDLE hFile, DWORD dwFlags))
-// clang-format on
-{
-	HMODULE moduleAddress;
-
-	LPCSTR lpLibFileNameEnd = lpLibFileName + strlen(lpLibFileName);
-	LPCSTR lpLibName = lpLibFileNameEnd - strlen(XINPUT1_3_DLL);
-
-	// replace xinput dll with one that has ASLR
-	if (lpLibFileName <= lpLibName && !strncmp(lpLibName, XINPUT1_3_DLL, strlen(XINPUT1_3_DLL) + 1))
-	{
-		moduleAddress = _LoadLibraryExA("XInput9_1_0.dll", hFile, dwFlags);
-
-		if (!moduleAddress)
-		{
-			MessageBoxA(0, "Could not find XInput9_1_0.dll", "Northstar", MB_ICONERROR);
-			exit(EXIT_FAILURE);
-
-			return nullptr;
-		}
-	}
-	else
-		moduleAddress = _LoadLibraryExA(lpLibFileName, hFile, dwFlags);
-
-	if (moduleAddress)
-	{
-		CallLoadLibraryACallbacks(lpLibFileName, moduleAddress);
-		g_pPluginManager->InformDllLoad(moduleAddress, fs::path(lpLibFileName));
-	}
-
-	return moduleAddress;
-}
-
-// clang-format off
-AUTOHOOK_ABSOLUTEADDR(_LoadLibraryA, (LPVOID)LoadLibraryA,
-HMODULE, WINAPI, (LPCSTR lpLibFileName))
-// clang-format on
-{
-	HMODULE moduleAddress = _LoadLibraryA(lpLibFileName);
-
-	if (moduleAddress)
-		CallLoadLibraryACallbacks(lpLibFileName, moduleAddress);
-
-	return moduleAddress;
-}
-
-// clang-format off
-AUTOHOOK_ABSOLUTEADDR(_LoadLibraryExW, (LPVOID)LoadLibraryExW,
-HMODULE, WINAPI, (LPCWSTR lpLibFileName, HANDLE hFile, DWORD dwFlags))
-// clang-format on
-{
-	HMODULE moduleAddress = _LoadLibraryExW(lpLibFileName, hFile, dwFlags);
-
-	if (moduleAddress)
-		CallLoadLibraryWCallbacks(lpLibFileName, moduleAddress);
-
-	return moduleAddress;
-}
-
-// clang-format off
-AUTOHOOK_ABSOLUTEADDR(_LoadLibraryW, (LPVOID)LoadLibraryW,
-HMODULE, WINAPI, (LPCWSTR lpLibFileName))
-// clang-format on
-{
-	HMODULE moduleAddress = _LoadLibraryW(lpLibFileName);
-
-	if (moduleAddress)
-	{
-		CallLoadLibraryWCallbacks(lpLibFileName, moduleAddress);
-		g_pPluginManager->InformDllLoad(moduleAddress, fs::path(lpLibFileName));
-	}
-
-	return moduleAddress;
-}
-
-void InstallInitialHooks()
+void HookSys_Init()
 {
 	if (MH_Initialize() != MH_OK)
+	{
 		spdlog::error("MH_Initialize (minhook initialization) failed");
-
+	}
+	// todo: remove remaining instances of autohook in this file
 	AUTOHOOK_DISPATCH()
 }

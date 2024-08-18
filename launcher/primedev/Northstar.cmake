@@ -161,6 +161,8 @@ add_library(
     "util/version.h"
     "util/wininfo.cpp"
     "util/wininfo.h"
+    "windows/libsys.cpp"
+    "windows/libsys.h"
     "dllmain.cpp"
     "ns_version.h"
     "Northstar.def"
