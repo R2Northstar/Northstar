@@ -109,7 +109,7 @@ HMODULE WINAPI WLoadLibraryExW(LPCWSTR lpLibFileName, HANDLE hFile, DWORD dwFlag
 //-----------------------------------------------------------------------------
 void LibSys_Init()
 {
-	HMODULE hKernel = GetModuleHandleA("Kernel32.dll");
+	HMODULE hKernel = GetModuleHandleA("KERNEL32.DLL");
 
 	o_LoadLibraryA = reinterpret_cast<ILoadLibraryA>(GetProcAddress(hKernel, "LoadLibraryA"));
 	o_LoadLibraryExA = reinterpret_cast<ILoadLibraryExA>(GetProcAddress(hKernel, "LoadLibraryExA"));
