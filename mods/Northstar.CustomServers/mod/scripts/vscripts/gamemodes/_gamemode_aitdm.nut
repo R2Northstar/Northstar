@@ -435,9 +435,12 @@ void function SquadHandler( array<entity> guys )
 	// Setup AI, first assault point
 	foreach ( guy in guys )
 	{
-		guy.EnableNPCFlag( NPC_ALLOW_PATROL | NPC_ALLOW_INVESTIGATE | NPC_ALLOW_HAND_SIGNALS | NPC_ALLOW_FLEE )
-		guy.AssaultPoint( point )
-		guy.AssaultSetGoalRadius( 1600 ) // 1600 is minimum for npc_stalker, works fine for others
+		if ( IsAlive( guy ) )
+		{
+			guy.EnableNPCFlag( NPC_ALLOW_PATROL | NPC_ALLOW_INVESTIGATE | NPC_ALLOW_HAND_SIGNALS | NPC_ALLOW_FLEE )
+			guy.AssaultPoint( point )
+			guy.AssaultSetGoalRadius( 1600 ) // 1600 is minimum for npc_stalker, works fine for others
+		}
 
 		//thread AITdm_CleanupBoredNPCThread( guy )
 	}
