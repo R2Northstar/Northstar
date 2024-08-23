@@ -56,15 +56,27 @@ HMODULE WINAPI WLoadLibraryExA(LPCSTR lpLibFileName, HANDLE hFile, DWORD dwFlags
 	// replace xinput dll with one that has ASLR
 	if (lpLibFileName <= lpLibName && !strncmp(lpLibName, XINPUT1_3_DLL, strlen(XINPUT1_3_DLL) + 1))
 	{
-		hModule = o_LoadLibraryExA("XInput9_1_0.dll", hFile, dwFlags);
+		const char* pszReplacementDll = "XInput1_4.dll";
+		hModule = o_LoadLibraryExA(pszReplacementDll, hFile, dwFlags);
 
 		if (!hModule)
 		{
-			MessageBoxA(0, "Could not find XInput9_1_0.dll", "Northstar", MB_ICONERROR);
+			pszReplacementDll = "XInput9_1_0.dll";
+			spdlog::warn("Couldn't load XInput1_4.dll. Will try XInput9_1_0.dll. If on Windows 7 this is expected");
+			hModule = o_LoadLibraryExA(pszReplacementDll, hFile, dwFlags);
+		}
+
+		if (!hModule)
+		{
+			spdlog::error("Couldn't load XInput9_1_0.dll");
+			MessageBoxA(
+				0, "Could not load a replacement for XInput1_3.dll\nTried: XInput1_4.dll and XInput9_1_0.dll", "Northstar", MB_ICONERROR);
 			exit(EXIT_FAILURE);
 
 			return nullptr;
 		}
+
+		spdlog::info("Successfully loaded {} as a replacement for XInput1_3.dll", pszReplacementDll);
 	}
 	else
 	{
