@@ -7,7 +7,7 @@ AccessModifierOffset: -4
 AlignTrailingComments: false
 AllowAllConstructorInitializersOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: true
-AllowShortFunctionsOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: Inline
 AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakAfterReturnType: None
 AlwaysBreakTemplateDeclarations: No
