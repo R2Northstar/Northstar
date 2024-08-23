@@ -40,10 +40,7 @@ public:
 		}
 		return _realloc_base(originalPtr, newSize);
 	}
-	static void Free(void* ptr)
-	{
-		_free_base(ptr);
-	}
+	static void Free(void* ptr) { _free_base(ptr); }
 };
 
 typedef rapidjson::GenericDocument<rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<SourceAllocator>, SourceAllocator> rapidjson_document;

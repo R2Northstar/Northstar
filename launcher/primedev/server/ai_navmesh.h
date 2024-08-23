@@ -207,28 +207,16 @@ struct dtPoly
 	Vector3 org; //
 
 	/// Sets the user defined area id. [Limit: < #DT_MAX_AREAS]
-	inline void setArea(unsigned char a)
-	{
-		areaAndtype = (areaAndtype & 0xc0) | (a & 0x3f);
-	}
+	inline void setArea(unsigned char a) { areaAndtype = (areaAndtype & 0xc0) | (a & 0x3f); }
 
 	/// Sets the polygon type. (See: #dtPolyTypes.)
-	inline void setType(unsigned char t)
-	{
-		areaAndtype = (areaAndtype & 0x3f) | (t << 6);
-	}
+	inline void setType(unsigned char t) { areaAndtype = (areaAndtype & 0x3f) | (t << 6); }
 
 	/// Gets the user defined area id.
-	inline unsigned char getArea() const
-	{
-		return areaAndtype & 0x3f;
-	}
+	inline unsigned char getArea() const { return areaAndtype & 0x3f; }
 
 	/// Gets the polygon type. (See: #dtPolyTypes)
-	inline unsigned char getType() const
-	{
-		return areaAndtype >> 6;
-	}
+	inline unsigned char getType() const { return areaAndtype >> 6; }
 };
 
 /// Defines a link between polygons.

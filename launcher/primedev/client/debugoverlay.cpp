@@ -41,10 +41,7 @@ struct OverlayBase_t
 
 struct OverlayLine_t : public OverlayBase_t
 {
-	OverlayLine_t()
-	{
-		m_Type = OVERLAY_LINE;
-	}
+	OverlayLine_t() { m_Type = OVERLAY_LINE; }
 
 	Vector3 origin;
 	Vector3 dest;
@@ -57,10 +54,7 @@ struct OverlayLine_t : public OverlayBase_t
 
 struct OverlayBox_t : public OverlayBase_t
 {
-	OverlayBox_t()
-	{
-		m_Type = OVERLAY_BOX;
-	}
+	OverlayBox_t() { m_Type = OVERLAY_BOX; }
 
 	Vector3 origin;
 	Vector3 mins;
@@ -74,10 +68,7 @@ struct OverlayBox_t : public OverlayBase_t
 
 struct OverlayTriangle_t : public OverlayBase_t
 {
-	OverlayTriangle_t()
-	{
-		m_Type = OVERLAY_TRIANGLE;
-	}
+	OverlayTriangle_t() { m_Type = OVERLAY_TRIANGLE; }
 
 	Vector3 p1;
 	Vector3 p2;
@@ -91,10 +82,7 @@ struct OverlayTriangle_t : public OverlayBase_t
 
 struct OverlaySweptBox_t : public OverlayBase_t
 {
-	OverlaySweptBox_t()
-	{
-		m_Type = OVERLAY_SWEPT_BOX;
-	}
+	OverlaySweptBox_t() { m_Type = OVERLAY_SWEPT_BOX; }
 
 	Vector3 start;
 	Vector3 end;
@@ -109,10 +97,7 @@ struct OverlaySweptBox_t : public OverlayBase_t
 
 struct OverlaySphere_t : public OverlayBase_t
 {
-	OverlaySphere_t()
-	{
-		m_Type = OVERLAY_SPHERE;
-	}
+	OverlaySphere_t() { m_Type = OVERLAY_SPHERE; }
 
 	Vector3 vOrigin;
 	float flRadius;

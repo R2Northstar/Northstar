@@ -26,13 +26,7 @@ public:
 			spdlog::error("Failed to call CreateInterface for %s in %s", interfaceName, moduleName);
 	}
 
-	T* operator->() const
-	{
-		return m_interface;
-	}
+	T* operator->() const { return m_interface; }
 
-	operator T*() const
-	{
-		return m_interface;
-	}
+	operator T*() const { return m_interface; }
 };

@@ -14,10 +14,7 @@ public:
 		if (!m_dismissed)
 			m_callback();
 	}
-	void Dismiss()
-	{
-		m_dismissed = true;
-	}
+	void Dismiss() { m_dismissed = true; }
 
 private:
 	bool m_dismissed = false;
