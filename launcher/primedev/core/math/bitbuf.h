@@ -90,25 +90,13 @@ enum EBitCoordType
 class BitBufferBase
 {
 protected:
-	INLINE void SetName(const char* name)
-	{
-		m_BufferName = name;
-	}
+	INLINE void SetName(const char* name) { m_BufferName = name; }
 
 public:
-	INLINE bool IsOverflowed()
-	{
-		return m_Overflow;
-	}
-	INLINE void SetOverflowed()
-	{
-		m_Overflow = true;
-	}
+	INLINE bool IsOverflowed() { return m_Overflow; }
+	INLINE void SetOverflowed() { m_Overflow = true; }
 
-	INLINE const char* GetName()
-	{
-		return m_BufferName;
-	}
+	INLINE const char* GetName() { return m_BufferName; }
 
 private:
 	const char* m_BufferName = "";
@@ -437,28 +425,13 @@ public:
 		return fReturn;
 	}
 
-	INLINE i32 ReadChar()
-	{
-		return ReadSBitLong(sizeof(char) << 3);
-	}
-	INLINE u32 ReadByte()
-	{
-		return ReadUBitLong(sizeof(unsigned char) << 3);
-	}
+	INLINE i32 ReadChar() { return ReadSBitLong(sizeof(char) << 3); }
+	INLINE u32 ReadByte() { return ReadUBitLong(sizeof(unsigned char) << 3); }
 
-	INLINE i32 ReadShort()
-	{
-		return ReadSBitLong(sizeof(short) << 3);
-	}
-	INLINE u32 ReadWord()
-	{
-		return ReadUBitLong(sizeof(unsigned short) << 3);
-	}
+	INLINE i32 ReadShort() { return ReadSBitLong(sizeof(short) << 3); }
+	INLINE u32 ReadWord() { return ReadUBitLong(sizeof(unsigned short) << 3); }
 
-	INLINE i32 ReadLong()
-	{
-		return (i32)(ReadUBitLong(sizeof(i32) << 3));
-	}
+	INLINE i32 ReadLong() { return (i32)(ReadUBitLong(sizeof(i32) << 3)); }
 	INLINE float ReadFloat()
 	{
 		u32 temp = ReadUBitLong(sizeof(float) << 3);
@@ -687,24 +660,12 @@ public:
 		return std::min(nCurOfs + nAdjust, m_DataBits);
 	}
 
-	INLINE bool SeekRelative(size_t offset)
-	{
-		return Seek(GetNumBitsRead() + offset);
-	}
+	INLINE bool SeekRelative(size_t offset) { return Seek(GetNumBitsRead() + offset); }
 
-	INLINE size_t TotalBytesAvailable()
-	{
-		return m_DataBytes;
-	}
+	INLINE size_t TotalBytesAvailable() { return m_DataBytes; }
 
-	INLINE size_t GetNumBitsLeft()
-	{
-		return m_DataBits - GetNumBitsRead();
-	}
-	INLINE size_t GetNumBytesLeft()
-	{
-		return GetNumBitsLeft() >> 3;
-	}
+	INLINE size_t GetNumBitsLeft() { return m_DataBits - GetNumBitsRead(); }
+	INLINE size_t GetNumBytesLeft() { return GetNumBitsLeft() >> 3; }
 
 private:
 	size_t m_DataBits; // 0x0010
@@ -743,10 +704,7 @@ public:
 		m_DataEnd = reinterpret_cast<u32*>(reinterpret_cast<u8*>(m_Data) + m_DataBytes);
 	}
 
-	INLINE int GetNumBitsLeft()
-	{
-		return m_OutBitsLeft + (32 * (m_DataEnd - m_DataOut - 1));
-	}
+	INLINE int GetNumBitsLeft() { return m_OutBitsLeft + (32 * (m_DataEnd - m_DataOut - 1)); }
 
 	INLINE void Reset()
 	{
@@ -775,10 +733,7 @@ public:
 		return reinterpret_cast<u8*>(m_Data);
 	}
 
-	INLINE u8* GetData()
-	{
-		return GetBasePointer();
-	}
+	INLINE u8* GetData() { return GetBasePointer(); }
 
 	INLINE void Finish()
 	{
@@ -851,10 +806,7 @@ public:
 		}
 	}
 
-	INLINE void WriteSBitLong(i32 data, i32 numBits)
-	{
-		WriteUBitLong((u32)data, numBits, false);
-	}
+	INLINE void WriteSBitLong(i32 data, i32 numBits) { WriteUBitLong((u32)data, numBits, false); }
 
 	INLINE void WriteUBitVar(u32 n)
 	{
@@ -911,40 +863,19 @@ public:
 		return !IsOverflowed();
 	}
 
-	INLINE bool WriteBytes(const uptr data, i32 numBytes)
-	{
-		return WriteBits(data, numBytes << 3);
-	}
+	INLINE bool WriteBytes(const uptr data, i32 numBytes) { return WriteBits(data, numBytes << 3); }
 
-	INLINE i32 GetNumBitsWritten()
-	{
-		return (32 - m_OutBitsLeft) + (32 * (m_DataOut - m_Data));
-	}
+	INLINE i32 GetNumBitsWritten() { return (32 - m_OutBitsLeft) + (32 * (m_DataOut - m_Data)); }
 
-	INLINE i32 GetNumBytesWritten()
-	{
-		return (GetNumBitsWritten() + 7) >> 3;
-	}
+	INLINE i32 GetNumBytesWritten() { return (GetNumBitsWritten() + 7) >> 3; }
 
-	INLINE void WriteChar(i32 val)
-	{
-		WriteSBitLong(val, sizeof(char) << 3);
-	}
+	INLINE void WriteChar(i32 val) { WriteSBitLong(val, sizeof(char) << 3); }
 
-	INLINE void WriteByte(i32 val)
-	{
-		WriteUBitLong(val, sizeof(unsigned char) << 3, false);
-	}
+	INLINE void WriteByte(i32 val) { WriteUBitLong(val, sizeof(unsigned char) << 3, false); }
 
-	INLINE void WriteShort(i32 val)
-	{
-		WriteSBitLong(val, sizeof(short) << 3);
-	}
+	INLINE void WriteShort(i32 val) { WriteSBitLong(val, sizeof(short) << 3); }
 
-	INLINE void WriteWord(i32 val)
-	{
-		WriteUBitLong(val, sizeof(unsigned short) << 3);
-	}
+	INLINE void WriteWord(i32 val) { WriteUBitLong(val, sizeof(unsigned short) << 3); }
 
 	INLINE bool WriteString(const char* str)
 	{

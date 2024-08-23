@@ -17,10 +17,7 @@ public:
 		m_bIsVanillaCompatible = isVanilla;
 	}
 
-	bool GetVanillaCompatibility()
-	{
-		return m_bIsVanillaCompatible;
-	}
+	bool GetVanillaCompatibility() { return m_bIsVanillaCompatible; }
 
 private:
 	bool m_bIsVanillaCompatible = false;

@@ -327,10 +327,7 @@ public:
 		pAutohook->vars.push_back(this);
 	}
 
-	void Dispatch()
-	{
-		*m_pTarget = (void*)ParseDLLOffsetString(m_pAddrString);
-	}
+	void Dispatch() { *m_pTarget = (void*)ParseDLLOffsetString(m_pAddrString); }
 };
 
 // VAR_AT(engine.dll+0x404, ConVar*, Cvar_host_timescale)

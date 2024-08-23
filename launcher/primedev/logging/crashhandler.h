@@ -14,35 +14,17 @@ public:
 	void Init();
 	void Shutdown();
 
-	void Lock()
-	{
-		m_Mutex.lock();
-	}
+	void Lock() { m_Mutex.lock(); }
 
-	void Unlock()
-	{
-		m_Mutex.unlock();
-	}
+	void Unlock() { m_Mutex.unlock(); }
 
-	void SetState(bool bState)
-	{
-		m_bState = bState;
-	}
+	void SetState(bool bState) { m_bState = bState; }
 
-	bool GetState() const
-	{
-		return m_bState;
-	}
+	bool GetState() const { return m_bState; }
 
-	void SetAllFatal(bool bState)
-	{
-		m_bAllExceptionsFatal = bState;
-	}
+	void SetAllFatal(bool bState) { m_bAllExceptionsFatal = bState; }
 
-	bool GetAllFatal() const
-	{
-		return m_bAllExceptionsFatal;
-	}
+	bool GetAllFatal() const { return m_bAllExceptionsFatal; }
 
 	//-----------------------------------------------------------------------------
 	// Exception helpers

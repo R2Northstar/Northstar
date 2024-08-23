@@ -107,10 +107,7 @@ public:
 	void StopHttpRequestHandler();
 
 	// Whether or not this http request handler is currently running.
-	bool IsRunning() const
-	{
-		return m_bIsHttpRequestHandlerRunning;
-	}
+	bool IsRunning() const { return m_bIsHttpRequestHandlerRunning; }
 
 	/**
 	 * Creates a new thread to execute an HTTP request.
