@@ -5,3 +5,6 @@
 
 # Folder rename
 f9bc3c9d1834cb8bd5f872b749b057c33e8b0102
+
+# Clang format change: one-line inline functions
+5b2c608b22ba272e4ab1a45adc1f43b60b1aea79
