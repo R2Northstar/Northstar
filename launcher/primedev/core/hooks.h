@@ -278,7 +278,7 @@ public:
 class ManualHook
 {
 public:
-	char* pFuncName;
+	std::string svFuncName;
 
 	LPVOID pHookFunc;
 	LPVOID* ppOrigFunc;
