@@ -85,19 +85,9 @@ void __fileAutohook::DispatchForModule(const char* pModuleName)
 			hook->Dispatch();
 }
 
-ManualHook::ManualHook(const char* funcName, LPVOID func) : pHookFunc(func), ppOrigFunc(nullptr)
-{
-	const size_t iFuncNameStrlen = strlen(funcName);
-	pFuncName = new char[iFuncNameStrlen];
-	memcpy(pFuncName, funcName, iFuncNameStrlen);
-}
+ManualHook::ManualHook(const char* funcName, LPVOID func) : svFuncName(funcName), pHookFunc(func), ppOrigFunc(nullptr) {}
 
-ManualHook::ManualHook(const char* funcName, LPVOID* orig, LPVOID func) : pHookFunc(func), ppOrigFunc(orig)
-{
-	const size_t iFuncNameStrlen = strlen(funcName);
-	pFuncName = new char[iFuncNameStrlen];
-	memcpy(pFuncName, funcName, iFuncNameStrlen);
-}
+ManualHook::ManualHook(const char* funcName, LPVOID* orig, LPVOID func) : svFuncName(funcName), pHookFunc(func), ppOrigFunc(orig) {}
 
 bool ManualHook::Dispatch(LPVOID addr, LPVOID* orig)
 {
@@ -105,19 +95,19 @@ bool ManualHook::Dispatch(LPVOID addr, LPVOID* orig)
 		ppOrigFunc = orig;
 
 	if (!addr)
-		spdlog::error("Address for hook {} is invalid", pFuncName);
+		spdlog::error("Address for hook {} is invalid", svFuncName);
 	else if (MH_CreateHook(addr, pHookFunc, ppOrigFunc) == MH_OK)
 	{
 		if (MH_EnableHook(addr) == MH_OK)
 		{
-			spdlog::info("Enabling hook {}", pFuncName);
+			spdlog::info("Enabling hook {}", svFuncName);
 			return true;
 		}
 		else
-			spdlog::error("MH_EnableHook failed for function {}", pFuncName);
+			spdlog::error("MH_EnableHook failed for function {}", svFuncName);
 	}
 	else
-		spdlog::error("MH_CreateHook failed for function {}", pFuncName);
+		spdlog::error("MH_CreateHook failed for function {}", svFuncName);
 
 	return false;
 }
