@@ -15,12 +15,12 @@
 		"DIALOG_TITLE_INSTALLED_NORTHSTAR" "Dzięki za instalację Northstar!"
 		"AUTHENTICATION_AGREEMENT_DIALOG_TEXT" "Dla poprawnego działania Northstar potrzebne jest uwierzytelnienie z głównym serwerem. Potrzebne będzie wysłanie twojego tokena Origin do głównego serwera, nie będzie on przechowywany ani użyty do żadnych innych celów.
 Naciśnij "Tak" jeżeli wyrażasz zgodę. Wybór może zostać zmieniony w menu Modów."
-		"BACK_AUTHENTICATION_AGREEMENT" "Zgoda na uwierzytelnienie"
-		"AUTHENTICATION_AGREEMENT" "Zgoda na uwierzytelnienie"
+		"BACK_AUTHENTICATION_AGREEMENT" "Zgoda na uwierzytelnianie"
+		"AUTHENTICATION_AGREEMENT" "Zgoda na uwierzytelnianie"
 		"AUTHENTICATION_AGREEMENT_RESTART" "Potrzebne jest ponowne odpalenie Titanfall 2 by zmiany dały efekt."
 
 		"DIALOG_AUTHENTICATING_MASTERSERVER" "Uwierzytelnianie z głównym serwerem."
-		"AUTHENTICATIONAGREEMENT_NO" "Zdecydowałeś się nie uwierzytelniać się z Northstar. Zgodę może wyrazić w menu z modami."
+		"AUTHENTICATIONAGREEMENT_NO" "Zdecydowałeś się nie uwierzytelniać się z Northstar. Zgodę można wyrazić w menu z modami."
 
 		"MENU_TITLE_SERVER_BROWSER" "Wyszukiwarka serwerów"
 		"NS_SERVERBROWSER_NOSERVERS" "Nie znaleziono serwerów"
@@ -46,7 +46,7 @@ Naciśnij "Tak" jeżeli wyrażasz zgodę. Wybór może zostać zmieniony w menu 
 		// mode settings
 		"MODE_SETTING_CATEGORY_PILOT" "Pilot"
 		"MODE_SETTING_CATEGORY_TITAN" "Tytan"
-		"MODE_SETTING_CATEGORY_RIFF" "modyfikatory meczu"
+		"MODE_SETTING_CATEGORY_RIFF" "Modyfikatory meczu"
 		"MODE_SETTING_CATEGORY_MATCH" "Mecz"
 
 		"classic_mp" "Klasyczny tryb wieloosobowy"
