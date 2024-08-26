@@ -8,7 +8,10 @@ public:
 	auto operator=(ScopeGuard&) = delete;
 	ScopeGuard(ScopeGuard&) = delete;
 
-	ScopeGuard(T callback) : m_callback(callback) {}
+	ScopeGuard(T callback)
+		: m_callback(callback)
+	{
+	}
 	~ScopeGuard()
 	{
 		if (!m_dismissed)

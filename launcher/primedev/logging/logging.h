@@ -14,7 +14,11 @@ class ColoredLogger;
 struct custom_log_msg : spdlog::details::log_msg
 {
 public:
-	custom_log_msg(ColoredLogger* origin, spdlog::details::log_msg msg) : origin(origin), spdlog::details::log_msg(msg) {}
+	custom_log_msg(ColoredLogger* origin, spdlog::details::log_msg msg)
+		: origin(origin)
+		, spdlog::details::log_msg(msg)
+	{
+	}
 
 	ColoredLogger* origin;
 };
@@ -38,7 +42,8 @@ public:
 
 	std::vector<std::shared_ptr<CustomSink>> custom_sinks_;
 
-	ColoredLogger(std::string name, Color color, bool first = false) : spdlog::logger(*spdlog::default_logger())
+	ColoredLogger(std::string name, Color color, bool first = false)
+		: spdlog::logger(*spdlog::default_logger())
 	{
 		name_ = std::move(name);
 		if (!first)

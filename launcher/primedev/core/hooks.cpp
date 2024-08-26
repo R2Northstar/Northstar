@@ -85,9 +85,19 @@ void __fileAutohook::DispatchForModule(const char* pModuleName)
 			hook->Dispatch();
 }
 
-ManualHook::ManualHook(const char* funcName, LPVOID func) : svFuncName(funcName), pHookFunc(func), ppOrigFunc(nullptr) {}
+ManualHook::ManualHook(const char* funcName, LPVOID func)
+	: svFuncName(funcName)
+	, pHookFunc(func)
+	, ppOrigFunc(nullptr)
+{
+}
 
-ManualHook::ManualHook(const char* funcName, LPVOID* orig, LPVOID func) : svFuncName(funcName), pHookFunc(func), ppOrigFunc(orig) {}
+ManualHook::ManualHook(const char* funcName, LPVOID* orig, LPVOID func)
+	: svFuncName(funcName)
+	, pHookFunc(func)
+	, ppOrigFunc(orig)
+{
+}
 
 bool ManualHook::Dispatch(LPVOID addr, LPVOID* orig)
 {

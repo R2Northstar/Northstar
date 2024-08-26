@@ -13,9 +13,24 @@ class Vector3
 public:
 	float x, y, z;
 
-	Vector3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
-	Vector3(float _f) : x(_f), y(_f), z(_f) {}
-	Vector3() : x(0.0f), y(0.0f), z(0.0f) {}
+	Vector3(float _x, float _y, float _z)
+		: x(_x)
+		, y(_y)
+		, z(_z)
+	{
+	}
+	Vector3(float _f)
+		: x(_f)
+		, y(_f)
+		, z(_f)
+	{
+	}
+	Vector3()
+		: x(0.0f)
+		, y(0.0f)
+		, z(0.0f)
+	{
+	}
 
 	inline bool IsValid() { return IsFinite(x) && IsFinite(y) && IsFinite(z); }
 
@@ -302,9 +317,24 @@ public:
 	float y;
 	float z;
 
-	QAngle(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
-	QAngle(float _f) : x(_f), y(_f), z(_f) {}
-	QAngle() : x(0.0f), y(0.0f), z(0.0f) {}
+	QAngle(float _x, float _y, float _z)
+		: x(_x)
+		, y(_y)
+		, z(_z)
+	{
+	}
+	QAngle(float _f)
+		: x(_f)
+		, y(_f)
+		, z(_f)
+	{
+	}
+	QAngle()
+		: x(0.0f)
+		, y(0.0f)
+		, z(0.0f)
+	{
+	}
 
 	Vector3 GetNormal() const;
 
