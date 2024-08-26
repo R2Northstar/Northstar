@@ -102,7 +102,10 @@ Color lightColors[8] = {
 class AnsiEscapeParser
 {
 public:
-	explicit AnsiEscapeParser(LocalChatWriter* writer) : m_writer(writer) {}
+	explicit AnsiEscapeParser(LocalChatWriter* writer)
+		: m_writer(writer)
+	{
+	}
 
 	void HandleVal(unsigned long val)
 	{
@@ -257,7 +260,10 @@ private:
 	}
 };
 
-LocalChatWriter::LocalChatWriter(Context context) : m_context(context) {}
+LocalChatWriter::LocalChatWriter(Context context)
+	: m_context(context)
+{
+}
 
 void LocalChatWriter::Write(const char* str)
 {

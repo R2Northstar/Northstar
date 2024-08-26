@@ -992,7 +992,12 @@ void ConCommand_ns_fetchservers(const CCommand& args)
 	g_pMasterServerManager->RequestServerList();
 }
 
-MasterServerManager::MasterServerManager() : m_pendingConnectionInfo {}, m_sOwnServerId {""}, m_sOwnClientAuthToken {""} {}
+MasterServerManager::MasterServerManager()
+	: m_pendingConnectionInfo {}
+	, m_sOwnServerId {""}
+	, m_sOwnClientAuthToken {""}
+{
+}
 
 ON_DLL_LOAD_RELIESON("engine.dll", MasterServer, (ConCommand, ServerPresence), (CModule module))
 {

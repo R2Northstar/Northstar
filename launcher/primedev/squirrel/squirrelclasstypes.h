@@ -174,7 +174,8 @@ class SquirrelAsset
 {
 public:
 	std::string path;
-	SquirrelAsset(std::string path) : path(path) {};
+	SquirrelAsset(std::string path)
+		: path(path) {};
 };
 
 #pragma region TypeDefs

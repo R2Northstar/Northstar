@@ -22,7 +22,8 @@ bool isValidSquirrelIdentifier(std::string s)
 	return true;
 }
 
-Plugin::Plugin(std::string path) : m_location(path)
+Plugin::Plugin(std::string path)
+	: m_location(path)
 {
 	HMODULE pluginModule = GetModuleHandleA(path.c_str());
 
