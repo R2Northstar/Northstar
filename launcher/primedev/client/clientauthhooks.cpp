@@ -3,8 +3,6 @@
 #include "client/r2client.h"
 #include "core/vanilla.h"
 
-AUTOHOOK_INIT()
-
 ConVar* Cvar_ns_has_agreed_to_send_token;
 
 // mirrored in script
@@ -12,16 +10,14 @@ const int NOT_DECIDED_TO_SEND_TOKEN = 0;
 const int AGREED_TO_SEND_TOKEN = 1;
 const int DISAGREED_TO_SEND_TOKEN = 2;
 
-// clang-format off
-AUTOHOOK(AuthWithStryder, engine.dll + 0x1843A0,
-void, __fastcall, (void* a1))
-// clang-format on
+static void (*__fastcall o_pAuthWithStryder)(void* a1) = nullptr;
+static void __fastcall h_AuthWithStryder(void* a1)
 {
 	// don't attempt to do Atlas auth if we are in vanilla compatibility mode
 	// this prevents users from joining untrustworthy servers (unless they use a concommand or something)
 	if (g_pVanillaCompatibility->GetVanillaCompatibility())
 	{
-		AuthWithStryder(a1);
+		o_pAuthWithStryder(a1);
 		return;
 	}
 
@@ -38,15 +34,13 @@ void, __fastcall, (void* a1))
 		*g_pLocalPlayerOriginToken = 0;
 	}
 
-	AuthWithStryder(a1);
+	o_pAuthWithStryder(a1);
 }
 
 char* p3PToken;
 
-// clang-format off
-AUTOHOOK(Auth3PToken, engine.dll + 0x183760,
-char*, __fastcall, ())
-// clang-format on
+static char* (*__fastcall o_pAuth3PToken)() = nullptr;
+static char* __fastcall h_Auth3PToken()
 {
 	if (!g_pVanillaCompatibility->GetVanillaCompatibility() && g_pMasterServerManager->m_sOwnClientAuthToken[0])
 	{
@@ -54,12 +48,16 @@ char*, __fastcall, ())
 		strcpy(p3PToken, "Protocol 3: Protect the Pilot");
 	}
 
-	return Auth3PToken();
+	return o_pAuth3PToken();
 }
 
 ON_DLL_LOAD_CLIENT_RELIESON("engine.dll", ClientAuthHooks, ConVar, (CModule module))
 {
-	AUTOHOOK_DISPATCH()
+	o_pAuthWithStryder = module.Offset(0x1843A0).RCast<decltype(o_pAuthWithStryder)>();
+	HookAttach(&(PVOID&)o_pAuthWithStryder, (PVOID)h_AuthWithStryder);
+
+	o_pAuth3PToken = module.Offset(0x183760).RCast<decltype(o_pAuth3PToken)>();
+	HookAttach(&(PVOID&)o_pAuth3PToken, (PVOID)h_Auth3PToken);
 
 	p3PToken = module.Offset(0x13979D80).RCast<char*>();
 
