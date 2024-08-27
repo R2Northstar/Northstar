@@ -1,23 +1,20 @@
 #include "core/convar/convar.h"
 
-AUTOHOOK_INIT()
-
 ConVar* Cvar_rui_drawEnable;
 
-// clang-format off
-AUTOHOOK(DrawRUIFunc, engine.dll + 0xFC500,
-bool, __fastcall, (void* a1, float* a2))
-// clang-format on
+static bool (*__fastcall o_pDrawRUIFunc)(void* a1, float* a2) = nullptr;
+static bool __fastcall h_DrawRUIFunc(void* a1, float* a2)
 {
 	if (!Cvar_rui_drawEnable->GetBool())
 		return 0;
 
-	return DrawRUIFunc(a1, a2);
+	return o_pDrawRUIFunc(a1, a2);
 }
 
 ON_DLL_LOAD_CLIENT_RELIESON("engine.dll", RUI, ConVar, (CModule module))
 {
-	AUTOHOOK_DISPATCH()
+	o_pDrawRUIFunc = module.Offset(0xFC500).RCast<decltype(o_pDrawRUIFunc)>();
+	HookAttach(&(PVOID&)o_pDrawRUIFunc, (PVOID)h_DrawRUIFunc);
 
 	Cvar_rui_drawEnable = new ConVar("rui_drawEnable", "1", FCVAR_CLIENTDLL, "Controls whether RUI should be drawn");
 }
