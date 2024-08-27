@@ -18,14 +18,30 @@ ILoadLibraryExW o_LoadLibraryExW = nullptr;
 //-----------------------------------------------------------------------------
 void LibSys_RunModuleCallbacks(HMODULE hModule)
 {
+	// Modules that we have already ran callbacks for.
+	// Note: If we ever hook unloading modules, then this will need updating to handle removal etc.
+	static std::vector<HMODULE> vCalledModules;
+
 	if (!hModule)
 	{
 		return;
 	}
 
+	// If we have already ran callbacks for this module, don't run them again.
+	if (std::find(vCalledModules.begin(), vCalledModules.end(), hModule) != vCalledModules.end())
+	{
+		return;
+	}
+	vCalledModules.push_back(hModule);
+
 	// Get module base name in ASCII as noone wants to deal with unicode
 	CHAR szModuleName[MAX_PATH];
 	GetModuleBaseNameA(GetCurrentProcess(), hModule, szModuleName, MAX_PATH);
+
+	// Run calllbacks for all imported modules
+	CModule cModule(hModule);
+	for (const std::string& svImport : cModule.GetImportedModules())
+		LibSys_RunModuleCallbacks(GetModuleHandleA(svImport.c_str()));
 
 	// DevMsg(eLog::NONE, "%s\n", szModuleName);
 
