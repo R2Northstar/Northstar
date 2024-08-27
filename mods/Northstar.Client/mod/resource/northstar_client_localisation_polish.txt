@@ -14,7 +14,7 @@
 
 		"DIALOG_TITLE_INSTALLED_NORTHSTAR" "Dzięki za instalację Northstar!"
 		"AUTHENTICATION_AGREEMENT_DIALOG_TEXT" "Dla poprawnego działania Northstar potrzebne jest uwierzytelnienie z głównym serwerem. Potrzebne będzie wysłanie twojego tokena Origin do głównego serwera, nie będzie on przechowywany ani użyty do żadnych innych celów.
-Naciśnij "Tak" jeżeli wyrażasz zgodę. Wybór może zostać zmieniony w menu Modów."
+Naciśnij Tak jeżeli wyrażasz zgodę. Wybór może zostać zmieniony w menu Modów."
 		"BACK_AUTHENTICATION_AGREEMENT" "Zgoda na uwierzytelnianie"
 		"AUTHENTICATION_AGREEMENT" "Zgoda na uwierzytelnianie"
 		"AUTHENTICATION_AGREEMENT_RESTART" "Potrzebne jest ponowne odpalenie Titanfall 2 by zmiany dały efekt."
