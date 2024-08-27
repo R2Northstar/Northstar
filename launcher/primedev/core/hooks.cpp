@@ -328,8 +328,6 @@ void CallLoadLibraryACallbacks(LPCSTR lpLibFileName, HMODULE moduleAddress)
 
 void CallLoadLibraryWCallbacks(LPCWSTR lpLibFileName, HMODULE moduleAddress)
 {
-	CModule cModule(moduleAddress);
-
 	while (true)
 	{
 		bool bDoneCalling = true;
