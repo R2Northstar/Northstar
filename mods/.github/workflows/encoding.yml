@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Check localization files encoding
         run: |
           files=$(ls Northstar.Client/mod/resource/northstar_client_localisation_*.txt)
@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Look out for missing translations
         run: node .github/build/find-missing-translations.js
         continue-on-error: true
