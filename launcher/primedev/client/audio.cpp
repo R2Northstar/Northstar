@@ -11,8 +11,6 @@
 
 namespace fs = std::filesystem;
 
-AUTOHOOK_INIT()
-
 static const char* pszAudioEventName;
 
 ConVar* Cvar_mileslog_enable;
@@ -389,14 +387,12 @@ bool ShouldPlayAudioEvent(const char* eventName, const std::shared_ptr<EventOver
 	return true; // good to go
 }
 
-// clang-format off
-AUTOHOOK(LoadSampleMetadata, mileswin64.dll + 0xF110, 
-bool, __fastcall, (void* sample, void* audioBuffer, unsigned int audioBufferLength, int audioType))
-// clang-format on
+static bool(__fastcall* o_pLoadSampleMetadata)(void* sample, void* audioBuffer, unsigned int audioBufferLength, int audioType) = nullptr;
+static bool __fastcall h_LoadSampleMetadata(void* sample, void* audioBuffer, unsigned int audioBufferLength, int audioType)
 {
 	// Raw source, used for voice data only
 	if (audioType == 0)
-		return LoadSampleMetadata(sample, audioBuffer, audioBufferLength, audioType);
+		return o_pLoadSampleMetadata(sample, audioBuffer, audioBufferLength, audioType);
 
 	const char* eventName = pszAudioEventName;
 
@@ -423,7 +419,7 @@ bool, __fastcall, (void* sample, void* audioBuffer, unsigned int audioBufferLeng
 
 			if (!overrideData)
 				// not found either
-				return LoadSampleMetadata(sample, audioBuffer, audioBufferLength, audioType);
+				return o_pLoadSampleMetadata(sample, audioBuffer, audioBufferLength, audioType);
 			else
 			{
 				// cache found pattern to improve performance
@@ -437,7 +433,7 @@ bool, __fastcall, (void* sample, void* audioBuffer, unsigned int audioBufferLeng
 		overrideData = iter->second;
 
 	if (!ShouldPlayAudioEvent(eventName, overrideData))
-		return LoadSampleMetadata(sample, audioBuffer, audioBufferLength, audioType);
+		return o_pLoadSampleMetadata(sample, audioBuffer, audioBufferLength, audioType);
 
 	void* data = 0;
 	unsigned int dataLength = 0;
@@ -479,7 +475,7 @@ bool, __fastcall, (void* sample, void* audioBuffer, unsigned int audioBufferLeng
 	if (!data)
 	{
 		spdlog::warn("Could not fetch override sample data for event {}! Using original data instead.", eventName);
-		return LoadSampleMetadata(sample, audioBuffer, audioBufferLength, audioType);
+		return o_pLoadSampleMetadata(sample, audioBuffer, audioBufferLength, audioType);
 	}
 
 	audioBuffer = data;
@@ -490,31 +486,36 @@ bool, __fastcall, (void* sample, void* audioBuffer, unsigned int audioBufferLeng
 	*(unsigned int*)((uintptr_t)sample + 0xF0) = audioBufferLength;
 
 	// 64 - Auto-detect sample type
-	bool res = LoadSampleMetadata(sample, audioBuffer, audioBufferLength, 64);
+	bool res = o_pLoadSampleMetadata(sample, audioBuffer, audioBufferLength, 64);
 	if (!res)
 		spdlog::error("LoadSampleMetadata failed! The game will crash :(");
 
 	return res;
 }
 
-// clang-format off
-AUTOHOOK(sub_1800294C0, mileswin64.dll + 0x294C0,
-void*, __fastcall, (void* a1, void* a2))
-// clang-format on
+static void*(__fastcall* o_pSub_1800294C0)(void* a1, void* a2) = nullptr;
+static void* __fastcall h_Sub_1800294C0(void* a1, void* a2)
 {
 	pszAudioEventName = reinterpret_cast<const char*>((*((__int64*)a2 + 6)));
-	return sub_1800294C0(a1, a2);
+	return o_pSub_1800294C0(a1, a2);
 }
 
-// clang-format off
-AUTOHOOK(MilesLog, client.dll + 0x57DAD0, 
-void, __fastcall, (int level, const char* string))
-// clang-format on
+static void(__fastcall* o_pMilesLog)(int level, const char* string) = nullptr;
+static void __fastcall h_MilesLog(int level, const char* string)
 {
 	if (!Cvar_mileslog_enable->GetBool())
 		return;
 
 	spdlog::info("[MSS] {} - {}", level, string);
+}
+
+ON_DLL_LOAD("mileswin64.dll", MilesWin64_Audio, (CModule module))
+{
+	o_pLoadSampleMetadata = module.Offset(0xF110).RCast<decltype(o_pLoadSampleMetadata)>();
+	HookAttach(&(PVOID&)o_pLoadSampleMetadata, (PVOID)h_LoadSampleMetadata);
+
+	o_pSub_1800294C0 = module.Offset(0x294C0).RCast<decltype(o_pSub_1800294C0)>();
+	HookAttach(&(PVOID&)o_pSub_1800294C0, (PVOID)h_Sub_1800294C0);
 }
 
 ON_DLL_LOAD_RELIESON("engine.dll", MilesLogFuncHooks, ConVar, (CModule module))
@@ -524,7 +525,8 @@ ON_DLL_LOAD_RELIESON("engine.dll", MilesLogFuncHooks, ConVar, (CModule module))
 
 ON_DLL_LOAD_CLIENT_RELIESON("client.dll", AudioHooks, ConVar, (CModule module))
 {
-	AUTOHOOK_DISPATCH()
+	o_pMilesLog = module.Offset(0x57DAD0).RCast<decltype(o_pMilesLog)>();
+	HookAttach(&(PVOID&)o_pMilesLog, (PVOID)h_MilesLog);
 
 	Cvar_ns_print_played_sounds = new ConVar("ns_print_played_sounds", "0", FCVAR_NONE, "");
 	MilesStopAll = module.Offset(0x580850).RCast<MilesStopAll_Type>();
