@@ -16,3 +16,11 @@ Note that commit messages in PRs will generally be squashed to keep commit histo
 -->
 
 Replace this line with a description of your change (and screenshots/screenrecordings if applicable).
+
+### Code review:
+
+Replace this line with anything specific to look out for during code reviews.
+
+### Testing:
+
+Replace this line with instructions on how to test your pull request. The more detailed, the easier it is for reviewers to test, the faster your PR gets merged.
