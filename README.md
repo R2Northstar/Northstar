@@ -29,9 +29,9 @@ The documentation is split into three repositories:
 
 ## Special Thanks
 
-Thanks to everyone that's put up with me and helped out with this project, it's been a fun passion project I've had throughout 2021 so releasing it is pretty cathartic. Specifically: 
+Thanks to everyone that's put up with me and helped out with this project, it's been a fun passion project I've had throughout 2021 so releasing it is pretty cathartic. Specifically:
 
 - Thanks to the Icepick developers for making the Icepick, I initially forked it for earlier versions of Northstar and it was a great base to experiment with stuff on before moving to the custom launcher.
-- Thanks to everyone on R5R team for giving me advice on some later parts of development.  
-- Thanks to everyone in the testing server for putting up with me and helping find bugs.  
+- Thanks to everyone on R5R team for giving me advice on some later parts of development.
+- Thanks to everyone in the testing server for putting up with me and helping find bugs.
 - Thanks to everyone else that's helped, gave advice, all that.
