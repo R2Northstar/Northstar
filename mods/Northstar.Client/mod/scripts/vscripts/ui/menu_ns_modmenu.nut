@@ -338,6 +338,10 @@ void function RefreshMods()
 	{
 		string mod = modNames[i]
 
+		// Do not display remote mods
+		if ( NSIsModRemote( mod ) )
+			continue
+
 		if ( searchTerm.len() && mod.tolower().find( searchTerm ) == null )
 			continue
 
