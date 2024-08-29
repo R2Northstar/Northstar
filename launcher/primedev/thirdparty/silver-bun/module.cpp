@@ -69,11 +69,15 @@ void CModule::Init()
 
 	// Get the location of IMAGE_IMPORT_DESCRIPTOR for this module by adding the IMAGE_DIRECTORY_ENTRY_IMPORT relative virtual address onto our
 	// module base address.
-	IMAGE_IMPORT_DESCRIPTOR* pImageImportDescriptors = reinterpret_cast<IMAGE_IMPORT_DESCRIPTOR*>(
-		m_pModuleBase + m_pNTHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
-	if (!pImageImportDescriptors)
+
+	if (m_pNTHeaders->FileHeader.SizeOfOptionalHeader == 0)
 		return;
 
+	IMAGE_DATA_DIRECTORY& imageDirectory = m_pNTHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
+	if (imageDirectory.Size == 0 || imageDirectory.VirtualAddress == 0)
+		return;
+
+	IMAGE_IMPORT_DESCRIPTOR* pImageImportDescriptors = reinterpret_cast<IMAGE_IMPORT_DESCRIPTOR*>(m_pModuleBase + imageDirectory.VirtualAddress);
 	for (IMAGE_IMPORT_DESCRIPTOR* pIID = pImageImportDescriptors; pIID->Name != 0; pIID++)
 	{
 		// Get virtual relative Address of the imported module name. Then add module base Address to get the actual location.
