@@ -31,6 +31,11 @@ To get the cropped GIFs of a screenrecording:
    (The linked site has not been vetted, use at own risk)
 4. Upload GIF to GitHub pull request description by just pasting it at the appropriate location.
 
+### Useful links
+
+- [How to write a commit message](https://cbea.ms/git-commit/)
+- [Atomic commits](https://www.freshconsulting.com/insights/blog/atomic-commits/)
+
 ### Avoiding "PR hell"
 
 _"PR hell"_ is what contributors refer to when a pull request is stuck as pending without any indication for progress.
