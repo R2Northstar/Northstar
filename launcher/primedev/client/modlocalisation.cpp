@@ -1,55 +1,58 @@
 #include "mods/modmanager.h"
 
-AUTOHOOK_INIT()
-
 void* g_pVguiLocalize;
 
-// clang-format off
-AUTOHOOK(CLocalize__AddFile, localize.dll + 0x6D80,
-bool, __fastcall, (void* pVguiLocalize, const char* path, const char* pathId, bool bIncludeFallbackSearchPaths))
-// clang-format on
+static bool(__fastcall* o_pCLocalise__AddFile)(
+	void* pVguiLocalize, const char* path, const char* pathId, bool bIncludeFallbackSearchPaths) = nullptr;
+static bool __fastcall h_CLocalise__AddFile(void* pVguiLocalize, const char* path, const char* pathId, bool bIncludeFallbackSearchPaths)
 {
 	// save this for later
 	g_pVguiLocalize = pVguiLocalize;
 
-	bool ret = CLocalize__AddFile(pVguiLocalize, path, pathId, bIncludeFallbackSearchPaths);
+	bool ret = o_pCLocalise__AddFile(pVguiLocalize, path, pathId, bIncludeFallbackSearchPaths);
 	if (ret)
 		spdlog::info("Loaded localisation file {} successfully", path);
 
 	return true;
 }
 
-// clang-format off
-AUTOHOOK(CLocalize__ReloadLocalizationFiles, localize.dll + 0xB830,
-void, __fastcall, (void* pVguiLocalize))
-// clang-format on
+static void(__fastcall* o_pCLocalize__ReloadLocalizationFiles)(void* pVguiLocalize) = nullptr;
+static void __fastcall h_CLocalize__ReloadLocalizationFiles(void* pVguiLocalize)
 {
 	// load all mod localization manually, so we keep track of all files, not just previously loaded ones
 	for (Mod mod : g_pModManager->m_LoadedMods)
 		if (mod.m_bEnabled)
 			for (std::string& localisationFile : mod.LocalisationFiles)
-				CLocalize__AddFile(g_pVguiLocalize, localisationFile.c_str(), nullptr, false);
+				o_pCLocalise__AddFile(g_pVguiLocalize, localisationFile.c_str(), nullptr, false);
 
 	spdlog::info("reloading localization...");
-	CLocalize__ReloadLocalizationFiles(pVguiLocalize);
+	o_pCLocalize__ReloadLocalizationFiles(pVguiLocalize);
 }
 
-// clang-format off
-AUTOHOOK(CEngineVGui__Init, engine.dll + 0x247E10,
-void, __fastcall, (void* self))
-// clang-format on
+static void(__fastcall* o_pCEngineVGui__Init)(void* self) = nullptr;
+static void __fastcall h_CEngineVGui__Init(void* self)
 {
-	CEngineVGui__Init(self); // this loads r1_english, valve_english, dev_english
+	o_pCEngineVGui__Init(self); // this loads r1_english, valve_english, dev_english
 
 	// previously we did this in CLocalize::AddFile, but for some reason it won't properly overwrite localization from
 	// files loaded previously if done there, very weird but this works so whatever
 	for (Mod mod : g_pModManager->m_LoadedMods)
 		if (mod.m_bEnabled)
 			for (std::string& localisationFile : mod.LocalisationFiles)
-				CLocalize__AddFile(g_pVguiLocalize, localisationFile.c_str(), nullptr, false);
+				o_pCLocalise__AddFile(g_pVguiLocalize, localisationFile.c_str(), nullptr, false);
+}
+
+ON_DLL_LOAD_CLIENT("engine.dll", VGuiInit, (CModule module))
+{
+	o_pCEngineVGui__Init = module.Offset(0x247E10).RCast<decltype(o_pCEngineVGui__Init)>();
+	HookAttach(&(PVOID&)o_pCEngineVGui__Init, (PVOID)h_CEngineVGui__Init);
 }
 
 ON_DLL_LOAD_CLIENT("localize.dll", Localize, (CModule module))
 {
-	AUTOHOOK_DISPATCH()
+	o_pCLocalise__AddFile = module.Offset(0x6D80).RCast<decltype(o_pCLocalise__AddFile)>();
+	HookAttach(&(PVOID&)o_pCLocalise__AddFile, (PVOID)h_CLocalise__AddFile);
+
+	o_pCLocalize__ReloadLocalizationFiles = module.Offset(0xB830).RCast<decltype(o_pCLocalize__ReloadLocalizationFiles)>();
+	HookAttach(&(PVOID&)o_pCLocalize__ReloadLocalizationFiles, (PVOID)h_CLocalize__ReloadLocalizationFiles);
 }
