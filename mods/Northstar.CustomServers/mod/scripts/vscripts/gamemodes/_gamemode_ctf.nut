@@ -287,26 +287,6 @@ void function GiveFlag( entity player, entity flag )
 	SetFlagStateForTeam( flag.GetTeam(), eFlagState.Away ) // used for held
 }
 
-void function DropFlagIfPhased( entity player, entity flag )
-{
-	player.EndSignal( "StartPhaseShift" )
-	player.EndSignal( "OnDestroy" )
-	
-	OnThreadEnd( function() : ( player ) 
-	{
-		if (GetGameState() == eGameState.Playing || GetGameState() == eGameState.SuddenDeath)
-			DropFlag( player, true )
-	})
-	// the IsValid check is purely to prevent a crash due to a destroyed flag (epilogue)
-	while( IsValid(flag) && flag.GetParent() == player )
-		WaitFrame()
-}
-
-void function DropFlagForBecomingTitan( entity pilot, entity titan )
-{
-	DropFlag( pilot, true )
-}
-
 void function DropFlag( entity player, bool realDrop = true )
 {
 	entity flag = GetFlagForTeam( GetOtherTeam( player.GetTeam() ) )
@@ -342,15 +322,6 @@ void function DropFlag( entity player, bool realDrop = true )
 	}
 	
 	SetFlagStateForTeam( flag.GetTeam(), eFlagState.Home ) // used for return prompt
-}
-
-void function TrackFlagDropTimeout( entity flag )
-{
-	flag.EndSignal( "ResetDropTimeout" )
-	
-	wait CTF_GetDropTimeout()
-	
-	ResetFlag( flag )
 }
 
 void function ResetFlag( entity flag )
@@ -525,4 +496,33 @@ void function SetFlagStateForTeam( int team, int state )
 		SetGlobalNetEnt( team == TEAM_IMC ? "imcFlag" : "milFlag", team == TEAM_IMC ? file.imcFlag : file.militiaFlag )
 
 	SetGlobalNetInt( team == TEAM_IMC ? "imcFlagState" : "milFlagState", state )
+}
+
+void function DropFlagIfPhased( entity player, entity flag )
+{
+	player.EndSignal( "StartPhaseShift" )
+	player.EndSignal( "OnDestroy" )
+	
+	OnThreadEnd( function() : ( player ) 
+	{
+		if (GetGameState() == eGameState.Playing || GetGameState() == eGameState.SuddenDeath)
+			DropFlag( player, true )
+	})
+	// the IsValid check is purely to prevent a crash due to a destroyed flag (epilogue)
+	while( IsValid(flag) && flag.GetParent() == player )
+		WaitFrame()
+}
+
+void function DropFlagForBecomingTitan( entity pilot, entity titan )
+{
+	DropFlag( pilot, true )
+}
+
+void function TrackFlagDropTimeout( entity flag )
+{
+	flag.EndSignal( "ResetDropTimeout" )
+	
+	wait CTF_GetDropTimeout()
+	
+	ResetFlag( flag )
 }
