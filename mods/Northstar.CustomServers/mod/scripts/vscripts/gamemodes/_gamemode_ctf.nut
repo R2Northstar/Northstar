@@ -123,7 +123,9 @@ void function CreateFlags()
 		file.imcFlagSpawn.Destroy()
 		file.imcFlag.Destroy()
 		file.imcFlagReturnTrigger.Destroy()
-		
+	}
+	if ( IsValid( file.militiaFlagSpawn ) )
+	{
 		file.militiaFlagSpawn.Destroy()
 		file.militiaFlag.Destroy()
 		file.militiaFlagReturnTrigger.Destroy()
