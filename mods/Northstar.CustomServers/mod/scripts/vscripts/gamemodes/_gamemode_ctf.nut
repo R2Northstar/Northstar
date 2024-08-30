@@ -249,15 +249,6 @@ void function TrackFlagReturnTrigger( entity flag, entity returnTrigger )
 	}
 }
 
-void function SetFlagStateForTeam( int team, int state )
-{
-	if ( state == eFlagState.Away ) // we tell the client the flag is the player carrying it if they're carrying it
-		SetGlobalNetEnt( team == TEAM_IMC ? "imcFlag" : "milFlag", ( team == TEAM_IMC ? file.imcFlag : file.militiaFlag ).GetParent() )
-	else
-		SetGlobalNetEnt( team == TEAM_IMC ? "imcFlag" : "milFlag", team == TEAM_IMC ? file.imcFlag : file.militiaFlag )
-
-	SetGlobalNetInt( team == TEAM_IMC ? "imcFlagState" : "milFlagState", state )
-}
 
 bool function OnFlagCollected( entity player, entity flag )
 {
@@ -524,4 +515,14 @@ void function TryReturnFlag( entity player, entity flag )
 	MessageToTeam( GetOtherTeam( flag.GetTeam() ), eEventNotifications.PlayerReturnedEnemyFlag, null, player )
 	EmitSoundOnEntityToTeam( flag, "UI_CTF_3P_EnemyReturnsFlag", GetOtherTeam( flag.GetTeam() ) )
 	PlayFactionDialogueToTeam( "ctf_flagReturnedEnemy", GetOtherTeam( flag.GetTeam() ) )
+}
+
+void function SetFlagStateForTeam( int team, int state )
+{
+	if ( state == eFlagState.Away ) // we tell the client the flag is the player carrying it if they're carrying it
+		SetGlobalNetEnt( team == TEAM_IMC ? "imcFlag" : "milFlag", ( team == TEAM_IMC ? file.imcFlag : file.militiaFlag ).GetParent() )
+	else
+		SetGlobalNetEnt( team == TEAM_IMC ? "imcFlag" : "milFlag", team == TEAM_IMC ? file.imcFlag : file.militiaFlag )
+
+	SetGlobalNetInt( team == TEAM_IMC ? "imcFlagState" : "milFlagState", state )
 }
