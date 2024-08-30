@@ -67,30 +67,6 @@ void function CaptureTheFlag_Init()
 	ScoreEvent_SetEarnMeterValues( "FlagReturn", 0.0, 0.20 )
 }
 
-void function RateSpawnpoints_CTF( int checkClass, array<entity> spawnpoints, int team, entity player ) 
-{
-	RateSpawnpoints_SpawnZones( checkClass, spawnpoints, team, player )
-}
-
-bool function VerifyCTFSpawnpoint( entity spawnpoint, int team )
-{
-	// ensure spawnpoints aren't too close to enemy base
-	vector allyFlagSpot
-	vector enemyFlagSpot
-	foreach ( entity spawn in GetEntArrayByClass_Expensive( "info_spawnpoint_flag" ) )
-	{
-		if( spawn.GetTeam() == team )
-			allyFlagSpot = spawn.GetOrigin()
-		else
-			enemyFlagSpot = spawn.GetOrigin()
-	}
-	
-	if( Distance2D( spawnpoint.GetOrigin(), allyFlagSpot ) > Distance2D( spawnpoint.GetOrigin(), enemyFlagSpot ) )
-		return false
-	
-	return true
-}
-
 void function CreateFlags()
 {	
 	if ( IsValid( file.imcFlagSpawn ) )
@@ -209,6 +185,30 @@ void function RemoveFlags()
 	// unsure if this is needed, since the flags are destroyed? idk
 	SetFlagStateForTeam( TEAM_MILITIA, eFlagState.None )
 	SetFlagStateForTeam( TEAM_IMC, eFlagState.None )
+}
+
+void function RateSpawnpoints_CTF( int checkClass, array<entity> spawnpoints, int team, entity player ) 
+{
+	RateSpawnpoints_SpawnZones( checkClass, spawnpoints, team, player )
+}
+
+bool function VerifyCTFSpawnpoint( entity spawnpoint, int team )
+{
+	// ensure spawnpoints aren't too close to enemy base
+	vector allyFlagSpot
+	vector enemyFlagSpot
+	foreach ( entity spawn in GetEntArrayByClass_Expensive( "info_spawnpoint_flag" ) )
+	{
+		if( spawn.GetTeam() == team )
+			allyFlagSpot = spawn.GetOrigin()
+		else
+			enemyFlagSpot = spawn.GetOrigin()
+	}
+	
+	if( Distance2D( spawnpoint.GetOrigin(), allyFlagSpot ) > Distance2D( spawnpoint.GetOrigin(), enemyFlagSpot ) )
+		return false
+	
+	return true
 }
 
 void function CTFInitPlayer( entity player )
