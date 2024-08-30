@@ -315,12 +315,15 @@ void function CaptureFlag( entity player, entity flag )
 	
 	foreach( entity assistPlayer in assistList )
 	{
-		if ( player != assistPlayer )
-			AddPlayerScore( assistPlayer, "FlagCaptureAssist", player )
-		if( !HasPlayerCompletedMeritScore( assistPlayer ) )
+		if ( IsValidPlayer( assistPlayer ) )
 		{
-			AddPlayerScore( assistPlayer, "ChallengeCTFCapAssist" )
-			SetPlayerChallengeMeritScore( assistPlayer )
+			if ( player != assistPlayer )
+				AddPlayerScore( assistPlayer, "FlagCaptureAssist", player )
+			if( !HasPlayerCompletedMeritScore( assistPlayer ) )
+			{
+				AddPlayerScore( assistPlayer, "ChallengeCTFCapAssist" )
+				SetPlayerChallengeMeritScore( assistPlayer )
+			}
 		}
 	}
 		
