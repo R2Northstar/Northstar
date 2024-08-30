@@ -509,8 +509,11 @@ void function DropFlagIfPhased( entity player, entity flag )
 	
 	OnThreadEnd( function() : ( player ) 
 	{
-		if (GetGameState() == eGameState.Playing || GetGameState() == eGameState.SuddenDeath)
-			DropFlag( player, true )
+		if ( IsValidPlayer( player ) )
+		{
+			if ( GetGameState() == eGameState.Playing || GetGameState() == eGameState.SuddenDeath )
+				DropFlag( player, true )
+		}
 	})
 	// the IsValid check is purely to prevent a crash due to a destroyed flag (epilogue)
 	while( IsValid(flag) && flag.GetParent() == player )
