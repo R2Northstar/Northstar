@@ -5,8 +5,6 @@
 #include <iostream>
 #include <sstream>
 
-AUTOHOOK_INIT()
-
 bool bReadingOriginalFile = false;
 std::string sCurrentModPath;
 
@@ -44,18 +42,17 @@ std::string ReadVPKOriginalFile(const char* path)
 	return ret;
 }
 
-// clang-format off
-HOOK(AddSearchPathHook, AddSearchPath,
-void, __fastcall, (IFileSystem * fileSystem, const char* pPath, const char* pathID, SearchPathAdd_t addType))
-// clang-format on
+static void(__fastcall* o_pAddSearchPath)(IFileSystem* fileSystem, const char* pPath, const char* pathID, SearchPathAdd_t addType) =
+	nullptr;
+static void __fastcall h_AddSearchPath(IFileSystem* fileSystem, const char* pPath, const char* pathID, SearchPathAdd_t addType)
 {
-	AddSearchPath(fileSystem, pPath, pathID, addType);
+	o_pAddSearchPath(fileSystem, pPath, pathID, addType);
 
 	// make sure current mod paths are at head
 	if (!strcmp(pathID, "GAME") && sCurrentModPath.compare(pPath) && addType == PATH_ADD_TO_HEAD)
 	{
-		AddSearchPath(fileSystem, sCurrentModPath.c_str(), "GAME", PATH_ADD_TO_HEAD);
-		AddSearchPath(fileSystem, GetCompiledAssetsPath().string().c_str(), "GAME", PATH_ADD_TO_HEAD);
+		o_pAddSearchPath(fileSystem, sCurrentModPath.c_str(), "GAME", PATH_ADD_TO_HEAD);
+		o_pAddSearchPath(fileSystem, GetCompiledAssetsPath().string().c_str(), "GAME", PATH_ADD_TO_HEAD);
 	}
 }
 
@@ -67,13 +64,13 @@ void SetNewModSearchPaths(Mod* mod)
 	{
 		if ((fs::absolute(mod->m_ModDirectory) / MOD_OVERRIDE_DIR).string().compare(sCurrentModPath))
 		{
-			AddSearchPath(
+			o_pAddSearchPath(
 				&*(*g_pFilesystem), (fs::absolute(mod->m_ModDirectory) / MOD_OVERRIDE_DIR).string().c_str(), "GAME", PATH_ADD_TO_HEAD);
 			sCurrentModPath = (fs::absolute(mod->m_ModDirectory) / MOD_OVERRIDE_DIR).string();
 		}
 	}
 	else // push compiled to head
-		AddSearchPath(&*(*g_pFilesystem), fs::absolute(GetCompiledAssetsPath()).string().c_str(), "GAME", PATH_ADD_TO_HEAD);
+		o_pAddSearchPath(&*(*g_pFilesystem), fs::absolute(GetCompiledAssetsPath()).string().c_str(), "GAME", PATH_ADD_TO_HEAD);
 }
 
 bool TryReplaceFile(const char* pPath, bool shouldCompile)
@@ -97,22 +94,17 @@ bool TryReplaceFile(const char* pPath, bool shouldCompile)
 }
 
 // force modded files to be read from mods, not cache
-// clang-format off
-HOOK(ReadFromCacheHook, ReadFromCache,
-bool, __fastcall, (IFileSystem * filesystem, char* pPath, void* result))
-// clang-format off
+static bool(__fastcall* o_pReadFromCache)(IFileSystem* filesystem, char* pPath, void* result) = nullptr;
+static bool __fastcall h_ReadFromCache(IFileSystem* filesystem, char* pPath, void* result)
 {
 	if (TryReplaceFile(pPath, true))
 		return false;
 
-	return ReadFromCache(filesystem, pPath, result);
+	return o_pReadFromCache(filesystem, pPath, result);
 }
 
-// force modded files to be read from mods, not vpk
-// clang-format off
-AUTOHOOK(ReadFileFromVPK, filesystem_stdio.dll + 0x5CBA0,
-FileHandle_t, __fastcall, (VPKData* vpkInfo, uint64_t* b, char* filename))
-// clang-format on
+static FileHandle_t(__fastcall* o_pReadFileFromVPK)(VPKData* vpkInfo, uint64_t* b, char* filename) = nullptr;
+static FileHandle_t __fastcall h_ReadFileFromVPK(VPKData* vpkInfo, uint64_t* b, char* filename)
 {
 	// don't compile here because this is only ever called from OpenEx, which already compiles
 	if (TryReplaceFile(filename, false))
@@ -121,22 +113,24 @@ FileHandle_t, __fastcall, (VPKData* vpkInfo, uint64_t* b, char* filename))
 		return b;
 	}
 
-	return ReadFileFromVPK(vpkInfo, b, filename);
+	return o_pReadFileFromVPK(vpkInfo, b, filename);
 }
 
-// clang-format off
-AUTOHOOK(CBaseFileSystem__OpenEx, filesystem_stdio.dll + 0x15F50,
-FileHandle_t, __fastcall, (IFileSystem* filesystem, const char* pPath, const char* pOptions, uint32_t flags, const char* pPathID, char **ppszResolvedFilename))
-// clang-format on
+static FileHandle_t(__fastcall* o_pCBaseFileSystem__OpenEx)(
+	IFileSystem* filesystem, const char* pPath, const char* pOptions, uint32_t flags, const char* pPathID, char** ppszResolvedFilename) =
+	nullptr;
+static FileHandle_t __fastcall h_CBaseFileSystem__OpenEx(
+	IFileSystem* filesystem, const char* pPath, const char* pOptions, uint32_t flags, const char* pPathID, char** ppszResolvedFilename)
 {
 	TryReplaceFile(pPath, true);
-	return CBaseFileSystem__OpenEx(filesystem, pPath, pOptions, flags, pPathID, ppszResolvedFilename);
+	return o_pCBaseFileSystem__OpenEx(filesystem, pPath, pOptions, flags, pPathID, ppszResolvedFilename);
 }
 
-HOOK(MountVPKHook, MountVPK, VPKData*, , (IFileSystem * fileSystem, const char* pVpkPath))
+static VPKData* (*o_pMountVPK)(IFileSystem* fileSystem, const char* pVpkPath) = nullptr;
+static VPKData* h_MountVPK(IFileSystem* fileSystem, const char* pVpkPath)
 {
 	NS::log::fs->info("MountVPK {}", pVpkPath);
-	VPKData* ret = MountVPK(fileSystem, pVpkPath);
+	VPKData* ret = o_pMountVPK(fileSystem, pVpkPath);
 
 	for (Mod mod : g_pModManager->m_LoadedMods)
 	{
@@ -156,7 +150,7 @@ HOOK(MountVPKHook, MountVPK, VPKData*, , (IFileSystem * fileSystem, const char* 
 					continue;
 			}
 
-			VPKData* loaded = MountVPK(fileSystem, vpkEntry.m_sVpkPath.c_str());
+			VPKData* loaded = o_pMountVPK(fileSystem, vpkEntry.m_sVpkPath.c_str());
 			if (!ret) // this is primarily for map vpks and stuff, so the map's vpk is what gets returned from here
 				ret = loaded;
 		}
@@ -167,11 +161,18 @@ HOOK(MountVPKHook, MountVPK, VPKData*, , (IFileSystem * fileSystem, const char* 
 
 ON_DLL_LOAD("filesystem_stdio.dll", Filesystem, (CModule module))
 {
-	AUTOHOOK_DISPATCH()
+	o_pReadFileFromVPK = module.Offset(0x5CBA0).RCast<decltype(o_pReadFileFromVPK)>();
+	HookAttach(&(PVOID&)o_pReadFileFromVPK, (PVOID)h_ReadFileFromVPK);
+
+	o_pCBaseFileSystem__OpenEx = module.Offset(0x15F50).RCast<decltype(o_pCBaseFileSystem__OpenEx)>();
+	HookAttach(&(PVOID&)o_pCBaseFileSystem__OpenEx, (PVOID)h_CBaseFileSystem__OpenEx);
 
 	g_pFilesystem = new SourceInterface<IFileSystem>("filesystem_stdio.dll", "VFileSystem017");
 
-	AddSearchPathHook.Dispatch((LPVOID)(*g_pFilesystem)->m_vtable->AddSearchPath);
-	ReadFromCacheHook.Dispatch((LPVOID)(*g_pFilesystem)->m_vtable->ReadFromCache);
-	MountVPKHook.Dispatch((LPVOID)(*g_pFilesystem)->m_vtable->MountVPK);
+	o_pAddSearchPath = reinterpret_cast<decltype(o_pAddSearchPath)>((*g_pFilesystem)->m_vtable->AddSearchPath);
+	HookAttach(&(PVOID&)o_pAddSearchPath, (PVOID)h_AddSearchPath);
+	o_pReadFromCache = reinterpret_cast<decltype(o_pReadFromCache)>((*g_pFilesystem)->m_vtable->ReadFromCache);
+	HookAttach(&(PVOID&)o_pReadFromCache, (PVOID)h_ReadFromCache);
+	o_pMountVPK = reinterpret_cast<decltype(o_pMountVPK)>((*g_pFilesystem)->m_vtable->MountVPK);
+	HookAttach(&(PVOID&)o_pMountVPK, (PVOID)h_MountVPK);
 }
