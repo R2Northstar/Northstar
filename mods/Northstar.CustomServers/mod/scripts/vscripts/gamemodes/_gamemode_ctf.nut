@@ -91,19 +91,6 @@ bool function VerifyCTFSpawnpoint( entity spawnpoint, int team )
 	return true
 }
 
-void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
-{
-	if ( !IsValid( GetFlagForTeam( GetOtherTeam( victim.GetTeam() ) ) ) ) // getting a crash idk
-		return
-	if ( GetFlagForTeam( GetOtherTeam( victim.GetTeam() ) ).GetParent() == victim )
-	{
-		if ( victim != attacker && attacker.IsPlayer() )
-			AddPlayerScore( attacker, "FlagCarrierKill", victim )
-		
-		DropFlag( victim )
-	}
-}
-
 void function CreateFlags()
 {	
 	if ( IsValid( file.imcFlagSpawn ) )
@@ -234,6 +221,19 @@ void function CTFInitPlayer( entity player )
 	
 	vector militiaSpawn = file.militiaFlagSpawn.GetOrigin()
 	Remote_CallFunction_NonReplay( player, "ServerCallback_SetFlagHomeOrigin", TEAM_MILITIA, militiaSpawn.x, militiaSpawn.y, militiaSpawn.z )
+}
+
+void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
+{
+	if ( !IsValid( GetFlagForTeam( GetOtherTeam( victim.GetTeam() ) ) ) ) // getting a crash idk
+		return
+	if ( GetFlagForTeam( GetOtherTeam( victim.GetTeam() ) ).GetParent() == victim )
+	{
+		if ( victim != attacker && attacker.IsPlayer() )
+			AddPlayerScore( attacker, "FlagCarrierKill", victim )
+		
+		DropFlag( victim )
+	}
 }
 
 void function TrackFlagReturnTrigger( entity flag, entity returnTrigger )
