@@ -72,7 +72,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: R2Northstar/NorthstarNavs
-          ref: 'v3'
+          ref: 'v4'
           path: northstar-navs
       - name: Navmeshes setup
         run: |
