@@ -287,6 +287,68 @@ void function GiveFlag( entity player, entity flag )
 	SetFlagStateForTeam( flag.GetTeam(), eFlagState.Away ) // used for held
 }
 
+void function CaptureFlag( entity player, entity flag )
+{
+	// can only capture flags during normal play or sudden death
+	if (GetGameState() != eGameState.Playing && GetGameState() != eGameState.SuddenDeath)
+	{
+		printt( player + " tried to capture the flag, but the game state was " + GetGameState() + " not " + eGameState.Playing + " or " + eGameState.SuddenDeath)
+		return
+	}
+	// reset flag
+	ResetFlag( flag )
+	
+	print( player + " captured the flag!" )
+	
+	// score
+	int team = player.GetTeam() 
+	AddTeamScore( team, 1 )
+	AddPlayerScore( player, "FlagCapture", player )
+	player.AddToPlayerGameStat( PGS_ASSAULT_SCORE, 1 ) // add 1 to captures on scoreboard
+	SetRoundWinningKillReplayAttacker( player ) // set attacker for last cap replay
+	
+	array<entity> assistList
+	if ( player.GetTeam() == TEAM_IMC )
+		assistList = file.imcCaptureAssistList
+	else
+		assistList = file.militiaCaptureAssistList
+	
+	foreach( entity assistPlayer in assistList )
+	{
+		if ( player != assistPlayer )
+			AddPlayerScore( assistPlayer, "FlagCaptureAssist", player )
+		if( !HasPlayerCompletedMeritScore( assistPlayer ) )
+		{
+			AddPlayerScore( assistPlayer, "ChallengeCTFCapAssist" )
+			SetPlayerChallengeMeritScore( assistPlayer )
+		}
+	}
+		
+	assistList.clear()
+
+	// notifs
+	MessageToPlayer( player, eEventNotifications.YouCapturedTheEnemyFlag )
+	EmitSoundOnEntityOnlyToPlayer( player, player, "UI_CTF_1P_PlayerScore" )
+	
+	if( !HasPlayerCompletedMeritScore( player ) )
+	{
+		AddPlayerScore( player, "ChallengeCTFRetAssist" )
+		SetPlayerChallengeMeritScore( player )
+	}
+	
+	MessageToTeam( team, eEventNotifications.PlayerCapturedEnemyFlag, player, player )
+	EmitSoundOnEntityToTeamExceptPlayer( flag, "UI_CTF_3P_TeamScore", player.GetTeam(), player )
+	
+	MessageToTeam( GetOtherTeam( team ), eEventNotifications.PlayerCapturedFriendlyFlag, player, player )
+	EmitSoundOnEntityToTeam( flag, "UI_CTF_3P_EnemyScores", flag.GetTeam() )
+	
+	if ( GameRules_GetTeamScore( team ) == GameMode_GetRoundScoreLimit( GAMETYPE ) - 1 )
+	{
+		PlayFactionDialogueToTeam( "ctf_notifyWin1more", team )
+		PlayFactionDialogueToTeam( "ctf_notifyLose1more", GetOtherTeam( team ) )
+	}
+}
+
 void function DropFlag( entity player, bool realDrop = true )
 {
 	entity flag = GetFlagForTeam( GetOtherTeam( player.GetTeam() ) )
@@ -351,67 +413,6 @@ void function ResetFlag( entity flag )
 	flag.Signal( "ResetDropTimeout" )
 }
 
-void function CaptureFlag( entity player, entity flag )
-{
-	// can only capture flags during normal play or sudden death
-	if (GetGameState() != eGameState.Playing && GetGameState() != eGameState.SuddenDeath)
-	{
-		printt( player + " tried to capture the flag, but the game state was " + GetGameState() + " not " + eGameState.Playing + " or " + eGameState.SuddenDeath)
-		return
-	}
-	// reset flag
-	ResetFlag( flag )
-	
-	print( player + " captured the flag!" )
-	
-	// score
-	int team = player.GetTeam() 
-	AddTeamScore( team, 1 )
-	AddPlayerScore( player, "FlagCapture", player )
-	player.AddToPlayerGameStat( PGS_ASSAULT_SCORE, 1 ) // add 1 to captures on scoreboard
-	SetRoundWinningKillReplayAttacker( player ) // set attacker for last cap replay
-	
-	array<entity> assistList
-	if ( player.GetTeam() == TEAM_IMC )
-		assistList = file.imcCaptureAssistList
-	else
-		assistList = file.militiaCaptureAssistList
-	
-	foreach( entity assistPlayer in assistList )
-	{
-		if ( player != assistPlayer )
-			AddPlayerScore( assistPlayer, "FlagCaptureAssist", player )
-		if( !HasPlayerCompletedMeritScore( assistPlayer ) )
-		{
-			AddPlayerScore( assistPlayer, "ChallengeCTFCapAssist" )
-			SetPlayerChallengeMeritScore( assistPlayer )
-		}
-	}
-		
-	assistList.clear()
-
-	// notifs
-	MessageToPlayer( player, eEventNotifications.YouCapturedTheEnemyFlag )
-	EmitSoundOnEntityOnlyToPlayer( player, player, "UI_CTF_1P_PlayerScore" )
-	
-	if( !HasPlayerCompletedMeritScore( player ) )
-	{
-		AddPlayerScore( player, "ChallengeCTFRetAssist" )
-		SetPlayerChallengeMeritScore( player )
-	}
-	
-	MessageToTeam( team, eEventNotifications.PlayerCapturedEnemyFlag, player, player )
-	EmitSoundOnEntityToTeamExceptPlayer( flag, "UI_CTF_3P_TeamScore", player.GetTeam(), player )
-	
-	MessageToTeam( GetOtherTeam( team ), eEventNotifications.PlayerCapturedFriendlyFlag, player, player )
-	EmitSoundOnEntityToTeam( flag, "UI_CTF_3P_EnemyScores", flag.GetTeam() )
-	
-	if ( GameRules_GetTeamScore( team ) == GameMode_GetRoundScoreLimit( GAMETYPE ) - 1 )
-	{
-		PlayFactionDialogueToTeam( "ctf_notifyWin1more", team )
-		PlayFactionDialogueToTeam( "ctf_notifyLose1more", GetOtherTeam( team ) )
-	}
-}
 
 void function OnPlayerEntersFlagReturnTrigger( entity trigger, entity player )
 {
