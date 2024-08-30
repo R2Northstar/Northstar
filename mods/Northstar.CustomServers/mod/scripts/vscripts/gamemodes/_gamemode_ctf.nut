@@ -91,18 +91,6 @@ bool function VerifyCTFSpawnpoint( entity spawnpoint, int team )
 	return true
 }
 
-void function CTFInitPlayer( entity player )
-{
-	if ( !IsValid( file.imcFlagSpawn ) )
-		return
-	
-	vector imcSpawn = file.imcFlagSpawn.GetOrigin()
-	Remote_CallFunction_NonReplay( player, "ServerCallback_SetFlagHomeOrigin", TEAM_IMC, imcSpawn.x, imcSpawn.y, imcSpawn.z )
-	
-	vector militiaSpawn = file.militiaFlagSpawn.GetOrigin()
-	Remote_CallFunction_NonReplay( player, "ServerCallback_SetFlagHomeOrigin", TEAM_MILITIA, militiaSpawn.x, militiaSpawn.y, militiaSpawn.z )
-}
-
 void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
 	if ( !IsValid( GetFlagForTeam( GetOtherTeam( victim.GetTeam() ) ) ) ) // getting a crash idk
@@ -234,6 +222,18 @@ void function RemoveFlags()
 	// unsure if this is needed, since the flags are destroyed? idk
 	SetFlagStateForTeam( TEAM_MILITIA, eFlagState.None )
 	SetFlagStateForTeam( TEAM_IMC, eFlagState.None )
+}
+
+void function CTFInitPlayer( entity player )
+{
+	if ( !IsValid( file.imcFlagSpawn ) )
+		return
+	
+	vector imcSpawn = file.imcFlagSpawn.GetOrigin()
+	Remote_CallFunction_NonReplay( player, "ServerCallback_SetFlagHomeOrigin", TEAM_IMC, imcSpawn.x, imcSpawn.y, imcSpawn.z )
+	
+	vector militiaSpawn = file.militiaFlagSpawn.GetOrigin()
+	Remote_CallFunction_NonReplay( player, "ServerCallback_SetFlagHomeOrigin", TEAM_MILITIA, militiaSpawn.x, militiaSpawn.y, militiaSpawn.z )
 }
 
 void function TrackFlagReturnTrigger( entity flag, entity returnTrigger )
