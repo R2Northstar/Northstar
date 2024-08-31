@@ -12,8 +12,6 @@
 
 namespace fs = std::filesystem;
 
-AUTOHOOK_INIT()
-
 // called from the ON_DLL_LOAD macros
 __dllLoadCallback::__dllLoadCallback(
 	eDllLoadCallbackSide side, const std::string dllName, DllLoadCallbackFuncType callback, std::string uniqueStr, std::string reliesOn)
@@ -223,14 +221,15 @@ void MakeHook(LPVOID pTarget, LPVOID pDetour, void* ppOriginal, const char* pFun
 		spdlog::error("MH_CreateHook failed for function {}", pStrippedFuncName);
 }
 
-AUTOHOOK_ABSOLUTEADDR(_GetCommandLineA, (LPVOID)GetCommandLineA, LPSTR, WINAPI, ())
+static LPSTR(WINAPI* o_pGetCommandLineA)() = nullptr;
+static LPSTR WINAPI h_GetCommandLineA()
 {
 	static char* cmdlineModified;
 	static char* cmdlineOrg;
 
 	if (cmdlineOrg == nullptr || cmdlineModified == nullptr)
 	{
-		cmdlineOrg = _GetCommandLineA();
+		cmdlineOrg = o_pGetCommandLineA();
 		bool isDedi = strstr(cmdlineOrg, "-dedicated"); // well, this one has to be a real argument
 		bool ignoreStartupArgs = strstr(cmdlineOrg, "-nostartupargs");
 
@@ -394,6 +393,7 @@ void HookSys_Init()
 	{
 		spdlog::error("MH_Initialize (minhook initialization) failed");
 	}
-	// todo: remove remaining instances of autohook in this file
-	AUTOHOOK_DISPATCH()
+
+	o_pGetCommandLineA = GetCommandLineA;
+	HookAttach(&(PVOID&)o_pGetCommandLineA, (PVOID)h_GetCommandLineA);
 }
