@@ -2,9 +2,8 @@
 
 CMaterialGlue* (*GetMaterialAtCrossHair)();
 
-AUTOHOOK_INIT()
-
-AUTOHOOK(CC_mat_crosshair_printmaterial_f, engine.dll + 0xB3C40, void, __fastcall, (const CCommand& args))
+static void(__fastcall* o_pCC_mat_crosshair_printmaterial_f)(const CCommand& args) = nullptr;
+static void __fastcall h_CC_mat_crosshair_printmaterial_f(const CCommand& args)
 {
 	CMaterialGlue* pMat = GetMaterialAtCrossHair();
 
@@ -44,7 +43,8 @@ AUTOHOOK(CC_mat_crosshair_printmaterial_f, engine.dll + 0xB3C40, void, __fastcal
 
 ON_DLL_LOAD("engine.dll", GlMatSysIFace, (CModule module))
 {
-	AUTOHOOK_DISPATCH()
+	o_pCC_mat_crosshair_printmaterial_f = module.Offset(0xB3C40).RCast<decltype(o_pCC_mat_crosshair_printmaterial_f)>();
+	HookAttach(&(PVOID&)o_pCC_mat_crosshair_printmaterial_f, (PVOID)h_CC_mat_crosshair_printmaterial_f);
 
 	GetMaterialAtCrossHair = module.Offset(0xB37D0).RCast<CMaterialGlue* (*)()>();
 }
