@@ -334,10 +334,7 @@ void function CaptureFlag( entity player, entity flag )
 	EmitSoundOnEntityOnlyToPlayer( player, player, "UI_CTF_1P_PlayerScore" )
 	
 	if( !HasPlayerCompletedMeritScore( player ) )
-	{
-		AddPlayerScore( player, "ChallengeCTFRetAssist" )
 		SetPlayerChallengeMeritScore( player )
-	}
 	
 	MessageToTeam( team, eEventNotifications.PlayerCapturedEnemyFlag, player, player )
 	EmitSoundOnEntityToTeamExceptPlayer( flag, "UI_CTF_3P_TeamScore", player.GetTeam(), player )
