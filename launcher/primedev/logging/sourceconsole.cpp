@@ -1,35 +1,35 @@
 #include "core/convar/convar.h"
 #include "sourceconsole.h"
-#include "core/sourceinterface.h"
+#include "core/tier1.h"
 #include "core/convar/concommand.h"
 #include "util/printcommands.h"
 
-SourceInterface<CGameConsole>* g_pSourceGameConsole;
+CGameConsole* g_pGameConsole;
 
 void ConCommand_toggleconsole(const CCommand& arg)
 {
 	NOTE_UNUSED(arg);
-	if ((*g_pSourceGameConsole)->IsConsoleVisible())
-		(*g_pSourceGameConsole)->Hide();
+	if (g_pGameConsole->IsConsoleVisible())
+		g_pGameConsole->Hide();
 	else
-		(*g_pSourceGameConsole)->Activate();
+		g_pGameConsole->Activate();
 }
 
 void ConCommand_showconsole(const CCommand& arg)
 {
 	NOTE_UNUSED(arg);
-	(*g_pSourceGameConsole)->Activate();
+	g_pGameConsole->Activate();
 }
 
 void ConCommand_hideconsole(const CCommand& arg)
 {
 	NOTE_UNUSED(arg);
-	(*g_pSourceGameConsole)->Hide();
+	g_pGameConsole->Hide();
 }
 
 void SourceConsoleSink::custom_sink_it_(const custom_log_msg& msg)
 {
-	if (!(*g_pSourceGameConsole)->m_bInitialized)
+	if (!g_pGameConsole->m_bInitialized)
 		return;
 
 	spdlog::memory_buf_t formatted;
@@ -41,11 +41,11 @@ void SourceConsoleSink::custom_sink_it_(const custom_log_msg& msg)
 	SourceColor levelColor = m_LogColours[msg.level];
 	std::string name {msg.logger_name.begin(), msg.logger_name.end()};
 
-	(*g_pSourceGameConsole)->m_pConsole->m_pConsolePanel->ColorPrint(msg.origin->SRCColor, ("[" + name + "]").c_str());
-	(*g_pSourceGameConsole)->m_pConsole->m_pConsolePanel->Print(" ");
-	(*g_pSourceGameConsole)->m_pConsole->m_pConsolePanel->ColorPrint(levelColor, ("[" + std::string(level_names[msg.level]) + "]").c_str());
-	(*g_pSourceGameConsole)->m_pConsole->m_pConsolePanel->Print(" ");
-	(*g_pSourceGameConsole)->m_pConsole->m_pConsolePanel->Print(fmt::to_string(formatted).c_str());
+	g_pGameConsole->m_pConsole->m_pConsolePanel->ColorPrint(msg.origin->SRCColor, ("[" + name + "]").c_str());
+	g_pGameConsole->m_pConsole->m_pConsolePanel->Print(" ");
+	g_pGameConsole->m_pConsole->m_pConsolePanel->ColorPrint(levelColor, ("[" + std::string(level_names[msg.level]) + "]").c_str());
+	g_pGameConsole->m_pConsole->m_pConsolePanel->Print(" ");
+	g_pGameConsole->m_pConsole->m_pConsolePanel->Print(fmt::to_string(formatted).c_str());
 }
 
 void SourceConsoleSink::sink_it_(const spdlog::details::log_msg& msg)
@@ -73,9 +73,9 @@ void, __fastcall, (CConsoleDialog* consoleDialog, const char* pCommand))
 // called from sourceinterface.cpp in client createinterface hooks, on GameClientExports001
 void InitialiseConsoleOnInterfaceCreation()
 {
-	(*g_pSourceGameConsole)->Initialize();
+	g_pGameConsole->Initialize();
 	// hook OnCommandSubmitted so we print inputted commands
-	OnCommandSubmittedHook.Dispatch((LPVOID)(*g_pSourceGameConsole)->m_pConsole->m_vtable->OnCommandSubmitted);
+	OnCommandSubmittedHook.Dispatch((LPVOID)g_pGameConsole->m_pConsole->m_vtable->OnCommandSubmitted);
 
 	auto consoleSink = std::make_shared<SourceConsoleSink>();
 	if (g_bSpdLog_UseAnsiColor)
@@ -87,7 +87,7 @@ void InitialiseConsoleOnInterfaceCreation()
 
 ON_DLL_LOAD_CLIENT_RELIESON("client.dll", SourceConsole, ConCommand, (CModule module))
 {
-	g_pSourceGameConsole = new SourceInterface<CGameConsole>("client.dll", "GameConsole004");
+	g_pGameConsole = Sys_GetFactoryPtr("client.dll", "GameConsole004").RCast<CGameConsole*>();
 
 	RegisterConCommand("toggleconsole", ConCommand_toggleconsole, "Show/hide the console.", FCVAR_DONTRECORD);
 	RegisterConCommand("showconsole", ConCommand_showconsole, "Show the console.", FCVAR_DONTRECORD);
