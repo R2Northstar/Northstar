@@ -453,9 +453,11 @@ void function TryReturnFlag( entity player, entity flag )
 	
 	OnThreadEnd( function() : ( player )
 	{
-		// cleanup
-		Remote_CallFunction_NonReplay( player, "ServerCallback_CTF_StopReturnFlagProgressBar" )
-		StopSoundOnEntity( player, "UI_CTF_1P_FlagReturnMeter" )
+		if ( IsValidPlayer( player ) )
+		{
+			Remote_CallFunction_NonReplay( player, "ServerCallback_CTF_StopReturnFlagProgressBar" )
+			StopSoundOnEntity( player, "UI_CTF_1P_FlagReturnMeter" )
+		}
 	})
 	
 	player.EndSignal( "FlagReturnEnded" )
