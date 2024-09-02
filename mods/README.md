@@ -11,7 +11,7 @@ Issues in this repository should be created if they are related to these domains
 - `Northstar.Client` - Localisation files, UI and client-side scripts.
 - `Northstar.Coop` - Soon™.
 - `Northstar.Custom` - Northstar custom content.
-- `Northstar.CustomServer` - Server config files and scripts necessary for multiplayer.
+- `Northstar.CustomServers` - Server config files and scripts necessary for multiplayer.
 
 ### Translating
 
