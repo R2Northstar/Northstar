@@ -20,12 +20,6 @@ void function GamemodePs_Init()
 	ScoreEvent_SetupEarnMeterValuesForMixedModes()
 	SetTimeoutWinnerDecisionFunc( CheckScoreForDraw )
 	SetupGenericFFAChallenge()
-
-	// spawnzone stuff
-	SetShouldCreateMinimapSpawnZones( true )
-	
-	//AddCallback_OnPlayerKilled( CheckSpawnzoneSuspiciousDeaths )
-	//AddSpawnCallbackEditorClass( "trigger_multiple", "trigger_mp_spawn_zone", SpawnzoneTriggerInit )
 	
 	file.militiaPreviousSpawnZones = [ null, null, null ]
 	file.imcPreviousSpawnZones = [ null, null, null ]
