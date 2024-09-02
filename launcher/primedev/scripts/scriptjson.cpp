@@ -9,8 +9,8 @@
 #undef GetObject // fuck microsoft developers
 #endif
 
-template <ScriptContext context> void
-DecodeJsonArray(HSquirrelVM* sqvm, rapidjson::GenericValue<rapidjson::UTF8<char>, rapidjson::MemoryPoolAllocator<SourceAllocator>>* arr)
+template <ScriptContext context>
+void DecodeJsonArray(HSQUIRRELVM sqvm, rapidjson::GenericValue<rapidjson::UTF8<char>, rapidjson::MemoryPoolAllocator<SourceAllocator>>* arr)
 {
 	g_pSquirrel<context>->newarray(sqvm, 0);
 
@@ -48,8 +48,8 @@ DecodeJsonArray(HSquirrelVM* sqvm, rapidjson::GenericValue<rapidjson::UTF8<char>
 	}
 }
 
-template <ScriptContext context> void
-DecodeJsonTable(HSquirrelVM* sqvm, rapidjson::GenericValue<rapidjson::UTF8<char>, rapidjson::MemoryPoolAllocator<SourceAllocator>>* obj)
+template <ScriptContext context>
+void DecodeJsonTable(HSQUIRRELVM sqvm, rapidjson::GenericValue<rapidjson::UTF8<char>, rapidjson::MemoryPoolAllocator<SourceAllocator>>* obj)
 {
 	g_pSquirrel<context>->newtable(sqvm);
 
@@ -107,7 +107,7 @@ template <ScriptContext context> void EncodeJSONTable(
 {
 	for (int i = 0; i < table->_numOfNodes; i++)
 	{
-		tableNode* node = &table->_nodes[i];
+		SQTable::_HashNode* node = &table->_nodes[i];
 		if (node->key._Type == OT_STRING)
 		{
 			rapidjson::GenericValue<rapidjson::UTF8<char>, rapidjson::MemoryPoolAllocator<SourceAllocator>> newObj(rapidjson::kObjectType);
@@ -240,7 +240,7 @@ ADD_SQFUNC(
 	doc.SetObject();
 
 	// temp until this is just the func parameter type
-	HSquirrelVM* vm = (HSquirrelVM*)sqvm;
+	HSQUIRRELVM vm = (HSQUIRRELVM)sqvm;
 	SQTable* table = vm->_stackOfCurrentFunction[1]._VAL.asTable;
 	EncodeJSONTable<context>(table, &doc, doc.GetAllocator());
 

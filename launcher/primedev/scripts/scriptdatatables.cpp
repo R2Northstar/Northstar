@@ -44,7 +44,7 @@ struct Datatable
 
 ConVar* Cvar_ns_prefer_datatable_from_disk;
 
-template <ScriptContext context> Datatable* (*SQ_GetDatatableInternal)(HSquirrelVM* sqvm);
+template <ScriptContext context> Datatable* (*SQ_GetDatatableInternal)(HSQUIRRELVM sqvm);
 
 struct CSVData
 {
@@ -852,12 +852,12 @@ void ConCommand_dump_datatables(const CCommand& args)
 
 ON_DLL_LOAD_RELIESON("server.dll", ServerScriptDatatables, ServerSquirrel, (CModule module))
 {
-	SQ_GetDatatableInternal<ScriptContext::SERVER> = module.Offset(0x1250f0).RCast<Datatable* (*)(HSquirrelVM*)>();
+	SQ_GetDatatableInternal<ScriptContext::SERVER> = module.Offset(0x1250f0).RCast<Datatable* (*)(HSQUIRRELVM)>();
 }
 
 ON_DLL_LOAD_RELIESON("client.dll", ClientScriptDatatables, ClientSquirrel, (CModule module))
 {
-	SQ_GetDatatableInternal<ScriptContext::CLIENT> = module.Offset(0x1C9070).RCast<Datatable* (*)(HSquirrelVM*)>();
+	SQ_GetDatatableInternal<ScriptContext::CLIENT> = module.Offset(0x1C9070).RCast<Datatable* (*)(HSQUIRRELVM)>();
 	SQ_GetDatatableInternal<ScriptContext::UI> = SQ_GetDatatableInternal<ScriptContext::CLIENT>;
 }
 

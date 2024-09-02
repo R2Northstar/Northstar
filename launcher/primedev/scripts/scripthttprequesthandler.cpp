@@ -450,7 +450,7 @@ template <ScriptContext context> int HttpRequestHandler::MakeHttpRequest(const H
 
 // int NS_InternalMakeHttpRequest(int method, string baseUrl, table<string, string> headers, table<string, string> queryParams,
 //	string contentType, string body, int timeout, string userAgent)
-template <ScriptContext context> SQRESULT SQ_InternalMakeHttpRequest(HSquirrelVM* sqvm)
+template <ScriptContext context> SQRESULT SQ_InternalMakeHttpRequest(HSQUIRRELVM sqvm)
 {
 	if (!g_httpRequestHandler || !g_httpRequestHandler->IsRunning())
 	{
@@ -475,7 +475,7 @@ template <ScriptContext context> SQRESULT SQ_InternalMakeHttpRequest(HSquirrelVM
 	SQTable* headerTable = sqvm->_stackOfCurrentFunction[3]._VAL.asTable;
 	for (int idx = 0; idx < headerTable->_numOfNodes; ++idx)
 	{
-		tableNode* node = &headerTable->_nodes[idx];
+		SQTable::_HashNode* node = &headerTable->_nodes[idx];
 
 		if (node->key._Type == OT_STRING && node->val._Type == OT_ARRAY)
 		{
@@ -497,7 +497,7 @@ template <ScriptContext context> SQRESULT SQ_InternalMakeHttpRequest(HSquirrelVM
 	SQTable* queryTable = sqvm->_stackOfCurrentFunction[4]._VAL.asTable;
 	for (int idx = 0; idx < queryTable->_numOfNodes; ++idx)
 	{
-		tableNode* node = &queryTable->_nodes[idx];
+		SQTable::_HashNode* node = &queryTable->_nodes[idx];
 
 		if (node->key._Type == OT_STRING && node->val._Type == OT_ARRAY)
 		{
@@ -527,14 +527,14 @@ template <ScriptContext context> SQRESULT SQ_InternalMakeHttpRequest(HSquirrelVM
 }
 
 // bool NSIsHttpEnabled()
-template <ScriptContext context> SQRESULT SQ_IsHttpEnabled(HSquirrelVM* sqvm)
+template <ScriptContext context> SQRESULT SQ_IsHttpEnabled(HSQUIRRELVM sqvm)
 {
 	g_pSquirrel<context>->pushbool(sqvm, !IsHttpDisabled());
 	return SQRESULT_NOTNULL;
 }
 
 // bool NSIsLocalHttpAllowed()
-template <ScriptContext context> SQRESULT SQ_IsLocalHttpAllowed(HSquirrelVM* sqvm)
+template <ScriptContext context> SQRESULT SQ_IsLocalHttpAllowed(HSQUIRRELVM sqvm)
 {
 	g_pSquirrel<context>->pushbool(sqvm, IsLocalHttpAllowed());
 	return SQRESULT_NOTNULL;

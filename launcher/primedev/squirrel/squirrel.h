@@ -129,72 +129,72 @@ public:
 	inline void defconst(CSquirrelVM* sqvm, const SQChar* pName, int nValue) { __sq_defconst(sqvm, pName, nValue); }
 
 	inline SQRESULT
-	compilebuffer(CompileBufferState* bufferState, const SQChar* bufferName = "unnamedbuffer", const SQBool bShouldThrowError = false)
+	compilebuffer(SQBufferState* bufferState, const SQChar* bufferName = "unnamedbuffer", const SQBool bShouldThrowError = false)
 	{
 		return __sq_compilebuffer(m_pSQVM->sqvm, bufferState, bufferName, -1, bShouldThrowError);
 	}
 
-	inline SQRESULT _call(HSquirrelVM* sqvm, const SQInteger args) { return __sq_call(sqvm, args + 1, false, true); }
+	inline SQRESULT _call(HSQUIRRELVM sqvm, const SQInteger args) { return __sq_call(sqvm, args + 1, false, true); }
 
-	inline SQInteger raiseerror(HSquirrelVM* sqvm, const SQChar* sError) { return __sq_raiseerror(sqvm, sError); }
+	inline SQInteger raiseerror(HSQUIRRELVM sqvm, const SQChar* sError) { return __sq_raiseerror(sqvm, sError); }
 
 	inline bool compilefile(CSquirrelVM* sqvm, const char* path, const char* name, int a4)
 	{
 		return __sq_compilefile(sqvm, path, name, a4);
 	}
 
-	inline void newarray(HSquirrelVM* sqvm, const SQInteger stackpos = 0) { __sq_newarray(sqvm, stackpos); }
+	inline void newarray(HSQUIRRELVM sqvm, const SQInteger stackpos = 0) { __sq_newarray(sqvm, stackpos); }
 
-	inline SQRESULT arrayappend(HSquirrelVM* sqvm, const SQInteger stackpos) { return __sq_arrayappend(sqvm, stackpos); }
+	inline SQRESULT arrayappend(HSQUIRRELVM sqvm, const SQInteger stackpos) { return __sq_arrayappend(sqvm, stackpos); }
 
-	inline SQRESULT newtable(HSquirrelVM* sqvm) { return __sq_newtable(sqvm); }
+	inline SQRESULT newtable(HSQUIRRELVM sqvm) { return __sq_newtable(sqvm); }
 
-	inline SQRESULT newslot(HSquirrelVM* sqvm, SQInteger idx, SQBool bStatic) { return __sq_newslot(sqvm, idx, bStatic); }
+	inline SQRESULT newslot(HSQUIRRELVM sqvm, SQInteger idx, SQBool bStatic) { return __sq_newslot(sqvm, idx, bStatic); }
 
-	inline void pushroottable(HSquirrelVM* sqvm) { __sq_pushroottable(sqvm); }
+	inline void pushroottable(HSQUIRRELVM sqvm) { __sq_pushroottable(sqvm); }
 
-	inline void pushstring(HSquirrelVM* sqvm, const SQChar* sVal, int length = -1) { __sq_pushstring(sqvm, sVal, length); }
+	inline void pushstring(HSQUIRRELVM sqvm, const SQChar* sVal, int length = -1) { __sq_pushstring(sqvm, sVal, length); }
 
-	inline void pushinteger(HSquirrelVM* sqvm, const SQInteger iVal) { __sq_pushinteger(sqvm, iVal); }
+	inline void pushinteger(HSQUIRRELVM sqvm, const SQInteger iVal) { __sq_pushinteger(sqvm, iVal); }
 
-	inline void pushfloat(HSquirrelVM* sqvm, const SQFloat flVal) { __sq_pushfloat(sqvm, flVal); }
+	inline void pushfloat(HSQUIRRELVM sqvm, const SQFloat flVal) { __sq_pushfloat(sqvm, flVal); }
 
-	inline void pushbool(HSquirrelVM* sqvm, const SQBool bVal) { __sq_pushbool(sqvm, bVal); }
+	inline void pushbool(HSQUIRRELVM sqvm, const SQBool bVal) { __sq_pushbool(sqvm, bVal); }
 
-	inline void pushasset(HSquirrelVM* sqvm, const SQChar* sVal, int length = -1) { __sq_pushasset(sqvm, sVal, length); }
+	inline void pushasset(HSQUIRRELVM sqvm, const SQChar* sVal, int length = -1) { __sq_pushasset(sqvm, sVal, length); }
 
-	inline void pushvector(HSquirrelVM* sqvm, const Vector3 pVal) { __sq_pushvector(sqvm, (float*)&pVal); }
+	inline void pushvector(HSQUIRRELVM sqvm, const Vector3 pVal) { __sq_pushvector(sqvm, (float*)&pVal); }
 
-	inline void pushobject(HSquirrelVM* sqvm, SQObject* obj) { __sq_pushobject(sqvm, obj); }
+	inline void pushobject(HSQUIRRELVM sqvm, SQObject* obj) { __sq_pushobject(sqvm, obj); }
 
-	inline const SQChar* getstring(HSquirrelVM* sqvm, const SQInteger stackpos) { return __sq_getstring(sqvm, stackpos); }
+	inline const SQChar* getstring(HSQUIRRELVM sqvm, const SQInteger stackpos) { return __sq_getstring(sqvm, stackpos); }
 
-	inline SQInteger getinteger(HSquirrelVM* sqvm, const SQInteger stackpos) { return __sq_getinteger(sqvm, stackpos); }
+	inline SQInteger getinteger(HSQUIRRELVM sqvm, const SQInteger stackpos) { return __sq_getinteger(sqvm, stackpos); }
 
-	inline SQFloat getfloat(HSquirrelVM* sqvm, const SQInteger stackpos) { return __sq_getfloat(sqvm, stackpos); }
+	inline SQFloat getfloat(HSQUIRRELVM sqvm, const SQInteger stackpos) { return __sq_getfloat(sqvm, stackpos); }
 
-	inline SQBool getbool(HSquirrelVM* sqvm, const SQInteger stackpos) { return __sq_getbool(sqvm, stackpos); }
+	inline SQBool getbool(HSQUIRRELVM sqvm, const SQInteger stackpos) { return __sq_getbool(sqvm, stackpos); }
 
-	inline SQRESULT get(HSquirrelVM* sqvm, const SQInteger stackpos) { return __sq_get(sqvm, stackpos); }
+	inline SQRESULT get(HSQUIRRELVM sqvm, const SQInteger stackpos) { return __sq_get(sqvm, stackpos); }
 
-	inline Vector3 getvector(HSquirrelVM* sqvm, const SQInteger stackpos) { return *(Vector3*)__sq_getvector(sqvm, stackpos); }
+	inline Vector3 getvector(HSQUIRRELVM sqvm, const SQInteger stackpos) { return *(Vector3*)__sq_getvector(sqvm, stackpos); }
 
-	inline int sq_getfunction(HSquirrelVM* sqvm, const char* name, SQObject* returnObj, const char* signature)
+	inline int sq_getfunction(HSQUIRRELVM sqvm, const char* name, SQObject* returnObj, const char* signature)
 	{
 		return __sq_getfunction(sqvm, name, returnObj, signature);
 	}
 
-	inline SQRESULT getasset(HSquirrelVM* sqvm, const SQInteger stackpos, const char** result)
+	inline SQRESULT getasset(HSQUIRRELVM sqvm, const SQInteger stackpos, const char** result)
 	{
 		return __sq_getasset(sqvm, stackpos, result);
 	}
 
-	inline long long sq_stackinfos(HSquirrelVM* sqvm, int level, SQStackInfos& out)
+	inline long long sq_stackinfos(HSQUIRRELVM sqvm, int level, SQStackInfos& out)
 	{
 		return __sq_stackinfos(sqvm, level, &out, sqvm->_callstacksize);
 	}
 
-	inline Mod* getcallingmod(HSquirrelVM* sqvm, int depth = 0)
+	inline Mod* getcallingmod(HSQUIRRELVM sqvm, int depth = 0)
 	{
 		SQStackInfos stackInfo {};
 		if (1 + depth >= sqvm->_callstacksize)
@@ -211,26 +211,26 @@ public:
 		}
 		return nullptr;
 	}
-	template <typename T> inline SQRESULT getuserdata(HSquirrelVM* sqvm, const SQInteger stackpos, T* data, uint64_t* typeId)
+	template <typename T> inline SQRESULT getuserdata(HSQUIRRELVM sqvm, const SQInteger stackpos, T* data, uint64_t* typeId)
 	{
 		return __sq_getuserdata(sqvm, stackpos, (void**)data, typeId); // this sometimes crashes idk
 	}
 
-	template <typename T> inline T* createuserdata(HSquirrelVM* sqvm, SQInteger size)
+	template <typename T> inline T* createuserdata(HSQUIRRELVM sqvm, SQInteger size)
 	{
 		void* ret = __sq_createuserdata(sqvm, size);
 		memset(ret, 0, size);
 		return (T*)ret;
 	}
 
-	inline SQRESULT setuserdatatypeid(HSquirrelVM* sqvm, const SQInteger stackpos, uint64_t typeId)
+	inline SQRESULT setuserdatatypeid(HSQUIRRELVM sqvm, const SQInteger stackpos, uint64_t typeId)
 	{
 		return __sq_setuserdatatypeid(sqvm, stackpos, typeId);
 	}
 
-	template <typename T> inline SQBool getthisentity(HSquirrelVM* sqvm, T* ppEntity) { return __sq_getthisentity(sqvm, (void**)ppEntity); }
+	template <typename T> inline SQBool getthisentity(HSQUIRRELVM sqvm, T* ppEntity) { return __sq_getthisentity(sqvm, (void**)ppEntity); }
 
-	template <typename T> inline T* getentity(HSquirrelVM* sqvm, SQInteger iStackPos)
+	template <typename T> inline T* getentity(HSQUIRRELVM sqvm, SQInteger iStackPos)
 	{
 		SQObject obj;
 		__sq_getobject(sqvm, iStackPos, &obj);
@@ -239,9 +239,9 @@ public:
 		return (T*)__sq_getentityfrominstance(m_pSQVM, &obj, __sq_GetEntityConstant_CBaseEntity());
 	}
 
-	inline SQRESULT pushnewstructinstance(HSquirrelVM* sqvm, const int fieldCount) { return __sq_pushnewstructinstance(sqvm, fieldCount); }
+	inline SQRESULT pushnewstructinstance(HSQUIRRELVM sqvm, const int fieldCount) { return __sq_pushnewstructinstance(sqvm, fieldCount); }
 
-	inline SQRESULT sealstructslot(HSquirrelVM* sqvm, const int fieldIndex) { return __sq_sealstructslot(sqvm, fieldIndex); }
+	inline SQRESULT sealstructslot(HSQUIRRELVM sqvm, const int fieldIndex) { return __sq_sealstructslot(sqvm, fieldIndex); }
 #pragma endregion
 };
 
