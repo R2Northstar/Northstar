@@ -10,4 +10,4 @@ template <ScriptContext context> void EncodeJSONTable(
 	rapidjson::MemoryPoolAllocator<SourceAllocator>& allocator);
 
 template <ScriptContext context> void
-DecodeJsonTable(HSquirrelVM* sqvm, rapidjson::GenericValue<rapidjson::UTF8<char>, rapidjson::MemoryPoolAllocator<SourceAllocator>>* obj);
+DecodeJsonTable(HSQUIRRELVM sqvm, rapidjson::GenericValue<rapidjson::UTF8<char>, rapidjson::MemoryPoolAllocator<SourceAllocator>>* obj);

@@ -537,7 +537,7 @@ ADD_SQFUNC("int", NSGetTotalSpaceRemaining, "", "", ScriptContext::CLIENT | Scri
 // ok, I'm just gonna explain what the fuck is going on here because this
 // is the pinnacle of my stupidity and I do not want to touch this ever
 // again, yet someone will eventually have to maintain this.
-template <ScriptContext context> std::string EncodeJSON(HSquirrelVM* sqvm)
+template <ScriptContext context> std::string EncodeJSON(HSQUIRRELVM sqvm)
 {
 	// new rapidjson
 	rapidjson_document doc;
