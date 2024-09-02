@@ -171,12 +171,14 @@ void function RemoveFlags()
 	// destroy all the flag related things
 	if ( IsValid( file.imcFlagSpawn ) )
 	{
+		PlayFX( $"P_phase_shift_main", file.imcFlagSpawn.GetOrigin() )
 		file.imcFlagSpawn.Destroy()
 		file.imcFlag.Destroy()
 		file.imcFlagReturnTrigger.Destroy()
 	}
 	if ( IsValid( file.militiaFlagSpawn ) )
 	{
+		PlayFX( $"P_phase_shift_main", file.militiaFlagSpawn.GetOrigin() )
 		file.militiaFlagSpawn.Destroy()
 		file.militiaFlag.Destroy()
 		file.militiaFlagReturnTrigger.Destroy()
