@@ -61,8 +61,6 @@ public:
 	CConsoleDialog* m_pConsole;
 };
 
-extern SourceInterface<CGameConsole>* g_pSourceGameConsole;
-
 // spdlog logger
 class SourceConsoleSink : public CustomSink
 {
