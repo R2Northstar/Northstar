@@ -34,5 +34,4 @@ public:
 	std::unordered_map<std::string, ConCommandBase*> DumpToMap();
 };
 
-extern SourceInterface<CCvar>* g_pCVarInterface;
 extern CCvar* g_pCVar;
