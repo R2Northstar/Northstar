@@ -24,7 +24,7 @@ jobs:
       - name: Setup msvc
         uses: ilammy/msvc-dev-cmd@v1
       - name: Configure cmake
-        run: cmake -G "Ninja" -DCMAKE_BUILD_TYPE:STRING="${{ env.BUILD_PROFILE }}"
+        run: cmake -G "Ninja" -B build -DCMAKE_BUILD_TYPE:STRING="${{ env.BUILD_PROFILE }}"
       - name: Setup resource file version
         shell: bash
         run: |
@@ -33,7 +33,7 @@ jobs:
           FILEVERSION=$(echo ${{ env.NORTHSTAR_VERSION }} | tr '.' ',' | sed -E 's/-rc[0-9]+//' | tr -d '[:alpha:]')
           sed -i "s/0,0,0,1/${FILEVERSION}/g" primedev/ns_version.h
       - name: Build
-        run: cmake --build .
+        run: cmake --build build/
       - name: Extract Short Commit Hash
         id: extract
         shell: bash
@@ -43,7 +43,7 @@ jobs:
         with:
           name: NorthstarLauncher-${{ matrix.config.name }}-${{ steps.extract.outputs.commit }}
           path: |
-            game/
+            build/game/
 
   format-check:
     runs-on: ubuntu-latest
