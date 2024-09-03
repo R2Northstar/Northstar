@@ -21,7 +21,7 @@ jobs:
       - name: Setup msvc
         uses: ilammy/msvc-dev-cmd@v1
       - name: Configure cmake
-        run: cmake -G "Ninja" -DCMAKE_BUILD_TYPE:STRING="Release"
+        run: cmake -G "Ninja" -B build -DCMAKE_BUILD_TYPE:STRING="Release"
       - name: Setup resource file version
         shell: bash
         run: |
@@ -30,22 +30,22 @@ jobs:
           FILEVERSION=$(echo ${{ env.NORTHSTAR_VERSION }} | tr '.' ',' | sed -E 's/-rc[0-9]+//' | tr -d '[:alpha:]')
           sed -i "s/0,0,0,1/${FILEVERSION}/g" primedev/ns_version.h
       - name: Build
-        run: cmake --build .
+        run: cmake --build build/
       - name: Upload launcher build as artifact
         uses: actions/upload-artifact@v3
         with:
           name: northstar-launcher
           path: |
-            game/*.exe
-            game/*.dll
-            game/bin/x64_retail/*.dll
+            build/game/*.exe
+            build/game/*.dll
+            build/game/bin/x64_retail/*.dll
       - name: Upload debug build artifact
         uses: actions/upload-artifact@v3
         with:
           name: launcher-debug-files
           path: |
-            game/*.pdb
-            game/bin/x64_retail/*.pdb
+            build/game/*.pdb
+            build/game/bin/x64_retail/*.pdb
 
   upload-launcher-to-release:
     if: startsWith(github.ref, 'refs/tags/v')

@@ -18,7 +18,7 @@ mono_crash.*
 
 # CMake output
 out/
-game/
+build/game/
 build/
 CMakeFiles/
 cmake_install.cmake
