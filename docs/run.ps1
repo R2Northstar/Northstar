@@ -9,10 +9,4 @@ else {
     py -m pip install -U poetry
 }
 py -m poetry install
-Set-Location ./docs
-
-try {
-    py -m poetry run sphinx-autobuild source build/html --open-browser --ignore *build/**
-} finally {
-    Set-Location ../
-}
+py -m poetry run mkdocs serve
