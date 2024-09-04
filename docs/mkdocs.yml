@@ -1,0 +1,78 @@
+site_name: Northstar modding docs
+site_url: https://docs.northstar.tf/
+repo_url: https://github.com/R2Northstar/NorthstarDocs
+edit_uri: blob/main/docs/
+theme:
+  name: material
+  palette:
+    scheme: "slate"
+  features:
+    - announce.dismiss
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
+    - content.code.copy
+    - content.tooltips
+    - navigation.footer
+    - navigation.indexes
+    - navigation.sections
+    - navigation.tabs
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+    - navigation.instant
+    - navigation.instant.prefetch
+  icon:
+    edit: material/pencil 
+    view: material/eye
+
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+  anchors: warn
+
+plugins:
+  - group:
+      plugins:
+        - privacy
+      enabled: !ENV CI 
+  - search
+  - social
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - md_in_html
+  - pymdownx.betterem
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.smartsymbols
+  - pymdownx.snippets
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      use_pygments: true
+      linenums_style: pymdownx-inline
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+
+extra_css:
+  - stylesheets/extra.css

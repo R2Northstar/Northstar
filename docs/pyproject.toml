@@ -5,20 +5,13 @@ description = "This repo contains the technical documentation on all things rela
 authors = ["R2Northstar"]
 license = "MIT"
 packages = [
-    { include = "docs/source/**/*.py" },
-    { include = "sphinx_rsquirrel" },
+    { include = "squirrel_syntax/*.py" },
 ]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-Sphinx = "^7.2.6"
-furo = "^2023.09.10"
-sphinx-autobuild = "^2021.3.14"
-sphinxcontrib-youtube = "^1.4.0"
-sphinx-copybutton = "^0.5.2"
-sphinx-design = "^0.5.0"
 pygments = { extras = ["plugins"], version = "^2.16.1" }
-sphinxext-opengraph = "^0.8.2"
+mkdocs-material = { extras = ["imaging"], version = "^9.5.34" }
 
 
 [tool.poetry.dev-dependencies]
