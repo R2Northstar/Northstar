@@ -1,0 +1,79 @@
+/* Catpuccin Latte theme: https://github.com/catppuccin/catppuccin/ */
+/* :root {
+    --catpuccin-rosewater: #dc8a78;
+    --catpuccin-flamingo: #dd7878;
+    --catpuccin-pink: #ea76cb;
+    --catpuccin-mauve: #8839ef;
+    --catpuccin-red: #d20f39;
+    --catpuccin-maroon: #e64553;
+    --catpuccin-peach: #fe640b;
+    --catpuccin-yellow: #df8e1d;
+    --catpuccin-green: #40a02b;
+    --catpuccin-teal: #179299;
+    --catpuccin-sky: #04a5e5;
+    --catpuccin-sapphire: #209fb5;
+    --catpuccin-blue: #1e66f5;
+    --catpuccin-lavender: #7287fd;
+    --catpuccin-text: #4c4f69;
+    --catpuccin-subtext1: #5c5f77;
+    --catpuccin-subtext0: #6c6f85;
+    --catpuccin-overlay2: #7c7f93;
+    --catpuccin-overlay1: #8c8fa1;
+    --catpuccin-overlay0: #9ca0b0;
+    --catpuccin-surface2: #acb0be;
+    --catpuccin-surface1: #bcc0cc;
+    --catpuccin-surface0: #ccd0da;
+    --catpuccin-base: #eff1f5;
+    --catpuccin-mantle: #e6e9ef;
+    --catpuccin-crust: #dce0e8;
+} */
+
+/* Catpuccin Mocha theme: https://github.com/catppuccin/catppuccin/ */
+:root {
+    --catpuccin-rosewater: #f5e0dc;
+    --catpuccin-flamingo: #f2cdcd;
+    --catpuccin-pink: #f5c2e7;
+    --catpuccin-mauve: #cba6f7;
+    --catpuccin-red: #f38ba8;
+    --catpuccin-maroon: #eba0ac;
+    --catpuccin-peach: #fab387;
+    --catpuccin-yellow: #f9e2af;
+    --catpuccin-green: #a6e3a1;
+    --catpuccin-teal: #94e2d5;
+    --catpuccin-sky: #89dceb;
+    --catpuccin-sapphire: #74c7ec;
+    --catpuccin-blue: #89b4fa;
+    --catpuccin-lavender: #b4befe;
+    --catpuccin-text: #cdd6f4;
+    --catpuccin-subtext1: #bac2de;
+    --catpuccin-subtext0: #a6adc8;
+    --catpuccin-overlay2: #9399b2;
+    --catpuccin-overlay1: #7f849c;
+    --catpuccin-overlay0: #6c7086;
+    --catpuccin-surface2: #585b70;
+    --catpuccin-surface1: #45475a;
+    --catpuccin-surface0: #313244;
+    --catpuccin-base: #1e1e2e;
+    --catpuccin-mantle: #181825;
+    --catpuccin-crust: #11111b;
+}
+
+:root>* {
+    --md-code-hl-keyword-color: var(--catpuccin-mauve);
+    --md-code-hl-string-color: var(--catpuccin-green);
+    --md-code-hl-punctuation-color: var(--catpuccin-red);
+    --md-code-hl-number-color: var(--catpuccin-peach);
+    --md-code-hl-special-color: var(--catpuccin-pink);
+    --md-code-hl-function-color: var(--catpuccin-blue);
+    --md-code-hl-constant-color: var(--catpuccin-peach);
+    --md-code-hl-name-color: var(--catpuccin-maroon);
+    --md-code-hl-operator-color: var(--catpuccin-sky);
+    --md-code-hl-comment-color: var(--catpuccin-overlay2);
+    --md-code-hl-generic-color: var(--catpuccin-teal);
+    --md-code-hl-variable-color: var(--catpuccin-yellow);
+    --md-code-bg-color: var(--catpuccin-surface0);
+}
+
+.md-typeset code {
+    border-radius: 0.6rem;
+}
