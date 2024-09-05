@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "moddingdocs"
+name = "northstardocs"
 version = "0.1.0"
 description = "This repo contains the technical documentation on all things related to making Northstar mods."
 authors = ["R2Northstar"]
