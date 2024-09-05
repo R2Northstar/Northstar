@@ -819,7 +819,7 @@ void ModManager::LoadMods()
 					modVpk.m_sVpkPath = (file.path().parent_path() / vpkName).string();
 
 					if (m_bHasLoadedMods && modVpk.m_bAutoLoad)
-						(*g_pFilesystem)->m_vtable->MountVPK(*g_pFilesystem, vpkName.c_str());
+						g_pFilesystem->m_vtable->MountVPK(g_pFilesystem, vpkName.c_str());
 				}
 			}
 		}
