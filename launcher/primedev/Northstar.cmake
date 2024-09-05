@@ -69,6 +69,7 @@ add_library(
     "engine/r2engine.cpp"
     "engine/r2engine.h"
     "engine/runframe.cpp"
+    "game/client/clientmode_shared.cpp"
     "logging/crashhandler.cpp"
     "logging/crashhandler.h"
     "logging/logging.cpp"
