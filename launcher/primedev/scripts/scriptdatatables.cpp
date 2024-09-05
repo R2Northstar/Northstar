@@ -96,7 +96,7 @@ REPLACE_SQFUNC(GetDataTable, (ScriptContext::UI | ScriptContext::CLIENT | Script
 			diskAssetPath /= fs::path(pAssetName);
 
 		std::string sDiskAssetPath(diskAssetPath.string());
-		if ((*g_pFilesystem)->m_vtable2->FileExists(&(*g_pFilesystem)->m_vtable2, sDiskAssetPath.c_str(), "GAME"))
+		if (g_pFilesystem->m_vtable2->FileExists(&g_pFilesystem->m_vtable2, sDiskAssetPath.c_str(), "GAME"))
 		{
 			std::string sTableCSV = ReadVPKFile(sDiskAssetPath.c_str());
 			if (!sTableCSV.size())

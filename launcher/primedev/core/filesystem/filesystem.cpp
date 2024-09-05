@@ -1,5 +1,5 @@
 #include "filesystem.h"
-#include "core/sourceinterface.h"
+#include "core/tier1.h"
 #include "mods/modmanager.h"
 
 #include <iostream>
@@ -10,23 +10,23 @@ std::string sCurrentModPath;
 
 ConVar* Cvar_ns_fs_log_reads;
 
-SourceInterface<IFileSystem>* g_pFilesystem;
+IFileSystem* g_pFilesystem;
 
 std::string ReadVPKFile(const char* path)
 {
 	// read scripts.rson file, todo: check if this can be overwritten
-	FileHandle_t fileHandle = (*g_pFilesystem)->m_vtable2->Open(&(*g_pFilesystem)->m_vtable2, path, "rb", "GAME", 0);
+	FileHandle_t fileHandle = g_pFilesystem->m_vtable2->Open(&g_pFilesystem->m_vtable2, path, "rb", "GAME", 0);
 
 	std::stringstream fileStream;
 	int bytesRead = 0;
 	char data[4096];
 	do
 	{
-		bytesRead = (*g_pFilesystem)->m_vtable2->Read(&(*g_pFilesystem)->m_vtable2, data, (int)std::size(data), fileHandle);
+		bytesRead = g_pFilesystem->m_vtable2->Read(&g_pFilesystem->m_vtable2, data, (int)std::size(data), fileHandle);
 		fileStream.write(data, bytesRead);
 	} while (bytesRead == std::size(data));
 
-	(*g_pFilesystem)->m_vtable2->Close(*g_pFilesystem, fileHandle);
+	g_pFilesystem->m_vtable2->Close(g_pFilesystem, fileHandle);
 
 	return fileStream.str();
 }
@@ -65,12 +65,12 @@ void SetNewModSearchPaths(Mod* mod)
 		if ((fs::absolute(mod->m_ModDirectory) / MOD_OVERRIDE_DIR).string().compare(sCurrentModPath))
 		{
 			o_pAddSearchPath(
-				&*(*g_pFilesystem), (fs::absolute(mod->m_ModDirectory) / MOD_OVERRIDE_DIR).string().c_str(), "GAME", PATH_ADD_TO_HEAD);
+				g_pFilesystem, (fs::absolute(mod->m_ModDirectory) / MOD_OVERRIDE_DIR).string().c_str(), "GAME", PATH_ADD_TO_HEAD);
 			sCurrentModPath = (fs::absolute(mod->m_ModDirectory) / MOD_OVERRIDE_DIR).string();
 		}
 	}
 	else // push compiled to head
-		o_pAddSearchPath(&*(*g_pFilesystem), fs::absolute(GetCompiledAssetsPath()).string().c_str(), "GAME", PATH_ADD_TO_HEAD);
+		o_pAddSearchPath(g_pFilesystem, fs::absolute(GetCompiledAssetsPath()).string().c_str(), "GAME", PATH_ADD_TO_HEAD);
 }
 
 bool TryReplaceFile(const char* pPath, bool shouldCompile)
@@ -167,12 +167,12 @@ ON_DLL_LOAD("filesystem_stdio.dll", Filesystem, (CModule module))
 	o_pCBaseFileSystem__OpenEx = module.Offset(0x15F50).RCast<decltype(o_pCBaseFileSystem__OpenEx)>();
 	HookAttach(&(PVOID&)o_pCBaseFileSystem__OpenEx, (PVOID)h_CBaseFileSystem__OpenEx);
 
-	g_pFilesystem = new SourceInterface<IFileSystem>("filesystem_stdio.dll", "VFileSystem017");
+	g_pFilesystem = Sys_GetFactoryPtr("filesystem_stdio.dll", "VFileSystem017").RCast<IFileSystem*>();
 
-	o_pAddSearchPath = reinterpret_cast<decltype(o_pAddSearchPath)>((*g_pFilesystem)->m_vtable->AddSearchPath);
+	o_pAddSearchPath = reinterpret_cast<decltype(o_pAddSearchPath)>(g_pFilesystem->m_vtable->AddSearchPath);
 	HookAttach(&(PVOID&)o_pAddSearchPath, (PVOID)h_AddSearchPath);
-	o_pReadFromCache = reinterpret_cast<decltype(o_pReadFromCache)>((*g_pFilesystem)->m_vtable->ReadFromCache);
+	o_pReadFromCache = reinterpret_cast<decltype(o_pReadFromCache)>(g_pFilesystem->m_vtable->ReadFromCache);
 	HookAttach(&(PVOID&)o_pReadFromCache, (PVOID)h_ReadFromCache);
-	o_pMountVPK = reinterpret_cast<decltype(o_pMountVPK)>((*g_pFilesystem)->m_vtable->MountVPK);
+	o_pMountVPK = reinterpret_cast<decltype(o_pMountVPK)>(g_pFilesystem->m_vtable->MountVPK);
 	HookAttach(&(PVOID&)o_pMountVPK, (PVOID)h_MountVPK);
 }
