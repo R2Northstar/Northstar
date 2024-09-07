@@ -17,9 +17,9 @@
 Drücke Ja, um zuzustimmen. Du kannst diese Entscheidung jederzeit im Modmenü ändern."
 		"BACK_AUTHENTICATION_AGREEMENT" "Authentifizierungs-Einwilligung"
 		"AUTHENTICATION_AGREEMENT" "Authentifizierungs-Einwilligung"
-		"AUTHENTICATION_AGREEMENT_RESTART" "Ein Neustart ist notwendig, um diese Änderung zu übernehmen"
+		"AUTHENTICATION_AGREEMENT_RESTART" "Ein Neustart ist notwendig, um diese Änderung zu übernehmen."
 
-		"DIALOG_AUTHENTICATING_MASTERSERVER" "Authentifizierung mit Master Server"
+		"DIALOG_AUTHENTICATING_MASTERSERVER" "Authentifizierung mit Master Server."
 		"AUTHENTICATIONAGREEMENT_NO" "Du hast dich gegen die Authentifizierung mit Northstar entschieden. Du kannst die Authentifizierungs-Einwilligung im Modmenü ansehen."
 
 		"MENU_TITLE_SERVER_BROWSER" "Server Browser"
