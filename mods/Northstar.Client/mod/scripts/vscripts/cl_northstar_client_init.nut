@@ -20,6 +20,9 @@ global struct GameStateStruct {
     int otherHighestScore
     int maxScore
     float timeEnd
+    int serverGameState
+    int fd_waveNumber
+    int fd_totalWaves
 }
 
 global struct UIPresenceStruct {

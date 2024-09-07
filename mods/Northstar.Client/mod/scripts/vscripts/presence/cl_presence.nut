@@ -30,6 +30,19 @@ GameStateStruct function DiscordRPC_GenerateGameState( GameStateStruct gs )
     if ( IsValid( GetLocalClientPlayer() ) )
 		gs.ownScore = GameRules_GetTeamScore( GetLocalClientPlayer().GetTeam() )
 
+    if ( GameRules_GetGameMode() == FD )
+    {
+        gs.playlist = "fd" // So it returns only one thing to the plugin side instead of the 5 separate difficulties FD have
+        if ( GetGlobalNetInt( "FD_waveState" ) == WAVE_STATE_INCOMING || GetGlobalNetInt( "FD_waveState" ) == WAVE_STATE_IN_PROGRESS )
+        {
+            gs.fd_waveNumber = GetGlobalNetInt( "FD_currentWave" ) + 1
+            gs.fd_totalWaves = GetGlobalNetInt( "FD_totalWaves" )
+        }
+        else
+            gs.fd_waveNumber = -1 // Tells plugin it's on Wave Break
+    }
+
+    gs.serverGameState = GetGameState() == -1 ? 0 : GetGameState()
     gs.otherHighestScore = gs.ownScore == highestScore ? secondHighest : highestScore
 
     gs.maxScore = IsRoundBased() ? GetCurrentPlaylistVarInt( "roundscorelimit", 0 ) : GetCurrentPlaylistVarInt( "scorelimit", 0 )
