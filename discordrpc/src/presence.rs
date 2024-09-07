@@ -11,7 +11,7 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use crate::presense_bindings::{GameState, GameStateStruct, UIPresenceStruct};
+use crate::presense_bindings::{GameState, GameStateStruct, SVGameState, UIPresenceStruct};
 
 // heartbeat for pulling presence
 pub fn run_presence_updates(sqvm: NonNull<HSquirrelVM>) {
@@ -127,7 +127,10 @@ fn on_presence_updated(
             activity.end = None;
         }
         GameState::Lobby => {
-            activity.party = None;
+            activity.party = Some((
+                cl_presence.current_players.try_into().unwrap_or_default(),
+                cl_presence.max_players.try_into().unwrap_or_default(),
+            ));
             activity.details = "Lobby".to_string();
             activity.state = "In the Lobby".to_string();
             activity.large_image = Some("northstar".to_string());
@@ -150,6 +153,18 @@ fn on_presence_updated(
             if cl_presence.playlist == "campaign" {
                 activity.party = None;
                 activity.end = None;
+            } else if cl_presence.playlist == "fd" {
+                cl_presence
+                    .playlist_displayname
+                    .clone_into(&mut activity.state);
+                if cl_presence.fd_wavenumber == -1 {
+                    activity.details = "On Wave Break".to_string();
+                } else {
+                    activity.details = format!(
+                        "Wave: {} of {}",
+                        cl_presence.fd_wavenumber, cl_presence.fd_totalwaves
+                    );
+                }
             } else {
                 cl_presence
                     .playlist_displayname
@@ -167,6 +182,21 @@ fn on_presence_updated(
                     let ig_end = cl_presence.time_end.ceil() as i64;
                     activity.end = Some(current_time + ig_end);
                 }
+            }
+            // This will override previous details established whenever server is not in the Playing gamestate, so friends can see at which stage a match currently is
+            if cl_presence.servergamestate != SVGameState::Playing {
+                activity.details = match cl_presence.servergamestate {
+                    SVGameState::WaitingForPlayers => "Waiting Players to Load",
+                    SVGameState::PickLoadout => "Titan Selection",
+                    SVGameState::Prematch => "Match Starting",
+                    SVGameState::SuddenDeath => "In Sudden Death",
+                    SVGameState::SwitchingSides => "Switching Sides",
+                    SVGameState::WinnerDetermined => "Winner Determined",
+                    SVGameState::Epilogue => "In Epilogue",
+                    SVGameState::Postmatch => "Match Ending",
+                    _ => "",
+                }
+                .to_string();
             }
         }
     };
