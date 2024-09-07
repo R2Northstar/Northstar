@@ -5,17 +5,22 @@ class ModDownloader
 private:
 	const char* VERIFICATION_FLAG = "-disablemodverification";
 	const char* CUSTOM_MODS_URL_FLAG = "-customverifiedurl=";
-	const char* STORE_URL = "https://gcdn.thunderstore.io/live/repository/packages/";
 	const char* DEFAULT_MODS_LIST_URL = "https://raw.githubusercontent.com/R2Northstar/VerifiedMods/main/verified-mods.json";
 	char* modsListUrl;
 
+	enum class VerifiedModPlatform
+	{
+		Unknown,
+		Thunderstore
+	};
 	struct VerifiedModVersion
 	{
 		std::string checksum;
+		std::string downloadLink;
+		VerifiedModPlatform platform;
 	};
 	struct VerifiedModDetails
 	{
-		std::string dependencyPrefix;
 		std::unordered_map<std::string, VerifiedModVersion> versions = {};
 	};
 	std::unordered_map<std::string, VerifiedModDetails> verifiedMods = {};
@@ -45,7 +50,7 @@ private:
 	 * @param modVersion version of the mod to be downloaded
 	 * @returns location of the downloaded archive
 	 */
-	std::optional<fs::path> FetchModFromDistantStore(std::string_view modName, std::string_view modVersion);
+	std::optional<fs::path> FetchModFromDistantStore(std::string_view modName, VerifiedModVersion modVersion);
 
 	/**
 	 * Tells if a mod archive has not been corrupted.
@@ -65,12 +70,13 @@ private:
 	 * Extracts a mod archive to the game folder.
 	 *
 	 * This extracts a downloaded mod archive from its original location to the
-	 * current game profile, in the remote mods folder.
+	 * current game profile; the install folder is defined by the platform parameter.
 	 *
 	 * @param modPath location of the downloaded archive
+	 * @param platform origin of the downloaded archive
 	 * @returns nothing
 	 */
-	void ExtractMod(fs::path modPath);
+	void ExtractMod(fs::path modPath, VerifiedModPlatform platform);
 
 public:
 	ModDownloader();
@@ -131,7 +137,8 @@ public:
 		MOD_FETCHING_FAILED,
 		MOD_CORRUPTED, // Downloaded archive checksum does not match verified hash
 		NO_DISK_SPACE_AVAILABLE,
-		NOT_FOUND // Mod is not currently being auto-downloaded
+		NOT_FOUND, // Mod is not currently being auto-downloaded
+		UNKNOWN_PLATFORM
 	};
 
 	struct MOD_STATE
