@@ -29,6 +29,9 @@ pub struct GameStateStruct {
     pub other_highest_score: i32,
     pub max_score: i32,
     pub time_end: f32,
+    pub servergamestate: SVGameState,
+    pub fd_wavenumber: i32,
+    pub fd_totalwaves: i32,
 }
 
 #[derive(PushToSquirrelVm, GetFromSquirrelVm, Default, Clone)]
@@ -40,5 +43,29 @@ pub struct UIPresenceStruct {
 impl Default for GameState {
     fn default() -> Self {
         Self::Loading
+    }
+}
+
+#[derive(
+    PushToSquirrelVm, GetFromSquirrelVm, GetFromSQObject, Clone, Copy, Debug, PartialEq, Eq,
+)]
+#[repr(i32)]
+/// binding to ServerGameState
+pub enum SVGameState {
+    WaitingForCustomStart,
+    WaitingForPlayers,
+    PickLoadout,
+    Prematch,
+    Playing,
+    SuddenDeath,
+    SwitchingSides,
+    WinnerDetermined,
+    Epilogue,
+    Postmatch,
+}
+
+impl Default for SVGameState {
+    fn default() -> Self {
+        Self::WaitingForCustomStart
     }
 }
