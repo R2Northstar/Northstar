@@ -141,8 +141,8 @@ fn on_presence_updated(
                 cl_presence.current_players.try_into().unwrap_or_default(),
                 cl_presence.max_players.try_into().unwrap_or_default(),
             ));
-            activity.details = map_displayname.clone();
-            activity.state = map_displayname.clone();
+            map_displayname.clone_into(&mut activity.details);
+            map_displayname.clone_into(&mut activity.state);
             activity.large_image = Some(cl_presence.map.clone());
             activity.large_text = Some(map_displayname);
             activity.small_image = Some("northstar".to_string());
@@ -151,7 +151,9 @@ fn on_presence_updated(
                 activity.party = None;
                 activity.end = None;
             } else {
-                activity.state = cl_presence.playlist_displayname.clone();
+                cl_presence
+                    .playlist_displayname
+                    .clone_into(&mut activity.state);
                 activity.details = format!(
                     "Score: {} - {} (First to {})",
                     cl_presence.own_score, cl_presence.other_highest_score, cl_presence.max_score,

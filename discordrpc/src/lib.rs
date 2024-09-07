@@ -2,16 +2,19 @@
 
 use discord_sdk::activity::Secrets;
 use parking_lot::Mutex;
+use rrplug::interfaces::manager::register_interface;
 use rrplug::prelude::*;
 use tokio::runtime::Runtime;
 
 use crate::{
     discord::async_main,
+    invite_handler::InviteHandler,
     presence::run_presence_updates,
     presense_bindings::{GameState, GameStateStruct, UIPresenceStruct},
 };
 
 pub(crate) mod discord;
+pub(crate) mod invite_handler;
 pub(crate) mod presence;
 pub(crate) mod presense_bindings;
 
@@ -49,6 +52,8 @@ impl Plugin for DiscordRpcPlugin {
 
     fn new(_: bool) -> Self {
         register_sq_functions(presence::fetch_presence);
+
+        unsafe { register_interface("InviteHandler001", InviteHandler::new()) };
 
         let activity = Mutex::new(ActivityData {
             large_image: Some("northstar".to_string()),
