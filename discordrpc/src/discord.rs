@@ -3,20 +3,22 @@
 use std::num::NonZeroU32;
 
 use discord_sdk::{
-    activity::{ActivityBuilder, Assets, PartyPrivacy},
+    activity::{events::ActivityEvent, ActivityBuilder, Assets, JoinRequestReply, PartyPrivacy},
     user::User,
     wheel::UserState,
     wheel::Wheel,
     Discord, DiscordApp, Subscriptions,
 };
-use rrplug::prelude::*;
+use rrplug::{mid::utils::try_cstring, prelude::*};
+use tokio::sync::broadcast::Receiver;
 
-use crate::exports::PLUGIN;
+use crate::{exports::PLUGIN, invite_handler::JOIN_HANDLER_FUNCTION};
 
 /// the discord app's id, taken from older v1 discord rpc
 const APP_ID: i64 = 941428101429231617;
 
 /// struct to hold everything required to run discord rpc
+#[allow(dead_code)]
 pub struct Client {
     pub discord: Discord,
     pub user: User,
@@ -41,6 +43,8 @@ pub async fn async_main() {
         Ok(_) => log::info!("cleared activity"),
         Err(err) => log::error!("coudln't clear activity because of {:?}", err),
     }
+
+    let mut events = client.wheel.activity().0;
 
     loop {
         let data = activity.lock().clone();
@@ -84,8 +88,33 @@ pub async fn async_main() {
             return;
         }
 
+        handle_activity_events(&mut events, &client.discord).await;
+
         wait(1000);
     }
+}
+
+async fn handle_activity_events(
+    events: &mut Receiver<ActivityEvent>,
+    discord: &Discord,
+) -> Option<()> {
+    match events.try_recv().ok()? {
+        ActivityEvent::Join(join) => {
+            log::info!("invite proccessing");
+            let secret = try_cstring(&join.secret).expect("I like null bytes in my strings cool");
+            JOIN_HANDLER_FUNCTION.lock()(secret.as_ptr())
+        }
+        ActivityEvent::Spectate(_) => log::warn!("spectating cannot be supported!"),
+        ActivityEvent::JoinRequest(request) => {
+            log::info!("{} joined the party", request.user.username);
+            _ = discord
+                .send_join_request_reply(request.user.id, JoinRequestReply::Yes)
+                .await;
+        }
+        _ => {}
+    }
+
+    None
 }
 
 /// discord connection init sourced from https://github.com/EmbarkStudios/discord-sdk/blob/d311db749b7e11cc55cb1a9d7bfd9a95cfe61fd1/examples-shared/src/lib.rs#L16
