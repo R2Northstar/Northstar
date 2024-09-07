@@ -70,10 +70,11 @@ REPLACE_SQFUNC(GetDataTable, (ScriptContext::UI | ScriptContext::CLIENT | Script
 		g_pSquirrel<context>->raiseerror(sqvm, fmt::format("Asset \"{}\" doesn't start with \"datatable/\"", pAssetName).c_str());
 		return SQRESULT_ERROR;
 	}
-	else if (!Cvar_ns_prefer_datatable_from_disk->GetBool() && g_pPakLoadManager->LoadFile(pAssetName))
+	else if (!Cvar_ns_prefer_datatable_from_disk->GetBool() && g_pPakLoadManager->OpenFile(pAssetName))
+	{
 		return g_pSquirrel<context>->m_funcOriginals["GetDataTable"](sqvm);
-	// either we prefer disk datatables, or we're loading a datatable that wasn't found in rpak
-	else
+	}
+	else // either we prefer disk datatables, or we're loading a datatable that wasn't found in rpak
 	{
 		std::string sAssetPath(fmt::format("scripts/{}", pAssetName));
 
@@ -223,7 +224,7 @@ REPLACE_SQFUNC(GetDataTable, (ScriptContext::UI | ScriptContext::CLIENT | Script
 			return SQRESULT_NOTNULL;
 		}
 		// the file doesn't exist on disk, check rpak if we haven't already
-		else if (Cvar_ns_prefer_datatable_from_disk->GetBool() && g_pPakLoadManager->LoadFile(pAssetName))
+		else if (Cvar_ns_prefer_datatable_from_disk->GetBool() && g_pPakLoadManager->OpenFile(pAssetName))
 			return g_pSquirrel<context>->m_funcOriginals["GetDataTable"](sqvm);
 		// the file doesn't exist at all, error
 		else
@@ -750,7 +751,7 @@ std::string DataTableToString(Datatable* datatable)
 
 void DumpDatatable(const char* pDatatablePath)
 {
-	Datatable* pDatatable = (Datatable*)g_pPakLoadManager->LoadFile(pDatatablePath);
+	Datatable* pDatatable = (Datatable*)g_pPakLoadManager->OpenFile(pDatatablePath);
 	if (!pDatatable)
 	{
 		spdlog::error("couldn't load datatable {} (rpak containing it may not be loaded?)", pDatatablePath);
