@@ -509,6 +509,40 @@ static void __fastcall h_MilesLog(int level, const char* string)
 	spdlog::info("[MSS] {} - {}", level, string);
 }
 
+static void(__fastcall* o_pSub_18003EBD0)(DWORD dwThreadID, const char* threadName) = nullptr;
+static void __fastcall h_Sub_18003EBD0(DWORD dwThreadID, const char* threadName)
+{
+	HANDLE hThread = OpenThread(THREAD_SET_LIMITED_INFORMATION, FALSE, dwThreadID);
+
+	if (hThread != NULL)
+	{
+		// TODO: This "method" of "charset conversion" from string to wstring is abhorrent. Change it to a proper one
+		// as soon as Northstar has some helper function to do proper charset conversions.
+		auto tmp = std::string(threadName);
+		HRESULT WINAPI _SetThreadDescription(HANDLE hThread, PCWSTR lpThreadDescription);
+		_SetThreadDescription(hThread, std::wstring(tmp.begin(), tmp.end()).c_str());
+
+		CloseHandle(hThread);
+	}
+
+	o_pSub_18003EBD0(dwThreadID, threadName);
+}
+
+static char*(__fastcall* o_pSub_18003BC10)(void* a1, void* a2, void* a3, void* a4, void* a5, int a6) = nullptr;
+static char* __fastcall h_Sub_18003BC10(void* a1, void* a2, void* a3, void* a4, void* a5, int a6)
+{
+	HANDLE hThread;
+	char* ret = o_pSub_18003BC10(a1, a2, a3, a4, a5, a6);
+
+	if (ret != NULL && (hThread = reinterpret_cast<HANDLE>(*((uint64_t*)ret + 55))) != NULL)
+	{
+		HRESULT WINAPI _SetThreadDescription(HANDLE hThread, PCWSTR lpThreadDescription);
+		_SetThreadDescription(hThread, L"[Miles] WASAPI Service Thread");
+	}
+
+	return ret;
+}
+
 ON_DLL_LOAD("mileswin64.dll", MilesWin64_Audio, (CModule module))
 {
 	o_pLoadSampleMetadata = module.Offset(0xF110).RCast<decltype(o_pLoadSampleMetadata)>();
@@ -516,6 +550,12 @@ ON_DLL_LOAD("mileswin64.dll", MilesWin64_Audio, (CModule module))
 
 	o_pSub_1800294C0 = module.Offset(0x294C0).RCast<decltype(o_pSub_1800294C0)>();
 	HookAttach(&(PVOID&)o_pSub_1800294C0, (PVOID)h_Sub_1800294C0);
+
+	o_pSub_18003EBD0 = module.Offset(0x3EBD0).RCast<decltype(o_pSub_18003EBD0)>();
+	HookAttach(&(PVOID&)o_pSub_18003EBD0, (PVOID)h_Sub_18003EBD0);
+
+	o_pSub_18003BC10 = module.Offset(0x3BC10).RCast<decltype(o_pSub_18003BC10)>();
+	HookAttach(&(PVOID&)o_pSub_18003BC10, (PVOID)h_Sub_18003BC10);
 }
 
 ON_DLL_LOAD_RELIESON("engine.dll", MilesLogFuncHooks, ConVar, (CModule module))
