@@ -11,8 +11,6 @@
 #include <iomanip>
 #include <sstream>
 
-AUTOHOOK_INIT()
-
 std::vector<std::shared_ptr<ColoredLogger>> loggers {};
 
 namespace NS::log
