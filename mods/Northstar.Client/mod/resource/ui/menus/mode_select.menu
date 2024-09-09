@@ -1,0 +1,343 @@
+resource/ui/menus/mode_select.menu
+{
+	menu
+	{
+		ControlName				Frame
+		xpos					0
+		ypos					0
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+
+		MenuCommon
+		{
+			ControlName				CNestedPanel
+			xpos					0
+			ypos					0
+			wide					f0
+			tall					f0
+			visible					1
+			controlSettingsFile		"resource/ui/menus/panels/menu_common.res"
+		}
+
+		MatchmakingStatus
+		{
+			ControlName				CNestedPanel
+			xpos					0
+			ypos					0
+			wide					f0
+			tall					f0
+			visible					1
+			controlSettingsFile		"resource/ui/menus/panels/matchmaking_status.res"
+		}
+
+        NextModeImageFrame
+        {
+            ControlName				RuiPanel
+			xpos 					800
+			ypos					160
+			wide					860
+			tall					418
+            labelText				""
+            visible				    1
+            bgcolor_override        "0 0 0 0"
+            paintbackground         1
+            rui                     "ui/basic_border_box.rpak"
+        }
+
+		NextModeImage
+		{
+			ControlName				RuiPanel
+			pin_to_sibling			NextModeImageFrame
+			pin_corner_to_sibling	BOTTOM
+			pin_to_sibling_corner	BOTTOM
+//			xpos                    -12
+			ypos                    -12
+			wide					480
+			tall					240
+			visible					1
+			scaleImage				1
+            rui                     "ui/basic_menu_image.rpak"
+			zpos					2
+		}
+
+		ModeIconImage
+		{
+			ControlName				RuiPanel
+			pin_to_sibling			NextModeImage
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+			xpos                    0
+			ypos                    -16
+			wide					72
+			tall					72
+			visible					1
+			scaleImage				1
+            rui                     "ui/basic_image_add.rpak"
+			zpos					2
+		}
+
+		NextModeName
+		{
+			ControlName				Label
+			pin_to_sibling			NextModeImageFrame
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+			ypos					-20
+			wide                    840
+			auto_tall_tocontents	1
+			visible					1
+			labelText				"Foo"
+			textAlignment           center
+			centerWrap              1
+			font					Default_43_DropShadow
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+		}
+
+		NextModeDesc
+		{
+			ControlName				Label
+			pin_to_sibling			NextModeName
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	BOTTOM
+			xpos					0
+			ypos					0
+			wide					840
+			wrap					1
+			auto_tall_tocontents	1
+			visible					1
+			labelText				"Bar"
+			textAlignment           center
+			centerWrap              1
+			font					Default_27
+			allcaps					0
+			fgcolor_override		"255 255 255 255"
+		}
+
+		MenuTitle
+		{
+			ControlName				Label
+			InheritProperties		MenuTitle
+			labelText				"#SELECT_GAME_MODE"
+		}
+
+		ButtonRowAnchor
+		{
+			ControlName				Label
+			labelText				""
+
+			xpos                    96
+            ypos                    160
+		}
+
+		BtnMode1
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ModeButton
+			scriptID				0
+			navUp					BtnMode15
+			navDown					BtnMode2
+
+			pin_to_sibling				ButtonRowAnchor
+			pin_corner_to_sibling		TOP_LEFT
+			pin_to_sibling_corner		TOP_LEFT
+		}
+		BtnMode2
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ModeButton
+			scriptID				1
+			pin_to_sibling			BtnMode1
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnMode1
+			navDown					BtnMode3
+		}
+		BtnMode3
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ModeButton
+			scriptID				2
+			pin_to_sibling			BtnMode2
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnMode2
+			navDown					BtnMode4
+		}
+		BtnMode4
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ModeButton
+			scriptID				3
+			pin_to_sibling			BtnMode3
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			//ypos					11
+			navUp					BtnMode3
+			navDown					BtnMode5
+		}
+		BtnMode5
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ModeButton
+			scriptID				4
+			pin_to_sibling			BtnMode4
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnMode4
+			navDown					BtnMode6
+		}
+		BtnMode6
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ModeButton
+			scriptID				5
+			pin_to_sibling			BtnMode5
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnMode5
+			navDown					BtnMode7
+		}
+		BtnMode7
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ModeButton
+			scriptID				6
+			pin_to_sibling			BtnMode6
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnMode6
+			navDown					BtnMode8
+		}
+		BtnMode8
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ModeButton
+			scriptID				7
+			pin_to_sibling			BtnMode7
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnMode7
+			navDown					BtnMode9
+		}
+		BtnMode9
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ModeButton
+			scriptID				8
+			pin_to_sibling			BtnMode8
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnMode8
+			navDown					BtnMode10
+		}
+		BtnMode10
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ModeButton
+			scriptID				9
+			pin_to_sibling			BtnMode9
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnMode9
+			navDown					BtnMode11
+		}
+		BtnMode11
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ModeButton
+			scriptID				10
+			pin_to_sibling			BtnMode10
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnMode10
+			navDown					BtnMode12
+		}
+		BtnMode12
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ModeButton
+			scriptID				11
+			pin_to_sibling			BtnMode11
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnMode11
+			navDown					BtnMode13
+		}
+		BtnMode13
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ModeButton
+			scriptID				12
+			pin_to_sibling			BtnMode12
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnMode12
+			navDown					BtnMode14
+		}
+		BtnMode14
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ModeButton
+			scriptID				13
+			pin_to_sibling			BtnMode13
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnMode13
+			navDown					BtnMode15
+		}
+		BtnMode15
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ModeButton
+			scriptID				14
+			pin_to_sibling			BtnMode14
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnMode14
+			navDown					BtnMode1
+		}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		ButtonTooltip
+		{
+			ControlName				CNestedPanel
+			InheritProperties		ButtonTooltip
+		}
+
+		FooterButtons
+		{
+			ControlName				CNestedPanel
+			xpos					0
+			ypos					r119
+			wide					f0
+			tall					36
+			visible					1
+			controlSettingsFile		"resource/ui/menus/panels/footer_buttons.res"
+		}
+	}
+}
