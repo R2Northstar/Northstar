@@ -324,6 +324,18 @@ Press Yes if you agree to this. This choice can be changed in the mods menu at a
 		"JSON_PARSE_ERROR" 				"Error parsing json response"
 		"UNSUPPORTED_VERSION" 			"The version you are using is no longer supported"
 
+		// Mode menu
+		"MODE_MENU_PVPVE"		"PvPvE"
+		"MODE_MENU_PVE"			"PvE"
+		"MODE_MENU_PVP"			"PvP"
+		"MODE_MENU_FFA"			"FFA"
+		"MODE_MENU_TITAN_ONLY"	"Titan Only"
+		"MODE_MENU_OTHER"		"Other"
+		"MODE_MENU_CUSTOM"		"Custom"
+		"MODE_MENU_ALL"			"All"
+		"MODE_MENU_UNKNOWN"		"Unknown"
+		"MODE_MENU_SWITCH"		"Filter"
+
 		"AUTHENTICATION_FAILED_HEADER"		"Authentication Failed"
 		"AUTHENTICATION_FAILED_BODY"		"Failed to authenticate with Atlas!"
 		"AUTHENTICATION_FAILED_ERROR_CODE"	"Error code: ^DB6F2C00%s1^"
