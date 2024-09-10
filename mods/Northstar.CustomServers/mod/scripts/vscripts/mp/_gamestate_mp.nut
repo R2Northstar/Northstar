@@ -59,18 +59,21 @@ struct {
 	bool functionref( entity victim, entity attacker, var damageInfo, bool isRoundEnd ) shouldTryUseProjectileReplayCallback
 } file
 
-void function SetCallback_TryUseProjectileReplay( bool functionref( entity victim, entity attacker, var damageInfo, bool isRoundEnd ) callback )
-{
-	file.shouldTryUseProjectileReplayCallback = callback
-}
 
-bool function ShouldTryUseProjectileReplay( entity victim, entity attacker, var damageInfo, bool isRoundEnd )
-{
-	if ( file.shouldTryUseProjectileReplayCallback != null )
-		return file.shouldTryUseProjectileReplayCallback( victim, attacker, damageInfo, isRoundEnd )
-	// default to true (vanilla behaviour)
-	return true
-}
+
+
+
+
+
+
+
+/*
+ ██████   █████  ███    ███ ███████ ███████ ████████  █████  ████████ ███████ ███████ 
+██       ██   ██ ████  ████ ██      ██         ██    ██   ██    ██    ██      ██      
+██   ███ ███████ ██ ████ ██ █████   ███████    ██    ███████    ██    █████   ███████ 
+██    ██ ██   ██ ██  ██  ██ ██           ██    ██    ██   ██    ██    ██           ██ 
+ ██████  ██   ██ ██      ██ ███████ ███████    ██    ██   ██    ██    ███████ ███████ 
+*/
 
 void function PIN_GameStart()
 {
@@ -101,6 +104,61 @@ void function PIN_GameStart()
 	RegisterSignal( "CleanUpEntitiesForRoundEnd" )
 }
 
+void function GameState_EntitiesDidLoad()
+{
+	if ( GetClassicMPMode() || ClassicMP_ShouldTryIntroAndEpilogueWithoutClassicMP() )
+		ClassicMP_SetupIntro()
+}
+
+void function WaittillGameStateOrHigher( int gameState )
+{
+	while ( GetGameState() < gameState )
+		svGlobal.levelEnt.WaitSignal( "GameStateChanged" )
+}
+
+bool function ShouldTryUseProjectileReplay( entity victim, entity attacker, var damageInfo, bool isRoundEnd )
+{
+	if ( file.shouldTryUseProjectileReplayCallback != null )
+		return file.shouldTryUseProjectileReplayCallback( victim, attacker, damageInfo, isRoundEnd )
+	// default to true (vanilla behaviour)
+	return true
+}
+
+/// This is to move all NPCs that a player owns from one team to the other during a match
+/// Auto-Titans, Turrets, Ticks and Hacked Spectres will all move along together with the player to the new Team
+/// Also possibly prevents mods that spawns other types of NPCs that players can own from breaking when switching (i.e Drones, Hacked Reapers)
+void function OnPlayerChangedTeam( entity player )
+{
+	if ( !player.hasConnected ) // Prevents players who just joined to trigger below code, as server always pre setups their teams
+		return
+	
+	if( IsIMCOrMilitiaTeam( player.GetTeam() ) )
+		NotifyClientsOfTeamChange( player, GetOtherTeam( player.GetTeam() ), player.GetTeam() )
+	
+	foreach( npc in GetNPCArray() )
+	{
+		entity bossPlayer = npc.GetBossPlayer()
+		if ( IsValidPlayer( bossPlayer ) && bossPlayer == player && IsAlive( npc ) )
+			SetTeam( npc, player.GetTeam() )
+	}
+}
+
+
+
+
+
+
+
+
+
+/*
+ ██████   █████  ███    ███ ███████     ███████ ███████ ████████ ██    ██ ██████  
+██       ██   ██ ████  ████ ██          ██      ██         ██    ██    ██ ██   ██ 
+██   ███ ███████ ██ ████ ██ █████       ███████ █████      ██    ██    ██ ██████  
+██    ██ ██   ██ ██  ██  ██ ██               ██ ██         ██    ██    ██ ██      
+ ██████  ██   ██ ██      ██ ███████     ███████ ███████    ██     ██████  ██      
+*/
+
 void function SetGameState( int newState )
 {
 	if ( newState == GetGameState() )
@@ -115,23 +173,166 @@ void function SetGameState( int newState )
 		callbackFunc()
 }
 
-void function GameState_EntitiesDidLoad()
+void function AddTeamScore( int team, int amount )
 {
-	if ( GetClassicMPMode() || ClassicMP_ShouldTryIntroAndEpilogueWithoutClassicMP() )
-		ClassicMP_SetupIntro()
+	GameRules_SetTeamScore( team, GameRules_GetTeamScore( team ) + amount )
+	GameRules_SetTeamScore2( team, GameRules_GetTeamScore2( team ) + amount )
+	
+	int scoreLimit
+	if ( IsRoundBased() )
+		scoreLimit = GameMode_GetRoundScoreLimit( GAMETYPE )
+	else
+		scoreLimit = GameMode_GetScoreLimit( GAMETYPE )
+		
+	int score = GameRules_GetTeamScore( team )
+	if ( score >= scoreLimit || GetGameState() == eGameState.SuddenDeath )
+		SetWinner( team )
+	else if ( ( file.switchSidesBased && !file.hasSwitchedSides ) && score >= ( scoreLimit.tofloat() / 2.0 ) )
+		SetGameState( eGameState.SwitchingSides )
 }
 
-void function WaittillGameStateOrHigher( int gameState )
+void function SetWinner( int team, string winningReason = "", string losingReason = "" )
+{	
+	SetServerVar( "winningTeam", team )
+	
+	file.gameWonThisFrame = true
+	thread UpdateGameWonThisFrameNextFrame()
+	
+	if ( winningReason.len() == 0 )
+		file.announceRoundWinnerWinningSubstr = 0
+	else
+		file.announceRoundWinnerWinningSubstr = GetStringID( winningReason )
+	
+	if ( losingReason.len() == 0 )
+		file.announceRoundWinnerLosingSubstr = 0
+	else
+		file.announceRoundWinnerLosingSubstr = GetStringID( losingReason )
+	
+	if ( GamePlayingOrSuddenDeath() )
+	{
+		if ( IsRoundBased() )
+		{	
+			if ( team != TEAM_UNASSIGNED )
+			{
+				GameRules_SetTeamScore( team, GameRules_GetTeamScore( team ) + 1 )
+				GameRules_SetTeamScore2( team, GameRules_GetTeamScore2( team ) + 1 )
+			}
+			
+			SetGameState( eGameState.WinnerDetermined )
+			ScoreEvent_RoundComplete( team )
+		}
+		else
+		{
+			SetGameState( eGameState.WinnerDetermined )
+			ScoreEvent_MatchComplete( team )
+			
+			array<entity> players = GetPlayerArray()
+			int functionref( entity, entity ) compareFunc = GameMode_GetScoreCompareFunc( GAMETYPE )
+			if ( compareFunc != null )
+			{
+				players.sort( compareFunc )
+				int playerCount = players.len()
+				int currentPlace = 1
+				for ( int i = 0; i < 3; i++ )
+				{
+					if ( i >= playerCount )
+						continue
+					
+					if ( i > 0 && compareFunc( players[i - 1], players[i] ) != 0 )
+						currentPlace += 1
+
+					switch( currentPlace )
+					{
+						case 1:
+							UpdatePlayerStat( players[i], "game_stats", "mvp" )
+							UpdatePlayerStat( players[i], "game_stats", "mvp_total" )
+							UpdatePlayerStat( players[i], "game_stats", "top3OnTeam" )
+							break
+						case 2:
+							UpdatePlayerStat( players[i], "game_stats", "top3OnTeam" )
+							break
+						case 3:
+							UpdatePlayerStat( players[i], "game_stats", "top3OnTeam" )
+							break
+					}
+				}
+			}
+		}
+	}
+}
+
+void function SetTimeoutWinnerDecisionFunc( int functionref() callback )
 {
-	while ( GetGameState() < gameState )
-		svGlobal.levelEnt.WaitSignal( "GameStateChanged" )
+	file.timeoutWinnerDecisionFunc = callback
+}
+
+void function SetCallback_TryUseProjectileReplay( bool functionref( entity victim, entity attacker, var damageInfo, bool isRoundEnd ) callback )
+{
+	file.shouldTryUseProjectileReplayCallback = callback
+}
+
+void function AddCallback_OnRoundEndCleanup( void functionref() callback )
+{
+	file.roundEndCleanupCallbacks.append( callback )
+}
+
+void function SetShouldUsePickLoadoutScreen( bool shouldUse )
+{
+	file.usePickLoadoutScreen = shouldUse
+}
+
+void function SetSwitchSidesBased( bool switchSides )
+{
+	file.switchSidesBased = switchSides
+}
+
+void function SetSuddenDeathBased( bool suddenDeathBased )
+{
+	file.suddenDeathBased = suddenDeathBased
+}
+
+void function SetTimerBased( bool timerBased )
+{
+	file.timerBased = timerBased
+}
+
+void function SetShouldUseRoundWinningKillReplay( bool shouldUse )
+{
+	SetServerVar( "roundWinningKillReplayEnabled", shouldUse )
+}
+
+void function SetRoundWinningKillReplayKillClasses( bool pilot, bool titan )
+{
+	file.roundWinningKillReplayTrackPilotKills = pilot
+	file.roundWinningKillReplayTrackTitanKills = titan // player kills in titans should get tracked anyway, might be worth renaming this
+}
+
+void function SetRoundWinningKillReplayAttacker( entity attacker, int inflictorEHandle = -1 )
+{
+	file.roundWinningKillReplayTime = Time()
+	file.roundWinningKillReplayHealthFrac = GetHealthFrac( attacker )
+	file.roundWinningKillReplayAttacker = attacker
+	file.roundWinningKillReplayInflictorEHandle = inflictorEHandle == -1 ? attacker.GetEncodedEHandle() : inflictorEHandle
+	file.roundWinningKillReplayTimeOfDeath = Time()
 }
 
 
-// logic for individual gamestates:
 
 
-// eGameState.WaitingForCustomStart
+
+
+
+
+
+
+/*
+ ██████ ██    ██ ███████ ████████  ██████  ███    ███     ███████ ████████  █████  ██████  ████████ 
+██      ██    ██ ██         ██    ██    ██ ████  ████     ██         ██    ██   ██ ██   ██    ██    
+██      ██    ██ ███████    ██    ██    ██ ██ ████ ██     ███████    ██    ███████ ██████     ██    
+██      ██    ██      ██    ██    ██    ██ ██  ██  ██          ██    ██    ██   ██ ██   ██    ██    
+ ██████  ██████  ███████    ██     ██████  ██      ██     ███████    ██    ██   ██ ██   ██    ██    
+*/
+
 void function GameStateEnter_WaitingForCustomStart()
 {
 	// unused in release, comments indicate this was supposed to be used for an e3 demo
@@ -139,7 +340,22 @@ void function GameStateEnter_WaitingForCustomStart()
 }
 
 
-// eGameState.WaitingForPlayers
+
+
+
+
+
+
+
+
+/*
+██     ██  █████  ██ ████████ ██ ███    ██  ██████      ███████  ██████  ██████      ██████  ██       █████  ██    ██ ███████ ██████  ███████ 
+██     ██ ██   ██ ██    ██    ██ ████   ██ ██           ██      ██    ██ ██   ██     ██   ██ ██      ██   ██  ██  ██  ██      ██   ██ ██      
+██  █  ██ ███████ ██    ██    ██ ██ ██  ██ ██   ███     █████   ██    ██ ██████      ██████  ██      ███████   ████   █████   ██████  ███████ 
+██ ███ ██ ██   ██ ██    ██    ██ ██  ██ ██ ██    ██     ██      ██    ██ ██   ██     ██      ██      ██   ██    ██    ██      ██   ██      ██ 
+ ███ ███  ██   ██ ██    ██    ██ ██   ████  ██████      ██       ██████  ██   ██     ██      ███████ ██   ██    ██    ███████ ██   ██ ███████ 
+*/
+
 void function GameStateEnter_WaitingForPlayers()
 {
 	foreach ( entity player in GetPlayerArray() )
@@ -171,7 +387,22 @@ void function WaitingForPlayers_ClientConnected( entity player )
 		ScreenFadeToBlackForever( player, 0.0 )
 }
 
-// eGameState.PickLoadout
+
+
+
+
+
+
+
+
+/*
+██████  ██  ██████ ██   ██     ██       ██████   █████  ██████   ██████  ██    ██ ████████ 
+██   ██ ██ ██      ██  ██      ██      ██    ██ ██   ██ ██   ██ ██    ██ ██    ██    ██    
+██████  ██ ██      █████       ██      ██    ██ ███████ ██   ██ ██    ██ ██    ██    ██    
+██      ██ ██      ██  ██      ██      ██    ██ ██   ██ ██   ██ ██    ██ ██    ██    ██    
+██      ██  ██████ ██   ██     ███████  ██████  ██   ██ ██████   ██████   ██████     ██    
+*/
+
 void function GameStateEnter_PickLoadout()
 {
 	thread GameStateEnter_PickLoadout_Threaded()
@@ -190,7 +421,22 @@ void function GameStateEnter_PickLoadout_Threaded()
 }
 
 
-// eGameState.Prematch
+
+
+
+
+
+
+
+
+/*
+██████  ██████  ███████ ███    ███  █████  ████████  ██████ ██   ██ 
+██   ██ ██   ██ ██      ████  ████ ██   ██    ██    ██      ██   ██ 
+██████  ██████  █████   ██ ████ ██ ███████    ██    ██      ███████ 
+██      ██   ██ ██      ██  ██  ██ ██   ██    ██    ██      ██   ██ 
+██      ██   ██ ███████ ██      ██ ██   ██    ██     ██████ ██   ██ 
+*/
+
 void function GameStateEnter_Prematch()
 {	
 	int timeLimit = GameMode_GetTimeLimit( GAMETYPE ) * 60
@@ -236,7 +482,22 @@ void function StartGameWithoutClassicMP()
 }
 
 
-// eGameState.Playing
+
+
+
+
+
+
+
+
+/*
+██████  ██       █████  ██    ██ ██ ███    ██  ██████  
+██   ██ ██      ██   ██  ██  ██  ██ ████   ██ ██       
+██████  ██      ███████   ████   ██ ██ ██  ██ ██   ███ 
+██      ██      ██   ██    ██    ██ ██  ██ ██ ██    ██ 
+██      ███████ ██   ██    ██    ██ ██   ████  ██████  
+*/
+
 void function GameStateEnter_Playing()
 {
 	thread GameStateEnter_Playing_Threaded()
@@ -279,7 +540,22 @@ void function GameStateEnter_Playing_Threaded()
 }
 
 
-// eGameState.WinnerDetermined
+
+
+
+
+
+
+
+
+/*
+██     ██ ██ ███    ██ ███    ██ ███████ ██████      ██████  ███████ ████████ ███████ ██████  ███    ███ ██ ███    ██ ███████ ██████  
+██     ██ ██ ████   ██ ████   ██ ██      ██   ██     ██   ██ ██         ██    ██      ██   ██ ████  ████ ██ ████   ██ ██      ██   ██ 
+██  █  ██ ██ ██ ██  ██ ██ ██  ██ █████   ██████      ██   ██ █████      ██    █████   ██████  ██ ████ ██ ██ ██ ██  ██ █████   ██   ██ 
+██ ███ ██ ██ ██  ██ ██ ██  ██ ██ ██      ██   ██     ██   ██ ██         ██    ██      ██   ██ ██  ██  ██ ██ ██  ██ ██ ██      ██   ██ 
+ ███ ███  ██ ██   ████ ██   ████ ███████ ██   ██     ██████  ███████    ██    ███████ ██   ██ ██      ██ ██ ██   ████ ███████ ██████  
+*/
+
 // these are likely innacurate
 const float ROUND_END_FADE_KILLREPLAY = 1.0
 const float ROUND_END_DELAY_KILLREPLAY = 3.0 
@@ -446,7 +722,22 @@ void function PlayerWatchesRoundWinningKillReplay( entity player, float replayLe
 }
 
 
-// eGameState.SwitchingSides
+
+
+
+
+
+
+
+
+/*
+███████ ██     ██ ██ ████████  ██████ ██   ██ ██ ███    ██  ██████      ███████ ██ ██████  ███████ ███████ 
+██      ██     ██ ██    ██    ██      ██   ██ ██ ████   ██ ██           ██      ██ ██   ██ ██      ██      
+███████ ██  █  ██ ██    ██    ██      ███████ ██ ██ ██  ██ ██   ███     ███████ ██ ██   ██ █████   ███████ 
+     ██ ██ ███ ██ ██    ██    ██      ██   ██ ██ ██  ██ ██ ██    ██          ██ ██ ██   ██ ██           ██ 
+███████  ███ ███  ██    ██     ██████ ██   ██ ██ ██   ████  ██████      ███████ ██ ██████  ███████ ███████ 
+*/
+
 void function GameStateEnter_SwitchingSides()
 {
 	thread GameStateEnter_SwitchingSides_Threaded()
@@ -537,7 +828,22 @@ void function PlayerWatchesSwitchingSidesKillReplay( entity player, bool doRepla
 }
 
 
-// eGameState.SuddenDeath
+
+
+
+
+
+
+
+
+/*
+███████ ██    ██ ██████  ██████  ███████ ███    ██     ██████  ███████  █████  ████████ ██   ██ 
+██      ██    ██ ██   ██ ██   ██ ██      ████   ██     ██   ██ ██      ██   ██    ██    ██   ██ 
+███████ ██    ██ ██   ██ ██   ██ █████   ██ ██  ██     ██   ██ █████   ███████    ██    ███████ 
+     ██ ██    ██ ██   ██ ██   ██ ██      ██  ██ ██     ██   ██ ██      ██   ██    ██    ██   ██ 
+███████  ██████  ██████  ██████  ███████ ██   ████     ██████  ███████ ██   ██    ██    ██   ██ 
+*/
+
 void function GameStateEnter_SuddenDeath()
 {
 	// disable respawns, suddendeath calling is done on a kill callback
@@ -559,7 +865,22 @@ void function GameStateEnter_SuddenDeath()
 }
 
 
-// eGameState.Postmatch
+
+
+
+
+
+
+
+
+/*
+██████   ██████  ███████ ████████ ███    ███  █████  ████████  ██████ ██   ██ 
+██   ██ ██    ██ ██         ██    ████  ████ ██   ██    ██    ██      ██   ██ 
+██████  ██    ██ ███████    ██    ██ ████ ██ ███████    ██    ██      ███████ 
+██      ██    ██      ██    ██    ██  ██  ██ ██   ██    ██    ██      ██   ██ 
+██       ██████  ███████    ██    ██      ██ ██   ██    ██     ██████ ██   ██ 
+*/
+
 void function GameStateEnter_Postmatch()
 {
 	foreach ( entity player in GetPlayerArray() )
@@ -592,7 +913,21 @@ void function ForceFadeToBlack( entity player )
 }
 
 
-// shared across multiple gamestates
+
+
+
+
+
+
+
+
+/*
+██   ██ ██ ██      ██           ██████  █████  ██      ██      ██████   █████   ██████ ██   ██ ███████ 
+██  ██  ██ ██      ██          ██      ██   ██ ██      ██      ██   ██ ██   ██ ██      ██  ██  ██      
+█████   ██ ██      ██          ██      ███████ ██      ██      ██████  ███████ ██      █████   ███████ 
+██  ██  ██ ██      ██          ██      ██   ██ ██      ██      ██   ██ ██   ██ ██      ██  ██       ██ 
+██   ██ ██ ███████ ███████      ██████ ██   ██ ███████ ███████ ██████  ██   ██  ██████ ██   ██ ███████ 
+*/
 
 void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
@@ -722,10 +1057,22 @@ void function OnTitanKilled( entity victim, var damageInfo )
 	}
 }
 
-void function AddCallback_OnRoundEndCleanup( void functionref() callback )
-{
-	file.roundEndCleanupCallbacks.append( callback )
-}
+
+
+
+
+
+
+
+
+
+/*
+████████  ██████   ██████  ██          ███████ ██    ██ ███    ██  ██████ ████████ ██  ██████  ███    ██ ███████ 
+   ██    ██    ██ ██    ██ ██          ██      ██    ██ ████   ██ ██         ██    ██ ██    ██ ████   ██ ██      
+   ██    ██    ██ ██    ██ ██          █████   ██    ██ ██ ██  ██ ██         ██    ██ ██    ██ ██ ██  ██ ███████ 
+   ██    ██    ██ ██    ██ ██          ██      ██    ██ ██  ██ ██ ██         ██    ██ ██    ██ ██  ██ ██      ██ 
+   ██     ██████   ██████  ███████     ██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████ 
+*/
 
 void function CleanUpEntitiesForRoundEnd()
 {
@@ -763,148 +1110,11 @@ void function CleanUpEntitiesForRoundEnd()
 	SetPlayerDeathsHidden( false )
 }
 
-
-
-// stuff for gamemodes to call
-
-void function SetShouldUsePickLoadoutScreen( bool shouldUse )
-{
-	file.usePickLoadoutScreen = shouldUse
-}
-
-void function SetSwitchSidesBased( bool switchSides )
-{
-	file.switchSidesBased = switchSides
-}
-
-void function SetSuddenDeathBased( bool suddenDeathBased )
-{
-	file.suddenDeathBased = suddenDeathBased
-}
-
-void function SetTimerBased( bool timerBased )
-{
-	file.timerBased = timerBased
-}
-
-void function SetShouldUseRoundWinningKillReplay( bool shouldUse )
-{
-	SetServerVar( "roundWinningKillReplayEnabled", shouldUse )
-}
-
-void function SetRoundWinningKillReplayKillClasses( bool pilot, bool titan )
-{
-	file.roundWinningKillReplayTrackPilotKills = pilot
-	file.roundWinningKillReplayTrackTitanKills = titan // player kills in titans should get tracked anyway, might be worth renaming this
-}
-
-void function SetRoundWinningKillReplayAttacker( entity attacker, int inflictorEHandle = -1 )
-{
-	file.roundWinningKillReplayTime = Time()
-	file.roundWinningKillReplayHealthFrac = GetHealthFrac( attacker )
-	file.roundWinningKillReplayAttacker = attacker
-	file.roundWinningKillReplayInflictorEHandle = inflictorEHandle == -1 ? attacker.GetEncodedEHandle() : inflictorEHandle
-	file.roundWinningKillReplayTimeOfDeath = Time()
-}
-
-void function SetWinner( int team, string winningReason = "", string losingReason = "" )
-{	
-	SetServerVar( "winningTeam", team )
-	
-	file.gameWonThisFrame = true
-	thread UpdateGameWonThisFrameNextFrame()
-	
-	if ( winningReason.len() == 0 )
-		file.announceRoundWinnerWinningSubstr = 0
-	else
-		file.announceRoundWinnerWinningSubstr = GetStringID( winningReason )
-	
-	if ( losingReason.len() == 0 )
-		file.announceRoundWinnerLosingSubstr = 0
-	else
-		file.announceRoundWinnerLosingSubstr = GetStringID( losingReason )
-	
-	if ( GamePlayingOrSuddenDeath() )
-	{
-		if ( IsRoundBased() )
-		{	
-			if ( team != TEAM_UNASSIGNED )
-			{
-				GameRules_SetTeamScore( team, GameRules_GetTeamScore( team ) + 1 )
-				GameRules_SetTeamScore2( team, GameRules_GetTeamScore2( team ) + 1 )
-			}
-			
-			SetGameState( eGameState.WinnerDetermined )
-			ScoreEvent_RoundComplete( team )
-		}
-		else
-		{
-			SetGameState( eGameState.WinnerDetermined )
-			ScoreEvent_MatchComplete( team )
-			
-			array<entity> players = GetPlayerArray()
-			int functionref( entity, entity ) compareFunc = GameMode_GetScoreCompareFunc( GAMETYPE )
-			if ( compareFunc != null )
-			{
-				players.sort( compareFunc )
-				int playerCount = players.len()
-				int currentPlace = 1
-				for ( int i = 0; i < 3; i++ )
-				{
-					if ( i >= playerCount )
-						continue
-					
-					if ( i > 0 && compareFunc( players[i - 1], players[i] ) != 0 )
-						currentPlace += 1
-
-					switch( currentPlace )
-					{
-						case 1:
-							UpdatePlayerStat( players[i], "game_stats", "mvp" )
-							UpdatePlayerStat( players[i], "game_stats", "mvp_total" )
-							UpdatePlayerStat( players[i], "game_stats", "top3OnTeam" )
-							break
-						case 2:
-							UpdatePlayerStat( players[i], "game_stats", "top3OnTeam" )
-							break
-						case 3:
-							UpdatePlayerStat( players[i], "game_stats", "top3OnTeam" )
-							break
-					}
-				}
-			}
-		}
-	}
-}
-
 void function UpdateGameWonThisFrameNextFrame()
 {
 	WaitFrame()
 	file.gameWonThisFrame = false
 	file.hasKillForGameWonThisFrame = false
-}
-
-void function AddTeamScore( int team, int amount )
-{
-	GameRules_SetTeamScore( team, GameRules_GetTeamScore( team ) + amount )
-	GameRules_SetTeamScore2( team, GameRules_GetTeamScore2( team ) + amount )
-	
-	int scoreLimit
-	if ( IsRoundBased() )
-		scoreLimit = GameMode_GetRoundScoreLimit( GAMETYPE )
-	else
-		scoreLimit = GameMode_GetScoreLimit( GAMETYPE )
-		
-	int score = GameRules_GetTeamScore( team )
-	if ( score >= scoreLimit || GetGameState() == eGameState.SuddenDeath )
-		SetWinner( team )
-	else if ( ( file.switchSidesBased && !file.hasSwitchedSides ) && score >= ( scoreLimit.tofloat() / 2.0 ) )
-		SetGameState( eGameState.SwitchingSides )
-}
-
-void function SetTimeoutWinnerDecisionFunc( int functionref() callback )
-{
-	file.timeoutWinnerDecisionFunc = callback
 }
 
 int function GetWinningTeamWithFFASupport()
@@ -936,8 +1146,6 @@ int function GetWinningTeamWithFFASupport()
 	unreachable
 }
 
-// idk
-
 float function GameState_GetTimeLimitOverride()
 {
 	return 100
@@ -966,8 +1174,6 @@ float function GetTimeLimit_ForGameMode()
 	// default to 10 mins, because that seems reasonable
 	return GetCurrentPlaylistVarFloat( playlistString, 10 )
 }
-
-// faction dialogue
 
 void function DialoguePlayNormal()
 {
@@ -1051,25 +1257,5 @@ void function DialoguePlayWinnerDetermined()
 	{
 		PlayFactionDialogueToTeam( "scoring_won", winningTeam )
 		PlayFactionDialogueToTeam( "scoring_lost", losingTeam )
-	}
-}
-
-/// This is to move all NPCs that a player owns from one team to the other during a match
-/// Auto-Titans, Turrets, Ticks and Hacked Spectres will all move along together with the player to the new Team
-/// Also possibly prevents mods that spawns other types of NPCs that players can own from breaking when switching (i.e Drones, Hacked Reapers)
-void function OnPlayerChangedTeam( entity player )
-{
-	if ( !player.hasConnected ) // Prevents players who just joined to trigger below code, as server always pre setups their teams
-		return
-	
-	// only TEAM_IMC and TEAM_MILITIA can use function GetOtherTeam(), doesnt need to notify them when player got a special team
-	if( IsIMCOrMilitiaTeam( player.GetTeam() ) )
-		NotifyClientsOfTeamChange( player, GetOtherTeam( player.GetTeam() ), player.GetTeam() )
-	
-	foreach( npc in GetNPCArray() )
-	{
-		entity bossPlayer = npc.GetBossPlayer()
-		if ( IsValidPlayer( bossPlayer ) && bossPlayer == player && IsAlive( npc ) )
-			SetTeam( npc, player.GetTeam() )
 	}
 }
