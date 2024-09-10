@@ -46,6 +46,10 @@
 			"Name": "modlist_reverse",
 			"DefaultValue": "0",
 			"Flags": "ARCHIVE_PLAYERPROFILE"
+		},
+		{
+			"Name": "modemenu_mode_filter",
+			"DefaultValue": "-1"
 		}
 	],
 	"Scripts": [
