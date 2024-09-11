@@ -250,7 +250,7 @@
 		"UNAUTHORIZED_PWD"                       "Неправильный пароль"
 		"STRYDER_RESPONSE"                             "Не удалось разобрать ответ Stryder"
 		"PLAYER_NOT_FOUND"                           "Не удалось найти аккаунт игрока"
-		"INVALID_MASTERSERVER_TOKEN"    "Некорректный или истёкший токен главного сервера. Перезапустите EA App, чтобы обновить токен."
+		"INVALID_MASTERSERVER_TOKEN"    "Некорректный или истёкший токен главного сервера. Попробуйте перезапустить EA App."
 		"JSON_PARSE_ERROR"                              "Ошибка разбора json-ответа"
 		"UNSUPPORTED_VERSION"                    "Используемая вами версия больше не поддерживается"
 		"DISABLE"                    "Выключить"
@@ -367,5 +367,12 @@
 		"MOD_FETCHING_FAILED_GENERAL"                    "Ошибка распаковки мода. Проверьте файл лога, чтобы узнать подробности."
 		"MANIFESTO_FETCHING_TEXT"                    "Скачиваем список проверенных модов..."
 		"MANIFESTO_FETCHING_TITLE"                    "Начало загрузки модов"
+		"MODE_MENU_FFA"                    "Все против всех"
+		"MODE_MENU_OTHER"                    "Другое"
+		"MODE_MENU_CUSTOM"                    "Свой"
+		"MODE_MENU_ALL"                    "Все"
+		"MODE_MENU_UNKNOWN"                    "Неизвестный"
+		"MODE_MENU_SWITCH"                    "Фильтр"
+		"MODE_MENU_TITAN_ONLY"                    "Только титаны"
 	}
 }
