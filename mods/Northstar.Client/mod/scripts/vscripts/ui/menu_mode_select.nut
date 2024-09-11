@@ -524,7 +524,7 @@ void function UpdateVisibleModes()
 			if( blockedModes.contains( file.sortedModes[ modeIndex ] ) )
 				Hud_SetLocked( button, true )
 
-			if ( !PrivateMatch_IsValidMapModeCombo( PrivateMatch_GetSelectedMap(), mode ) )
+			if ( PrivateMatch_IsValidMapModeCombo( PrivateMatch_GetSelectedMap(), mode ) )
 			{
 				Hud_SetLocked( button, true )
 				SetButtonRuiText( button, mode )
