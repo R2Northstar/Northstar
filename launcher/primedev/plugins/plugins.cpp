@@ -219,7 +219,6 @@ void Plugin::OnSqvmCreated(CSquirrelVM* sqvm) const
 
 void Plugin::OnSqvmDestroying(CSquirrelVM* sqvm) const
 {
-	NS::log::PLUGINSYS->info("destroying sqvm {}", sqvm->vmContext);
 	m_callbacks->OnSqvmDestroying(sqvm);
 }
 
