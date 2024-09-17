@@ -1,11 +1,7 @@
 #include "dedicated.h"
 #include "core/tier0.h"
 
-AUTOHOOK_INIT()
-
-// clang-format off
-AUTOHOOK(D3D11CreateDevice, materialsystem_dx11.dll + 0xD9A0E,
-HRESULT, __stdcall, (
+static HRESULT(__stdcall* o_pD3D11CreateDevice)(
 	void* pAdapter,
 	int DriverType,
 	HMODULE Software,
@@ -15,8 +11,18 @@ HRESULT, __stdcall, (
 	UINT SDKVersion,
 	void** ppDevice,
 	int* pFeatureLevel,
-	void** ppImmediateContext))
-// clang-format on
+	void** ppImmediateContext) = nullptr;
+static HRESULT __stdcall h_D3D11CreateDevice(
+	void* pAdapter,
+	int DriverType,
+	HMODULE Software,
+	UINT Flags,
+	int* pFeatureLevels,
+	UINT FeatureLevels,
+	UINT SDKVersion,
+	void** ppDevice,
+	int* pFeatureLevel,
+	void** ppImmediateContext)
 {
 	// note: this is super duper temp pretty much just messing around with it
 	// does run surprisingly well on dedi for a software driver tho if you ignore the +1gb ram usage at times, seems like dedi doesn't
@@ -26,13 +32,14 @@ HRESULT, __stdcall, (
 	if (CommandLine()->CheckParm("-softwared3d11"))
 		DriverType = 5; // D3D_DRIVER_TYPE_WARP
 
-	return D3D11CreateDevice(
+	return o_pD3D11CreateDevice(
 		pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, ppDevice, pFeatureLevel, ppImmediateContext);
 }
 
 ON_DLL_LOAD_DEDI("materialsystem_dx11.dll", DedicatedServerMaterialSystem, (CModule module))
 {
-	AUTOHOOK_DISPATCH()
+	o_pD3D11CreateDevice = module.Offset(0xD9A0E).RCast<decltype(o_pD3D11CreateDevice)>();
+	HookAttach(&(PVOID&)o_pD3D11CreateDevice, (PVOID)h_D3D11CreateDevice);
 
 	// CMaterialSystem::FindMaterial
 	// make the game always use the error material
