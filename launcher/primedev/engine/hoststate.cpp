@@ -9,14 +9,12 @@
 #include "squirrel/squirrel.h"
 #include "plugins/pluginmanager.h"
 
-AUTOHOOK_INIT()
-
 CHostState* g_pHostState;
 
 std::string sLastMode;
 
-VAR_AT(engine.dll + 0x13FA6070, ConVar*, Cvar_hostport);
-FUNCTION_AT(engine.dll + 0x1232C0, void, __fastcall, _Cmd_Exec_f, (const CCommand& arg, bool bOnlyIfExists, bool bUseWhitelists));
+static ConVar* Cvar_hostport = nullptr;
+static void(__fastcall* _Cmd_Exec_f)(const CCommand& arg, bool bOnlyIfExists, bool bUseWhitelists) = nullptr;
 
 void ServerStartingOrChangingMap()
 {
@@ -53,10 +51,8 @@ void ServerStartingOrChangingMap()
 		g_pServerAuthentication->m_bStartingLocalSPGame = false;
 }
 
-// clang-format off
-AUTOHOOK(CHostState__State_NewGame, engine.dll + 0x16E7D0,
-void, __fastcall, (CHostState* self))
-// clang-format on
+static void(__fastcall* o_pCHostState__State_NewGame)(CHostState* self) = nullptr;
+static void __fastcall h_CHostState__State_NewGame(CHostState* self)
 {
 	spdlog::info("HostState: NewGame");
 
@@ -70,7 +66,7 @@ void, __fastcall, (CHostState* self))
 	ServerStartingOrChangingMap();
 
 	double dStartTime = Plat_FloatTime();
-	CHostState__State_NewGame(self);
+	o_pCHostState__State_NewGame(self);
 	spdlog::info("loading took {}s", Plat_FloatTime() - dStartTime);
 
 	// setup server presence
@@ -82,10 +78,8 @@ void, __fastcall, (CHostState* self))
 	g_pServerAuthentication->m_bNeedLocalAuthForNewgame = false;
 }
 
-// clang-format off
-AUTOHOOK(CHostState__State_LoadGame, engine.dll + 0x16E730,
-void, __fastcall, (CHostState* self))
-// clang-format on
+static void(__fastcall* o_pCHostState__State_LoadGame)(CHostState* self) = nullptr;
+static void __fastcall h_CHostState__State_LoadGame(CHostState* self)
 {
 	// singleplayer server starting
 	// useless in 99% of cases but without it things could potentially break very much
@@ -100,7 +94,7 @@ void, __fastcall, (CHostState* self))
 	g_pServerAuthentication->m_bStartingLocalSPGame = true;
 
 	double dStartTime = Plat_FloatTime();
-	CHostState__State_LoadGame(self);
+	o_pCHostState__State_LoadGame(self);
 	spdlog::info("loading took {}s", Plat_FloatTime() - dStartTime);
 
 	// no server presence, can't do it because no map name in hoststate
@@ -109,32 +103,28 @@ void, __fastcall, (CHostState* self))
 	g_pServerAuthentication->m_bNeedLocalAuthForNewgame = false;
 }
 
-// clang-format off
-AUTOHOOK(CHostState__State_ChangeLevelMP, engine.dll + 0x16E520,
-void, __fastcall, (CHostState* self))
-// clang-format on
+static void(__fastcall* o_pCHostState__State_ChangeLevelMP)(CHostState* self) = nullptr;
+static void __fastcall h_CHostState__State_ChangeLevelMP(CHostState* self)
 {
 	spdlog::info("HostState: ChangeLevelMP");
 
 	ServerStartingOrChangingMap();
 
 	double dStartTime = Plat_FloatTime();
-	CHostState__State_ChangeLevelMP(self);
+	o_pCHostState__State_ChangeLevelMP(self);
 	spdlog::info("loading took {}s", Plat_FloatTime() - dStartTime);
 
 	g_pServerPresence->SetMap(g_pHostState->m_levelName);
 }
 
-// clang-format off
-AUTOHOOK(CHostState__State_GameShutdown, engine.dll + 0x16E640,
-void, __fastcall, (CHostState* self))
-// clang-format on
+static void(__fastcall* o_pCHostState__State_GameShutdown)(CHostState* self) = nullptr;
+static void __fastcall h_CHostState__State_GameShutdown(CHostState* self)
 {
 	spdlog::info("HostState: GameShutdown");
 
 	g_pServerPresence->DestroyPresence();
 
-	CHostState__State_GameShutdown(self);
+	o_pCHostState__State_GameShutdown(self);
 
 	// run gamemode cleanup cfg now instead of when we start next map
 	if (sLastMode.length())
@@ -153,12 +143,10 @@ void, __fastcall, (CHostState* self))
 	}
 }
 
-// clang-format off
-AUTOHOOK(CHostState__FrameUpdate, engine.dll + 0x16DB00,
-void, __fastcall, (CHostState* self, double flCurrentTime, float flFrameTime))
-// clang-format on
+static void(__fastcall* o_pCHostState__FrameUpdate)(CHostState* self, double flCurrentTime, float flFrameTime) = nullptr;
+static void __fastcall h_CHostState__FrameUpdate(CHostState* self, double flCurrentTime, float flFrameTime)
 {
-	CHostState__FrameUpdate(self, flCurrentTime, flFrameTime);
+	o_pCHostState__FrameUpdate(self, flCurrentTime, flFrameTime);
 
 	if (*g_pServerState == server_state_t::ss_active)
 	{
@@ -184,7 +172,23 @@ void, __fastcall, (CHostState* self, double flCurrentTime, float flFrameTime))
 
 ON_DLL_LOAD_RELIESON("engine.dll", HostState, ConVar, (CModule module))
 {
-	AUTOHOOK_DISPATCH()
+	o_pCHostState__State_NewGame = module.Offset(0x16E7D0).RCast<decltype(o_pCHostState__State_NewGame)>();
+	HookAttach(&(PVOID&)o_pCHostState__State_NewGame, (PVOID)h_CHostState__State_NewGame);
+
+	o_pCHostState__State_LoadGame = module.Offset(0x16E730).RCast<decltype(o_pCHostState__State_LoadGame)>();
+	HookAttach(&(PVOID&)o_pCHostState__State_LoadGame, (PVOID)h_CHostState__State_LoadGame);
+
+	o_pCHostState__State_ChangeLevelMP = module.Offset(0x16E520).RCast<decltype(o_pCHostState__State_ChangeLevelMP)>();
+	HookAttach(&(PVOID&)o_pCHostState__State_ChangeLevelMP, (PVOID)h_CHostState__State_ChangeLevelMP);
+
+	o_pCHostState__State_GameShutdown = module.Offset(0x16E640).RCast<decltype(o_pCHostState__State_GameShutdown)>();
+	HookAttach(&(PVOID&)o_pCHostState__State_GameShutdown, (PVOID)h_CHostState__State_GameShutdown);
+
+	o_pCHostState__FrameUpdate = module.Offset(0x16DB00).RCast<decltype(o_pCHostState__FrameUpdate)>();
+	HookAttach(&(PVOID&)o_pCHostState__FrameUpdate, (PVOID)h_CHostState__FrameUpdate);
+
+	Cvar_hostport = module.Offset(0x13FA6070).RCast<decltype(Cvar_hostport)>();
+	_Cmd_Exec_f = module.Offset(0x1232C0).RCast<decltype(_Cmd_Exec_f)>();
 
 	g_pHostState = module.Offset(0x7CF180).RCast<CHostState*>();
 }
