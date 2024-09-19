@@ -11,7 +11,7 @@ Client commands are how the clients communicate with the server. Mods can define
         AddClientCommandCallback("commandname", commandcallback)
 
         void CommandCalled(entity player, array<string> args) {
-            print("commandname: was kalled with " + args);
+            print("commandname: was called with " + args);
         }
     ```
 
