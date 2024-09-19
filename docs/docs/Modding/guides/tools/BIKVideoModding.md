@@ -7,7 +7,7 @@ installed on your PC
 
 !!! note
     The ZIP file containing the installer is password protected, you can find it on the download page
-    
+
 
 ## Converting the Video
 

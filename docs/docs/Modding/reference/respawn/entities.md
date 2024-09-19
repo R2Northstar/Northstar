@@ -315,9 +315,9 @@ Basic entity that most other entities inherit from.
     !!! cpp-function "entity constructor( unknown )"
 
         Depends on the class.
-        
+
         Returns a new instance of a class.
-        
+
         You can invoke the constructor with brackets as well, for example like this: `CBaseEntity()`
 
     !!! cpp-function "void SetDoDestroyCallback( bool doCallBack )"
@@ -352,7 +352,7 @@ Basic entity that most other entities inherit from.
 
     !!! cpp-function "string GetScriptName()"
 
-        Returns the script name of this entity. 
+        Returns the script name of this entity.
 
     !!! cpp-function "void SetScriptName( string name )"
 
@@ -2010,11 +2010,11 @@ Grenade entities in worldspace. Grenades that are equipped ("cooked") by players
         Returns if `this.supportsXRay` not null.
 
     !!! cpp-function "void ForceCombat()"
-        
+
         Force into combat state by updating NPC's memory of the player.
 
     !!! cpp-function "bool InCombat()"
-        
+
         Returns true if NPC is in combat.
 
 ### C_AI_BaseNPC
@@ -2082,7 +2082,7 @@ CNPC_SentryTurret / C_NPC_SentryTurret
 ### C_NPC_SentryTurret
 
 !!! cpp-class "C_NPC_SentryTurret : extends C_AI_BaseNPC"
-    
+
 
 ## CFirstPersonProxy / C_FirstPersonProxy
 
@@ -2211,7 +2211,7 @@ CNPC_SentryTurret / C_NPC_SentryTurret
 
     !!! cpp-function "void Decoy_Dissolve()"
 
-        Dissolve this decoy. You might want to clear decoy fx with `CleanupFXAndSoundsForDecoy( entity decoy )` afterwards. 
+        Dissolve this decoy. You might want to clear decoy fx with `CleanupFXAndSoundsForDecoy( entity decoy )` afterwards.
 
     !!! cpp-function "void SetTimeout( float duration )"
 
@@ -2252,7 +2252,7 @@ CNPC_SentryTurret / C_NPC_SentryTurret
     !!! cpp-function "float GetTimeInCockpit()"
 
         Returns the total time of time spent in this cockpit.
-        
+
         Cockpit booting takes 1.3 seconds, so anything less than 1.3 seconds is still playing the booting animation. You can use `TitanCockpit_IsBooting( entity cockpit )` to determine this state.
 
     !!! cpp-function "void SetOpenViewmodelOffset( float x, float y, float z )"

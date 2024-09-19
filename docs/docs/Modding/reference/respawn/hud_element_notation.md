@@ -25,7 +25,7 @@ An Element is declared in the following way:
 
 If you're working on a **menu**, you need a `menu` object that contains all elements, for example like this:
 
-``` 
+```
 
     resource/ui/menus/profiles_menu.menu
     {
@@ -59,7 +59,7 @@ It's not possible to load other files as menus or panels. A `.menu` represents a
 
 The rest of the file needs to be wrapped in curly brackets.
 
-``` 
+```
 
     resource/ui/menus/more/folders/my_menu.menu
     {
@@ -431,14 +431,14 @@ Usable conditions are:
 !!! cpp-function "$LANGUAGE"
 
     the game's language.
-    
+
     .. code-block:: text
-    
+
             // use allcaps only in russian
             allCaps        0  [!$RUSSIAN]
             allCaps        1  [$RUSSIAN]
 
-       
+
 
 On top of that, logical operators like `!`, `&&` and `||` are available as well.
 

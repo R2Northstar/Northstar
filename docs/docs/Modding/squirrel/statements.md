@@ -38,7 +38,7 @@ A while loop runs as long as the condition evaluates to a truthy value.
 
   while( true )
   {
-    // this will result in an endless loop because the probe condition will never be false 
+    // this will result in an endless loop because the probe condition will never be false
   }
 
   while( RandomInt( 2 ) )
@@ -80,7 +80,7 @@ The Syntax is as follows: `for( int counter; condition; behaviour_after_body_exe
     print( arr[i] )
   }
 ```
-  
+
 ### Foreach Loop
 
 A foreach loop iterates over a `table` or an `array` and executes for each entry. The loop provides you with an optional counter for arrays or key for tables.

@@ -1,6 +1,6 @@
 # Custom Damage Source IDs
 
-Custom damage source IDs can be used to create new damage source IDs for modded weapons, abilities, damage, etc. 
+Custom damage source IDs can be used to create new damage source IDs for modded weapons, abilities, damage, etc.
 
 They can only be registered server-side and cannot modify existing damage source IDs. Clients pre-1.9.4 will not see the custom damage sources in the obituary.
 
@@ -8,7 +8,7 @@ To add a single damage source ID, use:
 
 !!! cpp-function "void RegisterWeaponDamageSource( string weaponRef, string damageSourceName )"
 
-To add multiple damage source IDs, use  
+To add multiple damage source IDs, use
 
 !!! cpp-function "void RegisterWeaponDamageSources( table< string, string > newValueTable )"
 

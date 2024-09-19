@@ -23,11 +23,11 @@ Structs are default initialized by assigning each field it's appropriate default
 Struct fields can be indexed by writing `instance.field`, just like with tables.
 
 ```squirrel
-  
+
   MyStruct myStructInstance
   printt( myStructInstance.field1 ) // 0
 ```
-  
+
 Structs are passed by reference so if a function changes a field that field is changed for everything that uses the struct instance.
 
 Struct instances can also get initiaized with different default values if required.

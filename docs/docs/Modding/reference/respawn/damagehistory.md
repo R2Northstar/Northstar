@@ -5,47 +5,47 @@ After a player receives damage it is stored by the game in an array of the follo
 ## DamageHistoryStruct
 
 !!! cpp-struct "DamageHistoryStruct"
-    
+
     !!! cpp-var "string attackerName"
-    
-        Name of the attacker 
+
+        Name of the attacker
     !!! cpp-var "string attackerPetName"
-    
-        Name of the titan    
+
+        Name of the titan
     !!! cpp-var "vector origin"
-    
-        Position of the victim    
+
+        Position of the victim
     !!! cpp-var "float damage"
-    
-        The amount of damage inflicted    
+
+        The amount of damage inflicted
     !!! cpp-var "int damageType"
-    
-        A value from the [Damage Flags](native_server/damageinfo.md#damage-flags-damage-flag-overview)    
+
+        A value from the [Damage Flags](native_server/damageinfo.md#damage-flags-damage-flag-overview)
     !!! cpp-var "int damageSourceId"
-    
+
         Damage souce ID from the gun ( damage-source-id-overview )
     !!! cpp-var "entity attacker"
-    
-        Entity of the attacker    
+
+        Entity of the attacker
     !!! cpp-var "int attackerEHandle"
-    
-    
+
+
     !!! cpp-var "float attackerHealthPercent"
-    
+
         How much health the attacker has in %
-    
+
     !!! cpp-var "float time"
-    
+
         When the damage was inflicted
-    
+
     !!! cpp-var "array<string> weaponMods"
-    
-        Array of mods on the attacking gun    
-    
+
+        Array of mods on the attacking gun
+
     !!! cpp-var "bool victimIsTitan"
-    
+
         `true` if the victim died in the Titan
-    
+
     !!! cpp-var "bool rodeoDamage"
 
         `true` if the damage was inflicted in rodeo mode

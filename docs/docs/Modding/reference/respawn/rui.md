@@ -3,7 +3,7 @@
 Functions for creating a rui, and methods of the rui object
 
 ```squirrel
-        
+
             // To create one, do:
             rui = RuiCreate( $"ui/assetname.rpak", topology, drawGroup, sortKey ) // sortkey = int to prevent z-fighting. higher -> in front
 
@@ -20,7 +20,7 @@ Functions for creating a rui, and methods of the rui object
             // To destroy it, just do:
             RuiDestroy( rui )
 ```
-     
+
 Drawgroups
 
 ```
@@ -51,13 +51,13 @@ Trackers
         RUI_TRACK_WEAPON_SMART_AMMO_LOCK_FRACTION                   // Smart ammo weapon lock fraction from 0 to N
         RUI_TRACK_WEAPON_READY_TO_FIRE_FRACTION                   // Weapon cooldown as fraction from 0 to 1
         RUI_TRACK_WEAPON_RELOAD_FRACTION                   // Weapon reloading as fraction from 0 to 1
-        RUI_TRACK_WEAPON_DRYFIRE_FRACTION                   
+        RUI_TRACK_WEAPON_DRYFIRE_FRACTION
         RUI_TRACK_WEAPON_CLIP_AMMO_FRACTION                   // Weapon clip ammo as fraction from 0 to 1
         RUI_TRACK_WEAPON_REMAINING_AMMO_FRACTION                   // Weapon remaining ammo as fraction from 0 to 1
-        RUI_TRACK_WEAPON_CLIP_AMMO_MAX                   
-        RUI_TRACK_WEAPON_STOCKPILE_AMMO_MAX                   
-        RUI_TRACK_WEAPON_LIFETIME_SHOTS                   
-        RUI_TRACK_WEAPON_AMMO_REGEN_RATE                   
+        RUI_TRACK_WEAPON_CLIP_AMMO_MAX
+        RUI_TRACK_WEAPON_STOCKPILE_AMMO_MAX
+        RUI_TRACK_WEAPON_LIFETIME_SHOTS
+        RUI_TRACK_WEAPON_AMMO_REGEN_RATE
         RUI_TRACK_BOOST_METER_FRACTION                   // Player boost meter as fraction from 0 to 1
         RUI_TRACK_GLIDE_METER_FRACTION                   // Player glide meter as fraction from 0 to 1
         RUI_TRACK_SHIELD_FRACTION                   // Shield health as fraction from 0 to 1
@@ -65,11 +65,11 @@ Trackers
         RUI_TRACK_SCRIPT_NETWORK_VAR                   // Value of a script network variable (use GetNetworkedVariableIndex())
         RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL                   // Value of a script network variable without an entity (use GetNetworkedVariableIndex())
         RUI_TRACK_SCRIPT_NETWORK_VAR_LOCAL_VIEW_PLAYER                   // Value of a script network variable on the local view player (changes automatically during kill replay) (use GetNetworkedVariableIndex())
-        RUI_TRACK_FRIENDLY_TEAM_SCORE                   
+        RUI_TRACK_FRIENDLY_TEAM_SCORE
         RUI_TRACK_FRIENDLY_TEAM_ROUND_SCORE                   // The value of score2 for friendlies
-        RUI_TRACK_ENEMY_TEAM_SCORE                   
+        RUI_TRACK_ENEMY_TEAM_SCORE
         RUI_TRACK_ENEMY_TEAM_ROUND_SCORE                   // The value of score2 for enemies
-        RUI_TRACK_MINIMAP_SCALE                   
+        RUI_TRACK_MINIMAP_SCALE
         RUI_TRACK_SOUND_METER                   // Sound meter as fraction from 0 to 1.
 
         // INT TYPES
@@ -93,32 +93,32 @@ Trackers
 !!! cpp-class "rui : public var"
 
     !!! cpp-function "void RuiSetResolution(rui, screenSizeX, screenSizey)"
-    
+
         ```squirrel
-        
+
                 screenSizeX = GetScreenSize()[0]
                 screenSizeY = GetScreenSize()[1]
         ```
-    
+
     !!! cpp-function "void RuiSetDrawGroup( rui, drawGroup )"
 
     !!! cpp-function "void RuiSetString( rui, argName, value )"
-    
+
     !!! cpp-function "void RuiSetBool( rui, argName, value )"
-    
+
     !!! cpp-function "void RuiSetInt( rui, argName, value )"
-    
+
     !!! cpp-function "void RuiSetFloat( rui, argName, value )"
-    
+
     !!! cpp-function "void RuiSetFloat2( rui, argName, value )  "
-    
+
         value is a vector; only x and y are used
-    
+
     !!! cpp-function "void RuiSetFloat3( rui, argName, value )"
-    
+
     !!! cpp-function "void RuiSetColorAlpha( rui, argName, color, alpha )  "
-    
+
         color is a vector
 
     !!! cpp-function "void RuiDestroyIfAlive( rui )"
-    
+

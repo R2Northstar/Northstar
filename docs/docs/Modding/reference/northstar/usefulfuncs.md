@@ -125,7 +125,7 @@ Below are a list of useful functions added by Northstar.
 
 !!! cpp-function "vector function GetCenter( array<entity> ents )"
 
-### Turret functions 
+### Turret functions
 
 !!! cpp-function "void function TurretChangeTeam( entity turret, int team )"
 
@@ -164,7 +164,7 @@ Below are a list of useful functions added by Northstar.
 
 !!! cpp-function "void function ClearChildren( entity parentEnt )"
 
-### Titans 
+### Titans
 
 !!! cpp-function "bool function TitanHasRegenningShield( entity soul )"
 
@@ -224,11 +224,11 @@ Below are a list of useful functions added by Northstar.
 !!! cpp-function "bool function IsPlayerFemalePilot( entity player )"
 
 !!! cpp-function "void function RandomizeHead( entity model ) "
-    
+
     Randomize head across all available heads
 
 !!! cpp-function "void function RandomizeHeadByTeam( entity model, int headIndex, int numOfHeads ) "
-    
+
     Randomize head across heads available to a particular team. Assumes for a model all imc heads are first, then all militia heads are later.
 
 !!! cpp-function "void function CreateZipline( vector startPos, vector endPos )"
@@ -236,11 +236,11 @@ Below are a list of useful functions added by Northstar.
 !!! cpp-function "bool function HasTeamSkin( entity model )"
 
 !!! cpp-function "void function DropToGround( entity ent )"
-    
+
 !!! cpp-function "void function DropTitanToGround( entity titan, array<entity> ignoreEnts )"
 
 
-## Type Utilities 
+## Type Utilities
 
 ### Table
 
@@ -273,11 +273,11 @@ Below are a list of useful functions added by Northstar.
 
 !!! cpp-function "array.resize(int newSize, var fillValue = 0)"
 
-    changes the size of the array to the first int, new slots will be filled with the 2nd argument. 
+    changes the size of the array to the first int, new slots will be filled with the 2nd argument.
 
 !!! cpp-function "array.sort( compare_func = null )"
 
-!!! note  
+!!! note
 
     A few built-in functions you can give as arguments to sort an array.
 
@@ -296,7 +296,7 @@ Below are a list of useful functions added by Northstar.
         !!! cpp-function "int function SortStringAsset( asset a, asset b )"
 
         !!! cpp-function "int function SortBySpawnTime( entity a, entity b )"
-    
+
         Functions for score comparison
 
         !!! cpp-function "int function CompareKills( entity a, entity b )"
@@ -334,7 +334,7 @@ Below are a list of useful functions added by Northstar.
 
 
 !!! cpp-function "array.reverse()"
-    
+
     reverse the array in place
 
 !!! cpp-function "array.slice(int start, int end = null)"
@@ -358,7 +358,7 @@ Below are a list of useful functions added by Northstar.
     Returns a formatted template
 
 !!! cpp-function "string function Localize( string token )"
-    
+
     !!! note
 
         replaces text that should be localized on the client
@@ -373,7 +373,7 @@ Below are a list of useful functions added by Northstar.
     !!! warning
 
         returns `null` if the string is not found.
-        
+
         You can eliminate the possibility of the returned index being null by casting like this:
 
         ```squirrel

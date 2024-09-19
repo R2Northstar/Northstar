@@ -4,7 +4,7 @@
 
 ```squirrel
 
-  // var can be just about anything. 
+  // var can be just about anything.
   var v = 1
   v = "string"
   v = []

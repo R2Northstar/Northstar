@@ -1,13 +1,13 @@
 # HTTP and JSON
 
 As of v1.12.0, you can now make HTTP requests from Squirrel scripts.
-HTTP requests allow you to query online APIs, send, retrieve data and much more. 
+HTTP requests allow you to query online APIs, send, retrieve data and much more.
 
-This is particularly useful for custom APIs you might want to build for your servers, for instance if you want to wrap 
+This is particularly useful for custom APIs you might want to build for your servers, for instance if you want to wrap
 a database with an API so that your servers can save player stats.
 
 !!! warning
-    
+
     For security reasons, private network hosts, such as `localhost` or `192.168.1.106` are blocked by default, meaning you cannot make HTTP requests to them.
     This includes a blanket ban on IPv6 hosts.
 
@@ -70,7 +70,7 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
         Uses the `PATCH` HTTP method for the request.
 
     !!! cpp-member "OPTIONS = 6"
-        
+
         Uses the `OPTIONS` HTTP method for the request.
 
 
@@ -114,7 +114,7 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
 
 !!! warning
 
-    Only `POST` requests can send a body to the remote end. You may only choose to send a body, or query parameters. 
+    Only `POST` requests can send a body to the remote end. You may only choose to send a body, or query parameters.
     Having both will give priority to the body and clear the parameters.
 
 
@@ -157,9 +157,9 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
 ### Functions
 
 !!! warning
-    
+
     Your mod needs to be load priority 1 or above to use `HttpRequest` and `HttpRequestResponse` in your script.
-    
+
 
 !!! cpp-function "bool NSHttpRequest( HttpRequest requestParameters, void functionref( HttpRequestResponse ) onSuccess = null, void functionref( HttpRequestFailure ) onFailure = null )"
 
@@ -172,17 +172,17 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
     - `[OPTIONAL] void functionref( HttpRequestResponse ) onSuccess` - The callback to execute if the request is successful.
     - `[OPTIONAL] void functionref( HttpRequestFailure ) onFailure` - The callback to execute if the request has failed.
 
-    **Returns:** 
-    
+    **Returns:**
+
     - Whether or not the request has been successfully started.
 
     **Example:**
 
     Below is a working example of an HTTP request for a mod.
-    
+
     As you can see, you can either use named functions for the callbacks, or create lambdas.
     Lambdas are particularly useful as they let you capture local variables of the functions to re-use later
-    such as `callback` in this example. 
+    such as `callback` in this example.
 
     ```squirrel
 
@@ -190,17 +190,17 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
         request.method = HttpRequestMethod.GET
         request.url = "https://my.spyglass.api/sanctions/get_by_id"
         request.queryParameters[ "id" ] <- [ id.tostring() ]
-        
+
         void functionref( HttpRequestResponse ) onSuccess = void function ( HttpRequestResponse response ) : ( callback )
         {
             SpyglassApi_OnQuerySanctionByIdSuccessful( response, callback )
         }
-        
+
         void functionref( HttpRequestFailure ) onFailure = void function ( HttpRequestFailure failure ) : ( callback )
         {
             SpyglassApi_OnQuerySanctionByIdFailed( failure, callback )
         }
-        
+
         return NSHttpRequest( request, onSuccess, onFailure )
     ```
 
@@ -216,33 +216,33 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
     **Parameters:**
 
     - `string url` - The url to make the HTTP request at.
-    - `[OPTIONAL] table< string, array< string > > queryParameters` - A table of key value parameters to insert in the url. 
+    - `[OPTIONAL] table< string, array< string > > queryParameters` - A table of key value parameters to insert in the url.
     - `[OPTIONAL] void functionref( HttpRequestResponse ) onSuccess` - The callback to execute if the request is successful.
     - `[OPTIONAL] void functionref( HttpRequestFailure ) onFailure` - The callback to execute if the request has failed.
 
-    **Returns:** 
-    
+    **Returns:**
+
     - Whether or not the request has been successfully started.
 
     **Example:**
 
     This is the same example as NSHttpRequest()'s example. However, it uses this function instead.
-    
+
     ```squirrel
 
         table<string, array<string> > params
         params[ "id" ] <- [ id.tostring() ]
-        
+
         void functionref( HttpRequestResponse ) onSuccess = void function ( HttpRequestResponse response ) : ( callback )
         {
             SpyglassApi_OnQuerySanctionByIdSuccessful( response, callback )
         }
-        
+
         void functionref( HttpRequestFailure ) onFailure = void function ( HttpRequestFailure failure ) : ( callback )
         {
             SpyglassApi_OnQuerySanctionByIdFailed( failure, callback )
         }
-        
+
         return NSHttpGet( "https://my.spyglass.api/sanctions/get_by_id", params, onSuccess, onFailure )
     ```
 
@@ -257,12 +257,12 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
     **Parameters:**
 
     - `string url` - The url to make the HTTP request at.
-    - `[OPTIONAL] table< string, array< string > > queryParameters` - A table of key value parameters to insert in the url. 
+    - `[OPTIONAL] table< string, array< string > > queryParameters` - A table of key value parameters to insert in the url.
     - `[OPTIONAL] void functionref( HttpRequestResponse ) onSuccess` - The callback to execute if the request is successful.
     - `[OPTIONAL] void functionref( HttpRequestFailure ) onFailure` - The callback to execute if the request has failed.
 
-    **Returns:** 
-    
+    **Returns:**
+
     - Whether or not the request has been successfully started.
 
 
@@ -278,12 +278,12 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
     **Parameters:**
 
     - `string url` - The url to make the HTTP request at.
-    - `string body` - The body to send with the request. Expects JSON by default. 
+    - `string body` - The body to send with the request. Expects JSON by default.
     - `[OPTIONAL] void functionref( HttpRequestResponse ) onSuccess` - The callback to execute if the request is successful.
     - `[OPTIONAL] void functionref( HttpRequestFailure ) onFailure` - The callback to execute if the request has failed.
 
-    **Returns:** 
-    
+    **Returns:**
+
     - Whether or not the request has been successfully started.
 
     **Example:**
@@ -301,7 +301,7 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
         if ( NSHttpPostBody( "https://api.stats.tf/player/connect", json ) )
         {
             printt( "Successfully attempted to upload player connection stats to API." )
-        } 
+        }
     ```
 
 
@@ -310,7 +310,7 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
 !!! cpp-function "bool NSIsSuccessHttpCode( int statusCode )"
 
     Checks whether or not the given HTTP status code is considered a "success" code.
-    
+
     This is true for status codes between 200 and 299.
 
     **Parameters:**
@@ -340,14 +340,14 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
 
 
     Converts a JSON string to a Squirrel table.
-    
+
     **Parameters:**
 
     - `string json` - The JSON string to decode into a table.
     - `[OPTIONAL] bool fatalParseErrors` - Whether or not parsing errors should throw a fatal script error. Default to false.
 
-    **Returns:** 
-    
+    **Returns:**
+
     - The table decoded from the JSON string on success, or an empty table `{}` on parse failure (if fatalParseErrors is false).
 
 
@@ -361,8 +361,8 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
 
     - `table data` - The table to encode to a JSON string.
 
-    **Returns:** 
-    
+    **Returns:**
+
     - The JSON string parsed from the Squirrel table.
 
 Paired with [HTTP and JSON](httprequests.md) , this allows you to send and retrieve JSON data from external sources.

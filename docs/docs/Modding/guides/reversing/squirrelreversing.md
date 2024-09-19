@@ -61,7 +61,7 @@ Because the squirrel function executes native code, the callback `FUN_18029a630`
     {
         char cVar1;
         undefined4 uVar2;
-        
+
         uVar2 = 1;
         FUN_180003710(param_1,1);
         cVar1 = FUN_18001d840(param_1);
@@ -81,7 +81,7 @@ It's also obvious that either `FUN_180003710` or `FUN_18001d840` pushes a boolea
     {
         char cVar1;
         undefined4 uVar2;
-        
+
         FUN_180003710(param_1,0);
         cVar1 = FUN_18001d840(param_1);
         uVar2 = 1;

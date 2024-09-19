@@ -25,7 +25,7 @@ Since the number of topologies that can be created is very limited and Vanilla u
     The parameters `right` and `down` specify the dimensions of the topology relative to the origin. For example, passing `<GetScreenSize()[0],0,0>` and `<0,GetScreenSize()[1],0>` will create a topology that covers the entire screen. Note that in this example the origin is the top left corner. The unit used is pixels.
 
 !!! cpp-function "void RuiTopology_CreateSphere( vector origin, vector angles, vector right, vector down, COCKPIT_RUI_RADIUS, COCKPIT_RUI_WIDTH, COCKPIT_RUI_HEIGHT, float subDiv  )"
-    
+
     Similar to `RuiTopology_CreatePlane` but creates an arched sphere instead of a plane. Unlike in `RuiTopology_CreatePlane`, **right and down are angles and not relative positions**. The width and height are instead controlled by their respective parameters.
 
 !!! cpp-function "void RuiTopology_Destroy( var topology )"
@@ -43,7 +43,7 @@ Since the number of topologies that can be created is very limited and Vanilla u
     Update the position and dimensions of the topology
 
 !!! cpp-function "void RuiTopology_ShareWithCode( topology, ruiCode ) "
-    
+
 
 ## Drawcalls
 
@@ -99,7 +99,7 @@ Drawcalls determine how and where RUIs on a topology are being rendered.
         int attachIndex = weapon.LookupAttachment( "muzzle_flash" )
         entity anchor = CreateClientSidePropDynamic( weapon.GetAttachmentOrigin( attachIndex ) + fwd * conf.x + right * conf.y + up * conf.z, <0,0,0>, $"models/dev/empty_model.mdl") // props need a model but this one is invisible so we don't need to set visibility manually
         var topo = Worldspace_CreateRUITopology( <0,0,0>, <0,90,0>, 128, 64 ) // origin <0,0,0> so the topo sits at the origin of the prop
-        
+
         var tm_box = RuiCreate( $"ui/helmet_scanning_percentbar.rpak", topo, RUI_DRAW_WORLD, 0 )
         RuiSetString( tm_box, "stage3TextTop", "Top" )
         RuiSetString( tm_box, "stage3TextBottom", "Bottom" )

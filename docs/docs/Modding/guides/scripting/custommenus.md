@@ -87,7 +87,7 @@ Next, create the file that defines the layout of your menu. It's already referen
                 SomeLabel // A label that is placed in the middle of the screen
                 {
                     ControlName Label
-                    
+
                     labelText "Some Label"
 
                     auto_wide_tocontents 1 // Set width automatically relative to the label content
@@ -249,7 +249,7 @@ Now you need to define the `OnSomeButtonClick` callback that's triggered when th
 
 First you need to add a definition in your `custommenu.menu` file:
 
-``` 
+```
 
     ResetButton
     {

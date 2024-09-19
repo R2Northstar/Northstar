@@ -26,7 +26,7 @@ Return a string from a native registered function:
     ADD_SQFUNC("string", CPlugTest, "", "returns \"native gaming\"", ScriptContext::CLIENT | ScriptContext::SERVER)
     {
         g_pSquirrel<context>->pushstring(sqvm, "native gaming"); // push a string to the stack
-        
+
         return SQRESULT_NOTNULL; // Signal that the topmost item on the stack is returned by this function
     }
 ```
@@ -38,7 +38,7 @@ Return a complex `ornull` type:
     ADD_SQFUNC("array<int> ornull", CPlugComplex, "int n", "returns null", ScriptContext::CLIENT | ScriptContext::SERVER | ScriptContext::UI)
     {
         SQInteger n = g_pSquirrel<context>->getinteger(sqvm, 1);
-        
+
         if (n == 0)
             return SQRESULT_NULL;
 
@@ -108,7 +108,7 @@ Squirrel functions need to return a `SQRESULT`. Valid results are
 
         This is a squirrel API wrapper added by northstar. It's not available for plugins and is supposed to abstract squirrel calls.
 
-    
+
     This function assumes the squirrel VM is stopped/blocked at the moment of call
 
     Calling this function while the VM is running is likely to result in a crash due to stack destruction
