@@ -1,6 +1,6 @@
 # Modding
 
-Northstar Modding documentation has moved over to: [https://r2northstar.readthedocs.io/](https://r2northstar.readthedocs.io/).
+Northstar Modding documentation has moved over to: [https://docs.northstar.tf/Modding/](https://docs.northstar.tf/Modding/).
 
 ## Custom Skin Modding
 
