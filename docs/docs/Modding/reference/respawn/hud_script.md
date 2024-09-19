@@ -85,7 +85,7 @@ Script methods to manipulate hud elements.
 !!! cpp-function "int Hud_GetAbsX( var elem )"
 
     Returns the absolute x position on the screen of this element.
-    
+
 !!! cpp-function "int Hud_GetAbsY( var elem )"
 
     Returns the absolute y position of the screen of this element.
@@ -127,7 +127,7 @@ Script methods to manipulate hud elements.
 !!! cpp-function "void Hud_Show( var elem )"
 
     Make this element visible
-    
+
 !!! cpp-function "void Hud_Hide( var elem )"
 
     Make this element invisible
@@ -191,7 +191,7 @@ Script methods to manipulate hud elements.
 !!! cpp-function "void Hud_SetHeigth( var elem, int height )"
 
     Set the heigth of an element.
-    
+
 !!! cpp-function "int Hud_GetBaseHeigth( var elem )"
 
     Returns the heigth an element got initialized with.

@@ -11,7 +11,7 @@ The type keyword for Integers is `int`.
 Integers can be represented with multiple different literals.
 
 - Decimal
-  
+
     Regular decimal letters will always be an integer decimal literal.
     ```squirrel
 
@@ -28,7 +28,7 @@ Integers can be represented with multiple different literals.
     ```
 
 - Octal
-  
+
     Numbers starting with a `0` are octal literals.
 
     ``` squirrel

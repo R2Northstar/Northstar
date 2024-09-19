@@ -51,7 +51,7 @@ Creating entities is documented [here](createent.md).
 ### Connecting Players
 
 !!! cpp-function "array<entity> GetConnectingAndConnectedPlayerArray()"
-  
+
   Get array of all players, even ones who are connecting
 
 !!! cpp-function "int GetPendingClientsCount()"

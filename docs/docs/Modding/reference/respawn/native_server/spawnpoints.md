@@ -35,7 +35,7 @@
 ## Sorting
 
 !!! cpp-function "void SpawnPoints_SortPilot()"
-  
+
 !!! cpp-function "void SpawnPoints_SortTitan()"
 
 !!! cpp-function "void SpawnPoints_SortDropPod()"

@@ -44,13 +44,13 @@ The script above defines the pubic and listed details of the mod.
     ],
 ```
 
-The script above defines both what functions to run, when to run them and WHERE to run them, 
+The script above defines both what functions to run, when to run them and WHERE to run them,
 
 The first one being `_gamemode_simplerandomiser.nut` runs the server scripts, which handles the portion of everything related to the player, such as taking their weapons and replacing it with a different one.
 
 Second one being `cl_gamemode_simplerandomiser.nut` is where the client scripts run to perform stuff locally on the player's game, such as playing music, receiving announcement texts from the server and so on.
 
-Lastly, `sh_gamemode_simplerandomiser.nut` is a shared script between server and client, in this case it runs your `simplerandomiser_init` in order to assign many variables for the server and client to "know" about this gamemode. 
+Lastly, `sh_gamemode_simplerandomiser.nut` is a shared script between server and client, in this case it runs your `simplerandomiser_init` in order to assign many variables for the server and client to "know" about this gamemode.
 
 For example, both server and client needs to know whether if this gamemode exists in the private match settings, the scoring HUD and system, the spawnpoints configuration and many more.
 
@@ -108,7 +108,7 @@ Here's what the end result would look like:
 This follows a fairly simple template, the only thing of note is that you often get strange behaviour using `UTF-8` when saving the file instead of using `UTF-16 LE`.
 
 
-``` 
+```
     "lang"
     {
         "Language" "english"
@@ -129,11 +129,11 @@ Let's begin the process by first creating the file `sh_gamemode_simplerandomiser
 ```squirrel
 
     global function simplerandomiser_init // initializing functions
-    global const string GAMEMODE_SIMPLERANDOMISER = "rand" 
-    // we want a short term to use which allows server owners to 
+    global const string GAMEMODE_SIMPLERANDOMISER = "rand"
+    // we want a short term to use which allows server owners to
     // select our gamemode without typing the entire name
     // also makes it easier for us lol
-    
+
     void function simplerandomiser_init()
     {
         // start defining what to do before the map loads on this gamemode
@@ -159,7 +159,7 @@ Let's begin the process by first creating the file `sh_gamemode_simplerandomiser
     AddPrivateMatchModeSettingArbitrary("#PL_rand", "rand_announcementduration", "3")
     // Creates a riff with an arbitrary numerical value for how long the announcement text remains on screen
     // These riffs can be accessed from server configs or from the private match settings screen, under the "Simple Randomiser" category
-        
+
 
     // set this to 25 score limit default
     GameMode_SetDefaultScoreLimits( GAMEMODE_SIMPLERANDOMISER, 25, 0 )
@@ -173,7 +173,7 @@ Let's begin the process by first creating the file `sh_gamemode_simplerandomiser
         GameMode_AddClientInit( GAMEMODE_SIMPLERANDOMISER, ClGamemodeRand_Init ) // client side initializing function
     #endif
     #if !UI
-        GameMode_SetScoreCompareFunc( GAMEMODE_SIMPLERANDOMISER, CompareAssaultScore ) 
+        GameMode_SetScoreCompareFunc( GAMEMODE_SIMPLERANDOMISER, CompareAssaultScore )
                 // usually compares which team's score is higher and places the winning team on top of the losing team in the scoreboard
     #endif
     }
@@ -202,9 +202,9 @@ Now that we're done, name this file `sh_gamemode_simplerandomiser.nut` and place
 Now that we're down with defining the gamemode, its time to focus on the component on that makes the gamemode function in-game. For this, it will be mostly handled by the server scripts, so head into `_gamemode_simplerandomiser.nut` to begin writing the randomizing script.
 
 ```squirrel
-    
+
     global function GamemodeRand_Init
-    
+
     void function GamemodeRand_Init()
     {
         #if SERVER
@@ -217,9 +217,9 @@ Now that we're down with defining the gamemode, its time to focus on the compone
 
 As you may have noticed, checking if it is a server is a special case, so we use `#if SERVER` and `#endif` instead of the usual `if(thing){stuff}`
 
-Now that our initial function is created, we now have the game triggering `GiveRandomGun` when a player spawns, but we don't have any such function, so let's begin creating one. 
+Now that our initial function is created, we now have the game triggering `GiveRandomGun` when a player spawns, but we don't have any such function, so let's begin creating one.
 
-Firstly, we need to know what weapons we can equip. 
+Firstly, we need to know what weapons we can equip.
 For this we define an array:
 
 ```squirrel
@@ -229,7 +229,7 @@ For this we define an array:
                                   "mp_weapon_car",
                                   "mp_weapon_dmr"]
 ```
-    
+
 Here we have defined an array with only 4 weapons in it, you can make this list however you like but remember to separate all but the last item with a `,`
 
 ### Randomise function
@@ -245,7 +245,7 @@ First we strip any existing weapons:
             player.TakeWeaponNow( weapon.GetWeaponClassName() )
 ```
 
-This iterates through each weapon (that being the primary, secondary and anti-titan weapons) and removes them individually. 
+This iterates through each weapon (that being the primary, secondary and anti-titan weapons) and removes them individually.
 
 Then lets give them a new, random weapon by selecting a random item from our previous array:
 
@@ -269,7 +269,7 @@ Overall, the server script should look like this.
 ```squirrel
 
     global function GamemodeRand_Init
-    
+
     void function GamemodeRand_Init()
     {
         #if SERVER
@@ -288,9 +288,9 @@ Overall, the server script should look like this.
     {
         foreach ( entity weapon in player.GetMainWeapons() )
             player.TakeWeaponNow( weapon.GetWeaponClassName() )
-         
+
         player.GiveWeapon( pilotWeapons[ RandomInt( pilotWeapons.len() ) ] )
-        
+
         // checks if the toggle option is set to enabled
         if ( GetCurrentPlaylistVarInt( "rand_enableannouncements", 1 ) == 1 )
             Remote_CallFunction_NonReplay( player, "ServerCallback_Randomiser", GetCurrentPlaylistVarFloat( "rand_announcementduration", 3 ) ) // call the function that will be used client-side
@@ -304,10 +304,10 @@ Make sure to double check that all spellings are correct in your mod as everythi
 Lastly, for your `cl_gamemode_simplerandomiser.nut`, we are going to utilize the callback functions from earlier, as well as add some music to play during the gamemode.
 
 ```squirrel
-    
+
     global function ClGamemodeRand_Init
     global function ServerCallback_Randomiser
-    
+
     void function ClGamemodeRand_Init()
     {
         RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_INTRO, "music_mp_freeagents_intro", TEAM_IMC )

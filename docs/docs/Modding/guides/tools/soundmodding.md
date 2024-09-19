@@ -50,7 +50,7 @@ ready it's time to set up the folder structure.
 Assuming the event name is `pilot_grapple_fire`, the folder structure of your mod should look like this:
 
 ```text
-   
+
    author.mod/
    ├── audio/
    │   ├── pilot_grapple_fire/
@@ -58,7 +58,7 @@ Assuming the event name is `pilot_grapple_fire`, the folder structure of your mo
    │   └── pilot_grapple_fire.json
    └── mod.json
 ```
-   
+
 
 Example of a `mod.json` (documented here: [Getting Started](../gettingstarted.md))
 
@@ -138,7 +138,7 @@ This is usually because there's some metadata left in the audio. Remove it to fi
             mv -f "${f%.wav}.new.wav" "$f"
             done
         ```
-            
+
 - Sound is slightly higher/lower pitched in game. This is usually because the sampling rate of your sound doesn't match the original sound's sampling rate. You can use a tool like Audacity to resample your sound to match the original rate. Consult `_creating_your_sound` for more information.
 
 ## Sound Tools {#sound_tools}
@@ -160,10 +160,10 @@ This is usually because there's some metadata left in the audio. Remove it to fi
     === "WAV script"
 
         ```shell
-               
+
                #WAV to WAV 16-bit 48000 Hz.
                #wav_converter.sh
-               
+
                shopt -s globstar nullglob
                for f in *.wav **/*.wav
                do
@@ -176,10 +176,10 @@ This is usually because there's some metadata left in the audio. Remove it to fi
     === "MP3 Script"
 
         ```shell
-               
+
                #MP3 to WAV 16-bit 48000 Hz.
                #mp3-wav_converter.sh
-               
+
                shopt -s globstar nullglob
                for f in *.mp3
                do
@@ -193,7 +193,7 @@ This is usually because there's some metadata left in the audio. Remove it to fi
         ```shell
                #Replace .format with the one you want to convert.
                #format-wav_converter.sh
-               
+
                shopt -s globstar nullglob
                for f in *.format
                do

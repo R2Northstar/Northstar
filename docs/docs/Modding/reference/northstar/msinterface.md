@@ -46,7 +46,7 @@ These are functions required for the ingame server browser and the authorization
 
 !!! cpp-function "void NSCompleteAuthWithLocalServer()"
 
-    Call this after `NSWasAuthSuccessful` returns `true` to complete the local authorization process. 
+    Call this after `NSWasAuthSuccessful` returns `true` to complete the local authorization process.
 
 ## Server Information
 
@@ -56,7 +56,7 @@ These are functions required for the ingame server browser and the authorization
 
 !!! cpp-function "bool NSIsRequestingServerList()"
 
-    Returns `true` if the last request by 
+    Returns `true` if the last request by
 
 !!! cpp-function "int NSGetServerCount()"
 
@@ -94,7 +94,7 @@ These are functions required for the ingame server browser and the authorization
     !!! cpp-var "int index"
 
         Index of the native Object equivalent
-    
+
     !!! cpp-var "string id"
 
         ID assigned to the game server by the Masterserver in the registration
@@ -126,7 +126,7 @@ These are functions required for the ingame server browser and the authorization
     !!! cpp-var "bool requiresPassword"
 
         If `true` an extra password is required to connect to the server. Otherwise the password is an empty string
-    
+
     !!! cpp-var "string region"
 
         Unlocalized region where the physical server is located
@@ -142,7 +142,7 @@ These are functions required for the ingame server browser and the authorization
     !!! cpp-var "string name"
 
         Name of the mod
-    
+
     !!! cpp-var "string version"
 
         Version of the mod

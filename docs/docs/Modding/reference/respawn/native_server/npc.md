@@ -102,7 +102,7 @@ For settings, see [AI Settings](settings.md#ai-settings)
 !!! cpp-function "bool NavMesh_IsPosReachableForAI( entity npc, vector point )"
 
   Checks if the npc can reach the position over graph
-  
+
 !!! cpp-function "vector GetBoundsMin( int hull )"
 
 !!! cpp-function "vector GetBoundsMax( int hull )"

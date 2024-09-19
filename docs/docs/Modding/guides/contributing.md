@@ -2,13 +2,13 @@
 
 **How can I contribute?**
 
-All contributions to ModdingDocs are welcome. 
+All contributions to ModdingDocs are welcome.
 
 Including:
 
 - GitHub Issues containing any knowledge you want to share
 - Pull Requests with changes to the docs, even small ones
-  
+
 **What do I need to know to contribute?**
 
 The Northstar modding documentation uses [Markdown](https://en.wikipedia.org/wiki/Markdown).

@@ -1,6 +1,6 @@
 # Crosshair Modding
 
-Example Mod: 
+Example Mod:
 [Custom.Crosshairs](https://github.com/MysteriousRSA/Custom.Crosshairs)
 
 ## How To Modify Crosshairs:
@@ -13,12 +13,12 @@ Example Mod:
 ```
 
    WeaponData
-   {   
+   {
        RUI_CrosshairData
        {
-           Crosshair_1 
+           Crosshair_1
            {
-               "ui"                        "ui/crosshair_alternator" 
+               "ui"                        "ui/crosshair_alternator"
            }
        }
    }
@@ -42,14 +42,14 @@ into one**
 
        RUI_CrosshairData
        {
-           Crosshair_1                                                                     
+           Crosshair_1
            {
-               "ui"                        "ui/crosshair_alternator"   
-           }                                                                               
-           Crosshair_2                                                                     
+               "ui"                        "ui/crosshair_alternator"
+           }
+           Crosshair_2
            {
-               "ui"                        "ui/crosshair_tri"          
-           }                                                                              
+               "ui"                        "ui/crosshair_tri"
+           }
        }
    }
 ```
@@ -72,10 +72,10 @@ Below the "ui" line, Like this:
 
 ```
 
-    {   
+    {
        RUI_CrosshairData
        {
-           Crosshair_1 
+           Crosshair_1
            {
                "ui"                        "ui/crosshair_alternator" //THis is the Croshair
                "base_spread"               "3.0"   //This is a spread Multiplier, Line doesn't exist by default
@@ -91,10 +91,10 @@ Below the "ui" line, Like this:
 ```
 
    WeaponData
-   {   
+   {
        RUI_CrosshairData
        {
-           Crosshair_1 
+           Crosshair_1
            {
                "ui"                        "ui/crosshair_sniper_amped" //This means NO crosshair
            }
@@ -125,7 +125,7 @@ https://noskill.gitbook.io/titanfall2/
 * As with any mod, it is recommended to test this out in a private match first. Save any changes you made to the desired weapon's file and type `reload` in your console
 
 
-* Keep in mind that some weapons have animated or dynamic crosshairs. Weapons like the Charge Rifle, Cold War, Frag Grenade, etc... have custom animations for their crosshairs. which can cause weirdness or jank when used on other weapons or when using other crosshairs on them. 
+* Keep in mind that some weapons have animated or dynamic crosshairs. Weapons like the Charge Rifle, Cold War, Frag Grenade, etc... have custom animations for their crosshairs. which can cause weirdness or jank when used on other weapons or when using other crosshairs on them.
    * Animated weapons like the Charge rifle will work with animated crosshairs like `ui/crosshair_titan_sniper`
 
 Thank you to `Cpone#0001` and `Nixie#8251` from the [Northstar

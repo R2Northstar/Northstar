@@ -96,7 +96,7 @@
 
     - `HSquirrelVM* sqvm` The target vm
     - `int fieldCount` total number of fields the struct contains
-    
+
     Creates and pushes a struct instance with `fieldCount` to the stack.
 
 

@@ -40,7 +40,7 @@ alt="/_static/map-corners.png" />
 
 <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/mwvxonuCm8U" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
-Sample clip: 
+Sample clip:
 
 <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/zgWDme7Y6oI" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 

@@ -88,7 +88,7 @@ calling:
 
 We'll use:
 
-``` 
+```
 
     AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_LAUNCH_NORTHSTAR" )
 ```

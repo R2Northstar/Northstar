@@ -93,9 +93,9 @@ Remote functions allow the `SERVER` to call registered script functions on the `
         Allowed extra parameter types are null, bool, int, and float.
 
   Given a player, function name, and optional parameters, call function in client script.
-  
+
   Does not get called again in replays.
-  
+
 !!! cpp-function "void Remote_CallFunction_UI( entity player, string functionName, ... )"
 
     !!! note

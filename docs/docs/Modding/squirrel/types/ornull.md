@@ -20,7 +20,7 @@ To use the value of an `ornull` variable you need to ensure that it is not `null
 
    print( n ) // 3
 ```
-  
+
 Being required to cast the value of `ornull` variables makes it impossible to use it with types that cannot be casted like complex arrays. You can still make complex ornull variables, just be aware that the content type can never be recasted.
 
 You can use `ornull` types in complex type as well, for example in complex arrays.

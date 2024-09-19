@@ -2,7 +2,7 @@
 
 Callbacks added by Northstar
 
-Callbacks within squirrel trigger functions when certain events occur. 
+Callbacks within squirrel trigger functions when certain events occur.
 
 They will also often pass arguments to those functions based on the callbacks used.
 
@@ -78,7 +78,7 @@ Please refer to [Respawn Callbacks](../respawn/callbacks.md)  for the list of ca
 
 !!! cpp-function "void AddCallback_IsValidMeleeExecutionTarget( bool functionref( entity attacker, entity target ) callbackFunc )"
 
-   This callback gets triggered after the melee button is pressed to check if the action to execute the target is still valid. 
+   This callback gets triggered after the melee button is pressed to check if the action to execute the target is still valid.
    If one of the added callbacks return false the target won't be executed and will just be meleed.
 
 !!! note

@@ -77,7 +77,7 @@ Useless functions have been left out. From `_menus.nut`
 
 !!! cpp-function "void OpenSubmenu( var menu, bool updateMenuPos = true )"
 
-    if `updateMenuPos` is not `null`, the menu is required to have a `ButtonFrame` element that is the main content reference. 
+    if `updateMenuPos` is not `null`, the menu is required to have a `ButtonFrame` element that is the main content reference.
 
 ### Retrieve Menus
 

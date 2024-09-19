@@ -48,8 +48,8 @@ Because damageInfo instances are implemented as userdata they can't be typed.
 !!! cpp-function "int DamageInfo_GetDamageSourceIdentifier( var damageInfo )"
 
     Returns the `eDamageSourceId`
-    
-    `damageSourceId` is an `int` that references an `enum` and can be used to identify what source damage came from. 
+
+    `damageSourceId` is an `int` that references an `enum` and can be used to identify what source damage came from.
 
     `damageSourceId` is mostly found as an argument in some kill and damage related functions. Respawn has created a function that will attempt to localise the damageSourceId inputed.
     To add your own custom `damageSourceID` , see: :doc:`../../northstar/customdamagesources`

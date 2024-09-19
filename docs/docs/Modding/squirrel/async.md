@@ -75,7 +75,7 @@ If you want to wait until a thread is finished, you can spin off the thread that
 
 Use the `OnThreadEnd` function to execute a callback after a thread has ended. This is useful for cleanup functions that remove entities after they're used or similar.
 
-```squirrel 
+```squirrel
 
     void function PlayIncomingFX( vector origin, int teamNum )
     {
@@ -155,7 +155,7 @@ Signals and flags allow threads to wait for events before running some code.
     !!! cpp-function "void AddOutput( string outputName, string | entity target, string inputName, string parameter = "", float delay = 0, float maxFires = 0 )"
 
     Connects an output on this entity to an input on another entity via code.  The `target` can be a name or a named entity.
-        
+
     !!! cpp-function "void Fire( string signal, string param = "", float delay = 0, entity activator = null, entity caller = null )"
 
     Fire a signal on this entity, with optional parm and delay
@@ -194,7 +194,7 @@ For example, if we want to tell a player not to give up after being killed sever
     RegisterSignal("OnMultipleDeaths")
 
 
-    void function WatchForDeaths (entity player) 
+    void function WatchForDeaths (entity player)
     {
         int deathsCount = 0
 
@@ -208,7 +208,7 @@ For example, if we want to tell a player not to give up after being killed sever
                 {
                     // This sends "OnMultipleDeaths" signal on player entity
                     player.Signal( "OnMultipleDeaths" )
-                } 
+                }
             }
         }
     }
@@ -229,10 +229,10 @@ For example, if we want to tell a player not to give up after being killed sever
     thread DontGiveUp( player )
 ```
 
-In this example, the `DontGiveUp` method is launched at the same time as `WatchForDeaths`; but it will not 
+In this example, the `DontGiveUp` method is launched at the same time as `WatchForDeaths`; but it will not
 run until player died 42 times.
 
-When you want your thread to die on a given event, you can use `entity.EndSignal( "OnMultipleDeaths" )`; when said signal 
+When you want your thread to die on a given event, you can use `entity.EndSignal( "OnMultipleDeaths" )`; when said signal
 is set, thread will end (after calling any `OnThreadEnd` methods).
 
 ### Flags
@@ -273,7 +273,7 @@ is set, thread will end (after calling any `OnThreadEnd` methods).
 
 !!! cpp-function "void FlagClearOnFlag( string flagclear, string flagwait )"
 
-    Reset `flagclear` when `flagwait` is set. 
+    Reset `flagclear` when `flagwait` is set.
 
 !!! cpp-function "void FlagWaitClearWithTimeout( string flag, float timeOut )"
 

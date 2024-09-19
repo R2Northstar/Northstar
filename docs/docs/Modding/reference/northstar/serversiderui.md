@@ -91,7 +91,7 @@ alt="/_static/serversiderui/info.gif" />
 **Example:**
 
 ```squirrel
-  
+
     void function SendDummyInfoMessage(entity player)
     {
         NSSendInfoMessageToPlayer(player, "we were sent at the same time but I was sent sooner")
@@ -174,7 +174,7 @@ alt="/_static/serversiderui/status.gif" />
 **Examples:**
 
 ```squirrel
-  
+
     void function TestStatusMessage_Threaded(entity player)
     {
         string id = UniqueString("votes#")
@@ -182,6 +182,6 @@ alt="/_static/serversiderui/status.gif" />
         wait 3
         NSEditStatusMessageOnPlayer(player, "have voted", "[1/12]", id)
         wait 10
-        NSDeleteStatusMessageOnPlayer(player, id)    
+        NSDeleteStatusMessageOnPlayer(player, id)
     }
 ```

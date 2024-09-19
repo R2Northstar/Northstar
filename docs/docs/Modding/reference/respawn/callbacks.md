@@ -2,7 +2,7 @@
 
 Callbacks from Respawn native code
 
-Callbacks within squirrel trigger functions when certain events occur. 
+Callbacks within squirrel trigger functions when certain events occur.
 
 They will also often pass arguments to those functions based on the callbacks used.
 

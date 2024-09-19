@@ -5,7 +5,7 @@ For an example of chathooks in use, check out EmmaM's [OwOfier mod](https://gith
 
 
 !!! warning
-    
+
     Your mod needs to be load priority 1 or above to use the structs and callbacks in your script.
 
 
@@ -29,7 +29,7 @@ The client chat callbacks allow you to intercept chat messages and modify or blo
 
         the player who sent the chat.
     !!! cpp-var "string playerName"
-    
+
        the display name of the player who sent the chat.
     !!! cpp-var "bool isTeam"
 
@@ -64,9 +64,9 @@ The client chat callbacks allow you to intercept chat messages and modify or blo
             {
                 message.shouldBlock = true
             }
-            
+
             message.message = StringReplace(message.message, "yes", "no", true, true)
-            
+
             return message
         }
 
@@ -104,7 +104,7 @@ players, they only display them locally.
     **Example:**
 
     ```squirrel
-        
+
         void function InitialiseHEVSuit()
         {
             Chat_GameWriteLine("SENSOR ARRAYS-")
@@ -169,16 +169,16 @@ The server chat callbacks allow you to intercept incoming chat messages and modi
     `AddCallback_OnReceivedSayTextMessage`.
 
     !!! cpp-var "string message"
-        
+
         the text sent by the player.
     !!! cpp-var "entity player"
-        
+
         the player who sent the chat.
     !!! cpp-var "bool isTeam"
-        
+
         whether this chat is only sent to the player's team.
     !!! cpp-var "bool shouldBlock"
-        
+
         if true, this chat will not be sent.
 
 
@@ -201,9 +201,9 @@ The server chat callbacks allow you to intercept incoming chat messages and modi
             {
                 message.shouldBlock = true
             }
-            
+
             message.message = StringReplace(message.message, "yes", "no", true, true)
-            
+
             return message
         }
         void function MyModInit()
@@ -320,7 +320,7 @@ With custom messages you can send chat messages at any time, to all players or t
                 Chat_ServerPrivateMessage(player, "You do not have the permissions to perform this command.", true, false)
                 return
             }
-            
+
             BanPlayerByName(args[0])
         }
     ```

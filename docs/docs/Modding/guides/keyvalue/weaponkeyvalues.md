@@ -453,7 +453,7 @@ The majority of these values are held in `eWeaponVar`. Those that are can be mod
 |`projectile_straight_radius_min`|`float`|True|Unknown.|
 |`projectile_straight_time_max`|`float`|True|Unknown.|
 |`projectile_straight_time_min`|`float`|True|Unknown.|
-|`projectile_trail_effect_0`|`asset`|True|Trail effect shown on projectiles.|Additional trail effects exist up to `projectile_trail_effect_4`. 
+|`projectile_trail_effect_0`|`asset`|True|Trail effect shown on projectiles.|Additional trail effects exist up to `projectile_trail_effect_4`.
 |`projectile_visible_to_smart_ammo`|`bool`|True|Allows projectiles to be targeted by smart weapons.|
 |`projectiles_per_shot`|`int`|True|Has no native use. Used in script by some weapons to determine the number of projectiles fired per shot.|
 |`raise_from_sprint_time`|`float`|True|The time in seconds of the weapon's raise animation after sprinting.|Not the time before firing is allowed. Animations can allow firing sooner at various fractions of the full raise time.

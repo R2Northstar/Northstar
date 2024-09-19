@@ -30,9 +30,9 @@ While creating an entire Model from scratch is possible it would be an extremely
     Especially the following topics are important for modifying or creating game assets:
 
     •   Modeling
-    •   UV Mapping 
-    •   Texturing 
-    •   Rigging 
+    •   UV Mapping
+    •   Texturing
+    •   Rigging
 
     These things work in conjunction with each other and are all important for creating a game ready model. An understanding of these topics is very helpful for proper usage of Blender.
 
@@ -55,7 +55,7 @@ The workflow for editing a model is as follows:
 This is a short video guide on MDL Editing, there are some discrepancies between the video and this guide but the general workflow is the same.
 Its relatively quick but shows the process quite well.
 
-<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/mZg5AlWvXZs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>    
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/mZg5AlWvXZs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 ## Blender
 
@@ -103,7 +103,7 @@ We will add a cube to the side of the Flatline and assign a custom material to i
 - Navigate to the location of your Titanfall 2 installions `/vpk/` folder.
 - Open the `.vpk` file you want to extract (most multiplayer weapons are in `client_mp_common.bsp.pak000_000.vpk` since you most likely want one of those).
 - You will now see a list of all files in the `.vpk` file on the left side looking something like this:
- 
+
 ``` text
 
     RootDir
@@ -119,14 +119,14 @@ We will add a cube to the side of the Flatline and assign a custom material to i
 - Navigate to the `models` folder (this is where all models in this file are located).
 - Navigate to the folder of the model you want to extract (for example `weapons/vinson` which is the internal name for the Flatline).
 - Select the `.mdl` file you want to extract (for example `ptpov_vinson.mdl`).
- 
+
 !!! note
     Weapons are mostly split into two models, one for the first person view(`ptpov_` and the world model `w_`.
 
     `ptpov` is used when you are in first person.
-    
+
     `w_` is used when the weapon is viewed in the world (for example when its dropped on the ground).
-    
+
 - Click on the `Unpack` button on the top right.
 - You are now prompted to select a folder to extract the model to, select a folder of your choice and click on `Select Folder`.
 - Your model is now extracted and you can close Harmony VPK.
@@ -136,7 +136,7 @@ We will add a cube to the side of the Flatline and assign a custom material to i
 
 !!! note
     In order to use Crowbar the way we will we need to setup a few things first.
-    
+
     This step only needs to be done once
 
 
@@ -149,7 +149,7 @@ We will add a cube to the side of the Flatline and assign a custom material to i
 
 - Select the `Decompile` tab on the top.
 - In this tab make sure the following settings are set:
- 
+
   - `MDL input`: `File`
   - `Output to`: `Subfolder (of MDL input)` (change the text in the box to the right of that to `decompiled`)
 
@@ -169,18 +169,18 @@ We will add a cube to the side of the Flatline and assign a custom material to i
 
 - Select the `Compile` tab on the top.
 - In this tab make sure the following settings are set:
-  
-  - `QC input`: `File` 
+
+  - `QC input`: `File`
   - `Output to`: `Subfolder (of QC input)` (change the text in the box to the right of that to `compiled`)
   Check the following boxes:
 
   - `No P4`
   - `Verbose`
-  
+
   Set `Game that has the model compiler` to the game you selected in the `Set Up Games` tab on the top left.
 
 - This concludes the setup for crowbar these settings will be saved and you will not need to do this again.
-  
+
 
 ### Decompiling the model
 
@@ -189,7 +189,7 @@ We will add a cube to the side of the Flatline and assign a custom material to i
 - Select the `.mdl` file you want to decompile (for example `ptpov_vinson.mdl`).
 - Press the `Decompile` button.
 - Crowbar now decompiles the model and outputs the files to the `decompiled` folder in the same folder as the `.mdl` file.
-  
+
 
 ## Step 3: Importing to Blender
 
@@ -255,7 +255,7 @@ This is the way you will usually do it when reimporting a model that you have ed
 
 - Exit `EDIT Mode`.
 - Your cube should now have the material assigned to it ingame after compiling.
- 
+
     !!! note
         To clearify: the material of a mesh or individual faces in the game will be associated using the name of the assigned material in Blender.
 
@@ -286,7 +286,7 @@ Command docs: [VALVe developer docs $renamematerial](https://developer.valvesoft
 
     !!! note
         This is important since we want to export the model as a dmx file instead of an smd file, this is because of limitation in the smd format that we want to avoid.
-        dmx by default will, uppon importing set a "material path" which is the path to the material in the game files, if you reimport this model later on you will need to 
+        dmx by default will, uppon importing set a "material path" which is the path to the material in the game files, if you reimport this model later on you will need to
 
 - Press the `Export` button and select `Scene Export` (this will export all meshes in the scene to DMX files, you can also individually export meshes by selecting them in the outliner and then pressing the `Export` button and selecting the mesh in the Export Menu).
 - Your DMX files are now exported and you can close Blender.
@@ -297,7 +297,7 @@ Command docs: [VALVe developer docs $renamematerial](https://developer.valvesoft
 - Open your `.qc` file in a text editor of your choice.
 - On the top of the file you will see so called "bodygroup" lines, these are used to define the bodygroups of the model. They look a bit like this:
     ```
-    
+
             $bodygroup "body"
             {
                 studio "ptpov_vinson_v_vinson.smd"
@@ -319,9 +319,9 @@ Command docs: [VALVe developer docs $renamematerial](https://developer.valvesoft
 - Choose your game from the dropdown labeled `Games that has the model compiler` (for example `Portal 2`)
 - Press the `Compile` button.
 - Crowbar now compiles the model and outputs the files to the `compiled` folder in the same folder as the `.qc` file, inside the `compiled` folder you will find the full folder path of the model (for example `models\weapons\vinson\`).
-  
+
     !!! note
-        Usually the error is self explainatory and you can fix it by yourself. 
+        Usually the error is self explainatory and you can fix it by yourself.
         By default Crowbar will not output a compiled file if any errors occur during the compilation process.
 
         If you have Visual Studio Code installed you can also use the `Valve KeyValue Files Support` extension to have a better overview of the qc file, extension id: `GEEKiDoS.vdf`

@@ -24,7 +24,7 @@ If they do they include any white space between the matching string quotes.
   string a = "simple string\nover two lines"
   string b = @"simple string
   over two lines"
-  
+
   Assert( a == b )
 ```
 
@@ -34,7 +34,7 @@ However, a doubled quotation mark within a verbatim string is replaced by a sing
 
   string a = "extra quotation mark\""
   string b = @"extra quotation mark """
-  
+
   Assert( a == b )
 ```
 

@@ -7,7 +7,7 @@ Dialogs are a way for a client to open a text window with up to 4 buttons.
 All the data in the struct that can be changed.
 
 !!! cpp-struct "DialogData"
-    
+
 
     !!! cpp-var "var menu"
 
@@ -32,7 +32,7 @@ All the data in the struct that can be changed.
          Path to the asset of the image displayed on the right of the text body
     !!! cpp-var "bool forceChoice = false"
 
-         unknown 
+         unknown
     !!! cpp-var "bool noChoice = false"
 
          unknown
@@ -41,7 +41,7 @@ All the data in the struct that can be changed.
          unknown
     !!! cpp-var "bool showSpinner = false"
 
-         Sets the left image as an animated spinner 
+         Sets the left image as an animated spinner
     !!! cpp-var "bool showPCBackButton = false"
 
          Shows an additional button below all other buttons that closes the dialog for the client when pressed, works the same as pressing the `esc` button
@@ -149,7 +149,7 @@ All the data in the struct that can be changed.
     - `string errorDetails` User facing information about the error
 ## Code example
 
-the folowing code produces this output: 
+the folowing code produces this output:
 
 ```squirrel
 

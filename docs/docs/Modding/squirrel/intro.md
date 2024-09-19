@@ -27,12 +27,12 @@ The language provides easy interfaces for coroutines and asynchronous code.
 
    void main()
    {
-    thread timer( 1.0, timercallback ) 
+    thread timer( 1.0, timercallback )
    }
 
    void function timercallback( int iteration )
    {
-    print( iteration ) 
+    print( iteration )
    }
 
    // call the callback function every n seconds

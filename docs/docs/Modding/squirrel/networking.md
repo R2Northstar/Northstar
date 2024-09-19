@@ -12,20 +12,20 @@ Remote functions allow the `SERVER` vm to call a function from the `CLIENT` vm w
 
 To use remote functions, you have to make a registration on both the `CLIENT` and the `SERVER` vm with `Remote_RegisterFunction`.
 
-Northstar provides the 
+Northstar provides the
 
 !!! cpp-function "AddCallback_OnRegisteringCustomNetworkVars( void functionref() identifierFn)"
 
-callback in which you can use the 
+callback in which you can use the
 
 !!! cpp-function "Remote_RegisterFunction(string identifier)"
-    
+
 function. It's not possible to register remote functions after `Remote_EndRegisteringFunctions` has been called. The callback exists to allow multiple mods to register remote vars.
 
 !!! warning
 
     You can only pass parameters of the types `null`, `int`, `float` or `bool`.
-    
+
     It is possible to communicate entities using eHandles. To get an eHandle, use the `entity.GetEncodedEHandle()` function. To get the corresponding entity of a handle, use `entity ent = GetEntityFromEncodedEHandle( eHandle )`. eHandles are of type `int`.
 
 #### Example
@@ -33,7 +33,7 @@ function. It's not possible to register remote functions after `Remote_EndRegist
 mod.json extract:
 
 ```json
-    
+
         "Scripts": [
         {
             "Path": "sh_spaceships.nut",
@@ -110,7 +110,7 @@ Allows the `SERVER` vm to create a `ServerToClientStringCommand` on a player whi
 Register with the function clientside:
 
 !!! cpp-function "AddServerToClientStringCommandCallback( string func, void functionref( array<string> ) reference )"
-    
+
 
 and execute with the function serverside:
 
@@ -149,7 +149,7 @@ and execute with the function serverside:
 
 ### Client to Server command callbacks
 
-Register a client command callback serverside with 
+Register a client command callback serverside with
 
 !!! cpp-function "AddClientCommandCallback( string command, bool functionref( entity player /*CPlayer*/, array<string> "args ) callback )
 
@@ -158,7 +158,7 @@ Register a client command callback serverside with
 The `CLIENT` vm can execute commands with the function:
 
 !!! cpp-function "player.ClientCommand( string command )"
-    
+
 These will be handled by the `SERVER` if the command is registered.
 
 ### ClientCommand Notifications
@@ -196,7 +196,7 @@ You can also pass parameters to the function. `identifier` is the name of the fu
 ```squirrel
     #if UI
     global function CallMe
-    
+
     void function CallMe( int a, int b )
     {
         printt( a + b )
@@ -221,7 +221,7 @@ You can also pass parameters to the function. `identifier` is the name of the fu
 
     #if CLIENT
     global function CallMe
-    
+
     void function CallMe( int a, int b )
     {
         printt( a + b )

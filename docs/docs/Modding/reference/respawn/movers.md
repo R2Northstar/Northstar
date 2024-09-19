@@ -9,7 +9,7 @@ Movers are entites that move and rotate smoothly.
 !!! cpp-function "entity CreateExpensiveScriptMover( vector origin , vector angles )"
 
    returns `script_mover`
-    
+
 !!! cpp-function "entity CreateExpensiveScriptMoverModel( asset model, vector origin, vector angles, int solidType, float fadeDist )"
 
     returns `script_mover` which has a model
@@ -23,7 +23,7 @@ Movers are entites that move and rotate smoothly.
     returns `script_mover_lightweight` which has a model
 
 !!! cpp-function "entity CreateOwnedScriptMover( entity owner )"
-    
+
      returns `script_mover` which will be at the location of the owner
 
 ## Moving
@@ -62,17 +62,17 @@ Movers are entites that move and rotate smoothly.
 
 ```squirrel
 
-    entity mover = CreateScriptMover( <0,0,0> ) 
-    
+    entity mover = CreateScriptMover( <0,0,0> )
+
     // moving the mover to <0,0,10> in 1 second
     mover.NonPhysicsMoveTo( <0,0,10>, 1, 0, 0 )
-    
+
     // wating so the mover gets to the destination
     wait 1
-    
+
     // sending it back
     mover.NonPhysicsMoveTo( <0,0,0>, 1, 0, 0 )
-    
+
     // then stoping the mover in 0.5 seconds
     wait 0.5
     mover.NonPhysicsStop()
@@ -80,12 +80,12 @@ Movers are entites that move and rotate smoothly.
 ```
 
 ```squirrel
-    
-    // creating a elevator 
+
+    // creating a elevator
     // using a mover with a model
     entity mover = CreateScriptMoverModel( $"models/props/turret_base/turret_base.mdl", < -40.5605, -1827.87, -223.944 >, <0,0,0>, SOLID_VPHYSICS, 1000 )
     mover.SetPusher( true ) // making it into a pusher
-    
+
     // for loop to move the elevator up and down
     for(;;)
     {

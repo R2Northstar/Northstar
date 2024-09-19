@@ -103,7 +103,7 @@ After you have made the desired changes to the image, export it as a .dds file w
 ![ExportDDS](https://user-images.githubusercontent.com/66967891/181824740-c8a6d1d7-234f-405d-a348-1287aa9bb168.png)
 
 !!! warning
-    Try to make your textures have dimensions that are powers of two, so that [mipmaps](https://en.wikipedia.org/wiki/Mipmap#Overview) can be used. 
+    Try to make your textures have dimensions that are powers of two, so that [mipmaps](https://en.wikipedia.org/wiki/Mipmap#Overview) can be used.
     For example `256x256` `512x512` `1024x512` `4096x1024` are all fine, but `350x700` might cause issues.
 
     ![MipMaps](https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Mipmap_Aliasing_Comparison.png/1280px-Mipmap_Aliasing_Comparison.png)
@@ -191,7 +191,7 @@ This is fine for camo RPaks, but isn't suitable for more complex RPaks
         },
         "Postload":
         {
-            
+
         }
     }
 ```
