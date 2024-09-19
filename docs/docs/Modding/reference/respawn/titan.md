@@ -9,7 +9,7 @@ Functions for getting titan, and methods of the titan object
 ```
 
 
-!!! cpp-class "titan : public entity	"
+!!! cpp-class "titan : public entity"
 
     !!! cpp-function "unknown GetAISettingsName()"
 

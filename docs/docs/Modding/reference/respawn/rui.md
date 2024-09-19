@@ -90,7 +90,7 @@ Trackers
         RUI_TRACK_WEAPON_HUD_ICON
 ```
 
-!!! cpp-class "rui : public var	"
+!!! cpp-class "rui : public var"
 
     !!! cpp-function "void RuiSetResolution(rui, screenSizeX, screenSizey)"
     
