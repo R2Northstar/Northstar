@@ -7,7 +7,7 @@ sidebar_position: 0
 
     This project is under active development. Please PR everything you can!
 
-    Check [Contributing to ModdingDocs](guides/contributing.md) section for getting started with [readthedocs](https://readthedocs.org/) and [reStructuredText](https://en.wikipedia.org/wiki/ReStructuredText).
+    Check [Contributing to ModdingDocs](guides/contributing.md) section for getting started.
 
 ## Contents
 
