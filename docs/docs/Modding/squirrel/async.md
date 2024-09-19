@@ -8,7 +8,7 @@ In threaded functions, it's possible to halt a threaded function with `wait` sta
 
 You can use the `IsNewThread()` function to determine if the current function is threaded off.
 
-For more information, check out the [squirrel documentation on threads](http://www.squirrel-lang.org/squirreldoc/reference/language/threads.html) and [sq functions of threads](http://www.squirrel-lang.org/squirreldoc/reference/language/builtin_functions.html#thread). rsquirrel is very similar to vanilla squirrel in this regard.
+For more information, check out the [squirrel documentation on threads](http://www.squirrel-lang.org/squirreldoc/reference/language/threads.html) and [sq functions of threads](http://www.squirrel-lang.org/squirreldoc/reference/language/builtin_functions.html#thread). squirrel_re is very similar to vanilla squirrel in this regard.
 
 A thread is considered finished, after the threaded function returned a value. This may be `null`.
 
