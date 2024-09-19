@@ -20,14 +20,14 @@ Check out the `tools` section for more information.
 
 ## Quick Start
 
-In order to get started with making your mod, create a folder in ``R2Northstar/mods``.
+In order to get started with making your mod, create a folder in `R2Northstar/mods`.
 While it isn't required, it is best practise by mod authors to follow the naming scheme
-``Author.ModName``, such as ``Northstar.Client``.
+`Author.ModName`, such as `Northstar.Client`.
 
-After making this folder, inside it add a folder named ``mod`` and a file named
-``mod.json``.
+After making this folder, inside it add a folder named `mod` and a file named
+`mod.json`.
 
-Provided is a template ``mod.json``, for a detailed list of values read the
+Provided is a template `mod.json`, for a detailed list of values read the
 `cheatsheet`
 
 ```json
@@ -43,9 +43,9 @@ Provided is a template ``mod.json``, for a detailed list of values read the
     }
 ```
 
-Inside the ``mod`` folder, existing files found in the engine's virtual file system will
+Inside the `mod` folder, existing files found in the engine's virtual file system will
 be overwritten and new files can be added. If you need to define new Squirrel files
-``(.nut/.gnut)`` they *must* be declared in the ``"Scripts"`` array in `mod.json`. An
+`(.nut/.gnut)` they *must* be declared in the `"Scripts"` array in `mod.json`. An
 example for this might be:
 
 ```json
@@ -70,21 +70,21 @@ example for this might be:
     ]
 ```
 
-``"Path"`` indicates where the script is, ``"RunOn"`` is the Squirrel VM context (see
-`../native/sqvm`) as an expression, and ``"ClientCallback"`` and
-``"ServerCallback"`` specify a function call that can be ``"Before"`` and/or ``"After"``
+`"Path"` indicates where the script is, `"RunOn"` is the Squirrel VM context (see
+`../native/sqvm`) as an expression, and `"ClientCallback"` and
+`"ServerCallback"` specify a function call that can be `"Before"` and/or `"After"`
 map-spawn.
 
-## Detailed ``mod.json`` architecture
+## Detailed `mod.json` architecture
 
-Located at your mod's root folder, the ``mod.json`` file is the entrypoint of your mod;
+Located at your mod's root folder, the `mod.json` file is the entrypoint of your mod;
 it contains human-readable information about it, which scripts to load, and a bunch of
 interesting stuff.
 
-This guide will dig into each of the possible ``mod.json`` fields. Please note that
-``mod.json`` keys must start with an uppercase letter.
+This guide will dig into each of the possible `mod.json` fields. Please note that
+`mod.json` keys must start with an uppercase letter.
 
-This is what a well-formatted ``mod.json`` looks like:
+This is what a well-formatted `mod.json` looks like:
 
 ```json
 
@@ -121,30 +121,30 @@ This is what a well-formatted ``mod.json`` looks like:
 
 !!! note
 
-    The real ``Northstar.CustomServers`` mod contains more convars and scripts, some
+    The real `Northstar.CustomServers` mod contains more convars and scripts, some
     have been removed for the readability of the example.
 
 ### Name and description
 
 Those ones are pretty self-explanatory. Both fields are used by Northstar itself to
-display in-game information about your mod in the main screen ``Mods`` menu.
+display in-game information about your mod in the main screen `Mods` menu.
 
-Best pratice for your mod's name is to use the ``Author.ModName`` convention.
+Best pratice for your mod's name is to use the `Author.ModName` convention.
 
 ### Version
 
-This field specifies version of your mod using ``X.Y.Z`` scheme; this field must be
+This field specifies version of your mod using `X.Y.Z` scheme; this field must be
 updated each time you release a new version of your mod.
 
-Common use is to increase *Z* when you publish a fix (*e.g.* ``1.5.0`` to ``1.5.1``),
-and increase *Y* when you release new features (*e.g.* ``1.5.1`` to ``1.6.0``).
+Common use is to increase *Z* when you publish a fix (*e.g.* `1.5.0` to `1.5.1`),
+and increase *Y* when you release new features (*e.g.* `1.5.1` to `1.6.0`).
 
 Best practise is to follow semantic versioning (https://semver.org/).
 
 ### LoadPriority
 
 This field defines the order in which all mods will be loaded by Northstar. For example,
-a mod with ``"LoadPriority": 1`` will be loaded after a mod with ``"LoadPriority": 0``.
+a mod with `"LoadPriority": 1` will be loaded after a mod with `"LoadPriority": 0`.
 
 If your mod uses code from another mod, make sure to set a greater LoadPriority than the
 mod you're using code from.
@@ -154,13 +154,13 @@ mod you're using code from.
 This field lists configuration variables, that can be set by servers owners to modify
 behaviour of your mod.
 
-Each configuration variable must have a ``"Name"`` and a ``"DefaultValue"``. ConVars can
-also have an optional ``"Flags"`` field which specifies special behaviour and an
-optional ``"HelpString"`` field which specifies the usage of the ConVar which can be
-view in-game by running ``help <convar>``.
+Each configuration variable must have a `"Name"` and a `"DefaultValue"`. ConVars can
+also have an optional `"Flags"` field which specifies special behaviour and an
+optional `"HelpString"` field which specifies the usage of the ConVar which can be
+view in-game by running `help <convar>`.
 
-You can access configuration variables from squirrel code using ``GetConVarInt``,
-``GetConVarFloat``, ``GetConVarBool`` or ``GetConVarString`` calls.
+You can access configuration variables from squirrel code using `GetConVarInt`,
+`GetConVarFloat`, `GetConVarBool` or `GetConVarString` calls.
 
 !!! warning
 
@@ -170,8 +170,8 @@ You can access configuration variables from squirrel code using ``GetConVarInt``
 #### Example
 
 If I don't want to wait 15 seconds for matches to start on my server,
-``Northstar.CustomServers`` mod exposes a ConVar named
-``ns_private_match_countdown_length`` in its ``mod.json`` manifesto:
+`Northstar.CustomServers` mod exposes a ConVar named
+`ns_private_match_countdown_length` in its `mod.json` manifesto:
 
 ```json
 
@@ -185,11 +185,11 @@ If I don't want to wait 15 seconds for matches to start on my server,
     ]
 ```
 
-I can setup the ``ns_private_match_countdown_length`` variable in my
-``R2Northstar/mods/Northstar.CustomServers/mod/cfg/autoexec_ns_server.cfg``
+I can setup the `ns_private_match_countdown_length` variable in my
+`R2Northstar/mods/Northstar.CustomServers/mod/cfg/autoexec_ns_server.cfg`
 configuration file.
 
-When starting a match, ``Northstar.CustomServers`` mod will retrieve the configuration
+When starting a match, `Northstar.CustomServers` mod will retrieve the configuration
 variable value, or its default value if it hasn't been specified in configuration file:
 
 ```squirrel
@@ -200,7 +200,7 @@ variable value, or its default value if it hasn't been specified in configuratio
 
 !!! note
 
-    All ``Northstar.CustomServers`` ConVars are listed here:
+    All `Northstar.CustomServers` ConVars are listed here:
     https://r2northstar.gitbook.io/r2northstar-wiki/hosting-a-server-with-northstar/basic-listen-server
 
 #### Flags
@@ -275,7 +275,7 @@ Each script entry must have a "Path" value and a "RunOn" value.
 
 #### Path
 
-Path of the Squirrel file to import, without ``mod/scripts/vscripts`` prefix (that's
+Path of the Squirrel file to import, without `mod/scripts/vscripts` prefix (that's
 where your script files should go).
 
 #### RunOn
@@ -295,15 +295,15 @@ A boolean expression which tells the game when and in which context to compile t
 |MAP_mp_box|True if the given map name is being loaded|
 |GAMEMODE_at|True if the given game mode is being loaded|
 
-``CLIENT && !LOBBY`` - Compiles on client and not in the lobby. So during actual singeplayer and multiplayer gameplay.
+`CLIENT && !LOBBY` - Compiles on client and not in the lobby. So during actual singeplayer and multiplayer gameplay.
 
-``CLIENT && MP && !LOBBY`` - Compiles on client, only in multiplayer and not in the lobby.
+`CLIENT && MP && !LOBBY` - Compiles on client, only in multiplayer and not in the lobby.
 
-``( CLIENT || SERVER ) && MP`` - Compiles on both client and server only in multiplayer.
+`( CLIENT || SERVER ) && MP` - Compiles on both client and server only in multiplayer.
 
-``CLIENT && SP && MAP_sp_boomtown`` - Compiles only on client in singleplayer only when the map ``sp_boomtown`` is loaded. ( Here ``SP`` isn't needed as ``sp_boomtown`` is singleplayer only )
+`CLIENT && SP && MAP_sp_boomtown` - Compiles only on client in singleplayer only when the map `sp_boomtown` is loaded. ( Here `SP` isn't needed as `sp_boomtown` is singleplayer only )
 
-``CLIENT && GAMEMODE_aitdm`` - Compiles on client on both singleplayer and multiplayer only when the ``aitdm`` gamemode is set. ( ``aitdm`` is attrition which is multiplayer only so this script only compiles on multiplayer )
+`CLIENT && GAMEMODE_aitdm` - Compiles on client on both singleplayer and multiplayer only when the `aitdm` gamemode is set. ( `aitdm` is attrition which is multiplayer only so this script only compiles on multiplayer )
 
 
 #### ClientCallback / ServerCallback

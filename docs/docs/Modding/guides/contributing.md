@@ -13,7 +13,7 @@ Including:
 
 The Northstar modding documentation uses [Markdown](https://en.wikipedia.org/wiki/Markdown).
 
-The ``.md`` files can be found in the ``docs/source`` directory.
+The `.md` files can be found in the `docs/source` directory.
 
 ## Contributing without a local build
 

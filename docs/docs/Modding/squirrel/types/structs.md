@@ -18,9 +18,9 @@ The fields are typed like any regular variable.
    }
 ```
 
-You can then use ``MyStruct`` as a type anywhere in the file.
+You can then use `MyStruct` as a type anywhere in the file.
 Structs are default initialized by assigning each field it's appropriate default value.
-Struct fields can be indexed by writing ``instance.field``, just like with tables.
+Struct fields can be indexed by writing `instance.field`, just like with tables.
 
 ```squirrel
   
@@ -32,7 +32,7 @@ Structs are passed by reference so if a function changes a field that field is c
 
 Struct instances can also get initiaized with different default values if required.
 
-Similar like in static arrays, you can omit any fields that should have their type's default value with ``...``.
+Similar like in static arrays, you can omit any fields that should have their type's default value with `...`.
 
 ```squirrel
 
@@ -65,7 +65,7 @@ Struct fields can be any type, this includes previously declared structs as well
 
 ### Self Nesting Structs
 
-Structs can contain fields of their own type, however they need to be **null initialized**. You can achieve this by specifying their type as ``ornull``.
+Structs can contain fields of their own type, however they need to be **null initialized**. You can achieve this by specifying their type as `ornull`.
 
 ```squirrel
 

@@ -12,7 +12,7 @@ Creating entities is documented [here](createent.md).
 
 !!! cpp-function "array<entity> GetPlayerArrayEx( string classname, int onSameTeamAsNum, int enemiesOfTeamNum, vector origin, float maxdist )"
 
-  Get array of all players by class, team within dist. team -1 for any team, ``"any"`` for any class, otherwise ``"titan"`` or ``"pilot"``, -1 for any dist
+  Get array of all players by class, team within dist. team -1 for any team, `"any"` for any class, otherwise `"titan"` or `"pilot"`, -1 for any dist
 
 !!! cpp-function "array<entity> GetPlayerArrayOfTeam( int team )"
 
@@ -86,11 +86,11 @@ Get all players in a titan and souls.
 
 !!! cpp-function "array<entity> GetNPCArrayEx( string classname, int onSameTeamAsNum, int enemiesOfTeamNum, vector origin, float maxdist )"
 
-  Get array of all NPCs by class, team, within dist. team -1 for any team, ``"any"`` for any class, otherwise ``"titan"`` or ``"pilot"``, -1 for any dist
+  Get array of all NPCs by class, team, within dist. team -1 for any team, `"any"` for any class, otherwise `"titan"` or `"pilot"`, -1 for any dist
 
 !!! cpp-function "GetNPCArrayWithSubclassEx( string classname, int onSameTeamAsNum, int enemiesOfTeamNum, vector origin, float maxdist, array<int> subclasses )"
 
-  Get array of all NPCs by class, team, and subclass (array), within dist. team -1 for any team, ``"'any"`` for any class, -1 for any dist
+  Get array of all NPCs by class, team, and subclass (array), within dist. team -1 for any team, `"'any"` for any class, -1 for any dist
 
 !!! cpp-function "array<entity> GetNPCArrayByClass( string classname )"
 
@@ -106,7 +106,7 @@ Get all players in a titan and souls.
 
 !!! cpp-function "array<entity> GetProjectileArrayEx( string classname, int onSameTeamAsNum, int enemiesOfTeamNum, vector origin, float maxdist )"
 
-  Get array of all NPCs by class, team, within dist. team -1 for any team, ``"any"`` for any class, otherwise ``"titan"`` or ``"pilot"``, -1 for any dist
+  Get array of all NPCs by class, team, within dist. team -1 for any team, `"any"` for any class, otherwise `"titan"` or `"pilot"`, -1 for any dist
 
 ## Find Entities
 

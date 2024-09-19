@@ -4,9 +4,9 @@ Functions are an integral part of any programming language. They allow to repeat
 
 ## Declaring Functions
 
-Functions in squirrel are defined with this syntax: ``<return type> function <name>(<parameters>) <body>``
+Functions in squirrel are defined with this syntax: `<return type> function <name>(<parameters>) <body>`
 
-For example, a simple function that returns either ``true`` or ``false`` would look like this:
+For example, a simple function that returns either `true` or `false` would look like this:
 
 ```squirrel
 
@@ -35,9 +35,9 @@ You can return anything, however the type of the returned variable needs to matc
 
 Keep in mind that no code after a return statement will get executed.
 
-If you don't want to return any value, use ``void`` as the return type. This indicates that your function returns ``null``.
+If you don't want to return any value, use `void` as the return type. This indicates that your function returns `null`.
 
-If nothing is returned by a function, ``null`` will get returned implicitly.
+If nothing is returned by a function, `null` will get returned implicitly.
 
 ```squirrel
 
@@ -57,7 +57,7 @@ If nothing is returned by a function, ``null`` will get returned implicitly.
   }
 ```
 
-In ``untyped`` files you may leave out the return type. In those cases the return type will default to ``var``.
+In `untyped` files you may leave out the return type. In those cases the return type will default to `var`.
 
 ## Parameters
 
@@ -80,7 +80,7 @@ Parameters are the input a function gets when called. They are local variables w
 
 ## Optional parameters
 
-Sometimes you need parameters that are optional for a function, like extra options. If a parameter name is followed by ``= <default-value>``, that parameter is not required to call the function.
+Sometimes you need parameters that are optional for a function, like extra options. If a parameter name is followed by `= <default-value>`, that parameter is not required to call the function.
 
 Optional parameters need to be the last parameters of a function.
 
@@ -106,9 +106,9 @@ Optional parameters need to be the last parameters of a function.
 
 ## vargs
 
-With vargs you can pass a function an unlimited amount of parameters. The parameters will be inside a pseudo array called ``vargv``. The length of the vargs the function receives will be stored inside a variable called ``vargc``.
+With vargs you can pass a function an unlimited amount of parameters. The parameters will be inside a pseudo array called `vargv`. The length of the vargs the function receives will be stored inside a variable called `vargc`.
 
-You can denote a function to have vargs with adding ``...`` to the end of the parameter list.
+You can denote a function to have vargs with adding `...` to the end of the parameter list.
 
 ```squirrel
 

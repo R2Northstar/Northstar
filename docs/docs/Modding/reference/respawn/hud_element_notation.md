@@ -23,7 +23,7 @@ An Element is declared in the following way:
     }
 ```
 
-If you're working on a **menu**, you need a ``menu`` object that contains all elements, for example like this:
+If you're working on a **menu**, you need a `menu` object that contains all elements, for example like this:
 
 ``` 
 
@@ -53,9 +53,9 @@ It usually doesn't matter if you use quotation marks to assign string values to 
 
 ## HUD & Panel files
 
-The first line of a ``.menu`` or ``.res`` file needs to be the resource path to itself, starting from the resource folder.
+The first line of a `.menu` or `.res` file needs to be the resource path to itself, starting from the resource folder.
 
-It's not possible to load other files as menus or panels. A ``.menu`` represents an independant menu of the game, while ``.res`` files are "Panels" that can be loaded from other elements.
+It's not possible to load other files as menus or panels. A `.menu` represents an independant menu of the game, while `.res` files are "Panels" that can be loaded from other elements.
 
 The rest of the file needs to be wrapped in curly brackets.
 
@@ -92,9 +92,9 @@ Capitalization of the properties shouldn't matter.
 
 !!! cpp-function "controlSettingsFile"
 
-    Load a ``.res`` file. All elements in the settings file are instantiated and set as children of the element.
+    Load a `.res` file. All elements in the settings file are instantiated and set as children of the element.
 
-    ``Hud_GetChild`` only works if the parent element is (has the ``ControlName``) a **CNestedPanel**!
+    `Hud_GetChild` only works if the parent element is (has the `ControlName`) a **CNestedPanel**!
 
 #### Identifying
 
@@ -146,9 +146,9 @@ Capitalization of the properties shouldn't matter.
 
 !!! cpp-function "textAlignment"
 
-    Controls the element boundary point the element's text gets aligned with. ``east`` -> Left, ``north`` -> Top, ``west`` -> Right, ``south`` Bottom.
+    Controls the element boundary point the element's text gets aligned with. `east` -> Left, `north` -> Top, `west` -> Right, `south` Bottom.
 
-    You can also combine the directions like this: ``north-west``.
+    You can also combine the directions like this: `north-west`.
 
 !!! cpp-function "allcaps"
 
@@ -400,7 +400,7 @@ Capitalization of the properties shouldn't matter.
 
 ### Conditional Properties
 
-You can declare properties for specific conditions by adding ``[CONDITION]`` after the property value.
+You can declare properties for specific conditions by adding `[CONDITION]` after the property value.
 
 When putting a condition after an element's name, the element will only be created if the condition evaluates to true.
 
@@ -440,7 +440,7 @@ Usable conditions are:
 
        
 
-On top of that, logical operators like ``!``, ``&&`` and ``||`` are available as well.
+On top of that, logical operators like `!`, `&&` and `||` are available as well.
 
 #### Example:
 
@@ -547,4 +547,4 @@ You can calculate the position or dimensions etc. with different units. If you p
 
 ### Including KeyValues
 
-To include another KeyValue file, use ``#base "filepath"`` at the top of a VDF file.
+To include another KeyValue file, use `#base "filepath"` at the top of a VDF file.

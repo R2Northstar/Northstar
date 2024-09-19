@@ -8,9 +8,9 @@
 
   Do muliple LOS checks, early out if any return true. Runs on multiple threads.
 
-  ``mask``: ``TRACE_MASK_*``
+  `mask`: `TRACE_MASK_*`
 
-  ``group``: ``TRACE_COLLISION_GROUP_*``
+  `group`: `TRACE_COLLISION_GROUP_*`
 
 !!! cpp-function "TraceResults TraceLine( vector startPos, vector endPos, var ignoreEntOrArrayOfEnts = null, int traceMask = 0, int collisionGroup = 0 )"
 
@@ -30,11 +30,11 @@
 
 !!! cpp-function "float TraceLineSimple( vector startPos, vector endPos, entity ignoreEnt )"
 
-  Does a trace and returns the distance from ``startPos`` to hit.
+  Does a trace and returns the distance from `startPos` to hit.
 
 !!! cpp-function "float TraceHullSimple( vector startPos, vector endPos, vector hullMins, vector hullMaxs, entity ignoreEnt )"
 
-  Does a trace and returns the distance from ``startPos`` to hit.
+  Does a trace and returns the distance from `startPos` to hit.
 
 !!! cpp-function "void DoTraceCoordCheck( bool check )"
 

@@ -8,7 +8,7 @@
 
 !!! cpp-function "int GetNetworkedVariableIndex( string name )"
 
-  Gets the internal index used to reference a scripted network variable. For use with ``FX_PATTACH_SCRIPT_NETWORK_VAR``.
+  Gets the internal index used to reference a scripted network variable. For use with `FX_PATTACH_SCRIPT_NETWORK_VAR`.
 
 !!! cpp-function "void SetGlobalNetBool( string name, bool value )"
 
@@ -34,7 +34,7 @@
 
 ## Remote Functions
 
-Remote functions allow the ``SERVER`` to call registered script functions on the ``CLIENT`` and ``UI`` VM.
+Remote functions allow the `SERVER` to call registered script functions on the `CLIENT` and `UI` VM.
 
 !!! cpp-function "void Remote_BeginRegisteringFunctions()"
 

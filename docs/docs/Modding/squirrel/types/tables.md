@@ -6,9 +6,9 @@ In other languages tables might be called Hashmaps, Maps or Objects.
 
 Entries are added with a key that can subsequently be used to read that object from the table back.
 
-The type keyword is ``table``.
+The type keyword is `table`.
 
-To index an array with a string you can write ``t.index``, or with an expression just like in arrays with ``t.["index"]``.
+To index an array with a string you can write `t.index`, or with an expression just like in arrays with `t.["index"]`.
 
 ```squirrel
 
@@ -19,11 +19,11 @@ To index an array with a string you can write ``t.index``, or with an expression
 
 ## Literals
 
-Table literals are comma or newline seperated expressions that are delimited by ``{`` and ``}``.
+Table literals are comma or newline seperated expressions that are delimited by `{` and `}`.
 
-Each entry needs to have a key, seperated from the initial value with a ``=``.
+Each entry needs to have a key, seperated from the initial value with a `=`.
 
-Table keys will be by default strings if you just write their identifier in the literal. However they can also be any expression if wrapped with ``[`` and ``]``.
+Table keys will be by default strings if you just write their identifier in the literal. However they can also be any expression if wrapped with `[` and `]`.
 
 ```squirrel
 
@@ -40,7 +40,7 @@ Table keys will be by default strings if you just write their identifier in the 
 
 Like arrays primitive tables can hold any type, both as values and keys.
 
-Any value of key of the table will therefore be ``var`` if retrieved.
+Any value of key of the table will therefore be `var` if retrieved.
 
 ## Complex Tables
 

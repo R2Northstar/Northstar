@@ -22,11 +22,11 @@ Since the number of topologies that can be created is very limited and Vanilla u
 
     This creates a simple topology at the specified origin relative to the parent position.
 
-    The parameters ``right`` and ``down`` specify the dimensions of the topology relative to the origin. For example, passing ``<GetScreenSize()[0],0,0>`` and ``<0,GetScreenSize()[1],0>`` will create a topology that covers the entire screen. Note that in this example the origin is the top left corner. The unit used is pixels.
+    The parameters `right` and `down` specify the dimensions of the topology relative to the origin. For example, passing `<GetScreenSize()[0],0,0>` and `<0,GetScreenSize()[1],0>` will create a topology that covers the entire screen. Note that in this example the origin is the top left corner. The unit used is pixels.
 
 !!! cpp-function "void RuiTopology_CreateSphere( vector origin, vector angles, vector right, vector down, COCKPIT_RUI_RADIUS, COCKPIT_RUI_WIDTH, COCKPIT_RUI_HEIGHT, float subDiv  )"
     
-    Similar to ``RuiTopology_CreatePlane`` but creates an arched sphere instead of a plane. Unlike in ``RuiTopology_CreatePlane``, **right and down are angles and not relative positions**. The width and height are instead controlled by their respective parameters.
+    Similar to `RuiTopology_CreatePlane` but creates an arched sphere instead of a plane. Unlike in `RuiTopology_CreatePlane`, **right and down are angles and not relative positions**. The width and height are instead controlled by their respective parameters.
 
 !!! cpp-function "void RuiTopology_Destroy( var topology )"
 
@@ -36,7 +36,7 @@ Since the number of topologies that can be created is very limited and Vanilla u
 
     Parents the given topology to the anchor entity. The topology moves and rotates relative to the parent.
 
-    Set the position of the topology to ``<0,0,0>`` to render at the parent's position.
+    Set the position of the topology to `<0,0,0>` to render at the parent's position.
 
 !!! cpp-function "void RuiTopology_UpdatePos( topo, updateOrg, right, down )"
 
@@ -49,10 +49,10 @@ Since the number of topologies that can be created is very limited and Vanilla u
 
 Drawcalls determine how and where RUIs on a topology are being rendered.
 
-* ``RUI_DRAW_NONE``: Don't render rui at all
-* ``RUI_DRAW_HUD``: Render rui on screen. Uses screen coordinates in pixels.
-* ``RUI_DRAW_WORLD``: Render rui in worldspace on a two dimensional surface facing the direction of the topology.
-* ``RUI_DRAW_COCKPIT``: Similiar to ``RUI_DRAW_HUD`` but follows the cockpit headbob movement.
+* `RUI_DRAW_NONE`: Don't render rui at all
+* `RUI_DRAW_HUD`: Render rui on screen. Uses screen coordinates in pixels.
+* `RUI_DRAW_WORLD`: Render rui in worldspace on a two dimensional surface facing the direction of the topology.
+* `RUI_DRAW_COCKPIT`: Similiar to `RUI_DRAW_HUD` but follows the cockpit headbob movement.
 
 **Drawcalls are not set for a topology but for each rui individually**
 

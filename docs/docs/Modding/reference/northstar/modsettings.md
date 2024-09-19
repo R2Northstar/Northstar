@@ -21,9 +21,9 @@ Inside of the callback specified here, you can add your settings.
 
 !!! warning
 
-    ConVar values will only persist if the ConVar has an ARCHIVE flag. For Clients, use ``FCVAR_ARCHIVE_PLAYERPROFILE``.
+    ConVar values will only persist if the ConVar has an ARCHIVE flag. For Clients, use `FCVAR_ARCHIVE_PLAYERPROFILE`.
   
-    All Mod Settings functions have a ``stackPos`` paramter. This parameter should only be changed if you're writing custom wrappers for the settings.
+    All Mod Settings functions have a `stackPos` paramter. This parameter should only be changed if you're writing custom wrappers for the settings.
 
 !!! cpp-function "void ModSettings_AddModTitle( string modName, int stackPos = 2 )"
 
@@ -47,18 +47,18 @@ Inside of the callback specified here, you can add your settings.
 
     **Parameters:**
   
-    * ``string conVar`` - the ConVar this setting modifies
-    * ``string displayName`` - The display string of this setting. This can be a localization token.
-    * ``string type = ""`` - Optional type of this ConVar. This guards against users inserting invalid values.
-    * ``int stackPos = 2``
+    * `string conVar` - the ConVar this setting modifies
+    * `string displayName` - The display string of this setting. This can be a localization token.
+    * `string type = ""` - Optional type of this ConVar. This guards against users inserting invalid values.
+    * `int stackPos = 2`
 
     **Types:**
   
-    * ``int``
-    * ``bool``
-    * ``float``
-    * ``float2``
-    * ``float3`` / ``vector``
+    * `int`
+    * `bool`
+    * `float`
+    * `float2`
+    * `float3` / `vector`
   
     other types will default to setting a string for the ConVar.
   
@@ -68,10 +68,10 @@ Inside of the callback specified here, you can add your settings.
   
     **Parameters:**
   
-    * ``string conVar`` - the ConVar this setting modifies
-    * ``string displayName`` - The display string of this setting. This can be a localization token.
-    * ``array<string> values`` - all possible values of this enum. The ConVar value will be set to the index of the selected value.
-    * ``int stackPos = 2``
+    * `string conVar` - the ConVar this setting modifies
+    * `string displayName` - The display string of this setting. This can be a localization token.
+    * `array<string> values` - all possible values of this enum. The ConVar value will be set to the index of the selected value.
+    * `int stackPos = 2`
 
 !!! cpp-function "void ModSettings_AddSliderSetting( string conVar, string displayName, float min = 0.0, float max = 1.0, float stepSize = 0.1, bool forceClamp = false )"
 
@@ -79,12 +79,12 @@ Inside of the callback specified here, you can add your settings.
 
     **Parameters:**
   
-    * ``string conVar`` - the conVar this setting modifies
-    * ``string displayName`` - The display string of this setting. This can be a localization token.
-    * ``float min = 0.0`` - the minimum value of the ConVar
-    * ``float max = 0.0`` - the maximum value of the ConVar
-    * ``float stepSize = 0.1`` - the distance between each possible value.
-    * ``bool forceClamp = false`` - wether to force the value to round to the nearest interval of ``stepValue``.
+    * `string conVar` - the conVar this setting modifies
+    * `string displayName` - The display string of this setting. This can be a localization token.
+    * `float min = 0.0` - the minimum value of the ConVar
+    * `float max = 0.0` - the maximum value of the ConVar
+    * `float stepSize = 0.1` - the distance between each possible value.
+    * `bool forceClamp = false` - wether to force the value to round to the nearest interval of `stepValue`.
   
     !!! note
   
@@ -96,9 +96,9 @@ Inside of the callback specified here, you can add your settings.
     
     **Parameters:**
     
-    * ``string conVar`` - the conVar this setting modifies
-    * ``void functionref() onPress`` - callback that gets triggered when this button is pressed.
-    * ``int stackPos``
+    * `string conVar` - the conVar this setting modifies
+    * `void functionref() onPress` - callback that gets triggered when this button is pressed.
+    * `int stackPos`
 
 ## Examples
 
@@ -128,4 +128,4 @@ To create custom wrapper functions you need to specify the stack position where 
   }
 ```
 
-Note that in this example the stack position is ``3``, since ``AddModSettingsButton`` needs to walk one additional step to the callback function.
+Note that in this example the stack position is `3`, since `AddModSettingsButton` needs to walk one additional step to the callback function.

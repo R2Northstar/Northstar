@@ -23,7 +23,7 @@ The Video will now be in the same folder as the original one and converted to a 
 ## Making a Main Menu Video Mod
 
 1. [Convert](#converting-the-video) a Video to .bik
-2. Rename the newly converted .bik to ``menu_act01.bik``
+2. Rename the newly converted .bik to `menu_act01.bik`
 3. Make a mod according to [Getting Started](../gettingstarted.md)
 4. Copy the .bik to the following path in your mod folder:
     ```text
@@ -40,11 +40,11 @@ The Video will now be in the same folder as the original one and converted to a 
 
 Not only can you replace the pre-existing BIK files Respawn uses, you can also make your own custom ones and play them whenever you like with console commands.
 
-``playvideo [video name] [horizontal resolution] [vertical resolution]`` will play the named BIK file within the specified resolution.
+`playvideo [video name] [horizontal resolution] [vertical resolution]` will play the named BIK file within the specified resolution.
 
-**EX.** ``playvideo mycoolvideo 100 100`` will play the BIK file named "mycoolvideo" within a 100x100 resolution square in the top-left corner.
+**EX.** `playvideo mycoolvideo 100 100` will play the BIK file named "mycoolvideo" within a 100x100 resolution square in the top-left corner.
 
-The ``stopvideos`` command will end any currently playing BIK videos.
+The `stopvideos` command will end any currently playing BIK videos.
 
 With these commands, BIK files can be used as a substitute for custom audio outside of audio overrides, though they of course can only be played directly on the client and have no directional audio. Videos running in a 1x1 resolution in the top-left corner will be nearly unnoticeable outside of whatever audio they're playing.
 

@@ -3,7 +3,7 @@
 
 ## Adding Squirrel Functions {#sq-api-register-native-functions-c-macro}
 
-You can use the ``ADD_SQFUNC`` macro defined in ``squirrelautobind.h`` to easily add new Squirrel functions for specific contexts.
+You can use the `ADD_SQFUNC` macro defined in `squirrelautobind.h` to easily add new Squirrel functions for specific contexts.
 
 Inside the macro you have access to the Squirrel Manager of the context the function has been called from and the SQVM.
 
@@ -31,7 +31,7 @@ Return a string from a native registered function:
     }
 ```
 
-Return a complex ``ornull`` type:
+Return a complex `ornull` type:
 
 ```cpp
 
@@ -58,18 +58,18 @@ Return a complex ``ornull`` type:
 
     Replacing functions is not possible in plugins
 
-You can use the ``REPLACE_SQFUNC`` macro to replace an existing sq function.
+You can use the `REPLACE_SQFUNC` macro to replace an existing sq function.
 
 !!! cpp-function "macro REPLACE_SQFUNC(funcName, runOnContext)"
 
     - `funcName` The name of the function to replace
     - `runOnContext` The contexts that have access to this function
 
-It's also possible to add an override directly with the ``AddFuncOverride`` function of the ``SquirrelManager`` class.
+It's also possible to add an override directly with the `AddFuncOverride` function of the `SquirrelManager` class.
 
 !!! cpp-function "void AddFuncOverride(std::string name, SQFunction func)"
 
-    - `std``string name` The name of the function to override
+    - `std`string name` The name of the function to override
     - `SQFunc func` A function object that replaces the logic
 
 ```cpp
@@ -84,17 +84,17 @@ It's also possible to add an override directly with the ``AddFuncOverride`` func
 
 Scriptcontexts are used to define the VMs that have access to a native function. Available Contexts are
 
-- ``ScriptContext::SERVER`` - The SERVER sqvm
-- ``ScriptContext::CLIENT`` - The CLIENT sqvm
-- ``ScriptContext::UI`` - The UI vm
+- `ScriptContext::SERVER` - The SERVER sqvm
+- `ScriptContext::CLIENT` - The CLIENT sqvm
+- `ScriptContext::UI` - The UI vm
 
 ## Script Returns
 
-Squirrel functions need to return a ``SQRESULT``. Valid results are
+Squirrel functions need to return a `SQRESULT`. Valid results are
 
-- ``SQRESULT_NULL`` - This function returns ``null``. Nothing is left over on the stack.
-- ``SQRESULT_NOTNULL`` - This functions returns the last item on the stack.
-- ``SQRESULT_ERROR`` - This function has thrown an error.
+- `SQRESULT_NULL` - This function returns `null`. Nothing is left over on the stack.
+- `SQRESULT_NOTNULL` - This functions returns the last item on the stack.
+- `SQRESULT_ERROR` - This function has thrown an error.
 
 
 ## Calling {#sq-api-calling-functions}
@@ -165,7 +165,7 @@ Squirrel functions need to return a ``SQRESULT``. Valid results are
     - `HSquirrelVM* sqvm` the target vm
     - `SQInteger args` number of arguments to call this function with
 
-    ``_call`` adds one to the ``args`` count for ``this``.
+    `_call` adds one to the `args` count for `this`.
 
     !!! note
 
@@ -198,7 +198,7 @@ Squirrel functions need to return a ``SQRESULT``. Valid results are
 
     calls a closure or a native closure. The function pops all the parameters and leave the closure in the stack; if retval is true the return value of the closure is pushed. If the execution of the function is suspended through sq_suspendvm(), the closure and the arguments will not be automatically popped from the stack.
 
-    When using to create an instance, push a dummy parameter to be filled with the newly-created instance for the constructor's ``this`` parameter.
+    When using to create an instance, push a dummy parameter to be filled with the newly-created instance for the constructor's `this` parameter.
 
 ## Errors
 
@@ -207,9 +207,9 @@ Squirrel functions need to return a ``SQRESULT``. Valid results are
 
     - `HSquirrelVM* sqvm` the target vm
     - `SQChar* error` string thrown
-    - Returns ``SQRESULT_ERROR``
+    - Returns `SQRESULT_ERROR`
 
-    Throws an error with ``error`` being the thrown object.
+    Throws an error with `error` being the thrown object.
 
     ```cpp
 

@@ -11,7 +11,7 @@
 !!! cpp-function "table PlayerMelee_AttackTrace( entity player, float range, bool functionref( entity attacker, entity target ) isValidTargetFunc )"
 
   Do a trace for potential melee targets in front of player.
-  Returns a table with keys ``entity`` and ``position``, which is the hit entity and position
+  Returns a table with keys `entity` and `position`, which is the hit entity and position
 
 !!! cpp-function "bool PlayerMelee_IsExecutionReachable( entity attacker, entity target, number dist )"
 

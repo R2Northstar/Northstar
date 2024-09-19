@@ -2,7 +2,7 @@
 
 Function references are a complex type that can reference any function or closure.
 
-The type keyword is ``functionref`` and needs to include any parameter types and optionally return types.
+The type keyword is `functionref` and needs to include any parameter types and optionally return types.
 
 ```squirrel
 
@@ -13,7 +13,7 @@ The type keyword is ``functionref`` and needs to include any parameter types and
    }
 ```
 
-You can call functionrefs like a regular function. The return type of a functionref will default to ``var`` if omitted. Omitting the return type is only possible in ``untyped`` files.
+You can call functionrefs like a regular function. The return type of a functionref will default to `var` if omitted. Omitting the return type is only possible in `untyped` files.
 
 Parameter names are optional in functionrefs. Otherwise the parameter syntax is like in regular functions.
 

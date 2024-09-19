@@ -14,9 +14,9 @@ To add multiple damage source IDs, use
 
 The first string parameter is the in-code weapon name while the latter is the name displayed in the obituary.
 
-Damage source IDs should be added in ``"After"`` server callbacks.
+Damage source IDs should be added in `"After"` server callbacks.
 
-For example, we can call the methods from a function in ``damage_source_example.nut``:
+For example, we can call the methods from a function in `damage_source_example.nut`:
 
 ```squirrel
 
@@ -39,7 +39,7 @@ For example, we can call the methods from a function in ``damage_source_example.
     }
 ```
 
-Then call the function as an ``"After"`` server callback in the ``mod.json``:
+Then call the function as an `"After"` server callback in the `mod.json`:
 
 ```javascript
 

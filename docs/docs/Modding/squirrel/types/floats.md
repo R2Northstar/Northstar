@@ -2,13 +2,13 @@
 
 Floats are 32 bit floating point numbers that can be any decimal number.
 
-An unitilized float will have the default value ``0.0``.
+An unitilized float will have the default value `0.0`.
 
-The type keyword for floats is ``float``.
+The type keyword for floats is `float`.
 
 ## Literals
 
-Float literals need to contain a ``.`` to distinguish them from integer literals.
+Float literals need to contain a `.` to distinguish them from integer literals.
 
 They may omit the decimal before the period, however after the period a value is required.
 

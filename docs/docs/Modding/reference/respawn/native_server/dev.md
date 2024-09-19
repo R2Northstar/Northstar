@@ -18,7 +18,7 @@
 
 !!! cpp-function "array<asset> GetModelViewerList()"
 
-  Returns list of files in ``scripts/model_view_list.txt``, which is written by reRun (respawn internal tool)
+  Returns list of files in `scripts/model_view_list.txt`, which is written by reRun (respawn internal tool)
 
 !!! cpp-function "void NativeFuncTest( number a, bool b, number c )"
 

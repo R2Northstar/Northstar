@@ -8,10 +8,10 @@ a database with an API so that your servers can save player stats.
 
 !!! warning
     
-    For security reasons, private network hosts, such as ``localhost`` or ``192.168.1.106`` are blocked by default, meaning you cannot make HTTP requests to them.
+    For security reasons, private network hosts, such as `localhost` or `192.168.1.106` are blocked by default, meaning you cannot make HTTP requests to them.
     This includes a blanket ban on IPv6 hosts.
 
-    You are also limited to ``HTTP`` and ``HTTPS`` for protocols. Any other protocols will prevent the request from being made.
+    You are also limited to `HTTP` and `HTTPS` for protocols. Any other protocols will prevent the request from being made.
 
 ## Launch Arguments
 
@@ -21,9 +21,9 @@ These should be applied to your client or server's launch commandline.
 
 |Name|Description|
 |---|---|
-|``-allowlocalhttp``| Disables private network checks for HTTP requests, allowing any IPv4 and IPv6 host to be used.|
-|``-disablehttprequests``| Disables HTTP requests. Any attempts at making requests will fail.|
-|``-disablehttpssl``| Disables SSL verifications, useful when the host's SSL certificate is invalid, and insecure HTTP cannot be used.|
+|`-allowlocalhttp`| Disables private network checks for HTTP requests, allowing any IPv4 and IPv6 host to be used.|
+|`-disablehttprequests`| Disables HTTP requests. Any attempts at making requests will fail.|
+|`-disablehttpssl`| Disables SSL verifications, useful when the host's SSL certificate is invalid, and insecure HTTP cannot be used.|
 
 
 ## HTTP API
@@ -47,37 +47,37 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
 
     !!! cpp-member "GET = 0"
 
-        Uses the ``GET`` HTTP method for the request.
+        Uses the `GET` HTTP method for the request.
 
     !!! cpp-member "POST = 1"
 
-        Uses the ``POST`` HTTP method for the request.
+        Uses the `POST` HTTP method for the request.
 
     !!! cpp-member "HEAD = 2"
 
-        Uses the ``HEAD`` HTTP method for the request.
+        Uses the `HEAD` HTTP method for the request.
 
     !!! cpp-member "PUT = 3"
 
-        Uses the ``PUT`` HTTP method for the request.
+        Uses the `PUT` HTTP method for the request.
 
     !!! cpp-member "DELETE = 4"
 
-        Uses the ``DELETE`` HTTP method for the request.
+        Uses the `DELETE` HTTP method for the request.
 
     !!! cpp-member "PATCH = 5"
 
-        Uses the ``PATCH`` HTTP method for the request.
+        Uses the `PATCH` HTTP method for the request.
 
     !!! cpp-member "OPTIONS = 6"
         
-        Uses the ``OPTIONS`` HTTP method for the request.
+        Uses the `OPTIONS` HTTP method for the request.
 
 
 
 !!! cpp-struct "struct HttpRequest"
 
-    Contains the settings for a HTTP request. This is used for the more flexible ``NSHttpRequest` function.
+    Contains the settings for a HTTP request. This is used for the more flexible `NSHttpRequest` function.
 
     !!! cpp-var "(HttpRequestMethod) int method"
 
@@ -114,7 +114,7 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
 
 !!! warning
 
-    Only ``POST`` requests can send a body to the remote end. You may only choose to send a body, or query parameters. 
+    Only `POST` requests can send a body to the remote end. You may only choose to send a body, or query parameters. 
     Having both will give priority to the body and clear the parameters.
 
 
@@ -158,7 +158,7 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
 
 !!! warning
     
-    Your mod needs to be load priority 1 or above to use ``HttpRequest`` and ``HttpRequestResponse`` in your script.
+    Your mod needs to be load priority 1 or above to use `HttpRequest` and `HttpRequestResponse` in your script.
     
 
 !!! cpp-function "bool NSHttpRequest( HttpRequest requestParameters, void functionref( HttpRequestResponse ) onSuccess = null, void functionref( HttpRequestFailure ) onFailure = null )"
@@ -168,9 +168,9 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
 
     **Parameters:**
 
-    - ``HttpRequest requestParameters`` - The parameters to use for this request.
-    - ``[OPTIONAL] void functionref( HttpRequestResponse ) onSuccess`` - The callback to execute if the request is successful.
-    - ``[OPTIONAL] void functionref( HttpRequestFailure ) onFailure`` - The callback to execute if the request has failed.
+    - `HttpRequest requestParameters` - The parameters to use for this request.
+    - `[OPTIONAL] void functionref( HttpRequestResponse ) onSuccess` - The callback to execute if the request is successful.
+    - `[OPTIONAL] void functionref( HttpRequestFailure ) onFailure` - The callback to execute if the request has failed.
 
     **Returns:** 
     
@@ -182,7 +182,7 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
     
     As you can see, you can either use named functions for the callbacks, or create lambdas.
     Lambdas are particularly useful as they let you capture local variables of the functions to re-use later
-    such as ``callback`` in this example. 
+    such as `callback` in this example. 
 
     ```squirrel
 
@@ -215,10 +215,10 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
 
     **Parameters:**
 
-    - ``string url`` - The url to make the HTTP request at.
-    - ``[OPTIONAL] table< string, array< string > > queryParameters`` - A table of key value parameters to insert in the url. 
-    - ``[OPTIONAL] void functionref( HttpRequestResponse ) onSuccess`` - The callback to execute if the request is successful.
-    - ``[OPTIONAL] void functionref( HttpRequestFailure ) onFailure`` - The callback to execute if the request has failed.
+    - `string url` - The url to make the HTTP request at.
+    - `[OPTIONAL] table< string, array< string > > queryParameters` - A table of key value parameters to insert in the url. 
+    - `[OPTIONAL] void functionref( HttpRequestResponse ) onSuccess` - The callback to execute if the request is successful.
+    - `[OPTIONAL] void functionref( HttpRequestFailure ) onFailure` - The callback to execute if the request has failed.
 
     **Returns:** 
     
@@ -256,10 +256,10 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
 
     **Parameters:**
 
-    - ``string url`` - The url to make the HTTP request at.
-    - ``[OPTIONAL] table< string, array< string > > queryParameters`` - A table of key value parameters to insert in the url. 
-    - ``[OPTIONAL] void functionref( HttpRequestResponse ) onSuccess`` - The callback to execute if the request is successful.
-    - ``[OPTIONAL] void functionref( HttpRequestFailure ) onFailure`` - The callback to execute if the request has failed.
+    - `string url` - The url to make the HTTP request at.
+    - `[OPTIONAL] table< string, array< string > > queryParameters` - A table of key value parameters to insert in the url. 
+    - `[OPTIONAL] void functionref( HttpRequestResponse ) onSuccess` - The callback to execute if the request is successful.
+    - `[OPTIONAL] void functionref( HttpRequestFailure ) onFailure` - The callback to execute if the request has failed.
 
     **Returns:** 
     
@@ -277,10 +277,10 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
 
     **Parameters:**
 
-    - ``string url`` - The url to make the HTTP request at.
-    - ``string body`` - The body to send with the request. Expects JSON by default. 
-    - ``[OPTIONAL] void functionref( HttpRequestResponse ) onSuccess`` - The callback to execute if the request is successful.
-    - ``[OPTIONAL] void functionref( HttpRequestFailure ) onFailure`` - The callback to execute if the request has failed.
+    - `string url` - The url to make the HTTP request at.
+    - `string body` - The body to send with the request. Expects JSON by default. 
+    - `[OPTIONAL] void functionref( HttpRequestResponse ) onSuccess` - The callback to execute if the request is successful.
+    - `[OPTIONAL] void functionref( HttpRequestFailure ) onFailure` - The callback to execute if the request has failed.
 
     **Returns:** 
     
@@ -315,7 +315,7 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
 
     **Parameters:**
 
-    - ``int statusCode`` - The status code to verify.
+    - `int statusCode` - The status code to verify.
 
     **Returns:**
 
@@ -327,11 +327,11 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
 
 !!! warning
 
-    The JSON parser currently supports the following types for values: ``string``, ``integer``, ``float``, ``bool``, ``table``, and ``array``.
+    The JSON parser currently supports the following types for values: `string`, `integer`, `float`, `bool`, `table`, and `array`.
 
     Tables and arrays can only hold supported types. Unsupported types will be ignored. Keys can only be strings.
 
-    The JSON parser currently does not support keys holding ``null`` values, and simply won't include them in decoded tables or encoded JSON strings.
+    The JSON parser currently does not support keys holding `null` values, and simply won't include them in decoded tables or encoded JSON strings.
 
 
 
@@ -343,12 +343,12 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
     
     **Parameters:**
 
-    - ``string json`` - The JSON string to decode into a table.
-    - ``[OPTIONAL] bool fatalParseErrors`` - Whether or not parsing errors should throw a fatal script error. Default to false.
+    - `string json` - The JSON string to decode into a table.
+    - `[OPTIONAL] bool fatalParseErrors` - Whether or not parsing errors should throw a fatal script error. Default to false.
 
     **Returns:** 
     
-    - The table decoded from the JSON string on success, or an empty table ``{}`` on parse failure (if fatalParseErrors is false).
+    - The table decoded from the JSON string on success, or an empty table `{}` on parse failure (if fatalParseErrors is false).
 
 
 
@@ -359,7 +359,7 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
 
     **Parameters:**
 
-    - ``table data`` - The table to encode to a JSON string.
+    - `table data` - The table to encode to a JSON string.
 
     **Returns:** 
     

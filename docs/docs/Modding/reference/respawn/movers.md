@@ -2,29 +2,29 @@
 
 
 Movers are entites that move and rotate smoothly.
-``script_mover`` allows for smooth movement and rotation contrary to ``script_mover_lightweight`` which is not able to rotate.
+`script_mover` allows for smooth movement and rotation contrary to `script_mover_lightweight` which is not able to rotate.
 
 ## Create a Mover
 
 !!! cpp-function "entity CreateExpensiveScriptMover( vector origin , vector angles )"
 
-   returns ``script_mover``
+   returns `script_mover`
     
 !!! cpp-function "entity CreateExpensiveScriptMoverModel( asset model, vector origin, vector angles, int solidType, float fadeDist )"
 
-    returns ``script_mover`` which has a model
+    returns `script_mover` which has a model
 
 !!! cpp-function "entity CreateScriptMover( vector origin, vector angles )"
 
-    returns ``script_mover_lightweight``
+    returns `script_mover_lightweight`
 
 !!! cpp-function "entity CreateScriptMoverModel( asset model, vector origin, vector angles, int solidType, float fadeDist )"
 
-    returns ``script_mover_lightweight`` which has a model
+    returns `script_mover_lightweight` which has a model
 
 !!! cpp-function "entity CreateOwnedScriptMover( entity owner )"
     
-     returns ``script_mover`` which will be at the location of the owner
+     returns `script_mover` which will be at the location of the owner
 
 ## Moving
 
