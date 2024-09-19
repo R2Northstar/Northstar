@@ -64,19 +64,19 @@ In the same folder you extracted your mdl's. Make a ``materials`` folder next to
 Example:
 ```
 
-	models
-	materials
+    models
+    materials
 ```
 
 Recreate the path you changed in the ``materials`` folder, such that the last section is a .vmt file:
 
 ```text
 
-	materials
-	└─ models
-	      └─ weapons_r2
-	            └─ car_smg
-	                 └─ car_ctm.vmt
+    materials
+    └─ models
+          └─ weapons_r2
+                └─ car_smg
+                     └─ car_ctm.vmt
 
 ```
 
@@ -84,20 +84,20 @@ Inside your .vmt paste:
 
 ```
 
-	"UnlitTwoTexture"
-	{
+    "UnlitTwoTexture"
+    {
 
-		"$surfaceprop" "metal"
-		"$basetexture" ""
-		"$texture2" ""
-		"$bumpmap" ""	
-		"$allowoverbright" "1"
-		"$vertexcolor" 1
-		"$vertexalpha" 1	
-		"$decal" "1"
-		"$model" 1
-		"$nocull" "1"
-	}
+        "$surfaceprop" "metal"
+        "$basetexture" ""
+        "$texture2" ""
+        "$bumpmap" ""   
+        "$allowoverbright" "1"
+        "$vertexcolor" 1
+        "$vertexalpha" 1 
+        "$decal" "1"
+        "$model" 1
+        "$nocull" "1"
+    }
 
 ```
 
@@ -131,19 +131,19 @@ Your root folder should look somewhat like this
 
 ```text
 
-	root
-	├─ materials
-	│  └─ models
-	│     └─ weapons_r2
-	│        └─ car_smg
-	│           ├─ YOURTEXTURE.vtf
-	│           ├─ YOURTEXTURE.vtf
-	│           └─ car_ctm.vmt
-	└─ models
-	   └─ weapons
-	      └─car101
-	        ├─ ptpov_car101.mdl
-	        └─ w_car101.mdl
+    root
+    ├─ materials
+    │  └─ models
+    │     └─ weapons_r2
+    │        └─ car_smg
+    │           ├─ YOURTEXTURE.vtf
+    │           ├─ YOURTEXTURE.vtf
+    │           └─ car_ctm.vmt
+    └─ models
+       └─ weapons
+          └─car101
+            ├─ ptpov_car101.mdl
+            └─ w_car101.mdl
 
 ```
 
@@ -162,16 +162,16 @@ You need to create a .vtf texture with multiple frames imported to a single .vtf
 At the bottom of your vmt but before the ``}``, add this:
 
 ```text
-	
-	"Proxies"
-	{
-			AnimatedTexture
-			{
-				animatedTextureVar $basetexture
-				animatedTextureFrameNumVar $frame
-				animatedTextureFrameRate 30
-			}
-	}
+    
+    "Proxies"
+    {
+            AnimatedTexture
+            {
+                animatedTextureVar $basetexture
+                animatedTextureFrameNumVar $frame
+                animatedTextureFrameRate 30
+            }
+    }
 ```
 
 

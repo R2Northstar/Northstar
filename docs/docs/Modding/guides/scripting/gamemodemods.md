@@ -25,7 +25,7 @@ The script above defines the pubic and listed details of the mod.
     "Scripts": [
         {
             "Path": "gamemodes/_gamemode_simplerandomiser.nut",
-	    "RunOn": "SERVER && MP"
+        "RunOn": "SERVER && MP"
         },
         {
             "Path": "gamemodes/cl_gamemode_simplerandomiser.nut",
@@ -80,7 +80,7 @@ Here's what the end result would look like:
         "Scripts": [
         {
             "Path": "gamemodes/_gamemode_simplerandomiser.nut",
-	    "RunOn": "SERVER && MP"
+        "RunOn": "SERVER && MP"
         },
         {
             "Path": "gamemodes/cl_gamemode_simplerandomiser.nut",
@@ -137,53 +137,53 @@ Let's begin the process by first creating the file ``sh_gamemode_simplerandomise
     void function simplerandomiser_init()
     {
         // start defining what to do before the map loads on this gamemode
-	AddCallback_OnCustomGamemodesInit( CreateGamemodeRand ) // define various properties such as name, desc, so on
-	AddCallback_OnRegisteringCustomNetworkVars( RandRegisterNetworkVars ) // server callbacks stuff
+    AddCallback_OnCustomGamemodesInit( CreateGamemodeRand ) // define various properties such as name, desc, so on
+    AddCallback_OnRegisteringCustomNetworkVars( RandRegisterNetworkVars ) // server callbacks stuff
     }
 
     void function CreateGamemodeRand()
     {
-	GameMode_Create( GAMEMODE_SIMPLERANDOMISER )
-	GameMode_SetName( GAMEMODE_SIMPLERANDOMISER, "#GAMEMODE_SIMPLERANDOMISER" ) // localizations will be handled later
-	GameMode_SetDesc( GAMEMODE_SIMPLERANDOMISER, "#PL_rand_desc" )
-	GameMode_SetGameModeAnnouncement( GAMEMODE_SIMPLERANDOMISER, "grnc_modeDesc" )
-	GameMode_SetDefaultTimeLimits( GAMEMODE_SIMPLERANDOMISER, 10, 0.0 ) // a time limit of 10 minutes
-	GameMode_AddScoreboardColumnData( GAMEMODE_SIMPLERANDOMISER, "#SCOREBOARD_SCORE", PGS_ASSAULT_SCORE, 2 ) // dont fuck with it
-	GameMode_AddScoreboardColumnData( GAMEMODE_SIMPLERANDOMISER, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 ) // dont fuck with it
-	GameMode_SetColor( GAMEMODE_SIMPLERANDOMISER, [147, 204, 57, 255] ) // dont fuck with it
+    GameMode_Create( GAMEMODE_SIMPLERANDOMISER )
+    GameMode_SetName( GAMEMODE_SIMPLERANDOMISER, "#GAMEMODE_SIMPLERANDOMISER" ) // localizations will be handled later
+    GameMode_SetDesc( GAMEMODE_SIMPLERANDOMISER, "#PL_rand_desc" )
+    GameMode_SetGameModeAnnouncement( GAMEMODE_SIMPLERANDOMISER, "grnc_modeDesc" )
+    GameMode_SetDefaultTimeLimits( GAMEMODE_SIMPLERANDOMISER, 10, 0.0 ) // a time limit of 10 minutes
+    GameMode_AddScoreboardColumnData( GAMEMODE_SIMPLERANDOMISER, "#SCOREBOARD_SCORE", PGS_ASSAULT_SCORE, 2 ) // dont fuck with it
+    GameMode_AddScoreboardColumnData( GAMEMODE_SIMPLERANDOMISER, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 ) // dont fuck with it
+    GameMode_SetColor( GAMEMODE_SIMPLERANDOMISER, [147, 204, 57, 255] ) // dont fuck with it
 
-	AddPrivateMatchMode( GAMEMODE_SIMPLERANDOMISER ) // add to private lobby modes
+    AddPrivateMatchMode( GAMEMODE_SIMPLERANDOMISER ) // add to private lobby modes
 
-	AddPrivateMatchModeSettingEnum("#PL_rand", "rand_enableannouncements", ["#SETTING_DISABLED", "#SETTING_ENABLED"], "1")
-	// creates a togglable riff whether or not we want to announce a text to the client
-	AddPrivateMatchModeSettingArbitrary("#PL_rand", "rand_announcementduration", "3")
-	// Creates a riff with an arbitrary numerical value for how long the announcement text remains on screen
-	// These riffs can be accessed from server configs or from the private match settings screen, under the "Simple Randomiser" category
+    AddPrivateMatchModeSettingEnum("#PL_rand", "rand_enableannouncements", ["#SETTING_DISABLED", "#SETTING_ENABLED"], "1")
+    // creates a togglable riff whether or not we want to announce a text to the client
+    AddPrivateMatchModeSettingArbitrary("#PL_rand", "rand_announcementduration", "3")
+    // Creates a riff with an arbitrary numerical value for how long the announcement text remains on screen
+    // These riffs can be accessed from server configs or from the private match settings screen, under the "Simple Randomiser" category
         
 
-	// set this to 25 score limit default
-	GameMode_SetDefaultScoreLimits( GAMEMODE_SIMPLERANDOMISER, 25, 0 )
+    // set this to 25 score limit default
+    GameMode_SetDefaultScoreLimits( GAMEMODE_SIMPLERANDOMISER, 25, 0 )
 
-	#if SERVER
-		GameMode_AddServerInit( GAMEMODE_SIMPLERANDOMISER, GamemodeRand_Init ) // server side initalizing function
-		GameMode_SetPilotSpawnpointsRatingFunc( GAMEMODE_SIMPLERANDOMISER, RateSpawnpoints_Generic )
-		GameMode_SetTitanSpawnpointsRatingFunc( GAMEMODE_SIMPLERANDOMISER, RateSpawnpoints_Generic )
+    #if SERVER
+        GameMode_AddServerInit( GAMEMODE_SIMPLERANDOMISER, GamemodeRand_Init ) // server side initalizing function
+        GameMode_SetPilotSpawnpointsRatingFunc( GAMEMODE_SIMPLERANDOMISER, RateSpawnpoints_Generic )
+        GameMode_SetTitanSpawnpointsRatingFunc( GAMEMODE_SIMPLERANDOMISER, RateSpawnpoints_Generic )
                 // until northstar adds more spawnpoints algorithm, we are using the default.
-	#elseif CLIENT
-		GameMode_AddClientInit( GAMEMODE_SIMPLERANDOMISER, ClGamemodeRand_Init ) // client side initializing function
-	#endif
-	#if !UI
-		GameMode_SetScoreCompareFunc( GAMEMODE_SIMPLERANDOMISER, CompareAssaultScore ) 
+    #elseif CLIENT
+        GameMode_AddClientInit( GAMEMODE_SIMPLERANDOMISER, ClGamemodeRand_Init ) // client side initializing function
+    #endif
+    #if !UI
+        GameMode_SetScoreCompareFunc( GAMEMODE_SIMPLERANDOMISER, CompareAssaultScore ) 
                 // usually compares which team's score is higher and places the winning team on top of the losing team in the scoreboard
-	#endif
+    #endif
     }
 
     void function RandRegisterNetworkVars()
     {
-	if ( GAMETYPE != GAMEMODE_SIMPLERANDOMISER )
-		return
+    if ( GAMETYPE != GAMEMODE_SIMPLERANDOMISER )
+        return
 
-	Remote_RegisterFunction( "ServerCallback_Randomiser" )
+    Remote_RegisterFunction( "ServerCallback_Randomiser" )
         // will come in useful later when we want the server to communicate to the client
         // for example, making an announcement appear on the client
     }
@@ -208,8 +208,8 @@ Now that we're down with defining the gamemode, its time to focus on the compone
     void function GamemodeRand_Init()
     {
         #if SERVER
-	SetLoadoutGracePeriodEnabled( false ) // prevent modifying loadouts with grace period
-	SetWeaponDropsEnabled( false ) // prevents picking up weapons on the ground
+    SetLoadoutGracePeriodEnabled( false ) // prevent modifying loadouts with grace period
+    SetWeaponDropsEnabled( false ) // prevents picking up weapons on the ground
         AddCallback_OnPlayerRespawned( GiveRandomGun )
         #endif
     }
@@ -273,8 +273,8 @@ Overall, the server script should look like this.
     void function GamemodeRand_Init()
     {
         #if SERVER
-	SetLoadoutGracePeriodEnabled( false ) // prevent modifying loadouts with grace period
-	SetWeaponDropsEnabled( false ) // prevents picking up weapons on the ground
+    SetLoadoutGracePeriodEnabled( false ) // prevent modifying loadouts with grace period
+    SetWeaponDropsEnabled( false ) // prevents picking up weapons on the ground
         AddCallback_OnPlayerRespawned( GiveRandomGun )
         #endif
     }
@@ -311,35 +311,35 @@ Lastly, for your ``cl_gamemode_simplerandomiser.nut``, we are going to utilize t
     void function ClGamemodeRand_Init()
     {
         RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_INTRO, "music_mp_freeagents_intro", TEAM_IMC )
-	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_INTRO, "music_mp_freeagents_intro", TEAM_MILITIA )
+    RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_INTRO, "music_mp_freeagents_intro", TEAM_MILITIA )
 
-	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_WIN, "music_mp_freeagents_outro_win", TEAM_IMC )
-	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_WIN, "music_mp_freeagents_outro_win", TEAM_MILITIA )
+    RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_WIN, "music_mp_freeagents_outro_win", TEAM_IMC )
+    RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_WIN, "music_mp_freeagents_outro_win", TEAM_MILITIA )
 
-	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_DRAW, "music_mp_freeagents_outro_lose", TEAM_IMC )
-	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_DRAW, "music_mp_freeagents_outro_lose", TEAM_MILITIA )
+    RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_DRAW, "music_mp_freeagents_outro_lose", TEAM_IMC )
+    RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_DRAW, "music_mp_freeagents_outro_lose", TEAM_MILITIA )
 
-	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LOSS, "music_mp_freeagents_outro_lose", TEAM_IMC )
-	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LOSS, "music_mp_freeagents_outro_lose", TEAM_MILITIA )
+    RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LOSS, "music_mp_freeagents_outro_lose", TEAM_IMC )
+    RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LOSS, "music_mp_freeagents_outro_lose", TEAM_MILITIA )
 
-	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_THREE_MINUTE, "music_mp_freeagents_almostdone", TEAM_IMC )
-	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_THREE_MINUTE, "music_mp_freeagents_almostdone", TEAM_MILITIA )
+    RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_THREE_MINUTE, "music_mp_freeagents_almostdone", TEAM_IMC )
+    RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_THREE_MINUTE, "music_mp_freeagents_almostdone", TEAM_MILITIA )
 
-	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LAST_MINUTE, "music_mp_freeagents_lastminute", TEAM_IMC )
-	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LAST_MINUTE, "music_mp_freeagents_lastminute", TEAM_MILITIA )
+    RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LAST_MINUTE, "music_mp_freeagents_lastminute", TEAM_IMC )
+    RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LAST_MINUTE, "music_mp_freeagents_lastminute", TEAM_MILITIA )
     }
 
     void function ServerCallback_Randomiser( float duration )
     {
         AnnouncementData announcement = Announcement_Create( "#RAND_RANDOMIZED" )
-	Announcement_SetSubText( announcement, "#RAND_RANDOMIZED_DESC" )
-	Announcement_SetTitleColor( announcement, <0,0,1> )
-	Announcement_SetPurge( announcement, true )
-	Announcement_SetPriority( announcement, 200 ) //Be higher priority than Titanfall ready indicator etc
-	Announcement_SetSoundAlias( announcement, SFX_HUD_ANNOUNCE_QUICK )
-	Announcement_SetDuration( announcement, duration )
-	Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_QUICK )
-	AnnouncementFromClass( GetLocalViewPlayer(), announcement )
+    Announcement_SetSubText( announcement, "#RAND_RANDOMIZED_DESC" )
+    Announcement_SetTitleColor( announcement, <0,0,1> )
+    Announcement_SetPurge( announcement, true )
+    Announcement_SetPriority( announcement, 200 ) //Be higher priority than Titanfall ready indicator etc
+    Announcement_SetSoundAlias( announcement, SFX_HUD_ANNOUNCE_QUICK )
+    Announcement_SetDuration( announcement, duration )
+    Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_QUICK )
+    AnnouncementFromClass( GetLocalViewPlayer(), announcement )
     }
 ```
 
@@ -359,20 +359,20 @@ Hence, open your ``simplerandomiser_localisation_english.txt`` which is located 
 
     "lang"
     {
-	"Language" "english"
-	"Tokens"
-	{
-		"PL_rand" "Simple Randomiser" // displays in the lobby settings
+    "Language" "english"
+    "Tokens"
+    {
+        "PL_rand" "Simple Randomiser" // displays in the lobby settings
                 "rand_enableannouncements" "Toggle announcements" // describe the togglable setting
-		"rand_announcementduration" "Announcement duration" // describe the numerical setting
-		"PL_rand_lobby" "Simple Randomiser Lobby" // displays in lobby
-		"PL_rand_desc" "Your weapons are randomised! Fight and win!" // displays in the description of the gamemode in the lobby
-		"PL_rand_hint" "Your weapons are randomised! Fight and win!" // displays in the scoreboard of the gamemode ingame
-		"PL_rand_abbr" "RAND"
-		"GAMEMODE_TBAG" "Simple Randomiser" // displays in the loading screen
+        "rand_announcementduration" "Announcement duration" // describe the numerical setting
+        "PL_rand_lobby" "Simple Randomiser Lobby" // displays in lobby
+        "PL_rand_desc" "Your weapons are randomised! Fight and win!" // displays in the description of the gamemode in the lobby
+        "PL_rand_hint" "Your weapons are randomised! Fight and win!" // displays in the scoreboard of the gamemode ingame
+        "PL_rand_abbr" "RAND"
+        "GAMEMODE_TBAG" "Simple Randomiser" // displays in the loading screen
                 "RAND_RANDOMIZED" "Weapons Randomized" // displays in the announcement text
                 "RAND_RANDOMIZED_DESC" "Fight and win!" // displays below the announcement text, as a description
-	}
+    }
     }
 ```
 
@@ -390,49 +390,49 @@ Next, inside this ``playlists_v2.txt``, we will need to allow/disallow what maps
 
     playlists
     {
-	Gamemodes
-	{
-		rand
-		{
-			inherit defaults
-			vars
-			{
-				name #PL_rand
-				lobbytitle #PL_rand_lobby
-				description #PL_rand_desc
-				hint #PL_rand_hint
-				abbreviation #PL_rand_abbr
-				max_players 12
-				max_teams 2
-				classic_mp 1
+    Gamemodes
+    {
+        rand
+        {
+            inherit defaults
+            vars
+            {
+                name #PL_rand
+                lobbytitle #PL_rand_lobby
+                description #PL_rand_desc
+                hint #PL_rand_hint
+                abbreviation #PL_rand_abbr
+                max_players 12
+                max_teams 2
+                classic_mp 1
 
-				gamemode_score_hint #GAMEMODE_SCORE_HINT_TDM
-			}
-		}
-    	}
+                gamemode_score_hint #GAMEMODE_SCORE_HINT_TDM
+            }
+        }
+        }
         Playlists
-	{
-		rand
-		{
-			inherit defaults
-			vars
-			{
-				name #PL_rand
-				lobbytitle #PL_rand_lobby
-				description #PL_rand_desc
-				abbreviation #PL_rand_abbr
-				image ps
-				//mixtape_slot 7
-				mixtape_timeout 120
-				visible 0
-			}
-			gamemodes
-			{
-				rand
-				{
-				        maps
-					{
-					        mp_forwardbase_kodai 1
+    {
+        rand
+        {
+            inherit defaults
+            vars
+            {
+                name #PL_rand
+                lobbytitle #PL_rand_lobby
+                description #PL_rand_desc
+                abbreviation #PL_rand_abbr
+                image ps
+                //mixtape_slot 7
+                mixtape_timeout 120
+                visible 0
+            }
+            gamemodes
+            {
+                rand
+                {
+                        maps
+                    {
+                            mp_forwardbase_kodai 1
                                                 mp_grave 1
                                                 mp_homestead 1
                                                 mp_thaw 1
@@ -444,21 +444,21 @@ Next, inside this ``playlists_v2.txt``, we will need to allow/disallow what maps
                                                 mp_angel_city 1
                                                 mp_colony02 1
                                                 mp_glitch 1
-						mp_lf_stacks 1
-						mp_lf_deck 1
-						mp_lf_meadow 1
-						mp_lf_traffic 1
-						mp_lf_township 1
-						mp_lf_uma 1
-						mp_relic02 1
-						mp_wargames 1
-						mp_rise 1
+                        mp_lf_stacks 1
+                        mp_lf_deck 1
+                        mp_lf_meadow 1
+                        mp_lf_traffic 1
+                        mp_lf_township 1
+                        mp_lf_uma 1
+                        mp_relic02 1
+                        mp_wargames 1
+                        mp_rise 1
                                                 mp_coliseum 1
                                                 mp_coliseum_column 1
-					}
-				}
-			}
-		}
+                    }
+                }
+            }
+        }
         }
     }
 ```
