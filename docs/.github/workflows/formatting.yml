@@ -1,0 +1,22 @@
+name: Formatting
+
+on: [push, pull_request]
+
+jobs:
+  consistent-whitespace:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for tabs
+        run: |
+          echo "Checking for tabs..."
+          TABBED_FILES=$(grep --recursive --binary-files=without-match --perl-regexp --files-with-matches "\t" --exclude-dir=.git . || true)
+          if [ -n "$TABBED_FILES" ]; then
+            echo "Error: Tabs found in the following files:"
+            echo "$TABBED_FILES"
+            exit 1
+          else
+            echo "No tabs found."
+          fi
