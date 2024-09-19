@@ -20,3 +20,20 @@ jobs:
           else
             echo "No tabs found."
           fi
+
+  trailing-whitespace:
+    name: Find Trailing Whitespace
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Find trailing whitespaces in text files
+        run: |
+          # List all text file extensions to check
+          FILE_EXTENSIONS=("*.txt" "*.md" "*.yml" "*.yaml" "*.json" "*.sh" "*.py")
+
+          # Loop over each extension and check for trailing whitespaces
+          for EXT in "${FILE_EXTENSIONS[@]}"; do
+            if git ls-files "$EXT" | grep -q .; then
+              git ls-files "$EXT" | xargs grep -n -E " +$" && exit 1 || echo "No trailing whitespaces found in $EXT files"
+            fi
+          done
