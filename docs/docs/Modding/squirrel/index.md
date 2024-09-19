@@ -1,4 +1,4 @@
-# rSquirrel
+# squirrel_re
 
 Squirrel is the programming language used by Respawn. A lot of the logic for the game is written in squirrel scripts because of how convenient it is, even for people with little programming knowledge.
 
@@ -7,7 +7,7 @@ The version of squirrel used by Respawn is heavily modified. Most notable is the
 
 Respawn's fork branched off at version 2.3 of vanilla squirrel so newer features do not exist, like generators.
 
-Because of how different Respawn's fork of squirrel is, the language is often called "rSquirrel" or "squirrel_re" (the official name found in Apex Legends).
+Because of how different Respawn's fork of squirrel is, the language is often called "squirrel_re" (the official name found in Apex Legends).
 
 ## Syntax Highlighting
 
