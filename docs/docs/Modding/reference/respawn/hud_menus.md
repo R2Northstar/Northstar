@@ -192,11 +192,11 @@ To use footers, add this element to your menu:
 
 ```
 
-	FooterButtons
-	{
-		ControlName			CNestedPanel
-		InheritProperties	FooterButtons
-	}
+    FooterButtons
+    {
+        ControlName         CNestedPanel
+        InheritProperties   FooterButtons
+    }
 ```
 
 !!! cpp-function "void AddMenuFooterOption( var menu, int input, string gamepadLabel, string mouseLabel = "", void functionref( var ) activateFunc = null, bool functionref() conditionCheckFunc = null, void functionref( InputDef ) updateFunc = null )"

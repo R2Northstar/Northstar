@@ -228,7 +228,7 @@ You can get a bitflag of all damage types used with `DamageInfo_GetDamageType`.
         global enum damageTypes
         {
             gibs = (DF_GIB)
-            largeCaliberExp	 = (DF_BULLET | DF_GIB | DF_EXPLOSION)
+            largeCaliberExp  = (DF_BULLET | DF_GIB | DF_EXPLOSION)
             gibBullet = (DF_BULLET | DF_GIB)
             instant = (DF_INSTANT)
             dissolve = (DF_DISSOLVE)
@@ -243,9 +243,9 @@ You can get a bitflag of all damage types used with `DamageInfo_GetDamageType`.
             largeCaliber = (DF_BULLET | DF_KNOCK_BACK)
             shotgun = (DF_BULLET | DF_GIB | DF_SHOTGUN )
             titanMelee = (DF_MELEE | DF_RAGDOLL)
-            titanBerserkerMelee	= (DF_MELEE | DF_RAGDOLL)
-            titanEjectExplosion	= (DF_GIB | DF_EXPLOSION)
+            titanBerserkerMelee = (DF_MELEE | DF_RAGDOLL)
+            titanEjectExplosion = (DF_GIB | DF_EXPLOSION)
             dissolveForce = (DF_DISSOLVE | DF_KNOCK_BACK | DF_EXPLOSION)
-            rodeoBatteryRemoval	= (DF_RODEO | DF_EXPLOSION | DF_STOPS_TITAN_REGEN )
+            rodeoBatteryRemoval = (DF_RODEO | DF_EXPLOSION | DF_STOPS_TITAN_REGEN )
         }
     ```

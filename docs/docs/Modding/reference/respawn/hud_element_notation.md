@@ -435,8 +435,8 @@ Usable conditions are:
     .. code-block:: text
     
             // use allcaps only in russian
-    		allCaps 				0 	[!$RUSSIAN]
-		    allCaps 				1 	[$RUSSIAN]
+            allCaps        0  [!$RUSSIAN]
+            allCaps        1  [$RUSSIAN]
 
        
 
@@ -447,40 +447,40 @@ On top of that, logical operators like ``!``, ``&&`` and ``||`` are available as
 ```text
 
     // This element only shows on pc
-	IngameTextChat [$WINDOWS]
-	{
-		ControlName				CBaseHudChat
-		InheritProperties		ChatBox
+    IngameTextChat [$WINDOWS]
+    {
+        ControlName             CBaseHudChat
+        InheritProperties       ChatBox
 
-		destination				"match"
+        destination             "match"
 
-		visible 				0
+        visible                 0
 
-		pin_to_sibling			Screen
-		pin_corner_to_sibling	TOP_LEFT
-		pin_to_sibling_corner	TOP_LEFT
-		xpos					-45
-		ypos					-616
-	}
+        pin_to_sibling          Screen
+        pin_corner_to_sibling   TOP_LEFT
+        pin_to_sibling_corner   TOP_LEFT
+        xpos                    -45
+        ypos                    -616
+    }
 
     // This element has different widths depending on the game resolution
     LoadingTip
     {
-        ControlName				Label
-        ypos					10
-        wide					1630 [$WIDESCREEN_16_9]
-        wide					1441 [!$WIDESCREEN_16_9]
-        auto_tall_tocontents	1
-        labelText				""
-        textalign				"north-west"
-        font					Default_28
-        wrap 					1
-        fgcolor_override 		"217 170 75 255"
-        visible					0
+        ControlName             Label
+        ypos                    10
+        wide                    1630 [$WIDESCREEN_16_9]
+        wide                    1441 [!$WIDESCREEN_16_9]
+        auto_tall_tocontents    1
+        labelText               ""
+        textalign               "north-west"
+        font                    Default_28
+        wrap                    1
+        fgcolor_override        "217 170 75 255"
+        visible                 0
 
-        pin_to_sibling			LoadingGameMode
-        pin_corner_to_sibling	TOP_LEFT
-        pin_to_sibling_corner	BOTTOM_LEFT
+        pin_to_sibling          LoadingGameMode
+        pin_corner_to_sibling   TOP_LEFT
+        pin_to_sibling_corner   BOTTOM_LEFT
     }
 
 ```

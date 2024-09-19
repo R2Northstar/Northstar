@@ -29,10 +29,10 @@ While creating an entire Model from scratch is possible it would be an extremely
     This Guide is tailored towards users with atleast some experience with Blender. If you are new to Blender I recommend you to first familiarize yourself with the basics of Blender. There are many tutorials on the Internet that can help you with that.
     Especially the following topics are important for modifying or creating game assets:
 
-    •	Modeling
-    •	UV Mapping 
-    •	Texturing 
-    •	Rigging 
+    •   Modeling
+    •   UV Mapping 
+    •   Texturing 
+    •   Rigging 
 
     These things work in conjunction with each other and are all important for creating a game ready model. An understanding of these topics is very helpful for proper usage of Blender.
 
@@ -267,14 +267,14 @@ Usage:
 
 ```text
 
-        $renamematerial	<current material>	<new material>
+        $renamematerial <current material> <new material>
 ```
 
 Example:
 
 ```text
 
-        $renamematerial	"models\weapons_r2\coolmaterial\cool_material"	"models\amazing\uncoolmaterial\cool_material2"
+        $renamematerial "models\weapons_r2\coolmaterial\cool_material" "models\amazing\uncoolmaterial\cool_material2"
 ```
 
 Command docs: [VALVe developer docs $renamematerial](https://developer.valvesoftware.com/wiki/$renamematerial)

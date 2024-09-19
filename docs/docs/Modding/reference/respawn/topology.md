@@ -26,7 +26,7 @@ Since the number of topologies that can be created is very limited and Vanilla u
 
 !!! cpp-function "void RuiTopology_CreateSphere( vector origin, vector angles, vector right, vector down, COCKPIT_RUI_RADIUS, COCKPIT_RUI_WIDTH, COCKPIT_RUI_HEIGHT, float subDiv  )"
     
-	Similar to ``RuiTopology_CreatePlane`` but creates an arched sphere instead of a plane. Unlike in ``RuiTopology_CreatePlane``, **right and down are angles and not relative positions**. The width and height are instead controlled by their respective parameters.
+    Similar to ``RuiTopology_CreatePlane`` but creates an arched sphere instead of a plane. Unlike in ``RuiTopology_CreatePlane``, **right and down are angles and not relative positions**. The width and height are instead controlled by their respective parameters.
 
 !!! cpp-function "void RuiTopology_Destroy( var topology )"
 
@@ -40,10 +40,10 @@ Since the number of topologies that can be created is very limited and Vanilla u
 
 !!! cpp-function "void RuiTopology_UpdatePos( topo, updateOrg, right, down )"
 
-	Update the position and dimensions of the topology
+    Update the position and dimensions of the topology
 
 !!! cpp-function "void RuiTopology_ShareWithCode( topology, ruiCode ) "
-	
+    
 
 ## Drawcalls
 
@@ -60,51 +60,51 @@ Drawcalls determine how and where RUIs on a topology are being rendered.
 
 ```squirrel
 
-	// Cover the top left quadrant of the screen with a basic image
-	float[2] s = GetScreenSize()
-	var topo = RuiTopology_CreatePlane( <0,0,0>, <s[0] / 2,0,0>, <0,s[1] / 2,0>, true ) // RUIs scale with the topology they are being drawn on so make sure to use the correct dimensions
-	RuiCreate( $"ui/basic_image.rpak", topo, RUI_DRAW_HUD, 0 )
+    // Cover the top left quadrant of the screen with a basic image
+    float[2] s = GetScreenSize()
+    var topo = RuiTopology_CreatePlane( <0,0,0>, <s[0] / 2,0,0>, <0,s[1] / 2,0>, true ) // RUIs scale with the topology they are being drawn on so make sure to use the correct dimensions
+    RuiCreate( $"ui/basic_image.rpak", topo, RUI_DRAW_HUD, 0 )
 ```
 
 ## Worldspace Topology example
 
 ```squirrel
 
-	// REMEMBER TO DESTROY ALL TOPOS, RUIS AND PROPS YOU CREATE WHEN YOU NO LONGER NEED THEM
-	// ripped from respawn
-	var function Worldspace_CreateRUITopology( vector org, vector ang, float width, float height )
-	{
-		// adjust so the RUI is drawn with the org as its center point
-		org += ( (AnglesToRight( ang )*-1) * (width*0.5) )
-		org += ( AnglesToUp( ang ) * (height*0.5) )
+    // REMEMBER TO DESTROY ALL TOPOS, RUIS AND PROPS YOU CREATE WHEN YOU NO LONGER NEED THEM
+    // ripped from respawn
+    var function Worldspace_CreateRUITopology( vector org, vector ang, float width, float height )
+    {
+        // adjust so the RUI is drawn with the org as its center point
+        org += ( (AnglesToRight( ang )*-1) * (width*0.5) )
+        org += ( AnglesToUp( ang ) * (height*0.5) )
 
-		// right and down vectors that get added to base org to create the display size
-		vector right = ( AnglesToRight( ang ) * width )
-		vector down = ( (AnglesToUp( ang )*-1) * height )
+        // right and down vectors that get added to base org to create the display size
+        vector right = ( AnglesToRight( ang ) * width )
+        vector down = ( (AnglesToUp( ang )*-1) * height )
 
-		return RuiTopology_CreatePlane( org, right, down, true )
-	}
+        return RuiTopology_CreatePlane( org, right, down, true )
+    }
 
-	void function WorldSpaceTopoTest()
-	{
-		// To rotate a topology without manually calculating and updating position and dimensions you can parent the topology to  a client side prop
-		entity player = GetLocalClientPlayer()
-		entity weapon = player.GetActiveWeapon()
+    void function WorldSpaceTopoTest()
+    {
+        // To rotate a topology without manually calculating and updating position and dimensions you can parent the topology to  a client side prop
+        entity player = GetLocalClientPlayer()
+        entity weapon = player.GetActiveWeapon()
 
-		vector fwd = AnglesToForward( weapon.GetAngles() )
-		vector right = AnglesToRight( weapon.GetAngles() )
-		vector up = AnglesToUp( weapon.GetAngles() )
-		vector conf = < 20, -40, 30 > // float next to the player's weapon
+        vector fwd = AnglesToForward( weapon.GetAngles() )
+        vector right = AnglesToRight( weapon.GetAngles() )
+        vector up = AnglesToUp( weapon.GetAngles() )
+        vector conf = < 20, -40, 30 > // float next to the player's weapon
 
-		int attachIndex = weapon.LookupAttachment( "muzzle_flash" )
-		entity anchor = CreateClientSidePropDynamic( weapon.GetAttachmentOrigin( attachIndex ) + fwd * conf.x + right * conf.y + up * conf.z, <0,0,0>, $"models/dev/empty_model.mdl") // props need a model but this one is invisible so we don't need to set visibility manually
-		var topo = Worldspace_CreateRUITopology( <0,0,0>, <0,90,0>, 128, 64 ) // origin <0,0,0> so the topo sits at the origin of the prop
-		
-		var tm_box = RuiCreate( $"ui/helmet_scanning_percentbar.rpak", topo, RUI_DRAW_WORLD, 0 )
-		RuiSetString( tm_box, "stage3TextTop", "Top" )
-		RuiSetString( tm_box, "stage3TextBottom", "Bottom" )
+        int attachIndex = weapon.LookupAttachment( "muzzle_flash" )
+        entity anchor = CreateClientSidePropDynamic( weapon.GetAttachmentOrigin( attachIndex ) + fwd * conf.x + right * conf.y + up * conf.z, <0,0,0>, $"models/dev/empty_model.mdl") // props need a model but this one is invisible so we don't need to set visibility manually
+        var topo = Worldspace_CreateRUITopology( <0,0,0>, <0,90,0>, 128, 64 ) // origin <0,0,0> so the topo sits at the origin of the prop
+        
+        var tm_box = RuiCreate( $"ui/helmet_scanning_percentbar.rpak", topo, RUI_DRAW_WORLD, 0 )
+        RuiSetString( tm_box, "stage3TextTop", "Top" )
+        RuiSetString( tm_box, "stage3TextBottom", "Bottom" )
 
-		anchor.SetParent( weapon )
-		RuiTopology_SetParent( topo, anchor )
-	}
+        anchor.SetParent( weapon )
+        RuiTopology_SetParent( topo, anchor )
+    }
 ```

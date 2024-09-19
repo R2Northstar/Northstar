@@ -5,8 +5,8 @@ For an example of chathooks in use, check out EmmaM's [OwOfier mod](https://gith
 
 
 !!! warning
-	
-	Your mod needs to be load priority 1 or above to use the structs and callbacks in your script.
+    
+    Your mod needs to be load priority 1 or above to use the structs and callbacks in your script.
 
 
 ## Client chat API
