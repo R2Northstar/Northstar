@@ -1,10 +1,10 @@
-Typedefs
-========
+# Typedefs
 
 With typedefs you can create type aliases for types.
 Typedefs can be global as well.
 
-.. code-block::
+```squirrel
 
   typedef alias var
   global typedef SomeCallback void functionref(int)
+```

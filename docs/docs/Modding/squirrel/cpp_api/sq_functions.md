@@ -1,10 +1,7 @@
-Squirrel Functions
-==================
+# Squirrel Functions
 
-.. _sq-api-register-native-functions-c-macro:
 
-Adding Squirrel Functions
--------------------------
+## Adding Squirrel Functions {#sq-api-register-native-functions-c-macro}
 
 You can use the ``ADD_SQFUNC`` macro defined in ``squirrelautobind.h`` to easily add new Squirrel functions for specific contexts.
 
@@ -12,20 +9,19 @@ Inside the macro you have access to the Squirrel Manager of the context the func
 
 Parameters are the initial stack in the function context.
 
-.. cpp:function:: macro ADD_SQFUNC(return_type, funcName, argTypes, helpText, runOnContext)
+!!! cpp-function "macro ADD_SQFUNC(return_type, funcName, argTypes, helpText, runOnContext)"
 
-    :param return_type: The squirrel return type the compiler expects from this function
-    :param funcName: The squirrel function name
-    :param argTypes: The args with types the compiler expects
-    :param helpText: A help text describing the function
-    :param runOnContext: The contexts that have access to this function
+    - `return_type` The squirrel return type the compiler expects from this function
+    - `funcName` The squirrel function name
+    - `argTypes` The args with types the compiler expects
+    - `helpText` A help text describing the function
+    - `runOnContext` The contexts that have access to this function
 
-Examples
-~~~~~~~~
+### Examples
 
 Return a string from a native registered function:
 
-.. code-block:: cpp
+```cpp
 
     ADD_SQFUNC("string", CPlugTest, "", "returns \"native gaming\"", ScriptContext::CLIENT | ScriptContext::SERVER)
     {
@@ -33,10 +29,11 @@ Return a string from a native registered function:
         
         return SQRESULT_NOTNULL; // Signal that the topmost item on the stack is returned by this function
     }
+```
 
 Return a complex ``ornull`` type:
 
-.. code-block:: cpp
+```cpp
 
     ADD_SQFUNC("array<int> ornull", CPlugComplex, "int n", "returns null", ScriptContext::CLIENT | ScriptContext::SERVER | ScriptContext::UI)
     {
@@ -53,37 +50,37 @@ Return a complex ``ornull`` type:
 
         return SQRESULT_NOTNULL; // return the array [ n, n * 2 ] or NULL if n == 0
     }
+```
 
-Replacing Squirrel Functions
-----------------------------
+## Replacing Squirrel Functions
 
-.. note::
+!!! note
 
     Replacing functions is not possible in plugins
 
 You can use the ``REPLACE_SQFUNC`` macro to replace an existing sq function.
 
-.. cpp:function:: macro REPLACE_SQFUNC(funcName, runOnContext)
+!!! cpp-function "macro REPLACE_SQFUNC(funcName, runOnContext)"
 
-    :param funcName: The name of the function to replace
-    :param runOnContext: The contexts that have access to this function
+    - `funcName` The name of the function to replace
+    - `runOnContext` The contexts that have access to this function
 
 It's also possible to add an override directly with the ``AddFuncOverride`` function of the ``SquirrelManager`` class.
 
-.. cpp_function:: void AddFuncOverride(std::string name, SQFunction func)
+!!! cpp-function "void AddFuncOverride(std::string name, SQFunction func)"
 
-    :param std::string name: The name of the function to override
-    :param SQFunc func: A function object that replaces the logic
+    - `std``string name` The name of the function to override
+    - `SQFunc func` A function object that replaces the logic
 
-.. code-block:: cpp
+```cpp
 
     // Replaces dangerous vanilla functions to only log their call with no further logic.
     g_pSquirrel<context>->AddFuncOverride("DevTextBufferWrite", SQ_StubbedFunc<context, "DevTextBufferWrite">);
     g_pSquirrel<context>->AddFuncOverride("DevTextBufferClear", SQ_StubbedFunc<context, "DevTextBufferClear">);
     g_pSquirrel<context>->AddFuncOverride("DevTextBufferDumpToFile", SQ_StubbedFunc<context, "DevTextBufferDumpToFile">);
+```
 
-Script Contexts
----------------
+## Script Contexts
 
 Scriptcontexts are used to define the VMs that have access to a native function. Available Contexts are
 
@@ -91,8 +88,7 @@ Scriptcontexts are used to define the VMs that have access to a native function.
 - ``ScriptContext::CLIENT`` - The CLIENT sqvm
 - ``ScriptContext::UI`` - The UI vm
 
-Script Returns
---------------
+## Script Returns
 
 Squirrel functions need to return a ``SQRESULT``. Valid results are
 
@@ -100,18 +96,15 @@ Squirrel functions need to return a ``SQRESULT``. Valid results are
 - ``SQRESULT_NOTNULL`` - This functions returns the last item on the stack.
 - ``SQRESULT_ERROR`` - This function has thrown an error.
 
-.. _sq-api-calling-functions:
 
-Calling
--------
+## Calling {#sq-api-calling-functions}
 
-.. _Call:
 
-.. cpp:function:: SQRESULT Call(const char* funcname)
+!!! cpp-function "SQRESULT Call(const char* funcname)"
 
-    :param char* funcname: Name of the function to call
+    - `char* funcname` Name of the function to call
 
-    .. note::
+    !!! note
 
         This is a squirrel API wrapper added by northstar. It's not available for plugins and is supposed to abstract squirrel calls.
 
@@ -122,32 +115,32 @@ Calling
 
     If you want to call into squirrel asynchronously, use `AsyncCall`_ instead.
 
-    .. code-block:: cpp
+    ```cpp
 
         Call("PluginCallbackTest"); // PluginCallbackTest()
+    ```
 
-.. _Call-args:
 
-.. cpp:function:: SQRESULT Call(const char* funcname, Args... args)
+!!! cpp-function "SQRESULT Call(const char* funcname, Args... args)"
 
-    :param char* funcname: Name of the function to call
-    :param Args... args: vector of args to pass to the function
+    - `char* funcname` Name of the function to call
+    - `Args... args` vector of args to pass to the function
 
-    .. note::
+    !!! note
 
         This is a squirrel API wrapper added by northstar. It's not available for plugins and is supposed to abstract squirrel calls.
 
-    .. code-block:: cpp
+    ```cpp
 
         Call("PluginCallbackTest", "param"); // PluginCallbackTest("param")
+    ```
 
-.. _AsyncCall:
 
-.. cpp:function:: SquirrelMessage AsyncCall(std::string funcname)
+!!! cpp-function "SquirrelMessage AsyncCall(std::string funcname)"
 
-    :param char* funcname: Name of the function to call
+    - `char* funcname` Name of the function to call
 
-    .. note::
+    !!! note
 
         This is a squirrel API wrapper added by northstar. It's not available for plugins and is supposed to abstract squirrel calls.
 
@@ -155,32 +148,30 @@ Calling
 
     This is useful for things like threads and plugins, which do not run on the main thread.
 
-.. _AsyncCall-args:
 
-.. cpp:function:: SquirrelMessage AsyncCall(std::string funcname, Args... args)
+!!! cpp-function "SquirrelMessage AsyncCall(std::string funcname, Args... args)"
 
-    :param char* funcname: Name of the function to call
-    :param Args... args: vector of args to pass to the function
+    - `char* funcname` Name of the function to call
+    - `Args... args` vector of args to pass to the function
 
-    .. note::
+    !!! note
 
         This is a squirrel API wrapper added by northstar. It's not available for plugins and is supposed to abstract squirrel calls.
 
 
-.. _ns-call:
 
-.. cpp:function:: SQRESULT _call(HSquirrelVM* sqvm, const SQInteger args)
+!!! cpp-function "SQRESULT _call(HSquirrelVM* sqvm, const SQInteger args)"
 
-    :param HSquirrelVM* sqvm: the target vm
-    :param SQInteger args: number of arguments to call this function with
+    - `HSquirrelVM* sqvm` the target vm
+    - `SQInteger args` number of arguments to call this function with
 
     ``_call`` adds one to the ``args`` count for ``this``.
 
-    .. note::
+    !!! note
 
         This is a squirrel API wrapper added by northstar. It's not available for plugins and is supposed to abstract squirrel calls.
 
-    .. code-block:: cpp
+    ```cpp
 
         SQObject functionobj {};
         SQRESULT result = g_pSquirrel<context>->sq_getfunction(sqvm, "PluginCallbackTest", &functionobj, 0); // Get a global squirrel function called "PluginCallbackTest"
@@ -195,34 +186,32 @@ Calling
         g_pSquirrel<context>->pushroottable(sqvm);
         g_pSquirrel<context>->pushstring(sqvm, "param");
         return g_pSquirrel<context>->_call(sqvm, 1); // PluginCallbackTest("param")
+    ```
 
-.. _sq-call:
 
-.. cpp:function:: SQRESULT __sq_call(HSquirrelVM* sqvm, SQInteger iArgs, SQBool bShouldReturn, SQBool bThrowError)
+!!! cpp-function "SQRESULT __sq_call(HSquirrelVM* sqvm, SQInteger iArgs, SQBool bShouldReturn, SQBool bThrowError)"
 
-    :param HSquirrelVM* sqvm: the target vm
-    :param SQInteger iArgs: number of parameters of the function
-    :param SQBool bShouldReturn: if true the function will push the return value to the stack
-    :param SQBool bThrowError: if true, if a runtime error occurs during the execution of the call, the vm will invoke the error handler
+    - `HSquirrelVM* sqvm` the target vm
+    - `SQInteger iArgs` number of parameters of the function
+    - `SQBool bShouldReturn` if true the function will push the return value to the stack
+    - `SQBool bThrowError` if true, if a runtime error occurs during the execution of the call, the vm will invoke the error handler
 
     calls a closure or a native closure. The function pops all the parameters and leave the closure in the stack; if retval is true the return value of the closure is pushed. If the execution of the function is suspended through sq_suspendvm(), the closure and the arguments will not be automatically popped from the stack.
 
     When using to create an instance, push a dummy parameter to be filled with the newly-created instance for the constructor's ``this`` parameter.
 
-Errors
-------
+## Errors
 
-.. _raiseerror:
 
-.. cpp:function:: SQRESULT raiseerror(HSquirrelVM* sqvm, const SQChar* error)
+!!! cpp-function "SQRESULT raiseerror(HSquirrelVM* sqvm, const SQChar* error)"
 
-    :param HSquirrelVM* sqvm: the target vm
-    :param SQChar* error: string thrown
-    :returns: ``SQRESULT_ERROR``
+    - `HSquirrelVM* sqvm` the target vm
+    - `SQChar* error` string thrown
+    - Returns ``SQRESULT_ERROR``
 
     Throws an error with ``error`` being the thrown object.
 
-    .. code-block:: cpp
+    ```cpp
 
         ADD_SQFUNC("void", CPlugThrowTest, "", "", ScriptContext::UI)
         {
@@ -236,3 +225,4 @@ Errors
             print(e) // "test error"
         }
         */
+    ```

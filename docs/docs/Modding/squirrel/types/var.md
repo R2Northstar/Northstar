@@ -1,15 +1,15 @@
-Var
-===
+# Var
 
 ``var`` stands for a variable of any type. Any **primitive** can be ``var``, however complex types can never be ``var``.
 
-.. code-block::
+```squirrel
 
   // var can be just about anything. 
   var v = 1
   v = "string"
   v = []
   v = {}
+```
 
 in ``untyped`` files you can also use the ``local`` keyword instead of ``var``. However the keyword is deprecated and should not be used.
 

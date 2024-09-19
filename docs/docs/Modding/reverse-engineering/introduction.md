@@ -1,5 +1,4 @@
-Introduction
-============
+# Introduction
 
 The documentation for reverse engineering Titanfall2, adding new hooks to Northstar
 using information gathered during reverse engineering etc. is very much incomplete.

@@ -1,9 +1,8 @@
-Rui
----
+# Rui
 
 Functions for creating a rui, and methods of the rui object
 
-.. code-block::
+```squirrel
         
             // To create one, do:
             rui = RuiCreate( $"ui/assetname.rpak", topology, drawGroup, sortKey ) // sortkey = int to prevent z-fighting. higher -> in front
@@ -20,19 +19,21 @@ Functions for creating a rui, and methods of the rui object
 
             // To destroy it, just do:
             RuiDestroy( rui )
+```
      
 Drawgroups
 
-.. code-block::
+```
 
         RUI_DRAW_WORLD
         RUI_DRAW_HUD
         RUI_DRAW_COCKPIT
         RUI_DRAW_NONE
+```
 
 Trackers
 
-.. code-block::
+```
 
         // VECTOR TYPES
         RUI_TRACK_ABSORIGIN_FOLLOW                   // Create at absorigin, and update to follow the entity
@@ -87,35 +88,37 @@ Trackers
         // IMAGE TYPES
         RUI_TRACK_WEAPON_MENU_ICON,
         RUI_TRACK_WEAPON_HUD_ICON
+```
 
-.. cpp:class:: rui : public var	
+!!! cpp-class "rui : public var	"
 
-    .. cpp:function:: void RuiSetResolution(rui, screenSizeX, screenSizey)
+    !!! cpp-function "void RuiSetResolution(rui, screenSizeX, screenSizey)"
     
-        .. code-block::
+        ```squirrel
         
                 screenSizeX = GetScreenSize()[0]
                 screenSizeY = GetScreenSize()[1]
+        ```
     
-    .. cpp:function:: void RuiSetDrawGroup( rui, drawGroup )
+    !!! cpp-function "void RuiSetDrawGroup( rui, drawGroup )"
 
-    .. cpp:function:: void RuiSetString( rui, argName, value )
+    !!! cpp-function "void RuiSetString( rui, argName, value )"
     
-    .. cpp:function:: void RuiSetBool( rui, argName, value )
+    !!! cpp-function "void RuiSetBool( rui, argName, value )"
     
-    .. cpp:function:: void RuiSetInt( rui, argName, value )
+    !!! cpp-function "void RuiSetInt( rui, argName, value )"
     
-    .. cpp:function:: void RuiSetFloat( rui, argName, value )
+    !!! cpp-function "void RuiSetFloat( rui, argName, value )"
     
-    .. cpp:function:: void RuiSetFloat2( rui, argName, value )  
+    !!! cpp-function "void RuiSetFloat2( rui, argName, value )  "
     
         value is a vector; only x and y are used
     
-    .. cpp:function:: void RuiSetFloat3( rui, argName, value )
+    !!! cpp-function "void RuiSetFloat3( rui, argName, value )"
     
-    .. cpp:function:: void RuiSetColorAlpha( rui, argName, color, alpha )  
+    !!! cpp-function "void RuiSetColorAlpha( rui, argName, color, alpha )  "
     
         color is a vector
 
-    .. cpp:function:: void RuiDestroyIfAlive( rui )
+    !!! cpp-function "void RuiDestroyIfAlive( rui )"
     

@@ -1,71 +1,66 @@
-Movers
-======
+# Movers
 
 
 Movers are entites that move and rotate smoothly.
 ``script_mover`` allows for smooth movement and rotation contrary to ``script_mover_lightweight`` which is not able to rotate.
 
-Create a Mover
---------------
+## Create a Mover
 
-.. cpp:function:: entity CreateExpensiveScriptMover( vector origin , vector angles )
+!!! cpp-function "entity CreateExpensiveScriptMover( vector origin , vector angles )"
 
    returns ``script_mover``
     
-.. cpp:function:: entity CreateExpensiveScriptMoverModel( asset model, vector origin, vector angles, int solidType, float fadeDist )
+!!! cpp-function "entity CreateExpensiveScriptMoverModel( asset model, vector origin, vector angles, int solidType, float fadeDist )"
 
     returns ``script_mover`` which has a model
 
-.. cpp:function:: entity CreateScriptMover( vector origin, vector angles )
+!!! cpp-function "entity CreateScriptMover( vector origin, vector angles )"
 
     returns ``script_mover_lightweight``
 
-.. cpp:function:: entity CreateScriptMoverModel( asset model, vector origin, vector angles, int solidType, float fadeDist )
+!!! cpp-function "entity CreateScriptMoverModel( asset model, vector origin, vector angles, int solidType, float fadeDist )"
 
     returns ``script_mover_lightweight`` which has a model
 
-.. cpp:function:: entity CreateOwnedScriptMover( entity owner )
+!!! cpp-function "entity CreateOwnedScriptMover( entity owner )"
     
      returns ``script_mover`` which will be at the location of the owner
 
-Moving
-------
+## Moving
 
-    .. cpp:function:: void NonPhysicsMoveTo( vector position, float time, float easeIn, float easeOut )
+!!! cpp-function "void NonPhysicsMoveTo( vector position, float time, float easeIn, float easeOut )"
 
-    .. cpp:function:: void NonPhysicsMoveInWorldSpaceToLocalPos( vector localPos, float time, float easeIn, float easeOut )
+!!! cpp-function "void NonPhysicsMoveInWorldSpaceToLocalPos( vector localPos, float time, float easeIn, float easeOut )"
 
-    .. cpp:function:: void NonPhysicsMoveWithGravity( vector velocityForOthers, vector fakeGravity )
+!!! cpp-function "void NonPhysicsMoveWithGravity( vector velocityForOthers, vector fakeGravity )"
 
-    .. cpp:function:: void NonPhysicsRotateTo( vector angles, float time, float easeIn, float easeOut )
+!!! cpp-function "void NonPhysicsRotateTo( vector angles, float time, float easeIn, float easeOut )"
 
-        Only usable by expensive movers
+    Only usable by expensive movers
 
-    .. cpp:function:: void NonPhysicsRotate( vector angles, float speed )
+!!! cpp-function "void NonPhysicsRotate( vector angles, float speed )"
 
-        Only usable by expensive movers
+    Only usable by expensive movers
 
-    .. cpp:function:: void NonPhysicsStop()
+!!! cpp-function "void NonPhysicsStop()"
 
-        Immediately stop this mover from moving
+    Immediately stop this mover from moving
 
-Behaviour
----------
+## Behaviour
 
-.. cpp:function:: void ChangeNPCPathsOnMove( bool recalculate )
+!!! cpp-function "void ChangeNPCPathsOnMove( bool recalculate )"
 
-.. cpp:function:: void SetPusher( bool isPusher )
+!!! cpp-function "void SetPusher( bool isPusher )"
 
     Pushers move everything that stands on top of them or next to them and can also kill entities by crushing them.
 
-.. cpp:function:: void NonPhysicsSetRotateModeLocal( bool useLocal )
+!!! cpp-function "void NonPhysicsSetRotateModeLocal( bool useLocal )"
 
-.. cpp:function:: void PhysicsDummyEnableMotion( bool enabled )
+!!! cpp-function "void PhysicsDummyEnableMotion( bool enabled )"
 
-Examples
---------
+## Examples
 
-.. code-block::
+```squirrel
 
     entity mover = CreateScriptMover( <0,0,0> ) 
     
@@ -82,7 +77,9 @@ Examples
     wait 0.5
     mover.NonPhysicsStop()
 
-.. code-block::
+```
+
+```squirrel
     
     // creating a elevator 
     // using a mover with a model
@@ -99,8 +96,9 @@ Examples
         wait 6
     }
 
+```
 
-.. code-block::
+```squirrel
 
     // Phase shifting the player to a destination
     // setting a position
@@ -122,3 +120,4 @@ Examples
     {
         player.ClearParent() // removing the player from the mover
     }
+```

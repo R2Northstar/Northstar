@@ -77,3 +77,131 @@
 .md-typeset code {
     border-radius: 0.6rem;
 }
+
+/* Custom admonition for C++ code */
+:root {
+  --md-admonition-icon--cpp-function: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 0 0"></svg>')
+}
+.md-typeset .admonition.cpp-function,
+.md-typeset details.cpp-function {
+  border-color: #42477f;
+  border-width: 0;
+  border-top-width: 4px;
+  color: #ee5151;
+}
+.md-typeset .cpp-function > .admonition-title,
+.md-typeset .cpp-function > summary {
+  background-color: #14141e;
+}
+.md-typeset .cpp-function > .admonition-title::before,
+.md-typeset .cpp-function > summary::before {
+  -webkit-mask-image: var(--md-admonition-icon--cpp-function);
+          mask-image: var(--md-admonition-icon--cpp-function);
+}
+
+/* Custom admonition for C++ code */
+:root {
+  --md-admonition-icon--cpp-struct: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 0 0"></svg>')
+}
+.md-typeset .admonition.cpp-struct,
+.md-typeset details.cpp-struct {
+  border-color: #42477f;
+  border-width: 0;
+  border-top-width: 4px;
+  color: #ee5151;
+}
+.md-typeset .cpp-struct > .admonition-title,
+.md-typeset .cpp-struct > summary {
+  background-color: #14141e;
+}
+.md-typeset .cpp-struct > .admonition-title::before,
+.md-typeset .cpp-struct > summary::before {
+  -webkit-mask-image: var(--md-admonition-icon--cpp-struct);
+          mask-image: var(--md-admonition-icon--cpp-struct);
+}
+
+/* Custom admonition for C++ code */
+:root {
+  --md-admonition-icon--cpp-var: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 0 0"></svg>')
+}
+.md-typeset .admonition.cpp-var,
+.md-typeset details.cpp-var {
+  border-color: #42477f;
+  border-width: 0;
+  border-top-width: 4px;
+  color: #ee5151;
+}
+.md-typeset .cpp-var > .admonition-title,
+.md-typeset .cpp-var > summary {
+  background-color: #14141e;
+}
+.md-typeset .cpp-var > .admonition-title::before,
+.md-typeset .cpp-var > summary::before {
+  -webkit-mask-image: var(--md-admonition-icon--cpp-var);
+          mask-image: var(--md-admonition-icon--cpp-var);
+}
+
+/* Custom admonition for C++ code */
+:root {
+  --md-admonition-icon--cpp-enum: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 0 0"></svg>')
+}
+.md-typeset .admonition.cpp-enum,
+.md-typeset details.cpp-enum {
+  border-color: #42477f;
+  border-width: 0;
+  border-top-width: 4px;
+  color: #ee5151;
+}
+.md-typeset .cpp-enum > .admonition-title,
+.md-typeset .cpp-enum > summary {
+  background-color: #14141e;
+}
+.md-typeset .cpp-enum > .admonition-title::before,
+.md-typeset .cpp-enum > summary::before {
+  -webkit-mask-image: var(--md-admonition-icon--cpp-enum);
+          mask-image: var(--md-admonition-icon--cpp-enum);
+}
+
+
+/* Custom admonition for C++ code */
+:root {
+  --md-admonition-icon--cpp-member: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 0 0"></svg>')
+}
+.md-typeset .admonition.cpp-member,
+.md-typeset details.cpp-member {
+  border-color: #42477f;
+  border-width: 0;
+  border-top-width: 4px;
+  color: #ee5151;
+}
+.md-typeset .cpp-member > .admonition-title,
+.md-typeset .cpp-member > summary {
+  background-color: #14141e;
+}
+.md-typeset .cpp-member > .admonition-title::before,
+.md-typeset .cpp-member > summary::before {
+  -webkit-mask-image: var(--md-admonition-icon--cpp-member);
+          mask-image: var(--md-admonition-icon--cpp-member);
+}
+
+
+/* Custom admonition for C++ code */
+:root {
+  --md-admonition-icon--cpp-class: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 0 0"></svg>')
+}
+.md-typeset .admonition.cpp-class,
+.md-typeset details.cpp-class {
+  border-color: #42477f;
+  border-width: 0;
+  border-top-width: 4px;
+  color: #ee5151;
+}
+.md-typeset .cpp-class > .admonition-title,
+.md-typeset .cpp-class > summary {
+  background-color: #14141e;
+}
+.md-typeset .cpp-class > .admonition-title::before,
+.md-typeset .cpp-class > summary::before {
+  -webkit-mask-image: var(--md-admonition-icon--cpp-class);
+          mask-image: var(--md-admonition-icon--cpp-class);
+}

@@ -1,9 +1,7 @@
-.. _element-notation:
+# Element Notation
 
-Element Notation
-====
 
-Elements are notated as `VDF <https://developer.valvesoftware.com/wiki/KeyValues>`_
+Elements are notated as [VDF](https://developer.valvesoftware.com/wiki/KeyValues)
 
 UI elements are created when a menu is initialized. References to the elements will stay the same, regardless if the menu is open or not.
 
@@ -11,7 +9,7 @@ It is not possible to create elements at runtime so you have to define all eleme
 
 An Element is declared in the following way:
 
-.. code-block::
+```
 
     // please follow this structure
     ElementName
@@ -23,10 +21,11 @@ An Element is declared in the following way:
 
         // optional: pinning
     }
+```
 
 If you're working on a **menu**, you need a ``menu`` object that contains all elements, for example like this:
 
-.. code-block::
+``` 
 
     resource/ui/menus/profiles_menu.menu
     {
@@ -49,11 +48,10 @@ If you're working on a **menu**, you need a ``menu`` object that contains all el
             // elements
         }
     }
-
+```
 It usually doesn't matter if you use quotation marks to assign string values to parameters.
 
-HUD & Panel files
------------------
+## HUD & Panel files
 
 The first line of a ``.menu`` or ``.res`` file needs to be the resource path to itself, starting from the resource folder.
 
@@ -61,7 +59,7 @@ It's not possible to load other files as menus or panels. A ``.menu`` represents
 
 The rest of the file needs to be wrapped in curly brackets.
 
-.. code-block::
+``` 
 
     resource/ui/menus/more/folders/my_menu.menu
     {
@@ -72,346 +70,335 @@ The rest of the file needs to be wrapped in curly brackets.
 
         // more objects ...
     }
+```
 
-Properties
-~~~~~~~~~~
+### Properties
 
 Capitalization of the properties shouldn't matter.
 
-.. cpp:function:: (ElementName)
+!!! cpp-function "(ElementName)"
 
     This isn't a regular property and comes **before** the opening bracket
 
     Unique string identifier used in scripts to look up an element. Every element is required to have a name.
 
-Inheritance / Parenting
-^^^^^^^^^^^^^^^^^^^^^^^
+#### Inheritance / Parenting
 
-.. cpp:function:: ControlName
+!!! cpp-function "ControlName"
 
     Controls what type of Component the element is and what parameters have an effect. Every element is required to have control name.
 
-.. cpp:function:: InheritProperties
+!!! cpp-function "InheritProperties"
 
-.. cpp:function:: controlSettingsFile
+!!! cpp-function "controlSettingsFile"
 
     Load a ``.res`` file. All elements in the settings file are instantiated and set as children of the element.
 
     ``Hud_GetChild`` only works if the parent element is (has the ``ControlName``) a **CNestedPanel**!
 
-Identifying
-^^^^^^^^^^^
-.. cpp:function:: classname
+#### Identifying
+
+!!! cpp-function "classname"
 
     Classname used for identifying groups of elements
 
-.. cpp:function:: scriptID
+!!! cpp-function "scriptID"
 
     Set an unique integer id for this element that's retrievable in script.
 
-Position
-^^^^^^^^
+#### Position
 
-.. cpp:function:: xpos
+!!! cpp-function "xpos"
 
     Set the base x position relative to the element's sibling position.
 
     inverted when attached to the left corner or smth
 
-.. cpp:function:: ypos
+!!! cpp-function "ypos"
 
     Set the base y position relative to the element's sibling position.
 
     inverted when attached to the top corner or smth
 
-.. cpp:function:: zpos
+!!! cpp-function "zpos"
 
     The layer this element sits in. Elements with a higher z will be prioritized to be selected / focused. They are also drawn on top of elements with a lower z position.
 
-Dimensions
-^^^^
+#### Dimensions
 
-.. cpp:function:: wide
+!!! cpp-function "wide"
 
     Set the base width of this element.
 
-.. cpp:function:: tall
+!!! cpp-function "tall"
 
     Set the base height of this element.
 
-.. cpp:function:: scale
+!!! cpp-function "scale"
 
     Float that scales the element.
 
-Text
-^^^^
+#### Text
 
-.. cpp:function:: labelText
+!!! cpp-function "labelText"
 
     Set the label text of this element, if it is a Label.
 
-.. cpp:function:: textAlignment
+!!! cpp-function "textAlignment"
 
     Controls the element boundary point the element's text gets aligned with. ``east`` -> Left, ``north`` -> Top, ``west`` -> Right, ``south`` Bottom.
 
     You can also combine the directions like this: ``north-west``.
 
-.. cpp:function:: allcaps
+!!! cpp-function "allcaps"
 
     Controls if the text of this element is rendered in all caps. Defaults to 0.
 
-.. cpp:function:: font
+!!! cpp-function "font"
 
     Set the text font of this element.
 
-.. cpp:function:: textinsetx
+!!! cpp-function "textinsetx"
 
-.. cpp:function:: textinsety
+!!! cpp-function "textinsety"
 
-.. cpp:function:: dulltext
+!!! cpp-function "dulltext"
 
-.. cpp:function:: brighttext
+!!! cpp-function "brighttext"
 
-.. cpp:function:: textalign
+!!! cpp-function "textalign"
 
-.. cpp:function:: NoWrap
+!!! cpp-function "NoWrap"
 
     don't wrape text
 
-.. cpp:function:: wrap
+!!! cpp-function "wrap"
 
     wrap text from east
 
-.. cpp:function:: centerwrap
+!!! cpp-function "centerwrap"
 
     wrap text from center
 
-.. cpp:function:: keyboardTitle
+!!! cpp-function "keyboardTitle"
 
-.. cpp:function:: keyboardDescription
+!!! cpp-function "keyboardDescription"
 
-.. cpp:function:: selectedFont
+!!! cpp-function "selectedFont"
 
-.. cpp:function:: text
+!!! cpp-function "text"
 
-.. cpp:function:: multiline
+!!! cpp-function "multiline"
 
     Set if the text input supports multiline input.
 
-.. cpp:function:: use_proportional_insets
+!!! cpp-function "use_proportional_insets"
 
 
-Pinning
-^^^^
+#### Pinning
 
-.. cpp:function:: pin_to_sibling
+!!! cpp-function "pin_to_sibling"
 
     Controls the sibling this element will be pinned to. Takes an element's name as a parameter.
 
-.. cpp:function:: pin_corner_to_sibling
+!!! cpp-function "pin_corner_to_sibling"
 
     Sets which corner of this element is pinned to the sibling.
 
-.. cpp:function:: pin_to_sibling_corner
+!!! cpp-function "pin_to_sibling_corner"
 
     Set to which corner of the sibling this element is pinned to.
 
-.. cpp:function:: pinCorner
+!!! cpp-function "pinCorner"
 
-Rui
-^^^^
+#### Rui
 
-.. cpp:function:: rui
+!!! cpp-function "rui"
 
-Images
-^^^^
+#### Images
 
-.. cpp:function:: image
+!!! cpp-function "image"
 
     vgui asset to render
 
-.. cpp:function:: scaleImage
+!!! cpp-function "scaleImage"
 
-.. cpp:function:: fg_image
+!!! cpp-function "fg_image"
 
-.. cpp:function:: drawColor
+!!! cpp-function "drawColor"
 
     apply this color on top. Format is "r g b a".
 
-.. cpp:function:: fillcolor
+!!! cpp-function "fillcolor"
 
     Fill transparent pixels with this color. Format is "r g b a"
 
-Navigation
-^^^^
+#### Navigation
 
-.. cpp:function:: navUp
+!!! cpp-function "navUp"
 
-.. cpp:function:: navDown
+!!! cpp-function "navDown"
 
-.. cpp:function:: navLeft
+!!! cpp-function "navLeft"
 
-.. cpp:function:: navRight
+!!! cpp-function "navRight"
 
-Slider
-^^^^
+#### Slider
 
-.. cpp:function:: stepSize
+!!! cpp-function "stepSize"
 
-.. cpp:function:: isValueClampedToStepSize
+!!! cpp-function "isValueClampedToStepSize"
 
 
-Other
-^^^^
+#### Other
 
-.. cpp:function:: visible
+!!! cpp-function "visible"
 
     Controls if this element is rendered. Defaults to 1.
 
-.. cpp:function:: enable
+!!! cpp-function "enable"
 
     Controls if this element starts enabled. Defaults to 1.
 
-.. cpp:function:: auto_wide_to_contents
+!!! cpp-function "auto_wide_to_contents"
 
-.. cpp:function:: auto_wide_tocontents
+!!! cpp-function "auto_wide_tocontents"
 
-.. cpp:function:: auto_tall_tocontents
+!!! cpp-function "auto_tall_tocontents"
 
-.. cpp:function:: enabled
+!!! cpp-function "enabled"
 
     Controls if this element is enabled. Only enabled elements can be focused / selected. Defaults to 1.
 
-.. cpp:function:: destination
+!!! cpp-function "destination"
 
-.. cpp:function:: frame
+!!! cpp-function "frame"
 
-.. cpp:function:: fieldName
+!!! cpp-function "fieldName"
 
-.. cpp:function:: autoResize
+!!! cpp-function "autoResize"
 
-.. cpp:function:: barCount
+!!! cpp-function "barCount"
 
-.. cpp:function:: barSpacing
+!!! cpp-function "barSpacing"
 
-.. cpp:function:: dialogstyle
+!!! cpp-function "dialogstyle"
 
-.. cpp:function:: style
+!!! cpp-function "style"
 
-.. cpp:function:: command
+!!! cpp-function "command"
 
-.. cpp:function:: ActivationType
+!!! cpp-function "ActivationType"
 
-.. cpp:function:: paintbackground
+!!! cpp-function "paintbackground"
 
-.. cpp:function:: tabposition
+!!! cpp-function "tabposition"
 
-.. cpp:function:: activeInputExclusivePaint
+!!! cpp-function "activeInputExclusivePaint"
 
-.. cpp:function:: paintborder
+!!! cpp-function "paintborder"
 
-.. cpp:function:: CircularEnabled
+!!! cpp-function "CircularEnabled"
 
-.. cpp:function:: CircularClockwise
+!!! cpp-function "CircularClockwise"
 
-.. cpp:function:: consoleStyle
+!!! cpp-function "consoleStyle"
 
-.. cpp:function:: unicode
+!!! cpp-function "unicode"
 
-.. cpp:function:: Default
+!!! cpp-function "Default"
 
-.. cpp:function:: selected
+!!! cpp-function "selected"
 
-.. cpp:function:: maxchars
+!!! cpp-function "maxchars"
 
-.. cpp:function:: listName
+!!! cpp-function "listName"
 
-.. cpp:function:: arrowsVisible
+!!! cpp-function "arrowsVisible"
 
-.. cpp:function:: verifiedColumnWidth
+!!! cpp-function "verifiedColumnWidth"
 
-.. cpp:function:: nameColumnWidth
+!!! cpp-function "nameColumnWidth"
 
-.. cpp:function:: totalMembersColumnWidth
+!!! cpp-function "totalMembersColumnWidth"
 
-.. cpp:function:: chatBorderThickness
+!!! cpp-function "chatBorderThickness"
 
-.. cpp:function:: messageModeAlwaysOn
+!!! cpp-function "messageModeAlwaysOn"
 
-.. cpp:function:: interactive
+!!! cpp-function "interactive"
 
-.. cpp:function:: rowHeight
+!!! cpp-function "rowHeight"
 
-.. cpp:function:: nameSpaceX
+!!! cpp-function "nameSpaceX"
 
-.. cpp:function:: nameSpaceY
+!!! cpp-function "nameSpaceY"
 
-.. cpp:function:: micWide
+!!! cpp-function "micWide"
 
-.. cpp:function:: micTall
+!!! cpp-function "micTall"
 
-.. cpp:function:: micSpaceX
+!!! cpp-function "micSpaceX"
 
-.. cpp:function:: micOffsetY
+!!! cpp-function "micOffsetY"
 
-.. cpp:function:: textHidden
+!!! cpp-function "textHidden"
 
-.. cpp:function:: editable
+!!! cpp-function "editable"
 
-.. cpp:function:: NumericInputOnly
+!!! cpp-function "NumericInputOnly"
 
-.. cpp:function:: allowRightClickMenu
+!!! cpp-function "allowRightClickMenu"
 
-.. cpp:function:: allowSpecialCharacters
+!!! cpp-function "allowSpecialCharacters"
 
-.. cpp:function:: SelectedTextColor
+!!! cpp-function "SelectedTextColor"
 
-.. cpp:function:: SelectedBgColor
+!!! cpp-function "SelectedBgColor"
 
-.. cpp:function:: clip
+!!! cpp-function "clip"
 
-.. cpp:function:: teamRelationshipFilter
+!!! cpp-function "teamRelationshipFilter"
 
-.. cpp:function:: activeColumnWidth
+!!! cpp-function "activeColumnWidth"
 
-.. cpp:function:: happyHourColumnWidth
+!!! cpp-function "happyHourColumnWidth"
 
-.. cpp:function:: onlinePlayersColumnWidth
+!!! cpp-function "onlinePlayersColumnWidth"
 
-.. cpp:function:: PaintBackgroundType
+!!! cpp-function "PaintBackgroundType"
 
     // 0 for normal(opaque), 1 for single texture from Texture1, and 2 for rounded box w/ four corner textures
 
-.. cpp:function:: ConVar
+!!! cpp-function "ConVar"
 
-.. cpp:function:: alpha
+!!! cpp-function "alpha"
 
-.. cpp:function:: conCommand
+!!! cpp-function "conCommand"
 
-.. cpp:function:: minValue
+!!! cpp-function "minValue"
 
-.. cpp:function:: maxValue
+!!! cpp-function "maxValue"
 
-.. cpp:function:: inverseFill
+!!! cpp-function "inverseFill"
 
-.. cpp:function:: syncedConVar
+!!! cpp-function "syncedConVar"
 
-.. cpp:function:: showConVarAsFloat
+!!! cpp-function "showConVarAsFloat"
 
-.. cpp:function:: modal
+!!! cpp-function "modal"
 
-.. cpp:function:: headerHeight
+!!! cpp-function "headerHeight"
 
-.. cpp:function:: panelBorder
+!!! cpp-function "panelBorder"
 
-.. cpp:function:: linespacing
+!!! cpp-function "linespacing"
 
-.. cpp:function:: rightClickEvents
+!!! cpp-function "rightClickEvents"
 
-.. cpp:function:: conCommandDefault
+!!! cpp-function "conCommandDefault"
 
-Conditional Properties
-~~~~
+### Conditional Properties
 
 You can declare properties for specific conditions by adding ``[CONDITION]`` after the property value.
 
@@ -419,29 +406,29 @@ When putting a condition after an element's name, the element will only be creat
 
 Usable conditions are:
 
-.. cpp:function:: $WIN32
+!!! cpp-function "$WIN32"
 
     game is running on 32 bit windows
 
-.. cpp:function:: $WINDOWS
+!!! cpp-function "$WINDOWS"
 
     game is running on windows
 
-.. cpp:function:: $DURANGO
+!!! cpp-function "$DURANGO"
 
     game is running on xbox
 
-.. cpp:function:: $PS4
+!!! cpp-function "$PS4"
 
     game is running on a PS4
 
-.. cpp:function:: $GAMECONSOLE
+!!! cpp-function "$GAMECONSOLE"
 
-.. cpp:function:: $WIDESCREEN_16_9
+!!! cpp-function "$WIDESCREEN_16_9"
 
     game resolution is 16/9
 
-.. cpp:function:: $LANGUAGE
+!!! cpp-function "$LANGUAGE"
 
     the game's language.
     
@@ -455,10 +442,9 @@ Usable conditions are:
 
 On top of that, logical operators like ``!``, ``&&`` and ``||`` are available as well.
 
-Example:
-^^^^
+#### Example:
 
-.. code-block:: text
+```text
 
     // This element only shows on pc
 	IngameTextChat [$WINDOWS]
@@ -497,51 +483,51 @@ Example:
         pin_to_sibling_corner	BOTTOM_LEFT
     }
 
-Pinning
-~~~~
+```
 
-.. cpp:function:: CENTER
+### Pinning
+
+!!! cpp-function "CENTER"
 
     The calculated center of the element
 
-.. cpp:function:: TOP
+!!! cpp-function "TOP"
 
     Element's top y bounds, x axis center.
 
-.. cpp:function:: BOTTOM
+!!! cpp-function "BOTTOM"
 
     Element's lowest y bounds, x axis center.
 
-.. cpp:function:: LEFT
+!!! cpp-function "LEFT"
 
     Element's lowest x bounds, y axis center.
 
-.. cpp:function:: RIGHT
+!!! cpp-function "RIGHT"
 
     Element's highest x bounds, y axis center.
 
-.. cpp:function:: TOP_LEFT
+!!! cpp-function "TOP_LEFT"
 
     Top left corner
 
-.. cpp:function:: TOP_RIGHT
+!!! cpp-function "TOP_RIGHT"
 
     Top right corner
 
-.. cpp:function:: BOTTOM_LEFT
+!!! cpp-function "BOTTOM_LEFT"
 
     Bottom left corner
 
-.. cpp:function:: BOTTOM_RIGHT
+!!! cpp-function "BOTTOM_RIGHT"
 
     Bottom right corner
 
-Units
-~~~~
+### Units
 
 You can calculate the position or dimensions etc. with different units. If you provide no extra unit, the game uses pixels.
 
-.. cpp:function:: %x
+!!! cpp-function "%x"
 
     x percent of the screen.
 
@@ -551,15 +537,14 @@ You can calculate the position or dimensions etc. with different units. If you p
         width   %100
         height  %100
 
-.. cpp:function:: fx
+!!! cpp-function "fx"
 
     use 100%
 
-.. cpp:function:: c+/-x
+!!! cpp-function "c+/-x"
 
     something with the screen edges not exactly sure how positions get calculated
 
-Including KeyValues
-~~~~
+### Including KeyValues
 
 To include another KeyValue file, use ``#base "filepath"`` at the top of a VDF file.

@@ -1,5 +1,4 @@
-Textures
-========
+# Textures
 
 Textures are the foundation of some RPak asset types. They cannot be used directly by
 the game, but are instead referenced by other asset types which the game can use by
@@ -19,68 +18,64 @@ following compression types:
 - BC4U
 - BC5U UNORM
 
-.. warning::
+!!! warning
 
     SRGB DDS compression types are preferred, as they can prevent the texture's colour
     from looking "washed out"
 
-Examples:
----------
+## Examples:
 
-1. Basic Texture Asset - No streaming
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+### 1. Basic Texture Asset - No streaming
 
-.. code-block:: json
+```json
 
     {
         "$type": "txtr",
         "path": "textures/models/humans/test_texture",
         "disableStreaming": true
     }
+```
 
-.. note::
+!!! note
 
     The image file in this texture asset will be called ``test_texture.dds`` and will be
     at ``<ASSETSDIR>/textures/models/humans/test_texture.dds``
 
-.. note::
+!!! note
 
     Because ``disableStreaming`` is ``true``, this texture will not be stored in a
     .starpak file, and all mip levels will be stored in the .rpak file
 
-2. Streamed Texture Asset
-~~~~~~~~~~~~~~~~~~~~~~~~~
+### 2. Streamed Texture Asset
 
-.. code-block:: json
+```json
 
     {
         "$type": "txtr",
         "path": "textures/models/humans/test_texture_2",
         "starpakPath": "test_texture_2.starpak"
     }
+```
 
-.. note::
+!!! note
 
     The image file in this texture asset will be called ``test_texture_2.dds`` and will
     be at ``<ASSETSDIR>/textures/models/humans/test_texture_2.dds``
 
-.. note::
+!!! note
 
     Because ``disableStreaming`` is not present, this texture will have it's higher
     resolution mip levels stored in ``test_texture_2.starpak``, as defined by the
     ``starpakPath``. It will not use the default ``starpakPath`` if one is defined
     outside of the ``files`` array
 
-Asset Structure:
-----------------
+## Asset Structure:
 
-``$type``
-~~~~~~~~~
+### ``$type``
 
 For an asset to be a texture asset, the ``$type`` field must be ``"txtr"``.
 
-``path``
-~~~~~~~~
+### ``path``
 
 The ``path`` field of a texture asset is used to determine the location in the RPak's
 ``assetsDir`` that the image file is in.
@@ -90,7 +85,7 @@ use it.
 
 The ``path`` field must start with ``textures/`` and must not end with a file extension.
 
-.. error::
+!!! error
 
     If RePak is unable to locate a file at the given ``path``, it will output the
     following error to the console:
@@ -98,7 +93,7 @@ The ``path`` field must start with ``textures/`` and must not end with a file ex
     ``Failed to find texture source file %s. Exiting...`` where ``%s`` is the ``path``
     field of the texture.
 
-.. error::
+!!! error
 
     If the file at the given ``path`` is not a .dds file, RePak will output the
     following error to the console:
@@ -106,7 +101,7 @@ The ``path`` field must start with ``textures/`` and must not end with a file ex
     ``Attempted to add txtr asset '%s' that was not a valid DDS file (invalid magic).``
     where ``%s`` is the ``path`` field of the texture.
 
-.. error::
+!!! error
 
     If an unsupported .dds compression type is used, RePak will output the following
     error to the console:
@@ -114,8 +109,7 @@ The ``path`` field must start with ``textures/`` and must not end with a file ex
     ``Attempted to add txtr asset '%s' that was not using a supported DDS type.
     Exiting...`` where ``%s`` is the ``path`` field of the texture.
 
-``starpakPath``
-~~~~~~~~~~~~~~~
+### ``starpakPath``
 
 The ``starpakPath`` field of a texture asset determines the path of the starpak in which
 the higher resolution mip levels should be stored.
@@ -126,14 +120,14 @@ If no ``starpakPath`` value is specified, RePak will default to using the defaul
 The ``starpakPath`` field should be a string, and importantly, should end in
 ``.starpak``.
 
-.. note::
+!!! note
 
     If the starpak name ends in ``_hotswap.starpak`` (e.g. ``my_thing_hotswap.starpak``)
     then Titanfall 2 will view it as optional. This allows the starpak to be moved,
     removed, or replaced while the game is running and streaming the texture. This can
     be useful for debugging.
 
-.. error::
+!!! error
 
     If the ``starpakPath`` is not present, and no ``starpakPath`` is defined at file
     scope, RePak will output the following error to the console.
@@ -142,8 +136,7 @@ The ``starpakPath`` field should be a string, and importantly, should end in
     available. to fix: add 'starpakPath' as an rpak-wide variable or: add 'starpakPath'
     as an asset specific variable`` where %s is the ``path`` of the texture asset
 
-``disableStreaming``
-~~~~~~~~~~~~~~~~~~~~
+### ``disableStreaming``
 
 The ``disableStreaming`` field of a texture asset determines if the texture should use a
 starpak to store the higher resolution mip levels.

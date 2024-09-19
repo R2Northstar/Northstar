@@ -1,10 +1,9 @@
-Resources
-=========
+# Resources
 
-Templates
----------
+## Templates
+
 * **NSPluginTemplate:** https://github.com/uniboi/NSPluginTemplate/
 
-Libs
-----
+## Libs
+
 * **rrplug:** https://crates.io/crates/rrplug

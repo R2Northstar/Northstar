@@ -1,5 +1,4 @@
-Entities
-========
+# Entities
 
 Entities are a primitive type that can refer to any in-game object.
 
@@ -11,16 +10,18 @@ You can not specify which entity class a variable is supposed to hold so you nee
 
 If you need to check the class of an entity at runtime you can do so with the ``instanceof`` operator.
 
-.. code-block::
+```squirrel
 
    bool function IsCPlayer( entity e )
    {
     return e instanceof CPlayer
    }
+```
 
 Entities are ``null`` initialized and there are no literals for entities.
 
-.. code-block::
+```squirrel
 
    entity e
    Assert( e == null )
+```

@@ -1,5 +1,4 @@
-Custom Damage Source IDs
-========================
+# Custom Damage Source IDs
 
 Custom damage source IDs can be used to create new damage source IDs for modded weapons, abilities, damage, etc. 
 
@@ -7,11 +6,11 @@ They can only be registered server-side and cannot modify existing damage source
 
 To add a single damage source ID, use:
 
-.. cpp:function:: void RegisterWeaponDamageSource( string weaponRef, string damageSourceName )
+!!! cpp-function "void RegisterWeaponDamageSource( string weaponRef, string damageSourceName )"
 
 To add multiple damage source IDs, use  
 
-.. cpp:function:: void RegisterWeaponDamageSources( table< string, string > newValueTable )
+!!! cpp-function "void RegisterWeaponDamageSources( table< string, string > newValueTable )"
 
 The first string parameter is the in-code weapon name while the latter is the name displayed in the obituary.
 
@@ -19,7 +18,7 @@ Damage source IDs should be added in ``"After"`` server callbacks.
 
 For example, we can call the methods from a function in ``damage_source_example.nut``:
 
-.. code:: csharp
+```csharp
 
     global function SimpleSourceInit
 
@@ -38,10 +37,11 @@ For example, we can call the methods from a function in ``damage_source_example.
             }
         )
     }
+```
 
 Then call the function as an ``"After"`` server callback in the ``mod.json``:
 
-.. code:: javascript
+```javascript
 
     {
         "Scripts": [
@@ -54,13 +54,15 @@ Then call the function as an ``"After"`` server callback in the ``mod.json``:
             },
         ]
     }
+```
 
 Now, these damage source IDs can be referenced in script like so:
 
-.. code:: csharp
+```csharp
 
     eDamageSourceId.mp_weapon_minigun
     eDamageSourceId.mp_titanweapon_barrage_core_launcher
     eDamageSourceId.mp_titanweapon_grenade_launcher
+```
 
 and their corresponding precached weapons (if applicable) will automatically use their custom damage source IDs.
