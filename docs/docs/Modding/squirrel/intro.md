@@ -1,7 +1,6 @@
-Introduction
-============
+# Introduction
 
-`Squirrel <http://squirrel-lang.org/>`_ is a high level imperative, object-oriented programming language used in Titanfall to script large amounts of content in the game.
+[Squirrel](http://squirrel-lang.org/) is a high level imperative, object-oriented programming language used in Titanfall to script large amounts of content in the game.
 
 Respawn modified large parts of the language to fit their needs, for example adding a static type compiler to the language.
 
@@ -11,7 +10,7 @@ The syntax of squirrel is very similar to C++ or Javascript and very easy to lea
 
 The programmer doesn't need to think about memory management in scripts since all objects are refcounted and the garbage collector can be invoked manually.
 
-.. code-block::
+```squirrel
 
    int function fibonacci( int n )
    {
@@ -20,10 +19,11 @@ The programmer doesn't need to think about memory management in scripts since al
 
     return fibonacci( n - 1 ) + fibonacci( n - 2 )
    }
+```
 
 The language provides easy interfaces for coroutines and asynchronous code.
 
-.. code-block::
+```squirrel
 
    void main()
    {
@@ -46,10 +46,11 @@ The language provides easy interfaces for coroutines and asynchronous code.
       callback( iterations )
     }
    }
+```
 
 Signals and Flags allow you to control code execution based on events that happen elsewhere in the code or in the ingame world.
 
-.. code-block::
+```squirrel
 
    void main()
    {
@@ -66,3 +67,4 @@ Signals and Flags allow you to control code execution based on events that happe
     player.WaitSignal( "OnDestroy" ) // wait until the player dies or disconnects
     print( Time() - time ) // print how long the player was alive
    }
+```

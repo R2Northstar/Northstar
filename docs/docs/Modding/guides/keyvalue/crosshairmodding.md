@@ -1,19 +1,16 @@
-Crosshair Modding
-==================
-
+# Crosshair Modding
 
 Example Mod: 
-`Custom.Crosshairs <https://github.com/MysteriousRSA/Custom.Crosshairs>`__
+[Custom.Crosshairs](https://github.com/MysteriousRSA/Custom.Crosshairs)
 
-How To Modify Crosshairs:
--------------------------
+## How To Modify Crosshairs:
 
 1: Create the following file
 ``~/Your.Mod/keyvalues/scripts/weapons/mp_weapon_[desired weapon].txt``
 
 2: Put the following into the newly created .txt file:
 
-::
+```
 
    WeaponData
    {   
@@ -25,11 +22,11 @@ How To Modify Crosshairs:
            }
        }
    }
+```
 
 3: change "ui/crosshair_alternator" to your desired crosshair
 
-Overlapping Crosshairs
-----------------------
+## Overlapping Crosshairs
 
 It is possible to combine crosshairs by modifying the mp_weapon_[Desired
 Weapons].txt
@@ -37,7 +34,7 @@ Weapons].txt
 **Below is an example of combining the Alternator and R201 crosshairs
 into one**
 
-::
+```
 
    WeaponData
    {
@@ -55,26 +52,25 @@ into one**
            }                                                                              
        }
    }
+```
 
 **To add more crosshairs add another Crosshair\_\ X following the
 formating in the script above.**
 
-.. note::
+!!! note
     The limit for this seems to be 4 Crosshairs onscreen at once
 
-How the script above appears:
------------------------------
+## How the script above appears:
 
-|triandaltCH|
+![triandaltCH](https://user-images.githubusercontent.com/45333346/149623038-64937ab7-bb0f-450c-ba92-97c625e715bf.png)
 
-Adjust Crosshair Spread?
-------------------------
+## Adjust Crosshair Spread?
 
-| Simply add the following line below the  "ui" line
-| ``"base_spread"               "3.0"``
-| Below the "ui" line, Like this:
+Simply add the following line below the  "ui" line
+``"base_spread"               "3.0"``
+Below the "ui" line, Like this:
 
-::
+```
 
     {   
        RUI_CrosshairData
@@ -86,13 +82,13 @@ Adjust Crosshair Spread?
            }
        }
    }
+```
 
 * This only affects the visual spread of the crosshair, not the actual bullet spread. Positive Values increase spread while negative decrease it. By default it is based on the weapon's own stats.
 
-No Crosshair?
--------------
+## No Crosshair?
 
-::
+```
 
    WeaponData
    {   
@@ -104,28 +100,26 @@ No Crosshair?
            }
        }
    }
+```
 
-Crosshair Index:
-----------------
+## Crosshair Index:
 
 These are the available crosshairs in-game, along with their in-game
 reference:
 
-|Crosshair examples|
+![Crosshair examples](https://github.com/Riccorbypro/Custom.Crosshairs/raw/main/assets/crosshairs.png)
 
 Crosshair images are taken from the modding guide on
-`https://noskill.gitbook.io/titanfall2/ <https://noskill.gitbook.io/titanfall2/>`__
+https://noskill.gitbook.io/titanfall2/
 
-Examples
---------
+## Examples
 
-|CH1| 
+![CH1](https://user-images.githubusercontent.com/45333346/149503054-45eb1fa5-5e89-4bf1-bf58-b58c1bfab94b.png)
 
-|CH2|
+![CH2](https://user-images.githubusercontent.com/45333346/149503085-154c05b8-4a76-4d03-80aa-fe67fba1bcb1.png)
 
 
-Extra Info
-^^^^^^^^^^
+### Extra Info
 
 
 * As with any mod, it is recommended to test this out in a private match first. Save any changes you made to the desired weapon's file and type ``reload`` in your console
@@ -134,11 +128,5 @@ Extra Info
 * Keep in mind that some weapons have animated or dynamic crosshairs. Weapons like the Charge Rifle, Cold War, Frag Grenade, etc... have custom animations for their crosshairs. which can cause weirdness or jank when used on other weapons or when using other crosshairs on them. 
    * Animated weapons like the Charge rifle will work with animated crosshairs like ``ui/crosshair_titan_sniper``
 
-Thank you to ``Cpone#0001`` and ``Nixie#8251`` from the `Northstar
-Discord <https://northstar.tf/discord>`__ for helping me figure this out
-
-.. |location| image:: https://user-images.githubusercontent.com/45333346/149657078-86db15a0-0ecc-4d53-9265-23d80a072cea.jpg
-.. |triandaltCH| image:: https://user-images.githubusercontent.com/45333346/149623038-64937ab7-bb0f-450c-ba92-97c625e715bf.png
-.. |Crosshair examples| image:: https://github.com/Riccorbypro/Custom.Crosshairs/raw/main/assets/crosshairs.png
-.. |CH1| image:: https://user-images.githubusercontent.com/45333346/149503054-45eb1fa5-5e89-4bf1-bf58-b58c1bfab94b.png
-.. |CH2| image:: https://user-images.githubusercontent.com/45333346/149503085-154c05b8-4a76-4d03-80aa-fe67fba1bcb1.png
+Thank you to ``Cpone#0001`` and ``Nixie#8251`` from the [Northstar
+Discord](https://northstar.tf/discord) for helping me figure this out

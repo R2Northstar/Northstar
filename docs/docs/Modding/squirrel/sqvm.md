@@ -1,2 +1,1 @@
-Squirrel VM
-===========
+# Squirrel VM

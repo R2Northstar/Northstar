@@ -1,5 +1,5 @@
-Interface API
-=============
+# Interface API
+
 the plugins system now use source interfaces.
 
 The launcher exposes almost everything required by plugins in interfaces that allow for backwards compatibility.
@@ -11,15 +11,13 @@ The launcher loads the ``PluginId`` interface from the plugin to query info such
 Plugins can use the ``CreateInterface`` function exposed by the northstarDll to use northstar interfaces such as for logging.
 An interface is just an abstract class to force all functions into a vftable.
 
-Northstar Interfaces
---------------------
+## Northstar Interfaces
 
-NSSys001
-~~~~~~~~
+### NSSys001
 
 Exposes some system functionality to plugins
 
-.. code-block::
+```cpp
 
 	// 32 bit
 	enum LogLevel {
@@ -32,16 +30,15 @@ Exposes some system functionality to plugins
 	void Log(HMODULE handle, LogLevel level, char* msg); // logs a message with the plugin's log name
 	void Unload(HMODULE handle); // unloads the plugin
 	void Reload(HMODULE handle);
+```
 
-Required Plugin Interfaces
---------------------------
+## Required Plugin Interfaces
 
 Interfaces that have to be exposed for the plugin to be loaded.
 
-PluginId001
-~~~~~~~~~~~
+### PluginId001
 
-.. code-block::
+```cpp
 
 	// strings of data about the plugin itself. may be extended in the future
 	// 32 bit
@@ -59,11 +56,11 @@ PluginId001
 
 	char* GetString(PluginString prop);
 	i64 GetField(PluginField prop);
+```
 
-PluginCallbacks001
-~~~~~~~~~~~~~~~~~~
+### PluginCallbacks001
 
-.. code-block::
+```cpp
 
 	struct PluginNorthstarData { HMODULE handle; };
 
@@ -75,15 +72,15 @@ PluginCallbacks001
 	void OnSqvmDestroying(CSquirrelVM* sqvm); // callback with the sqvm instance that's about to be destroyed (for UI, CLIENT is destroyed for some reason??)
 	void OnLibraryLoaded(HMODULE module, const char* libraryName); // called for any library loaded by the game (for example engine.dll)
 	void RunFrame(); // just runs on every frame of the game I think
+```
 
-What's an interface anyways?
-----------------------------
+## What's an interface anyways?
 
 Interfaces are just abstract classes. So make sure the first parameter is always a pointer to the instance of the interface you're using.
 
 an example what NSSys001 looks like in C:
 
-.. code-block::
+```cpp
 
 	typedef enum {
 	  LOG_INFO,
@@ -100,5 +97,6 @@ an example what NSSys001 looks like in C:
 
 	// use like this
 	g_c_sys->vftable->log(g_c_sys, g_handle, LOG_INFO, "my balls are itching");
+```
 
 Interfaces are created with CreateInterface that's exposed in another dll.

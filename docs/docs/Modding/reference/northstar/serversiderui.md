@@ -1,30 +1,27 @@
-.. _serverside-rui-doc:
+# Serverside RUI {#serverside-rui-doc}
 
-Serverside RUI
-==============
 
 Server-side Rui provides a set of functions enabling servers to display complex hud elements on clients without requiring a client-side mod. These functions were introduced in Northstar ``1.10.0``.
 
 It should be noted that there’s no guarantee the client will see the hud elements.
 
-Polls
-^^^^^
+## Polls
 
 Creates a poll on ``player``.
 
-.. figure:: /_static/serversiderui/vote.png
-  :align: center
-  :class: screenshot
-
-  Player POV
+<figure class="screenshotalign-center">
+<img src="/_static/serversiderui/vote.png" class="screenshot"
+alt="/_static/serversiderui/vote.png" />
+<figcaption>Player POV</figcaption>
+</figure>
 
 **Definition:**
 
-.. cpp:function:: void NSCreatePollOnPlayer( entity player, string header, array<string> options, float duration )
+!!! cpp-function "void NSCreatePollOnPlayer( entity player, string header, array<string> options, float duration )"
 
 **Example:**
 
-.. code-block::
+```squirrel
 
     void function CreateDummyPoll()
      {
@@ -32,152 +29,151 @@ Creates a poll on ``player``.
         foreach(entity player in GetPlayerArray())
             NSCreatePollOnPlayer(player, "Vote who's the biggest dummy!", options, 30)
       }
+```
 
-Getting Response
-----------------
+### Getting Response
 
 **Definition:**
 
-.. cpp:function:: int NSGetPlayerResponse( entity player )
+!!! cpp-function "int NSGetPlayerResponse( entity player )"
 
-Returns the index of the item from ``options`` the player voted for. If the player hadn't voted yet it returns a -1.
+    Returns the index of the item from ``options`` the player voted for. If the player hadn't voted yet it returns a -1.
 
 **Example:**
 
-.. code-block::
+```squirrel
 
     void function CheckResponseToDummyPoll(entity player)
     {
         if(NSGetPlayerResponse(player) != -1)
             print("Player has voted!")
     }
+```
 
-Large Message
-^^^^^^^^^^^^^
+## Large Message
 
 Sends a large message to ``player`` which will appear in the top right corner.
 
-.. figure:: /_static/serversiderui/largemessage.gif
-  :align: center
-  :class: screenshot
+<figure class="screenshotalign-center">
+<img src="/_static/serversiderui/largemessage.gif" class="screenshot"
+alt="/_static/serversiderui/largemessage.gif" />
+<figcaption>Player POV</figcaption>
+</figure>
 
-  Player POV
-  
 **Definition:**
 
-.. cpp:function:: void NSSendLargeMessageToPlayer( entity player, string title, string description, float duration, string image )
+!!! cpp-function "void NSSendLargeMessageToPlayer( entity player, string title, string description, float duration, string image )"
 
 **Example:**
 
-.. code-block::
+```squirrel
 
     void function SendDummyLargeMessage(entity player)
     {
         NSSendLargeMessageToPlayer(player,"I'm not a dummy >:(", "You are", 10, "ui/fd_tutorial_tip.rpak")
     }
+```
 
-Info Message
-^^^^^^^^^^^^
+## Info Message
 
 Sends a smaller message to ``player`` which will appear from the center right.
 
-.. figure:: /_static/serversiderui/info.gif
-  :align: center
-  :class: screenshot
-
-  Player POV
+<figure class="screenshotalign-center">
+<img src="/_static/serversiderui/info.gif" class="screenshot"
+alt="/_static/serversiderui/info.gif" />
+<figcaption>Player POV</figcaption>
+</figure>
 
 **Definition:**
 
-.. cpp:function:: void NSSendInfoMessageToPlayer( entity player, string text )
+!!! cpp-function "void NSSendInfoMessageToPlayer( entity player, string text )"
 
 **Example:**
 
-.. code-block::
+```squirrel
   
     void function SendDummyInfoMessage(entity player)
     {
         NSSendInfoMessageToPlayer(player, "we were sent at the same time but I was sent sooner")
     }
+```
 
-PopUp
-^^^^^
+## PopUp
 
 Send a small popup to ``player`` which will appear in the lower half of their screen under their cursor.
 
-.. figure:: /_static/serversiderui/popup.gif
-  :align: center
-  :class: screenshot
-
-  Player POV
+<figure class="screenshotalign-center">
+<img src="/_static/serversiderui/popup.gif" class="screenshot"
+alt="/_static/serversiderui/popup.gif" />
+<figcaption>Player POV</figcaption>
+</figure>
 
 **Definition:**
 
-.. cpp:function:: void function NSSendPopUpMessageToPlayer( entity player, string text )
+!!! cpp-function "void function NSSendPopUpMessageToPlayer( entity player, string text )"
 
 **Example:**
 
-.. code-block::
+```squirrel
 
     void funcions SendDummyPopUp(entity player)
     {
         NSSendPopUpMessageToPlayer(player, "very cool text I like")
     }
+```
 
-Announcement
-^^^^^^^^^^^^
+## Announcement
 
 Sends a large announcement to ``player``.
 
-.. figure:: /_static/serversiderui/announcement.gif
-  :align: center
-  :class: screenshot
-
-  Player POV
+<figure class="screenshotalign-center">
+<img src="/_static/serversiderui/announcement.gif" class="screenshot"
+alt="/_static/serversiderui/announcement.gif" />
+<figcaption>Player POV</figcaption>
+</figure>
 
 **Definition:**
 
-.. cpp:function:: void NSSendAnnouncementMessageToPlayer( entity player, string title, string description, vector color, int priority, int style )
+!!! cpp-function "void NSSendAnnouncementMessageToPlayer( entity player, string title, string description, vector color, int priority, int style )"
 
 **Example:**
 
-.. code-block::
+```squirrel
 
       void function SendDummyAnnouncement(entity player)
       {
           NSSendAnnouncementMessageToPlayer(player, "Very cool announcement", "Hi Karma", <1,1,0>, 1, ANNOUNCEMENT_STYLE_QUICK)
       }
+```
 
-Status
-^^^^^^
+## Status
 
 Status messages allow you to show live data to the player.
 Currently status messages are limited to 4 and there's no way to know if the player can see your message.
 
-.. figure:: /_static/serversiderui/status.gif
-   :align: center
-   :class: screenshot
-
-   Player POV
+<figure class="screenshotalign-center">
+<img src="/_static/serversiderui/status.gif" class="screenshot"
+alt="/_static/serversiderui/status.gif" />
+<figcaption>Player POV</figcaption>
+</figure>
 
 **Definitions:**
 
-.. cpp:function:: void  NSCreateStatusMessageOnPlayer( entity player, string title, string description, string id )
+!!! cpp-function "void  NSCreateStatusMessageOnPlayer( entity player, string title, string description, string id )"
 
-Creates a status message on ``player``. ``id`` is used to identify and edit the message, make sure your id is unique!
-To generate a unique id, use UniqueString().
+    Creates a status message on `player`. `id` is used to identify and edit the message, make sure your id is unique! To generate a unique id, use UniqueString().
 
-.. cpp:function:: void  NSEditStatusMessageOnPlayer( entity player, string title, string description, string id  )
+!!! cpp-function "void  NSEditStatusMessageOnPlayer( entity player, string title, string description, string id  )"
 
-Allows for editing of the ``title`` and ``description`` of a message which was created using ``id``.
+    Allows for editing of the `title` and `description` of a message which was created using `id`.
 
-.. cpp:function:: void  NSDeleteStatusMessageOnPlayer( entity player, string id  )
+!!! cpp-function "void  NSDeleteStatusMessageOnPlayer( entity player, string id  )"
 
-Deletes the status message which was created with ``id``
+    Deletes the status message which was created with `id`
 
 **Examples:**
 
-.. code-block::
+```squirrel
   
     void function TestStatusMessage_Threaded(entity player)
     {
@@ -188,3 +184,4 @@ Deletes the status message which was created with ``id``
         wait 10
         NSDeleteStatusMessageOnPlayer(player, id)    
     }
+```
