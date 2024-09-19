@@ -32,7 +32,7 @@ The Squirrel API offers several functions to push and retrieve data from the Sta
 
     !!! note
 
-        This function (``server.dll+0x7000```) is not available in the launcher or plugins at the moment.
+        This function (`server.dll+0x7000```) is not available in the launcher or plugins at the moment.
 
         You can open a PR if you need it now.
 

@@ -4,9 +4,9 @@ Creating a gamemode is **significantly** more complex than making mutators. The 
 
 For example, the client localisation, the way the gamemode is defined (FFA, TDM, etc), the scoring system, respawn system (FFA or TDM spawnpoints) and team mechanics must all be considered.
 
-## The ``mod.json``
+## The `mod.json`
 
-The ``mod.json`` is responsible for governing when, and where your mod is loaded, and follows a layout that is fairly complicated at first glance.
+The `mod.json` is responsible for governing when, and where your mod is loaded, and follows a layout that is fairly complicated at first glance.
 However, once you get the hang of it, it should be fairly easy to use.
 
 ```json
@@ -46,11 +46,11 @@ The script above defines the pubic and listed details of the mod.
 
 The script above defines both what functions to run, when to run them and WHERE to run them, 
 
-The first one being ``_gamemode_simplerandomiser.nut`` runs the server scripts, which handles the portion of everything related to the player, such as taking their weapons and replacing it with a different one.
+The first one being `_gamemode_simplerandomiser.nut` runs the server scripts, which handles the portion of everything related to the player, such as taking their weapons and replacing it with a different one.
 
-Second one being ``cl_gamemode_simplerandomiser.nut`` is where the client scripts run to perform stuff locally on the player's game, such as playing music, receiving announcement texts from the server and so on.
+Second one being `cl_gamemode_simplerandomiser.nut` is where the client scripts run to perform stuff locally on the player's game, such as playing music, receiving announcement texts from the server and so on.
 
-Lastly, ``sh_gamemode_simplerandomiser.nut`` is a shared script between server and client, in this case it runs your ``simplerandomiser_init`` in order to assign many variables for the server and client to "know" about this gamemode. 
+Lastly, `sh_gamemode_simplerandomiser.nut` is a shared script between server and client, in this case it runs your `simplerandomiser_init` in order to assign many variables for the server and client to "know" about this gamemode. 
 
 For example, both server and client needs to know whether if this gamemode exists in the private match settings, the scoring HUD and system, the spawnpoints configuration and many more.
 
@@ -66,7 +66,7 @@ For example, both server and client needs to know whether if this gamemode exist
 
 This defines the path to the language file, and its main use is to localize strings such as the announcement texts, gamemode and so on.
 
-Name this file ``mod.json``, and it should go in the mods root folder, that being /yourmodname.
+Name this file `mod.json`, and it should go in the mods root folder, that being /yourmodname.
 
 Here's what the end result would look like:
 
@@ -105,7 +105,7 @@ Here's what the end result would look like:
 
 ## Language file
 
-This follows a fairly simple template, the only thing of note is that you often get strange behaviour using ``UTF-8`` when saving the file instead of using ``UTF-16 LE``.
+This follows a fairly simple template, the only thing of note is that you often get strange behaviour using `UTF-8` when saving the file instead of using `UTF-16 LE`.
 
 
 ``` 
@@ -120,11 +120,11 @@ This follows a fairly simple template, the only thing of note is that you often 
     }
 ```
 
-Name this file ``simplerandomiser_localisation_english.txt`` and place it in the ``yourmodsname/mod/resource/`` folder.
+Name this file `simplerandomiser_localisation_english.txt` and place it in the `yourmodsname/mod/resource/` folder.
 
 ## Shared functions
 
-Let's begin the process by first creating the file ``sh_gamemode_simplerandomiser.nut`` and making the core components of the gamemode, which is to define the gamemode properties.
+Let's begin the process by first creating the file `sh_gamemode_simplerandomiser.nut` and making the core components of the gamemode, which is to define the gamemode properties.
 
 ```squirrel
 
@@ -195,11 +195,11 @@ The comments should hopefully explain what most of everything does, but just to 
 - we set the default scoring method, what spawnpoint algorithm to use, as well as the scoreboard size.
 - we defined server callbacks, which we will use later on in the server scripts portion of this gamemode.
 
-Now that we're done, name this file ``sh_gamemode_simplerandomiser.nut`` and place it in the ``yourmodsname/mod/scripts/vscripts/gamemodes`` folder.
+Now that we're done, name this file `sh_gamemode_simplerandomiser.nut` and place it in the `yourmodsname/mod/scripts/vscripts/gamemodes` folder.
 
 ## Server-side function
 
-Now that we're down with defining the gamemode, its time to focus on the component on that makes the gamemode function in-game. For this, it will be mostly handled by the server scripts, so head into ``_gamemode_simplerandomiser.nut`` to begin writing the randomizing script.
+Now that we're down with defining the gamemode, its time to focus on the component on that makes the gamemode function in-game. For this, it will be mostly handled by the server scripts, so head into `_gamemode_simplerandomiser.nut` to begin writing the randomizing script.
 
 ```squirrel
     
@@ -215,7 +215,7 @@ Now that we're down with defining the gamemode, its time to focus on the compone
     }
 ```
 
-As you may have noticed, checking if it is a server is a special case, so we use ``#if SERVER`` and ``#endif`` instead of the usual ``if(thing){stuff}``
+As you may have noticed, checking if it is a server is a special case, so we use `#if SERVER` and `#endif` instead of the usual `if(thing){stuff}`
 
 Now that our initial function is created, we now have the game triggering `GiveRandomGun` when a player spawns, but we don't have any such function, so let's begin creating one. 
 
@@ -230,11 +230,11 @@ For this we define an array:
                                   "mp_weapon_dmr"]
 ```
     
-Here we have defined an array with only 4 weapons in it, you can make this list however you like but remember to separate all but the last item with a ``,``
+Here we have defined an array with only 4 weapons in it, you can make this list however you like but remember to separate all but the last item with a `,`
 
 ### Randomise function
 
-As we already know its going to call the function ``GiveRandomGun`` when a player respawns, let's define that now.
+As we already know its going to call the function `GiveRandomGun` when a player respawns, let's define that now.
 First we strip any existing weapons:
 
 ```squirrel
@@ -254,7 +254,7 @@ Then lets give them a new, random weapon by selecting a random item from our pre
     player.GiveWeapon( pilotWeapons[ RandomInt( pilotWeapons.len() ) ] )
 ```
 
-Now, remember the server callback that we defined earlier in ``sh_gamemode_simplerandomiser.nut``? Let's put that to use.
+Now, remember the server callback that we defined earlier in `sh_gamemode_simplerandomiser.nut`? Let's put that to use.
 We are going to make it so the player receives an announcement whenever they have their weapons randomized.
 
 ```squirrel
@@ -297,11 +297,11 @@ Overall, the server script should look like this.
     }
 ```
 
-Name this file ``_gamemode_simplerandomiser.nut`` and place it in the ``yourmodsname/mod/scripts/vscripts/gamemodes`` folder as well.
+Name this file `_gamemode_simplerandomiser.nut` and place it in the `yourmodsname/mod/scripts/vscripts/gamemodes` folder as well.
 Make sure to double check that all spellings are correct in your mod as everything is case-sensitive.
 
 ## Client-side functions
-Lastly, for your ``cl_gamemode_simplerandomiser.nut``, we are going to utilize the callback functions from earlier, as well as add some music to play during the gamemode.
+Lastly, for your `cl_gamemode_simplerandomiser.nut`, we are going to utilize the callback functions from earlier, as well as add some music to play during the gamemode.
 
 ```squirrel
     
@@ -353,7 +353,7 @@ Also, it also displays an announcement towards the player when they have their w
 
 Technically, yes, you could. But it wouldn't look pretty. Remember all those strings with the # symbol in front of them? We have to localize them first so it displays correctly.
 
-Hence, open your ``simplerandomiser_localisation_english.txt`` which is located in the ``yourmodsname/mod/resource/`` folder.
+Hence, open your `simplerandomiser_localisation_english.txt` which is located in the `yourmodsname/mod/resource/` folder.
 
 ```json
 
@@ -380,11 +380,11 @@ Alright, we're finally done! However, there's just one thing missing, which is t
 
 ## Maps
 
-We will need to create a file called ``playlists_v2.txt`` and place it in ``yourmodsname/keyvalues`` folder.
+We will need to create a file called `playlists_v2.txt` and place it in `yourmodsname/keyvalues` folder.
 
-Yes, you will need to create a folder called ``keyvalues`` which is separate from the ``mod`` folder that we placed all our scripts and localization inside.
+Yes, you will need to create a folder called `keyvalues` which is separate from the `mod` folder that we placed all our scripts and localization inside.
 
-Next, inside this ``playlists_v2.txt``, we will need to allow/disallow what maps can the gamemode be played on.
+Next, inside this `playlists_v2.txt`, we will need to allow/disallow what maps can the gamemode be played on.
 
 ```text
 
@@ -463,9 +463,9 @@ Next, inside this ``playlists_v2.txt``, we will need to allow/disallow what maps
     }
 ```
 
-There isn't much to say here except that we enabled this gamemode to played on all maps. So if this gamemode is set to auto-rotate maps in a server, it will go from one map to the next in order. You could disable certain maps by changing the ``1`` to a ``0``.
+There isn't much to say here except that we enabled this gamemode to played on all maps. So if this gamemode is set to auto-rotate maps in a server, it will go from one map to the next in order. You could disable certain maps by changing the `1` to a `0`.
 
-Another thing to note is that under the ``Playlists`` tab, there is an ``image`` slot. You could change the image that displays when selecting a gamemode in the private match lobby. You can find out what the keyvalues for the other images by checking out other gamemodes in ``Northstar.Custom/keyvalues/playlists_v2.txt``.
+Another thing to note is that under the `Playlists` tab, there is an `image` slot. You could change the image that displays when selecting a gamemode in the private match lobby. You can find out what the keyvalues for the other images by checking out other gamemodes in `Northstar.Custom/keyvalues/playlists_v2.txt`.
 
 ## Closing words
 
@@ -473,4 +473,4 @@ And that should be all you need in order to create a gamemode. Thanks for readin
 
 If you ever have a question or two, feel free to head into the Northstar Discord and ask about in #modding-chat.
 
-- Revised by ``x3Karma#6984``
+- Revised by `x3Karma#6984`

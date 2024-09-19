@@ -1,6 +1,6 @@
 # Entities
 
-There are different Classes for Server and Client. Classes that start with ``C_`` are exclusive to the Client VM and classes that only have the ``C`` Prefix are only usable in the Server VM.
+There are different Classes for Server and Client. Classes that start with `C_` are exclusive to the Client VM and classes that only have the `C` Prefix are only usable in the Server VM.
 
 Most entries have three sub entries: The class available to the SERVER, the CLIENT and methods that are available on both VMs.
 
@@ -8,7 +8,7 @@ For a graphic reprasentation of the Server and Client class inheritance, refer t
 
 !!! note
 
-    Pay attention to the ``extends`` keyword for each class! You can use every property of that the parent class has access to!
+    Pay attention to the `extends` keyword for each class! You can use every property of that the parent class has access to!
 
     This List of Classes and their Methods is incomplete!
 
@@ -57,7 +57,7 @@ Basic entity that most other entities inherit from.
 
     !!! cpp-function "void AddOutput( string outputName, string | entity target, string inputName, string parameter = "", float delay = 0, float maxFires = 0 )"
 
-        Connects an output on this entity to an input on another entity via code.  The ``target`` can be a name or a named entity.
+        Connects an output on this entity to an input on another entity via code.  The `target` can be a name or a named entity.
 
     !!! cpp-function "vector GetOrigin()"
 
@@ -73,7 +73,7 @@ Basic entity that most other entities inherit from.
 
     !!! cpp-function "entity GetOwner()"
 
-        Returns the owner of this entity. Set the owner with ``SetOwner``
+        Returns the owner of this entity. Set the owner with `SetOwner`
 
     !!! cpp-function "entity GetBossPlayer()"
 
@@ -85,40 +85,40 @@ Basic entity that most other entities inherit from.
 
     !!! cpp-function "bool IsNPC()"
 
-        Returns ``true`` if this entity is an NPC
+        Returns `true` if this entity is an NPC
 
     !!! cpp-function "bool IsTitan()"
 
-        Returns ``true`` if this entity is a Titan
+        Returns `true` if this entity is a Titan
 
     !!! cpp-function "bool IsHuman()"
 
         Returns true if this entity is a gameplay-wise a human.
 
-        For example, returns ``true`` if the entity is a grunt but ``false`` if the entity is a Titan or spectre etc.
+        For example, returns `true` if the entity is a grunt but `false` if the entity is a Titan or spectre etc.
 
         However, players will always be Human, even when they are spectating or their playermodel is robotic (for example when playing as stim)
 
     !!! cpp-function "bool IsMechanical()"
 
-        Returns ``true`` if this entity is mechanical. Examples are Titans and spectres
+        Returns `true` if this entity is mechanical. Examples are Titans and spectres
 
         !!! note
 
-            This returns ``true`` for players that are playing mechanical classes
+            This returns `true` for players that are playing mechanical classes
 
 
     !!! cpp-function "bool IsPhaseShifted()"
 
-        Returns ``true`` if this entity is currently phase shifting
+        Returns `true` if this entity is currently phase shifting
 
     !!! cpp-function "bool IsPlayer()"
 
-        Returns ``true`` if this entity is a player
+        Returns `true` if this entity is a player
 
     !!! cpp-function "bool IsProjectile()"
 
-        Returns ``true`` if this entity is a projectile
+        Returns `true` if this entity is a projectile
 
     !!! cpp-function "asset GetModelName()"
 
@@ -142,13 +142,13 @@ Basic entity that most other entities inherit from.
 
     !!! cpp-function "void SetValueForEffectNameKey( asset effect )"
 
-        Similar to ``SetValueForModelKey`` but for FX.
+        Similar to `SetValueForModelKey` but for FX.
 
     !!! cpp-function "table CreateTableFromModelKeyValues()"
 
     !!! cpp-function "int GetArmorType()"
 
-        Returns ``0`` for light armor and ``1`` for heavy armor
+        Returns `0` for light armor and `1` for heavy armor
 
         Titans use heavy armor while pilots and similar use light armor
 
@@ -170,7 +170,7 @@ Basic entity that most other entities inherit from.
 
     !!! cpp-function "bool HasGibModel()"
 
-        Returns ``true`` if this entity has gib models
+        Returns `true` if this entity has gib models
 
     !!! cpp-function "bool HasKey( string key )"
 
@@ -198,13 +198,13 @@ Basic entity that most other entities inherit from.
 
     !!! cpp-function "var Get( string key )"
 
-        The same as ``GetValueForKey``
+        The same as `GetValueForKey`
 
     !!! cpp-function "void SetValueForKey( var key, var val )"
 
     !!! cpp-function "var Set( string key )"
 
-        The same as ``SetValueForKey``
+        The same as `SetValueForKey`
 
     !!! cpp-function "vector GetVelocity()"
 
@@ -220,7 +220,7 @@ Basic entity that most other entities inherit from.
 
     !!! cpp-function "bool IsInvulnerable()"
 
-        returns ``true`` if this entity is invulnerable
+        returns `true` if this entity is invulnerable
 
     !!! cpp-function "vector GetWorldSpaceCenter()"
 
@@ -288,17 +288,17 @@ Basic entity that most other entities inherit from.
 
     !!! cpp-function "bool IsCloaked()"
 
-        Returns ``true`` if this entity is cloaked
+        Returns `true` if this entity is cloaked
 
     !!! cpp-function "bool IsEntAlive()"
 
-        Returns ``true`` if this entity is alive
+        Returns `true` if this entity is alive
 
     !!! cpp-function "bool IsValidInternal()"
 
-        Returns ``true`` if this entity is Valid.
+        Returns `true` if this entity is Valid.
 
-        ``IsValid( ent )`` is a good alternative
+        `IsValid( ent )` is a good alternative
 
     !!! cpp-function "vector GetForwardVector()"
 
@@ -318,7 +318,7 @@ Basic entity that most other entities inherit from.
         
         Returns a new instance of a class.
         
-        You can invoke the constructor with brackets as well, for example like this: ``CBaseEntity()``
+        You can invoke the constructor with brackets as well, for example like this: `CBaseEntity()`
 
     !!! cpp-function "void SetDoDestroyCallback( bool doCallBack )"
 
@@ -334,15 +334,15 @@ Basic entity that most other entities inherit from.
 
     !!! cpp-function "bool GetCritsPrevented()"
 
-        Returns ``true`` if this entity can't be critted.
+        Returns `true` if this entity can't be critted.
 
     !!! cpp-function "bool IsHologram()"
 
-        Returns ``true`` if this entity is a hologram
+        Returns `true` if this entity is a hologram
 
     !!! cpp-function "bool IsOnGround()"
 
-        Returns ``true`` if this entity is touching the ground
+        Returns `true` if this entity is touching the ground
 
     !!! cpp-function "void SetModel( asset model )"
 
@@ -360,17 +360,17 @@ Basic entity that most other entities inherit from.
 
     !!! cpp-function "bool IsBreakableGlass()"
 
-        Returns ``true`` if this entity is breakable glass
+        Returns `true` if this entity is breakable glass
 
     !!! cpp-function "bool IsWorld()"
 
-        Returns ``true```if this entity is the gameworld
+        Returns `true```if this entity is the gameworld
 
     !!! cpp-function "void DispatchImpactEffects( entity ent, vector startPos, vector endPos, vector hitNormal, entity prop, int propIndex, int damageType, int impactIndex, entity orig, int impactEffectFlags )"
 
     !!! cpp-function "void IsPlayerDecoy()"
 
-        Returns ``true`` if this entity is a decoy
+        Returns `true` if this entity is a decoy
 
     !!! cpp-function "void SetPassThroughDirection( float dir )"
 
@@ -378,7 +378,7 @@ Basic entity that most other entities inherit from.
 
     !!! cpp-function "void SetTakeDamageType( int takeDamageType )"
 
-        ``DAMAGE_NO``, ``DAMAGE_YES``, ``DAMAGE_EVENTS_ONLY``
+        `DAMAGE_NO`, `DAMAGE_YES`, `DAMAGE_EVENTS_ONLY`
 
     !!! cpp-function "void SetPreventCrits( bool prevent )"
 
@@ -452,11 +452,11 @@ Basic entity that most other entities inherit from.
 
     !!! cpp-function "bool NotSolid()"
 
-        Returns ``false`` if this entity is solid
+        Returns `false` if this entity is solid
 
     !!! cpp-function "void MoveTo( vector pos, float moveTime, float easeIn = 0, float easeOut = 0 )"
 
-        Moves this entity to ``pos`` over the duration of ``moveTime`` with ease in and ease out
+        Moves this entity to `pos` over the duration of `moveTime` with ease in and ease out
 
         !!! note
 
@@ -618,7 +618,7 @@ Basic entity that most other entities inherit from.
 
         the function must be called (or the entity deleted) at some point to avoid leaking the new slot we make in this Table.
 
-        compile with output with ``compilestring``
+        compile with output with `compilestring`
 
 ### C_BaseEntity
 
@@ -696,7 +696,7 @@ Basic entity that most other entities inherit from.
 
     !!! cpp-function "bool IsHUDVisible()"
 
-        Return ``true`` if HUD is shown on this entity
+        Return `true` if HUD is shown on this entity
 
 ## CDynamicProp / C_DynamicProp
 
@@ -771,7 +771,7 @@ Weapons hold by a player or that are lying on the ground are of this type.
 
     !!! cpp-function "bool GetAllowHeadShots()"
 
-        Returns ``true`` if this weapon can deal crits
+        Returns `true` if this weapon can deal crits
 
     !!! cpp-function "float GetMaxDamageFarDist()"
 
@@ -807,7 +807,7 @@ Weapons hold by a player or that are lying on the ground are of this type.
 
     !!! cpp-function "bool IsChargeWeapon()"
 
-        Returns ``true`` if this weapon is a charge weapon
+        Returns `true` if this weapon is a charge weapon
 
     !!! cpp-function "void SetNextAttackAllowedTime( float time )"
 
@@ -833,7 +833,7 @@ Weapons hold by a player or that are lying on the ground are of this type.
 
     !!! cpp-function "bool IsWeaponOffhand()"
 
-        Returns ``true`` if this weapon is equipped as a offhand weapon
+        Returns `true` if this weapon is equipped as a offhand weapon
 
     !!! cpp-function "float GetWeaponChargeFraction()"
 
@@ -845,7 +845,7 @@ Weapons hold by a player or that are lying on the ground are of this type.
 
     !!! cpp-function "bool HasMod( string mod )"
 
-        Check if the array of mods for this weapon contains ``mod``
+        Check if the array of mods for this weapon contains `mod`
 
     !!! cpp-function "int GetWeaponCurrentEnergyCost()"
 
@@ -895,7 +895,7 @@ Weapons hold by a player or that are lying on the ground are of this type.
 
     !!! cpp-function "bool ShouldPredictProjectiles()"
 
-        Returns ``true`` if clients should be predicting the projectiles fired from this weapon.
+        Returns `true` if clients should be predicting the projectiles fired from this weapon.
 
     !!! cpp-function "float GetScriptTime0()"
 
@@ -903,11 +903,11 @@ Weapons hold by a player or that are lying on the ground are of this type.
 
     !!! cpp-function "void SetScriptTime0( float gameTime )"
 
-        ``gameTime`` needs to be game time. The current game time can be retrieved with ``Time()``
+        `gameTime` needs to be game time. The current game time can be retrieved with `Time()`
 
     !!! cpp-function "bool IsReloading()"
 
-        Returns ``true`` if this weapon is currently being reloaded.
+        Returns `true` if this weapon is currently being reloaded.
 
     !!! cpp-function "void SetForcedADS()"
 
@@ -989,7 +989,7 @@ Weapons hold by a player or that are lying on the ground are of this type.
 
     !!! cpp-function "bool IsWeaponInAds()"
 
-        Returns ``true`` if this weapon is in ADS.
+        Returns `true` if this weapon is in ADS.
 
     !!! cpp-function "void ResetWeaponToDefaultEnergyCost()"
 
@@ -1005,13 +1005,13 @@ Weapons hold by a player or that are lying on the ground are of this type.
 
     !!! cpp-function "bool IsWeaponAdsButtonPressed()"
 
-        Returns ``true`` while the ADS button is pressed.
+        Returns `true` while the ADS button is pressed.
 
     !!! cpp-function "float GetWeaponChargeLevelMax()"
 
     !!! cpp-function "bool IsReadyToFire()"
 
-        Returns ``true`` if the weapon can be fired.
+        Returns `true` if the weapon can be fired.
 
     !!! cpp-function "void SetAttackKickRollScale(float scale)"
 
@@ -1029,7 +1029,7 @@ Weapons hold by a player or that are lying on the ground are of this type.
 
     !!! cpp-function "string GetSmartAmmoWeaponType()"
 
-        Check if weaponType is valid: ``Assert( weaponType in VALID_WEAPON_TYPES )``
+        Check if weaponType is valid: `Assert( weaponType in VALID_WEAPON_TYPES )`
 
     !!! cpp-function "int GetWeaponBurstFireCount()"
 
@@ -1075,11 +1075,11 @@ Weapons hold by a player or that are lying on the ground are of this type.
 
     !!! cpp-function "void ForceReleaseFromServer()"
 
-        Will eventually result in ``Grenade_OnWeaponToss_()`` or equivalent function
+        Will eventually result in `Grenade_OnWeaponToss_()` or equivalent function
 
     !!! cpp-function "bool IsForceReleaseFromServer()"
 
-        returns ``true`` if this weapon has been forced to be released
+        returns `true` if this weapon has been forced to be released
 
 ### C_WeaponX
 
@@ -1091,7 +1091,7 @@ Weapons hold by a player or that are lying on the ground are of this type.
 
     !!! cpp-function "void SetViewmodelAmmoModelIndex( int index )"
 
-        ``index`` may be the number of rounds in the clip etc.
+        `index` may be the number of rounds in the clip etc.
 
 ## CProjectile / C_Projectile
 
@@ -1183,7 +1183,7 @@ Grenade entities in worldspace. Grenades that are equipped ("cooked") by players
 
     !!! cpp-function "bool GrenadeHasIgnited()"
 
-        Returns ``true`` if this grenade has already been ignited
+        Returns `true` if this grenade has already been ignited
 
     !!! cpp-function "void GrenadeIgnite()"
 
@@ -1231,7 +1231,7 @@ Grenade entities in worldspace. Grenades that are equipped ("cooked") by players
 
     !!! cpp-function "void InitMissileSpiral( vector pos, vector dir, int missileNumber, bool unknown_purpose1, bool unknown_purpose2 )"
 
-        If both ``slowAndExpand`` and ``consistentSpacing`` are true, missiles fly faster instead of normal ``slowAndExpand`` behavior.
+        If both `slowAndExpand` and `consistentSpacing` are true, missiles fly faster instead of normal `slowAndExpand` behavior.
 
     !!! cpp-function "void SetSpeed( float speed )"
 
@@ -1277,7 +1277,7 @@ Grenade entities in worldspace. Grenades that are equipped ("cooked") by players
 
     !!! cpp-function "bool Lunge_IsActive()"
 
-        Returns ``true`` if the player is currently lunging to a melee victim.
+        Returns `true` if the player is currently lunging to a melee victim.
 
     !!! cpp-function "bool GetForcedDialogueOnly()"
 
@@ -1329,7 +1329,7 @@ Grenade entities in worldspace. Grenades that are equipped ("cooked") by players
 
     !!! cpp-function "int Code_GetActiveBurnCardIndex()"
 
-        Use ``GetActiveBurnCardIndex`` instead
+        Use `GetActiveBurnCardIndex` instead
 
     !!! cpp-function "string GetPlayerSettingsField( string field )"
 
@@ -1369,7 +1369,7 @@ Grenade entities in worldspace. Grenades that are equipped ("cooked") by players
 
     !!! cpp-function "bool IsWallHanging()"
 
-        Returns ``true`` if the player is wall hanging.
+        Returns `true` if the player is wall hanging.
 
     !!! cpp-function "float GetNextTitanRespawnAvailable()"
 
@@ -1393,21 +1393,21 @@ Grenade entities in worldspace. Grenades that are equipped ("cooked") by players
 
     !!! cpp-function "bool IsCrouched()"
 
-        Returns ``true`` if the player is crouching.
+        Returns `true` if the player is crouching.
 
     !!! cpp-function "bool IsStanding()"
 
-        Returns ``true`` if the player is standing
+        Returns `true` if the player is standing
 
     !!! cpp-function "void IsTraversing()"
 
     !!! cpp-function "void IsWallRunning()"
 
-        Returns ``true`` if the player is wallrunning.
+        Returns `true` if the player is wallrunning.
 
     !!! cpp-function "bool IsZiplining()"
 
-        Returns ``true`` if the player is currently attached to a zipline
+        Returns `true` if the player is currently attached to a zipline
 
     !!! cpp-function "vector Lunge_GetStartPositionOffset()"
 
@@ -1493,11 +1493,11 @@ Grenade entities in worldspace. Grenades that are equipped ("cooked") by players
 
     !!! cpp-function "void HolsterWeapon()"
 
-        Holsters this weapon. The player can't use it until it's deployed again with ``DeployWeapon``
+        Holsters this weapon. The player can't use it until it's deployed again with `DeployWeapon`
 
     !!! cpp-function "void DeployWeapon()"
 
-        May not work with ``DeployAndEnableWeapons()`` and ``HolsterAndDisableWeapons()``
+        May not work with `DeployAndEnableWeapons()` and `HolsterAndDisableWeapons()`
 
     !!! cpp-function "float GetZoomFrac()"
 
@@ -1550,7 +1550,7 @@ Grenade entities in worldspace. Grenades that are equipped ("cooked") by players
 
     !!! cpp-function "entity CreateAnimatedPlayerDecoy( string decoyType )"
 
-        Decoy Types: ``pt_mp_execution_attacker_hologram_01``, ``pt_mp_execution_attacker_hologram_02``, ``pt_mp_execution_attacker_hologram_03``
+        Decoy Types: `pt_mp_execution_attacker_hologram_01`, `pt_mp_execution_attacker_hologram_02`, `pt_mp_execution_attacker_hologram_03`
 
     !!! cpp-function "void StopObserverMode()"
 
@@ -1574,7 +1574,7 @@ Grenade entities in worldspace. Grenades that are equipped ("cooked") by players
 
     !!! cpp-function "bool IsNoclipping()"
 
-        Returns ``true`` if noclip is enabled.
+        Returns `true` if noclip is enabled.
 
     !!! cpp-function "void SetCinematicEventFlags( int flag )"
 
@@ -1618,7 +1618,7 @@ Grenade entities in worldspace. Grenades that are equipped ("cooked") by players
 
     !!! cpp-function "void ClientCommand( string command )"
 
-        Executes a command on the player's client. For a server to execute a console command on a client, the client has to launch the game with the ``norestrictservercommands`` launch argument for security reasons.
+        Executes a command on the player's client. For a server to execute a console command on a client, the client has to launch the game with the `norestrictservercommands` launch argument for security reasons.
 
 
     !!! cpp-function "entity GetCockpit()"
@@ -1687,13 +1687,13 @@ Grenade entities in worldspace. Grenades that are equipped ("cooked") by players
 
     !!! cpp-function "bool IsDoomed()"
 
-        Returns ``true`` if this soul is in doomed state
+        Returns `true` if this soul is in doomed state
 
     !!! cpp-function "float GetTitanSoulNetFloat( string key )"
 
     !!! cpp-function "entity GetInvalidHealthBarEnt()"
 
-        Returns an instance of ``CNPC_Titan``
+        Returns an instance of `CNPC_Titan`
 
     !!! cpp-function "int GetTitanSoulNetInt( string key )"
 
@@ -1911,7 +1911,7 @@ Grenade entities in worldspace. Grenades that are equipped ("cooked") by players
 
     !!! cpp-function "int GetAIClass()"
 
-        ``AIC_SMALL_TURRET``, ``AIC_MARVIN``, ``AIC_SPECTRE``, ``AIC_STALKER_CRAWLING``, ``AIC_FRAG_DRONE``, ``AIC_HUMAN``
+        `AIC_SMALL_TURRET`, `AIC_MARVIN`, `AIC_SPECTRE`, `AIC_STALKER_CRAWLING`, `AIC_FRAG_DRONE`, `AIC_HUMAN`
 
     !!! cpp-function "string GetBodyType()"
 
@@ -1937,7 +1937,7 @@ Grenade entities in worldspace. Grenades that are equipped ("cooked") by players
 
     !!! cpp-function "void DisableBehavior( string behaviour )"
 
-        Possible behaviours: ``Follow``, ``Assault``
+        Possible behaviours: `Follow`, `Assault`
 
     !!! cpp-function "void SetThinkEveryFrame( bool think )"
 
@@ -1983,7 +1983,7 @@ Grenade entities in worldspace. Grenades that are equipped ("cooked") by players
 
     !!! cpp-function "bool CanSee( entity ent )"
 
-        Returns ``true`` if the npc can see the ``ent``.
+        Returns `true` if the npc can see the `ent`.
 
     !!! cpp-function "bool IsCrouching()"
 
@@ -2007,7 +2007,7 @@ Grenade entities in worldspace. Grenades that are equipped ("cooked") by players
 
     !!! cpp-function "bool HasXRaySupport()"
 
-        Returns if ``this.supportsXRay`` not null.
+        Returns if `this.supportsXRay` not null.
 
     !!! cpp-function "void ForceCombat()"
         
@@ -2061,7 +2061,7 @@ Grenade entities in worldspace. Grenades that are equipped ("cooked") by players
 
     !!! cpp-function "void SetAttackMode( bool attack )"
 
-        Set to ``false`` to not attack enemies.
+        Set to `false` to not attack enemies.
 
 CNPC_SentryTurret / C_NPC_SentryTurret
 
@@ -2211,7 +2211,7 @@ CNPC_SentryTurret / C_NPC_SentryTurret
 
     !!! cpp-function "void Decoy_Dissolve()"
 
-        Dissolve this decoy. You might want to clear decoy fx with ``CleanupFXAndSoundsForDecoy( entity decoy )`` afterwards. 
+        Dissolve this decoy. You might want to clear decoy fx with `CleanupFXAndSoundsForDecoy( entity decoy )` afterwards. 
 
     !!! cpp-function "void SetTimeout( float duration )"
 
@@ -2253,7 +2253,7 @@ CNPC_SentryTurret / C_NPC_SentryTurret
 
         Returns the total time of time spent in this cockpit.
         
-        Cockpit booting takes 1.3 seconds, so anything less than 1.3 seconds is still playing the booting animation. You can use ``TitanCockpit_IsBooting( entity cockpit )`` to determine this state.
+        Cockpit booting takes 1.3 seconds, so anything less than 1.3 seconds is still playing the booting animation. You can use `TitanCockpit_IsBooting( entity cockpit )` to determine this state.
 
     !!! cpp-function "void SetOpenViewmodelOffset( float x, float y, float z )"
 

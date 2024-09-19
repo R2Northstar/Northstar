@@ -44,16 +44,16 @@ After a player receives damage it is stored by the game in an array of the follo
     
     !!! cpp-var "bool victimIsTitan"
     
-        ``true`` if the victim died in the Titan
+        `true` if the victim died in the Titan
     
     !!! cpp-var "bool rodeoDamage"
 
-        ``true`` if the damage was inflicted in rodeo mode
+        `true` if the damage was inflicted in rodeo mode
 
 
 ### Getting the info from the entity
 
-You can get the damage history for any player entity with ``player.e.recentDamageHistory``, this is of the type ``array<DamageHistoryStruct>`` and gets automatically updated by the game. The higher the index the older the ``DamageHistoryStruct`` is ( so to get the most recent struct you do ``player.e.recentDamageHistory[ 0 ]`` ).
+You can get the damage history for any player entity with `player.e.recentDamageHistory`, this is of the type `array<DamageHistoryStruct>` and gets automatically updated by the game. The higher the index the older the `DamageHistoryStruct` is ( so to get the most recent struct you do `player.e.recentDamageHistory[ 0 ]` ).
 
 ### Getter functions
 
@@ -63,7 +63,7 @@ You can get the damage history for any player entity with ``player.e.recentDamag
 
     - `float time` How old the damage history can be in seconds.
 
-    - Returns: All ``DamageHistoryStruct`` found in the given time frame.
+    - Returns: All `DamageHistoryStruct` found in the given time frame.
 
 ### Setter functions
 
@@ -71,7 +71,7 @@ You can get the damage history for any player entity with ``player.e.recentDamag
 
 !!! cpp-function "void function UpdateDamageHistory( entity player, float maxTime, float time )"
 
-    Removes all ``DamageHistoryStruct`` in the time frame ``time - maxTime``
+    Removes all `DamageHistoryStruct` in the time frame `time - maxTime`
 
     - `entity player` The player you want to update the damage history from.
 

@@ -17,7 +17,7 @@ All the data in the struct that can be changed.
          The headline of the dialog
     !!! cpp-var "string message"
 
-         The body of text under the headline, it supports newline with ``\n``
+         The body of text under the headline, it supports newline with `\n`
     !!! cpp-var "DialogMessageRuiData &ruiMessage"
 
          Stores relevant RUI data
@@ -44,7 +44,7 @@ All the data in the struct that can be changed.
          Sets the left image as an animated spinner 
     !!! cpp-var "bool showPCBackButton = false"
 
-         Shows an additional button below all other buttons that closes the dialog for the client when pressed, works the same as pressing the ``esc`` button
+         Shows an additional button below all other buttons that closes the dialog for the client when pressed, works the same as pressing the `esc` button
     !!! cpp-var "float inputDisableTime = 0"
 
          How long it takes before the client is able to press a button
@@ -59,10 +59,10 @@ All the data in the struct that can be changed.
          Creates a larger dialog window even if there is no text or buttons to fill that space
     !!! cpp-var "array<DialogButtonData> buttonData"
 
-         Stores the information added by the ``AddDialogButton`` function
+         Stores the information added by the `AddDialogButton` function
     !!! cpp-var "array<DialogFooterData> footerData"
 
-         Stores the information added by the ``AddDialogFooter`` function
+         Stores the information added by the `AddDialogFooter` function
 
 !!! cpp-struct "DialogMessageRuiData"
 
@@ -110,7 +110,7 @@ All the data in the struct that can be changed.
 
     - `DialogData dialog` Instance of a DialogData struct
 
-    - `string text` The Text that is shown on the button, supports some assets with ``%ASSET PATH%``
+    - `string text` The Text that is shown on the button, supports some assets with `%ASSET PATH%`
 
     - `void functionref() callback` Function that is executed when the button is pressed.
 
@@ -135,14 +135,14 @@ All the data in the struct that can be changed.
 
     - `DialogData dialog` Instance of a DialogData struct
 
-    - `string text` The Text that is shown on the button, supports some assets with ``%ASSET PATH%``
+    - `string text` The Text that is shown on the button, supports some assets with `%ASSET PATH%`
 
 
 !!! cpp-function "bool IsDialogActive( DialogData dialogData )"
 
     - `DialogData dialog` Instance of a DialogData struct
 
-    - Returns: ``true`` if the dialog with that struct is currently open, otherwise it returns ``false``
+    - Returns: `true` if the dialog with that struct is currently open, otherwise it returns `false`
 
 !!! cpp-function "void OpenErrorDialog( string errorDetails )"
 

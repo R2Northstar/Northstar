@@ -2,9 +2,9 @@
 
 Integers in Squirrel are 32 bit signed integers and can be any whole number (in the 32 bit confines).
 
-An Integer is a primitive type with a default value of ``0``.
+An Integer is a primitive type with a default value of `0`.
 
-The type keyword for Integers is ``int``.
+The type keyword for Integers is `int`.
 
 ## Literals
 
@@ -20,7 +20,7 @@ Integers can be represented with multiple different literals.
 
 - Hexadecimal
 
-    If any number is prefixed with ``0x``, it is a hexadecimal literal.
+    If any number is prefixed with `0x`, it is a hexadecimal literal.
 
     ``` squirrel
 
@@ -29,7 +29,7 @@ Integers can be represented with multiple different literals.
 
 - Octal
   
-    Numbers starting with a ``0`` are octal literals.
+    Numbers starting with a `0` are octal literals.
 
     ``` squirrel
 

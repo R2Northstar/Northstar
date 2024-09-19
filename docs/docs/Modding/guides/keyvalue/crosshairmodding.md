@@ -6,7 +6,7 @@ Example Mod:
 ## How To Modify Crosshairs:
 
 1: Create the following file
-``~/Your.Mod/keyvalues/scripts/weapons/mp_weapon_[desired weapon].txt``
+`~/Your.Mod/keyvalues/scripts/weapons/mp_weapon_[desired weapon].txt`
 
 2: Put the following into the newly created .txt file:
 
@@ -67,7 +67,7 @@ formating in the script above.**
 ## Adjust Crosshair Spread?
 
 Simply add the following line below the  "ui" line
-``"base_spread"               "3.0"``
+`"base_spread"               "3.0"`
 Below the "ui" line, Like this:
 
 ```
@@ -122,11 +122,11 @@ https://noskill.gitbook.io/titanfall2/
 ### Extra Info
 
 
-* As with any mod, it is recommended to test this out in a private match first. Save any changes you made to the desired weapon's file and type ``reload`` in your console
+* As with any mod, it is recommended to test this out in a private match first. Save any changes you made to the desired weapon's file and type `reload` in your console
 
 
 * Keep in mind that some weapons have animated or dynamic crosshairs. Weapons like the Charge Rifle, Cold War, Frag Grenade, etc... have custom animations for their crosshairs. which can cause weirdness or jank when used on other weapons or when using other crosshairs on them. 
-   * Animated weapons like the Charge rifle will work with animated crosshairs like ``ui/crosshair_titan_sniper``
+   * Animated weapons like the Charge rifle will work with animated crosshairs like `ui/crosshair_titan_sniper`
 
-Thank you to ``Cpone#0001`` and ``Nixie#8251`` from the [Northstar
+Thank you to `Cpone#0001` and `Nixie#8251` from the [Northstar
 Discord](https://northstar.tf/discord) for helping me figure this out

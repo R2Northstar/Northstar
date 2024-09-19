@@ -4,17 +4,17 @@
 
 Squirrel allows scripts to spin off function calls in a thread. All subsequential function calls will be threaded as well.
 
-In threaded functions, it's possible to halt a threaded function with ``wait`` statements, signals, flags and by suspending a thread object.
+In threaded functions, it's possible to halt a threaded function with `wait` statements, signals, flags and by suspending a thread object.
 
-You can use the ``IsNewThread()`` function to determine if the current function is threaded off.
+You can use the `IsNewThread()` function to determine if the current function is threaded off.
 
 For more information, check out the [squirrel documentation on threads](http://www.squirrel-lang.org/squirreldoc/reference/language/threads.html) and [sq functions of threads](http://www.squirrel-lang.org/squirreldoc/reference/language/builtin_functions.html#thread). rsquirrel is very similar to vanilla squirrel in this regard.
 
-A thread is considered finished, after the threaded function returned a value. This may be ``null``.
+A thread is considered finished, after the threaded function returned a value. This may be `null`.
 
 ### Spinning off a thread
 
-To create a new coroutine, call a function with the ``thread`` keyword before.
+To create a new coroutine, call a function with the `thread` keyword before.
 
 ```squirrel
 
@@ -22,7 +22,7 @@ To create a new coroutine, call a function with the ``thread`` keyword before.
     thread MyFunction()
 ```
 
-To get a thread object, use the ``newthread`` function.
+To get a thread object, use the `newthread` function.
 
 ```squirrel
 
@@ -39,7 +39,7 @@ To get a thread object, use the ``newthread`` function.
 
 ### wait
 
-The ``wait`` statement halts threads for a set amount of time specified after the ``wait`` keyword. Integers and floats are accepted as times in seconds.
+The `wait` statement halts threads for a set amount of time specified after the `wait` keyword. Integers and floats are accepted as times in seconds.
 
 ```squirrel
     void function WaitExample( float n )
@@ -51,11 +51,11 @@ The ``wait`` statement halts threads for a set amount of time specified after th
     thread WaitExample( 0.5 ) // thread will halt for a total 1.5 seconds
 ```
 
-To wait a single frame, don't use ``wait 0`` since it doesn't actually wait a game frame. For example, if you have a client loop that does wait 0 even if the game is paused the loop will still run. Use ``WaitFrame()`` instead.
+To wait a single frame, don't use `wait 0` since it doesn't actually wait a game frame. For example, if you have a client loop that does wait 0 even if the game is paused the loop will still run. Use `WaitFrame()` instead.
 
-When using infinite loops it's important to work with ``wait`` statements to avoid the game freezing.
+When using infinite loops it's important to work with `wait` statements to avoid the game freezing.
 
-If you want to wait until a thread is finished, you can spin off the thread that you wait for with the ``waitthread`` keyword.
+If you want to wait until a thread is finished, you can spin off the thread that you wait for with the `waitthread` keyword.
 
 ```squirrel
 
@@ -73,7 +73,7 @@ If you want to wait until a thread is finished, you can spin off the thread that
 
 ### OnThreadEnd
 
-Use the ``OnThreadEnd`` function to execute a callback after a thread has ended. This is useful for cleanup functions that remove entities after they're used or similar.
+Use the `OnThreadEnd` function to execute a callback after a thread has ended. This is useful for cleanup functions that remove entities after they're used or similar.
 
 ```squirrel 
 
@@ -134,7 +134,7 @@ Signals and flags allow threads to wait for events before running some code.
 
     !!! cpp-function "void Signal( string signal, table<var, var> results = null )"
 
-    Trigger a signal on this entity. The passed ``results`` will be returned by ``WaitSignal``.
+    Trigger a signal on this entity. The passed `results` will be returned by `WaitSignal`.
 
     !!! cpp-function "void EndSignal( string signal )"
 
@@ -146,7 +146,7 @@ Signals and flags allow threads to wait for events before running some code.
 
     !!! cpp-function "void ConnectOutput( string signal, void functionref( entity trigger, entity activator, entity caller, var value ) callback )"
 
-        Register a callback that executes when the ``signal`` has been fired on this Entity
+        Register a callback that executes when the `signal` has been fired on this Entity
 
     !!! cpp-function "void DisconnectOutput( string event, void functionref( entity trigger, entity activator, entity caller, var value ) callback )"
 
@@ -154,7 +154,7 @@ Signals and flags allow threads to wait for events before running some code.
 
     !!! cpp-function "void AddOutput( string outputName, string | entity target, string inputName, string parameter = "", float delay = 0, float maxFires = 0 )"
 
-    Connects an output on this entity to an input on another entity via code.  The ``target`` can be a name or a named entity.
+    Connects an output on this entity to an input on another entity via code.  The `target` can be a name or a named entity.
         
     !!! cpp-function "void Fire( string signal, string param = "", float delay = 0, entity activator = null, entity caller = null )"
 
@@ -168,7 +168,7 @@ It's also possible to trigger and catch signals with methods that aren't propert
 
 !!! cpp-function "void Signal( var obj, string signal, table<var, var> results = null )"
 
-    Trigger a signal on ``ent``. The passed ``results`` will be returned by ``WaitSignal``.
+    Trigger a signal on `ent`. The passed `results` will be returned by `WaitSignal`.
 
 !!! cpp-function "table<var, var> WaitSignal( entity ent, ... )"
 
@@ -182,7 +182,7 @@ It's also possible to trigger and catch signals with methods that aren't propert
 
 !!! cpp-function "void EndSignal( var obj, string signal )"
 
-    Ends this thread when the identifier is signaled on ``ent``
+    Ends this thread when the identifier is signaled on `ent`
 
 #### Example
 
@@ -229,15 +229,15 @@ For example, if we want to tell a player not to give up after being killed sever
     thread DontGiveUp( player )
 ```
 
-In this example, the ``DontGiveUp`` method is launched at the same time as ``WatchForDeaths``; but it will not 
+In this example, the `DontGiveUp` method is launched at the same time as `WatchForDeaths`; but it will not 
 run until player died 42 times.
 
-When you want your thread to die on a given event, you can use ``entity.EndSignal( "OnMultipleDeaths" )``; when said signal 
+When you want your thread to die on a given event, you can use `entity.EndSignal( "OnMultipleDeaths" )`; when said signal 
 is set, thread will end (after calling any `OnThreadEnd` methods).
 
 ### Flags
 
-``Flags`` work pretty much the same way as ``Signals``, except they can be set up without target entity:
+`Flags` work pretty much the same way as `Signals`, except they can be set up without target entity:
 
 !!! cpp-function "void FlagInit( string flag, bool isSet = false )"
 
@@ -261,7 +261,7 @@ is set, thread will end (after calling any `OnThreadEnd` methods).
 
 !!! cpp-function "void FlagSetOnFlag( string flagset, string flagwait, float delay = 0 )"
 
-    Set ``flagset`` after ``flagwait`` is set and the delay is met.
+    Set `flagset` after `flagwait` is set and the delay is met.
 
 !!! cpp-function "void FlagClear( string flag )"
 
@@ -273,7 +273,7 @@ is set, thread will end (after calling any `OnThreadEnd` methods).
 
 !!! cpp-function "void FlagClearOnFlag( string flagclear, string flagwait )"
 
-    Reset ``flagclear`` when ``flagwait`` is set. 
+    Reset `flagclear` when `flagwait` is set. 
 
 !!! cpp-function "void FlagWaitClearWithTimeout( string flag, float timeOut )"
 
@@ -299,15 +299,15 @@ is set, thread will end (after calling any `OnThreadEnd` methods).
 
 !!! cpp-function "bool FlagExists( string flag )"
 
-    Returns ``true`` if the flag is initialized
+    Returns `true` if the flag is initialized
 
 !!! cpp-function "array<string> GetFlagsFromString( string str )"
 
-    Splits the flag on ``" "``
+    Splits the flag on `" "`
 
 !!! cpp-function "array<string> GetFlagsFromField( entity ent, var field )"
 
-    Splits the value of the keyvalues of the entity on the index ``field`` on ``" "``
+    Splits the value of the keyvalues of the entity on the index `field` on `" "`
 
 #### Example
 

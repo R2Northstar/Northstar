@@ -8,7 +8,7 @@ When ejecting the game selects a random number between 0 and 1, if this number i
 
 ### Adding new messages
 
-Using ``AddCommonEjectMessage( String message )`` and ``AddRareEjectMessage( String message )`` in script additional messages can be added to the pool of potential ejection messages
+Using `AddCommonEjectMessage( String message )` and `AddRareEjectMessage( String message )` in script additional messages can be added to the pool of potential ejection messages
 
 ### Localisation
 
@@ -82,7 +82,7 @@ Below are a list of useful functions added by Northstar.
     !!! note
         Respawn comment next to the function:
 
-        ``TODO: This is a copy of SP's PlayerPosInSolid(). Not changing it to avoid patching SP. Merge into one function next game``
+        `TODO: This is a copy of SP's PlayerPosInSolid(). Not changing it to avoid patching SP. Merge into one function next game`
 
 
 !!! cpp-function "bool function PlayerSpawnpointIsValid( entity ent )"
@@ -92,7 +92,7 @@ Below are a list of useful functions added by Northstar.
     !!! note
         Respawn comment next to the function:
 
-        ``TODO:  This function returns true for a player standing inside a friendly grunt. It also returns true if you are right up against a ceiling.Needs fixing for next game``
+        `TODO:  This function returns true for a player standing inside a friendly grunt. It also returns true if you are right up against a ceiling.Needs fixing for next game`
 
 !!! cpp-function "bool function EntityInSpecifiedEnt( entity ent, entity specifiedEnt, int buffer = 0 )"
 
@@ -186,7 +186,7 @@ Below are a list of useful functions added by Northstar.
 
 !!! cpp-function "string NSGetLocalPlayerUID()"
 
-    Returns the local player's UID, else ``null``.
+    Returns the local player's UID, else `null`.
     Available on CLIENT, UI and SERVER VM.
 
 !!! cpp-function "bool function IsMultiplayer()"
@@ -257,7 +257,7 @@ Below are a list of useful functions added by Northstar.
 
 !!! cpp-function "int function array.find(var value)"
 
-    !!! warning "this returns ``-1`` if the item was not found in the array"
+    !!! warning "this returns `-1` if the item was not found in the array"
 
 !!! cpp-function "array.fastremove(var)"
 
@@ -372,7 +372,7 @@ Below are a list of useful functions added by Northstar.
 
     !!! warning
 
-        returns ``null`` if the string is not found.
+        returns `null` if the string is not found.
         
         You can eliminate the possibility of the returned index being null by casting like this:
 

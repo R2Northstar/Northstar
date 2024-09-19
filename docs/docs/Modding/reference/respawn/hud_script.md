@@ -16,11 +16,11 @@ Script methods to manipulate hud elements.
 
 !!! cpp-function "bool Hud_HasChild( var elem, string childName )"
 
-    Returns ``true`` if the element has a child named like ``childName``
+    Returns `true` if the element has a child named like `childName`
 
 !!! cpp-function "var Hud_GetChild( var elem, string childName )"
 
-    Returns the child element of the passed element named like ``childName``
+    Returns the child element of the passed element named like `childName`
 
 !!! cpp-function "array<var> GetElementsByClassname( var elem, string className )"
 
@@ -44,7 +44,7 @@ Script methods to manipulate hud elements.
 
 !!! cpp-function "var Hud_GetPos( var elem )"
 
-    Returns an array of type ``int[2]`` as a ``var``. The position is **relative** to the element's base position.
+    Returns an array of type `int[2]` as a `var`. The position is **relative** to the element's base position.
 
 !!! cpp-function "void Hud_SetX( var elem, int x )"
 
@@ -68,7 +68,7 @@ Script methods to manipulate hud elements.
 
 !!! cpp-function "var Hud_GetBasePos( var elem )"
 
-    Returns an orray of type ``int[2]`` as a ``var``. Base position is always ``[0,0]``
+    Returns an orray of type `int[2]` as a `var`. Base position is always `[0,0]`
 
 !!! cpp-function "int Hud_GetBaseX( var elem )"
 
@@ -80,7 +80,7 @@ Script methods to manipulate hud elements.
 
 !!! cpp-function "var Hud_GetAbsPos( var elem )"
 
-    Returns an array of type ``int[2]`` as a ``var``. Absolute coordinates on the screen of this element.
+    Returns an array of type `int[2]` as a `var`. Absolute coordinates on the screen of this element.
 
 !!! cpp-function "int Hud_GetAbsX( var elem )"
 
@@ -94,19 +94,19 @@ Script methods to manipulate hud elements.
 
     Move to relative x over time with interpolation.
 
-    * ``INTERPOLATOR_LINEAR``: linear interpolation
+    * `INTERPOLATOR_LINEAR`: linear interpolation
 
-    * ``INTERPOLATOR_ACCEL``: move with accelerating speed
+    * `INTERPOLATOR_ACCEL`: move with accelerating speed
 
-    * ``INTERPOLATOR_DEACCEL``: move with deaccelerating speed
+    * `INTERPOLATOR_DEACCEL`: move with deaccelerating speed
 
-    * ``INTERPOLATOR_PULSE``: one time bounce
+    * `INTERPOLATOR_PULSE`: one time bounce
 
-    * ``INTERPOLATOR_FLICKER``: no transition
+    * `INTERPOLATOR_FLICKER`: no transition
 
-    * ``INTERPOLATOR_SIMPLESPLINE``: ease in / out
+    * `INTERPOLATOR_SIMPLESPLINE`: ease in / out
 
-    * ``INTERPOLATOR_BOUNCE``: gravitational bounce
+    * `INTERPOLATOR_BOUNCE`: gravitational bounce
 
 !!! cpp-function "void Hud_SetYOverTime( var elem, int y, float transitionTime, int interpolation_mode "= 0 )
 
@@ -134,7 +134,7 @@ Script methods to manipulate hud elements.
 
 !!! cpp-function "bool Hud_IsVisible( var elem )"
 
-    Returns ``true`` if the element is visible
+    Returns `true` if the element is visible
 
 !!! cpp-function "void Hud_SetVisible( var elem, bool visible )"
 
@@ -198,7 +198,7 @@ Script methods to manipulate hud elements.
 
 !!! cpp-function "var Hud_GetSize( var elem )"
 
-    Returns an array of type ``int[2]`` as a ``var``. The first index is width and the second height of the element.
+    Returns an array of type `int[2]` as a `var`. The first index is width and the second height of the element.
 
 !!! cpp-function "void Hud_SetSize( var elem, int x, int y )"
 
@@ -206,13 +206,13 @@ Script methods to manipulate hud elements.
 
 !!! cpp-function "var Hud_GetBaseSize( var elem )"
 
-    Returns the width and height values the element got initialized with as an array of type ``int[2]`` as ``var``.
+    Returns the width and height values the element got initialized with as an array of type `int[2]` as `var`.
 
 !!! cpp-function "void Hud_ScaleOverTime( var elem, float width_factor, float height_factor, float "time, int interpolation_mode )
 
     Set the width and height of the element over time.
 
-    The final width and height is calculated like this: ``width * width_factor``
+    The final width and height is calculated like this: `width * width_factor`
 
 !!! cpp-function "void Hud_SetScaleX( var elem, float xStretch )"
 
@@ -248,7 +248,7 @@ Script methods to manipulate hud elements.
 
 !!! cpp-function "bool Hud_IsLocked( var elem )"
 
-    Returns ``true`` if the element is locked.
+    Returns `true` if the element is locked.
 
     Locked elements are visible, can be focused and selected but don't trigger events and play a locked sound if they are selected
 
@@ -258,7 +258,7 @@ Script methods to manipulate hud elements.
 
 !!! cpp-function "bool Hud_IsEnabled( var elem )"
 
-    Returns ``true`` if the element is enabled
+    Returns `true` if the element is enabled
 
     Disabled elements are visible but can't be focused or selected and don't trigger events.
 
@@ -268,7 +268,7 @@ Script methods to manipulate hud elements.
 
 !!! cpp-function "bool Hud_IsFocused( var elem )"
 
-    Returns ``true`` if this element is focused
+    Returns `true` if this element is focused
 
     Focused elements will be selected when pressing enter
 
@@ -278,7 +278,7 @@ Script methods to manipulate hud elements.
 
 !!! cpp-function "bool Hud_IsSelected( var elem )"
 
-    Returns ``true`` if this element is selected
+    Returns `true` if this element is selected
 
 !!! cpp-function "void Hud_SetSelected( var elem, bool selected )"
 
@@ -290,13 +290,13 @@ Script methods to manipulate hud elements.
 
 !!! cpp-function "bool Hud_IsLabel( var elem )"
 
-    Returns ``true`` if the element is a label
+    Returns `true` if the element is a label
 
 ## Element RUI
 
 !!! cpp-function "bool Hud_IsRuiPanel( var elem )"
 
-    Returns ``true`` if this element can contain ruis
+    Returns `true` if this element can contain ruis
 
 !!! cpp-function "var Hud_GetRui( var elem )"
 
@@ -332,13 +332,13 @@ Script methods to manipulate hud elements.
 
     Accepted events:
 
-    * ``UIE_CLICK``
+    * `UIE_CLICK`
 
-    * ``UIE_GET_FOCUS``
+    * `UIE_GET_FOCUS`
 
-    * ``UIE_LOSE_FOCUS``
+    * `UIE_LOSE_FOCUS`
 
-    * ``UIE_CHANGE``
+    * `UIE_CHANGE`
 
 ## Other Visuals
 

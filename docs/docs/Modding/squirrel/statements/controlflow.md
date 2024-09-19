@@ -4,7 +4,7 @@ Squirrel supports most basic control flow statements.
 
 ## If
 
-``if`` statements check if a condition evaluates to ``true``.
+`if` statements check if a condition evaluates to `true`.
 
 ```squirrel
 
@@ -12,4 +12,4 @@ Squirrel supports most basic control flow statements.
     body
 ```
 
-``null``, ``0`` and ``0.0`` evaluate to ``false``.
+`null`, `0` and `0.0` evaluate to `false`.

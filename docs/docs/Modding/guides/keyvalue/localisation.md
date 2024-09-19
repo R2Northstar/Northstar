@@ -15,7 +15,7 @@ Languages natively supported by Titanfall2 are:
 - Portuguese
 - Russian
 - Spanish
-- Traditional Chinese (``"tchinese"``)
+- Traditional Chinese (`"tchinese"`)
 
 ## Create translation files
 
@@ -38,24 +38,24 @@ Here's what a translation file looks like:
     }
 ```
 
-It begins with the ``"lang"`` instruction, contains a ``"Language"`` key indicating
-language of current file's translations, and a ``"Token"`` key indexing all
+It begins with the `"lang"` instruction, contains a `"Language"` key indicating
+language of current file's translations, and a `"Token"` key indexing all
 translations.
 
 !!! warning
 
-    If the translation file contains any non-ASCII character, it must use ``"UTF-16
-    LE"`` encoding.
+    If the translation file contains any non-ASCII character, it must use `"UTF-16
+    LE"` encoding.
 
 You'll have to create one file per supported language, and all your files must be named
 in a similar fashion.
 
 For example, Northstar translation files are named
-``"northstar_client_localisation_english.txt"``,
-``"northstar_client_localisation_french.txt"``,
-``"northstar_client_localisation_german.txt"`` etc.
+`"northstar_client_localisation_english.txt"`,
+`"northstar_client_localisation_french.txt"`,
+`"northstar_client_localisation_german.txt"` etc.
 
-You can import them from your ``mod.json`` manifesto this way:
+You can import them from your `mod.json` manifesto this way:
 
 ```json
 
@@ -68,14 +68,14 @@ You can import them from your ``mod.json`` manifesto this way:
 
 !!! note
 
-    The ``"%language%"`` syntax allows VM to load up translations matching game language
+    The `"%language%"` syntax allows VM to load up translations matching game language
     (e.g. an English client will automatically use
-    ``"northstar_client_localisation_english.txt"`` file)
+    `"northstar_client_localisation_english.txt"` file)
 
 ## Use translations in your code
 
 To translate UI elements like menus, you have to insert strings containing your
-translation keys, preceded by a ``#``.
+translation keys, preceded by a `#`.
 
 For example, to translate the "Launch Northstar" button on main menu, instead of
 calling:
@@ -92,7 +92,7 @@ We'll use:
     AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_LAUNCH_NORTHSTAR" )
 ```
 
-You can also use the ``Localize`` method client-side:
+You can also use the `Localize` method client-side:
 
 ```
 
@@ -104,7 +104,7 @@ You can also use the ``Localize`` method client-side:
 Northstar adds new strings to the game which can be localised to match the language you
 are using on your Titanfall 2 installation.
 
-They're all located in ``"Northstar.Client"`` mod: [Northstar localisation files on
+They're all located in `"Northstar.Client"` mod: [Northstar localisation files on
 GitHub]
 (https://github.com/R2Northstar/NorthstarMods/blob/main/Northstar.Client/mod/resource)
 

@@ -4,15 +4,15 @@ Unlike the data types previously covered, arrays can hold multiple values.
 
 Their size is dynamic and you can add and remove elements at will.
 
-The type keyword is ``array``.
+The type keyword is `array`.
 
 By default, uninitialized arrays are empty.
 
-Arrays are always zero indexed with ``[ <expression> ]``. The indexes are always numbers. If you index an array with a key that does not exist, an error will get thrown.
+Arrays are always zero indexed with `[ <expression> ]`. The indexes are always numbers. If you index an array with a key that does not exist, an error will get thrown.
 
 ## Literals
 
-Array literals are a comma or newline seperated sequence of expressions delimited by an opening bracket ``[`` and a corresponding closing bracket ``]``.
+Array literals are a comma or newline seperated sequence of expressions delimited by an opening bracket `[` and a corresponding closing bracket `]`.
 
 ```squirrel
 
@@ -45,7 +45,7 @@ Primitive arrays are arrays that can hold any value. Their content is therefore 
 
 Complex Arrays are arrays that can only hold values that have a specific type.
 
-The content type needs to be specified within ``<`` and ``>`` brackets.
+The content type needs to be specified within `<` and `>` brackets.
 
 There is no way to define a complex array that holds multiple different types.
 
@@ -62,13 +62,13 @@ There is no way to define a complex array that holds multiple different types.
 
 Static arrays are a different kind of complex type. Like complex arrays they can only hold values of one specific type. However unlike complex arrays static arrays have a set length that cannot be changed.
 
-The typing for static arrays is ``type[size]``, where ``type`` is the content type of the array and ``size`` is an **integer literal** of the total size of the array.
+The typing for static arrays is `type[size]`, where `type` is the content type of the array and `size` is an **integer literal** of the total size of the array.
 
 Uninitialized static arrays have their size by default and all content values are the **default values of their content type**.
 
 You can index and change content values like with regular arrays.
 
-When initializing a static array you can omit all values after your initial values with ``...``. All following values will get default initialized with the content's default.
+When initializing a static array you can omit all values after your initial values with `...`. All following values will get default initialized with the content's default.
 
 ```squirrel
 
@@ -82,7 +82,7 @@ When initializing a static array you can omit all values after your initial valu
 
 ## Compatability
 
-It is not possible to cast or convert an array between their different forms. For example you can't assign an ``array<string>`` variable to a different variable that has the type ``array`` or the other way around.
+It is not possible to cast or convert an array between their different forms. For example you can't assign an `array<string>` variable to a different variable that has the type `array` or the other way around.
 
 Instead you need to create an entirely new array with the target type or add all contents manually.
 
@@ -96,4 +96,4 @@ Instead you need to create an entirely new array with the target type or add all
     target.append( v )
 ```
 
-Furthermore it's important to understand that ``array`` and ``array<var>`` behave the same but **are not identical**.
+Furthermore it's important to understand that `array` and `array<var>` behave the same but **are not identical**.

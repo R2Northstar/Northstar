@@ -9,7 +9,7 @@
 
 ## Declaring Classes
 
-To declare a class, first add the ``untyped`` keyword and the class as a variable at
+To declare a class, first add the `untyped` keyword and the class as a variable at
 file level.
 
 ```squirrel
@@ -18,10 +18,10 @@ file level.
     var ExampleClass
 ```
 
-The ``untyped`` declaration is required because instances have an unknown type and it's
+The `untyped` declaration is required because instances have an unknown type and it's
 not possible to use classes as types.
 
-``var [classname]`` represents the class. After declaring the class inside of a function
+`var [classname]` represents the class. After declaring the class inside of a function
 you can use it in the script. You can use any type that can hold vars to store classes.
 Refer to [Namespaces](#namespaces) for more info.
 
@@ -46,9 +46,9 @@ executed on object creation.
 You can require parameters in the constructor. Keep in mind that you have to pass those
 when creating an object.
 
-Function parameters are passed as type ``var``, but the type keyword is not required.
-``constructor( parameter ){}; func( parameter ){};`` and ``constructor( var parameter
-){}; func( var parameter ){};`` are both correct.
+Function parameters are passed as type `var`, but the type keyword is not required.
+`constructor( parameter ){}; func( parameter ){};` and `constructor( var parameter
+){}; func( var parameter ){};` are both correct.
 
 ```squirrel
 
@@ -68,10 +68,10 @@ Function parameters are passed as type ``var``, but the type keyword is not requ
 ```
 
 Usually objects have properties. To define them, just add their identifier into the
-class without type declaration. The properties will be of type ``var``. However, you are
-required to set a default value of a property. This may be ``null``.
+class without type declaration. The properties will be of type `var`. However, you are
+required to set a default value of a property. This may be `null`.
 
-Every object has a reference to itself called ``this``. You can change parameters of an
+Every object has a reference to itself called `this`. You can change parameters of an
 object by reference.
 
 ```squirrel
@@ -86,12 +86,12 @@ object by reference.
     }
 ```
 
-You can't use the class name as a type. Use ``var`` instead. You can't ``expect`` them
+You can't use the class name as a type. Use `var` instead. You can't `expect` them
 either.
 
 ## Declaring Functions of Classes
 
-Functions of a class have to return a value of type ``var``. This may be ``null``.
+Functions of a class have to return a value of type `var`. This may be `null`.
 Define functions like this:
 
 ```squirrel
@@ -121,11 +121,11 @@ Define functions like this:
 ## Inserting Properties Into Classes
 
 It's possible to insert more properties into a class at runtime. To achieve this, use
-the ``<-`` operator.
+the `<-` operator.
 
 ```squirrel
 
-    // Using ``ExampleClass`` and ``exampleObject`` from example above
+    // Using `ExampleClass` and `exampleObject` from example above
     ExampleClass.newProperty <- "New property in class"
     // The value of the new index may be of any type.
     ExampleClass.newFunc <- function(){return "Function return value";}
@@ -147,7 +147,7 @@ the ``<-`` operator.
         }
     ```
 
-Inserting functions is also possible using the ``::`` operator
+Inserting functions is also possible using the `::` operator
 
 ```squirrel
 
@@ -182,7 +182,7 @@ For example, extending functionality of the CPlayer class might look like this:
     }
 ```
 
-This will allow scripts to run the ``AFK`` method on CPlayer entities, which will kick a
+This will allow scripts to run the `AFK` method on CPlayer entities, which will kick a
 player after 3
 
 Make sure to load this script **after** the class has been declared and **before** it's
@@ -223,7 +223,7 @@ Like the example above shows you can manipulate properties of a class directly. 
 no way to make a private property.
 
 Methods from a class can be accessed without an instance. Note that the class itself
-doesn't have a reference to itself, meaning that the ``this`` keyword refers to the root
+doesn't have a reference to itself, meaning that the `this` keyword refers to the root
 table.
 
 ```squirrel
@@ -337,7 +337,7 @@ And in a similar fashion in structs:
 
 !!! warning
 
-    Respawn's fork doesn't appear to support inheritance. Using the ``extend`` keyword
+    Respawn's fork doesn't appear to support inheritance. Using the `extend` keyword
     won't compile.
 
     ```squirrel

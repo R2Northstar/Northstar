@@ -14,7 +14,7 @@
 
 !!! cpp-function "bool IsEnemyTeam( int ownTeam, int otherTeam )"
 
-  Returns if ``otherTeam`` is an enemy of ``ownTeam``
+  Returns if `otherTeam` is an enemy of `ownTeam`
 
 !!! cpp-function "void SetMaxActivityMode( int mode )"
 
@@ -28,7 +28,7 @@
 
 !!! cpp-function "void SendToConsole( string cmd )"
 
-  Execute ``cmd`` on the local host
+  Execute `cmd` on the local host
 
 !!! cpp-function "void RecordAchievementEvent( string s1, number n1 )"
 
@@ -94,7 +94,7 @@
 
   Fade the player's scren.
 
-  Fade flags start with ``FFADE_``
+  Fade flags start with `FFADE_`
 
 ## Levels
 

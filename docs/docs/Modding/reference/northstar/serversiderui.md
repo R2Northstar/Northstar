@@ -1,13 +1,13 @@
 # Serverside RUI {#serverside-rui-doc}
 
 
-Server-side Rui provides a set of functions enabling servers to display complex hud elements on clients without requiring a client-side mod. These functions were introduced in Northstar ``1.10.0``.
+Server-side Rui provides a set of functions enabling servers to display complex hud elements on clients without requiring a client-side mod. These functions were introduced in Northstar `1.10.0`.
 
 It should be noted that there’s no guarantee the client will see the hud elements.
 
 ## Polls
 
-Creates a poll on ``player``.
+Creates a poll on `player`.
 
 <figure class="screenshotalign-center">
 <img src="/_static/serversiderui/vote.png" class="screenshot"
@@ -37,7 +37,7 @@ alt="/_static/serversiderui/vote.png" />
 
 !!! cpp-function "int NSGetPlayerResponse( entity player )"
 
-    Returns the index of the item from ``options`` the player voted for. If the player hadn't voted yet it returns a -1.
+    Returns the index of the item from `options` the player voted for. If the player hadn't voted yet it returns a -1.
 
 **Example:**
 
@@ -52,7 +52,7 @@ alt="/_static/serversiderui/vote.png" />
 
 ## Large Message
 
-Sends a large message to ``player`` which will appear in the top right corner.
+Sends a large message to `player` which will appear in the top right corner.
 
 <figure class="screenshotalign-center">
 <img src="/_static/serversiderui/largemessage.gif" class="screenshot"
@@ -76,7 +76,7 @@ alt="/_static/serversiderui/largemessage.gif" />
 
 ## Info Message
 
-Sends a smaller message to ``player`` which will appear from the center right.
+Sends a smaller message to `player` which will appear from the center right.
 
 <figure class="screenshotalign-center">
 <img src="/_static/serversiderui/info.gif" class="screenshot"
@@ -100,7 +100,7 @@ alt="/_static/serversiderui/info.gif" />
 
 ## PopUp
 
-Send a small popup to ``player`` which will appear in the lower half of their screen under their cursor.
+Send a small popup to `player` which will appear in the lower half of their screen under their cursor.
 
 <figure class="screenshotalign-center">
 <img src="/_static/serversiderui/popup.gif" class="screenshot"
@@ -124,7 +124,7 @@ alt="/_static/serversiderui/popup.gif" />
 
 ## Announcement
 
-Sends a large announcement to ``player``.
+Sends a large announcement to `player`.
 
 <figure class="screenshotalign-center">
 <img src="/_static/serversiderui/announcement.gif" class="screenshot"

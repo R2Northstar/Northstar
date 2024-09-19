@@ -5,10 +5,10 @@ the plugins system now use source interfaces.
 The launcher exposes almost everything required by plugins in interfaces that allow for backwards compatibility.
 The only thing that's passed to a plugin directly is the northstar dll HWND and a struct of data that's different for each plugin.
 
-Plugins are required to expose a ``void* CreateInterface(const char* name, int* status)`` function to share their own interfaces.
-The launcher loads the ``PluginId`` interface from the plugin to query info such as it's name.
+Plugins are required to expose a `void* CreateInterface(const char* name, int* status)` function to share their own interfaces.
+The launcher loads the `PluginId` interface from the plugin to query info such as it's name.
 
-Plugins can use the ``CreateInterface`` function exposed by the northstarDll to use northstar interfaces such as for logging.
+Plugins can use the `CreateInterface` function exposed by the northstarDll to use northstar interfaces such as for logging.
 An interface is just an abstract class to force all functions into a vftable.
 
 ## Northstar Interfaces

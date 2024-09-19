@@ -1,6 +1,6 @@
 # Chathooks
 
-This document provides usage of the Chathook API added in Northstar ``v1.6.0``.
+This document provides usage of the Chathook API added in Northstar `v1.6.0`.
 For an example of chathooks in use, check out EmmaM's [OwOfier mod](https://github.com/emma-miler/OwOfier/).
 
 
@@ -33,13 +33,13 @@ The client chat callbacks allow you to intercept chat messages and modify or blo
        the display name of the player who sent the chat.
     !!! cpp-var "bool isTeam"
 
-        whether this chat has a ``[TEAM]`` tag.
+        whether this chat has a `[TEAM]` tag.
     !!! cpp-var "bool isDead"
 
-        whether this chat has a ``[DEAD]`` tag.
+        whether this chat has a `[DEAD]` tag.
     !!! cpp-var "bool isWhisper"
 
-        whether this chat has a ``[WHISPER]`` tag.
+        whether this chat has a `[WHISPER]` tag.
     !!! cpp-var "bool shouldBlock"
 
         if true, this chat will not be displayed.
@@ -224,9 +224,9 @@ With custom messages you can send chat messages at any time, to all players or t
 
     **Parameters:**
 
-    - ``entity player`` - the player that the chat message will appear to be from.
-    - ``string text`` - the contents of the chat message. Supports [ANSI escape codes](#ansi_escape)  for colors.
-    - ``bool isTeamChat`` - whether this chat is only sent to the player's team.
+    - `entity player` - the player that the chat message will appear to be from.
+    - `string text` - the contents of the chat message. Supports [ANSI escape codes](#ansi_escape)  for colors.
+    - `bool isTeamChat` - whether this chat is only sent to the player's team.
 
     **Example:**
 
@@ -246,10 +246,10 @@ With custom messages you can send chat messages at any time, to all players or t
 
     **Parameters:**
 
-    - ``entity fromPlayer`` - the player the message will be from.
-    - ``entity toPlayer`` - the player that the message will be shown to.
-    - ``string text`` - the contents of the chat message. Supports [ANSI escape codes](#ansi_escape) for colors.
-    - ``bool whisper`` - if true, ``[WHISPER]`` will be displayed before the message to indicate the message is private.
+    - `entity fromPlayer` - the player the message will be from.
+    - `entity toPlayer` - the player that the message will be shown to.
+    - `string text` - the contents of the chat message. Supports [ANSI escape codes](#ansi_escape) for colors.
+    - `bool whisper` - if true, `[WHISPER]` will be displayed before the message to indicate the message is private.
 
     **Example:**
 
@@ -272,8 +272,8 @@ With custom messages you can send chat messages at any time, to all players or t
 
     **Parameters:**
 
-    - ``string text`` - the contents of the chat message. Supports [ANSI escape codes](#ansi_escape) for colors.
-    - ``bool withServerTag`` - if true, ``[SERVER]`` will appear before the message in chat. Defaults to true.
+    - `string text` - the contents of the chat message. Supports [ANSI escape codes](#ansi_escape) for colors.
+    - `bool withServerTag` - if true, `[SERVER]` will appear before the message in chat. Defaults to true.
 
     **Example:**
 
@@ -304,10 +304,10 @@ With custom messages you can send chat messages at any time, to all players or t
 
     **Parameters:**
 
-    - ``entity toPlayer`` - the player that the message will be shown to.
-    - ``string text`` - the contents of the chat message. Supports [ANSI escape codes](#ansi_escape) for colors.
-    - ``bool whisper`` - if true, ``[WHISPER]`` will be displayed before the message to indicate the message is private.
-    - ``bool withServerTag`` - if true, ``[SERVER]`` will appear before the message in chat. Defaults to true.
+    - `entity toPlayer` - the player that the message will be shown to.
+    - `string text` - the contents of the chat message. Supports [ANSI escape codes](#ansi_escape) for colors.
+    - `bool whisper` - if true, `[WHISPER]` will be displayed before the message to indicate the message is private.
+    - `bool withServerTag` - if true, `[SERVER]` will appear before the message in chat. Defaults to true.
 
     **Example:**
 
@@ -336,19 +336,19 @@ meaning. For example, the string:
     Hello world, \x1b[31mthis text is red\x1b[0m. And \x1b[34mthis text is blue\x1b[0m.
 ```
 
-``\x1b`` is a special character that Squirrel (and other languages) replace with a reserved ASCII character. For future
-reference this will be referred to with ``ESC`` (e.g. setting red text is ``ESC[31m``).
+`\x1b` is a special character that Squirrel (and other languages) replace with a reserved ASCII character. For future
+reference this will be referred to with `ESC` (e.g. setting red text is `ESC[31m`).
 
 The following commands are available:
 
 
 |Codes|Description|
 |-----|-----------|
-|``ESC[0m`` and ``ESC[39m``|Reset text formatting.|
-|``ESC[30-37m``, ``ESC[90-97m``|Set to one of [the available color presets](https://en.wikipedia.org/wiki/ANSI_escape_code#3-bit_and_4-bit).|
-|``ESC[38;5;Xm``|Set to one of [the available 8-bit colors](https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit).|
-|``ESC[38;2;R;G;Bm``|Set to an RGB color, with ``R``, ``G`` and ``B`` in the range 0-255.|
-|``ESC[110m``|Set to chat text color.|
-|``ESC[111m``|Set to friendly player name color.|
-|``ESC[112m``|Set to enemy player name color.|
-|``ESC[113m``|Set to network name color.|
+|`ESC[0m` and `ESC[39m`|Reset text formatting.|
+|`ESC[30-37m`, `ESC[90-97m`|Set to one of [the available color presets](https://en.wikipedia.org/wiki/ANSI_escape_code#3-bit_and_4-bit).|
+|`ESC[38;5;Xm`|Set to one of [the available 8-bit colors](https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit).|
+|`ESC[38;2;R;G;Bm`|Set to an RGB color, with `R`, `G` and `B` in the range 0-255.|
+|`ESC[110m`|Set to chat text color.|
+|`ESC[111m`|Set to friendly player name color.|
+|`ESC[112m`|Set to enemy player name color.|
+|`ESC[113m`|Set to network name color.|
