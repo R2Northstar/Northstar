@@ -9,58 +9,58 @@ All the data in the struct that can be changed.
 !!! cpp-struct "DialogData"
     
 
-    !!! cpp-var "var menu                                             "
+    !!! cpp-var "var menu"
 
          The instance of the menu
-    !!! cpp-var "string header                                        "
+    !!! cpp-var "string header"
 
          The headline of the dialog
-    !!! cpp-var "string message                                       "
+    !!! cpp-var "string message"
 
          The body of text under the headline, it supports newline with ``\n``
-    !!! cpp-var "DialogMessageRuiData &ruiMessage                     "
+    !!! cpp-var "DialogMessageRuiData &ruiMessage"
 
          Stores relevant RUI data
-    !!! cpp-var "array<int> messageColor = [161, 161, 161, 255]       "
+    !!! cpp-var "array<int> messageColor = [161, 161, 161, 255]"
 
         The colour of the message body, in the format of RGBA
-    !!! cpp-var "string image                                         "
+    !!! cpp-var "string image"
 
          Path to the asset of the image displayed on the left of the text body
-    !!! cpp-var "string rightImage = $""                              "
+    !!! cpp-var "string rightImage = $"""
 
          Path to the asset of the image displayed on the right of the text body
-    !!! cpp-var "bool forceChoice = false                             "
+    !!! cpp-var "bool forceChoice = false"
 
          unknown 
-    !!! cpp-var "bool noChoice = false                                "
+    !!! cpp-var "bool noChoice = false"
 
          unknown
-    !!! cpp-var "bool noChoiceWithNavigateBack = false                "
+    !!! cpp-var "bool noChoiceWithNavigateBack = false"
 
          unknown
-    !!! cpp-var "bool showSpinner = false                             "
+    !!! cpp-var "bool showSpinner = false"
 
          Sets the left image as an animated spinner 
-    !!! cpp-var "bool showPCBackButton = false                        "
+    !!! cpp-var "bool showPCBackButton = false"
 
          Shows an additional button below all other buttons that closes the dialog for the client when pressed, works the same as pressing the ``esc`` button
-    !!! cpp-var "float inputDisableTime = 0                           "
+    !!! cpp-var "float inputDisableTime = 0"
 
          How long it takes before the client is able to press a button
-    !!! cpp-var "table<int,bool> coloredButton                        "
+    !!! cpp-var "table<int,bool> coloredButton"
 
          The int is the index of the Button
-    !!! cpp-var "bool darkenBackground = false                        "
+    !!! cpp-var "bool darkenBackground = false"
 
          Darkens the colour of the dialog window slightly
-    !!! cpp-var "bool useFullMessageHeight = false                    "
+    !!! cpp-var "bool useFullMessageHeight = false"
 
          Creates a larger dialog window even if there is no text or buttons to fill that space
-    !!! cpp-var "array<DialogButtonData> buttonData             "
+    !!! cpp-var "array<DialogButtonData> buttonData"
 
          Stores the information added by the ``AddDialogButton`` function
-    !!! cpp-var "array<DialogFooterData> footerData                   "
+    !!! cpp-var "array<DialogFooterData> footerData"
 
          Stores the information added by the ``AddDialogFooter`` function
 
