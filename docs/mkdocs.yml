@@ -26,7 +26,7 @@ theme:
     - navigation.instant
     - navigation.instant.prefetch
   icon:
-    edit: material/pencil 
+    edit: material/pencil
     view: material/eye
 
 validation:
@@ -39,7 +39,7 @@ plugins:
   - group:
       plugins:
         - privacy
-      enabled: !ENV CI 
+      enabled: !ENV CI
   - search
   - social
 
