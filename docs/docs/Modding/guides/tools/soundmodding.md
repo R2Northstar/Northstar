@@ -63,12 +63,12 @@ Example of a `mod.json` (documented here: [Getting Started](../gettingstarted.md
 
 
 ```json
-   {
-     "Name": "MOD_NAME_HERE",
-     "Description": "DESCRIPTION_HERE",
-     "Version": "0.1.0",
-     "LoadPriority": 2
-   }
+{
+    "Name": "MOD_NAME_HERE",
+    "Description": "DESCRIPTION_HERE",
+    "Version": "0.1.0",
+    "LoadPriority": 2
+}
 ```
 
 
@@ -82,10 +82,10 @@ The event JSON files must contain both `EventId` and `AudioSelectionStrategy` li
 
 
 ```json
-   {
-       "EventId": [ "pilot_grapple_fire" ],
-       "AudioSelectionStrategy": "sequential"
-   }
+{
+    "EventId": [ "pilot_grapple_fire" ],
+    "AudioSelectionStrategy": "sequential"
+}
 ```
 
 The `AudioSelectionStrategy` can be either:
@@ -128,12 +128,12 @@ This is usually because there's some metadata left in the audio. Remove it to fi
 
     ??? script
         ```shell
-            shopt -s globstar nullglob
-            for f in *.wav **/*.wav
-            do
-            ffmpeg -i "$f" -map 0 -map_metadata -1 -c:v copy -c:a copy "${f%.wav}.new.wav"
-            mv -f "${f%.wav}.new.wav" "$f"
-            done
+        shopt -s globstar nullglob
+        for f in *.wav **/*.wav
+        do
+        ffmpeg -i "$f" -map 0 -map_metadata -1 -c:v copy -c:a copy "${f%.wav}.new.wav"
+        mv -f "${f%.wav}.new.wav" "$f"
+        done
         ```
 
 - Sound is slightly higher/lower pitched in game. This is usually because the sampling rate of your sound doesn't match the original sound's sampling rate. You can use a tool like Audacity to resample your sound to match the original rate. Consult `_creating_your_sound` for more information.
@@ -157,43 +157,43 @@ This is usually because there's some metadata left in the audio. Remove it to fi
     === "WAV script"
 
         ```shell
-               #WAV to WAV 16-bit 48000 Hz.
-               #wav_converter.sh
+        #WAV to WAV 16-bit 48000 Hz.
+        #wav_converter.sh
 
-               shopt -s globstar nullglob
-               for f in *.wav **/*.wav
-               do
-               ffmpeg -i "$f" -acodec pcm_s16le -ar 48000 "${f%.wav}.new.wav"
-               mv -f "${f%.wav}.new.wav" "$f"
-               done
+        shopt -s globstar nullglob
+        for f in *.wav **/*.wav
+        do
+        ffmpeg -i "$f" -acodec pcm_s16le -ar 48000 "${f%.wav}.new.wav"
+        mv -f "${f%.wav}.new.wav" "$f"
+        done
         ```
 
 
     === "MP3 Script"
 
         ```shell
-               #MP3 to WAV 16-bit 48000 Hz.
-               #mp3-wav_converter.sh
+        #MP3 to WAV 16-bit 48000 Hz.
+        #mp3-wav_converter.sh
 
-               shopt -s globstar nullglob
-               for f in *.mp3
-               do
-               ffmpeg -i "${f}" -vn -c:a pcm_s16le  -ar 48000 "${f%.*}.wav"
-               done
+        shopt -s globstar nullglob
+        for f in *.mp3
+        do
+        ffmpeg -i "${f}" -vn -c:a pcm_s16le  -ar 48000 "${f%.*}.wav"
+        done
         ```
 
 
     === "Script for other formats"
 
         ```shell
-               #Replace .format with the one you want to convert.
-               #format-wav_converter.sh
+        #Replace .format with the one you want to convert.
+        #format-wav_converter.sh
 
-               shopt -s globstar nullglob
-               for f in *.format
-               do
-               ffmpeg -i "${f}" -vn -c:a pcm_s16le  -ar 48000 "${f%.*}.wav"
-               done
+        shopt -s globstar nullglob
+        for f in *.format
+        do
+        ffmpeg -i "${f}" -vn -c:a pcm_s16le  -ar 48000 "${f%.*}.wav"
+        done
         ```
 
 ## Installation

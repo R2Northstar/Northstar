@@ -98,9 +98,9 @@ All the data in the struct that can be changed.
     **Example**
 
     ```squirrel
-        DialogData dialog
-        dialog.message = "Hello there"
-        OpenDialog( dialog )
+    DialogData dialog
+    dialog.message = "Hello there"
+    OpenDialog( dialog )
     ```
 
 !!! cpp-function "void AddDialogButton( DialogData dialog, string text, void functionref() callback )"
@@ -116,15 +116,15 @@ All the data in the struct that can be changed.
     **Example**
 
     ```squirrel
-        void function SendDialogWithButton()
-        {
-            DialogData dialog
-            dialog.message = "Hello there"
-            AddDialogButton(dialog, "Button 1 %%$r2_ui/menus/loadout_icons/primary_weapon/primary_kraber%%", void function():() {
-                printt( "pressed button 1" )
-            })
-            OpenDialog( dialog )
-        }
+    void function SendDialogWithButton()
+    {
+        DialogData dialog
+        dialog.message = "Hello there"
+        AddDialogButton(dialog, "Button 1 %%$r2_ui/menus/loadout_icons/primary_weapon/primary_kraber%%", void function():() {
+            printt( "pressed button 1" )
+        })
+        OpenDialog( dialog )
+    }
     ```
 
 !!! cpp-function "void AddDialogFooter( DialogData dialog, string text )"
@@ -150,14 +150,14 @@ All the data in the struct that can be changed.
 the folowing code produces this output:
 
 ```squirrel
-    DialogData dialog
-    dialog.header = "This is the header"
-    dialog.message = "this is the body, it is green \n \n Hello There \n \n General Kenobi"
-    dialog.messageColor = [0,200,0,100]
-    dialog.showSpinner = true
-    dialog.showPCBackButton = true
-    AddDialogButton( dialog, "Button 1 %%$r2_ui/menus/loadout_icons/primary_weapon/primary_kraber%%", ButtonOnePressed )
-    OpenDialog( dialog )
+DialogData dialog
+dialog.header = "This is the header"
+dialog.message = "this is the body, it is green \n \n Hello There \n \n General Kenobi"
+dialog.messageColor = [0,200,0,100]
+dialog.showSpinner = true
+dialog.showPCBackButton = true
+AddDialogButton( dialog, "Button 1 %%$r2_ui/menus/loadout_icons/primary_weapon/primary_kraber%%", ButtonOnePressed )
+OpenDialog( dialog )
 ```
 
 

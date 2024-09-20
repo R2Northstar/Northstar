@@ -55,19 +55,19 @@ Remote functions allow the `SERVER` to call registered script functions on the `
   To register custom remote functions you are **required** to use this callback because functions can only be registered once.
 
   ```squirrel
-    globalize_all_functions
+globalize_all_functions
 
-    void function MyMod_Init()
-    {
-      AddCallback_OnRegisteringCustomNetworkVars( MyModRegisterRemoteFunctions )
-    }
+void function MyMod_Init()
+{
+    AddCallback_OnRegisteringCustomNetworkVars( MyModRegisterRemoteFunctions )
+}
 
-    void function MyModRegisterRemoteFunctions()
-    {
-      Remote_RegisterFunction( "ExampleRemoteFunction" )
-    }
+void function MyModRegisterRemoteFunctions()
+{
+    Remote_RegisterFunction( "ExampleRemoteFunction" )
+}
 
-    void function ExampleRemoteFunction() {}
+void function ExampleRemoteFunction() {}
   ```
 
 !!! cpp-function "void Remote_RegisterFunction( string name )"

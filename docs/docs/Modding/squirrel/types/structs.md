@@ -9,12 +9,12 @@ Before using a struct you need to define it and all contents.
 The fields are typed like any regular variable.
 
 ```squirrel
-   struct MyStruct
-   {
+struct MyStruct
+{
     int field1
     string field2
     array<float> field3
-   }
+}
 ```
 
 You can then use `MyStruct` as a type anywhere in the file.
@@ -42,21 +42,21 @@ Similar like in static arrays, you can omit any fields that should have their ty
 Struct fields can be any type, this includes previously declared structs as well.
 
 ```squirrel
-   struct Engine
-   {
+struct Engine
+{
     string manufacturer
-   }
+}
 
-   struct Tire
-   {
+struct Tire
+{
     string material
-   }
+}
 
-   struct Car
-   {
+struct Car
+{
     Engine engine,
     Tire[4] tires
-   }
+}
 ```
 
 ### Self Nesting Structs
@@ -64,11 +64,11 @@ Struct fields can be any type, this includes previously declared structs as well
 Structs can contain fields of their own type, however they need to be **null initialized**. You can achieve this by specifying their type as `ornull`.
 
 ```squirrel
-   struct LinkedList
-   {
+struct LinkedList
+{
     var content
     LinkedList ornull nextNode
-   }
+}
 ```
 
 ## Field Default Values
@@ -78,10 +78,10 @@ Any struct field can have an optional default value. If omitted, the type's defa
 Default values need to be a constant expression that can be evaluated at compile time.
 
 ```squirrel
-   struct Dice
-   {
+struct Dice
+{
     int[6] sides = [ 1, 2, 3, 4, 5, 6 ]
-   }
+}
 ```
 
 ## Singleton Instances
@@ -89,27 +89,27 @@ Default values need to be a constant expression that can be evaluated at compile
 You can define a struct and initialize a local variable of that struct instantly with singletons. These are often used to have global variables that are only used in a single script file.
 
 ```squirrel
-   struct {
+struct {
     var menu
-   } file
+} file
 
-   void function InitMyMenu()
-   {
+void function InitMyMenu()
+{
     file.menu = GetMenu( "SomeMenu" )
-   }
+}
 ```
 
 Singletons can also be used for struct fields.
 
 ```squirrel
-   struct Car
-   {
+struct Car
+{
     struct {
-      string manufacturer
-      } engine
-   }
+        string manufacturer
+    } engine
+}
 
-   // ...
-   Car car
-   car.engine.manufacturer = "Vinson Dynamics"
+// ...
+Car car
+car.engine.manufacturer = "Vinson Dynamics"
 ```

@@ -39,54 +39,54 @@ You can search for a string in memory with `Search > Memory`. Select `String` as
 The first occurence is at `server.dll+0x2b44f3`. If you wait for the function to be decompiled, you'll see the string in this code:
 
 ```c
-    _DAT_181055f60 = "IsServer";
-    _DAT_181055f68 = "IsServer";
-    _DAT_181055fb8 = 0;
-    _DAT_181055f90 = 0;
-    _DAT_181055f98 = 0;
-    _DAT_181055fc0 = FUN_18029a630;
-    _DAT_181055f88 = _DAT_181055f88 & 0xff;
-    _DAT_181055f70 = ZEXT816(0x1808fa7f8);
-    _DAT_181055f80 = 0;
-    _DAT_181055f8c = 0;
-    _DAT_181055f9c = 6;
+_DAT_181055f60 = "IsServer";
+_DAT_181055f68 = "IsServer";
+_DAT_181055fb8 = 0;
+_DAT_181055f90 = 0;
+_DAT_181055f98 = 0;
+_DAT_181055fc0 = FUN_18029a630;
+_DAT_181055f88 = _DAT_181055f88 & 0xff;
+_DAT_181055f70 = ZEXT816(0x1808fa7f8);
+_DAT_181055f80 = 0;
+_DAT_181055f8c = 0;
+_DAT_181055f9c = 6;
 ```
 
 Because the squirrel function executes native code, the callback `FUN_18029a630` is probably where it's located. You can double click the reference to decompile the function.
 
 ```c
-    undefined4 FUN_18029a630(undefined8 param_1)
-    {
-        char cVar1;
-        undefined4 uVar2;
+undefined4 FUN_18029a630(undefined8 param_1)
+{
+    char cVar1;
+    undefined4 uVar2;
 
-        uVar2 = 1;
-        FUN_180003710(param_1,1);
-        cVar1 = FUN_18001d840(param_1);
-        if (cVar1 != '\0') {
-            uVar2 = 0xffffffff;
-        }
-        return uVar2;
+    uVar2 = 1;
+    FUN_180003710(param_1,1);
+    cVar1 = FUN_18001d840(param_1);
+    if (cVar1 != '\0') {
+        uVar2 = 0xffffffff;
     }
+    return uVar2;
+}
 ```
 
 From this you can assume that native closures in squirrel_re still use the `SQRESULT` convention, because the closure returns `-1` if `FUN_18001d840` returns `NULL`, which is typically an error and `1` if nothing happens.
 It's also obvious that either `FUN_180003710` or `FUN_18001d840` pushes a boolean to the stack. It's probably `FUN_180003710` because it takes an extra parameter but you can check `IsClient` at `server.dll+0x29a4d0` as a reference.
 
 ```c
-    undefined4 FUN_18029a4d0(undefined8 param_1)
-    {
-        char cVar1;
-        undefined4 uVar2;
+undefined4 FUN_18029a4d0(undefined8 param_1)
+{
+    char cVar1;
+    undefined4 uVar2;
 
-        FUN_180003710(param_1,0);
-        cVar1 = FUN_18001d840(param_1);
-        uVar2 = 1;
-        if (cVar1 != '\0') {
-            uVar2 = 0xffffffff;
-        }
-        return uVar2;
+    FUN_180003710(param_1,0);
+    cVar1 = FUN_18001d840(param_1);
+    uVar2 = 1;
+    if (cVar1 != '\0') {
+        uVar2 = 0xffffffff;
     }
+    return uVar2;
+}
 ```
 
 This is virtually the same, except that `FUN_180003710` is being called with a `0`.
@@ -95,7 +95,7 @@ Decompile the function, then right click the function and select `Edit Function 
 Right now the signature looks like this:
 
 ```c
-    void FUN_180003710(longlong param_1, int param_2)
+void FUN_180003710(longlong param_1, int param_2)
 ```
 
 `param_1` has to be a pointer to the Squirrel VM, because a pointer on 64x systems is 8 bytes long (the same as `longlong`) and the `HSquirrelVM` struct is larger than 8 bytes.
@@ -105,5 +105,5 @@ The second parameter has to be the value that will be pushed to the VM as a bool
 You can change the signature now to this, to make code using the function more readable. Because `HSquirrelVM` isn't defined yet, the type needs to stay `longlong` for now.
 
 ```c
-    void sq_pushbool(longlong sqvm, int value)
+void sq_pushbool(longlong sqvm, int value)
 ```

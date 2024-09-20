@@ -5,10 +5,10 @@
 ### 1. Example Datatable Asset
 
 ```json
-    {
-        "$type": "dtbl",
-        "path": "datatable/custom_datatable",
-    }
+{
+    "$type": "dtbl",
+    "path": "datatable/custom_datatable",
+}
 ```
 
 ### 2. Example Datatable `.csv` File

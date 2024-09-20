@@ -27,10 +27,10 @@ The Video will now be in the same folder as the original one and converted to a 
 3. Make a mod according to [Getting Started](../gettingstarted.md)
 4. Copy the .bik to the following path in your mod folder:
     ```text
-        author.mod/
-        ├─ mod.json
-        ├─ media/
-        │  ├─ menu_act01.bik
+    author.mod/
+    ├─ mod.json
+    ├─ media/
+    │  ├─ menu_act01.bik
     ```
 5. Your mod should now load a custom Main Menu Video
 

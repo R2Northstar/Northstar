@@ -7,17 +7,17 @@
 `example1.json`
 
 ```json
-    {
-        "version": 7
-    }
+{
+    "version": 7
+}
 ```
 
 ```text
-    root
-    ├── RePak.exe
-    ├── example1.json
-    └── build
-        └─ example1.rpak
+root
+├── RePak.exe
+├── example1.json
+└── build
+    └─ example1.rpak
 ```
 
 !!! note
@@ -33,34 +33,34 @@
 `example2.json`
 
 ```json
-    {
-        "name": "example2",
-        "assetsDir": "../depot",
-        "outputDir": "../output",
-        "version": 7,
-        "starpakPath": "example2.starpak",
-        "files":
-        [
-            {
-                "$type": "txtr",
-                "path": "textures/models/my_texture"
-            }
-        ]
-    }
+{
+    "name": "example2",
+    "assetsDir": "../depot",
+    "outputDir": "../output",
+    "version": 7,
+    "starpakPath": "example2.starpak",
+    "files":
+    [
+        {
+            "$type": "txtr",
+            "path": "textures/models/my_texture"
+        }
+    ]
+}
 ```
 
 ```text
-    root
-    ├── RePak.exe
-    ├── maps
-    |   └─ example2.json
-    ├── depot
-    |   └─ textures
-    |       └─ models
-    |           └─ my_texture.dds
-    └── output
-        ├─ example2.starpak
-        └─ example2.rpak
+root
+├── RePak.exe
+├── maps
+|   └─ example2.json
+├── depot
+|   └─ textures
+|       └─ models
+|           └─ my_texture.dds
+└── output
+    ├─ example2.starpak
+    └─ example2.rpak
 ```
 
 !!! note
@@ -80,46 +80,46 @@
 `example3.json`
 
 ```json
-    {
-        "name": "example3",
-        "assetsDir": "../depot",
-        "outputDir": "../output",
-        "version": 7,
-        "starpakPath": "example3.starpak",
-        "files":
-        [
-            {
-                "$type": "txtr",
-                "path": "textures/models/my_texture_col"
-            },
-            {
-                "$type": "txtr",
-                "path": "textures/models/my_texture_nml"
-            },
-            {
-                "$type": "txtr",
-                "starpakPath": "example3-spc.starpak",
-                "path": "textures/models/my_texture_spc"
-            }
-        ]
-    }
+{
+    "name": "example3",
+    "assetsDir": "../depot",
+    "outputDir": "../output",
+    "version": 7,
+    "starpakPath": "example3.starpak",
+    "files":
+    [
+        {
+            "$type": "txtr",
+            "path": "textures/models/my_texture_col"
+        },
+        {
+            "$type": "txtr",
+            "path": "textures/models/my_texture_nml"
+        },
+        {
+            "$type": "txtr",
+            "starpakPath": "example3-spc.starpak",
+            "path": "textures/models/my_texture_spc"
+        }
+    ]
+}
 ```
 
 ```text
-    root
-    ├── RePak.exe
-    ├── maps
-    |   └─ example3.json
-    ├── depot
-    |   └─ textures
-    |       └─ models
-    |           ├─ my_texture_col.dds
-    |           ├─ my_texture_nml.dds
-    |           └─ my_texture_spc.dds
-    └── output
-        ├─ example3.starpak
-        ├─ example3-spc.starpak
-        └─ example3.rpak
+root
+├── RePak.exe
+├── maps
+|   └─ example3.json
+├── depot
+|   └─ textures
+|       └─ models
+|           ├─ my_texture_col.dds
+|           ├─ my_texture_nml.dds
+|           └─ my_texture_spc.dds
+└── output
+    ├─ example3.starpak
+    ├─ example3-spc.starpak
+    └─ example3.rpak
 ```
 
 !!! note

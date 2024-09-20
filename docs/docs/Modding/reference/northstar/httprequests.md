@@ -185,22 +185,22 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
     such as `callback` in this example.
 
     ```squirrel
-        HttpRequest request
-        request.method = HttpRequestMethod.GET
-        request.url = "https://my.spyglass.api/sanctions/get_by_id"
-        request.queryParameters[ "id" ] <- [ id.tostring() ]
+    HttpRequest request
+    request.method = HttpRequestMethod.GET
+    request.url = "https://my.spyglass.api/sanctions/get_by_id"
+    request.queryParameters[ "id" ] <- [ id.tostring() ]
 
-        void functionref( HttpRequestResponse ) onSuccess = void function ( HttpRequestResponse response ) : ( callback )
-        {
-            SpyglassApi_OnQuerySanctionByIdSuccessful( response, callback )
-        }
+    void functionref( HttpRequestResponse ) onSuccess = void function ( HttpRequestResponse response ) : ( callback )
+    {
+        SpyglassApi_OnQuerySanctionByIdSuccessful( response, callback )
+    }
 
-        void functionref( HttpRequestFailure ) onFailure = void function ( HttpRequestFailure failure ) : ( callback )
-        {
-            SpyglassApi_OnQuerySanctionByIdFailed( failure, callback )
-        }
+    void functionref( HttpRequestFailure ) onFailure = void function ( HttpRequestFailure failure ) : ( callback )
+    {
+        SpyglassApi_OnQuerySanctionByIdFailed( failure, callback )
+    }
 
-        return NSHttpRequest( request, onSuccess, onFailure )
+    return NSHttpRequest( request, onSuccess, onFailure )
     ```
 
 
@@ -228,20 +228,20 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
     This is the same example as NSHttpRequest()'s example. However, it uses this function instead.
 
     ```squirrel
-        table<string, array<string> > params
-        params[ "id" ] <- [ id.tostring() ]
+    table<string, array<string> > params
+    params[ "id" ] <- [ id.tostring() ]
 
-        void functionref( HttpRequestResponse ) onSuccess = void function ( HttpRequestResponse response ) : ( callback )
-        {
-            SpyglassApi_OnQuerySanctionByIdSuccessful( response, callback )
-        }
+    void functionref( HttpRequestResponse ) onSuccess = void function ( HttpRequestResponse response ) : ( callback )
+    {
+        SpyglassApi_OnQuerySanctionByIdSuccessful( response, callback )
+    }
 
-        void functionref( HttpRequestFailure ) onFailure = void function ( HttpRequestFailure failure ) : ( callback )
-        {
-            SpyglassApi_OnQuerySanctionByIdFailed( failure, callback )
-        }
+    void functionref( HttpRequestFailure ) onFailure = void function ( HttpRequestFailure failure ) : ( callback )
+    {
+        SpyglassApi_OnQuerySanctionByIdFailed( failure, callback )
+    }
 
-        return NSHttpGet( "https://my.spyglass.api/sanctions/get_by_id", params, onSuccess, onFailure )
+    return NSHttpGet( "https://my.spyglass.api/sanctions/get_by_id", params, onSuccess, onFailure )
     ```
 
 
@@ -289,16 +289,16 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
     In this example, we'll convert a table to JSON, and send it over to a web API.
 
     ```squirrel
-        table myData = {}
-        myData[ "uid" ] <- player.GetUID()
-        myData[ "username" ] <- player.GetPlayerName()
-        myData[ "isBot" ] <- player.IsBot().tostring()
+    table myData = {}
+    myData[ "uid" ] <- player.GetUID()
+    myData[ "username" ] <- player.GetPlayerName()
+    myData[ "isBot" ] <- player.IsBot().tostring()
 
-        string json = EncodeJSON( myData )
-        if ( NSHttpPostBody( "https://api.stats.tf/player/connect", json ) )
-        {
-            printt( "Successfully attempted to upload player connection stats to API." )
-        }
+    string json = EncodeJSON( myData )
+    if ( NSHttpPostBody( "https://api.stats.tf/player/connect", json ) )
+    {
+        printt( "Successfully attempted to upload player connection stats to API." )
+    }
     ```
 
 

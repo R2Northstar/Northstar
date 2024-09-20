@@ -33,19 +33,19 @@ function. It's not possible to register remote functions after `Remote_EndRegist
 mod.json extract:
 
 ```json
-        "Scripts": [
-        {
-            "Path": "sh_spaceships.nut",
-            "RunOn": "CLIENT || SERVER", // execute the same function on both CLIENT and SERVER
-            "ClientCallback": {
-                "Before": "Spaceship_Network"
-            },
-            "ServerCallback": {
-                "Before": "Spaceship_Network"
-            }
-        },
-        {
-            // more script registrations ...
+"Scripts": [
+{
+    "Path": "sh_spaceships.nut",
+    "RunOn": "CLIENT || SERVER", // execute the same function on both CLIENT and SERVER
+    "ClientCallback": {
+        "Before": "Spaceship_Network"
+    },
+    "ServerCallback": {
+        "Before": "Spaceship_Network"
+    }
+},
+{
+    // more script registrations ...
 ```
 
 sh_spaceships.nut:
@@ -53,43 +53,43 @@ sh_spaceships.nut:
 The networked `CLIENT` function has to be global
 
 ```squirrel
-    #if CLIENT
-    global function Server_GetNetworkedVariable // make the networked function only global on CLIENT
-    #endif //CLIENT
+#if CLIENT
+global function Server_GetNetworkedVariable // make the networked function only global on CLIENT
+#endif //CLIENT
 
-    global function Spaceship_Network // this gets executed on both CLIENT & SERVER
+global function Spaceship_Network // this gets executed on both CLIENT & SERVER
 
-    void function Spaceship_Network()
-    {
-        AddCallback_OnRegisteringCustomNetworkVars( RegisterNetworkVars ) // you can only register remote functions inside of this callback
-    }
+void function Spaceship_Network()
+{
+    AddCallback_OnRegisteringCustomNetworkVars( RegisterNetworkVars ) // you can only register remote functions inside of this callback
+}
 
-    void function RegisterNetworkVars()
-    {
-        // this has to be executed on both CLIENT and SERVER, else they will be out of sync and the client disconnects
-        Remote_RegisterFunction( "Server_GetNetworkedVariable" ) // register a remote function. Note that the parameters are not declared here
-    }
+void function RegisterNetworkVars()
+{
+    // this has to be executed on both CLIENT and SERVER, else they will be out of sync and the client disconnects
+    Remote_RegisterFunction( "Server_GetNetworkedVariable" ) // register a remote function. Note that the parameters are not declared here
+}
 
-    #if CLIENT
-    void function Server_GetNetworkedVariable( int number ) // you can declare as many or few parameters as you wish
-    {
-        printt("got integer", number)
-    }
-    #endif //CLIENT
+#if CLIENT
+void function Server_GetNetworkedVariable( int number ) // you can declare as many or few parameters as you wish
+{
+    printt("got integer", number)
+}
+#endif //CLIENT
 ```
 
 Calling the `CLIENT` function `Server_GetNetworkedVariable` on `SERVER` vm:
 
 ```squirrel
-    // player: CPlayer entity that should execute the function
-    // func: function identifier string
-    // ...: any parameters passed to the function
-    Remote_CallFunction_NonReplay( entity player, string func, ... ) // NOT reexecuted in a replay
-    Remote_CallFunction_Replay( entity player, string func, ... ) // reexecuted in a replay
+// player: CPlayer entity that should execute the function
+// func: function identifier string
+// ...: any parameters passed to the function
+Remote_CallFunction_NonReplay( entity player, string func, ... ) // NOT reexecuted in a replay
+Remote_CallFunction_Replay( entity player, string func, ... ) // reexecuted in a replay
 
-    // for the previous example, this would be a valid remote function call:
+// for the previous example, this would be a valid remote function call:
 
-    Remote_CallFunction_NonReplay( player, "Server_GetNetworkedVariable", RandomIntRange( 1, 100 ) )
+Remote_CallFunction_NonReplay( player, "Server_GetNetworkedVariable", RandomIntRange( 1, 100 ) )
 ```
 
 ### Server to Client command callbacks
@@ -117,15 +117,15 @@ and execute with the function serverside:
 #### Example
 
 ```squirrel
-    void function MessageUtils_ClientInit()
-    {
-        AddServerToClientStringCommandCallback( "ServerHUDMessageShow", ServerCallback_CreateServerHUDMessage )
-    }
+void function MessageUtils_ClientInit()
+{
+    AddServerToClientStringCommandCallback( "ServerHUDMessageShow", ServerCallback_CreateServerHUDMessage )
+}
 
-    void function ServerCallback_CreateServerHUDMessage ( array<string> args )
-    {
-        // client side command handle logic ...
-    }
+void function ServerCallback_CreateServerHUDMessage ( array<string> args )
+{
+    // client side command handle logic ...
+}
 ```
 
 ## `SERVER` to `UI` vm
@@ -137,7 +137,7 @@ and execute with the function serverside:
 #### Example
 
 ```squirrel
-    Remote_CallFunction_UI( player, "ScriptCallback_UnlockAchievement", achievementID )
+Remote_CallFunction_UI( player, "ScriptCallback_UnlockAchievement", achievementID )
 ```
 
 ## `CLIENT` to `SERVER` vm
@@ -165,13 +165,13 @@ Since version 1.5 mods can receive notifications when a client command has been 
     Example usage with the :doc:`PrivateMatchLaunch` clientcommand
 
     ```squirrel
-        void function init(){
-            AddClientCommandNotifyCallback("PrivateMatchLaunch", started)
-        }
+    void function init(){
+        AddClientCommandNotifyCallback("PrivateMatchLaunch", started)
+    }
 
-        void function started(entity player, array<string> args){
-            print(player + " started the match")
-        }
+    void function started(entity player, array<string> args){
+        print(player + " started the match")
+    }
     ```
 
 Please refer to :ref:`list_client_commands` for a list of native client commands you could catch.
@@ -188,16 +188,16 @@ You can also pass parameters to the function. `identifier` is the name of the fu
 ## Example
 
 ```squirrel
-    #if UI
-    global function CallMe
+#if UI
+global function CallMe
 
-    void function CallMe( int a, int b )
-    {
-        printt( a + b )
-    }
-    #elseif CLIENT
-    RunUIScript( "CallMe", 1, 2 ) // 3
-    #endif
+void function CallMe( int a, int b )
+{
+    printt( a + b )
+}
+#elseif CLIENT
+RunUIScript( "CallMe", 1, 2 ) // 3
+#endif
 ```
 
 ## `UI` to `CLIENT` vm
@@ -212,16 +212,16 @@ You can also pass parameters to the function. `identifier` is the name of the fu
 #### Example
 
 ```squirrel
-    #if CLIENT
-    global function CallMe
+#if CLIENT
+global function CallMe
 
-    void function CallMe( int a, int b )
-    {
-        printt( a + b )
-    }
-    #elseif UI
-    RunClientScript( "CallMe", 1, 2 ) // 3
-    #endif
+void function CallMe( int a, int b )
+{
+    printt( a + b )
+}
+#elseif UI
+RunClientScript( "CallMe", 1, 2 ) // 3
+#endif
 ```
 
 

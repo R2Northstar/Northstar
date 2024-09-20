@@ -11,10 +11,10 @@ You can not specify which entity class a variable is supposed to hold so you nee
 If you need to check the class of an entity at runtime you can do so with the `instanceof` operator.
 
 ```squirrel
-   bool function IsCPlayer( entity e )
-   {
+bool function IsCPlayer( entity e )
+{
     return e instanceof CPlayer
-   }
+}
 ```
 
 Entities are `null` initialized and there are no literals for entities.

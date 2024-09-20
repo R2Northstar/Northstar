@@ -17,22 +17,22 @@ A thread is considered finished, after the threaded function returned a value. T
 To create a new coroutine, call a function with the `thread` keyword before.
 
 ```squirrel
-    thread void function(){}()
-    thread MyFunction()
+thread void function(){}()
+thread MyFunction()
 ```
 
 To get a thread object, use the `newthread` function.
 
 ```squirrel
-    void function CoroutineExample()
-    {
-        suspend( "passback" ) // passback is optional
-        print( "threaded statement" )
-    }
+void function CoroutineExample()
+{
+    suspend( "passback" ) // passback is optional
+    print( "threaded statement" )
+}
 
-    var co = newthread( CoroutineExample )
-    var suspendedReturn = co.call() // you NEED to use .call, invoking the function with () won't work
-    co.wakeup() // continue thread
+var co = newthread( CoroutineExample )
+var suspendedReturn = co.call() // you NEED to use .call, invoking the function with () won't work
+co.wakeup() // continue thread
 ```
 
 ### wait
@@ -40,13 +40,13 @@ To get a thread object, use the `newthread` function.
 The `wait` statement halts threads for a set amount of time specified after the `wait` keyword. Integers and floats are accepted as times in seconds.
 
 ```squirrel
-    void function WaitExample( float n )
-    {
-        wait 1 // wait 1 second
-        wait n // wait n seconds
-    }
+void function WaitExample( float n )
+{
+    wait 1 // wait 1 second
+    wait n // wait n seconds
+}
 
-    thread WaitExample( 0.5 ) // thread will halt for a total 1.5 seconds
+thread WaitExample( 0.5 ) // thread will halt for a total 1.5 seconds
 ```
 
 To wait a single frame, don't use `wait 0` since it doesn't actually wait a game frame. For example, if you have a client loop that does wait 0 even if the game is paused the loop will still run. Use `WaitFrame()` instead.
@@ -56,16 +56,16 @@ When using infinite loops it's important to work with `wait` statements to avoid
 If you want to wait until a thread is finished, you can spin off the thread that you wait for with the `waitthread` keyword.
 
 ```squirrel
-    void function ParentThread()
+void function ParentThread()
+{
+    printt( "pre spinoff " + string( Time() ) )
+    waitthread void function()
     {
-        printt( "pre spinoff " + string( Time() ) )
-        waitthread void function()
-        {
-            printt( "mid spinoff " + string( Time() ) )
-            wait 1
-        }
-        printt( "post spinoff" + string( Time() ) )
+        printt( "mid spinoff " + string( Time() ) )
+        wait 1
     }
+    printt( "post spinoff" + string( Time() ) )
+}
 ```
 
 ### OnThreadEnd
@@ -73,43 +73,43 @@ If you want to wait until a thread is finished, you can spin off the thread that
 Use the `OnThreadEnd` function to execute a callback after a thread has ended. This is useful for cleanup functions that remove entities after they're used or similar.
 
 ```squirrel
-    void function PlayIncomingFX( vector origin, int teamNum )
-    {
-        wait 1.50
-        EmitSoundAtPosition( teamNum, origin, "Titan_1P_Warpfall_Start" )
+void function PlayIncomingFX( vector origin, int teamNum )
+{
+    wait 1.50
+    EmitSoundAtPosition( teamNum, origin, "Titan_1P_Warpfall_Start" )
 
-        local colorVec = Vector( 0, 255, 0 )
-        entity cpoint = CreateEntity( "info_placement_helper" )
-        SetTargetName( cpoint, UniqueString( "pickup_controlpoint" ) )
-        DispatchSpawn( cpoint )
-        cpoint.SetOrigin( colorVec )
-        entity glowFX = PlayFXWithControlPoint( INCOMING_SPAWN_FX, origin, cpoint, -1, null, null, C_PLAYFX_LOOP )
+    local colorVec = Vector( 0, 255, 0 )
+    entity cpoint = CreateEntity( "info_placement_helper" )
+    SetTargetName( cpoint, UniqueString( "pickup_controlpoint" ) )
+    DispatchSpawn( cpoint )
+    cpoint.SetOrigin( colorVec )
+    entity glowFX = PlayFXWithControlPoint( INCOMING_SPAWN_FX, origin, cpoint, -1, null, null, C_PLAYFX_LOOP )
 
-        OnThreadEnd(
-            function() : ( glowFX, cpoint )
-            {
-                if ( IsValid( glowFX ) )
-                    glowFX.Destroy()
-                if ( IsValid( cpoint ) )
-                    cpoint.Destroy()
-            }
-        )
+    OnThreadEnd(
+        function() : ( glowFX, cpoint )
+        {
+            if ( IsValid( glowFX ) )
+                glowFX.Destroy()
+            if ( IsValid( cpoint ) )
+                cpoint.Destroy()
+        }
+    )
 
-        wait 1.25
-    }
+    wait 1.25
+}
 ```
 
 ### Example Script
 
 ```squirrel
-    void function SetPositionDelayed( entity ent, vector pos, float delay )
-    {
-        wait delay
-        ent.SetOrigin( pos )
-    }
+void function SetPositionDelayed( entity ent, vector pos, float delay )
+{
+    wait delay
+    ent.SetOrigin( pos )
+}
 
-    SetPositionDelayed( player, <0, 0, 100>, 5.0 )
-    SetPositionDelayed( player, <0, 0, 50>, 2.5 ) // this will finish sooner.
+SetPositionDelayed( player, <0, 0, 100>, 5.0 )
+SetPositionDelayed( player, <0, 0, 50>, 2.5 ) // this will finish sooner.
 ```
 
 
@@ -170,8 +170,8 @@ It's also possible to trigger and catch signals with methods that aren't propert
     Wait for any of the passed signals to be triggered.
 
     ```squirrel
-        // Wait for the NPC to die, delete, or get leeched, then remove the npc from the array
-        WaitSignal( ent, "OnDeath", "OnDestroy", "OnLeeched" )
+    // Wait for the NPC to die, delete, or get leeched, then remove the npc from the array
+    WaitSignal( ent, "OnDeath", "OnDestroy", "OnLeeched" )
     ```
 
 !!! cpp-function "void EndSignal( var obj, string signal )"
@@ -183,43 +183,43 @@ It's also possible to trigger and catch signals with methods that aren't propert
 For example, if we want to tell a player not to give up after being killed several times, we can write it this way:
 
 ```squirrel
-    // First, we register signal we want to use
-    RegisterSignal("OnMultipleDeaths")
+// First, we register signal we want to use
+RegisterSignal("OnMultipleDeaths")
 
 
-    void function WatchForDeaths (entity player)
+void function WatchForDeaths (entity player)
+{
+    int deathsCount = 0
+
+    while( GamePlayingOrSuddenDeath() )
     {
-        int deathsCount = 0
-
-        while( GamePlayingOrSuddenDeath() )
+        if ( player.isDead() )  // This doesn't exist, don't try this at home
         {
-            if ( player.isDead() )  // This doesn't exist, don't try this at home
-            {
-                deathsCount += 1
+            deathsCount += 1
 
-                if (deathsCount >= 42)
-                {
-                    // This sends "OnMultipleDeaths" signal on player entity
-                    player.Signal( "OnMultipleDeaths" )
-                }
+            if (deathsCount >= 42)
+            {
+                // This sends "OnMultipleDeaths" signal on player entity
+                player.Signal( "OnMultipleDeaths" )
             }
         }
     }
+}
 
 
-    void function DontGiveUp (entity player)
-    {
-        // This is a blocking call
-        player.WaitSignal("OnMultipleDeaths");
+void function DontGiveUp (entity player)
+{
+    // This is a blocking call
+    player.WaitSignal("OnMultipleDeaths");
 
-        // This will not run until entity received "OnMultipleDeaths" signal
-        SendHudMessage( player, "Don't give up!", -1, 0.4, 255, 0, 0, 0, 0, 3, 0.15 )
-    }
+    // This will not run until entity received "OnMultipleDeaths" signal
+    SendHudMessage( player, "Don't give up!", -1, 0.4, 255, 0, 0, 0, 0, 3, 0.15 )
+}
 
-    // Launch our methods in dedicated threads
-    entity player = GetPlayerArray()[0]
-    thread WatchForDeaths( player )
-    thread DontGiveUp( player )
+// Launch our methods in dedicated threads
+entity player = GetPlayerArray()[0]
+thread WatchForDeaths( player )
+thread DontGiveUp( player )
 ```
 
 In this example, the `DontGiveUp` method is launched at the same time as `WatchForDeaths`; but it will not
@@ -305,20 +305,20 @@ is set, thread will end (after calling any `OnThreadEnd` methods).
 #### Example
 
 ```squirrel
-    void function FlagExample()
-    {
-        FlagInit( "BombHasExploded" )
+void function FlagExample()
+{
+    FlagInit( "BombHasExploded" )
 
-        thread BombTicker()
+    thread BombTicker()
 
-        FlagWait( "BombHasExploded" )
-        print( "bomb just exploded" )
-    }
+    FlagWait( "BombHasExploded" )
+    print( "bomb just exploded" )
+}
 
-    void function BombTicker()
-    {
-        Assert( IsNewThread(), "BombTicker must be threaded off" )
-        wait RandomFloatRange( 3, 9 )
-        FlagSet( "BombHasExploded" )
-    }
+void function BombTicker()
+{
+    Assert( IsNewThread(), "BombTicker must be threaded off" )
+    wait RandomFloatRange( 3, 9 )
+    FlagSet( "BombHasExploded" )
+}
 ```

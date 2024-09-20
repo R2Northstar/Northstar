@@ -225,27 +225,27 @@ You can get a bitflag of all damage types used with `DamageInfo_GetDamageType`.
     ```squirrel
 
 
-        global enum damageTypes
-        {
-            gibs = (DF_GIB)
-            largeCaliberExp  = (DF_BULLET | DF_GIB | DF_EXPLOSION)
-            gibBullet = (DF_BULLET | DF_GIB)
-            instant = (DF_INSTANT)
-            dissolve = (DF_DISSOLVE)
-            projectileImpact = (DF_GIB)
-            pinkMist = (DF_GIB) //If updated from DF_GIB, change the DF_GIB in Arc Cannon to match.
-            ragdoll = (DF_RAGDOLL)
-            titanStepCrush = (DF_TITAN_STEP)
-            arcCannon = (DF_DISSOLVE | DF_GIB | DF_ELECTRICAL )
-            electric = (DF_ELECTRICAL) //Only increases Vortex Shield decay for bullet weapons atm.
-            explosive = (DF_RAGDOLL | DF_EXPLOSION )
-            bullet = (DF_BULLET)
-            largeCaliber = (DF_BULLET | DF_KNOCK_BACK)
-            shotgun = (DF_BULLET | DF_GIB | DF_SHOTGUN )
-            titanMelee = (DF_MELEE | DF_RAGDOLL)
-            titanBerserkerMelee = (DF_MELEE | DF_RAGDOLL)
-            titanEjectExplosion = (DF_GIB | DF_EXPLOSION)
-            dissolveForce = (DF_DISSOLVE | DF_KNOCK_BACK | DF_EXPLOSION)
-            rodeoBatteryRemoval = (DF_RODEO | DF_EXPLOSION | DF_STOPS_TITAN_REGEN )
-        }
+    global enum damageTypes
+    {
+        gibs = (DF_GIB)
+        largeCaliberExp  = (DF_BULLET | DF_GIB | DF_EXPLOSION)
+        gibBullet = (DF_BULLET | DF_GIB)
+        instant = (DF_INSTANT)
+        dissolve = (DF_DISSOLVE)
+        projectileImpact = (DF_GIB)
+        pinkMist = (DF_GIB) //If updated from DF_GIB, change the DF_GIB in Arc Cannon to match.
+        ragdoll = (DF_RAGDOLL)
+        titanStepCrush = (DF_TITAN_STEP)
+        arcCannon = (DF_DISSOLVE | DF_GIB | DF_ELECTRICAL )
+        electric = (DF_ELECTRICAL) //Only increases Vortex Shield decay for bullet weapons atm.
+        explosive = (DF_RAGDOLL | DF_EXPLOSION )
+        bullet = (DF_BULLET)
+        largeCaliber = (DF_BULLET | DF_KNOCK_BACK)
+        shotgun = (DF_BULLET | DF_GIB | DF_SHOTGUN )
+        titanMelee = (DF_MELEE | DF_RAGDOLL)
+        titanBerserkerMelee = (DF_MELEE | DF_RAGDOLL)
+        titanEjectExplosion = (DF_GIB | DF_EXPLOSION)
+        dissolveForce = (DF_DISSOLVE | DF_KNOCK_BACK | DF_EXPLOSION)
+        rodeoBatteryRemoval = (DF_RODEO | DF_EXPLOSION | DF_STOPS_TITAN_REGEN )
+    }
     ```

@@ -7,11 +7,11 @@ ConVars are the easiest way to implement settings for your mod using the Mod Set
 Your mod needs to register itself and all ConVars that are a part of your mod that should be accessible in the Mod Settings menu. To do this, simply add a new script to your mod that runs only in the UI VM like this:
 
 ```json
-  "Path": "ui/ms_example_mod.nut",
-  "RunOn": "UI",
-  "UICallback": {
+"Path": "ui/ms_example_mod.nut",
+"RunOn": "UI",
+"UICallback": {
     "Before": "ExampleMod_AddModSettings"
-  }
+}
 ```
 
 Inside of the callback specified here, you can add your settings.
@@ -120,10 +120,10 @@ Inside of the callback specified here, you can add your settings.
 To create custom wrapper functions you need to specify the stack position where the root of your Mod Setting declarations take place.
 
 ```squirrel
-  void function AddModSettingsDropDown( string displayName, array<string> options )
-  {
+void function AddModSettingsDropDown( string displayName, array<string> options )
+{
     NSModSettingsAddButton( displayName, void function() { OpenDropDown( options ) }, 3 )
-  }
+}
 ```
 
 Note that in this example the stack position is `3`, since `AddModSettingsButton` needs to walk one additional step to the callback function.
