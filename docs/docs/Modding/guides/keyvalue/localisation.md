@@ -23,7 +23,6 @@ Languages natively supported by Titanfall2 are:
 Here's what a translation file looks like:
 
 ```json
-
     "lang"
     {
         "Language" "english"
@@ -59,7 +58,6 @@ For example, Northstar translation files are named
 You can import them from your `mod.json` manifesto this way:
 
 ```json
-
     {
         "Localisation": [
             "resource/northstar_client_localisation_%language%.txt"
@@ -82,21 +80,18 @@ For example, to translate the "Launch Northstar" button on main menu, instead of
 calling:
 
 ```
-
     AddComboButton( comboStruct, headerIndex, buttonIndex++, "Launch Northstar" )
 ```
 
 We'll use:
 
 ```
-
     AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_LAUNCH_NORTHSTAR" )
 ```
 
 You can also use the `Localize` method client-side:
 
 ```
-
     Localize( "#MENU_LAUNCH_NORTHSTAR" )
 ```
 

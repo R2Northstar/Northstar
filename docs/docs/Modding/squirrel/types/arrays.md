@@ -15,7 +15,6 @@ Arrays are always zero indexed with `[ <expression> ]`. The indexes are always n
 Array literals are a comma or newline seperated sequence of expressions delimited by an opening bracket `[` and a corresponding closing bracket `]`.
 
 ```squirrel
-
   array a = [ 1, 2, 3 ]
   array b = [
     1
@@ -29,7 +28,6 @@ Array literals are a comma or newline seperated sequence of expressions delimite
 Primitive arrays are arrays that can hold any value. Their content is therefore untyped.
 
 ```squirrel
-
   array a
   a.append( 1 ) // add a number
   a.append( "str" ) // add a string
@@ -50,7 +48,6 @@ The content type needs to be specified within `<` and `>` brackets.
 There is no way to define a complex array that holds multiple different types.
 
 ```squirrel
-
    array<int> a
    a.append( 1 )
    a.append( 0x2 )
@@ -71,7 +68,6 @@ You can index and change content values like with regular arrays.
 When initializing a static array you can omit all values after your initial values with `...`. All following values will get default initialized with the content's default.
 
 ```squirrel
-
    float[3] v1
    float[8] v2 = [ 1.0, 2.0, ... ]
    v2[2] = 3.0
@@ -87,7 +83,6 @@ It is not possible to cast or convert an array between their different forms. Fo
 Instead you need to create an entirely new array with the target type or add all contents manually.
 
 ```squirrel
-
   array<string> orig = [ "a", "b", "c" ]
   array target
 

@@ -10,7 +10,6 @@ The `mod.json` is responsible for governing when, and where your mod is loaded, 
 However, once you get the hang of it, it should be fairly easy to use.
 
 ```json
-
     {
         "Name" : "SimpleRandomiser",
         "Description" : "A randomiser gamemode that randomizes your loadouts!",
@@ -21,7 +20,6 @@ However, once you get the hang of it, it should be fairly easy to use.
 The script above defines the pubic and listed details of the mod.
 
 ```json
-
     "Scripts": [
         {
             "Path": "gamemodes/_gamemode_simplerandomiser.nut",
@@ -57,7 +55,6 @@ For example, both server and client needs to know whether if this gamemode exist
 
 
 ```json
-
         "Localisation": [
             "resource/simplerandomiser_localisation_%language%.txt"
         ]
@@ -71,7 +68,6 @@ Name this file `mod.json`, and it should go in the mods root folder, that being 
 Here's what the end result would look like:
 
 ```json
-
     {
         "Name" : "SimpleRandomiser",
         "Description" : "SimpleRandomiser",
@@ -127,7 +123,6 @@ Name this file `simplerandomiser_localisation_english.txt` and place it in the `
 Let's begin the process by first creating the file `sh_gamemode_simplerandomiser.nut` and making the core components of the gamemode, which is to define the gamemode properties.
 
 ```squirrel
-
     global function simplerandomiser_init // initializing functions
     global const string GAMEMODE_SIMPLERANDOMISER = "rand"
     // we want a short term to use which allows server owners to
@@ -202,7 +197,6 @@ Now that we're done, name this file `sh_gamemode_simplerandomiser.nut` and place
 Now that we're down with defining the gamemode, its time to focus on the component on that makes the gamemode function in-game. For this, it will be mostly handled by the server scripts, so head into `_gamemode_simplerandomiser.nut` to begin writing the randomizing script.
 
 ```squirrel
-
     global function GamemodeRand_Init
 
     void function GamemodeRand_Init()
@@ -223,7 +217,6 @@ Firstly, we need to know what weapons we can equip.
 For this we define an array:
 
 ```squirrel
-
     array<string> pilotWeapons = ["mp_weapon_alternator_smg",
                                   "mp_weapon_autopistol",
                                   "mp_weapon_car",
@@ -238,7 +231,6 @@ As we already know its going to call the function `GiveRandomGun` when a player 
 First we strip any existing weapons:
 
 ```squirrel
-
     void function GiveRandomGun(entity player)
     {
         foreach ( entity weapon in player.GetMainWeapons() )
@@ -250,7 +242,6 @@ This iterates through each weapon (that being the primary, secondary and anti-ti
 Then lets give them a new, random weapon by selecting a random item from our previous array:
 
 ```squirrel
-
     player.GiveWeapon( pilotWeapons[ RandomInt( pilotWeapons.len() ) ] )
 ```
 
@@ -258,7 +249,6 @@ Now, remember the server callback that we defined earlier in `sh_gamemode_simple
 We are going to make it so the player receives an announcement whenever they have their weapons randomized.
 
 ```squirrel
-
     // checks if the toggle option is set to enabled
     if ( GetCurrentPlaylistVarInt( "rand_enableannouncements", 1 ) == 1 )
         Remote_CallFunction_NonReplay( player, "ServerCallback_Randomiser" ) // call the function that will be used client-side
@@ -267,7 +257,6 @@ We are going to make it so the player receives an announcement whenever they hav
 Overall, the server script should look like this.
 
 ```squirrel
-
     global function GamemodeRand_Init
 
     void function GamemodeRand_Init()
@@ -304,7 +293,6 @@ Make sure to double check that all spellings are correct in your mod as everythi
 Lastly, for your `cl_gamemode_simplerandomiser.nut`, we are going to utilize the callback functions from earlier, as well as add some music to play during the gamemode.
 
 ```squirrel
-
     global function ClGamemodeRand_Init
     global function ServerCallback_Randomiser
 
@@ -356,7 +344,6 @@ Technically, yes, you could. But it wouldn't look pretty. Remember all those str
 Hence, open your `simplerandomiser_localisation_english.txt` which is located in the `yourmodsname/mod/resource/` folder.
 
 ```json
-
     "lang"
     {
     "Language" "english"
@@ -387,7 +374,6 @@ Yes, you will need to create a folder called `keyvalues` which is separate from 
 Next, inside this `playlists_v2.txt`, we will need to allow/disallow what maps can the gamemode be played on.
 
 ```text
-
     playlists
     {
     Gamemodes

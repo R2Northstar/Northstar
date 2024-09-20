@@ -5,7 +5,6 @@
 ### 1. Example Datatable Asset
 
 ```json
-
     {
         "$type": "dtbl",
         "path": "datatable/custom_datatable",

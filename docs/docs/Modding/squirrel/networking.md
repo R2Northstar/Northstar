@@ -33,7 +33,6 @@ function. It's not possible to register remote functions after `Remote_EndRegist
 mod.json extract:
 
 ```json
-
         "Scripts": [
         {
             "Path": "sh_spaceships.nut",
@@ -54,7 +53,6 @@ sh_spaceships.nut:
 The networked `CLIENT` function has to be global
 
 ```squirrel
-
     #if CLIENT
     global function Server_GetNetworkedVariable // make the networked function only global on CLIENT
     #endif //CLIENT
@@ -83,7 +81,6 @@ The networked `CLIENT` function has to be global
 Calling the `CLIENT` function `Server_GetNetworkedVariable` on `SERVER` vm:
 
 ```squirrel
-
     // player: CPlayer entity that should execute the function
     // func: function identifier string
     // ...: any parameters passed to the function
@@ -120,7 +117,6 @@ and execute with the function serverside:
 #### Example
 
 ```squirrel
-
     void function MessageUtils_ClientInit()
     {
         AddServerToClientStringCommandCallback( "ServerHUDMessageShow", ServerCallback_CreateServerHUDMessage )
@@ -141,7 +137,6 @@ and execute with the function serverside:
 #### Example
 
 ```squirrel
-
     Remote_CallFunction_UI( player, "ScriptCallback_UnlockAchievement", achievementID )
 ```
 
@@ -170,7 +165,6 @@ Since version 1.5 mods can receive notifications when a client command has been 
     Example usage with the :doc:`PrivateMatchLaunch` clientcommand
 
     ```squirrel
-
         void function init(){
             AddClientCommandNotifyCallback("PrivateMatchLaunch", started)
         }
@@ -218,7 +212,6 @@ You can also pass parameters to the function. `identifier` is the name of the fu
 #### Example
 
 ```squirrel
-
     #if CLIENT
     global function CallMe
 

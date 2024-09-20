@@ -9,7 +9,6 @@ reference a single texture asset, known as the `atlas` and have an array of
 ### 1. Basic UI Image Atlas with 2 Textures
 
 ```json
-
     {
         "$type":"uimg",
         "path":"rui/atlas/example1",
@@ -42,7 +41,6 @@ reference a single texture asset, known as the `atlas` and have an array of
 ### 2. Full Map File With a UI Image Atlas
 
 ```json
-
     {
         "name":"blue_fire",
         "assetsDir":"../depot",

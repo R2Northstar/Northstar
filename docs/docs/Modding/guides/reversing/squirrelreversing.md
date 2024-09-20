@@ -39,7 +39,6 @@ You can search for a string in memory with `Search > Memory`. Select `String` as
 The first occurence is at `server.dll+0x2b44f3`. If you wait for the function to be decompiled, you'll see the string in this code:
 
 ```c
-
     _DAT_181055f60 = "IsServer";
     _DAT_181055f68 = "IsServer";
     _DAT_181055fb8 = 0;
@@ -56,7 +55,6 @@ The first occurence is at `server.dll+0x2b44f3`. If you wait for the function to
 Because the squirrel function executes native code, the callback `FUN_18029a630` is probably where it's located. You can double click the reference to decompile the function.
 
 ```c
-
     undefined4 FUN_18029a630(undefined8 param_1)
     {
         char cVar1;
@@ -76,7 +74,6 @@ From this you can assume that native closures in squirrel_re still use the `SQRE
 It's also obvious that either `FUN_180003710` or `FUN_18001d840` pushes a boolean to the stack. It's probably `FUN_180003710` because it takes an extra parameter but you can check `IsClient` at `server.dll+0x29a4d0` as a reference.
 
 ```c
-
     undefined4 FUN_18029a4d0(undefined8 param_1)
     {
         char cVar1;
@@ -98,7 +95,6 @@ Decompile the function, then right click the function and select `Edit Function 
 Right now the signature looks like this:
 
 ```c
-
     void FUN_180003710(longlong param_1, int param_2)
 ```
 
@@ -109,6 +105,5 @@ The second parameter has to be the value that will be pushed to the VM as a bool
 You can change the signature now to this, to make code using the function more readable. Because `HSquirrelVM` isn't defined yet, the type needs to stay `longlong` for now.
 
 ```c
-
     void sq_pushbool(longlong sqvm, int value)
 ```

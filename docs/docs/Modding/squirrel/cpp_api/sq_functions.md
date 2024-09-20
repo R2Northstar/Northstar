@@ -22,7 +22,6 @@ Parameters are the initial stack in the function context.
 Return a string from a native registered function:
 
 ```cpp
-
     ADD_SQFUNC("string", CPlugTest, "", "returns \"native gaming\"", ScriptContext::CLIENT | ScriptContext::SERVER)
     {
         g_pSquirrel<context>->pushstring(sqvm, "native gaming"); // push a string to the stack
@@ -34,7 +33,6 @@ Return a string from a native registered function:
 Return a complex `ornull` type:
 
 ```cpp
-
     ADD_SQFUNC("array<int> ornull", CPlugComplex, "int n", "returns null", ScriptContext::CLIENT | ScriptContext::SERVER | ScriptContext::UI)
     {
         SQInteger n = g_pSquirrel<context>->getinteger(sqvm, 1);
@@ -73,7 +71,6 @@ It's also possible to add an override directly with the `AddFuncOverride` functi
     - `SQFunc func` A function object that replaces the logic
 
 ```cpp
-
     // Replaces dangerous vanilla functions to only log their call with no further logic.
     g_pSquirrel<context>->AddFuncOverride("DevTextBufferWrite", SQ_StubbedFunc<context, "DevTextBufferWrite">);
     g_pSquirrel<context>->AddFuncOverride("DevTextBufferClear", SQ_StubbedFunc<context, "DevTextBufferClear">);
@@ -116,7 +113,6 @@ Squirrel functions need to return a `SQRESULT`. Valid results are
     If you want to call into squirrel asynchronously, use `AsyncCall`_ instead.
 
     ```cpp
-
         Call("PluginCallbackTest"); // PluginCallbackTest()
     ```
 
@@ -131,7 +127,6 @@ Squirrel functions need to return a `SQRESULT`. Valid results are
         This is a squirrel API wrapper added by northstar. It's not available for plugins and is supposed to abstract squirrel calls.
 
     ```cpp
-
         Call("PluginCallbackTest", "param"); // PluginCallbackTest("param")
     ```
 
@@ -172,7 +167,6 @@ Squirrel functions need to return a `SQRESULT`. Valid results are
         This is a squirrel API wrapper added by northstar. It's not available for plugins and is supposed to abstract squirrel calls.
 
     ```cpp
-
         SQObject functionobj {};
         SQRESULT result = g_pSquirrel<context>->sq_getfunction(sqvm, "PluginCallbackTest", &functionobj, 0); // Get a global squirrel function called "PluginCallbackTest"
 
@@ -212,7 +206,6 @@ Squirrel functions need to return a `SQRESULT`. Valid results are
     Throws an error with `error` being the thrown object.
 
     ```cpp
-
         ADD_SQFUNC("void", CPlugThrowTest, "", "", ScriptContext::UI)
         {
             return g_pSquirrel<context>->raiseerror(sqvm, "test error");

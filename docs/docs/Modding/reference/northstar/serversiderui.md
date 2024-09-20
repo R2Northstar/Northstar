@@ -22,7 +22,6 @@ alt="/_static/serversiderui/vote.png" />
 **Example:**
 
 ```squirrel
-
     void function CreateDummyPoll()
      {
         array<string> options = [ "Vote for a map!", "Amongsus", "sussy", "when", "1.10", "hi H0l0" ]
@@ -42,7 +41,6 @@ alt="/_static/serversiderui/vote.png" />
 **Example:**
 
 ```squirrel
-
     void function CheckResponseToDummyPoll(entity player)
     {
         if(NSGetPlayerResponse(player) != -1)
@@ -67,7 +65,6 @@ alt="/_static/serversiderui/largemessage.gif" />
 **Example:**
 
 ```squirrel
-
     void function SendDummyLargeMessage(entity player)
     {
         NSSendLargeMessageToPlayer(player,"I'm not a dummy >:(", "You are", 10, "ui/fd_tutorial_tip.rpak")
@@ -91,7 +88,6 @@ alt="/_static/serversiderui/info.gif" />
 **Example:**
 
 ```squirrel
-
     void function SendDummyInfoMessage(entity player)
     {
         NSSendInfoMessageToPlayer(player, "we were sent at the same time but I was sent sooner")
@@ -115,7 +111,6 @@ alt="/_static/serversiderui/popup.gif" />
 **Example:**
 
 ```squirrel
-
     void funcions SendDummyPopUp(entity player)
     {
         NSSendPopUpMessageToPlayer(player, "very cool text I like")
@@ -139,7 +134,6 @@ alt="/_static/serversiderui/announcement.gif" />
 **Example:**
 
 ```squirrel
-
       void function SendDummyAnnouncement(entity player)
       {
           NSSendAnnouncementMessageToPlayer(player, "Very cool announcement", "Hi Karma", <1,1,0>, 1, ANNOUNCEMENT_STYLE_QUICK)
@@ -174,7 +168,6 @@ alt="/_static/serversiderui/status.gif" />
 **Examples:**
 
 ```squirrel
-
     void function TestStatusMessage_Threaded(entity player)
     {
         string id = UniqueString("votes#")

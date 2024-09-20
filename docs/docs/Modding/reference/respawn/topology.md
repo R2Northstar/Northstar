@@ -7,7 +7,6 @@ The position of topologies are relative to the position of their parent.
 Since the number of topologies that can be created is very limited and Vanilla uses most of the slots already, try to minimize your topology uses. Instead of creating new ones, check if you can use one that already exists:
 
 ```squirrel
-
             clGlobal.topoFullScreen
             clGlobal.topoCockpitHudPermanent
             clGlobal.topoTitanCockpitLowerHud
@@ -59,7 +58,6 @@ Drawcalls determine how and where RUIs on a topology are being rendered.
 ## HUD Topology example
 
 ```squirrel
-
     // Cover the top left quadrant of the screen with a basic image
     float[2] s = GetScreenSize()
     var topo = RuiTopology_CreatePlane( <0,0,0>, <s[0] / 2,0,0>, <0,s[1] / 2,0>, true ) // RUIs scale with the topology they are being drawn on so make sure to use the correct dimensions
@@ -69,7 +67,6 @@ Drawcalls determine how and where RUIs on a topology are being rendered.
 ## Worldspace Topology example
 
 ```squirrel
-
     // REMEMBER TO DESTROY ALL TOPOS, RUIS AND PROPS YOU CREATE WHEN YOU NO LONGER NEED THEM
     // ripped from respawn
     var function Worldspace_CreateRUITopology( vector org, vector ang, float width, float height )

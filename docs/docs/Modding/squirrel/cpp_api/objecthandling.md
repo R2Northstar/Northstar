@@ -152,7 +152,6 @@
     Used to add global constants for scripts.
 
     ```cpp
-
         getConstants(sqvm);
 
         pushstring(sqvm, "MY_CONSTANT");
@@ -173,7 +172,6 @@
     returns `0` if the function was found.
 
     ```cpp
-
         SQObject functionobj {};
         int result = sq_getfunction(m_pSQVM->sqvm, funcname, &functionobj, 0);
         if (result != 0) // This func returns 0 on success for some reason
@@ -214,7 +212,6 @@
     More information about function calls are available [here](sq_functions.md)
 
     ```cpp
-
         ADD_SQFUNC("void", SQCallbackTest, "void functionref()", "", ScriptContext::UI)
         {
             SQObject fn; // Make an empty sqobject. This will hold the function object later

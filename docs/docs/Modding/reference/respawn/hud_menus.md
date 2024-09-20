@@ -7,7 +7,6 @@ Before working on HUD, it's recommended to `extract <https://noskill.gitbook.io/
 In your `mod.json`, add a `Before` UI callback like this:
 
 ```json
-
         {
             "Path": "ui/profiles_menu.nut",
             "RunOn": "UI",
@@ -20,7 +19,6 @@ In your `mod.json`, add a `Before` UI callback like this:
 In the script you referenced, create a global in which you register your menu with the `AddMenu` like this:
 
 ```squirrel
-
     global function InitProfilesMenu
 
     void function InitProfilesMenu()
@@ -36,7 +34,6 @@ The returns `void` and takes no parameters. It gets called once the menu is init
 It's recommended to create a file struct in which you store menu states:
 
 ```squirrel
-
     struct {
         var menu
     } file
@@ -191,7 +188,6 @@ Not recommended to use.
 To use footers, add this element to your menu:
 
 ```
-
     FooterButtons
     {
         ControlName         CNestedPanel

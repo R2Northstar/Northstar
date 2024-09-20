@@ -31,7 +31,6 @@ Provided is a template `mod.json`, for a detailed list of values read the
 `cheatsheet`
 
 ```json
-
     {
        "Name": "Yourname.Modname",
        "Description": "Woo yeah wooo!",
@@ -49,7 +48,6 @@ be overwritten and new files can be added. If you need to define new Squirrel fi
 example for this might be:
 
 ```json
-
     "Scripts": [
        {
           "Path": "path/to/file.nut",
@@ -87,7 +85,6 @@ This guide will dig into each of the possible `mod.json` fields. Please note tha
 This is what a well-formatted `mod.json` looks like:
 
 ```json
-
     {
         "Name": "Northstar.CustomServers",
         "Description": "Attempts to recreate the behaviour of vanilla Titanfall 2 servers, as well as changing some scripts to allow better support for mods",
@@ -174,7 +171,6 @@ If I don't want to wait 15 seconds for matches to start on my server,
 `ns_private_match_countdown_length` in its `mod.json` manifesto:
 
 ```json
-
     "ConVars": [
         {
             "Name": "ns_private_match_countdown_length",
@@ -193,7 +189,6 @@ When starting a match, `Northstar.CustomServers` mod will retrieve the configura
 variable value, or its default value if it hasn't been specified in configuration file:
 
 ```squirrel
-
     // start countdown
     SetUIVar( level, "gameStartTime", Time() + GetConVarFloat( "ns_private_match_countdown_length" ) )
 ```
@@ -252,7 +247,6 @@ The scripts field lets you declare an array of Squirrel files to import into you
 Each script entry must have a "Path" value and a "RunOn" value.
 
 ```json
-
      "Scripts": [
          {
              "Path": "path/to/file.nut",
