@@ -1,0 +1,25 @@
+# git config --global blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Remove trailing spaces inside quotation marks (#12)
+445bc3a6e4283fe568538af0b9e0915a1752a389
+
+# Ensure consistent whitespaces (#14)
+5a905727c992c2d380fb232cc0a85623797cbb14
+
+# Remove trailing whitespace in quotes (#15)
+be210eef0ad8c49f3f74ecb974978d95239b7641
+
+# Ensure consistent whitespace in stylesheet
+1ad3a8d1f6093b1df0ccffe5c90781345946ddf0
+
+# Change all occurences of double backticks to single backticks (#18)
+7ad54d9ce831187ef1e32e6a8ff00bdfbef983dd
+
+# Remove cases of trailing whitespaces (#41)
+6f17ba8a22640bbb8cfb131d5bd5796ec6b4c060
+
+# Remove superfluous newline at the start of codeblocks (#44)
+8f9c10d7840c4051fce7bf1260e644752bd8dfc6
+
+# Fix indentation in codeblocks (#45)
+028e59941946ed37d29f73ac902d70d00bc2257d
