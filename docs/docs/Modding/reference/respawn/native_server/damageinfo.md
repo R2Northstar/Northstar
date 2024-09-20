@@ -144,19 +144,19 @@ Because damageInfo instances are implemented as userdata they can't be typed.
 
 !!! cpp-function "bool HeavyArmorCriticalHitRequired( var damageInfo )"
 
-  .. note::
+  !!! note
 
     SERVER only
 
 !!! cpp-function "bool CritWeaponInDamageInfo( var damageInfo )"
 
-  .. note::
+  !!! note
 
     SERVER only
 
 !!! cpp-function "float GetCriticalScaler( ent, damageInfo )"
 
-  .. note::
+  !!! note
 
     SERVER only
 
