@@ -432,11 +432,12 @@ Usable conditions are:
 
     the game's language.
 
-    .. code-block:: text
+    ```text
 
             // use allcaps only in russian
             allCaps        0  [!$RUSSIAN]
             allCaps        1  [$RUSSIAN]
+    ```
 
 
 
@@ -531,11 +532,12 @@ You can calculate the position or dimensions etc. with different units. If you p
 
     x percent of the screen.
 
-    .. code:block::
+    ```
 
         // cover the entire screen
         width   %100
         height  %100
+    ```
 
 !!! cpp-function "fx"
 
