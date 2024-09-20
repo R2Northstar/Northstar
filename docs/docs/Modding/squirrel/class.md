@@ -13,7 +13,6 @@ To declare a class, first add the `untyped` keyword and the class as a variable 
 file level.
 
 ```squirrel
-
     untyped
     var ExampleClass
 ```
@@ -35,7 +34,6 @@ Most classes use a constructor. A constructor is a function of the instance that
 executed on object creation.
 
 ```squirrel
-
     void function initClient() {
         class ExampleClass {
             constructor(){print("Instance of ExampleClass created");}
@@ -51,7 +49,6 @@ Function parameters are passed as type `var`, but the type keyword is not requir
 ){}; func( var parameter ){};` are both correct.
 
 ```squirrel
-
     class ExampleClass {
             propertyString = null // Actual type is var
             propertyInt = null // Actual type is var
@@ -75,7 +72,6 @@ Every object has a reference to itself called `this`. You can change parameters 
 object by reference.
 
 ```squirrel
-
     void function initClient() {
         class ExampleClass {
             property = null
@@ -95,7 +91,6 @@ Functions of a class have to return a value of type `var`. This may be `null`.
 Define functions like this:
 
 ```squirrel
-
     global var ExampleClass;
     void function initClassF(){
         class ExampleClass {
@@ -124,7 +119,6 @@ It's possible to insert more properties into a class at runtime. To achieve this
 the `<-` operator.
 
 ```squirrel
-
     // Using `ExampleClass` and `exampleObject` from example above
     ExampleClass.newProperty <- "New property in class"
     // The value of the new index may be of any type.
@@ -150,7 +144,6 @@ the `<-` operator.
 Inserting functions is also possible using the `::` operator
 
 ```squirrel
-
     function ExampleClass::AddOne( var param /* parameters have to be var */ ){ return expect int( param ) + 1 }
     var e = ExampleClass()
     print( expect int( e.AddOne( 1 ) ) ) // prints 2
@@ -196,7 +189,6 @@ inherited from a modified class.
 To create an instance, do:
 
 ```squirrel
-
     class ExampleClass {
         property = null
         constructor( var parameter ) {
@@ -213,7 +205,6 @@ To create an instance, do:
 It's also possible to create an instance without calling the constructor.
 
 ```squirrel
-
     // Using 'ExampleClass' from previous examples
     var e = ExampleClass.instance()
     e.constructor(1) // Constructor is a normal function so you can call it manually.
@@ -227,7 +218,6 @@ doesn't have a reference to itself, meaning that the `this` keyword refers to th
 table.
 
 ```squirrel
-
     var class = ExampleClass
     var instance = class.constructor()
 ```
@@ -239,7 +229,6 @@ reference to itself. This means that any modifications inside of a function are 
 to the original object.
 
 ```squirrel
-
     void function initClass(){
         class Container {
             content = null
@@ -261,7 +250,6 @@ You can avoid this by using cloned objects. Use the `clone` keyword to create a 
 of an object.
 
 ```squirrel
-
     // Assumes the 'Container' class from the previous example has already been declared
     void function initClass(){
         var originalObj = Container("original string")
@@ -283,7 +271,6 @@ hold multiple class objects that emulate the behaviour of namespaces to a certai
 extend.
 
 ```squirrel
-
     global table<string, var> fakeNamespace = {
             class1 = null,
             class2 = null
@@ -295,7 +282,6 @@ This allows you to group classes together in a single global variable.
 You can use the classes inside of the table like this:
 
 ```squirrel
-
     // Create a class object in field
     class fakeNamespace.class1 { constructor(){ print("constructing instance of class1") } }
     class fakeNamespace.class2 { constructor(){ print("constructing instance of class2") } }
@@ -311,7 +297,6 @@ You can use the classes inside of the table like this:
 You can also declare classes in an array:
 
 ```squirrel
-
     array<var> classes // This has to be at file level
 
     // This has to be inside of a function:
@@ -322,7 +307,6 @@ You can also declare classes in an array:
 And in a similar fashion in structs:
 
 ```squirrel
-
     struct {
             var class1 = null
             var class2 = null
@@ -341,7 +325,6 @@ And in a similar fashion in structs:
     won't compile.
 
     ```squirrel
-
         class Child extends Parent{}
     ```
 

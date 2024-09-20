@@ -18,14 +18,12 @@ Contditons you can check for are
 These conditions can also be combined with the regular squirrel boolean expressions
 
 ```squirrel
-
     #if SERVER
     Chat_ServerBroadcast("Message from the server VM")
     #endif
 ```
 
 ```squirrel
-
     #if (CLIENT && MP) || DEV
     ...
     #elseif SP
@@ -41,7 +39,6 @@ loaded, these use the Compiler directives syntax.
 Inside your `mod.json` define a constant as:
 
 ```squirrel
-
     {
         // mod.json stuff
         "Dependencies": {
@@ -54,7 +51,6 @@ Inside your `mod.json` define a constant as:
 For Example:
 
 ```json
-
     "PLAYER_HAS_ROGUELIKE_MOD": "TF|Roguelike"
 ```
 
@@ -62,7 +58,6 @@ Will define a constant `PLAYER_HAS_ROGUELIKE_MOD` that is set to `0` or `1`
 depending if the mod is enabled. It then can be used as a constant/compiler flag.
 
 ```squirrel
-
     #if PLAYER_HAS_ROGUELIKE_MOD
     print("player has roguelike mod")
     Roguelike_Function();

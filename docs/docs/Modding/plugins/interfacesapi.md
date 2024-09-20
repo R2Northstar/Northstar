@@ -18,7 +18,6 @@ An interface is just an abstract class to force all functions into a vftable.
 Exposes some system functionality to plugins
 
 ```cpp
-
     // 32 bit
     enum LogLevel {
       INFO,
@@ -39,7 +38,6 @@ Interfaces that have to be exposed for the plugin to be loaded.
 ### PluginId001
 
 ```cpp
-
     // strings of data about the plugin itself. may be extended in the future
     // 32 bit
     enum PluginString {
@@ -61,7 +59,6 @@ Interfaces that have to be exposed for the plugin to be loaded.
 ### PluginCallbacks001
 
 ```cpp
-
     struct PluginNorthstarData { HMODULE handle; };
 
     // COPY THE initData IT MAY BE MOVED AT RUNTIME
@@ -81,7 +78,6 @@ Interfaces are just abstract classes. So make sure the first parameter is always
 an example what NSSys001 looks like in C:
 
 ```cpp
-
     typedef enum {
       LOG_INFO,
       LOG_WARN,

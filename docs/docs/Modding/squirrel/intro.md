@@ -11,7 +11,6 @@ The syntax of squirrel is very similar to C++ or Javascript and very easy to lea
 The programmer doesn't need to think about memory management in scripts since all objects are refcounted and the garbage collector can be invoked manually.
 
 ```squirrel
-
    int function fibonacci( int n )
    {
     if ( n < 2 )
@@ -24,7 +23,6 @@ The programmer doesn't need to think about memory management in scripts since al
 The language provides easy interfaces for coroutines and asynchronous code.
 
 ```squirrel
-
    void main()
    {
     thread timer( 1.0, timercallback )
@@ -51,7 +49,6 @@ The language provides easy interfaces for coroutines and asynchronous code.
 Signals and Flags allow you to control code execution based on events that happen elsewhere in the code or in the ingame world.
 
 ```squirrel
-
    void main()
    {
     AddCallback_OnPlayerRespawned( OnPlayerRespawned )

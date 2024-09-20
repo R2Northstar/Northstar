@@ -63,7 +63,6 @@ In the same folder you extracted your mdl's. Make a `materials` folder next to t
 
 Example:
 ```
-
     models
     materials
 ```
@@ -71,7 +70,6 @@ Example:
 Recreate the path you changed in the `materials` folder, such that the last section is a .vmt file:
 
 ```text
-
     materials
     └─ models
           └─ weapons_r2
@@ -83,7 +81,6 @@ Recreate the path you changed in the `materials` folder, such that the last sect
 Inside your .vmt paste:
 
 ```
-
     "UnlitTwoTexture"
     {
 
@@ -130,7 +127,6 @@ In some cases you might have to create another vtf with literally any image. Put
 Your root folder should look somewhat like this
 
 ```text
-
     root
     ├─ materials
     │  └─ models
@@ -162,7 +158,6 @@ You need to create a .vtf texture with multiple frames imported to a single .vtf
 At the bottom of your vmt but before the `}`, add this:
 
 ```text
-
     "Proxies"
     {
             AnimatedTexture

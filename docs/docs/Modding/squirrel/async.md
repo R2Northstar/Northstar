@@ -17,7 +17,6 @@ A thread is considered finished, after the threaded function returned a value. T
 To create a new coroutine, call a function with the `thread` keyword before.
 
 ```squirrel
-
     thread void function(){}()
     thread MyFunction()
 ```
@@ -25,7 +24,6 @@ To create a new coroutine, call a function with the `thread` keyword before.
 To get a thread object, use the `newthread` function.
 
 ```squirrel
-
     void function CoroutineExample()
     {
         suspend( "passback" ) // passback is optional
@@ -58,7 +56,6 @@ When using infinite loops it's important to work with `wait` statements to avoid
 If you want to wait until a thread is finished, you can spin off the thread that you wait for with the `waitthread` keyword.
 
 ```squirrel
-
     void function ParentThread()
     {
         printt( "pre spinoff " + string( Time() ) )
@@ -76,7 +73,6 @@ If you want to wait until a thread is finished, you can spin off the thread that
 Use the `OnThreadEnd` function to execute a callback after a thread has ended. This is useful for cleanup functions that remove entities after they're used or similar.
 
 ```squirrel
-
     void function PlayIncomingFX( vector origin, int teamNum )
     {
         wait 1.50
@@ -106,7 +102,6 @@ Use the `OnThreadEnd` function to execute a callback after a thread has ended. T
 ### Example Script
 
 ```squirrel
-
     void function SetPositionDelayed( entity ent, vector pos, float delay )
     {
         wait delay
@@ -175,7 +170,6 @@ It's also possible to trigger and catch signals with methods that aren't propert
     Wait for any of the passed signals to be triggered.
 
     ```squirrel
-
         // Wait for the NPC to die, delete, or get leeched, then remove the npc from the array
         WaitSignal( ent, "OnDeath", "OnDestroy", "OnLeeched" )
     ```
@@ -189,7 +183,6 @@ It's also possible to trigger and catch signals with methods that aren't propert
 For example, if we want to tell a player not to give up after being killed several times, we can write it this way:
 
 ```squirrel
-
     // First, we register signal we want to use
     RegisterSignal("OnMultipleDeaths")
 
@@ -312,7 +305,6 @@ is set, thread will end (after calling any `OnThreadEnd` methods).
 #### Example
 
 ```squirrel
-
     void function FlagExample()
     {
         FlagInit( "BombHasExploded" )

@@ -9,7 +9,6 @@ Before using a struct you need to define it and all contents.
 The fields are typed like any regular variable.
 
 ```squirrel
-
    struct MyStruct
    {
     int field1
@@ -23,7 +22,6 @@ Structs are default initialized by assigning each field it's appropriate default
 Struct fields can be indexed by writing `instance.field`, just like with tables.
 
 ```squirrel
-
   MyStruct myStructInstance
   printt( myStructInstance.field1 ) // 0
 ```
@@ -35,7 +33,6 @@ Struct instances can also get initiaized with different default values if requir
 Similar like in static arrays, you can omit any fields that should have their type's default value with `...`.
 
 ```squirrel
-
    MyStruct ins = { field3 = [], field1 = 1, ... }
    printt( ins.field1, ins.field2 ) // 1, ""
 ```
@@ -45,7 +42,6 @@ Similar like in static arrays, you can omit any fields that should have their ty
 Struct fields can be any type, this includes previously declared structs as well.
 
 ```squirrel
-
    struct Engine
    {
     string manufacturer
@@ -68,7 +64,6 @@ Struct fields can be any type, this includes previously declared structs as well
 Structs can contain fields of their own type, however they need to be **null initialized**. You can achieve this by specifying their type as `ornull`.
 
 ```squirrel
-
    struct LinkedList
    {
     var content
@@ -83,7 +78,6 @@ Any struct field can have an optional default value. If omitted, the type's defa
 Default values need to be a constant expression that can be evaluated at compile time.
 
 ```squirrel
-
    struct Dice
    {
     int[6] sides = [ 1, 2, 3, 4, 5, 6 ]
@@ -95,7 +89,6 @@ Default values need to be a constant expression that can be evaluated at compile
 You can define a struct and initialize a local variable of that struct instantly with singletons. These are often used to have global variables that are only used in a single script file.
 
 ```squirrel
-
    struct {
     var menu
    } file
@@ -109,7 +102,6 @@ You can define a struct and initialize a local variable of that struct instantly
 Singletons can also be used for struct fields.
 
 ```squirrel
-
    struct Car
    {
     struct {

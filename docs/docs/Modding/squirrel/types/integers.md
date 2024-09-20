@@ -14,7 +14,6 @@ Integers can be represented with multiple different literals.
 
     Regular decimal letters will always be an integer decimal literal.
     ```squirrel
-
     int n = 123
     ```
 
@@ -23,7 +22,6 @@ Integers can be represented with multiple different literals.
     If any number is prefixed with `0x`, it is a hexadecimal literal.
 
     ``` squirrel
-
     int n = 0x0012 // 18
     ```
 
@@ -32,7 +30,6 @@ Integers can be represented with multiple different literals.
     Numbers starting with a `0` are octal literals.
 
     ``` squirrel
-
     int n = 075 // 61
     ```
 
@@ -41,7 +38,6 @@ Integers can be represented with multiple different literals.
     A single letter or escaped sequence are character literals. Their value is the ASCII value of the letter.
 
     ``` squirrel
-
     int a = 'a' // 97
     int newline = '\n' // 10
     ```

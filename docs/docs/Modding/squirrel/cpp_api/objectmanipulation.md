@@ -13,7 +13,6 @@
     creates a new array and pushes it to the stack
 
     ```cpp
-
         newarray(sqvm, 0);
         pushstring(sqvm, "val1");
         arrayappend(sqvm, -2);
@@ -57,7 +56,6 @@
     pops a key and a value from the stack and performs a set operation on the table or class that is at position idx in the stack, if the slot does not exist it will be created.
 
     ```cpp
-
         newtable(sqvm);
         // slot 1
         pushstring(sqvm, "key");
@@ -108,7 +106,6 @@
     Pops a value from the stack and fills the field at `fieldIndex` from the struct object that needs to be at the top of the stack.
 
     ```cpp
-
         pushnewstructinstance(sqvm, 2); // create a struct instance with 2 slots
         pushinteger(sqvm, 12);
         sealstructslot(sqvm, 0);

@@ -57,7 +57,6 @@ The client chat callbacks allow you to intercept chat messages and modify or blo
     **Example:**
 
     ```squirrel
-
         ClClient_MessageStruct function MyChatFilter(ClClient_MessageStruct message)
         {
             if (message.message.find("nft") != null)
@@ -89,7 +88,6 @@ players, they only display them locally.
     **Example:**
 
     ```squirrel
-
         void function OnGameStarted()
         {
             Chat_GameWriteLine("You got this, " + GetLocalClientPlayer().GetPlayerName() + "!")
@@ -104,7 +102,6 @@ players, they only display them locally.
     **Example:**
 
     ```squirrel
-
         void function InitialiseHEVSuit()
         {
             Chat_GameWriteLine("SENSOR ARRAYS-")
@@ -126,7 +123,6 @@ players, they only display them locally.
     **Example:**
 
     ```squirrel
-
         void function MyModInit()
         {
             Chat_NetworkWriteLine("MyMod v1.0.0 is good to go!")
@@ -141,7 +137,6 @@ players, they only display them locally.
     **Example:**
 
     ```squirrel
-
         void function OnButtonPressed()
         {
             Chat_NetworkWrite("Connecting in 3...")
@@ -194,7 +189,6 @@ The server chat callbacks allow you to intercept incoming chat messages and modi
     **Example:**
 
     ```squirrel
-
         ClServer_MessageStruct function MyChatFilter(ClServer_MessageStruct message)
         {
             if (message.message.find("nft") != null)
@@ -231,7 +225,6 @@ With custom messages you can send chat messages at any time, to all players or t
     **Example:**
 
     ```squirrel
-
         void function OnSayRedCommand(entity player, string text)
         {
             Chat_Impersonate(player, "red text -> \x1b[31m" + text)
@@ -254,7 +247,6 @@ With custom messages you can send chat messages at any time, to all players or t
     **Example:**
 
     ```squirrel
-
         void function OnSendToFriendsCommand(entity fromPlayer, string text)
         {
             array<entity> friends = GetPlayerFriends(fromPlayer)
@@ -278,7 +270,6 @@ With custom messages you can send chat messages at any time, to all players or t
     **Example:**
 
     ```squirrel
-
         void function RestartServerThread()
         {
             // wait one hour
@@ -312,7 +303,6 @@ With custom messages you can send chat messages at any time, to all players or t
     **Example:**
 
     ```squirrel
-
         void function OnBanCommand(entity player, array<string> args)
         {
             if (!PlayerIsModerator(player))
@@ -332,7 +322,6 @@ All messages support ANSI escape codes for customising text color. These are com
 meaning. For example, the string:
 
 ```text
-
     Hello world, \x1b[31mthis text is red\x1b[0m. And \x1b[34mthis text is blue\x1b[0m.
 ```
 

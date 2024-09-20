@@ -364,7 +364,6 @@ Below are a list of useful functions added by Northstar.
         replaces text that should be localized on the client
 
         ```squirrel
-
             string localized = Localize( token )
         ```
 
@@ -377,7 +376,6 @@ Below are a list of useful functions added by Northstar.
         You can eliminate the possibility of the returned index being null by casting like this:
 
         ```squirrel
-
             int ornull index = GetMapName().find( "mp" )
 
             if( !index )

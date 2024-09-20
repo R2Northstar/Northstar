@@ -30,7 +30,6 @@ Once it has been downloaded, it is recommended to set up your file structure as 
     Depending on the version of RePak, some of these folders and files might be already there for you
 
 ```text
-
     RePak
     ├── RePak.exe
     ├── pack_all.bat
@@ -52,7 +51,6 @@ Once it has been downloaded, it is recommended to set up your file structure as 
 Below is the script that should be copied into the file.
 
 ```bat
-
     for %%i in ("%~dp0maps\*") do "%~dp0RePak.exe" "%%i"
     pause
 ```
@@ -123,7 +121,6 @@ They can be named anything you want, but should be put in the `RePak\maps` folde
 Below is an example of a map file that creates an RPak called `example.rpak` which contains 1 texture asset.
 
 ```json
-
     {
         "name":"example",
         "assetsDir":"../assets",
@@ -179,7 +176,6 @@ In this example, the `camo_skin04_col.rpak` rpak is completely replaced by `exam
 This is fine for camo RPaks, but isn't suitable for more complex RPaks
 
 ```json
-
     {
         "Preload":
         {
@@ -233,7 +229,6 @@ The file structure of your `paks` folder should be similar to this:
 ![PaksStructure](https://user-images.githubusercontent.com/66967891/181840126-98e48860-84d0-496d-8f2e-1cea4dea7363.png)
 
 ```text
-
     paks
     ├── example.rpak
     ├── example.starpak

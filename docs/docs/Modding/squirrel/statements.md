@@ -5,7 +5,6 @@
 If statements use a similar style to most programming languages and will execute their asigned code if the test placed inside returns the boolean value true. If I wanted to have something occur if, and only if, our previous `ReturnTrueOrFalse` function returned true, then you can use:
 
 ```squirrel
-
   if( ReturnTrueOrFalse() )
 ```
 
@@ -21,7 +20,6 @@ Squirrel supports ternary operations like most languages. The value of the expre
 The Syntax is `condition ? if_condition_true : if_condition_false`. This is especially useful when declaring variables or passing parameters.
 
 ```squirrel
-
   // shortenedUsername is "longus..."" if username is "longusername" or "short" if username is "short"
   string shortenedUsername = username.len() > 9 ? username.slice(0,6) + "..." : username;
 ```
@@ -35,7 +33,6 @@ Loops are used to execute the same code n times.
 A while loop runs as long as the condition evaluates to a truthy value.
 
 ```squirrel
-
   while( true )
   {
     // this will result in an endless loop because the probe condition will never be false
@@ -52,7 +49,6 @@ A while loop runs as long as the condition evaluates to a truthy value.
 A do while loop is the same as a while loop but the condition is checked **after** the body is executed.
 
 ```squirrel
-
   do
   {
     // this will execute only one time
@@ -66,7 +62,6 @@ A for loop also runs until a condition is met however it provides you with a cou
 The Syntax is as follows: `for( int counter; condition; behaviour_after_body_execution )`
 
 ```squirrel
-
   // prints 0, 1, 2, 3, 4
   for( int i; i < 5; i++ )
   {
@@ -86,7 +81,6 @@ The Syntax is as follows: `for( int counter; condition; behaviour_after_body_exe
 A foreach loop iterates over a `table` or an `array` and executes for each entry. The loop provides you with an optional counter for arrays or key for tables.
 
 ```squirrel
-
   array<int> arr = [ 1, 2, 3, 4 ]
   table<string, string> map = {
     key1 = "mapped value 1",
@@ -111,12 +105,10 @@ A foreach loop iterates over a `table` or an `array` and executes for each entry
 Conditional statements, such as while loops and if statements, also implictly cast non-boolean inputs to booleans. For numbers, this means 0 is considered false and anything else is considered true. For instance variables like arrays and entities, `null` is considered false and anything else is considered true. For example, these inputs are considered true by the if statements:
 
 ```squirrel
-
   if(2)
 ```
 
 ```squirrel
-
   array somelist = [0, 1]
   if(somelist)
 ```
@@ -129,7 +121,6 @@ So great, we can loop and check things, but what can we do with this information
 For example, lets make our `ReturnTrueOrFalse` function, that randomly picks either true or false, first:
 
 ```squirrel
-
   bool function ReturnTrueOrFalse() {
     return RandomInt(2) == 1
   }
@@ -139,7 +130,6 @@ Note that while functions always need `{}`, single-line `if`/`else` statements a
 
 
 ```squirrel
-
   if(ReturnTrueOrFalse())
     printt("Only called if true")
 ```
@@ -147,7 +137,6 @@ Note that while functions always need `{}`, single-line `if`/`else` statements a
 Now let's make a more complicated function that will use the previous script to determine true or false, printing a list each time it returns true:
 
 ```squirrel
-
   array<int> someinformation = [1,2,3,4,5,6]
   void function ThisDoesStuff(){
     while(ReturnTrueOrFalse()){

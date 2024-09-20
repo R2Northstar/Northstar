@@ -11,7 +11,6 @@ Example Mod:
 2: Put the following into the newly created .txt file:
 
 ```
-
    WeaponData
    {
        RUI_CrosshairData
@@ -35,7 +34,6 @@ Weapons].txt
 into one**
 
 ```
-
    WeaponData
    {
        active_crosshair_count              "2" //Amount of crosshairs you want to use
@@ -71,7 +69,6 @@ Simply add the following line below the  "ui" line
 Below the "ui" line, Like this:
 
 ```
-
     {
        RUI_CrosshairData
        {
@@ -89,7 +86,6 @@ Below the "ui" line, Like this:
 ## No Crosshair?
 
 ```
-
    WeaponData
    {
        RUI_CrosshairData

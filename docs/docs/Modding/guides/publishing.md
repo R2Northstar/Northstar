@@ -12,7 +12,6 @@ If the changes your mod makes can be represented in screenshots, gameplay record
 To do so, simply upload the image or gif to a host of your choice (Imgur, GitHub, and even Discord all work). To display the image directly on your page in Thunderstore, add the following line to your README:
 
 ```markdown
-
     ![alt text, this text shows up when image cannot be loaded](https://example.com/image/to/link/to.gif)
 ```
 
@@ -26,7 +25,6 @@ The best place to publish your mod is [Thunderstore](https://northstar.thunderst
 The Thunderstore package zip structure is as follows:
 
 ```
-
     mods/<your name>.<mod name>/
     icon.png
     manifest.json

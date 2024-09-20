@@ -28,7 +28,6 @@ following compression types:
 ### 1. Basic Texture Asset - No streaming
 
 ```json
-
     {
         "$type": "txtr",
         "path": "textures/models/humans/test_texture",
@@ -49,7 +48,6 @@ following compression types:
 ### 2. Streamed Texture Asset
 
 ```json
-
     {
         "$type": "txtr",
         "path": "textures/models/humans/test_texture_2",

@@ -9,7 +9,6 @@ Functions in squirrel are defined with this syntax: `<return type> function <nam
 For example, a simple function that returns either `true` or `false` would look like this:
 
 ```squirrel
-
   bool function CoinFlip()
   {
     return RandomInt( 2 ) == 0 // generate a random number from 0 - 1
@@ -25,7 +24,6 @@ If you need some data after a function is finished (for example after a calculat
 You can return anything, however the type of the returned variable needs to match with the return type of the function.
 
 ```squirrel
-
    string function GetNorthstarName()
    {
     return "Northstar" // this would be valid
@@ -40,7 +38,6 @@ If you don't want to return any value, use `void` as the return type. This indic
 If nothing is returned by a function, `null` will get returned implicitly.
 
 ```squirrel
-
   void function ReturnNull()
   {
     // return null regardless what happens, this all does the same
@@ -64,7 +61,6 @@ In `untyped` files you may leave out the return type. In those cases the return 
 Parameters are the input a function gets when called. They are local variables whose values come from the calling function.
 
 ```squirrel
-
    void function main()
    {
     int refcount = 0
@@ -85,7 +81,6 @@ Sometimes you need parameters that are optional for a function, like extra optio
 Optional parameters need to be the last parameters of a function.
 
 ```squirrel
-
    void function main()
    {
     array a = [ 1, 2, 3, 4 ]
@@ -111,7 +106,6 @@ With vargs you can pass a function an unlimited amount of parameters. The parame
 You can denote a function to have vargs with adding `...` to the end of the parameter list.
 
 ```squirrel
-
    string function CombineStuff( string base, ... )
    {
     string s = base
@@ -127,7 +121,6 @@ You can denote a function to have vargs with adding `...` to the end of the para
 Closures are functions that are anonymous (unnamed) functions created in a specific script context that can use variables from the parent scope.
 
 ```squirrel
-
    void function main()
    {
     void functionref() fn = void function(){ print( "I'm a closure" ) } // create a closure
@@ -138,7 +131,6 @@ Closures are functions that are anonymous (unnamed) functions created in a speci
 Closures can capture variables from their parent scope.
 
 ```squirrel
-
    void function PlayFXOnEntity( entity ent )
    {
       int fxHandle = StartParticleEffectOnEntity( ent, PILOT_THROWN_TICK_WARNING, FX_ATTACH_POINT_FOLLOW, ent.LookupAttachment( "head_base" )

@@ -7,14 +7,12 @@
 `example1.json`
 
 ```json
-
     {
         "version": 7
     }
 ```
 
 ```text
-
     root
     ├── RePak.exe
     ├── example1.json
@@ -35,7 +33,6 @@
 `example2.json`
 
 ```json
-
     {
         "name": "example2",
         "assetsDir": "../depot",
@@ -53,7 +50,6 @@
 ```
 
 ```text
-
     root
     ├── RePak.exe
     ├── maps
@@ -84,7 +80,6 @@
 `example3.json`
 
 ```json
-
     {
         "name": "example3",
         "assetsDir": "../depot",
@@ -111,7 +106,6 @@
 ```
 
 ```text
-
     root
     ├── RePak.exe
     ├── maps

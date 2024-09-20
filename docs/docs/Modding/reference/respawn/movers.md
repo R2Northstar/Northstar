@@ -61,7 +61,6 @@ Movers are entites that move and rotate smoothly.
 ## Examples
 
 ```squirrel
-
     entity mover = CreateScriptMover( <0,0,0> )
 
     // moving the mover to <0,0,10> in 1 second
@@ -80,7 +79,6 @@ Movers are entites that move and rotate smoothly.
 ```
 
 ```squirrel
-
     // creating a elevator
     // using a mover with a model
     entity mover = CreateScriptMoverModel( $"models/props/turret_base/turret_base.mdl", < -40.5605, -1827.87, -223.944 >, <0,0,0>, SOLID_VPHYSICS, 1000 )
@@ -99,7 +97,6 @@ Movers are entites that move and rotate smoothly.
 ```
 
 ```squirrel
-
     // Phase shifting the player to a destination
     // setting a position
     vector destination = <250,1000,100>

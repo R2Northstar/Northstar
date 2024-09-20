@@ -3,7 +3,6 @@
 `var` stands for a variable of any type. Any **primitive** can be `var`, however complex types can never be `var`.
 
 ```squirrel
-
   // var can be just about anything.
   var v = 1
   v = "string"

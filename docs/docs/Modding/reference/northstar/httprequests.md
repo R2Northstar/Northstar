@@ -185,7 +185,6 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
     such as `callback` in this example.
 
     ```squirrel
-
         HttpRequest request
         request.method = HttpRequestMethod.GET
         request.url = "https://my.spyglass.api/sanctions/get_by_id"
@@ -229,7 +228,6 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
     This is the same example as NSHttpRequest()'s example. However, it uses this function instead.
 
     ```squirrel
-
         table<string, array<string> > params
         params[ "id" ] <- [ id.tostring() ]
 
@@ -291,7 +289,6 @@ The HTTP system uses a few enums and structs for requests and their callbacks.
     In this example, we'll convert a table to JSON, and send it over to a web API.
 
     ```squirrel
-
         table myData = {}
         myData[ "uid" ] <- player.GetUID()
         myData[ "username" ] <- player.GetPlayerName()

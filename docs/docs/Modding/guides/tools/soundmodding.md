@@ -50,7 +50,6 @@ ready it's time to set up the folder structure.
 Assuming the event name is `pilot_grapple_fire`, the folder structure of your mod should look like this:
 
 ```text
-
    author.mod/
    ├── audio/
    │   ├── pilot_grapple_fire/
@@ -64,7 +63,6 @@ Example of a `mod.json` (documented here: [Getting Started](../gettingstarted.md
 
 
 ```json
-
    {
      "Name": "MOD_NAME_HERE",
      "Description": "DESCRIPTION_HERE",
@@ -84,7 +82,6 @@ The event JSON files must contain both `EventId` and `AudioSelectionStrategy` li
 
 
 ```json
-
    {
        "EventId": [ "pilot_grapple_fire" ],
        "AudioSelectionStrategy": "sequential"
@@ -160,7 +157,6 @@ This is usually because there's some metadata left in the audio. Remove it to fi
     === "WAV script"
 
         ```shell
-
                #WAV to WAV 16-bit 48000 Hz.
                #wav_converter.sh
 
@@ -176,7 +172,6 @@ This is usually because there's some metadata left in the audio. Remove it to fi
     === "MP3 Script"
 
         ```shell
-
                #MP3 to WAV 16-bit 48000 Hz.
                #mp3-wav_converter.sh
 

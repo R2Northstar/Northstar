@@ -19,7 +19,6 @@ Damage source IDs should be added in `"After"` server callbacks.
 For example, we can call the methods from a function in `damage_source_example.nut`:
 
 ```squirrel
-
     global function SimpleSourceInit
 
     void function SimpleSourceInit()
@@ -42,7 +41,6 @@ For example, we can call the methods from a function in `damage_source_example.n
 Then call the function as an `"After"` server callback in the `mod.json`:
 
 ```javascript
-
     {
         "Scripts": [
             {
@@ -59,7 +57,6 @@ Then call the function as an `"After"` server callback in the `mod.json`:
 Now, these damage source IDs can be referenced in script like so:
 
 ```squirrel
-
     eDamageSourceId.mp_weapon_minigun
     eDamageSourceId.mp_titanweapon_barrage_core_launcher
     eDamageSourceId.mp_titanweapon_grenade_launcher

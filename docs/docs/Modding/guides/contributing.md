@@ -31,7 +31,6 @@ You need to have a relatively recent version of Python installed - 3.8 or higher
 === "Windows"
 
     ```powershell
-
     git clone https://github.com/R2Northstar/ModdingDocs/
     cd ModdingDocs
     ./run.ps1
@@ -40,7 +39,6 @@ You need to have a relatively recent version of Python installed - 3.8 or higher
 === "Linux"
 
     ```bash
-
     git clone https://github.com/R2Northstar/ModdingDocs/
     cd ModdingDocs
     ./run.sh

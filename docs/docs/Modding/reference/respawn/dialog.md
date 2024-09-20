@@ -98,7 +98,6 @@ All the data in the struct that can be changed.
     **Example**
 
     ```squirrel
-
         DialogData dialog
         dialog.message = "Hello there"
         OpenDialog( dialog )
@@ -117,7 +116,6 @@ All the data in the struct that can be changed.
     **Example**
 
     ```squirrel
-
         void function SendDialogWithButton()
         {
             DialogData dialog
@@ -152,7 +150,6 @@ All the data in the struct that can be changed.
 the folowing code produces this output:
 
 ```squirrel
-
     DialogData dialog
     dialog.header = "This is the header"
     dialog.message = "this is the body, it is green \n \n Hello There \n \n General Kenobi"

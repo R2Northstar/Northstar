@@ -8,7 +8,6 @@ This is required for nesting structs inside themselves to ensure they are fixed 
 To use the value of an `ornull` variable you need to ensure that it is not `null` and then cast to the correct type.
 
 ```squirrel
-
    int ornull n = null
    n = 1
 
@@ -26,7 +25,6 @@ Being required to cast the value of `ornull` variables makes it impossible to us
 You can use `ornull` types in complex type as well, for example in complex arrays.
 
 ```squirrel
-
    array<int ornull> a = [ 1, null ]
    a.append( 2 )
    a.append( null )
@@ -35,7 +33,6 @@ You can use `ornull` types in complex type as well, for example in complex array
 Additionally, `ornull` is useful for adding optional parameters to functions that need to preserve backwards compatability.
 
 ```squirrel
-
    SomeAPIFunction( int ornull n = null ) {}
 
    // both are valid
