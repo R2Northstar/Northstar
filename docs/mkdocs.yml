@@ -42,6 +42,13 @@ plugins:
       enabled: !ENV CI
   - search
   - social
+  - git-authors:
+      enabled_on_serve: false
+      exclude:
+        - index.md
+      ignore_commits: .git-blame-ignore-revs
+      show_email_address: false
+      strict: true
 
 markdown_extensions:
   - abbr
