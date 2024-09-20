@@ -18,17 +18,17 @@ Contditons you can check for are
 These conditions can also be combined with the regular squirrel boolean expressions
 
 ```squirrel
-    #if SERVER
-    Chat_ServerBroadcast("Message from the server VM")
-    #endif
+#if SERVER
+Chat_ServerBroadcast("Message from the server VM")
+#endif
 ```
 
 ```squirrel
-    #if (CLIENT && MP) || DEV
-    ...
-    #elseif SP
-    ...
-    #endif
+#if (CLIENT && MP) || DEV
+...
+#elseif SP
+...
+#endif
 ```
 
 ## Dependency Constants
@@ -39,29 +39,29 @@ loaded, these use the Compiler directives syntax.
 Inside your `mod.json` define a constant as:
 
 ```squirrel
-    {
-        // mod.json stuff
-        "Dependencies": {
-            // sets the constant to 0 or 1, depending if the mod with the name "Mod Name" exists and is enabled
-            "CONSTANT_NAME": "Mod Name"
-        }
+{
+    // mod.json stuff
+    "Dependencies": {
+        // sets the constant to 0 or 1, depending if the mod with the name "Mod Name" exists and is enabled
+        "CONSTANT_NAME": "Mod Name"
     }
+}
 ```
 
 For Example:
 
 ```json
-    "PLAYER_HAS_ROGUELIKE_MOD": "TF|Roguelike"
+"PLAYER_HAS_ROGUELIKE_MOD": "TF|Roguelike"
 ```
 
 Will define a constant `PLAYER_HAS_ROGUELIKE_MOD` that is set to `0` or `1`
 depending if the mod is enabled. It then can be used as a constant/compiler flag.
 
 ```squirrel
-    #if PLAYER_HAS_ROGUELIKE_MOD
-    print("player has roguelike mod")
-    Roguelike_Function();
-    #else
-    print("Can't use the function because the mod is off :'(")
-    #endif
+#if PLAYER_HAS_ROGUELIKE_MOD
+print("player has roguelike mod")
+Roguelike_Function();
+#else
+print("Can't use the function because the mod is off :'(")
+#endif
 ```

@@ -7,11 +7,11 @@ Client commands are how the clients communicate with the server. Mods can define
     Registers a function as a callback for a client command. This can only be done once per client command string.
 
     ```squirrel
-        AddClientCommandCallback("commandname", commandcallback)
+    AddClientCommandCallback("commandname", commandcallback)
 
-        void CommandCalled(entity player, array<string> args) {
-            print("commandname: was called with " + args);
-        }
+    void CommandCalled(entity player, array<string> args) {
+        print("commandname: was called with " + args);
+    }
     ```
 
 

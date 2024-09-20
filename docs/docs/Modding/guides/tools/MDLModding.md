@@ -105,14 +105,14 @@ We will add a cube to the side of the Flatline and assign a custom material to i
 - You will now see a list of all files in the `.vpk` file on the left side looking something like this:
 
 ``` text
-    RootDir
-    ├── materials
-    ├── resource
-    ├── cfg
-    ├── scripts
-    ├── models
-    ├── maps
-    └── depot
+RootDir
+├── materials
+├── resource
+├── cfg
+├── scripts
+├── models
+├── maps
+└── depot
 ```
 
 - Navigate to the `models` folder (this is where all models in this file are located).
@@ -265,13 +265,13 @@ If you have materials with multiple paths (different folders in the game files) 
 Usage:
 
 ```text
-        $renamematerial <current material> <new material>
+$renamematerial <current material> <new material>
 ```
 
 Example:
 
 ```text
-        $renamematerial "models\weapons_r2\coolmaterial\cool_material" "models\amazing\uncoolmaterial\cool_material2"
+$renamematerial "models\weapons_r2\coolmaterial\cool_material" "models\amazing\uncoolmaterial\cool_material2"
 ```
 
 Command docs: [VALVe developer docs $renamematerial](https://developer.valvesoftware.com/wiki/$renamematerial)
@@ -294,11 +294,11 @@ Command docs: [VALVe developer docs $renamematerial](https://developer.valvesoft
 - Open your `.qc` file in a text editor of your choice.
 - On the top of the file you will see so called "bodygroup" lines, these are used to define the bodygroups of the model. They look a bit like this:
     ```
-            $bodygroup "body"
-            {
-                studio "ptpov_vinson_v_vinson.smd"
-                blank
-            }
+    $bodygroup "body"
+    {
+        studio "ptpov_vinson_v_vinson.smd"
+        blank
+    }
     ```
 
 - For each bodygroup you will want to change the files to be the dmx files you exported in the previous step. (in most cases its gonna be just renaming all the files to `.dmx` instead of `.smd`).

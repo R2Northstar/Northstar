@@ -13,8 +13,8 @@ To declare a class, first add the `untyped` keyword and the class as a variable 
 file level.
 
 ```squirrel
-    untyped
-    var ExampleClass
+untyped
+var ExampleClass
 ```
 
 The `untyped` declaration is required because instances have an unknown type and it's
@@ -34,11 +34,11 @@ Most classes use a constructor. A constructor is a function of the instance that
 executed on object creation.
 
 ```squirrel
-    void function initClient() {
-        class ExampleClass {
-            constructor(){print("Instance of ExampleClass created");}
-        }
+void function initClient() {
+    class ExampleClass {
+        constructor(){print("Instance of ExampleClass created");}
     }
+}
 ```
 
 You can require parameters in the constructor. Keep in mind that you have to pass those
@@ -49,19 +49,19 @@ Function parameters are passed as type `var`, but the type keyword is not requir
 ){}; func( var parameter ){};` are both correct.
 
 ```squirrel
-    class ExampleClass {
-            propertyString = null // Actual type is var
-            propertyInt = null // Actual type is var
-            constructor( var pString, var pInt ) {
-                this.propertyString = expect string(pString);
-                this.propertyInt = expect int(pInt);
-            }
-    }
+class ExampleClass {
+        propertyString = null // Actual type is var
+        propertyInt = null // Actual type is var
+        constructor( var pString, var pInt ) {
+            this.propertyString = expect string(pString);
+            this.propertyInt = expect int(pInt);
+        }
+}
 
-    // See section "Declaring Objects" for more information on object creation
-    var obj = ExampleClass( "foo", 1 );
-    printt(obj.propertyString, obj.propertyString ) // foo, 1
-    var lObj = ExampleClass(); tObj = ExampleClass( "" , 0 , 0); // Both throw an error compile time because parameters don't match with the constructor
+// See section "Declaring Objects" for more information on object creation
+var obj = ExampleClass( "foo", 1 );
+printt(obj.propertyString, obj.propertyString ) // foo, 1
+var lObj = ExampleClass(); tObj = ExampleClass( "" , 0 , 0); // Both throw an error compile time because parameters don't match with the constructor
 ```
 
 Usually objects have properties. To define them, just add their identifier into the
@@ -72,14 +72,14 @@ Every object has a reference to itself called `this`. You can change parameters 
 object by reference.
 
 ```squirrel
-    void function initClient() {
-        class ExampleClass {
-            property = null
-            constructor( var parameter ) {
-                this.property = expect int(parameter);
-            }
+void function initClient() {
+    class ExampleClass {
+        property = null
+        constructor( var parameter ) {
+            this.property = expect int(parameter);
         }
     }
+}
 ```
 
 You can't use the class name as a type. Use `var` instead. You can't `expect` them
@@ -91,26 +91,26 @@ Functions of a class have to return a value of type `var`. This may be `null`.
 Define functions like this:
 
 ```squirrel
-    global var ExampleClass;
-    void function initClassF(){
-        class ExampleClass {
-            variable = "default value"
+global var ExampleClass;
+void function initClassF(){
+    class ExampleClass {
+        variable = "default value"
 
-            // Set field 'variable' of this instance to passed parameter
-            function setV( pV ){
-                this.variable = pV
-            }
-
-            // Return field 'variable' of this instance
-            function getV(){
-                return this.variable; // return value can be of any type
-            }
+        // Set field 'variable' of this instance to passed parameter
+        function setV( pV ){
+            this.variable = pV
         }
-        var inst = ExampleClass();
-        print(inst.getV()); // -> default value
-        inst.setV("new value");
-        print(inst.getV()); // -> new value
+
+        // Return field 'variable' of this instance
+        function getV(){
+            return this.variable; // return value can be of any type
+        }
     }
+    var inst = ExampleClass();
+    print(inst.getV()); // -> default value
+    inst.setV("new value");
+    print(inst.getV()); // -> new value
+}
 ```
 
 ## Inserting Properties Into Classes
@@ -119,10 +119,10 @@ It's possible to insert more properties into a class at runtime. To achieve this
 the `<-` operator.
 
 ```squirrel
-    // Using `ExampleClass` and `exampleObject` from example above
-    ExampleClass.newProperty <- "New property in class"
-    // The value of the new index may be of any type.
-    ExampleClass.newFunc <- function(){return "Function return value";}
+// Using `ExampleClass` and `exampleObject` from example above
+ExampleClass.newProperty <- "New property in class"
+// The value of the new index may be of any type.
+ExampleClass.newFunc <- function(){return "Function return value";}
 ```
 
 !!! note
@@ -131,22 +131,22 @@ the `<-` operator.
     instantiation*
 
     ```squirrel
-        var ExampleErrorClass;
+    var ExampleErrorClass;
 
-        func(){
-            class ExampleErrorClass {};
-            var eInst = ExampleErrorClass()
-            eInst.e <- "Instance error value"; // Asserts error: class instances do not support the new slot operator
-            ExampleErrorClass.e <- "Class error value"; // Fails because an instance of class ExampleErrorClass has already been created. Asserts error: trying to modify a class that has already been instantiated
-        }
+    func(){
+        class ExampleErrorClass {};
+        var eInst = ExampleErrorClass()
+        eInst.e <- "Instance error value"; // Asserts error: class instances do not support the new slot operator
+        ExampleErrorClass.e <- "Class error value"; // Fails because an instance of class ExampleErrorClass has already been created. Asserts error: trying to modify a class that has already been instantiated
+    }
     ```
 
 Inserting functions is also possible using the `::` operator
 
 ```squirrel
-    function ExampleClass::AddOne( var param /* parameters have to be var */ ){ return expect int( param ) + 1 }
-    var e = ExampleClass()
-    print( expect int( e.AddOne( 1 ) ) ) // prints 2
+function ExampleClass::AddOne( var param /* parameters have to be var */ ){ return expect int( param ) + 1 }
+var e = ExampleClass()
+print( expect int( e.AddOne( 1 ) ) ) // prints 2
 ```
 
 This allows mods to extend functionality of classes declared in the base game and other
@@ -155,24 +155,24 @@ mods that have already been loaded.
 For example, extending functionality of the CPlayer class might look like this:
 
 ```squirrel
-    global function InitCPlayerInsert
+global function InitCPlayerInsert
 
-    void function InitCPlayerInsert()
-    {
-            CPlayer.afkCount <- 0 // Insert new property into the CPlayer class
-            CPlayer.maxAFKCount <- 3
-            function CPlayer::AFK(){ // Kick a player when they are afk multiple times in a match
-                    if ( this.afkCount >= this.maxAFKCount )
-                            ClientCommand( this, "disconnect You have been AFK too often in a match")
-                    else
-                    {
-                            this.afkCount++
-                            SendHudMessage( this, format( "You are AFK!\nYou will get kicked after %i more violations", this.maxAFKCount - this.afkCount ), -1, 0.4, 255, 255, 255, 0, 0.5, 5, 0.9 )
-                    }
-            }
-
-            // To trigger the method, do GetPlayerArray()[0].AFK()
+void function InitCPlayerInsert()
+{
+    CPlayer.afkCount <- 0 // Insert new property into the CPlayer class
+    CPlayer.maxAFKCount <- 3
+    function CPlayer::AFK(){ // Kick a player when they are afk multiple times in a match
+        if ( this.afkCount >= this.maxAFKCount )
+            ClientCommand( this, "disconnect You have been AFK too often in a match")
+        else
+        {
+            this.afkCount++
+            SendHudMessage( this, format( "You are AFK!\nYou will get kicked after %i more violations", this.maxAFKCount - this.afkCount ), -1, 0.4, 255, 255, 255, 0, 0.5, 5, 0.9 )
+        }
     }
+
+    // To trigger the method, do GetPlayerArray()[0].AFK()
+}
 ```
 
 This will allow scripts to run the `AFK` method on CPlayer entities, which will kick a
@@ -189,25 +189,25 @@ inherited from a modified class.
 To create an instance, do:
 
 ```squirrel
-    class ExampleClass {
-        property = null
-        constructor( var parameter ) {
-            this.property = expect int(parameter);
-        }
+class ExampleClass {
+    property = null
+    constructor( var parameter ) {
+        this.property = expect int(parameter);
     }
+}
 
-    var exampleObject = ExampleClass(1);
-    int n = exampleObject.property // n = 1
-    exampleObject.property++;
-    n = exampleObject.property // n = 2
+var exampleObject = ExampleClass(1);
+int n = exampleObject.property // n = 1
+exampleObject.property++;
+n = exampleObject.property // n = 2
 ```
 
 It's also possible to create an instance without calling the constructor.
 
 ```squirrel
-    // Using 'ExampleClass' from previous examples
-    var e = ExampleClass.instance()
-    e.constructor(1) // Constructor is a normal function so you can call it manually.
+// Using 'ExampleClass' from previous examples
+var e = ExampleClass.instance()
+e.constructor(1) // Constructor is a normal function so you can call it manually.
 ```
 
 Like the example above shows you can manipulate properties of a class directly. There is
@@ -218,8 +218,8 @@ doesn't have a reference to itself, meaning that the `this` keyword refers to th
 table.
 
 ```squirrel
-    var class = ExampleClass
-    var instance = class.constructor()
+var class = ExampleClass
+var instance = class.constructor()
 ```
 
 ## Cloning Instances
@@ -229,38 +229,38 @@ reference to itself. This means that any modifications inside of a function are 
 to the original object.
 
 ```squirrel
-    void function initClass(){
-        class Container {
-            content = null
-            constructor ( var pString ) {
-                this.content = expect string(pString);
-            }
+void function initClass(){
+    class Container {
+        content = null
+        constructor ( var pString ) {
+            this.content = expect string(pString);
         }
-        var con = Container("original string")
-        manipulateContainer( con )
-        print(con.content) // -> manipulated string
     }
+    var con = Container("original string")
+    manipulateContainer( con )
+    print(con.content) // -> manipulated string
+}
 
-    void function manipulateContainer( var con ){
-        con.content = "manipulated string";
-    }
+void function manipulateContainer( var con ){
+    con.content = "manipulated string";
+}
 ```
 
 You can avoid this by using cloned objects. Use the `clone` keyword to create a copy
 of an object.
 
 ```squirrel
-    // Assumes the 'Container' class from the previous example has already been declared
-    void function initClass(){
-        var originalObj = Container("original string")
-        var clonedObj = clone originalObj
-        manipulateContainer( clonedObj )
-        printt(orignalObj.content, clonedObj.content) // -> original string, manipulated string
-    }
+// Assumes the 'Container' class from the previous example has already been declared
+void function initClass(){
+    var originalObj = Container("original string")
+    var clonedObj = clone originalObj
+    manipulateContainer( clonedObj )
+    printt(orignalObj.content, clonedObj.content) // -> original string, manipulated string
+}
 
-    void function manipulateContainer( var con ){
-        con.content = "manipulated string";
-    }
+void function manipulateContainer( var con ){
+    con.content = "manipulated string";
+}
 ```
 
 
@@ -271,10 +271,10 @@ hold multiple class objects that emulate the behaviour of namespaces to a certai
 extend.
 
 ```squirrel
-    global table<string, var> fakeNamespace = {
-            class1 = null,
-            class2 = null
-    }
+global table<string, var> fakeNamespace = {
+    class1 = null,
+    class2 = null
+}
 ```
 
 This allows you to group classes together in a single global variable.
@@ -282,41 +282,41 @@ This allows you to group classes together in a single global variable.
 You can use the classes inside of the table like this:
 
 ```squirrel
-    // Create a class object in field
-    class fakeNamespace.class1 { constructor(){ print("constructing instance of class1") } }
-    class fakeNamespace.class2 { constructor(){ print("constructing instance of class2") } }
+// Create a class object in field
+class fakeNamespace.class1 { constructor(){ print("constructing instance of class1") } }
+class fakeNamespace.class2 { constructor(){ print("constructing instance of class2") } }
 
-    // Access class object in field
-    var c1 = fakeNamespace.class1()
-    var c2 = fakeNamespace.class2()
+// Access class object in field
+var c1 = fakeNamespace.class1()
+var c2 = fakeNamespace.class2()
 
-    // Insert functions into class object in field
-    fakeNamespace.class1.testfunc <- var function(){ print( "inserted function in class1" ) }
+// Insert functions into class object in field
+fakeNamespace.class1.testfunc <- var function(){ print( "inserted function in class1" ) }
 ```
 
 You can also declare classes in an array:
 
 ```squirrel
-    array<var> classes // This has to be at file level
+array<var> classes // This has to be at file level
 
-    // This has to be inside of a function:
-    classes.append( class { constructor(){ print( "inline constructor" ) } )
-    var instance = classes[0]()
+// This has to be inside of a function:
+classes.append( class { constructor(){ print( "inline constructor" ) } )
+var instance = classes[0]()
 ```
 
 And in a similar fashion in structs:
 
 ```squirrel
-    struct {
-            var class1 = null
-            var class2 = null
-    } classes // This has to be at file level
+struct {
+    var class1 = null
+    var class2 = null
+} classes // This has to be at file level
 
-    // This has to be inside of a function:
-    classes.class1 = class { constructor(){ print( "inline constructor" ) } )
-    classes.class2 = class { constructor(){ print( "inline constructor" ) } )
-    var c1 = classes.class1()
-    var c2 = classes.class2()
+// This has to be inside of a function:
+classes.class1 = class { constructor(){ print( "inline constructor" ) } )
+classes.class2 = class { constructor(){ print( "inline constructor" ) } )
+var c1 = classes.class1()
+var c2 = classes.class2()
 ```
 
 !!! warning
@@ -325,7 +325,7 @@ And in a similar fashion in structs:
     won't compile.
 
     ```squirrel
-        class Child extends Parent{}
+    class Child extends Parent{}
     ```
 
 Make sure you check out the squirrel documentation on

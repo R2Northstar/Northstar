@@ -8,16 +8,16 @@ This is required for nesting structs inside themselves to ensure they are fixed 
 To use the value of an `ornull` variable you need to ensure that it is not `null` and then cast to the correct type.
 
 ```squirrel
-   int ornull n = null
-   n = 1
+int ornull n = null
+n = 1
 
-   if( n != null )
-   {
+if( n != null )
+{
     expect int( n ) // n is now in this scope an int
     n += 2
-   }
+}
 
-   print( n ) // 3
+print( n ) // 3
 ```
 
 Being required to cast the value of `ornull` variables makes it impossible to use it with types that cannot be casted like complex arrays. You can still make complex ornull variables, just be aware that the content type can never be recasted.

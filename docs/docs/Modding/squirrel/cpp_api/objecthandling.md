@@ -152,13 +152,13 @@
     Used to add global constants for scripts.
 
     ```cpp
-        getConstants(sqvm);
+    getConstants(sqvm);
 
-        pushstring(sqvm, "MY_CONSTANT");
-        pushstring(sqvm, "MY_VALUE");
-        newslot(sqvm, -3, false);
+    pushstring(sqvm, "MY_CONSTANT");
+    pushstring(sqvm, "MY_VALUE");
+    newslot(sqvm, -3, false);
 
-        removeFromStack(sqvm); // don't forget this!
+    removeFromStack(sqvm); // don't forget this!
     ```
 
 
@@ -172,13 +172,13 @@
     returns `0` if the function was found.
 
     ```cpp
-        SQObject functionobj {};
-        int result = sq_getfunction(m_pSQVM->sqvm, funcname, &functionobj, 0);
-        if (result != 0) // This func returns 0 on success for some reason
-        {
-            NS::log::squirrel_logger<context>()->error("Call was unable to find function with name '{}'. Is it global?", funcname);
-            return SQRESULT_ERROR;
-        }
+    SQObject functionobj {};
+    int result = sq_getfunction(m_pSQVM->sqvm, funcname, &functionobj, 0);
+    if (result != 0) // This func returns 0 on success for some reason
+    {
+        NS::log::squirrel_logger<context>()->error("Call was unable to find function with name '{}'. Is it global?", funcname);
+        return SQRESULT_ERROR;
+    }
     ```
 
 !!! cpp-function "T* getentity(HSquirrelVM* sqvm, SQInteger iStackPos)"
@@ -212,16 +212,16 @@
     More information about function calls are available [here](sq_functions.md)
 
     ```cpp
-        ADD_SQFUNC("void", SQCallbackTest, "void functionref()", "", ScriptContext::UI)
-        {
-            SQObject fn; // Make an empty sqobject. This will hold the function object later
-            g_pSquirrel<context>->__sq_getobject(sqvm, 1, &fn); // Assign the function object to the SQOBJECT
-            g_pSquirrel<context>->pushobject(sqvm, &fn); // Push the function object for the call
-            g_pSquirrel<context>->pushroottable(sqvm); // Push the root table for the function stack
-            g_pSquirrel<context>->__sq_call(sqvm, 1, false, true); // call the function with one parameter (the 'this' object)
+    ADD_SQFUNC("void", SQCallbackTest, "void functionref()", "", ScriptContext::UI)
+    {
+        SQObject fn; // Make an empty sqobject. This will hold the function object later
+        g_pSquirrel<context>->__sq_getobject(sqvm, 1, &fn); // Assign the function object to the SQOBJECT
+        g_pSquirrel<context>->pushobject(sqvm, &fn); // Push the function object for the call
+        g_pSquirrel<context>->pushroottable(sqvm); // Push the root table for the function stack
+        g_pSquirrel<context>->__sq_call(sqvm, 1, false, true); // call the function with one parameter (the 'this' object)
 
-            return SQRESULT_NULL;
-        }
+        return SQRESULT_NULL;
+    }
     ```
 
 !!! cpp-function "SQRESULT get(HSquirrelVM* sqvm, const SQInteger stackpos)"

@@ -10,42 +10,42 @@ It is not possible to create elements at runtime so you have to define all eleme
 An Element is declared in the following way:
 
 ```
-    // please follow this structure
-    ElementName
-    {
-        ControlName name
-        // optional: classname, inheritance, ids ...
+// please follow this structure
+ElementName
+{
+    ControlName name
+    // optional: classname, inheritance, ids ...
 
-        // optional: other properties
+    // optional: other properties
 
-        // optional: pinning
-    }
+    // optional: pinning
+}
 ```
 
 If you're working on a **menu**, you need a `menu` object that contains all elements, for example like this:
 
 ```
-    resource/ui/menus/profiles_menu.menu
+resource/ui/menus/profiles_menu.menu
+{
+    menu
     {
-        menu
-        {
-            ControlName Frame
-            xpos 0
-            ypos 0
-            zpos 3
-            wide f0
-            tall f0
-            autoResize 0
-            visible 1
-            enabled 1
-            pinCorner 0
-            PaintBackgroundType 0
-            infocus_bgcolor_override "0 0 0 0"
-            outoffocus_bgcolor_override "0 0 0 0"
+        ControlName Frame
+        xpos 0
+        ypos 0
+        zpos 3
+        wide f0
+        tall f0
+        autoResize 0
+        visible 1
+        enabled 1
+        pinCorner 0
+        PaintBackgroundType 0
+        infocus_bgcolor_override "0 0 0 0"
+        outoffocus_bgcolor_override "0 0 0 0"
 
-            // elements
-        }
+        // elements
     }
+}
 ```
 It usually doesn't matter if you use quotation marks to assign string values to parameters.
 
@@ -58,15 +58,15 @@ It's not possible to load other files as menus or panels. A `.menu` represents a
 The rest of the file needs to be wrapped in curly brackets.
 
 ```
-    resource/ui/menus/more/folders/my_menu.menu
+resource/ui/menus/more/folders/my_menu.menu
+{
+    MyObject
     {
-        MyObject
-        {
-            // object properties go here
-        }
-
-        // more objects ...
+        // object properties go here
     }
+
+    // more objects ...
+}
 ```
 
 ### Properties
@@ -430,9 +430,9 @@ Usable conditions are:
     the game's language.
 
     ```text
-            // use allcaps only in russian
-            allCaps        0  [!$RUSSIAN]
-            allCaps        1  [$RUSSIAN]
+    // use allcaps only in russian
+    allCaps        0  [!$RUSSIAN]
+    allCaps        1  [$RUSSIAN]
     ```
 
 
@@ -442,42 +442,42 @@ On top of that, logical operators like `!`, `&&` and `||` are available as well.
 #### Example:
 
 ```text
-    // This element only shows on pc
-    IngameTextChat [$WINDOWS]
-    {
-        ControlName             CBaseHudChat
-        InheritProperties       ChatBox
+// This element only shows on pc
+IngameTextChat [$WINDOWS]
+{
+    ControlName             CBaseHudChat
+    InheritProperties       ChatBox
 
-        destination             "match"
+    destination             "match"
 
-        visible                 0
+    visible                 0
 
-        pin_to_sibling          Screen
-        pin_corner_to_sibling   TOP_LEFT
-        pin_to_sibling_corner   TOP_LEFT
-        xpos                    -45
-        ypos                    -616
-    }
+    pin_to_sibling          Screen
+    pin_corner_to_sibling   TOP_LEFT
+    pin_to_sibling_corner   TOP_LEFT
+    xpos                    -45
+    ypos                    -616
+}
 
-    // This element has different widths depending on the game resolution
-    LoadingTip
-    {
-        ControlName             Label
-        ypos                    10
-        wide                    1630 [$WIDESCREEN_16_9]
-        wide                    1441 [!$WIDESCREEN_16_9]
-        auto_tall_tocontents    1
-        labelText               ""
-        textalign               "north-west"
-        font                    Default_28
-        wrap                    1
-        fgcolor_override        "217 170 75 255"
-        visible                 0
+// This element has different widths depending on the game resolution
+LoadingTip
+{
+    ControlName             Label
+    ypos                    10
+    wide                    1630 [$WIDESCREEN_16_9]
+    wide                    1441 [!$WIDESCREEN_16_9]
+    auto_tall_tocontents    1
+    labelText               ""
+    textalign               "north-west"
+    font                    Default_28
+    wrap                    1
+    fgcolor_override        "217 170 75 255"
+    visible                 0
 
-        pin_to_sibling          LoadingGameMode
-        pin_corner_to_sibling   TOP_LEFT
-        pin_to_sibling_corner   BOTTOM_LEFT
-    }
+    pin_to_sibling          LoadingGameMode
+    pin_corner_to_sibling   TOP_LEFT
+    pin_to_sibling_corner   BOTTOM_LEFT
+}
 
 ```
 
@@ -528,9 +528,9 @@ You can calculate the position or dimensions etc. with different units. If you p
     x percent of the screen.
 
     ```
-        // cover the entire screen
-        width   %100
-        height  %100
+    // cover the entire screen
+    width   %100
+    height  %100
     ```
 
 !!! cpp-function "fx"

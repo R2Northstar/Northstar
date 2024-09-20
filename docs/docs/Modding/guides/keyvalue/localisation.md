@@ -23,19 +23,19 @@ Languages natively supported by Titanfall2 are:
 Here's what a translation file looks like:
 
 ```json
-    "lang"
+"lang"
+{
+    "Language" "english"
+    "Tokens"
     {
-        "Language" "english"
-        "Tokens"
-        {
-            "MENU_LAUNCH_NORTHSTAR" "Launch Northstar"
-            "MENU_TITLE_MODS" "Mods"
-            "RELOAD_MODS" "Reload Mods"
-            "WARNING" "Warning"
-            "CORE_MOD_DISABLE_WARNING" "Disabling core mods can break your client!"
-            "DISABLE" "Disable"
-        }
+        "MENU_LAUNCH_NORTHSTAR" "Launch Northstar"
+        "MENU_TITLE_MODS" "Mods"
+        "RELOAD_MODS" "Reload Mods"
+        "WARNING" "Warning"
+        "CORE_MOD_DISABLE_WARNING" "Disabling core mods can break your client!"
+        "DISABLE" "Disable"
     }
+}
 ```
 
 It begins with the `"lang"` instruction, contains a `"Language"` key indicating
@@ -58,11 +58,11 @@ For example, Northstar translation files are named
 You can import them from your `mod.json` manifesto this way:
 
 ```json
-    {
-        "Localisation": [
-            "resource/northstar_client_localisation_%language%.txt"
-        ]
-    }
+{
+    "Localisation": [
+        "resource/northstar_client_localisation_%language%.txt"
+    ]
+}
 ```
 
 !!! note
@@ -80,19 +80,19 @@ For example, to translate the "Launch Northstar" button on main menu, instead of
 calling:
 
 ```
-    AddComboButton( comboStruct, headerIndex, buttonIndex++, "Launch Northstar" )
+AddComboButton( comboStruct, headerIndex, buttonIndex++, "Launch Northstar" )
 ```
 
 We'll use:
 
 ```
-    AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_LAUNCH_NORTHSTAR" )
+AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_LAUNCH_NORTHSTAR" )
 ```
 
 You can also use the `Localize` method client-side:
 
 ```
-    Localize( "#MENU_LAUNCH_NORTHSTAR" )
+Localize( "#MENU_LAUNCH_NORTHSTAR" )
 ```
 
 ## Northstar translations

@@ -15,12 +15,12 @@ Arrays are always zero indexed with `[ <expression> ]`. The indexes are always n
 Array literals are a comma or newline seperated sequence of expressions delimited by an opening bracket `[` and a corresponding closing bracket `]`.
 
 ```squirrel
-  array a = [ 1, 2, 3 ]
-  array b = [
+array a = [ 1, 2, 3 ]
+array b = [
     1
     2
     3
-  ]
+]
 ```
 
 ## Primitive Arrays
@@ -28,15 +28,15 @@ Array literals are a comma or newline seperated sequence of expressions delimite
 Primitive arrays are arrays that can hold any value. Their content is therefore untyped.
 
 ```squirrel
-  array a
-  a.append( 1 ) // add a number
-  a.append( "str" ) // add a string
-  a.append( [] ) // add an empty array
+array a
+a.append( 1 ) // add a number
+a.append( "str" ) // add a string
+a.append( [] ) // add an empty array
 
-  // because the content type of the array is not defined, all content will be var
-  var n = a[0]
-  var str = a[1]
-  var arr = a[2]
+// because the content type of the array is not defined, all content will be var
+var n = a[0]
+var str = a[1]
+var arr = a[2]
 ```
 
 ## Complex Arrays
@@ -48,10 +48,10 @@ The content type needs to be specified within `<` and `>` brackets.
 There is no way to define a complex array that holds multiple different types.
 
 ```squirrel
-   array<int> a
-   a.append( 1 )
-   a.append( 0x2 )
-   a.append( "3" ) // this will throw a compile error because the array can only contain integers
+array<int> a
+a.append( 1 )
+a.append( 0x2 )
+a.append( "3" ) // this will throw a compile error because the array can only contain integers
 ```
 
 
@@ -68,12 +68,12 @@ You can index and change content values like with regular arrays.
 When initializing a static array you can omit all values after your initial values with `...`. All following values will get default initialized with the content's default.
 
 ```squirrel
-   float[3] v1
-   float[8] v2 = [ 1.0, 2.0, ... ]
-   v2[2] = 3.0
+float[3] v1
+float[8] v2 = [ 1.0, 2.0, ... ]
+v2[2] = 3.0
 
-   print( v1[0] ) // notice how no value needs to be pushed into the vector
-   print( v2[7] ) // will print 0.0 because it has been default initialized
+print( v1[0] ) // notice how no value needs to be pushed into the vector
+print( v2[7] ) // will print 0.0 because it has been default initialized
 ```
 
 ## Compatability
@@ -83,11 +83,11 @@ It is not possible to cast or convert an array between their different forms. Fo
 Instead you need to create an entirely new array with the target type or add all contents manually.
 
 ```squirrel
-  array<string> orig = [ "a", "b", "c" ]
-  array target
+array<string> orig = [ "a", "b", "c" ]
+array target
 
-  target.clear() // clear all contents from the target array
-  foreach( v in orig ) // iterate over the original array and add all contents to the target array
+target.clear() // clear all contents from the target array
+foreach( v in orig ) // iterate over the original array and add all contents to the target array
     target.append( v )
 ```
 

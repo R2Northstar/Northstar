@@ -31,15 +31,15 @@ Provided is a template `mod.json`, for a detailed list of values read the
 `cheatsheet`
 
 ```json
-    {
-       "Name": "Yourname.Modname",
-       "Description": "Woo yeah wooo!",
+{
+   "Name": "Yourname.Modname",
+   "Description": "Woo yeah wooo!",
 
-       "LoadPriority": 0,
-       "ConVars": [],
-       "Scripts": [],
-       "Localisation": []
-    }
+   "LoadPriority": 0,
+   "ConVars": [],
+   "Scripts": [],
+   "Localisation": []
+}
 ```
 
 Inside the `mod` folder, existing files found in the engine's virtual file system will
@@ -48,24 +48,24 @@ be overwritten and new files can be added. If you need to define new Squirrel fi
 example for this might be:
 
 ```json
-    "Scripts": [
-       {
-          "Path": "path/to/file.nut",
-          "RunOn": "( CLIENT || SERVER ) && MP"
-       },
-       {
-          "Path": "path/to/another_file.nut",
-          "RunOn": "( CLIENT || SERVER ) && MP",
-          "ClientCallback": {
-             "Before": "ClientPreMapspawnThing",
-             "After": "AfterMapspawnClientThing"
-          },
-          "ServerCallback": {
-             "Before": "ServerPreMapspawncrap",
-             "After": "ServerAfterMapspawnWoo"
-          }
-       }
-    ]
+"Scripts": [
+    {
+        "Path": "path/to/file.nut",
+        "RunOn": "( CLIENT || SERVER ) && MP"
+    },
+    {
+        "Path": "path/to/another_file.nut",
+        "RunOn": "( CLIENT || SERVER ) && MP",
+        "ClientCallback": {
+            "Before": "ClientPreMapspawnThing",
+            "After": "AfterMapspawnClientThing"
+        },
+        "ServerCallback": {
+            "Before": "ServerPreMapspawncrap",
+            "After": "ServerAfterMapspawnWoo"
+        }
+    }
+]
 ```
 
 `"Path"` indicates where the script is, `"RunOn"` is the Squirrel VM context (see
@@ -85,35 +85,35 @@ This guide will dig into each of the possible `mod.json` fields. Please note tha
 This is what a well-formatted `mod.json` looks like:
 
 ```json
-    {
-        "Name": "Northstar.CustomServers",
-        "Description": "Attempts to recreate the behaviour of vanilla Titanfall 2 servers, as well as changing some scripts to allow better support for mods",
-        "Version": "1.5.0",
-        "LoadPriority": 0,
-        "ConVars": [
-            {
-                "Name": "ns_private_match_last_mode",
-                "DefaultValue": "tdm"
-            },
-            {
-                "Name": "ns_private_match_last_map",
-                "DefaultValue": "mp_forwardbase_kodai"
-            }
-        ],
-        "Scripts": [
-            {
-                "Path": "sh_northstar_utils.gnut",
-                "RunOn": "CLIENT || SERVER || UI"
-            },
-            {
-                "Path": "mp/_classic_mp_dropship_intro.gnut",
-                "RunOn": "SERVER && MP"
-            }
-        ],
-        "Localisation": [
-            "resource/northstar_custom_%language%.txt"
-        ]
-    }
+{
+    "Name": "Northstar.CustomServers",
+    "Description": "Attempts to recreate the behaviour of vanilla Titanfall 2 servers, as well as changing some scripts to allow better support for mods",
+    "Version": "1.5.0",
+    "LoadPriority": 0,
+    "ConVars": [
+        {
+            "Name": "ns_private_match_last_mode",
+            "DefaultValue": "tdm"
+        },
+        {
+            "Name": "ns_private_match_last_map",
+            "DefaultValue": "mp_forwardbase_kodai"
+        }
+    ],
+    "Scripts": [
+        {
+            "Path": "sh_northstar_utils.gnut",
+            "RunOn": "CLIENT || SERVER || UI"
+        },
+        {
+            "Path": "mp/_classic_mp_dropship_intro.gnut",
+            "RunOn": "SERVER && MP"
+        }
+    ],
+    "Localisation": [
+        "resource/northstar_custom_%language%.txt"
+    ]
+}
 ```
 
 !!! note
@@ -171,14 +171,14 @@ If I don't want to wait 15 seconds for matches to start on my server,
 `ns_private_match_countdown_length` in its `mod.json` manifesto:
 
 ```json
-    "ConVars": [
-        {
-            "Name": "ns_private_match_countdown_length",
-            "DefaultValue": "15"
-        },
+"ConVars": [
+    {
+        "Name": "ns_private_match_countdown_length",
+        "DefaultValue": "15"
+    },
 
-        ...
-    ]
+    ...
+]
 ```
 
 I can setup the `ns_private_match_countdown_length` variable in my
@@ -189,8 +189,8 @@ When starting a match, `Northstar.CustomServers` mod will retrieve the configura
 variable value, or its default value if it hasn't been specified in configuration file:
 
 ```squirrel
-    // start countdown
-    SetUIVar( level, "gameStartTime", Time() + GetConVarFloat( "ns_private_match_countdown_length" ) )
+// start countdown
+SetUIVar( level, "gameStartTime", Time() + GetConVarFloat( "ns_private_match_countdown_length" ) )
 ```
 
 !!! note
@@ -247,24 +247,24 @@ The scripts field lets you declare an array of Squirrel files to import into you
 Each script entry must have a "Path" value and a "RunOn" value.
 
 ```json
-     "Scripts": [
-         {
-             "Path": "path/to/file.nut",
-             "RunOn": "( CLIENT || SERVER ) && MP"
-         },
-         {
-             "Path": "path/to/another_file.nut",
-             "RunOn": "( CLIENT || SERVER ) && MP",
-             "ClientCallback": {
-                 "Before": "ClientPreMapspawnThing",
-                 "After": "AfterMapspawnClientThing"
-             },
-             "ServerCallback": {
-                 "Before": "ServerPreMapspawncrap",
-                 "After": "ServerAfterMapspawnWoo"
-             }
-         }
-    ]
+"Scripts": [
+    {
+        "Path": "path/to/file.nut",
+        "RunOn": "( CLIENT || SERVER ) && MP"
+    },
+    {
+        "Path": "path/to/another_file.nut",
+        "RunOn": "( CLIENT || SERVER ) && MP",
+        "ClientCallback": {
+            "Before": "ClientPreMapspawnThing",
+            "After": "AfterMapspawnClientThing"
+        },
+        "ServerCallback": {
+            "Before": "ServerPreMapspawncrap",
+            "After": "ServerAfterMapspawnWoo"
+        }
+    }
+]
 ```
 
 #### Path

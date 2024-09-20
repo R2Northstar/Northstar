@@ -57,22 +57,22 @@ The client chat callbacks allow you to intercept chat messages and modify or blo
     **Example:**
 
     ```squirrel
-        ClClient_MessageStruct function MyChatFilter(ClClient_MessageStruct message)
+    ClClient_MessageStruct function MyChatFilter(ClClient_MessageStruct message)
+    {
+        if (message.message.find("nft") != null)
         {
-            if (message.message.find("nft") != null)
-            {
-                message.shouldBlock = true
-            }
-
-            message.message = StringReplace(message.message, "yes", "no", true, true)
-
-            return message
+            message.shouldBlock = true
         }
 
-        void function MyModInit()
-        {
-            AddCallback_OnReceivedSayTextMessage(MyChatFilter)
-        }
+        message.message = StringReplace(message.message, "yes", "no", true, true)
+
+        return message
+    }
+
+    void function MyModInit()
+    {
+        AddCallback_OnReceivedSayTextMessage(MyChatFilter)
+    }
     ```
 
 
@@ -88,10 +88,10 @@ players, they only display them locally.
     **Example:**
 
     ```squirrel
-        void function OnGameStarted()
-        {
-            Chat_GameWriteLine("You got this, " + GetLocalClientPlayer().GetPlayerName() + "!")
-        }
+    void function OnGameStarted()
+    {
+        Chat_GameWriteLine("You got this, " + GetLocalClientPlayer().GetPlayerName() + "!")
+    }
     ```
 
 
@@ -102,18 +102,18 @@ players, they only display them locally.
     **Example:**
 
     ```squirrel
-        void function InitialiseHEVSuit()
-        {
-            Chat_GameWriteLine("SENSOR ARRAYS-")
-            ActivateSensorArrays()
-            Chat_GameWrite("ACTIVATED")
-            wait 1
-            Chat_GameWriteLine("BIOMETRIC MONITORING SYSTEMS-")
-            ActivateBiometricMonitoringSystems()
-            Chat_GameWrite("ACTIVATED")
-            wait 1
-            Chat_GameWriteLine("HAVE A VERY SAFE DAY.")
-        }
+    void function InitialiseHEVSuit()
+    {
+        Chat_GameWriteLine("SENSOR ARRAYS-")
+        ActivateSensorArrays()
+        Chat_GameWrite("ACTIVATED")
+        wait 1
+        Chat_GameWriteLine("BIOMETRIC MONITORING SYSTEMS-")
+        ActivateBiometricMonitoringSystems()
+        Chat_GameWrite("ACTIVATED")
+        wait 1
+        Chat_GameWriteLine("HAVE A VERY SAFE DAY.")
+    }
     ```
 
 !!! cpp-function "void Chat_NetworkWriteLine(string text)"
@@ -123,10 +123,10 @@ players, they only display them locally.
     **Example:**
 
     ```squirrel
-        void function MyModInit()
-        {
-            Chat_NetworkWriteLine("MyMod v1.0.0 is good to go!")
-        }
+    void function MyModInit()
+    {
+        Chat_NetworkWriteLine("MyMod v1.0.0 is good to go!")
+    }
     ```
 
 
@@ -137,17 +137,17 @@ players, they only display them locally.
     **Example:**
 
     ```squirrel
-        void function OnButtonPressed()
-        {
-            Chat_NetworkWrite("Connecting in 3...")
-            wait 1
-            Chat_NetworkWrite("2...")
-            wait 1
-            Chat_NetworkWrite("1...")
-            wait 1
-            Chat_NetworkWrite("0")
-            Connect()
-        }
+    void function OnButtonPressed()
+    {
+        Chat_NetworkWrite("Connecting in 3...")
+        wait 1
+        Chat_NetworkWrite("2...")
+        wait 1
+        Chat_NetworkWrite("1...")
+        wait 1
+        Chat_NetworkWrite("0")
+        Connect()
+    }
     ```
 
 
@@ -189,21 +189,21 @@ The server chat callbacks allow you to intercept incoming chat messages and modi
     **Example:**
 
     ```squirrel
-        ClServer_MessageStruct function MyChatFilter(ClServer_MessageStruct message)
+    ClServer_MessageStruct function MyChatFilter(ClServer_MessageStruct message)
+    {
+        if (message.message.find("nft") != null)
         {
-            if (message.message.find("nft") != null)
-            {
-                message.shouldBlock = true
-            }
-
-            message.message = StringReplace(message.message, "yes", "no", true, true)
-
-            return message
+            message.shouldBlock = true
         }
-        void function MyModInit()
-        {
-            AddCallback_OnReceivedSayTextMessage(MyChatFilter)
-        }
+
+        message.message = StringReplace(message.message, "yes", "no", true, true)
+
+        return message
+    }
+    void function MyModInit()
+    {
+        AddCallback_OnReceivedSayTextMessage(MyChatFilter)
+    }
     ```
 
 
@@ -225,10 +225,10 @@ With custom messages you can send chat messages at any time, to all players or t
     **Example:**
 
     ```squirrel
-        void function OnSayRedCommand(entity player, string text)
-        {
-            Chat_Impersonate(player, "red text -> \x1b[31m" + text)
-        }
+    void function OnSayRedCommand(entity player, string text)
+    {
+        Chat_Impersonate(player, "red text -> \x1b[31m" + text)
+    }
     ```
 
 
@@ -247,14 +247,14 @@ With custom messages you can send chat messages at any time, to all players or t
     **Example:**
 
     ```squirrel
-        void function OnSendToFriendsCommand(entity fromPlayer, string text)
+    void function OnSendToFriendsCommand(entity fromPlayer, string text)
+    {
+        array<entity> friends = GetPlayerFriends(fromPlayer)
+        foreach (friend in friends)
         {
-            array<entity> friends = GetPlayerFriends(fromPlayer)
-            foreach (friend in friends)
-            {
-                Chat_PrivateMessage(fromPlayer, friend, text, true)
-            }
+            Chat_PrivateMessage(fromPlayer, friend, text, true)
         }
+    }
     ```
 
 
@@ -270,22 +270,22 @@ With custom messages you can send chat messages at any time, to all players or t
     **Example:**
 
     ```squirrel
-        void function RestartServerThread()
-        {
-            // wait one hour
-            wait 3600
-            Chat_ServerBroadcast("Server will be shut down in \x1b[93m5 seconds")
-            wait 1
-            Chat_ServerBroadcast("Server will be shut down in \x1b[93m4 seconds")
-            wait 1
-            Chat_ServerBroadcast("Server will be shut down in \x1b[93m3 seconds")
-            wait 1
-            Chat_ServerBroadcast("Server will be shut down in \x1b[93m2 seconds")
-            wait 1
-            Chat_ServerBroadcast("Server will be shut down in \x1b[93m1 second")
-            wait 1
-            StopServer()
-        }
+    void function RestartServerThread()
+    {
+        // wait one hour
+        wait 3600
+        Chat_ServerBroadcast("Server will be shut down in \x1b[93m5 seconds")
+        wait 1
+        Chat_ServerBroadcast("Server will be shut down in \x1b[93m4 seconds")
+        wait 1
+        Chat_ServerBroadcast("Server will be shut down in \x1b[93m3 seconds")
+        wait 1
+        Chat_ServerBroadcast("Server will be shut down in \x1b[93m2 seconds")
+        wait 1
+        Chat_ServerBroadcast("Server will be shut down in \x1b[93m1 second")
+        wait 1
+        StopServer()
+    }
     ```
 
 
@@ -303,16 +303,16 @@ With custom messages you can send chat messages at any time, to all players or t
     **Example:**
 
     ```squirrel
-        void function OnBanCommand(entity player, array<string> args)
+    void function OnBanCommand(entity player, array<string> args)
+    {
+        if (!PlayerIsModerator(player))
         {
-            if (!PlayerIsModerator(player))
-            {
-                Chat_ServerPrivateMessage(player, "You do not have the permissions to perform this command.", true, false)
-                return
-            }
-
-            BanPlayerByName(args[0])
+            Chat_ServerPrivateMessage(player, "You do not have the permissions to perform this command.", true, false)
+            return
         }
+
+        BanPlayerByName(args[0])
+    }
     ```
 
 
@@ -322,7 +322,7 @@ All messages support ANSI escape codes for customising text color. These are com
 meaning. For example, the string:
 
 ```text
-    Hello world, \x1b[31mthis text is red\x1b[0m. And \x1b[34mthis text is blue\x1b[0m.
+Hello world, \x1b[31mthis text is red\x1b[0m. And \x1b[34mthis text is blue\x1b[0m.
 ```
 
 `\x1b` is a special character that Squirrel (and other languages) replace with a reserved ASCII character. For future

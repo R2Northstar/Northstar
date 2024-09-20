@@ -7,24 +7,24 @@ Before working on HUD, it's recommended to `extract <https://noskill.gitbook.io/
 In your `mod.json`, add a `Before` UI callback like this:
 
 ```json
-        {
-            "Path": "ui/profiles_menu.nut",
-            "RunOn": "UI",
-            "UICallback": {
-                "Before": "InitProfilesMenu",
-            }
-        }
+{
+    "Path": "ui/profiles_menu.nut",
+    "RunOn": "UI",
+    "UICallback": {
+        "Before": "InitProfilesMenu",
+    }
+}
 ```
 
 In the script you referenced, create a global in which you register your menu with the `AddMenu` like this:
 
 ```squirrel
-    global function InitProfilesMenu
+global function InitProfilesMenu
 
-    void function InitProfilesMenu()
-    {
-        AddMenu( "MenuName", $"path/to/menu.menu"  )
-    }
+void function InitProfilesMenu()
+{
+    AddMenu( "MenuName", $"path/to/menu.menu"  )
+}
 ```
 
 If you want to, you can add a init to `AddMenu` like this: `AddMenu( "MenuName", $"path/to/menu.menu", func )`
@@ -34,14 +34,14 @@ The returns `void` and takes no parameters. It gets called once the menu is init
 It's recommended to create a file struct in which you store menu states:
 
 ```squirrel
-    struct {
-        var menu
-    } file
+struct {
+    var menu
+} file
 
-    void function MenuInitCallback()
-    {
-        file.menu = GetMenu( "MenuName" )
-    }
+void function MenuInitCallback()
+{
+    file.menu = GetMenu( "MenuName" )
+}
 ```
 
 ## Registering a Submenu
@@ -188,11 +188,11 @@ Not recommended to use.
 To use footers, add this element to your menu:
 
 ```
-    FooterButtons
-    {
-        ControlName         CNestedPanel
-        InheritProperties   FooterButtons
-    }
+FooterButtons
+{
+    ControlName         CNestedPanel
+    InheritProperties   FooterButtons
+}
 ```
 
 !!! cpp-function "void AddMenuFooterOption( var menu, int input, string gamepadLabel, string mouseLabel = "", void functionref( var ) activateFunc = null, bool functionref() conditionCheckFunc = null, void functionref( InputDef ) updateFunc = null )"
