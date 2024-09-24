@@ -10,7 +10,6 @@
 
 ### RPSNVPK's
 
-- [squidgyberries RSPNVPK](https://github.com/squidgyberries/RSPNVPK)
 - [taskinoz RSPNVPK](https://github.com/taskinoz/RSPNVPK)
 - [Provoxin RSPNVPK](https://github.com/Provoxin/RSPNVPK-GUI)
 
