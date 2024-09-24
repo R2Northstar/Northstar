@@ -1,0 +1,19 @@
+{
+    "ignorePatterns": [
+        {
+            "pattern": "http://127.0.0.1:8000/"
+        },
+        {
+            "pattern": "https://cra0.net/public/bin-published/Titanfall_VPKTool3.4_Portable.zip"
+        },
+        {
+            "pattern": "https://crates.io/crates/rrplug"
+        },
+        {
+            "pattern": "https://www.wunderboy.org/valve-hl2source-sdk-tools/#vtf_shell"
+        },
+        {
+            "pattern": "/_static/corner_test_map.map"
+        }
+    ]
+}
