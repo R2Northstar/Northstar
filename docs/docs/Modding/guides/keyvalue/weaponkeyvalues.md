@@ -4,7 +4,7 @@ This document provides a list of various Key Values utilized by weapons and thei
 
 Note that asset values are identical to strings in Key Value files.
 
-These can be modified with KeyValue modding, see here: [weaponmodding](broken)
+These can be modified with KeyValue modding, see here: [weaponmodding](./index.md)
 
 The majority of these values are held in `eWeaponVar`. Those that are can be modified with attachments (named "Mods" in Key Value files); otherwise, the game will crash with an "Unrecognized entry" error when Key Values are loaded.
 
