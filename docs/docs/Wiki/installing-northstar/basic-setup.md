@@ -5,7 +5,7 @@
 Head over to the installer page and pick one of the existing installers. All of these take care of both installing and updating Northstar.
 
 {% content-ref url="northstar-installers" %}
-[northstar-installers](northstar-installers)
+[northstar-installers](northstar-installers/README.md)
 {% endcontent-ref %}
 
 ## Manual installation
