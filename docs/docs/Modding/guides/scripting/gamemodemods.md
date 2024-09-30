@@ -17,7 +17,7 @@ However, once you get the hang of it, it should be fairly easy to use.
     "LoadPriority": 1,
 ```
 
-The script above defines the pubic and listed details of the mod.
+The script above defines the public and listed details of the mod.
 
 ```json
 "Scripts": [
