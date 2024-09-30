@@ -1,8 +1,8 @@
 # Hosting on Linux
 
-{% hint style="info" %}
-This page is currently work-in-progress.
-{% endhint %}
+!!! info
+    This page is currently work-in-progress.
+
 
 Linux users can launch the server executable using a Docker image or by using Wine.
 If you do not have a DirectX 11 capable GPU in your system (for example if you are using a hosting service), you will want to host a **Headless server.**

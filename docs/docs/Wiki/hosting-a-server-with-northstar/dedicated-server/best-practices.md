@@ -4,9 +4,9 @@ description: Tweaks and tricks to improve both your experience in hosting and ot
 
 # Best practices
 
-{% hint style="info" %}
-TODO: If you have experience in hosting Northstar servers and want to share your knowledge, please open a [pull request](https://github.com/R2Northstar/NorthstarWiki/pulls).
-{% endhint %}
+!!! info
+    TODO: If you have experience in hosting Northstar servers and want to share your knowledge, please open a [pull request](https://github.com/R2Northstar/NorthstarWiki/pulls).
+
 
 ## Optimization Commands (Optional)
 

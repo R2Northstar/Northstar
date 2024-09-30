@@ -4,9 +4,9 @@ description: Useful information when contributing to Northstar
 
 # Contributing code to Northstar
 
-{% hint style="info" %}
-WIP
-{% endhint %}
+!!! info
+    WIP
+
 
 ## Guidelines
 

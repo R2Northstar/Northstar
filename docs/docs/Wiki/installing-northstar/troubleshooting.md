@@ -207,9 +207,9 @@ Relevant issue on GitHub: [https://github.com/R2Northstar/Northstar/issues/284](
 
 ## I used a command to set my player/gun XP level and I set it too high so now my game crashes when trying to join multiplayer
 
-{% hint style="warning" %}
-The following command will reset all your loadouts and levels!
-{% endhint %}
+!!! warning
+    The following command will reset all your loadouts and levels!
+
 
 Open console in-game in main menu, type in `ns_resetpersistence` and press enter. Close console again and click on "Launch Northstar". All your stuff should now be reset.
 

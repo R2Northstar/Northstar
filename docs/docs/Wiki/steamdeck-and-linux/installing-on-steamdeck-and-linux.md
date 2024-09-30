@@ -2,13 +2,13 @@
 
 ## Steam & Steam Deck (NorthstarProton)
 
-{% hint style="warning" %}
-EA App currently displays a blank screen when using NorthstarProton, however Northstar will still launch assuming you have logged in to EA App at least once.
-{% endhint %}
+!!! warning
+    EA App currently displays a blank screen when using NorthstarProton, however Northstar will still launch assuming you have logged in to EA App at least once.
 
-{% hint style="warning" %}
-NorthstarProton has some problems and may stop working at any point, if this happens you can try [deleting the compatibility directory](linux-troubleshooting.md#northstar-not-launching-with-steam) or visit the Northstar Discord for help.
-{% endhint %}
+
+!!! warning
+    NorthstarProton has some problems and may stop working at any point, if this happens you can try [deleting the compatibility directory](linux-troubleshooting.md#northstar-not-launching-with-steam) or visit the Northstar Discord for help.
+
 
 > **Check your GLIBC version.** NorthstarProton currently only supports version 2.33 and higher. Verify your installed version with `ldd --version`. **Ubuntu 20.04 LTS** and **Debian 11** are known to have outdated GLIBC packages, meaning you will have to experiment with finding a Proton version that works for you, or use Lutris. It is therefore strongly recommended to use an up-to-date Linux distro to be able to make use of NorthstarProton. This check does not need to be completed on Steam Deck or Steam OS.
 
@@ -38,10 +38,10 @@ On Steam Deck, complete the following in desktop mode. You may return to game mo
 
 Note that removing the `%command% -northstar` will cause Steam to launch the vanilla game again.
 
-{% hint style="info" %}
-This guide assumes you're *up to date with NorthstarProton*, as the method used to launch Northstar changed in NorthstarProton-8.1-1 which was released on 2023-02-22.\
-If you're using an older version of NorthstarProton, replace the information about launch options with a text file called `run_northstar.txt` in your Titanfall2 directory. This text file should have a single character `1` inside.
-{% endhint %}
+!!! info
+    This guide assumes you're *up to date with NorthstarProton*, as the method used to launch Northstar changed in NorthstarProton-8.1-1 which was released on 2023-02-22.\
+    If you're using an older version of NorthstarProton, replace the information about launch options with a text file called `run_northstar.txt` in your Titanfall2 directory. This text file should have a single character `1` inside.
+
 
 ## Lutris (Wine)
 

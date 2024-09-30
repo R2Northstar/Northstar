@@ -1,8 +1,8 @@
 # Moderation
 
-{% hint style="info" %}
-This page contains information targetted at Discord moderators.
-{% endhint %}
+!!! info
+    This page contains information targetted at Discord moderators.
+
 
 
 ## General stuff

@@ -57,13 +57,13 @@ After leaving your comment, select the type of feedback.
 * **Approve**: You found no issues when looking at the code or during testing.
 * **Request changes**: Either something in the code doesn't look right or you found bugs during testing.
 
-{% hint style="warning" %}
-Approval reviews should **always** contain information about what parts of the code you looked at or tested. Approvals without comment or a single _LGTM_ are not useful and will be dismissed. \
-Some exceptions to this rule are e.g. approving a single line comment typo fix, though even than the review should say something along the lines of "LGTM as it's just single line typo fix in a comment". In a nutshell it should be obvious to a future reader why you approved a PR without the reader having to look at the file diff first.
+!!! warning
+    Approval reviews should **always** contain information about what parts of the code you looked at or tested. Approvals without comment or a single _LGTM_ are not useful and will be dismissed. \
+    Some exceptions to this rule are e.g. approving a single line comment typo fix, though even than the review should say something along the lines of "LGTM as it's just single line typo fix in a comment". In a nutshell it should be obvious to a future reader why you approved a PR without the reader having to look at the file diff first.
 
-Contributors with reviewer access may see their role removed should they leave (multiple) empty/_"LGTM"_ reviews.
+    Contributors with reviewer access may see their role removed should they leave (multiple) empty/_"LGTM"_ reviews.
 
-If you want to "approve" a pull request because you like the feature it implements, please opt for simply giving the PR a "👍" reaction instead.
-{% endhint %}
+    If you want to "approve" a pull request because you like the feature it implements, please opt for simply giving the PR a "👍" reaction instead.
+
 
 Finally, click on _"Submit review"_. Your review is now publicly visible, congrats! :D

@@ -1,11 +1,11 @@
 ### Playlist overrides
 
-{% hint style="warning" %}
-Playlist overrides determines the behaviour of the server. PlaylistOverrides can be added using the `+setplaylistvaroverrides` argument in the `ns_startup_args_dedi.txt` file.
+!!! warning
+    Playlist overrides determines the behaviour of the server. PlaylistOverrides can be added using the `+setplaylistvaroverrides` argument in the `ns_startup_args_dedi.txt` file.
 
 The list of playlist overrides needs to be quoted and separated by spaces.\
 Example: `+setplaylistvaroverrides "run_epilogue 0 featured_mode_amped_tacticals 1"`
-{% endhint %}
+
 
 | PlaylistOverrides                            | Accepted Values | Default Value | Description                                                                                                         |
 | -------------------------------------------- | --------------- | ------------- | ------------------------------------------------------------------------------------------------------------------- |
