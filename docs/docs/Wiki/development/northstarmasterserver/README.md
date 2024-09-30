@@ -1,8 +1,8 @@
 # NorthstarMasterServer
 
-{% hint style="warning" %}
-The old NodeJS master server has been replaced in favour of the Go rewrite called Atlas.
-{% endhint %}
+!!! warning
+    The old NodeJS master server has been replaced in favour of the Go rewrite called Atlas.
+
 
 ## Introduction
 

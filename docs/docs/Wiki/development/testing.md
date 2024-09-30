@@ -6,9 +6,9 @@ description: >-
 
 # Testing
 
-{% hint style="info" %}
-This section is very much still WIP. Feel free to help expand it.
-{% endhint %}
+!!! info
+    This section is very much still WIP. Feel free to help expand it.
+
 
 ## Developers & Contributors
 

@@ -2,9 +2,9 @@
 
 Northstar comes included with some community made gamemodes.
 
-{% hint style="info" %}
-If you are looking for every available gamemode and its corresponding string check [hosting/gamemodes](../hosting-a-server-with-northstar/server-settings/file-names.md)
-{% endhint %}
+!!! info
+    If you are looking for every available gamemode and its corresponding string check [hosting/gamemodes](../hosting-a-server-with-northstar/server-settings/file-names.md)
+
 
 ## Gun Game
 

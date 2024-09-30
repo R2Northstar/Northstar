@@ -6,9 +6,9 @@ description: >-
 
 # Releases
 
-{% hint style="info" %}
-WIP
-{% endhint %}
+!!! info
+    WIP
+
 
 ## General
 

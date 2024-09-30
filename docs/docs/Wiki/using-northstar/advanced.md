@@ -1,8 +1,8 @@
 # Advanced Options
 
-{% hint style="warning" %}
-This is a section detailing the more advanced parts of using Northstar, with some of them having a chance to potentially mess with your game. Setting your level too high, for example, will lock you out of Northstar's multiplayer until you reset your entire player stats, progress, and loadouts.
-{% endhint %}
+!!! warning
+    This is a section detailing the more advanced parts of using Northstar, with some of them having a chance to potentially mess with your game. Setting your level too high, for example, will lock you out of Northstar's multiplayer until you reset your entire player stats, progress, and loadouts.
+
 
 ## Mod profiles <a href="#profiles" id="profiles"></a>
 
@@ -23,9 +23,9 @@ You can set up profiles in an even more advanced way by setting up a way to use 
 
 ## Setting levels using console commands <a href="#set-level" id="set-level"></a>
 
-{% hint style="warning" %}
-This section can cause you to mess up your persistence (multiplayer user data) on Northstar if you set your levels too high! Make sure to read carefully!
-{% endhint %}
+!!! warning
+    This section can cause you to mess up your persistence (multiplayer user data) on Northstar if you set your levels too high! Make sure to read carefully!
+
 
 With everything unlocked, there is no need to set your level to a higher level, but some users may still want to do so. In order to this, you'll need to open the in-game console with the `~` button on your keyboard and type in/copy and paste the relevant commands. Both of these require `sv_cheats 1` to be enabled on the server you're playing on, easily done by using `sv_cheats 1` in the console in a private match.
 

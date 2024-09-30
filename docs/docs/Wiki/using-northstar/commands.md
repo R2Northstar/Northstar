@@ -10,9 +10,9 @@ If you for example have a German keyboard you'll notice that this key is located
 To open your console you'll either have to switch to the English (US) layout **before** starting the game or rebinding the key to open console.
 
 ### Rebinding the console
-{% hint style="info" %}
-The console can only be bound to ```"`"``` or one of the function keys ```"F1" - "F12"```
-{% endhint %}
+!!! info
+    The console can only be bound to ```"`"``` or one of the function keys ```"F1" - "F12"```
+
 
 To rebind it open Titanfall and navigate to `Controls > Settings > Key Binds` and change the `"Toggle Developer Console"` bind.
 

@@ -1,8 +1,8 @@
 # x64dbg
 
-{% hint style="warning" %}
-If you are not experienced with x64dbg it its recommended to use [Visual Studio](visualstudio.md).
-{% endhint %}
+!!! warning
+    If you are not experienced with x64dbg it its recommended to use [Visual Studio](visualstudio.md).
+
 
 
 ## Windows
@@ -32,9 +32,9 @@ If you are not experienced with x64dbg it its recommended to use [Visual Studio]
 
 ## Linux
 
-{% hint style="warning" %}
-Debugging Northstar under Linux is not trivial due to the direct dependency on Origin, unless you know your way around wine its recommended to debug on Windows.
-{% endhint %}
+!!! warning
+    Debugging Northstar under Linux is not trivial due to the direct dependency on Origin, unless you know your way around wine its recommended to debug on Windows.
+
 
 To simplify the use of x64dbg and automate running Origin a community member has created a script: [ns-linux-dbg](https://github.com/R2NorthstarTools/ns-linux-dbg)
 
