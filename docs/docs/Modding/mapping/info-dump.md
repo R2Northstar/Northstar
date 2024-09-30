@@ -33,10 +33,7 @@ How titanfall custom map:
 
 Improper corners can cause the player to get stuck
 
-<figure class="screenshot">
-<img src="/_static/map-corners.png" class="screenshot"
-alt="/_static/map-corners.png" />
-</figure>
+![](../../_static/map-corners.png)
 
 <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/mwvxonuCm8U" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
@@ -44,4 +41,4 @@ Sample clip:
 
 <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/zgWDme7Y6oI" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
-Sample map for corners can be download [here](/_static/corner_test_map.map).
+Sample map for corners can be download [here](../../_static/corner_test_map.map).
