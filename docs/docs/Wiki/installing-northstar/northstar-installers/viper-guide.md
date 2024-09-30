@@ -49,7 +49,7 @@ The `Find Mods` button on Viper's mod screen allows you to search through [North
 
 The `Release Notes` tab shows you the release notes for Northstar versions, which you can find [here](https://github.com/R2Northstar/Northstar/releases)
 
-### Viper Menu 
+### Viper Menu
 
 ![Viper's main menu](../../images/viper-menu.png)
 

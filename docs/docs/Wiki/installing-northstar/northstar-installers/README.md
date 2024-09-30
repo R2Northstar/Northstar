@@ -28,7 +28,7 @@ Note that none of these tools are directly part of the Northstar project and as 
 ![FlightCore Mod browser](../../images/flightcore-mod-browser-window.png)
 
 Fast and easy to use Northstar installer, updater, launcher, and mod-manager. Features built-in mod browser and allows for easy installation of pre-release versions of Northstar.\
-Supports Windows and Linux. 
+Supports Windows and Linux.
 
 
 Download and source code:

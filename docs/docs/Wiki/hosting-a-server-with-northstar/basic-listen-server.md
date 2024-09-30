@@ -19,7 +19,7 @@ Whether you're running a listen or dedicated server, you'll generally want to me
 Additionally dedicated server settings and configs can be used on a listen server.\
 Server startup arguments can be placed into `Titanfall2/ns_startup_args.txt`\
 Convars can be placed into `R2Northstar/mods/Northstar.CustomServers/mod/cfg/autoexec_ns_server.cfg`
-The only difference between a listen and dedicated server is that a listen can only run while the host is in the match. 
+The only difference between a listen and dedicated server is that a listen can only run while the host is in the match.
 
 Below are a series of variables and commands you can use for server configuration:
 

@@ -26,7 +26,7 @@ Should you notice any issues/warnings/errors while running Northstar, check the 
 
 ## Additional Stuff
 
-You can launch Northstar via Steam, Origin, or EA using [launch options](troubleshooting.md#launch-opts). 
+You can launch Northstar via Steam, Origin, or EA using [launch options](troubleshooting.md#launch-opts).
 
 If Northstar doesn't appear to be installed, or you have issues entering the lobby, try running vanilla files. It's hard to say what VPK mods could cause issues with Northstar at the moment, so it'd probably be easiest just to try running unmodded.
 

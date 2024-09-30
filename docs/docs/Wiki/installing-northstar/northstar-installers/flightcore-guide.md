@@ -2,7 +2,7 @@
 
 FlightCore is a Northstar installer and mod manager which allows for installing, updating, and managing mods for the Northstar client made for Titanfall 2.
 
-Something to note is that FlightCore works on both Windows and Linux. The setup process is similar for both, except for the installation folder, and how you install FlightCore. 
+Something to note is that FlightCore works on both Windows and Linux. The setup process is similar for both, except for the installation folder, and how you install FlightCore.
 
 ## Windows Installation
 
@@ -12,7 +12,7 @@ Install the FlightCore file directly from the [Northstar website](https://norths
 
 Then, run the `.msi` file this downloads, and it will automatically install FlightCore for you.
 
-## Linux Installation 
+## Linux Installation
 
 For Linux, you want to download `flight-core_X.Y.Z_amd64.AppImage` (X Y Z being the version numbers of FlightCore) from [FlightCore's GitHub releases page](https://github.com/R2NorthstarTools/FlightCore/releases), put it in a place you prefer, then make sure to right click on it, click on properties, and tick `Executable as Program` (as shown below), then you can just double click it to open FlightCore.
 
@@ -24,7 +24,7 @@ For Linux, you want to download `flight-core_X.Y.Z_amd64.AppImage` (X Y Z being 
 
 This is the _Main Menu_ of FlightCore. It includes the _Play_, _Changelog_, _Mods_, and _Settings_ tabs, all of which will be covered in the guide.
 
-## Play 
+## Play
 
 ![Play tab's information](../../images/flightcore-main-window-information.png)
 
@@ -46,7 +46,7 @@ The _Mods_ tab of Flightcore can display either mods installed locally, or a bro
 
 `Online` displays the Mod browser, which sorts by newest uploads by default. Hitting install on a mod will automatically install it, and hitting the *i* next to it will open the mod's information page on ThunderStore in your browser.
 
-## Settings 
+## Settings
 
 ![FlightCore's Settings tab](../../images/flightcore-settings.png)
 

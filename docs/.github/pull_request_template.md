@@ -1,4 +1,4 @@
-<!-- 
+<!--
 BEFORE OPENING A PULL REQUEST:
 -> If you're adding multiple independent changes (e.g. adding a section about modding while also fixing a typo on another page) it's generally recommended to split these changes into separate pull requests.
 

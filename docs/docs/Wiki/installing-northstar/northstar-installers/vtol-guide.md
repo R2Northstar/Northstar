@@ -4,7 +4,7 @@ VTOL is a mod manager for installing and managing mods for the Northstar client 
 
 VTOL works on Windows only and you can find links to download it on [Northstar's website](https://northstar.tf) or [VTOL's GitHub repo](https://github.com/R2NorthstarTools/VTOL).
 Installing it from the website automatically installs the latest version that will automatically update itself.
-On the GitHub repo, you can download the newest version by clicking one of two options. 
+On the GitHub repo, you can download the newest version by clicking one of two options.
 Note that the portable is just a `.exe` file and not the installer, as such it won't automatically update itself.
 
 ![VTOL installer download (on GitHub, automatically updates](../../images/vtol-download-github.png)
@@ -17,7 +17,7 @@ Note that the portable is just a `.exe` file and not the installer, as such it w
 
 **The _Main Menu_ of VTOL is where you'll probably spend most of your time.**
 
-This menu has a lot of useful information, such as the version of VTOL you have, the version of Northstar you have, if the Master Server is online, whether EA App/Origin are currently open, and a place to set your game path. 
+This menu has a lot of useful information, such as the version of VTOL you have, the version of Northstar you have, if the Master Server is online, whether EA App/Origin are currently open, and a place to set your game path.
 
 ## Version Numbers
 
@@ -46,7 +46,7 @@ VTOL handles most things automatically, but it may still require minimal setup f
 
 Something you might have to do manually is locate your Titanfall 2 install. You can do this by pressing the button of the same name on VTOL, and navigating to your Titanfall 2 directory (If you're unsure of what your game path is, check out the [Default Directories](../troubleshooting.md#game-location) section)
 
-After doing this, Northstar should automatically install. If not, the button at the bottom will read _"Install Northstar"_. 
+After doing this, Northstar should automatically install. If not, the button at the bottom will read _"Install Northstar"_.
 Let VTOL install Northstar and you should be good to go. Once installed, this button will turn into the _"Re-Install Northstar"_ button shown in the screenshot earlier, which you can use to forcibly reinstall Northstar in the case something goes wrong with your Northstar install.
 
 ## Launching Northstar via VTOL
@@ -54,7 +54,7 @@ Let VTOL install Northstar and you should be good to go. Once installed, this bu
 ![Launching Northstar](../../images/vtol-launching-northstar.png)
 
 Assuming you've followed everything up to this point, you should be set to hit _"Launch Titanfall 2 Northstar"_ and play on Northstar's servers.
-If you encounter an error like a crash, Northstar will create a log file in the `Titanfall2/R2Northstar/logs` directory. 
+If you encounter an error like a crash, Northstar will create a log file in the `Titanfall2/R2Northstar/logs` directory.
 You can look at this log yourself, or send it on the [Northstar Discord server](https://discord.com/invite/northstar) and someone can try to look at it and help you.
 
 ## Additional Mods/Settings
@@ -84,8 +84,8 @@ You can also right click on a specific mod to get the option to either delete it
 
 ![Mods browser](../../images/vtol-mods-browser.png)
 
-VTOL has a built in-browser for searching [Northstar's Thunderstore page](https://northstar.thunderstore.io/) (the website where most Northstar mods get uploaded to), located at the second tab _"Browse"_ on the tab list. 
-You will see the newest uploaded mods here by default, which you can change by applying filters (Note: The sorting is by default Low-High for filters. 
+VTOL has a built in-browser for searching [Northstar's Thunderstore page](https://northstar.thunderstore.io/) (the website where most Northstar mods get uploaded to), located at the second tab _"Browse"_ on the tab list.
+You will see the newest uploaded mods here by default, which you can change by applying filters (Note: The sorting is by default Low-High for filters.
 You can change this by pressing the button with an arrow next to the filters button, making it High-Low)
 
 VTOL also has support where all you need to do is drag and drop a mod downloaded from the Thunderstore page onto the _"Mods"_ tab (the second tab on the left side) to automatically install the mod.
@@ -121,7 +121,7 @@ For the dedicated server option, you can scroll through this tab to set many dif
 
 ![Tools tab](../../images/vtol-tools.png)
 
-The fifth tab called _"Tools"_ is meant to help those trying to create mods for Northsar. 
+The fifth tab called _"Tools"_ is meant to help those trying to create mods for Northsar.
 
 ### ThunderStore Packer
 
@@ -154,7 +154,7 @@ The fourth screen lists a lot of commonly used tools by modders to help create m
 
 ![VTOL's Profiles menu](../../images/vtol-profiles.png)
 
-The sixth tab is the _"Profiles"_ tab, allowing you to create profiles for Northstar. Profiles are seperate Northstar installs, each with their own set of mods and seperated by folders. 
+The sixth tab is the _"Profiles"_ tab, allowing you to create profiles for Northstar. Profiles are seperate Northstar installs, each with their own set of mods and seperated by folders.
 For example, you can have one profile with your normal set of mods and another profile for only using core mods (those that common with Northstar/the ones that start with `Northstar.`).
 
 ![The Export Profile menu in VTOL](../../images/vtol-export-profile.png)
