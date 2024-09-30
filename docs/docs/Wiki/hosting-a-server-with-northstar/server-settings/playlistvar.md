@@ -62,7 +62,7 @@ Example: `+setplaylistvaroverrides "run_epilogue 0 featured_mode_amped_tacticals
 | sns_melee_kill_value                               | int             | 5             |                                                                                                |
 | sns_reset_pulse_blade_cooldown_on_pulse_blade_kill | 0-1             | 1             | Enables getting Pulse Blade back after a Pulse Blade kill                                      |
 
-### Gun game playlist overrides 
+### Gun game playlist overrides
 
 | PlaylistOverrides for GG                   | Accepted Values | Default Value | Description                                                                                    |
 | ------------------------------------------ | --------------- | ------------- | ---------------------------------------------------------------------------------------------- |

@@ -136,7 +136,7 @@ Once `2.0` has been released, expectations for `3.0` tend to be lower as the num
 
 ## Other repos
 
-Repos like navmeshes and DiscordRPC get their release unrelated to main Northstar release numbering as they usually only see a few release per year due to 
+Repos like navmeshes and DiscordRPC get their release unrelated to main Northstar release numbering as they usually only see a few release per year due to
 
 
 ### DiscordRPC

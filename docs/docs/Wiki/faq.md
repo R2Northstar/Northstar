@@ -92,7 +92,7 @@ A: This usually lies behind your computer's specs not being high enough in order
 
 ### Q: Why does my game tell me there's an issue with Origin when I don't have Origin? <a href="#ea-replaced-origin" id="faq-ea-replaced-origin"></a>
 
-A: Titanfall2 (and other EA games) used to use a program called [Origin](<https://en.wikipedia.org/wiki/Origin_(service)>) to play games, however this has since been replaced by the EA App. 
+A: Titanfall2 (and other EA games) used to use a program called [Origin](<https://en.wikipedia.org/wiki/Origin_(service)>) to play games, however this has since been replaced by the EA App.
 This change, however, did not update the game's error messages to say "EA App" instead of "Origin", so any time you see that there's an issue with Origin, you can replace mention of "Origin" with the "EA App".
 
 ### Q: When I launch Northstar, a small command prompt appears for a few seconds then closes as nothing else happens!
