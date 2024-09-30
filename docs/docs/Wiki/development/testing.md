@@ -62,11 +62,11 @@ Alternatively, compiling the PR'd code from source is also an option. For this, 
 
 Click on the source branch of the PR
 
-![](../.gitbook/assets/download-mods-pr1.png)
+![](/_static/wiki/download-mods-pr1.png)
 
 Click on _"Code"_ and then on _"Download ZIP"_
 
-![](../.gitbook/assets/download-mods-pr2.png)
+![](/_static/wiki/download-mods-pr2.png)
 
 From there copy over all the `Northstar.XXXXX` folders into your mods folder in your Titanfall2 install the same way you would manually install mods.
 
