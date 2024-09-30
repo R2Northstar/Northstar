@@ -22,7 +22,7 @@ On Steam Deck, complete the following in desktop mode. You may return to game mo
    4. Launch the game and allow the install to completely finish.
    5. Set Titanfall 2 to launch with a more current version of Proton, NorthstarProton, or Proton GE.
    6. If Titanfall 2 still fails to launch, delete the prefix again and try installing with the other version of Proton.
-2. Install the latest version of Northstar using [FlightCore](../installing-northstar/northstar-installers#geckoeidechse-flightcore), [Viper](../installing-northstar/northstar-installers#0negal-viper), or do it manually
+2. Install the latest version of Northstar using [FlightCore](../installing-northstar/northstar-installers/README.md#geckoeidechse-flightcore), [Viper](../installing-northstar/northstar-installers/README.md#0negal-viper), or do it manually
    1. For manual install download the latest version of Northstar from the [releases](https://github.com/R2Northstar/Northstar/releases) page
    2. Then extract all contents of the file to your Titanfall 2 folder ( Right click _Titanfall 2_ > Open _Properties_ > Click _Local Files_ > Click _Browse_ )
 3. Install NorthstarProton or a current version of Proton GE.
