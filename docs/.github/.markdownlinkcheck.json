@@ -14,6 +14,21 @@
         },
         {
             "pattern": "/_static/corner_test_map.map"
+        },
+        {
+            "pattern": "https://help.ea.com/en/help/pc/link-ea-and-steam/"
+        },
+        {
+            "pattern": "https://panel.ticketsbot.net/manage/920776187884732556/tags"
+        },
+        {
+            "pattern": "https://forum.manjaro.org/t/howto-troubleshoot-crackling-in-pipewire/82442"
+        },
+        {
+            "pattern": "https://taskinoz.com/northstar/"
+        },
+        {
+            "pattern": "https://wiki.archlinux.org/title/PulseAudio/Troubleshooting#Glitches.2C\\_skips\\_or\\_crackling"
         }
     ]
 }
