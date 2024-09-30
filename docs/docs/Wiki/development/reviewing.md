@@ -19,15 +19,15 @@ It's not necessary to do both when reviewing as long as you mention what you did
 
 For code review head to the _"Files changed"_ section of the PR.
 
-![](/_static/wiki/review1.png)
+![](../../_static/wiki/review1.png)
 
 From there you can select the line(s) you want to leave a comment on.
 
-![](/_static/wiki/review2.png)
+![](../../_static/wiki/review2.png)
 
 Type in your comment and click on _"Start a review"_.
 
-![](/_static/wiki/review3.png)
+![](../../_static/wiki/review3.png)
 
 Note that this will **NOT** post your comment immediately! Add any remaining comments to other lines of code, then head to the _Finishing up_ section of this wiki page to see how to post your code review.
 
@@ -47,7 +47,7 @@ The TL;DR is to test the aspect that has been changed.
 
 After you performed the testing and/or code review leave a final comment by clicking on _"Finish your review"_ on the top right of the _"Files changed"_ page of the PR.
 
-![](/_static/wiki/review4.png)
+![](../../_static/wiki/review4.png)
 
 In your final comment make sure to mention what you did, e.g. which aspects of the change you tested for or what you considered during code review (formatting, edge cases, ...). The more detailed this part is the easier it is for other reviewers to tell which aspects they can skip during reviewing to speed up the process.
 
