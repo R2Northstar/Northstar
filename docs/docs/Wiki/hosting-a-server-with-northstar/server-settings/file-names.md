@@ -1,4 +1,4 @@
-# File names
+# Name in the files
 
 ## Gamemodes
 
