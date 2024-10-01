@@ -20,7 +20,7 @@ After a player receives damage it is stored by the game in an array of the follo
         The amount of damage inflicted
     !!! cpp-var "int damageType"
 
-        A value from the [Damage Flags](native_server/damageinfo.md#damage-flags-damage-flag-overview)
+        A value from the [Damage Flags](native_server/damageinfo.md#damage-flags)
     !!! cpp-var "int damageSourceId"
 
         Damage souce ID from the gun ( damage-source-id-overview )
