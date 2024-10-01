@@ -26,6 +26,7 @@
 | ttdm | Titan Brawl |
 
 Note an exception to the rule of playlist and gamemode names being the same. With Live Fire, startup arguments need to be different for `+setplaylist` and `+mp_gamemode` for a server to run Live Fire.
+
 | Playlist | Gamemode | Title |
 | --- | --- | --- |
 | lf | speedball | Live Fire |
