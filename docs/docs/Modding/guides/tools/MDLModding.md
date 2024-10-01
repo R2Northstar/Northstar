@@ -249,7 +249,7 @@ This is the way you will usually do it when reimporting a model that you have ed
 - Set the name of the material to its NAME in the game files
 
     !!! note
-        with dmx files you can set the material path later on in the export menu. If you have multiple needed paths we will talk about that in the next step [Multiple Material Paths](#step-5-5-multiple-material-paths-dmx).
+        with dmx files you can set the material path later on in the export menu. If you have multiple needed paths we will talk about that in the next step [Multiple Material Paths](#step-55-multiple-material-paths-dmx).
         This is why we set the name of the material to its name in the game files instead of its path.
 
 - Exit `EDIT Mode`.

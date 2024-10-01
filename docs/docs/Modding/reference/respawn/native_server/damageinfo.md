@@ -176,7 +176,7 @@ Because damageInfo instances are implemented as userdata they can't be typed.
 
 
 
-## Damage Flags {#damage-flag-overview}
+## Damage Flags
 
 You can get a bitflag of all damage types used with `DamageInfo_GetDamageType`.
 
