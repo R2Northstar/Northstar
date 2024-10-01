@@ -103,9 +103,9 @@ mp_weapon_defender|Charge Rifle
 
 ## Maps
 
-Maps can be set on autorotation using [`ns_should_return_to_lobby 0`](./#Convars-returntolobby)
+Maps can be set on autorotation using [`ns_should_return_to_lobby 0`](convars.md)
 
-First map of autorotation can be set using [`ns_private_match_last_map`](./#Convars-lastmap)
+First map of autorotation can be set using [`ns_private_match_last_map`](convars.md)
 
 A way to blacklist maps with autorotation does not exist.
 

@@ -90,7 +90,7 @@ services:
     restart: always
 ```
 
-A list of all the CONVARs are [here](../../hosting-a-server-with-northstar/dedicated-server/README.md#convars)
+A list of all the CONVARs are [here](../../hosting-a-server-with-northstar/server-settings/convars.md)
 
 A more complex docker-compose example for hosting a server can be found [here](https://github.com/pg9182/northstar-dedicated#container), along with some extra information.
 
