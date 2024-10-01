@@ -50,3 +50,7 @@ include_directories(primedev/thirdparty)
 
 # Targets
 add_subdirectory(primedev)
+# Forces Minizip to not use functions that are not available in Win 7 libraries.
+if(WIN32)
+    target_compile_definitions(minizip PUBLIC -D_WIN32_WINNT=0x0601)
+endif()
