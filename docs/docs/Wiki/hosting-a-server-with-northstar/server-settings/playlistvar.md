@@ -9,7 +9,7 @@ Example: `+setplaylistvaroverrides "run_epilogue 0 featured_mode_amped_tacticals
 
 | PlaylistOverrides                            | Accepted Values | Default Value | Description                                                                                                         |
 | -------------------------------------------- | --------------- | ------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `max_players`                                | `int`           |               | Needs to be in combination with the [`-maxplayersplaylist`](./#Startup\_flags-maxplrplst) flag                      |
+| `max_players`                                | `int`           |               | Needs to be in combination with the [`-maxplayersplaylist`](startup-args.md) flag                                   |
 | `custom_air_accel_pilot`                     |                 |               |                                                                                                                     |
 | `pilot_health_multiplier`                    |                 |               |                                                                                                                     |
 | `run_epilogue`                               | `0-1`           | `1`           | Enables escape dropship                                                                                             |
