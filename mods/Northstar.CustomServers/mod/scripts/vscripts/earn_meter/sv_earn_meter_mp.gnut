@@ -91,6 +91,8 @@ void function EarnMeterMP_PlayerLifeThink( entity player )
 	EarnObject pilotReward = PlayerEarnMeter_GetReward( player ) 
 	float pilotRewardFrac = PlayerEarnMeter_GetRewardFrac( player )
 	int lastEarnMeterMode = PlayerEarnMeter_GetMode( player )
+	bool saidTitanSoon = false
+	bool titanReadyMsg = false
 	float lastPassiveGainTime = Time()
 
 	OnThreadEnd(
@@ -148,8 +150,22 @@ void function EarnMeterMP_PlayerLifeThink( entity player )
 
 		if ( lastEarnMeterMode == eEarnMeterMode.DEFAULT )
 		{
+			if ( Riff_TitanAvailability() != eTitanAvailability.Never )
+			{
+				if ( PlayerEarnMeter_GetOwnedFrac( player ) >= 0.75 && PlayerEarnMeter_GetOwnedFrac( player ) < 0.95 && !saidTitanSoon )
+				{
+					PlayFactionDialogueToPlayer( "mp_titanSoon", player )
+					saidTitanSoon = true
+				}
+				else if( PlayerEarnMeter_GetOwnedFrac( player ) < 0.75 )
+					saidTitanSoon = false
+			}
+			
 			if ( PlayerEarnMeter_GetOwnedFrac( player ) < 1.0 )
+			{
 				PlayerEarnMeter_DisableGoal( player )
+				titanReadyMsg = false
+			}
 			else if ( player.GetPlayerNetInt( "goalState" ) != eRewardState.UNAVAILABLE )
 			{
 				// if goal is enabled then the client will show "titan ready" alerts even if it isn't
@@ -157,6 +173,11 @@ void function EarnMeterMP_PlayerLifeThink( entity player )
 				// so unfortunately we have to do this manually
 				player.SetPlayerNetInt( "goalState", eRewardState.AVAILABLE )
 				PlayerEarnMeter_RefreshGoal( player )
+				if( !titanReadyMsg )
+				{
+					Remote_CallFunction_NonReplay( player, "ServerCallback_TitanReadyMessage" )
+					titanReadyMsg = true
+				}
 			}
 
 			if ( Time() - lastPassiveGainTime > 4.0 && file.passiveMeterGainEnabled ) // this might be 5.0
