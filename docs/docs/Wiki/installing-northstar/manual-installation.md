@@ -1,7 +1,7 @@
 # Manual installation
 
 ## Installing Northstar:
-{% embed url="https://www.youtube.com/watch?v=bK4pV-AHOHM" %}
+![type:video](https://www.youtube.com/embed/bK4pV-AHOHM)
 
 Firstly, note that the Northstar client is only available on PC and requires you to **both own the game and have it installed**.
 
