@@ -55,7 +55,7 @@ The workflow for editing a model is as follows:
 This is a short video guide on MDL Editing, there are some discrepancies between the video and this guide but the general workflow is the same.
 Its relatively quick but shows the process quite well.
 
-<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/mZg5AlWvXZs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+![type:video](https://www.youtube.com/embed/mZg5AlWvXZs)
 
 ## Blender
 
