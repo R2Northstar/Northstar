@@ -42,7 +42,7 @@ If your port can be accessed from your local IP but not from your public IP, the
 
 **CGNAT**
 
-See [CGNAT](https://r2northstar.gitbook.io/r2northstar-wiki/hosting-a-server-with-northstar/getting-started#cgnat)
+See [CGNAT](getting-started.md#cgnat)
 
 ### If server is not reachable using external IP nor using internal IP
 
