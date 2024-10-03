@@ -195,8 +195,7 @@ SetUIVar( level, "gameStartTime", Time() + GetConVarFloat( "ns_private_match_cou
 
 !!! note
 
-    All `Northstar.CustomServers` ConVars are listed here:
-    https://r2northstar.gitbook.io/r2northstar-wiki/hosting-a-server-with-northstar/basic-listen-server
+    All `Northstar.CustomServers` ConVars are listed [on this page](../../Wiki/hosting-a-server-with-northstar/basic-listen-server.md)
 
 #### Flags
 
