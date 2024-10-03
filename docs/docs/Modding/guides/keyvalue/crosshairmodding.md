@@ -64,9 +64,7 @@ formating in the script above.**
 
 ## Adjust Crosshair Spread?
 
-Simply add the following line below the  "ui" line
-`"base_spread"               "3.0"`
-Below the "ui" line, Like this:
+Simply add the following line below the "ui" line: `"base_spread"               "3.0"`
 
 ```
 WeaponData
@@ -106,8 +104,10 @@ reference:
 
 ![Crosshair examples](https://github.com/Riccorbypro/Custom.Crosshairs/raw/main/assets/crosshairs.png)
 
-Crosshair images are taken from the modding guide on
-https://noskill.gitbook.io/titanfall2/
+Crosshair images are taken from the modding guide on the [NoSkill Wiki](https://noskill.gitbook.io/titanfall2).
+
+!!! note
+    Some crosshairs completely ignore the `"base_spread"` setting, and will always use a specific spread. <br> Some crosshairs don't disappear when aiming down sights.
 
 ## Examples
 
@@ -119,7 +119,7 @@ https://noskill.gitbook.io/titanfall2/
 ### Extra Info
 
 
-* As with any mod, it is recommended to test this out in a private match first. Save any changes you made to the desired weapon's file and type `reload` in your console
+* As with any mod, it is recommended to test this out in a private match first. Save any changes you made to the desired weapon's file and type `sv_cheats 1; reload_mods; weapon_reparse; sv_cheats 0` in your console.
 
 
 * Keep in mind that some weapons have animated or dynamic crosshairs. Weapons like the Charge Rifle, Cold War, Frag Grenade, etc... have custom animations for their crosshairs. Which can cause weirdness or jank when used on other weapons or when using other crosshairs on them.
