@@ -21,7 +21,9 @@ For a pull request to be merged, it has to be reviewed first. In order to make t
 
 An example of a well-formatted PR description:
 
-{% embed url="https://github.com/R2Northstar/NorthstarMods/pull/392" %}
+```embed
+url: https://github.com/R2Northstar/NorthstarMods/pull/392
+```
 
 To get the cropped GIFs of a screenrecording:
 

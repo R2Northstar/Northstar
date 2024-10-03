@@ -12,7 +12,9 @@ cover: images/northstarbanner.png
 
 Get the newest Northstar release here:
 
-{% embed url="https://github.com/R2Northstar/Northstar/releases" %}
+```embed
+url: https://github.com/R2Northstar/Northstar/releases
+```
 
 Install instructions can be found here:
 
@@ -24,13 +26,18 @@ Install instructions can be found here:
 
 For modding guides, documentation on Northstar API features and documentation on Respawn Squirrel look at:
 
-{% embed url="https://docs.northstar.tf/Modding/" %}
+```embed
+url: https://docs.northstar.tf/Modding/
+```
 
 ## Contact and contributing
 
 **Please remember:** You should expect to encounter bugs and crashes with Northstar.\
 If you need help troubleshooting, setting up or modifying Northstar try talking to the community on our Discord server:
-{% embed url="https://northstar.tf/discord" %}
+
+```embed
+url: https://northstar.tf/discord
+```
 
 Before creating issues or contributing changes to the source code please read:
 
@@ -40,4 +47,6 @@ Before creating issues or contributing changes to the source code please read:
 
 All the source code related to Northstar can be found here:
 
-{% embed url="https://northstar.tf" %}
+```embed
+url: https://northstar.tf
+```
