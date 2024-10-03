@@ -67,6 +67,7 @@ plugins:
       strict: true
   - link-embeds:
       enabled: true
+  - mkdocs-video
 
 markdown_extensions:
   - abbr
