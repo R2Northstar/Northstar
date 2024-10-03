@@ -6,7 +6,7 @@ cover: images/northstarbanner.png
 
 # Welcome to Northstar
 
-{% embed url="https://www.youtube.com/watch?v=en06Y6CPMQg" %}
+![type:video](https://www.youtube.com/embed/en06Y6CPMQg)
 
 ## Releases and installation guide
 

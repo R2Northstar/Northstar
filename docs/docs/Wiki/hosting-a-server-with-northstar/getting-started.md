@@ -15,7 +15,7 @@ In order for others to join your game they need to be able to reach you. Most li
 
 An explanation of what port-forwarding is exactly can be found in the following video:
 
-{% embed url="https://www.youtube.com/watch?v=WOZQppVNGvA" %}
+![type:video](https://www.youtube.com/embed/WOZQppVNGvA)
 
 ## CGNAT
 

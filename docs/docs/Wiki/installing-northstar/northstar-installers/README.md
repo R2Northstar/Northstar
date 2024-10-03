@@ -82,7 +82,7 @@ Download and source code:
 url: https://github.com/0neGal/viper
 ```
 
-{% embed url="https://www.youtube.com/watch?v=Aes7V5YOSNY" %}
+![type:video](https://www.youtube.com/embed/Aes7V5YOSNY)
 
 ## **BigSpice:** VTOL
 
