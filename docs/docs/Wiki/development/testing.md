@@ -37,7 +37,9 @@ You can use FlightCore to essentially 1-click install any pull request to [North
 
 The tool is still being improved upon but already more than usable. Check its README for instructions:
 
-{% embed url="https://github.com/R2NorthstarTools/FlightCore/blob/main/docs/DEV-TOOLS.md" %}
+```embed
+url: https://github.com/R2NorthstarTools/FlightCore/blob/main/docs/DEV-TOOLS.md
+```
 
 
 ### Manually

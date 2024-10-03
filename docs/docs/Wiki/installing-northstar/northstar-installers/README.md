@@ -33,7 +33,9 @@ Supports Windows and Linux.
 
 Download and source code:
 
-{% embed url="https://github.com/R2NorthstarTools/FlightCore" %}
+```embed
+url: https://github.com/R2NorthstarTools/FlightCore
+```
 
 ## **ebkr:** r2modman
 
@@ -44,20 +46,28 @@ Supports Windows and Linux.
 
 Download from (select _"Manual Download"_):
 
-{% embed url="https://northstar.thunderstore.io/package/ebkr/r2modman/" %}
+```embed
+url: https://northstar.thunderstore.io/package/ebkr/r2modman/
+```
 
 Source code:
 
-{% embed url="https://github.com/ebkr/r2modmanPlus" %}
+```embed
+url: https://github.com/ebkr/r2modmanPlus
+```
 
 Wiki and documentation:
 
-{% embed url="https://github.com/ebkr/r2modmanPlus/wiki/" %}
+```embed
+url: https://github.com/ebkr/r2modmanPlus/wiki/
+```
 
 There's also an alternative version of r2mm called _Thunderstore Mod Manager_ TMM, which can be downloaded from here:\
 (Contains ads to support the development of Thunderstore)
 
-{% embed url="https://www.overwolf.com/app/Thunderstore-Thunderstore_Mod_Manager" %}
+```embed
+url: https://www.overwolf.com/app/Thunderstore-Thunderstore_Mod_Manager
+```
 
 ## **0neGal:** Viper
 
@@ -68,7 +78,9 @@ Supports Windows and Linux.
 
 Download and source code:
 
-{% embed url="https://github.com/0neGal/viper" %}
+```embed
+url: https://github.com/0neGal/viper
+```
 
 {% embed url="https://www.youtube.com/watch?v=Aes7V5YOSNY" %}
 
@@ -80,10 +92,14 @@ Easy to use and extensive Northstar installer and mod-manager. Supports installi
 
 Download and source code:
 
-{% embed url="https://github.com/BigSpice/VTOL" %}
+```embed
+url: https://github.com/BigSpice/VTOL
+```
 
 ## **AnActualEmerald:** Papa
 
 Command-line only mod manager and Northstar installer written in Rust. Available for Linux as `.deb` and `.msi` Windows installer. Or build from source. Can install, uninstall, and update mods from Thunderstore.
 
-{% embed url="https://github.com/AnActualEmerald/papa" %}
+```embed
+url: https://github.com/AnActualEmerald/papa
+```
