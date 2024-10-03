@@ -23,12 +23,12 @@ WeaponData
 }
 ```
 
-3: Change "ui/crosshair_alternator" to your desired crosshair.
+3: Change `"ui/crosshair_alternator"` to your desired crosshair.
 
 ## Overlapping Crosshairs
 
-It is possible to combine crosshairs by modifying the mp_weapon_[Desired
-Weapons].txt file.
+It is possible to combine crosshairs by modifying the `mp_weapon_[Desired
+Weapons].txt` file.
 
 **Below is an example of combining the Alternator and R201 crosshairs
 into one.**
