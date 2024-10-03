@@ -11,16 +11,16 @@ Example Mod:
 2: Put the following into the newly created .txt file:
 
 ```
-   WeaponData
-   {
-   RUI_CrosshairData
-   {
-       Crosshair_1
-       {
-           "ui"                        "ui/crosshair_alternator"
-       }
-   }
-   }
+WeaponData
+{
+    RUI_CrosshairData
+    {
+        Crosshair_1
+        {
+            "ui"                        "ui/crosshair_alternator"
+        }
+    }
+}
 ```
 
 3: change "ui/crosshair_alternator" to your desired crosshair
@@ -46,7 +46,7 @@ WeaponData
         }
         Crosshair_2
         {
-           "ui"                        "ui/crosshair_tri"
+            "ui"                        "ui/crosshair_tri"
         }
     }
 }
@@ -87,7 +87,7 @@ Below the "ui" line, Like this:
 
 ```
 WeaponData
-    {
+{
     RUI_CrosshairData
     {
         Crosshair_1
