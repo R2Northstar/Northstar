@@ -65,6 +65,8 @@ plugins:
       ignore_commits: .git-blame-ignore-revs
       show_email_address: false
       strict: true
+  - link-embeds:
+      enabled: true
 
 markdown_extensions:
   - abbr
@@ -99,3 +101,4 @@ markdown_extensions:
 
 extra_css:
   - stylesheets/extra.css
+  - stylesheets/link-embeds.css
