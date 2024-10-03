@@ -35,11 +35,7 @@ Note that this will **NOT** post your comment immediately! Add any remaining com
 
 #### Testing
 
-For testing a PR, refer to the following page
-
-{% content-ref url="../testing.md" %}
-[testing.md](./testing.md)
-{% endcontent-ref %}
+For testing a PR, refer to [the testing page](./testing.md)
 
 The TL;DR is to test the aspect that has been changed.
 

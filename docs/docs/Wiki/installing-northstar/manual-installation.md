@@ -25,11 +25,7 @@ Firstly, note that the Northstar client is only available on PC and requires you
 5. From the multiplayer menu, you can use the server browser to select and join any of the public community hosted servers.\
    ![Server Browser](../images/lobbyserverbrowser.png)
 
-Should you notice any issues/warnings/errors while running Northstar, check the troubleshooting page.
-
-{% content-ref url="troubleshooting.md" %}
-[troubleshooting.md](troubleshooting.md)
-{% endcontent-ref %}
+Should you notice any issues/warnings/errors while running Northstar, check [the troubleshooting page](troubleshooting.md).
 
 ## Updating Northstar
 

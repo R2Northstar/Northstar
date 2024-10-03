@@ -16,11 +16,7 @@ Get the newest Northstar release here:
 url: https://github.com/R2Northstar/Northstar/releases
 ```
 
-Install instructions can be found here:
-
-{% content-ref url="installing-northstar/basic-setup.md" %}
-[basic-setup.md](installing-northstar/basic-setup.md)
-{% endcontent-ref %}
+Install instructions can be found [on this page here](installing-northstar/basic-setup.md)
 
 ## Modding instructions
 
@@ -39,11 +35,7 @@ If you need help troubleshooting, setting up or modifying Northstar try talking 
 url: https://northstar.tf/discord
 ```
 
-Before creating issues or contributing changes to the source code please read:
-
-{% content-ref url="contributing.md" %}
-[contributing.md](contributing.md)
-{% endcontent-ref %}
+Before creating issues or contributing changes to the source code please read [the contributing page](contributing.md)
 
 All the source code related to Northstar can be found here:
 
