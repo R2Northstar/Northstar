@@ -10,8 +10,4 @@ Check the subpages on the sidebar for various aspects of Northstar development.
 
 ## Repositories
 
-Check the following page for information about different code repositories Northstar uses
-
-{% content-ref url="repositories/" %}
-[repositories](repositories/README.md)
-{% endcontent-ref %}
+Check the [repositories page](repositories/README.md) for information about different code repositories Northstar uses
