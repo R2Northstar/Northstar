@@ -16,3 +16,5 @@ The only prerequisites are python and pip. On Linux simply run `run.sh` in the r
 
 Running the script will install all dependencies required and build the docs locally. The local version is available at [port 8000](http://127.0.0.1:8000/). The server will get opened in your browser when the script finishes.
 When you change a file the server will automatically rebuild it and refresh your browser window.
+
+If you get an error message while running the script on Windows, check the following GitHub issue: https://github.com/R2Northstar/NorthstarDocs/issues/106
