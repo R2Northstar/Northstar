@@ -101,10 +101,6 @@ void function AddInWorldMinimapObject( entity ent ) //TODO: If we want radar jam
 
 void function AddInWorldMinimapObjectInternal( entity ent, var screen )
 {
-	printt( "AddInWorldMinimapObject" )
-	printt( screen )
-	printt( ent )
-
 	bool isNPCTitan = ent.IsNPC() && ent.IsTitan()
 	bool isPetTitan = ent == GetLocalViewPlayer().GetPetTitan()
 	bool isLocalPlayer = ent == GetLocalViewPlayer()
