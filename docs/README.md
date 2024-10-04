@@ -1,7 +1,11 @@
-Titanfall 2 + Northstar Modding Docs
+NorthstarDocs
 ====================================
 
-This repo contains documentation and guides on most things you need to know about creating mods for Northstar.
+This repo contains documentation and guides on most things you need to know about using and creating mods for Northstar.
+
+It is partitioned into:
+- the **Wiki** section which contains a variety of information on how to install and use Northstar as well as troubleshooting tips.
+- the **Modding** section which contains all the information necessary to create mods for Northstar as well as further technical details for developing for Northstar.
 
 Especially the technical documentation is not done yet and might be incorrect or outdated in some places.
 
