@@ -52,7 +52,6 @@ add_library(
     "core/memalloc.cpp"
     "core/memalloc.h"
     "core/sourceinterface.cpp"
-    "core/sourceinterface.h"
     "core/tier0.cpp"
     "core/tier0.h"
     "core/tier1.cpp"

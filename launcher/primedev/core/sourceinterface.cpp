@@ -1,4 +1,3 @@
-#include "sourceinterface.h"
 #include "logging/sourceconsole.h"
 
 // really wanted to do a modular callback system here but honestly couldn't be bothered so hardcoding stuff for now: todo later

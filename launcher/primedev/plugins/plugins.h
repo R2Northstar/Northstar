@@ -1,5 +1,5 @@
 #pragma once
-#include "core/sourceinterface.h"
+#include "core/tier1.h"
 #include "plugins/interfaces/interface.h"
 #include "plugins/interfaces/IPluginId.h"
 #include "plugins/interfaces/IPluginCallbacks.h"

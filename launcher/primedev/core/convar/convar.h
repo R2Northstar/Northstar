@@ -1,5 +1,4 @@
 #pragma once
-#include "core/sourceinterface.h"
 #include "core/math/color.h"
 #include "cvar.h"
 #include "concommand.h"

@@ -2,7 +2,6 @@
 #include "pluginmanager.h"
 #include "squirrel/squirrel.h"
 #include "util/wininfo.h"
-#include "core/sourceinterface.h"
 #include "logging/logging.h"
 #include "dedicated/dedicated.h"
 
