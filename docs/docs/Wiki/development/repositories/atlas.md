@@ -16,7 +16,7 @@ The endpoint for this is `/client/mainmenupromos`
 {
     "newInfo": {
         "Title1": "%$rui\/bullet_point%`2Northstar vX.Y`0 is now live!",
-        "Title2": "%$rui\/bullet_point%`2Highlighted`0 defailt",
+        "Title2": "%$rui\/bullet_point%`2Highlighted`0 default",
         "Title3": "%$rui\/bullet_point%Make sure to `2update`0 your game!"
     },
     "largeButton": {
