@@ -2,14 +2,12 @@
 
 ## What Are RPaks/Starpaks?
 
-.rpak files are a file format created by Respawn as the main way to store and load in-game assets,
-such as textures, materials, datatables, animation recordings, etc. The assets in the .rpak file are kept stored in memory
-as long as the .rpak file is loaded.
+.rpak files are a file format created by Respawn as the main way to store and load in-game assets, such as textures, materials, datatables, animation recordings, etc.
+The assets in the .rpak file are kept stored in memory as long as the .rpak file is loaded.
 
 .starpak files are another file format created by Respawn to complement the .rpak file format.
 They contain streamed asset data, saving hardware resources by only loading the data when needed.
-The most common example of streamed asset data is high resolution textures. The low resolution versions are kept permanently loaded
-in a .rpak file, whilst the higher resolution versions are loaded as needed.
+The most common example of streamed asset data is high resolution textures. The low resolution versions are kept permanently loaded in a .rpak file, whilst the higher resolution versions are loaded as needed.
 
 ### What can RPak mods do?
 
