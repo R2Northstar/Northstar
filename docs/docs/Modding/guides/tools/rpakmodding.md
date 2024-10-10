@@ -165,7 +165,7 @@ If there are no errors, a .rpak file should have been created in the `rpaks` fol
 
 ### Using the RPak in a mod
 
-Create the basis of the mod using the `gettingstarted` guide.
+Create the basis of the mod using the [Getting Started](../gettingstarted.md) guide.
 
 Inside the mod's folder, create a new folder, called `paks`. Move your .rpak file (and .starpak files if you have any) into the folder.
 
