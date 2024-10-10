@@ -91,7 +91,7 @@ WeaponData
     {
         Crosshair_1
         {
-            "ui"                        "ui/crosshair_sniper_amped" //This means NO crosshair
+            "ui"                        "ui/crosshair_sniper_amped" //This means NO crosshair, unless your weapon is amped
         }
     }
 }
@@ -102,12 +102,57 @@ WeaponData
 These are the available crosshairs in-game, along with their in-game
 reference:
 
-![Crosshair examples](https://github.com/Riccorbypro/Custom.Crosshairs/raw/main/assets/crosshairs.png)
+### Titan Crosshairs:
 
-Crosshair images are taken from the modding guide on the [NoSkill Wiki](https://noskill.gitbook.io/titanfall2).
+| Picture | Value | Special Properties |
+| ------- | ----- | ------- ---------- |
+| ![](../../../_static/crosshairmodding/crosshair_40mm.png)| `ui/crosshair_40mm` | `NOADS` |
+| ![](../../../_static/crosshairmodding/crosshair_40mm_burst.png)| `ui/crosshair_40mm_burst` | `NOADS`, `TRACKER` |
+| ![](../../../_static/crosshairmodding/crosshair_flight_core.png)| `ui/crosshair_flight_core` | `NOADS`, `NOSPREAD` |
+| ![](../../../_static/crosshairmodding/crosshair_heat_shield.png)| `ui/crosshair_heat_shield` / `ui/crosshair_vortex` | `NOADS`, `NOSPREAD`, `TRACKER` |
+| ![](../../../_static/crosshairmodding/crosshair_ion.png)| `ui/crosshair_ion` | `NOADS` |
+| ![](../../../_static/crosshairmodding/crosshair_leadwall.png)| `ui/crosshair_leadwall` | `NOADS`,` NOSPREAD` |
+| ![](../../../_static/crosshairmodding/crosshair_scorch.png)| `ui/crosshair_scorch` ||
+| ![](../../../_static/crosshairmodding/crosshair_shotgun.png)| `ui/crosshair_titan_predator_close_range`/ `ui/crosshair_titan_predator_power_shot_close` | `NOADS` |
+| ![](../../../_static/crosshairmodding/crosshair_titan_predator_power_shot_long.png)| `ui/crosshair_titan_predator_power_shot_long` | `NOADS` |
+| ![](../../../_static/crosshairmodding/crosshair_titan_sniper.png)| `ui/crosshair_titan_sniper` | `NOADS`, `NOSPREAD`, `TRACKER` |
+| ![](../../../_static/crosshairmodding/crosshair_tracker_rockets.png)| `ui/crosshair_tracker_rockets` | `NOADS`, `NOSPREAD` |
+
+### Pilot Crosshairs:
+| Picture | Value | Special Properties |
+| ------- | ----- | ------- ---------- |
+| ![](../../../_static/crosshairmodding/crosshair_alternator.png)| `ui/crosshair_alternator` ||
+| ![](../../../_static/crosshairmodding/crosshair_arc.png)| `ui/crosshair_arc` | `NOADS`, `NOSPREAD` |
+| ![](../../../_static/crosshairmodding/crosshair_circle2.png)| `ui/crosshair_circle2` / `ui/crosshair_circle2_small` | `NOADS`, `NOSPREAD` |
+| ![](../../../_static/crosshairmodding/crosshair_charge_rifle.png)| `ui/crosshair_charge_rifle` | `NOADS`, `NOSPREAD, TRACKER` |
+| ![](../../../_static/crosshairmodding/crosshair_esmoke.png)| `ui/crosshair_esmoke` | `NOADS`, `NOSPREAD` |
+| ![](../../../_static/crosshairmodding/crosshair_firestar.png)| `ui/crosshair_firestar` | `NOADS`, `NOSPREAD` |
+| ![](../../../_static/crosshairmodding/crosshair_frag.png)| `ui/crosshair_frag` | `NOADS`, `NOSPREAD` |
+| ![](../../../_static/crosshairmodding/crosshair_grapple_charge.png)| `ui/crosshair_grapple_charge` / `ui/crosshair_phase_charge` | `NOADS`, `NOSPREAD`, `TRACKER` |
+| ![](../../../_static/crosshairmodding/crosshair_gravstar.png)| `ui/crosshair_gravstar` | `NOADS`, `NOSPREAD` |
+| ![](../../../_static/crosshairmodding/crosshair_grenade_launcher.png)| `ui/crosshair_grenade_launcher` / `ui/crosshair_grenade_launcher2` | `NOADS` |
+| ![](../../../_static/crosshairmodding/crosshair_shotgun.png)| `ui/crosshair_lstar` / `ui/crosshair_shotgun` ||
+| ![](../../../_static/crosshairmodding/crosshair_mastiff.png)| `ui/crosshair_mastiff` | `NOSPREAD` |
+| ![](../../../_static/crosshairmodding/crosshair_mine.png)| `ui/crosshair_mine` | `NOADS`, `NOSPREAD` |
+| ![](../../../_static/crosshairmodding/crosshair_mozambique.png)| `ui/crosshair_mozambique` | `NOSPREAD` |
+| ![](../../../_static/crosshairmodding/crosshair_plus.png)| `ui/crosshair_plus` ||
+| ![](../../../_static/crosshairmodding/crosshair_pulse_blade.png)| `ui/crosshair_pulse_blade` | `NOADS`, `NOSPREAD` |
+| ![](../../../_static/crosshairmodding/crosshair_satchel.png)| `ui/crosshair_satchel` | `NOADS`, `NOSPREAD` |
+| ![](../../../_static/crosshairmodding/crosshair_smart_pistol.png)| `ui/crosshair_smart_pistol` | `NOADS`, `NOSPREAD`, `TRACKER` |
+| ![](../../../_static/crosshairmodding/crosshair_smr.png)| `ui/crosshair_smr` | `NOADS`, `NOSPREAD` |
+| ![](../../../_static/crosshairmodding/crosshair_sniper_amped.png)| `ui/crosshair_sniper_amped` | `AMPED`, `NOSPREAD` |
+| ![](../../../_static/crosshairmodding/crosshair_tri.png)| `ui/crosshair_tri` ||
+| ![](../../../_static/crosshairmodding/crosshair_turret.png)| `ui/crosshair_turret` | `NOADS`, `TRACKER` |
+| ![](../../../_static/crosshairmodding/crosshair_wingman.png)| `ui/crosshair_wingman` ||
+| ![](../../../_static/crosshairmodding/crosshair_wingman_n.png)| `ui/crosshair_wingman_n` ||
 
 !!! note
-    Some crosshairs completely ignore the `"base_spread"` setting, and will always use a specific spread. <br> Some crosshairs don't disappear when aiming down sights.
+    Some of the crosshairs shown above were recreated from scratch, and may not be entirely accurate to their in-game look.
+
+* `AMPED` means the crosshair is invisible, unless your weapon is amped.
+* `NOADS` means the crosshair doesn't fully disappear when aiming down sights.
+* `NOSPREAD` means the crosshair completely ignores the `"base_spread"` setting, and will always use a specific spread.
+* `TRACKER` means the crosshair can track a specific value of your weapon (charge amount, clip size...).
 
 ## Examples
 
