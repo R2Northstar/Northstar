@@ -2,12 +2,12 @@
 
 ## What Are RPaks/Starpaks?
 
-.rpak files are a file format created by Respawn as the main way to store and load in-game assets, such as textures, materials, datatables, animation recordings, etc.
-The assets in the .rpak file are kept stored in memory as long as the .rpak file is loaded.
+`.rpak` files are a file format created by Respawn as the main way to store and load in-game assets, such as textures, materials, datatables, animation recordings, etc.
+The assets in the `.rpak` file are kept stored in memory as long as the `.rpak` file is loaded.
 
-.starpak files are another file format created by Respawn to complement the .rpak file format.
+`.starpak` files are another file format created by Respawn to complement the `.rpak` file format.
 They contain streamed asset data, saving hardware resources by only loading the data when needed.
-The most common example of streamed asset data is high resolution textures. The low resolution versions are kept permanently loaded in a .rpak file, whilst the higher resolution versions are loaded as needed.
+The most common example of streamed asset data is high resolution textures. The low resolution versions are kept permanently loaded in a `.rpak` file, whilst the higher resolution versions are loaded as needed.
 
 ### What can RPak mods do?
 
@@ -38,7 +38,7 @@ RePak
 
 - `RePak`: the base folder where your RePak/RPak related files go
 - `RePak.exe`: the `unzipped` file you downloaded from GitHub
-- `pack_all.bat`: a .bat file that will pack all of your RPaks when opened (outlined below)
+- `pack_all.bat`: a `.bat` file that will pack all of your RPaks when opened (outlined below)
 - `rpaks`: the folder where RePak.exe will put your RPaks when they have been created
 - `maps`: the folder where you will write your "map" files, these define the contents of your RPaks
 - `assets`: the folder where you will put your various different images and folders, used to create your RPaks
@@ -86,15 +86,15 @@ Make a note of the Name of the asset, in this example it's `models\camo_skins\ca
 Find the extracted file that LegionPlus created, and open it in some image editing software
 
 !!! warning
-    The image editing software you choose must be able to export images as .dds files
+    The image editing software you choose must be able to export images as `.dds` files
 
-    Examples of image editing software that supports .dds files:
+    Examples of image editing software that supports `.dds` files:
 
     - [GIMP](https://www.gimp.org/) (No SRGB support)
     - [paint.net](https://www.getpaint.net/)
     - [Adobe Photoshop](https://www.adobe.com/uk/products/photoshop.html)
 
-After you have made the desired changes to the image, export it as a .dds file with DXT1 (BC1) compression and the same name as it had originally.
+After you have made the desired changes to the image, export it as a `.dds` file with DXT1 (BC1) compression and the same name as it had originally.
 
 ![ExportDDS](https://user-images.githubusercontent.com/66967891/181824740-c8a6d1d7-234f-405d-a348-1287aa9bb168.png)
 
@@ -105,15 +105,15 @@ After you have made the desired changes to the image, export it as a .dds file w
     ![MipMaps](https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Mipmap_Aliasing_Comparison.png/1280px-Mipmap_Aliasing_Comparison.png)
 
 
-Place your newly created .dds file in the `assets\texture` folder, following the path in the Name you noted down above.
-In this example the .dds file would go in `RePak\assets\texture\models\camo_skins`, with the path of the image being `..\RePak\assets\texture\models\camo_skins\camo_skin04_col.dds`
+Place your newly created `.dds` file in the `assets\texture` folder, following the path in the Name you noted down above.
+In this example the `.dds` file would go in `RePak\assets\texture\models\camo_skins`, with the path of the image being `..\RePak\assets\texture\models\camo_skins\camo_skin04_col.dds`
 
 
 ### Making a map file
 
 Once you have edited your texture image and placed it in the right folder, you are ready to make your map file.
 
-Map files are what RePak uses to create the .rpak file (and .starpak files if needed) and are in the .json file format.
+Map files are what RePak uses to create the `.rpak` file (and `.starpak` files if needed) and are in the `.json` file format.
 They can be named anything you want, but should be put in the `RePak\maps` folder.
 
 Below is an example of a map file that creates an RPak called `example.rpak` which contains 1 texture asset.
@@ -158,18 +158,18 @@ To create your RPak file, simply open `pack_all.bat`.
 Alternatively, click and drag your map file over `RePak.exe`. (I don't recommend this, it's a pain)
 
 **Look at the console for any errors.**
-If there are no errors, a .rpak file should have been created in the `rpaks` folder.
+If there are no errors, a `.rpak` file should have been created in the `rpaks` folder.
 
 
 ### Using the RPak in a mod
 
 Create the basis of the mod using the [Getting Started](../gettingstarted.md) guide.
 
-Inside the mod's folder, create a new folder, called `paks`. Move your .rpak file (and .starpak files if you have any) into the folder.
+Inside the mod's folder, create a new folder, called `paks`. Move your `.rpak` file (and `.starpak` files if you have any) into the folder.
 
 ![ModStructure](https://user-images.githubusercontent.com/66967891/181840035-3cfa24e0-efdd-49fa-85f6-60e6c4cc9a12.png)
 
-Inside the `paks` folder that you created, make a new .json file called `rpak.json`.
+Inside the `paks` folder that you created, make a new `.json` file called `rpak.json`.
 In this example, the `camo_skin04_col.rpak` rpak is completely replaced by `example.rpak`.
 This is fine for camo RPaks, but isn't suitable for more complex RPaks
 
@@ -239,4 +239,4 @@ paks
 **After** `rpak.json` **is set up correctly, your RPak mod should be complete and functional!**
 
 !!! note
-    If when you test the rpak the colour looks weird, use SRGB in the .dds compression, or use non-SRGB if you were already using SRGB
+    If when you test the rpak the colour looks weird, use SRGB in the `.dds` compression, or use non-SRGB if you were already using SRGB
