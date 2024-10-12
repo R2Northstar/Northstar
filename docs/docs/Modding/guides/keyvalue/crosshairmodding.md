@@ -112,6 +112,7 @@ reference:
 | ![](../../../_static/crosshairmodding/crosshair_heat_shield.png)| `ui/crosshair_heat_shield` / `ui/crosshair_vortex` | `NOADS`, `NOSPREAD`, `TRACKER` |
 | ![](../../../_static/crosshairmodding/crosshair_ion.png)| `ui/crosshair_ion` | `NOADS` |
 | ![](../../../_static/crosshairmodding/crosshair_leadwall.png)| `ui/crosshair_leadwall` | `NOADS`,` NOSPREAD` |
+| ![](../../../_static/crosshairmodding/crosshair_quad_rocket.png)| `ui/crosshair_quad_rocket` | `NOADS`,` NOSPREAD` |
 | ![](../../../_static/crosshairmodding/crosshair_scorch.png)| `ui/crosshair_scorch` ||
 | ![](../../../_static/crosshairmodding/crosshair_shotgun.png)| `ui/crosshair_titan_predator_close_range`/ `ui/crosshair_titan_predator_power_shot_close` | `NOADS` |
 | ![](../../../_static/crosshairmodding/crosshair_titan_predator_power_shot_long.png)| `ui/crosshair_titan_predator_power_shot_long` | `NOADS` |
@@ -123,14 +124,17 @@ reference:
 | ------- | ----- | ------- ---------- |
 | ![](../../../_static/crosshairmodding/crosshair_alternator.png)| `ui/crosshair_alternator` ||
 | ![](../../../_static/crosshairmodding/crosshair_arc.png)| `ui/crosshair_arc` | `NOADS`, `NOSPREAD` |
-| ![](../../../_static/crosshairmodding/crosshair_circle2.png)| `ui/crosshair_circle2` / `ui/crosshair_circle2_small` | `NOADS`, `NOSPREAD` |
+| ![](../../../_static/crosshairmodding/crosshair_circle2.png)| `ui/crosshair_circle` / `ui/crosshair_circle2` / `ui/crosshair_circle2_small` | `NOADS`, `NOSPREAD` |
 | ![](../../../_static/crosshairmodding/crosshair_charge_rifle.png)| `ui/crosshair_charge_rifle` | `NOADS`, `NOSPREAD, TRACKER` |
+| ![](../../../_static/crosshairmodding/crosshair_wingman_n.png)| `ui/crosshair_dot` / `ui/crosshair_wingman_n` ||
 | ![](../../../_static/crosshairmodding/crosshair_esmoke.png)| `ui/crosshair_esmoke` | `NOADS`, `NOSPREAD` |
 | ![](../../../_static/crosshairmodding/crosshair_firestar.png)| `ui/crosshair_firestar` | `NOADS`, `NOSPREAD` |
-| ![](../../../_static/crosshairmodding/crosshair_frag.png)| `ui/crosshair_frag` | `NOADS`, `NOSPREAD` |
+| ![](../../../_static/crosshairmodding/crosshair_frag.png)| `ui/crosshair_frag` / `ui/crosshair_frag2` | `NOADS`, `NOSPREAD` |
+| ![](../../../_static/crosshairmodding/crosshair_grapple.png)| `ui/crosshair_grapple` | `NOADS`, `NOSPREAD`, `TRACKER` |
 | ![](../../../_static/crosshairmodding/crosshair_grapple_charge.png)| `ui/crosshair_grapple_charge` / `ui/crosshair_phase_charge` | `NOADS`, `NOSPREAD`, `TRACKER` |
 | ![](../../../_static/crosshairmodding/crosshair_gravstar.png)| `ui/crosshair_gravstar` | `NOADS`, `NOSPREAD` |
 | ![](../../../_static/crosshairmodding/crosshair_grenade_launcher.png)| `ui/crosshair_grenade_launcher` / `ui/crosshair_grenade_launcher2` | `NOADS` |
+| ![](../../../_static/crosshairmodding/crosshair_ladder.png)| `ui/crosshair_ladder` | `NOADS`, `NOSPREAD` |
 | ![](../../../_static/crosshairmodding/crosshair_shotgun.png)| `ui/crosshair_lstar` / `ui/crosshair_shotgun` ||
 | ![](../../../_static/crosshairmodding/crosshair_mastiff.png)| `ui/crosshair_mastiff` | `NOSPREAD` |
 | ![](../../../_static/crosshairmodding/crosshair_mine.png)| `ui/crosshair_mine` | `NOADS`, `NOSPREAD` |
@@ -141,10 +145,14 @@ reference:
 | ![](../../../_static/crosshairmodding/crosshair_smart_pistol.png)| `ui/crosshair_smart_pistol` | `NOADS`, `NOSPREAD`, `TRACKER` |
 | ![](../../../_static/crosshairmodding/crosshair_smr.png)| `ui/crosshair_smr` | `NOADS`, `NOSPREAD` |
 | ![](../../../_static/crosshairmodding/crosshair_sniper_amped.png)| `ui/crosshair_sniper_amped` | `AMPED`, `NOSPREAD` |
+| ![](../../../_static/crosshairmodding/crosshair_square.png)| `ui/crosshair_square` ||
+| ![](../../../_static/crosshairmodding/crosshair_test.png)| `ui/crosshair_test` ||
 | ![](../../../_static/crosshairmodding/crosshair_tri.png)| `ui/crosshair_tri` ||
 | ![](../../../_static/crosshairmodding/crosshair_turret.png)| `ui/crosshair_turret` | `NOADS`, `TRACKER` |
 | ![](../../../_static/crosshairmodding/crosshair_wingman.png)| `ui/crosshair_wingman` ||
-| ![](../../../_static/crosshairmodding/crosshair_wingman_n.png)| `ui/crosshair_wingman_n` ||
+
+!!! note
+    ``ui/crosshair_test`` has a rapidly flashing dot in its center.
 
 !!! note
     Some of the crosshairs shown above were recreated from scratch, and may not be entirely accurate to their in-game look.
