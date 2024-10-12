@@ -40,5 +40,5 @@ Before creating issues or contributing changes to the source code please read [t
 All the source code related to Northstar can be found here:
 
 ```embed
-url: https://northstar.tf
+url: https://northstar.tf/github
 ```
