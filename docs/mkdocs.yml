@@ -1,5 +1,6 @@
 site_name: Northstar Documentation
 site_url: https://docs.northstar.tf/
+site_description: "The official documentation and wiki for Northstar"
 repo_url: https://github.com/R2Northstar/NorthstarDocs
 edit_uri: blob/main/docs/
 theme:
