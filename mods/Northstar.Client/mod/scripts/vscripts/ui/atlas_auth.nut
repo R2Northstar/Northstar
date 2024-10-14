@@ -37,7 +37,7 @@ void function AtlasAuthDialog_Threaded()
 	if ( res.errorCode != "" )
 		dialogData.message += format( "\n\n%s", Localize( "#AUTHENTICATION_FAILED_ERROR_CODE", res.errorCode ) )
 
-	string link = "https://r2northstar.gitbook.io/r2northstar-wiki/installing-northstar/troubleshooting"
+	string link = "https://docs.northstar.tf/Wiki/installing-northstar/troubleshooting/"
 	// link to generic troubleshooting page if we don't have an error code from Atlas
 	if ( res.errorCode != "" )
 		link = format( "%s#%s", link, res.errorCode )
