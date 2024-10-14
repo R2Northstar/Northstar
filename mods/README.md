@@ -3,7 +3,7 @@
 <img src="https://translate.harmony.tf/widgets/northstar/-/client/svg-badge.svg" alt="Translation status" />
 </a>
 
-[Squirrel](http://www.squirrel-lang.org/squirreldoc/reference/index.html) scripts used to recreate server-side gamelogic and add [custom content](https://r2northstar.gitbook.io/r2northstar-wiki/using-northstar/gamemodes) to the game. 
+[Squirrel](http://www.squirrel-lang.org/squirreldoc/reference/index.html) scripts used to recreate server-side gamelogic and add [custom content](https://docs.northstar.tf/Wiki/using-northstar/gamemodes/) to the game. 
 
 ## Contents:
 
