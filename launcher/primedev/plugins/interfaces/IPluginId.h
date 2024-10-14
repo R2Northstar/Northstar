@@ -18,6 +18,7 @@ enum class PluginString : int
 enum class PluginField : int
 {
 	CONTEXT = 0,
+	COLOR = 1,
 };
 
 // an interface that is required from every plugin to query data about it
