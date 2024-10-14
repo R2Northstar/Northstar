@@ -46,7 +46,7 @@ jobs:
           path: northstar-mods
       - name: Update mod version info
         run: |
-          export MOD_VERSION=$(echo $NORTHSTAR_VERSION | tr -d 'v')
+          export MOD_VERSION=$(echo $NORTHSTAR_VERSION | tr --delete 'v')
           cat <<< $(jq ".Version = \"${MOD_VERSION}\"" northstar-mods/Northstar.Client/mod.json) > northstar-mods/Northstar.Client/mod.json
           cat <<< $(jq ".Version = \"${MOD_VERSION}\"" northstar-mods/Northstar.Custom/mod.json) > northstar-mods/Northstar.Custom/mod.json
           cat <<< $(jq ".Version = \"${MOD_VERSION}\"" northstar-mods/Northstar.CustomServers/mod.json) > northstar-mods/Northstar.CustomServers/mod.json
