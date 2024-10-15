@@ -35,6 +35,8 @@ pub fn run_presence_updates(sqvm: NonNull<HSquirrelVM>) {
     };
 }
 
+// "Localize_001" is a thing
+
 /// function to pull presence from the sqvm since in runframe it's impossibke to get the output of a function back
 #[rrplug::sqfunction(VM = "UI | CLIENT", ExportName = "FetchPresence")]
 pub fn fetch_presence() -> Result<(), String> {
