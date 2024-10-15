@@ -2,8 +2,8 @@
 
 use discord_sdk::activity::Secrets;
 use parking_lot::Mutex;
-use rrplug::interfaces::manager::register_interface;
 use rrplug::prelude::*;
+use rrplug::{bindings::plugin_abi::PluginColor, interfaces::manager::register_interface};
 use tokio::runtime::Runtime;
 
 use crate::{
@@ -43,11 +43,16 @@ pub struct DiscordRpcPlugin {
 
 #[deny(non_snake_case)]
 impl Plugin for DiscordRpcPlugin {
-    const PLUGIN_INFO: PluginInfo = PluginInfo::new(
+    const PLUGIN_INFO: PluginInfo = PluginInfo::new_with_color(
         c"DISCORDRPC",
         c"DSCRD-RPC",
         c"DISCORDRPC",
         PluginContext::CLIENT,
+        PluginColor {
+            red: 114,
+            green: 137,
+            blue: 218,
+        },
     );
 
     fn new(_: bool) -> Self {
