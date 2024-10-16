@@ -10,7 +10,7 @@ Make sure you already installed Northstar [as described here](../installing-nort
 
 To host a listen server on Northstar, go to the lobby and press the `Private Match` button to begin a private match. While this does allow you to host a server, other people won't be able to join it, so you'll need to port forward UDP port `37015` to allow other people to join.\
 If this works correctly, this should result in your server being displayed on the server browser, and other clients being able to connect to it.\
-![screenshot select private match](https://raw.githubusercontent.com/R2Northstar/NorthstarWiki/main/docs/images/lobbyprivatematch.png)
+![screenshot select private match](../images/lobbyprivatematch.png)
 
 ## Server Configuration
 
