@@ -20,9 +20,7 @@ Northstar is split over multiple git repositories that fulfill different functio
   Contains D3D11 and GFSDK stubs for the Northstar dedicated server.
 * [NorthstarTF](https://github.com/R2Northstar/NorthstarTF):\
   The Northstar website.
-* [NorthstarWiki](https://github.com/R2Northstar/NorthstarWiki):\
-  The repository for this wiki.
-* [ModdingDocs](https://github.com/R2Northstar/ModdingDocs):\
-  Contains guides and tutorials on how to mod using Northstar
+* [NorthstarDocs](https://github.com/R2Northstar/NorthstarDocs):\
+  The repository for this wiki. Also Contains guides and tutorials on how to mod using Northstar.
 
 Check the subpages of this wiki for additional information about some of these repositories.

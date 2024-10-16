@@ -3,7 +3,7 @@
 This is a copy of the current list of rules on the Northstar Discord server.
 They are copied here for transparency reasons so any change to them can be tracked and easily observed.
 
-In particular you can check changes to the rules on GitHub using the following link: [https://github.com/R2Northstar/NorthstarWiki/commits/main/docs/other/moderation/rules.md](https://github.com/R2Northstar/NorthstarWiki/commits/main/docs/other/moderation/rules.md)
+In particular you can check changes to the rules on GitHub using the following link: [https://github.com/R2Northstar/NorthstarDocs/commits/main/docs/other/moderation/rules.md](https://github.com/R2Northstar/NorthstarDocs/commits/main/docs/other/moderation/rules.md)
 
 ```markdown
 This is a public server that anyone is welcome to join. As such, we expect everybody who participates to keep things civil. To that end, we've established some guidelines for this server. Failing to follow these rules may result in your posts being removed, limitations of your permissions in channels, or removal from this server.
