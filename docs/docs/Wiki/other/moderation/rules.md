@@ -49,7 +49,7 @@ Please note:
 Should an individual whose contributions are vital to the continuation of the project break the stated rules, they may have their access suspended or removed from certain parts and/or features of the Discord Server instead of being fully banned outright.
 
 For questions regarding Discord's Privacy Policy or Terms of Use, please refer to the documents here (<https://discord.com/terms>)
-`Last Updated: 2024-08-18`
+`Last Updated: 2024-10-17`
 <https://discord.gg/northstar>
 
 **If you have any issues regarding Northstar during your time playing or installing**, please open a support ticket in <#922663326994018366>. This channel is dedicated to helping users and should be used for this purpose instead of `#⁠general` and other similar chats.
