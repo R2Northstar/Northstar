@@ -122,6 +122,10 @@ Script methods to manipulate hud elements.
 
     Set the angles of the element
 
+!!! cpp-function "void Hud_SetPinSibling( var elem, string sibling_name )"
+
+    Only change the sibling pinned to
+
 ## Visibility & Color
 
 !!! cpp-function "void Hud_Show( var elem )"
