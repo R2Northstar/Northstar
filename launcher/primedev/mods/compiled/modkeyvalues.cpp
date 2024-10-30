@@ -3,8 +3,6 @@
 
 #include <fstream>
 
-AUTOHOOK_INIT()
-
 void ModManager::TryBuildKeyValues(const char* filename)
 {
 	spdlog::info("Building KeyValues for file {}", filename);
