@@ -13,6 +13,7 @@ global function UpdateTitanCoreEarnedStat
 global function PreScoreEventUpdateStats
 global function PostScoreEventUpdateStats
 global function Stats_OnPlayerDidDamage
+global function RegisterMatchStats_OnMatchComplete
 
 struct {
 	table< string, array<string> > refs
@@ -36,7 +37,6 @@ void function Stats_Init()
 	AddCallback_OnPlayerRespawned( OnPlayerRespawned )
 	AddCallback_OnClientConnected( OnClientConnected )
 	AddCallback_OnClientDisconnected( OnClientDisconnected )
-	AddCallback_GameStateEnter( eGameState.WinnerDetermined, OnWinnerDetermined )
 
 	thread HandleDistanceAndTimeStats_Threaded()
 	thread SaveStatsPeriodically_Threaded()
@@ -813,7 +813,7 @@ void function OnPlayerRespawned( entity player )
 	thread SetLastPosForDistanceStatValid_Threaded( player, true )
 }
 
-void function OnWinnerDetermined()
+void function RegisterMatchStats_OnMatchComplete()
 {
 	// award players for match completed, wins, and losses
 	foreach ( entity player in GetPlayerArray() )
@@ -888,30 +888,28 @@ void function OnWinnerDetermined()
 		player.SetPersistentVar( "kdratio_lifetime_pvp", kdratio_lifetimepvp )
 	}
 
-	// award mvp and top 3 in each team
-	if ( !IsFFAGame() )
+	array<entity> players = GetPlayerArray()
+	players.sort( GetScoreboardCompareFunc() )
+	int playerCount = players.len()
+	int currentPlace = 1
+	for ( int i = 0; i < 3; i++ )
 	{
-		string gamemode = GameRules_GetGameMode()
-		int functionref( entity, entity ) compareFunc = GameMode_GetScoreCompareFunc( gamemode )
-
-		for( int team = 0; team < MAX_TEAMS; team++ )
+		if ( i >= playerCount )
+			continue
+		
+		int functionref( entity, entity ) compareFunc = GetScoreboardCompareFunc()
+		if ( i > 0 && compareFunc( players[i - 1], players[i] ) != 0 )
+			currentPlace += 1
+		switch( currentPlace )
 		{
-			array<entity> players = GetPlayerArrayOfTeam( team )
-			if ( compareFunc == null )
-			{
-				printt( "gamemode doesn't have a compare func to get the top 3" )
-				return
-			}
-			players.sort( compareFunc )
-			int maxAwards = int( min( players.len(), 3 ) )
-			for ( int i = 0; i < maxAwards; i++ )
-			{
-				if ( i == 0 )
-					Stats_IncrementStat( players[ i ], "game_stats", "mvp", "", 1.0 )
-				Stats_IncrementStat( players[ i ], "game_stats", "top3OnTeam", "", 1.0 )
-			}
+			case 1: // MVP have two parallel stats which one registers MVP for the map played and the other goes to the player's stats menu as a total MVP times
+				UpdatePlayerStat( players[i], "game_stats", "mvp" )
+				UpdatePlayerStat( players[i], "game_stats", "mvp_total" )
+			case 2:
+			case 3:
+				UpdatePlayerStat( players[i], "game_stats", "top3OnTeam" ) // Ingame this is the "Times Top 3" for the whole match, not per team
+				break
 		}
-
 	}
 }
 
