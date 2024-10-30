@@ -19,8 +19,6 @@
 #include <string>
 #include <thread>
 
-AUTOHOOK_INIT()
-
 // global vars
 ServerAuthenticationManager* g_pServerAuthentication;
 CBaseServer__RejectConnectionType CBaseServer__RejectConnection;
@@ -207,9 +205,7 @@ void ServerAuthenticationManager::WritePersistentData(CBaseClient* pPlayer)
 char* pNextPlayerToken;
 uint64_t iNextPlayerUid;
 
-// clang-format off
-AUTOHOOK(CBaseServer__ConnectClient, engine.dll + 0x114430,
-void*,, (
+static void* (*o_pCBaseServer__ConnectClient)(
 	void* self,
 	void* addr,
 	void* a3,
@@ -226,22 +222,39 @@ void*,, (
 	char a14,
 	int64_t uid,
 	uint32_t a16,
-	uint32_t a17))
-// clang-format on
+	uint32_t a17) = nullptr;
+static void* h_CBaseServer__ConnectClient(
+	void* self,
+	void* addr,
+	void* a3,
+	uint32_t a4,
+	uint32_t a5,
+	int32_t a6,
+	void* a7,
+	char* playerName,
+	char* serverFilter,
+	void* a10,
+	char a11,
+	void* a12,
+	char a13,
+	char a14,
+	int64_t uid,
+	uint32_t a16,
+	uint32_t a17)
 {
 	// auth tokens are sent with serverfilter, can't be accessed from player struct to my knowledge, so have to do this here
 	pNextPlayerToken = serverFilter;
 	iNextPlayerUid = uid;
 
-	return CBaseServer__ConnectClient(self, addr, a3, a4, a5, a6, a7, playerName, serverFilter, a10, a11, a12, a13, a14, uid, a16, a17);
+	return o_pCBaseServer__ConnectClient(self, addr, a3, a4, a5, a6, a7, playerName, serverFilter, a10, a11, a12, a13, a14, uid, a16, a17);
 }
 
 ConVar* Cvar_ns_allowuserclantags;
 
-// clang-format off
-AUTOHOOK(CBaseClient__Connect, engine.dll + 0x101740,
-bool,, (CBaseClient* self, char* pName, void* pNetChannel, char bFakePlayer, void* a5, char pDisconnectReason[256], void* a7))
-// clang-format on
+static bool (*o_pCBaseClient__Connect)(
+	CBaseClient* self, char* pName, void* pNetChannel, char bFakePlayer, void* a5, char pDisconnectReason[256], void* a7) = nullptr;
+static bool
+h_CBaseClient__Connect(CBaseClient* self, char* pName, void* pNetChannel, char bFakePlayer, void* a5, char pDisconnectReason[256], void* a7)
 {
 	const char* pAuthenticationFailure = nullptr;
 	char pVerifiedName[64];
@@ -267,7 +280,7 @@ bool,, (CBaseClient* self, char* pName, void* pNetChannel, char bFakePlayer, voi
 	}
 
 	// try to actually connect the player
-	if (!CBaseClient__Connect(self, pVerifiedName, pNetChannel, bFakePlayer, a5, pDisconnectReason, a7))
+	if (!o_pCBaseClient__Connect(self, pVerifiedName, pNetChannel, bFakePlayer, a5, pDisconnectReason, a7))
 		return false;
 
 	// we already know this player's authentication data is legit, actually write it to them now
@@ -279,10 +292,8 @@ bool,, (CBaseClient* self, char* pName, void* pNetChannel, char bFakePlayer, voi
 	return true;
 }
 
-// clang-format off
-AUTOHOOK(CBaseClient__ActivatePlayer, engine.dll + 0x100F80,
-void,, (CBaseClient* self))
-// clang-format on
+static void (*o_pCBaseClient__ActivatePlayer)(CBaseClient* self) = nullptr;
+static void h_CBaseClient__ActivatePlayer(CBaseClient* self)
 {
 	// if we're authed, write our persistent data
 	// RemovePlayerAuthData returns true if it removed successfully, i.e. on first call only, and we only want to write on >= second call
@@ -294,13 +305,11 @@ void,, (CBaseClient* self))
 		g_pServerPresence->SetPlayerCount((int)g_pServerAuthentication->m_PlayerAuthenticationData.size());
 	}
 
-	CBaseClient__ActivatePlayer(self);
+	o_pCBaseClient__ActivatePlayer(self);
 }
 
-// clang-format off
-AUTOHOOK(_CBaseClient__Disconnect, engine.dll + 0x1012C0,
-void,, (CBaseClient* self, uint32_t unknownButAlways1, const char* pReason, ...))
-// clang-format on
+static void (*o_pCBaseClient__Disconnect)(CBaseClient* self, uint32_t unknownButAlways1, const char* pReason, ...) = nullptr;
+static void h_CBaseClient__Disconnect(CBaseClient* self, uint32_t unknownButAlways1, const char* pReason, ...)
 {
 	// have to manually format message because can't pass varargs to original func
 	char buf[1024];
@@ -328,7 +337,7 @@ void,, (CBaseClient* self, uint32_t unknownButAlways1, const char* pReason, ...)
 
 	g_pServerPresence->SetPlayerCount((int)g_pServerAuthentication->m_PlayerAuthenticationData.size());
 
-	_CBaseClient__Disconnect(self, unknownButAlways1, buf);
+	o_pCBaseClient__Disconnect(self, unknownButAlways1, buf);
 }
 
 void ConCommand_ns_resetpersistence(const CCommand& args)
@@ -346,7 +355,17 @@ void ConCommand_ns_resetpersistence(const CCommand& args)
 
 ON_DLL_LOAD_RELIESON("engine.dll", ServerAuthentication, (ConCommand, ConVar), (CModule module))
 {
-	AUTOHOOK_DISPATCH()
+	o_pCBaseServer__ConnectClient = module.Offset(0x114430).RCast<decltype(o_pCBaseServer__ConnectClient)>();
+	HookAttach(&(PVOID&)o_pCBaseServer__ConnectClient, (PVOID)h_CBaseServer__ConnectClient);
+
+	o_pCBaseClient__Connect = module.Offset(0x101740).RCast<decltype(o_pCBaseClient__Connect)>();
+	HookAttach(&(PVOID&)o_pCBaseClient__Connect, (PVOID)h_CBaseClient__Connect);
+
+	o_pCBaseClient__ActivatePlayer = module.Offset(0x100F80).RCast<decltype(o_pCBaseClient__ActivatePlayer)>();
+	HookAttach(&(PVOID&)o_pCBaseClient__ActivatePlayer, (PVOID)h_CBaseClient__ActivatePlayer);
+
+	o_pCBaseClient__Disconnect = module.Offset(0x1012C0).RCast<decltype(o_pCBaseClient__Disconnect)>();
+	HookAttach(&(PVOID&)o_pCBaseClient__Disconnect, (PVOID)h_CBaseClient__Disconnect);
 
 	g_pServerAuthentication = new ServerAuthenticationManager;
 
