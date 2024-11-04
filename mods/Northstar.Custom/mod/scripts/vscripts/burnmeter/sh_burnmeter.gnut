@@ -207,7 +207,7 @@ string function GetSelectedBurnCardRef( entity player )
 
 	#if SERVER
 	if ( GetItemDisplayData( ref ).hidden )
-		ClientCommand( player, "disconnect" )
+		NSDisconnectPlayer( player, "" )
 	#endif
 
 	#if SERVER || CLIENT

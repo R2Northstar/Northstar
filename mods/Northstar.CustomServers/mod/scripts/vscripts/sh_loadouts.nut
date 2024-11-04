@@ -1509,7 +1509,7 @@ string function GetValidatedPersistentLoadoutValue( entity player, string loadou
 			{
 				printt( "Invalid Loadout Property: ", loadoutType, loadoutIndex, loadoutProperty, value )
 				value = ResetLoadoutPropertyToDefault( player, loadoutType, loadoutIndex, loadoutProperty ) //TODO: This will call player.SetPersistentVar() directly. Awkward to do this in a getter function
-				ClientCommand( player, "disconnect #RESETTING_LOADOUT", 0 ) //Kick player out with a "Resetting Invalid Loadout" message. Mainly necessary so UI/Client script don't crash out later with known, bad data from persistence
+				NSDisconnectPlayer( player, "#RESETTING_LOADOUT" ) // Kick player out with a "Resetting Invalid Loadout" message. Mainly necessary so UI/Client script don't crash out later with known, bad data from persistence
 			}
 		}
 
@@ -1519,7 +1519,8 @@ string function GetValidatedPersistentLoadoutValue( entity player, string loadou
 			{
 				printt( "Invalid Loadout Property: ", loadoutType, loadoutIndex, loadoutProperty, value )
 				value = ResetLoadoutPropertyToDefault( player, loadoutType, loadoutIndex, loadoutProperty ) //TODO: This will call player.SetPersistentVar() directly. Awkward to do this in a getter function
-				ClientCommand( player, "disconnect #RESETTING_LOADOUT", 0 ) //Kick player out with a "Resetting Invalid Loadout" message. Mainly necessary so UI/Client script don't crash out later with known, bad data from persistence
+				NSDisconnectPlayer( player, "#RESETTING_LOADOUT" ) // Kick player out with a "Resetting Invalid Loadout" message. Mainly necessary so UI/Client script don't crash out later with known, bad data from persistence
+
 			}
 
 			ValidateSkinAndCamoIndexesAsAPair( player, loadoutType, loadoutIndex, loadoutProperty, value ) //TODO: This is awkward, has the potential to call a SetPersistentLoadoutValue() if skinIndex and camoIndex are not correct as a pair
