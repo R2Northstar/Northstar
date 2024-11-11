@@ -969,10 +969,28 @@ string function GetVictimSyncedMeleeTargetType( entity ent )
 	{
 		targetType = "prowler"
 	}
+
+	// Disabled to allow for executing NPC Pilots
+
+	// The way this function works, is that if an entity gets added here, then whatever "targetType" it returns
+	// gets passed to sh_melee_synced_human.gnut or sh_melee_synced_titan.gnut,
+	// which determines what animation set that entity should use when getting executed
+	// If an entity is not included, the it uses its BodyType to determine it ( see line 83 in sh_melee_synced_human)
+	// As you can see: Grunts, and Spectres are not included here, so it gets their BodyType (human) and goes from there
+
+	// I imagine the reason Respawn added the NPC Pilots to this function, is so they could make unique executions for them,
+	// just like the Prowlers
+	// Unfortunately, they either scrapped them, or simply never got around to making them
+	// That means this piece of code has basically no reason to exist anymore
+	// The only thing it does is break executions and thats it
+	// Since NPC Pilots also use the "human" BodyType, it means we can execute them with no issues
+
+/*
 	else if ( IsPilotElite( ent ) )
 	{
 		targetType = "pilotelite"
 	}
+*/
 	else if ( ent.IsNPC() )
 	{
 		targetType = ent.GetBodyType()
