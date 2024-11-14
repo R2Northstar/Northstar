@@ -378,11 +378,6 @@ bool function CodeCallback_IsValidMeleeAttackTarget( entity attacker, entity tar
 
 void function CodeCallback_OnMeleePressed( entity player )
 {
-#if SERVER
-	print( "SERVER: " + player + " pressed melee\n" )
-#else
-	print( "CLIENT: " + player + " pressed melee\n" )
-#endif
 
 	if ( !Melee_IsAllowed( player ) )
 	{
@@ -410,24 +405,10 @@ void function CodeCallback_OnMeleePressed( entity player )
 	}
 
 	if ( player.PlayerMelee_GetState() != PLAYER_MELEE_STATE_NONE )
-	{
-#if SERVER
-		print( "SERVER: PlayerMelee_GetState() for " + player + " is " + player.PlayerMelee_GetState() + "\n" )
-#else
-		print( "CLIENT: PlayerMelee_GetState() for " + player + " is " + player.PlayerMelee_GetState() + "\n" )
-#endif
 		return
-	}
 
 	if ( !IsAlive( player ) )
-	{
-#if SERVER
-		print( "SERVER: " + player + " is dead\n" )
-#else
-		print( "CLIENT: " + player + " is dead\n" )
-#endif
 		return
-	}
 
 	thread CodeCallback_OnMeleePressed_InternalThread( player )
 }
@@ -527,14 +508,7 @@ bool function PlayerTriesSyncedMelee( entity player, entity target )
 	}
 
 	if ( !player.Lunge_IsActive() || !player.Lunge_IsGroundExecute() || !player.Lunge_IsLungingToEntity() || (player.Lunge_GetTargetEntity() != target) )
-	{
-#if SERVER
-		print( "SERVER: " + player + " is calling Lunge_SetTargetEntity() from PlayerTriesSyncedMelee()\n" )
-#else
-		print( "CLIENT: " + player + " is calling Lunge_SetTargetEntity() from PlayerTriesSyncedMelee()\n" )
-#endif
 		player.Lunge_SetTargetEntity( target, false )
-	}
 
 #if SERVER
 	OnThreadEnd(
@@ -1024,11 +998,7 @@ SyncedMeleeChooser ornull function GetSyncedMeleeChooserForPlayerVsTarget( entit
 void function CodeCallback_OnMeleeAttackAnimEvent( entity player )
 {
 	Assert( IsValid( player ) )
-#if SERVER
-	print( "SERVER: " + player + " is calling CodeCallback_OnMeleeAttackAnimEvent()\n" )
-#else
-	print( "CLIENT: " + player + " is calling CodeCallback_OnMeleeAttackAnimEvent()\n" )
-#endif
+
 	if ( player.PlayerMelee_IsAttackActive() )
 	{
 		if ( player.IsTitan() )
