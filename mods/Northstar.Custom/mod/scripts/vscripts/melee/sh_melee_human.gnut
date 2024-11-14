@@ -55,11 +55,6 @@ function HumanUnsyncedMelee( entity player, bool movestunBlocked )
 		{
 			if ( !movestunBlocked )
 			{
-#if SERVER
-				print( "SERVER: " + player + " is calling Lunge_SetTargetEntity() from HumanUnsyncedMelee()\n" )
-#else
-				print( "CLIENT: " + player + " is calling Lunge_SetTargetEntity() from HumanUnsyncedMelee()\n" )
-#endif
 				if ( player.Lunge_SetTargetEntity( lungeTarget, true ) )
 				{
 					if ( lungeTarget.IsTitan() )
@@ -95,11 +90,6 @@ function HumanUnsyncedMelee( entity player, bool movestunBlocked )
 
 function DoReactionForTitanHit( entity player, entity titan )
 {
-#if SERVER
-	print( "SERVER: " + player + " is calling Lunge_SetTargetEntity() from DoReactionForTitanHit()\n" )
-#else
-	print( "CLIENT: " + player + " is calling Lunge_SetTargetEntity() from DoReactionForTitanHit()\n" )
-#endif
 	player.Lunge_SetTargetEntity( titan, true )
 	if ( player.Lunge_IsLungingToEntity() )
 		player.Lunge_EnableFlying()
@@ -125,29 +115,11 @@ function HumanMeleeAttack( entity player )
 	if ( player.Lunge_IsGroundExecute() )
 		attackRange = 150
 
-#if SERVER
-	print( "SERVER: " + player + " is calling PlayerMelee_AttackTrace() from HumanMeleeAttack()\n" )
-#else
-	print( "CLIENT: " + player + " is calling PlayerMelee_AttackTrace() from HumanMeleeAttack()\n" )
-#endif
 	table traceResult = PlayerMelee_AttackTrace( player, attackRange, CodeCallback_IsValidMeleeAttackTarget )
 
 	entity hitEnt = expect entity( traceResult.ent )
 	if ( !IsValid( hitEnt )  )
-	{
-#if SERVER
-		print( "SERVER: " + player + " call to PlayerMelee_AttackTrace() did NOT hit\n" )
-#else
-		print( "CLIENT: " + player + " call to PlayerMelee_AttackTrace() did NOT hit\n" )
-#endif
 		return
-	}
-
-#if SERVER
-	print( "SERVER: " + player + " call to PlayerMelee_AttackTrace() hit " + hitEnt + "\n" )
-#else
-	print( "CLIENT: " + player + " call to PlayerMelee_AttackTrace() hit " + hitEnt + "\n" )
-#endif
 
 	if ( PlayerMelee_IsServerSideEffects() )
 	{
@@ -230,8 +202,6 @@ function HumanMeleeAttack_DoImpact( entity player, entity meleeWeapon, traceResu
 
 	vector oldVelocity = target.GetVelocity()
 	vector damageForce = AnglesToForward( angles ) * meleeWeapon.GetWeaponDamageForce()
-
-	print( "SERVER: HumanMeleeAttack_DoImpact() applying damage to " + target + "\n" )
 
 	if ( target.IsNPC() && target.CanBeGroundExecuted() )
 		target.TakeDamage( target.GetHealth(), player, player, { scriptType = DF_RAGDOLL | meleeWeapon.GetWeaponDamageFlags(), damageType = DMG_MELEE_ATTACK, damageSourceId = damageSource, origin = traceResult.position, force = Vector( 0, 0, 0 ) } )
@@ -511,28 +481,10 @@ bool function AttemptHumanMeleeExecution( entity player, entity syncedTarget, en
 
 void function PlayerTriesSyncedMelee_FallbackToHumanMeleeAttack( entity player, entity target, entity meleeWeapon, table traceResult )
 {
-#if SERVER
-		print( "SERVER: PlayerTriesSyncedMelee_FallbackToHumanMeleeAttack() for " + player + "\n" )
-#else
-		print( "CLIENT: PlayerTriesSyncedMelee_FallbackToHumanMeleeAttack() for " + player + "\n" )
-#endif
 	if ( !PlayerTriesSyncedMelee( player, target ) )
 	{
 #if SERVER
-		print( "SERVER: PlayerTriesSyncedMelee() for " + player + " failed\n" )
-#else
-		print( "CLIENT: PlayerTriesSyncedMelee() for " + player + " failed\n" )
-#endif
-#if SERVER
 		HumanMeleeAttack_DoImpact( player, meleeWeapon, traceResult )
-#endif
-	}
-	else
-	{
-#if SERVER
-		print( "SERVER: PlayerTriesSyncedMelee() for " + player + " succeeded\n" )
-#else
-		print( "CLIENT: PlayerTriesSyncedMelee() for " + player + " succeeded\n" )
 #endif
 	}
 }
