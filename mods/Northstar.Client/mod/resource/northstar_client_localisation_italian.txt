@@ -20,7 +20,7 @@ Premi Sì se sei d'accordo. Questa scelta può essere modificata in qualsiasi mo
 		"DIALOG_AUTHENTICATING_MASTERSERVER", "Autenticazione Sul Master Server in corso"
 		"AUTHENTICATIONAGREEMENT_NO", "Hai Scelto di non autenticarti con Northstar. Puoi vedere l'Accordo nel Menu delle Mods"
 
-		"MENU_TITLE_SERVER_BROWSER" "Server Browser"
+		"MENU_TITLE_SERVER_BROWSER" "Lista dei Server"
 		"NS_SERVERBROWSER_NOSERVERS" "Nessun server trovato"
 		"NS_SERVERBROWSER_UNKNOWNMODE", "Modalità Sconosciuta"
 		"NS_SERVERBROWSER_WAITINGFORSERVERS" "In attesa dei server..."
