@@ -1,0 +1,538 @@
+untyped
+
+global function MeleeHumanShared_Init
+
+global function HumanUnsyncedMelee
+global function HumanMeleeAttack
+
+function MeleeHumanShared_Init()
+{
+	PrecacheParticleSystem( $"P_melee_player" )
+	RegisterSignal( "StopSlowMoMelee" )
+	RegisterSignal( "StopHighlightValidMeleeEnemy" )
+}
+
+function HumanUnsyncedMelee( entity player, bool movestunBlocked )
+{
+	entity activeWeapon = player.GetActiveWeapon()
+	if ( !IsValid( activeWeapon ) )
+	{
+#if SERVER
+		print( "SERVER: " + player + " has no valid active weapon\n" )
+#else
+		print( "CLIENT: " + player + " has no valid active weapon\n" )
+#endif
+		return
+	}
+
+	entity meleeWeapon = player.GetMeleeWeapon()
+	if ( !IsValid( meleeWeapon ) )
+	{
+#if SERVER
+		print( "SERVER: " + player + " has no valid melee weapon\n" )
+#else
+		print( "CLIENT: " + player + " has no valid melee weapon\n" )
+#endif
+		return
+	}
+
+	local meleeAttackType = PLAYER_MELEE_STATE_HUMAN_KICK_ATTACK
+	if ( activeWeapon.GetWeaponClassName() == "mp_weapon_dash_melee" )
+		meleeAttackType = PLAYER_MELEE_STATE_HUMAN_EVISCERATE_ATTACK
+
+	player.PlayerMelee_StartAttack( meleeAttackType )
+
+	if ( player.PlayerMelee_GetState() == PLAYER_MELEE_STATE_HUMAN_EVISCERATE_ATTACK )
+	{
+		vector lungeTargetPos = (player.GetOrigin() + (player.GetViewVector() * 300))
+		player.Lunge_SetTargetPosition( lungeTargetPos )
+		player.Lunge_EnableFlying()
+	}
+	else
+	{
+		entity lungeTarget = GetLungeTargetForPlayer( player )
+		if ( IsAlive( lungeTarget ) )
+		{
+			if ( !movestunBlocked )
+			{
+#if SERVER
+				print( "SERVER: " + player + " is calling Lunge_SetTargetEntity() from HumanUnsyncedMelee()\n" )
+#else
+				print( "CLIENT: " + player + " is calling Lunge_SetTargetEntity() from HumanUnsyncedMelee()\n" )
+#endif
+				if ( player.Lunge_SetTargetEntity( lungeTarget, true ) )
+				{
+					if ( lungeTarget.IsTitan() )
+					{
+						player.Lunge_EnableFlying()
+						vector oldOffset = player.Lunge_GetEndPositionOffset()
+						player.Lunge_SetEndPositionOffset( oldOffset + <0, 0, 128> )
+					}
+					else
+					{
+						if ( player.IsOnGround() )
+							player.Lunge_LockPitch( true )
+					}
+				}
+			}
+		}
+#if SERVER
+		// if we don't lunge at anything stop slowmo
+		else if ( IsSingleplayer() && PROTO_IsSlowMoWeapon( meleeWeapon ) )
+		{
+			player.Signal( "StopSlowMoMelee" )
+		}
+#endif // #if SERVER
+	}
+
+#if SERVER
+	meleeWeapon.EmitWeaponNpcSound_DontUpdateLastFiredTime( 200, 0.2 )
+#endif // #if SERVER
+
+	//player.Weapon_StartCustomActivity( meleeActivity1p, false )
+	player.SetSelectedOffhandToMelee()
+}
+
+function DoReactionForTitanHit( entity player, entity titan )
+{
+#if SERVER
+	print( "SERVER: " + player + " is calling Lunge_SetTargetEntity() from DoReactionForTitanHit()\n" )
+#else
+	print( "CLIENT: " + player + " is calling Lunge_SetTargetEntity() from DoReactionForTitanHit()\n" )
+#endif
+	player.Lunge_SetTargetEntity( titan, true )
+	if ( player.Lunge_IsLungingToEntity() )
+		player.Lunge_EnableFlying()
+
+	vector titanCenter = titan.EyePosition()
+	vector delta = (player.EyePosition() - titanCenter)
+	vector dir = Normalize( delta )
+	player.Lunge_SetEndPositionOffset( dir * 350 )
+}
+
+function HumanMeleeAttack( entity player )
+{
+	if ( player.IsPhaseShifted() )
+		return
+	if ( player.PlayerMelee_GetAttackHitEntity() )
+		return
+	if ( IsInExecutionMeleeState( player ) )
+		return
+
+	entity meleeWeapon = player.GetMeleeWeapon()
+	float attackRange = meleeWeapon.GetMeleeAttackRange()
+
+	if ( player.Lunge_IsGroundExecute() )
+		attackRange = 150
+
+#if SERVER
+	print( "SERVER: " + player + " is calling PlayerMelee_AttackTrace() from HumanMeleeAttack()\n" )
+#else
+	print( "CLIENT: " + player + " is calling PlayerMelee_AttackTrace() from HumanMeleeAttack()\n" )
+#endif
+	table traceResult = PlayerMelee_AttackTrace( player, attackRange, CodeCallback_IsValidMeleeAttackTarget )
+
+	entity hitEnt = expect entity( traceResult.ent )
+	if ( !IsValid( hitEnt )  )
+	{
+#if SERVER
+		print( "SERVER: " + player + " call to PlayerMelee_AttackTrace() did NOT hit\n" )
+#else
+		print( "CLIENT: " + player + " call to PlayerMelee_AttackTrace() did NOT hit\n" )
+#endif
+		return
+	}
+
+#if SERVER
+	print( "SERVER: " + player + " call to PlayerMelee_AttackTrace() hit " + hitEnt + "\n" )
+#else
+	print( "CLIENT: " + player + " call to PlayerMelee_AttackTrace() hit " + hitEnt + "\n" )
+#endif
+
+	if ( PlayerMelee_IsServerSideEffects() )
+	{
+#if SERVER
+		vector hitNormal = Normalize( traceResult.startPosition - traceResult.position )
+		player.DispatchImpactEffects( hitEnt, traceResult.startPosition, traceResult.position, hitNormal, traceResult.surfaceProp, traceResult.staticPropIndex, traceResult.damageType, meleeWeapon.GetImpactTableIndex(), player, traceResult.impactEffectFlags | IEF_SERVER_SIDE_EFFECT )
+#endif
+	}
+	else
+	{
+		vector hitNormal = Normalize( traceResult.startPosition - traceResult.position )
+		player.DispatchImpactEffects( hitEnt, traceResult.startPosition, traceResult.position, hitNormal, traceResult.surfaceProp, traceResult.staticPropIndex, traceResult.damageType, meleeWeapon.GetImpactTableIndex(), player, traceResult.impactEffectFlags )
+	}
+
+	player.PlayerMelee_SetAttackHitEntity( hitEnt )
+	if ( !hitEnt.IsWorld() )
+		player.PlayerMelee_SetAttackRecoveryShouldBeQuick( true )
+
+	if ( hitEnt.IsTitan() )
+		DoReactionForTitanHit( player, hitEnt )
+
+	if ( hitEnt.IsBreakableGlass() )
+	{
+#if SERVER
+		hitEnt.BreakSphere( traceResult.position, 50 )
+#endif // #if SERVER
+	}
+	else
+	{
+		if ( player.IsInputCommandHeld( IN_MELEE ) && AttemptHumanMeleeExecution( player, hitEnt, meleeWeapon, traceResult ) )
+			return
+
+#if CLIENT
+		//MeleeImpactFX( player, meleeWeapon, hitEnt )
+#else
+		HumanMeleeAttack_DoImpact( player, meleeWeapon, traceResult )
+#endif
+		const float SCALE_WHEN_ENEMY = 1.0
+		const float SCALE_WHEN_NOT_ENEMY = 0.5
+		float severityScale = IsEnemyTeam( player.GetTeam(), hitEnt.GetTeam() ) ? SCALE_WHEN_ENEMY : SCALE_WHEN_NOT_ENEMY
+		meleeWeapon.DoMeleeHitConfirmation( severityScale )
+	}
+}
+
+#if 0 //CLIENT
+function MeleeImpactFX( entity player, entity meleeWeapon, entity target )
+{
+	if ( !target.IsWorld() )
+	{
+		entity cockpit = player.GetCockpit()
+		if ( IsValid( cockpit ) )
+			StartParticleEffectOnEntity( cockpit, GetParticleSystemIndex( $"P_melee_player" ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 ) //P_MFD works well too
+	}
+}
+#endif // CLIENT
+
+#if SERVER
+function HumanMeleeAttack_DoImpact( entity player, entity meleeWeapon, traceResult )
+{
+	local angles = player.EyeAngles()
+	entity target = expect entity( traceResult.ent )
+	player.PlayerMelee_SetAttackHitEntity( target )
+
+	string weaponName = meleeWeapon.GetWeaponClassName()
+	local damageSource = eDamageSourceId[weaponName]
+	int damageAmount = GetDamageAmountForTarget( meleeWeapon, target )
+
+	if ( IsHumanSized( target ) )
+	{
+		if ( target.IsPlayer() ) //Strip away rodeo protection
+		{
+			entity titanBeingRodeoed = GetTitanBeingRodeoed( target )
+			if ( IsValid( titanBeingRodeoed ) )
+				TakeAwayFriendlyRodeoPlayerProtection( titanBeingRodeoed )
+		}
+
+		// ??
+		target.SetContinueAnimatingAfterRagdoll( true )
+	}
+
+	vector oldVelocity = target.GetVelocity()
+	vector damageForce = AnglesToForward( angles ) * meleeWeapon.GetWeaponDamageForce()
+
+	print( "SERVER: HumanMeleeAttack_DoImpact() applying damage to " + target + "\n" )
+
+	if ( target.IsNPC() && target.CanBeGroundExecuted() )
+		target.TakeDamage( target.GetHealth(), player, player, { scriptType = DF_RAGDOLL | meleeWeapon.GetWeaponDamageFlags(), damageType = DMG_MELEE_ATTACK, damageSourceId = damageSource, origin = traceResult.position, force = Vector( 0, 0, 0 ) } )
+	else
+		target.TakeDamage( damageAmount, player, player, { scriptType = meleeWeapon.GetWeaponDamageFlags(), damageType = DMG_MELEE_ATTACK, damageSourceId = damageSource, origin = traceResult.position, force = damageForce } )
+
+	// PROTO DEV
+	if ( IsSingleplayer() )
+	{
+		if ( PROTO_ShouldActivateSlowMo( target, meleeWeapon ) )
+		{
+			thread PROTO_SlowMoMelee( player, target, meleeWeapon )
+		}
+	}
+
+	// triggers:
+	{
+		local triggerTraceDir = Normalize( traceResult.position - traceResult.startPosition )
+		player.TraceAttackToTriggers( damageAmount, player, player, { scriptType = meleeWeapon.GetWeaponDamageFlags(), damageType = DMG_MELEE_ATTACK, damageSourceId = damageSource, force = damageForce }, traceResult.startPosition, traceResult.position, triggerTraceDir )
+	}
+
+	if ( target.IsPlayerDecoy() )
+	{
+		player.PlayerMelee_EndAttack()
+	}
+}
+
+int function GetDamageAmountForTarget( entity meleeWeapon, entity target )
+{
+	// special case
+	if ( IsTurret( target ) && IsHumanSized( target ) )
+		return target.GetMaxHealth() + 1
+
+	// default
+	return meleeWeapon.GetDamageAmountForArmorType( target.GetArmorType() )
+}
+
+
+// HACK - testing linked slow mo melee
+void function PROTO_SlowMoMelee( entity player, entity currentEnemy, entity meleeWeapon )
+{
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "StopSlowMoMelee" )
+
+	float duration = 1.75 //1.75
+	float timescale = 0.4
+	float lastKillTimescale = 0.2
+
+	var SlowMoTimeRemaining = player.s.meleeSlowMoEndTime - Time()
+
+	meleeWeapon.SetMods( [ "SlowMoLinked" ] )	// need to switch to the other mod to get the longer lunge range
+
+	// find an enemy close enough that we can melee him next
+	entity nextEnemy = PROTO_GetNextMeleeEnemy( player, meleeWeapon, currentEnemy )
+
+	if ( !IsValid( nextEnemy ) )
+	{
+		meleeWeapon.SetMods( [ "SlowMo" ] )
+		if ( SlowMoTimeRemaining > 0 )
+		{
+			// do extra slowdown for the last kill in a linked slow-mo melee chain.
+			ServerCommand( "host_timescale " + string( lastKillTimescale ) )
+			wait 0.2
+			player.Signal( "StopSlowMoMelee" ) // this will also end this thread
+		}
+
+		return
+	}
+
+	if ( player.s.meleeSlowMoEndTime > Time() )
+	{
+		// if we are already in slow-mo just turn towards the next enemy and extend the duration
+		thread PROTO_TurnViewTowardsClosestEnemy( player, nextEnemy )
+		player.s.meleeSlowMoEndTime = Time() + duration // += duration
+		return
+	}
+
+ 	// require a 5 second cool down between leaving and reentering slow mo.
+ 	if ( SlowMoTimeRemaining > -5 )
+		return
+
+	thread PROTO_TurnViewTowardsClosestEnemy( player, nextEnemy )
+
+	// enter slow mo
+	ServerCommand( "host_timescale " + string( timescale ) )
+	player.s.meleeSlowMoEndTime = Time() + duration
+	meleeWeapon.SetMods( [ "SlowMoLinked" ] )
+
+	float range = meleeWeapon.GetMeleeLungeTargetRange()
+	array<entity> enemyArray = PROTO_GetMeleeEnemiesWithinRange( player.GetOrigin(), player.GetTeam(), range )
+	foreach( enemy in enemyArray )
+		thread PROTO_HighlightValidMeleeEnemy( player, enemy, meleeWeapon )
+
+	player.SetInvulnerable()
+
+	OnThreadEnd(
+		function() : ( player, meleeWeapon )
+		{
+			if ( IsValid( meleeWeapon ) )
+				meleeWeapon.SetMods( [ "SlowMo" ] )
+
+			if ( IsValid( player ) )
+			{
+				player.ClearInvulnerable()
+				player.s.meleeSlowMoEndTime = 0
+			}
+
+			thread PROTO_EaseOutSlowMo()
+		}
+	)
+
+	while( Time() <= player.s.meleeSlowMoEndTime )
+	{
+		var waitTime = player.s.meleeSlowMoEndTime - Time()
+		wait waitTime
+	}
+
+	player.Signal( "StopSlowMoMelee" )
+}
+
+void function PROTO_EaseOutSlowMo()
+{
+	ServerCommand( "host_timescale 0.4" )
+	wait 0.1
+	ServerCommand( "host_timescale 0.7" )
+	wait 0.1
+	ServerCommand( "host_timescale 1.0" )
+}
+
+bool function PROTO_IsSlowMoWeapon( entity meleeWeapon )
+{
+	return 	( meleeWeapon.HasMod( "SlowMo" ) || meleeWeapon.HasMod( "SlowMoLinked" ) )
+}
+
+bool function PROTO_ShouldActivateSlowMo( entity enemy, entity meleeWeapon )
+{
+	if ( !PROTO_IsSlowMoWeapon( meleeWeapon ) )
+		return false
+
+	if ( !IsHumanSized( enemy ) )
+		return false
+
+	return true
+}
+
+void function PROTO_TurnViewTowardsClosestEnemy( entity player, entity nextEnemy )
+{
+	player.EndSignal( "OnDeath" )
+
+	OnThreadEnd(
+		function() : ( player )
+		{
+			if ( IsValid( player ) )
+			{
+				player.ClearParent()
+				player.PlayerCone_Disable()
+			}
+		}
+	)
+
+	// turn player view towards next enemy
+	vector vec = nextEnemy.GetOrigin() - player.GetOrigin()
+	vector newAngles = VectorToAngles( vec )
+
+	entity scriptMover = CreateScriptMover( player.GetOrigin(), player.GetAngles() )
+	player.SetParent( scriptMover )
+
+	player.PlayerCone_SetLerpTime( 0.15 )
+
+	player.PlayerCone_FromAnim()
+	player.PlayerCone_SetMinYaw( -15 )
+	player.PlayerCone_SetMaxYaw( 15 )
+	player.PlayerCone_SetMinPitch( -5 )
+	player.PlayerCone_SetMaxPitch( 15 )
+
+	wait 0.2
+
+	scriptMover.NonPhysicsRotateTo( newAngles, 0.4, 0.2, 0.2 )
+	wait 0.4
+}
+
+entity function PROTO_GetNextMeleeEnemy( entity player, entity meleeWeapon, entity lastEnemy )
+{
+	float range = meleeWeapon.GetMeleeLungeTargetRange()
+	array<entity> enemyArray = PROTO_GetMeleeEnemiesWithinRange( player.GetOrigin(), player.GetTeam(), range )
+	entity nextEnemy = null
+
+	foreach ( enemy in enemyArray  )
+	{
+		float heightDif = enemy.GetOrigin().z - player.GetOrigin().z
+		if ( heightDif < -96 || heightDif > 48 )
+			continue
+
+		float frac = TraceLineSimple( player.EyePosition(), enemy.EyePosition(), enemy )
+		if ( frac < 1 )
+			continue
+
+		if ( enemy == lastEnemy )
+			continue
+
+		nextEnemy = enemy
+		break
+	}
+
+	return nextEnemy
+}
+
+array<entity> function PROTO_GetMeleeEnemiesWithinRange( vector playerOrigin, int playerTeam, float range )
+{
+	array<entity> enemyArray = GetNPCArrayEx( "npc_soldier", TEAM_ANY, playerTeam, playerOrigin, range )
+	enemyArray.extend( GetNPCArrayEx( "npc_spectre", TEAM_ANY, playerTeam, playerOrigin, range ) )
+
+	return enemyArray
+}
+
+void function PROTO_HighlightValidMeleeEnemy( entity player, entity enemy, entity meleeWeapon )
+{
+	enemy.Signal( "StopHighlightValidMeleeEnemy" )
+	enemy.EndSignal( "StopHighlightValidMeleeEnemy" )
+
+	player.EndSignal( "StopSlowMoMelee" )
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+
+	enemy.EndSignal( "OnDestroy" )
+
+	OnThreadEnd(
+		function() : ( enemy )
+		{
+			if ( IsValid( enemy ) )
+				Highlight_ClearEnemyHighlight( enemy )
+		}
+	)
+
+	float range = meleeWeapon.GetMeleeLungeTargetRange()
+	float minDot = AngleToDot( meleeWeapon.GetMeleeLungeTargetAngle() )
+
+	while( true )
+	{
+		vector viewVector = player.GetViewVector()
+		vector enemyVector = enemy.GetCenter() - player.EyePosition()
+		float dist = expect float( enemyVector.Norm() )
+
+		if ( DotProduct( enemyVector, viewVector ) > minDot && dist < range )
+			Highlight_SetEnemyHighlight( enemy, "enemy_sur_base" ) // enemy_sur_base, enemy_sonar, map_scan
+		else
+			Highlight_ClearEnemyHighlight( enemy )
+
+		wait 0.1
+	}
+}
+
+#endif // #if SERVER
+
+bool function AttemptHumanMeleeExecution( entity player, entity syncedTarget, entity meleeWeapon, table traceResult )
+{
+	if ( player.PlayerMelee_GetState() == PLAYER_MELEE_STATE_NONE )
+		return false
+
+	if ( !IsAlive( player ) )
+		return false
+
+	if ( player.IsPhaseShifted() )
+		return false
+
+	if ( !CodeCallback_IsValidMeleeExecutionTarget( player, syncedTarget ) )
+		return false
+
+	#if SERVER
+		player.Anim_StopGesture( 0 )
+	#endif
+
+	thread PlayerTriesSyncedMelee_FallbackToHumanMeleeAttack( player, syncedTarget, meleeWeapon, traceResult )
+	return true
+}
+
+void function PlayerTriesSyncedMelee_FallbackToHumanMeleeAttack( entity player, entity target, entity meleeWeapon, table traceResult )
+{
+#if SERVER
+		print( "SERVER: PlayerTriesSyncedMelee_FallbackToHumanMeleeAttack() for " + player + "\n" )
+#else
+		print( "CLIENT: PlayerTriesSyncedMelee_FallbackToHumanMeleeAttack() for " + player + "\n" )
+#endif
+	if ( !PlayerTriesSyncedMelee( player, target ) )
+	{
+#if SERVER
+		print( "SERVER: PlayerTriesSyncedMelee() for " + player + " failed\n" )
+#else
+		print( "CLIENT: PlayerTriesSyncedMelee() for " + player + " failed\n" )
+#endif
+#if SERVER
+		HumanMeleeAttack_DoImpact( player, meleeWeapon, traceResult )
+#endif
+	}
+	else
+	{
+#if SERVER
+		print( "SERVER: PlayerTriesSyncedMelee() for " + player + " succeeded\n" )
+#else
+		print( "CLIENT: PlayerTriesSyncedMelee() for " + player + " succeeded\n" )
+#endif
+	}
+}
