@@ -1,0 +1,2742 @@
+untyped
+
+global function ClPlayer_Init
+
+global function PlayIt
+global function JumpRandomlyForever
+
+global function ClientCodeCallback_PlayerDidDamage
+global function ClientCodeCallback_PlayerSpawned
+//global function ClientCodeCallback_OnHudReloadScheme
+global function ClientCodeCallback_HUDThink
+global function Player_AddPlayer
+global function Player_AddClient
+global function PlayerConnectedOrDisconnected
+global function ServerCallback_GameModeAnnouncement
+global function MainHud_InitScoreBars
+
+global function ServerCallback_PlayerConnectedOrDisconnected
+global function ClientCodeCallback_PlayerDisconnected
+global function ServerCallback_PlayerChangedTeams
+global function ClientCodeCallback_OnModelChanged
+global function ServerCallback_RodeoerEjectWarning
+global function ServerCallback_PlayScreenFXWarpJump
+global function PlayShieldBreakEffect
+global function PlayShieldActivateEffect
+global function HandleDoomedState
+global function RewardReadyMessage
+global function TitanReadyMessage
+global function CoreReadyMessage
+
+global function ServerCallback_RewardReadyMessage
+global function ServerCallback_TitanReadyMessage
+
+global function OnClientPlayerAlive
+global function OnClientPlayerDying
+global function PlayPlayerDeathSound
+global function StopPlayerDeathSound
+
+global function ServerCallback_ShowNextSpawnMessage
+global function GetWaveSpawnTime
+global function ServerCallback_HideNextSpawnMessage
+
+global function ClientCodeCallback_OnHealthChanged
+global function ClientCodeCallback_OnCrosshairCurrentTargetChanged
+global function Pressed_TitanNextMode
+global function ClientCodeCallback_OnGib
+global function ClientPilotSpawned
+global function AddCallback_OnPlayerDisconnected
+
+global function IsPlayerEliminated
+
+global function ServerCallback_GiveMatchLossProtection
+global function ServerCallback_OnEntityKilled
+global function ServerCallback_OnTitanKilled
+
+global function ShouldShowSpawnAsTitanHint
+global function ServerCallback_SetAssistInformation
+
+global function GetShieldEffectCurrentColor
+global function ClientPlayerClassChanged
+
+#if DEV
+global function BloodSprayDecals_Toggle
+#endif
+
+const float DEFAULT_GAMEMODE_ANNOUNCEMENT_DURATION = 5.0
+
+struct {
+	var orbitalstrike_tracer = null
+	var law_missile_tracer = null
+	float nextSpawnTime = 0.0
+	entity lastEarnedReward // primarily used to check if we should still show the reward message after a delay
+} file
+
+struct BloodDecalParams
+{
+	float traceDist
+	float secondaryTraceDist
+	asset fxType
+	asset secondaryFxType
+}
+
+void function ClPlayer_Init()
+{
+	ClPilotJumpjet_Init()
+	ClDamageIndicator_Init()
+
+	ClPlayer_Common_Precache()
+
+	RegisterSignal( "OnAnimationDone" )
+	RegisterSignal( "OnAnimationInterrupted" )
+	RegisterSignal( "OnBleedingOut" )
+	RegisterSignal( "PanelAlphaOverTime" )
+	RegisterSignal( "LocalClientPlayerRespawned" )
+	RegisterSignal( "OnClientPlayerAlive" )
+	RegisterSignal( "OnClientPlayerDying" )
+	RegisterSignal( "StopAlertCore" )
+	RegisterSignal( "OnSpectatorMode" )
+	RegisterSignal( "HealthChanged" )
+
+	FlagInit( "DamageDistancePrint" )
+	FlagInit( "EnableTitanModeChange", true )
+	FlagInit( "EnableBloodSprayDecals", true )
+
+	level.vduOpen <- false
+	level.canSpawnAsTitan <- false
+	level.grenadeIndicatorEnabled <- true
+	level.clientsLastKiller <- null
+
+	AddCreateCallback( "player", SetupPlayerAnimEvents )
+	AddCreateCallback( "player", MpClientPlayerInit )
+
+	AddCreateCallback( "first_person_proxy", SetupFirstPersonProxyEvents )
+	AddCreateCallback( "predicted_first_person_proxy", SetupFirstPersonProxyEvents )
+
+	AddCreateCallback( "player", EnableDoDeathCallback )
+	AddCreateCallback( "npc_titan", EnableDoDeathCallback )
+
+	AddCreateCallback( "titan_soul", CreateCallback_TitanSoul )
+
+	AddCallback_OnPlayerLifeStateChanged( PlayerADSDof )
+
+	file.orbitalstrike_tracer = PrecacheParticleSystem( $"Rocket_Smoke_Large" )
+	//DEBUG Remove when bug is fixed.
+	file.law_missile_tracer = PrecacheParticleSystem( $"wpn_orbital_rocket_tracer" )
+
+	level.menuHideGroups <- {}
+
+	level.spawnAsTitanSelected <- false
+
+	AddPlayerFunc( Player_AddPlayer )
+}
+
+entity function FindEnemyRodeoParent( entity player )
+{
+	entity ent = player.GetParent()
+	if ( ent == null )
+		return null
+
+	if ( !ent.IsTitan() )
+		return null
+
+	if ( ent == player.GetPetTitan() )
+		return null
+
+	if ( ent.GetTeam() == player.GetTeam() )
+		return null
+
+	return ent
+}
+
+void function MpClientPlayerInit( entity player )
+{
+	player.ClientCommand( "save_enable 0" )
+}
+
+void function ClientCodeCallback_PlayerSpawned( entity player )
+{
+	if ( !IsValid( player ) )
+		return
+
+	if ( IsMenuLevel() )
+		return
+
+	ClearCrosshairPriority( crosshairPriorityLevel.ROUND_WINNING_KILL_REPLAY )
+
+	if ( !level.clientScriptInitialized )
+		return
+
+	// exists on server and client. Clear it when you respawn.
+	ClearRecentDamageHistory( player )
+	DamageHistoryStruct blankDamageHistory
+	clGlobal.lastDamageHistory = blankDamageHistory
+
+	if ( player == GetLocalViewPlayer() )
+	{
+		foreach ( callbackFunc in clGlobal.onLocalViewPlayerSpawnedCallbacks )
+		{
+			callbackFunc( player )
+		}
+	}
+
+	if ( player == GetLocalClientPlayer() )
+	{
+		player.cv.lastSpawnTime = Time()
+		player.cv.roundSpawnCount++
+
+		foreach ( callbackFunc in clGlobal.onLocalClientPlayerSpawnedCallbacks )
+		{
+			thread callbackFunc( player )
+		}
+	}
+
+	if ( player.IsTitan() )
+		return
+
+	if ( player.GetPlayerClass() == level.pilotClass )
+	{
+		thread ClientPilotSpawned( player )
+	}
+}
+
+
+void function ServerCallback_TitanReadyMessage()
+{
+	//thread TitanReadyMessage( 1.5, false ) //Delay was necessary at some point in time according to Brent, might no longer be true?
+	thread TitanReadyMessage( 0.0, false )
+}
+
+
+void function ServerCallback_RewardReadyMessage( float timeSinceLastRespawn )
+{
+	if ( timeSinceLastRespawn < 1.0 )
+		thread RewardReadyMessage( 6.0, false )
+	else
+		thread RewardReadyMessage( 0.0, false )
+}
+
+
+void function RewardReadyMessage( float delay = 0.0, bool isQuick = false )
+{
+	if ( delay > 0.0 )
+		wait delay
+
+	if ( !GamePlayingOrSuddenDeath() )
+		return
+
+	entity player = GetLocalClientPlayer()
+	if ( !IsAlive( player ) || IsSpectating() || IsWatchingKillReplay() )
+		return
+
+	if ( player.ContextAction_IsMeleeExecution() )
+		return
+
+	entity weapon = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+	if ( !IsValid( weapon ) )
+		return
+
+	file.lastEarnedReward = weapon
+
+	if ( player.IsTitan() )
+	{
+		EmitSoundOnEntity( player, "HUD_Boost_Card_Earned_1P" )
+
+		string rewardReadyMessage = expect string( GetWeaponInfoFileKeyField_WithMods_Global( weapon.GetWeaponClassName(), weapon.GetMods(), "readymessage" ) )
+		string rewardReadyHint = expect string( GetWeaponInfoFileKeyField_WithMods_Global( weapon.GetWeaponClassName(), weapon.GetMods(), "readyhint" ) )
+		asset rewardIcon = GetWeaponInfoFileKeyFieldAsset_WithMods_Global( weapon.GetWeaponClassName(), weapon.GetMods(), "hud_icon" )
+
+		AnnouncementData announcement = CreateAnnouncementMessageQuick( player, rewardReadyMessage, rewardReadyHint, <1, 0.5, 0>, rewardIcon )
+		announcement.displayConditionCallback = LastEarnedRewardStillValid
+		AnnouncementFromClass( player, announcement )
+	}
+	else
+	{
+		EmitSoundOnEntity( player, "HUD_Boost_Card_Earned_1P" )
+
+		string rewardReadyMessage = expect string( GetWeaponInfoFileKeyField_WithMods_Global( weapon.GetWeaponClassName(), weapon.GetMods(), "readymessage" ) )
+		string rewardReadyHint = expect string( GetWeaponInfoFileKeyField_WithMods_Global( weapon.GetWeaponClassName(), weapon.GetMods(), "readyhint" ) )
+		asset rewardIcon = GetWeaponInfoFileKeyFieldAsset_WithMods_Global( weapon.GetWeaponClassName(), weapon.GetMods(), "hud_icon" )
+
+		AnnouncementData announcement = CreateAnnouncementMessageQuick( player, rewardReadyMessage, rewardReadyHint, <1, 0.5, 0>, rewardIcon )
+		announcement.displayConditionCallback = LastEarnedRewardStillValid
+		AnnouncementFromClass( player, announcement )
+	}
+}
+
+void function TitanReadyMessage( float delay = 0.0, bool isQuick = false )
+{
+	if ( delay > 0.0 )
+		wait delay
+
+	if ( !GamePlayingOrSuddenDeath() )
+		return
+
+	entity player = GetLocalClientPlayer()
+	if ( !IsAlive( player ) || IsSpectating() || IsWatchingKillReplay() )
+		return
+
+	if ( player.ContextAction_IsMeleeExecution() )
+		return
+
+	if ( Riff_TitanAvailability() == eTitanAvailability.Never )
+		return
+
+	if ( !IsTitanAvailable( player ) &&
+					(Riff_TitanAvailability() == eTitanAvailability.Custom)
+			)
+		return
+
+	int loadoutIndex = GetPersistentSpawnLoadoutIndex( player, "titan" )
+	TitanLoadoutDef loadout = GetTitanLoadoutFromPersistentData( player, loadoutIndex )
+
+	string titanReadyMessage = GetTitanReadyMessageFromSetFile( loadout.setFile )
+	string titanReadyHint = GetTitanReadyHintFromSetFile( loadout.setFile )
+
+	AnnouncementData announcement = CreateAnnouncementMessageQuick( player, titanReadyMessage, titanReadyHint, TEAM_COLOR_YOU, $"rui/hud/titanfall_marker_arrow_ready" )
+	announcement.displayConditionCallback = ConditionNoTitan
+	AnnouncementFromClass( player, announcement )
+
+	#if FACTION_DIALOGUE_ENABLED
+		if ( !isQuick || CoinFlip() )
+			PlayFactionDialogueOnLocalClientPlayer( "mp_titanReady" ) //Playing here as opposed to on the server since delay is normally not 0
+	#endif
+
+	if ( PlayerEarnMeter_GetMode( player ) == eEarnMeterMode.DEFAULT ) //Help stop spamming "Your Titan is Ready"
+	{
+		Cl_EarnMeter_SetLastHintTime( Time() )
+	}
+}
+
+
+function CoreReadyMessage( entity player, bool isQuick = false )
+{
+	if ( !GamePlayingOrSuddenDeath() )
+		return
+
+	if ( !IsAlive( player ) )
+		return
+
+	if ( GetDoomedState( player ) )
+		return
+
+	if ( !player.IsTitan() )
+		return
+
+	entity weapon = player.GetOffhandWeapon( OFFHAND_EQUIPMENT )
+
+	string coreOnlineMessage = expect string( weapon.GetWeaponInfoFileKeyField( "readymessage" ) )
+	string coreOnlineHint = expect string( weapon.GetWeaponInfoFileKeyField( "readyhint" ) )
+
+	if ( isQuick )
+	{
+		AnnouncementData announcement = CreateAnnouncementMessageQuick( player, coreOnlineMessage, coreOnlineHint, TEAM_COLOR_YOU )
+		announcement.displayConditionCallback = ConditionPlayerIsTitan
+		AnnouncementFromClass( player, announcement )
+	}
+	else
+	{
+		AnnouncementData announcement = CreateAnnouncementMessage( player, coreOnlineMessage, coreOnlineHint, TEAM_COLOR_YOU )
+		announcement.displayConditionCallback = ConditionPlayerIsTitan
+		announcement.subText = coreOnlineHint
+		AnnouncementFromClass( player, announcement )
+	}
+}
+
+
+bool function ConditionPlayerIsTitan()
+{
+	entity player = GetLocalClientPlayer()
+	if ( !IsAlive( player ) )
+		return false
+
+	return player.IsTitan()
+}
+
+
+bool function ConditionPlayerIsNotTitan()
+{
+	entity player = GetLocalClientPlayer()
+	if ( !IsAlive( player ) )
+		return false
+
+	return !player.IsTitan()
+}
+
+bool function LastEarnedRewardStillValid()
+{
+	entity player = GetLocalClientPlayer()
+	if ( !IsAlive( player ) )
+		return false
+
+	entity weapon = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+	if ( !IsValid( weapon ) )
+		return false
+
+	return weapon == file.lastEarnedReward
+}
+
+
+bool function ConditionNoTitan()
+{
+	entity player = GetLocalClientPlayer()
+	if ( !IsAlive( player ) )
+		return false
+
+	if ( IsValid( player.GetPetTitan() ) )
+		return false
+
+	return !player.IsTitan()
+}
+
+
+function ClientPilotSpawned( entity player )
+{
+	player.EndSignal( "SettingsChanged" )
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "OnDeath" )
+
+	if ( (player != GetLocalViewPlayer()) )
+		//Turning off for the time being since the front rodeo spot leaves persistent jumpjets in the face of the TItan
+		thread ParentedPlayerJets( player )
+}
+
+void function Player_AddClient( entity player )
+{
+	if ( GetCurrentPlaylistVarInt( "titan_mode_change_allowed", 1 ) )
+		RegisterConCommandTriggeredCallback( "+scriptCommand2", Pressed_TitanNextMode )
+
+	RegisterConCommandTriggeredCallback( "+scriptCommand2", Pressed_RequestTitanfall )
+	RegisterConCommandTriggeredCallback( "+scriptCommand2", Pressed_ActivateMobilityGhost )
+
+	RegisterConCommandTriggeredCallback( "+use", Pressed_OfferRodeoBattery )
+	RegisterConCommandTriggeredCallback( "+use", Pressed_RequestRodeoBattery )
+	RegisterConCommandTriggeredCallback( "+useandreload", Pressed_OfferRodeoBattery )
+	RegisterConCommandTriggeredCallback( "+useandreload", Pressed_RequestRodeoBattery )
+
+	#if MP
+	RegisterConCommandTriggeredCallback( "+use", Pressed_TryNukeGrenade )
+	RegisterConCommandTriggeredCallback( "-use", Released_TryNukeGrenade )
+	RegisterConCommandTriggeredCallback( "+useandreload", Pressed_TryNukeGrenade )
+	RegisterConCommandTriggeredCallback( "-useandreload", Released_TryNukeGrenade )
+	#endif
+
+	Create_DamageIndicatorHUD()
+
+	if ( !IsLobby() )
+	{
+		player.EnableHealthChangedCallback()
+
+		player.cv.deathTime <- 0.0
+		player.cv.lastSpawnTime <- 0.0
+		player.cv.deathOrigin <- <0.0, 0.0, 0.0>
+		player.cv.roundSpawnCount <- 0
+
+		thread CinematicIntroScreen()
+	}
+}
+
+void function Player_AddPlayer( entity player )
+{
+	player.s.weaponUpdateData <- {}
+
+	player.s.trackedAttackers <- {} // for titans
+	player.classChanged = true
+}
+
+function Pressed_RequestTitanfall( entity player )
+{
+	if ( !IsTitanAvailable( player ) )
+		return
+
+	#if DEV
+		printt( player.GetEntIndex(), "Requested replacement Titan from eye pos " + player.EyePosition() + " view angles " + player.EyeAngles() + " player origin " + player.GetOrigin() + " map " + GetMapName() )
+	#endif
+
+	player.ClientCommand( "ClientCommand_RequestTitan" ) //Send client command regardless of whether we can call the titan in or not. Server decides
+	Rumble_Play( "rumble_titanfall_request", {} )
+
+	//
+	//if ( player.cv.announcementActive && player.cv.announcementActive.messageText == "#HUD_TITAN_READY" )
+	//{
+	//	clGlobal.levelEnt.Signal( "AnnoucementPurge" )
+	//}
+	//
+	////PlayMusic( "Music_FR_Militia_TitanFall1" )
+	//EmitSoundOnEntity( player, "titan_callin" )
+	//return
+	//}
+}
+
+function Pressed_TitanNextMode( entity player )
+{
+	if ( player.IsTitan() )
+		return
+
+	if ( IsWatchingReplay() )
+		return
+
+	if ( !IsAlive( player ) )
+		return
+
+	if ( player.IsPhaseShifted() )
+		return
+
+	if ( !IsAlive( player.GetPetTitan() ) )
+		return
+
+	if ( !Flag( "EnableTitanModeChange" ) )
+		return
+
+	// cannot change modes while titan is incoming
+	if ( player.GetHotDropImpactTime() )
+		return
+
+	player.ClientCommand( "TitanNextMode" )
+
+	local newMode = player.GetPetTitanMode() + 1
+	if ( newMode == eNPCTitanMode.MODE_COUNT )
+		newMode = eNPCTitanMode.FOLLOW
+
+	SetAutoTitanModeHudIndicator( player, newMode )
+
+	local guardModeAlias = GenerateTitanOSAlias( player, AUTO_TITAN_GUARD_MODE_DIAG_SUFFIX )
+	local followModeAlias = GenerateTitanOSAlias( player, AUTO_TITAN_FOLLOW_MODE_DIAG_SUFFIX )
+
+	// prevent the sounds from stomping each other if button is pressed rapidly
+	StopSoundOnEntity( player, guardModeAlias )
+	StopSoundOnEntity( player, AUTO_TITAN_GUARD_MODE_SOUND )
+	StopSoundOnEntity( player, followModeAlias )
+	StopSoundOnEntity( player, AUTO_TITAN_FOLLOW_MODE_SOUND )
+
+	if ( newMode == eNPCTitanMode.FOLLOW )
+	{
+		EmitSoundOnEntity( player, followModeAlias )
+		EmitSoundOnEntity( player, AUTO_TITAN_FOLLOW_MODE_SOUND )
+	}
+	else if ( newMode == eNPCTitanMode.STAY )
+	{
+		EmitSoundOnEntity( player, guardModeAlias )
+		EmitSoundOnEntity( player, AUTO_TITAN_GUARD_MODE_SOUND )
+	}
+}
+
+/*
+void function ClientCodeCallback_OnHudReloadScheme()
+{
+}
+*/
+
+void function ClientCodeCallback_HUDThink()
+{
+	PerfStart( PerfIndexClient.ClientCodeCallback_HUDThink )
+
+	entity player = GetLocalViewPlayer()
+
+	if ( !player.p.playerScriptsInitialized )
+	{
+		PerfEnd( PerfIndexClient.ClientCodeCallback_HUDThink )
+		return
+	}
+
+	if ( !IsMenuLevel() )
+	{
+		PerfStart( PerfIndexClient.ClientCodeCallback_HUDThink_4 )
+
+		ClGameState_Think()
+		PerfEnd( PerfIndexClient.ClientCodeCallback_HUDThink_4 )
+
+		PerfStart( PerfIndexClient.ClientCodeCallback_HUDThink_5 )
+		UpdateVoiceHUD()
+		#if PC_PROG
+			UpdateChatHUDVisibility()
+		#endif // PC_PROG
+		PerfEnd( PerfIndexClient.ClientCodeCallback_HUDThink_5 )
+
+		UpdateScreenFade()
+
+		entity clientPlayer = GetLocalClientPlayer()
+		if ( !IsWatchingKillReplay() && clientPlayer.classChanged )
+		{
+			ClientPlayerClassChanged( clientPlayer, clientPlayer.GetPlayerClass() )
+		}
+
+		PerfStart( PerfIndexClient.ClientCodeCallback_HUDThink_6 )
+		SmartAmmo_LockedOntoWarningHUD_Update()
+		WeaponFlyoutThink( player )
+		PerfEnd( PerfIndexClient.ClientCodeCallback_HUDThink_6 )
+	}
+
+	PerfEnd( PerfIndexClient.ClientCodeCallback_HUDThink )
+}
+
+function ClientPlayerClassChanged( entity player, newClass )
+{
+	//printl( "ClientPlayerClassChanged to " + player.GetPlayerClass() )
+	player.classChanged = false
+
+	level.vduOpen = false // vdu goes away when class changes
+
+	Assert( !IsServer() )
+	Assert( newClass, "No class " )
+
+	switch ( newClass )
+	{
+		case "titan":
+			SetStandardAbilityBindingsForTitan( player )
+			SetAbilityBinding( player, 6, "+offhand4", "-offhand4" )	// "+ability 6"
+
+			LinkButtonPair( -1, -1, -1 )
+			break
+
+		case level.pilotClass:
+			SetStandardAbilityBindingsForPilot( player )
+			SetAbilityBinding( player, 6, "+offhand4", "-offhand4" )	// "+ability 6"
+
+			LinkButtonPair( IN_OFFHAND0, IN_OFFHAND1, IN_OFFHAND3 )
+
+			if ( clGlobal.isAnnouncementActive && (clGlobal.activeAnnouncement.messageText == "#HUD_CORE_ONLINE_STRYDER" ||
+							clGlobal.activeAnnouncement.messageText == "#HUD_CORE_ONLINE_ATLAS" ||
+							clGlobal.activeAnnouncement.messageText == "#HUD_CORE_ONLINE_OGRE" ) )
+			{
+				clGlobal.levelEnt.Signal( "AnnoucementPurge" )
+			}
+			break
+
+		case "spectator":
+			LinkButtonPair( -1, -1, -1 )
+			break
+
+		default:
+			Assert( 0, "Unknown class " + newClass )
+	}
+
+	PlayActionMusic()
+}
+
+function ShouldShowSpawnAsTitanHint( entity player )
+{
+	if ( Time() - player.cv.deathTime < GetRespawnButtonCamTime( player ) )
+		return false
+
+	if ( GetGameState() < eGameState.Playing )
+		return false
+
+	if ( GetGameState() == eGameState.SwitchingSides )
+		return false
+
+	return !IsPlayerEliminated( player )
+}
+
+function ServerCallback_PlayerChangedTeams( player_eHandle, oldTeam, newTeam )
+{
+	entity player = GetEntityFromEncodedEHandle( player_eHandle )
+	if ( player == null )
+		return
+	Assert( oldTeam != null )
+	Assert( newTeam != null )
+
+	string playerName = player.GetPlayerNameWithClanTag()
+	vector playerNameColor = OBITUARY_COLOR_ENEMY
+	string teamString = "ENEMY"
+	if ( newTeam == GetLocalViewPlayer().GetTeam() )
+	{
+		playerNameColor = OBITUARY_COLOR_FRIENDLY
+		teamString = "FRIENDLY"
+	}
+
+	Obituary_Print( playerName, "CHANGED TEAMS TO", teamString, playerNameColor, OBITUARY_COLOR_WEAPON, playerNameColor )
+	//"Switching " + player.GetPlayerNameWithClanTag() + " from " + GetTeamStr( team1 ) + " to " + GetTeamStr( team2 )
+}
+
+function ServerCallback_PlayerConnectedOrDisconnected( player_eHandle, state )
+{
+	entity player = GetEntityFromEncodedEHandle( player_eHandle )
+	PlayerConnectedOrDisconnected( player, state )
+
+	if ( !IsLobby() || !IsConnected() )
+		UpdatePlayerStatusCounts()
+}
+
+void function AddCallback_OnPlayerDisconnected( void functionref( entity ) callbackFunc )
+{
+	Assert( !clGlobal.onPlayerDisconnectedFuncs.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnPlayerDisconnected" )
+
+	clGlobal.onPlayerDisconnectedFuncs.append( callbackFunc )
+}
+
+void function ClientCodeCallback_PlayerDisconnected( entity player, string cachedPlayerName )
+{
+	PlayerConnectedOrDisconnected( player, 0, cachedPlayerName )
+
+	if ( ShouldUpdatePlayerStatusCounts() )
+		UpdatePlayerStatusCounts()
+
+	// Added via AddCallback_OnPlayerDisconnected
+	foreach ( callbackFunc in clGlobal.onPlayerDisconnectedFuncs )
+	{
+		callbackFunc( player )
+	}
+}
+
+function ShouldUpdatePlayerStatusCounts()
+{
+	if ( GetGameState() < eGameState.WaitingForPlayers )
+		return false
+
+	if ( !IsLobby() )
+		return true
+
+	if ( !IsConnected() )
+		return true
+
+	return false
+}
+
+function PlayerConnectedOrDisconnected( entity player, state, string disconnectingPlayerName = "" )
+{
+	if ( IsLobby() || GetMapName() == "" )
+		// HACK: If you are disconnecting GetMapName() in IsLobby() will return ""
+		return
+
+	if ( !IsValid( player ) )
+		return
+
+	Assert( state == 0 || state == 1 )
+
+	if ( !IsValid( GetLocalViewPlayer() ) )
+		return
+
+	string playerName
+	if ( state == 0 )
+	{
+		if ( disconnectingPlayerName == "" )
+			return
+
+		playerName = disconnectingPlayerName
+		Assert( typeof( playerName ) == "string" )
+	}
+	else
+	{
+		playerName = player.GetPlayerNameWithClanTag()
+		Assert( typeof( playerName ) == "string" )
+	}
+
+	vector playerNameColor = player.GetTeam() == GetLocalViewPlayer().GetTeam() ? OBITUARY_COLOR_FRIENDLY : OBITUARY_COLOR_ENEMY
+	string connectionString = (state == 0) ? "#MP_PLAYER_DISCONNECTED" : "#MP_PLAYER_CONNECTED"
+
+	Obituary_Print_Generic( connectionString, playerName, <255, 255, 255>, playerNameColor )
+}
+
+void function ClientCodeCallback_PlayerDidDamage( PlayerDidDamageParams params )
+{
+	if ( IsWatchingThirdPersonKillReplay() )
+		return
+
+	entity attacker = GetLocalViewPlayer()
+	if ( !IsValid( attacker ) )
+		return
+
+	entity victim = params.victim
+	if ( !IsValid( victim ) )
+		return
+
+	vector damagePosition = params.damagePosition
+	int hitBox = params.hitBox
+	int damageType = params.damageType
+	float damageAmount = params.damageAmount
+	int damageFlags = params.damageFlags
+	int hitGroup = params.hitGroup
+	entity weapon = params.weapon
+	float distanceFromAttackOrigin = params.distanceFromAttackOrigin
+
+	bool playHitSound = true
+	bool showCrosshairHitIndicator = true
+	bool hitIneffective = false
+	bool victimIsHeavyArmor = false
+	bool isCritShot = (damageType & DF_CRITICAL) ? true : false
+	bool isHeadShot = (damageType & DF_HEADSHOT) ? true : false
+	bool isKillShot = (damageType & DF_KILLSHOT) ? true : false
+	bool isMelee = (damageType & DF_MELEE) ? true : false
+	bool isExplosion = (damageType & DF_EXPLOSION) ? true : false
+	bool isBullet = (damageType & DF_BULLET) ? true : false
+	bool isShotgun = (damageType & DF_SHOTGUN) ? true : false
+	bool isDoomFatality = (damageType & DF_DOOM_FATALITY) ? true : false
+	bool isDoomProtected = ((damageType & DF_DOOM_PROTECTED) && !isDoomFatality) ? true : false
+	victimIsHeavyArmor = victim.GetArmorType() == ARMOR_TYPE_HEAVY
+
+	isDoomFatality = false
+	isDoomProtected = false
+
+	if ( isDoomProtected )
+		RegisterDoomProtectionHintDamage( damageAmount )
+
+	bool playKillSound = isKillShot
+
+	if ( !attacker.IsTitan() )
+	{
+		if ( victimIsHeavyArmor )
+		{
+			showCrosshairHitIndicator = true
+			if ( victim.IsTitan() )
+				hitIneffective = false //!IsHitEffectiveVsTitan( victim, damageType )
+			else
+				hitIneffective = isCritShot || isHeadShot || !IsHitEffectiveVsNonTitan( victim, damageType )
+		}
+		else
+		{
+			switch ( victim.GetSignifierName() )
+			{
+				case "npc_super_spectre":
+					//if ( !( damageType & DF_CRITICAL ) )
+					//	hitIneffective = true
+
+				default:
+					if ( (damageType & DF_BULLET && damageType & DF_MAX_RANGE) )
+						hitIneffective = true
+					break
+			}
+		}
+	}
+	else
+	{
+		if ( victim.IsTitan() && victim.IsPlayer() )
+		{
+			if ( PlayerHasPassive( victim, ePassives.PAS_BERSERKER ) )
+				hitIneffective = true
+		}
+	}
+
+	if ( damageType & DF_MAX_RANGE && damageType & DF_BULLET )
+		// TODO: this is crap; these damage types should just send DF_NO_HITBEEP
+		playHitSound = false
+
+	if ( damageType & DF_TITAN_STEP )
+		// TODO: this is crap; these damage types should just send DF_NO_HITBEEP
+	{
+		playHitSound = false
+		playKillSound = false
+	}
+
+	if ( damageType & DF_MELEE )
+		// TODO: this is crap; these damage types should just send DF_NO_HITBEEP
+	{
+		playHitSound = false
+		playKillSound = false
+	}
+
+	if ( damageType & DF_NO_HITBEEP )
+	{
+		playHitSound = false
+		playKillSound = false
+	}
+
+	if ( damageFlags & DAMAGEFLAG_VICTIM_HAS_VORTEX )
+		showCrosshairHitIndicator = false
+
+	if ( damageType & DF_SHIELD_DAMAGE )
+	{
+		PlayShieldHitEffect( params )
+		showCrosshairHitIndicator = true
+	}
+	else if ( damageAmount <= 0 )
+	{
+		playHitSound = false
+		playKillSound = false
+		showCrosshairHitIndicator = false
+	}
+
+	if ( damageType & DF_NO_INDICATOR )
+	{
+		playHitSound = false
+		playKillSound = false
+		showCrosshairHitIndicator = false
+	}
+
+	if ( isDoomProtected )
+		playHitSound = false
+
+	if ( showCrosshairHitIndicator )
+	{
+		Tracker_PlayerAttackedTarget( attacker, victim )
+
+		//if ( hitIneffective )
+		//	Crosshair_ShowHitIndicator( CROSSHAIR_HIT_INEFFECTIVE )
+		//else
+		//	Crosshair_ShowHitIndicator( CROSSHAIR_HIT_NORMAL )
+		//
+		//if ( (isCritShot || isDoomFatality) && !isDoomProtected )
+		//	Crosshair_ShowHitIndicator( CROSSHAIR_HIT_CRITICAL )
+		//
+		//if ( isHeadShot )
+		//	Crosshair_ShowHitIndicator( CROSSHAIR_HIT_HEADSHOT )
+
+		if ( IsMultiplayer() && !victim.IsTitan() && !victim.IsHologram() )
+			PROTO_HitIndicatorEffect( attacker, victim, damagePosition, isHeadShot, isKillShot )
+
+		if ( isKillShot )
+			KillShotBloodSpray( attacker, victim, damagePosition, isExplosion, isBullet, isShotgun )
+
+		if ( victim.IsTitan() && isKillShot )
+			ClientScreenShake( 8, 10, 1, Vector( 0, 0, 0 ) )
+
+		BloodSprayDecals( attacker, victim, damagePosition, damageAmount, isHeadShot, isKillShot, isMelee, isExplosion, isBullet, isShotgun )
+
+		DamageFlyout( damageAmount, damagePosition, victim, isHeadShot || isCritShot, hitIneffective )
+	}
+
+	bool playedHitSound = false
+	if ( playHitSound )
+	{
+		if ( isHeadShot )
+			playedHitSound = PlayHeadshotConfirmSound( attacker, victim, isKillShot )
+		else if ( playKillSound )
+			playedHitSound = PlayKillshotConfirmSound( attacker, victim, damageType )
+	}
+
+	if ( IsSpectre( victim ) )
+	{
+		if ( isHeadShot )
+			victim.Signal( "SpectreGlowEYEGLOW" )
+	}
+
+	// Play a hit sound effect if we didn't play a kill shot sound, and other conditions are met
+	if ( playHitSound && IsAlive( victim ) && !playedHitSound )
+	{
+		PlayHitSound( victim, attacker, damageFlags, isCritShot, victimIsHeavyArmor, isKillShot, hitGroup )
+	}
+
+	if ( PlayerHasPassive( attacker, ePassives.PAS_SMART_CORE ) && isKillShot )
+	{
+		attacker.p.smartCoreKills++
+	}
+
+	foreach ( callback in clGlobal.onLocalPlayerDidDamageCallback )
+	{
+		callback( attacker, victim, damagePosition, damageType )
+	}
+}
+
+void function PlayHitSound( entity victim, entity attacker, int damageFlags, bool isCritShot, bool victimIsHeavyArmor, bool isKillShot, int hitGroup )
+{
+	if ( damageFlags & DAMAGEFLAG_VICTIM_INVINCIBLE )
+	{
+		EmitSoundOnEntity( attacker, "Player.HitbeepInvincible" )
+	}
+	else if ( damageFlags & DAMAGEFLAG_VICTIM_HAS_VORTEX )
+	{
+		EmitSoundOnEntity( attacker, "Player.HitbeepVortex" )
+	}
+	else if ( isCritShot && victimIsHeavyArmor )
+	{
+		EmitSoundOnEntity( attacker, "titan_damage_crit" )
+	}
+	else if ( isCritShot )
+	{
+		EmitSoundOnEntity( attacker, "Player.Hitbeep_crit" )
+	}
+	else
+	{
+		EmitSoundOnEntity( attacker, "Player.Hitbeep" )
+	}
+}
+
+function PROTO_HitIndicatorEffect( entity player, entity victim, vector damagePosition, bool isHeadShot, bool isKillShot )
+{
+	int fxId
+	if ( isKillShot )
+		fxId = GetParticleSystemIndex( $"P_ar_impact_pilot_kill" )
+	else if ( isHeadShot && !isKillShot )
+		return
+	//		fxId = GetParticleSystemIndex( $"P_ar_impact_pilot_headshot" )
+	else
+		return
+	//		fxId = GetParticleSystemIndex( $"P_ar_impact_pilot" )
+
+	vector victimVelocity = victim.GetVelocity()
+	damagePosition += (Length( victimVelocity ) * 0.15) * Normalize( victimVelocity )
+	vector fxOffset = damagePosition - victim.GetOrigin()
+	StartParticleEffectOnEntityWithPos( victim, fxId, FX_PATTACH_ABSORIGIN_FOLLOW, -1, damagePosition - victim.GetOrigin(), <0, 0, 0> )
+}
+
+void function KillShotBloodSpray( entity player, entity victim, vector damagePosition, bool isExplosion, bool isBullet, bool isShotgun )
+{
+	if ( IsSoftenedLocale() )
+		return
+
+	if ( !victim.IsHuman() && !IsProwler( victim ) )
+		return
+
+	if ( victim.IsMechanical() )
+		return
+
+	if ( victim.IsHologram() )
+		return
+
+	if ( !isExplosion && !isBullet && !isShotgun )
+		return
+
+	int fxId = GetParticleSystemIndex( FX_KILLSHOT_BLOODSPRAY )
+
+	vector victimVelocity = victim.GetVelocity()
+	damagePosition += (Length( victimVelocity ) * 0.15) * Normalize( victimVelocity )
+	StartParticleEffectOnEntityWithPos( victim, fxId, FX_PATTACH_ABSORIGIN_FOLLOW, -1, damagePosition - victim.GetOrigin(), <0, 0, 0> )
+}
+
+void function BloodSprayDecals( entity player, entity victim, vector damagePosition, float damageAmount, bool isHeadShot, bool isKillShot, bool isMelee, bool isExplosion, bool isBullet, bool isShotgun )
+{
+	if ( IsSoftenedLocale() || !Flag( "EnableBloodSprayDecals" ) )
+		return
+
+	if ( !victim.IsHuman() && !IsProwler( victim ) )
+		return
+
+	if ( victim.IsMechanical() )
+		return
+
+	if ( victim.IsHologram() )
+		return
+
+	if ( !isMelee && !isExplosion && !isBullet && !isShotgun )
+		return
+
+	// in MP, too expensive to do on every shot
+	if ( IsMultiplayer() && !isKillShot )
+		return
+
+	thread BloodSprayDecals_Think( player, victim, damagePosition, damageAmount, isHeadShot, isKillShot, isMelee, isExplosion, isBullet, isShotgun )
+}
+
+void function BloodSprayDecals_Think( entity player, entity victim, vector damagePosition, float damageAmount, bool isHeadShot, bool isKillShot, bool isMelee, bool isExplosion, bool isBullet, bool isShotgun )
+{
+	player.EndSignal( "OnDestroy" )
+	victim.EndSignal( "OnDestroy" )
+
+	BloodDecalParams params = BloodDecal_GetParams( damageAmount, isHeadShot, isKillShot, isMelee, isExplosion, isBullet, isShotgun )
+	float traceDist = params.traceDist
+	float secondaryTraceDist = params.secondaryTraceDist
+	asset fxType = params.fxType
+	asset secondaryFxType = params.secondaryFxType
+
+	int fxId = GetParticleSystemIndex( fxType )
+
+	// PRIMARY TRACES
+	vector traceStart = damagePosition
+	vector traceFwd = player.GetViewVector()
+
+	if ( isExplosion || isMelee )
+	{
+		// for explosion/melee damage, use chest instead of actual damage position
+		int attachID = victim.LookupAttachment( "CHESTFOCUS" )
+		traceStart = victim.GetAttachmentOrigin( attachID )
+
+		if ( isExplosion )
+			traceFwd = AnglesToForward( victim.GetAngles() ) * -1
+	}
+
+	vector traceEnd = damagePosition + (traceFwd * traceDist)
+	//TraceResults traceResult = TraceLine( traceStart, traceEnd, victim, TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE )
+
+	var deferredTrace_primary = DeferredTraceLineHighDetail( traceStart, traceEnd, victim, TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE )
+
+	while( !IsDeferredTraceFinished( deferredTrace_primary ) )
+		WaitFrame()
+
+	TraceResults traceResult = GetDeferredTraceResult( deferredTrace_primary )
+
+	vector primaryTraceEndPos = traceResult.endPos
+	vector primaryTraceNormal = traceResult.surfaceNormal
+	//DebugDrawLine( traceStart, traceEnd, 255, 150, 0, true, 5 )
+	//DebugDrawSphere( primaryTraceEndPos, 8.0, 255, 0, 0, true, 5 )
+
+	bool doGravitySplat = isMelee ? false : true
+
+	if ( traceResult.fraction < 1.0 )
+	{
+		vector normAng = VectorToAngles( traceResult.surfaceNormal )
+		vector fxAng = AnglesCompose( normAng, < 90, 0, 0 > )
+
+		StartParticleEffectInWorld( fxId, primaryTraceEndPos, fxAng )
+		//DebugDrawAngles( endPos, fxAng, 5 )
+	}
+	else if ( doGravitySplat )
+	{
+		// trace behind the guy on the ground and put a decal there
+		float gravitySplatBackTraceDist = 58.0  // how far behind the guy to put the gravity splat
+		float gravitySplatDownTraceDist = 100.0  // max dist vertically to try to trace and put a gravity splat
+		vector groundTraceStartPos = damagePosition + (traceFwd * gravitySplatBackTraceDist)
+		vector groundTraceEndPos = groundTraceStartPos - <0, 0, 100>
+
+		var deferredTrace_gravitySplat = DeferredTraceLineHighDetail( groundTraceStartPos, groundTraceEndPos, victim, TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE )
+
+		while( !IsDeferredTraceFinished( deferredTrace_gravitySplat ) )
+			WaitFrame()
+
+		TraceResults downTraceResult = GetDeferredTraceResult( deferredTrace_gravitySplat )
+
+		if ( downTraceResult.fraction < 1.0 )
+		{
+			//DebugDrawLine( groundTraceStartPos, downTraceResult.endPos, 255, 150, 0, true, 5 )
+			//DebugDrawSphere( downTraceResult.endPos, 4.0, 255, 0, 0, true, 5 )
+
+			vector normAng = VectorToAngles( downTraceResult.surfaceNormal )
+			vector fxAng = AnglesCompose( normAng, < 90, 0, 0 > )
+
+			//DebugDrawAngles( downTraceResult.endPos, fxAng, 5 )
+
+			StartParticleEffectInWorld( fxId, downTraceResult.endPos, fxAng )
+		}
+	}
+
+	// MP doesn't want secondaries, too expensive
+	if ( IsMultiplayer() )
+		return
+
+	// SECONDARY TRACES
+	array<vector> testVecs = []
+	vector tempAng = VectorToAngles( traceFwd )
+
+	if ( isExplosion )
+	{
+		// for explosions, different & more angles for secondary splatter
+		testVecs.append( AnglesToRight( tempAng ) )
+		testVecs.append( AnglesToRight( tempAng ) * -1 )
+		testVecs.append( traceFwd * -1 )
+		testVecs.append( AnglesToUp( tempAng ) )
+		testVecs.append( AnglesToUp( tempAng ) * -1 )
+	}
+	else
+	{
+		// mostly to cover edge cases involving corners
+		vector traceRight = AnglesToRight( tempAng )
+		vector traceLeft = traceRight * -1
+		vector backLeft = (traceFwd + traceLeft) * 0.5
+		vector backRight = (traceFwd + traceRight) * 0.5
+		testVecs.append( backRight )
+		testVecs.append( backLeft )
+
+		// add blood on the ground for these weapons too
+		if ( isBullet || isShotgun )
+			testVecs.append( AnglesToUp( tempAng ) * -1 )
+	}
+
+	if ( !testVecs.len() )
+		return
+
+	array<var> secondaryDeferredTraces = []
+	foreach ( testVec in testVecs )
+	{
+		vector secondaryTraceEnd = traceStart + (testVec * secondaryTraceDist)
+		var secondaryDeferredTrace = DeferredTraceLineHighDetail( traceStart, secondaryTraceEnd, victim, TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE )
+		secondaryDeferredTraces.append( secondaryDeferredTrace )
+	}
+
+	int secondaryFxId = GetParticleSystemIndex( secondaryFxType )
+
+	float startTime = Time()
+	array<var> processedResults = []
+	while ( processedResults.len() < secondaryDeferredTraces.len() )
+	{
+		WaitFrame()
+
+		foreach ( deferredTrace in secondaryDeferredTraces )
+		{
+			if ( processedResults.contains( deferredTrace ) )
+				continue
+
+			if ( !IsDeferredTraceFinished( deferredTrace ) )
+				continue
+
+			processedResults.append( deferredTrace )
+
+			TraceResults traceResult = GetDeferredTraceResult( deferredTrace )
+
+			if ( traceResult.fraction == 1.0 )
+				continue
+
+			// don't put secondaries on the same wall as the primary
+			vector secondaryTraceNormal = traceResult.surfaceNormal
+			if ( primaryTraceNormal == secondaryTraceNormal )
+				continue
+
+			vector normAng = VectorToAngles( secondaryTraceNormal )
+			vector fxAng = AnglesCompose( normAng, < 90, 0, 0 > )
+
+			vector endPos = traceResult.endPos
+			//DebugDrawSphere( endPos, 4.0, 255, 0, 0, true, 5 )
+			StartParticleEffectInWorld( secondaryFxId, endPos, fxAng )
+		}
+
+		// timeout if traces aren't returning
+		if ( Time() - startTime >= 0.3 )
+			return
+	}
+}
+
+BloodDecalParams function BloodDecal_GetParams( float damageAmount, bool isHeadShot, bool isKillShot, bool isMelee, bool isExplosion, bool isBullet, bool isShotgun )
+{
+	// default: bullet damage
+	float traceDist = 175
+	float secondaryTraceDist = 100
+	asset fxType = FX_BLOODSPRAY_DECAL_SML
+	asset secondaryFxType = FX_BLOODSPRAY_DECAL_SML
+
+	if ( isBullet )
+	{
+		// HACK- shotguns report isBullet also
+		if ( isShotgun )
+		{
+			//if ( isKillShot )
+			//	fxType = FX_BLOODSPRAY_DECAL_LRG
+			//else
+			fxType = FX_BLOODSPRAY_DECAL_MED
+		}
+		else
+		{
+			if ( isKillShot )
+				fxType = FX_BLOODSPRAY_DECAL_MED
+			else
+				fxType = FX_BLOODSPRAY_DECAL_SML
+
+			if ( damageAmount >= 200 )
+			{
+				traceDist = 216
+				fxType = FX_BLOODSPRAY_DECAL_LRG
+				secondaryFxType = FX_BLOODSPRAY_DECAL_MED
+			}
+		}
+	}
+
+	else if ( isExplosion )
+	{
+		secondaryTraceDist = traceDist
+
+		float maxDmg = 100
+		float medDmg = 75
+
+		if ( damageAmount >= maxDmg )
+		{
+			fxType = FX_BLOODSPRAY_DECAL_LRG
+			secondaryFxType = FX_BLOODSPRAY_DECAL_LRG
+		}
+		else if ( damageAmount >= medDmg )
+		{
+			fxType = FX_BLOODSPRAY_DECAL_LRG
+			secondaryFxType = FX_BLOODSPRAY_DECAL_MED
+		}
+		else if ( isKillShot )
+		{
+			fxType = FX_BLOODSPRAY_DECAL_MED
+			secondaryFxType = FX_BLOODSPRAY_DECAL_MED
+		}
+	}
+
+	else if ( isMelee )
+	{
+		traceDist = 96
+
+		if ( isKillShot )
+			fxType = FX_BLOODSPRAY_DECAL_MED
+	}
+
+	// for kills, increase trace distance a bit
+	if ( isKillShot )
+	{
+		traceDist = traceDist + (traceDist * 0.1)
+		secondaryTraceDist = secondaryTraceDist + (secondaryTraceDist * 0.1)
+	}
+
+	BloodDecalParams params
+	params.traceDist = traceDist
+	params.secondaryTraceDist = secondaryTraceDist
+	params.fxType = fxType
+	params.secondaryFxType = secondaryFxType
+	return params
+}
+
+#if DEV
+string function BloodSprayDecals_Toggle()
+{
+	string returnStr = ""
+
+	if ( Flag( "EnableBloodSprayDecals" ) )
+	{
+		FlagClear( "EnableBloodSprayDecals" )
+		returnStr = "Blood spray decals DISABLED"
+	}
+	else
+	{
+		FlagSet( "EnableBloodSprayDecals" )
+		returnStr = "Blood spray decals ENABLED"
+	}
+
+	return returnStr
+}
+#endif
+
+function ServerCallback_RodeoerEjectWarning( soulHandle, ejectTime )
+{
+	entity soul = GetEntityFromEncodedEHandle( soulHandle )
+
+	if ( !IsValid( soul ) )
+		return
+
+	thread TitanEjectHatchSequence( soul, ejectTime )
+}
+
+function TitanEjectHatchSequence( soul, ejectTime )
+{
+	expect entity( soul )
+
+	soul.EndSignal( "OnSoulTransfer" )
+	soul.EndSignal( "OnTitanDeath" )
+	soul.EndSignal( "OnDestroy" )
+
+	local effects = []
+
+	OnThreadEnd(
+		function() : ( effects )
+		{
+			foreach ( effect in effects )
+			{
+				if ( !EffectDoesExist( effect ) )
+					continue
+
+				EffectStop( effect, true, true )
+			}
+		}
+	)
+
+	int boltCount = 6
+	int fxID = GetParticleSystemIndex( $"xo_spark_bolt" )
+
+	for ( int index = 0; index < boltCount; index++ )
+	{
+		entity titan = soul.GetTitan()
+
+		WaitEndFrame() // so OnTitanDeath/Destroy can happen
+
+		if ( !IsAlive( titan ) )
+			return
+
+		if ( !titan.IsTitan() )
+		{
+			printt( "WARNING: " + titan + " is not a Titan!" )
+			return
+		}
+
+		int attachID = titan.LookupAttachment( "HATCH_BOLT" + (index + 1) )
+		//printt( "attachID is " + attachID )
+		vector boltOrgin = titan.GetAttachmentOrigin( attachID )
+		vector boltAngles = titan.GetAttachmentAngles( attachID )
+		vector launchVec = AnglesToForward( boltAngles ) * 500
+
+		CreateClientsideGib( $"models/industrial/bolt_tiny01.mdl", boltOrgin, boltAngles, launchVec, < 0, 0, 0 >, 3.0, 1000.0, 200.0 )
+		int effect = PlayFXOnTag( titan, fxID, attachID )
+		effects.append( effect )
+		EmitSoundOnEntity( titan, "titan_bolt_loose" )
+
+		wait (ejectTime / boltCount)
+	}
+}
+
+void function ServerCallback_OnEntityKilled( attackerEHandle, victimEHandle, int scriptDamageType, damageSourceId )
+{
+	expect int( damageSourceId )
+
+	bool isHeadShot = (scriptDamageType & DF_HEADSHOT) > 0
+
+	entity victim = GetEntityFromEncodedEHandle( victimEHandle )
+	entity attacker = attackerEHandle ? GetHeavyWeightEntityFromEncodedEHandle( attackerEHandle ) : null
+	entity localClientPlayer = GetLocalClientPlayer()
+
+	if ( !IsValid( victim ) )
+		return
+
+	Signal( victim, "OnDeath" )
+
+	if ( victim == localClientPlayer )
+	{
+		victim.cv.deathOrigin = victim.GetOrigin()
+		level.clientsLastKiller = attacker
+	}
+
+	if ( damageSourceId == eDamageSourceId.indoor_inferno )
+	{
+		if ( victim == localClientPlayer )
+			thread PlayerFieryDeath( victim )
+	}
+
+	UpdatePlayerStatusCounts()
+
+	if ( IsValid( attacker ) && attacker.IsPlayer() )
+	{
+		PlayTargetEliminatedTitanVO( attacker, victim )
+
+		if ( attacker == GetLocalViewPlayer() )
+			WeaponFlyoutRefresh() // refreshes to display xp gained from kills
+	}
+	else if ( victim.IsPlayer() )
+	{
+		if ( ("latestAssistTime" in victim.s) && victim.s.latestAssistTime >= Time() - MAX_NPC_KILL_STEAL_PREVENTION_TIME )
+		{
+			attacker = expect entity( victim.s.latestAssistPlayer )
+			damageSourceId = expect int( victim.s.latestAssistDamageSource )
+		}
+	}
+
+	if ( victim.IsPlayer() && victim != attacker )
+	{
+		if ( attacker == localClientPlayer )
+		{
+			thread PlayKillConfirmedSound( "Pilot_Killed_Indicator" )
+		}
+		else if ( IsValid( attacker ) && attacker.IsTitan() )
+		{
+			entity bossPlayer = attacker.GetBossPlayer()
+			if ( bossPlayer && bossPlayer == localClientPlayer )
+				thread PlayKillConfirmedSound( "Pilot_Killed_Indicator" )
+		}
+	}
+	else if ( (IsGrunt( victim ) || IsSpectre( victim )) && attacker == localClientPlayer )
+	{
+		thread PlayKillConfirmedSound( "HUD_Grunt_Killed_Indicator" )
+	}
+
+	//if it's an auto titan, the obit was already printed when doomed
+	if ( (victim.IsTitan()) && (!victim.IsPlayer()) )
+		return
+
+	Obituary( attacker, "", victim, scriptDamageType, damageSourceId, isHeadShot )
+}
+
+
+const float KILL_CONFIRM_DEBOUNCE = 0.025
+void function PlayKillConfirmedSound( string sound )
+{
+	while ( true )
+	{
+		if ( Time() - clGlobal.lastKillConfirmTime > KILL_CONFIRM_DEBOUNCE )
+		{
+			clGlobal.lastKillConfirmTime = Time()
+			EmitSoundOnEntity( GetLocalClientPlayer(), sound )
+			return
+		}
+
+		WaitFrame()
+	}
+}
+
+void function ServerCallback_OnTitanKilled( int attackerEHandle, int victimEHandle, int scriptDamageType, int damageSourceId )
+{
+	//Gets run on every client whenever a titan is doomed by another player
+	bool isHeadShot = false
+	entity attacker = attackerEHandle != -1 ? GetEntityFromEncodedEHandle( attackerEHandle ) : null
+	entity victim = GetEntityFromEncodedEHandle( victimEHandle )
+
+	if ( (!IsValid( victim )) || (!IsValid( attacker )) )
+		return
+
+	//Obit: titans get scored/obits when doomed, so we don't want to just see "Player" in the obit, we want to see "Player's Titan"
+	bool victimIsOwnedTitan = victim.IsPlayer()
+	Obituary( attacker, "", victim, scriptDamageType, damageSourceId, isHeadShot, victimIsOwnedTitan )
+}
+
+function PlayTargetEliminatedTitanVO( attacker, victim )
+{
+	entity localPlayer = GetLocalViewPlayer()
+
+	if ( attacker != localPlayer )
+		return
+
+	if ( !victim.IsPlayer() )
+		return
+
+	if ( victim.IsTitan() )
+	{
+		// a bit more delay for a titan explosion to clear
+		thread TitanCockpit_PlayDialogDelayed( localPlayer, 1.3, "elimTarget" )
+	}
+	else
+	{
+		thread TitanCockpit_PlayDialogDelayed( localPlayer, 0.8, "elimEnemyPilot" )
+	}
+}
+
+function ServerCallback_SetAssistInformation( damageSourceId, attackerEHandle, entityEHandle, assistTime )
+{
+	local ent = GetHeavyWeightEntityFromEncodedEHandle( entityEHandle )
+	if ( !ent )
+		return
+
+	local latestAssistPlayer = GetEntityFromEncodedEHandle ( attackerEHandle )
+	if ( !("latestAssistPlayer" in ent.s) )
+	{
+		ent.s.latestAssistPlayer <- latestAssistPlayer
+		ent.s.latestAssistDamageSource <- damageSourceId
+		ent.s.latestAssistTime <- assistTime
+	}
+	else
+	{
+		ent.s.latestAssistPlayer = latestAssistPlayer
+		ent.s.latestAssistDamageSource = damageSourceId
+		ent.s.latestAssistTime = assistTime
+	}
+}
+
+void function ClientCodeCallback_OnModelChanged( entity ent )
+{
+/*
+	// OnModelChanged gets called for each model change, but gets processed after the model has done all switches
+
+	if ( !IsValid( ent ) )
+		return;
+
+	if ( !("creationCount" in ent.s) )
+		return;
+
+	Assert( ent instanceof C_BaseAnimating );
+*/
+}
+
+
+void function ClientCodeCallback_OnHealthChanged( entity ent, int oldHealth, int newHealth )
+{
+	if ( IsLobby() )
+		return
+
+	entity player = GetLocalViewPlayer()
+	if ( !IsValid( player ) )
+		return
+
+	if ( !IsValid( ent ) )
+		return
+
+	ent.Signal( "HealthChanged", { oldHealth = oldHealth, newHealth = newHealth } )
+}
+
+void function ClientCodeCallback_OnCrosshairCurrentTargetChanged( entity player, entity newTarget )
+{
+	if ( IsLobby() )
+		return;
+	if ( !IsValid( player ) )
+		return
+
+	if ( IsValid( newTarget ) )
+		TryOfferRodeoBatteryHint( newTarget )
+}
+
+void function SetupPlayerAnimEvents( entity player )
+{
+	SetupPlayerJumpJetAnimEvents( player )
+	AddAnimEvent( player, "WallHangAttachDataKnife", WallHangAttachDataKnife )
+}
+
+void function JumpRandomlyForever()
+{
+	for (;; )
+	{
+		if ( IsWatchingReplay() )
+		{
+			wait 1
+			continue
+		}
+
+		entity player = GetLocalClientPlayer()
+		if ( !IsAlive( player ) || player != GetLocalViewPlayer() )
+		{
+			wait 1
+			continue
+		}
+
+		printt( "jump!" )
+		player.ClientCommand( "+jump" )
+		wait 0
+		player.ClientCommand( "-jump" )
+
+		wait RandomFloatRange( 0.2, 1.1 )
+	}
+}
+
+void function RemoteTurretFadeoutAnimEvent( entity ent )
+{
+	entity player = GetLocalViewPlayer()
+	ScreenFade( player, 0, 0, 0, 255, 0.1, 0.25, FFADE_OUT );
+}
+
+void function SetupFirstPersonProxyEvents( entity firstPersonProxy )
+{
+	//printt( "SetupFirstPersonProxyEvents" )
+
+	AddAnimEvent( firstPersonProxy, "mantle_smallmantle", OnSmallMantle )
+	AddAnimEvent( firstPersonProxy, "mantle_mediummantle", OnMediumMantle )
+	AddAnimEvent( firstPersonProxy, "mantle_lowmantle", OnLowMantle )
+	AddAnimEvent( firstPersonProxy, "mantle_extralowmantle", OnExtraLowMantle )
+	AddAnimEvent( firstPersonProxy, "remoteturret_fadeout", RemoteTurretFadeoutAnimEvent )
+}
+
+void function OnSmallMantle( entity firstPersonProxy ) //Was set up in script instead of anim to be able to play quieter sounds with stealth passive. No longer needed, but more work to move inside of anim
+{
+	entity player = GetLocalViewPlayer()
+	EmitSoundOnEntity( firstPersonProxy, "mantle_smallmantle" )
+}
+
+void function OnMediumMantle( entity firstPersonProxy ) //Was set up in script instead of anim to be able to play quieter sounds with stealth passive. No longer needed, but more work to move inside of anim
+{
+	entity player = GetLocalViewPlayer()
+	EmitSoundOnEntity( firstPersonProxy, "mantle_mediummantle" )
+}
+
+void function OnLowMantle( entity firstPersonProxy ) //Was set up in script instead of anim to be able to play quieter sounds with stealth passive. No longer needed, but more work to move inside of anim
+{
+	entity player = GetLocalViewPlayer()
+	EmitSoundOnEntity( firstPersonProxy, "mantle_lowmantle" )
+}
+
+void function OnExtraLowMantle( entity firstPersonProxy ) //Was set up in script instead of anim to be able to play quieter sounds with stealth passive. No longer needed, but more work to move inside of anim
+{
+	entity player = GetLocalViewPlayer()
+	EmitSoundOnEntity( firstPersonProxy, "mantle_extralow" )
+}
+
+void function CreateCallback_TitanSoul( entity ent )
+{
+}
+
+bool function ShouldHideRespawnSelectionText( entity player )
+{
+	if ( player != GetLocalClientPlayer() )
+		return false
+	if ( player.GetPlayerClass() != "spectator" )
+		return false
+	if ( IsWatchingReplay() )
+		return false
+
+	return true
+}
+
+
+
+void function WallHangAttachDataKnife( entity player )
+{
+	int attachIdx = player.LookupAttachment( "l_hand" )
+	if ( attachIdx == 0 )
+		// hack while i wait for the attachment to be fixed
+		return
+
+	entity dataknife = CreateClientSidePropDynamic( player.GetAttachmentOrigin( attachIdx ), player.GetAttachmentAngles( attachIdx ), DATA_KNIFE_MODEL )
+	dataknife.SetParent( player, "l_hand" )
+
+	thread DeleteDataKnifeAfterWallHang( player, dataknife )
+}
+
+void function DeleteDataKnifeAfterWallHang( entity player, entity dataknife )
+{
+	OnThreadEnd(
+		function() : ( dataknife )
+		{
+			if ( IsValid( dataknife ) )
+				dataknife.Kill_Deprecated_UseDestroyInstead()
+		}
+	)
+
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+
+	for (;; )
+	{
+		Wait( 0.1 )
+		if ( !player.IsWallHanging() )
+			break
+	}
+}
+
+bool function ClientCodeCallback_OnGib( entity victim, vector attackDir )
+{
+	if ( !victim.IsMechanical() )
+		return SpawnFleshGibs( victim, attackDir )
+
+	return false
+}
+
+bool function SpawnFleshGibs( entity victim, vector attackDir )
+{
+	asset modelName = $"models/gibs/human_gibs.mdl"
+	attackDir = Normalize( attackDir )
+
+	float cullDist = 2048.0
+	if ( "gibDist" in victim.s )
+		cullDist = expect float( victim.s.gibDist )
+
+	vector startOrigin = victim.GetWorldSpaceCenter() + (attackDir * -30)
+
+	vector origin = victim.GetOrigin() + < RandomIntRange( 10, 20 ), RandomIntRange( 10, 20 ), RandomIntRange( 32, 64 ) >
+	vector angles = < 0, 0, 0 >
+	vector flingDir = attackDir * RandomIntRange( 80, 200 )
+
+	int fxID
+	bool isSoftenedLocale = IsSoftenedLocale()
+
+	if ( isSoftenedLocale )
+	{
+		if ( victim.GetModelName() == FLYER_MODEL )
+			fxID = StartParticleEffectOnEntity( victim, GetParticleSystemIndex( $"death_pinkmist_LG_nochunk" ), FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
+		else
+			fxID = StartParticleEffectOnEntity( victim, GetParticleSystemIndex( $"death_pinkmist_nochunk" ), FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
+	}
+	else
+	{
+		if ( victim.GetModelName() == FLYER_MODEL )
+			fxID = StartParticleEffectOnEntity( victim, GetParticleSystemIndex( $"death_pinkmist_LG" ), FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
+		else
+			fxID = StartParticleEffectOnEntity( victim, GetParticleSystemIndex( $"death_pinkmist" ), FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
+	}
+
+	EffectSetControlPointVector( fxID, 1, flingDir )
+
+	if ( isSoftenedLocale )
+		return true
+
+	vector angularVel = < 0, 0, 0 >
+	float lifeTime = 10.0
+	CreateClientsideGibWithBodyGroupGibs( modelName, victim.GetOrigin(), angles, attackDir, angularVel, lifeTime, cullDist, 1024 )
+
+	return true
+}
+
+function ServerCallback_PlayScreenFXWarpJump()
+{
+	if ( IsWatchingReplay() )
+		return false
+
+	thread PlayScreenFXWarpJump( GetLocalClientPlayer() )
+}
+
+void function PlayScreenFXWarpJump( entity clientPlayer )
+{
+	clientPlayer.EndSignal( "OnDeath" )
+	clientPlayer.EndSignal( "OnDestroy" )
+
+	entity player = GetLocalViewPlayer()
+	int index = GetParticleSystemIndex( SCREENFX_WARPJUMP )
+	int indexD = GetParticleSystemIndex( SCREENFX_WARPJUMPDLIGHT )
+	int fxID = StartParticleEffectInWorldWithHandle( index, < 0, 0, 0 >, < 0, 0, 0 > )
+	int fxID2 = -1
+	if ( IsValid( player.GetCockpit() ) )
+	{
+		fxID2 = StartParticleEffectOnEntity( player, indexD, FX_PATTACH_POINT_FOLLOW, player.GetCockpit().LookupAttachment( "CAMERA" ) )
+		EffectSetIsWithCockpit( fxID2, true )
+	}
+
+	OnThreadEnd(
+		function() : ( clientPlayer, fxID, fxID2 )
+		{
+			if ( IsValid( clientPlayer ) && !IsAlive( clientPlayer ) )
+			{
+				EffectStop( fxID, true, false )
+				if ( fxID2 > -1 )
+					EffectStop( fxID2, true, false )
+			}
+		}
+	)
+
+	wait 3.2
+	if ( IsValid( player.GetCockpit() ) )
+		thread TonemappingUpdateAfterWarpJump()
+}
+
+const EXPOSURE_RAMPDOWN_DURATION = 2
+const EXPOSURE_RAMPDOWN_MAX = 20
+const EXPOSURE_RAMPDOWN_MIN = 0
+const MAX_RAMPDOWN_DURATION = 5
+const MAX_RAMPDOWN_MAX = 3
+const MAX_RAMPDOWN_MIN = 1
+
+function TonemappingUpdateAfterWarpJump()
+{
+	// Turn cubemaps black inside drop ship, since it's pretty dark in there anyway and we don't have a great way to take a valid cubemap shot for that location.
+	SetConVarFloat( "mat_envmap_scale", 0 );
+
+	AutoExposureSetMaxExposureMultiplier( 500 ); // allow exposure to actually go bright, even if it's clamped in the level.
+
+	// Start the exposure super bright behind the white FX, and ramp it down quickly to normal.
+	local startTime = Time()
+	while( 1 )
+	{
+		local time = Time() - startTime
+		float factor = GraphCapped( time, 0, EXPOSURE_RAMPDOWN_DURATION, 1, 0 )
+		local toneMapScale = EXPOSURE_RAMPDOWN_MIN + (EXPOSURE_RAMPDOWN_MAX - EXPOSURE_RAMPDOWN_MIN) * factor * factor * factor * factor
+		AutoExposureSetExposureCompensationBias( toneMapScale )
+		AutoExposureSnap()
+		wait  0
+		if ( factor == 0 )
+			break;
+	}
+
+	// Ramp the max exposure multiplier back down to 1 gently
+	startTime = Time()
+	while( 1 )
+	{
+		local time = Time() - startTime
+		float factor = GraphCapped( time, 0, MAX_RAMPDOWN_DURATION, 1, 0 )
+		local scale = MAX_RAMPDOWN_MIN + (MAX_RAMPDOWN_MAX - MAX_RAMPDOWN_MIN) * factor * factor
+		AutoExposureSetMaxExposureMultiplier( scale );
+		wait  0
+		if ( factor == 0 )
+			break;
+	}
+}
+
+function SetPanelAlphaOverTime( panel, alpha, duration )
+{
+	// HACK this should be a code command - Mackey
+	Signal( panel, "PanelAlphaOverTime" )
+	EndSignal( panel, "PanelAlphaOverTime" )
+	EndSignal( panel, "OnDestroy" )
+
+	local startTime = Time()
+	local endTime = startTime + duration
+	local startAlpha = panel.GetPanelAlpha()
+
+	while( Time() <= endTime )
+	{
+		float a = GraphCapped( Time(), startTime, endTime, startAlpha, alpha )
+		panel.SetPanelAlpha( a )
+		WaitFrame()
+	}
+
+	panel.SetPanelAlpha( alpha )
+}
+
+
+
+function HandleDoomedState( entity player, entity titan )
+{
+	bool isDoomed = GetDoomedState( titan )
+	if ( isDoomed )
+	{
+		titan.Signal( "Doomed" )
+
+		if ( HasSoul( titan ) )
+		{
+			entity soul = titan.GetTitanSoul()
+			soul.Signal( "Doomed" )
+		}
+	}
+}
+
+const asset SHIELD_BREAK_FX = $"P_xo_armor_break_CP"
+function PlayShieldBreakEffect( entity ent )
+{
+	entity shieldEnt = ent
+	if ( IsSoul( ent ) )
+	{
+		shieldEnt = ent.GetTitan()
+		if ( !shieldEnt )
+			return
+	}
+
+	float shieldHealthFrac = GetShieldHealthFrac( shieldEnt )
+
+	int shieldBreakFX = GetParticleSystemIndex( SHIELD_BREAK_FX )
+
+	local attachID
+	if ( shieldEnt.IsTitan() )
+		attachID = shieldEnt.LookupAttachment( "exp_torso_main" )
+	else
+		attachID = shieldEnt.LookupAttachment( "ref" ) // TEMP
+
+	local shieldFXHandle = StartParticleEffectOnEntity( shieldEnt, shieldBreakFX, FX_PATTACH_POINT_FOLLOW, attachID )
+	EffectSetControlPointVector( shieldFXHandle, 1, GetShieldEffectCurrentColor( 1 - shieldHealthFrac ) )
+}
+
+function PlayShieldActivateEffect( entity ent )
+{
+	entity shieldEnt = ent
+	if ( IsSoul( ent ) )
+	{
+		shieldEnt = ent.GetTitan()
+		if ( !shieldEnt )
+			return
+	}
+
+	float shieldHealthFrac = GetShieldHealthFrac( shieldEnt )
+
+	int shieldBreakFX = GetParticleSystemIndex( SHIELD_BREAK_FX )
+
+	local attachID
+	if ( shieldEnt.IsTitan() )
+		attachID = shieldEnt.LookupAttachment( "exp_torso_main" )
+	else
+		attachID = shieldEnt.LookupAttachment( "ref" ) // TEMP
+
+	local shieldFXHandle = StartParticleEffectOnEntity( shieldEnt, shieldBreakFX, FX_PATTACH_POINT_FOLLOW, attachID )
+	EffectSetControlPointVector( shieldFXHandle, 1, GetShieldEffectCurrentColor( 1 - shieldHealthFrac ) )
+}
+
+function PlayIt( entity victim )
+{
+	float shieldHealthFrac = GetShieldHealthFrac( victim )
+
+	int shieldbodyFX = GetParticleSystemIndex( SHIELD_BODY_FX )
+	local attachID
+	if ( victim.IsTitan() )
+		attachID = victim.LookupAttachment( "exp_torso_main" )
+	else
+		attachID = victim.LookupAttachment( "ref" ) // TEMP
+
+	local shieldFXHandle = StartParticleEffectOnEntity( victim, shieldbodyFX, FX_PATTACH_POINT_FOLLOW, attachID )
+
+	EffectSetControlPointVector( shieldFXHandle, 1, GetShieldEffectCurrentColor( 1 - shieldHealthFrac ) )
+}
+
+function PlayShieldHitEffect( PlayerDidDamageParams params )
+{
+	entity player = GetLocalViewPlayer()
+	entity victim = params.victim
+	//vector damagePosition = params.damagePosition
+	//int hitBox = params.hitBox
+	//int damageType = params.damageType
+	//float damageAmount = params.damageAmount
+	//int damageFlags = params.damageFlags
+	//int hitGroup = params.hitGroup
+	//entity weapon = params.weapon
+	//float distanceFromAttackOrigin = params.distanceFromAttackOrigin
+
+	//shieldFX <- GetParticleSystemIndex( SHIELD_FX )
+	//StartParticleEffectInWorld( shieldFX, damagePosition, player.GetViewVector() * -1 )
+
+	float shieldHealthFrac = GetShieldHealthFrac( victim )
+
+	int shieldbodyFX = GetParticleSystemIndex( SHIELD_BODY_FX )
+	local attachID
+	if ( victim.IsTitan() )
+		attachID = victim.LookupAttachment( "exp_torso_main" )
+	else
+		attachID = victim.LookupAttachment( "ref" ) // TEMP
+
+	local shieldFXHandle = StartParticleEffectOnEntity( victim, shieldbodyFX, FX_PATTACH_POINT_FOLLOW, attachID )
+
+	EffectSetControlPointVector( shieldFXHandle, 1, GetShieldEffectCurrentColor( 1 - shieldHealthFrac ) )
+}
+
+const table SHIELD_COLOR_CHARGE_FULL = { r = 115, g = 247, b = 255 }    // blue
+const table SHIELD_COLOR_CHARGE_MED  = { r = 200, g = 128, b = 80 } // orange
+const table SHIELD_COLOR_CHARGE_EMPTY = { r = 200, g = 80, b = 80 } // red
+
+const SHIELD_COLOR_CROSSOVERFRAC_FULL2MED    = 0.75  // from zero to this fraction, fade between full and medium charge colors
+const SHIELD_COLOR_CROSSOVERFRAC_MED2EMPTY    = 0.95  // from "full2med" to this fraction, fade between medium and empty charge colors
+
+function GetShieldEffectCurrentColor( shieldHealthFrac )
+{
+	local color1 = SHIELD_COLOR_CHARGE_FULL
+	local color2 = SHIELD_COLOR_CHARGE_MED
+	local color3 = SHIELD_COLOR_CHARGE_EMPTY
+
+	local crossover1 = SHIELD_COLOR_CROSSOVERFRAC_FULL2MED  // from zero to this fraction, fade between color1 and color2
+	local crossover2 = SHIELD_COLOR_CROSSOVERFRAC_MED2EMPTY  // from crossover1 to this fraction, fade between color2 and color3
+
+	local colorVec = < 0, 0, 0 >
+	// 0 = full charge, 1 = no charge remaining
+	if ( shieldHealthFrac < crossover1 )
+	{
+		colorVec.x = Graph( shieldHealthFrac, 0, crossover1, color1.r, color2.r )
+		colorVec.y = Graph( shieldHealthFrac, 0, crossover1, color1.g, color2.g )
+		colorVec.z = Graph( shieldHealthFrac, 0, crossover1, color1.b, color2.b )
+	}
+	else if ( shieldHealthFrac < crossover2 )
+	{
+		colorVec.x = Graph( shieldHealthFrac, crossover1, crossover2, color2.r, color3.r )
+		colorVec.y = Graph( shieldHealthFrac, crossover1, crossover2, color2.g, color3.g )
+		colorVec.z = Graph( shieldHealthFrac, crossover1, crossover2, color2.b, color3.b )
+	}
+	else
+	{
+		// for the last bit of overload timer, keep it max danger color
+		colorVec.x = color3.r
+		colorVec.y = color3.g
+		colorVec.z = color3.b
+	}
+
+	return colorVec
+}
+
+
+
+void function PlayPlayerDeathSound( entity player )
+{
+	if ( IsPlayerEliminated( player ) )
+		EmitSoundOnEntity( player, "player_death_begin_elimination" )
+	else
+		EmitSoundOnEntity( player, "Player_Death_Begin" )
+}
+
+void function StopPlayerDeathSound( entity player )
+{
+	StopSoundOnEntity( player, "Player_Death_Begin" )
+	EmitSoundOnEntity( player, "Player_Death_PrespawnTransition" )
+}
+
+function OnClientPlayerAlive( entity player )
+{
+	player.Signal( "OnClientPlayerAlive" ) // TEMP; this should not be necessary, but IsWatchingKillReplay is wrong
+	player.EndSignal( "OnClientPlayerAlive" )
+
+	UpdateClientHudVisibility( player )
+
+	if ( IsWatchingReplay() )
+		return
+
+	if ( GetGameState() < eGameState.Playing )
+		return
+}
+
+function OnClientPlayerDying( entity player )
+{
+	player.Signal( "OnClientPlayerDying" ) // TEMP; this should not be necessary, but IsWatchingKillReplay is wrong
+	player.EndSignal( "OnClientPlayerDying" )
+
+	entity player = GetLocalClientPlayer()
+	UpdateClientHudVisibility( player )
+//	thread ShowDeathRecap( player )
+
+	if ( IsWatchingReplay() )
+		return
+
+	player.cv.deathTime = Time()
+
+	thread DeathCamCheck( player )
+}
+
+void function ShowDeathRecap( entity player )
+{
+	Assert( player == GetLocalClientPlayer() )
+
+	DisableCallingCardEvents()
+
+	if ( player.e.recentDamageHistory.len() == 0 )
+		return
+
+	DamageHistoryStruct damageHistory = player.e.recentDamageHistory[ 0 ]
+
+	entity attacker = damageHistory.attacker
+
+	if ( !IsValid( attacker ) )
+		return
+
+	EndSignal( attacker, "OnDestroy" )
+
+	if ( !attacker.IsPlayer() )
+		return
+
+	if ( attacker.GetTeam() == player.GetTeam() )
+		return
+
+	wait( 1.0 )
+
+	CallsignEvent( eCallSignEvents.YOU, attacker, Localize( "#DEATH_SCREEN_KILLED_YOU" ) )
+}
+
+void function HideDeathRecap( entity player, var rui )
+{
+	float minDisplayTime = 6.0
+	float startTime = Time()
+
+	waitthread DeathRecapHideDelay( player )
+	wait( 0.5 )
+
+	float elapsedTime = Time() - startTime
+	if ( elapsedTime < minDisplayTime )
+		wait( minDisplayTime - elapsedTime )
+
+	RuiSetBool( rui, "playOutro", true )
+	RuiSetGameTime( rui, "outroStartTime", Time() )
+
+	EnableCallingCardEvents()
+}
+
+void function DeathRecapHideDelay( entity player )
+{
+	EndSignal( clGlobal.levelEnt, "LocalClientPlayerRespawned" )
+	EndSignal( clGlobal.levelEnt, "OnSpectatorMode" )
+
+	WaitForever()
+}
+
+void function DeathCamCheck( entity player )
+{
+	wait GetRespawnButtonCamTime( player )
+}
+
+void function ServerCallback_ShowNextSpawnMessage( float nextSpawnTime )
+{
+	entity player = GetLocalClientPlayer()
+	float camTime = GetRespawnButtonCamTime( player )
+
+	file.nextSpawnTime = nextSpawnTime
+
+	if ( nextSpawnTime > Time() + camTime )
+		thread ShowSpawnDelayMessage( nextSpawnTime )
+}
+
+
+void function ShowSpawnDelayMessage( nextSpawnTime )
+{
+	float waitTime = max( nextSpawnTime - Time(), 0 )
+
+	if ( waitTime < 1.0 )
+		return
+
+	entity player = GetLocalClientPlayer()
+
+	//player.cv.nextSpawnTimeLabel.SetAlpha( 255 )
+	//player.cv.nextSpawnTimeLabel.Show()
+	//player.cv.nextSpawnTimeLabel.SetAutoText( "#GAMEMODE_DEPLOYING_IN_N", HATT_GAME_COUNTDOWN_SECONDS, nextSpawnTime )
+	//
+	//if ( !player.cv.nextSpawnTimeLabel.IsAutoText() )
+	//	player.cv.nextSpawnTimeLabel.EnableAutoText()
+
+	while ( !IsAlive( player ) && waitTime > 0.0 )
+	{
+		waitTime = max( nextSpawnTime - Time(), 0 )
+
+		AddPlayerHint( waitTime, 0.25, $"", "#GAMEMODE_DEPLOYING_IN_N", int( waitTime ) )
+
+		wait 1.0
+	}
+}
+void function ServerCallback_HideNextSpawnMessage()
+{
+	entity player = GetLocalClientPlayer()
+
+	HidePlayerHint( "#GAMEMODE_DEPLOYING_IN_N" )
+}
+
+float function GetWaveSpawnTime()
+{
+	return (file.nextSpawnTime)
+}
+
+bool function IsPlayerEliminated( entity player )
+{
+	return (player.GetPlayerGameStat( PGS_ELIMINATED ) > 0)
+}
+
+function PlayerFieryDeath( player )
+{
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "OnClientPlayerAlive" )
+	clGlobal.levelEnt.EndSignal( "OnSpectatorMode" )
+
+	local offset = < 0, 0, 0 >
+	if ( player.IsTitan() )
+		offset = < 0, 0, 96 >
+
+	entity scriptRef = CreatePropDynamic( $"models/dev/empty_model.mdl", player.GetOrigin() + offset, player.GetAngles() )
+	scriptRef.SetParent( player )
+
+	local fxHandle = StartParticleEffectOnEntity( scriptRef, GetParticleSystemIndex( $"P_burn_player" ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
+
+	OnThreadEnd(
+		function () : ( fxHandle, scriptRef )
+		{
+			EffectStop( fxHandle, false, false )
+			if ( IsValid( scriptRef ) )
+				scriptRef.Destroy()
+		}
+	)
+	WaitForever()
+}
+
+
+function ServerCallback_GiveMatchLossProtection()
+{
+	clGlobal.showMatchLossProtection = true
+}
+
+void function EnableDoDeathCallback( entity ent )
+{
+	ent.DoDeathCallback( true )
+}
+
+
+
+int function UpdateSubText2ForRiffs( AnnouncementData announcement )
+{
+	array<string> riffTexts = []
+
+	if ( IsPilotEliminationBased() )
+		riffTexts.append( "#GAMESTATE_NO_RESPAWNING" )
+
+	if (  Riff_FloorIsLava() )
+		riffTexts.append( "#GAMEMODE_FLOOR_IS_LAVA_SUBTEXT2" )
+
+	if ( level.nv.minimapState == eMinimapState.Hidden )
+		riffTexts.append( "#GAMESTATE_NO_MINIMAP" )
+
+	if ( level.nv.ammoLimit == eAmmoLimit.Limited )
+		riffTexts.append( "#GAMESTATE_LIMITED_AMMUNITION" )
+
+	if ( level.nv.titanAvailability != eTitanAvailability.Default )
+	{
+		switch ( level.nv.titanAvailability )
+		{
+			case eTitanAvailability.Always:
+				riffTexts.append( "#GAMESTATE_UNLIMITED_TITANS" )
+				break
+			case eTitanAvailability.Once:
+				riffTexts.append( "#GAMESTATE_ONE_TITAN" )
+				break
+			case eTitanAvailability.Never:
+				riffTexts.append( "#GAMESTATE_NO_TITANS" )
+				break
+		}
+	}
+
+	if ( level.nv.allowNPCs != eAllowNPCs.Default )
+	{
+		switch ( level.nv.allowNPCs )
+		{
+			case eAllowNPCs.None:
+				//riffTexts.append( "#GAMESTATE_NO_MINIONS" )
+				break
+
+			case eAllowNPCs.GruntOnly:
+				riffTexts.append( "#GAMESTATE_GRUNTS_ONLY" )
+				break
+
+			case eAllowNPCs.SpectreOnly:
+				riffTexts.append( "#GAMESTATE_SPECTRES_ONLY" )
+				break
+		}
+	}
+
+	float pilotHealthMultiplier = GetCurrentPlaylistVarFloat( "pilot_health_multiplier", 0.0 )
+	if ( pilotHealthMultiplier != 0.0 && pilotHealthMultiplier <= 1.5 )
+		riffTexts.append( "#GAMESTATE_LOW_PILOT_HEALTH" )
+	else if ( pilotHealthMultiplier > 1.5 )
+		riffTexts.append( "#GAMESTATE_HIGH_PILOT_HEALTH" )
+
+	switch ( riffTexts.len() )
+	{
+		case 1:
+			Announcement_SetSubText2( announcement, riffTexts[0] )
+			break
+		case 2:
+			Announcement_SetSubText2( announcement, "#GAMEMODE_ANNOUNCEMENT_SUBTEXT_2", riffTexts[0], riffTexts[1] )
+			break
+		case 3:
+			Announcement_SetSubText2( announcement, "#GAMEMODE_ANNOUNCEMENT_SUBTEXT_3", riffTexts[0], riffTexts[1], riffTexts[2] )
+			break
+		case 4:
+			Announcement_SetSubText2( announcement, "#GAMEMODE_ANNOUNCEMENT_SUBTEXT_4", riffTexts[0], riffTexts[1], riffTexts[2], riffTexts[3] )
+			break
+		case 5:
+			Announcement_SetSubText2( announcement, "#GAMEMODE_ANNOUNCEMENT_SUBTEXT_5", riffTexts[0], riffTexts[1], riffTexts[2], riffTexts[3], riffTexts[4] )
+			break
+
+		default:
+			Announcement_SetSubText2( announcement, "", "" )
+			return 0
+	}
+
+	return riffTexts.len()
+}
+
+
+void function ServerCallback_GameModeAnnouncement()
+{
+	entity player = GetLocalClientPlayer()
+	string gameMode = GameRules_GetGameMode()
+
+	if ( GameMode_GetCustomIntroAnnouncement( gameMode ) != null )
+	{
+		void functionref(entity) func = GameMode_GetCustomIntroAnnouncement( gameMode )
+		func(player)
+		return
+	}
+
+	int team = player.GetTeam()
+
+	local totalDuration = 0.0
+
+	AnnouncementData announcement
+
+	if ( GetGameState() == eGameState.Epilogue )
+	{
+		// never gets hit??
+		announcement = Announcement_Create( "#GAMEMODE_EPILOGUE" )
+	}
+	else
+	{
+		announcement = Announcement_Create( GAMETYPE_TEXT[gameMode] )
+		announcement.announcementStyle = ANNOUNCEMENT_STYLE_BIG
+
+		Announcement_SetIcon( announcement, GAMETYPE_ICON[gameMode] )
+		Announcement_SetSubText( announcement, GAMEDESC_CURRENT )
+
+		if ( GameMode_IsDefined( gameMode ) )
+		{
+			if ( GameMode_GetAttackDesc( gameMode ) != "" && team == level.nv.attackingTeam )
+				Announcement_SetSubText( announcement, GameMode_GetAttackDesc( gameMode ) )
+
+			if ( GameMode_GetDefendDesc( gameMode ) != "" && team != level.nv.attackingTeam )
+				Announcement_SetSubText( announcement, GameMode_GetDefendDesc( gameMode ) )
+		}
+	}
+
+	int numRiffs = UpdateSubText2ForRiffs( announcement )
+	float announcementDuration = numRiffs + DEFAULT_GAMEMODE_ANNOUNCEMENT_DURATION
+	if ( gameMode == COLISEUM )
+		announcementDuration = 2.3 //JFS: Make coliseum announcement disappear with the black bars. Note that the rui fade out sequence time is a floor on how low announcementDuration can be set to
+
+	Announcement_SetDuration( announcement, announcementDuration )
+	totalDuration += announcementDuration
+
+	AnnouncementFromClass( player, announcement ) // TODO: team specific goals
+
+	if ( clGlobal.showMatchLossProtection )
+	{
+		announcementDuration = 2.0
+		totalDuration += announcementDuration
+		delaythread( announcementDuration ) DeathHintDisplay( "#LATE_JOIN_NO_LOSS" )
+	}
+	else if ( clGlobal.canShowLateJoinMessage )
+	{
+		if ( level.nv.matchProgress > 5 || GetRoundsPlayed() > 0 )
+		{
+			announcementDuration = 2.0
+			totalDuration += announcementDuration
+			delaythread( announcementDuration ) DeathHintDisplay( "#LATE_JOIN" )
+		}
+	}
+	clGlobal.showMatchLossProtection = false
+	clGlobal.canShowLateJoinMessage = false
+
+	if (  Riff_FloorIsLava() )
+	{
+		announcementDuration = 10.0
+		totalDuration += announcementDuration
+		//printt( "Total duration delayed for lava announcement: " + totalDuration )
+		delaythread( totalDuration ) PlayConversationToLocalClient( "floor_is_lava_announcement" )
+	}
+}
+
+
+function MainHud_InitScoreBars( vgui, entity player, scoreGroup )
+{
+	local hudScores = {}
+	vgui.s.scoreboardProgressBars <- hudScores
+
+	local panel = vgui.GetPanel()
+
+	hudScores.GameInfoBG 		<- scoreGroup.CreateElement( "GameInfoBG", panel )
+
+	string gameMode = GameRules_GetGameMode()
+	int friendlyTeam = player.GetTeam()
+
+	#if HAS_GAMEMODES
+	if ( IsFFAGame() )
+	{
+		return
+	}
+	#endif
+
+	int enemyTeam = friendlyTeam == TEAM_IMC ? TEAM_MILITIA : TEAM_IMC
+
+	if ( IsRoundBased() )
+	{
+		level.scoreLimit[TEAM_IMC] <- GetRoundScoreLimit_FromPlaylist()
+		level.scoreLimit[TEAM_MILITIA] <- GetRoundScoreLimit_FromPlaylist()
+	}
+	else
+	{
+		level.scoreLimit[TEAM_IMC] <- GetScoreLimit_FromPlaylist()
+		level.scoreLimit[TEAM_MILITIA] <- GetScoreLimit_FromPlaylist()
+	}
+
+	#if HAS_GAMEMODES
+	Assert( gameMode == GameRules_GetGameMode() )
+	switch ( gameMode )
+	{
+		case CAPTURE_THE_FLAG:
+			vgui.s.friendlyFlag <- scoreGroup.CreateElement( "FriendlyFlag", panel )
+			vgui.s.enemyFlag <- scoreGroup.CreateElement( "EnemyFlag", panel )
+
+			vgui.s.friendlyFlagLabel <- scoreGroup.CreateElement( "FriendlyFlagLabel", panel )
+			vgui.s.enemyFlagLabel <- scoreGroup.CreateElement( "EnemyFlagLabel", panel )
+
+			thread CaptureTheFlagThink( vgui, player )
+			break
+
+		case MARKED_FOR_DEATH:
+		case MARKED_FOR_DEATH_PRO:
+			thread MarkedForDeathHudThink( vgui, player, scoreGroup )
+			break
+	}
+	#endif
+
+	thread TitanEliminationThink( vgui, player )
+
+	thread RoundScoreThink( vgui, scoreGroup, player )
+
+	vgui.s.scoreboardProgressGroup <- scoreGroup
+
+	hudScores.GameInfoBG.Show()
+
+	local scoreboardArrays = {}
+	vgui.s.scoreboardArrays <- scoreboardArrays
+
+	//if ( ShouldUsePlayerStatusCount() ) //Can't just do PilotEliminationBased check here because it isn't set when first connecting
+	//{
+	//	//ToDo: Eventually turn it on for normal Titan count too. Need to make sure "Titan ready but not called in yet" icon doesn't get hidden by this element
+	//	hudScores.Player_Status_BG <- scoreGroup.CreateElement( "Player_Status_BG", panel )
+	//	hudScores.Player_Status_BG.Show()
+	//
+	//	CreatePlayerStatusElementsFriendly( scoreboardArrays, scoreGroup, panel )
+	//	CreatePlayerStatusElementsEnemy( scoreboardArrays, scoreGroup, panel )
+	//
+	//	thread ScoreBarsPlayerStatusThink( vgui, player, scoreboardArrays.FriendlyPlayerStatusCount, scoreboardArrays.EnemyPlayerStatusCount )
+	//}
+	//else
+	//{
+	//	hudScores.Player_Status_BG <- scoreGroup.CreateElement( "Player_Status_BG", panel )
+	//	hudScores.Player_Status_BG.Show()
+	//	thread ScoreBarsTitanCountThink( vgui, player, hudScores.FriendlyTitanCount, hudScores.FriendlyTitanReadyCount, hudScores.EnemyTitanCount )
+	//}
+
+	if ( IsWatchingReplay() )
+		vgui.s.scoreboardProgressGroup.Hide()
+
+	UpdatePlayerStatusCounts()
+
+	if ( IsSuddenDeathGameMode() )
+		thread SuddenDeathHUDThink( vgui, player )
+}
+
+function CaptureTheFlagThink( vgui, entity player )
+{
+	vgui.EndSignal( "OnDestroy" )
+
+	if ( vgui instanceof C_VGuiScreen )
+		player.EndSignal( "OnDestroy" )
+
+	vgui.s.friendlyFlag.Show()
+	vgui.s.enemyFlag.Show()
+	vgui.s.friendlyFlagLabel.Show()
+	vgui.s.enemyFlagLabel.Show()
+
+	while ( GetGameState() < eGameState.Epilogue )
+	{
+		if ( "friendlyFlagState" in player.s )
+		{
+			switch ( player.s.friendlyFlagState )
+			{
+				case eFlagState.None:
+					vgui.s.friendlyFlagLabel.SetText( "" )
+					break
+				case eFlagState.Home:
+					vgui.s.friendlyFlagLabel.SetText( "#GAMEMODE_FLAG_HOME" )
+					break
+				case eFlagState.Held:
+					vgui.s.friendlyFlagLabel.SetText( player.s.friendlyFlagCarrierName )
+					break
+				case eFlagState.Away:
+					vgui.s.friendlyFlagLabel.SetText( "#GAMEMODE_FLAG_DROPPED" )
+					break
+			}
+
+			switch ( player.s.enemyFlagState )
+			{
+				case eFlagState.None:
+					vgui.s.enemyFlagLabel.SetText( "" )
+					break
+				case eFlagState.Home:
+					vgui.s.enemyFlagLabel.SetText( "#GAMEMODE_FLAG_HOME" )
+					break
+				case eFlagState.Held:
+					vgui.s.enemyFlagLabel.SetText( player.s.enemyFlagCarrierName )
+					break
+				case eFlagState.Away:
+					vgui.s.enemyFlagLabel.SetText( "#GAMEMODE_FLAG_DROPPED" )
+					break
+			}
+		}
+
+		clGlobal.levelEnt.WaitSignal( "FlagUpdate" )
+
+		WaitEndFrame()
+	}
+
+	vgui.s.friendlyFlag.Hide()
+	vgui.s.enemyFlag.Hide()
+	vgui.s.friendlyFlagLabel.Hide()
+	vgui.s.enemyFlagLabel.Hide()
+}
+
+
+
+function TitanEliminationThink( vgui, entity player )
+{
+	vgui.EndSignal( "OnDestroy" )
+	player.EndSignal( "OnDestroy" )
+
+	if ( player != GetLocalClientPlayer() )
+		return
+
+	OnThreadEnd(
+		function() : ( player )
+		{
+			if ( !IsValid( player ) )
+				return
+
+			if ( player.cv.hud.s.lastEventNotificationText == "#GAMEMODE_CALLINTITAN_COUNTDOWN" )
+				HideEventNotification()
+		}
+	)
+
+	while ( true )
+	{
+		if ( Riff_EliminationMode() == eEliminationMode.Titans )
+		{
+			if ( IsAlive( player ) && GamePlayingOrSuddenDeath() && level.nv.secondsTitanCheckTime > Time() && !player.IsTitan() && !IsValid( player.GetPetTitan() ) && player.GetNextTitanRespawnAvailable() >= 0 )
+			{
+				SetTimedEventNotificationHATT( level.nv.secondsTitanCheckTime - Time(), "#GAMEMODE_CALLINTITAN_COUNTDOWN", HATT_GAME_COUNTDOWN_SECONDS_MILLISECONDS, level.nv.secondsTitanCheckTime )
+			}
+			else if ( player.cv.hud.s.lastEventNotificationText == "#GAMEMODE_CALLINTITAN_COUNTDOWN" )
+			{
+				HideEventNotification()
+			}
+		}
+		else if ( Riff_EliminationMode() == eEliminationMode.Pilots )
+		{
+
+		}
+
+		WaitSignal( player, "UpdateLastTitanStanding", "PetTitanChanged", "OnDeath" )
+	}
+}
+
+function RoundScoreThink( var vgui, var scoreGroup, entity player )
+{
+	vgui.EndSignal( "OnDestroy" )
+	player.EndSignal( "OnDestroy" )
+
+	FlagWait( "EntitiesDidLoad" ) //Have to do this because the nv that determines if RoundBased or not might not get set yet
+
+	int friendlyTeam = player.GetTeam()
+	int enemyTeam = friendlyTeam == TEAM_IMC ? TEAM_MILITIA : TEAM_IMC
+
+	local isRoundBased = IsRoundBased()
+	bool showRoundScore = true
+	int roundScoreLimit = GetRoundScoreLimit_FromPlaylist()
+	int scoreLimit = GetScoreLimit_FromPlaylist()
+
+	if ( isRoundBased && showRoundScore )
+	{
+		level.scoreLimit[TEAM_IMC] <- roundScoreLimit
+		level.scoreLimit[TEAM_MILITIA] <- roundScoreLimit
+	}
+	else
+	{
+		level.scoreLimit[TEAM_IMC] <- scoreLimit
+		level.scoreLimit[TEAM_MILITIA] <- scoreLimit
+	}
+
+	local hudScores = vgui.s.scoreboardProgressBars
+
+	while ( true )
+	{
+		if ( isRoundBased && showRoundScore )
+		{
+			hudScores.Friendly_Number.SetAutoText( "", HATT_FRIENDLY_TEAM_ROUND_SCORE, 0 )
+			hudScores.Enemy_Number.SetAutoText( "", HATT_ENEMY_TEAM_ROUND_SCORE, 0 )
+		}
+
+		hudScores.ScoresFriendly.SetBarProgressRemap( 0, level.scoreLimit[friendlyTeam], 0.011, 0.96 )
+		hudScores.ScoresEnemy.SetBarProgressRemap( 0, level.scoreLimit[enemyTeam], 0.011, 0.96 )
+		wait 1.0
+	}
+}
+
+function CreatePlayerStatusElementsFriendly( scoreboardArrays, scoreGroup, panel )
+{
+	scoreboardArrays.FriendlyPlayerStatusCount <- arrayofsize( 8 )
+
+	for ( int i = 0; i < 8; ++i )
+	{
+		scoreboardArrays.FriendlyPlayerStatusCount[ i ] = scoreGroup.CreateElement( "Friendly_Player_Status_" + i, panel )
+	}
+}
+
+function CreatePlayerStatusElementsEnemy( scoreboardArrays, scoreGroup, panel )
+{
+	scoreboardArrays.EnemyPlayerStatusCount <- arrayofsize( 8 )
+
+	for ( int i = 0; i < 8; ++i )
+	{
+		scoreboardArrays.EnemyPlayerStatusCount[ i ] = scoreGroup.CreateElement( "Enemy_Player_Status_" + i, panel )
+	}
+}
+
+
+function ScoreBarsPlayerStatusThink( vgui, entity player, friendlyPlayerStatusElem, enemyPlayerStatusElem )
+{
+	int friendlyTeam = player.GetTeam()
+	int enemyTeam = friendlyTeam == TEAM_IMC ? TEAM_MILITIA : TEAM_IMC
+
+	vgui.EndSignal( "OnDestroy" )
+
+	while( true )
+	{
+		clGlobal.levelEnt.WaitSignal( "UpdatePlayerStatusCounts" )
+
+		if ( IsWatchingReplay() ) //Don't update visibility if the scoreboardgroup should be hidden
+			continue
+
+		UpdatePlayerStatusForTeam( friendlyTeam, friendlyPlayerStatusElem, $"ui/icon_status_titan_friendly", $"ui/icon_status_pilot_friendly", $"ui/icon_status_burncard_friendly", $"ui/icon_status_burncard_friendly" )
+		UpdatePlayerStatusForTeam( enemyTeam, enemyPlayerStatusElem, $"ui/icon_status_titan_enemy", $"ui/icon_status_pilot_enemy", $"ui/icon_status_burncard_enemy", $"ui/icon_status_burncard_enemy" )
+	}
+}
+
+function CountPlayerStatusTypes( array<entity> teamPlayers )
+{
+	table resultTable = {
+		titanWithBurnCard = 0,
+		titan = 0,
+		pilotWithBurnCard = 0
+		pilot = 0,
+	}
+
+	foreach ( player in teamPlayers )
+	{
+		entity playerPetTitan = player.GetPetTitan()
+
+		if ( !IsAlive( player ) )
+		{
+			if ( IsAlive( playerPetTitan ) )
+				resultTable.titan++
+		}
+		else
+		{
+			if ( player.IsTitan() )
+				resultTable.titan++
+			else if ( IsAlive( playerPetTitan ) )
+				resultTable.titan++
+			else
+				resultTable.pilot++
+		}
+
+	}
+
+	return resultTable
+}
+
+
+function UpdatePlayerStatusForTeam( int team, teamStatusElem, titanImage, pilotImage, pilotBurnCardImage, titanBurnCardImage )
+{
+	array<entity> teamPlayers = GetPlayerArrayOfTeam( team )
+	local teamResultTable = CountPlayerStatusTypes( teamPlayers )
+
+	int maxElems = 8
+
+	int index = 0
+	int currentElem = 0
+
+	for ( index = 0; index < teamResultTable.titanWithBurnCard && currentElem < maxElems; index++, currentElem++ )
+	{
+		teamStatusElem[ currentElem ].Show()
+		teamStatusElem[ currentElem ].SetImage( titanBurnCardImage )
+	}
+
+	for ( index = 0; index < teamResultTable.titan && index < maxElems; index++, currentElem++ )
+	{
+		teamStatusElem[ currentElem ].Show()
+		teamStatusElem[ currentElem ].SetImage( titanImage )
+	}
+
+	for ( index = 0; index < teamResultTable.pilotWithBurnCard && index < maxElems; index++, currentElem++ )
+	{
+		teamStatusElem[ currentElem ].Show()
+		teamStatusElem[ currentElem ].SetImage( pilotBurnCardImage )
+	}
+
+	for ( index = 0; index < teamResultTable.pilot && index < maxElems; index++, currentElem++ )
+	{
+		teamStatusElem[ currentElem ].Show()
+		teamStatusElem[ currentElem ].SetImage( pilotImage )
+	}
+
+	for( ; currentElem < maxElems; currentElem++ )
+	{
+		teamStatusElem[ currentElem ].Hide()
+	}
+}
+function SuddenDeathHUDThink( vgui, entity player )
+{
+	Signal( player, "SuddenDeathHUDThink" )
+	player.EndSignal( "SuddenDeathHUDThink" )
+	vgui.EndSignal( "OnDestroy" )
+
+	while ( GetGameState() != eGameState.SuddenDeath )
+		WaitSignal( player, "GameStateChanged" )
+
+	EndSignal( player, "GameStateChanged" )
+
+	local hudScores = vgui.s.scoreboardProgressBars
+
+	OnThreadEnd(
+		function() : ( hudScores, player )
+		{
+			if ( !IsValid( hudScores ) )
+				return
+
+			hudScores.GameInfo_Label.SetColor( 255, 255, 255, 255 )
+
+			string restoredGameModeLabelText = GAMETYPE_TEXT[ GameRules_GetGameMode() ]
+			hudScores.GameModeLabel.SetText( restoredGameModeLabelText )
+
+			if ( player == GetLocalClientPlayer() )
+			{
+				local scoreElemsClient = player.cv.clientHud.s.mainVGUI.s.scoreboardProgressGroup.elements
+				scoreElemsClient.GameModeLabel.SetText( restoredGameModeLabelText )
+			}
+		}
+	)
+
+	string gameModeLabelText = ""
+
+	switch ( GAMETYPE )
+	{
+		case CAPTURE_THE_FLAG:
+			gameModeLabelText = "#GAMEMODE_CAPTURE_THE_FLAG_SUDDEN_DEATH"
+			break
+
+		case TEAM_DEATHMATCH:
+		case HARDCORE_TDM:
+			gameModeLabelText = "#GAMEMODE_PILOT_HUNTER_SUDDEN_DEATH"
+			break
+
+		default:
+			gameModeLabelText = GAMETYPE_TEXT[ GameRules_GetGameMode() ]
+	}
+
+	hudScores.GameModeLabel.SetText( gameModeLabelText )
+
+	if ( player == GetLocalClientPlayer() )
+	{
+		local scoreElemsClient = player.cv.clientHud.s.mainVGUI.s.scoreboardProgressGroup.elements
+		scoreElemsClient.GameModeLabel.SetText( gameModeLabelText )
+	}
+
+	float startTime = Time()
+	float pulseFrac = 0.0
+
+	while ( true )
+	{
+		pulseFrac = Graph( GetPulseFrac( 1.0, startTime ), 0.0, 1.0, 0.05, 1.0 )
+		hudScores.GameInfo_Label.SetColor( 255, 255, 255, 255 * pulseFrac )
+
+		wait( 0.0 )
+	}
+}
