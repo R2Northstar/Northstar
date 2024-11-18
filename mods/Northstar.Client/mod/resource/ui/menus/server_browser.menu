@@ -2554,6 +2554,7 @@ resource/ui/menus/mods_browse.menu
 			xpos -17
 			ypos -57
 			zpos 90
+			textAlignment	north
 
 			scriptID 999
 
