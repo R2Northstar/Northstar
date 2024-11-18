@@ -247,8 +247,10 @@ void function PlayerPainSoundThread()
 				ourPlayer = localViewPlayer;
 				soundLayer2Start = GetPainSound( ourPlayer, "sound_pain_layer2_start" )
 				soundLayer2Loop = GetPainSound( ourPlayer, "sound_pain_layer2_loop" )
-				EmitSoundOnEntity( ourPlayer, soundLayer2Start )
-				EmitSoundOnEntity( ourPlayer, soundLayer2Loop )
+				if ( soundLayer2Start != "" )
+					EmitSoundOnEntity( ourPlayer, soundLayer2Start )
+				if ( soundLayer2Loop != "" )
+					EmitSoundOnEntity( ourPlayer, soundLayer2Loop )
 			}
 			else
 			{
@@ -274,7 +276,8 @@ void function PlayerPainSoundThread()
 				ourPlayer = localViewPlayer
 				soundLayer3Loop = GetPainSound( ourPlayer, "sound_pain_layer3_loop" )
 				soundLayer3End = GetPainSound( ourPlayer, "sound_pain_layer3_end" )
-				EmitSoundOnEntity( ourPlayer, soundLayer3Loop )
+				if ( soundLayer3Loop != "" )
+					EmitSoundOnEntity( ourPlayer, soundLayer3Loop )
 			}
 			else
 			{
