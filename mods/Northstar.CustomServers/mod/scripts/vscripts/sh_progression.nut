@@ -169,8 +169,13 @@ void function UpdateCachedLoadouts_Threaded()
 	// below here is just making all the menu models update properly and such
 
 	#if UI
-	uiGlobal.pilotSpawnLoadoutIndex = GetPersistentSpawnLoadoutIndex( GetUIPlayer(), "pilot" )
-	uiGlobal.titanSpawnLoadoutIndex = GetPersistentSpawnLoadoutIndex( GetUIPlayer(), "titan" )
+	entity UIPlayer = GetUIPlayer()
+	
+	if ( !IsValid( UIPlayer ) )
+		return
+
+	uiGlobal.pilotSpawnLoadoutIndex = GetPersistentSpawnLoadoutIndex( UIPlayer, "pilot" )
+	uiGlobal.titanSpawnLoadoutIndex = GetPersistentSpawnLoadoutIndex( UIPlayer, "titan" )
 	#endif
 
 	#if CLIENT
