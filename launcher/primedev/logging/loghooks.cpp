@@ -9,8 +9,6 @@
 #include <iomanip>
 #include <sstream>
 
-AUTOHOOK_INIT()
-
 ConVar* Cvar_spewlog_enable;
 ConVar* Cvar_cl_showtextmsg;
 
@@ -70,10 +68,8 @@ const std::unordered_map<SpewType_t, const char> PrintSpewTypes_Short = {
 
 ICenterPrint* pInternalCenterPrint = NULL;
 
-// clang-format off
-AUTOHOOK(TextMsg, client.dll + 0x198710,
-void,, (BFRead* msg))
-// clang-format on
+static void (*o_pTextMsg)(BFRead* msg) = nullptr;
+static void h_TextMsg(BFRead* msg)
 {
 	TextMsgPrintType_t msg_dest = (TextMsgPrintType_t)msg->ReadByte();
 
@@ -103,10 +99,8 @@ void,, (BFRead* msg))
 	}
 }
 
-// clang-format off
-AUTOHOOK(Hook_fprintf, engine.dll + 0x51B1F0,
-int,, (void* const stream, const char* const format, ...))
-// clang-format on
+static int (*o_pfprintf)(void* const stream, const char* const format, ...) = nullptr;
+static int h_fprintf(void* const stream, const char* const format, ...)
 {
 	NOTE_UNUSED(stream);
 
@@ -127,19 +121,15 @@ int,, (void* const stream, const char* const format, ...))
 	return 0;
 }
 
-// clang-format off
-AUTOHOOK(ConCommand_echo, engine.dll + 0x123680,
-void,, (const CCommand& arg))
-// clang-format on
+static void (*o_pConCommand_echo)(const CCommand& arg) = nullptr;
+static void h_ConCommand_echo(const CCommand& arg)
 {
 	if (arg.ArgC() >= 2)
 		NS::log::echo->info("{}", arg.ArgS());
 }
 
-// clang-format off
-AUTOHOOK(EngineSpewFunc, engine.dll + 0x11CA80,
-void, __fastcall, (void* pEngineServer, SpewType_t type, const char* format, va_list args))
-// clang-format on
+static void(__fastcall* o_pEngineSpewFunc)(void* pEngineServer, SpewType_t type, const char* format, va_list args) = nullptr;
+static void __fastcall h_EngineSpewFunc(void* pEngineServer, SpewType_t type, const char* format, va_list args)
 {
 	NOTE_UNUSED(pEngineServer);
 	if (!Cvar_spewlog_enable->GetBool())
@@ -214,10 +204,8 @@ void, __fastcall, (void* pEngineServer, SpewType_t type, const char* format, va_
 }
 
 // used for printing the output of status
-// clang-format off
-AUTOHOOK(Status_ConMsg, engine.dll + 0x15ABD0,
-void,, (const char* text, ...))
-// clang-format on
+static void (*o_pStatus_ConMsg)(const char* text, ...) = nullptr;
+static void h_Status_ConMsg(const char* text, ...)
 {
 	char formatted[2048];
 	va_list list;
@@ -233,10 +221,8 @@ void,, (const char* text, ...))
 	spdlog::info(formatted);
 }
 
-// clang-format off
-AUTOHOOK(CClientState_ProcessPrint, engine.dll + 0x1A1530, 
-bool,, (void* thisptr, uintptr_t msg))
-// clang-format on
+static bool (*o_pCClientState_ProcessPrint)(void* thisptr, uintptr_t msg) = nullptr;
+static bool h_CClientState_ProcessPrint(void* thisptr, uintptr_t msg)
 {
 	NOTE_UNUSED(thisptr);
 
@@ -252,14 +238,28 @@ bool,, (void* thisptr, uintptr_t msg))
 
 ON_DLL_LOAD_RELIESON("engine.dll", EngineSpewFuncHooks, ConVar, (CModule module))
 {
-	AUTOHOOK_DISPATCH_MODULE(engine.dll)
+	o_pfprintf = module.Offset(0x51B1F0).RCast<decltype(o_pfprintf)>();
+	HookAttach(&(PVOID&)o_pfprintf, (PVOID)h_fprintf);
+
+	o_pConCommand_echo = module.Offset(0x123680).RCast<decltype(o_pConCommand_echo)>();
+	HookAttach(&(PVOID&)o_pConCommand_echo, (PVOID)h_ConCommand_echo);
+
+	o_pEngineSpewFunc = module.Offset(0x11CA80).RCast<decltype(o_pEngineSpewFunc)>();
+	HookAttach(&(PVOID&)o_pEngineSpewFunc, (PVOID)h_EngineSpewFunc);
+
+	o_pStatus_ConMsg = module.Offset(0x15ABD0).RCast<decltype(o_pStatus_ConMsg)>();
+	HookAttach(&(PVOID&)o_pStatus_ConMsg, (PVOID)h_Status_ConMsg);
+
+	o_pCClientState_ProcessPrint = module.Offset(0x1A1530).RCast<decltype(o_pCClientState_ProcessPrint)>();
+	HookAttach(&(PVOID&)o_pCClientState_ProcessPrint, (PVOID)h_CClientState_ProcessPrint);
 
 	Cvar_spewlog_enable = new ConVar("spewlog_enable", "0", FCVAR_NONE, "Enables/disables whether the engine spewfunc should be logged");
 }
 
 ON_DLL_LOAD_CLIENT_RELIESON("client.dll", ClientPrintHooks, ConVar, (CModule module))
 {
-	AUTOHOOK_DISPATCH_MODULE(client.dll)
+	o_pTextMsg = module.Offset(0x198710).RCast<decltype(o_pTextMsg)>();
+	HookAttach(&(PVOID&)o_pTextMsg, (PVOID)h_TextMsg);
 
 	Cvar_cl_showtextmsg = new ConVar("cl_showtextmsg", "1", FCVAR_NONE, "Enable/disable text messages printing on the screen.");
 	pInternalCenterPrint = module.Offset(0x216E940).RCast<ICenterPrint*>();
