@@ -1,0 +1,951 @@
+untyped
+
+global function ClDamageIndicator_Init
+global function Create_DamageIndicatorHUD
+global function DamageIndicators
+global function GrenadeArrowThink
+global function RumbleForTitanDamage
+
+global function ServerCallback_TitanTookDamage
+global function ServerCallback_PilotTookDamage
+//global function ClientCodeCallback_OnMissileCreation
+global function ClientCodeCallback_CreateGrenadeIndicator
+
+global function DamageIndicatorRui
+
+global function ShowGrenadeArrow
+
+global function SCB_AddGrenadeIndicatorForEntity
+
+const DAMAGEARROW_FADEANIM = "damage_fade"
+const DAMAGEARROW_DURATION = 2.5
+const DAMAGEARROW_SMALL = 0
+const DAMAGEARROW_MEDIUM = 1
+const DAMAGEARROW_LARGE = 2
+
+const float DAMAGEHUD_GRENADE_DEBOUNCE_TIME = 0.4
+const float DAMAGEHUD_GRENADE_DEBOUNCE_TIME_LOWSPEED = 0.15
+const float DAMAGEHUD_GRENADE_DEBOUNCE_TIME_LOWSPEED_VELOCITYCUTOFF = 500.0
+
+
+struct {
+	array<table> damageArrows
+	int currentDamageArrow = 0
+	int numDamageArrows = 16
+	float damageArrowFadeDuration = 1.0
+	float damageArrowTime = 0.0
+	vector damageArrowAngles = < 0.0, 0.0, 0.0 >
+	vector damageArrowPointCenter = < 0.0, 0.0, 0.0 >
+
+	table whizByFX = {
+		small = null,
+		large = null,
+		titan = null,
+	}
+
+	array<table> arrowIncomingAnims = [
+		{ anim = "damage_incoming_small", duration = 1.5 },
+		{ anim = "damage_incoming", duration = 1.75 },
+		{ anim = "damage_incoming_large", duration = 2.00 },
+	]
+
+	int damageIndicatorCount = 0
+} file
+
+function ClDamageIndicator_Init()
+{
+	RegisterSignal( "CriticalHitReceived" )
+
+	AddCreateCallback( "titan_cockpit", DamageArrow_CockpitInit )
+
+	PrecacheParticleSystem( $"P_wpn_grenade_frag_icon" )
+	PrecacheParticleSystem( $"P_wpn_grenade_frag_blue_icon" )
+	PrecacheParticleSystem( $"P_wpn_grenade_smoke_icon" )
+
+	if ( !IsLobby() )
+		AddCallback_EntitiesDidLoad( InitDamageArrows )
+}
+
+function ServerCallback_TitanTookDamage( damage, x, y, z, damageType, damageSourceId, attackerEHandle, eModId, doomedNow, doomedDamage )
+{
+	expect float( damage )
+	expect int( damageType )
+	expect int( damageSourceId )
+	expect bool( doomedNow )
+	expect int( doomedDamage )
+
+	if ( IsWatchingThirdPersonKillReplay() )
+		return
+
+	if ( DebugVictimClientDamageFeedbackIsEnabled() && (damage > 0.0) )
+	{
+		entity attacker = attackerEHandle ? GetHeavyWeightEntityFromEncodedEHandle( attackerEHandle ) : null
+		entity localViewPlayer = GetLocalViewPlayer()
+		bool isHeadShot = (damageType & DF_HEADSHOT) ? true : false
+		bool isKillShot = (damageType & DF_KILLSHOT) ? true : false
+		bool isCritical = (damageType & DF_CRITICAL) ? true : false
+		bool isDoomProtected = (damageType & DF_DOOM_PROTECTED) ? true : false
+		bool isDoomFatality = (damageType & DF_DOOM_FATALITY) ? true : false
+
+		local weaponMods = []
+		if ( eModId != null && eModId in modNameStrings )
+			weaponMods.append( modNameStrings[eModId] )
+
+		string modDesc = ((eModId != null && eModId in modNameStrings) ? (expect string( modNameStrings[eModId] )) : "")
+		DebugTookDamagePrint( localViewPlayer, attacker, damage, damageSourceId, modDesc, isHeadShot, isKillShot, isCritical, doomedNow, doomedDamage, isDoomProtected, isDoomFatality )
+	}
+
+	// It appears to be faster here to create a new thread so other functions called can wait until the frame ends before running.
+	thread TitanTookDamageThread( damage, x, y, z, damageType, damageSourceId, attackerEHandle, eModId, doomedNow, doomedDamage )
+
+	vector damageOrigin = < x, y, z >
+	entity attacker = attackerEHandle ? GetHeavyWeightEntityFromEncodedEHandle( attackerEHandle ) : null
+
+	if ( damageSourceId in clGlobal.onLocalPlayerTookDamageCallback )
+	{
+		foreach ( callback in clGlobal.onLocalPlayerTookDamageCallback[ damageSourceId ] )
+			callback( damage, damageOrigin, damageType, damageSourceId, attacker )
+	}
+}
+
+function TitanTookDamageThread( float damage, x, y, z, int damageType, int damageSourceId, attackerEHandle, eModId, bool doomedNow, int doomedDamage )
+{
+	WaitEndFrame()
+
+	entity attacker = attackerEHandle ? GetHeavyWeightEntityFromEncodedEHandle( attackerEHandle ) : null
+	entity localViewPlayer = GetLocalViewPlayer()
+	entity cockpit = localViewPlayer.GetCockpit()
+
+	if ( cockpit && IsTitanCockpitModelName( cockpit.GetModelName() ) )
+		TitanCockpit_DamageFeedback( localViewPlayer, cockpit, damage, damageType, < x, y, z >, damageSourceId, doomedNow, doomedDamage )
+
+	if ( damage >= DAMAGE_BREAK_MELEE_ASSIST )
+		localViewPlayer.Lunge_ClearTarget()
+
+	if ( damageSourceId != eDamageSourceId.bubble_shield  ) //Don't play Betty OS dialogue if we took damage by bubble shield. We don't have appropriate dialogue for it.
+		Tracker_PlayerAttackedByTarget( localViewPlayer, attacker )
+
+	array<string> weaponMods
+	if ( eModId != null && eModId in modNameStrings )
+		weaponMods.append( expect string( modNameStrings[ eModId ] ) )
+
+	if ( (damage > 0.0) || doomedDamage )
+	{
+		vector damageOrigin = < x, y, z >
+		DamageHistoryStruct damageHistory = StoreDamageHistoryAndUpdate( localViewPlayer, MAX_DAMAGE_HISTORY_TIME, damage, damageOrigin, damageType, damageSourceId, attacker, weaponMods )
+		DamageIndicators( damageHistory, true )
+	}
+
+	entity soul = localViewPlayer.GetTitanSoul()
+	if ( PlayerHasPassive( localViewPlayer, ePassives.PAS_AUTO_EJECT ) ) //TODO: Handle nuclear eject if we ever allow nuclear + auto eject combo again
+	{
+		if ( ShouldPlayAutoEjectAnim( localViewPlayer, soul, doomedNow )  )
+			thread PlayerEjects( localViewPlayer, cockpit )
+
+	}
+
+	if ( damageType & DF_CRITICAL )
+	{
+		localViewPlayer.Signal( "CriticalHitReceived" )
+		EmitSoundOnEntity( localViewPlayer, "titan_damage_crit_3p_vs_1p" )
+	}
+}
+
+bool function ShouldPlayAutoEjectAnim( entity player, entity titanSoul, bool doomedNow )
+{
+	if ( !titanSoul.IsDoomed() )
+		return false
+
+	if ( player.ContextAction_IsActive() && !player.ContextAction_IsBusy() ) //Some other context action, e.g. melee instead of eject. Then again
+		return false
+
+	return true
+}
+
+string function DevBuildAttackerDesc( entity localViewPlayer, entity ent )
+{
+	if ( ent == null )
+		return "<null>"
+
+	if ( localViewPlayer == ent )
+		return ("<self>")
+
+	if ( ent.IsPlayer() )
+		return ("'" + ent.GetPlayerName() + "' " + ent.GetPlayerSettings())
+
+	entity bossPlayer = ent.GetBossPlayer()
+	string ownerString = ((bossPlayer != null) ? (bossPlayer.GetPlayerName() + "'s ") : "")
+
+	var sigName = ent.GetSignifierName()
+	string debugName = (sigName != null) ? expect string( sigName ) : ent.GetClassName()
+	return (ownerString + debugName)
+}
+
+void function DebugTookDamagePrint( entity ornull localViewPlayer, entity attacker, float damage, int damageSourceId, string modDesc, bool isHeadShot, bool isKillShot, bool isCritical, bool isDoomShot, int doomShotDamage, bool isDoomProtected, bool isDoomFatality )
+{
+	Assert( localViewPlayer )
+	string attackerDesc = DevBuildAttackerDesc( expect entity( localViewPlayer ), attacker )
+	string timePrint = format( "%d:%.2f", FrameCount(), PlatformTime() )
+	printt(
+				"{"+timePrint+"} TOOK DAMAGE: " + damage +
+						(isHeadShot ? " (headshot)" : "") +
+						(isCritical ? " (critical)" : "") +
+						(isKillShot ? " (KILLED)" : "") +
+						(isDoomShot ? " (DOOMED dmg:" + doomShotDamage + ")" : "") +
+						(isDoomProtected ? " (DOOM PROTECTION)" : "") +
+						(isDoomFatality ? " (DOOM FATALITY)" : "") +
+				"   " + attackerDesc +
+				"  w/ " + GetObitFromDamageSourceID( damageSourceId ) + modDesc
+	)
+}
+
+void function PlayVictimHeadshotConfirmation( bool isKillShot )
+{
+	entity localViewPlayer = GetLocalViewPlayer()
+	if ( localViewPlayer == null )
+		return
+
+	if ( isKillShot )
+		EmitSoundOnEntity( localViewPlayer, "Player.Hitbeep_headshot.Kill.Human_3P_vs_1P" )
+	else
+		EmitSoundOnEntity( localViewPlayer, "Player.Hitbeep_headshot.Human_3P_vs_1P" )
+}
+
+void function RumbleForPilotDamage( float damageAmount )
+{
+	Rumble_Play( "rumble_pilot_hurt", {} )
+}
+
+void function RumbleForTitanDamage( float damageAmount )
+{
+	string rumbleName;
+	if ( damageAmount < 500 )
+		rumbleName = "titan_damaged_small"
+	else if ( damageAmount < 1000 )
+		rumbleName = "titan_damaged_med"
+	else
+		rumbleName = "titan_damaged_big"
+
+	Rumble_Play( rumbleName, {} )
+}
+
+function ServerCallback_PilotTookDamage( damage, x, y, z, damageType, damageSourceId, attackerEHandle, eModId )
+{
+	expect float( damage )
+	expect int( damageType )
+	expect int( damageSourceId )
+
+	if ( IsWatchingThirdPersonKillReplay() )
+		return
+
+	entity attacker = attackerEHandle ? GetHeavyWeightEntityFromEncodedEHandle( attackerEHandle ) : null
+	entity localViewPlayer = GetLocalViewPlayer()
+	vector damageOrigin = < x, y, z >
+
+	bool isHeadShot = (damageType & DF_HEADSHOT) ? true : false
+	bool isKillShot = (damageType & DF_KILLSHOT) ? true : false
+
+	if ( isHeadShot )
+		PlayVictimHeadshotConfirmation( isKillShot );
+
+	//Jolt view if player is getting meleed
+	if ( damageSourceId == eDamageSourceId.human_melee )
+	{
+		vector joltDir = Normalize( localViewPlayer.CameraPosition() - damageOrigin )
+		//clear melee assist when you get meleed
+		localViewPlayer.Lunge_ClearTarget()
+	}
+
+	array<string> weaponMods
+	if ( eModId != null && eModId in modNameStrings )
+		weaponMods.append( expect string( modNameStrings[ eModId ] ) )
+
+	if ( DebugVictimClientDamageFeedbackIsEnabled() && !IsWatchingReplay() )
+	{
+		string modDesc = (weaponMods.len() > 0 ? (" +" + weaponMods[0]) : "")
+		bool isCritical = (damageType & DF_CRITICAL) ? true : false
+
+		DebugTookDamagePrint( localViewPlayer, attacker, damage, damageSourceId, modDesc, isHeadShot, isKillShot, isCritical, false, 0, false, false )
+	}
+
+	RumbleForPilotDamage( damage )
+
+	DamageHistoryStruct damageTable = StoreDamageHistoryAndUpdate( localViewPlayer, MAX_DAMAGE_HISTORY_TIME, damage, damageOrigin, damageType, damageSourceId, attacker, weaponMods )
+
+	DamageIndicators( damageTable, false )
+
+	if ( damageSourceId in clGlobal.onLocalPlayerTookDamageCallback )
+	{
+		foreach ( callback in clGlobal.onLocalPlayerTookDamageCallback[ damageSourceId ] )
+			callback( damage, damageOrigin, damageType, damageSourceId, attacker )
+	}
+}
+
+/*
+void function ClientCodeCallback_OnMissileCreation( entity missileEnt, string weaponName, bool firstTime )
+{
+
+}
+*/
+
+void function ClientCodeCallback_CreateGrenadeIndicator( entity missileEnt, string weaponName )
+{
+	if ( !IsValid( missileEnt ) )
+		return
+
+	//Called for all projectiles, not just missiles.
+	TryAddGrenadeIndicator( missileEnt, weaponName )
+}
+
+
+void function DamageIndicators( DamageHistoryStruct damageHistory, bool playerIsTitan )
+{
+	if ( damageHistory.damageType & DF_NO_INDICATOR )
+		return
+	if ( !level.clientScriptInitialized )
+		return
+	if ( IsWatchingThirdPersonKillReplay() )
+		return
+
+	entity localViewPlayer = GetLocalViewPlayer()
+
+	int arrowType = DAMAGEARROW_MEDIUM
+
+	if ( IsValid( damageHistory.attacker ) )
+	{
+		if ( damageHistory.attacker == localViewPlayer )
+			return
+
+		if ( damageHistory.attacker.IsTitan() )
+			arrowType = DAMAGEARROW_MEDIUM
+		else if ( damageHistory.attacker.IsPlayer() )
+			arrowType = DAMAGEARROW_SMALL
+		else
+			arrowType = DAMAGEARROW_SMALL
+
+			//if ( damageHistory.attacker.IsTitan() )
+			//	arrowType = DAMAGEARROW_LARGE
+			//else if ( damageHistory.attacker.IsPlayer() )
+			//	arrowType = DAMAGEARROW_MEDIUM
+			//else
+			//	arrowType = DAMAGEARROW_SMALL
+	}
+
+	if ( playerIsTitan )
+	{
+		entity cockpit = localViewPlayer.GetCockpit()
+
+		if ( !cockpit )
+			return
+
+		vector dirToDamage = damageHistory.origin - localViewPlayer.GetOrigin()
+		dirToDamage.z = 0
+		dirToDamage = Normalize( dirToDamage )
+
+		vector playerViewForward = localViewPlayer.GetViewVector()
+		playerViewForward.z = 0.0
+		playerViewForward = Normalize( playerViewForward )
+
+		float damageFrontDot = DotProduct( dirToDamage, playerViewForward )
+
+		if ( damageFrontDot >= 0.707107 )
+			cockpit.AddToTitanHudDamageHistory( COCKPIT_PANEL_TOP, damageHistory.damage )
+		else if ( damageFrontDot <= -0.707107 )
+			cockpit.AddToTitanHudDamageHistory( COCKPIT_PANEL_BOTTOM, damageHistory.damage )
+		else
+		{
+			vector playerViewRight = localViewPlayer.GetViewRight()
+			playerViewRight.z = 0.0
+			playerViewRight = Normalize( playerViewRight )
+
+			float damageRightDot = DotProduct( dirToDamage, playerViewRight )
+
+			if ( damageRightDot >= 0.707107 )
+				cockpit.AddToTitanHudDamageHistory( COCKPIT_PANEL_RIGHT, damageHistory.damage )
+			else
+				cockpit.AddToTitanHudDamageHistory( COCKPIT_PANEL_LEFT, damageHistory.damage )
+		}
+
+		if ( damageHistory.attacker && damageHistory.attacker.GetParent() == localViewPlayer )
+		{
+			damageHistory.rodeoDamage = true
+			return
+		}
+	}
+
+	#if SP
+		if ( IsValid( damageHistory.attacker ) && damageHistory.attacker.IsTitan() )
+			arrowType = DAMAGEARROW_LARGE
+		else if ( playerIsTitan && damageHistory.damage < 50 )
+			return
+		else if ( !playerIsTitan && damageHistory.damage < 15 )
+			arrowType = DAMAGEARROW_SMALL
+		else
+			arrowType = DAMAGEARROW_MEDIUM
+
+		thread DamageIndicatorRui( damageHistory.origin, arrowType, playerIsTitan )
+	#else
+		bool show2DIndicator = true
+		bool show3DIndicator = false
+
+		const int DAMAGE_INDICATOR_STYLE_2D_ONLY = 0
+		const int DAMAGE_INDICATOR_STYLE_BOTH = 1
+		const int DAMAGE_INDICATOR_STYLE_3D_ONLY = 2
+
+		if ( playerIsTitan )
+		{
+			show2DIndicator = GetConVarInt( "damage_indicator_style_titan" ) != DAMAGE_INDICATOR_STYLE_3D_ONLY
+			show3DIndicator = GetConVarInt( "damage_indicator_style_titan" ) != DAMAGE_INDICATOR_STYLE_2D_ONLY
+		}
+		else
+		{
+			show2DIndicator = GetConVarInt( "damage_indicator_style_pilot" ) != DAMAGE_INDICATOR_STYLE_3D_ONLY
+			show3DIndicator = GetConVarInt( "damage_indicator_style_pilot" ) != DAMAGE_INDICATOR_STYLE_2D_ONLY
+		}
+
+		if ( show2DIndicator )
+			thread DamageIndicatorRui( damageHistory.origin, arrowType, playerIsTitan )
+
+		if ( show3DIndicator )
+			ShowDamageArrow( localViewPlayer, damageHistory.origin, arrowType, playerIsTitan, damageHistory.attacker )
+	#endif
+}
+
+const float DAMAGE_INDICATOR_DURATION = 4.0
+
+void function DamageIndicatorRui( vector damageOrigin, int arrowType, bool playerIsTitan )
+{
+	clGlobal.levelEnt.EndSignal( "KillReplayStarted" )
+	clGlobal.levelEnt.EndSignal( "KillReplayEnded" )
+
+	// slop
+	float distance = Length( damageOrigin - GetLocalViewPlayer().CameraPosition() )
+	float randomRange = GraphCapped( distance, 0.0, 2048, 0.0, 256.0 )
+	damageOrigin = <damageOrigin.x + RandomFloatRange( randomRange, -randomRange ), damageOrigin.y + RandomFloatRange( randomRange, -randomRange ), damageOrigin.z>
+
+	float startTime = Time()
+
+	var rui = RuiCreate( $"ui/damage_indicator.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
+	RuiSetResolutionToScreenSize( rui )
+	RuiSetGameTime( rui, "startTime", startTime )
+	RuiSetFloat( rui, "duration", DAMAGE_INDICATOR_DURATION )
+	RuiSetInt( rui, "attackerType", arrowType )
+
+	file.damageIndicatorCount++
+	int damageIndicatorThreshold = file.damageIndicatorCount + 8
+
+	OnThreadEnd(
+		function() : ( rui )
+		{
+			RuiDestroy( rui )
+		}
+	)
+
+	while ( Time() - startTime < DAMAGE_INDICATOR_DURATION && file.damageIndicatorCount < damageIndicatorThreshold )
+	{
+		vector vecToDamage = damageOrigin - GetLocalViewPlayer().CameraPosition()
+		vecToDamage.z = 0
+		vecToDamage = Normalize( vecToDamage )
+		RuiSetFloat3( rui, "vecToDamage2D", vecToDamage )
+		RuiSetFloat3( rui, "camVec2D", Normalize( AnglesToForward( < 0, GetLocalViewPlayer().CameraAngles().y, 0 > ) ) )
+		RuiSetFloat( rui, "sideDot", vecToDamage.Dot( CrossProduct( <0, 0, 1>, Normalize( AnglesToForward( < 0, GetLocalViewPlayer().CameraAngles().y, 0 > ) ) ) ) )
+		WaitFrame()
+	}
+}
+
+void function ShowGrenadeArrow( entity player, entity grenade, float damageRadius, float startDelay, bool requireLos = true )
+{
+	thread GrenadeArrowThink( player, grenade, damageRadius, startDelay, requireLos )
+}
+
+vector function GetRandomOriginWithinBounds( entity ent )
+{
+	vector boundingMins = ent.GetBoundingMins()
+	vector boundingMaxs = ent.GetBoundingMaxs()
+
+	vector randomOffset = < RandomFloatRange( boundingMins.x, boundingMaxs.x ), RandomFloatRange( boundingMins.y, boundingMaxs.y ), RandomFloatRange( boundingMins.z, boundingMaxs.z ) >
+
+	return ent.GetOrigin() + randomOffset
+}
+
+void function GrenadeArrowThink( entity player, entity grenade, float damageRadius, float startDelay, bool requireLos, string requiredPlayerState = "any" )
+{
+	EndSignal( grenade, "OnDeath" ) //On death added primarily for frag_drones
+	EndSignal( grenade, "OnDestroy" )
+	EndSignal( player, "OnDeath" )
+
+	wait startDelay
+
+	asset grenadeModel = GRENADE_INDICATOR_FRAG_MODEL
+	vector grenadeOffset = < -5, 0, 0 >
+	if ( grenade instanceof C_Projectile )
+	{
+		if ( grenade.ProjectileGetWeaponClassName() == "mp_weapon_grenade_sonar" )
+		{
+			grenadeModel = GRENADE_INDICATOR_SONAR_MODEL
+			grenadeOffset = < -5, 0, 0 >
+			requireLos = false
+		}
+	}
+	else if ( grenade.IsNPC() )
+	{
+		switch ( grenade.GetSignifierName() )
+		{
+			#if MP
+			case "npc_stalker":
+				grenadeModel = GRENADE_INDICATOR_STALKER_MODEL
+				break
+			#endif
+
+			case "npc_frag_drone":
+				grenadeModel = GRENADE_INDICATOR_TICK_MODEL
+				break
+		}
+	}
+
+	entity arrow = CreateClientSidePropDynamic( < 0, 0, 0 >, < 0, 0, 0 >, GRENADE_INDICATOR_ARROW_MODEL )
+	entity mdl = CreateClientSidePropDynamic( < 0, 0, 0 >, < 0, 0, 0 >, grenadeModel )
+
+	OnThreadEnd(
+		function() : ( arrow, mdl )
+		{
+			if ( IsValid( arrow ) )
+				arrow.Destroy()
+			if ( IsValid( mdl ) )
+				mdl.Destroy()
+		}
+	)
+
+	entity cockpit = player.GetCockpit()
+	if ( !cockpit )
+		return
+
+	EndSignal( cockpit, "OnDestroy" )
+
+	arrow.SetParent( cockpit, "CAMERA_BASE" )
+	arrow.SetAttachOffsetOrigin( < 25.0, 0.0, -4.0 > )
+
+	mdl.SetParent( arrow, "BACK" )
+	mdl.SetAttachOffsetOrigin( grenadeOffset )
+
+	float lastVisibleTime = 0
+	bool shouldBeVisible = true
+
+	while ( true )
+	{
+		cockpit = player.GetCockpit()
+
+		switch ( requiredPlayerState )
+		{
+			case "any":
+				shouldBeVisible = true
+				break
+			case "pilot":
+				shouldBeVisible = !player.IsTitan()
+				break
+			case "titan":
+				shouldBeVisible = player.IsTitan()
+				break
+			default:
+				Assert( false, "Invalid player state! Allower states: 'any' 'pilot' 'titan'" )
+
+		}
+
+		if ( shouldBeVisible )
+		{
+			if ( Distance( player.GetOrigin(), grenade.GetOrigin() ) > damageRadius || !cockpit )
+			{
+				shouldBeVisible = false
+			}
+			else
+			{
+				bool tracePassed = false
+
+				if ( requireLos )
+				{
+					TraceResults result = TraceLine( grenade.GetOrigin(), GetRandomOriginWithinBounds( player ), grenade, TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE )
+
+					if ( result.fraction == 1.0 )
+						tracePassed = true
+				}
+
+				if ( requireLos && !tracePassed )
+				{
+					shouldBeVisible = false
+				}
+				else
+				{
+					shouldBeVisible = true
+					lastVisibleTime = Time()
+				}
+			}
+		}
+
+		if ( shouldBeVisible || Time() - lastVisibleTime < 0.25 )
+		{
+			arrow.EnableDraw()
+			mdl.EnableDraw()
+
+			arrow.DisableRenderWithViewModelsNoZoom()
+			arrow.EnableRenderWithCockpit()
+			arrow.EnableRenderWithHud()
+			mdl.DisableRenderWithViewModelsNoZoom()
+			mdl.EnableRenderWithCockpit()
+			mdl.EnableRenderWithHud()
+
+			vector damageArrowAngles = AnglesInverse( player.EyeAngles() )
+			vector vecToDamage = grenade.GetOrigin() - (player.EyePosition() + (player.GetViewVector() * 20.0))
+
+			// reparent for embark/disembark
+			if ( arrow.GetParent() == null )
+				arrow.SetParent( cockpit, "CAMERA_BASE", true )
+
+			arrow.SetAttachOffsetAngles( damageArrowAngles.AnglesCompose( vecToDamage.VectorToAngles() ) )
+		}
+		else
+		{
+			mdl.DisableDraw()
+			arrow.DisableDraw()
+		}
+
+		WaitFrame()
+	}
+
+}
+
+
+function Create_DamageIndicatorHUD()
+{
+}
+
+
+void function SCB_AddGrenadeIndicatorForEntity( int team, int ownerHandle, int eHandle, float damageRadius )
+{
+	if ( !level.grenadeIndicatorEnabled )
+		return
+
+	#if DEV
+		if ( !level.clientScriptInitialized )
+			return
+	#endif
+
+	entity player = GetLocalViewPlayer()
+	entity owner = GetEntityFromEncodedEHandle( ownerHandle )
+
+	entity ent = GetEntityFromEncodedEHandle( eHandle )
+	if ( !IsValid( ent ) )
+		return
+
+	if ( team == player.GetTeam() && owner != player )
+		return
+
+	//TryAddGrenadeIndicator( ent, "" ) // TODO: make function handle non-grenade ents
+}
+
+
+function TryAddGrenadeIndicator( grenade, weaponName )
+{
+	#if DEV
+		if ( !level.clientScriptInitialized )
+			return
+	#endif
+
+	if ( !level.grenadeIndicatorEnabled )
+		return
+
+	expect entity( grenade )
+	entity player = GetLocalViewPlayer()
+
+	// view player may be null when dead
+	if ( !IsValid( player ) )
+		return
+
+	var className = grenade.GetClassName()
+	float damageRadius = 0.0
+
+	if ( className == "grenade" )
+	{
+		damageRadius = grenade.GetDamageRadius()
+	}
+	else if ( grenade.ProjectileGetWeaponClassName() == "mp_titanweapon_arc_ball" )
+	{
+		// arc ball doesn't arc to pilots so no need to show the warning
+		if ( !player.IsTitan() )
+			return
+
+		damageRadius = BALL_LIGHTNING_ZAP_RADIUS
+	}
+	else
+	{
+		return
+	}
+
+	float radius = grenade.GetExplosionRadius()
+
+	if ( player.IsPhaseShifted() )
+		return
+
+
+	float startDelay = 0.0
+	if ( grenade.GetOwner() == player )
+	{
+		if ( !grenade.GetProjectileWeaponSettingBool( eWeaponVar.projectile_damages_owner ) && !grenade.GetProjectileWeaponSettingBool( eWeaponVar.explosion_damages_owner ) )
+			return
+
+		float relVelocity = Length( grenade.GetVelocity() - player.GetVelocity() )
+		if ( relVelocity < DAMAGEHUD_GRENADE_DEBOUNCE_TIME_LOWSPEED_VELOCITYCUTOFF )
+			startDelay = DAMAGEHUD_GRENADE_DEBOUNCE_TIME_LOWSPEED
+		else
+			startDelay = DAMAGEHUD_GRENADE_DEBOUNCE_TIME
+	}
+	else if ( grenade.GetTeam() == player.GetTeam() )
+	{
+		return
+	}
+
+	float padding = player.IsTitan() ? 204.0 : 65.0
+
+	//AddGrenadeIndicator( grenade, radius + padding, startDelay, false )
+	ShowGrenadeArrow( player, grenade, radius + padding, startDelay )
+
+	//thread ShowRuiGrenadeThreatIndicator( grenade, float( radius ) + padding )
+}
+
+void function ShowRuiGrenadeThreatIndicator( entity grenade, float radius )
+{
+	var rui = RuiCreate( $"ui/grenade_threat_indicator.rpak", clGlobal.topoCockpitHudPermanent, RUI_DRAW_COCKPIT, 0 )
+	//var rui = CreateCockpitRui( $"ui/grenade_threat_indicator.rpak", 0 )
+	RuiSetGameTime( rui, "startTime", Time() )
+	RuiSetFloat( rui, "damageRadius", radius )
+	//RuiTrackFloat3( rui, "pos", grenade, RUI_TRACK_ABSORIGIN_FOLLOW )`
+	RuiTrackFloat3( rui, "pos", grenade, RUI_TRACK_POINT_FOLLOW, grenade.LookupAttachment( "BACK" ) )
+
+	OnThreadEnd(
+		function() : ( rui )
+		{
+			RuiDestroy( rui )
+		}
+	)
+
+	grenade.WaitSignal( "OnDestroy" )
+}
+
+
+
+void function InitDamageArrows()
+{
+	for ( int i = 0; i < file.numDamageArrows; i++ )
+	{
+		table arrowData = {
+			grenade = null
+			grenadeRadius = 0.0
+			damageOrigin = < 0.0, 0.0, 0.0 >,
+			damageDirection = < 0.0, 0.0, 0.0 >,
+			endTime = -99.0 + DAMAGEARROW_DURATION,
+			startTime = -99.0,
+			isDying = false,
+			isVisible = false,
+			whizby = false, // hack until we get a new model/shader for the whizby indicator - Roger
+			attacker = null,
+			randomAngle = 0 // Repeated shots from the same attacker randomize the angle of the arrow.
+		}
+
+		entity arrow = CreateClientSidePropDynamic( < 0, 0, 0 >, < 0, 0, 0 >, DAMAGEARROW_MODEL )
+		arrow.SetCanCloak( false )
+		arrow.SetVisibleForLocalPlayer( 0 )
+		arrow.DisableDraw()
+
+		arrowData.arrow <- arrow
+		arrow.s.arrowData <- arrowData
+
+		file.damageArrows.append( arrowData )
+	}
+
+	entity arrow = CreateClientSidePropDynamic( < 0, 0, 0 >, < 0, 0, 0 >, DAMAGEARROW_MODEL )
+	file.damageArrowFadeDuration = arrow.GetSequenceDuration( DAMAGEARROW_FADEANIM ) // 0.266
+	arrow.Destroy()
+}
+
+
+void function DamageArrow_CockpitInit( entity cockpit )
+{
+	entity localViewPlayer = GetLocalViewPlayer()
+	thread UpdateDamageArrows( localViewPlayer, cockpit )
+}
+
+function RefreshExistingDamageArrow( entity player, arrowData, int arrowType, damageOrigin )
+{
+	//Hack - 10 tick rate is making damage feedback bunch up. If we improve that then shouldn't be threaded.
+	player.EndSignal( "OnDestroy" )
+	entity cockpit = player.GetCockpit()
+	if ( IsValid( cockpit ) )
+		cockpit.EndSignal( "OnDestroy" )
+
+	float time = Time()
+
+	if ( arrowData.startTime == time )
+		wait 0.05
+
+	if ( !arrowData.isVisible || arrowData.isDying )
+		return
+
+	time = Time()
+	arrowData.endTime = time + file.arrowIncomingAnims[ arrowType ].duration
+	arrowData.startTime = time
+	arrowData.damageOrigin = damageOrigin
+	arrowData.randomAngle = RandomIntRange( -3, 3 )
+	PulseDamageArrow( expect entity( arrowData.arrow ), arrowType )
+	UpdateDamageArrowVars( player )
+	UpdateDamageArrowAngle( arrowData )
+}
+
+function ShowDamageArrow( entity player, damageOrigin, int arrowType, playerIsTitan, attacker )
+{
+	if ( file.damageArrows.len() == 0 ) // not yet initialized
+		return
+
+	table arrowData = file.damageArrows[file.currentDamageArrow]
+	entity arrow = expect entity( arrowData.arrow )
+
+	file.currentDamageArrow++
+	if ( file.currentDamageArrow >= file.numDamageArrows )
+		file.currentDamageArrow = 0
+
+	float time = Time()
+
+	arrow.s.arrowData.damageOrigin = damageOrigin
+	arrow.s.arrowData.grenade = null
+	arrow.s.arrowData.grenadeRadius = 0.0
+	arrow.s.arrowData.endTime = time + file.arrowIncomingAnims[ arrowType ].duration
+	arrow.s.arrowData.startTime = time
+	arrow.s.arrowData.isDying = false
+	arrow.s.arrowData.whizby = false	//	hack until we get a new model/shader for the whizby indicator
+	arrow.s.arrowData.attacker = attacker
+
+	if ( !arrow.s.arrowData.isVisible )
+	{
+		entity cockpit = player.GetCockpit()
+
+		if ( !cockpit )
+			return
+
+		arrow.s.arrowData.isVisible = true
+		arrow.EnableDraw()
+
+		arrow.DisableRenderWithViewModelsNoZoom()
+		arrow.EnableRenderWithCockpit()
+
+		arrow.EnableRenderWithHud()
+
+		arrow.SetParent( cockpit, "CAMERA_BASE" )
+		arrow.SetAttachOffsetOrigin( < 20.0, 0.0, -2.0 > )
+	}
+
+
+	PulseDamageArrow( arrow, arrowType )
+	UpdateDamageArrowVars( player )
+	UpdateDamageArrowAngle( arrowData )
+}
+
+
+function PulseDamageArrow( entity arrow, int arrowType )
+{
+	arrow.Anim_NonScriptedPlay( file.arrowIncomingAnims[ arrowType ].anim )
+}
+
+function UpdateDamageArrowVars( entity localViewPlayer )
+{
+	file.damageArrowTime = Time()
+	file.damageArrowAngles = AnglesInverse( localViewPlayer.EyeAngles() )
+	file.damageArrowPointCenter = localViewPlayer.EyePosition() + ( localViewPlayer.GetViewVector() * 20.0 )
+}
+
+function UpdateDamageArrowAngle( arrowData )
+{
+	if ( IsValid( arrowData.grenade ) )
+		arrowData.damageOrigin = arrowData.grenade.GetOrigin()
+
+	vector vecToDamage = expect vector( arrowData.damageOrigin ) - file.damageArrowPointCenter
+	vector anglesToDamage = VectorToAngles( vecToDamage )
+	vector eyeAngles = GetLocalViewPlayer().EyeAngles()
+
+	float roll = sin( DegToRad( eyeAngles.y - anglesToDamage.y ) )
+
+	arrowData.arrow.SetAttachOffsetAngles( AnglesCompose( file.damageArrowAngles, anglesToDamage ) + < arrowData.randomAngle, 0, roll * 90.0 > )
+	arrowData.damageDirection = Normalize( vecToDamage )
+}
+
+function UpdateDamageArrows( entity localViewPlayer, entity cockpit )
+{
+	localViewPlayer.EndSignal( "OnDestroy" )
+	cockpit.EndSignal( "OnDestroy" )
+
+	OnThreadEnd(
+		function() : ( localViewPlayer )
+		{
+			foreach ( arrowData in file.damageArrows )
+			{
+				if ( IsValid( arrowData.arrow ) )
+				{
+					arrowData.arrow.DisableDraw()
+					arrowData.arrow.ClearParent()
+					arrowData.attacker = null
+					arrowData.isVisible = false
+					arrowData.randomAngle = 0
+				}
+			}
+		}
+	)
+
+	bool varsUpdated = false
+
+	while ( true )
+	{
+		WaitEndFrame()
+
+		vector playerOrigin = localViewPlayer.GetOrigin()
+
+		varsUpdated = false
+		bool inPhaseShift = localViewPlayer.IsPhaseShifted()
+
+		foreach ( arrowData in file.damageArrows )
+		{
+			if ( !arrowData.isVisible )
+			{
+				continue
+			}
+
+			if ( arrowData.grenade != null )
+			{
+				if ( !IsValid( arrowData.grenade ) )
+					arrowData.endTime = 0.0
+			}
+
+			if ( (file.damageArrowTime >= arrowData.endTime) || inPhaseShift )
+			{
+				arrowData.arrow.DisableDraw()
+				arrowData.arrow.ClearParent()
+				arrowData.attacker = null
+				arrowData.isVisible = false
+				arrowData.randomAngle = 0
+				continue
+			}
+
+			if ( !varsUpdated ) // only call UpdateDamageArrowVars if one or more of the file.damageArrows is visible
+			{
+				varsUpdated = true
+				UpdateDamageArrowVars( localViewPlayer )
+			}
+
+			UpdateDamageArrowAngle( arrowData )
+
+			if ( !arrowData.isDying && ( ( arrowData.endTime - file.damageArrowTime ) <= file.damageArrowFadeDuration ) )
+			{
+				arrowData.isDying = true
+				arrowData.arrow.Anim_NonScriptedPlay( DAMAGEARROW_FADEANIM )
+			}
+		}
+
+		wait( 0.0 )
+	}
+}
