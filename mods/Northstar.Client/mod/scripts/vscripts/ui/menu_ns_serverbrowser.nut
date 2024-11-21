@@ -973,18 +973,27 @@ void function OnServerSelected_Threaded( var button )
 	foreach ( requiredModInfo in server.requiredMods )
 	{
 		// Tolerate core mods having different versions
-		if ( requiredModInfo.name.len() > 10 && requiredModInfo.name.slice(0, 10) == "Northstar." )
+		if ( IsCoreMod( requiredModInfo.name ) )
 			continue
 
 		if ( !modNames.contains( requiredModInfo.name ) )
 		{
-			print( format ( "\"%s\" was not found locally, triggering manifesto fetching.", requiredModInfo.name ) )
+			print( format ( "\"%s\" was not found locally" + ( autoDownloadAllowed ? ", triggering manifesto fetching." : "." ), requiredModInfo.name ) )
 			uninstalledModFound = true
 			break
-		} else if ( NSGetModVersionByModName( requiredModInfo.name ) != requiredModInfo.version ) {
-			print( format ( "\"%s\" was found locally but has version \"%s\" while server requires \"%s\", triggering manifesto fetching.", requiredModInfo.name, NSGetModVersionByModName( requiredModInfo.name ), requiredModInfo.version ) )
-			uninstalledModFound = true
-			break
+		} else {
+			array<string> modVersions = GetModVersions( requiredModInfo.name )
+
+			if ( !modVersions.contains( requiredModInfo.version ) ) {
+				print( format ( "\"%s\" was found locally but has versions:", requiredModInfo.name ) )
+				foreach ( string version in modVersions )
+				{
+					print("    - " + version)
+				}
+				print( format ( "while server requires \"%s\"" + ( autoDownloadAllowed ? ", triggering manifesto fetching." : "." ), requiredModInfo.version ) )
+				uninstalledModFound = true
+				break
+			}
 		}
 	}
 	
@@ -992,17 +1001,16 @@ void function OnServerSelected_Threaded( var button )
 	// mods can be installed through auto-download
 	if ( uninstalledModFound && autoDownloadAllowed )
 	{
-		print("Auto-download is allowed, checking if missing mods can be installed automatically.")
 		FetchVerifiedModsManifesto()
 	}
 
 	foreach ( RequiredModInfo mod in server.requiredMods )
 	{
 		// Tolerate core mods having different versions
-		if ( mod.name.len() > 10 && mod.name.slice(0, 10) == "Northstar." )
+		if ( IsCoreMod( mod.name ) )
 			continue
 
-		if ( !NSGetModNames().contains( mod.name ) || NSGetModVersionByModName( mod.name ) != mod.version )
+		if ( !NSGetModNames().contains( mod.name ) || !GetModVersions( mod.name ).contains( mod.version ) )
 		{
 			// Auto-download mod
 			if ( autoDownloadAllowed )
@@ -1055,43 +1063,8 @@ void function OnServerSelected_Threaded( var button )
 				return
 			}
 		}
-		else
-		{
-			// this uses semver https://semver.org
-			array<string> serverModVersion = split( mod.name, "." )
-			array<string> clientModVersion = split( NSGetModVersionByModName( mod.name ), "." )
 
-			bool semverFail = false
-			// if server has invalid semver don't bother checking
-			if ( serverModVersion.len() == 3 )
-			{
-				// bad client semver
-				if ( clientModVersion.len() != serverModVersion.len() )
-					semverFail = true
-				// major version, don't think we should need to check other versions
-				else if ( clientModVersion[ 0 ] != serverModVersion[ 0 ] )
-					semverFail = true
-			}
-
-			if ( semverFail )
-			{
-				DialogData dialogData
-				dialogData.header = "#ERROR"
-				dialogData.message = Localize( "#WRONG_MOD_VERSION", mod.name, mod.version, NSGetModVersionByModName( mod.name ) )
-				dialogData.image = $"ui/menu/common/dialog_error"
-
-				#if PC_PROG
-					AddDialogButton( dialogData, "#DISMISS" )
-
-					AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
-				#endif // PC_PROG
-				AddDialogFooter( dialogData, "#B_BUTTON_DISMISS_RUI" )
-
-				OpenDialog( dialogData )
-
-				return
-			}
-		}
+		// If we get here, means that mod version exists locally => we good
 	}
 
 	if ( server.requiresPassword )
@@ -1136,25 +1109,31 @@ void function ThreadedAuthAndConnectToServer( string password = "", bool modsCha
 	if ( NSWasAuthSuccessful() )
 	{
 		// disable all RequiredOnClient mods that are not required by the server and are currently enabled
-		foreach ( string modName in NSGetModNames() )
+		foreach ( ModInfo mod in NSGetModsInformation() )
 		{
-			if ( NSIsModRequiredOnClient( modName ) && NSIsModEnabled( modName ) )
+			string modName = mod.name
+			string modVersion = mod.version
+
+			if ( mod.requiredOnClient && mod.enabled )
 			{
 				// find the mod name in the list of server required mods
 				bool found = false
 				foreach ( RequiredModInfo mod in file.lastSelectedServer.requiredMods )
 				{
-					if (mod.name == modName)
+					// this tolerates a version difference for requiredOnClient core mods (only Northstar.Custom for now)
+					if (mod.name == modName && ( IsCoreMod( modName ) || mod.version == modVersion ))
 					{
 						found = true
+						print(format("\"%s\" (v%s) is required and already enabled.", modName, modVersion))
 						break
 					}
 				}
-				// if we didnt find the mod name, disable the mod
+				// if we didn't find the mod name, disable the mod
 				if (!found)
 				{
 					modsChanged = true
 					NSSetModEnabled( modName, false )
+					print(format("Disabled \"%s\" (v%s) since it's not required on server.", modName, modVersion))
 				}
 			}
 		}
@@ -1162,10 +1141,33 @@ void function ThreadedAuthAndConnectToServer( string password = "", bool modsCha
 		// enable all RequiredOnClient mods that are required by the server and are currently disabled
 		foreach ( RequiredModInfo mod in file.lastSelectedServer.requiredMods )
 		{
-			if ( NSIsModRequiredOnClient( mod.name ) && !NSIsModEnabled( mod.name ))
+			string modName = mod.name
+			string modVersion = mod.version
+			array<ModInfo> localModInfos = NSGetModInformation( modName )
+
+			// Tolerate core mods (only Northstar.Custom for now) having a different version than server
+			if ( IsCoreMod(modName) )
 			{
-				modsChanged = true
-				NSSetModEnabled( mod.name, true )
+				if ( !localModInfos[0].enabled )
+				{
+					modsChanged = true
+					NSSetModEnabled( modName, true )
+					print(format("Enabled \"%s\" (v%s) to join server.", modName, localModInfos[0].version))
+				}
+			}
+
+			else
+			{
+				foreach( localMod in localModInfos )
+				{
+					if ( localMod.version == mod.version )
+					{
+						modsChanged = true
+						NSSetModEnabled( mod.name, true )
+						print(format("Enabled \"%s\" (v%s) to join server.", modName, modVersion))
+						break
+					}
+				}
 			}
 		}
 
@@ -1360,4 +1362,20 @@ void function TriggerConnectToServerCallbacks( ServerInfo ornull targetServer = 
 	{
 		callback( expect ServerInfo( targetServer ) )
 	}
+}
+
+const array<string> CORE_MODS = ["Northstar.Client", "Northstar.Coop", "Northstar.CustomServers", "Northstar.Custom"]
+bool function IsCoreMod( string modName )
+{
+	return CORE_MODS.find( modName ) != -1
+}
+
+array<string> function GetModVersions( string modName )
+{
+	array<string> versions = []
+	foreach ( ModInfo mod in NSGetModInformation( modName ) )
+	{
+		versions.append( mod.version )
+	}
+	return versions
 }
