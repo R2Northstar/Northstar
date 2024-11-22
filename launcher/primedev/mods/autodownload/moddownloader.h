@@ -129,6 +129,7 @@ public:
 		CHECKSUMING,
 		EXTRACTING,
 		DONE, // Everything went great, mod can be used in-game
+		ABORTED, // User cancelled mod install process
 
 		// Errors
 		FAILED, // Generic error message, should be avoided as much as possible
