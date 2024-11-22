@@ -156,6 +156,14 @@ int ModDownloader::ModFetchingProgressCallback(
 {
 	NOTE_UNUSED(totalToUpload);
 	NOTE_UNUSED(nowUploaded);
+
+	// Abort download
+	ModDownloader* instance = static_cast<ModDownloader*>(ptr);
+	if (instance->modState.state == ABORTED)
+	{
+		return 1;
+	}
+
 	if (totalDownloadSize != 0 && finishedDownloadSize != 0)
 	{
 		ModDownloader* instance = static_cast<ModDownloader*>(ptr);
@@ -563,6 +571,13 @@ void ModDownloader::ExtractMod(fs::path modPath, VerifiedModPlatform platform)
 			}
 		}
 
+		// Abort mod extraction if needed
+		if (modState.state == ABORTED)
+		{
+			spdlog::info("User cancelled mod installation, aborting mod extraction.");
+			return;
+		}
+
 		// Go to next file
 		if ((i + 1) < gi.number_entry)
 		{
@@ -602,8 +617,7 @@ void ModDownloader::DownloadMod(std::string modName, std::string modVersion)
 						spdlog::error("Error while removing downloaded archive: {}", a.what());
 					}
 
-					modState.state = DONE;
-					spdlog::info("Done downloading {}.", modName);
+					spdlog::info("Done cleaning after downloading {}.", modName);
 				});
 
 			// Download mod archive
@@ -613,7 +627,10 @@ void ModDownloader::DownloadMod(std::string modName, std::string modVersion)
 			if (!fetchingResult.has_value())
 			{
 				spdlog::error("Something went wrong while fetching archive, aborting.");
-				modState.state = MOD_FETCHING_FAILED;
+				if (modState.state != ABORTED)
+				{
+					modState.state = MOD_FETCHING_FAILED;
+				}
 				return;
 			}
 			archiveLocation = fetchingResult.value();
@@ -626,9 +643,15 @@ void ModDownloader::DownloadMod(std::string modName, std::string modVersion)
 
 			// Extract downloaded mod archive
 			ExtractMod(archiveLocation, fullVersion.platform);
+			modState.state = DONE;
 		});
 
 	requestThread.detach();
+}
+
+void ModDownloader::CancelDownload()
+{
+	modState.state = ABORTED;
 }
 
 ON_DLL_LOAD_RELIESON("engine.dll", ModDownloader, (ConCommand), (CModule module))
@@ -686,4 +709,10 @@ ADD_SQFUNC("ModInstallState", NSGetModInstallState, "", "", ScriptContext::SERVE
 	g_pSquirrel<context>->sealstructslot(sqvm, 3);
 
 	return SQRESULT_NOTNULL;
+}
+
+ADD_SQFUNC("void", NSCancelModDownload, "", "", ScriptContext::SERVER | ScriptContext::CLIENT | ScriptContext::UI)
+{
+	g_pModDownloader->CancelDownload();
+	return SQRESULT_NULL;
 }
