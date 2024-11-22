@@ -404,6 +404,7 @@
 		"PROGRESSION_ANNOUNCEMENT_BODY" 			"^CCCC0000進行システムが開放されました！^\n\nNorthstarはバニラの進行システム、つまり武器、スキン、タイタン等をレベルアップやチャレンジ達成で解除する機能をサポートしています。\n\nこの進行システムは、ロビー画面下のボタンから有効にできます。\n\nこの設定はいつでも変更可能です。"
 		"MOD_NOT_VERIFIED" 			"(Modが検証されていないため、自動ダウンロードできませんでした)"
 		"WRONG_MOD_VERSION" 			"サーバーはMod\"%s1\"v%s2 を要求していますが、あなたのModバージョンは%s3です"
+		"MODE_MENU_PVPVE" 			"PvPvE"
 
 		// Translation done by Zetryox and CYakigasi
 	}
