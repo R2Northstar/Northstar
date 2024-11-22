@@ -185,13 +185,14 @@ void function NSSendPopUpMessageToPlayer( entity player, string text )
 	ServerToClientStringCommand( player, "ServerHUDMessageShow " + eMessageType.POPUP )
 }
 
-void function NSSendAnnouncementMessageToPlayer( entity player, string title, string description, vector color, int priority, int style )
+void function NSSendAnnouncementMessageToPlayer( entity player, string title, string description, vector color, int priority, int style, string image = "" )
 {
 	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.TITLE + " " + title )
 	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.DESC + " " + description )
 	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.COLOR + " " + color.x + " " + color.y + " " + color.z )
 	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.PRIORITY + " " + priority )
 	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.STYLE + " " + style )
+	ServerToClientStringCommand( player, "ServerHUDMessagePut " + eDataType.ASSET + " " + image )
 	
 	ServerToClientStringCommand( player, "ServerHUDMessageShow " + eMessageType.ANNOUNCEMENT )
 }
@@ -453,6 +454,7 @@ void function AnnouncementMessageHandler_Threaded()
 		Announcement_SetPriority( announcement, client.announcementQueue[0].priority )
 		Announcement_SetSoundAlias( announcement, SFX_HUD_ANNOUNCE_QUICK )
 		Announcement_SetStyle( announcement, client.announcementQueue[0].style )
+		Announcement_SetIcon( announcement, StringToAsset( strip( client.announcementQueue[0].image ) ) )
 		AnnouncementFromClass( GetLocalViewPlayer(), announcement )
 
 		wait 5
