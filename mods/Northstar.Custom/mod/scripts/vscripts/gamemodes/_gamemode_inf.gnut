@@ -11,6 +11,7 @@ void function GamemodeInfection_Init()
 	SetSpawnpointGamemodeOverride( FFA )
 	SetLoadoutGracePeriodEnabled( false ) // prevent modifying loadouts with grace period
 	SetWeaponDropsEnabled( false )
+	SetGamemodeAllowsTeamSwitch( false )
 	SetShouldUseRoundWinningKillReplay( true )
 	Riff_ForceTitanAvailability( eTitanAvailability.Never )
 	Riff_ForceBoostAvailability( eBoostAvailability.Disabled )

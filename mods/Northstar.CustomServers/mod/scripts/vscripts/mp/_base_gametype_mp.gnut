@@ -18,6 +18,7 @@ global function TrackTitanDamageInPlayerGameStat
 global function ShouldEntTakeDamage_SPMP
 global function GetTitanBuildTime
 global function TitanPlayerHotDropsIntoLevel
+global function SetGamemodeAllowsTeamSwitch
 
 global function SetRecalculateRespawnAsTitanStartPointCallback
 
@@ -30,10 +31,13 @@ struct {
 	array<entity> specCams 
 	
 	entity functionref( entity player, entity basePoint ) recalculateRespawnAsTitanStartPointCallback
+	table<entity, float> playerChangeTeamTimeBuffer
+	bool gamemodeTeamSwitchEnabled = true
 } file
 
 void function BaseGametype_Init_MPSP()
 {
+	AddClientCommandCallback( "changeteam", ClientCommandCallbackChangeTeam )
 	AddSpawnCallback( "info_intermission", SetIntermissionCamera )
 	
 	AddPostDamageCallback( "player", AddToTitanDamageStat )
@@ -628,6 +632,51 @@ void function CheckForAutoTitanDeath( entity victim, entity attacker, var damage
 void function SetRecalculateRespawnAsTitanStartPointCallback( entity functionref( entity player, entity basePoint ) callbackFunc )
 {
 	file.recalculateRespawnAsTitanStartPointCallback = callbackFunc
+}
+
+void function SetGamemodeAllowsTeamSwitch( bool enabled )
+{
+	file.gamemodeTeamSwitchEnabled = enabled
+}
+
+bool function ClientCommandCallbackChangeTeam( entity player, array<string> args )
+{
+	if ( !GetConVarBool( "ns_allow_team_change" ) || IsPrivateMatchSpectator( player ) )
+		return true
+	
+	if ( !file.gamemodeTeamSwitchEnabled )
+	{
+		SendHudMessage( player, "#TEAMSWITCH_GAMEMODE", -1, 0.4, 255, 255, 255, 255, 0.15, 3.0, 0.5 )
+		return true
+	}
+	
+	if ( !( player in file.playerChangeTeamTimeBuffer ) )
+	{
+		file.playerChangeTeamTimeBuffer[ player ] <- Time() + 5.0
+	}
+	else
+	{
+		if ( file.playerChangeTeamTimeBuffer[ player ] > Time() )
+		{
+			SendHudMessage( player, "#TEAMSWITCH_BUFFER", -1, 0.4, 255, 255, 255, 255, 0.15, 3.0, 0.5 )
+			return true
+		}
+	}
+	
+	if ( player in file.playerChangeTeamTimeBuffer && file.playerChangeTeamTimeBuffer[ player ] < Time() )
+		file.playerChangeTeamTimeBuffer[ player ] = Time() + 5.0
+	
+	if ( !GamePlaying() )
+	{
+		SendHudMessage( player, "#TEAMSWITCH_GAMEPLAY", -1, 0.4, 255, 255, 255, 255, 0.15, 3.0, 0.5 )
+		return true
+	}
+	if ( GetCurrentPlaylistVarInt( "max_teams", 0 ) > 1 && !IsFFAGame() )
+		SetTeam( player, GetOtherTeam( player.GetTeam() ) )
+	else
+		SendHudMessage( player, "#TEAMSWITCH_DISABLED", -1, 0.4, 255, 255, 255, 255, 0.15, 3.0, 0.5 )
+	
+	return true
 }
 
 // stuff to change later

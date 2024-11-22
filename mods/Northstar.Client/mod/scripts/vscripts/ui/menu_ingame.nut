@@ -85,6 +85,9 @@ void function InitInGameMPMenu()
 	var gameHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_GAME" )
 	var leaveButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#LEAVE_MATCH" )
 	Hud_AddEventHandler( leaveButton, UIE_CLICK, OnLeaveButton_Activate )
+	var teamChangeButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#SWITCH_TEAMS" )
+	Hud_AddEventHandler( teamChangeButton, UIE_CLICK, OnRequestTeamSwitch )
+	thread UpdateTeamSwitchButton_Threaded( teamChangeButton )
 	#if DEV
 		var devButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "Dev" )
 		Hud_AddEventHandler( devButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "DevMenu" ) ) )
@@ -698,5 +701,23 @@ void function SetTitanSelectButtonVisibleState( bool state )
 		Hud_Hide( file.titanHeader )
 		Hud_Hide( file.titanEditButton )
 		Hud_Hide( file.titanSelectButton )
+	}
+}
+
+void function UpdateTeamSwitchButton_Threaded( var button )
+{
+	while ( true )
+	{
+		Hud_SetLocked( button, !GetConVarBool( "ns_allow_team_change" ) )
+		wait 0.5
+	}
+}
+
+void function OnRequestTeamSwitch( var button )
+{
+	if ( !Hud_IsLocked( button ) )
+	{
+		ClientCommand( "changeteam" )
+		CloseAllMenus()
 	}
 }

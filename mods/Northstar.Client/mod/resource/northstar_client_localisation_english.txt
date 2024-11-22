@@ -312,6 +312,12 @@ Press Yes if you agree to this. This choice can be changed in the mods menu at a
 		// In-game chat
 		"HUD_CHAT_WHISPER_PREFIX" "[WHISPER]"
 		"HUD_CHAT_SERVER_PREFIX" "[SERVER]"
+		
+		// Team Switching
+		"TEAMSWITCH_GAMEMODE"			"Gamemode does not allow Team Switching"
+		"TEAMSWITCH_BUFFER"				"Team Switching is on Cooldown"
+		"TEAMSWITCH_GAMEPLAY"			"Team change not allowed outside playing phase"
+		"TEAMSWITCH_DISABLED"			"Current gamemode doesn't support team change"
 
 		"NO_GAMESERVER_RESPONSE" 		"Couldn't reach game server"
 		"BAD_GAMESERVER_RESPONSE" 		"Game server gave an invalid response"

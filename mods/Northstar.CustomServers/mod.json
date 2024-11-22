@@ -49,6 +49,11 @@
 			"Name": "ns_progression_enabled",
 			"DefaultValue": "0",
 			"Flags": "ARCHIVE_PLAYERPROFILE"
+		},
+		{
+			"Name": "ns_allow_team_change",
+			"DefaultValue": "1",
+			"Flags": "REPLICATED"
 		}
 	],
 	"Scripts": [

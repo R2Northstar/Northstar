@@ -11,6 +11,7 @@ void function GamemodeHidden_Init()
 	SetLoadoutGracePeriodEnabled( false ) // prevent modifying loadouts with grace period
 	SetWeaponDropsEnabled( false )
 	SetRespawnsEnabled( false )
+	SetGamemodeAllowsTeamSwitch( false )
 	Riff_ForceTitanAvailability( eTitanAvailability.Never )
 	Riff_ForceBoostAvailability( eBoostAvailability.Disabled )
 	Riff_ForceSetEliminationMode( eEliminationMode.Pilots )
