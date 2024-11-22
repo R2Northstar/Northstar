@@ -12,6 +12,9 @@ To host a listen server on Northstar, go to the lobby and press the `Private Mat
 If this works correctly, this should result in your server being displayed on the server browser, and other clients being able to connect to it.\
 ![screenshot select private match](../images/lobbyprivatematch.png)
 
+!!! warning
+    Hosting a port-forwarded server that appears in the server browser will show the names of all of the currently enabled mods to clients.
+
 ## Server Configuration
 
 Whether you're running a listen or dedicated server, you'll generally want to mess with the configuration at least a bit. While I do think the default configuration settings are pretty ok, being able to change your server's name or password, or increasing your server's tickrate is often something you'll want to do. Server configuration can be modified in the file `R2Northstar/mods/Northstar.CustomServers/mod/cfg/autoexec_ns_server.cfg`, which will be executed on server startup.\

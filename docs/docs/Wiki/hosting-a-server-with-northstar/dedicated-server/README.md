@@ -8,6 +8,9 @@ Dedicated servers allow you to host a Northstar server without having to use a f
 To start a dedicated server on Northstar, launch NorthstarLauncher.exe with the argument `-dedicated`, this can be done manually, but releases also provide the batch file `r2ds.bat`, which will also do this.\
 When using a dedicated server, arguments are read from `ns_startup_args_dedi.txt`, rather than `ns_startup_args.txt`.
 
+!!! warning
+    Hosting a port-forwarded server that appears in the server browser will show the names of all of the currently enabled mods to clients.
+
 ### Dedicated Server Caveats
 
 At the moment, dedicated servers still require DirectX 11 to work, which typically requires a physical GPU, though they use almost no GPU processing power while in use, this can be an issue especially on GPU-less setups, so the launch argument `-softwared3d11` can be used to force DirectX to run in software mode.\
