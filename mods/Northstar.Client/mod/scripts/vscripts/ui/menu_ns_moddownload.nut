@@ -9,6 +9,7 @@ global enum eModInstallStatus
     CHECKSUMING,
     EXTRACTING,
     DONE,
+    ABORTED,
     FAILED,
     FAILED_READING_ARCHIVE,
     FAILED_WRITING_TO_DISK,
@@ -57,6 +58,11 @@ bool function DownloadMod( RequiredModInfo mod )
 	dialogData.message = Localize( "#DOWNLOADING_MOD_TEXT", mod.name, mod.version )
 	dialogData.showSpinner = true;
 
+	// Prevent download button
+	AddDialogButton( dialogData, "#CANCEL", void function() {
+		NSCancelModDownload()
+	})
+
 	// Prevent user from closing dialog
 	dialogData.forceChoice = true;
 	OpenDialog( dialogData )
@@ -75,6 +81,13 @@ bool function DownloadMod( RequiredModInfo mod )
 		state = NSGetModInstallState()
 		UpdateModDownloadDialog( mod, state, menu, header, body )
 		WaitFrame()
+	}
+
+	// If download was aborted, don't close UI since it was closed by clicking cancel button
+	if ( state.status == eModInstallStatus.ABORTED )
+	{
+		print("Mod download was cancelled by the user.")
+		return false;
 	}
 
 	printt( "Mod status:", state.status )
@@ -113,6 +126,12 @@ void function UpdateModDownloadDialog( RequiredModInfo mod, ModInstallState stat
 void function DisplayModDownloadErrorDialog( string modName )
 {
 	ModInstallState state = NSGetModInstallState()
+
+	// If user cancelled download, no need to display an error message
+	if ( state.status == eModInstallStatus.ABORTED )
+	{
+		return
+	}
 
 	DialogData dialogData
 	dialogData.header = Localize( "#FAILED_DOWNLOADING", modName )

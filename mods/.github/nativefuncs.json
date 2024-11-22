@@ -415,6 +415,12 @@
 			"argTypes": "string name, string version"
 		},
 		{
+			"name": "NSCancelModDownload",
+			"helpText": "prevents installation of the mod currently being installed",
+			"returnTypeString": "void",
+			"argTypes": ""
+		},
+		{
 			"name": "NSGetModInstallState",
 			"helpText": "get status of the mod currently being installed",
 			"returnTypeString": "ModInstallState",
