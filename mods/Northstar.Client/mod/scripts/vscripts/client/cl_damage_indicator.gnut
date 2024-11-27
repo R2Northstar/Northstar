@@ -366,7 +366,7 @@ void function DamageIndicators( DamageHistoryStruct damageHistory, bool playerIs
 				cockpit.AddToTitanHudDamageHistory( COCKPIT_PANEL_LEFT, damageHistory.damage )
 		}
 
-		if ( damageHistory.attacker && damageHistory.attacker.GetParent() == localViewPlayer )
+		if ( damageHistory.damageSourceId != eDamageSourceId.mp_weapon_arc_launcher && damageHistory.attacker && damageHistory.attacker.GetParent() == localViewPlayer )
 		{
 			damageHistory.rodeoDamage = true
 			return
