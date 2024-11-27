@@ -40,20 +40,23 @@ void function StimPlayer( entity player, float duration, float severity = STIM_E
 
 void function StimPlayer_Internal( entity player, float duration, float effectSeverity )
 {
-	int endlessStatusEffectHandle = 0
+	// Handles for tracking status effects
+	int statusEffectHandle_SpeedBoost = 0
+	int statusEffectHandle_StimVFX = 0
 	if ( duration == USE_TIME_INFINITE )
 	{
-		endlessStatusEffectHandle = StatusEffect_AddEndless( player, eStatusEffect.speed_boost, effectSeverity )
+		statusEffectHandle_SpeedBoost = StatusEffect_AddEndless( player, eStatusEffect.speed_boost, effectSeverity )
+		statusEffectHandle_StimVFX = StatusEffect_AddEndless( player, eStatusEffect.stim_visual_effect, 1.0 )
 	}
 	else
 	{
-		StatusEffect_AddTimed( player, eStatusEffect.speed_boost, effectSeverity, duration + 0.5, 0.25 ) // sound is slightly off
-		StatusEffect_AddTimed( player, eStatusEffect.stim_visual_effect, 1.0, duration, duration )
+		statusEffectHandle_SpeedBoost = StatusEffect_AddTimed( player, eStatusEffect.speed_boost, effectSeverity, duration + 0.5, 0.25 ) // sound is slightly off
+		statusEffectHandle_StimVFX = StatusEffect_AddTimed( player, eStatusEffect.stim_visual_effect, 1.0, duration, duration )
 	}
 
 #if SERVER
-	thread StimThink( player, duration, endlessStatusEffectHandle )
-#else
+	thread StimThink( player, duration, statusEffectHandle_SpeedBoost, statusEffectHandle_StimVFX )
+#else // CLIENT
 	entity cockpit = player.GetCockpit()
 	if ( !IsValid( cockpit ) )
 		return
@@ -63,15 +66,25 @@ void function StimPlayer_Internal( entity player, float duration, float effectSe
 }
 
 #if SERVER
-void function StimThink( entity player, float duration, int endlessStatusEffectHandle )
+void function StimThink( entity player, float duration, int statusEffectHandle_SpeedBoost, int statusEffectHandle_StimVFX )
 {
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "OnChangedPlayerClass" )
-	if ( endlessStatusEffectHandle != 0 )
-		player.EndSignal( "StopEndlessStim" )
+	player.EndSignal( "player_embarks_titan" ) // Prevent transferring active Stim ability to Titan.
 
-	EmitSoundOnEntityOnlyToPlayer( player, player, "pilot_stimpack_loop_1P" )
-	EmitSoundOnEntityExceptToPlayer( player, player, "pilot_stimpack_loop_3P" )
+	if ( duration == USE_TIME_INFINITE )
+	{
+		player.EndSignal( "StopEndlessStim" )
+		// TF|2 stim loop sounds don't actually loop, use TF|1 loop sound.
+		// TF|1 sound is very quiet, is there a way to boost its volume (it has 300% volume in TF|1), except playing 3 sounds at once?
+		// BUG: It still stops playing sometimes for whatever reason ( Too many sounds? )
+		EmitSoundOnEntity( player, "Pilot_Stimpack_Loop" )
+	}
+	else
+	{
+		EmitSoundOnEntityOnlyToPlayer( player, player, "pilot_stimpack_loop_1P" )
+		EmitSoundOnEntityExceptToPlayer( player, player, "pilot_stimpack_loop_3P" )
+	}
 
 	int attachmentIndex = player.LookupAttachment( "CHESTFOCUS" )
 
@@ -82,7 +95,7 @@ void function StimThink( entity player, float duration, int endlessStatusEffectH
 	//thread StimSlowmoAim( player, duration )
 
 	OnThreadEnd(
-		function() : ( player, stimFX, endlessStatusEffectHandle )
+		function() : ( player, duration, stimFX, statusEffectHandle_SpeedBoost, statusEffectHandle_StimVFX )
 		{
 			if ( !IsValid( player ) )
 				return
@@ -90,11 +103,21 @@ void function StimThink( entity player, float duration, int endlessStatusEffectH
 			if ( IsValid( stimFX ) )
 				EffectStop( stimFX )
 
-			StopSoundOnEntity( player, "pilot_stimpack_loop_1P" )
-			StopSoundOnEntity( player, "pilot_stimpack_loop_3P" )
+			if ( duration == USE_TIME_INFINITE )
+			{
+				StopSoundOnEntity( player, "Pilot_Stimpack_Loop" )
+			}
+			else
+			{
+				StopSoundOnEntity( player, "pilot_stimpack_loop_1P" )
+				StopSoundOnEntity( player, "pilot_stimpack_loop_3P" )
+			}
 
-			if ( endlessStatusEffectHandle != 0 )
-				StatusEffect_Stop( player, endlessStatusEffectHandle )
+			if ( statusEffectHandle_SpeedBoost != 0 )
+				StatusEffect_Stop( player, statusEffectHandle_SpeedBoost )
+			
+			if ( statusEffectHandle_StimVFX != 0 )
+				StatusEffect_Stop( player, statusEffectHandle_StimVFX )
 
 			player.Signal( "EndStim" )
 		}
@@ -111,7 +134,7 @@ void function StimThink( entity player, float duration, int endlessStatusEffectH
 	wait 2.0
 }
 
-#else // #if SERVER
+#else // CLIENT
 void function StimVisualsEnabled( entity ent, int statusEffect, bool actuallyChanged )
 {
 	if ( ent != GetLocalViewPlayer() )
@@ -164,4 +187,4 @@ void function StimScreenFXThink( entity player, int fxHandle, entity cockpit )
 	}
 }
 
-#endif // #else // #if SERVER
+#endif
