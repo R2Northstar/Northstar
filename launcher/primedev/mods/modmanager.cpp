@@ -111,8 +111,6 @@ void ModManager::LoadMods()
 	if (m_bHasLoadedMods)
 		UnloadMods();
 
-	std::vector<fs::path> modDirs;
-
 	// ensure dirs exist
 	fs::remove_all(GetCompiledAssetsPath());
 	fs::create_directories(GetModFolderPath());
@@ -137,107 +135,8 @@ void ModManager::LoadMods()
 		m_bHasEnabledModsCfg = m_EnabledModsCfg.IsObject();
 	}
 
-	// get mod directories
-	std::filesystem::directory_iterator classicModsDir = fs::directory_iterator(GetModFolderPath());
-	std::filesystem::directory_iterator remoteModsDir = fs::directory_iterator(GetRemoteModFolderPath());
-	std::filesystem::directory_iterator thunderstoreModsDir = fs::directory_iterator(GetThunderstoreModFolderPath());
-
-	for (fs::directory_entry dir : classicModsDir)
-		if (fs::exists(dir.path() / "mod.json"))
-			modDirs.push_back(dir.path());
-
-	// Special case for Thunderstore and remote mods directories
-	// Set up regex for `AUTHOR-MOD-VERSION` pattern
-	std::regex pattern(R"(.*\\([a-zA-Z0-9_]+)-([a-zA-Z0-9_]+)-(\d+\.\d+\.\d+))");
-
-	for (fs::directory_iterator dirIterator : {thunderstoreModsDir, remoteModsDir})
-	{
-		for (fs::directory_entry dir : dirIterator)
-		{
-			fs::path modsDir = dir.path() / "mods"; // Check for mods folder in the Thunderstore mod
-			// Use regex to match `AUTHOR-MOD-VERSION` pattern
-			if (!std::regex_match(dir.path().string(), pattern))
-			{
-				spdlog::warn("The following directory did not match 'AUTHOR-MOD-VERSION': {}", dir.path().string());
-				continue; // skip loading mod that doesn't match
-			}
-			if (fs::exists(modsDir) && fs::is_directory(modsDir))
-			{
-				for (fs::directory_entry subDir : fs::directory_iterator(modsDir))
-				{
-					if (fs::exists(subDir.path() / "mod.json"))
-					{
-						modDirs.push_back(subDir.path());
-					}
-				}
-			}
-		}
-	}
-
-	for (fs::path modDir : modDirs)
-	{
-		// read mod json file
-		std::ifstream jsonStream(modDir / "mod.json");
-		std::stringstream jsonStringStream;
-
-		// fail if no mod json
-		if (jsonStream.fail())
-		{
-			spdlog::warn(
-				"Mod file at '{}' does not exist or could not be read, is it installed correctly?", (modDir / "mod.json").string());
-			continue;
-		}
-
-		while (jsonStream.peek() != EOF)
-			jsonStringStream << (char)jsonStream.get();
-
-		jsonStream.close();
-
-		Mod mod(modDir, (char*)jsonStringStream.str().c_str());
-
-		for (auto& pair : mod.DependencyConstants)
-		{
-			if (m_DependencyConstants.find(pair.first) != m_DependencyConstants.end() && m_DependencyConstants[pair.first] != pair.second)
-			{
-				spdlog::error(
-					"'{}' attempted to register a dependency constant '{}' for '{}' that already exists for '{}'. "
-					"Change the constant name.",
-					mod.Name,
-					pair.first,
-					pair.second,
-					m_DependencyConstants[pair.first]);
-				mod.m_bWasReadSuccessfully = false;
-				break;
-			}
-			if (m_DependencyConstants.find(pair.first) == m_DependencyConstants.end())
-				m_DependencyConstants.emplace(pair);
-		}
-
-		for (std::string& dependency : mod.PluginDependencyConstants)
-		{
-			m_PluginDependencyConstants.insert(dependency);
-		}
-
-		if (m_bHasEnabledModsCfg && m_EnabledModsCfg.HasMember(mod.Name.c_str()))
-			mod.m_bEnabled = m_EnabledModsCfg[mod.Name.c_str()].IsTrue();
-		else
-			mod.m_bEnabled = true;
-
-		if (mod.m_bWasReadSuccessfully)
-		{
-			if (mod.m_bEnabled)
-				spdlog::info("'{}' loaded successfully, version {}", mod.Name, mod.Version);
-			else
-				spdlog::info("'{}' loaded successfully, version {} (DISABLED)", mod.Name, mod.Version);
-
-			m_LoadedMods.push_back(mod);
-		}
-		else
-			spdlog::warn("Mod file at '{}' failed to load", (modDir / "mod.json").string());
-	}
-
-	// sort by load prio, lowest-highest
-	std::sort(m_LoadedMods.begin(), m_LoadedMods.end(), [](Mod& a, Mod& b) { return a.LoadPriority < b.LoadPriority; });
+	// Load mod info from filesystem into `m_LoadedMods`
+	SearchFilesystemForMods();
 
 	// This is used to check if some mods have a folder but no entry in enabledmods.json
 	bool newModsDetected = false;
@@ -619,6 +518,114 @@ void ModManager::UnloadMods()
 
 	// do we need to dealloc individual entries in m_loadedMods? idk, rework
 	m_LoadedMods.clear();
+}
+
+void ModManager::SearchFilesystemForMods()
+{
+	std::vector<fs::path> modDirs;
+	m_LoadedMods.clear();
+
+	// get mod directories
+	std::filesystem::directory_iterator classicModsDir = fs::directory_iterator(GetModFolderPath());
+	std::filesystem::directory_iterator remoteModsDir = fs::directory_iterator(GetRemoteModFolderPath());
+	std::filesystem::directory_iterator thunderstoreModsDir = fs::directory_iterator(GetThunderstoreModFolderPath());
+
+	for (fs::directory_entry dir : classicModsDir)
+		if (fs::exists(dir.path() / "mod.json"))
+			modDirs.push_back(dir.path());
+
+	// Special case for Thunderstore and remote mods directories
+	// Set up regex for `AUTHOR-MOD-VERSION` pattern
+	std::regex pattern(R"(.*\\([a-zA-Z0-9_]+)-([a-zA-Z0-9_]+)-(\d+\.\d+\.\d+))");
+
+	for (fs::directory_iterator dirIterator : {thunderstoreModsDir, remoteModsDir})
+	{
+		for (fs::directory_entry dir : dirIterator)
+		{
+			fs::path modsDir = dir.path() / "mods"; // Check for mods folder in the Thunderstore mod
+			// Use regex to match `AUTHOR-MOD-VERSION` pattern
+			if (!std::regex_match(dir.path().string(), pattern))
+			{
+				spdlog::warn("The following directory did not match 'AUTHOR-MOD-VERSION': {}", dir.path().string());
+				continue; // skip loading mod that doesn't match
+			}
+			if (fs::exists(modsDir) && fs::is_directory(modsDir))
+			{
+				for (fs::directory_entry subDir : fs::directory_iterator(modsDir))
+				{
+					if (fs::exists(subDir.path() / "mod.json"))
+					{
+						modDirs.push_back(subDir.path());
+					}
+				}
+			}
+		}
+	}
+
+	for (fs::path modDir : modDirs)
+	{
+		// read mod json file
+		std::ifstream jsonStream(modDir / "mod.json");
+		std::stringstream jsonStringStream;
+
+		// fail if no mod json
+		if (jsonStream.fail())
+		{
+			spdlog::warn(
+				"Mod file at '{}' does not exist or could not be read, is it installed correctly?", (modDir / "mod.json").string());
+			continue;
+		}
+
+		while (jsonStream.peek() != EOF)
+			jsonStringStream << (char)jsonStream.get();
+
+		jsonStream.close();
+
+		Mod mod(modDir, (char*)jsonStringStream.str().c_str());
+
+		for (auto& pair : mod.DependencyConstants)
+		{
+			if (m_DependencyConstants.find(pair.first) != m_DependencyConstants.end() && m_DependencyConstants[pair.first] != pair.second)
+			{
+				spdlog::error(
+					"'{}' attempted to register a dependency constant '{}' for '{}' that already exists for '{}'. "
+					"Change the constant name.",
+					mod.Name,
+					pair.first,
+					pair.second,
+					m_DependencyConstants[pair.first]);
+				mod.m_bWasReadSuccessfully = false;
+				break;
+			}
+			if (m_DependencyConstants.find(pair.first) == m_DependencyConstants.end())
+				m_DependencyConstants.emplace(pair);
+		}
+
+		for (std::string& dependency : mod.PluginDependencyConstants)
+		{
+			m_PluginDependencyConstants.insert(dependency);
+		}
+
+		if (m_bHasEnabledModsCfg && m_EnabledModsCfg.HasMember(mod.Name.c_str()))
+			mod.m_bEnabled = m_EnabledModsCfg[mod.Name.c_str()].IsTrue();
+		else
+			mod.m_bEnabled = true;
+
+		if (mod.m_bWasReadSuccessfully)
+		{
+			if (mod.m_bEnabled)
+				spdlog::info("'{}' loaded successfully, version {}", mod.Name, mod.Version);
+			else
+				spdlog::info("'{}' loaded successfully, version {} (DISABLED)", mod.Name, mod.Version);
+
+			m_LoadedMods.push_back(mod);
+		}
+		else
+			spdlog::warn("Mod file at '{}' failed to load", (modDir / "mod.json").string());
+	}
+
+	// sort by load prio, lowest-highest
+	std::sort(m_LoadedMods.begin(), m_LoadedMods.end(), [](Mod& a, Mod& b) { return a.LoadPriority < b.LoadPriority; });
 }
 
 std::string ModManager::NormaliseModFilePath(const fs::path path)
