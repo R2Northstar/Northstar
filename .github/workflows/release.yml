@@ -15,6 +15,7 @@ permissions:
 
 env:
   NORTHSTAR_VERSION: ${{ github.ref_name }}
+  DISCORD_RPC_VERSION: v13
 
 jobs:
   build-northstar:
@@ -34,7 +35,7 @@ jobs:
           wget "https://github.com/R2Northstar/NorthstarLauncher/releases/download/${{ env.NORTHSTAR_VERSION }}/northstar-launcher.zip"
       - name: Download DiscordRPC plugin
         run:
-          wget "https://github.com/R2Northstar/NorthstarDiscordRPC/releases/download/v13/northstar-discord-rpc.zip"
+          wget "https://github.com/R2Northstar/NorthstarDiscordRPC/releases/download/${{ env.DISCORD_RPC_VERSION }}/northstar-discord-rpc.zip"
       - name: Download compiled stubs
         run:
           wget "https://github.com/R2Northstar/NorthstarStubs/releases/download/v1/NorthstarStubs.zip"
