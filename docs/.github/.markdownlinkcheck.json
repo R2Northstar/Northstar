@@ -13,10 +13,16 @@
             "pattern": "https://www.wunderboy.org/valve-hl2source-sdk-tools/#vtf_shell"
         },
         {
+            "pattern": "https://forums.getpaint.net/topic/6265-gradient-mapping/"
+        },
+        {
             "pattern": "https://help.ea.com/en/help/pc/link-ea-and-steam/"
         },
         {
             "pattern": "https://panel.ticketsbot.net/manage/920776187884732556/tags"
+        },
+        {
+            "pattern": "https://pastebin.com/raw/3DSCK09f"
         },
         {
             "pattern": "https://forum.manjaro.org/t/howto-troubleshoot-crackling-in-pipewire/82442"
