@@ -13,9 +13,9 @@ Once you do this, double click the `Vanilla.bat` file to load vanilla Titanfall 
 ## Launching vanilla Titanfall 2 via Northstar (with mods) <a href="#vanilla-with-mods" id="vanilla-with-mods"></a>
 
 While Northstar is seeing [more progress towards vanilla compatibility](https://github.com/R2Northstar/NorthstarLauncher/pull/601), it's still decently far out.
-A community made modification is available in the form of [VanillaPlus](https://northstar.thunderstore.io/package/NanohmProtogen/VanillaPlus/) to load mods on vanilla.
+A community made modification is available in the form of [VanillaPlus](https://northstar.thunderstore.io/package/NachosChipeados/VanillaPlus/) to load mods on vanilla.
 It should be noted that, again, this is a community made modification and is not "officially" Northstar.
 
 To use it, read the mod's description on Thunderstore to install it, as it has a special install process compared to other mods.
-If you have any issues, check the [VanillaPlus FAQ](https://github.com/Zayveeo5e/NP.VanillaPlus/blob/main/FAQ.md) to see if you can find your issue there.
+If you have any issues, check the [VanillaPlus FAQ](https://github.com/NachosChipeados/NP.VanillaPlus/blob/main/FAQ.md) to see if you can find your issue there.
 If you can't find your issue on the FAQ, open an issue on the mod's GitHub repo.
