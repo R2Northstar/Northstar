@@ -10,7 +10,7 @@
             "pattern": "https://crates.io/crates/rrplug"
         },
         {
-            "pattern": "https://www.wunderboy.org/valve-hl2source-sdk-tools/#vtf_shell"
+            "pattern": "https://forum.manjaro.org/t/howto-troubleshoot-crackling-in-pipewire/82442"
         },
         {
             "pattern": "https://forums.getpaint.net/topic/6265-gradient-mapping/"
@@ -25,13 +25,13 @@
             "pattern": "https://pastebin.com/raw/3DSCK09f"
         },
         {
-            "pattern": "https://forum.manjaro.org/t/howto-troubleshoot-crackling-in-pipewire/82442"
-        },
-        {
             "pattern": "https://taskinoz.com/northstar/"
         },
         {
             "pattern": "https://wiki.archlinux.org/title/PulseAudio/Troubleshooting#Glitches.2C\\_skips\\_or\\_crackling"
+        },
+        {
+            "pattern": "https://www.wunderboy.org/valve-hl2source-sdk-tools/#vtf_shell"
         }
     ]
 }
