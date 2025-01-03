@@ -1,5 +1,7 @@
 use core::slice;
+use std::alloc::{GlobalAlloc, Layout};
 
+use high::squirrel_traits::{GetFromSquirrelVm, PushToSquirrelVm, SQVMName};
 use mid::{
     source_alloc::{IMemAlloc, SOURCE_ALLOC},
     utils::from_char_ptr,
@@ -9,7 +11,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::bindings::*;
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SavedRecordedAnimation {
     pub unknown_0: Vec<i32>,
     pub unknown_b0: Vec<u8>,
@@ -27,8 +29,6 @@ pub struct SavedRecordedAnimation {
 
 impl From<RecordedAnimation> for SavedRecordedAnimation {
     fn from(value: RecordedAnimation) -> Self {
-        let alloc = SOURCE_ALLOC.get_underlying_alloc();
-
         let save = SavedRecordedAnimation {
             unknown_0: value.unknown_0.to_vec(),
             unknown_b0: value.unknown_b0.to_vec(),
@@ -37,13 +37,9 @@ impl From<RecordedAnimation> for SavedRecordedAnimation {
                 .iter()
                 .copied()
                 .take_while(|ptr| !ptr.is_null())
-                .map(|ptr| unsafe {
-                    let s = from_char_ptr(ptr);
-                    alloc.Free(ptr.cast_mut().cast());
-                    s
-                })
+                .map(|ptr| unsafe { from_char_ptr(ptr) })
                 .collect(),
-            unknown_268: value.unknown_0.to_vec(),
+            unknown_268: value.unknown_268.to_vec(),
             origin: [value.origin.x, value.origin.y, value.origin.z],
             angles: [value.angles.x, value.angles.y, value.angles.z],
             frames: Vec::from(unsafe {
@@ -58,11 +54,6 @@ impl From<RecordedAnimation> for SavedRecordedAnimation {
             index: value.index,
         };
 
-        unsafe {
-            alloc.Free(value.frames.cast());
-            alloc.Free(value.layers.cast());
-        }
-
         save
     }
 }
@@ -71,8 +62,8 @@ impl TryInto<RecordedAnimation> for SavedRecordedAnimation {
     type Error = &'static str;
 
     fn try_into(mut self) -> Result<RecordedAnimation, Self::Error> {
-        self.sequences.reserve_exact(self.sequences.len() - 47);
-        self.sequences.fill(String::new());
+        self.sequences
+            .extend((0..47 - self.sequences.len()).map(|_| String::new()));
 
         assert_eq!(self.frame_count, self.frames.len() as u32);
         assert_eq!(self.layer_count, self.layers.len() as u32);
@@ -122,16 +113,49 @@ impl TryInto<RecordedAnimation> for SavedRecordedAnimation {
             layer_count: self.layer_count,
             loaded_index: self.loaded_index,
             index: self.index,
-            not_refcounted: true,
-            refcount: 0,
+            not_refcounted: false,
+            refcount: 1,
         })
     }
 }
 
-impl Drop for RecordedAnimation {
-    fn drop(&mut self) {
-        // allocates extra stuff but I am too lazy lol
-        let _drop: SavedRecordedAnimation = self.clone().into();
+impl PushToSquirrelVm for RecordedAnimation {
+    fn push_to_sqvm(self, sqvm: std::ptr::NonNull<HSquirrelVM>, _sqfunctions: &SquirrelFunctions) {
+        unsafe {
+            let buf = SOURCE_ALLOC.alloc(Layout::new::<Self>()).cast::<Self>();
+            buf.write(self);
+
+            (RECORDING_FUNCTIONS.wait().sq_pushrecordedanimation)(sqvm.as_ptr(), buf)
+        }
+    }
+}
+
+impl GetFromSquirrelVm for &mut RecordedAnimation {
+    fn get_from_sqvm(
+        sqvm: std::ptr::NonNull<HSquirrelVM>,
+        _sqfunctions: &'static SquirrelFunctions,
+        stack_pos: i32,
+    ) -> Self {
+        unsafe {
+            (RECORDING_FUNCTIONS.wait().sq_getrecordedanimation)(sqvm.as_ptr(), stack_pos)
+                .as_mut()
+                .expect("RecordedAnimation should exist")
+        }
+    }
+
+    fn get_from_sqvm_internal(
+        sqvm: std::ptr::NonNull<HSquirrelVM>,
+        sqfunctions: &'static SquirrelFunctions,
+        stack_pos: &mut i32,
+    ) -> Self {
+        *stack_pos += 2;
+        Self::get_from_sqvm(sqvm, sqfunctions, 2)
+    }
+}
+
+impl SQVMName for &mut RecordedAnimation {
+    fn get_sqvm_name() -> String {
+        "userdata".to_string()
     }
 }
 

@@ -1,9 +1,16 @@
-use rrplug::prelude::*;
+use rrplug::{offset_functions, prelude::*};
 use serde::{Deserialize, Serialize};
 use std::os::raw::c_char;
 
+offset_functions! {
+    RECORDING_FUNCTIONS + RecordingFunctions for WhichDll::Server => {
+        sq_getrecordedanimation = unsafe extern "C" fn(*mut HSquirrelVM, i32) -> *mut RecordedAnimation where offset(0x99b30);
+        sq_pushrecordedanimation = unsafe extern "C" fn(*mut HSquirrelVM, *mut RecordedAnimation) where offset(0x99c50);
+    }
+}
+
 #[repr(C)]
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RecordedAnimationLayer {
     pub unk_0: i32,
     pub sequence_index: i32,
@@ -17,7 +24,7 @@ pub struct RecordedAnimationLayer {
 }
 
 #[repr(C)]
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RecordedAnimationFrame {
     pub unk_0: i32,
     pub unk_4: i32,
@@ -38,7 +45,7 @@ pub struct RecordedAnimationFrame {
 }
 
 #[repr(C)]
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct RecordedAnimation {
     pub unknown_0: [i32; 44],
     pub unknown_b0: [u8; 64],

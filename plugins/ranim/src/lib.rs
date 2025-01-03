@@ -18,7 +18,21 @@ impl Plugin for Ranim {
 
         // TODO: parse cmd and get ns folder
 
+        let mut ns_path = std::env::current_exe().expect("should have a path to the current exe");
+        ns_path.pop();
+        _ = NS_DIR.set(ns_path.join("R2Northstar"));
+        _ = std::fs::create_dir(NS_DIR.get().unwrap());
+
         Self {}
+    }
+    fn on_dll_load(
+        &self,
+        _engine_data: Option<&EngineData>,
+        dll_ptr: &DLLPointer,
+        _engine_token: EngineToken,
+    ) {
+        use bindings::{RecordingFunctions, RECORDING_FUNCTIONS};
+        unsafe { RecordingFunctions::try_init(dll_ptr, &RECORDING_FUNCTIONS) }
     }
 
     fn on_reload_request(&self) -> reloading::ReloadResponse {
