@@ -1,19 +1,9 @@
-use bytemuck::{Pod, Zeroable};
-use rrplug::{offset_functions, prelude::*};
+use rrplug::prelude::*;
+use serde::{Deserialize, Serialize};
 use std::os::raw::c_char;
 
-offset_functions! {
-    RECORDING_FUNCTIONS + RecordingFunctions for WhichDll::Server => {
-        sq_getrecordedanimation = unsafe extern "C" fn(*mut HSquirrelVM, i32) -> *mut RecordedAnimation where offset(0x99b30);
-        sq_pushrecordedanimation = unsafe extern "C" fn(*mut HSquirrelVM, *mut RecordedAnimation) where offset(0x99c50);
-        created_recorded_anim_count = *mut u32 where offset(0xbce630);
-        insert_anim_in_loaded_list = unsafe extern "C" fn(*const RecordedAnimation) -> bool where offset(0x99270);
-        new_recorded_animation = unsafe extern "C" fn() -> *mut RecordedAnimation where offset(0x996e0);
-    }
-}
-
 #[repr(C)]
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Pod, Zeroable)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct RecordedAnimationLayer {
     pub unk_0: i32,
     pub sequence_index: i32,
@@ -27,7 +17,7 @@ pub struct RecordedAnimationLayer {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Pod, Zeroable)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct RecordedAnimationFrame {
     pub unk_0: i32,
     pub unk_4: i32,
@@ -44,18 +34,18 @@ pub struct RecordedAnimationFrame {
     pub layer_index: i32,
     pub unk_34: i32,
     pub gap_38: [u8; 11],
-    pub unk_43: u8, // was a bool
+    pub unk_43: bool,
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, Zeroable)]
+#[derive(Clone)]
 pub struct RecordedAnimation {
     pub unknown_0: [i32; 44],
     pub unknown_b0: [u8; 64],
     pub sequences: [*const c_char; 47],
     pub unknown_268: [i32; 34],
-    pub origin: [f32; 3],
-    pub angles: [f32; 3],
+    pub origin: Vector3,
+    pub angles: Vector3,
     pub frames: *mut RecordedAnimationFrame,
     pub layers: *mut RecordedAnimationLayer,
     pub frame_count: u32,
@@ -65,11 +55,3 @@ pub struct RecordedAnimation {
     pub not_refcounted: bool,
     pub refcount: u8,
 }
-
-unsafe impl Pod for RecordedAnimation {}
-
-static _ASSERT_RECORDED_ANIMATION_LAYER: () = assert!(size_of::<RecordedAnimationLayer>() == 0x24);
-static _ASSERT_RECORDED_ANIMATION_FRAME: () = assert!(size_of::<RecordedAnimationFrame>() == 0x44);
-#[rustfmt::skip] static _ASSERT_RECORDED_ANIMATION_LAYER_ARR: () = assert!(size_of::<RecordedAnimationLayer>() == size_of::<[u8; 0x24]>());
-#[rustfmt::skip] static _ASSERT_RECORDED_ANIMATION_FRAME_ARR: () = assert!(size_of::<RecordedAnimationFrame>() == size_of::<[u8; 0x44]>());
-static _ASSERT_RECORDED_ANIMATION: () = assert!(size_of::<RecordedAnimation>() == 0x330);

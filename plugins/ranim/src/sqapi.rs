@@ -1,62 +1,51 @@
-#![allow(clippy::mut_from_ref)] // TODO: remove this
+use std::{fs, path::PathBuf};
 
+use high::squirrel::{UserData, UserDataRef};
 use rrplug::prelude::*;
-use std::{fs, io::Write, path::PathBuf};
 
-use crate::{NS_DIR, bindings::RecordedAnimation};
+use crate::{bindings::RecordedAnimation, recording_impl::SavedRecordedAnimation, NS_DIR};
 
-#[allow(unused)]
 const USER_DATA_ID: u64 = 18444492235241160706;
 
 pub fn register_sq_function() {
     register_sq_functions(save_recorded_animation);
     register_sq_functions(read_recorded_animation);
-    register_sq_functions(encode_recorded_animation_base85);
-    register_sq_functions(decode_recorded_animation_base85);
 }
 
 #[rrplug::sqfunction(VM = "SERVER", ExportName = "RSaveRecordedAnimation")]
-fn save_recorded_animation(recording: &mut RecordedAnimation, name: String) -> Result<(), String> {
-    let serialized: Vec<u8> = Vec::from(*recording);
-    fs::File::create(name_to_path(name.clone())?)
-        .map_err(|err| err.to_string())?
-        .write_all(&serialized)
-        .map_err(|err| err.to_string())?;
+fn save_recorded_animation(
+    recording: UserDataRef<RecordedAnimation, true, USER_DATA_ID>,
+    name: String,
+) -> Result<(), String> {
+    let recording: SavedRecordedAnimation = recording.clone().into();
+
+    fs::write(
+        name_to_path(name)?,
+        bincode::serialize(&recording).map_err(|err| err.to_string())?,
+    )
+    .map_err(|err| err.to_string())?;
 
     Ok(())
 }
 
 #[rrplug::sqfunction(VM = "SERVER", ExportName = "RReadRecordedAnimation")]
-fn read_recorded_animation(name: String) -> Result<&'static mut RecordedAnimation, String> {
-    fs::read(name_to_path(name)?)
-        .map_err(|err| err.to_string())?
-        .try_into()
+fn read_recorded_animation(name: String) -> Result<UserData<RecordedAnimation, true>, String> {
+    bincode::deserialize::<SavedRecordedAnimation>(
+        &fs::read(name_to_path(name)?).map_err(|err| err.to_string())?,
+    )
+    .map_err(|err| err.to_string())?
+    .try_into()
+    .map(UserData::new)
+    .map_err(|err: &str| err.to_string())
 }
 
-#[rrplug::sqfunction(VM = "SERVER", ExportName = "REncodeRecordedAnimation")]
-fn encode_recorded_animation_base85(recording: &mut RecordedAnimation) -> String {
-    let anim: Vec<u8> = Vec::from(*recording);
-    // TODO: maybe add compression at some point
-    base85::encode(&anim)
-}
-
-#[rrplug::sqfunction(VM = "SERVER", ExportName = "RDecodeRecordedAnimation")]
-fn decode_recorded_animation_base85(
-    encoded: String,
-) -> Result<&'static mut RecordedAnimation, String> {
-    base85::decode(&encoded)
-        .map_err(|err| err.to_string())?
-        .try_into()
-}
-
-fn name_to_path(name: impl ToString) -> Result<PathBuf, String> {
-    let name = name.to_string();
+fn name_to_path(name: String) -> Result<PathBuf, String> {
     if name
         .chars()
-        .any(|c| !c.is_alphanumeric() && c != '_' && c != '-')
+        .any(|c| !c.is_alphabetic() && c != '_' && c != '-')
     {
         return Err(
-            "name didn't pass the filter, should be a only have alphanumeric values, _ or -"
+            "name didn't pass the filter, should be a only have alphanumric values, _ or -"
                 .to_string(),
         );
     }
@@ -66,7 +55,11 @@ fn name_to_path(name: impl ToString) -> Result<PathBuf, String> {
         .expect("NS_DIR should be init")
         .join("recordings")
         .join(name);
-    path.set_extension("anim");
+    path.set_extension(".anim");
 
-    Ok(path)
+    if path.parent().and_then(|path| path.as_os_str().to_str()) != Some("recordings") {
+        Err("path somehow ended up in the wrong dir".to_string())
+    } else {
+        Ok(path)
+    }
 }

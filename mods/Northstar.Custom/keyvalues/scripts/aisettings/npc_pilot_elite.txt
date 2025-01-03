@@ -1,5 +1,0 @@
-npc_pilot_elite
-{
-	GibModel0				        "models/gibs/human_gibs.mdl"
-	headshotFX 					    "P_headshot_pilot"
-}
