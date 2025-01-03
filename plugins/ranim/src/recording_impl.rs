@@ -1,13 +1,11 @@
 use core::slice;
-use std::alloc::{GlobalAlloc, Layout};
-
-use high::squirrel_traits::{GetFromSquirrelVm, PushToSquirrelVm, SQVMName};
-use mid::{
-    source_alloc::{IMemAlloc, SOURCE_ALLOC},
-    utils::from_char_ptr,
+use rrplug::{
+    high::squirrel_traits::{GetFromSquirrelVm, PushToSquirrelVm, SQVMName},
+    mid::{source_alloc::SOURCE_ALLOC, utils::from_char_ptr},
+    prelude::*,
 };
-use rrplug::prelude::*;
 use serde::{Deserialize, Serialize};
+use std::alloc::{GlobalAlloc, Layout};
 
 use crate::bindings::*;
 
@@ -29,7 +27,7 @@ pub struct SavedRecordedAnimation {
 
 impl From<RecordedAnimation> for SavedRecordedAnimation {
     fn from(value: RecordedAnimation) -> Self {
-        let save = SavedRecordedAnimation {
+        SavedRecordedAnimation {
             unknown_0: value.unknown_0.to_vec(),
             unknown_b0: value.unknown_b0.to_vec(),
             sequences: value
@@ -38,6 +36,7 @@ impl From<RecordedAnimation> for SavedRecordedAnimation {
                 .copied()
                 .take_while(|ptr| !ptr.is_null())
                 .map(|ptr| unsafe { from_char_ptr(ptr) })
+                .inspect(|seq| log::info!("sequence: {seq}"))
                 .collect(),
             unknown_268: value.unknown_268.to_vec(),
             origin: [value.origin.x, value.origin.y, value.origin.z],
@@ -52,9 +51,7 @@ impl From<RecordedAnimation> for SavedRecordedAnimation {
             layer_count: value.layer_count,
             loaded_index: value.loaded_index,
             index: value.index,
-        };
-
-        save
+        }
     }
 }
 
@@ -75,7 +72,6 @@ impl TryInto<RecordedAnimation> for SavedRecordedAnimation {
                 .unknown_0
                 .try_into()
                 .map_err(|_| "unknown_0 had a mismatched size")?,
-
             unknown_b0: self
                 .unknown_b0
                 .try_into()
@@ -87,6 +83,7 @@ impl TryInto<RecordedAnimation> for SavedRecordedAnimation {
                     if seq.is_empty() {
                         std::ptr::null()
                     } else {
+                        log::info!("sequence: {seq}");
                         unsafe {
                             let ptr = alloc.Alloc(seq.len() + 1) as *mut u8;
 
@@ -107,13 +104,13 @@ impl TryInto<RecordedAnimation> for SavedRecordedAnimation {
                 .map_err(|_| "unknown_268 had a mismatched size")?,
             origin: self.origin.into(),
             angles: self.angles.into(),
-            frames: allocate_with_source_alloc(self.frames, alloc),
-            layers: allocate_with_source_alloc(self.layers, alloc),
+            frames: allocate_with_source_alloc(self.frames),
+            layers: allocate_with_source_alloc(self.layers),
             frame_count: self.frame_count,
             layer_count: self.layer_count,
             loaded_index: self.loaded_index,
             index: self.index,
-            not_refcounted: false,
+            not_refcounted: true,
             refcount: 1,
         })
     }
@@ -148,7 +145,7 @@ impl GetFromSquirrelVm for &mut RecordedAnimation {
         sqfunctions: &'static SquirrelFunctions,
         stack_pos: &mut i32,
     ) -> Self {
-        *stack_pos += 2;
+        *stack_pos = 2;
         Self::get_from_sqvm(sqvm, sqfunctions, 2)
     }
 }
@@ -159,9 +156,15 @@ impl SQVMName for &mut RecordedAnimation {
     }
 }
 
-fn allocate_with_source_alloc<T>(vec: Vec<T>, alloc: &IMemAlloc) -> *mut T {
+impl SQVMName for RecordedAnimation {
+    fn get_sqvm_name() -> String {
+        "userdata".to_string()
+    }
+}
+
+fn allocate_with_source_alloc<T>(vec: Vec<T>) -> *mut T {
     unsafe {
-        let buf = alloc.Alloc(vec.len() * std::mem::size_of::<T>()) as *mut T;
+        let buf = SOURCE_ALLOC.alloc(Layout::array::<T>(vec.len()).expect("skill issue")) as *mut T;
 
         vec.into_iter()
             .enumerate()
