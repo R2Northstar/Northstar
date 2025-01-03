@@ -1,10 +1,11 @@
 use std::{fs, io::Write, path::PathBuf};
 
-use high::squirrel::{PrintType, UserData};
+use high::squirrel::PrintType;
 use rrplug::prelude::*;
 
 use crate::{bindings::RecordedAnimation, recording_impl::SavedRecordedAnimation, NS_DIR};
 
+#[allow(unused)]
 const USER_DATA_ID: u64 = 18444492235241160706;
 
 pub fn register_sq_function() {
@@ -17,7 +18,7 @@ fn save_recorded_animation(
     recording: &mut RecordedAnimation,
     // _name2: PrintType,
     // _name3: PrintType,
-    // _name: PrintType,
+    _name: PrintType,
 ) -> Result<(), String> {
     let recording: SavedRecordedAnimation = recording.clone().into();
 
@@ -30,15 +31,13 @@ fn save_recorded_animation(
 }
 
 #[rrplug::sqfunction(VM = "SERVER", ExportName = "RReadRecordedAnimation")]
-fn read_recorded_animation(
-    name: String,
-) -> Result<UserData<RecordedAnimation, true, USER_DATA_ID>, String> {
+fn read_recorded_animation(name: String) -> Result<RecordedAnimation, String> {
     bincode::deserialize::<SavedRecordedAnimation>(
         &fs::read(name_to_path(name)?).map_err(|err| err.to_string())?,
     )
     .map_err(|err| err.to_string())?
     .try_into()
-    .map(UserData::new)
+    // .map(UserData::new)
     .map_err(|err: &str| err.to_string())
 }
 

@@ -62,3 +62,7 @@ pub struct RecordedAnimation {
     pub not_refcounted: bool,
     pub refcount: u8,
 }
+
+static _ASSERT_RECORDED_ANIMATION_LAYER: () = assert!(size_of::<RecordedAnimationLayer>() == 0x24);
+static _ASSERT_RECORDED_ANIMATION_FRAME: () = assert!(size_of::<RecordedAnimationFrame>() == 0x44);
+static _ASSERT_RECORDED_ANIMATION: () = assert!(size_of::<RecordedAnimation>() == 0x330);
