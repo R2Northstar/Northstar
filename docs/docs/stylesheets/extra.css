@@ -71,7 +71,6 @@
     --md-code-hl-comment-color: var(--catpuccin-overlay2);
     --md-code-hl-generic-color: var(--catpuccin-teal);
     --md-code-hl-variable-color: var(--catpuccin-yellow);
-    --md-code-bg-color: var(--catpuccin-surface0);
 }
 
 .md-typeset code {
