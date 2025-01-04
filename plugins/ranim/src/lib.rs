@@ -7,6 +7,7 @@ pub struct Ranim;
 
 mod bindings;
 mod recording_impl;
+mod serde_ext;
 mod sqapi;
 
 impl Plugin for Ranim {

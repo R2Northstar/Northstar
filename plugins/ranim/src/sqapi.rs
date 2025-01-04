@@ -11,6 +11,7 @@ pub fn register_sq_function() {
     register_sq_functions(save_recorded_animation);
     register_sq_functions(read_recorded_animation);
     register_sq_functions(unload_thyself);
+    register_sq_functions(pipe_recording);
 }
 
 #[rrplug::sqfunction(VM = "SERVER", ExportName = "RSaveRecordedAnimation")]
@@ -46,6 +47,35 @@ fn read_recorded_animation(name: String) -> Result<&mut RecordedAnimation, Strin
     .map_err(|err: &str| err.to_string())
 }
 
+#[rrplug::sqfunction(VM = "SERVER", ExportName = "RPipeRecordedAnimation")]
+fn pipe_recording(recording: &'static mut RecordedAnimation) -> &'static mut RecordedAnimation {
+    log::info!("org");
+    for i in 0..recording.frame_count as usize {
+        log::info!("{:?}", unsafe {
+            recording.frames.add(i).as_ref().unwrap_unchecked().gap_38
+        });
+    }
+
+    let recording_copy: SavedRecordedAnimation = recording.clone().into();
+    let recording_copy: &mut RecordedAnimation = recording_copy.try_into().unwrap();
+
+    log::info!("copy");
+    for i in 0..recording_copy.frame_count as usize {
+        log::info!("{:?}", unsafe {
+            recording_copy
+                .frames
+                .add(i)
+                .as_ref()
+                .unwrap_unchecked()
+                .gap_38
+        });
+    }
+
+    assert_eq!(recording, recording_copy);
+
+    recording_copy
+}
+
 #[rrplug::sqfunction(VM = "SERVER", ExportName = "RUnload")]
 fn unload_thyself() {
     unsafe {
@@ -60,10 +90,10 @@ fn name_to_path(name: impl ToString) -> Result<PathBuf, String> {
     let name = name.to_string();
     if name
         .chars()
-        .any(|c| !c.is_alphabetic() && c != '_' && c != '-')
+        .any(|c| !c.is_alphanumeric() && c != '_' && c != '-')
     {
         return Err(
-            "name didn't pass the filter, should be a only have alphanumric values, _ or -"
+            "name didn't pass the filter, should be a only have alphanumeric values, _ or -"
                 .to_string(),
         );
     }
