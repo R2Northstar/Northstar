@@ -15,7 +15,6 @@ use crate::{
     },
 };
 
-#[serde_with::serde_as]
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SavedRecordedAnimation {
     #[serde(serialize_with = "serialize_arr")]
