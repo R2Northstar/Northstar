@@ -7,6 +7,7 @@ edition = "2021"
 bincode = "1.3.3"
 rrplug = { workspace = true }
 serde = { version = "1.0.217", features = ["serde_derive"] }
+serde_with = "3.12.0"
 
 [lib]
 crate-type = ["cdylib"]
