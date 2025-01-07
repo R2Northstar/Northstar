@@ -1,7 +1,6 @@
 use mid::utils::str_from_char_ptr;
 use rrplug::{offset_functions, prelude::*};
 use serde::{Deserialize, Serialize};
-use serde_with::serde_as;
 use std::{os::raw::c_char, slice};
 
 offset_functions! {
@@ -50,7 +49,6 @@ pub struct RecordedAnimationFrame {
 }
 
 #[repr(C)]
-#[serde_as]
 #[derive(Debug, Clone)]
 pub struct RecordedAnimation {
     pub unknown_0: [i32; 44],
