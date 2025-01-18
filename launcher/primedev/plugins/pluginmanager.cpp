@@ -1,6 +1,7 @@
 #include "pluginmanager.h"
 
 #include <regex>
+#include <ranges>
 #include "plugins.h"
 #include "config/profile.h"
 #include "core/convar/concommand.h"
@@ -111,13 +112,14 @@ bool PluginManager::LoadPlugins(bool reloaded)
 
 void PluginManager::ReloadPlugins()
 {
-	for (const Plugin& plugin : this->GetLoadedPlugins())
-	{
-		plugin.Unload();
-	}
+	NS::log::PLUGINSYS->info("Reloading plugins");
 
-	this->plugins.clear();
-	this->LoadPlugins(true);
+	for (const Plugin& plugin : this->plugins | std::views::reverse)
+	{
+		std::string name = plugin.GetName();
+		if (plugin.Reload())
+			NS::log::PLUGINSYS->info("Reloaded {}", name);
+	}
 }
 
 void PluginManager::RemovePlugin(HMODULE handle)

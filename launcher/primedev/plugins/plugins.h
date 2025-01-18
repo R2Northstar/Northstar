@@ -28,7 +28,7 @@ public:
 
 	Plugin(std::string path);
 	bool Unload() const;
-	void Reload() const;
+	bool Reload() const;
 
 	// sys
 	void Log(spdlog::level::level_enum level, char* msg) const;
