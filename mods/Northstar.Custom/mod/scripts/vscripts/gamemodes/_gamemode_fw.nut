@@ -124,6 +124,10 @@ void function GamemodeFW_Init()
 	// _battery_port.gnut needs this
 	RegisterSignal( "BatteryActivate" )
 
+	// mp_thaw's intro spawnpoint have some problem, player can be stucked on the sky, so override it
+	if ( GetMapName() == "mp_thaw" )
+		SetSpawnpointGamemodeOverride( TEAM_DEATHMATCH )
+
 	AiGameModes_SetNPCWeapons( "npc_soldier", [ "mp_weapon_rspn101", "mp_weapon_dmr", "mp_weapon_r97", "mp_weapon_lmg" ] )
 	AiGameModes_SetNPCWeapons( "npc_spectre", [ "mp_weapon_hemlok_smg", "mp_weapon_doubletake", "mp_weapon_mastiff" ] )
 
@@ -459,7 +463,7 @@ bool function TryFWTerritoryDialogue( entity territory, entity player )
 
 	// the territory trigger will only save players and titans
 	array<entity> allEntsInside = GetAllEntitiesInTrigger( territory )
-	allEntsInside.removebyvalue( null ) // since we're using a fake trigger, need to check this
+	ArrayRemoveInvalid( allEntsInside ) // since we're using a fake trigger, need to check this
 	array<entity> friendliesInside // this means territory's friendly team
 	array<entity> enemiesInside // this means territory's enemy team
 	array<entity> enemyTitansInside
@@ -1342,8 +1346,8 @@ void function FWAreaThreatLevelThink_Threaded()
 		// check threats
 		array<entity> imcEntArray = GetAllEntitiesInTrigger( imcTerritory )
 		array<entity> mltEntArray = GetAllEntitiesInTrigger( mltTerritory )
-		imcEntArray.removebyvalue( null ) // since we're using a fake trigger, need to check this
-		mltEntArray.removebyvalue( null )
+		ArrayRemoveInvalid( imcEntArray ) // since we're using a fake trigger, need to check this
+		ArrayRemoveInvalid( mltEntArray )
 		foreach( entity ent in imcEntArray )
 		{
 			//print( ent )
@@ -1752,6 +1756,7 @@ void function FW_createHarvester()
 	fw_harvesterImc.harvester.Minimap_SetHeightTracking( true )
 	fw_harvesterImc.harvester.Minimap_SetZOrder( MINIMAP_Z_OBJECT )
 	fw_harvesterImc.harvester.Minimap_SetCustomState( eMinimapObject_prop_script.FD_HARVESTER )
+	SetObjectCanBeMeleed( fw_harvesterImc.harvester, true )
 	AddEntityCallback_OnFinalDamaged( fw_harvesterImc.harvester, OnHarvesterDamaged )
 	AddEntityCallback_OnPostDamaged( fw_harvesterImc.harvester, OnHarvesterPostDamaged )
 	
@@ -1778,6 +1783,7 @@ void function FW_createHarvester()
 	fw_harvesterMlt.harvester.Minimap_SetHeightTracking( true )
 	fw_harvesterMlt.harvester.Minimap_SetZOrder( MINIMAP_Z_OBJECT )
 	fw_harvesterMlt.harvester.Minimap_SetCustomState( eMinimapObject_prop_script.FD_HARVESTER )
+	SetObjectCanBeMeleed( fw_harvesterMlt.harvester, true )
 	AddEntityCallback_OnFinalDamaged( fw_harvesterMlt.harvester, OnHarvesterDamaged )
 	AddEntityCallback_OnPostDamaged( fw_harvesterMlt.harvester, OnHarvesterPostDamaged )
 
@@ -2316,7 +2322,7 @@ function FW_UseBattery( batteryPortvar, playervar ) //actually void function( en
     if( turretReplaced || teamChanged ) // replaced/hacked turret will spawn with 50% health
         newHealth = int ( turret.GetMaxHealth() * GetCurrentPlaylistVarFloat( "fw_turret_hacked_health", TURRET_HACKED_HEALTH_PERCENTAGE ) )
     // restore turret shield
-    int newShield = int ( min( turret.GetShieldHealthMax(), turret.GetShieldHealth() + ( turret.GetShieldHealth() * GetCurrentPlaylistVarFloat( "fw_turret_fixed_shield", TURRET_FIXED_SHIELD_PERCENTAGE ) ) ) )
+    int newShield = int( min( turret.GetShieldHealthMax(), turret.GetShieldHealth() + ( turret.GetShieldHealthMax() * GetCurrentPlaylistVarFloat( "fw_turret_fixed_shield", TURRET_FIXED_SHIELD_PERCENTAGE ) ) ) )
     if( turretReplaced || teamChanged ) // replaced/hacked turret will spawn with 50% shield
         newShield = int ( turret.GetShieldHealthMax() * GetCurrentPlaylistVarFloat( "fw_turret_hacked_shield", TURRET_HACKED_SHIELD_PERCENTAGE ) )
     // only do team score event if turret's shields down, encourage players to hack more turrets
