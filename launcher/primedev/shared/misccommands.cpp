@@ -301,6 +301,7 @@ void FixupCvarFlags()
 		// these 2 could be FCVAR_CHEAT, i guess?
 		{"cl_draw_player_model", FCVAR_DEVELOPMENTONLY},
 		{"cl_always_draw_3p_player", FCVAR_DEVELOPMENTONLY},
+		{"cl_gib_lifetime", FCVAR_CHEAT},
 		{"idcolor_neutral", FCVAR_DEVELOPMENTONLY},
 		{"idcolor_ally", FCVAR_DEVELOPMENTONLY},
 		{"idcolor_ally_cb1", FCVAR_DEVELOPMENTONLY},
