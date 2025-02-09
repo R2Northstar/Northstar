@@ -22,6 +22,7 @@ void function Score_Init()
 {
 	SvXP_Init()
 	AddCallback_OnClientConnected( InitPlayerForScoreEvents )
+	AddCallback_OnPlayerAssist( TitanAssistedKill )
 }
 
 void function InitPlayerForScoreEvents( entity player )
@@ -216,28 +217,17 @@ void function ScoreEvent_TitanKilled( entity victim, entity attacker, var damage
 			AddPlayerScore( attacker, "KillTitan" )
 	}
 
-	entity soul = victim.GetTitanSoul()
-	if ( IsValid( soul ) )
-	{
-		table<int, bool> alreadyAssisted
-		
-		foreach( DamageHistoryStruct attackerInfo in soul.e.recentDamageHistory )
-		{
-			if ( !IsValid( attackerInfo.attacker ) || !attackerInfo.attacker.IsPlayer() || attackerInfo.attacker == soul )
-				continue
-			
-			bool exists = attackerInfo.attacker.GetEncodedEHandle() in alreadyAssisted ? true : false
-			if( attackerInfo.attacker != attacker && !exists )
-			{
-				alreadyAssisted[attackerInfo.attacker.GetEncodedEHandle()] <- true
-				AddPlayerScore(attackerInfo.attacker, "TitanAssist" )
-				Remote_CallFunction_NonReplay( attackerInfo.attacker, "ServerCallback_SetAssistInformation", attackerInfo.damageSourceId, attacker.GetEncodedEHandle(), soul.GetEncodedEHandle(), attackerInfo.time ) 
-			}
-		}
-	}
-
 	if( !victim.IsNPC() ) // don't let killing a npc titan plays dialogue
 		KilledPlayerTitanDialogue( attacker, victim )
+}
+
+void function TitanAssistedKill( entity attacker, entity victim )
+{
+	if ( IsSoul( victim ) )
+	{
+		AddPlayerScore( attacker, "TitanAssist" )
+		attacker.AddToPlayerGameStat( PGS_ASSISTS, 1 )
+	}
 }
 
 void function ScoreEvent_NPCKilled( entity victim, entity attacker, var damageInfo )
