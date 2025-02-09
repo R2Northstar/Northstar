@@ -20,7 +20,7 @@ mkdocs-video = "^1.5.0"
 [tool.poetry.dev-dependencies]
 
 [tool.poetry.plugins."pygments.lexers"]
-"squirrel" = "squirrel_support:SquirrelLexer"
+"squirrel" = "squirrel_syntax:SquirrelLexer"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
