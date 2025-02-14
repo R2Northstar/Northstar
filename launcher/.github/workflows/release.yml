@@ -32,7 +32,7 @@ jobs:
       - name: Build
         run: cmake --build build/
       - name: Upload launcher build as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: northstar-launcher
           path: |
@@ -40,7 +40,7 @@ jobs:
             build/game/*.dll
             build/game/bin/x64_retail/*.dll
       - name: Upload debug build artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: launcher-debug-files
           path: |
@@ -53,12 +53,12 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Download compiled launcher
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: northstar-launcher
           path: northstar-launcher
       - name: Download compiled launcher
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: launcher-debug-files
           path: launcher-debug-files
