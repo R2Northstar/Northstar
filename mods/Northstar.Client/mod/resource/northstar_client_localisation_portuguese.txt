@@ -386,5 +386,9 @@ Clique em Sim se você concorda. Esta escolha pode ser alterada a qualquer momen
 		"MODE_MENU_UNKNOWN" "Desconhecido"
 		"MODE_MENU_SWITCH" "Filtrar"
 		"MODE_MENU_TITAN_ONLY" "Somente Titãs"
+		"TEAMSWITCH_GAMEMODE" "Modo de jogo não suporta troca de time"
+		"TEAMSWITCH_BUFFER" "Trocar de time está em esfriamento"
+		"TEAMSWITCH_GAMEPLAY" "Troca de time não é permitido fora do estágio de jogando"
+		"TEAMSWITCH_DISABLED" "Esse modo de jogo não suporta troca de time"
 	}
 }
