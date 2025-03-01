@@ -38,7 +38,7 @@ fn save_recorded_animation(recording: &mut RecordedAnimation, name: String) -> R
 }
 
 #[rrplug::sqfunction(VM = "SERVER", ExportName = "RReadRecordedAnimation")]
-fn read_recorded_animation(name: String) -> Result<&mut RecordedAnimation, String> {
+fn read_recorded_animation(name: String) -> Result<&'static mut RecordedAnimation, String> {
     bincode::deserialize::<SavedRecordedAnimation>(
         &fs::read(name_to_path(name)?).map_err(|err| err.to_string())?,
     )
