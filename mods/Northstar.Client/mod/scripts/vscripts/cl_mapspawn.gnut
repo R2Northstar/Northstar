@@ -1,0 +1,367 @@
+
+untyped
+
+//********************************************************************************************
+//	_cl_mapspawn.nut
+//  Called on newgame or transitions, BEFORE entities have been created and initialized
+//********************************************************************************************
+
+global function ClientCodeCallback_MapSpawn
+
+global function ClientCodeCallback_RunClientConnectScripts
+global function Init_PlayerScripts
+global function CodeCallback_EntityVarChanged
+global function ServerCallback_ClientInitComplete
+global function ClientCodeCallback_OnDropShipCinematicEventStateChanged
+global function ClientCodeCallback_OnDetenteEnded
+global function PerfInitLabels
+
+global var Hud = null
+
+global bool TITAN_CORE_ENABLED = true
+
+void function ClientCodeCallback_MapSpawn()
+{
+	ScriptCompilerTest()
+	LevelVarInit()
+
+	Hud = getroottable().Hud
+
+	level.scoreLimit <- {}
+	level.scoreLimit[TEAM_IMC] <- GetScoreLimit_FromPlaylist()
+	level.scoreLimit[TEAM_MILITIA] <- GetScoreLimit_FromPlaylist()
+
+	level.clientVars <- {}
+
+    level.onPlayerLifeStateChanged <- []
+
+	level.clientScriptInitialized <- false
+
+	RegisterSignal( "CachedLoadoutsReady" )
+	RegisterSignal( "EndSetPresentationType" )
+	RegisterSignal( "forever" )
+	RegisterSignal( "UpdateTitanCounts" )
+	RegisterSignal( "UpdatePlayerStatusCounts" )
+	RegisterSignal( "ControllerModeChanged" )
+	RegisterSignal( "PulseROE" )
+	RegisterSignal( "OnDeath" )
+
+	FlagInit( "ClientInitComplete" )
+	FlagInit( "EntitiesDidLoad" )
+
+	if ( !IsLobby() )
+	{
+		PrecacheRes( "vgui_icon" )
+		PrecacheRes( "vgui_binding" )
+		PrecacheRes( "vgui_jump_quest" )
+		PrecacheRes( "vgui_titan_ammo" )
+		PrecacheRes( "vgui_xpbar" )
+		PrecacheRes( "vgui_titan_threat" )
+		PrecacheRes( "vgui_titan_vdu" )
+		PrecacheRes( "vgui_fullscreen_titan" )
+		PrecacheRes( "vgui_fullscreen_pilot" )
+		PrecacheRes( "vgui_pilot_launcher_screen" )
+		PrecacheRes( "vgui_titan_emp" )
+		PrecacheRes( "vgui_enemy_announce" )
+		PrecacheRes( "Coop_TeamScoreEventNotification" )
+		PrecacheRes( "control_panel_generic_screen" )
+		PrecacheRes( "vgui_callsign_menu" )
+	}
+
+	#if DEV
+		ClModelViewInit()
+	#endif
+
+	float[2] screenSize = GetScreenSize()
+
+	clGlobal.topoFullScreen = RuiTopology_CreatePlane( <0,0,0>, <screenSize[0],0,0>, <0,screenSize[1],0>, false )
+
+	if ( screenSize[0] / screenSize[1] <= 1.6 )
+	{
+		clGlobal.topoCockpitHud = RuiTopology_CreateSphere( COCKPIT_RUI_OFFSET_1610_TEMP, <0, -1, 0>, <0, 0, -1>, COCKPIT_RUI_RADIUS, COCKPIT_RUI_WIDTH, COCKPIT_RUI_HEIGHT, COCKPIT_RUI_SUBDIV )
+		clGlobal.topoCockpitHudPermanent = RuiTopology_CreateSphere( COCKPIT_RUI_OFFSET_1610_TEMP, <0, -1, 0>, <0, 0, -1>, COCKPIT_RUI_RADIUS, COCKPIT_RUI_WIDTH, COCKPIT_RUI_HEIGHT, COCKPIT_RUI_SUBDIV )
+	}
+	else
+	{
+		clGlobal.topoCockpitHud = RuiTopology_CreateSphere( COCKPIT_RUI_OFFSET, <0, -1, 0>, <0, 0, -1>, COCKPIT_RUI_RADIUS, COCKPIT_RUI_WIDTH, COCKPIT_RUI_HEIGHT, COCKPIT_RUI_SUBDIV )
+		clGlobal.topoCockpitHudPermanent = RuiTopology_CreateSphere( COCKPIT_RUI_OFFSET, <0, -1, 0>, <0, 0, -1>, COCKPIT_RUI_RADIUS, COCKPIT_RUI_WIDTH, COCKPIT_RUI_HEIGHT, COCKPIT_RUI_SUBDIV )
+	}
+	RuiTopology_ShareWithCode( clGlobal.topoCockpitHudPermanent, RUI_CODE_TOPO_PERMANENT_COCKPIT );
+	RuiTopology_ShareWithCode( clGlobal.topoCockpitHud, RUI_CODE_TOPO_ANIMATED_COCKPIT );
+
+	clGlobal.topoTitanCockpitHud = RuiTopology_CreateSphere( < -120, 0, -TITAN_COCKPIT_TOPO_RADIUS * deg_sin( TITAN_COCKPIT_ROTATION_ANGLE )>, <0, -1, 0>, <deg_sin( TITAN_COCKPIT_ROTATION_ANGLE ), 0, -deg_cos( TITAN_COCKPIT_ROTATION_ANGLE )>, TITAN_COCKPIT_TOPO_RADIUS, TITAN_COCKPIT_RUI_SCREEN_WIDTH, TITAN_COCKPIT_RUI_SCREEN_WIDTH / 1.7665, COCKPIT_RUI_SUBDIV )
+	clGlobal.topoTitanCockpitLowerHud = RuiTopology_CreatePlane( <0,0,0>, <0, -TITAN_COCKPIT_LOWER_RUI_SCREEN_SQUARE_SIZE, 0>, <0, 0, -TITAN_COCKPIT_LOWER_RUI_SCREEN_SQUARE_SIZE * TITAN_COCKPIT_LOWER_RUI_SCREEN_HEIGHT_SCALE>, true )
+	clGlobal.topoTitanCockpitInstrument1 = RuiTopology_CreatePlane( <0,0,0>, <0, -1, 0>, <0, 0, -1>, true )
+
+	SPMP_Shared_Init()
+}
+
+/*
+const VGUI_TITAN_NOSAFE_X = 0.15
+const VGUI_TITAN_NOSAFE_Y = 0.075
+const VGUI_PILOT_NOSAFE_X = 0.10
+const VGUI_PILOT_NOSAFE_Y = 0.10
+
+function MainHud_InitAspectRatio( entity cockpit, entity player, bool isTitan )
+{
+	entity vgui = cockpit.e.mainVGUI
+	local panel = vgui.GetPanel()
+
+	vgui.e.screen = HudElement( "Screen", panel )
+	vgui.e.safeArea = HudElement( "SafeArea", panel )
+	vgui.e.safeAreaCenter = HudElement( "SafeAreaCenter", panel )
+
+	local safeWidth = vgui.e.safeArea.GetWidth()
+	local safeWidthCenter = vgui.e.safeAreaCenter.GetWidth()
+
+	if ( level.safeAreaScale != 1.0 )
+	{
+		if ( isTitan )
+		{
+			vgui.e.safeArea.SetBaseSize( vgui.e.screen.GetWidth() - (vgui.e.screen.GetWidth() * VGUI_TITAN_NOSAFE_X), vgui.e.screen.GetHeight() - (vgui.e.screen.GetHeight() * VGUI_TITAN_NOSAFE_Y) )
+			vgui.e.safeAreaCenter.SetBaseSize( vgui.e.screen.GetWidth() - (vgui.e.screen.GetWidth() * VGUI_TITAN_NOSAFE_X), vgui.e.screen.GetHeight() - (vgui.e.screen.GetHeight() * VGUI_TITAN_NOSAFE_Y) )
+		}
+		else
+		{
+			vgui.e.safeArea.SetBaseSize( vgui.e.screen.GetWidth() - (vgui.e.screen.GetWidth() * VGUI_PILOT_NOSAFE_X), vgui.e.screen.GetHeight() - (vgui.e.screen.GetHeight() * VGUI_PILOT_NOSAFE_Y) )
+			vgui.e.safeAreaCenter.SetBaseSize( vgui.e.screen.GetWidth() - (vgui.e.screen.GetWidth() * VGUI_PILOT_NOSAFE_X), vgui.e.screen.GetHeight() - (vgui.e.screen.GetHeight() * (VGUI_PILOT_NOSAFE_Y * 0.5)) )
+		}
+	}
+
+	vgui.e.safeArea.SetScaleX( level.aspectRatioScale )
+	vgui.e.safeAreaCenter.SetScaleX( level.aspectRatioScale )
+}
+*/
+
+void function PrecacheRes( resFile )
+{
+	var vgui = CreateClientsideVGuiScreen( resFile, VGUI_SCREEN_PASS_WORLD, Vector(0,0,0), Vector(0,0,0), 4, 4 )
+	Assert( vgui != null, "Failed to precache res file " + resFile )
+	vgui.Destroy()
+}
+
+
+void function ClientCodeCallback_RunClientConnectScripts( entity player )
+{
+	Assert( IsValid( player ) )
+	Assert( player == GetLocalClientPlayer() )
+	thread RunClientConnectScriptsThreaded( player )
+}
+
+function RunClientConnectScriptsThreaded( entity player )
+{
+	Assert( IsValid( player ) )
+	Assert( player == GetLocalClientPlayer() )
+
+	if ( level.clientScriptInitialized )
+		return
+
+	player.cv = level.clientVars
+
+	clGlobal.levelEnt = CreateClientSidePointCamera( Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), 50 )
+	clGlobal.levelEnt.Hide()
+	Assert( clGlobal.levelEnt )
+
+	Init_ClientScripts( player )
+
+	FlagWait( "ClientInitComplete" )
+
+	player = GetLocalClientPlayer()
+
+	Assert( IsValid( player ) )
+	Assert( player == GetLocalClientPlayer() )
+
+	level.clientScriptInitialized = true
+
+	RunCallbacks_EntitiesDidLoad()
+
+	FlagSet( "EntitiesDidLoad" )
+
+	#if DURANGO_PROG
+		// Update game progress based off gen and xp
+		Assert( IsValid( player ) )
+		Assert( player == GetLocalClientPlayer() );
+		Assert( GetMaxPlayerLevel() > 0 );
+
+		if ( player.GetGen() > 1 )
+		{
+			Durango_SetGameProgress( 1.0 )
+		}
+		else
+		{
+			// temp fix for level curve bug
+			float result = float( player.GetLevel() ) / GetMaxPlayerLevel()
+			if ( result > 1.0 )
+				result = 1.0
+			Durango_SetGameProgress( result )
+		}
+	#endif // DURANGO_PROG
+}
+
+function Init_ClientScripts( entity player )
+{
+	level.safeAreaScale <- GetSafeAreaScaleSetting()
+
+	level.screenSize <- Hud.GetScreenSize()
+
+	local aspectRatio = level.screenSize[0].tofloat() / level.screenSize[1].tofloat()
+	level.aspectRatioScale <- min( aspectRatio / (16.0/9.0), 1.0 )
+
+	level.safeArea <- HudElement( "SafeArea" )
+	level.safeAreaCenter <- HudElement( "SafeAreaCenter" )
+
+	if ( level.safeAreaScale != 1.0 )
+	{
+		level.safeArea.SetWidth( level.screenSize[0] - (level.screenSize[0] * 0.025) )
+		level.safeArea.SetHeight( level.screenSize[1] - (level.screenSize[1] * 0.025) )
+		level.safeAreaCenter.SetWidth( level.screenSize[0] - (level.screenSize[0] * 0.025) )
+		level.safeAreaCenter.SetHeight( level.screenSize[1] - (level.screenSize[1] * 0.025) )
+	}
+
+	if ( !IsLobby() )
+    {
+		Player_AddClient( player )
+    }
+
+	//ScreenFade_AddClient()
+
+    if ( !IsLobby() )
+    {
+		InitVoiceHUD( player )
+		CapturePointHudInit( player ) //TODO: Reexamine this with more CapturePoint refactoring
+    }
+
+	#if PC_PROG
+		InitChatHUD()
+	#endif // PC_PROG
+
+	if ( !IsLobby() )
+	{
+		ClassicMP_AddClient()
+		KillReplayHud_AddClient()
+		clGlobal.initScoreboardFunc()
+		InitChallengePopup()
+		MainHud_AddClient( player )
+		ReplacementTitanHUD_AddClient( player )
+		InitCrosshair()
+
+		player.ClientCommand( "ClientStatus " + (IsPartyMember( player ) ? "1" : "0") )
+
+		// Added via AddCallback_OnClientScriptInit
+		foreach ( callbackFunc in clGlobal.onClientScriptInitCallback )
+		{
+			callbackFunc( player )
+		}
+	}
+	else
+	{
+		// Added via AddCallback_OnClientScriptInit
+		foreach ( callbackFunc in clGlobal.onClientScriptInitCallback )
+		{
+			callbackFunc( player )
+		}
+		//BurnCards_AddLobbyClient() // move this to a callback if we need it again``
+	}
+
+	Assert( IsMultiplayer() )
+	InitDefaultLoadouts()
+
+	DoF_SetNearDepthToDefault()
+	DoF_SetFarDepthToDefault()
+
+	MenuModels_Init()
+	thread UpdateCachedLoadouts() // Needs to wait till frame end
+
+	// This is needed to fix save/load issues because server script will wait to hear from the client that dialogue has finished playing, but client script is reinitialized and no longer knows to respond
+	player.ClientCommand( "AllDialogueFinished" )
+}
+
+
+function Init_PlayerScripts( entity player )
+{
+	SmartAmmo_LockedOntoWarningHUD_Init()
+
+	foreach ( addPlayerFunc in clGlobal.addPlayerFuncs )
+	{
+		addPlayerFunc( player )
+	}
+
+	if ( IsLobby() )
+		thread Lobby_AddPlayer( player )
+
+	player.p.playerScriptsInitialized = true
+}
+
+
+
+function CodeCallback_EntityVarChanged( ent, varName, newValue, oldValue )
+{
+	local className = ent.GetSignifierName()
+
+	if ( !(className in _entityClassVarChangeCallbacks) )
+		return
+
+	if ( !(varName in _entityClassVarChangeCallbacks[className]) )
+		return
+
+	foreach ( callbackFunc in _entityClassVarChangeCallbacks[className][varName] )
+	{
+		local infos = callbackFunc.getinfos()
+		if ( infos.parameters.len() == 2 )
+			callbackFunc( ent )
+		else
+			callbackFunc( ent, newValue, oldValue )
+	}
+}
+
+// called from _base_gametype::ClientCommand_ClientScriptInitialized()
+function ServerCallback_ClientInitComplete()
+{
+	FlagSet( "ClientInitComplete" )
+}
+
+
+function StripPrefix( stringName, prefix )
+{
+	local index = stringName.find( prefix )
+
+	if ( index != 0 )
+		return stringName
+
+	return stringName.slice( prefix.len(), stringName.len() )
+}
+
+
+function GetTableNumContents( Table, contents )
+{
+	foreach ( k, v in Table )
+	{
+		contents.num++
+
+		if ( typeof v == "table" )
+		{
+			GetTableNumContents( v, contents )
+		}
+	}
+}
+
+void function ClientCodeCallback_OnDetenteEnded()
+{
+}
+
+function PerfInitLabels()
+{
+	PerfClearAll()
+
+	local Table = getconsttable().PerfIndexClient
+    foreach( label, intval in Table )
+         PerfInitLabel( intval, string( label ) )
+
+	local sharedTable = getconsttable().PerfIndexShared
+    foreach( label, intval in sharedTable )
+         PerfInitLabel( intval + SharedPerfIndexStart, string( label ) )
+}
+
+function ClientCodeCallback_OnDropShipCinematicEventStateChanged()
+{
+}
