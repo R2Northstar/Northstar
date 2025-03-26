@@ -31,6 +31,9 @@
             "pattern": "https://wiki.archlinux.org/title/PulseAudio/Troubleshooting#Glitches.2C\\_skips\\_or\\_crackling"
         },
         {
+            "pattern": "https://www.majorgeeks.com/files/details/ati_tray_tools.html"
+        },
+        {
             "pattern": "https://www.wunderboy.org/valve-hl2source-sdk-tools/#vtf_shell"
         }
     ]
