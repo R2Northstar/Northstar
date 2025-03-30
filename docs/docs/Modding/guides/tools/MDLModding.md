@@ -2,37 +2,37 @@
 
 ## MDL Overview
 
-Model (MDL) is the extension for Source's proprietary model format. It defines the structure of the model along with animation, bounding box, hit box, materials, mesh and LOD information. Unlike other Source games in Titanfall 2 files like the .phy, .vtx, .vvd etc. are not separate files and are instead included in the .mdl file.
+Model (MDL) is the extension for Source's proprietary model format. It defines the structure of the model along with animation, bounding box, hit box, materials, mesh and LOD information. Unlike other Source games, in Titanfall 2 files like the `.phy`, `.vtx`, `.vvd` etc. are not separate files and are instead included in the .mdl file.
 
 [VALVe developer docs "Model"](https://developer.valvesoftware.com/wiki/.mdl)
 
 
-## Editing an existing Model
+## Editing an existing model
 
-While creating an entire Model from scratch is possible it would be an extremely long and tedious task. Instead its recommended to use an existing Model as your base.
+While creating an entire model from scratch is possible, it would be an extremely long and tedious task. Instead its recommended to use an existing model as your base.
 
 
-## Prequisites
+## Prerequisites
 
 - [Blender](https://www.blender.org/download/) (min. 2.92)
 - [Blender Source Tools](https://developer.valvesoftware.com/wiki/Blender_Source_Tools)
-    (refer to Download page for install instructions)
+    (refer to download page for install instructions)
 - [Crowbar](https://steamcommunity.com/groups/CrowbarTool) (min 0.74)
-
-        - One of the following on Steam:
-        - [Portal 2](https://store.steampowered.com/app/620/Portal_2/) (and its Authoring Tools [Portal 2 SDK](https://developer.valvesoftware.com/wiki/Authoring_Tools/SDK_(Portal_2)))
-        - [SourceFilmMaker](https://store.steampowered.com/app/1840/Source_Filmmaker/) (FREE)
-- [mdlshit](https://github.com/headassbtw/mdlshit)
+- [MDLShit](https://github.com/headassbtw/mdlshit)
 - [Harmony VPK](https://github.com/harmonytf/HarmonyVPKTool) (optional if you want to extract the model yourself)
+- [Crak0kalos StudioMDL](https://www.moddb.com/downloads/crak0kalos-studiomdl-full) (optional)
+One of the following on Steam:
+    - [Portal 2](https://store.steampowered.com/app/620/Portal_2/) (and its [Authoring Tools](https://developer.valvesoftware.com/wiki/Authoring_Tools/SDK_(Portal_2)))
+    - [SourceFilmMaker](https://store.steampowered.com/app/1840/Source_Filmmaker/) (FREE)
 
 !!! note
-    This Guide is tailored towards users with atleast some experience with Blender. If you are new to Blender I recommend you to first familiarize yourself with the basics of Blender. There are many tutorials on the Internet that can help you with that.
+    This Guide is tailored towards users with atleast some experience with Blender. If you are new to Blender I recommend you to first familiarize yourself with the basics of it. There are many tutorials on the Internet that can help you with that.
     Especially the following topics are important for modifying or creating game assets:
 
-    •   Modeling
-    •   UV Mapping
-    •   Texturing
-    •   Rigging
+    - Modeling
+    - UV Mapping
+    - Texturing
+    - Rigging
 
     These things work in conjunction with each other and are all important for creating a game ready model. An understanding of these topics is very helpful for proper usage of Blender.
 
@@ -41,11 +41,12 @@ While creating an entire Model from scratch is possible it would be an extremely
 
 The workflow for editing a model is as follows:
 
-- Extract the model using [HARMONY VPK](#harmony-vpk) or Downloading the model from the [Titanfall 2 Skin Modding Repo](https://github.com/BigSpice/TitanFall-2-Skin-Modding/tree/main/Models_MDL_Format)
+- Extract the model using [HARMONY VPK](#harmony-vpk) or downloading the model from the [Titanfall 2 Skin Modding Repo](https://github.com/BigSpice/TitanFall-2-Skin-Modding/tree/main/Models_MDL_Format)
+- Extract its RUI meshes with [MDLShit](#mdlshit), if necessary
 - Decompile the model using [CROWBAR](#crowbar)
 - Importing the model in [BLENDER](#blender)
-- Editing the model to our liking
-- Assigning a material to parts of our model
+- Editing the model to your liking
+- Assigning a material to parts of your model
 - Exporting the model from [BLENDER](#blender)
 - Compiling using [CROWBAR](#crowbar)
 - Converting the MDL file with other output files using [MDLSHIT](#mdlshit)
@@ -75,7 +76,7 @@ We will use it to decompile and compile the model.
 
 ## MDLShit
 
-MDLShit is a tool written by headassbtw. It is used to combine the MDL file with the other output files from Crowbar.
+MDLShit is a tool written by headassbtw. It is used to combine the MDL file with the other output files from Crowbar, as well as extract said model's `rui` meshes.
 
 We will use it to combine the MDL file with the other output files from Crowbar.
 
@@ -86,6 +87,11 @@ Harmony VPK is a tool written by the Harmony Team. It's an electron-based GUI fo
 
 We will use it to extract the model from the game files.
 
+## Crak0kalos StudioMDL
+
+Crak0kalos StudioMDL is a modified version of Source's Studiomdl.exe that allows us to bypass the 32 material limit.
+
+While its not necessary in the majority of cases, its still a useful tool to keep around.
 
 ## Workflow in Detail
 
@@ -101,7 +107,7 @@ We will add a cube to the side of the Flatline and assign a custom material to i
 - Open HARMONY VPK.
 - On the top right click on the `Open VPK` button.
 - Navigate to the location of your Titanfall 2 installions `/vpk/` folder.
-- Open the `.vpk` file you want to extract (most multiplayer weapons are in `client_mp_common.bsp.pak000_000.vpk` since you most likely want one of those).
+- Open the `_dir.vpk` file you want to extract (most multiplayer weapons are in `englishclient_frontend.bsp.pak000_dir.vpk` since you most likely want one of those).
 - You will now see a list of all files in the `.vpk` file on the left side looking something like this:
 
 ``` text
@@ -120,28 +126,48 @@ RootDir
 - Select the `.mdl` file you want to extract (for example `ptpov_vinson.mdl`).
 
 !!! note
-    Weapons are mostly split into two models, one for the first person view(`ptpov_` and the world model `w_`.
+    Weapons are mostly split into two, sometimes three or four models:
 
-    `ptpov` is used when you are in first person.
+    `ptpov_` is used when you are in first person.
 
     `w_` is used when the weapon is viewed in the world (for example when its dropped on the ground).
+
+    `_projectile` is the projectile model used by the weapon. Not all weapons use projectiles, and not all that do use dedicated projectile models.
+
+    `_stow` is used when the weapon is equipped by a player or NPC, and is holstered. Not all weapons have dedicated holster models. Instead, they will use the `w_` model.
+
+    `_menu` is used when inspecting the weapon in the lobby. Not all weapons have dedicated menu models.
 
 - Click on the `Unpack` button on the top right.
 - You are now prompted to select a folder to extract the model to, select a folder of your choice and click on `Select Folder`.
 - Your model is now extracted and you can close Harmony VPK.
 
+## Step 1.1: RUI meshes
+
+Before extracting them, let me explain what RUI meshes are. RUI meshes are special meshes that can't be edited, and are embedded into `ptpov_` models. They are used to control your weapon's ammo counters, sights and proscreen. Not all weapons have RUI meshes.
+
+### Extracting RUI meshes
+
+!!! note
+    This step is only necessary for `ptpov_` models. If your weapon doesn't have RUI meshes, you can skip this section.
+
+- Open MDLShit.
+- On the top right, click the `tools` button.
+- Drag your `ptpov_` model into MDLShit, and press `Read MDL`.
+- Click on the `Extract` button on the right. You should now see a `<name>.rui` file in the same folder as your model. If you don't see one, that means your weapons doesn't have RUI meshes.
+
 
 ## Step 2: Decompiling the model
 
 !!! note
-    In order to use Crowbar the way we will we need to setup a few things first.
+    In order to use Crowbar the way we will, we need to setup a few things first.
 
-    This step only needs to be done once
+    This step only needs to be done once.
 
 
 ### Setup Crowbar (one time only)
 
-- Uppon first launch select the `Set Up Games` tab on the top left.
+- Upon first launch select the `Set Up Games` tab on the top left.
 - Select either `Portal 2` or `Source Filmmaker` in the dropdown menu on the top.
 - Make sure your Library Path is set to the location of the Steam library you have the game installed in on the bottom.
 - The `Game Setup` section should now be filled with the correct paths.
@@ -178,7 +204,7 @@ RootDir
 
   Set `Game that has the model compiler` to the game you selected in the `Set Up Games` tab on the top left.
 
-- This concludes the setup for crowbar these settings will be saved and you will not need to do this again.
+- This concludes the setup for Crowbar. These settings will be saved and you will not need to do this again.
 
 
 ### Decompiling the model
@@ -194,7 +220,7 @@ RootDir
 
 - Open Blender.
 - In the top left corner select `File` -> `Import` -> `Source Engine`.
-- Navigate to the folder you extracted the model to in the previous step and select the `.qc` file (for example `ptpov_vinson.qc`) and uncheck the `Import Animations` box and check the `Create Collections` box.
+- Navigate to the folder you extracted the model to in the previous step and select the `.qc` file (for example `ptpov_vinson.qc`), uncheck the `Import Animations` box and check the `Create Collections` box.
 
 
 ## Step 4: Editing the model
@@ -204,10 +230,10 @@ RootDir
     In this example we will add a cube to the side of the Flatline and assign a custom material to it.
 
 Before editing let me explain how the model is structured in Blender.
-By selecting a qc file in the import menu we told Blender to import all SMD files referenced in that qc file.
-This means that the model is split into multiple collections based on the SMD files referenced in the qc file.
+By selecting a `.qc` file in the import menu we told Blender to import all SMD files referenced in that `.qc` file.
+This means that the model is split into multiple collections based on the SMD files referenced in the `.qc` file.
 For example the `ptpov_vinson.qc` file references the `ptpov_vinson_v_vinson.smd` file which contains the model for the Flatline.
-For now the smd file will be imported into blender when you import the qc file, later we will change this to be an dmx file instead.
+For now the smd file will be imported into blender when you import the `.qc` file, later we will change this to be a dmx file instead.
 
 - Select the `ptpov_vinson_v_vinson.smd` mesh in the outliner.
 - Enter `EDIT Mode`.
@@ -225,7 +251,7 @@ For now the smd file will be imported into blender when you import the qc file, 
 
 ## Step 5: Assigning Materials
 
-This step has two ways of being done, using a `qc` file that references `smd` files or references `dmx` files.
+This step has two ways of being done, using a `.qc` file that references `smd` files or references `dmx` files.
 Usually the `smd` way is what you will want todo when first importing and editing a model, however if you want to reimport a EDITED model you will need to use the `dmx` way.
 
 ### Assigning Materials (smd)
@@ -261,7 +287,7 @@ This is the way you will usually do it when reimporting a model that you have ed
 
 ## Step 5.5: Multiple Material Paths (dmx)
 
-If you have materials with multiple paths (different folders in the game files) you will want to use the `$renamematerial` command in the qc file.
+If you have materials with multiple paths (different folders in the game files) you will want to use the `$renamematerial` command in the `.qc` file.
 Usage:
 
 ```text
@@ -278,12 +304,12 @@ Command docs: [VALVe developer docs $renamematerial](https://developer.valvesoft
 
 ## Step 6: Exporting from Blender
 
-- In the `Source Engine Export` Menu in the `Scene Properties` select an `Export Path` usually the same folder as the original qc file.
+- In the `Source Engine Export` Menu in the `Scene Properties` select an `Export Path` usually the same folder as the original `.qc` file.
 - Set the `Export Format` to `DMX`.
 
     !!! note
-        This is important since we want to export the model as a dmx file instead of an smd file, this is because of limitation in the smd format that we want to avoid.
-        dmx by default will, uppon importing set a "material path" which is the path to the material in the game files, if you reimport this model later on you will need to
+        This is important since we want to export the model as a dmx file instead of an smd file, this is because of limitations in the smd format that we want to avoid.
+        dmx by default will, upon importing, set a "material path" which is the path to the material in the game files.
 
 - Press the `Export` button and select `Scene Export` (this will export all meshes in the scene to DMX files, you can also individually export meshes by selecting them in the outliner and then pressing the `Export` button and selecting the mesh in the Export Menu).
 - Your DMX files are now exported and you can close Blender.
@@ -308,47 +334,56 @@ Command docs: [VALVe developer docs $renamematerial](https://developer.valvesoft
         If you have multiple bodygroups you will need to do this for each bodygroup, if you have multiple meshes in a bodygroup you will need to do this for each mesh in the bodygroup.
         We do this so Crowbar uses the dmx files instead of the smd files when compiling the model.
 
+- Add `$MaxVerts 9999999` somewhere in your `.qc` file. This is to prevent issues related to the vertices limit.
 - Open Crowbar.
 - Select the `Compile` tab on the top.
 - Click on the `Browse` button on the top right.
 - Select the `.qc` file you want to compile (for example `ptpov_vinson.qc`).
 - Choose your game from the dropdown labeled `Games that has the model compiler` (for example `Portal 2`)
 - Press the `Compile` button.
-- Crowbar now compiles the model and outputs the files to the `compiled` folder in the same folder as the `.qc` file, inside the `compiled` folder you will find the full folder path of the model (for example `models\weapons\vinson\`).
+- Crowbar now compiles the model and outputs the files to the `compiled` folder in the same folder as the `.qc` file. Inside the `compiled` folder you will find the full folder path of the model (for example `models\weapons\vinson\`).
 
     !!! note
-        Usually the error is self explainatory and you can fix it by yourself.
-        By default Crowbar will not output a compiled file if any errors occur during the compilation process.
+        By default Crowbar will not output a compiled file if any errors occur during the compilation process. Usually the error is self explainatory and you can fix it by yourself.
+        See the [common errors](#common-errors) section for more info.
 
-        If you have Visual Studio Code installed you can also use the `Valve KeyValue Files Support` extension to have a better overview of the qc file, extension id: `GEEKiDoS.vdf`
+        If you have Visual Studio Code installed you can also use the `Valve KeyValue Files Support` extension to have a better overview of the `.qc` file. Extension id: `GEEKiDoS.vdf`
 
 ## Step 8: Combining model files
 
 - Open MDLShit.
-- In a file explorer navigate to the compiled folder of your model (for example `compiled\models\weapons\vinson\`).
-- In this folder you will find the `.mdl` file and multiple other files, in our case there will be 3 files `.mdl`, `.vvd` and `.vtx`) all with the same name.
+- In a file explorer, navigate to the compiled folder of your model (for example `compiled\models\weapons\vinson\`).
+- In this folder you will find the `.mdl` file and multiple other files, in our case there will be 3 files `.mdl`, `.vvd` and `.vtx`, all with the same name.
 - In MDLShit drag these into their respective boxes.
-- Make sure they are checked and the boxes you dont have files for are unchecked.
+- If your weapon has RUI meshes, check the `RUI` box on the right and drag the `.rui` file you extracted earlier into that box.
+- Make sure they are checked and the boxes you don't have files for are unchecked.
 - Press the `Check` button.
 - Press the `Convert` button.
-- MDLShit will now combine the files into a single `_conv.mdl` file, this is our final exported and working model you can now close MDLShit and use that model in a mod.
+- MDLShit will now combine the files into a single `_conv.mdl` file, this is our final exported and working model. You can now close MDLShit and use that model in a mod.
 
 
 
 ## Common errors
 
-In this list the word `<filename>` will be used to refer to the name of the file that is causing the error and X will refer to a number depending on your file, `line` will refer to the line in the qc file that is causing the error.
 The following words correspond to the following:
 
 - `<filename>`: The name of the file that is causing the error.
-- `<line>`: The line in the qc file that is causing the error.
+- `<line>`: The line in the `.qc` file that is causing the error.
 
-`modelpath.qc(<line>): - could not load file '<<filename>.smd'`:
-    This error means that the qc file is trying to reference a file that does not exist, make sure that the file is in the same folder as the qc file and that the name of the file is correct.
-    If the above solution does not work think about if you need said file actually, if not you can remove it from the qc file. Or if you need it you can create it yourself.
+`Crowbar ERROR: Leaking <number> elements.`
+
+`Crowbar ERROR: modelpath.qc(<line>): could not load file '<filename>.smd'`:
+    This error means that the `.qc` file is trying to reference a file that does not exist, make sure that the file is in the same folder as the `.qc` file and that the name of the file is correct.
+    If the above solution does not work think about if you need said file actually, if not you can remove it from the `.qc` file. Or if you need it you can create it yourself.
     You can also see if a Physics or LOD file is the missing file, if it is make sure you have the correct settings in Crowbar for the file to be generated.
 
 `Crowbar ERROR: The model compiler, "<filename>", does not exist.`
 
 `Crowbar ERROR: The game's "<filename>" file does not exist.`
-    Mostly happens if you did not properly set up Crowbar, make sure you set the `Game that has the model compiler` to [your prerequisite game](https://r2northstar.readthedocs.io/en/latest/guides/tools/MDLModding.html#prequisites).
+    Mostly happens if you did not properly set up Crowbar, make sure you set the `Game that has the model compiler` to [your prerequisite game](#prerequisites).
+
+`Crowbar ERROR: Too many materials used, max 32`
+    Make sure you don't have any duplicate or unecessary materials (for example, `models\amazing\uncoolmaterial\cool_material2` and `models/amazing/uncoolmaterial/cool_material2` are considered separate materials). If that fails, compile the model using Crak0kalos StudioMDL.
+
+`Ammo counters and sights are not visible`
+    You forgot to include your model's `.rui` file when combining it in MDLShit.
