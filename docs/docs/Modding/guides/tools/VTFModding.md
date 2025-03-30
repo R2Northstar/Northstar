@@ -9,6 +9,8 @@ VTF, short for "Valve Texture Format", is a texture type used by Valve in the so
 
 VMT, short for "Valve Material Type", is a text [material](https://developer.valvesoftware.com/wiki/Material) system that dictates how the game perceives a vtf outside of how it looks. It uses [parameters](https://developer.valvesoftware.com/wiki/Category:List_of_Shader_Parameters) and [proxies](https://developer.valvesoftware.com/wiki/Material_proxies) to dictate how [shaders](https://developer.valvesoftware.com/wiki/Shader) will show the game. We will go into greater detail later.
 
+You can find a list of Titanfall exclusive material proxies [here](https://developer.valvesoftware.com/wiki/List_of_material_proxies#Titanfall_and_Titanfall_2).
+
 ## Editing FX that use VTFs
 
 A lot of fx in Titanfall use vtf's as textures. Therefore, if the corresponding vtf can be found, we can do almost anything with the fx's appearence.
