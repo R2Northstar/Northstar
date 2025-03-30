@@ -37,6 +37,7 @@ Provided is a template `mod.json`, for a detailed list of values read the
 
    "LoadPriority": 0,
    "ConVars": [],
+   "ConCommands": [],
    "Scripts": [],
    "Localisation": []
 }
@@ -197,10 +198,34 @@ SetUIVar( level, "gameStartTime", Time() + GetConVarFloat( "ns_private_match_cou
 
     All `Northstar.CustomServers` ConVars are listed [on this page](../../Wiki/hosting-a-server-with-northstar/basic-listen-server.md)
 
+### ConCommands
+
+This field lists console commands that can trigger Squirrel functions when executed.
+
+Each console command must have a `"Name"`, a `"Function"` and a `"Context"`. ConCommands can
+also have an optional `"Flags"` field which specifies special behaviour, and an
+optional `"HelpString"` field which specifies the usage of the ConCommand, which can be
+viewed in-game by running `help <concommand>`.
+
+The `"Function"` field is the Squirrel function that will run every time the command is executed. The `"Context"` field tells the game when and in which context to run the command, See [RunOn](#runon).
+
+#### Example
+
+```json
+"ConCommands": [
+    {
+        "Name": "my_custom_concommand",
+        "Function": "my_custom_function",
+        "Context": "CLIENT"
+    },
+
+    ...
+]
+```
+
 #### Flags
 
-You can assign flags to configuration variables; to use several flags at once, just add
-their values.
+You can assign flags to configuration variables and console commands; to use several flags at once, just add their values.
 
 |Name|Value|Description|
 |----|-----|-----------|
