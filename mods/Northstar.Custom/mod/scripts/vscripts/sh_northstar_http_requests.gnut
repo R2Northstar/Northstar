@@ -3,7 +3,7 @@ globalize_all_functions
 global enum HttpRequestMethod
 {
 	GET = 0,
-	POST = 1
+	POST = 1,
 	HEAD = 2,
 	PUT = 3,
 	DELETE = 4,

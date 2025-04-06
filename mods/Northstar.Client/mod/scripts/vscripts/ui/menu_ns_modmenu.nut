@@ -13,7 +13,7 @@ struct panelContent {
 enum filterShow {
 	ALL = 0,
 	ONLY_ENABLED = 1,
-	ONLY_DISABLED = 2
+	ONLY_DISABLED = 2,
 	ONLY_NOT_REQUIRED = 3,
 	ONLY_REQUIRED = 4
 }
@@ -712,3 +712,4 @@ void function ReloadMods()
 	// note: the logic for this seems really odd, unsure why it doesn't seem to update, since the same code seems to get run irregardless of whether we've read weapon data before
 	ClientCommand( "uiscript_reset" )
 }
+
