@@ -190,13 +190,15 @@ EventOverrideData::EventOverrideData(const std::string& data, const fs::path& pa
 	{
 		if (file.is_regular_file() && file.path().extension().string() == ".wav")
 		{
-			std::string pathString = file.path().string();
+			std::wstring pathString = file.path().wstring();
 
 			// Retrieve event id from path (standard?)
-			std::string eventId = file.path().parent_path().filename().string();
+			const fs::path eventFilename = file.path().parent_path().filename();
+			std::string eventId = eventFilename.string();
 			if (std::find(registeredEvents.begin(), registeredEvents.end(), eventId) != registeredEvents.end())
 			{
-				spdlog::warn("{} couldn't be loaded because {} event has already been overrided, skipping.", pathString, eventId);
+				spdlog::warn(
+					L"{} couldn't be loaded because {} event has already been overrided, skipping.", pathString, eventFilename.wstring());
 				continue;
 			}
 
@@ -205,7 +207,7 @@ EventOverrideData::EventOverrideData(const std::string& data, const fs::path& pa
 
 			if (wavStream.fail())
 			{
-				spdlog::error("Failed reading audio sample {}", file.path().string());
+				spdlog::error(L"Failed reading audio sample {}", pathString);
 				continue;
 			}
 
@@ -231,7 +233,7 @@ EventOverrideData::EventOverrideData(const std::string& data, const fs::path& pa
 					// would be weird if this got hit, since it would've worked previously
 					if (wavStream.fail())
 					{
-						spdlog::error("Failed async read of audio sample {}", pathString);
+						spdlog::error(L"Failed async read of audio sample {}", pathString);
 						return;
 					}
 
@@ -240,7 +242,7 @@ EventOverrideData::EventOverrideData(const std::string& data, const fs::path& pa
 					wavStream.read(reinterpret_cast<char*>(data), fileSize);
 					wavStream.close();
 
-					spdlog::info("Finished async read of audio sample {}", pathString);
+					spdlog::info(L"Finished async read of audio sample {}", pathString);
 				});
 
 			readThread.detach();
