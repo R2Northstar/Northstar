@@ -2,8 +2,8 @@
 
 version: 2
 updates:
-  # Poetry packages
-  - package-ecosystem: 'pip'
+  # uv packages
+  - package-ecosystem: 'uv'
     directory: '/'
     schedule:
       interval: "weekly"
