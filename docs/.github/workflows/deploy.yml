@@ -35,7 +35,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python3 -m pip install -U poetry
-          python3 -m poetry install
-          python3 -m poetry run mkdocs build
-          python3 -m poetry run mkdocs gh-deploy --force --no-history
+          python3 -m pip install -U uv
+          python3 -m uv run mkdocs build
+          python3 -m uv run mkdocs gh-deploy --force --no-history
