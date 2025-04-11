@@ -15,8 +15,9 @@ global function ServerCallback_ClientInitComplete
 global function ClientCodeCallback_OnDropShipCinematicEventStateChanged
 global function ClientCodeCallback_OnDetenteEnded
 global function ClientCodeCallback_OnResolutionChanged
-
 global function PerfInitLabels
+
+global function PrecacheRes
 
 global var Hud = null
 
