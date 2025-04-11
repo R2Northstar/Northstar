@@ -34,6 +34,7 @@ private:
 	bool m_bHasLoadedMods = false;
 	bool m_bHasEnabledModsCfg;
 	rapidjson_document m_EnabledModsCfg;
+	std::string cfgPath;
 
 	// precalculated hashes
 	size_t m_hScriptsRsonHash;
@@ -47,6 +48,17 @@ public:
 	std::unordered_set<std::string> m_PluginDependencyConstants;
 
 private:
+	/**
+	 * Saves mod enabled state to enabledmods.json file.
+	 *
+	 * This loops over loaded mods (stored in `m_LoadedMods` list), exports their
+	 * state (enabled or disabled) to a local JSON document, then exports this
+	 * document to local profile.
+	 *
+	 * @returns nothing
+	 **/
+	void ExportModsConfigurationToFile();
+
 	/**
 	 * Load information for all mods from filesystem.
 	 *

@@ -22,6 +22,8 @@ ModManager* g_pModManager;
 
 ModManager::ModManager()
 {
+	cfgPath = GetNorthstarPrefix() + "/enabledmods.json";
+
 	// precaculated string hashes
 	// note: use backslashes for these, since we use lexically_normal for file paths which uses them
 	m_hScriptsRsonHash = STR_HASH("scripts\\vscripts\\scripts.rson");
@@ -120,7 +122,7 @@ void ModManager::LoadMods()
 	m_DependencyConstants.clear();
 
 	// read enabled mods cfg
-	std::ifstream enabledModsStream(GetNorthstarPrefix() + "/enabledmods.json");
+	std::ifstream enabledModsStream(cfgPath);
 	std::stringstream enabledModsStringStream;
 
 	if (!enabledModsStream.fail())
@@ -421,7 +423,7 @@ void ModManager::LoadMods()
 	// If there are new mods, we write entries accordingly in enabledmods.json
 	if (newModsDetected)
 	{
-		std::ofstream writeStream(GetNorthstarPrefix() + "/enabledmods.json");
+		std::ofstream writeStream(cfgPath);
 		rapidjson::OStreamWrapper writeStreamWrapper(writeStream);
 		rapidjson::PrettyWriter<rapidjson::OStreamWrapper> writer(writeStreamWrapper);
 		m_EnabledModsCfg.Accept(writer);
@@ -500,21 +502,10 @@ void ModManager::UnloadMods()
 			fs::remove(GetCompiledAssetsPath() / fs::path(kvPaths.second).lexically_relative(mod.m_ModDirectory));
 
 		mod.KeyValues.clear();
-
-		// write to m_enabledModsCfg
-		// should we be doing this here or should scripts be doing this manually?
-		// main issue with doing this here is when we reload mods for connecting to a server, we write enabled mods, which isn't necessarily
-		// what we wanna do
-		if (!m_EnabledModsCfg.HasMember(mod.Name.c_str()))
-			m_EnabledModsCfg.AddMember(rapidjson_document::StringRefType(mod.Name.c_str()), false, m_EnabledModsCfg.GetAllocator());
-
-		m_EnabledModsCfg[mod.Name.c_str()].SetBool(mod.m_bEnabled);
 	}
 
-	std::ofstream writeStream(GetNorthstarPrefix() + "/enabledmods.json");
-	rapidjson::OStreamWrapper writeStreamWrapper(writeStream);
-	rapidjson::PrettyWriter<rapidjson::OStreamWrapper> writer(writeStreamWrapper);
-	m_EnabledModsCfg.Accept(writer);
+	// save mods configuration to disk
+	ExportModsConfigurationToFile();
 
 	// do we need to dealloc individual entries in m_loadedMods? idk, rework
 	m_LoadedMods.clear();
@@ -626,6 +617,28 @@ void ModManager::SearchFilesystemForMods()
 
 	// sort by load prio, lowest-highest
 	std::sort(m_LoadedMods.begin(), m_LoadedMods.end(), [](Mod& a, Mod& b) { return a.LoadPriority < b.LoadPriority; });
+}
+
+void ModManager::ExportModsConfigurationToFile()
+{
+	m_EnabledModsCfg.SetObject();
+
+	for (Mod& mod : m_LoadedMods)
+	{
+		// write to m_enabledModsCfg
+		// should we be doing this here or should scripts be doing this manually?
+		// main issue with doing this here is when we reload mods for connecting to a server, we write enabled mods, which isn't necessarily
+		// what we wanna do
+		if (!m_EnabledModsCfg.HasMember(mod.Name.c_str()))
+			m_EnabledModsCfg.AddMember(rapidjson_document::StringRefType(mod.Name.c_str()), false, m_EnabledModsCfg.GetAllocator());
+
+		m_EnabledModsCfg[mod.Name.c_str()].SetBool(mod.m_bEnabled);
+	}
+
+	std::ofstream writeStream(cfgPath);
+	rapidjson::OStreamWrapper writeStreamWrapper(writeStream);
+	rapidjson::PrettyWriter<rapidjson::OStreamWrapper> writer(writeStreamWrapper);
+	m_EnabledModsCfg.Accept(writer);
 }
 
 std::string ModManager::NormaliseModFilePath(const fs::path path)
