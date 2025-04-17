@@ -55,7 +55,7 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-#ifdef USE_LGBT_LOGO
+#if USE_LGBT_LOGO == 1
 IDI_ICON1               ICON                    "ns_lgbt_icon.ico"
 #else
 IDI_ICON1               ICON                    "ns_icon.ico"
