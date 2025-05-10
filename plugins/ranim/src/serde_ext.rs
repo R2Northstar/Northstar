@@ -36,7 +36,7 @@ where
         type Value = [TI; N];
 
         fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-            formatter.write_fmt(format_args!("an array of size {}", N))
+            formatter.write_fmt(format_args!("an array of size {N}"))
         }
 
         #[inline]
@@ -102,9 +102,10 @@ where
     D: Deserializer<'de>,
 {
     Ok(deserialize_arr::<N, _, String>(deserialize)?.map(|str| {
-        str.is_empty()
-            .not()
-            .then(|| unsafe { into_c_str(str).cast::<i8>().cast_const() })
-            .unwrap_or(std::ptr::null())
+        if str.is_empty().not() {
+            unsafe { into_c_str(str).cast::<i8>().cast_const() }
+        } else {
+            std::ptr::null()
+        }
     }))
 }
