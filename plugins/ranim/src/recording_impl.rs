@@ -105,8 +105,10 @@ impl TryInto<&'static mut RecordedAnimation> for SavedRecordedAnimation {
         recording.unknown_268 = self.unknown_268;
         recording.origin = self.origin;
         recording.angles = self.angles;
-        recording.frame_count = self.frames.len() as u32;
-        recording.layer_count = self.layers.len() as u32;
+        // recording.frame_count = self.frames.len() as u32;
+        // recording.layer_count = self.layers.len() as u32;
+        recording.frame_count = 3000;
+        recording.layer_count = 3000;
         self.frames
             .into_iter()
             .enumerate()
@@ -115,10 +117,8 @@ impl TryInto<&'static mut RecordedAnimation> for SavedRecordedAnimation {
             .into_iter()
             .enumerate()
             .for_each(|(i, layer)| unsafe { *recording.layers.add(i) = layer });
-        recording.loaded_index = 0;
-        recording.index = 0;
-        recording.not_refcounted = false;
-        recording.refcount = 1;
+        // recording.not_refcounted = false;
+        // recording.refcount = 1;
 
         Ok(recording)
     }
