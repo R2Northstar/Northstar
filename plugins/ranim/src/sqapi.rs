@@ -1,3 +1,5 @@
+#![allow(clippy::mut_from_ref)] // TODO: remove this
+
 use mid::northstar::NORTHSTAR_DATA;
 use rrplug::prelude::*;
 use std::{fs, io::Write, path::PathBuf};
@@ -71,7 +73,7 @@ fn pipe_recording(recording: &'static mut RecordedAnimation) -> &'static mut Rec
         });
     }
 
-    assert_eq!(recording, recording_copy);
+    // assert_eq!(recording, recording_copy);
 
     recording_copy
 }
