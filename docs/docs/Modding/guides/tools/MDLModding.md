@@ -107,7 +107,7 @@ We will add a cube to the side of the Flatline and assign a custom material to i
 - Open HARMONY VPK.
 - On the top right click on the `Open VPK` button.
 - Navigate to the location of your Titanfall 2 installions `/vpk/` folder.
-- Open the `_dir.vpk` file you want to extract (most multiplayer weapons are in `englishclient_frontend.bsp.pak000_dir.vpk` since you most likely want one of those).
+- Open the `_dir.vpk` file you want to extract (most multiplayer weapons are in `englishclient_mp_common.bsp.pak000_dir.vpk` since you most likely want one of those).
 - You will now see a list of all files in the `.vpk` file on the left side looking something like this:
 
 ``` text
