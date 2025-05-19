@@ -70,9 +70,9 @@ The IPluginId provides information about the plugin itself, like the name and wh
 
             Keep the plugin loaded on dedicated northstar servers
 
-        - CLIENT: 0x3
+        - CLIENT: 0x2
 
-            Keep the plugin loaded on dedicated northstar clients
+            Keep the plugin loaded on northstar clients
 
     !!! cpp-member "COLOR = 1"
 

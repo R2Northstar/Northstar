@@ -26,12 +26,6 @@ Any Plugin is only valid if it exposes every required [interface](interfaces.md)
 
 If a plugin does not expose every Interface the Launcher requires, it is unloaded immediately.
 
-## Development
-
-To debug a plugin it's recommended to compile Northstar itself or download the debug data from the [Release Page](https://github.com/R2Northstar/NorthstarLauncher/releases).
-
-When developing a plugin it's usually easier to output the binary directly in the `<profile>/plugins/` directory, the `packages/` directory is usually only used for complete packaged mods downloaded from Thunderstore.
-
 ### Valid plugins
 
 Every plugin must fulfill these criteria to be considered valid by Northstar.
@@ -56,7 +50,7 @@ Otherwise are the steps basically the same everywhere else.
 
 3. Launch `NorthstarLauncher.exe` with a debugger or attach a debugger to a running process
 
-4. Load debug symbols of your plugin(s) (for example `myplugin.pdb`) in the debugger
+4. Place the plugin PDB (for example `myplugin.pdb` next to the plugin's DLL.
 
 That's it.
 
@@ -70,6 +64,10 @@ Northstar does not expose an interface to (un)install hooks. Every plugin is exp
 
 ## Examples and Libraries
 
-- A small plugin [""framework""](https://github.com/uniboi/NSPluginTemplate/) to show the basics of writing plugins and Squirrel bindings in C
+- [Very basic C++ example plugin](https://github.com/uniboi/NSCppPluginTemplate)
+
+- [Basic C example plugin](https://github.com/uniboi/NSPluginTemplate/)
 
 - A complete [Rust plugin library](https://crates.io/crates/rrplug) that allows you to easily integrate safely with large parts of the engine itself
+
+- A Zig [plugin library](https://github.com/uniboi/zzplug)
