@@ -41,6 +41,9 @@ global function GetWaveSpawnTime
 global function ServerCallback_HideNextSpawnMessage
 
 global function ClientCodeCallback_OnHealthChanged
+
+// Northstar
+global function AddCallback_OnCrosshairCurrentTargetChanged
 global function ClientCodeCallback_OnCrosshairCurrentTargetChanged
 global function Pressed_TitanNextMode
 global function ClientCodeCallback_OnGib
@@ -70,6 +73,9 @@ struct {
 	var law_missile_tracer = null
 	float nextSpawnTime = 0.0
 	entity lastEarnedReward // primarily used to check if we should still show the reward message after a delay
+
+	// Northstar
+	array< void functionref( entity, entity ) > OnCrosshairCurrentTargetChangedCallbacks
 } file
 
 struct BloodDecalParams
@@ -1515,6 +1521,14 @@ void function ClientCodeCallback_OnHealthChanged( entity ent, int oldHealth, int
 	ent.Signal( "HealthChanged", { oldHealth = oldHealth, newHealth = newHealth } )
 }
 
+// Northstar
+void function AddCallback_OnCrosshairCurrentTargetChanged( void functionref( entity, entity ) callbackFunc )
+{
+	Assert( !file.OnCrosshairCurrentTargetChangedCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnCrosshairCurrentTargetChanged" )
+
+	file.OnCrosshairCurrentTargetChangedCallbacks.append( callbackFunc )
+}
+
 void function ClientCodeCallback_OnCrosshairCurrentTargetChanged( entity player, entity newTarget )
 {
 	if ( IsLobby() )
@@ -1524,6 +1538,12 @@ void function ClientCodeCallback_OnCrosshairCurrentTargetChanged( entity player,
 
 	if ( IsValid( newTarget ) )
 		TryOfferRodeoBatteryHint( newTarget )
+
+	// Northstar
+	foreach ( callback in file.OnCrosshairCurrentTargetChangedCallbacks )
+	{
+		callback( player, newTarget )
+	}
 }
 
 void function SetupPlayerAnimEvents( entity player )
