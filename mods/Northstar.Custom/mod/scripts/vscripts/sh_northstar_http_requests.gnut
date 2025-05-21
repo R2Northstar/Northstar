@@ -89,6 +89,7 @@ void function NSHandleSuccessfulHttpRequest( int handle, int statusCode, string 
 		response.statusCode = statusCode
 		response.body = body
 		response.rawHeaders = headers
+		response.headers = {}
 
 		// Parse the raw headers into key -> values
 		array<string> values = split( headers, "\n" )
@@ -156,6 +157,13 @@ void function NSHandleFailedHttpRequest( int handle, int errorCode, string error
  */
 bool function NSHttpRequest( HttpRequest requestParameters, void functionref( HttpRequestResponse ) onSuccess = null, void functionref( HttpRequestFailure ) onFailure = null )
 {
+#if CLIENT
+	if ( IsPlayingDemo() )
+	{
+		return false
+	}
+#endif
+
 	int handle = NS_InternalMakeHttpRequest( requestParameters.method, requestParameters.url, requestParameters.headers,
 		requestParameters.queryParameters, requestParameters.contentType, requestParameters.body, requestParameters.timeout, requestParameters.userAgent )
 
@@ -182,6 +190,13 @@ bool function NSHttpRequest( HttpRequest requestParameters, void functionref( Ht
  */
 bool function NSHttpGet( string url, table< string, array< string > > queryParameters = {}, void functionref( HttpRequestResponse ) onSuccess = null, void functionref( HttpRequestFailure ) onFailure = null )
 {
+#if CLIENT
+	if ( IsPlayingDemo() )
+	{
+		return false
+	}
+#endif
+
 	HttpRequest request
 	request.method = HttpRequestMethod.GET
 	request.url = url
@@ -201,6 +216,13 @@ bool function NSHttpGet( string url, table< string, array< string > > queryParam
  */
 bool function NSHttpPostQuery( string url, table< string, array< string > > queryParameters, void functionref( HttpRequestResponse ) onSuccess = null, void functionref( HttpRequestFailure ) onFailure = null )
 {
+#if CLIENT
+	if ( IsPlayingDemo() )
+	{
+		return false
+	}
+#endif
+
 	HttpRequest request
 	request.method = HttpRequestMethod.POST
 	request.url = url
@@ -220,6 +242,13 @@ bool function NSHttpPostQuery( string url, table< string, array< string > > quer
  */
 bool function NSHttpPostBody( string url, string body, void functionref( HttpRequestResponse ) onSuccess = null, void functionref( HttpRequestFailure ) onFailure = null )
 {
+#if CLIENT
+	if ( IsPlayingDemo() )
+	{
+		return false
+	}
+#endif
+
 	HttpRequest request
 	request.method = HttpRequestMethod.POST
 	request.url = url
