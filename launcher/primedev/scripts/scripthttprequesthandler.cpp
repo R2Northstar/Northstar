@@ -143,6 +143,7 @@ bool IsHttpDestinationHostAllowed(const std::string& host, std::string& outHostn
 			spdlog::error("Failed to resolve http request destination {} into a valid IPv4 address.", urlHostname);
 		}
 
+		freeaddrinfo(result);
 		curl_free(urlHostname);
 		curl_free(urlScheme);
 		curl_free(urlPort);
@@ -174,6 +175,7 @@ bool IsHttpDestinationHostAllowed(const std::string& host, std::string& outHostn
 			|| addrBytes.s_b1 == 233 && addrBytes.s_b2 == 252 && addrBytes.s_b3 == 0	// 233.252.0.0		- 233.252.0.255			(MCAST-TEST-NET)
 			|| addrBytes.s_b1 >= 240 && addrBytes.s_b4 <= 254)							// 240.0.0.0		- 255.255.255.254		(Future Use Class E)
 		{
+			freeaddrinfo(result);
 			curl_free(urlHostname);
 			curl_free(urlScheme);
 			curl_free(urlPort);
