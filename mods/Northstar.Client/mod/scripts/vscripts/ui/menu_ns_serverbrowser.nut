@@ -1132,7 +1132,7 @@ void function ThreadedAuthAndConnectToServer( string password = "", bool modsCha
 				if (!found)
 				{
 					modsChanged = true
-					NSSetModEnabled( modName, false )
+					NSSetModEnabled( modName, modVersion, false )
 					print(format("Disabled \"%s\" (v%s) since it's not required on server.", modName, modVersion))
 				}
 			}
@@ -1151,7 +1151,7 @@ void function ThreadedAuthAndConnectToServer( string password = "", bool modsCha
 				if ( !localModInfos[0].enabled )
 				{
 					modsChanged = true
-					NSSetModEnabled( modName, true )
+					NSSetModEnabled( modName, localModInfos[0].version, true )
 					print(format("Enabled \"%s\" (v%s) to join server.", modName, localModInfos[0].version))
 				}
 			}
@@ -1160,10 +1160,10 @@ void function ThreadedAuthAndConnectToServer( string password = "", bool modsCha
 			{
 				foreach( localMod in localModInfos )
 				{
-					if ( localMod.version == mod.version )
+					if ( localMod.version == mod.version && !localMod.enabled)
 					{
 						modsChanged = true
-						NSSetModEnabled( mod.name, true )
+						NSSetModEnabled( mod.name, mod.version, true )
 						print(format("Enabled \"%s\" (v%s) to join server.", modName, modVersion))
 						break
 					}
