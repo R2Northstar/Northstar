@@ -7,8 +7,20 @@
 class CSys : public ISys
 {
 public:
-	void Log(HMODULE handle, LogLevel level, char* msg)
+	void Log(int64_t unused, LogLevel level, char* msg)
 	{
+		void* callee = _ReturnAddress();
+		void* pluginHandle;
+		RtlPcToFileHeader(callee, &pluginHandle);
+
+		// This should never happen
+		if (!pluginHandle)
+		{
+
+			NS::log::PLUGINSYS->warn("Unmapped plugin attempted to log from callee {}", static_cast<void*>(pluginHandle));
+			return;
+		}
+
 		spdlog::level::level_enum spdLevel;
 
 		switch (level)
@@ -26,40 +38,62 @@ public:
 			break;
 		}
 
-		std::optional<Plugin> plugin = g_pPluginManager->GetPlugin(handle);
+		std::optional<Plugin> plugin = g_pPluginManager->GetPlugin((HMODULE)pluginHandle);
 		if (plugin)
 		{
 			plugin->Log(spdLevel, msg);
 		}
 		else
 		{
-			NS::log::PLUGINSYS->warn("Attempted to log message '{}' with invalid plugin handle {}", msg, static_cast<void*>(handle));
+			NS::log::PLUGINSYS->warn("Attempted to log message '{}' with invalid plugin handle {}", msg, static_cast<void*>(pluginHandle));
 		}
 	}
 
-	void Unload(HMODULE handle)
+	void Unload(int64_t unused)
 	{
-		std::optional<Plugin> plugin = g_pPluginManager->GetPlugin(handle);
+		void* callee = _ReturnAddress();
+		void* pluginHandle;
+		RtlPcToFileHeader(callee, &pluginHandle);
+
+		// This should never happen
+		if (!pluginHandle)
+		{
+			NS::log::PLUGINSYS->warn("Attempted to unload unmapped plugin from callee {}", static_cast<void*>(pluginHandle));
+			return;
+		}
+
+		std::optional<Plugin> plugin = g_pPluginManager->GetPlugin((HMODULE)pluginHandle);
 		if (plugin)
 		{
 			plugin->Unload();
 		}
 		else
 		{
-			NS::log::PLUGINSYS->warn("Attempted to unload plugin with invalid handle {}", static_cast<void*>(handle));
+			NS::log::PLUGINSYS->warn("Attempted to unload plugin with invalid handle {}", static_cast<void*>(pluginHandle));
 		}
 	}
 
-	void Reload(HMODULE handle)
+	void Reload(int64_t unused)
 	{
-		std::optional<Plugin> plugin = g_pPluginManager->GetPlugin(handle);
+		void* callee = _ReturnAddress();
+		void* pluginHandle = 0;
+		RtlPcToFileHeader(callee, &pluginHandle);
+
+		// This should never happen
+		if (!pluginHandle)
+		{
+			NS::log::PLUGINSYS->warn("Attempted to reload unmapped plugin from callee {}", static_cast<void*>(pluginHandle));
+			return;
+		}
+
+		std::optional<Plugin> plugin = g_pPluginManager->GetPlugin((HMODULE)pluginHandle);
 		if (plugin)
 		{
 			plugin->Reload();
 		}
 		else
 		{
-			NS::log::PLUGINSYS->warn("Attempted to reload plugin with invalid handle {}", static_cast<void*>(handle));
+			NS::log::PLUGINSYS->warn("Attempted to reload plugin with invalid handle {}", static_cast<void*>(pluginHandle));
 		}
 	}
 };
