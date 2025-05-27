@@ -673,8 +673,6 @@ void ModManager::SearchFilesystemForMods()
 		{
 			mod.m_bEnabled = m_EnabledModsCfg[mod.Name.c_str()][mod.Version.c_str()].IsTrue();
 		}
-		if (m_bHasEnabledModsCfg && m_EnabledModsCfg.HasMember(mod.Name.c_str()))
-			mod.m_bEnabled = m_EnabledModsCfg[mod.Name.c_str()].IsTrue();
 		else
 			mod.m_bEnabled = true;
 
