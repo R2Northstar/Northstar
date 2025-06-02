@@ -172,6 +172,9 @@ void ModManager::LoadMods()
 	// Load mod info from filesystem into `m_LoadedMods`
 	SearchFilesystemForMods();
 
+	// Do not activate the same mod multiple times
+	DisableMultipleModVersions();
+
 	// This is used to check if some mods have a folder but no entry in enabledmods.json
 	bool newModsDetected = false;
 
@@ -691,6 +694,50 @@ void ModManager::SearchFilesystemForMods()
 
 	// sort by load prio, lowest-highest
 	std::sort(m_LoadedMods.begin(), m_LoadedMods.end(), [](Mod& a, Mod& b) { return a.LoadPriority < b.LoadPriority; });
+}
+
+void ModManager::DisableMultipleModVersions()
+{
+	// Stores versions, for each mod, associated to their position in the `m_LoadedMods` array, *e.g.*:
+	//
+	// {
+	//     "Northstar.Client": [ {"1.30.2", 0} ],
+	//     "Northstar.Custom": [ {"1.30.2", 1} ],
+	//     "Northstar.CustomServers": [ {"1.30.2", 2} ],
+	//     "Extraction": [ {"1.2.0", 3}, {"1.2.1", 4}, {"1.3.0", 5} ]
+	// }
+	//
+	std::unordered_map<std::string, std::vector<std::tuple<const char*, int>>> modVersions;
+
+	// Load up the dictionary
+	int i = 0;
+	for (Mod& mod : m_LoadedMods)
+	{
+		// Store versions for enabled mods only, as disabled mods are not loaded and won't collide
+		if (mod.m_bEnabled)
+		{
+			modVersions[mod.Name].push_back({mod.Version.c_str(), i});
+		}
+
+		i++;
+	}
+
+	// Find duplicate mods and disable them
+	for (const auto& pair : modVersions)
+	{
+		if (pair.second.size() <= 1)
+		{
+			continue;
+		}
+
+		spdlog::warn("Mod '{}' has several versions enabled, disabling them all.", pair.first);
+		for (auto& [version, versionIndex] : pair.second)
+		{
+
+			m_LoadedMods[versionIndex].m_bEnabled = false;
+			spdlog::warn("	-> v{} is now disabled.", version);
+		}
+	}
 }
 
 void ModManager::ExportModsConfigurationToFile()
