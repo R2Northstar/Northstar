@@ -187,8 +187,6 @@ void FixupCvarFlags()
 	// array of cvars and the flags we want to add to them
 	const std::vector<std::tuple<const char*, uint32_t>> CVAR_FIXUP_ADD_FLAGS = {
 		// system commands (i.e. necessary for proper functionality)
-		// servers need to be able to disconnect
-		{"disconnect", FCVAR_SERVER_CAN_EXECUTE},
 
 		// cheat commands
 		{"give", FCVAR_GAMEDLL_FOR_REMOTE_CLIENTS},
