@@ -125,7 +125,7 @@ public:
 	std::vector<std::string> PluginDependencyConstants;
 
 public:
-	Mod(fs::path modPath, char* jsonBuf);
+	Mod(fs::path modPath, const char* jsonBuf);
 
 private:
 	void ParseConVars(rapidjson_document& json);
