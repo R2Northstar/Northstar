@@ -1,6 +1,6 @@
 #include "rapidjson/error/en.h"
 
-Mod::Mod(fs::path modDir, char* jsonBuf)
+Mod::Mod(fs::path modDir, const char* jsonBuf)
 {
 	m_bWasReadSuccessfully = false;
 
