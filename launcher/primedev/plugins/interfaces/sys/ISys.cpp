@@ -38,10 +38,10 @@ public:
 			break;
 		}
 
-		std::optional<Plugin> plugin = g_pPluginManager->GetPlugin((HMODULE)pluginHandle);
-		if (plugin)
+		std::optional<const Plugin*> plugin = g_pPluginManager->GetPlugin((HMODULE)pluginHandle);
+		if (plugin.has_value())
 		{
-			plugin->Log(spdLevel, msg);
+			plugin.value()->Log(spdLevel, msg);
 		}
 		else
 		{
@@ -62,10 +62,10 @@ public:
 			return;
 		}
 
-		std::optional<Plugin> plugin = g_pPluginManager->GetPlugin((HMODULE)pluginHandle);
-		if (plugin)
+		std::optional<const Plugin*> plugin = g_pPluginManager->GetPlugin((HMODULE)pluginHandle);
+		if (plugin.has_value())
 		{
-			plugin->Unload();
+			plugin.value()->Unload();
 		}
 		else
 		{
@@ -86,10 +86,10 @@ public:
 			return;
 		}
 
-		std::optional<Plugin> plugin = g_pPluginManager->GetPlugin((HMODULE)pluginHandle);
-		if (plugin)
+		std::optional<const Plugin*> plugin = g_pPluginManager->GetPlugin((HMODULE)pluginHandle);
+		if (plugin.has_value())
 		{
-			plugin->Reload();
+			plugin.value()->Reload();
 		}
 		else
 		{

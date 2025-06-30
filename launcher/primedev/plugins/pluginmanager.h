@@ -11,9 +11,9 @@ class PluginManager
 {
 public:
 	const std::vector<Plugin>& GetLoadedPlugins() const;
-	const std::optional<Plugin> GetPlugin(HMODULE handle) const;
+	const std::optional<const Plugin*> GetPlugin(HMODULE handle) const;
 	bool LoadPlugins(bool reloaded = false);
-	void LoadPlugin(fs::path path, bool reloaded = false);
+	std::optional<HMODULE> LoadPlugin(fs::path path, bool reloaded = false);
 	void ReloadPlugins();
 	void RemovePlugin(HMODULE handle);
 
