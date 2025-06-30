@@ -28,7 +28,9 @@ public:
 
 	Plugin(std::string path);
 	bool Unload() const;
-	bool Reload() const;
+
+	// Returns the new handle if the plugin has been reloaded or null otherwise.
+	std::optional<HMODULE> Reload() const;
 
 	// sys
 	void Log(spdlog::level::level_enum level, char* msg) const;
