@@ -529,10 +529,17 @@ void ModManager::SearchFilesystemForMods()
 			m_PluginDependencyConstants.insert(dependency);
 		}
 
-		if (m_EnabledModsCfg.HasMember(mod.Name.c_str()) && m_EnabledModsCfg[mod.Name.c_str()].HasMember(mod.Version))
+		// Do not load remote mods on first load
+		if (mod.m_bIsRemote && !m_bHasLoadedMods)
+		{
+			mod.m_bEnabled = false;
+		}
+		// Else, use enabledmods.json if possible
+		else if (m_EnabledModsCfg.HasMember(mod.Name.c_str()) && m_EnabledModsCfg[mod.Name.c_str()].HasMember(mod.Version))
 		{
 			mod.m_bEnabled = m_EnabledModsCfg[mod.Name.c_str()][mod.Version.c_str()].IsTrue();
 		}
+		// Else, enable new mods by default
 		else
 			mod.m_bEnabled = true;
 
