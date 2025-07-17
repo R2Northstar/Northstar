@@ -94,6 +94,47 @@
 		"navLeft" "ResetModToDefault"
 		"navRight" "TextEntrySetting"
 	}
+	"ColorPickerButton"
+	{
+		"ControlName" "RuiButton"
+		"InheritProperties"	"RuiSmallButton"
+		"labelText" "#EDIT"
+		"zpos" "0"
+		"xpos" "10"
+		// ypos -10
+		"wide"		"320"
+		"tall"		"45"
+		"scriptID" "0"
+		"pin_to_sibling" "BtnMod"
+		"pin_corner_to_sibling" "TOP_LEFT"
+		"pin_to_sibling_corner" "TOP_RIGHT"
+
+		"navRight" "ResetModToDefault"
+		"navLeft" "TextEntrySetting"
+
+		"visible" "0"
+		FocusColor "0 0 0 0"
+		textAlignment			center
+		font					Default_23
+		wrap					0
+	}
+	"ColorPickerImage"
+	{
+		"ControlName" "ImagePanel"
+		"image" "vgui/white"
+		"scaleImage" "1"
+		"drawColor" "255 255 255 255" // vanilla label color
+		"visible" "0"
+		"wide"		"320"
+		"tall"		"45"
+		"enabled"	"0"
+
+		ypos 0
+
+		"pin_to_sibling" "ColorPickerButton"
+		"pin_corner_to_sibling" RIGHT
+		"pin_to_sibling_corner" LEFT
+	}
 	"ResetModToDefault"
 	{
 		"ControlName" "RuiButton"
@@ -109,6 +150,8 @@
 		"pin_to_sibling_corner" "LEFT"
 		"navLeft" "Slider"
 		"navRight" "TextEntrySetting"
+		"navLeft" "ColorPickerButton"
+
 	}
 	"ResetModImage"
 	{

@@ -131,13 +131,20 @@
 			"RunOn": "UI"
 		},
 		{
+			"Path": "ui/menu_ns_color_picker.nut",
+			"RunOn": "UI || CLIENT",
+			"UICallback": {
+				"After": "AddColorPickerMenu"
+			}
+		},
+		{
 			"Path": "ui/menu_mod_settings.nut",
 			"RunOn": "UI",
 			"UICallback":{
 				"Before": "AddModSettingsMenu"
-      		}
-    	},
-    	{
+			}
+		},
+		{
 			"Path": "ui/ui_mouse_capture.nut",
 			"RunOn": "UI"
 		},

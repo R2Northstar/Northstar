@@ -8,6 +8,10 @@ global function ModSettings_AddModTitle
 global function ModSettings_AddModCategory
 global function PureModulo
 
+global function ModSettings_AddColorSetting
+global function ModSettings_AddAlphaSetting
+global function TryUpdateModSettingLists
+
 // Legacy functions for backwards compatability. These will be removed eventually
 global function AddConVarSetting
 global function AddConVarSettingEnum
@@ -78,6 +82,14 @@ struct {
 	int deltaX = 0
 	int deltaY = 0
 } mouseDeltaBuffer
+
+struct Color
+{
+    int r
+    int g
+    int b
+    int a
+}
 
 void function AddModSettingsMenu()
 {
@@ -153,6 +165,13 @@ void function InitModMenu()
 
 		Hud_AddEventHandler( child, UIE_CLICK, ResetConVar )
 		file.resetModButtons.append(child)
+
+		// color nav
+		child = Hud_GetChild( panel, "ColorPickerButton" )
+		Hud_AddEventHandler( child, UIE_CLICK, ColorButtonPressed )
+		child.SetNavUp( Hud_GetChild( file.modPanels[ int( PureModulo( i - 1, len ) ) ], "ColorPickerButton" ) )
+		child.SetNavDown( Hud_GetChild( file.modPanels[ int( PureModulo( i + 1, len ) ) ], "ColorPickerButton" ) )
+
 
 		// text field nav
 		child = Hud_GetChild( panel, "TextEntrySetting" )
@@ -263,6 +282,25 @@ void functionref() function ResetConVarEventHandler( int modIndex )
 			Hud_SetText( Hud_GetChild( file.modPanels[ modIndex - file.scrollOffset ], "TextEntrySetting" ), c.isEnumSetting ? c.values[ GetConVarInt( c.conVar ) ] : GetConVarString( c.conVar ) )
 			if( c.sliderEnabled )
 				MS_Slider_SetValue( file.sliders[ modIndex - file.scrollOffset ], GetConVarFloat( c.conVar ) )
+			if ( c.type == "color" )
+			{
+				var colorVGUI = Hud_GetChild( file.modPanels[ modIndex - file.scrollOffset ], "ColorPickerImage" )
+				try
+				{
+					Color color = StringToColors( GetConVarString( c.conVar ) )
+					Hud_SetColor( colorVGUI, color.r, color.g, color.b, color.a )
+				}
+				catch ( ex )
+				{
+					ThrowInvalidValue( "This setting is a color, and only accepts a four of numbers(each number should be a integer between 0 and 255) - you put something we could not parse!\n\n( Input like \"255 255 255 255\", not \"" + c.conVar + "\". )\n Press reset button or change the default value in mod.json. Or inform the mod author." )
+					Hud_SetColor( colorVGUI, 0, 0, 0, 0 )
+				}
+			}
+			if ( c.type == "alpha" )
+			{
+				float alpha = GetConVarFloat( c.conVar )
+				Hud_SetAlpha( Hud_GetChild( file.modPanels[ modIndex - file.scrollOffset ], "ColorPickerImage" ), int( alpha * 255 ) )
+			}
 		}
 	}
 }
@@ -520,9 +558,17 @@ void function SetModMenuNameText( var button )
 	var modTitle = Hud_GetChild( panel, "ModTitle" )
 	var customMenuButton = Hud_GetChild( panel, "OpenCustomMenu")
 	var slider = Hud_GetChild( panel, "Slider" )
+
+	var colorButton = Hud_GetChild( panel, "ColorPickerButton" )
+	var colorVGUI = Hud_GetChild( panel, "ColorPickerImage" )
+
+
 	Hud_SetVisible( slider, false )
 	Hud_SetEnabled( slider, true )
-
+	Hud_SetVisible( colorButton, false )
+	Hud_SetVisible( colorVGUI, false )
+	Hud_SetEnabled( colorButton, false )
+	Hud_SetEnabled( colorVGUI, false )
 
 	if ( conVar.isEmptySpace )
 	{
@@ -631,6 +677,54 @@ void function SetModMenuNameText( var button )
 		Hud_SetVisible( textField, true )
 		Hud_SetVisible( resetButton, true )
 		Hud_SetVisible( resetVGUI, true )
+
+		// color
+		if (conVar.type == "color")
+		{
+			try {
+				Color color = StringToColors( GetConVarString(conVar.conVar) )
+				Hud_SetVisible( colorButton, true )
+				Hud_SetVisible( colorVGUI, true )
+				Hud_SetEnabled( colorButton, true )
+				Hud_SetEnabled( colorVGUI, true )
+				Hud_SetSize( label, int(scaleX * (375 + 85)), int(scaleY * 40) )
+				Hud_SetSize( colorVGUI, int( scaleX * ( 50  ) ), int( scaleY * 20 ) )
+				Hud_SetSize( colorButton, int( scaleX * ( 300  ) ), int( scaleY * 35 ) )
+
+				Hud_SetColor(colorVGUI, color.r, color.g, color.b, color.a)
+				// Hud_ColorOverTime(colorVGUI, color.r, color.g, color.b, color.a, 1, 1)
+			}
+			catch ( ex )
+			{
+				printt(ex)
+				ThrowInvalidValue("This setting is a color, and only accepts a four of numbers(each number should be a integer between 0 and 255) - you put something we could not parse!\n\n( Input like \"255 255 255 255\", not \"" + conVar.conVar + "\". )\n Press reset button or change the default value in mod.json. Or inform the mod author.")
+
+				Hud_SetSize( colorVGUI, 0, int( 45 * scaleY ) )
+				Hud_SetSize( colorButton, 0, int( 45 * scaleY ) )
+				Hud_SetEnabled( colorButton, false )
+				Hud_SetEnabled( colorVGUI, false )
+				Hud_SetColor(colorVGUI, 0, 0, 0, 0)
+			}
+		}
+		else if (conVar.type == "alpha") {
+			Hud_SetVisible( colorVGUI, true )
+			Hud_SetEnabled( colorVGUI, true )
+			Hud_SetSize( colorVGUI, int( scaleX * ( 20  ) ), int( scaleY * 20 ) )
+
+			float alpha = GetConVarFloat(conVar.conVar)
+			Hud_SetColor(colorVGUI, 124, 252, 0, 255)
+			Hud_SetAlpha(colorVGUI, int(alpha * 255))
+
+		}
+		else
+		{
+			Hud_SetSize( colorVGUI, 0, int( 45 * scaleY ) )
+			Hud_SetSize( colorButton, 0, int( 45 * scaleY ) )
+			Hud_SetEnabled( colorButton, false )
+			Hud_SetEnabled( colorVGUI, false )
+			Hud_SetColor(colorVGUI, 0, 0, 0, 0)
+
+		}
 	}
 }
 
@@ -639,6 +733,19 @@ void function CustomButtonPressed( var button )
 	var panel = Hud_GetParent( button )
 	ConVarData c = file.filteredList[ int( Hud_GetScriptID( panel ) ) + file.scrollOffset ]
 	c.onPress()
+}
+
+void function ColorButtonPressed( var button )
+{
+	var panel = Hud_GetParent( button )
+	ConVarData c = file.filteredList[ int( Hud_GetScriptID( panel ) ) + file.scrollOffset ]
+	// c.onPress()
+	// printt(c.displayName, c.type, c.conVar)
+
+	thread OpenColorPickerMenu(c.conVar, c.displayName)
+
+
+	// UpdateList()
 }
 
 void function OnScrollDown( var button )
@@ -782,7 +889,7 @@ void function ModSettings_AddModCategory( string catName, int stackPos = 2 )
 {
 	if ( !( getstackinfos( stackPos )[ "func" ] in file.setFuncs ) )
 		throw getstackinfos( stackPos )[ "src" ] + " #" + getstackinfos( stackPos )[ "line" ] + "\nCannot add a category before a mod title!"
-	
+
 	ConVarData space
 	space.isEmptySpace = true
 	space.modName = file.currentMod
@@ -846,6 +953,45 @@ void function ModSettings_AddSetting( string conVar, string displayName, string 
 void function AddConVarSetting( string conVar, string displayName, string type = "", int stackPos = 2 )
 {
 	ModSettings_AddSetting( conVar, displayName, type, stackPos + 1 )
+}
+
+void function ModSettings_AddColorSetting(string conVar, string buttonLabel, void functionref() onPress = null, int stackPos = 2)
+{
+	if ( !( getstackinfos( stackPos )[ "func" ] in file.setFuncs ) || !file.setFuncs[ expect string( getstackinfos( stackPos )[ "func" ] ) ] )
+		throw getstackinfos( stackPos )[ "src" ] + " #" + getstackinfos( stackPos )[ "line" ] + "\nCannot add a button before a category and mod title!"
+
+	ConVarData data
+
+
+	data.conVar = conVar
+	data.type = "color"
+	data.displayName = buttonLabel
+	data.modName = file.currentMod
+	data.catName = file.currentCat
+	data.onPress = onPress
+
+	file.conVarList.append( data )
+}
+
+void function ModSettings_AddAlphaSetting(string conVar, string displayName, int stackPos = 2)
+{
+	if ( !( getstackinfos( stackPos )[ "func" ] in file.setFuncs ) || !file.setFuncs[ expect string( getstackinfos( stackPos )[ "func" ] ) ] )
+		throw getstackinfos( stackPos )[ "src" ] + " #" + getstackinfos( stackPos )[ "line" ] + "\nCannot add a button before a category and mod title!"
+
+	ConVarData data
+
+	data.catName = file.currentCat
+	data.conVar = conVar
+	data.modName = file.currentMod
+	data.displayName = displayName
+	data.type = "alpha"
+	data.sliderEnabled = true
+	data.forceClamp = false
+	data.min = 0
+	data.max = 1
+	data.stepSize = 0.05
+
+	file.conVarList.append( data )
 }
 
 void function ModSettings_AddSliderSetting( string conVar, string displayName, float min = 0.0, float max = 1.0, float stepSize = 0.1, bool forceClamp = false, int stackPos = 2 )
@@ -926,11 +1072,22 @@ void function OnSliderChange( var button )
 	MS_Slider_SetValue( file.sliders[ int( Hud_GetScriptID( Hud_GetParent( textPanel ) ) ) ], val )
 
 	Hud_SetText( textPanel, string( GetConVarFloat( c.conVar ) ) )
+
+	if (c.type == "alpha")
+	{
+		var colorVGUI = Hud_GetChild( Hud_GetParent( textPanel ), "ColorPickerImage" )
+
+		float alpha = GetConVarFloat( c.conVar )
+		Hud_SetAlpha( colorVGUI, int( alpha * 255 ) )
+	}
 }
 
 void function SendTextPanelChanges( var textPanel )
 {
 	ConVarData c = file.filteredList[ int( Hud_GetScriptID( Hud_GetParent( textPanel ) ) ) + file.scrollOffset ]
+	var colorButton = Hud_GetChild( Hud_GetParent( textPanel ), "ColorPickerButton" )
+	var colorVGUI = Hud_GetChild( Hud_GetParent( textPanel ), "ColorPickerImage" )
+
 	if ( c.conVar == "" ) return
 	// enums don't need to do this
 	if ( !c.isEnumSetting )
@@ -1022,6 +1179,65 @@ void function SendTextPanelChanges( var textPanel )
 					Hud_SetText( textPanel, GetConVarString( c.conVar ) )
 				}
 				break
+			case "color":
+				try {
+					array<string> split = split( newSetting, " " )
+					if ( split.len() < 3 || split.len() > 4)
+					{
+						throw ""
+					}
+
+					array<int> color
+					string clampedNewSetting = ""
+					foreach (string val in split) {
+						int c = int( clamp( val.tointeger(), 0 ,255 ) )
+						color.append( c )
+
+						clampedNewSetting += c + " "
+					}
+
+					if (split.len() == 3)
+					{
+						color.append( 255 )
+						clampedNewSetting += " 255"
+					}
+
+					Hud_SetColor( colorVGUI, color[0], color[1], color[2], color[3] )
+					Hud_SetText( textPanel, clampedNewSetting )
+					SetConVarString( c.conVar, clampedNewSetting )
+				}
+				catch ( ex )
+				{
+					Color color = StringToColors( GetConVarString( c.conVar ) )
+					Hud_SetText( textPanel, GetConVarString( c.conVar ) )
+					Hud_SetColor( colorVGUI, color.r, color.g, color.b, color.a )
+
+					printt( "Failed to send textField change, because:" + ex )
+					ThrowInvalidValue( "This setting is a color, and only accepts a four of numbers(each number should be a integer between 0 and 255) - you put something we could not parse!\n\n( Input like \"255 255 255 255\", not \"" + newSetting + "\". )" )
+				}
+				break
+			case "alpha":
+				try
+				{
+					float alpha = clamp( newSetting.tofloat(), 0, 1.0 )
+
+					Hud_SetAlpha( colorVGUI, int( alpha * 255 ) )
+					SetConVarFloat( c.conVar, alpha )
+				}
+				catch ( ex )
+				{
+					printt( ex )
+					ThrowInvalidValue( "This setting is a alpha(float), and only accepts a number - we could not parse this!\n\n( Use \".\" for the floating point, not \",\". )" )
+				}
+
+				if ( c.sliderEnabled )
+				{
+					var panel = Hud_GetParent( textPanel )
+					MS_Slider s = file.sliders[ int ( Hud_GetScriptID( panel ) ) ]
+
+					MS_Slider_SetValue( s, GetConVarFloat( c.conVar ) )
+				}
+				break
 			default:
 				SetConVarString( c.conVar, newSetting )
 				break;
@@ -1103,4 +1319,29 @@ string function SanitizeDisplayName( string displayName )
 		else result += p.slice( i, p.len() )
 	}
 	return result
+}
+
+Color function StringToColors( string colorString, string delimiter = " " )
+{
+	Color color
+	array<string> tokens = split( colorString, " " )
+	if ( tokens.len() < 3 || tokens.len() > 4)
+	{
+		throw "The length of tokens should be 3 or 4, but it is " + tokens.len()
+	}
+
+	color.r = int(clamp(int(tokens[0]), 0, 255))
+	color.g = int(clamp(int(tokens[1]), 0, 255))
+	color.b = int(clamp(int(tokens[2]), 0, 255))
+
+	if ( tokens.len() == 4 )
+		color.a = int(clamp(int(tokens[3]), 0, 255))
+	else
+		color.a = 255
+
+	return color
+}
+
+void function TryUpdateModSettingLists() {
+	UpdateList()
 }
