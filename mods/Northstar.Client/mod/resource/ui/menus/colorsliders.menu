@@ -1,0 +1,580 @@
+resource/ui/menus/colorsliders.menu
+{
+	menu
+	{
+		ControlName				Frame
+		xpos					0
+		ypos					0
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		tabPosition				0
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+		modal					1
+
+		DarkenBackground
+		{
+			ControlName				RuiButton
+			rui                     "ui/basic_image.rpak"
+
+			wide					%100
+			tall					%100
+			bgcolor_override		"0 0 0 255"
+			fgcolor_override		"0 0 0 255"
+			visible					1
+			scaleImage				1
+		}
+
+		DialogFrameButton
+		{
+			ControlName				Label
+			wide					600
+			tall					400
+			// rui                     "ui/basic_image.rpak"
+			visible					1
+
+			pin_to_sibling			DarkenBackground
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+
+		DialogFrame
+		{
+			ControlName				RuiPanel
+			wide					600
+			tall					400
+			rui                     "ui/basic_image.rpak"
+			visible					1
+
+			pin_to_sibling			DarkenBackground
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+
+		DialogHeader
+		{
+			ControlName				Label
+			xpos 130
+			ypos -50
+			labelText				"#COLOR_MODE"
+
+			wide					764
+			tall					41
+			visible					1
+			labelText				""
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+
+			pin_to_sibling			DialogFrame
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	TOP
+		}
+
+		Color
+		{
+			ControlName ImagePanel
+			image "vgui/white"
+			scaleImage 1
+			drawColor "180 180 180 255" // vanilla label color
+			visible 1
+			wide "600"
+			tall "20"
+			enabled	0
+			
+
+			pin_to_sibling DialogFrame
+			pin_corner_to_sibling TOP
+			pin_to_sibling_corner TOP
+		}
+
+		DialogMessage
+		{
+			ControlName				Label
+			classname 				DialogMessageClass
+			ypos					0
+			wide					736
+			auto_tall_tocontents	1
+			visible					1
+			labelText				""
+			font					Default_28
+			textAlignment			north-west
+			wrap					1
+
+			pin_to_sibling			DialogHeader
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+
+		LabelR
+		{
+			Classname LabelClass
+		
+			ControlName Label
+			xpos -15
+			ypos 35
+			labelText "R"
+			scriptID 0
+
+			auto_wide_tocontents 1
+
+			pin_to_sibling			DialogMessage
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+
+		SliderR
+		{
+			Classname SliderClass
+			xpos 15
+			ControlName			SliderControl
+			scriptID 0
+			
+			minValue				0
+			maxValue				255
+			stepSize				1
+			drawColor		"255 0 0 255"
+
+			pin_to_sibling LabelR
+			pin_corner_to_sibling LEFT
+			pin_to_sibling_corner RIGHT
+
+			BtnDropButton
+			{
+				ControlName				RuiButton
+
+				style					SliderButton
+				wide					320
+				tall					45
+				labelText				""
+				auto_wide_tocontents	0
+			}
+
+			wide		320
+			tall		45
+		}
+
+		TextEntrySettingR
+		{
+			ControlName TextEntry
+			Classname TextEntrySettingClass
+
+			xpos 20
+			ypos -5
+			zpos 100
+			wide 50
+			tall 30
+			scriptID 0
+			textHidden 0
+			editable 1
+			NumericInputOnly 1
+			font Default_21
+			allowRightClickMenu 0
+			allowSpecialCharacters 1
+			unicode 0
+			scriptID 0
+
+			pin_to_sibling SliderR
+			pin_corner_to_sibling LEFT
+			pin_to_sibling_corner RIGHT
+		}		
+
+
+		ResetModToDefaultR
+		{
+			Classname ResetModToDefaultClass
+			ControlName RuiButton
+			InheritProperties RuiSmallButton
+			labelText ""
+			zpos 0
+			xpos 10
+			wide 75
+			tall 45
+			scriptID 0
+			pin_to_sibling TextEntrySettingR
+			pin_corner_to_sibling LEFT
+			pin_to_sibling_corner RIGHT
+
+			navLeft TextEntrySettingR
+			navRight SliderG
+			enabled	1
+
+		}
+		ResetModImageR
+		{
+			ControlName ImagePanel
+			image "vgui/reset"
+			scaleImage 1
+			drawColor "180 180 180 255" // vanilla label color
+			visible 1
+			wide 30
+			tall 30
+			enabled	0
+			
+			pin_to_sibling ResetModToDefaultR
+			pin_corner_to_sibling CENTER
+			pin_to_sibling_corner CENTER
+		}
+
+		LabelG
+		{
+			Classname LabelClass
+		
+			ControlName Label
+			scriptID 1
+
+			ypos 25
+			labelText "G"
+
+			auto_wide_tocontents 1
+
+			pin_to_sibling			LabelR
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+
+		SliderG
+		{
+			Classname SliderClass
+
+			xpos 15
+			ControlName			SliderControl
+			scriptID 1
+
+			minValue				0
+			maxValue				255
+			stepSize				1
+			drawColor		"255 0 0 255"
+
+			pin_to_sibling LabelG
+			pin_corner_to_sibling LEFT
+			pin_to_sibling_corner RIGHT
+			
+			BtnDropButton
+			{
+				ControlName				RuiButton
+
+				style					SliderButton
+				wide					320
+				tall					45
+				labelText				""
+				auto_wide_tocontents	0
+			}
+
+			wide		320
+			tall		45
+		}
+
+		TextEntrySettingG
+		{
+			ControlName TextEntry
+			Classname TextEntrySettingClass
+
+			xpos 20
+			ypos -5
+			zpos 100
+			wide 50
+			tall 30
+			scriptID 1
+
+			textHidden 0
+			editable 1
+			NumericInputOnly 1
+			font Default_21
+			allowRightClickMenu 0
+			allowSpecialCharacters 1
+			unicode 0
+
+			pin_to_sibling SliderG
+			pin_corner_to_sibling LEFT
+			pin_to_sibling_corner RIGHT
+		}		
+
+		ResetModToDefaultG
+		{
+			Classname ResetModToDefaultClass
+
+			enabled	1
+
+			ControlName RuiButton
+			InheritProperties RuiSmallButton
+			labelText ""
+			zpos 0
+			xpos 10
+			wide 75
+			tall 45
+			scriptID 1
+
+			pin_to_sibling TextEntrySettingG
+			pin_corner_to_sibling LEFT
+			pin_to_sibling_corner RIGHT
+
+			navLeft TextEntrySettingG
+			navRight SliderB
+			enabled	1
+		}
+
+		ResetModImageG
+		{
+			ControlName ImagePanel
+			image "vgui/reset"
+			scaleImage 1
+			drawColor "180 180 180 255" // vanilla label color
+			visible 1
+			wide 30
+			tall 30
+			enabled	1
+			
+			pin_to_sibling ResetModToDefaultG
+			pin_corner_to_sibling CENTER
+			pin_to_sibling_corner CENTER
+		}
+
+		LabelB
+		{
+			Classname LabelClass
+
+		
+			ControlName Label
+			scriptID 2
+
+			ypos 25
+			labelText "B"
+
+			auto_wide_tocontents 1
+
+			pin_to_sibling			LabelG
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+
+		SliderB
+		{
+			Classname SliderClass
+
+			xpos 15
+			ControlName			SliderControl
+			scriptID 2
+
+			minValue				0
+			maxValue				255
+			stepSize				1
+			drawColor		"255 0 0 255"
+
+			pin_to_sibling LabelB
+			pin_corner_to_sibling LEFT
+			pin_to_sibling_corner RIGHT
+
+			BtnDropButton
+			{
+				ControlName				RuiButton
+
+				style					SliderButton
+				wide					320
+				tall					45
+				labelText				""
+				auto_wide_tocontents	0
+			}
+
+			wide		320
+			tall		45
+		}
+
+		TextEntrySettingB
+		{
+			Classname TextEntrySettingClass
+
+			ControlName TextEntry
+			xpos 20
+			ypos -5
+			zpos 100
+			wide 50
+			tall 30
+			scriptID 2
+
+			textHidden 0
+			editable 1
+			NumericInputOnly 1
+			font Default_21
+			allowRightClickMenu 0
+			allowSpecialCharacters 1
+			unicode 0
+
+			pin_to_sibling SliderB
+			pin_corner_to_sibling LEFT
+			pin_to_sibling_corner RIGHT
+		}
+
+		ResetModToDefaultB
+		{
+			Classname ResetModToDefaultClass
+
+			enabled	1
+
+			ControlName RuiButton
+			InheritProperties RuiSmallButton
+			labelText ""
+			zpos 0
+			xpos 10
+			wide 75
+			tall 45
+			scriptID 2
+
+			pin_to_sibling TextEntrySettingB
+			pin_corner_to_sibling LEFT
+			pin_to_sibling_corner RIGHT
+
+			navLeft TextEntrySettingB
+			navRight SliderA
+			enabled	1
+		}
+
+		ResetModImageB
+		{
+			ControlName ImagePanel
+			image "vgui/reset"
+			scaleImage 1
+			drawColor "180 180 180 255" // vanilla label color
+			visible 1
+			wide 30
+			tall 30
+			enabled	0
+			
+			pin_to_sibling ResetModToDefaultB
+			pin_corner_to_sibling CENTER
+			pin_to_sibling_corner CENTER
+		}
+
+		LabelA
+		{
+			Classname LabelClass
+
+		
+			ControlName Label
+			scriptID 3
+
+			ypos 25
+			labelText "A"
+
+			auto_wide_tocontents 1
+
+			pin_to_sibling			LabelB
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+
+		SliderA
+		{
+			Classname SliderClass
+
+			xpos 15
+			ControlName			SliderControl
+			scriptID 3
+
+			minValue				0
+			maxValue				255
+			stepSize				1
+			drawColor		"255 0 0 255"
+			
+			pin_to_sibling LabelA
+			pin_corner_to_sibling LEFT
+			pin_to_sibling_corner RIGHT
+
+			BtnDropButton
+			{
+				ControlName				RuiButton
+
+				style					SliderButton
+				wide					320
+				tall					45
+				labelText				""
+				auto_wide_tocontents	0
+			}
+
+			wide		320
+			tall		45
+		}
+
+		TextEntrySettingA
+		{
+			Classname TextEntrySettingClass
+
+			ControlName TextEntry
+			xpos 20
+			ypos -5
+			zpos 100
+			wide 50
+			tall 30
+			scriptID 3
+
+			textHidden 0
+			editable 1
+			NumericInputOnly 1
+			font Default_21
+			allowRightClickMenu 0
+			allowSpecialCharacters 1
+			unicode 0
+
+			pin_to_sibling SliderA
+			pin_corner_to_sibling LEFT
+			pin_to_sibling_corner RIGHT
+		}
+
+		ResetModToDefaultA
+		{
+			Classname ResetModToDefaultClass
+
+			enabled	1
+
+			ControlName RuiButton
+			InheritProperties RuiSmallButton
+			labelText ""
+			zpos 0
+			xpos 10
+			wide 75
+			tall 45
+			scriptID 3
+
+			pin_to_sibling TextEntrySettingA
+			pin_corner_to_sibling LEFT
+			pin_to_sibling_corner RIGHT
+
+			navLeft TextEntrySettingA
+			enabled	1
+		}
+
+		ResetModImageA
+		{
+			ControlName ImagePanel
+			image "vgui/reset"
+			scaleImage 1
+			drawColor "180 180 180 255" // vanilla label color
+			visible 1
+			wide 30
+			tall 30
+			enabled	0
+			
+			pin_to_sibling ResetModToDefaultA
+			pin_corner_to_sibling CENTER
+			pin_to_sibling_corner CENTER
+		}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		<!-- DialogFooterButtons
+		{
+			ControlName				CNestedPanel
+			InheritProperties       DialogFooterButtons
+
+			pin_to_sibling			DialogFrame
+			pin_corner_to_sibling	BOTTOM_LEFT
+			pin_to_sibling_corner	BOTTOM
+		} -->
+	}
+}
