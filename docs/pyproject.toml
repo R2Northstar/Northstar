@@ -11,6 +11,7 @@ dependencies = [
     "mkdocs-git-authors-plugin>=0.9.0,<0.10",
     "mkdocs-link-embeds-plugin>=0.2.0,<0.3",
     "mkdocs-video>=1.5.0,<2",
+    "mkdocs-mermaid2-plugin>=1.2.1",
 ]
 
 [project.entry-points."pygments.lexers"]
