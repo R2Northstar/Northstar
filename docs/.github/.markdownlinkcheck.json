@@ -35,6 +35,15 @@
         },
         {
             "pattern": "https://www.wunderboy.org/valve-hl2source-sdk-tools/#vtf_shell"
+        },
+        {
+            "pattern": "https://www.blender.org/"
+        },
+        {
+            "pattern": "#*"
+        },
+        {
+            "pattern": "/_static/"
         }
     ]
 }
