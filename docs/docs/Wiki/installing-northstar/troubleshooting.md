@@ -162,6 +162,8 @@ If you own Titanfall 2 on Steam, you'll want to add [launch options](troubleshoo
 If you _don't_ own Titanfall 2 on Steam, you'll want to add Northstar as a Non-Steam game and launch the added game via Steam.\
 To do this, go to Steam, then in the bottom left corner, hit `ADD A GAME` > `Add a Non-Steam Game...` > `BROWSE...` > Find `NorthstarLauncher` in your [titanfall2 directory](troubleshooting.md#game-location)
 
+If none of the above work, you may need to look into using [DS4Windows](https://ds4-windows.com/) (assuming you're using a PS4 or PS5 controller), however it should be noted that this is an _external_ program that it is in no way affiliated with Northstar.
+
 ## Access Violation
 
 If your error says `Access Violation | Attempted to read from 0x00000000` specifically DO NOT post just THAT.\
