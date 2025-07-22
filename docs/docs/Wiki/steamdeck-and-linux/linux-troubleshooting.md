@@ -7,7 +7,7 @@ If you're encountering issues with Northstar launching on Steam, a very quick fi
 You can do this by going to your Steam directory, going to `steamapps/compatdata`, then look for the folder called `1237970` (the App ID for Titanfall2). This folder contains the data used by Steam in order to make games function using Proton (assuming you're using Proton for said game).
 This folder, however, sometimes has issues with launching Northstar.
 
-It is recommended you close Steam before this. Deleting this folder then attempting to launch Northstar with NorthstarProton again _should_ fix the issue. Steam will generate another `compatdata` folder for Titanfall2 automatically.
+It is recommended you close Steam before this. Deleting this folder then attempting to launch Northstar again _should_ fix the issue. Steam will generate another `compatdata` folder for Titanfall2 automatically.
 
 ## EA App blank window
 
@@ -83,7 +83,7 @@ For more info and proposed fixes, refer to [this issue thread on Github](https:/
 
 ## Game crashes on launch with Cause: Access Violation Data Execution Prevention (DEP) at: 0x00000000
 
-**Steam/Steam Deck:** Ensure your installation matches the latest [install guide](installing-on-steamdeck-and-linux.md#steam-steam-deck-northstarproton).
+**Steam/Steam Deck:** Ensure your installation matches the latest [install guide](installing-on-steamdeck-and-linux.md#steam-steam-deck).
 
 **Lutris**: Ensure your installation matches the latest [install guide](installing-on-steamdeck-and-linux.md#lutris-wine). If that fails, you may optionally try the latest release of [Wine-TKG](https://github.com/Frogging-Family/wine-tkg-git/releases/latest).
 
@@ -98,18 +98,6 @@ However if you don't want to wait you can try precompiled DXVK [_state cache_](h
 Proton: extract and put it in `/path/to/steamapps/shadercache/1237970/DXVK_state_cache` default is `~/.local/share/..` or next to .exe if shader pre-caching is turned off.
 
 Wine: extract and put it next to game's .exe. Also remember to rename it if the .exe has a different name.
-
-### Steam/Steam Deck (dxvk-async)
-
-DXVK-async is automatically installed and enabled if using the NorthstarProton runner.
-
-### Lutris (dxvk-async)
-
-DXVK-[_async_](https://github.com/Sporif/dxvk-async#improvements) can optionally be used on Lutris to prevent stutter during shader compilation by asynchronously compiling and allowing the frame to render with not-yet-compiled shaders simply not drawn.
-
-Download [**dxvk-async**](https://github.com/Sporif/dxvk-async/releases), extract and put it in `~/.local/share/lutris/runtime/dxvk` then type the name of the folder in `▲` -> `Configure` -> `Runner Options` -> `DXVK version`, to enable add `DXVK_ASYNC 1` to `System Options` -> `Environment variables`
-
-_DXVK-async can also be installed for Lutris with_ [_ProtonUp-Qt_](https://davidotek.github.io/protonup-qt/)
 
 ### Origin Continual File Writing Fix
 
