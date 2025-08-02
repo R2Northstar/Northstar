@@ -20,7 +20,7 @@ Docs about shaders inside of Titanfall 2's rpak system
 
 
 
-# The Basics
+## The Basics
 
 !!! note
     In RSX make sure that the export for Shaders and Shadersets are both set to `.msw`
@@ -36,7 +36,7 @@ If after unpacking the exported shader you are unsure which compiled `.fxc` file
 
 
 
-# Unpacking your Shader
+## Unpacking your Shader
 
 Once you found a shader you will need to unpack the `.msw` file.
 Do so using the [MSWUnpacker](https://github.com/RoyalBlue1/MSWUnPacker) with the commandline.
@@ -45,7 +45,7 @@ Do so using the [MSWUnpacker](https://github.com/RoyalBlue1/MSWUnPacker) with th
 
 The unpacked shader files will now be in a newly created folder named after your ```.msw``` file.
 
-# Repacking your Shader
+## Repacking your Shader
 
 Once you have done your modifications to the Shader's `.fxc` files you'll want to pack it back into a .msw to use in repak
 Do so using the [MSWUnpacker](https://github.com/RoyalBlue1/MSWUnPacker) with the commandline.
@@ -54,7 +54,7 @@ Do so using the [MSWUnpacker](https://github.com/RoyalBlue1/MSWUnPacker) with th
 
 There should be an packed `.msw` file next to the unpacked shader folder.
 
-# Decompiling your Shader
+## Decompiling your Shader
 
 To decompile the compiled `.fxc` file to a readable, and recompilable file use the [HLSLDecompiler](https://github.com/zxxyye/HLSLDecompiler)
 Do so using the commandline
@@ -64,7 +64,7 @@ Do so using the commandline
 !!! note
     Make sure to use a capital D, a lowercase d will not decompile but instead disassemble.
 
-# Compiling your Shader
+## Compiling your Shader
 
 You can compile your modified `.hlsl` file using the Effect Compiler Tool mentioned in the Prerequisites.
 
@@ -82,7 +82,7 @@ To compile your `.hlsl` file do so using the commandline.
 This will attempt to compile your `.hlsl` source file, if it fails it will show you warnings and errors for you to track down issues.
 
 
-# Making a new Shaderset
+## Making a new Shaderset
 Its quite important to make a new Shaderset for your modified Shader if its supposed to only appear on a single Material of your choice instead of overwriting the original Shader and Shaderset.
 
 Next we make sure that both our vertex shader and pixel shader have unique names.
@@ -103,7 +103,7 @@ The script will now ask you for the GUID's of the shaders, enter the output give
 A new `.msw` file will now have been generated.
 
 
-# Paking the `.rpak`
+## Packing the `.rpak`
 
 In order to pack the shaders and shaderset into an .rpak first prepare the following folder structure somewhere, with the json having whatever name you want:
 
