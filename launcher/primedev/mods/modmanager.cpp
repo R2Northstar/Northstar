@@ -115,8 +115,6 @@ void ModManager::LoadMods()
 
 	fs::remove_all(GetCompiledAssetsPath());
 
-	m_DependencyConstants.clear();
-
 	for (Mod& mod : m_LoadedMods)
 	{
 		if (!mod.m_bEnabled)
@@ -412,6 +410,8 @@ void ModManager::LoadMods()
 void ModManager::UnloadMods()
 {
 	// clean up stuff from mods before we unload
+	m_DependencyConstants.clear();
+
 	m_ModFiles.clear();
 	fs::remove_all(GetCompiledAssetsPath());
 
