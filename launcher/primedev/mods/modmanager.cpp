@@ -383,14 +383,14 @@ void ModManager::LoadMods()
 			}
 		}
 
-		// register mod files
+		// register mod files, mods loaded later should have their files prioritised
 		if (fs::exists(mod.m_ModDirectory / MOD_OVERRIDE_DIR))
 		{
 			for (fs::directory_entry file : fs::recursive_directory_iterator(mod.m_ModDirectory / MOD_OVERRIDE_DIR))
 			{
 				std::string path =
 					g_pModManager->NormaliseModFilePath(file.path().lexically_relative(mod.m_ModDirectory / MOD_OVERRIDE_DIR));
-				if (file.is_regular_file() && m_ModFiles.find(path) == m_ModFiles.end())
+				if (file.is_regular_file())
 				{
 					ModOverrideFile modFile;
 					modFile.m_pOwningMod = &mod;
