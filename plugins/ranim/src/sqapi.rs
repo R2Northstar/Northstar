@@ -4,7 +4,7 @@ use mid::northstar::NORTHSTAR_DATA;
 use rrplug::prelude::*;
 use std::{fs, io::Write, path::PathBuf};
 
-use crate::{bindings::RecordedAnimation, recording_impl::SavedRecordedAnimation, NS_DIR};
+use crate::{bindings::RecordedAnimation, NS_DIR};
 
 #[allow(unused)]
 const USER_DATA_ID: u64 = 18444492235241160706;
@@ -13,7 +13,6 @@ pub fn register_sq_function() {
     register_sq_functions(save_recorded_animation);
     register_sq_functions(read_recorded_animation);
     register_sq_functions(unload_thyself);
-    register_sq_functions(pipe_recording);
 }
 
 #[rrplug::sqfunction(VM = "SERVER", ExportName = "RSaveRecordedAnimation")]
@@ -34,35 +33,6 @@ fn read_recorded_animation(name: String) -> Result<&'static mut RecordedAnimatio
     fs::read(name_to_path(name)?)
         .map_err(|err| err.to_string())?
         .try_into()
-}
-
-#[rrplug::sqfunction(VM = "SERVER", ExportName = "RPipeRecordedAnimation")]
-fn pipe_recording(recording: &'static mut RecordedAnimation) -> &'static mut RecordedAnimation {
-    log::info!("org");
-    for i in 0..recording.frame_count as usize {
-        log::info!("{:?}", unsafe {
-            recording.frames.add(i).as_ref().unwrap_unchecked().gap_38
-        });
-    }
-
-    let recording_copy: SavedRecordedAnimation = (*recording).into();
-    let recording_copy: &mut RecordedAnimation = recording_copy.try_into().unwrap();
-
-    log::info!("copy");
-    for i in 0..recording_copy.frame_count as usize {
-        log::info!("{:?}", unsafe {
-            recording_copy
-                .frames
-                .add(i)
-                .as_ref()
-                .unwrap_unchecked()
-                .gap_38
-        });
-    }
-
-    // assert_eq!(recording, recording_copy);
-
-    recording_copy
 }
 
 #[rrplug::sqfunction(VM = "SERVER", ExportName = "RUnload")]

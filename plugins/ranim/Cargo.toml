@@ -7,7 +7,6 @@ edition = "2021"
 bincode = "1.3.3"
 bytemuck = { version = "1.23.1", features = ["derive", "pod_saturating"] }
 rrplug = { workspace = true }
-serde = { version = "1.0.217", features = ["serde_derive"] }
 
 [lib]
 crate-type = ["cdylib"]

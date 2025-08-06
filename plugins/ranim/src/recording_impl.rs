@@ -7,7 +7,6 @@ use rrplug::{
     },
     prelude::*,
 };
-use serde::{Deserialize, Serialize};
 use std::{
     alloc::{GlobalAlloc, Layout},
     mem,
@@ -15,34 +14,7 @@ use std::{
     ptr,
 };
 
-use crate::{
-    bindings::*,
-    serde_ext::{deserialize_arr, deserialize_cstr_array, serialize_arr, serialize_cstr_array},
-};
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct SavedRecordedAnimation {
-    #[serde(serialize_with = "serialize_arr")]
-    #[serde(deserialize_with = "deserialize_arr")]
-    pub unknown_0: [i32; 44],
-    #[serde(serialize_with = "serialize_arr")]
-    #[serde(deserialize_with = "deserialize_arr")]
-    pub unknown_b0: [u8; 64],
-    #[serde(serialize_with = "serialize_cstr_array")]
-    #[serde(deserialize_with = "deserialize_cstr_array")]
-    pub sequences: [*const i8; 47],
-    #[serde(serialize_with = "serialize_arr")]
-    #[serde(deserialize_with = "deserialize_arr")]
-    pub unknown_268: [i32; 34],
-    #[serde(serialize_with = "serialize_arr")]
-    #[serde(deserialize_with = "deserialize_arr")]
-    pub origin: [f32; 3],
-    #[serde(serialize_with = "serialize_arr")]
-    #[serde(deserialize_with = "deserialize_arr")]
-    pub angles: [f32; 3],
-    pub frames: Vec<RecordedAnimationFrame>,
-    pub layers: Vec<RecordedAnimationLayer>,
-}
+use crate::bindings::*;
 
 impl From<RecordedAnimation> for Vec<u8> {
     fn from(value: RecordedAnimation) -> Self {
@@ -176,91 +148,6 @@ impl TryFrom<Vec<u8>> for &'static mut RecordedAnimation {
     }
 }
 
-impl From<RecordedAnimation> for SavedRecordedAnimation {
-    fn from(value: RecordedAnimation) -> Self {
-        SavedRecordedAnimation {
-            unknown_0: value.unknown_0,
-            unknown_b0: value.unknown_b0,
-            sequences: value.sequences,
-            unknown_268: value.unknown_268,
-            origin: value.origin,
-            angles: value.angles,
-            frames: Vec::from(unsafe {
-                slice::from_raw_parts(value.frames, value.frame_count as usize)
-            }),
-            layers: Vec::from(unsafe {
-                slice::from_raw_parts(value.layers, value.layer_count as usize)
-            }),
-        }
-    }
-}
-
-impl TryInto<RecordedAnimation> for SavedRecordedAnimation {
-    type Error = &'static str;
-
-    fn try_into(self) -> Result<RecordedAnimation, Self::Error> {
-        // const FRAMES: usize = 3000;
-        // const LAYERS: usize = FRAMES;
-
-        // self.frames
-        //     .extend((0..FRAMES - self.frames.len()).map(|_| RecordedAnimationFrame::default()));
-        // self.layers
-        //     .extend((0..LAYERS - self.layers.len()).map(|_| RecordedAnimationLayer::default()));
-
-        Ok(RecordedAnimation {
-            unknown_0: self.unknown_0,
-            unknown_b0: self.unknown_b0,
-            sequences: self.sequences,
-            unknown_268: self.unknown_268,
-            origin: self.origin,
-            angles: self.angles,
-            frame_count: self.frames.len() as u32,
-            layer_count: self.layers.len() as u32,
-            frames: allocate_with_source_alloc(self.frames),
-            layers: allocate_with_source_alloc(self.layers),
-            loaded_index: 0,
-            index: 0,
-            not_refcounted: false,
-            refcount: 1,
-        })
-    }
-}
-
-impl TryInto<&'static mut RecordedAnimation> for SavedRecordedAnimation {
-    type Error = &'static str;
-
-    fn try_into(self) -> Result<&'static mut RecordedAnimation, Self::Error> {
-        let recording = unsafe {
-            (RECORDING_FUNCTIONS.wait().new_recorded_animation)()
-                .as_mut()
-                .unwrap_unchecked()
-        };
-
-        recording.unknown_0 = self.unknown_0;
-        recording.unknown_b0 = self.unknown_b0;
-        recording.sequences = self.sequences;
-        recording.unknown_268 = self.unknown_268;
-        recording.origin = self.origin;
-        recording.angles = self.angles;
-        // recording.frame_count = self.frames.len() as u32;
-        // recording.layer_count = self.layers.len() as u32;
-        recording.frame_count = 3000;
-        recording.layer_count = 3000;
-        self.frames
-            .into_iter()
-            .enumerate()
-            .for_each(|(i, frame)| unsafe { *recording.frames.add(i) = frame });
-        self.layers
-            .into_iter()
-            .enumerate()
-            .for_each(|(i, layer)| unsafe { *recording.layers.add(i) = layer });
-        // recording.not_refcounted = false;
-        // recording.refcount = 1;
-
-        Ok(recording)
-    }
-}
-
 impl PushToSquirrelVm for RecordedAnimation {
     fn push_to_sqvm(
         mut self,
@@ -325,18 +212,6 @@ impl SQVMName for &mut RecordedAnimation {
 impl SQVMName for RecordedAnimation {
     fn get_sqvm_name() -> String {
         "userdata".to_string()
-    }
-}
-
-fn allocate_with_source_alloc<T>(vec: Vec<T>) -> *mut T {
-    unsafe {
-        let buf = SOURCE_ALLOC.alloc(Layout::array::<T>(vec.len()).expect("skill issue")) as *mut T;
-
-        vec.into_iter()
-            .enumerate()
-            .for_each(|(i, thing)| *buf.add(i) = thing);
-
-        buf
     }
 }
 

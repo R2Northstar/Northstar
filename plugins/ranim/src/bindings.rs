@@ -1,7 +1,6 @@
 use bytemuck::{Pod, Zeroable};
 use mid::utils::str_from_char_ptr;
 use rrplug::{offset_functions, prelude::*};
-use serde::{Deserialize, Serialize};
 use std::{os::raw::c_char, slice};
 
 offset_functions! {
@@ -15,7 +14,7 @@ offset_functions! {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, Default, Deserialize, Serialize, PartialEq, Eq, Pod, Zeroable)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Pod, Zeroable)]
 pub struct RecordedAnimationLayer {
     pub unk_0: i32,
     pub sequence_index: i32,
@@ -29,7 +28,7 @@ pub struct RecordedAnimationLayer {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, Default, Deserialize, Serialize, PartialEq, Eq, Pod, Zeroable)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Pod, Zeroable)]
 pub struct RecordedAnimationFrame {
     pub unk_0: i32,
     pub unk_4: i32,
@@ -69,40 +68,6 @@ pub struct RecordedAnimation {
 }
 
 unsafe impl Pod for RecordedAnimation {}
-
-impl PartialEq for RecordedAnimation {
-    fn eq(&self, other: &Self) -> bool {
-        self.unknown_0 == other.unknown_0
-            && self.unknown_b0 == other.unknown_b0
-            && self.unknown_268 == other.unknown_268
-            && self.origin == other.origin
-            && self.angles == other.angles
-            && !self
-                .sequences
-                .iter()
-                .copied()
-                .zip(other.sequences.iter().copied())
-                .map(|(left, rigth)| {
-                    (
-                        if left.is_null() { c"8".as_ptr() } else { left },
-                        if rigth.is_null() {
-                            c"8".as_ptr()
-                        } else {
-                            rigth
-                        },
-                    )
-                })
-                .any(|(left, rigth)| unsafe { str_from_char_ptr(left) != str_from_char_ptr(rigth) })
-            && unsafe {
-                slice::from_raw_parts(self.frames, self.frame_count as usize)
-                    == slice::from_raw_parts(other.frames, other.frame_count as usize)
-                    && slice::from_raw_parts(self.layers, self.layer_count as usize)
-                        == slice::from_raw_parts(other.layers, other.layer_count as usize)
-            }
-            && self.frame_count == other.frame_count
-            && self.layer_count == other.layer_count
-    }
-}
 
 static _ASSERT_RECORDED_ANIMATION_LAYER: () = assert!(size_of::<RecordedAnimationLayer>() == 0x24);
 static _ASSERT_RECORDED_ANIMATION_FRAME: () = assert!(size_of::<RecordedAnimationFrame>() == 0x44);
