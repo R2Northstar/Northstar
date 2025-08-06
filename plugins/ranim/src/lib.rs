@@ -17,11 +17,20 @@ impl Plugin for Ranim {
     fn new(_reloaded: bool) -> Self {
         sqapi::register_sq_function();
 
-        // TODO: parse cmd and get ns folder
+        let profile = std::env::args()
+            .find(|arg| arg.starts_with("-profile"))
+            .and_then(|profile| {
+                profile
+                    .split_once('=')
+                    .map(|(_, profile)| profile.to_string())
+            })
+            .unwrap_or_else(|| "R2Northstar".to_string());
+
+        log::info!("using profile {profile}");
 
         let mut ns_path = std::env::current_exe().expect("should have a path to the current exe");
         ns_path.pop();
-        _ = NS_DIR.set(ns_path.join("R2Northstar"));
+        _ = NS_DIR.set(ns_path.join(profile));
         _ = std::fs::create_dir(NS_DIR.get().unwrap());
 
         Self {}
