@@ -18,35 +18,22 @@ pub fn register_sq_function() {
 
 #[rrplug::sqfunction(VM = "SERVER", ExportName = "RSaveRecordedAnimation")]
 fn save_recorded_animation(recording: &mut RecordedAnimation, name: String) -> Result<(), String> {
-    let org = recording.clone();
-    let recording: SavedRecordedAnimation = recording.clone().into();
-
+    log::info!("save");
+    let serialized: Vec<u8> = Vec::from(*recording);
     fs::File::create(name_to_path(name.clone())?)
         .map_err(|err| err.to_string())?
-        .write_all(&bincode::serialize(&recording).map_err(|err| err.to_string())?)
+        .write_all(&serialized)
         .map_err(|err| err.to_string())?;
-
-    assert_eq!(
-        org,
-        bincode::deserialize::<SavedRecordedAnimation>(
-            &fs::read(name_to_path(name)?).map_err(|err| err.to_string())?,
-        )
-        .map_err(|err| err.to_string())?
-        .try_into()
-        .map_err(|err: &str| err.to_string())?
-    );
 
     Ok(())
 }
 
 #[rrplug::sqfunction(VM = "SERVER", ExportName = "RReadRecordedAnimation")]
 fn read_recorded_animation(name: String) -> Result<&'static mut RecordedAnimation, String> {
-    bincode::deserialize::<SavedRecordedAnimation>(
-        &fs::read(name_to_path(name)?).map_err(|err| err.to_string())?,
-    )
-    .map_err(|err| err.to_string())?
-    .try_into()
-    .map_err(|err: &str| err.to_string())
+    log::info!("read");
+    fs::read(name_to_path(name)?)
+        .map_err(|err| err.to_string())?
+        .try_into()
 }
 
 #[rrplug::sqfunction(VM = "SERVER", ExportName = "RPipeRecordedAnimation")]
@@ -58,7 +45,7 @@ fn pipe_recording(recording: &'static mut RecordedAnimation) -> &'static mut Rec
         });
     }
 
-    let recording_copy: SavedRecordedAnimation = recording.clone().into();
+    let recording_copy: SavedRecordedAnimation = (*recording).into();
     let recording_copy: &mut RecordedAnimation = recording_copy.try_into().unwrap();
 
     log::info!("copy");

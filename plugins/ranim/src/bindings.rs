@@ -1,3 +1,4 @@
+use bytemuck::{Pod, Zeroable};
 use mid::utils::str_from_char_ptr;
 use rrplug::{offset_functions, prelude::*};
 use serde::{Deserialize, Serialize};
@@ -14,7 +15,7 @@ offset_functions! {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Default, Deserialize, Serialize, PartialEq, Eq, Pod, Zeroable)]
 pub struct RecordedAnimationLayer {
     pub unk_0: i32,
     pub sequence_index: i32,
@@ -28,7 +29,7 @@ pub struct RecordedAnimationLayer {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Default, Deserialize, Serialize, PartialEq, Eq, Pod, Zeroable)]
 pub struct RecordedAnimationFrame {
     pub unk_0: i32,
     pub unk_4: i32,
@@ -45,18 +46,18 @@ pub struct RecordedAnimationFrame {
     pub layer_index: i32,
     pub unk_34: i32,
     pub gap_38: [u8; 11],
-    pub unk_43: bool,
+    pub unk_43: u8, // was a bool
 }
 
 #[repr(C)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, Zeroable)]
 pub struct RecordedAnimation {
     pub unknown_0: [i32; 44],
     pub unknown_b0: [u8; 64],
     pub sequences: [*const c_char; 47],
     pub unknown_268: [i32; 34],
-    pub origin: Vector3,
-    pub angles: Vector3,
+    pub origin: [f32; 3],
+    pub angles: [f32; 3],
     pub frames: *mut RecordedAnimationFrame,
     pub layers: *mut RecordedAnimationLayer,
     pub frame_count: u32,
@@ -66,6 +67,8 @@ pub struct RecordedAnimation {
     pub not_refcounted: bool,
     pub refcount: u8,
 }
+
+unsafe impl Pod for RecordedAnimation {}
 
 impl PartialEq for RecordedAnimation {
     fn eq(&self, other: &Self) -> bool {
