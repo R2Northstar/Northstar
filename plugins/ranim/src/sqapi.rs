@@ -17,7 +17,6 @@ pub fn register_sq_function() {
 
 #[rrplug::sqfunction(VM = "SERVER", ExportName = "RSaveRecordedAnimation")]
 fn save_recorded_animation(recording: &mut RecordedAnimation, name: String) -> Result<(), String> {
-    log::info!("save");
     let serialized: Vec<u8> = Vec::from(*recording);
     fs::File::create(name_to_path(name.clone())?)
         .map_err(|err| err.to_string())?
@@ -29,7 +28,6 @@ fn save_recorded_animation(recording: &mut RecordedAnimation, name: String) -> R
 
 #[rrplug::sqfunction(VM = "SERVER", ExportName = "RReadRecordedAnimation")]
 fn read_recorded_animation(name: String) -> Result<&'static mut RecordedAnimation, String> {
-    log::info!("read");
     fs::read(name_to_path(name)?)
         .map_err(|err| err.to_string())?
         .try_into()

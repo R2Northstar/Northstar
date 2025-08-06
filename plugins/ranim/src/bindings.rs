@@ -1,7 +1,6 @@
 use bytemuck::{Pod, Zeroable};
-use mid::utils::str_from_char_ptr;
 use rrplug::{offset_functions, prelude::*};
-use std::{os::raw::c_char, slice};
+use std::os::raw::c_char;
 
 offset_functions! {
     RECORDING_FUNCTIONS + RecordingFunctions for WhichDll::Server => {

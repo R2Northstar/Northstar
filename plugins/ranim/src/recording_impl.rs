@@ -1,10 +1,7 @@
 use core::slice;
 use rrplug::{
     high::squirrel_traits::{GetFromSquirrelVm, PushToSquirrelVm, SQVMName},
-    mid::{
-        source_alloc::SOURCE_ALLOC,
-        utils::{from_char_ptr, str_from_char_ptr},
-    },
+    mid::{source_alloc::SOURCE_ALLOC, utils::str_from_char_ptr},
     prelude::*,
 };
 use std::{
@@ -34,18 +31,6 @@ impl From<RecordedAnimation> for Vec<u8> {
                     .copied(),
             )
             .chain(value.sequences.iter().flat_map(|ptr| {
-                log::info!(
-                    "{}",
-                    bytemuck::bytes_of(unsafe {
-                        &ptr.is_null()
-                            .not()
-                            .then(|| str_from_char_ptr(*ptr))
-                            .flatten()
-                            .unwrap_or_default()
-                            .len()
-                    })
-                    .len()
-                );
                 bytemuck::bytes_of(unsafe {
                     &ptr.is_null()
                         .not()
@@ -145,40 +130,6 @@ impl TryFrom<Vec<u8>> for &'static mut RecordedAnimation {
         }
 
         Ok(recording)
-    }
-}
-
-impl PushToSquirrelVm for RecordedAnimation {
-    fn push_to_sqvm(
-        mut self,
-        sqvm: std::ptr::NonNull<HSquirrelVM>,
-        _sqfunctions: &SquirrelFunctions,
-    ) {
-        let recording_functions = RECORDING_FUNCTIONS.wait();
-        unsafe {
-            self.index = *(recording_functions.created_recorded_anim_count).cast::<i32>();
-            *(recording_functions.created_recorded_anim_count)
-                .as_mut()
-                .unwrap_unchecked() += 1;
-
-            let buf = SOURCE_ALLOC.alloc(Layout::new::<Self>()).cast::<Self>();
-            buf.write(self);
-            (recording_functions.insert_anim_in_loaded_list)(buf.cast_const());
-
-            log::info!("{:#?}", buf.as_ref().unwrap_unchecked());
-
-            buf.as_ref()
-                .unwrap_unchecked()
-                .sequences
-                .iter()
-                .copied()
-                .enumerate()
-                .filter(|(_, ptr)| !ptr.is_null())
-                .map(|(i, ptr)| (i, from_char_ptr(ptr)))
-                .for_each(|(i, str)| log::info!("{i} sequence pushed with {str}"));
-
-            (recording_functions.sq_pushrecordedanimation)(sqvm.as_ptr(), buf)
-        }
     }
 }
 
