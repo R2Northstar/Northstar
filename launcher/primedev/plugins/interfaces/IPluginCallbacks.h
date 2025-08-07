@@ -18,6 +18,7 @@ namespace PluginContext
 struct PluginNorthstarData
 {
 	HMODULE pluginHandle;
+	uint64_t size = sizeof(PluginNorthstarData);
 };
 
 class IPluginCallbacks
