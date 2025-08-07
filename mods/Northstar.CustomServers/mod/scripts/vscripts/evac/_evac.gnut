@@ -67,6 +67,8 @@ struct {
 	entity currentEvacNode
 	entity evacDropship
 	entity evacIcon
+
+	table<entity, bool> shouldholsterweapons
 } file
 
 struct EvacShipSetting
@@ -268,7 +270,8 @@ void function Evac( int evacTeam, float initialWait, float arrivalTime, float wa
 	AddEntityCallback_OnDamaged( dropship, EvacDropshipDamaged )
 	
 	AddEntityCallback_OnKilled( dropship, EvacDropshipKilled )
-	
+
+	file.shouldholsterweapons[ dropship ] <- true
 	dropship.s.evacSlots <- [ null, null, null, null, null, null, null, null ]
 	file.evacDropship = dropship
 	
@@ -363,6 +366,7 @@ void function Evac( int evacTeam, float initialWait, float arrivalTime, float wa
 	EmitSoundOnEntity( dropship, evacShip.flyoutSound )
 	
 	// holster all weapons
+	file.shouldholsterweapons[ dropship ] <- true
 	foreach ( entity player in dropship.s.evacSlots )
 		if ( IsValid( player ) )
 			player.HolsterWeapon()
@@ -495,6 +499,9 @@ void function AddPlayerToEvacDropship( entity dropship, entity player )
 	player.SetInvulnerable()
 	player.UnforceCrouch()
 	player.ForceStand()
+	
+	if ( dropship in file.shouldholsterweapons && file.shouldholsterweapons[ dropship ] ) // don't let people have their weapons in the dropship after it leaves
+    	player.HolsterWeapon()
 
 	FirstPersonSequenceStruct fp
 	//fp.firstPersonAnim = EVAC_EMBARK_ANIMS_1P[ slot ]
