@@ -56,11 +56,11 @@ That's it.
 
 ### Hooks
 
-Any Plugin can install hooks anywhere in memory it desires. However, plugins should avoid hooks if possible because of conflicts with Northstar itself or hooks installed by other plugins.
+Any Plugin can install hooks independently from another. Before installing a hook, verify that the target address has not been modified.
 
-It is not generically possible to determine if a given address has already been hooked by a different plugin and there is currently **no mechanism for plugins to share information which addresses have hooks installed**.
+In the case that the target has already been modified by another plugin, do not overwrite the trampoline. Overwriting another plugin's hook will result in crashes and unexpected behaviour.
 
-Northstar does not expose an interface to (un)install hooks. Every plugin is expected to use their own provider.
+There exists no shared interface for hooks. Plugins that need to install hooks will have to bundle a library for this purpose.
 
 ## Examples and Libraries
 
@@ -71,3 +71,4 @@ Northstar does not expose an interface to (un)install hooks. Every plugin is exp
 - A complete [Rust plugin library](https://crates.io/crates/rrplug) that allows you to easily integrate safely with large parts of the engine itself
 
 - A Zig [plugin library](https://github.com/uniboi/zzplug)
+
