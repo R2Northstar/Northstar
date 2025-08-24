@@ -271,7 +271,7 @@ void function Evac( int evacTeam, float initialWait, float arrivalTime, float wa
 	
 	AddEntityCallback_OnKilled( dropship, EvacDropshipKilled )
 
-	file.shouldholsterweapons[ dropship ] <- true
+	file.shouldholsterweapons[ dropship ] <- false
 	dropship.s.evacSlots <- [ null, null, null, null, null, null, null, null ]
 	file.evacDropship = dropship
 	
