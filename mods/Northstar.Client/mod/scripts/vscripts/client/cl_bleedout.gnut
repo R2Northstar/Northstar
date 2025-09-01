@@ -1,0 +1,211 @@
+
+untyped
+global function BleedoutClient_Init
+
+//SERVER CALLBACKS
+global function ServerCallback_BLEEDOUT_StartFirstAidProgressBar
+global function ServerCallback_BLEEDOUT_StopFirstAidProgressBar
+global function ServerCallback_BLEEDOUT_ShowWoundedMarker
+global function ServerCallback_BLEEDOUT_HideWoundedMarker
+
+struct
+{
+	int currentResAttemptID = -1
+	bool isSelfBleeding = false
+	bool displayedTutorialMessage = false
+}
+file
+
+void function BleedoutClient_Init()
+{
+	RegisterSignal( "Bleedout_StopFirstAid" )
+	RegisterSignal( "Bleedout_OnRevive" )
+
+	StatusEffect_RegisterEnabledCallback( eStatusEffect.bleedoutDOF, Bleedout_StartDyingDOF )
+	StatusEffect_RegisterDisabledCallback( eStatusEffect.bleedoutDOF, Bleedout_PlayerRevivedDOF )
+}
+
+void function Bleedout_StartBleedoutProgressBar()
+{
+	entity player = GetLocalClientPlayer()
+	player.EndSignal( "OnDeath" )
+
+	var rui = CreateFullscreenRui( $"ui/bleedout_wounded_marker.rpak", 10000 )
+	RuiTrackFloat3( rui, "pos", player, RUI_TRACK_ABSORIGIN_FOLLOW ) // RUI_TRACK_OVERHEAD_FOLLOW
+	RuiSetGameTime( rui, "startTime", Time() )
+	RuiSetGameTime( rui, "endTime", Time() + Bleedout_GetBleedoutTime() )
+	//RuiSetString( rui, "title", "hello there" )
+	//RuiSetBool( rui, "showTimer", true )
+
+	OnThreadEnd(
+		function() : ( rui )
+		{
+			RuiDestroy( rui )
+			entity ent = GetLocalClientPlayer()
+			StopSoundOnEntity( ent, ent.IsMechanical() ? "Pilot_Critical_Breath_Loop_1P" : "GruntCooper_Wounded_Loop_1P" )
+		}
+	)
+
+	while ( file.isSelfBleeding )
+	{
+		WaitFrame()
+	}
+}
+
+void function ServerCallback_BLEEDOUT_StartFirstAidProgressBar( float endTime, int playerEHandle, int healerEHandle, int resAttemptID )
+{
+	entity playerToRes = GetEntityFromEncodedEHandle( playerEHandle )
+	entity playerHealer = GetEntityFromEncodedEHandle( healerEHandle )
+
+	if ( !IsValid( playerToRes ) || !IsValid( playerHealer ) )
+		return
+
+	entity player = GetLocalClientPlayer()
+
+	//If the local player is already reciving healing, do not change their hud state
+	if ( player == playerToRes && file.currentResAttemptID != -1 )
+		return
+
+	player.Signal( "Bleedout_StopFirstAid" )
+
+	float progressTime = playerToRes == playerHealer ? Bleedout_GetFirstAidTimeSelf() : Bleedout_GetFirstAidTime()
+
+	if ( playerToRes == player && playerHealer != player )
+	{
+		thread Bleedout_DisplayFirstAidProgressBar( endTime, progressTime, playerHealer, "#BLEEDOUT_RECIEVING_FIRST_AID" )
+	}
+	else
+	{
+		thread Bleedout_DisplayFirstAidProgressBar( endTime, progressTime, playerToRes, "#BLEEDOUT_APPLYING_FIRST_AID" )
+	}
+
+	file.currentResAttemptID = resAttemptID
+}
+
+void function ServerCallback_BLEEDOUT_StopFirstAidProgressBar( int resAttemptID )
+{
+	//Ensure that the res instance that started the First Aid Progress Bar is the one to end it.
+	if ( resAttemptID != file.currentResAttemptID )
+		return
+
+	//Allow for new res attempts
+	file.currentResAttemptID = -1
+
+	entity player = GetLocalClientPlayer()
+	player.Signal( "Bleedout_StopFirstAid" )
+}
+
+void function Bleedout_DisplayFirstAidProgressBar( float endTime, float progressTime, entity playerToRes, string text )
+{
+	entity player = GetLocalClientPlayer()
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "Bleedout_StopFirstAid" )
+	playerToRes.EndSignal( "OnDeath" )
+	var rui = CreateCockpitRui( $"ui/bleedout_timer.rpak" )
+	RuiSetString( rui, "text", text )
+	RuiSetGameTime( rui, "endTime", endTime )
+	RuiSetFloat( rui, "progressTime", progressTime )
+
+	OnThreadEnd(
+		function() : ( rui )
+		{
+			RuiDestroy( rui )
+		}
+	)
+
+	while( Time() <= endTime )
+	{
+		WaitFrame()
+	}
+}
+
+void function Bleedout_StartDyingDOF( entity ent, int statusEffect, bool actuallyChanged )
+{
+	if ( !actuallyChanged )
+		return
+
+	if ( ent != GetLocalClientPlayer() )
+		return
+
+	file.isSelfBleeding = true
+	thread Bleedout_StartBleedoutProgressBar()
+	thread Bleedout_StartScreenEffects( ent )
+	EmitSoundOnEntity( ent, ent.IsMechanical() ? "Pilot_Critical_Breath_Loop_1P" : "GruntCooper_Wounded_Loop_1P" )
+
+	if ( !file.displayedTutorialMessage && Bleedout_GetFirstAidTimeSelf() < 0 )
+	{
+		AddPlayerHint( Bleedout_GetBleedoutTime() - 0.25, 0.5, $"","#BLEEDOUT_CALL_HELP" )
+		file.displayedTutorialMessage = true
+	}
+
+	DoF_LerpFarDepth( 1, 20, Bleedout_GetBleedoutTime() * 10 )
+	ent.DisableHealthChangedCallback()
+}
+
+void function Bleedout_StartScreenEffects( entity ent )
+{
+	ent.hudElems.damageOverlayRedBloom.SetColor( 255, 0, 0, 100 )
+	ent.hudElems.damageOverlayRedBloom.ColorOverTime( 255, 0, 0, 255, Bleedout_GetBleedoutTime())
+
+	float flashDuration = 0.5
+	ent.hudElems.damageOverlayRedBloom.Show()
+	ScreenFade( ent, 255, 0, 0, 175, 0.55, 0.0, FFADE_IN | FFADE_PURGE) // red flash
+	wait flashDuration
+
+	ScreenFade( ent, 0, 0, 0, 240, Bleedout_GetBleedoutTime() - flashDuration, 0.0, FFADE_OUT | FFADE_PURGE )
+}
+
+void function Bleedout_PlayerRevivedDOF( entity ent, int statusEffect, bool actuallyChanged )
+{
+	if ( !actuallyChanged )
+		return
+
+	if ( ent != GetLocalClientPlayer() )
+		return
+
+	file.isSelfBleeding = false
+	HidePlayerHint( "#BLEEDOUT_CALL_HELP" )
+	DoF_SetFarDepthToDefault()
+	HealthHUD_AddPlayer( ent )
+	ScreenFade( ent, 0, 0, 0, 200, 0.5, 0.0, FFADE_IN | FFADE_PURGE)
+}
+
+void function ServerCallback_BLEEDOUT_ShowWoundedMarker( int woundedPlayerEhandle, float startTime, float endTime )
+{
+	entity woundedPlayer = GetEntityFromEncodedEHandle( woundedPlayerEhandle )
+	if ( !IsValid( woundedPlayer ) )
+		return
+	thread ShowWoundedMarker_Internal( woundedPlayer, startTime, endTime )
+}
+
+void function ShowWoundedMarker_Internal( entity woundedPlayer, float startTime, float endTime )
+{
+	woundedPlayer.EndSignal( "OnDeath" )
+	woundedPlayer.EndSignal( "Bleedout_OnRevive" )
+	var rui = CreateCockpitRui( $"ui/bleedout_wounded_marker.rpak", 500 )
+	RuiTrackFloat3( rui, "pos", woundedPlayer, RUI_TRACK_POINT_FOLLOW, woundedPlayer.LookupAttachment( "HEADSHOT" ) )
+	RuiSetGameTime( rui, "startTime", startTime )
+	RuiSetGameTime( rui, "endTime", endTime )
+
+	if ( Bleedout_GetBleedoutTime() <= 0 )
+	{
+		RuiSetBool( rui, "showTimer", false )
+	}
+
+	OnThreadEnd(
+	function() : ( rui )
+		{
+			RuiDestroy( rui )
+		}
+	)
+
+	WaitForever()
+}
+
+void function ServerCallback_BLEEDOUT_HideWoundedMarker( int woundedPlayerEhandle )
+{
+	entity woundedPlayer = GetEntityFromEncodedEHandle( woundedPlayerEhandle )
+	if ( !IsValid( woundedPlayer ) )
+		return
+	woundedPlayer.Signal( "Bleedout_OnRevive" )
+}

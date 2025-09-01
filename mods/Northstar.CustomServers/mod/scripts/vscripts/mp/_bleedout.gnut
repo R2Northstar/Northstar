@@ -117,7 +117,7 @@ void function PlayerDying( entity player )
 				file.isBleeding[ player ] = false
 				file.lastAttacker[ player ] = svGlobal.worldspawn
 
-				player.UnforceCrouch()
+				thread MakePlayerStand( player )
 				player.SetOneHandedWeaponUsageOff()
 				//Remote_CallFunction_NonReplay( player, "ServerCallback_BLEEDOUT_PlayerRevivedDOF" )
 
@@ -158,6 +158,15 @@ void function PlayerDying( entity player )
 		WaitForever()
 
 	PlayerDiesFromBleedout( player, file.lastAttacker[ player ] )
+}
+
+void function MakePlayerStand( entity player )
+{
+	Assert( IsNewThread(), "Must be threaded off." )
+	player.UnforceCrouch()
+	player.ForceStand()
+	WaitFrame() // waiting for player to stand before allowing them to crouch again
+	player.UnforceStand()
 }
 
 void function EnablePlayerRes( entity player )
