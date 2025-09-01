@@ -262,8 +262,9 @@ REPLACE_SQFUNC(GetDataTableColumnByName, (ScriptContext::UI | ScriptContext::CLI
 	return SQRESULT_NOTNULL;
 }
 
-// int function GetDataTableRowCount( var datatable )
-REPLACE_SQFUNC(GetDataTableRowCount, (ScriptContext::UI | ScriptContext::CLIENT | ScriptContext::SERVER))
+// this function has casing that is inconsistent with the others...
+// int function GetDatatableRowCount( var datatable )
+REPLACE_SQFUNC(GetDatatableRowCount, (ScriptContext::UI | ScriptContext::CLIENT | ScriptContext::SERVER))
 {
 	CSVData** pData;
 	uint64_t typeId;
@@ -466,7 +467,7 @@ REPLACE_SQFUNC(GetDataTableRowMatchingStringValue, (ScriptContext::UI | ScriptCo
 }
 
 // int function GetDataTableRowMatchingAssetValue( var datatable, int col, asset value )
-REPLACE_SQFUNC(GetDataTableMatchingAssetValue, (ScriptContext::UI | ScriptContext::CLIENT | ScriptContext::SERVER))
+REPLACE_SQFUNC(GetDataTableRowMatchingAssetValue, (ScriptContext::UI | ScriptContext::CLIENT | ScriptContext::SERVER))
 {
 	CSVData** pData;
 	uint64_t typeId;

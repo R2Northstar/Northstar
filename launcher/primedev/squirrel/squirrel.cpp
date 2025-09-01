@@ -474,6 +474,15 @@ int64_t __fastcall RegisterSquirrelFunctionHook(CSquirrelVM* sqvm, SQFuncRegistr
 	return g_pSquirrel<context>->RegisterSquirrelFunc(sqvm, funcReg, unknown);
 }
 
+template <ScriptContext context> void CheckFuncOverrides()
+{
+	for (auto& [name, func] : g_pSquirrel<context>->m_funcOverrides)
+	{
+		if (!g_pSquirrel<context>->m_funcOriginals.count(name))
+			g_pSquirrel<context>->logger->error("Failed to replace SQ function '{}' as it doesn't exist.", name);
+	}
+}
+
 template <ScriptContext context> bool (*CallScriptInitCallback)(void* sqvm, const char* callback);
 template <ScriptContext context> bool __fastcall CallScriptInitCallbackHook(void* sqvm, const char* callback)
 {
@@ -489,6 +498,12 @@ template <ScriptContext context> bool __fastcall CallScriptInitCallbackHook(void
 	}
 	else if (context == ScriptContext::SERVER)
 		bShouldCallCustomCallbacks = !strcmp(callback, "CodeCallback_MapSpawn");
+
+	// check that all func overrides for this VM have been registered properly
+	if (realContext == ScriptContext::UI)
+		CheckFuncOverrides<ScriptContext::UI>();
+	else
+		CheckFuncOverrides<context>();
 
 	if (bShouldCallCustomCallbacks)
 	{
@@ -562,7 +577,7 @@ template <ScriptContext context> void StubUnsafeSQFuncs()
 		g_pSquirrel<context>->AddFuncOverride("DevTextBufferWrite", SQ_StubbedFunc<context>);
 		g_pSquirrel<context>->AddFuncOverride("DevTextBufferClear", SQ_StubbedFunc<context>);
 		g_pSquirrel<context>->AddFuncOverride("DevTextBufferDumpToFile", SQ_StubbedFunc<context>);
-		g_pSquirrel<context>->AddFuncOverride("Dev_CommandLineAddParam", SQ_StubbedFunc<context>);
+		g_pSquirrel<context>->AddFuncOverride("Dev_CommandLineAddParm", SQ_StubbedFunc<context>);
 		g_pSquirrel<context>->AddFuncOverride("DevP4Checkout", SQ_StubbedFunc<context>);
 		g_pSquirrel<context>->AddFuncOverride("DevP4Add", SQ_StubbedFunc<context>);
 	}
