@@ -237,6 +237,7 @@ Press Yes if you agree to this. This choice can be changed in the mods menu at a
 		"player_bleedout_firstAidTimeSelf" "Self-res time"
 		"player_bleedout_firstAidHealPercent" "First aid health percentage"
 		"player_bleedout_aiBleedingPlayerMissChance" "Downed AI miss chance"
+		"BLEEDOUT_CALL_HELP" "You're bleeding out!"
 
 		// coop stuff
 		"PL_sp_coop" "(UNFINISHED) Singleplayer Coop"

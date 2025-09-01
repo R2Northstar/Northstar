@@ -236,6 +236,7 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 		"player_bleedout_firstAidTimeSelf" "Temps d'auto-réanimation"
 		"player_bleedout_firstAidHealPercent" "Soins (%) des prem. secours"
 		"player_bleedout_aiBleedingPlayerMissChance" "Ratage (%) des IA à terre"
+		"BLEEDOUT_CALL_HELP" "Vous êtes à terre !"
 
 		// coop stuff
 		"PL_sp_coop" "(ALPHA) Campagne (coop)"
