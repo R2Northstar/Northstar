@@ -381,5 +381,6 @@
 		"MODE_MENU_PVP"                    "Против игроков"
 		"MODE_MENU_PVPVE"                    "Против людей и окружения"
 		"MODE_MENU_PVE"                    "Против окружения"
+		"BLEEDOUT_CALL_HELP"                    "Кровотечение!"
 	}
 }
