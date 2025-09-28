@@ -343,6 +343,11 @@ string function GetMapDisplayName( string mapname )
 	return "#" + mapname
 }
 
+string function GetCampaignMapDisplayName( string mapname )
+{
+	return "#" + mapname + "_CAMPAIGN_NAME"
+}
+
 string function GetMapDisplayDesc( string mapname )
 {
 	return "#" + mapname + "_CLASSIC_DESC"
