@@ -354,3 +354,6 @@ MigrationBackup/
 
 # vscode
 /.vscode
+
+# nix
+/result
