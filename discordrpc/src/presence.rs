@@ -152,8 +152,9 @@ fn on_presence_updated(
             activity.large_text = Some(map_displayname);
             activity.small_image = Some("northstar".to_string());
             activity.small_text = Some("Titanfall 2 + Northstar".to_string());
-            if cl_presence.playlist == "campaign" {
+            if cl_presence.playlist == "solo" {
                 activity.party = None;
+                activity.state = "Playing Singleplayer".to_string();
                 activity.end = None;
             } else if cl_presence.playlist == "fd" {
                 cl_presence
