@@ -19,7 +19,7 @@ GameStateStruct function DiscordRPC_GenerateGameState( GameStateStruct gs )
     }
 
     gs.map = GetMapName()
-    gs.mapDisplayname = Localize(GetMapDisplayName(GetMapName()))
+    gs.mapDisplayname = Localize( IsSingleplayer() ? GetCampaignMapDisplayName( GetMapName() ) : GetMapDisplayName( GetMapName() ) )
 
     gs.playlist = GetCurrentPlaylistName()
     gs.playlistDisplayname = Localize( GetCurrentPlaylistVarString( "name", GetCurrentPlaylistName() ) ) 
