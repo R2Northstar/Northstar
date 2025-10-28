@@ -229,6 +229,9 @@ void FixupCvarFlags()
 		{"sound_volume_dialogue_sp", FCVAR_ARCHIVE_PLAYERPROFILE},
 		{"sound_volume_music_game_sp", FCVAR_ARCHIVE_PLAYERPROFILE},
 		{"sound_volume_sfx_sp", FCVAR_ARCHIVE_PLAYERPROFILE},
+
+		// fcvars that should be replicated
+		{"sv_alltalk", FCVAR_REPLICATED},
 	};
 
 	// array of cvars and the flags we want to remove from them
