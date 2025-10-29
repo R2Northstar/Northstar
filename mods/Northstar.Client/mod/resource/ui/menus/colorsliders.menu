@@ -22,7 +22,7 @@ resource/ui/menus/colorsliders.menu
 		{
 			ControlName				RuiButton
 			rui                     "ui/basic_image.rpak"
-
+			labelText				""
 			wide					%100
 			tall					%100
 			bgcolor_override		"0 0 0 255"
