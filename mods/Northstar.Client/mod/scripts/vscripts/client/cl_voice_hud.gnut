@@ -1,0 +1,76 @@
+untyped
+
+
+global function InitVoiceHUD
+global function UpdateVoiceHUD
+
+
+const VOICEHUD_MAX = 5
+
+
+function InitVoiceHUD( entity player )
+{
+	player.cv.voiceHUDArray <- []
+	local elemPrefix
+	local elemIndex
+
+	for ( int index = 0; index < VOICEHUD_MAX; index++ )
+	{
+		elemPrefix = "voice"
+		elemIndex = string( index )
+
+		local Table = {
+			mic = HudElement( elemPrefix + "Mic" + elemIndex )
+			name = HudElement( elemPrefix + "Name" + elemIndex )
+		}
+
+		player.cv.voiceHUDArray.append( Table )
+
+		Table.name.Hide()
+		Table.mic.Hide()
+
+		VisGroup_AddElement( clGlobal.menuVisGroup, Table.mic )
+		VisGroup_AddElement( clGlobal.menuVisGroup, Table.name )
+	}
+}
+
+
+function UpdateVoiceHUD()
+{
+	entity localPlayer = GetLocalClientPlayer()
+
+	// Verify init was called first
+	if ( !( "voiceHUDArray" in localPlayer.cv ) )
+		return
+
+	int index = 0
+	if ( !clGlobal.showingScoreboard && !clGlobal.isMenuOpen )
+	{
+		array<entity> teamPlayers = GetPlayerArrayOfTeam( localPlayer.GetTeam() )
+		if ( teamPlayers.len() > 1 )
+		{
+			foreach ( teamPlayer in teamPlayers )
+			{
+				if ( teamPlayer.IsTalking() && !teamPlayer.IsMuted() )
+				{
+					localPlayer.cv.voiceHUDArray[index].mic.Show()
+
+					localPlayer.cv.voiceHUDArray[index].name.SetText( teamPlayer.GetPlayerNameWithClanTag() )
+					localPlayer.cv.voiceHUDArray[index].name.Show()
+
+					index++
+
+					// Already showing max, can't do anything else
+					if ( index >= VOICEHUD_MAX )
+						return
+				}
+			}
+		}
+	}
+
+	for ( ; index < VOICEHUD_MAX; index++ )
+	{
+		localPlayer.cv.voiceHUDArray[index].name.Hide()
+		localPlayer.cv.voiceHUDArray[index].mic.Hide()
+	}
+}
