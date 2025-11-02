@@ -27,13 +27,9 @@ written a squirrel highlighter](https://gist.github.com/samisalreadytaken/5bcf32
 the top 2. Navigate through the tabs to find what you want to change 3. Click its
 '`Styler`' button and make the changes you wish to
 
-## VSCode
-
-RespawnSquirrel has been added to the vscode marketplace, you can download it here:
-
-https://marketplace.visualstudio.com/items?itemName=Sandwhiched.rspn-squirrel
-
-Otherwise you can simply search "Respawn Squirrel" in the extensions tab
+## VS Code
+An extension for VS Code with syntax highlighting and snippets can be found [on the VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=Sandwhiched.rsquirrel).
+The easiest way to install it is through the Extensions panel by searching "rSquirrel".
 
 ## Kate
 
