@@ -5,8 +5,9 @@ global function InitVoiceHUD
 global function UpdateVoiceHUD
 
 
-const VOICEHUD_MAX = 5
-
+const VOICEHUD_MAX = 10
+const VOICEHUD_COLOR_FRIENDLY = [FRIENDLY_R, FRIENDLY_G, FRIENDLY_B, 255]
+const VOICEHUD_COLOR_ENEMY = [ENEMY_R, ENEMY_G, ENEMY_B, 255]
 
 function InitVoiceHUD( entity player )
 {
@@ -47,6 +48,12 @@ function UpdateVoiceHUD()
 	if ( !clGlobal.showingScoreboard && !clGlobal.isMenuOpen )
 	{
 		array<entity> teamPlayers = GetPlayerArrayOfTeam( localPlayer.GetTeam() )
+
+		bool allTalkEnabled = GetConVarBool( "sv_alltalk" )
+
+		if ( allTalkEnabled )
+			teamPlayers = GetPlayerArray()
+
 		if ( teamPlayers.len() > 1 )
 		{
 			foreach ( teamPlayer in teamPlayers )
@@ -57,6 +64,18 @@ function UpdateVoiceHUD()
 
 					localPlayer.cv.voiceHUDArray[index].name.SetText( teamPlayer.GetPlayerNameWithClanTag() )
 					localPlayer.cv.voiceHUDArray[index].name.Show()
+
+					var color = [ 255, 255, 255, 255 ]
+					if ( allTalkEnabled )
+					{
+						if ( teamPlayer.GetTeam() == localPlayer.GetTeam() )
+							color = VOICEHUD_COLOR_FRIENDLY
+						else
+							color = VOICEHUD_COLOR_ENEMY
+					}
+
+					localPlayer.cv.voiceHUDArray[index].mic.SetColor( color )
+					localPlayer.cv.voiceHUDArray[index].name.SetColor( color )
 
 					index++
 
