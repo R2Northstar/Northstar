@@ -151,90 +151,6 @@ void function GamemodeFW_Init()
 }
 
 
-
-//////////////////////////
-///// HACK FUNCTIONS /////
-//////////////////////////
-
-const array<string> HACK_CLEANUP_MAPS =
-[
-	"mp_grave",
-	"mp_homestead",
-	"mp_complex3"
-]
-
-//if npcs outside the map try to fire( like in death animation ), it will cause a engine error
-
-// in mp_grave, npcs will sometimes stuck underground
-const float GRAVE_CHECK_HEIGHT = 1700 // the map's lowest ground is 1950+, npcs will stuck under -4000 or -400
-// in mp_homestead, npcs will sometimes stuck in the sky
-const float HOMESTEAD_CHECK_HIEGHT = 8000 // the map's highest part is 7868+, npcs will stuck above 13800+
-// in mp_complex3, npcs will sometimes stuck in the sky
-const float COMPLEX_CHECK_HEIGHT = 7000 // the map's highest part is 6716+, npcs will stuck above 9700+
-
-// do a hack
-void function HACK_ForceDestroyNPCs()
-{
-	thread HACK_ForceDestroyNPCs_Threaded()
-}
-
-void function HACK_ForceDestroyNPCs_Threaded()
-{
-	string mapName = GetMapName()
-	if( !( HACK_CLEANUP_MAPS.contains( mapName ) ) )
-		return
-
-	while( true )
-	{
-		if( mapName == "mp_grave" )
-		{
-			foreach( entity npc in GetNPCArray() )
-			{
-				if( npc.GetOrigin().z <= GRAVE_CHECK_HEIGHT )
-				{
-					npc.ClearParent()
-					npc.Destroy()
-				}
-			}
-		}
-		if( mapName == "mp_homestead" )
-		{
-			foreach( entity npc in GetNPCArray() )
-			{
-				// neither spawning from droppod nor hotdropping
-				if( !IsValid( npc.GetParent() ) && !npc.e.isHotDropping )
-				{
-					if( npc.GetOrigin().z >= HOMESTEAD_CHECK_HIEGHT )
-					{
-						npc.Destroy()
-					}
-				}
-			}
-		}
-		if( mapName == "mp_complex3" )
-		{
-			foreach( entity npc in GetNPCArray() )
-			{
-				// neither spawning from droppod nor hotdropping
-				if( !IsValid( npc.GetParent() ) && !npc.e.isHotDropping )
-				{
-					if( npc.GetOrigin().z >= COMPLEX_CHECK_HEIGHT )
-					{
-						npc.Destroy()
-					}
-				}
-			}
-		}
-		WaitFrame()
-	}
-}
-
-//////////////////////////////
-///// HACK FUNCTIONS END /////
-//////////////////////////////
-
-
-
 ////////////////////////////////
 ///// SPAWNPOINT FUNCTIONS /////
 ////////////////////////////////
@@ -312,8 +228,6 @@ void function OnFWGamePlaying()
 	StartFWCampThink()
 	InitTurretSettings()
 	FWPlayerObjectiveState()
-
-	HACK_ForceDestroyNPCs()
 }
 
 void function OnFWPlayerConnected( entity player )
@@ -756,12 +670,13 @@ void function InitFWCampSites()
 	foreach( int index, CampSiteStruct campsite in file.fwCampSites )
 	{
 		entity campInfo = campsite.camp
-		float radius = float( campInfo.kv.radius )
+		float radius = 2048 //float( campInfo.kv.radius )
 
 		// get droppod spawns
-		foreach ( entity spawnpoint in SpawnPoints_GetDropPod() )
-			if ( Distance( campInfo.GetOrigin(), spawnpoint.GetOrigin() ) < radius )
-				campsite.validDropPodSpawns.append( spawnpoint )
+		// these spawn points suck because sometimes they are outside the map
+		//foreach ( entity spawnpoint in SpawnPoints_GetDropPod() )
+			//if ( Distance( campInfo.GetOrigin(), spawnpoint.GetOrigin() ) < radius )
+				//campsite.validDropPodSpawns.append( spawnpoint )
 
 		// get titan spawns
 		foreach ( entity spawnpoint in SpawnPoints_GetTitan() )
@@ -941,11 +856,11 @@ void function AddIgnoredCountToOtherCamps( CampSiteStruct senderCamp )
 // functions from at
 void function FW_SpawnDroppodSquad( CampSiteStruct campsite, string aiType )
 {
-	entity spawnpoint
-	if ( campsite.validDropPodSpawns.len() == 0 )
-		spawnpoint = campsite.tracker // no spawnPoints valid, use camp itself to spawn
-	else
-		spawnpoint = campsite.validDropPodSpawns.getrandom()
+	entity spawnpoint = campsite.tracker
+	array<entity> spawnpoints = campsite.validDropPodSpawns
+	spawnpoints.extend( campsite.validTitanSpawns )
+	if ( spawnpoints.len() > 0 )
+		spawnpoint = spawnpoints.getrandom()
 
 	// add variation to spawns
 	wait RandomFloat( 1.0 )
@@ -965,6 +880,7 @@ void function FW_HandleSquadSpawn( array<entity> guys, CampSiteStruct campsite, 
 		// show on minimap to let players kill them
 		guy.Minimap_AlwaysShow( TEAM_MILITIA, null )
 		guy.Minimap_AlwaysShow( TEAM_IMC, null )
+		guy.SetEnemyChangeCallback( OnNPCEnemyChange )
 
 		// untrack them on death
 		thread FW_WaitToUntrackNPC( guy, campsite.campId, aiType )
@@ -975,11 +891,11 @@ void function FW_HandleSquadSpawn( array<entity> guys, CampSiteStruct campsite, 
 
 void function FW_SpawnReaper( CampSiteStruct campsite )
 {
-	entity spawnpoint
-	if ( campsite.validDropPodSpawns.len() == 0 )
-		spawnpoint = campsite.tracker // no spawnPoints valid, use camp itself to spawn
-	else
-		spawnpoint = campsite.validDropPodSpawns.getrandom()
+	entity spawnpoint = campsite.tracker
+	array<entity> spawnpoints = campsite.validDropPodSpawns
+	spawnpoints.extend( campsite.validTitanSpawns )
+	if ( spawnpoints.len() > 0 )
+		spawnpoint = spawnpoints.getrandom()
 
 	// add variation to spawns
 	wait RandomFloat( 1.0 )
@@ -1026,6 +942,36 @@ void function FW_WaitToUntrackNPC( entity guy, string campId, string aiType )
 	guy.WaitSignal( "OnDeath", "OnDestroy" )
 	if( aiType in file.trackedCampNPCSpawns[ campId ] ) // maybe escalated?
 		file.trackedCampNPCSpawns[ campId ][ aiType ]--
+}
+
+void function OnNPCEnemyChange( entity guy )
+{
+	entity enemy = guy.GetEnemy()
+	if ( !IsAlive( guy ) || guy.IsFrozen() || !IsAlive( enemy ) || !IsValid( guy.GetActiveWeapon() ) )
+		return
+
+	string archer = "mp_weapon_rocket_launcher"
+	array<string> weapons = []
+	foreach ( entity weapon in guy.GetMainWeapons() )
+		weapons.append( weapon.GetWeaponClassName() )
+
+	if ( enemy == fw_harvesterImc.harvester || enemy == fw_harvesterMlt.harvester )
+	{
+		if ( !weapons.contains( archer ) )
+			guy.GiveWeapon( archer )
+		guy.SetActiveWeaponByName( archer )
+	}
+	else
+	{
+		foreach ( string weapon in weapons )
+			if ( weapon == archer )
+				guy.TakeWeaponNow( archer )
+		array<string> newweapons = []
+		foreach ( entity newweapon in guy.GetMainWeapons() )
+			newweapons.append( newweapon.GetWeaponClassName() )
+		if ( newweapons.len() )
+			guy.SetActiveWeaponByName( newweapons.getrandom() )
+	}
 }
 
 /////////////////////////////////
@@ -1936,12 +1882,11 @@ void function OnHarvesterPostDamaged( entity harvester, var damageInfo )
 
 	damageAmount = DamageInfo_GetDamage( damageInfo ) // get damageAmount again after all damage adjustments
 
-	if ( !attacker.IsTitan() )
+	if ( !attacker.IsTitan() && attacker.IsPlayer() )
 	{
-		if( attacker.IsPlayer() )
-			Remote_CallFunction_NonReplay( attacker , "ServerCallback_FW_NotifyTitanRequired" )
+		Remote_CallFunction_NonReplay( attacker , "ServerCallback_FW_NotifyTitanRequired" )
 		DamageInfo_SetDamage( damageInfo, harvester.GetShieldHealth() )
-		damageAmount = 0 // never damage haveter's prop
+		damageAmount = 0 // never damage harvester's prop
 	}
 
 	if( !harvesterstruct.harvesterShieldDown )
