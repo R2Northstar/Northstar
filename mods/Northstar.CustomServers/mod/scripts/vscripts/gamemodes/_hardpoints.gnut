@@ -1,44 +1,555 @@
-// atm this is just a stub script since hardpoints are only really used in hardpoint
-// respawn probably tried to share this code across multiple modes but atm we just dont need to do that 
+untyped
 
 global function Hardpoints_Init
+global function OnHardpointEnter
+global function OnHardpointLeave
+global function Hardpoint_Think
+global function TrackChevronStates
+global function Hardpoints_OnPlayerKilled_UpdateMedals
 
-global function CapturePoint_GetStartProgress
-global function CapturePoint_GetCappingTeam
-global function CapturePoint_GetOwningTeam
-global function CapturePoint_GetGoalProgress
+global const INVALID_HARDPOINT_ID = 1023
 
+// needed for sh_gamemode_cp_dialogue
+global array<entity> HARDPOINTS
+
+global struct HardpointState {
+	string group
+	entity ent // CHardPoint
+	entity trigger
+	entity prop
+	int oldState = CAPTURE_POINT_STATE_UNASSIGNED
+	int oldTeam = TEAM_UNASSIGNED
+	float lastTime = 0
+	array<entity> capPlayers = []
+}
+
+global struct State {
+    bool ampingEnabled
+	array<HardpointState> hardpoints
+}
+
+global State CPstate
 
 void function Hardpoints_Init()
 {
 	RegisterSignal( "StopHardpointBehavior" )
-}
-
-float function CapturePoint_GetStartProgress( entity hardpoint )
-{	
-	return GetGlobalNetFloat( "objective" + GetHardpointGroup(hardpoint) + "Progress" )
-}
-
-int function CapturePoint_GetCappingTeam( entity hardpoint )
-{	
-	return GetGlobalNetInt( "objective" + GetHardpointGroup(hardpoint) + "CappingTeam" )
-}
-
-int function CapturePoint_GetOwningTeam( entity hardpoint )
-{
-	return hardpoint.GetTeam()
-}
-
-float function CapturePoint_GetGoalProgress( entity hardpoint )
-{	
+	RegisterSignal( "HardpointCaptureStart" )
+	RegisterSignal( "CapturePointStateChange" )
+	RegisterSignal( "CapturePointStateChangeSend" )
+	RegisterSignal( "CapturePointPlayerLeft" )
 	
-	return GetGlobalNetFloat( "objective" + GetHardpointGroup(hardpoint) + "Progress" )
+	CPstate.ampingEnabled = GetCurrentPlaylistVarInt("cp_amped_capture_points", 1) == 1
+}
+
+void function Hardpoints_OnPlayerKilled_UpdateMedals( entity victim, entity attacker, var damageInfo )
+{
+	// prevent non players from earning melads and prevent medals form suicide
+	if(!attacker.IsPlayer() || !victim.IsPlayer() || attacker == victim )
+		return
+
+	if ( victim.GetPlayerNetInt( "playerHardpointID" ) != INVALID_HARDPOINT_ID && victim.GetPlayerNetInt( "playerHardpointID" ) == attacker.GetPlayerNetInt( "playerHardpointID" ) ) 
+	{
+		// victim hardpoint
+		entity hardpoint
+		foreach( entity hp in HARDPOINTS )
+		{
+			if ( hp.GetHardpointID() == victim.GetPlayerNetInt( "playerHardpointID" ) )
+				hardpoint = hp
+		}
+
+		if ( hardpoint == null )
+			return
+
+		if ( CapturePoint_GetOwningTeam( hardpoint ) == attacker.GetTeam() )
+		{
+			AddPlayerScore( attacker, "HardpointDefense", victim )
+			attacker.AddToPlayerGameStat( PGS_DEFENSE_SCORE, POINTVALUE_HARDPOINT_DEFENSE )
+			CheckPlayerChallenges( attacker )
+		}
+		else if ( CapturePoint_GetOwningTeam( hardpoint ) == victim.GetTeam() || CapturePoint_GetCappingTeam( hardpoint ) == victim.GetTeam() )
+		{
+			AddPlayerScore( attacker, "HardpointAssault", victim )
+			attacker.AddToPlayerGameStat( PGS_ASSAULT_SCORE, POINTVALUE_HARDPOINT_ASSAULT )
+			CheckPlayerChallenges( attacker )
+		}
+	}
+	else if ( victim.GetPlayerNetInt( "playerHardpointID" ) != INVALID_HARDPOINT_ID ) //siege or snipe
+	{
+		if ( Distance( victim.GetOrigin(), attacker.GetOrigin() )>=1875 )//1875 inches(units) are 47.625 meters
+		{
+			AddPlayerScore( attacker, "HardpointSnipe", victim )
+			attacker.AddToPlayerGameStat( PGS_ASSAULT_SCORE, POINTVALUE_HARDPOINT_SNIPE )
+			CheckPlayerChallenges( attacker )
+		}
+		else
+		{
+			AddPlayerScore( attacker, "HardpointSiege", victim )
+			attacker.AddToPlayerGameStat( PGS_ASSAULT_SCORE, POINTVALUE_HARDPOINT_SIEGE )
+			CheckPlayerChallenges( attacker )
+		}
+	}
+	else if ( victim.GetPlayerNetInt( "playerHardpointID" ) != INVALID_HARDPOINT_ID )//Perimeter Defense
+	{
+		// attacker hardpoint
+		entity hardpoint
+		foreach( entity hp in HARDPOINTS )
+		{
+			if ( hp.GetHardpointID() == attacker.GetPlayerNetInt( "playerHardpointID" ) )
+				hardpoint = hp
+		}
+
+		if ( CapturePoint_GetOwningTeam( hardpoint ) == attacker.GetTeam() )
+		{
+			AddPlayerScore( attacker, "HardpointPerimeterDefense", victim )
+			attacker.AddToPlayerGameStat( PGS_DEFENSE_SCORE, POINTVALUE_HARDPOINT_PERIMETER_DEFENSE )
+			CheckPlayerChallenges( attacker )
+		}	
+	}
+}
+
+void function OnHardpointEnter( entity trigger, entity player )
+{
+	entity hp = trigger.GetOwner();
+
+	// don't handle anything other than players yet
+	if ( !player.IsPlayer() )
+		return
+
+	// it's just too hard to handle emarking and disemarking with the count stuff
+	HardpointState hpState = GetHardpointState( hp )
+	if ( hpState.capPlayers.find( player ) == -1 )
+		hpState.capPlayers.append( player )
+
+	player.SetPlayerNetInt( "playerHardpointID", hp.GetHardpointID() )
+
+	player.Signal( "CapturePointPlayerLeft" ) // reset this in case the function is called multiple times
+	thread TrackPlayerScoreDefenseScore( player, hp )
+}
+
+void function OnHardpointLeave( entity trigger, entity player )
+{
+	entity hp = trigger.GetOwner();
+
+	// don't handle anything other than players yet
+	if ( !player.IsPlayer() )
+		return
+
+	// it's just too hard to handle emarking and disemarking with the count stuff
+	HardpointState hpState = GetHardpointState( hp )
+	int index = hpState.capPlayers.find( player );
+	if ( index != -1 )
+		hpState.capPlayers.fastremove( index )
+
+	player.SetPlayerNetInt( "playerHardpointID", INVALID_HARDPOINT_ID )
+	player.Signal( "CapturePointPlayerLeft" )
+}
+
+void function Hardpoint_Think( HardpointState hardpoint )
+{
+	// wait for game state playing otherwise vo might not correctly start
+	while ( GetGameState() != eGameState.Playing )
+		WaitFrame()
+
+	thread GamemodeCP_VO_Think( hardpoint.ent )
+	// there is also a thing called GamemodeCP_VO_Approaching but respawn never used?
+
+	while ( GetGameState() <= eGameState.Playing )
+	{
+		// they will be recounted in the next "scope"
+		hardpoint.ent.SetHardpointPlayerCount( TEAM_IMC, 0 )
+		hardpoint.ent.SetHardpointPlayerCount( TEAM_MILITIA, 0 )
+		hardpoint.ent.SetHardpointPlayerTitanCount( TEAM_IMC, 0 )
+		hardpoint.ent.SetHardpointPlayerTitanCount( TEAM_MILITIA, 0 )
+
+		// update counts based on capPlayers
+		foreach( entity player in hardpoint.capPlayers )
+		{
+			if ( player.IsTitan() )
+				hardpoint.ent.SetHardpointPlayerTitanCount( player.GetTeam(), hardpoint.ent.GetHardpointPlayerTitanCount( player.GetTeam() ) + 1 )
+			else
+				hardpoint.ent.SetHardpointPlayerCount( player.GetTeam(), hardpoint.ent.GetHardpointPlayerCount( player.GetTeam() ) + 1 )
+		}
+
+		Hardpoint_ThinkTick( hardpoint )
+
+		SetTeam( hardpoint.prop, hardpoint.ent.GetTeam() ) // hardpoint has to have the correct color
+
+		WaitFrame()
+	}
+}
+
+const HAS_IMC = 1
+const HAS_MILITIA = 1 << 1
+const HAS_IMC_TITAN = 1 << 2
+const HAS_MILITIA_TITAN = 1 << 3
+const CONTESTED = HAS_IMC | HAS_MILITIA | HAS_IMC_TITAN | HAS_MILITIA_TITAN
+const IMC_HOLD = HAS_IMC | HAS_IMC_TITAN
+const MILITIA_HOLD = HAS_MILITIA | HAS_MILITIA_TITAN
+void function Hardpoint_ThinkTick( HardpointState hardpoint )
+{
+	
+	int currentState = expect int( hardpoint.ent.s.state )
+	int currentTeam = CapturePoint_GetOwningTeam( hardpoint.ent )
+	int oldState = hardpoint.oldState
+	int oldTeam = hardpoint.oldTeam
+	float deltaTime = Time() - hardpoint.lastTime
+	int imcCappers = hardpoint.ent.GetHardpointPlayerCount( TEAM_IMC ) + hardpoint.ent.GetHardpointPlayerTitanCount( TEAM_IMC );
+	int militiaCappers = hardpoint.ent.GetHardpointPlayerCount( TEAM_MILITIA ) + hardpoint.ent.GetHardpointPlayerTitanCount( TEAM_MILITIA );
+
+	int occupation = min( abs( hardpoint.ent.GetHardpointPlayerCount( TEAM_IMC ) ), 1 ).tointeger()
+		| min( abs( hardpoint.ent.GetHardpointPlayerCount( TEAM_MILITIA ) ), 1 ).tointeger() << 1
+		| min( abs( hardpoint.ent.GetHardpointPlayerTitanCount( TEAM_IMC ) ), 1 ).tointeger() << 2
+		| min( abs( hardpoint.ent.GetHardpointPlayerTitanCount( TEAM_MILITIA ) ), 1 ).tointeger() << 3
+
+	// I am pretty sure it's just a check for if both teams are present not which one has more
+	if ( ( occupation & CONTESTED ) > 0 && !( ( occupation & IMC_HOLD ) == 0 || ( occupation & MILITIA_HOLD ) == 0 ) && ( ( occupation & HAS_IMC_TITAN ) == ( occupation & HAS_MILITIA_TITAN ) || ( ( occupation & HAS_MILITIA_TITAN ) && ( occupation & HAS_MILITIA_TITAN ) ) ) )
+	{
+		CapturePoint_SetState( hardpoint.ent, CapturePoint_GetState( hardpoint.ent ) | CAPTURE_POINT_FLAGS_CONTESTED ) // add contested flag
+		hardpoint.ent.s.state = CAPTURE_POINT_STATE_HALTED
+		hardpoint.ent.s.wasJustCapping = false
+	}
+	else if ( ( occupation & IMC_HOLD ) && !( occupation & HAS_MILITIA_TITAN ) )
+	{
+		CapturePoint_SetState( hardpoint.ent, CapturePoint_GetState( hardpoint.ent ) & ~CAPTURE_POINT_FLAGS_CONTESTED ) // remove contested flag
+		CaptureHardPoint( hardpoint.ent, TEAM_IMC, deltaTime, imcCappers )
+	}
+	else if ( occupation & MILITIA_HOLD )
+	{
+		CapturePoint_SetState( hardpoint.ent, CapturePoint_GetState( hardpoint.ent ) & ~CAPTURE_POINT_FLAGS_CONTESTED ) // remove contested flag
+		CaptureHardPoint( hardpoint.ent, TEAM_MILITIA, deltaTime, militiaCappers )
+	}
+	else
+	{
+		hardpoint.ent.s.wasJustCapping = false
+		CapturePoint_SetState( hardpoint.ent, CapturePoint_GetState( hardpoint.ent ) & ~CAPTURE_POINT_FLAGS_CONTESTED ) // remove contested flag
+		if( CapturePoint_GetCaptureProgress( hardpoint.ent ) <=1.001 ) // unamp
+		{
+			if ( CapturePoint_GetState( hardpoint.ent ) & CAPTURE_POINT_FLAGS_AMPED && !IsValid( hardpoint.prop.GetParent() ) ) // only play 2inactive animation if we were amped
+				thread PlayAnim( hardpoint.prop, "mh_active_2_inactive" )
+
+			CapturePoint_SetState( hardpoint.ent, CapturePoint_GetState( hardpoint.ent ) & ~CAPTURE_POINT_FLAGS_AMPED ) // remove amped flag
+			hardpoint.ent.s.state = CAPTURE_POINT_STATE_CAPTURED
+		}
+		else
+		{
+			CapturePoint_SetCappingTeam( hardpoint.ent, TEAM_UNASSIGNED )
+			CapturePoint_SetCaptureProgress( hardpoint.ent, max( 1.0, min( 2.0, CapturePoint_GetCaptureProgress( hardpoint.ent ) - ( deltaTime / HARDPOINT_AMPED_DELAY ) ) ) )
+
+			if ( currentState == CAPTURE_POINT_STATE_AMPING ) // idk the old code does this
+				hardpoint.ent.s.state = CAPTURE_POINT_STATE_SELF_UNAMPING
+		}
+	}
+
+	// steal state code from respawn vo think since it won't work
+	// I assume this is what respawn did in their own sv code since the state net var is using flags not state
+	int newState = expect int( hardpoint.ent.s.state )
+	if ( oldState == CAPTURE_POINT_STATE_UNASSIGNED && newState == CAPTURE_POINT_STATE_CAPPING )
+	{
+		// starting capture of uncaptured point
+		printt( "starting capture of uncaptured point" )
+		GamemodeCP_VO_StartCapping( hardpoint.ent )
+	}
+	else if ( oldState == CAPTURE_POINT_STATE_SELF_UNAMPING && newState == CAPTURE_POINT_STATE_CAPPING )
+	{
+		//Started capping a point that was naturally unamping
+		printt( "Started capping a point that was naturally unamping" )
+		GamemodeCP_VO_StartCapping( hardpoint.ent )
+	}
+	else if ( oldState >= CAPTURE_POINT_STATE_CAPTURED && newState == CAPTURE_POINT_STATE_CAPPING )
+	{
+		// started capturing an unoccupied hardpoint
+		printt( "started capturing an unoccupied hardpoint" )
+		GamemodeCP_VO_StartCapping( hardpoint.ent )
+	}
+	else if ( oldState == CAPTURE_POINT_STATE_HALTED && newState == CAPTURE_POINT_STATE_CAPPING )
+	{
+		// cleared hardpoint OR exited and re-entered hardpoint
+		printt( "cleared hardpoint OR exited and re-entered hardpoint. Hardpoint was previously unowned" )
+		GamemodeCP_VO_StartCapping( hardpoint.ent )
+	}
+
+	table oldStates = { oldTeam = oldTeam, oldState = oldState }
+	// SendVoSignal( hardpoint.ent, oldStates )
+
+	// update old stuff
+	hardpoint.oldTeam = hardpoint.ent.GetTeam();
+	hardpoint.oldState = expect int( hardpoint.ent.s.state );
+	hardpoint.lastTime = Time()
+}
+
+void function CaptureHardPoint( entity hardpoint, int team, float deltaTime, int cappers )
+{
+	if ( CapturePoint_GetOwningTeam( hardpoint ) == TEAM_UNASSIGNED && hardpoint.s.lastCappedBy == GetOtherTeam( team ) )
+		CaptureHardPointUnassigned( hardpoint, team, deltaTime, cappers )
+	else if ( CapturePoint_GetOwningTeam( hardpoint ) != team && CapturePoint_GetOwningTeam( hardpoint ) != TEAM_UNASSIGNED )
+		CaptureHardPointEnemy( hardpoint, team, deltaTime, cappers )
+	else
+		CaptureHardPointAllied( hardpoint, team, deltaTime, cappers )		
+}
+
+void function CaptureHardPointAllied( entity hardpoint, int team, float deltaTime, int cappers )
+{
+	CapturePoint_SetCappingTeam( hardpoint, team )
+	hardpoint.s.lastCappedBy = team
+
+	if ( CapturePoint_GetCaptureProgress( hardpoint ) < 1.0 )
+	{
+		hardpoint.s.state = CAPTURE_POINT_STATE_CAPPING
+		hardpoint.s.wasJustCapping = true
+
+		CapturePoint_SetCaptureProgress( hardpoint, max( 0.0, min( 1.0, CapturePoint_GetCaptureProgress( hardpoint ) + ( deltaTime / CAPTURE_DURATION_CAPTURE * cappers) ) ) )
+	}
+	else if ( CapturePoint_GetCaptureProgress( hardpoint ) >= 1.0 && expect int( hardpoint.s.state ) < CAPTURE_POINT_STATE_CAPTURED )
+	{
+		// eh
+		if ( hardpoint.s.state == CAPTURE_POINT_STATE_SELF_UNAMPING && CPstate.ampingEnabled )
+			hardpoint.s.state = CAPTURE_POINT_STATE_AMPING
+		else if ( hardpoint.s.state == CAPTURE_POINT_STATE_SELF_UNAMPING )
+			hardpoint.s.state = CAPTURE_POINT_STATE_CAPTURED
+		else
+			SetCaptureHardpoint( hardpoint, team )
+	}
+	else if ( CapturePoint_GetCaptureProgress( hardpoint ) >= 2.0 && expect int( hardpoint.s.state ) >= CAPTURE_POINT_STATE_CAPTURED && CPstate.ampingEnabled )
+	{
+		if ( !( CapturePoint_GetState( hardpoint ) & CAPTURE_POINT_FLAGS_AMPED ) )
+			SetAmpedHardpoint( hardpoint, team )
+	}
+	else if ( CapturePoint_GetCaptureProgress( hardpoint ) >= 1.0 && expect int( hardpoint.s.state ) >= CAPTURE_POINT_STATE_CAPTURED && CPstate.ampingEnabled )
+	{
+		hardpoint.s.wasJustCapping = false
+		hardpoint.s.state = CAPTURE_POINT_STATE_AMPING
+		CapturePoint_SetOwningTeam( hardpoint, team )
+
+		CapturePoint_SetCaptureProgress( hardpoint, max( 1.0, min( 2.0, CapturePoint_GetCaptureProgress( hardpoint ) + ( deltaTime / HARDPOINT_AMPED_DELAY * cappers) ) ) )
+	}
+}
+
+void function CaptureHardPointEnemy( entity hardpoint, int team, float deltaTime, int cappers )
+{
+	CapturePoint_SetCappingTeam( hardpoint, team )
+	hardpoint.s.lastCappedBy = team
+
+	if ( CapturePoint_GetCaptureProgress( hardpoint ) > 0.0 )
+	{
+		CapturePoint_SetCaptureProgress( hardpoint, max( 0.0, min( 2.0, CapturePoint_GetCaptureProgress( hardpoint ) - ( deltaTime / CAPTURE_DURATION_CAPTURE * cappers) ) ) )
+
+		hardpoint.s.state = CAPTURE_POINT_STATE_CAPPING
+		hardpoint.s.wasJustCapping = true
+
+		if ( ( CapturePoint_GetState( hardpoint ) & CAPTURE_POINT_FLAGS_AMPED ) && CapturePoint_GetCaptureProgress( hardpoint ) <= 1.0 )
+		{
+			if ( !IsValid( hardpoint.s.prop.GetParent() ) )
+				thread PlayAnim( hardpoint.s.prop, "mh_active_2_inactive" )
+			CapturePoint_SetState( hardpoint, CapturePoint_GetState( hardpoint ) & ~CAPTURE_POINT_FLAGS_AMPED ) // remove apmed flag
+		}
+	}
+	else if ( CapturePoint_GetCaptureProgress( hardpoint ) == 0.0 )
+	{
+		if ( expect int( hardpoint.s.state ) != CAPTURE_POINT_STATE_CAPTURED )
+			SetCaptureHardpoint( hardpoint, team )
+
+		CapturePoint_SetState( hardpoint, CAPTURE_POINT_STATE_CAPTURED )
+		CapturePoint_SetOwningTeam( hardpoint, team )
+		CapturePoint_SetCaptureProgress( hardpoint, 1.0 )
+		CapturePoint_SetState( hardpoint, CapturePoint_GetState( hardpoint ) & ~CAPTURE_POINT_FLAGS_AMPED ) // remove amped flag
+	}
+}
+
+void function CaptureHardPointUnassigned( entity hardpoint, int team, float deltaTime, int cappers )
+{
+	CapturePoint_SetCappingTeam( hardpoint, GetOtherTeam( team ) )
+
+	if ( CapturePoint_GetCaptureProgress( hardpoint ) > 0.0 )
+	{
+		if ( CapturePoint_GetCaptureProgress( hardpoint ) <= 1.0 )
+			CapturePoint_SetCaptureProgress( hardpoint, max( 0.0, min( 2.0, CapturePoint_GetCaptureProgress( hardpoint ) - ( deltaTime / CAPTURE_DURATION_CAPTURE * cappers) ) ) )
+		else
+			// not possible but whatever
+			CapturePoint_SetCaptureProgress( hardpoint, max( 0.0, min( 2.0, CapturePoint_GetCaptureProgress( hardpoint ) - ( deltaTime / HARDPOINT_AMPED_DELAY * cappers) ) ) )
+			
+
+		hardpoint.s.state = CAPTURE_POINT_STATE_CAPPING
+		hardpoint.s.wasJustCapping = true
+
+		if ( ( CapturePoint_GetState( hardpoint ) & CAPTURE_POINT_FLAGS_AMPED ) && CapturePoint_GetCaptureProgress( hardpoint ) <= 1.0 )
+		{
+			if ( !IsValid( hardpoint.s.prop.GetParent() ) )
+				thread PlayAnim( hardpoint.s.prop, "mh_active_2_inactive" )
+			CapturePoint_SetState( hardpoint, CapturePoint_GetState( hardpoint ) & ~CAPTURE_POINT_FLAGS_AMPED ) // remove apmed flag
+		}
+	}
+	else if ( CapturePoint_GetCaptureProgress( hardpoint ) == 0.0 )
+	{
+		hardpoint.s.lastCappedBy = team
+		CapturePoint_SetState( hardpoint, CAPTURE_POINT_STATE_UNASSIGNED )
+		CapturePoint_SetState( hardpoint, CapturePoint_GetState( hardpoint ) & ~CAPTURE_POINT_FLAGS_AMPED ) // remove amped flag
+	}
+}
+
+void function SetCaptureHardpoint( entity hardpoint, int team )
+{
+	HardpointState hpState = GetHardpointState( hardpoint )
+
+	hardpoint.s.state = CAPTURE_POINT_STATE_CAPTURED
+	CapturePoint_SetOwningTeam( hardpoint, team )
+	
+	EmitSoundOnEntityToTeamExceptPlayer( hardpoint, "hardpoint_console_captured", team, null )
+	GamemodeCP_VO_Captured( hardpoint )
+
+	hardpoint.s.state = CAPTURE_POINT_STATE_CAPTURED
+
+	CapturePoint_SetOwningTeam( hardpoint, team )
+
+	if ( !hardpoint.s.wasJustCapping )
+		return
+
+	foreach( entity player in hpState.capPlayers )
+	{	
+
+		// the team check is just for race conditions
+		if( player.IsPlayer() && player.GetTeam() == team )
+		{
+			// TODO: figure when assists happen
+			AddPlayerScore( player,"ControlPointCapture" )
+			player.AddToPlayerGameStat( PGS_ASSAULT_SCORE, POINTVALUE_HARDPOINT_CAPTURE )
+			CheckPlayerChallenges( player )
+		}
+	}
+
+	hardpoint.s.wasJustCapping = false
+}
+
+void function SetAmpedHardpoint( entity hardpoint, int team )
+{
+	HardpointState hpState = GetHardpointState( hardpoint )
+
+	GamemodeCP_VO_Amped( hardpoint )
+	if ( !IsValid( hardpoint.s.prop.GetParent() ) )
+		thread PlayAnim( hardpoint.s.prop, "mh_inactive_2_active" )
+	
+	
+	hardpoint.s.state = CAPTURE_POINT_STATE_AMPED
+	CapturePoint_SetOwningTeam( hardpoint, team )
+
+	// was already amped?
+	if ( CapturePoint_GetState( hardpoint ) & CAPTURE_POINT_FLAGS_AMPED )
+		return
+
+	foreach( entity player in hpState.capPlayers )
+	{
+		// the team check is just for race conditions
+		if( player.IsPlayer() && player.GetTeam() == team )
+		{
+			AddPlayerScore( player, "ControlPointAmped" )
+			player.AddToPlayerGameStat( PGS_DEFENSE_SCORE, POINTVALUE_HARDPOINT_AMPED )
+			CheckPlayerChallenges( player )
+		}
+	}
+
+	CapturePoint_SetState( hardpoint, CapturePoint_GetState( hardpoint ) | CAPTURE_POINT_FLAGS_AMPED ) // add amped flag
+}
+
+void function TrackChevronStates() {
+	while ( GetGameState() <= eGameState.Playing )
+	{
+		table <int, int> chevrons = {
+			[TEAM_IMC] = 0,
+			[TEAM_MILITIA] = 0,
+		}
+
+		foreach (HardpointState hardpoint in CPstate.hardpoints) {
+			foreach (team, chevronsCount in chevrons) {
+				if ( team == CapturePoint_GetOwningTeam( hardpoint.ent ) ) {
+					// 4 is the value for a amped chevron
+					chevrons[team] += CapturePoint_GetState( hardpoint.ent ) & CAPTURE_POINT_FLAGS_AMPED
+						? 5 - ( CapturePoint_GetState( hardpoint.ent ) & CAPTURE_POINT_FLAGS_CONTESTED ) * 5
+						: 1 - ( CapturePoint_GetState( hardpoint.ent ) & CAPTURE_POINT_FLAGS_CONTESTED )
+				}
+			}
+		}
+
+		SetGlobalNetInt( "imcChevronState", chevrons[TEAM_IMC] )
+		SetGlobalNetInt( "milChevronState", chevrons[TEAM_MILITIA] )
+
+		
+		AddTeamScore( TEAM_IMC, chevrons[TEAM_IMC] % 4 + chevrons[TEAM_IMC] / 4 )
+		AddTeamScore( TEAM_MILITIA, chevrons[TEAM_MILITIA] % 4 + chevrons[TEAM_MILITIA] / 4 )
+
+		// the cheverons get updated at the same rigth it seams
+		wait TEAM_OWNED_SCORE_FREQ
+	}
+
+	// reset chevrons after the match
+	SetGlobalNetInt( "imcChevronState", 0 )
+	SetGlobalNetInt( "milChevronState", 0 )
+}
+
+void function TrackPlayerScoreDefenseScore( entity player, entity hardpoint )
+{
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "CapturePointPlayerLeft" )
+
+	while ( GetGameState() <= eGameState.Playing )
+	{
+		// player migth be capping the hardpoint then after they do cap it they won't earn score if it was in the while loop condition
+		if ( CapturePoint_GetOwningTeam( hardpoint ) != player.GetTeam() )
+		{
+			WaitFrame()
+			continue
+		}
+
+		// we wait before otherwise when the trigger is rapied fired the player will earn lots of score
+
+		wait PLAYER_HELD_SCORE_FREQ
+
+		if ( CapturePoint_GetState( hardpoint ) & CAPTURE_POINT_FLAGS_CONTESTED )
+			continue
+
+		// not sure if players will still earn score if the hardpoint is contested
+		if( CapturePoint_GetState( hardpoint ) & CAPTURE_POINT_FLAGS_AMPED )
+		{
+			AddPlayerScore( player, "ControlPointAmpedHold" )
+			player.AddToPlayerGameStat( PGS_DEFENSE_SCORE, POINTVALUE_HARDPOINT_AMPED_HOLD )
+		}
+		else
+		{
+			AddPlayerScore( player, "ControlPointHold" )
+			player.AddToPlayerGameStat( PGS_DEFENSE_SCORE, POINTVALUE_HARDPOINT_HOLD )
+		}
+
+		CheckPlayerChallenges( player )
+	}
+}
+
+HardpointState function GetHardpointState( entity hp )
+{
+	foreach ( hpState in CPstate.hardpoints )
+	{
+		if ( hpState.ent == hp )
+			return hpState 
+	}
+	unreachable
 } 
 
-string function GetHardpointGroup(entity hardpoint) //Hardpoint Entity B on Homestead is missing the Hardpoint Group KeyValue
+// respawn can't even really use their vo think function since the state var uses flags instead of state therefore this is correct
+void function GamemodeCP_VO_Amped( entity hardpoint )
 {
-	if((GetMapName()=="mp_homestead")&&(!hardpoint.HasKey("hardpointGroup")))
-		return "B"
+	#if FACTION_DIALOGUE_ENABLED
+		PlayFactionDialogueToTeam( "amphp_youAmped" + CapturePoint_GetGroup( hardpoint ), CapturePoint_GetCappingTeam( hardpoint ) )
+		PlayFactionDialogueToTeam( "amphp_enemyAmped" + CapturePoint_GetGroup( hardpoint ), GetOtherTeam( CapturePoint_GetCappingTeam( hardpoint ) ) )
+	#endif
+}
 
-	return string(hardpoint.kv.hardpointGroup)
+void function CheckPlayerChallenges( entity player ) {
+	if ( !HasPlayerCompletedMeritScore( player ) )
+		return
+
+	if ( player.GetPlayerGameStat( PGS_ASSAULT_SCORE ) >= 1000 )
+		AddPlayerScore( player, "ChallengeCPAssault" )
+	if ( player.GetPlayerGameStat( PGS_DEFENSE_SCORE ) >= 500 )
+		AddPlayerScore( player, "ChallengeCPDefense" )
+	else
+		return
+	SetPlayerChallengeMeritScore( player )
 }
