@@ -65,6 +65,7 @@ add_library(
     "engine/host.cpp"
     "engine/hoststate.cpp"
     "engine/hoststate.h"
+    "engine/models.cpp"
     "engine/r2engine.cpp"
     "engine/r2engine.h"
     "engine/runframe.cpp"
