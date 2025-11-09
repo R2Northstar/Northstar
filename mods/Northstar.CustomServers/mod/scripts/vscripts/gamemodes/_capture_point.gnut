@@ -1,1 +1,70 @@
-// not using this, everything is just in _hardpoints instead lol
+global function CapturePoint_GetStartProgress
+global function CapturePoint_SetCappingTeam
+global function CapturePoint_GetCappingTeam
+global function CapturePoint_GetOwningTeam
+global function CapturePoint_SetOwningTeam
+global function CapturePoint_GetGoalProgress
+global function CapturePoint_SetState
+global function CapturePoint_GetState
+global function CapturePoint_GetGroup
+global function CapturePoint_SetCaptureProgress
+global function CapturePoint_GetCaptureProgress
+
+float function CapturePoint_GetStartProgress( entity hardpoint )
+{	
+	return GetGlobalNetFloat( "objective" + CapturePoint_GetGroup(hardpoint) + "Progress" )
+}
+
+void function CapturePoint_SetCappingTeam( entity hardpoint, int team )
+{	
+	SetGlobalNetInt( "objective" + CapturePoint_GetGroup(hardpoint) + "CappingTeam", team )
+}
+
+int function CapturePoint_GetCappingTeam( entity hardpoint )
+{	
+	return GetGlobalNetInt( "objective" + CapturePoint_GetGroup(hardpoint) + "CappingTeam" )
+}
+
+int function CapturePoint_GetOwningTeam( entity hardpoint )
+{
+	return hardpoint.GetTeam()
+}
+
+void function CapturePoint_SetOwningTeam( entity hardpoint, int team )
+{
+	SetTeam( hardpoint, team )
+}
+
+float function CapturePoint_GetGoalProgress( entity hardpoint )
+{	
+	return GetGlobalNetFloat( "objective" + CapturePoint_GetGroup( hardpoint ) + "Progress" )
+} 
+
+string function CapturePoint_GetGroup( entity hardpoint ) // hardpoint Entity B on Homestead is missing the hardpoint Group KeyValue
+{
+	if( ( GetMapName() == "mp_homestead") && ( !hardpoint.HasKey("hardpointGroup") ) )
+		return "B"
+
+	return string( hardpoint.kv.hardpointGroup )
+}
+
+void function CapturePoint_SetState( entity hardpoint, int state )
+{
+	SetGlobalNetInt( "objective" + CapturePoint_GetGroup( hardpoint ) + "State", state )
+	hardpoint.SetHardpointState( state )
+}
+
+int function CapturePoint_GetState( entity hardpoint )
+{
+	return GetGlobalNetInt( "objective" + CapturePoint_GetGroup( hardpoint ) + "State" )
+}
+
+void function CapturePoint_SetCaptureProgress( entity hardpoint, float progress )
+{
+	SetGlobalNetFloat( "objective" + CapturePoint_GetGroup( hardpoint ) + "Progress", progress )
+}
+
+float function CapturePoint_GetCaptureProgress( entity hardpoint )
+{
+	return GetGlobalNetFloat( "objective" + CapturePoint_GetGroup( hardpoint ) + "Progress" )
+}
