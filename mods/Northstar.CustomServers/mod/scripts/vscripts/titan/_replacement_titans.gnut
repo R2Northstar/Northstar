@@ -34,6 +34,8 @@ global function SetRequestTitanGamemodeRules
 global function CreateTitanForPlayerAndHotdrop
 global function SetRequestTitanAllowedCallback
 
+global function TitanDropDisabledForPlayerTeam
+
 struct {
 	array<int> ETATimeThresholds = [ 120, 60, 30, 15 ]
 	float ETA2MinUpperBound = 123
@@ -104,16 +106,10 @@ bool function IsReplacementTitanAvailable( player, timeBuffer = 0 )
 {
 	expect entity( player )
 
-	if ( !IsReplacementTitanAvailableForGameState() )
+	if ( !IsReplacementTitanAvailableForGameState() || IsAlive( player.GetPetTitan() ) )
 		return false
 
-	if ( player.IsTitan() )
-		return false
-
-	if ( IsAlive( player.GetPetTitan() ) )
-		return false
-
-	if ( player.isSpawning )
+	if ( player.IsTitan() || player.isSpawning || TitanDropDisabledForPlayerTeam( player ) )
 		return false
 
 	if ( !file.ReplacementTitanGamemodeRules( player ) )
@@ -192,11 +188,23 @@ void function SetRequestTitanGamemodeRules( bool functionref( entity, vector ) r
 
 bool function ReplacementTitanGamemodeRules_Default( entity player )
 {
+	if ( Riff_TitanQueueLimit() > 0 && GetTitanCountForTeam( player.GetTeam() ) >= Riff_TitanQueueLimit() )
+	{
+		EmitSoundOnEntityOnlyToPlayer( player, player, "coop_sentrygun_deploymentdeniedbeep" )
+		SendHudMessage( player, "Titan limit enabled.\nMax of " + Riff_TitanQueueLimit() + " Titans active per team.", -1, 0.4, 255, 255, 255, 255, 0.15, 3.0, 0.5 )
+		return false
+	}
 	return true
 }
 
 bool function RequestTitanGamemodeRules_Default( entity player, vector origin )
 {
+	if ( Riff_TitanQueueLimit() > 0 && GetTitanCountForTeam( player.GetTeam() ) >= Riff_TitanQueueLimit() )
+	{
+		EmitSoundOnEntityOnlyToPlayer( player, player, "coop_sentrygun_deploymentdeniedbeep" )
+		SendHudMessage( player, "Titan limit enabled.\nMax of " + Riff_TitanQueueLimit() + " Titans active per team.", -1, 0.4, 255, 255, 255, 255, 0.15, 3.0, 0.5 )
+		return false
+	}
 	return true
 }
 
@@ -483,7 +491,7 @@ function TryReplacementTitanReadyAnnouncement( entity player )
 		if ( GetPlayerTitanInMap( player ) )
 			return
 
-		if ( level.nv.titanDropEnabledForTeam != TEAM_BOTH && level.nv.titanDropEnabledForTeam != player.GetTeam() )
+		if ( TitanDropDisabledForPlayerTeam( player ) )
 			return
 
 		if ( player.p.replacementTitanReady_lastNagTime == 0 || Time() - player.p.replacementTitanReady_lastNagTime >= nagInterval )
@@ -577,20 +585,26 @@ bool function ReplacementTitan( entity player )
 {
 	if ( !IsAlive( player ) )
 	{
+		#if DEV
 		printt( "ReplacementTitan", player, player.entindex(), "failed", "IsAlive( player ) was false" )
+		#endif
 		return false
 	}
 
 	if ( !IsReplacementTitanAvailable( player, 0 ) )
 	{
+		#if DEV
 		printt( "ReplacementTitan", player, player.entindex(), "failed", "IsReplacementTitanAvailable was false" )
+		#endif
 		return false
 	}
 
 	entity titan = GetPlayerTitanInMap( player )
 	if ( IsAlive( titan ) )
 	{
+		#if DEV
 		printt( "ReplacementTitan", player, player.entindex(), "failed", "GetPlayerTitanInMap was true" )
+		#endif
 		return false
 	}
 
@@ -598,10 +612,15 @@ bool function ReplacementTitan( entity player )
 	{
 		if ( Time() - file.warpFallDebounce[ player ] < 3.0 )
 		{
+			#if DEV
 			printt( "ReplacementTitan", player, player.entindex(), "failed", "player in file.warpFallDebounce was true" )
+			#endif
 			return false
 		}
 	}
+
+	if ( TitanDropDisabledForPlayerTeam( player ) )
+		return false
 
 	Point spawnPoint = GetTitanReplacementPoint( player, false )
 	local origin = spawnPoint.origin
@@ -1204,4 +1223,9 @@ bool function ShouldDoTitanfall()
 		return false
 
 	return ( GetCurrentPlaylistVarInt( "enable_titanfalls", 1 ) == 1 )
+}
+
+bool function TitanDropDisabledForPlayerTeam( entity player )
+{
+	return ( level.nv.titanDropEnabledForTeam != TEAM_BOTH && level.nv.titanDropEnabledForTeam != player.GetTeam() )
 }

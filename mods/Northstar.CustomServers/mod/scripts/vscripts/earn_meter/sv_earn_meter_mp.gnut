@@ -21,7 +21,7 @@ void function Sv_EarnMeterMP_Init()
 
 void function EarnMeterMP_SetTitanLoadout( entity player )
 {
-	if ( EarnMeterMP_IsTitanEarnGametype() )
+	if ( EarnMeterMP_IsTitanEarnGametype() && IsTitanDropAvailableForPlayerTeam( player ) )
 		PlayerEarnMeter_SetGoal( player, EarnObject_GetByRef( GetTitanLoadoutForPlayer( player ).titanClass ) )
 	else
 		PlayerEarnMeter_SetGoal( player, PlayerEarnMeter_GetReward( player ) )
@@ -50,7 +50,7 @@ void function OnPlaying()
 	foreach ( entity player in GetPlayerArray() )
 		SetupPlayerEarnMeter( player )
 
-	if ( Riff_BoostAvailability() != eBoostAvailability.Disabled )
+	if ( BurnMeterEnabled() )
 		SetCallback_EarnMeterRewardEarned( EarnMeterMP_BoostEarned )
 
 	// do this in playing so that gamemodes/maps can disable and this'll take affect
@@ -61,11 +61,17 @@ void function OnPlaying()
 	}
 
 	SetCallback_EarnMeterGoalEarned( EarnMeterMP_TitanEarned )
+
+	if( !BurnMeterEnabled() && !EarnMeterMP_IsTitanEarnGametype() )
+		PlayerEarnMeter_SetEnabled( false )
 }
 
 void function OnPlayerRespawned( entity player )
 {
-	thread EarnMeterMP_PlayerLifeThink( player )
+	if( !BurnMeterEnabled() && !EarnMeterMP_IsTitanEarnGametype() ) // If both are disabled there's no reason to show up the Earn Meter
+		PlayerEarnMeter_SetMode( player, eEarnMeterMode.DISABLED )
+	else
+		thread EarnMeterMP_PlayerLifeThink( player )
 
 	if ( PlayerEarnMeter_IsRewardAvailable( player ) )
 		EarnMeterMP_BoostEarned( player )
@@ -73,9 +79,12 @@ void function OnPlayerRespawned( entity player )
 
 void function EarnMeterMP_ReplaceReward( entity player, EarnObject reward, float rewardFrac )
 {
-	PlayerEarnMeter_Reset( player )
+	if ( !IsTitanAvailable( player ) )
+		PlayerEarnMeter_Reset( player )
+
 	if ( reward.id < 0 )
 		return
+	
 	PlayerEarnMeter_SetReward( player, reward )
 	PlayerEarnMeter_SetRewardFrac( player, rewardFrac )
 
@@ -85,6 +94,7 @@ void function EarnMeterMP_ReplaceReward( entity player, EarnObject reward, float
 
 void function EarnMeterMP_PlayerLifeThink( entity player )
 {
+	svGlobal.levelEnt.EndSignal( "CleanUpEntitiesForRoundEnd" )
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "OnDestroy" )
 
@@ -111,17 +121,27 @@ void function EarnMeterMP_PlayerLifeThink( entity player )
 	while ( true )
 	{
 		int desiredEarnMeterMode
+		bool maxActiveTitansReached
 
+		if ( Riff_TitanQueueLimit() > 0 && GetTitanCountForTeam( player.GetTeam() ) >= Riff_TitanQueueLimit() )
+			maxActiveTitansReached = true
+		
 		if ( player.IsTitan() )
 		{
 			entity soul = player.GetTitanSoul()
-			if ( SoulTitanCore_GetExpireTime( soul ) > Time() )
+			if ( IsValid( soul ) && TitanCoreInUse( player ) )
 				desiredEarnMeterMode = eEarnMeterMode.CORE_ACTIVE
 			else
 				desiredEarnMeterMode = eEarnMeterMode.CORE
 		}
 		else if ( IsValid( player.GetPetTitan() ) )
 			desiredEarnMeterMode = eEarnMeterMode.PET
+		else if ( maxActiveTitansReached ) // Hides Meter when max active Titan limit is reached
+		{
+			desiredEarnMeterMode = eEarnMeterMode.DISABLED
+			if( titanReadyMsg ) // Resets so next time people can drop titans because a slot opened, they will be greeted with the message right away
+				titanReadyMsg = false
+		}
 		else
 			desiredEarnMeterMode = eEarnMeterMode.DEFAULT
 
@@ -150,7 +170,7 @@ void function EarnMeterMP_PlayerLifeThink( entity player )
 
 		if ( lastEarnMeterMode == eEarnMeterMode.DEFAULT )
 		{
-			if ( Riff_TitanAvailability() != eTitanAvailability.Never )
+			if ( Riff_TitanAvailability() != eTitanAvailability.Never && IsTitanDropAvailableForPlayerTeam( player ) )
 			{
 				if ( PlayerEarnMeter_GetOwnedFrac( player ) >= 0.75 && PlayerEarnMeter_GetOwnedFrac( player ) < 0.95 && !saidTitanSoon )
 				{
@@ -160,7 +180,7 @@ void function EarnMeterMP_PlayerLifeThink( entity player )
 				else if( PlayerEarnMeter_GetOwnedFrac( player ) < 0.75 )
 					saidTitanSoon = false
 			}
-			
+
 			if ( PlayerEarnMeter_GetOwnedFrac( player ) < 1.0 )
 			{
 				PlayerEarnMeter_DisableGoal( player )
@@ -180,10 +200,21 @@ void function EarnMeterMP_PlayerLifeThink( entity player )
 				}
 			}
 
-			if ( Time() - lastPassiveGainTime > 4.0 && file.passiveMeterGainEnabled ) // this might be 5.0
+			if ( Time() >= lastPassiveGainTime && file.passiveMeterGainEnabled && GetGameState() != eGameState.Prematch )
 			{
-				lastPassiveGainTime = Time()
+				lastPassiveGainTime = Time() + 4.0
 				PlayerEarnMeter_AddOwnedFrac( player, 0.01 )
+			}
+		}
+		// Allow players to do a "shadow buildup" while meter is hidden for them in case Max Active Titans Riff is enabled
+		else if ( maxActiveTitansReached && lastEarnMeterMode == eEarnMeterMode.DISABLED )
+		{
+			if ( PlayerEarnMeter_GetOwnedFrac( player ) < 1.0 )
+				PlayerEarnMeter_DisableGoal( player )
+			else if ( player.GetPlayerNetInt( "goalState" ) != eRewardState.UNAVAILABLE )
+			{
+				player.SetPlayerNetInt( "goalState", eRewardState.AVAILABLE )
+				PlayerEarnMeter_RefreshGoal( player )
 			}
 		}
 
@@ -211,10 +242,9 @@ void function EarnMeterMP_BoostEarned( entity player )
 
 void function EarnMeterMP_TitanEarned( entity player )
 {
-	if ( EarnMeterMP_IsTitanEarnGametype() )
+	if ( EarnMeterMP_IsTitanEarnGametype() && IsTitanDropAvailableForPlayerTeam( player ) )
 	{
 		SetTitanAvailable( player )
-		//Remote_CallFunction_Replay( player, "ServerCallback_TitanReadyMessage" ) // broken for some reason
 	}
 	else
 	{
@@ -233,18 +263,25 @@ void function EarnMeterMP_SetBoostByRef( entity player, string boostRef )
 	EarnObject earnobject = EarnObject_GetByRef( boostRef )
 	BurnReward burncard = BurnReward_GetByRef( boostRef )
 
-	if ( Riff_BoostAvailability() != eBoostAvailability.Disabled )
+	if ( BurnMeterEnabled() )
 	{
 		PlayerEarnMeter_SetReward( player, earnobject ) // pretty sure this works?
 		PlayerEarnMeter_SetRewardFrac( player, burncard.cost )
 		PlayerEarnMeter_EnableReward( player )
 	}
 
-	if ( EarnMeterMP_IsTitanEarnGametype() )
+	if ( EarnMeterMP_IsTitanEarnGametype() && IsTitanDropAvailableForPlayerTeam( player ) )
 	{
 		PlayerEarnMeter_SetGoal( player, EarnObject_GetByRef( GetTitanLoadoutForPlayer( player ).titanClass ) )
 		PlayerEarnMeter_EnableGoal( player ) // prevents goalstate from being set incorrectly
 	}
 	else
+	{
 		PlayerEarnMeter_SetGoal( player, earnobject )
+	}
+}
+
+bool function IsTitanDropAvailableForPlayerTeam( entity player ) 
+{
+	return ( level.nv.titanDropEnabledForTeam == TEAM_BOTH || level.nv.titanDropEnabledForTeam == player.GetTeam() )
 }
