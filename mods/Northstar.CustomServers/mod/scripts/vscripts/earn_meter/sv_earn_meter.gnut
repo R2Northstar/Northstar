@@ -144,6 +144,10 @@ void function PlayerEarnMeter_AddOwnedFrac( entity player, float addValue )
 
 bool function PlayerEarnMeter_CanEarn( entity player )
 {
+	// Handle players being able to build their Titan Meter even when it's not visible with the Max Active Titans Riff enabled
+	if ( Riff_TitanQueueLimit() > 0 && GetTitanCountForTeam( player.GetTeam() ) >= Riff_TitanQueueLimit() && PlayerEarnMeter_GetMode( player ) == eEarnMeterMode.DISABLED )
+		return file.earnMeterEnabled
+
 	if ( PlayerEarnMeter_GetMode( player ) != eEarnMeterMode.DEFAULT || player.IsTitan() || IsValid( player.GetPetTitan() ) )
 		return false
 
