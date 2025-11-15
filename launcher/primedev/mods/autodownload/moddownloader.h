@@ -11,8 +11,21 @@ private:
 	enum class VerifiedModPlatform
 	{
 		Unknown,
+		ModWorkshop,
 		Thunderstore
 	};
+	VerifiedModPlatform resolvePlatform(std::string input)
+	{
+		if (input.compare("thunderstore") == 0)
+		{
+			return VerifiedModPlatform::Thunderstore;
+		}
+		if (input.compare("modworkshop") == 0)
+		{
+			return VerifiedModPlatform::ModWorkshop;
+		}
+		return VerifiedModPlatform::Unknown;
+	}
 	struct VerifiedModVersion
 	{
 		std::string checksum;
@@ -77,6 +90,22 @@ private:
 	 * @returns nothing
 	 */
 	void ExtractMod(fs::path modPath, fs::path destinationPath, VerifiedModPlatform platform);
+
+	/**
+	 * Retrieves archive name from input URL.
+	 *
+	 * Thunderstore and ModWorkshop do not format their URLs the same way:
+	 *     - Thunderstore: https://gcdn.thunderstore.io/live/repository/packages/Nyami11-mp_brick-1.0.2.zip
+	 *     - ModWorkshop:
+	 * https://storage.modworkshop.net/mods/files/46563_156759_CSio1Cd3QVXYRZLd1h6iNu0IPuuaY9ePKGceQD31.zip?filename=em4v.zip
+	 *
+	 * This takes those differences into account and returns an archive name for
+	 * both types of URLs.
+	 *
+	 * @param url URL from which to extract archive file name
+	 * @returns name of the archive to be downloaded
+	 */
+	std::string GetModArchiveName(std::string url);
 
 public:
 	ModDownloader();

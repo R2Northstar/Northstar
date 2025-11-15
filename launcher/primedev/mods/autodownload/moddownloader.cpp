@@ -129,8 +129,7 @@ void ModDownloader::FetchModsListFromAPI()
 					std::string checksum = attribute["Checksum"].GetString();
 					std::string downloadLink = attribute["DownloadLink"].GetString();
 					std::string platformValue = attribute["Platform"].GetString();
-					VerifiedModPlatform platform =
-						platformValue.compare("thunderstore") == 0 ? VerifiedModPlatform::Thunderstore : VerifiedModPlatform::Unknown;
+					VerifiedModPlatform platform = resolvePlatform(platformValue);
 					modVersions.insert({version, {.checksum = checksum, .downloadLink = downloadLink, .platform = platform}});
 				}
 
@@ -176,13 +175,28 @@ int ModDownloader::ModFetchingProgressCallback(
 	return 0;
 }
 
+std::string ModDownloader::GetModArchiveName(std::string url)
+{
+	std::string name = fs::path(url).filename().generic_string();
+	std::string::size_type charIndex = name.find("?");
+
+	// Thunderstore format
+	if (std::string::npos == charIndex)
+	{
+		return name;
+	}
+
+	// ModWorkshop format (removing the "?filename=" part)
+	return name.substr(charIndex + 10);
+}
+
 std::tuple<fs::path, bool> ModDownloader::FetchModFromDistantStore(std::string_view modName, VerifiedModVersion version)
 {
 	std::string url = version.downloadLink;
-	std::string archiveName = fs::path(url).filename().generic_string();
-	spdlog::info(std::format("Fetching mod archive from {}", url));
 
 	// Download destination
+	spdlog::info(std::format("Fetching mod archive from {}", url));
+	std::string archiveName = ModDownloader::GetModArchiveName(url);
 	std::filesystem::path downloadPath = std::filesystem::temp_directory_path() / archiveName;
 	spdlog::info(std::format("Downloading archive to {}", downloadPath.generic_string()));
 
@@ -436,10 +450,10 @@ void ModDownloader::ExtractMod(fs::path modPath, fs::path destinationPath, Verif
 	modState.total = GetModArchiveSize(file, gi);
 	modState.progress = 0;
 
-	// Right now, we only know how to extract Thunderstore mods
-	if (platform != VerifiedModPlatform::Thunderstore)
+	// We don't know how to extract mods from unknown platforms
+	if (platform == VerifiedModPlatform::Unknown)
 	{
-		spdlog::error("Failed extracting mod from unknown platform (value: {}).", platform);
+		spdlog::error("Failed extracting mod from unknown platform.");
 		modState.state = UNKNOWN_PLATFORM;
 		return;
 	}
@@ -658,10 +672,19 @@ void ModDownloader::DownloadMod(std::string modName, std::string modVersion)
 				return;
 			}
 
-			// Mod directory name (removing the ".zip" fom the archive name)
-			name = archiveLocation.filename().string();
-			name = name.substr(0, name.length() - 4);
-			modDirectory = GetRemoteModFolderPath() / name;
+			// Mod directory name
+			/// Don't use archive name as destination with ModWorkshop
+			if (fullVersion.platform == VerifiedModPlatform::ModWorkshop)
+			{
+				modDirectory = GetRemoteModFolderPath();
+			}
+			else
+			/// Removes the ".zip" fom the archive name and use it as parent directory
+			{
+				name = archiveLocation.filename().string();
+				name = name.substr(0, name.length() - 4);
+				modDirectory = GetRemoteModFolderPath() / name;
+			}
 
 			// Extract downloaded mod archive
 			ExtractMod(archiveLocation, modDirectory, fullVersion.platform);

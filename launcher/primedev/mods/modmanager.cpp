@@ -448,19 +448,30 @@ void ModManager::SearchFilesystemForMods()
 	std::filesystem::directory_iterator remoteModsDir = fs::directory_iterator(GetRemoteModFolderPath());
 	std::filesystem::directory_iterator thunderstoreModsDir = fs::directory_iterator(GetThunderstoreModFolderPath());
 
-	for (fs::directory_entry dir : classicModsDir)
-		if (fs::exists(dir.path() / "mod.json"))
-			modDirs.push_back(dir.path());
+	for (fs::directory_iterator dirIterator : {classicModsDir, remoteModsDir})
+		for (fs::directory_entry dir : dirIterator)
+			if (fs::exists(dir.path() / "mod.json"))
+				modDirs.push_back(dir.path());
 
 	// Special case for Thunderstore and remote mods directories
 	// Set up regex for `AUTHOR-MOD-VERSION` pattern
 	std::regex pattern(R"(.*\\([a-zA-Z0-9_]+)-([a-zA-Z0-9_]+)-(\d+\.\d+\.\d+))");
+
+	// Reset directory iterator
+	remoteModsDir = fs::directory_iterator(GetRemoteModFolderPath());
 
 	for (fs::directory_iterator dirIterator : {thunderstoreModsDir, remoteModsDir})
 	{
 		for (fs::directory_entry dir : dirIterator)
 		{
 			fs::path modsDir = dir.path() / "mods"; // Check for mods folder in the Thunderstore mod
+
+			// Do not register ModWorkshop mods twice
+			if (std::find(modDirs.begin(), modDirs.end(), dir.path()) != modDirs.end())
+			{
+				continue;
+			}
+
 			// Use regex to match `AUTHOR-MOD-VERSION` pattern
 			if (!std::regex_match(dir.path().string(), pattern))
 			{
