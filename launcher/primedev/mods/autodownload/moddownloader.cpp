@@ -84,7 +84,7 @@ void ModDownloader::FetchModsListFromAPI()
 				[&]
 				{
 					curl_easy_cleanup(easyhandle);
-					modState.state = DOWNLOADING;
+					modState.state = DONE;
 				});
 
 			if (result == CURLcode::CURLE_OK)
@@ -608,8 +608,12 @@ void ModDownloader::DownloadMod(std::string modName, std::string modVersion)
 	if (!IsModAuthorized(std::string_view(modName), std::string_view(modVersion)))
 	{
 		spdlog::warn("Tried to download a mod that is not verified, aborting.");
+		modState.state = ABORTED;
 		return;
 	}
+
+	// Tell VM we're ready to download mod
+	modState.state = DOWNLOADING;
 
 	std::thread requestThread(
 		[this, modName, modVersion]()
