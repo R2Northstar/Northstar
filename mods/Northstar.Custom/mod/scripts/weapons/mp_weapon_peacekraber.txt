@@ -344,4 +344,5 @@ WeaponData
 			"ui"						"ui/crosshair_lstar"
 			"base_spread"				"4"
 		}
+	}
 }
