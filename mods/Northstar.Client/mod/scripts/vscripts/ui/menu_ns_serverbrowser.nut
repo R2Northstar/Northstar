@@ -802,8 +802,11 @@ void function FilterServerList()
 	}
 	
 	// Update player and server count
-	Hud_SetText( Hud_GetChild( file.menu, "InGamePlayerLabel" ), Localize("#INGAME_PLAYERS", string( totalPlayers ) ) )
-	Hud_SetText( Hud_GetChild( file.menu, "TotalServerLabel" ),  Localize("#TOTAL_SERVERS", string( NSGetServerCount() ) ) )
+	int ServerCount = NSGetServerCount()
+	string totalPlayersStr = string( totalPlayers ) + ( totalPlayers == 1 ? " " : ""  ) + ( totalPlayers < 10 ? " " : ""  )
+	string serverCountStr = string( ServerCount ) + ( ServerCount == 1 ? " " : "" ) + ( ServerCount < 10 ? " " : ""  )
+	Hud_SetText( Hud_GetChild( file.menu, "InGamePlayerLabel" ), Localize( "#INGAME_PLAYERS", totalPlayersStr ) )
+	Hud_SetText( Hud_GetChild( file.menu, "TotalServerLabel" ),  Localize( "#TOTAL_SERVERS", serverCountStr ) )
 }
 
 
