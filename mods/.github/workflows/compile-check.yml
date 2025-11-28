@@ -16,15 +16,7 @@ jobs:
         uses: ASpoonPlaysGames/squirrel-re-compiler@v3
         with:
           mods-directory: "${{ github.workspace }}/mods"
-          native-json: "${{ github.workspace }}/mods/.github/nativefuncs.json"
-          vanilla: false
-
-      - name: Compile Scripts (Vanilla)
-        uses: ASpoonPlaysGames/squirrel-re-compiler@v3
-        with:
-          mods-directory: "${{ github.workspace }}/mods"
-          native-json: "${{ github.workspace }}/mods/.github/nativefuncs.json"
-          vanilla: true
+          native-json: "${{ github.workspace }}/mods/.github/natives.json"
 
       # It's important that scripts compile when Northstar.Custom isn't enabled/installed, so run again without it
       - name: Remove Northstar.Custom
@@ -35,12 +27,4 @@ jobs:
         uses: ASpoonPlaysGames/squirrel-re-compiler@v3
         with:
           mods-directory: "${{ github.workspace }}/mods"
-          native-json: "${{ github.workspace }}/mods/.github/nativefuncs.json"
-          vanilla: false
-
-      - name: Compile Scripts (Vanilla, No Northstar.Custom)
-        uses: ASpoonPlaysGames/squirrel-re-compiler@v3
-        with:
-          mods-directory: "${{ github.workspace }}/mods"
-          native-json: "${{ github.workspace }}/mods/.github/nativefuncs.json"
-          vanilla: true
+          native-json: "${{ github.workspace }}/mods/.github/natives.json"
