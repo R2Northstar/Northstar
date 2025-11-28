@@ -1,4 +1,30 @@
 {
+	"CONSTS":[
+		{
+			"name": "VANILLA",
+			"value": 0
+		},
+		{
+			"name": "MAX_FOLDER_SIZE",
+			"value": 1024
+		},
+		{
+			"name": "NS_VERSION_MAJOR",
+			"value": 0
+		},
+		{
+			"name": "NS_VERSION_MINOR",
+			"value": 0
+		},
+		{
+			"name": "NS_VERSION_PATCH",
+			"value": 0
+		},
+		{
+			"name": "NS_VERSION_DEV",
+			"value": 1
+		}
+	],
 	"SERVER":[
 		{
 			"name":"NSGetModNames",
