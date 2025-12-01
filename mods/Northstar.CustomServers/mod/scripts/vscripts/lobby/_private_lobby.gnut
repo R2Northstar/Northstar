@@ -76,9 +76,16 @@ bool function ClientCommandCallback_PrivateMatchSetMode( entity player, array<st
 		if ( !NSIsPlayerLocalPlayer( player ) )
 			return true
 	
-	LogPrivateMatchChange( player , " changed the mode to " , args )
+	if ( GetPrivateMatchModes().contains( args[0] ) )
+	{
+		LogPrivateMatchChange( player , " changed the mode to " , args )
+	}
+	else
+	{
+		LogPrivateMatchChange( player , " attempted to set an invalid mode: " , args )
+		return true
+	}
 
-	// todo: need to verify this value
 	file.mode = args[0]
 	//GameRules_SetGameMode( args[0] ) // can't do this here due to out of sync errors with new clients
 	
@@ -99,10 +106,18 @@ bool function ClientCommandCallback_SetCustomMap( entity player, array<string> a
 	if ( GetConVarInt( "ns_private_match_only_host_can_change_settings" ) == 2 )
 		if ( !NSIsPlayerLocalPlayer( player ) )
 			return true
-	
-	LogPrivateMatchChange( player , " changed the map to " , args )
 
-	// todo: need to verify this value
+	if ( GetPrivateMatchMapsForMode( file.mode ).contains( args[0] ) )
+	{
+		LogPrivateMatchChange( player , " changed the map to " , args )
+	}
+	else
+	{
+		args[0] += " for mode: " + file.mode
+		LogPrivateMatchChange( player , " attempted to set an invalid map: " , args )
+		return true
+	}
+
 	file.map = args[0]
 	
 	// todo: this should NOT be necessary, private matches should use an api to register maps in the future rather than hardcoded ids
@@ -213,6 +228,9 @@ void function RefreshPlayerTeams()
 
 bool function ClientCommandCallback_PrivateMatchSetPlaylistVarOverride( entity player, array<string> args )
 {
+	if ( file.startState == ePrivateMatchStartState.STARTING )
+		return true
+
 	if ( args.len() < 2 )
 		return true
 		
@@ -243,6 +261,9 @@ bool function ClientCommandCallback_PrivateMatchSetPlaylistVarOverride( entity p
 
 bool function ClientCommandCallback_ResetMatchSettingsToDefault( entity player, array<string> args )
 {
+	if ( file.startState == ePrivateMatchStartState.STARTING )
+		return true
+
 	if ( GetConVarInt( "ns_private_match_only_host_can_change_settings" ) >= 1 )
 		if ( !NSIsPlayerLocalPlayer( player ) )
 			return true
