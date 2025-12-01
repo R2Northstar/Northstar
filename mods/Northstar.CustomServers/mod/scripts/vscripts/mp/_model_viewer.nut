@@ -96,6 +96,9 @@ function ControlsInit()
 
 bool function ClientCommand_ModelViewer( entity player, array<string> args )
 {
+	if ( !args.len() )
+		return true
+
 	string command = args[ 0 ]
 	switch ( command )
 	{

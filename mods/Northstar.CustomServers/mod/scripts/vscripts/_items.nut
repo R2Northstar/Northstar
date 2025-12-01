@@ -4914,8 +4914,10 @@ string function GetRefFromItem( item )
 
 function SubitemDefined( string parentRef, string childRef )
 {
-	Assert( parentRef in file.itemData )
-	return (childRef in file.itemData[parentRef].subitems)
+	if ( !( parentRef in file.itemData ) )
+		return false
+
+	return ( childRef in file.itemData[parentRef].subitems )
 }
 
 ItemDisplayData function GetSubitemDisplayData( string parentRef, string childRef )
@@ -7971,7 +7973,7 @@ bool function ClientCommand_BuyTicket( entity player, array<string> args )
 
 
 	int numTickets = 1
-	if ( args.len() > 0 )
+	if ( args.len() && int( args[0] ) > 0 )
 		numTickets = int( args[0] )
 
 	int cost = GetItemCost( ref ) * numTickets
