@@ -15,7 +15,7 @@ void ModManager::BuildPdef()
 	fs::path MOD_PDEF_PATH = fs::path(GetCompiledAssetsPath() / MOD_PDEF_SUFFIX);
 
 	fs::remove(MOD_PDEF_PATH);
-	std::string pdef = ReadVPKOriginalFile(VPK_PDEF_PATH);
+	std::string pdef = ReadVPKFile(VPK_PDEF_PATH, FileSourceType_Original);
 
 	for (Mod& mod : m_LoadedMods)
 	{
@@ -107,12 +107,5 @@ void ModManager::BuildPdef()
 	writeStream << pdef;
 	writeStream.close();
 
-	ModOverrideFile overrideFile;
-	overrideFile.m_pOwningMod = nullptr;
-	overrideFile.m_Path = VPK_PDEF_PATH;
-
-	if (m_ModFiles.find(VPK_PDEF_PATH) == m_ModFiles.end())
-		m_ModFiles.insert(std::make_pair(VPK_PDEF_PATH, overrideFile));
-	else
-		m_ModFiles[VPK_PDEF_PATH] = overrideFile;
+	m_CompiledFiles.insert(VPK_PDEF_PATH);
 }

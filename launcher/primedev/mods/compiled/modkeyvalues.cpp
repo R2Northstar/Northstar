@@ -54,7 +54,7 @@ void ModManager::TryBuildKeyValues(const char* filename)
 	newKvs += "\"\n";
 
 	// load original file, so we can parse out the name of the root obj (e.g. WeaponData for weapons)
-	std::string originalFile = ReadVPKOriginalFile(filename);
+	std::string originalFile = ReadVPKFile(filename, FileSourceType_ModOverride + FileSourceType_Original);
 
 	if (!originalFile.length())
 	{
@@ -93,12 +93,5 @@ void ModManager::TryBuildKeyValues(const char* filename)
 	writeStream << newKvs;
 	writeStream.close();
 
-	ModOverrideFile overrideFile;
-	overrideFile.m_pOwningMod = nullptr;
-	overrideFile.m_Path = normalisedPath;
-
-	if (m_ModFiles.find(normalisedPath) == m_ModFiles.end())
-		m_ModFiles.insert(std::make_pair(normalisedPath, overrideFile));
-	else
-		m_ModFiles[normalisedPath] = overrideFile;
+	m_CompiledFiles.insert(normalisedPath);
 }
