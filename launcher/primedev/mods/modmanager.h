@@ -45,6 +45,7 @@ private:
 public:
 	std::vector<Mod> m_LoadedMods;
 	std::unordered_map<std::string, ModOverrideFile> m_ModFiles;
+	std::unordered_set<std::string> m_CompiledFiles;
 	std::unordered_map<std::string, std::string> m_DependencyConstants;
 	std::unordered_set<std::string> m_PluginDependencyConstants;
 

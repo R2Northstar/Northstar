@@ -5,7 +5,9 @@
 #include <iostream>
 #include <sstream>
 
-bool bReadingOriginalFile = false;
+// the currently accepted sources for files
+int iFileSourceType = FileSourceType_Any;
+
 std::string sCurrentModPath;
 
 ConVar* Cvar_ns_fs_log_reads;
@@ -31,13 +33,14 @@ std::string ReadVPKFile(const char* path)
 	return fileStream.str();
 }
 
-std::string ReadVPKOriginalFile(const char* path)
+std::string ReadVPKFile(const char* path, int fileSourceType)
 {
-	// todo: should probably set search path to be g_pModName here also
+	int oldType = iFileSourceType;
+	iFileSourceType = fileSourceType;
 
-	bReadingOriginalFile = true;
 	std::string ret = ReadVPKFile(path);
-	bReadingOriginalFile = false;
+
+	iFileSourceType = oldType;
 
 	return ret;
 }
@@ -56,38 +59,53 @@ static void __fastcall h_AddSearchPath(IFileSystem* fileSystem, const char* pPat
 	}
 }
 
+void SetNewCompiledSearchPaths()
+{
+	// push compiled to head
+	o_pAddSearchPath(g_pFilesystem, fs::absolute(GetCompiledAssetsPath()).string().c_str(), "GAME", PATH_ADD_TO_HEAD);
+	sCurrentModPath = "";
+}
+
 void SetNewModSearchPaths(Mod* mod)
 {
 	// put our new path to the head if we need to read from a different mod path
 	// in the future we could also determine whether the file we're setting paths for needs a mod dir, or compiled assets
-	if (mod != nullptr)
+	if (mod == nullptr)
+		return;
+	if ((fs::absolute(mod->m_ModDirectory) / MOD_OVERRIDE_DIR).string().compare(sCurrentModPath))
 	{
-		if ((fs::absolute(mod->m_ModDirectory) / MOD_OVERRIDE_DIR).string().compare(sCurrentModPath))
-		{
-			o_pAddSearchPath(
-				g_pFilesystem, (fs::absolute(mod->m_ModDirectory) / MOD_OVERRIDE_DIR).string().c_str(), "GAME", PATH_ADD_TO_HEAD);
-			sCurrentModPath = (fs::absolute(mod->m_ModDirectory) / MOD_OVERRIDE_DIR).string();
-		}
+		o_pAddSearchPath(g_pFilesystem, (fs::absolute(mod->m_ModDirectory) / MOD_OVERRIDE_DIR).string().c_str(), "GAME", PATH_ADD_TO_HEAD);
+		sCurrentModPath = (fs::absolute(mod->m_ModDirectory) / MOD_OVERRIDE_DIR).string();
 	}
-	else // push compiled to head
-		o_pAddSearchPath(g_pFilesystem, fs::absolute(GetCompiledAssetsPath()).string().c_str(), "GAME", PATH_ADD_TO_HEAD);
 }
 
 bool TryReplaceFile(const char* pPath, bool shouldCompile)
 {
-	if (bReadingOriginalFile)
-		return false;
-
-	if (shouldCompile)
-		g_pModManager->CompileAssetsForFile(pPath);
-
 	// idk how efficient the lexically normal check is
 	// can't just set all /s in path to \, since some paths aren't in writeable memory
-	auto file = g_pModManager->m_ModFiles.find(g_pModManager->NormaliseModFilePath(fs::path(pPath)));
-	if (file != g_pModManager->m_ModFiles.end())
+	std::string normalisedPath = g_pModManager->NormaliseModFilePath(fs::path(pPath));
+
+	if (iFileSourceType & FileSourceType_Compiled)
 	{
-		SetNewModSearchPaths(file->second.m_pOwningMod);
-		return true;
+		// only compile assets if we would accept a compiled asset in the first place
+		if (shouldCompile)
+			g_pModManager->CompileAssetsForFile(pPath);
+
+		if (g_pModManager->m_CompiledFiles.contains(normalisedPath))
+		{
+			SetNewCompiledSearchPaths();
+			return true;
+		}
+	}
+
+	if (iFileSourceType & FileSourceType_ModOverride)
+	{
+		auto file = g_pModManager->m_ModFiles.find(normalisedPath);
+		if (file != g_pModManager->m_ModFiles.end())
+		{
+			SetNewModSearchPaths(file->second.m_pOwningMod);
+			return true;
+		}
 	}
 
 	return false;

@@ -14,7 +14,7 @@ void ModManager::BuildKBActionsList()
 	std::ofstream soCompiledKeys(GetCompiledAssetsPath() / KB_ACT_PATH, std::ios::binary);
 
 	// write vanilla file's content to compiled file
-	soCompiledKeys << ReadVPKOriginalFile(KB_ACT_PATH);
+	soCompiledKeys << ReadVPKFile(KB_ACT_PATH, FileSourceType_Original);
 
 	for (Mod& mod : m_LoadedMods)
 	{
@@ -32,13 +32,5 @@ void ModManager::BuildKBActionsList()
 
 	soCompiledKeys.close();
 
-	// push to overrides
-	ModOverrideFile overrideFile;
-	overrideFile.m_pOwningMod = nullptr;
-	overrideFile.m_Path = KB_ACT_PATH;
-
-	if (m_ModFiles.find(KB_ACT_PATH) == m_ModFiles.end())
-		m_ModFiles.insert(std::make_pair(KB_ACT_PATH, overrideFile));
-	else
-		m_ModFiles[KB_ACT_PATH] = overrideFile;
+	m_CompiledFiles.insert(KB_ACT_PATH);
 }

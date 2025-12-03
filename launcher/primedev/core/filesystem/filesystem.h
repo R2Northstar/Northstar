@@ -11,6 +11,16 @@ enum SearchPathAdd_t
 	PATH_ADD_TO_TAIL, // Last path searched
 };
 
+enum FileSourceType_t : int
+{
+	FileSourceType_Original = 1 << 0,
+	FileSourceType_ModOverride = 1 << 1,
+	FileSourceType_Compiled = 1 << 2,
+
+	FileSourceType_Modded = FileSourceType_ModOverride | FileSourceType_Compiled,
+	FileSourceType_Any = FileSourceType_Original | FileSourceType_ModOverride | FileSourceType_Compiled,
+};
+
 class CSearchPath
 {
 public:
@@ -50,4 +60,4 @@ public:
 extern IFileSystem* g_pFilesystem;
 
 std::string ReadVPKFile(const char* path);
-std::string ReadVPKOriginalFile(const char* path);
+std::string ReadVPKFile(const char* path, int fileSourceFilter);
