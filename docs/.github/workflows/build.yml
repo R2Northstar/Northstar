@@ -16,5 +16,6 @@ jobs:
 
       - name: Install dependencies and build
         run: |
-          python3 -m pip install -U uv
+          sudo apt-get install -y libxml2-dev libxslt1-dev libjpeg-dev libfreetype6-dev
+          python3 -m pip install -U uv pillow
           python3 -m uv run mkdocs build --strict
