@@ -123,31 +123,28 @@ bool ManualHook::Dispatch(LPVOID addr, LPVOID* orig)
 uintptr_t ParseDLLOffsetString(const char* pAddrString)
 {
 	// in the format server.dll + 0xDEADBEEF
-	int iDllNameEnd = 0;
-	for (; !isspace(pAddrString[iDllNameEnd]) && pAddrString[iDllNameEnd] != '+'; iDllNameEnd++)
-		;
+	size_t iDllNameEnd = 0;
+	do
+		++iDllNameEnd;
+	while (!isspace(pAddrString[iDllNameEnd]) && pAddrString[iDllNameEnd] != '+');
 
-	char* pModuleName = new char[iDllNameEnd + 1];
-	memcpy(pModuleName, pAddrString, iDllNameEnd);
-	pModuleName[iDllNameEnd] = '\0';
+	const std::string svModuleName(pAddrString, iDllNameEnd);
 
 	// get the module address
-	const HMODULE pModuleAddr = GetModuleHandleA(pModuleName);
+	const HMODULE pModuleAddr = GetModuleHandleA(svModuleName.c_str());
 
 	if (!pModuleAddr)
 		return 0;
 
 	// get the offset string
-	uintptr_t iOffset = 0;
-
-	int iOffsetBegin = iDllNameEnd;
-	size_t iOffsetEnd = strlen(pAddrString);
-
 	// seek until we hit the start of the number offset
-	for (; !(pAddrString[iOffsetBegin] >= '0' && pAddrString[iOffsetBegin] <= '9') && pAddrString[iOffsetBegin]; iOffsetBegin++)
-		;
+	size_t iOffsetBegin = iDllNameEnd;
+	do
+		++iOffsetBegin;
+	while (!isdigit(pAddrString[iOffsetBegin]) && pAddrString[iOffsetBegin]);
 
-	bool bIsHex = pAddrString[iOffsetBegin] == '0' && (pAddrString[iOffsetBegin + 1] == 'X' || pAddrString[iOffsetBegin + 1] == 'x');
+	uintptr_t iOffset = 0;
+	const bool bIsHex = pAddrString[iOffsetBegin] == '0' && (pAddrString[iOffsetBegin + 1] == 'X' || pAddrString[iOffsetBegin + 1] == 'x');
 	if (bIsHex)
 		iOffset = std::stoi(pAddrString + iOffsetBegin + 2, 0, 16);
 	else
