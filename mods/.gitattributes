@@ -1,4 +1,6 @@
 /Northstar.Client/mod/resource/northstar_client_localisation_*.txt text diff working-tree-encoding=UTF-16LE-BOM
+/Northstar.Custom/mod/resource/northstar_custom_*.txt text diff working-tree-encoding=UTF-16LE-BOM
+
 
 # Highlight `.gnut` like `.nut` files
 *.gnut linguist-language=Squirrel
