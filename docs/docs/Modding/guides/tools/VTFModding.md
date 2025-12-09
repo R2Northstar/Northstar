@@ -153,7 +153,7 @@ Help with repacking [here](https://noskill.gitbook.io/titanfall2/intro/duction/v
 
 ## Making your Skin Animated
 
-To add animation functionality, all we need to do is add a Proxie; which is just a modifier inside a `.vmt`, and change our albedo vtf texture.
+To add animation functionality, all we need to do is add a Proxy; which is just a modifier inside a `.vmt`, and change our albedo vtf texture.
 
 You need to create a .vtf texture with multiple frames imported to a single .vtf texture, that's your animated texture. You can do this with [VTFEdit](https://nemstools.github.io/pages/VTFLib-Download.html). Then assign the texture in `$basetexture`.
 
