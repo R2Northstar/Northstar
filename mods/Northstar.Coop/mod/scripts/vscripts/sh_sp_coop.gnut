@@ -1,6 +1,0 @@
-global function IsSPCoopMode
-
-bool function IsSPCoopMode()
-{
-	return GAMETYPE == "solo" && GetCurrentPlaylistName() == "sp_coop"
-}
