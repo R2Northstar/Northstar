@@ -1,4 +1,5 @@
 #include "moddownloader.h"
+#include "core/vanilla.h"
 #include "util/utils.h"
 #include <rapidjson/fwd.h>
 #include <mz_strm_mem.h>
@@ -12,7 +13,7 @@
 #include <winternl.h>
 #include <fstream>
 
-ModDownloader* g_pModDownloader;
+ModDownloader* g_pModDownloader = nullptr;
 
 ModDownloader::ModDownloader()
 {
@@ -704,18 +705,26 @@ void ModDownloader::CancelDownload()
 
 ON_DLL_LOAD_RELIESON("engine.dll", ModDownloader, (ConCommand), (CModule module))
 {
-	g_pModDownloader = new ModDownloader();
+	if (!g_pVanillaCompatibility->GetVanillaCompatibility())
+		g_pModDownloader = new ModDownloader();
 }
 
 ADD_SQFUNC("void", NSFetchVerifiedModsManifesto, "", "", ScriptContext::SERVER | ScriptContext::CLIENT | ScriptContext::UI)
 {
-	g_pModDownloader->FetchModsListFromAPI();
+	if (g_pModDownloader)
+		g_pModDownloader->FetchModsListFromAPI();
 	return SQRESULT_NULL;
 }
 
 ADD_SQFUNC(
 	"bool", NSIsModDownloadable, "string name, string version", "", ScriptContext::SERVER | ScriptContext::CLIENT | ScriptContext::UI)
 {
+	if (!g_pModDownloader)
+	{
+		g_pSquirrel<context>->pushbool(sqvm, false);
+		return SQRESULT_NOTNULL;
+	}
+
 	g_pSquirrel<context>->newarray(sqvm, 0);
 
 	const SQChar* modName = g_pSquirrel<context>->getstring(sqvm, 1);
@@ -729,31 +738,40 @@ ADD_SQFUNC(
 
 ADD_SQFUNC("void", NSDownloadMod, "string name, string version", "", ScriptContext::SERVER | ScriptContext::CLIENT | ScriptContext::UI)
 {
+	if (!g_pModDownloader)
+		return SQRESULT_NULL;
+
 	const SQChar* modName = g_pSquirrel<context>->getstring(sqvm, 1);
 	const SQChar* modVersion = g_pSquirrel<context>->getstring(sqvm, 2);
 	g_pModDownloader->DownloadMod(modName, modVersion);
 
-	return SQRESULT_NOTNULL;
+	return SQRESULT_NULL;
 }
 
 ADD_SQFUNC("ModInstallState", NSGetModInstallState, "", "", ScriptContext::SERVER | ScriptContext::CLIENT | ScriptContext::UI)
 {
 	g_pSquirrel<context>->pushnewstructinstance(sqvm, 4);
 
+	ModDownloader::MOD_STATE modState = {};
+	if (g_pModDownloader)
+		modState = g_pModDownloader->modState;
+	else
+		modState.state = ModDownloader::NOT_FOUND;
+
 	// state
-	g_pSquirrel<context>->pushinteger(sqvm, g_pModDownloader->modState.state);
+	g_pSquirrel<context>->pushinteger(sqvm, modState.state);
 	g_pSquirrel<context>->sealstructslot(sqvm, 0);
 
 	// progress
-	g_pSquirrel<context>->pushinteger(sqvm, g_pModDownloader->modState.progress);
+	g_pSquirrel<context>->pushinteger(sqvm, modState.progress);
 	g_pSquirrel<context>->sealstructslot(sqvm, 1);
 
 	// total
-	g_pSquirrel<context>->pushinteger(sqvm, g_pModDownloader->modState.total);
+	g_pSquirrel<context>->pushinteger(sqvm, modState.total);
 	g_pSquirrel<context>->sealstructslot(sqvm, 2);
 
 	// ratio
-	g_pSquirrel<context>->pushfloat(sqvm, g_pModDownloader->modState.ratio);
+	g_pSquirrel<context>->pushfloat(sqvm, modState.ratio);
 	g_pSquirrel<context>->sealstructslot(sqvm, 3);
 
 	return SQRESULT_NOTNULL;
@@ -761,6 +779,7 @@ ADD_SQFUNC("ModInstallState", NSGetModInstallState, "", "", ScriptContext::SERVE
 
 ADD_SQFUNC("void", NSCancelModDownload, "", "", ScriptContext::SERVER | ScriptContext::CLIENT | ScriptContext::UI)
 {
-	g_pModDownloader->CancelDownload();
+	if (g_pModDownloader)
+		g_pModDownloader->CancelDownload();
 	return SQRESULT_NULL;
 }
