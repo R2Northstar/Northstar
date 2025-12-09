@@ -19,7 +19,6 @@ contribute it, even if its just a quick and dirty PR.
 
 # Cheatsheet
 
-- [NoSkill modding guide (highly recommended to check out)](https://noskill.gitbook.io/titanfall2/)
 - [Tools for modding](guides/tools/index.md)
 - [All the Squirrel Constants](https://gist.github.com/laundmo/825c4708663a179b23e144402b09244f)
 - [Modding Documentation](https://github.com/ScureX/Titanfall2-ModdingDocumentation#readme)
