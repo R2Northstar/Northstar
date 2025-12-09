@@ -1,7 +1,153 @@
-// as much as i'd like to restore this i've not been able to get any of this working
 global function Spotting_Init 
+
+struct {
+	table<entity, float> playerPingTimeBuffer
+} file
+
+
+
+
+
+
+
+
+
+/*
+██████  ██ ███    ██  ██████      ███████ ██    ██ ███████ ████████ ███████ ███    ███ 
+██   ██ ██ ████   ██ ██           ██       ██  ██  ██         ██    ██      ████  ████ 
+██████  ██ ██ ██  ██ ██   ███     ███████   ████   ███████    ██    █████   ██ ████ ██ 
+██      ██ ██  ██ ██ ██    ██          ██    ██         ██    ██    ██      ██  ██  ██ 
+██      ██ ██   ████  ██████      ███████    ██    ███████    ██    ███████ ██      ██ 
+
+Whenever calling this command (preferably from a bind), players will do a sound notification to their entire team, a ping with friendly color
+will happen in the minimap where they points their crosshair, and a in-world marker will appear for 3 seconds, in Frontier Defense targets will be
+highlighted as well.
+*/
 
 void function Spotting_Init()
 {
+	AddClientCommandCallback( "pingspot", ClientCommandCallbackPingSpot )
+}
 
+bool function ClientCommandCallbackPingSpot( entity player, array<string> args )
+{
+	if ( GetCurrentPlaylistVarInt( "pingspot_enabled", 0 ) )
+		return true
+
+	if( !IsAlive( player ) || !GamePlaying() || IsPrivateMatchSpectator( player ) )
+		return true
+	
+	if ( !( player in file.playerPingTimeBuffer ) )
+	{
+		file.playerPingTimeBuffer[ player ] <- Time() + 2.0
+	}
+	else
+	{
+		if ( file.playerPingTimeBuffer[ player ] > Time() )
+			return true
+	}
+
+	if ( player in file.playerPingTimeBuffer && file.playerPingTimeBuffer[ player ] < Time() )
+		file.playerPingTimeBuffer[ player ] = Time() + 2.0
+	
+	entity spottedEnemy
+	array<VisibleEntityInCone> results = FindVisibleEntitiesInCone( player.EyePosition(), player.GetViewVector(), 16384, 8, [player], TRACE_MASK_PLAYERSOLID | TRACE_MASK_BLOCKLOS, VIS_CONE_ENTS_TEST_HITBOXES, player )
+	foreach( result in results )
+	{
+		entity visibleEnt = result.ent
+
+		if ( !IsAlive( visibleEnt ) )
+			continue
+
+		if ( visibleEnt.IsPhaseShifted() )
+			continue
+		
+		if ( visibleEnt.GetTeam() == player.GetTeam() )
+			continue
+		
+		if( visibleEnt.IsTitan() || visibleEnt.IsPlayer() )
+		{
+			spottedEnemy = visibleEnt
+			break
+		}
+
+		spottedEnemy = visibleEnt
+		break
+	}
+	
+	vector spotToPing = < 0, 0, 0 >
+	if( IsAlive( spottedEnemy ) )
+	{
+		#if BATTLECHATTER_ENABLED
+		if ( !player.IsTitan() )
+			PlayBattleChatterLine( player, "bc_pPulseBladeSpotEnemy" ) // Use Pulse Blade's speech about revealing enemies
+		#endif
+		
+		foreach( npc in GetNPCArray() )
+		{
+			entity bossPlayer = npc.GetBossPlayer()
+			if ( IsValidPlayer( bossPlayer ) && bossPlayer == player && IsAlive( npc ) )
+			{
+				npc.ClearEnemy()
+				npc.SetEnemy( spottedEnemy )
+			}
+		}
+		
+		if ( GameRules_GetGameMode() == FD )
+			thread HighlightEnemyForPing( spottedEnemy )
+		spotToPing = spottedEnemy.GetOrigin()
+	}
+	
+	else
+	{
+		vector origin = player.EyePosition()
+		vector angles = player.EyeAngles()
+		vector forward = AnglesToForward( angles )
+		TraceResults traceResult = TraceLine( origin, origin + forward * 16384, [], TRACE_MASK_PLAYERSOLID | TRACE_MASK_BLOCKLOS, TRACE_COLLISION_GROUP_NONE )
+		spotToPing = traceResult.endPos
+	}
+	
+	if( spotToPing == < 0, 0, 0 > )
+		return true
+	
+	Minimap_PingForTeam( player.GetTeam(), spotToPing, 100.0, 2.0, TEAM_COLOR_FRIENDLY / 255.0, 8, true )
+	thread SpawnWorldPingMarkerInSpot( spotToPing, player.GetTeam() )
+	
+	foreach( entity player in GetPlayerArrayOfTeam( player.GetTeam() ) )
+		EmitSoundOnEntityOnlyToPlayer( player, player, "skyway_scripted_bombardment_ping" )
+	
+	return true
+}
+
+void function HighlightEnemyForPing( entity markedEnemy )
+{
+	if( !IsAlive( markedEnemy ) )
+		return
+	
+	markedEnemy.EndSignal( "OnDestroy" )
+	markedEnemy.EndSignal( "OnDeath" )
+	
+	Highlight_SetEnemyHighlight( markedEnemy, "sp_objective_entity" )
+	markedEnemy.Highlight_SetParam( 2, 0, HIGHLIGHT_COLOR_ENEMY )
+	
+	wait 2
+	
+	Highlight_ClearEnemyHighlight( markedEnemy )
+}
+
+void function SpawnWorldPingMarkerInSpot( vector markedLocation, int team )
+{
+	vector surfaceNormal = < 0, 0, 1 >
+
+	int index = GetParticleSystemIndex( $"P_ar_titan_droppoint" )
+
+	entity pingMarker = StartParticleEffectInWorld_ReturnEntity( index, markedLocation, surfaceNormal )
+	SetTeam( pingMarker, team )
+	EffectSetControlPointVector( pingMarker, 1, < 255, 64, 16 > )
+	pingMarker.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY
+	pingMarker.DisableHibernation()
+	
+	wait 1
+
+	EffectStop( pingMarker )
 }
