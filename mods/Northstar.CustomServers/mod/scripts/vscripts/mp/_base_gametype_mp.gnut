@@ -57,6 +57,23 @@ void function SetIntermissionCamera( entity camera )
 	file.intermissionCamera = camera
 }
 
+
+
+
+
+
+
+
+
+
+/*
+██████  ██       █████  ██    ██ ███████ ██████       ██████  ██████  ███    ██ ███    ██ ███████  ██████ ████████ ██  ██████  ███    ██ 
+██   ██ ██      ██   ██  ██  ██  ██      ██   ██     ██      ██    ██ ████   ██ ████   ██ ██      ██         ██    ██ ██    ██ ████   ██ 
+██████  ██      ███████   ████   █████   ██████      ██      ██    ██ ██ ██  ██ ██ ██  ██ █████   ██         ██    ██ ██    ██ ██ ██  ██ 
+██      ██      ██   ██    ██    ██      ██   ██     ██      ██    ██ ██  ██ ██ ██  ██ ██ ██      ██         ██    ██ ██    ██ ██  ██ ██ 
+██      ███████ ██   ██    ██    ███████ ██   ██      ██████  ██████  ██   ████ ██   ████ ███████  ██████    ██    ██  ██████  ██   ████ 
+*/
+
 void function CodeCallback_OnClientConnectionStarted( entity player )
 {
 	// not a real player?
@@ -228,6 +245,23 @@ void function CodeCallback_OnClientDisconnected( entity player, string reason )
 	player.CleanupMPClasses()
 }
 
+
+
+
+
+
+
+
+
+
+/*
+██████  ██       █████  ██    ██ ███████ ██████      ██████  ███████ ███████ ██████   █████  ██     ██ ███    ██ 
+██   ██ ██      ██   ██  ██  ██  ██      ██   ██     ██   ██ ██      ██      ██   ██ ██   ██ ██     ██ ████   ██ 
+██████  ██      ███████   ████   █████   ██████      ██████  █████   ███████ ██████  ███████ ██  █  ██ ██ ██  ██ 
+██      ██      ██   ██    ██    ██      ██   ██     ██   ██ ██           ██ ██      ██   ██ ██ ███ ██ ██  ██ ██ 
+██      ███████ ██   ██    ██    ███████ ██   ██     ██   ██ ███████ ███████ ██      ██   ██  ███ ███  ██   ████ 
+*/
+
 void function CodeCallback_OnPlayerRespawned( entity player )
 {
 	SetHumanRagdollImpactTable( player )
@@ -250,6 +284,23 @@ void function CodeCallback_OnPlayerRespawned( entity player )
 	Remote_CallFunction_NonReplay( player, "ServerCallback_YouRespawned" )
 	ClearLastAttacker( player ) // so dying to anything doesn't credit the same attacker after respawning
 }
+
+
+
+
+
+
+
+
+
+
+/*
+██████  ██       █████  ██    ██ ███████ ██████      ██   ██ ██ ██      ██      ███████ ██████  
+██   ██ ██      ██   ██  ██  ██  ██      ██   ██     ██  ██  ██ ██      ██      ██      ██   ██ 
+██████  ██      ███████   ████   █████   ██████      █████   ██ ██      ██      █████   ██   ██ 
+██      ██      ██   ██    ██    ██      ██   ██     ██  ██  ██ ██      ██      ██      ██   ██ 
+██      ███████ ██   ██    ██    ███████ ██   ██     ██   ██ ██ ███████ ███████ ███████ ██████  
+*/
 
 void function PlayerAssistedKill( entity attacker, entity victim )
 {
@@ -459,6 +510,23 @@ void function PlayerWatchesKillReplayWrapper( entity player, entity attacker, in
 	PlayerWatchesKillReplay( player, eHandle, attacker.GetIndexForEntity(), timeSinceAttackerSpawned, timeOfDeath, beforeTime, replayTracker )
 }
 
+
+
+
+
+
+
+
+
+
+/*
+██████  ██       █████  ██    ██ ███████ ██████      ██████  ███████ ███████ ██████   █████  ██     ██ ███    ██ 
+██   ██ ██      ██   ██  ██  ██  ██      ██   ██     ██   ██ ██      ██      ██   ██ ██   ██ ██     ██ ████   ██ 
+██████  ██      ███████   ████   █████   ██████      ██████  █████   ███████ ██████  ███████ ██  █  ██ ██ ██  ██ 
+██      ██      ██   ██    ██    ██      ██   ██     ██   ██ ██           ██ ██      ██   ██ ██ ███ ██ ██  ██ ██ 
+██      ███████ ██   ██    ██    ███████ ██   ██     ██   ██ ███████ ███████ ██      ██   ██  ███ ███  ██   ████ 
+*/
+
 void function DecideRespawnPlayer( entity player )
 {
 	// this isn't even used atm, could likely be removed if some vanilla code didn't rely on it
@@ -562,6 +630,21 @@ void function RespawnAsTitan( entity player, bool manualPosition = false )
 }
 
 
+
+
+
+
+
+
+
+
+/*
+██    ██ ████████ ██ ██      ██ ████████ ██    ██ 
+██    ██    ██    ██ ██      ██    ██     ██  ██  
+██    ██    ██    ██ ██      ██    ██      ████   
+██    ██    ██    ██ ██      ██    ██       ██    
+ ██████     ██    ██ ███████ ██    ██       ██    
+*/
 
 void function TryGameModeAnnouncement( entity player ) // only putting this here because it's here in gametype_sp lol
 {
