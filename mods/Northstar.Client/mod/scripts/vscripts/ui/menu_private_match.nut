@@ -271,6 +271,12 @@ void function SetupComboButtons( var menu, var navUpButton, var navDownButton  )
 	file.matchSettingsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_MATCH_SETTINGS" )
 	Hud_AddEventHandler( file.matchSettingsButton, UIE_CLICK, OnSelectMatchSettings_Activate )
 
+	#if VANILLA
+		var friendsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_INVITE_FRIENDS" )
+		file.inviteFriendsButton = friendsButton
+		Hud_AddEventHandler( friendsButton, UIE_CLICK, InviteFriendsIfAllowed )
+	#endif
+
 	headerIndex++
 	buttonIndex = 0
 	file.customizeHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_LOADOUTS" )
@@ -565,12 +571,18 @@ function UpdatePrivateMatchButtons()
 		Hud_SetLocked( file.selectMapButton, true )
 		Hud_SetLocked( file.selectModeButton, true )
 		Hud_SetLocked( file.matchSettingsButton, true )
+		#if VANILLA
+			Hud_SetLocked( file.inviteFriendsButton, true )
+		#endif
 	}
 	else
 	{
 		RHud_SetText( file.startMatchButton, "#START_MATCH" )
 		Hud_SetLocked( file.selectMapButton, false )
 		Hud_SetLocked( file.selectModeButton, false )
+		#if VANILLA
+			Hud_SetLocked( file.inviteFriendsButton, false )
+		#endif
 
 		string modeName = PrivateMatch_GetSelectedMode()
 		bool settingsLocked = IsFDMode( modeName )

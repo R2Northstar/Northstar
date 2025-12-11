@@ -21,6 +21,7 @@ Press Yes if you agree to this. This choice can be changed in the mods menu at a
 
 		"DIALOG_AUTHENTICATING_MASTERSERVER" "Authenticating to master server."
 		"AUTHENTICATIONAGREEMENT_NO" "You have chosen not to authenticate with Northstar. You can view the agreement in the Mods menu."
+		"HAS_NON_VANILLA_MODS" "You currently have mods enabled (marked with a \"!\") that break vanilla compatibility. You can disable them in the Mods menu."
 
 		"MENU_TITLE_SERVER_BROWSER" "Server Browser"
 		"NS_SERVERBROWSER_NOSERVERS" "No servers found"
@@ -372,6 +373,8 @@ Press Yes if you agree to this. This choice can be changed in the mods menu at a
 		// Toggleable progression
 		"TOGGLE_PROGRESSION"			"Toggle Progression"
 		"Y_BUTTON_TOGGLE_PROGRESSION"	"%[Y_BUTTON|]% Toggle Progression"
+
+		"PROGRESSION_TOGGLE_VANILLA" "Progression cannot be disabled on vanilla servers."
 
 		"PROGRESSION_TOGGLE_ENABLED_HEADER" "Disable Progression?"
 		"PROGRESSION_TOGGLE_ENABLED_BODY" "Titans, Weapons, Factions, Skins, etc. will all be unlocked and usable at any time.\n\nThis can be changed at any time in the multiplayer lobby."

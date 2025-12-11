@@ -81,12 +81,19 @@ void function InitMainMenuPanel()
 	headerIndex++
 	buttonIndex = 0
 	var multiplayerHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MULTIPLAYER_ALLCAPS" )
-	// "Launch Multiplayer" button removed because we don't support vanilla yet :clueless:
-	//file.mpButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MULTIPLAYER_LAUNCH" )
-	//Hud_AddEventHandler( file.mpButton, UIE_CLICK, OnPlayMPButton_Activate )
-	file.fdButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_LAUNCH_NORTHSTAR" )
-	Hud_AddEventHandler( file.fdButton, UIE_CLICK, OnPlayFDButton_Activate )
-	Hud_SetLocked( file.fdButton, true )
+	#if VANILLA
+		file.mpButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MULTIPLAYER_LAUNCH" )
+		Hud_AddEventHandler( file.mpButton, UIE_CLICK, OnPlayMPButton_Activate )
+		file.fdButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#GAMEMODE_COOP" )
+		Hud_AddEventHandler( file.fdButton, UIE_CLICK, OnPlayFDButton_Activate )
+	#else
+		// "Launch Multiplayer" button removed because we don't support vanilla yet :clueless:
+		//file.mpButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MULTIPLAYER_LAUNCH" )
+		//Hud_AddEventHandler( file.mpButton, UIE_CLICK, OnPlayMPButton_Activate )
+		file.fdButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_LAUNCH_NORTHSTAR" )
+		Hud_AddEventHandler( file.fdButton, UIE_CLICK, OnPlayNSButton_Activate )
+		Hud_SetLocked( file.fdButton, true )
+	#endif
 
 	headerIndex++
 	buttonIndex = 0
@@ -137,7 +144,7 @@ void function InitMainMenuPanel()
 	//AddPanelFooterOption( file.panel, BUTTON_BACK, "", "", ClosePostGameMenu )
 
 	thread TrackInstallProgress()
-	UpdateCustomMainMenuPromos()
+	thread UpdateCustomMainMenuPromos()
 }
 
 void function OnShowMainMenuPanel()
@@ -170,9 +177,11 @@ void function OnShowMainMenuPanel()
 	#endif // PS4_PROG
 
 	UpdateSPButtons()
-	// dont try and update the launch multiplayer button, because it doesn't exist
-	//thread UpdatePlayButton( file.mpButton )
+	#if VANILLA
+	thread UpdatePlayButton( file.mpButton )
+	#else
 	thread UpdatePlayButton( file.fdButton )
+	#endif
 	thread MonitorTrialVersionChange()
 
 	#if DURANGO_PROG
@@ -402,55 +411,68 @@ void function UpdatePlayButton( var button )
 			buttonText = "#MULTIPLAYER_LAUNCH"
 			message = ""
 
-			if ( !isOriginConnected )
-			{
-				message = "#ORIGIN_IS_OFFLINE"
-				file.mpButtonActivateFunc = null
-			}
-			else if ( !isStryderAuthenticated )
-			{
-				message = "#CONTACTING_RESPAWN_SERVERS"
-				file.mpButtonActivateFunc = null
-			}
-			else if ( button == file.mpButton && !isMPAllowed )
-			{
-				message = "#MULTIPLAYER_NOT_AVAILABLE"
-				file.mpButtonActivateFunc = null
-			}
-			else if ( button == file.mpButton && !hasLatestPatch )
-			{
-				message = "#ORIGIN_UPDATE_AVAILABLE"
-				file.mpButtonActivateFunc = null
-			}
-			else if ( button == file.fdButton && GetConVarInt( "ns_has_agreed_to_send_token" ) != NS_AGREED_TO_SEND_TOKEN )
-			{
-				message = "#AUTHENTICATIONAGREEMENT_NO"
-				file.mpButtonActivateFunc = null
-			}
-			else if ( button == file.mpButton )
-			{
-				// restrict non-vanilla players from accessing official servers
-				bool hasNonVanillaMods = false
-				foreach ( ModInfo mod in NSGetModsInformation() )
+			#if VANILLA
+				if ( !isOriginConnected )
 				{
-					if ( mod.enabled && mod.requiredOnClient )
+					message = "#ORIGIN_IS_OFFLINE"
+					file.mpButtonActivateFunc = null
+				}
+				else if ( !isStryderAuthenticated )
+				{
+					message = "#CONTACTING_RESPAWN_SERVERS"
+					file.mpButtonActivateFunc = null
+				}
+				else if ( !isMPAllowed )
+				{
+					message = "#MULTIPLAYER_NOT_AVAILABLE"
+					file.mpButtonActivateFunc = null
+				}
+				else if ( !hasLatestPatch )
+				{
+					message = "#ORIGIN_UPDATE_AVAILABLE"
+					file.mpButtonActivateFunc = null
+				}
+				else
+				{
+					// restrict non-vanilla players from accessing official servers
+					bool hasNonVanillaMods = false
+					foreach ( ModInfo mod in NSGetModsInformation() )
 					{
-						hasNonVanillaMods = true
-						break
+						if ( mod.enabled && mod.requiredOnClient )
+						{
+							hasNonVanillaMods = true
+							break
+						}
+					}
+
+					if ( hasNonVanillaMods )
+					{
+						message = "#HAS_NON_VANILLA_MODS"
+						file.mpButtonActivateFunc = null
+					}
+					else
+					{
+						file.mpButtonActivateFunc = LaunchMP
 					}
 				}
-
-				if ( hasNonVanillaMods )
+			#else
+				if ( GetConVarInt( "ns_has_agreed_to_send_token" ) != NS_AGREED_TO_SEND_TOKEN )
+				{
+					message = "#AUTHENTICATIONAGREEMENT_NO"
 					file.mpButtonActivateFunc = null
+				}
 				else
+				{
 					file.mpButtonActivateFunc = LaunchMP
-			}
+				}
+			#endif
 
 			isLocked = file.mpButtonActivateFunc == null ? true : false
-			if( button == file.fdButton )
+			#if !VANILLA
 				thread TryUnlockNorthstarButton()
-			else
+			#else
 				Hud_SetLocked( button, isLocked )
+			#endif
 		#endif
 
 		if ( Script_IsRunningTrialVersion() && !IsTrialPeriodActive() && file.mpButtonActivateFunc != LaunchGamePurchase )
@@ -461,11 +483,26 @@ void function UpdatePlayButton( var button )
 			message = ""
 		}
 
-		// dont try and update the launch multiplayer button, because it doesn't exist
-		//ComboButton_SetText( file.mpButton, buttonText )
+		#if VANILLA
+			ComboButton_SetText( file.mpButton, buttonText )
 
-		ComboButton_SetText( file.fdButton, "#MENU_LAUNCH_NORTHSTAR" )
-		//Hud_SetEnabled( file.fdButton, false )
+			if ( Hud_IsLocked( button ) || buttonText == "#MENU_GET_THE_FULL_GAME" )
+			{
+				ComboButton_SetText( file.fdButton, "" )
+				Hud_SetEnabled( file.fdButton, false )
+			}
+			else
+			{
+				ComboButton_SetText( file.fdButton, "#MULTIPLAYER_LAUNCH_FD" )
+				Hud_SetEnabled( file.fdButton, true )
+			}
+		#else
+			// dont try and update the launch multiplayer button, because it doesn't exist
+			//ComboButton_SetText( file.mpButton, buttonText )
+
+			ComboButton_SetText( file.fdButton, "#MENU_LAUNCH_NORTHSTAR" )
+			//Hud_SetEnabled( file.fdButton, false )
+		#endif
 
 		if ( file.installing )
 			message = ""
@@ -530,7 +567,20 @@ void function TryUnlockNorthstarButton()
 	Hud_SetLocked( file.fdButton, false )
 }
 
-void function OnPlayFDButton_Activate( var button ) // repurposed for launching northstar lobby
+void function OnPlayFDButton_Activate( var button )
+{
+	if ( file.mpButtonActivateFunc == null )
+		printt( "file.mpButtonActivateFunc is null" )
+
+	if ( !Hud_IsLocked( button ) && file.mpButtonActivateFunc != null )
+	{
+		Lobby_SetAutoFDOpen( true )
+		// Lobby_SetFDMode( true )
+		thread file.mpButtonActivateFunc()
+	}
+}
+
+void function OnPlayNSButton_Activate( var button )
 {
 	if ( !Hud_IsLocked( button ) )
 	{
@@ -796,9 +846,12 @@ void function TrackInstallProgress()
 
 bool function IsStryderAuthenticated()
 {
-	// We don't actually need to wait for Stryder response, because we don't care about it anyway
-	return true
-	//return GetConVarInt( "mp_allowed" ) != -1
+	#if VANILLA
+		return GetConVarInt( "mp_allowed" ) != -1
+	#else
+		// We don't actually need to wait for Stryder response, because we don't care about it anyway
+		return true
+	#endif
 }
 
 bool function IsStryderAllowingMP()
@@ -851,6 +904,8 @@ enum eMainMenuPromoDataProperty
 
 void function UpdateCustomMainMenuPromos()
 {
+	// HACK: wait a frame, so that autoexec_ns_client.cfg has taken effect and changed the masterserver hostname
+	WaitFrame()
 	NSRequestCustomMainMenuPromos()
 
 	thread UpdateCustomMainMenuPromosThreaded()

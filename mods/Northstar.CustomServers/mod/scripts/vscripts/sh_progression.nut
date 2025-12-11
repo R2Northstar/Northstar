@@ -60,7 +60,9 @@ bool function ProgressionEnabledForPlayer( entity player )
 #if SERVER
 void function OnPlaying()
 {
-	SetUIVar( level, "penalizeDisconnect", false ) // dont show the "you will lose merits thing"
+	#if !VANILLA
+		SetUIVar( level, "penalizeDisconnect", false ) // dont show the "you will lose merits thing"
+	#endif
 }
 
 void function OnClientDisconnected( entity player )
@@ -132,16 +134,22 @@ void function Progression_SetPreference( bool enabled )
 {
 	SetConVarBool( "ns_progression_enabled", enabled )
 
-	#if CLIENT
-	GetLocalClientPlayer().ClientCommand( "ns_progression " + enabled.tointeger() )
-	#else // UI
-	ClientCommand( "ns_progression " + enabled.tointeger() )
+	#if !VANILLA
+		#if CLIENT
+		GetLocalClientPlayer().ClientCommand( "ns_progression " + enabled.tointeger() )
+		#else // UI
+		ClientCommand( "ns_progression " + enabled.tointeger() )
+		#endif
 	#endif
 }
 
 bool function Progression_GetPreference()
 {
+	#if VANILLA
+	return true
+	#else
 	return GetConVarBool( "ns_progression_enabled" )
+	#endif
 }
 
 void function UpdateCachedLoadouts_Delayed()
