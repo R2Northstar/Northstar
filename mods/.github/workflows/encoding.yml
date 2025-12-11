@@ -7,9 +7,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Check localization files encoding
+      - name: Check Northstar.Client localization files encoding
         run: |
           files=$(ls Northstar.Client/mod/resource/northstar_client_localisation_*.txt)
+          IFS=$'\n'; files=($files); unset IFS; ! file --mime "${files[@]}" | grep -v "charset=utf-16le"
+      - name: Check Northstar.Custom localization files encoding
+        run: |
+          files=$(ls Northstar.Custom/mod/resource/northstar_custom_*.txt)
           IFS=$'\n'; files=($files); unset IFS; ! file --mime "${files[@]}" | grep -v "charset=utf-16le"
   check-missing-translations:
     runs-on: ubuntu-22.04
