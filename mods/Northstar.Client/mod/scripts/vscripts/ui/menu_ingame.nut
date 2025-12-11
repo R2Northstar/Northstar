@@ -85,9 +85,11 @@ void function InitInGameMPMenu()
 	var gameHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_GAME" )
 	var leaveButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#LEAVE_MATCH" )
 	Hud_AddEventHandler( leaveButton, UIE_CLICK, OnLeaveButton_Activate )
-	var teamChangeButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#SWITCH_TEAMS" )
-	Hud_AddEventHandler( teamChangeButton, UIE_CLICK, OnRequestTeamSwitch )
-	thread UpdateTeamSwitchButton_Threaded( teamChangeButton )
+	#if !VANILLA
+		var teamChangeButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#SWITCH_TEAMS" )
+		Hud_AddEventHandler( teamChangeButton, UIE_CLICK, OnRequestTeamSwitch )
+		thread UpdateTeamSwitchButton_Threaded( teamChangeButton )
+	#endif
 	#if DEV
 		var devButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "Dev" )
 		Hud_AddEventHandler( devButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "DevMenu" ) ) )

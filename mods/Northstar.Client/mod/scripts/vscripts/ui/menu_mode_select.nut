@@ -17,6 +17,9 @@ global enum eModeMenuModeCategory
 }
 
 // List of blocked modes due to them being unfinished
+#if VANILLA
+const array<string> blockedModes = []
+#else
 const array<string> blockedModes =
 [
 	"fd_easy",
@@ -25,6 +28,7 @@ const array<string> blockedModes =
 	"fd_master",
 	"fd_insane"
 ]
+#endif
 
 struct ListEntry_t {
 	string mode

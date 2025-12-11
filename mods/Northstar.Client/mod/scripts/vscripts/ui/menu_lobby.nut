@@ -230,16 +230,24 @@ void function InitLobbyMenu()
 
 void function ShowToggleProgressionDialog( var button )
 {
-	bool enabled = Progression_GetPreference()
+	#if VANILLA
+		DialogData dialogData
+		dialogData.menu = GetMenu( "AnnouncementDialog" )
+		dialogData.header = "#PROGRESSION_TOGGLE_ENABLED_HEADER"
+		dialogData.message = "#PROGRESSION_TOGGLE_VANILLA"
+		dialogData.image = $"ui/menu/common/dialog_announcement_1"
+	#else
+		bool enabled = Progression_GetPreference()
 
-	DialogData dialogData
-	dialogData.menu = GetMenu( "AnnouncementDialog" )
-	dialogData.header = enabled ? "#PROGRESSION_TOGGLE_ENABLED_HEADER" : "#PROGRESSION_TOGGLE_DISABLED_HEADER"
-	dialogData.message = enabled ? "#PROGRESSION_TOGGLE_ENABLED_BODY" : "#PROGRESSION_TOGGLE_DISABLED_BODY"
-	dialogData.image = $"ui/menu/common/dialog_announcement_1"
+		DialogData dialogData
+		dialogData.menu = GetMenu( "AnnouncementDialog" )
+		dialogData.header = enabled ? "#PROGRESSION_TOGGLE_ENABLED_HEADER" : "#PROGRESSION_TOGGLE_DISABLED_HEADER"
+		dialogData.message = enabled ? "#PROGRESSION_TOGGLE_ENABLED_BODY" : "#PROGRESSION_TOGGLE_DISABLED_BODY"
+		dialogData.image = $"ui/menu/common/dialog_announcement_1"
 
-	AddDialogButton( dialogData, "#NO" )
-	AddDialogButton( dialogData, "#YES", enabled ? DisableProgression : EnableProgression )
+		AddDialogButton( dialogData, "#NO" )
+		AddDialogButton( dialogData, "#YES", enabled ? DisableProgression : EnableProgression )
+	#endif
 
 	OpenDialog( dialogData )
 }
@@ -288,21 +296,32 @@ void function SetupComboButtonTest( var menu )
 	int buttonIndex = 0
 	file.playHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_PLAY" )
 	
-	// server browser
-	file.findGameButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_SERVER_BROWSER" )
-	file.lobbyButtons.append( file.findGameButton )
-	Hud_SetLocked( file.findGameButton, true )
-	Hud_AddEventHandler( file.findGameButton, UIE_CLICK, OpenServerBrowser )
+	#if VANILLA
+		file.findGameButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_FIND_GAME" )
+		file.lobbyButtons.append( file.findGameButton )
+		Hud_AddEventHandler( file.findGameButton, UIE_CLICK, BigPlayButton1_Activate )
 
-	// private match
-	file.inviteRoomButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#PRIVATE_MATCH" )
-	Hud_AddEventHandler( file.inviteRoomButton, UIE_CLICK, StartPrivateMatch )
+		file.inviteRoomButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_INVITE_ROOM" )
+		Hud_AddEventHandler( file.inviteRoomButton, UIE_CLICK, DoRoomInviteIfAllowed )
+	#else
+		// server browser
+		file.findGameButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_SERVER_BROWSER" )
+		file.lobbyButtons.append( file.findGameButton )
+		Hud_SetLocked( file.findGameButton, true )
+		Hud_AddEventHandler( file.findGameButton, UIE_CLICK, OpenServerBrowser )
+
+		// private match
+		file.inviteRoomButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#PRIVATE_MATCH" )
+		Hud_AddEventHandler( file.inviteRoomButton, UIE_CLICK, StartPrivateMatch )
+	#endif
 
 	file.inviteFriendsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_TITLE_INVITE_FRIENDS" )
 	Hud_AddEventHandler( file.inviteFriendsButton, UIE_CLICK, InviteFriendsIfAllowed )
 
-	Hud_SetEnabled( file.inviteFriendsButton, false )
-	Hud_SetVisible( file.inviteFriendsButton, false )
+	#if !VANILLA
+		Hud_SetEnabled( file.inviteFriendsButton, false )
+		Hud_SetVisible( file.inviteFriendsButton, false )
+	#endif
 
 	// file.toggleMenuModeButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_LOBBY_SWITCH_FD" )
 	// Hud_AddEventHandler( file.toggleMenuModeButton, UIE_CLICK, ToggleLobbyMode )
@@ -1268,7 +1287,9 @@ function UpdateLobbyUI()
 	thread UpdateLobbyType()
 	thread UpdateMatchmakingStatus()
 	thread UpdateChatroomThread()
-	//thread UpdateInviteJoinButton()
+	#if VANILLA
+		thread UpdateInviteJoinButton()
+	#endif
 	thread UpdateInviteFriendsToNetworkButton()
 	thread UpdatePlayerInfo()
 

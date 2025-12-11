@@ -1,6 +1,12 @@
 global function AddNorthstarCustomMatchSettingsMenu
 global function SetNextMatchSettingsCategory
 
+#if VANILLA
+const string OVERRIDE_COMMAND = "setplaylistvaroverrides"
+#else
+const string OVERRIDE_COMMAND = "PrivateMatchSetPlaylistVarOverride"
+#endif
+
 const string SETTING_ITEM_TEXT = "                           " // this is long enough to be the same size as the textentry field
 
 struct {
@@ -120,7 +126,7 @@ void function OnSettingButtonPressed( var button )
 		file.enumRealValues[ int( Hud_GetScriptID( button ) ) ] = enumVal
 		Hud_SetText( textPanel, setting.enumNames[ enumVal ] )
 		
-		ClientCommand( "PrivateMatchSetPlaylistVarOverride " + setting.playlistVar + " " + setting.enumValues[ enumVal ] )
+		ClientCommand( OVERRIDE_COMMAND + " " + setting.playlistVar + " " + setting.enumValues[ enumVal ] )
 	}
 	else
 	{
@@ -137,5 +143,7 @@ void function SendTextPanelChanges( var textPanel )
 	
 	// enums don't need to do this
 	if ( !setting.isEnumSetting )
-		ClientCommand( "PrivateMatchSetPlaylistVarOverride " + setting.playlistVar + " " + Hud_GetUTF8Text( textPanel ) )
+	{
+		ClientCommand( OVERRIDE_COMMAND + " " + setting.playlistVar + " " + Hud_GetUTF8Text( textPanel ) )
+	}
 }
