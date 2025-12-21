@@ -316,12 +316,13 @@ void function PlayerAssistedKill( entity attacker, entity victim )
 
 void function CodeCallback_OnPlayerKilled( entity player, var damageInfo )
 {
+	bool gamePlayingOrSuddenDeath = GamePlayingOrSuddenDeath() // PlayerOrNPCKilled can result in the gamestate changing, so store it before that happens
 	PlayerOrNPCKilled( player, damageInfo )
 	HandleDeathPackage( player, damageInfo )
-	thread PostDeathThread_MP( player, damageInfo )
+	thread PostDeathThread_MP( player, damageInfo, gamePlayingOrSuddenDeath )
 }
 
-void function PostDeathThread_MP( entity player, var damageInfo ) // based on gametype_sp: postdeaththread_sp
+void function PostDeathThread_MP( entity player, var damageInfo, bool gamePlayingOrSuddenDeath ) // based on gametype_sp: postdeaththread_sp
 {
 	if ( player.s.inPostDeath )
 		return
@@ -394,7 +395,7 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 	else
 		player.SetObserverTarget( null )
 	
-	if ( ( GamePlayingOrSuddenDeath() || GetGameState() == eGameState.Epilogue ) && !file.playerDeathsHidden )
+	if ( gamePlayingOrSuddenDeath && !file.playerDeathsHidden )
 		player.AddToPlayerGameStat( PGS_DEATHS, 1 )
 	
 	if ( !file.playerDeathsHidden )
@@ -460,7 +461,7 @@ void function PostDeathThread_MP( entity player, var damageInfo ) // based on ga
 		else // spawn as pilot
 			RespawnAsPilot( player )
 	}
-	else if ( GamePlayingOrSuddenDeath() || GetGameState() == eGameState.Epilogue )
+	else if ( gamePlayingOrSuddenDeath || GetGameState() == eGameState.Epilogue )
 	{
 		if ( shouldDoReplay && player.IsWatchingKillReplay() )
 			player.WaitSignal( "KillCamOver" )
