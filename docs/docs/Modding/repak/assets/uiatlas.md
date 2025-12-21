@@ -10,10 +10,10 @@ reference a single texture asset, known as the `atlas` and have an array of
 
 ```json
 {
-    "$type":"uimg",
-    "path":"rui/atlas/example1",
+    "_type":"uimg",
+    "_path":"rui/atlas/example1",
     "atlas":"rui/example1",
-    "textures":
+    "images":
     [
         {
             "path":"rui/example1/texture1",
@@ -38,62 +38,6 @@ reference a single texture asset, known as the `atlas` and have an array of
     This UI Image Atlas expects a texture with the path of `rui/example1` which is at
     least 256x128
 
-### 2. Full Map File With a UI Image Atlas
-
-```json
-{
-    "name":"blue_fire",
-    "assetsDir":"../depot",
-    "outputDir":"../rpaks",
-    "version": 7,
-    "files":[
-        {
-            "$type":"txtr",
-            "path":"rui/blue_fire"
-        },
-        {
-            "$type":"uimg",
-            "path":"rui/atlas/blue_fire",
-            "atlas":"rui/blue_fire",
-            "textures":[
-                {
-                    "path":"blue_fire/hud/flame_wall",
-                    "width":128,
-                    "height":128,
-                    "posX":0,
-                    "posY":0
-                },
-                {
-                    "path":"blue_fire/menu/flame_wall",
-                    "width":128,
-                    "height":128,
-                    "posX":128,
-                    "posY":0
-                },
-                {
-                    "path":"blue_fire/hud/flame_shield",
-                    "width":128,
-                    "height":128,
-                    "posX":0,
-                    "posY":128
-                },
-                {
-                    "path":"blue_fire/menu/flame_shield",
-                    "width":128,
-                    "height":128,
-                    "posX":128,
-                    "posY":128
-                }
-            ]
-        }
-    ]
-}
-```
-
-!!! note
-
-    This map file is a shortened version of the one used in EXRILL's
-    [Blue Fire](https://northstar.thunderstore.io/package/EXRILL/Exrills_BlueFire_mod_Beta/) mod
 
 ## Asset Structure:
 
