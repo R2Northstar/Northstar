@@ -1,0 +1,288 @@
+
+global function AddAnimEvent
+global function DeleteAnimEvent
+global function GetOptionalAnimEventVar
+global function RunAnimEventCallbacks
+global function HasAnimEvent
+
+#if SERVER
+global function AddGlobalAnimEvent
+global function GlobalAnimEventWithStringParameter_WorldSound
+global function SendSignalFromTokens
+global function GlobalAnimEventWithStringParameter_FlagSet
+#endif
+
+#if CLIENT
+global function ClientCodeCallback_HandleClientAnimEvent
+#endif
+
+global struct AnimEventData
+{
+	string eventName
+	void functionref( entity ) callback
+	var optionalVar
+}
+
+AnimEventData function GetAnimEventDataForEvent( entity ent, string eventName )
+{
+	Assert( eventName in ent.e.animEventDataForEntity )
+	return ent.e.animEventDataForEntity[ eventName ]
+}
+
+var function GetOptionalAnimEventVar( entity ent, string eventName )
+{
+	AnimEventData animEventData = GetAnimEventDataForEvent( ent, eventName )
+	return animEventData.optionalVar
+}
+
+// when the ent animates and hits an AE_SV_VSCRIPT_CALLBACK event, he will
+// call the function registered to the given eventName
+void function AddAnimEvent( entity ent, string eventName, void functionref( entity ent ) func, var optionalVar = null )
+{
+	Assert( !HasAnimEvent( ent, eventName ), "Already added anim event " + eventName + " for " + ent )
+
+	AnimEventData animEventData
+	animEventData.eventName = eventName
+	animEventData.callback = func
+	animEventData.optionalVar = optionalVar
+	ent.e.animEventDataForEntity[ eventName ] <- animEventData
+}
+
+void function DeleteAnimEvent( entity ent, string eventName )
+{
+	Assert( HasAnimEvent( ent, eventName ) )
+	delete ent.e.animEventDataForEntity[ eventName ]
+}
+
+bool function HasAnimEvent( entity ent, string eventName )
+{
+	return eventName in ent.e.animEventDataForEntity
+}
+
+void function RunAnimEventCallbacks( entity ent, string eventName )
+{
+	Assert( HasAnimEvent( ent, eventName ) )
+	ent.e.animEventDataForEntity[ eventName ].callback( ent )
+}
+
+#if SERVER
+// when this guy animates and hits an AE_SV_VSCRIPT_CALLBACK event, he will
+// call the function registered to the given name
+void function AddGlobalAnimEvent( string name, void functionref(entity) func )
+{
+	Assert( !( name in svGlobal.globalAnimEventCallbacks ), "Already created global anim event " + name )
+	svGlobal.globalAnimEventCallbacks[ name ] <- func
+}
+
+void function GlobalAnimEventWithStringParameter_Signal( entity guy, string msg )
+{
+	guy.Signal( msg, { signal = msg } )
+}
+
+void function GlobalAnimEventWithStringParameter_WorldSound( entity guy, string msg )
+{
+	array<string> tokens = split( msg, " " )
+	string sound = tokens[0]
+	vector origin
+	if ( tokens.len() == 1 )
+	{
+		origin = guy.GetOrigin()
+	}
+	else
+	{
+		string tag = tokens[1]
+		int index = guy.LookupAttachment( tag )
+		origin = guy.GetAttachmentOrigin( index )
+	}
+
+	EmitSoundAtPosition( guy.GetTeam(), origin, sound )
+}
+
+void function GlobalAnimEventWithStringParameter_FlagSet( entity guy, string msg )
+{
+	//printl( "FLAG SET " + msg )
+	FlagSet( msg )
+}
+
+#endif // server
+
+void function SendSignalFromTokens( entity self, array<string> tokens )
+{
+	if ( tokens.len() == 2 )
+	{
+		self.Signal( tokens[1], { signal = tokens[1] } )
+	}
+	else
+	{
+		self.Signal( tokens[1], { signal = tokens[1], parm = tokens[2] } )
+	}
+}
+
+#if CLIENT
+
+void function ClientCodeCallback_HandleClientAnimEvent( entity self, string eventName )
+{
+	if ( HasAnimEvent( self, eventName ) )
+		thread RunAnimEventCallbacks( self, eventName )
+
+	if ( eventName.find( ":" ) != null )
+	{
+		array<string> tokens = split( eventName, ":" )
+		string eventName = tokens[0]
+
+		switch ( eventName )
+		{
+			case "signal":
+				SendSignalFromTokens( self, tokens )
+				break
+
+			case "level_signal":
+				clGlobal.levelEnt.Signal( tokens[1] )
+				break
+
+			case "grenade_indicator":
+
+				int damageDef
+				switch ( tokens[1] )
+				{
+					case "damagedef_frag_drone_throwable":
+						entity boss = self.GetBossPlayer()
+						if ( IsValid( boss ) && boss.IsPlayer() )
+							damageDef = damagedef_frag_drone_throwable_PLAYER
+						else
+							damageDef = damagedef_frag_drone_throwable_NPC
+						break
+
+					default:
+						Assert( 0, "No mapping exists for damageDef " + tokens[1] )
+						break
+				}
+
+				float damageRadius = float( expect int( Dev_DamageDef_GetSettingByKeyField( damageDef, "radius" ) ) )
+
+				entity player = GetLocalViewPlayer()
+
+				if ( IsAlive( self ) )
+					thread GrenadeArrowThink( player, self, damageRadius, 0, false )
+				break
+
+			case "pet_titan_1p_sound":
+				Assert( tokens.len() == 2 )
+				Assert( self.IsTitan() )
+				entity player = GetLocalViewPlayer()
+				if ( self.GetBossPlayerName() == player.GetPlayerName()  )
+				{
+					//printt( "local player is boss player!" )
+					//printt( "Emit sound: " + tokens[1] + " on " + self )
+					EmitSoundOnEntity( self, tokens[1] )
+				}
+				break
+
+			case "pet_titan_3p_sound":
+				Assert( tokens.len() == 2 )
+				Assert( self.IsTitan() )
+				entity player = GetLocalViewPlayer()
+				if ( self.GetBossPlayerName() != player.GetPlayerName()  )
+				{
+					//printt( "local player is not boss player!" )
+					//printt( "Emit sound: " + tokens[1] + " on " + self )
+					EmitSoundOnEntity( self, tokens[1] )
+
+				}
+				break
+
+			case "screenblur":
+				Assert( tokens.len() == 3 )
+				float blur = float( tokens[1] )
+				float blendtime = float( tokens[2] ) / 30
+				printt( "blur", blur, blendtime )
+				SetScreenBlur( blur, blendtime, EASING_SINE_INOUT )
+				break
+
+			case "fade_to_black":
+				Assert( tokens.len() == 2 )
+				entity player = GetLocalViewPlayer()
+				float fadetime = float( tokens[1] ) / 30
+				ScreenFade( player, 0, 0, 0, 255, fadetime, 10, FFADE_OUT | FFADE_PURGE )
+				break
+
+			case "fade_from_black":
+				Assert( tokens.len() == 2 )
+				entity player = GetLocalViewPlayer()
+				float fadetime = float( tokens[1] ) / 30
+				ScreenFade( player, 0, 0, 0, 255, fadetime, 0.1, FFADE_IN | FFADE_PURGE ) //0.1 hold to fix issue with lerp
+				//	ScreenFade( player, 0, 0, 0, 255, fadetime, 0.0, FFADE_IN | FFADE_PURGE )
+				break
+
+			case "screenshake":
+				// ex: "screenshake:5:20:3: // amplitude = 5,  frequency = 20, duration 3
+				Assert( tokens.len() == 4 )
+				ClientScreenShake( float( tokens[1] ), float( tokens[2] ), float( tokens[3] ), <0,0,0> )
+				break
+		}
+		return
+	}
+
+	switch ( eventName )
+	{
+		case "hide_cockpit":
+		{
+			entity player = GetLocalViewPlayer()
+			entity proxy = player.GetFirstPersonProxy()
+			if ( IsValid( proxy ) && proxy == self )
+				player.GetCockpit().Hide()
+			break
+		}
+
+		//Best to do it like this instead of using the signalling functionality above
+		//since the above functionality is for signalling the animating entity,
+		//i.e. the prop dynamic animating instead of the player seeing the animation
+		case "close_vdu":
+		{
+			entity player = GetLocalViewPlayer()
+			player.Signal( "ConversationOver" )
+			break
+		}
+
+		case "vdu_static_light":
+		{
+			break
+		}
+
+		case "vdu_static_heavy":
+		{
+			break
+		}
+
+		case "vdu_static_off":
+		{
+			break
+		}
+
+		case "screen_blackout" :
+		{
+			printt("We got screen blackout event!")
+			break
+		}
+
+		case "vdu_close" :
+		{
+			break
+		}
+
+		case "mp_frag_drone_fx":
+		{
+			thread PlayWarningFXOnMPFragDrone( self ) //Can't just do AE_CL_CREATE_PARTICLE_EFFECT because those effects are only stopped when the entity is destroyed as opposed to killed. See bug 159462
+			break
+		}
+
+		case "sp_tick_fx":
+		{
+			thread PlayWarningFXOnSPTick( self ) //Can't just do AE_CL_CREATE_PARTICLE_EFFECT because those effects are only stopped when the entity is destroyed as opposed to killed. See bug 159462
+			break
+		}
+	}
+	return
+}
+
+#endif // client
