@@ -12,7 +12,7 @@
 template <ScriptContext context>
 void DecodeJsonArray(HSQUIRRELVM sqvm, rapidjson::GenericValue<rapidjson::UTF8<char>, rapidjson::MemoryPoolAllocator<SourceAllocator>>* arr)
 {
-	g_pSquirrel<context>->newarray(sqvm, 0);
+	g_pSquirrel[context]->newarray(sqvm, 0);
 
 	for (auto& itr : arr->GetArray())
 	{
@@ -20,27 +20,27 @@ void DecodeJsonArray(HSQUIRRELVM sqvm, rapidjson::GenericValue<rapidjson::UTF8<c
 		{
 		case rapidjson::kObjectType:
 			DecodeJsonTable<context>(sqvm, &itr);
-			g_pSquirrel<context>->arrayappend(sqvm, -2);
+			g_pSquirrel[context]->arrayappend(sqvm, -2);
 			break;
 		case rapidjson::kArrayType:
 			DecodeJsonArray<context>(sqvm, &itr);
-			g_pSquirrel<context>->arrayappend(sqvm, -2);
+			g_pSquirrel[context]->arrayappend(sqvm, -2);
 			break;
 		case rapidjson::kStringType:
-			g_pSquirrel<context>->pushstring(sqvm, itr.GetString(), -1);
-			g_pSquirrel<context>->arrayappend(sqvm, -2);
+			g_pSquirrel[context]->pushstring(sqvm, itr.GetString(), -1);
+			g_pSquirrel[context]->arrayappend(sqvm, -2);
 			break;
 		case rapidjson::kTrueType:
 		case rapidjson::kFalseType:
-			g_pSquirrel<context>->pushbool(sqvm, itr.GetBool());
-			g_pSquirrel<context>->arrayappend(sqvm, -2);
+			g_pSquirrel[context]->pushbool(sqvm, itr.GetBool());
+			g_pSquirrel[context]->arrayappend(sqvm, -2);
 			break;
 		case rapidjson::kNumberType:
 			if (itr.IsDouble() || itr.IsFloat())
-				g_pSquirrel<context>->pushfloat(sqvm, itr.GetFloat());
+				g_pSquirrel[context]->pushfloat(sqvm, itr.GetFloat());
 			else
-				g_pSquirrel<context>->pushinteger(sqvm, itr.GetInt());
-			g_pSquirrel<context>->arrayappend(sqvm, -2);
+				g_pSquirrel[context]->pushinteger(sqvm, itr.GetInt());
+			g_pSquirrel[context]->arrayappend(sqvm, -2);
 			break;
 		case rapidjson::kNullType:
 			break;
@@ -51,48 +51,48 @@ void DecodeJsonArray(HSQUIRRELVM sqvm, rapidjson::GenericValue<rapidjson::UTF8<c
 template <ScriptContext context>
 void DecodeJsonTable(HSQUIRRELVM sqvm, rapidjson::GenericValue<rapidjson::UTF8<char>, rapidjson::MemoryPoolAllocator<SourceAllocator>>* obj)
 {
-	g_pSquirrel<context>->newtable(sqvm);
+	g_pSquirrel[context]->newtable(sqvm);
 
 	for (auto itr = obj->MemberBegin(); itr != obj->MemberEnd(); itr++)
 	{
 		switch (itr->value.GetType())
 		{
 		case rapidjson::kObjectType:
-			g_pSquirrel<context>->pushstring(sqvm, itr->name.GetString(), -1);
+			g_pSquirrel[context]->pushstring(sqvm, itr->name.GetString(), -1);
 			DecodeJsonTable<context>(
 				sqvm, (rapidjson::GenericValue<rapidjson::UTF8<char>, rapidjson::MemoryPoolAllocator<SourceAllocator>>*)&itr->value);
-			g_pSquirrel<context>->newslot(sqvm, -3, false);
+			g_pSquirrel[context]->newslot(sqvm, -3, false);
 			break;
 		case rapidjson::kArrayType:
-			g_pSquirrel<context>->pushstring(sqvm, itr->name.GetString(), -1);
+			g_pSquirrel[context]->pushstring(sqvm, itr->name.GetString(), -1);
 			DecodeJsonArray<context>(
 				sqvm, (rapidjson::GenericValue<rapidjson::UTF8<char>, rapidjson::MemoryPoolAllocator<SourceAllocator>>*)&itr->value);
-			g_pSquirrel<context>->newslot(sqvm, -3, false);
+			g_pSquirrel[context]->newslot(sqvm, -3, false);
 			break;
 		case rapidjson::kStringType:
-			g_pSquirrel<context>->pushstring(sqvm, itr->name.GetString(), -1);
-			g_pSquirrel<context>->pushstring(sqvm, itr->value.GetString(), -1);
+			g_pSquirrel[context]->pushstring(sqvm, itr->name.GetString(), -1);
+			g_pSquirrel[context]->pushstring(sqvm, itr->value.GetString(), -1);
 
-			g_pSquirrel<context>->newslot(sqvm, -3, false);
+			g_pSquirrel[context]->newslot(sqvm, -3, false);
 			break;
 		case rapidjson::kTrueType:
 		case rapidjson::kFalseType:
-			g_pSquirrel<context>->pushstring(sqvm, itr->name.GetString(), -1);
-			g_pSquirrel<context>->pushbool(sqvm, itr->value.GetBool());
-			g_pSquirrel<context>->newslot(sqvm, -3, false);
+			g_pSquirrel[context]->pushstring(sqvm, itr->name.GetString(), -1);
+			g_pSquirrel[context]->pushbool(sqvm, itr->value.GetBool());
+			g_pSquirrel[context]->newslot(sqvm, -3, false);
 			break;
 		case rapidjson::kNumberType:
 			if (itr->value.IsDouble() || itr->value.IsFloat())
 			{
-				g_pSquirrel<context>->pushstring(sqvm, itr->name.GetString(), -1);
-				g_pSquirrel<context>->pushfloat(sqvm, itr->value.GetFloat());
+				g_pSquirrel[context]->pushstring(sqvm, itr->name.GetString(), -1);
+				g_pSquirrel[context]->pushfloat(sqvm, itr->value.GetFloat());
 			}
 			else
 			{
-				g_pSquirrel<context>->pushstring(sqvm, itr->name.GetString(), -1);
-				g_pSquirrel<context>->pushinteger(sqvm, itr->value.GetInt());
+				g_pSquirrel[context]->pushstring(sqvm, itr->name.GetString(), -1);
+				g_pSquirrel[context]->pushinteger(sqvm, itr->value.GetInt());
 			}
-			g_pSquirrel<context>->newslot(sqvm, -3, false);
+			g_pSquirrel[context]->newslot(sqvm, -3, false);
 			break;
 		case rapidjson::kNullType:
 			break;
@@ -201,14 +201,14 @@ ADD_SQFUNC(
 	"converts a json string to a squirrel table",
 	ScriptContext::UI | ScriptContext::CLIENT | ScriptContext::SERVER)
 {
-	const char* pJson = g_pSquirrel<context>->getstring(sqvm, 1);
-	const bool bFatalParseErrors = g_pSquirrel<context>->getbool(sqvm, 2);
+	const char* pJson = g_pSquirrel[context]->getstring(sqvm, 1);
+	const bool bFatalParseErrors = g_pSquirrel[context]->getbool(sqvm, 2);
 
 	rapidjson_document doc;
 	doc.Parse(pJson);
 	if (doc.HasParseError())
 	{
-		g_pSquirrel<context>->newtable(sqvm);
+		g_pSquirrel[context]->newtable(sqvm);
 
 		std::string sErrorString = fmt::format(
 			"Failed parsing json file: encountered parse error \"{}\" at offset {}",
@@ -217,7 +217,7 @@ ADD_SQFUNC(
 
 		if (bFatalParseErrors)
 		{
-			g_pSquirrel<context>->raiseerror(sqvm, sErrorString.c_str());
+			g_pSquirrel[context]->raiseerror(sqvm, sErrorString.c_str());
 			return SQRESULT_ERROR;
 		}
 
@@ -249,6 +249,6 @@ ADD_SQFUNC(
 	doc.Accept(writer);
 	const char* pJsonString = buffer.GetString();
 
-	g_pSquirrel<context>->pushstring(sqvm, pJsonString, -1);
+	g_pSquirrel[context]->pushstring(sqvm, pJsonString, -1);
 	return SQRESULT_NOTNULL;
 }

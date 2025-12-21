@@ -4,6 +4,7 @@
 #include "squirrelautobind.h"
 #include "core/math/vector.h"
 #include "mods/modmanager.h"
+#include <vscript/languages/squirrel_re/vsquirrel.h>
 
 namespace fs = std::filesystem;
 
@@ -12,9 +13,9 @@ namespace fs = std::filesystem;
 	required to function
 */
 
-template <ScriptContext context, typename T> inline void SqRecurseArgs(FunctionVector& v, T& arg);
+template <typename T> inline void SqRecurseArgs(FunctionVector& v, T& arg);
 
-template <ScriptContext context, typename T, typename... Args> inline void SqRecurseArgs(FunctionVector& v, T& arg, Args... args);
+template <typename T, typename... Args> inline void SqRecurseArgs(FunctionVector& v, T& arg, Args... args);
 
 /*
 	sanity below
@@ -56,24 +57,38 @@ ScriptContext ScriptContextFromString(std::string string);
 
 namespace NS::log
 {
-	template <ScriptContext context> std::shared_ptr<spdlog::logger> squirrel_logger();
+	std::shared_ptr<spdlog::logger> squirrel_logger(ScriptContext context);
 }; // namespace NS::log
 
-// This base class means that only the templated functions have to be rebuilt for each template instance
-// Cuts down on compile time by ~5 seconds
-class SquirrelManagerBase
+class SquirrelManager
 {
 protected:
 	std::vector<SQFuncRegistration*> m_funcRegistrations;
 
 public:
+	ScriptContext m_context;
+	std::shared_ptr<spdlog::logger> m_logger;
 	CSquirrelVM* m_pSQVM;
 	std::map<std::string, SQFunction> m_funcOverrides = {};
 	std::map<std::string, SQFunction> m_funcOriginals = {};
 
 	bool m_bFatalCompilationErrors = false;
 
-	std::shared_ptr<spdlog::logger> logger;
+public:
+	SquirrelManager(ScriptContext context)
+	{
+		m_pSQVM = nullptr;
+		m_context = context;
+		m_logger = NS::log::squirrel_logger(m_context);
+	}
+
+	void VMCreated(CSquirrelVM* newSqvm);
+	void VMDestroyed();
+	void ExecuteCode(const char* code);
+	void AddFuncRegistration(std::string returnType, std::string name, std::string argTypes, std::string helpText, SQFunction func);
+	SQRESULT setupfunc(const SQChar* funcname);
+	void AddFuncOverride(std::string name, SQFunction func);
+	void ProcessMessageBuffer();
 
 #pragma region SQVM funcs
 	RegisterSquirrelFuncType RegisterSquirrelFunc;
@@ -243,13 +258,9 @@ public:
 
 	inline SQRESULT sealstructslot(HSQUIRRELVM sqvm, const int fieldIndex) { return __sq_sealstructslot(sqvm, fieldIndex); }
 #pragma endregion
-};
 
-template <ScriptContext context> class SquirrelManager : public virtual SquirrelManagerBase
-{
-public:
 #pragma region MessageBuffer
-	SquirrelMessageBuffer* messageBuffer;
+	SquirrelMessageBuffer* m_messageBuffer;
 
 	template <typename... Args> SquirrelMessage AsyncCall(std::string funcname, Args... args)
 	{
@@ -257,13 +268,13 @@ public:
 		// This is useful for things like threads and plugins, which do not run on the main thread
 		if (!m_pSQVM || !m_pSQVM->sqvm)
 		{
-			spdlog::error("AsyncCall {} was called on context {} while VM was not initialized.", funcname, GetContextName(context));
+			spdlog::error("AsyncCall {} was called on context {} while VM was not initialized.", funcname, GetContextName(m_context));
 			return SquirrelMessage();
 		}
 		FunctionVector functionVector;
-		SqRecurseArgs<context>(functionVector, args...);
+		SqRecurseArgs(this, functionVector, args...);
 		SquirrelMessage message = {funcname, functionVector};
-		messageBuffer->push(message);
+		m_messageBuffer->push(message);
 		return message;
 	}
 
@@ -273,12 +284,12 @@ public:
 		// This is useful for things like threads and plugins, which do not run on the main thread
 		if (!m_pSQVM || !m_pSQVM->sqvm)
 		{
-			spdlog::error("AsyncCall {} was called on context {} while VM was not initialized.", funcname, GetContextName(context));
+			spdlog::error("AsyncCall {} was called on context {} while VM was not initialized.", funcname, GetContextName(m_context));
 			return SquirrelMessage();
 		}
 		FunctionVector functionVector = {};
 		SquirrelMessage message = {funcname, functionVector};
-		messageBuffer->push(message);
+		m_messageBuffer->push(message);
 		return message;
 	}
 
@@ -291,7 +302,7 @@ public:
 
 		if (!m_pSQVM || !m_pSQVM->sqvm)
 		{
-			spdlog::error("{} was called on context {} while VM was not initialized.", __FUNCTION__, GetContextName(context));
+			spdlog::error("{} was called on context {} while VM was not initialized.", __FUNCTION__, GetContextName(m_context));
 			return SQRESULT_ERROR;
 		}
 
@@ -299,7 +310,7 @@ public:
 		int result = sq_getfunction(m_pSQVM->sqvm, funcname, &functionobj, 0);
 		if (result != 0) // This func returns 0 on success for some reason
 		{
-			NS::log::squirrel_logger<context>()->error("Call was unable to find function with name '{}'. Is it global?", funcname);
+			m_logger->error("Call was unable to find function with name '{}'. Is it global?", funcname);
 			return SQRESULT_ERROR;
 		}
 		pushobject(m_pSQVM->sqvm, &functionobj); // Push the function object
@@ -315,21 +326,21 @@ public:
 		// If you want to call into squirrel asynchronously, use `schedule_call` instead
 		if (!m_pSQVM || !m_pSQVM->sqvm)
 		{
-			spdlog::error("{} was called on context {} while VM was not initialized.", __FUNCTION__, GetContextName(context));
+			spdlog::error("{} was called on context {} while VM was not initialized.", __FUNCTION__, GetContextName(m_context));
 			return SQRESULT_ERROR;
 		}
 		SQObject functionobj {};
 		int result = sq_getfunction(m_pSQVM->sqvm, funcname, &functionobj, 0);
 		if (result != 0) // This func returns 0 on success for some reason
 		{
-			NS::log::squirrel_logger<context>()->error("Call was unable to find function with name '{}'. Is it global?", funcname);
+			m_logger->error("Call was unable to find function with name '{}'. Is it global?", funcname);
 			return SQRESULT_ERROR;
 		}
 		pushobject(m_pSQVM->sqvm, &functionobj); // Push the function object
 		pushroottable(m_pSQVM->sqvm); // Push root table
 
 		FunctionVector functionVector;
-		SqRecurseArgs<context>(functionVector, args...);
+		SqRecurseArgs(this, functionVector, args...);
 
 		for (auto& v : functionVector)
 		{
@@ -341,22 +352,26 @@ public:
 	}
 
 #pragma endregion
-
-public:
-	SquirrelManager() { m_pSQVM = nullptr; }
-
-	void VMCreated(CSquirrelVM* newSqvm);
-	void VMDestroyed();
-	void ExecuteCode(const char* code);
-	void AddFuncRegistration(std::string returnType, std::string name, std::string argTypes, std::string helpText, SQFunction func);
-	SQRESULT setupfunc(const SQChar* funcname);
-	void AddFuncOverride(std::string name, SQFunction func);
-	void ProcessMessageBuffer();
 };
 
-template <ScriptContext context> SquirrelManager<context>* g_pSquirrel;
+// just a wrapper that lets us still access SquirrelManagers using [] operators
+class SquirrelManagerManager
+{
+public:
+	void InitialiseSquirrelManagers()
+	{
+		m_pSquirrel[static_cast<int>(ScriptContext::CLIENT)] = new SquirrelManager(ScriptContext::CLIENT);
+		m_pSquirrel[static_cast<int>(ScriptContext::UI)] = new SquirrelManager(ScriptContext::UI);
+		m_pSquirrel[static_cast<int>(ScriptContext::SERVER)] = new SquirrelManager(ScriptContext::SERVER);
+	}
 
-void InitialiseSquirrelManagers();
+	SquirrelManager* operator[](ScriptContext context) { return m_pSquirrel[static_cast<int>(context)]; }
+
+private:
+	SquirrelManager* m_pSquirrel[3] = {};
+};
+
+extern SquirrelManagerManager g_pSquirrel;
 
 /*
 	Beware all ye who enter below.
@@ -372,86 +387,83 @@ void InitialiseSquirrelManagers();
 #ifndef MessageBufferFuncs
 #define MessageBufferFuncs
 // Bools
-template <ScriptContext context, typename T>
+template <typename T>
 requires std::convertible_to<T, bool> && (!std::is_floating_point_v<T>) && (!std::convertible_to<T, std::string>) && (!std::convertible_to<T, int>)
-inline VoidFunction SQMessageBufferPushArg(T& arg) {
-	return [arg]{ g_pSquirrel<context>->pushbool(g_pSquirrel<context>->m_pSQVM->sqvm, static_cast<bool>(arg)); };
+inline VoidFunction SQMessageBufferPushArg(SquirrelManager* squirrel, T& arg) {
+	return [squirrel, arg]{ squirrel->pushbool(squirrel->m_pSQVM->sqvm, static_cast<bool>(arg)); };
 }
 // Vectors
-template <ScriptContext context>
-inline VoidFunction SQMessageBufferPushArg(Vector3& arg) {
-	return [arg]{ g_pSquirrel<context>->pushvector(g_pSquirrel<context>->m_pSQVM->sqvm, arg); };
+inline VoidFunction SQMessageBufferPushArg(SquirrelManager* squirrel, Vector3& arg) {
+	return [squirrel, arg]{ squirrel->pushvector(squirrel->m_pSQVM->sqvm, arg); };
 }
 // Vectors
-template <ScriptContext context>
-inline VoidFunction SQMessageBufferPushArg(SQObject* arg) {
-	return [arg]{ g_pSquirrel<context>->pushobject(g_pSquirrel<context>->m_pSQVM->sqvm, arg); };
+inline VoidFunction SQMessageBufferPushArg(SquirrelManager* squirrel, SQObject* arg) {
+	return [squirrel, arg]{ squirrel->pushobject(squirrel->m_pSQVM->sqvm, arg); };
 }
 // Ints
-template <ScriptContext context, typename T>
+template <typename T>
 requires std::convertible_to<T, int> && (!std::is_floating_point_v<T>)
-inline VoidFunction SQMessageBufferPushArg(T& arg) {
-	return [arg]{ g_pSquirrel<context>->pushinteger(g_pSquirrel<context>->m_pSQVM->sqvm, static_cast<int>(arg)); };
+inline VoidFunction SQMessageBufferPushArg(SquirrelManager* squirrel, T& arg) {
+	return [squirrel, arg]{ squirrel->pushinteger(squirrel->m_pSQVM->sqvm, static_cast<int>(arg)); };
 }
 // Floats
-template <ScriptContext context, typename T>
+template <typename T>
 requires std::convertible_to<T, float> && (std::is_floating_point_v<T>)
-inline VoidFunction SQMessageBufferPushArg(T& arg) {
-	return [arg]{ g_pSquirrel<context>->pushfloat(g_pSquirrel<context>->m_pSQVM->sqvm, static_cast<float>(arg)); };
+inline VoidFunction SQMessageBufferPushArg(SquirrelManager* squirrel, T& arg) {
+	return [squirrel, arg]{ squirrel->pushfloat(squirrel->m_pSQVM->sqvm, static_cast<float>(arg)); };
 }
 // Strings
-template <ScriptContext context, typename T>
+template <typename T>
 requires (std::convertible_to<T, std::string> || std::is_constructible_v<std::string, T>)
-inline VoidFunction SQMessageBufferPushArg(T& arg) {
+inline VoidFunction SQMessageBufferPushArg(SquirrelManager* squirrel, T& arg) {
 	auto converted = std::string(arg);
-	return [converted]{ g_pSquirrel<context>->pushstring(g_pSquirrel<context>->m_pSQVM->sqvm, converted.c_str(), (int)converted.length()); };
+	return [squirrel, converted]{ squirrel->pushstring(squirrel->m_pSQVM->sqvm, converted.c_str(), (int)converted.length()); };
 }
 // Assets
-template <ScriptContext context>
-inline VoidFunction SQMessageBufferPushArg(SquirrelAsset& arg) {
-	return [arg]{ g_pSquirrel<context>->pushasset(g_pSquirrel<context>->m_pSQVM->sqvm, arg.path.c_str(), arg.path.length()); };
+inline VoidFunction SQMessageBufferPushArg(SquirrelManager* squirrel, SquirrelAsset& arg) {
+	return [squirrel, arg]{ squirrel->pushasset(squirrel->m_pSQVM->sqvm, arg.path.c_str(), arg.path.length()); };
 }
 // Maps
-template <ScriptContext context, typename T>
+template <typename T>
 requires is_iterable<T>
-inline VoidFunction SQMessageBufferPushArg(T& arg) {
+inline VoidFunction SQMessageBufferPushArg(SquirrelManager* squirrel, T& arg) {
 	FunctionVector localv = {};
-	localv.push_back([]{g_pSquirrel<context>->newarray(g_pSquirrel<context>->m_pSQVM->sqvm, 0);});
+	localv.push_back([squirrel]{squirrel->newarray(squirrel->m_pSQVM->sqvm, 0);});
 
 	for (const auto& item : arg) {
-		localv.push_back(SQMessageBufferPushArg<context>(item));
-		localv.push_back([]{g_pSquirrel<context>->arrayappend(g_pSquirrel<context>->m_pSQVM->sqvm, -2);});
+		localv.push_back(SQMessageBufferPushArg(squirrel, item));
+		localv.push_back([squirrel]{squirrel->arrayappend(squirrel->m_pSQVM->sqvm, -2);});
 	}
 
 	return [localv] { for (auto& func : localv) { func(); } };
 }
 // Vectors
-template <ScriptContext context, typename T>
+template <typename T>
 requires is_map<T>
-inline VoidFunction SQMessageBufferPushArg(T& map) {
+inline VoidFunction SQMessageBufferPushArg(SquirrelManager* squirrel, T& map) {
 	FunctionVector localv = {};
-	localv.push_back([]{g_pSquirrel<context>->newtable(g_pSquirrel<context>->m_pSQVM->sqvm);});
+	localv.push_back([squirrel]{squirrel->newtable(squirrel->m_pSQVM->sqvm);});
 
 	for (const auto& item : map) {
-		localv.push_back(SQMessageBufferPushArg<context>(item.first));
-		localv.push_back(SQMessageBufferPushArg<context>(item.second));
-		localv.push_back([]{g_pSquirrel<context>->newslot(g_pSquirrel<context>->m_pSQVM->sqvm, -3, false);});
+		localv.push_back(SQMessageBufferPushArg(squirrel,item.first));
+		localv.push_back(SQMessageBufferPushArg(squirrel,item.second));
+		localv.push_back([squirrel]{squirrel->newslot(squirrel->m_pSQVM->sqvm, -3, false);});
 	}
 
 	return [localv]{ for (auto& func : localv) { func(); } };
 }
 
-template <ScriptContext context, typename T>
-inline void SqRecurseArgs(FunctionVector& v, T& arg) {
-	v.push_back(SQMessageBufferPushArg<context>(arg));
+template <typename T>
+inline void SqRecurseArgs(SquirrelManager* squirrel, FunctionVector& v, T& arg) {
+	v.push_back(SQMessageBufferPushArg(squirrel, arg));
 }
 
 // This function is separated from the PushArg function so as to not generate too many template instances
 // This is the main function responsible for unrolling the argument pack
-template <ScriptContext context, typename T, typename... Args>
-inline void SqRecurseArgs(FunctionVector& v, T& arg, Args... args) {
-	v.push_back(SQMessageBufferPushArg<context>(arg));
-	SqRecurseArgs<context>(v, args...);
+template <typename T, typename... Args>
+inline void SqRecurseArgs(SquirrelManager* squirrel, FunctionVector& v, T& arg, Args... args) {
+	v.push_back(SQMessageBufferPushArg(squirrel, arg));
+	SqRecurseArgs(squirrel, v, args...);
 }
 
 // clang-format on

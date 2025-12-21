@@ -51,7 +51,7 @@ static void __fastcall h_CServerGameDLL__OnReceivedSayTextMessage(
 	if (!g_pServerLimits->CheckChatLimits(&g_pClientArray[senderPlayerId - 1]))
 		return;
 
-	SQRESULT result = g_pSquirrel<ScriptContext::SERVER>->Call(
+	SQRESULT result = g_pSquirrel[ScriptContext::SERVER]->Call(
 		"CServerGameDLL_ProcessMessageStartThread", static_cast<int>(senderPlayerId) - 1, text, isTeam);
 
 	if (result == SQRESULT_ERROR)
@@ -111,9 +111,9 @@ void ChatBroadcastMessage(int fromPlayerIndex, int toPlayerIndex, const char* te
 
 ADD_SQFUNC("void", NSSendMessage, "int playerIndex, string text, bool isTeam", "", ScriptContext::SERVER)
 {
-	int playerIndex = g_pSquirrel<ScriptContext::SERVER>->getinteger(sqvm, 1);
-	const char* text = g_pSquirrel<ScriptContext::SERVER>->getstring(sqvm, 2);
-	bool isTeam = g_pSquirrel<ScriptContext::SERVER>->getbool(sqvm, 3);
+	int playerIndex = g_pSquirrel[ScriptContext::SERVER]->getinteger(sqvm, 1);
+	const char* text = g_pSquirrel[ScriptContext::SERVER]->getstring(sqvm, 2);
+	bool isTeam = g_pSquirrel[ScriptContext::SERVER]->getbool(sqvm, 3);
 
 	ChatSendMessage(playerIndex, text, isTeam);
 
@@ -127,16 +127,16 @@ ADD_SQFUNC(
 	"",
 	ScriptContext::SERVER)
 {
-	int fromPlayerIndex = g_pSquirrel<ScriptContext::SERVER>->getinteger(sqvm, 1);
-	int toPlayerIndex = g_pSquirrel<ScriptContext::SERVER>->getinteger(sqvm, 2);
-	const char* text = g_pSquirrel<ScriptContext::SERVER>->getstring(sqvm, 3);
-	bool isTeam = g_pSquirrel<ScriptContext::SERVER>->getbool(sqvm, 4);
-	bool isDead = g_pSquirrel<ScriptContext::SERVER>->getbool(sqvm, 5);
-	int messageType = g_pSquirrel<ScriptContext::SERVER>->getinteger(sqvm, 6);
+	int fromPlayerIndex = g_pSquirrel[ScriptContext::SERVER]->getinteger(sqvm, 1);
+	int toPlayerIndex = g_pSquirrel[ScriptContext::SERVER]->getinteger(sqvm, 2);
+	const char* text = g_pSquirrel[ScriptContext::SERVER]->getstring(sqvm, 3);
+	bool isTeam = g_pSquirrel[ScriptContext::SERVER]->getbool(sqvm, 4);
+	bool isDead = g_pSquirrel[ScriptContext::SERVER]->getbool(sqvm, 5);
+	int messageType = g_pSquirrel[ScriptContext::SERVER]->getinteger(sqvm, 6);
 
 	if (messageType < 1)
 	{
-		g_pSquirrel<ScriptContext::SERVER>->raiseerror(sqvm, fmt::format("Invalid message type {}", messageType).c_str());
+		g_pSquirrel[ScriptContext::SERVER]->raiseerror(sqvm, fmt::format("Invalid message type {}", messageType).c_str());
 		return SQRESULT_ERROR;
 	}
 
