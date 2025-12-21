@@ -1,4 +1,3 @@
-
 global function AddAnimEvent
 global function DeleteAnimEvent
 global function GetOptionalAnimEventVar
@@ -39,7 +38,8 @@ var function GetOptionalAnimEventVar( entity ent, string eventName )
 // call the function registered to the given eventName
 void function AddAnimEvent( entity ent, string eventName, void functionref( entity ent ) func, var optionalVar = null )
 {
-	Assert( !HasAnimEvent( ent, eventName ), "Already added anim event " + eventName + " for " + ent )
+	if ( HasAnimEvent( ent, eventName ) )
+		return
 
 	AnimEventData animEventData
 	animEventData.eventName = eventName
@@ -50,8 +50,8 @@ void function AddAnimEvent( entity ent, string eventName, void functionref( enti
 
 void function DeleteAnimEvent( entity ent, string eventName )
 {
-	Assert( HasAnimEvent( ent, eventName ) )
-	delete ent.e.animEventDataForEntity[ eventName ]
+	if ( HasAnimEvent( ent, eventName ) )
+		delete ent.e.animEventDataForEntity[ eventName ]
 }
 
 bool function HasAnimEvent( entity ent, string eventName )
@@ -61,8 +61,8 @@ bool function HasAnimEvent( entity ent, string eventName )
 
 void function RunAnimEventCallbacks( entity ent, string eventName )
 {
-	Assert( HasAnimEvent( ent, eventName ) )
-	ent.e.animEventDataForEntity[ eventName ].callback( ent )
+	if ( HasAnimEvent( ent, eventName ) )
+		ent.e.animEventDataForEntity[ eventName ].callback( ent )
 }
 
 #if SERVER
@@ -70,8 +70,8 @@ void function RunAnimEventCallbacks( entity ent, string eventName )
 // call the function registered to the given name
 void function AddGlobalAnimEvent( string name, void functionref(entity) func )
 {
-	Assert( !( name in svGlobal.globalAnimEventCallbacks ), "Already created global anim event " + name )
-	svGlobal.globalAnimEventCallbacks[ name ] <- func
+	if ( !( name in svGlobal.globalAnimEventCallbacks ) )
+		svGlobal.globalAnimEventCallbacks[ name ] <- func
 }
 
 void function GlobalAnimEventWithStringParameter_Signal( entity guy, string msg )
