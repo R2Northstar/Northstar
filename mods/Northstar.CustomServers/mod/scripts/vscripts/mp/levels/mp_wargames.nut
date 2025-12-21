@@ -135,52 +135,79 @@ void function OnPrematchStart()
 	openPodSequence.thirdPersonAnimIdle = "trainingpod_doors_open_idle"
 	thread FirstPersonSequence( openPodSequence, file.imcPod )
 	thread FirstPersonSequence( openPodSequence, file.militiaPod )
-	
-	// militia titans/marvins
-	entity militiaOgre = CreatePropDynamic( $"models/titans/ogre/ogreposeopen.mdl", < -2060, 2856, -1412.5 >, < 0, 0, 0 > )
-	
-	entity militiaOgreMarvin1 = CreateMarvin( TEAM_UNASSIGNED, < -2113, 2911, -1412 >, < 0, 20, 0 > )
-	DispatchSpawn( militiaOgreMarvin1 )
-	thread PlayAnim( militiaOgreMarvin1, "mv_idle_weld" )
-	
-	entity militiaOgreMarvin2 = CreateMarvin( TEAM_UNASSIGNED, < -2040, 2788, -1412 >, < 0, 140, 0 > )
-	DispatchSpawn( militiaOgreMarvin2 )
-	thread PlayAnim( militiaOgreMarvin2, "mv_idle_weld" )
-	
-	entity militiaOgreMarvin3 = CreateMarvin( TEAM_UNASSIGNED, < -2116, 2868, -1458 >, < 0, 127, 0 > )
-	DispatchSpawn( militiaOgreMarvin3 )
-	thread PlayAnim( militiaOgreMarvin3, "mv_turret_repair_A_idle" )
-	
-	entity militiaIon = CreatePropDynamic( $"models/titans/medium/titan_medium_ajax.mdl", < -1809.98, 2790.39, -1409 >, < 0, 80, 0 > )
-	thread PlayAnim( militiaIon, "at_titan_activation_wargames_intro" )
-	militiaIon.Anim_SetInitialTime( 4.5 )
 
-	entity militiaPilot = CreateElitePilot( TEAM_UNASSIGNED, < 0, 0, 0 >, < 0, 0, 0 > )
-	DispatchSpawn( militiaPilot )
-	militiaPilot.SetParent( militiaIon, "HIJACK" )
-	militiaPilot.MarkAsNonMovingAttachment()
-	militiaPilot.Anim_ScriptedPlay( "pt_titan_activation_pilot" )
-	militiaPilot.Anim_EnableUseAnimatedRefAttachmentInsteadOfRootMotion()
+	array<entity> trackedEntities
 	
-	entity militiaMarvinChillin = CreateMarvin( TEAM_UNASSIGNED, < -1786, 3060, -1412 >, < 0, -120, 0 > )
-	DispatchSpawn( militiaMarvinChillin )
-	thread PlayAnim( militiaMarvinChillin, "mv_idle_unarmed" )
-	
-	// imc grunts
-	entity imcGrunt1 = CreatePropDynamic( $"models/humans/grunts/imc_grunt_rifle.mdl", < -2915, 2867, -1788 >, < 0, -137, 0 > )
-	thread PlayAnim( imcGrunt1, "pt_console_idle" )
-	
-	entity imcGrunt2 = CreatePropDynamic( $"models/humans/grunts/imc_grunt_rifle.mdl", < -2870, 2746, -1786 >, < 0, -167, 0 > )
-	thread PlayAnim( imcGrunt2, "pt_console_idle" )
-	imcGrunt2.Anim_SetInitialTime( 2.0 )
-	
-	entity imcGrunt3 = CreatePropDynamic( $"models/humans/grunts/imc_grunt_rifle.mdl", < -3037, 2909, -1786 >, < 0, -60, 0 > )
-	thread PlayAnim( imcGrunt3, "pt_console_idle" )
-	imcGrunt3.Anim_SetInitialTime( 4.0 )
-	
-	entity imcGrunt4 = CreatePropDynamic( $"models/humans/grunts/imc_grunt_rifle.mdl", < -3281, 2941, -1790 >, < 0, 138, 0 > )
-	thread PlayAnim( imcGrunt4, "pt_console_idle" )
-	imcGrunt4.Anim_SetInitialTime( 6.0 )
+	// create copies for each team, so that the lights and stuff work, because player faction choices may not match with their actual team
+	foreach ( int team in [ TEAM_IMC, TEAM_MILITIA ] )
+	{
+		// militia titans/marvins
+		entity militiaOgre = CreatePropDynamic( $"models/titans/ogre/ogreposeopen.mdl", < -2060, 2856, -1412.5 >, < 0, 0, 0 > )
+		SetTeam( militiaOgre, team )
+		trackedEntities.append( militiaOgre )
+		
+		entity militiaIon = CreatePropDynamic( $"models/titans/medium/titan_medium_ajax.mdl", < -1809.98, 2790.39, -1409 >, < 0, 80, 0 > )
+		thread PlayAnim( militiaIon, "at_titan_activation_wargames_intro" )
+		militiaIon.Anim_SetInitialTime( 4.5 )
+		SetTeam( militiaIon, team )
+		trackedEntities.append( militiaIon )
+
+		entity militiaGrunt = CreatePropDynamic( $"models/humans/grunts/mlt_grunt_rifle.mdl", < 0, 0, 0 >, < 0, 0, 0 > )
+		militiaGrunt.SetParent( militiaIon, "HIJACK" )
+		militiaGrunt.MarkAsNonMovingAttachment()
+		militiaGrunt.Anim_Play( "pt_titan_activation_pilot" )
+		militiaGrunt.Anim_EnableUseAnimatedRefAttachmentInsteadOfRootMotion()
+		SetTeam( militiaGrunt, team )
+		trackedEntities.append( militiaGrunt )
+
+		entity militiaOgreMarvin1 = CreatePropDynamic( $"models/robots/marvin/marvin.mdl", < -2113, 2911, -1412 >, < 0, 20, 0 > )
+		thread PlayAnim( militiaOgreMarvin1, "mv_idle_weld" )
+		SetTeam( militiaOgreMarvin1, team )
+		trackedEntities.append( militiaOgreMarvin1 )
+		
+		entity militiaOgreMarvin2 = CreatePropDynamic( $"models/robots/marvin/marvin.mdl", < -2040, 2788, -1412 >, < 0, 140, 0 > )
+		thread PlayAnim( militiaOgreMarvin2, "mv_idle_weld" )
+		SetTeam( militiaOgreMarvin2, team )
+		trackedEntities.append( militiaOgreMarvin2 )
+		
+		entity militiaOgreMarvin3 = CreatePropDynamic( $"models/robots/marvin/marvin.mdl", < -2116, 2868, -1458 >, < 0, 127, 0 > )
+		thread PlayAnim( militiaOgreMarvin3, "mv_turret_repair_A_idle" )
+		SetTeam( militiaOgreMarvin3, team )
+		trackedEntities.append( militiaOgreMarvin3 )
+		
+		entity militiaMarvinChillin = CreatePropDynamic( $"models/robots/marvin/marvin.mdl", < -1786, 3060, -1412 >, < 0, -120, 0 > )
+		thread PlayAnim( militiaMarvinChillin, "mv_idle_unarmed" )
+		SetTeam( militiaMarvinChillin, team )
+		trackedEntities.append( militiaMarvinChillin )
+
+		// imc grunts
+		entity imcGrunt1 = CreatePropDynamic( $"models/humans/grunts/imc_grunt_rifle.mdl", < -2915, 2867, -1788 >, < 0, -137, 0 > )
+		thread PlayAnim( imcGrunt1, "pt_console_idle" )
+		SetTeam( imcGrunt1, team )
+		trackedEntities.append( imcGrunt1 )
+		
+		entity imcGrunt2 = CreatePropDynamic( $"models/humans/grunts/imc_grunt_rifle.mdl", < -2870, 2746, -1786 >, < 0, -167, 0 > )
+		thread PlayAnim( imcGrunt2, "pt_console_idle" )
+		imcGrunt2.Anim_SetInitialTime( 2.0 )
+		SetTeam( imcGrunt2, team )
+		trackedEntities.append( imcGrunt2 )
+		
+		entity imcGrunt3 = CreatePropDynamic( $"models/humans/grunts/imc_grunt_rifle.mdl", < -3037, 2909, -1786 >, < 0, -60, 0 > )
+		thread PlayAnim( imcGrunt3, "pt_console_idle" )
+		imcGrunt3.Anim_SetInitialTime( 4.0 )
+		SetTeam( imcGrunt3, team )
+		trackedEntities.append( imcGrunt3 )
+		
+		entity imcGrunt4 = CreatePropDynamic( $"models/humans/grunts/imc_grunt_rifle.mdl", < -3281, 2941, -1790 >, < 0, 138, 0 > )
+		thread PlayAnim( imcGrunt4, "pt_console_idle" )
+		imcGrunt4.Anim_SetInitialTime( 6.0 )
+		SetTeam( imcGrunt4, team )
+		trackedEntities.append( imcGrunt4 )
+	}
+
+	// so I don't have to duplicate this on all entities
+	foreach ( entity ent in trackedEntities )
+		ent.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY
 	
 	// launch players into intro
 	foreach ( entity player in GetPlayerArray() )
@@ -215,18 +242,11 @@ void function OnPrematchStart()
 	//PodFXCleanup( file.militiaPod )
 	
 	// cleanup intro objects
-	militiaOgre.Destroy()
-	militiaIon.Destroy()
-	militiaPilot.Destroy()
-	militiaOgreMarvin1.Destroy()
-	militiaOgreMarvin2.Destroy()
-	militiaOgreMarvin3.Destroy()
-	militiaMarvinChillin.Destroy()
-	
-	imcGrunt1.Destroy()
-	imcGrunt2.Destroy()
-	imcGrunt3.Destroy()
-	imcGrunt4.Destroy()
+	foreach ( entity ent in trackedEntities )
+	{
+		if ( IsValid(ent) )
+			ent.Destroy()
+	}
 }
 
 void function PlayerWatchesWargamesIntro( entity player )
