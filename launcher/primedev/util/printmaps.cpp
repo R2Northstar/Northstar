@@ -167,12 +167,12 @@ ADD_SQFUNC(
 	// Maybe we should call this on mods reload instead
 	RefreshMapList();
 
-	g_pSquirrel<context>->newarray(sqvm, 0);
+	g_pSquirrel[context]->newarray(sqvm, 0);
 
 	for (MapVPKInfo& map : vMapList)
 	{
-		g_pSquirrel<context>->pushstring(sqvm, map.name.c_str());
-		g_pSquirrel<context>->arrayappend(sqvm, -2);
+		g_pSquirrel[context]->pushstring(sqvm, map.name.c_str());
+		g_pSquirrel[context]->arrayappend(sqvm, -2);
 	}
 
 	return SQRESULT_NOTNULL;

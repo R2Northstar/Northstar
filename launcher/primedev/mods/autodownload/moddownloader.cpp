@@ -721,17 +721,17 @@ ADD_SQFUNC(
 {
 	if (!g_pModDownloader)
 	{
-		g_pSquirrel<context>->pushbool(sqvm, false);
+		g_pSquirrel[context]->pushbool(sqvm, false);
 		return SQRESULT_NOTNULL;
 	}
 
-	g_pSquirrel<context>->newarray(sqvm, 0);
+	g_pSquirrel[context]->newarray(sqvm, 0);
 
-	const SQChar* modName = g_pSquirrel<context>->getstring(sqvm, 1);
-	const SQChar* modVersion = g_pSquirrel<context>->getstring(sqvm, 2);
+	const SQChar* modName = g_pSquirrel[context]->getstring(sqvm, 1);
+	const SQChar* modVersion = g_pSquirrel[context]->getstring(sqvm, 2);
 
 	bool result = g_pModDownloader->IsModAuthorized(modName, modVersion);
-	g_pSquirrel<context>->pushbool(sqvm, result);
+	g_pSquirrel[context]->pushbool(sqvm, result);
 
 	return SQRESULT_NOTNULL;
 }
@@ -741,8 +741,8 @@ ADD_SQFUNC("void", NSDownloadMod, "string name, string version", "", ScriptConte
 	if (!g_pModDownloader)
 		return SQRESULT_NULL;
 
-	const SQChar* modName = g_pSquirrel<context>->getstring(sqvm, 1);
-	const SQChar* modVersion = g_pSquirrel<context>->getstring(sqvm, 2);
+	const SQChar* modName = g_pSquirrel[context]->getstring(sqvm, 1);
+	const SQChar* modVersion = g_pSquirrel[context]->getstring(sqvm, 2);
 	g_pModDownloader->DownloadMod(modName, modVersion);
 
 	return SQRESULT_NULL;
@@ -750,7 +750,7 @@ ADD_SQFUNC("void", NSDownloadMod, "string name, string version", "", ScriptConte
 
 ADD_SQFUNC("ModInstallState", NSGetModInstallState, "", "", ScriptContext::SERVER | ScriptContext::CLIENT | ScriptContext::UI)
 {
-	g_pSquirrel<context>->pushnewstructinstance(sqvm, 4);
+	g_pSquirrel[context]->pushnewstructinstance(sqvm, 4);
 
 	ModDownloader::MOD_STATE modState = {};
 	if (g_pModDownloader)
@@ -759,20 +759,20 @@ ADD_SQFUNC("ModInstallState", NSGetModInstallState, "", "", ScriptContext::SERVE
 		modState.state = ModDownloader::NOT_FOUND;
 
 	// state
-	g_pSquirrel<context>->pushinteger(sqvm, modState.state);
-	g_pSquirrel<context>->sealstructslot(sqvm, 0);
+	g_pSquirrel[context]->pushinteger(sqvm, modState.state);
+	g_pSquirrel[context]->sealstructslot(sqvm, 0);
 
 	// progress
-	g_pSquirrel<context>->pushinteger(sqvm, modState.progress);
-	g_pSquirrel<context>->sealstructslot(sqvm, 1);
+	g_pSquirrel[context]->pushinteger(sqvm, modState.progress);
+	g_pSquirrel[context]->sealstructslot(sqvm, 1);
 
 	// total
-	g_pSquirrel<context>->pushinteger(sqvm, modState.total);
-	g_pSquirrel<context>->sealstructslot(sqvm, 2);
+	g_pSquirrel[context]->pushinteger(sqvm, modState.total);
+	g_pSquirrel[context]->sealstructslot(sqvm, 2);
 
 	// ratio
-	g_pSquirrel<context>->pushfloat(sqvm, modState.ratio);
-	g_pSquirrel<context>->sealstructslot(sqvm, 3);
+	g_pSquirrel[context]->pushfloat(sqvm, modState.ratio);
+	g_pSquirrel[context]->sealstructslot(sqvm, 3);
 
 	return SQRESULT_NOTNULL;
 }

@@ -77,7 +77,7 @@ bool InitialiseNorthstar()
 	g_pPluginManager = new PluginManager();
 	g_pPluginManager->LoadPlugins();
 
-	InitialiseSquirrelManagers();
+	g_pSquirrel.InitialiseSquirrelManagers();
 
 	// Fix some users' failure to connect to respawn datacenters
 	SetEnvironmentVariableA("OPENSSL_ia32cap", "~0x200000200000000");

@@ -243,7 +243,7 @@ template <ScriptContext context> int HttpRequestHandler::MakeHttpRequest(const H
 					spdlog::warn(
 						"HttpRequestHandler::MakeHttpRequest attempted to make a request to a private network. This is only allowed when "
 						"running the game with -allowlocalhttp.");
-					g_pSquirrel<context>->AsyncCall(
+					g_pSquirrel[context]->AsyncCall(
 						"NSHandleFailedHttpRequest",
 						handle,
 						(int)0,
@@ -257,7 +257,7 @@ template <ScriptContext context> int HttpRequestHandler::MakeHttpRequest(const H
 			if (!curl)
 			{
 				spdlog::error("HttpRequestHandler::MakeHttpRequest failed to init libcurl for request.");
-				g_pSquirrel<context>->AsyncCall(
+				g_pSquirrel[context]->AsyncCall(
 					"NSHandleFailedHttpRequest", handle, static_cast<int>(CURLE_FAILED_INIT), curl_easy_strerror(CURLE_FAILED_INIT));
 				return;
 			}
@@ -419,7 +419,7 @@ template <ScriptContext context> int HttpRequestHandler::MakeHttpRequest(const H
 					// Squirrel side will handle firing the correct callback.
 					long httpCode = 0;
 					curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
-					g_pSquirrel<context>->AsyncCall(
+					g_pSquirrel[context]->AsyncCall(
 						"NSHandleSuccessfulHttpRequest", handle, static_cast<int>(httpCode), bodyBuffer, headerBuffer);
 				}
 				else
@@ -436,7 +436,7 @@ template <ScriptContext context> int HttpRequestHandler::MakeHttpRequest(const H
 									  "Keep in mind this is potentially dangerous!");
 					}
 
-					g_pSquirrel<context>->AsyncCall(
+					g_pSquirrel[context]->AsyncCall(
 						"NSHandleFailedHttpRequest", handle, static_cast<int>(result), curl_easy_strerror(result));
 				}
 			}
@@ -457,7 +457,7 @@ template <ScriptContext context> SQRESULT SQ_InternalMakeHttpRequest(HSQUIRRELVM
 	if (!g_httpRequestHandler || !g_httpRequestHandler->IsRunning())
 	{
 		spdlog::warn("NS_InternalMakeHttpRequest called while the http request handler isn't running.");
-		g_pSquirrel<context>->pushinteger(sqvm, -1);
+		g_pSquirrel[context]->pushinteger(sqvm, -1);
 		return SQRESULT_NOTNULL;
 	}
 
@@ -465,13 +465,13 @@ template <ScriptContext context> SQRESULT SQ_InternalMakeHttpRequest(HSQUIRRELVM
 	{
 		spdlog::warn("NS_InternalMakeHttpRequest called while the game is running with -disablehttprequests."
 					 " Please check if requests are allowed using NSIsHttpEnabled() first.");
-		g_pSquirrel<context>->pushinteger(sqvm, -1);
+		g_pSquirrel[context]->pushinteger(sqvm, -1);
 		return SQRESULT_NOTNULL;
 	}
 
 	HttpRequest request;
-	request.method = static_cast<HttpRequestMethod::Type>(g_pSquirrel<context>->getinteger(sqvm, 1));
-	request.baseUrl = g_pSquirrel<context>->getstring(sqvm, 2);
+	request.method = static_cast<HttpRequestMethod::Type>(g_pSquirrel[context]->getinteger(sqvm, 1));
+	request.baseUrl = g_pSquirrel[context]->getstring(sqvm, 2);
 
 	// Read the tables for headers and query parameters.
 	SQTable* headerTable = sqvm->_stackOfCurrentFunction[3]._VAL.asTable;
@@ -518,33 +518,33 @@ template <ScriptContext context> SQRESULT SQ_InternalMakeHttpRequest(HSQUIRRELVM
 		}
 	}
 
-	request.contentType = g_pSquirrel<context>->getstring(sqvm, 5);
-	request.body = g_pSquirrel<context>->getstring(sqvm, 6);
-	request.timeout = g_pSquirrel<context>->getinteger(sqvm, 7);
-	request.userAgent = g_pSquirrel<context>->getstring(sqvm, 8);
+	request.contentType = g_pSquirrel[context]->getstring(sqvm, 5);
+	request.body = g_pSquirrel[context]->getstring(sqvm, 6);
+	request.timeout = g_pSquirrel[context]->getinteger(sqvm, 7);
+	request.userAgent = g_pSquirrel[context]->getstring(sqvm, 8);
 
 	int handle = g_httpRequestHandler->MakeHttpRequest<context>(request);
-	g_pSquirrel<context>->pushinteger(sqvm, handle);
+	g_pSquirrel[context]->pushinteger(sqvm, handle);
 	return SQRESULT_NOTNULL;
 }
 
 // bool NSIsHttpEnabled()
 template <ScriptContext context> SQRESULT SQ_IsHttpEnabled(HSQUIRRELVM sqvm)
 {
-	g_pSquirrel<context>->pushbool(sqvm, !IsHttpDisabled());
+	g_pSquirrel[context]->pushbool(sqvm, !IsHttpDisabled());
 	return SQRESULT_NOTNULL;
 }
 
 // bool NSIsLocalHttpAllowed()
 template <ScriptContext context> SQRESULT SQ_IsLocalHttpAllowed(HSQUIRRELVM sqvm)
 {
-	g_pSquirrel<context>->pushbool(sqvm, IsLocalHttpAllowed());
+	g_pSquirrel[context]->pushbool(sqvm, IsLocalHttpAllowed());
 	return SQRESULT_NOTNULL;
 }
 
 template <ScriptContext context> void HttpRequestHandler::RegisterSQFuncs()
 {
-	g_pSquirrel<context>->AddFuncRegistration(
+	g_pSquirrel[context]->AddFuncRegistration(
 		"int",
 		"NS_InternalMakeHttpRequest",
 		"int method, string baseUrl, table<string, array<string> > headers, table<string, array<string> > queryParams, string contentType, "
@@ -553,14 +553,14 @@ template <ScriptContext context> void HttpRequestHandler::RegisterSQFuncs()
 		"[Internal use only] Passes the HttpRequest struct fields to be reconstructed in native and used for an http request",
 		SQ_InternalMakeHttpRequest<context>);
 
-	g_pSquirrel<context>->AddFuncRegistration(
+	g_pSquirrel[context]->AddFuncRegistration(
 		"bool",
 		"NSIsHttpEnabled",
 		"",
 		"Whether or not HTTP requests are enabled. You can opt-out by starting the game with -disablehttprequests.",
 		SQ_IsHttpEnabled<context>);
 
-	g_pSquirrel<context>->AddFuncRegistration(
+	g_pSquirrel[context]->AddFuncRegistration(
 		"bool",
 		"NSIsLocalHttpAllowed",
 		"",

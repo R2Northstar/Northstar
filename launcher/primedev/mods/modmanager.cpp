@@ -37,11 +37,11 @@ ModManager::ModManager()
 
 template <ScriptContext context> void ModConCommandCallback_Internal(std::string name, const CCommand& command)
 {
-	if (g_pSquirrel<context>->m_pSQVM && g_pSquirrel<context>->m_pSQVM)
+	if (g_pSquirrel[context]->m_pSQVM && g_pSquirrel[context]->m_pSQVM)
 	{
 		if (command.ArgC() == 1)
 		{
-			g_pSquirrel<context>->AsyncCall(name);
+			g_pSquirrel[context]->AsyncCall(name);
 		}
 		else
 		{
@@ -49,7 +49,7 @@ template <ScriptContext context> void ModConCommandCallback_Internal(std::string
 			args.reserve(command.ArgC());
 			for (int i = 1; i < command.ArgC(); i++)
 				args.push_back(command.Arg(i));
-			g_pSquirrel<context>->AsyncCall(name, args);
+			g_pSquirrel[context]->AsyncCall(name, args);
 		}
 	}
 	else

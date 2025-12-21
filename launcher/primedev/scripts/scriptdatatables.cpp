@@ -63,16 +63,16 @@ std::unordered_map<std::string, CSVData> CSVCache;
 REPLACE_SQFUNC(GetDataTable, (ScriptContext::UI | ScriptContext::CLIENT | ScriptContext::SERVER))
 {
 	const char* pAssetName;
-	g_pSquirrel<context>->getasset(sqvm, 2, &pAssetName);
+	g_pSquirrel[context]->getasset(sqvm, 2, &pAssetName);
 
 	if (strncmp(pAssetName, "datatable/", 10))
 	{
-		g_pSquirrel<context>->raiseerror(sqvm, fmt::format("Asset \"{}\" doesn't start with \"datatable/\"", pAssetName).c_str());
+		g_pSquirrel[context]->raiseerror(sqvm, fmt::format("Asset \"{}\" doesn't start with \"datatable/\"", pAssetName).c_str());
 		return SQRESULT_ERROR;
 	}
 	else if (!Cvar_ns_prefer_datatable_from_disk->GetBool() && g_pPakLoadManager->OpenFile(pAssetName))
 	{
-		return g_pSquirrel<context>->m_funcOriginals["GetDataTable"](sqvm);
+		return g_pSquirrel[context]->m_funcOriginals["GetDataTable"](sqvm);
 	}
 	else // either we prefer disk datatables, or we're loading a datatable that wasn't found in rpak
 	{
@@ -81,8 +81,8 @@ REPLACE_SQFUNC(GetDataTable, (ScriptContext::UI | ScriptContext::CLIENT | Script
 		// first, check the cache
 		if (CSVCache.find(pAssetName) != CSVCache.end())
 		{
-			CSVData** pUserdata = g_pSquirrel<context>->template createuserdata<CSVData*>(sqvm, sizeof(CSVData*));
-			g_pSquirrel<context>->setuserdatatypeid(sqvm, -1, USERDATA_TYPE_DATATABLE_CUSTOM);
+			CSVData** pUserdata = g_pSquirrel[context]->template createuserdata<CSVData*>(sqvm, sizeof(CSVData*));
+			g_pSquirrel[context]->setuserdatatypeid(sqvm, -1, USERDATA_TYPE_DATATABLE_CUSTOM);
 			*pUserdata = &CSVCache[pAssetName];
 
 			return SQRESULT_NOTNULL;
@@ -102,7 +102,7 @@ REPLACE_SQFUNC(GetDataTable, (ScriptContext::UI | ScriptContext::CLIENT | Script
 			std::string sTableCSV = ReadVPKFile(sDiskAssetPath.c_str());
 			if (!sTableCSV.size())
 			{
-				g_pSquirrel<context>->raiseerror(sqvm, fmt::format("Datatable \"{}\" is empty", pAssetName).c_str());
+				g_pSquirrel[context]->raiseerror(sqvm, fmt::format("Datatable \"{}\" is empty", pAssetName).c_str());
 				return SQRESULT_ERROR;
 			}
 
@@ -145,7 +145,7 @@ REPLACE_SQFUNC(GetDataTable, (ScriptContext::UI | ScriptContext::CLIENT | Script
 					// shouldn't have newline in string
 					if (bInQuotes)
 					{
-						g_pSquirrel<context>->raiseerror(sqvm, "Unexpected \\n in string");
+						g_pSquirrel[context]->raiseerror(sqvm, "Unexpected \\n in string");
 						return SQRESULT_ERROR;
 					}
 
@@ -180,7 +180,7 @@ REPLACE_SQFUNC(GetDataTable, (ScriptContext::UI | ScriptContext::CLIENT | Script
 						// shouldn't have quoted strings in column names
 						if (!bHasColumns)
 						{
-							g_pSquirrel<context>->raiseerror(sqvm, "Unexpected \" in column name");
+							g_pSquirrel[context]->raiseerror(sqvm, "Unexpected \" in column name");
 							return SQRESULT_ERROR;
 						}
 
@@ -216,8 +216,8 @@ REPLACE_SQFUNC(GetDataTable, (ScriptContext::UI | ScriptContext::CLIENT | Script
 			}
 
 			// add to cache and return
-			CSVData** pUserdata = g_pSquirrel<context>->template createuserdata<CSVData*>(sqvm, sizeof(CSVData*));
-			g_pSquirrel<context>->setuserdatatypeid(sqvm, -1, USERDATA_TYPE_DATATABLE_CUSTOM);
+			CSVData** pUserdata = g_pSquirrel[context]->template createuserdata<CSVData*>(sqvm, sizeof(CSVData*));
+			g_pSquirrel[context]->setuserdatatypeid(sqvm, -1, USERDATA_TYPE_DATATABLE_CUSTOM);
 			CSVCache[pAssetName] = csv;
 			*pUserdata = &CSVCache[pAssetName];
 
@@ -225,11 +225,11 @@ REPLACE_SQFUNC(GetDataTable, (ScriptContext::UI | ScriptContext::CLIENT | Script
 		}
 		// the file doesn't exist on disk, check rpak if we haven't already
 		else if (Cvar_ns_prefer_datatable_from_disk->GetBool() && g_pPakLoadManager->OpenFile(pAssetName))
-			return g_pSquirrel<context>->m_funcOriginals["GetDataTable"](sqvm);
+			return g_pSquirrel[context]->m_funcOriginals["GetDataTable"](sqvm);
 		// the file doesn't exist at all, error
 		else
 		{
-			g_pSquirrel<context>->raiseerror(sqvm, fmt::format("Datatable {} not found", pAssetName).c_str());
+			g_pSquirrel[context]->raiseerror(sqvm, fmt::format("Datatable {} not found", pAssetName).c_str());
 			return SQRESULT_ERROR;
 		}
 	}
@@ -240,25 +240,25 @@ REPLACE_SQFUNC(GetDataTableColumnByName, (ScriptContext::UI | ScriptContext::CLI
 {
 	CSVData** pData;
 	uint64_t typeId;
-	g_pSquirrel<context>->getuserdata(sqvm, 2, &pData, &typeId);
+	g_pSquirrel[context]->getuserdata(sqvm, 2, &pData, &typeId);
 
 	if (typeId != USERDATA_TYPE_DATATABLE_CUSTOM)
-		return g_pSquirrel<context>->m_funcOriginals["GetDataTableColumnByName"](sqvm);
+		return g_pSquirrel[context]->m_funcOriginals["GetDataTableColumnByName"](sqvm);
 
 	CSVData* csv = *pData;
-	const char* pColumnName = g_pSquirrel<context>->getstring(sqvm, 2);
+	const char* pColumnName = g_pSquirrel[context]->getstring(sqvm, 2);
 
 	for (int i = 0; i < csv->columns.size(); i++)
 	{
 		if (!strcmp(csv->columns[i], pColumnName))
 		{
-			g_pSquirrel<context>->pushinteger(sqvm, i);
+			g_pSquirrel[context]->pushinteger(sqvm, i);
 			return SQRESULT_NOTNULL;
 		}
 	}
 
 	// column not found
-	g_pSquirrel<context>->pushinteger(sqvm, -1);
+	g_pSquirrel[context]->pushinteger(sqvm, -1);
 	return SQRESULT_NOTNULL;
 }
 
@@ -268,13 +268,13 @@ REPLACE_SQFUNC(GetDatatableRowCount, (ScriptContext::UI | ScriptContext::CLIENT 
 {
 	CSVData** pData;
 	uint64_t typeId;
-	g_pSquirrel<context>->getuserdata(sqvm, 2, &pData, &typeId);
+	g_pSquirrel[context]->getuserdata(sqvm, 2, &pData, &typeId);
 
 	if (typeId != USERDATA_TYPE_DATATABLE_CUSTOM)
-		return g_pSquirrel<context>->m_funcOriginals["GetDatatableRowCount"](sqvm);
+		return g_pSquirrel[context]->m_funcOriginals["GetDatatableRowCount"](sqvm);
 
 	CSVData* csv = *pData;
-	g_pSquirrel<context>->pushinteger(sqvm, (SQInteger)csv->dataPointers.size());
+	g_pSquirrel[context]->pushinteger(sqvm, (SQInteger)csv->dataPointers.size());
 	return SQRESULT_NOTNULL;
 }
 
@@ -283,17 +283,17 @@ REPLACE_SQFUNC(GetDataTableString, (ScriptContext::UI | ScriptContext::CLIENT | 
 {
 	CSVData** pData;
 	uint64_t typeId;
-	g_pSquirrel<context>->getuserdata(sqvm, 2, &pData, &typeId);
+	g_pSquirrel[context]->getuserdata(sqvm, 2, &pData, &typeId);
 
 	if (typeId != USERDATA_TYPE_DATATABLE_CUSTOM)
-		return g_pSquirrel<context>->m_funcOriginals["GetDataTableString"](sqvm);
+		return g_pSquirrel[context]->m_funcOriginals["GetDataTableString"](sqvm);
 
 	CSVData* csv = *pData;
-	const int nRow = g_pSquirrel<context>->getinteger(sqvm, 2);
-	const int nCol = g_pSquirrel<context>->getinteger(sqvm, 3);
+	const int nRow = g_pSquirrel[context]->getinteger(sqvm, 2);
+	const int nCol = g_pSquirrel[context]->getinteger(sqvm, 3);
 	if (nRow >= csv->dataPointers.size() || nCol >= csv->dataPointers[nRow].size())
 	{
-		g_pSquirrel<context>->raiseerror(
+		g_pSquirrel[context]->raiseerror(
 			sqvm,
 			fmt::format(
 				"row {} and col {} are outside of range row {} and col {}", nRow, nCol, csv->dataPointers.size(), csv->columns.size())
@@ -301,7 +301,7 @@ REPLACE_SQFUNC(GetDataTableString, (ScriptContext::UI | ScriptContext::CLIENT | 
 		return SQRESULT_ERROR;
 	}
 
-	g_pSquirrel<context>->pushstring(sqvm, csv->dataPointers[nRow][nCol], -1);
+	g_pSquirrel[context]->pushstring(sqvm, csv->dataPointers[nRow][nCol], -1);
 	return SQRESULT_NOTNULL;
 }
 
@@ -310,17 +310,17 @@ REPLACE_SQFUNC(GetDataTableAsset, (ScriptContext::UI | ScriptContext::CLIENT | S
 {
 	CSVData** pData;
 	uint64_t typeId;
-	g_pSquirrel<context>->getuserdata(sqvm, 2, &pData, &typeId);
+	g_pSquirrel[context]->getuserdata(sqvm, 2, &pData, &typeId);
 
 	if (typeId != USERDATA_TYPE_DATATABLE_CUSTOM)
-		return g_pSquirrel<context>->m_funcOriginals["GetDataTableAsset"](sqvm);
+		return g_pSquirrel[context]->m_funcOriginals["GetDataTableAsset"](sqvm);
 
 	CSVData* csv = *pData;
-	const int nRow = g_pSquirrel<context>->getinteger(sqvm, 2);
-	const int nCol = g_pSquirrel<context>->getinteger(sqvm, 3);
+	const int nRow = g_pSquirrel[context]->getinteger(sqvm, 2);
+	const int nCol = g_pSquirrel[context]->getinteger(sqvm, 3);
 	if (nRow >= csv->dataPointers.size() || nCol >= csv->dataPointers[nRow].size())
 	{
-		g_pSquirrel<context>->raiseerror(
+		g_pSquirrel[context]->raiseerror(
 			sqvm,
 			fmt::format(
 				"row {} and col {} are outside of range row {} and col {}", nRow, nCol, csv->dataPointers.size(), csv->columns.size())
@@ -328,7 +328,7 @@ REPLACE_SQFUNC(GetDataTableAsset, (ScriptContext::UI | ScriptContext::CLIENT | S
 		return SQRESULT_ERROR;
 	}
 
-	g_pSquirrel<context>->pushasset(sqvm, csv->dataPointers[nRow][nCol], -1);
+	g_pSquirrel[context]->pushasset(sqvm, csv->dataPointers[nRow][nCol], -1);
 	return SQRESULT_NOTNULL;
 }
 
@@ -337,17 +337,17 @@ REPLACE_SQFUNC(GetDataTableInt, (ScriptContext::UI | ScriptContext::CLIENT | Scr
 {
 	CSVData** pData;
 	uint64_t typeId;
-	g_pSquirrel<context>->getuserdata(sqvm, 2, &pData, &typeId);
+	g_pSquirrel[context]->getuserdata(sqvm, 2, &pData, &typeId);
 
 	if (typeId != USERDATA_TYPE_DATATABLE_CUSTOM)
-		return g_pSquirrel<context>->m_funcOriginals["GetDataTableInt"](sqvm);
+		return g_pSquirrel[context]->m_funcOriginals["GetDataTableInt"](sqvm);
 
 	CSVData* csv = *pData;
-	const int nRow = g_pSquirrel<context>->getinteger(sqvm, 2);
-	const int nCol = g_pSquirrel<context>->getinteger(sqvm, 3);
+	const int nRow = g_pSquirrel[context]->getinteger(sqvm, 2);
+	const int nCol = g_pSquirrel[context]->getinteger(sqvm, 3);
 	if (nRow >= csv->dataPointers.size() || nCol >= csv->dataPointers[nRow].size())
 	{
-		g_pSquirrel<context>->raiseerror(
+		g_pSquirrel[context]->raiseerror(
 			sqvm,
 			fmt::format(
 				"row {} and col {} are outside of range row {} and col {}", nRow, nCol, csv->dataPointers.size(), csv->columns.size())
@@ -355,7 +355,7 @@ REPLACE_SQFUNC(GetDataTableInt, (ScriptContext::UI | ScriptContext::CLIENT | Scr
 		return SQRESULT_ERROR;
 	}
 
-	g_pSquirrel<context>->pushinteger(sqvm, std::stoi(csv->dataPointers[nRow][nCol]));
+	g_pSquirrel[context]->pushinteger(sqvm, std::stoi(csv->dataPointers[nRow][nCol]));
 	return SQRESULT_NOTNULL;
 }
 
@@ -364,17 +364,17 @@ REPLACE_SQFUNC(GetDataTableFloat, (ScriptContext::UI | ScriptContext::CLIENT | S
 {
 	CSVData** pData;
 	uint64_t typeId;
-	g_pSquirrel<context>->getuserdata(sqvm, 2, &pData, &typeId);
+	g_pSquirrel[context]->getuserdata(sqvm, 2, &pData, &typeId);
 
 	if (typeId != USERDATA_TYPE_DATATABLE_CUSTOM)
-		return g_pSquirrel<context>->m_funcOriginals["GetDataTableFloat"](sqvm);
+		return g_pSquirrel[context]->m_funcOriginals["GetDataTableFloat"](sqvm);
 
 	CSVData* csv = *pData;
-	const int nRow = g_pSquirrel<context>->getinteger(sqvm, 2);
-	const int nCol = g_pSquirrel<context>->getinteger(sqvm, 3);
+	const int nRow = g_pSquirrel[context]->getinteger(sqvm, 2);
+	const int nCol = g_pSquirrel[context]->getinteger(sqvm, 3);
 	if (nRow >= csv->dataPointers.size() || nCol >= csv->dataPointers[nRow].size())
 	{
-		g_pSquirrel<context>->raiseerror(
+		g_pSquirrel[context]->raiseerror(
 			sqvm,
 			fmt::format(
 				"row {} and col {} are outside of range row {} and col {}", nRow, nCol, csv->dataPointers.size(), csv->columns.size())
@@ -382,7 +382,7 @@ REPLACE_SQFUNC(GetDataTableFloat, (ScriptContext::UI | ScriptContext::CLIENT | S
 		return SQRESULT_ERROR;
 	}
 
-	g_pSquirrel<context>->pushfloat(sqvm, std::stof(csv->dataPointers[nRow][nCol]));
+	g_pSquirrel[context]->pushfloat(sqvm, std::stof(csv->dataPointers[nRow][nCol]));
 	return SQRESULT_NOTNULL;
 }
 
@@ -391,17 +391,17 @@ REPLACE_SQFUNC(GetDataTableBool, (ScriptContext::UI | ScriptContext::CLIENT | Sc
 {
 	CSVData** pData;
 	uint64_t typeId;
-	g_pSquirrel<context>->getuserdata(sqvm, 2, &pData, &typeId);
+	g_pSquirrel[context]->getuserdata(sqvm, 2, &pData, &typeId);
 
 	if (typeId != USERDATA_TYPE_DATATABLE_CUSTOM)
-		return g_pSquirrel<context>->m_funcOriginals["GetDataTableBool"](sqvm);
+		return g_pSquirrel[context]->m_funcOriginals["GetDataTableBool"](sqvm);
 
 	CSVData* csv = *pData;
-	const int nRow = g_pSquirrel<context>->getinteger(sqvm, 2);
-	const int nCol = g_pSquirrel<context>->getinteger(sqvm, 3);
+	const int nRow = g_pSquirrel[context]->getinteger(sqvm, 2);
+	const int nCol = g_pSquirrel[context]->getinteger(sqvm, 3);
 	if (nRow >= csv->dataPointers.size() || nCol >= csv->dataPointers[nRow].size())
 	{
-		g_pSquirrel<context>->raiseerror(
+		g_pSquirrel[context]->raiseerror(
 			sqvm,
 			fmt::format(
 				"row {} and col {} are outside of range row {} and col {}", nRow, nCol, csv->dataPointers.size(), csv->columns.size())
@@ -409,7 +409,7 @@ REPLACE_SQFUNC(GetDataTableBool, (ScriptContext::UI | ScriptContext::CLIENT | Sc
 		return SQRESULT_ERROR;
 	}
 
-	g_pSquirrel<context>->pushbool(sqvm, std::stoi(csv->dataPointers[nRow][nCol]));
+	g_pSquirrel[context]->pushbool(sqvm, std::stoi(csv->dataPointers[nRow][nCol]));
 	return SQRESULT_NOTNULL;
 }
 
@@ -418,17 +418,17 @@ REPLACE_SQFUNC(GetDataTableVector, (ScriptContext::UI | ScriptContext::CLIENT | 
 {
 	CSVData** pData;
 	uint64_t typeId;
-	g_pSquirrel<context>->getuserdata(sqvm, 2, &pData, &typeId);
+	g_pSquirrel[context]->getuserdata(sqvm, 2, &pData, &typeId);
 
 	if (typeId != USERDATA_TYPE_DATATABLE_CUSTOM)
-		return g_pSquirrel<context>->m_funcOriginals["GetDataTableVector"](sqvm);
+		return g_pSquirrel[context]->m_funcOriginals["GetDataTableVector"](sqvm);
 
 	CSVData* csv = *pData;
-	const int nRow = g_pSquirrel<context>->getinteger(sqvm, 2);
-	const int nCol = g_pSquirrel<context>->getinteger(sqvm, 3);
+	const int nRow = g_pSquirrel[context]->getinteger(sqvm, 2);
+	const int nCol = g_pSquirrel[context]->getinteger(sqvm, 3);
 	if (nRow >= csv->dataPointers.size() || nCol >= csv->dataPointers[nRow].size())
 	{
-		g_pSquirrel<context>->raiseerror(
+		g_pSquirrel[context]->raiseerror(
 			sqvm,
 			fmt::format(
 				"row {} and col {} are outside of range row {} and col {}", nRow, nCol, csv->dataPointers.size(), csv->columns.size())
@@ -436,7 +436,7 @@ REPLACE_SQFUNC(GetDataTableVector, (ScriptContext::UI | ScriptContext::CLIENT | 
 		return SQRESULT_ERROR;
 	}
 
-	g_pSquirrel<context>->pushvector(sqvm, StringToVector(csv->dataPointers[nRow][nCol]));
+	g_pSquirrel[context]->pushvector(sqvm, StringToVector(csv->dataPointers[nRow][nCol]));
 	return SQRESULT_NOTNULL;
 }
 
@@ -445,24 +445,24 @@ REPLACE_SQFUNC(GetDataTableRowMatchingStringValue, (ScriptContext::UI | ScriptCo
 {
 	CSVData** pData;
 	uint64_t typeId;
-	g_pSquirrel<context>->getuserdata(sqvm, 2, &pData, &typeId);
+	g_pSquirrel[context]->getuserdata(sqvm, 2, &pData, &typeId);
 
 	if (typeId != USERDATA_TYPE_DATATABLE_CUSTOM)
-		return g_pSquirrel<context>->m_funcOriginals["GetDataTableRowMatchingStringValue"](sqvm);
+		return g_pSquirrel[context]->m_funcOriginals["GetDataTableRowMatchingStringValue"](sqvm);
 
 	CSVData* csv = *pData;
-	int nCol = g_pSquirrel<context>->getinteger(sqvm, 2);
-	const char* pStringVal = g_pSquirrel<context>->getstring(sqvm, 3);
+	int nCol = g_pSquirrel[context]->getinteger(sqvm, 2);
+	const char* pStringVal = g_pSquirrel[context]->getstring(sqvm, 3);
 	for (int i = 0; i < csv->dataPointers.size(); i++)
 	{
 		if (!strcmp(csv->dataPointers[i][nCol], pStringVal))
 		{
-			g_pSquirrel<context>->pushinteger(sqvm, i);
+			g_pSquirrel[context]->pushinteger(sqvm, i);
 			return SQRESULT_NOTNULL;
 		}
 	}
 
-	g_pSquirrel<context>->pushinteger(sqvm, -1);
+	g_pSquirrel[context]->pushinteger(sqvm, -1);
 	return SQRESULT_NOTNULL;
 }
 
@@ -471,25 +471,25 @@ REPLACE_SQFUNC(GetDataTableRowMatchingAssetValue, (ScriptContext::UI | ScriptCon
 {
 	CSVData** pData;
 	uint64_t typeId;
-	g_pSquirrel<context>->getuserdata(sqvm, 2, &pData, &typeId);
+	g_pSquirrel[context]->getuserdata(sqvm, 2, &pData, &typeId);
 
 	if (typeId != USERDATA_TYPE_DATATABLE_CUSTOM)
-		return g_pSquirrel<context>->m_funcOriginals["GetDataTableRowMatchingAssetValue"](sqvm);
+		return g_pSquirrel[context]->m_funcOriginals["GetDataTableRowMatchingAssetValue"](sqvm);
 
 	CSVData* csv = *pData;
-	int nCol = g_pSquirrel<context>->getinteger(sqvm, 2);
+	int nCol = g_pSquirrel[context]->getinteger(sqvm, 2);
 	const char* pStringVal;
-	g_pSquirrel<context>->getasset(sqvm, 3, &pStringVal);
+	g_pSquirrel[context]->getasset(sqvm, 3, &pStringVal);
 	for (int i = 0; i < csv->dataPointers.size(); i++)
 	{
 		if (!strcmp(csv->dataPointers[i][nCol], pStringVal))
 		{
-			g_pSquirrel<context>->pushinteger(sqvm, i);
+			g_pSquirrel[context]->pushinteger(sqvm, i);
 			return SQRESULT_NOTNULL;
 		}
 	}
 
-	g_pSquirrel<context>->pushinteger(sqvm, -1);
+	g_pSquirrel[context]->pushinteger(sqvm, -1);
 	return SQRESULT_NOTNULL;
 }
 
@@ -498,24 +498,24 @@ REPLACE_SQFUNC(GetDataTableRowMatchingFloatValue, (ScriptContext::UI | ScriptCon
 {
 	CSVData** pData;
 	uint64_t typeId;
-	g_pSquirrel<context>->getuserdata(sqvm, 2, &pData, &typeId);
+	g_pSquirrel[context]->getuserdata(sqvm, 2, &pData, &typeId);
 
 	if (typeId != USERDATA_TYPE_DATATABLE_CUSTOM)
-		return g_pSquirrel<context>->m_funcOriginals["GetDataTableRowMatchingFloatValue"](sqvm);
+		return g_pSquirrel[context]->m_funcOriginals["GetDataTableRowMatchingFloatValue"](sqvm);
 
 	CSVData* csv = *pData;
-	int nCol = g_pSquirrel<context>->getinteger(sqvm, 2);
-	const float flFloatVal = g_pSquirrel<context>->getfloat(sqvm, 3);
+	int nCol = g_pSquirrel[context]->getinteger(sqvm, 2);
+	const float flFloatVal = g_pSquirrel[context]->getfloat(sqvm, 3);
 	for (int i = 0; i < csv->dataPointers.size(); i++)
 	{
 		if (flFloatVal == std::stof(csv->dataPointers[i][nCol]))
 		{
-			g_pSquirrel<context>->pushinteger(sqvm, i);
+			g_pSquirrel[context]->pushinteger(sqvm, i);
 			return SQRESULT_NOTNULL;
 		}
 	}
 
-	g_pSquirrel<context>->pushinteger(sqvm, -1);
+	g_pSquirrel[context]->pushinteger(sqvm, -1);
 	return SQRESULT_NOTNULL;
 }
 
@@ -524,24 +524,24 @@ REPLACE_SQFUNC(GetDataTableRowMatchingIntValue, (ScriptContext::UI | ScriptConte
 {
 	CSVData** pData;
 	uint64_t typeId;
-	g_pSquirrel<context>->getuserdata(sqvm, 2, &pData, &typeId);
+	g_pSquirrel[context]->getuserdata(sqvm, 2, &pData, &typeId);
 
 	if (typeId != USERDATA_TYPE_DATATABLE_CUSTOM)
-		return g_pSquirrel<context>->m_funcOriginals["GetDataTableRowMatchingIntValue"](sqvm);
+		return g_pSquirrel[context]->m_funcOriginals["GetDataTableRowMatchingIntValue"](sqvm);
 
 	CSVData* csv = *pData;
-	int nCol = g_pSquirrel<context>->getinteger(sqvm, 2);
-	const int nIntVal = g_pSquirrel<context>->getinteger(sqvm, 3);
+	int nCol = g_pSquirrel[context]->getinteger(sqvm, 2);
+	const int nIntVal = g_pSquirrel[context]->getinteger(sqvm, 3);
 	for (int i = 0; i < csv->dataPointers.size(); i++)
 	{
 		if (nIntVal == std::stoi(csv->dataPointers[i][nCol]))
 		{
-			g_pSquirrel<context>->pushinteger(sqvm, i);
+			g_pSquirrel[context]->pushinteger(sqvm, i);
 			return SQRESULT_NOTNULL;
 		}
 	}
 
-	g_pSquirrel<context>->pushinteger(sqvm, -1);
+	g_pSquirrel[context]->pushinteger(sqvm, -1);
 	return SQRESULT_NOTNULL;
 }
 
@@ -550,25 +550,25 @@ REPLACE_SQFUNC(GetDataTableRowMatchingVectorValue, (ScriptContext::UI | ScriptCo
 {
 	CSVData** pData;
 	uint64_t typeId;
-	g_pSquirrel<context>->getuserdata(sqvm, 2, &pData, &typeId);
+	g_pSquirrel[context]->getuserdata(sqvm, 2, &pData, &typeId);
 
 	if (typeId != USERDATA_TYPE_DATATABLE_CUSTOM)
-		return g_pSquirrel<context>->m_funcOriginals["GetDataTableRowMatchingVectorValue"](sqvm);
+		return g_pSquirrel[context]->m_funcOriginals["GetDataTableRowMatchingVectorValue"](sqvm);
 
 	CSVData* csv = *pData;
-	int nCol = g_pSquirrel<context>->getinteger(sqvm, 2);
-	const Vector3 vVectorVal = g_pSquirrel<context>->getvector(sqvm, 3);
+	int nCol = g_pSquirrel[context]->getinteger(sqvm, 2);
+	const Vector3 vVectorVal = g_pSquirrel[context]->getvector(sqvm, 3);
 
 	for (int i = 0; i < csv->dataPointers.size(); i++)
 	{
 		if (vVectorVal == StringToVector(csv->dataPointers[i][nCol]))
 		{
-			g_pSquirrel<context>->pushinteger(sqvm, i);
+			g_pSquirrel[context]->pushinteger(sqvm, i);
 			return SQRESULT_NOTNULL;
 		}
 	}
 
-	g_pSquirrel<context>->pushinteger(sqvm, -1);
+	g_pSquirrel[context]->pushinteger(sqvm, -1);
 	return SQRESULT_NOTNULL;
 }
 
@@ -577,25 +577,25 @@ REPLACE_SQFUNC(GetDataTableRowGreaterThanOrEqualToIntValue, (ScriptContext::UI |
 {
 	CSVData** pData;
 	uint64_t typeId;
-	g_pSquirrel<context>->getuserdata(sqvm, 2, &pData, &typeId);
+	g_pSquirrel[context]->getuserdata(sqvm, 2, &pData, &typeId);
 
 	if (typeId != USERDATA_TYPE_DATATABLE_CUSTOM)
-		return g_pSquirrel<context>->m_funcOriginals["GetDataTableRowGreaterThanOrEqualToIntValue"](sqvm);
+		return g_pSquirrel[context]->m_funcOriginals["GetDataTableRowGreaterThanOrEqualToIntValue"](sqvm);
 
 	CSVData* csv = *pData;
-	int nCol = g_pSquirrel<context>->getinteger(sqvm, 2);
-	const int nIntVal = g_pSquirrel<context>->getinteger(sqvm, 3);
+	int nCol = g_pSquirrel[context]->getinteger(sqvm, 2);
+	const int nIntVal = g_pSquirrel[context]->getinteger(sqvm, 3);
 	for (int i = 0; i < csv->dataPointers.size(); i++)
 	{
 		if (nIntVal >= std::stoi(csv->dataPointers[i][nCol]))
 		{
 			spdlog::info("datatable not loaded");
-			g_pSquirrel<context>->pushinteger(sqvm, 1);
+			g_pSquirrel[context]->pushinteger(sqvm, 1);
 			return SQRESULT_NOTNULL;
 		}
 	}
 
-	g_pSquirrel<context>->pushinteger(sqvm, -1);
+	g_pSquirrel[context]->pushinteger(sqvm, -1);
 	return SQRESULT_NOTNULL;
 }
 
@@ -604,24 +604,24 @@ REPLACE_SQFUNC(GetDataTableRowLessThanOrEqualToIntValue, (ScriptContext::UI | Sc
 {
 	CSVData** pData;
 	uint64_t typeId;
-	g_pSquirrel<context>->getuserdata(sqvm, 2, &pData, &typeId);
+	g_pSquirrel[context]->getuserdata(sqvm, 2, &pData, &typeId);
 
 	if (typeId != USERDATA_TYPE_DATATABLE_CUSTOM)
-		return g_pSquirrel<context>->m_funcOriginals["GetDataTableRowLessThanOrEqualToIntValue"](sqvm);
+		return g_pSquirrel[context]->m_funcOriginals["GetDataTableRowLessThanOrEqualToIntValue"](sqvm);
 
 	CSVData* csv = *pData;
-	int nCol = g_pSquirrel<context>->getinteger(sqvm, 2);
-	const int nIntVal = g_pSquirrel<context>->getinteger(sqvm, 3);
+	int nCol = g_pSquirrel[context]->getinteger(sqvm, 2);
+	const int nIntVal = g_pSquirrel[context]->getinteger(sqvm, 3);
 	for (int i = 0; i < csv->dataPointers.size(); i++)
 	{
 		if (nIntVal <= std::stoi(csv->dataPointers[i][nCol]))
 		{
-			g_pSquirrel<context>->pushinteger(sqvm, i);
+			g_pSquirrel[context]->pushinteger(sqvm, i);
 			return SQRESULT_NOTNULL;
 		}
 	}
 
-	g_pSquirrel<context>->pushinteger(sqvm, -1);
+	g_pSquirrel[context]->pushinteger(sqvm, -1);
 	return SQRESULT_NOTNULL;
 }
 
@@ -630,24 +630,24 @@ REPLACE_SQFUNC(GetDataTableRowGreaterThanOrEqualToFloatValue, (ScriptContext::UI
 {
 	CSVData** pData;
 	uint64_t typeId;
-	g_pSquirrel<context>->getuserdata(sqvm, 2, &pData, &typeId);
+	g_pSquirrel[context]->getuserdata(sqvm, 2, &pData, &typeId);
 
 	if (typeId != USERDATA_TYPE_DATATABLE_CUSTOM)
-		return g_pSquirrel<context>->m_funcOriginals["GetDataTableRowGreaterThanOrEqualToFloatValue"](sqvm);
+		return g_pSquirrel[context]->m_funcOriginals["GetDataTableRowGreaterThanOrEqualToFloatValue"](sqvm);
 
 	CSVData* csv = *pData;
-	int nCol = g_pSquirrel<context>->getinteger(sqvm, 2);
-	const float flFloatVal = g_pSquirrel<context>->getfloat(sqvm, 3);
+	int nCol = g_pSquirrel[context]->getinteger(sqvm, 2);
+	const float flFloatVal = g_pSquirrel[context]->getfloat(sqvm, 3);
 	for (int i = 0; i < csv->dataPointers.size(); i++)
 	{
 		if (flFloatVal >= std::stof(csv->dataPointers[i][nCol]))
 		{
-			g_pSquirrel<context>->pushinteger(sqvm, i);
+			g_pSquirrel[context]->pushinteger(sqvm, i);
 			return SQRESULT_NOTNULL;
 		}
 	}
 
-	g_pSquirrel<context>->pushinteger(sqvm, -1);
+	g_pSquirrel[context]->pushinteger(sqvm, -1);
 	return SQRESULT_NOTNULL;
 }
 
@@ -656,24 +656,24 @@ REPLACE_SQFUNC(GetDataTableRowLessThanOrEqualToFloatValue, (ScriptContext::UI | 
 {
 	CSVData** pData;
 	uint64_t typeId;
-	g_pSquirrel<context>->getuserdata(sqvm, 2, &pData, &typeId);
+	g_pSquirrel[context]->getuserdata(sqvm, 2, &pData, &typeId);
 
 	if (typeId != USERDATA_TYPE_DATATABLE_CUSTOM)
-		return g_pSquirrel<context>->m_funcOriginals["GetDataTableRowLessThanOrEqualToFloatValue"](sqvm);
+		return g_pSquirrel[context]->m_funcOriginals["GetDataTableRowLessThanOrEqualToFloatValue"](sqvm);
 
 	CSVData* csv = *pData;
-	int nCol = g_pSquirrel<context>->getinteger(sqvm, 2);
-	const float flFloatVal = g_pSquirrel<context>->getfloat(sqvm, 3);
+	int nCol = g_pSquirrel[context]->getinteger(sqvm, 2);
+	const float flFloatVal = g_pSquirrel[context]->getfloat(sqvm, 3);
 	for (int i = 0; i < csv->dataPointers.size(); i++)
 	{
 		if (flFloatVal <= std::stof(csv->dataPointers[i][nCol]))
 		{
-			g_pSquirrel<context>->pushinteger(sqvm, i);
+			g_pSquirrel[context]->pushinteger(sqvm, i);
 			return SQRESULT_NOTNULL;
 		}
 	}
 
-	g_pSquirrel<context>->pushinteger(sqvm, -1);
+	g_pSquirrel[context]->pushinteger(sqvm, -1);
 	return SQRESULT_NOTNULL;
 }
 
