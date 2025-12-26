@@ -906,20 +906,6 @@ void function CreateTitanForPlayerAndHotdrop( entity player, Point spawnPoint, T
 	player.Signal( "titan_impact" )
 
 	thread TitanNPC_WaitForBubbleShield_StartAutoTitanBehavior( titan )
-	thread PlayerEarnMeter_ReplacementTitanThink( player, titan )
-}
-
-void function PlayerEarnMeter_ReplacementTitanThink( entity player, entity titan )
-{
-	player.EndSignal( "OnDestroy" )
-	OnThreadEnd(
-		function(): ( player )
-		{
-			if( IsValid( player ) )
-				PlayerEarnMeter_Reset( player )
-		}
-	)
-	titan.WaitSignal( "OnDestroy" )
 }
 
 void function CleanupTitanFallDisablingEntity( entity titanFallDisablingEntity, entity titan )
