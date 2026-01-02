@@ -421,8 +421,19 @@ void __fastcall ScriptCompileErrorHook(HSQUIRRELVM sqvm, const char* error, cons
 
 	auto logger = getSquirrelLoggerByContext(realContext);
 
+	const char* ownerName = "Vanilla";
+	std::string filePath = g_pModManager->NormaliseModFilePath(fs::path("scripts/vscripts") / file);
+	auto it = g_pModManager->m_ModFiles.find(filePath);
+	if (it != g_pModManager->m_ModFiles.end())
+	{
+		ModOverrideFile& modFile = it->second;
+		ownerName = modFile.m_pOwningMod ? modFile.m_pOwningMod->Name.c_str() : "Unknown";
+	}
+
 	logger->error("COMPILE ERROR {}", error);
 	logger->error("{} line [{}] column [{}]", file, line, column);
+	logger->error("This can be caused by a broken mod, or incompatibilities between mods.");
+	logger->error("{} belongs to {}", file, ownerName);
 
 	// use disconnect to display an error message for the compile error, but only if the compilation error was fatal
 	// todo, we could get this from sqvm itself probably, rather than hooking sq_compiler_create
