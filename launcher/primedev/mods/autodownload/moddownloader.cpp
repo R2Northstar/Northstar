@@ -451,6 +451,126 @@ void ModDownloader::ExtractMod(fs::path modPath, fs::path destinationPath, Verif
 	modState.total = GetModArchiveSize(file, gi);
 	modState.progress = 0;
 
+	// extracts the file in the archive at zipFilename to fileDestination on disk
+	auto extractFile = [&](fs::path fileDestination, char* zipFilename) -> bool
+	{
+		std::error_code ec;
+		spdlog::info("=> {}", fileDestination.generic_string());
+
+		// Create parent directory if needed
+		if (!std::filesystem::exists(fileDestination.parent_path()))
+		{
+			spdlog::info("Parent directory does not exist, creating it.", fileDestination.generic_string());
+			if (!std::filesystem::create_directories(fileDestination.parent_path(), ec) && ec.value() != 0)
+			{
+				spdlog::error("Parent directory ({}) creation failed.", fileDestination.parent_path().generic_string());
+				modState.state = FAILED_WRITING_TO_DISK;
+				return false;
+			}
+		}
+
+		// If current file is a directory, create directory...
+		if (fileDestination.generic_string().back() == '/')
+		{
+			// Create directory
+			if (!std::filesystem::create_directory(fileDestination, ec) && ec.value() != 0)
+			{
+				spdlog::error("Directory creation failed: {}", ec.message());
+				modState.state = FAILED_WRITING_TO_DISK;
+				return false;
+			}
+		}
+		// ...else create file
+		else
+		{
+			// Ensure file is in zip archive
+			if (unzLocateFile(file, zipFilename, 0) != UNZ_OK)
+			{
+				spdlog::error("File \"{}\" was not found in archive.", zipFilename);
+				modState.state = FAILED_READING_ARCHIVE;
+				return false;
+			}
+
+			// Create file
+			const int bufferSize = 8192;
+			void* buffer;
+			int err = UNZ_OK;
+			FILE* fout = NULL;
+
+			// Open zip file to prepare its extraction
+			status = unzOpenCurrentFile(file);
+			if (status != UNZ_OK)
+			{
+				spdlog::error("Could not open file {} from archive.", zipFilename);
+				modState.state = FAILED_READING_ARCHIVE;
+				return false;
+			}
+
+			// Create destination file
+			fout = fopen(fileDestination.generic_string().c_str(), "wb");
+			if (fout == NULL)
+			{
+				spdlog::error("Failed creating destination file.");
+				modState.state = FAILED_WRITING_TO_DISK;
+				return false;
+			}
+
+			// Allocate memory for buffer
+			buffer = (void*)malloc(bufferSize);
+			if (buffer == NULL)
+			{
+				spdlog::error("Error while allocating memory.");
+				modState.state = FAILED_WRITING_TO_DISK;
+				return false;
+			}
+
+			// Extract file to destination
+			do
+			{
+				err = unzReadCurrentFile(file, buffer, bufferSize);
+				if (err < 0)
+				{
+					spdlog::error("error {} with zipfile in unzReadCurrentFile", err);
+					break;
+				}
+				if (err > 0)
+				{
+					if (fwrite(buffer, (unsigned)err, 1, fout) != 1)
+					{
+						spdlog::error("error in writing extracted file\n");
+						err = UNZ_ERRNO;
+						break;
+					}
+				}
+
+				// Update extraction stats
+				modState.progress += bufferSize;
+				modState.ratio = roundf(static_cast<float>(modState.progress) / modState.total * 100);
+			} while (err > 0);
+
+			if (err != UNZ_OK)
+			{
+				spdlog::error("An error occurred during file extraction (code: {})", err);
+				modState.state = FAILED_WRITING_TO_DISK;
+				return false;
+			}
+			err = unzCloseCurrentFile(file);
+			if (err != UNZ_OK)
+			{
+				spdlog::error("error {} with zipfile in unzCloseCurrentFile", err);
+			}
+
+			// Cleanup
+			if (fout)
+				fclose(fout);
+		}
+
+		return true;
+	};
+
+	// the folder that contains the mod.json. all other files are considered relative to this
+	fs::path rootDir = "";
+
 	// We don't know how to extract mods from unknown platforms
 	if (platform == VerifiedModPlatform::Unknown)
 	{
@@ -458,133 +578,63 @@ void ModDownloader::ExtractMod(fs::path modPath, fs::path destinationPath, Verif
 		modState.state = UNKNOWN_PLATFORM;
 		return;
 	}
+	else if (platform == VerifiedModPlatform::ModWorkshop)
+	{
+		// find the mod.json and store the folder that it's in as the root directory
+		unzGoToFirstFile(file);
+		for (uint64_t i = 0; i < gi.number_entry; ++i)
+		{
+			char zipFilename[256];
+			unz_file_info64 fileInfo;
+			status = unzGetCurrentFileInfo64(file, &fileInfo, zipFilename, sizeof(zipFilename), NULL, 0, NULL, 0);
+			fs::path filePath = zipFilename;
 
-	for (int i = 0; i < gi.number_entry; i++)
+			if (filePath.has_filename() && filePath.filename() == "mod.json")
+			{
+				fs::path parentPath = modPath.filename();
+				if (filePath.has_parent_path())
+					rootDir = filePath.parent_path() / "";
+
+				break;
+			}
+
+			if ((i + 1) < gi.number_entry)
+			{
+				status = unzGoToNextFile(file);
+				if (status != UNZ_OK)
+				{
+					spdlog::error("Error while browsing archive files (error code: {}).", status);
+					return;
+				}
+			}
+		}
+	}
+
+	unzGoToFirstFile(file);
+	for (uint64_t i = 0; i < gi.number_entry; i++)
 	{
 		char zipFilename[256];
 		unz_file_info64 fileInfo;
 		status = unzGetCurrentFileInfo64(file, &fileInfo, zipFilename, sizeof(zipFilename), NULL, 0, NULL, 0);
 
-		// Extract file
+		// Get the destination path, correcting for rootDir
+		fs::path zipFilePath = zipFilename;
+		fs::path relativePath = zipFilePath.lexically_relative(rootDir);
+		// don't try to do anything with our root directory
+		if (zipFilePath.compare(rootDir))
 		{
-			std::error_code ec;
-			fs::path fileDestination = destinationPath / zipFilename;
-			spdlog::info("=> {}", fileDestination.generic_string());
+			fs::path fileDestination = destinationPath / relativePath;
 
-			// Create parent directory if needed
-			if (!std::filesystem::exists(fileDestination.parent_path()))
+			// Extract file
+			if (!extractFile(fileDestination, zipFilename))
+				return;
+
+			// Abort mod extraction if needed
+			if (modState.state == ABORTED)
 			{
-				spdlog::info("Parent directory does not exist, creating it.", fileDestination.generic_string());
-				if (!std::filesystem::create_directories(fileDestination.parent_path(), ec) && ec.value() != 0)
-				{
-					spdlog::error("Parent directory ({}) creation failed.", fileDestination.parent_path().generic_string());
-					modState.state = FAILED_WRITING_TO_DISK;
-					return;
-				}
+				spdlog::info("User cancelled mod installation, aborting mod extraction.");
+				return;
 			}
-
-			// If current file is a directory, create directory...
-			if (fileDestination.generic_string().back() == '/')
-			{
-				// Create directory
-				if (!std::filesystem::create_directory(fileDestination, ec) && ec.value() != 0)
-				{
-					spdlog::error("Directory creation failed: {}", ec.message());
-					modState.state = FAILED_WRITING_TO_DISK;
-					return;
-				}
-			}
-			// ...else create file
-			else
-			{
-				// Ensure file is in zip archive
-				if (unzLocateFile(file, zipFilename, 0) != UNZ_OK)
-				{
-					spdlog::error("File \"{}\" was not found in archive.", zipFilename);
-					modState.state = FAILED_READING_ARCHIVE;
-					return;
-				}
-
-				// Create file
-				const int bufferSize = 8192;
-				void* buffer;
-				int err = UNZ_OK;
-				FILE* fout = NULL;
-
-				// Open zip file to prepare its extraction
-				status = unzOpenCurrentFile(file);
-				if (status != UNZ_OK)
-				{
-					spdlog::error("Could not open file {} from archive.", zipFilename);
-					modState.state = FAILED_READING_ARCHIVE;
-					return;
-				}
-
-				// Create destination file
-				fout = fopen(fileDestination.generic_string().c_str(), "wb");
-				if (fout == NULL)
-				{
-					spdlog::error("Failed creating destination file.");
-					modState.state = FAILED_WRITING_TO_DISK;
-					return;
-				}
-
-				// Allocate memory for buffer
-				buffer = (void*)malloc(bufferSize);
-				if (buffer == NULL)
-				{
-					spdlog::error("Error while allocating memory.");
-					modState.state = FAILED_WRITING_TO_DISK;
-					return;
-				}
-
-				// Extract file to destination
-				do
-				{
-					err = unzReadCurrentFile(file, buffer, bufferSize);
-					if (err < 0)
-					{
-						spdlog::error("error {} with zipfile in unzReadCurrentFile", err);
-						break;
-					}
-					if (err > 0)
-					{
-						if (fwrite(buffer, (unsigned)err, 1, fout) != 1)
-						{
-							spdlog::error("error in writing extracted file\n");
-							err = UNZ_ERRNO;
-							break;
-						}
-					}
-
-					// Update extraction stats
-					modState.progress += bufferSize;
-					modState.ratio = roundf(static_cast<float>(modState.progress) / modState.total * 100);
-				} while (err > 0);
-
-				if (err != UNZ_OK)
-				{
-					spdlog::error("An error occurred during file extraction (code: {})", err);
-					modState.state = FAILED_WRITING_TO_DISK;
-					return;
-				}
-				err = unzCloseCurrentFile(file);
-				if (err != UNZ_OK)
-				{
-					spdlog::error("error {} with zipfile in unzCloseCurrentFile", err);
-				}
-
-				// Cleanup
-				if (fout)
-					fclose(fout);
-			}
-		}
-
-		// Abort mod extraction if needed
-		if (modState.state == ABORTED)
-		{
-			spdlog::info("User cancelled mod installation, aborting mod extraction.");
-			return;
 		}
 
 		// Go to next file
@@ -681,7 +731,8 @@ void ModDownloader::DownloadMod(std::string modName, std::string modVersion)
 			/// Don't use archive name as destination with ModWorkshop
 			if (fullVersion.platform == VerifiedModPlatform::ModWorkshop)
 			{
-				modDirectory = GetRemoteModFolderPath();
+				name = archiveLocation.stem().string();
+				modDirectory = GetRemoteModFolderPath() / std::format("{}-{}", name, modVersion);
 			}
 			else
 			/// Removes the ".zip" fom the archive name and use it as parent directory
