@@ -118,7 +118,7 @@ void function InitInGameMPMenu()
 	#endif
 
 	// MOD SETTINGS
-	var modSettingsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "Mod Settings" )
+	var modSettingsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MOD_SETTINGS" )
 	Hud_AddEventHandler( modSettingsButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ModSettings" ) ) )
 
 	// Nobody reads the FAQ so we replace it with ModSettings because of the limited combobutton space available
@@ -267,7 +267,7 @@ void function InitInGameSPMenu()
 	#endif
 	
 	// MOD SETTINGS
-	var modSettingsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "Mod Settings" )
+	var modSettingsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MOD_SETTINGS" )
 	Hud_AddEventHandler( modSettingsButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ModSettings" ) ) )
 
 	array<var> orderedButtons
