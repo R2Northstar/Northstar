@@ -1,11 +1,7 @@
 #pragma once
 
 #include <regex>
-
-enum PakHandle : int
-{
-	INVALID = -1,
-};
+#include "rtech/pakfile.h"
 
 struct ModPak_t
 {

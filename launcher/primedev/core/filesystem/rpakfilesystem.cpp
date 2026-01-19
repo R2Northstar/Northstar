@@ -3,6 +3,7 @@
 #include "dedicated/dedicated.h"
 #include "core/tier0.h"
 #include "util/utils.h"
+#include "rtech/pakfile.h"
 
 #pragma pack(push, 1)
 struct PakLoadFuncs
@@ -97,7 +98,11 @@ void PakLoadManager::TrackModPaks(Mod& mod)
 // Untracks all paks that aren't currently loaded and are marked for unload.
 void PakLoadManager::CleanUpUnloadedPaks()
 {
-	auto fnRemovePredicate = [](ModPak_t& pak) -> bool { return pak.m_markedForDelete && pak.m_handle == PakHandle::INVALID; };
+	auto fnRemovePredicate = [](ModPak_t& pak) -> bool
+	{
+		return pak.m_markedForDelete && pak.m_handle == PakHandle::INVALID &&
+			   std::find(g_pBadPaks.begin(), g_pBadPaks.end(), pak.m_handle) == g_pBadPaks.end();
+	};
 
 	m_modPaks.erase(std::remove_if(m_modPaks.begin(), m_modPaks.end(), fnRemovePredicate), m_modPaks.end());
 }
@@ -115,6 +120,12 @@ void PakLoadManager::UnloadMarkedPaks()
 	{
 		if (modPak.m_handle == PakHandle::INVALID || !modPak.m_markedForDelete)
 			continue;
+
+		if (std::find(g_pBadPaks.begin(), g_pBadPaks.end(), modPak.m_handle) != g_pBadPaks.end())
+		{
+			NS::log::rpak->warn("Skipping unload on bad pack: handle: {} filepath: {}", static_cast<int>(modPak.m_handle), modPak.m_path);
+			continue;
+		}
 
 		g_pakLoadApi->UnloadPak(modPak.m_handle, *o_pCleanMaterialSystemStuff);
 		modPak.m_handle = PakHandle::INVALID;
@@ -564,6 +575,22 @@ void*, __fastcall, (const char* pPath, void* pCallback))
 	return o_pOpenFile(pPath, pCallback);
 }
 
+using Pak_Free_t = void(__fastcall*)(PakLoadedInfo_s* handle);
+Pak_Free_t Pak_Free = nullptr;
+std::vector<PakHandle> g_pBadPaks;
+HOOK(v_Pak_Free, o_Pak_Free, void, __fastcall, (PakLoadedInfo_s * info))
+{
+	if (info->pakFile)
+	{
+		if (!info->pakFile->IsValid())
+		{
+			g_pBadPaks.push_back(info->handle);
+		}
+	}
+
+	o_Pak_Free(info);
+}
+
 ON_DLL_LOAD("engine.dll", RpakFilesystem, (CModule module))
 {
 	g_pPakLoadManager = new PakLoadManager;
@@ -591,4 +618,6 @@ ON_DLL_LOAD("engine.dll", RpakFilesystem, (CModule module))
 	// kinda bad, doing things in rtech in an engine callback but it seems fine for now
 	CModule rtechModule(GetModuleHandleA("rtech_game.dll"));
 	o_pGetPakPatchNumber = rtechModule.Offset(0x9A00).RCast<decltype(o_pGetPakPatchNumber)>();
+	Pak_Free = rtechModule.Offset(0x8410).RCast<Pak_Free_t>();
+	v_Pak_Free.Dispatch(reinterpret_cast<LPVOID*>(Pak_Free));
 }

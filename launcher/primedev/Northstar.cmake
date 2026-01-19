@@ -155,6 +155,8 @@ add_library(
     "squirrel/squirrelautobind.cpp"
     "squirrel/squirrelautobind.h"
     "squirrel/squirrelclasstypes.h"
+    "rtech/pakfile.h"
+    "rtech/pakfile.cpp"
     "util/printcommands.cpp"
     "util/printcommands.h"
     "util/printmaps.cpp"
