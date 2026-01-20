@@ -31,26 +31,26 @@ impl From<RecordedAnimation> for Vec<u8> {
                     .copied(),
             )
             .chain(value.sequences.iter().flat_map(|ptr| {
-                bytemuck::bytes_of(unsafe {
-                    &ptr.is_null()
-                        .not()
-                        .then(|| str_from_char_ptr(*ptr))
-                        .flatten()
-                        .unwrap_or_default()
-                        .len()
-                })
-                .iter()
-                .copied()
-                .chain(unsafe {
-                    ptr.is_null()
-                        .not()
-                        .then(|| str_from_char_ptr(*ptr))
-                        .flatten()
-                        .unwrap_or_default()
-                        .as_bytes()
-                        .to_vec()
-                })
-                .collect::<Vec<_>>()
+                let str = ptr
+                    .is_null()
+                    .not()
+                    .then(|| unsafe { str_from_char_ptr(*ptr) })
+                    .flatten()
+                    .unwrap_or_default()
+                    .len();
+                bytemuck::bytes_of(&str)
+                    .iter()
+                    .copied()
+                    .chain(unsafe {
+                        ptr.is_null()
+                            .not()
+                            .then(|| str_from_char_ptr(*ptr))
+                            .flatten()
+                            .unwrap_or_default()
+                            .as_bytes()
+                            .to_vec()
+                    })
+                    .collect::<Vec<_>>()
             }))
             .collect()
     }
