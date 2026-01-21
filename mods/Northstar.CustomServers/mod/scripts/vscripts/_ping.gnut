@@ -31,7 +31,7 @@ void function Spotting_Init()
 
 bool function ClientCommandCallbackPingSpot( entity player, array<string> args )
 {
-	if ( GetCurrentPlaylistVarInt( "pingspot_enabled", 0 ) )
+	if ( GetCurrentPlaylistVarInt( "pingspot_enabled", 0 ) == 0 )
 		return true
 
 	if( !IsAlive( player ) || !GamePlaying() || IsPrivateMatchSpectator( player ) )
