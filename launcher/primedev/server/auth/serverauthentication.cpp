@@ -42,6 +42,14 @@ void ServerAuthenticationManager::AddPlayer(CBaseClient* pPlayer, const char* pT
 {
 	PlayerAuthenticationData additionalData;
 
+	if (pPlayer->m_bFakePlayer)
+	{
+		additionalData.pdataSize = PERSISTENCE_MAX_SIZE;
+		additionalData.usingLocalPdata = true;
+		m_PlayerAuthenticationData.insert(std::make_pair(pPlayer, additionalData));
+		return;
+	}
+
 	auto remoteAuthData = m_RemoteAuthenticationData.find(pToken);
 	if (remoteAuthData != m_RemoteAuthenticationData.end())
 		additionalData.pdataSize = remoteAuthData->second.pdataSize;
@@ -135,6 +143,12 @@ void ServerAuthenticationManager::AuthenticatePlayer(CBaseClient* pPlayer, uint6
 	// copy uuid
 	strcpy(pPlayer->m_UID, sUid.c_str());
 
+	if (pPlayer->m_bFakePlayer)
+	{
+		pPlayer->m_iPersistenceReady = ePersistenceReady::READY_INSECURE;
+		return;
+	}
+
 	std::lock_guard<std::mutex> guard(m_AuthDataMutex);
 	auto authData = m_RemoteAuthenticationData.find(pAuthToken);
 	if (authData != m_RemoteAuthenticationData.end())
@@ -150,7 +164,7 @@ void ServerAuthenticationManager::AuthenticatePlayer(CBaseClient* pPlayer, uint6
 		pPlayer->m_iPersistenceReady = ePersistenceReady::READY_REMOTE;
 	}
 	// we probably allow insecure at this point, but make sure not to write anyway if not insecure
-	else if (Cvar_ns_auth_allow_insecure->GetBool() || pPlayer->m_bFakePlayer)
+	else if (Cvar_ns_auth_allow_insecure->GetBool())
 	{
 		// set persistent data as ready
 		// note: actual placeholder persistent data is populated in script with InitPersistentData()
@@ -261,10 +275,12 @@ h_CBaseClient__Connect(CBaseClient* self, char* pName, void* pNetChannel, char b
 
 	if (!bFakePlayer)
 	{
-		if (!g_pServerAuthentication->VerifyPlayerName(pNextPlayerToken, pName, pVerifiedName))
+		if (!pNextPlayerToken)
+			pAuthenticationFailure = "No Authentication Token.";
+		else if (!g_pServerAuthentication->VerifyPlayerName(pNextPlayerToken, pName, pVerifiedName))
 			pAuthenticationFailure = "Invalid Name.";
 		else if (!g_pBanSystem->IsUIDAllowed(iNextPlayerUid))
-			pAuthenticationFailure = "Banned From server.";
+			pAuthenticationFailure = "Banned From Server.";
 		else if (!g_pServerAuthentication->CheckAuthentication(self, iNextPlayerUid, pNextPlayerToken))
 			pAuthenticationFailure = "Authentication Failed.";
 	}
