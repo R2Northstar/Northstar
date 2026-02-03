@@ -87,6 +87,7 @@ add_library(
     "mods/compiled/modkeyvalues.cpp"
     "mods/compiled/modpdef.cpp"
     "mods/compiled/modscriptsrson.cpp"
+    "mods/compiled/particles_manifest.cpp"
     "mods/mod.cpp"
     "mods/mod.h"
     "mods/modmanager.cpp"

@@ -31,6 +31,7 @@ ModManager::ModManager()
 		"cfg\\server\\persistent_player_data_version_231.pdef" // this can have multiple versions, but we use 231 so that's what we hash
 	);
 	m_hKBActHash = STR_HASH("scripts\\kb_act.lst");
+	m_particlesManifestHash = STR_HASH("particles\\particles_manifest.txt");
 
 	LoadMods();
 }
@@ -835,6 +836,8 @@ void ModManager::CompileAssetsForFile(const char* filename)
 		BuildPdef();
 	else if (fileHash == m_hKBActHash)
 		BuildKBActionsList();
+	else if (fileHash == m_particlesManifestHash)
+		BuildParticlesManifest();
 	else
 	{
 		// check if we should build keyvalues, depending on whether any of our mods have patch kvs for this file
