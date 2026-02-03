@@ -41,6 +41,7 @@ private:
 	size_t m_hScriptsRsonHash;
 	size_t m_hPdefHash;
 	size_t m_hKBActHash;
+	size_t m_particlesManifestHash;
 
 public:
 	std::vector<Mod> m_LoadedMods;
@@ -116,6 +117,7 @@ public:
 	void TryBuildKeyValues(const char* filename);
 	void BuildPdef();
 	void BuildKBActionsList();
+	void BuildParticlesManifest();
 };
 
 fs::path GetModFolderPath();
