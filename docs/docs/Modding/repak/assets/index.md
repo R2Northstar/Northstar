@@ -4,8 +4,8 @@
 ## Datatable
 ```json
 {
-    "$type": "dtbl",
-    "path": "datatable/custom_datatable",
+    "_type": "dtbl",
+    "_path": "datatable/custom_datatable",
 }
 ```
 see [Datatable](datatable.md) for more info about Datatables
@@ -13,8 +13,8 @@ see [Datatable](datatable.md) for more info about Datatables
 ## Material
 ```json
 {
-    "$type": "matl",
-    "path": "material/models/testmodel/test_m_skn.rpak"
+    "_type": "matl",
+    "_path": "material/models/testmodel/test_m_skn.rpak"
 }
 ```
 see [Material](material.md) for more info about Materials
@@ -22,8 +22,8 @@ see [Material](material.md) for more info about Materials
 ## Texture
 ```json
 {
-    "$type": "txtr",
-    "path": "texture/models/testmodel/test_col.rpak"
+    "_type": "txtr",
+    "_path": "texture/models/testmodel/test_col.rpak"
 }
 ```
 Textures have to be in one of the following `.dds` compression types:
