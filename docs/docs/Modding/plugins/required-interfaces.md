@@ -44,7 +44,7 @@ The IPluginId provides information about the plugin itself, like the name and wh
 
         The prefix to use for logs in northstar. Use 8 characters to align with northstar prefixes.
 
-    !!! cpp-member "DEPENDENCY_NAME = 1"
+    !!! cpp-member "DEPENDENCY_NAME = 2"
 
         For every loaded plugin a squirrel global constant is registered with this value. Has to be a valid squirrel identifier.
 
@@ -107,9 +107,9 @@ For some commonly used events northstar provides callbacks.
 
         Called after all plugins are initialized
 
-    !!! cpp-function "void Unload()"
+    !!! cpp-function "bool Unload()"
 
-        Called right before this plugin is unloaded
+        Called right before this plugin is unloaded. If Unload returns false, the plugin will stay loaded.
 
     !!! cpp-function "void OnSqvmCreated(CSquirrelVM* sqvm)"
 
@@ -134,3 +134,4 @@ For some commonly used events northstar provides callbacks.
     !!! cpp-member "HMODULE pluginHandle"
 
         The handle of the initializing plugin
+
