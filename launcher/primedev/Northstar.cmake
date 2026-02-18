@@ -227,3 +227,8 @@ set_target_properties(
                OUTPUT_NAME Northstar
                LINK_FLAGS "/MANIFEST:NO /DEBUG"
     )
+
+# not sure why this is needed but otherwise the linker fails
+if(IS_NIX_ENV)
+    target_link_libraries(NorthstarDLL PRIVATE -nodefaultlib:libucrt.lib msvcrt.lib)
+endif()
