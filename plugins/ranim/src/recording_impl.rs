@@ -167,13 +167,15 @@ impl SQVMName for RecordedAnimation {
 }
 
 pub unsafe fn into_c_str(seq: String) -> *mut u8 {
-    let ptr =
-        SOURCE_ALLOC.alloc(Layout::array::<u8>(seq.len() + 1).expect("should be a correct array"));
+    unsafe {
+        let ptr = SOURCE_ALLOC
+            .alloc(Layout::array::<u8>(seq.len() + 1).expect("should be a correct array"));
 
-    ptr.write_bytes(1, seq.len());
-    std::ptr::copy_nonoverlapping(seq.as_ptr(), ptr, seq.len());
-    ptr.add(seq.len()).write(b'\0');
-    ptr
+        ptr.write_bytes(1, seq.len());
+        std::ptr::copy_nonoverlapping(seq.as_ptr(), ptr, seq.len());
+        ptr.add(seq.len()).write(b'\0');
+        ptr
+    }
 }
 
 fn drain_array<'a, T>(array: &mut &'a [T], amount: usize) -> &'a [T] {
