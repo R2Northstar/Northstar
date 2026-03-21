@@ -2,6 +2,10 @@
 #include "logging/logging.h"
 #include "core/convar/convar.h"
 
+class CBaseClient;
+
+extern void (*CGameClient__ClientPrintf)(CBaseClient* pClient, const char* fmt, ...);
+
 class DedicatedServerLogToClientSink : public CustomSink
 {
 protected:
