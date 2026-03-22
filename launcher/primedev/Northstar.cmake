@@ -131,6 +131,7 @@ add_library(
     "server/ai_navmesh.cpp"
     "server/ai_navmesh.h"
     "server/buildainfile.cpp"
+    "server/weaponx.h"
     "server/r2server.cpp"
     "server/r2server.h"
     "server/serverchathooks.cpp"
