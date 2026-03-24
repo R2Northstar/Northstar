@@ -1,5 +1,3 @@
-// Shared
-
 // Contains data about a custom scoreboard column data.
 global struct ScoreboardColumnData
 {
@@ -7,8 +5,17 @@ global struct ScoreboardColumnData
     string title
     // A valid PlayerGameStat (PGS) constant value (PGS_ASSAULT_SCORE, PGS_KILLS etc.).
     int scoreType
-    // The maximum amount of digits this column can hold.  Determines the width of the column.
-    int digits 
+    // The maximum amount of digits this column can hold. Determines the width of the column.
+    int digits
+}
+
+// Stores a replacement for any scoreboard column index (base or custom).
+global struct ScoreboardColumnReplacementData
+{
+    int columnIndex
+    string title
+    int scoreType
+    int digits
 }
 
 global function Shared_GetCustomScoreboardColumns
@@ -20,10 +27,16 @@ global function Client_CustomScoreboardColumns_Init
 #if SERVER
 global function Server_CustomScoreboardColumns_Init
 global function Server_AddCustomScoreboardColumn
+global function Server_ReplaceCustomScoreboardColumn
 #endif
 
 // Currently tracked custom scoreboard columns added by the server.
 array<ScoreboardColumnData> CustomScoreboardColumns
+
+#if SERVER
+// Track latest replacement per absolute scoreboard column index.
+array<ScoreboardColumnReplacementData> ScoreboardColumnReplacements
+#endif
 
 // Returns the custom scoreboard columns defined by the server.
 array<ScoreboardColumnData> function Shared_GetCustomScoreboardColumns()
@@ -35,26 +48,43 @@ array<ScoreboardColumnData> function Shared_GetCustomScoreboardColumns()
 void function Client_CustomScoreboardColumns_Init()
 {
     AddServerToClientStringCommandCallback( "AddCustomScoreboardColumn", ServerCallback_AddCustomScoreboardColumn )
+    AddServerToClientStringCommandCallback( "ReplaceCustomScoreboardColumn", ServerCallback_ReplaceCustomScoreboardColumn )
+}
+
+void function ServerCallback_ReplaceCustomScoreboardColumn( array<string> args )
+{
+    if ( args.len() != 4 )
+    {
+        printt( format( "Warning: received invalid ReplaceCustomScoreboardColumn command with %i arguments.", args.len() ) )
+        return
+    }
+
+    int columnIndex = args[0].tointeger()
+    string title = StringReplace( args[1], "\b", " ", true )
+    int scoreType = args[2].tointeger()
+    int digits = args[3].tointeger()
+
+    GameMode_ReplaceScoreboardColumnData( GAMETYPE, columnIndex, title, scoreType, digits )
 }
 
 void function ServerCallback_AddCustomScoreboardColumn( array<string> args )
 {
-    if (args.len() != 3)
+    if ( args.len() != 3 )
     {
-        printt(format("Warning: received invalid AddCustomScoreboardColumn command with %i arguments.", args.len()))
+        printt( format( "Warning: received invalid AddCustomScoreboardColumn command with %i arguments.", args.len() ) )
         return
     }
 
     ScoreboardColumnData newColumn = { ... }
-    newColumn.title = StringReplace(args[0], "\b", " ", true)
+    newColumn.title = StringReplace( args[0], "\b", " ", true )
     newColumn.scoreType = args[1].tointeger()
     newColumn.digits = args[2].tointeger()
 
-    CustomScoreboardColumns.append(newColumn)
-    
-    GameMode_AddScoreboardColumnData(GAMETYPE, newColumn.title, newColumn.scoreType, newColumn.digits)
+    CustomScoreboardColumns.append( newColumn )
+
+    GameMode_AddScoreboardColumnData( GAMETYPE, newColumn.title, newColumn.scoreType, newColumn.digits )
 }
-#endif //CLIENT
+#endif // CLIENT
 
 #if SERVER
 void function Server_CustomScoreboardColumns_Init()
@@ -69,16 +99,16 @@ void function Server_CustomScoreboardColumns_Init()
  * @param scoreType A valid PlayerGameStat (PGS) constant value (PGS_ASSAULT_SCORE, PGS_KILLS etc.).
  * @param digits The maximum amount of digits this column can hold. Determines the width of the column.
  */
-void function Server_AddCustomScoreboardColumn(string title, int scoreType, int digits)
-{   
-    // Limit of four scoreboard columns, else it'll break it entirely.
-    if (GameMode_GetScoreboardColumnTitles(GAMETYPE).len() + CustomScoreboardColumns.len() >= 4)
+void function Server_AddCustomScoreboardColumn( string title, int scoreType, int digits )
+{
+    // Limit of four scoreboard columns, else it will break it entirely.
+    if ( GameMode_GetScoreboardColumnTitles( GAMETYPE ).len() + CustomScoreboardColumns.len() >= 4 )
     {
         throw "Cannot have more than 4 scoreboard columns."
     }
-    
-    string sanitized = strip(title)
-    if (sanitized.len() == 0)
+
+    string sanitized = strip( title )
+    if ( sanitized.len() == 0 )
     {
         throw "Cannot have an empty scoreboard column title."
     }
@@ -89,32 +119,117 @@ void function Server_AddCustomScoreboardColumn(string title, int scoreType, int 
     newColumn.scoreType = scoreType
     newColumn.digits = digits
 
-    CustomScoreboardColumns.append(newColumn)
+    CustomScoreboardColumns.append( newColumn )
 
-    string cmd = BuildScoreboardStringCommand(newColumn)
-    printt(cmd)
-    foreach(entity player in GetPlayerArray())
+    string cmd = BuildScoreboardStringCommand( newColumn )
+    foreach ( entity player in GetPlayerArray() )
     {
-        ServerToClientStringCommand(player, cmd)
+        ServerToClientStringCommand( player, cmd )
     }
 }
 
-//adds all the registered columns when a player connects
-void function SendCustomScoreboardColumnsToPlayer(entity player)
+/**
+ * Replaces a scoreboard column by index.
+ * Replacements are tracked and replayed to late joiners.
+ */
+void function Server_ReplaceCustomScoreboardColumn( int columnIndex, string title, int scoreType, int digits )
 {
-    foreach(ScoreboardColumnData data in CustomScoreboardColumns)
+    string sanitized = strip( title )
+    if ( sanitized.len() == 0 )
     {
-        string cmd = BuildScoreboardStringCommand(data)
-        ServerToClientStringCommand(player, cmd)
+        throw "Cannot have an empty scoreboard column title."
     }
+
+    int baseColumnCount = GameMode_GetScoreboardColumnTitles( GAMETYPE ).len()
+    int totalColumnCount = baseColumnCount + CustomScoreboardColumns.len()
+
+    if ( columnIndex < 0 || columnIndex >= totalColumnCount )
+    {
+        throw format( "Scoreboard column index %i is out of range (0..%i).", columnIndex, totalColumnCount - 1 )
+    }
+
+    // If replacing one of our tracked custom columns, update stored state
+    // so reconnecting players still receive the correct custom data.
+    if ( columnIndex >= baseColumnCount )
+    {
+        int customIndex = columnIndex - baseColumnCount
+        ScoreboardColumnData data = CustomScoreboardColumns[customIndex]
+        data.title = sanitized
+        data.scoreType = scoreType
+        data.digits = digits
+        CustomScoreboardColumns[customIndex] = data
+    }
+
+    RecordScoreboardColumnReplacement( columnIndex, sanitized, scoreType, digits )
+
+    ScoreboardColumnData payload = { ... }
+    payload.title = sanitized
+    payload.scoreType = scoreType
+    payload.digits = digits
+
+    string cmd = BuildReplaceScoreboardStringCommand( columnIndex, payload )
+    foreach ( entity player in GetPlayerArray() )
+    {
+        ServerToClientStringCommand( player, cmd )
+    }
+}
+
+// Adds all the registered columns and replacements when a player connects.
+void function SendCustomScoreboardColumnsToPlayer( entity player )
+{
+    foreach ( ScoreboardColumnData data in CustomScoreboardColumns )
+    {
+        string addCmd = BuildScoreboardStringCommand( data )
+        ServerToClientStringCommand( player, addCmd )
+    }
+
+    foreach ( ScoreboardColumnReplacementData replacement in ScoreboardColumnReplacements )
+    {
+        ScoreboardColumnData data = { ... }
+        data.title = replacement.title
+        data.scoreType = replacement.scoreType
+        data.digits = replacement.digits
+
+        string replaceCmd = BuildReplaceScoreboardStringCommand( replacement.columnIndex, data )
+        ServerToClientStringCommand( player, replaceCmd )
+    }
+}
+
+void function RecordScoreboardColumnReplacement( int columnIndex, string title, int scoreType, int digits )
+{
+    for ( int i = 0; i < ScoreboardColumnReplacements.len(); i++ )
+    {
+        if ( ScoreboardColumnReplacements[i].columnIndex == columnIndex )
+        {
+            ScoreboardColumnReplacementData existing = ScoreboardColumnReplacements[i]
+            existing.title = title
+            existing.scoreType = scoreType
+            existing.digits = digits
+            ScoreboardColumnReplacements[i] = existing
+            return
+        }
+    }
+
+    ScoreboardColumnReplacementData replacement = { ... }
+    replacement.columnIndex = columnIndex
+    replacement.title = title
+    replacement.scoreType = scoreType
+    replacement.digits = digits
+    ScoreboardColumnReplacements.append( replacement )
+}
+
+string function BuildReplaceScoreboardStringCommand( int columnIndex, ScoreboardColumnData data )
+{
+    string sanitizedName = StringReplace( data.title, " ", "\b", true )
+    return format( "ReplaceCustomScoreboardColumn %i %s %i %i", columnIndex, sanitizedName, data.scoreType, data.digits )
 }
 
 // Helper function to build the string command used to send a custom scoreboard column.
-string function BuildScoreboardStringCommand(ScoreboardColumnData data)
+string function BuildScoreboardStringCommand( ScoreboardColumnData data )
 {
     // Replace spaces with backspaces so they arrive as one argument instead of splitting.
-    // Nobody's going to use those anyway, should be fine.
-    string sanitizedName = StringReplace(data.title, " ", "\b", true)
-    return format("AddCustomScoreboardColumn %s %i %i", sanitizedName, data.scoreType, data.digits)
+    // Nobody is going to use those anyway, should be fine.
+    string sanitizedName = StringReplace( data.title, " ", "\b", true )
+    return format( "AddCustomScoreboardColumn %s %i %i", sanitizedName, data.scoreType, data.digits )
 }
-#endif //SERVER
+#endif // SERVER
