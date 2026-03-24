@@ -13,6 +13,16 @@ global function NSCreateStatusMessageOnPlayer
 global function NSEditStatusMessageOnPlayer
 global function NSDeleteStatusMessageOnPlayer
 
+global const int ANNOUNCEMENT_STYLE_BIG = 0
+global const int ANNOUNCEMENT_STYLE_QUICK = 1
+global const int ANNOUNCEMENT_STYLE_PLAYER_LEVEL = 2
+global const int ANNOUNCEMENT_STYLE_WEAPON_LEVEL = 3
+global const int ANNOUNCEMENT_STYLE_TITAN_LEVEL = 4
+global const int ANNOUNCEMENT_STYLE_SWEEP = 5
+global const int ANNOUNCEMENT_STYLE_RESULTS = 6
+global const int ANNOUNCEMENT_STYLE_FD_WAVE_INTRO = 7
+global const int ANNOUNCEMENT_STYLE_FD_ITEM = 8
+
 struct
 {
 	table<entity,int> playerPollResponses
