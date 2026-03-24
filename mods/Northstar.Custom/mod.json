@@ -458,6 +458,16 @@
 			"UICallback":{
 				"Before": "NSCustomModSettings"
 			}
+		},
+		{
+		  "Path" : "sh_custom_scoreboard_columns.gnut",
+		  "RunOn": "( CLIENT || SERVER ) && MP",
+		  "ClientCallback":{
+				"Before": "Client_CustomScoreboardColumns_Init"
+		  },
+		  "ServerCallback": {
+				"Before": "Server_CustomScoreboardColumns_Init"
+		  }
 		}
 	],
 
