@@ -451,5 +451,8 @@ ON_DLL_LOAD_CLIENT("client.dll", LocalChatWriter, (CModule module))
 	gChatFadeSustain = module.Offset(0x11BAC08).RCast<CGameFloatVar**>();
 	CHudChat::allHuds = module.Offset(0x11BA9E8).RCast<CHudChat**>();
 
+	// Patch chat history length from 3000 chars to 16777215 :)
+	module.Offset(0x22DE35).Patch({0xBA, 0xFF, 0xFF, 0xFF, 0x00});
+
 	ConvertANSIToUnicode = module.Offset(0x7339A0).RCast<ConvertANSIToUnicodeType>();
 }
