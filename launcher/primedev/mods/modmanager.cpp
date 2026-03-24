@@ -42,7 +42,7 @@ template <ScriptContext context> void ModConCommandCallback_Internal(std::string
 	{
 		if (command.ArgC() == 1)
 		{
-			g_pSquirrel[context]->AsyncCall(name);
+			g_pSquirrel[context]->Call(name.c_str());
 		}
 		else
 		{
@@ -50,7 +50,7 @@ template <ScriptContext context> void ModConCommandCallback_Internal(std::string
 			args.reserve(command.ArgC());
 			for (int i = 1; i < command.ArgC(); i++)
 				args.push_back(command.Arg(i));
-			g_pSquirrel[context]->AsyncCall(name, args);
+			g_pSquirrel[context]->Call(name.c_str(), args);
 		}
 	}
 	else
