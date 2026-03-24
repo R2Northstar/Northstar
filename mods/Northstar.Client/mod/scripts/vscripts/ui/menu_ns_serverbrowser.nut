@@ -745,6 +745,76 @@ void function WaitForServerListRequest()
 }
 
 
+bool function IsHexDigitChar( int c )
+{
+    return ( c >= '0' && c <= '9' ) || ( c >= 'A' && c <= 'F' ) || ( c >= 'a' && c <= 'f' )
+}
+
+int function GetNameColorCodeLengthAt( string s, int i )
+{
+    if ( i >= s.len() || s[i] != '^' )
+        return 0
+
+    int remaining = s.len() - ( i + 1 )
+    if ( remaining <= 0 )
+        return 0
+
+    if ( remaining >= 8 )
+    {
+        bool ok = true
+        for ( int j = 1; j <= 8; j++ )
+        {
+            int c = expect int( s[i + j].tointeger() )
+            if ( !IsHexDigitChar( c ) )
+            {
+                ok = false
+                break
+            }
+        }
+        if ( ok )
+            return 9
+    }
+
+    if ( remaining >= 6 )
+    {
+        bool ok = true
+        for ( int j = 1; j <= 6; j++ )
+        {
+            int c = expect int( s[i + j].tointeger() )
+            if ( !IsHexDigitChar( c ) )
+            {
+                ok = false
+                break
+            }
+        }
+        if ( ok )
+            return 7
+    }
+
+    int c1 = expect int( s[i + 1].tointeger() )
+    if ( c1 >= '0' && c1 <= '9' )
+        return 2
+
+    return 0
+}
+
+string function StripColorCodes( string s )
+{
+    string clean = ""
+    for ( int i = 0; i < s.len(); )
+    {
+        int codeLen = GetNameColorCodeLengthAt( s, i )
+        if ( codeLen > 0 )
+        {
+            i += codeLen
+            continue
+        }
+
+        clean += format( "%c", expect int( s[i].tointeger() ) )
+        i++
+    }
+    return clean
+}
 
 void function FilterServerList()
 {
@@ -777,7 +847,8 @@ void function FilterServerList()
 		if ( filterArguments.useSearch )
 		{	
 			array<string> sName
-			sName.append( server.name.tolower() )
+			string cleanName = StripColorCodes( server.name )
+			sName.append( cleanName.tolower() )
 			sName.append( Localize( GetMapDisplayName( server.map ) ).tolower() )
 			sName.append( server.map.tolower() )
 			sName.append( server.playlist.tolower() )
