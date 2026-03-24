@@ -10,6 +10,7 @@ global function GameMode_SetDefendDesc
 global function GameMode_SetIcon
 global function GameMode_SetDefaultScoreLimits
 global function GameMode_AddScoreboardColumnData
+global function GameMode_ReplaceScoreboardColumnData
 global function GameMode_SetGameModeAnnouncement
 global function GameMode_SetDefaultTimeLimits
 global function GameMode_SetDesc
@@ -558,6 +559,15 @@ void function GameMode_AddScoreboardColumnData( string gameModeName, string titl
 	file.gameModeDefs[gameModeName].scoreboardColumnTitles.append( title )
 	file.gameModeDefs[gameModeName].scoreboardColumnScoreTypes.append( scoreType )
 	file.gameModeDefs[gameModeName].scoreboardColumnNumDigits.append( numDigits )
+}
+
+void function GameMode_ReplaceScoreboardColumnData( string gameModeName, int columnIndex, string title, int scoreType, int numDigits )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	Assert( columnIndex < file.gameModeDefs[gameModeName].scoreboardColumnTitles.len(), "Column index out of range" )
+	file.gameModeDefs[gameModeName].scoreboardColumnTitles[columnIndex] = title
+	file.gameModeDefs[gameModeName].scoreboardColumnScoreTypes[columnIndex] = scoreType
+	file.gameModeDefs[gameModeName].scoreboardColumnNumDigits[columnIndex] = numDigits
 }
 
 void function GameMode_SetEvacEnabled( string gameModeName, bool value )
