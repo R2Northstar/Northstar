@@ -184,6 +184,11 @@ bool ServerBanSystem::IsUIDAllowed(uint64_t uid)
 	return std::find(m_vBannedUids.begin(), m_vBannedUids.end(), uid) == m_vBannedUids.end();
 }
 
+const std::vector<uint64_t>& ServerBanSystem::GetBannedUids() const
+{
+	return m_vBannedUids;
+}
+
 void ConCommand_ban(const CCommand& args)
 {
 	if (args.ArgC() < 2)
@@ -257,13 +262,45 @@ int ConCommand_banCompletion(const char* const partial, char commands[COMMAND_CO
 	return numCompletions;
 }
 
+int ConCommand_unbanCompletion(const char* const partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+{
+	const char* space = strchr(partial, ' ');
+	const char* cmdName = partial;
+	const char* query = partial + (space == nullptr ? 0 : space - partial) + 1;
+
+	const size_t queryLength = strlen(query);
+	const size_t cmdLength = strlen(cmdName) - queryLength;
+
+	g_pBanSystem->ReloadBanlist();
+
+	int numCompletions = 0;
+	for (uint64_t bannedUid : g_pBanSystem->GetBannedUids())
+	{
+		if (numCompletions >= COMMAND_COMPLETION_MAXITEMS - 2)
+			break;
+
+		std::string uid = std::to_string(bannedUid);
+		if (strncmp(query, uid.c_str(), queryLength))
+			continue;
+
+		strncpy(commands[numCompletions], cmdName, cmdLength);
+		strncpy_s(
+			commands[numCompletions++] + cmdLength,
+			COMMAND_COMPLETION_ITEM_LENGTH,
+			uid.c_str(),
+			COMMAND_COMPLETION_ITEM_LENGTH - cmdLength);
+	}
+
+	return numCompletions;
+}
+
 ON_DLL_LOAD_RELIESON("engine.dll", BanSystem, ConCommand, (CModule module))
 {
 	g_pBanSystem = new ServerBanSystem;
 	g_pBanSystem->OpenBanlist();
 
 	RegisterConCommand("ban", ConCommand_ban, "bans a given player by uid or name", FCVAR_GAMEDLL, ConCommand_banCompletion);
-	RegisterConCommand("unban", ConCommand_unban, "unbans a given player by uid", FCVAR_GAMEDLL);
+	RegisterConCommand("unban", ConCommand_unban, "unbans a given player by uid", FCVAR_GAMEDLL, ConCommand_unbanCompletion);
 	RegisterConCommand("clearbanlist", ConCommand_clearbanlist, "clears all uids on the banlist", FCVAR_GAMEDLL);
 }
 
