@@ -61,7 +61,7 @@ As such the corresponding commands are
 * `podman run --rm -it -e CC=cl -e CXX=cl --mount type=bind,source="$(pwd)",destination=/build,z northstar-build-fedora cmake --build build/`
 
 ## NixOs/Nix
-Using the nix package manager to build northstar is just as simple as `nix build github:R2Northstar/NorthstarLauncher` or `nix build` inside the repo.
+Using the nix package manager to build northstar is just as simple as `nix build git+https://github.com/R2Northstar/NorthstarLauncher.git?submodules=1` or `nix build` inside the repo.
 
 A development shell exists as well : `nix develop`
 1. To generate build files Run `generate-build-ns` (this is required since a custom toolchain file must be used).

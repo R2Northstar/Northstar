@@ -52,13 +52,10 @@
           compiler = mkArgs [
             "/vctoolsdir ${cross.windows.sdk}/crt"
             "/winsdkdir ${cross.windows.sdk}/sdk"
-            # tbh I am not sure what is exactly needed here since I just copied a execiting toolchain file from somewhere
-            # if it causes problems remove it but since it doesn't cause I don't see any reason in removing this
-            # thougths?
-            "/EHs"
-            "-D_CRT_SECURE_NO_WARNINGS"
-            "--target=x86_64-windows-msvc"
-            "-fms-compatibility-version=19.11"
+            "/EHs" # this for exceptions
+            "-D_CRT_SECURE_NO_WARNINGS" # disables warnings about unsafe functions
+            "--target=x86_64-windows-msvc" # set target just to be sure
+            "-fms-compatibility-version=19.11" # emulate a specific msvc version, idk what version it is but works
             "-imsvc ${MSVC_INCLUDE}"
             "-imsvc ${WINSDK_INCLUDE}/ucrt"
             "-imsvc ${WINSDK_INCLUDE}/shared"
@@ -112,7 +109,6 @@
             include_directories(${WINSDK_INCLUDE}/um)
             include_directories(${WINSDK_INCLUDE}/winrt)
 
-
             set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
 
             set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -133,15 +129,22 @@
               projectRootFile = "flake.nix";
 
               # Add formaters for some other langs
-              # programs.clang-format.enable = true; # doesn't format correctly yet
+              programs.clang-format.enable = true;
+              programs.cmake-format.enable = true;
               programs.nixfmt.enable = true;
 
               # settings
-              settings.formater.clang-format.args = [
-                "-i"
-                "--style=file"
-                "--exclude=primedev/include primedev/*.cpp primedev/*.h"
-              ];
+              settings.formatter.clang-format = {
+                args = [
+                  "-i"
+                  "--style=file"
+                ];
+                excludes = [
+                  "primedev/include/**"
+                  "primedev/*.cpp"
+                  "primedev/*.h"
+                ];
+              };
             }
           );
       in
@@ -157,7 +160,7 @@
           northstar = pkgs.stdenv.mkDerivation (finalAttrs: {
             pname = "NorthstarLauncher";
             # version should be in the format "0.0.0" or things migth break
-            # if it needs to change update the version coide in postPatch
+            # if it needs to change update the version code in postPatch
             version = "0.0.0"; # TODO: get a some action to update the version
 
             src = self;
@@ -165,7 +168,6 @@
             nativeBuildInputs = with pkgs; [
               cross.buildPackages.cmake
               cross.buildPackages.ninja
-              cross.buildPackages.msitools
               llvmPackages.clang-unwrapped
               llvmPackages.bintools-unwrapped
               perl
@@ -197,7 +199,15 @@
                 };
                 versionSeq = (lib.strings.splitString "." finalAttrs.version);
                 versionAt = index: builtins.elemAt versionSeq index;
-                versionQuadruplet = "${versionAt 0},${versionAt 1},${versionAt 2},0";
+                isDev = finalAttrs.version == "0.0.0"; # 1 = dev, 0 = not dev
+                versionQuadruplet = "${versionAt 0},${versionAt 1},${versionAt 2},${
+                  if isDev then
+                    "1"
+                  else if builtins.length > 3 then
+                    versionAt 3
+                  else
+                    "0"
+                }";
               in
               ''
                 mkdir -p $TMPDIR/cloned
@@ -251,7 +261,6 @@
             nativeBuildInputs = with pkgs; [
               cross.buildPackages.cmake
               cross.buildPackages.ninja
-              cross.buildPackages.msitools
               llvmPackages.clang-unwrapped
               llvmPackages.bintools-unwrapped
               perl
@@ -273,26 +282,14 @@
               cross.windows.sdk
             ];
 
-            shellHook =
-              let
-                inherit (toolchainHelper) MSVC_INCLUDE WINSDK_INCLUDE;
-                includes = [
-                  "${MSVC_INCLUDE}"
-                  "${WINSDK_INCLUDE}/ucrt"
-                  "${WINSDK_INCLUDE}/shared"
-                  "${WINSDK_INCLUDE}/um"
-                  "${WINSDK_INCLUDE}/winrt"
-                ];
-              in
-              /* bash */ ''
-                cp -f ${pkgs.writeText ".clangd" ''
-                  CompileFlags:
-                    CompilationDatabase: "cmake"
-                ''} .clangd
-                export CPATH="${lib.makeLibraryPath includes}"
-                echo "Northstar shell init"
-                echo "    generate-build-ns: generate build files for cmake"
-              '';
+            shellHook = /* bash */ ''
+              cp -f ${pkgs.writeText ".clangd" ''
+                CompileFlags:
+                  CompilationDatabase: "build"
+              ''} .clangd
+              echo "Northstar shell init"
+              echo "    generate-build-ns: generate build files for cmake"
+            '';
           };
           default = self.devShells.${system}.no-auto-build;
         };
