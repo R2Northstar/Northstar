@@ -819,13 +819,16 @@ string function StripColorCodes( string s )
 void function FilterServerList()
 {
 	file.filteredServers.clear()
+
 	int totalPlayers = 0
+	int serverCount = 0
 
 	array<ServerInfo> servers = NSGetGameServers()
 
 	foreach ( ServerInfo server in servers )
 	{
 		totalPlayers += server.playerCount
+		serverCount++
 
 		// Filters
 		if ( filterArguments.hideEmpty && server.playerCount == 0 )
@@ -847,13 +850,12 @@ void function FilterServerList()
 		if ( filterArguments.useSearch )
 		{	
 			array<string> sName
-			string cleanName = StripColorCodes( server.name )
-			sName.append( cleanName.tolower() )
+			sName.append( StripColorCodes( RemoveNewlines( server.name.tolower() ) ) )
 			sName.append( Localize( GetMapDisplayName( server.map ) ).tolower() )
 			sName.append( server.map.tolower() )
 			sName.append( server.playlist.tolower() )
 			sName.append( Localize( server.playlist ).tolower() )
-			sName.append( server.description.tolower() )
+			sName.append( StripColorCodes( RemoveNewlines( server.description.tolower() ) ) )
 			sName.append( server.region.tolower() )
 
 			string sTerm = filterArguments.searchTerm.tolower()
@@ -873,9 +875,8 @@ void function FilterServerList()
 	}
 	
 	// Update player and server count
-	int ServerCount = NSGetServerCount()
 	string totalPlayersStr = string( totalPlayers ) + ( totalPlayers == 1 ? " " : ""  ) + ( totalPlayers < 10 ? " " : ""  )
-	string serverCountStr = string( ServerCount ) + ( ServerCount == 1 ? " " : "" ) + ( ServerCount < 10 ? " " : ""  )
+	string serverCountStr = string( serverCount ) + ( serverCount == 1 ? " " : "" ) + ( serverCount < 10 ? " " : ""  )
 	Hud_SetText( Hud_GetChild( file.menu, "InGamePlayerLabel" ), Localize( "#INGAME_PLAYERS", totalPlayersStr ) )
 	Hud_SetText( Hud_GetChild( file.menu, "TotalServerLabel" ),  Localize( "#TOTAL_SERVERS", serverCountStr ) )
 }
@@ -906,7 +907,7 @@ void function UpdateShownPage()
 		Hud_SetVisible( file.serverButtons[ i ], true )
 
 		Hud_SetVisible( file.serversProtected[ i ], server.requiresPassword )
-		Hud_SetText( file.serversName[ i ], server.name )
+		Hud_SetText( file.serversName[ i ], EscapeLocalisationAndRemoveNewlines( server.name ) )
 		Hud_SetText( file.playerCountLabels[ i ], format( "%i/%i", server.playerCount, server.maxPlayerCount ) )
 		Hud_SetText( file.serversMap[ i ], GetMapDisplayName( server.map ) )
 		Hud_SetText( file.serversGamemode[ i ], GetGameModeDisplayName( server.playlist ) )
@@ -986,7 +987,7 @@ void function DisplayFocusedServerInfo( int scriptID )
 	// text panels
 	Hud_SetVisible( Hud_GetChild( menu, "LabelDescription" ), true )
 	Hud_SetVisible( Hud_GetChild( menu, "LabelMods" ), false )
-	Hud_SetText( Hud_GetChild( menu, "LabelDescription" ), server.description + "\n\nRequired Mods:\n" + FillInServerModsLabel( server.requiredMods ) )
+	Hud_SetText( Hud_GetChild( menu, "LabelDescription" ), RemoveNewlines( server.description ) + " ^FFFFFFFF" + "\n\nRequired Mods:\n" + FillInServerModsLabel( server.requiredMods ) )
 
 	// map name/image/server name
 	string map = server.map
@@ -996,7 +997,7 @@ void function DisplayFocusedServerInfo( int scriptID )
 	Hud_SetVisible( Hud_GetChild( menu, "NextMapName" ), true )
 	Hud_SetText( Hud_GetChild( menu, "NextMapName" ), GetMapDisplayName( map ) )
 	Hud_SetVisible( Hud_GetChild( menu, "ServerName" ), true )
-	Hud_SetText( Hud_GetChild( menu, "ServerName" ), server.name )
+	Hud_SetText( Hud_GetChild( menu, "ServerName" ), EscapeLocalisationAndRemoveNewlines( server.name ) )
 
 	// mode name/image
 	string mode = server.playlist
@@ -1449,4 +1450,34 @@ array<string> function GetModVersions( string modName )
 		versions.append( mod.version )
 	}
 	return versions
+}
+
+// escapes localisation by replacing # with ^FFFFFFFF#
+string function EscapeLocalisation( string input )
+{
+	// only escape if it actually localizes
+	// localisations like eula, can script error with how long it is
+	try
+	{
+		if ( Localize( input ) != input )
+			return StringReplace( input, "#", "^FFFFFFFF#" )
+	}
+	catch ( error )
+	{
+		return StringReplace( input, "#", "^FFFFFFFF#" )
+	}
+
+	return input
+}
+
+// removes all newlines
+string function RemoveNewlines( string input )
+{
+	return StringReplace( input, "\n", " " )
+}
+
+// EscapeLocalisation and RemoveNewlines combined
+string function EscapeLocalisationAndRemoveNewlines( string input )
+{
+	return EscapeLocalisation( RemoveNewlines( input ) )
 }
