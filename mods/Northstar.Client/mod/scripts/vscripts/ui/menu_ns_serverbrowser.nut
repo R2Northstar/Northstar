@@ -10,7 +10,7 @@ global function RemoveConnectToServerCallback
 // Stop peeking
 
 const int BUTTONS_PER_PAGE = 15 // Number of servers we show
-const float DOUBLE_CLICK_TIME_MS = 0.4 // Max time between clicks for double click registering 
+const float DOUBLE_CLICK_TIME_MS = 0.4 // Max time between clicks for double click registering
 
 // Stores mouse delta used for scroll bar
 struct {
@@ -77,14 +77,14 @@ struct {
 	int serverButtonFocusedID = 0
 	bool shouldFocus = true
 	bool cancelConnection = false
-	
+
 	// filtered array of servers
 	array<serverStruct> serversArrayFiltered
 
 	array<ServerInfo> filteredServers
 	ServerInfo& focusedServer
 	ServerInfo& lastSelectedServer
-	
+
 	// UI references
 	array<var> serverButtons
 	array<var> serversName
@@ -102,10 +102,72 @@ struct {
 bool function FloatsEqual( float arg1, float arg2, float epsilon )
 {
 	if ( fabs( arg1 - arg2 ) < epsilon ) return true
-	
+
 	return false
 }
 
+
+////////////////////////////
+// Custom map handling
+////////////////////////////
+
+/**
+ * A map name is deemed raw if it is not localized (happens if the map
+ * is not an original Titanfall2 map, or is not localized by its mod).
+ */
+bool function IsMapNameRaw( string mapname )
+{
+	return mapname == Localize( mapname )
+}
+
+/**
+ * Formats a map name in a human readable way.
+ * (e.g. inputting "#mp_chroma_null_surf" returns "Chroma Null Surf" )
+ */
+string function GetCustomMapDisplayName( string mapname )
+{
+	// Remove "#mp_" prefix
+	string res = mapname.slice(4)
+
+	// Remove underscores
+	res = StringReplace( res, "_", " ", true )
+
+	// Uppercase first letter
+	res = res.slice(0, 1).toupper() + res.slice(1)
+
+	// Uppercase each word
+	/// Early exit
+	if ( ! res.find(" ") )
+	{
+		return res
+	}
+
+	/// Uppercasing
+	for ( int i = 0; i < res.len(); i++ )
+	{
+		string c = res.slice(i, i+1 )
+		if ( c != " " )
+			continue
+
+		res = res.slice(0, i + 1) + res.slice(i + 1, i + 2).toupper() + res.slice(i + 2)
+	}
+
+	return res
+}
+
+/**
+ * Supersedes the default {GetMapDisplayName} function, to the addition of returning a
+ * nicely formatted map name if it couldn't be properly localized by the game (happens
+ * with maps that are not original sp or mp maps).
+ */
+string function GetMapBrowserName( string mapname )
+{
+	string localized = GetMapDisplayName( mapname )
+
+	if ( IsMapNameRaw( localized ) )
+		return GetCustomMapDisplayName( localized )
+	return localized
+}
 
 ////////////////////////////
 // Init
@@ -127,7 +189,7 @@ void function UpdatePrivateMatchModesAndMaps()
 
 		filterArguments.filterMaps.append( map )
 
-		string localized = GetMapDisplayName( map )
+		string localized = GetMapBrowserName( map )
 		Hud_DialogList_AddListItem( Hud_GetChild( file.menu, "SwtBtnSelectMap" ) , localized, string( enum_ + 1 ) )
 	}
 
@@ -487,7 +549,7 @@ void function OnHitDummyTop( var button )
 		file.scrollOffset = 0
 		Hud_SetFocused(Hud_GetChild(file.menu, "BtnServerNameTab"))
 	}
-	else 
+	else
 	{
 		// only update if list position changed
 		UpdateShownPage()
@@ -531,7 +593,7 @@ void function OnDownArrowSelected( var button )
 	{
 		file.scrollOffset = file.filteredServers.len() - BUTTONS_PER_PAGE
 	}
-	
+
 	UpdateShownPage()
 	UpdateListSliderPosition( file.filteredServers.len() )
 }
@@ -544,7 +606,7 @@ void function OnUpArrowSelected( var button )
 	{
 		file.scrollOffset = 0
 	}
-	
+
 	UpdateShownPage()
 	UpdateListSliderPosition( file.filteredServers.len() )
 }
@@ -552,41 +614,41 @@ void function OnUpArrowSelected( var button )
 ////////////////////////
 // Key Callbacks
 ////////////////////////
-void function OnEnterPressed( arg ) 
+void function OnEnterPressed( arg )
 {
 	// only trigger if a server is focused
-	if ( IsServerButtonFocused() ) 
+	if ( IsServerButtonFocused() )
 	{
 		OnServerSelected(0)
 	}
 }
 
-void function OnKeyRPressed( arg ) 
+void function OnKeyRPressed( arg )
 {
-	if ( !IsSearchBarFocused() ) 
+	if ( !IsSearchBarFocused() )
 	{
 		RefreshServers(0);
 	}
 }
 
-bool function IsServerButtonFocused() 
+bool function IsServerButtonFocused()
 {
 	var focusedElement = GetFocus()
 	if ( focusedElement == null )
 		return false
-	
+
 	var name = Hud_GetHudName( focusedElement )
 
-	foreach ( element in GetElementsByClassname( file.menu, "ServerButton" ) ) 
+	foreach ( element in GetElementsByClassname( file.menu, "ServerButton" ) )
 	{
-		if ( element == focusedElement ) 
+		if ( element == focusedElement )
 			return true
 	}
 
 	return false
 }
 
-bool function IsSearchBarFocused() 
+bool function IsSearchBarFocused()
 {
 	return Hud_GetChild( file.menu, "BtnServerSearch" ) == GetFocus()
 }
@@ -833,25 +895,25 @@ void function FilterServerList()
 		// Filters
 		if ( filterArguments.hideEmpty && server.playerCount == 0 )
 			continue;
-		
+
 		if ( filterArguments.hideFull && server.playerCount == server.maxPlayerCount )
 			continue;
-		
+
 		if ( filterArguments.hideProtected && server.requiresPassword )
 			continue;
-		
+
 		if ( filterArguments.filterMap != "SWITCH_ANY" && filterArguments.filterMap != server.map )
 			continue;
-		
+
 		if ( filterArguments.filterGamemode != "SWITCH_ANY" && filterArguments.filterGamemode != GetGameModeDisplayName(server.playlist) )
 			continue;
-	
+
 		// Search
 		if ( filterArguments.useSearch )
-		{	
+		{
 			array<string> sName
 			sName.append( StripColorCodes( RemoveNewlines( server.name.tolower() ) ) )
-			sName.append( Localize( GetMapDisplayName( server.map ) ).tolower() )
+			sName.append( Localize( GetMapBrowserName( server.map ) ).tolower() )
 			sName.append( server.map.tolower() )
 			sName.append( server.playlist.tolower() )
 			sName.append( Localize( server.playlist ).tolower() )
@@ -859,21 +921,21 @@ void function FilterServerList()
 			sName.append( server.region.tolower() )
 
 			string sTerm = filterArguments.searchTerm.tolower()
-			
+
 			bool found = false
 			for( int j = 0; j < sName.len(); j++ )
 			{
 				if ( sName[j].find( sTerm ) != null )
 					found = true
 			}
-			
+
 			if ( !found )
 				continue;
 		}
 
 		file.filteredServers.append( server )
 	}
-	
+
 	// Update player and server count
 	string totalPlayersStr = string( totalPlayers ) + ( totalPlayers == 1 ? " " : ""  ) + ( totalPlayers < 10 ? " " : ""  )
 	string serverCountStr = string( serverCount ) + ( serverCount == 1 ? " " : "" ) + ( serverCount < 10 ? " " : ""  )
@@ -909,7 +971,7 @@ void function UpdateShownPage()
 		Hud_SetVisible( file.serversProtected[ i ], server.requiresPassword )
 		Hud_SetText( file.serversName[ i ], EscapeLocalisationAndRemoveNewlines( server.name ) )
 		Hud_SetText( file.playerCountLabels[ i ], format( "%i/%i", server.playerCount, server.maxPlayerCount ) )
-		Hud_SetText( file.serversMap[ i ], GetMapDisplayName( server.map ) )
+		Hud_SetText( file.serversMap[ i ], GetMapBrowserName( server.map ) )
 		Hud_SetText( file.serversGamemode[ i ], GetGameModeDisplayName( server.playlist ) )
 		Hud_SetText( file.serversRegion[ i ], server.region )
 	}
@@ -928,7 +990,7 @@ void function OnServerButtonFocused( var button )
 {
 	if ( file.scrollOffset < 0 )
 		file.scrollOffset = 0
-	
+
 	int scriptID = int ( Hud_GetScriptID( button ) )
 	file.serverButtonFocusedID = scriptID
 	if ( file.filteredServers.len() > 0 )
@@ -995,7 +1057,7 @@ void function DisplayFocusedServerInfo( int scriptID )
 	Hud_SetVisible( Hud_GetChild( menu, "NextMapBack" ), true )
 	RuiSetImage( Hud_GetRui( Hud_GetChild( menu, "NextMapImage" ) ), "basicImage", GetMapImageForMapName( map ) )
 	Hud_SetVisible( Hud_GetChild( menu, "NextMapName" ), true )
-	Hud_SetText( Hud_GetChild( menu, "NextMapName" ), GetMapDisplayName( map ) )
+	Hud_SetText( Hud_GetChild( menu, "NextMapName" ), GetMapBrowserName( map ) )
 	Hud_SetVisible( Hud_GetChild( menu, "ServerName" ), true )
 	Hud_SetText( Hud_GetChild( menu, "ServerName" ), EscapeLocalisationAndRemoveNewlines( server.name ) )
 
@@ -1121,7 +1183,7 @@ void function OnServerSelected_Threaded( string password = "" )
 			}
 		}
 	}
-	
+
 	// If yes, we fetch the verified mods manifesto, to check whether uninstalled
 	// mods can be installed through auto-download
 	if ( uninstalledModFound && autoDownloadAllowed )
