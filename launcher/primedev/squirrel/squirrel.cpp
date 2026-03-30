@@ -11,6 +11,8 @@
 #include "ns_version.h"
 #include "core/vanilla.h"
 
+#include "spdlog/spdlog.h"
+#include "vscript/languages/squirrel_re/include/squirrel.h"
 #include "vscript/vscript.h"
 
 #include <any>
@@ -375,6 +377,7 @@ template <ScriptContext context> bool (*CSquirrelVM_init)(CSquirrelVM* vm, Scrip
 template <ScriptContext context> bool __fastcall CSquirrelVM_initHook(CSquirrelVM* vm, ScriptContext realContext, float time)
 {
 	bool ret = CSquirrelVM_init<context>(vm, realContext, time);
+
 	for (Mod mod : g_pModManager->m_LoadedMods)
 	{
 		if (mod.m_bEnabled && mod.initScript.size() != 0)
@@ -383,6 +386,22 @@ template <ScriptContext context> bool __fastcall CSquirrelVM_initHook(CSquirrelV
 			std::string path = std::string("scripts/vscripts/") + mod.initScript;
 			if (g_pSquirrel[context]->compilefile(vm, path.c_str(), name.c_str(), 0))
 				g_pSquirrel[context]->compilefile(vm, path.c_str(), name.c_str(), 1);
+
+			if (mod.initScriptCallBack.has_value())
+			{
+				// g_pSquirrel[context]->Call can't be used here ...
+				SQObject functionobj {};
+				int result = g_pSquirrel[context]->sq_getfunction(vm->sqvm, mod.initScriptCallBack.value().c_str(), &functionobj, 0);
+				if (result != SQRESULT_NULL)
+				{
+					spdlog::error("InitScript was unable to find function with name '{}'. Is it global?", mod.initScriptCallBack.value());
+					continue;
+				}
+
+				g_pSquirrel[context]->pushobject(vm->sqvm, &functionobj); // Push the function object
+				g_pSquirrel[context]->pushroottable(vm->sqvm);
+				g_pSquirrel[context]->_call(vm->sqvm, 0);
+			}
 		}
 	}
 	return ret;
