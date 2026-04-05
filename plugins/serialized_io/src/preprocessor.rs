@@ -1,4 +1,3 @@
-use parking_lot::Mutex;
 use retour::static_detour;
 use rrplug::{
     bindings::squirreldatatypes::{CSquirrelVM, SQObject},
@@ -8,27 +7,22 @@ use rrplug::{
 };
 use sqparse::ast::{GlobalDefinition, GlobalStatement, StatementType};
 use std::{
-    collections::HashMap,
     ffi::{CStr, c_void},
     mem::{MaybeUninit, transmute},
     path::PathBuf,
     ptr::NonNull,
-    sync::LazyLock,
 };
 
 use crate::{
     rson_parser::{Rson, load_rson},
     runtime_registration::register_typed_function,
-    sqtypes::{TypedType, add_enum, add_struct, get_type, seal_structs},
+    sqtypes::{add_enum, add_struct, get_type, seal_structs},
 };
 
 static_detour! {
     static Server_CSquirrelVM_InitGcMaybe: unsafe extern "C" fn(*mut CSquirrelVM, *mut HSquirrelVM, u32, usize);
     static Client_CSquirrelVM_InitGcMaybe: unsafe extern "C" fn(*mut CSquirrelVM, *mut HSquirrelVM, u32, usize);
 }
-
-static REGISTRATION_ACCUMULATOR: LazyLock<Mutex<HashMap<ScriptContext, Vec<TypedType<'static>>>>> =
-    LazyLock::new(|| Mutex::new(HashMap::new()));
 
 pub fn init_hooks(dll: &DLLPointer) {
     unsafe {
@@ -120,25 +114,13 @@ fn register_type_pun(ty: String, _template: SQObject) -> Result<(), String> {
         ));
     };
 
-    REGISTRATION_ACCUMULATOR
-        .lock()
-        .entry(context)
-        .or_default()
-        .push(typed);
-
-    Ok(())
-}
-
-pub fn register_accumulated_registration(sqvm: NonNull<HSquirrelVM>, context: ScriptContext) {
-    let mut registration = REGISTRATION_ACCUMULATOR.lock();
-    for typed in registration.entry(context).or_default().drain(0..) {
-        let ty = typed.sq_name(); // it's fine honestly; this step is a certainly a bit expansive in general
-        if register_typed_function(sqvm, typed, context).is_none() {
-            log::error!(
-                "could not register type {}; possibly would help reading logs as to why; possibly not sealed",
-                ty
-            )
-        }
+    if register_typed_function(sqvm, typed, context).is_none() {
+        Err(format!(
+            "could not register type {}; possibly would help reading logs as to why; possibly not sealed",
+            ty
+        ))
+    } else {
+        Ok(())
     }
 }
 

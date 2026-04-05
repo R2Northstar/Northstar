@@ -53,7 +53,7 @@ pub fn serialize_obj(obj: SQObject) -> Result<String, String> {
 }
 
 #[rrplug::sqfunction(VM = "CLIENT | SERVER | UI", ExportName = "BPSerialize")]
-pub fn deserialize_string(obj: SQObject) -> Result<SQValueTyped<'static>, String> {
+pub fn deserialize_string(obj: SQHandle<SQString>) -> Result<SQValueTyped<'static>, String> {
     let index = sqname_to_slot_index(
         &get_func_name(sqvm, sq_functions)
             .map_err(|err| format!("couldn't find the native closure's name : {err}"))?,
@@ -69,10 +69,8 @@ pub fn deserialize_string(obj: SQObject) -> Result<SQValueTyped<'static>, String
         .0
         .clone();
 
-    let string =
-        SQHandle::<SQString>::try_new(obj).map_err(|_| "the passed parameter wasn't a string")?;
-    let string =
-        get_from_sq_string(string.get()).ok_or("the passed object wasn't a utf8 string")?;
+    // less copies :)
+    let string = get_from_sq_string(obj.get()).ok_or("the passed object wasn't a utf8 string")?;
 
     Ok(SQValueTyped(
         serde_json::from_str(string).map_err(|err| err.to_string())?,
@@ -194,8 +192,11 @@ fn get_func_name(
     };
 
     unsafe {
-        let var_name = from_char_ptr(stack_info._name.as_ref().ok_or("no name")?);
-        log::info!("{var_name}");
-        Ok(var_name)
+        Ok(from_char_ptr(
+            stack_info
+                ._name
+                .as_ref()
+                .ok_or("no name found for this native function")?,
+        ))
     }
 }
