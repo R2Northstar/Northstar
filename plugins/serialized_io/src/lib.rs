@@ -1,13 +1,18 @@
-#![feature(if_let_guard)]
+#![feature(if_let_guard, normalize_lexically, slice_as_array)]
 use std::{fs, path::PathBuf};
 
 use rrplug::{bindings::plugin_abi::PluginColor, prelude::*};
 
+mod preprocessor;
+mod rson_parser;
+mod runtime_registration;
 mod sqapi;
+mod sqtypes;
 mod utils;
 
 pub struct SerializedIO {
     file_dir: PathBuf,
+    extra_print: bool,
 }
 
 impl Plugin for SerializedIO {
@@ -37,23 +42,38 @@ impl Plugin for SerializedIO {
                 .unwrap_or_else(|| "R2Northstar".to_string()),
         )
         .join("runtime")
-        .join("serilized_io");
+        .join("serialized_io");
 
         _ = fs::create_dir_all(&file_dir);
 
-        Self { file_dir }
+        let extra_print = std::env::args().any(|arg| arg == "-extra-print");
+
+        Self {
+            file_dir,
+            extra_print,
+        }
+    }
+
+    fn on_sqvm_created(&self, sqvm_handle: &CSquirrelVMHandle, _engine_token: EngineToken) {
+        preprocessor::populate_rson_cache(sqvm_handle.get_context());
+        preprocessor::register_accumulated_registration(
+            unsafe { sqvm_handle.get_sqvm().take() },
+            sqvm_handle.get_context(),
+        );
+    }
+
+    fn on_sqvm_destroyed(&self, sqvm_handle: &CSquirrelVMHandle, _engine_token: EngineToken) {
+        sqtypes::clear_cache(sqvm_handle.get_context());
+        runtime_registration::drop_registrations(sqvm_handle.get_context());
     }
 
     fn on_dll_load(
         &self,
         _engine_data: Option<&EngineData>,
-        _dll_ptr: &DLLPointer,
+        dll_ptr: &DLLPointer,
         _engine_token: EngineToken,
     ) {
-    }
-
-    fn on_reload_request(&self) -> reloading::ReloadResponse {
-        unsafe { reloading::ReloadResponse::allow_reload() }
+        preprocessor::init_hooks(dll_ptr);
     }
 }
 
