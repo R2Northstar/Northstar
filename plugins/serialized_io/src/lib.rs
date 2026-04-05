@@ -56,10 +56,6 @@ impl Plugin for SerializedIO {
 
     fn on_sqvm_created(&self, sqvm_handle: &CSquirrelVMHandle, _engine_token: EngineToken) {
         preprocessor::populate_rson_cache(sqvm_handle.get_context());
-        preprocessor::register_accumulated_registration(
-            unsafe { sqvm_handle.get_sqvm().take() },
-            sqvm_handle.get_context(),
-        );
     }
 
     fn on_sqvm_destroyed(&self, sqvm_handle: &CSquirrelVMHandle, _engine_token: EngineToken) {

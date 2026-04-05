@@ -68,9 +68,6 @@ pub fn register_typed_function(
 
     let serialize_name = format!("BPSerialize{}", ty_to_sqname(&ty));
     let deserialize_name = format!("BPDeserialize{}", ty_to_sqname(&ty));
-    let type_pun_name = format!("BPTypePun{}", ty_to_sqname(&ty));
-
-    log::info!("{ty:?} {}", ty.sq_name());
 
     let mut map_lock = ALLOCATED_TYPES_MAP.lock();
     let map = map_lock.entry(context).or_default();
@@ -85,12 +82,6 @@ pub fn register_typed_function(
         return None;
     }
     map.insert(deserialize_name.clone(), slot);
-
-    if map.get(&type_pun_name).is_some() {
-        log::warn!("{type_pun_name} is already registered");
-        return None;
-    }
-    map.insert(type_pun_name.clone(), slot);
 
     unsafe {
         let csqvm = sqvm.as_ref().sharedState.as_ref()?.cSquirrelVM.as_mut()?;
@@ -109,16 +100,6 @@ pub fn register_typed_function(
                 sq_func_name: Box::from(deserialize_name),
                 return_type: Box::from(ty.sq_name()),
                 ..sqapi::deserialize_string()
-            },
-        )
-        .ok()?;
-        manually_register_sq_functions(
-            csqvm,
-            &SQFuncInfo {
-                sq_func_name: Box::from(type_pun_name),
-                return_type: Box::from(ty.sq_name()),
-                types: Box::from("var"),
-                ..sqapi::type_pun()
             },
         )
         .ok()?;
