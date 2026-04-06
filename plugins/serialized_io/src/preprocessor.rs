@@ -92,8 +92,8 @@ fn hook_csquirrel_vm_init_gc(
     _ = unsafe { manually_register_sq_functions(&mut *csqvm, &register_type_pun()) };
 }
 
-#[rrplug::sqfunction(VM = "SERVER | UI | CLIENT", ExportName = "BPRegisterTypePun")]
-fn register_type_pun(ty: String, _template: SQObject) -> Result<(), String> {
+#[rrplug::sqfunction(VM = "SERVER | UI | CLIENT", ExportName = "BPRegisterType")]
+fn register_type_pun(ty: String) -> Result<(), String> {
     let file = get_calling_file(sqvm, sq_functions)
         .ok_or_else(|| "file not found for this call".to_string())?;
 
