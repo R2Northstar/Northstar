@@ -66,44 +66,77 @@ pub fn register_typed_function(
         .replace('_', "")
     };
 
-    let serialize_name = format!("BPSerialize{}", ty_to_sqname(&ty));
-    let deserialize_name = format!("BPDeserialize{}", ty_to_sqname(&ty));
-
     let mut map_lock = ALLOCATED_TYPES_MAP.lock();
     let map = map_lock.entry(context).or_default();
-    if map.get(&serialize_name).is_some() {
-        log::warn!("{serialize_name} is already registered");
-        return None;
-    }
-    map.insert(serialize_name.clone(), slot);
 
-    if map.get(&deserialize_name).is_some() {
-        log::warn!("{deserialize_name} is already registered");
-        return None;
-    }
-    map.insert(deserialize_name.clone(), slot);
-
-    unsafe {
-        let csqvm = sqvm.as_ref().sharedState.as_ref()?.cSquirrelVM.as_mut()?;
-        manually_register_sq_functions(
-            csqvm,
-            &SQFuncInfo {
-                sq_func_name: Box::from(serialize_name),
+    let csqvm = unsafe { sqvm.as_ref().sharedState.as_ref()?.cSquirrelVM.as_mut()? };
+    let register_funcs: [(String, &dyn Fn(String) -> SQFuncInfo); _] = [
+        (format!("BPSerialize{}", ty_to_sqname(&ty)), &|name| {
+            SQFuncInfo {
+                sq_func_name: Box::from(name),
                 types: Box::from(ty.sq_name()),
                 ..sqapi::serialize_obj()
-            },
-        )
-        .ok()?;
-        manually_register_sq_functions(
-            csqvm,
-            &SQFuncInfo {
-                sq_func_name: Box::from(deserialize_name),
+            }
+        }),
+        (format!("BPDeserialize{}", ty_to_sqname(&ty)), &|name| {
+            SQFuncInfo {
+                sq_func_name: Box::from(name),
                 return_type: Box::from(ty.sq_name()),
                 ..sqapi::deserialize_string()
-            },
-        )
-        .ok()?;
-    }
+            }
+        }),
+        (format!("BPLoadFile{}", ty_to_sqname(&ty)), &|name| {
+            SQFuncInfo {
+                sq_func_name: Box::from(name),
+                types: Box::from(format!("string, array< {} >", ty.sq_name())),
+                ..sqapi::load_file()
+            }
+        }),
+        (format!("BPLoadFileAsync{}", ty_to_sqname(&ty)), &|name| {
+            SQFuncInfo {
+                sq_func_name: Box::from(name),
+                types: Box::from(format!(
+                    "string, array< {} >, array< string > ornull",
+                    ty.sq_name()
+                )),
+                ..sqapi::load_file_async()
+            }
+        }),
+        (format!("BPSaveFile{}", ty_to_sqname(&ty)), &|name| {
+            SQFuncInfo {
+                sq_func_name: Box::from(name),
+                types: Box::from(format!("string, {}", ty.sq_name())),
+                ..sqapi::save_file()
+            }
+        }),
+        (format!("BPSaveFileAsync{}", ty_to_sqname(&ty)), &|name| {
+            SQFuncInfo {
+                sq_func_name: Box::from(name),
+                types: Box::from(format!("string, {}, array< string > ornull", ty.sq_name())),
+                ..sqapi::save_file_async()
+            }
+        }),
+    ];
+
+    register_funcs
+        .into_iter()
+        .map(|(name, def)| {
+            if map.get(&name).is_some() {
+                log::warn!("{name} is already registered");
+                return None;
+            }
+            map.insert(name.clone(), slot);
+
+            Some((name, def))
+        })
+        .collect::<Option<Vec<_>>>()?
+        .into_iter()
+        .map(|(name, def)| {
+            unsafe { manually_register_sq_functions(csqvm, &def(name)) }
+                .ok()
+                .map(|_| ())
+        })
+        .collect::<Option<()>>()?;
 
     slots.get_mut(slot)?.replace((ty, context));
 
