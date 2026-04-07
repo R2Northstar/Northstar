@@ -105,3 +105,7 @@ Please refer to [Respawn Callbacks](../respawn/callbacks.md)  for the list of ca
 ### ui\\ui_mouse_capture.nut:
 
 !!! cpp-function "void AddMouseMovementCaptureHandler( var capturePanelOrMenu, void functionref( int deltaX, int deltaY ) func )"
+
+### mp\\\_codecallbacks.gnut:
+
+!!! cpp-function "void AddCallback_OnWeaponAttack( void functionref( entity, entity, string int ) callback )"
