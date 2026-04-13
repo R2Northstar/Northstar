@@ -188,6 +188,8 @@ add_library(
     "vscript/vscript.h"
     "windows/libsys.cpp"
     "windows/libsys.h"
+    "origin/origin.cpp"
+    "origin/origin.h"
     "dllmain.cpp"
     "ns_version.h"
     "Northstar.def"
