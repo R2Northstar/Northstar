@@ -1,10 +1,10 @@
 #![allow(clippy::mut_from_ref)] // TODO: remove this
 
-use mid::northstar::NORTHSTAR_DATA;
+use base64::{Engine as _, engine::general_purpose::STANDARD};
 use rrplug::prelude::*;
 use std::{fs, io::Write, path::PathBuf};
 
-use crate::{bindings::RecordedAnimation, NS_DIR};
+use crate::{NS_DIR, bindings::RecordedAnimation};
 
 #[allow(unused)]
 const USER_DATA_ID: u64 = 18444492235241160706;
@@ -12,7 +12,8 @@ const USER_DATA_ID: u64 = 18444492235241160706;
 pub fn register_sq_function() {
     register_sq_functions(save_recorded_animation);
     register_sq_functions(read_recorded_animation);
-    register_sq_functions(unload_thyself);
+    register_sq_functions(encode_recorded_animation_base64);
+    register_sq_functions(decode_recorded_animation_base64);
 }
 
 #[rrplug::sqfunction(VM = "SERVER", ExportName = "RSaveRecordedAnimation")]
@@ -33,14 +34,21 @@ fn read_recorded_animation(name: String) -> Result<&'static mut RecordedAnimatio
         .try_into()
 }
 
-#[rrplug::sqfunction(VM = "SERVER", ExportName = "RUnload")]
-fn unload_thyself() {
-    unsafe {
-        NORTHSTAR_DATA
-            .wait()
-            .sys()
-            .unload(NORTHSTAR_DATA.wait().handle())
-    }
+#[rrplug::sqfunction(VM = "SERVER", ExportName = "REncodeRecordedAnimation")]
+fn encode_recorded_animation_base64(recording: &mut RecordedAnimation) -> Result<String, String> {
+    let anim: Vec<u8> = Vec::from(*recording);
+    // TODO: maybe add compression at some point
+    Ok(STANDARD.encode(anim))
+}
+
+#[rrplug::sqfunction(VM = "SERVER", ExportName = "RDecodeRecordedAnimation")]
+fn decode_recorded_animation_base64(
+    encoded: String,
+) -> Result<&'static mut RecordedAnimation, String> {
+    STANDARD
+        .decode(encoded)
+        .map_err(|err| err.to_string())?
+        .try_into()
 }
 
 fn name_to_path(name: impl ToString) -> Result<PathBuf, String> {
