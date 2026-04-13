@@ -9,7 +9,6 @@ license = "Apache-2.0"
 [dependencies]
 sqparse = "0.3.0"
 retour = { version = "0.3.*", features = ["static-detour"] }
-ron = "0.12.0"
 rrplug = { workspace = true, features = ["async_engine"] }
 shared = { workspace = true }
 parking_lot = "*"

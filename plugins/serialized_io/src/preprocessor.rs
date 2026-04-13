@@ -1,6 +1,6 @@
 use retour::static_detour;
 use rrplug::{
-    bindings::squirreldatatypes::{CSquirrelVM, SQObject},
+    bindings::squirreldatatypes::CSquirrelVM,
     high::filesystem,
     mid::squirrel::{manually_register_sq_functions, sqvm_to_context},
     prelude::*,
