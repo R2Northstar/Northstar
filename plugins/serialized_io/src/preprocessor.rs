@@ -101,11 +101,8 @@ fn register_type_pun(ty: String) -> Result<(), String> {
     for err in register_file(context, file).err().into_iter().flatten() {
         log::warn!("failed to add file to struct cache : {err}");
     }
-    for s in seal_structs(context) {
-        (s != ty)
-            .then_some(())
-            .ok_or_else(|| format!("{ty} couldn't get reflected properly; the struct was missing referenced structs; refer to logs"))?;
-        log::warn!("{s} was missing some other struct; therefore it will dropped")
+    for (struct_name, source) in seal_structs(context) {
+        log::warn!("{struct_name} was missing {source}; therefore it will dropped")
     }
 
     let Some(typed) = get_type(&ty, context) else {
@@ -175,9 +172,9 @@ pub fn populate_rson_cache(context: ScriptContext) {
             }
         }
     }
-    for s in seal_structs(context) {
+    for (struct_name, source) in seal_structs(context) {
         if extra_print {
-            log::warn!("{s} was missing some other struct; therefore it will dropped")
+            log::warn!("{struct_name} was missing {source}; therefore it will dropped")
         }
     }
 }

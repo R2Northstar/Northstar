@@ -110,6 +110,7 @@ impl TryFrom<&Type<'_>> for CompositeSQObjectType {
         match value {
             Type::Local(_) => Err(format!("local is not a thing in structs : {value:?}")),
             Type::Plain(plain_type) => match plain_type.name.value {
+                "bool" => Ok(CompositeSQObjectType::Single(SQObjectType::OT_BOOL)),
                 "int" => Ok(CompositeSQObjectType::Single(SQObjectType::OT_INTEGER)),
                 "float" => Ok(CompositeSQObjectType::Single(SQObjectType::OT_FLOAT)),
                 "string" => Ok(CompositeSQObjectType::Single(SQObjectType::OT_STRING)),
@@ -246,28 +247,30 @@ pub fn add_enum<'a>(
     Ok(())
 }
 
-pub fn seal_structs(context: ScriptContext) -> Vec<String> {
+pub fn seal_structs(context: ScriptContext) -> Vec<(String, Box<str>)> {
     let mut lock = STRUCT_INFO.lock();
     let structs = lock.entry(context).or_default();
     let reference_structs = structs.clone();
 
     let mut to_remove = Vec::new();
+    let mut reasons = Vec::new();
     for (name, fields) in structs.iter_mut() {
-        if seal_struct(fields, &reference_structs).is_err() {
+        if let Err(source) = seal_struct(fields, &reference_structs) {
             to_remove.push(name.to_owned());
+            reasons.push(source);
         }
     }
     for struct_name in to_remove.iter() {
         structs.remove(struct_name);
     }
 
-    to_remove
+    to_remove.into_iter().zip(reasons.into_iter()).collect()
 }
 
 fn seal_struct(
     fields: &mut SQStructFields,
     structs: &HashMap<String, SQStructFields>,
-) -> Result<(), ()> {
+) -> Result<(), Box<str>> {
     for field in fields {
         seal_field(&mut field.1, structs)?
     }
@@ -277,7 +280,7 @@ fn seal_struct(
 fn seal_field(
     field: &mut CompositeSQObjectType,
     structs: &HashMap<String, Vec<(String, CompositeSQObjectType)>>,
-) -> Result<(), ()> {
+) -> Result<(), Box<str>> {
     match field {
         CompositeSQObjectType::Single(_) => Ok(()),
         CompositeSQObjectType::Array(ty) => seal_field(ty, structs),
@@ -295,7 +298,7 @@ fn seal_field(
 
             Ok(())
         }
-        CompositeSQObjectType::PossibleStructRef(_) => Err(()),
+        CompositeSQObjectType::PossibleStructRef(name) => Err(Box::from(name.as_str())),
         CompositeSQObjectType::Struct(_, fields) => seal_struct(fields, structs),
     }
 }
