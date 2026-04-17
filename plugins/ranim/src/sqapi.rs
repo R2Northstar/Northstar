@@ -1,6 +1,5 @@
 #![allow(clippy::mut_from_ref)] // TODO: remove this
 
-use base64::{Engine as _, engine::general_purpose::STANDARD};
 use rrplug::prelude::*;
 use std::{fs, io::Write, path::PathBuf};
 
@@ -12,8 +11,8 @@ const USER_DATA_ID: u64 = 18444492235241160706;
 pub fn register_sq_function() {
     register_sq_functions(save_recorded_animation);
     register_sq_functions(read_recorded_animation);
-    register_sq_functions(encode_recorded_animation_base64);
-    register_sq_functions(decode_recorded_animation_base64);
+    register_sq_functions(encode_recorded_animation_base85);
+    register_sq_functions(decode_recorded_animation_base85);
 }
 
 #[rrplug::sqfunction(VM = "SERVER", ExportName = "RSaveRecordedAnimation")]
@@ -35,18 +34,17 @@ fn read_recorded_animation(name: String) -> Result<&'static mut RecordedAnimatio
 }
 
 #[rrplug::sqfunction(VM = "SERVER", ExportName = "REncodeRecordedAnimation")]
-fn encode_recorded_animation_base64(recording: &mut RecordedAnimation) -> Result<String, String> {
+fn encode_recorded_animation_base85(recording: &mut RecordedAnimation) -> String {
     let anim: Vec<u8> = Vec::from(*recording);
     // TODO: maybe add compression at some point
-    Ok(STANDARD.encode(anim))
+    base85::encode(&anim)
 }
 
 #[rrplug::sqfunction(VM = "SERVER", ExportName = "RDecodeRecordedAnimation")]
-fn decode_recorded_animation_base64(
+fn decode_recorded_animation_base85(
     encoded: String,
 ) -> Result<&'static mut RecordedAnimation, String> {
-    STANDARD
-        .decode(encoded)
+    base85::decode(&encoded)
         .map_err(|err| err.to_string())?
         .try_into()
 }

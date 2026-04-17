@@ -156,13 +156,13 @@ impl GetFromSquirrelVm for &mut RecordedAnimation {
 
 impl SQVMName for &mut RecordedAnimation {
     fn get_sqvm_name() -> String {
-        "userdata".to_string()
+        "var".to_string()
     }
 }
 
 impl SQVMName for RecordedAnimation {
     fn get_sqvm_name() -> String {
-        "userdata".to_string()
+        "var".to_string()
     }
 }
 
