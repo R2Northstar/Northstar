@@ -27,4 +27,7 @@ ON_DLL_LOAD("server.dll", R2GameServer, (CModule module))
 
 	o_pOnWeaponAttack = module.Offset(0x6A0220).RCast<decltype(o_pOnWeaponAttack)>();
 	HookAttach(&(PVOID&)o_pOnWeaponAttack, (PVOID)h_pOnWeaponAttack);
+
+	// Remove call to Error for Geo bug: bullet trace ended at (%f, %f, %f), which is outside the max map coord:%i.
+	module.Offset(0x43D4D8).NOP(6);
 }
