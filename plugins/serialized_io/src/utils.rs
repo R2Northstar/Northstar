@@ -55,6 +55,7 @@ impl<'a> PushToSquirrelVm for SQValueTyped<'a> {
                 }
             }
             TypedType::Enum(name, _) => {
+                SQNull.push_to_sqvm(sqvm, sqfunctions);
                 log::warn!("while deserializing: enum {name}; {value} is not of type Object");
             }
 
@@ -79,6 +80,7 @@ impl<'a> PushToSquirrelVm for SQValueTyped<'a> {
                             unsafe { _ = (sqfunctions.sq_sealstructslot)(sqvm.as_ptr(), i as i32) }
                         });
                 } else {
+                    SQNull.push_to_sqvm(sqvm, sqfunctions);
                     log::warn!(
                         "while deserializing: struct {name} found a value which is not of type Object or not all fields are present"
                     );
@@ -141,9 +143,11 @@ impl<'a> PushToSquirrelVm for SQValueTyped<'a> {
                     | SQObjectType::OT_FLOAT
                     | SQObjectType::OT_STRING
                     | SQObjectType::OT_ASSET => {
+                        SQNull.push_to_sqvm(sqvm, sqfunctions);
                         log::warn!("while deserializing: expected {sq_ty:?} found something else")
                     }
                     SQObjectType::OT_TABLE | SQObjectType::OT_ARRAY | SQObjectType::OT_STRUCT => {
+                        SQNull.push_to_sqvm(sqvm, sqfunctions);
                         log::warn!("while deserializing: found illegal untyped type {sq_ty:?}")
                     }
                     SQObjectType::OT_THREAD
@@ -156,6 +160,7 @@ impl<'a> PushToSquirrelVm for SQValueTyped<'a> {
                     | SQObjectType::OT_USERDATA
                     | SQObjectType::OT_INSTANCE
                     | SQObjectType::OT_ENTITY => {
+                        SQNull.push_to_sqvm(sqvm, sqfunctions);
                         log::warn!("while deserializing: reached an invalid push operation")
                     }
                     _ => log::warn!("while deserializing: reached an unreachable push operation"),
@@ -168,6 +173,7 @@ impl<'a> PushToSquirrelVm for SQValueTyped<'a> {
                             .collect::<Vec<_>>()
                             .push_to_sqvm(sqvm, sqfunctions)
                     } else {
+                        SQNull.push_to_sqvm(sqvm, sqfunctions);
                         log::warn!(
                             "while deserializing: tried pushing a non array object for an array type"
                         );
@@ -183,25 +189,30 @@ impl<'a> PushToSquirrelVm for SQValueTyped<'a> {
                             .collect::<Vec<_>>()
                             .push_to_sqvm(sqvm, sqfunctions)
                     } else {
+                        SQNull.push_to_sqvm(sqvm, sqfunctions);
                         log::warn!(
                             "while deserializing: tried pushing a non array object for an array type or the size is not right"
                         );
                     }
                 }
-                CompositeSQObjectType::Table(_key_ty, _value_ty) => {
-                    if let JsonValue::Object(_map) = value {
+                CompositeSQObjectType::Table(key_ty, value_ty) => {
+                    if let JsonValue::Object(map) = value {
                         unsafe { (sqfunctions.sq_newtable)(sqvm.as_ptr()) };
 
-                        todo!("tables");
-
-                        // map.into_iter().for_each(|(key, value)| {
-                        //     SQValueTyped(key).push_to_sqvm(sqvm, sqfunctions);
-                        //     SQValueTyped(value).push_to_sqvm(sqvm, sqfunctions);
-                        //     unsafe { _ = (sqfunctions.sq_newslot)(sqvm.as_ptr(), -3, false as u32) }
-                        // });
+                        map.into_iter().for_each(|(key, value)| {
+                            SQValueTyped(
+                                JsonValue::String(key),
+                                TypedType::RefFullType(key_ty.as_ref()),
+                            )
+                            .push_to_sqvm(sqvm, sqfunctions);
+                            SQValueTyped(value, TypedType::RefFullType(value_ty.as_ref()))
+                                .push_to_sqvm(sqvm, sqfunctions);
+                            unsafe { _ = (sqfunctions.sq_newslot)(sqvm.as_ptr(), -3, false as u32) }
+                        });
                     } else {
+                        SQNull.push_to_sqvm(sqvm, sqfunctions);
                         log::warn!(
-                            "while deserializing: tried pushing a non object for a table type"
+                            "while deserializing: tried pushing a non object for a table type or couldn't get types for the table"
                         );
                     }
                 }
@@ -214,9 +225,10 @@ impl<'a> PushToSquirrelVm for SQValueTyped<'a> {
                     }
                 }
                 CompositeSQObjectType::PossibleStructRef(_) => {
+                    SQNull.push_to_sqvm(sqvm, sqfunctions);
                     log::warn!("while deserializing: found an unsealed struct")
                 }
-                CompositeSQObjectType::Struct(_, fields) => {
+                CompositeSQObjectType::Struct(name, fields) => {
                     if let JsonValue::Object(mut map) = value
                         && fields.iter().all(|(field, _)| map.contains_key(field))
                     {
@@ -239,8 +251,9 @@ impl<'a> PushToSquirrelVm for SQValueTyped<'a> {
                                 }
                             });
                     } else {
+                        SQNull.push_to_sqvm(sqvm, sqfunctions);
                         log::warn!(
-                            "while deserializing: struct <anonymous> found a value which is not of type Object or not all fields are present"
+                            "while deserializing: struct {name} found a value which is not of type Object or not all fields are present"
                         );
                     }
                 }

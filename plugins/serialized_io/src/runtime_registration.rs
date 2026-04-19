@@ -63,7 +63,7 @@ pub fn register_typed_function(
                 .replace(['<', '>'], "_")
                 .replace([' ', '\t', '>'], ""),
         )
-        .replace('_', "")
+        .replace(['_', ','], "")
     };
 
     let mut map_lock = ALLOCATED_TYPES_MAP.lock();
@@ -150,9 +150,13 @@ fn to_camel_case(s: String) -> String {
             .flat_map(|(prev, current)| {
                 current
                     .to_uppercase()
-                    .filter(move |_| prev == '_')
+                    .filter(move |_| prev == '_' || prev == ',')
                     // preserve cases, since this is only needed for snake case like types
-                    .chain(Some(current).into_iter().filter(move |_| prev != '_'))
+                    .chain(
+                        Some(current)
+                            .into_iter()
+                            .filter(move |_| prev != '_' && prev != ','),
+                    )
             })
             .collect::<String>()
 }

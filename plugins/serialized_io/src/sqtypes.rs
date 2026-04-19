@@ -264,7 +264,7 @@ pub fn seal_structs(context: ScriptContext) -> Vec<(String, Box<str>)> {
         structs.remove(struct_name);
     }
 
-    to_remove.into_iter().zip(reasons.into_iter()).collect()
+    to_remove.into_iter().zip(reasons).collect()
 }
 
 fn seal_struct(
