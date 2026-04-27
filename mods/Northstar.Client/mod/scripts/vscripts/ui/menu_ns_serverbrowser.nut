@@ -968,8 +968,9 @@ void function UpdateShownPage()
 		Hud_SetEnabled( file.serverButtons[ i ], true )
 		Hud_SetVisible( file.serverButtons[ i ], true )
 
+		bool stripColor = GetConVarBool( "serverlist_remove_colors" )
 		Hud_SetVisible( file.serversProtected[ i ], server.requiresPassword )
-		Hud_SetText( file.serversName[ i ], EscapeLocalisationAndRemoveNewlines( server.name ) )
+		Hud_SetText( file.serversName[ i ], stripColor ? StripColorCodes( EscapeLocalisationAndRemoveNewlines( server.name ) ) : EscapeLocalisationAndRemoveNewlines( server.name ) )
 		Hud_SetText( file.playerCountLabels[ i ], format( "%i/%i", server.playerCount, server.maxPlayerCount ) )
 		Hud_SetText( file.serversMap[ i ], GetMapBrowserName( server.map ) )
 		Hud_SetText( file.serversGamemode[ i ], GetGameModeDisplayName( server.playlist ) )
@@ -1043,23 +1044,27 @@ void function DisplayFocusedServerInfo( int scriptID )
 
 	ServerInfo server = file.filteredServers[ serverIndex ]
 
+	bool stripColor = GetConVarBool( "serverlist_remove_colors" )
+
+	string description = stripColor ? StripColorCodes( RemoveNewlines( server.description ) ) : RemoveNewlines( server.description )
 	Hud_SetVisible( Hud_GetChild( menu, "BtnServerDescription" ), true )
 	Hud_SetVisible( Hud_GetChild( menu, "BtnServerMods" ), true )
 	Hud_SetVisible( Hud_GetChild( menu, "BtnServerJoin" ), true )
 	// text panels
 	Hud_SetVisible( Hud_GetChild( menu, "LabelDescription" ), true )
 	Hud_SetVisible( Hud_GetChild( menu, "LabelMods" ), false )
-	Hud_SetText( Hud_GetChild( menu, "LabelDescription" ), RemoveNewlines( server.description ) + " ^FFFFFFFF" + "\n\nRequired Mods:\n" + FillInServerModsLabel( server.requiredMods ) )
+	Hud_SetText( Hud_GetChild( menu, "LabelDescription" ), description + " ^FFFFFFFF" + "\n\nRequired Mods:\n" + FillInServerModsLabel( server.requiredMods ) )
 
 	// map name/image/server name
 	string map = server.map
+	string serverName = stripColor ? StripColorCodes( EscapeLocalisationAndRemoveNewlines( server.name ) ) : EscapeLocalisationAndRemoveNewlines( server.name )
 	Hud_SetVisible( Hud_GetChild( menu, "NextMapImage" ), true )
 	Hud_SetVisible( Hud_GetChild( menu, "NextMapBack" ), true )
 	RuiSetImage( Hud_GetRui( Hud_GetChild( menu, "NextMapImage" ) ), "basicImage", GetMapImageForMapName( map ) )
 	Hud_SetVisible( Hud_GetChild( menu, "NextMapName" ), true )
 	Hud_SetText( Hud_GetChild( menu, "NextMapName" ), GetMapBrowserName( map ) )
 	Hud_SetVisible( Hud_GetChild( menu, "ServerName" ), true )
-	Hud_SetText( Hud_GetChild( menu, "ServerName" ), EscapeLocalisationAndRemoveNewlines( server.name ) )
+	Hud_SetText( Hud_GetChild( menu, "ServerName" ), serverName )
 
 	// mode name/image
 	string mode = server.playlist

@@ -1,0 +1,8 @@
+global function NSClientModSettings
+
+void function NSClientModSettings()
+{
+	ModSettings_AddModTitle( "Northstar Client" , 2 )
+	ModSettings_AddModCategory( "#MENU_TITLE_SERVER_BROWSER" )
+	ModSettings_AddEnumSetting( "serverlist_remove_colors", "Remove Server Name/Description Colors", [ "#SETTING_OFF", "#SETTING_ON" ], 2 )
+}

@@ -50,6 +50,11 @@
 		{
 			"Name": "modemenu_mode_filter",
 			"DefaultValue": "-1"
+		},
+		{
+			"Name": "serverlist_remove_colors",
+			"DefaultValue": "0",
+			"Flags": "ARCHIVE_PLAYERPROFILE"
 		}
 	],
 	"Scripts": [
@@ -153,6 +158,13 @@
 			"RunOn": "UI",
 			"UICallback": {
 				"After": "AtlasAuthDialog"
+			}
+		},
+		{
+			"Path": "ui/ns_client_mod_settings.gnut",
+			"RunOn": "UI",
+			"UICallback":{
+				"Before": "NSClientModSettings"
 			}
 		}
 	],
