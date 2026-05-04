@@ -19,10 +19,10 @@ void function CreateGamemodeInfection()
 	GameMode_SetGameModeAnnouncement( GAMEMODE_INFECTION, "ffa_modeDesc" )
 	GameMode_SetDefaultTimeLimits( GAMEMODE_INFECTION, 5, 0.0 )
 	GameMode_AddScoreboardColumnData( GAMEMODE_INFECTION, "#SCOREBOARD_KILLS", PGS_ASSAULT_SCORE, 2 )
-	GameMode_SetColor( GAMEMODE_INFECTION, [147, 204, 57, 255] )
-	
+	GameMode_SetColor( GAMEMODE_INFECTION, [ 147, 204, 57, 255 ] )
+
 	AddPrivateMatchMode( GAMEMODE_INFECTION ) // add to private lobby modes
-	
+
 	#if SERVER
 		GameMode_AddServerInit( GAMEMODE_INFECTION, GamemodeInfection_Init )
 		GameMode_SetPilotSpawnpointsRatingFunc( GAMEMODE_INFECTION, RateSpawnpoints_Generic )
@@ -53,6 +53,6 @@ int function CompareAssaultScoreAndInfection( entity a, entity b )
 		return 1
 	else if ( a.GetTeam() == INFECTION_TEAM_SURVIVOR && b.GetTeam() == INFECTION_TEAM_INFECTED )
 		return -1
-		
+
 	return CompareAssaultScore( a, b )
 }

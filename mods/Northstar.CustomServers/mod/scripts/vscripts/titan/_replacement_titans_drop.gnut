@@ -20,11 +20,10 @@ global const TITANDROP_FALLBACK_DIST = 150 // if the ground search hits, we go t
 struct
 {
 	int replacementSpawnpointsID
-	Point functionref(Point originalPoint, entity player) recalculateTitanReplacementPointCallback
+	Point functionref( Point originalPoint, entity player ) recalculateTitanReplacementPointCallback
 } file
 
-
-void function SetRecalculateTitanReplacementPointCallback(Point functionref(Point originalPoint, entity player) recalculateTitanReplacementPointCallback)
+void function SetRecalculateTitanReplacementPointCallback( Point functionref( Point originalPoint, entity player ) recalculateTitanReplacementPointCallback )
 {
 	file.recalculateTitanReplacementPointCallback = recalculateTitanReplacementPointCallback
 }
@@ -43,7 +42,6 @@ void function EntitiesDidLoad()
 {
 }
 
-
 void function AddDroppoint( entity ent )
 {
 	AddToScriptManagedEntArray( file.replacementSpawnpointsID, ent )
@@ -56,14 +54,14 @@ void function DebugTitanfall()
 
 void function DebugTitanfallThread()
 {
-	entity player = GetPlayerArray()[0]
+	entity player = GetPlayerArray()[ 0 ]
 
 	float interval = 0.1
 
 	FlightPath flightPath = GetAnalysisForModel( GetFlightPathModel( "fp_titan_model" ), HOTDROP_TURBO_ANIM )
 	int dataIndex = GetAnalysisDataIndex( flightPath )
 
-	for ( ;; )
+	for ( ; ; )
 	{
 		if ( !IsValid( player ) )
 		{
@@ -85,33 +83,42 @@ void function DebugTitanfallThread()
 		else
 		{
 			expect vector( desiredPos )
-			DebugDrawCircle( desiredPos, Vector(0,0,0), 10, 128, 255, 128, true, interval )
-			DebugDrawText( desiredPos + Vector(0,0,60), "Looking here", false, interval )
+			DebugDrawCircle( desiredPos, Vector( 0, 0, 0 ), 10, 128, 255, 128, true, interval )
+			DebugDrawText( desiredPos + Vector( 0, 0, 60 ), "Looking here", false, interval )
 			pathNodeSearchPos = GetPathNodeSearchPosWithLookPos( playerOrg, playerEyePos, playerEyeForward, desiredPos, true )
 		}
 
-		DebugDrawCircle( pathNodeSearchPos, Vector(0,0,0), 10, 128, 128, 255, true, interval )
-		DebugDrawText( pathNodeSearchPos + Vector(0,0,40), "Searching from here", false, interval )
+		DebugDrawCircle( pathNodeSearchPos, Vector( 0, 0, 0 ), 10, 128, 128, 255, true, interval )
+		DebugDrawText( pathNodeSearchPos + Vector( 0, 0, 40 ), "Searching from here", false, interval )
 
 		DebugDrawLine( playerOrg, playerOrg + AnglesToForward( Vector( 0, yaw - TITANDROP_MIN_FOV, 0 ) ) * 500, 200, 200, 200, true, interval )
 		DebugDrawLine( playerOrg, playerOrg + AnglesToForward( Vector( 0, yaw + TITANDROP_MIN_FOV, 0 ) ) * 500, 200, 200, 200, true, interval )
 		DebugDrawLine( playerOrg, playerOrg + AnglesToForward( Vector( 0, yaw - TITANDROP_MAX_FOV, 0 ) ) * 500, 128, 128, 128, true, interval )
 		DebugDrawLine( playerOrg, playerOrg + AnglesToForward( Vector( 0, yaw + TITANDROP_MAX_FOV, 0 ) ) * 500, 128, 128, 128, true, interval )
 
-		int node = GetBestNodeForPosInWedge( pathNodeSearchPos, playerEyePos, yaw, TITANDROP_MIN_FOV, TITANDROP_MAX_FOV, TITANDROP_FOV_PENALTY, dataIndex, /*ANALYSIS_STEPS*/ 8 )
+		int node = GetBestNodeForPosInWedge(
+			pathNodeSearchPos,
+			playerEyePos,
+			yaw,
+			TITANDROP_MIN_FOV,
+			TITANDROP_MAX_FOV,
+			TITANDROP_FOV_PENALTY,
+			dataIndex,
+			/* ANALYSIS_STEPS */ 8
+		)
 
 		if ( node >= 0 )
 		{
 			Assert( NodeHasFlightPath( dataIndex, node ) )
 
 			vector pos = GetNodePos( node )
-			DebugDrawCircle( pos, Vector(0,0,0), 25, 255, 255, 128, true, interval )
-			DebugDrawText( pos + Vector(0,0,20), "Best node", false, interval )
+			DebugDrawCircle( pos, Vector( 0, 0, 0 ), 25, 255, 255, 128, true, interval )
+			DebugDrawText( pos + Vector( 0, 0, 20 ), "Best node", false, interval )
 		}
 
 		Point actualResult = GetTitanReplacementPoint( player, true )
 		vector actualPos = actualResult.origin
-		DebugDrawCircle( actualPos, Vector(0,0,0), 32, 255, 255, 255, true, interval )
+		DebugDrawCircle( actualPos, Vector( 0, 0, 0 ), 32, 255, 255, 255, true, interval )
 		DebugDrawLine( actualPos, actualPos + AnglesToForward( actualResult.angles ) * 40, 255, 255, 255, true, interval )
 		DebugDrawText( actualPos, "Final location", false, interval )
 
@@ -125,20 +132,22 @@ Point function GetTitanReplacementPoint( entity player, bool forDebugging = fals
 	vector playerEyeAngles = player.EyeAngles()
 	vector playerOrg = player.GetOrigin()
 
-	Point tempPoint = CalculateTitanReplacementPoint( playerOrg, playerEyePos, playerEyeAngles, forDebugging)
-	if( file.recalculateTitanReplacementPointCallback != null )
+	Point tempPoint = CalculateTitanReplacementPoint( playerOrg, playerEyePos, playerEyeAngles, forDebugging )
+	if ( file.recalculateTitanReplacementPointCallback != null )
 		tempPoint = file.recalculateTitanReplacementPointCallback( tempPoint, player )
 	return tempPoint
 }
 
 Point function CalculateTitanReplacementPoint( vector playerOrg, vector playerEyePos, vector playerEyeAngles, bool forDebugging = false )
 {
-	//local playerEyePos = 		Vector(-281.036224, 34.857925, 860.031250)
-	//local playerEyeAngles = 	Vector(60.055622, 80.775780, 0.000000)
-	//local playerOrg = 		Vector(-281.036224, 34.857925, 800.031250)
+	// local playerEyePos = 		Vector(-281.036224, 34.857925, 860.031250)
+	// local playerEyeAngles = 	Vector(60.055622, 80.775780, 0.000000)
+	// local playerOrg = 		Vector(-281.036224, 34.857925, 800.031250)
 
 	if ( !forDebugging )
-		printt( "Requested replacement Titan from eye pos " + playerEyePos + " view angles " + playerEyeAngles + " player origin " + playerOrg + " map " + GetMapName() )
+		printt(
+			"Requested replacement Titan from eye pos " + playerEyePos + " view angles " + playerEyeAngles + " player origin " + playerOrg + " map " + GetMapName()
+		)
 
 	vector playerEyeForward = AnglesToForward( playerEyeAngles )
 
@@ -194,7 +203,16 @@ Point function CalculateTitanReplacementPoint( vector playerOrg, vector playerEy
 		pathNodeSearchPos = GetPathNodeSearchPos( playerOrg, playerEyePos, playerEyeForward, false )
 	}
 
-	int node = GetBestNodeForPosInWedge( pathNodeSearchPos, playerEyePos, playerEyeAngles.y, TITANDROP_MIN_FOV, TITANDROP_MAX_FOV, TITANDROP_FOV_PENALTY, dataIndex, /*ANALYSIS_STEPS*/ 8 )
+	int node = GetBestNodeForPosInWedge(
+		pathNodeSearchPos,
+		playerEyePos,
+		playerEyeAngles.y,
+		TITANDROP_MIN_FOV,
+		TITANDROP_MAX_FOV,
+		TITANDROP_FOV_PENALTY,
+		dataIndex,
+		/* ANALYSIS_STEPS */ 8
+	)
 
 	if ( node < 0 )
 	{
@@ -234,9 +252,12 @@ Point function CalculateTitanReplacementPoint( vector playerOrg, vector playerEy
 vector function GetPathNodeSearchPosWithLookPos( vector playerOrg, vector playerEyePos, vector playerEyeForward, vector playerLookPos, bool debug )
 {
 	float dist2DSqr = Distance2DSqr( playerOrg, playerLookPos )
-	if ( dist2DSqr > (TITANDROP_PATHNODESEARCH_EXACTDIST / TITANDROP_PATHNODESEARCH_DISTFRAC) * (TITANDROP_PATHNODESEARCH_EXACTDIST / TITANDROP_PATHNODESEARCH_DISTFRAC) )
+	if (
+		dist2DSqr >
+		( TITANDROP_PATHNODESEARCH_EXACTDIST / TITANDROP_PATHNODESEARCH_DISTFRAC ) * ( TITANDROP_PATHNODESEARCH_EXACTDIST / TITANDROP_PATHNODESEARCH_DISTFRAC )
+	)
 	{
-		return playerOrg + (playerLookPos - playerOrg) * TITANDROP_PATHNODESEARCH_DISTFRAC
+		return playerOrg + ( playerLookPos - playerOrg ) * TITANDROP_PATHNODESEARCH_DISTFRAC
 	}
 	else if ( dist2DSqr > TITANDROP_PATHNODESEARCH_EXACTDIST * TITANDROP_PATHNODESEARCH_EXACTDIST )
 	{
@@ -253,7 +274,7 @@ vector function GetPathNodeSearchPosWithLookPos( vector playerOrg, vector player
 
 vector function GetPathNodeSearchPos( vector playerOrg, vector playerEyePos, vector playerEyeForward, bool debug )
 {
-	vector diagonallyDown = Normalize( <playerEyeForward.x, playerEyeForward.y, 0> )
+	vector diagonallyDown = Normalize( < playerEyeForward.x, playerEyeForward.y, 0 > )
 	diagonallyDown.z = TITANDROP_GROUNDSEARCH_ZDIR
 
 	vector startPos = playerEyePos + playerEyeForward * TITANDROP_GROUNDSEARCH_FORWARDDIST
@@ -263,10 +284,10 @@ vector function GetPathNodeSearchPos( vector playerOrg, vector playerEyePos, vec
 
 	if ( debug )
 	{
-		DebugDrawLine( playerEyePos, startPos, 128,128,200, true, 0.1 )
-		DebugDrawLine( startPos, result.endPos, 128,128,200, true, 0.1 )
+		DebugDrawLine( playerEyePos, startPos, 128, 128, 200, true, 0.1 )
+		DebugDrawLine( startPos, result.endPos, 128, 128, 200, true, 0.1 )
 		if ( result.fraction < 1 )
-			DebugDrawLine( result.endPos, result.endPos + playerEyeForward * TITANDROP_FALLBACK_DIST, 128,128,200, true, 0.1 )
+			DebugDrawLine( result.endPos, result.endPos + playerEyeForward * TITANDROP_FALLBACK_DIST, 128, 128, 200, true, 0.1 )
 	}
 
 	if ( result.fraction < 1 )
@@ -283,10 +304,10 @@ vector ornull function GetReplacementTrace( vector startPos, vector viewVector )
 		viewDirLen2D = 0.1
 
 	vector endPos = startPos + ( viewVector * ( TITANDROP_LOS_DIST / viewDirLen2D ) )
-	int mask = TRACE_MASK_SOLID & (~CONTENTS_WINDOW)
+	int mask = TRACE_MASK_SOLID & ( ~CONTENTS_WINDOW )
 	TraceResults result = TraceLine( startPos, endPos, null, mask, TRACE_COLLISION_GROUP_NONE )
-	//DebugDrawLine( result.endPos, endPos, 255, 0, 0, true, 20.0 )
-	//DebugDrawLine( startPos, result.endPos, 0, 255, 0, true, 20.0 )
+	// DebugDrawLine( result.endPos, endPos, 255, 0, 0, true, 20.0 )
+	// DebugDrawLine( startPos, result.endPos, 0, 255, 0, true, 20.0 )
 
 	if ( result.fraction == 1 )
 		return null
@@ -300,9 +321,9 @@ vector ornull function GetReplacementTrace( vector startPos, vector viewVector )
 	{
 		endPos = result.endPos
 
-		if ( result.surfaceNormal.Dot( <0.0, 0.0, 1.0> ) < 0.7 )
+		if ( result.surfaceNormal.Dot( < 0.0, 0.0, 1.0 > ) < 0.7 )
 		{
-			//DebugDrawLine( endPos, Vector(0,0,0), 0, 200, 0, true, 5.0 )
+			// DebugDrawLine( endPos, Vector(0,0,0), 0, 200, 0, true, 5.0 )
 			// pull it back towards player
 			float titanRadius = GetBoundsMax( HULL_TITAN ).x * 1.2
 			endPos -= viewVector * titanRadius
@@ -312,13 +333,13 @@ vector ornull function GetReplacementTrace( vector startPos, vector viewVector )
 		}
 	}
 
-	vector ornull clampedEndPos = NavMesh_ClampPointForHullWithExtents( endPos, HULL_TITAN, <160.0, 160.0, 80.0> )
-	
+	vector ornull clampedEndPos = NavMesh_ClampPointForHullWithExtents( endPos, HULL_TITAN, < 160.0, 160.0, 80.0 > )
+
 	if ( !clampedEndPos )
 		return null
-	
+
 	expect vector( clampedEndPos )
-	
+
 	vector dir = clampedEndPos - startPos
 	if ( DotProduct2D( dir, viewVector ) < 0 )
 		return null
@@ -329,24 +350,24 @@ vector ornull function GetReplacementTrace( vector startPos, vector viewVector )
 var function HullTraceDropPoint( FlightPath flightPath, vector baseOrigin, float heightCapMax = 190 )
 {
 	float heightCapMin = -512
-	vector startOrigin = baseOrigin + Vector( 0,0,1000 )
-	vector endOrigin = baseOrigin + Vector( 0,0, heightCapMin )
+	vector startOrigin = baseOrigin + Vector( 0, 0, 1000 )
+	vector endOrigin = baseOrigin + Vector( 0, 0, heightCapMin )
 
 	int mask = flightPath.traceMask
 
 	TraceResults result = TraceHull( startOrigin, endOrigin, flightPath.mins, flightPath.maxs, null, mask, TRACE_COLLISION_GROUP_NONE )
-	//DebugDrawLine( startOrigin, result.endPos, 0, 255, 0, true, 5.0 )
-	//DebugDrawLine( result.endPos, endOrigin, 255, 0, 0, true, 5.0 )
+	// DebugDrawLine( startOrigin, result.endPos, 0, 255, 0, true, 5.0 )
+	// DebugDrawLine( result.endPos, endOrigin, 255, 0, 0, true, 5.0 )
 
-//	DebugDrawLine( startOrigin, baseOrigin, 0, 255, 0, true, 5.0 )
-//	DebugDrawLine( baseOrigin, endOrigin, 255, 0, 0, true, 5.0 )
-//	local offset = Vector(0.15, 0.15, 0.0 )
-//	DebugDrawLine( startOrigin + offset, result.endPos + offset, 0, 255, 0, true, 5.0 )
-//	DebugDrawLine( result.endPos + offset, endOrigin + offset, 255, 0, 0, true, 5.0 )
-//	DrawArrow( baseOrigin, Vector(0,0,0), 5.0, 50 )
-//	DebugDrawLine( result.endPos, baseOrigin, 255, 255, 255, true, 4.5 )
+	// 	DebugDrawLine( startOrigin, baseOrigin, 0, 255, 0, true, 5.0 )
+	// 	DebugDrawLine( baseOrigin, endOrigin, 255, 0, 0, true, 5.0 )
+	// 	local offset = Vector(0.15, 0.15, 0.0 )
+	// 	DebugDrawLine( startOrigin + offset, result.endPos + offset, 0, 255, 0, true, 5.0 )
+	// 	DebugDrawLine( result.endPos + offset, endOrigin + offset, 255, 0, 0, true, 5.0 )
+	// 	DrawArrow( baseOrigin, Vector(0,0,0), 5.0, 50 )
+	// 	DebugDrawLine( result.endPos, baseOrigin, 255, 255, 255, true, 4.5 )
 
-/*
+	/*
 	printt( " " )
 	printt( "Hull drop " )
 	printt( "start " + startOrigin )
@@ -367,13 +388,12 @@ var function HullTraceDropPoint( FlightPath flightPath, vector baseOrigin, float
 	return result.endPos
 }
 
-
 entity function FindSpawnpoint_ForReplacementTitan( vector origin )
 {
 	Assert( GetScriptManagedEntArrayLen( file.replacementSpawnpointsID ) > 0 )
 
 	array<entity> spawnpoints = GetScriptManagedEntArray( file.replacementSpawnpointsID )
-	entity selectedSpawnpoint = spawnpoints[0]
+	entity selectedSpawnpoint = spawnpoints[ 0 ]
 
 	float closestDist = -1
 	foreach ( spawnpoint in spawnpoints )
@@ -389,7 +409,6 @@ entity function FindSpawnpoint_ForReplacementTitan( vector origin )
 			closestDist = dist
 			selectedSpawnpoint = spawnpoint
 		}
-
 	}
 
 	Assert( selectedSpawnpoint )
@@ -398,21 +417,21 @@ entity function FindSpawnpoint_ForReplacementTitan( vector origin )
 
 bool function TitanFindDropNodes( FlightPath flightPath, vector baseOrigin, float yaw )
 {
-//	return TitanFindDropNodesReloadable( flightPath, baseOrigin, yaw )
-//}
-//function TitanFindDropNodesReloadable( flightPath, baseOrigin, yaw )
-//{
+	// 	return TitanFindDropNodesReloadable( flightPath, baseOrigin, yaw )
+	// }
+	// function TitanFindDropNodesReloadable( flightPath, baseOrigin, yaw )
+	// {
 	if ( NearTitanfallBlocker( baseOrigin ) )
 		return false
 
 	asset model = flightPath.model
 	string animation = flightPath.anim
-	//local flightPath = GetAnalysisForModel( model, animation )
+	// local flightPath = GetAnalysisForModel( model, animation )
 
 	vector origin = baseOrigin
-	vector angles = Vector(0,yaw,0)
-	//entity titan = CreatePropDynamic( model, origin, Vector(0,0,0) )
-	//entity titan = CreateNPCTitanFromSettings( "titan_atlas", TEAM_IMC, origin, angles )
+	vector angles = Vector( 0, yaw, 0 )
+	// entity titan = CreatePropDynamic( model, origin, Vector(0,0,0) )
+	// entity titan = CreateNPCTitanFromSettings( "titan_atlas", TEAM_IMC, origin, angles )
 
 	entity titan = expect entity( level.ainTestTitan )
 
@@ -447,10 +466,8 @@ bool function TitanFindDropNodes( FlightPath flightPath, vector baseOrigin, floa
 	return true
 }
 
-
 var function TitanHulldropSpawnpoint( FlightPath flightPath, vector origin, float _ )
 {
 	return HullTraceDropPoint( flightPath, origin, 20 )
 }
-
 

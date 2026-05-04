@@ -2,6 +2,6 @@ globalize_all_functions
 
 // whether the game should return to the lobby on GameRules_EndMatch()
 bool function ShouldReturnToLobby()
-{	
+{
 	return GetConVarBool( "ns_should_return_to_lobby" )
 }

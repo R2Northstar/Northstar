@@ -1,4 +1,4 @@
-//global function InitLobbyStartMenu
+// global function InitLobbyStartMenu
 global function InitInGameMPMenu
 global function InitInGameSPMenu
 global function ServerCallback_UI_ObjectiveUpdated
@@ -33,7 +33,7 @@ struct
 	var titanSelectButton
 	var titanEditButton
 
-	ComboStruct &comboStruct
+	ComboStruct& comboStruct
 
 	array<var> loadoutButtons
 	array<var> loadoutHeaders
@@ -122,11 +122,11 @@ void function InitInGameMPMenu()
 	Hud_AddEventHandler( modSettingsButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ModSettings" ) ) )
 
 	// Nobody reads the FAQ so we replace it with ModSettings because of the limited combobutton space available
-	//file.faqButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#KNB_MENU_HEADER" )
-	//Hud_AddEventHandler( file.faqButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "KnowledgeBaseMenu" ) ) )
+	// file.faqButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#KNB_MENU_HEADER" )
+	// Hud_AddEventHandler( file.faqButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "KnowledgeBaseMenu" ) ) )
 
-	//var dataCenterButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#DATA_CENTER" )
-	//Hud_AddEventHandler( dataCenterButton, UIE_CLICK, OpenDataCenterDialog )
+	// var dataCenterButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#DATA_CENTER" )
+	// Hud_AddEventHandler( dataCenterButton, UIE_CLICK, OpenDataCenterDialog )
 
 	ComboButtons_Finalize( comboStruct )
 
@@ -143,7 +143,7 @@ void function OnInGameMPMenu_Open()
 
 	bool faqIsNew = !GetConVarBool( "menu_faq_viewed" ) || HaveNewPatchNotes() || HaveNewCommunityNotes()
 	RuiSetBool( Hud_GetRui( file.settingsHeader ), "isNew", faqIsNew )
-	//ComboButton_SetNew( file.faqButton, faqIsNew )
+	// ComboButton_SetNew( file.faqButton, faqIsNew )
 
 	UpdateLoadoutButtons()
 	RefreshCreditsAvailable()
@@ -156,8 +156,8 @@ void function OnInGameMPMenu_Close()
 
 	if ( IsConnected() && !IsLobby() && IsLevelMultiplayer( GetActiveLevel() ) )
 	{
-		//printt( "OnInGameMPMenu_Close() uiGlobal.updatePilotSpawnLoadout is:", uiGlobal.updatePilotSpawnLoadout )
-		//printt( "OnInGameMPMenu_Close() uiGlobal.updateTitanSpawnLoadout is:", uiGlobal.updateTitanSpawnLoadout )
+		// printt( "OnInGameMPMenu_Close() uiGlobal.updatePilotSpawnLoadout is:", uiGlobal.updatePilotSpawnLoadout )
+		// printt( "OnInGameMPMenu_Close() uiGlobal.updateTitanSpawnLoadout is:", uiGlobal.updateTitanSpawnLoadout )
 
 		string updatePilotSpawnLoadout = uiGlobal.updatePilotSpawnLoadout ? "1" : "0"
 		string updateTitanSpawnLoadout = uiGlobal.updateTitanSpawnLoadout ? "1" : "0"
@@ -173,7 +173,7 @@ void function OnInGameMPMenu_Close()
 
 void function UpdateLoadoutButtons()
 {
-	bool loadoutSelectionEnabled = (GetCurrentPlaylistVarInt( "loadout_selection_enabled", 1 ) == 1)
+	bool loadoutSelectionEnabled = ( GetCurrentPlaylistVarInt( "loadout_selection_enabled", 1 ) == 1 )
 
 	SetTitanSelectButtonVisibleState( true )
 
@@ -214,9 +214,9 @@ void function UpdateLoadoutButtons()
 	}
 }
 
-//////////
+// ////////
 
-//////////
+// ////////
 
 void function InitInGameSPMenu()
 {
@@ -265,7 +265,7 @@ void function InitInGameSPMenu()
 		var videoButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#VIDEO" )
 		Hud_AddEventHandler( videoButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "VideoMenu" ) ) )
 	#endif
-	
+
 	// MOD SETTINGS
 	var modSettingsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MOD_SETTINGS" )
 	Hud_AddEventHandler( modSettingsButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ModSettings" ) ) )
@@ -305,7 +305,6 @@ void function InitInGameSPMenu()
 	AddMenuFooterOption( menu, BUTTON_A, "#A_BUTTON_SELECT" )
 	AddMenuFooterOption( menu, BUTTON_B, "#B_BUTTON_CLOSE", "#CLOSE" )
 }
-
 
 void function OnOpenInGameSPMenu()
 {
@@ -393,7 +392,6 @@ void function OnOpenInGameSPMenu()
 	SPMenu_UpdateReloadCheckpointButton()
 }
 
-
 void function OnCloseInGameSPMenu()
 {
 	if ( file.SP_displayObjectiveOnClose )
@@ -443,7 +441,7 @@ void function OnReloadCheckpoint_Activate( var button )
 	}
 	else
 	{
-		ShowAreYouSureDialog( "#MENU_RESTART_CHECKPOINT_CONFIRM", ReloadLastCheckpoint, "#EMPTY_STRING"  )
+		ShowAreYouSureDialog( "#MENU_RESTART_CHECKPOINT_CONFIRM", ReloadLastCheckpoint, "#EMPTY_STRING" )
 	}
 }
 
@@ -511,24 +509,20 @@ void function SPDifficultyButton_Click( var button )
 	else
 		AddDialogButton( dialogData, "#SP_DIFFICULTY_EASY_TITLE", SPPickEasy, "#SP_DIFFICULTY_EASY_DESCRIPTION", false )
 
-
 	if ( currentDifficulty == DIFFICULTY_NORMAL )
 		AddDialogButton( dialogData, "#SP_DIFFICULTY_NORMAL_TITLE", SPPickNormal, "#SP_DIFFICULTY_NORMAL_DESCRIPTION", true )
 	else
 		AddDialogButton( dialogData, "#SP_DIFFICULTY_NORMAL_TITLE", SPPickNormal, "#SP_DIFFICULTY_NORMAL_DESCRIPTION", false )
-
 
 	if ( currentDifficulty == DIFFICULTY_HARD )
 		AddDialogButton( dialogData, "#SP_DIFFICULTY_HARD_TITLE", SPPickHard, "#SP_DIFFICULTY_HARD_DESCRIPTION", true )
 	else
 		AddDialogButton( dialogData, "#SP_DIFFICULTY_HARD_TITLE", SPPickHard, "#SP_DIFFICULTY_HARD_DESCRIPTION", false )
 
-
 	if ( currentDifficulty == DIFFICULTY_MASTER )
 		AddDialogButton( dialogData, "#SP_DIFFICULTY_MASTER_TITLE", SPPickMaster, "#SP_DIFFICULTY_MASTER_DESCRIPTION", true )
 	else
 		AddDialogButton( dialogData, "#SP_DIFFICULTY_MASTER_TITLE", SPPickMaster, "#SP_DIFFICULTY_MASTER_DESCRIPTION", false )
-
 
 	AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
 	AddDialogFooter( dialogData, "#B_BUTTON_BACK" )

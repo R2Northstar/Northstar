@@ -23,7 +23,6 @@ function DropPod_Init()
 	PrecacheEffect( $"droppod_impact" )
 }
 
-
 function GetDropPodAnimDuration()
 {
 	// hack seems bad to spawn an ent to get this info
@@ -45,11 +44,11 @@ function LaunchAnimDropPod( entity dropPod, string anim, vector targetOrigin, ve
 	int team = dropPod.GetTeam()
 
 	entity ref = CreateOwnedScriptMover( dropPod )
-    ref.SetOrigin( targetOrigin )
-    ref.SetAngles( targetAngles )
+	ref.SetOrigin( targetOrigin )
+	ref.SetAngles( targetAngles )
 
 	OnThreadEnd(
-		function () : ( dropPod, ref )
+		function() : ( dropPod, ref )
 		{
 			if ( IsValid( dropPod ) )
 			{
@@ -69,15 +68,15 @@ function LaunchAnimDropPod( entity dropPod, string anim, vector targetOrigin, ve
 	EmitSoundOnEntity( dropPod, "spectre_drop_pod" )
 
 	FirstPersonSequenceStruct sequence
-	sequence.thirdPersonAnim 		= anim
+	sequence.thirdPersonAnim = anim
 
-	sequence.blendTime 			= 0.0
-	sequence.attachment 		= "ref"
-	sequence.useAnimatedRefAttachment		= true
-	//DrawArrow( ref.GetOrigin(), ref.GetAngles(), 5, 100 )
+	sequence.blendTime = 0.0
+	sequence.attachment = "ref"
+	sequence.useAnimatedRefAttachment = true
+	// DrawArrow( ref.GetOrigin(), ref.GetAngles(), 5, 100 )
 	waitthread FirstPersonSequence( sequence, dropPod, ref )
 	dropPod.DisableRenderAlways()
-//	WaitFrame()
+	// 	WaitFrame()
 }
 
 function CheckPlayersIntersectingPod( pod, targetOrigin )
@@ -133,7 +132,7 @@ void function PushPlayerAndCreateDropPodCollision( entity pod, vector targetOrig
 	entity point_push = CreateEntity( "point_push" )
 	point_push.kv.spawnflags = 8
 	point_push.kv.enabled = 1
-	point_push.kv.magnitude = 140.0 * 0.75 //Compensate for reduced player gravity to match R1
+	point_push.kv.magnitude = 140.0 * 0.75 // Compensate for reduced player gravity to match R1
 	point_push.kv.radius = 192.0
 	point_push.SetOrigin( targetOrigin + Vector( 0.0, 0.0, 32.0 ) )
 	DispatchSpawn( point_push )
@@ -146,7 +145,7 @@ void function PushPlayerAndCreateDropPodCollision( entity pod, vector targetOrig
 	)
 
 	while ( CheckPlayersIntersectingPod( pod, targetOrigin ) )
-		wait( 0.1 )
+		wait ( 0.1 )
 
 	pod.Solid()
 }
@@ -166,11 +165,10 @@ void function DropPodOnImpactFXAndShake( entity droppod )
 	// 2 - Push players
 	// 8 - Test LOS before pushing
 	local flags = 11
-	local impactOrigin = e.targetOrigin + Vector( 0,0,10 )
+	local impactOrigin = e.targetOrigin + Vector( 0, 0, 10 )
 	local impactRadius = 192
 	thread PushPlayerAndCreateDropPodCollision( droppod, expect vector( e.targetOrigin ) )
 }
-
 
 function CreateDropPodSmokeTrail( pod )
 {

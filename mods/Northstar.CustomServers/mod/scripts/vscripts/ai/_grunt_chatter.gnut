@@ -20,104 +20,104 @@ const float CHATTER_EVENT_EXPIRE_TIME = 3.0 // chatter events get thrown away wh
 const float CHATTER_PLAYER_COMBAT_STATE_CHANGE_DEBOUNCE = 1.5
 
 const float CHATTER_PILOT_LOST_NEARBY_TEAMMATE_DIST = 1024.0
-const float CHATTER_PLAYER_CLOSE_MIN_DIST 			= 370.0 // all squad members have to be at least this far away from enemy to say they lost visual
+const float CHATTER_PLAYER_CLOSE_MIN_DIST = 370.0 // all squad members have to be at least this far away from enemy to say they lost visual
 
-const float CHATTER_PILOT_SPOTTED_CLOSE_DIST 			= 600.0
-const float CHATTER_PILOT_SPOTTED_MID_DIST 				= 1100.0
-const float CHATTER_PILOT_SPOTTED_NEARBY_TEAMMATE_DIST 	= 1024.0
+const float CHATTER_PILOT_SPOTTED_CLOSE_DIST = 600.0
+const float CHATTER_PILOT_SPOTTED_MID_DIST = 1100.0
+const float CHATTER_PILOT_SPOTTED_NEARBY_TEAMMATE_DIST = 1024.0
 
 const float CHATTER_PILOT_SPOTTED_MID_DIST_MOVING_MIN_SPEED = 170.0
 
-const float CHATTER_PILOT_SPOTTED_RANGE_DIST_MIN 	= 600.0
-const float CHATTER_PILOT_SPOTTED_RANGE_DIST_MAX 	= 1400.0
-const float CHATTER_PILOT_SPOTTED_RANGE_DIST_20 	= 787.0
-const float CHATTER_PILOT_SPOTTED_RANGE_DIST_25 	= 984.0
-const float CHATTER_PILOT_SPOTTED_RANGE_DIST_30 	= 1181.0
-const float CHATTER_PILOT_SPOTTED_RANGE_DIST_35 	= 1378.0
+const float CHATTER_PILOT_SPOTTED_RANGE_DIST_MIN = 600.0
+const float CHATTER_PILOT_SPOTTED_RANGE_DIST_MAX = 1400.0
+const float CHATTER_PILOT_SPOTTED_RANGE_DIST_20 = 787.0
+const float CHATTER_PILOT_SPOTTED_RANGE_DIST_25 = 984.0
+const float CHATTER_PILOT_SPOTTED_RANGE_DIST_30 = 1181.0
+const float CHATTER_PILOT_SPOTTED_RANGE_DIST_35 = 1378.0
 
-const float CHATTER_PILOT_DECOY_SPOTTED_DIST_MAX 		= 1500.0
+const float CHATTER_PILOT_DECOY_SPOTTED_DIST_MAX = 1500.0
 
-const float CHATTER_ENEMY_GRUNT_SPOTTED_DIST 			= 1250.0
-const float CHATTER_ENEMY_TITAN_SPOTTED_DIST 			= 3000.0
-const float CHATTER_ENEMY_TITAN_SPOTTED_DIST_CLOSE 		= 1024.0
-const float CHATTER_ENEMY_SPECTRE_SPOTTED_DIST 			= 1250.0
-const float CHATTER_ENEMY_SPECTRE_SPOTTED_DIST_CLOSE 	= 650.0
-const float CHATTER_ENEMY_TICK_SPOTTED_DIST 			= 1024.0
+const float CHATTER_ENEMY_GRUNT_SPOTTED_DIST = 1250.0
+const float CHATTER_ENEMY_TITAN_SPOTTED_DIST = 3000.0
+const float CHATTER_ENEMY_TITAN_SPOTTED_DIST_CLOSE = 1024.0
+const float CHATTER_ENEMY_SPECTRE_SPOTTED_DIST = 1250.0
+const float CHATTER_ENEMY_SPECTRE_SPOTTED_DIST_CLOSE = 650.0
+const float CHATTER_ENEMY_TICK_SPOTTED_DIST = 1024.0
 
-const float CHATTER_PILOT_SPOTTED_ABOVE_DIST_MIN 	= 128.0
-const float CHATTER_PILOT_SPOTTED_ABOVE_DIST_MAX 	= 1024.0
-const float CHATTER_PILOT_SPOTTED_ABOVE_RADIUS 		= 450.0
-const float CHATTER_PILOT_SPOTTED_BELOW_DIST_MIN 	= 128.0
-const float CHATTER_PILOT_SPOTTED_BELOW_DIST_MAX 	= 1024.0
-const float CHATTER_PILOT_SPOTTED_BELOW_RADIUS 		= 512.0
+const float CHATTER_PILOT_SPOTTED_ABOVE_DIST_MIN = 128.0
+const float CHATTER_PILOT_SPOTTED_ABOVE_DIST_MAX = 1024.0
+const float CHATTER_PILOT_SPOTTED_ABOVE_RADIUS = 450.0
+const float CHATTER_PILOT_SPOTTED_BELOW_DIST_MIN = 128.0
+const float CHATTER_PILOT_SPOTTED_BELOW_DIST_MAX = 1024.0
+const float CHATTER_PILOT_SPOTTED_BELOW_RADIUS = 512.0
 
-const float CHATTER_GRUNT_ENEMY_OUT_OF_SIGHT_TIME 	= 15.0
+const float CHATTER_GRUNT_ENEMY_OUT_OF_SIGHT_TIME = 15.0
 
 const float CHATTER_FRIENDLY_EQUIPMENT_DEPLOYED_NEARBY_DIST = 900.0 // distance from the Specialist that a Grunt will chatter about him deploying things
 
-const bool 	CHATTER_DO_UNSUSPECTING_PILOT_CALLOUTS 			= false // couldn't get it working well enough in time just in script... next game maybe
-const float CHATTER_UNSUSPECTING_PILOT_TARGET_DIST_MAX 		= 512.0
-const float CHATTER_UNSUSPECTING_PILOT_TARGET_MIN_DOT_REAR 	= 0.65
-const float CHATTER_UNSUSPECTING_PILOT_MAX_SPEED 			= 170.0 // player has to be below this speed to trigger "unsuspecting pilot"
-const float CHATTER_UNSUSPECTING_PILOT_STATETIME_MIN 		= 2.0  	// how long the player has to be in "unsuspecting state" before we try to chatter about it
+const bool CHATTER_DO_UNSUSPECTING_PILOT_CALLOUTS = false // couldn't get it working well enough in time just in script... next game maybe
+const float CHATTER_UNSUSPECTING_PILOT_TARGET_DIST_MAX = 512.0
+const float CHATTER_UNSUSPECTING_PILOT_TARGET_MIN_DOT_REAR = 0.65
+const float CHATTER_UNSUSPECTING_PILOT_MAX_SPEED = 170.0 // player has to be below this speed to trigger "unsuspecting pilot"
+const float CHATTER_UNSUSPECTING_PILOT_STATETIME_MIN = 2.0 // how long the player has to be in "unsuspecting state" before we try to chatter about it
 
 const float CHATTER_SEE_CLOAKED_PILOT_MIN_DOT_REAR = 0.65
 
-const float CHATTER_SUPPRESSION_EXPIRE_TIME 		= 0.2 	// secs after kv.lastSuppressionTime that we will be ok with adding a chatter event about it
-const float CHATTER_MISS_FAST_TARGET_EXPIRE_TIME 	= 0.5 	// secs after kv.lastMissFastPlayerTime that we will be ok with adding a chatter event about it
-const float CHATTER_MISS_FAST_TARGET_MIN_SPEED 		= 350.0 // min "speed" that player needs to be moving to trigger a missing fast player callout
+const float CHATTER_SUPPRESSION_EXPIRE_TIME = 0.2 // secs after kv.lastSuppressionTime that we will be ok with adding a chatter event about it
+const float CHATTER_MISS_FAST_TARGET_EXPIRE_TIME = 0.5 // secs after kv.lastMissFastPlayerTime that we will be ok with adding a chatter event about it
+const float CHATTER_MISS_FAST_TARGET_MIN_SPEED = 350.0 // min "speed" that player needs to be moving to trigger a missing fast player callout
 
-const float CHATTER_PILOT_LOW_HEALTH_FRAC 		= 0.35 		// below this fraction of pilot maxhealth, enemies can chatter about pilot low health
-const float CHATTER_PILOT_LOW_HEALTH_RANGE 		= 1024.0 	// beyond this distance, enemies won't chatter about pilot low health
-const float CHATTER_PLAYER_RELOADING_RANGE 		= 800.0
+const float CHATTER_PILOT_LOW_HEALTH_FRAC = 0.35 // below this fraction of pilot maxhealth, enemies can chatter about pilot low health
+const float CHATTER_PILOT_LOW_HEALTH_RANGE = 1024.0 // beyond this distance, enemies won't chatter about pilot low health
+const float CHATTER_PLAYER_RELOADING_RANGE = 800.0
 
-const float CHATTER_NEARBY_GRUNT_TRACEFRAC_MIN 		= 0.95  // for when we need "LOS" trace
+const float CHATTER_NEARBY_GRUNT_TRACEFRAC_MIN = 0.95 // for when we need "LOS" trace
 
-const float CHATTER_ENEMY_PILOT_MULTIKILL_EXPIRETIME 	= 4.5  // max time between kills to trigger multikill callout
-const int 	CHATTER_PILOT_MULTIKILL_MIN_KILLS 			= 3
+const float CHATTER_ENEMY_PILOT_MULTIKILL_EXPIRETIME = 4.5 // max time between kills to trigger multikill callout
+const int CHATTER_PILOT_MULTIKILL_MIN_KILLS = 3
 
-const float CHATTER_FRIENDLY_GRUNT_DOWN_DIST_MAX 	= 1100.0
-const float CHATTER_FRIENDLY_TITAN_DOWN_DIST_MAX 	= 1500.0
-const float CHATTER_ENEMY_PILOT_DOWN_DIST_MAX 		= 600.0
-const float CHATTER_ENEMY_GRUNT_DOWN_DIST_MAX 		= 800.0
-const float CHATTER_ENEMY_TITAN_DOWN_DIST_MAX 		= 1500.0
-const float CHATTER_ENEMY_SPECTRE_DOWN_DIST_MAX 	= 800.0
+const float CHATTER_FRIENDLY_GRUNT_DOWN_DIST_MAX = 1100.0
+const float CHATTER_FRIENDLY_TITAN_DOWN_DIST_MAX = 1500.0
+const float CHATTER_ENEMY_PILOT_DOWN_DIST_MAX = 600.0
+const float CHATTER_ENEMY_GRUNT_DOWN_DIST_MAX = 800.0
+const float CHATTER_ENEMY_TITAN_DOWN_DIST_MAX = 1500.0
+const float CHATTER_ENEMY_SPECTRE_DOWN_DIST_MAX = 800.0
 
-const float CHATTER_NEARBY_TITAN_DIST 		= 1024.0
-const float CHATTER_NEARBY_REAPER_DIST 		= 1024.0
-const float CHATTER_NEARBY_SPECTRE_DIST 	= 800.0
+const float CHATTER_NEARBY_TITAN_DIST = 1024.0
+const float CHATTER_NEARBY_REAPER_DIST = 1024.0
+const float CHATTER_NEARBY_SPECTRE_DIST = 800.0
 
-const float CHATTER_ENEMY_TIME_SHIFT_NEARBY_DIST 	= 700.0
+const float CHATTER_ENEMY_TIME_SHIFT_NEARBY_DIST = 700.0
 
-const float CHATTER_SQUAD_DEPLETED_FRIENDLY_NEARBY_DIST = 650.0  // if any other friendly grunt is within this dist, squad deplete chatter won't play
+const float CHATTER_SQUAD_DEPLETED_FRIENDLY_NEARBY_DIST = 650.0 // if any other friendly grunt is within this dist, squad deplete chatter won't play
 
 const float CHATTER_DANGEROUS_AREA_NEARBY_RANGE = 512.0
 
 struct ChatterCategory
 {
-	string 	alias
-	int 	priority = -1
-	string 	timer
-	string 	secondaryTimer
-	bool 	trackEventTarget
-	bool 	resetTargetKillChain
+	string alias
+	int priority = -1
+	string timer
+	string secondaryTimer
+	bool trackEventTarget
+	bool resetTargetKillChain
 }
 
 struct ChatterEvent
 {
 	ChatterCategory& category
-	entity npc 		= null
-	bool hasNPC 	= false
-	entity target 	= null
-	bool hasTarget 	= false
-	bool isValid 	= false
-	float time 		= -1
+	entity npc = null
+	bool hasNPC = false
+	entity target = null
+	bool hasTarget = false
+	bool isValid = false
+	float time = -1
 }
 
 struct
 {
 	array<ChatterEvent> chatterEvents = []
-	table< string, ChatterCategory > chatterCategories
+	table<string, ChatterCategory> chatterCategories
 	int usedEventTargetsArrayHandle
 
 	int pilotKillChainCounter = 0
@@ -157,7 +157,7 @@ void function GruntChatter_OnPlayerSpawned( entity player )
 
 void function GruntChatter_OnGruntSpawned( entity grunt )
 {
-	if( IsMultiplayer() )
+	if ( IsMultiplayer() )
 		return
 
 	if ( !GruntChatter_IsGruntTypeEligibleForChatter( grunt ) )
@@ -266,7 +266,7 @@ void function GruntChatter_PlayerThink( entity player )
 		GruntChatter_RemoveExpiredEventsFromQueue()
 
 		// process chatter events
-		array< ChatterEvent > currChatterEvents = file.chatterEvents
+		array<ChatterEvent> currChatterEvents = file.chatterEvents
 
 		ChatterEvent eventToPlay
 
@@ -321,7 +321,7 @@ void function GruntChatter_PlayerThink( entity player )
 				}
 
 				nearbyGrunts = ArrayClosest( nearbyGrunts, player.GetOrigin() )
-				grunt = nearbyGrunts[0]
+				grunt = nearbyGrunts[ 0 ]
 			}
 
 			Assert( IsAlive( grunt ), "Grunt chatter error: need a grunt to talk" )
@@ -351,7 +351,7 @@ void function GruntChatter_FlushEventQueue()
 
 void function GruntChatter_RemoveExpiredEventsFromQueue()
 {
-	array< ChatterEvent > recentEvents = []
+	array<ChatterEvent> recentEvents = []
 	foreach ( event in file.chatterEvents )
 	{
 		if ( Time() - event.time >= CHATTER_EVENT_EXPIRE_TIME )
@@ -376,7 +376,6 @@ void function ChatterTimerReset( ChatterEvent event )
 	if ( event.category.secondaryTimer != "" )
 		TimerReset( event.category.secondaryTimer )
 }
-
 
 // ==== combat state tracking ====
 void function GruntChatter_TrackGruntCombatStateVsPlayer( entity player )
@@ -424,7 +423,6 @@ int function GruntChatter_GetGruntCombatStateVsPlayer( entity player )
 
 	return currState
 }
-
 
 // ==== player event handling ====
 // not currently used - I can't make it work well enough in script. Maybe code next game.
@@ -493,7 +491,7 @@ void function GruntChatter_DetectPlayerPilotUnsuspecting( entity player )
 		if ( !TimerCheck( "chatter_pilot_target_unsuspecting" ) )
 		{
 			if ( file.debugLevel > 2 )
-				printt( "waiting for UNSUSPECTING chatter timer...")
+				printt( "waiting for UNSUSPECTING chatter timer..." )
 
 			continue
 		}
@@ -504,7 +502,6 @@ void function GruntChatter_DetectPlayerPilotUnsuspecting( entity player )
 		resetUnsuspectingTime = true
 	}
 }
-
 
 // ==== grunt event handling ====
 void function GruntChatter_GruntSignalWait( entity grunt )
@@ -519,21 +516,21 @@ void function GruntChatter_GruntSignalWait( entity grunt )
 
 		string signal = expect string( result.signal )
 
-		switch( signal )
+		switch ( signal )
 		{
 			// Sees target for the first time, or switches back to a target
 			case "OnFoundEnemy":
 				entity enemy = expect entity( result.value )
 				GruntChatter_TryOnFoundEnemy( grunt, enemy )
 				break
+				// Sees active target ent again
 
-			// Sees active target ent again
 			case "OnSeeEnemy":
 				entity enemy = expect entity( result.activator )
 				GruntChatter_TryPlayerPilotSpotted( grunt, enemy, signal )
 				break
+				// can no longer see active target ent
 
-			// can no longer see active target ent
 			case "OnLostEnemy":
 				entity lostEnemy = expect entity( result.activator )
 				GruntChatter_TryPilotLost( grunt, lostEnemy )
@@ -607,8 +604,8 @@ void function GruntChatter_HACK_TryPilotTargetOutOfSight( entity grunt, entity t
 	if ( Time() - grunt.GetEnemyLastTimeSeen() < CHATTER_GRUNT_ENEMY_OUT_OF_SIGHT_TIME )
 		return
 
-	//if ( file.debugLevel > 1 )
-	//	printt( "FAKEY LOST TARGET" )
+	// if ( file.debugLevel > 1 )
+	// 	printt( "FAKEY LOST TARGET" )
 
 	if ( !TimerCheck( "chatter_pilot_lost" ) )
 		return
@@ -685,7 +682,7 @@ void function GruntChatter_TryPlayerPilotSpotted( entity grunt, entity player, s
 	if ( !IsAlive( player ) || !player.IsPlayer() || !IsPilot( player ) )
 		return
 
-	if ( TimerCheck ( "chatter_pilot_spotted" ) )
+	if ( TimerCheck( "chatter_pilot_spotted" ) )
 	{
 		string spottedAlias = "gruntchatter_pilot_spotted"
 
@@ -718,10 +715,10 @@ void function GruntChatter_TryPlayerPilotSpotted( entity grunt, entity player, s
 				if ( TimerCheck( "chatter_pilot_spotted_specific_range" ) && RandomInt( 100 ) < 40 )
 				{
 					table<string, float> rangeDists
-					rangeDists["chatter_pilot_spotted_specific_range_20"] <- CHATTER_PILOT_SPOTTED_RANGE_DIST_20
-					rangeDists["chatter_pilot_spotted_specific_range_25"] <- CHATTER_PILOT_SPOTTED_RANGE_DIST_25
-					rangeDists["chatter_pilot_spotted_specific_range_30"] <- CHATTER_PILOT_SPOTTED_RANGE_DIST_30
-					rangeDists["chatter_pilot_spotted_specific_range_35"] <- CHATTER_PILOT_SPOTTED_RANGE_DIST_35
+					rangeDists[ "chatter_pilot_spotted_specific_range_20" ] <- CHATTER_PILOT_SPOTTED_RANGE_DIST_20
+					rangeDists[ "chatter_pilot_spotted_specific_range_25" ] <- CHATTER_PILOT_SPOTTED_RANGE_DIST_25
+					rangeDists[ "chatter_pilot_spotted_specific_range_30" ] <- CHATTER_PILOT_SPOTTED_RANGE_DIST_30
+					rangeDists[ "chatter_pilot_spotted_specific_range_35" ] <- CHATTER_PILOT_SPOTTED_RANGE_DIST_35
 
 					if ( distToPilot >= CHATTER_PILOT_SPOTTED_RANGE_DIST_MIN && distToPilot <= CHATTER_PILOT_SPOTTED_RANGE_DIST_MAX )
 					{
@@ -746,7 +743,7 @@ void function GruntChatter_TryPlayerPilotSpotted( entity grunt, entity player, s
 		GruntChatter_AddEvent( spottedAlias, grunt )
 	}
 
-	if ( TimerCheck ( "chatter_pilot_spotted_abovebelow" ) )
+	if ( TimerCheck( "chatter_pilot_spotted_abovebelow" ) )
 	{
 		bool isEnemyAbove = GruntChatter_IsEnemyAbove( grunt, player )
 		bool isEnemyBelow = GruntChatter_IsEnemyBelow( grunt, player )
@@ -890,7 +887,11 @@ void function GruntChatter_TryFriendlyEquipmentDeployed( entity deployer, string
 	if ( !TimerCheck( timerAlias ) )
 		return
 
-	entity closestGrunt = GruntChatter_FindClosestFriendlyHumanGrunt_LOS( deployer.GetOrigin(), deployer.GetTeam(), CHATTER_FRIENDLY_EQUIPMENT_DEPLOYED_NEARBY_DIST )
+	entity closestGrunt = GruntChatter_FindClosestFriendlyHumanGrunt_LOS(
+		deployer.GetOrigin(),
+		deployer.GetTeam(),
+		CHATTER_FRIENDLY_EQUIPMENT_DEPLOYED_NEARBY_DIST
+	)
 	if ( !closestGrunt )
 		return
 
@@ -905,7 +906,7 @@ void function GruntChatter_TryDisplacingFromDangerousArea( entity displacingGrun
 
 void function GruntChatter_TryDangerousAreaWeapon( entity grunt, string dangerousAreaWeaponName )
 {
-	if  ( !GruntChatter_CanGruntChatterNow( grunt ) )
+	if ( !GruntChatter_CanGruntChatterNow( grunt ) )
 		return
 
 	string alias
@@ -914,12 +915,12 @@ void function GruntChatter_TryDangerousAreaWeapon( entity grunt, string dangerou
 	// TODO move to data files
 	switch ( dangerousAreaWeaponName )
 	{
-		case "mp_weapon_frag_grenade": //Since GruntChatter_TryDangerousAreaWeapon() is called from both CodeDialogue_DangerousAreaDisplace() and GruntChatter_OnGruntDamaged() this has bugs; a grunt who was not in the dangerous area created but took damage from the frag grenade will say VO like "Incoming Frag!! Take cover!". Not worth fixing this late in.
+		case "mp_weapon_frag_grenade": // Since GruntChatter_TryDangerousAreaWeapon() is called from both CodeDialogue_DangerousAreaDisplace() and GruntChatter_OnGruntDamaged() this has bugs; a grunt who was not in the dangerous area created but took damage from the frag grenade will say VO like "Incoming Frag!! Take cover!". Not worth fixing this late in.
 			alias = "gruntchatter_dangerous_area_frag"
 			timerAlias = "chatter_dangerous_area_frag"
 			break
 
-		case "mp_weapon_grenade_emp": //This is triggered from GruntChatter_OnGruntDamaged(), since arc grenades don't create a dangerousarea
+		case "mp_weapon_grenade_emp": // This is triggered from GruntChatter_OnGruntDamaged(), since arc grenades don't create a dangerousarea
 			alias = "gruntchatter_dangerous_area_arc_grenade"
 			timerAlias = "chatter_dangerous_area_arc_grenade"
 			break
@@ -943,7 +944,7 @@ void function GruntChatter_TryDangerousAreaWeapon( entity grunt, string dangerou
 	if ( alias == "" )
 		return
 
-	if ( !TimerCheck ( timerAlias ) )
+	if ( !TimerCheck( timerAlias ) )
 		return
 
 	// all grunts in the area will try to call it out, in case this guy dies
@@ -960,7 +961,11 @@ void function GruntChatter_TryEnemyTimeShifted( entity timeShiftedEnemy )
 	if ( !TimerCheck( "chatter_enemy_time_shifted" ) )
 		return
 
-	entity closestGrunt = GruntChatter_FindClosestEnemyHumanGrunt_LOS( timeShiftedEnemy.GetOrigin(), timeShiftedEnemy.GetTeam(), CHATTER_ENEMY_TIME_SHIFT_NEARBY_DIST )
+	entity closestGrunt = GruntChatter_FindClosestEnemyHumanGrunt_LOS(
+		timeShiftedEnemy.GetOrigin(),
+		timeShiftedEnemy.GetTeam(),
+		CHATTER_ENEMY_TIME_SHIFT_NEARBY_DIST
+	)
 	if ( !closestGrunt )
 		return
 
@@ -1117,7 +1122,7 @@ void function GruntChatter_TrySquadDepleted( entity deadGuy )
 	array<entity> squad = GetNPCArrayBySquad( deadGuySquadName )
 	entity lastSquadMember
 	if ( squad.len() == 1 )
-		lastSquadMember = squad[0]
+		lastSquadMember = squad[ 0 ]
 
 	if ( !GruntChatter_CanGruntChatterNow( lastSquadMember ) )
 		return
@@ -1374,7 +1379,7 @@ void function GruntChatter_TrySuppressingPilotTarget( entity grunt, entity targe
 	if ( !TimerCheck( "chatter_suppressingLKP_start" ) )
 		return
 
-	string STR_lastSuppressionTime = expect string( grunt.kv.lastSuppressionTime )  // hacky
+	string STR_lastSuppressionTime = expect string( grunt.kv.lastSuppressionTime ) // hacky
 	float lastSuppressionTime = STR_lastSuppressionTime.tofloat()
 	float validRecentWindow_suppression = Time() - CHATTER_SUPPRESSION_EXPIRE_TIME
 
@@ -1402,7 +1407,7 @@ void function GruntChatter_TryMissingFastTarget( entity grunt, entity target )
 	if ( targetSpeed < CHATTER_MISS_FAST_TARGET_MIN_SPEED )
 		return
 
-	string STR_lastMissFastPlayerTime = expect string( grunt.kv.lastMissFastPlayerTime )  // hacky
+	string STR_lastMissFastPlayerTime = expect string( grunt.kv.lastMissFastPlayerTime ) // hacky
 	float lastMissFastPlayerTime = STR_lastMissFastPlayerTime.tofloat()
 	float validRecentWindow_missFastTarget = Time() - CHATTER_MISS_FAST_TARGET_EXPIRE_TIME
 
@@ -1450,7 +1455,6 @@ void function GruntChatter_TryPlayerPilotReloading( entity player )
 	GruntChatter_AddEvent( "gruntchatter_target_reloading", closestGrunt, player )
 }
 
-
 // ==== turret event handling ====
 void function GruntChatter_TurretSignalWait( entity turret )
 {
@@ -1463,7 +1467,7 @@ void function GruntChatter_TurretSignalWait( entity turret )
 
 		string signal = expect string( result.signal )
 
-		switch( signal )
+		switch ( signal )
 		{
 			case "OnFoundEnemy":
 				entity enemy = expect entity( result.value )
@@ -1474,7 +1478,6 @@ void function GruntChatter_TurretSignalWait( entity turret )
 				entity enemy = expect entity( result.activator )
 				GruntChatter_TryFriendlyTurretFoundTarget( turret, enemy )
 				break
-
 		}
 	}
 }
@@ -1484,7 +1487,7 @@ void function GruntChatter_TryFriendlyTurretFoundTarget( entity turret, entity e
 	if ( !IsAlive( turret ) || !IsAlive( enemy ) )
 		return
 
-	if ( !TimerCheck( "chatter_friendly_turret_found_target") )
+	if ( !TimerCheck( "chatter_friendly_turret_found_target" ) )
 		return
 
 	entity closestGrunt = GruntChatter_FindClosestFriendlyHumanGrunt_LOS( turret.GetOrigin(), turret.GetTeam(), CHATTER_FRIENDLY_EQUIPMENT_DEPLOYED_NEARBY_DIST )
@@ -1493,7 +1496,6 @@ void function GruntChatter_TryFriendlyTurretFoundTarget( entity turret, entity e
 
 	GruntChatter_AddEvent( "gruntchatter_friendly_turret_found_target", closestGrunt, enemy )
 }
-
 
 // ==== pilot kill chains ====
 // NOTE: don't technically require a pilot, but makes it easier to port to an MP environment
@@ -1513,14 +1515,13 @@ bool function GruntChatter_IsKillChainStillActive( entity pilot )
 	if ( file.lastPilotKillTime == -1 )
 		return true
 
-	return (Time() - file.lastPilotKillTime) < CHATTER_ENEMY_PILOT_MULTIKILL_EXPIRETIME
+	return ( Time() - file.lastPilotKillTime ) < CHATTER_ENEMY_PILOT_MULTIKILL_EXPIRETIME
 }
 
 void function GruntChatter_ResetPilotKillChain( entity pilot )
 {
 	file.pilotKillChainCounter = 0
 }
-
 
 // ==== chatter util ====
 // won't return mechanicals like Specialists
@@ -1649,7 +1650,7 @@ bool function GruntChatter_IsTargetFacingAway( entity grunt, entity target, floa
 	if ( !IsAlive( grunt ) || !IsAlive( target ) )
 		return false
 
-	vector viewAng = target.GetAngles()  // overall body angles better for this than viewvec
+	vector viewAng = target.GetAngles() // overall body angles better for this than viewvec
 	vector viewVec = AnglesToForward( viewAng )
 	vector vecRear = viewVec * -1
 	vector angRear = VectorToAngles( vecRear )
@@ -1657,7 +1658,7 @@ bool function GruntChatter_IsTargetFacingAway( entity grunt, entity target, floa
 	vector vecToTarget = Normalize( grunt.EyePosition() - target.EyePosition() )
 	float dot2Grunt_rear = DotProduct( vecToTarget, vecRear )
 
-	//printt( "REAR dot to enemy:", dot2Grunt_rear )
+	// printt( "REAR dot to enemy:", dot2Grunt_rear )
 
 	return dot2Grunt_rear >= minDotRear
 }
@@ -1671,8 +1672,8 @@ bool function GruntChatter_IsEnemyAbove( entity grunt, entity enemy )
 	vector gOrg = grunt.GetOrigin()
 	vector eOrg = enemy.GetOrigin()
 
-	vector cylinderBottom 	= gOrg + < 0, 0, CHATTER_PILOT_SPOTTED_ABOVE_DIST_MIN >
-	vector cylinderTop 		= gOrg + < 0, 0, CHATTER_PILOT_SPOTTED_ABOVE_DIST_MAX >
+	vector cylinderBottom = gOrg + < 0, 0, CHATTER_PILOT_SPOTTED_ABOVE_DIST_MIN >
+	vector cylinderTop = gOrg + < 0, 0, CHATTER_PILOT_SPOTTED_ABOVE_DIST_MAX >
 
 	bool isAbove = PointInCylinder( cylinderBottom, cylinderTop, CHATTER_PILOT_SPOTTED_ABOVE_RADIUS, eOrg )
 	return isAbove
@@ -1683,8 +1684,8 @@ bool function GruntChatter_IsEnemyBelow( entity grunt, entity enemy )
 	vector gOrg = grunt.GetOrigin()
 	vector eOrg = enemy.GetOrigin()
 
-	vector cylinderBottom 	= gOrg - < 0, 0, CHATTER_PILOT_SPOTTED_BELOW_DIST_MAX >
-	vector cylinderTop 		= gOrg - < 0, 0, CHATTER_PILOT_SPOTTED_BELOW_DIST_MIN >
+	vector cylinderBottom = gOrg - < 0, 0, CHATTER_PILOT_SPOTTED_BELOW_DIST_MAX >
+	vector cylinderTop = gOrg - < 0, 0, CHATTER_PILOT_SPOTTED_BELOW_DIST_MIN >
 
 	bool isBelow = PointInCylinder( cylinderBottom, cylinderTop, CHATTER_PILOT_SPOTTED_BELOW_RADIUS, eOrg )
 	return isBelow
@@ -1703,12 +1704,12 @@ void function GruntChatter_TryGruntFlankedByPlayer( entity grunt, int aiSurprise
 	switch ( aiSurprisedReactionType )
 	{
 		case RSR_REAR_FLANK:
-			//printt( "REAR      FLANK!")
+			// printt( "REAR      FLANK!")
 			alias = "gruntchatter_pilot_spotted_flank_rear"
 			break
 
 		case RSR_SIDE_FLANK:
-			//printt( "     SIDE FLANK!" )
+			// printt( "     SIDE FLANK!" )
 			alias = "gruntchatter_pilot_spotted_flank_side"
 			break
 	}

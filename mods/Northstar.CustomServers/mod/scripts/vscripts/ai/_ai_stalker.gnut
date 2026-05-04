@@ -53,19 +53,12 @@ void function StalkerOnDeath( entity npc, var damageInfo )
 	thread StalkerOnDeath_Internal( npc, damageInfo )
 
 	#if MP
-	int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
-	if ( sourceId == eDamageSourceId.damagedef_titan_step )
-	{
-		Explosion_DamageDefSimple(
-			damagedef_stalker_powersupply_explosion_large_at,
-			npc.GetOrigin(),
-			npc,
-			npc,
-			npc.GetOrigin()
-		)
-	}
+		int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+		if ( sourceId == eDamageSourceId.damagedef_titan_step )
+		{
+			Explosion_DamageDefSimple( damagedef_stalker_powersupply_explosion_large_at, npc.GetOrigin(), npc, npc, npc.GetOrigin() )
+		}
 	#endif
-
 }
 
 void function StalkerOnDeath_Internal( entity npc, var damageInfo )
@@ -91,8 +84,8 @@ void function StalkerOnDeath_Internal( entity npc, var damageInfo )
 	}
 }
 
-
-// All damage to stalkers comes here for modification and then either branches out to other npc types (Suicide, etc) for custom stuff or it just continues like normal.
+// All damage to stalkers comes here for modification and then either branches out to
+// other npc types (Suicide, etc) for custom stuff or it just continues like normal.
 void function StalkerOnDamaged( entity npc, var damageInfo )
 {
 	StalkerOnDamaged_Internal( npc, damageInfo )
@@ -298,7 +291,7 @@ void function StalkerGearOverloads( entity npc, entity attacker = null )
 	entity fx = PlayFXOnEntity( STALKER_REACTOR_CRITICAL_FX, nukeFXInfoTarget )
 
 	OnThreadEnd(
-	function() : ( nukeFXInfoTarget, fx, npc, attacker )
+		function() : ( nukeFXInfoTarget, fx, npc, attacker )
 		{
 			if ( IsValid( npc ) )
 				StopSoundOnEntity( nukeFXInfoTarget, STALKER_REACTOR_CRITICAL_SOUND )
@@ -331,7 +324,7 @@ void function StalkerGearOverloads( entity npc, entity attacker = null )
 
 	int tagID = npc.LookupAttachment( "CHESTFOCUS" )
 
-	for ( ;; )
+	for ( ; ; )
 	{
 		float timePassed = Time() - startTime
 		float explodeMin = Graph( timePassed, 0, duration, 0.4, 0.1 )
@@ -396,7 +389,7 @@ void function EnableStalkerCrawlingBehavior( entity npc )
 
 	DisableMinionUsesHeavyWeapons( npc )
 
-	string crawlingSettings = string ( npc.Dev_GetAISettingByKeyField( "crawlingSettingsWrapper" ) )
+	string crawlingSettings = string( npc.Dev_GetAISettingByKeyField( "crawlingSettingsWrapper" ) )
 
 	// Changing the setting file includes changing the behavior file to	"behavior_stalker_crawling"
 	SetAISettingsWrapper( npc, crawlingSettings )
@@ -421,10 +414,10 @@ void function EnableStalkerCrawlingBehavior( entity npc )
 void function SelfTerminateAfterDelay( entity npc )
 {
 	const float lifeSupportDuration = 8
-	float deathTime = Time() + (lifeSupportDuration * 2)
+	float deathTime = Time() + ( lifeSupportDuration * 2 )
 
 	npc.EndSignal( "OnDeath" )
-	for ( ;; )
+	for ( ; ; )
 	{
 		entity enemy = npc.GetEnemy()
 		if ( IsAlive( enemy ) )
@@ -456,7 +449,7 @@ void function FallAndBecomeCrawlingStalker( entity npc )
 	// Workaround for Bug 114372
 	WaitFrame()
 
-	for ( ;; )
+	for ( ; ; )
 	{
 		if ( npc.IsInterruptable() )
 			break
@@ -504,7 +497,7 @@ void function AttemptStandToStaggerAnimation( entity npc )
 	// Workaround for Bug 114372
 	WaitFrame()
 
-	for ( ;; )
+	for ( ; ; )
 	{
 		if ( npc.IsInterruptable() )
 			break
@@ -557,8 +550,8 @@ bool function StalkerLimbBlownOff( entity npc, var damageInfo, int hitGroup, flo
 void function StalkerHeadShot( entity npc, var damageInfo, int hitGroup )
 {
 	// random chance to blow up head
-//	if ( DamageInfo_GetDamage( damageInfo ) < 100 && RandomFloat( 100 ) <= 66 )
-//		return
+	// 	if ( DamageInfo_GetDamage( damageInfo ) < 100 && RandomFloat( 100 ) <= 66 )
+	// 		return
 
 	if ( !IsValidHeadShot( damageInfo, npc ) )
 		return
@@ -580,10 +573,10 @@ void function StalkerHeadShot( entity npc, var damageInfo, int hitGroup )
 	npc.Anim_Stop() // stop leeching, etc.
 	npc.ClearParent()
 
-	//DisableLeeching( npc )
+	// DisableLeeching( npc )
 
 	// No pain anims
-	//DamageInfo_AddDamageFlags( damageInfo, DAMAGEFLAG_NOPAIN )
+	// DamageInfo_AddDamageFlags( damageInfo, DAMAGEFLAG_NOPAIN )
 
 	// Set these so cl_player knows to kill the eye glow and play the right SFX
 	DamageInfo_AddCustomDamageType( damageInfo, DF_HEADSHOT )
@@ -592,7 +585,7 @@ void function StalkerHeadShot( entity npc, var damageInfo, int hitGroup )
 	EmitSoundOnEntityExceptToPlayer( npc, attacker, "SuicideSpectre.BulletImpact_HeadShot_3P_vs_3P" )
 
 	int bodyGroupIndex = npc.FindBodyGroup( "removableHead" )
-	int stateIndex = 1  // 0 = show, 1 = hide
+	int stateIndex = 1 // 0 = show, 1 = hide
 	npc.SetBodygroup( bodyGroupIndex, stateIndex )
 
 	DamageInfo_SetDamage( damageInfo, npc.GetMaxHealth() )
@@ -600,7 +593,7 @@ void function StalkerHeadShot( entity npc, var damageInfo, int hitGroup )
 
 vector function GetDeathForce()
 {
-	vector angles = <RandomFloatRange(-45,-75),RandomFloat(360),0>
+	vector angles = < RandomFloatRange( -45, -75 ), RandomFloat( 360 ), 0 >
 	vector forward = AnglesToForward( angles )
 	return forward * RandomFloatRange( 0.25, 0.75 )
 }

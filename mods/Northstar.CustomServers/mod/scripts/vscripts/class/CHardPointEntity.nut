@@ -7,7 +7,6 @@ function CodeCallback_RegisterClass_CHardPointEntity()
 {
 	CHardPointEntity.ClassName <- "CHardPointEntity"
 
-
 	function CHardPointEntity::Enabled()
 	{
 		return this.GetHardpointID() >= 0

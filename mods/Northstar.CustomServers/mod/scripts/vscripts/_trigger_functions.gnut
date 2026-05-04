@@ -12,16 +12,16 @@ const DEBUG_DEADLY_FOG = false
 const asset BIRD_ALERT_FX = $"P_bird_alert_white"
 struct BirdAlertInfo
 {
-	entity scriptRef //Also FX location
+	entity scriptRef // Also FX location
 	array<entity> triggers
 	float lastUseTime
 }
 
 struct
 {
-	//bool checkpointReached
-	//vector checkpointOrigin
-	//vector checkpointAngles
+	// bool checkpointReached
+	// vector checkpointOrigin
+	// vector checkpointAngles
 	table<string, array<void functionref( entity )> > triggerEditorClassFunctions
 
 	table<string, int> flagTriggerEntArrayIndex
@@ -38,9 +38,9 @@ function TriggerFunctions_Init()
 	AddTriggerEditorClassFunc( "trigger_flag_clear", TriggerClearFlagOnTrigger )
 	AddTriggerEditorClassFunc( "trigger_flag_touching", TriggerTouchingFlagOnTrigger )
 
-	AddSpawnCallback( "trigger_multiple", 		TriggerInit )
-	AddSpawnCallback( "trigger_once", 			TriggerInit )
-	AddSpawnCallback( "trigger_hurt", 			TriggerInit )
+	AddSpawnCallback( "trigger_multiple", TriggerInit )
+	AddSpawnCallback( "trigger_once", TriggerInit )
+	AddSpawnCallback( "trigger_hurt", TriggerInit )
 
 	AddTriggerEditorClassFunc( "trigger_death_fall", TriggerDeathFall )
 	AddSpawnCallbackEditorClass( "trigger_multiple", "trigger_deadly_fog", DeadlyFogTriggerInit )
@@ -64,7 +64,7 @@ void function AddTriggerEditorClassFunc( string editorClass, void functionref( e
 
 void function AddKeyPairFunctionality( entity trigger )
 {
-	table< string, void functionref( entity, string )> funcs
+	table<string, void functionref( entity, string )> funcs
 	funcs[ "scr_flagSet" ] <- TriggerFlagSet
 	funcs[ "scr_flagClear" ] <- TriggerFlagClear
 
@@ -95,7 +95,6 @@ function GetFlagTriggers()
 	return level._flagTriggers
 }
 
-
 function AddKeyPairFunctionToClass( funcs, classname )
 {
 	array<entity> triggers = GetEntArrayByClass_Expensive( classname )
@@ -118,7 +117,7 @@ void function TriggerChangesFlagOnTrigger( entity trigger, string flag, void fun
 
 	array<string> flags = GetFlagsFromString( flag )
 
-	for ( ;; )
+	for ( ; ; )
 	{
 		trigger.WaitSignal( "OnTrigger" )
 
@@ -248,8 +247,7 @@ void function InitFlagMaskTriggers()
 		{
 			Assert( !trigger.HasKey( "scr_flagTrueAny" ), "Trigger at " + trigger.GetOrigin() + " has flag all and flag any" )
 		}
-		else
-		if ( trigger.HasKey( "scr_flagTrueAny" ) )
+		else if ( trigger.HasKey( "scr_flagTrueAny" ) )
 		{
 			Assert( !trigger.HasKey( "scr_flagTrueAll" ), "Trigger at " + trigger.GetOrigin() + " has flag all and flag any" )
 		}
@@ -258,8 +256,7 @@ void function InitFlagMaskTriggers()
 		{
 			Assert( !trigger.HasKey( "scr_flagFalseAny" ), "Trigger at " + trigger.GetOrigin() + " has flag all and flag any" )
 		}
-		else
-		if ( trigger.HasKey( "scr_flagFalseAny" ) )
+		else if ( trigger.HasKey( "scr_flagFalseAny" ) )
 		{
 			Assert( !trigger.HasKey( "scr_flagFalseAll" ), "Trigger at " + trigger.GetOrigin() + " has flag all and flag any" )
 		}
@@ -332,7 +329,6 @@ function InitFlagsFromTrigger( entity trigger )
 	}
 }
 
-
 void function DeadlyFogTriggerInit( entity trigger )
 {
 	trigger.ConnectOutput( "OnStartTouch", DeadlyFogStartTouch )
@@ -365,7 +361,7 @@ void function DeadlyFogDamagedEntity( entity trigger, entity ent )
 	float timeTillDeath = 4.0
 
 	entity worldSpawn = GetEnt( "worldspawn" )
-	while( true )
+	while ( true )
 	{
 		if ( !IsValid( ent ) )
 		{
@@ -386,7 +382,7 @@ void function DeadlyFogDamagedEntity( entity trigger, entity ent )
 		}
 
 		local isTitan = ent.IsTitan()
-		local damageOrigin = ent.GetOrigin() + ( isTitan ? < 0.0, 0.0, 0.0 > : < 0.0 , 0.0, -200.0 > )
+		local damageOrigin = ent.GetOrigin() + ( isTitan ? < 0.0, 0.0, 0.0 > : < 0.0, 0.0, -200.0 > )
 		damageOrigin += < RandomFloatRange( -300.0, 300.0 ), RandomFloatRange( -300.0, 300.0 ), RandomFloatRange( -100.0, 100.0 ) >
 		local scriptTypeMask = damageTypes.dissolve | DF_STOPS_TITAN_REGEN
 
@@ -439,20 +435,20 @@ void function DeadlyFogVisuals( entity trigger )
 	segmentCount.z = segmentCount.z < 1.0 ? 1.0 : segmentCount.z
 
 	vector startPos = triggerOrigin + triggerMins + segmentSize * 0.5
-	startPos.x += (triggerDimension.x - (segmentCount.x * segmentSize.x)) * 0.5
-	startPos.y += (triggerDimension.y - (segmentCount.y * segmentSize.y)) * 0.5
-	startPos.z += (triggerDimension.z - (segmentCount.z * segmentSize.z)) * 0.5
+	startPos.x += ( triggerDimension.x - ( segmentCount.x * segmentSize.x ) ) * 0.5
+	startPos.y += ( triggerDimension.y - ( segmentCount.y * segmentSize.y ) ) * 0.5
+	startPos.z += ( triggerDimension.z - ( segmentCount.z * segmentSize.z ) ) * 0.5
 
 	vector segmentPos = startPos
-	for ( int z = 0 ; z < segmentCount.z ; z++ )
+	for ( int z = 0; z < segmentCount.z; z++ )
 	{
 		// Only do effects on the top layer of the trigger
 		if ( z < ( segmentCount.z - 1 ) )
 			continue
 
-		for ( int y = 0 ; y < floor(segmentCount.y) ; y++ )
+		for ( int y = 0; y < floor( segmentCount.y ); y++ )
 		{
-			for ( int x = 0 ; x < floor(segmentCount.x) ; x++ )
+			for ( int x = 0; x < floor( segmentCount.x ); x++ )
 			{
 				vector segmentPos = startPos + Vector( segmentSize.x * x, segmentSize.y * y, segmentSize.z * z )
 				thread DeadlyFogEffect( segmentPos, segmentSize )
@@ -470,15 +466,15 @@ void function DeadlyFogEffect( vector origin, vector segmentSize )
 	effect.SetOrigin( origin )
 	DispatchSpawn( effect )
 
-	vector mins = origin + (segmentSize * -0.5)
-	vector maxs = origin + (segmentSize * 0.5)
+	vector mins = origin + ( segmentSize * -0.5 )
+	vector maxs = origin + ( segmentSize * 0.5 )
 	if ( DEBUG_DEADLY_FOG )
 	{
 		DebugDrawBox( origin, mins - origin, maxs - origin, 255, 255, 0, 1, 60.0 )
 		DebugDrawSphere( origin, 25.0, 255, 200, 0, true, 60.0 )
 	}
 
-	while( true )
+	while ( true )
 	{
 		wait RandomFloatRange( 2.1, 2.6 )
 
@@ -542,7 +538,6 @@ void function TriggerDeathFall( entity trigger )
 	}
 }
 
-
 void function BirdAlertInit( entity ref )
 {
 	BirdAlertInfo info
@@ -559,7 +554,7 @@ void function BirdAlertInit( entity ref )
 void function BirdAlertStartTouch( entity trigger, entity ent, entity caller, var value )
 {
 	array<BirdAlertInfo> birdAlerts = GetBirdAlertInfoFromTrigger( trigger )
-	foreach( alert in birdAlerts )
+	foreach ( alert in birdAlerts )
 	{
 		float debounceTime = 6.0
 		if ( alert.lastUseTime + debounceTime > Time() )

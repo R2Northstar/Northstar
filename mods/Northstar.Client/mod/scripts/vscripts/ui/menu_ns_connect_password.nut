@@ -17,9 +17,9 @@ void function InitConnectWithPasswordMenu()
 {
 	file.menu = GetMenu( "ConnectWithPasswordMenu" )
 
-	file.enterPasswordBox = Hud_GetChild( file.menu, "EnterPasswordBox")
-	file.enterPasswordDummy = Hud_GetChild( file.menu, "EnterPasswordBoxDummy")
-	file.connectButton = Hud_GetChild( file.menu, "ConnectButton")
+	file.enterPasswordBox = Hud_GetChild( file.menu, "EnterPasswordBox" )
+	file.enterPasswordDummy = Hud_GetChild( file.menu, "EnterPasswordBoxDummy" )
+	file.connectButton = Hud_GetChild( file.menu, "ConnectButton" )
 
 	AddMenuEventHandler( file.menu, eUIEvent.MENU_OPEN, OnConnectWithPasswordMenuOpened )
 	AddMenuFooterOption( file.menu, BUTTON_B, "#B_BUTTON_BACK", "#BACK" )
@@ -34,7 +34,7 @@ void function InitConnectWithPasswordMenu()
 void function UpdatePasswordLabel( var n )
 {
 	string hiddenPSWD
-	for ( int i = 0; i < Hud_GetUTF8Text( file.enterPasswordBox ).len(); i++)
+	for ( int i = 0; i < Hud_GetUTF8Text( file.enterPasswordBox ).len(); i++ )
 		hiddenPSWD += "*"
 	Hud_SetText( file.enterPasswordDummy, hiddenPSWD )
 }
@@ -48,7 +48,6 @@ void function OnConnectWithPasswordMenuOpened()
 	Hud_SetText( file.enterPasswordBox, "" )
 	Hud_SetText( file.enterPasswordDummy, "" )
 	Hud_SetFocused( file.enterPasswordBox )
-
 }
 
 void function ConnectWithPassword( var button )

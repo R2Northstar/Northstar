@@ -3,9 +3,8 @@ global function InitTurretBatteryPort // only for fw turrets!
 
 void function InitTurretBatteryPort( entity batteryPort )
 {
-	
-	batteryPort.s.beingUsed <- false                // bool
-	batteryPort.s.hackAvaliable <- true            // bool, for controlling hacking avaliablity
+	batteryPort.s.beingUsed <- false // bool
+	batteryPort.s.hackAvaliable <- true // bool, for controlling hacking avaliablity
 
 	// SetUsableByGroup() updates is done in TurretStateWatcher()
 	batteryPort.SetUsableByGroup( "pilot" ) // show hind to any pilots
@@ -18,13 +17,13 @@ function OnUseTurretBatteryPort( entBeingUse, user )
 	expect entity( entBeingUse )
 	expect entity( user )
 
-	//print( "try to use batteryPort" )
+	// print( "try to use batteryPort" )
 	thread TryUseTurretBatteryPort( user, entBeingUse )
 }
 
 void function TryUseTurretBatteryPort( entity player, entity batteryPort )
 {
-	if( batteryPort.s.beingUsed ) // already being using
+	if ( batteryPort.s.beingUsed ) // already being using
 		return
 
 	player.EndSignal( "OnDeath" )
@@ -33,16 +32,15 @@ void function TryUseTurretBatteryPort( entity player, entity batteryPort )
 	AddButtonPressedPlayerInputCallback( player, IN_JUMP, ForceStopUseBatteryPort )
 
 	OnThreadEnd(
-		function():( player )
+		function() : ( player )
 		{
 			RemoveButtonPressedPlayerInputCallback( player, IN_JUMP, ForceStopUseBatteryPort )
 		}
 	)
 
-
 	var BatteryPortUsable = batteryPort.s.isUsable
 
-	if( expect bool( BatteryPortUsable( batteryPort, player ) ) )
+	if ( expect bool( BatteryPortUsable( batteryPort, player ) ) )
 	{
 		// friendly try to apply one, or enemy try to hack this turret
 		waitthread PlayerApplesBatteryPackToPort( player, batteryPort )
@@ -64,7 +62,7 @@ void function PlayerApplesBatteryPackToPort( entity player, entity batteryPort )
 
 	// these are from _rodeo_titan.gnut
 	entity battery = GetBatteryOnBack( player )
-	battery.Hide() //Hide it because the animation has a battery model already
+	battery.Hide() // Hide it because the animation has a battery model already
 	Battery_StopFX( battery )
 
 	entity tempBattery3p
@@ -99,11 +97,11 @@ void function PlayerApplesBatteryPackToPort( entity player, entity batteryPort )
 			{
 				// restore control
 				DeployAndEnableWeapons( player )
-				//ViewConeFree( player ) // no need to lock viewcone
+				// ViewConeFree( player ) // no need to lock viewcone
 
 				// clean up
 				ClearBatteryAnimTempProps( player )
-				PutEntityInSafeSpot( player, player, null, player.GetOrigin() + <0, 0, 32>, player.GetOrigin() )
+				PutEntityInSafeSpot( player, player, null, player.GetOrigin() + < 0, 0, 32 >, player.GetOrigin() )
 
 				CleanUpBatterySequenceForPlayer( player )
 				RestoreCloakAfterBatteryPortSequence( player, dataStruct )
@@ -114,12 +112,12 @@ void function PlayerApplesBatteryPackToPort( entity player, entity batteryPort )
 	FirstPersonSequenceStruct sequence
 	sequence.attachment = "REF" // only ref the batteryPort has
 
-	sequence.thirdPersonAnim = "pt_mp_battery_port_insert" //"pt_rodeo_ride_r_return_battery"
-	sequence.firstPersonAnim = "ptpov_mp_battery_port_insert" //"ptpov_rodeo_ride_r_return_battery"
+	sequence.thirdPersonAnim = "pt_mp_battery_port_insert" // "pt_rodeo_ride_r_return_battery"
+	sequence.firstPersonAnim = "ptpov_mp_battery_port_insert" // "ptpov_rodeo_ride_r_return_battery"
 
 	// player stats
 	HolsterAndDisableWeapons( player )
-	//ViewConeZero( player ) // no need to lock viewcone
+	// ViewConeZero( player ) // no need to lock viewcone
 
 	batteryPort.Anim_Play( "bp_mp_battery_port_insert" )
 
@@ -151,7 +149,6 @@ void function ApplyBatteryToBatteryPort( entity player, entity batteryPort )
 
 	// disable hacking
 	batteryPort.s.hackAvaliable = false // can't be hacked again until completely killed
-
 
 	var useBatteryPort = batteryPort.s.useBattery
 	useBatteryPort( batteryPort, player )
@@ -185,14 +182,14 @@ bool function RestoreCloakAfterBatteryPortSequence( entity player, BatteryPortSe
 	if ( !IsAlive( player ) )
 		return false
 
-	if ( !dataStruct.wasCloaked  )
+	if ( !dataStruct.wasCloaked )
 		return false
 
 	if ( dataStruct.cloakEndTime <= 0.0 )
 		return false
 
 	float remainingCloakDuration = max( 0.0, dataStruct.cloakEndTime - Time() )
-	if ( remainingCloakDuration <= CLOAK_FADE_IN ) //Has to be greater than 1.0 fade in duration, otherwise will cloak forever
+	if ( remainingCloakDuration <= CLOAK_FADE_IN ) // Has to be greater than 1.0 fade in duration, otherwise will cloak forever
 		return false
 
 	EnableCloak( player, remainingCloakDuration, CLOAK_FADE_IN )
@@ -209,7 +206,7 @@ void function CleanUpBatterySequenceForPlayer( entity player )
 
 void function ClearBatteryAnimTempProps( entity player )
 {
-	foreach( tempProp in player.p.rodeoAnimTempProps )
+	foreach ( tempProp in player.p.rodeoAnimTempProps )
 	{
 		if ( IsValid( tempProp ) )
 			tempProp.Destroy()

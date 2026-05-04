@@ -2,7 +2,7 @@ untyped
 
 global function LoadoutCrate_Init
 
-const LOADOUT_CRATE_MODEL				= $"models/containers/pelican_case_ammobox.mdl"
+const LOADOUT_CRATE_MODEL = $"models/containers/pelican_case_ammobox.mdl"
 global function AddLoadoutCrate
 global function DestroyAllLoadoutCrates
 
@@ -55,7 +55,7 @@ function AddLoadoutCrate( team, vector origin, vector angles, bool showOnMinimap
 
 	AddToScriptManagedEntArray( level.loadoutCrateManagedEntArrayID, crate )
 
-	//thread LoadoutCrateMarkerThink( "LoadoutCrateMarker" + string( crateCount ), crate )
+	// thread LoadoutCrateMarkerThink( "LoadoutCrateMarker" + string( crateCount ), crate )
 	thread LoadoutCrateThink( crate )
 	thread LoadoutCrateRestockAmmoThink( crate )
 
@@ -113,7 +113,7 @@ function LoadoutCrateThink( crate )
 		if ( player.IsPlayer() )
 		{
 			thread UsingLoadoutCrate( crate, player )
-			wait 1	// debounce on using the crate to minimize the risk of using it twice before the menu opens.
+			wait 1 // debounce on using the crate to minimize the risk of using it twice before the menu opens.
 		}
 	}
 }
@@ -130,7 +130,7 @@ function LoadoutCrateRestockAmmoThink( crate )
 	{
 		wait 1 // check every second
 		array<entity> playerArray = GetPlayerArray_Alive()
-		foreach( player in playerArray )
+		foreach ( player in playerArray )
 		{
 			if ( player.IsTitan() )
 				continue
@@ -145,7 +145,7 @@ function LoadoutCrateRestockAmmoThink( crate )
 				{
 					player.s.restockAmmoCrate = crate
 					player.s.restockAmmoTime = Time() + 10 // debounce time before you can get new ammo again if you stay next to the crate.
-					//MessageToPlayer( player, eEventNotifications.CoopAmmoRefilled, null, null )
+					// MessageToPlayer( player, eEventNotifications.CoopAmmoRefilled, null, null )
 					RestockPlayerAmmo( player )
 				}
 			}
@@ -173,11 +173,10 @@ function UsingLoadoutCrate( crate, player )
 function DestroyAllLoadoutCrates()
 {
 	local crateArray = GetScriptManagedEntArray( level.loadoutCrateManagedEntArrayID )
-	foreach( crate in crateArray )
+	foreach ( crate in crateArray )
 		crate.Destroy()
-
-	//dissolve didn't work
-	//Dissolve( ENTITY_DISSOLVE_CHAR, Vector( 0, 0, 0 ), 0 )
-	//ENTITY_DISSOLVE_CORE
-	//ENTITY_DISSOLVE_NORMAL
+	// dissolve didn't work
+	// Dissolve( ENTITY_DISSOLVE_CHAR, Vector( 0, 0, 0 ), 0 )
+	// ENTITY_DISSOLVE_CORE
+	// ENTITY_DISSOLVE_NORMAL
 }

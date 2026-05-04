@@ -20,10 +20,10 @@ void function CreateGamemodeFastball()
 	GameMode_AddScoreboardColumnData( GAMEMODE_FASTBALL, "#SCOREBOARD_FASTBALL_HACKS", PGS_ASSAULT_SCORE, 2 )
 	GameMode_AddScoreboardColumnData( GAMEMODE_FASTBALL, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 )
 	GameMode_AddScoreboardColumnData( GAMEMODE_FASTBALL, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
-	GameMode_SetColor( GAMEMODE_FASTBALL, [147, 204, 57, 255] )
-	
+	GameMode_SetColor( GAMEMODE_FASTBALL, [ 147, 204, 57, 255 ] )
+
 	AddPrivateMatchMode( GAMEMODE_FASTBALL ) // add to private lobby modes
-	
+
 	#if SERVER
 		GameMode_AddServerInit( GAMEMODE_FASTBALL, GamemodeFastball_Init )
 		GameMode_SetPilotSpawnpointsRatingFunc( GAMEMODE_FASTBALL, RateSpawnpoints_Generic )
@@ -40,7 +40,7 @@ void function FastballRegisterNetworkVars()
 {
 	if ( GAMETYPE != GAMEMODE_FASTBALL )
 		return
-	
+
 	Remote_RegisterFunction( "ServerCallback_FastballUpdatePanelRui" )
 	Remote_RegisterFunction( "ServerCallback_FastballPanelHacked" )
 	Remote_RegisterFunction( "ServerCallback_FastballRespawnPlayer" )

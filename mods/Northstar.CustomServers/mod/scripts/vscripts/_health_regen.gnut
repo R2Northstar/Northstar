@@ -1,4 +1,3 @@
-
 global function HealthRegen_Init
 
 global function PilotHealthRegenThinkSP
@@ -29,7 +28,7 @@ void function PilotHealthRegenThinkSP( entity player )
 
 	while ( IsValid( player ) )
 	{
-		wait( HEALTH_REGEN_TICK_TIME )
+		wait ( HEALTH_REGEN_TICK_TIME )
 
 		if ( !IsAlive( player ) )
 			continue
@@ -40,7 +39,7 @@ void function PilotHealthRegenThinkSP( entity player )
 		if ( shGlobal.proto_pilotHealthRegenDisabled )
 			continue
 
-		//Assert( IsTestMap() || player.GetPlayerSettings() == DEFAULT_PILOT_SETTINGS, "for now, we should all be pilot_solo at all times, or in a test map." )
+		// Assert( IsTestMap() || player.GetPlayerSettings() == DEFAULT_PILOT_SETTINGS, "for now, we should all be pilot_solo at all times, or in a test map." )
 
 		if ( player.GetHealth() == player.GetMaxHealth() )
 			continue
@@ -48,7 +47,7 @@ void function PilotHealthRegenThinkSP( entity player )
 		float healthRegenRate = 4.0
 		float healthRegenStartDelay = GraphCapped( player.GetHealth(), 0, player.GetMaxHealth(), 3.0, 0.8 )
 
-		//printt( "recentDamage " + recentDamage + " delay " + healthRegenStartDelay + " rate " + healthRegenRate )
+		// printt( "recentDamage " + recentDamage + " delay " + healthRegenStartDelay + " rate " + healthRegenRate )
 
 		if ( Time() - player.p.lastDamageTime < healthRegenStartDelay )
 		{
@@ -70,14 +69,14 @@ void function PilotHealthRegenThinkMP( entity player )
 	player.Signal( "PilotHealthRegenThink" )
 	player.EndSignal( "PilotHealthRegenThink" )
 
-	//float healthRegenStartDelay = player.GetPlayerSettingsField( "powerRegenRateOp" ) // seconds after we take damager to start regen
-	float healthRegenStartDelay = 5.0 //Needs to use GetPlayerSettingsField() instead of hard coding, waiting on Bug 129567
+	// float healthRegenStartDelay = player.GetPlayerSettingsField( "powerRegenRateOp" ) // seconds after we take damager to start regen
+	float healthRegenStartDelay = 5.0 // Needs to use GetPlayerSettingsField() instead of hard coding, waiting on Bug 129567
 	if ( PlayerHasPassive( player, ePassives.PAS_FAST_HEALTH_REGEN ) )
 		healthRegenStartDelay = 2.5
 
 	while ( IsValid( player ) )
 	{
-		wait( HEALTH_REGEN_TICK_TIME )
+		wait ( HEALTH_REGEN_TICK_TIME )
 
 		if ( !IsAlive( player ) )
 			continue
@@ -88,7 +87,7 @@ void function PilotHealthRegenThinkMP( entity player )
 		if ( shGlobal.proto_pilotHealthRegenDisabled )
 			continue
 
-		float healthRegenRate = file.healthRegenRate 	// health regen per tick
+		float healthRegenRate = file.healthRegenRate // health regen per tick
 
 		if ( player.GetHealth() == player.GetMaxHealth() )
 			continue

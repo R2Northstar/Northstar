@@ -66,15 +66,15 @@ void function InitMainMenuPanel()
 	var campaignHeader = AddComboButtonHeader( comboStruct, headerIndex, "#GAMEMODE_SOLO" )
 	file.spButtons.append( AddComboButton( comboStruct, headerIndex, buttonIndex, "" ) )
 	file.spButtonFuncs.append( DoNothing() )
-	Hud_AddEventHandler( file.spButtons[buttonIndex], UIE_CLICK, RunSPButton0 )
+	Hud_AddEventHandler( file.spButtons[ buttonIndex ], UIE_CLICK, RunSPButton0 )
 	buttonIndex++
 	file.spButtons.append( AddComboButton( comboStruct, headerIndex, buttonIndex, "" ) )
 	file.spButtonFuncs.append( DoNothing() )
-	Hud_AddEventHandler( file.spButtons[buttonIndex], UIE_CLICK, RunSPButton1 )
+	Hud_AddEventHandler( file.spButtons[ buttonIndex ], UIE_CLICK, RunSPButton1 )
 	buttonIndex++
 	file.spButtons.append( AddComboButton( comboStruct, headerIndex, buttonIndex, "" ) )
 	file.spButtonFuncs.append( DoNothing() )
-	Hud_AddEventHandler( file.spButtons[buttonIndex], UIE_CLICK, RunSPButton2 )
+	Hud_AddEventHandler( file.spButtons[ buttonIndex ], UIE_CLICK, RunSPButton2 )
 	buttonIndex++
 	UpdateSPButtons()
 
@@ -88,8 +88,8 @@ void function InitMainMenuPanel()
 		Hud_AddEventHandler( file.fdButton, UIE_CLICK, OnPlayFDButton_Activate )
 	#else
 		// "Launch Multiplayer" button removed because we don't support vanilla yet :clueless:
-		//file.mpButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MULTIPLAYER_LAUNCH" )
-		//Hud_AddEventHandler( file.mpButton, UIE_CLICK, OnPlayMPButton_Activate )
+		// file.mpButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MULTIPLAYER_LAUNCH" )
+		// Hud_AddEventHandler( file.mpButton, UIE_CLICK, OnPlayMPButton_Activate )
 		file.fdButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MENU_LAUNCH_NORTHSTAR" )
 		Hud_AddEventHandler( file.fdButton, UIE_CLICK, OnPlayNSButton_Activate )
 		Hud_SetLocked( file.fdButton, true )
@@ -109,16 +109,16 @@ void function InitMainMenuPanel()
 		var videoButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#VIDEO" )
 		Hud_AddEventHandler( videoButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "VideoMenu" ) ) )
 	#endif
-	
+
 	// MOD SETTINGS
 	var modSettingsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#MOD_SETTINGS" )
 	Hud_AddEventHandler( modSettingsButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ModSettings" ) ) )
 
 	var spotlightLargeButton = Hud_GetChild( file.spotlightPanel, "SpotlightLarge" )
-	spotlightLargeButton.SetNavLeft( file.spButtons[0] )
+	spotlightLargeButton.SetNavLeft( file.spButtons[ 0 ] )
 
 	var spotlightSmall0Button = Hud_GetChild( file.spotlightPanel, "SpotlightSmall0" )
-	spotlightSmall0Button.SetNavLeft( file.spButtons[0] )
+	spotlightSmall0Button.SetNavLeft( file.spButtons[ 0 ] )
 
 	file.buttonData = []
 
@@ -129,7 +129,7 @@ void function InitMainMenuPanel()
 	if ( file.buttonData.len() )
 	{
 		comboStruct.navUpButton = file.menuButtons[ expect int( file.buttonData.len() ) - 1 ]
-		comboStruct.navDownButton = file.menuButtons[0]
+		comboStruct.navDownButton = file.menuButtons[ 0 ]
 
 		foreach ( button in file.menuButtons )
 			button.SetNavRight( spotlightLargeButton )
@@ -139,9 +139,9 @@ void function InitMainMenuPanel()
 
 	ComboButtons_Finalize( comboStruct )
 
-	//AddPanelFooterOption( file.panel, BUTTON_A, "#A_BUTTON_SELECT" )
-	//AddPanelFooterOption( file.panel, BUTTON_B, "#B_BUTTON_CLOSE", "#CLOSE" )
-	//AddPanelFooterOption( file.panel, BUTTON_BACK, "", "", ClosePostGameMenu )
+	// AddPanelFooterOption( file.panel, BUTTON_A, "#A_BUTTON_SELECT" )
+	// AddPanelFooterOption( file.panel, BUTTON_B, "#B_BUTTON_CLOSE", "#CLOSE" )
+	// AddPanelFooterOption( file.panel, BUTTON_BACK, "", "", ClosePostGameMenu )
 
 	thread TrackInstallProgress()
 	thread UpdateCustomMainMenuPromos()
@@ -158,12 +158,12 @@ void function OnShowMainMenuPanel()
 
 		if ( buttonID < file.buttonData.len() )
 		{
-			if ( "updateFunc" in file.buttonData[buttonID] )
-				file.buttonData[buttonID].updateFunc.call( this, button )
+			if ( "updateFunc" in file.buttonData[ buttonID ] )
+				file.buttonData[ buttonID ].updateFunc.call( this, button )
 			else
 				Hud_SetEnabled( button, true )
 
-			RuiSetString( Hud_GetRui( button ), "buttonText", file.buttonData[buttonID].name )
+			RuiSetString( Hud_GetRui( button ), "buttonText", file.buttonData[ buttonID ].name )
 			Hud_Show( button )
 		}
 		else
@@ -178,9 +178,9 @@ void function OnShowMainMenuPanel()
 
 	UpdateSPButtons()
 	#if VANILLA
-	thread UpdatePlayButton( file.mpButton )
+		thread UpdatePlayButton( file.mpButton )
 	#else
-	thread UpdatePlayButton( file.fdButton )
+		thread UpdatePlayButton( file.fdButton )
 	#endif
 	thread MonitorTrialVersionChange()
 
@@ -191,7 +191,6 @@ void function OnShowMainMenuPanel()
 
 	ExecCurrentGamepadButtonConfig()
 	ExecCurrentGamepadStickConfig()
-
 
 	string defaultButtonRowFocus = "ButtonRow0x0"
 	bool shouldFocusMultiplayer = GetMenuWasMultiplayerPlayedLast()
@@ -298,7 +297,6 @@ void function UpdatePlayButton( var button )
 			else
 				file.mpButtonActivateFunc = LaunchMP
 
-
 			isLocked = file.mpButtonActivateFunc == null ? true : false
 			Hud_SetLocked( button, isLocked )
 
@@ -358,7 +356,7 @@ void function UpdatePlayButton( var button )
 			}
 			else if ( !isFullyInstalled )
 			{
-				//message = "#INSTALL_IN_PROGRESS"
+				// message = "#INSTALL_IN_PROGRESS"
 				file.mpButtonActivateFunc = null
 			}
 			else if ( !isOverAge )
@@ -373,11 +371,10 @@ void function UpdatePlayButton( var button )
 			}
 			else if ( !hasPlus )
 			{
-				//buttonText = "#PS4_GET_PLAYSTATION_PLUS"
-				//message = "#PSN_MUST_BE_PLUS_USER"
-				//file.mpButtonActivateFunc = PS4_PlusSignUp
+				// buttonText = "#PS4_GET_PLAYSTATION_PLUS"
+				// message = "#PSN_MUST_BE_PLUS_USER"
+				// file.mpButtonActivateFunc = PS4_PlusSignUp
 				// Their is a race on this. The function may not be completed.
-
 
 				// The LaunchMP handles this race and will retry/ issue an error dialog if needed.
 				file.mpButtonActivateFunc = LaunchMP
@@ -498,10 +495,10 @@ void function UpdatePlayButton( var button )
 			}
 		#else
 			// dont try and update the launch multiplayer button, because it doesn't exist
-			//ComboButton_SetText( file.mpButton, buttonText )
+			// ComboButton_SetText( file.mpButton, buttonText )
 
 			ComboButton_SetText( file.fdButton, "#MENU_LAUNCH_NORTHSTAR" )
-			//Hud_SetEnabled( file.fdButton, false )
+			// Hud_SetEnabled( file.fdButton, false )
 		#endif
 
 		if ( file.installing )
@@ -515,7 +512,7 @@ void function UpdatePlayButton( var button )
 		RuiSetBool( file.serviceStatus, "isVisible", isMessageVisible )
 
 		WaitFrame()
-		//wait 2
+		// wait 2
 	}
 }
 
@@ -547,8 +544,8 @@ void function MainMenuButton_Activate( var button )
 
 	Assert( file.buttonData )
 
-	if ( file.buttonData[buttonID].activateFunc )
-		file.buttonData[buttonID].activateFunc.call( this )
+	if ( file.buttonData[ buttonID ].activateFunc )
+		file.buttonData[ buttonID ].activateFunc.call( this )
 }
 
 void function TryUnlockNorthstarButton()
@@ -604,7 +601,7 @@ void function TryAuthWithLocalServer()
 
 	while ( NSIsAuthenticatingWithServer() )
 	{
-		if( file.stopNSLocalAuth )
+		if ( file.stopNSLocalAuth )
 		{
 			file.stopNSLocalAuth = false
 			return
@@ -623,7 +620,7 @@ void function TryAuthWithLocalServer()
 		ClientCommand( "setplaylist tdm" )
 		ClientCommand( "map mp_lobby" )
 	}
-	else 
+	else
 	{
 		CloseAllDialogs()
 
@@ -666,24 +663,24 @@ void function UICodeCallback_GetOnPartyServer()
 }
 
 #if PC_PROG
-void function OnQuitButton_Activate()
-{
-	DialogData dialogData
-	dialogData.header = "#MENU_QUIT_GAME_CONFIRM"
+	void function OnQuitButton_Activate()
+	{
+		DialogData dialogData
+		dialogData.header = "#MENU_QUIT_GAME_CONFIRM"
 
-	AddDialogButton( dialogData, "#CANCEL" )
-	AddDialogButton( dialogData, "#QUIT", Quit )
+		AddDialogButton( dialogData, "#CANCEL" )
+		AddDialogButton( dialogData, "#QUIT", Quit )
 
-	AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
-	AddDialogFooter( dialogData, "#B_BUTTON_CANCEL" )
+		AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
+		AddDialogFooter( dialogData, "#B_BUTTON_CANCEL" )
 
-	OpenDialog( dialogData )
-}
+		OpenDialog( dialogData )
+	}
 
-void function Quit()
-{
-	ClientCommand( "quit" )
-}
+	void function Quit()
+	{
+		ClientCommand( "quit" )
+	}
 #endif // #if PC_PROG
 
 void function MonitorTrialVersionChange()
@@ -706,7 +703,7 @@ void function MonitorTrialVersionChange()
 
 void function UpdateSPButtons()
 {
-	foreach( button in file.spButtons )
+	foreach ( button in file.spButtons )
 	{
 		ComboButton_SetText( button, "" )
 		Hud_SetEnabled( button, false )
@@ -782,24 +779,24 @@ void function RunSPButton2( var button )
 void function ActivateControlsMenu( var button )
 {
 	#if CONSOLE_PROG
-	if ( GetEULAVersionAccepted() < 1 ) // Treat as binary for now, as discussed with Preston.
-	{
-		if ( uiGlobal.activeMenu == GetMenu( "EULADialog" ) )
+		if ( GetEULAVersionAccepted() < 1 ) // Treat as binary for now, as discussed with Preston.
+		{
+			if ( uiGlobal.activeMenu == GetMenu( "EULADialog" ) )
+				return
+
+			if ( IsDialog( uiGlobal.activeMenu ) )
+				CloseActiveMenu( true )
+
+			uiGlobal.consoleSettingMenu = eConsoleSettingsMenu.CONTROLS_MENU
+
+			EULA_Dialog()
 			return
-
-		if ( IsDialog( uiGlobal.activeMenu ) )
-			CloseActiveMenu( true )
-
-		uiGlobal.consoleSettingMenu = eConsoleSettingsMenu.CONTROLS_MENU
-
-		EULA_Dialog()
-		return
-	}
-	else
-	{
-		AdvanceMenu( GetMenu( "ControlsMenu" ) )
-		return
-	}
+		}
+		else
+		{
+			AdvanceMenu( GetMenu( "ControlsMenu" ) )
+			return
+		}
 	#endif
 
 	#if PC_PROG
@@ -807,7 +804,7 @@ void function ActivateControlsMenu( var button )
 	#endif
 }
 
-void function ActivateAudioVisualMenu( var button ) //This is only run on console
+void function ActivateAudioVisualMenu( var button ) // This is only run on console
 {
 	if ( GetEULAVersionAccepted() < 1 ) // Treat as binary for now, as discussed with Preston.
 	{
@@ -860,15 +857,15 @@ bool function IsStryderAllowingMP()
 }
 
 #if PS4_PROG
-bool function HasLatestPatch()
-{
-	int status = PS4_getUserNetworkingErrorStatus()
+	bool function HasLatestPatch()
+	{
+		int status = PS4_getUserNetworkingErrorStatus()
 
-	if ( status == -2141913073 ) // SCE_NP_ERROR_LATEST_PATCH_PKG_EXIST
-		return false
+		if ( status == -2141913073 ) // SCE_NP_ERROR_LATEST_PATCH_PKG_EXIST
+			return false
 
-	return true
-}
+		return true
+	}
 #endif // PS4_PROG
 
 // custom mainmenupromos stuff
@@ -923,13 +920,19 @@ void function UpdateCustomMainMenuPromosThreaded()
 void function UpdateWhatsNewData()
 {
 	// file.promoData.newInfo_ImageIndex
-	//RuiSetString( file.whatsNew, "line1Text", "`2%$rui/menu/main_menu/whats_new_bulletpoint%`0 Updated Live Fire Maps!\n`2%$rui/menu/main_menu/whats_new_bulletpoint%`0 Prime Titans`0 in the Store\n`2%$rui/menu/main_menu/whats_new_bulletpoint% DOUBLE XP`0 weekend!" )//file.promoData.newInfo_Title1 )
+	// RuiSetString( file.whatsNew, "line1Text", "`2%$rui/menu/main_menu/whats_new_bulletpoint%`0 Updated Live Fire
+	// Maps!\n`2%$rui/menu/main_menu/whats_new_bulletpoint%`0 Prime Titans`0 in the
+	// Store\n`2%$rui/menu/main_menu/whats_new_bulletpoint% DOUBLE XP`0 weekend!" )//file.promoData.newInfo_Title1 )
 	RuiSetString( file.whatsNew, "line1Text", expect string( NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.newInfoTitle1 ) ) )
 	RuiSetString( file.whatsNew, "line2Text", expect string( NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.newInfoTitle2 ) ) )
 	RuiSetString( file.whatsNew, "line3Text", expect string( NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.newInfoTitle3 ) ) )
 
 	bool isVisible = true
-	if ( NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.newInfoTitle1 ) == "" && NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.newInfoTitle2 ) == "" && NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.newInfoTitle3 ) == "" )
+	if (
+		NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.newInfoTitle1 ) == "" &&
+		NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.newInfoTitle2 ) == "" &&
+		NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.newInfoTitle3 ) == ""
+	)
 		isVisible = false
 
 	RuiSetBool( file.whatsNew, "isVisible", isVisible )
@@ -937,9 +940,25 @@ void function UpdateWhatsNewData()
 
 void function UpdateSpotlightData()
 {
-	SetSpotlightButtonData( file.spotlightButtons[0], expect string( NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.largeButtonUrl ) ), expect int( NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.largeButtonImageIndex ) ), expect string( NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.largeButtonTitle ) ), expect string( NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.largeButtonText ) ) )
-	SetSpotlightButtonData( file.spotlightButtons[1], expect string( NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.smallButton1Url ) ), expect int( NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.smallButton1ImageIndex ) ), expect string( NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.smallButton1Title ) ) )
-	SetSpotlightButtonData( file.spotlightButtons[2], expect string( NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.smallButton2Url ) ), expect int( NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.smallButton2ImageIndex ) ), expect string( NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.smallButton2Title ) ) )
+	SetSpotlightButtonData(
+		file.spotlightButtons[ 0 ],
+		expect string( NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.largeButtonUrl ) ),
+		expect int( NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.largeButtonImageIndex ) ),
+		expect string( NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.largeButtonTitle ) ),
+		expect string( NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.largeButtonText ) )
+	)
+	SetSpotlightButtonData(
+		file.spotlightButtons[ 1 ],
+		expect string( NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.smallButton1Url ) ),
+		expect int( NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.smallButton1ImageIndex ) ),
+		expect string( NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.smallButton1Title ) )
+	)
+	SetSpotlightButtonData(
+		file.spotlightButtons[ 2 ],
+		expect string( NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.smallButton2Url ) ),
+		expect int( NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.smallButton2ImageIndex ) ),
+		expect string( NSGetCustomMainMenuPromoData( eMainMenuPromoDataProperty.smallButton2Title ) )
+	)
 }
 
 void function SetSpotlightButtonData( var button, string link, int imageIndex, string title, string details = "skip" )
@@ -972,18 +991,17 @@ void function SpotlightButton_Activate( var button )
 
 		switch ( link )
 		{
-			//case "menu:new":
-			//	menu = GetMenu( "StoreMenu_NewReleases" )
-			//	break
+			// case "menu:new":
+			// 	menu = GetMenu( "StoreMenu_NewReleases" )
+			// 	break
 
 			case "menu:new":
 			case "menu:weaponskins":
 				menu = GetMenu( "StoreMenu_WeaponSkins" )
 				break
-
-			//case "menu:limited":
-			//	menu = GetMenu( "StoreMenu_Limited" )
-			//	break
+				// case "menu:limited":
+				// 	menu = GetMenu( "StoreMenu_Limited" )
+				// 	break
 
 			case "menu:sales":
 				menu = GetMenu( "StoreMenu_Sales" )

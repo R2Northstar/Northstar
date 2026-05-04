@@ -29,12 +29,12 @@ void function EntitiesDidLoad()
 var function AddInWorldMinimapTopo( entity ent, float width, float height )
 {
 	vector ang = ent.GetAngles()
-	vector right = ( (AnglesToRight( ang )*-1) * width * 0.5 )
-	vector down = ( (AnglesToUp( ang )*-1) * height * 0.5 )
+	vector right = ( ( AnglesToRight( ang ) * -1 ) * width * 0.5 )
+	vector down = ( ( AnglesToUp( ang ) * -1 ) * height * 0.5 )
 
 	vector org = ent.GetOrigin()
 
-	org = ent.GetOrigin() - right*0.5 - down*0.5
+	org = ent.GetOrigin() - right * 0.5 - down * 0.5
 
 	var topo = RuiTopology_CreatePlane( org, right, down, true )
 	return topo
@@ -73,7 +73,7 @@ void function InitMinimapScreens()
 	{
 		var rui = RuiCreate( $"ui/in_world_minimap_base.rpak", screen, RUI_DRAW_WORLD, 0 )
 		RuiSetImage( rui, "mapImage", $"overviews/mp_glitch_wallmap" )
-		RuiSetFloat3( rui, "mapCorner", <file.mapCornerX, file.mapCornerY, 0> )
+		RuiSetFloat3( rui, "mapCorner", < file.mapCornerX, file.mapCornerY, 0 > )
 		RuiSetFloat( rui, "displayDist", max( file.threatMaxDist, 2200 ) )
 		RuiSetFloat( rui, "mapScale", file.mapScale )
 		file.screens.append( rui )
@@ -86,7 +86,7 @@ void function InitMinimapScreens()
 	}
 }
 
-void function AddInWorldMinimapObject( entity ent ) //TODO: If we want radar jammer boost to hide friendly players we need to be able to get the rui handles back.
+void function AddInWorldMinimapObject( entity ent ) // TODO: If we want radar jammer boost to hide friendly players we need to be able to get the rui handles back.
 {
 	Assert( IsValid( ent ) )
 
@@ -116,9 +116,9 @@ void function AddInWorldMinimapObjectInternal( entity ent, var screen )
 
 	var rui = RuiCreate( minimapAsset, screen, RUI_DRAW_WORLD, MINIMAP_Z_BASE + zOrder )
 
-	//RuiTrackGameTime( rui, "lastFireTime", ent, RUI_TRACK_LAST_FIRED_TIME )
+	// RuiTrackGameTime( rui, "lastFireTime", ent, RUI_TRACK_LAST_FIRED_TIME )
 
-	RuiSetFloat3( rui, "mapCorner", <file.mapCornerX,file.mapCornerY,0.0> )
+	RuiSetFloat3( rui, "mapCorner", < file.mapCornerX, file.mapCornerY, 0.0 > )
 	RuiSetFloat( rui, "mapScale", file.mapScale )
 
 	RuiTrackFloat3( rui, "objectPos", ent, RUI_TRACK_ABSORIGIN_FOLLOW )
@@ -163,7 +163,7 @@ void function AddInWorldMinimapObjectInternal( entity ent, var screen )
 void function MinimapPackage_PlayerInit( entity ent, var rui )
 {
 	RuiTrackGameTime( rui, "lastFireTime", ent, RUI_TRACK_LAST_FIRED_TIME )
-	if ( !IsFFAGame() ) //JFS: Too much work to get FFA to work correctly with Minimap logic, so disabling it for FFA
+	if ( !IsFFAGame() ) // JFS: Too much work to get FFA to work correctly with Minimap logic, so disabling it for FFA
 	{
 		RuiTrackFloat( rui, "sonarDetectedFrac", ent, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.sonar_detected )
 		RuiTrackFloat( rui, "maphackDetectedFrac", ent, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.maphack_detected )

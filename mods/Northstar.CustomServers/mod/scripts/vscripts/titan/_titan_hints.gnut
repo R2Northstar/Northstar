@@ -15,9 +15,9 @@ struct
 	float lastTookDamageTime = -99
 	float lastShowHintTime = -99
 	float lastDodgeTime = -99
-	table<int,float> titanHintThresholds
-	table<int,float> titanHintThresholdAdd
-	table<int,float> lastShowHintTimes
+	table<int, float> titanHintThresholds
+	table<int, float> titanHintThresholdAdd
+	table<int, float> lastShowHintTimes
 } file
 
 void function TitanHints_Init()
@@ -59,7 +59,7 @@ void function TitanHint_Player_OnDamaged( entity player, var damageInfo )
 		return
 
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
-	if ( !attacker.IsTitan() && !IsSuperSpectre(attacker) )
+	if ( !attacker.IsTitan() && !IsSuperSpectre( attacker ) )
 		return
 
 	if ( attacker.GetTeam() == player.GetTeam() )
@@ -121,10 +121,7 @@ void function TitanHints_NotifyUsedOffhand( int index )
 
 bool function TrySetFightTime()
 {
-	if (
-		Time() - file.lastTookDamageTime > FIGHT_START_THRESHOLD &&
-		Time() - file.lastDidDamageTime > FIGHT_START_THRESHOLD
-		 )
+	if ( Time() - file.lastTookDamageTime > FIGHT_START_THRESHOLD && Time() - file.lastDidDamageTime > FIGHT_START_THRESHOLD )
 	{
 		file.titanFightStartTime = Time()
 		return true
@@ -147,14 +144,14 @@ void function TitanHints_TryShowHint( entity player, array<int> indexes, entity 
 
 	foreach ( idx in indexes )
 	{
-		float threshold = file.titanHintThresholds[idx] + file.titanHintThresholdAdd[idx]
+		float threshold = file.titanHintThresholds[ idx ] + file.titanHintThresholdAdd[ idx ]
 
 		// have we been fighting for a while?
 		if ( fightDuration < max( threshold, TITAN_HINT_COOLDOWN ) )
 			continue
 
 		// have we already shown this hint?
-		if ( Time() - file.lastShowHintTimes[idx] < max( threshold, TITAN_HINT_COOLDOWN ) )
+		if ( Time() - file.lastShowHintTimes[ idx ] < max( threshold, TITAN_HINT_COOLDOWN ) )
 			continue
 
 		// have we already shown a hint?
@@ -164,7 +161,7 @@ void function TitanHints_TryShowHint( entity player, array<int> indexes, entity 
 		if ( idx != TITAN_HINT_DASH )
 		{
 			// when did you last use this ability?
-			if ( Time() - player.p.lastTitanOffhandUseTime[idx] < threshold )
+			if ( Time() - player.p.lastTitanOffhandUseTime[ idx ] < threshold )
 				continue
 
 			entity weapon = player.GetOffhandWeapon( idx )
@@ -188,7 +185,6 @@ void function TitanHints_TryShowHint( entity player, array<int> indexes, entity 
 				}
 			}
 
-
 			int curEnergyCost = weapon.GetWeaponCurrentEnergyCost()
 			if ( !player.CanUseSharedEnergy( curEnergyCost ) )
 				continue
@@ -205,7 +201,7 @@ void function TitanHints_TryShowHint( entity player, array<int> indexes, entity 
 			// special core check
 			if ( idx == OFFHAND_EQUIPMENT )
 			{
-				if( !CheckCoreAvailable( weapon ) )
+				if ( !CheckCoreAvailable( weapon ) )
 					continue
 				if ( IsConversationPlaying() )
 					continue
@@ -237,13 +233,11 @@ void function TitanHints_TryShowHint( entity player, array<int> indexes, entity 
 					}
 				}
 			}
-
 		}
 		else
 		{
 			if ( Time() - file.lastDodgeTime < threshold )
 				continue
-
 			// should check if dodge is available here, but we can't seem to do that
 		}
 
@@ -256,7 +250,7 @@ void function TitanHints_TryShowHint( entity player, array<int> indexes, entity 
 void function TitanHints_ShowHint( entity player, int idx )
 {
 	Remote_CallFunction_Replay( player, "ServerCallback_ShowOffhandWeaponHint", idx )
-	file.lastShowHintTimes[idx] = Time()
+	file.lastShowHintTimes[ idx ] = Time()
 	file.lastShowHintTime = Time()
 }
 

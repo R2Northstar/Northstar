@@ -2,7 +2,8 @@ untyped
 global function GamemodeFastball_Init
 global function FastballAddPanelSpawnsForLevel
 
-struct {
+struct
+{
 	// first panel is a, second is b, third is c
 	array<Point> panelSpawns
 } file
@@ -12,10 +13,10 @@ void function GamemodeFastball_Init()
 	// used for intro
 	PrecacheModel( $"models/titans/buddy/titan_buddy.mdl" )
 	PrecacheParticleSystem( $"P_BT_eye_SM" )
-	
+
 	// used for respawn
 	PrecacheParticleSystem( $"P_pod_screen_lasers_OUT" )
-	
+
 	SetShouldUseRoundWinningKillReplay( true )
 	SetRoundBased( true )
 	SetSwitchSidesBased( true )
@@ -23,155 +24,153 @@ void function GamemodeFastball_Init()
 	Riff_ForceTitanAvailability( eTitanAvailability.Never )
 	Riff_ForceSetEliminationMode( eEliminationMode.Pilots )
 	ScoreEvent_SetupEarnMeterValuesForMixedModes()
-	
-	// implementing intro in a different file because it'll likely be big 
+
+	// implementing intro in a different file because it'll likely be big
 	ClassicMP_SetCustomIntro( GamemodeFastballIntroSetup, 14.5 ) // bit of a guess number
 	ClassicMP_ForceDisableEpilogue( true )
 	AddCallback_EntitiesDidLoad( SpawnPanelsForLevel )
 	AddCallback_GameStateEnter( eGameState.Prematch, ResetPanels )
 	SetTimeoutWinnerDecisionFunc( FastballDecideWinner )
-	
+
 	AddCallback_OnClientConnected( FastballInitPlayer )
-	
+
 	// setup spawns
 	// first is a, second is b, third is c
-	
+
 	FastballAddBuddySpawnForLevel( "mp_angel_city", TEAM_IMC, < 2281.39, -3333.06, 200.031 >, < 0, 91.23, 0 > )
-	FastballAddBuddySpawnForLevel( "mp_angel_city", TEAM_MILITIA, < -4139.57, 4684.4, 41.0313 >, <0, -14.326, 0 > )
-	FastballAddPanelSpawnsForLevel( "mp_angel_city", [
-		< 2055.94, 2040.03, 128.031 >, < 0, -180, 0 >,
-		< -274.757, 2255.22, 400.031 >, < 0, -176.251, 0 >,
-		< -3208.28, 2741.17, 128.031 >, < 0, -0.0821686, 0 >
-	])
-	
+	FastballAddBuddySpawnForLevel( "mp_angel_city", TEAM_MILITIA, < -4139.57, 4684.4, 41.0313 >, < 0, -14.326, 0 > )
+	FastballAddPanelSpawnsForLevel(
+		"mp_angel_city",
+		[ < 2055.94, 2040.03, 128.031 >, < 0, -180, 0 >, < -274.757, 2255.22, 400.031 >, < 0, -176.251, 0 >, < -3208.28, 2741.17, 128.031 >, < 0, -0.0821686, 0 > ]
+	)
+
 	FastballAddBuddySpawnForLevel( "mp_thaw", TEAM_MILITIA, < 2049.29, -4085.22, -274.839 >, < 0, 89.2991, 0 > )
 	FastballAddBuddySpawnForLevel( "mp_thaw", TEAM_IMC, < 834.484, 2664.28, -380.515 >, < 0.532141, -90.875, -0.542593 > )
-	FastballAddPanelSpawnsForLevel( "mp_thaw", [
-		< -1026.71, -1691.93, -319.969 >, < 0, 90, 0 >,
-		< 1836.07, -538.823, -64.1245 >, < 0, -135, 0 >,
-		< 2840.15, 1321.17, -63.9688 >, < 0, 0, 0 >
-	])
-	
+	FastballAddPanelSpawnsForLevel(
+		"mp_thaw",
+		[ < -1026.71, -1691.93, -319.969 >, < 0, 90, 0 >, < 1836.07, -538.823, -64.1245 >, < 0, -135, 0 >, < 2840.15, 1321.17, -63.9688 >, < 0, 0, 0 > ]
+	)
+
 	FastballAddBuddySpawnForLevel( "mp_wargames", TEAM_MILITIA, < -4848.87, 682.17, -127.969 >, < 0, 0, 0 > )
-	FastballAddBuddySpawnForLevel( "mp_wargames", TEAM_IMC, < 2960.78, 1229.36, -127.969 >, < 7.89891e-005, 146.505, 1.38387e-005 > )
-	FastballAddPanelSpawnsForLevel( "mp_wargames", [
-		< -691.961, 1888.56, 112.031 >, < 0, 90, 0 >,
-		< -1072.03, -508.229, -127.969 >, < 0, 180, 0 >,
-		< -24.291, -1403.69, -119.969 >, < 0, -90, 0 >
-	])
-	
-	FastballAddBuddySpawnForLevel( "mp_eden", TEAM_MILITIA, < -2404.4, 1738.07, 167.767 >, <0, -40.0894, 0> )
+	FastballAddBuddySpawnForLevel( "mp_wargames", TEAM_IMC, < 2960.78, 1229.36, -127.969 >, < 0.0000789891, 146.505, 0.0000138387 > )
+	FastballAddPanelSpawnsForLevel(
+		"mp_wargames",
+		[ < -691.961, 1888.56, 112.031 >, < 0, 90, 0 >, < -1072.03, -508.229, -127.969 >, < 0, 180, 0 >, < -24.291, -1403.69, -119.969 >, < 0, -90, 0 > ]
+	)
+
+	FastballAddBuddySpawnForLevel( "mp_eden", TEAM_MILITIA, < -2404.4, 1738.07, 167.767 >, < 0, -40.0894, 0 > )
 	FastballAddBuddySpawnForLevel( "mp_eden", TEAM_IMC, < 5248.01, 414.698, 77.1051 >, < 0, 180, 0 > )
-	FastballAddPanelSpawnsForLevel( "mp_eden", [
-		< 704.333, 1530.18, 144.031 >, < 0, 90, 0 >,
-		< -108.43, 272.638, 72.0313 >, < 0, -90, 0 >,
-		<1044.25, -1145.68, 68.0313>, < 0, 180, 0 >
-	])
-	
+	FastballAddPanelSpawnsForLevel(
+		"mp_eden",
+		[ < 704.333, 1530.18, 144.031 >, < 0, 90, 0 >, < -108.43, 272.638, 72.0313 >, < 0, -90, 0 >, < 1044.25, -1145.68, 68.0313 >, < 0, 180, 0 > ]
+	)
+
 	FastballAddBuddySpawnForLevel( "mp_black_water_canal", TEAM_MILITIA, < 1222.88, -5050.63, -187.763 >, < 0, 45, 0 > )
 	FastballAddBuddySpawnForLevel( "mp_black_water_canal", TEAM_IMC, < -235.375, 4736.75, -255.969 >, < 0, -90, 0 > )
-	FastballAddPanelSpawnsForLevel( "mp_black_water_canal", [
-		< 1566.13, -731.539, -63.9688 >, < 0, -90, 0 >,
-		< 502.603, 1102.92, 260.031 >, < 0, 152.328, 0 >,
-		< 2337.37, 2099.91, -26.9688 >, < 0, 0, 0 >
-	])
-	
+	FastballAddPanelSpawnsForLevel(
+		"mp_black_water_canal",
+		[ < 1566.13, -731.539, -63.9688 >, < 0, -90, 0 >, < 502.603, 1102.92, 260.031 >, < 0, 152.328, 0 >, < 2337.37, 2099.91, -26.9688 >, < 0, 0, 0 > ]
+	)
+
 	FastballAddBuddySpawnForLevel( "mp_grave", TEAM_MILITIA, < 11026.8, -5163.18, 1885.64 >, < 0, 155.05, 0 > )
 	FastballAddBuddySpawnForLevel( "mp_grave", TEAM_IMC, < -1952, -3120, 1993.33 >, < 0, 0, 0 > )
-	FastballAddPanelSpawnsForLevel( "mp_grave", [
-		< 5204.54, -2726.54, 2376.03 >, < 0, -90, 0 >,
-		< 6001.58, -4126.61, 2252.03 >, < 0, -135, 0 >,
-		< 3595.96, -4568.04, 2376.03 >, < 0, -135, 0 >
-	])
+	FastballAddPanelSpawnsForLevel(
+		"mp_grave",
+		[ < 5204.54, -2726.54, 2376.03 >, < 0, -90, 0 >, < 6001.58, -4126.61, 2252.03 >, < 0, -135, 0 >, < 3595.96, -4568.04, 2376.03 >, < 0, -135, 0 > ]
+	)
 
-	FastballAddBuddySpawnForLevel( "mp_complex3", TEAM_MILITIA, < -7800.67, -800.02, 510.02 >, < 0, 45.00, 0 > )
+	FastballAddBuddySpawnForLevel( "mp_complex3", TEAM_MILITIA, < -7800.67, -800.02, 510.02 >, < 0, 45.0, 0 > )
 	FastballAddBuddySpawnForLevel( "mp_complex3", TEAM_IMC, < -550.95, -1626, 380 >, < 0, -127, 0 > )
-	FastballAddPanelSpawnsForLevel( "mp_complex3", [
-		< -3642.70, -3391.82, 645.00 >, < 0, -135.0, 0 >,
-		< -4429.40, -2001.04, 697.64 >, < 0, -90.00, 0 >,
-		< -5050.00, 811.66, 576.03 >, < 0, 42.0, 0 >
-	])
+	FastballAddPanelSpawnsForLevel(
+		"mp_complex3",
+		[ < -3642.7, -3391.82, 645.0 >, < 0, -135.0, 0 >, < -4429.4, -2001.04, 697.64 >, < 0, -90.0, 0 >, < -5050.0, 811.66, 576.03 >, < 0, 42.0, 0 > ]
+	)
 
-	FastballAddBuddySpawnForLevel( "mp_forwardbase_kodai", TEAM_MILITIA, < -3200.00, 1461, 1000>, < 0, 0, 0 > )
+	FastballAddBuddySpawnForLevel( "mp_forwardbase_kodai", TEAM_MILITIA, < -3200.0, 1461, 1000 >, < 0, 0, 0 > )
 	FastballAddBuddySpawnForLevel( "mp_forwardbase_kodai", TEAM_IMC, < 3000, 1243, 944 >, < 0, 180, 0 > )
-	FastballAddPanelSpawnsForLevel( "mp_forwardbase_kodai", [
-		< -830, 2210, 960 >, < 0, 90.00, 0 >,
-		< 8, 825, 1096 >, < 0, -90.00, 0 > ,
-		< 740 , -600, 960 >, < 0, 0, 0 >  
-	])
-	
-	FastballAddBuddySpawnForLevel( "mp_crashsite3", TEAM_MILITIA, < -6364.65,  -1291.28, 822.02>, <0, -19.17, 0> ) 
-	FastballAddBuddySpawnForLevel( "mp_crashsite3", TEAM_IMC, < -2455.29, 821.52, 539.21>, <0, -179.21, 0> )
-	FastballAddPanelSpawnsForLevel( "mp_crashsite3", [
-		< -672.27, -2786, 931.17 >, < 0, -45, 0 >,
-		< -3770, -990, 985 >, < 10, 80.00, 20 >,
-		< -6190.25, 1658.51, 1400.03 >, < 0, 144, 0 >  
-	])
-	
-	FastballAddBuddySpawnForLevel( "mp_rise", TEAM_MILITIA, < -3885.97, 35.11, 704.03>, <0, 11.86, 0> ) 
-	FastballAddBuddySpawnForLevel( "mp_rise", TEAM_IMC, < 2206.76, 1869.08, 453.9>, <0, -165.77, 0> )
-	FastballAddPanelSpawnsForLevel( "mp_rise", [
-		< 141, 2484.71, 296.03 >, < 0, 0, 0 >,
-		< -448.54, 1091.42, 545.03 >, < 0, 0, 0 >,
-		< -2097, 1050, 320.03 >, < 0, 180, 0 >
-	]) 
+	FastballAddPanelSpawnsForLevel(
+		"mp_forwardbase_kodai",
+		[ < -830, 2210, 960 >, < 0, 90.0, 0 >, < 8, 825, 1096 >, < 0, -90.0, 0 >, < 740, -600, 960 >, < 0, 0, 0 > ]
+	)
 
-	//Current BT fast ball points are good
-	FastballAddPanelSpawnsForLevel( "mp_colony02", [
-		< 1374, 559, 60 >, < 0, 0.00, 0 > ,
-		< -87, 1630, 22 >, < 0, 90.00, 0 >,
-		< -2167 , 448, 54 >, <0 , 90, 0 >  
-	])
+	FastballAddBuddySpawnForLevel( "mp_crashsite3", TEAM_MILITIA, < -6364.65, -1291.28, 822.02 >, < 0, -19.17, 0 > )
+	FastballAddBuddySpawnForLevel( "mp_crashsite3", TEAM_IMC, < -2455.29, 821.52, 539.21 >, < 0, -179.21, 0 > )
+	FastballAddPanelSpawnsForLevel(
+		"mp_crashsite3",
+		[ < -672.27, -2786, 931.17 >, < 0, -45, 0 >, < -3770, -990, 985 >, < 10, 80.0, 20 >, < -6190.25, 1658.51, 1400.03 >, < 0, 144, 0 > ]
+	)
+
+	FastballAddBuddySpawnForLevel( "mp_rise", TEAM_MILITIA, < -3885.97, 35.11, 704.03 >, < 0, 11.86, 0 > )
+	FastballAddBuddySpawnForLevel( "mp_rise", TEAM_IMC, < 2206.76, 1869.08, 453.9 >, < 0, -165.77, 0 > )
+	FastballAddPanelSpawnsForLevel(
+		"mp_rise",
+		[ < 141, 2484.71, 296.03 >, < 0, 0, 0 >, < -448.54, 1091.42, 545.03 >, < 0, 0, 0 >, < -2097, 1050, 320.03 >, < 0, 180, 0 > ]
+	)
+
+	// Current BT fast ball points are good
+	FastballAddPanelSpawnsForLevel( "mp_colony02", [ < 1374, 559, 60 >, < 0, 0.0, 0 >, < -87, 1630, 22 >, < 0, 90.0, 0 >, < -2167, 448, 54 >, < 0, 90, 0 > ] )
 
 	FastballAddBuddySpawnForLevel( "mp_glitch", TEAM_MILITIA, < -4450, -629, 320 >, < 0, 0, 0 > )
-	FastballAddBuddySpawnForLevel( "mp_glitch", TEAM_IMC, < 4100, 890, 320>, < 0, 180, 0 > )
-	FastballAddPanelSpawnsForLevel( "mp_glitch", [
-		< 2703, 2170, 25 >, < 0, 0.00, 0 >,
-		< -192, 129, -245.998 >, < 0, 90.00, 0 >,
-		< -3088, -1905, 25 >, < 0, -180.00, 0 >
-	])
+	FastballAddBuddySpawnForLevel( "mp_glitch", TEAM_IMC, < 4100, 890, 320 >, < 0, 180, 0 > )
+	FastballAddPanelSpawnsForLevel(
+		"mp_glitch",
+		[ < 2703, 2170, 25 >, < 0, 0.0, 0 >, < -192, 129, -245.998 >, < 0, 90.0, 0 >, < -3088, -1905, 25 >, < 0, -180.0, 0 > ]
+	)
 
-	FastballAddPropForLevel("mp_glitch", $"models/containers/plastic_pallet_01.mdl", [
-		< -190, 0, -250 >, < 0, 90.00, 0 >,
-		< -190, 65, -250 >, < 0, 90.00, 0 >,
-		< -190, 130, -250 >, < 0, 90.00, 0 >,
-		< -190, 195, -250 >, < 0, 90.00, 0 >,
-		< -190, 250, -250 >, < 0, 90.00, 0 >,
-		< -125, 0, -250 >, < 0, 90.00, 0 >,
-		< -125, 65, -250 >, < 0, 90.00, 0 >,
-		< -125, 130, -250 >, < 0, 90.00, 0 >,
-		< -125, 195, -250 >, < 0, 90.00, 0 >,
-		< -125, 250, -250 >, < 0, 90.00, 0 >,
-		< -255, 0, -250 >, < 0, 90.00, 0 >,
-		< -255, 65, -250 >, < 0, 90.00, 0 >,
-		< -255, 130, -250 >, < 0, 90.00, 0 >,
-		< -255, 195, -250 >, < 0, 90.00, 0 >,
-		< -255, 250, -250 >, < 0, 90.00, 0 >
-	] )
+	FastballAddPropForLevel(
+		"mp_glitch",
+		$"models/containers/plastic_pallet_01.mdl",
+		[
+			< -190, 0, -250 >,
+			< 0, 90.0, 0 >,
+			< -190, 65, -250 >,
+			< 0, 90.0, 0 >,
+			< -190, 130, -250 >,
+			< 0, 90.0, 0 >,
+			< -190, 195, -250 >,
+			< 0, 90.0, 0 >,
+			< -190, 250, -250 >,
+			< 0, 90.0, 0 >,
+			< -125, 0, -250 >,
+			< 0, 90.0, 0 >,
+			< -125, 65, -250 >,
+			< 0, 90.0, 0 >,
+			< -125, 130, -250 >,
+			< 0, 90.0, 0 >,
+			< -125, 195, -250 >,
+			< 0, 90.0, 0 >,
+			< -125, 250, -250 >,
+			< 0, 90.0, 0 >,
+			< -255, 0, -250 >,
+			< 0, 90.0, 0 >,
+			< -255, 65, -250 >,
+			< 0, 90.0, 0 >,
+			< -255, 130, -250 >,
+			< 0, 90.0, 0 >,
+			< -255, 195, -250 >,
+			< 0, 90.0, 0 >,
+			< -255, 250, -250 >,
+			< 0, 90.0, 0 >
+		]
+	)
 
 	FastballAddBuddySpawnForLevel( "mp_relic02", TEAM_MILITIA, < 4504, -3500, 150 >, < 0, -170, 0 > )
-	FastballAddBuddySpawnForLevel( "mp_relic02", TEAM_IMC, < -4505, -3750, 367>, < 0, 10, 0 > )
-	FastballAddPanelSpawnsForLevel( "mp_relic02", [
-		< -2258, -5286, 356 >, < 0, 0.00, 0 >,
-		< -32, -2600, -75 >, < 0, 90.00, 0 >,
-		< 2028, -5332, 128 >, < 0, 90.00, 0 >
-	])
+	FastballAddBuddySpawnForLevel( "mp_relic02", TEAM_IMC, < -4505, -3750, 367 >, < 0, 10, 0 > )
+	FastballAddPanelSpawnsForLevel(
+		"mp_relic02",
+		[ < -2258, -5286, 356 >, < 0, 0.0, 0 >, < -32, -2600, -75 >, < 0, 90.0, 0 >, < 2028, -5332, 128 >, < 0, 90.0, 0 > ]
+	)
 
-	FastballAddBuddySpawnForLevel( "mp_homestead", TEAM_MILITIA, < -3848.19.00, -2521, -25>, < 0, 0, 0 > )
+	FastballAddBuddySpawnForLevel( "mp_homestead", TEAM_MILITIA, < -3848.19, -2521, -25 >, < 0, 0, 0 > )
 	FastballAddBuddySpawnForLevel( "mp_homestead", TEAM_IMC, < 6000, 1560, -137 >, < 0, -150, 0 > )
-	FastballAddPanelSpawnsForLevel( "mp_homestead", [
-		< 3672, -696, -10 >, < 0, 100.00, 0 > ,
-		< 1101, -911, 145 >, < -8, 40.00, 0 >,
-		< -1585 , -953, -79 >, <0, 135.00, 0 >  
-	])
+	FastballAddPanelSpawnsForLevel(
+		"mp_homestead",
+		[ < 3672, -696, -10 >, < 0, 100.0, 0 >, < 1101, -911, 145 >, < -8, 40.0, 0 >, < -1585, -953, -79 >, < 0, 135.0, 0 > ]
+	)
 
 	FastballAddBuddySpawnForLevel( "mp_drydock", TEAM_MILITIA, < -4, -4350, 144 >, < 0, 80, 0 > )
-	FastballAddBuddySpawnForLevel( "mp_drydock", TEAM_IMC, < 679, 4674, 200>, < 0, -90, 0 > )
-	FastballAddPanelSpawnsForLevel( "mp_drydock", [
-		< 1726, 2290, 256 >, < 0, 0.00, 0 >,
-		< 100, 63, 265 >, < 0, 180.00, 0 >,
-		< -752, -863, 408>, <0, 180.00, 0 >
-	])
+	FastballAddBuddySpawnForLevel( "mp_drydock", TEAM_IMC, < 679, 4674, 200 >, < 0, -90, 0 > )
+	FastballAddPanelSpawnsForLevel( "mp_drydock", [ < 1726, 2290, 256 >, < 0, 0.0, 0 >, < 100, 63, 265 >, < 0, 180.0, 0 >, < -752, -863, 408 >, < 0, 180.0, 0 > ] )
 }
 
 void function SpawnPanelsForLevel()
@@ -179,7 +178,7 @@ void function SpawnPanelsForLevel()
 	int panelId
 	foreach ( Point panelSpawn in file.panelSpawns )
 	{
-		entity panel = CreatePanel( panelSpawn.origin, panelSpawn.angles )	
+		entity panel = CreatePanel( panelSpawn.origin, panelSpawn.angles )
 		panel.s.panelId <- panelId++
 	}
 }
@@ -203,22 +202,22 @@ void function FastballAddPanelSpawnsForLevel( string level, array<vector> positi
 {
 	if ( GetMapName() != level )
 		return
-	
+
 	for ( int i = 0; i < positionsAndOrigins.len(); i += 2 )
 	{
 		Point spawnPoint
 		spawnPoint.origin = positionsAndOrigins[ i ]
 		spawnPoint.angles = positionsAndOrigins[ i + 1 ]
-		
+
 		file.panelSpawns.append( spawnPoint )
 	}
 }
 
-void function FastballAddPropForLevel( string level, asset model, array<vector> positionsAndOrigins)
+void function FastballAddPropForLevel( string level, asset model, array<vector> positionsAndOrigins )
 {
 	if ( GetMapName() != level )
 		return
-	
+
 	for ( int i = 0; i < positionsAndOrigins.len(); i += 2 )
 	{
 		entity prop = CreateEntity( "prop_control_panel" )
@@ -227,10 +226,9 @@ void function FastballAddPropForLevel( string level, asset model, array<vector> 
 		prop.SetAngles( positionsAndOrigins[ i + 1 ] )
 		prop.kv.solid = SOLID_VPHYSICS
 		DispatchSpawn( prop )
-	
+
 		prop.SetModel( model )
 	}
-	
 }
 
 entity function CreatePanel( vector origin, vector angles )
@@ -241,18 +239,19 @@ entity function CreatePanel( vector origin, vector angles )
 	panel.SetAngles( angles )
 	panel.kv.solid = SOLID_VPHYSICS
 	DispatchSpawn( panel )
-	
+
 	panel.SetModel( $"models/communication/terminal_usable_imc_01.mdl" )
 	panel.s.scriptedPanel <- true
-	
-	// HACK: need to use a custom useFunction here as control panel exposes no way to get the player's position before hacking it, or a way to run code before the hacking animation actually starts
+
+	// HACK: need to use a custom useFunction here as control panel exposes no way to get the player's
+	// position before hacking it, or a way to run code before the hacking animation actually starts
 	panel.s.startOrigin <- < 0, 0, 0 >
 	panel.useFunction = FastballControlPanelCanUse
-	
+
 	SetControlPanelUseFunc( panel, FastballOnPanelHacked )
-	
+
 	Highlight_SetNeutralHighlight( panel, "sp_enemy_pilot" )
-	
+
 	return panel
 }
 
@@ -262,7 +261,7 @@ function FastballControlPanelCanUse( playerUser, controlPanel )
 	expect entity( playerUser )
 	expect entity( controlPanel )
 	controlPanel.s.startOrigin <- playerUser.GetOrigin()
-	
+
 	return ControlPanel_CanUseFunction( playerUser, controlPanel )
 }
 
@@ -271,12 +270,12 @@ function FastballOnPanelHacked( panel, player )
 {
 	expect entity( panel )
 	expect entity( player )
-		
+
 	print( panel + " was hacked by " + player )
 	SetTeam( panel, player.GetTeam() )
-	
+
 	player.SetPlayerGameStat( PGS_ASSAULT_SCORE, player.GetPlayerGameStat( PGS_ASSAULT_SCORE ) + 1 )
-	
+
 	foreach ( entity otherPlayer in GetPlayerArray() )
 		Remote_CallFunction_NonReplay( otherPlayer, "ServerCallback_FastballPanelHacked", panel.GetEncodedEHandle(), panel.s.panelId, player.GetEncodedEHandle() )
 
@@ -287,7 +286,7 @@ function FastballOnPanelHacked( panel, player )
 		{
 			deadPlayer.SetOrigin( panel.s.startOrigin )
 			deadPlayer.RespawnPlayer( null )
-			Remote_CallFunction_NonReplay( deadPlayer, "ServerCallback_FastballRespawnPlayer" ) 
+			Remote_CallFunction_NonReplay( deadPlayer, "ServerCallback_FastballRespawnPlayer" )
 		}
 	}
 }
@@ -296,7 +295,7 @@ int function FastballDecideWinner()
 {
 	int militiaPanels
 	int imcPanels
-	
+
 	foreach ( entity panel in GetAllControlPanels() )
 	{
 		if ( panel.GetTeam() == TEAM_MILITIA )
@@ -304,11 +303,11 @@ int function FastballDecideWinner()
 		else if ( panel.GetTeam() == TEAM_IMC )
 			imcPanels++
 	}
-	
+
 	if ( militiaPanels > imcPanels )
 		return TEAM_MILITIA
 	else if ( imcPanels > militiaPanels )
 		return TEAM_IMC
-		
+
 	return TEAM_UNASSIGNED
 }

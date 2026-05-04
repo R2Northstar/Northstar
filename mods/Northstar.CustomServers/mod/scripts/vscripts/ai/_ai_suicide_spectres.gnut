@@ -3,37 +3,35 @@ global function MakeSuicideSpectre
 global function SpectreSuicideOnDamaged
 global function GetNPCAttackerEnt
 
-const FX_SPECTRE_EXPLOSION				= $"P_drone_frag_exp"
+const FX_SPECTRE_EXPLOSION = $"P_drone_frag_exp"
 
 //
 // Suicide spectre script
 //
 
-const SPECTRE_EXPLOSION_DELAY 					= 0.25   // Delay for the first spectre in a chain to start exploding.
-const SPECTRE_DAMAGE_MULTIPLIER_BODY 			= 1.5
-const SPECTRE_DAMAGE_MULTIPLIER_HEAD 			= 6.0
-const SPECTRE_DAMAGE_MULTIPLIER_SMART_PISTOL	= 2.0
-const SPECTRE_HEADSHOT_KEEP_WALKING_CHANCE		= 100 	 // 35% chance to keep walking after a headshot to add variety
+const SPECTRE_EXPLOSION_DELAY = 0.25 // Delay for the first spectre in a chain to start exploding.
+const SPECTRE_DAMAGE_MULTIPLIER_BODY = 1.5
+const SPECTRE_DAMAGE_MULTIPLIER_HEAD = 6.0
+const SPECTRE_DAMAGE_MULTIPLIER_SMART_PISTOL = 2.0
+const SPECTRE_HEADSHOT_KEEP_WALKING_CHANCE = 100 // 35% chance to keep walking after a headshot to add variety
 
 struct
 {
 	int chainExplosionIndex
 	float lastChainExplosionTime
 
-	table< string, array<string> > spectreAnims
+	table<string, array<string> > spectreAnims
 	float nextOverloadTime
-
 } file
 
-const SFX_TICK_OVERLOAD 				= "corporate_spectre_overload_beep"
-const SFX_TICK_EXPLODE 					= "corporate_spectre_death_explode"
+const SFX_TICK_OVERLOAD = "corporate_spectre_overload_beep"
+const SFX_TICK_EXPLODE = "corporate_spectre_death_explode"
 
-const SFX_FRAGDRONE_OVERLOAD 			= "weapon_sentryfragdrone_preexplo"
-const SFX_FRAGDRONE_EXPLODE 			= "weapon_sentryfragdrone_explo"
-const SFX_FRAGDRONE_SUPERPURSUIT		= "weapon_sentryfragdrone_superpursuit"
+const SFX_FRAGDRONE_OVERLOAD = "weapon_sentryfragdrone_preexplo"
+const SFX_FRAGDRONE_EXPLODE = "weapon_sentryfragdrone_explo"
+const SFX_FRAGDRONE_SUPERPURSUIT = "weapon_sentryfragdrone_superpursuit"
 
-const CHAIN_EXPLOSION_MAXINDEX			= 10
-
+const CHAIN_EXPLOSION_MAXINDEX = 10
 
 void function SuicideSpectres_Init()
 {
@@ -82,7 +80,7 @@ void function MakeSuicideSpectre( entity spectre )
 		spectre.SetEnemyChangeCallback( SuicideSpectreEnemyChanged )
 
 	spectre.SetLookDistOverride( SPECTRE_MAX_SIGHT_DIST )
-	//spectre.SetHearingSensitivity( 10 ) //1 is default
+	// spectre.SetHearingSensitivity( 10 ) //1 is default
 	spectre.EnableNPCFlag( NPC_MUTE_TEAMMATE )
 
 	spectre.ai.suicideSpectreExplosionDelay = -1
@@ -126,7 +124,7 @@ void function FragDroneDeath_Think( entity spectre, var damageInfo )
 	CreateShake( pos, 10, 105, 1.25, 768 )
 	StartParticleEffectInWorld( expFX, fxOrg, Vector( 0, 0, 0 ) )
 
-	spectre.Gib( <0, 0, 100> ) //Used to do .Destroy() on the frag drones immediately, but this meant you can't display the obiturary correctly. Instead, since it's dead already just hide it
+	spectre.Gib( < 0, 0, 100 > ) // Used to do .Destroy() on the frag drones immediately, but this meant you can't display the obiturary correctly. Instead, since it's dead already just hide it
 }
 
 entity function GetNPCAttackerEnt( entity npc, entity attacker )
@@ -149,7 +147,6 @@ entity function GetNPCAttackerEnt( entity npc, entity attacker )
 
 	return attacker
 }
-
 
 int function GetDamageDefForFragDrone( entity drone )
 {
@@ -271,11 +268,11 @@ void function SuicideSpectre_WaittillNearEnemyOrExploding( entity spectre )
 		if ( spectre.ai.suicideSpectreExplodingAttacker != null )
 			return
 
-		//If spectre is not interrruptable, don't bother
+		// If spectre is not interrruptable, don't bother
 		if ( !spectre.IsInterruptable() )
 			continue
 
-		//If spectre is parented, don't bother
+		// If spectre is parented, don't bother
 		if ( IsValid( spectre.GetParent() ) )
 			continue
 
@@ -315,8 +312,8 @@ void function SuicideSpectre_WaittillNearEnemyOrExploding( entity spectre )
 		entity attacker = SuicideSpectre_NearEnemy( spectre )
 		if ( attacker != null )
 		{
-			//SetSuicideSpectreOverloading( spectre, attacker )
-			//Assert( 0 ) // never reached
+			// SetSuicideSpectreOverloading( spectre, attacker )
+			// Assert( 0 ) // never reached
 			return
 		}
 	}
@@ -384,55 +381,55 @@ void function SpectreOverloads( entity spectre )
 	file.nextOverloadTime = Time() + 0.05
 
 	#if MP
-	var chaseTime = spectre.Dev_GetAISettingByKeyField( "SuicideChaseTime" )
-	if ( chaseTime != null )
-	{
-		float maxScale = expect float( spectre.Dev_GetAISettingByKeyField( "maxSpeedScale" ) )
-		spectre.SetNPCMoveSpeedScale( maxScale )
-
-		expect float( chaseTime )
-		float endChaseTime = Time() + chaseTime
-
-		for ( ;; )
+		var chaseTime = spectre.Dev_GetAISettingByKeyField( "SuicideChaseTime" )
+		if ( chaseTime != null )
 		{
-			if ( Time() >= endChaseTime )
-				break
+			float maxScale = expect float( spectre.Dev_GetAISettingByKeyField( "maxSpeedScale" ) )
+			spectre.SetNPCMoveSpeedScale( maxScale )
 
-			if ( !IsAlive( spectre.GetEnemy() ) )
-				break
+			expect float( chaseTime )
+			float endChaseTime = Time() + chaseTime
 
-			entity nearEnemy = SuicideSpectre_NearEnemy( spectre )
-			if ( IsAlive( nearEnemy ) )
+			for ( ; ; )
 			{
-				if ( nearEnemy.IsTitan() && spectre.IsInterruptable() )
-				{
-					JumpAtTitan( spectre, nearEnemy )
-					spectre.ai.suicideSpectreExplosionDelay = 0.0
-					return
-				}
-				break
-			}
+				if ( Time() >= endChaseTime )
+					break
 
-			WaitFrame()
+				if ( !IsAlive( spectre.GetEnemy() ) )
+					break
+
+				entity nearEnemy = SuicideSpectre_NearEnemy( spectre )
+				if ( IsAlive( nearEnemy ) )
+				{
+					if ( nearEnemy.IsTitan() && spectre.IsInterruptable() )
+					{
+						JumpAtTitan( spectre, nearEnemy )
+						spectre.ai.suicideSpectreExplosionDelay = 0.0
+						return
+					}
+					break
+				}
+
+				WaitFrame()
+			}
 		}
-	}
 	#endif
 
-	for ( ;; )
+	for ( ; ; )
 	{
 		#if SP
-		if ( spectre.IsInterruptable() && !spectre.Anim_IsActive() )
-			break
+			if ( spectre.IsInterruptable() && !spectre.Anim_IsActive() )
+				break
 		#elseif MP
-		if ( spectre.IsInterruptable() && !spectre.Anim_IsActive() && spectre.IsOnGround() )
-			break
+			if ( spectre.IsInterruptable() && !spectre.Anim_IsActive() && spectre.IsOnGround() )
+				break
 		#endif
 
 		WaitFrame()
 	}
 
 	string overloadSF
-	bool isFragDrone = 	spectre.mySpawnOptions_aiSettings == "npc_frag_drone_throwable"
+	bool isFragDrone = spectre.mySpawnOptions_aiSettings == "npc_frag_drone_throwable"
 	if ( isFragDrone )
 		overloadSF = SFX_FRAGDRONE_OVERLOAD
 	else
@@ -501,7 +498,6 @@ int function GetExplosionTeamBasedOnGamemode( entity spectre )
 	return spectre.GetTeam()
 }
 
-
 /************************************************************************************************\
 
 ########     ###    ##     ##    ###     ######   ########
@@ -518,10 +514,9 @@ void function SpectreSuicideOnDamaged_Callback( entity spectre, var damageInfo )
 	SpectreSuicideOnDamaged( spectre, damageInfo )
 }
 
-
 void function SpectreSuicideOnDamaged( entity spectre, var damageInfo )
 {
-	//Assert( IsSuicideSpectre( spectre ) )
+	// Assert( IsSuicideSpectre( spectre ) )
 
 	int damageType = DamageInfo_GetCustomDamageType( damageInfo )
 	DamageInfo_SetCustomDamageType( damageInfo, damageType )
@@ -529,11 +524,10 @@ void function SpectreSuicideOnDamaged( entity spectre, var damageInfo )
 	if ( !IsAlive( spectre ) )
 		return
 
-
-	entity attacker 			= DamageInfo_GetAttacker( damageInfo )
-	entity inflictor 			= DamageInfo_GetInflictor( damageInfo )
-	float damage				= DamageInfo_GetDamage( damageInfo )
-	int damageSourceId 			= DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	entity inflictor = DamageInfo_GetInflictor( damageInfo )
+	float damage = DamageInfo_GetDamage( damageInfo )
+	int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 
 	// Calculate build time credit
 	if ( attacker.IsPlayer() )
@@ -548,7 +542,6 @@ void function SpectreSuicideOnDamaged( entity spectre, var damageInfo )
 
 	// No pain anims for suicide spectres
 	DamageInfo_AddDamageFlags( damageInfo, DAMAGEFLAG_NOPAIN )
-
 
 	spectre.Signal( "SuicideSpectreExploding" )
 

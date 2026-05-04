@@ -13,7 +13,7 @@ PickupGlow function CreatePickupGlow( entity ent, int r, int g, int b )
 	entity cpoint = CreateEntity( "info_placement_helper" )
 	SetTargetName( cpoint, UniqueString( "pickup_controlpoint" ) )
 	DispatchSpawn( cpoint )
-	cpoint.SetOrigin( Vector(r,g,b) )
+	cpoint.SetOrigin( Vector( r, g, b ) )
 	entity glowFX = PlayFXWithControlPoint( COLLECTIBLE_PICKUP_EFFECT, origin, cpoint, -1, null, null, C_PLAYFX_LOOP )
 
 	PickupGlow pickupGlow
@@ -40,7 +40,7 @@ void function StopPickupGlow( PickupGlow pickupGlow )
 	if ( IsValid( pickupGlow.cpoint ) )
 		pickupGlow.cpoint.Destroy()
 
-	if ( IsValid(pickupGlow.glowFX) )
+	if ( IsValid( pickupGlow.glowFX ) )
 	{
 		EntityFire( pickupGlow.glowFX, "StopPlayEndCap" )
 		pickupGlow.glowFX.Destroy()

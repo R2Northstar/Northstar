@@ -1,4 +1,3 @@
-
 /*
 	ToDo:
 		-if marvin has no jobs to go to make him to back to spawn position instead of standing at last node
@@ -26,34 +25,31 @@ struct MarvinJob
 struct
 {
 	array<MarvinJob> marvinJobs
-	table<string,void functionref( entity,MarvinJob)> jobFunctions
+	table<string, void functionref( entity, MarvinJob )> jobFunctions
 } file
 
-
-
-
-//	██╗███╗   ██╗██╗████████╗
-//	██║████╗  ██║██║╚══██╔══╝
-//	██║██╔██╗ ██║██║   ██║
-//	██║██║╚██╗██║██║   ██║
-//	██║██║ ╚████║██║   ██║
-//	╚═╝╚═╝  ╚═══╝╚═╝   ╚═╝
+// 	██╗███╗   ██╗██╗████████╗
+// 	██║████╗  ██║██║╚══██╔══╝
+// 	██║██╔██╗ ██║██║   ██║
+// 	██║██║╚██╗██║██║   ██║
+// 	██║██║ ╚████║██║   ██║
+// 	╚═╝╚═╝  ╚═══╝╚═╝   ╚═╝
 
 void function MarvinJobs_Init()
 {
-	file.jobFunctions[ "welding" ] 			<- SimpleJobAnims
-	file.jobFunctions[ "welding_under" ] 	<- SimpleJobAnims
-	file.jobFunctions[ "window" ] 			<- SimpleJobAnims
-	file.jobFunctions[ "fightFire" ] 		<- SimpleJobAnims
-	file.jobFunctions[ "barrel_pickup" ] 	<- MarvinPicksUpBarrel
-	file.jobFunctions[ "barrel_putdown" ] 	<- MarvinPutsDownBarrel
+	file.jobFunctions[ "welding" ] <- SimpleJobAnims
+	file.jobFunctions[ "welding_under" ] <- SimpleJobAnims
+	file.jobFunctions[ "window" ] <- SimpleJobAnims
+	file.jobFunctions[ "fightFire" ] <- SimpleJobAnims
+	file.jobFunctions[ "barrel_pickup" ] <- MarvinPicksUpBarrel
+	file.jobFunctions[ "barrel_putdown" ] <- MarvinPutsDownBarrel
 	file.jobFunctions[ "repair_over_edge" ] <- SimpleJobAnims
-	file.jobFunctions[ "repair_above" ] 	<- SimpleJobAnims
-	file.jobFunctions[ "repair_under" ] 	<- SimpleJobAnims
-	file.jobFunctions[ "datacards" ] 		<- SimpleJobAnims
+	file.jobFunctions[ "repair_above" ] <- SimpleJobAnims
+	file.jobFunctions[ "repair_under" ] <- SimpleJobAnims
+	file.jobFunctions[ "datacards" ] <- SimpleJobAnims
 
-	file.jobFunctions[ "drone_welding" ] 	<- SimpleJobAnims
-	file.jobFunctions[ "drone_inspect" ] 	<- SimpleJobAnims
+	file.jobFunctions[ "drone_welding" ] <- SimpleJobAnims
+	file.jobFunctions[ "drone_inspect" ] <- SimpleJobAnims
 
 	RegisterSignal( "pickup_barrel" )
 	RegisterSignal( "putdown_barrel" )
@@ -97,6 +93,7 @@ void function InitMarvinJob( entity node )
 		case "script_marvin_drone_job":
 			marvinJob.validMarvinType = "marvin_type_drone"
 			break
+
 		default:
 			marvinJob.validMarvinType = "marvin_type_walker"
 			break
@@ -111,16 +108,12 @@ void function MarvinJobsEntitiesDidLoad()
 		DebugMarvinJobs()
 }
 
-
-
-
-
-//	████████╗██╗  ██╗██╗███╗   ██╗██╗  ██╗
-//	╚══██╔══╝██║  ██║██║████╗  ██║██║ ██╔╝
-//	   ██║   ███████║██║██╔██╗ ██║█████╔╝
-//	   ██║   ██╔══██║██║██║╚██╗██║██╔═██╗
-//	   ██║   ██║  ██║██║██║ ╚████║██║  ██╗
-//	   ╚═╝   ╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝
+// 	████████╗██╗  ██╗██╗███╗   ██╗██╗  ██╗
+// 	╚══██╔══╝██║  ██║██║████╗  ██║██║ ██╔╝
+// 	   ██║   ███████║██║██╔██╗ ██║█████╔╝
+// 	   ██║   ██╔══██║██║██║╚██╗██║██╔═██╗
+// 	   ██║   ██║  ██║██║██║ ╚████║██║  ██╗
+// 	   ╚═╝   ╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝
 
 void function MarvinJobThink( entity marvin )
 {
@@ -137,7 +130,7 @@ void function MarvinJobThink( entity marvin )
 		return
 
 	OnThreadEnd(
-	function() : ( marvin )
+		function() : ( marvin )
 		{
 			Assert( !IsAlive( marvin ), "MarvinJobThink ended but the marvin is still alive" )
 		}
@@ -175,7 +168,7 @@ void function MarvinDoJob( entity marvin, MarvinJob job )
 		return
 
 	OnThreadEnd(
-	function() : ( job )
+		function() : ( job )
 		{
 			job.user = null
 			job.nextUsableTime = Time() + JOB_NODE_COOLDOWN_TIME
@@ -205,16 +198,12 @@ void function DontDisableJobOnPathFailOrDeath( entity marvin, MarvinJob job )
 	job.nextUsableTime = Time()
 }
 
-
-
-
-
-//	     ██╗ ██████╗ ██████╗     ███████╗██╗   ██╗███╗   ██╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
-//	     ██║██╔═══██╗██╔══██╗    ██╔════╝██║   ██║████╗  ██║██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║██╔════╝
-//	     ██║██║   ██║██████╔╝    █████╗  ██║   ██║██╔██╗ ██║██║        ██║   ██║██║   ██║██╔██╗ ██║███████╗
-//	██   ██║██║   ██║██╔══██╗    ██╔══╝  ██║   ██║██║╚██╗██║██║        ██║   ██║██║   ██║██║╚██╗██║╚════██║
-//	╚█████╔╝╚██████╔╝██████╔╝    ██║     ╚██████╔╝██║ ╚████║╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║███████║
-//	 ╚════╝  ╚═════╝ ╚═════╝     ╚═╝      ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
+// 	     ██╗ ██████╗ ██████╗     ███████╗██╗   ██╗███╗   ██╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
+// 	     ██║██╔═══██╗██╔══██╗    ██╔════╝██║   ██║████╗  ██║██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║██╔════╝
+// 	     ██║██║   ██║██████╔╝    █████╗  ██║   ██║██╔██╗ ██║██║        ██║   ██║██║   ██║██╔██╗ ██║███████╗
+// 	██   ██║██║   ██║██╔══██╗    ██╔══╝  ██║   ██║██║╚██╗██║██║        ██║   ██║██║   ██║██║╚██╗██║╚════██║
+// 	╚█████╔╝╚██████╔╝██████╔╝    ██║     ╚██████╔╝██║ ╚████║╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║███████║
+// 	 ╚════╝  ╚═════╝ ╚═════╝     ╚═╝      ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
 
 void function SimpleJobAnims( entity marvin, MarvinJob job )
 {
@@ -226,39 +215,47 @@ void function SimpleJobAnims( entity marvin, MarvinJob job )
 		case "welding":
 			anims.append( "mv_idle_weld" )
 			break
+
 		case "welding_under":
 			anims.append( "mv_weld_under" )
 			anims.append( "mv_weld_under" )
 			anims.append( "mv_weld_under_stumble" )
 			break
+
 		case "window":
 			anims.append( "mv_idle_wash_window_noloop" )
 			anims.append( "mv_idle_buff_window_noloop" )
 			break
+
 		case "fightFire":
 			anims.append( "mv_fireman_idle" )
 			anims.append( "mv_fireman_shift" )
 			break
+
 		case "repair_over_edge":
 			anims.append( "mv_repair_overedge" )
 			anims.append( "mv_repair_overedge" )
 			anims.append( "mv_repair_overedge_stumble" )
 			break
+
 		case "repair_above":
 			anims.append( "mv_repair_ship_above" )
 			break
+
 		case "repair_under":
 			anims.append( "mv_repair_under" )
 			anims.append( "mv_repair_under_stumble" )
 			break
+
 		case "datacards":
 			anims.append( "mv_job_replace_datacards" )
 			break
+			// Marvin drone jobs
 
-		// Marvin drone jobs
 		case "drone_welding":
 			anims.append( "dw_jobs_welding_wallpanel" )
 			break
+
 		case "drone_inspect":
 			anims.append( "inspect1" )
 			anims.append( "inspect2" )
@@ -267,9 +264,9 @@ void function SimpleJobAnims( entity marvin, MarvinJob job )
 	Assert( anims.len() > 0 )
 
 	if ( IsMarvinWalker( marvin ) )
-		waitthread MarvinRunToAnimStart( marvin, anims[0], job.node )
+		waitthread MarvinRunToAnimStart( marvin, anims[ 0 ], job.node )
 	else
-		waitthread MarvinFlyToAnimStart( marvin, anims[0], job.node )
+		waitthread MarvinFlyToAnimStart( marvin, anims[ 0 ], job.node )
 
 	Signal( marvin, "JobStarted" )
 
@@ -306,7 +303,7 @@ void function MarvinPicksUpBarrel( entity marvin, MarvinJob job )
 	DispatchSpawn( info_target )
 
 	OnThreadEnd(
-		function () : ( info_target )
+		function() : ( info_target )
 		{
 			info_target.Destroy()
 		}
@@ -326,7 +323,6 @@ void function MarvinPicksUpBarrel( entity marvin, MarvinJob job )
 
 	if ( DEBUG_MARVIN_JOBS )
 		thread DrawAnglesForMovingEnt( info_target, 30.0 )
-
 
 	// Go to the barrel
 	MarvinRunToAnimStart( marvin, "mv_carry_barrel_pickup", info_target )
@@ -362,7 +358,7 @@ void function MarvinCarryBarrel( entity marvin, entity barrel )
 	marvin.EndSignal( "putdown_barrel" )
 
 	OnThreadEnd(
-		function () : ( marvin, barrel )
+		function() : ( marvin, barrel )
 		{
 			if ( IsValid( barrel ) )
 			{
@@ -403,7 +399,7 @@ void function MarvinPutsDownBarrel( entity marvin, MarvinJob job )
 	if ( IsValid( job.barrel ) )
 	{
 		if ( Distance( job.node.GetOrigin(), job.barrel.GetOrigin() ) <= 25 )
-		return
+			return
 	}
 
 	EndSignal( marvin.ai.carryBarrel, "OnDestroy" )
@@ -423,15 +419,12 @@ void function MarvinPutsDownBarrel( entity marvin, MarvinJob job )
 	marvin.WaitSignal( "OnAnimationDone" )
 }
 
-
-
-
-//	██╗   ██╗████████╗██╗██╗     ██╗████████╗██╗   ██╗
-//	██║   ██║╚══██╔══╝██║██║     ██║╚══██╔══╝╚██╗ ██╔╝
-//	██║   ██║   ██║   ██║██║     ██║   ██║    ╚████╔╝
-//	██║   ██║   ██║   ██║██║     ██║   ██║     ╚██╔╝
-//	╚██████╔╝   ██║   ██║███████╗██║   ██║      ██║
-//	 ╚═════╝    ╚═╝   ╚═╝╚══════╝╚═╝   ╚═╝      ╚═╝
+// 	██╗   ██╗████████╗██╗██╗     ██╗████████╗██╗   ██╗
+// 	██║   ██║╚══██╔══╝██║██║     ██║╚══██╔══╝╚██╗ ██╔╝
+// 	██║   ██║   ██║   ██║██║     ██║   ██║    ╚████╔╝
+// 	██║   ██║   ██║   ██║██║     ██║   ██║     ╚██╔╝
+// 	╚██████╔╝   ██║   ██║███████╗██║   ██║      ██║
+// 	 ╚═════╝    ╚═╝   ╚═╝╚══════╝╚═╝   ╚═╝      ╚═╝
 
 bool function IsMarvinWalker( entity marvin )
 {

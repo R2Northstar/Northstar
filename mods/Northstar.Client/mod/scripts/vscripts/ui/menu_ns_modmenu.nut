@@ -4,13 +4,14 @@ global function AddNorthstarModMenu
 global function AddNorthstarModMenu_MainMenuFooter
 global function ReloadMods
 
-
-struct panelContent {
+struct panelContent
+{
 	ModInfo& mod
 	bool isHeader = false
 }
 
-enum filterShow {
+enum filterShow
+{
 	ALL = 0,
 	ONLY_ENABLED = 1,
 	ONLY_DISABLED = 2,
@@ -18,12 +19,14 @@ enum filterShow {
 	ONLY_REQUIRED = 4
 }
 
-struct {
+struct
+{
 	int deltaX = 0
 	int deltaY = 0
 } mouseDeltaBuffer
 
-struct {
+struct
+{
 	array<panelContent> mods
 	var menu
 	array<var> panels
@@ -35,7 +38,7 @@ struct {
 } file
 
 const int PANELS_LEN = 15
-const string[3] CORE_MODS = ["Northstar.Client", "Northstar.Coop", "Northstar.CustomServers"] // Shows a warning if you try to disable these
+const string[ 3 ] CORE_MODS = [ "Northstar.Client", "Northstar.Coop", "Northstar.CustomServers" ] // Shows a warning if you try to disable these
 
 void function AddNorthstarModMenu()
 {
@@ -74,7 +77,7 @@ void function InitModMenu()
 		RuiSetImage( rui, "basicImage", $"ui/menu/common/dialog_error" )
 	}
 
-	AddMouseMovementCaptureHandler( Hud_GetChild(file.menu, "MouseMovementCapture"), UpdateMouseDeltaBuffer )
+	AddMouseMovementCaptureHandler( Hud_GetChild( file.menu, "MouseMovementCapture" ), UpdateMouseDeltaBuffer )
 
 	// UI Events
 	AddMenuEventHandler( file.menu, eUIEvent.MENU_OPEN, OnModMenuOpened )
@@ -88,22 +91,16 @@ void function InitModMenu()
 	AddButtonEventHandler( Hud_GetChild( file.menu, "ModPageButton" ), UIE_CLICK, OnModLinkButtonPressed )
 
 	// Filter buttons
-	AddButtonEventHandler( Hud_GetChild( file.menu, "SwtBtnShowFilter"), UIE_CHANGE, OnFiltersChange )
-	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnModsSearch"), UIE_CHANGE, OnFiltersChange )
-	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnListReverse"), UIE_CHANGE, OnFiltersChange )
-	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnFiltersClear"), UIE_CLICK, OnBtnFiltersClear_Activate )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "SwtBtnShowFilter" ), UIE_CHANGE, OnFiltersChange )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnModsSearch" ), UIE_CHANGE, OnFiltersChange )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnListReverse" ), UIE_CHANGE, OnFiltersChange )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnFiltersClear" ), UIE_CLICK, OnBtnFiltersClear_Activate )
 
-	AddButtonEventHandler( Hud_GetChild( file.menu, "HideCVButton"), UIE_CHANGE, OnHideConVarsChange )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "HideCVButton" ), UIE_CHANGE, OnHideConVarsChange )
 
 	// Footers
 	AddMenuFooterOption( file.menu, BUTTON_B, "#B_BUTTON_BACK", "#BACK" )
-	AddMenuFooterOption(
-		file.menu,
-		BUTTON_X,
-		PrependControllerPrompts( BUTTON_X, "#RELOAD_MODS" ),
-		"#RELOAD_MODS",
-		OnReloadModsButtonPressed
-	)
+	AddMenuFooterOption( file.menu, BUTTON_X, PrependControllerPrompts( BUTTON_X, "#RELOAD_MODS" ), "#RELOAD_MODS", OnReloadModsButtonPressed )
 	AddMenuFooterOption(
 		file.menu,
 		BUTTON_BACK,
@@ -113,9 +110,9 @@ void function InitModMenu()
 	)
 
 	// Nuke weird rui on filter switch
-	RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "SwtBtnShowFilter")), "buttonText", "")
-	RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "HideCVButton")), "buttonText", "")
-	RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "BtnListReverse")), "buttonText", "")
+	RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "SwtBtnShowFilter" ) ), "buttonText", "" )
+	RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "HideCVButton" ) ), "buttonText", "" )
+	RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "BtnListReverse" ) ), "buttonText", "" )
 }
 
 // EVENTS
@@ -128,18 +125,20 @@ void function OnModMenuOpened()
 	UpdateListSliderHeight()
 	UpdateListSliderPosition()
 
-	RegisterButtonPressedCallback(MOUSE_WHEEL_UP , OnScrollUp)
-	RegisterButtonPressedCallback(MOUSE_WHEEL_DOWN , OnScrollDown)
+	RegisterButtonPressedCallback( MOUSE_WHEEL_UP, OnScrollUp )
+	RegisterButtonPressedCallback( MOUSE_WHEEL_DOWN, OnScrollDown )
 }
 
 void function OnModMenuClosed()
 {
 	try
 	{
-		DeregisterButtonPressedCallback(MOUSE_WHEEL_UP , OnScrollUp)
-		DeregisterButtonPressedCallback(MOUSE_WHEEL_DOWN , OnScrollDown)
+		DeregisterButtonPressedCallback( MOUSE_WHEEL_UP, OnScrollUp )
+		DeregisterButtonPressedCallback( MOUSE_WHEEL_DOWN, OnScrollDown )
 	}
-	catch ( ex ) {}
+	catch ( ex )
+	{
+	}
 
 	array<ModInfo> current = GetEnabledModsArray()
 	bool reload
@@ -168,11 +167,11 @@ void function OnModMenuClosed()
 
 void function OnModButtonFocused( var button )
 {
-	if( int ( Hud_GetScriptID( Hud_GetParent( button ) ) ) > file.mods.len() )
+	if ( int( Hud_GetScriptID( Hud_GetParent( button ) ) ) > file.mods.len() )
 		return
 
 	file.currentButton = button
-	file.lastMod = file.mods[ int ( Hud_GetScriptID( Hud_GetParent( button ) ) ) + file.scrollOffset - 1 ].mod
+	file.lastMod = file.mods[ int( Hud_GetScriptID( Hud_GetParent( button ) ) ) + file.scrollOffset - 1 ].mod
 	string modName = file.lastMod.name
 	var rui = Hud_GetRui( Hud_GetChild( file.menu, "LabelDetails" ) )
 
@@ -198,13 +197,13 @@ void function OnModButtonFocused( var button )
 	SetControlBarColor( file.lastMod )
 
 	bool required = file.lastMod.requiredOnClient
-	Hud_SetVisible( Hud_GetChild( file.menu, "WarningLegendLabel"  ), required )
-	Hud_SetVisible( Hud_GetChild( file.menu, "WarningLegendImage"  ), required )
+	Hud_SetVisible( Hud_GetChild( file.menu, "WarningLegendLabel" ), required )
+	Hud_SetVisible( Hud_GetChild( file.menu, "WarningLegendImage" ), required )
 }
 
 void function OnModButtonPressed( var button )
 {
-	ModInfo mod = file.mods[ int ( Hud_GetScriptID( Hud_GetParent( button ) ) ) + file.scrollOffset - 1 ].mod
+	ModInfo mod = file.mods[ int( Hud_GetScriptID( Hud_GetParent( button ) ) ) + file.scrollOffset - 1 ].mod
 	string modName = mod.name
 	if ( StaticFind( modName ) && mod.enabled )
 		CoreModToggleDialog( modName )
@@ -222,9 +221,9 @@ void function OnModButtonPressed( var button )
 			}
 
 			// Update UI mod state
-			file.mods[ int ( Hud_GetScriptID( Hud_GetParent( button ) ) ) + file.scrollOffset - 1 ].mod = modInfo
+			file.mods[ int( Hud_GetScriptID( Hud_GetParent( button ) ) ) + file.scrollOffset - 1 ].mod = modInfo
 
-			var panel = file.panels[ int ( Hud_GetScriptID( Hud_GetParent( button ) ) ) - 1 ]
+			var panel = file.panels[ int( Hud_GetScriptID( Hud_GetParent( button ) ) ) - 1 ]
 			SetControlBoxColor( Hud_GetChild( panel, "ControlBox" ), modInfo )
 			SetControlBarColor( modInfo )
 			SetModEnabledHelperImageAsset( Hud_GetChild( panel, "EnabledImage" ), modInfo )
@@ -248,9 +247,9 @@ void function OnAuthenticationAgreementButtonPressed( var button )
 
 void function OnModLinkButtonPressed( var button )
 {
-	ModInfo mod = file.mods[ int ( Hud_GetScriptID( Hud_GetParent( file.currentButton ) ) ) + file.scrollOffset - 1 ].mod
+	ModInfo mod = file.mods[ int( Hud_GetScriptID( Hud_GetParent( file.currentButton ) ) ) + file.scrollOffset - 1 ].mod
 	string link = mod.downloadLink
-	if ( link.find("http://") != 0 && link.find("https://") != 0 )
+	if ( link.find( "http://" ) != 0 && link.find( "https://" ) != 0 )
 		link = "http://" + link // links without the http or https protocol get opened in the internal browser
 	LaunchExternalWebBrowser( link, WEBBROWSER_FLAG_FORCEEXTERNAL )
 }
@@ -302,7 +301,7 @@ void function CoreModToggleDialog( string mod )
 
 void function DisableMod()
 {
-	ModInfo mod = file.mods[ int ( Hud_GetScriptID( Hud_GetParent( file.currentButton ) ) ) + file.scrollOffset - 1 ].mod
+	ModInfo mod = file.mods[ int( Hud_GetScriptID( Hud_GetParent( file.currentButton ) ) ) + file.scrollOffset - 1 ].mod
 	string modName = mod.name
 	NSSetModEnabled( modName, mod.version, false )
 
@@ -315,7 +314,7 @@ void function DisableMod()
 			continue
 		}
 
-		var panel = file.panels[ int ( Hud_GetScriptID( Hud_GetParent( file.currentButton ) ) ) - 1]
+		var panel = file.panels[ int( Hud_GetScriptID( Hud_GetParent( file.currentButton ) ) ) - 1 ]
 		SetControlBoxColor( Hud_GetChild( panel, "ControlBox" ), modInfo )
 		SetControlBarColor( modInfo )
 		SetModEnabledHelperImageAsset( Hud_GetChild( panel, "EnabledImage" ), modInfo )
@@ -362,11 +361,9 @@ void function RefreshMods()
 	int lastLoadPriority = reverse ? mods.top().loadPriority + 1 : -1
 	string searchTerm = Hud_GetUTF8Text( Hud_GetChild( file.menu, "BtnModsSearch" ) ).tolower()
 
-	for ( int i = reverse ? mods.len() - 1 : 0;
-		reverse ? ( i >= 0 ) : ( i < mods.len() );
-		i += ( reverse ? -1 : 1) )
+	for ( int i = reverse ? mods.len() - 1 : 0; reverse ? ( i >= 0 ) : ( i < mods.len() ); i += ( reverse ? -1 : 1 ) )
 	{
-		ModInfo mod = mods[i]
+		ModInfo mod = mods[ i ]
 		string modName = mod.name
 
 		// Do not display remote mods
@@ -384,16 +381,19 @@ void function RefreshMods()
 				if ( !enabled )
 					continue
 				break
+
 			case filterShow.ONLY_DISABLED:
 				if ( enabled )
 					continue
 				break
+
 			case filterShow.ONLY_REQUIRED:
 				if ( !required )
 					continue
 				break
+
 			case filterShow.ONLY_NOT_REQUIRED:
-				if( required )
+				if ( required )
 					continue
 				break
 		}
@@ -421,7 +421,7 @@ void function RefreshMods()
 
 void function DisplayModPanels()
 {
-	foreach ( int i, var panel in file.panels)
+	foreach ( int i, var panel in file.panels )
 	{
 		if ( i >= file.mods.len() || file.scrollOffset + i >= file.mods.len() ) // don't try to show more panels than needed
 			break
@@ -434,7 +434,7 @@ void function DisplayModPanels()
 		var line = Hud_GetChild( panel, "BottomLine" )
 		var warning = Hud_GetChild( panel, "WarningImage" )
 		var enabledImage = Hud_GetChild( panel, "EnabledImage" )
-		
+
 		if ( c.isHeader )
 		{
 			Hud_SetEnabled( btn, false )
@@ -471,25 +471,25 @@ void function DisplayModPanels()
 
 void function SetModEnabledHelperImageAsset( var panel, ModInfo mod )
 {
-	if( mod.enabled )
+	if ( mod.enabled )
 		RuiSetImage( Hud_GetRui( panel ), "basicImage", $"rui/menu/common/merit_state_success" )
 	else
 		RuiSetImage( Hud_GetRui( panel ), "basicImage", $"rui/menu/common/merit_state_failure" )
-	RuiSetFloat3(Hud_GetRui( panel ), "basicImageColor", GetControlColorForMod( mod ) )
+	RuiSetFloat3( Hud_GetRui( panel ), "basicImageColor", GetControlColorForMod( mod ) )
 	Hud_SetVisible( panel, true )
 }
 
 void function SetControlBoxColor( var box, ModInfo mod )
 {
 	var rui = Hud_GetRui( box )
-	RuiSetFloat3(rui, "basicImageColor", GetControlColorForMod( mod ) )
+	RuiSetFloat3( rui, "basicImageColor", GetControlColorForMod( mod ) )
 }
 
 void function SetControlBarColor( ModInfo mod )
 {
 	var bar_element = Hud_GetChild( file.menu, "ModEnabledBar" )
 	var bar = Hud_GetRui( bar_element )
-	RuiSetFloat3(bar, "basicImageColor", GetControlColorForMod( mod ) )
+	RuiSetFloat3( bar, "basicImageColor", GetControlColorForMod( mod ) )
 	Hud_SetVisible( bar_element, true )
 }
 
@@ -502,17 +502,18 @@ vector function GetControlColorForMod( ModInfo mod )
 			case 2:
 			case 3:
 			default:
-				return <0,1,0>
+				return < 0, 1, 0 >
 		}
 	else
 		switch ( GetConVarInt( "colorblind_mode" ) )
 		{
 			case 1:
 			case 2:
-				return <0.29,0,0.57>
+				return < 0.29, 0, 0.57 >
+
 			case 3:
 			default:
-				return <1,0,0>
+				return < 1, 0, 0 >
 		}
 	unreachable
 }
@@ -552,11 +553,11 @@ string function FormatModDescription()
 	return ret
 }
 
-////////////
+// //////////
 // SLIDER
-////////////
+// //////////
 
-void function UpdateMouseDeltaBuffer(int x, int y)
+void function UpdateMouseDeltaBuffer( int x, int y )
 {
 	mouseDeltaBuffer.deltaX = x
 	mouseDeltaBuffer.deltaY = y
@@ -565,86 +566,91 @@ void function UpdateMouseDeltaBuffer(int x, int y)
 	SliderBarUpdate()
 }
 
-
 void function SliderBarUpdate()
 {
 	if ( file.mods.len() <= 15 )
 		return
 
-	var sliderButton = Hud_GetChild( file.menu , "BtnModListSlider" )
-	var sliderPanel = Hud_GetChild( file.menu , "BtnModListSliderPanel" )
-	var movementCapture = Hud_GetChild( file.menu , "MouseMovementCapture" )
+	var sliderButton = Hud_GetChild( file.menu, "BtnModListSlider" )
+	var sliderPanel = Hud_GetChild( file.menu, "BtnModListSliderPanel" )
+	var movementCapture = Hud_GetChild( file.menu, "MouseMovementCapture" )
 
-	Hud_SetFocused(sliderButton)
+	Hud_SetFocused( sliderButton )
 
-	float minYPos = -40.0 * (GetScreenSize()[1] / 1080.0)
-	float maxHeight = 604.0  * (GetScreenSize()[1] / 1080.0)
-	float maxYPos = minYPos - (maxHeight - Hud_GetHeight( sliderPanel ))
-	float useableSpace = (maxHeight - Hud_GetHeight( sliderPanel ))
+	float minYPos = -40.0 * ( GetScreenSize()[ 1 ] / 1080.0 )
+	float maxHeight = 604.0 * ( GetScreenSize()[ 1 ] / 1080.0 )
+	float maxYPos = minYPos - ( maxHeight - Hud_GetHeight( sliderPanel ) )
+	float useableSpace = ( maxHeight - Hud_GetHeight( sliderPanel ) )
 
-	float jump = minYPos - (useableSpace / ( float( file.mods.len())))
+	float jump = minYPos - ( useableSpace / ( float( file.mods.len() ) ) )
 
 	// got local from official respaw scripts, without untyped throws an error
-	local pos =	Hud_GetPos(sliderButton)[1]
+	local pos = Hud_GetPos( sliderButton )[ 1 ]
 	local newPos = pos - mouseDeltaBuffer.deltaY
 
-	if ( newPos < maxYPos ) newPos = maxYPos
-	if ( newPos > minYPos ) newPos = minYPos
+	if ( newPos < maxYPos )
+		newPos = maxYPos
+	if ( newPos > minYPos )
+		newPos = minYPos
 
-	Hud_SetPos( sliderButton , 2, newPos )
-	Hud_SetPos( sliderPanel , 2, newPos )
-	Hud_SetPos( movementCapture , 2, newPos )
+	Hud_SetPos( sliderButton, 2, newPos )
+	Hud_SetPos( sliderPanel, 2, newPos )
+	Hud_SetPos( movementCapture, 2, newPos )
 
-	file.scrollOffset = -int( ( (newPos - minYPos) / useableSpace ) * ( file.mods.len() - PANELS_LEN) )
+	file.scrollOffset = -int( ( ( newPos - minYPos ) / useableSpace ) * ( file.mods.len() - PANELS_LEN ) )
 	UpdateList()
 }
 
 void function UpdateListSliderPosition()
 {
-	var sliderButton = Hud_GetChild( file.menu , "BtnModListSlider" )
-	var sliderPanel = Hud_GetChild( file.menu , "BtnModListSliderPanel" )
-	var movementCapture = Hud_GetChild( file.menu , "MouseMovementCapture" )
+	var sliderButton = Hud_GetChild( file.menu, "BtnModListSlider" )
+	var sliderPanel = Hud_GetChild( file.menu, "BtnModListSliderPanel" )
+	var movementCapture = Hud_GetChild( file.menu, "MouseMovementCapture" )
 
-	float mods = float ( file.mods.len() )
+	float mods = float( file.mods.len() )
 
-	float minYPos = -40.0 * (GetScreenSize()[1] / 1080.0)
-	float useableSpace = (604.0 * (GetScreenSize()[1] / 1080.0) - Hud_GetHeight( sliderPanel ))
+	float minYPos = -40.0 * ( GetScreenSize()[ 1 ] / 1080.0 )
+	float useableSpace = ( 604.0 * ( GetScreenSize()[ 1 ] / 1080.0 ) - Hud_GetHeight( sliderPanel ) )
 
-	float jump = minYPos - (useableSpace / ( mods - float( PANELS_LEN ) ) * file.scrollOffset)
+	float jump = minYPos - ( useableSpace / ( mods - float( PANELS_LEN ) ) * file.scrollOffset )
 
-	if ( jump > minYPos ) jump = minYPos
+	if ( jump > minYPos )
+		jump = minYPos
 
-	Hud_SetPos( sliderButton , 2, jump )
-	Hud_SetPos( sliderPanel , 2, jump )
-	Hud_SetPos( movementCapture , 2, jump )
+	Hud_SetPos( sliderButton, 2, jump )
+	Hud_SetPos( sliderPanel, 2, jump )
+	Hud_SetPos( movementCapture, 2, jump )
 }
 
 void function UpdateListSliderHeight()
 {
-	var sliderButton = Hud_GetChild( file.menu , "BtnModListSlider" )
-	var sliderPanel = Hud_GetChild( file.menu , "BtnModListSliderPanel" )
-	var movementCapture = Hud_GetChild( file.menu , "MouseMovementCapture" )
+	var sliderButton = Hud_GetChild( file.menu, "BtnModListSlider" )
+	var sliderPanel = Hud_GetChild( file.menu, "BtnModListSliderPanel" )
+	var movementCapture = Hud_GetChild( file.menu, "MouseMovementCapture" )
 
-	float mods = float ( file.mods.len() )
+	float mods = float( file.mods.len() )
 
-	float maxHeight = 604.0 * (GetScreenSize()[1] / 1080.0)
-	float minHeight = 80.0 * (GetScreenSize()[1] / 1080.0)
+	float maxHeight = 604.0 * ( GetScreenSize()[ 1 ] / 1080.0 )
+	float minHeight = 80.0 * ( GetScreenSize()[ 1 ] / 1080.0 )
 
 	float height = maxHeight * ( float( PANELS_LEN ) / mods )
 
-	if ( height > maxHeight ) height = maxHeight
-	if ( height < minHeight ) height = minHeight
+	if ( height > maxHeight )
+		height = maxHeight
+	if ( height < minHeight )
+		height = minHeight
 
-	Hud_SetHeight( sliderButton , height )
-	Hud_SetHeight( sliderPanel , height )
-	Hud_SetHeight( movementCapture , height )
+	Hud_SetHeight( sliderButton, height )
+	Hud_SetHeight( sliderPanel, height )
+	Hud_SetHeight( movementCapture, height )
 }
 
 void function OnScrollDown( var button )
 {
-	if ( file.mods.len() <= PANELS_LEN ) return
+	if ( file.mods.len() <= PANELS_LEN )
+		return
 	file.scrollOffset += 5
-	if (file.scrollOffset + PANELS_LEN > file.mods.len())
+	if ( file.scrollOffset + PANELS_LEN > file.mods.len() )
 		file.scrollOffset = file.mods.len() - PANELS_LEN
 	Hud_SetFocused( Hud_GetChild( file.menu, "BtnModListSlider" ) )
 	ValidateScrollOffset()
@@ -653,7 +659,7 @@ void function OnScrollDown( var button )
 void function OnScrollUp( var button )
 {
 	file.scrollOffset -= 5
-	if (file.scrollOffset < 0)
+	if ( file.scrollOffset < 0 )
 		file.scrollOffset = 0
 	Hud_SetFocused( Hud_GetChild( file.menu, "BtnModListSlider" ) )
 	ValidateScrollOffset()
@@ -661,9 +667,10 @@ void function OnScrollUp( var button )
 
 void function OnDownArrowSelected( var button )
 {
-	if ( file.mods.len() <= PANELS_LEN ) return
+	if ( file.mods.len() <= PANELS_LEN )
+		return
 	file.scrollOffset += 1
-	if (file.scrollOffset + PANELS_LEN > file.mods.len())
+	if ( file.scrollOffset + PANELS_LEN > file.mods.len() )
 		file.scrollOffset = file.mods.len() - PANELS_LEN
 	ValidateScrollOffset()
 }
@@ -671,7 +678,7 @@ void function OnDownArrowSelected( var button )
 void function OnUpArrowSelected( var button )
 {
 	file.scrollOffset -= 1
-	if (file.scrollOffset < 0)
+	if ( file.scrollOffset < 0 )
 		file.scrollOffset = 0
 	ValidateScrollOffset()
 }
@@ -679,9 +686,9 @@ void function OnUpArrowSelected( var button )
 void function ValidateScrollOffset()
 {
 	RefreshMods()
-	if( file.scrollOffset + 15  > file.mods.len() )
+	if ( file.scrollOffset + 15 > file.mods.len() )
 		file.scrollOffset = file.mods.len() - 15
-	if( file.scrollOffset < 0 )
+	if ( file.scrollOffset < 0 )
 		file.scrollOffset = 0
 	HideAllPanels()
 	DisplayModPanels()
@@ -692,7 +699,7 @@ void function ValidateScrollOffset()
 // Static arrays don't have the .find method for some reason
 bool function StaticFind( string mod )
 {
-	foreach( string smod in CORE_MODS )
+	foreach ( string smod in CORE_MODS )
 		if ( mod == smod )
 			return true
 	return false
@@ -707,7 +714,8 @@ void function ReloadMods()
 	int svCheatsOriginal = GetConVarInt( "sv_cheats" )
 	ClientCommand( "sv_cheats 1;weapon_reparse;sv_cheats " + svCheatsOriginal ) // weapon_reparse only works if a server is running and sv_cheats is 1, gotta figure this out eventually
 
-	// note: the logic for this seems really odd, unsure why it doesn't seem to update, since the same code seems to get run irregardless of whether we've read weapon data before
+	// note: the logic for this seems really odd, unsure why it doesn't seem to update, since
+	// the same code seems to get run irregardless of whether we've read weapon data before
 	ClientCommand( "uiscript_reset" )
 }
 

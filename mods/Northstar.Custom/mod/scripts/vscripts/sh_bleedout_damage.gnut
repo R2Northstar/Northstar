@@ -1,10 +1,12 @@
-// note: this is technically vanilla content, since bleedout was shipped with retail, but it needs custom remote functions which would break vanilla compatiblity, so it's not in Northstar.CustomServers
+// note: this is technically vanilla content, since bleedout was shipped with retail, but it needs custom
+// remote functions which would break vanilla compatiblity, so it's not in Northstar.CustomServers
 // idk why bleedout was even shipped in retail lmao
 global function BleedoutDamage_PreInit
 global function BleedoutDamage_Init
 global function SetShouldPlayerStartBleedoutFunc
 
-struct {
+struct
+{
 	array<entity> bleedingPlayers // this is in _bleedout already, but it doesn't expose a way to track it, so we have to track it ourselves
 	bool functionref( entity, var ) shouldPlayerStartBleedoutFunc = null
 } file
@@ -12,7 +14,7 @@ struct {
 void function BleedoutDamage_PreInit()
 {
 	AddCallback_OnRegisteringCustomNetworkVars( Bleedout_RegisterRemoteFunctions )
-	
+
 	#if CLIENT
 		// because playlist var overrides fucking suck, they aren't actually updated by this point
 		// client bleedout can be inited late enough that we can just init it on local player spawn
@@ -39,15 +41,34 @@ const bool DEFAULT_DEATH_ON_TEAM_BLEEDOUT = false
 
 void function BleedoutDamage_Init()
 {
-	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_BLEEDOUT", "riff_player_bleedout", [ "#SETTING_DISABLED", "#SETTING_DEFAULT", "#SETTING_ENABLED" ], "0" )
-	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_BLEEDOUT", "player_bleedout_forceHolster", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], DEFAULT_FORCE_WEAPON_HOLSTER.tostring() )
-	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_BLEEDOUT", "player_bleedout_forceDeathOnTeamBleedout", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], DEFAULT_DEATH_ON_TEAM_BLEEDOUT.tostring() )
+	AddPrivateMatchModeSettingEnum(
+		"#MODE_SETTING_CATEGORY_BLEEDOUT",
+		"riff_player_bleedout",
+		[ "#SETTING_DISABLED", "#SETTING_DEFAULT", "#SETTING_ENABLED" ],
+		"0"
+	)
+	AddPrivateMatchModeSettingEnum(
+		"#MODE_SETTING_CATEGORY_BLEEDOUT",
+		"player_bleedout_forceHolster",
+		[ "#SETTING_DISABLED", "#SETTING_ENABLED" ],
+		DEFAULT_FORCE_WEAPON_HOLSTER.tostring()
+	)
+	AddPrivateMatchModeSettingEnum(
+		"#MODE_SETTING_CATEGORY_BLEEDOUT",
+		"player_bleedout_forceDeathOnTeamBleedout",
+		[ "#SETTING_DISABLED", "#SETTING_ENABLED" ],
+		DEFAULT_DEATH_ON_TEAM_BLEEDOUT.tostring()
+	)
 	AddPrivateMatchModeSettingArbitrary( "#MODE_SETTING_CATEGORY_BLEEDOUT", "player_bleedout_bleedoutTime", DEFAULT_BLEEDOUT_TIME.tostring() )
 	AddPrivateMatchModeSettingArbitrary( "#MODE_SETTING_CATEGORY_BLEEDOUT", "player_bleedout_firstAidTime", DEFAULT_FIRSTAID_TIME.tostring() )
 	AddPrivateMatchModeSettingArbitrary( "#MODE_SETTING_CATEGORY_BLEEDOUT", "player_bleedout_firstAidTimeSelf", DEFAULT_FIRSTAID_TIME_SELF.tostring() )
 	AddPrivateMatchModeSettingArbitrary( "#MODE_SETTING_CATEGORY_BLEEDOUT", "player_bleedout_firstAidHealPercent", DEFAULT_FIRSTAID_HEAL_PERCENT.tostring() )
-	AddPrivateMatchModeSettingArbitrary( "#MODE_SETTING_CATEGORY_BLEEDOUT", "player_bleedout_aiBleedingPlayerMissChance", DEFAULT_AI_BLEEDING_PLAYER_MISS_CHANCE.tostring() )
-	
+	AddPrivateMatchModeSettingArbitrary(
+		"#MODE_SETTING_CATEGORY_BLEEDOUT",
+		"player_bleedout_aiBleedingPlayerMissChance",
+		DEFAULT_AI_BLEEDING_PLAYER_MISS_CHANCE.tostring()
+	)
+
 	#if CLIENT
 		// manually register signals here: defensive fix so we don't crash
 		RegisterSignal( "Bleedout_OnRevive" )
@@ -56,10 +77,10 @@ void function BleedoutDamage_Init()
 		// sh_riff_settings should set this correctly on server
 		if ( !Riff_PlayerBleedout() )
 			return
-		
+
 		AddDamageCallback( "player", HandleDamageForBleedout ) // do this irregardless of whether scripts inited, given it should always be used for bleedout
-		Bleedout_SetCallback_OnPlayerStartBleedout( OnPlayerBleedoutBegin ) // kinda sucks we have to use this callback since game scripts could be using it		
-		
+		Bleedout_SetCallback_OnPlayerStartBleedout( OnPlayerBleedoutBegin ) // kinda sucks we have to use this callback since game scripts could be using it
+
 		// dont init if scripts already inited it manually
 		if ( !Bleedout_IsBleedoutLogicActive() )
 		{
@@ -76,7 +97,7 @@ void function SetShouldPlayerStartBleedoutFunc( bool functionref( entity, var ) 
 
 void function InitSharedBleedoutWithPlaylistVars()
 {
-	BleedoutShared_Init( 
+	BleedoutShared_Init(
 		GetCurrentPlaylistVarFloat( "player_bleedout_bleedoutTime", DEFAULT_BLEEDOUT_TIME ),
 		GetCurrentPlaylistVarFloat( "player_bleedout_firstAidTime", DEFAULT_FIRSTAID_TIME ),
 		GetCurrentPlaylistVarFloat( "player_bleedout_firstAidTimeSelf", DEFAULT_FIRSTAID_TIME_SELF ),
@@ -88,74 +109,78 @@ void function InitSharedBleedoutWithPlaylistVars()
 }
 
 #if CLIENT
-void function InitClientBleedoutForLocalPlayer( entity player )
-{
-	// dont init if bleedout is disabled or scripts already inited it
-	if ( !Riff_PlayerBleedout() || Bleedout_IsBleedoutLogicActive() )
-		return
-	
-	InitSharedBleedoutWithPlaylistVars()
-	BleedoutClient_Init()
-}
+	void function InitClientBleedoutForLocalPlayer( entity player )
+	{
+		// dont init if bleedout is disabled or scripts already inited it
+		if ( !Riff_PlayerBleedout() || Bleedout_IsBleedoutLogicActive() )
+			return
+
+		InitSharedBleedoutWithPlaylistVars()
+		BleedoutClient_Init()
+	}
 #endif
 
 #if SERVER
-void function HandleDamageForBleedout( entity player, var damageInfo )
-{
-	if ( IsInstantDeath( damageInfo ) || DamageInfo_GetForceKill( damageInfo ) || player.IsTitan() || file.bleedingPlayers.contains( player ) )
-		return
-	
-	if ( file.shouldPlayerStartBleedoutFunc != null )
-		if ( !file.shouldPlayerStartBleedoutFunc( player, damageInfo ) )
+	void function HandleDamageForBleedout( entity player, var damageInfo )
+	{
+		if ( IsInstantDeath( damageInfo ) || DamageInfo_GetForceKill( damageInfo ) || player.IsTitan() || file.bleedingPlayers.contains( player ) )
 			return
-	
-	// check if damage would kill player
-	if ( player.GetHealth() - DamageInfo_GetDamage( damageInfo ) <= 0 )
-	{	
-		Bleedout_StartPlayerBleedout( player, DamageInfo_GetAttacker( damageInfo ) )
-		DamageInfo_SetDamage( damageInfo, 1 ) // prevent player from dying, but if we set it to 0, player won't receive any knockback from damage source
+
+		if ( file.shouldPlayerStartBleedoutFunc != null )
+			if ( !file.shouldPlayerStartBleedoutFunc( player, damageInfo ) )
+				return
+
+		// check if damage would kill player
+		if ( player.GetHealth() - DamageInfo_GetDamage( damageInfo ) <= 0 )
+		{
+			Bleedout_StartPlayerBleedout( player, DamageInfo_GetAttacker( damageInfo ) )
+			DamageInfo_SetDamage( damageInfo, 1 ) // prevent player from dying, but if we set it to 0, player won't receive any knockback from damage source
+		}
 	}
-}
 
-void function OnPlayerBleedoutBegin( entity player )
-{
-	file.bleedingPlayers.append( player )
-	EmitSoundOnEntityOnlyToPlayer( player, player, "Player_Death_Begin" )
-	
-	thread PlayerBleedoutGracePeriod( player )
-
-	// would prefer to use Bleedout_SetCallback_OnPlayerGiveFirstAid for this, but it doesn't expose the player that's receiving first aid for some reason
-	thread TrackPlayerBleedout( player )
-}
-
-void function PlayerBleedoutGracePeriod( entity player )
-{
-	player.EndSignal( "OnDeath" )
-	player.EndSignal( "OnDestroy" )
-	
-	OnThreadEnd( function() : ( player )
+	void function OnPlayerBleedoutBegin( entity player )
 	{
-		player.ClearInvulnerable()
-		StopSoundOnEntity( player, "Player_Death_Begin" )
-	})
-	
-	player.SetInvulnerable()
-	wait 0.25
-}
+		file.bleedingPlayers.append( player )
+		EmitSoundOnEntityOnlyToPlayer( player, player, "Player_Death_Begin" )
 
-void function TrackPlayerBleedout( entity player )
-{
-	player.EndSignal( "OnDeath" )
-	player.EndSignal( "OnDestroy" )
-	
-	OnThreadEnd( function() : ( player )
+		thread PlayerBleedoutGracePeriod( player )
+
+		// would prefer to use Bleedout_SetCallback_OnPlayerGiveFirstAid for this, but it doesn't expose the player that's receiving first aid for some reason
+		thread TrackPlayerBleedout( player )
+	}
+
+	void function PlayerBleedoutGracePeriod( entity player )
 	{
-		file.bleedingPlayers.remove( file.bleedingPlayers.find( player ) )
-	})
-	
-	WaitFrame() // wait a frame, since this gets called before this status effect is added
-	
-	while ( StatusEffect_Get( player, eStatusEffect.bleedoutDOF ) != 0 )
-		WaitFrame() 
-}
+		player.EndSignal( "OnDeath" )
+		player.EndSignal( "OnDestroy" )
+
+		OnThreadEnd(
+			function() : ( player )
+			{
+				player.ClearInvulnerable()
+				StopSoundOnEntity( player, "Player_Death_Begin" )
+			}
+		)
+
+		player.SetInvulnerable()
+		wait 0.25
+	}
+
+	void function TrackPlayerBleedout( entity player )
+	{
+		player.EndSignal( "OnDeath" )
+		player.EndSignal( "OnDestroy" )
+
+		OnThreadEnd(
+			function() : ( player )
+			{
+				file.bleedingPlayers.remove( file.bleedingPlayers.find( player ) )
+			}
+		)
+
+		WaitFrame() // wait a frame, since this gets called before this status effect is added
+
+		while ( StatusEffect_Get( player, eStatusEffect.bleedoutDOF ) != 0 )
+			WaitFrame()
+	}
 #endif

@@ -21,33 +21,29 @@ global function SpawnZiplineEntities
 global function GetZiplineLandingAnims
 global function AnimDoneStuckInSolidFailSafe
 
-struct {
+struct
+{
 	array<string> zipLineLandingAnimations = [
 		"pt_zipline_dismount_standF",
 		"pt_zipline_dismount_crouchF",
 		"pt_zipline_dismount_crouch180",
 		"pt_zipline_dismount_breakright",
-		"pt_zipline_land"
-		"pt_zipline_land"
-		"pt_zipline_land"
-		"pt_zipline_land"
-		"pt_zipline_land"
+		"pt_zipline_land",
+		"pt_zipline_land",
+		"pt_zipline_land",
+		"pt_zipline_land",
+		"pt_zipline_land",
 		"pt_zipline_land"
 	]
 
-	array<string> zipLinePlayerLandingAnimations = [
-		"pt_zipline_dismount_standF"
-	]
+	array<string> zipLinePlayerLandingAnimations = [ "pt_zipline_dismount_standF" ]
 
-	array<string> zipLineReadyAnimations = [
-		"pt_zipline_ready_idleA",
-		"pt_zipline_ready_idleB"
-	]
+	array<string> zipLineReadyAnimations = [ "pt_zipline_ready_idleA", "pt_zipline_ready_idleB" ]
 } file
 
-//typedef EntitiesDidLoadCallbackType void functionref(entity)
-array<void functionref(entity,entity)> 	_ZiplineStartCallbacks
-array<void functionref(entity)> 		_ZiplineStopCallbacks
+// typedef EntitiesDidLoadCallbackType void functionref(entity)
+array<void functionref( entity, entity )> _ZiplineStartCallbacks
+array<void functionref( entity )> _ZiplineStopCallbacks
 
 function Zipline_Init()
 {
@@ -63,12 +59,11 @@ function Zipline_Init()
 	level.MIN_ZIPLINE_LAND_DIST_SQRD <- 128 * 128
 	level.MIN_ZIPLINE_HOOK_DIST_SQRD <- 256 * 256
 	level._info_spawnpoint_dropships <- {}
-	AddSpawnCallback( "info_spawnpoint_dropship", 		AddToSpawnpointDropships )
+	AddSpawnCallback( "info_spawnpoint_dropship", AddToSpawnpointDropships )
 
 	PrecacheParticleSystem( $"hmn_mcorps_jump_jet_wallrun_full" )
 	PrecacheParticleSystem( $"hmn_imc_jump_jet_wallrun_full" )
 	PrecacheParticleSystem( $"P_Zipline_hld_1" )
-
 }
 
 void function AddToSpawnpointDropships( entity self )
@@ -93,7 +88,6 @@ function GetZiplineSpawns()
 	return targets
 }
 
-
 function GuyZiplinesToGround( guy, Table )
 {
 	expect entity( guy )
@@ -106,14 +100,14 @@ function GuyZiplinesToGround( guy, Table )
 		}
 	)
 
-	local ship		= Table.ship
-	local dropPos 	= GetDropPos( Table )
+	local ship = Table.ship
+	local dropPos = GetDropPos( Table )
 
 	// ship didn't find a drop spot
 	if ( dropPos == null )
 		WaitForever()
 
-	//DebugDrawLine( guy.GetOrigin(), dropPos, 255, 0, 0, true, 8.0 )
+	// DebugDrawLine( guy.GetOrigin(), dropPos, 255, 0, 0, true, 8.0 )
 
 	local attachOrigin = ship.GetAttachmentOrigin( Table.attachIndex )
 	local nodeOrigin = dropPos
@@ -133,14 +127,14 @@ function GuyZiplinesToGround( guy, Table )
 
 	waitthread GuyRidesZiplineToGround( guy, Table, e, dropPos )
 
-	//DebugDrawLine( guy.GetOrigin(), dropPos, 255, 0, 135, true, 5.0 )
+	// DebugDrawLine( guy.GetOrigin(), dropPos, 255, 0, 135, true, 5.0 )
 
 	if ( !( "forward" in Table ) )
 	{
 		// the sequence ended before the guy reached the ground
 		local start = guy.GetOrigin()
 		// this needs functionification
-		local end = Table.hookOrigin + Vector( 0,0,-80 )
+		local end = Table.hookOrigin + Vector( 0, 0, -80 )
 		TraceResults result = TraceLine( start, end, guy )
 		local angles = guy.GetAngles()
 		Table.forward <- AnglesToForward( angles )
@@ -149,7 +143,7 @@ function GuyZiplinesToGround( guy, Table )
 
 	// the guy detaches and falls to the ground
 	string landingAnim = file.zipLineLandingAnimations.getrandom()
-	//DrawArrow( guy.GetOrigin(), guy.GetAngles(), 5.0, 80 )
+	// DrawArrow( guy.GetOrigin(), guy.GetAngles(), 5.0, 80 )
 
 	if ( !guy.IsInterruptable() )
 		return
@@ -193,7 +187,7 @@ function TrackMoverDirection( mover, e )
 	e.oldOrigin <- origin
 	e.currentOrigin <- origin
 
-	for ( ;; )
+	for ( ; ; )
 	{
 		WaitFrame()
 		e.oldOrigin = e.currentOrigin
@@ -225,7 +219,6 @@ function GuyRidesZiplineToGround( entity guy, zipline, e, dropPos )
 		}
 	)
 
-
 	local rideDist = Distance( guy.GetOrigin(), zipline.hookOrigin )
 
 	// how long it takes the zipline to travel 1000 units
@@ -236,7 +229,6 @@ function GuyRidesZiplineToGround( entity guy, zipline, e, dropPos )
 
 	// how long it takes the rider to ride 1000 units
 	float rideTime = Graph( rideDist, 0, 1000, 0, 2.5 )
-
 
 	// orient the script_mover in the direction its going
 	local angles = guy.GetAngles()
@@ -255,14 +247,13 @@ function GuyRidesZiplineToGround( entity guy, zipline, e, dropPos )
 	// see the zipline lerp in
 	SpawnZiplineEntities( zipline )
 
-
 	// the zipline shoots out
 	ZiplineMover( expect entity( zipline.end ), zipline.hookOrigin, zipline.pinTime )
 
 	EmitSoundAtPosition( TEAM_UNASSIGNED, zipAttachOrigin, "dropship_zipline_zipfire" )
 	delaythread( zipline.pinTime ) ZiplineMoveCleanup( zipline )
 
-//	wait zipline.pinTime * 0.37
+	// 	wait zipline.pinTime * 0.37
 	wait zipline.pinTime
 	EmitSoundAtPosition( TEAM_UNASSIGNED, zipline.hookOrigin, "dropship_zipline_impact" )
 
@@ -284,19 +275,19 @@ function GuyRidesZiplineToGround( entity guy, zipline, e, dropPos )
 	// Anim_PlayWithRefPoint requires that the guy be parented to the ref point.
 	thread PlayAnim( guy, ZIPLINE_IDLE_ANIM, mover, "ref" )
 
-	//thread ZiplineAutoClipsToGeo( zipline, mover )
+	// thread ZiplineAutoClipsToGeo( zipline, mover )
 
-	//wait 0.4 // some time to clear the lip
+	// wait 0.4 // some time to clear the lip
 
 	local nodeOrigin = dropPos
-	//DebugDrawLine( guy.GetOrigin(), nodeOrigin, 200, 255, 50, true, 8.0 )
+	// DebugDrawLine( guy.GetOrigin(), nodeOrigin, 200, 255, 50, true, 8.0 )
 
 	rideDist = Distance( guy.GetOrigin(), nodeOrigin )
 	rideDist -= 100 // for animation at end
 	if ( rideDist < 0 )
 		rideDist = 0
 	rideTime = Graph( rideDist, 0, 100, 0, 0.15 )
-/*
+	/*
 	printt( "ride time " + rideTime )
 	local endTime = Time() + rideTime
 	for ( ;; )
@@ -347,7 +338,7 @@ function MoverMovesToGround( zipline, mover, timeTotal )
 	mover.SetAngles( angles )
 
 	local start = zipline.start.GetOrigin()
-	local end = zipline.hookOrigin + Vector( 0,0,-180 )
+	local end = zipline.hookOrigin + Vector( 0, 0, -180 )
 
 	local blendTime = 0.5
 	if ( timeTotal <= blendTime )
@@ -361,7 +352,6 @@ function MoverMovesToGround( zipline, mover, timeTotal )
 	mover.RotateTo( angles, 0.2 )
 }
 
-
 function WaitUntilZiplinerNearsGround( guy, zipline )
 {
 	local start, end, frac
@@ -373,37 +363,37 @@ function WaitUntilZiplinerNearsGround( guy, zipline )
 	if ( guy.IsNPC() )
 		dropDist = 150
 	else
-		dropDist = 10  //much closer for player
+		dropDist = 10 // much closer for player
 
 	local mins = guy.GetBoundingMins()
 	local maxs = guy.GetBoundingMaxs()
 
 	TraceResults result
 
-	for ( ;; )
+	for ( ; ; )
 	{
 		start = guy.GetOrigin()
-		end = start + Vector(0,0,-dropDist)
+		end = start + Vector( 0, 0, -dropDist )
 		end += forward * dropDist
-//		TraceResults result = TraceLine( start, end, guy )
+		// 		TraceResults result = TraceLine( start, end, guy )
 		result = TraceHull( start, end, mins, maxs, guy, TRACE_MASK_NPCSOLID_BRUSHONLY, TRACE_COLLISION_GROUP_NONE )
-		//DebugDrawLine( start, end, 255, 0, 0, true, 0.2 )
+		// DebugDrawLine( start, end, 255, 0, 0, true, 0.2 )
 
 		if ( result.fraction < 1.0 )
 			break
 
 		start = guy.GetOrigin()
-		end = zipline.hookOrigin + Vector( 0,0,-80 )
+		end = zipline.hookOrigin + Vector( 0, 0, -80 )
 
 		zipForward = ( end - start )
 		zipForward.Norm()
 		zipForward *= 250
 
 		end = start + zipForward
-		//DebugDrawLine( start, end, 255, 0, 0, true, 0.1 )
+		// DebugDrawLine( start, end, 255, 0, 0, true, 0.1 )
 
-//		result = TraceLine( start, end, guy )
-		//DebugDrawLine( start, end, 255, 150, 0, true, 0.2 )
+		// 		result = TraceLine( start, end, guy )
+		// DebugDrawLine( start, end, 255, 150, 0, true, 0.2 )
 		result = TraceHull( start, end, mins, maxs, guy, TRACE_MASK_NPCSOLID_BRUSHONLY, TRACE_COLLISION_GROUP_NONE )
 
 		if ( result.fraction < 1.0 )
@@ -415,7 +405,6 @@ function WaitUntilZiplinerNearsGround( guy, zipline )
 	zipline.origin <- result.endPos
 	zipline.forward <- forward
 }
-
 
 function ZiplineRetracts( zipline )
 {
@@ -476,13 +465,13 @@ function ZiplineRetracts( zipline )
 		return
 
 	progress = startDist / totalDist
-//	newMidPoint = end * progress + start * ( 1 - progress )
-//
-//	// how far from the midpoint we are, vertically
-//	local mid_z_offset = newMidPoint.z - mid.z
-//	local addOffset
+	// 	newMidPoint = end * progress + start * ( 1 - progress )
+	//
+	// 	// how far from the midpoint we are, vertically
+	// 	local mid_z_offset = newMidPoint.z - mid.z
+	// 	local addOffset
 
-	for ( ;; )
+	for ( ; ; )
 	{
 		start = zipline.start.GetOrigin()
 		end = zipline.end.GetOrigin()
@@ -494,9 +483,9 @@ function ZiplineRetracts( zipline )
 			break
 
 		newMidPoint = mid * ( 1 - midRetractProgress ) + newMidPoint * midRetractProgress
-		//addOffset = mid_z_offset * ( 1 - midRetractProgress )
-		//newMidPoint.z -= addOffset
-		//DebugDrawLine( zipline.mid.GetOrigin(), newMidPoint, 255, 0, 0, true, 0.2 )
+		// addOffset = mid_z_offset * ( 1 - midRetractProgress )
+		// newMidPoint.z -= addOffset
+		// DebugDrawLine( zipline.mid.GetOrigin(), newMidPoint, 255, 0, 0, true, 0.2 )
 
 		if ( !IsValid( zipline.mid ) )
 		{
@@ -507,22 +496,21 @@ function ZiplineRetracts( zipline )
 			zipline.mid.SetOrigin( newMidPoint )
 		}
 
-
-//		startDist = Distance( mid, start )
-//		endDist = Distance( mid, end )
-//		totalDist = startDist + endDist
-//		progress = startDist / totalDist
+		// 		startDist = Distance( mid, start )
+		// 		endDist = Distance( mid, end )
+		// 		totalDist = startDist + endDist
+		// 		progress = startDist / totalDist
 		WaitFrame()
 	}
 
-//	DebugDrawLine( zipline.start.GetOrigin(), zipline.mid.GetOrigin(), 255, 100, 50, true, 5.0 )
-//	DebugDrawLine( zipline.end.GetOrigin(), zipline.mid.GetOrigin(), 60, 100, 244, true, 5.0 )
+	// 	DebugDrawLine( zipline.start.GetOrigin(), zipline.mid.GetOrigin(), 255, 100, 50, true, 5.0 )
+	// 	DebugDrawLine( zipline.end.GetOrigin(), zipline.mid.GetOrigin(), 60, 100, 244, true, 5.0 )
 	local moveTime = 0.4
 	ZiplineMover( expect entity( zipline.start ), zipline.end.GetOrigin(), moveTime )
 	ZiplineMover( expect entity( zipline.mid ), zipline.end.GetOrigin(), moveTime )
 
 	wait moveTime
-/*
+	/*
 	startTime = Time()
 	endTime = startTime + zipline.retractTime
 	end = zipline.end.GetOrigin()
@@ -602,8 +590,8 @@ function SpawnZiplineEntities( Table )
 {
 	// after origins are set
 	DispatchSpawn( Table.start )
-	DispatchSpawn( Table.mid   )
-	DispatchSpawn( Table.end   )
+	DispatchSpawn( Table.mid )
+	DispatchSpawn( Table.end )
 	return Table
 }
 
@@ -634,17 +622,17 @@ function GetHookOriginFromNode( origin, nodeOrigin, attachOrigin )
 	local dropDist = Length( dropVec )
 	dropVec.Norm()
 
-//	DrawArrow( nodeOrigin, Vector(0,0,0), 5, 100 )
+	// 	DrawArrow( nodeOrigin, Vector(0,0,0), 5, 100 )
 	local attachEnd = attachOrigin + dropVec * ( dropDist + 1500 ) // some buffer
 	TraceResults zipTrace = TraceLine( attachOrigin, attachEnd, null, TRACE_MASK_NPCWORLDSTATIC )
 
-//	DebugDrawLine( attachOrigin, zipTrace.endPos, 0, 255, 0, true, 5.0 )
-//	DebugDrawLine( zipTrace.endPos, attachEnd, 255, 0, 0, true, 5.0 )
+	// 	DebugDrawLine( attachOrigin, zipTrace.endPos, 0, 255, 0, true, 5.0 )
+	// 	DebugDrawLine( zipTrace.endPos, attachEnd, 255, 0, 0, true, 5.0 )
 
 	// zipline didn't connect with anything
 	if ( zipTrace.fraction == 1.0 )
 	{
-//		DebugDrawLine( attachOrigin, attachEnd, 255, 255, 0, true, 5.0 )
+		// 		DebugDrawLine( attachOrigin, attachEnd, 255, 255, 0, true, 5.0 )
 		return null
 	}
 
@@ -665,12 +653,12 @@ function CreateZiplineJetEffects( entity player )
 	asset jumpJetEffectEnemyName = $"hmn_mcorps_jump_jet_wallrun_full"
 	int playerTeam = player.GetTeam()
 
-	//HACK!
-	//Create 2 sets of jump jet effects, 1 visible to friendly, 1 visible to enemy
-	//Doing this for a myriad of reasons on the server as opposed to on the client like the rest
-	//of the jump jet effects. Since ziplining isn't all that common an action it should be fine
+	// HACK!
+	// Create 2 sets of jump jet effects, 1 visible to friendly, 1 visible to enemy
+	// Doing this for a myriad of reasons on the server as opposed to on the client like the rest
+	// of the jump jet effects. Since ziplining isn't all that common an action it should be fine
 
- 	//create left jump jetfriendly
+	// create left jump jetfriendly
 	entity leftJumpJetFriendly = CreateEntity( "info_particle_system" )
 	leftJumpJetFriendly.kv.start_active = 1
 	leftJumpJetFriendly.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY
@@ -678,10 +666,10 @@ function CreateZiplineJetEffects( entity player )
 	SetTargetName( leftJumpJetFriendly, UniqueString() )
 	leftJumpJetFriendly.SetParent( player, "vent_left_back", false, 0 )
 	SetTeam( leftJumpJetFriendly, playerTeam )
-	leftJumpJetFriendly.SetOwner( player)
+	leftJumpJetFriendly.SetOwner( player )
 	DispatchSpawn( leftJumpJetFriendly )
 
-	//now create right jump jet	for friendly
+	// now create right jump jet	for friendly
 	entity rightJumpJetFriendly = CreateEntity( "info_particle_system" )
 	rightJumpJetFriendly.kv.start_active = 1
 	rightJumpJetFriendly.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY
@@ -689,10 +677,10 @@ function CreateZiplineJetEffects( entity player )
 	SetTargetName( rightJumpJetFriendly, UniqueString() )
 	rightJumpJetFriendly.SetParent( player, "vent_right_back", false, 0 )
 	SetTeam( rightJumpJetFriendly, playerTeam )
-	rightJumpJetFriendly.SetOwner( player)
+	rightJumpJetFriendly.SetOwner( player )
 	DispatchSpawn( rightJumpJetFriendly )
 
-	//create left jump jet for enemy
+	// create left jump jet for enemy
 	entity leftJumpJetEnemy = CreateEntity( "info_particle_system" )
 	leftJumpJetEnemy.kv.start_active = 1
 	leftJumpJetEnemy.kv.VisibilityFlags = ENTITY_VISIBLE_TO_ENEMY
@@ -700,10 +688,10 @@ function CreateZiplineJetEffects( entity player )
 	SetTargetName( leftJumpJetEnemy, UniqueString() )
 	leftJumpJetEnemy.SetParent( player, "vent_left_back", false, 0 )
 	SetTeam( leftJumpJetEnemy, playerTeam )
-	leftJumpJetEnemy.SetOwner( player)
+	leftJumpJetEnemy.SetOwner( player )
 	DispatchSpawn( leftJumpJetEnemy )
 
-	//now create right jump jet	for enemy
+	// now create right jump jet	for enemy
 	entity rightJumpJetEnemy = CreateEntity( "info_particle_system" )
 	rightJumpJetEnemy.kv.start_active = 1
 	rightJumpJetEnemy.kv.VisibilityFlags = ENTITY_VISIBLE_TO_ENEMY
@@ -711,30 +699,30 @@ function CreateZiplineJetEffects( entity player )
 	SetTargetName( rightJumpJetEnemy, UniqueString() )
 	rightJumpJetEnemy.SetParent( player, "vent_right_back", false, 0 )
 	SetTeam( rightJumpJetEnemy, playerTeam )
-	rightJumpJetEnemy.SetOwner( player)
+	rightJumpJetEnemy.SetOwner( player )
 	DispatchSpawn( rightJumpJetEnemy )
 
-	//sparks from the hand
+	// sparks from the hand
 	entity handSparks = CreateEntity( "info_particle_system" )
 	handSparks.kv.start_active = 1
 	handSparks.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY
 	handSparks.SetValueForEffectNameKey( $"P_Zipline_hld_1" )
 	SetTargetName( handSparks, UniqueString() )
 	handSparks.SetParent( player, "L_HAND", false, 0 )
-	handSparks.SetOwner( player)
+	handSparks.SetOwner( player )
 	DispatchSpawn( handSparks )
 
-	//Do it again for greater intensity!
+	// Do it again for greater intensity!
 	entity handSparks2 = CreateEntity( "info_particle_system" )
 	handSparks2.kv.start_active = 1
 	handSparks2.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY
 	handSparks2.SetValueForEffectNameKey( $"P_Zipline_hld_1" )
 	SetTargetName( handSparks2, UniqueString() )
 	handSparks2.SetParent( player, "L_HAND", false, 0 )
-	handSparks2.SetOwner( player)
+	handSparks2.SetOwner( player )
 	DispatchSpawn( handSparks2 )
 
-	player.s.ziplineEffects.append( leftJumpJetFriendly	)
+	player.s.ziplineEffects.append( leftJumpJetFriendly )
 	player.s.ziplineEffects.append( rightJumpJetFriendly )
 	player.s.ziplineEffects.append( leftJumpJetEnemy )
 	player.s.ziplineEffects.append( rightJumpJetEnemy )
@@ -749,7 +737,6 @@ void function CodeCallback_ZiplineMount( entity player, entity zipline )
 	#if SERVER
 		EmitDifferentSoundsOnEntityForPlayerAndWorld( "player_zipline_attach", "3p_zipline_attach", player, player )
 	#endif
-
 }
 
 void function CodeCallback_ZiplineStart( entity player, entity zipline )
@@ -767,16 +754,16 @@ void function CodeCallback_ZiplineMove( entity player, entity zipline )
 	#if SERVER
 		if ( player.IsPhaseShifted() )
 		{
-			foreach( effect in player.s.ziplineEffects )
+			foreach ( effect in player.s.ziplineEffects )
 			{
 				IsValid( effect )
-					effect.Destroy()
+				effect.Destroy()
 			}
 			player.s.ziplineEffects.clear()
 		}
 		else if ( player.s.ziplineEffects.len() <= 0 )
 		{
-			CreateZiplineJetEffects( player );
+			CreateZiplineJetEffects( player )
 		}
 	#endif
 }
@@ -784,10 +771,10 @@ void function CodeCallback_ZiplineMove( entity player, entity zipline )
 void function CodeCallback_ZiplineStop( entity player )
 {
 	#if SERVER
-		foreach( effect in player.s.ziplineEffects )
+		foreach ( effect in player.s.ziplineEffects )
 		{
 			IsValid( effect )
-				effect.Destroy()
+			effect.Destroy()
 		}
 		player.s.ziplineEffects.clear()
 
@@ -801,12 +788,12 @@ void function CodeCallback_ZiplineStop( entity player )
 	#endif
 }
 
-void function AddCallback_ZiplineStart( void functionref(entity,entity) callback )
+void function AddCallback_ZiplineStart( void functionref( entity, entity ) callback )
 {
 	_ZiplineStartCallbacks.append( callback )
 }
 
-void function AddCallback_ZiplineStop( void functionref(entity) callback )
+void function AddCallback_ZiplineStop( void functionref( entity ) callback )
 {
 	_ZiplineStopCallbacks.append( callback )
 }

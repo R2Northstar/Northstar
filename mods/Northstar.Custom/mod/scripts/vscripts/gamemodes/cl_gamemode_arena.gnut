@@ -1,21 +1,27 @@
 global function ClGameModeArena_Init
 global function ServerCallback_CreateMoneyParticles
 
-struct {
+struct
+{
 	var moneyRui
 } file
 
 void function ClGameModeArena_Init()
 {
 	AddCallback_OnClientScriptInit( CreateArenaUI )
-	
+
 	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_INTRO, "music_mp_fd_intro_easy", TEAM_MILITIA )
 	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_INTRO, "music_mp_fd_intro_easy", TEAM_IMC )
 }
 
 void function CreateArenaUI( entity player )
 {
-	AddEventNotificationCallback( eEventNotifications.FD_BoughtItem, void function( entity e, var v ) {} )
+	AddEventNotificationCallback(
+		eEventNotifications.FD_BoughtItem,
+		void function( entity e, var v )
+		{
+		}
+	)
 
 	var rui = CreateCockpitRui( $"ui/fd_score_splash.rpak", 500 )
 	RuiTrackInt( rui, "pointValue", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "FD_money" ) )

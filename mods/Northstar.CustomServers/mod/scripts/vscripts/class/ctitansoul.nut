@@ -33,9 +33,8 @@ function CodeCallback_RegisterClass_CTitanSoul()
 		this.rodeoRiderTracker = {} // all players that rode this titan, so they cant get multiple score events
 		this.capturable = false
 		this.followOnly = false
-		this.rodeoReservedSlots = arrayofsize( PROTOTYPE_DEFAULT_TITAN_RODEO_SLOTS, null )  //hardcoded 3 slots for now!
+		this.rodeoReservedSlots = arrayofsize( PROTOTYPE_DEFAULT_TITAN_RODEO_SLOTS, null ) // hardcoded 3 slots for now!
 	}
-
 
 	// function SoulDeath()
 	function CTitanSoul::SoulDestroy()

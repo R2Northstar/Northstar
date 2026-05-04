@@ -45,8 +45,7 @@ function CodeCallback_RegisterClass_CAI_BaseNPC()
 	#document( "SetSpawnOption_Weapon", "Specify spawn weapon and mods" )
 	#document( "SetSpawnOption_NPCTitan", "Spawn titan of type" )
 
-
-	//printl( "Class Script: CAI_BaseNPC" )
+	// printl( "Class Script: CAI_BaseNPC" )
 
 	CAI_BaseNPC.ClassName <- "CAI_BaseNPC"
 	CAI_BaseNPC.supportsXRay <- null
@@ -81,8 +80,6 @@ function CodeCallback_RegisterClass_CAI_BaseNPC()
 	}
 	#document( CAI_BaseNPC, "InCombat", "Returns true if NPC is in combat" )
 }
-
-
 
 function SetSpawnOption_AISettings( entity npc, setting )
 {
@@ -126,7 +123,7 @@ void function SetSpawnOption_Weapon( entity npc, string weapon, array<string> mo
 	}
 }
 
-void function SetSpawnOption_Sidearm( entity npc, string weapon, array<string> mods = [])
+void function SetSpawnOption_Sidearm( entity npc, string weapon, array<string> mods = [] )
 {
 	Assert( weapon != "", "Tried to assign no weapon as a spawn weapon" )
 	Assert( IsValid( npc ) && npc.IsNPC(), npc + " is not an npc!" )
@@ -255,7 +252,6 @@ function SetSpawnOption_NPCTitan( entity npc, int type )
 	Assert( !npc.executedSpawnOptions, npc + " tried to set spawn options after npc was dispatchspawned." )
 	npc.ai.bossTitanType = type
 }
-
 
 function SetSpawnOption_TitanLoadout( entity npc, TitanLoadoutDef loadout )
 {

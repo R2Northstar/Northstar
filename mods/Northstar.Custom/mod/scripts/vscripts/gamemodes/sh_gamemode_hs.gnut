@@ -17,12 +17,12 @@ void function CreateGamemodeHideAndSeek()
 	GameMode_SetName( GAMEMODE_HIDEANDSEEK, "#GAMEMODE_hs" )
 	GameMode_SetDesc( GAMEMODE_HIDEANDSEEK, "#PL_hs_desc" )
 	GameMode_SetGameModeAnnouncement( GAMEMODE_HIDEANDSEEK, "ffa_modeDesc" )
-	GameMode_SetColor( GAMEMODE_HIDEANDSEEK, [147, 204, 57, 255] )
-	
+	GameMode_SetColor( GAMEMODE_HIDEANDSEEK, [ 147, 204, 57, 255 ] )
+
 	AddPrivateMatchMode( GAMEMODE_HIDEANDSEEK ) // add to private lobby modes
 	AddPrivateMatchModeSettingEnum( "#GAMEMODE_hs", "hideandseek_balance_teams", [ "Disabled", "Enabled" ], "1" )
 	AddPrivateMatchModeSettingArbitrary( "#GAMEMODE_hs", "hideandseek_hiding_time", "60" )
-	
+
 	#if SERVER
 		GameMode_AddServerInit( GAMEMODE_HIDEANDSEEK, GamemodeHideAndSeek_Init )
 		GameMode_SetPilotSpawnpointsRatingFunc( GAMEMODE_HIDEANDSEEK, RateSpawnpoints_Generic )
@@ -39,7 +39,7 @@ void function HideAndSeekRegisterNetworkVars()
 {
 	if ( GAMETYPE != GAMEMODE_HIDEANDSEEK )
 		return
-		
+
 	Remote_RegisterFunction( "ServerCallback_ShowHideAndSeekCountdown" )
 	Remote_RegisterFunction( "ServerCallback_SeekersIncoming" )
 	Remote_RegisterFunction( "ServerCallback_LastHiderAlive" )

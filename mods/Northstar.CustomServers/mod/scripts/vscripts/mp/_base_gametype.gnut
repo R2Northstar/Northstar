@@ -2,12 +2,12 @@ untyped
 
 globalize_all_functions
 
-//********************************************************************************************
-//	Base Gametype
-//********************************************************************************************
+// ********************************************************************************************
+// 	Base Gametype
+// ********************************************************************************************
 const DEATH_CHAT_DELAY = 0.3
 
-global struct OutOfBoundsDataStruct //Have to globalize it because all functions are globalized in this file :/
+global struct OutOfBoundsDataStruct // Have to globalize it because all functions are globalized in this file :/
 {
 	int outOfBoundsTriggersTouched = 0
 	float timeBackInBound = 0
@@ -20,7 +20,7 @@ struct
 	array<entity> outOfBoundsTriggers = []
 	array<entity> hurtTriggers = []
 	bool functionref( entity, entity, var ) isProtectedFromFriendlyFire
-	table< entity, OutOfBoundsDataStruct > outOfBoundsTable
+	table<entity, OutOfBoundsDataStruct> outOfBoundsTable
 } file
 
 function BaseGametype_Init()
@@ -40,8 +40,8 @@ function BaseGametype_Init()
 
 		CreateTeamColorControlPoints()
 
- 		AddClientCommandCallback( "CC_SelectRespawn", ClientCommand_SelectRespawn )
- 		AddClientCommandCallback( "CC_RespawnPlayer", ClientCommand_RespawnPlayer )
+		AddClientCommandCallback( "CC_SelectRespawn", ClientCommand_SelectRespawn )
+		AddClientCommandCallback( "CC_RespawnPlayer", ClientCommand_RespawnPlayer )
 
 		AddCallback_NPCLeeched( OnNPCLeeched )
 
@@ -123,7 +123,7 @@ void function CodeCallback_OnPrecache()
 	if ( IsLobby() )
 		return
 
- 	Assert( IsSingleplayer() || GAMETYPE in GAMETYPE_TEXT )
+	Assert( IsSingleplayer() || GAMETYPE in GAMETYPE_TEXT )
 
 	// these should be level specific in SP
 	PrecacheEntity( "npc_soldier" )
@@ -131,8 +131,8 @@ void function CodeCallback_OnPrecache()
 
 	PrecacheEntity( "npc_dropship", DROPSHIP_MODEL )
 
-	//Scavenger ore models. Need to precache here instead of in gamemode scripts for vpk builds
-    //Removing for build
+	// Scavenger ore models. Need to precache here instead of in gamemode scripts for vpk builds
+	// Removing for build
 	/*level.scavengerSmallRocks <- [
 		$"models/rocks/rock_01_sandstone.mdl"
 		//$"models/rocks/rock_02_sandstone.mdl"
@@ -175,16 +175,16 @@ function AddFlinch( entity attackedEnt, damageInfo )
 {
 	Assert( IsValid_ThisFrame( attackedEnt ) )
 
-	//if ( !( "nextFlinchTime" in attackedEnt.s ) )
-	//	attackedEnt.s.nextFlinchTime <- 0
-	//if ( Time() < attackedEnt.s.nextFlinchTime )
-	//	return
-	//attackedEnt.s.nextFlinchTime = Time() + RandomFloatRange( 2.0, 4.0 )
+	// if ( !( "nextFlinchTime" in attackedEnt.s ) )
+	// 	attackedEnt.s.nextFlinchTime <- 0
+	// if ( Time() < attackedEnt.s.nextFlinchTime )
+	// 	return
+	// attackedEnt.s.nextFlinchTime = Time() + RandomFloatRange( 2.0, 4.0 )
 
 	vector damageAngles = VectorToAngles( DamageInfo_GetDamageForce( damageInfo ) )
 	vector entAngles = attackedEnt.EyeAngles()
 
-	float damageYaw = (damageAngles.y + 180) - entAngles.y
+	float damageYaw = ( damageAngles.y + 180 ) - entAngles.y
 
 	damageYaw = AngleNormalize( damageYaw )
 
@@ -192,17 +192,16 @@ function AddFlinch( entity attackedEnt, damageInfo )
 		damageYaw += 360
 
 	if ( damageYaw < 45 )
-		DamageInfo_SetFlinchDirection( damageInfo, FLINCH_DIRECTION_BACKWARDS );
+		DamageInfo_SetFlinchDirection( damageInfo, FLINCH_DIRECTION_BACKWARDS )
 	else if ( damageYaw < 135 )
-		DamageInfo_SetFlinchDirection( damageInfo, FLINCH_DIRECTION_RIGHT );
+		DamageInfo_SetFlinchDirection( damageInfo, FLINCH_DIRECTION_RIGHT )
 	else if ( damageYaw < 225 )
-		DamageInfo_SetFlinchDirection( damageInfo, FLINCH_DIRECTION_FORWARDS );
+		DamageInfo_SetFlinchDirection( damageInfo, FLINCH_DIRECTION_FORWARDS )
 	else if ( damageYaw < 315 )
-		DamageInfo_SetFlinchDirection( damageInfo, FLINCH_DIRECTION_LEFT );
+		DamageInfo_SetFlinchDirection( damageInfo, FLINCH_DIRECTION_LEFT )
 	else
-		DamageInfo_SetFlinchDirection( damageInfo, FLINCH_DIRECTION_BACKWARDS );
+		DamageInfo_SetFlinchDirection( damageInfo, FLINCH_DIRECTION_BACKWARDS )
 }
-
 
 bool function IsProtectedFromFriendlyFire_MP( entity attacker, entity ent, var damageInfo )
 {
@@ -236,7 +235,6 @@ bool function IsProtectedFromNPCFire( entity attacker, entity ent )
 		return true
 	return false
 }
-
 
 bool function IsProtectedFromFriendlyFire_SP( entity attacker, entity ent, var damageInfo )
 {
@@ -318,7 +316,7 @@ bool function ScriptCallback_ShouldEntTakeDamage( entity ent, damageInfo )
 
 	if ( attacker == ent || IsValid( inflictor ) && inflictor == ent )
 	{
-		if ( (damageType & DF_NO_SELF_DAMAGE) > 0  )
+		if ( ( damageType & DF_NO_SELF_DAMAGE ) > 0 )
 			return false
 	}
 
@@ -333,11 +331,11 @@ bool function ScriptCallback_ShouldEntTakeDamage( entity ent, damageInfo )
 
 	if ( ent.IsTitan() )
 	{
-		const int BULLET_VORTEX_FLAGS = (DF_VORTEX_REFIRE | DF_BULLET)
-		if ( ((damageType & BULLET_VORTEX_FLAGS) == BULLET_VORTEX_FLAGS) && (ent == attacker) )
-			return false	// don't let vortex-refiring titan hit themselves with bullet or bullet splash damage
+		const int BULLET_VORTEX_FLAGS = ( DF_VORTEX_REFIRE | DF_BULLET )
+		if ( ( ( damageType & BULLET_VORTEX_FLAGS ) == BULLET_VORTEX_FLAGS ) && ( ent == attacker ) )
+			return false // don't let vortex-refiring titan hit themselves with bullet or bullet splash damage
 
-		if ( IsTitanWithinBubbleShield( ent ) && TitanHasBubbleShieldWeapon( ent ) && !(damageType & DF_DOOMED_HEALTH_LOSS) )
+		if ( IsTitanWithinBubbleShield( ent ) && TitanHasBubbleShieldWeapon( ent ) && !( damageType & DF_DOOMED_HEALTH_LOSS ) )
 			return false
 	}
 
@@ -347,7 +345,7 @@ bool function ScriptCallback_ShouldEntTakeDamage( entity ent, damageInfo )
 			return false
 	}
 
-	if ( (inflictor != null) )
+	if ( ( inflictor != null ) )
 	{
 		if ( inflictor.IsProjectile() )
 		{
@@ -368,7 +366,7 @@ bool function ScriptCallback_ShouldEntTakeDamage( entity ent, damageInfo )
 							float damageAmount = DamageInfo_GetDamage( damageInfo )
 							damageAmount *= 0.75
 							DamageInfo_SetDamage( damageInfo, damageAmount )
-						//	DamageInfo_SetDamageForce( damageInfo, DamageInfo_GetDamageForce( damageInfo ) * 2.0 )
+							// 	DamageInfo_SetDamageForce( damageInfo, DamageInfo_GetDamageForce( damageInfo ) * 2.0 )
 						}
 					}
 				}
@@ -406,9 +404,7 @@ bool function ShouldPlayerTakeDamage( entity player, damageInfo )
 	if ( player.IsGodMode() )
 		return false
 
-	if ( player.IsPhaseShifted()
-		&& !(DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOMED_HEALTH_LOSS)
-		&& !IsDamageFromDamageTrigger( damageInfo ) )
+	if ( player.IsPhaseShifted() && !( DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOMED_HEALTH_LOSS ) && !IsDamageFromDamageTrigger( damageInfo ) )
 		return false
 
 	if ( player.IsInvulnerable() )
@@ -420,12 +416,12 @@ bool function ShouldPlayerTakeDamage( entity player, damageInfo )
 	}
 	else
 	{
-		//Rodeo cases
+		// Rodeo cases
 		entity titanSoul = player.GetTitanSoulBeingRodeoed()
 		if ( IsValid( titanSoul ) )
 		{
 			entity titan = titanSoul.GetTitan()
-			//Stop being stepped on by the guy you are rodeoing
+			// Stop being stepped on by the guy you are rodeoing
 			if ( IsTitanCrushDamage( damageInfo ) && ( titan == DamageInfo_GetAttacker( damageInfo ) ) )
 				return false
 			else
@@ -440,10 +436,9 @@ bool function ShouldPlayerTakeDamage( entity player, damageInfo )
 	unreachable
 }
 
-
 void function HandlePainSounds( entity ent, var damageInfo )
 {
-	//exit if the thing is dead
+	// exit if the thing is dead
 	if ( ent.GetHealth() < DamageInfo_GetDamage( damageInfo ) )
 		return
 
@@ -515,7 +510,7 @@ function HandleLocationBasedDamage( entity ent, var damageInfo )
 	var weaponName // TODO: If set to type string, will cause errors because weaponName can be ""
 	if ( DamageInfo_GetWeapon( damageInfo ) )
 		weaponName = DamageInfo_GetWeapon( damageInfo ).GetWeaponClassName()
-	else if ( DamageInfo_GetInflictor( damageInfo ) && (DamageInfo_GetInflictor( damageInfo ) instanceof CProjectile ) )
+	else if ( DamageInfo_GetInflictor( damageInfo ) && ( DamageInfo_GetInflictor( damageInfo ) instanceof CProjectile ) )
 		weaponName = DamageInfo_GetInflictor( damageInfo ).ProjectileGetWeaponClassName()
 
 	if ( ent.IsTitan() )
@@ -524,7 +519,10 @@ function HandleLocationBasedDamage( entity ent, var damageInfo )
 	}
 	else if ( IsSuperSpectre( ent ) )
 	{
-		if ( CritWeaponInDamageInfo( damageInfo ) && IsCriticalHit( attacker, ent, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamage( damageInfo ), DamageInfo_GetDamageType( damageInfo ) ) )
+		if (
+			CritWeaponInDamageInfo( damageInfo ) &&
+			IsCriticalHit( attacker, ent, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamage( damageInfo ), DamageInfo_GetDamageType( damageInfo ) )
+		)
 		{
 			damageMult_location = GetCriticalScaler( ent, damageInfo )
 			DamageInfo_AddCustomDamageType( damageInfo, DF_CRITICAL )
@@ -560,7 +558,7 @@ function HandleLocationBasedDamage( entity ent, var damageInfo )
 
 function PlayerDamageFeedback( entity ent, damageInfo )
 {
-//	printt( "player damage feedback for " + ent )
+	// 	printt( "player damage feedback for " + ent )
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
 	Assert( attacker.IsPlayer() )
 
@@ -575,7 +573,17 @@ function PlayerDamageFeedback( entity ent, damageInfo )
 			customDamageType = customDamageType | DF_KILLSHOT
 	}
 
-	attacker.NotifyDidDamage( ent, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamagePosition( damageInfo ), customDamageType, DamageInfo_GetDamage( damageInfo ), DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
+	attacker.NotifyDidDamage(
+		ent,
+		DamageInfo_GetHitBox( damageInfo ),
+		DamageInfo_GetDamagePosition( damageInfo ),
+		customDamageType,
+		DamageInfo_GetDamage( damageInfo ),
+		DamageInfo_GetDamageFlags( damageInfo ),
+		DamageInfo_GetHitGroup( damageInfo ),
+		DamageInfo_GetWeapon( damageInfo ),
+		DamageInfo_GetDistFromAttackOrigin( damageInfo )
+	)
 }
 
 void function UpdateLastDamageTime( entity ent )
@@ -592,19 +600,19 @@ void function PlayerDealtTitanDamage( entity attacker, entity victim, float save
 	{
 		attacker.p.titanDamageDealt += savedDamage
 
-#if MP
-	UpdateTitanWeaponDamageStat( attacker, savedDamage, damageInfo )
+		#if MP
+			UpdateTitanWeaponDamageStat( attacker, savedDamage, damageInfo )
 
-	if ( attacker.IsTitan() )
-	{
-		attacker.p.titanDamageDealt_Stat += savedDamage
-		if ( attacker.p.titanDamageDealt_Stat >= 500 ) // buffer the titan stat damage so that we don't spam damage callbacks
-		{
-			UpdateTitanDamageStat( attacker, attacker.p.titanDamageDealt_Stat, damageInfo )
-			attacker.p.titanDamageDealt_Stat = 0
-		}
-	}
-#endif
+			if ( attacker.IsTitan() )
+			{
+				attacker.p.titanDamageDealt_Stat += savedDamage
+				if ( attacker.p.titanDamageDealt_Stat >= 500 ) // buffer the titan stat damage so that we don't spam damage callbacks
+				{
+					UpdateTitanDamageStat( attacker, attacker.p.titanDamageDealt_Stat, damageInfo )
+					attacker.p.titanDamageDealt_Stat = 0
+				}
+			}
+		#endif
 	}
 }
 
@@ -621,15 +629,15 @@ function UpdateAttackerInfo( entity ent, entity attacker, damage )
 	if ( !damage || damage <= 0 )
 		return
 
-	if ( !("attackerInfo" in ent.s) )
+	if ( !( "attackerInfo" in ent.s ) )
 		ent.s.attackerInfo <- {}
 	else if ( ent.GetHealth() == ent.GetMaxHealth() )
 		ent.s.attackerInfo.clear()
 
-	if ( !(attackerPlayer.weakref() in ent.s.attackerInfo ) )
-		ent.s.attackerInfo[attackerPlayer.weakref()] <- 0
+	if ( !( attackerPlayer.weakref() in ent.s.attackerInfo ) )
+		ent.s.attackerInfo[ attackerPlayer.weakref() ] <- 0
 
-	ent.s.attackerInfo[attackerPlayer.weakref()] += damage
+	ent.s.attackerInfo[ attackerPlayer.weakref() ] += damage
 
 	ent.e.lastAttacker = attackerPlayer
 }
@@ -656,17 +664,17 @@ entity function GetAttackerOrLastAttacker( entity ent, damageInfo )
 	if ( ShouldGetLastAttacker( ent, attacker ) == false )
 		return attacker
 
-	entity lastAttacker = GetLastAttacker( ent ) //Attacker doesn't work, get last attacker
+	entity lastAttacker = GetLastAttacker( ent ) // Attacker doesn't work, get last attacker
 
 	if ( IsValid( lastAttacker ) == true )
 		return lastAttacker
 
-	//last attacker doesn't work, get latestAssistingPlayerInfo
+	// last attacker doesn't work, get latestAssistingPlayerInfo
 	AssistingPlayerStruct attackerInfo = GetLatestAssistingPlayerInfo( ent )
 	if ( IsValid( attackerInfo.player ) )
 		return attackerInfo.player
 
-	if ( IsValid( attacker ) ) //No Last Attacker and No Lastest Assisting Player, e.g. when you suicide before taking damage. Just return the attacker if valid
+	if ( IsValid( attacker ) ) // No Last Attacker and No Lastest Assisting Player, e.g. when you suicide before taking damage. Just return the attacker if valid
 		return attacker
 
 	return null
@@ -677,10 +685,10 @@ bool function ShouldGetLastAttacker( entity ent, entity attacker )
 	if ( IsValid( attacker ) == false )
 		return true
 
-	if ( attacker == ent ) //suicide
+	if ( attacker == ent ) // suicide
 		return true
 
-	if ( attacker.IsPlayer() == false && attacker.IsNPC() == false ) //Environmental damage
+	if ( attacker.IsPlayer() == false && attacker.IsNPC() == false ) // Environmental damage
 		return true
 
 	return false
@@ -723,7 +731,7 @@ bool function PlayerOrNPCKilled( entity ent, var damageInfo )
 	{
 		LogPlayerMatchStat_Death( ent )
 
-		if ( attacker.IsPlayer() && (attacker != ent) )
+		if ( attacker.IsPlayer() && ( attacker != ent ) )
 			LogPlayerMatchStat_KilledAPilot( attacker )
 	}
 
@@ -739,16 +747,18 @@ bool function PlayerOrNPCKilled( entity ent, var damageInfo )
 
 	if ( ent.IsPlayer() )
 	{
-		//Do callbacks. Main reason we call this here as opposed to CodeCallback_OnPlayerKilled() is legacy script compatibility reasons.
-		//For example: In script immediately above this we change the attacker to get the player behind the kill, e.g. owner of a pet titan, etc. Bunch of registered callbacks depends on this.
-		foreach( callbackFunc in svGlobal.onPlayerKilledCallbacks )
+		// Do callbacks. Main reason we call this here as opposed to CodeCallback_OnPlayerKilled() is legacy script compatibility reasons.
+		// For example: In script immediately above this we change the attacker to get the player behind
+		// the kill, e.g. owner of a pet titan, etc. Bunch of registered callbacks depends on this.
+		foreach ( callbackFunc in svGlobal.onPlayerKilledCallbacks )
 			callbackFunc( ent, attacker, damageInfo )
 	}
 	else if ( ent.IsNPC() )
 	{
-		//Do callbacks. Main reason we call this here as opposed to CodeCallback_OnNPCKilled() is legacy script compatibility reasons.
-		//For example: In script immediately above this we change the attacker to get the player behind the kill, e.g. owner of a pet titan, etc. Bunch of registered callbacks depends on this.
-		foreach( callbackFunc in svGlobal.onNPCKilledCallbacks )
+		// Do callbacks. Main reason we call this here as opposed to CodeCallback_OnNPCKilled() is legacy script compatibility reasons.
+		// For example: In script immediately above this we change the attacker to get the player behind
+		// the kill, e.g. owner of a pet titan, etc. Bunch of registered callbacks depends on this.
+		foreach ( callbackFunc in svGlobal.onNPCKilledCallbacks )
 		{
 			callbackFunc( ent, attacker, damageInfo )
 		}
@@ -768,11 +778,19 @@ bool function PlayerOrNPCKilled( entity ent, var damageInfo )
 		if ( !IsValid( attacker ) )
 			return true
 
-		// Hack - attacker history isn't on client to calculate if a player should get credit for a kill when AI steals the final killing shot while a player is damaging them.
+		// Hack - attacker history isn't on client to calculate if a player should get credit
+		// for a kill when AI steals the final killing shot while a player is damaging them.
 		array<entity> playerArray = GetPlayerArray()
 		foreach ( player in playerArray )
 		{
-			Remote_CallFunction_Replay( player, "ServerCallback_SetAssistInformation", attackerInfo.damageSourceId, attacker.GetEncodedEHandle(), ent.GetEncodedEHandle(), attackerInfo.assistTime )
+			Remote_CallFunction_Replay(
+				player,
+				"ServerCallback_SetAssistInformation",
+				attackerInfo.damageSourceId,
+				attacker.GetEncodedEHandle(),
+				ent.GetEncodedEHandle(),
+				attackerInfo.assistTime
+			)
 		}
 	}
 
@@ -787,23 +805,30 @@ bool function PlayerOrNPCKilled( entity ent, var damageInfo )
 			ScoreEvent_TitanKilled( ent, attacker, damageInfo )
 		else
 			ScoreEvent_NPCKilled( ent, attacker, damageInfo )
-		
+
 		entity victim = ent.IsTitan() ? ent.GetTitanSoul() : ent
 		if ( IsValid( victim ) )
 		{
 			table<int, bool> alreadyAssisted
-			
-			foreach( DamageHistoryStruct attackerInfo in victim.e.recentDamageHistory )
+
+			foreach ( DamageHistoryStruct attackerInfo in victim.e.recentDamageHistory )
 			{
 				if ( !IsValid( attackerInfo.attacker ) || !attackerInfo.attacker.IsPlayer() || attackerInfo.attacker == victim )
 					continue
-				
+
 				bool exists = attackerInfo.attacker.GetEncodedEHandle() in alreadyAssisted ? true : false
-				if( attackerInfo.attacker != attacker && !exists )
+				if ( attackerInfo.attacker != attacker && !exists )
 				{
-					alreadyAssisted[attackerInfo.attacker.GetEncodedEHandle()] <- true
+					alreadyAssisted[ attackerInfo.attacker.GetEncodedEHandle() ] <- true
 					foreach ( player in GetPlayerArray() )
-						Remote_CallFunction_Replay( player, "ServerCallback_SetAssistInformation", attackerInfo.damageSourceId, attacker.GetEncodedEHandle(), ent.GetEncodedEHandle(), attackerInfo.time )
+						Remote_CallFunction_Replay(
+							player,
+							"ServerCallback_SetAssistInformation",
+							attackerInfo.damageSourceId,
+							attacker.GetEncodedEHandle(),
+							ent.GetEncodedEHandle(),
+							attackerInfo.time
+						)
 
 					foreach ( callback in svGlobal.onPlayerAssistCallbacks )
 						callback( attackerInfo.attacker, victim )
@@ -831,7 +856,7 @@ bool function PlayerOrNPCKilled( entity ent, var damageInfo )
 		{
 			if ( ent.IsTitan() )
 			{
-				//if we killed a player in a titan count two kills (one for the pilot, one for the titan )
+				// if we killed a player in a titan count two kills (one for the pilot, one for the titan )
 				attacker.AddToPlayerGameStat( PGS_KILLS, 2 )
 				attacker.AddToPlayerGameStat( PGS_TITAN_KILLS, 1 )
 				attacker.AddToPlayerGameStat( PGS_PILOT_KILLS, 1 )
@@ -847,7 +872,7 @@ bool function PlayerOrNPCKilled( entity ent, var damageInfo )
 			if ( ent.IsTitan() )
 				attacker.AddToPlayerGameStat( PGS_TITAN_KILLS, 1 )
 
-			if( !IsMarvin( ent ) && !ent.IsTitan() )
+			if ( !IsMarvin( ent ) && !ent.IsTitan() )
 				attacker.AddToPlayerGameStat( PGS_NPC_KILLS, 1 )
 		}
 	}
@@ -861,13 +886,13 @@ float function CalculateBuildTimeCredit( entity attacker, entity target, float d
 	float titanSpawnDelay = GetTitanBuildTime( attacker )
 	float timerCredit = 0
 
-	health = maxint( 0, health )	// health should never be less then 0
+	health = maxint( 0, health ) // health should never be less then 0
 	if ( titanSpawnDelay && IsAlive( target ) )
 	{
 		timerCredit = GetCurrentPlaylistVarFloat( playlistVarStr, defaultCredit )
 
 		float dealtDamage = min( health, damage )
-		timerCredit = timerCredit * (dealtDamage / maxHealth )
+		timerCredit = timerCredit * ( dealtDamage / maxHealth )
 	}
 
 	return timerCredit
@@ -883,13 +908,13 @@ bool function ShouldSetObserverTarget( entity attacker )
 	if ( !IsAlive( attacker ) )
 		return false
 
-   	if ( attacker.IsPlayer() && attacker.IsObserver() )
-   		return false
+	if ( attacker.IsPlayer() && attacker.IsObserver() )
+		return false
 
-    return true
+	return true
 }
 
-float function CalculateLengthOfKillReplay( entity player, int methodOfDeath ) //Meant to be called on the same frame player dies
+float function CalculateLengthOfKillReplay( entity player, int methodOfDeath ) // Meant to be called on the same frame player dies
 {
 	return GetDeathCamLength( player ) + GetKillReplayBeforeTime( player, methodOfDeath ) + GetKillReplayAfterTime( player )
 }
@@ -939,7 +964,7 @@ function TrackDestroyTimeForReplay( entity attacker, table replayTracker )
 	EndSignal( replayTracker, "OnDestroy" )
 
 	OnThreadEnd(
-		function () : ( replayTracker, startTime )
+		function() : ( replayTracker, startTime )
 		{
 			replayTracker.validTime = Time() - startTime
 		}
@@ -954,48 +979,48 @@ function TrackDestroyTimeForReplay( entity attacker, table replayTracker )
 }
 
 #if MP
-function PlayerWatchesKillReplay( entity player, int inflictorEHandle, int attackerViewIndex, float timeSinceAttackerSpawned, float timeOfDeath, float beforeTime, table replayTracker )
-{
-	OnThreadEnd(
-		function () : ( player, replayTracker )
+	function PlayerWatchesKillReplay( entity player, int inflictorEHandle, int attackerViewIndex, float timeSinceAttackerSpawned, float timeOfDeath, float beforeTime, table replayTracker )
+	{
+		OnThreadEnd(
+			function() : ( player, replayTracker )
+			{
+				Signal( replayTracker, "OnDestroy" )
+			}
+		)
+
+		player.EndSignal( "RespawnMe" )
+
+		float timeBeforeKill = beforeTime
+		float timeAfterKill = GetKillReplayAfterTime( player )
+
+		if ( timeBeforeKill > timeSinceAttackerSpawned )
+			timeBeforeKill = timeSinceAttackerSpawned
+
+		float replayDelay = timeBeforeKill + ( Time() - timeOfDeath )
+		if ( replayDelay < 0 )
 		{
-			Signal( replayTracker, "OnDestroy" )
+			print( "PlayerWatchesKillReplay(): replayDelay is < 0 (" + replayDelay + "). Aborting kill replay.\n" )
+			return
 		}
-	)
 
-	player.EndSignal( "RespawnMe" )
+		player.SetKillReplayDelay( replayDelay, THIRD_PERSON_KILL_REPLAY_ALWAYS )
+		player.SetKillReplayInflictorEHandle( inflictorEHandle )
+		player.SetKillReplayVictim( player )
+		player.SetViewIndex( attackerViewIndex )
 
-	float timeBeforeKill = beforeTime
-	float timeAfterKill = GetKillReplayAfterTime( player )
+		wait timeBeforeKill
 
-	if ( timeBeforeKill > timeSinceAttackerSpawned )
-		timeBeforeKill = timeSinceAttackerSpawned
-
-	float replayDelay = timeBeforeKill + ( Time() - timeOfDeath )
-	if ( replayDelay < 0 )
-	{
-		print( "PlayerWatchesKillReplay(): replayDelay is < 0 (" + replayDelay + "). Aborting kill replay.\n" )
-		return
+		if ( replayTracker.validTime != null && replayTracker.validTime < timeAfterKill )
+		{
+			float waitTime = expect float( replayTracker.validTime ) - 0.1 // cut off just before ent becomes invalid in the past
+			if ( waitTime > 0 )
+				wait waitTime
+		}
+		else
+		{
+			wait timeAfterKill
+		}
 	}
-
-	player.SetKillReplayDelay( replayDelay, THIRD_PERSON_KILL_REPLAY_ALWAYS )
-	player.SetKillReplayInflictorEHandle( inflictorEHandle )
-	player.SetKillReplayVictim( player )
-	player.SetViewIndex( attackerViewIndex )
-
-	wait timeBeforeKill
-
-	if ( replayTracker.validTime != null && replayTracker.validTime < timeAfterKill )
-	{
-		float waitTime = expect float( replayTracker.validTime ) - 0.1 // cut off just before ent becomes invalid in the past
-		if ( waitTime > 0 )
-			wait waitTime
-	}
-	else
-	{
-		wait timeAfterKill
-	}
-}
 #endif // #if MP
 
 bool function ClientCommand_SelectRespawn( entity player, array<string> args )
@@ -1003,7 +1028,7 @@ bool function ClientCommand_SelectRespawn( entity player, array<string> args )
 	if ( IsAlive( player ) )
 		return true
 
-	if ( args.len() == 0  )
+	if ( args.len() == 0 )
 		return true
 
 	int index = args[ 0 ].tointeger()
@@ -1013,6 +1038,7 @@ bool function ClientCommand_SelectRespawn( entity player, array<string> args )
 		case 1:
 			player.SetPersistentVar( "spawnAsTitan", true )
 			break
+
 		case 2:
 			player.SetPersistentVar( "spawnAsTitan", false )
 			break
@@ -1021,8 +1047,7 @@ bool function ClientCommand_SelectRespawn( entity player, array<string> args )
 	return true
 }
 
-
-bool function ClientCommand_RespawnPlayer( entity player, array<string>args )
+bool function ClientCommand_RespawnPlayer( entity player, array<string> args )
 {
 	if ( IsSingleplayer() )
 		return true
@@ -1037,8 +1062,8 @@ bool function ClientCommand_RespawnPlayer( entity player, array<string>args )
 
 	if ( opParm.find( "burncard" ) != null )
 	{
-		//int burnCard = opParm.tointeger()
-		//SetPlayerBurnCardSlotToActivate( player, burnCard )
+		// int burnCard = opParm.tointeger()
+		// SetPlayerBurnCardSlotToActivate( player, burnCard )
 		return true
 	}
 	else if ( opParm == "Titan" )
@@ -1052,7 +1077,7 @@ bool function ClientCommand_RespawnPlayer( entity player, array<string>args )
 
 	float deathCamLength = GetDeathCamLength( player )
 	float skipBufferTime = 0.5
-	if ( Time() > (player.p.postDeathThreadStartTime + deathCamLength) - skipBufferTime )
+	if ( Time() > ( player.p.postDeathThreadStartTime + deathCamLength ) - skipBufferTime )
 	{
 		player.s.respawnSelectionDone = true
 		player.Signal( "RespawnMe" )
@@ -1067,7 +1092,7 @@ function AIChatter( string alias, int team, vector origin )
 
 	if ( ai.len() > 0 )
 	{
-		PlaySquadConversationToAll( alias, ai[0] )
+		PlaySquadConversationToAll( alias, ai[ 0 ] )
 	}
 }
 
@@ -1088,18 +1113,17 @@ bool function GetPilotBotFlag()
 	else if ( max_activity_mode == MAX_ACTIVITY_TITANS )
 		return false
 	else if ( max_activity_mode == MAX_ACTIVITY_CONGER_MODE )
-		return rand() % 2 != 0    // conger mode: 50/50 pilot and titan bots!
+		return rand() % 2 != 0 // conger mode: 50/50 pilot and titan bots!
 	else
 		return Flag( "PilotBot" )
 
 	unreachable
 }
 
-
 function DoRespawnPlayer( entity player, entity spawnPoint )
 {
 	player.p.lastSpawnPoint = spawnPoint
-	player.RespawnPlayer( spawnPoint ) //This will send "OnRespawned" signal, killing the thread if started from PostDeathThread
+	player.RespawnPlayer( spawnPoint ) // This will send "OnRespawned" signal, killing the thread if started from PostDeathThread
 }
 
 function SetupPilotSpawnOnRematch( entity player )
@@ -1113,7 +1137,7 @@ function SetupPilotSpawnOnRematch( entity player )
 	if ( GetWaveSpawnType() == eWaveSpawnType.DISABLED )
 		wait 0.9
 
-	if ( IsAlive( player ) )//HACK: This seems terrible, we shouldn't have to do this
+	if ( IsAlive( player ) ) // HACK: This seems terrible, we shouldn't have to do this
 	{
 		printt( "This happened one time, in retail." )
 		return
@@ -1134,17 +1158,17 @@ function GivePlayerInfoOnSpawn( entity player )
 {
 	player.EndSignal( "OnDeath" )
 
-	//PrintFunc()
+	// PrintFunc()
 
-	while( player.IsWatchingKillReplay() )
+	while ( player.IsWatchingKillReplay() )
 		WaitFrame()
 
-	//printt( " GivePlayerInfoOnSpawn Player isn't watching kill replay anymore!" )
+	// printt( " GivePlayerInfoOnSpawn Player isn't watching kill replay anymore!" )
 
-	wait 0.2 //Hack: Have to wait even though player should not be watching kill replay anymore...
+	wait 0.2 // Hack: Have to wait even though player should not be watching kill replay anymore...
 
-	//This needed a wait, probably because at this time we haven't given them loadouts yet, so when we do give them loadouts it strips out the passive?
-	thread ScanMinimap( player, true, 0.5 ) //x second minimap pulse
+	// This needed a wait, probably because at this time we haven't given them loadouts yet, so when we do give them loadouts it strips out the passive?
+	thread ScanMinimap( player, true, 0.5 ) // x second minimap pulse
 }
 
 bool function ShouldStartSpawn( entity player )
@@ -1176,7 +1200,7 @@ void function PlayerSpawnsIntoPetTitan( entity player )
 	vector origin = titan.GetOrigin() + Vector( 0, 0, 600 )
 	vector angles = titan.GetAngles()
 
-	entity camera = CreateTitanDropCamera( origin, Vector(90,angles.y,0) )
+	entity camera = CreateTitanDropCamera( origin, Vector( 90, angles.y, 0 ) )
 	player.SetViewEntity( camera, false )
 
 	player.isSpawning = true // set this to prevent .isSpawning checks from returning false
@@ -1201,10 +1225,7 @@ void function PlayerSpawnsIntoPetTitan( entity player )
 
 	wait 0.2
 
-	local criteria = {
-		embark = "above_close",
-		titanCanStandRequired = true
-	}
+	local criteria = { embark = "above_close", titanCanStandRequired = true }
 
 	local embarkAction
 	embarkAction = FindEmbarkActionForCriteria( criteria )
@@ -1253,7 +1274,6 @@ entity function CreateDropPodViewController( entity pod )
 
 	return viewControl
 }
-
 
 function ClearEntInUseOnDestroy( dropPoint, dropPod )
 {
@@ -1313,7 +1333,7 @@ void function CodeCallback_OnNPCKilled( entity npc, var damageInfo )
 		if ( IsAlive( player ) )
 		{
 			// kill the embarking player
-			//printt( "Killed embarking player" )
+			// printt( "Killed embarking player" )
 			KillFromInfo( player, damageInfo )
 		}
 
@@ -1341,7 +1361,7 @@ void function OnNPCKilled_SP( entity npc, var damageInfo )
 		if ( IsAlive( player ) )
 		{
 			// kill the embarking player
-			//printt( "Killed embarking player" )
+			// printt( "Killed embarking player" )
 			KillFromInfo( player, damageInfo )
 		}
 
@@ -1366,7 +1386,7 @@ void function OnNPCKilled_SP( entity npc, var damageInfo )
 			attacker = newAttacker
 	}
 
-	foreach( callbackFunc in svGlobal.onNPCKilledCallbacks )
+	foreach ( callbackFunc in svGlobal.onNPCKilledCallbacks )
 	{
 		callbackFunc( npc, attacker, damageInfo )
 	}
@@ -1378,7 +1398,7 @@ void function OnNPCKilled_SP( entity npc, var damageInfo )
 void function CodeCallback_OnEntityDestroyed( entity ent )
 {
 	// Must do ent.SetDoDestroyCallback( true ) to get this callback
-//	print( "OnEntityDestroyed " + ent.entindex() + "\n" )
+	// 	print( "OnEntityDestroyed " + ent.entindex() + "\n" )
 
 	if ( "onEntityDestroyedCallbacks" in ent.s )
 	{
@@ -1415,7 +1435,7 @@ void function CodeCallback_WeaponFireInCloak( entity player )
 	if ( !WeaponInterruptsCloak( player.GetActiveWeapon() ) )
 		return
 
-	if ( player.IsTitan() )  // Fix timing issue with auto-eject cloak and firing your weapon as a Titan cancelling it.  This assumes we never want cloaked titans!
+	if ( player.IsTitan() ) // Fix timing issue with auto-eject cloak and firing your weapon as a Titan cancelling it.  This assumes we never want cloaked titans!
 		return
 
 	// if ( player.cloakedForever )
@@ -1433,7 +1453,7 @@ void function CodeCallback_WeaponFireInCloak( entity player )
 
 	if ( IsMultiplayer() )
 	{
-		//player.SetCloakFlicker( 1.0, 2.0 )
+		// player.SetCloakFlicker( 1.0, 2.0 )
 
 		DisableCloak( player, 0.5 )
 		entity cloakWeapon
@@ -1441,16 +1461,16 @@ void function CodeCallback_WeaponFireInCloak( entity player )
 		for ( int i = 0; i <= OFFHAND_MELEE; i++ ) // OFFHAND_MELEE is the largest
 		{
 			entity nowWeapon = player.GetOffhandWeapon( i )
-			if( IsValid( nowWeapon ))
+			if ( IsValid( nowWeapon ) )
 			{
-				if( nowWeapon.GetWeaponClassName() == "mp_ability_cloak" )
+				if ( nowWeapon.GetWeaponClassName() == "mp_ability_cloak" )
 				{
 					cloakWeapon = nowWeapon
 					offhandSlot = i
 				}
 			}
 		}
-		if( IsValid( cloakWeapon ) )
+		if ( IsValid( cloakWeapon ) )
 		{
 			array<string> mods = cloakWeapon.GetMods()
 			// can't reset cooldown properly in script, let's give player a empty one
@@ -1481,7 +1501,7 @@ function OnPlayerCloseClassMenu( entity player )
 	if ( IsValid( player.isSpawning ) )
 		return
 
-	thread DecideRespawnPlayer( player )	// there is a wait that happens later when using rematch burncard in Frontier Defense.
+	thread DecideRespawnPlayer( player ) // there is a wait that happens later when using rematch burncard in Frontier Defense.
 }
 
 //  playerconnected Reload
@@ -1489,7 +1509,6 @@ void function CodeCallback_OnClientReloadConnectionCompleted( entity player )
 {
 	FinishClientScriptInitialization( player )
 }
-
 
 bool function ShouldPlayerHaveLossProtection( entity player )
 {
@@ -1517,7 +1536,7 @@ bool function ShouldPlayerHaveLossProtection( entity player )
 // Any client hud initialization should be done here
 function FinishClientScriptInitialization( entity player )
 {
-	printt( "Player client script initialization complete: " + player );
+	printt( "Player client script initialization complete: " + player )
 
 	player.p.clientScriptInitialized = true
 
@@ -1545,11 +1564,10 @@ function NotifyClientsOfTeamChange( entity player, int oldTeam, int newTeam )
 	array<entity> players = GetPlayerArray()
 	foreach ( ent in players )
 	{
-		//if ( ent != player )
+		// if ( ent != player )
 		Remote_CallFunction_Replay( ent, "ServerCallback_PlayerChangedTeams", playerEHandle, oldTeam, newTeam )
 	}
 }
-
 
 bool function IsValidNPCTarget( entity ent )
 {
@@ -1577,26 +1595,23 @@ int function CodeCallback_GetWeaponDamageSourceId( entity weapon )
 	string classname = weapon.GetWeaponClassName()
 
 	#if DEV
-		if ( ("devWeapons" in level) && classname in level.devWeapons )
+		if ( ( "devWeapons" in level ) && classname in level.devWeapons )
 			return 0
 
 	#endif
-	//Filter out abilities for now
-	if ( !(classname in eDamageSourceId) )
+	// Filter out abilities for now
+	if ( !( classname in eDamageSourceId ) )
 		return damagedef_unknown
 
-	//Assert( classname in getconsttable().eDamageSourceId, classname + " not added to eDamageSourceId enum" )
+	// Assert( classname in getconsttable().eDamageSourceId, classname + " not added to eDamageSourceId enum" )
 	int damageSourceInt = eDamageSourceId[ classname ]
 	return damageSourceInt
 }
 
-
-
-
 function TriggerHurtSetup()
 {
 	file.hurtTriggers.extend( GetEntArrayByClass_Expensive( "trigger_hurt" ) )
-	foreach( trigger in file.hurtTriggers )
+	foreach ( trigger in file.hurtTriggers )
 	{
 		trigger.ConnectOutput( "OnStartTouch", TriggerHurtEnter )
 	}
@@ -1609,19 +1624,19 @@ void function TriggerHurtEnter( entity trigger, entity ent, entity caller, var v
 }
 
 #if MP
-table< entity, table< entity, bool > > oob_triggerEntPairs
+	table<entity, table<entity, bool> > oob_triggerEntPairs
 
-void function SetupOutOfBoundsTrigger( entity trigger )
-{
-	if ( !(trigger in oob_triggerEntPairs) )
-		oob_triggerEntPairs[trigger] <- {}
-}
+	void function SetupOutOfBoundsTrigger( entity trigger )
+	{
+		if ( !( trigger in oob_triggerEntPairs ) )
+			oob_triggerEntPairs[ trigger ] <- {}
+	}
 #endif
 
 function OutOfBoundsSetup()
 {
 	file.outOfBoundsTriggers.extend( GetEntArrayByClass_Expensive( "trigger_out_of_bounds" ) )
-	foreach( trigger in file.outOfBoundsTriggers )
+	foreach ( trigger in file.outOfBoundsTriggers )
 	{
 		#if MP
 			SetupOutOfBoundsTrigger( trigger )
@@ -1638,11 +1653,11 @@ function OutOfBoundsSetup()
 
 void function OutOfBoundsDisable()
 {
-	foreach( trigger in file.outOfBoundsTriggers )
+	foreach ( trigger in file.outOfBoundsTriggers )
 	{
 		#if MP
-			foreach ( ent, val in oob_triggerEntPairs[trigger] )
-				oob_triggerEntPairs[trigger][ent] = false
+			foreach ( ent, val in oob_triggerEntPairs[ trigger ] )
+				oob_triggerEntPairs[ trigger ][ ent ] = false
 			trigger.DisconnectOutput( "OnStartTouch", EntityEnterOutOfBoundsTrig )
 			trigger.DisconnectOutput( "OnEndTouch", EntityLeaveOutOfBoundsTrig )
 		#else
@@ -1663,150 +1678,149 @@ bool function IsPointOutOfBounds( vector point )
 }
 
 #if MP
-void function EntityEnterOutOfBoundsTrig( entity trigger, entity ent, entity caller, var value )
-{
-	if ( !IsValid( ent ) || !ent.IsPlayer() )
+	void function EntityEnterOutOfBoundsTrig( entity trigger, entity ent, entity caller, var value )
 	{
-		EntityOutOfBounds( trigger, ent, null, null )
-		return
-	}
-
-	if ( !(ent in oob_triggerEntPairs[trigger]) )
-	{
-		oob_triggerEntPairs[trigger][ent] <- true
-		thread EntityCheckOutOfBoundsThread( trigger, ent )
-	}
-	else
-	{
-		oob_triggerEntPairs[trigger][ent] = true
-		// thread is already running
-	}
-}
-
-void function EntityLeaveOutOfBoundsTrig( entity trigger, entity ent, entity caller, var value )
-{
-	if ( !(ent in oob_triggerEntPairs[trigger]) )
-	{
-		EntityBackInBounds( trigger, ent, null, null )
-		return
-	}
-
-	oob_triggerEntPairs[trigger][ent] = false // tell thread to stop
-}
-
-bool function TriggerIsTouchingPlayerHullAtPoint( entity player, entity trigger, float triggerminz, vector pos, float radius )
-{
-	if ( trigger.GetClassName() == "trigger_cylinder" )
-	{
-		array<entity> touchingEnts = trigger.GetTouchingEntities()
-		return touchingEnts.contains( player )
-	}
-	else
-	{
-		return BrushTriggerIsTouchingPlayerHullAtPoint( trigger, triggerminz, pos, radius )
-	}
-
-	unreachable
-}
-
-bool function BrushTriggerIsTouchingPlayerHullAtPoint( entity trigger, float triggerminz, vector pos, float radius )
-{
-	if ( pos.z < triggerminz )
-		return false
-
-	radius *= 1.0824 // expand by 1/cos(22.5) so that an octagon circumscribes the circle
-
-	if ( trigger.ContainsPoint( pos ) ||
-		trigger.ContainsPoint( pos + <radius,0,0> ) ||
-		trigger.ContainsPoint( pos + < -radius,0,0> ) ||
-		trigger.ContainsPoint( pos + <0,radius,0> ) ||
-		trigger.ContainsPoint( pos + <0,-radius,0> ) )
-		return true
-
-	float radius45 = radius * 0.7071
-
-	if ( trigger.ContainsPoint( pos + <radius45,radius45,0> ) ||
-		trigger.ContainsPoint( pos + < -radius45,-radius45,0> ) ||
-		trigger.ContainsPoint( pos + <radius45,-radius45,0> ) ||
-		trigger.ContainsPoint( pos + < -radius45,radius45,0> ) )
-		return true
-
-	return false
-}
-
-void function EntityCheckOutOfBoundsThread( entity trigger, entity ent )
-{
-	float minz = trigger.GetOrigin().z + trigger.GetBoundingMins().z
-	float radius = ent.GetBoundingMaxs().x
-
-	bool wasTouching = false
-	for ( ;; )
-	{
-		wait 0.099
-
-		if ( !IsValid( ent ) )
-			break
-
-		if ( !oob_triggerEntPairs[trigger][ent] )
-			break
-
-		bool isTouching
-		if ( ent.IsOnGround() )
-		{
-			if ( ent.IsWallRunning() && !ent.IsWallHanging() )
-			{
-				isTouching = TriggerIsTouchingPlayerHullAtPoint( ent, trigger, minz, ent.GetOrigin() + <0,0,10>, radius )
-			}
-			else
-			{
-				isTouching = true
-			}
-		}
-		else
-		{
-			vector startpos = ent.GetOrigin()
-			vector endpos = startpos
-			endpos.z -= 2048
-
-			TraceResults result = TraceHull( startpos, endpos, ent.GetBoundingMins(), ent.GetBoundingMaxs(), ent, TRACE_MASK_PLAYERSOLID, TRACE_COLLISION_GROUP_PLAYER )
-			if ( result.startSolid || result.fraction >= 1 || TriggerIsTouchingPlayerHullAtPoint( ent, trigger, minz, result.endPos + <0,0,40>, radius ) )
-			{
-				//DebugDrawLine( startpos, result.endPos, 255,255,255, true, 3.0 )
-				isTouching = true
-			}
-			else
-			{
-				//DebugDrawLine( startpos, result.endPos, 255,0,0, true, 3.0 )
-				isTouching = false
-			}
-		}
-
-		if ( isTouching == wasTouching )
-			continue
-
-		wasTouching = isTouching
-		if ( isTouching )
+		if ( !IsValid( ent ) || !ent.IsPlayer() )
 		{
 			EntityOutOfBounds( trigger, ent, null, null )
+			return
+		}
+
+		if ( !( ent in oob_triggerEntPairs[ trigger ] ) )
+		{
+			oob_triggerEntPairs[ trigger ][ ent ] <- true
+			thread EntityCheckOutOfBoundsThread( trigger, ent )
 		}
 		else
+		{
+			oob_triggerEntPairs[ trigger ][ ent ] = true
+			// thread is already running
+		}
+	}
+
+	void function EntityLeaveOutOfBoundsTrig( entity trigger, entity ent, entity caller, var value )
+	{
+		if ( !( ent in oob_triggerEntPairs[ trigger ] ) )
+		{
+			EntityBackInBounds( trigger, ent, null, null )
+			return
+		}
+
+		oob_triggerEntPairs[ trigger ][ ent ] = false // tell thread to stop
+	}
+
+	bool function TriggerIsTouchingPlayerHullAtPoint( entity player, entity trigger, float triggerminz, vector pos, float radius )
+	{
+		if ( trigger.GetClassName() == "trigger_cylinder" )
+		{
+			array<entity> touchingEnts = trigger.GetTouchingEntities()
+			return touchingEnts.contains( player )
+		}
+		else
+		{
+			return BrushTriggerIsTouchingPlayerHullAtPoint( trigger, triggerminz, pos, radius )
+		}
+
+		unreachable
+	}
+
+	bool function BrushTriggerIsTouchingPlayerHullAtPoint( entity trigger, float triggerminz, vector pos, float radius )
+	{
+		if ( pos.z < triggerminz )
+			return false
+
+		radius *= 1.0824 // expand by 1/cos(22.5) so that an octagon circumscribes the circle
+
+		if (
+			trigger.ContainsPoint( pos ) || trigger.ContainsPoint( pos + < radius, 0, 0 > ) || trigger.ContainsPoint( pos + < -radius, 0, 0 > ) ||
+			trigger.ContainsPoint( pos + < 0, radius, 0 > ) || trigger.ContainsPoint( pos + < 0, -radius, 0 > )
+		)
+			return true
+
+		float radius45 = radius * 0.7071
+
+		if (
+			trigger.ContainsPoint( pos + < radius45, radius45, 0 > ) || trigger.ContainsPoint( pos + < -radius45, -radius45, 0 > ) ||
+			trigger.ContainsPoint( pos + < radius45, -radius45, 0 > ) || trigger.ContainsPoint( pos + < -radius45, radius45, 0 > )
+		)
+			return true
+
+		return false
+	}
+
+	void function EntityCheckOutOfBoundsThread( entity trigger, entity ent )
+	{
+		float minz = trigger.GetOrigin().z + trigger.GetBoundingMins().z
+		float radius = ent.GetBoundingMaxs().x
+
+		bool wasTouching = false
+		for ( ; ; )
+		{
+			wait 0.099
+
+			if ( !IsValid( ent ) )
+				break
+
+			if ( !oob_triggerEntPairs[ trigger ][ ent ] )
+				break
+
+			bool isTouching
+			if ( ent.IsOnGround() )
+			{
+				if ( ent.IsWallRunning() && !ent.IsWallHanging() )
+				{
+					isTouching = TriggerIsTouchingPlayerHullAtPoint( ent, trigger, minz, ent.GetOrigin() + < 0, 0, 10 >, radius )
+				}
+				else
+				{
+					isTouching = true
+				}
+			}
+			else
+			{
+				vector startpos = ent.GetOrigin()
+				vector endpos = startpos
+				endpos.z -= 2048
+
+				TraceResults result = TraceHull( startpos, endpos, ent.GetBoundingMins(), ent.GetBoundingMaxs(), ent, TRACE_MASK_PLAYERSOLID, TRACE_COLLISION_GROUP_PLAYER )
+				if ( result.startSolid || result.fraction >= 1 || TriggerIsTouchingPlayerHullAtPoint( ent, trigger, minz, result.endPos + < 0, 0, 40 >, radius ) )
+				{
+					// DebugDrawLine( startpos, result.endPos, 255,255,255, true, 3.0 )
+					isTouching = true
+				}
+				else
+				{
+					// DebugDrawLine( startpos, result.endPos, 255,0,0, true, 3.0 )
+					isTouching = false
+				}
+			}
+
+			if ( isTouching == wasTouching )
+				continue
+
+			wasTouching = isTouching
+			if ( isTouching )
+			{
+				EntityOutOfBounds( trigger, ent, null, null )
+			}
+			else
+			{
+				EntityBackInBounds( trigger, ent, null, null )
+			}
+		}
+
+		if ( wasTouching )
 		{
 			EntityBackInBounds( trigger, ent, null, null )
 		}
-	}
 
-	if ( wasTouching )
-	{
-		EntityBackInBounds( trigger, ent, null, null )
+		delete oob_triggerEntPairs[ trigger ][ ent ]
 	}
-
-	delete oob_triggerEntPairs[trigger][ent]
-}
 #endif
 
 void function EntityOutOfBounds( entity trigger, entity ent, entity caller, var value )
 {
-	//printt( "ENTITY", ent, "IS OUT OF BOUNDS ON TRIGGER", trigger )
+	// printt( "ENTITY", ent, "IS OUT OF BOUNDS ON TRIGGER", trigger )
 
 	if ( ent.e.destroyOutOfBounds )
 		ent.Destroy()
@@ -1814,18 +1828,18 @@ void function EntityOutOfBounds( entity trigger, entity ent, entity caller, var 
 	if ( !IsValidOutOfBoundsEntity( ent, trigger ) )
 		return
 
-	//printt( "Valid Out OfBounds Entity, EntityOutOfBounds" )
+	// printt( "Valid Out OfBounds Entity, EntityOutOfBounds" )
 
 	float overridenOOBTimer = expect float( level.customOOBTimer )
-	if ( !(ent in file.outOfBoundsTable) ) //Note that we never remove the ent from the table after adding it
+	if ( !( ent in file.outOfBoundsTable ) ) // Note that we never remove the ent from the table after adding it
 	{
 		OutOfBoundsDataStruct initialDataStruct
 		initialDataStruct.timeBackInBound = max( 0, Time() - OUT_OF_BOUNDS_DECAY_TIME )
-		
-		if( overridenOOBTimer > 0.0 )
+
+		if ( overridenOOBTimer > 0.0 )
 			initialDataStruct.timeLeftBeforeDyingFromOutOfBounds = overridenOOBTimer
 
-		ManageAddEntToOutOfBoundsTable( ent,  initialDataStruct  )
+		ManageAddEntToOutOfBoundsTable( ent, initialDataStruct )
 	}
 
 	OutOfBoundsDataStruct dataStruct = file.outOfBoundsTable[ ent ]
@@ -1841,13 +1855,15 @@ void function EntityOutOfBounds( entity trigger, entity ent, entity caller, var 
 		float outOfBoundsTimeRegained = decayTime * ( OUT_OF_BOUNDS_TIME_LIMIT / OUT_OF_BOUNDS_DECAY_TIME )
 		float deadTime = clamp( dataStruct.timeLeftBeforeDyingFromOutOfBounds + outOfBoundsTimeRegained, 0.0, OUT_OF_BOUNDS_TIME_LIMIT )
 
-		if( overridenOOBTimer > 0.0 )
+		if ( overridenOOBTimer > 0.0 )
 		{
 			outOfBoundsTimeRegained = decayTime * ( overridenOOBTimer / OUT_OF_BOUNDS_DECAY_TIME )
 			deadTime = clamp( dataStruct.timeLeftBeforeDyingFromOutOfBounds + outOfBoundsTimeRegained, 0.0, overridenOOBTimer )
 		}
-		
-		//printt( "Decay Time: " + decayTime + ", outOfBoundsTimeRegained:" + outOfBoundsTimeRegained + ", timeLeftBeforeDyingFromOutOfBounds: " + dataStruct.timeLeftBeforeDyingFromOutOfBounds + ", deadTime: " + deadTime  )
+
+		// printt( "Decay Time: " + decayTime + ", outOfBoundsTimeRegained:" + outOfBoundsTimeRegained + ",
+		// timeLeftBeforeDyingFromOutOfBounds: " + dataStruct.timeLeftBeforeDyingFromOutOfBounds + ", deadTime: " + deadTime
+		// )
 
 		dataStruct.timeLeftBeforeDyingFromOutOfBounds = deadTime
 
@@ -1855,8 +1871,7 @@ void function EntityOutOfBounds( entity trigger, entity ent, entity caller, var 
 
 		thread KillEntityOutOfBounds( ent, trigger )
 	}
-
-	//printt( "ent.GetOutOfBoundsDeadTime():", ent.GetOutOfBoundsDeadTime() )
+	// printt( "ent.GetOutOfBoundsDeadTime():", ent.GetOutOfBoundsDeadTime() )
 }
 
 bool function EntityIsOutOfBounds( entity ent )
@@ -1868,40 +1883,40 @@ bool function EntityIsOutOfBounds( entity ent )
 
 void function EntityBackInBounds( entity trigger, entity ent, entity caller, var value )
 {
-	//printt( "ENTITY", ent, "IS BACK IN BOUNDS OF TRIGGER", trigger )
+	// printt( "ENTITY", ent, "IS BACK IN BOUNDS OF TRIGGER", trigger )
 
 	if ( !IsValidOutOfBoundsEntity( ent, trigger ) )
 		return
 
-	//printt( "Valid Out OfBounds Entity, EntityBackInBounds" )
+	// printt( "Valid Out OfBounds Entity, EntityBackInBounds" )
 
-		if ( !(ent in file.outOfBoundsTable) )  //Can go back in bounds even though we went out of bounds as an invalid ent, e.g. in a dropship
+	if ( !( ent in file.outOfBoundsTable ) ) // Can go back in bounds even though we went out of bounds as an invalid ent, e.g. in a dropship
+	{
+		OutOfBoundsDataStruct initialDataStruct
+		ManageAddEntToOutOfBoundsTable( ent, initialDataStruct )
+
+		ent.SetOutOfBoundsDeadTime( 0.0 )
+		ent.Signal( "BackInBounds" )
+
+		return
+	}
+	else
+	{
+		OutOfBoundsDataStruct dataStruct = file.outOfBoundsTable[ ent ]
+
+		dataStruct.outOfBoundsTriggersTouched--
+		if ( dataStruct.outOfBoundsTriggersTouched < 0 ) // You can exit from bounds while being an invalid ent from out of bounds on the way in, e.g. during dropship anims, etc
+			dataStruct.outOfBoundsTriggersTouched = 0
+
+		if ( dataStruct.outOfBoundsTriggersTouched == 0 )
 		{
-			OutOfBoundsDataStruct initialDataStruct
-			ManageAddEntToOutOfBoundsTable( ent,  initialDataStruct  )
-
+			dataStruct.timeBackInBound = Time()
+			dataStruct.timeLeftBeforeDyingFromOutOfBounds = max( 0, ent.GetOutOfBoundsDeadTime() - Time() )
 			ent.SetOutOfBoundsDeadTime( 0.0 )
 			ent.Signal( "BackInBounds" )
-
 			return
 		}
-		else
-		{
-			OutOfBoundsDataStruct dataStruct = file.outOfBoundsTable[ ent ]
-
-			dataStruct.outOfBoundsTriggersTouched--
-			if ( dataStruct.outOfBoundsTriggersTouched < 0 ) //You can exit from bounds while being an invalid ent from out of bounds on the way in, e.g. during dropship anims, etc
-				 dataStruct.outOfBoundsTriggersTouched = 0
-
-			if ( dataStruct.outOfBoundsTriggersTouched == 0 )
-			{
-				dataStruct.timeBackInBound = Time()
-				dataStruct.timeLeftBeforeDyingFromOutOfBounds =  max( 0, ent.GetOutOfBoundsDeadTime() - Time() )
-				ent.SetOutOfBoundsDeadTime( 0.0 )
-				ent.Signal( "BackInBounds" )
-				return
-			}
-		}
+	}
 }
 
 void function KillEntityOutOfBounds( entity ent, entity trigger )
@@ -1951,7 +1966,7 @@ bool function IsValidOutOfBoundsEntity( entity ent, entity trigger )
 
 	Assert( triggerTeam >= 0 )
 
-	if ( triggerTeam != 0  && ent.GetTeam() != triggerTeam )
+	if ( triggerTeam != 0 && ent.GetTeam() != triggerTeam )
 		return false
 
 	// Temp hack for tday intro, might not keep this
@@ -1960,7 +1975,7 @@ bool function IsValidOutOfBoundsEntity( entity ent, entity trigger )
 
 	if ( ent.IsPlayer() )
 	{
-		if ( ent.IsNoclipping() && !ent.Anim_IsActive() ) //Need to check for Anim_IsActive because PlayAnim() calls will set IsNoclipping() to true. This caused a bug with ejecting out of a OutOfBounds trigger
+		if ( ent.IsNoclipping() && !ent.Anim_IsActive() ) // Need to check for Anim_IsActive because PlayAnim() calls will set IsNoclipping() to true. This caused a bug with ejecting out of a OutOfBounds trigger
 			return false
 
 		entity parentEnt = ent.GetParent()
@@ -1981,15 +1996,15 @@ void function OnTitanBecomesPilot_OutOfBoundsCheck( entity pilot, entity npc_tit
 	if ( pilot.GetOutOfBoundsDeadTime() == 0 )
 		return
 
-	npc_titan.SetOrigin( npc_titan.GetOrigin() ) //Kinda a hack to force redetection of the Titan touching the out of bounds trigger
+	npc_titan.SetOrigin( npc_titan.GetOrigin() ) // Kinda a hack to force redetection of the Titan touching the out of bounds trigger
 }
 
-void function ManageAddEntToOutOfBoundsTable( entity ent, OutOfBoundsDataStruct dataStruct  ) //Might be overkill, but: suggested by Haggerty to avoid leak of constantly adding ents to the file table without removing them
+void function ManageAddEntToOutOfBoundsTable( entity ent, OutOfBoundsDataStruct dataStruct ) // Might be overkill, but: suggested by Haggerty to avoid leak of constantly adding ents to the file table without removing them
 {
-	//First clean up dead references in table
-	table< entity, OutOfBoundsDataStruct> tempTable = clone file.outOfBoundsTable
+	// First clean up dead references in table
+	table<entity, OutOfBoundsDataStruct> tempTable = clone file.outOfBoundsTable
 
-	foreach( ent, dataStruct in tempTable )
+	foreach ( ent, dataStruct in tempTable )
 	{
 		if ( !IsValid( ent ) )
 		{
@@ -1997,7 +2012,7 @@ void function ManageAddEntToOutOfBoundsTable( entity ent, OutOfBoundsDataStruct 
 		}
 	}
 
-	//Now add the new ent
+	// Now add the new ent
 
 	file.outOfBoundsTable[ ent ] <- dataStruct
 }
@@ -2017,7 +2032,7 @@ function SetTitanAvailable( entity player )
 {
 	Assert( player.entindex() < 32 )
 	int shiftIndex = player.entindex() - 1
-	int elimMask = (1 << shiftIndex)
+	int elimMask = ( 1 << shiftIndex )
 
 	level.nv.titanAvailableBits = level.nv.titanAvailableBits | elimMask
 
@@ -2030,32 +2045,28 @@ function ClearTitanAvailable( entity player )
 {
 	Assert( player.entindex() < 32 )
 	int shiftIndex = player.entindex() - 1
-	int elimMask = (1 << shiftIndex)
+	int elimMask = ( 1 << shiftIndex )
 
-	level.nv.titanAvailableBits = level.nv.titanAvailableBits & (~elimMask)
+	level.nv.titanAvailableBits = level.nv.titanAvailableBits & ( ~elimMask )
 }
-
-
 
 function SetRespawnAvailable( entity player )
 {
 	Assert( player.entindex() < 32 )
 	int shiftIndex = player.entindex() - 1
-	int elimMask = (1 << shiftIndex)
+	int elimMask = ( 1 << shiftIndex )
 
 	level.nv.respawnAvailableBits = level.nv.respawnAvailableBits | elimMask
 }
-
 
 function ClearRespawnAvailable( entity player )
 {
 	Assert( player.entindex() < 32 )
 	int shiftIndex = player.entindex() - 1
-	int elimMask = (1 << shiftIndex)
+	int elimMask = ( 1 << shiftIndex )
 
-	level.nv.respawnAvailableBits = level.nv.respawnAvailableBits & (~elimMask)
+	level.nv.respawnAvailableBits = level.nv.respawnAvailableBits & ( ~elimMask )
 }
-
 
 void function SetPlayerEliminated( entity player )
 {
@@ -2069,7 +2080,7 @@ void function ClearPlayerEliminated( entity player )
 
 bool function IsPlayerEliminated( entity player )
 {
-	return (player.GetPlayerGameStat( PGS_ELIMINATED ) > 0)
+	return ( player.GetPlayerGameStat( PGS_ELIMINATED ) > 0 )
 }
 
 bool function IsTeamEliminated( int team )
@@ -2124,8 +2135,8 @@ bool function GameModeRemove( entity ent )
 		case FFA:
 		case FD:
 			break
+			// These game modes use tdm spawns
 
-		// These game modes use tdm spawns
 		case PILOT_SKIRMISH:
 		case WINGMAN_PILOT_SKIRMISH:
 		case MARKED_FOR_DEATH_PRO:
@@ -2159,20 +2170,21 @@ bool function GameModeRemove( entity ent )
 			break
 
 		default:
-			// If a game mode is not handled in here, spawnpoints won't have checkboxes that correspond to it, so all spawnpoints will be used in that mode, which is probably bad.
+			// If a game mode is not handled in here, spawnpoints won't have checkboxes that
+			// correspond to it, so all spawnpoints will be used in that mode, which is probably bad.
 			Assert( false, "Game mode " + gameMode + " not handled in GameModeRemove()" )
 	}
 
 	AT_CollisionCleanup( ent )
 
 	string gamemodeKey = "gamemode_" + gameMode
-	if ( ent.HasKey( gamemodeKey ) && (ent.kv[gamemodeKey] == "0" || ent.kv[gamemodeKey] == "") )
+	if ( ent.HasKey( gamemodeKey ) && ( ent.kv[ gamemodeKey ] == "0" || ent.kv[ gamemodeKey ] == "" ) )
 	{
 		// printt( "Removing ent " + ent.GetClassName() + " with " + gamemodeKey + " = \"" + ent.kv[gamemodeKey] + "\" at " + ent.GetOrigin() )
 		ent.Destroy()
 		return true
 	}
-	//printt( "keeping ent", ent.GetClassName() )
+	// printt( "keeping ent", ent.GetClassName() )
 
 	return false
 }
@@ -2189,7 +2201,6 @@ void function AT_CollisionCleanup( entity spawnPoint )
 	}
 }
 
-
 void function EntityFire( entity ent, string fire )
 {
 	ent.Fire( fire )
@@ -2201,26 +2212,26 @@ void function EntityFireDelayed( entity ent, string fire, string parm, float del
 }
 
 #if MP
-void function AddOutOfBoundsTriggerWithParams( vector org, float radius = 250.0, float height = 250.0 )
-{
-	entity trigger = CreateEntity( "trigger_cylinder" )
-	trigger.SetRadius( radius )
-	trigger.SetAboveHeight( height ) //Still not quite a sphere, will see if close enough
-	trigger.SetBelowHeight( height )
-	trigger.SetOrigin( org )
-	DispatchSpawn( trigger )
-	SetupOutOfBoundsTrigger( trigger )
-	trigger.SetEnterCallback( OnOOBTriggerEnter )
-	trigger.SetLeaveCallback( OnOOBTriggerLeave )
-}
+	void function AddOutOfBoundsTriggerWithParams( vector org, float radius = 250.0, float height = 250.0 )
+	{
+		entity trigger = CreateEntity( "trigger_cylinder" )
+		trigger.SetRadius( radius )
+		trigger.SetAboveHeight( height ) // Still not quite a sphere, will see if close enough
+		trigger.SetBelowHeight( height )
+		trigger.SetOrigin( org )
+		DispatchSpawn( trigger )
+		SetupOutOfBoundsTrigger( trigger )
+		trigger.SetEnterCallback( OnOOBTriggerEnter )
+		trigger.SetLeaveCallback( OnOOBTriggerLeave )
+	}
 
-void function OnOOBTriggerEnter( entity trigger, entity ent )
-{
-	EntityEnterOutOfBoundsTrig( trigger, ent, null, 0 )
-}
+	void function OnOOBTriggerEnter( entity trigger, entity ent )
+	{
+		EntityEnterOutOfBoundsTrig( trigger, ent, null, 0 )
+	}
 
-void function OnOOBTriggerLeave( entity trigger, entity ent )
-{
-	EntityLeaveOutOfBoundsTrig( trigger, ent, null, 0 )
-}
+	void function OnOOBTriggerLeave( entity trigger, entity ent )
+	{
+		EntityLeaveOutOfBoundsTrig( trigger, ent, null, 0 )
+	}
 #endif

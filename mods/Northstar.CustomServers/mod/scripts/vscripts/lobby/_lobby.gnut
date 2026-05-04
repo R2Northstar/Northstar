@@ -7,7 +7,7 @@ void function Lobby_Init()
 {
 	// need to prevent a crash
 	Music_Init()
-	
+
 	if ( IsPrivateMatch() || GetCurrentPlaylistName() == "private_match" ) // IsPrivateMatch() doesn't seem to be reliable on local server start
 		PrivateLobby_Init()
 	else
@@ -35,7 +35,7 @@ bool function ClientCommandCallback_StartPrivateMatchSearch( entity player, arra
 	// open lobby in private match mode
 	SetCurrentPlaylist( "private_match" ) // required for private match lobby to start properly
 	GameRules_ChangeMap( "mp_lobby", GAMETYPE )
-	
+
 	return true
 }
 
@@ -43,8 +43,8 @@ bool function ClientCommandCallback_SetAnnouncementVersionSeen( entity player, a
 {
 	if ( args.len() < 1 )
 		return false
-	
-	int version = int( args[0] )
+
+	int version = int( args[ 0 ] )
 
 	player.SetPersistentVar( "announcementVersionSeen", version )
 	return true

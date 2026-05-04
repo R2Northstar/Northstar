@@ -2,7 +2,8 @@ untyped
 global function InitCustomGamemodes
 global function AddCallback_OnCustomGamemodesInit
 
-struct {
+struct
+{
 	array<void functionref()> onCustomGamemodesInitCallbacks
 } file
 

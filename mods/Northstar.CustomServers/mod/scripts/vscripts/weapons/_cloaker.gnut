@@ -6,7 +6,7 @@ global function CloakerShouldCloakGuy
 global function CloakerCloaksGuy
 global function CloakerDeCloaksGuy
 
-function CloakerThink( entity cloaker, float radius, array<string> ents = [ "any" ], vector offset = Vector(0,0,0), var shouldCloakGuyFunc = null, float waitTime = 0.25 )
+function CloakerThink( entity cloaker, float radius, array<string> ents = [ "any" ], vector offset = Vector( 0, 0, 0 ), var shouldCloakGuyFunc = null, float waitTime = 0.25 )
 {
 	OnThreadEnd(
 		function() : ( cloaker )
@@ -25,7 +25,7 @@ function CloakerThink( entity cloaker, float radius, array<string> ents = [ "any
 	cloaker.s.cloakList <- {}
 	cloaker.s.decloakList <- {}
 
-	while( 1 )
+	while ( 1 )
 	{
 		vector origin = cloaker.GetOrigin() + offset
 		array<entity> guys
@@ -37,7 +37,8 @@ function CloakerThink( entity cloaker, float radius, array<string> ents = [ "any
 				case "player":
 				case "players":
 					guys.extend( GetPlayerArrayEx( "any", cloaker.GetTeam(), TEAM_ANY, origin, radius ) )
-					break;
+					break
+
 				default:
 					guys.extend( GetNPCArrayEx( entType, cloaker.GetTeam(), TEAM_ANY, origin, radius ) )
 					break
@@ -52,7 +53,7 @@ function CloakerThink( entity cloaker, float radius, array<string> ents = [ "any
 
 		foreach ( guy in guys )
 		{
-			//only do 5 distanceSqr / cansee checks per frame
+			// only do 5 distanceSqr / cansee checks per frame
 			if ( index++ > 5 )
 			{
 				wait 0.1

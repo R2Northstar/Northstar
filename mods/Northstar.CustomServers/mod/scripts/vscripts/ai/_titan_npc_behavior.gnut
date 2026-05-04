@@ -80,7 +80,7 @@ void function TitanNPC_WaitForBubbleShield_StartAutoTitanBehavior( entity titan 
 		return
 
 	OnThreadEnd(
-		function () : ( titan )
+		function() : ( titan )
 		{
 			if ( IsAlive( titan ) )
 			{
@@ -115,7 +115,7 @@ function TitanNPC_Think( entity titan )
 	// This particular bug occurred if TitanNPC_WaitForBubbleShield_StartAutoTitanBehavior() was called before soul transferred from npc to player,
 	// in which case the soul transfer killed the thread via Signal( "TitanStopsThinking" ), which causes the OnThreadEnd() to run TitanNPC_Think().
 	if ( !IsValid( soul ) )
-		return;
+		return
 
 	if ( soul.capturable || !ShouldBecomeAutoTitan( titan ) )
 	{
@@ -127,7 +127,7 @@ function TitanNPC_Think( entity titan )
 
 	Assert( IsAlive( titan ) )
 
-	if ( !TitanCanStand( titan ) )// sets the var
+	if ( !TitanCanStand( titan ) ) // sets the var
 	{
 		// try to put the titan on the navmesh
 		vector ornull clampedPos = NavMesh_ClampPointForAIWithExtents( titan.GetOrigin(), titan, < 100, 100, 100 > )
@@ -145,7 +145,7 @@ function TitanNPC_Think( entity titan )
 		return
 	}
 
-	if ( "disableAutoTitanConversation" in titan.s ) //At this point the Titan has stood up and is ready to talk
+	if ( "disableAutoTitanConversation" in titan.s ) // At this point the Titan has stood up and is ready to talk
 		delete titan.s.disableAutoTitanConversation
 
 	titan.EndSignal( "TitanStopsThinking" )
@@ -153,7 +153,7 @@ function TitanNPC_Think( entity titan )
 	titan.EndSignal( "player_embarks_titan" )
 
 	// kneel in certain circumstances
-	for ( ;; )
+	for ( ; ; )
 	{
 		if ( !ChangedStance( titan ) )
 			waitthread TitanWaitsToChangeStance( titan )
@@ -175,7 +175,7 @@ bool function ChangedStance( entity titan )
 	{
 		if ( TitanShouldKneel( titan ) )
 		{
-			//waitthread PlayAnimGravity( titan, "at_MP_stand2knee_straight" )
+			// waitthread PlayAnimGravity( titan, "at_MP_stand2knee_straight" )
 			waitthread KneelToShowRider( titan )
 			thread PlayAnim( titan, "at_MP_embark_idle_blended" )
 			SetStanceKneel( soul )
@@ -206,8 +206,8 @@ function TitanShouldKneel( entity titan )
 	if ( soul.capturable )
 		return true
 
-	//if( HasEnemyRodeoRiders( titan ) )
-	//	return true
+	// if( HasEnemyRodeoRiders( titan ) )
+	// 	return true
 	if ( !TitanCanStand( titan ) )
 		return false
 
@@ -240,7 +240,6 @@ function TitanStandUp( titan )
 	SetStanceStand( soul )
 }
 
-
 void function TitanKneel( entity titan )
 {
 	titan.EndSignal( "TitanStopsThinking" )
@@ -253,7 +252,6 @@ void function TitanKneel( entity titan )
 	thread PlayAnim( titan, "at_MP_embark_idle_blended" )
 	SetStanceKneel( soul )
 }
-
 
 /*
 function TitanWaittillShouldStand( entity titan )
@@ -286,40 +284,40 @@ void function KneelToShowRider( entity titan )
 	local animation
 	local yawDif
 
-	//if ( IsAlive( player ) )
-	//{
-	//	local table = GetFrontRightDots( titan, player )
-    //
-	//	local dotForward = Table.dotForward
-	//	local dotRight = Table.dotRight
-    //
-	////	DebugDrawLine( titanOrg, titanOrg + titan.GetForwardVector() * 200, 255, 0, 0, true, 5 )
-	////	DebugDrawLine( titanOrg, titanOrg + vecToEnt * 200, 0, 255, 0, true, 5 )
-    //
-	//	if ( dotForward > 0.88 )
-	//	{
-	//		animation = "at_MP_stand2knee_L90"
-	//		yawDif = 0
-	//	}
-	//	else
-	//	if ( dotForward < -0.88 )
-	//	{
-	//		animation = "at_MP_stand2knee_R90"
-	//		yawDif = 180
-	//	}
-	//	else
-	//	if ( dotRight > 0 )
-	//	{
-	//		animation = "at_MP_stand2knee_straight"
-	//		yawDif = 90
-	//	}
-	//	else
-	//	{
-	//		animation = "at_MP_stand2knee_180"
-	//		yawDif = -90
-	//	}
-	//}
-	//else
+	// if ( IsAlive( player ) )
+	// {
+	// 	local table = GetFrontRightDots( titan, player )
+	//
+	// 	local dotForward = Table.dotForward
+	// 	local dotRight = Table.dotRight
+	//
+	// //	DebugDrawLine( titanOrg, titanOrg + titan.GetForwardVector() * 200, 255, 0, 0, true, 5 )
+	// //	DebugDrawLine( titanOrg, titanOrg + vecToEnt * 200, 0, 255, 0, true, 5 )
+	//
+	// 	if ( dotForward > 0.88 )
+	// 	{
+	// 		animation = "at_MP_stand2knee_L90"
+	// 		yawDif = 0
+	// 	}
+	// 	else
+	// 	if ( dotForward < -0.88 )
+	// 	{
+	// 		animation = "at_MP_stand2knee_R90"
+	// 		yawDif = 180
+	// 	}
+	// 	else
+	// 	if ( dotRight > 0 )
+	// 	{
+	// 		animation = "at_MP_stand2knee_straight"
+	// 		yawDif = 90
+	// 	}
+	// 	else
+	// 	{
+	// 		animation = "at_MP_stand2knee_180"
+	// 		yawDif = -90
+	// 	}
+	// }
+	// else
 	{
 		animation = "at_MP_stand2knee_straight"
 		yawDif = 0
@@ -343,7 +341,7 @@ void function KneelToShowRider( entity titan )
 	local angles = VectorToAngles( vec )
 
 	angles.y += yawDif
-	*/
+*/
 
 	local angles = titan.GetAngles()
 

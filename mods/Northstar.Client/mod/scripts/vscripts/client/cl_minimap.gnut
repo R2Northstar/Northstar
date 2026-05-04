@@ -20,10 +20,11 @@ global function Minimap_EnableDraw
 global function Minimap_DisableDraw
 
 #if DEV
-global function DumpMinimapHandles
+	global function DumpMinimapHandles
 #endif
 
-struct {
+struct
+{
 	var minimap_base
 	var minimap_wedges
 
@@ -35,7 +36,7 @@ struct {
 	var minimap_indicator
 
 	#if DEV
-	table< int, entity > minimapHandles
+		table<int, entity> minimapHandles
 	#endif
 
 	array<var> minimapOtherRuis
@@ -48,30 +49,28 @@ struct {
 	bool minimapEnabled = true
 } file
 
-
 struct MinmapPackage
 {
 	asset minimapAsset = $""
 	void functionref( entity, var ) initFunction
 }
 
-table< string, array<MinmapPackage> > minimapAssetMap = {}
+table<string, array<MinmapPackage> > minimapAssetMap = {}
 
-const int OF_IS_VISIBLE						= 1 << 0
-const int OF_TEAM_SAME						= 1 << 1
-const int OF_TEAM_ENEMY						= 1 << 2
-const int OF_IN_OUR_PARTY					= 1 << 3
-const int OF_IS_OWNED_BY_US					= 1 << 4
-const int OF_IS_PLAYER						= 1 << 5
-const int OF_IS_NPC							= 1 << 6
-const int OF_IS_TITAN						= 1 << 7
-const int OF_ORIENT_UP						= 1 << 8
-const int OF_NO_TEAM_COLOR					= 1 << 9
-
+const int OF_IS_VISIBLE = 1 << 0
+const int OF_TEAM_SAME = 1 << 1
+const int OF_TEAM_ENEMY = 1 << 2
+const int OF_IN_OUR_PARTY = 1 << 3
+const int OF_IS_OWNED_BY_US = 1 << 4
+const int OF_IS_PLAYER = 1 << 5
+const int OF_IS_NPC = 1 << 6
+const int OF_IS_TITAN = 1 << 7
+const int OF_ORIENT_UP = 1 << 8
+const int OF_NO_TEAM_COLOR = 1 << 9
 
 void function RegisterMinimapPackage( string entityClassname, int customStateIndex, asset minimapAsset, void functionref( entity, var ) initFunction )
 {
-	Assert ( (entityClassname in minimapAssetMap), "minimap is not currently setup to handle this type of entity: " + entityClassname )
+	Assert( ( entityClassname in minimapAssetMap ), "minimap is not currently setup to handle this type of entity: " + entityClassname )
 
 	MinmapPackage minimapPackage
 	minimapPackage.minimapAsset = minimapAsset
@@ -87,25 +86,26 @@ void function RegisterMinimapPackage( string entityClassname, int customStateInd
 		case "npc_super_spectre":
 		case "npc_turret_sentry":
 			Assert( customStateIndex > 0 && customStateIndex < eMinimapObject_npc.COUNT )
-			minimapAssetMap[entityClassname].resize( eMinimapObject_npc.COUNT )
-			minimapAssetMap[entityClassname][customStateIndex] = minimapPackage
+			minimapAssetMap[ entityClassname ].resize( eMinimapObject_npc.COUNT )
+			minimapAssetMap[ entityClassname ][ customStateIndex ] = minimapPackage
 			break
+
 		case "npc_titan":
 			Assert( customStateIndex > 0 && customStateIndex < eMinimapObject_npc_titan.COUNT )
-			minimapAssetMap[entityClassname].resize( eMinimapObject_npc_titan.COUNT )
-			minimapAssetMap[entityClassname][customStateIndex] = minimapPackage
+			minimapAssetMap[ entityClassname ].resize( eMinimapObject_npc_titan.COUNT )
+			minimapAssetMap[ entityClassname ][ customStateIndex ] = minimapPackage
 			break
 
 		case "prop_script":
 			Assert( customStateIndex > 0 && customStateIndex < eMinimapObject_prop_script.COUNT )
-			minimapAssetMap[entityClassname].resize( eMinimapObject_prop_script.COUNT )
-			minimapAssetMap[entityClassname][customStateIndex] = minimapPackage
+			minimapAssetMap[ entityClassname ].resize( eMinimapObject_prop_script.COUNT )
+			minimapAssetMap[ entityClassname ][ customStateIndex ] = minimapPackage
 			break
 
 		case "info_hardpoint":
 			Assert( customStateIndex > 0 && customStateIndex < eMinimapObject_info_hardpoint.COUNT )
-			minimapAssetMap[entityClassname].resize( eMinimapObject_info_hardpoint.COUNT )
-			minimapAssetMap[entityClassname][customStateIndex] = minimapPackage
+			minimapAssetMap[ entityClassname ].resize( eMinimapObject_info_hardpoint.COUNT )
+			minimapAssetMap[ entityClassname ][ customStateIndex ] = minimapPackage
 			break
 
 		default:
@@ -115,13 +115,13 @@ void function RegisterMinimapPackage( string entityClassname, int customStateInd
 
 void function RegisterDefaultMinimapPackage( string entityClassname, asset minimapAsset, void functionref( entity, var ) initFunction )
 {
-	Assert ( !(entityClassname in minimapAssetMap) )
+	Assert( !( entityClassname in minimapAssetMap ) )
 
 	MinmapPackage minimapPackage
 	minimapPackage.minimapAsset = minimapAsset
 	minimapPackage.initFunction = initFunction
 
-	minimapAssetMap[entityClassname] <- [minimapPackage]
+	minimapAssetMap[ entityClassname ] <- [ minimapPackage ]
 }
 
 void function ClMinimap_Init()
@@ -160,24 +160,24 @@ void function ClMinimap_Init()
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FD_MORTAR_POSITION, $"ui/minimap_mortar_spectre.rpak", MinimapPackage_MortarPosition )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.ARC_TRAP, $"ui/minimap_obj_area.rpak", MinimapPackage_ArcTrap )
 
-	//RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FW_CAMP_A, $"ui/minimap_fw_camp.rpak", MinimapPackage_FWCampA )
-	//RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FW_CAMP_B, $"ui/minimap_fw_camp.rpak", MinimapPackage_FWCampB )
-	//RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FW_CAMP_C, $"ui/minimap_fw_camp.rpak", MinimapPackage_FWCampC )
+	// RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FW_CAMP_A, $"ui/minimap_fw_camp.rpak", MinimapPackage_FWCampA )
+	// RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FW_CAMP_B, $"ui/minimap_fw_camp.rpak", MinimapPackage_FWCampB )
+	// RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FW_CAMP_C, $"ui/minimap_fw_camp.rpak", MinimapPackage_FWCampC )
 
 	RegisterMinimapPackage( "info_hardpoint", eMinimapObject_info_hardpoint.HARDPOINT_A, $"ui/minimap_obj_area.rpak", MinimapPackage_HardpointA )
 	RegisterMinimapPackage( "info_hardpoint", eMinimapObject_info_hardpoint.HARDPOINT_B, $"ui/minimap_obj_area.rpak", MinimapPackage_HardpointB )
 	RegisterMinimapPackage( "info_hardpoint", eMinimapObject_info_hardpoint.HARDPOINT_C, $"ui/minimap_obj_area.rpak", MinimapPackage_HardpointC )
 
-	//if ( IsPlayingDemo() )
+	// if ( IsPlayingDemo() )
 	{
 		RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.SPAWNZONE_IMC, $"ui/minimap_obj_area.rpak", MinimapPackage_SpawnZoneAreaInit )
 		RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.SPAWNZONE_MIL, $"ui/minimap_obj_area.rpak", MinimapPackage_SpawnZoneAreaInit )
 	}
-	//else
-	//{
-	//	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.SPAWNZONE_IMC, $"", MinimapPackage_SpawnZoneAreaInit )
-	//	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.SPAWNZONE_MIL, $"", MinimapPackage_SpawnZoneAreaInit )
-	//}
+	// else
+	// {
+	// 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.SPAWNZONE_IMC, $"", MinimapPackage_SpawnZoneAreaInit )
+	// 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.SPAWNZONE_MIL, $"", MinimapPackage_SpawnZoneAreaInit )
+	// }
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.LTS_SITE_A, $"ui/minimap_object.rpak", MinimapPackage_LTSBombSiteA )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.LTS_SITE_B, $"ui/minimap_object.rpak", MinimapPackage_LTSBombSiteB )
 	/*
@@ -246,17 +246,16 @@ void function ClMinimap_Init()
 }
 
 #if DEV
-void function DumpMinimapHandles()
-{
-	int index = 0
-	foreach ( handle, ent in file.minimapHandles )
+	void function DumpMinimapHandles()
 	{
-		printt( index, handle, ent )
-		++index
+		int index = 0
+		foreach ( handle, ent in file.minimapHandles )
+		{
+			printt( index, handle, ent )
+			++index
+		}
 	}
-}
 #endif
-
 
 void function Minimap_DisableDraw()
 {
@@ -288,7 +287,6 @@ void function Minimap_EnableDraw()
 	}
 }
 
-
 void function ClientCodeCallback_MinimapEntitySpawned( entity ent )
 {
 	foreach ( callbackFunc in clGlobal.onMinimapEntSpawnedCallbacks )
@@ -302,20 +300,18 @@ void function ClientCodeCallback_MinimapEntitySpawned( entity ent )
 	thread AddMinimapObject( ent )
 }
 
-
 asset function GetMinimapAsset( string className, int customState )
 {
-	if ( !(className in minimapAssetMap) )
+	if ( !( className in minimapAssetMap ) )
 		return $""
 
-	if ( customState > minimapAssetMap[className].len() - 1 )
+	if ( customState > minimapAssetMap[ className ].len() - 1 )
 		return $""
 
-	return minimapAssetMap[className][customState].minimapAsset
+	return minimapAssetMap[ className ][ customState ].minimapAsset
 }
 
-
-void function AddMinimapObject( entity ent ) //TODO: If we want radar jammer boost to hide friendly players we need to be able to get the rui handles back.
+void function AddMinimapObject( entity ent ) // TODO: If we want radar jammer boost to hide friendly players we need to be able to get the rui handles back.
 {
 	Assert( IsValid( ent ) )
 
@@ -337,7 +333,7 @@ void function AddMinimapObject( entity ent ) //TODO: If we want radar jammer boo
 		int eHandle = ent.Dev_GetEncodedEHandle()
 
 		{
-			array< int > eHandlesToRemove
+			array<int> eHandlesToRemove
 			foreach ( eHandleIter, entIter in file.minimapHandles )
 			{
 				if ( !IsValid( entIter ) )
@@ -348,25 +344,25 @@ void function AddMinimapObject( entity ent ) //TODO: If we want radar jammer boo
 
 			foreach ( eHandleIter in eHandlesToRemove )
 			{
-				delete file.minimapHandles[eHandleIter]
+				delete file.minimapHandles[ eHandleIter ]
 			}
 		}
 
 		if ( eHandle in file.minimapHandles )
 		{
 			// Should have been removed in above loop
-			Assert( IsValid( file.minimapHandles[eHandle] ) )
+			Assert( IsValid( file.minimapHandles[ eHandle ] ) )
 
 			DumpMinimapHandles()
 			Assert( false, "Duplicate minimap entity added - " + ent )
 		}
 
-		file.minimapHandles[eHandle] <- ent
+		file.minimapHandles[ eHandle ] <- ent
 	#endif
 
 	var rui = CreateCockpitRui( minimapAsset, MINIMAP_Z_BASE + zOrder )
 
-	//RuiTrackGameTime( rui, "lastFireTime", ent, RUI_TRACK_LAST_FIRED_TIME )
+	// RuiTrackGameTime( rui, "lastFireTime", ent, RUI_TRACK_LAST_FIRED_TIME )
 
 	RuiTrackFloat3( rui, "playerPos", viewPlayer, RUI_TRACK_ABSORIGIN_FOLLOW )
 	RuiTrackFloat3( rui, "playerAngles", viewPlayer, RUI_TRACK_EYEANGLES_FOLLOW )
@@ -379,7 +375,7 @@ void function AddMinimapObject( entity ent ) //TODO: If we want radar jammer boo
 	RuiSetFloat( rui, "minimapZoomScale", file.minimapZoomScale )
 	RuiSetFloat( rui, "minimapSizeScale", file.minimapSizeScale )
 
-	minimapAssetMap[className][customState].initFunction( ent, rui )
+	minimapAssetMap[ className ][ customState ].initFunction( ent, rui )
 
 	file.minimapOtherRuis.append( rui )
 
@@ -407,7 +403,6 @@ void function AddMinimapObject( entity ent ) //TODO: If we want radar jammer boo
 	}
 }
 
-
 void function Minimap_PingCount( vector origin, float radius, float duration, vector color, int count, bool reverse = false )
 {
 	float delay = duration / count
@@ -416,11 +411,10 @@ void function Minimap_PingCount( vector origin, float radius, float duration, ve
 	{
 		count--
 
-		Minimap_Ping( origin, radius, delay + (delay * 0.25), color, reverse )
+		Minimap_Ping( origin, radius, delay + ( delay * 0.25 ), color, reverse )
 		wait delay
 	}
 }
-
 
 void function Minimap_Ping( vector origin, float radius, float duration, vector color, bool reverse = false )
 {
@@ -437,7 +431,7 @@ void function Minimap_Ping( vector origin, float radius, float duration, vector 
 
 	RuiSetFloat3( rui, "objColor", color )
 	RuiSetFloat3( rui, "objectPos", origin )
-	RuiSetFloat3( rui, "objectAngles", <0,0,0> )
+	RuiSetFloat3( rui, "objectAngles", < 0, 0, 0 > )
 
 	RuiSetFloat( rui, "objectRadius", radius / ( file.threatMaxDist * file.minimapZoomScale ) )
 
@@ -450,8 +444,6 @@ void function Minimap_Ping( vector origin, float radius, float duration, vector 
 
 	RuiSetBool( rui, "reverse", reverse )
 }
-
-
 
 var function Minimap_AddLayer( asset layerImage, bool isFriendly )
 {
@@ -472,7 +464,7 @@ var function Minimap_AddLayer( asset layerImage, bool isFriendly )
 	float mapScale = Minimap_GetFloatForKey( "scale" )
 
 	RuiSetImage( rui, "layerImage", layerImage )
-	RuiSetFloat3( rui, "mapCorner", <mapCornerX, mapCornerY, 0> )
+	RuiSetFloat3( rui, "mapCorner", < mapCornerX, mapCornerY, 0 > )
 	RuiSetFloat( rui, "displayDist", file.threatMaxDist )
 	RuiSetFloat( rui, "mapScale", mapScale )
 	RuiSetFloat( rui, "minimapZoomScale", file.minimapZoomScale )
@@ -501,7 +493,7 @@ var function Minimap_AddCustomLayer( asset ruiAsset, int sortKey = MINIMAP_Z_LAY
 
 	float mapScale = Minimap_GetFloatForKey( "scale" )
 
-	RuiSetFloat3( rui, "mapCorner", <mapCornerX, mapCornerY, 0> )
+	RuiSetFloat3( rui, "mapCorner", < mapCornerX, mapCornerY, 0 > )
 	RuiSetFloat( rui, "displayDist", file.threatMaxDist )
 	RuiSetFloat( rui, "mapScale", mapScale )
 	RuiSetFloat( rui, "minimapZoomScale", file.minimapZoomScale )
@@ -509,7 +501,6 @@ var function Minimap_AddCustomLayer( asset ruiAsset, int sortKey = MINIMAP_Z_LAY
 
 	return rui
 }
-
 
 void function OnPlayerCreate( entity player )
 {
@@ -531,13 +522,13 @@ void function OnPlayerCreate( entity player )
 	float mapScale = Minimap_GetFloatForKey( "scale" )
 
 	RuiSetImage( file.minimap_base, "mapImage", mapImage )
-	RuiSetFloat3( file.minimap_base, "mapCorner", <mapCornerX, mapCornerY, 0> )
+	RuiSetFloat3( file.minimap_base, "mapCorner", < mapCornerX, mapCornerY, 0 > )
 	RuiSetFloat( file.minimap_base, "displayDist", file.threatMaxDist )
 	RuiSetFloat( file.minimap_base, "mapScale", mapScale )
 
 	RuiTrackFloat3( file.minimap_wedges, "playerPos", player, RUI_TRACK_ABSORIGIN_FOLLOW )
 	RuiTrackFloat3( file.minimap_wedges, "playerAngles", player, RUI_TRACK_EYEANGLES_FOLLOW )
-	RuiSetFloat3( file.minimap_wedges, "distances", <threatDistNear / file.threatMaxDist, 1.0 - (threatDistFar / file.threatMaxDist), 1.0> )
+	RuiSetFloat3( file.minimap_wedges, "distances", < threatDistNear / file.threatMaxDist, 1.0 - ( threatDistFar / file.threatMaxDist ), 1.0 > )
 	RuiSetBool( file.minimap_wedges, "isVisible", file.minimapZoomScale == 1.0 )
 
 	RuiTrackGameTime( file.minimap_wedges, "lastFireTimeCenter", player, RUI_TRACK_MINIMAP_THREAT_SECTOR, MOTS_CENTER )
@@ -560,7 +551,6 @@ void function OnPlayerCreate( entity player )
 	RuiTrackGameTime( file.minimap_wedges, "lastFireTimeOuter6", player, RUI_TRACK_MINIMAP_THREAT_SECTOR, MOTS_FAR_W )
 	RuiTrackGameTime( file.minimap_wedges, "lastFireTimeOuter7", player, RUI_TRACK_MINIMAP_THREAT_SECTOR, MOTS_FAR_NW )
 
-
 	RuiSetFloat( file.minimap_wedges, "minimapZoomScale", file.minimapZoomScale )
 	RuiSetFloat( file.minimap_wedges, "minimapSizeScale", file.minimapSizeScale )
 
@@ -569,19 +559,16 @@ void function OnPlayerCreate( entity player )
 
 	RuiTrackInt( file.minimap_you, "objectFlags", player, RUI_TRACK_MINIMAP_FLAGS )
 	RuiTrackInt( file.minimap_you, "customState", player, RUI_TRACK_MINIMAP_CUSTOM_STATE )
-
 }
-
 
 void function MinimapPackage_DummyInit( entity ent, var rui )
 {
-
 }
 
 void function MinimapPackage_PlayerInit( entity ent, var rui )
 {
 	RuiTrackGameTime( rui, "lastFireTime", ent, RUI_TRACK_LAST_FIRED_TIME )
-	if ( !IsFFAGame() ) //JFS: Too much work to get FFA to work correctly with Minimap logic, so disabling it for FFA
+	if ( !IsFFAGame() ) // JFS: Too much work to get FFA to work correctly with Minimap logic, so disabling it for FFA
 	{
 		RuiTrackFloat( rui, "sonarDetectedFrac", ent, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.sonar_detected )
 		RuiTrackFloat( rui, "maphackDetectedFrac", ent, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.maphack_detected )
@@ -595,7 +582,7 @@ void function MinimapPackage_NPCTitanInit( entity ent, var rui )
 	RuiSetBool( rui, "useTeamColor", false )
 
 	RuiTrackGameTime( rui, "lastFireTime", ent, RUI_TRACK_LAST_FIRED_TIME )
-	if ( !IsFFAGame() )  //JFS: Too much work to get FFA to work correctly with Minimap logic, so disabling it for FFA
+	if ( !IsFFAGame() ) // JFS: Too much work to get FFA to work correctly with Minimap logic, so disabling it for FFA
 		RuiTrackFloat( rui, "sonarDetectedFrac", ent, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.sonar_detected )
 }
 
@@ -604,16 +591,16 @@ void function MinimapPackage_NPCHumanSizedInit( entity ent, var rui )
 	entity player = GetLocalClientPlayer()
 
 	RuiSetImage( rui, "defaultIcon", $"rui/hud/minimap/compass_icon_small_dot" )
-	RuiSetImage( rui, "clampedDefaultIcon", $""  )
+	RuiSetImage( rui, "clampedDefaultIcon", $"" )
 
-	//if ( ent == GetLocalClientPlayer().GetPetTitan() )
-	//{
-	//	RuiSetBool( rui, "useTeamColor", false )
-	//	RuiSetFloat3( rui, "iconColor", TEAM_COLOR_YOU / 255.0 )
-	//}
+	// if ( ent == GetLocalClientPlayer().GetPetTitan() )
+	// {
+	// 	RuiSetBool( rui, "useTeamColor", false )
+	// 	RuiSetFloat3( rui, "iconColor", TEAM_COLOR_YOU / 255.0 )
+	// }
 	RuiTrackGameTime( rui, "lastFireTime", ent, RUI_TRACK_LAST_FIRED_TIME )
-	//if ( !IsFFAGame() )  //JFS: Too much work to get FFA to work correctly with Minimap logic, so disabling it for FFA
-	//	RuiTrackFloat( rui, "sonarDetectedFrac", ent, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.sonar_detected )
+	// if ( !IsFFAGame() )  //JFS: Too much work to get FFA to work correctly with Minimap logic, so disabling it for FFA
+	// 	RuiTrackFloat( rui, "sonarDetectedFrac", ent, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.sonar_detected )
 }
 
 void function MinimapPackage_NPCDropShipInit( entity ent, var rui )
@@ -650,7 +637,7 @@ void function MinimapPackage_ATAreaInit( entity ent, var rui )
 void function MinimapPackage_ATBank( entity ent, var rui )
 {
 	RuiSetImage( rui, "defaultIcon", $"rui/hud/gametype_icons/bounty_hunt/bh_bank_icon" )
-	RuiSetImage( rui, "clampedDefaultIcon", $"rui/hud/gametype_icons/bounty_hunt/bh_bank_icon"  )
+	RuiSetImage( rui, "clampedDefaultIcon", $"rui/hud/gametype_icons/bounty_hunt/bh_bank_icon" )
 	RuiSetBool( rui, "useTeamColor", false )
 }
 
@@ -659,7 +646,7 @@ void function MinimapPackage_SpawnZoneAreaInit( entity ent, var rui )
 	RuiTrackFloat( rui, "objectRadius", ent, RUI_TRACK_MINIMAP_SCALE )
 	if ( !IsPlayingDemo() )
 	{
-		RuiSetImage( rui, "centerImage", $""  ) // hide diamond
+		RuiSetImage( rui, "centerImage", $"" ) // hide diamond
 		RuiSetImage( rui, "clampedImage", $"rui/hud/gametype_icons/obj_foreground_diamond" )
 	}
 }
@@ -668,7 +655,7 @@ void function MinimapPackage_FWBuildSite( entity ent, var rui )
 {
 	entity player = GetLocalViewPlayer()
 	RuiTrackInt( rui, "batteryCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "batteryCount" ) )
-	//RuiTrackFloat( rui, "objectRadius", ent, RUI_TRACK_MINIMAP_SCALE )
+	// RuiTrackFloat( rui, "objectRadius", ent, RUI_TRACK_MINIMAP_SCALE )
 }
 
 void function MinimapPackage_HardpointA( entity ent, var rui )
@@ -692,7 +679,7 @@ void function MinimapPackage_FDHarvester( entity ent, var rui )
 	RuiSetImage( rui, "clampedImage", $"rui/hud/gametype_icons/fd/coop_harvester" )
 	RuiSetFloat( rui, "objectRadius", 0.01 )
 	RuiSetBool( rui, "useOverrideColor", true )
-	RuiSetColorAlpha( rui, "overrideColor", <1.0,1.0,1.0>, 1.0 )
+	RuiSetColorAlpha( rui, "overrideColor", < 1.0, 1.0, 1.0 >, 1.0 )
 }
 
 void function MinimapPackage_FDLoadoutChest( entity ent, var rui )
@@ -701,7 +688,7 @@ void function MinimapPackage_FDLoadoutChest( entity ent, var rui )
 	RuiSetImage( rui, "clampedImage", $"rui/hud/gametype_icons/fd/coop_ammo_locker_icon" )
 	RuiSetFloat( rui, "objectRadius", 0.01 )
 	RuiSetBool( rui, "useOverrideColor", true )
-	RuiSetColorAlpha( rui, "overrideColor", <1.0,1.0,1.0>, 1.0 )
+	RuiSetColorAlpha( rui, "overrideColor", < 1.0, 1.0, 1.0 >, 1.0 )
 }
 
 void function MinimapPackage_FDBatteryExchange( entity ent, var rui )
@@ -710,7 +697,7 @@ void function MinimapPackage_FDBatteryExchange( entity ent, var rui )
 	RuiSetImage( rui, "clampedImage", $"rui/hud/gametype_icons/bounty_hunt/bh_bank_icon" )
 	RuiSetFloat( rui, "objectRadius", 0.01 )
 	RuiSetBool( rui, "useOverrideColor", true )
-	RuiSetColorAlpha( rui, "overrideColor", <1.0,1.0,1.0>, 1.0 )
+	RuiSetColorAlpha( rui, "overrideColor", < 1.0, 1.0, 1.0 >, 1.0 )
 }
 
 void function MinimapPackage_BoostStore( entity ent, var rui )
@@ -719,7 +706,7 @@ void function MinimapPackage_BoostStore( entity ent, var rui )
 	RuiSetImage( rui, "clampedImage", $"rui/hud/gametype_icons/bounty_hunt/bh_bonus_icon" )
 	RuiSetFloat( rui, "objectRadius", 0.01 )
 	RuiSetBool( rui, "useOverrideColor", true )
-	RuiSetColorAlpha( rui, "overrideColor", <1.0,1.0,1.0>, 1.0 )
+	RuiSetColorAlpha( rui, "overrideColor", < 1.0, 1.0, 1.0 >, 1.0 )
 }
 
 void function MinimapPackage_MortarPosition( entity ent, var rui )
@@ -758,13 +745,13 @@ void function MinimapPackage_FWCampC( entity ent, var rui )
 void function MinimapPackage_LTSBombSiteA( entity ent, var rui )
 {
 	RuiSetImage( rui, "defaultIcon", $"rui/hud/gametype_icons/last_titan_standing/bomb_site_a_attacking" )
-	RuiSetImage( rui, "clampedDefaultIcon", $"rui/hud/gametype_icons/last_titan_standing/bomb_site_a_attacking"  )
+	RuiSetImage( rui, "clampedDefaultIcon", $"rui/hud/gametype_icons/last_titan_standing/bomb_site_a_attacking" )
 }
 
 void function MinimapPackage_LTSBombSiteB( entity ent, var rui )
 {
 	RuiSetImage( rui, "defaultIcon", $"rui/hud/gametype_icons/last_titan_standing/bomb_site_b_attacking" )
-	RuiSetImage( rui, "clampedDefaultIcon", $"rui/hud/gametype_icons/last_titan_standing/bomb_site_b_attacking"  )
+	RuiSetImage( rui, "clampedDefaultIcon", $"rui/hud/gametype_icons/last_titan_standing/bomb_site_b_attacking" )
 }
 
 void function MinimapPackage_LTSBomb( entity ent, var rui )
@@ -783,12 +770,11 @@ void function MinimapPackage_FlagInit( entity ent, var rui )
 
 void function MinimapPackage_PowerUp( entity ent, var rui )
 {
-	//Battery spawners are the only power ups in use atm. This would need to be updated if we use them differently.
+	// Battery spawners are the only power ups in use atm. This would need to be updated if we use them differently.
 	RuiSetImage( rui, "defaultIcon", $"rui/hud/battery/battery_capture_friendly" )
 	RuiSetImage( rui, "clampedDefaultIcon", $"rui/hud/battery/battery_capture_friendly" )
 	RuiSetBool( rui, "useTeamColor", false )
 }
-
 
 void function MinimapJammed_Enabled( entity ent, int statusEffect, bool actuallyChanged )
 {
@@ -813,7 +799,6 @@ void function MinimapJammed_Enabled( entity ent, int statusEffect, bool actually
 	RuiTrackFloat( file.minimap_jammed_layer, "scriptAlphaVar", ent, RUI_TRACK_STATUS_EFFECT_SEVERITY, statusEffect )
 
 	RuiTrackFloat( file.minimap_wedges, "scriptInverseAlphaVar", ent, RUI_TRACK_STATUS_EFFECT_SEVERITY, statusEffect )
-
 }
 
 void function MinimapJammed_Disabled( entity ent, int statusEffect, bool actuallyChanged )
@@ -840,7 +825,7 @@ void function LoopRadarJammerSounds( entity ent )
 	ent.EndSignal( "OnDeath" )
 
 	OnThreadEnd(
-	function() : ( ent )
+		function() : ( ent )
 		{
 			StopSoundOnEntity( ent, "HUD_Boost_Card_Radar_Jammer_RedTextBeep_1P" )
 		}
@@ -854,14 +839,14 @@ void function LoopRadarJammerSounds( entity ent )
 	else
 		timeToWait = 1.5 - fractionalComponent
 
-	wait (	timeToWait  ) //Red text flashes in with regards to game time, so we need to wait till the appropriate time (0.5) to play the next sound
+	wait ( timeToWait ) // Red text flashes in with regards to game time, so we need to wait till the appropriate time (0.5) to play the next sound
 
-	while( true )
+	while ( true )
 	{
 		if ( IsValid( ent ) )
 			EmitSoundOnEntity( ent, "HUD_Boost_Card_Radar_Jammer_RedTextBeep_1P" )
 
-		wait 1.0 //This is dependent on the rui logic, and will need to be changed if the rui logic changes
+		wait 1.0 // This is dependent on the rui logic, and will need to be changed if the rui logic changes
 	}
 }
 
@@ -872,12 +857,11 @@ void function FadeOutStaticSoundAfterDelay( entity ent, float delay )
 	ent.EndSignal( "OnDeath" )
 
 	OnThreadEnd(
-	function() : ( ent )
+		function() : ( ent )
 		{
-			clGlobal.levelEnt.Signal( "LoopRadarJammerSounds" ) //stop red text beeping sounds
+			clGlobal.levelEnt.Signal( "LoopRadarJammerSounds" ) // stop red text beeping sounds
 			if ( IsValid( ent ) )
 				StopSoundOnEntity( ent, "HUD_Boost_Card_Radar_Jammer_Signal_Static_1P" )
-
 		}
 	)
 	wait delay
@@ -885,18 +869,18 @@ void function FadeOutStaticSoundAfterDelay( entity ent, float delay )
 void function Minimap_SetZoomScale( float scale )
 {
 	file.minimapZoomScale = scale
-	if(file.minimap_you != null)
+	if ( file.minimap_you != null )
 		RuiSetFloat( file.minimap_you, "minimapZoomScale", file.minimapZoomScale )
-	if(file.minimap_indicator != null)
+	if ( file.minimap_indicator != null )
 		RuiSetFloat( file.minimap_indicator, "minimapZoomScale", file.minimapZoomScale )
-	if(file.minimap_base != null)
+	if ( file.minimap_base != null )
 		RuiSetFloat( file.minimap_base, "minimapZoomScale", file.minimapZoomScale )
-    
+
 	if ( file.minimap_wedges != null )
 	{
 		RuiSetBool( file.minimap_wedges, "isVisible", file.minimapZoomScale == 1.0 )
 		RuiSetFloat( file.minimap_wedges, "minimapZoomScale", file.minimapZoomScale )
-    }
+	}
 	foreach ( var rui in file.minimapOtherRuis )
 	{
 		RuiSetFloat( rui, "minimapZoomScale", file.minimapZoomScale )
@@ -906,19 +890,18 @@ void function Minimap_SetZoomScale( float scale )
 void function Minimap_SetSizeScale( float scale )
 {
 	file.minimapSizeScale = scale
-	if(file.minimap_base != null)
+	if ( file.minimap_base != null )
 		RuiSetFloat( file.minimap_base, "minimapSizeScale", file.minimapSizeScale )
-	if(file.minimap_indicator != null)
+	if ( file.minimap_indicator != null )
 		RuiSetFloat( file.minimap_indicator, "minimapSizeScale", file.minimapSizeScale )
-	if(file.minimap_you != null)
+	if ( file.minimap_you != null )
 		RuiSetFloat( file.minimap_you, "minimapSizeScale", file.minimapSizeScale )
-	if(file.minimap_wedges != null)
+	if ( file.minimap_wedges != null )
 		RuiSetFloat( file.minimap_wedges, "minimapSizeScale", file.minimapSizeScale )
 	foreach ( var rui in file.minimapOtherRuis )
 	{
 		RuiSetFloat( rui, "minimapSizeScale", file.minimapSizeScale )
 	}
-
 }
 float function Minimap_GetZoomScale()
 {
@@ -936,7 +919,7 @@ bool function Minimap_IsUsingLargeMinimap()
 void function ServerCallback_PingMinimap( float originX, float originY, float originZ, float radius, float duration, float colorR, float colorG, float colorB, int count, bool reverse )
 {
 	if ( count > 1 )
-		thread Minimap_PingCount( <originX, originY, originZ>, radius, duration, <colorR, colorG, colorB>, count, reverse )
+		thread Minimap_PingCount( < originX, originY, originZ >, radius, duration, < colorR, colorG, colorB >, count, reverse )
 	else
-		Minimap_Ping( <originX, originY, originZ>, radius, duration, <colorR, colorG, colorB>, reverse )
+		Minimap_Ping( < originX, originY, originZ >, radius, duration, < colorR, colorG, colorB >, reverse )
 }

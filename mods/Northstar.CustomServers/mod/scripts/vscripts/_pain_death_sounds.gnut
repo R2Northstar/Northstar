@@ -16,12 +16,11 @@ struct PainOrDeathSound
 
 struct
 {
-	array< array<PainOrDeathSound> > painSounds
-	array< array<PainOrDeathSound> > deathSounds
+	array<array<PainOrDeathSound> > painSounds
+	array<array<PainOrDeathSound> > deathSounds
 
 	bool painDeathDebug
 } file
-
 
 enum eBodyTypes
 {
@@ -100,18 +99,18 @@ void function PainDeathSounds_Init()
 	var dataTable = GetDataTable( $"datatable/pain_death_sounds.rpak" )
 	int numRows = GetDatatableRowCount( dataTable )
 
-	int eventColumn	 			= GetDataTableColumnByName( dataTable, "event" )
-	int blocksPriorityColumn	= GetDataTableColumnByName( dataTable, "blocksNextPriority" )
-	int methodColumn	 		= GetDataTableColumnByName( dataTable, "method" )
-	int priorityColumn	 		= GetDataTableColumnByName( dataTable, "priority" )
-	int bodyTypeColumn	 		= GetDataTableColumnByName( dataTable, "bodyType" )
+	int eventColumn = GetDataTableColumnByName( dataTable, "event" )
+	int blocksPriorityColumn = GetDataTableColumnByName( dataTable, "blocksNextPriority" )
+	int methodColumn = GetDataTableColumnByName( dataTable, "method" )
+	int priorityColumn = GetDataTableColumnByName( dataTable, "priority" )
+	int bodyTypeColumn = GetDataTableColumnByName( dataTable, "bodyType" )
 	int alias_1p_victim_only_column = GetDataTableColumnByName( dataTable, "alias_1p_victim_only" )
 	int alias_3p_except_victim_column = GetDataTableColumnByName( dataTable, "alias_3p_except_victim" )
 	int alias_3p_attacker_only_column = GetDataTableColumnByName( dataTable, "alias_3p_attacker_only" )
 	int alias_3p_except_attacker_column = GetDataTableColumnByName( dataTable, "alias_3p_except_attacker" )
-	int visibleColumn			= GetDataTableColumnByName( dataTable, "spmp" )
+	int visibleColumn = GetDataTableColumnByName( dataTable, "spmp" )
 
- 	table<string,bool> visibleMask
+	table<string, bool> visibleMask
 	visibleMask[ "spmp" ] <- true
 	if ( IsMultiplayer() )
 		visibleMask[ "mp" ] <- true
@@ -124,19 +123,19 @@ void function PainDeathSounds_Init()
 		if ( !( visible in visibleMask ) )
 			continue
 
-		int priority			 		= GetDataTableInt( dataTable, i, priorityColumn )
-		bool blocksPriority		 		= GetDataTableBool( dataTable, i, blocksPriorityColumn )
-		string event	 				= GetDataTableString( dataTable, i, eventColumn )
-		string method	 				= GetDataTableString( dataTable, i, methodColumn )
-		string bodyTypeName				= GetDataTableString( dataTable, i, bodyTypeColumn )
-		string alias_1p_victim_only 	= GetDataTableString( dataTable, i, alias_1p_victim_only_column )
-		string alias_3p_except_victim 	= GetDataTableString( dataTable, i, alias_3p_except_victim_column )
-		string alias_3p_attacker_only 	= GetDataTableString( dataTable, i, alias_3p_attacker_only_column )
+		int priority = GetDataTableInt( dataTable, i, priorityColumn )
+		bool blocksPriority = GetDataTableBool( dataTable, i, blocksPriorityColumn )
+		string event = GetDataTableString( dataTable, i, eventColumn )
+		string method = GetDataTableString( dataTable, i, methodColumn )
+		string bodyTypeName = GetDataTableString( dataTable, i, bodyTypeColumn )
+		string alias_1p_victim_only = GetDataTableString( dataTable, i, alias_1p_victim_only_column )
+		string alias_3p_except_victim = GetDataTableString( dataTable, i, alias_3p_except_victim_column )
+		string alias_3p_attacker_only = GetDataTableString( dataTable, i, alias_3p_attacker_only_column )
 		string alias_3p_except_attacker = GetDataTableString( dataTable, i, alias_3p_except_attacker_column )
 		int bodyType = eBodyTypes[ bodyTypeName ]
 
 		PainOrDeathSound painOrDeathSound
-		painOrDeathSound.isSoundTypeFunc 	= GetSoundTypeFuncFromName( method )
+		painOrDeathSound.isSoundTypeFunc = GetSoundTypeFuncFromName( method )
 		painOrDeathSound.alias_1p_victim_only = alias_1p_victim_only
 		painOrDeathSound.alias_3p_except_victim = alias_3p_except_victim
 		painOrDeathSound.alias_3p_attacker_only = alias_3p_attacker_only
@@ -145,8 +144,8 @@ void function PainDeathSounds_Init()
 		painOrDeathSound.priority = priority
 
 		#if DEV
-		if ( priority < 100 || priority > 500 )
-			CodeWarning( "PainDeathSound event priority must be between 100 and 500. See " + event + " " + method )
+			if ( priority < 100 || priority > 500 )
+				CodeWarning( "PainDeathSound event priority must be between 100 and 500. See " + event + " " + method )
 		#endif
 
 		switch ( event )
@@ -180,7 +179,6 @@ int function PainOrDeathSort( PainOrDeathSound a, PainOrDeathSound b )
 		return 1
 	return 0
 }
-
 
 bool functionref( entity, entity, bool, int, int ) function GetSoundTypeFuncFromName( string method )
 {
@@ -410,41 +408,41 @@ void function PlayPainOrDeathSounds( array<PainOrDeathSound> soundEvents, entity
 	}
 
 	#if DEV
-	if ( !file.painDeathDebug )
-		return
+		if ( !file.painDeathDebug )
+			return
 
-	foreach ( sound in alias_3p_except_victim )
-	{
-		printt( "PAIN_DEATH_DEBUG: EmitSoundOnEntity - " + sound )
-	}
-
-	if ( victim.IsPlayer() )
-	{
-		foreach ( sound in alias_1p_victim_only )
-		{
-			printt( "PAIN_DEATH_DEBUG: EmitSoundOnEntityOnlyToPlayer - " + sound )
-		}
-	}
-
-	if ( attacker.IsPlayer() )
-	{
-		foreach ( sound in alias_3p_except_attacker )
-		{
-			printt( "PAIN_DEATH_DEBUG: EmitSoundOnEntityExceptToPlayer - " + sound )
-		}
-
-		foreach ( sound in alias_3p_attacker_only )
-		{
-			printt( "PAIN_DEATH_DEBUG: EmitSoundOnEntityOnlyToPlayer - " + sound )
-		}
-	}
-	else
-	{
-		foreach ( sound in alias_3p_except_attacker )
+		foreach ( sound in alias_3p_except_victim )
 		{
 			printt( "PAIN_DEATH_DEBUG: EmitSoundOnEntity - " + sound )
 		}
-	}
+
+		if ( victim.IsPlayer() )
+		{
+			foreach ( sound in alias_1p_victim_only )
+			{
+				printt( "PAIN_DEATH_DEBUG: EmitSoundOnEntityOnlyToPlayer - " + sound )
+			}
+		}
+
+		if ( attacker.IsPlayer() )
+		{
+			foreach ( sound in alias_3p_except_attacker )
+			{
+				printt( "PAIN_DEATH_DEBUG: EmitSoundOnEntityExceptToPlayer - " + sound )
+			}
+
+			foreach ( sound in alias_3p_attacker_only )
+			{
+				printt( "PAIN_DEATH_DEBUG: EmitSoundOnEntityOnlyToPlayer - " + sound )
+			}
+		}
+		else
+		{
+			foreach ( sound in alias_3p_except_attacker )
+			{
+				printt( "PAIN_DEATH_DEBUG: EmitSoundOnEntity - " + sound )
+			}
+		}
 	#endif
 }
 

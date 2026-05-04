@@ -116,48 +116,51 @@ void function UpdateOpenInvite()
 	string message = ""
 	string param1 = ""
 	string ornull param2 = null
-	switch( openInvite.inviteType )
+	switch ( openInvite.inviteType )
 	{
-	case "party":
-		if ( openInvite.amILeader )
-			message = "#OPENINVITE_SENDER_PARTY";
-		else
-			message = "#OPENINVITE_PARTY";
-		param1 = openInvite.originatorName
-		break;
-	case "playlist":
-		if ( playlists.len() > 1 )
-		{
+		case "party":
 			if ( openInvite.amILeader )
-				message = "#OPENINVITE_SENDER_PLAYLIST_MANY"
+				message = "#OPENINVITE_SENDER_PARTY"
 			else
-				message = "#OPENINVITE_PLAYLIST_MANY"
+				message = "#OPENINVITE_PARTY"
 			param1 = openInvite.originatorName
-			param2 = GetPlaylistDisplayName( openInvite.playlistName )
-		}
-		else
-		{
+			break
+
+		case "playlist":
+			if ( playlists.len() > 1 )
+			{
+				if ( openInvite.amILeader )
+					message = "#OPENINVITE_SENDER_PLAYLIST_MANY"
+				else
+					message = "#OPENINVITE_PLAYLIST_MANY"
+				param1 = openInvite.originatorName
+				param2 = GetPlaylistDisplayName( openInvite.playlistName )
+			}
+			else
+			{
+				if ( openInvite.amILeader )
+					message = "#OPENINVITE_SENDER_PLAYLIST"
+				else
+					message = "#OPENINVITE_PLAYLIST"
+				param1 = openInvite.originatorName
+				param2 = GetPlaylistDisplayName( openInvite.playlistName )
+			}
+			break
+
+		case "private_match":
 			if ( openInvite.amILeader )
-				message = "#OPENINVITE_SENDER_PLAYLIST"
+				message = "#OPENINVITE_SENDER_PRIVATEMATCH"
 			else
-				message = "#OPENINVITE_PLAYLIST"
+				message = "#OPENINVITE_PRIVATEMATCH"
 			param1 = openInvite.originatorName
-			param2 = GetPlaylistDisplayName( openInvite.playlistName )
-		}
-		break;
-	case "private_match":
-		if ( openInvite.amILeader )
-			message = "#OPENINVITE_SENDER_PRIVATEMATCH"
-		else
-			message = "#OPENINVITE_PRIVATEMATCH"
-		param1 = openInvite.originatorName
-		break;
-	default:
-		HideOpenInvite()
-		file.openInviteVisible = false
-		file.openInviteJoinable = false
-		UpdateFooterOptions()
-		return;
+			break
+
+		default:
+			HideOpenInvite()
+			file.openInviteVisible = false
+			file.openInviteJoinable = false
+			UpdateFooterOptions()
+			return
 	}
 	int timeLeft = int( openInvite.timeLeft ) + 1
 	if ( openInvite.timeLeft <= 0 || openInvite.numFreeSlots == 0 )

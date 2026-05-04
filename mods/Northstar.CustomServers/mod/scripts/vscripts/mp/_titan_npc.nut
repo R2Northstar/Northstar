@@ -53,8 +53,8 @@ function TitanNPC_Init()
 	AddSoulDeathCallback( AutoTitanDestroyedCheck )
 
 	#if R1_VGUI_MINIMAP
-	Minimap_PrecacheMaterial( $"vgui/HUD/threathud_titan_friendlyself" )
-	Minimap_PrecacheMaterial( $"vgui/HUD/threathud_titan_friendlyself_guard" )
+		Minimap_PrecacheMaterial( $"vgui/HUD/threathud_titan_friendlyself" )
+		Minimap_PrecacheMaterial( $"vgui/HUD/threathud_titan_friendlyself_guard" )
 	#endif
 
 	if ( IsSingleplayer() )
@@ -106,31 +106,28 @@ void function AutoTitanDestroyedCheck( entity soul, var damageInfo )
 	thread PlayConversationToPlayer( "AutoTitanDestroyed", player )
 }
 
-
-
-//////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////
 function SetupNPC_TitanTitle( npcTitan, player )
 {
 	npcTitan.SetBossPlayer( player )
 
 	#if R1_VGUI_MINIMAP
-	switch ( player.GetPetTitanMode() )
-	{
-		case eNPCTitanMode.FOLLOW:
-			npcTitan.Minimap_SetBossPlayerMaterial( $"vgui/HUD/threathud_titan_friendlyself" )
-			break;
+		switch ( player.GetPetTitanMode() )
+		{
+			case eNPCTitanMode.FOLLOW:
+				npcTitan.Minimap_SetBossPlayerMaterial( $"vgui/HUD/threathud_titan_friendlyself" )
+				break
+				// case eNPCTitanMode.ROAM:
+				// 	break;
 
-		//case eNPCTitanMode.ROAM:
-		//	break;
-
-		case eNPCTitanMode.STAY:
-			npcTitan.Minimap_SetBossPlayerMaterial( $"vgui/HUD/threathud_titan_friendlyself_guard" )
-			break;
-	}
+			case eNPCTitanMode.STAY:
+				npcTitan.Minimap_SetBossPlayerMaterial( $"vgui/HUD/threathud_titan_friendlyself_guard" )
+				break
+		}
 	#endif
 }
 
-//////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////
 void function NPCTitanNextMode( entity npcTitan, entity player )
 {
 	entity soul = npcTitan.GetTitanSoul()
@@ -150,11 +147,11 @@ void function NPCTitanNextMode( entity npcTitan, entity player )
 	NPCTitanEnableCurrentMode( npcTitan, player )
 }
 
-//////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////
 function NPCTitanSetBehaviorForMode( entity npcTitan, entity player )
 {
 	entity soul = npcTitan.GetTitanSoul()
-	if ( soul == null)
+	if ( soul == null )
 		soul = player.GetTitanSoul()
 
 	switch ( player.GetPetTitanMode() )
@@ -164,81 +161,75 @@ function NPCTitanSetBehaviorForMode( entity npcTitan, entity player )
 				npcTitan.SetBehaviorSelector( "behavior_mp_auto_titan_enhanced" )
 			else
 				npcTitan.SetBehaviorSelector( "behavior_mp_auto_titan" )
-			break;
-
-		//case eNPCTitanMode.ROAM:
-		//	break;
+			break
+			// case eNPCTitanMode.ROAM:
+			// 	break;
 
 		case eNPCTitanMode.STAY:
 			if ( soul && SoulHasPassive( soul, ePassives.PAS_ENHANCED_TITAN_AI ) )
 				npcTitan.SetBehaviorSelector( "behavior_mp_auto_titan_enhanced_guard" )
 			else
 				npcTitan.SetBehaviorSelector( "behavior_mp_auto_titan_guard" )
-			break;
+			break
 	}
 }
 
-//////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////
 function NPCTitanDisableCurrentMode( entity npcTitan, entity player )
 {
 	switch ( player.GetPetTitanMode() )
 	{
 		case eNPCTitanMode.FOLLOW:
 			npcTitan.DisableBehavior( "Follow" )
-			break;
-
-		//case eNPCTitanMode.ROAM:
-		//	break;
+			break
+			// case eNPCTitanMode.ROAM:
+			// 	break;
 
 		case eNPCTitanMode.STAY:
 			npcTitan.DisableBehavior( "Assault" )
-			break;
+			break
 	}
 }
 
-
-//////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////
 function NPCTitanEnableCurrentMode( entity npcTitan, entity player )
 {
 	switch ( player.GetPetTitanMode() )
 	{
 		case eNPCTitanMode.FOLLOW:
 			NPCTitanFollowPilotInit( npcTitan, player )
-			break;
-
-		//case eNPCTitanMode.ROAM:
-		//	break;
+			break
+			// case eNPCTitanMode.ROAM:
+			// 	break;
 
 		case eNPCTitanMode.STAY:
-		{
+			{
+				local traceStart = player.EyePosition()
+				local forward = AnglesToForward( player.EyeAngles() )
+				local traceEnd = traceStart + ( forward * 12000 )
 
-			local traceStart = player.EyePosition()
-			local forward = AnglesToForward( player.EyeAngles() )
-			local traceEnd	= traceStart + ( forward * 12000 )
+				TraceResults result = TraceLine( traceStart, traceEnd, player, TRACE_MASK_BLOCKLOS, TRACE_COLLISION_GROUP_NONE )
 
-			TraceResults result = TraceLine( traceStart, traceEnd, player, TRACE_MASK_BLOCKLOS, TRACE_COLLISION_GROUP_NONE )
+				local dir = result.endPos - npcTitan.EyePosition()
 
-			local dir = result.endPos - npcTitan.EyePosition()
+				// DebugDrawLine( result.endPos, npcTitan.EyePosition(), 255, 0, 0, true, 5 )
 
-			// DebugDrawLine( result.endPos, npcTitan.EyePosition(), 255, 0, 0, true, 5 )
+				local titanAngles
+				if ( LengthSqr( dir ) > 100 )
+					titanAngles = VectorToAngles( dir )
+				else
+					titanAngles = player.GetAngles()
 
-			local titanAngles;
-			if ( LengthSqr( dir ) > 100 )
-				titanAngles = VectorToAngles( dir )
-			else
-				titanAngles = player.GetAngles()
+				titanAngles.z = 0
 
-			titanAngles.z = 0;
-
-			npcTitan.AssaultPointClamped( npcTitan.GetOrigin() )
-			npcTitan.AssaultSetAngles( titanAngles, true )
-			break;
-		}
+				npcTitan.AssaultPointClamped( npcTitan.GetOrigin() )
+				npcTitan.AssaultSetAngles( titanAngles, true )
+				break
+			}
 	}
 
 	NPCTitanSetBehaviorForMode( npcTitan, player )
 }
-
 
 void function AutoTitanChangedEnemy( entity titan )
 {
@@ -276,7 +267,7 @@ function AutoTitanShouldSpeak( entity titan, entity owner, aliasSuffix )
 	{
 		return false
 	}
-	//Shut Auto Titans up when game isn't active anymore
+	// Shut Auto Titans up when game isn't active anymore
 	if ( GetGameState() >= eGameState.Postmatch )
 	{
 		return false
@@ -320,20 +311,19 @@ void function PlayAutoTitanConversation( entity titan, string aliasSuffix )
 			return
 	}
 
-	if ( !AutoTitanShouldSpeak( titan, owner, aliasSuffix ) ) //Only use the suffix since that's the distinguishing part of the alias, i.e. "engage_titans"
+	if ( !AutoTitanShouldSpeak( titan, owner, aliasSuffix ) ) // Only use the suffix since that's the distinguishing part of the alias, i.e. "engage_titans"
 		return
 
 	owner.s.autoTitanLastEngageCalloutTime = Time()
-	owner.s.autoTitanLastEngageCallout = aliasSuffix //Only use the suffix since that's the distinguishing part of the alias, i.e. "engage_titans"
+	owner.s.autoTitanLastEngageCallout = aliasSuffix // Only use the suffix since that's the distinguishing part of the alias, i.e. "engage_titans"
 
 	int conversationID = GetConversationIndex( aliasSuffix )
 	Remote_CallFunction_Replay( owner, "ServerCallback_PlayTitanConversation", conversationID )
 }
 
-
 void function FreeAutoTitan( entity npcTitan )
 {
-	//npcTitan.SetEnemyChangeCallback( "" )
+	// npcTitan.SetEnemyChangeCallback( "" )
 
 	local bossPlayer = npcTitan.GetBossPlayer()
 
@@ -355,16 +345,15 @@ void function FreeAutoTitan( entity npcTitan )
 	thread TitanKneel( npcTitan )
 }
 
-
-//////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////
 function SetupAutoTitan( entity npcTitan, entity player )
 {
 	#if SP
-	npcTitan.SetUsePrompts( "#HOLD_TO_EMBARK_SP", "#PRESS_TO_EMBARK_SP" )
+		npcTitan.SetUsePrompts( "#HOLD_TO_EMBARK_SP", "#PRESS_TO_EMBARK_SP" )
 	#endif
 
 	#if MP
-	npcTitan.SetUsePrompts( "#HOLD_TO_EMBARK", "#PRESS_TO_EMBARK" )
+		npcTitan.SetUsePrompts( "#HOLD_TO_EMBARK", "#PRESS_TO_EMBARK" )
 	#endif
 
 	npcTitan.SetUsableByGroup( "owner pilot" )
@@ -438,8 +427,7 @@ function SetPlayerPetTitan( entity player, entity npcTitan )
 	npcTitan.DisableHibernation()
 }
 
-
-//////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////
 function NPCTitanFollowPilotInit( npcTitan, player )
 {
 	int followBehavior = GetDefaultNPCFollowBehavior( npcTitan )
@@ -462,14 +450,14 @@ function NPCTitanFollowPilotInit( npcTitan, player )
 	npcTitan.DisableBehavior( "Assault" )
 }
 
-//////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////
 function NPCTitanGuardModeInit( npcTitan )
 {
-#if DEV // Bug 110047
-	Assert( IsValid( npcTitan ) )
-	if ( !npcTitan.IsTitan() && !npcTitan.IsNPC() )
-		printl( "npcTitan is " + npcTitan.GetClassName() )
-#endif
+	#if DEV // Bug 110047
+		Assert( IsValid( npcTitan ) )
+		if ( !npcTitan.IsTitan() && !npcTitan.IsNPC() )
+			printl( "npcTitan is " + npcTitan.GetClassName() )
+	#endif
 
 	npcTitan.AssaultSetFightRadius( 0 )
 
@@ -485,7 +473,7 @@ function NPCTitanGuardModeInit( npcTitan )
 	}
 }
 
-//////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////
 function NPCTitanInitModeOnPlayerRespawn( player )
 {
 	if ( IsValid( player.GetPetTitan() ) )
@@ -496,24 +484,21 @@ function NPCTitanInitModeOnPlayerRespawn( player )
 		{
 			case eNPCTitanMode.FOLLOW:
 				NPCTitanFollowPilotInit( titan, player )
-				break;
+				break
 
 			default:
 				// nothing to do for other modes
-				break;
+				break
 		}
 	}
 }
 
-//////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////
 function CodeCallback_PlayerRequestClimbInNPCTitan( npcTitan, player )
 {
 }
 
-
-
-
-//////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////
 entity function CreateNPCTitanFromSettings( string settings, int team, vector origin, vector angles )
 {
 	entity npc = CreateNPCTitan( settings, team, origin, angles )
@@ -568,7 +553,6 @@ void function ResetTitanBuildTime( entity player )
 	player.SetTitanBuildTime( GetTitanBuildTime( player ) )
 }
 
-
 /* SP */
 
 void function SpawnTitanBattery( entity batteryRef )
@@ -597,26 +581,21 @@ void function SpawnTitanBatteryOnDeath( entity titan, var damageInfo )
 	{
 		if ( Flag( "PlayerDidSpawn" ) )
 		{
-			entity player = GetPlayerArray()[0]
+			entity player = GetPlayerArray()[ 0 ]
 			entity playerTitan = GetTitanFromPlayer( player )
 
-			if ( IsValid( playerTitan ) &&
-					(
-						GetDoomedState( playerTitan ) ||
-				 		RandomDropBatteryBasedOnHealth( playerTitan )
-				 	)
-				)
+			if ( IsValid( playerTitan ) && ( GetDoomedState( playerTitan ) || RandomDropBatteryBasedOnHealth( playerTitan ) ) )
 			{
 				numBatt = 1
 			}
 		}
 	}
 
-	for ( int i=0; i<numBatt; i++ )
+	for ( int i = 0; i < numBatt; i++ )
 	{
 		vector vec = RandomVec( 150 )
 		if ( numBatt == 1 )
-			vec = < 0,0,0 >
+			vec = < 0, 0, 0 >
 		entity battery = CreateTitanBattery( origin )
 		battery.SetVelocity( < vec.x, vec.y, 400 > )
 	}
@@ -626,7 +605,7 @@ entity function CreateTitanBattery( vector origin )
 {
 	entity battery = Rodeo_CreateBatteryPack()
 	battery.SetOrigin( origin )
-	//Highlight_SetNeutralHighlight( battery, "power_up" )
+	// Highlight_SetNeutralHighlight( battery, "power_up" )
 	// if ( IsValid( battery ) )
 	// {
 	// 	PickupGlow glow = CreatePickupGlow( battery, 0, 255, 0 )
@@ -662,7 +641,7 @@ void function ResetTitanLoadoutFromPrimary( entity titan )
 	Assert( titan.IsTitan() )
 	Assert( IsAlive( titan ) )
 
-//	EmitSoundOnEntity( player, "Coop_AmmoBox_AmmoRefill" )
+	// 	EmitSoundOnEntity( player, "Coop_AmmoBox_AmmoRefill" )
 	entity soul = titan.GetTitanSoul()
 	// not a real titan, swapping in/out of titan etc
 	if ( soul == null )
@@ -685,7 +664,7 @@ void function ResetTitanLoadoutFromPrimary( entity titan )
 
 		if ( titan.IsPlayer() )
 		{
-//			Remote_CallFunction_Replay( titan, "ServerCallback_NotifyLoadout", titan.GetEncodedEHandle() )
+			// 			Remote_CallFunction_Replay( titan, "ServerCallback_NotifyLoadout", titan.GetEncodedEHandle() )
 			Remote_CallFunction_Replay( titan, "ServerCallback_UpdateTitanModeHUD" )
 		}
 		break
@@ -748,6 +727,7 @@ void function TitanAchievementTracking_SP( entity titan, var damageInfo )
 		case eDamageSourceId.mp_titancore_amp_core:
 			file.coreKillCounter++
 			break
+
 		case eDamageSourceId.mp_titanweapon_predator_cannon:
 			array<string> weaponMods = GetWeaponModsFromDamageInfo( damageInfo )
 			if ( weaponMods.contains( "Smart_Core" ) )
@@ -755,14 +735,15 @@ void function TitanAchievementTracking_SP( entity titan, var damageInfo )
 				file.coreKillCounter++
 			}
 			break
-		#if HAS_BOSS_AI
-		case eDamageSourceId.titan_execution:
-			if ( IsMercTitan( titan ) )
-			{
-				UnlockAchievement( player, achievements.EXECUTE_BOSS )
-			}
-			break
-		#endif
+			#if HAS_BOSS_AI
+
+			case eDamageSourceId.titan_execution:
+				if ( IsMercTitan( titan ) )
+				{
+					UnlockAchievement( player, achievements.EXECUTE_BOSS )
+				}
+				break
+			#endif
 	}
 
 	if ( file.coreKillCounter >= 3 )
@@ -785,22 +766,28 @@ void function TitanAchievementTracking_SP( entity titan, var damageInfo )
 		case eDamageSourceId.mp_titancore_salvo_core:
 			UnlockAchievement( player, achievements.CORE_SALVO )
 			break
+
 		case eDamageSourceId.mp_titancore_laser_cannon:
 			UnlockAchievement( player, achievements.CORE_LASER )
 			break
+
 		case eDamageSourceId.mp_titancore_flame_wave:
 		case eDamageSourceId.mp_titancore_flame_wave_secondary:
 			UnlockAchievement( player, achievements.CORE_FLAME )
 			break
+
 		case eDamageSourceId.mp_titancore_shift_core:
 			UnlockAchievement( player, achievements.CORE_SWORD )
 			break
+
 		case eDamageSourceId.mp_titanweapon_flightcore_rockets:
 			UnlockAchievement( player, achievements.CORE_FLIGHT )
 			break
+
 		case eDamageSourceId.mp_titancore_amp_core:
 			UnlockAchievement( player, achievements.CORE_BURST )
 			break
+
 		case eDamageSourceId.mp_titanweapon_predator_cannon:
 			array<string> weaponMods = GetWeaponModsFromDamageInfo( damageInfo )
 			if ( weaponMods.contains( "Smart_Core" ) )

@@ -1,4 +1,3 @@
-
 // Events for handlers
 // UIE_CLICK
 // UIE_GET_FOCUS
@@ -44,9 +43,9 @@ global struct DialogFooterData
 global struct DialogMessageRuiData
 {
 	string message = ""
-	vector style1Color = <1.0, 1.0, 1.0>
-	vector style2Color = <0.5, 0.5, 0.5>
-	vector style3Color = <0.5, 0.5, 0.5>
+	vector style1Color = < 1.0, 1.0, 1.0 >
+	vector style2Color = < 0.5, 0.5, 0.5 >
+	vector style3Color = < 0.5, 0.5, 0.5 >
 
 	float style1FontScale = 1.0
 	float style2FontScale = 1.0
@@ -58,8 +57,8 @@ global struct DialogData
 	var menu
 	string header
 	string message
-	DialogMessageRuiData &ruiMessage
-	array messageColor = [161, 161, 161, 255]
+	DialogMessageRuiData& ruiMessage
+	array messageColor = [ 161, 161, 161, 255 ]
 	asset image
 	asset rightImage = $""
 	bool forceChoice = false
@@ -68,7 +67,7 @@ global struct DialogData
 	bool showSpinner = false
 	bool showPCBackButton = false
 	float inputDisableTime = 0
-	table<int,bool> coloredButton
+	table<int, bool> coloredButton
 	bool darkenBackground = false
 	bool useFullMessageHeight = false
 
@@ -123,134 +122,132 @@ global struct PieChartEntry
 {
 	string displayName
 	float numValue
-	array<int> color = [127, 127, 127, 255]
+	array<int> color = [ 127, 127, 127, 255 ]
 	float fracValue = 0.0
 }
 
 global struct PieChartData
 {
 	array<PieChartEntry> entries
-	array<int> labelColor = [46, 49, 51, 255]
+	array<int> labelColor = [ 46, 49, 51, 255 ]
 	bool timeBased = false
 	float sum = 0.0
 }
 
 global struct UIGlobals
 {
-	table	menus = {}
-	array	allMenus = []
-	array<var>	menuStack
-	string	loadingLevel = ""
-	string	loadedLevel = ""
-	string	previousLevel = ""
-	string	previousPlaylist = ""
-	var		activeMenu = null
-	bool	lastMenuNavDirection = MENU_NAV_FORWARD
-	bool 	lobbyFromLoadingScreen = false
-	bool	eventHandlersAdded = false
-	bool	loadoutsInitialized = false
-	bool	itemsInitialized = false
-	bool	matchmaking = false
-	var		dialogCloseCallback = null
-	table	signalDummy = {}
-	float	dialogInputEnableTime = 0.0
-	bool	lobbyMenusLeftOpen = false
-	bool	playingMusic = false
-	var		mainMenuFocus = null
-	int 	announcementVersionSeen = -1
-	var		lastCategoryFocus = null
+	table menus = {}
+	array allMenus = []
+	array<var> menuStack
+	string loadingLevel = ""
+	string loadedLevel = ""
+	string previousLevel = ""
+	string previousPlaylist = ""
+	var activeMenu = null
+	bool lastMenuNavDirection = MENU_NAV_FORWARD
+	bool lobbyFromLoadingScreen = false
+	bool eventHandlersAdded = false
+	bool loadoutsInitialized = false
+	bool itemsInitialized = false
+	bool matchmaking = false
+	var dialogCloseCallback = null
+	table signalDummy = {}
+	float dialogInputEnableTime = 0.0
+	bool lobbyMenusLeftOpen = false
+	bool playingMusic = false
+	var mainMenuFocus = null
+	int announcementVersionSeen = -1
+	var lastCategoryFocus = null
 
-	int		pilotSpawnLoadoutIndex = -1
-	int		titanSpawnLoadoutIndex = -1
+	int pilotSpawnLoadoutIndex = -1
+	int titanSpawnLoadoutIndex = -1
 
-	bool	updatePilotSpawnLoadout = false
-	bool	updateTitanSpawnLoadout = false
+	bool updatePilotSpawnLoadout = false
+	bool updateTitanSpawnLoadout = false
 
-	string	editingLoadoutType = "pilot"
-	string	editingLoadoutProperty = ""
-	int		editingLoadoutIndex = -1
-	string	editingItemRef = ""
-	int		editingItemType = -1
-	var		editingSubitemRef = null
-	int		editingSubitemType = -1
-	var		editingParentItemRef = null
-	int 	editingWeaponCategory = -1
+	string editingLoadoutType = "pilot"
+	string editingLoadoutProperty = ""
+	int editingLoadoutIndex = -1
+	string editingItemRef = ""
+	int editingItemType = -1
+	var editingSubitemRef = null
+	int editingSubitemType = -1
+	var editingParentItemRef = null
+	int editingWeaponCategory = -1
 
-	int		entitlementId = -1
-	string	testStoreWeaponRef // TODO: Remove when done testing
+	int entitlementId = -1
+	string testStoreWeaponRef // TODO: Remove when done testing
 
-	bool	EOGAutoAdvance = true
-	bool	EOGOpenInLobby = false
-	string	EOGChallengeFilter = ""
-	var		eogCoopFocusedButton = null
-	var		eogCoopSelectedButton = null
-	var		eogScoreboardFocusedButton = null
-	bool	eogNavigationButtonsRegistered = false
+	bool EOGAutoAdvance = true
+	bool EOGOpenInLobby = false
+	string EOGChallengeFilter = ""
+	var eogCoopFocusedButton = null
+	var eogCoopSelectedButton = null
+	var eogScoreboardFocusedButton = null
+	bool eogNavigationButtonsRegistered = false
 
-	table<string, var>	ui_ChallengeProgress = {}
+	table<string, var> ui_ChallengeProgress = {}
 
-	int		decalScrollState = 0
+	int decalScrollState = 0
 
-	bool	isLobby
+	bool isLobby
 
-	var		ConfirmMenuMessage
-	var		ConfirmMenuErrorCode
+	var ConfirmMenuMessage
+	var ConfirmMenuErrorCode
 	array<DialogButtonData> dialogButtonData
 
-	bool	updatingLobbyUI = false
+	bool updatingLobbyUI = false
 
-	array	buttonConfigs
-	array	stickConfigs
+	array buttonConfigs
+	array stickConfigs
 
-	var		playlistList
+	var playlistList
 
-	table< string, array > eog_challengesToShow
-	table< string, array > eog_unlocks
+	table<string, array> eog_challengesToShow
+	table<string, array> eog_unlocks
 
-	bool	videoSettingsChanged = false
+	bool videoSettingsChanged = false
 
-	bool	playingVideo = false
-	bool	playingCredits = false
+	bool playingVideo = false
+	bool playingCredits = false
 
-	bool	mapSupportsMenuModels = false
-	bool	mapSupportsMenuModelsUpdated = false
-	bool	interpolateCameraMoves = true
-	int		activePresentationType = ePresentationType.INACTIVE
-	bool	rotateCharacterInputRegistered = false
+	bool mapSupportsMenuModels = false
+	bool mapSupportsMenuModelsUpdated = false
+	bool interpolateCameraMoves = true
+	int activePresentationType = ePresentationType.INACTIVE
+	bool rotateCharacterInputRegistered = false
 
-	table<var,MenuDef> menuData
+	table<var, MenuDef> menuData
 
-	table<string, int>	intVars
-	table<string, bool>	boolVars
-	table<string, var>	varVars
+	table<string, int> intVars
+	table<string, bool> boolVars
+	table<string, var> varVars
 	table<string, array<void functionref()> > varChangeFuncs
 
 	array<void functionref()> onLevelInitCallbacks
 
-	bool	tabButtonsRegistered = false
+	bool tabButtonsRegistered = false
 
-	table	panels = {}
-	array<var>	allPanels
-	table<var,PanelDef> panelData
+	table panels = {}
+	array<var> allPanels
+	table<var, PanelDef> panelData
 
-	bool	sp_showAlternateMissionLog = false
+	bool sp_showAlternateMissionLog = false
 
-	int 	launching = eLaunching.FALSE
-	bool 	triedNucleusRegistration = false
-	int 	consoleSettingMenu = eConsoleSettingsMenu.FALSE
+	int launching = eLaunching.FALSE
+	bool triedNucleusRegistration = false
+	int consoleSettingMenu = eConsoleSettingsMenu.FALSE
 
-	bool	updateCachedNewItems = true
+	bool updateCachedNewItems = true
 
-	var		menuToOpenFromPromoButton = null
+	var menuToOpenFromPromoButton = null
 
 	bool isLoading = false
-
 }
 
 global UIGlobals uiGlobal
 
 global const MAINMENU_MUSIC_DELAY = 4.0
-
 
 void function UICodeCallback_UIInit()
 {
@@ -289,7 +286,7 @@ void function UICodeCallback_UIInit()
 	RegisterSignal( "OnCancelConnect" )
 	RegisterSignal( "PlayVideoEnded" )
 	RegisterSignal( "ActiveMenuChanged" )
-	RegisterSignal( "LevelFinishedLoading")
+	RegisterSignal( "LevelFinishedLoading" )
 	RegisterSignal( "OpenErrorDialog" )
 	RegisterSignal( "BoughtItem" )
 
@@ -305,7 +302,7 @@ void function UICodeCallback_UIInit()
 
 void function UICodeCallback_ControllerModeChanged( bool controllerModeEnabled )
 {
-	//printt( "CONTROLLER! " + controllerModeEnabled + ", " + IsControllerModeActive() )
+	// printt( "CONTROLLER! " + controllerModeEnabled + ", " + IsControllerModeActive() )
 
 	if ( uiGlobal.activeMenu == null )
 		return
@@ -328,7 +325,7 @@ void function UICodeCallback_OnVideoOver()
 
 void function UpdateClientMenuOpenState()
 {
-	for ( ;; )
+	for ( ; ; )
 	{
 		WaitSignal( uiGlobal.signalDummy, "ActiveMenuChanged" )
 
@@ -337,7 +334,7 @@ void function UpdateClientMenuOpenState()
 			int newState = 0
 			if ( IsDialogOnlyActiveMenu() )
 				newState = 2
-			else if ( uiGlobal.activeMenu != null)
+			else if ( uiGlobal.activeMenu != null )
 				newState = 1
 
 			RunMenuClientFunction( "SetMenuOpenState", newState )

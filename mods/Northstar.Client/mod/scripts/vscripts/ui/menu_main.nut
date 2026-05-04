@@ -35,7 +35,7 @@ void function InitMainMenu()
 	AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, OnMainMenu_NavigateBack )
 
 	var titleRui = Hud_GetRui( Hud_GetChild( file.menu, "TitleRui" ) )
-	RuiSetImage( titleRui, "basicImage", $"rui/menu/main_menu/title")
+	RuiSetImage( titleRui, "basicImage", $"rui/menu/main_menu/title" )
 
 	file.versionDisplay = Hud_GetChild( menu, "versionDisplay" )
 	file.trialLabel = Hud_GetChild( menu, "TrialLabel" )
@@ -54,13 +54,13 @@ void function InitMainMenu()
 	#endif // PC_PROG
 
 	#if VANILLA
-	AddMenuFooterOption( menu, BUTTON_X, "#X_BUTTON_INBOX_ACCEPT", "#INBOX_ACCEPT", OpenDataCenterDialog, IsDataCenterFooterValid, UpdateDataCenterFooter )
+		AddMenuFooterOption( menu, BUTTON_X, "#X_BUTTON_INBOX_ACCEPT", "#INBOX_ACCEPT", OpenDataCenterDialog, IsDataCenterFooterValid, UpdateDataCenterFooter )
 	#endif
 
-#if DEV
-	if ( DevStartPoints() )
-		AddMenuFooterOption( menu, BUTTON_SHOULDER_LEFT, "#Y_BUTTON_DEV_MENU", "#DEV_MENU", OpenSinglePlayerDevMenu )
-#endif // DEV
+	#if DEV
+		if ( DevStartPoints() )
+			AddMenuFooterOption( menu, BUTTON_SHOULDER_LEFT, "#Y_BUTTON_DEV_MENU", "#DEV_MENU", OpenSinglePlayerDevMenu )
+	#endif // DEV
 }
 
 #if CONSOLE_PROG
@@ -75,9 +75,9 @@ void function OnMainMenu_Open()
 	Signal( uiGlobal.signalDummy, "EndOnMainMenu_Open" )
 	EndSignal( uiGlobal.signalDummy, "EndOnMainMenu_Open" )
 
-#if !VANILLA
-	SetConVarString( "communities_hostname", "" ) // disable communities due to crash exploits that are still possible through it
-#endif
+	#if !VANILLA
+		SetConVarString( "communities_hostname", "" ) // disable communities due to crash exploits that are still possible through it
+	#endif
 
 	UpdatePromoData() // On script restarts this gives us the last data until the new request is complete
 	RequestMainMenuPromos() // This will be ignored if there was a recent request. "infoblock_requestInterval"
@@ -102,10 +102,10 @@ void function OnMainMenu_Open()
 	if ( !GetConVarBool( "ns_has_agreed_to_send_token" ) )
 		NorthstarMasterServerAuthDialog()
 
-#if PC_PROG
-	ActivatePanel( GetPanel( "MainMenuPanel" ) )
-	return
-#endif // PC_PROG
+	#if PC_PROG
+		ActivatePanel( GetPanel( "MainMenuPanel" ) )
+		return
+	#endif // PC_PROG
 
 	int state
 	int lastState = -1
@@ -196,30 +196,30 @@ void function ActivatePanel( var panel )
 
 void function OnMainMenu_NavigateBack()
 {
-#if DURANGO_PROG
-	Durango_ShowAccountPicker()
-#endif // DURANGO_PROG
+	#if DURANGO_PROG
+		Durango_ShowAccountPicker()
+	#endif // DURANGO_PROG
 }
 
 int function GetUserSignInState()
 {
-#if DURANGO_PROG
-	if ( Durango_InErrorScreen() )
-	{
-		return userSignInState.ERROR
-	}
-	else if ( Durango_IsSigningIn() )
-	{
-		return userSignInState.SIGNING_IN
-	}
-	else if ( !Console_IsSignedIn() && !Console_SkippedSignIn() )
-	{
-		//printt( "Console_IsSignedIn():", Console_IsSignedIn(), "Console_SkippedSignIn:", Console_SkippedSignIn() )
-		return userSignInState.SIGNED_OUT
-	}
+	#if DURANGO_PROG
+		if ( Durango_InErrorScreen() )
+		{
+			return userSignInState.ERROR
+		}
+		else if ( Durango_IsSigningIn() )
+		{
+			return userSignInState.SIGNING_IN
+		}
+		else if ( !Console_IsSignedIn() && !Console_SkippedSignIn() )
+		{
+			// printt( "Console_IsSignedIn():", Console_IsSignedIn(), "Console_SkippedSignIn:", Console_SkippedSignIn() )
+			return userSignInState.SIGNED_OUT
+		}
 
-	Assert( Console_IsSignedIn() || Console_SkippedSignIn() )
-#endif
+		Assert( Console_IsSignedIn() || Console_SkippedSignIn() )
+	#endif
 	return userSignInState.SIGNED_IN
 }
 
@@ -307,11 +307,11 @@ void function LaunchMP()
 
 void function LaunchGame()
 {
-	Assert( uiGlobal.launching == eLaunching.SINGLEPLAYER_NEW ||
-			uiGlobal.launching == eLaunching.SINGLEPLAYER_CONTINUE ||
-			uiGlobal.launching == eLaunching.SINGLEPLAYER_MISSION_SELECT ||
-			uiGlobal.launching == eLaunching.MULTIPLAYER ||
-			uiGlobal.launching == eLaunching.MULTIPLAYER_INVITE )
+	Assert(
+		uiGlobal.launching == eLaunching.SINGLEPLAYER_NEW || uiGlobal.launching == eLaunching.SINGLEPLAYER_CONTINUE ||
+			uiGlobal.launching == eLaunching.SINGLEPLAYER_MISSION_SELECT || uiGlobal.launching == eLaunching.MULTIPLAYER ||
+			uiGlobal.launching == eLaunching.MULTIPLAYER_INVITE
+	)
 
 	if ( uiGlobal.activeMenu == GetMenu( "PlayVideoMenu" ) )
 	{
@@ -339,7 +339,7 @@ void function LaunchGame()
 			printt( mapName )
 			printt( startPointIndex )
 
-			bool isInTraining = (mapName == "sp_training" && startPointIndex < 5)  // "Titanfall" start point
+			bool isInTraining = ( mapName == "sp_training" && startPointIndex < 5 ) // "Titanfall" start point
 
 			if ( !isInTraining )
 			{
@@ -421,7 +421,7 @@ void function StartSearchForPartyServer()
 {
 	printt( "StartSearchForPartyServer" )
 
-#if DURANGO_PROG
+	#if DURANGO_PROG
 		// IMPORTANT: As a safety measure leave any party view we are in at this point.
 		// Otherwise, if you are unlucky enough to get stuck in a party view, you will
 		// trash its state by pointing it to your private lobby.
@@ -435,7 +435,7 @@ void function StartSearchForPartyServer()
 		printt( "Durango - verifying MP permissions" )
 		if ( !Console_HasPermissionToPlayMultiplayer() )
 			Durango_VerifyMultiplayerPermissions()
-#endif // DURANGO_PROG
+	#endif // DURANGO_PROG
 
 	Signal( uiGlobal.signalDummy, "OnCancelConnect" )
 	EndSignal( uiGlobal.signalDummy, "OnCancelConnect" )
@@ -450,17 +450,17 @@ void function StartSearchForPartyServer()
 	Hud_Show( uiGlobal.ConfirmMenuMessage )
 	Hud_Show( uiGlobal.ConfirmMenuErrorCode )
 
-#if DURANGO_PROG
-		if( !Console_IsOnline() )
+	#if DURANGO_PROG
+		if ( !Console_IsOnline() )
 		{
 			printt( "Durango - finding empty party server failed - not online" )
 			Hud_SetText( uiGlobal.ConfirmMenuMessage, "#DURANGO_NOT_ONLINE" )
 			return
 		}
-#endif // DURANGO_PROG
+	#endif // DURANGO_PROG
 
-#if PS4_PROG
-		if(  !Console_IsOnline() )
+	#if PS4_PROG
+		if ( !Console_IsOnline() )
 		{
 			printt( "PS4 - finding empty party server failed - not online" )
 			Hud_SetText( uiGlobal.ConfirmMenuMessage, "#INTERNET_NOT_FOUND" )
@@ -474,60 +474,60 @@ void function StartSearchForPartyServer()
 			return
 		}
 
-		if(  !PS4_isUserNetworkingEnabled() )
+		if ( !PS4_isUserNetworkingEnabled() )
 		{
 			Hud_SetText( uiGlobal.ConfirmMenuMessage, "#PSN_CHECKING_USABILITY" )
 			PS4_ScheduleUserNetworkingEnabledTest()
 			WaitFrame()
 
-			if( !PS4_isUserNetworkingResolved() )
+			if ( !PS4_isUserNetworkingResolved() )
 			{
 				printt( "PS4 - finding empty party server stalled - networking isn't resolved yet" )
 				// offer cancel ??
-				while( !PS4_isUserNetworkingResolved())
+				while ( !PS4_isUserNetworkingResolved() )
 					WaitFrame()
 			}
 
-			if( PS4_getUserNetworkingResolution() == PS4_NETWORK_STATUS_NOT_LOGGED_IN )
+			if ( PS4_getUserNetworkingResolution() == PS4_NETWORK_STATUS_NOT_LOGGED_IN )
 			{
-  				Hud_SetText( uiGlobal.ConfirmMenuErrorCode, string(PS4_getUserNetworkingErrorStatus()) )
+				Hud_SetText( uiGlobal.ConfirmMenuErrorCode, string( PS4_getUserNetworkingErrorStatus() ) )
 				Hud_SetText( uiGlobal.ConfirmMenuMessage, "#PSN_LOGIN" )
 
 				Ps4_LoginDialog_Schedule()
-				while( Ps4_LoginDialog_Running() )
+				while ( Ps4_LoginDialog_Running() )
 					WaitFrame()
 
 				PS4_ScheduleUserNetworkingEnabledTest()
 				WaitFrame()
-				if( !PS4_isUserNetworkingResolved() )
+				if ( !PS4_isUserNetworkingResolved() )
 				{
 					Hud_SetText( uiGlobal.ConfirmMenuErrorCode, "" )
 					Hud_SetText( uiGlobal.ConfirmMenuMessage, "#PSN_CHECKING_USABILITY" )
-					while( !PS4_isUserNetworkingResolved())
+					while ( !PS4_isUserNetworkingResolved() )
 						WaitFrame()
 				}
 			}
 
-			if( PS4_getUserNetworkingResolution() == PS4_NETWORK_STATUS_AGE_RESTRICTION )
+			if ( PS4_getUserNetworkingResolution() == PS4_NETWORK_STATUS_AGE_RESTRICTION )
 			{
-  		        Hud_SetText( uiGlobal.ConfirmMenuErrorCode, string(PS4_getUserNetworkingErrorStatus()) )
+				Hud_SetText( uiGlobal.ConfirmMenuErrorCode, string( PS4_getUserNetworkingErrorStatus() ) )
 				Hud_SetText( uiGlobal.ConfirmMenuMessage, "#MULTIPLAYER_AGE_RESTRICTED" )
 				return
 			}
 
-			if( PS4_getUserNetworkingResolution() == PS4_NETWORK_STATUS_IN_ERROR )
+			if ( PS4_getUserNetworkingResolution() == PS4_NETWORK_STATUS_IN_ERROR )
 			{
-  		        Hud_SetText( uiGlobal.ConfirmMenuErrorCode, string(PS4_getUserNetworkingErrorStatus()) )
+				Hud_SetText( uiGlobal.ConfirmMenuErrorCode, string( PS4_getUserNetworkingErrorStatus() ) )
 				Hud_SetText( uiGlobal.ConfirmMenuMessage, "#PSN_HAD_ERROR" )
 				return
 			}
 
-			if(  !PS4_isUserNetworkingEnabled() )
+			if ( !PS4_isUserNetworkingEnabled() )
 			{
-				Hud_SetText( uiGlobal.ConfirmMenuErrorCode, string(PS4_getUserNetworkingErrorStatus()) )
+				Hud_SetText( uiGlobal.ConfirmMenuErrorCode, string( PS4_getUserNetworkingErrorStatus() ) )
 				Hud_SetText( uiGlobal.ConfirmMenuMessage, "#PSN_NOT_ALLOWED" )
 				return
-   			}
+			}
 
 			Hud_SetText( uiGlobal.ConfirmMenuErrorCode, "" )
 			Hud_SetText( uiGlobal.ConfirmMenuMessage, "" )
@@ -538,31 +538,31 @@ void function StartSearchForPartyServer()
 			Ps4_LoginDialog_Schedule()
 			Hud_SetText( uiGlobal.ConfirmMenuMessage, "#PSN_LOGIN" )
 
-			while( Ps4_LoginDialog_Running() )
+			while ( Ps4_LoginDialog_Running() )
 				WaitFrame()
 
 			if ( !Ps4_PSN_Is_Loggedin() )
 				return
 		}
 
-		if( Ps4_CheckPlus_Schedule() )
+		if ( Ps4_CheckPlus_Schedule() )
 		{
-			while( Ps4_CheckPlus_Running() )
+			while ( Ps4_CheckPlus_Running() )
 				WaitFrame()
-			if( !Ps4_CheckPlus_Allowed() )
+			if ( !Ps4_CheckPlus_Allowed() )
 			{
-				if( Ps4_CheckPlus_GetLastRequestResults() != 0 )
+				if ( Ps4_CheckPlus_GetLastRequestResults() != 0 )
 				{
-  					Hud_SetText( uiGlobal.ConfirmMenuErrorCode, string( Ps4_CheckPlus_GetLastRequestResults()) )
+					Hud_SetText( uiGlobal.ConfirmMenuErrorCode, string( Ps4_CheckPlus_GetLastRequestResults() ) )
 					Hud_SetText( uiGlobal.ConfirmMenuMessage, "#PSN_HAD_ERROR" )
 					return
 				}
 
-				if( Ps4_ScreenPlusDialog_Schedule() )
+				if ( Ps4_ScreenPlusDialog_Schedule() )
 				{
-					while( Ps4_ScreenPlusDialog_Running() )
+					while ( Ps4_ScreenPlusDialog_Running() )
 						WaitFrame()
-					if( !Ps4_ScreenPlusDialog_Allowed() )
+					if ( !Ps4_ScreenPlusDialog_Allowed() )
 					{
 						Hud_SetText( uiGlobal.ConfirmMenuMessage, "#PSN_MUST_BE_PLUS_USER" )
 						return
@@ -570,14 +570,14 @@ void function StartSearchForPartyServer()
 				}
 				else
 				{
-  					return
+					return
 				}
 			}
 		}
 
-        Hud_SetText( uiGlobal.ConfirmMenuErrorCode, "" )
+		Hud_SetText( uiGlobal.ConfirmMenuErrorCode, "" )
 		Hud_SetText( uiGlobal.ConfirmMenuMessage, "" )
-#endif // #if PS4_PROG
+	#endif // #if PS4_PROG
 
 	printt( "Checking if this user has permission to play MP\n" )
 	if ( !Console_HasPermissionToPlayMultiplayer() )
@@ -594,7 +594,7 @@ void function StartSearchForPartyServer()
 	while ( Plat_IsSystemMessageDialogOpen() )
 		WaitFrame()
 
-#if PC_PROG
+	#if PC_PROG
 		if ( Origin_IsEnabled() )
 		{
 			Origin_RequestTicket()
@@ -603,7 +603,7 @@ void function StartSearchForPartyServer()
 			while ( !Origin_IsReady() )
 				WaitFrame()
 		}
-#endif // PC_PROG
+	#endif // PC_PROG
 
 	printt( "SearchForPartyServer" )
 	SetMenuWasMultiplayerPlayedLast( true )
@@ -615,7 +615,7 @@ void function StartSearchForPartyServer()
 
 void function EULA_Dialog()
 {
-	if ( GetUserSignInState() != userSignInState.SIGNED_IN  )
+	if ( GetUserSignInState() != userSignInState.SIGNED_IN )
 		return
 
 	if ( GetEULAVersionAccepted() >= 1 )
@@ -629,17 +629,17 @@ void function DoGameNeedsToInstallDialog()
 	DialogData dialogData
 	dialogData.header = "#MENU_WAIT_FOR_INTALL"
 
-	int installProgress = int( GetGameFullyInstalledProgress()*100 )
+	int installProgress = int( GetGameFullyInstalledProgress() * 100 )
 
 	if ( uiGlobal.launching == eLaunching.MULTIPLAYER && IsGamePartiallyInstalled() && !Script_IsRunningTrialVersion() )
 	{
-		dialogData.message = Localize("#MENU_WAIT_FOR_INTALL_HINT", installProgress )
+		dialogData.message = Localize( "#MENU_WAIT_FOR_INTALL_HINT", installProgress )
 		AddDialogButton( dialogData, "#YES", LaunchSPNew )
 		AddDialogButton( dialogData, "#NO" )
 	}
 	else
 	{
-		dialogData.message = Localize("#MENU_WAIT_FOR_INTALL_HINT_NOTRAINING", installProgress )
+		dialogData.message = Localize( "#MENU_WAIT_FOR_INTALL_HINT_NOTRAINING", installProgress )
 		AddDialogButton( dialogData, "#OK" )
 	}
 
@@ -651,24 +651,23 @@ void function DoGameNeedsToInstallDialog()
 
 void function UpdateTrialLabel()
 {
-	//bool isTrialVersion
-	//bool lastIsTrialVersion = Script_IsRunningTrialVersion()
+	// bool isTrialVersion
+	// bool lastIsTrialVersion = Script_IsRunningTrialVersion()
 
 	Hud_SetColor( file.trialLabel, 101, 109, 207, 255 )
 	Hud_SetText( file.trialLabel, "+ NORTHSTAR" )
 	Hud_SetVisible( file.trialLabel, true )
-
-	//while ( GetTopNonDialogMenu() == file.menu )
-	//{
-	//	isTrialVersion = Script_IsRunningTrialVersion()
+	// while ( GetTopNonDialogMenu() == file.menu )
+	// {
+	// 	isTrialVersion = Script_IsRunningTrialVersion()
 	//
-	//	if ( isTrialVersion != lastIsTrialVersion )
-	//		Hud_SetVisible( file.trialLabel, isTrialVersion )
+	// 	if ( isTrialVersion != lastIsTrialVersion )
+	// 		Hud_SetVisible( file.trialLabel, isTrialVersion )
 	//
-	//	lastIsTrialVersion = isTrialVersion
+	// 	lastIsTrialVersion = isTrialVersion
 	//
-	//	WaitFrame()
-	//}
+	// 	WaitFrame()
+	// }
 }
 
 void function OpenSinglePlayerDevMenu( var button )

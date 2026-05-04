@@ -4,7 +4,7 @@ global function ServerCallback_AnnounceHidden
 
 void function ClGamemodeHidden_Init()
 {
-    // add ffa gamestate asset
+	// add ffa gamestate asset
 	// ClGameState_RegisterGameStateAsset( $"ui/gamestate_info_ffa.rpak" )
 
 	// add music for mode, this is copied directly from the ffa/fra music registered in cl_music.gnut
@@ -33,13 +33,13 @@ void function ServerCallback_YouAreHidden()
 	entity localPlayer = GetLocalViewPlayer()
 
 	StartParticleEffectOnEntity( localPlayer.GetCockpit(), GetParticleSystemIndex( $"P_MFD" ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
-	EmitSoundOnEntity( localPlayer, "UI_InGame_MarkedForDeath_PlayerMarked"  )
+	EmitSoundOnEntity( localPlayer, "UI_InGame_MarkedForDeath_PlayerMarked" )
 	HideEventNotification()
 	AnnouncementData announcement = Announcement_Create( "#HIDDEN_YOU_ARE_HIDDEN" )
 	Announcement_SetSubText( announcement, "#HIDDEN_KILL_SURVIVORS" )
-	Announcement_SetTitleColor( announcement, <1,0,0> )
+	Announcement_SetTitleColor( announcement, < 1, 0, 0 > )
 	Announcement_SetPurge( announcement, true )
-	Announcement_SetPriority( announcement, 200 ) //Be higher priority than Titanfall ready indicator etc
+	Announcement_SetPriority( announcement, 200 ) // Be higher priority than Titanfall ready indicator etc
 	Announcement_SetSoundAlias( announcement, SFX_HUD_ANNOUNCE_QUICK )
 	Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_QUICK )
 	AnnouncementFromClass( localPlayer, announcement )
@@ -50,10 +50,10 @@ void function ServerCallback_AnnounceHidden( int survivorEHandle )
 	entity player = GetEntityFromEncodedEHandle( survivorEHandle )
 
 	AnnouncementData announcement = Announcement_Create( Localize( "#HIDDEN_FIRST_HIDDEN", player.GetPlayerName() ) )
-	//Announcement_SetSubText( announcement, "#INFECTION_KILL_LAST_SURVIVOR" )
-	Announcement_SetTitleColor( announcement, <1,0,0> )
+	// Announcement_SetSubText( announcement, "#INFECTION_KILL_LAST_SURVIVOR" )
+	Announcement_SetTitleColor( announcement, < 1, 0, 0 > )
 	Announcement_SetPurge( announcement, true )
-	Announcement_SetPriority( announcement, 200 ) //Be higher priority than Titanfall ready indicator etc
+	Announcement_SetPriority( announcement, 200 ) // Be higher priority than Titanfall ready indicator etc
 	Announcement_SetSoundAlias( announcement, SFX_HUD_ANNOUNCE_QUICK )
 	Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_QUICK )
 	AnnouncementFromClass( GetLocalViewPlayer(), announcement )

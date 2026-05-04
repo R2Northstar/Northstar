@@ -7,10 +7,5 @@ void function NorthstarCustomPrecache()
 	PrecacheWeapon( "mp_titanweapon_arc_cannon" )
 	PrecacheWeapon( "melee_pilot_kunai" )
 
-	RegisterWeaponDamageSources(
-		{
-			mp_weapon_peacekraber = "#WPN_PEACEKRABER",
-			melee_pilot_kunai = "#MELEE_KUNAI"
-		}
-	)
+	RegisterWeaponDamageSources( { mp_weapon_peacekraber = "#WPN_PEACEKRABER", melee_pilot_kunai = "#MELEE_KUNAI" } )
 }

@@ -1,6 +1,7 @@
 global function GamemodeInfection_Init
 
-struct {
+struct
+{
 	bool hasHadFirstInfection = false
 	bool hasHadLastInfection = false
 	array<entity> playersToNotifyOfInfection
@@ -69,9 +70,10 @@ void function InfectionOnPlayerKilled( entity victim, entity attacker, var damag
 	if ( victim.GetTeam() == INFECTION_TEAM_SURVIVOR )
 		InfectPlayer( victim )
 
-	if ( attacker.IsPlayer() ) {
+	if ( attacker.IsPlayer() )
+	{
 		attacker.SetPlayerGameStat( PGS_ASSAULT_SCORE, attacker.GetPlayerGameStat( PGS_ASSAULT_SCORE ) + 1 )
-		SetRoundWinningKillReplayAttacker(attacker)
+		SetRoundWinningKillReplayAttacker( attacker )
 	}
 }
 
@@ -135,18 +137,18 @@ void function RespawnInfected( entity player )
 
 	// TEMP: give archer so player so player has a weapon which lets them use offhands
 	// need to replace this with a custom empty weapon at some point
-	//player.GiveWeapon( "mp_weapon_rocket_launcher" )
+	// player.GiveWeapon( "mp_weapon_rocket_launcher" )
 	player.GiveWeapon( "mp_weapon_mgl" )
 	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE )
 
-	thread GiveAirAccel(player)
+	thread GiveAirAccel( player )
 	thread PlayInfectedSounds( player )
 }
 
-void function GiveAirAccel(entity player)
+void function GiveAirAccel( entity player )
 {
 	WaitFrame()
-	if (GetCurrentPlaylistVarInt( "custom_air_accel_pilot", int( player.GetPlayerSettingsField( "airAcceleration" ) ) ) < 2500)
+	if ( GetCurrentPlaylistVarInt( "custom_air_accel_pilot", int( player.GetPlayerSettingsField( "airAcceleration" ) ) ) < 2500 )
 		player.kv.airAcceleration = 2500 // prevents sh_custom_air_accel from not giving infected air acceleration.
 	else
 		player.kv.airAcceleration = GetCurrentPlaylistVarInt( "custom_air_accel_pilot", int( player.GetPlayerSettingsField( "airAcceleration" ) ) )

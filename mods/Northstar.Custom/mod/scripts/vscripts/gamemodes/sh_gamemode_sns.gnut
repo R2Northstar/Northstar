@@ -1,6 +1,6 @@
 globalize_all_functions
 
-global array<var> consoleVars;
+global array<var> consoleVars
 global const string GAMEMODE_SNS = "sns"
 
 void function SNSMode_Init()
@@ -9,10 +9,9 @@ void function SNSMode_Init()
 	AddCallback_OnRegisteringCustomNetworkVars( SNSRegisterNetworkVars )
 }
 
-
 void function CreateGamemodeSNS()
 {
- 	GameMode_Create( GAMEMODE_SNS )
+	GameMode_Create( GAMEMODE_SNS )
 	GameMode_SetName( GAMEMODE_SNS, "#GAMEMODE_SNS" )
 	GameMode_SetDesc( GAMEMODE_SNS, "#PL_sns_desc" )
 	GameMode_SetGameModeAnnouncement( GAMEMODE_SNS, "ffa_modeDesc" )
@@ -20,17 +19,16 @@ void function CreateGamemodeSNS()
 	GameMode_AddScoreboardColumnData( GAMEMODE_SNS, "#SCOREBOARD_SCORE", PGS_ASSAULT_SCORE, 2 )
 	GameMode_AddScoreboardColumnData( GAMEMODE_SNS, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 )
 	GameMode_AddScoreboardColumnData( GAMEMODE_SNS, "#SCOREBOARD_BANKRUPTS", PGS_TITAN_KILLS, 2 )
-	GameMode_SetColor( GAMEMODE_SNS, [147, 204, 57, 255] )
+	GameMode_SetColor( GAMEMODE_SNS, [ 147, 204, 57, 255 ] )
 
 	AddPrivateMatchMode( GAMEMODE_SNS ) // add to private lobby modes
-	AddPrivateMatchModeSettingEnum( "#PL_sns", "sns_reset_pulse_blade_cooldown_on_pulse_blade_kill", [ "Disabled", "Enabled" ], "1"  )
-	AddPrivateMatchModeSettingEnum( "#PL_sns", "sns_softball_enabled", [ "False", "True" ], "0"  )
+	AddPrivateMatchModeSettingEnum( "#PL_sns", "sns_reset_pulse_blade_cooldown_on_pulse_blade_kill", [ "Disabled", "Enabled" ], "1" )
+	AddPrivateMatchModeSettingEnum( "#PL_sns", "sns_softball_enabled", [ "False", "True" ], "0" )
 	AddPrivateMatchModeSettingArbitrary( "#PL_sns", "sns_softball_kill_value", "10" )
 	AddPrivateMatchModeSettingArbitrary( "#PL_sns", "sns_wme_kill_value", "10" )
 	AddPrivateMatchModeSettingArbitrary( "#PL_sns", "sns_offhand_kill_value", "10" )
 	AddPrivateMatchModeSettingArbitrary( "#PL_sns", "sns_reset_kill_value", "5" )
 	AddPrivateMatchModeSettingArbitrary( "#PL_sns", "sns_melee_kill_value", "5" )
-	
 
 	GameMode_SetDefaultScoreLimits( GAMEMODE_SNS, 300, 0 )
 

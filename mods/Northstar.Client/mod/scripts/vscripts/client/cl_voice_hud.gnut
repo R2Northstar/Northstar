@@ -1,13 +1,11 @@
 untyped
 
-
 global function InitVoiceHUD
 global function UpdateVoiceHUD
 
-
 const VOICEHUD_MAX = 10
-const VOICEHUD_COLOR_FRIENDLY = [FRIENDLY_R, FRIENDLY_G, FRIENDLY_B, 255]
-const VOICEHUD_COLOR_ENEMY = [ENEMY_R, ENEMY_G, ENEMY_B, 255]
+const VOICEHUD_COLOR_FRIENDLY = [ FRIENDLY_R, FRIENDLY_G, FRIENDLY_B, 255 ]
+const VOICEHUD_COLOR_ENEMY = [ ENEMY_R, ENEMY_G, ENEMY_B, 255 ]
 
 function InitVoiceHUD( entity player )
 {
@@ -20,10 +18,7 @@ function InitVoiceHUD( entity player )
 		elemPrefix = "voice"
 		elemIndex = string( index )
 
-		local Table = {
-			mic = HudElement( elemPrefix + "Mic" + elemIndex )
-			name = HudElement( elemPrefix + "Name" + elemIndex )
-		}
+		local Table = { mic = HudElement( elemPrefix + "Mic" + elemIndex ), name = HudElement( elemPrefix + "Name" + elemIndex ) }
 
 		player.cv.voiceHUDArray.append( Table )
 
@@ -34,7 +29,6 @@ function InitVoiceHUD( entity player )
 		VisGroup_AddElement( clGlobal.menuVisGroup, Table.name )
 	}
 }
-
 
 function UpdateVoiceHUD()
 {
@@ -60,10 +54,10 @@ function UpdateVoiceHUD()
 			{
 				if ( teamPlayer.IsTalking() && !teamPlayer.IsMuted() )
 				{
-					localPlayer.cv.voiceHUDArray[index].mic.Show()
+					localPlayer.cv.voiceHUDArray[ index ].mic.Show()
 
-					localPlayer.cv.voiceHUDArray[index].name.SetText( teamPlayer.GetPlayerNameWithClanTag() )
-					localPlayer.cv.voiceHUDArray[index].name.Show()
+					localPlayer.cv.voiceHUDArray[ index ].name.SetText( teamPlayer.GetPlayerNameWithClanTag() )
+					localPlayer.cv.voiceHUDArray[ index ].name.Show()
 
 					var color = [ 255, 255, 255, 255 ]
 					if ( allTalkEnabled )
@@ -74,8 +68,8 @@ function UpdateVoiceHUD()
 							color = VOICEHUD_COLOR_ENEMY
 					}
 
-					localPlayer.cv.voiceHUDArray[index].mic.SetColor( color )
-					localPlayer.cv.voiceHUDArray[index].name.SetColor( color )
+					localPlayer.cv.voiceHUDArray[ index ].mic.SetColor( color )
+					localPlayer.cv.voiceHUDArray[ index ].name.SetColor( color )
 
 					index++
 
@@ -89,7 +83,7 @@ function UpdateVoiceHUD()
 
 	for ( ; index < VOICEHUD_MAX; index++ )
 	{
-		localPlayer.cv.voiceHUDArray[index].name.Hide()
-		localPlayer.cv.voiceHUDArray[index].mic.Hide()
+		localPlayer.cv.voiceHUDArray[ index ].name.Hide()
+		localPlayer.cv.voiceHUDArray[ index ].mic.Hide()
 	}
 }

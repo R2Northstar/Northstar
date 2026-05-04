@@ -8,9 +8,9 @@ global function TitanVO_DelayedTitanDown
 const TITAN_VO_DIST_SQR = 2000 * 2000
 
 const CHATTER_TIME_LAPSE = 30.0
-//const CHATTER_TIME_LAPSE = 5.0  //For testing
-//const CHATTER_TIME_LAPSE = 8.0  //For testing
-//const CHATTER_TIME_LAPSE = 15.0 //For testing
+// const CHATTER_TIME_LAPSE = 5.0  //For testing
+// const CHATTER_TIME_LAPSE = 8.0  //For testing
+// const CHATTER_TIME_LAPSE = 15.0 //For testing
 
 void function DialogueChatter_Init()
 {
@@ -99,7 +99,6 @@ void function TitanVO_DelayedTitanDown( entity ent )
 			Remote_CallFunction_Replay( player, "SCB_TitanDialogue", eTitanVO.FRIENDLY_TITAN_DEAD )
 	}
 }
-
 
 void function TitanVO_AlertTitansIfTargetWasKilled( entity victim, entity attacker )
 {

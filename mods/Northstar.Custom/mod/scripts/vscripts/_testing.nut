@@ -22,19 +22,20 @@ struct TestInfo
 	bool passed
 }
 
-struct {
-	table< string, array< TestInfo > > tests = {}
+struct
+{
+	table<string, array<TestInfo> > tests = {}
 } file
 
 void function Testing_Init()
 {
 	// tests for the testing functions :)
-	//AddTest( "Example Tests", "example succeeding test", ExampleTest_ReturnsTrue, true )
-	//AddTest( "Example Tests", "example failing test", ExampleTest_ReturnsFalse, true )
-	//AddTest( "Example Tests", "example erroring test", ExampleTest_ThrowsError, true )
-	//AddTest( "Example Tests", "example test with args", var function() {
-	//	return ExampleTest_HasArgs_ReturnsNonVar( 2, 3 )
-	//}, 6 )
+	// AddTest( "Example Tests", "example succeeding test", ExampleTest_ReturnsTrue, true )
+	// AddTest( "Example Tests", "example failing test", ExampleTest_ReturnsFalse, true )
+	// AddTest( "Example Tests", "example erroring test", ExampleTest_ThrowsError, true )
+	// AddTest( "Example Tests", "example test with args", var function() {
+	// 	return ExampleTest_HasArgs_ReturnsNonVar( 2, 3 )
+	// }, 6 )
 }
 
 int function ExampleTest_HasArgs_ReturnsNonVar( int first, int second )
@@ -63,11 +64,11 @@ void function RunAllTests_SaveToFile()
 	RunAllTests()
 
 	#if UI
-	string fileName = "ns-unit-tests-UI.json"
+		string fileName = "ns-unit-tests-UI.json"
 	#elseif CLIENT
-	string fileName = "ns-unit-tests-CLIENT.json"
+		string fileName = "ns-unit-tests-CLIENT.json"
 	#elseif SERVER
-	string fileName = "ns-unit-tests-SERVER.json"
+		string fileName = "ns-unit-tests-SERVER.json"
 	#endif
 
 	// cant encode structs so have to reconstruct a table manually from the structs
@@ -152,7 +153,7 @@ void function RunTestByCategoryAndName( string category, string testName )
 	}
 
 	expect TestInfo( foundTest )
-	
+
 	printt( "Running test!" )
 	// run test
 	RunTest( foundTest )

@@ -13,8 +13,9 @@ global function BallLightningZapFX
 global function BallLightningZapTargets
 global function BallLightningZapConnectionFX
 
-struct {
-	table< string, float > uniqueStrings
+struct
+{
+	table<string, float> uniqueStrings
 } file
 
 function BallLightning_Init()
@@ -47,7 +48,6 @@ function AttachBallLightning( entity weapon, entity projectile )
 		damageSourceId = weapon.GetDamageSourceID()
 	}
 
-
 	entity ball = CreateBallLightning( owner, damageSourceId, projectile.GetOrigin(), projectile.GetAngles() )
 	ball.SetParent( projectile )
 	projectile.s.ballLightning <- ball
@@ -61,7 +61,6 @@ void function DestroyBallLightningOnEnt( entity prop )
 		delete prop.s.ballLightning
 	}
 }
-
 
 entity function AttachBallLightningToProp( entity prop, entity owner, int damageSourceId )
 {
@@ -99,7 +98,7 @@ void function OnBallLightningDamage( entity victim, var damageInfo )
 	if ( victim.IsProjectile() )
 		return
 
-	if ( DamageInfo_GetCustomDamageType( damageInfo ) & (DF_EXPLOSION | DF_IMPACT) )
+	if ( DamageInfo_GetCustomDamageType( damageInfo ) & ( DF_EXPLOSION | DF_IMPACT ) )
 		return
 
 	// if ( IsHumanSized( victim ) )
@@ -151,9 +150,9 @@ void function BallLightningThink( entity ballLightning, int damageSourceId )
 
 	WaitEndFrame()
 
-	while( 1 )
+	while ( 1 )
 	{
-		for( int i=0; i<BALL_LIGHTNING_BURST_NUM; i++ )
+		for ( int i = 0; i < BALL_LIGHTNING_BURST_NUM; i++ )
 		{
 			if ( BALL_LIGHTNING_BURST_NUM > 1 )
 				wait BALL_LIGHTNING_BURST_PAUSE
@@ -168,18 +167,18 @@ void function BallLightningThink( entity ballLightning, int damageSourceId )
 void function BallLightningZapTargets( entity ballLightning, vector origin, int inflictorTeam, int damageSourceId, BallLightningData fxData, bool single )
 {
 	RadiusDamage(
-	    origin,				// origin
-	    ballLightning.GetOwner(),		// owner
-	    ballLightning,		 			// inflictor
-	    fxData.damageToPilots,								// normal damage
-	    fxData.damage,					// heavy armor damage
-	    fxData.radius,							// inner radius
-	    fxData.radius,							// outer radius
-	    SF_ENVEXPLOSION_NO_DAMAGEOWNER,	// explosion flags
-	    0, 								// distanceFromAttacker
-	    0, 								// explosionForce
-	    fxData.deathPackage,				// damage flags
-	    damageSourceId	// damage source id
+		origin, // origin
+		ballLightning.GetOwner(), // owner
+		ballLightning, // inflictor
+		fxData.damageToPilots, // normal damage
+		fxData.damage, // heavy armor damage
+		fxData.radius, // inner radius
+		fxData.radius, // outer radius
+		SF_ENVEXPLOSION_NO_DAMAGEOWNER, // explosion flags
+		0, // distanceFromAttacker
+		0, // explosionForce
+		fxData.deathPackage, // damage flags
+		damageSourceId // damage source id
 	)
 }
 
@@ -253,7 +252,6 @@ bool function IsTargetEntValid( entity ballLightning, entity target, BallLightni
 	if ( dot < fxData.minDot )
 		return false
 
-
 	if ( IsHumanSized( target ) )
 	{
 		float maxDist = fxData.humanRadius
@@ -301,7 +299,7 @@ void function BallLightningZapConnectionFX( entity ballLightning, entity target,
 		zapBeam.Fire( "Start" )
 
 		OnThreadEnd(
-		function() : ( zapBeam, cpEnd )
+			function() : ( zapBeam, cpEnd )
 			{
 				if ( IsValid( zapBeam ) )
 					zapBeam.Destroy()
@@ -339,7 +337,7 @@ string function GetUniqueCpString()
 {
 	foreach ( string uString, float useTime in file.uniqueStrings )
 	{
-		if ( useTime + BALL_LIGHTNING_ZAP_LIFETIME*2 > Time() )
+		if ( useTime + BALL_LIGHTNING_ZAP_LIFETIME * 2 > Time() )
 			continue
 
 		file.uniqueStrings[ uString ] = Time()

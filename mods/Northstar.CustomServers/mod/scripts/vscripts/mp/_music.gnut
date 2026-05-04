@@ -8,7 +8,6 @@ global function CreateLevelWinnerDeterminedMusicEvent
 
 const int MUSIC_EVENT_UNINITIALIZED = -1
 
-
 struct MusicEvent
 {
 	int musicPieceID = MUSIC_EVENT_UNINITIALIZED
@@ -18,9 +17,8 @@ struct MusicEvent
 
 struct
 {
-	table< int, MusicEvent > musicEvents
+	table<int, MusicEvent> musicEvents
 } file
-
 
 void function Music_Init()
 {
@@ -37,7 +35,7 @@ void function CreateTeamMusicEvent( int team, int musicPieceID, float timeMusicS
 	Assert( !( shouldSeek == false && timeMusicStarted > 0 ), "Don't pass in timeMusicStarted when creating a TeamMusicEvent with shouldSeek set to false!" )
 
 	MusicEvent musicEvent
-	musicEvent.musicPieceID  = musicPieceID
+	musicEvent.musicPieceID = musicPieceID
 	musicEvent.timeMusicStarted = timeMusicStarted
 	musicEvent.shouldSeek = shouldSeek
 
@@ -52,9 +50,9 @@ void function PlayCurrentTeamMusicEventsOnPlayer( entity player )
 	if ( team in file.musicEvents )
 		musicEvent = file.musicEvents[ team ]
 	else
-		musicEvent = file.musicEvents[ TEAM_MILITIA ] //This normally means we're in FFA. Fine to failsafe to use any music event
+		musicEvent = file.musicEvents[ TEAM_MILITIA ] // This normally means we're in FFA. Fine to failsafe to use any music event
 
-	if ( musicEvent.musicPieceID == MUSIC_EVENT_UNINITIALIZED ) //No current music event
+	if ( musicEvent.musicPieceID == MUSIC_EVENT_UNINITIALIZED ) // No current music event
 		return
 
 	Remote_CallFunction_NonReplay( player, "ServerCallback_PlayTeamMusicEvent", musicEvent.musicPieceID, musicEvent.timeMusicStarted, musicEvent.shouldSeek )
@@ -62,7 +60,7 @@ void function PlayCurrentTeamMusicEventsOnPlayer( entity player )
 
 void function CreateLevelIntroMusicEvent()
 {
-	//printt( "Creating LevelIntroMusicEvent" )
+	// printt( "Creating LevelIntroMusicEvent" )
 	CreateTeamMusicEvent( TEAM_IMC, eMusicPieceID.LEVEL_INTRO, Time() )
 	CreateTeamMusicEvent( TEAM_MILITIA, eMusicPieceID.LEVEL_INTRO, Time() )
 }
@@ -87,7 +85,7 @@ void function PlayMusicToAll( int musicID )
 
 void function CreateLevelWinnerDeterminedMusicEvent()
 {
-	//printt( "Creating CreateLevelWinnerDeterminedMusicEvent" )
+	// printt( "Creating CreateLevelWinnerDeterminedMusicEvent" )
 	if ( IsFFAGame() )
 		return
 

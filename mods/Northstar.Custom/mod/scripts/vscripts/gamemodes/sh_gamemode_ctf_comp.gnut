@@ -23,13 +23,13 @@ void function CreateGamemodeCTFComp()
 	GameMode_AddScoreboardColumnData( GAMEMODE_CTF_COMP, "#SCOREBOARD_RETURNS", PGS_DEFENSE_SCORE, 2 )
 	GameMode_AddScoreboardColumnData( GAMEMODE_CTF_COMP, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
 	GameMode_AddScoreboardColumnData( GAMEMODE_CTF_COMP, "#SCOREBOARD_TITAN_DAMAGE", PGS_DISTANCE_SCORE, 6 ) // gotta use a weird pgs here since we're running out of them lol
-	GameMode_SetColor( GAMEMODE_CTF_COMP, [61, 117, 193, 255] )
-	
+	GameMode_SetColor( GAMEMODE_CTF_COMP, [ 61, 117, 193, 255 ] )
+
 	AddPrivateMatchMode( GAMEMODE_CTF_COMP ) // add to private lobby modes
-	
+
 	// this gamemode is literally just normal ctf + a few extra settings
 	// as such we do all the inits in this file, not enough logic to be worth splitting it up
-	
+
 	#if SERVER
 		GameMode_AddServerInit( GAMEMODE_CTF_COMP, InitCTFCompSpecificSettings )
 		GameMode_AddServerInit( GAMEMODE_CTF_COMP, CaptureTheFlag_Init )
@@ -75,14 +75,14 @@ void function CTFCompRegisterNetworkVars()
 
 void function InitCTFCompSpecificSettings()
 {
-	#if SERVER 
+	#if SERVER
 		SetShouldUsePickLoadoutScreen( true )
 		TrackTitanDamageInPlayerGameStat( PGS_DISTANCE_SCORE )
 		SetSpawnpointGamemodeOverride( CAPTURE_THE_FLAG )
 		TeamTitanSelectMenu_Init()
 	#elseif CLIENT
 		ClTeamTitanSelectMenu_Init()
-		
+
 		// gotta register the music here because this is done hardcoded to ctf in cl_music
 		RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_INTRO, "music_mp_ctf_intro_flyin", TEAM_IMC )
 		RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_INTRO, "music_mp_ctf_intro_flyin", TEAM_MILITIA )

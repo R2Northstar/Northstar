@@ -12,7 +12,7 @@ global function DestroyBubbleShield
 global function CreateBubbleShieldWithSettings
 
 const float SHIELD_TITAN_DAMAGE_FLOOR = 250.0
-const float SHIELD_TITAN_DAMAGE_CEILING = 16000 //Some arbitrarily large number really
+const float SHIELD_TITAN_DAMAGE_CEILING = 16000 // Some arbitrarily large number really
 const float SHIELD_PILOT_DAMAGE_FLOOR = 30.0
 const float SHIELD_PILOT_DAMAGE_CEILING = 60.0
 const float SHIELD_NPC_DAMAGE_FLOOR = 30.0
@@ -26,7 +26,7 @@ struct BubbleShieldDamageStruct
 {
 	float damageFloor
 	float damageCeiling
-	array<float> quadraticPolynomialCoefficients //Should actually be float[3], but because float[ 3 ] and array<float> are different types and this needs to be fed into EvaluatePolynomial make it an array<float> instead
+	array<float> quadraticPolynomialCoefficients // Should actually be float[3], but because float[ 3 ] and array<float> are different types and this needs to be fed into EvaluatePolynomial make it an array<float> instead
 }
 
 struct
@@ -34,9 +34,7 @@ struct
 	BubbleShieldDamageStruct titanDamageStruct
 	BubbleShieldDamageStruct pilotDamageStruct
 	BubbleShieldDamageStruct aiDamageStruct
-
-}file
-
+} file
 
 void function BubbleShield_Init()
 {
@@ -46,7 +44,7 @@ void function BubbleShield_Init()
 
 	InitBubbleShieldDamageStructValues( file.titanDamageStruct, SHIELD_TITAN_DAMAGE_FLOOR, SHIELD_TITAN_DAMAGE_CEILING, [ 12.0, 5.0, 2.0 ] )
 	InitBubbleShieldDamageStructValues( file.pilotDamageStruct, SHIELD_PILOT_DAMAGE_FLOOR, SHIELD_PILOT_DAMAGE_CEILING, [ 2.0, 1.0, 1.0 ] )
-	InitBubbleShieldDamageStructValues( file.aiDamageStruct, 	SHIELD_PILOT_DAMAGE_FLOOR, SHIELD_PILOT_DAMAGE_CEILING, [ 2.0, 1.0, 1.0 ] )
+	InitBubbleShieldDamageStructValues( file.aiDamageStruct, SHIELD_PILOT_DAMAGE_FLOOR, SHIELD_PILOT_DAMAGE_CEILING, [ 2.0, 1.0, 1.0 ] )
 }
 
 void function InitBubbleShieldDamageStructValues( BubbleShieldDamageStruct damageStruct, float damageFloor, float damageCeiling, array<float> quadPolynomialCoeffs )
@@ -82,20 +80,19 @@ void function CreateBubbleShield( entity titan, vector origin, vector angles )
 	bubbleShield.SetBossPlayer( player ) // so code knows AI should try to shoot at titan inside shield
 	soul.soul.bubbleShield = bubbleShield
 
-	player.SetTitanBubbleShieldTime( Time() + GetBubbleShieldDuration( player ) ) //This sets the time to display "Titan Shielded" on the HUD
+	player.SetTitanBubbleShieldTime( Time() + GetBubbleShieldDuration( player ) ) // This sets the time to display "Titan Shielded" on the HUD
 
 	AI_CreateDangerousArea_Static( bubbleShield, null, TITAN_BUBBLE_SHIELD_INVULNERABILITY_RANGE, titan.GetTeam(), true, true, origin )
 
-	//titan.SetNPCPriorityOverride( 1 )
+	// titan.SetNPCPriorityOverride( 1 )
 
 	OnThreadEnd(
-		function () : ( titan, soul, player, bubbleShield )
+		function() : ( titan, soul, player, bubbleShield )
 		{
 			if ( IsValid( player ) )
-				player.SetTitanBubbleShieldTime( 0 ) //This sets the time to display "Titan Shielded" on the HUD
+				player.SetTitanBubbleShieldTime( 0 ) // This sets the time to display "Titan Shielded" on the HUD
 
 			CleanupTitanBubbleShieldVars( titan, soul, bubbleShield )
-
 		}
 	)
 
@@ -112,7 +109,7 @@ void function MonitorTitanMovement( entity soul, entity bubbleShield )
 
 	vector startPos = titan.GetOrigin()
 	float endTime = Time() + SHIELD_FADE_ARBITRARY_DELAY
-	while( endTime >= Time() )
+	while ( endTime >= Time() )
 	{
 		if ( Distance( titan.GetOrigin(), startPos ) > SHIELD_DISTANCE_TO_DESTROY )
 			break
@@ -136,7 +133,7 @@ void function CreateGenericBubbleShield( entity titan, vector origin, vector ang
 	titan.SetNPCPriorityOverride( 10 )
 
 	OnThreadEnd(
-		function () : ( titan, soul, bubbleShield )
+		function() : ( titan, soul, bubbleShield )
 		{
 			CleanupTitanBubbleShieldVars( titan, soul, bubbleShield )
 		}
@@ -158,7 +155,7 @@ void function CreateParentedBubbleShield( entity titan, vector origin, vector an
 	titan.SetNPCPriorityOverride( 10 )
 
 	OnThreadEnd(
-		function () : ( titan, soul, bubbleShield )
+		function() : ( titan, soul, bubbleShield )
 		{
 			CleanupTitanBubbleShieldVars( titan, soul, bubbleShield )
 		}
@@ -169,8 +166,8 @@ void function CreateParentedBubbleShield( entity titan, vector origin, vector an
 
 	soul.soul.bubbleShield.SetParent( titan, "ORIGIN" )
 	table bubleshieldDotS = expect table( soul.soul.bubbleShield.s )
-	entity friendlyColoredFX = expect entity (bubleshieldDotS.friendlyColoredFX )
-	entity enemyColoredFX = expect entity (bubleshieldDotS.enemyColoredFX )
+	entity friendlyColoredFX = expect entity( bubleshieldDotS.friendlyColoredFX )
+	entity enemyColoredFX = expect entity( bubleshieldDotS.enemyColoredFX )
 	friendlyColoredFX.SetParent( soul.soul.bubbleShield )
 	enemyColoredFX.SetParent( soul.soul.bubbleShield )
 
@@ -181,7 +178,8 @@ void function CleanupTitanBubbleShieldVars( entity titan, entity soul, entity bu
 {
 	DestroyBubbleShield( bubbleShield )
 
-	if ( IsValid( soul ) ){
+	if ( IsValid( soul ) )
+	{
 		soul.soul.bubbleShield = null
 	}
 
@@ -203,11 +201,11 @@ entity function CreateBubbleShieldWithSettings( int team, vector origin, vector 
 	entity bubbleShield = CreateEntity( "prop_dynamic" )
 	bubbleShield.SetValueForModelKey( $"models/fx/xo_shield.mdl" )
 	bubbleShield.kv.solid = SOLID_VPHYSICS
-    bubbleShield.kv.rendercolor = "81 130 151"
-    bubbleShield.kv.contents = (int(bubbleShield.kv.contents) | CONTENTS_NOGRAPPLE)
+	bubbleShield.kv.rendercolor = "81 130 151"
+	bubbleShield.kv.contents = ( int( bubbleShield.kv.contents ) | CONTENTS_NOGRAPPLE )
 	bubbleShield.SetOrigin( origin )
 	bubbleShield.SetAngles( angles )
-     // Blocks bullets, projectiles but not players and not AI
+	// Blocks bullets, projectiles but not players and not AI
 	bubbleShield.kv.CollisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS
 	bubbleShield.SetBlocksRadiusDamage( true )
 	DispatchSpawn( bubbleShield )
@@ -220,7 +218,7 @@ entity function CreateBubbleShieldWithSettings( int team, vector origin, vector 
 	table bubbleShieldDotS = expect table( bubbleShield.s )
 	if ( team == TEAM_UNASSIGNED )
 	{
-		entity neutralColoredFX = StartParticleEffectInWorld_ReturnEntity( BUBBLE_SHIELD_FX_PARTICLE_SYSTEM_INDEX, coloredFXOrigin, <0, 0, 0> )
+		entity neutralColoredFX = StartParticleEffectInWorld_ReturnEntity( BUBBLE_SHIELD_FX_PARTICLE_SYSTEM_INDEX, coloredFXOrigin, < 0, 0, 0 > )
 		SetTeam( neutralColoredFX, team )
 		bubbleShieldDotS.neutralColoredFX <- neutralColoredFX
 		neutralColoredFX.DisableHibernation()
@@ -228,17 +226,17 @@ entity function CreateBubbleShieldWithSettings( int team, vector origin, vector 
 	}
 	else
 	{
-		//Create friendly and enemy colored particle systems
-		entity friendlyColoredFX = StartParticleEffectInWorld_ReturnEntity( BUBBLE_SHIELD_FX_PARTICLE_SYSTEM_INDEX, coloredFXOrigin, <0, 0, 0> )
+		// Create friendly and enemy colored particle systems
+		entity friendlyColoredFX = StartParticleEffectInWorld_ReturnEntity( BUBBLE_SHIELD_FX_PARTICLE_SYSTEM_INDEX, coloredFXOrigin, < 0, 0, 0 > )
 		SetTeam( friendlyColoredFX, team )
 		friendlyColoredFX.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY
-		EffectSetControlPointVector(  friendlyColoredFX, 1, FRIENDLY_COLOR_FX )
+		EffectSetControlPointVector( friendlyColoredFX, 1, FRIENDLY_COLOR_FX )
 		friendlyColoredFX.DisableHibernation()
 
-		entity enemyColoredFX = StartParticleEffectInWorld_ReturnEntity( BUBBLE_SHIELD_FX_PARTICLE_SYSTEM_INDEX, coloredFXOrigin, <0, 0, 0> )
+		entity enemyColoredFX = StartParticleEffectInWorld_ReturnEntity( BUBBLE_SHIELD_FX_PARTICLE_SYSTEM_INDEX, coloredFXOrigin, < 0, 0, 0 > )
 		SetTeam( enemyColoredFX, team )
 		enemyColoredFX.kv.VisibilityFlags = ENTITY_VISIBLE_TO_ENEMY
-		EffectSetControlPointVector(  enemyColoredFX, 1, ENEMY_COLOR_FX )
+		EffectSetControlPointVector( enemyColoredFX, 1, ENEMY_COLOR_FX )
 		enemyColoredFX.DisableHibernation()
 
 		bubbleShieldDotS.friendlyColoredFX <- friendlyColoredFX
@@ -248,7 +246,7 @@ entity function CreateBubbleShieldWithSettings( int team, vector origin, vector 
 	}
 
 	#if MP
-	DisableTitanfallForLifetimeOfEntityNearOrigin( bubbleShield, origin, TITANHOTDROP_DISABLE_ENEMY_TITANFALL_RADIUS )
+		DisableTitanfallForLifetimeOfEntityNearOrigin( bubbleShield, origin, TITANHOTDROP_DISABLE_ENEMY_TITANFALL_RADIUS )
 	#endif
 
 	EmitSoundOnEntity( bubbleShield, "BubbleShield_Sustain_Loop" )
@@ -264,7 +262,7 @@ void function CleanupBubbleShield( entity bubbleShield, array<entity> bubbleShie
 	bubbleShield.EndSignal( "OnDestroy" )
 
 	OnThreadEnd(
-		function () : ( bubbleShield, bubbleShieldFXs )
+		function() : ( bubbleShield, bubbleShieldFXs )
 		{
 			if ( IsValid_ThisFrame( bubbleShield ) )
 			{
@@ -314,7 +312,7 @@ void function WaitUntilPlayerTitanStandsOrDies( entity player, entity titan, flo
 	waitthread WaitUntilTitanStandsOrDies( titan, failTime )
 
 	if ( !IsAlive( player ) )
-			return
+		return
 
 	if ( IsPlayerEmbarking( player ) && player.Anim_IsActive() )
 		WaittillAnimDone( player )
@@ -326,7 +324,7 @@ void function WaitUntilTitanStandsOrDies( entity titan, float timeout = -1.0 )
 	titan.EndSignal( "ChangedTitanMode" )
 	float endTime = Time() + timeout
 
-	for ( ;; )
+	for ( ; ; )
 	{
 		if ( titan.GetTitanSoul().GetStance() == STANCE_STAND )
 			return
@@ -348,18 +346,18 @@ void function BubbleShieldDamageEnemies( entity bubbleShield, entity bubbleShiel
 
 	entity trigger = CreateEntity( "trigger_cylinder" )
 	trigger.SetRadius( TITAN_BUBBLE_SHIELD_INVULNERABILITY_RANGE )
-	trigger.SetAboveHeight( TITAN_BUBBLE_SHIELD_CYLINDER_TRIGGER_HEIGHT ) //Still not quite a sphere, will see if close enough
+	trigger.SetAboveHeight( TITAN_BUBBLE_SHIELD_CYLINDER_TRIGGER_HEIGHT ) // Still not quite a sphere, will see if close enough
 	trigger.SetBelowHeight( 0 )
 	trigger.SetOrigin( bubbleShield.GetOrigin() )
 	trigger.SetParent( bubbleShield )
 	DispatchSpawn( trigger )
 
-	trigger.SearchForNewTouchingEntity() //JFS: trigger.GetTouchingEntities() will not return entities already in the trigger unless this is called. See bug 202843
+	trigger.SearchForNewTouchingEntity() // JFS: trigger.GetTouchingEntities() will not return entities already in the trigger unless this is called. See bug 202843
 
 	/*DebugDrawCylinder( trigger.GetOrigin(), <270,0,0>, TITAN_BUBBLE_SHIELD_INVULNERABILITY_RANGE, TITAN_BUBBLE_SHIELD_CYLINDER_TRIGGER_HEIGHT, 255, 255, 255, true, 20.0 )
 	DebugDrawSphere( bubbleShield.GetOrigin(), TITAN_BUBBLE_SHIELD_INVULNERABILITY_RANGE, 255, 0, 0, true, 20 )*/
 	OnThreadEnd(
-	function() : ( trigger )
+		function() : ( trigger )
 		{
 			trigger.Destroy()
 		}
@@ -378,11 +376,11 @@ void function BubbleShieldDamageEnemies( entity bubbleShield, entity bubbleShiel
 	{
 		array<entity> touchingEnts = trigger.GetTouchingEntities()
 
-		foreach( touchingEnt in touchingEnts  )
+		foreach ( touchingEnt in touchingEnts )
 		{
 			if ( touchingEnt.IsTitan() )
 				countTable = soulTable
-			else if( touchingEnt.IsPlayer() )
+			else if ( touchingEnt.IsPlayer() )
 				countTable = pilotTable
 			else
 				countTable = npcTable
@@ -404,7 +402,7 @@ void function LetTitanPlayerShootThroughBubbleShield( entity titanPlayer )
 	if ( !IsValid( bubbleShield ) )
 		return
 
-	bubbleShield.SetOwner( titanPlayer ) //After this, player is able to fire out from shield. WATCH OUT FOR POTENTIAL COLLISION BUGS!
+	bubbleShield.SetOwner( titanPlayer ) // After this, player is able to fire out from shield. WATCH OUT FOR POTENTIAL COLLISION BUGS!
 
 	thread MonitorLastFireTime( titanPlayer )
 	thread StopPlayerShootThroughBubbleShield( titanPlayer, bubbleShield )
@@ -413,7 +411,7 @@ void function LetTitanPlayerShootThroughBubbleShield( entity titanPlayer )
 void function StopPlayerShootThroughBubbleShield( entity player, entity bubbleShield )
 {
 	player.EndSignal( "OnDeath" )
-	player.WaitSignal( "OnChangedPlayerClass" ) //Kill this thread once player gets out of the Titan
+	player.WaitSignal( "OnChangedPlayerClass" ) // Kill this thread once player gets out of the Titan
 
 	if ( !IsValid( bubbleShield ) )
 		return
@@ -424,23 +422,23 @@ void function StopPlayerShootThroughBubbleShield( entity player, entity bubbleSh
 void function MonitorLastFireTime( entity player )
 {
 	player.EndSignal( "OnDestroy" )
-	player.EndSignal( "OnChangedPlayerClass" ) //Kill this thread once player gets out of the Titan
+	player.EndSignal( "OnChangedPlayerClass" ) // Kill this thread once player gets out of the Titan
 
-	player.WaitSignal( "OnPrimaryAttack" ) //Sent when player fires his weapon
-	//printt( "Player fired weapon! in MonitorLastFireTime" )
+	player.WaitSignal( "OnPrimaryAttack" ) // Sent when player fires his weapon
+	// printt( "Player fired weapon! in MonitorLastFireTime" )
 
 	entity soul = player.GetTitanSoul()
 
 	if ( !IsValid( soul ) )
 		return
 
-	soul.Signal( "TitanBrokeBubbleShield" ) //WaitUntilShieldFades will end when this signal is sent
+	soul.Signal( "TitanBrokeBubbleShield" ) // WaitUntilShieldFades will end when this signal is sent
 }
 
-void function DamageEntWithinBubbleShield( entity bubbleShield, entity bubbleShieldPlayer, entity touchingEnt, table<entity, int> countTable,  )
+void function DamageEntWithinBubbleShield( entity bubbleShield, entity bubbleShieldPlayer, entity touchingEnt, table<entity, int> countTable, )
 {
 	int ownerTeam = IsValid( bubbleShieldPlayer ) ? bubbleShieldPlayer.GetTeam() : bubbleShield.GetTeam()
-	if ( !BubbleShieldShouldDamage( bubbleShield, ownerTeam,  touchingEnt ) )
+	if ( !BubbleShieldShouldDamage( bubbleShield, ownerTeam, touchingEnt ) )
 		return
 
 	entity entInCountTable = null
@@ -458,7 +456,7 @@ void function DamageEntWithinBubbleShield( entity bubbleShield, entity bubbleShi
 		entInCountTable = touchingEnt
 	}
 
-	if ( IsValid( entInCountTable  ) && !( entInCountTable in countTable ) )
+	if ( IsValid( entInCountTable ) && !( entInCountTable in countTable ) )
 		countTable[ entInCountTable ] <- 0
 
 	int timesTouched = ++countTable[ entInCountTable ]
@@ -472,11 +470,11 @@ void function DamageEntWithinBubbleShield( entity bubbleShield, entity bubbleShi
 	else
 		damageStruct = file.aiDamageStruct
 
-	float damageAmount = damageStruct.damageFloor + EvaluatePolynomial( float ( countTable[ entInCountTable ] ),  damageStruct.quadraticPolynomialCoefficients )
+	float damageAmount = damageStruct.damageFloor + EvaluatePolynomial( float( countTable[ entInCountTable ] ), damageStruct.quadraticPolynomialCoefficients )
 
-	//printt( "Damage amount: " + damageAmount + ", touchingEnt: " + touchingEnt )
+	// printt( "Damage amount: " + damageAmount + ", touchingEnt: " + touchingEnt )
 
-	touchingEnt.TakeDamage( damageAmount, bubbleShieldPlayer, bubbleShield, { origin = bubbleShield.GetOrigin(), damageSourceId=eDamageSourceId.bubble_shield } )
+	touchingEnt.TakeDamage( damageAmount, bubbleShieldPlayer, bubbleShield, { origin = bubbleShield.GetOrigin(), damageSourceId = eDamageSourceId.bubble_shield } )
 	StatusEffect_AddTimed( touchingEnt, eStatusEffect.emp, 0.1, 1.0, 0.2 )
 
 	EmitSoundOnEntity( bubbleShield, "titan_energyshield_damage" )
@@ -493,7 +491,7 @@ bool function BubbleShieldShouldDamage( entity bubbleShield, int ownerTeam, enti
 	/*if ( ent.IsTitan() && IsTitanWithinBubbleShield( ent ) )
 		return false*/
 
-	if ( ! ( ent instanceof CBaseCombatCharacter ) ) //Projectiles etc won't get damaged
+	if ( !( ent instanceof CBaseCombatCharacter ) ) // Projectiles etc won't get damaged
 		return false
 
 	float distSqr = DistanceSqr( bubbleShield.GetOrigin(), ent.GetOrigin() )
@@ -508,13 +506,14 @@ bool function IsTitanWithinBubbleShield( entity titan )
 
 	entity soul = titan.GetTitanSoul()
 
-	if ( !IsValid( soul ) ) //Bug 152438. Defensive coding, but there's a small window after embarking where the npc Titan doesn't have a soul anymore but can be damaged
+	if ( !IsValid( soul ) ) // Bug 152438. Defensive coding, but there's a small window after embarking where the npc Titan doesn't have a soul anymore but can be damaged
 		return false
 
 	if ( !IsValid( soul.soul.bubbleShield ) )
 		return false
 
-	return DistanceSqr( soul.soul.bubbleShield.GetOrigin(), titan.GetOrigin() ) < TITAN_BUBBLE_SHIELD_INVULNERABILITY_RANGE * TITAN_BUBBLE_SHIELD_INVULNERABILITY_RANGE
+	return DistanceSqr( soul.soul.bubbleShield.GetOrigin(), titan.GetOrigin() ) <
+		TITAN_BUBBLE_SHIELD_INVULNERABILITY_RANGE * TITAN_BUBBLE_SHIELD_INVULNERABILITY_RANGE
 }
 
 bool function TitanHasBubbleShieldWeapon( entity titan )

@@ -39,9 +39,8 @@ global function InitDropShipFlightPaths
 // 3. pass the dropship ent into DropshipDropshipFlyPathAndUnload() (thread it off if you want to do stuff right after)
 //
 
-
 const FX_DROPSHIP_THRUSTERS = $"xo_atlas_jet_large"
-const FX_GUNSHIP_DAMAGE =  $"veh_gunship_damage_FULL"
+const FX_GUNSHIP_DAMAGE = $"veh_gunship_damage_FULL"
 const FX_DROPSHIP_DEATH = $"P_veh_exp_crow"
 
 const DROPSHIP_ROPE_ENDPOINT_FX = $"runway_light_blue"
@@ -54,13 +53,10 @@ const ENGAGEMENT_DIST_SQD = ENGAGEMENT_DIST * ENGAGEMENT_DIST
 
 const DEFAULT_READYANIM_BLENDTIME = 1.0
 
-table file = {
-	dropshipAttachments = null
-}
+table file = { dropshipAttachments = null }
 
 function VehicleDropshipNew_Init()
 {
-
 	RegisterSignal( "sRampOpen" )
 	RegisterSignal( "sRampClose" )
 
@@ -88,34 +84,33 @@ function VehicleDropshipNew_Init()
 	PrecacheSprite( $"sprites/laserbeam.vmt" )
 	PrecacheSprite( $"sprites/glow_05.vmt" )
 
-
-	//Array of all attachments in the dropship model. Used in DropshipDamageEffects
+	// Array of all attachments in the dropship model. Used in DropshipDamageEffects
 	local names = []
-	names.append( "FRONT_TURRET"      )
-	names.append( "BOMB_L"            )
-	names.append( "BOMB_R"            )
-	names.append( "Spotlight"         )
-	names.append( "Light_Red0"        )
-	names.append( "Light_Red1"        )
-	names.append( "Light_Red2"        )
-	names.append( "Light_Red3"        )
-	names.append( "HeadlightLeft"     )
-	names.append( "RopeAttachLeftA"   )
-	names.append( "RopeAttachLeftB"   )
-	names.append( "RopeAttachLeftC"   )
-	names.append( "L_exhaust_rear_1"  )
-	names.append( "L_exhaust_rear_2"  )
+	names.append( "FRONT_TURRET" )
+	names.append( "BOMB_L" )
+	names.append( "BOMB_R" )
+	names.append( "Spotlight" )
+	names.append( "Light_Red0" )
+	names.append( "Light_Red1" )
+	names.append( "Light_Red2" )
+	names.append( "Light_Red3" )
+	names.append( "HeadlightLeft" )
+	names.append( "RopeAttachLeftA" )
+	names.append( "RopeAttachLeftB" )
+	names.append( "RopeAttachLeftC" )
+	names.append( "L_exhaust_rear_1" )
+	names.append( "L_exhaust_rear_2" )
 	names.append( "L_exhaust_front_1" )
-	names.append( "Light_Green0"      )
-	names.append( "Light_Green1"      )
-	names.append( "Light_Green2"      )
-	names.append( "Light_Green3"      )
-	names.append( "HeadlightRight"    )
-	names.append( "RopeAttachRightA"  )
-	names.append( "RopeAttachRightB"  )
-	names.append( "RopeAttachRightC"  )
-	names.append( "R_exhaust_rear_1"  )
-	names.append( "R_exhaust_rear_2"  )
+	names.append( "Light_Green0" )
+	names.append( "Light_Green1" )
+	names.append( "Light_Green2" )
+	names.append( "Light_Green3" )
+	names.append( "HeadlightRight" )
+	names.append( "RopeAttachRightA" )
+	names.append( "RopeAttachRightB" )
+	names.append( "RopeAttachRightC" )
+	names.append( "R_exhaust_rear_1" )
+	names.append( "R_exhaust_rear_2" )
 	names.append( "R_exhaust_front_1" )
 
 	file.dropshipAttachments = names
@@ -146,8 +141,7 @@ function InitLeanDropship( dropship )
 	{
 		dropship.kv.desiredSpeed = level.DROPSHIP_DEFAULT_AIRSPEED
 	}
-
-	//dropship.s.dropFunc <- ShipDropsGuys
+	// dropship.s.dropFunc <- ShipDropsGuys
 }
 
 array<entity> function CreateNPCSForDropship( entity ship, array<entity functionref( int, vector, vector )> spawnFuncs, string side = "both" )
@@ -162,17 +156,17 @@ array<entity> function CreateNPCSForDropship( entity ship, array<entity function
 	array<entity> guys = []
 
 	if ( Flag( "disable_npcs" ) )
-		return guys //i.e. empty aray
+		return guys // i.e. empty aray
 
 	local guy
 
 	// this is to maintain sketchy support for just passing an array of 1 spawn function
-	entity functionref( int, vector, vector ) spawnFunc = spawnFuncs[0]
+	entity functionref( int, vector, vector ) spawnFunc = spawnFuncs[ 0 ]
 
 	for ( int i = 0; i < count; i++ )
 	{
 		if ( i < spawnFuncs.len() )
-			spawnFunc = spawnFuncs[i]
+			spawnFunc = spawnFuncs[ i ]
 
 		entity guy = spawnFunc( team, origin, angles )
 		guy.kv.squadname = squadName
@@ -183,7 +177,7 @@ array<entity> function CreateNPCSForDropship( entity ship, array<entity function
 
 		guys.append( guy )
 
-		local seat 	= i
+		local seat = i
 		table Table = CreateDropshipAnimTable( ship, side, seat )
 
 		thread GuyDeploysOffShip( guy, Table )
@@ -192,19 +186,17 @@ array<entity> function CreateNPCSForDropship( entity ship, array<entity function
 	return guys
 }
 
-
-
 table function CreateDropshipAnimTable( ship, side, seat )
 {
 	table Table
 
-	Table.idleAnim			<- level.DSAIziplineAnims[ side ][ seat ].idle
-	Table.deployAnim		<- "zipline"
-	Table.shipAttach 		<- level.DSAIziplineAnims[ side ][ seat ].attach
-	Table.attachIndex 		<- null
-	Table.ship 				<- ship
-	Table.side				<- side
-	Table.blendTime			<- DEFAULT_SCRIPTED_ANIMATION_BLEND_TIME
+	Table.idleAnim <- level.DSAIziplineAnims[ side ][ seat ].idle
+	Table.deployAnim <- "zipline"
+	Table.shipAttach <- level.DSAIziplineAnims[ side ][ seat ].attach
+	Table.attachIndex <- null
+	Table.ship <- ship
+	Table.side <- side
+	Table.blendTime <- DEFAULT_SCRIPTED_ANIMATION_BLEND_TIME
 
 	return Table
 }
@@ -222,17 +214,16 @@ function WaitForNPCsDeployed( npcArray )
 		}
 	)
 
-	local func =
-		function( ent, guy )
-		{
-			ent.s.count++
+	local func = function( ent, guy )
+	{
+		ent.s.count++
 
-			WaitSignal( guy, "npc_deployed", "OnDeath", "OnDestroy" )
-			ent.s.count--
+		WaitSignal( guy, "npc_deployed", "OnDeath", "OnDestroy" )
+		ent.s.count--
 
-			if ( !ent.s.count )
-				ent.Kill_Deprecated_UseDestroyInstead()
-		}
+		if ( !ent.s.count )
+			ent.Kill_Deprecated_UseDestroyInstead()
+	}
 
 	foreach ( entity guy in npcArray )
 	{
@@ -278,19 +269,17 @@ function GetDropShipAnimOffset( dropShip, animName, refEnt )
 	return animStart.origin - refEnt.GetOrigin()
 }
 
-
-
 function GetDropshipSquadSize( squadname )
 {
 	local squadsize = 0
 	array<entity> dropships = GetNPCArrayByClass( "npc_dropship" )
 
-	//printl( dropships.len()+ " dropships, checking squadname: " + squadname )
+	// printl( dropships.len()+ " dropships, checking squadname: " + squadname )
 	foreach ( ship in dropships )
 		if ( ship.kv.squadname == squadname )
 			squadsize++
 
-	//printl( dropships.len()+ " dropships, squadsize: " + squadsize )
+	// printl( dropships.len()+ " dropships, squadsize: " + squadsize )
 	return squadsize
 }
 
@@ -298,7 +287,7 @@ function DelayDropshipDelete( dropship )
 {
 	dropship.EndSignal( "OnDeath" )
 
-	//very defensive check
+	// very defensive check
 	DefensiveFreePlayers( dropship )
 
 	WaitFrame() // so the dropship wont pop out before it warps out
@@ -317,7 +306,7 @@ function DefensiveFreePlayers( dropship )
 		if ( player.GetParent() != dropship )
 			continue
 
-		player.ClearParent() //Clear parent before dropship gets deleted with players still attached to it. Defensive fix for bug 178543
+		player.ClearParent() // Clear parent before dropship gets deleted with players still attached to it. Defensive fix for bug 178543
 
 		KillPlayer( player, eDamageSourceId.fall )
 	}
@@ -341,16 +330,24 @@ void function OnDropshipDamaged( entity dropship, var damageInfo )
 {
 	float damage = DamageInfo_GetDamage( damageInfo )
 
-	//Tried to give visual shield indicator, but it doesn't seem to work?
-	//DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )
+	// Tried to give visual shield indicator, but it doesn't seem to work?
+	// DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )
 
 	// store the damage so all hits can be tallied
 	entity inflictor = DamageInfo_GetInflictor( damageInfo )
-	Assert( IsValid( inflictor ) )//Done so we can still get the error in dev
-	if ( !IsValid( inflictor ) ) //JFS Defensive fix
+	Assert( IsValid( inflictor ) ) // Done so we can still get the error in dev
+	if ( !IsValid( inflictor ) ) // JFS Defensive fix
 		return
 
-	StoreDamageHistoryAndUpdate( dropship, 120.0, DamageInfo_GetDamage( damageInfo ), inflictor.GetOrigin(), DamageInfo_GetCustomDamageType( damageInfo ), DamageInfo_GetDamageSourceIdentifier( damageInfo ), DamageInfo_GetAttacker( damageInfo ) )
+	StoreDamageHistoryAndUpdate(
+		dropship,
+		120.0,
+		DamageInfo_GetDamage( damageInfo ),
+		inflictor.GetOrigin(),
+		DamageInfo_GetCustomDamageType( damageInfo ),
+		DamageInfo_GetDamageSourceIdentifier( damageInfo ),
+		DamageInfo_GetAttacker( damageInfo )
+	)
 
 	if ( DamageInfo_GetDamage( damageInfo ) < 450 )
 		return
@@ -362,8 +359,8 @@ void function OnDropshipDamaged( entity dropship, var damageInfo )
 void function GuyDeploysOffShip( entity guy, table Table )
 {
 	guy.EndSignal( "OnDeath" )
-	entity ship 		= expect entity( Table.ship )
-	local shipAttach 	= Table.shipAttach
+	entity ship = expect entity( Table.ship )
+	local shipAttach = Table.shipAttach
 
 	OnThreadEnd(
 		function() : ( guy, ship )
@@ -386,8 +383,8 @@ void function GuyDeploysOffShip( entity guy, table Table )
 			}
 
 			if ( !IsAlive( guy ) )
-				guy.BecomeRagdoll( Vector(0,0,0), false )
-			}
+				guy.BecomeRagdoll( Vector( 0, 0, 0 ), false )
+		}
 	)
 
 	guy.SetEfficientMode( true )
@@ -430,7 +427,6 @@ void function GuyAnimatesOut( entity guy, table Table )
 			break
 	}
 
-
 	guy.SetEfficientMode( false )
 	guy.SetNameVisibleToOwner( true )
 
@@ -462,12 +458,12 @@ table<string, array<string> > function GetDropshipRopeAttachments( string side =
 		attachments[ "left" ] <- []
 		attachments[ "right" ] <- []
 
-		foreach ( seat, Table in level.DSAIziplineAnims[ "left"] )
+		foreach ( seat, Table in level.DSAIziplineAnims[ "left" ] )
 		{
 			attachments[ "left" ].append( expect string( Table.attach ) )
 		}
 
-		foreach ( seat, Table in level.DSAIziplineAnims[ "right"] )
+		foreach ( seat, Table in level.DSAIziplineAnims[ "right" ] )
 		{
 			attachments[ "right" ].append( expect string( Table.attach ) )
 		}
@@ -510,7 +506,7 @@ void function WarpoutEffectFPS( entity dropship )
 
 void function WarpinEffect( asset model, string animation, vector origin, vector angles, string sfx = "" )
 {
-	//we need a temp dropship to get the anim offsets
+	// we need a temp dropship to get the anim offsets
 	Point start = GetWarpinPosition( model, animation, origin, angles )
 
 	__WarpInEffectShared( start.origin, start.angles, sfx )

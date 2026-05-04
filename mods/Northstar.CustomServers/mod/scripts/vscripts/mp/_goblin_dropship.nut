@@ -15,29 +15,28 @@ const LINEGEN_DEBUG = 0
 global const bool FLIGHT_PATH_DEBUG = false
 const LINEGEN_TIME = 600.0
 
-const OPTIMAL_ZIPNODE_DIST_SQRD = 16384 //128 sqrd
-//	4096 	64 sqrd
-//	65536 	256 sqrd
+const OPTIMAL_ZIPNODE_DIST_SQRD = 16384 // 128 sqrd
+// 	4096 	64 sqrd
+// 	65536 	256 sqrd
 
 struct
 {
 	array<entity> ziplineDropshipSpawns
 
-	table < var, var > dropshipSound = {
-		[ TEAM_IMC ] = {
-			[ DROPSHIP_STRAFE ]						= "Goblin_IMC_TroopDeploy_Flyin",
-			[ DROPSHIP_VERTICAL ]					= "Goblin_Dropship_Flyer_Attack_Vertical_Succesful",
-			[ DROPSHIP_FLYER_ATTACK_ANIM_VERTICAL ]	= "Goblin_Flyer_Dropshipattack_Vertical",
-			[ DROPSHIP_FLYER_ATTACK_ANIM ]			= "Goblin_Flyer_Dropshipattack"
+	table<var, var> dropshipSound = {
+		[TEAM_IMC] = {
+			[DROPSHIP_STRAFE] = "Goblin_IMC_TroopDeploy_Flyin",
+			[DROPSHIP_VERTICAL] = "Goblin_Dropship_Flyer_Attack_Vertical_Succesful",
+			[DROPSHIP_FLYER_ATTACK_ANIM_VERTICAL] = "Goblin_Flyer_Dropshipattack_Vertical",
+			[DROPSHIP_FLYER_ATTACK_ANIM] = "Goblin_Flyer_Dropshipattack"
 		},
-		[ TEAM_MILITIA ] = {
-			[ DROPSHIP_STRAFE ]						= "Crow_MCOR_TroopDeploy_Flyin",
-			[ DROPSHIP_VERTICAL ]					= "Crow_Dropship_Flyer_Attack_Vertical_Succesful",
-			[ DROPSHIP_FLYER_ATTACK_ANIM_VERTICAL ]	= "Crow_Flyer_Dropshipattack_Vertical",
-			[ DROPSHIP_FLYER_ATTACK_ANIM ]			= "Crow_Flyer_Dropshipattack"
+		[TEAM_MILITIA] = {
+			[DROPSHIP_STRAFE] = "Crow_MCOR_TroopDeploy_Flyin",
+			[DROPSHIP_VERTICAL] = "Crow_Dropship_Flyer_Attack_Vertical_Succesful",
+			[DROPSHIP_FLYER_ATTACK_ANIM_VERTICAL] = "Crow_Flyer_Dropshipattack_Vertical",
+			[DROPSHIP_FLYER_ATTACK_ANIM] = "Crow_Flyer_Dropshipattack"
 		}
 	}
-
 } file
 
 function GoblinDropship_Init()
@@ -52,34 +51,33 @@ function GoblinDropship_Init()
 
 void function EntitiesDidLoad()
 {
-	//Generate a list of valid zipline dropship drop off points.
+	// Generate a list of valid zipline dropship drop off points.
 	#if MP
 		BuildZiplineDropshipSpawnPoints()
 	#endif //MP
 }
 
 #if MP
-void function BuildZiplineDropshipSpawnPoints()
-{
-	array<entity> spawnPoints = SpawnPoints_GetDropPod()
-	file.ziplineDropshipSpawns = []
-
-	foreach ( entity spawnPoint in spawnPoints )
+	void function BuildZiplineDropshipSpawnPoints()
 	{
-		if ( !DropshipCanZiplineDropAtSpawnPoint( spawnPoint ) )
-			continue
+		array<entity> spawnPoints = SpawnPoints_GetDropPod()
+		file.ziplineDropshipSpawns = []
 
-		file.ziplineDropshipSpawns.append( spawnPoint )
+		foreach ( entity spawnPoint in spawnPoints )
+		{
+			if ( !DropshipCanZiplineDropAtSpawnPoint( spawnPoint ) )
+				continue
+
+			file.ziplineDropshipSpawns.append( spawnPoint )
+		}
+		// Assert( file.dropshipSpawns.len() > 0, "No valid zipline dropship spawns exist in this map." )
 	}
 
-	//Assert( file.dropshipSpawns.len() > 0, "No valid zipline dropship spawns exist in this map." )
-}
-
-//Function returns an array of level droppod spawns that have been pretested to ensure they have the space for zipline deployments.
-array<entity> function GetZiplineDropshipSpawns()
-{
-	return clone file.ziplineDropshipSpawns
-}
+	// Function returns an array of level droppod spawns that have been pretested to ensure they have the space for zipline deployments.
+	array<entity> function GetZiplineDropshipSpawns()
+	{
+		return clone file.ziplineDropshipSpawns
+	}
 #endif //MP
 
 bool function AnaylsisFuncDropshipFindDropNodes( FlightPath flightPath, vector origin, float yaw )
@@ -88,10 +86,10 @@ bool function AnaylsisFuncDropshipFindDropNodes( FlightPath flightPath, vector o
 }
 
 // run from TryAnalysisAtOrigin
-table<string,table<string,NodeFP> > function DropshipFindDropNodes( FlightPath flightPath, vector origin, float yaw, string side = "both", ignoreCollision = false, bool functionref( FlightPath, vector, vector, vector, bool = 0 ) legalFlightFunc = null, bool amortize = false )
+table<string, table<string, NodeFP> > function DropshipFindDropNodes( FlightPath flightPath, vector origin, float yaw, string side = "both", ignoreCollision = false, bool functionref( FlightPath, vector, vector, vector, bool = 0 ) legalFlightFunc = null, bool amortize = false )
 {
 	// find nodes to deploy to
-	table<string,table<string,NodeFP> > foundNodes
+	table<string, table<string, NodeFP> > foundNodes
 
 	vector angles = Vector( 0, yaw, 0 )
 	vector forward = AnglesToForward( angles )
@@ -126,7 +124,7 @@ table<string,table<string,NodeFP> > function DropshipFindDropNodes( FlightPath f
 	vector deployLeftAngles = AnglesCompose( deployAngles, Vector( 0, 90, 0 ) )
 	deployLeftAngles = AnglesCompose( deployLeftAngles, Vector( pitch, 0, 0 ) )
 
-	table<int,NodeFP> nodeTable
+	table<int, NodeFP> nodeTable
 	bool foundRightNodes = false
 	bool foundLeftNodes = false
 
@@ -135,7 +133,7 @@ table<string,table<string,NodeFP> > function DropshipFindDropNodes( FlightPath f
 		nodeTable = FindDropshipDeployNodes( deployOrigin, deployRightAngles, amortize )
 		if ( LINEGEN_DEBUG )
 		{
-			foreach( node in nodeTable )
+			foreach ( node in nodeTable )
 				DebugDrawLine( deployOrigin, node.origin, 200, 200, 200, true, 30.0 )
 		}
 
@@ -143,7 +141,8 @@ table<string,table<string,NodeFP> > function DropshipFindDropNodes( FlightPath f
 		{
 			if ( amortize )
 				WaitFrame()
-			foundRightNodes = FindBestDropshipNodesForSide( foundNodes, nodeTable, "right", flightPath, origin, forward, right, angles, deployOrigin, deployRightAngles, amortize )
+			foundRightNodes =
+				FindBestDropshipNodesForSide( foundNodes, nodeTable, "right", flightPath, origin, forward, right, angles, deployOrigin, deployRightAngles, amortize )
 		}
 
 		if ( !foundRightNodes && side != "either" )
@@ -160,7 +159,8 @@ table<string,table<string,NodeFP> > function DropshipFindDropNodes( FlightPath f
 		{
 			if ( amortize )
 				WaitFrame()
-			foundLeftNodes = FindBestDropshipNodesForSide( foundNodes, nodeTable, "left", flightPath, origin, forward, right, angles, deployOrigin, deployLeftAngles, amortize )
+			foundLeftNodes =
+				FindBestDropshipNodesForSide( foundNodes, nodeTable, "left", flightPath, origin, forward, right, angles, deployOrigin, deployLeftAngles, amortize )
 		}
 
 		if ( !foundLeftNodes && side != "either" )
@@ -176,47 +176,42 @@ table<string,table<string,NodeFP> > function DropshipFindDropNodes( FlightPath f
 		float time = 500.0
 		foreach ( side, nodes in foundNodes )
 		{
-			//DebugDrawText( nodes.centerNode.origin + Vector(0,0,55), nodes.centerNode.fraction + "", true, time )
-			//DebugDrawText( nodes.centerNode.origin, "" + nodes.centerNode.dot, true, time )
+			// DebugDrawText( nodes.centerNode.origin + Vector(0,0,55), nodes.centerNode.fraction + "", true, time )
+			// DebugDrawText( nodes.centerNode.origin, "" + nodes.centerNode.dot, true, time )
 			DebugDrawLine( nodes.centerNode.origin, nodes.centerNode.attachOrigin, 120, 255, 120, true, time )
-			DebugDrawCircle( nodes.centerNode.origin, Vector( 0,0,0 ), 15, 120, 255, 120, true, time )
+			DebugDrawCircle( nodes.centerNode.origin, Vector( 0, 0, 0 ), 15, 120, 255, 120, true, time )
 
-			//DebugDrawText( nodes.leftNode.origin + Vector(0,0,55), nodes.leftNode.fraction + "", true, time )
-			//DebugDrawText( nodes.leftNode.origin, "" + nodes.leftNode.dot, true, time )
+			// DebugDrawText( nodes.leftNode.origin + Vector(0,0,55), nodes.leftNode.fraction + "", true, time )
+			// DebugDrawText( nodes.leftNode.origin, "" + nodes.leftNode.dot, true, time )
 			DebugDrawLine( nodes.leftNode.origin, nodes.leftNode.attachOrigin, 255, 120, 120, true, time )
-			DebugDrawCircle( nodes.leftNode.origin, Vector( 0,0,0 ), 15, 255, 120, 120, true, time )
+			DebugDrawCircle( nodes.leftNode.origin, Vector( 0, 0, 0 ), 15, 255, 120, 120, true, time )
 
-			//DebugDrawText( nodes.rightNode.origin + Vector(0,0,55), nodes.rightNode.fraction + "", true, time )
-			//DebugDrawText( nodes.rightNode.origin, "" + nodes.rightNode.dot, true, time )
+			// DebugDrawText( nodes.rightNode.origin + Vector(0,0,55), nodes.rightNode.fraction + "", true, time )
+			// DebugDrawText( nodes.rightNode.origin, "" + nodes.rightNode.dot, true, time )
 			DebugDrawLine( nodes.rightNode.origin, nodes.rightNode.attachOrigin, 120, 120, 255, true, time )
-			DebugDrawCircle( nodes.rightNode.origin, Vector( 0,0,0 ), 15, 120, 120, 255, true, time )
-
-			//DebugDrawLine( nodes.rightNode.origin, nodes.centerNode.origin, 200, 200, 200, true, time )
-			//DebugDrawText( nodes.rightNode.origin + Vector(0,0,20), "dist: " + Distance( nodes.rightNode.origin, nodes.centerNode.origin ), true, time )
-			//DebugDrawLine( nodes.leftNode.origin, nodes.centerNode.origin, 200, 200, 200, true, time )
-			//DebugDrawText( nodes.leftNode.origin + Vector(0,0,20), "dist: " + Distance( nodes.leftNode.origin, nodes.centerNode.origin ), true, time )
-
-			//DebugDrawLine( origin, origin + deployForward * 200, 50, 255, 50, true, time )
-
-	//		foreach ( node in nodes.rightNodes )
-	//		{
-	//			DebugDrawText( node.origin + Vector(0,0,25), "R", true, 15 )
-	//		}
-	//
-	//		foreach ( node in nodes.leftNodes )
-	//		{
-	//			DebugDrawText( node.origin + Vector(0,0,25), "L", true, 15 )
-	//		}
+			DebugDrawCircle( nodes.rightNode.origin, Vector( 0, 0, 0 ), 15, 120, 120, 255, true, time )
+			// DebugDrawLine( nodes.rightNode.origin, nodes.centerNode.origin, 200, 200, 200, true, time )
+			// DebugDrawText( nodes.rightNode.origin + Vector(0,0,20), "dist: " + Distance( nodes.rightNode.origin, nodes.centerNode.origin ), true, time )
+			// DebugDrawLine( nodes.leftNode.origin, nodes.centerNode.origin, 200, 200, 200, true, time )
+			// DebugDrawText( nodes.leftNode.origin + Vector(0,0,20), "dist: " + Distance( nodes.leftNode.origin, nodes.centerNode.origin ), true, time )
+			// DebugDrawLine( origin, origin + deployForward * 200, 50, 255, 50, true, time )
+			// 		foreach ( node in nodes.rightNodes )
+			// 		{
+			// 			DebugDrawText( node.origin + Vector(0,0,25), "R", true, 15 )
+			// 		}
+			//
+			// 		foreach ( node in nodes.leftNodes )
+			// 		{
+			// 			DebugDrawText( node.origin + Vector(0,0,25), "L", true, 15 )
+			// 		}
 		}
-
-//		IsLegalFlightPath( flightPath, origin, forward, right, true )
+		// 		IsLegalFlightPath( flightPath, origin, forward, right, true )
 	}
 
 	return foundNodes
 }
 
-
-table<int,NodeFP> function FindDropshipDeployNodes( vector deployOrigin, vector deployAngles, bool amortize = false )
+table<int, NodeFP> function FindDropshipDeployNodes( vector deployOrigin, vector deployAngles, bool amortize = false )
 {
 	vector deployForward = AnglesToForward( deployAngles )
 
@@ -226,8 +221,8 @@ table<int,NodeFP> function FindDropshipDeployNodes( vector deployOrigin, vector 
 	if ( LINEGEN_DEBUG )
 	{
 		DebugDrawLine( deployOrigin, result.endPos, 255, 255, 255, true, LINEGEN_TIME )
-		DebugDrawText( result.endPos + Vector( 0,0,10 ), "test", true, LINEGEN_TIME )
-		DebugDrawCircle( result.endPos, Vector( 0,0,0 ), 35, 255, 255, 255, true, LINEGEN_TIME )
+		DebugDrawText( result.endPos + Vector( 0, 0, 10 ), "test", true, LINEGEN_TIME )
+		DebugDrawCircle( result.endPos, Vector( 0, 0, 0 ), 35, 255, 255, 255, true, LINEGEN_TIME )
 	}
 	// no hit?
 	if ( result.fraction >= 1.0 )
@@ -239,8 +234,8 @@ table<int,NodeFP> function FindDropshipDeployNodes( vector deployOrigin, vector 
 
 	if ( LINEGEN_DEBUG )
 	{
-		DebugDrawText( GetNodePos( node ) + Vector(0,0,10), "nearest node", true, 15.0 )
-		DebugDrawCircle( GetNodePos( node ), Vector( 0,0,0 ), 20, 60, 60, 255, true, LINEGEN_TIME )
+		DebugDrawText( GetNodePos( node ) + Vector( 0, 0, 10 ), "nearest node", true, 15.0 )
+		DebugDrawCircle( GetNodePos( node ), Vector( 0, 0, 0 ), 20, 60, 60, 255, true, LINEGEN_TIME )
 	}
 
 	array<vector> neighborPositions = NavMesh_GetNeighborPositions( GetNodePos( node ), HULL_HUMAN, 20 )
@@ -248,7 +243,7 @@ table<int,NodeFP> function FindDropshipDeployNodes( vector deployOrigin, vector 
 	if ( amortize )
 		WaitFrame()
 
-	table<int,NodeFP> nodeTable = {}
+	table<int, NodeFP> nodeTable = {}
 	int uniqueID = -2
 	foreach ( pos in neighborPositions )
 	{
@@ -287,7 +282,7 @@ void function AddDirectionVecFromDir( array<NodeFP> nodeArray, vector origin, ve
 	}
 }
 
-bool function FindBestDropshipNodesForSide( table<string,table<string,NodeFP> > foundNodes, table<int,NodeFP> nodeTable, string side, FlightPath flightPath, vector origin, vector forward, vector right, vector angles, vector deployOrigin, vector deployAngles, bool amortize )
+bool function FindBestDropshipNodesForSide( table<string, table<string, NodeFP> > foundNodes, table<int, NodeFP> nodeTable, string side, FlightPath flightPath, vector origin, vector forward, vector right, vector angles, vector deployOrigin, vector deployAngles, bool amortize )
 {
 	vector deployForward = AnglesToForward( deployAngles )
 	vector deployRight = AnglesToRight( deployAngles )
@@ -306,7 +301,7 @@ bool function FindBestDropshipNodesForSide( table<string,table<string,NodeFP> > 
 
 	array<NodeFP> centerNodes = GetNodeArrayFromTable( nodeTable )
 	AddDirectionVec( centerNodes, deployOrigin )
-	NodeFP centerNode = GetBestDropshipNode( attachPoints[2], centerNodes, origin, deployForward, forward, right, angles, NullNodeFP )
+	NodeFP centerNode = GetBestDropshipNode( attachPoints[ 2 ], centerNodes, origin, deployForward, forward, right, angles, NullNodeFP )
 	if ( centerNode == NullNodeFP )
 		return false
 	delete nodeTable[ centerNode.uniqueID ]
@@ -316,7 +311,7 @@ bool function FindBestDropshipNodesForSide( table<string,table<string,NodeFP> > 
 
 	array<NodeFP> leftNodes = GetCulledNodes( nodeTable, deployRight * -1 )
 	AddDirectionVecFromDir( leftNodes, deployOrigin, deployRight * -1 )
-	NodeFP leftNode = GetBestDropshipNode( attachPoints[1], leftNodes, origin, RightDeployForward, forward, right, angles, centerNode )
+	NodeFP leftNode = GetBestDropshipNode( attachPoints[ 1 ], leftNodes, origin, RightDeployForward, forward, right, angles, centerNode )
 	if ( leftNode == NullNodeFP )
 		return false
 	delete nodeTable[ leftNode.uniqueID ]
@@ -326,23 +321,23 @@ bool function FindBestDropshipNodesForSide( table<string,table<string,NodeFP> > 
 
 	array<NodeFP> rightNodes = GetCulledNodes( nodeTable, deployRight )
 	AddDirectionVecFromDir( rightNodes, deployOrigin, deployRight )
-	NodeFP rightNode = GetBestDropshipNode( attachPoints[0], rightNodes, origin, LeftDeployForward, forward, right, angles, centerNode )
+	NodeFP rightNode = GetBestDropshipNode( attachPoints[ 0 ], rightNodes, origin, LeftDeployForward, forward, right, angles, centerNode )
 	if ( rightNode == NullNodeFP )
 		return false
 
-	table<string,NodeFP> Table
+	table<string, NodeFP> Table
 	Table.centerNode <- centerNode
 	Table.leftNode <- leftNode
 	Table.rightNode <- rightNode
 
-	//Table.rightNodes <- rightNodes // for debug
-	//Table.leftNodes <- leftNodes // for debug
+	// Table.rightNodes <- rightNodes // for debug
+	// Table.leftNodes <- leftNodes // for debug
 
 	foundNodes[ side ] = Table
 	return true
 }
 
-array<NodeFP> function GetNodeArrayFromTable( table<int,NodeFP> nodeTable )
+array<NodeFP> function GetNodeArrayFromTable( table<int, NodeFP> nodeTable )
 {
 	array<NodeFP> Array
 	foreach ( Table in nodeTable )
@@ -353,9 +348,9 @@ array<NodeFP> function GetNodeArrayFromTable( table<int,NodeFP> nodeTable )
 	return Array
 }
 
-array<NodeFP> function GetCulledNodes( table<int,NodeFP> nodeTable, vector right )
+array<NodeFP> function GetCulledNodes( table<int, NodeFP> nodeTable, vector right )
 {
-	table<int,NodeFP> leftNodes
+	table<int, NodeFP> leftNodes
 	// get the nodes on the left
 	foreach ( nod, tab in nodeTable )
 	{
@@ -389,7 +384,7 @@ NodeFP function GetBestDropshipNode( AttachPoint attachPoint, array<NodeFP> node
 			}
 
 			DebugDrawLine( node.origin, node.origin + ( node.vec * -1000 ), red, green, 0, true, 15.0 )
-			DebugDrawCircle( node.origin, Vector( 0,0,0 ), 25, red, green, 0, true, 15.0 )
+			DebugDrawCircle( node.origin, Vector( 0, 0, 0 ), 25, red, green, 0, true, 15.0 )
 		}
 	}
 
@@ -404,7 +399,7 @@ NodeFP function GetBestDropshipNode( AttachPoint attachPoint, array<NodeFP> node
 	FlightPath offsetAnalysis = GetAnalysisForModel( TEAM_IMC_GRUNT_MODEL, ZIPLINE_IDLE_ANIM )
 	Point offsetPoint = GetPreviewPoint( offsetAnalysis )
 	vector offsetOrigin = GetOriginFromPoint( offsetPoint, attachOrigin, attachForward, attachRight )
-//	DebugDrawLine( offsetOrigin, attachOrigin, 255, 255, 0, true, 15 )
+	// 	DebugDrawLine( offsetOrigin, attachOrigin, 255, 255, 0, true, 15 )
 
 	nodeArray.sort( SortHighestDot )
 
@@ -415,7 +410,7 @@ NodeFP function GetBestDropshipNode( AttachPoint attachPoint, array<NodeFP> node
 
 	for ( int i = 0; i < nodeArray.len(); i++ )
 	{
-		NodeFP node = nodeArray[i]
+		NodeFP node = nodeArray[ i ]
 
 		// beyond the allowed dot
 		if ( node.dot < 0.3 )
@@ -424,7 +419,7 @@ NodeFP function GetBestDropshipNode( AttachPoint attachPoint, array<NodeFP> node
 		// trace to see if the ai could drop to the node from here
 		TraceResults result = TraceHull( offsetOrigin, node.origin, mins, maxs, null, TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
 		if ( result.fraction < 1.0 )
-			continue //return
+			continue // return
 
 		// trace to insure that there will be a good place to hook the zipline
 		if ( !GetHookOriginFromNode( offsetOrigin, node.origin, attachOrigin ) )
@@ -436,7 +431,7 @@ NodeFP function GetBestDropshipNode( AttachPoint attachPoint, array<NodeFP> node
 
 		if ( centerNode != NullNodeFP )
 		{
-			//test for distance, not too close, not too far
+			// test for distance, not too close, not too far
 			local distSqr = DistanceSqr( centerNode.origin, node.origin )
 			node.rating = fabs( OPTIMAL_ZIPNODE_DIST_SQRD - distSqr )
 			passedNodes.append( node )
@@ -480,7 +475,7 @@ int function SortLowestRating( NodeFP a, NodeFP b )
 void function SetDropTableSpawnFuncs( CallinData drop, entity functionref( int, vector, vector ) spawnFunc, int count )
 {
 	array<entity functionref( int, vector, vector )> spawnFuncArray
-	//spawnFuncArray.resize( count, spawnFunc )
+	// spawnFuncArray.resize( count, spawnFunc )
 	for ( int i = 0; i < count; i++ )
 	{
 		spawnFuncArray.append( spawnFunc )
@@ -508,15 +503,15 @@ asset function GetTeamDropshipModel( int team, bool hero = false )
 	unreachable
 }
 
-//This function tests to see if the given spawn point has enough clearance for a dropship to deploy zipline grunts.
+// This function tests to see if the given spawn point has enough clearance for a dropship to deploy zipline grunts.
 bool function DropshipCanZiplineDropAtSpawnPoint( entity spawnPoint )
 {
 	CallinData drop
-	drop.origin 		= spawnPoint.GetOrigin()
-	drop.yaw 			= spawnPoint.GetAngles().y
-	drop.dist 			= 768
+	drop.origin = spawnPoint.GetOrigin()
+	drop.yaw = spawnPoint.GetAngles().y
+	drop.dist = 768
 	SetCallinStyle( drop, eDropStyle.ZIPLINE_NPC )
-	int style 			= drop.style
+	int style = drop.style
 
 	bool validSpawn = false
 	array<string> anims = GetRandomDropshipDropoffAnims()
@@ -552,15 +547,15 @@ bool function DropshipCanZiplineDropAtSpawnPoint( entity spawnPoint )
 
 function RunDropshipDropoff( CallinData Table )
 {
-	vector origin 		= Table.origin
-	float yaw 			= Table.yaw
-	int team 			= Table.team
-	entity owner 		= Table.owner
-	string squadname 	= Table.squadname
-	string side 		= Table.side
-	array<entity functionref( int, vector, vector )> npcSpawnFuncs =	Table.npcSpawnFuncs
-	int style 			= Table.style
-	int health = 		7800
+	vector origin = Table.origin
+	float yaw = Table.yaw
+	int team = Table.team
+	entity owner = Table.owner
+	string squadname = Table.squadname
+	string side = Table.side
+	array<entity functionref( int, vector, vector )> npcSpawnFuncs = Table.npcSpawnFuncs
+	int style = Table.style
+	int health = 7800
 
 	if ( Table.dropshipHealth != 0 )
 		health = Table.dropshipHealth
@@ -659,7 +654,7 @@ function RunDropshipDropoff( CallinData Table )
 	dropship.kv.solid = SOLID_VPHYSICS
 	DispatchSpawn( dropship )
 	Table.dropship = dropship
-	//dropship.SetPusher( true )
+	// dropship.SetPusher( true )
 	dropship.SetHealth( health )
 	dropship.SetMaxHealth( health )
 	Table.dropship = dropship
@@ -714,9 +709,9 @@ function RunDropshipDropoff( CallinData Table )
 		}
 	}
 
-	//thread DropshipMissiles( dropship )
+	// thread DropshipMissiles( dropship )
 	dropship.Hide()
-	EmitSoundOnEntity( dropship, dropshipSound ) //HACK: Note that the anims can play sounds too! For R3 just make it consistent so it's all played in script or all played in anims
+	EmitSoundOnEntity( dropship, dropshipSound ) // HACK: Note that the anims can play sounds too! For R3 just make it consistent so it's all played in script or all played in anims
 	thread ShowDropship( dropship )
 	thread PlayAnimTeleport( dropship, animation, ref, 0 )
 
@@ -749,16 +744,16 @@ entity function AddTurret( entity dropship, int team, string turretWeapon, strin
 	turret.kv.FieldOfView = 0.4
 	turret.kv.FieldOfViewAlert = 0.4
 	SetSpawnOption_Weapon( turret, turretWeapon )
-	turret.SetOrigin( Vector(0,0,0) )
+	turret.SetOrigin( Vector( 0, 0, 0 ) )
 	turret.SetTitle( "#NPC_DROPSHIP" )
 	turret.s.skipTurretFX <- true
 	DispatchSpawn( turret )
 
 	SetTargetName( turret, "DropshipTurret" )
-	turret.SetHealth( health)
+	turret.SetHealth( health )
 	turret.SetMaxHealth( health )
 	turret.Hide()
-	//turret.Show()
+	// turret.Show()
 	entity weapon = turret.GetActiveWeapon()
 	weapon.Hide()
 	SetTeam( turret, team )

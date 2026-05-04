@@ -7,17 +7,17 @@ global function BurnReward_GetRandom
 global function GetSelectedBurnCardRef
 global function GetBoostSkin
 #if SERVER || CLIENT
-global function BurnMeterEnabled
-global function CanUseWeaponAsBurnCard
-global function TryUsingBurnCardWeapon
-global function TryUsingBurnCardWeaponInCriticalSection
-global function BurnMeterPlayer_CanUseEquipped
-global function OnWeaponAttemptOffhandSwitch_burncardweapon
-global function BurnMeterPlayer_CanUseReward
-global function BurnMeterPlayer_GetRewardOrGoal
-global function BurnReward_GetTopInventoryItemBurnCard
-global function OnWeaponPrimaryAttack_nuke_eject
-global function BurnMeter_HarvesterShieldCanUse
+	global function BurnMeterEnabled
+	global function CanUseWeaponAsBurnCard
+	global function TryUsingBurnCardWeapon
+	global function TryUsingBurnCardWeaponInCriticalSection
+	global function BurnMeterPlayer_CanUseEquipped
+	global function OnWeaponAttemptOffhandSwitch_burncardweapon
+	global function BurnMeterPlayer_CanUseReward
+	global function BurnMeterPlayer_GetRewardOrGoal
+	global function BurnReward_GetTopInventoryItemBurnCard
+	global function OnWeaponPrimaryAttack_nuke_eject
+	global function BurnMeter_HarvesterShieldCanUse
 #endif
 
 global function GetAllBoostTurretTypes
@@ -57,15 +57,14 @@ global struct BurnReward
 
 global struct BurnStruct
 {
-	table< string, BurnReward > burnRewards
-	array< BurnReward > allCards //Kinda inefficient to store the same burn cards 3 times (once in burnRewards, once in foil/normal, once in allcards. Prefer speed over memory? )
-	array< BurnReward > allowedCards
-
+	table<string, BurnReward> burnRewards
+	array<BurnReward> allCards // Kinda inefficient to store the same burn cards 3 times (once in burnRewards, once in foil/normal, once in allcards. Prefer speed over memory? )
+	array<BurnReward> allowedCards
 }
 
 global BurnStruct burn
 
-global table< string, bool functionref( entity ) >  burnMeterCanUseFuncTable
+global table<string, bool functionref( entity )> burnMeterCanUseFuncTable
 
 struct
 {
@@ -77,20 +76,17 @@ array<string> turretBurnCards = [
 	"burnmeter_ap_turret_weapon",
 	"burnmeter_at_turret_weapon",
 	"burnmeter_ap_turret_weapon_infinite",
-	"burnmeter_at_turret_weapon_infinite",
+	"burnmeter_at_turret_weapon_infinite"
 ]
 
 void function ShBurnMeter_Init()
 {
-
 	#if SERVER || CLIENT
-		//burnMeterCanUseFuncTable[ "burnmeter_random_foil" ] <- BurnMeter_RandomFoilCanUse
+		// burnMeterCanUseFuncTable[ "burnmeter_random_foil" ] <- BurnMeter_RandomFoilCanUse
 		burnMeterCanUseFuncTable[ "burnmeter_emergency_titan" ] <- BurnMeter_EmergencyTitanCanUse
 		burnMeterCanUseFuncTable[ "burnmeter_nuke_titan" ] <- BurnMeter_NukeTitanCanUse
 		// burnMeterCanUseFuncTable[ "burnmeter_harvester_shield" ] <- BurnMeter_HarvesterShieldCanUse
 	#endif
-
-
 
 	var dataTable = GetDataTable( $"datatable/burn_meter_rewards.rpak" )
 
@@ -104,7 +100,7 @@ void function ShBurnMeter_Init()
 		burnReward.image = GetDataTableAsset( dataTable, row, GetDataTableColumnByName( dataTable, BURN_IMAGE_COLUMN_NAME ) )
 		burnReward.cost = GetDataTableFloat( dataTable, row, GetDataTableColumnByName( dataTable, BURN_COST_COLUMN_NAME ) )
 		string userType = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, BURN_AVAILABLE_COLUMN_NAME ) )
-		burnReward.userType = eBurnMeterRewardAvailableFor[userType]
+		burnReward.userType = eBurnMeterRewardAvailableFor[ userType ]
 		burnReward.weaponName = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, BURN_WEAPON_COLUMN_NAME ) )
 		burnReward.extraWeaponMod = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, BURN_EXTRA_WEAPON_MOD_NAME ) )
 		burnReward.activationText = GetDataTableString( dataTable, row, GetDataTableColumnByName( dataTable, "activationText" ) )
@@ -113,22 +109,27 @@ void function ShBurnMeter_Init()
 		if ( IsDisabledRef( burnReward.ref ) )
 			continue
 
-#if SERVER || CLIENT
-		if ( burnReward.weaponName != "" )
-			PrecacheWeapon( burnReward.weaponName )
+		#if SERVER || CLIENT
+			if ( burnReward.weaponName != "" )
+				PrecacheWeapon( burnReward.weaponName )
 		#endif
 
-		burn.burnRewards[burnReward.ref] <- burnReward
+		burn.burnRewards[ burnReward.ref ] <- burnReward
 
-		bool selectable 		= GetDataTableBool( dataTable, row, GetDataTableColumnByName( dataTable, "selectable" ) )
+		bool selectable = GetDataTableBool( dataTable, row, GetDataTableColumnByName( dataTable, "selectable" ) )
 		burn.allCards.append( burnReward )
 		if ( selectable )
 			burn.allowedCards.append( burnReward )
 	}
 
 	#if CLIENT
-		//Registering here instead of in CreateWeaponData() in _items.nut to remove dependence on HUD script with items. If more weapons other than smart pistol run into this problem, just add a column in burn_meter_rewards to specify we need to do this. ( ticks are fine because they have a damagedef associated with them )
-		RegisterWeaponDamageSourceName( "mp_weapon_smart_pistol", expect string( GetWeaponInfoFileKeyField_GlobalNotNull( "mp_weapon_smart_pistol", "shortprintname" ) ) )
+		// Registering here instead of in CreateWeaponData() in _items.nut to remove dependence on HUD script with
+		// items. If more weapons other than smart pistol run into this problem, just add a column in burn_meter_rewards
+		// to specify we need to do this. ( ticks are fine because they have a damagedef associated with them )
+		RegisterWeaponDamageSourceName(
+			"mp_weapon_smart_pistol",
+			expect string( GetWeaponInfoFileKeyField_GlobalNotNull( "mp_weapon_smart_pistol", "shortprintname" ) )
+		)
 
 		RegisterConCommandTriggeredCallback( "-offhand4", CycleOnRelease )
 	#endif
@@ -141,29 +142,28 @@ void function ShBurnMeter_Init()
 
 void function BurnMeter_SetNoTitansReplacement( string original, string noTitansReplacement )
 {
-	file.noTitansReplacements[original] <- noTitansReplacement
+	file.noTitansReplacements[ original ] <- noTitansReplacement
 }
 
 string function BurnMeter_GetNoTitansReplacement( string burnRef )
 {
 	if ( burnRef in file.noTitansReplacements )
-		return file.noTitansReplacements[burnRef]
+		return file.noTitansReplacements[ burnRef ]
 
 	return burnRef
 }
 
 #if SERVER || CLIENT
-bool function BurnMeterEnabled()
-{
-	return Riff_BoostAvailability() != eBoostAvailability.Disabled
-}
+	bool function BurnMeterEnabled()
+	{
+		return Riff_BoostAvailability() != eBoostAvailability.Disabled
+	}
 #endif
 
 BurnReward function BurnReward_GetById( int id )
 {
 	return burn.allCards[ id ]
 }
-
 
 BurnReward function BurnReward_GetByRef( string ref )
 {
@@ -173,13 +173,13 @@ BurnReward function BurnReward_GetByRef( string ref )
 	if ( !( ref in burn.burnRewards ) && GetCurrentPlaylistVarString( "boost_store_mode", "off" ) == "arena" )
 		return GetArenaLoadoutItemAsBurnReward( ref )
 
-	return burn.burnRewards[ref]
+	return burn.burnRewards[ ref ]
 }
 
 int function GetBoostSkin( string ref )
 {
 	BurnReward reward = BurnReward_GetByRef( ref )
-	//printt( "ref: " + ref + ", Boost skin: " + reward.skinIndex )
+	// printt( "ref: " + ref + ", Boost skin: " + reward.skinIndex )
 	return reward.skinIndex
 }
 
@@ -188,12 +188,12 @@ BurnReward function BurnReward_GetRandom()
 	string ref = burn.allowedCards.getrandom().ref
 
 	#if SERVER || CLIENT
-	if ( Riff_TitanAvailability() == eTitanAvailability.Never )
-		ref = BurnMeter_GetNoTitansReplacement( ref )
+		if ( Riff_TitanAvailability() == eTitanAvailability.Never )
+			ref = BurnMeter_GetNoTitansReplacement( ref )
 
-	if ( GetCurrentPlaylistVarInt( "featured_mode_all_ticks", 0 ) >= 1 )
-		if ( ref == "burnmeter_ticks" || ref == "burnmeter_random_foil"  )
-			ref = "burnmeter_amped_weapons"
+		if ( GetCurrentPlaylistVarInt( "featured_mode_all_ticks", 0 ) >= 1 )
+			if ( ref == "burnmeter_ticks" || ref == "burnmeter_random_foil" )
+				ref = "burnmeter_amped_weapons"
 	#endif
 
 	return BurnReward_GetByRef( ref )
@@ -201,308 +201,299 @@ BurnReward function BurnReward_GetRandom()
 
 string function GetSelectedBurnCardRef( entity player )
 {
-	int burnCardID = expect int ( player.GetPersistentVar( "burnmeterSlot" ) )
+	int burnCardID = expect int( player.GetPersistentVar( "burnmeterSlot" ) )
 	BurnReward burnCard = burn.allCards[ burnCardID ]
 	string ref = burnCard.ref
 
 	#if SERVER
-	if ( GetItemDisplayData( ref ).hidden )
-		NSDisconnectPlayer( player, "" )
+		if ( GetItemDisplayData( ref ).hidden )
+			NSDisconnectPlayer( player, "" )
 	#endif
 
 	#if SERVER || CLIENT
-	if ( Riff_TitanAvailability() == eTitanAvailability.Never )
-		ref = BurnMeter_GetNoTitansReplacement( ref )
+		if ( Riff_TitanAvailability() == eTitanAvailability.Never )
+			ref = BurnMeter_GetNoTitansReplacement( ref )
 
-	if ( GetCurrentPlaylistVarInt( "featured_mode_all_ticks", 0 ) >= 1 )
-		if ( ref == "burnmeter_ticks" || ref == "burnmeter_random_foil"  )
-			ref = "burnmeter_amped_weapons"
+		if ( GetCurrentPlaylistVarInt( "featured_mode_all_ticks", 0 ) >= 1 )
+			if ( ref == "burnmeter_ticks" || ref == "burnmeter_random_foil" )
+				ref = "burnmeter_amped_weapons"
 	#endif
 
 	return ref
 }
 
-
 #if SERVER || CLIENT
-bool function CanUseWeaponAsBurnCard( entity weapon, entity ownerPlayer )
-{
-	Assert( weapon.HasMod( "burn_card_weapon_mod" ) )
-
-	if ( !BurnMeterPlayer_CanUseEquipped( ownerPlayer ) )
+	bool function CanUseWeaponAsBurnCard( entity weapon, entity ownerPlayer )
 	{
-		weapon.EmitWeaponSound( "CoOp_SentryGun_DeploymentDeniedBeep" )
-		return false
-	}
+		Assert( weapon.HasMod( "burn_card_weapon_mod" ) )
 
-	return true
-}
-
-bool function TryUsingBurnCardWeapon( entity weapon, entity ownerPlayer )
-{
-	Assert( weapon.HasMod( "burn_card_weapon_mod" ) )
-
-	if ( !CanUseWeaponAsBurnCard( weapon, ownerPlayer ) )
-		return false
-
-	#if SERVER
-		UseBurnCardWeapon( weapon, ownerPlayer )
-	#endif
-
-	return true
-}
-
-bool function TryUsingBurnCardWeaponInCriticalSection( entity weapon, entity ownerPlayer )
-{
-	Assert( weapon.HasMod( "burn_card_weapon_mod" ) )
-
-	if ( !CanUseWeaponAsBurnCard( weapon, ownerPlayer ) )
-		return false
-
-	#if SERVER
-		UseBurnCardWeaponInCriticalSection( weapon, ownerPlayer )
-	#endif
-
-	return true
-}
-
-
-
-bool function BurnMeterPlayer_CanUseReward( entity player, BurnReward burnReward )
-{
-	if ( !BurnMeterPlayer_CanUseGlobal( player ) )
-		return false
-
-	switch( burnReward.userType )
-	{
-		case eBurnMeterRewardAvailableFor.PILOT_ONLY:
-			return !player.IsTitan()
-
-		case eBurnMeterRewardAvailableFor.TITAN_ONLY:
-			return player.IsTitan()
-
-		case eBurnMeterRewardAvailableFor.PILOT_AND_TITAN:
-			return true
-
-		case eBurnMeterRewardAvailableFor.SPECIAL_PLAYERS_ONLY:
-			return BurnMeterPlayer_CanUseSpecial( player, burnReward ) //TODO: Note that for the case of reaperfall we also send the message to the client if they can't summon reaper in the validation function. Not ideal...
-	}
-
-	unreachable
-
-}
-
-
-bool function BurnMeterPlayer_CanUseEquipped( entity player )
-{
-	BurnReward burnReward = BurnReward_GetTopInventoryItemBurnCard( player )
-	return BurnMeterPlayer_CanUseReward( player, burnReward )
-}
-
-
-EarnObject function BurnMeterPlayer_GetRewardOrGoal( entity player )
-{
-	if ( PlayerEarnMeter_IsRewardEnabled( player ) ) // TODO: more robust
-		return PlayerEarnMeter_GetReward( player )
-	else
-		return PlayerEarnMeter_GetGoal( player )
-
-	unreachable
-}
-
-
-bool function BurnMeterPlayer_CanUseGlobal( entity player )
-{
-	if ( player.IsBot() )
-		return false
-
-	if ( !IsAlive( player ) )
-		return false
-
-	if ( player.IsPhaseShifted() )
-		return false
-
-	if ( player.ContextAction_IsInVehicle() ) //no rewards when in dropship
-		return false
-
-	if ( !IsBurnMeterRewardAvailableForGameState() )
-		return false
-
-	return true
-}
-
-
-bool function IsBurnMeterRewardAvailableForGameState() //Based off IsReplacementTitanAvailable
-{
-	int currentGameState = GetGameState()
-
-	switch ( currentGameState ) //need to add a new entry in here for every new game state we make
-	{
-		case eGameState.WaitingForCustomStart:
-		case eGameState.WaitingForPlayers:
-		case eGameState.PickLoadout:
-		case eGameState.Prematch:
-		case eGameState.SwitchingSides:
-		case eGameState.Postmatch:
-			return false
-
-		case eGameState.Playing:
-		case eGameState.SuddenDeath:
-			return true
-
-		case eGameState.WinnerDetermined:
-		case eGameState.Epilogue:
+		if ( !BurnMeterPlayer_CanUseEquipped( ownerPlayer ) )
 		{
-			if ( IsRoundBased() )
-			{
-				// TODO: make this work on the client
-				#if SERVER
-				if ( !IsRoundBasedGameOver() )
-					return false
-
-				if ( !ShouldRunEvac() )
-					return false
-				#endif
-			}
-
-			return true
+			weapon.EmitWeaponSound( "CoOp_SentryGun_DeploymentDeniedBeep" )
+			return false
 		}
 
-		default:
-			Assert( false, "Unknown Game State: " + currentGameState )
-			return false
+		return true
 	}
 
-	unreachable
-}
-
-
-bool function OnWeaponAttemptOffhandSwitch_burncardweapon( entity weapon )
-{
-	entity ownerPlayer = weapon.GetWeaponOwner()
-	Assert( ownerPlayer.IsPlayer() )
-
-	entity activeWeapon = ownerPlayer.GetActiveWeapon()
-	if ( ownerPlayer.IsUsingOffhandWeapon() && !( activeWeapon.GetWeaponInfoFileKeyField( "fire_mode" ) == "offhand_melee" && activeWeapon.IsReadyToFire() ) )
-		return false
-
-	if ( weapon.HasMod( "burn_card_weapon_mod" ) )
+	bool function TryUsingBurnCardWeapon( entity weapon, entity ownerPlayer )
 	{
-		bool canUse = BurnMeterPlayer_CanUseEquipped( ownerPlayer )
+		Assert( weapon.HasMod( "burn_card_weapon_mod" ) )
+
+		if ( !CanUseWeaponAsBurnCard( weapon, ownerPlayer ) )
+			return false
+
+		#if SERVER
+			UseBurnCardWeapon( weapon, ownerPlayer )
+		#endif
+
+		return true
+	}
+
+	bool function TryUsingBurnCardWeaponInCriticalSection( entity weapon, entity ownerPlayer )
+	{
+		Assert( weapon.HasMod( "burn_card_weapon_mod" ) )
+
+		if ( !CanUseWeaponAsBurnCard( weapon, ownerPlayer ) )
+			return false
+
+		#if SERVER
+			UseBurnCardWeaponInCriticalSection( weapon, ownerPlayer )
+		#endif
+
+		return true
+	}
+
+	bool function BurnMeterPlayer_CanUseReward( entity player, BurnReward burnReward )
+	{
+		if ( !BurnMeterPlayer_CanUseGlobal( player ) )
+			return false
+
+		switch ( burnReward.userType )
+		{
+			case eBurnMeterRewardAvailableFor.PILOT_ONLY:
+				return !player.IsTitan()
+
+			case eBurnMeterRewardAvailableFor.TITAN_ONLY:
+				return player.IsTitan()
+
+			case eBurnMeterRewardAvailableFor.PILOT_AND_TITAN:
+				return true
+
+			case eBurnMeterRewardAvailableFor.SPECIAL_PLAYERS_ONLY:
+				return BurnMeterPlayer_CanUseSpecial( player, burnReward ) // TODO: Note that for the case of reaperfall we also send the message to the client if they can't summon reaper in the validation function. Not ideal...
+		}
+
+		unreachable
+	}
+
+	bool function BurnMeterPlayer_CanUseEquipped( entity player )
+	{
+		BurnReward burnReward = BurnReward_GetTopInventoryItemBurnCard( player )
+		return BurnMeterPlayer_CanUseReward( player, burnReward )
+	}
+
+	EarnObject function BurnMeterPlayer_GetRewardOrGoal( entity player )
+	{
+		if ( PlayerEarnMeter_IsRewardEnabled( player ) ) // TODO: more robust
+			return PlayerEarnMeter_GetReward( player )
+		else
+			return PlayerEarnMeter_GetGoal( player )
+
+		unreachable
+	}
+
+	bool function BurnMeterPlayer_CanUseGlobal( entity player )
+	{
+		if ( player.IsBot() )
+			return false
+
+		if ( !IsAlive( player ) )
+			return false
+
+		if ( player.IsPhaseShifted() )
+			return false
+
+		if ( player.ContextAction_IsInVehicle() ) // no rewards when in dropship
+			return false
+
+		if ( !IsBurnMeterRewardAvailableForGameState() )
+			return false
+
+		return true
+	}
+
+	bool function IsBurnMeterRewardAvailableForGameState() // Based off IsReplacementTitanAvailable
+	{
+		int currentGameState = GetGameState()
+
+		switch ( currentGameState ) // need to add a new entry in here for every new game state we make
+		{
+			case eGameState.WaitingForCustomStart:
+			case eGameState.WaitingForPlayers:
+			case eGameState.PickLoadout:
+			case eGameState.Prematch:
+			case eGameState.SwitchingSides:
+			case eGameState.Postmatch:
+				return false
+
+			case eGameState.Playing:
+			case eGameState.SuddenDeath:
+				return true
+
+			case eGameState.WinnerDetermined:
+			case eGameState.Epilogue:
+				{
+					if ( IsRoundBased() )
+					{
+						// TODO: make this work on the client
+						#if SERVER
+							if ( !IsRoundBasedGameOver() )
+								return false
+
+							if ( !ShouldRunEvac() )
+								return false
+						#endif
+					}
+
+					return true
+				}
+
+			default:
+				Assert( false, "Unknown Game State: " + currentGameState )
+				return false
+		}
+
+		unreachable
+	}
+
+	bool function OnWeaponAttemptOffhandSwitch_burncardweapon( entity weapon )
+	{
+		entity ownerPlayer = weapon.GetWeaponOwner()
+		Assert( ownerPlayer.IsPlayer() )
+
+		entity activeWeapon = ownerPlayer.GetActiveWeapon()
+		if ( ownerPlayer.IsUsingOffhandWeapon() && !( activeWeapon.GetWeaponInfoFileKeyField( "fire_mode" ) == "offhand_melee" && activeWeapon.IsReadyToFire() ) )
+			return false
+
+		if ( weapon.HasMod( "burn_card_weapon_mod" ) )
+		{
+			bool canUse = BurnMeterPlayer_CanUseEquipped( ownerPlayer )
+
+			return canUse
+		}
+		else
+			return true
+
+		unreachable
+	}
+
+	BurnReward function BurnReward_GetTopInventoryItemBurnCard( entity player )
+	{
+		int burnRewardID = player.GetPlayerNetInt( TOP_INVENTORY_ITEM_BURN_CARD_ID )
+		return BurnReward_GetById( burnRewardID )
+	}
+
+	bool function BurnMeterPlayer_CanUseSpecial( entity player, BurnReward burnReward )
+	{
+		Assert( burnReward.ref in burnMeterCanUseFuncTable )
+		return burnMeterCanUseFuncTable[ burnReward.ref ]( player )
+	}
+
+	bool function BurnMeter_HarvesterShieldCanUse( entity player )
+	{
+		// 	entity harvester = GetGlobalNetEnt( "FD_activeHarvester" )
+		bool canUse = GetGlobalNetTime( "FD_harvesterInvulTime" ) < Time()
+		// harvester.GetShieldHealth() < harvester.GetShieldHealthMax()
+
+		if ( !canUse )
+		{
+			#if CLIENT
+				AddPlayerHint( 3.0, 0.5, $"", "#HINT_HARVESTER_BOOST_CANT_USE" )
+			#endif
+		}
 
 		return canUse
 	}
-	else
-		return true
 
-	unreachable
-}
-
-BurnReward function BurnReward_GetTopInventoryItemBurnCard( entity player )
-{
-	int burnRewardID = player.GetPlayerNetInt( TOP_INVENTORY_ITEM_BURN_CARD_ID )
-	return BurnReward_GetById( burnRewardID )
-}
-
-bool function BurnMeterPlayer_CanUseSpecial( entity player, BurnReward burnReward )
-{
-	Assert( burnReward.ref in burnMeterCanUseFuncTable )
-	return burnMeterCanUseFuncTable[ burnReward.ref ]( player )
-}
-
-bool function BurnMeter_HarvesterShieldCanUse( entity player )
-{
-//	entity harvester = GetGlobalNetEnt( "FD_activeHarvester" )
-	bool canUse = GetGlobalNetTime( "FD_harvesterInvulTime" ) < Time()
-	// harvester.GetShieldHealth() < harvester.GetShieldHealthMax()
-
-	if ( !canUse )
+	bool function BurnMeter_NukeTitanCanUse( entity player )
 	{
-		#if CLIENT
-		AddPlayerHint( 3.0, 0.5, $"", "#HINT_HARVESTER_BOOST_CANT_USE" )
-		#endif
-	}
+		bool canUse = BurnMeter_EmergencyTitanCanUse( player )
 
-	return canUse
-}
-
-bool function BurnMeter_NukeTitanCanUse( entity player )
-{
-	bool canUse = BurnMeter_EmergencyTitanCanUse( player )
-
-	if ( !canUse )
-	{
-		#if CLIENT
-		AddPlayerHint( 5.0, 0.5, $"", "#HINT_NUKE_TITAN_CANT_USE" )
-		#endif
-	}
-
-	return canUse
-}
-
-bool function BurnMeter_EmergencyTitanCanUse( entity player )
-{
-	if ( IsAlive( player.GetPetTitan() ) )
-		return false
-
-	#if SERVER
-		if ( !IsReplacementTitanAvailableForGameState() )
-			return false
-
-		if ( player.isSpawning )
-			return false
-
-		return true
-	#endif
-
-	#if CLIENT
-		return true
-	#endif
-}
-
-bool function BurnMeter_SummonReaperCanUse( entity player )
-{
-	array< entity > allReapers = GetNPCArrayByClass( "npc_super_spectre" )
-
-	int playerTeam = player.GetTeam()
-
-	foreach( reaper in allReapers )
-	{
-		if ( reaper.GetTeam() == playerTeam )
+		if ( !canUse )
 		{
-			#if SERVER
-				MessageToPlayer( player, eEventNotifications.BurnMeter_CantSummonReaper )
+			#if CLIENT
+				AddPlayerHint( 5.0, 0.5, $"", "#HINT_NUKE_TITAN_CANT_USE" )
 			#endif
-
-			return false
 		}
+
+		return canUse
 	}
-	return true
-}
 
-var function OnWeaponPrimaryAttack_nuke_eject( entity weapon, WeaponPrimaryAttackParams attackParams )
-{
-	#if CLIENT
-		entity weaponOwner = weapon.GetWeaponOwner()
-		if ( weaponOwner.IsPlayer() && IsValid( weaponOwner.GetCockpit() ) )
+	bool function BurnMeter_EmergencyTitanCanUse( entity player )
+	{
+		if ( IsAlive( player.GetPetTitan() ) )
+			return false
+
+		#if SERVER
+			if ( !IsReplacementTitanAvailableForGameState() )
+				return false
+
+			if ( player.isSpawning )
+				return false
+
+			return true
+		#endif
+
+		#if CLIENT
+			return true
+		#endif
+	}
+
+	bool function BurnMeter_SummonReaperCanUse( entity player )
+	{
+		array<entity> allReapers = GetNPCArrayByClass( "npc_super_spectre" )
+
+		int playerTeam = player.GetTeam()
+
+		foreach ( reaper in allReapers )
 		{
-			weaponOwner.ClientCommand( "TitanEject " + 3 )
-			PlayerEjects( weaponOwner, weaponOwner.GetCockpit() ) //Note that this can be run multiple times in a frame, e.g. get damaged by 4 pellets of a shotgun that brings the Titan into a doomed state with auto eject. Not ideal
+			if ( reaper.GetTeam() == playerTeam )
+			{
+				#if SERVER
+					MessageToPlayer( player, eEventNotifications.BurnMeter_CantSummonReaper )
+				#endif
+
+				return false
+			}
 		}
-	#endif
-	return 0
-}
+		return true
+	}
+
+	var function OnWeaponPrimaryAttack_nuke_eject( entity weapon, WeaponPrimaryAttackParams attackParams )
+	{
+		#if CLIENT
+			entity weaponOwner = weapon.GetWeaponOwner()
+			if ( weaponOwner.IsPlayer() && IsValid( weaponOwner.GetCockpit() ) )
+			{
+				weaponOwner.ClientCommand( "TitanEject " + 3 )
+				PlayerEjects( weaponOwner, weaponOwner.GetCockpit() ) // Note that this can be run multiple times in a frame, e.g. get damaged by 4 pellets of a shotgun that brings the Titan into a doomed state with auto eject. Not ideal
+			}
+		#endif
+		return 0
+	}
 
 #endif
 
 #if CLIENT
-void function CycleOnRelease( entity player )
-{
-	if ( file.shouldCycleOnRelease )
+	void function CycleOnRelease( entity player )
 	{
-		CycleInventory( player )
-		file.shouldCycleOnRelease = false
+		if ( file.shouldCycleOnRelease )
+		{
+			CycleInventory( player )
+			file.shouldCycleOnRelease = false
+		}
 	}
-}
 #endif
 
 array<string> function GetAllBoostTurretTypes()

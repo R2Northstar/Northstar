@@ -1,10 +1,10 @@
 untyped
 
-const MAXNODES_PER_SNIPERSPOT 	= 4
-const MAX_SNIPERSPOTS 			= 30 // for speed of iterating through the array
-const SNIPERSPOT_RADIUSCHECK 	= 200
-const SNIPERSPOT_HEIGHTCHECK 	= 160
-const SNIPERNODE_TOOCLOSE_SQR	= 2500//50x50
+const MAXNODES_PER_SNIPERSPOT = 4
+const MAX_SNIPERSPOTS = 30 // for speed of iterating through the array
+const SNIPERSPOT_RADIUSCHECK = 200
+const SNIPERSPOT_HEIGHTCHECK = 160
+const SNIPERNODE_TOOCLOSE_SQR = 2500 // 50x50
 
 global function SniperSpectres_Init
 global function TowerDefense_AddSniperLocation
@@ -14,7 +14,6 @@ global function Sniper_MoveToNewLocation
 global function Sniper_FreeSniperNodeOnDeath
 global function SniperCloak
 global function SniperDeCloak
-
 
 function SniperSpectres_Init()
 {
@@ -93,16 +92,16 @@ function DebugDrawSniperSpot( vector pos, array<float> radii, int r, int g, int 
 
 	if ( yaw != null )
 	{
-		local angles 	= Vector( 0, yaw, 0 )
-		local forward 	= AnglesToForward( angles )
-		local right 	= AnglesToRight( angles )
-		local length 	= radii[ radii.len() - 1 ]
-		local endPos 	= pos + ( forward * ( length * 1.75 ) )
-		local rightPos 	= pos + ( right * length )
-		local leftPos 	= pos + ( right * -length )
-		DebugDrawLine( pos, 		endPos, r, g, b, true, time )
-		DebugDrawLine( rightPos, 	endPos, r, g, b, true, time )
-		DebugDrawLine( leftPos, 	endPos, r, g, b, true, time )
+		local angles = Vector( 0, yaw, 0 )
+		local forward = AnglesToForward( angles )
+		local right = AnglesToRight( angles )
+		local length = radii[ radii.len() - 1 ]
+		local endPos = pos + ( forward * ( length * 1.75 ) )
+		local rightPos = pos + ( right * length )
+		local leftPos = pos + ( right * -length )
+		DebugDrawLine( pos, endPos, r, g, b, true, time )
+		DebugDrawLine( rightPos, endPos, r, g, b, true, time )
+		DebugDrawLine( leftPos, endPos, r, g, b, true, time )
 
 		local ring = GetDesirableRing( pos, yaw )
 		DebugDrawCircle( expect vector( ring.pos ), Vector( 0, 0, 0 ), expect float( ring.radius ), r, g, b, true, time )
@@ -123,7 +122,7 @@ function DebugDrawSniperSpot( vector pos, array<float> radii, int r, int g, int 
 ##        ##     ##    ##    ##     ## #### ##    ##  ######
 
 \************************************************************************************************/
-//HACK -> this should probably move into code
+// HACK -> this should probably move into code
 function Sniper_MoveToNewLocation( entity sniper )
 {
 	sniper.EndSignal( "OnDeath" )
@@ -131,10 +130,10 @@ function Sniper_MoveToNewLocation( entity sniper )
 
 	delaythread( 2 ) SniperCloak( sniper )
 
-	//go searching for nodes that are up somewhere
+	// go searching for nodes that are up somewhere
 	local sniperNode = GetRandomSniperNodeWithin( sniper, 3000 )
 
-	Sniper_FreeSniperNode( sniper )//free his current node
+	Sniper_FreeSniperNode( sniper ) // free his current node
 	Sniper_TakeSniperNode( sniper, sniperNode )
 	Sniper_AssaultLocation( sniper, sniperNode )
 
@@ -148,7 +147,7 @@ function Sniper_TakeSniperNode( sniper, sniperNode )
 	Assert( sniper.s.sniperNode == null ) // didn't free the last one
 	sniper.s.sniperNode = sniperNode
 
-	Assert( sniperNode.locked == false )// someone else already has it?
+	Assert( sniperNode.locked == false ) // someone else already has it?
 	sniperNode.locked = true
 
 	local loc = sniperNode.loc
@@ -203,9 +202,9 @@ function Sniper_AssaultLocation( sniper, sniperNode )
 {
 	Assert( sniper.s.sniperNode == sniperNode ) // didn't get the right one
 
-	local origin 	= sniperNode.pos
-	local loc 		= sniperNode.loc
-	local angles 	= Vector( 0, loc.yaw, 0 )
+	local origin = sniperNode.pos
+	local loc = sniperNode.loc
+	local angles = Vector( 0, loc.yaw, 0 )
 
 	Assert( "assaultPoint" in sniper.s )
 	sniper.AssaultPoint( origin )
@@ -226,24 +225,24 @@ function GetRandomSniperNodeWithin( sniper, maxDist )
 	if ( goalNode != null )
 		return goalNode
 
-	//if we get here it's because there are no free nodes within the maxDist
+	// if we get here it's because there are no free nodes within the maxDist
 	locations = SniperNodeClosest( level.TowerDefense_SniperNodes, origin )
 
 	goalNode = FindFreeSniperNode( locations )
-	Assert ( goalNode != null )
+	Assert( goalNode != null )
 
 	return goalNode
 }
 
 function FindFreeSniperNode( locations )
 {
-	foreach( loc in locations )
+	foreach ( loc in locations )
 	{
-		//is if filled up?
+		// is if filled up?
 		if ( loc.numGuys >= loc.maxGuys )
 			continue
 
-		//grab the first unlocked cover node
+		// grab the first unlocked cover node
 		foreach ( node in loc.coverNodes )
 		{
 			if ( node.locked )
@@ -252,7 +251,7 @@ function FindFreeSniperNode( locations )
 			return node
 		}
 
-		//ok then grab the first unlocked extra node
+		// ok then grab the first unlocked extra node
 		foreach ( node in loc.extraNodes )
 		{
 			if ( node.locked )
@@ -265,13 +264,13 @@ function FindFreeSniperNode( locations )
 	return null
 }
 
-//ArrayWithin() copy
+// ArrayWithin() copy
 function SniperNodeWithin( Array, origin, maxDist )
 {
 	maxDist *= maxDist
 
 	local resultArray = []
-	foreach( loc in Array )
+	foreach ( loc in Array )
 	{
 		local testspot = null
 		testspot = loc.pos
@@ -283,7 +282,7 @@ function SniperNodeWithin( Array, origin, maxDist )
 	return resultArray
 }
 
-//ArrayClosest() copy
+// ArrayClosest() copy
 function SniperNodeClosest( Array, origin )
 {
 	Assert( type( Array ) == "array" )
@@ -329,10 +328,8 @@ function SniperArrayDistanceCompare( a, b )
 	else if ( a.distanceSqr < b.distanceSqr )
 		return -1
 
-	return 0;
+	return 0
 }
-
-
 
 /************************************************************************************************\
 
@@ -348,13 +345,13 @@ function SniperArrayDistanceCompare( a, b )
 function CreateSniperLocation( origin, yaw, heightCheck )
 {
 	local loc = {}
-	loc.pos 		<- origin
-	loc.yaw 		<- yaw
+	loc.pos <- origin
+	loc.yaw <- yaw
 	loc.heightCheck <- heightCheck
-	loc.numGuys		<- 0
-	loc.maxGuys 	<- 0
-	loc.coverNodes 	<- []
-	loc.extraNodes	<- []
+	loc.numGuys <- 0
+	loc.maxGuys <- 0
+	loc.coverNodes <- []
+	loc.extraNodes <- []
 
 	return loc
 }
@@ -363,8 +360,8 @@ function CreateSniperNode( location, origin )
 {
 	local node = {}
 	node.locked <- false
-	node.loc 	<- location
-	node.pos 	<- origin
+	node.loc <- location
+	node.pos <- origin
 
 	return node
 }
@@ -377,7 +374,7 @@ function SniperLocationsInit()
 	foreach ( loc in level.TowerDefense_SniperNodes )
 	{
 		SniperLocationSetup( loc )
-		wait 0.1 //space out all the slow stuff so it doesn't happen on the same frame
+		wait 0.1 // space out all the slow stuff so it doesn't happen on the same frame
 	}
 
 	printt( "<<<<<***********************************************************>>>>>" )
@@ -387,7 +384,12 @@ function SniperLocationsInit()
 
 function SniperLocationSetup( loc )
 {
-	array<vector> extraPos = GetNeighborPositionsAroundSniperLocation( expect vector( loc.pos ), expect float( loc.yaw ), expect float( loc.heightCheck ), MAXNODES_PER_SNIPERSPOT )
+	array<vector> extraPos = GetNeighborPositionsAroundSniperLocation(
+		expect vector( loc.pos ),
+		expect float( loc.yaw ),
+		expect float( loc.heightCheck ),
+		MAXNODES_PER_SNIPERSPOT
+	)
 	foreach ( origin in extraPos )
 	{
 		local node = CreateSniperNode( loc, origin )
@@ -402,13 +404,13 @@ function SniperLocationSetup( loc )
 
 array<vector> function GetNeighborPositionsAroundSniperLocation( vector pos, float yaw, float heightCheck, int max )
 {
-	local height 			= pos.z
-	local isSpectre 		= true
-	local radius 			= SNIPERSPOT_RADIUSCHECK
-	array<vector> goalPos 	= []
+	local height = pos.z
+	local isSpectre = true
+	local radius = SNIPERSPOT_RADIUSCHECK
+	array<vector> goalPos = []
 
 	array<vector> neighborPos = NavMesh_GetNeighborPositions( pos, HULL_HUMAN, MAXNODES_PER_SNIPERSPOT )
-	neighborPos	= SortPositionsByClosestToPos( neighborPos, pos, yaw )
+	neighborPos = SortPositionsByClosestToPos( neighborPos, pos, yaw )
 	foreach ( origin in neighborPos )
 	{
 		if ( fabs( origin.z - height ) > heightCheck )
@@ -430,8 +432,8 @@ array<vector> function GetNeighborPositionsAroundSniperLocation( vector pos, flo
 
 array<vector> function SortPositionsByClosestToPos( array<vector> neighborPos, vector pos, float yaw )
 {
-	table ring 		= GetDesirableRing( pos, yaw )
-	vector testPos 	= expect vector( ring.pos )
+	table ring = GetDesirableRing( pos, yaw )
+	vector testPos = expect vector( ring.pos )
 
 	array<vector> returnOrigins = ArrayClosestVector( neighborPos, testPos )
 	return returnOrigins
@@ -453,9 +455,9 @@ function IsMostDesireablePos( testPos, sniperPos, yaw )
 	what this function does is actually draw a circle out infront of the position based on the yaw.
 	then it checks to see if the node is within that circle.
 	Since most sniper positions are on EDGES of buildings, windows, etc, this techinique helps grab more nodes along the edge
-	*/
+*/
 
-	table ring 		= GetDesirableRing( sniperPos, yaw )
+	table ring = GetDesirableRing( sniperPos, yaw )
 	local radiusSqr = ring.radius * ring.radius
 
 	if ( Distance2DSqr( testPos, ring.pos ) <= radiusSqr )
@@ -466,20 +468,15 @@ function IsMostDesireablePos( testPos, sniperPos, yaw )
 
 table function GetDesirableRing( pos, yaw )
 {
-	local dist 		= 200
-	local radius 	= 300
+	local dist = 200
+	local radius = 300
 
-	local vec 		= AnglesToForward( Vector( 0, yaw, 0 ) ) * dist
-	local testPos 	= pos + vec
+	local vec = AnglesToForward( Vector( 0, yaw, 0 ) ) * dist
+	local testPos = pos + vec
 
 	table ring = {}
 	ring.pos <- testPos
 	ring.radius <- radius
 	return ring
 }
-
-
-
-
-
 

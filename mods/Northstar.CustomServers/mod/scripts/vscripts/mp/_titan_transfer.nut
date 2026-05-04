@@ -47,7 +47,7 @@ function TitanCoreEffectTransfer_threaded( entity soul, entity titan, entity old
 	soul.s.coreEffect.ent = soul.s.coreEffect.func( titan, soul.s.coreEffect.parameter )
 }
 
-void function OnClassChangeBecomePilot( entity player, entity titan ) //Stuff here used to be in old CPlayer:OnChangedPlayerClass, for turning into Pilot class
+void function OnClassChangeBecomePilot( entity player, entity titan ) // Stuff here used to be in old CPlayer:OnChangedPlayerClass, for turning into Pilot class
 {
 	player.ClearDoomed()
 	player.UnsetUsable()
@@ -58,7 +58,7 @@ void function OnClassChangeBecomePilot( entity player, entity titan ) //Stuff he
 	RandomizeHead( player )
 }
 
-void function OnClassChangeBecomeTitan( entity player, entity titan ) //Stuff here used to be in old CPlayer:OnChangedPlayerClass, for turning into Titan class
+void function OnClassChangeBecomeTitan( entity player, entity titan ) // Stuff here used to be in old CPlayer:OnChangedPlayerClass, for turning into Titan class
 {
 	CodeCallback_PlayerInTitanCockpit( player, player )
 	player.Minimap_SetHeightTracking( false )
@@ -146,7 +146,7 @@ array<StoredWeapon> function StoreWeapons( entity player )
 		sw.clipCount = weapon.GetWeaponPrimaryClipCount()
 		sw.nextAttackTime = weapon.GetNextAttackAllowedTime()
 		#if MP
-		sw.burnReward = weapon.e.burnReward
+			sw.burnReward = weapon.e.burnReward
 		#endif
 
 		if ( sw.activeWeapon )
@@ -172,41 +172,40 @@ void function GiveWeaponsFromStoredArray( entity player, array<StoredWeapon> sto
 				weapon.SetWeaponSkin( storedWeapon.skinIndex )
 				weapon.SetWeaponCamo( storedWeapon.camoIndex )
 				#if MP
-				if ( storedWeapon.isProScreenOwner )
-				{
-					weapon.SetProScreenOwner( player )
-					if ( weapon.HasMod( "pro_screen" ) )
-						UpdateProScreen( player, weapon )
-				}
+					if ( storedWeapon.isProScreenOwner )
+					{
+						weapon.SetProScreenOwner( player )
+						if ( weapon.HasMod( "pro_screen" ) )
+							UpdateProScreen( player, weapon )
+					}
 
-				string weaponCategory = ""
-				if ( IsWeaponKeyFieldDefined(weapon.GetWeaponClassName(), "menu_category") )
-				{
-					weaponCategory = GetWeaponInfoFileKeyField_GlobalString( weapon.GetWeaponClassName(), "menu_category" )
-				}
+					string weaponCategory = ""
+					if ( IsWeaponKeyFieldDefined( weapon.GetWeaponClassName(), "menu_category" ) )
+					{
+						weaponCategory = GetWeaponInfoFileKeyField_GlobalString( weapon.GetWeaponClassName(), "menu_category" )
+					}
 
-				if ( weaponCategory == "at" || weaponCategory == "special" ) // refill AT/grenadier ammo stockpile
-				{
-					int defaultTotal = weapon.GetWeaponSettingInt( eWeaponVar.ammo_default_total )
-					int clipSize = weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
+					if ( weaponCategory == "at" || weaponCategory == "special" ) // refill AT/grenadier ammo stockpile
+					{
+						int defaultTotal = weapon.GetWeaponSettingInt( eWeaponVar.ammo_default_total )
+						int clipSize = weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
 
-					weapon.SetWeaponPrimaryAmmoCount( defaultTotal - clipSize )
+						weapon.SetWeaponPrimaryAmmoCount( defaultTotal - clipSize )
 
-					if ( weapon.GetWeaponPrimaryClipCountMax() > 0 )
-						weapon.SetWeaponPrimaryClipCount( storedWeapon.clipCount )
-				}
-				else
-				{
+						if ( weapon.GetWeaponPrimaryClipCountMax() > 0 )
+							weapon.SetWeaponPrimaryClipCount( storedWeapon.clipCount )
+					}
+					else
+					{
+						weapon.SetWeaponPrimaryAmmoCount( storedWeapon.ammoCount )
+						if ( weapon.GetWeaponPrimaryClipCountMax() > 0 )
+							weapon.SetWeaponPrimaryClipCount( storedWeapon.clipCount )
+					}
+				#else
 					weapon.SetWeaponPrimaryAmmoCount( storedWeapon.ammoCount )
 					if ( weapon.GetWeaponPrimaryClipCountMax() > 0 )
 						weapon.SetWeaponPrimaryClipCount( storedWeapon.clipCount )
-				}
-				#else
-				weapon.SetWeaponPrimaryAmmoCount( storedWeapon.ammoCount )
-				if ( weapon.GetWeaponPrimaryClipCountMax() > 0 )
-					weapon.SetWeaponPrimaryClipCount( storedWeapon.clipCount )
 				#endif
-
 
 				if ( storedWeapon.activeWeapon )
 					activeWeaponSlot = i
@@ -222,7 +221,7 @@ void function GiveWeaponsFromStoredArray( entity player, array<StoredWeapon> sto
 				if ( weapon.GetWeaponPrimaryClipCountMax() > 0 )
 					weapon.SetWeaponPrimaryClipCount( storedWeapon.clipCount )
 				#if MP
-				weapon.e.burnReward = storedWeapon.burnReward
+					weapon.e.burnReward = storedWeapon.burnReward
 				#endif
 
 				break
@@ -258,14 +257,14 @@ function TransferHealth( srcEnt, destEnt )
 {
 	destEnt.SetMaxHealth( srcEnt.GetMaxHealth() )
 	destEnt.SetHealth( srcEnt.GetHealth() )
-	//destEnt.SetHealthPerSegment( srcEnt.GetHealthPerSegment() )
+	// destEnt.SetHealthPerSegment( srcEnt.GetHealthPerSegment() )
 }
 
 void function DevSpawnTitan()
 {
-	entity player = GetPlayerArray()[0]
+	entity player = GetPlayerArray()[ 0 ]
 	vector spawnpointOrigin = player.GetOrigin()
-	vector spawnpointAngles = VectorToAngles( FlattenVector( GetPlayerArray()[0].GetViewVector() ) * -1 )
+	vector spawnpointAngles = VectorToAngles( FlattenVector( GetPlayerArray()[ 0 ].GetViewVector() ) * -1 )
 	entity titan = CreateAutoTitanForPlayer_FromTitanLoadout( player, GetTitanLoadoutForPlayer( player ), spawnpointOrigin, spawnpointAngles )
 	DispatchSpawn( titan )
 }
@@ -319,7 +318,7 @@ void function SetTitanSpawnOptionsFromLoadout( entity titan, TitanLoadoutDef loa
 	titan.ai.titanSpawnLoadout = loadout
 }
 
-TitanLoadoutDef function GetTitanLoadoutFromPlayerInventory( entity player ) //TODO: Examine necessity for this? Was needed in R1 where TItans could pick up weapons off the ground, but may not be needed in R2 anymore. Might just be fine to call GetTitanLoadoutForPlayer()
+TitanLoadoutDef function GetTitanLoadoutFromPlayerInventory( entity player ) // TODO: Examine necessity for this? Was needed in R1 where TItans could pick up weapons off the ground, but may not be needed in R2 anymore. Might just be fine to call GetTitanLoadoutForPlayer()
 {
 	TitanLoadoutDef loadout = GetTitanLoadoutForPlayer( player )
 	loadout.setFile = player.GetPlayerSettings()
@@ -328,26 +327,26 @@ TitanLoadoutDef function GetTitanLoadoutFromPlayerInventory( entity player ) //T
 	array mainWeapons = player.GetMainWeapons()
 	if ( mainWeapons.len() )
 	{
-		entity wep = player.GetMainWeapons()[0]
+		entity wep = player.GetMainWeapons()[ 0 ]
 		loadout.primary = wep.GetWeaponClassName()
 		loadout.primaryMods = wep.GetMods()
 	}
 
-	entity ord = player.GetOffhandWeapon(OFFHAND_ORDNANCE)
+	entity ord = player.GetOffhandWeapon( OFFHAND_ORDNANCE )
 	if ( ord )
 	{
 		loadout.ordnance = ord.GetWeaponClassName()
 		loadout.ordnanceMods = ord.GetMods()
 	}
 
-	entity tac = player.GetOffhandWeapon(OFFHAND_SPECIAL)
+	entity tac = player.GetOffhandWeapon( OFFHAND_SPECIAL )
 	if ( tac )
 	{
 		loadout.special = tac.GetWeaponClassName()
 		loadout.specialMods = tac.GetMods()
 	}
 
-	entity antirodeo = player.GetOffhandWeapon(OFFHAND_ANTIRODEO)
+	entity antirodeo = player.GetOffhandWeapon( OFFHAND_ANTIRODEO )
 	if ( antirodeo )
 	{
 		loadout.antirodeo = antirodeo.GetWeaponClassName()
@@ -363,16 +362,16 @@ TitanLoadoutDef function GetTitanLoadoutFromPlayerInventory( entity player ) //T
 
 void function ForceTitanSustainedDischargeEnd( entity player )
 {
-    // To disable core's while disembarking
+	// To disable core's while disembarking
 	local weapons = player.GetOffhandWeapons()
-   	foreach ( weapon in weapons )
-   	{
-   		if ( weapon.IsChargeWeapon() )
-   			weapon.ForceChargeEndNoAttack()
+	foreach ( weapon in weapons )
+	{
+		if ( weapon.IsChargeWeapon() )
+			weapon.ForceChargeEndNoAttack()
 
-   		if ( weapon.IsSustainedDischargeWeapon() && weapon.IsDischarging() )
-   			weapon.ForceSustainedDischargeEnd();
-   	}
+		if ( weapon.IsSustainedDischargeWeapon() && weapon.IsDischarging() )
+			weapon.ForceSustainedDischargeEnd()
+	}
 }
 
 function TitanBecomesPilot( entity player, entity titan )
@@ -397,7 +396,7 @@ function TitanBecomesPilot( entity player, entity titan )
 	ForceTitanSustainedDischargeEnd( player )
 
 	TransferHealth( player, titan )
-	//Transfer children before player becomes pilot model
+	// Transfer children before player becomes pilot model
 	player.TransferChildrenTo( titan )
 	player.TransferTethersToEntity( titan )
 	entity soul = player.GetTitanSoul()
@@ -500,14 +499,14 @@ function PilotBecomesTitan( entity player, entity titan, bool fullCopy = true )
 	StorePilotWeapons( player )
 
 	#if HAS_TITAN_WEAPON_SWAPPING
-	{
-		foreach ( weapon in titan.GetMainWeapons() )
 		{
-			// the pilot's weapons will recent entirely in sp if this doesn't match
-			player.p.lastPrimaryWeaponEnt = weapon
-			break
+			foreach ( weapon in titan.GetMainWeapons() )
+			{
+				// the pilot's weapons will recent entirely in sp if this doesn't match
+				player.p.lastPrimaryWeaponEnt = weapon
+				break
+			}
 		}
-	}
 	#endif
 
 	if ( fullCopy )
@@ -515,13 +514,13 @@ function PilotBecomesTitan( entity player, entity titan, bool fullCopy = true )
 		CopyWeapons( titan, player )
 	}
 
-	//Should only be the first time a player embarks into a Titan that Titan's life.
-	//Check with differ if there is a better way than .e.var on the soul.
-	//TitanLoadoutDef loadout = GetTitanLoadoutForPlayer( player )
-	//PROTO_DisplayTitanLoadouts( player, titan, loadout )
+	// Should only be the first time a player embarks into a Titan that Titan's life.
+	// Check with differ if there is a better way than .e.var on the soul.
+	// TitanLoadoutDef loadout = GetTitanLoadoutForPlayer( player )
+	// PROTO_DisplayTitanLoadouts( player, titan, loadout )
 
 	entity soul = titan.GetTitanSoul()
-	if( !IsValid(soul) )
+	if ( !IsValid( soul ) )
 		return
 	soul.soul.lastOwner = player
 
@@ -550,7 +549,7 @@ function PilotBecomesTitan( entity player, entity titan, bool fullCopy = true )
 	{
 		player.SetOrigin( titan.GetOrigin() )
 		player.SetAngles( titan.GetAngles() )
-		player.SetVelocity( Vector( 0,0,0 ) )
+		player.SetVelocity( Vector( 0, 0, 0 ) )
 	}
 
 	if ( soul.capturable )
@@ -616,16 +615,16 @@ function PilotBecomesTitan( entity player, entity titan, bool fullCopy = true )
 
 	titan.TransferTethersToEntity( player )
 
-	//We parent the player to the titan in the process of embarking
-	//Must clear parent when transfering children to avoid parenting the player to himself
+	// We parent the player to the titan in the process of embarking
+	// Must clear parent when transfering children to avoid parenting the player to himself
 	if ( player.GetParent() == titan )
 		player.ClearParent()
-	//Transfer children after player has become titan model.
+	// Transfer children after player has become titan model.
 	titan.TransferChildrenTo( player )
 
 	player.SetOrigin( titan.GetOrigin() )
 	player.SetAngles( titan.GetAngles() )
-	player.SetVelocity( Vector( 0,0,0 ) )
+	player.SetVelocity( Vector( 0, 0, 0 ) )
 
 	soul.e.embarkCount++
 	soul.Signal( "PlayerEmbarkedTitan", { player = player } )

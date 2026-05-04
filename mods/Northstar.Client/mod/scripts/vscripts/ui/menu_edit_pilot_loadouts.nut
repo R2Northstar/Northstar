@@ -6,8 +6,8 @@ struct
 {
 	var menu
 	var loadoutPanel
-	var[NUM_PERSISTENT_PILOT_LOADOUTS] loadoutHeaders
-	var[NUM_PERSISTENT_PILOT_LOADOUTS] activateButtons
+	var[ NUM_PERSISTENT_PILOT_LOADOUTS ] loadoutHeaders
+	var[ NUM_PERSISTENT_PILOT_LOADOUTS ] activateButtons
 	bool enteringEdit = false
 	var unlockReq
 } file
@@ -29,10 +29,10 @@ void function InitEditPilotLoadoutsMenu()
 		Hud_AddEventHandler( activateButton, UIE_CLICK, OnLoadoutButton_Activate )
 		Hud_AddEventHandler( activateButton, UIE_GET_FOCUS, OnLoadoutButton_Focused )
 		Hud_AddEventHandler( activateButton, UIE_LOSE_FOCUS, OnLoadoutButton_LostFocus )
-		file.activateButtons[i] = activateButton
+		file.activateButtons[ i ] = activateButton
 	}
 
-	Hud_SetFocused( file.activateButtons[0] )
+	Hud_SetFocused( file.activateButtons[ 0 ] )
 
 	file.loadoutPanel = Hud_GetChild( menu, "PilotLoadoutDisplay" )
 	file.unlockReq = Hud_GetChild( menu, "UnlockReq" )
@@ -109,7 +109,7 @@ void function OnLoadoutButton_Activate( var button )
 
 	if ( Hud_IsLocked( button ) )
 	{
-		int index = expect int ( button.s.rowIndex )
+		int index = expect int( button.s.rowIndex )
 		string pilotLoadoutRef = "pilot_loadout_" + ( index + 1 )
 
 		array<var> buttons
@@ -122,7 +122,7 @@ void function OnLoadoutButton_Activate( var button )
 		return
 	}
 
-	int loadoutIndex = expect int ( button.s.rowIndex )
+	int loadoutIndex = expect int( button.s.rowIndex )
 	SetEditLoadout( "pilot", loadoutIndex )
 
 	if ( EDIT_LOADOUT_SELECTS )
@@ -157,7 +157,7 @@ void function OnLoadoutButton_LostFocus( var button )
 	if ( !IsValid( player ) )
 		return
 
-	int loadoutIndex = expect int ( button.s.rowIndex )
+	int loadoutIndex = expect int( button.s.rowIndex )
 	string pilotLoadoutRef = "pilot_loadout_" + ( loadoutIndex + 1 )
 	ClearNewStatus( button, pilotLoadoutRef )
 
@@ -165,6 +165,6 @@ void function OnLoadoutButton_LostFocus( var button )
 		return
 
 	PilotLoadoutDef loadout = GetCachedPilotLoadout( loadoutIndex )
-	if ( (RefHasAnyNewSubitem( player, loadout.primary ) || RefHasAnyNewSubitem( player, loadout.secondary ) || RefHasAnyNewSubitem( player, loadout.weapon3 )) )
+	if ( ( RefHasAnyNewSubitem( player, loadout.primary ) || RefHasAnyNewSubitem( player, loadout.secondary ) || RefHasAnyNewSubitem( player, loadout.weapon3 ) ) )
 		Hud_SetNew( button, true )
 }

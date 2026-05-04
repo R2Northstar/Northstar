@@ -19,7 +19,7 @@ float function ClassicMP_DefaultNoIntro_GetLength()
 		return TITAN_DROP_SPAWN_INTRO_LENGTH
 	else
 		return NOINTRO_INTRO_PILOT_LENGTH
-		
+
 	unreachable
 }
 
@@ -29,13 +29,13 @@ void function ClassicMP_DefaultNoIntro_Start()
 
 	foreach ( entity player in GetPlayerArray() )
 		ClassicMP_DefaultNoIntro_SpawnPlayer( player )
-		
+
 	if ( ShouldIntroSpawnAsTitan() )
 		wait TITAN_DROP_SPAWN_INTRO_REAL_LENGTH
 	else
 	{
 		wait NOINTRO_INTRO_PILOT_LENGTH
-		
+
 		foreach ( entity player in GetPlayerArray() )
 		{
 			if ( !IsPrivateMatchSpectator( player ) )
@@ -43,11 +43,11 @@ void function ClassicMP_DefaultNoIntro_Start()
 				player.UnfreezeControlsOnServer()
 				RemoveCinematicFlag( player, CE_FLAG_CLASSIC_MP_SPAWNING )
 			}
-			
+
 			TryGameModeAnnouncement( player )
 		}
 	}
-	
+
 	ClassicMP_OnIntroFinished()
 }
 
@@ -55,22 +55,21 @@ void function ClassicMP_DefaultNoIntro_SpawnPlayer( entity player )
 {
 	if ( GetGameState() != eGameState.Prematch )
 		return
-	
+
 	if ( IsPrivateMatchSpectator( player ) ) // private match spectators use custom spawn logic
 	{
 		RespawnPrivateMatchSpectator( player )
 		return
 	}
-	
+
 	if ( IsAlive( player ) )
 		player.Die()
-	
+
 	if ( ShouldIntroSpawnAsTitan() )
 		thread ClassicMP_DefaultNoIntro_TitanSpawnPlayer( player )
 	else
 		thread ClassicMP_DefaultNoIntro_PilotSpawnPlayer( player )
 }
-
 
 // spawn as pilot for intro
 void function ClassicMP_DefaultNoIntro_PilotSpawnPlayer( entity player )

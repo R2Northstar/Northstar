@@ -11,7 +11,6 @@ const TURRET_WEAPON_BULLETS = "mp_weapon_yh803_bullet"
 
 function Dogfighter_Init()
 {
-
 	AddDeathCallback( "npc_dropship", OnDogFighterDeath )
 
 	RegisterSignal( "new_attack_thread" )
@@ -23,7 +22,7 @@ function LaunchRandomDogFighterAttacks( int team )
 	svGlobal.levelEnt.Signal( "new_attack_thread" )
 	svGlobal.levelEnt.EndSignal( "new_attack_thread" )
 
-	for ( ;; )
+	for ( ; ; )
 	{
 		thread CreateDogFighterAttack( team )
 		wait RandomFloatRange( 3, 9 )
@@ -39,12 +38,11 @@ function CreateDogFighterAttack( int team )
 	SetCallinStyle( drop, eDropStyle.RANDOM_FROM_YAW )
 	SetCallinYaw( drop, RandomFloat( 360 ) )
 
+	SpawnPointFP spawnPoint = GetSpawnPointForStyle( flightPath, drop )
+	if ( !spawnPoint.valid )
+		return
 
- 	SpawnPointFP spawnPoint = GetSpawnPointForStyle( flightPath, drop )
- 	if ( !spawnPoint.valid )
- 		return
-
-	entity ship = CreateDogFighter( Vector(0,0,0), Vector(0,0,0), team )
+	entity ship = CreateDogFighter( Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), team )
 
 	int hornet_health = 2000
 	ship.SetHealth( hornet_health )
@@ -52,7 +50,7 @@ function CreateDogFighterAttack( int team )
 
 	ship.EndSignal( "OnDeath" )
 
-	//AddBulletTurrets( ship, team )
+	// AddBulletTurrets( ship, team )
 
 	waitthread PlayAnimTeleport( ship, "st_AngelCity_IMC_Win_ComeIn", spawnPoint.origin, spawnPoint.angles )
 
@@ -63,7 +61,6 @@ function CreateDogFighterAttack( int team )
 
 	ship.Kill_Deprecated_UseDestroyInstead()
 }
-
 
 function DogFighterWaitsUntilLeave( ship, idleMin = 10, idleMax = 15 )
 {
@@ -76,7 +73,7 @@ function DogFighterWaitsUntilLeave( ship, idleMin = 10, idleMax = 15 )
 	local totalTime = reps * duration
 	local endTime = Time() + totalTime
 
-	for ( ;; )
+	for ( ; ; )
 	{
 		if ( ship.GetHealth().tofloat() / maxHealth < 0.2 )
 			return
@@ -127,8 +124,8 @@ entity function CreateDogFighter( vector origin, vector angles, int team )
 	hornet.SetAngles( angles )
 	// DispatchSpawn( hornet )
 
-	//hornet.EnableRenderAlways()
-	//hornet.SetAimAssistAllowed( false )
+	// hornet.EnableRenderAlways()
+	// hornet.SetAimAssistAllowed( false )
 
 	return hornet
 }
@@ -145,13 +142,10 @@ void function OnDogFighterDeath( entity ent, var damageInfo )
 		FighterExplodes( ent )
 }
 
-
-
-
 function AddRocketTurrets( entity ship, int team, int prof = eWeaponProficiency.VERYGOOD )
 {
 	entity turret = AddTurret( ship, team, "mp_weapon_yh803", "l_exhaust_front_1" )
- 	turret.kv.WeaponProficiency = prof
+	turret.kv.WeaponProficiency = prof
 	turret.NotSolid()
 	turret.Show()
 	entity weapon = turret.GetActiveWeapon()
@@ -168,7 +162,7 @@ function AddRocketTurrets( entity ship, int team, int prof = eWeaponProficiency.
 void function AddBulletTurrets( entity ship, int team, int prof = eWeaponProficiency.VERYGOOD )
 {
 	entity turret = AddTurret( ship, team, TURRET_WEAPON_BULLETS, "l_exhaust_front_1" )
- 	turret.kv.WeaponProficiency = prof
+	turret.kv.WeaponProficiency = prof
 	turret.NotSolid()
 	turret = AddTurret( ship, team, TURRET_WEAPON_BULLETS, "r_exhaust_front_1" )
 	turret.kv.WeaponProficiency = prof
@@ -191,11 +185,11 @@ asset function GetGunshipModel( int team )
 
 void function CreateDogFighterAssist( int team, vector origin, vector angles, float duration = 10.0, entity ship = null, float dropHeight = 1500 )
 {
-	angles += <0,90,0>
+	angles += < 0, 90, 0 >
 
-	angles = < 0, angles.y%360, 0 >
+	angles = < 0, angles.y % 360, 0 >
 
- 	// DebugDrawSphere( origin, 256, 255, 0, 0, true, 10.0 )
+	// DebugDrawSphere( origin, 256, 255, 0, 0, true, 10.0 )
 
 	// warp in effect before
 	Point start = GetWarpinPosition( GetFighterModelForTeam( team ), "st_AngelCity_IMC_Win_ComeIn_fast", origin, angles )
@@ -211,7 +205,6 @@ void function CreateDogFighterAssist( int team, vector origin, vector angles, fl
 	}
 
 	waitthread __WarpInEffectShared( start.origin, start.angles, "", 0.0 )
-
 
 	ship.SetHealth( 10000 )
 	ship.SetMaxHealth( 10000 )
@@ -229,7 +222,7 @@ void function CreateDogFighterAssist( int team, vector origin, vector angles, fl
 	entity mover = CreateScriptMover( origin, angles )
 
 	OnThreadEnd(
-		function () : ( ship, mover )
+		function() : ( ship, mover )
 		{
 			if ( IsValid( mover ) )
 				mover.Destroy()
@@ -239,8 +232,8 @@ void function CreateDogFighterAssist( int team, vector origin, vector angles, fl
 	)
 
 	float SHIP_SIZE = 530
-	vector SHIP_MIN = Vector( -SHIP_SIZE/2, -SHIP_SIZE/2, -250 )
-	vector SHIP_MAX = Vector( SHIP_SIZE/2, SHIP_SIZE/2, 100 )
+	vector SHIP_MIN = Vector( -SHIP_SIZE / 2, -SHIP_SIZE / 2, -250 )
+	vector SHIP_MAX = Vector( SHIP_SIZE / 2, SHIP_SIZE / 2, 100 )
 
 	entity turret
 
@@ -280,9 +273,9 @@ void function CreateDogFighterAssist( int team, vector origin, vector angles, fl
 	if ( dropHeight > 0 )
 	{
 		// TRACE to find the floor
-		float traceFrac = TraceLineSimple( shipOrigin, shipOrigin - Vector(0,0,dropHeight), ship )
-		vector floorPos = shipOrigin - Vector(0,0,dropHeight * traceFrac)
-		floorPos += Vector( 0,0,400 ) //we don't want the ship to land!
+		float traceFrac = TraceLineSimple( shipOrigin, shipOrigin - Vector( 0, 0, dropHeight ), ship )
+		vector floorPos = shipOrigin - Vector( 0, 0, dropHeight * traceFrac )
+		floorPos += Vector( 0, 0, 400 ) // we don't want the ship to land!
 
 		// TRACE to see if anything is in the way
 		float result = TraceHullSimple( shipOrigin, floorPos, SHIP_MIN, SHIP_MAX, ship )
@@ -304,7 +297,7 @@ void function CreateDogFighterAssist( int team, vector origin, vector angles, fl
 	float dropDuration = 5.0
 	if ( dropHeight > 0 )
 	{
-		mover.NonPhysicsMoveTo( newOrigin, dropDuration, dropDuration*0.4, dropDuration*0.4 )
+		mover.NonPhysicsMoveTo( newOrigin, dropDuration, dropDuration * 0.4, dropDuration * 0.4 )
 		wait dropDuration
 	}
 
@@ -314,7 +307,7 @@ void function CreateDogFighterAssist( int team, vector origin, vector angles, fl
 	// Ship raises before it leaves...
 	if ( dropHeight > 0 )
 	{
-		mover.NonPhysicsMoveTo( origin, dropDuration, dropDuration*0.4, dropDuration*0.4 )
+		mover.NonPhysicsMoveTo( origin, dropDuration, dropDuration * 0.4, dropDuration * 0.4 )
 		wait dropDuration
 	}
 	ship.ClearParent()

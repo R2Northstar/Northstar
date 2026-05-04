@@ -15,55 +15,44 @@ global function PIN_PlayerRodeoedEnemyTitanToCompletion
 
 void function PIN_Init()
 {
-
 }
 
 void function PIN_BuyItemWithRealMoney( entity player, bool _0, string name, int cost )
 {
-
 }
 
 void function PIN_BuyItem( entity player, bool _0, string name, int cost )
 {
-
 }
 
 void function PIN_GiveItem( entity player, bool _0, string name, int count )
 {
-
 }
 
 void function PIN_GiveCredits( entity player, int count )
 {
-
 }
 
 void function PIN_ConsumeItem( entity player, string name )
 {
-
 }
 
 void function PIN_AddToPlayerCountStat( entity player, string name )
 {
-
 }
 
 void function PIN_PlayerAbility( entity player, string name, string action, table args, float duration = 0 )
 {
-
 }
 
 void function PIN_PlayerAbilityReady( entity player, string action )
 {
-
 }
 
 void function PIN_DamageDone( entity player, entity victim, var damageInfo )
 {
-
 }
 
 void function PIN_PlayerRodeoedEnemyTitanToCompletion( entity player, entity titan, bool playerHadBattery )
 {
-
 }

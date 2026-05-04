@@ -27,6 +27,7 @@ function SetAILethality( aiLethality )
 			NPCSetAimConeFocusParams( 6, 2.5 )
 			NPCSetAimPatternFocusParams( 4, 0.3, 0.8 )
 			break
+
 		case eAILethality.VeryHigh:
 			NPCSetAimConeFocusParams( 5, 2.0 )
 			NPCSetAimPatternFocusParams( 4, 0.3, 0.8 )
@@ -42,7 +43,6 @@ function SetAILethality( aiLethality )
 	}
 }
 
-
 function SetTitanAccuracyAndProficiency( entity npcTitan )
 {
 	Assert( IsMultiplayer() )
@@ -54,7 +54,7 @@ function SetTitanAccuracyAndProficiency( entity npcTitan )
 	entity soul = npcTitan.GetTitanSoul()
 
 	// auto titans have lower proficiency
-	if ( player && soul == null)
+	if ( player && soul == null )
 	{
 		soul = player.GetTitanSoul() // in mid transfer
 	}
@@ -64,7 +64,7 @@ function SetTitanAccuracyAndProficiency( entity npcTitan )
 		if ( SoulHasPassive( soul, ePassives.PAS_ENHANCED_TITAN_AI ) )
 		{
 			weaponProficiency = eWeaponProficiency.GOOD
- 		}
+		}
 		else if ( player )
 		{
 			weaponProficiency = eWeaponProficiency.AVERAGE

@@ -1,10 +1,9 @@
-
 global function UpdatePilotLoadoutPanel
 global function UpdatePilotLoadoutPanelBinds
 global function UpdatePilotLoadoutButtons
 global function UpdatePilotItemButton
 
-void function UpdatePilotLoadoutButtons( int selectedIndex, var[NUM_PERSISTENT_PILOT_LOADOUTS] buttons, bool focusSelected = true )
+void function UpdatePilotLoadoutButtons( int selectedIndex, var[ NUM_PERSISTENT_PILOT_LOADOUTS ] buttons, bool focusSelected = true )
 {
 	entity player = GetUIPlayer()
 	if ( player == null )
@@ -30,7 +29,10 @@ void function UpdatePilotLoadoutButtons( int selectedIndex, var[NUM_PERSISTENT_P
 		Hud_SetLocked( button, IsItemLocked( player, pilotLoadoutRef ) )
 
 		bool shouldShowNew = ButtonShouldShowNew( eItemTypes.FEATURE, pilotLoadoutRef )
-		if ( !shouldShowNew && (RefHasAnyNewSubitem( player, loadout.primary ) || RefHasAnyNewSubitem( player, loadout.secondary ) || RefHasAnyNewSubitem( player, loadout.weapon3 )) )
+		if (
+			!shouldShowNew &&
+			( RefHasAnyNewSubitem( player, loadout.primary ) || RefHasAnyNewSubitem( player, loadout.secondary ) || RefHasAnyNewSubitem( player, loadout.weapon3 ) )
+		)
 			shouldShowNew = true
 
 		if ( IsItemLocked( player, pilotLoadoutRef ) )
@@ -78,7 +80,9 @@ void function UpdatePilotLoadoutPanel( var loadoutPanel, PilotLoadoutDef loadout
 
 	var renameEditBox = Hud_GetChild( loadoutPanel, "RenameEditBox" )
 
-	asset pilotAppearanceImage = loadout.camoIndex > 0 ? CamoSkin_GetImage( CamoSkins_GetByIndex( loadout.camoIndex ) ) : $"rui/menu/common/appearance_button_swatch"
+	asset pilotAppearanceImage = loadout.camoIndex > 0
+		? CamoSkin_GetImage( CamoSkins_GetByIndex( loadout.camoIndex ) )
+		: $"rui/menu/common/appearance_button_swatch"
 
 	asset primaryAppearanceImage
 	if ( loadout.primarySkinIndex == 0 ) // default skin
@@ -136,7 +140,10 @@ void function UpdatePilotItemButton( var button, PilotLoadoutDef loadout, bool i
 
 	ItemDisplayData parentItem
 
-	if ( itemType == eItemTypes.PILOT_PRIMARY_ATTACHMENT || itemType == eItemTypes.PILOT_PRIMARY_MOD || itemType == eItemTypes.PILOT_SECONDARY_MOD || itemType == eItemTypes.PILOT_WEAPON_MOD3 )
+	if (
+		itemType == eItemTypes.PILOT_PRIMARY_ATTACHMENT || itemType == eItemTypes.PILOT_PRIMARY_MOD || itemType == eItemTypes.PILOT_SECONDARY_MOD ||
+		itemType == eItemTypes.PILOT_WEAPON_MOD3
+	)
 	{
 		string parentProperty = GetParentLoadoutProperty( "pilot", propertyName )
 		Assert( parentProperty == "primary" || parentProperty == "secondary" || parentProperty == "weapon3" )
@@ -153,7 +160,10 @@ void function UpdatePilotItemButton( var button, PilotLoadoutDef loadout, bool i
 		if ( itemType == eItemTypes.PILOT_PRIMARY_ATTACHMENT )
 		{
 			// Disable attachment option for "special" primary weapons
-			if ( "menuCategory" in parentItem.i && ( expect int( parentItem.i.menuCategory ) == ePrimaryWeaponCategory.SPECIAL || expect int( parentItem.i.menuCategory ) == ePrimaryWeaponCategory.HANDGUN ) )
+			if (
+				"menuCategory" in parentItem.i &&
+				( expect int( parentItem.i.menuCategory ) == ePrimaryWeaponCategory.SPECIAL || expect int( parentItem.i.menuCategory ) == ePrimaryWeaponCategory.HANDGUN )
+			)
 			{
 				isHiddenAttachment = true
 
@@ -180,13 +190,13 @@ void function UpdatePilotItemButton( var button, PilotLoadoutDef loadout, bool i
 
 	if ( itemType == eItemTypes.PILOT_PRIMARY || itemType == eItemTypes.PILOT_SECONDARY )
 	{
-		//if ( isEdit )
-		//{
-		//	RuiSetString( Hud_GetRui( button ), "subText", "" )
-		//	RuiSetFloat( Hud_GetRui( button ), "numSegments", 0 )
-		//	RuiSetFloat( Hud_GetRui( button ), "filledSegments", 0 )
-		//}
-		//else
+		// if ( isEdit )
+		// {
+		// 	RuiSetString( Hud_GetRui( button ), "subText", "" )
+		// 	RuiSetFloat( Hud_GetRui( button ), "numSegments", 0 )
+		// 	RuiSetFloat( Hud_GetRui( button ), "filledSegments", 0 )
+		// }
+		// else
 		{
 			int currentXP = WeaponGetXP( GetLocalClientPlayer(), itemRef )
 			int numPips = WeaponGetNumPipsForXP( itemRef, currentXP )
@@ -250,48 +260,47 @@ void function UpdatePilotItemButton( var button, PilotLoadoutDef loadout, bool i
 		shouldShowNew = ButtonShouldShowNew( GetSubitemType( parentItem.ref, propertyRef ), propertyRef, parentItem.ref )
 	Hud_SetNew( button, shouldShowNew )
 
-#if HAS_THREAT_SCOPE_SLOT_LOCK
-	if ( propertyName == "primaryMod2" )
-	{
-		string attatchmentRef = GetPilotLoadoutValue( loadout, "primaryAttachment" )
-		if ( attatchmentRef == "threat_scope" )
+	#if HAS_THREAT_SCOPE_SLOT_LOCK
+		if ( propertyName == "primaryMod2" )
 		{
-			Hud_SetLocked( button, true )
-			RefreshButtonCost( button, propertyRef, "", 0, 0 )
-			Hud_SetNew( button, false )
+			string attatchmentRef = GetPilotLoadoutValue( loadout, "primaryAttachment" )
+			if ( attatchmentRef == "threat_scope" )
+			{
+				Hud_SetLocked( button, true )
+				RefreshButtonCost( button, propertyRef, "", 0, 0 )
+				Hud_SetNew( button, false )
+			}
 		}
-	}
-#endif
+	#endif
 }
 
 void function UpdatePilotLoadoutPanelBinds( var loadoutPanel )
 {
 	if ( IsControllerModeActive() )
 	{
-		//SetLabelRuiText( Hud_GetChild( loadoutPanel, "PrimaryBind" ), "%weaponCycle%" )
-		//SetLabelRuiText( Hud_GetChild( loadoutPanel, "SecondaryBind" ), "%weaponCycle%" )
+		// SetLabelRuiText( Hud_GetChild( loadoutPanel, "PrimaryBind" ), "%weaponCycle%" )
+		// SetLabelRuiText( Hud_GetChild( loadoutPanel, "SecondaryBind" ), "%weaponCycle%" )
 		SetLabelRuiText( Hud_GetChild( loadoutPanel, "Weapon3Bind" ), Localize( "#WEAPON3_HOLD_HINT" ) )
 	}
 	else
 	{
-		//SetLabelRuiText( Hud_GetChild( loadoutPanel, "PrimaryBind" ), "%weaponSelectPrimary0%" )
-		//SetLabelRuiText( Hud_GetChild( loadoutPanel, "SecondaryBind" ), "%weaponSelectPrimary1%" )
+		// SetLabelRuiText( Hud_GetChild( loadoutPanel, "PrimaryBind" ), "%weaponSelectPrimary0%" )
+		// SetLabelRuiText( Hud_GetChild( loadoutPanel, "SecondaryBind" ), "%weaponSelectPrimary1%" )
 		SetLabelRuiText( Hud_GetChild( loadoutPanel, "Weapon3Bind" ), Localize( "#WEAPON3_PRESS_HINT" ) )
 	}
-
-	//SetLabelRuiText( Hud_GetChild( loadoutPanel, "TacticalBind" ), Localize( "%offhand1%" ) )
-	//SetLabelRuiText( Hud_GetChild( loadoutPanel, "OrdnanceBind" ), Localize( "%offhand0%" ) )
+	// SetLabelRuiText( Hud_GetChild( loadoutPanel, "TacticalBind" ), Localize( "%offhand1%" ) )
+	// SetLabelRuiText( Hud_GetChild( loadoutPanel, "OrdnanceBind" ), Localize( "%offhand0%" ) )
 }
 
-asset function GetItemImageFromWeaponRefAndPersistenceValue(string weaponRef, int persistenceValue, string loadoutProperty)
+asset function GetItemImageFromWeaponRefAndPersistenceValue( string weaponRef, int persistenceValue, string loadoutProperty )
 {
 	string skinRef = GetSkinRefFromWeaponRefAndPersistenceValue( weaponRef, persistenceValue )
-	if (!IsRefValid(skinRef))
+	if ( !IsRefValid( skinRef ) )
 	{
-		if (uiGlobal.editingLoadoutIndex != -1)
+		if ( uiGlobal.editingLoadoutIndex != -1 )
 		{
 			printt( "Resetting invalid " + loadoutProperty + " for weapon " + weaponRef )
-			SetCachedLoadoutValue(GetUIPlayer(), "pilot", uiGlobal.editingLoadoutIndex, loadoutProperty, "0")
+			SetCachedLoadoutValue( GetUIPlayer(), "pilot", uiGlobal.editingLoadoutIndex, loadoutProperty, "0" )
 		}
 		return $"rui/menu/common/appearance_button_swatch"
 	}

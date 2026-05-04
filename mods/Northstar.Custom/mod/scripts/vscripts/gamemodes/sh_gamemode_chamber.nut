@@ -17,7 +17,7 @@ void function CreateGamemodeChamber()
 	GameMode_SetDefaultTimeLimits( GAMEMODE_CHAMBER, 10, 0.0 )
 	GameMode_AddScoreboardColumnData( GAMEMODE_CHAMBER, "#SCOREBOARD_SCORE", PGS_ASSAULT_SCORE, 2 )
 	GameMode_AddScoreboardColumnData( GAMEMODE_CHAMBER, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 )
-	GameMode_SetColor( GAMEMODE_CHAMBER, [147, 204, 57, 255] )
+	GameMode_SetColor( GAMEMODE_CHAMBER, [ 147, 204, 57, 255 ] )
 
 	AddPrivateMatchMode( GAMEMODE_CHAMBER ) // add to private lobby modes
 

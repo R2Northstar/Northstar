@@ -4,7 +4,7 @@ global function NukeTitanThink
 
 global function AutoTitan_SelfDestruct
 
-const NUKE_TITAN_PLAYER_DETECT_RANGE 	= 500
+const NUKE_TITAN_PLAYER_DETECT_RANGE = 500
 const NUKE_TITAN_RANGE_CHECK_SLEEP_SECS = 1.0
 
 void function AutoTitan_SelfDestruct( entity titan )
@@ -17,8 +17,8 @@ void function AutoTitan_SelfDestruct( entity titan )
 
 void function NukeTitanThink( entity titan, entity generator )
 {
-	//Function assumes that given Titan is spawned as npc_titan_ogre_meteor_nuke. Changing the Titan's AISettings post-spawn
-	//disrupts the Titan's titanfall animations and can result in the Titan landing outside the level.
+	// Function assumes that given Titan is spawned as npc_titan_ogre_meteor_nuke. Changing the Titan's AISettings post-spawn
+	// disrupts the Titan's titanfall animations and can result in the Titan landing outside the level.
 	NPC_SetNuclearPayload( titan )
 	AddEntityCallback_OnPostDamaged( titan, AutoTitan_NuclearPayload_PostDamageCallback )
 
@@ -26,7 +26,6 @@ void function NukeTitanThink( entity titan, entity generator )
 
 	thread NukeTitanSeekOutGenerator( titan, generator )
 }
-
 
 void function NukeTitanSeekOutGenerator( entity titan, entity generator )
 {
@@ -39,7 +38,7 @@ void function NukeTitanSeekOutGenerator( entity titan, entity generator )
 	float goalRadius = 100
 	float checkRadiusSqr = 400 * 400
 
-	//array<vector> pos = NavMesh_RandomPositions( generator.GetOrigin(), HULL_TITAN, 5, 250, 350 )
+	// array<vector> pos = NavMesh_RandomPositions( generator.GetOrigin(), HULL_TITAN, 5, 250, 350 )
 	array<vector> pos = NavMesh_GetNeighborPositions( generator.GetOrigin(), HULL_TITAN, 5 )
 	pos = ArrayClosestVector( pos, titan.GetOrigin() )
 
@@ -49,15 +48,15 @@ void function NukeTitanSeekOutGenerator( entity titan, entity generator )
 		if ( DistanceSqr( generator.GetOrigin(), point ) <= checkRadiusSqr && NavMesh_IsPosReachableForAI( titan, point ) )
 		{
 			validPos.append( point )
-			//DebugDrawSphere( point, 32, 255, 0, 0, true, 60 )
+			// DebugDrawSphere( point, 32, 255, 0, 0, true, 60 )
 		}
 	}
 
 	int posLen = validPos.len()
-	while( posLen >= 1 )
+	while ( posLen >= 1 )
 	{
 		titan.SetEnemy( generator )
-		thread AssaultOrigin( titan, validPos[0], goalRadius )
+		thread AssaultOrigin( titan, validPos[ 0 ], goalRadius )
 		titan.AssaultSetFightRadius( goalRadius )
 
 		wait 0.5
@@ -103,7 +102,7 @@ void function AutoTitan_NuclearPayload_PostDamageCallback( entity titan, var dam
 
 	if ( titan.GetHealth() > titan.s.doomedStateNukeTriggerHealth )
 	{
-		//printt( "titan health:", titan.GetHealth(), "health to nuke:", titan.s.doomedStateNukeTriggerHealth )
+		// printt( "titan health:", titan.GetHealth(), "health to nuke:", titan.s.doomedStateNukeTriggerHealth )
 		return
 	}
 

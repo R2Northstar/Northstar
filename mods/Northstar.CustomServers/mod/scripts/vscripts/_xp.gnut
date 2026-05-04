@@ -38,7 +38,7 @@ void function HandleXPGainForScoreEvent( entity player, ScoreEvent event )
 	int weaponXp = ScoreEvent_GetXPValueWeapon( event )
 	int titanXp = ScoreEvent_GetXPValueTitan( event )
 	int factionXp = ScoreEvent_GetXPValueFaction( event )
-	
+
 	if ( player.GetPlayerNetInt( "xpMultiplier" ) > 0 || GetCurrentPlaylistVarInt( "double_xp_enabled", 0 ) == 1 )
 	{
 		xpValue *= 2
@@ -66,7 +66,8 @@ void function HandleXPGainForScoreEvent( entity player, ScoreEvent event )
 void function AddXP( entity player, int amount )
 {
 	int oldXp = player.GetPersistentVarAsInt( "xp" )
-	if( oldXp < 0 ) oldXp = 0
+	if ( oldXp < 0 )
+		oldXp = 0
 	int oldLevel = GetLevelForXP( oldXp )
 	player.SetPersistentVar( "xp", min( oldXp + amount, PlayerGetMaxXPPerGen() ) )
 	player.XPChanged() // network xp change to client, gen can't change here
@@ -76,8 +77,8 @@ void function AddXP( entity player, int amount )
 	if ( newLevel != oldLevel )
 	{
 		Remote_CallFunction_NonReplay( player, "ServerCallback_PlayerLeveledUp", player.GetPersistentVarAsInt( "gen" ), newLevel )
-		
-		if( ProgressionEnabledForPlayer( player ) )
+
+		if ( ProgressionEnabledForPlayer( player ) )
 			AwardRandomItemsForPlayerLevels( player, player.GetPersistentVarAsInt( "gen" ), newLevel )
 	}
 }

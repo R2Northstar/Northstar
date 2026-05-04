@@ -2,5 +2,4 @@ global function PROTO_PlayLoadoutNotification
 
 void function PROTO_PlayLoadoutNotification( string weapon, entity player )
 {
-
 }

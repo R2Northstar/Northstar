@@ -1,8 +1,7 @@
-
 untyped
 global function BleedoutClient_Init
 
-//SERVER CALLBACKS
+// SERVER CALLBACKS
 global function ServerCallback_BLEEDOUT_StartFirstAidProgressBar
 global function ServerCallback_BLEEDOUT_StopFirstAidProgressBar
 global function ServerCallback_BLEEDOUT_ShowWoundedMarker
@@ -13,8 +12,7 @@ struct
 	int currentResAttemptID = -1
 	bool isSelfBleeding = false
 	bool displayedTutorialMessage = false
-}
-file
+} file
 
 void function BleedoutClient_Init()
 {
@@ -34,8 +32,8 @@ void function Bleedout_StartBleedoutProgressBar()
 	RuiTrackFloat3( rui, "pos", player, RUI_TRACK_ABSORIGIN_FOLLOW ) // RUI_TRACK_OVERHEAD_FOLLOW
 	RuiSetGameTime( rui, "startTime", Time() )
 	RuiSetGameTime( rui, "endTime", Time() + Bleedout_GetBleedoutTime() )
-	//RuiSetString( rui, "title", "hello there" )
-	//RuiSetBool( rui, "showTimer", true )
+	// RuiSetString( rui, "title", "hello there" )
+	// RuiSetBool( rui, "showTimer", true )
 
 	OnThreadEnd(
 		function() : ( rui )
@@ -62,7 +60,7 @@ void function ServerCallback_BLEEDOUT_StartFirstAidProgressBar( float endTime, i
 
 	entity player = GetLocalClientPlayer()
 
-	//If the local player is already reciving healing, do not change their hud state
+	// If the local player is already reciving healing, do not change their hud state
 	if ( player == playerToRes && file.currentResAttemptID != -1 )
 		return
 
@@ -84,11 +82,11 @@ void function ServerCallback_BLEEDOUT_StartFirstAidProgressBar( float endTime, i
 
 void function ServerCallback_BLEEDOUT_StopFirstAidProgressBar( int resAttemptID )
 {
-	//Ensure that the res instance that started the First Aid Progress Bar is the one to end it.
+	// Ensure that the res instance that started the First Aid Progress Bar is the one to end it.
 	if ( resAttemptID != file.currentResAttemptID )
 		return
 
-	//Allow for new res attempts
+	// Allow for new res attempts
 	file.currentResAttemptID = -1
 
 	entity player = GetLocalClientPlayer()
@@ -113,7 +111,7 @@ void function Bleedout_DisplayFirstAidProgressBar( float endTime, float progress
 		}
 	)
 
-	while( Time() <= endTime )
+	while ( Time() <= endTime )
 	{
 		WaitFrame()
 	}
@@ -134,7 +132,7 @@ void function Bleedout_StartDyingDOF( entity ent, int statusEffect, bool actuall
 
 	if ( !file.displayedTutorialMessage && Bleedout_GetFirstAidTimeSelf() < 0 )
 	{
-		AddPlayerHint( Bleedout_GetBleedoutTime() - 0.25, 0.5, $"","#BLEEDOUT_CALL_HELP" )
+		AddPlayerHint( Bleedout_GetBleedoutTime() - 0.25, 0.5, $"", "#BLEEDOUT_CALL_HELP" )
 		file.displayedTutorialMessage = true
 	}
 
@@ -145,11 +143,11 @@ void function Bleedout_StartDyingDOF( entity ent, int statusEffect, bool actuall
 void function Bleedout_StartScreenEffects( entity ent )
 {
 	ent.hudElems.damageOverlayRedBloom.SetColor( 255, 0, 0, 100 )
-	ent.hudElems.damageOverlayRedBloom.ColorOverTime( 255, 0, 0, 255, Bleedout_GetBleedoutTime())
+	ent.hudElems.damageOverlayRedBloom.ColorOverTime( 255, 0, 0, 255, Bleedout_GetBleedoutTime() )
 
 	float flashDuration = 0.5
 	ent.hudElems.damageOverlayRedBloom.Show()
-	ScreenFade( ent, 255, 0, 0, 175, 0.55, 0.0, FFADE_IN | FFADE_PURGE) // red flash
+	ScreenFade( ent, 255, 0, 0, 175, 0.55, 0.0, FFADE_IN | FFADE_PURGE ) // red flash
 	wait flashDuration
 
 	ScreenFade( ent, 0, 0, 0, 240, Bleedout_GetBleedoutTime() - flashDuration, 0.0, FFADE_OUT | FFADE_PURGE )
@@ -167,7 +165,7 @@ void function Bleedout_PlayerRevivedDOF( entity ent, int statusEffect, bool actu
 	HidePlayerHint( "#BLEEDOUT_CALL_HELP" )
 	DoF_SetFarDepthToDefault()
 	HealthHUD_AddPlayer( ent )
-	ScreenFade( ent, 0, 0, 0, 200, 0.5, 0.0, FFADE_IN | FFADE_PURGE)
+	ScreenFade( ent, 0, 0, 0, 200, 0.5, 0.0, FFADE_IN | FFADE_PURGE )
 }
 
 void function ServerCallback_BLEEDOUT_ShowWoundedMarker( int woundedPlayerEhandle, float startTime, float endTime )
@@ -193,7 +191,7 @@ void function ShowWoundedMarker_Internal( entity woundedPlayer, float startTime,
 	}
 
 	OnThreadEnd(
-	function() : ( rui )
+		function() : ( rui )
 		{
 			RuiDestroy( rui )
 		}

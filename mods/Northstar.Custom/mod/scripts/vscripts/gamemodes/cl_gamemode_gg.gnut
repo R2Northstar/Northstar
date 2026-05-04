@@ -1,6 +1,7 @@
 global function ClGamemodeGG_Init
 
-struct {
+struct
+{
 	int lastScore = -1
 } file
 
@@ -28,7 +29,7 @@ void function ClGamemodeGG_Init()
 	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LAST_MINUTE, "music_mp_freeagents_lastminute", TEAM_IMC )
 	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LAST_MINUTE, "music_mp_freeagents_lastminute", TEAM_MILITIA )
 
-	Cl_GGEarnMeter_Init(ClGamemodeGG_GetWeaponIcon, ClGamemodeGG_ShouldChangeWeaponIcon)
+	Cl_GGEarnMeter_Init( ClGamemodeGG_GetWeaponIcon, ClGamemodeGG_ShouldChangeWeaponIcon )
 }
 
 asset function ClGamemodeGG_GetWeaponIcon()

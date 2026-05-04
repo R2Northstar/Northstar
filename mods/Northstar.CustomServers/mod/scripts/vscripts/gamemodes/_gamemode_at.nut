@@ -4,29 +4,28 @@ global function RateSpawnpoints_AT
 
 // Old bobr note which still applies after a year :)
 // IMPLEMENTATION NOTES:
-// bounty hunt is a mode that was clearly pretty heavily developed, and had alot of scrapped concepts (i.e. most wanted player bounties, turret bounties, collectable blackbox objectives)
+// bounty hunt is a mode that was clearly pretty heavily developed, and had alot of scrapped
+// concepts (i.e. most wanted player bounties, turret bounties, collectable blackbox objectives)
 // in the interest of time, this script isn't gonna support any of that atm
 // alot of the remote functions also take parameters that aren't used, i'm not gonna populate these and just use default values for now instead
-// however, if you do want to mess with this stuff, almost all the remote functions for this stuff are still present in cl_gamemode_at, and should work fine with minimal fuckery in my experience
-
+// however, if you do want to mess with this stuff, almost all the remote functions for this stuff
+// are still present in cl_gamemode_at, and should work fine with minimal fuckery in my experience
 
 // Bank settings
-const float AT_BANKS_OPEN_DURATION = 45.0   // Bank open time
-const int   AT_BANK_DEPOSIT_RATE = 10       // Amount deposited per second
-const int   AT_BANK_DEPOSIT_RADIUS = 256    // bank radius for depositing
+const float AT_BANKS_OPEN_DURATION = 45.0 // Bank open time
+const int AT_BANK_DEPOSIT_RATE = 10 // Amount deposited per second
+const int AT_BANK_DEPOSIT_RADIUS = 256 // bank radius for depositing
 const float AT_BANK_FORCE_CLOSE_DELAY = 4.0 // If all bonus money has been deposited close the banks after this constant early
 
 // TODO: The reference function no longer exists, check if this still holds true
 // VoyageDB: HACK score events... respawn made things in AT_SetScoreEventOverride() really messed up, have to do some hack here
-const array<string> AT_ENABLE_SCOREEVENTS = 
-[
+const array<string> AT_ENABLE_SCOREEVENTS = [
 	// these are disabled in AT_SetScoreEventOverride(), but related scoreEvents are not implemented into gamemode
 	// needs to re-enable them
 	"DoomTitan",
 	"DoomAutoTitan"
 ]
-const array<string> AT_DISABLE_SCOREEVENTS =
-[
+const array<string> AT_DISABLE_SCOREEVENTS = [
 	// these are missed in AT_SetScoreEventOverride(), but game actually used them
 	// needs to disable them
 	"KillStalker"
@@ -34,21 +33,20 @@ const array<string> AT_DISABLE_SCOREEVENTS =
 
 // Wave settings
 // General
-const int   AT_AI_TEAM = TEAM_BOTH               // Allow AI to attack and be attacked by both player teams
-const float AT_FIRST_WAVE_START_DELAY = 10.0     // First wave has an extra delay before begining
-const float AT_WAVE_TRANSITION_DELAY = 5.0       // Time between each wave and banks opening/closing
+const int AT_AI_TEAM = TEAM_BOTH // Allow AI to attack and be attacked by both player teams
+const float AT_FIRST_WAVE_START_DELAY = 10.0 // First wave has an extra delay before begining
+const float AT_WAVE_TRANSITION_DELAY = 5.0 // Time between each wave and banks opening/closing
 const float AT_WAVE_END_ANNOUNCEMENT_DELAY = 1.0 // Extra wait before announcing wave cleaned
 
 // Squad settings
 const int AT_DROPPOD_SQUADS_ALLOWED_ON_FIELD = 4 // default is 4 droppod squads on field, won't use if AT_USE_TOTAL_ALLOWED_ON_FIELD_CHECK turns on // TODO: verify this
 
 // Titan bounty settings
-const float AT_BOUNTY_TITAN_CHECK_DELAY = 10.0    // wait for bounty titans landing before we start checking their life state
+const float AT_BOUNTY_TITAN_CHECK_DELAY = 10.0 // wait for bounty titans landing before we start checking their life state
 const float AT_BOUNTY_TITAN_HEALTH_MULTIPLIER = 3 // TODO: Verify this
 
 // Titan boss settings, check sh_gamemode_at.nut for more info
-const array<string> AT_BOUNTY_TITANS_AI_SETTINGS =
-[
+const array<string> AT_BOUNTY_TITANS_AI_SETTINGS = [
 	"npc_titan_atlas_stickybomb_bounty",
 	"npc_titan_atlas_tracker_bounty",
 	"npc_titan_ogre_minigun_bounty",
@@ -59,16 +57,17 @@ const array<string> AT_BOUNTY_TITANS_AI_SETTINGS =
 ]
 
 // Extra
-// Respawn didn't use the "totalAllowedOnField" for npc spawning, they only allow 1 squad to be on field for each type of npc. enabling this might cause too much npcs spawning and crash the game
+// Respawn didn't use the "totalAllowedOnField" for npc spawning, they only allow 1 squad to be on
+// field for each type of npc. enabling this might cause too much npcs spawning and crash the game
 const bool AT_USE_TOTAL_ALLOWED_ON_FIELD_CHECK = false
 
 // Objectives
-const int AT_OBJECTIVE_EMPTY = -1            // Remove objective
-const int AT_OBJECTIVE_KILL_DZ = 104         // #AT_OBJECTIVE_KILL_DZ
-const int AT_OBJECTIVE_KILL_DZ_MULTI = 105   // #AT_OBJECTIVE_KILL_DZ_MULTI
-const int AT_OBJECTIVE_KILL_BOSS = 106       // #AT_OBJECTIVE_KILL_BOSS
+const int AT_OBJECTIVE_EMPTY = -1 // Remove objective
+const int AT_OBJECTIVE_KILL_DZ = 104 // #AT_OBJECTIVE_KILL_DZ
+const int AT_OBJECTIVE_KILL_DZ_MULTI = 105 // #AT_OBJECTIVE_KILL_DZ_MULTI
+const int AT_OBJECTIVE_KILL_BOSS = 106 // #AT_OBJECTIVE_KILL_BOSS
 const int AT_OBJECTIVE_KILL_BOSS_MULTI = 107 // #AT_OBJECTIVE_KILL_BOSS_MULTI
-const int AT_OBJECTIVE_BANK_OPEN = 109       // #AT_BANK_OPEN_OBJECTIVE
+const int AT_OBJECTIVE_BANK_OPEN = 109 // #AT_BANK_OPEN_OBJECTIVE
 
 // When a player tries to deposit when they have 0 bonus money
 // we show a help mesage, this is the ratelimit for that message
@@ -79,22 +78,22 @@ const float AT_PLAYER_HUD_MESSAGE_COOLDOWN = 2.5
 // might teleport them into the map while trying to correct their position
 // This obviously breaks bounty hunt where the objective is to kill ALL ai
 // so we try to cleanup the camps after a set amount of time of inactivity
-const int   AT_CAMP_BORED_NPCS_LEFT_TO_START_CLEANUP = 3
+const int AT_CAMP_BORED_NPCS_LEFT_TO_START_CLEANUP = 3
 const float AT_CAMP_BORED_CLEANUP_WAIT = 60.0
-struct 
+struct
 {
-	array<entity> banks 
+	array<entity> banks
 	array<AT_WaveOrigin> camps
 
 	// Used to track ScriptmanagedEntArrays of ai squads
-	table< int, array<int> > campScriptEntArrays
-	
-	table< entity, bool > titanIsBountyBoss
-	table< entity, int > bountyTitanRewards
-	table< entity, int > npcStolenBonus
-	table< entity, bool > playerBankUploading
-	table< entity, table<entity, int> > playerSavedBountyDamage
-	table< entity, float > playerHudMessageAllowedTime
+	table<int, array<int> > campScriptEntArrays
+
+	table<entity, bool> titanIsBountyBoss
+	table<entity, int> bountyTitanRewards
+	table<entity, int> npcStolenBonus
+	table<entity, bool> playerBankUploading
+	table<entity, table<entity, int> > playerSavedBountyDamage
+	table<entity, float> playerHudMessageAllowedTime
 } file
 
 void function GamemodeAt_Init()
@@ -131,11 +130,9 @@ void function RateSpawnpoints_AT( int checkclass, array<entity> spawnpoints, int
 	RateSpawnpoints_Generic( checkclass, spawnpoints, team, player )
 }
 
-
-
-////////////////////////////////////////
-///// GAMESTATE CALLBACK FUNCTIONS /////
-////////////////////////////////////////
+// //////////////////////////////////////
+// /// GAMESTATE CALLBACK FUNCTIONS /////
+// //////////////////////////////////////
 
 void function OnATGamePrematch()
 {
@@ -147,15 +144,13 @@ void function OnATGamePlaying()
 	thread AT_GameLoop_Threaded()
 }
 
-////////////////////////////////////////////
-///// GAMESTATE CALLBACK FUNCTIONS END /////
-////////////////////////////////////////////
+// //////////////////////////////////////////
+// /// GAMESTATE CALLBACK FUNCTIONS END /////
+// //////////////////////////////////////////
 
-
-
-////////////////////////////
-///// PLAYER FUNCTIONS /////
-////////////////////////////
+// //////////////////////////
+// /// PLAYER FUNCTIONS /////
+// //////////////////////////
 
 void function InitialiseATPlayer( entity player )
 {
@@ -178,8 +173,8 @@ void function AT_PlayerTitleThink( entity player )
 		{
 			// Set player money count
 			player.SetTitle( "$" + string( AT_GetPlayerBonusPoints( player ) ) )
-			
-			if( AT_GetPlayerBonusPoints( player ) >= 600 && !HasPlayerCompletedMeritScore( player ) ) //Challenge is: "Earn $600."
+
+			if ( AT_GetPlayerBonusPoints( player ) >= 600 && !HasPlayerCompletedMeritScore( player ) ) // Challenge is: "Earn $600."
 			{
 				AddPlayerScore( player, "ChallengeATAssault" )
 				SetPlayerChallengeMeritScore( player )
@@ -191,7 +186,7 @@ void function AT_PlayerTitleThink( entity player )
 				player.SetTitle( GetTitanPlayerTitle( player ) )
 			else
 				player.SetTitle( "" )
-			
+
 			return
 		}
 
@@ -205,13 +200,13 @@ string function GetTitanPlayerTitle( entity player )
 
 	if ( !IsValid( soul ) )
 		return ""
-	
+
 	string settings = GetSoulPlayerSettings( soul )
 	var title = GetPlayerSettingsFieldForClassName( settings, "printname" )
 
 	if ( title == null )
 		return ""
-	
+
 	return expect string( title )
 }
 
@@ -266,21 +261,23 @@ void function AT_PlayerObjectiveThink( entity player )
 					}
 				}
 
-				switch( dropZoneActiveCount )
+				switch ( dropZoneActiveCount )
 				{
 					case 1:
 						nextObjective = AT_OBJECTIVE_KILL_DZ
 						break
+
 					case 2:
 						nextObjective = AT_OBJECTIVE_KILL_DZ_MULTI
 						break
 				}
 
-				switch( bossAliveCount )
+				switch ( bossAliveCount )
 				{
 					case 1:
 						nextObjective = AT_OBJECTIVE_KILL_BOSS
 						break
+
 					case 2:
 						nextObjective = AT_OBJECTIVE_KILL_BOSS_MULTI
 						break
@@ -303,23 +300,21 @@ void function AT_PlayerObjectiveThink( entity player )
 	}
 }
 
-////////////////////////////////
-///// PLAYER FUNCTIONS END /////
-////////////////////////////////
+// //////////////////////////////
+// /// PLAYER FUNCTIONS END /////
+// //////////////////////////////
 
-
-
-////////////////////////////////////////
-///// GAMEMODE INITILAZE FUNCTIONS /////
-////////////////////////////////////////
+// //////////////////////////////////////
+// /// GAMEMODE INITILAZE FUNCTIONS /////
+// //////////////////////////////////////
 
 void function OnEntitiesDidLoad()
 {
 	foreach ( entity info_target in GetEntArrayByClass_Expensive( "info_target" ) )
 	{
-		if( info_target.HasKey( "editorclass" ) )
+		if ( info_target.HasKey( "editorclass" ) )
 		{
-			switch( info_target.kv.editorclass )
+			switch ( info_target.kv.editorclass )
 			{
 				case "info_attrition_bank":
 					entity bank = CreateEntity( "prop_script" )
@@ -336,32 +331,33 @@ void function OnEntitiesDidLoad()
 					bank.Minimap_SetZOrder( MINIMAP_Z_OBJECT )
 					bank.Minimap_Hide( TEAM_IMC, null )
 					bank.Minimap_Hide( TEAM_MILITIA, null )
-					
+
 					// Create tracker ent
 					// we don't need to store these at all, client just needs to get them
 					DispatchSpawn( GetAvailableBankTracker( bank ) )
-					
+
 					// Make sure the bank is in it's disabled pose
 					thread PlayAnim( bank, "mh_inactive_idle" )
 					// Set the bank usable
 					AddCallback_OnUseEntity( bank, OnPlayerUseBank )
 					bank.SetUsable()
 					bank.SetUsePrompts( "#AT_USE_BANK_CLOSED", "#AT_USE_BANK_CLOSED" )
-					
+
 					file.banks.append( bank )
-					break;
+					break
+
 				case "info_attrition_camp":
 					AT_WaveOrigin campStruct
 					campStruct.ent = info_target
 					campStruct.origin = info_target.GetOrigin()
 					campStruct.radius = expect string( info_target.kv.radius ).tofloat()
 					campStruct.height = expect string( info_target.kv.height ).tofloat()
-					
+
 					// Assumes every info_attrition_camp will have all 9 phases, possibly not a good idea?
 					// TODO: verify this on all vanilla maps before release
 					for ( int i = 0; i < 9; i++ )
 						campStruct.phaseAllowed.append( expect string( info_target.kv[ "phase_" + ( i + 1 ) ] ) == "1" )
-					
+
 					// Get droppod spawns within the camp
 					foreach ( entity spawnpoint in SpawnPoints_GetDropPod() )
 					{
@@ -370,7 +366,7 @@ void function OnEntitiesDidLoad()
 						if ( Distance( campPos, spawnPos ) < campStruct.radius )
 							campStruct.dropPodSpawnPoints.append( spawnpoint )
 					}
-					
+
 					// Get titan spawns within the camp
 					foreach ( entity spawnpoint in SpawnPoints_GetTitan() )
 					{
@@ -379,23 +375,21 @@ void function OnEntitiesDidLoad()
 						if ( Distance( campPos, spawnPos ) < campStruct.radius )
 							campStruct.titanSpawnPoints.append( spawnpoint )
 					}
-				
+
 					file.camps.append( campStruct )
-					break;
+					break
 			}
 		}
 	}
 }
 
-////////////////////////////////////////////
-///// GAMEMODE INITILAZE FUNCTIONS END /////
-////////////////////////////////////////////
+// //////////////////////////////////////////
+// /// GAMEMODE INITILAZE FUNCTIONS END /////
+// //////////////////////////////////////////
 
-
-
-/////////////////////////////
-///// SCORING FUNCTIONS /////
-/////////////////////////////
+// ///////////////////////////
+// /// SCORING FUNCTIONS /////
+// ///////////////////////////
 
 // TODO: Don't reward in postmatch
 // TODO: Dropping a titan on a bounty with it's dome-shield still up rewards you the bonus, but
@@ -403,16 +397,16 @@ void function OnEntitiesDidLoad()
 
 void function AT_ScoreEventsValueSetUp()
 {
-	ScoreEvent_SetEarnMeterValues( "KillTitan", 0.10, 0.15 )
-	ScoreEvent_SetEarnMeterValues( "KillAutoTitan", 0.10, 0.15 )
-	ScoreEvent_SetEarnMeterValues( "AttritionTitanKilled", 0.10, 0.15 )
-	ScoreEvent_SetEarnMeterValues( "KillPilot", 0.10, 0.10 )
-	ScoreEvent_SetEarnMeterValues( "AttritionPilotKilled", 0.10, 0.10 )
-	ScoreEvent_SetEarnMeterValues( "AttritionBossKilled", 0.10, 0.20 )
+	ScoreEvent_SetEarnMeterValues( "KillTitan", 0.1, 0.15 )
+	ScoreEvent_SetEarnMeterValues( "KillAutoTitan", 0.1, 0.15 )
+	ScoreEvent_SetEarnMeterValues( "AttritionTitanKilled", 0.1, 0.15 )
+	ScoreEvent_SetEarnMeterValues( "KillPilot", 0.1, 0.1 )
+	ScoreEvent_SetEarnMeterValues( "AttritionPilotKilled", 0.1, 0.1 )
+	ScoreEvent_SetEarnMeterValues( "AttritionBossKilled", 0.1, 0.2 )
 	ScoreEvent_SetEarnMeterValues( "AttritionGruntKilled", 0.02, 0.02, 0.5 )
 	ScoreEvent_SetEarnMeterValues( "AttritionSpectreKilled", 0.02, 0.02, 0.5 )
 	ScoreEvent_SetEarnMeterValues( "AttritionStalkerKilled", 0.02, 0.02, 0.5 )
-	ScoreEvent_SetEarnMeterValues( "AttritionSuperSpectreKilled", 0.10, 0.10, 0.5 )
+	ScoreEvent_SetEarnMeterValues( "AttritionSuperSpectreKilled", 0.1, 0.1, 0.5 )
 
 	// HACK
 	foreach ( string eventName in AT_ENABLE_SCOREEVENTS )
@@ -426,16 +420,16 @@ void function AT_PlayerOrNPCKilledScoreEvent( entity victim, entity attacker, va
 {
 	if ( !IsValid( attacker ) )
 		return
-	
+
 	// Suicide
 	if ( attacker == victim )
 	{
 		if ( victim.IsPlayer() )
 			AT_PlayerBonusLoss( victim, AT_GetPlayerBonusPoints( victim ) / 2 )
-		
+
 		return
 	}
-	
+
 	// NPC is the attacker
 	if ( !attacker.IsPlayer() )
 	{
@@ -443,10 +437,10 @@ void function AT_PlayerOrNPCKilledScoreEvent( entity victim, entity attacker, va
 			attacker = GetPetTitanOwner( attacker )
 		else // NPC steals money from player, killing it will award the stolen bonus + normal reward
 			AT_NPCTryStealBonusPoints( attacker, victim )
-		
+
 		return
 	}
-	
+
 	// Get event name
 	string eventName = GetAttritionScoreEventName( victim.GetClassName() )
 
@@ -455,18 +449,18 @@ void function AT_PlayerOrNPCKilledScoreEvent( entity victim, entity attacker, va
 
 	if ( eventName == "" ) // no valid scoreEvent
 		return
-	
+
 	int scoreVal = ScoreEvent_GetPointValue( GetScoreEvent( eventName ) )
 
 	// pet titan check
 	if ( victim.IsTitan() && IsValid( GetPetTitanOwner( victim ) ) )
 	{
-		if( GetPetTitanOwner( victim ) == attacker ) // Player ejected
+		if ( GetPetTitanOwner( victim ) == attacker ) // Player ejected
 			return
-		
-		if( GetPetTitanOwner( victim ).IsPlayer() ) // Killed player npc titan
+
+		if ( GetPetTitanOwner( victim ).IsPlayer() ) // Killed player npc titan
 			return
-		
+
 		scoreVal = ATTRITION_SCORE_TITAN_MIN
 	}
 
@@ -496,10 +490,10 @@ bool function AT_NPCTryStealBonusPoints( entity attacker, entity victim )
 	// basic checks
 	if ( !attacker.IsNPC() )
 		return false
-	
+
 	if ( !victim.IsPlayer() )
 		return false
-	
+
 	int victimBonus = AT_GetPlayerBonusPoints( victim )
 	int bonusToSteal = victimBonus / 2 // npc always steal half the bonus from player, no extra bonus for killing the player
 	if ( bonusToSteal == 0 ) // player has no bonus!
@@ -507,7 +501,7 @@ bool function AT_NPCTryStealBonusPoints( entity attacker, entity victim )
 
 	if ( !( attacker in file.npcStolenBonus ) ) // init
 		file.npcStolenBonus[ attacker ] <- 0
-	
+
 	file.npcStolenBonus[ attacker ] += bonusToSteal
 
 	AT_PlayerBonusLoss( victim, bonusToSteal ) // tell victim of bonus stolen
@@ -528,10 +522,10 @@ bool function AT_PlayerTryStealBonusPoints( entity attacker, entity victim, var 
 	// basic checks
 	if ( !attacker.IsPlayer() )
 		return false
-	
+
 	if ( !victim.IsPlayer() )
 		return false
-	
+
 	int victimBonus = AT_GetPlayerBonusPoints( victim )
 
 	int minScoreCanSteal = ATTRITION_SCORE_PILOT_MIN
@@ -554,14 +548,14 @@ bool function AT_PlayerTryStealBonusPoints( entity attacker, entity victim, var 
 	// only do attacker events if victim has enough bonus to steal
 	if ( realStealBonus )
 	{
-		Remote_CallFunction_NonReplay( 
-			attacker, 
+		Remote_CallFunction_NonReplay(
+			attacker,
 			"ServerCallback_AT_PlayerKillScorePopup",
-			bonusToSteal,   // stolenScore
-			victimEHandle,  // victimEHandle
+			bonusToSteal, // stolenScore
+			victimEHandle, // victimEHandle
 			damageOrigin.x, // x
 			damageOrigin.y, // y
-			damageOrigin.z  // z
+			damageOrigin.z // z
 		)
 	}
 	else // otherwise we do a normal entity killed scoreEvent
@@ -582,15 +576,15 @@ bool function AT_PlayerTryStealBonusPoints( entity attacker, entity victim, var 
 
 	// tell victim of bonus stolen
 	AT_PlayerBonusLoss( victim, bonusToSteal )
-	
+
 	return realStealBonus
 }
 
 void function AT_PlayerBonusLoss( entity player, int bonusLoss )
 {
 	AT_AddPlayerBonusPoints( player, -bonusLoss )
-	Remote_CallFunction_NonReplay( 
-		player, 
+	Remote_CallFunction_NonReplay(
+		player,
 		"ServerCallback_AT_ShowStolenBonus",
 		bonusLoss // stolenScore
 	)
@@ -607,11 +601,11 @@ void function AT_AddToPlayerTeamScore( entity player, int amount )
 	player.AddToPlayerGameStat( PGS_ASSAULT_SCORE, amount )
 
 	// Check score so we dont go over max
-	if ( GameRules_GetTeamScore(player.GetTeam()) + amount > GetScoreLimit_FromPlaylist() )
+	if ( GameRules_GetTeamScore( player.GetTeam() ) + amount > GetScoreLimit_FromPlaylist() )
 	{
-		amount = GetScoreLimit_FromPlaylist() - GameRules_GetTeamScore(player.GetTeam())
+		amount = GetScoreLimit_FromPlaylist() - GameRules_GetTeamScore( player.GetTeam() )
 	}
-	
+
 	// update score difference
 	AddTeamScore( player.GetTeam(), amount )
 }
@@ -685,15 +679,15 @@ void function AT_AddPlayerBonusPointsForBossDamaged( entity player, entity victi
 	int bossEHandle = victim.GetEncodedEHandle()
 	vector damageOrigin = DamageInfo_GetDamagePosition( damageInfo )
 
-	Remote_CallFunction_NonReplay( 
-		player, 
+	Remote_CallFunction_NonReplay(
+		player,
 		"ServerCallback_AT_BossDamageScorePopup",
-		amount,         // damageScore
-		amount,         // damageBonus
-		bossEHandle,    // bossEHandle
+		amount, // damageScore
+		amount, // damageBonus
+		bossEHandle, // bossEHandle
 		damageOrigin.x, // x
 		damageOrigin.y, // y
-		damageOrigin.z  // z
+		damageOrigin.z // z
 	)
 }
 
@@ -704,38 +698,35 @@ void function AT_AddPlayerBonusPointsForEntityKilled( entity player, int amount,
 	// send servercallback for damaging
 	int attackerEHandle = player.GetEncodedEHandle()
 	vector damageOrigin = DamageInfo_GetDamagePosition( damageInfo )
-	
-	Remote_CallFunction_NonReplay( 
-		player, 
+
+	Remote_CallFunction_NonReplay(
+		player,
 		"ServerCallback_AT_ShowATScorePopup",
-		attackerEHandle,     // attackerEHandle
-		amount,              // damageScore
+		attackerEHandle, // attackerEHandle
+		amount, // damageScore
 		amount + extraBonus, // damageBonus
-		damageOrigin.x,      // damagePosX
-		damageOrigin.y,      // damagePosX
-		damageOrigin.z,      // damagePosX
-		0                    // damageType ( not used )
+		damageOrigin.x, // damagePosX
+		damageOrigin.y, // damagePosX
+		damageOrigin.z, // damagePosX
+		0 // damageType ( not used )
 	)
 }
 
-/////////////////////////////////
-///// SCORING FUNCTIONS END /////
-/////////////////////////////////
+// ///////////////////////////////
+// /// SCORING FUNCTIONS END /////
+// ///////////////////////////////
 
-
-
-//////////////////////////////
-///// GAMELOOP FUNCTIONS /////
-//////////////////////////////
+// ////////////////////////////
+// /// GAMELOOP FUNCTIONS /////
+// ////////////////////////////
 
 void function AT_GameLoop_Threaded()
 {
 	svGlobal.levelEnt.EndSignal( "GameStateChanged" )
-	
+
 	// game end func
 	// TODO: Cant seem to be able to get this crash ???
-	OnThreadEnd
-	( 
+	OnThreadEnd(
 		function()
 		{
 			// prevent crash before entity creation on map change
@@ -746,15 +737,15 @@ void function AT_GameLoop_Threaded()
 			}
 		}
 	)
-	
+
 	// Initial wait before first wave
 	wait AT_FIRST_WAVE_START_DELAY - AT_WAVE_TRANSITION_DELAY
-	
+
 	int lastWaveId = -1
 	for ( int waveCount = 1; ; waveCount++ )
 	{
 		wait AT_WAVE_TRANSITION_DELAY
-	
+
 		// cap to number of real waves
 		int waveId = ( waveCount - 1 ) / 2
 		int waveCapAmount = 2
@@ -774,11 +765,11 @@ void function AT_GameLoop_Threaded()
 		}
 
 		lastWaveId = waveId
-			
+
 		SetGlobalNetInt( "AT_currentWave", waveId )
 		bool isBossWave = waveCount % 2 == 0 // even number waveCount means boss wave
-		
-		// announce the wave 
+
+		// announce the wave
 		foreach ( entity player in GetPlayerArray() )
 		{
 			if ( isBossWave )
@@ -787,17 +778,17 @@ void function AT_GameLoop_Threaded()
 			}
 			else
 			{
-				Remote_CallFunction_NonReplay( 
-					player, 
-					"ServerCallback_AT_AnnouncePreParty", 
-					0.0,   // endTime ( not used )
+				Remote_CallFunction_NonReplay(
+					player,
+					"ServerCallback_AT_AnnouncePreParty",
+					0.0, // endTime ( not used )
 					waveId // waveNum
 				)
 			}
 		}
-		
+
 		wait AT_WAVE_TRANSITION_DELAY
-		
+
 		// Run the wave
 		thread AT_CampSpawnThink( waveId, isBossWave )
 
@@ -805,7 +796,7 @@ void function AT_GameLoop_Threaded()
 		{
 			svGlobal.levelEnt.WaitSignal( "ATAllCampsClean" ) // signaled when all camps cleaned in spawn functions
 		}
-			else
+		else
 		{
 			wait AT_BOUNTY_TITAN_CHECK_DELAY
 			// wait until all bounty titans killed
@@ -818,25 +809,25 @@ void function AT_GameLoop_Threaded()
 		SetGlobalNetBool( "preBankPhase", true )
 
 		wait AT_WAVE_END_ANNOUNCEMENT_DELAY
-		
+
 		// announce wave end
 		foreach ( entity player in GetPlayerArray() )
 		{
-			Remote_CallFunction_NonReplay( 
-				player, 
+			Remote_CallFunction_NonReplay(
+				player,
 				"ServerCallback_AT_AnnounceWaveOver",
 				waveId, // waveNum            ( not used )
-				0,      // militiaDamageTotal ( not used )
-				0,      // imcDamageTotal     ( not used )
-				0,      // milMVP             ( not used )
-				0,      // imcMVP             ( not used )
-				0,      // milMVPDamage       ( not used )
-				0       // imcMVPDamage       ( not used )
+				0, // militiaDamageTotal ( not used )
+				0, // imcDamageTotal     ( not used )
+				0, // milMVP             ( not used )
+				0, // imcMVP             ( not used )
+				0, // milMVPDamage       ( not used )
+				0 // imcMVPDamage       ( not used )
 			)
 		}
 
 		wait AT_WAVE_TRANSITION_DELAY
-		
+
 		// banking phase
 		SetGlobalNetBool( "preBankPhase", false )
 		SetGlobalNetTime( "AT_bankStartTime", Time() )
@@ -849,7 +840,6 @@ void function AT_GameLoop_Threaded()
 		foreach ( entity bank in file.banks )
 			thread AT_BankActiveThink( bank )
 
-		
 		float endTime = Time() + AT_BANKS_OPEN_DURATION
 		bool forceCloseTriggered = false
 		// wait until no player is holding bonus, or max wait time
@@ -864,7 +854,7 @@ void function AT_GameLoop_Threaded()
 
 			WaitFrame()
 		}
-		
+
 		SetGlobalNetBool( "banksOpen", false )
 		foreach ( entity player in GetPlayerArray() )
 			Remote_CallFunction_NonReplay( player, "ServerCallback_AT_BankClose" )
@@ -881,20 +871,18 @@ bool function ATAnyPlayerHasBonus()
 	return false
 }
 
-//////////////////////////////////
-///// GAMELOOP FUNCTIONS END /////
-//////////////////////////////////
+// ////////////////////////////////
+// /// GAMELOOP FUNCTIONS END /////
+// ////////////////////////////////
 
-
-
-//////////////////////////
-///// CAMP FUNCTIONS /////
-//////////////////////////
+// ////////////////////////
+// /// CAMP FUNCTIONS /////
+// ////////////////////////
 
 void function AT_CampSpawnThink( int waveId, bool isBossWave )
 {
 	AT_WaveData wave = GetWaveData( waveId )
-	array< array<AT_SpawnData> > campSpawnData
+	array<array<AT_SpawnData> > campSpawnData
 
 	if ( isBossWave )
 		campSpawnData = wave.bossSpawnData
@@ -911,35 +899,34 @@ void function AT_CampSpawnThink( int waveId, bool isBossWave )
 	// HACK
 	// There's too many phase3 camps on exoplanet and rise, make sure we always have the correct count
 	int maxCampsForWave = waveId == 0 ? 1 : 2
-	while( allCampsToUse.len() > maxCampsForWave )
+	while ( allCampsToUse.len() > maxCampsForWave )
 	{
 		// Get the required number of camps
 		array<AT_WaveOrigin> tempCamps
-		for( int i = 0; i < maxCampsForWave; i++ )
-			tempCamps.append( allCampsToUse[RandomInt( allCampsToUse.len() )] )
-		
+		for ( int i = 0; i < maxCampsForWave; i++ )
+			tempCamps.append( allCampsToUse[ RandomInt( allCampsToUse.len() ) ] )
 
 		// Check if they're intersecting, if they are, try again
 		bool intersecting = false
-		for( int i = 0; i < tempCamps.len(); i++ )
+		for ( int i = 0; i < tempCamps.len(); i++ )
 		{
-			AT_WaveOrigin campA = tempCamps[i]
-			for( int j = 0; j < tempCamps.len(); j++ )
+			AT_WaveOrigin campA = tempCamps[ i ]
+			for ( int j = 0; j < tempCamps.len(); j++ )
 			{
 				// Don't compare the same two camps
-				if( j == i )
+				if ( j == i )
 					continue
-				
-				AT_WaveOrigin campB = tempCamps[j]
-				
-				if( Distance( campA.origin, campB.origin ) < campA.radius + campB.radius )
+
+				AT_WaveOrigin campB = tempCamps[ j ]
+
+				if ( Distance( campA.origin, campB.origin ) < campA.radius + campB.radius )
 					intersecting = true
 			}
 		}
 
-		if( !intersecting )
+		if ( !intersecting )
 			allCampsToUse = tempCamps
-		
+
 		// If we ever get really unlucky just wait a frame
 		WaitFrame()
 	}
@@ -960,14 +947,14 @@ void function AT_CampSpawnThink( int waveId, bool isBossWave )
 			totalNPCsToSpawn += spawnData.totalToSpawn
 		}
 
-		if ( !isBossWave ) 
+		if ( !isBossWave )
 		{
 			// camp Ent, boss wave will use boss themselves as campEnt
 			string campEntVarName = "camp" + string( spawnId + 1 ) + "Ent"
 			bool waveNotActive = GetGlobalNetBool( "preBankPhase" ) || GetGlobalNetBool( "banksOpen" )
 			if ( !IsValid( GetGlobalNetEnt( campEntVarName ) ) && !waveNotActive )
 				SetGlobalNetEnt( campEntVarName, CreateCampTracker( curCampData, spawnId ) )
-			
+
 			array<AT_SpawnData> minionSquadDatas
 			foreach ( AT_SpawnData data in curSpawnData )
 			{
@@ -981,7 +968,7 @@ void function AT_CampSpawnThink( int waveId, bool isBossWave )
 						else
 							thread AT_DroppodSquadEvent_Single( curCampData, spawnId, data )
 						break
-					
+
 					case "npc_super_spectre":
 						thread AT_ReaperEvent( curCampData, spawnId, data )
 						break
@@ -1002,9 +989,9 @@ void function AT_CampSpawnThink( int waveId, bool isBossWave )
 		{
 			foreach ( AT_SpawnData data in curSpawnData )
 			{
-				if( data.aitype != "npc_titan" )
+				if ( data.aitype != "npc_titan" )
 					continue
-				
+
 				thread AT_BountyTitanEvent( curCampData, spawnId, data )
 				break
 			}
@@ -1041,15 +1028,15 @@ void function CampProgressThink( int spawnId, int totalNPCsToSpawn )
 		float campLeft = float( npcsLeft ) / float( totalNPCsToSpawn )
 		SetGlobalNetFloat( campProgressName, campLeft )
 
-		if( npcsLeft <= AT_CAMP_BORED_NPCS_LEFT_TO_START_CLEANUP && cleanUpTime < 0.0 )
+		if ( npcsLeft <= AT_CAMP_BORED_NPCS_LEFT_TO_START_CLEANUP && cleanUpTime < 0.0 )
 		{
 			cleanUpTime = Time() + AT_CAMP_BORED_CLEANUP_WAIT
-			print("Cleanup timer started!")
+			print( "Cleanup timer started!" )
 		}
 
-		if( Time() > cleanUpTime && cleanUpTime > 0.0 && spawnId in file.campScriptEntArrays )
+		if ( Time() > cleanUpTime && cleanUpTime > 0.0 && spawnId in file.campScriptEntArrays )
 		{
-			foreach( int handle in file.campScriptEntArrays[spawnId] )
+			foreach ( int handle in file.campScriptEntArrays[ spawnId ] )
 			{
 				array<entity> entities = GetScriptManagedEntArray( handle )
 				entities.removebyvalue( null )
@@ -1076,7 +1063,7 @@ void function CampProgressThink( int spawnId, int totalNPCsToSpawn )
 			// check if both camps being destroyed
 			if ( !IsValid( GetGlobalNetEnt( "camp1Ent" ) ) && !IsValid( GetGlobalNetEnt( "camp2Ent" ) ) )
 				svGlobal.levelEnt.Signal( "ATAllCampsClean" ) // end the wave
-			
+
 			return
 		}
 
@@ -1124,14 +1111,13 @@ void function TrackWaveEndForCampInfo( entity tracker, entity mapIconEnt )
 	tracker.EndSignal( "OnDestroy" )
 	tracker.EndSignal( "ATCampClean" )
 
-	OnThreadEnd
-	(
-		function(): ( tracker, mapIconEnt )
+	OnThreadEnd(
+		function() : ( tracker, mapIconEnt )
 		{
 			// camp cleaned, wave or game ended, destroy the camp info
 			if ( IsValid( tracker ) )
 				tracker.Destroy()
-			
+
 			if ( IsValid( mapIconEnt ) )
 				mapIconEnt.Destroy()
 		}
@@ -1151,8 +1137,10 @@ int function GetCampMinimapState( int id )
 	{
 		case 0:
 			return eMinimapObject_prop_script.AT_DROPZONE_A
+
 		case 1:
 			return eMinimapObject_prop_script.AT_DROPZONE_B
+
 		case 2:
 			return eMinimapObject_prop_script.AT_DROPZONE_C
 	}
@@ -1160,25 +1148,22 @@ int function GetCampMinimapState( int id )
 	unreachable
 }
 
-//////////////////////////////
-///// CAMP FUNCTIONS END /////
-//////////////////////////////
+// ////////////////////////////
+// /// CAMP FUNCTIONS END /////
+// ////////////////////////////
 
-
-
-//////////////////////////
-///// BANK FUNCTIONS /////
-//////////////////////////
+// ////////////////////////
+// /// BANK FUNCTIONS /////
+// ////////////////////////
 
 void function AT_BankActiveThink( entity bank )
 {
 	svGlobal.levelEnt.EndSignal( "GameStateChanged" )
 	bank.EndSignal( "OnDestroy" )
-	
+
 	// Banks closed
-	OnThreadEnd
-	(
-		function(): ( bank )
+	OnThreadEnd(
+		function() : ( bank )
 		{
 			if ( IsValid( bank ) )
 			{
@@ -1207,7 +1192,7 @@ void function AT_BankActiveThink( entity bank )
 	bank.Minimap_AlwaysShow( TEAM_IMC, null )
 	bank.Minimap_AlwaysShow( TEAM_MILITIA, null )
 	bank.Minimap_SetCustomState( eMinimapObject_prop_script.AT_BANK )
-	
+
 	// Wait for bank close or game end
 	while ( GetGlobalNetBool( "banksOpen" ) )
 		WaitFrame()
@@ -1225,7 +1210,7 @@ function OnPlayerUseBank( bank, player )
 
 	// bank.SetUsableByGroup( "pilot" ) didn't seem to work so we just
 	// exit here if player is in a titan
-	if( player.IsTitan() )
+	if ( player.IsTitan() )
 		return
 
 	// Player has no bonus, try to send a tip using SendHUDMessage
@@ -1244,7 +1229,7 @@ bool function ATSendDepositTipToPlayer( entity player, string message )
 {
 	if ( Time() < file.playerHudMessageAllowedTime[ player ] )
 		return false
-	
+
 	SendHudMessage( player, message, -1, 0.4, 255, 255, 255, 255, 0.5, 1.0, 0.5 )
 	file.playerHudMessageAllowedTime[ player ] = Time() + AT_PLAYER_HUD_MESSAGE_COOLDOWN
 
@@ -1271,9 +1256,8 @@ void function PlayerUploadingBonus_Threaded( entity bank, entity player )
 	AT_playerUploadStruct uploadInfo
 
 	// Cleanup and call finish deposit func
-	OnThreadEnd
-	(
-		function(): ( player, uploadInfo )
+	OnThreadEnd(
+		function() : ( player, uploadInfo )
 		{
 			if ( IsValid( player ) )
 			{
@@ -1288,10 +1272,7 @@ void function PlayerUploadingBonus_Threaded( entity bank, entity player )
 				AddPlayerScore( player, "AttritionCashedBonus" )
 
 				// Do server callback
-				Remote_CallFunction_NonReplay( 
-					player, 
-					"ServerCallback_AT_FinishDeposit",
-					uploadInfo.depositedPoints // deposit
+				Remote_CallFunction_NonReplay( player, "ServerCallback_AT_FinishDeposit", uploadInfo.depositedPoints // deposit
 				)
 
 				player.SetPlayerNetBool( "AT_playerUploading", false )
@@ -1305,15 +1286,15 @@ void function PlayerUploadingBonus_Threaded( entity bank, entity player )
 					// player is MVP
 					int ourScore = player.GetPlayerGameStat( PGS_ASSAULT_SCORE )
 					bool isMVP = true
-					foreach(teamPlayer in GetPlayerArrayOfTeam(player.GetTeam()))
+					foreach ( teamPlayer in GetPlayerArrayOfTeam( player.GetTeam() ) )
 					{
-						if (ourScore < teamPlayer.GetPlayerGameStat( PGS_ASSAULT_SCORE ))
+						if ( ourScore < teamPlayer.GetPlayerGameStat( PGS_ASSAULT_SCORE ) )
 						{
 							isMVP = false
 							break
 						}
 					}
-					if (isMVP)
+					if ( isMVP )
 						PlayFactionDialogueToPlayer( "bh_mvp", player )
 				}
 				else // Player was killed or left the bank radius
@@ -1333,7 +1314,7 @@ void function PlayerUploadingBonus_Threaded( entity bank, entity player )
 	EmitSoundOnEntityExceptToPlayer( player, player, "HUD_MP_BountyHunt_BankBonusPts_Ticker_Loop_3P" )
 
 	player.SetPlayerNetBool( "AT_playerUploading", true )
-	
+
 	// Upload bonus while the player is within range of the bank
 	while ( Distance( player.GetOrigin(), bank.GetOrigin() ) <= AT_BANK_DEPOSIT_RADIUS && GetGlobalNetBool( "banksOpen" ) )
 	{
@@ -1358,15 +1339,13 @@ void function PlayerUploadingBonus_Threaded( entity bank, entity player )
 	}
 }
 
-//////////////////////////////
-///// BANK FUNCTIONS END /////
-//////////////////////////////
+// ////////////////////////////
+// /// BANK FUNCTIONS END /////
+// ////////////////////////////
 
-
-
-/////////////////////////
-///// NPC FUNCTIONS /////
-/////////////////////////
+// ///////////////////////
+// /// NPC FUNCTIONS /////
+// ///////////////////////
 
 int function GetScriptManagedNPCArrayLength_Alive( int scriptManagerId )
 {
@@ -1387,10 +1366,10 @@ void function AT_DroppodSquadEvent( AT_WaveOrigin campData, int spawnId, array<A
 	// create a script managed array for all handled minions
 	int eventManager = CreateScriptManagedEntArray()
 
-	if( !(spawnId in file.campScriptEntArrays) )
-		file.campScriptEntArrays[spawnId] <- []
-	
-	file.campScriptEntArrays[spawnId].append(eventManager)
+	if ( !( spawnId in file.campScriptEntArrays ) )
+		file.campScriptEntArrays[ spawnId ] <- []
+
+	file.campScriptEntArrays[ spawnId ].append( eventManager )
 
 	int totalAllowedOnField = SQUAD_SIZE * AT_DROPPOD_SQUADS_ALLOWED_ON_FIELD
 	while ( true )
@@ -1426,10 +1405,10 @@ void function AT_DroppodSquadEvent_Single( AT_WaveOrigin campData, int spawnId, 
 	string ent = data.aitype
 	int eventManager = CreateScriptManagedEntArray()
 
-	if( !(spawnId in file.campScriptEntArrays) )
-		file.campScriptEntArrays[spawnId] <- []
-	
-	file.campScriptEntArrays[spawnId].append(eventManager)
+	if ( !( spawnId in file.campScriptEntArrays ) )
+		file.campScriptEntArrays[ spawnId ] <- []
+
+	file.campScriptEntArrays[ spawnId ].append( eventManager )
 
 	int totalAllowedOnField = data.totalAllowedOnField // mostly 12 for grunts and spectres, too much!
 	// start spawner
@@ -1457,19 +1436,19 @@ void function AT_SpawnDroppodSquad( AT_WaveOrigin campData, int spawnId, string 
 	else
 		spawnpoint = campData.dropPodSpawnPoints.getrandom()
 	// anti-crash
-	if ( !IsValid( spawnpoint ) ) 
+	if ( !IsValid( spawnpoint ) )
 		spawnpoint = campData.ent
-	
+
 	// add variation to spawns
 	wait RandomFloat( 1.0 )
-	
-	AiGameModes_SpawnDropPod( 
-		spawnpoint.GetOrigin(), 
-		spawnpoint.GetAngles(), 
-		AT_AI_TEAM, 
-		aiType, 
+
+	AiGameModes_SpawnDropPod(
+		spawnpoint.GetOrigin(),
+		spawnpoint.GetAngles(),
+		AT_AI_TEAM,
+		aiType,
 		// squad handler
-		void function( array<entity> guys ) : ( campData, spawnId, aiType, scriptManagerId ) 
+		void function( array<entity> guys ) : ( campData, spawnId, aiType, scriptManagerId )
 		{
 			AT_HandleSquadSpawn( guys, campData, spawnId, aiType, scriptManagerId )
 		},
@@ -1482,7 +1461,7 @@ void function AT_HandleSquadSpawn( array<entity> guys, AT_WaveOrigin campData, i
 	foreach ( entity guy in guys )
 	{
 		// TODO: NPCs still seem to go outside their camp ???
-		//guy.EnableNPCFlag( NPC_ALLOW_PATROL | NPC_ALLOW_HAND_SIGNALS | NPC_ALLOW_FLEE )
+		// guy.EnableNPCFlag( NPC_ALLOW_PATROL | NPC_ALLOW_HAND_SIGNALS | NPC_ALLOW_FLEE )
 
 		// tracking lifetime
 		AddToScriptManagedEntArray( scriptManagerId, guy )
@@ -1498,21 +1477,21 @@ void function AT_ForceAssaultAroundCamp( entity guy, AT_WaveOrigin campData )
 	guy.EndSignal( "OnDeath" )
 
 	// goal check
-	vector ornull goalPos = NavMesh_ClampPointForAI(campData.origin, guy)
+	vector ornull goalPos = NavMesh_ClampPointForAI( campData.origin, guy )
 	goalPos = goalPos == null ? campData.origin : goalPos
-	expect vector(goalPos)
+	expect vector( goalPos )
 
 	float goalRadius = campData.radius / 4
 	float guyGoalRadius = guy.GetMinGoalRadius()
 	if ( guyGoalRadius > goalRadius ) // this npc cannot use forced goal radius?
 		goalRadius = guyGoalRadius
-	
-	while( true )
+
+	while ( true )
 	{
 		guy.AssaultPoint( goalPos )
 		guy.AssaultSetGoalRadius( goalRadius )
-		guy.AssaultSetFightRadius( 0 ) 
-		guy.AssaultSetArrivalTolerance( int(goalRadius) )
+		guy.AssaultSetFightRadius( 0 )
+		guy.AssaultSetArrivalTolerance( int( goalRadius ) )
 
 		wait RandomFloatRange( 1, 5 )
 	}
@@ -1525,15 +1504,15 @@ void function AT_ReaperEvent( AT_WaveOrigin campData, int spawnId, AT_SpawnData 
 	// create a script managed array for current event
 	int eventManager = CreateScriptManagedEntArray()
 
-	if( !(spawnId in file.campScriptEntArrays) )
-		file.campScriptEntArrays[spawnId] <- []
-	
-	file.campScriptEntArrays[spawnId].append(eventManager)
-	
+	if ( !( spawnId in file.campScriptEntArrays ) )
+		file.campScriptEntArrays[ spawnId ] <- []
+
+	file.campScriptEntArrays[ spawnId ].append( eventManager )
+
 	int totalAllowedOnField = 1 // 1 allowed at the same time for heavy armor units
 	if ( AT_USE_TOTAL_ALLOWED_ON_FIELD_CHECK )
 		totalAllowedOnField = data.totalAllowedOnField
-	
+
 	while ( true )
 	{
 		waitthread AT_SpawnReaper( campData, spawnId, eventManager )
@@ -1558,19 +1537,19 @@ void function AT_SpawnReaper( AT_WaveOrigin campData, int spawnId, int scriptMan
 	else
 		spawnpoint = campData.dropPodSpawnPoints.getrandom()
 	// anti-crash
-	if ( !IsValid( spawnpoint ) ) 
+	if ( !IsValid( spawnpoint ) )
 		spawnpoint = campData.ent
 
 	// add variation to spawns
 	wait RandomFloat( 1.0 )
-	
-	AiGameModes_SpawnReaper( 
-		spawnpoint.GetOrigin(), 
-		spawnpoint.GetAngles(), 
-		AT_AI_TEAM, 
-		"npc_super_spectre_aitdm", 
+
+	AiGameModes_SpawnReaper(
+		spawnpoint.GetOrigin(),
+		spawnpoint.GetAngles(),
+		AT_AI_TEAM,
+		"npc_super_spectre_aitdm",
 		// reaper handler
-		void function( entity reaper ) : ( campData, spawnId, scriptManagerId ) 
+		void function( entity reaper ) : ( campData, spawnId, scriptManagerId )
 		{
 			AT_HandleReaperSpawn( reaper, campData, spawnId, scriptManagerId )
 		}
@@ -1592,7 +1571,7 @@ void function AT_BountyTitanEvent( AT_WaveOrigin campData, int spawnId, AT_Spawn
 
 	// create a script managed array for current event
 	int eventManager = CreateScriptManagedEntArray()
-	
+
 	int totalAllowedOnField = 1 // 1 allowed at the same time for heavy armor units
 	if ( AT_USE_TOTAL_ALLOWED_ON_FIELD_CHECK )
 		totalAllowedOnField = data.totalAllowedOnField
@@ -1620,34 +1599,36 @@ void function AT_SpawnBountyTitan( AT_WaveOrigin campData, int spawnId, int scri
 	else
 		spawnpoint = campData.titanSpawnPoints.getrandom()
 	// anti-crash
-	if ( !IsValid( spawnpoint ) ) 
+	if ( !IsValid( spawnpoint ) )
 		spawnpoint = campData.ent
 
 	// add variation to spawns
 	wait RandomFloat( 1.0 )
-	
+
 	// look up titan to use
 	int bountyID = 0
-	try 
+	try
 	{
 		bountyID = ReserveBossID( AT_BOUNTY_TITANS_AI_SETTINGS.getrandom() )
 	}
-	catch ( ex ) {} // if we go above the expected wave count that vanilla supports, there's basically no way to ensure that this func won't error, so default 0 after that point
-	
+	catch ( ex )
+	{
+	} // if we go above the expected wave count that vanilla supports, there's basically no way to ensure that this func won't error, so default 0 after that point
+
 	string aisettings = GetTypeFromBossID( bountyID )
 	string titanClass = expect string( Dev_GetAISettingByKeyField_Global( aisettings, "npc_titan_player_settings" ) )
-	
-	AiGameModes_SpawnTitan( 
-		spawnpoint.GetOrigin(), 
-		spawnpoint.GetAngles(), 
-		AT_AI_TEAM, 
-		titanClass, 
+
+	AiGameModes_SpawnTitan(
+		spawnpoint.GetOrigin(),
+		spawnpoint.GetAngles(),
+		AT_AI_TEAM,
+		titanClass,
 		aisettings,
-		// titan handler 
-		void function( entity titan ) : ( campData, spawnId, bountyID, scriptManagerId ) 
+		// titan handler
+		void function( entity titan ) : ( campData, spawnId, bountyID, scriptManagerId )
 		{
 			AT_HandleBossTitanSpawn( titan, campData, spawnId, bountyID, scriptManagerId )
-		} 
+		}
 	)
 }
 
@@ -1668,7 +1649,7 @@ void function AT_HandleBossTitanSpawn( entity titan, AT_WaveOrigin campData, int
 	file.bountyTitanRewards[ titan ] <- ATTRITION_SCORE_BOSS_DAMAGE
 	AddEntityCallback_OnPostDamaged( titan, OnBountyTitanPostDamage )
 	AddEntityCallback_OnKilled( titan, OnBountyTitanKilled )
-	
+
 	titan.GetTitanSoul().soul.skipDoomState = true
 	// i feel like this should be localised, but there's nothing for it in r1_english?
 	titan.SetTitle( GetNameFromBossID( bountyID ) )
@@ -1713,7 +1694,7 @@ void function OnBountyTitanPostDamage( entity titan, var damageInfo )
 	file.playerSavedBountyDamage[ attacker ][ titan ] += int( DamageInfo_GetDamage( damageInfo ) )
 	if ( file.playerSavedBountyDamage[ attacker ][ titan ] < healthSegment )
 		return // they can't earn reward from this shot
-	
+
 	int damageSegment = file.playerSavedBountyDamage[ attacker ][ titan ] / healthSegment
 	int savedDamageLeft = file.playerSavedBountyDamage[ attacker ][ titan ] % healthSegment
 	file.playerSavedBountyDamage[ attacker ][ titan ] = savedDamageLeft
@@ -1724,7 +1705,7 @@ void function OnBountyTitanPostDamage( entity titan, var damageInfo )
 	if ( reward >= rewardLeft ) // overloaded shot?
 		reward = rewardLeft
 	file.bountyTitanRewards[ titan ] -= reward
-	
+
 	if ( reward > 0 )
 		AT_AddPlayerBonusPointsForBossDamaged( attacker, titan, reward, damageInfo )
 }
@@ -1767,7 +1748,7 @@ entity function GetBountyBossDamageOwner( entity attacker, entity titan )
 {
 	if ( attacker.IsPlayer() ) // already a player
 		return attacker
-	
+
 	if ( attacker.IsTitan() ) // attacker is a npc titan
 	{
 		// try to find it's pet titan owner
@@ -1787,7 +1768,6 @@ void function AT_TrackNPCLifeTime( entity guy, int spawnId, string aiType )
 	SetGlobalNetInt( npcNetVar, GetGlobalNetInt( npcNetVar ) - 1 )
 }
 
-
 // network var
 string function GetNPCNetVarName( string className, int spawnId )
 {
@@ -1802,6 +1782,6 @@ string function GetNPCNetVarName( string className, int spawnId )
 	return npcId + campLetter + "campCount"
 }
 
-/////////////////////////////
-///// NPC FUNCTIONS END /////
-/////////////////////////////
+// ///////////////////////////
+// /// NPC FUNCTIONS END /////
+// ///////////////////////////

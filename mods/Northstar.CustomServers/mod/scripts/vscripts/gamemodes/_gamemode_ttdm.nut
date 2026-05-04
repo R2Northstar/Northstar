@@ -4,7 +4,7 @@ const float TTDMIntroLength = 15.0
 
 struct
 {
-	table< entity, int > challengeCount
+	table<entity, int> challengeCount
 } file
 
 void function GamemodeTTDM_Init()
@@ -19,10 +19,9 @@ void function GamemodeTTDM_Init()
 	ClassicMP_ForceDisableEpilogue( true )
 	SetTimeoutWinnerDecisionFunc( CheckScoreForDraw )
 
-	AddCallback_OnClientConnected( SetupPlayerTTDMChallenges ) //Just to make up the Match Goals tracking
-	AddCallback_OnClientDisconnected( RemovePlayerTTDMChallenges ) //Safety removal of data to prevent crashes
+	AddCallback_OnClientConnected( SetupPlayerTTDMChallenges ) // Just to make up the Match Goals tracking
+	AddCallback_OnClientDisconnected( RemovePlayerTTDMChallenges ) // Safety removal of data to prevent crashes
 	AddCallback_OnPlayerKilled( AddTeamScoreForPlayerKilled ) // dont have to track autotitan kills since you cant leave your titan in this mode
-
 	// probably needs scoreevent earnmeter values
 }
 
@@ -70,7 +69,7 @@ void function SetupPlayerTTDMChallenges( entity player )
 
 void function RemovePlayerTTDMChallenges( entity player )
 {
-	if( player in file.challengeCount )
+	if ( player in file.challengeCount )
 		delete file.challengeCount[ player ]
 }
 
@@ -97,13 +96,13 @@ void function AddTeamScoreForPlayerKilled( entity victim, entity attacker, var d
 	if ( victim == attacker || !victim.IsPlayer() || !attacker.IsPlayer() && GetGameState() == eGameState.Playing )
 		return
 
-	if( victim in file.challengeCount )
-		file.challengeCount[victim] = 0
-	
-	if( attacker in file.challengeCount )
+	if ( victim in file.challengeCount )
+		file.challengeCount[ victim ] = 0
+
+	if ( attacker in file.challengeCount )
 	{
-		file.challengeCount[attacker]++
-		if( file.challengeCount[attacker] >= 2 && !HasPlayerCompletedMeritScore( attacker ) )
+		file.challengeCount[ attacker ]++
+		if ( file.challengeCount[ attacker ] >= 2 && !HasPlayerCompletedMeritScore( attacker ) )
 		{
 			AddPlayerScore( attacker, "ChallengeTTDM" )
 			SetPlayerChallengeMeritScore( attacker )
@@ -115,9 +114,9 @@ void function AddTeamScoreForPlayerKilled( entity victim, entity attacker, var d
 
 int function CheckScoreForDraw()
 {
-	if (GameRules_GetTeamScore(TEAM_IMC) > GameRules_GetTeamScore(TEAM_MILITIA))
+	if ( GameRules_GetTeamScore( TEAM_IMC ) > GameRules_GetTeamScore( TEAM_MILITIA ) )
 		return TEAM_IMC
-	else if (GameRules_GetTeamScore(TEAM_MILITIA) > GameRules_GetTeamScore(TEAM_IMC))
+	else if ( GameRules_GetTeamScore( TEAM_MILITIA ) > GameRules_GetTeamScore( TEAM_IMC ) )
 		return TEAM_MILITIA
 
 	return TEAM_UNASSIGNED

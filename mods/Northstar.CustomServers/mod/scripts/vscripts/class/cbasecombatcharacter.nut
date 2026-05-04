@@ -7,8 +7,6 @@ function CodeCallback_RegisterClass_CBaseCombatCharacter()
 	CBaseCombatCharacter.ClassName <- "CBaseCombatCharacter"
 
 	RegisterSignal( "ContextAction_SetBusy" ) // signalled from ContextAction_SetBusy() in code
-
-
 	/*
 	CBaseCombatCharacter.__SetActiveWeaponByName <- CBaseCombatCharacter.SetActiveWeaponByName
 	function CBaseCombatCharacter::SetActiveWeaponByName( weapon )
@@ -24,5 +22,5 @@ function CodeCallback_RegisterClass_CBaseCombatCharacter()
 		return this.__TakeWeapon( weapon )
 	}
 
-	*/
+*/
 }

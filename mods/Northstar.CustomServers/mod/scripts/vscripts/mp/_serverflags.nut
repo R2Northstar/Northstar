@@ -26,7 +26,6 @@ function TakeServerFlag( player, passive )
 	switch ( passive )
 	{
 	}
-
 }
 
 bool function PlayerHasServerFlag( player, passive )

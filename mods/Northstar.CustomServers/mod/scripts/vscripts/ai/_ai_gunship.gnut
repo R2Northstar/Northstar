@@ -14,7 +14,6 @@ function AiGunship_Init()
 	AddDeathCallback( "npc_gunship", GunshipDeath )
 }
 
-
 function GunshipThink( gunship )
 {
 	gunship.EndSignal( "OnDeath" )
@@ -24,36 +23,35 @@ function GunshipThink( gunship )
 	local accuracyMultiplierBase = gunship.kv.AccuracyMultiplier
 	local accuracyMultiplierAgainstDrones = 100
 
-	while( true )
+	while ( true )
 	{
 		wait 0.25
 
-		//----------------------------------
+		// ----------------------------------
 		// Get owner and current enemy
-		//----------------------------------
+		// ----------------------------------
 		currentTarget = expect entity( gunship.GetEnemy() )
 		owner = expect entity( gunship.GetFollowTarget() )
 
-		//----------------------------------
+		// ----------------------------------
 		// Free roam if owner is dead or HasEnemy
-		//----------------------------------
+		// ----------------------------------
 		if ( ( !IsAlive( owner ) ) || ( currentTarget != null ) )
 		{
 			gunship.DisableBehavior( "Follow" )
 		}
 
-		//---------------------------------------------------------------------
+		// ---------------------------------------------------------------------
 		// If owner is alive and no enemies in sight, go back and follow owner
-		//----------------------------------------------------------------------
+		// ----------------------------------------------------------------------
 		if ( ( IsAlive( owner ) ) && ( currentTarget == null ) )
 		{
 			gunship.EnableBehavior( "Follow" )
 		}
 
-
-		//----------------------------------------------
+		// ----------------------------------------------
 		// Jack up accuracy if targeting a small target (like a drone)
-		//----------------------------------------------
+		// ----------------------------------------------
 		if ( ( currentTarget != null ) && ( IsAirDrone( currentTarget ) ) )
 		{
 			gunship.kv.AccuracyMultiplier = accuracyMultiplierAgainstDrones
@@ -63,9 +61,7 @@ function GunshipThink( gunship )
 			gunship.kv.AccuracyMultiplier = accuracyMultiplierBase
 		}
 	}
-
 }
-
 
 void function GunshipDeath( entity gunship, var damageInfo )
 {
@@ -86,12 +82,11 @@ void function GunshipDeath( entity gunship, var damageInfo )
 
 	P_veh_exp_hornet, TAG_ORIGIN, attach
 
-	*/
+*/
 
-	//TEMP
+	// TEMP
 	PlayFX( FX_GUNSHIP_EXPLOSION, gunship.GetOrigin() )
 	EmitSoundAtPosition( TEAM_UNASSIGNED, gunship.GetOrigin(), "Goblin_Dropship_Explode" )
 	gunship.Destroy()
 }
-
 

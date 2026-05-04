@@ -1,6 +1,6 @@
 global function Melee_Init
 
-//global function CodeCallback_NPCMeleeChargedPlayerOrNPC
+// global function CodeCallback_NPCMeleeChargedPlayerOrNPC
 global function CodeCallback_OnMeleeKilled
 global function EnablePlantingOnEntity
 
@@ -9,9 +9,9 @@ void function Melee_Init()
 	MeleeShared_Init()
 }
 
-//File is pretty sparse for now. In all honesty a lot of existing functionality in _melee_shared should
-//belong here instead, but we'll wait until we try to do prediction (which requires running the same code
-//on client and server) before we try to split up functionality in the different script files any better.
+// File is pretty sparse for now. In all honesty a lot of existing functionality in _melee_shared should
+// belong here instead, but we'll wait until we try to do prediction (which requires running the same code
+// on client and server) before we try to split up functionality in the different script files any better.
 
 /*
 void function CodeCallback_NPCMeleeChargedPlayerOrNPC( entity ent, var damageInfo )
@@ -67,11 +67,14 @@ void function CodeCallback_OnMeleeKilled( entity target )
 		attacker = null
 	}
 
-
 	int damageAmount = target.GetMaxHealth() + 1
-	target.TakeDamage( damageAmount , attacker, attacker, { forceKill = true, damageType = DMG_MELEE_EXECUTION, damageSourceId = damageSourceId, scriptType = DF_NO_INDICATOR } )
+	target.TakeDamage(
+		damageAmount,
+		attacker,
+		attacker,
+		{ forceKill = true, damageType = DMG_MELEE_EXECUTION, damageSourceId = damageSourceId, scriptType = DF_NO_INDICATOR }
+	)
 }
-
 
 void function EnablePlantingOnEntity( entity titan )
 {

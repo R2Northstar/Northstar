@@ -1,4 +1,3 @@
-
 global function SpectreRack_Init
 global function IsStalkerRack
 global function SpawnFromStalkerRack
@@ -8,8 +7,8 @@ global function SetupSpectreRack
 global function SpectreRackActivationEffects
 global function TrackFriendlySpectre
 
-const FX_GREEN_GLOW 		= $"P_spectre_rack_glow_idle"
-const WARNING_LIGHT_BLINK	= $"warning_light_orange_blink"
+const FX_GREEN_GLOW = $"P_spectre_rack_glow_idle"
+const WARNING_LIGHT_BLINK = $"warning_light_orange_blink"
 const SPECTRE_RACK_ACHIEVEMENT_COUNT = 6
 
 global struct SpectreRackSpectre
@@ -48,8 +47,8 @@ void function SpectreRack_Init()
 	file.spectreRackTypes.append( "npc_spectre_rack_wall" )
 	file.spectreRackTypes.append( "npc_spectre_rack_multi" )
 	file.spectreRackTypes.append( "npc_spectre_rack_triple" )
-	//file.spectreRackTypes.append( "npc_spectre_rack_portable" )
-	//file.spectreRackTypes.append( "npc_spectre_rack_palette" )
+	// file.spectreRackTypes.append( "npc_spectre_rack_portable" )
+	// file.spectreRackTypes.append( "npc_spectre_rack_palette" )
 
 	PrecacheParticleSystem( FX_GREEN_GLOW )
 	PrecacheParticleSystem( WARNING_LIGHT_BLINK )
@@ -80,7 +79,7 @@ void function SetupSpectreRack( entity rack )
 	spectreRack.rackEnt = rack
 
 	// Get attach point info from the model being used
-	while( true )
+	while ( true )
 	{
 		int attachIndex = spectreRack.spectreRackSpectres.len() + 1
 		string attachment = "spectre_attach_" + attachIndex
@@ -101,11 +100,15 @@ void function SetupSpectreRack( entity rack )
 	{
 		if ( IsSpawner( ent ) )
 		{
-			spectreRack.spectreRackSpectres[index].spawner = ent
+			spectreRack.spectreRackSpectres[ index ].spawner = ent
 			spawnerCount++
 		}
 	}
-	Assert( spawnerCount == spectreRack.spectreRackSpectres.len(), "Spectre rack " + rack + " at: " + rack.GetOrigin() + " " + rack.GetValueForKey( "editorclass" ) + " must link to exactly " + spectreRack.spectreRackSpectres.len() + " spawner" )
+	Assert(
+		spawnerCount == spectreRack.spectreRackSpectres.len(),
+		"Spectre rack " + rack + " at: " + rack.GetOrigin() + " " + rack.GetValueForKey( "editorclass" ) + " must link to exactly " +
+			spectreRack.spectreRackSpectres.len() + " spawner"
+	)
 
 	// Create dummy spectre models to idle on the rack
 	foreach ( spectreRackSpectre in spectreRack.spectreRackSpectres )
@@ -148,7 +151,7 @@ void function SpawnFromStalkerRack( entity rack, entity activator = null )
 	thread SpectreRackActivationEffects( spectreRack )
 	thread SpectreRackActivationSpawners( spectreRack, activator )
 
-	if ( IsValid( activator )  && activator.IsPlayer() )
+	if ( IsValid( activator ) && activator.IsPlayer() )
 		UnlockAchievement( activator, achievements.HACK_STALKERS )
 }
 
@@ -157,8 +160,7 @@ void function SpectreRackActivationEffects( SpectreRack spectreRack )
 	EndSignal( spectreRack, "OnDestroy" )
 	EndSignal( spectreRack.rackEnt, "OnDestroy" )
 
-	OnThreadEnd
-	(
+	OnThreadEnd(
 		function() : ( spectreRack )
 		{
 			if ( IsValid( spectreRack ) )
@@ -166,8 +168,8 @@ void function SpectreRackActivationEffects( SpectreRack spectreRack )
 		}
 	)
 
-	EmitSoundAtPosition( TEAM_UNASSIGNED, spectreRack.rackEnt.GetOrigin() + Vector( 0, 0, 72), "colony_spectre_initialize_beep" )
-	EmitSoundAtPosition( TEAM_UNASSIGNED, spectreRack.rackEnt.GetOrigin() + Vector( 0, 0, 72), "corporate_spectrerack_activate" )
+	EmitSoundAtPosition( TEAM_UNASSIGNED, spectreRack.rackEnt.GetOrigin() + Vector( 0, 0, 72 ), "colony_spectre_initialize_beep" )
+	EmitSoundAtPosition( TEAM_UNASSIGNED, spectreRack.rackEnt.GetOrigin() + Vector( 0, 0, 72 ), "corporate_spectrerack_activate" )
 
 	SpectreRackDestroyFx( spectreRack )
 	SpectreRackCreateFx( spectreRack, WARNING_LIGHT_BLINK )
@@ -182,9 +184,9 @@ void function SpectreRackActivationSpawners( SpectreRack spectreRack, entity act
 	EndSignal( spectreRack.rackEnt, "OnDestroy" )
 
 	array<int> spawnOrder
-	for ( int i = 0 ; i < spectreRack.spectreRackSpectres.len() ; i++ )
+	for ( int i = 0; i < spectreRack.spectreRackSpectres.len(); i++ )
 	{
-		spawnOrder.append(i)
+		spawnOrder.append( i )
 	}
 
 	spawnOrder.randomize()
@@ -206,10 +208,10 @@ void function SpectreRackReleaseSpectre( SpectreRack spectreRack, int index, ent
 	entity rackEnt = spectreRack.rackEnt
 
 	entity dummy = spectreRackSpectre.dummyModel
-	Assert( IsValid ( dummy ) )
+	Assert( IsValid( dummy ) )
 
 	entity spawner = spectreRackSpectre.spawner
-	Assert( IsValid ( spawner ) )
+	Assert( IsValid( spawner ) )
 
 	EndSignal( spectreRackSpectre, "OnDestroy" )
 	EndSignal( rackEnt, "OnDestroy" )
@@ -231,7 +233,7 @@ void function SpectreRackReleaseSpectre( SpectreRack spectreRack, int index, ent
 	if ( IsValid( activator ) )
 	{
 		SetTeam( spectre, activator.GetTeam() )
-		//spectre.DisableBehavior( "Assault" )
+		// spectre.DisableBehavior( "Assault" )
 		/*
 		if ( activator.IsPlayer() )
 		{
@@ -241,7 +243,7 @@ void function SpectreRackReleaseSpectre( SpectreRack spectreRack, int index, ent
 		{
 			NPCFollowsNPC( spectre, activator )
 		}
-		*/
+*/
 	}
 
 	string deployAnim = GetDeployAnimForSpawner( spectreRackSpectre.spawner )
@@ -260,7 +262,7 @@ void function SpectreRackReleaseSpectre( SpectreRack spectreRack, int index, ent
 	waitthread PlayAnim( spectre, deployAnim, rackEnt, attachment )
 	spectre.ClearParent()
 	float yaw = spectre.GetAngles().y
-	spectre.SetAngles( <0,yaw,0> )//spectres released on moving platforms angle correctly
+	spectre.SetAngles( < 0, yaw, 0 > ) // spectres released on moving platforms angle correctly
 
 	foreach ( func in file.callbackFuncs )
 	{
@@ -277,15 +279,15 @@ void function SpectreRackReleaseSpectre( SpectreRack spectreRack, int index, ent
 
 void function SpectreRackCreateFx( SpectreRack spectreRack, asset fxName )
 {
-	for ( int i = 0 ; i < spectreRack.spectreRackSpectres.len() ; i++ )
+	for ( int i = 0; i < spectreRack.spectreRackSpectres.len(); i++ )
 	{
 		string attachment = "glow_" + i
 		int id = spectreRack.rackEnt.LookupAttachment( attachment )
 		Assert( id != 0, "Missing attachment \"" + attachment + "\" in model " + spectreRack.rackEnt.GetModelName() )
 
 		entity fx = PlayLoopFXOnEntity( fxName, spectreRack.rackEnt, attachment )
-		Assert( !IsValid( spectreRack.spectreRackSpectres[i].glowFX ) )
-		spectreRack.spectreRackSpectres[i].glowFX = fx
+		Assert( !IsValid( spectreRack.spectreRackSpectres[ i ].glowFX ) )
+		spectreRack.spectreRackSpectres[ i ].glowFX = fx
 	}
 }
 
@@ -320,16 +322,18 @@ string function GetIdleAnimForSpawner( entity spawner )
 	if ( spawnClassName == "" )
 		spawnClassName = spawner.GetSpawnEntityClassName()
 
-	switch( spawnClassName )
+	switch ( spawnClassName )
 	{
 		case "npc_stalker":
 		case "npc_stalker_zombie":
 		case "npc_stalker_zombie_mossy":
 			idleAnim = "st_medbay_idle_armed"
 			break
+
 		case "npc_spectre":
 			idleAnim = "sp_med_bay_dropidle_A"
 			break
+
 		default:
 			idleAnim = "st_medbay_idle_armed"
 			break
@@ -345,19 +349,22 @@ string function GetDeployAnimForSpawner( entity spawner )
 	if ( spawnClassName == "" )
 		spawnClassName = spawner.GetSpawnEntityClassName()
 
-	switch( spawnClassName )
+	switch ( spawnClassName )
 	{
 		case "npc_stalker":
 		case "npc_stalker_zombie":
 		case "npc_stalker_zombie_mossy":
 			deployAnim = "st_medbay_drop_armed"
 			break
+
 		case "npc_spectre_suicide":
 			deployAnim = "sp_med_bay_drop_unarmed"
 			break
+
 		case "npc_spectre":
 			deployAnim = "sp_med_bay_drop_A"
 			break
+
 		default:
 			deployAnim = "st_medbay_drop_armed"
 			break

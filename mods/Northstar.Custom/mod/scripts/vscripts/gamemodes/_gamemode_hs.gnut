@@ -1,12 +1,13 @@
 global function GamemodeHideAndSeek_Init
 
-struct {
+struct
+{
 	entity intermissionCam
 	array<entity> droppodSpawns
 
 	float hidingTime
 	bool autobalance
-	
+
 	float hidingStartTime
 } file
 
@@ -18,16 +19,16 @@ void function GamemodeHideAndSeek_Init()
 	SetRespawnsEnabled( false )
 	Riff_ForceSetEliminationMode( eEliminationMode.Pilots )
 	SetLoadoutGracePeriodEnabled( false )
-	
+
 	SetTimeoutWinnerDecisionFunc( HideAndSeekDecideWinner )
 	ClassicMP_SetCustomIntro( GamemodeHideAndSeekIntroSetup, 0.0 )
 	ClassicMP_ForceDisableEpilogue( true )
-	
+
 	AddCallback_OnPlayerRespawned( SetupHideAndSeekPlayer )
 	AddCallback_OnPlayerKilled( TryNotifyLastPlayerAlive )
 	AddSpawnCallback( "info_intermission", SetIntermissionCam )
 	AddSpawnCallback( "info_spawnpoint_droppod_start", AddDroppodSpawn )
-	
+
 	file.hidingTime = GetCurrentPlaylistVarFloat( "hideandseek_hiding_time", 60.0 )
 	file.autobalance = GetCurrentPlaylistVarInt( "hideandseek_balance_teams", 1 ) == 1
 }
@@ -52,47 +53,47 @@ void function AddPlayerToHideAndSeekIntro( entity player )
 {
 	if ( GetGameState() < eGameState.Prematch || Time() - file.hidingStartTime > file.hidingTime )
 		return
-	
+
 	// seeker/hider autobalance
 	// try to have 1/6 of players be seekers
 	if ( file.autobalance )
 	{
 		int wantedSeekers = int( max( 1, GetPlayerArray().len() / 6 ) )
-		
+
 		if ( GetPlayerArrayOfTeam( HIDEANDSEEK_TEAM_SEEKER ).len() < wantedSeekers )
 			SetTeam( player, HIDEANDSEEK_TEAM_SEEKER )
 		else
 			SetTeam( player, HIDEANDSEEK_TEAM_HIDER )
 	}
-	
+
 	ScreenFadeFromBlack( player, 1.0, 0.75 )
 	Remote_CallFunction_NonReplay( player, "ServerCallback_ShowHideAndSeekCountdown", file.hidingStartTime + file.hidingTime )
-		
+
 	if ( player.GetTeam() == HIDEANDSEEK_TEAM_HIDER )
 	{
 		player.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY
 		Highlight_ClearEnemyHighlight( player )
-		
+
 		thread HiderIntroThread( player )
 	}
-	else 
+	else
 		thread SeekerIntroThread( player )
-	
+
 	thread DelayedRoleAnnounce( player )
 }
 
 void function HideAndSeekIntroPrematch()
 {
 	ClassicMP_OnIntroStarted()
-	
+
 	file.hidingStartTime = Time()
 	foreach ( entity player in GetPlayerArray() )
 		AddPlayerToHideAndSeekIntro( player )
-	
+
 	// this intro is mostly done in playing, so just finish the intro up now and we can do fully custom logic from here
 	wait 2.5
 	ClassicMP_OnIntroFinished()
-	
+
 	thread GlobalSeekerIntroThread()
 }
 
@@ -104,9 +105,9 @@ void function HiderIntroThread( entity player )
 	RespawnAsPilot( player )
 
 	wait ( file.hidingStartTime + file.hidingTime ) - Time()
-	
+
 	player.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE // make sure everyone can see us again
-} 
+}
 
 void function SeekerIntroThread( entity player )
 {
@@ -116,7 +117,7 @@ void function SeekerIntroThread( entity player )
 	player.SetObserverModeStaticPosition( file.intermissionCam.GetOrigin() )
 	player.SetObserverModeStaticAngles( file.intermissionCam.GetAngles() )
 	player.StartObserverMode( OBS_MODE_STATIC_LOCKED )
-	
+
 	wait ( file.hidingStartTime + file.hidingTime ) - Time()
 	UnMuteAll( player )
 }
@@ -130,7 +131,7 @@ void function DelayedRoleAnnounce( entity player )
 void function GlobalSeekerIntroThread()
 {
 	wait file.hidingTime
-	
+
 	PlayMusicToAll( eMusicPieceID.GAMEMODE_1 )
 	foreach ( entity hider in GetPlayerArrayOfTeam( HIDEANDSEEK_TEAM_HIDER ) )
 		Remote_CallFunction_NonReplay( hider, "ServerCallback_SeekersIncoming" )
@@ -141,9 +142,9 @@ void function GlobalSeekerIntroThread()
 		podSpawn = file.droppodSpawns.getrandom()
 	else
 		podSpawn = SpawnPoints_GetPilot().getrandom()
-	
+
 	SpawnPlayersInDropPod( seekers, podSpawn.GetOrigin(), podSpawn.GetAngles() )
-	
+
 	foreach ( entity seeker in seekers )
 		if ( IsValid( seeker ) )
 			Highlight_SetEnemyHighlight( seeker, "enemy_sonar" )
@@ -153,9 +154,9 @@ void function SetupHideAndSeekPlayer( entity player )
 {
 	foreach ( entity weapon in player.GetMainWeapons() )
 		player.TakeWeapon( weapon.GetWeaponClassName() )
-	
+
 	player.TakeWeapon( player.GetOffhandWeapon( OFFHAND_ORDNANCE ).GetWeaponClassName() )
-	
+
 	player.GiveWeapon( "mp_weapon_rocket_launcher" )
 	player.SetActiveWeaponByName( "mp_weapon_rocket_launcher" )
 
@@ -164,11 +165,11 @@ void function SetupHideAndSeekPlayer( entity player )
 	if ( player.GetTeam() == HIDEANDSEEK_TEAM_HIDER )
 	{
 		player.TakeWeapon( player.GetMeleeWeapon().GetWeaponClassName() )
-	
+
 		// set visibility flags if we're hiding, so seekers can't see us on intermission cam
 		if ( Time() - file.hidingStartTime < file.hidingTime )
 			player.kv.VisiblityFlags = ENTITY_VISIBLE_TO_FRIENDLY
-		
+
 		// remove red outline, ideally should work tm
 		Highlight_ClearEnemyHighlight( player )
 		thread PlayHintSoundsForHider( player )
@@ -181,7 +182,7 @@ void function PlayHintSoundsForHider( entity player )
 {
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "OnDestroy" )
-	
+
 	while ( true )
 	{
 		wait 60.0
@@ -197,11 +198,11 @@ void function TryNotifyLastPlayerAlive( entity victim, entity attacker, var dama
 		if ( hiders.len() == 2 ) // 2nd to last hider is the one getting killed rn
 		{
 			PlayMusicToAll( eMusicPieceID.GAMEMODE_2 )
-		
+
 			// let them know they're the last hider
 			Remote_CallFunction_NonReplay( hiders[ 0 ], "ServerCallback_LastHiderAlive" )
 			StimPlayer( hiders[ 0 ], 9999.9 ) // can't do endless since we don't get the visual effect in endless
-			
+
 			// tell seekers
 			foreach ( entity player in GetPlayerArrayOfTeam( HIDEANDSEEK_TEAM_SEEKER ) )
 				Remote_CallFunction_NonReplay( player, "ServerCallback_LastHiderAlive" )

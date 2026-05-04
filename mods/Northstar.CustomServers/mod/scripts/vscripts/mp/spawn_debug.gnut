@@ -2,5 +2,4 @@ global function SpawnDebug_Init
 
 void function SpawnDebug_Init()
 {
-
 }

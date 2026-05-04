@@ -14,6 +14,6 @@ void function TrimBadTitanStartSpawns( entity spawn )
 	else
 		comparisonOrigin = < 1087.13, -4914.88, -199.969 >
 
-	if ( Distance2D( spawn.GetOrigin(), comparisonOrigin ) >= 1000.0)
+	if ( Distance2D( spawn.GetOrigin(), comparisonOrigin ) >= 1000.0 )
 		spawn.Destroy()
 }

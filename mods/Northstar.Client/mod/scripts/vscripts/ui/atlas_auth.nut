@@ -20,7 +20,7 @@ void function AtlasAuthDialog_Threaded()
 
 	// do nothing on successful authentication
 	if ( res.success )
-	    return
+		return
 
 	EmitUISound( "blackmarket_purchase_fail" )
 
@@ -44,13 +44,17 @@ void function AtlasAuthDialog_Threaded()
 
 	CloseAllDialogs()
 	AddDialogButton( dialogData, "#OK" )
-	AddDialogButton( dialogData, Localize( "#AUTHENTICATION_FAILED_HELP" ), void function() : ( dialogData, link )
-	{
-		// todo: get MS to redirect, so i can use an MS link or something?
-		LaunchExternalWebBrowser( link, WEBBROWSER_FLAG_FORCEEXTERNAL )
-		// keep the dialog open
-		OpenDialog( dialogData )
-	} )
+	AddDialogButton(
+		dialogData,
+		Localize( "#AUTHENTICATION_FAILED_HELP" ),
+		void function() : ( dialogData, link )
+		{
+			// todo: get MS to redirect, so i can use an MS link or something?
+			LaunchExternalWebBrowser( link, WEBBROWSER_FLAG_FORCEEXTERNAL )
+			// keep the dialog open
+			OpenDialog( dialogData )
+		}
+	)
 
 	OpenDialog( dialogData )
 }

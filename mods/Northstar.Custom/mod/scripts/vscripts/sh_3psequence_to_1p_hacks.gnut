@@ -44,150 +44,156 @@ void function FirstPersonSequenceForce1P_RegisterCustomNetworkFunctions()
 }
 
 #if SERVER
-Forced1PSequenceData function FirstPersonSequenceForce1P( FirstPersonSequenceStruct sequence, entity player, entity other = null )
-{
-	string attachment = FORCE1P_PILOT_1P_ATTACHMENT
-	string hiddenBodygroup = FORCE1P_PILOT_1P_HIDDEN_BODYGROUP
-	string entityclass = FORCE1P_PILOT_ENTITYCLASS
-
-	if ( player.IsTitan() )
+	Forced1PSequenceData function FirstPersonSequenceForce1P( FirstPersonSequenceStruct sequence, entity player, entity other = null )
 	{
-		attachment = FORCE1P_TITAN_1P_ATTACHMENT
-		hiddenBodygroup = FORCE1P_TITAN_1P_HIDDEN_BODYGROUP	
-		entityclass	= FORCE1P_TITAN_ENTITYCLASS
+		string attachment = FORCE1P_PILOT_1P_ATTACHMENT
+		string hiddenBodygroup = FORCE1P_PILOT_1P_HIDDEN_BODYGROUP
+		string entityclass = FORCE1P_PILOT_ENTITYCLASS
+
+		if ( player.IsTitan() )
+		{
+			attachment = FORCE1P_TITAN_1P_ATTACHMENT
+			hiddenBodygroup = FORCE1P_TITAN_1P_HIDDEN_BODYGROUP
+			entityclass = FORCE1P_TITAN_ENTITYCLASS
+		}
+
+		// hide player from everyone, unlike VisibilityFlags, this won't hide children, which is way easier to deal with
+		player.Hide()
+
+		Forced1PSequenceData cleanupData
+		cleanupData.player = player
+
+		// for some melee sequences, player.GetAngles() will be the angles the player had before they began the melee, which can cause desyncs
+		// eyeangles are fine though
+		vector angles = player.GetAngles()
+		angles.y = player.EyeAngles().y
+
+		// create the first proxy entity, this should visually be identical to the player, but only visible to them, and with head/torso hidden
+		// this is an npc because some firstpersonsequences use animation features that only work on npcs and pilots, not props, so need to do this
+		entity ownerProxy = CreateEntity( entityclass ) // CreatePropDynamic( player.GetModelName(), player.GetOrigin(), player.GetAngles() )
+		ownerProxy.SetModel( player.GetModelName() )
+		ownerProxy.SetValueForModelKey( player.GetModelName() )
+		ownerProxy.SetOrigin( player.GetOrigin() )
+		ownerProxy.SetAngles( angles )
+		ownerProxy.kv.VisibilityFlags = ENTITY_VISIBLE_TO_OWNER
+		ownerProxy.kv.solid = 0 // nonsolid
+		SetTeam( ownerProxy, player.GetTeam() )
+		ownerProxy.SetOwner( player )
+		ownerProxy.SetSkin( player.GetSkin() )
+		ownerProxy.SetCamo( player.GetCamo() ) // note: this seems weird, doesn't set right
+		DispatchSpawn( ownerProxy )
+		ownerProxy.SetModel( player.GetModelName() )
+		ownerProxy.SetValueForModelKey( player.GetModelName() )
+		ownerProxy.SetInvulnerable()
+		HideName( ownerProxy )
+		cleanupData.ownerProxy = ownerProxy
+
+		int bodygroupValue = 1
+		if ( hiddenBodygroup == "torso" )
+			bodygroupValue = 2
+
+		// hide annoying bodygroup
+		ownerProxy.SetBodygroup( ownerProxy.FindBodyGroup( hiddenBodygroup ), bodygroupValue )
+		// don't play anim until later so we can do cleanup stuff
+
+		// create the second proxy entity, this visible to everyone else
+		entity thirdPersonProxy = CreateEntity( entityclass ) // CreatePropDynamic( player.GetModelName(), player.GetOrigin(), player.GetAngles() )
+		thirdPersonProxy.SetModel( player.GetModelName() )
+		thirdPersonProxy.SetValueForModelKey( player.GetModelName() )
+		thirdPersonProxy.SetOrigin( player.GetOrigin() )
+		thirdPersonProxy.SetAngles( angles )
+		thirdPersonProxy.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE & ~ENTITY_VISIBLE_TO_OWNER
+		thirdPersonProxy.kv.solid = 0 // nonsolid
+		SetTeam( thirdPersonProxy, player.GetTeam() )
+		thirdPersonProxy.SetOwner( player )
+		thirdPersonProxy.SetSkin( player.GetSkin() )
+		thirdPersonProxy.SetCamo( player.GetCamo() ) // note: this seems weird, doesn't set right
+		DispatchSpawn( thirdPersonProxy )
+		thirdPersonProxy.SetModel( player.GetModelName() )
+		thirdPersonProxy.SetValueForModelKey( player.GetModelName() )
+		thirdPersonProxy.SetInvulnerable()
+		HideName( thirdPersonProxy )
+		cleanupData.thirdPersonProxy = thirdPersonProxy
+
+		if ( player.IsTitan() )
+			Highlight_SetEnemyHighlight( thirdPersonProxy, "enemy_titan" )
+		else
+			Highlight_SetEnemyHighlight( thirdPersonProxy, "enemy_player" )
+
+		thread FirstPersonSequence( sequence, thirdPersonProxy, other )
+
+		// create the viewpoint entity
+		if ( player.IsPlayer() ) // Check if the victim is an NPC
+		{
+			entity camera = CreateEntity( "point_viewcontrol" )
+			camera.SetParent( ownerProxy, attachment )
+			camera.kv.spawnflags = 56
+			DispatchSpawn( camera )
+			player.SetViewEntity( camera, true )
+			cleanupData.camera = camera
+		}
+
+		// note for potential thing that could be done
+		// entity e = CreatePropDynamic($"models/weapons/arms/pov_titan_light_cockpit.mdl");
+		// e.SetParent(GetPlayerArray()[0].GetPetTitan(), "HATCH_HEAD"); e.SetOrigin(<0.75,0,-195>)
+		// this is so we get a cockpit in these anims, issue with it is that the cockpit seems to break alot of rendering stuff
+		// which really sucks since it'd be awesome to have a cockpit over these anims, really makes them better, even the client func to render
+		// through cockpits doesn't seem to work for it, just makes stuff rendering through the cockpit invisible rather than rendering in a broken way
+
+		if ( player.IsPlayer() ) // Check if the victim is an NPC
+			Remote_CallFunction_NonReplay( player, "ServerCallback_HideHudForFPHackAnim" )
+		// play this anim now, so we can cleanup after it's done
+		thread CleanupForced1PSequenceAfterAnimDone( sequence, ownerProxy, other, cleanupData )
+		return cleanupData
 	}
-			
-	// hide player from everyone, unlike VisibilityFlags, this won't hide children, which is way easier to deal with
-	player.Hide()
-	
-	Forced1PSequenceData cleanupData
-	cleanupData.player = player
-	
-	// for some melee sequences, player.GetAngles() will be the angles the player had before they began the melee, which can cause desyncs
-	// eyeangles are fine though
-	vector angles = player.GetAngles()
-	angles.y = player.EyeAngles().y
-	
-	// create the first proxy entity, this should visually be identical to the player, but only visible to them, and with head/torso hidden
-	// this is an npc because some firstpersonsequences use animation features that only work on npcs and pilots, not props, so need to do this
-	entity ownerProxy = CreateEntity( entityclass ) //CreatePropDynamic( player.GetModelName(), player.GetOrigin(), player.GetAngles() )
-	ownerProxy.SetModel( player.GetModelName() )
-	ownerProxy.SetValueForModelKey( player.GetModelName() )
-	ownerProxy.SetOrigin( player.GetOrigin() )
-	ownerProxy.SetAngles( angles )
-	ownerProxy.kv.VisibilityFlags = ENTITY_VISIBLE_TO_OWNER
-	ownerProxy.kv.solid = 0 // nonsolid
-	SetTeam( ownerProxy, player.GetTeam() )
-	ownerProxy.SetOwner( player )
-	ownerProxy.SetSkin( player.GetSkin() )
-	ownerProxy.SetCamo( player.GetCamo() ) // note: this seems weird, doesn't set right
-	DispatchSpawn( ownerProxy )
-	ownerProxy.SetModel( player.GetModelName() )
-	ownerProxy.SetValueForModelKey( player.GetModelName() )
-	ownerProxy.SetInvulnerable()
-	HideName( ownerProxy )
-	cleanupData.ownerProxy = ownerProxy
-	
-	int bodygroupValue = 1
-	if ( hiddenBodygroup == "torso" )
-		bodygroupValue = 2
-	
-	// hide annoying bodygroup
-	ownerProxy.SetBodygroup( ownerProxy.FindBodyGroup( hiddenBodygroup ), bodygroupValue )
-	// don't play anim until later so we can do cleanup stuff
-		
-	// create the second proxy entity, this visible to everyone else
-	entity thirdPersonProxy = CreateEntity( entityclass ) //CreatePropDynamic( player.GetModelName(), player.GetOrigin(), player.GetAngles() )
-	thirdPersonProxy.SetModel( player.GetModelName() )
-	thirdPersonProxy.SetValueForModelKey( player.GetModelName() )
-	thirdPersonProxy.SetOrigin( player.GetOrigin() )
-	thirdPersonProxy.SetAngles( angles )
-	thirdPersonProxy.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE & ~ENTITY_VISIBLE_TO_OWNER
-	thirdPersonProxy.kv.solid = 0 // nonsolid
-	SetTeam( thirdPersonProxy, player.GetTeam() )
-	thirdPersonProxy.SetOwner( player )
-	thirdPersonProxy.SetSkin( player.GetSkin() )
-	thirdPersonProxy.SetCamo( player.GetCamo() ) // note: this seems weird, doesn't set right
-	DispatchSpawn( thirdPersonProxy	)
-	thirdPersonProxy.SetModel( player.GetModelName() )
-	thirdPersonProxy.SetValueForModelKey( player.GetModelName() )
-	thirdPersonProxy.SetInvulnerable()
-	HideName( thirdPersonProxy )
-	cleanupData.thirdPersonProxy = thirdPersonProxy
-	
-	if ( player.IsTitan() )
-		Highlight_SetEnemyHighlight( thirdPersonProxy, "enemy_titan" )
-	else
-		Highlight_SetEnemyHighlight( thirdPersonProxy, "enemy_player" )
-	
-	thread FirstPersonSequence( sequence, thirdPersonProxy, other )
-	
-	// create the viewpoint entity
-	if ( player.IsPlayer() ) // Check if the victim is an NPC
+
+	void function CleanupForced1PSequenceAfterAnimDone( FirstPersonSequenceStruct sequence, entity player, entity other, Forced1PSequenceData cleanupData )
 	{
-		entity camera = CreateEntity( "point_viewcontrol" )
-		camera.SetParent( ownerProxy, attachment )
-		camera.kv.spawnflags = 56
-		DispatchSpawn( camera )
-		player.SetViewEntity( camera, true )
-		cleanupData.camera = camera
+		player.EndSignal( "OnDestroy" )
+		player.EndSignal( "OnAnimationDone" )
+
+		OnThreadEnd(
+			function() : ( cleanupData )
+			{
+				if ( IsValid( cleanupData.player ) && cleanupData.player.IsPlayer() )
+					CleanupForced1PSequence( cleanupData )
+			}
+		)
+
+		FirstPersonSequence( sequence, player, other )
 	}
 
-	// note for potential thing that could be done
-	// entity e = CreatePropDynamic($"models/weapons/arms/pov_titan_light_cockpit.mdl"); e.SetParent(GetPlayerArray()[0].GetPetTitan(), "HATCH_HEAD"); e.SetOrigin(<0.75,0,-195>)
-	// this is so we get a cockpit in these anims, issue with it is that the cockpit seems to break alot of rendering stuff
-	// which really sucks since it'd be awesome to have a cockpit over these anims, really makes them better, even the client func to render through cockpits doesn't seem to work for it, just makes stuff rendering through the cockpit invisible rather than rendering in a broken way
-	
-	if ( player.IsPlayer() ) // Check if the victim is an NPC
-		Remote_CallFunction_NonReplay( player, "ServerCallback_HideHudForFPHackAnim" )
-	// play this anim now, so we can cleanup after it's done
-	thread CleanupForced1PSequenceAfterAnimDone( sequence, ownerProxy, other, cleanupData )
-	return cleanupData
-}
-
-void function CleanupForced1PSequenceAfterAnimDone( FirstPersonSequenceStruct sequence, entity player, entity other, Forced1PSequenceData cleanupData )
-{
-	player.EndSignal( "OnDestroy" )
-	player.EndSignal( "OnAnimationDone" )
-
-	OnThreadEnd( function() : ( cleanupData )
+	void function CleanupForced1PSequence( Forced1PSequenceData cleanupData )
 	{
-		if ( IsValid( cleanupData.player ) && cleanupData.player.IsPlayer() )
-			CleanupForced1PSequence( cleanupData )
-	})
-
-	FirstPersonSequence( sequence, player, other )
-}
-
-void function CleanupForced1PSequence( Forced1PSequenceData cleanupData )
-{
-	cleanupData.player.Show()
-	cleanupData.player.ClearViewEntity()
-	cleanupData.camera.Destroy()
-	cleanupData.ownerProxy.Destroy()
-	cleanupData.thirdPersonProxy.Destroy()
-}
+		cleanupData.player.Show()
+		cleanupData.player.ClearViewEntity()
+		cleanupData.camera.Destroy()
+		cleanupData.ownerProxy.Destroy()
+		cleanupData.thirdPersonProxy.Destroy()
+	}
 #endif
 
 #if CLIENT
-void function ServerCallback_HideHudForFPHackAnim()
-{
-	// these functions just set hud positions to infront of/behind the camera, manually set them up here so they'll be far enough away so we don't see them in these anims
-	// in an ideal world we wouldn't even have to turn off this rui stuff because it would be parented to our camera but unfortunately we do not live in an ideal world
-	//thread MainHud_TurnOff_RUI( true )
-	//HidePermanentCockpitRui()
-	RuiTopology_UpdatePos( clGlobal.topoCockpitHud, < -1000, -1000, -1000 >, < -1000, -1000, -1000 >, < -1000, -1000, -1000 > )
-	RuiTopology_UpdatePos( clGlobal.topoCockpitHudPermanent, < -1000, -1000, -1000 >, < -1000, -1000, -1000 >, < -1000, -1000, -1000 > )
-		
-	thread EnableHudOnViewRestored()
-}
+	void function ServerCallback_HideHudForFPHackAnim()
+	{
+		// these functions just set hud positions to infront of/behind the camera, manually
+		// set them up here so they'll be far enough away so we don't see them in these anims
+		// in an ideal world we wouldn't even have to turn off this rui stuff because it
+		// would be parented to our camera but unfortunately we do not live in an ideal world
+		// thread MainHud_TurnOff_RUI( true )
+		// HidePermanentCockpitRui()
+		RuiTopology_UpdatePos( clGlobal.topoCockpitHud, < -1000, -1000, -1000 >, < -1000, -1000, -1000 >, < -1000, -1000, -1000 > )
+		RuiTopology_UpdatePos( clGlobal.topoCockpitHudPermanent, < -1000, -1000, -1000 >, < -1000, -1000, -1000 >, < -1000, -1000, -1000 > )
 
-void function EnableHudOnViewRestored()
-{
-	while ( GetViewEntity() != GetLocalClientPlayer() )
-		WaitFrame()
-	
-	thread MainHud_TurnOn_RUI( true )
-	ShowPermanentCockpitRui()
-}
+		thread EnableHudOnViewRestored()
+	}
+
+	void function EnableHudOnViewRestored()
+	{
+		while ( GetViewEntity() != GetLocalClientPlayer() )
+			WaitFrame()
+
+		thread MainHud_TurnOn_RUI( true )
+		ShowPermanentCockpitRui()
+	}
 #endif

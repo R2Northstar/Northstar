@@ -7,7 +7,6 @@ global function IsAutoPopulateEnabled
 
 void function MpInitAILoadouts()
 {
-
 }
 
 void function SetProficiency( entity npc )
@@ -18,7 +17,6 @@ void function SetProficiency( entity npc )
 
 void function SPMP_UpdateNPCProficiency( entity npc )
 {
-
 }
 
 bool function IsAutoPopulateEnabled( var team = null )
@@ -41,29 +39,29 @@ bool function SPMP_Callback_ForceAIMissPlayer( entity npc, entity player )
 {
 	if ( GetGameState() >= eGameState.Postmatch )
 		return true
-	
+
 	if ( player.IsTitan() )
 		return false
-		
+
 	int lethality = Riff_AILethality()
 	if ( lethality <= eAILethality.Medium )
 		if ( player.GetTitanSoulBeingRodeoed() != null )
 			return true
-	
+
 	if ( Bleedout_IsBleedoutLogicActive() && Bleedout_ShouldAIMissBleedingPlayer( player ) )
 		return true
-	
+
 	if ( player.ContextAction_IsActive() )
 		return RandomFloat( 1 ) >= 0.25
-	
+
 	if ( IsFastPilot( player ) )
 	{
 		float chance = ( lethality + 1 ) * 0.125
 		if ( lethality <= eAILethality.Medium && npc.IsMechanical() )
 			chance /= 1.25
-		
+
 		return RandomFloat( 1 ) >= chance
 	}
-	
+
 	return false
 }

@@ -1,6 +1,6 @@
 untyped
 
-global const PROTOTYPE_DEFAULT_TITAN_RODEO_SLOTS = 3  // Todo: remove and set this in titan_base.set
+global const PROTOTYPE_DEFAULT_TITAN_RODEO_SLOTS = 3 // Todo: remove and set this in titan_base.set
 
 global function CommonNPCOnSpawned
 global function ShouldSpawn
@@ -9,8 +9,8 @@ global function FixupTitle
 
 struct
 {
-	array<string> 	pilotAntiTitanWeapons
-	int 			nextAntiTitanWeaponAutoAssign
+	array<string> pilotAntiTitanWeapons
+	int nextAntiTitanWeaponAutoAssign
 } file
 
 function AiSpawnContent_Init()
@@ -21,21 +21,23 @@ function AiSpawnContent_Init()
 		file.pilotAntiTitanWeapons = [ "mp_weapon_rocket_launcher" ]
 
 	#if DEV
-	if ( IsSingleplayer() )
-	{
-		array<string> aiSettings = GetAllowedTitanAISettings()
-		foreach ( npcSettings in aiSettings )
+		if ( IsSingleplayer() )
 		{
-			asset npcModel = Dev_GetAISettingAssetByKeyField_Global( npcSettings, "DefaultModelName" )
-			string playerSettings = expect string(  Dev_GetAISettingByKeyField_Global( npcSettings, "npc_titan_player_settings" ) )
-			asset playerModel = GetPlayerSettingsAssetForClassName( playerSettings, "bodymodel" )
+			array<string> aiSettings = GetAllowedTitanAISettings()
+			foreach ( npcSettings in aiSettings )
+			{
+				asset npcModel = Dev_GetAISettingAssetByKeyField_Global( npcSettings, "DefaultModelName" )
+				string playerSettings = expect string( Dev_GetAISettingByKeyField_Global( npcSettings, "npc_titan_player_settings" ) )
+				asset playerModel = GetPlayerSettingsAssetForClassName( playerSettings, "bodymodel" )
 
-			Assert( npcModel == playerModel, "NPC settings " + npcSettings + " has model " + npcModel + ", which does not match player model for same titan " + playerModel )
+				Assert(
+					npcModel == playerModel,
+					"NPC settings " + npcSettings + " has model " + npcModel + ", which does not match player model for same titan " + playerModel
+				)
+			}
 		}
-	}
 	#endif
 }
-
 
 function CommonNPCOnSpawned( entity npc )
 {
@@ -115,7 +117,7 @@ function CommonNPCOnSpawned( entity npc )
 	// start alert
 	if ( npc.mySpawnOptions_alert != null )
 		npc.kv.alwaysalert = npc.mySpawnOptions_alert
-	else if ( npc.HasKey( "start_alert") )
+	else if ( npc.HasKey( "start_alert" ) )
 		npc.kv.alwaysalert = npc.kv.start_alert
 
 	npc.kv.physdamagescale = 1.0
@@ -137,8 +139,8 @@ function CommonNPCOnSpawned( entity npc )
 			{
 				CodeWarning( "Spawned weak Titan at " + npc.GetOrigin() + ". Change TitanType to Henchman Titan." )
 
-			// GetSettingsTitle() is causing a script error.  Removed for now.
-			//	CodeWarning( "Spawned weak Titan " + npc.GetSettingsTitle() + " at " + npc.GetOrigin() + ". Change TitanType to Henchman Titan." )
+				// GetSettingsTitle() is causing a script error.  Removed for now.
+				// 	CodeWarning( "Spawned weak Titan " + npc.GetSettingsTitle() + " at " + npc.GetOrigin() + ". Change TitanType to Henchman Titan." )
 				npc.ai.bossTitanType = TITAN_HENCH
 			}
 		}
@@ -154,7 +156,7 @@ function CommonNPCOnSpawned( entity npc )
 	{
 		UpdateTitanMinimapStatusToOtherPlayers( npc )
 		CommonNPCTitanOnSpawned( npc )
-//		Assert( npc.Dev_GetAISettingByKeyField( "footstep_type" ) != "", "NPC " + npc + " has no footstep type set" )
+		// 		Assert( npc.Dev_GetAISettingByKeyField( "footstep_type" ) != "", "NPC " + npc + " has no footstep type set" )
 	}
 	else
 	{
@@ -176,7 +178,7 @@ function CommonNPCOnSpawned( entity npc )
 
 	if ( npc.HasKey( "drop_battery" ) )
 	{
-		npc.ai.shouldDropBattery = (npc.kv.drop_battery == "1")
+		npc.ai.shouldDropBattery = ( npc.kv.drop_battery == "1" )
 	}
 
 	switch ( npc.GetClassName() )
@@ -214,15 +216,14 @@ function CommonNPCOnSpawned( entity npc )
 			break
 
 		case "npc_dropship":
-			npc.SetSkin( 1 ) //Use skin where the lights are on for dropship.
+			npc.SetSkin( 1 ) // Use skin where the lights are on for dropship.
 			npc.EnableRenderAlways()
 			npc.SetAimAssistAllowed( false )
-			//npc.kv.CollisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS
+			// npc.kv.CollisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS
 			AddAnimEvent( npc, "dropship_warpout", WarpoutEffect )
 
 			InitLeanDropship( npc )
 			break
-
 
 		case "npc_frag_drone":
 			MakeSuicideSpectre( npc )
@@ -237,7 +238,7 @@ function CommonNPCOnSpawned( entity npc )
 			npc.s.plantedMinesManagedEntArrayID <- CreateScriptManagedEntArray()
 
 			npc.kv.crashOnDeath = false
-			//npc.kv.secondaryWeaponName = "mp_weapon_gunship_missile"
+			// npc.kv.secondaryWeaponName = "mp_weapon_gunship_missile"
 
 			EnableLeeching( npc )
 			npc.SetUsableByGroup( "enemies pilot" )
@@ -247,21 +248,21 @@ function CommonNPCOnSpawned( entity npc )
 
 		case "npc_marvin":
 			asset model = npc.GetModelName()
-			npc.EnableNPCFlag( NPC_DISABLE_SENSING )	// don't do traces to look for enemies or players
+			npc.EnableNPCFlag( NPC_DISABLE_SENSING ) // don't do traces to look for enemies or players
 			thread MarvinFace( npc )
 			thread MarvinJobThink( npc )
 			break
 
 		case "npc_pilot_elite":
-			npc.kv.physdamagescale 		= 1.0
-			npc.kv.WeaponProficiency 	= eWeaponProficiency.VERYGOOD
+			npc.kv.physdamagescale = 1.0
+			npc.kv.WeaponProficiency = eWeaponProficiency.VERYGOOD
 			break
 
 		case "npc_prowler":
 			npc.kv.disengageEnemyDist = 1500
-			npc.DisableNPCFlag( NPC_ALLOW_FLEE ) //HACK until we get a way to make last guy not run away and hide
-			//SetSquad( npc, spawnOptions.squadName ) //not sure why this is here - jake had it in his original spawn func, so I'm keeping it
-			//SetNPCSquadMode( spawnOptions.squadName, SQUAD_MODE_MULTIPRONGED_ATTACK )
+			npc.DisableNPCFlag( NPC_ALLOW_FLEE ) // HACK until we get a way to make last guy not run away and hide
+			// SetSquad( npc, spawnOptions.squadName ) //not sure why this is here - jake had it in his original spawn func, so I'm keeping it
+			// SetNPCSquadMode( spawnOptions.squadName, SQUAD_MODE_MULTIPRONGED_ATTACK )
 			break
 
 		case "npc_soldier":
@@ -277,21 +278,21 @@ function CommonNPCOnSpawned( entity npc )
 
 			int team = npc.GetTeam()
 
-			//grunt specific
-			npc.SetDoFaceAnimations( true ) //HACK: assumption that militia are the only grunt models with faces ( will need a better thing for R2 )
+			// grunt specific
+			npc.SetDoFaceAnimations( true ) // HACK: assumption that militia are the only grunt models with faces ( will need a better thing for R2 )
 
-			bool alreadyGaveASecondary = false;
+			bool alreadyGaveASecondary = false
 			entity weapon = npc.GetActiveWeapon()
 			string weaponSubClass
 			if ( weapon )
 				weaponSubClass = string( weapon.GetWeaponInfoFileKeyField( "weaponSubClass" ) )
 
 			#if SP
-			if ( weaponSubClass == "sniper" )
-			{
-				if ( AssignDefaultNPCSidearm( npc ) )
-					alreadyGaveASecondary = true
-			}
+				if ( weaponSubClass == "sniper" )
+				{
+					if ( AssignDefaultNPCSidearm( npc ) )
+						alreadyGaveASecondary = true
+				}
 			#endif
 
 			if ( !alreadyGaveASecondary && SP_GetPilotAntiTitanWeapon( npc ) == null )
@@ -319,7 +320,7 @@ function CommonNPCOnSpawned( entity npc )
 			if ( IsMultiplayer() )
 			{
 				npc.EnableNPCFlag( NPC_CROUCH_COMBAT )
-				//Only enable spectre hacking if the playlist var is enabled
+				// Only enable spectre hacking if the playlist var is enabled
 				if ( ( npc.GetTeam() == TEAM_IMC || npc.GetTeam() == TEAM_MILITIA ) && GetCurrentPlaylistVarInt( "enable_spectre_hacking", 0 ) == 1 )
 				{
 					EnableLeeching( npc )
@@ -374,7 +375,6 @@ function CommonNPCOnSpawned( entity npc )
 			SuperSpectreIntro( npc )
 			break
 
-
 		case "npc_titan":
 			InitMinimapSettings( npc )
 
@@ -387,7 +387,6 @@ function CommonNPCOnSpawned( entity npc )
 				SetDefaultMPEnemyHighlight( npc )
 			}
 			break
-
 
 		case "npc_turret_mega":
 			InitMinimapSettings( npc )
@@ -405,16 +404,15 @@ function CommonNPCOnSpawned( entity npc )
 			InitMinimapSettings( npc )
 			npc.SetAimAssistAllowed( false )
 			break
-
 	}
 
 	thread AssaultLinkedMoveTarget( npc )
 
 	FixupTitle( npc )
 	#if DEV
-	// stop all the wandering in sp_enemies.
-	if ( GetMapName() == "sp_enemies" )
-		npc.DisableNPCFlag( NPC_ALLOW_PATROL | NPC_ALLOW_INVESTIGATE )
+		// stop all the wandering in sp_enemies.
+		if ( GetMapName() == "sp_enemies" )
+			npc.DisableNPCFlag( NPC_ALLOW_PATROL | NPC_ALLOW_INVESTIGATE )
 	#endif
 }
 
@@ -437,7 +435,7 @@ void function FixupTitle( entity npc )
 			npc.SetTitle( "" )
 			break
 	}
-	*/
+*/
 }
 
 var function GetTitanHotdropSetting( entity npc )
@@ -453,9 +451,11 @@ var function GetTitanHotdropSetting( entity npc )
 		{
 			case "0":
 				return null
+
 			case "3":
 			case "1":
 				return "titanfall"
+
 			case "4":
 			case "2":
 				return "warpfall"
@@ -479,16 +479,16 @@ function CommonNPCTitanOnSpawned( entity npc )
 		GiveTitanLoadout( npc, npc.ai.titanSpawnLoadout )
 	}
 
-	//Assert( npc.ai.titanSpawnLoadout.setFile == npc.ai.titanSettings.titanSetFile )
-	string playerSettings = expect string(  npc.Dev_GetAISettingByKeyField( "npc_titan_player_settings" ) )
+	// Assert( npc.ai.titanSpawnLoadout.setFile == npc.ai.titanSettings.titanSetFile )
+	string playerSettings = expect string( npc.Dev_GetAISettingByKeyField( "npc_titan_player_settings" ) )
 	asset modelName = GetPlayerSettingsAssetForClassName( playerSettings, "bodymodel" )
 	if ( npc.GetModelName() != modelName )
 		npc.SetModel( modelName )
-//	Assert( npc.GetModelName() == modelName )
+	// 	Assert( npc.GetModelName() == modelName )
 
 	int camoIndex = GetTitanCamoIndexFromLoadoutAndPrimeStatus( npc.ai.titanSpawnLoadout )
 	int skinIndex = GetTitanSkinIndexFromLoadoutAndPrimeStatus( npc.ai.titanSpawnLoadout )
-	int decalIndex = GetTitanDecalIndexFromLoadoutAndPrimeStatus ( npc.ai.titanSpawnLoadout )
+	int decalIndex = GetTitanDecalIndexFromLoadoutAndPrimeStatus( npc.ai.titanSpawnLoadout )
 
 	if ( camoIndex > 0 )
 	{
@@ -514,19 +514,19 @@ function CommonNPCTitanOnSpawned( entity npc )
 	npc.SetDecal( decalIndex )
 
 	#if HAS_BOSS_AI
-	if ( IsMercTitan( npc ) )
-	{
-		array<entity> weapons = GetPrimaryWeapons( npc )
-		Assert( weapons.len() == 1 )
-		string character = GetMercCharacterForWeapon( weapons[0].GetWeaponClassName() )
-		npc.ai.bossCharacterName = character
-		npc.ai.mercCharacterID = GetBossTitanID( character )
+		if ( IsMercTitan( npc ) )
+		{
+			array<entity> weapons = GetPrimaryWeapons( npc )
+			Assert( weapons.len() == 1 )
+			string character = GetMercCharacterForWeapon( weapons[ 0 ].GetWeaponClassName() )
+			npc.ai.bossCharacterName = character
+			npc.ai.mercCharacterID = GetBossTitanID( character )
 
-		int id = GetBossTitanID( character )
-		string title = GetBossTitleFromID( id )
+			int id = GetBossTitanID( character )
+			string title = GetBossTitleFromID( id )
 
-		npc.SetTitle( title )
-	}
+			npc.SetTitle( title )
+		}
 	#endif
 
 	// force sp titans to use specific loadouts
@@ -534,7 +534,7 @@ function CommonNPCTitanOnSpawned( entity npc )
 		ResetTitanLoadoutFromPrimary( npc )
 
 	npc.EnableNPCFlag( NPC_NO_MOVING_PLATFORM_DEATH )
-	//npc.DisableNPCFlag( NPC_ALLOW_PATROL | NPC_ALLOW_INVESTIGATE )
+	// npc.DisableNPCFlag( NPC_ALLOW_PATROL | NPC_ALLOW_INVESTIGATE )
 
 	if ( IsMultiplayer() )
 	{
@@ -561,10 +561,10 @@ function CommonNPCTitanOnSpawned( entity npc )
 		}
 	}
 
-	local maxHealth = GetPlayerSettingsFieldForClassName_Health( npc.ai.titanSettings.titanSetFile ) //FD META - TO UPDATE with NPC equivalent of .GetPlayerModHealth()
+	local maxHealth = GetPlayerSettingsFieldForClassName_Health( npc.ai.titanSettings.titanSetFile ) // FD META - TO UPDATE with NPC equivalent of .GetPlayerModHealth()
 	if ( npc.ai.titanSpawnLoadout.setFileMods.contains( "fd_health_upgrade" ) )
 		maxHealth += 2500
-	//TEMP - GetPlayerSettingsFieldForClassName_Health doesn't return modded values.
+	// TEMP - GetPlayerSettingsFieldForClassName_Health doesn't return modded values.
 	if ( IsHardcoreGameMode() )
 		maxHealth *= 0.5
 
@@ -574,7 +574,7 @@ function CommonNPCTitanOnSpawned( entity npc )
 	npc.SetValidHealthBarTarget( true )
 
 	#if HAS_BOSS_AI
-	UpdateMercTitanHealthForDifficulty( npc )
+		UpdateMercTitanHealthForDifficulty( npc )
 	#endif
 
 	switch ( GetTitanHotdropSetting( npc ) )
@@ -645,7 +645,9 @@ function CommonNPCTitanOnSpawned( entity npc )
 	{
 		if ( bool( npc.kv.follow_mode ) )
 		{
-			entity player = GetPlayerArray()[0] // gross
+			entity player = GetPlayerArray()[
+				0
+			] // gross
 			int followBehavior = GetDefaultNPCFollowBehavior( npc )
 			npc.InitFollowBehavior( player, followBehavior )
 			npc.EnableBehavior( "Follow" )
@@ -668,7 +670,7 @@ function CommonNPCTitanOnSpawned( entity npc )
 
 function ShouldSpawn( team, forced )
 {
-	//we're not allowed to spawn AI at all - return false
+	// we're not allowed to spawn AI at all - return false
 	if ( !IsNPCSpawningEnabled() && !forced )
 	{
 		printt( "WARNING: tried to spawn an NPC but NPC Spawning is Disabled." )
@@ -677,25 +679,24 @@ function ShouldSpawn( team, forced )
 	return true
 }
 
-
 function HACK_DroneGruntModel( grunt )
 {
-	string tag 		= "CHESTFOCUS"
-	int attachID 	= expect int( grunt.LookupAttachment( tag ) )
-	vector origin 	= expect vector( grunt.GetAttachmentOrigin( attachID ) )
-	vector angles 	= expect vector( grunt.GetAttachmentAngles( attachID ) )
-	vector forward 	= AnglesToForward( angles )
-	vector right 	= AnglesToRight( angles )
-	vector up 		= AnglesToUp( angles )
+	string tag = "CHESTFOCUS"
+	int attachID = expect int( grunt.LookupAttachment( tag ) )
+	vector origin = expect vector( grunt.GetAttachmentOrigin( attachID ) )
+	vector angles = expect vector( grunt.GetAttachmentAngles( attachID ) )
+	vector forward = AnglesToForward( angles )
+	vector right = AnglesToRight( angles )
+	vector up = AnglesToUp( angles )
 
-	vector angles1 	= AnglesCompose( angles, Vector( 0, -90, 90 ) )
-	vector origin1 	= origin + ( forward * -4 ) + ( up * -1.5 )
-	entity back1 	= CreatePropDynamic( HACK_DRONE_BACK1, origin1, angles1 )
+	vector angles1 = AnglesCompose( angles, Vector( 0, -90, 90 ) )
+	vector origin1 = origin + ( forward * -4 ) + ( up * -1.5 )
+	entity back1 = CreatePropDynamic( HACK_DRONE_BACK1, origin1, angles1 )
 	back1.SetParent( grunt, tag, true, 0 )
 
-	vector angles2 	= AnglesCompose( angles, Vector( 0, -90, 0 ) )
-	vector origin2 	= origin + ( forward * -9 ) + ( up * 11 ) + ( right * -1 )
-	entity back2 	= CreatePropDynamic( HACK_DRONE_BACK2, origin2, angles2 )
+	vector angles2 = AnglesCompose( angles, Vector( 0, -90, 0 ) )
+	vector origin2 = origin + ( forward * -9 ) + ( up * 11 ) + ( right * -1 )
+	entity back2 = CreatePropDynamic( HACK_DRONE_BACK2, origin2, angles2 )
 	back2.SetParent( grunt, tag, true, 0 )
 }
 
@@ -728,12 +729,12 @@ void function TryAutoAssignAntiTitanWeapon( entity npc )
 			case TEAM_IMC:
 				npc.SetModel( TEAM_IMC_GRUNT_MODEL_ROCKET )
 				break
+				#if SP
 
-#if SP
-			case TEAM_MILITIA:
-				npc.SetModel( TEAM_MIL_GRUNT_MODEL_ROCKET )
-				break
-#endif
+				case TEAM_MILITIA:
+					npc.SetModel( TEAM_MIL_GRUNT_MODEL_ROCKET )
+					break
+				#endif
 		}
 	}
 }
@@ -775,7 +776,7 @@ void function AssignGruntModelForWeaponClass( entity npc, entity weapon, string 
 
 	switch ( npc.GetTeam() )
 	{
-//#if SP
+		// #if SP
 		case TEAM_MILITIA:
 			switch ( weaponSubClass )
 			{
@@ -802,7 +803,7 @@ void function AssignGruntModelForWeaponClass( entity npc, entity weapon, string 
 					break
 			}
 			break
-//#endif
+			// #endif
 
 		case TEAM_IMC:
 		default:
@@ -827,27 +828,28 @@ void function AssignGruntModelForWeaponClass( entity npc, entity weapon, string 
 
 				case "rifle":
 				default:
-#if SP
-					model = TEAM_IMC_GRUNT_MODEL_RIFLE
-#else
-					// no shotgun/smg grunts in MP right now
-					switch ( RandomInt( 3 ) )
-					{
-					case 0:
+					#if SP
 						model = TEAM_IMC_GRUNT_MODEL_RIFLE
-						break
-					case 1:
-						model = TEAM_IMC_GRUNT_MODEL_SHOTGUN
-						break
-					case 2:
-						model = TEAM_IMC_GRUNT_MODEL_SMG
-						break
-					}
-#endif
+					#else
+						// no shotgun/smg grunts in MP right now
+						switch ( RandomInt( 3 ) )
+						{
+							case 0:
+								model = TEAM_IMC_GRUNT_MODEL_RIFLE
+								break
+
+							case 1:
+								model = TEAM_IMC_GRUNT_MODEL_SHOTGUN
+								break
+
+							case 2:
+								model = TEAM_IMC_GRUNT_MODEL_SMG
+								break
+						}
+					#endif
 					break
 			}
 			break
-
 	}
 
 	if ( model != $"" )
@@ -857,11 +859,13 @@ void function AssignGruntModelForWeaponClass( entity npc, entity weapon, string 
 	}
 
 	if ( IsValid( weapon ) )
-		CodeWarning( "Grunt at " + npc.GetOrigin() + " couldnt get assigned a body model for weapon " + weapon.GetWeaponClassName() + " because that weapon is missing or has invalid weaponSubClass field" )
+		CodeWarning(
+			"Grunt at " + npc.GetOrigin() + " couldnt get assigned a body model for weapon " + weapon.GetWeaponClassName() +
+				" because that weapon is missing or has invalid weaponSubClass field"
+		)
 	else
 		CodeWarning( "Grunt at " + npc.GetOrigin() + " has no weapon" )
 }
-
 
 entity function SP_GetPilotAntiTitanWeapon( entity ent )
 {

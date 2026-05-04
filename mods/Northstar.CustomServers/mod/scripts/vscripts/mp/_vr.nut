@@ -3,7 +3,8 @@ untyped
 global function VR_Init
 global function VR_GroundTroopsDeathCallback
 
-struct {
+struct
+{
 	string vr_settings = ""
 } file
 
@@ -17,10 +18,10 @@ function VR_Init( string settings = "", bool enableDropships = false )
 
 	file.vr_settings = settings
 
-	//AddDeathCallback( "npc_soldier", VR_GroundTroopsDeathCallback )
-	//AddDeathCallback( "npc_spectre", VR_GroundTroopsDeathCallback )
-	//AddDeathCallback( "npc_marvin", VR_GroundTroopsDeathCallback )
-	//AddDeathCallback( "player", VR_GroundTroopsDeathCallback )
+	// AddDeathCallback( "npc_soldier", VR_GroundTroopsDeathCallback )
+	// AddDeathCallback( "npc_spectre", VR_GroundTroopsDeathCallback )
+	// AddDeathCallback( "npc_marvin", VR_GroundTroopsDeathCallback )
+	// AddDeathCallback( "player", VR_GroundTroopsDeathCallback )
 	AddCallback_EntitiesDidLoad( EntitiesDidLoad )
 }
 

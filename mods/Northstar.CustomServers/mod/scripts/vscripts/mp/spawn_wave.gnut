@@ -2,5 +2,4 @@ global function SpawnWave_Init
 
 void function SpawnWave_Init()
 {
-
 }

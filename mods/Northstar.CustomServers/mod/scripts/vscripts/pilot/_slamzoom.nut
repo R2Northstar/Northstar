@@ -27,12 +27,12 @@ function SlammzoomSpawn( entity player, vector origin, vector angles, entity fri
 	int slamzoom_angle = 90
 	int enter_angle = 90 - slamzoom_angle
 
-	vector start_angles = Vector( -90-enter_angle, angles.y, 0 )
+	vector start_angles = Vector( -90 - enter_angle, angles.y, 0 )
 	vector start_vector = AnglesToForward( start_angles )
 
 	// origin = origin + Vector(0,0,48)
 
-	entity camera = CreateTitanDropCamera( origin + start_vector * slamzoom_height, Vector( slamzoom_angle, angles.y, 0.0) )
+	entity camera = CreateTitanDropCamera( origin + start_vector * slamzoom_height, Vector( slamzoom_angle, angles.y, 0.0 ) )
 	camera.Fire( "Enable", "!activator", 0, player )
 
 	entity mover = CreateScriptMover()
@@ -55,12 +55,12 @@ function SlammzoomSpawn( entity player, vector origin, vector angles, entity fri
 	)
 
 	player.isSpawning = mover
-	mover.MoveTo( mover.GetOrigin() + (start_vector * 100), slamzoom_time1, slamzoom_time1*0.4, slamzoom_time1*0.4 )
+	mover.MoveTo( mover.GetOrigin() + ( start_vector * 100 ), slamzoom_time1, slamzoom_time1 * 0.4, slamzoom_time1 * 0.4 )
 	wait slamzoom_time1
 	EmitSoundOnEntityOnlyToPlayer( player, player, SLAMZOOM_WHOOSH_SOUND )
-	mover.MoveTo( landorigin, slamzoom_time2, slamzoom_time2*0.5, slamzoom_time2*0.2 )
+	mover.MoveTo( landorigin, slamzoom_time2, slamzoom_time2 * 0.5, slamzoom_time2 * 0.2 )
 	wait slamzoom_time2 - slamzoom_rotate_time
-	mover.RotateTo( angles, slamzoom_rotate_time, slamzoom_rotate_time*0.2, slamzoom_rotate_time*0.2 )
+	mover.RotateTo( angles, slamzoom_rotate_time, slamzoom_rotate_time * 0.2, slamzoom_rotate_time * 0.2 )
 	wait slamzoom_rotate_time
 	player.isSpawning = null
 	wait 0.1
@@ -77,7 +77,7 @@ function SlammzoomSpawn( entity player, vector origin, vector angles, entity fri
 	}
 
 	if ( ShouldGivePlayerInfoOnSpawn() )
-	 	thread GivePlayerInfoOnSpawn( player )
+		thread GivePlayerInfoOnSpawn( player )
 
 	player.SetOrigin( origin )
 	player.SnapEyeAngles( angles )

@@ -4,7 +4,6 @@ global function RegisterDoomProtectionHintDamage
 
 global function UpdateScreenFade
 
-
 struct
 {
 	var screenFade = null
@@ -20,7 +19,6 @@ void function ClScreenfade_Init()
 	else
 		file.screenFadeFunc = UpdateScreenFadeInternal
 
-
 	thread PlayerPainSoundThread()
 
 	AddCallback_OnClientScriptInit( ScreenFade_AddClient )
@@ -30,14 +28,13 @@ void function ClScreenfade_Init()
 	if ( IsLobby() )
 		return
 
-	RuiSetFloat3( file.screenFade, "fadeColor", <0, 0, 0> )
+	RuiSetFloat3( file.screenFade, "fadeColor", < 0, 0, 0 > )
 	RuiSetFloat( file.screenFade, "fadeAlpha", 1.0 )
 }
 
 void function ScreenFade_AddClient( entity player )
 {
 }
-
 
 void function UpdateScreenFade()
 {
@@ -48,7 +45,7 @@ void function UpdateScreenFadeInternal()
 {
 	table fadeParams = expect table( GetFadeParams() )
 
-	//For debugging screen fade
+	// For debugging screen fade
 	/*int alpha = expect int (fadeParams.a )
 
 	if ( file.lastAlpha != alpha  )
@@ -75,10 +72,10 @@ void function RegisterDoomProtectionHintDamage( float newAmount )
 	const float LOCKOUT_TIME = 20.0
 	if ( newAmount < 0.0 )
 		return
-	if ( (Time() - g_doomProtectionHintLastShowedTime) < LOCKOUT_TIME )
+	if ( ( Time() - g_doomProtectionHintLastShowedTime ) < LOCKOUT_TIME )
 		return
 
-	g_doomProtectionHintDamage += newAmount;
+	g_doomProtectionHintDamage += newAmount
 	printt( "g_doomProtectionHintDamage is now:", g_doomProtectionHintDamage )
 }
 
@@ -95,7 +92,7 @@ void function DoomProtectionHintThread()
 
 		entity player = GetLocalViewPlayer()
 		if ( !IsValid( player ) )
-			continue;
+			continue
 
 		float threshold = player.IsTitan() ? THRESHOLD_TITAN : THRESHOLD_PILOT
 		if ( g_doomProtectionHintLastShowedTime == 0.0 )
@@ -120,7 +117,7 @@ string function GetPainSound( entity player, string varName )
 	var resultRaw = player.GetPlayerSettingsField( varName )
 	if ( resultRaw == null )
 	{
-		Assert( 0, ("Invalid player setting field: " + varName) )
+		Assert( 0, ( "Invalid player setting field: " + varName ) )
 		return ""
 	}
 
@@ -130,17 +127,17 @@ string function GetPainSound( entity player, string varName )
 void function PlayerPainSoundThread()
 {
 	// Each layer has:
-	//: begin threshold (health falls below XX)
-	//: end threshold (health has risen back up above YY)
-	//: looping sound
-	//: endcap sound
+	// : begin threshold (health falls below XX)
+	// : end threshold (health has risen back up above YY)
+	// : looping sound
+	// : endcap sound
 
-	float HEALTH_PERCENT_LAYER1 = 0.85;
-	float HEALTH_PERCENT_LAYER1_END = 0.85;
-	float HEALTH_PERCENT_LAYER2 = 0.55;
-	float HEALTH_PERCENT_LAYER2_END = 0.55;
-	float HEALTH_PERCENT_LAYER3 = 0.55;
-	float HEALTH_PERCENT_LAYER3_END = 0.59;
+	float HEALTH_PERCENT_LAYER1 = 0.85
+	float HEALTH_PERCENT_LAYER1_END = 0.85
+	float HEALTH_PERCENT_LAYER2 = 0.55
+	float HEALTH_PERCENT_LAYER2_END = 0.55
+	float HEALTH_PERCENT_LAYER3 = 0.55
+	float HEALTH_PERCENT_LAYER3_END = 0.59
 
 	if ( shGlobal.proto_pilotHealthRegenDisabled )
 	{
@@ -152,10 +149,10 @@ void function PlayerPainSoundThread()
 		HEALTH_PERCENT_LAYER3_END *= 0.33
 	}
 
-	entity ourPlayer = null;
-	bool arePlayingLayer1 = false;
-	bool arePlayingLayer2 = false;
-	bool arePlayingLayer3 = false;
+	entity ourPlayer = null
+	bool arePlayingLayer1 = false
+	bool arePlayingLayer2 = false
+	bool arePlayingLayer3 = false
 
 	string soundLayer1Loop = ""
 	string soundLayer1End = ""
@@ -170,7 +167,7 @@ void function PlayerPainSoundThread()
 		bool shouldPlayLayer2 = false
 		bool shouldPlayLayer3 = false
 		bool endcapsAllowed = false
-		entity localViewPlayer = GetLocalViewPlayer();
+		entity localViewPlayer = GetLocalViewPlayer()
 
 		if ( !IsValid( localViewPlayer ) )
 		{
@@ -178,7 +175,7 @@ void function PlayerPainSoundThread()
 		else if ( !IsAlive( localViewPlayer ) )
 		{
 		}
-		else if ( (ourPlayer != null) && (ourPlayer != localViewPlayer) )
+		else if ( ( ourPlayer != null ) && ( ourPlayer != localViewPlayer ) )
 		{
 		}
 		else if ( localViewPlayer.IsTitan() )
@@ -191,21 +188,21 @@ void function PlayerPainSoundThread()
 
 			int health = localViewPlayer.GetHealth()
 			int maxHealth = localViewPlayer.GetMaxHealth()
-			float healthPercent = ((maxHealth > 0) ? (health.tofloat() / maxHealth.tofloat()) : 1.0)
+			float healthPercent = ( ( maxHealth > 0 ) ? ( health.tofloat() / maxHealth.tofloat() ) : 1.0 )
 
-			if ( !arePlayingLayer1 && (healthPercent <= HEALTH_PERCENT_LAYER1) )
+			if ( !arePlayingLayer1 && ( healthPercent <= HEALTH_PERCENT_LAYER1 ) )
 				shouldPlayLayer1 = true
-			else if ( arePlayingLayer1 && (healthPercent <= HEALTH_PERCENT_LAYER1_END) )
+			else if ( arePlayingLayer1 && ( healthPercent <= HEALTH_PERCENT_LAYER1_END ) )
 				shouldPlayLayer1 = true
 
-			if ( !arePlayingLayer2 && (healthPercent <= HEALTH_PERCENT_LAYER2) )
+			if ( !arePlayingLayer2 && ( healthPercent <= HEALTH_PERCENT_LAYER2 ) )
 				shouldPlayLayer2 = true
-			else if ( arePlayingLayer2 && (healthPercent <= HEALTH_PERCENT_LAYER2_END) )
+			else if ( arePlayingLayer2 && ( healthPercent <= HEALTH_PERCENT_LAYER2_END ) )
 				shouldPlayLayer2 = true
 
-			if ( !arePlayingLayer3 && (healthPercent <= HEALTH_PERCENT_LAYER3) )
+			if ( !arePlayingLayer3 && ( healthPercent <= HEALTH_PERCENT_LAYER3 ) )
 				shouldPlayLayer3 = true
-			else if ( arePlayingLayer3 && (healthPercent <= HEALTH_PERCENT_LAYER3_END) )
+			else if ( arePlayingLayer3 && ( healthPercent <= HEALTH_PERCENT_LAYER3_END ) )
 				shouldPlayLayer3 = true
 		}
 
@@ -213,9 +210,9 @@ void function PlayerPainSoundThread()
 		{
 			if ( shouldPlayLayer1 )
 			{
-				//printt( "LAYER 1 STARTS" )
+				// printt( "LAYER 1 STARTS" )
 				arePlayingLayer1 = true
-				Assert( (ourPlayer == null) || (ourPlayer == localViewPlayer) )
+				Assert( ( ourPlayer == null ) || ( ourPlayer == localViewPlayer ) )
 				ourPlayer = localViewPlayer
 
 				soundLayer1Loop = GetPainSound( ourPlayer, "sound_pain_layer1_loop" )
@@ -225,15 +222,15 @@ void function PlayerPainSoundThread()
 			}
 			else
 			{
-				//printt( "LAYER 1 _stop_" )
+				// printt( "LAYER 1 _stop_" )
 				if ( IsValid( ourPlayer ) )
 				{
 					if ( soundLayer1Loop != "" )
 						StopSoundOnEntity( ourPlayer, soundLayer1Loop )
-					if ( endcapsAllowed && (soundLayer1End != "") )
+					if ( endcapsAllowed && ( soundLayer1End != "" ) )
 						EmitSoundOnEntity( ourPlayer, soundLayer1End )
 				}
-				arePlayingLayer1 = false;
+				arePlayingLayer1 = false
 			}
 		}
 
@@ -241,10 +238,10 @@ void function PlayerPainSoundThread()
 		{
 			if ( shouldPlayLayer2 )
 			{
-				//printt( "LAYER 2 STARTS" );
-				arePlayingLayer2 = true;
-				Assert( (ourPlayer == null) || (ourPlayer == localViewPlayer) )
-				ourPlayer = localViewPlayer;
+				// printt( "LAYER 2 STARTS" );
+				arePlayingLayer2 = true
+				Assert( ( ourPlayer == null ) || ( ourPlayer == localViewPlayer ) )
+				ourPlayer = localViewPlayer
 				soundLayer2Start = GetPainSound( ourPlayer, "sound_pain_layer2_start" )
 				soundLayer2Loop = GetPainSound( ourPlayer, "sound_pain_layer2_loop" )
 				if ( soundLayer2Start != "" )
@@ -254,7 +251,7 @@ void function PlayerPainSoundThread()
 			}
 			else
 			{
-				//printt( "LAYER 2 _stop_" );
+				// printt( "LAYER 2 _stop_" );
 				if ( IsValid( ourPlayer ) )
 				{
 					if ( soundLayer2Start != "" )
@@ -262,7 +259,7 @@ void function PlayerPainSoundThread()
 					if ( soundLayer2Loop != "" )
 						StopSoundOnEntity( ourPlayer, soundLayer2Loop )
 				}
-				arePlayingLayer2 = false;
+				arePlayingLayer2 = false
 			}
 		}
 
@@ -270,9 +267,9 @@ void function PlayerPainSoundThread()
 		{
 			if ( shouldPlayLayer3 )
 			{
-				//printt( "LAYER 3 STARTS" )
+				// printt( "LAYER 3 STARTS" )
 				arePlayingLayer3 = true
-				Assert( (ourPlayer == null) || (ourPlayer == localViewPlayer) )
+				Assert( ( ourPlayer == null ) || ( ourPlayer == localViewPlayer ) )
 				ourPlayer = localViewPlayer
 				soundLayer3Loop = GetPainSound( ourPlayer, "sound_pain_layer3_loop" )
 				soundLayer3End = GetPainSound( ourPlayer, "sound_pain_layer3_end" )
@@ -281,15 +278,15 @@ void function PlayerPainSoundThread()
 			}
 			else
 			{
-				//printt( "LAYER 3 _stop_" )
+				// printt( "LAYER 3 _stop_" )
 				if ( IsValid( ourPlayer ) )
 				{
 					if ( soundLayer3Loop != "" )
 						StopSoundOnEntity( ourPlayer, soundLayer3Loop )
-					if ( endcapsAllowed && (soundLayer3End != "") )
+					if ( endcapsAllowed && ( soundLayer3End != "" ) )
 						EmitSoundOnEntity( ourPlayer, soundLayer3End )
 				}
-				arePlayingLayer3 = false;
+				arePlayingLayer3 = false
 			}
 		}
 
@@ -299,7 +296,6 @@ void function PlayerPainSoundThread()
 		WaitFrame()
 	}
 }
-
 
 /*
 void function ClientSetPilotPainFlashColor( entity player, int a )
