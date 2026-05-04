@@ -12,9 +12,9 @@ void function GamemodeTFFA_Init()
 	TrackTitanDamageInPlayerGameStat( PGS_ASSAULT_SCORE )
 	ScoreEvent_SetupEarnMeterValuesForMixedModes()
 	SetLoadoutGracePeriodEnabled( false )
-	
+
 	ClassicMP_SetCustomIntro( TFFAIntroSetup, TFFAIntroLength )
-	
+
 	AddCallback_OnPlayerKilled( AddTeamScoreForPlayerKilled ) // dont have to track autotitan kills since you cant leave your titan in this mode
 }
 
@@ -36,9 +36,9 @@ void function TFFAIntroStartThreaded()
 
 	foreach ( entity player in GetPlayerArray() )
 		TFFAIntroShowIntermissionCam( player )
-		
+
 	wait TFFAIntroLength
-	
+
 	ClassicMP_OnIntroFinished()
 }
 
@@ -46,7 +46,7 @@ void function TFFAIntroShowIntermissionCam( entity player )
 {
 	if ( GetGameState() != eGameState.Prematch )
 		return
-	
+
 	thread PlayerWatchesTFFAIntroIntermissionCam( player )
 }
 
@@ -55,14 +55,14 @@ void function PlayerWatchesTFFAIntroIntermissionCam( entity player )
 	ScreenFadeFromBlack( player )
 
 	entity intermissionCam = GetEntArrayByClass_Expensive( "info_intermission" )[ 0 ]
-	
+
 	// the angle set here seems sorta inconsistent as to whether it actually works or just stays at 0 for some reason
 	player.SetObserverModeStaticPosition( intermissionCam.GetOrigin() )
 	player.SetObserverModeStaticAngles( intermissionCam.GetAngles() )
 	player.StartObserverMode( OBS_MODE_STATIC_LOCKED )
 
 	wait TFFAIntroLength
-	
+
 	if ( !IsValid( player ) ) // if player leaves during the intro sequence
 		return
 

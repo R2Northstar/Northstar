@@ -6,16 +6,16 @@ const DEV_DRAWALLTRIGGERS = 0
 
 global const CHARGE_TOOL = "sp_weapon_arc_tool"
 
-global const TRIG_FLAG_NONE				= 0
-global const TRIG_FLAG_PLAYERONLY		= 0x0001
-global const TRIG_FLAG_NPCONLY			= 0x0002
-global const TRIG_FLAG_NOCONTEXTBUSY	= 0x0004
-global const TRIG_FLAG_ONCE				= 0x0008
-global const TRIG_FLAG_EXCLUSIVE		= 0x0010 // can only be triggered by entities passed in at creation
-global const TRIG_FLAG_DEVDRAW			= 0x0020
-global const TRIG_FLAG_START_DISABLED	= 0x0040
-global const TRIG_FLAG_NO_PHASE_SHIFT	= 0x0080
-global const float MAP_EXTENTS = 128*128
+global const TRIG_FLAG_NONE = 0
+global const TRIG_FLAG_PLAYERONLY = 0x1
+global const TRIG_FLAG_NPCONLY = 0x2
+global const TRIG_FLAG_NOCONTEXTBUSY = 0x4
+global const TRIG_FLAG_ONCE = 0x8
+global const TRIG_FLAG_EXCLUSIVE = 0x10 // can only be triggered by entities passed in at creation
+global const TRIG_FLAG_DEVDRAW = 0x20
+global const TRIG_FLAG_START_DISABLED = 0x40
+global const TRIG_FLAG_NO_PHASE_SHIFT = 0x80
+global const float MAP_EXTENTS = 128 * 128
 /*
 const TRIG_FLAG_	= 0x0080
 const TRIG_FLAG_	= 0x0100*/
@@ -56,12 +56,12 @@ global struct FirstPersonSequenceStruct
 	vector ornull origin = null
 	vector ornull angles = null
 	bool enablePlanting = false
-	float setInitialTime = 0.0	//set the starting point of the animation in seconds
-	bool useAnimatedRefAttachment = false //Position entity using ref every frame instead of using root motion
+	float setInitialTime = 0.0 // set the starting point of the animation in seconds
+	bool useAnimatedRefAttachment = false // Position entity using ref every frame instead of using root motion
 	bool renderWithViewModels = false
 	bool gravity = false // force gravity command on sequence
 	bool playerPushable = false
-	array< string > thirdPersonCameraAttachments = []
+	array<string> thirdPersonCameraAttachments = []
 	bool thirdPersonCameraVisibilityChecks = false
 	entity thirdPersonCameraEntity = null
 	bool snapPlayerFeetToEyes = true
@@ -84,18 +84,17 @@ void function Utility_Shared_Init()
 {
 	RegisterSignal( TRIGGER_INTERNAL_SIGNAL )
 	RegisterSignal( "devForcedWin" )
-
 	#document( "IsAlive", "Returns true if the given ent is not null, and is alive." )
 	#document( "ArrayWithin", "Remove ents from array that are out of range" )
 }
 
 #if DEV
-// short cut for the console
-// script gp()[0].Die( gp()[1] )
-array<entity> function gp()
-{
-	return GetPlayerArray()
-}
+	// short cut for the console
+	// script gp()[0].Die( gp()[1] )
+	array<entity> function gp()
+	{
+		return GetPlayerArray()
+	}
 #endif
 
 void function InitWeaponScripts()
@@ -107,10 +106,10 @@ void function InitWeaponScripts()
 	Grenade_FileInit()
 	Vortex_Init()
 
-//	#if SERVER
-//		PrecacheProjectileEntity( "grenade_frag" )
-//		PrecacheProjectileEntity( "crossbow_bolt" )
-//	#endif
+	// 	#if SERVER
+	// 		PrecacheProjectileEntity( "grenade_frag" )
+	// 		PrecacheProjectileEntity( "crossbow_bolt" )
+	// 	#endif
 
 	MpWeaponDroneBeam_Init()
 	MpWeaponDroneRocket_Init()
@@ -172,7 +171,7 @@ void function InitWeaponScripts()
 	MpTitanWeaponShoulderRockets_Init()
 	MpTitanAbilitySmoke_Init()
 	#if MP
-	MpWeaponArcTrap_Init()
+		MpWeaponArcTrap_Init()
 	#endif
 
 	#if SERVER
@@ -295,7 +294,7 @@ entity function GetFarthest( array<entity> entArray, vector origin )
 {
 	Assert( entArray.len() > 0, "Empty array!" )
 
-	entity bestEnt = entArray[0]
+	entity bestEnt = entArray[ 0 ]
 	float bestDistSqr = DistanceSqr( bestEnt.GetOrigin(), origin )
 
 	for ( int i = 1; i < entArray.len(); i++ )
@@ -346,12 +345,12 @@ table function StringToColors( string colorString, string delimiter = " " )
 	Assert( tokens.len() >= 3 )
 
 	table Table = {}
-	Table.r <- int( tokens[0] )
-	Table.g <- int( tokens[1] )
-	Table.b <- int( tokens[2] )
+	Table.r <- int( tokens[ 0 ] )
+	Table.g <- int( tokens[ 1 ] )
+	Table.b <- int( tokens[ 2 ] )
 
 	if ( tokens.len() == 4 )
-		Table.a <- int( tokens[3] )
+		Table.a <- int( tokens[ 3 ] )
 	else
 		Table.a <- 255
 
@@ -383,7 +382,7 @@ float function EvaluatePolynomial( float x, array<float> coefficientArray )
 	float sum = 0.0
 
 	for ( int i = 0; i < coefficientArray.len() - 1; ++i )
-		sum += coefficientArray[ i ] * pow( x, coefficientArray.len() -1 - i )
+		sum += coefficientArray[ i ] * pow( x, coefficientArray.len() - 1 - i )
 
 	if ( coefficientArray.len() >= 1 )
 		sum += coefficientArray[ coefficientArray.len() - 1 ]
@@ -402,81 +401,81 @@ void function WaitForever()
 
 #if SERVER
 
-bool function ShouldDoReplay( entity player, entity attacker, float replayTime, int methodOfDeath )
-{
-	if ( ShouldDoReplayIsForcedByCode() )
+	bool function ShouldDoReplay( entity player, entity attacker, float replayTime, int methodOfDeath )
 	{
-		print( "ShouldDoReplay(): Doing a replay because code forced it." );
-		return true
-	}
-
-	if ( GetCurrentPlaylistVarInt( "replay_disabled", 0 ) == 1 )
-	{
-		print( "ShouldDoReplay(): Not doing a replay because 'replay_disabled' is enabled in the current playlist.\n" );
-		return false
-	}
-
-	switch( methodOfDeath )
-	{
-		case eDamageSourceId.human_execution:
-		case eDamageSourceId.titan_execution:
+		if ( ShouldDoReplayIsForcedByCode() )
 		{
-			print( "ShouldDoReplay(): Not doing a replay because the player died from an execution.\n" );
+			print( "ShouldDoReplay(): Doing a replay because code forced it." )
+			return true
+		}
+
+		if ( GetCurrentPlaylistVarInt( "replay_disabled", 0 ) == 1 )
+		{
+			print( "ShouldDoReplay(): Not doing a replay because 'replay_disabled' is enabled in the current playlist.\n" )
 			return false
 		}
+
+		switch ( methodOfDeath )
+		{
+			case eDamageSourceId.human_execution:
+			case eDamageSourceId.titan_execution:
+				{
+					print( "ShouldDoReplay(): Not doing a replay because the player died from an execution.\n" )
+					return false
+				}
+		}
+
+		if ( level.nv.replayDisabled )
+		{
+			print( "ShouldDoReplay(): Not doing a replay because replays are disabled for the level.\n" )
+			return false
+		}
+
+		if ( Time() - player.p.connectTime <= replayTime ) // Bad things happen if we try to do a kill replay that lasts longer than the player entity existing on the server
+		{
+			print( "ShouldDoReplay(): Not doing a replay because the player is not old enough.\n" )
+			return false
+		}
+
+		if ( player == attacker )
+		{
+			print( "ShouldDoReplay(): Not doing a replay because the attacker is the player.\n" )
+			return false
+		}
+
+		if ( player.IsBot() == true )
+		{
+			print( "ShouldDoReplay(): Not doing a replay because the player is a bot.\n" )
+			return false
+		}
+
+		return AttackerShouldTriggerReplay( attacker )
 	}
 
-	if ( level.nv.replayDisabled )
+	// Don't let things like killbrushes show replays
+	bool function AttackerShouldTriggerReplay( entity attacker )
 	{
-		print( "ShouldDoReplay(): Not doing a replay because replays are disabled for the level.\n" );
+		if ( !IsValid( attacker ) )
+		{
+			print( "AttackerShouldTriggerReplay(): Not doing a replay because the attacker is not valid.\n" )
+			return false
+		}
+
+		if ( attacker.IsPlayer() )
+		{
+			print( "AttackerShouldTriggerReplay(): Doing a replay because the attacker is a player.\n" )
+			return true
+		}
+
+		if ( attacker.IsNPC() )
+		{
+			print( "AttackerShouldTriggerReplay(): Doing a replay because the attacker is an NPC.\n" )
+			return true
+		}
+
+		print( "AttackerShouldTriggerReplay(): Not doing a replay by default.\n" )
 		return false
 	}
-
-	if ( Time() - player.p.connectTime <= replayTime ) //Bad things happen if we try to do a kill replay that lasts longer than the player entity existing on the server
-	{
-		print( "ShouldDoReplay(): Not doing a replay because the player is not old enough.\n" );
-		return false
-	}
-
-	if ( player == attacker )
-	{
-		print( "ShouldDoReplay(): Not doing a replay because the attacker is the player.\n" );
-		return false
-	}
-
-	if ( player.IsBot() == true )
-	{
-		print( "ShouldDoReplay(): Not doing a replay because the player is a bot.\n" );
-		return false
-	}
-
-	return AttackerShouldTriggerReplay( attacker )
-}
-
-// Don't let things like killbrushes show replays
-bool function AttackerShouldTriggerReplay( entity attacker )
-{
-	if ( !IsValid( attacker ) )
-	{
-		print( "AttackerShouldTriggerReplay(): Not doing a replay because the attacker is not valid.\n" )
-		return false
-	}
-
-	if ( attacker.IsPlayer() )
-	{
-		print( "AttackerShouldTriggerReplay(): Doing a replay because the attacker is a player.\n" )
-		return true
-	}
-
-	if ( attacker.IsNPC() )
-	{
-		print( "AttackerShouldTriggerReplay(): Doing a replay because the attacker is an NPC.\n" )
-		return true
-	}
-
-	print( "AttackerShouldTriggerReplay(): Not doing a replay by default.\n" )
-	return false
-}
 #endif // #if SERVER
 
 vector function RandomVec( float range )
@@ -495,7 +494,7 @@ function ArrayValuesToTableKeys( arr )
 	Assert( type( arr ) == "array", "Not an array" )
 
 	local resultTable = {}
-	for ( int i = 0; i < arr.len(); ++ i)
+	for ( int i = 0; i < arr.len(); ++i )
 	{
 		resultTable[ arr[ i ] ] <- 1
 	}
@@ -538,9 +537,9 @@ int function RandomWeightedIndex( array Array )
 	int count = Array.len()
 	Assert( count != 0, "Array is empty" )
 
-	int sum = int( ( count * ( count + 1 ) ) / 2.0 )		// ( n * ( n + 1 ) ) / 2
+	int sum = int( ( count * ( count + 1 ) ) / 2.0 ) // ( n * ( n + 1 ) ) / 2
 	int randInt = RandomInt( sum )
-	for ( int i = 0 ; i < count ; i++ )
+	for ( int i = 0; i < count; i++ )
 	{
 		int rangeForThisIndex = count - i
 		if ( randInt < rangeForThisIndex )
@@ -572,27 +571,27 @@ bool function IsAlive( entity ent )
 }
 
 #if DEV && SERVER
-void function vduon()
-{
-	PlayConversationToAll( "TitanReplacement" )
-}
-
-void function playconvtest( string conv )
-{
-	entity player = GetPlayerArray()[0]
-	array<entity> guys = GetAllSoldiers()
-	if ( !guys.len() )
+	void function vduon()
 	{
-		printt( "No AI!!" )
-		return
+		PlayConversationToAll( "TitanReplacement" )
 	}
-	entity guy = GetClosest( guys, player.GetOrigin() )
-	if ( conv in player.s.lastAIConversationTime )
-		delete player.s.lastAIConversationTime[ conv ]
 
-	printt( "Play ai conversation " + conv )
-	PlaySquadConversationToAll( conv, guy )
-}
+	void function playconvtest( string conv )
+	{
+		entity player = GetPlayerArray()[ 0 ]
+		array<entity> guys = GetAllSoldiers()
+		if ( !guys.len() )
+		{
+			printt( "No AI!!" )
+			return
+		}
+		entity guy = GetClosest( guys, player.GetOrigin() )
+		if ( conv in player.s.lastAIConversationTime )
+			delete player.s.lastAIConversationTime[ conv ]
+
+		printt( "Play ai conversation " + conv )
+		PlaySquadConversationToAll( conv, guy )
+	}
 #endif //DEV
 
 void function FighterExplodes( entity ship )
@@ -626,7 +625,6 @@ vector function PositionOffsetFromOriginAngles( vector origin, vector angles, fl
 	return origin
 }
 
-
 bool function IsMenuLevel()
 {
 	return IsLobby()
@@ -640,7 +638,7 @@ function Dump( package, depth = 0 )
 	foreach ( k, v in package )
 	{
 		for ( int i = 0; i < depth; i++ )
-			print( "    ")
+			print( "    " )
 
 		if ( IsTable( package ) )
 			printl( "Key: " + k + " Value: " + v )
@@ -704,7 +702,7 @@ float function VectorDot_DirectionToOrigin( entity player, vector direction, vec
 void function WaitUntilWithinDistance( entity player, entity titan, float dist )
 {
 	float distSqr = dist * dist
-	for ( ;; )
+	for ( ; ; )
 	{
 		if ( !IsAlive( titan ) )
 			return
@@ -721,7 +719,7 @@ void function WaitUntilWithinDistance( entity player, entity titan, float dist )
 void function WaitUntilBeyondDistance( entity player, entity titan, float dist )
 {
 	float distSqr = dist * dist
-	for ( ;; )
+	for ( ; ; )
 	{
 		if ( !IsAlive( titan ) )
 			return
@@ -740,12 +738,11 @@ bool function IsModelViewer()
 	return GetMapName() == "mp_model_viewer"
 }
 
-
-//----------------------------------//
-//	Tweening functions				//
+// ----------------------------------//
+// 	Tweening functions				//
 // Pass in a fraction 0.0 - 1.0		//
 // Get a fraction back 0.0 - 1.0	//
-//----------------------------------//
+// ----------------------------------//
 
 // simple linear tweening - no easing, no acceleration
 float function Tween_Linear( float frac )
@@ -758,7 +755,7 @@ float function Tween_Linear( float frac )
 float function Tween_QuadEaseOut( float frac )
 {
 	Assert( frac >= 0.0 && frac <= 1.0 )
-	return -1.0 * frac*(frac-2)
+	return -1.0 * frac * ( frac - 2 )
 }
 
 // exponential easing out - decelerating to zero velocity
@@ -771,7 +768,7 @@ float function Tween_ExpoEaseOut( float frac )
 float function Tween_ExpoEaseIn( float frac )
 {
 	Assert( frac >= 0.0 && frac <= 1.0 )
-	return pow( 2, 10 * ( frac - 1 ) );
+	return pow( 2, 10 * ( frac - 1 ) )
 }
 
 bool function LegalOrigin( vector origin )
@@ -891,24 +888,23 @@ FrontRightDotProductsStruct function GetFrontRightDots( entity baseEnt, entity r
 
 		vector targetOrg = relativeEnt.GetOrigin()
 		vector vecToEnt = ( targetOrg - origin )
-//		printt( "vecToEnt ", vecToEnt )
+		// 		printt( "vecToEnt ", vecToEnt )
 		vecToEnt.z = 0
 
 		vecToEnt.Norm()
-
 
 		FrontRightDotProductsStruct result
 		result.forwardDot = DotProduct( vecToEnt, forward )
 		result.rightDot = DotProduct( vecToEnt, right )
 
 		// red: forward for incoming ent
-		//DebugDrawLine( origin, origin + vecToEnt * 150, 255, 0, 0, true, 5 )
+		// DebugDrawLine( origin, origin + vecToEnt * 150, 255, 0, 0, true, 5 )
 
 		// green: tag forward
-		//DebugDrawLine( origin, origin + forward * 150, 0, 255, 0, true, 5 )
+		// DebugDrawLine( origin, origin + forward * 150, 0, 255, 0, true, 5 )
 
 		// blue: tag right
-		//DebugDrawLine( origin, origin + right * 150, 0, 0, 255, true, 5 )
+		// DebugDrawLine( origin, origin + right * 150, 0, 0, 255, true, 5 )
 		return result
 	}
 
@@ -923,8 +919,6 @@ FrontRightDotProductsStruct function GetFrontRightDots( entity baseEnt, entity r
 	return result
 }
 
-
-
 array<vector> function GetAllPointsOnBezier( array<vector> points, int numSegments, float debugDrawTime = 0.0 )
 {
 	Assert( points.len() >= 2 )
@@ -935,7 +929,7 @@ array<vector> function GetAllPointsOnBezier( array<vector> points, int numSegmen
 	if ( debugDrawTime )
 	{
 		for ( int i = 0; i < points.len() - 1; i++ )
-			DebugDrawLine( points[i], points[i + 1], 150, 150, 150, true, debugDrawTime )
+			DebugDrawLine( points[ i ], points[ i + 1 ], 150, 150, 150, true, debugDrawTime )
 	}
 
 	for ( int i = 0; i < numSegments; i++ )
@@ -952,14 +946,14 @@ vector function GetSinglePointOnBezier( array<vector> points, float t )
 	// evaluate a point on a bezier-curve. t goes from 0 to 1.0
 
 	array<vector> lastPoints = clone points
-	for(;;)
+	for ( ; ; )
 	{
 		array<vector> newPoints = []
 		for ( int i = 0; i < lastPoints.len() - 1; i++ )
-			newPoints.append( lastPoints[i] + ( lastPoints[i+1] - lastPoints[i] ) * t )
+			newPoints.append( lastPoints[ i ] + ( lastPoints[ i + 1 ] - lastPoints[ i ] ) * t )
 
 		if ( newPoints.len() == 1 )
-			return newPoints[0]
+			return newPoints[ 0 ]
 
 		lastPoints = newPoints
 	}
@@ -985,7 +979,6 @@ bool function TitanCoreInUse( entity player )
 
 	return Time() < SoulTitanCore_GetExpireTime( player.GetTitanSoul() )
 }
-
 
 // Return float or null
 function GetTitanCoreTimeRemaining( entity player )
@@ -1079,11 +1072,10 @@ float function GetCoreBuildTime( entity titan )
 
 	if ( !IsValid( coreWeapon ) )
 	{
-		//printt( "WARNING: tried to set build timer, but core weapon was invalid." )
-		//printt( "titan is alive? " + IsAlive( titan ) )
+		// printt( "WARNING: tried to set build timer, but core weapon was invalid." )
+		// printt( "titan is alive? " + IsAlive( titan ) )
 		return 200.0 // default
 	}
-
 
 	return GetTitanCoreBuildTimeFromWeapon( coreWeapon )
 }
@@ -1168,7 +1160,7 @@ entity function GetOffhand( entity ent, string classname )
 
 bool function IsCloaked( entity ent )
 {
-	return ent.IsCloaked( true ) //pass true to ignore flicker time -
+	return ent.IsCloaked( true ) // pass true to ignore flicker time -
 }
 
 float function TimeSpentInCurrentState()
@@ -1197,22 +1189,31 @@ string function GameStateToString()
 	{
 		case eGameState.WaitingForCustomStart:
 			return "WaitingForCustomStart"
+
 		case eGameState.WaitingForPlayers:
 			return "WaitingForPlayers"
+
 		case eGameState.PickLoadout:
 			return "PickLoadout"
+
 		case eGameState.Prematch:
 			return "Prematch"
+
 		case eGameState.Playing:
 			return "Playing"
+
 		case eGameState.SuddenDeath:
 			return "SuddenDeath"
+
 		case eGameState.SwitchingSides:
 			return "SwitchingSides"
+
 		case eGameState.WinnerDetermined:
 			return "WinnerDetermined"
+
 		case eGameState.Epilogue:
 			return "Epilogue"
+
 		case eGameState.Postmatch:
 			return "Postmatch"
 	}
@@ -1420,7 +1421,7 @@ array<vector> function ArrayClosest2DVectorWithinDistance( array<vector> entArra
 bool function ArrayEntityWithinDistance( array<entity> entArray, vector origin, float distance )
 {
 	float distSq = distance * distance
-	foreach( entity ent in entArray )
+	foreach ( entity ent in entArray )
 	{
 		if ( DistanceSqr( ent.GetOrigin(), origin ) <= distSq )
 			return true
@@ -1457,7 +1458,7 @@ int function DistanceCompareClosest( ArrayDistanceEntry a, ArrayDistanceEntry b 
 	else if ( a.distanceSqr < b.distanceSqr )
 		return -1
 
-	return 0;
+	return 0
 }
 
 int function DistanceCompareFarthest( ArrayDistanceEntry a, ArrayDistanceEntry b )
@@ -1467,7 +1468,7 @@ int function DistanceCompareFarthest( ArrayDistanceEntry a, ArrayDistanceEntry b
 	else if ( a.distanceSqr > b.distanceSqr )
 		return -1
 
-	return 0;
+	return 0
 }
 
 array<ArrayDistanceEntry> function ArrayDistanceResults( array<entity> entArray, vector origin )
@@ -1550,7 +1551,11 @@ array<ArrayDistanceEntry> function ArrayDistance2DResultsVector( array<vector> v
 	return allResults
 }
 
-GravityLandData function GetGravityLandData( vector startPos, vector parentVelocity, vector objectVelocity, float timeLimit, bool bDrawPath = false, float bDrawPathDuration = 0.0, array pathColor = [ 255, 255, 0 ] )
+GravityLandData function GetGravityLandData( vector startPos, vector parentVelocity, vector objectVelocity, float timeLimit, bool bDrawPath = false, float bDrawPathDuration = 0.0, array pathColor = [
+	255,
+	255,
+	0
+] )
 {
 	GravityLandData returnData
 
@@ -1570,14 +1575,14 @@ GravityLandData function GetGravityLandData( vector startPos, vector parentVeloc
 
 	objectVelocity += parentVelocity
 
-	while( returnData.elapsedTime <= timeLimit )
+	while ( returnData.elapsedTime <= timeLimit )
 	{
 		objectVelocity.z -= ( ent_gravity * sv_gravity * timeElapsePerTrace * gravityScale )
 
 		traceEnd += objectVelocity * timeElapsePerTrace
 		returnData.points.append( traceEnd )
 		if ( bDrawPath )
-			DebugDrawLine( traceStart, traceEnd, pathColor[0], pathColor[1], pathColor[2], false, bDrawPathDuration )
+			DebugDrawLine( traceStart, traceEnd, pathColor[ 0 ], pathColor[ 1 ], pathColor[ 2 ], false, bDrawPathDuration )
 
 		traceFrac = TraceLineSimple( traceStart, traceEnd, null )
 		traceCount++
@@ -1595,17 +1600,17 @@ GravityLandData function GetGravityLandData( vector startPos, vector parentVeloc
 
 float function GetPulseFrac( rate = 1, startTime = 0 )
 {
-	return (1 - cos( ( Time() - startTime ) * (rate * (2*PI)) )) / 2
+	return ( 1 - cos( ( Time() - startTime ) * ( rate * ( 2 * PI ) ) ) ) / 2
 }
 
 bool function IsPetTitan( titan )
 {
 	Assert( titan.IsTitan() )
-	
+
 	if ( !titan.GetTitanSoul() )
 		return false
 
-	return titan.GetTitanSoul().GetBossPlayer()	!= null
+	return titan.GetTitanSoul().GetBossPlayer() != null
 }
 
 vector function StringToVector( string vecString, string delimiter = " " )
@@ -1614,7 +1619,7 @@ vector function StringToVector( string vecString, string delimiter = " " )
 
 	Assert( tokens.len() >= 3 )
 
-	return Vector( float( tokens[0] ), float( tokens[1] ), float( tokens[2] ) )
+	return Vector( float( tokens[ 0 ] ), float( tokens[ 1 ] ), float( tokens[ 2 ] ) )
 }
 
 float function GetShieldHealthFrac( entity ent )
@@ -1624,7 +1629,7 @@ float function GetShieldHealthFrac( entity ent )
 
 	if ( HasSoul( ent ) )
 	{
-	entity soul = ent.GetTitanSoul()
+		entity soul = ent.GetTitanSoul()
 		if ( IsValid( soul ) )
 			ent = soul
 	}
@@ -1650,15 +1655,15 @@ vector function HackGetDeltaToRefOnPlane( vector origin, vector angles, entity e
 {
 	AnimRefPoint animStartPos = ent.Anim_GetStartForRefPoint( anim, origin, angles )
 
-	vector delta 		= origin - animStartPos.origin
-	vector nDelta 		= Normalize( delta )
-	vector xProd 		= CrossProduct( nDelta, up )
-	vector G 			= CrossProduct( up, xProd )
-	vector planarDelta 	= G * DotProduct( delta, G )
-	vector P 			= origin + planarDelta
+	vector delta = origin - animStartPos.origin
+	vector nDelta = Normalize( delta )
+	vector xProd = CrossProduct( nDelta, up )
+	vector G = CrossProduct( up, xProd )
+	vector planarDelta = G * DotProduct( delta, G )
+	vector P = origin + planarDelta
 
-//	DebugDrawLine( origin + delta, origin, 255, 0, 0, true, 1.0 )
-//	DebugDrawLine( P, origin, 0,255, 100, true, 1.0 )
+	// 	DebugDrawLine( origin + delta, origin, 255, 0, 0, true, 1.0 )
+	// 	DebugDrawLine( P, origin, 0,255, 100, true, 1.0 )
 
 	return P
 }
@@ -1666,7 +1671,7 @@ vector function HackGetDeltaToRefOnPlane( vector origin, vector angles, entity e
 TraceResults function GetViewTrace( entity ent )
 {
 	vector traceStart = ent.EyePosition()
-	vector traceEnd = traceStart + (ent.GetPlayerOrNPCViewVector() * 56756) // longest possible trace given our map size limits
+	vector traceEnd = traceStart + ( ent.GetPlayerOrNPCViewVector() * 56756 ) // longest possible trace given our map size limits
 	array<entity> ignoreEnts = [ ent ]
 
 	return TraceLine( traceStart, traceEnd, ignoreEnts, TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE )
@@ -1705,7 +1710,6 @@ array<entity> function GetSortedPlayers( IntFromEntityCompare compareFunc, int t
 
 	return players
 }
-
 
 // Sorts by kills and resolves ties in this order: fewest deaths, most titan kills, most assists
 int function CompareKills( entity a, entity b )
@@ -1868,7 +1872,6 @@ int function CompareCP( entity a, entity b )
 	return 0
 }
 
-
 int function CompareCTF( entity a, entity b )
 {
 	// Capture the flag sorting. Sort priority = flag captures > flag returns > pilot kills > titan kills > death
@@ -1951,7 +1954,7 @@ int function CompareMFD( entity a, entity b )
 		return result
 
 	// 2) Marks Outlasted
- 	result = CompareDefense( a, b )
+	result = CompareDefense( a, b )
 	if ( result != 0 )
 		return result
 
@@ -2208,7 +2211,7 @@ bool function IsHitEffectiveVsTitan( entity victim, int damageType )
 bool function IsHitEffectiveVsNonTitan( entity victim, int damageType )
 {
 	if ( damageType & DF_BULLET || damageType & DF_MAX_RANGE )
-		return false;
+		return false
 
 	return true
 }
@@ -2273,7 +2276,7 @@ array<entity> function ArrayWithin( array<entity> Array, vector origin, float ma
 
 function GetTitanChassis( entity titan )
 {
-	if ( !("titanChassis" in titan.s ) )
+	if ( !( "titanChassis" in titan.s ) )
 	{
 		if ( HasSoul( titan ) )
 		{
@@ -2372,31 +2375,30 @@ float function AngleDiff( float ang, float targetAng )
 	if ( targetAng > ang )
 	{
 		if ( delta >= 180.0 )
-			delta -= 360.0;
+			delta -= 360.0
 	}
 	else
 	{
 		if ( delta <= -180.0 )
-			delta += 360.0;
+			delta += 360.0
 	}
 	return delta
 }
 
-
 float function ClampAngle( float ang )
 {
-	while( ang > 360 )
+	while ( ang > 360 )
 		ang -= 360
-	while( ang < 0 )
+	while ( ang < 0 )
 		ang += 360
 	return ang
 }
 
 float function ClampAngle180( float ang )
 {
-	while( ang > 180 )
+	while ( ang > 180 )
 		ang -= 180
-	while( ang < -180 )
+	while ( ang < -180 )
 		ang += 180
 	return ang
 }
@@ -2444,7 +2446,7 @@ int function GetWinningTeam_FFA()
 	int currentScore
 	int winningTeam = TEAM_UNASSIGNED
 
-	foreach( player in GetPlayerArray() )
+	foreach ( player in GetPlayerArray() )
 	{
 		playerTeam = player.GetTeam()
 		if ( IsRoundBased() )
@@ -2452,7 +2454,7 @@ int function GetWinningTeam_FFA()
 		else
 			currentScore = GameRules_GetTeamScore( playerTeam )
 
-		if ( currentScore == maxScore) //Treat multiple teams as having the same score as no team winning
+		if ( currentScore == maxScore ) // Treat multiple teams as having the same score as no team winning
 			winningTeam = TEAM_UNASSIGNED
 
 		if ( currentScore > maxScore )
@@ -2463,7 +2465,6 @@ int function GetWinningTeam_FFA()
 	}
 
 	return winningTeam
-
 }
 
 void function EmitSkyboxSoundAtPosition( vector positionInSkybox, string sound, float skyboxScale = 0.001, bool clamp = false )
@@ -2525,8 +2526,8 @@ function GetRandomKeyFromWeightedTable( Table )
 
 	foreach ( key, value in Table )
 	{
-		if ( randomValue <= weightTotal && randomValue >= weightTotal - value)
-			 return key
+		if ( randomValue <= weightTotal && randomValue >= weightTotal - value )
+			return key
 		weightTotal -= value
 	}
 }
@@ -2588,7 +2589,7 @@ void function __WarpInEffectShared( vector origin, vector angles, string sfx, fl
 	if ( preWaitOverride >= 0.0 )
 		wait preWaitOverride
 	else
-		wait preWait  //this needs to go and the const for warpin fx time needs to change - but not this game - the intro system is too dependent on it
+		wait preWait // this needs to go and the const for warpin fx time needs to change - but not this game - the intro system is too dependent on it
 
 	#if CLIENT
 		int fxIndex = GetParticleSystemIndex( FX_GUNSHIP_CRASH_EXPLOSION_ENTRANCE )
@@ -2625,10 +2626,10 @@ void function __WarpOutEffectShared( entity dropship )
 
 bool function IsSwitchSidesBased()
 {
-	return (level.nv.switchedSides != null)
+	return ( level.nv.switchedSides != null )
 }
 
-int function HasSwitchedSides() //This returns an int instead of a bool! Should rewrite
+int function HasSwitchedSides() // This returns an int instead of a bool! Should rewrite
 {
 	return expect int( level.nv.switchedSides )
 }
@@ -2639,9 +2640,9 @@ bool function IsFirstRoundAfterSwitchingSides()
 		return false
 
 	if ( IsRoundBased() )
-		return  level.nv.switchedSides > 0 && GetRoundsPlayed() == level.nv.switchedSides
+		return level.nv.switchedSides > 0 && GetRoundsPlayed() == level.nv.switchedSides
 	else
-		return  level.nv.switchedSides > 0
+		return level.nv.switchedSides > 0
 
 	unreachable
 }
@@ -2661,12 +2662,12 @@ void function CamBlendFov( entity cam, float oldFov, float newFov, float transTi
 	{
 		float interp = Interpolate( startTime, endTime - startTime, transAccel, transDecel )
 		cam.SetFOV( GraphCapped( interp, 0.0, 1.0, oldFov, newFov ) )
-		wait( 0.0 )
+		wait ( 0.0 )
 		currentTime = Time()
 	}
 }
 
-void function CamFollowEnt( entity cam, entity ent, float duration, vector offset = <0.0, 0.0, 0.0>, string attachment = "", bool isInSkybox = false )
+void function CamFollowEnt( entity cam, entity ent, float duration, vector offset = < 0.0, 0.0, 0.0 >, string attachment = "", bool isInSkybox = false )
 {
 	if ( !IsValid( cam ) )
 		return
@@ -2697,7 +2698,7 @@ void function CamFollowEnt( entity cam, entity ent, float duration, vector offse
 
 		cam.SetAngles( VectorToAngles( diff ) )
 
-		wait( 0.0 )
+		wait ( 0.0 )
 
 		currentTime = Time()
 	}
@@ -2721,7 +2722,7 @@ void function CamFacePos( entity cam, vector pos, float duration )
 
 		cam.SetAngles( VectorToAngles( diff ) )
 
-		wait( 0.0 )
+		wait ( 0.0 )
 
 		currentTime = Time()
 	}
@@ -2751,7 +2752,7 @@ void function CamBlendFromFollowToAng( entity cam, entity ent, vector endAng, fl
 
 		cam.SetAngles( newAngs )
 
-		wait( 0.0 )
+		wait ( 0.0 )
 
 		currentTime = Time()
 	}
@@ -2777,7 +2778,7 @@ void function CamBlendFromPosToPos( entity cam, vector startPos, vector endPos, 
 
 		cam.SetOrigin( newAngs )
 
-		wait( 0.0 )
+		wait ( 0.0 )
 
 		currentTime = Time()
 	}
@@ -2802,7 +2803,7 @@ void function CamBlendFromAngToAng( entity cam, vector startAng, vector endAng, 
 
 		cam.SetAngles( newAngs )
 
-		wait( 0.0 )
+		wait ( 0.0 )
 
 		currentTime = Time()
 	}
@@ -2858,7 +2859,7 @@ float function GetKillReplayAfterTime( player )
 function IntroPreviewOn()
 {
 	local bugnum = GetBugReproNum()
-	switch( bugnum )
+	switch ( bugnum )
 	{
 		case 1337:
 		case 13371:
@@ -2887,7 +2888,7 @@ bool function EntHasModelSet( entity ent )
 
 string function GenerateTitanOSAlias( entity player, string aliasSuffix )
 {
-	//HACK: Temp fix for blocker bug. Fixing correctly next.
+	// HACK: Temp fix for blocker bug. Fixing correctly next.
 	if ( IsSingleplayer() )
 	{
 		return "diag_gs_titanBt_" + aliasSuffix
@@ -2986,14 +2987,12 @@ bool function PointIsWithinBounds( vector point, vector mins, vector maxs )
 	Assert( mins.y < maxs.y )
 	Assert( mins.z < maxs.z )
 
-	return ( ( point.z >= mins.z && point.z <= maxs.z ) &&
-			 ( point.x >= mins.x && point.x <= maxs.x ) &&
-			 ( point.y >= mins.y && point.y <= maxs.y ) )
+	return ( ( point.z >= mins.z && point.z <= maxs.z ) && ( point.x >= mins.x && point.x <= maxs.x ) && ( point.y >= mins.y && point.y <= maxs.y ) )
 }
 
 int function GetSpStartIndex()
 {
-	//HACK -> this should use some other code driven thing, not GetBugReproNum
+	// HACK -> this should use some other code driven thing, not GetBugReproNum
 	int index = GetBugReproNum()
 
 	if ( index < 0 )
@@ -3099,7 +3098,10 @@ bool function TitanShieldRegenEnabled()
 
 bool function DoomStateDisabled()
 {
-	return ( GetCurrentPlaylistVarString( "titan_doomstate_variation", "default" ) == "disabled" || GetCurrentPlaylistVarString( "titan_doomstate_variation", "default" ) == "lastsegment" )
+	return (
+		GetCurrentPlaylistVarString( "titan_doomstate_variation", "default" ) == "disabled" ||
+			GetCurrentPlaylistVarString( "titan_doomstate_variation", "default" ) == "lastsegment"
+	)
 }
 
 bool function NoWeaponDoomState()
@@ -3139,7 +3141,6 @@ string function GetPlayerBodyType( player )
 {
 	return expect string( player.GetPlayerSettingsField( "weaponClass" ) )
 }
-
 
 void function SetTeam( entity ent, int team )
 {
@@ -3294,7 +3295,7 @@ bool function PlayerCanSpawnIntoTitan( entity player )
 	return false // turned off until todd figures out how to enable
 }
 
-array< vector > function EntitiesToOrigins( array< entity > ents )
+array<vector> function EntitiesToOrigins( array<entity> ents )
 {
 	array<vector> origins
 
@@ -3315,7 +3316,7 @@ vector function GetMedianOriginOfEntities( array<entity> ents )
 vector function GetMedianOrigin( array<vector> origins )
 {
 	if ( origins.len() == 1 )
-		return origins[0]
+		return origins[ 0 ]
 
 	vector median
 
@@ -3376,9 +3377,9 @@ float function GetFractionAlongPath( array<entity> nodes, vector p )
 	// See which segment we are currently on (closest to)
 	int closestSegment = -1
 	float closestDist = 9999
-	for( int i = 0 ; i < nodes.len() - 1; i++ )
+	for ( int i = 0; i < nodes.len() - 1; i++ )
 	{
-		float dist = GetDistanceSqrFromLineSegment( nodes[i].GetOrigin(), nodes[i + 1].GetOrigin(), p )
+		float dist = GetDistanceSqrFromLineSegment( nodes[ i ].GetOrigin(), nodes[ i + 1 ].GetOrigin(), p )
 		if ( closestSegment < 0 || dist < closestDist )
 		{
 			closestSegment = i
@@ -3390,16 +3391,16 @@ float function GetFractionAlongPath( array<entity> nodes, vector p )
 
 	// Get the distance along the path already traveled
 	float distTraveled = 0.0
-	for( int i = 0 ; i < closestSegment; i++ )
+	for ( int i = 0; i < closestSegment; i++ )
 	{
-		//DebugDrawLine( nodes[i].GetOrigin(), nodes[i + 1].GetOrigin(), 255, 255, 0, true, 0.1 )
-		distTraveled += Distance( nodes[i].GetOrigin(), nodes[i+1].GetOrigin() )
+		// DebugDrawLine( nodes[i].GetOrigin(), nodes[i + 1].GetOrigin(), 255, 255, 0, true, 0.1 )
+		distTraveled += Distance( nodes[ i ].GetOrigin(), nodes[ i + 1 ].GetOrigin() )
 	}
 
 	// Add the distance traveled on current segment
-	vector closestPointOnSegment = GetClosestPointOnLineSegment( nodes[closestSegment].GetOrigin(), nodes[closestSegment + 1].GetOrigin(), p )
-	//DebugDrawLine( nodes[closestSegment].GetOrigin(), closestPointOnSegment, 255, 255, 0, true, 0.1 )
-	distTraveled += Distance( nodes[closestSegment].GetOrigin(), closestPointOnSegment )
+	vector closestPointOnSegment = GetClosestPointOnLineSegment( nodes[ closestSegment ].GetOrigin(), nodes[ closestSegment + 1 ].GetOrigin(), p )
+	// DebugDrawLine( nodes[closestSegment].GetOrigin(), closestPointOnSegment, 255, 255, 0, true, 0.1 )
+	distTraveled += Distance( nodes[ closestSegment ].GetOrigin(), closestPointOnSegment )
 
 	return clamp( distTraveled / totalDistance, 0.0, 1.0 )
 }
@@ -3407,12 +3408,12 @@ float function GetFractionAlongPath( array<entity> nodes, vector p )
 float function GetPathDistance( array<entity> nodes )
 {
 	float totalDist = 0.0
-	for( int i = 0 ; i < nodes.len() - 1; i++ )
+	for ( int i = 0; i < nodes.len() - 1; i++ )
 	{
-		//DebugDrawSphere( nodes[i].GetOrigin(), 16.0, 255, 0, 0, true, 0.1 )
-		totalDist += Distance( nodes[i].GetOrigin(), nodes[i+1].GetOrigin() )
+		// DebugDrawSphere( nodes[i].GetOrigin(), 16.0, 255, 0, 0, true, 0.1 )
+		totalDist += Distance( nodes[ i ].GetOrigin(), nodes[ i + 1 ].GetOrigin() )
 	}
-	//DebugDrawSphere( nodes[nodes.len() -1].GetOrigin(), 16.0, 255, 0, 0, true, 0.1 )
+	// DebugDrawSphere( nodes[nodes.len() -1].GetOrigin(), 16.0, 255, 0, 0, true, 0.1 )
 
 	return totalDist
 }
@@ -3436,9 +3437,9 @@ array<entity> function GetEntityLinkChain( entity startNode )
 	Assert( IsValid( startNode ) )
 	array<entity> nodes
 	nodes.append( startNode )
-	while(true)
+	while ( true )
 	{
-		entity nextNode = nodes[nodes.len() - 1].GetLinkEnt()
+		entity nextNode = nodes[ nodes.len() - 1 ].GetLinkEnt()
 		if ( !IsValid( nextNode ) )
 			break
 		nodes.append( nextNode )
@@ -3459,22 +3460,22 @@ vector function GetPointOnPathForFraction( array<entity> nodes, float frac )
 
 	float totalPathDist = GetPathDistance( nodes )
 	float distRemaining = totalPathDist * frac
-	vector point = nodes[0].GetOrigin()
+	vector point = nodes[ 0 ].GetOrigin()
 
-	for( int i = 0 ; i < nodes.len() - 1; i++ )
+	for ( int i = 0; i < nodes.len() - 1; i++ )
 	{
-		float segmentDist = Distance( nodes[i].GetOrigin(), nodes[i+1].GetOrigin() )
+		float segmentDist = Distance( nodes[ i ].GetOrigin(), nodes[ i + 1 ].GetOrigin() )
 		if ( segmentDist <= distRemaining )
 		{
 			// Add the whole segment
 			distRemaining -= segmentDist
-			point = nodes[i+1].GetOrigin()
+			point = nodes[ i + 1 ].GetOrigin()
 		}
 		else
 		{
 			// Fraction ends somewhere in this segment
-			vector dirVec = Normalize( nodes[i+1].GetOrigin() - nodes[i].GetOrigin() )
-			point = nodes[i].GetOrigin() + ( dirVec * distRemaining )
+			vector dirVec = Normalize( nodes[ i + 1 ].GetOrigin() - nodes[ i ].GetOrigin() )
+			point = nodes[ i ].GetOrigin() + ( dirVec * distRemaining )
 			distRemaining = 0
 		}
 		if ( distRemaining <= 0 )
@@ -3483,8 +3484,8 @@ vector function GetPointOnPathForFraction( array<entity> nodes, float frac )
 
 	if ( frac > 1.0 && distRemaining > 0 )
 	{
-		vector dirVec = Normalize( nodes[nodes.len() - 1].GetOrigin() - nodes[nodes.len() - 2].GetOrigin() )
-		point = nodes[nodes.len() - 1].GetOrigin() + ( dirVec * distRemaining )
+		vector dirVec = Normalize( nodes[ nodes.len() - 1 ].GetOrigin() - nodes[ nodes.len() - 2 ].GetOrigin() )
+		point = nodes[ nodes.len() - 1 ].GetOrigin() + ( dirVec * distRemaining )
 	}
 
 	return point
@@ -3496,25 +3497,25 @@ bool function PlayerBlockedByTeamEMP( entity player )
 }
 
 #if SERVER
-void function Embark_Allow( entity player )
-{
-	player.SetTitanEmbarkEnabled( true )
-}
+	void function Embark_Allow( entity player )
+	{
+		player.SetTitanEmbarkEnabled( true )
+	}
 
-void function Embark_Disallow( entity player )
-{
-	player.SetTitanEmbarkEnabled( false )
-}
+	void function Embark_Disallow( entity player )
+	{
+		player.SetTitanEmbarkEnabled( false )
+	}
 
-void function Disembark_Allow( entity player )
-{
-	player.SetTitanDisembarkEnabled( true )
-}
+	void function Disembark_Allow( entity player )
+	{
+		player.SetTitanDisembarkEnabled( true )
+	}
 
-void function Disembark_Disallow( entity player )
-{
-	player.SetTitanDisembarkEnabled( false )
-}
+	void function Disembark_Disallow( entity player )
+	{
+		player.SetTitanDisembarkEnabled( false )
+	}
 #endif
 
 bool function CanEmbark( entity player )
@@ -3549,7 +3550,6 @@ bool function IsHumanSized( entity ent )
 
 	if ( ent.IsNPC() )
 	{
-
 		if ( ent.GetAIClass() == AIC_SMALL_TURRET )
 			return true
 
@@ -3562,14 +3562,14 @@ bool function IsHumanSized( entity ent )
 
 bool function IsDropship( entity ent )
 {
-#if SERVER
-	return ent.GetClassName() == "npc_dropship"
-#elseif CLIENT
-	if ( !ent.IsNPC() )
-		return false
-	//Probably should not use GetClassName, but npc_dropship isn't a class so can't use instanceof?
-	return ( ent.GetClassName() == "npc_dropship" || ent.GetSignifierName() == "npc_dropship" )
-#endif
+	#if SERVER
+		return ent.GetClassName() == "npc_dropship"
+	#elseif CLIENT
+		if ( !ent.IsNPC() )
+			return false
+		// Probably should not use GetClassName, but npc_dropship isn't a class so can't use instanceof?
+		return ( ent.GetClassName() == "npc_dropship" || ent.GetSignifierName() == "npc_dropship" )
+	#endif
 }
 
 bool function IsSpecialist( entity ent )
@@ -3579,11 +3579,11 @@ bool function IsSpecialist( entity ent )
 
 bool function IsGrunt( entity ent )
 {
-#if SERVER
-	return ent.IsNPC() && ent.GetClassName() == "npc_soldier"
-#elseif CLIENT
-	return ent.IsNPC() && ent.GetSignifierName() == "npc_soldier"
-#endif
+	#if SERVER
+		return ent.IsNPC() && ent.GetClassName() == "npc_soldier"
+	#elseif CLIENT
+		return ent.IsNPC() && ent.GetSignifierName() == "npc_soldier"
+	#endif
 }
 
 bool function IsMarvin( entity ent )
@@ -3616,11 +3616,11 @@ bool function IsEnvironment( entity ent )
 
 bool function IsSuperSpectre( entity ent )
 {
-#if SERVER
-	return ent.GetClassName() == "npc_super_spectre"
-#elseif CLIENT
-	return ent.GetSignifierName() == "npc_super_spectre"
-#endif
+	#if SERVER
+		return ent.GetClassName() == "npc_super_spectre"
+	#elseif CLIENT
+		return ent.GetSignifierName() == "npc_super_spectre"
+	#endif
 }
 
 bool function IsAndroidNPC( entity ent )
@@ -3635,29 +3635,29 @@ bool function IsStalker( entity ent )
 
 bool function IsProwler( entity ent )
 {
-#if SERVER
-	return ent.GetClassName() == "npc_prowler"
-#elseif CLIENT
-	return ent.GetSignifierName() == "npc_prowler"
-#endif
+	#if SERVER
+		return ent.GetClassName() == "npc_prowler"
+	#elseif CLIENT
+		return ent.GetSignifierName() == "npc_prowler"
+	#endif
 }
 
 bool function IsAirDrone( entity ent )
 {
-#if SERVER
-	return ent.GetClassName() == "npc_drone"
-#elseif CLIENT
-	return ent.GetSignifierName() == "npc_drone"
-#endif
+	#if SERVER
+		return ent.GetClassName() == "npc_drone"
+	#elseif CLIENT
+		return ent.GetSignifierName() == "npc_drone"
+	#endif
 }
 
 bool function IsPilotElite( entity ent )
 {
-#if SERVER
-	return ent.GetClassName() == "npc_pilot_elite"
-#elseif CLIENT
-	return ent.GetSignifierName() == "npc_pilot_elite"
-#endif
+	#if SERVER
+		return ent.GetClassName() == "npc_pilot_elite"
+	#elseif CLIENT
+		return ent.GetSignifierName() == "npc_pilot_elite"
+	#endif
 }
 
 bool function IsAttackDrone( entity ent )
@@ -3667,11 +3667,11 @@ bool function IsAttackDrone( entity ent )
 
 bool function IsGunship( entity ent )
 {
-#if SERVER
-	return ent.GetClassName() == "npc_gunship"
-#elseif CLIENT
-	return ent.GetSignifierName() == "npc_gunship"
-#endif
+	#if SERVER
+		return ent.GetClassName() == "npc_gunship"
+	#elseif CLIENT
+		return ent.GetSignifierName() == "npc_gunship"
+	#endif
 }
 
 bool function IsMinion( entity ent )
@@ -3687,27 +3687,27 @@ bool function IsMinion( entity ent )
 
 bool function IsShieldDrone( entity ent )
 {
-#if SERVER
-	if ( ent.GetClassName() != "npc_drone" )
-		return false
-#elseif CLIENT
-	if ( ent.GetSignifierName() != "npc_drone" )
-		return false
-#endif
+	#if SERVER
+		if ( ent.GetClassName() != "npc_drone" )
+			return false
+	#elseif CLIENT
+		if ( ent.GetSignifierName() != "npc_drone" )
+			return false
+	#endif
 
 	return GetDroneType( ent ) == "drone_type_shield"
 }
 
 #if SERVER
-bool function IsTick( entity ent )
-{
-	return (ent.IsNPC() && (ent.GetAIClass() == AIC_FRAG_DRONE))
-}
+	bool function IsTick( entity ent )
+	{
+		return ( ent.IsNPC() && ( ent.GetAIClass() == AIC_FRAG_DRONE ) )
+	}
 
-bool function IsNPCTitan( entity ent )
-{
-	return ent.IsNPC() && ent.IsTitan()
-}
+	bool function IsNPCTitan( entity ent )
+	{
+		return ent.IsNPC() && ent.IsTitan()
+	}
 #endif
 
 bool function NPC_GruntChatterSPEnabled( entity npc )
@@ -3752,8 +3752,8 @@ RaySphereIntersectStruct function IntersectRayWithSphere( vector rayStart, vecto
 
 	discrim = sqrt( discrim )
 	float oo2a = 0.5 / a
-	intersection.enterFrac = ( - b - discrim ) * oo2a
-	intersection.leaveFrac = ( - b + discrim ) * oo2a
+	intersection.enterFrac = ( -b - discrim ) * oo2a
+	intersection.leaveFrac = ( -b + discrim ) * oo2a
 
 	if ( ( intersection.enterFrac > 1.0 ) || ( intersection.leaveFrac < 0.0 ) )
 	{
@@ -3816,13 +3816,12 @@ void function PrintFirstPersonSequenceStruct( FirstPersonSequenceStruct fpsStruc
 	printt( "hideProxy: " + fpsStruct.hideProxy )
 	printt( "viewConeFunction: " + string( fpsStruct.viewConeFunction ) )
 	printt( "origin: " + string( fpsStruct.origin ) )
-	printt( "angles: " + string ( fpsStruct.angles ) )
+	printt( "angles: " + string( fpsStruct.angles ) )
 	printt( "enablePlanting: " + fpsStruct.enablePlanting )
 	printt( "setInitialTime: " + fpsStruct.setInitialTime )
 	printt( "useAnimatedRefAttachment: " + fpsStruct.useAnimatedRefAttachment )
 	printt( "renderWithViewModels: " + fpsStruct.renderWithViewModels )
 	printt( "gravity: " + fpsStruct.gravity )
-
 }
 
 void function WaitSignalOrTimeout( entity ent, float timeout, string signal1, string signal2 = "", string signal3 = "" )
@@ -3837,7 +3836,7 @@ void function WaitSignalOrTimeout( entity ent, float timeout, string signal1, st
 	if ( signal3 != "" )
 		ent.EndSignal( signal3 )
 
-	wait( timeout )
+	wait ( timeout )
 }
 
 array<vector> function GetShortestLineSegmentConnectingLineSegments( vector line1Point1, vector line1Point2, vector line2Point1, vector line2Point2 )
@@ -3874,13 +3873,12 @@ array<vector> function GetShortestLineSegmentConnectingLineSegments( vector line
 	float d4343 = p43.x * p43.x + p43.y * p43.y + p43.z * p43.z
 	float d2121 = p21.x * p21.x + p21.y * p21.y + p21.z * p21.z
 
-
 	float denom = d2121 * d4343 - d4321 * d4321
 	Assert( fabs( denom ) > 0.01 )
 	float numer = d1343 * d4321 - d1321 * d4343
 
 	float mua = numer / denom
-	float mub = (d1343 + d4321 * (mua)) / d4343
+	float mub = ( d1343 + d4321 * ( mua ) ) / d4343
 
 	vector resultVec1
 	vector resultVec2
@@ -3901,9 +3899,8 @@ vector function GetClosestPointToLineSegments( vector line1Point1, vector line1P
 {
 	array<vector> results = GetShortestLineSegmentConnectingLineSegments( line1Point1, line1Point2, line2Point1, line2Point2 )
 	Assert( results.len() == 2 )
-	return ( results[0] + results[1] ) / 2.0
+	return ( results[ 0 ] + results[ 1 ] ) / 2.0
 }
-
 
 bool function PlayerCanSee( entity player, entity ent, bool doTrace, float degrees )
 {
@@ -3926,7 +3923,7 @@ bool function PlayerCanSee( entity player, entity ent, bool doTrace, float degre
 	else
 		return true
 
-	Assert( 0, "shouldn't ever get here")
+	Assert( 0, "shouldn't ever get here" )
 	unreachable
 }
 
@@ -3964,27 +3961,27 @@ vector function GetRelativeDelta( vector origin, entity ref, string attachment =
 	if ( attachment != "" )
 	{
 		int attachID = ref.LookupAttachment( attachment )
-		pos 	= ref.GetAttachmentOrigin( attachID )
+		pos = ref.GetAttachmentOrigin( attachID )
 		vector angles = ref.GetAttachmentAngles( attachID )
-		right 	= AnglesToRight( angles )
+		right = AnglesToRight( angles )
 		forward = AnglesToForward( angles )
-		up 		= AnglesToUp( angles )
+		up = AnglesToUp( angles )
 	}
 	else
 	{
-		pos 	= ref.GetOrigin()
-		right 	= ref.GetRightVector()
+		pos = ref.GetOrigin()
+		right = ref.GetRightVector()
 		forward = ref.GetForwardVector()
-		up 		= ref.GetUpVector()
+		up = ref.GetUpVector()
 	}
 
-	vector x = GetClosestPointOnLineSegment( pos + right * -16384, 		pos + right * 16384, origin )
-	vector y = GetClosestPointOnLineSegment( pos + forward * -16384, 	pos + forward * 16384, origin )
-	vector z = GetClosestPointOnLineSegment( pos + up * -16384, 		pos + up * 16384, origin )
+	vector x = GetClosestPointOnLineSegment( pos + right * -16384, pos + right * 16384, origin )
+	vector y = GetClosestPointOnLineSegment( pos + forward * -16384, pos + forward * 16384, origin )
+	vector z = GetClosestPointOnLineSegment( pos + up * -16384, pos + up * 16384, origin )
 
-	float distx = Distance(pos, x)
-	float disty = Distance(pos, y)
-	float distz = Distance(pos, z)
+	float distx = Distance( pos, x )
+	float disty = Distance( pos, y )
+	float distz = Distance( pos, z )
 
 	if ( DotProduct( x - pos, right ) < 0 )
 		distx *= -1
@@ -3997,42 +3994,42 @@ vector function GetRelativeDelta( vector origin, entity ref, string attachment =
 }
 
 #if SERVER
-float function GetRoundTimeLimit_ForGameMode()
-{
-	#if DEV
-		if ( level.devForcedTimeLimit )
-		{
-			//Make it needed to be called multiple times for RoundBasedGameModes
-			level.devForcedTimeLimit = 0
-			return 0.1
-		}
-	#endif
+	float function GetRoundTimeLimit_ForGameMode()
+	{
+		#if DEV
+			if ( level.devForcedTimeLimit )
+			{
+				// Make it needed to be called multiple times for RoundBasedGameModes
+				level.devForcedTimeLimit = 0
+				return 0.1
+			}
+		#endif
 
-	#if MP
-	if ( GameState_GetTimeLimitOverride() >= 0 )
-		return GameState_GetTimeLimitOverride()
-	#endif
+		#if MP
+			if ( GameState_GetTimeLimitOverride() >= 0 )
+				return GameState_GetTimeLimitOverride()
+		#endif
 
-	if ( !GameMode_IsDefined( GAMETYPE ) )
-		return GetCurrentPlaylistVarFloat( "roundtimelimit", 10 )
-	else
-		return GameMode_GetRoundTimeLimit( GAMETYPE )
+		if ( !GameMode_IsDefined( GAMETYPE ) )
+			return GetCurrentPlaylistVarFloat( "roundtimelimit", 10 )
+		else
+			return GameMode_GetRoundTimeLimit( GAMETYPE )
 
-	unreachable
-}
+		unreachable
+	}
 #endif
 
 bool function HasIronRules()
 {
-	bool result = (GetCurrentPlaylistVarInt( "iron_rules", 0 ) != 0)
+	bool result = ( GetCurrentPlaylistVarInt( "iron_rules", 0 ) != 0 )
 	return result
 }
 
 vector function GetWorldOriginFromRelativeDelta( vector delta, entity ref )
 {
-	vector right 	= ref.GetRightVector() 	* delta.x
-	vector forward 	= ref.GetForwardVector() 	* delta.y
-	vector up 		= ref.GetUpVector() 		* delta.z
+	vector right = ref.GetRightVector() * delta.x
+	vector forward = ref.GetForwardVector() * delta.y
+	vector up = ref.GetUpVector() * delta.z
 
 	return ref.GetOrigin() + right + forward + up
 }
@@ -4095,6 +4092,5 @@ bool function IsTitanPrimeTitan( entity titan )
 		setFile = expect string( Dev_GetAISettingByKeyField_Global( aiSettingsFile, "npc_titan_player_settings" ) )
 	}
 
-	return  Dev_GetPlayerSettingByKeyField_Global( setFile, "isPrime" ) == 1
-
+	return Dev_GetPlayerSettingByKeyField_Global( setFile, "isPrime" ) == 1
 }

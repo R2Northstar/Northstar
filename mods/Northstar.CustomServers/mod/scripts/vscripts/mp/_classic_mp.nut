@@ -1,11 +1,11 @@
 untyped
 global function ClassicMp_Init
-global function ClassicMP_TryDefaultIntroSetup 
+global function ClassicMP_TryDefaultIntroSetup
 global function ClassicMP_SetShouldTryIntroAndEpilogueWithoutClassicMP
 global function ClassicMP_ShouldTryIntroAndEpilogueWithoutClassicMP
 
 // intro setups
-global function	ClassicMP_SetLevelIntro
+global function ClassicMP_SetLevelIntro
 global function ClassicMP_SetCustomIntro
 global function ClassicMP_SetupIntro
 
@@ -22,7 +22,8 @@ global function ClassicMP_ShouldRunEpilogue
 
 global function GetClassicMPMode
 
-struct {
+struct
+{
 	bool shouldTryIntroAndEpilogueWithoutClassicMP = false
 
 	// level intros have a lower priority than custom intros
@@ -32,7 +33,7 @@ struct {
 
 	void functionref() customIntroSetupFunc
 	float customIntroLength
-	
+
 	bool epilogueForceDisabled = false
 	bool shouldRunEpilogueInRoundBasedMode = false
 	void functionref() epilogueSetupFunc
@@ -80,14 +81,14 @@ void function ClassicMP_SetupIntro()
 {
 	if ( file.customIntroSetupFunc != null )
 		file.customIntroSetupFunc()
-	else 
+	else
 		file.levelIntroSetupFunc()
 }
 
 void function ClassicMP_OnIntroStarted()
 {
 	print( "started intro!" )
-	
+
 	float introLength = ClassicMP_GetIntroLength()
 	SetServerVar( "gameStartTime", Time() + introLength )
 	SetServerVar( "roundStartTime", Time() + introLength )
@@ -99,7 +100,7 @@ void function ClassicMP_OnIntroFinished()
 	SetGameState( eGameState.Playing )
 }
 
-float function ClassicMP_GetIntroLength() 
+float function ClassicMP_GetIntroLength()
 {
 	if ( file.customIntroSetupFunc != null )
 		return file.customIntroLength
@@ -121,7 +122,7 @@ void function ClassicMP_SetupEpilogue()
 {
 	if ( file.epilogueSetupFunc == null ) // default is evac
 		ClassicMP_SetEpilogue( EvacEpilogueSetup )
-	
+
 	file.epilogueSetupFunc()
 }
 

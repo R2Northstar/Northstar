@@ -19,64 +19,63 @@ global function GetArcCannonChargeFraction
 global function IsEntANeutralMegaTurret
 global function CreateArcCannonBeam
 
-
 // Aiming & Range
-global const DEFAULT_ARC_CANNON_FOVDOT				= 0.98		// First target must be within this dot to be zapped and start a chain
-global const DEFAULT_ARC_CANNON_FOVDOT_MISSILE		= 0.95		// First target must be within this dot to be zapped and start a chain ( if it's a missile, we allow more leaniency )
-global const ARC_CANNON_RANGE_CHAIN				= 400		// Max distance we can arc from one target to another
-global const ARC_CANNON_TITAN_RANGE_CHAIN			= 900		// Max distance we can arc from one target to another
-global const ARC_CANNON_CHAIN_COUNT_MIN			= 5			// Max number of chains at no charge
-global const ARC_CANNON_CHAIN_COUNT_MAX			= 5			// Max number of chains at full charge
-global const ARC_CANNON_CHAIN_COUNT_NPC			= 2			// Number of chains when an NPC fires the weapon
-global const ARC_CANNON_FORK_COUNT_MAX				= 1			// Number of forks that can come out of one target to other targets
-global const ARC_CANNON_FORK_DELAY					= 0.1
+global const DEFAULT_ARC_CANNON_FOVDOT = 0.98 // First target must be within this dot to be zapped and start a chain
+global const DEFAULT_ARC_CANNON_FOVDOT_MISSILE = 0.95 // First target must be within this dot to be zapped and start a chain ( if it's a missile, we allow more leaniency )
+global const ARC_CANNON_RANGE_CHAIN = 400 // Max distance we can arc from one target to another
+global const ARC_CANNON_TITAN_RANGE_CHAIN = 900 // Max distance we can arc from one target to another
+global const ARC_CANNON_CHAIN_COUNT_MIN = 5 // Max number of chains at no charge
+global const ARC_CANNON_CHAIN_COUNT_MAX = 5 // Max number of chains at full charge
+global const ARC_CANNON_CHAIN_COUNT_NPC = 2 // Number of chains when an NPC fires the weapon
+global const ARC_CANNON_FORK_COUNT_MAX = 1 // Number of forks that can come out of one target to other targets
+global const ARC_CANNON_FORK_DELAY = 0.1
 
-global const ARC_CANNON_RANGE_CHAIN_BURN			= 400
-global const ARC_CANNON_TITAN_RANGE_CHAIN_BURN		= 900
-global const ARC_CANNON_CHAIN_COUNT_MIN_BURN		= 100		// Max number of chains at no charge
-global const ARC_CANNON_CHAIN_COUNT_MAX_BURN		= 100		// Max number of chains at full charge
-global const ARC_CANNON_CHAIN_COUNT_NPC_BURN		= 10		// Number of chains when an NPC fires the weapon
-global const ARC_CANNON_FORK_COUNT_MAX_BURN		= 10		// Number of forks that can come out of one target to other targets
-global const ARC_CANNON_BEAM_LIFETIME_BURN			= 1
+global const ARC_CANNON_RANGE_CHAIN_BURN = 400
+global const ARC_CANNON_TITAN_RANGE_CHAIN_BURN = 900
+global const ARC_CANNON_CHAIN_COUNT_MIN_BURN = 100 // Max number of chains at no charge
+global const ARC_CANNON_CHAIN_COUNT_MAX_BURN = 100 // Max number of chains at full charge
+global const ARC_CANNON_CHAIN_COUNT_NPC_BURN = 10 // Number of chains when an NPC fires the weapon
+global const ARC_CANNON_FORK_COUNT_MAX_BURN = 10 // Number of forks that can come out of one target to other targets
+global const ARC_CANNON_BEAM_LIFETIME_BURN = 1
 
 // Visual settings
-global const ARC_CANNON_BOLT_RADIUS_MIN 			= 32		// Bolt radius at no charge ( not actually sure what this does to the beam lol )
-global const ARC_CANNON_BOLT_RADIUS_MAX 			= 640		// Bold radius at full charge ( not actually sure what this does to the beam lol )
-global const ARC_CANNON_BOLT_WIDTH_MIN 			= 1			// Bolt width at no charge
-global const ARC_CANNON_BOLT_WIDTH_MAX 			= 26		// Bolt width at full charge
-global const ARC_CANNON_BOLT_WIDTH_NPC				= 8			// Bolt width when used by NPC
-global const ARC_CANNON_BEAM_COLOR					= "150 190 255"
-global const ARC_CANNON_BEAM_LIFETIME				= 0.75
+global const ARC_CANNON_BOLT_RADIUS_MIN = 32 // Bolt radius at no charge ( not actually sure what this does to the beam lol )
+global const ARC_CANNON_BOLT_RADIUS_MAX = 640 // Bold radius at full charge ( not actually sure what this does to the beam lol )
+global const ARC_CANNON_BOLT_WIDTH_MIN = 1 // Bolt width at no charge
+global const ARC_CANNON_BOLT_WIDTH_MAX = 26 // Bolt width at full charge
+global const ARC_CANNON_BOLT_WIDTH_NPC = 8 // Bolt width when used by NPC
+global const ARC_CANNON_BEAM_COLOR = "150 190 255"
+global const ARC_CANNON_BEAM_LIFETIME = 0.75
 
 // Player Effects
-global const ARC_CANNON_TITAN_SCREEN_SFX 		= "Null_Remove_SoundHook"
-global const ARC_CANNON_PILOT_SCREEN_SFX 		= "Null_Remove_SoundHook"
-global const ARC_CANNON_EMP_DURATION_MIN 		= 0.1
-global const ARC_CANNON_EMP_DURATION_MAX		= 1.8
-global const ARC_CANNON_EMP_FADEOUT_DURATION	= 0.4
-global const ARC_CANNON_SCREEN_EFFECTS_MIN 	= 0.01
-global const ARC_CANNON_SCREEN_EFFECTS_MAX 	= 0.02
-global const ARC_CANNON_SCREEN_THRESHOLD		= 0.3385
+global const ARC_CANNON_TITAN_SCREEN_SFX = "Null_Remove_SoundHook"
+global const ARC_CANNON_PILOT_SCREEN_SFX = "Null_Remove_SoundHook"
+global const ARC_CANNON_EMP_DURATION_MIN = 0.1
+global const ARC_CANNON_EMP_DURATION_MAX = 1.8
+global const ARC_CANNON_EMP_FADEOUT_DURATION = 0.4
+global const ARC_CANNON_SCREEN_EFFECTS_MIN = 0.01
+global const ARC_CANNON_SCREEN_EFFECTS_MAX = 0.02
+global const ARC_CANNON_SCREEN_THRESHOLD = 0.3385
 global const ARC_CANNON_3RD_PERSON_EFFECT_MIN_DURATION = 0.2
 
 // Damage
-global const ARC_CANNON_DAMAGE_FALLOFF_SCALER		= 0.75		// Amount of damage carried on to the next target in the chain lightning. If 0.75, then a target that would normally take 100 damage will take 75 damage if they are one chain deep, or 56 damage if 2 levels deep
-global const ARC_CANNON_DAMAGE_CHARGE_RATIO		= 0.85		// What amount of charge is required for full damage.
-global const ARC_CANNON_DAMAGE_CHARGE_RATIO_BURN	= 0.676		// What amount of charge is required for full damage.
-global const ARC_CANNON_CAPACITOR_CHARGE_RATIO		= 1.0
+global const ARC_CANNON_DAMAGE_FALLOFF_SCALER = 0.75 // Amount of damage carried on to the next target in the chain lightning. If 0.75, then a target that would normally take 100 damage will take 75 damage if they are one chain deep, or 56 damage if 2 levels deep
+global const ARC_CANNON_DAMAGE_CHARGE_RATIO = 0.85 // What amount of charge is required for full damage.
+global const ARC_CANNON_DAMAGE_CHARGE_RATIO_BURN = 0.676 // What amount of charge is required for full damage.
+global const ARC_CANNON_CAPACITOR_CHARGE_RATIO = 1.0
 
 // Options
-global const ARC_CANNON_TARGETS_MISSILES 			= 1			// 1 = arc cannon zaps missiles that are active, 0 = missiles are ignored by arc cannon
+global const ARC_CANNON_TARGETS_MISSILES = 1 // 1 = arc cannon zaps missiles that are active, 0 = missiles are ignored by arc cannon
 
-//Mods
-global const OVERCHARGE_MAX_SHIELD_DECAY       	= 0.2
-global const OVERCHARGE_SHIELD_DECAY_MULTIPLIER 	= 0.04
-global const OVERCHARGE_BONUS_CHARGE_FRACTION		= 0.05
+// Mods
+global const OVERCHARGE_MAX_SHIELD_DECAY = 0.2
+global const OVERCHARGE_SHIELD_DECAY_MULTIPLIER = 0.04
+global const OVERCHARGE_BONUS_CHARGE_FRACTION = 0.05
 
-global const SPLITTER_DAMAGE_FALLOFF_SCALER		= 0.6
-global const SPLITTER_FORK_COUNT_MAX				= 10
+global const SPLITTER_DAMAGE_FALLOFF_SCALER = 0.6
+global const SPLITTER_FORK_COUNT_MAX = 10
 
-global const ARC_CANNON_SIGNAL_DEACTIVATED	= "ArcCannonDeactivated"
+global const ARC_CANNON_SIGNAL_DEACTIVATED = "ArcCannonDeactivated"
 global const ARC_CANNON_SIGNAL_CHARGEEND = "ArcCannonChargeEnd"
 
 global const ARC_CANNON_BEAM_EFFECT = $"wpn_arc_cannon_beam"
@@ -85,36 +84,37 @@ global const ARC_CANNON_BEAM_EFFECT_MOD = $"wpn_arc_cannon_beam_mod"
 global const ARC_CANNON_FX_TABLE = "exp_arc_cannon"
 
 global const ArcCannonTargetClassnames = {
-	[ "npc_drone" ] 			= true,
-	[ "npc_dropship" ] 			= true,
-	[ "npc_marvin" ] 			= true,
-	[ "npc_prowler" ]			= true,
-	[ "npc_soldier" ] 			= true,
-	[ "npc_soldier_heavy" ] 	= true,
-	[ "npc_soldier_shield" ]	= true,
-	[ "npc_spectre" ] 			= true,
-	[ "npc_stalker" ] 			= true,
-	[ "npc_super_spectre" ]		= true,
-	[ "npc_titan" ] 			= true,
-	[ "npc_turret_floor" ] 		= true,
-	[ "npc_turret_mega" ]		= true,
-	[ "npc_turret_sentry" ] 	= true,
-	[ "npc_frag_drone" ] 		= true,
-	[ "player" ] 				= true,
-	[ "prop_dynamic" ] 			= true,
-	[ "prop_script" ] 			= true,
-	[ "grenade_frag" ] 			= true,
-	[ "rpg_missile" ] 			= true,
-	[ "script_mover" ] 			= true,
-	[ "turret" ] 				= true,
+	["npc_drone"] = true,
+	["npc_dropship"] = true,
+	["npc_marvin"] = true,
+	["npc_prowler"] = true,
+	["npc_soldier"] = true,
+	["npc_soldier_heavy"] = true,
+	["npc_soldier_shield"] = true,
+	["npc_spectre"] = true,
+	["npc_stalker"] = true,
+	["npc_super_spectre"] = true,
+	["npc_titan"] = true,
+	["npc_turret_floor"] = true,
+	["npc_turret_mega"] = true,
+	["npc_turret_sentry"] = true,
+	["npc_frag_drone"] = true,
+	["player"] = true,
+	["prop_dynamic"] = true,
+	["prop_script"] = true,
+	["grenade_frag"] = true,
+	["rpg_missile"] = true,
+	["script_mover"] = true,
+	["turret"] = true,
 }
 
-struct {
+struct
+{
 	array<string> missileCheckTargetnames = [
 		// "Arc Pylon",
 		"Arc Ball"
 	]
-} file;
+} file
 
 function ArcCannon_Init()
 {
@@ -185,7 +185,7 @@ function ArcCannon_ChargeBegin( entity weapon )
 
 		entity weaponOwner = weapon.GetWeaponOwner()
 		Assert( weaponOwner.IsPlayer() )
-		weaponOwner.StartArcCannon();
+		weaponOwner.StartArcCannon()
 	#endif
 }
 
@@ -212,45 +212,45 @@ function ArcCannon_ChargeEnd( entity weapon, entity player = null )
 }
 
 #if SERVER
-function ConvertTitanShieldIntoBonusCharge( entity soul, entity weapon )
-{
-	weapon.EndSignal( ARC_CANNON_SIGNAL_CHARGEEND )
-	weapon.EndSignal( "OnDestroy" )
-
-	local maxShieldDecay = OVERCHARGE_MAX_SHIELD_DECAY
-	local bonusChargeFraction = OVERCHARGE_BONUS_CHARGE_FRACTION
-	local shieldDecayMultiplier = OVERCHARGE_SHIELD_DECAY_MULTIPLIER
-	int shieldHealthMax = soul.GetShieldHealthMax()
-	local chargeRatio = GetArcCannonChargeFraction( weapon )
-
-	while( 1 )
+	function ConvertTitanShieldIntoBonusCharge( entity soul, entity weapon )
 	{
-		if ( !IsValid( soul ) || !IsValid( weapon ) )
-			break
+		weapon.EndSignal( ARC_CANNON_SIGNAL_CHARGEEND )
+		weapon.EndSignal( "OnDestroy" )
 
-		local baseCharge = GetWeaponChargeFrac( weapon ) // + GetOverchargeBonusChargeFraction()
-		local charge = clamp ( baseCharge * ( 1 / chargeRatio ), 0.0, 1.0 )
-		if ( charge < 1.0 || maxShieldDecay > 0)
+		local maxShieldDecay = OVERCHARGE_MAX_SHIELD_DECAY
+		local bonusChargeFraction = OVERCHARGE_BONUS_CHARGE_FRACTION
+		local shieldDecayMultiplier = OVERCHARGE_SHIELD_DECAY_MULTIPLIER
+		int shieldHealthMax = soul.GetShieldHealthMax()
+		local chargeRatio = GetArcCannonChargeFraction( weapon )
+
+		while ( 1 )
 		{
-			int shieldHealth = soul.GetShieldHealth()
+			if ( !IsValid( soul ) || !IsValid( weapon ) )
+				break
 
-			//Slight inconsistency in server updates, this ensures it never takes too much.
-			if ( shieldDecayMultiplier > maxShieldDecay )
-				shieldDecayMultiplier = maxShieldDecay
-			maxShieldDecay -= shieldDecayMultiplier
+			local baseCharge = GetWeaponChargeFrac( weapon ) // + GetOverchargeBonusChargeFraction()
+			local charge = clamp( baseCharge * ( 1 / chargeRatio ), 0.0, 1.0 )
+			if ( charge < 1.0 || maxShieldDecay > 0 )
+			{
+				int shieldHealth = soul.GetShieldHealth()
 
-			local shieldDecayAmount = shieldHealthMax * shieldDecayMultiplier
-			local newShieldAmount = shieldHealth - shieldDecayAmount
-			soul.SetShieldHealth( max( newShieldAmount, 0 ) )
-			soul.nextRegenTime = Time() + GetShieldRegenTime( soul )
+				// Slight inconsistency in server updates, this ensures it never takes too much.
+				if ( shieldDecayMultiplier > maxShieldDecay )
+					shieldDecayMultiplier = maxShieldDecay
+				maxShieldDecay -= shieldDecayMultiplier
 
-			if ( shieldDecayAmount > shieldHealth )
-				bonusChargeFraction = bonusChargeFraction * ( shieldHealth / shieldDecayAmount )
-			weapon.SetWeaponChargeFraction( baseCharge + bonusChargeFraction )
+				local shieldDecayAmount = shieldHealthMax * shieldDecayMultiplier
+				local newShieldAmount = shieldHealth - shieldDecayAmount
+				soul.SetShieldHealth( max( newShieldAmount, 0 ) )
+				soul.nextRegenTime = Time() + GetShieldRegenTime( soul )
+
+				if ( shieldDecayAmount > shieldHealth )
+					bonusChargeFraction = bonusChargeFraction * ( shieldHealth / shieldDecayAmount )
+				weapon.SetWeaponChargeFraction( baseCharge + bonusChargeFraction )
+			}
+			wait 0.1
 		}
-		wait 0.1
 	}
-}
 #endif
 
 function FireArcCannon( entity weapon, WeaponPrimaryAttackParams attackParams )
@@ -269,7 +269,7 @@ function FireArcCannon( entity weapon, WeaponPrimaryAttackParams attackParams )
 	Assert( attachmentIndex >= 0 )
 	local muzzleOrigin = weapon.GetAttachmentOrigin( attachmentIndex )
 
-	//printt( "-------- FIRING ARC CANNON --------" )
+	// printt( "-------- FIRING ARC CANNON --------" )
 
 	table firstTargetInfo = GetFirstArcCannonTarget( weapon, attackParams )
 	if ( !IsValid( firstTargetInfo.target ) )
@@ -282,14 +282,14 @@ function FireArcCannon( entity weapon, WeaponPrimaryAttackParams attackParams )
 
 table function GetFirstArcCannonTarget( entity weapon, WeaponPrimaryAttackParams attackParams )
 {
-	entity owner 				= weapon.GetWeaponOwner()
-	local coneHeight 			= weapon.GetMaxDamageFarDist()
+	entity owner = weapon.GetWeaponOwner()
+	local coneHeight = weapon.GetMaxDamageFarDist()
 
-	local angleToAxis 			= 2 // set this too high and auto-titans using it will error on FindVisibleEntitiesInCone
+	local angleToAxis = 2 // set this too high and auto-titans using it will error on FindVisibleEntitiesInCone
 	array<entity> ignoredEntities = [ owner, weapon ]
-	int traceMask 				= TRACE_MASK_SHOT
-	int flags					= VIS_CONE_ENTS_TEST_HITBOXES
-	local antilagPlayer			= null
+	int traceMask = TRACE_MASK_SHOT
+	int flags = VIS_CONE_ENTS_TEST_HITBOXES
+	local antilagPlayer = null
 	if ( owner.IsPlayer() )
 	{
 		angleToAxis = owner.GetAttackSpreadAngle() * 0.11
@@ -313,7 +313,16 @@ table function GetFirstArcCannonTarget( entity weapon, WeaponPrimaryAttackParams
 
 		coneAngle = clamp( coneAngle, 0.1, 89.9 )
 
-		array<VisibleEntityInCone> results = FindVisibleEntitiesInCone( attackParams.pos, attackParams.dir, coneHeight, coneAngle, ignoredEntities, traceMask, flags, antilagPlayer )
+		array<VisibleEntityInCone> results = FindVisibleEntitiesInCone(
+			attackParams.pos,
+			attackParams.dir,
+			coneHeight,
+			coneAngle,
+			ignoredEntities,
+			traceMask,
+			flags,
+			antilagPlayer
+		)
 		foreach ( result in results )
 		{
 			entity visibleEnt = result.ent
@@ -352,7 +361,7 @@ table function GetFirstArcCannonTarget( entity weapon, WeaponPrimaryAttackParams
 			break
 		}
 	}
-	//Creating a whiz-by sound.
+	// Creating a whiz-by sound.
 	weapon.FireWeaponBullet_Special( attackParams.pos, attackParams.dir, 1, 0, true, true, true, true, true, false, false )
 
 	return firstTargetInfo
@@ -365,7 +374,13 @@ function FireArcNoTargets( entity weapon, WeaponPrimaryAttackParams attackParams
 	local chargeFrac = GetWeaponChargeFrac( weapon )
 	local beamVec = attackParams.dir * weapon.GetMaxDamageFarDist()
 	local playerEyePos = player.EyePosition()
-	TraceResults traceResults = TraceLineHighDetail( playerEyePos, (playerEyePos + beamVec), weapon, (TRACE_MASK_PLAYERSOLID_BRUSHONLY | TRACE_MASK_BLOCKLOS), TRACE_COLLISION_GROUP_NONE )
+	TraceResults traceResults = TraceLineHighDetail(
+		playerEyePos,
+		( playerEyePos + beamVec ),
+		weapon,
+		( TRACE_MASK_PLAYERSOLID_BRUSHONLY | TRACE_MASK_BLOCKLOS ),
+		TRACE_COLLISION_GROUP_NONE
+	)
 	local beamEnd = traceResults.endPos
 
 	VortexBulletHit ornull vortexHit = VortexBulletHitCheck( player, playerEyePos, beamEnd )
@@ -436,18 +451,18 @@ function FireArcWithTargets( entity weapon, table firstTargetInfo, WeaponPrimary
 		maxChains = Graph( chargeFrac, 0, 1, minChains, maxChains )
 
 	table zapInfo = {}
-	zapInfo.weapon 			<- weapon
-	zapInfo.player 			<- player
-	zapInfo.muzzleOrigin	<- muzzleOrigin
-	zapInfo.radius			<- radius
-	zapInfo.boltWidth		<- boltWidth
-	zapInfo.maxChains		<- maxChains
-	zapInfo.chargeFrac		<- chargeFrac
-	zapInfo.zappedTargets 	<- {}
+	zapInfo.weapon <- weapon
+	zapInfo.player <- player
+	zapInfo.muzzleOrigin <- muzzleOrigin
+	zapInfo.radius <- radius
+	zapInfo.boltWidth <- boltWidth
+	zapInfo.maxChains <- maxChains
+	zapInfo.chargeFrac <- chargeFrac
+	zapInfo.zappedTargets <- {}
 	zapInfo.zappedTargets[ firstTargetInfo.target ] <- true
-	zapInfo.dmgSourceID 	<- weapon.GetDamageSourceID()
+	zapInfo.dmgSourceID <- weapon.GetDamageSourceID()
 	local chainNum = 1
-	thread ZapTargetRecursive( expect entity( firstTargetInfo.target), zapInfo, zapInfo.muzzleOrigin, expect vector( firstTargetInfo.hitLocation ), chainNum )
+	thread ZapTargetRecursive( expect entity( firstTargetInfo.target ), zapInfo, zapInfo.muzzleOrigin, expect vector( firstTargetInfo.hitLocation ), chainNum )
 }
 
 function ZapTargetRecursive( entity target, table zapInfo, beamStartPos, vector ornull firstTargetBeamEndPos = null, chainNum = 1 )
@@ -481,7 +496,7 @@ function ZapTargetRecursive( entity target, table zapInfo, beamStartPos, vector 
 
 		// NOTE: 'target' could be invalid at this point (no corpse)
 		array<entity> chainTargets = GetArcCannonChainTargets( beamEndPos, target, zapInfo )
-		foreach( entity chainTarget in chainTargets )
+		foreach ( entity chainTarget in chainTargets )
 		{
 			local newChainNum = chainNum
 			if ( chainTarget.GetClassName() != "rpg_missile" )
@@ -493,8 +508,8 @@ function ZapTargetRecursive( entity target, table zapInfo, beamStartPos, vector 
 		if ( IsValid( zapInfo.player ) && zapInfo.player.IsPlayer() && zapInfo.zappedTargets.len() >= 5 )
 		{
 			#if HAS_STATS
-			if ( chainNum == 5 )
-				UpdatePlayerStat( expect entity( zapInfo.player ), "misc_stats", "arcCannonMultiKills", 1 )
+				if ( chainNum == 5 )
+					UpdatePlayerStat( expect entity( zapInfo.player ), "misc_stats", "arcCannonMultiKills", 1 )
 			#endif
 		}
 	#endif
@@ -506,7 +521,7 @@ function ZapTarget( zapInfo, target, beamStartPos, beamEndPos, chainNum = 1 )
 	expect vector( beamStartPos )
 	expect vector( beamEndPos )
 
-	//DebugDrawLine( beamStartPos, beamEndPos, 255, 0, 0, true, 5.0 )
+	// DebugDrawLine( beamStartPos, beamEndPos, 255, 0, 0, true, 5.0 )
 	local boltWidth = zapInfo.boltWidth
 	if ( zapInfo.player.IsNPC() )
 		boltWidth = ARC_CANNON_BOLT_WIDTH_NPC
@@ -518,7 +533,19 @@ function ZapTarget( zapInfo, target, beamStartPos, beamEndPos, chainNum = 1 )
 		}
 	#endif
 
-	thread CreateArcCannonBeam( zapInfo.weapon, target, beamStartPos, beamEndPos, zapInfo.player, ARC_CANNON_BEAM_LIFETIME, zapInfo.radius, boltWidth, 5, true, firstBeam )
+	thread CreateArcCannonBeam(
+		zapInfo.weapon,
+		target,
+		beamStartPos,
+		beamEndPos,
+		zapInfo.player,
+		ARC_CANNON_BEAM_LIFETIME,
+		zapInfo.radius,
+		boltWidth,
+		5,
+		true,
+		firstBeam
+	)
 
 	#if SERVER
 		local isMissile = ( target.GetClassName() == "rpg_missile" )
@@ -587,14 +614,13 @@ function ZapTarget( zapInfo, target, beamStartPos, beamEndPos, chainNum = 1 )
 
 				if ( target.IsNPC() )
 				{
-					damageMin *= 3	// more powerful against NPC humans so they die easy
+					damageMin *= 3 // more powerful against NPC humans so they die easy
 					damageMax *= 3
 				}
 			}
 
-
 			local chargeRatio = GetArcCannonChargeFraction( zapInfo.weapon )
-			if  ( IsValid( zapInfo.weapon ) && !zapInfo.weapon.GetWeaponSettingBool( eWeaponVar.charge_require_input ) )
+			if ( IsValid( zapInfo.weapon ) && !zapInfo.weapon.GetWeaponSettingBool( eWeaponVar.charge_require_input ) )
 			{
 				// use distance for damage if the weapon auto-fires
 				entity weapon = expect entity( zapInfo.weapon )
@@ -641,11 +667,16 @@ function ZapTarget( zapInfo, target, beamStartPos, beamEndPos, chainNum = 1 )
 				// Do 3rd person effect on the body
 				asset effect
 				string tag
-				target.TakeDamage( damageAmount, zapInfo.player, zapInfo.player, { origin = beamEndPos, force = Vector(0,0,0), scriptType = deathPackage, weapon = zapInfo.weapon, damageSourceId = dmgSourceID } )
-				//vector dir = Normalize( beamEndPos - beamStartPos )
-				//vector velocity = dir * 600
-				//PushPlayerAway( target, velocity )
-				//PushPlayerAway( expect entity( zapInfo.player ), -velocity )
+				target.TakeDamage(
+					damageAmount,
+					zapInfo.player,
+					zapInfo.player,
+					{ origin = beamEndPos, force = Vector( 0, 0, 0 ), scriptType = deathPackage, weapon = zapInfo.weapon, damageSourceId = dmgSourceID }
+				)
+				// vector dir = Normalize( beamEndPos - beamStartPos )
+				// vector velocity = dir * 600
+				// PushPlayerAway( target, velocity )
+				// PushPlayerAway( expect entity( zapInfo.player ), -velocity )
 
 				if ( IsValid( zapInfo.weapon ) && hasFastPacitor )
 				{
@@ -689,7 +720,7 @@ function ZapTarget( zapInfo, target, beamStartPos, beamEndPos, chainNum = 1 )
 			}
 			else
 			{
-				//Don't bounce if the beam is set to do 0 damage.
+				// Don't bounce if the beam is set to do 0 damage.
 				chainNum = zapInfo.maxChains
 			}
 
@@ -703,124 +734,136 @@ function ZapTarget( zapInfo, target, beamStartPos, beamEndPos, chainNum = 1 )
 	#endif // SERVER
 }
 
-
 #if SERVER
 
-void function PushEntForTime( entity ent, vector velocity, float time )
-{
-	ent.EndSignal( "OnDeath" )
-	float endTime = Time() + time
-	float startTime = Time()
-	for ( ;; )
+	void function PushEntForTime( entity ent, vector velocity, float time )
 	{
-		if ( Time() >= endTime )
-			break
-		float multiplier = Graph( Time(), startTime, endTime, 1.0, 0.0 )
-		vector currentVel = ent.GetVelocity()
-		currentVel += velocity * multiplier
-		ent.SetVelocity( currentVel )
-		WaitFrame()
+		ent.EndSignal( "OnDeath" )
+		float endTime = Time() + time
+		float startTime = Time()
+		for ( ; ; )
+		{
+			if ( Time() >= endTime )
+				break
+			float multiplier = Graph( Time(), startTime, endTime, 1.0, 0.0 )
+			vector currentVel = ent.GetVelocity()
+			currentVel += velocity * multiplier
+			ent.SetVelocity( currentVel )
+			WaitFrame()
+		}
 	}
-}
 
-array<entity> function GetArcCannonChainTargets( vector fromOrigin, entity fromTarget, table zapInfo )
-{
-	// NOTE: fromTarget could be null/invalid if it was a drone
-	array<entity> results = []
-	if ( !IsValid( zapInfo.player ) )
+	array<entity> function GetArcCannonChainTargets( vector fromOrigin, entity fromTarget, table zapInfo )
+	{
+		// NOTE: fromTarget could be null/invalid if it was a drone
+		array<entity> results = []
+		if ( !IsValid( zapInfo.player ) )
+			return results
+
+		int playerTeam = expect entity( zapInfo.player ).GetTeam()
+		array<entity> allTargets = GetArcCannonTargetsInRange( fromOrigin, playerTeam, expect entity( zapInfo.weapon ) )
+		allTargets = ArrayClosest( allTargets, fromOrigin )
+
+		local viewVector
+		if ( zapInfo.player.IsPlayer() )
+			viewVector = zapInfo.player.GetViewVector()
+		else
+			viewVector = AnglesToForward( zapInfo.player.EyeAngles() )
+
+		local eyePosition = zapInfo.player.EyePosition()
+
+		foreach ( ent in allTargets )
+		{
+			local forkCount = ARC_CANNON_FORK_COUNT_MAX
+			if ( zapInfo.weapon.HasMod( "splitter" ) )
+				forkCount = SPLITTER_FORK_COUNT_MAX
+			else if ( zapInfo.weapon.HasMod( "burn_mod_titan_arc_cannon" ) )
+				forkCount = ARC_CANNON_FORK_COUNT_MAX_BURN
+
+			if ( results.len() >= forkCount )
+				break
+
+			if ( ent.IsPhaseShifted() )
+				continue
+
+			if ( ent.IsPlayer() )
+			{
+				// Ignore players that are passing damage to their parent. This is to address zapping a friendly rodeo player
+				local entParent = ent.GetParent()
+				if ( IsValid( entParent ) && ent.kv.PassDamageToParent.tointeger() )
+					continue
+
+				// only chains to other titan players for now
+				if ( !ent.IsTitan() )
+					continue
+			}
+
+			if ( ent.GetClassName() == "script_mover" )
+				continue
+
+			if ( IsEntANeutralMegaTurret( ent, playerTeam ) )
+				continue
+
+			if ( !IsAlive( ent ) )
+				continue
+
+			// Don't consider targets that already got zapped
+			if ( ent in zapInfo.zappedTargets )
+				continue
+
+			// Preventing the arc-cannon from firing behind.
+			local vecToEnt = ( ent.GetWorldSpaceCenter() - eyePosition )
+			vecToEnt.Norm()
+			local dotVal = DotProduct( vecToEnt, viewVector )
+			if ( dotVal < 0 )
+				continue
+
+			// Check if we can see them, they aren't behind a wall or something
+			local ignoreEnts = []
+			ignoreEnts.append( zapInfo.player )
+			ignoreEnts.append( ent )
+
+			foreach ( zappedTarget, val in zapInfo.zappedTargets )
+			{
+				if ( IsValid( zappedTarget ) )
+					ignoreEnts.append( zappedTarget )
+			}
+
+			TraceResults traceResult = TraceLineHighDetail(
+				fromOrigin,
+				ent.GetWorldSpaceCenter(),
+				ignoreEnts,
+				( TRACE_MASK_PLAYERSOLID_BRUSHONLY | TRACE_MASK_BLOCKLOS ),
+				TRACE_COLLISION_GROUP_NONE
+			)
+
+			// Trace failed, lets try an eye to eye trace
+			if ( traceResult.fraction < 1 )
+			{
+				// 'fromTarget' may be invalid
+				if ( IsValid( fromTarget ) )
+					traceResult =
+						TraceLineHighDetail(
+							fromTarget.EyePosition(),
+							ent.EyePosition(),
+							ignoreEnts,
+							( TRACE_MASK_PLAYERSOLID_BRUSHONLY | TRACE_MASK_BLOCKLOS ),
+							TRACE_COLLISION_GROUP_NONE
+						)
+			}
+
+			if ( traceResult.fraction < 1 )
+				continue
+
+			// Enemy is in visible, and within range.
+			if ( !results.contains( ent ) )
+				results.append( ent )
+		}
+
+		// printt( "NEARBY TARGETS VALID AND VISIBLE:", results.len() )
+
 		return results
-
-	int playerTeam = expect entity( zapInfo.player ).GetTeam()
-	array<entity> allTargets = GetArcCannonTargetsInRange( fromOrigin, playerTeam, expect entity( zapInfo.weapon ) )
-	allTargets = ArrayClosest( allTargets, fromOrigin )
-
-	local viewVector
-	if ( zapInfo.player.IsPlayer() )
-		viewVector = zapInfo.player.GetViewVector()
-	else
-		viewVector = AnglesToForward( zapInfo.player.EyeAngles() )
-
-	local eyePosition = zapInfo.player.EyePosition()
-
-	foreach ( ent in allTargets )
-	{
-		local forkCount = ARC_CANNON_FORK_COUNT_MAX
-		if ( zapInfo.weapon.HasMod( "splitter" ) )
-			forkCount = SPLITTER_FORK_COUNT_MAX
-		else if ( zapInfo.weapon.HasMod( "burn_mod_titan_arc_cannon" ) )
-			forkCount = ARC_CANNON_FORK_COUNT_MAX_BURN
-
-		if ( results.len() >= forkCount )
-			break
-
-		if ( ent.IsPhaseShifted() )
-			continue
-
-		if ( ent.IsPlayer() )
-		{
-			// Ignore players that are passing damage to their parent. This is to address zapping a friendly rodeo player
-			local entParent = ent.GetParent()
-			if ( IsValid( entParent ) && ent.kv.PassDamageToParent.tointeger() )
-				continue
-
-			// only chains to other titan players for now
-			if ( !ent.IsTitan() )
-				continue
-		}
-
-		if ( ent.GetClassName() == "script_mover" )
-			continue
-
-		if ( IsEntANeutralMegaTurret( ent, playerTeam ) )
-			continue
-
-		if ( !IsAlive( ent ) )
-			continue
-
-		// Don't consider targets that already got zapped
-		if ( ent in zapInfo.zappedTargets )
-			continue
-
-		//Preventing the arc-cannon from firing behind.
-		local vecToEnt = ( ent.GetWorldSpaceCenter() - eyePosition )
-		vecToEnt.Norm()
-		local dotVal = DotProduct( vecToEnt, viewVector )
-		if ( dotVal < 0 )
-			continue
-
-		// Check if we can see them, they aren't behind a wall or something
-		local ignoreEnts = []
-		ignoreEnts.append( zapInfo.player )
-		ignoreEnts.append( ent )
-
-		foreach( zappedTarget, val in zapInfo.zappedTargets )
-		{
-			if ( IsValid( zappedTarget ) )
-				ignoreEnts.append( zappedTarget )
-		}
-
-		TraceResults traceResult = TraceLineHighDetail( fromOrigin, ent.GetWorldSpaceCenter(), ignoreEnts, (TRACE_MASK_PLAYERSOLID_BRUSHONLY | TRACE_MASK_BLOCKLOS), TRACE_COLLISION_GROUP_NONE )
-
-		// Trace failed, lets try an eye to eye trace
-		if ( traceResult.fraction < 1 )
-		{
-			// 'fromTarget' may be invalid
-			if ( IsValid( fromTarget ) )
-				traceResult = TraceLineHighDetail( fromTarget.EyePosition(), ent.EyePosition(), ignoreEnts, (TRACE_MASK_PLAYERSOLID_BRUSHONLY | TRACE_MASK_BLOCKLOS), TRACE_COLLISION_GROUP_NONE )
-		}
-
-		if ( traceResult.fraction < 1 )
-			continue
-
-		// Enemy is in visible, and within range.
-		if ( !results.contains( ent ) )
-			results.append( ent )
 	}
-
-	//printt( "NEARBY TARGETS VALID AND VISIBLE:", results.len() )
-
-	return results
-}
 #endif // SERVER
 
 bool function IsEntANeutralMegaTurret( ent, int playerTeam )
@@ -853,7 +896,7 @@ function ArcCannon_HideIdleEffect( entity weapon, delay )
 		return
 
 	entity weaponOwner = weapon.GetWeaponOwner()
-	//The weapon can be valid, but the player isn't a Titan during melee execute.
+	// The weapon can be valid, but the player isn't a Titan during melee execute.
 	// JFS: threads with waits should just end on "OnDestroy"
 	if ( !IsValid( weaponOwner ) )
 		return
@@ -873,54 +916,54 @@ function ArcCannon_HideIdleEffect( entity weapon, delay )
 }
 
 #if SERVER
-void function AddToArcCannonTargets( entity ent )
-{
-	AddToScriptManagedEntArray( level._arcCannonTargetsArrayID, ent );
-}
-
-function RemoveArcCannonTarget( ent )
-{
-	RemoveFromScriptManagedEntArray( level._arcCannonTargetsArrayID, ent )
-}
-
-array<entity> function GetArcCannonTargets( vector origin, int team )
-{
-	array<entity> targets = GetScriptManagedEntArrayWithinCenter( level._arcCannonTargetsArrayID, team, origin, ARC_CANNON_TITAN_RANGE_CHAIN )
-
-	if ( ARC_CANNON_TARGETS_MISSILES )
-		targets.extend( GetProjectileArrayEx( "rpg_missile", TEAM_ANY, team, origin, ARC_CANNON_TITAN_RANGE_CHAIN ) )
-
-	return targets
-}
-
-array<entity> function GetArcCannonTargetsInRange( vector origin, int team, entity weapon )
-{
-	array<entity> allTargets = GetArcCannonTargets( origin, team )
-	array<entity> targetsInRange
-
-	float titanDistSq
-	float distSq
-	if ( weapon.HasMod( "burn_mod_titan_arc_cannon" ) )
+	void function AddToArcCannonTargets( entity ent )
 	{
-		titanDistSq = ARC_CANNON_TITAN_RANGE_CHAIN_BURN * ARC_CANNON_TITAN_RANGE_CHAIN_BURN
-		distSq = ARC_CANNON_RANGE_CHAIN_BURN * ARC_CANNON_RANGE_CHAIN_BURN
-	}
-	else
-	{
-		titanDistSq = ARC_CANNON_TITAN_RANGE_CHAIN * ARC_CANNON_TITAN_RANGE_CHAIN
-		distSq = ARC_CANNON_RANGE_CHAIN * ARC_CANNON_RANGE_CHAIN
+		AddToScriptManagedEntArray( level._arcCannonTargetsArrayID, ent )
 	}
 
-	foreach( target in allTargets )
+	function RemoveArcCannonTarget( ent )
 	{
-		float d = DistanceSqr( target.GetOrigin(), origin )
-		float validDist = target.IsTitan() ? titanDistSq : distSq
-		if ( d <= validDist )
-			targetsInRange.append( target )
+		RemoveFromScriptManagedEntArray( level._arcCannonTargetsArrayID, ent )
 	}
 
-	return targetsInRange
-}
+	array<entity> function GetArcCannonTargets( vector origin, int team )
+	{
+		array<entity> targets = GetScriptManagedEntArrayWithinCenter( level._arcCannonTargetsArrayID, team, origin, ARC_CANNON_TITAN_RANGE_CHAIN )
+
+		if ( ARC_CANNON_TARGETS_MISSILES )
+			targets.extend( GetProjectileArrayEx( "rpg_missile", TEAM_ANY, team, origin, ARC_CANNON_TITAN_RANGE_CHAIN ) )
+
+		return targets
+	}
+
+	array<entity> function GetArcCannonTargetsInRange( vector origin, int team, entity weapon )
+	{
+		array<entity> allTargets = GetArcCannonTargets( origin, team )
+		array<entity> targetsInRange
+
+		float titanDistSq
+		float distSq
+		if ( weapon.HasMod( "burn_mod_titan_arc_cannon" ) )
+		{
+			titanDistSq = ARC_CANNON_TITAN_RANGE_CHAIN_BURN * ARC_CANNON_TITAN_RANGE_CHAIN_BURN
+			distSq = ARC_CANNON_RANGE_CHAIN_BURN * ARC_CANNON_RANGE_CHAIN_BURN
+		}
+		else
+		{
+			titanDistSq = ARC_CANNON_TITAN_RANGE_CHAIN * ARC_CANNON_TITAN_RANGE_CHAIN
+			distSq = ARC_CANNON_RANGE_CHAIN * ARC_CANNON_RANGE_CHAIN
+		}
+
+		foreach ( target in allTargets )
+		{
+			float d = DistanceSqr( target.GetOrigin(), origin )
+			float validDist = target.IsTitan() ? titanDistSq : distSq
+			if ( d <= validDist )
+				targetsInRange.append( target )
+		}
+
+		return targetsInRange
+	}
 #endif // SERVER
 
 function CreateArcCannonBeam( weapon, target, startPos, endPos, player, lifeDuration = ARC_CANNON_BEAM_LIFETIME, radius = 256, boltWidth = 4, noiseAmplitude = 5, hasTarget = true, firstBeam = false )
@@ -928,9 +971,9 @@ function CreateArcCannonBeam( weapon, target, startPos, endPos, player, lifeDura
 	Assert( startPos )
 	Assert( endPos )
 
-	//**************************
+	// **************************
 	// 	LIGHTNING BEAM EFFECT
-	//**************************
+	// **************************
 	if ( weapon.HasMod( "burn_mod_titan_arc_cannon" ) )
 		lifeDuration = ARC_CANNON_BEAM_LIFETIME_BURN
 	// If it's the first beam and on client we do a special beam so it's lined up with the muzzle origin
@@ -956,7 +999,7 @@ function CreateArcCannonBeam( weapon, target, startPos, endPos, player, lifeDura
 		zapBeam.SetOrigin( startPos )
 		if ( firstBeam )
 		{
-			zapBeam.kv.VisibilityFlags = (ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY)	// everyone but owner
+			zapBeam.kv.VisibilityFlags = ( ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY ) // everyone but owner
 			zapBeam.SetParent( player.GetActiveWeapon(), "muzzle_flash", false, 0.0 )
 		}
 		DispatchSpawn( zapBeam )
@@ -977,36 +1020,36 @@ function GetBeamEffect( weapon )
 }
 
 #if CLIENT
-function CreateClientArcBeam( weapon, endPos, lifeDuration, target )
-{
-	Assert( IsClient() )
+	function CreateClientArcBeam( weapon, endPos, lifeDuration, target )
+	{
+		Assert( IsClient() )
 
-	local beamEffect = GetBeamEffect( weapon )
+		local beamEffect = GetBeamEffect( weapon )
 
-	// HACK HACK HACK HACK
-	string tag = "muzzle_flash"
-	if ( weapon.GetWeaponInfoFileKeyField( "client_tag_override" ) != null )
-		tag = expect string( weapon.GetWeaponInfoFileKeyField( "client_tag_override" ) )
+		// HACK HACK HACK HACK
+		string tag = "muzzle_flash"
+		if ( weapon.GetWeaponInfoFileKeyField( "client_tag_override" ) != null )
+			tag = expect string( weapon.GetWeaponInfoFileKeyField( "client_tag_override" ) )
 
-	local handle = weapon.PlayWeaponEffectReturnViewEffectHandle( beamEffect, $"", tag )
-	if ( !EffectDoesExist( handle ) )
-		return
+		local handle = weapon.PlayWeaponEffectReturnViewEffectHandle( beamEffect, $"", tag )
+		if ( !EffectDoesExist( handle ) )
+			return
 
-	EffectSetControlPointVector( handle, 1, endPos )
+		EffectSetControlPointVector( handle, 1, endPos )
 
-	if ( weapon.HasMod( "burn_mod_titan_arc_cannon" ) )
-		lifeDuration = ARC_CANNON_BEAM_LIFETIME_BURN
+		if ( weapon.HasMod( "burn_mod_titan_arc_cannon" ) )
+			lifeDuration = ARC_CANNON_BEAM_LIFETIME_BURN
 
-	wait( lifeDuration )
+		wait ( lifeDuration )
 
-	if ( IsValid( weapon ) )
-		weapon.StopWeaponEffect( beamEffect, $"" )
-}
+		if ( IsValid( weapon ) )
+			weapon.StopWeaponEffect( beamEffect, $"" )
+	}
 
-void function ClientDestroyCallback_ArcCannon_Stop( entity ent )
-{
-	ArcCannon_Stop( ent )
-}
+	void function ClientDestroyCallback_ArcCannon_Stop( entity ent )
+	{
+		ArcCannon_Stop( ent )
+	}
 #endif // CLIENT
 
 function GetArcCannonChargeFraction( weapon )

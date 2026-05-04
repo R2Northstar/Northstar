@@ -15,17 +15,18 @@ global function PostScoreEventUpdateStats
 global function Stats_OnPlayerDidDamage
 global function RegisterMatchStats_OnMatchComplete
 
-struct {
-	table< string, array<string> > refs
-	table< string, array< void functionref( entity, float, string ) > > callbacks
+struct
+{
+	table<string, array<string> > refs
+	table<string, array<void functionref( entity, float, string )> > callbacks
 
-	table< entity, table< string, int > > cachedIntStatChanges
-	table< table< string, float > > cachedFloatStatChanges
+	table<entity, table<string, int> > cachedIntStatChanges
+	table<table<string, float> > cachedFloatStatChanges
 
-	table< entity, float > playerKills
-	table< entity, float > playerKillsPvp
-	table< entity, float > playerDeaths
-	table< entity, float > playerDeathsPvp
+	table<entity, float> playerKills
+	table<entity, float> playerKillsPvp
+	table<entity, float> playerDeaths
+	table<entity, float> playerDeathsPvp
 
 	bool isFirstStrike = true
 } file
@@ -46,7 +47,6 @@ void function AddStatCallback( string statCategory, string statAlias, string sta
 {
 	if ( !IsValidStat( statCategory, statAlias, statSubAlias ) )
 		throw format( "INVALID STAT: %s : %s : %s", statCategory, statAlias, statSubAlias )
-
 
 	string statVar = GetStatVar( statCategory, statAlias, statSubAlias )
 
@@ -78,7 +78,7 @@ void function Stats_SaveAllStats( entity player )
 {
 	if ( player in file.cachedIntStatChanges )
 	{
-		foreach( string key, int val in file.cachedIntStatChanges[ player ] )
+		foreach ( string key, int val in file.cachedIntStatChanges[ player ] )
 		{
 			player.SetPersistentVar( key, player.GetPersistentVarAsInt( key ) + val )
 		}
@@ -88,7 +88,7 @@ void function Stats_SaveAllStats( entity player )
 	// save cached float stat change
 	if ( player in file.cachedFloatStatChanges )
 	{
-		foreach( string key, float val in file.cachedFloatStatChanges[ player ] )
+		foreach ( string key, float val in file.cachedFloatStatChanges[ player ] )
 		{
 			player.SetPersistentVar( key, expect float( player.GetPersistentVar( key ) ) + val )
 		}
@@ -258,13 +258,13 @@ void function Stats_IncrementStat( entity player, string statCategory, string st
 		PersistenceGetEnumIndexForItemName( "gamemodes", mode )
 		PersistenceGetEnumIndexForItemName( "maps", GetMapName() )
 	}
-	catch( ex )
+	catch ( ex )
 	{
 		// if we have an invalid mode or map for persistence, and it is used in the
 		// persistence string, we can't save the persistence so we have to just return
 		if ( str != saveVar )
 		{
-			//printt( ex, str, GetMapName(), mode ) // Commented out due to spamming logs on invalid modes (e.g. Gun Game, Infection, ...)
+			// printt( ex, str, GetMapName(), mode ) // Commented out due to spamming logs on invalid modes (e.g. Gun Game, Infection, ...)
 			return
 		}
 	}
@@ -272,26 +272,28 @@ void function Stats_IncrementStat( entity player, string statCategory, string st
 
 	switch ( type )
 	{
-	case ePlayerStatType.INT:
-		// populate table if needed
-		if ( !( player in file.cachedIntStatChanges ) )
-			file.cachedIntStatChanges[ player ] <- {}
-		if ( !( str in file.cachedIntStatChanges[ player ] ) )
-			file.cachedIntStatChanges[ player ][ str ] <- 0
+		case ePlayerStatType.INT:
+			// populate table if needed
+			if ( !( player in file.cachedIntStatChanges ) )
+				file.cachedIntStatChanges[ player ] <- {}
+			if ( !( str in file.cachedIntStatChanges[ player ] ) )
+				file.cachedIntStatChanges[ player ][ str ] <- 0
 
-		file.cachedIntStatChanges[ player ][ str ] += amount.tointeger()
-		break
-	case ePlayerStatType.FLOAT:
-		// populate table if needed
-		if ( !( player in file.cachedFloatStatChanges ) )
-			file.cachedFloatStatChanges[ player ] <- {}
-		if ( !( str in file.cachedFloatStatChanges[ player ] ) )
-			file.cachedFloatStatChanges[ player ][ str ] <- 0.0
+			file.cachedIntStatChanges[ player ][ str ] += amount.tointeger()
+			break
 
-		file.cachedFloatStatChanges[ player ][ str ] += amount
-		break
-	default:
-		throw "UNIMPLEMENTED STAT TYPE: " + type
+		case ePlayerStatType.FLOAT:
+			// populate table if needed
+			if ( !( player in file.cachedFloatStatChanges ) )
+				file.cachedFloatStatChanges[ player ] <- {}
+			if ( !( str in file.cachedFloatStatChanges[ player ] ) )
+				file.cachedFloatStatChanges[ player ][ str ] <- 0.0
+
+			file.cachedFloatStatChanges[ player ][ str ] += amount
+			break
+
+		default:
+			throw "UNIMPLEMENTED STAT TYPE: " + type
 	}
 
 	// amount here is never used
@@ -303,7 +305,7 @@ void function Stats_RunCallbacks( string statVar, entity player, float change )
 	if ( !( statVar in file.refs ) )
 		return
 
-	for( int i = 0; i < file.refs[ statVar ].len(); i++ )
+	for ( int i = 0; i < file.refs[ statVar ].len(); i++ )
 	{
 		string ref = file.refs[ statVar ][ i ]
 		void functionref( entity, float, string ) callback = file.callbacks[ statVar ][ i ]
@@ -334,10 +336,10 @@ void function OnPlayerOrNPCKilled( entity victim, entity attacker, var damageInf
 		thread SetLastPosForDistanceStatValid_Threaded( victim, false )
 
 	HandleDeathStats( victim, attacker, damageInfo )
-	
-	if( victim == attacker ) //Suicides are registering stats, afaik vanilla ignores them
+
+	if ( victim == attacker ) // Suicides are registering stats, afaik vanilla ignores them
 		return
-	
+
 	HandleKillStats( victim, attacker, damageInfo )
 	HandleWeaponKillStats( victim, attacker, damageInfo )
 	HandleTitanStats( victim, attacker, damageInfo )
@@ -494,24 +496,23 @@ void function HandleKillStats( entity victim, entity attacker, var damageInfo )
 	entity player
 	entity playerPetTitan
 	entity inflictor = DamageInfo_GetInflictor( damageInfo )
-	
+
 	if ( IsValid( inflictor ) )
 	{
 		if ( inflictor.IsProjectile() && IsValid( inflictor.GetOwner() ) ) // Attackers are always the final entity in the owning hierarchy, projectile owners though migh be a player's NPC minion (i.e Auto-Titans)
 			attacker = inflictor.GetOwner()
-		
 		else if ( inflictor.IsNPC() ) // NPCs are bypassed as Attackers if they are owned by players, instead they become just inflictors
 			attacker = inflictor
 	}
-	
+
 	if ( attacker.IsNPC() )
 	{
 		if ( !attacker.IsTitan() ) // Normal NPCs case
 			return
-		
+
 		if ( !IsPetTitan( attacker ) ) // NPC Titans case
 			return
-		
+
 		player = attacker.GetTitanSoul().GetBossPlayer()
 		playerPetTitan = attacker
 	}
@@ -585,14 +586,14 @@ void function HandleKillStats( entity victim, entity attacker, var damageInfo )
 	// note: eww
 	table<int, bool> alreadyAssisted
 	// titans store their recentDamageHistory in the soul
-	entity assistVictim = ( victim.IsTitan() && IsValid( victim.GetTitanSoul() ) ) ? victim.GetTitanSoul() : victim 
-	foreach( DamageHistoryStruct attackerInfo in assistVictim.e.recentDamageHistory )
+	entity assistVictim = ( victim.IsTitan() && IsValid( victim.GetTitanSoul() ) ) ? victim.GetTitanSoul() : victim
+	foreach ( DamageHistoryStruct attackerInfo in assistVictim.e.recentDamageHistory )
 	{
 		if ( !IsValid( attackerInfo.attacker ) || !attackerInfo.attacker.IsPlayer() || attackerInfo.attacker == assistVictim )
 			continue
 
 		bool exists = attackerInfo.attacker.GetEncodedEHandle() in alreadyAssisted ? true : false
-		if( attackerInfo.attacker != attacker && !exists )
+		if ( attackerInfo.attacker != attacker && !exists )
 		{
 			alreadyAssisted[ attackerInfo.attacker.GetEncodedEHandle() ] <- true
 			Stats_IncrementStat( attackerInfo.attacker, "kills_stats", "totalAssists", "", 1.0 )
@@ -751,7 +752,6 @@ void function HandleKillStats( entity victim, entity attacker, var damageInfo )
 	// titanKillsAsTitan
 	if ( victimIsTitan && attacker.IsTitan() )
 		Stats_IncrementStat( player, "kills_stats", "titanKillsAsTitan", "", 1.0 )
-
 }
 
 void function HandleTitanStats( entity victim, entity attacker, var damageInfo )
@@ -878,7 +878,7 @@ void function RegisterMatchStats_OnMatchComplete()
 		// shift stats by 1 to make room for new game data
 		for ( int i = NUM_GAMES_TRACK_KDRATIO - 2; i >= 0; --i )
 		{
-			player.SetPersistentVar( format( "kdratio_match[%i]", ( i + 1 ) ), player.GetPersistentVar( format("kdratio_match[%i]", i ) ) )
+			player.SetPersistentVar( format( "kdratio_match[%i]", ( i + 1 ) ), player.GetPersistentVar( format( "kdratio_match[%i]", i ) ) )
 			player.SetPersistentVar( format( "kdratiopvp_match[%i]", ( i + 1 ) ), player.GetPersistentVar( format( "kdratiopvp_match[%i]", i ) ) )
 		}
 		// add new game data
@@ -896,18 +896,19 @@ void function RegisterMatchStats_OnMatchComplete()
 	{
 		if ( i >= playerCount )
 			continue
-		
+
 		int functionref( entity, entity ) compareFunc = GetScoreboardCompareFunc()
-		if ( i > 0 && compareFunc( players[i - 1], players[i] ) != 0 )
+		if ( i > 0 && compareFunc( players[ i - 1 ], players[ i ] ) != 0 )
 			currentPlace += 1
-		switch( currentPlace )
+		switch ( currentPlace )
 		{
 			case 1: // MVP have two parallel stats which one registers MVP for the map played and the other goes to the player's stats menu as a total MVP times
-				UpdatePlayerStat( players[i], "game_stats", "mvp" )
-				UpdatePlayerStat( players[i], "game_stats", "mvp_total" )
+				UpdatePlayerStat( players[ i ], "game_stats", "mvp" )
+				UpdatePlayerStat( players[ i ], "game_stats", "mvp_total" )
+
 			case 2:
 			case 3:
-				UpdatePlayerStat( players[i], "game_stats", "top3OnTeam" ) // Ingame this is the "Times Top 3" for the whole match, not per team
+				UpdatePlayerStat( players[ i ], "game_stats", "top3OnTeam" ) // Ingame this is the "Times Top 3" for the whole match, not per team
 				break
 		}
 	}
@@ -937,14 +938,14 @@ void function HandleDistanceAndTimeStats_Threaded()
 
 	float lastTickTime = Time()
 
-	while( true )
+	while ( true )
 	{
 		// track distance stats
 		foreach ( entity player in GetPlayerArray() )
 		{
 			if ( !IsValid( player ) )
 				continue
-				
+
 			if ( player.p.lastPosForDistanceStatValid )
 			{
 				// not 100% sure on using Distance2D over Distance tbh
@@ -960,7 +961,6 @@ void function HandleDistanceAndTimeStats_Threaded()
 				}
 				else
 					Stats_IncrementStat( player, "distance_stats", "asPilot", "", distMiles )
-
 
 				string state = ""
 				// specific distance stats
@@ -1026,7 +1026,7 @@ void function HandleDistanceAndTimeStats_Threaded()
 				if ( IsValidStatItemString( activeWeapon.GetWeaponClassName() ) )
 					Stats_IncrementStat( player, "weapon_stats", "hoursUsed", activeWeapon.GetWeaponClassName(), timeHours )
 
-				foreach( entity weapon in player.GetMainWeapons() )
+				foreach ( entity weapon in player.GetMainWeapons() )
 				{
 					if ( IsValidStatItemString( weapon.GetWeaponClassName() ) )
 						Stats_IncrementStat( player, "weapon_stats", "hoursEquipped", weapon.GetWeaponClassName(), timeHours )
@@ -1046,9 +1046,9 @@ void function HandleDistanceAndTimeStats_Threaded()
 // this is kinda shit
 void function SaveStatsPeriodically_Threaded()
 {
-	while( true )
+	while ( true )
 	{
-		foreach( entity player in GetPlayerArray() )
+		foreach ( entity player in GetPlayerArray() )
 		{
 			if ( IsValid( player ) )
 				Stats_SaveAllStats( player )
@@ -1073,7 +1073,7 @@ bool function IsValidGamemodeString( string mode )
 
 bool function IsValidStatItemString( string item )
 {
-	foreach( str in shGlobalMP.statsItemsList )
+	foreach ( str in shGlobalMP.statsItemsList )
 	{
 		if ( str == item )
 			return true
@@ -1086,7 +1086,7 @@ string function GetPersistenceRefFromDamageInfo( var damageInfo )
 {
 	string damageSourceString = DamageSourceIDToString( DamageInfo_GetDamageSourceIdentifier( damageInfo ) )
 
-	foreach( str in shGlobalMP.statsItemsList )
+	foreach ( str in shGlobalMP.statsItemsList )
 	{
 		if ( str == damageSourceString )
 			return damageSourceString
@@ -1097,7 +1097,7 @@ string function GetPersistenceRefFromDamageInfo( var damageInfo )
 
 bool function DamageIsTitanMelee( int damageSourceId )
 {
-	switch( damageSourceId )
+	switch ( damageSourceId )
 	{
 		case eDamageSourceId.melee_titan_punch:
 		case eDamageSourceId.melee_titan_punch_ion:
@@ -1109,6 +1109,7 @@ bool function DamageIsTitanMelee( int damageSourceId )
 		case eDamageSourceId.melee_titan_sword:
 		case eDamageSourceId.melee_titan_sword_aoe:
 			return true
+
 		default:
 			return false
 	}

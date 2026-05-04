@@ -1,6 +1,5 @@
 untyped
 
-
 global function CodeCallback_RegisterClass_CPlayer
 global function PlayerDropsScriptedItems
 global function IsDemigod
@@ -8,7 +7,6 @@ global function EnableDemigod
 global function DisableDemigod
 
 int __nextInputHandle = 0
-
 
 global struct PlayerSlowDownEffect
 {
@@ -18,7 +16,7 @@ global struct PlayerSlowDownEffect
 
 function CodeCallback_RegisterClass_CPlayer()
 {
-	//printl( "Class Script: CPlayer" )
+	// printl( "Class Script: CPlayer" )
 
 	CPlayer.ClassName <- "CPlayer"
 	CPlayer.hasSpawned <- null
@@ -66,7 +64,6 @@ function CodeCallback_RegisterClass_CPlayer()
 		this.SetOwner( null )
 		this.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
 
-
 		Assert( !this.GetParent(), this + " should not have a parent yet! - Parent: " + this.GetParent() )
 		Assert( this.s.respawnCount <= 1 || IsMultiplayer(), "Tried to respawn in single player, see callstack" )
 		this.Code_RespawnPlayer( ent )
@@ -81,20 +78,18 @@ function CodeCallback_RegisterClass_CPlayer()
 		DumpStack()
 		this.__SetTrackEntity( ent )
 	}
-	*/
+*/
 
 	function CPlayer::GetDropEntForPoint( origin )
 	{
 		return null
 	}
 
-
 	function CPlayer::GetPlayerClassData( myClass )
 	{
 		Assert( myClass in this.playerClassData, myClass + " not in playerClassData" )
 		return this.playerClassData[ myClass ]
 	}
-
 
 	function CPlayer::InitMPClasses()
 	{
@@ -104,7 +99,6 @@ function CodeCallback_RegisterClass_CPlayer()
 		Wallrun_AddPlayer( this )
 	}
 
-
 	function CPlayer::InitSPClasses()
 	{
 		this.playerClassData = {}
@@ -112,7 +106,6 @@ function CodeCallback_RegisterClass_CPlayer()
 
 		Titan_AddPlayer( this )
 	}
-
 
 	// function SpawnAsClass()
 	function CPlayer::SpawnAsClass( className = null )
@@ -132,7 +125,6 @@ function CodeCallback_RegisterClass_CPlayer()
 				Assert( 0, "Tried to spawn as unsupported " + className )
 		}
 	}
-
 
 	function CPlayer::GiveScriptWeapon( weaponName, equipSlot = null )
 	{
@@ -171,7 +163,7 @@ function CodeCallback_RegisterClass_CPlayer()
 				FreeAutoTitan( titan )
 			else
 				titan.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
-			//				titan.Die()
+			// 				titan.Die()
 		}
 
 		PROTO_CleanupTrackedProjectiles( expect entity( this ) )
@@ -183,14 +175,13 @@ function CodeCallback_RegisterClass_CPlayer()
 		}
 	}
 
-
 	function CPlayer::GetClassDataEnts()
 	{
 		local ents = []
 		local added
 
 		if ( this.playerClassData == null )
-			return ents;
+			return ents
 
 		foreach ( ent in this.playerClassData )
 		{
@@ -212,7 +203,6 @@ function CodeCallback_RegisterClass_CPlayer()
 		return ents
 	}
 
-
 	function CPlayer::CleanupMPClasses()
 	{
 	}
@@ -233,18 +223,16 @@ function CodeCallback_RegisterClass_CPlayer()
 		this.SetExtraWeaponMods( mods )
 	}
 
-
 	function CPlayer::HasExtraWeaponMod( mod )
 	{
 		local mods = this.GetExtraWeaponMods()
-		foreach( _mod in mods )
+		foreach ( _mod in mods )
 		{
 			if ( _mod == mod )
 				return true
 		}
 		return false
 	}
-
 
 	function CPlayer::TakeExtraWeaponMod( mod )
 	{
@@ -261,7 +249,6 @@ function CodeCallback_RegisterClass_CPlayer()
 	{
 		this.SetExtraWeaponMods( [] )
 	}
-
 
 	function CPlayer::SetPlayerPilotSettings( settingsName )
 	{
@@ -318,7 +305,7 @@ function CodeCallback_RegisterClass_CPlayer()
 
 		if ( this.IsTitan() )
 		{
-			entity soul = expect entity ( this.GetTitanSoul() )
+			entity soul = expect entity( this.GetTitanSoul() )
 			local index = PlayerSettingsNameToIndex( settings )
 			soul.SetPlayerSettingsNum( index )
 
@@ -328,26 +315,26 @@ function CodeCallback_RegisterClass_CPlayer()
 			}
 		}
 	}
-	
-    function CPlayer::GetUserInfoString( key, defaultValue = "" )
-    {
-        return GetUserInfoKVString_Internal( this, key, defaultValue )
-    }
-	
-    function CPlayer::GetUserInfoInt( key, defaultValue = 0 )
-    {
-        return GetUserInfoKVInt_Internal( this, key, defaultValue )
-    }
 
-    function CPlayer::GetUserInfoFloat( key, defaultValue = 0 )
-    {
-        return GetUserInfoKVFloat_Internal( this, key, defaultValue )
-    }
+	function CPlayer::GetUserInfoString( key, defaultValue = "" )
+	{
+		return GetUserInfoKVString_Internal( this, key, defaultValue )
+	}
 
-    function CPlayer::GetUserInfoBool( key, defaultValue = false )
-    {
-        return GetUserInfoKVBool_Internal( this, key, defaultValue )
-    }
+	function CPlayer::GetUserInfoInt( key, defaultValue = 0 )
+	{
+		return GetUserInfoKVInt_Internal( this, key, defaultValue )
+	}
+
+	function CPlayer::GetUserInfoFloat( key, defaultValue = 0 )
+	{
+		return GetUserInfoKVFloat_Internal( this, key, defaultValue )
+	}
+
+	function CPlayer::GetUserInfoBool( key, defaultValue = false )
+	{
+		return GetUserInfoKVBool_Internal( this, key, defaultValue )
+	}
 }
 
 void function PlayerDropsScriptedItems( entity player )

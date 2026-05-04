@@ -18,7 +18,7 @@ void function CreateGamemodeHidden()
 	GameMode_SetDefaultTimeLimits( GAMEMODE_HIDDEN, 5, 0.0 )
 	GameMode_AddScoreboardColumnData( GAMEMODE_HIDDEN, "#SCOREBOARD_SCORE", PGS_ASSAULT_SCORE, 2 )
 	GameMode_AddScoreboardColumnData( GAMEMODE_HIDDEN, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 )
-	GameMode_SetColor( GAMEMODE_HIDDEN, [147, 204, 57, 255] )
+	GameMode_SetColor( GAMEMODE_HIDDEN, [ 147, 204, 57, 255 ] )
 
 	AddPrivateMatchMode( GAMEMODE_HIDDEN ) // add to private lobby modes
 

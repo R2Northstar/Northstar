@@ -30,8 +30,7 @@ global function ScriptDialog_PilotCloaked
 
 struct
 {
-	array< void functionref( entity ) > codeDialogueFunc
-
+	array<void functionref( entity )> codeDialogueFunc
 } file
 
 void function DialogueScheduleServer_Init()
@@ -41,21 +40,22 @@ void function DialogueScheduleServer_Init()
 	// dialogue that comes from ai schedule notifies
 
 	// must match order of enum eCodeDialogueID
-	file.codeDialogueFunc =	[
-								CodeDialogue_ManDown,
-								CodeDialogue_GruntSalute,
-								CodeDialogue_EnemyContact, //As per Conger's advice: Don't depend on this one. Use WaitSignal( guy, "OnFoundEnemy", "OnSeeEnemy", "OnLostEnemy" )
-								CodeDialogue_RunFromEnemy,
-								CodeDialogue_Reload,
-								CodeDialogue_MoveToAssault,
-								CodeDialogue_MoveToSquadLeader,
-								CodeDialogue_FanOut,
-								CodeDialogue_TakeCoverFromEnemy,
-								CodeDialogue_ChaseEnemy,
-								CodeDialogue_GrenadeOut,
-								CodeDialogue_DangerousAreaDisplace,
-								CodeDialogue_ReactSurprised,
-							]
+	file.codeDialogueFunc =
+		[
+			CodeDialogue_ManDown,
+			CodeDialogue_GruntSalute,
+			CodeDialogue_EnemyContact, // As per Conger's advice: Don't depend on this one. Use WaitSignal( guy, "OnFoundEnemy", "OnSeeEnemy", "OnLostEnemy" )
+			CodeDialogue_RunFromEnemy,
+			CodeDialogue_Reload,
+			CodeDialogue_MoveToAssault,
+			CodeDialogue_MoveToSquadLeader,
+			CodeDialogue_FanOut,
+			CodeDialogue_TakeCoverFromEnemy,
+			CodeDialogue_ChaseEnemy,
+			CodeDialogue_GrenadeOut,
+			CodeDialogue_DangerousAreaDisplace,
+			CodeDialogue_ReactSurprised
+		]
 
 	Assert( file.codeDialogueFunc.len() == eCodeDialogueID.DIALOGUE_COUNT )
 }
@@ -80,20 +80,19 @@ void function ScriptDialog_PilotCloaked( entity guy, entity enemy )
 
 void function CodeDialogue_GruntSalute( entity guy )
 {
-	//EmitSoundOnEntity( guy, "grunt_salute" )
-	//PlaySquadConversationToAll( "grunt_salute" )
+	// EmitSoundOnEntity( guy, "grunt_salute" )
+	// PlaySquadConversationToAll( "grunt_salute" )
 }
 
-void function CodeDialogue_EnemyContact( entity guy ) //As per Conger's advice: Don't depend on this one. Use WaitSignal( guy, "OnFoundEnemy", "OnSeeEnemy", "OnLostEnemy" )
+void function CodeDialogue_EnemyContact( entity guy ) // As per Conger's advice: Don't depend on this one. Use WaitSignal( guy, "OnFoundEnemy", "OnSeeEnemy", "OnLostEnemy" )
 {
 }
-
 
 void function CodeDialogue_RunFromEnemy( entity guy )
 {
-	//MP and SP use different systems.
+	// MP and SP use different systems.
 	#if GRUNT_CHATTER_MP_ENABLED
-		//MP, use PlayOneLinerConversationOnEntWithPriority() as base function
+		// MP, use PlayOneLinerConversationOnEntWithPriority() as base function
 		entity enemy = guy.GetEnemy()
 		if ( !IsAlive( enemy ) )
 			return
@@ -101,7 +100,7 @@ void function CodeDialogue_RunFromEnemy( entity guy )
 		if ( enemy.IsTitan() )
 			PlayGruntChatterMPLine( guy, "bc_fleePlayerTitanCall" )
 	#else
-		//SP, use r1 style PlayConversation calls()
+		// SP, use r1 style PlayConversation calls()
 		// only imc has these currently
 		if ( guy.GetTeam() != TEAM_IMC )
 			return
@@ -140,7 +139,7 @@ void function CodeDialogue_RunFromEnemy( entity guy )
 
 void function CodeDialogue_Reload( entity guy )
 {
-	//PlaySquadConversationToAll( "aichat_reload", guy )
+	// PlaySquadConversationToAll( "aichat_reload", guy )
 }
 
 void function CodeDialogue_FanOut( entity guy )
@@ -176,12 +175,12 @@ void function CodeDialogue_GrenadeOut( entity guy )
 	if ( NPC_GruntChatterSPEnabled( guy ) )
 	{
 		#if GRUNTCHATTER_ENABLED
-		// Ticks are actually thrown like grenades, but the callouts work differently because only Specialists use them
-		// TODO- move this info to the weapon data file
-		if ( guy.kv.grenadeWeaponName == "mp_weapon_frag_drone" )
-			GruntChatter_TryFriendlyEquipmentDeployed( guy, "mp_weapon_frag_drone" )
-		else
-			GruntChatter_TryThrowingGrenade( guy )
+			// Ticks are actually thrown like grenades, but the callouts work differently because only Specialists use them
+			// TODO- move this info to the weapon data file
+			if ( guy.kv.grenadeWeaponName == "mp_weapon_frag_drone" )
+				GruntChatter_TryFriendlyEquipmentDeployed( guy, "mp_weapon_frag_drone" )
+			else
+				GruntChatter_TryThrowingGrenade( guy )
 		#endif
 	}
 	else
@@ -192,7 +191,6 @@ void function CodeDialogue_GrenadeOut( entity guy )
 				PlaySpectreChatterMPLine( guy, "diag_imc_spectre_gs_grenadeout_01_1" )
 			#else
 				PlaySpectreChatterToAll( "spectre_gs_grenadeout_01_1", guy )
-
 			#endif
 		}
 		else if ( IsGrunt( guy ) )
@@ -207,11 +205,11 @@ void function CodeDialogue_GrenadeOut( entity guy )
 void function CodeDialogue_DangerousAreaDisplace( entity guy )
 {
 	#if GRUNT_CHATTER_MP_ENABLED
-		//MP ONly
+		// MP ONly
 		string dangerousAreaWeaponName = guy.GetDangerousAreaWeapon()
-		//printt( "CodeDialogue_DangerousAreaDisplace, Dangerous weapon name: " + dangerousAreaWeaponName )
+		// printt( "CodeDialogue_DangerousAreaDisplace, Dangerous weapon name: " + dangerousAreaWeaponName )
 		string conversationName = ""
-		switch ( dangerousAreaWeaponName ) //String comparison, not great...
+		switch ( dangerousAreaWeaponName ) // String comparison, not great...
 		{
 			case "mp_weapon_frag_grenade":
 				conversationName = "bc_grenadecall"
@@ -221,43 +219,42 @@ void function CodeDialogue_DangerousAreaDisplace( entity guy )
 				conversationName = "bc_reactGrenadeThermite"
 				break
 
-			case "mp_weapon_grenade_gravity": //By the time this triggers it looks like they're already being sucked in.
+			case "mp_weapon_grenade_gravity": // By the time this triggers it looks like they're already being sucked in.
 				conversationName = "bc_reactGrenadeGravity"
 				break
 
 			case "mp_weapon_grenade_electric_smoke":
 				conversationName = "bc_reactGrenadeElecSmoke"
 				break
-
-			//Arc grenades have their dialogue triggered by PlayGruntChatterMP_DamagedByEMP() since arc grenades don't create dangerous areas
+				// Arc grenades have their dialogue triggered by PlayGruntChatterMP_DamagedByEMP() since arc grenades don't create dangerous areas
 		}
 
-		if( conversationName != "" )
+		if ( conversationName != "" )
 			PlayGruntChatterMPLine( guy, conversationName )
 
 	#endif
 	#if GRUNTCHATTER_ENABLED
-		//SP Only
-	if ( NPC_GruntChatterSPEnabled( guy ) )
-		GruntChatter_TryDisplacingFromDangerousArea( guy )
+		// SP Only
+		if ( NPC_GruntChatterSPEnabled( guy ) )
+			GruntChatter_TryDisplacingFromDangerousArea( guy )
 	#endif
 }
 
 void function CodeDialogue_ReactSurprised( entity guy )
 {
 	#if GRUNTCHATTER_ENABLED
-	if ( NPC_GruntChatterSPEnabled( guy ) )
-	{
-		int aiSurprisedReactionType = guy.GetSurprisedReactionReason()
-
-		switch ( aiSurprisedReactionType )
+		if ( NPC_GruntChatterSPEnabled( guy ) )
 		{
-			case RSR_SIDE_FLANK:
-			case RSR_REAR_FLANK:
-				GruntChatter_TryGruntFlankedByPlayer( guy, aiSurprisedReactionType )
-				break
+			int aiSurprisedReactionType = guy.GetSurprisedReactionReason()
+
+			switch ( aiSurprisedReactionType )
+			{
+				case RSR_SIDE_FLANK:
+				case RSR_REAR_FLANK:
+					GruntChatter_TryGruntFlankedByPlayer( guy, aiSurprisedReactionType )
+					break
+			}
 		}
-	}
 	#endif
 }
 
@@ -296,14 +293,14 @@ void function PlayConversationToPlayer( string conversationType, entity player )
 void function PlayConversationToTeam( string conversationType, int team )
 {
 	array<entity> playerArr = GetPlayerArrayOfTeam( team )
-	foreach( player in playerArr )
+	foreach ( player in playerArr )
 		PlayConversationToPlayer( conversationType, player )
 }
 
 void function PlayConversationToTeamExceptPlayer( string conversationType, int team, entity excludePlayer )
 {
 	array<entity> playerArr = GetPlayerArrayOfTeam( team )
-	foreach( player in playerArr )
+	foreach ( player in playerArr )
 	{
 		if ( player == excludePlayer )
 			continue
@@ -315,7 +312,7 @@ void function PlayConversationToTeamExceptPlayer( string conversationType, int t
 void function PlayConversationToAll( string conversationType )
 {
 	array<entity> playerArr = GetPlayerArray()
-	foreach( player in playerArr )
+	foreach ( player in playerArr )
 		PlayConversationToPlayer( conversationType, player )
 }
 
@@ -332,7 +329,7 @@ void function PlayConversation_internal( string conversationType, entity player 
 void function ForcePlayConversationToAll( string conversationType )
 {
 	array<entity> playerArr = GetPlayerArray()
-	foreach( player in playerArr )
+	foreach ( player in playerArr )
 	{
 		ForcePlayConversationToPlayer( conversationType, player )
 	}
@@ -341,13 +338,13 @@ void function ForcePlayConversationToAll( string conversationType )
 void function ForcePlayConversationToTeam( string conversationType, team )
 {
 	array<entity> playerArr = GetPlayerArrayOfTeam( team )
-	foreach( player in playerArr )
+	foreach ( player in playerArr )
 	{
 		ForcePlayConversationToPlayer( conversationType, player )
 	}
 }
 
-//Like PlayConversation, but no checking for flags
+// Like PlayConversation, but no checking for flags
 void function ForcePlayConversationToPlayer( string conversationType, entity player )
 {
 	PlayConversation_internal( conversationType, player )
@@ -396,7 +393,7 @@ bool function SquadExistsForConversation( entity ai, string conversationType )
 	if ( !IsGrunt( ai ) )
 		return false
 
-	//Squadless AI don't play squad conversations
+	// Squadless AI don't play squad conversations
 	local squadName = ai.Get( "squadname" )
 	if ( squadName == "" )
 		return false
@@ -416,7 +413,7 @@ bool function SquadExistsForConversation( entity ai, string conversationType )
 		}
 	}
 
-	if ( !(DoesConversationExist( conversationType ) ))
+	if ( !( DoesConversationExist( conversationType ) ) )
 	{
 		printt( "*****CONVERSATION WARNING***** Conversation " + conversationType + " does not exist! Returning" )
 		return false
@@ -438,7 +435,7 @@ function GetSquadEHandles( ai )
 
 	array<entity> squad = GetNPCArrayBySquad( squadName )
 	squad.fastremovebyvalue( ai )
-	aiHandles[0] = ai.GetEncodedEHandle()
+	aiHandles[ 0 ] = ai.GetEncodedEHandle()
 
 	int nextIdx = 1
 
@@ -493,7 +490,7 @@ void function PlaySquadConversationToPlayer_Internal( string conversationType, e
 		return
 
 	UpdateConversationTracking( player, conversationType, Time() )
-	Remote_CallFunction_Replay( player, "ServerCallback_PlaySquadConversation", conversationID, aiHandles[0], aiHandles[1], aiHandles[2], aiHandles[3] )
+	Remote_CallFunction_Replay( player, "ServerCallback_PlaySquadConversation", conversationID, aiHandles[ 0 ], aiHandles[ 1 ], aiHandles[ 2 ], aiHandles[ 3 ] )
 }
 
 void function PlaySquadConversation( string conversationType, entity ai )
@@ -546,9 +543,9 @@ void function PlaySpectreChatterToTeam( string conversationType, team, entity sp
 
 void function PlaySpectreChatterToPlayer( string conversationType, entity player, entity spectre, float rangeSqr = AI_CONVERSATION_RANGE_SQR )
 {
-	//PrintFunc()
+	// PrintFunc()
 	vector spectreOrigin = spectre.GetOrigin()
-	float debounceTime = DEFAULT_CONVERSATION_DEBOUNCE_TIME  // Spectre conversations aren't as real as the Grunt ones- they don't get registered bc they just EmitSound
+	float debounceTime = DEFAULT_CONVERSATION_DEBOUNCE_TIME // Spectre conversations aren't as real as the Grunt ones- they don't get registered bc they just EmitSound
 	float allowedTime = Time() - debounceTime
 
 	string teamSpecificSoundAlias = GetSpectreTeamSpecificSoundAlias( spectre, conversationType )
@@ -559,7 +556,7 @@ void function PlaySpectreChatterToPlayer( string conversationType, entity player
 
 	Assert( DoesAliasExist( teamSpecificSoundAlias ) )
 
-	//printt( "Trying to play spectre chatter: " +  teamSpecificSoundAlias + " to player: " + player)
+	// printt( "Trying to play spectre chatter: " +  teamSpecificSoundAlias + " to player: " + player)
 	if ( !ShouldPlaySquadConversation( player, teamSpecificSoundAlias, allowedTime, spectreOrigin, rangeSqr ) )
 		return
 
@@ -584,8 +581,8 @@ void function PlayConversationToAllExcept( string conversationType, array<entity
 {
 	array<entity> playerArr = GetPlayerArray()
 
-	table<entity, int>  exceptionsTable
-	foreach( exceptionPlayer in exceptions )
+	table<entity, int> exceptionsTable
+	foreach ( exceptionPlayer in exceptions )
 	{
 		exceptionsTable[ exceptionPlayer ] <- 1
 	}
@@ -611,7 +608,7 @@ void function CodeCallback_ScriptedDialogue( entity guy, int dialogueID )
 
 function UpdateConversationTracking( player, conversationType, time )
 {
-	if ( !(conversationType in player.s.lastAIConversationTime) )
+	if ( !( conversationType in player.s.lastAIConversationTime ) )
 		player.s.lastAIConversationTime[ conversationType ] <- time
 	else
 		player.s.lastAIConversationTime[ conversationType ] = time
@@ -620,7 +617,7 @@ function UpdateConversationTracking( player, conversationType, time )
 int function GetConversationIndex( string conversation )
 {
 	Assert( conversation != "", "No conversation specified." )
-	Assert( typeof(conversation) == "string" )
+	Assert( typeof ( conversation ) == "string" )
 	return GetConversationToIndexTable()[ conversation ]
 }
 

@@ -2,7 +2,6 @@ untyped
 
 global function MeleeRewards_Init
 
-
 function MeleeRewards_Init()
 {
 	AddSyncedMeleeServerCallback( GetSyncedMeleeChooser( "human", "human" ), GiveMeleeRewards )
@@ -38,9 +37,11 @@ function GiveMeleeRewards_Internal( entity player, entity enemy )
 		case eMeleeReward.MAPHACK:
 			ExecutionGivesMapHack( player )
 			break
+
 		case eMeleeReward.AMMO:
 			ExecutionGivesAmmo( player )
 			break
+
 		default:
 			break
 	}

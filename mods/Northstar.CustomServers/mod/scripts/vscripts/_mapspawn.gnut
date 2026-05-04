@@ -1,7 +1,7 @@
-//=========================================================
-//	_mapspawn.nut
+// =========================================================
+// 	_mapspawn.nut
 //  Called on newgame or transitions, BEFORE entities have been created and initialized
-//=========================================================
+// =========================================================
 
 global function CodeCallback_MapSpawn
 global function CodeCallback_ClientCommand
@@ -34,19 +34,19 @@ global struct SvGlobals
 {
 	entity worldspawn
 
-	array<spawnCallbackFuncArray> 					spawnCallbackFuncs
-	array<spawnCallbackEditorClassFuncArray>		spawnCallbackEditorClassFuncs
-	array<spawnCallbackFuncArray_scriptNoteworthy>	spawnCallbackFuncs_scriptNoteworthy
+	array<spawnCallbackFuncArray> spawnCallbackFuncs
+	array<spawnCallbackEditorClassFuncArray> spawnCallbackEditorClassFuncs
+	array<spawnCallbackFuncArray_scriptNoteworthy> spawnCallbackFuncs_scriptNoteworthy
 
 	table<string, array<void functionref( entity )> > spawnCallbacks_scriptName
 
-	array<pilotEliminationDialogueCallbackType> 	pilotEliminationDialogueCallbacks
-	table<string, array<bool functionref( entity player, entity healthpack)> > onTouchHealthKitCallbacks
+	array<pilotEliminationDialogueCallbackType> pilotEliminationDialogueCallbacks
+	table<string, array<bool functionref( entity player, entity healthpack )> > onTouchHealthKitCallbacks
 	array<void functionref( entity )> onClientConnectedCallbacks
-	array<void functionref(entity)> onPlayerRespawnedCallbacks
+	array<void functionref( entity )> onPlayerRespawnedCallbacks
 	array<void functionref( entity player, entity npc_titan )> onPilotBecomesTitanCallbacks
 	array<void functionref( entity player, entity npc_titan )> onTitanBecomesPilotCallbacks
-	array<void functionref( entity, entity, entity) > soulTransferFuncs
+	array<void functionref( entity, entity, entity )> soulTransferFuncs
 	array<void functionref( entity titanSoul )> soulSettingsChangeFuncs
 	array<void functionref( entity titanSoul )> soulInitFuncs
 	table<string, array<void functionref( entity, var )> > damageByCallbacks
@@ -55,7 +55,7 @@ global struct SvGlobals
 
 	bool functionref() timelimitCompleteFunc
 	bool functionref( entity ) titanAvailabilityCheck
-	bool cloakBreaksOnMelee = true //Reexamine if still needed if we have same behavior for cloak in MP/SP.
+	bool cloakBreaksOnMelee = true // Reexamine if still needed if we have same behavior for cloak in MP/SP.
 	float defaultPilotLeechTime = 2.8
 	int winReason
 	string winReasonText
@@ -63,13 +63,13 @@ global struct SvGlobals
 	string gameWonAnnouncement
 	string gameLostAnnouncement
 
-	table< int, int > npcsSpawnedThisFrame_scriptManagedArray
+	table<int, int> npcsSpawnedThisFrame_scriptManagedArray
 
 	float pilotRespawnDelay = 0.0
 
-	array<void functionref( entity, var )> 		soulDeathFuncs
+	array<void functionref( entity, var )> soulDeathFuncs
 
-	table<string, void functionref(entity)> globalAnimEventCallbacks
+	table<string, void functionref( entity )> globalAnimEventCallbacks
 
 	array<void functionref( entity titan, TitanLoadoutDef newTitanLoadout )> onTitanGetsNewLoadoutCallbacks
 	array<void functionref( entity player, PilotLoadoutDef newTitanLoadout )> onPlayerGetsNewPilotLoadoutCallbacks
@@ -91,10 +91,10 @@ global struct SvGlobals
 
 	array<void functionref( entity ship, string anim )> onWaveSpawnDropshipSpawned
 
-	table<string, array<void functionref( entity ent )> >onEntityChangedTeamCallbacks
+	table<string, array<void functionref( entity ent )> > onEntityChangedTeamCallbacks
 
-	table<string, bool functionref( entity player, array<string>args )> clientCommandCallbacks
-	table<string, array<void functionref( entity player, array<string>args )> > notifyClientCommandCallbacks
+	table<string, bool functionref( entity player, array<string> args )> clientCommandCallbacks
+	table<string, array<void functionref( entity player, array<string> args )> > notifyClientCommandCallbacks
 
 	array<void functionref()>[ eGameState._count_ ] gameStateEnterCallbacks
 
@@ -104,10 +104,10 @@ global struct SvGlobals
 
 	entity levelEnt
 
-	//TODO: Get rid of these and use the new StartParticleEffectInWorld_ReturnEntity etc functions
-	entity fx_CP_color_enemy //Used for setting control points on FX
-	entity fx_CP_color_friendly //Used for setting control points on FX
-	entity fx_CP_color_neutral //Used for setting control points on FX
+	// TODO: Get rid of these and use the new StartParticleEffectInWorld_ReturnEntity etc functions
+	entity fx_CP_color_enemy // Used for setting control points on FX
+	entity fx_CP_color_friendly // Used for setting control points on FX
+	entity fx_CP_color_neutral // Used for setting control points on FX
 
 	array<entity>[ TEAM_COUNT ] classicMPDropships
 	bool evacEnabled = false
@@ -136,15 +136,15 @@ global struct SvGlobals
 	bool forceDisableTitanfalls = false
 	bool titanfallEnabled = true
 
-	//RoundWinningKillReplay related
+	// RoundWinningKillReplay related
 	entity roundWinningKillReplayViewEnt = null
 	entity roundWinningKillReplayVictim = null
 	int roundWinningKillReplayInflictorEHandle = -1
 	bool watchingRoundWinningKillReplay = false
 
-	bool forceNoFinalRoundDraws = false //Setting this to true will force a round based mode to keep playing rounds until a winner is determined. Game will not end on draw.
+	bool forceNoFinalRoundDraws = false // Setting this to true will force a round based mode to keep playing rounds until a winner is determined. Game will not end on draw.
 
-	bool roundBasedTeamScore_RoundReset = true //if true, reset team scores at the start of each round.
+	bool roundBasedTeamScore_RoundReset = true // if true, reset team scores at the start of each round.
 	bool isInPilotGracePeriod = false // if true, all players will be allowed to switch loadouts
 }
 
@@ -188,7 +188,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 	SPMP_MapSpawn_Init()
 }
 
-
 var function CodeCallback_ClientCommand( entity player, array<string> args )
 {
 	/*printl( "############################" )
@@ -201,16 +200,17 @@ var function CodeCallback_ClientCommand( entity player, array<string> args )
 
 	string commandString = args.remove( 0 )
 
-	//TODO: Track down Why VModEnable is being called from code?
+	// TODO: Track down Why VModEnable is being called from code?
 
-	//Assert( commandString in svGlobal.clientCommandCallbacks )
-	if ( commandString in svGlobal.clientCommandCallbacks  )
+	// Assert( commandString in svGlobal.clientCommandCallbacks )
+	if ( commandString in svGlobal.clientCommandCallbacks )
 	{
 		var result = svGlobal.clientCommandCallbacks[ commandString ]( player, args )
-		if ( commandString in svGlobal.notifyClientCommandCallbacks  )
+		if ( commandString in svGlobal.notifyClientCommandCallbacks )
 		{
-			foreach ( callbackfunc in svGlobal.notifyClientCommandCallbacks[ commandString ]){
-				callbackfunc(player, args)
+			foreach ( callbackfunc in svGlobal.notifyClientCommandCallbacks[ commandString ] )
+			{
+				callbackfunc( player, args )
 			}
 		}
 		return result
@@ -220,7 +220,7 @@ var function CodeCallback_ClientCommand( entity player, array<string> args )
 		if ( GetConVarBool( "ns_should_log_unknown_clientcommands" ) )
 		{
 			printl( "############################" )
-			printl( "CommandString: " + commandString  + " was not added via AddClientCommandCallback but is being called in CodeCallback_ClientCommand" )
+			printl( "CommandString: " + commandString + " was not added via AddClientCommandCallback but is being called in CodeCallback_ClientCommand" )
 			printl( "############################" )
 		}
 		return false

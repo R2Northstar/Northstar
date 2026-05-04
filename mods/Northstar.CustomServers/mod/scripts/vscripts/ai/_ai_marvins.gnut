@@ -2,7 +2,6 @@ untyped
 
 global function AiMarvins_Init
 
-
 function AiMarvins_Init()
 {
 	FlagInit( "Disable_Marvins" )
@@ -26,7 +25,7 @@ void function EntitiesDidLoad()
 	if ( !marvin_spawners.len() )
 		return
 
-	for ( ;; )
+	for ( ; ; )
 	{
 		wait 3
 
@@ -65,7 +64,9 @@ function TotalLivingMarvins()
 entity function SpawnRandomMarvin( array<entity> marvin_spawners )
 {
 	marvin_spawners.randomize()
-	entity spawnpoint = marvin_spawners[0] // if no valid spawn is found use this one
+	entity spawnpoint = marvin_spawners[
+		0
+	] // if no valid spawn is found use this one
 	for ( int i = 0; i < marvin_spawners.len(); i++ )
 	{
 		if ( IsMarvinSpawnpointValid( marvin_spawners[ i ] ) )
@@ -95,15 +96,15 @@ bool function IsMarvinSpawnpointValid( entity spawnpoint )
 entity function SpawnAmbientMarvin( entity spawnpoint )
 {
 	entity npc_marvin = CreateEntity( "npc_marvin" )
-	SetTargetName( npc_marvin, UniqueString( "mp_random_marvin") )
+	SetTargetName( npc_marvin, UniqueString( "mp_random_marvin" ) )
 	npc_marvin.SetOrigin( spawnpoint.GetOrigin() )
 	npc_marvin.SetAngles( spawnpoint.GetAngles() )
-	//npc_marvin.kv.rendercolor = "255 255 255"
+	// npc_marvin.kv.rendercolor = "255 255 255"
 	npc_marvin.kv.health = -1
 	npc_marvin.kv.max_health = -1
-	npc_marvin.kv.spawnflags = 516  // Fall to ground, Fade Corpse
-	//npc_marvin.kv.FieldOfView = 0.5
-	//npc_marvin.kv.FieldOfViewAlert = 0.2
+	npc_marvin.kv.spawnflags = 516 // Fall to ground, Fade Corpse
+	// npc_marvin.kv.FieldOfView = 0.5
+	// npc_marvin.kv.FieldOfViewAlert = 0.2
 	npc_marvin.kv.AccuracyMultiplier = 1.0
 	npc_marvin.kv.physdamagescale = 1.0
 	npc_marvin.kv.WeaponProficiency = eWeaponProficiency.GOOD
@@ -119,7 +120,7 @@ entity function SpawnAmbientMarvin( entity spawnpoint )
 
 function Marvin_SetModels( entity npc_marvin, entity spawnpoint )
 {
-	//default
+	// default
 	npc_marvin.s.bodytype <- MARVIN_TYPE_WORKER
 
 	// set body and head based on KVP
@@ -127,11 +128,13 @@ function Marvin_SetModels( entity npc_marvin, entity spawnpoint )
 	{
 		local bodytype = spawnpoint.GetValueForKey( "bodytype" ).tointeger()
 
-		Assert( bodytype >= MARVIN_TYPE_SHOOTER && bodytype <= MARVIN_TYPE_FIREFIGHTER, "Specified invalid body type index " + bodytype + " for info_spawnpoint_marvin " + spawnpoint + ", Use values from 0-2 instead." )
+		Assert(
+			bodytype >= MARVIN_TYPE_SHOOTER && bodytype <= MARVIN_TYPE_FIREFIGHTER,
+			"Specified invalid body type index " + bodytype + " for info_spawnpoint_marvin " + spawnpoint + ", Use values from 0-2 instead."
+		)
 
 		npc_marvin.s.bodytype = bodytype
 	}
-
 
 	if ( spawnpoint.HasKey( "headtype" ) )
 	{

@@ -1,6 +1,7 @@
 global function GamemodeHidden_Init
 
-struct {
+struct
+{
 	bool isVisible = false
 	array<entity> hiddens
 } file
@@ -45,12 +46,12 @@ void function SelectFirstHiddenDelayed()
 	array<entity> players = GetPlayerArray()
 	entity hidden = players[ RandomInt( players.len() ) ]
 
-	if (hidden != null || IsAlive(hidden))
+	if ( hidden != null || IsAlive( hidden ) )
 		MakePlayerHidden( hidden ) // randomly selected player becomes hidden
 
 	foreach ( entity otherPlayer in GetPlayerArray() )
-			if ( hidden != otherPlayer )
-				Remote_CallFunction_NonReplay( otherPlayer, "ServerCallback_AnnounceHidden", hidden.GetEncodedEHandle() )
+		if ( hidden != otherPlayer )
+			Remote_CallFunction_NonReplay( otherPlayer, "ServerCallback_AnnounceHidden", hidden.GetEncodedEHandle() )
 
 	PlayMusicToAll( eMusicPieceID.GAMEMODE_1 )
 
@@ -59,26 +60,30 @@ void function SelectFirstHiddenDelayed()
 
 void function UpdateSurvivorsLoadout()
 {
-	foreach (entity player in GetPlayerArray())
+	foreach ( entity player in GetPlayerArray() )
 	{
-		if (player.GetTeam() != TEAM_MILITIA || !IsAlive(player) || player == null)
-			continue;
+		if ( player.GetTeam() != TEAM_MILITIA || !IsAlive( player ) || player == null )
+			continue
 
 		foreach ( entity weapon in player.GetOffhandWeapons() )
 			player.TakeWeaponNow( weapon.GetWeaponClassName() )
 
-		try {
-			player.GiveOffhandWeapon("mp_ability_cloak", OFFHAND_SPECIAL )
-			player.GiveOffhandWeapon("mp_weapon_grenade_emp", OFFHAND_ORDNANCE )
+		try
+		{
+			player.GiveOffhandWeapon( "mp_ability_cloak", OFFHAND_SPECIAL )
+			player.GiveOffhandWeapon( "mp_weapon_grenade_emp", OFFHAND_ORDNANCE )
 			player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE )
-		} catch (ex) {}
+		}
+		catch ( ex )
+		{
+		}
 	}
 }
 
-void function MakePlayerHidden(entity player)
+void function MakePlayerHidden( entity player )
 {
-	if (player == null)
-		return;
+	if ( player == null )
+		return
 
 	SetTeam( player, TEAM_IMC )
 	player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 0 ) // reset kills
@@ -89,14 +94,14 @@ void function MakePlayerHidden(entity player)
 	Remote_CallFunction_NonReplay( player, "ServerCallback_YouAreHidden" )
 }
 
-void function RespawnHidden(entity player)
+void function RespawnHidden( entity player )
 {
-	if (player.GetTeam() != TEAM_IMC )
+	if ( player.GetTeam() != TEAM_IMC )
 		return
 
 	// scale health of the hidden, with 50 as base health
-	player.SetMaxHealth( 80 + ( (GetPlayerArrayOfTeam( TEAM_MILITIA ).len() + 1 ) * 20) )
-	player.SetHealth( 80 + ( (GetPlayerArrayOfTeam( TEAM_MILITIA ).len() + 1 ) * 20) )
+	player.SetMaxHealth( 80 + ( ( GetPlayerArrayOfTeam( TEAM_MILITIA ).len() + 1 ) * 20 ) )
+	player.SetHealth( 80 + ( ( GetPlayerArrayOfTeam( TEAM_MILITIA ).len() + 1 ) * 20 ) )
 
 	if ( !player.IsMechanical() )
 		player.SetBodygroup( player.FindBodyGroup( "head" ), 1 )
@@ -108,18 +113,18 @@ void function RespawnHidden(entity player)
 	foreach ( entity weapon in player.GetOffhandWeapons() )
 		player.TakeWeaponNow( weapon.GetWeaponClassName() )
 
-	player.GiveWeapon("mp_weapon_wingman_n")
+	player.GiveWeapon( "mp_weapon_wingman_n" )
 	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE )
-	player.GiveOffhandWeapon( "mp_weapon_grenade_sonar", OFFHAND_SPECIAL );
-	thread UpdateLoadout(player)
-	thread GiveArcGrenade(player)
+	player.GiveOffhandWeapon( "mp_weapon_grenade_sonar", OFFHAND_SPECIAL )
+	thread UpdateLoadout( player )
+	thread GiveArcGrenade( player )
 }
 
-void function GiveArcGrenade(entity player)
+void function GiveArcGrenade( entity player )
 {
 	wait 45.0
-	if (IsAlive(player) || player != null)
-		player.GiveOffhandWeapon( "mp_weapon_grenade_emp", OFFHAND_ORDNANCE );
+	if ( IsAlive( player ) || player != null )
+		player.GiveOffhandWeapon( "mp_weapon_grenade_emp", OFFHAND_ORDNANCE )
 }
 
 void function HiddenOnPlayerKilled( entity victim, entity attacker, var damageInfo )
@@ -132,7 +137,6 @@ void function HiddenOnPlayerKilled( entity victim, entity attacker, var damageIn
 		// increase kills by 1
 		attacker.SetPlayerGameStat( PGS_ASSAULT_SCORE, attacker.GetPlayerGameStat( PGS_ASSAULT_SCORE ) + 1 )
 	}
-
 }
 
 void function UpdateLoadout( entity player )
@@ -140,10 +144,10 @@ void function UpdateLoadout( entity player )
 	string p2016 = "mp_weapon_wingman_n"
 	foreach ( entity weapon in player.GetMainWeapons() )
 	{
-		if (weapon.GetWeaponClassName() == p2016)
+		if ( weapon.GetWeaponClassName() == p2016 )
 		{
-        	weapon.SetWeaponPrimaryAmmoCount(0)
-        	weapon.SetWeaponPrimaryClipCount(weapon.GetWeaponPrimaryClipCountMax())
+			weapon.SetWeaponPrimaryAmmoCount( 0 )
+			weapon.SetWeaponPrimaryClipCount( weapon.GetWeaponPrimaryClipCountMax() )
 		}
 	}
 	WaitFrame()
@@ -153,23 +157,23 @@ void function UpdateLoadout( entity player )
 
 void function RemoveHidden()
 {
-	foreach (entity player in GetPlayerArray())
+	foreach ( entity player in GetPlayerArray() )
 	{
-		if (player.GetTeam() == TEAM_IMC && player != null)
+		if ( player.GetTeam() == TEAM_IMC && player != null )
 			player.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
 	}
 }
 
 void function PredatorMain( entity player )
 {
-        player.EndSignal( "OnDeath" )
-        player.EndSignal( "OnDestroy" )
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
 	float playerVel
 
-	while (true) 
+	while ( true )
 	{
 		WaitFrame()
-		if(!IsLobby())
+		if ( !IsLobby() )
 		{
 			if ( !IsValid( player ) || !IsAlive( player ) || player.GetTeam() != TEAM_IMC )
 				continue
@@ -177,7 +181,7 @@ void function PredatorMain( entity player )
 			vector playerVelV = player.GetVelocity()
 			playerVel = sqrt( playerVelV.x * playerVelV.x + playerVelV.y * playerVelV.y + playerVelV.z * playerVelV.z )
 
-			if ( playerVel/300 < 1.3 )
+			if ( playerVel / 300 < 1.3 )
 			{
 				player.SetCloakFlicker( 0, 0 )
 				player.kv.VisibilityFlags = 0
@@ -190,7 +194,7 @@ void function PredatorMain( entity player )
 			}
 			else
 			{
-				player.SetCloakFlicker( 0.2 , 1 )
+				player.SetCloakFlicker( 0.2, 1 )
 				player.kv.VisibilityFlags = 0
 				float waittime = RandomFloat( 0.5 )
 				wait waittime
@@ -203,12 +207,12 @@ void function PredatorMain( entity player )
 
 void function VisibleNotification( entity player )
 {
-        player.EndSignal( "OnDeath" )
-        player.EndSignal( "OnDestroy" )
-	while (IsAlive(player))
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+	while ( IsAlive( player ) )
 	{
 		WaitFrame()
-		if (!file.isVisible)
+		if ( !file.isVisible )
 		{
 			NSDeleteStatusMessageOnPlayer( player, "visibleTitle" )
 			NSDeleteStatusMessageOnPlayer( player, "visibleDesc" )

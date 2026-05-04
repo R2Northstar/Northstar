@@ -9,19 +9,18 @@ global function AiGameModes_SpawnTitan
 
 global function GetValidIntroDropShipSpawn
 
-
 const INTRO_DROPSHIP_CUTOFF = 2000
 
 struct
 {
-	table< string, array<string> > npcWeaponsTable // npcs have their default weapon in aisettings file
+	table<string, array<string> > npcWeaponsTable // npcs have their default weapon in aisettings file
 } file
 
 void function AiGameModes_Init()
 {
 }
 
-//------------------------------------------------------
+// ------------------------------------------------------
 
 void function AiGameModes_SetNPCWeapons( string npcClass, array<string> weapons )
 {
@@ -30,62 +29,61 @@ void function AiGameModes_SetNPCWeapons( string npcClass, array<string> weapons 
 	file.npcWeaponsTable[ npcClass ] = weapons
 }
 
-//------------------------------------------------------
+// ------------------------------------------------------
 
 void function AiGameModes_SpawnDropShip( vector pos, vector rot, int team, int count, void functionref( array<entity> guys ) squadHandler = null )
-{  
+{
 	string squadName = MakeSquadName( team, UniqueString( "" ) )
 
 	CallinData drop
-	drop.origin 		= pos
-	drop.yaw 			  = rot.y
-	drop.dist 			= 768
-	drop.team 			= team
-	drop.squadname 	= squadName
+	drop.origin = pos
+	drop.yaw = rot.y
+	drop.dist = 768
+	drop.team = team
+	drop.squadname = squadName
 	SetDropTableSpawnFuncs( drop, CreateSoldier, count )
 	SetCallinStyle( drop, eDropStyle.ZIPLINE_NPC )
-  
+
 	thread RunDropshipDropoff( drop )
-	
+
 	WaitSignal( drop, "OnDropoff" )
-	
-	array< entity > guys = GetNPCArrayBySquad( squadName )
-	
+
+	array<entity> guys = GetNPCArrayBySquad( squadName )
+
 	foreach ( guy in guys )
 	{
 		SetUpNPCWeapons( guy )
 		guy.EnableNPCFlag( NPC_ALLOW_PATROL | NPC_ALLOW_INVESTIGATE | NPC_ALLOW_HAND_SIGNALS | NPC_ALLOW_FLEE )
 	}
-	
+
 	if ( squadHandler != null )
 		thread squadHandler( guys )
 }
 
-
-void function AiGameModes_SpawnDropPod( vector pos, vector rot, int team, string content /*( ͡° ͜ʖ ͡°)*/, void functionref( array<entity> guys ) squadHandler = null, int flags = 0 )
+void function AiGameModes_SpawnDropPod( vector pos, vector rot, int team, string content /* ( ͡° ͜ʖ ͡°) */ , void functionref( array<entity> guys ) squadHandler = null, int flags = 0 )
 {
-	entity pod = CreateDropPod( pos, <0,0,0> )
-	
+	entity pod = CreateDropPod( pos, < 0, 0, 0 > )
+
 	InitFireteamDropPod( pod, flags )
-		
+
 	waitthread LaunchAnimDropPod( pod, "pod_testpath", pos, rot )
 
 	string squadName = MakeSquadName( team, UniqueString( "" ) )
 	array<entity> guys
-	for ( int i = 0; i < 4 ;i++ )
+	for ( int i = 0; i < 4; i++ )
 	{
-		entity npc = CreateNPC( content, team, pos,<0,0,0> )
+		entity npc = CreateNPC( content, team, pos, < 0, 0, 0 > )
 		DispatchSpawn( npc )
 		SetSquad( npc, squadName )
-		
+
 		SetUpNPCWeapons( npc )
-		
+
 		npc.SetParent( pod, "ATTACH", true )
-		
+
 		npc.EnableNPCFlag( NPC_ALLOW_PATROL | NPC_ALLOW_INVESTIGATE | NPC_ALLOW_HAND_SIGNALS | NPC_ALLOW_FLEE )
 		guys.append( npc )
 	}
-	
+
 	ActivateFireteamDropPod( pod, guys )
 
 	// start searching for enemies
@@ -104,22 +102,22 @@ void function AiGameModes_SpawnReaper( vector pos, vector rot, int team, string 
 	reaper.EndSignal( "OnDestroy" )
 	// reaper highlight
 	Highlight_SetFriendlyHighlight( reaper, "sp_enemy_pilot" )
-	reaper.Highlight_SetParam( 1, 0, < 1,1,1 > )
+	reaper.Highlight_SetParam( 1, 0, < 1, 1, 1 > )
 	SetDefaultMPEnemyHighlight( reaper )
 	Highlight_SetEnemyHighlight( reaper, "enemy_titan" )
 
 	SetSpawnOption_Titanfall( reaper )
 	SetSpawnOption_Warpfall( reaper )
-	
+
 	if ( aiSettings != "" )
 		SetSpawnOption_AISettings( reaper, aiSettings )
-	
+
 	HideName( reaper ) // prevent flash a name onto it
 	DispatchSpawn( reaper )
 
 	reaper.WaitSignal( "WarpfallComplete" )
 	ShowName( reaper ) // show name again after drop
-	
+
 	if ( reaperHandler != null )
 		thread reaperHandler( reaper )
 }
@@ -132,7 +130,7 @@ void function HotDrop_Spawnpoint( vector origin, int team, float impactTime, boo
 
 	int index = GetParticleSystemIndex( $"P_ar_titan_droppoint" )
 
-	if( hasFriendlyWarning )
+	if ( hasFriendlyWarning )
 	{
 		entity effectFriendly = StartParticleEffectInWorld_ReturnEntity( index, origin, surfaceNormal )
 		SetTeam( effectFriendly, team )
@@ -161,7 +159,7 @@ void function HotDrop_Spawnpoint( vector origin, int team, float impactTime, boo
 	wait impactTime
 
 	// clean up
-	foreach( entity targetEffect in targetEffects )
+	foreach ( entity targetEffect in targetEffects )
 	{
 		if ( IsValid( targetEffect ) )
 			EffectStop( targetEffect )
@@ -180,12 +178,12 @@ void function AiGameModes_SpawnTitan( vector pos, vector rot, int team, string s
 
 	// modified: do a hotdrop spawnpoint warning
 	thread HotDrop_Spawnpoint( pos, team, TITANFALL_WARNING_DURATION, false, damagedef_titan_fall )
-	
+
 	if ( aiSettings != "" )
 		SetSpawnOption_AISettings( titan, aiSettings )
-	
+
 	DispatchSpawn( titan )
-	
+
 	if ( titanHandler != null )
 		thread titanHandler( titan )
 }
@@ -193,11 +191,11 @@ void function AiGameModes_SpawnTitan( vector pos, vector rot, int team, string s
 void function SetUpNPCWeapons( entity guy )
 {
 	string className = guy.GetClassName()
-	
+
 	array<string> mainWeapons
 	if ( className in file.npcWeaponsTable )
 		mainWeapons = file.npcWeaponsTable[ className ]
-	
+
 	if ( mainWeapons.len() == 0 ) // no valid weapons
 		return
 
@@ -217,18 +215,18 @@ void function SetUpNPCWeapons( entity guy )
 array<entity> function GetValidIntroDropShipSpawn( array<entity> introNodes )
 {
 	array<entity> introShipSpawns
-	
+
 	if ( GetZiplineDropshipSpawns().len() == 0 )
 		return []
-	
+
 	foreach ( node in introNodes )
 	{
 		entity closestNode = GetClosest( GetZiplineDropshipSpawns(), node.GetOrigin() )
 		SetTeam( closestNode, node.GetTeam() )
-		
+
 		if ( Distance( closestNode.GetOrigin(), node.GetOrigin() ) < INTRO_DROPSHIP_CUTOFF )
 			introShipSpawns.append( closestNode )
 	}
-	
+
 	return introShipSpawns
 }

@@ -17,9 +17,9 @@ struct RewardStruct
 
 struct
 {
-	array< bool functionref( entity ) > onGGEarnMeterFullCallbacks,
-	table< entity, array< RewardStruct > > rewardQueue, // Because we have delayed reward handling, let's queue things so that everything gets handled eventually.
-	table< entity, bool > checkingQueue
+	array<bool functionref( entity )> onGGEarnMeterFullCallbacks
+	table<entity, array<RewardStruct> > rewardQueue // Because we have delayed reward handling, let's queue things so that everything gets handled eventually.
+	table<entity, bool> checkingQueue
 } file
 
 void function Sv_GGEarnMeter_Init()
@@ -39,14 +39,15 @@ void function AddReward( entity player, float amount, int type )
 	reward.amount = amount
 	reward.type = type
 
-	file.rewardQueue[player].append( reward )
+	file.rewardQueue[ player ].append( reward )
 
 	TryCheckQueue( player )
 }
 
 void function TryCheckQueue( entity player )
 {
-	if ( !file.checkingQueue[player] ) {
+	if ( !file.checkingQueue[ player ] )
+	{
 		thread CheckQueue( player )
 	}
 }
@@ -55,22 +56,22 @@ void function CheckQueue( entity player )
 {
 	player.EndSignal( "OnDestroy" ) // If the player disconnects or stops existing for some reason, stop doing shit with it so the server doesn't break.
 
-	file.checkingQueue[player] = true
+	file.checkingQueue[ player ] = true
 
-	while ( file.rewardQueue[player].len() > 0 && IsValid(player) )
+	while ( file.rewardQueue[ player ].len() > 0 && IsValid( player ) )
 	{
-		RewardStruct reward = file.rewardQueue[player].remove(0)
+		RewardStruct reward = file.rewardQueue[ player ].remove( 0 )
 
 		float newValue = reward.amount
 		if ( reward.type == RewardType.ADD )
-			newValue += player.GetPlayerNetFloat( "gunGameLevelPercentage")
+			newValue += player.GetPlayerNetFloat( "gunGameLevelPercentage" )
 		newValue = clamp( newValue, 0.0, 1.0 )
 
 		player.SetPlayerNetFloat( "gunGameLevelPercentage", newValue )
 
 		wait 0.2
 
-		if ( (newValue * 100) < 99 ) // To try and catch fun rounding issues.
+		if ( ( newValue * 100 ) < 99 ) // To try and catch fun rounding issues.
 			continue
 
 		bool keepFull = false
@@ -83,7 +84,7 @@ void function CheckQueue( entity player )
 		wait 0.2
 	}
 
-	file.checkingQueue[player] = false
+	file.checkingQueue[ player ] = false
 }
 
 void function Sv_GGEarnMeter_SetPercentage( entity player, float percentage )

@@ -1,12 +1,11 @@
 untyped
 
-
 global function SetPieChartData
 global function SetStatsBarValues
 global function SetStatsValueInfo
 global function SetStatsLabelValue
 global function GetPercent
-//global function GetChallengeCompleteData
+// global function GetChallengeCompleteData
 global function GetItemUnlockCountData
 global function GetOverviewWeaponData
 global function StatToTimeString
@@ -26,7 +25,7 @@ void function SetPieChartData( var menu, string panelName, string titleString, P
 	// Create background
 	var background = Hud_GetChild( piePanel, "BarBG" )
 	Hud_SetBarProgress( background, 1.0 )
-	Hud_SetColor( background, [190, 190, 190, 255] )
+	Hud_SetColor( background, [ 190, 190, 190, 255 ] )
 
 	// Calculate total of all values combined
 	foreach ( entry in data.entries )
@@ -51,7 +50,7 @@ void function SetPieChartData( var menu, string panelName, string titleString, P
 	for ( int index = 0; index < 8; index++ )
 	{
 		var barColorGuide = Hud_GetChild( piePanel, "BarColorGuide" + index )
-		//			Hud_SetColor( barColorGuide, entry.color )
+		// 			Hud_SetColor( barColorGuide, entry.color )
 		Hud_Hide( barColorGuide )
 
 		var barColorGuideFrame = Hud_GetChild( piePanel, "BarColorGuideFrame" + index )
@@ -62,8 +61,8 @@ void function SetPieChartData( var menu, string panelName, string titleString, P
 		Hud_SetText( barName, "" )
 
 		var bar = Hud_GetChild( piePanel, "Bar" + index )
-		//Hud_SetBarProgress( bar, combinedFrac )
-		//Hud_SetColor( bar, entry.color )
+		// Hud_SetBarProgress( bar, combinedFrac )
+		// Hud_SetColor( bar, entry.color )
 		Hud_Hide( bar )
 	}
 
@@ -115,7 +114,7 @@ void function SetPieChartData( var menu, string panelName, string titleString, P
 		for ( int index = 0; index < 8; index++ )
 		{
 			var barColorGuide = Hud_GetChild( piePanel, "BarColorGuide" + index )
-//			Hud_SetColor( barColorGuide, entry.color )
+			// 			Hud_SetColor( barColorGuide, entry.color )
 			Hud_Hide( barColorGuide )
 
 			var barColorGuideFrame = Hud_GetChild( piePanel, "BarColorGuideFrame" + index )
@@ -126,8 +125,8 @@ void function SetPieChartData( var menu, string panelName, string titleString, P
 			Hud_SetText( barName, "" )
 
 			var bar = Hud_GetChild( piePanel, "Bar" + index )
-			//Hud_SetBarProgress( bar, combinedFrac )
-			//Hud_SetColor( bar, entry.color )
+			// Hud_SetBarProgress( bar, combinedFrac )
+			// Hud_SetColor( bar, entry.color )
 			Hud_Hide( bar )
 		}
 	}
@@ -173,7 +172,7 @@ void function SetStatsValueInfo( var menu, valueID, labelText, textString )
 void function SetStatsLabelValue( var menu, labelName, textString )
 {
 	var elem = GetElem( menu, labelName )
-	Assert( elem != null)
+	Assert( elem != null )
 	SetStatsLabelValueOnLabel( elem, textString )
 }
 
@@ -182,17 +181,17 @@ void function SetStatsLabelValueOnLabel( elem, textString )
 	if ( type( textString ) == "array" )
 	{
 		if ( textString.len() == 6 )
-			Hud_SetText( elem, string( textString[0] ), textString[1], textString[2], textString[3], textString[4], textString[5] )
+			Hud_SetText( elem, string( textString[ 0 ] ), textString[ 1 ], textString[ 2 ], textString[ 3 ], textString[ 4 ], textString[ 5 ] )
 		if ( textString.len() == 5 )
-			Hud_SetText( elem, string( textString[0] ), textString[1], textString[2], textString[3], textString[4] )
+			Hud_SetText( elem, string( textString[ 0 ] ), textString[ 1 ], textString[ 2 ], textString[ 3 ], textString[ 4 ] )
 		if ( textString.len() == 4 )
-			Hud_SetText( elem, string( textString[0] ), textString[1], textString[2], textString[3] )
+			Hud_SetText( elem, string( textString[ 0 ] ), textString[ 1 ], textString[ 2 ], textString[ 3 ] )
 		if ( textString.len() == 3 )
-			Hud_SetText( elem, string( textString[0] ), textString[1], textString[2] )
+			Hud_SetText( elem, string( textString[ 0 ] ), textString[ 1 ], textString[ 2 ] )
 		if ( textString.len() == 2 )
-			Hud_SetText( elem, string( textString[0] ), textString[1] )
+			Hud_SetText( elem, string( textString[ 0 ] ), textString[ 1 ] )
 		if ( textString.len() == 1 )
-			Hud_SetText( elem, string( textString[0] ) )
+			Hud_SetText( elem, string( textString[ 0 ] ) )
 	}
 	else
 	{
@@ -221,30 +220,30 @@ string function GetPercent( float val, float total, float defaultPercent, bool d
 	return formattedPercent
 }
 
-//function GetChallengeCompleteData()
-//{
-//	local Table = {}
-//	Table.total <- 0
-//	Table.complete <- 0
+// function GetChallengeCompleteData()
+// {
+// 	local Table = {}
+// 	Table.total <- 0
+// 	Table.complete <- 0
 //
-//	UI_GetAllChallengesProgress()
-//	var allChallenges = GetLocalChallengeTable()
+// 	UI_GetAllChallengesProgress()
+// 	var allChallenges = GetLocalChallengeTable()
 //
-//	foreach( challengeRef, val in allChallenges )
-//	{
-//		if ( IsDailyChallenge( challengeRef ) )
-//			continue
-//		local tierCount = GetChallengeTierCount( challengeRef )
-//		Table.total += tierCount
-//		for ( int i = 0; i < tierCount; i++ )
-//		{
-//			if ( IsChallengeTierComplete( challengeRef, i ) )
-//				Table.complete++
-//		}
-//	}
+// 	foreach( challengeRef, val in allChallenges )
+// 	{
+// 		if ( IsDailyChallenge( challengeRef ) )
+// 			continue
+// 		local tierCount = GetChallengeTierCount( challengeRef )
+// 		Table.total += tierCount
+// 		for ( int i = 0; i < tierCount; i++ )
+// 		{
+// 			if ( IsChallengeTierComplete( challengeRef, i ) )
+// 				Table.complete++
+// 		}
+// 	}
 //
-//	return Table
-//}
+// 	return Table
+// }
 
 function GetItemUnlockCountData()
 {
@@ -268,7 +267,7 @@ function GetItemUnlockCountData()
 	Table[ "gear" ] <- {}
 	Table[ "gear" ].total <- 0
 	Table[ "gear" ].unlocked <- 0
-/*
+	/*
 	local tableMapping = {}
 
 	tableMapping[ eItemTypes.PILOT_PRIMARY ] 			<- "weapons"
@@ -323,12 +322,12 @@ table<string, table> function GetOverviewWeaponData()
 
 	allWeapons.extend( GetVisibleItemsOfType( eItemTypes.PILOT_PRIMARY ) )
 	allWeapons.extend( GetVisibleItemsOfType( eItemTypes.PILOT_SECONDARY ) )
-	//allWeapons.extend( GetVisibleItemsOfType( eItemTypes.PILOT_ORDNANCE ) ) // art looks bad
+	// allWeapons.extend( GetVisibleItemsOfType( eItemTypes.PILOT_ORDNANCE ) ) // art looks bad
 	allWeapons.extend( GetVisibleItemsOfType( eItemTypes.TITAN_PRIMARY ) )
 	allWeapons.extend( GetVisibleItemsOfType( eItemTypes.TITAN_ORDNANCE ) )
 	allWeapons.extend( GetVisibleItemsOfType( eItemTypes.TITAN_ANTIRODEO ) )
 	allWeapons.extend( GetVisibleItemsOfType( eItemTypes.TITAN_SPECIAL ) )
-	//allWeapons.extend( GetVisibleItemsOfType( eItemTypes.BURN_METER_REWARD ) ) // script errors
+	// allWeapons.extend( GetVisibleItemsOfType( eItemTypes.BURN_METER_REWARD ) ) // script errors
 
 	foreach ( weapon in allWeapons )
 	{
@@ -392,26 +391,26 @@ string function HoursToTimeString( float savedHours )
 
 	int days = 0
 	int hours = 0
-	
+
 	// For archiving code, i would like to keep this code here
 	// It is a testament to Respawn's hubris and determination to writing the absolutely worst fucking code ever
-	// These motherfuckers managed to run an O(1) operation in O(n) time. Genuinely impressive. 
-	//	while ( minutes >= 1440 )
-	//	{
-	//		minutes -= 1440
-	//		days++
-	//	}
+	// These motherfuckers managed to run an O(1) operation in O(n) time. Genuinely impressive.
+	// 	while ( minutes >= 1440 )
+	// 	{
+	// 		minutes -= 1440
+	// 		days++
+	// 	}
 	//
-	//	while ( minutes >= 60 )
-	//	{
-	//		minutes -= 60
-	//		hours++
-	//	}
+	// 	while ( minutes >= 60 )
+	// 	{
+	// 		minutes -= 60
+	// 		hours++
+	// 	}
 
-	days = int(floor(minutes / 1440))
+	days = int( floor( minutes / 1440 ) )
 	minutes = minutes % 1440
 
-	hours = int(floor(minutes / 60))
+	hours = int( floor( minutes / 60 ) )
 	minutes = minutes % 60
 
 	if ( days > 0 && hours > 0 && minutes > 0 )

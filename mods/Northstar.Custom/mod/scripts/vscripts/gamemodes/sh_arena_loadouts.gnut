@@ -14,11 +14,12 @@ const int ABILITY_ROUND = 2
 const int CRATE_ROUND = 4
 const int TITAN_ROUND = 7
 
-struct {
+struct
+{
 	array<BoostStoreData> tier0Weapons
 	array<BoostStoreData> tier1Weapons
 	array<BoostStoreData> antiTitanWeapons
-	
+
 	BoostStoreData droppodRespawn
 	BoostStoreData titanBattery
 	BoostStoreData titanfall
@@ -26,18 +27,18 @@ struct {
 
 void function InitialiseArenaLoadouts()
 {
-	BoostStoreData g2Data = { itemRef="mp_weapon_g2", modesAllowed="arena", cost=75, ... }
+	BoostStoreData g2Data = { itemRef = "mp_weapon_g2", modesAllowed = "arena", cost = 75, ... }
 	file.tier0Weapons.append( g2Data )
-	
-	BoostStoreData flatlineData = { itemRef="mp_weapon_vinson", modesAllowed="arena", cost=125, ... }
+
+	BoostStoreData flatlineData = { itemRef = "mp_weapon_vinson", modesAllowed = "arena", cost = 125, ... }
 	file.tier0Weapons.append( flatlineData )
-	
-	BoostStoreData wingmanData = { itemRef="mp_weapon_wingman", modesAllowed="arena", cost=50, ... }
+
+	BoostStoreData wingmanData = { itemRef = "mp_weapon_wingman", modesAllowed = "arena", cost = 50, ... }
 	file.tier0Weapons.append( wingmanData )
-	
-	BoostStoreData respawnData = { itemRef="droppodRespawn", modesAllowed="arena", cost=50, ... }
+
+	BoostStoreData respawnData = { itemRef = "droppodRespawn", modesAllowed = "arena", cost = 50, ... }
 	file.tier0Weapons.append( respawnData )
-	
+
 	#if SERVER
 		SetBoostPurchaseCallback( GivePlayerArenaLoadoutItem )
 	#endif
@@ -58,7 +59,7 @@ BurnReward function GetArenaLoadoutItemAsBurnReward( string itemRef )
 	BurnReward reward
 	reward.ref = itemRef
 	reward.localizedName = itemRef
-	
+
 	return reward
 }
 
@@ -66,7 +67,7 @@ bool function ArenaLoadoutItemIsWeapon( string item )
 {
 	if ( item.find( "mp_weapon" ) == 0 )
 		return true
-	
+
 	return false
 }
 
@@ -74,10 +75,10 @@ int function GetCashBoostForRoundCount( int round )
 {
 	if ( round == 0 )
 		return 150
-	
+
 	if ( round < 4 )
 		return 250
-	
+
 	return 350
 }
 
@@ -88,8 +89,8 @@ int function GetCashBoostForRoundCount( int round )
 		{
 			array<string> mods
 			// apply mods
-			//if ( item.itemRef = "mp_weapon_wingman" )
-		
+			// if ( item.itemRef = "mp_weapon_wingman" )
+
 			player.GiveWeapon( item.itemRef, mods )
 			player.SetActiveWeaponByName( item.itemRef )
 			return

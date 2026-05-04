@@ -80,65 +80,65 @@ void function AiSpawn_Init()
 
 	AiSpawnContent_Init()
 	#if DEV
-	// just to insure that ai settings are being setup properly.
-	InitNpcSettingsFileNamesForDevMenu()
-	SetupSpawnAIButtons( TEAM_MILITIA )
-	AddCallback_EntitiesDidLoad( AiSpawn_EntitiesDidLoad )
+		// just to insure that ai settings are being setup properly.
+		InitNpcSettingsFileNamesForDevMenu()
+		SetupSpawnAIButtons( TEAM_MILITIA )
+		AddCallback_EntitiesDidLoad( AiSpawn_EntitiesDidLoad )
 	#endif
 }
 
 void function AiSpawn_EntitiesDidLoad()
 {
 	#if DEV
-	//	On load in dev, verify that subclass matches leveled_aisettings. Subclass is being eradicated.
-	foreach ( spawner in GetSpawnerArrayByClassName( "npc_titan" ) )
-	{
-		table spawnerKeyValues = spawner.GetSpawnEntityKeyValues()
-		if ( "model" in spawnerKeyValues )
+		// 	On load in dev, verify that subclass matches leveled_aisettings. Subclass is being eradicated.
+		foreach ( spawner in GetSpawnerArrayByClassName( "npc_titan" ) )
 		{
-			switch ( spawnerKeyValues.model.tolower() )
+			table spawnerKeyValues = spawner.GetSpawnEntityKeyValues()
+			if ( "model" in spawnerKeyValues )
 			{
-				case "models/titans/atlas/atlas_titan.mdl":
-				case "models/titans/ogre/ogre_titan.mdl":
-				case "models/titans/stryder/stryder_titan.mdl":
-					CodeWarning( "Titan has deprecated model at " + spawnerKeyValues.origin )
+				switch ( spawnerKeyValues.model.tolower() )
+				{
+					case "models/titans/atlas/atlas_titan.mdl":
+					case "models/titans/ogre/ogre_titan.mdl":
+					case "models/titans/stryder/stryder_titan.mdl":
+						CodeWarning( "Titan has deprecated model at " + spawnerKeyValues.origin )
+						break
+				}
+			}
+		}
+
+		foreach ( model in GetEntArrayByClass_Expensive( "prop_dynamic" ) )
+		{
+			switch ( model.GetModelName() )
+			{
+				case $"models/titans/atlas/atlas_titan.mdl":
+				case $"models/titans/ogre/ogre_titan.mdl":
+				case $"models/titans/stryder/stryder_titan.mdl":
+					CodeWarning( "Prop has deprecated model at " + model.GetOrigin() )
 					break
 			}
 		}
-	}
 
-	foreach ( model in GetEntArrayByClass_Expensive( "prop_dynamic" ) )
-	{
-		switch ( model.GetModelName() )
+		if ( IsSingleplayer() )
 		{
-			case $"models/titans/atlas/atlas_titan.mdl":
-			case $"models/titans/ogre/ogre_titan.mdl":
-			case $"models/titans/stryder/stryder_titan.mdl":
-				CodeWarning( "Prop has deprecated model at " + model.GetOrigin() )
-				break
-		}
-	}
-
-	if ( IsSingleplayer() )
-	{
-		foreach ( spawner in GetSpawnerArrayByClassName( "npc_titan" ) )
-		{
-			table kvs = spawner.GetSpawnEntityKeyValues()
-			vector origin = StringToVector( expect string( kvs.origin ) )
-			if ( !( "leveled_aisettings" in kvs ) )
+			foreach ( spawner in GetSpawnerArrayByClassName( "npc_titan" ) )
 			{
-				CodeWarning( "Titan Spawner at " + origin + " has no leveled_aisettings" )
-				continue
-			}
+				table kvs = spawner.GetSpawnEntityKeyValues()
+				vector origin = StringToVector( expect string( kvs.origin ) )
+				if ( !( "leveled_aisettings" in kvs ) )
+				{
+					CodeWarning( "Titan Spawner at " + origin + " has no leveled_aisettings" )
+					continue
+				}
 
-			string aiSettings = expect string( kvs.leveled_aisettings )
-			string playerSettings = expect string(  Dev_GetAISettingByKeyField_Global( aiSettings, "npc_titan_player_settings" ) )
-			string playerModel = expect string( GetPlayerSettingsFieldForClassName( playerSettings, "bodymodel" ) )
-			string npcModel = expect string( kvs.model )
-			if ( npcModel != playerModel )
-				CodeWarning( "Titan spawner at " + origin + " has model " + npcModel + " that does not match player settings model " + playerModel )
+				string aiSettings = expect string( kvs.leveled_aisettings )
+				string playerSettings = expect string( Dev_GetAISettingByKeyField_Global( aiSettings, "npc_titan_player_settings" ) )
+				string playerModel = expect string( GetPlayerSettingsFieldForClassName( playerSettings, "bodymodel" ) )
+				string npcModel = expect string( kvs.model )
+				if ( npcModel != playerModel )
+					CodeWarning( "Titan spawner at " + origin + " has model " + npcModel + " that does not match player settings model " + playerModel )
+			}
 		}
-	}
 
 	#endif
 
@@ -165,12 +165,10 @@ void function AiSpawn_EntitiesDidLoad()
 			CodeWarning( "NPC spawner at " + origin + " has subclass " + subclass + ". Replace deprecated subclass key with leveled_aisettings." )
 		}
 	}
-
 }
 
-const ESCALATION_INCOMBAT_TIMEOUT 	= 180
-const ESCALATION_FRACTION_DEAD 		= 0.5
-
+const ESCALATION_INCOMBAT_TIMEOUT = 180
+const ESCALATION_FRACTION_DEAD = 0.5
 
 /************************************************************************************************\
 
@@ -184,7 +182,7 @@ const ESCALATION_FRACTION_DEAD 		= 0.5
 
 \************************************************************************************************/
 
-//////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////
 
 entity function CreateHenchTitan( string titanType, vector origin, vector angles )
 {
@@ -370,8 +368,6 @@ entity function CreateNPCFromAISettings( string aiSettings, int team, vector ori
 	return npc
 }
 
-
-
 /************************************************************************************************\
 
  ######   #######  ##     ## ##     ##  #######  ##    ##
@@ -444,7 +440,7 @@ function AssaultMoveTarget( entity npc, entity ent )
 	Assert( IsMoveTarget( ent ) )
 
 	OnThreadEnd(
-	function() : ( npc )
+		function() : ( npc )
 		{
 			if ( IsAlive( npc ) )
 			{
@@ -453,7 +449,7 @@ function AssaultMoveTarget( entity npc, entity ent )
 		}
 	)
 
-	for ( ;; )
+	for ( ; ; )
 	{
 		vector origin = ent.GetOrigin()
 		vector angles = ent.GetAngles()
@@ -492,7 +488,7 @@ function AssaultMoveTarget( entity npc, entity ent )
 		array<entity> entChildren = ent.GetLinkEntArray()
 
 		bool finalDestination = entChildren.len() == 0
-		npc.AssaultSetFinalDestination( finalDestination )	// this doesn't seem to make any difference as far as I can tell. Bug #117062
+		npc.AssaultSetFinalDestination( finalDestination ) // this doesn't seem to make any difference as far as I can tell. Bug #117062
 
 		if ( ent.HasKey( "clear_potential_threat_pos" ) && int( ent.kv.clear_potential_threat_pos ) == 1 )
 			npc.ClearPotentialThreatPos()
@@ -517,7 +513,7 @@ function AssaultMoveTarget( entity npc, entity ent )
 			const float RETRY_TIME = 3.0
 			float waitStartTime = Time()
 
-			while( true )
+			while ( true )
 			{
 				// activator, caller, self, signal, value
 				results = WaitSignal( npc, "OnFinishedAssault", "OnEnterGoalRadius", "OnFailedToPath" )
@@ -589,12 +585,12 @@ void function StopAssaultMoveTarget( entity npc )
 void function InitInfoMoveTargetFlags( entity infoMoveTarget )
 {
 	#if DEV
-	if ( infoMoveTarget.HasKey( "script_goal_radius" ) )
-	{
-		int radius = int( infoMoveTarget.kv.script_goal_radius )
-		if ( radius < 64 )
-			CodeWarning( "move target at " + infoMoveTarget.GetOrigin() + " had goal radius " + radius + " which is less than minimum 64" )
-	}
+		if ( infoMoveTarget.HasKey( "script_goal_radius" ) )
+		{
+			int radius = int( infoMoveTarget.kv.script_goal_radius )
+			if ( radius < 64 )
+				CodeWarning( "move target at " + infoMoveTarget.GetOrigin() + " had goal radius " + radius + " which is less than minimum 64" )
+		}
 	#endif
 	if ( infoMoveTarget.HasKey( "scr_flag_set" ) )
 		FlagInit( infoMoveTarget.GetValueForKey( "scr_flag_set" ) )
@@ -625,7 +621,7 @@ asset function __GetWeaponModel( weapon )
 	switch ( weapon )
 	{
 		case "mp_weapon_rspn101":
-			return $"models/weapons/rspn101/r101_ab_01.mdl"//$"models/weapons/rspn101/w_rspn101.mdl" --> this is the one I want to spawn, but I get a vague code error when I try
+			return $"models/weapons/rspn101/r101_ab_01.mdl" // $"models/weapons/rspn101/w_rspn101.mdl" --> this is the one I want to spawn, but I get a vague code error when I try
 			break
 
 		default:
@@ -670,7 +666,7 @@ void function AutosquadnameAssignment_Thread( int scriptManagedArrayIndex, entit
 	WaitEndFrame() // wait for everybody to spawn this frame
 
 	array<entity> entities = GetScriptManagedEntArray( scriptManagedArrayIndex )
-	if ( entities.len() <=  1 )
+	if ( entities.len() <= 1 )
 	{
 		foreach ( npc in entities )
 		{

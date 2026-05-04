@@ -1,6 +1,5 @@
 untyped
 
-
 global function GetFrontline
 global function SetFrontline
 global function AddCalculateFrontlineCallback
@@ -118,7 +117,7 @@ vector function CalculateWeightedTeamCenter( int team )
 		return Vector( 0.0, 0.0, 0.0 )
 
 	// find minimum distances between teammates
-	array<float> minTeammateDistances// = arrayofsize( teamPlayersCount, 99999.0 )
+	array<float> minTeammateDistances // = arrayofsize( teamPlayersCount, 99999.0 )
 	minTeammateDistances.resize( teamPlayersCount, 99999.0 )
 
 	for ( int i = 0; i < teamPlayersCount; i++ )

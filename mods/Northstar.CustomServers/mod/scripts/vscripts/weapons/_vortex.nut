@@ -8,10 +8,10 @@ global function EnableVortexSphere
 global function RegisterNewVortexIgnoreClassname
 global function RegisterNewVortexIgnoreClassnames
 #if SERVER
-global function ValidateVortexImpact
-global function TryVortexAbsorb
-global function SetVortexSphereBulletHitRules
-global function SetVortexSphereProjectileHitRules
+	global function ValidateVortexImpact
+	global function TryVortexAbsorb
+	global function SetVortexSphereBulletHitRules
+	global function SetVortexSphereProjectileHitRules
 #endif
 global function VortexDrainedByImpact
 global function VortexPrimaryAttack
@@ -19,10 +19,10 @@ global function GetVortexSphereCurrentColor
 global function GetShieldTriLerpColor
 global function IsVortexing
 #if SERVER
-global function Vortex_HandleElectricDamage
-global function VortexSphereDrainHealthForDamage
-global function Vortex_CreateImpactEventData
-global function Vortex_SpawnHeatShieldPingFX
+	global function Vortex_HandleElectricDamage
+	global function VortexSphereDrainHealthForDamage
+	global function Vortex_CreateImpactEventData
+	global function Vortex_SpawnHeatShieldPingFX
 #endif
 
 global function Vortex_SetTagName
@@ -37,30 +37,29 @@ global const PROTO_AMPED_WALL = "proto_amped_wall"
 global const GUN_SHIELD_WALL = "gun_shield_wall"
 const PROX_MINE_MODEL = $"models/weapons/caber_shot/caber_shot_thrown.mdl"
 
-const VORTEX_SPHERE_COLOR_CHARGE_FULL		= <115, 247, 255>	// blue
-const VORTEX_SPHERE_COLOR_CHARGE_MED		= <200, 128, 80>	// orange
-const VORTEX_SPHERE_COLOR_CHARGE_EMPTY		= <200, 80, 80>	// red
-const VORTEX_SPHERE_COLOR_PAS_ION_VORTEX	= <115, 174, 255>	// blue
+const VORTEX_SPHERE_COLOR_CHARGE_FULL = < 115, 247, 255 > // blue
+const VORTEX_SPHERE_COLOR_CHARGE_MED = < 200, 128, 80 > // orange
+const VORTEX_SPHERE_COLOR_CHARGE_EMPTY = < 200, 80, 80 > // red
+const VORTEX_SPHERE_COLOR_PAS_ION_VORTEX = < 115, 174, 255 > // blue
 const AMPED_DAMAGE_SCALAR = 1.5
 
-const VORTEX_SPHERE_COLOR_CROSSOVERFRAC_FULL2MED	= 0.75  // from zero to this fraction, fade between full and medium charge colors
-const VORTEX_SPHERE_COLOR_CROSSOVERFRAC_MED2EMPTY	= 0.95  // from "full2med" to this fraction, fade between medium and empty charge colors
+const VORTEX_SPHERE_COLOR_CROSSOVERFRAC_FULL2MED = 0.75 // from zero to this fraction, fade between full and medium charge colors
+const VORTEX_SPHERE_COLOR_CROSSOVERFRAC_MED2EMPTY = 0.95 // from "full2med" to this fraction, fade between medium and empty charge colors
 
 const VORTEX_BULLET_ABSORB_COUNT_MAX = 32
 const VORTEX_PROJECTILE_ABSORB_COUNT_MAX = 32
 
-const VORTEX_TIMED_EXPLOSIVE_FUSETIME				= 2.75	// fuse time for absorbed projectiles
-const VORTEX_TIMED_EXPLOSIVE_FUSETIME_WARNINGFRAC	= 0.75	// wait this fraction of the fuse time before warning the player it's about to explode
+const VORTEX_TIMED_EXPLOSIVE_FUSETIME = 2.75 // fuse time for absorbed projectiles
+const VORTEX_TIMED_EXPLOSIVE_FUSETIME_WARNINGFRAC = 0.75 // wait this fraction of the fuse time before warning the player it's about to explode
 
 const VORTEX_EXP_ROUNDS_RETURN_SPREAD_XY = 0.15
 const VORTEX_EXP_ROUNDS_RETURN_SPREAD_Z = 0.075
 
-const VORTEX_ELECTRIC_DAMAGE_CHARGE_DRAIN_MIN = 0.1  // fraction of charge time
+const VORTEX_ELECTRIC_DAMAGE_CHARGE_DRAIN_MIN = 0.1 // fraction of charge time
 const VORTEX_ELECTRIC_DAMAGE_CHARGE_DRAIN_MAX = 0.3
 
-//The shotgun spams a lot of pellets that deal too much damage if they return full damage.
+// The shotgun spams a lot of pellets that deal too much damage if they return full damage.
 const VORTEX_SHOTGUN_DAMAGE_RATIO = 0.25
-
 
 const SHIELD_WALL_BULLET_FX = $"P_impact_xo_shield_cp"
 const SHIELD_WALL_EXPMED_FX = $"P_impact_exp_med_xo_shield_CP"
@@ -72,29 +71,25 @@ const VORTEX_EXPLOSIVE_WARNING_SFX_LOOP = "Weapon_Vortex_Gun.ExplosiveWarningBee
 const VORTEX_PILOT_WEAPON_WEAKNESS_DAMAGESCALE = 6.0
 
 // These match the strings in the WeaponEd dropdown box for vortex_refire_behavior
-global const VORTEX_REFIRE_NONE					= ""
-global const VORTEX_REFIRE_ABSORB				= "absorb"
-global const VORTEX_REFIRE_BULLET				= "bullet"
-global const VORTEX_REFIRE_EXPLOSIVE_ROUND		= "explosive_round"
-global const VORTEX_REFIRE_ROCKET				= "rocket"
-global const VORTEX_REFIRE_GRENADE				= "grenade"
-global const VORTEX_REFIRE_GRENADE_LONG_FUSE	= "grenade_long_fuse"
+global const VORTEX_REFIRE_NONE = ""
+global const VORTEX_REFIRE_ABSORB = "absorb"
+global const VORTEX_REFIRE_BULLET = "bullet"
+global const VORTEX_REFIRE_EXPLOSIVE_ROUND = "explosive_round"
+global const VORTEX_REFIRE_ROCKET = "rocket"
+global const VORTEX_REFIRE_GRENADE = "grenade"
+global const VORTEX_REFIRE_GRENADE_LONG_FUSE = "grenade_long_fuse"
 
-table<string, bool> VortexIgnoreClassnames = {
-	["mp_titancore_flame_wave"] = true,
-	["mp_ability_grapple"] = true,
-	["mp_ability_shifter"] = true,
-}
-void function RegisterNewVortexIgnoreClassnames(table<string, bool> classTable)
+table<string, bool> VortexIgnoreClassnames = { ["mp_titancore_flame_wave"] = true, ["mp_ability_grapple"] = true, ["mp_ability_shifter"] = true, }
+void function RegisterNewVortexIgnoreClassnames( table<string, bool> classTable )
 {
-	foreach(string classname, bool shouldignore in classTable)
+	foreach ( string classname, bool shouldignore in classTable )
 	{
-		RegisterNewVortexIgnoreClassname(classname, shouldignore)
+		RegisterNewVortexIgnoreClassname( classname, shouldignore )
 	}
 }
-void function RegisterNewVortexIgnoreClassname(string classname, bool shouldignore)
+void function RegisterNewVortexIgnoreClassname( string classname, bool shouldignore )
 {
-	VortexIgnoreClassnames[classname] <- shouldignore
+	VortexIgnoreClassnames[ classname ] <- shouldignore
 }
 table vortexImpactWeaponInfo
 
@@ -118,25 +113,25 @@ function Vortex_Init()
 }
 
 #if SERVER
-var function VortexBulletHitRules_Default( entity vortexSphere, var damageInfo )
-{
-	return damageInfo
-}
+	var function VortexBulletHitRules_Default( entity vortexSphere, var damageInfo )
+	{
+		return damageInfo
+	}
 
-bool function VortexProjectileHitRules_Default( entity vortexSphere, entity attacker, bool takesDamageByDefault )
-{
-	return takesDamageByDefault
-}
+	bool function VortexProjectileHitRules_Default( entity vortexSphere, entity attacker, bool takesDamageByDefault )
+	{
+		return takesDamageByDefault
+	}
 
-void function SetVortexSphereBulletHitRules( entity vortexSphere, var functionref( entity, var ) customRules  )
-{
-	vortexSphere.e.BulletHitRules = customRules
-}
+	void function SetVortexSphereBulletHitRules( entity vortexSphere, var functionref( entity, var ) customRules )
+	{
+		vortexSphere.e.BulletHitRules = customRules
+	}
 
-void function SetVortexSphereProjectileHitRules( entity vortexSphere, bool functionref( entity, entity, bool ) customRules  )
-{
-	vortexSphere.e.ProjectileHitRules = customRules
-}
+	void function SetVortexSphereProjectileHitRules( entity vortexSphere, bool functionref( entity, entity, bool ) customRules )
+	{
+		vortexSphere.e.ProjectileHitRules = customRules
+	}
 #endif
 function CreateVortexSphere( entity vortexWeapon, bool useCylinderCheck, bool blockOwnerWeapon, int sphereRadius = 40, int bulletFOV = 180 )
 {
@@ -144,8 +139,8 @@ function CreateVortexSphere( entity vortexWeapon, bool useCylinderCheck, bool bl
 	Assert( owner )
 
 	#if SERVER
-		//printt( "util ent:", vortexWeapon.GetWeaponUtilityEntity() )
-		Assert ( !vortexWeapon.GetWeaponUtilityEntity(), "Tried to create more than one vortex sphere on a vortex weapon!" )
+		// printt( "util ent:", vortexWeapon.GetWeaponUtilityEntity() )
+		Assert( !vortexWeapon.GetWeaponUtilityEntity(), "Tried to create more than one vortex sphere on a vortex weapon!" )
 
 		entity vortexSphere = CreateEntity( "vortex_sphere" )
 		Assert( vortexSphere )
@@ -190,7 +185,7 @@ function CreateVortexSphere( entity vortexWeapon, bool useCylinderCheck, bool bl
 			vortexSphere.SetParent( owner )
 			vortexSphere.SetLocalOrigin( Vector( 0, 10, -30 ) )
 		}
-		vortexSphere.SetAbsAngles( Vector( 0, 0, 0 ) ) //Setting local angles on a parented object is not supported
+		vortexSphere.SetAbsAngles( Vector( 0, 0, 0 ) ) // Setting local angles on a parented object is not supported
 
 		vortexSphere.SetOwnerWeapon( vortexWeapon )
 		vortexWeapon.SetWeaponUtilityEntity( vortexSphere )
@@ -198,7 +193,6 @@ function CreateVortexSphere( entity vortexWeapon, bool useCylinderCheck, bool bl
 
 	SetVortexAmmo( vortexWeapon, 0 )
 }
-
 
 function EnableVortexSphere( entity vortexWeapon )
 {
@@ -232,7 +226,7 @@ function EnableVortexSphere( entity vortexWeapon )
 		vortexSphere.s.worldFX.kv.start_active = 1
 		vortexSphere.s.worldFX.SetOwner( weaponOwner )
 		vortexSphere.s.worldFX.SetParent( vortexWeapon, tagname )
-		vortexSphere.s.worldFX.kv.VisibilityFlags = (ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY) // not owner only
+		vortexSphere.s.worldFX.kv.VisibilityFlags = ( ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY ) // not owner only
 		vortexSphere.s.worldFX.kv.cpoint1 = vortexWeapon.s.vortexSphereColorCP.GetTargetName()
 		vortexSphere.s.worldFX.SetStopType( "destroyImmediately" )
 
@@ -243,26 +237,26 @@ function EnableVortexSphere( entity vortexWeapon )
 
 	#if CLIENT
 		if ( IsLocalViewPlayer( weaponOwner ) )
-	{
-		local fxAlias = null
+		{
+			local fxAlias = null
 
-		if ( hasBurnMod )
-		{
-			if ( "fxChargingFPControlPointBurn" in vortexWeapon.s )
-				fxAlias = vortexWeapon.s.fxChargingFPControlPointBurn
-		}
-		else
-		{
-			if ( "fxChargingFPControlPoint" in vortexWeapon.s )
-				fxAlias = vortexWeapon.s.fxChargingFPControlPoint
-		}
+			if ( hasBurnMod )
+			{
+				if ( "fxChargingFPControlPointBurn" in vortexWeapon.s )
+					fxAlias = vortexWeapon.s.fxChargingFPControlPointBurn
+			}
+			else
+			{
+				if ( "fxChargingFPControlPoint" in vortexWeapon.s )
+					fxAlias = vortexWeapon.s.fxChargingFPControlPoint
+			}
 
-		if ( fxAlias )
-		{
-			int sphereClientFXHandle = vortexWeapon.PlayWeaponEffectReturnViewEffectHandle( fxAlias, $"", tagname )
-			thread VortexSphereColorUpdate( vortexWeapon, sphereClientFXHandle )
+			if ( fxAlias )
+			{
+				int sphereClientFXHandle = vortexWeapon.PlayWeaponEffectReturnViewEffectHandle( fxAlias, $"", tagname )
+				thread VortexSphereColorUpdate( vortexWeapon, sphereClientFXHandle )
+			}
 		}
-	}
 	#elseif  SERVER
 		asset fxAlias = $""
 
@@ -284,7 +278,6 @@ function EnableVortexSphere( entity vortexWeapon )
 	#endif
 }
 
-
 function DestroyVortexSphereFromVortexWeapon( entity vortexWeapon )
 {
 	DisableVortexSphereFromVortexWeapon( vortexWeapon )
@@ -303,7 +296,6 @@ void function DestroyVortexSphere( entity vortexSphere )
 		vortexSphere.Destroy()
 	}
 }
-
 
 function DisableVortexSphereFromVortexWeapon( entity vortexWeapon )
 {
@@ -341,56 +333,52 @@ void function DisableVortexSphere( entity vortexSphere )
 		vortexSphere.FireNow( "Disable" )
 		vortexSphere.Signal( SIGNAL_ID_BULLET_HIT_THINK )
 	}
-
 }
-
 
 #if SERVER
-function Vortex_CreateAbsorbFX_ControlPoints( entity vortexWeapon )
-{
-	entity player = vortexWeapon.GetWeaponOwner()
-	Assert( player )
+	function Vortex_CreateAbsorbFX_ControlPoints( entity vortexWeapon )
+	{
+		entity player = vortexWeapon.GetWeaponOwner()
+		Assert( player )
 
-	// vortex swirling incoming rounds FX location control point
-	if ( !( "vortexBulletEffectCP" in vortexWeapon.s ) )
-		vortexWeapon.s.vortexBulletEffectCP <- null
-	vortexWeapon.s.vortexBulletEffectCP = CreateEntity( "info_placement_helper" )
-	SetTargetName( expect entity( vortexWeapon.s.vortexBulletEffectCP ), UniqueString( "vortexBulletEffectCP" ) )
-	vortexWeapon.s.vortexBulletEffectCP.kv.start_active = 1
+		// vortex swirling incoming rounds FX location control point
+		if ( !( "vortexBulletEffectCP" in vortexWeapon.s ) )
+			vortexWeapon.s.vortexBulletEffectCP <- null
+		vortexWeapon.s.vortexBulletEffectCP = CreateEntity( "info_placement_helper" )
+		SetTargetName( expect entity( vortexWeapon.s.vortexBulletEffectCP ), UniqueString( "vortexBulletEffectCP" ) )
+		vortexWeapon.s.vortexBulletEffectCP.kv.start_active = 1
 
-	DispatchSpawn( vortexWeapon.s.vortexBulletEffectCP )
+		DispatchSpawn( vortexWeapon.s.vortexBulletEffectCP )
 
-	vector offset = GetBulletCollectionOffset( vortexWeapon )
-	vector origin = player.OffsetPositionFromView( player.EyePosition(), offset )
+		vector offset = GetBulletCollectionOffset( vortexWeapon )
+		vector origin = player.OffsetPositionFromView( player.EyePosition(), offset )
 
-	vortexWeapon.s.vortexBulletEffectCP.SetOrigin( origin )
-	vortexWeapon.s.vortexBulletEffectCP.SetParent( player )
+		vortexWeapon.s.vortexBulletEffectCP.SetOrigin( origin )
+		vortexWeapon.s.vortexBulletEffectCP.SetParent( player )
 
-	// vortex sphere color control point
-	if ( !( "vortexSphereColorCP" in vortexWeapon.s ) )
-		vortexWeapon.s.vortexSphereColorCP <- null
-	vortexWeapon.s.vortexSphereColorCP = CreateEntity( "info_placement_helper" )
-	SetTargetName( expect entity( vortexWeapon.s.vortexSphereColorCP ), UniqueString( "vortexSphereColorCP" ) )
-	vortexWeapon.s.vortexSphereColorCP.kv.start_active = 1
+		// vortex sphere color control point
+		if ( !( "vortexSphereColorCP" in vortexWeapon.s ) )
+			vortexWeapon.s.vortexSphereColorCP <- null
+		vortexWeapon.s.vortexSphereColorCP = CreateEntity( "info_placement_helper" )
+		SetTargetName( expect entity( vortexWeapon.s.vortexSphereColorCP ), UniqueString( "vortexSphereColorCP" ) )
+		vortexWeapon.s.vortexSphereColorCP.kv.start_active = 1
 
-	DispatchSpawn( vortexWeapon.s.vortexSphereColorCP )
-}
+		DispatchSpawn( vortexWeapon.s.vortexSphereColorCP )
+	}
 
+	function Vortex_CleanupAllEffects( entity vortexWeapon )
+	{
+		Assert( IsServer() )
 
-function Vortex_CleanupAllEffects( entity vortexWeapon )
-{
-	Assert( IsServer() )
+		Vortex_CleanupImpactAbsorbFX( vortexWeapon )
 
-	Vortex_CleanupImpactAbsorbFX( vortexWeapon )
+		if ( ( "vortexBulletEffectCP" in vortexWeapon.s ) && IsValid_ThisFrame( expect entity( vortexWeapon.s.vortexBulletEffectCP ) ) )
+			vortexWeapon.s.vortexBulletEffectCP.Destroy()
 
-	if ( ( "vortexBulletEffectCP" in vortexWeapon.s ) && IsValid_ThisFrame( expect entity( vortexWeapon.s.vortexBulletEffectCP ) ) )
-		vortexWeapon.s.vortexBulletEffectCP.Destroy()
-
-	if ( ( "vortexSphereColorCP" in vortexWeapon.s ) && IsValid_ThisFrame( expect entity( vortexWeapon.s.vortexSphereColorCP ) ) )
-		vortexWeapon.s.vortexSphereColorCP.Destroy()
-}
+		if ( ( "vortexSphereColorCP" in vortexWeapon.s ) && IsValid_ThisFrame( expect entity( vortexWeapon.s.vortexSphereColorCP ) ) )
+			vortexWeapon.s.vortexSphereColorCP.Destroy()
+	}
 #endif // SERVER
-
 
 function SetPlayerUsingVortex( entity weaponOwner, entity vortexWeapon )
 {
@@ -400,8 +388,7 @@ function SetPlayerUsingVortex( entity weaponOwner, entity vortexWeapon )
 
 	vortexWeapon.WaitSignal( "VortexStopping" )
 
-	OnThreadEnd
-	(
+	OnThreadEnd(
 		function() : ( weaponOwner )
 		{
 			if ( IsValid_ThisFrame( weaponOwner ) && "isVortexing" in weaponOwner.s )
@@ -412,7 +399,6 @@ function SetPlayerUsingVortex( entity weaponOwner, entity vortexWeapon )
 	)
 }
 
-
 function IsVortexing( entity ent )
 {
 	Assert( IsServer() )
@@ -421,212 +407,210 @@ function IsVortexing( entity ent )
 		return true
 }
 
-
 #if SERVER
-function Vortex_HandleElectricDamage( entity ent, entity attacker, damage, entity weapon )
-{
-	if ( !IsValid( ent ) )
-		return damage
-
-	if ( !ent.IsTitan() )
-		return damage
-
-	if ( !ent.IsPlayer() && !ent.IsNPC() )
-		return damage
-
-	if ( !IsVortexing( ent ) )
-		return damage
-
-	entity vortexWeapon = ent.GetActiveWeapon()
-	if ( !IsValid( vortexWeapon ) )
-		return damage
-
-	entity vortexSphere = vortexWeapon.GetWeaponUtilityEntity()
-	if ( !IsValid( vortexSphere ) )
-		return damage
-
-	if ( !IsValid( vortexWeapon ) || !IsValid( vortexSphere ) )
-		return damage
-
-	// vortex FOV check
-	//printt( "sphere FOV:", vortexSphere.kv.bullet_fov )
-	local sphereFOV = vortexSphere.kv.bullet_fov.tointeger()
-	entity attackerWeapon = attacker.GetActiveWeapon()
-	int attachIdx = attackerWeapon.LookupAttachment( "muzzle_flash" )
-	vector beamOrg = attackerWeapon.GetAttachmentOrigin( attachIdx )
-	vector firingDir = beamOrg - vortexSphere.GetOrigin()
-	firingDir = Normalize( firingDir )
-	vector vortexDir = AnglesToForward( vortexSphere.GetAngles() )
-
-	float dot = DotProduct( vortexDir, firingDir )
-
-	float degCos = DEG_COS_60
-	if ( sphereFOV != 120 )
-		deg_cos( sphereFOV * 0.5 )
-
-	// not in the vortex cone
-	if ( dot < degCos )
-		return damage
-
-	if ( "fxElectricalExplosion" in vortexWeapon.s )
+	function Vortex_HandleElectricDamage( entity ent, entity attacker, damage, entity weapon )
 	{
+		if ( !IsValid( ent ) )
+			return damage
+
+		if ( !ent.IsTitan() )
+			return damage
+
+		if ( !ent.IsPlayer() && !ent.IsNPC() )
+			return damage
+
+		if ( !IsVortexing( ent ) )
+			return damage
+
+		entity vortexWeapon = ent.GetActiveWeapon()
+		if ( !IsValid( vortexWeapon ) )
+			return damage
+
+		entity vortexSphere = vortexWeapon.GetWeaponUtilityEntity()
+		if ( !IsValid( vortexSphere ) )
+			return damage
+
+		if ( !IsValid( vortexWeapon ) || !IsValid( vortexSphere ) )
+			return damage
+
+		// vortex FOV check
+		// printt( "sphere FOV:", vortexSphere.kv.bullet_fov )
+		local sphereFOV = vortexSphere.kv.bullet_fov.tointeger()
+		entity attackerWeapon = attacker.GetActiveWeapon()
+		int attachIdx = attackerWeapon.LookupAttachment( "muzzle_flash" )
+		vector beamOrg = attackerWeapon.GetAttachmentOrigin( attachIdx )
+		vector firingDir = beamOrg - vortexSphere.GetOrigin()
+		firingDir = Normalize( firingDir )
+		vector vortexDir = AnglesToForward( vortexSphere.GetAngles() )
+
+		float dot = DotProduct( vortexDir, firingDir )
+
+		float degCos = DEG_COS_60
+		if ( sphereFOV != 120 )
+			deg_cos( sphereFOV * 0.5 )
+
+		// not in the vortex cone
+		if ( dot < degCos )
+			return damage
+
+		if ( "fxElectricalExplosion" in vortexWeapon.s )
+		{
 			entity fxRef = CreateEntity( "info_particle_system" )
 			fxRef.SetValueForEffectNameKey( expect asset( vortexWeapon.s.fxElectricalExplosion ) )
 			fxRef.kv.start_active = 1
 			fxRef.SetStopType( "destroyImmediately" )
-			//fxRef.kv.VisibilityFlags = ENTITY_VISIBLE_TO_OWNER  // HACK this turns on owner only visibility. Uncomment when we hook up dedicated 3P effects
+			// fxRef.kv.VisibilityFlags = ENTITY_VISIBLE_TO_OWNER  // HACK this turns on owner only visibility. Uncomment when we hook up dedicated 3P effects
 			fxRef.SetOwner( ent )
 			fxRef.SetOrigin( vortexSphere.GetOrigin() )
 			fxRef.SetParent( ent )
 
 			DispatchSpawn( fxRef )
 			fxRef.Kill_Deprecated_UseDestroyInstead( 1 )
-	}
-
-	return 0
-}
-
-// this function handles all incoming vortex impact events
-bool function TryVortexAbsorb( entity vortexSphere, entity attacker, vector origin, int damageSourceID, entity weapon, string weaponName, string impactType, entity projectile = null, damageType = null, reflect = false )
-{
-	if ( weaponName in VortexIgnoreClassnames && VortexIgnoreClassnames[weaponName] )
-		return false
-
-	entity vortexWeapon = vortexSphere.GetOwnerWeapon()
-	entity owner = vortexWeapon.GetWeaponOwner()
-
-	// keep cycling the oldest hitscan bullets out
-	if( !reflect )
-	{
-		if ( impactType == "hitscan" )
-			Vortex_ClampAbsorbedBulletCount( vortexWeapon )
-		else
-			Vortex_ClampAbsorbedProjectileCount( vortexWeapon )
-	}
-
-	// vortex spheres tag refired projectiles with info about the original projectile for accurate duplication when re-absorbed
-	if ( projectile )
-	{
-
-		// specifically for tether, since it gets moved to the vortex area and can get absorbed in the process, then destroyed
-		if ( !IsValid( projectile ) )
-			return false
-
-		entity projOwner = projectile.GetOwner()
-		if ( IsValid( projOwner ) && projOwner.GetTeam() == owner.GetTeam() )
-			return false
-
-		if ( projectile.proj.hasBouncedOffVortex )
-			return false
-
-		if ( projectile.ProjectileGetWeaponInfoFileKeyField( "projectile_ignores_vortex" ) == "fall_vortex" )
-		{
-			vector velocity = projectile.GetVelocity()
-			vector multiplier = < -0.25, -0.25, -0.25 >
-			velocity = < velocity.x * multiplier.x, velocity.y * multiplier.y, velocity.z * multiplier.z >
-			projectile.SetVelocity( velocity )
-			projectile.proj.hasBouncedOffVortex = true
-			return false
 		}
 
-		// if ( projectile.GetParent() == owner )
-		// 	return false
+		return 0
+	}
 
-		if ( "originalDamageSource" in projectile.s )
+	// this function handles all incoming vortex impact events
+	bool function TryVortexAbsorb( entity vortexSphere, entity attacker, vector origin, int damageSourceID, entity weapon, string weaponName, string impactType, entity projectile = null, damageType = null, reflect = false )
+	{
+		if ( weaponName in VortexIgnoreClassnames && VortexIgnoreClassnames[ weaponName ] )
+			return false
+
+		entity vortexWeapon = vortexSphere.GetOwnerWeapon()
+		entity owner = vortexWeapon.GetWeaponOwner()
+
+		// keep cycling the oldest hitscan bullets out
+		if ( !reflect )
 		{
-			damageSourceID = expect int( projectile.s.originalDamageSource )
+			if ( impactType == "hitscan" )
+				Vortex_ClampAbsorbedBulletCount( vortexWeapon )
+			else
+				Vortex_ClampAbsorbedProjectileCount( vortexWeapon )
+		}
 
-			// Vortex Volley Achievement
+		// vortex spheres tag refired projectiles with info about the original projectile for accurate duplication when re-absorbed
+		if ( projectile )
+		{
+			// specifically for tether, since it gets moved to the vortex area and can get absorbed in the process, then destroyed
+			if ( !IsValid( projectile ) )
+				return false
+
+			entity projOwner = projectile.GetOwner()
+			if ( IsValid( projOwner ) && projOwner.GetTeam() == owner.GetTeam() )
+				return false
+
+			if ( projectile.proj.hasBouncedOffVortex )
+				return false
+
+			if ( projectile.ProjectileGetWeaponInfoFileKeyField( "projectile_ignores_vortex" ) == "fall_vortex" )
+			{
+				vector velocity = projectile.GetVelocity()
+				vector multiplier = < -0.25, -0.25, -0.25 >
+				velocity = < velocity.x * multiplier.x, velocity.y * multiplier.y, velocity.z * multiplier.z >
+				projectile.SetVelocity( velocity )
+				projectile.proj.hasBouncedOffVortex = true
+				return false
+			}
+
+			// if ( projectile.GetParent() == owner )
+			// 	return false
+
+			if ( "originalDamageSource" in projectile.s )
+			{
+				damageSourceID = expect int( projectile.s.originalDamageSource )
+
+				// Vortex Volley Achievement
+				if ( IsValid( owner ) && owner.IsPlayer() )
+				{
+					// if ( PlayerProgressionAllowed( owner ) )
+					// 	SetAchievement( owner, "ach_vortexVolley", true )
+				}
+			}
+
+			// Max projectile stat tracking
+			int projectilesInVortex = 1
+			projectilesInVortex += vortexWeapon.w.vortexImpactData.len()
+
 			if ( IsValid( owner ) && owner.IsPlayer() )
 			{
-				//if ( PlayerProgressionAllowed( owner ) )
-				//	SetAchievement( owner, "ach_vortexVolley", true )
+				if ( PlayerProgressionAllowed( owner ) )
+				{
+					int record = owner.GetPersistentVarAsInt( "mostProjectilesCollectedInVortex" )
+					if ( projectilesInVortex > record )
+						owner.SetPersistentVar( "mostProjectilesCollectedInVortex", projectilesInVortex )
+				}
+
+				var impact_sound_1p = projectile.ProjectileGetWeaponInfoFileKeyField( "vortex_impact_sound_1p" )
+				if ( impact_sound_1p != null )
+					EmitSoundOnEntityOnlyToPlayer( vortexSphere, owner, impact_sound_1p )
 			}
+
+			var impact_sound_3p = projectile.ProjectileGetWeaponInfoFileKeyField( "vortex_impact_sound_3p" )
+			if ( impact_sound_3p != null )
+				EmitSoundAtPosition( TEAM_UNASSIGNED, origin, impact_sound_3p )
 		}
-
-		// Max projectile stat tracking
-		int projectilesInVortex = 1
-		projectilesInVortex += vortexWeapon.w.vortexImpactData.len()
-
-		if ( IsValid( owner ) && owner.IsPlayer() )
+		else
 		{
-		 	if ( PlayerProgressionAllowed( owner ) )
-		 	{
-				int record = owner.GetPersistentVarAsInt( "mostProjectilesCollectedInVortex" )
-				if ( projectilesInVortex > record )
-					owner.SetPersistentVar( "mostProjectilesCollectedInVortex", projectilesInVortex )
-		 	}
+			if ( IsValid( owner ) && owner.IsPlayer() )
+			{
+				var impact_sound_1p = GetWeaponInfoFileKeyField_Global( weaponName, "vortex_impact_sound_1p" )
+				if ( impact_sound_1p != null )
+					EmitSoundOnEntityOnlyToPlayer( vortexSphere, owner, impact_sound_1p )
+			}
 
-			var impact_sound_1p = projectile.ProjectileGetWeaponInfoFileKeyField( "vortex_impact_sound_1p" )
-			if ( impact_sound_1p != null )
-				EmitSoundOnEntityOnlyToPlayer( vortexSphere, owner, impact_sound_1p )
+			var impact_sound_3p = GetWeaponInfoFileKeyField_Global( weaponName, "vortex_impact_sound_3p" )
+			if ( impact_sound_3p != null )
+				EmitSoundAtPosition( TEAM_UNASSIGNED, origin, impact_sound_3p )
 		}
 
-		var impact_sound_3p = projectile.ProjectileGetWeaponInfoFileKeyField( "vortex_impact_sound_3p" )
-		if ( impact_sound_3p != null )
-			EmitSoundAtPosition( TEAM_UNASSIGNED, origin, impact_sound_3p )
-	}
-	else
-	{
-		if ( IsValid( owner ) && owner.IsPlayer() )
-		{
-			var impact_sound_1p = GetWeaponInfoFileKeyField_Global( weaponName, "vortex_impact_sound_1p" )
-			if ( impact_sound_1p != null )
-				EmitSoundOnEntityOnlyToPlayer( vortexSphere, owner, impact_sound_1p )
-		}
+		local impactData = Vortex_CreateImpactEventData( vortexWeapon, attacker, origin, damageSourceID, weaponName, impactType )
 
-		var impact_sound_3p = GetWeaponInfoFileKeyField_Global( weaponName, "vortex_impact_sound_3p" )
-		if ( impact_sound_3p != null )
-			EmitSoundAtPosition( TEAM_UNASSIGNED, origin, impact_sound_3p )
-	}
+		VortexDrainedByImpact( vortexWeapon, weapon, projectile, damageType )
+		Vortex_NotifyAttackerDidDamage( expect entity( impactData.attacker ), owner, impactData.origin )
 
-	local impactData = Vortex_CreateImpactEventData( vortexWeapon, attacker, origin, damageSourceID, weaponName, impactType )
+		if ( impactData.refireBehavior == VORTEX_REFIRE_ABSORB )
+			return true
 
-	VortexDrainedByImpact( vortexWeapon, weapon, projectile, damageType )
-	Vortex_NotifyAttackerDidDamage( expect entity( impactData.attacker ), owner, impactData.origin )
+		if ( vortexWeapon.GetWeaponClassName() == "mp_titanweapon_heat_shield" )
+			return true
 
-	if ( impactData.refireBehavior == VORTEX_REFIRE_ABSORB )
-		return true
+		if ( !Vortex_ScriptCanHandleImpactEvent( impactData ) )
+			return false
 
-	if ( vortexWeapon.GetWeaponClassName() == "mp_titanweapon_heat_shield" )
-		return true
+		Vortex_StoreImpactEvent( vortexWeapon, impactData )
 
-	if ( !Vortex_ScriptCanHandleImpactEvent( impactData ) )
-		return false
+		VortexImpact_PlayAbsorbedFX( vortexWeapon, impactData )
 
-	Vortex_StoreImpactEvent( vortexWeapon, impactData )
+		if ( impactType == "hitscan" )
+			vortexSphere.AddBulletToSphere()
+		else
+			vortexSphere.AddProjectileToSphere()
 
-	VortexImpact_PlayAbsorbedFX( vortexWeapon, impactData )
-
-	if ( impactType == "hitscan" )
-		vortexSphere.AddBulletToSphere();
-	else
-		vortexSphere.AddProjectileToSphere();
-
-	local maxShotgunPelletsToIgnore = VORTEX_BULLET_ABSORB_COUNT_MAX * ( 1 - VORTEX_SHOTGUN_DAMAGE_RATIO )
-	if ( IsPilotShotgunWeapon( weaponName ) && ( vortexWeapon.s.shotgunPelletsToIgnore + 1 ) <  maxShotgunPelletsToIgnore )
+		local maxShotgunPelletsToIgnore = VORTEX_BULLET_ABSORB_COUNT_MAX * ( 1 - VORTEX_SHOTGUN_DAMAGE_RATIO )
+		if ( IsPilotShotgunWeapon( weaponName ) && ( vortexWeapon.s.shotgunPelletsToIgnore + 1 ) < maxShotgunPelletsToIgnore )
 			vortexWeapon.s.shotgunPelletsToIgnore += ( 1 - VORTEX_SHOTGUN_DAMAGE_RATIO )
 
-	if ( reflect )
-	{
-		local attackParams = {}
-		attackParams.pos <- owner.EyePosition()
-		attackParams.dir <- owner.GetPlayerOrNPCViewVector()
+		if ( reflect )
+		{
+			local attackParams = {}
+			attackParams.pos <- owner.EyePosition()
+			attackParams.dir <- owner.GetPlayerOrNPCViewVector()
 
-		int bulletsFired = VortexReflectAttack( vortexWeapon, attackParams, expect vector( impactData.origin ) )
+			int bulletsFired = VortexReflectAttack( vortexWeapon, attackParams, expect vector( impactData.origin ) )
 
-		Vortex_CleanupImpactAbsorbFX( vortexWeapon )
-		Vortex_ClearImpactEventData( vortexWeapon )
+			Vortex_CleanupImpactAbsorbFX( vortexWeapon )
+			Vortex_ClearImpactEventData( vortexWeapon )
 
-		while ( vortexSphere.GetBulletAbsorbedCount() > 0 )
-			vortexSphere.RemoveBulletFromSphere();
+			while ( vortexSphere.GetBulletAbsorbedCount() > 0 )
+				vortexSphere.RemoveBulletFromSphere()
 
-		while ( vortexSphere.GetProjectileAbsorbedCount() > 0 )
-			vortexSphere.RemoveProjectileFromSphere();
+			while ( vortexSphere.GetProjectileAbsorbedCount() > 0 )
+				vortexSphere.RemoveProjectileFromSphere()
+		}
+
+		return true
 	}
-
-	return true
-}
 #endif // SERVER
 
 function VortexDrainedByImpact( entity vortexWeapon, entity weapon, entity projectile, damageType )
@@ -653,11 +637,10 @@ function VortexDrainedByImpact( entity vortexWeapon, entity weapon, entity proje
 	}
 	else
 	{
-		float frac = min ( vortexWeapon.GetWeaponChargeFraction() + amount, 1.0 )
+		float frac = min( vortexWeapon.GetWeaponChargeFraction() + amount, 1.0 )
 		vortexWeapon.SetWeaponChargeFraction( frac )
 	}
 }
-
 
 function VortexSlowOwnerFromAttacker( entity player, entity attacker, vector velocity, float multiplier )
 {
@@ -683,321 +666,327 @@ function VortexSlowOwnerFromAttacker( entity player, entity attacker, vector vel
 	player.SetVelocity( velocity )
 }
 
-
 #if SERVER
-function Vortex_ClampAbsorbedBulletCount( entity vortexWeapon )
-{
-	if ( GetBulletsAbsorbedCount( vortexWeapon ) >= ( VORTEX_BULLET_ABSORB_COUNT_MAX - 1 ) )
-		Vortex_RemoveOldestAbsorbedBullet( vortexWeapon )
-}
-
-function Vortex_ClampAbsorbedProjectileCount( entity vortexWeapon )
-{
-	if ( GetProjectilesAbsorbedCount( vortexWeapon ) >= ( VORTEX_PROJECTILE_ABSORB_COUNT_MAX - 1 ) )
-		Vortex_RemoveOldestAbsorbedProjectile( vortexWeapon )
-}
-
-function Vortex_RemoveOldestAbsorbedBullet( entity vortexWeapon )
-{
-	entity vortexSphere = vortexWeapon.GetWeaponUtilityEntity()
-
-	local bulletImpacts = Vortex_GetHitscanBulletImpacts( vortexWeapon )
-	local impactDataToRemove = bulletImpacts[ 0 ]  // since it's an array, the first one will be the oldest
-
-	Vortex_RemoveImpactEvent( vortexWeapon, impactDataToRemove )
-
-	vortexSphere.RemoveBulletFromSphere()
-}
-
-function Vortex_RemoveOldestAbsorbedProjectile( entity vortexWeapon )
-{
-	entity vortexSphere = vortexWeapon.GetWeaponUtilityEntity()
-
-	local projImpacts = Vortex_GetProjectileImpacts( vortexWeapon )
-	local impactDataToRemove = projImpacts[ 0 ]  // since it's an array, the first one will be the oldest
-
-	Vortex_RemoveImpactEvent( vortexWeapon, impactDataToRemove )
-
-	vortexSphere.RemoveProjectileFromSphere()
-}
-
-function Vortex_CreateImpactEventData( entity vortexWeapon, entity attacker, vector origin, int damageSourceID, string weaponName, string impactType )
-{
-	entity player = vortexWeapon.GetWeaponOwner()
-	local impactData = {}
-
-	impactData.attacker				<- attacker
-	impactData.origin				<- origin
-	impactData.damageSourceID		<- damageSourceID
-	impactData.weaponName			<- weaponName
-	impactData.impactType			<- impactType
-
-	impactData.refireBehavior		<- VORTEX_REFIRE_NONE
-	impactData.absorbSFX			<- "Vortex_Shield_AbsorbBulletSmall"
-	impactData.absorbSFX_1p_vs_3p	<- null
-
-	impactData.team 				<- null
-	// sets a team even if the attacker disconnected
-	if ( IsValid_ThisFrame( attacker ) )
+	function Vortex_ClampAbsorbedBulletCount( entity vortexWeapon )
 	{
-		impactData.team = attacker.GetTeam()
-	}
-	else
-	{
-		// default to opposite team
-		if ( player.GetTeam() == TEAM_IMC )
-			impactData.team = TEAM_MILITIA
-		else
-			impactData.team = TEAM_IMC
+		if ( GetBulletsAbsorbedCount( vortexWeapon ) >= ( VORTEX_BULLET_ABSORB_COUNT_MAX - 1 ) )
+			Vortex_RemoveOldestAbsorbedBullet( vortexWeapon )
 	}
 
-	impactData.absorbFX				<- null
-	impactData.absorbFX_3p			<- null
-	impactData.fxEnt_absorb			<- null
-
-	impactData.explosionradius		<- null
-	impactData.explosion_damage		<- null
-	impactData.impact_effect_table	<- -1
-	// -- everything from here down relies on being able to read a megaweapon file
-	if ( !( impactData.weaponName in vortexImpactWeaponInfo ) )
+	function Vortex_ClampAbsorbedProjectileCount( entity vortexWeapon )
 	{
-		vortexImpactWeaponInfo[ impactData.weaponName ] <- {}
-		vortexImpactWeaponInfo[ impactData.weaponName ].absorbFX 						<- GetWeaponInfoFileKeyFieldAsset_Global( impactData.weaponName, "vortex_absorb_effect" )
-		vortexImpactWeaponInfo[ impactData.weaponName ].absorbFX_3p 					<- GetWeaponInfoFileKeyFieldAsset_Global( impactData.weaponName, "vortex_absorb_effect_third_person" )
-		vortexImpactWeaponInfo[ impactData.weaponName ].refireBehavior 					<- GetWeaponInfoFileKeyField_Global( impactData.weaponName, "vortex_refire_behavior" )
-		vortexImpactWeaponInfo[ impactData.weaponName ].absorbSound 					<- GetWeaponInfoFileKeyField_Global( impactData.weaponName, "vortex_absorb_sound" )
-		vortexImpactWeaponInfo[ impactData.weaponName ].absorbSound_1p_vs_3p			<- GetWeaponInfoFileKeyField_Global( impactData.weaponName, "vortex_absorb_sound_1p_vs_3p" )
-		vortexImpactWeaponInfo[ impactData.weaponName ].explosionradius 				<- GetWeaponInfoFileKeyField_Global( impactData.weaponName, "explosionradius" )
-		vortexImpactWeaponInfo[ impactData.weaponName ].explosion_damage_heavy_armor	<- GetWeaponInfoFileKeyField_Global( impactData.weaponName, "explosion_damage_heavy_armor" )
-		vortexImpactWeaponInfo[ impactData.weaponName ].explosion_damage				<- GetWeaponInfoFileKeyField_Global( impactData.weaponName, "explosion_damage" )
-		vortexImpactWeaponInfo[ impactData.weaponName ].impact_effect_table				<- GetWeaponInfoFileKeyField_Global( impactData.weaponName, "impact_effect_table" )
-		vortexImpactWeaponInfo[ impactData.weaponName ].grenade_ignition_time			<- GetWeaponInfoFileKeyField_Global( impactData.weaponName, "grenade_ignition_time" )
-		vortexImpactWeaponInfo[ impactData.weaponName ].grenade_fuse_time				<- GetWeaponInfoFileKeyField_Global( impactData.weaponName, "grenade_fuse_time" )
+		if ( GetProjectilesAbsorbedCount( vortexWeapon ) >= ( VORTEX_PROJECTILE_ABSORB_COUNT_MAX - 1 ) )
+			Vortex_RemoveOldestAbsorbedProjectile( vortexWeapon )
 	}
 
-	impactData.absorbFX				= vortexImpactWeaponInfo[ impactData.weaponName ].absorbFX
-	impactData.absorbFX_3p			= vortexImpactWeaponInfo[ impactData.weaponName ].absorbFX_3p
-	if ( impactData.absorbFX )
-		Assert( impactData.absorbFX_3p, "Missing 3rd person absorb effect for " + impactData.weaponName )
-	impactData.refireBehavior		= vortexImpactWeaponInfo[ impactData.weaponName ].refireBehavior
-
-	local absorbSound = vortexImpactWeaponInfo[ impactData.weaponName ].absorbSound
-	if ( absorbSound )
-		impactData.absorbSFX = absorbSound
-
-	local absorbSound_1p_vs_3p = vortexImpactWeaponInfo[ impactData.weaponName ].absorbSound_1p_vs_3p
-	if ( absorbSound_1p_vs_3p )
-		impactData.absorbSFX_1p_vs_3p = absorbSound_1p_vs_3p
-
-	// info we need for refiring (some types of) impacts
-	impactData.explosionradius		= vortexImpactWeaponInfo[ impactData.weaponName ].explosionradius
-	impactData.explosion_damage		= vortexImpactWeaponInfo[ impactData.weaponName ].explosion_damage_heavy_armor
-	if ( impactData.explosion_damage == null )
-		impactData.explosion_damage		= vortexImpactWeaponInfo[ impactData.weaponName ].explosion_damage
-	impactData.impact_effect_table	= vortexImpactWeaponInfo[ impactData.weaponName ].impact_effect_table
-
-	return impactData
-}
-
-function Vortex_ScriptCanHandleImpactEvent( impactData )
-{
-	if ( impactData.refireBehavior == VORTEX_REFIRE_NONE )
-		return false
-
-	if ( !impactData.absorbFX )
-		return false
-
-	if ( impactData.impactType == "projectile" && !impactData.impact_effect_table )
-		return false
-
-	return true
-}
-
-function Vortex_StoreImpactEvent( entity vortexWeapon, impactData )
-{
-	vortexWeapon.w.vortexImpactData.append( impactData )
-}
-
-// safely removes data for a single impact event
-function Vortex_RemoveImpactEvent( entity vortexWeapon, impactData )
-{
-	Vortex_ImpactData_KillAbsorbFX( impactData )
-
-	vortexWeapon.w.vortexImpactData.fastremovebyvalue( impactData )
-}
-
-function Vortex_GetAllImpactEvents( entity vortexWeapon )
-{
-	return vortexWeapon.w.vortexImpactData
-}
-
-function Vortex_ClearImpactEventData( entity vortexWeapon )
-{
-	vortexWeapon.w.vortexImpactData = []
-}
-
-function VortexImpact_PlayAbsorbedFX( entity vortexWeapon, impactData )
-{
-	// generic shield ping FX
-	Vortex_SpawnShieldPingFX( vortexWeapon, impactData )
-
-	// specific absorb FX
-	impactData.fxEnt_absorb = Vortex_SpawnImpactAbsorbFX( vortexWeapon, impactData )
-}
-
-// FX played when something first enters the vortex sphere
-function Vortex_SpawnShieldPingFX( entity vortexWeapon, impactData )
-{
-	entity player = vortexWeapon.GetWeaponOwner()
-	Assert( player )
-
-	local absorbSFX = impactData.absorbSFX
-	//printt( "SFX absorb sound:", absorbSFX )
-	if ( vortexWeapon.GetWeaponSettingBool( eWeaponVar.is_burn_mod ) )
-		EmitSoundOnEntity( vortexWeapon, "Vortex_Shield_Deflect_Amped" )
-	else
+	function Vortex_RemoveOldestAbsorbedBullet( entity vortexWeapon )
 	{
-		EmitSoundOnEntity( vortexWeapon, absorbSFX )
-		if ( impactData.absorbSFX_1p_vs_3p != null )
+		entity vortexSphere = vortexWeapon.GetWeaponUtilityEntity()
+
+		local bulletImpacts = Vortex_GetHitscanBulletImpacts( vortexWeapon )
+		local impactDataToRemove = bulletImpacts[
+			0
+		] // since it's an array, the first one will be the oldest
+
+		Vortex_RemoveImpactEvent( vortexWeapon, impactDataToRemove )
+
+		vortexSphere.RemoveBulletFromSphere()
+	}
+
+	function Vortex_RemoveOldestAbsorbedProjectile( entity vortexWeapon )
+	{
+		entity vortexSphere = vortexWeapon.GetWeaponUtilityEntity()
+
+		local projImpacts = Vortex_GetProjectileImpacts( vortexWeapon )
+		local impactDataToRemove = projImpacts[
+			0
+		] // since it's an array, the first one will be the oldest
+
+		Vortex_RemoveImpactEvent( vortexWeapon, impactDataToRemove )
+
+		vortexSphere.RemoveProjectileFromSphere()
+	}
+
+	function Vortex_CreateImpactEventData( entity vortexWeapon, entity attacker, vector origin, int damageSourceID, string weaponName, string impactType )
+	{
+		entity player = vortexWeapon.GetWeaponOwner()
+		local impactData = {}
+
+		impactData.attacker <- attacker
+		impactData.origin <- origin
+		impactData.damageSourceID <- damageSourceID
+		impactData.weaponName <- weaponName
+		impactData.impactType <- impactType
+
+		impactData.refireBehavior <- VORTEX_REFIRE_NONE
+		impactData.absorbSFX <- "Vortex_Shield_AbsorbBulletSmall"
+		impactData.absorbSFX_1p_vs_3p <- null
+
+		impactData.team <- null
+		// sets a team even if the attacker disconnected
+		if ( IsValid_ThisFrame( attacker ) )
 		{
-			if ( IsValid( impactData.attacker ) && impactData.attacker.IsPlayer() )
+			impactData.team = attacker.GetTeam()
+		}
+		else
+		{
+			// default to opposite team
+			if ( player.GetTeam() == TEAM_IMC )
+				impactData.team = TEAM_MILITIA
+			else
+				impactData.team = TEAM_IMC
+		}
+
+		impactData.absorbFX <- null
+		impactData.absorbFX_3p <- null
+		impactData.fxEnt_absorb <- null
+
+		impactData.explosionradius <- null
+		impactData.explosion_damage <- null
+		impactData.impact_effect_table <- -1
+		// -- everything from here down relies on being able to read a megaweapon file
+		if ( !( impactData.weaponName in vortexImpactWeaponInfo ) )
+		{
+			vortexImpactWeaponInfo[ impactData.weaponName ] <- {}
+			vortexImpactWeaponInfo[ impactData.weaponName ].absorbFX <- GetWeaponInfoFileKeyFieldAsset_Global( impactData.weaponName, "vortex_absorb_effect" )
+			vortexImpactWeaponInfo[ impactData.weaponName ].absorbFX_3p <-
+				GetWeaponInfoFileKeyFieldAsset_Global( impactData.weaponName, "vortex_absorb_effect_third_person" )
+			vortexImpactWeaponInfo[ impactData.weaponName ].refireBehavior <- GetWeaponInfoFileKeyField_Global( impactData.weaponName, "vortex_refire_behavior" )
+			vortexImpactWeaponInfo[ impactData.weaponName ].absorbSound <- GetWeaponInfoFileKeyField_Global( impactData.weaponName, "vortex_absorb_sound" )
+			vortexImpactWeaponInfo[ impactData.weaponName ].absorbSound_1p_vs_3p <-
+				GetWeaponInfoFileKeyField_Global( impactData.weaponName, "vortex_absorb_sound_1p_vs_3p" )
+			vortexImpactWeaponInfo[ impactData.weaponName ].explosionradius <- GetWeaponInfoFileKeyField_Global( impactData.weaponName, "explosionradius" )
+			vortexImpactWeaponInfo[ impactData.weaponName ].explosion_damage_heavy_armor <-
+				GetWeaponInfoFileKeyField_Global( impactData.weaponName, "explosion_damage_heavy_armor" )
+			vortexImpactWeaponInfo[ impactData.weaponName ].explosion_damage <- GetWeaponInfoFileKeyField_Global( impactData.weaponName, "explosion_damage" )
+			vortexImpactWeaponInfo[ impactData.weaponName ].impact_effect_table <- GetWeaponInfoFileKeyField_Global( impactData.weaponName, "impact_effect_table" )
+			vortexImpactWeaponInfo[ impactData.weaponName ].grenade_ignition_time <- GetWeaponInfoFileKeyField_Global( impactData.weaponName, "grenade_ignition_time" )
+			vortexImpactWeaponInfo[ impactData.weaponName ].grenade_fuse_time <- GetWeaponInfoFileKeyField_Global( impactData.weaponName, "grenade_fuse_time" )
+		}
+
+		impactData.absorbFX = vortexImpactWeaponInfo[ impactData.weaponName ].absorbFX
+		impactData.absorbFX_3p = vortexImpactWeaponInfo[ impactData.weaponName ].absorbFX_3p
+		if ( impactData.absorbFX )
+			Assert( impactData.absorbFX_3p, "Missing 3rd person absorb effect for " + impactData.weaponName )
+		impactData.refireBehavior = vortexImpactWeaponInfo[ impactData.weaponName ].refireBehavior
+
+		local absorbSound = vortexImpactWeaponInfo[ impactData.weaponName ].absorbSound
+		if ( absorbSound )
+			impactData.absorbSFX = absorbSound
+
+		local absorbSound_1p_vs_3p = vortexImpactWeaponInfo[ impactData.weaponName ].absorbSound_1p_vs_3p
+		if ( absorbSound_1p_vs_3p )
+			impactData.absorbSFX_1p_vs_3p = absorbSound_1p_vs_3p
+
+		// info we need for refiring (some types of) impacts
+		impactData.explosionradius = vortexImpactWeaponInfo[ impactData.weaponName ].explosionradius
+		impactData.explosion_damage = vortexImpactWeaponInfo[ impactData.weaponName ].explosion_damage_heavy_armor
+		if ( impactData.explosion_damage == null )
+			impactData.explosion_damage = vortexImpactWeaponInfo[ impactData.weaponName ].explosion_damage
+		impactData.impact_effect_table = vortexImpactWeaponInfo[ impactData.weaponName ].impact_effect_table
+
+		return impactData
+	}
+
+	function Vortex_ScriptCanHandleImpactEvent( impactData )
+	{
+		if ( impactData.refireBehavior == VORTEX_REFIRE_NONE )
+			return false
+
+		if ( !impactData.absorbFX )
+			return false
+
+		if ( impactData.impactType == "projectile" && !impactData.impact_effect_table )
+			return false
+
+		return true
+	}
+
+	function Vortex_StoreImpactEvent( entity vortexWeapon, impactData )
+	{
+		vortexWeapon.w.vortexImpactData.append( impactData )
+	}
+
+	// safely removes data for a single impact event
+	function Vortex_RemoveImpactEvent( entity vortexWeapon, impactData )
+	{
+		Vortex_ImpactData_KillAbsorbFX( impactData )
+
+		vortexWeapon.w.vortexImpactData.fastremovebyvalue( impactData )
+	}
+
+	function Vortex_GetAllImpactEvents( entity vortexWeapon )
+	{
+		return vortexWeapon.w.vortexImpactData
+	}
+
+	function Vortex_ClearImpactEventData( entity vortexWeapon )
+	{
+		vortexWeapon.w.vortexImpactData = []
+	}
+
+	function VortexImpact_PlayAbsorbedFX( entity vortexWeapon, impactData )
+	{
+		// generic shield ping FX
+		Vortex_SpawnShieldPingFX( vortexWeapon, impactData )
+
+		// specific absorb FX
+		impactData.fxEnt_absorb = Vortex_SpawnImpactAbsorbFX( vortexWeapon, impactData )
+	}
+
+	// FX played when something first enters the vortex sphere
+	function Vortex_SpawnShieldPingFX( entity vortexWeapon, impactData )
+	{
+		entity player = vortexWeapon.GetWeaponOwner()
+		Assert( player )
+
+		local absorbSFX = impactData.absorbSFX
+		// printt( "SFX absorb sound:", absorbSFX )
+		if ( vortexWeapon.GetWeaponSettingBool( eWeaponVar.is_burn_mod ) )
+			EmitSoundOnEntity( vortexWeapon, "Vortex_Shield_Deflect_Amped" )
+		else
+		{
+			EmitSoundOnEntity( vortexWeapon, absorbSFX )
+			if ( impactData.absorbSFX_1p_vs_3p != null )
 			{
-				EmitSoundOnEntityOnlyToPlayer( vortexWeapon, impactData.attacker, impactData.absorbSFX_1p_vs_3p )
+				if ( IsValid( impactData.attacker ) && impactData.attacker.IsPlayer() )
+				{
+					EmitSoundOnEntityOnlyToPlayer( vortexWeapon, impactData.attacker, impactData.absorbSFX_1p_vs_3p )
+				}
 			}
+		}
+
+		entity pingFX = CreateEntity( "info_particle_system" )
+
+		if ( vortexWeapon.GetWeaponSettingBool( eWeaponVar.is_burn_mod ) )
+		{
+			if ( "fxBulletHitBurn" in vortexWeapon.s )
+				pingFX.SetValueForEffectNameKey( expect asset( vortexWeapon.s.fxBulletHitBurn ) )
+		}
+		else
+		{
+			if ( "fxBulletHit" in vortexWeapon.s )
+				pingFX.SetValueForEffectNameKey( expect asset( vortexWeapon.s.fxBulletHit ) )
+		}
+
+		pingFX.kv.start_active = 1
+
+		DispatchSpawn( pingFX )
+
+		pingFX.SetOrigin( impactData.origin )
+		pingFX.SetParent( player )
+		pingFX.Kill_Deprecated_UseDestroyInstead( 0.25 )
+	}
+
+	function Vortex_SpawnHeatShieldPingFX( entity vortexWeapon, impactData, bool impactTypeIsBullet )
+	{
+		entity player = vortexWeapon.GetWeaponOwner()
+		Assert( player )
+
+		if ( impactTypeIsBullet )
+			EmitSoundOnEntity( vortexWeapon, "heat_shield_stop_bullet" )
+		else
+			EmitSoundOnEntity( vortexWeapon, "heat_shield_stop_projectile" )
+
+		entity pingFX = CreateEntity( "info_particle_system" )
+
+		if ( "fxBulletHit" in vortexWeapon.s )
+			pingFX.SetValueForEffectNameKey( expect asset( vortexWeapon.s.fxBulletHit ) )
+
+		pingFX.kv.start_active = 1
+
+		DispatchSpawn( pingFX )
+
+		pingFX.SetOrigin( impactData.origin )
+		pingFX.SetParent( player )
+		pingFX.Kill_Deprecated_UseDestroyInstead( 0.25 )
+	}
+
+	function Vortex_SpawnImpactAbsorbFX( entity vortexWeapon, impactData )
+	{
+		// in case we're in the middle of cleaning the weapon up
+		if ( !IsValid( vortexWeapon.s.vortexBulletEffectCP ) )
+			return
+
+		entity owner = vortexWeapon.GetWeaponOwner()
+		Assert( owner )
+
+		local fxRefs = []
+
+		// owner
+		{
+			entity fxRef = CreateEntity( "info_particle_system" )
+
+			fxRef.SetValueForEffectNameKey( expect asset( impactData.absorbFX ) )
+			fxRef.kv.start_active = 1
+			fxRef.SetStopType( "destroyImmediately" )
+			fxRef.kv.VisibilityFlags = ENTITY_VISIBLE_TO_OWNER
+			fxRef.kv.cpoint1 = vortexWeapon.s.vortexBulletEffectCP.GetTargetName()
+
+			DispatchSpawn( fxRef )
+
+			fxRef.SetOwner( owner )
+			fxRef.SetOrigin( impactData.origin )
+			fxRef.SetParent( owner )
+
+			fxRefs.append( fxRef )
+		}
+
+		// everyone else
+		{
+			entity fxRef = CreateEntity( "info_particle_system" )
+
+			fxRef.SetValueForEffectNameKey( expect asset( impactData.absorbFX_3p ) )
+			fxRef.kv.start_active = 1
+			fxRef.SetStopType( "destroyImmediately" )
+			fxRef.kv.VisibilityFlags = ( ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY ) // other only visibility
+			fxRef.kv.cpoint1 = vortexWeapon.s.vortexBulletEffectCP.GetTargetName()
+
+			DispatchSpawn( fxRef )
+
+			fxRef.SetOwner( owner )
+			fxRef.SetOrigin( impactData.origin )
+			fxRef.SetParent( owner )
+
+			fxRefs.append( fxRef )
+		}
+
+		return fxRefs
+	}
+
+	function Vortex_CleanupImpactAbsorbFX( entity vortexWeapon )
+	{
+		foreach ( impactData in Vortex_GetAllImpactEvents( vortexWeapon ) )
+		{
+			Vortex_ImpactData_KillAbsorbFX( impactData )
 		}
 	}
 
-	entity pingFX = CreateEntity( "info_particle_system" )
-
-	if ( vortexWeapon.GetWeaponSettingBool( eWeaponVar.is_burn_mod ) )
+	function Vortex_ImpactData_KillAbsorbFX( impactData )
 	{
-		if ( "fxBulletHitBurn" in vortexWeapon.s )
-			pingFX.SetValueForEffectNameKey( expect asset( vortexWeapon.s.fxBulletHitBurn ) )
-	}
-	else
-	{
-		if ( "fxBulletHit" in vortexWeapon.s )
-			pingFX.SetValueForEffectNameKey( expect asset( vortexWeapon.s.fxBulletHit ) )
-	}
+		foreach ( fxRef in impactData.fxEnt_absorb )
+		{
+			if ( !IsValid( fxRef ) )
+				continue
 
-	pingFX.kv.start_active = 1
-
-	DispatchSpawn( pingFX )
-
-	pingFX.SetOrigin( impactData.origin )
-	pingFX.SetParent( player )
-	pingFX.Kill_Deprecated_UseDestroyInstead( 0.25 )
-}
-
-function Vortex_SpawnHeatShieldPingFX( entity vortexWeapon, impactData, bool impactTypeIsBullet )
-{
-	entity player = vortexWeapon.GetWeaponOwner()
-	Assert( player )
-
-	if ( impactTypeIsBullet )
-		EmitSoundOnEntity( vortexWeapon, "heat_shield_stop_bullet" )
-	else
-		EmitSoundOnEntity( vortexWeapon, "heat_shield_stop_projectile" )
-
-	entity pingFX = CreateEntity( "info_particle_system" )
-
-	if ( "fxBulletHit" in vortexWeapon.s )
-		pingFX.SetValueForEffectNameKey( expect asset( vortexWeapon.s.fxBulletHit ) )
-
-	pingFX.kv.start_active = 1
-
-	DispatchSpawn( pingFX )
-
-	pingFX.SetOrigin( impactData.origin )
-	pingFX.SetParent( player )
-	pingFX.Kill_Deprecated_UseDestroyInstead( 0.25 )
-}
-
-function Vortex_SpawnImpactAbsorbFX( entity vortexWeapon, impactData )
-{
-	// in case we're in the middle of cleaning the weapon up
-	if ( !IsValid( vortexWeapon.s.vortexBulletEffectCP ) )
-		return
-
-	entity owner = vortexWeapon.GetWeaponOwner()
-	Assert( owner )
-
-	local fxRefs = []
-
-	// owner
-	{
-		entity fxRef = CreateEntity( "info_particle_system" )
-
-		fxRef.SetValueForEffectNameKey( expect asset( impactData.absorbFX ) )
-		fxRef.kv.start_active = 1
-		fxRef.SetStopType( "destroyImmediately" )
-		fxRef.kv.VisibilityFlags = ENTITY_VISIBLE_TO_OWNER
-		fxRef.kv.cpoint1 = vortexWeapon.s.vortexBulletEffectCP.GetTargetName()
-
-		DispatchSpawn( fxRef )
-
-		fxRef.SetOwner( owner )
-		fxRef.SetOrigin( impactData.origin )
-		fxRef.SetParent( owner )
-
-		fxRefs.append( fxRef )
+			fxRef.Fire( "DestroyImmediately" )
+			fxRef.Kill_Deprecated_UseDestroyInstead()
+		}
 	}
 
-	// everyone else
+	bool function PlayerDiedOrDisconnected( entity player )
 	{
-		entity fxRef = CreateEntity( "info_particle_system" )
+		if ( !IsValid( player ) )
+			return true
 
-		fxRef.SetValueForEffectNameKey( expect asset( impactData.absorbFX_3p ) )
-		fxRef.kv.start_active = 1
-		fxRef.SetStopType( "destroyImmediately" )
-		fxRef.kv.VisibilityFlags = (ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY)  // other only visibility
-		fxRef.kv.cpoint1 = vortexWeapon.s.vortexBulletEffectCP.GetTargetName()
+		if ( !IsAlive( player ) )
+			return true
 
-		DispatchSpawn( fxRef )
+		if ( IsDisconnected( player ) )
+			return true
 
-		fxRef.SetOwner( owner )
-		fxRef.SetOrigin( impactData.origin )
-		fxRef.SetParent( owner )
-
-		fxRefs.append( fxRef )
+		return false
 	}
-
-	return fxRefs
-}
-
-function Vortex_CleanupImpactAbsorbFX( entity vortexWeapon )
-{
-	foreach ( impactData in Vortex_GetAllImpactEvents( vortexWeapon ) )
-	{
-		Vortex_ImpactData_KillAbsorbFX( impactData )
-	}
-}
-
-function Vortex_ImpactData_KillAbsorbFX( impactData )
-{
-	foreach ( fxRef in impactData.fxEnt_absorb )
-	{
-		if ( !IsValid( fxRef ) )
-			continue
-
-		fxRef.Fire( "DestroyImmediately" )
-		fxRef.Kill_Deprecated_UseDestroyInstead()
-	}
-}
-
-bool function PlayerDiedOrDisconnected( entity player )
-{
-	if ( !IsValid( player ) )
-		return true
-
-	if ( !IsAlive( player ) )
-		return true
-
-	if ( IsDisconnected( player ) )
-		return true
-
-	return false
-}
 
 #endif // SERVER
 
@@ -1026,7 +1015,7 @@ int function VortexPrimaryAttack( entity vortexWeapon, WeaponPrimaryAttackParams
 
 	// UNPREDICTED REFIRES
 	#if SERVER
-		//printt( "server: force released?", forceReleased )
+		// printt( "server: force released?", forceReleased )
 
 		local unpredictedRefires = Vortex_GetProjectileImpacts( vortexWeapon )
 
@@ -1038,13 +1027,18 @@ int function VortexPrimaryAttack( entity vortexWeapon, WeaponPrimaryAttackParams
 
 		foreach ( impactData in unpredictedRefires )
 		{
-			table fakeAttackParams = {pos = attackParams.pos, dir = attackParams.dir, firstTimePredicted = attackParams.firstTimePredicted, burstIndex = attackParams.burstIndex}
+			table fakeAttackParams = {
+				pos = attackParams.pos,
+				dir = attackParams.dir,
+				firstTimePredicted = attackParams.firstTimePredicted,
+				burstIndex = attackParams.burstIndex
+			}
 			bool didFire = DoVortexAttackForImpactData( vortexWeapon, fakeAttackParams, impactData, totalAttempts )
 			if ( didFire )
 				totalfired++
 			totalAttempts++
 		}
-		//printt( "totalfired", totalfired )
+		// printt( "totalfired", totalfired )
 	#else
 		totalfired += GetProjectilesAbsorbedCount( vortexWeapon )
 	#endif
@@ -1064,7 +1058,7 @@ int function VortexPrimaryAttack( entity vortexWeapon, WeaponPrimaryAttackParams
 int function Vortex_FireBackBullets( entity vortexWeapon, WeaponPrimaryAttackParams attackParams )
 {
 	int bulletCount = GetBulletsAbsorbedCount( vortexWeapon )
-	//Defensive Check - Couldn't repro error.
+	// Defensive Check - Couldn't repro error.
 	if ( "shotgunPelletsToIgnore" in vortexWeapon.s )
 		bulletCount = int( ceil( bulletCount - vortexWeapon.s.shotgunPelletsToIgnore ) )
 
@@ -1072,10 +1066,10 @@ int function Vortex_FireBackBullets( entity vortexWeapon, WeaponPrimaryAttackPar
 	{
 		bulletCount = minint( bulletCount, MAX_BULLET_PER_SHOT )
 
-		//if ( IsClient() && GetLocalViewPlayer() == vortexWeapon.GetWeaponOwner() )
-		//	printt( "vortex firing", bulletCount, "bullets" )
+		// if ( IsClient() && GetLocalViewPlayer() == vortexWeapon.GetWeaponOwner() )
+		// 	printt( "vortex firing", bulletCount, "bullets" )
 
-		float radius = LOUD_WEAPON_AI_SOUND_RADIUS_MP;
+		float radius = LOUD_WEAPON_AI_SOUND_RADIUS_MP
 		vortexWeapon.EmitWeaponNpcSound( radius, 0.2 )
 		int damageType = damageTypes.shotgun | DF_VORTEX_REFIRE
 		if ( bulletCount == 1 )
@@ -1088,203 +1082,222 @@ int function Vortex_FireBackBullets( entity vortexWeapon, WeaponPrimaryAttackPar
 }
 
 #if SERVER
-bool function Vortex_FireBackExplosiveRound( vortexWeapon, attackParams, impactData, sequenceID )
-{
-	expect entity( vortexWeapon )
+	bool function Vortex_FireBackExplosiveRound( vortexWeapon, attackParams, impactData, sequenceID )
+	{
+		expect entity( vortexWeapon )
 
-	// common projectile data
-	float projSpeed		= 8000.0
-	int damageType		= damageTypes.explosive | DF_VORTEX_REFIRE
+		// common projectile data
+		float projSpeed = 8000.0
+		int damageType = damageTypes.explosive | DF_VORTEX_REFIRE
 
-	vortexWeapon.EmitWeaponSound( "Weapon.Explosion_Med" )
+		vortexWeapon.EmitWeaponSound( "Weapon.Explosion_Med" )
 
-	vector attackPos
-	//Requires code feature to properly fire tracers from offset positions.
-	//if ( vortexWeapon.GetWeaponSettingBool( eWeaponVar.is_burn_mod ) )
-	//	attackPos = impactData.origin
-	//else
+		vector attackPos
+		// Requires code feature to properly fire tracers from offset positions.
+		// if ( vortexWeapon.GetWeaponSettingBool( eWeaponVar.is_burn_mod ) )
+		// 	attackPos = impactData.origin
+		// else
 		attackPos = Vortex_GenerateRandomRefireOrigin( vortexWeapon )
 
-	vector fireVec = Vortex_GenerateRandomRefireVector( vortexWeapon, VORTEX_EXP_ROUNDS_RETURN_SPREAD_XY, VORTEX_EXP_ROUNDS_RETURN_SPREAD_Z )
+		vector fireVec = Vortex_GenerateRandomRefireVector( vortexWeapon, VORTEX_EXP_ROUNDS_RETURN_SPREAD_XY, VORTEX_EXP_ROUNDS_RETURN_SPREAD_Z )
 
-	// fire off the bolt
-	entity bolt = vortexWeapon.FireWeaponBolt( attackPos, fireVec, projSpeed, damageType, damageType, PROJECTILE_NOT_PREDICTED, sequenceID )
-	if ( bolt )
-	{
-		bolt.kv.gravity = 0.3
+		// fire off the bolt
+		entity bolt = vortexWeapon.FireWeaponBolt( attackPos, fireVec, projSpeed, damageType, damageType, PROJECTILE_NOT_PREDICTED, sequenceID )
+		if ( bolt )
+		{
+			bolt.kv.gravity = 0.3
 
-		Vortex_ProjectileCommonSetup( bolt, impactData )
+			Vortex_ProjectileCommonSetup( bolt, impactData )
+		}
+
+		return true
 	}
 
-	return true
-}
+	bool function Vortex_FireBackProjectileBullet( vortexWeapon, attackParams, impactData, sequenceID )
+	{
+		expect entity( vortexWeapon )
 
-bool function Vortex_FireBackProjectileBullet( vortexWeapon, attackParams, impactData, sequenceID )
-{
-	expect entity( vortexWeapon )
+		// common projectile data
+		float projSpeed = 12000.0
+		int damageType = damageTypes.bullet | DF_VORTEX_REFIRE
 
-	// common projectile data
-	float projSpeed		= 12000.0
-	int damageType		= damageTypes.bullet | DF_VORTEX_REFIRE
+		vortexWeapon.EmitWeaponSound( "Weapon.Explosion_Med" )
 
-	vortexWeapon.EmitWeaponSound( "Weapon.Explosion_Med" )
-
-	vector attackPos
-	//Requires code feature to properly fire tracers from offset positions.
-	//if ( vortexWeapon.GetWeaponSettingBool( eWeaponVar.is_burn_mod ) )
-	//	attackPos = impactData.origin
-	//else
+		vector attackPos
+		// Requires code feature to properly fire tracers from offset positions.
+		// if ( vortexWeapon.GetWeaponSettingBool( eWeaponVar.is_burn_mod ) )
+		// 	attackPos = impactData.origin
+		// else
 		attackPos = Vortex_GenerateRandomRefireOrigin( vortexWeapon )
 
-	vector fireVec = Vortex_GenerateRandomRefireVector( vortexWeapon, 0.15, 0.1 )
-	//printt( Time(), fireVec ) // print for bug with random
+		vector fireVec = Vortex_GenerateRandomRefireVector( vortexWeapon, 0.15, 0.1 )
+		// printt( Time(), fireVec ) // print for bug with random
 
-	// fire off the bolt
-	entity bolt = vortexWeapon.FireWeaponBolt( attackPos, fireVec, projSpeed, damageType, damageType, PROJECTILE_NOT_PREDICTED, sequenceID )
-	if ( bolt )
-	{
-		bolt.kv.gravity = 0.0
+		// fire off the bolt
+		entity bolt = vortexWeapon.FireWeaponBolt( attackPos, fireVec, projSpeed, damageType, damageType, PROJECTILE_NOT_PREDICTED, sequenceID )
+		if ( bolt )
+		{
+			bolt.kv.gravity = 0.0
 
-		Vortex_ProjectileCommonSetup( bolt, impactData )
+			Vortex_ProjectileCommonSetup( bolt, impactData )
+		}
+
+		return true
 	}
 
-	return true
-}
-
-vector function Vortex_GenerateRandomRefireOrigin( entity vortexWeapon, float distFromCenter = 3.0 )
-{
-	float distFromCenter_neg = distFromCenter * -1
-
-	vector attackPos = expect vector( vortexWeapon.s.vortexBulletEffectCP.GetOrigin() )
-
-	float x = RandomFloatRange( distFromCenter_neg, distFromCenter )
-	float y = RandomFloatRange( distFromCenter_neg, distFromCenter )
-	float z = RandomFloatRange( distFromCenter_neg, distFromCenter )
-
-	attackPos = attackPos + Vector( x, y, z )
-
-	return attackPos
-}
-
-vector function Vortex_GenerateRandomRefireVector( entity vortexWeapon, float vecSpread, float vecSpreadZ )
-{
-	float x = RandomFloatRange( vecSpread * -1, vecSpread )
-	float y = RandomFloatRange( vecSpread * -1, vecSpread )
-	float z = RandomFloatRange( vecSpreadZ * -1, vecSpreadZ )
-
-	vector fireVec = vortexWeapon.GetWeaponOwner().GetPlayerOrNPCViewVector() + Vector( x, y, z )
-	return fireVec
-}
-
-bool function Vortex_FireBackRocket( vortexWeapon, attackParams, impactData, sequenceID )
-{
-	expect entity( vortexWeapon )
-
-	// TODO prediction for clients
-	Assert( IsServer() )
-
-	entity rocket = vortexWeapon.FireWeaponMissile( attackParams.pos, attackParams.dir, 1800.0, damageTypes.largeCaliberExp | DF_VORTEX_REFIRE, damageTypes.largeCaliberExp | DF_VORTEX_REFIRE, false, PROJECTILE_NOT_PREDICTED )
-
-	if ( rocket )
+	vector function Vortex_GenerateRandomRefireOrigin( entity vortexWeapon, float distFromCenter = 3.0 )
 	{
-		rocket.kv.lifetime = RandomFloatRange( 2.6, 3.5 )
+		float distFromCenter_neg = distFromCenter * -1
 
-		InitMissileForRandomDriftForVortexLow( rocket, expect vector( attackParams.pos ), expect vector( attackParams.dir ) )
+		vector attackPos = expect vector( vortexWeapon.s.vortexBulletEffectCP.GetOrigin() )
 
-		Vortex_ProjectileCommonSetup( rocket, impactData )
+		float x = RandomFloatRange( distFromCenter_neg, distFromCenter )
+		float y = RandomFloatRange( distFromCenter_neg, distFromCenter )
+		float z = RandomFloatRange( distFromCenter_neg, distFromCenter )
+
+		attackPos = attackPos + Vector( x, y, z )
+
+		return attackPos
 	}
 
-	return true
-}
-
-bool function Vortex_FireBackGrenade( entity vortexWeapon, attackParams, impactData, int attackSeedCount, float baseFuseTime )
-{
-	float x = RandomFloatRange( -0.2, 0.2 )
-	float y = RandomFloatRange( -0.2, 0.2 )
-	float z = RandomFloatRange( -0.2, 0.2 )
-
-	vector velocity = ( expect vector( attackParams.dir ) + Vector( x, y, z ) ) * 1500
-	vector angularVelocity = Vector( RandomFloatRange( -1200, 1200 ), 100, 0 )
-
-	bool hasIgnitionTime = vortexImpactWeaponInfo[ impactData.weaponName ].grenade_ignition_time > 0
-	float fuseTime = hasIgnitionTime ? 0.0 : baseFuseTime
-	const int HARDCODED_DAMAGE_TYPE = (damageTypes.explosive | DF_VORTEX_REFIRE)
-
-	entity grenade = vortexWeapon.FireWeaponGrenade( attackParams.pos, velocity, angularVelocity, fuseTime, HARDCODED_DAMAGE_TYPE, HARDCODED_DAMAGE_TYPE, PROJECTILE_NOT_PREDICTED, true, true )
-	if ( grenade )
+	vector function Vortex_GenerateRandomRefireVector( entity vortexWeapon, float vecSpread, float vecSpreadZ )
 	{
-		Grenade_Init( grenade, vortexWeapon )
-		Vortex_ProjectileCommonSetup( grenade, impactData )
-		if ( hasIgnitionTime )
-			grenade.SetGrenadeIgnitionDuration( vortexImpactWeaponInfo[ impactData.weaponName ].grenade_ignition_time )
+		float x = RandomFloatRange( vecSpread * -1, vecSpread )
+		float y = RandomFloatRange( vecSpread * -1, vecSpread )
+		float z = RandomFloatRange( vecSpreadZ * -1, vecSpreadZ )
+
+		vector fireVec = vortexWeapon.GetWeaponOwner().GetPlayerOrNPCViewVector() + Vector( x, y, z )
+		return fireVec
 	}
 
-	return (grenade ? true : false)
-}
-
-bool function DoVortexAttackForImpactData( entity vortexWeapon, attackParams, impactData, int attackSeedCount )
-{
-	bool didFire = false
-	switch ( impactData.refireBehavior )
+	bool function Vortex_FireBackRocket( vortexWeapon, attackParams, impactData, sequenceID )
 	{
-		case VORTEX_REFIRE_EXPLOSIVE_ROUND:
-			didFire = Vortex_FireBackExplosiveRound( vortexWeapon, attackParams, impactData, attackSeedCount )
-			break
+		expect entity( vortexWeapon )
 
-		case VORTEX_REFIRE_ROCKET:
-			didFire = Vortex_FireBackRocket( vortexWeapon, attackParams, impactData, attackSeedCount )
-			break
+		// TODO prediction for clients
+		Assert( IsServer() )
 
-		case VORTEX_REFIRE_GRENADE:
-			didFire = Vortex_FireBackGrenade( vortexWeapon, attackParams, impactData, attackSeedCount, 1.25 )
-			break
+		entity rocket = vortexWeapon.FireWeaponMissile(
+			attackParams.pos,
+			attackParams.dir,
+			1800.0,
+			damageTypes.largeCaliberExp | DF_VORTEX_REFIRE,
+			damageTypes.largeCaliberExp | DF_VORTEX_REFIRE,
+			false,
+			PROJECTILE_NOT_PREDICTED
+		)
 
-		case VORTEX_REFIRE_GRENADE_LONG_FUSE:
-			didFire = Vortex_FireBackGrenade( vortexWeapon, attackParams, impactData, attackSeedCount, 10.0 )
-			break
+		if ( rocket )
+		{
+			rocket.kv.lifetime = RandomFloatRange( 2.6, 3.5 )
 
-		case VORTEX_REFIRE_BULLET:
-			didFire = Vortex_FireBackProjectileBullet( vortexWeapon, attackParams, impactData, attackSeedCount )
-			break
+			InitMissileForRandomDriftForVortexLow( rocket, expect vector( attackParams.pos ), expect vector( attackParams.dir ) )
 
-		case VORTEX_REFIRE_NONE:
-			break
+			Vortex_ProjectileCommonSetup( rocket, impactData )
+		}
+
+		return true
 	}
 
-	return didFire
-}
+	bool function Vortex_FireBackGrenade( entity vortexWeapon, attackParams, impactData, int attackSeedCount, float baseFuseTime )
+	{
+		float x = RandomFloatRange( -0.2, 0.2 )
+		float y = RandomFloatRange( -0.2, 0.2 )
+		float z = RandomFloatRange( -0.2, 0.2 )
 
-function Vortex_ProjectileCommonSetup( entity projectile, impactData )
-{
-	// custom tag it so it shows up correctly if it hits another vortex sphere
-	projectile.s.originalDamageSource <- impactData.damageSourceID
+		vector velocity = ( expect vector( attackParams.dir ) + Vector( x, y, z ) ) * 1500
+		vector angularVelocity = Vector( RandomFloatRange( -1200, 1200 ), 100, 0 )
 
-	Vortex_SetImpactEffectTable_OnProjectile( projectile, impactData )  // set the correct impact effect table
+		bool hasIgnitionTime = vortexImpactWeaponInfo[ impactData.weaponName ].grenade_ignition_time > 0
+		float fuseTime = hasIgnitionTime ? 0.0 : baseFuseTime
+		const int HARDCODED_DAMAGE_TYPE = ( damageTypes.explosive | DF_VORTEX_REFIRE )
 
-	projectile.SetVortexRefired( true ) // This tells code the projectile was refired from the vortex so that it uses "projectile_vortex_vscript"
-	projectile.SetModel( GetWeaponInfoFileKeyFieldAsset_Global( impactData.weaponName, "projectilemodel" ) )
-	projectile.SetWeaponClassName( impactData.weaponName )  // causes the projectile to use its normal trail FX
+		entity grenade = vortexWeapon.FireWeaponGrenade(
+			attackParams.pos,
+			velocity,
+			angularVelocity,
+			fuseTime,
+			HARDCODED_DAMAGE_TYPE,
+			HARDCODED_DAMAGE_TYPE,
+			PROJECTILE_NOT_PREDICTED,
+			true,
+			true
+		)
+		if ( grenade )
+		{
+			Grenade_Init( grenade, vortexWeapon )
+			Vortex_ProjectileCommonSetup( grenade, impactData )
+			if ( hasIgnitionTime )
+				grenade.SetGrenadeIgnitionDuration( vortexImpactWeaponInfo[ impactData.weaponName ].grenade_ignition_time )
+		}
 
-	projectile.ProjectileSetDamageSourceID( impactData.damageSourceID ) // obit will show the owner weapon
-}
+		return ( grenade ? true : false )
+	}
 
-// gives a refired projectile the correct impact effect table
-function Vortex_SetImpactEffectTable_OnProjectile( projectile, impactData )
-{
-	//Getting more info for bug 207595, don't check into Staging.
-	#if DEV
-	printt( "impactData.impact_effect_table ", impactData.impact_effect_table )
-	if ( impactData.impact_effect_table == "" )
-		PrintTable( impactData )
-	#endif
+	bool function DoVortexAttackForImpactData( entity vortexWeapon, attackParams, impactData, int attackSeedCount )
+	{
+		bool didFire = false
+		switch ( impactData.refireBehavior )
+		{
+			case VORTEX_REFIRE_EXPLOSIVE_ROUND:
+				didFire = Vortex_FireBackExplosiveRound( vortexWeapon, attackParams, impactData, attackSeedCount )
+				break
 
-	local fxTableHandle = GetImpactEffectTable( impactData.impact_effect_table )
+			case VORTEX_REFIRE_ROCKET:
+				didFire = Vortex_FireBackRocket( vortexWeapon, attackParams, impactData, attackSeedCount )
+				break
 
-	projectile.SetImpactEffectTable( fxTableHandle )
-}
+			case VORTEX_REFIRE_GRENADE:
+				didFire = Vortex_FireBackGrenade( vortexWeapon, attackParams, impactData, attackSeedCount, 1.25 )
+				break
+
+			case VORTEX_REFIRE_GRENADE_LONG_FUSE:
+				didFire = Vortex_FireBackGrenade( vortexWeapon, attackParams, impactData, attackSeedCount, 10.0 )
+				break
+
+			case VORTEX_REFIRE_BULLET:
+				didFire = Vortex_FireBackProjectileBullet( vortexWeapon, attackParams, impactData, attackSeedCount )
+				break
+
+			case VORTEX_REFIRE_NONE:
+				break
+		}
+
+		return didFire
+	}
+
+	function Vortex_ProjectileCommonSetup( entity projectile, impactData )
+	{
+		// custom tag it so it shows up correctly if it hits another vortex sphere
+		projectile.s.originalDamageSource <- impactData.damageSourceID
+
+		Vortex_SetImpactEffectTable_OnProjectile( projectile, impactData ) // set the correct impact effect table
+
+		projectile.SetVortexRefired( true ) // This tells code the projectile was refired from the vortex so that it uses "projectile_vortex_vscript"
+		projectile.SetModel( GetWeaponInfoFileKeyFieldAsset_Global( impactData.weaponName, "projectilemodel" ) )
+		projectile.SetWeaponClassName( impactData.weaponName ) // causes the projectile to use its normal trail FX
+
+		projectile.ProjectileSetDamageSourceID( impactData.damageSourceID ) // obit will show the owner weapon
+	}
+
+	// gives a refired projectile the correct impact effect table
+	function Vortex_SetImpactEffectTable_OnProjectile( projectile, impactData )
+	{
+		// Getting more info for bug 207595, don't check into Staging.
+		#if DEV
+			printt( "impactData.impact_effect_table ", impactData.impact_effect_table )
+			if ( impactData.impact_effect_table == "" )
+				PrintTable( impactData )
+		#endif
+
+		local fxTableHandle = GetImpactEffectTable( impactData.impact_effect_table )
+
+		projectile.SetImpactEffectTable( fxTableHandle )
+	}
 #endif // SERVER
 
-// absorbed bullets are tracked with a special networked kv variable because clients need to know how many bullets to fire as well, when they are doing the client version of FireWeaponBullet
+// absorbed bullets are tracked with a special networked kv variable because clients need to know
+// how many bullets to fire as well, when they are doing the client version of FireWeaponBullet
 int function GetBulletsAbsorbedCount( entity vortexWeapon )
 {
 	if ( !vortexWeapon )
@@ -1310,41 +1323,41 @@ int function GetProjectilesAbsorbedCount( entity vortexWeapon )
 }
 
 #if SERVER
-function Vortex_GetProjectileImpacts( entity vortexWeapon )
-{
-	local impacts = []
-	foreach ( impactData in Vortex_GetAllImpactEvents( vortexWeapon ) )
+	function Vortex_GetProjectileImpacts( entity vortexWeapon )
 	{
-		if ( impactData.impactType == "projectile" )
-			impacts.append( impactData )
+		local impacts = []
+		foreach ( impactData in Vortex_GetAllImpactEvents( vortexWeapon ) )
+		{
+			if ( impactData.impactType == "projectile" )
+				impacts.append( impactData )
+		}
+
+		return impacts
 	}
 
-	return impacts
-}
-
-function Vortex_GetHitscanBulletImpacts( entity vortexWeapon )
-{
-	local impacts = []
-	foreach ( impactData in Vortex_GetAllImpactEvents( vortexWeapon ) )
+	function Vortex_GetHitscanBulletImpacts( entity vortexWeapon )
 	{
-		if ( impactData.impactType == "hitscan" )
-			impacts.append( impactData )
+		local impacts = []
+		foreach ( impactData in Vortex_GetAllImpactEvents( vortexWeapon ) )
+		{
+			if ( impactData.impactType == "hitscan" )
+				impacts.append( impactData )
+		}
+
+		return impacts
 	}
 
-	return impacts
-}
-
-int function GetHitscanBulletImpactCount( entity vortexWeapon )
-{
-	int count = 0
-	foreach ( impactData in Vortex_GetAllImpactEvents( vortexWeapon ) )
+	int function GetHitscanBulletImpactCount( entity vortexWeapon )
 	{
-		if ( impactData.impactType == "hitscan" )
-			count++
-	}
+		int count = 0
+		foreach ( impactData in Vortex_GetAllImpactEvents( vortexWeapon ) )
+		{
+			if ( impactData.impactType == "hitscan" )
+				count++
+		}
 
-	return count
-}
+		return count
+	}
 #endif // SERVER
 
 // // lets the damage callback communicate to the attacker that he hit a vortex shield
@@ -1368,12 +1381,11 @@ function SetVortexAmmo( entity vortexWeapon, count )
 		return
 	#if CLIENT
 		if ( !IsLocalViewPlayer( owner ) )
-		return
+			return
 	#endif
 
 	vortexWeapon.SetWeaponPrimaryAmmoCount( count )
 }
-
 
 // sets the RGB color value for the vortex sphere FX based on current charge fraction
 function VortexSphereColorUpdate( entity weapon, sphereClientFXHandle = null )
@@ -1385,8 +1397,8 @@ function VortexSphereColorUpdate( entity weapon, sphereClientFXHandle = null )
 	#endif
 	bool isIonVortex = weapon.GetWeaponClassName() == "mp_titanweapon_vortex_shield_ion"
 	entity weaponOwner = weapon.GetWeaponOwner()
-	float energyTotal = float ( weaponOwner.GetSharedEnergyTotal() )
-	while( IsValid( weapon ) && IsValid( weaponOwner ) )
+	float energyTotal = float( weaponOwner.GetSharedEnergyTotal() )
+	while ( IsValid( weapon ) && IsValid( weaponOwner ) )
 	{
 		vector colorVec
 		if ( isIonVortex )
@@ -1401,7 +1413,6 @@ function VortexSphereColorUpdate( entity weapon, sphereClientFXHandle = null )
 		{
 			colorVec = GetVortexSphereCurrentColor( weapon.GetWeaponChargeFraction() )
 		}
-
 
 		// update the world entity that is linked to the world FX playing on the server
 		#if SERVER
@@ -1431,8 +1442,8 @@ vector function GetShieldTriLerpColor( float frac )
 
 vector function GetTriLerpColor( float fraction, vector color1, vector color2, vector color3 )
 {
-	float crossover1 = VORTEX_SPHERE_COLOR_CROSSOVERFRAC_FULL2MED  // from zero to this fraction, fade between color1 and color2
-	float crossover2 = VORTEX_SPHERE_COLOR_CROSSOVERFRAC_MED2EMPTY  // from crossover1 to this fraction, fade between color2 and color3
+	float crossover1 = VORTEX_SPHERE_COLOR_CROSSOVERFRAC_FULL2MED // from zero to this fraction, fade between color1 and color2
+	float crossover2 = VORTEX_SPHERE_COLOR_CROSSOVERFRAC_MED2EMPTY // from crossover1 to this fraction, fade between color2 and color3
 
 	float r, g, b
 
@@ -1442,14 +1453,14 @@ vector function GetTriLerpColor( float fraction, vector color1, vector color2, v
 		r = Graph( fraction, 0, crossover1, color1.x, color2.x )
 		g = Graph( fraction, 0, crossover1, color1.y, color2.y )
 		b = Graph( fraction, 0, crossover1, color1.z, color2.z )
-		return <r, g, b>
+		return < r, g, b >
 	}
 	else if ( fraction < crossover2 )
 	{
 		r = Graph( fraction, crossover1, crossover2, color2.x, color3.x )
 		g = Graph( fraction, crossover1, crossover2, color2.y, color3.y )
 		b = Graph( fraction, crossover1, crossover2, color2.z, color3.z )
-		return <r, g, b>
+		return < r, g, b >
 	}
 	else
 	{
@@ -1457,7 +1468,7 @@ vector function GetTriLerpColor( float fraction, vector color1, vector color2, v
 		r = color3.x
 		g = color3.y
 		b = color3.z
-		return <r, g, b>
+		return < r, g, b >
 	}
 
 	unreachable
@@ -1465,43 +1476,43 @@ vector function GetTriLerpColor( float fraction, vector color1, vector color2, v
 
 // generic impact validation
 #if SERVER
-bool function ValidateVortexImpact( entity vortexSphere, entity projectile = null )
-{
-	Assert( IsServer() )
-
-	if ( !IsValid( vortexSphere ) )
-		return false
-
-	if ( !vortexSphere.GetOwnerWeapon() )
-		return false
-
-	entity vortexWeapon = vortexSphere.GetOwnerWeapon()
-	if ( !IsValid( vortexWeapon ) )
-		return false
-
-	if ( projectile )
+	bool function ValidateVortexImpact( entity vortexSphere, entity projectile = null )
 	{
-		if ( !IsValid_ThisFrame( projectile ) )
+		Assert( IsServer() )
+
+		if ( !IsValid( vortexSphere ) )
 			return false
 
-		if ( projectile.ProjectileGetWeaponInfoFileKeyField( "projectile_ignores_vortex" ) == 1 )
+		if ( !vortexSphere.GetOwnerWeapon() )
 			return false
 
-		if ( projectile.ProjectileGetWeaponClassName() == "" )
+		entity vortexWeapon = vortexSphere.GetOwnerWeapon()
+		if ( !IsValid( vortexWeapon ) )
 			return false
 
-		// TEMP HACK
-		if ( projectile.ProjectileGetWeaponClassName() == "mp_weapon_tether" )
-			return false
+		if ( projectile )
+		{
+			if ( !IsValid_ThisFrame( projectile ) )
+				return false
+
+			if ( projectile.ProjectileGetWeaponInfoFileKeyField( "projectile_ignores_vortex" ) == 1 )
+				return false
+
+			if ( projectile.ProjectileGetWeaponClassName() == "" )
+				return false
+
+			// TEMP HACK
+			if ( projectile.ProjectileGetWeaponClassName() == "mp_weapon_tether" )
+				return false
+		}
+
+		return true
 	}
-
-	return true
-}
 #endif
 
-/********************************/
-/*	Setting override functions	*/
-/********************************/
+/* ****************************** */
+/* Setting override functions */
+/* ****************************** */
 
 function Vortex_SetTagName( entity weapon, string tagName )
 {
@@ -1542,55 +1553,53 @@ vector function GetBulletCollectionOffset( entity weapon )
 	unreachable
 }
 
-
 #if SERVER
-function VortexSphereDrainHealthForDamage( entity vortexSphere, damage )
-{
-	// don't drain the health of vortex_spheres that are set to be invulnerable. This is the case for the Particle Wall
-	if ( vortexSphere.IsInvulnerable() )
-		return
-
-	local result = {}
-	result.damage <- damage
-	vortexSphere.Signal( "Script_OnDamaged", result )
-
-	int currentHealth = vortexSphere.GetHealth()
-	Assert( damage >= 0 )
-	// JFS to fix phone home bug; we never hit the assert above locally...
-	damage = max( damage, 0 )
-	vortexSphere.SetHealth( currentHealth - damage )
-
-	entity vortexWeapon = vortexSphere.GetOwnerWeapon()
-	if ( IsValid( vortexWeapon ) && vortexWeapon.HasMod( "fd_gun_shield_redirect" ) )
+	function VortexSphereDrainHealthForDamage( entity vortexSphere, damage )
 	{
-		entity owner = vortexWeapon.GetWeaponOwner()
-		if ( IsValid( owner ) && owner.IsTitan() )
+		// don't drain the health of vortex_spheres that are set to be invulnerable. This is the case for the Particle Wall
+		if ( vortexSphere.IsInvulnerable() )
+			return
+
+		local result = {}
+		result.damage <- damage
+		vortexSphere.Signal( "Script_OnDamaged", result )
+
+		int currentHealth = vortexSphere.GetHealth()
+		Assert( damage >= 0 )
+		// JFS to fix phone home bug; we never hit the assert above locally...
+		damage = max( damage, 0 )
+		vortexSphere.SetHealth( currentHealth - damage )
+
+		entity vortexWeapon = vortexSphere.GetOwnerWeapon()
+		if ( IsValid( vortexWeapon ) && vortexWeapon.HasMod( "fd_gun_shield_redirect" ) )
 		{
-			entity soul = owner.GetTitanSoul()
-			if ( IsValid( soul ) )
+			entity owner = vortexWeapon.GetWeaponOwner()
+			if ( IsValid( owner ) && owner.IsTitan() )
 			{
-				int shieldRestoreAmount = int( damage ) //Might need tuning
-				soul.SetShieldHealth( min( soul.GetShieldHealth() + shieldRestoreAmount, soul.GetShieldHealthMax() ) )
+				entity soul = owner.GetTitanSoul()
+				if ( IsValid( soul ) )
+				{
+					int shieldRestoreAmount = int( damage ) // Might need tuning
+					soul.SetShieldHealth( min( soul.GetShieldHealth() + shieldRestoreAmount, soul.GetShieldHealthMax() ) )
+				}
 			}
 		}
+
+		UpdateShieldWallColorForFrac( vortexSphere.e.shieldWallFX, GetHealthFrac( vortexSphere ) )
 	}
-
-	UpdateShieldWallColorForFrac( vortexSphere.e.shieldWallFX, GetHealthFrac( vortexSphere ) )
-}
 #endif
-
 
 bool function CodeCallback_OnVortexHitBullet( entity weapon, entity vortexSphere, var damageInfo )
 {
 	bool isAmpedWall = vortexSphere.GetTargetName() == PROTO_AMPED_WALL
 	bool takesDamage = !isAmpedWall
-	bool adjustImpactAngles = !(vortexSphere.GetTargetName() == GUN_SHIELD_WALL)
+	bool adjustImpactAngles = !( vortexSphere.GetTargetName() == GUN_SHIELD_WALL )
 
 	#if SERVER
 		if ( vortexSphere.e.BulletHitRules != null )
 		{
 			vortexSphere.e.BulletHitRules( vortexSphere, damageInfo )
-			takesDamage = takesDamage && (DamageInfo_GetDamage( damageInfo ) > 0)
+			takesDamage = takesDamage && ( DamageInfo_GetDamage( damageInfo ) > 0 )
 		}
 	#endif
 
@@ -1607,7 +1616,7 @@ bool function CodeCallback_OnVortexHitBullet( entity weapon, entity vortexSphere
 		{
 			// TODO: slightly change angles to match radius rotation of vortex cylinder
 			int effectHandle = StartParticleEffectInWorldWithHandle( GetParticleSystemIndex( SHIELD_WALL_BULLET_FX ), damageOrigin, damageAngles )
-			//local color = GetShieldTriLerpColor( 1 - GetHealthFrac( vortexSphere ) )
+			// local color = GetShieldTriLerpColor( 1 - GetHealthFrac( vortexSphere ) )
 			vector color = GetShieldTriLerpColor( 0.0 )
 			EffectSetControlPointVector( effectHandle, 1, color )
 		}
@@ -1633,7 +1642,7 @@ bool function CodeCallback_OnVortexHitBullet( entity weapon, entity vortexSphere
 		entity weapon = DamageInfo_GetWeapon( damageInfo )
 		float damage = ceil( DamageInfo_GetDamage( damageInfo ) )
 
-		Assert( damage >= 0, "Bug 159851 - Damage should be greater than or equal to 0.")
+		Assert( damage >= 0, "Bug 159851 - Damage should be greater than or equal to 0." )
 		damage = max( 0.0, damage )
 
 		if ( IsValid( weapon ) )
@@ -1641,7 +1650,8 @@ bool function CodeCallback_OnVortexHitBullet( entity weapon, entity vortexSphere
 
 		if ( takesDamage )
 		{
-			//JFS - Arc Round bug fix for Monarch. Projectiles vortex callback doesn't even have damageInfo, so the shield modifier here doesn't exist in VortexSphereDrainHealthForDamage like it should.
+			// JFS - Arc Round bug fix for Monarch. Projectiles vortex callback doesn't even have damageInfo,
+			// so the shield modifier here doesn't exist in VortexSphereDrainHealthForDamage like it should.
 			ShieldDamageModifier damageModifier = GetShieldDamageModifier( damageInfo )
 			damage *= damageModifier.damageScale
 			VortexSphereDrainHealthForDamage( vortexSphere, damage )
@@ -1656,7 +1666,7 @@ bool function CodeCallback_OnVortexHitBullet( entity weapon, entity vortexSphere
 	if ( isAmpedWall )
 	{
 		#if SERVER
-		DamageInfo_ScaleDamage( damageInfo, AMPED_DAMAGE_SCALAR )
+			DamageInfo_ScaleDamage( damageInfo, AMPED_DAMAGE_SCALAR )
 		#endif
 		return false
 	}
@@ -1666,14 +1676,14 @@ bool function CodeCallback_OnVortexHitBullet( entity weapon, entity vortexSphere
 
 bool function OnVortexHitBullet_BubbleShieldNPC( entity vortexSphere, var damageInfo )
 {
-	vector vortexOrigin 	= vortexSphere.GetOrigin()
-	vector damageOrigin 	= DamageInfo_GetDamagePosition( damageInfo )
+	vector vortexOrigin = vortexSphere.GetOrigin()
+	vector damageOrigin = DamageInfo_GetDamagePosition( damageInfo )
 
 	float distSq = DistanceSqr( vortexOrigin, damageOrigin )
 	if ( distSq < MINION_BUBBLE_SHIELD_RADIUS_SQR )
-		return false//the damage is coming from INSIDE the sphere
+		return false // the damage is coming from INSIDE the sphere
 
-	vector damageVec 	= damageOrigin - vortexOrigin
+	vector damageVec = damageOrigin - vortexOrigin
 	vector damageAngles = VectorToAngles( damageVec )
 	damageAngles = AnglesCompose( damageAngles, Vector( 90, 0, 0 ) )
 
@@ -1692,7 +1702,7 @@ bool function OnVortexHitBullet_BubbleShieldNPC( entity vortexSphere, var damage
 	#else
 		int fxId = GetParticleSystemIndex( SHIELD_WALL_BULLET_FX )
 		PlayEffectOnVortexSphere( fxId, DamageInfo_GetDamagePosition( damageInfo ), damageAngles, vortexSphere )
-		//VortexSphereDrainHealthForDamage( vortexSphere, DamageInfo_GetWeapon( damageInfo ), null )
+		// VortexSphereDrainHealthForDamage( vortexSphere, DamageInfo_GetWeapon( damageInfo ), null )
 
 		if ( DamageInfo_GetAttacker( damageInfo ) && DamageInfo_GetAttacker( damageInfo ).IsTitan() )
 			EmitSoundAtPosition( teamNum, DamageInfo_GetDamagePosition( damageInfo ), "TitanShieldWall.Heavy.BulletImpact_3P_vs_3P" )
@@ -1712,41 +1722,41 @@ bool function CodeCallback_OnVortexHitProjectile( entity weapon, entity vortexSp
 	if ( ignoreVortex != null )
 	{
 		#if SERVER
-		if ( projectile.proj.hasBouncedOffVortex )
-			return false
+			if ( projectile.proj.hasBouncedOffVortex )
+				return false
 
-		vector velocity = projectile.GetVelocity()
-		vector multiplier
+			vector velocity = projectile.GetVelocity()
+			vector multiplier
 
-		switch ( ignoreVortex )
-		{
-			case "drop":
-				multiplier = < -0.25, -0.25, 0.0 >
-				break
+			switch ( ignoreVortex )
+			{
+				case "drop":
+					multiplier = < -0.25, -0.25, 0.0 >
+					break
 
-			case "fall_vortex":
-			case "fall":
-				multiplier = < -0.25, -0.25, -0.25 >
-				break
+				case "fall_vortex":
+				case "fall":
+					multiplier = < -0.25, -0.25, -0.25 >
+					break
 
-			case "mirror":
-				// bounce back, assume along xy axis
-				multiplier = < -1.0, -1.0, 1.0 >
-				break
+				case "mirror":
+					// bounce back, assume along xy axis
+					multiplier = < -1.0, -1.0, 1.0 >
+					break
 
-			default:
-				CodeWarning( "Unknown projectile_ignores_vortex " + ignoreVortex )
-				break
-		}
+				default:
+					CodeWarning( "Unknown projectile_ignores_vortex " + ignoreVortex )
+					break
+			}
 
-		velocity = < velocity.x * multiplier.x, velocity.y * multiplier.y, velocity.z * multiplier.z >
-		projectile.proj.hasBouncedOffVortex = true
-		projectile.SetVelocity( velocity )
+			velocity = < velocity.x * multiplier.x, velocity.y * multiplier.y, velocity.z * multiplier.z >
+			projectile.proj.hasBouncedOffVortex = true
+			projectile.SetVelocity( velocity )
 		#endif
 		return false
 	}
 
-	bool adjustImpactAngles = !(vortexSphere.GetTargetName() == GUN_SHIELD_WALL)
+	bool adjustImpactAngles = !( vortexSphere.GetTargetName() == GUN_SHIELD_WALL )
 
 	vector damageAngles = vortexSphere.GetAngles()
 
@@ -1754,7 +1764,7 @@ bool function CodeCallback_OnVortexHitProjectile( entity weapon, entity vortexSp
 		damageAngles = AnglesCompose( damageAngles, Vector( 90, 0, 0 ) )
 
 	asset projectileSettingFX = projectile.GetProjectileWeaponSettingAsset( eWeaponVar.vortex_impact_effect )
-	asset impactFX = (projectileSettingFX != $"") ? projectileSettingFX : SHIELD_WALL_EXPMED_FX
+	asset impactFX = ( projectileSettingFX != $"" ) ? projectileSettingFX : SHIELD_WALL_EXPMED_FX
 
 	bool isAmpedWall = vortexSphere.GetTargetName() == PROTO_AMPED_WALL
 	bool takesDamage = !isAmpedWall
@@ -1773,7 +1783,7 @@ bool function CodeCallback_OnVortexHitProjectile( entity weapon, entity vortexSp
 		if ( !isAmpedWall )
 		{
 			int effectHandle = StartParticleEffectInWorldWithHandle( GetParticleSystemIndex( impactFX ), contactPos, damageAngles )
-			//local color = GetShieldTriLerpColor( 1 - GetHealthFrac( vortexSphere ) )
+			// local color = GetShieldTriLerpColor( 1 - GetHealthFrac( vortexSphere ) )
 			vector color = GetShieldTriLerpColor( 0.0 )
 			EffectSetControlPointVector( effectHandle, 1, color )
 		}
@@ -1791,8 +1801,8 @@ bool function CodeCallback_OnVortexHitProjectile( entity weapon, entity vortexSp
 		}
 
 		float damage = float( projectile.GetProjectileWeaponSettingInt( eWeaponVar.damage_near_value ) )
-		//	once damageInfo is passed correctly we'll use that instead of looking up the values from the weapon .txt file.
-		//	local damage = ceil( DamageInfo_GetDamage( damageInfo ) )
+		// 	once damageInfo is passed correctly we'll use that instead of looking up the values from the weapon .txt file.
+		// 	local damage = ceil( DamageInfo_GetDamage( damageInfo ) )
 
 		damage = HandleWeakToPilotWeapons( vortexSphere, projectile.ProjectileGetWeaponClassName(), damage )
 		damage = damage + CalculateTitanSniperExtraDamage( projectile, vortexSphere )
@@ -1841,7 +1851,6 @@ bool function CodeCallback_OnVortexHitProjectile( entity weapon, entity vortexSp
 						thread DelayedPulseLocation( attacker, team, contactPos, false, false )
 				}
 				break
-
 		}
 	#endif
 
@@ -1849,7 +1858,7 @@ bool function CodeCallback_OnVortexHitProjectile( entity weapon, entity vortexSp
 	if ( isAmpedWall )
 	{
 		#if SERVER
-		projectile.proj.damageScale = AMPED_DAMAGE_SCALAR
+			projectile.proj.damageScale = AMPED_DAMAGE_SCALAR
 		#endif
 
 		return false
@@ -1860,18 +1869,18 @@ bool function CodeCallback_OnVortexHitProjectile( entity weapon, entity vortexSp
 
 bool function OnVortexHitProjectile_BubbleShieldNPC( entity vortexSphere, entity attacker, entity projectile, vector contactPos )
 {
-	vector vortexOrigin 	= vortexSphere.GetOrigin()
+	vector vortexOrigin = vortexSphere.GetOrigin()
 
 	float dist = DistanceSqr( vortexOrigin, contactPos )
 	if ( dist < MINION_BUBBLE_SHIELD_RADIUS_SQR )
 		return false // the damage is coming from INSIDE THE SPHERE
 
-	vector damageVec 	= Normalize( contactPos - vortexOrigin )
-	vector damageAngles 	= VectorToAngles( damageVec )
+	vector damageVec = Normalize( contactPos - vortexOrigin )
+	vector damageAngles = VectorToAngles( damageVec )
 	damageAngles = AnglesCompose( damageAngles, Vector( 90, 0, 0 ) )
 
 	asset projectileSettingFX = projectile.GetProjectileWeaponSettingAsset( eWeaponVar.vortex_impact_effect )
-	asset impactFX = (projectileSettingFX != $"") ? projectileSettingFX : SHIELD_WALL_EXPMED_FX
+	asset impactFX = ( projectileSettingFX != $"" ) ? projectileSettingFX : SHIELD_WALL_EXPMED_FX
 
 	int teamNum = vortexSphere.GetTeam()
 
@@ -1885,7 +1894,7 @@ bool function OnVortexHitProjectile_BubbleShieldNPC( entity vortexSphere, entity
 	#else
 		int fxId = GetParticleSystemIndex( impactFX )
 		PlayEffectOnVortexSphere( fxId, contactPos, damageAngles, vortexSphere )
-//		VortexSphereDrainHealthForDamage( vortexSphere, null, projectile )
+		// 		VortexSphereDrainHealthForDamage( vortexSphere, null, projectile )
 
 		EmitSoundAtPosition( teamNum, contactPos, "TitanShieldWall.Explosive.BulletImpact_3P_vs_3P" )
 
@@ -1901,20 +1910,20 @@ bool function OnVortexHitProjectile_BubbleShieldNPC( entity vortexSphere, entity
 }
 
 #if SERVER
-float function HandleWeakToPilotWeapons( entity vortexSphere, string weaponName, float damage )
-{
-	if ( vortexSphere.e.proto_weakToPilotWeapons ) //needs code for real, but this is fine for prototyping
+	float function HandleWeakToPilotWeapons( entity vortexSphere, string weaponName, float damage )
 	{
-		// is weapon a pilot weapon?
-		local refType = GetWeaponInfoFileKeyField_Global( weaponName, "weaponClass" )
-		if ( refType == "human" )
+		if ( vortexSphere.e.proto_weakToPilotWeapons ) // needs code for real, but this is fine for prototyping
 		{
-			damage *= VORTEX_PILOT_WEAPON_WEAKNESS_DAMAGESCALE
+			// is weapon a pilot weapon?
+			local refType = GetWeaponInfoFileKeyField_Global( weaponName, "weaponClass" )
+			if ( refType == "human" )
+			{
+				damage *= VORTEX_PILOT_WEAPON_WEAKNESS_DAMAGESCALE
+			}
 		}
-	}
 
-	return damage
-}
+		return damage
+	}
 #endif
 
 // ???: reflectOrigin not used
@@ -1936,16 +1945,16 @@ int function VortexReflectAttack( entity vortexWeapon, attackParams, vector refl
 	if ( vortexWeapon.IsForceRelease() || vortexWeapon.GetWeaponChargeFraction() == 1 )
 		forceReleased = true
 
-	//Requires code feature to properly fire tracers from offset positions.
-	//if ( vortexWeapon.GetWeaponSettingBool( eWeaponVar.is_burn_mod ) )
-	//	attackParams.pos = reflectOrigin
+	// Requires code feature to properly fire tracers from offset positions.
+	// if ( vortexWeapon.GetWeaponSettingBool( eWeaponVar.is_burn_mod ) )
+	// 	attackParams.pos = reflectOrigin
 
 	// PREDICTED REFIRES
 	// bullet impact events don't individually fire back per event because we aggregate and then shotgun blast them
 
-	//Remove the below script after FireWeaponBulletBroadcast
-	//local bulletsFired = Vortex_FireBackBullets( vortexWeapon, attackParams )
-	//totalfired += bulletsFired
+	// Remove the below script after FireWeaponBulletBroadcast
+	// local bulletsFired = Vortex_FireBackBullets( vortexWeapon, attackParams )
+	// totalfired += bulletsFired
 	int bulletCount = GetBulletsAbsorbedCount( vortexWeapon )
 	if ( bulletCount > 0 )
 	{
@@ -1959,7 +1968,7 @@ int function VortexReflectAttack( entity vortexWeapon, attackParams, vector refl
 
 	// UNPREDICTED REFIRES
 	#if SERVER
-		//printt( "server: force released?", forceReleased )
+		// printt( "server: force released?", forceReleased )
 
 		local unpredictedRefires = Vortex_GetProjectileImpacts( vortexWeapon )
 
@@ -1980,16 +1989,16 @@ int function VortexReflectAttack( entity vortexWeapon, attackParams, vector refl
 	SetVortexAmmo( vortexWeapon, 0 )
 	vortexWeapon.Signal( "VortexFired" )
 
-#if SERVER
-	vortexSphere.ClearAllBulletsFromSphere()
-#endif
+	#if SERVER
+		vortexSphere.ClearAllBulletsFromSphere()
+	#endif
 
 	/*
 	if ( forceReleased )
 		DestroyVortexSphereFromVortexWeapon( vortexWeapon )
 	else
 		DisableVortexSphereFromVortexWeapon( vortexWeapon )
-	*/
+*/
 
 	return totalfired
 }

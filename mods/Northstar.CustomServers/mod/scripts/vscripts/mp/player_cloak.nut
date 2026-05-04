@@ -1,4 +1,4 @@
-untyped //TODO: get rid of player.s.cloakedShotsAllowed. (Referenced in base_gametype_sp, so remove for R5)
+untyped // TODO: get rid of player.s.cloakedShotsAllowed. (Referenced in base_gametype_sp, so remove for R5)
 
 global function PlayerCloak_Init
 
@@ -10,15 +10,15 @@ global function DisableCloak
 global function EnableCloakForever
 global function DisableCloakForever
 
-//=========================================================
-//	player_cloak
+// =========================================================
+// 	player_cloak
 //
-//=========================================================
+// =========================================================
 
 void function PlayerCloak_Init()
 {
 	RegisterSignal( "OnStartCloak" )
-	RegisterSignal( "KillHandleCloakEnd" ) //Somewhat awkward, mainly to smooth out weird interactions with cloak ability and cloak execution
+	RegisterSignal( "KillHandleCloakEnd" ) // Somewhat awkward, mainly to smooth out weird interactions with cloak ability and cloak execution
 
 	AddCallback_OnPlayerKilled( AbilityCloak_OnDeath )
 	AddSpawnCallback( "npc_titan", SetCannotCloak )
@@ -49,7 +49,10 @@ void function EnableCloak( entity player, float duration, float fadeIn = CLOAK_F
 
 	float cloakDuration = duration - fadeIn
 
-	Assert( cloakDuration > 0.0, "Not valid cloak duration. Check that duration is larger than the fadeinTime. When this is not true it will cause the player to be cloaked forever. If you want to do that use EnableCloakForever instead" )
+	Assert(
+		cloakDuration > 0.0,
+		"Not valid cloak duration. Check that duration is larger than the fadeinTime. When this is not true it will cause the player to be cloaked forever. If you want to do that use EnableCloakForever instead"
+	)
 
 	player.SetCloakDuration( fadeIn, cloakDuration, CLOAK_FADE_OUT )
 
@@ -64,9 +67,9 @@ void function AICalloutCloak( entity player )
 {
 	player.EndSignal( "OnDeath" )
 
-	wait CLOAK_FADE_IN //Give it a beat after cloak has finishing cloaking in
+	wait CLOAK_FADE_IN // Give it a beat after cloak has finishing cloaking in
 
-	array<entity> nearbySoldiers = GetNPCArrayEx( "npc_soldier", TEAM_ANY, player.GetTeam(), player.GetOrigin(), 1000  )  //-1 for distance parameter means all spectres in map
+	array<entity> nearbySoldiers = GetNPCArrayEx( "npc_soldier", TEAM_ANY, player.GetTeam(), player.GetOrigin(), 1000 ) // -1 for distance parameter means all spectres in map
 	foreach ( entity grunt in nearbySoldiers )
 	{
 		if ( !IsAlive( grunt ) )
@@ -75,7 +78,7 @@ void function AICalloutCloak( entity player )
 		if ( grunt.GetEnemy() == player )
 		{
 			ScriptDialog_PilotCloaked( grunt, player )
-			return //Only need one guy to say this instead of multiple guys
+			return // Only need one guy to say this instead of multiple guys
 		}
 	}
 }
@@ -89,7 +92,6 @@ void function EnableCloakForever( entity player )
 	thread HandleCloakEnd( player )
 	PlayCloakSounds( player )
 }
-
 
 void function DisableCloak( entity player, float fadeOut = CLOAK_FADE_OUT )
 {
@@ -116,7 +118,6 @@ void function DisableCloakForever( entity player, float fadeOut = CLOAK_FADE_OUT
 	player.cloakedForever = false
 }
 
-
 void function HandleCloakEnd( entity player )
 {
 	player.EndSignal( "OnDeath" )
@@ -124,7 +125,7 @@ void function HandleCloakEnd( entity player )
 	player.EndSignal( "OnChangedPlayerClass" )
 	player.Signal( "OnStartCloak" )
 	player.EndSignal( "OnStartCloak" )
-	player.EndSignal( "KillHandleCloakEnd" ) //Calling DisableCloak() after EnableCloak() doesn't kill this thread by design (to allow attacking through cloak etc), so this signal is for when you want to kill this thread
+	player.EndSignal( "KillHandleCloakEnd" ) // Calling DisableCloak() after EnableCloak() doesn't kill this thread by design (to allow attacking through cloak etc), so this signal is for when you want to kill this thread
 
 	float duration = player.GetCloakEndTime() - Time()
 
@@ -173,7 +174,6 @@ void function HandleCloakEnd( entity player )
 		wait duration
 	}
 }
-
 
 void function AbilityCloak_OnDeath( entity player, entity attacker, var damageInfo )
 {

@@ -9,11 +9,11 @@ global function SetCustomIntroLength
 global function SetGetDifficultyFunc
 global function GetDifficultyLevel
 
-//********************************************************************************************
-//	Game State
-//********************************************************************************************
+// ********************************************************************************************
+// 	Game State
+// ********************************************************************************************
 global const PREMATCH_TIMER_INTRO_DEFAULT = 46
-global const PREMATCH_TIMER_NO_INTRO = 7	//shows 5 when fade from black
+global const PREMATCH_TIMER_NO_INTRO = 7 // shows 5 when fade from black
 global const CLEAR_PLAYERS_BUFFER = 2.0
 
 global const ENDROUND_FREEZE = 0
@@ -35,7 +35,6 @@ global enum eWinReason
 	ELIMINATION
 }
 
-
 function GameState_Init()
 {
 	FlagInit( "GamePlaying" )
@@ -51,15 +50,14 @@ function GameState_Init()
 	RegisterSignal( "CatchUpFallBehindVO" )
 	RegisterSignal( "ClearedPlayers" )
 
-
-	level.devForcedWin <- false  //For dev purposes only. Used to check if we forced a win through dev command
+	level.devForcedWin <- false // For dev purposes only. Used to check if we forced a win through dev command
 	level.devForcedTimeLimit <- false
 
 	level.lastTimeLeftSeconds <- null
 
 	level.lastScoreSwapVOTime <- null
 
-	level.nextMatchProgressAnnouncementLevel <- MATCH_PROGRESS_EARLY //When we make a matchProgressAnnouncement, this variable is set
+	level.nextMatchProgressAnnouncementLevel <- MATCH_PROGRESS_EARLY // When we make a matchProgressAnnouncement, this variable is set
 
 	level.endOfRoundPlayerState <- ENDROUND_FREEZE
 
@@ -69,11 +67,11 @@ function GameState_Init()
 	level.customEpilogueDuration <- null
 
 	level.lastTeamTitans <- {}
-	level.lastTeamTitans[TEAM_IMC] <- null
-	level.lastTeamTitans[TEAM_MILITIA] <- null
+	level.lastTeamTitans[ TEAM_IMC ] <- null
+	level.lastTeamTitans[ TEAM_MILITIA ] <- null
 	level.lastTeamPilots <- {}
-	level.lastTeamPilots[TEAM_IMC] <- null
-	level.lastTeamPilots[TEAM_MILITIA] <- null
+	level.lastTeamPilots[ TEAM_IMC ] <- null
+	level.lastTeamPilots[ TEAM_MILITIA ] <- null
 
 	level.firstTitanfall <- false
 
@@ -100,10 +98,9 @@ function GameState_Init()
 	file.difficultyFunc = DefaultDifficultyFunc
 
 	#if MP
-	AddCallback_EntitiesDidLoad( GameState_EntitiesDidLoad )
+		AddCallback_EntitiesDidLoad( GameState_EntitiesDidLoad )
 	#endif
 }
-
 
 int function DefaultDifficultyFunc()
 {
@@ -116,7 +113,6 @@ void function SetGetDifficultyFunc( int functionref() difficultyFunc )
 
 	file.difficultyFunc = difficultyFunc
 }
-
 
 // This function is meant to init stuff that _gamestate uses, as opposed
 // to stuff that any particular gamestate like Playing uses

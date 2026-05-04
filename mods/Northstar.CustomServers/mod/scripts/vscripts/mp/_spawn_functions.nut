@@ -8,10 +8,10 @@ function SpawnFunctions_Init()
 		return
 
 	// shared OnSpawned callbacks
-	AddSpawnCallback( "script_mover",		SpawnScriptMover )
-	AddSpawnCallback( "path_track", 		SpawnPathTrack )
-	AddSpawnCallback( "info_hint", 		SpawnInfoHint )
-	AddDeathCallback( "npc_titan", 					EmptyDeathCallback ) // so death info gets sent to client
+	AddSpawnCallback( "script_mover", SpawnScriptMover )
+	AddSpawnCallback( "path_track", SpawnPathTrack )
+	AddSpawnCallback( "info_hint", SpawnInfoHint )
+	AddDeathCallback( "npc_titan", EmptyDeathCallback ) // so death info gets sent to client
 
 	// Arc Cannon Targets
 	foreach ( classname, val in ArcCannonTargetClassnames )
@@ -28,7 +28,6 @@ function SpawnFunctions_Init()
 void function EmptyDeathCallback( entity _1, var _2 )
 {
 }
-
 
 void function SpawnPathTrack( entity node )
 {
@@ -49,12 +48,15 @@ void function SpawnScriptMover( entity ent )
 {
 	if ( ent.HasKey( "custom_health" ) )
 	{
-		//printt( "setting health on " + ent + " to " + ent.kv.custom_health.tointeger() )
+		// printt( "setting health on " + ent + " to " + ent.kv.custom_health.tointeger() )
 		ent.SetHealth( ent.kv.custom_health.tointeger() )
 	}
 }
 
 void function SpawnInfoHint( entity ent )
 {
-	Assert( !ent.HasKey( "hotspot" ) || ent.kv.hotspot.tolower() in level.hotspotHints, "info_hint at " + ent.GetOrigin() + " has unknown hotspot hint: " + ent.kv.hotspot.tolower() )
+	Assert(
+		!ent.HasKey( "hotspot" ) || ent.kv.hotspot.tolower() in level.hotspotHints,
+		"info_hint at " + ent.GetOrigin() + " has unknown hotspot hint: " + ent.kv.hotspot.tolower()
+	)
 }

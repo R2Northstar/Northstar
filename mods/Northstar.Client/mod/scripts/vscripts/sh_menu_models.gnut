@@ -2,9 +2,9 @@
 // Model tracking and save/Clear functions are temp. We already update the client knowledge of loadouts. Derive from that.
 // Move the struct off the player?
 
-//#if CLIENT && MP
-	untyped
-//#endif //client && MP
+// #if CLIENT && MP
+untyped
+// #endif //client && MP
 
 #if CLIENT
 	const float CARD_TAG_SCALE = 0.0 // update to match same const in hud_defs.rui
@@ -23,7 +23,7 @@
 	const MENU_COLOR_CORRECTION = "materials/correction/menu.raw"
 	const MENU_TEST_EFFECT = $"P_menu_motes"
 
-	const vector WEAPON_DLIGHT_COLOR = <0.65, 0.75, 1.0>
+	const vector WEAPON_DLIGHT_COLOR = < 0.65, 0.75, 1.0 >
 
 	global struct MenuCharacterDef
 	{
@@ -55,7 +55,7 @@
 		entity armBadge
 		string attachName
 		string bodyAnim
-		float[2] rotationDelta
+		float[ 2 ] rotationDelta
 		float fovScale = 1.0
 		float maxTurnSpeed = DEFAULT_MAX_TURN_SPEED
 	}
@@ -95,7 +95,7 @@
 	{
 		entity sceneRef
 		entity cameraTarget
-		float[2] mouseRotateDelta
+		float[ 2 ] mouseRotateDelta
 
 		CharacterData menuPilot
 		CharacterData menuTitan
@@ -116,10 +116,10 @@
 
 		int presentationType = ePresentationType.INACTIVE
 		bool presentationTypeInitialized = false
-		PresentationDef[ePresentationType.COUNT] presentationData
+		PresentationDef[ ePresentationType.COUNT ] presentationData
 
-		table< string, table<string, table<int,string> > > pilotAnims
-		table< string, table<string, string> > titanAnims
+		table<string, table<string, table<int, string> > > pilotAnims
+		table<string, table<string, string> > titanAnims
 
 		int menuColorCorrection = -1
 	} file
@@ -157,11 +157,11 @@
 	global function PreviewPilotWeaponSkinChange
 	global function ClearAllPilotPreview
 
-    global function PreviewPilotWeaponMod
-    global function SavePilotWeaponModPreview
+	global function PreviewPilotWeaponMod
+	global function SavePilotWeaponModPreview
 
 	global function PreviewPilotCamoChange
-	//global function SavePilotCamoPreview
+	// global function SavePilotCamoPreview
 
 	global function PreviewTitanCamoChange
 	global function SaveTitanCamoPreview
@@ -212,13 +212,13 @@
 	global function UI_SetPresentationType
 #endif // UI
 
-	global const STORE_BG_DEFAULT = 0
-	global const STORE_BG_BUNDLE1 = 1
-	global const STORE_BG_BUNDLE2 = 2
-	global const STORE_BG_BUNDLE3 = 3
-	global const STORE_BG_BUNDLE4 = 4
-	global const STORE_BG_BUNDLE5 = 5
-	global const STORE_BG_BUNDLE6 = 6
+global const STORE_BG_DEFAULT = 0
+global const STORE_BG_BUNDLE1 = 1
+global const STORE_BG_BUNDLE2 = 2
+global const STORE_BG_BUNDLE3 = 3
+global const STORE_BG_BUNDLE4 = 4
+global const STORE_BG_BUNDLE5 = 5
+global const STORE_BG_BUNDLE6 = 6
 
 #if CLIENT
 
@@ -232,15 +232,15 @@
 		return file.menuPilot.body
 	}
 
-    void function MenuModels_Init()
-    {
-	    if ( IsMultiplayer() && MenuMapEntitiesExist() )
-		    clGlobal.mapSupportsMenuModels = true
+	void function MenuModels_Init()
+	{
+		if ( IsMultiplayer() && MenuMapEntitiesExist() )
+			clGlobal.mapSupportsMenuModels = true
 
-	    RunUIScript( "UpdateUIMapSupportsMenuModels", clGlobal.mapSupportsMenuModels )
+		RunUIScript( "UpdateUIMapSupportsMenuModels", clGlobal.mapSupportsMenuModels )
 
-	    if ( !clGlobal.mapSupportsMenuModels )
-		    return
+		if ( !clGlobal.mapSupportsMenuModels )
+			return
 
 		#if MP
 			PrecacheParticleSystem( MENU_TEST_EFFECT )
@@ -254,15 +254,11 @@
 		#endif // MP
 
 		RegisterSignal( "UpdateCallsign" )
-    }
+	}
 
 	bool function MenuMapEntitiesExist()
 	{
-		array<string> entNames =
-		[
-			"menu_scene_ref",
-			"menu_camera_target"
-		]
+		array<string> entNames = [ "menu_scene_ref", "menu_camera_target" ]
 
 		foreach ( name in entNames )
 		{
@@ -293,321 +289,321 @@
 		// Outro anims should work the same
 
 		int presentationType = ePresentationType.INACTIVE
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_menu_main_idle_01"
-		file.presentationData[ presentationType ].pilotAnimType 	= "main_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels
+		file.presentationData[ presentationType ].sceneAnim = "camera_menu_main_idle_01"
+		file.presentationData[ presentationType ].pilotAnimType = "main_idle"
+		file.presentationData[ presentationType ].titanAnimType = "background_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels
 
 		presentationType = ePresentationType.DEFAULT
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_menu_main_idle_01"
-		file.presentationData[ presentationType ].pilotAnimType 	= "main_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels // Show spawn models
-		file.presentationData[ presentationType ].csmTexelScale1 	= 0.22
-		file.presentationData[ presentationType ].csmTexelScale2 	= 0.55
-		file.presentationData[ presentationType ].csmStartDistance 	= 70.0
-		file.presentationData[ presentationType ].showCallsign 		= true
+		file.presentationData[ presentationType ].sceneAnim = "camera_menu_main_idle_01"
+		file.presentationData[ presentationType ].pilotAnimType = "main_idle"
+		file.presentationData[ presentationType ].titanAnimType = "background_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels // Show spawn models
+		file.presentationData[ presentationType ].csmTexelScale1 = 0.22
+		file.presentationData[ presentationType ].csmTexelScale2 = 0.55
+		file.presentationData[ presentationType ].csmStartDistance = 70.0
+		file.presentationData[ presentationType ].showCallsign = true
 
 		presentationType = ePresentationType.STORE_CAMO_PACKS
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_menu_main_idle_01"
-		file.presentationData[ presentationType ].pilotAnimType 	= "main_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels // Show spawn models
-		file.presentationData[ presentationType ].dofFarStart 		= 200.0
-		file.presentationData[ presentationType ].dofFarEnd 		= 1000.0
-		file.presentationData[ presentationType ].csmTexelScale1 	= 0.22
-		file.presentationData[ presentationType ].csmTexelScale2 	= 0.55
-		file.presentationData[ presentationType ].csmStartDistance 	= 70.0
+		file.presentationData[ presentationType ].sceneAnim = "camera_menu_main_idle_01"
+		file.presentationData[ presentationType ].pilotAnimType = "main_idle"
+		file.presentationData[ presentationType ].titanAnimType = "background_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels // Show spawn models
+		file.presentationData[ presentationType ].dofFarStart = 200.0
+		file.presentationData[ presentationType ].dofFarEnd = 1000.0
+		file.presentationData[ presentationType ].csmTexelScale1 = 0.22
+		file.presentationData[ presentationType ].csmTexelScale2 = 0.55
+		file.presentationData[ presentationType ].csmStartDistance = 70.0
 
 		presentationType = ePresentationType.STORE_FRONT
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_menu_settings_idle"
-		file.presentationData[ presentationType ].pilotAnimType 	= "main_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels // Animation change
-		file.presentationData[ presentationType ].dofFarStart 		= 2300.0
-		file.presentationData[ presentationType ].dofFarEnd 		= 3000.0
-		file.presentationData[ presentationType ].showStoreBG 		= true
+		file.presentationData[ presentationType ].sceneAnim = "camera_menu_settings_idle"
+		file.presentationData[ presentationType ].pilotAnimType = "main_idle"
+		file.presentationData[ presentationType ].titanAnimType = "background_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels // Animation change
+		file.presentationData[ presentationType ].dofFarStart = 2300.0
+		file.presentationData[ presentationType ].dofFarEnd = 3000.0
+		file.presentationData[ presentationType ].showStoreBG = true
 
 		presentationType = ePresentationType.STORE_PRIME_TITANS
-		file.presentationData[ presentationType ].characterData 	= file.menuTitan
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_titan_menu_loadout_idle"
-		file.presentationData[ presentationType ].pilotAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "focused_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels // Animation change
-		file.presentationData[ presentationType ].dofFarStart 		= 4000.0
-		file.presentationData[ presentationType ].dofFarEnd 		= 5000.0
-		file.presentationData[ presentationType ].csmStartDistance 	= 200.0
-		file.presentationData[ presentationType ].showStorePrimeBG 	= true
+		file.presentationData[ presentationType ].characterData = file.menuTitan
+		file.presentationData[ presentationType ].sceneAnim = "camera_titan_menu_loadout_idle"
+		file.presentationData[ presentationType ].pilotAnimType = "background_idle"
+		file.presentationData[ presentationType ].titanAnimType = "focused_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels // Animation change
+		file.presentationData[ presentationType ].dofFarStart = 4000.0
+		file.presentationData[ presentationType ].dofFarEnd = 5000.0
+		file.presentationData[ presentationType ].csmStartDistance = 200.0
+		file.presentationData[ presentationType ].showStorePrimeBG = true
 
 		presentationType = ePresentationType.STORE_WEAPON_SKINS
-		file.presentationData[ presentationType ].characterData 	= file.menuWeaponModel
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_menu_weapon_idle"
-		file.presentationData[ presentationType ].pilotAnimType 	= "main_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "focused_idle"
-		file.presentationData[ presentationType ].maxPitchDegrees 	= 90
-		file.presentationData[ presentationType ].dofFarStart 		= 4000.0
-		file.presentationData[ presentationType ].dofFarEnd 		= 5000.0
-		file.presentationData[ presentationType ].showWeaponModel 	= true
-		file.presentationData[ presentationType ].showTitanModel 	= false
-		//file.presentationData[ presentationType ].useRollAxis 		= true
+		file.presentationData[ presentationType ].characterData = file.menuWeaponModel
+		file.presentationData[ presentationType ].sceneAnim = "camera_menu_weapon_idle"
+		file.presentationData[ presentationType ].pilotAnimType = "main_idle"
+		file.presentationData[ presentationType ].titanAnimType = "focused_idle"
+		file.presentationData[ presentationType ].maxPitchDegrees = 90
+		file.presentationData[ presentationType ].dofFarStart = 4000.0
+		file.presentationData[ presentationType ].dofFarEnd = 5000.0
+		file.presentationData[ presentationType ].showWeaponModel = true
+		file.presentationData[ presentationType ].showTitanModel = false
+		// file.presentationData[ presentationType ].useRollAxis 		= true
 
 		presentationType = ePresentationType.SEARCH
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_menu_main_idle_01"
-		file.presentationData[ presentationType ].pilotAnimType 	= "main_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels // Show spawn models
-		file.presentationData[ presentationType ].fov 				= DEFAULT_FOV + 10
-		file.presentationData[ presentationType ].csmTexelScale1 	= 0.22
-		file.presentationData[ presentationType ].csmTexelScale2 	= 0.55
-		file.presentationData[ presentationType ].csmStartDistance 	= 70.0
-		file.presentationData[ presentationType ].showCallsign 		= true
+		file.presentationData[ presentationType ].sceneAnim = "camera_menu_main_idle_01"
+		file.presentationData[ presentationType ].pilotAnimType = "main_idle"
+		file.presentationData[ presentationType ].titanAnimType = "background_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels // Show spawn models
+		file.presentationData[ presentationType ].fov = DEFAULT_FOV + 10
+		file.presentationData[ presentationType ].csmTexelScale1 = 0.22
+		file.presentationData[ presentationType ].csmTexelScale2 = 0.55
+		file.presentationData[ presentationType ].csmStartDistance = 70.0
+		file.presentationData[ presentationType ].showCallsign = true
 
 		presentationType = ePresentationType.CALLSIGN
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_menu_main_idle_01"
-		file.presentationData[ presentationType ].pilotAnimType 	= "main_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels // Show spawn models
-		file.presentationData[ presentationType ].csmTexelScale1 	= 0.22
-		file.presentationData[ presentationType ].csmTexelScale2 	= 0.55
-		file.presentationData[ presentationType ].csmStartDistance 	= 70.0
+		file.presentationData[ presentationType ].sceneAnim = "camera_menu_main_idle_01"
+		file.presentationData[ presentationType ].pilotAnimType = "main_idle"
+		file.presentationData[ presentationType ].titanAnimType = "background_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels // Show spawn models
+		file.presentationData[ presentationType ].csmTexelScale1 = 0.22
+		file.presentationData[ presentationType ].csmTexelScale2 = 0.55
+		file.presentationData[ presentationType ].csmStartDistance = 70.0
 
 		presentationType = ePresentationType.KNOWLEDGEBASE_MAIN
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_menu_loadout_idle_01"
-		file.presentationData[ presentationType ].pilotAnimType 	= "weapon_inspect_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels
-		file.presentationData[ presentationType ].fov 				= DEFAULT_FOV - 25
-		file.presentationData[ presentationType ].dofFarStart 		= 30.0
-		file.presentationData[ presentationType ].csmTexelScale1 	= 0.22
-		file.presentationData[ presentationType ].csmTexelScale2 	= 0.55
-		file.presentationData[ presentationType ].csmStartDistance 	= 70.0
+		file.presentationData[ presentationType ].sceneAnim = "camera_menu_loadout_idle_01"
+		file.presentationData[ presentationType ].pilotAnimType = "weapon_inspect_idle"
+		file.presentationData[ presentationType ].titanAnimType = "background_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels
+		file.presentationData[ presentationType ].fov = DEFAULT_FOV - 25
+		file.presentationData[ presentationType ].dofFarStart = 30.0
+		file.presentationData[ presentationType ].csmTexelScale1 = 0.22
+		file.presentationData[ presentationType ].csmTexelScale2 = 0.55
+		file.presentationData[ presentationType ].csmStartDistance = 70.0
 
 		presentationType = ePresentationType.KNOWLEDGEBASE_SUB
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_menu_loadout_idle_01"
-		file.presentationData[ presentationType ].pilotAnimType 	= "weapon_inspect_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels
-		file.presentationData[ presentationType ].fov 				= DEFAULT_FOV - 28
-		file.presentationData[ presentationType ].dofFarStart 		= 30.0
-		file.presentationData[ presentationType ].csmTexelScale1 	= 0.22
-		file.presentationData[ presentationType ].csmTexelScale2 	= 0.55
-		file.presentationData[ presentationType ].csmStartDistance 	= 70.0
+		file.presentationData[ presentationType ].sceneAnim = "camera_menu_loadout_idle_01"
+		file.presentationData[ presentationType ].pilotAnimType = "weapon_inspect_idle"
+		file.presentationData[ presentationType ].titanAnimType = "background_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels
+		file.presentationData[ presentationType ].fov = DEFAULT_FOV - 28
+		file.presentationData[ presentationType ].dofFarStart = 30.0
+		file.presentationData[ presentationType ].csmTexelScale1 = 0.22
+		file.presentationData[ presentationType ].csmTexelScale2 = 0.55
+		file.presentationData[ presentationType ].csmStartDistance = 70.0
 
 		presentationType = ePresentationType.PVE_MAIN
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_menu_loadout_idle_01"
-		file.presentationData[ presentationType ].pilotAnimType 	= "weapon_inspect_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels
-		file.presentationData[ presentationType ].fov 				= DEFAULT_FOV - 25
-		file.presentationData[ presentationType ].dofFarStart 		= 30.0
-		file.presentationData[ presentationType ].csmTexelScale1 	= 0.22
-		file.presentationData[ presentationType ].csmTexelScale2 	= 0.55
-		file.presentationData[ presentationType ].csmStartDistance 	= 70.0
+		file.presentationData[ presentationType ].sceneAnim = "camera_menu_loadout_idle_01"
+		file.presentationData[ presentationType ].pilotAnimType = "weapon_inspect_idle"
+		file.presentationData[ presentationType ].titanAnimType = "background_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels
+		file.presentationData[ presentationType ].fov = DEFAULT_FOV - 25
+		file.presentationData[ presentationType ].dofFarStart = 30.0
+		file.presentationData[ presentationType ].csmTexelScale1 = 0.22
+		file.presentationData[ presentationType ].csmTexelScale2 = 0.55
+		file.presentationData[ presentationType ].csmStartDistance = 70.0
 
 		presentationType = ePresentationType.PILOT
-		file.presentationData[ presentationType ].characterData 	= file.menuPilot
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_menu_loadout_idle_01"
-		file.presentationData[ presentationType ].pilotAnimType 	= "focused_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels // Animation change
-		file.presentationData[ presentationType ].dofFarStart 		= 200.0
-		file.presentationData[ presentationType ].dofFarEnd 		= 300.0
-		file.presentationData[ presentationType ].csmTexelScale1 	= 0.4
-		file.presentationData[ presentationType ].csmTexelScale2 	= 0.55
-		file.presentationData[ presentationType ].csmStartDistance 	= 70.0
+		file.presentationData[ presentationType ].characterData = file.menuPilot
+		file.presentationData[ presentationType ].sceneAnim = "camera_menu_loadout_idle_01"
+		file.presentationData[ presentationType ].pilotAnimType = "focused_idle"
+		file.presentationData[ presentationType ].titanAnimType = "background_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels // Animation change
+		file.presentationData[ presentationType ].dofFarStart = 200.0
+		file.presentationData[ presentationType ].dofFarEnd = 300.0
+		file.presentationData[ presentationType ].csmTexelScale1 = 0.4
+		file.presentationData[ presentationType ].csmTexelScale2 = 0.55
+		file.presentationData[ presentationType ].csmStartDistance = 70.0
 
 		presentationType = ePresentationType.PILOT_LOADOUT_EDIT
-		file.presentationData[ presentationType ].characterData 	= file.menuPilot
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_menu_loadout_idle_01"
-		file.presentationData[ presentationType ].pilotAnimType 	= "focused_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels
-		file.presentationData[ presentationType ].dofFarStart 		= 200.0
-		file.presentationData[ presentationType ].dofFarEnd 		= 300.0
-		file.presentationData[ presentationType ].csmTexelScale1 	= 0.4
-		file.presentationData[ presentationType ].csmTexelScale2 	= 0.55
-		file.presentationData[ presentationType ].csmStartDistance 	= 70.0
+		file.presentationData[ presentationType ].characterData = file.menuPilot
+		file.presentationData[ presentationType ].sceneAnim = "camera_menu_loadout_idle_01"
+		file.presentationData[ presentationType ].pilotAnimType = "focused_idle"
+		file.presentationData[ presentationType ].titanAnimType = "background_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels
+		file.presentationData[ presentationType ].dofFarStart = 200.0
+		file.presentationData[ presentationType ].dofFarEnd = 300.0
+		file.presentationData[ presentationType ].csmTexelScale1 = 0.4
+		file.presentationData[ presentationType ].csmTexelScale2 = 0.55
+		file.presentationData[ presentationType ].csmStartDistance = 70.0
 
 		presentationType = ePresentationType.PILOT_CHARACTER
-		file.presentationData[ presentationType ].characterData 	= file.menuPilot
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_menu_loadout_idle_01"
-		file.presentationData[ presentationType ].pilotAnimType 	= "focused_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels // Animation change
-		file.presentationData[ presentationType ].dofFarStart 		= 200.0
-		file.presentationData[ presentationType ].dofFarEnd 		= 300.0
-		file.presentationData[ presentationType ].csmTexelScale1 	= 0.4
-		file.presentationData[ presentationType ].csmTexelScale2 	= 0.55
-		file.presentationData[ presentationType ].csmStartDistance 	= 70.0
+		file.presentationData[ presentationType ].characterData = file.menuPilot
+		file.presentationData[ presentationType ].sceneAnim = "camera_menu_loadout_idle_01"
+		file.presentationData[ presentationType ].pilotAnimType = "focused_idle"
+		file.presentationData[ presentationType ].titanAnimType = "background_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels // Animation change
+		file.presentationData[ presentationType ].dofFarStart = 200.0
+		file.presentationData[ presentationType ].dofFarEnd = 300.0
+		file.presentationData[ presentationType ].csmTexelScale1 = 0.4
+		file.presentationData[ presentationType ].csmTexelScale2 = 0.55
+		file.presentationData[ presentationType ].csmStartDistance = 70.0
 
 		presentationType = ePresentationType.PILOT_WEAPON
-		file.presentationData[ presentationType ].characterData 	= file.menuPilot
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_menu_loadout_edit_idle_01"
-		file.presentationData[ presentationType ].pilotAnimType 	= "weapon_inspect_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels // Animation change
-		file.presentationData[ presentationType ].csmTexelScale1 	= 0.22
-		file.presentationData[ presentationType ].csmTexelScale2 	= 0.55
-		file.presentationData[ presentationType ].csmStartDistance 	= 40.0
+		file.presentationData[ presentationType ].characterData = file.menuPilot
+		file.presentationData[ presentationType ].sceneAnim = "camera_menu_loadout_edit_idle_01"
+		file.presentationData[ presentationType ].pilotAnimType = "weapon_inspect_idle"
+		file.presentationData[ presentationType ].titanAnimType = "background_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels // Animation change
+		file.presentationData[ presentationType ].csmTexelScale1 = 0.22
+		file.presentationData[ presentationType ].csmTexelScale2 = 0.55
+		file.presentationData[ presentationType ].csmStartDistance = 40.0
 
 		presentationType = ePresentationType.TITAN
-		file.presentationData[ presentationType ].characterData 	= file.menuTitan
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_titan_menu_loadout_idle"
-		file.presentationData[ presentationType ].pilotAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "focused_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels // Animation change
-		file.presentationData[ presentationType ].dofFarStart 		= 500.0
-		file.presentationData[ presentationType ].dofFarEnd 		= 1000.0
-		file.presentationData[ presentationType ].csmStartDistance 	= 200.0
+		file.presentationData[ presentationType ].characterData = file.menuTitan
+		file.presentationData[ presentationType ].sceneAnim = "camera_titan_menu_loadout_idle"
+		file.presentationData[ presentationType ].pilotAnimType = "background_idle"
+		file.presentationData[ presentationType ].titanAnimType = "focused_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels // Animation change
+		file.presentationData[ presentationType ].dofFarStart = 500.0
+		file.presentationData[ presentationType ].dofFarEnd = 1000.0
+		file.presentationData[ presentationType ].csmStartDistance = 200.0
 
 		presentationType = ePresentationType.TITAN_LOADOUT_EDIT
-		file.presentationData[ presentationType ].characterData 	= file.menuTitan
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_titan_menu_loadout_edit"
-		file.presentationData[ presentationType ].pilotAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "editing_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels
-		file.presentationData[ presentationType ].dofFarStart 		= 500.0
-		file.presentationData[ presentationType ].dofFarEnd 		= 1000.0
-		file.presentationData[ presentationType ].csmStartDistance 	= 200.0
+		file.presentationData[ presentationType ].characterData = file.menuTitan
+		file.presentationData[ presentationType ].sceneAnim = "camera_titan_menu_loadout_edit"
+		file.presentationData[ presentationType ].pilotAnimType = "background_idle"
+		file.presentationData[ presentationType ].titanAnimType = "editing_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels
+		file.presentationData[ presentationType ].dofFarStart = 500.0
+		file.presentationData[ presentationType ].dofFarEnd = 1000.0
+		file.presentationData[ presentationType ].csmStartDistance = 200.0
 
 		presentationType = ePresentationType.TITAN_SKIN_EDIT
-		file.presentationData[ presentationType ].characterData 	= file.menuTitan
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_titan_menu_loadout_edit"
-		file.presentationData[ presentationType ].pilotAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "editing_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels
-		file.presentationData[ presentationType ].dofFarStart 		= 500.0
-		file.presentationData[ presentationType ].dofFarEnd 		= 1000.0
-		file.presentationData[ presentationType ].csmStartDistance 	= 200.0
+		file.presentationData[ presentationType ].characterData = file.menuTitan
+		file.presentationData[ presentationType ].sceneAnim = "camera_titan_menu_loadout_edit"
+		file.presentationData[ presentationType ].pilotAnimType = "background_idle"
+		file.presentationData[ presentationType ].titanAnimType = "editing_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels
+		file.presentationData[ presentationType ].dofFarStart = 500.0
+		file.presentationData[ presentationType ].dofFarEnd = 1000.0
+		file.presentationData[ presentationType ].csmStartDistance = 200.0
 
 		presentationType = ePresentationType.TITAN_ARMBADGE
-		file.presentationData[ presentationType ].characterData 	= file.menuTitan
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_titan_menu_loadout_edit"
-		file.presentationData[ presentationType ].pilotAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "editing_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels
-		file.presentationData[ presentationType ].dofFarStart 		= 500.0
-		file.presentationData[ presentationType ].dofFarEnd 		= 1000.0
-		file.presentationData[ presentationType ].csmStartDistance 	= 200.0
+		file.presentationData[ presentationType ].characterData = file.menuTitan
+		file.presentationData[ presentationType ].sceneAnim = "camera_titan_menu_loadout_edit"
+		file.presentationData[ presentationType ].pilotAnimType = "background_idle"
+		file.presentationData[ presentationType ].titanAnimType = "editing_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels
+		file.presentationData[ presentationType ].dofFarStart = 500.0
+		file.presentationData[ presentationType ].dofFarEnd = 1000.0
+		file.presentationData[ presentationType ].csmStartDistance = 200.0
 
 		presentationType = ePresentationType.TITAN_WEAPON
-		file.presentationData[ presentationType ].characterData 	= file.menuTitan
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_titan_menu_loadout_idle"
-		file.presentationData[ presentationType ].pilotAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "editing_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels
-		file.presentationData[ presentationType ].dofFarStart 		= 500.0
-		file.presentationData[ presentationType ].dofFarEnd 		= 1000.0
-		file.presentationData[ presentationType ].csmStartDistance 	= 200.0
+		file.presentationData[ presentationType ].characterData = file.menuTitan
+		file.presentationData[ presentationType ].sceneAnim = "camera_titan_menu_loadout_idle"
+		file.presentationData[ presentationType ].pilotAnimType = "background_idle"
+		file.presentationData[ presentationType ].titanAnimType = "editing_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels
+		file.presentationData[ presentationType ].dofFarStart = 500.0
+		file.presentationData[ presentationType ].dofFarEnd = 1000.0
+		file.presentationData[ presentationType ].csmStartDistance = 200.0
 
 		presentationType = ePresentationType.TITAN_NOSE_ART
-		file.presentationData[ presentationType ].characterData 	= file.menuTitan
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_menu_noseart_idle"
-		file.presentationData[ presentationType ].pilotAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "nose_art_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels // Titan animation change
-		file.presentationData[ presentationType ].maxTurnDegrees 	= 100.0
-		file.presentationData[ presentationType ].dofFarStart 		= 500.0
-		file.presentationData[ presentationType ].dofFarEnd 		= 1000.0
-		file.presentationData[ presentationType ].csmStartDistance 	= 200.0
+		file.presentationData[ presentationType ].characterData = file.menuTitan
+		file.presentationData[ presentationType ].sceneAnim = "camera_menu_noseart_idle"
+		file.presentationData[ presentationType ].pilotAnimType = "background_idle"
+		file.presentationData[ presentationType ].titanAnimType = "nose_art_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels // Titan animation change
+		file.presentationData[ presentationType ].maxTurnDegrees = 100.0
+		file.presentationData[ presentationType ].dofFarStart = 500.0
+		file.presentationData[ presentationType ].dofFarEnd = 1000.0
+		file.presentationData[ presentationType ].csmStartDistance = 200.0
 
 		presentationType = ePresentationType.NO_MODELS
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_menu_settings_idle"
-		file.presentationData[ presentationType ].pilotAnimType 	= "main_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels // Animation change
+		file.presentationData[ presentationType ].sceneAnim = "camera_menu_settings_idle"
+		file.presentationData[ presentationType ].pilotAnimType = "main_idle"
+		file.presentationData[ presentationType ].titanAnimType = "background_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels // Animation change
 
 		presentationType = ePresentationType.FACTIONS
-		file.presentationData[ presentationType ].characterData 	= file.menuFaction
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_menu_faction_idle"
-		file.presentationData[ presentationType ].pilotAnimType 	= "main_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].csmTexelScale1 	= 0.4
-		file.presentationData[ presentationType ].csmTexelScale2 	= 0.55
-		file.presentationData[ presentationType ].csmStartDistance 	= 70.0
+		file.presentationData[ presentationType ].characterData = file.menuFaction
+		file.presentationData[ presentationType ].sceneAnim = "camera_menu_faction_idle"
+		file.presentationData[ presentationType ].pilotAnimType = "main_idle"
+		file.presentationData[ presentationType ].titanAnimType = "background_idle"
+		file.presentationData[ presentationType ].csmTexelScale1 = 0.4
+		file.presentationData[ presentationType ].csmTexelScale2 = 0.55
+		file.presentationData[ presentationType ].csmStartDistance = 70.0
 
 		presentationType = ePresentationType.BOOSTS
-		file.presentationData[ presentationType ].characterData 	= file.menuMiscModel
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_menu_burncard_idle"
-		file.presentationData[ presentationType ].pilotAnimType 	= "main_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].showMiscModel 	= true
+		file.presentationData[ presentationType ].characterData = file.menuMiscModel
+		file.presentationData[ presentationType ].sceneAnim = "camera_menu_burncard_idle"
+		file.presentationData[ presentationType ].pilotAnimType = "main_idle"
+		file.presentationData[ presentationType ].titanAnimType = "background_idle"
+		file.presentationData[ presentationType ].showMiscModel = true
 
 		presentationType = ePresentationType.TITAN_CENTER
-		file.presentationData[ presentationType ].characterData 	= file.menuTitan
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_titan_menu_frontierdefense_idle"
-		file.presentationData[ presentationType ].pilotAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "focused_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels // Animation change
-		file.presentationData[ presentationType ].dofFarStart 		= 500.0
-		file.presentationData[ presentationType ].dofFarEnd 		= 1000.0
-		file.presentationData[ presentationType ].csmStartDistance 	= 200.0
+		file.presentationData[ presentationType ].characterData = file.menuTitan
+		file.presentationData[ presentationType ].sceneAnim = "camera_titan_menu_frontierdefense_idle"
+		file.presentationData[ presentationType ].pilotAnimType = "background_idle"
+		file.presentationData[ presentationType ].titanAnimType = "focused_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels // Animation change
+		file.presentationData[ presentationType ].dofFarStart = 500.0
+		file.presentationData[ presentationType ].dofFarEnd = 1000.0
+		file.presentationData[ presentationType ].csmStartDistance = 200.0
 
 		presentationType = ePresentationType.TITAN_CENTER_SELECTED
-		file.presentationData[ presentationType ].characterData 	= file.menuTitan
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_titan_menu_frontierdefense_idle_selected"
-		file.presentationData[ presentationType ].pilotAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "editing_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels
-		file.presentationData[ presentationType ].fov 				= DEFAULT_FOV - 10
-		file.presentationData[ presentationType ].dofFarStart 		= 500.0
-		file.presentationData[ presentationType ].dofFarEnd 		= 1000.0
-		file.presentationData[ presentationType ].csmStartDistance 	= 200.0
+		file.presentationData[ presentationType ].characterData = file.menuTitan
+		file.presentationData[ presentationType ].sceneAnim = "camera_titan_menu_frontierdefense_idle_selected"
+		file.presentationData[ presentationType ].pilotAnimType = "background_idle"
+		file.presentationData[ presentationType ].titanAnimType = "editing_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels
+		file.presentationData[ presentationType ].fov = DEFAULT_FOV - 10
+		file.presentationData[ presentationType ].dofFarStart = 500.0
+		file.presentationData[ presentationType ].dofFarEnd = 1000.0
+		file.presentationData[ presentationType ].csmStartDistance = 200.0
 
 		presentationType = ePresentationType.TITAN_LEFT
-		file.presentationData[ presentationType ].characterData 	= file.menuTitan
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_titan_menu_left_idle"
-		file.presentationData[ presentationType ].pilotAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "focused_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels // Animation change
-		file.presentationData[ presentationType ].dofFarStart 		= 500.0
-		file.presentationData[ presentationType ].dofFarEnd 		= 1000.0
-		file.presentationData[ presentationType ].csmStartDistance 	= 200.0
+		file.presentationData[ presentationType ].characterData = file.menuTitan
+		file.presentationData[ presentationType ].sceneAnim = "camera_titan_menu_left_idle"
+		file.presentationData[ presentationType ].pilotAnimType = "background_idle"
+		file.presentationData[ presentationType ].titanAnimType = "focused_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels // Animation change
+		file.presentationData[ presentationType ].dofFarStart = 500.0
+		file.presentationData[ presentationType ].dofFarEnd = 1000.0
+		file.presentationData[ presentationType ].csmStartDistance = 200.0
 
 		presentationType = ePresentationType.TITAN_RIGHT
-		file.presentationData[ presentationType ].characterData 	= file.menuTitan
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_titan_menu_right_idle"
-		file.presentationData[ presentationType ].pilotAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "focused_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels // Animation change
-		file.presentationData[ presentationType ].dofFarStart 		= 500.0
-		file.presentationData[ presentationType ].dofFarEnd 		= 1000.0
-		file.presentationData[ presentationType ].csmStartDistance 	= 200.0
+		file.presentationData[ presentationType ].characterData = file.menuTitan
+		file.presentationData[ presentationType ].sceneAnim = "camera_titan_menu_right_idle"
+		file.presentationData[ presentationType ].pilotAnimType = "background_idle"
+		file.presentationData[ presentationType ].titanAnimType = "focused_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels // Animation change
+		file.presentationData[ presentationType ].dofFarStart = 500.0
+		file.presentationData[ presentationType ].dofFarEnd = 1000.0
+		file.presentationData[ presentationType ].csmStartDistance = 200.0
 
 		presentationType = ePresentationType.FD_MAIN
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_titan_menu_frontierdefense_idle"
-		file.presentationData[ presentationType ].pilotAnimType 	= "hidden_from_main"
-		file.presentationData[ presentationType ].titanAnimType 	= "focused_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels // Animation change
-		file.presentationData[ presentationType ].dofFarStart 		= 500.0
-		file.presentationData[ presentationType ].dofFarEnd 		= 1000.0
-		file.presentationData[ presentationType ].csmStartDistance 	= 200.0
-		file.presentationData[ presentationType ].showCallsign 		= true
-		file.presentationData[ presentationType ].showMiscModel 	= true
+		file.presentationData[ presentationType ].sceneAnim = "camera_titan_menu_frontierdefense_idle"
+		file.presentationData[ presentationType ].pilotAnimType = "hidden_from_main"
+		file.presentationData[ presentationType ].titanAnimType = "focused_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels // Animation change
+		file.presentationData[ presentationType ].dofFarStart = 500.0
+		file.presentationData[ presentationType ].dofFarEnd = 1000.0
+		file.presentationData[ presentationType ].csmStartDistance = 200.0
+		file.presentationData[ presentationType ].showCallsign = true
+		file.presentationData[ presentationType ].showMiscModel = true
 
 		presentationType = ePresentationType.FD_SEARCH
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_titan_menu_frontierdefense_idle"
-		file.presentationData[ presentationType ].pilotAnimType 	= "hidden_from_main"
-		file.presentationData[ presentationType ].titanAnimType 	= "focused_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels // Animation change
-		file.presentationData[ presentationType ].fov 				= DEFAULT_FOV + 10
-		file.presentationData[ presentationType ].dofFarStart 		= 500.0
-		file.presentationData[ presentationType ].dofFarEnd 		= 1000.0
-		file.presentationData[ presentationType ].csmStartDistance 	= 200.0
-		file.presentationData[ presentationType ].showCallsign 		= true
-		file.presentationData[ presentationType ].showMiscModel 	= true
+		file.presentationData[ presentationType ].sceneAnim = "camera_titan_menu_frontierdefense_idle"
+		file.presentationData[ presentationType ].pilotAnimType = "hidden_from_main"
+		file.presentationData[ presentationType ].titanAnimType = "focused_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels // Animation change
+		file.presentationData[ presentationType ].fov = DEFAULT_FOV + 10
+		file.presentationData[ presentationType ].dofFarStart = 500.0
+		file.presentationData[ presentationType ].dofFarEnd = 1000.0
+		file.presentationData[ presentationType ].csmStartDistance = 200.0
+		file.presentationData[ presentationType ].showCallsign = true
+		file.presentationData[ presentationType ].showMiscModel = true
 
 		presentationType = ePresentationType.FD_FIND_GAME
-		file.presentationData[ presentationType ].sceneAnim 		= "camera_titan_menu_loadout_idle"
-		file.presentationData[ presentationType ].pilotAnimType 	= "background_idle"
-		file.presentationData[ presentationType ].titanAnimType 	= "focused_idle"
-		file.presentationData[ presentationType ].activateFunc 		= UpdateBothModels // Animation change
-		file.presentationData[ presentationType ].fov 				= DEFAULT_FOV + 10
-		file.presentationData[ presentationType ].dofFarStart 		= 500.0
-		file.presentationData[ presentationType ].dofFarEnd 		= 1000.0
-		file.presentationData[ presentationType ].csmStartDistance 	= 200.0
-		file.presentationData[ presentationType ].showCallsign 		= true
-		file.presentationData[ presentationType ].showMiscModel 	= true
+		file.presentationData[ presentationType ].sceneAnim = "camera_titan_menu_loadout_idle"
+		file.presentationData[ presentationType ].pilotAnimType = "background_idle"
+		file.presentationData[ presentationType ].titanAnimType = "focused_idle"
+		file.presentationData[ presentationType ].activateFunc = UpdateBothModels // Animation change
+		file.presentationData[ presentationType ].fov = DEFAULT_FOV + 10
+		file.presentationData[ presentationType ].dofFarStart = 500.0
+		file.presentationData[ presentationType ].dofFarEnd = 1000.0
+		file.presentationData[ presentationType ].csmStartDistance = 200.0
+		file.presentationData[ presentationType ].showCallsign = true
+		file.presentationData[ presentationType ].showMiscModel = true
 	}
 
 	void function UpdateBothModels()
@@ -640,350 +636,350 @@
 
 		string bodyType = "light"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_menu_main_idle_02"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_menu_main_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_menu_main_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_menu_main_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_menu_main_idle_02"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_menu_main_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_menu_main_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_menu_main_idle_01"
 
 		bodyType = "medium"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_menu_main_idle_02"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_menu_main_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_menu_main_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_menu_main_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_menu_main_idle_02"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_menu_main_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_menu_main_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_menu_main_idle_01"
 
 		bodyType = "heavy"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_menu_main_idle_02"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_menu_main_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_menu_main_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_menu_main_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_menu_main_idle_02"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_menu_main_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_menu_main_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_menu_main_idle_01"
 
 		bodyType = "nomad"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_menu_main_idle_02"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_menu_main_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_menu_main_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_menu_main_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_menu_main_idle_02"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_menu_main_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_menu_main_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_menu_main_idle_01"
 
 		bodyType = "stalker"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_menu_main_idle_02"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_menu_main_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_menu_main_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_menu_main_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_menu_main_idle_02"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_menu_main_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_menu_main_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_menu_main_idle_01"
 
 		bodyType = "geist"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_menu_main_idle_02"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_menu_main_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_menu_main_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_menu_main_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_menu_main_idle_02"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_menu_main_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_menu_main_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_menu_main_idle_01"
 
 		bodyType = "grapple"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_menu_main_idle_02"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_menu_main_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_menu_main_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_menu_main_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_menu_main_idle_02"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_menu_main_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_menu_main_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_menu_main_idle_01"
 
 		animType = "background_idle"
 		file.pilotAnims[ animType ] <- {}
 
 		bodyType = "light"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_titan_menu_loadout_idle"
 
 		bodyType = "medium"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_titan_menu_loadout_idle"
 
 		bodyType = "heavy"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_titan_menu_loadout_idle"
 
 		bodyType = "nomad"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_titan_menu_loadout_idle"
 
 		bodyType = "stalker"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_titan_menu_loadout_idle"
 
 		bodyType = "geist"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_titan_menu_loadout_idle"
 
 		bodyType = "grapple"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_titan_menu_loadout_idle"
 
 		animType = "focused_idle"
 		file.pilotAnims[ animType ] <- {}
 
 		bodyType = "light"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_menu_loadout_idle_02"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_menu_loadout_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_menu_loadout_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_menu_loadout_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_menu_loadout_idle_02"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_menu_loadout_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_menu_loadout_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_menu_loadout_idle_01"
 
 		bodyType = "medium"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_menu_loadout_idle_02"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_menu_loadout_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_menu_loadout_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_menu_loadout_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_menu_loadout_idle_02"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_menu_loadout_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_menu_loadout_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_menu_loadout_idle_01"
 
 		bodyType = "heavy"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_menu_loadout_idle_02"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_menu_loadout_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_menu_loadout_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_menu_loadout_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_menu_loadout_idle_02"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_menu_loadout_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_menu_loadout_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_menu_loadout_idle_01"
 
 		bodyType = "nomad"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_menu_loadout_idle_02"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_menu_loadout_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_menu_loadout_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_menu_loadout_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_menu_loadout_idle_02"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_menu_loadout_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_menu_loadout_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_menu_loadout_idle_01"
 
 		bodyType = "stalker"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_menu_loadout_idle_02"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_menu_loadout_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_menu_loadout_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_menu_loadout_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_menu_loadout_idle_02"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_menu_loadout_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_menu_loadout_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_menu_loadout_idle_01"
 
 		bodyType = "geist"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_menu_loadout_idle_02"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_menu_loadout_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_menu_loadout_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_menu_loadout_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_menu_loadout_idle_02"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_menu_loadout_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_menu_loadout_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_menu_loadout_idle_01"
 
 		bodyType = "grapple"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_menu_loadout_idle_02"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_menu_loadout_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_menu_loadout_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_menu_loadout_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_menu_loadout_idle_02"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_menu_loadout_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_menu_loadout_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_menu_loadout_idle_01"
 
 		animType = "weapon_inspect_idle"
 		file.pilotAnims[ animType ] <- {}
 
 		bodyType = "light"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_menu_loadout_edit_idle_02"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_menu_loadout_edit_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ]		<- "pt_menu_loadout_edit_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ]	<- "pt_menu_loadout_edit_idle_03"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_menu_loadout_edit_idle_02"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_menu_loadout_edit_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_menu_loadout_edit_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_menu_loadout_edit_idle_03"
 
 		bodyType = "medium"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_menu_loadout_edit_idle_02"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_menu_loadout_edit_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_menu_loadout_edit_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_menu_loadout_edit_idle_03"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_menu_loadout_edit_idle_02"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_menu_loadout_edit_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_menu_loadout_edit_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_menu_loadout_edit_idle_03"
 
 		bodyType = "heavy"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_menu_loadout_edit_idle_02"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_menu_loadout_edit_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_menu_loadout_edit_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_menu_loadout_edit_idle_03"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_menu_loadout_edit_idle_02"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_menu_loadout_edit_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_menu_loadout_edit_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_menu_loadout_edit_idle_03"
 
 		bodyType = "nomad"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_menu_loadout_edit_idle_02"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_menu_loadout_edit_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_menu_loadout_edit_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_menu_loadout_edit_idle_03"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_menu_loadout_edit_idle_02"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_menu_loadout_edit_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_menu_loadout_edit_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_menu_loadout_edit_idle_03"
 
 		bodyType = "stalker"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_menu_loadout_edit_idle_02"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_menu_loadout_edit_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_menu_loadout_edit_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_menu_loadout_edit_idle_03"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_menu_loadout_edit_idle_02"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_menu_loadout_edit_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_menu_loadout_edit_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_menu_loadout_edit_idle_03"
 
 		bodyType = "geist"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_menu_loadout_edit_idle_02"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_menu_loadout_edit_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_menu_loadout_edit_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_menu_loadout_edit_idle_03"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_menu_loadout_edit_idle_02"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_menu_loadout_edit_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_menu_loadout_edit_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_menu_loadout_edit_idle_03"
 
 		bodyType = "grapple"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_menu_loadout_edit_idle_02"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_menu_loadout_edit_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_menu_loadout_edit_idle_01"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_menu_loadout_edit_idle_03"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_menu_loadout_edit_idle_02"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_menu_loadout_edit_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_menu_loadout_edit_idle_01"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_menu_loadout_edit_idle_03"
 
 		animType = "hidden_from_main"
 		file.pilotAnims[ animType ] <- {}
 
 		bodyType = "light"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ]		<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ]	<- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_titan_menu_loadout_idle"
 
 		bodyType = "medium"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_titan_menu_loadout_idle"
 
 		bodyType = "heavy"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_titan_menu_loadout_idle"
 
 		bodyType = "nomad"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_titan_menu_loadout_idle"
 
 		bodyType = "stalker"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_titan_menu_loadout_idle"
 
 		bodyType = "geist"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_titan_menu_loadout_idle"
 
 		bodyType = "grapple"
 		file.pilotAnims[ animType ][ bodyType ] <- {}
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ]	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] 	<- "pt_titan_menu_loadout_idle"
-		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] 	<- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.SMALL ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.MEDIUM ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.LARGE ] <- "pt_titan_menu_loadout_idle"
+		file.pilotAnims[ animType ][ bodyType ][ eMenuAnimClass.CUSTOM ] <- "pt_titan_menu_loadout_idle"
 
 		animType = "background_idle"
 		file.titanAnims[ animType ] <- {}
-		file.titanAnims[ animType ][ "titan_stryder_arc" ]					<- "titan_light_menu_main_idle_01"
-		file.titanAnims[ animType ][ "titan_stryder_leadwall" ]				<- "titan_light_menu_main_idle_01"
-		file.titanAnims[ animType ][ "titan_stryder_sniper" ]				<- "titan_light_menu_main_idle_01"
-		file.titanAnims[ animType ][ "titan_stryder_northstar_prime" ]		<- "titan_light_menu_main_idle_01"
-		file.titanAnims[ animType ][ "titan_stryder_ronin_prime" ]			<- "titan_light_menu_main_idle_01"
-		file.titanAnims[ animType ][ "titan_atlas_tracker" ]				<- "titan_medium_menu_main_idle_01_TONE"
-		file.titanAnims[ animType ][ "titan_atlas_vanguard" ]				<- "titan_medium_menu_main_idle_01_MONARCH"
-		file.titanAnims[ animType ][ "titan_atlas_stickybomb" ]				<- "titan_medium_menu_main_idle_01"
-		file.titanAnims[ animType ][ "titan_atlas_ion_prime" ]				<- "titan_medium_menu_main_idle_01"
-		file.titanAnims[ animType ][ "titan_atlas_tone_prime" ]				<- "titan_medium_menu_main_idle_01_TONE"
-		file.titanAnims[ animType ][ "titan_ogre_meteor" ]					<- "titan_heavy_menu_main_idle_01"
-		file.titanAnims[ animType ][ "titan_ogre_scorch_prime" ]			<- "titan_heavy_menu_main_idle_01"
-		file.titanAnims[ animType ][ "titan_ogre_minigun" ]					<- "titan_heavy_menu_main_idle_01_LEGION"
-		file.titanAnims[ animType ][ "titan_ogre_legion_prime" ]			<- "titan_heavy_menu_main_idle_01_LEGION"
-		file.titanAnims[ animType ][ "titan_ogre_fighter" ]					<- "titan_heavy_menu_main_idle_01"
+		file.titanAnims[ animType ][ "titan_stryder_arc" ] <- "titan_light_menu_main_idle_01"
+		file.titanAnims[ animType ][ "titan_stryder_leadwall" ] <- "titan_light_menu_main_idle_01"
+		file.titanAnims[ animType ][ "titan_stryder_sniper" ] <- "titan_light_menu_main_idle_01"
+		file.titanAnims[ animType ][ "titan_stryder_northstar_prime" ] <- "titan_light_menu_main_idle_01"
+		file.titanAnims[ animType ][ "titan_stryder_ronin_prime" ] <- "titan_light_menu_main_idle_01"
+		file.titanAnims[ animType ][ "titan_atlas_tracker" ] <- "titan_medium_menu_main_idle_01_TONE"
+		file.titanAnims[ animType ][ "titan_atlas_vanguard" ] <- "titan_medium_menu_main_idle_01_MONARCH"
+		file.titanAnims[ animType ][ "titan_atlas_stickybomb" ] <- "titan_medium_menu_main_idle_01"
+		file.titanAnims[ animType ][ "titan_atlas_ion_prime" ] <- "titan_medium_menu_main_idle_01"
+		file.titanAnims[ animType ][ "titan_atlas_tone_prime" ] <- "titan_medium_menu_main_idle_01_TONE"
+		file.titanAnims[ animType ][ "titan_ogre_meteor" ] <- "titan_heavy_menu_main_idle_01"
+		file.titanAnims[ animType ][ "titan_ogre_scorch_prime" ] <- "titan_heavy_menu_main_idle_01"
+		file.titanAnims[ animType ][ "titan_ogre_minigun" ] <- "titan_heavy_menu_main_idle_01_LEGION"
+		file.titanAnims[ animType ][ "titan_ogre_legion_prime" ] <- "titan_heavy_menu_main_idle_01_LEGION"
+		file.titanAnims[ animType ][ "titan_ogre_fighter" ] <- "titan_heavy_menu_main_idle_01"
 
 		animType = "focused_idle"
 		file.titanAnims[ animType ] <- {}
-		file.titanAnims[ animType ][ "titan_stryder_arc" ]					<- "titan_light_menu_loadout_idle"
-		file.titanAnims[ animType ][ "titan_stryder_leadwall" ]				<- "titan_light_menu_loadout_idle"
-		file.titanAnims[ animType ][ "titan_stryder_sniper" ]				<- "titan_light_menu_loadout_idle_NSTAR"
-		file.titanAnims[ animType ][ "titan_stryder_northstar_prime" ]		<- "titan_light_menu_loadout_idle_NSTAR"
-		file.titanAnims[ animType ][ "titan_stryder_ronin_prime" ]			<- "titan_light_menu_loadout_idle"
-		file.titanAnims[ animType ][ "titan_atlas_tracker" ]				<- "titan_medium_menu_loadout_idle"
-		file.titanAnims[ animType ][ "titan_atlas_vanguard" ]				<- "titan_medium_menu_loadout_idle_MONARCH"
-		file.titanAnims[ animType ][ "titan_atlas_stickybomb" ]				<- "titan_medium_menu_loadout_idle_ION"
-		file.titanAnims[ animType ][ "titan_atlas_ion_prime" ]				<- "titan_medium_menu_loadout_idle_ION"
-		file.titanAnims[ animType ][ "titan_atlas_tone_prime" ]				<- "titan_medium_menu_loadout_idle"
-		file.titanAnims[ animType ][ "titan_ogre_meteor" ]					<- "titan_heavy_menu_loadout_idle_SCORCH"
-		file.titanAnims[ animType ][ "titan_ogre_scorch_prime" ]			<- "titan_heavy_menu_loadout_idle_SCORCH"
-		file.titanAnims[ animType ][ "titan_ogre_minigun" ]					<- "titan_heavy_menu_loadout_idle_LEGION"
-		file.titanAnims[ animType ][ "titan_ogre_legion_prime" ]			<- "titan_heavy_menu_loadout_idle_LEGION"
-		file.titanAnims[ animType ][ "titan_ogre_fighter" ]					<- "titan_heavy_menu_loadout_idle"
+		file.titanAnims[ animType ][ "titan_stryder_arc" ] <- "titan_light_menu_loadout_idle"
+		file.titanAnims[ animType ][ "titan_stryder_leadwall" ] <- "titan_light_menu_loadout_idle"
+		file.titanAnims[ animType ][ "titan_stryder_sniper" ] <- "titan_light_menu_loadout_idle_NSTAR"
+		file.titanAnims[ animType ][ "titan_stryder_northstar_prime" ] <- "titan_light_menu_loadout_idle_NSTAR"
+		file.titanAnims[ animType ][ "titan_stryder_ronin_prime" ] <- "titan_light_menu_loadout_idle"
+		file.titanAnims[ animType ][ "titan_atlas_tracker" ] <- "titan_medium_menu_loadout_idle"
+		file.titanAnims[ animType ][ "titan_atlas_vanguard" ] <- "titan_medium_menu_loadout_idle_MONARCH"
+		file.titanAnims[ animType ][ "titan_atlas_stickybomb" ] <- "titan_medium_menu_loadout_idle_ION"
+		file.titanAnims[ animType ][ "titan_atlas_ion_prime" ] <- "titan_medium_menu_loadout_idle_ION"
+		file.titanAnims[ animType ][ "titan_atlas_tone_prime" ] <- "titan_medium_menu_loadout_idle"
+		file.titanAnims[ animType ][ "titan_ogre_meteor" ] <- "titan_heavy_menu_loadout_idle_SCORCH"
+		file.titanAnims[ animType ][ "titan_ogre_scorch_prime" ] <- "titan_heavy_menu_loadout_idle_SCORCH"
+		file.titanAnims[ animType ][ "titan_ogre_minigun" ] <- "titan_heavy_menu_loadout_idle_LEGION"
+		file.titanAnims[ animType ][ "titan_ogre_legion_prime" ] <- "titan_heavy_menu_loadout_idle_LEGION"
+		file.titanAnims[ animType ][ "titan_ogre_fighter" ] <- "titan_heavy_menu_loadout_idle"
 
 		animType = "editing_idle"
 		file.titanAnims[ animType ] <- {}
-		file.titanAnims[ animType ][ "titan_stryder_arc" ]					<- "titan_light_menu_loadout_idle_edit_NSTAR"
-		file.titanAnims[ animType ][ "titan_stryder_leadwall" ]				<- "titan_light_menu_loadout_idle_edit_RONIN"
-		file.titanAnims[ animType ][ "titan_stryder_sniper" ]				<- "titan_light_menu_loadout_idle_edit_NSTAR"
-		file.titanAnims[ animType ][ "titan_stryder_northstar_prime" ]		<- "titan_light_menu_loadout_idle_edit_NSTAR"
-		file.titanAnims[ animType ][ "titan_stryder_ronin_prime" ]			<- "titan_light_menu_loadout_idle_edit_RONIN"
-		file.titanAnims[ animType ][ "titan_atlas_tracker" ]				<- "titan_medium_menu_loadout_idle_edit_TONE"
-		file.titanAnims[ animType ][ "titan_atlas_vanguard" ]				<- "titan_medium_menu_loadout_idle_edit_MONARCH"
-		file.titanAnims[ animType ][ "titan_atlas_stickybomb" ]				<- "titan_medium_menu_loadout_idle_edit_ION"
-		file.titanAnims[ animType ][ "titan_atlas_ion_prime" ]				<- "titan_medium_menu_loadout_idle_edit_ION"
-		file.titanAnims[ animType ][ "titan_atlas_tone_prime" ]				<- "titan_medium_menu_loadout_idle_edit_TONE"
-		file.titanAnims[ animType ][ "titan_ogre_meteor" ]					<- "titan_heavy_menu_loadout_idle_edit_SCORCH"
-		file.titanAnims[ animType ][ "titan_ogre_scorch_prime" ]			<- "titan_heavy_menu_loadout_idle_edit_SCORCH"
-		file.titanAnims[ animType ][ "titan_ogre_minigun" ]					<- "titan_heavy_menu_loadout_idle_edit_LEGION"
-		file.titanAnims[ animType ][ "titan_ogre_legion_prime" ]			<- "titan_heavy_menu_loadout_idle_edit_LEGION"
-		file.titanAnims[ animType ][ "titan_ogre_fighter" ]					<- "titan_heavy_menu_loadout_idle_edit_LEGION"
+		file.titanAnims[ animType ][ "titan_stryder_arc" ] <- "titan_light_menu_loadout_idle_edit_NSTAR"
+		file.titanAnims[ animType ][ "titan_stryder_leadwall" ] <- "titan_light_menu_loadout_idle_edit_RONIN"
+		file.titanAnims[ animType ][ "titan_stryder_sniper" ] <- "titan_light_menu_loadout_idle_edit_NSTAR"
+		file.titanAnims[ animType ][ "titan_stryder_northstar_prime" ] <- "titan_light_menu_loadout_idle_edit_NSTAR"
+		file.titanAnims[ animType ][ "titan_stryder_ronin_prime" ] <- "titan_light_menu_loadout_idle_edit_RONIN"
+		file.titanAnims[ animType ][ "titan_atlas_tracker" ] <- "titan_medium_menu_loadout_idle_edit_TONE"
+		file.titanAnims[ animType ][ "titan_atlas_vanguard" ] <- "titan_medium_menu_loadout_idle_edit_MONARCH"
+		file.titanAnims[ animType ][ "titan_atlas_stickybomb" ] <- "titan_medium_menu_loadout_idle_edit_ION"
+		file.titanAnims[ animType ][ "titan_atlas_ion_prime" ] <- "titan_medium_menu_loadout_idle_edit_ION"
+		file.titanAnims[ animType ][ "titan_atlas_tone_prime" ] <- "titan_medium_menu_loadout_idle_edit_TONE"
+		file.titanAnims[ animType ][ "titan_ogre_meteor" ] <- "titan_heavy_menu_loadout_idle_edit_SCORCH"
+		file.titanAnims[ animType ][ "titan_ogre_scorch_prime" ] <- "titan_heavy_menu_loadout_idle_edit_SCORCH"
+		file.titanAnims[ animType ][ "titan_ogre_minigun" ] <- "titan_heavy_menu_loadout_idle_edit_LEGION"
+		file.titanAnims[ animType ][ "titan_ogre_legion_prime" ] <- "titan_heavy_menu_loadout_idle_edit_LEGION"
+		file.titanAnims[ animType ][ "titan_ogre_fighter" ] <- "titan_heavy_menu_loadout_idle_edit_LEGION"
 
 		animType = "nose_art_idle"
 		file.titanAnims[ animType ] <- {}
-		file.titanAnims[ animType ][ "titan_stryder_arc" ]					<- "titan_light_menu_noseart_idle"
-		file.titanAnims[ animType ][ "titan_stryder_leadwall" ]				<- "titan_light_menu_noseart_idle"
-		file.titanAnims[ animType ][ "titan_stryder_sniper" ]				<- "titan_light_menu_noseart_idle"
-		file.titanAnims[ animType ][ "titan_stryder_northstar_prime" ]		<- "titan_light_menu_noseart_idle"
-		file.titanAnims[ animType ][ "titan_stryder_ronin_prime" ]			<- "titan_light_menu_noseart_idle"
-		file.titanAnims[ animType ][ "titan_atlas_tracker" ]				<- "titan_medium_menu_noseart_idle_TONE"
-		file.titanAnims[ animType ][ "titan_atlas_vanguard" ]				<- "titan_medium_menu_noseart_idle_MONARCH"
-		file.titanAnims[ animType ][ "titan_atlas_stickybomb" ]				<- "titan_medium_menu_noseart_idle"
-		file.titanAnims[ animType ][ "titan_atlas_ion_prime" ]				<- "titan_medium_menu_noseart_idle"
-		file.titanAnims[ animType ][ "titan_atlas_tone_prime" ]				<- "titan_medium_menu_noseart_idle_TONE"
-		file.titanAnims[ animType ][ "titan_ogre_meteor" ]					<- "titan_heavy_menu_noseart_idle"
-		file.titanAnims[ animType ][ "titan_ogre_scorch_prime" ]			<- "titan_heavy_menu_noseart_idle"
-		file.titanAnims[ animType ][ "titan_ogre_minigun" ]					<- "titan_heavy_menu_noseart_idle_LEGION"
-		file.titanAnims[ animType ][ "titan_ogre_legion_prime" ]			<- "titan_heavy_menu_noseart_idle_LEGION"
-		file.titanAnims[ animType ][ "titan_ogre_fighter" ]					<- "titan_heavy_menu_noseart_idle"
+		file.titanAnims[ animType ][ "titan_stryder_arc" ] <- "titan_light_menu_noseart_idle"
+		file.titanAnims[ animType ][ "titan_stryder_leadwall" ] <- "titan_light_menu_noseart_idle"
+		file.titanAnims[ animType ][ "titan_stryder_sniper" ] <- "titan_light_menu_noseart_idle"
+		file.titanAnims[ animType ][ "titan_stryder_northstar_prime" ] <- "titan_light_menu_noseart_idle"
+		file.titanAnims[ animType ][ "titan_stryder_ronin_prime" ] <- "titan_light_menu_noseart_idle"
+		file.titanAnims[ animType ][ "titan_atlas_tracker" ] <- "titan_medium_menu_noseart_idle_TONE"
+		file.titanAnims[ animType ][ "titan_atlas_vanguard" ] <- "titan_medium_menu_noseart_idle_MONARCH"
+		file.titanAnims[ animType ][ "titan_atlas_stickybomb" ] <- "titan_medium_menu_noseart_idle"
+		file.titanAnims[ animType ][ "titan_atlas_ion_prime" ] <- "titan_medium_menu_noseart_idle"
+		file.titanAnims[ animType ][ "titan_atlas_tone_prime" ] <- "titan_medium_menu_noseart_idle_TONE"
+		file.titanAnims[ animType ][ "titan_ogre_meteor" ] <- "titan_heavy_menu_noseart_idle"
+		file.titanAnims[ animType ][ "titan_ogre_scorch_prime" ] <- "titan_heavy_menu_noseart_idle"
+		file.titanAnims[ animType ][ "titan_ogre_minigun" ] <- "titan_heavy_menu_noseart_idle_LEGION"
+		file.titanAnims[ animType ][ "titan_ogre_legion_prime" ] <- "titan_heavy_menu_noseart_idle_LEGION"
+		file.titanAnims[ animType ][ "titan_ogre_fighter" ] <- "titan_heavy_menu_noseart_idle"
 
 		animType = "fd_idle"
 		file.titanAnims[ animType ] <- {}
-		file.titanAnims[ animType ][ "titan_stryder_leadwall" ]				<- "titan_light_menu_FD_idle_RONIN"
-		file.titanAnims[ animType ][ "titan_stryder_sniper" ]				<- "titan_light_menu_FD_idle_NSTAR"
-		file.titanAnims[ animType ][ "titan_stryder_northstar_prime" ]		<- "titan_light_menu_FD_idle_NSTAR"
-		file.titanAnims[ animType ][ "titan_stryder_ronin_prime" ]			<- "titan_light_menu_FD_idle_RONIN"
-		file.titanAnims[ animType ][ "titan_atlas_tracker" ]				<- "titan_medium_menu_FD_idle_TONE"
-		file.titanAnims[ animType ][ "titan_atlas_vanguard" ]				<- "titan_medium_menu_FD_idle_MONARCH"
-		file.titanAnims[ animType ][ "titan_atlas_stickybomb" ]				<- "titan_medium_menu_FD_idle_ION"
-		file.titanAnims[ animType ][ "titan_atlas_ion_prime" ]				<- "titan_medium_menu_FD_idle_ION"
-		file.titanAnims[ animType ][ "titan_atlas_tone_prime" ]				<- "titan_medium_menu_FD_idle_TONE"
-		file.titanAnims[ animType ][ "titan_ogre_meteor" ]					<- "titan_heavy_menu_FD_idle_SCORCH"
-		file.titanAnims[ animType ][ "titan_ogre_scorch_prime" ]			<- "titan_heavy_menu_FD_idle_SCORCH"
-		file.titanAnims[ animType ][ "titan_ogre_minigun" ]					<- "titan_heavy_menu_FD_idle_LEGION"
-		file.titanAnims[ animType ][ "titan_ogre_legion_prime" ]			<- "titan_heavy_menu_FD_idle_LEGION"
-		file.titanAnims[ animType ][ "titan_stryder_arc" ]					<- "titan_light_menu_FD_idle_RONIN"
-		file.titanAnims[ animType ][ "titan_ogre_fighter" ]					<- "titan_heavy_menu_FD_idle_SCORCH"
+		file.titanAnims[ animType ][ "titan_stryder_leadwall" ] <- "titan_light_menu_FD_idle_RONIN"
+		file.titanAnims[ animType ][ "titan_stryder_sniper" ] <- "titan_light_menu_FD_idle_NSTAR"
+		file.titanAnims[ animType ][ "titan_stryder_northstar_prime" ] <- "titan_light_menu_FD_idle_NSTAR"
+		file.titanAnims[ animType ][ "titan_stryder_ronin_prime" ] <- "titan_light_menu_FD_idle_RONIN"
+		file.titanAnims[ animType ][ "titan_atlas_tracker" ] <- "titan_medium_menu_FD_idle_TONE"
+		file.titanAnims[ animType ][ "titan_atlas_vanguard" ] <- "titan_medium_menu_FD_idle_MONARCH"
+		file.titanAnims[ animType ][ "titan_atlas_stickybomb" ] <- "titan_medium_menu_FD_idle_ION"
+		file.titanAnims[ animType ][ "titan_atlas_ion_prime" ] <- "titan_medium_menu_FD_idle_ION"
+		file.titanAnims[ animType ][ "titan_atlas_tone_prime" ] <- "titan_medium_menu_FD_idle_TONE"
+		file.titanAnims[ animType ][ "titan_ogre_meteor" ] <- "titan_heavy_menu_FD_idle_SCORCH"
+		file.titanAnims[ animType ][ "titan_ogre_scorch_prime" ] <- "titan_heavy_menu_FD_idle_SCORCH"
+		file.titanAnims[ animType ][ "titan_ogre_minigun" ] <- "titan_heavy_menu_FD_idle_LEGION"
+		file.titanAnims[ animType ][ "titan_ogre_legion_prime" ] <- "titan_heavy_menu_FD_idle_LEGION"
+		file.titanAnims[ animType ][ "titan_stryder_arc" ] <- "titan_light_menu_FD_idle_RONIN"
+		file.titanAnims[ animType ][ "titan_ogre_fighter" ] <- "titan_heavy_menu_FD_idle_SCORCH"
 	}
 
 	string function GetPilotAnimType()
@@ -1030,10 +1026,9 @@
 		#endif
 
 		file.cameraTarget = GetEntByScriptName( "menu_camera_target" )
-		clGlobal.menuCamera = CreateClientSidePointCamera( <0, 0, 0>, <0, 0, 0>, DEFAULT_FOV )
+		clGlobal.menuCamera = CreateClientSidePointCamera( < 0, 0, 0 >, < 0, 0, 0 >, DEFAULT_FOV )
 
 		CreateMenuFX( environmentModel )
-
 
 		// Create scene model
 		clGlobal.menuSceneModel = CreateClientSidePropDynamic( refOrigin, refAngles, GetSetFileModel( DEFAULT_PILOT_SETTINGS ) )
@@ -1056,16 +1051,16 @@
 			file.weaponDLight = CreateClientSideDynamicLight( origin, <0,0,0>, <0, 0, 0>, 512.0 )
 		}*/
 
-		//thread DrawTag( clGlobal.menuSceneModel, "ORIGIN" )
-		//thread DrawTag( clGlobal.menuSceneModel, "PROPGUN" )
-		//thread DrawTag( clGlobal.menuSceneModel, "CHESTFOCUS" )
-		//thread DrawTag( clGlobal.menuSceneModel, "HEADFOCUS" )
+		// thread DrawTag( clGlobal.menuSceneModel, "ORIGIN" )
+		// thread DrawTag( clGlobal.menuSceneModel, "PROPGUN" )
+		// thread DrawTag( clGlobal.menuSceneModel, "CHESTFOCUS" )
+		// thread DrawTag( clGlobal.menuSceneModel, "HEADFOCUS" )
 
-		//thread DrawOrg( file.menuPilot.mover )
-		//thread DrawOrg( file.menuTitan.mover )
-		//thread DrawOrg( file.menuFaction.mover )
-		//thread DrawOrg( file.menuMiscModel.mover )
-		//thread DrawOrg( file.menuWeaponModel.mover )
+		// thread DrawOrg( file.menuPilot.mover )
+		// thread DrawOrg( file.menuTitan.mover )
+		// thread DrawOrg( file.menuFaction.mover )
+		// thread DrawOrg( file.menuMiscModel.mover )
+		// thread DrawOrg( file.menuWeaponModel.mover )
 
 		WaitSignal( level, "CachedLoadoutsReady" )
 
@@ -1086,13 +1081,13 @@
 
 	entity function GetDLightEntity()
 	{
-//		return file.weaponDLight
+		// 		return file.weaponDLight
 		return file.menuWeaponModel.body
 	}
 
 	void function CreateMover( CharacterData character, string attachName, float maxTurnSpeed = DEFAULT_MAX_TURN_SPEED )
 	{
-		character.mover = CreateClientsideScriptMover( $"models/dev/empty_model.mdl", <0, 0, 0>, <0, 0, 0> )
+		character.mover = CreateClientsideScriptMover( $"models/dev/empty_model.mdl", < 0, 0, 0 >, < 0, 0, 0 > )
 		character.mover.SetParent( clGlobal.menuSceneModel, attachName, false, 0.0 )
 		character.attachName = attachName
 		character.maxTurnSpeed = maxTurnSpeed
@@ -1112,11 +1107,11 @@
 
 		if ( DREW_MODE == 1 ) // TEMPHACK
 		{
-			refOrigin = refOrigin + <0, 0, -1000>
+			refOrigin = refOrigin + < 0, 0, -1000 >
 		}
 		else if ( DREW_MODE == 2 )
 		{
-			entity greenScreenEnt = CreateClientSidePropDynamic( <0, 0, 0>, <0, 0, 0>, GREEN_SCREEN_MODEL )
+			entity greenScreenEnt = CreateClientSidePropDynamic( < 0, 0, 0 >, < 0, 0, 0 >, GREEN_SCREEN_MODEL )
 			greenScreenEnt.MakeSafeForUIScriptHack()
 			greenScreenEnt.kv.disableshadows = 1
 		}
@@ -1146,21 +1141,21 @@
 	var function CreateCallsignTopology( vector org, vector ang, float width, float height )
 	{
 		// adjust so the RUI is drawn with the org as its center point
-		org += ( (AnglesToRight( ang )*-1) * (width*0.5) )
-		org += ( AnglesToUp( ang ) * (height*0.5) )
+		org += ( ( AnglesToRight( ang ) * -1 ) * ( width * 0.5 ) )
+		org += ( AnglesToUp( ang ) * ( height * 0.5 ) )
 
 		// right and down vectors that get added to base org to create the display size
 		vector right = ( AnglesToRight( ang ) * width )
-		vector down = ( (AnglesToUp( ang )*-1) * height )
+		vector down = ( ( AnglesToUp( ang ) * -1 ) * height )
 
 		return RuiTopology_CreatePlane( org, right, down, true )
 	}
 
 	void function CreateCallsign( entity player, entity mover )
 	{
-		//var topo = CreateCallsignTopology( GetMenuPilotBody().GetOrigin() + <110, 32, 100>, < 0, 45, 6 >, 32 * 1.25, 17 * 1.25 )
-		//var topo = CreateCallsignTopology( GetMenuPilotBody().GetOrigin() + <98, 16, 92>, < 0, 45, 6 >, 32 * 1.15, 17 * 1.15 )
-		var topo = CreateCallsignTopology( < -32, 50, 67 >, <0, 165, 6>, 28, 15 + (28 * CARD_TAG_SCALE) )
+		// var topo = CreateCallsignTopology( GetMenuPilotBody().GetOrigin() + <110, 32, 100>, < 0, 45, 6 >, 32 * 1.25, 17 * 1.25 )
+		// var topo = CreateCallsignTopology( GetMenuPilotBody().GetOrigin() + <98, 16, 92>, < 0, 45, 6 >, 32 * 1.15, 17 * 1.15 )
+		var topo = CreateCallsignTopology( < -32, 50, 67 >, < 0, 165, 6 >, 28, 15 + ( 28 * CARD_TAG_SCALE ) )
 		RuiTopology_SetParent( topo, mover, "ORIGIN" )
 		var rui = RuiCreate( $"ui/callsign_basic.rpak", topo, RUI_DRAW_WORLD, 0 )
 		file.menuCallsignRui = rui
@@ -1171,7 +1166,7 @@
 
 	void function CreateStoreBackground( entity player )
 	{
-		file.menuStoreBackground = CreateClientSidePropDynamic( <68.1134, 377.554, -21.029>, <0.0, 225.0, 0.0>, $"models/test/brad/store_card.mdl" )
+		file.menuStoreBackground = CreateClientSidePropDynamic( < 68.1134, 377.554, -21.029 >, < 0.0, 225.0, 0.0 >, $"models/test/brad/store_card.mdl" )
 	}
 
 	void function UpdateStoreBackground( entity player, int storeBgIndex )
@@ -1180,31 +1175,37 @@
 		{
 			case STORE_BG_DEFAULT:
 				file.menuStoreBackground.SetModel( $"models/test/brad/store_card.mdl" )
-				file.menuStoreBackground.SetOrigin( <68.1134, 377.554, -18.25> )
+				file.menuStoreBackground.SetOrigin( < 68.1134, 377.554, -18.25 > )
 				break
+
 			case STORE_BG_BUNDLE1:
 				file.menuStoreBackground.SetModel( $"models/test/brad/store_card_angel_city.mdl" )
-				file.menuStoreBackground.SetOrigin( <68.1134, 377.554, -18.25> )
+				file.menuStoreBackground.SetOrigin( < 68.1134, 377.554, -18.25 > )
 				break
+
 			case STORE_BG_BUNDLE2:
 				file.menuStoreBackground.SetModel( $"models/test/brad/store_card_colony.mdl" )
-				file.menuStoreBackground.SetOrigin( <68.1134, 377.554, -18.25> )
+				file.menuStoreBackground.SetOrigin( < 68.1134, 377.554, -18.25 > )
 				break
+
 			case STORE_BG_BUNDLE3:
 				file.menuStoreBackground.SetModel( $"models/test/brad/store_card_relic.mdl" )
-				file.menuStoreBackground.SetOrigin( <68.1134, 377.554, -18.25> )
+				file.menuStoreBackground.SetOrigin( < 68.1134, 377.554, -18.25 > )
 				break
+
 			case STORE_BG_BUNDLE4:
 				file.menuStoreBackground.SetModel( $"models/test/brad/store_card_prime_bundle.mdl" )
-				file.menuStoreBackground.SetOrigin( <68.1134, 377.554, -18.25> )
+				file.menuStoreBackground.SetOrigin( < 68.1134, 377.554, -18.25 > )
 				break
+
 			case STORE_BG_BUNDLE5:
 				file.menuStoreBackground.SetModel( $"models/test/brad/store_weapon_warpaint_bundle.mdl" )
-				file.menuStoreBackground.SetOrigin( <68.1134, 377.554, -18.25> )
+				file.menuStoreBackground.SetOrigin( < 68.1134, 377.554, -18.25 > )
 				break
+
 			case STORE_BG_BUNDLE6:
 				file.menuStoreBackground.SetModel( $"models/test/brad/jump_start.mdl" )
-				file.menuStoreBackground.SetOrigin( <68.1134, 377.554, -18.25> )
+				file.menuStoreBackground.SetOrigin( < 68.1134, 377.554, -18.25 > )
 				break
 		}
 	}
@@ -1216,21 +1217,27 @@
 			case 0:
 				RuiSetImage( file.menuStorePrimeBgRui, "bgImage", $"rui/menu/store/prime_ion_bg" )
 				break
+
 			case 1:
 				RuiSetImage( file.menuStorePrimeBgRui, "bgImage", $"rui/menu/store/prime_scorch_bg" )
 				break
+
 			case 2:
 				RuiSetImage( file.menuStorePrimeBgRui, "bgImage", $"rui/menu/store/prime_northstar_bg" )
 				break
+
 			case 3:
 				RuiSetImage( file.menuStorePrimeBgRui, "bgImage", $"rui/menu/store/prime_ronin_bg" )
 				break
+
 			case 4:
 				RuiSetImage( file.menuStorePrimeBgRui, "bgImage", $"rui/menu/store/prime_tone_bg" )
 				break
+
 			case 5:
 				RuiSetImage( file.menuStorePrimeBgRui, "bgImage", $"rui/menu/store/prime_legion_bg" )
 				break
+
 			case 6:
 				RuiSetImage( file.menuStorePrimeBgRui, "bgImage", $"rui/menu/store/prime_vanguard_bg" )
 				break
@@ -1251,7 +1258,7 @@
 			RuiSetImage( file.menuCallsignRui, "iconImage", callsignIcon.image )
 			RuiSetString( file.menuCallsignRui, "playerLevel", PlayerXPDisplayGenAndLevel( player.GetGen(), player.GetLevel() ) )
 			RuiSetString( file.menuCallsignRui, "playerName", player.GetPlayerName() )
-			RuiSetImage( file.menuCallsignRui, "cardGenImage", PlayerXPGetGenIcon( player ) ) //Commented Out Temporarily to Fix Blocker Bug: 220132
+			RuiSetImage( file.menuCallsignRui, "cardGenImage", PlayerXPGetGenIcon( player ) ) // Commented Out Temporarily to Fix Blocker Bug: 220132
 			RuiSetBool( file.menuCallsignRui, "isLobbyCard", true )
 
 			thread KeepCallsignUpToDate( player )
@@ -1272,7 +1279,7 @@
 				RuiSetString( file.menuCallsignRui, "playerLevel", PlayerXPDisplayGenAndLevel( player.GetGen(), player.GetLevel() ) )
 				RuiSetImage( file.menuCallsignRui, "cardImage", callingCard.image )
 				RuiSetImage( file.menuCallsignRui, "iconImage", callsignIcon.image )
-				RuiSetImage( file.menuCallsignRui, "cardGenImage", PlayerXPGetGenIcon( player ) )  //Commented Out Temporarily to Fix Blocker Bug: 220132
+				RuiSetImage( file.menuCallsignRui, "cardGenImage", PlayerXPGetGenIcon( player ) ) // Commented Out Temporarily to Fix Blocker Bug: 220132
 				RuiSetInt( file.menuCallsignRui, "layoutType", callingCard.layoutType )
 				wait 0.5
 			}
@@ -1376,7 +1383,6 @@
 
 		file.menuMiscModel.body = modelEnt
 	}
-
 
 	entity function CreateModelForMover( entity player, entity mover )
 	{
@@ -1581,7 +1587,8 @@
 		file.menuPilot.weapon.SetSkin( WEAPON_SKIN_INDEX_DEFAULT ) // Lame that we need this, but this avoids invalid skin errors when the model changes and the currently shown skin index doesn't exist for the new model
 		file.menuPilot.weapon.SetModel( weaponModel )
 
-		bool isPreviewingWeaponNotMatchingCurrent = clGlobal.previewMenuPilotModels.weaponModel != $"" && clGlobal.previewMenuPilotModels.weaponModel != clGlobal.currentMenuPilotModels.weaponModel
+		bool isPreviewingWeaponNotMatchingCurrent = clGlobal.previewMenuPilotModels.weaponModel != $"" &&
+			clGlobal.previewMenuPilotModels.weaponModel != clGlobal.currentMenuPilotModels.weaponModel
 
 		array<string> mods = clGlobal.previewMenuPilotModels.mods
 		if ( mods.len() == 0 )
@@ -1616,16 +1623,15 @@
 			}
 		}
 
-
 		if ( weaponCamoIndex > 0 )
 			weaponSkinIndex = WEAPON_SKIN_INDEX_CAMO
 		else
 			weaponCamoIndex = -1
 
 		file.menuPilot.weapon.SetSkin( weaponSkinIndex )
-		//printt( "Set pilot weapon skin to:", weaponSkinIndex )
+		// printt( "Set pilot weapon skin to:", weaponSkinIndex )
 		file.menuPilot.weapon.SetCamo( weaponCamoIndex )
-		//printt( "Set pilot weapon camo to:", weaponCamoIndex )
+		// printt( "Set pilot weapon camo to:", weaponCamoIndex )
 	}
 
 	void function UpdateTitanModelDisplay( entity player )
@@ -1645,9 +1651,9 @@
 		if ( file.menuTitan.body.GetModelName() != bodyModel || idleAnim != file.menuTitan.bodyAnim ) // Model has changed or anim has changed
 			playIdle = true
 
-		if ( file.menuTitan.body.GetModelName() != bodyModel  )
+		if ( file.menuTitan.body.GetModelName() != bodyModel )
 		{
-			file.menuTitan.body.SetSkin( 0 ) //First reset skin and decal to default to avoid code error message when changing models, if the new models don't have the same skins supported
+			file.menuTitan.body.SetSkin( 0 ) // First reset skin and decal to default to avoid code error message when changing models, if the new models don't have the same skins supported
 			file.menuTitan.body.SetCamo( -1 )
 			file.menuTitan.body.SetModel( bodyModel )
 		}
@@ -1685,7 +1691,7 @@
 			decalIndex = clGlobal.currentMenuTitanModels.decalIndex
 
 		file.menuTitan.body.SetDecal( decalIndex )
-		//printt( "Set titan decal to:", decalIndex )
+		// printt( "Set titan decal to:", decalIndex )
 
 		if ( playIdle )
 		{
@@ -1703,22 +1709,22 @@
 		if ( weaponCamoIndex == -1 )
 			weaponCamoIndex = clGlobal.currentMenuTitanModels.weaponCamoIndex
 
-		//printt( "clGlobal.previewMenuTitanModels.weaponCamoIndex:", clGlobal.previewMenuTitanModels.weaponCamoIndex )
-		//printt( "clGlobal.currentMenuTitanModels.weaponCamoIndex:", clGlobal.currentMenuTitanModels.weaponCamoIndex )
-		//printt( "weaponCamoIndex:", weaponCamoIndex )
+		// printt( "clGlobal.previewMenuTitanModels.weaponCamoIndex:", clGlobal.previewMenuTitanModels.weaponCamoIndex )
+		// printt( "clGlobal.currentMenuTitanModels.weaponCamoIndex:", clGlobal.currentMenuTitanModels.weaponCamoIndex )
+		// printt( "weaponCamoIndex:", weaponCamoIndex )
 		if ( weaponCamoIndex > 0 )
 		{
 			file.menuTitan.weapon.SetSkin( WEAPON_SKIN_INDEX_CAMO )
-			//printt( "Set titan weapon skin to:", WEAPON_SKIN_INDEX_CAMO )
+			// printt( "Set titan weapon skin to:", WEAPON_SKIN_INDEX_CAMO )
 			file.menuTitan.weapon.SetCamo( weaponCamoIndex )
-			//printt( "Set titan weapon camo to:", weaponCamoIndex )
+			// printt( "Set titan weapon camo to:", weaponCamoIndex )
 		}
 		else
 		{
 			file.menuTitan.weapon.SetSkin( 0 )
-			//printt( "Set titan weapon skin to:", 0 )
+			// printt( "Set titan weapon skin to:", 0 )
 			file.menuTitan.weapon.SetCamo( -1 )
-			//printt( "Set titan weapon camo to:", -1 )
+			// printt( "Set titan weapon camo to:", -1 )
 		}
 
 		if ( IsValid( file.menuTitan.prop ) )
@@ -1773,7 +1779,6 @@
 	{
 		clGlobal.editingTitanLoadoutIndex = -1
 	}
-
 
 	void function PreviewPilotCharacter( entity player, int itemIndex )
 	{
@@ -1862,8 +1867,18 @@
 
 	void function PrintWeaponModelData()
 	{
-		printt( "clGlobal.previewMenuPilotModels.weaponSkinIndex:", clGlobal.previewMenuPilotModels.weaponSkinIndex, "clGlobal.currentMenuPilotModels.weaponSkinIndex:", clGlobal.currentMenuPilotModels.weaponSkinIndex )
-		printt( "clGlobal.previewMenuPilotModels.weaponCamoIndex:", clGlobal.previewMenuPilotModels.weaponCamoIndex, "clGlobal.currentMenuPilotModels.weaponCamoIndex:", clGlobal.currentMenuPilotModels.weaponCamoIndex )
+		printt(
+			"clGlobal.previewMenuPilotModels.weaponSkinIndex:",
+			clGlobal.previewMenuPilotModels.weaponSkinIndex,
+			"clGlobal.currentMenuPilotModels.weaponSkinIndex:",
+			clGlobal.currentMenuPilotModels.weaponSkinIndex
+		)
+		printt(
+			"clGlobal.previewMenuPilotModels.weaponCamoIndex:",
+			clGlobal.previewMenuPilotModels.weaponCamoIndex,
+			"clGlobal.currentMenuPilotModels.weaponCamoIndex:",
+			clGlobal.currentMenuPilotModels.weaponCamoIndex
+		)
 	}
 
 	void function PreviewPilotWeaponSkinChange( entity player, int skinIndex )
@@ -1921,7 +1936,7 @@
 
 	void function UpdateMenuDefArmBadge( MenuCharacterDef charDef, entity player, int skinIndex, int camoIndex, int loadoutIndex )
 	{
-		if ( !IsConnected() ) //Defensive fix for persistence not being loaded when disconnecting or connecting into a match.
+		if ( !IsConnected() ) // Defensive fix for persistence not being loaded when disconnecting or connecting into a match.
 			return
 
 		TitanLoadoutDef loadout = clone GetCachedTitanLoadout( loadoutIndex )
@@ -1937,12 +1952,15 @@
 				case eFDDifficultyLevel.HARD:
 					armBadgeBodyGroupIndex = 1
 					break
+
 				case eFDDifficultyLevel.MASTER:
 					armBadgeBodyGroupIndex = 2
 					break
+
 				case eFDDifficultyLevel.INSANE:
 					armBadgeBodyGroupIndex = 3
 					break
+
 				default:
 					armBadgeBodyGroupIndex = 0
 					break
@@ -1970,9 +1988,9 @@
 		asset propModel = GetFactionPropModel( ref )
 		string idleAnim = GetFactionIdleAnim( ref )
 
-		//bool playIdle = false
-		//if ( file.menuFaction.body.GetModelName() != model || idleAnim != file.menuFaction.bodyAnim ) // Model has changed or anim has changed
-		//	playIdle = true
+		// bool playIdle = false
+		// if ( file.menuFaction.body.GetModelName() != model || idleAnim != file.menuFaction.bodyAnim ) // Model has changed or anim has changed
+		// 	playIdle = true
 
 		file.menuFaction.body.SetSkin( 0 )
 		file.menuFaction.body.SetModel( model )
@@ -1984,11 +2002,11 @@
 
 		file.menuFaction.weapon = propEnt
 
-		//if ( playIdle )
-		//{
-			PlayMenuAnim( file.menuFaction.body, idleAnim )
-			file.menuFaction.bodyAnim = idleAnim
-		//}
+		// if ( playIdle )
+		// {
+		PlayMenuAnim( file.menuFaction.body, idleAnim )
+		file.menuFaction.bodyAnim = idleAnim
+		// }
 	}
 
 	void function UpdateMenuToHarvester()
@@ -2004,7 +2022,7 @@
 			WaitFrame()
 
 		vector originOffset = < 450, -700, 0 >
-		vector angleOffset = <0, 0, 0>
+		vector angleOffset = < 0, 0, 0 >
 
 		file.menuMiscModel.body.SetLocalOrigin( originOffset )
 		file.menuMiscModel.body.SetLocalAngles( angleOffset )
@@ -2024,7 +2042,7 @@
 		EffectSetControlPointVector( harvesterBeamFX, 1, < 126.0, 188.0, 236.0 > )
 
 		OnThreadEnd(
-		function() : ( ringEnt, harvesterBeamFX )
+			function() : ( ringEnt, harvesterBeamFX )
 			{
 				ringEnt.Destroy()
 				EffectStop( harvesterBeamFX, true, true )
@@ -2044,8 +2062,8 @@
 		asset model = GetBoostModel( ref )
 		int skinIndex = GetBoostSkin( ref )
 
-		vector originOffset = <0, 0, 0>
-		vector angleOffset = <0, 0, 90>
+		vector originOffset = < 0, 0, 0 >
+		vector angleOffset = < 0, 0, 90 >
 
 		file.menuMiscModel.body.SetLocalOrigin( originOffset )
 		file.menuMiscModel.body.SetLocalAngles( angleOffset )
@@ -2055,12 +2073,12 @@
 
 	vector function GetWeaponModelOffset( string weaponRef )
 	{
-		vector vec = <0, 0, 0>
+		vector vec = < 0, 0, 0 >
 
 		switch ( weaponRef )
 		{
 			case "mp_weapon_sniper":
-				vec = <27.5, -2.55, 1.2>
+				vec = < 27.5, -2.55, 1.2 >
 				break
 		}
 
@@ -2082,7 +2100,7 @@
 		file.menuWeaponModel.body.SetModel( model )
 		file.menuWeaponModel.body.SetSkin( skinIndex )
 
-		vector angleOffset = <0, 60, 0>
+		vector angleOffset = < 0, 60, 0 >
 
 		string attachmentName = "MENU_ROTATE"
 		vector originOffset = GetAttachmentOriginOffset( file.menuWeaponModel.body, attachmentName, angleOffset )
@@ -2384,12 +2402,12 @@
 		UpdatePilotModelDisplay( player )
 	}
 
-	//void function SavePilotCamoPreview( entity player )
-	//{
-	//	clGlobal.currentMenuPilotModels.camoIndex = clGlobal.previewMenuPilotModels.camoIndex
-	//	clGlobal.previewMenuPilotModels.camoIndex = -1
-	//	UpdatePilotModelDisplay( player )
-	//}
+	// void function SavePilotCamoPreview( entity player )
+	// {
+	// 	clGlobal.currentMenuPilotModels.camoIndex = clGlobal.previewMenuPilotModels.camoIndex
+	// 	clGlobal.previewMenuPilotModels.camoIndex = -1
+	// 	UpdatePilotModelDisplay( player )
+	// }
 
 	void function ClearAllPilotPreview( entity player )
 	{
@@ -2488,8 +2506,8 @@
 		clGlobal.previewMenuTitanModels.camoIndex = -1
 		clGlobal.previewMenuTitanModels.skinIndex = 0
 		clGlobal.previewMenuTitanModels.decalIndex = -1
-		//clGlobal.previewMenuTitanModels.armBadgeModel = $"" // Not sure why these aren't in here. These should be uncommented when we're sure it's safe to.
-		//clGlobal.previewMenuTitanModels.armBadgeBodyGroupIndex = -1
+		// clGlobal.previewMenuTitanModels.armBadgeModel = $"" // Not sure why these aren't in here. These should be uncommented when we're sure it's safe to.
+		// clGlobal.previewMenuTitanModels.armBadgeBodyGroupIndex = -1
 		clGlobal.previewMenuTitanModels.weaponModel = $""
 		clGlobal.previewMenuTitanModels.weaponCamoIndex = -1
 		clGlobal.previewMenuTitanModels.idleAnim = ""
@@ -2500,7 +2518,7 @@
 	{
 		float animCycle = model.GetCycle()
 
-		//printt( "PlayMenuAnim(", model, ",",  anim, ")" )
+		// printt( "PlayMenuAnim(", model, ",",  anim, ")" )
 
 		model.Anim_NonScriptedPlay( anim )
 		model.SetCycle( animCycle )
@@ -2542,14 +2560,14 @@
 		file.activeCharacter = file.presentationData[ presentationType ].characterData
 
 		#if HAS_WORLD_CALLSIGN
-		if ( !file.presentationData[ presentationType ].showCallsign )
-		{
-			RuiSetFloat( file.menuCallsignRui, "cardAlpha", 0.0 )
-		}
-		else
-		{
-			RuiSetFloat( file.menuCallsignRui, "cardAlpha", 1.0 )
-		}
+			if ( !file.presentationData[ presentationType ].showCallsign )
+			{
+				RuiSetFloat( file.menuCallsignRui, "cardAlpha", 0.0 )
+			}
+			else
+			{
+				RuiSetFloat( file.menuCallsignRui, "cardAlpha", 1.0 )
+			}
 		#endif
 
 		if ( !file.presentationData[ presentationType ].showStoreBG )
@@ -2569,7 +2587,7 @@
 		else
 		{
 			file.menuStorePrimeBgCreated = true
-			file.menuStorePrimeBg = RuiTopology_CreatePlane( < -91.6658, 453.079, 463.765>, <399.802, -12.5803, 0.000155184>, <3.28334, 104.34, -386.138>, false )
+			file.menuStorePrimeBg = RuiTopology_CreatePlane( < -91.6658, 453.079, 463.765 >, < 399.802, -12.5803, 0.000155184 >, < 3.28334, 104.34, -386.138 >, false )
 			file.menuStorePrimeBgRui = RuiCreate( $"ui/prime_titan_bg.rpak", file.menuStorePrimeBg, RUI_DRAW_WORLD, 0 )
 		}
 
@@ -2580,12 +2598,12 @@
 
 		if ( file.presentationData[ presentationType ].showWeaponModel )
 		{
-			//file.weaponDLight.SetLightColor( WEAPON_DLIGHT_COLOR )
+			// file.weaponDLight.SetLightColor( WEAPON_DLIGHT_COLOR )
 			file.menuWeaponModel.body.Show()
 		}
 		else
 		{
-			//file.weaponDLight.SetLightColor( <0, 0, 0> )
+			// file.weaponDLight.SetLightColor( <0, 0, 0> )
 			file.menuWeaponModel.body.Hide()
 		}
 
@@ -2615,7 +2633,7 @@
 	void function SetMenuCamera( entity player, int presentationType, bool interpolate )
 	{
 		string sceneAnim = file.presentationData[ presentationType ].sceneAnim
-		clGlobal.menuSceneModel.Anim_PlayWithRefPoint( sceneAnim, file.sceneRef.GetOrigin(), file.sceneRef.GetAngles() + <0, -90, 0>, 0 )
+		clGlobal.menuSceneModel.Anim_PlayWithRefPoint( sceneAnim, file.sceneRef.GetOrigin(), file.sceneRef.GetAngles() + < 0, -90, 0 >, 0 )
 		if ( !interpolate )
 			clGlobal.menuSceneModel.Anim_SetStartTime( 1.0 )
 
@@ -2636,24 +2654,24 @@
 		player.SetMenuCameraEntity( clGlobal.menuCamera )
 		clGlobal.menuCamera.SetTarget( file.cameraTarget, fov, interpolate, EASING_CUBIC_INOUT, TRANSITION_DURATION )
 
-		//EASING_LINEAR
-		//EASING_SINE_IN
-		//EASING_SINE_OUT
-		//EASING_SINE_INOUT
-		//EASING_CIRC_IN
-		//EASING_CIRC_OUT
-		//EASING_CIRC_INOUT
-		//EASING_CUBIC_IN
-		//EASING_CUBIC_OUT
-		//EASING_CUBIC_INOUT
-		//EASING_BACK_IN
-		//EASING_BACK_OUT
-		//EASING_BACK_INOUT
+		// EASING_LINEAR
+		// EASING_SINE_IN
+		// EASING_SINE_OUT
+		// EASING_SINE_INOUT
+		// EASING_CIRC_IN
+		// EASING_CIRC_OUT
+		// EASING_CIRC_INOUT
+		// EASING_CUBIC_IN
+		// EASING_CUBIC_OUT
+		// EASING_CUBIC_INOUT
+		// EASING_BACK_IN
+		// EASING_BACK_OUT
+		// EASING_BACK_INOUT
 
-		float dofNearStart 	= file.presentationData[ presentationType ].dofNearStart
-		float dofNearEnd 	= file.presentationData[ presentationType ].dofNearEnd
-		float dofFarStart 	= file.presentationData[ presentationType ].dofFarStart
-		float dofFarEnd 	= file.presentationData[ presentationType ].dofFarEnd
+		float dofNearStart = file.presentationData[ presentationType ].dofNearStart
+		float dofNearEnd = file.presentationData[ presentationType ].dofNearEnd
+		float dofFarStart = file.presentationData[ presentationType ].dofFarStart
+		float dofFarEnd = file.presentationData[ presentationType ].dofFarEnd
 
 		if ( interpolate )
 			printt( "Interpolating menu camera to:", Dev_GetEnumString( ePresentationType, presentationType ) )
@@ -2673,15 +2691,15 @@
 
 		DoFSetDilateInfocus( true ) // We want to reduce DoF aliasing around bright edges in the menus.
 
-#if CONSOLE_PROG
-		const float texelNorm = 2.0
-#else
-		const float texelNorm = 1.0
-#endif
+		#if CONSOLE_PROG
+			const float texelNorm = 2.0
+		#else
+			const float texelNorm = 1.0
+		#endif
 
-		float csmTexelScale1	= file.presentationData[ presentationType ].csmTexelScale1 * texelNorm
-		float csmTexelScale2	= file.presentationData[ presentationType ].csmTexelScale2 * texelNorm
-		float csmStartDistance	= file.presentationData[ presentationType ].csmStartDistance
+		float csmTexelScale1 = file.presentationData[ presentationType ].csmTexelScale1 * texelNorm
+		float csmTexelScale2 = file.presentationData[ presentationType ].csmTexelScale2 * texelNorm
+		float csmStartDistance = file.presentationData[ presentationType ].csmStartDistance
 
 		// Tweaks in order to maximize the shadow space usage for the pilot and/or the titan.
 		// Used the convar csm_debug_2d to find the best values on PC.
@@ -2691,7 +2709,7 @@
 
 	void function ModelRotationThread()
 	{
-		for ( ;; )
+		for ( ; ; )
 		{
 			WaitFrame()
 
@@ -2699,50 +2717,50 @@
 				continue
 
 			CharacterData character = expect CharacterData( file.activeCharacter )
-			float[2] rotationDelta
+			float[ 2 ] rotationDelta
 
 			if ( IsControllerModeActive() )
 			{
 				const float STICK_DEADZONE = 0.05
 				float stickXRaw = clamp( InputGetAxis( ANALOG_RIGHT_X ), -1.0, 1.0 )
-				float stickXRemappedAbs = (fabs( stickXRaw ) < STICK_DEADZONE) ? 0.0 : ((fabs( stickXRaw ) - STICK_DEADZONE) / (1.0 - STICK_DEADZONE))
-				float stickX = EaseIn( stickXRemappedAbs ) * (stickXRaw < 0.0 ? -1.0 : 1.0)
+				float stickXRemappedAbs = ( fabs( stickXRaw ) < STICK_DEADZONE ) ? 0.0 : ( ( fabs( stickXRaw ) - STICK_DEADZONE ) / ( 1.0 - STICK_DEADZONE ) )
+				float stickX = EaseIn( stickXRemappedAbs ) * ( stickXRaw < 0.0 ? -1.0 : 1.0 )
 
-				rotationDelta[0] = ((character.rotationDelta[0] + stickX * character.maxTurnSpeed * FrameTime()) % 360.0)
+				rotationDelta[ 0 ] = ( ( character.rotationDelta[ 0 ] + stickX * character.maxTurnSpeed * FrameTime() ) % 360.0 )
 
 				float stickYRaw = clamp( InputGetAxis( ANALOG_RIGHT_Y ), -1.0, 1.0 )
-				float stickYRemappedAbs = (fabs( stickYRaw ) < STICK_DEADZONE) ? 0.0 : ((fabs( stickYRaw ) - STICK_DEADZONE) / (1.0 - STICK_DEADZONE))
-				float stickY = EaseIn( stickYRemappedAbs ) * (stickYRaw < 0.0 ? -1.0 : 1.0)
+				float stickYRemappedAbs = ( fabs( stickYRaw ) < STICK_DEADZONE ) ? 0.0 : ( ( fabs( stickYRaw ) - STICK_DEADZONE ) / ( 1.0 - STICK_DEADZONE ) )
+				float stickY = EaseIn( stickYRemappedAbs ) * ( stickYRaw < 0.0 ? -1.0 : 1.0 )
 
-				rotationDelta[1] = ((character.rotationDelta[1] + stickY * character.maxTurnSpeed * FrameTime()) % 360.0)
+				rotationDelta[ 1 ] = ( ( character.rotationDelta[ 1 ] + stickY * character.maxTurnSpeed * FrameTime() ) % 360.0 )
 			}
 			else
 			{
-				rotationDelta[0] = ((character.rotationDelta[0] + file.mouseRotateDelta[0] * FrameTime()) % 360.0)
-				file.mouseRotateDelta[0] = 0 // clear because otherwise it would keep spinning
+				rotationDelta[ 0 ] = ( ( character.rotationDelta[ 0 ] + file.mouseRotateDelta[ 0 ] * FrameTime() ) % 360.0 )
+				file.mouseRotateDelta[ 0 ] = 0 // clear because otherwise it would keep spinning
 
-				rotationDelta[1] = ((character.rotationDelta[1] + file.mouseRotateDelta[1] * FrameTime()) % 360.0)
-				file.mouseRotateDelta[1] = 0 // clear because otherwise it would keep spinning
+				rotationDelta[ 1 ] = ( ( character.rotationDelta[ 1 ] + file.mouseRotateDelta[ 1 ] * FrameTime() ) % 360.0 )
+				file.mouseRotateDelta[ 1 ] = 0 // clear because otherwise it would keep spinning
 			}
 
 			float maxTurnDegrees = file.presentationData[ file.presentationType ].maxTurnDegrees
 			if ( maxTurnDegrees < 360.0 )
 			{
-				float minRotationDelta = 0 - (maxTurnDegrees / 2)
+				float minRotationDelta = 0 - ( maxTurnDegrees / 2 )
 				float maxRotationDelta = maxTurnDegrees / 2
-				rotationDelta[0] = clamp( rotationDelta[0], minRotationDelta, maxRotationDelta )
+				rotationDelta[ 0 ] = clamp( rotationDelta[ 0 ], minRotationDelta, maxRotationDelta )
 			}
 
 			float maxPitchDegrees = file.presentationData[ file.presentationType ].maxPitchDegrees
 			if ( maxPitchDegrees < 360.0 )
 			{
-				float minRotationDelta = 0 - (maxPitchDegrees / 2)
+				float minRotationDelta = 0 - ( maxPitchDegrees / 2 )
 				float maxRotationDelta = maxPitchDegrees / 2
-				rotationDelta[1] = clamp( rotationDelta[1], minRotationDelta, maxRotationDelta )
+				rotationDelta[ 1 ] = clamp( rotationDelta[ 1 ], minRotationDelta, maxRotationDelta )
 			}
 
-			character.rotationDelta[0] = rotationDelta[0]
-			character.rotationDelta[1] = rotationDelta[1]
+			character.rotationDelta[ 0 ] = rotationDelta[ 0 ]
+			character.rotationDelta[ 1 ] = rotationDelta[ 1 ]
 
 			vector defaultAngles = clGlobal.menuSceneModel.GetAttachmentAngles( clGlobal.menuSceneModel.LookupAttachment( character.attachName ) )
 			vector newAng
@@ -2752,13 +2770,13 @@
 					newAng = <defaultAngles.x, defaultAngles.y + character.rotationDelta[0], defaultAngles.z  + character.rotationDelta[1]>
 				else
 					newAng = <defaultAngles.x + character.rotationDelta[1], defaultAngles.y + character.rotationDelta[0], defaultAngles.z>
-			*/
+*/
 
-			vector pitchTowardCamera = < -rotationDelta[1], 0, 0> //AnglesCompose( <0, -90, 0>, AnglesCompose( <rotationDelta[1], 0, 0>, <0, 90, 0> ) )
+			vector pitchTowardCamera = < -rotationDelta[ 1 ], 0, 0 > // AnglesCompose( <0, -90, 0>, AnglesCompose( <rotationDelta[1], 0, 0>, <0, 90, 0> ) )
 
-//			newAng = <defaultAngles.x, defaultAngles.y + character.rotationDelta[0], defaultAngles.z>
+			// 			newAng = <defaultAngles.x, defaultAngles.y + character.rotationDelta[0], defaultAngles.z>
 			newAng = AnglesCompose( defaultAngles, pitchTowardCamera )
-			newAng = AnglesCompose( newAng, <0, character.rotationDelta[0], 0> )
+			newAng = AnglesCompose( newAng, < 0, character.rotationDelta[ 0 ], 0 > )
 
 			float fov = file.presentationData[ file.presentationType ].fov
 			float finalFOV = GraphCapped( character.fovScale, 0.0, 1.0, fov * 0.6, fov )
@@ -2773,8 +2791,8 @@
 		entity mover = character.mover
 		vector defaultAngles = clGlobal.menuSceneModel.GetAttachmentAngles( clGlobal.menuSceneModel.LookupAttachment( character.attachName ) )
 		vector currentAngles = mover.GetAngles()
-		character.rotationDelta[0] = 0.0
-		character.rotationDelta[1] = 0.0
+		character.rotationDelta[ 0 ] = 0.0
+		character.rotationDelta[ 1 ] = 0.0
 		character.fovScale = 1.0
 
 		if ( currentAngles == defaultAngles )
@@ -2784,7 +2802,7 @@
 		float absNormDeg = fabs( currentAngles.y - defaultAngles.y % 360.0 )
 		float diffDeg = min( 360.0 - absNormDeg, absNormDeg )
 		float maxDuration = 0.5
-		float duration = diffDeg * (maxDuration / 180)
+		float duration = diffDeg * ( maxDuration / 180 )
 		float easeTime = duration / 3
 
 		if ( duration > 0 )
@@ -2797,8 +2815,8 @@
 	{
 		bool wasSoloDialogMenuOpen = clGlobal.isSoloDialogMenuOpen
 
-		clGlobal.isMenuOpen = (state == 1)
-		clGlobal.isSoloDialogMenuOpen = (state == 2);
+		clGlobal.isMenuOpen = ( state == 1 )
+		clGlobal.isSoloDialogMenuOpen = ( state == 2 )
 		if ( clGlobal.isSoloDialogMenuOpen != wasSoloDialogMenuOpen )
 			UpdateMainHudVisibility( player )
 
@@ -2815,7 +2833,7 @@
 			{
 				DoF_SetNearDepthToDefault()
 				DoF_SetFarDepthToDefault()
-				DoFSetDilateInfocus( false );
+				DoFSetDilateInfocus( false )
 
 				ColorCorrection_SetWeight( file.menuColorCorrection, 0.0 )
 				ColorCorrection_SetExclusive( file.menuColorCorrection, false )
@@ -2827,8 +2845,8 @@
 
 	void function UpdateMouseRotateDelta( entity player, float deltaX, float deltaY )
 	{
-		file.mouseRotateDelta[0] = deltaX
-		file.mouseRotateDelta[1] = deltaY
+		file.mouseRotateDelta[ 0 ] = deltaX
+		file.mouseRotateDelta[ 1 ] = deltaY
 	}
 #endif // CLIENT
 
@@ -2852,16 +2870,18 @@
 	{
 		if ( IsFullyConnected() && uiGlobal.mapSupportsMenuModels )
 		{
-			if ( uiGlobal.activePresentationType == ePresentationType.NO_MODELS || newPresentationType == ePresentationType.NO_MODELS ||
-				 uiGlobal.activePresentationType == ePresentationType.FACTIONS || newPresentationType == ePresentationType.FACTIONS ||
-				 uiGlobal.activePresentationType == ePresentationType.BOOSTS || newPresentationType == ePresentationType.BOOSTS ||
-				 uiGlobal.activePresentationType == ePresentationType.STORE_FRONT || newPresentationType == ePresentationType.STORE_FRONT ||
-				 uiGlobal.activePresentationType == ePresentationType.PVE_MAIN || newPresentationType == ePresentationType.PVE_MAIN ||
-				 uiGlobal.activePresentationType == ePresentationType.DEFAULT && newPresentationType == ePresentationType.STORE_WEAPON_SKINS ||
-				 uiGlobal.activePresentationType == ePresentationType.STORE_WEAPON_SKINS && newPresentationType == ePresentationType.DEFAULT ||
-				 uiGlobal.activePresentationType == ePresentationType.PILOT_WEAPON && newPresentationType == ePresentationType.STORE_WEAPON_SKINS ||
-				 uiGlobal.activePresentationType == ePresentationType.STORE_WEAPON_SKINS && newPresentationType == ePresentationType.PILOT_WEAPON ||
-				 uiGlobal.activePresentationType == ePresentationType.INACTIVE )
+			if (
+				uiGlobal.activePresentationType == ePresentationType.NO_MODELS || newPresentationType == ePresentationType.NO_MODELS ||
+				uiGlobal.activePresentationType == ePresentationType.FACTIONS || newPresentationType == ePresentationType.FACTIONS ||
+				uiGlobal.activePresentationType == ePresentationType.BOOSTS || newPresentationType == ePresentationType.BOOSTS ||
+				uiGlobal.activePresentationType == ePresentationType.STORE_FRONT || newPresentationType == ePresentationType.STORE_FRONT ||
+				uiGlobal.activePresentationType == ePresentationType.PVE_MAIN || newPresentationType == ePresentationType.PVE_MAIN ||
+				uiGlobal.activePresentationType == ePresentationType.DEFAULT && newPresentationType == ePresentationType.STORE_WEAPON_SKINS ||
+				uiGlobal.activePresentationType == ePresentationType.STORE_WEAPON_SKINS && newPresentationType == ePresentationType.DEFAULT ||
+				uiGlobal.activePresentationType == ePresentationType.PILOT_WEAPON && newPresentationType == ePresentationType.STORE_WEAPON_SKINS ||
+				uiGlobal.activePresentationType == ePresentationType.STORE_WEAPON_SKINS && newPresentationType == ePresentationType.PILOT_WEAPON ||
+				uiGlobal.activePresentationType == ePresentationType.INACTIVE
+			)
 			{
 				uiGlobal.interpolateCameraMoves = false
 			}
@@ -2874,16 +2894,14 @@
 			if ( uiGlobal.lobbyFromLoadingScreen )
 			{
 				uiGlobal.interpolateCameraMoves = false
-				uiGlobal.lobbyFromLoadingScreen	= false
+				uiGlobal.lobbyFromLoadingScreen = false
 			}
 
 			RunClientScript( "SetPresentationType", GetLocalClientPlayer(), newPresentationType, uiGlobal.interpolateCameraMoves )
 
 			uiGlobal.activePresentationType = newPresentationType
 
-			if ( newPresentationType == ePresentationType.FD_MAIN ||
-				newPresentationType == ePresentationType.FD_FIND_GAME
-				)
+			if ( newPresentationType == ePresentationType.FD_MAIN || newPresentationType == ePresentationType.FD_FIND_GAME )
 				RunClientScript( "UpdateMenuToHarvester" )
 		}
 	}

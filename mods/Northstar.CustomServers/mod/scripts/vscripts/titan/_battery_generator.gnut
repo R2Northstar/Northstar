@@ -42,12 +42,11 @@ void function PropBatteryGeneratorThink( entity generator )
 	entity trigger = CreateEntity( "trigger_cylinder" )
 	trigger.SetRadius( 150 )
 	trigger.SetAboveHeight( 150 )
-	trigger.SetBelowHeight( 150 ) //i.e. make the trigger a sphere as opposed to a cylinder
+	trigger.SetBelowHeight( 150 ) // i.e. make the trigger a sphere as opposed to a cylinder
 	trigger.SetOrigin( generator.GetOrigin() )
 	trigger.SetParent( generator )
 	DispatchSpawn( trigger )
 	trigger.SetEnterCallback( GeneratorTriggerThink )
-
 
 	file.generators.append( generator )
 }
@@ -87,7 +86,7 @@ void function GeneratorOnDamage( entity generator, var damageInfo )
 
 void function GeneratorDestroy( entity generator )
 {
-	int solidType = 6 //phys collision
+	int solidType = 6 // phys collision
 	entity destroyedProp = CreatePropDynamic( MODEL_DESTROYED_GENERATOR, generator.GetOrigin(), generator.GetAngles(), solidType )
 	if ( generator.GetParent() )
 		destroyedProp.SetToSameParentAs( generator )
@@ -96,7 +95,7 @@ void function GeneratorDestroy( entity generator )
 	destroyedProp.DisableHibernation()
 	int fxID = GetParticleSystemIndex( FX_GENERATOR_EXP )
 	vector origin = generator.GetOrigin()
-	vector up 		= generator.GetUpVector()
+	vector up = generator.GetUpVector()
 
 	EmitSoundOnEntity( destroyedProp, "BatteryCrate_Explosion" )
 	StartParticleEffectOnEntity( destroyedProp, fxID, FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
@@ -104,12 +103,12 @@ void function GeneratorDestroy( entity generator )
 	entity battery = CreateTitanBattery( origin + ( up * 40 ) )
 	battery.DisableHibernation()
 
-	//throw out the battery
-	vector right 	= generator.GetRightVector() * RandomFloatRange( -0.5, 0.5 )
-	vector forward 	= generator.GetForwardVector() * RandomFloatRange( -0.5, 0.5 )
+	// throw out the battery
+	vector right = generator.GetRightVector() * RandomFloatRange( -0.5, 0.5 )
+	vector forward = generator.GetForwardVector() * RandomFloatRange( -0.5, 0.5 )
 	vector velocity = Normalize( up + right + forward ) * 10
 
-	//for moving geo
+	// for moving geo
 	vector parentVelocity = generator.GetVelocity()
 
 	battery.SetVelocity( velocity + parentVelocity )

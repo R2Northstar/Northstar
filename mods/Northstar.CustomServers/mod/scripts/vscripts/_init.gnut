@@ -1,11 +1,11 @@
 #if DEV
-untyped
+	untyped
 #endif
 
-//=========================================================
-//	_init
+// =========================================================
+// 	_init
 //  Called on newgame or transitions, AFTER entities have been created and initialized
-//=========================================================
+// =========================================================
 
 global function CodeCallback_PostEntityInit
 

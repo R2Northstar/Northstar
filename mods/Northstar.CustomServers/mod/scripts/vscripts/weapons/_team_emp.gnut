@@ -28,7 +28,7 @@ void function RecoverFromEMP( entity player, float time )
 		{
 			if ( IsValid( player ) )
 			{
-			// remember this is a stack so you need to enable as many times as you disable
+				// remember this is a stack so you need to enable as many times as you disable
 				EnableOffhandWeapons( player )
 			}
 		}

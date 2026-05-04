@@ -5,14 +5,14 @@ global function DamageSourceIDToString
 global function DamageSourceIDHasString
 
 #if SERVER
-global function RegisterWeaponDamageSource
-global function RegisterWeaponDamageSources
+	global function RegisterWeaponDamageSource
+	global function RegisterWeaponDamageSources
 #endif
 
 struct
 {
-	table<int,string> damageSourceIDToName
-	table<int,string> damageSourceIDToString
+	table<int, string> damageSourceIDToName
+	table<int, string> damageSourceIDToString
 
 	// For new, modded damageSourceIDs.
 	// Holds triplets of [id, enum_name, display name]. Stored with no separation for ease of string conversion.
@@ -25,13 +25,13 @@ const string MESSAGE_SPACE_PADDING = "\xA6" // The "broken pipe" character. Tras
 
 global enum eDamageSourceId
 {
-	invalid 	= -1  // used in code
+	invalid = -1 // used in code
 
-	//---------------------------
+	// ---------------------------
 	// defined in damageDef.txt. This will go away ( you can use damagedef_nuclear_core instead of eDamageSourceId.[enum id] and get rid of it from here )
 	// once this list has only damagedef_*, then we can remove eDamageSourceId
-	code_reserved  				// may be merged with invalid -1 above
-	damagedef_unknown		   	// must start at 1 and order must match what's in damageDefs.txt
+	code_reserved // may be merged with invalid -1 above
+	damagedef_unknown // must start at 1 and order must match what's in damageDefs.txt
 	damagedef_unknownBugIt
 	damagedef_suicide
 	damagedef_despawn
@@ -55,7 +55,7 @@ global enum eDamageSourceId
 	damagedef_fd_explosive_barrel
 	damagedef_fd_tether_trap
 
-	//---------------------------
+	// ---------------------------
 
 	// Titan Weapons
 	mp_titanweapon_40mm
@@ -121,7 +121,7 @@ global enum eDamageSourceId
 	mp_titancore_salvo_core
 	mp_titancore_siege_mode
 
-	//SP weapons
+	// SP weapons
 	mp_weapon_grenade_electric_smoke
 	proto_titanweapon_deathblossom
 
@@ -222,7 +222,7 @@ global enum eDamageSourceId
 
 	// Misc
 	rodeo
-	rodeo_forced_titan_eject //For awarding points when you force a pilot to eject via rodeo
+	rodeo_forced_titan_eject // For awarding points when you force a pilot to eject via rodeo
 	rodeo_execution
 	human_melee
 	auto_titan_melee
@@ -308,16 +308,16 @@ global enum eDamageSourceId
 
 	bombardment
 	bleedout
-	//damageSourceId=eDamageSourceId.xxxxx
-	//fireteam
-	//marvin
-	//rocketstrike
-	//orbitallaser
-	//explosion
+// damageSourceId=eDamageSourceId.xxxxx
+// fireteam
+// marvin
+// rocketstrike
+// orbitallaser
+// explosion
 }
 
-//When adding new mods, they need to be added below and to persistent_player_data_version_N.pdef in r1/cfg/server.
-//Then when updating that file, save a new one and increment N.
+// When adding new mods, they need to be added below and to persistent_player_data_version_N.pdef in r1/cfg/server.
+// Then when updating that file, save a new one and increment N.
 
 global enum eModSourceId
 {
@@ -397,78 +397,78 @@ global enum eModSourceId
 	rocket_arena
 }
 
-//Attachments intentionally left off. This prevents them from displaying in kill cards.
+// Attachments intentionally left off. This prevents them from displaying in kill cards.
 // modNameStrings should be defined when the mods are created, not in a separate table -Mackey
 global const modNameStrings = {
-	[ eModSourceId.accelerator ]						= "#MOD_ACCELERATOR_NAME",
-	[ eModSourceId.afterburners ]						= "#MOD_AFTERBURNERS_NAME",
-	[ eModSourceId.arc_triple_threat ] 					= "#MOD_ARC_TRIPLE_THREAT_NAME",
-	[ eModSourceId.burn_mod_autopistol ] 				= "#BC_AUTOPISTOL_M2",
-	[ eModSourceId.burn_mod_car ] 						= "#BC_CAR_M2",
-	[ eModSourceId.burn_mod_defender ] 					= "#BC_DEFENDER_M2",
-	[ eModSourceId.burn_mod_dmr ] 						= "#BC_DMR_M2",
-	[ eModSourceId.burn_mod_emp_grenade ] 				= "#BC_EMP_GRENADE_M2",
-	[ eModSourceId.burn_mod_frag_grenade ] 				= "#BC_FRAG_GRENADE_M2",
-	[ eModSourceId.burn_mod_grenade_electric_smoke ] 	= "#BC_GRENADE_ELECTRIC_SMOKE_M2",
-	[ eModSourceId.burn_mod_grenade_gravity ] 			= "#BC_GRENADE_ELECTRIC_SMOKE_M2",
-	[ eModSourceId.burn_mod_thermite_grenade ] 			= "#BC_GRENADE_ELECTRIC_SMOKE_M2",
-	[ eModSourceId.burn_mod_g2 ] 						= "#BC_G2_M2",
-	[ eModSourceId.burn_mod_hemlok ] 					= "#BC_HEMLOK_M2",
-	[ eModSourceId.burn_mod_lmg ] 						= "#BC_LMG_M2",
-	[ eModSourceId.burn_mod_mgl ] 						= "#BC_MGL_M2",
-	[ eModSourceId.burn_mod_r97 ] 						= "#BC_R97_M2",
-	[ eModSourceId.burn_mod_rspn101 ] 					= "#BC_RSPN101_M2",
-	[ eModSourceId.burn_mod_satchel ] 					= "#BC_SATCHEL_M2",
-	[ eModSourceId.burn_mod_semipistol ] 				= "#BC_SEMIPISTOL_M2",
-	[ eModSourceId.burn_mod_smr ] 						= "#BC_SMR_M2",
-	[ eModSourceId.burn_mod_smart_pistol ] 				= "#BC_SMART_PISTOL_M2",
-	[ eModSourceId.burn_mod_sniper ] 					= "#BC_SNIPER_M2",
-	[ eModSourceId.burn_mod_rocket_launcher ] 			= "#BC_ROCKET_LAUNCHER_M2",
-	[ eModSourceId.burn_mod_titan_40mm ] 				= "#BC_TITAN_40MM_M2",
-	[ eModSourceId.burn_mod_titan_arc_cannon ] 			= "#BC_TITAN_ARC_CANNON_M2",
-	[ eModSourceId.burn_mod_titan_rocket_launcher ] 	= "#BC_TITAN_ROCKET_LAUNCHER_M2",
-	[ eModSourceId.burn_mod_titan_sniper ] 				= "#BC_TITAN_SNIPER_M2",
-	[ eModSourceId.burn_mod_titan_triple_threat ] 		= "#BC_TITAN_TRIPLE_THREAT_M2",
-	[ eModSourceId.burn_mod_titan_xo16 ]			 	= "#BC_TITAN_XO16_M2",
-	[ eModSourceId.burn_mod_titan_dumbfire_rockets ] 	= "#BC_TITAN_DUMBFIRE_MISSILE_M2",
-	[ eModSourceId.burn_mod_titan_homing_rockets ] 		= "#BC_TITAN_HOMING_ROCKETS_M2",
-	[ eModSourceId.burn_mod_titan_salvo_rockets ] 		= "#BC_TITAN_SALVO_ROCKETS_M2",
-	[ eModSourceId.burn_mod_titan_shoulder_rockets ] 	= "#BC_TITAN_SHOULDER_ROCKETS_M2",
-	[ eModSourceId.burn_mod_titan_vortex_shield ] 		= "#BC_TITAN_VORTEX_SHIELD_M2",
-	[ eModSourceId.burn_mod_titan_smoke ] 				= "#BC_TITAN_ELECTRIC_SMOKE_M2",
-	[ eModSourceId.burn_mod_titan_particle_wall ] 		= "#BC_TITAN_SHIELD_WALL_M2",
-	[ eModSourceId.burst ] 								= "#MOD_BURST_NAME",
-	[ eModSourceId.capacitor ] 							= "#MOD_CAPACITOR_NAME",
-	[ eModSourceId.enhanced_targeting ] 				= "#MOD_ENHANCED_TARGETING_NAME",
-	[ eModSourceId.extended_ammo ] 						= "#MOD_EXTENDED_MAG_NAME",
-	[ eModSourceId.fast_reload ] 						= "#MOD_FAST_RELOAD_NAME",
-	[ eModSourceId.instant_shot ]						= "#MOD_INSTANT_SHOT_NAME",
-	[ eModSourceId.overcharge ] 						= "#MOD_OVERCHARGE_NAME",
-	[ eModSourceId.quick_shot ]							= "#MOD_QUICK_SHOT_NAME",
-	[ eModSourceId.rapid_fire_missiles ] 				= "#MOD_RAPID_FIRE_MISSILES_NAME",
-	[ eModSourceId.burn_mod_shotgun ] 					= "#BC_SHOTGUN_M2",
-	[ eModSourceId.silencer ] 							= "#MOD_SILENCER_NAME",
-	[ eModSourceId.slammer ] 							= "#MOD_SLAMMER_NAME",
-	[ eModSourceId.spread_increase_ttt ]				= "#MOD_SPREAD_INCREASE_TTT_NAME",
-	[ eModSourceId.stabilizer ]							= "#MOD_STABILIZER_NAME",
-	[ eModSourceId.titanhammer ] 						= "#MOD_TITANHAMMER_NAME",
-	[ eModSourceId.burn_mod_wingman ]					= "#BC_WINGMAN_M2",
-	[ eModSourceId.burn_mod_lstar ]						= "#BC_LSTAR_M2",
-	[ eModSourceId.burn_mod_mastiff ]					= "#BC_MASTIFF_M2",
-	[ eModSourceId.burn_mod_vinson ]					= "#BC_VINSON_M2",
-	[ eModSourceId.ricochet ]							= "Ricochet",
-	[ eModSourceId.ar_trajectory ]						= "AR Trajectory",
-	[ eModSourceId.smart_lock ]							= "Smart Lock",
-	[ eModSourceId.pro_screen ]							= "Pro Screen",
-	[ eModSourceId.rocket_arena ]						= "Rocket Arena",
+	[eModSourceId.accelerator] = "#MOD_ACCELERATOR_NAME",
+	[eModSourceId.afterburners] = "#MOD_AFTERBURNERS_NAME",
+	[eModSourceId.arc_triple_threat] = "#MOD_ARC_TRIPLE_THREAT_NAME",
+	[eModSourceId.burn_mod_autopistol] = "#BC_AUTOPISTOL_M2",
+	[eModSourceId.burn_mod_car] = "#BC_CAR_M2",
+	[eModSourceId.burn_mod_defender] = "#BC_DEFENDER_M2",
+	[eModSourceId.burn_mod_dmr] = "#BC_DMR_M2",
+	[eModSourceId.burn_mod_emp_grenade] = "#BC_EMP_GRENADE_M2",
+	[eModSourceId.burn_mod_frag_grenade] = "#BC_FRAG_GRENADE_M2",
+	[eModSourceId.burn_mod_grenade_electric_smoke] = "#BC_GRENADE_ELECTRIC_SMOKE_M2",
+	[eModSourceId.burn_mod_grenade_gravity] = "#BC_GRENADE_ELECTRIC_SMOKE_M2",
+	[eModSourceId.burn_mod_thermite_grenade] = "#BC_GRENADE_ELECTRIC_SMOKE_M2",
+	[eModSourceId.burn_mod_g2] = "#BC_G2_M2",
+	[eModSourceId.burn_mod_hemlok] = "#BC_HEMLOK_M2",
+	[eModSourceId.burn_mod_lmg] = "#BC_LMG_M2",
+	[eModSourceId.burn_mod_mgl] = "#BC_MGL_M2",
+	[eModSourceId.burn_mod_r97] = "#BC_R97_M2",
+	[eModSourceId.burn_mod_rspn101] = "#BC_RSPN101_M2",
+	[eModSourceId.burn_mod_satchel] = "#BC_SATCHEL_M2",
+	[eModSourceId.burn_mod_semipistol] = "#BC_SEMIPISTOL_M2",
+	[eModSourceId.burn_mod_smr] = "#BC_SMR_M2",
+	[eModSourceId.burn_mod_smart_pistol] = "#BC_SMART_PISTOL_M2",
+	[eModSourceId.burn_mod_sniper] = "#BC_SNIPER_M2",
+	[eModSourceId.burn_mod_rocket_launcher] = "#BC_ROCKET_LAUNCHER_M2",
+	[eModSourceId.burn_mod_titan_40mm] = "#BC_TITAN_40MM_M2",
+	[eModSourceId.burn_mod_titan_arc_cannon] = "#BC_TITAN_ARC_CANNON_M2",
+	[eModSourceId.burn_mod_titan_rocket_launcher] = "#BC_TITAN_ROCKET_LAUNCHER_M2",
+	[eModSourceId.burn_mod_titan_sniper] = "#BC_TITAN_SNIPER_M2",
+	[eModSourceId.burn_mod_titan_triple_threat] = "#BC_TITAN_TRIPLE_THREAT_M2",
+	[eModSourceId.burn_mod_titan_xo16] = "#BC_TITAN_XO16_M2",
+	[eModSourceId.burn_mod_titan_dumbfire_rockets] = "#BC_TITAN_DUMBFIRE_MISSILE_M2",
+	[eModSourceId.burn_mod_titan_homing_rockets] = "#BC_TITAN_HOMING_ROCKETS_M2",
+	[eModSourceId.burn_mod_titan_salvo_rockets] = "#BC_TITAN_SALVO_ROCKETS_M2",
+	[eModSourceId.burn_mod_titan_shoulder_rockets] = "#BC_TITAN_SHOULDER_ROCKETS_M2",
+	[eModSourceId.burn_mod_titan_vortex_shield] = "#BC_TITAN_VORTEX_SHIELD_M2",
+	[eModSourceId.burn_mod_titan_smoke] = "#BC_TITAN_ELECTRIC_SMOKE_M2",
+	[eModSourceId.burn_mod_titan_particle_wall] = "#BC_TITAN_SHIELD_WALL_M2",
+	[eModSourceId.burst] = "#MOD_BURST_NAME",
+	[eModSourceId.capacitor] = "#MOD_CAPACITOR_NAME",
+	[eModSourceId.enhanced_targeting] = "#MOD_ENHANCED_TARGETING_NAME",
+	[eModSourceId.extended_ammo] = "#MOD_EXTENDED_MAG_NAME",
+	[eModSourceId.fast_reload] = "#MOD_FAST_RELOAD_NAME",
+	[eModSourceId.instant_shot] = "#MOD_INSTANT_SHOT_NAME",
+	[eModSourceId.overcharge] = "#MOD_OVERCHARGE_NAME",
+	[eModSourceId.quick_shot] = "#MOD_QUICK_SHOT_NAME",
+	[eModSourceId.rapid_fire_missiles] = "#MOD_RAPID_FIRE_MISSILES_NAME",
+	[eModSourceId.burn_mod_shotgun] = "#BC_SHOTGUN_M2",
+	[eModSourceId.silencer] = "#MOD_SILENCER_NAME",
+	[eModSourceId.slammer] = "#MOD_SLAMMER_NAME",
+	[eModSourceId.spread_increase_ttt] = "#MOD_SPREAD_INCREASE_TTT_NAME",
+	[eModSourceId.stabilizer] = "#MOD_STABILIZER_NAME",
+	[eModSourceId.titanhammer] = "#MOD_TITANHAMMER_NAME",
+	[eModSourceId.burn_mod_wingman] = "#BC_WINGMAN_M2",
+	[eModSourceId.burn_mod_lstar] = "#BC_LSTAR_M2",
+	[eModSourceId.burn_mod_mastiff] = "#BC_MASTIFF_M2",
+	[eModSourceId.burn_mod_vinson] = "#BC_VINSON_M2",
+	[eModSourceId.ricochet] = "Ricochet",
+	[eModSourceId.ar_trajectory] = "AR Trajectory",
+	[eModSourceId.smart_lock] = "Smart Lock",
+	[eModSourceId.pro_screen] = "Pro Screen",
+	[eModSourceId.rocket_arena] = "Rocket Arena",
 }
 
 void function DamageTypes_Init()
 {
 	#if SERVER
-	AddCallback_OnClientConnected( SendNewDamageSourceIDsConnected )
+		AddCallback_OnClientConnected( SendNewDamageSourceIDsConnected )
 	#else
-	AddServerToClientStringCommandCallback( "register_damage_source_ids", ReceiveNewDamageSourceIDs )
+		AddServerToClientStringCommandCallback( "register_damage_source_ids", ReceiveNewDamageSourceIDs )
 	#endif
 
 	foreach ( name, number in eDamageSourceId )
@@ -478,182 +478,181 @@ void function DamageTypes_Init()
 
 	PrecacheWeapon( "mp_weapon_rspn101" ) // used by npc_soldier ><
 
-#if DEV
+	#if DEV
 
-	int numDamageDefs = DamageDef_GetCount()
-	table damageSourceIdEnum = expect table( getconsttable().eDamageSourceId )
-	foreach ( name, id in damageSourceIdEnum )
-	{
-		expect int( id )
-		if ( id <= eDamageSourceId.code_reserved || id >= numDamageDefs )
-			continue
+		int numDamageDefs = DamageDef_GetCount()
+		table damageSourceIdEnum = expect table( getconsttable().eDamageSourceId )
+		foreach ( name, id in damageSourceIdEnum )
+		{
+			expect int( id )
+			if ( id <= eDamageSourceId.code_reserved || id >= numDamageDefs )
+				continue
 
-		string damageDefName = DamageDef_GetName( id )
-		Assert( damageDefName == name, "damage def (" + id + ") name: '" + damageDefName + "' doesn't match damage source id '" + name + "'" )
-	}
-#endif
+			string damageDefName = DamageDef_GetName( id )
+			Assert( damageDefName == name, "damage def (" + id + ") name: '" + damageDefName + "' doesn't match damage source id '" + name + "'" )
+		}
+	#endif
 
 	file.damageSourceIDToName =
-	{
-		//sp
-		[ eDamageSourceId.mp_weapon_grenade_electric_smoke ]		= "#DEATH_ELECTRIC_SMOKE_SCREEN",
-		[ eDamageSourceId.proto_titanweapon_deathblossom ] 			= "#WPN_TITAN_ROCKET_LAUNCHER",
+		{
+			// sp
+			[eDamageSourceId.mp_weapon_grenade_electric_smoke] = "#DEATH_ELECTRIC_SMOKE_SCREEN",
+			[eDamageSourceId.proto_titanweapon_deathblossom] = "#WPN_TITAN_ROCKET_LAUNCHER",
 
-		//mp
-		[ eDamageSourceId.mp_extreme_environment ] 					= "#DAMAGE_EXTREME_ENVIRONMENT",
+			// mp
+			[eDamageSourceId.mp_extreme_environment] = "#DAMAGE_EXTREME_ENVIRONMENT",
 
-		[ eDamageSourceId.mp_weapon_engineer_turret ] 				= "#WPN_ENGINEER_TURRET",
+			[eDamageSourceId.mp_weapon_engineer_turret] = "#WPN_ENGINEER_TURRET",
 
-		[ eDamageSourceId.mp_weapon_yh803 ] 						= "#WPN_LIGHT_TURRET",
-		[ eDamageSourceId.mp_weapon_yh803_bullet ]					= "#WPN_LIGHT_TURRET",
-		[ eDamageSourceId.mp_weapon_yh803_bullet_overcharged ]		= "#WPN_LIGHT_TURRET",
-		[ eDamageSourceId.mp_weapon_mega_turret ]					= "#WPN_MEGA_TURRET",
-		[ eDamageSourceId.mp_weapon_mega_turret_aa ]				= "#WPN_MEGA_TURRET",
-		[ eDamageSourceId.mp_turretweapon_rockets ]					= "#WPN_TURRET_ROCKETS",
-		[ eDamageSourceId.mp_weapon_super_spectre ]					= "#WPN_SUPERSPECTRE_ROCKETS",
-		[ eDamageSourceId.mp_weapon_dronebeam ] 					= "#WPN_DRONERBEAM",
-		[ eDamageSourceId.mp_weapon_dronerocket ] 					= "#WPN_DRONEROCKET",
-		[ eDamageSourceId.mp_weapon_droneplasma ] 					= "#WPN_DRONEPLASMA",
-		[ eDamageSourceId.mp_weapon_turretplasma ] 					= "#WPN_TURRETPLASMA",
-		[ eDamageSourceId.mp_weapon_turretrockets ] 				= "#WPN_TURRETROCKETS",
-		[ eDamageSourceId.mp_weapon_turretplasma_mega ] 			= "#WPN_TURRETPLASMA_MEGA",
-		[ eDamageSourceId.mp_weapon_gunship_launcher ] 				= "#WPN_GUNSHIP_LAUNCHER",
-		[ eDamageSourceId.mp_weapon_gunship_turret ]				= "#WPN_GUNSHIP_TURRET",
-		[ eDamageSourceId.mp_weapon_gunship_turret ]				= "#WPN_GUNSHIP_MISSILE",
+			[eDamageSourceId.mp_weapon_yh803] = "#WPN_LIGHT_TURRET",
+			[eDamageSourceId.mp_weapon_yh803_bullet] = "#WPN_LIGHT_TURRET",
+			[eDamageSourceId.mp_weapon_yh803_bullet_overcharged] = "#WPN_LIGHT_TURRET",
+			[eDamageSourceId.mp_weapon_mega_turret] = "#WPN_MEGA_TURRET",
+			[eDamageSourceId.mp_weapon_mega_turret_aa] = "#WPN_MEGA_TURRET",
+			[eDamageSourceId.mp_turretweapon_rockets] = "#WPN_TURRET_ROCKETS",
+			[eDamageSourceId.mp_weapon_super_spectre] = "#WPN_SUPERSPECTRE_ROCKETS",
+			[eDamageSourceId.mp_weapon_dronebeam] = "#WPN_DRONERBEAM",
+			[eDamageSourceId.mp_weapon_dronerocket] = "#WPN_DRONEROCKET",
+			[eDamageSourceId.mp_weapon_droneplasma] = "#WPN_DRONEPLASMA",
+			[eDamageSourceId.mp_weapon_turretplasma] = "#WPN_TURRETPLASMA",
+			[eDamageSourceId.mp_weapon_turretrockets] = "#WPN_TURRETROCKETS",
+			[eDamageSourceId.mp_weapon_turretplasma_mega] = "#WPN_TURRETPLASMA_MEGA",
+			[eDamageSourceId.mp_weapon_gunship_launcher] = "#WPN_GUNSHIP_LAUNCHER",
+			[eDamageSourceId.mp_weapon_gunship_turret] = "#WPN_GUNSHIP_TURRET",
+			[eDamageSourceId.mp_weapon_gunship_turret] = "#WPN_GUNSHIP_MISSILE",
 
-		[ eDamageSourceId.mp_titanability_smoke ]					= "#DEATH_ELECTRIC_SMOKE_SCREEN",
-		[ eDamageSourceId.mp_titanability_laser_trip ]				= "#DEATH_LASER_TRIPWIRE",
-		[ eDamageSourceId.mp_titanability_slow_trap ]				= "#DEATH_SLOW_TRAP",
-		[ eDamageSourceId.mp_titanability_tether_trap ]				= "#DEATH_TETHER_TRAP",
+			[eDamageSourceId.mp_titanability_smoke] = "#DEATH_ELECTRIC_SMOKE_SCREEN",
+			[eDamageSourceId.mp_titanability_laser_trip] = "#DEATH_LASER_TRIPWIRE",
+			[eDamageSourceId.mp_titanability_slow_trap] = "#DEATH_SLOW_TRAP",
+			[eDamageSourceId.mp_titanability_tether_trap] = "#DEATH_TETHER_TRAP",
 
-		[ eDamageSourceId.rodeo ] 									= "#DEATH_TITAN_RODEO",
-		[ eDamageSourceId.rodeo_forced_titan_eject ] 				= "#DEATH_TITAN_RODEO",
-		[ eDamageSourceId.rodeo_execution ] 						= "#DEATH_RODEO_EXECUTION",
-		[ eDamageSourceId.nuclear_turret ] 							= "#DEATH_NUCLEAR_TURRET",
-		[ eDamageSourceId.mp_titanweapon_flightcore_rockets ] 		= "#WPN_TITAN_FLIGHT_ROCKET",
-		[ eDamageSourceId.mp_titancore_amp_core ]					= "#TITANCORE_AMP_CORE",
-		[ eDamageSourceId.mp_titancore_emp ] 						= "#TITANCORE_EMP",
-		[ eDamageSourceId.mp_titancore_siege_mode ]					= "#TITANCORE_SIEGE_MODE",
-		[ eDamageSourceId.mp_titancore_flame_wave ]					= "#TITANCORE_FLAME_WAVE",
-		[ eDamageSourceId.mp_titancore_flame_wave_secondary ]		= "#GEAR_SCORCH_FLAMECORE",
-		[ eDamageSourceId.mp_titancore_nuke_core ] 					= "#TITANCORE_NUKE",
-		[ eDamageSourceId.mp_titancore_nuke_missile ]				= "#TITANCORE_NUKE_MISSILE",
-		[ eDamageSourceId.mp_titancore_shift_core ]					= "#TITANCORE_SWORD",
-		[ eDamageSourceId.berserker_melee ]							= "#DEATH_BERSERKER_MELEE",
-		[ eDamageSourceId.human_melee ] 							= "#DEATH_HUMAN_MELEE",
-		[ eDamageSourceId.auto_titan_melee ] 						= "#DEATH_AUTO_TITAN_MELEE",
+			[eDamageSourceId.rodeo] = "#DEATH_TITAN_RODEO",
+			[eDamageSourceId.rodeo_forced_titan_eject] = "#DEATH_TITAN_RODEO",
+			[eDamageSourceId.rodeo_execution] = "#DEATH_RODEO_EXECUTION",
+			[eDamageSourceId.nuclear_turret] = "#DEATH_NUCLEAR_TURRET",
+			[eDamageSourceId.mp_titanweapon_flightcore_rockets] = "#WPN_TITAN_FLIGHT_ROCKET",
+			[eDamageSourceId.mp_titancore_amp_core] = "#TITANCORE_AMP_CORE",
+			[eDamageSourceId.mp_titancore_emp] = "#TITANCORE_EMP",
+			[eDamageSourceId.mp_titancore_siege_mode] = "#TITANCORE_SIEGE_MODE",
+			[eDamageSourceId.mp_titancore_flame_wave] = "#TITANCORE_FLAME_WAVE",
+			[eDamageSourceId.mp_titancore_flame_wave_secondary] = "#GEAR_SCORCH_FLAMECORE",
+			[eDamageSourceId.mp_titancore_nuke_core] = "#TITANCORE_NUKE",
+			[eDamageSourceId.mp_titancore_nuke_missile] = "#TITANCORE_NUKE_MISSILE",
+			[eDamageSourceId.mp_titancore_shift_core] = "#TITANCORE_SWORD",
+			[eDamageSourceId.berserker_melee] = "#DEATH_BERSERKER_MELEE",
+			[eDamageSourceId.human_melee] = "#DEATH_HUMAN_MELEE",
+			[eDamageSourceId.auto_titan_melee] = "#DEATH_AUTO_TITAN_MELEE",
 
-		[ eDamageSourceId.prowler_melee ] 							= "#DEATH_PROWLER_MELEE",
-		[ eDamageSourceId.super_spectre_melee ] 					= "#DEATH_SUPER_SPECTRE",
-		[ eDamageSourceId.grunt_melee ] 							= "#DEATH_GRUNT_MELEE",
-		[ eDamageSourceId.spectre_melee ] 							= "#DEATH_SPECTRE_MELEE",
-		[ eDamageSourceId.eviscerate ]	 							= "#DEATH_EVISCERATE",
-		[ eDamageSourceId.wall_smash ] 								= "#DEATH_WALL_SMASH",
-		[ eDamageSourceId.ai_turret ] 								= "#DEATH_TURRET",
-		[ eDamageSourceId.team_switch ] 							= "#DEATH_TEAM_CHANGE",
-		[ eDamageSourceId.rocket ] 									= "#DEATH_ROCKET",
-		[ eDamageSourceId.titan_explosion ] 						= "#DEATH_TITAN_EXPLOSION",
-		[ eDamageSourceId.evac_dropship_explosion ] 				= "#DEATH_EVAC_DROPSHIP_EXPLOSION",
-		[ eDamageSourceId.flash_surge ] 							= "#DEATH_FLASH_SURGE",
-		[ eDamageSourceId.molotov ] 								= "#DEATH_MOLOTOV",
-		[ eDamageSourceId.sticky_time_bomb ] 						= "#DEATH_STICKY_TIME_BOMB",
-		[ eDamageSourceId.vortex_grenade ] 							= "#DEATH_VORTEX_GRENADE",
-		[ eDamageSourceId.droppod_impact ] 							= "#DEATH_DROPPOD_CRUSH",
-		[ eDamageSourceId.ai_turret_explosion ] 					= "#DEATH_TURRET_EXPLOSION",
-		[ eDamageSourceId.rodeo_trap ] 								= "#DEATH_RODEO_TRAP",
-		[ eDamageSourceId.round_end ] 								= "#DEATH_ROUND_END",
-		[ eDamageSourceId.burn ]	 								= "#DEATH_BURN",
-		[ eDamageSourceId.mind_crime ]								= "Mind Crime",
-		[ eDamageSourceId.charge_ball ]								= "Charge Ball",
-		[ eDamageSourceId.mp_titanweapon_rocketeer_missile ]		= "Rocketeer Missile",
-		[ eDamageSourceId.core_overload ]							= "#DEATH_CORE_OVERLOAD",
-		[ eDamageSourceId.mp_weapon_arc_trap ]						= "#WPN_ARC_TRAP",
+			[eDamageSourceId.prowler_melee] = "#DEATH_PROWLER_MELEE",
+			[eDamageSourceId.super_spectre_melee] = "#DEATH_SUPER_SPECTRE",
+			[eDamageSourceId.grunt_melee] = "#DEATH_GRUNT_MELEE",
+			[eDamageSourceId.spectre_melee] = "#DEATH_SPECTRE_MELEE",
+			[eDamageSourceId.eviscerate] = "#DEATH_EVISCERATE",
+			[eDamageSourceId.wall_smash] = "#DEATH_WALL_SMASH",
+			[eDamageSourceId.ai_turret] = "#DEATH_TURRET",
+			[eDamageSourceId.team_switch] = "#DEATH_TEAM_CHANGE",
+			[eDamageSourceId.rocket] = "#DEATH_ROCKET",
+			[eDamageSourceId.titan_explosion] = "#DEATH_TITAN_EXPLOSION",
+			[eDamageSourceId.evac_dropship_explosion] = "#DEATH_EVAC_DROPSHIP_EXPLOSION",
+			[eDamageSourceId.flash_surge] = "#DEATH_FLASH_SURGE",
+			[eDamageSourceId.molotov] = "#DEATH_MOLOTOV",
+			[eDamageSourceId.sticky_time_bomb] = "#DEATH_STICKY_TIME_BOMB",
+			[eDamageSourceId.vortex_grenade] = "#DEATH_VORTEX_GRENADE",
+			[eDamageSourceId.droppod_impact] = "#DEATH_DROPPOD_CRUSH",
+			[eDamageSourceId.ai_turret_explosion] = "#DEATH_TURRET_EXPLOSION",
+			[eDamageSourceId.rodeo_trap] = "#DEATH_RODEO_TRAP",
+			[eDamageSourceId.round_end] = "#DEATH_ROUND_END",
+			[eDamageSourceId.burn] = "#DEATH_BURN",
+			[eDamageSourceId.mind_crime] = "Mind Crime",
+			[eDamageSourceId.charge_ball] = "Charge Ball",
+			[eDamageSourceId.mp_titanweapon_rocketeer_missile] = "Rocketeer Missile",
+			[eDamageSourceId.core_overload] = "#DEATH_CORE_OVERLOAD",
+			[eDamageSourceId.mp_weapon_arc_trap] = "#WPN_ARC_TRAP",
 
+			[eDamageSourceId.mp_turretweapon_sentry] = "#WPN_SENTRY_TURRET",
+			[eDamageSourceId.mp_turretweapon_blaster] = "#WPN_BLASTER_TURRET",
+			[eDamageSourceId.mp_turretweapon_rockets] = "#WPN_ROCKET_TURRET",
+			[eDamageSourceId.mp_turretweapon_plasma] = "#WPN_PLASMA_TURRET",
 
-		[ eDamageSourceId.mp_turretweapon_sentry ] 					= "#WPN_SENTRY_TURRET",
-		[ eDamageSourceId.mp_turretweapon_blaster ] 				= "#WPN_BLASTER_TURRET",
-		[ eDamageSourceId.mp_turretweapon_rockets ] 				= "#WPN_ROCKET_TURRET",
-		[ eDamageSourceId.mp_turretweapon_plasma ]	 				= "#WPN_PLASMA_TURRET",
+			[eDamageSourceId.bubble_shield] = "#DEATH_BUBBLE_SHIELD",
+			[eDamageSourceId.sticky_explosive] = "#DEATH_STICKY_EXPLOSIVE",
+			[eDamageSourceId.titan_grapple] = "#DEATH_TITAN_GRAPPLE",
 
-		[ eDamageSourceId.bubble_shield ] 							= "#DEATH_BUBBLE_SHIELD",
-		[ eDamageSourceId.sticky_explosive ] 						= "#DEATH_STICKY_EXPLOSIVE",
-		[ eDamageSourceId.titan_grapple ] 							= "#DEATH_TITAN_GRAPPLE",
+			[eDamageSourceId.satellite_strike] = "#DEATH_SATELLITE_STRIKE",
 
-		[ eDamageSourceId.satellite_strike ] 						= "#DEATH_SATELLITE_STRIKE",
+			[eDamageSourceId.mp_titanweapon_meteor] = "#WPN_TITAN_METEOR",
+			[eDamageSourceId.mp_titanweapon_meteor_thermite] = "#WPN_TITAN_METEOR",
+			[eDamageSourceId.mp_titanweapon_meteor_thermite_charged] = "Thermite Meteor",
+			[eDamageSourceId.mp_titanweapon_flame_ring] = "Flame Wreath",
 
-		[ eDamageSourceId.mp_titanweapon_meteor ] 					= "#WPN_TITAN_METEOR",
-		[ eDamageSourceId.mp_titanweapon_meteor_thermite ]			= "#WPN_TITAN_METEOR",
-		[ eDamageSourceId.mp_titanweapon_meteor_thermite_charged ]	= "Thermite Meteor",
-		[ eDamageSourceId.mp_titanweapon_flame_ring ]				= "Flame Wreath",
+			// Instant death. Show no percentages on death recap.
+			[eDamageSourceId.fall] = "#DEATH_FALL",
+			// Todo: Rename eDamageSourceId.splat with a more appropriate name. This damage type was used for enviornmental damage, but it was for eject killing
+			// pilots if they were near a ceiling. I've changed the localized string to "Enviornment Damage", but this will cause confusion in the future.
+			[eDamageSourceId.splat] = "#DEATH_SPLAT",
+			[eDamageSourceId.titan_execution] = "#DEATH_TITAN_EXECUTION",
+			[eDamageSourceId.human_execution] = "#DEATH_HUMAN_EXECUTION",
+			[eDamageSourceId.outOfBounds] = "#DEATH_OUT_OF_BOUNDS",
+			[eDamageSourceId.indoor_inferno] = "#DEATH_INDOOR_INFERNO",
+			[eDamageSourceId.submerged] = "#DEATH_SUBMERGED",
+			[eDamageSourceId.switchback_trap] = "#DEATH_ELECTROCUTION", // Damages teammates and opposing team
+			[eDamageSourceId.floor_is_lava] = "#DEATH_ELECTROCUTION",
+			[eDamageSourceId.suicideSpectreAoE] = "#DEATH_SUICIDE_SPECTRE", // Used for distinguishing the initial spectre from allies.
+			[eDamageSourceId.titanEmpField] = "#DEATH_TITAN_EMP_FIELD",
+			[eDamageSourceId.deadly_fog] = "#DEATH_DEADLY_FOG",
 
-		// Instant death. Show no percentages on death recap.
-		[ eDamageSourceId.fall ]		 							= "#DEATH_FALL",
-		 //Todo: Rename eDamageSourceId.splat with a more appropriate name. This damage type was used for enviornmental damage, but it was for eject killing pilots if they were near a ceiling. I've changed the localized string to "Enviornment Damage", but this will cause confusion in the future.
-		[ eDamageSourceId.splat ] 									= "#DEATH_SPLAT",
-		[ eDamageSourceId.titan_execution ] 						= "#DEATH_TITAN_EXECUTION",
-		[ eDamageSourceId.human_execution ] 						= "#DEATH_HUMAN_EXECUTION",
-		[ eDamageSourceId.outOfBounds ] 							= "#DEATH_OUT_OF_BOUNDS",
-		[ eDamageSourceId.indoor_inferno ]	 						= "#DEATH_INDOOR_INFERNO",
-		[ eDamageSourceId.submerged ]								= "#DEATH_SUBMERGED",
-		[ eDamageSourceId.switchback_trap ]							= "#DEATH_ELECTROCUTION", // Damages teammates and opposing team
-		[ eDamageSourceId.floor_is_lava ]							= "#DEATH_ELECTROCUTION",
-		[ eDamageSourceId.suicideSpectreAoE ]						= "#DEATH_SUICIDE_SPECTRE", // Used for distinguishing the initial spectre from allies.
-		[ eDamageSourceId.titanEmpField ] 							= "#DEATH_TITAN_EMP_FIELD",
-		[ eDamageSourceId.deadly_fog ] 								= "#DEATH_DEADLY_FOG",
+			// Prototype
+			[eDamageSourceId.mp_weapon_zipline] = "Zipline",
+			[eDamageSourceId.mp_ability_ground_slam] = "Ground Slam",
+			[eDamageSourceId.sp_weapon_arc_tool] = "#WPN_ARC_TOOL",
+			[eDamageSourceId.sp_weapon_proto_battery_charger_offhand] = "Battery Charger",
+			[eDamageSourceId.at_turret_override] = "AT Turret",
+			[eDamageSourceId.phase_shift] = "#WPN_SHIFTER",
+			[eDamageSourceId.gamemode_bomb_detonation] = "Bomb Detonation",
+			[eDamageSourceId.bleedout] = "#DEATH_BLEEDOUT",
 
+			[eDamageSourceId.damagedef_unknownBugIt] = "#DEATH_GENERIC_KILLED",
+			[eDamageSourceId.damagedef_unknown] = "#DEATH_GENERIC_KILLED",
+			[eDamageSourceId.weapon_cubemap] = "#DEATH_GENERIC_KILLED",
+			[eDamageSourceId.stuck] = "#DEATH_GENERIC_KILLED",
+			[eDamageSourceId.rodeo_battery_removal] = "#DEATH_RODEO_BATTERY_REMOVAL",
 
-		// Prototype
-		[ eDamageSourceId.mp_weapon_zipline ]						= "Zipline",
-		[ eDamageSourceId.mp_ability_ground_slam ]					= "Ground Slam",
-		[ eDamageSourceId.sp_weapon_arc_tool ]						= "#WPN_ARC_TOOL",
-		[ eDamageSourceId.sp_weapon_proto_battery_charger_offhand ]	= "Battery Charger",
-		[ eDamageSourceId.at_turret_override ]						= "AT Turret",
-		[ eDamageSourceId.phase_shift ]								= "#WPN_SHIFTER",
-		[ eDamageSourceId.gamemode_bomb_detonation ]				= "Bomb Detonation",
-		[ eDamageSourceId.bleedout ]								= "#DEATH_BLEEDOUT",
-
-		[ eDamageSourceId.damagedef_unknownBugIt ] 					= "#DEATH_GENERIC_KILLED",
-		[ eDamageSourceId.damagedef_unknown ] 						= "#DEATH_GENERIC_KILLED",
-		[ eDamageSourceId.weapon_cubemap ] 							= "#DEATH_GENERIC_KILLED",
-		[ eDamageSourceId.stuck ]		 							= "#DEATH_GENERIC_KILLED",
-		[ eDamageSourceId.rodeo_battery_removal ]					= "#DEATH_RODEO_BATTERY_REMOVAL",
-
-		[ eDamageSourceId.melee_pilot_emptyhanded ] 				= "#DEATH_MELEE",
-		[ eDamageSourceId.melee_pilot_arena ]		 				= "#DEATH_MELEE",
-		[ eDamageSourceId.melee_pilot_sword ] 						= "#DEATH_SWORD",
-		[ eDamageSourceId.melee_titan_punch ] 						= "#DEATH_TITAN_MELEE",
-		[ eDamageSourceId.melee_titan_punch_ion ] 					= "#DEATH_TITAN_MELEE",
-		[ eDamageSourceId.melee_titan_punch_tone ] 					= "#DEATH_TITAN_MELEE",
-		[ eDamageSourceId.melee_titan_punch_northstar ] 			= "#DEATH_TITAN_MELEE",
-		[ eDamageSourceId.melee_titan_punch_scorch ] 				= "#DEATH_TITAN_MELEE",
-		[ eDamageSourceId.melee_titan_punch_legion ] 				= "#DEATH_TITAN_MELEE",
-		[ eDamageSourceId.melee_titan_punch_fighter ]		 		= "#DEATH_TITAN_MELEE",
-		[ eDamageSourceId.melee_titan_punch_vanguard ] 				= "#DEATH_TITAN_MELEE",
-		[ eDamageSourceId.melee_titan_sword ]						= "#DEATH_TITAN_SWORD",
-		[ eDamageSourceId.melee_titan_sword_aoe ]					= "#DEATH_TITAN_SWORD",
-		[ eDamageSourceId.mp_titanweapon_arc_cannon ]				= "#WPN_TITAN_ARC_CANNON_SHORT",
-		[ eDamageSourceId.mp_weapon_shotgun_doublebarrel ]			= "#WPN_SHOTGUN_DBLBARREL_SHORT"
-	}
+			[eDamageSourceId.melee_pilot_emptyhanded] = "#DEATH_MELEE",
+			[eDamageSourceId.melee_pilot_arena] = "#DEATH_MELEE",
+			[eDamageSourceId.melee_pilot_sword] = "#DEATH_SWORD",
+			[eDamageSourceId.melee_titan_punch] = "#DEATH_TITAN_MELEE",
+			[eDamageSourceId.melee_titan_punch_ion] = "#DEATH_TITAN_MELEE",
+			[eDamageSourceId.melee_titan_punch_tone] = "#DEATH_TITAN_MELEE",
+			[eDamageSourceId.melee_titan_punch_northstar] = "#DEATH_TITAN_MELEE",
+			[eDamageSourceId.melee_titan_punch_scorch] = "#DEATH_TITAN_MELEE",
+			[eDamageSourceId.melee_titan_punch_legion] = "#DEATH_TITAN_MELEE",
+			[eDamageSourceId.melee_titan_punch_fighter] = "#DEATH_TITAN_MELEE",
+			[eDamageSourceId.melee_titan_punch_vanguard] = "#DEATH_TITAN_MELEE",
+			[eDamageSourceId.melee_titan_sword] = "#DEATH_TITAN_SWORD",
+			[eDamageSourceId.melee_titan_sword_aoe] = "#DEATH_TITAN_SWORD",
+			[eDamageSourceId.mp_titanweapon_arc_cannon] = "#WPN_TITAN_ARC_CANNON_SHORT",
+			[eDamageSourceId.mp_weapon_shotgun_doublebarrel] = "#WPN_SHOTGUN_DBLBARREL_SHORT"
+		}
 
 	#if DEV
-		//development, with retail versions incase a rare bug happens we dont want to show developer text
-		file.damageSourceIDToName[ eDamageSourceId.damagedef_unknownBugIt ] 			= "UNKNOWN! BUG IT!"
-		file.damageSourceIDToName[ eDamageSourceId.damagedef_unknown ] 				= "Unknown"
-		file.damageSourceIDToName[ eDamageSourceId.weapon_cubemap ] 					= "Cubemap"
-		//file.damageSourceIDToName[ eDamageSourceId.invalid ] 						= "INVALID (BUG IT!)"
-		file.damageSourceIDToName[ eDamageSourceId.stuck ]		 					= "NPC got Stuck (Don't Bug it!)"
+		// development, with retail versions incase a rare bug happens we dont want to show developer text
+		file.damageSourceIDToName[ eDamageSourceId.damagedef_unknownBugIt ] = "UNKNOWN! BUG IT!"
+		file.damageSourceIDToName[ eDamageSourceId.damagedef_unknown ] = "Unknown"
+		file.damageSourceIDToName[ eDamageSourceId.weapon_cubemap ] = "Cubemap"
+		// file.damageSourceIDToName[ eDamageSourceId.invalid ] 						= "INVALID (BUG IT!)"
+		file.damageSourceIDToName[ eDamageSourceId.stuck ] = "NPC got Stuck (Don't Bug it!)"
 	#endif
 }
 
 void function RegisterWeaponDamageSourceName( string weaponRef, string damageSourceName )
 {
-	int sourceID = eDamageSourceId[weaponRef]
+	int sourceID = eDamageSourceId[ weaponRef ]
 	file.damageSourceIDToName[ sourceID ] <- damageSourceName
 }
 
 bool function DamageSourceIDHasString( int index )
 {
-	return (index in file.damageSourceIDToString)
+	return ( index in file.damageSourceIDToString )
 }
 
 string function DamageSourceIDToString( int index )
@@ -682,38 +681,38 @@ string function GetObitFromDamageSourceID( int damageSourceID )
 }
 
 #if SERVER
-void function RegisterWeaponDamageSource( string weaponRef, string damageSourceName )
-{
-	// Have to do this since squirrel table initialization only supports literals for string keys
-	table< string, string > temp
-	temp[ weaponRef ] <- damageSourceName
-	RegisterWeaponDamageSources( temp )
-}
+	void function RegisterWeaponDamageSource( string weaponRef, string damageSourceName )
+	{
+		// Have to do this since squirrel table initialization only supports literals for string keys
+		table<string, string> temp
+		temp[ weaponRef ] <- damageSourceName
+		RegisterWeaponDamageSources( temp )
+	}
 
-/*	Values are expected to be in a table containing the enum variable name and the string name, e.g.
+	/*	Values are expected to be in a table containing the enum variable name and the string name, e.g.
 	{"mp_titanweapon_sniper" : "Plasma Railgun", "mp_titanweapon_meteor" : "T203 Thermite Launcher"}
 	Only works properly if used after the match starts, e.g. called in "after" callbacks.
 */
-void function RegisterWeaponDamageSources( table< string, string > newValueTable )
-{
-	int trgt = file.damageSourceIDToString.len() - 1 // -1 accounts for invalid.
-	int lastCustomSize = file.customDamageSourceIDList.len() // Used to only send new IDs to clients if any are added during runtime.
-
-	foreach ( newVal, stringVal in newValueTable )
+	void function RegisterWeaponDamageSources( table<string, string> newValueTable )
 	{
-		// Don't replace existing enum values
-		while ( trgt in file.damageSourceIDToString )
-			trgt++
+		int trgt = file.damageSourceIDToString.len() - 1 // -1 accounts for invalid.
+		int lastCustomSize = file.customDamageSourceIDList.len() // Used to only send new IDs to clients if any are added during runtime.
 
-		// Only move insertion point if insertion succeeded
-		if ( RegisterWeaponDamageSourceInternal( trgt, newVal, stringVal ) )
-			trgt++;
+		foreach ( newVal, stringVal in newValueTable )
+		{
+			// Don't replace existing enum values
+			while ( trgt in file.damageSourceIDToString )
+				trgt++
+
+			// Only move insertion point if insertion succeeded
+			if ( RegisterWeaponDamageSourceInternal( trgt, newVal, stringVal ) )
+				trgt++
+		}
+
+		// Send IDs created during match runtime. IDs made on inits get sent through client connected callback.
+		foreach ( player in GetPlayerArray() )
+			SendNewDamageSourceIDs( player, lastCustomSize )
 	}
-
-	// Send IDs created during match runtime. IDs made on inits get sent through client connected callback.
-	foreach( player in GetPlayerArray() )
-		SendNewDamageSourceIDs( player, lastCustomSize )
-}
 #endif
 
 bool function RegisterWeaponDamageSourceInternal( int id, string newVal, string stringVal )
@@ -732,47 +731,47 @@ bool function RegisterWeaponDamageSourceInternal( int id, string newVal, string 
 }
 
 #if SERVER
-void function SendNewDamageSourceIDsConnected( entity player )
-{
-	SendNewDamageSourceIDs( player )
-}
-
-void function SendNewDamageSourceIDs( entity player, int index = 0 )
-{
-	while ( index < file.customDamageSourceIDList.len() )
+	void function SendNewDamageSourceIDsConnected( entity player )
 	{
-		int curSize = 0
-		int curIndex = index
-
-		// Figure out how many sources to send in this message chunk
-		while ( curIndex < file.customDamageSourceIDList.len() )
-		{
-			// Sources are inserted to the custom list in triplets, so we can trust these indices exist.
-			curSize += file.customDamageSourceIDList[ curIndex ].len()
-			curSize += file.customDamageSourceIDList[ curIndex + 1 ].len()
-			curSize += file.customDamageSourceIDList[ curIndex + 2 ].len()
-
-			// Stop before including strings in current message if it exceeds max message length.
-			// This will never stall on a singular source that exceeds the size since new sources are size limited.
-			if ( curSize > SOURCE_ID_MAX_MESSAGE_LENGTH )
-				break
-
-			curIndex += 3
-		}
-
-		// Create the string to pass to client
-		string message = ""
-		while ( index < curIndex )
-			message += file.customDamageSourceIDList[ index++ ] + " "
-
-		ServerToClientStringCommand( player, "register_damage_source_ids " + message )
+		SendNewDamageSourceIDs( player )
 	}
-}
+
+	void function SendNewDamageSourceIDs( entity player, int index = 0 )
+	{
+		while ( index < file.customDamageSourceIDList.len() )
+		{
+			int curSize = 0
+			int curIndex = index
+
+			// Figure out how many sources to send in this message chunk
+			while ( curIndex < file.customDamageSourceIDList.len() )
+			{
+				// Sources are inserted to the custom list in triplets, so we can trust these indices exist.
+				curSize += file.customDamageSourceIDList[ curIndex ].len()
+				curSize += file.customDamageSourceIDList[ curIndex + 1 ].len()
+				curSize += file.customDamageSourceIDList[ curIndex + 2 ].len()
+
+				// Stop before including strings in current message if it exceeds max message length.
+				// This will never stall on a singular source that exceeds the size since new sources are size limited.
+				if ( curSize > SOURCE_ID_MAX_MESSAGE_LENGTH )
+					break
+
+				curIndex += 3
+			}
+
+			// Create the string to pass to client
+			string message = ""
+			while ( index < curIndex )
+				message += file.customDamageSourceIDList[ index++ ] + " "
+
+			ServerToClientStringCommand( player, "register_damage_source_ids " + message )
+		}
+	}
 #else
-void function ReceiveNewDamageSourceIDs( array<string> args )
-{
-	// IDs are inserted to the custom list in triplets, so we can trust these indices exist and the loop will end properly
-	for ( int i = 0; i < args.len(); i += 3 )
-		RegisterWeaponDamageSourceInternal( args[ i ].tointeger(), args[ i + 1 ], StringReplace( args[ i + 2 ], MESSAGE_SPACE_PADDING, " ", true ) )
-}
+	void function ReceiveNewDamageSourceIDs( array<string> args )
+	{
+		// IDs are inserted to the custom list in triplets, so we can trust these indices exist and the loop will end properly
+		for ( int i = 0; i < args.len(); i += 3 )
+			RegisterWeaponDamageSourceInternal( args[ i ].tointeger(), args[ i + 1 ], StringReplace( args[ i + 2 ], MESSAGE_SPACE_PADDING, " ", true ) )
+	}
 #endif

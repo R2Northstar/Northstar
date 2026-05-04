@@ -1,5 +1,5 @@
 global function GamemodeFRA_AddAdditionalInitCallback
-	
+
 // fra doesn't register a gamemode init by default, adding one just so we can set stuff up for it
 void function GamemodeFRA_AddAdditionalInitCallback()
 {

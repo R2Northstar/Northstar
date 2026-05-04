@@ -1,39 +1,36 @@
 global function GruntChatter_MP_Init
 global function PlayGruntChatterMPLine
 
-const float CHATTER_FRIENDLY_GRUNT_DOWN_DIST_MAX 		= 1100.0
-const float CHATTER_SQUAD_DEPLETED_FRIENDLY_NEARBY_DIST = 650.0  // if any other friendly grunt is within this dist, squad deplete chatter won't play
-const float CHATTER_ENEMY_TITAN_DOWN_DIST_MAX 			= 1500.0
-const float CHATTER_NEARBY_GRUNT_TRACEFRAC_MIN 			= 0.95  // for when we need "LOS" trace
+const float CHATTER_FRIENDLY_GRUNT_DOWN_DIST_MAX = 1100.0
+const float CHATTER_SQUAD_DEPLETED_FRIENDLY_NEARBY_DIST = 650.0 // if any other friendly grunt is within this dist, squad deplete chatter won't play
+const float CHATTER_ENEMY_TITAN_DOWN_DIST_MAX = 1500.0
+const float CHATTER_NEARBY_GRUNT_TRACEFRAC_MIN = 0.95 // for when we need "LOS" trace
 
 void function GruntChatter_MP_Init()
 {
 	Assert( IsMultiplayer(), "MP Grunt chatter is restricted to Multiplayer only." )
-	
+
 	AddCallback_OnPlayerKilled( GruntChatter_OnPlayerOrNPCKilled )
 	AddCallback_OnNPCKilled( GruntChatter_OnPlayerOrNPCKilled )
 }
 
-
-
-
 /*=====================================================================================================================================================
-   _____                      _      _____  _             _    _                __  __         _  _    _         _                           
-  / ____|                    | |    / ____|| |           | |  | |              |  \/  |       | || |  (_)       | |                          
- | |  __  _ __  _   _  _ __  | |_  | |     | |__    __ _ | |_ | |_  ___  _ __  | \  / | _   _ | || |_  _  _ __  | |  __ _  _   _   ___  _ __ 
+   _____                      _      _____  _             _    _                __  __         _  _    _         _
+  / ____|                    | |    / ____|| |           | |  | |              |  \/  |       | || |  (_)       | |
+ | |  __  _ __  _   _  _ __  | |_  | |     | |__    __ _ | |_ | |_  ___  _ __  | \  / | _   _ | || |_  _  _ __  | |  __ _  _   _   ___  _ __
  | | |_ || '__|| | | || '_ \ | __| | |     | '_ \  / _` || __|| __|/ _ \| '__| | |\/| || | | || || __|| || '_ \ | | / _` || | | | / _ \| '__|
- | |__| || |   | |_| || | | || |_  | |____ | | | || (_| || |_ | |_|  __/| |    | |  | || |_| || || |_ | || |_) || || (_| || |_| ||  __/| |   
-  \_____||_|    \__,_||_| |_| \__|  \_____||_| |_| \__,_| \__| \__|\___||_|    |_|  |_| \__,_||_| \__||_|| .__/ |_| \__,_| \__, | \___||_|   
-                                                                                                         | |                __/ |            
-                                                                                                         |_|               |___/             
+ | |__| || |   | |_| || | | || |_  | |____ | | | || (_| || |_ | |_|  __/| |    | |  | || |_| || || |_ | || |_) || || (_| || |_| ||  __/| |
+  \_____||_|    \__,_||_| |_| \__|  \_____||_| |_| \__,_| \__| \__|\___||_|    |_|  |_| \__,_||_| \__||_|| .__/ |_| \__,_| \__, | \___||_|
+                                                                                                         | |                __/ |
+                                                                                                         |_|               |___/
 /*===================================================================================================================================================*/
-													   
+
 void function PlayGruntChatterMPLine( entity grunt, string conversationType )
 {
 	#if !GRUNT_CHATTER_MP_ENABLED
 		return
 	#endif
-	
+
 	foreach ( entity player in GetPlayerArray() )
 		if ( ShouldPlayGruntChatterMPLine( conversationType, player, grunt ) )
 			Remote_CallFunction_Replay( player, "ServerCallback_PlayGruntChatterMP", GetConversationIndex( conversationType ), grunt.GetEncodedEHandle() )
@@ -43,12 +40,12 @@ void function GruntChatter_OnPlayerOrNPCKilled( entity deadGuy, entity attacker,
 {
 	if ( !IsValid( deadGuy ) || !IsValid( attacker ) )
 		return
-	
-	if( IsGrunt( attacker ) && IsPilot( deadGuy ) )
+
+	if ( IsGrunt( attacker ) && IsPilot( deadGuy ) )
 		PlayGruntChatterMPLine( attacker, "bc_killenemypilot" )
 	else
 		GruntChatter_TryEnemyTitanDown( deadGuy )
-	
+
 	if ( IsGrunt( deadGuy ) )
 	{
 		GruntChatter_TryFriendlyDown( deadGuy )
@@ -61,10 +58,10 @@ void function GruntChatter_TryFriendlyDown( entity deadGuy )
 	entity closestGrunt = GruntChatter_FindClosestFriendlyHumanGrunt_LOS( deadGuy.GetOrigin(), deadGuy.GetTeam(), CHATTER_FRIENDLY_GRUNT_DOWN_DIST_MAX )
 	if ( !closestGrunt )
 		return
-	
+
 	if ( !GruntChatter_CanGruntChatterNow( closestGrunt ) )
 		return
-	
+
 	PlayGruntChatterMPLine( closestGrunt, "bc_allygruntdown" )
 }
 
@@ -77,7 +74,7 @@ void function GruntChatter_TrySquadDepleted( entity deadGuy )
 	array<entity> squad = GetNPCArrayBySquad( deadGuySquadName )
 	entity lastSquadMember
 	if ( squad.len() == 1 )
-		lastSquadMember = squad[0]
+		lastSquadMember = squad[ 0 ]
 
 	if ( !GruntChatter_CanGruntChatterNow( lastSquadMember ) )
 		return
@@ -97,7 +94,7 @@ void function GruntChatter_TrySquadDepleted( entity deadGuy )
 void function GruntChatter_TryEnemyTitanDown( entity deadGuy )
 {
 	if ( deadGuy.IsTitan() )
-	{ 
+	{
 		entity closestGrunt = GruntChatter_FindClosestEnemyHumanGrunt_LOS( deadGuy.GetOrigin(), deadGuy.GetTeam(), CHATTER_ENEMY_TITAN_DOWN_DIST_MAX )
 		if ( !closestGrunt )
 			return

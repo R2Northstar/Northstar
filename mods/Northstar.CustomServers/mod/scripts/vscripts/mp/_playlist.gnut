@@ -6,15 +6,15 @@ void function Playlist_Init()
 	// featured mode settings
 	AddCallback_OnPlayerRespawned( FeaturedModeSettingsSetupPilotLoadouts )
 	AddCallback_OnPilotBecomesTitan( FeaturedModeSettingsSetupTitanLoadouts )
-	
-	if ( IsFeaturedMode( "all_holopilot" ) || IsFeaturedMode( "all_grapple" ) || 
-		 IsFeaturedMode( "all_phase" ) || IsFeaturedMode( "all_ticks" ) || 
-		 IsFeaturedMode( "rocket_arena" ) || IsFeaturedMode( "shotguns_snipers" ) || 
-		 IsFeaturedMode( "tactikill" ) || IsFeaturedMode( "amped_tacticals" ) )
-		 SetLoadoutGracePeriodEnabled( false )
-	
+
+	if (
+		IsFeaturedMode( "all_holopilot" ) || IsFeaturedMode( "all_grapple" ) || IsFeaturedMode( "all_phase" ) || IsFeaturedMode( "all_ticks" ) ||
+		IsFeaturedMode( "rocket_arena" ) || IsFeaturedMode( "shotguns_snipers" ) || IsFeaturedMode( "tactikill" ) || IsFeaturedMode( "amped_tacticals" )
+	)
+		SetLoadoutGracePeriodEnabled( false )
+
 	// iron lts rules
-	if ( HasIronRules() ) 
+	if ( HasIronRules() )
 		Riff_ForceTitanExitEnabled( eTitanExitEnabled.Never )
 }
 
@@ -32,46 +32,46 @@ void function FeaturedModeSettingsSetupPilotLoadouts( entity player )
 
 	if ( IsFeaturedMode( "all_holopilot" ) )
 	{
-		shouldChangeLoadout = true 
-		
+		shouldChangeLoadout = true
+
 		modifiedLoadout.special = "mp_ability_holopilot"
 	}
-		
-	if ( IsFeaturedMode( "all_grapple" ) ) 
+
+	if ( IsFeaturedMode( "all_grapple" ) )
 	{
-		shouldChangeLoadout = true 
-		
+		shouldChangeLoadout = true
+
 		modifiedLoadout.special = "mp_ability_grapple"
 		modifiedLoadout.specialMods = [ "all_grapple" ]
 	}
-		
-	if ( IsFeaturedMode( "all_phase" ) ) 
+
+	if ( IsFeaturedMode( "all_phase" ) )
 	{
-		shouldChangeLoadout = true 
-		
+		shouldChangeLoadout = true
+
 		modifiedLoadout.special = "mp_ability_shifter"
 		modifiedLoadout.specialMods = [ "all_phase" ]
 	}
-		
-	if ( IsFeaturedMode( "all_ticks" ) ) 
+
+	if ( IsFeaturedMode( "all_ticks" ) )
 	{
-		shouldChangeLoadout = true 
-		
+		shouldChangeLoadout = true
+
 		modifiedLoadout.ordnance = "mp_weapon_frag_drone"
 		modifiedLoadout.ordnanceMods = [ "all_ticks" ]
 	}
-	
+
 	if ( IsFeaturedMode( "rocket_arena" ) )
-	{	
+	{
 		// this crashes sometimes for some reason
-	
+
 		shouldChangeLoadout = true
-	
+
 		// have to set attachments too, otherwise we could give invalid mods for this weapon
 		modifiedLoadout.primary = "mp_weapon_epg"
 		modifiedLoadout.primaryMods = [ "rocket_arena" ]
 		modifiedLoadout.primaryAttachments = [ "" ]
-		
+
 		// set secondary to whatever one is pistol
 		if ( GetWeaponInfoFileKeyField_Global( player.GetMainWeapons()[ 1 ].GetWeaponClassName(), "menu_category" ) == "at" )
 		{
@@ -83,22 +83,21 @@ void function FeaturedModeSettingsSetupPilotLoadouts( entity player )
 			modifiedLoadout.secondary = "mp_weapon_autopistol"
 			modifiedLoadout.secondaryMods = [ "rocket_arena" ]
 		}
-		
+
 		modifiedLoadout.meleeMods = [ "rocket_arena" ]
-		
+
 		player.GiveExtraWeaponMod( "rocket_arena" )
 	}
-	
+
 	if ( IsFeaturedMode( "shotguns_snipers" ) )
 	{
-	
-		shouldChangeLoadout = true 
-		
+		shouldChangeLoadout = true
+
 		// this one was never released, assuming it just gives you a mastiff and a kraber with quick swap
 		modifiedLoadout.primary = "mp_weapon_sniper"
 		modifiedLoadout.primaryMods = [ "pas_fast_swap", "pas_fast_ads" ]
 		modifiedLoadout.primaryAttachments = [ "" ]
-		
+
 		// set secondary to whatever one is pistol
 		if ( GetWeaponInfoFileKeyField_Global( player.GetMainWeapons()[ 1 ].GetWeaponClassName(), "menu_category" ) == "at" )
 		{
@@ -111,14 +110,14 @@ void function FeaturedModeSettingsSetupPilotLoadouts( entity player )
 			modifiedLoadout.secondaryMods = [ "pas_fast_swap", "pas_run_and_gun" ]
 		}
 	}
-	
+
 	// dont wanna give a new loadout if it's not necessary, could break other callbacks
 	if ( shouldChangeLoadout )
 		GivePilotLoadout( player, modifiedLoadout )
-	
+
 	if ( IsFeaturedMode( "tactikill" ) )
 		player.GiveExtraWeaponMod( "tactical_cdr_on_kill" )
-	
+
 	if ( IsFeaturedMode( "amped_tacticals" ) )
 		player.GiveExtraWeaponMod( "amped_tacticals" )
 }
@@ -128,7 +127,7 @@ void function FeaturedModeSettingsSetupTitanLoadouts( entity player, entity tita
 	if ( IsFeaturedMode( "turbo_titans" ) )
 	{
 		array<string> settingsMods = player.GetPlayerSettingsMods()
-		
+
 		// seems to crash if we set both of these at once? idk odd game
 		if ( !settingsMods.contains( "pas_mobility_dash_capacity" ) )
 		{

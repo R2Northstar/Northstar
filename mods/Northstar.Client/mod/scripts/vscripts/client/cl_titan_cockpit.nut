@@ -42,8 +42,8 @@ global function AddCommonEjectMessage
 global function AddRareEjectMessage
 
 #if MP
-global function NetworkedVarChangedCallback_UpdateVanguardRUICoreStatus
-global function DisplayFrontierRank
+	global function NetworkedVarChangedCallback_UpdateVanguardRUICoreStatus
+	global function DisplayFrontierRank
 #endif
 struct TitanCockpitManagedRUI
 {
@@ -54,12 +54,12 @@ struct TitanCockpitManagedRUI
 	int drawGroup = RUI_DRAW_COCKPIT
 }
 
-const TITAN_ALARM_SOUND 		= "titan_alarm"
+const TITAN_ALARM_SOUND = "titan_alarm"
 const TITAN_NUCLEAR_DEATH_ALARM = "titan_nuclear_death_alarm"
-const TITAN_EJECT_BOOST			= "titan_eject_boost"
-const TITAN_EJECT_ASCENT		= "player_eject_windrush"
-const TITAN_EJECT_APEX			= "player_eject_apex_wind"
-const TITAN_EJECT_DESCENT		= "player_fallingdescent_windrush"
+const TITAN_EJECT_BOOST = "titan_eject_boost"
+const TITAN_EJECT_ASCENT = "player_eject_windrush"
+const TITAN_EJECT_APEX = "player_eject_apex_wind"
+const TITAN_EJECT_DESCENT = "player_fallingdescent_windrush"
 
 const EJECT_MIN_VELOCITY = 200.0
 const EJECT_MAX_VELOCITY = 1000.0
@@ -117,7 +117,7 @@ function ClTitanCockpit_Init()
 
 	AddCallback_PlayerClassChanged( UpdateLastPlayerSettings )
 
-	AddTitanCockpitManagedRUI( Scorch_CreateHotstreakBar, Scorch_DestroyHotstreakBar, Scorch_ShouldCreateHotstreakBar, RUI_DRAW_COCKPIT ) //RUI_DRAW_HUD
+	AddTitanCockpitManagedRUI( Scorch_CreateHotstreakBar, Scorch_DestroyHotstreakBar, Scorch_ShouldCreateHotstreakBar, RUI_DRAW_COCKPIT ) // RUI_DRAW_HUD
 }
 
 void function UpdateLastPlayerSettings( entity player )
@@ -160,7 +160,6 @@ void function DeregisterTitanBindings( TitanBindings bind )
 		DeregisterConCommandTriggeredCallback( "+scriptCommand1", bind.PlayerPressed_EjectEnable )
 	}
 }
-
 
 void function TitanCockpit_AddPlayer( entity player )
 {
@@ -216,15 +215,15 @@ void function TitanCockpitInit( entity cockpit )
 		cockpitParent = GetLocalViewPlayer()
 
 	cockpit.s.empInfo <- {}
-	cockpit.s.empInfo["xOffset"] <- 0
-	cockpit.s.empInfo["yOffset"] <- 0
-	cockpit.s.empInfo["startTime"] <- 0
-	cockpit.s.empInfo["duration"] <- 0
-	cockpit.s.empInfo["sub_count"] <- 0
-	cockpit.s.empInfo["sub_start"] <- 0
-	cockpit.s.empInfo["sub_duration"] <- 0
-	cockpit.s.empInfo["sub_pause"] <- 0
-	cockpit.s.empInfo["sub_alpha"] <- 0
+	cockpit.s.empInfo[ "xOffset" ] <- 0
+	cockpit.s.empInfo[ "yOffset" ] <- 0
+	cockpit.s.empInfo[ "startTime" ] <- 0
+	cockpit.s.empInfo[ "duration" ] <- 0
+	cockpit.s.empInfo[ "sub_count" ] <- 0
+	cockpit.s.empInfo[ "sub_start" ] <- 0
+	cockpit.s.empInfo[ "sub_duration" ] <- 0
+	cockpit.s.empInfo[ "sub_pause" ] <- 0
+	cockpit.s.empInfo[ "sub_alpha" ] <- 0
 
 	cockpit.s.cockpitType <- 1
 	cockpit.s.FOV <- 70
@@ -240,7 +239,7 @@ void function TitanCockpitInit( entity cockpit )
 	ShowRUIHUD( cockpit )
 }
 
-//bind r "script_client ReloadScripts();script_client GetLocalViewPlayer().GetCockpit().Destroy()"
+// bind r "script_client ReloadScripts();script_client GetLocalViewPlayer().GetCockpit().Destroy()"
 void function ShowRUIHUD( entity cockpit )
 {
 	// update topo positions
@@ -256,21 +255,36 @@ void function ShowRUIHUD( entity cockpit )
 	vector instrument1Angles = cockpit.GetAttachmentAngles( instrument1AttachId )
 
 	lowerScreenOrigin = lowerScreenOrigin - cameraOrigin
-	vector lowerScreenPosition = <lowerScreenOrigin.x, lowerScreenOrigin.y + TITAN_COCKPIT_LOWER_RUI_SCREEN_SQUARE_SIZE * .5, lowerScreenOrigin.z + (TITAN_COCKPIT_LOWER_RUI_SCREEN_SQUARE_SIZE) * .5>
+	vector lowerScreenPosition = <
+		lowerScreenOrigin.x,
+		lowerScreenOrigin.y + TITAN_COCKPIT_LOWER_RUI_SCREEN_SQUARE_SIZE * 0.5,
+		lowerScreenOrigin.z + ( TITAN_COCKPIT_LOWER_RUI_SCREEN_SQUARE_SIZE ) * 0.5
+	>
 
 	instrument1Origin = instrument1Origin - cameraOrigin
-	vector instrument1Position = <instrument1Origin.x, instrument1Origin.y, instrument1Origin.z>
+	vector instrument1Position = < instrument1Origin.x, instrument1Origin.y, instrument1Origin.z >
 	vector instrument1RightVector = AnglesToRight( instrument1Angles ) * -1
 	vector instrument1DownVector = AnglesToUp( instrument1Angles ) * -1
 
-	RuiTopology_UpdatePos( clGlobal.topoTitanCockpitLowerHud, lowerScreenPosition, <0, -TITAN_COCKPIT_LOWER_RUI_SCREEN_SQUARE_SIZE, 0>, <0, 0, -(TITAN_COCKPIT_LOWER_RUI_SCREEN_SQUARE_SIZE * TITAN_COCKPIT_LOWER_RUI_SCREEN_HEIGHT_SCALE)> )
-	RuiTopology_UpdatePos( clGlobal.topoTitanCockpitInstrument1, instrument1Position - (instrument1RightVector *  TITAN_COCKPIT_INSTRUMENT1_RUI_SCREEN_SQUARE_SIZE * 0.5) - (instrument1DownVector * TITAN_COCKPIT_INSTRUMENT1_RUI_SCREEN_SQUARE_SIZE * 0.5), instrument1RightVector * TITAN_COCKPIT_INSTRUMENT1_RUI_SCREEN_SQUARE_SIZE, instrument1DownVector * TITAN_COCKPIT_INSTRUMENT1_RUI_SCREEN_SQUARE_SIZE )
+	RuiTopology_UpdatePos(
+		clGlobal.topoTitanCockpitLowerHud,
+		lowerScreenPosition,
+		< 0, -TITAN_COCKPIT_LOWER_RUI_SCREEN_SQUARE_SIZE, 0 >,
+		< 0, 0, -( TITAN_COCKPIT_LOWER_RUI_SCREEN_SQUARE_SIZE * TITAN_COCKPIT_LOWER_RUI_SCREEN_HEIGHT_SCALE ) >
+	)
+	RuiTopology_UpdatePos(
+		clGlobal.topoTitanCockpitInstrument1,
+		instrument1Position - ( instrument1RightVector * TITAN_COCKPIT_INSTRUMENT1_RUI_SCREEN_SQUARE_SIZE * 0.5 ) -
+			( instrument1DownVector * TITAN_COCKPIT_INSTRUMENT1_RUI_SCREEN_SQUARE_SIZE * 0.5 ),
+		instrument1RightVector * TITAN_COCKPIT_INSTRUMENT1_RUI_SCREEN_SQUARE_SIZE,
+		instrument1DownVector * TITAN_COCKPIT_INSTRUMENT1_RUI_SCREEN_SQUARE_SIZE
+	)
 
 	// create ruis
 	entity player = GetLocalViewPlayer()
 
 	#if SP
-	file.coreHintRui = CreateTitanCockpitRui( $"ui/core_hint.rpak" )
+		file.coreHintRui = CreateTitanCockpitRui( $"ui/core_hint.rpak" )
 	#endif
 
 	file.cockpitRui = CreateTitanCockpitRui( $"ui/ajax_cockpit_base.rpak" )
@@ -284,28 +298,28 @@ void function ShowRUIHUD( entity cockpit )
 	RuiSetGameTime( file.cockpitRui, "ejectManualStartTime", -60.0 )
 	RuiSetGameTime( file.cockpitRui, "ejectButtonPressTime", -60.0 )
 	#if MP
-	string titanName = GetTitanCharacterName( player )
-	if ( titanName == "vanguard" )
-	{
-		RuiSetString( file.cockpitRui, "titanInfo1", GetVanguardCoreString( player, 1 ) )
-		RuiSetString( file.cockpitRui, "titanInfo2", GetVanguardCoreString( player, 2 ) )
-		RuiSetString( file.cockpitRui, "titanInfo3", GetVanguardCoreString( player, 3 ) )
-		RuiSetString( file.cockpitRui, "titanInfo4", GetVanguardCoreString( player, 4 ) )
-	}
+		string titanName = GetTitanCharacterName( player )
+		if ( titanName == "vanguard" )
+		{
+			RuiSetString( file.cockpitRui, "titanInfo1", GetVanguardCoreString( player, 1 ) )
+			RuiSetString( file.cockpitRui, "titanInfo2", GetVanguardCoreString( player, 2 ) )
+			RuiSetString( file.cockpitRui, "titanInfo3", GetVanguardCoreString( player, 3 ) )
+			RuiSetString( file.cockpitRui, "titanInfo4", GetVanguardCoreString( player, 4 ) )
+		}
 
-	file.cockpitAdditionalRui = CreateTitanCockpitRui( $"ui/ajax_cockpit_fd.rpak" )
-	RuiSetFloat( file.cockpitAdditionalRui, "ejectManualTimeOut", EJECT_FADE_TIME )
-	RuiSetFloat( file.cockpitAdditionalRui, "ejectButtonTimeOut", TITAN_EJECT_MAX_PRESS_DELAY )
-	RuiSetGameTime( file.cockpitAdditionalRui, "ejectManualStartTime", -60.0 )
+		file.cockpitAdditionalRui = CreateTitanCockpitRui( $"ui/ajax_cockpit_fd.rpak" )
+		RuiSetFloat( file.cockpitAdditionalRui, "ejectManualTimeOut", EJECT_FADE_TIME )
+		RuiSetFloat( file.cockpitAdditionalRui, "ejectButtonTimeOut", TITAN_EJECT_MAX_PRESS_DELAY )
+		RuiSetGameTime( file.cockpitAdditionalRui, "ejectManualStartTime", -60.0 )
 
-	RuiSetDrawGroup( file.cockpitAdditionalRui, RUI_DRAW_NONE )
+		RuiSetDrawGroup( file.cockpitAdditionalRui, RUI_DRAW_NONE )
 	#endif
 
-#if SP
-	bool ejectIsAllowed = false
-#else
-	bool ejectIsAllowed = !TitanEjectIsDisabled()
-#endif
+	#if SP
+		bool ejectIsAllowed = false
+	#else
+		bool ejectIsAllowed = !TitanEjectIsDisabled()
+	#endif
 	RuiSetBool( file.cockpitRui, "ejectIsAllowed", ejectIsAllowed )
 
 	string playerSettings = GetLocalViewPlayer().GetPlayerSettings()
@@ -322,7 +336,7 @@ void function ShowRUIHUD( entity cockpit )
 	var instrument1Rui = CreateTitanCockpitInstrument1Rui( $"ui/ajax_cockpit_insturment1.rpak" )
 	RuiTrackFloat3( instrument1Rui, "playerEyeAngles", player, RUI_TRACK_EYEANGLES_FOLLOW )
 
-	int numDashPips = int( floor( 100 / GetSettingsForPlayer_DodgeTable( GetLocalViewPlayer() )["dodgePowerDrain"] ) )
+	int numDashPips = int( floor( 100 / GetSettingsForPlayer_DodgeTable( GetLocalViewPlayer() )[ "dodgePowerDrain" ] ) )
 	RuiSetInt( file.cockpitRui, "numDashSegments", numDashPips )
 	RuiSetInt( file.cockpitLowerRui, "numDashSegments", numDashPips )
 
@@ -331,8 +345,8 @@ void function ShowRUIHUD( entity cockpit )
 	thread TitanCockpitHealthChangedThink( cockpit, player )
 
 	#if MP
-	if ( GetCurrentPlaylistVarInt( "aegis_upgrades", 0 ) == 1 && !IsSpectating() && !IsWatchingKillReplay() )
-		thread DisplayFrontierRank( file.isFirstBoot )
+		if ( GetCurrentPlaylistVarInt( "aegis_upgrades", 0 ) == 1 && !IsSpectating() && !IsWatchingKillReplay() )
+			thread DisplayFrontierRank( file.isFirstBoot )
 	#endif
 	file.isFirstBoot = false
 
@@ -340,160 +354,160 @@ void function ShowRUIHUD( entity cockpit )
 }
 
 #if MP
-void function DisplayFrontierRank( bool isFirstBoot = true )
-{
-	GetLocalClientPlayer().Signal( "DisplayFrontierRank" )
-	GetLocalClientPlayer().EndSignal( "DisplayFrontierRank" )
-
-	wait 2.0
-
-	TitanLoadoutDef titanLoadout = GetTitanLoadoutFromPersistentData( GetLocalClientPlayer(), GetPersistentSpawnLoadoutIndex( GetLocalClientPlayer(), "titan" ) )
-	string titanClass = titanLoadout.titanClass
-
-	array<ItemDisplayData> titanUpgrades = FD_GetUpgradesForTitanClass( titanClass )
-	int maxActiveIndex
-	foreach ( index, item in titanUpgrades )
+	void function DisplayFrontierRank( bool isFirstBoot = true )
 	{
-		RuiSetImage( file.cockpitAdditionalRui, "upgradeIcon" + (index + 1), item.image )
-		RuiSetString( file.cockpitAdditionalRui, "upgradeName" + (index + 1), item.name )
+		GetLocalClientPlayer().Signal( "DisplayFrontierRank" )
+		GetLocalClientPlayer().EndSignal( "DisplayFrontierRank" )
 
-		if ( !IsSubItemLocked( GetLocalClientPlayer(), item.ref, item.parentRef ) )
-			maxActiveIndex++
-	}
-
-	RuiSetDrawGroup( file.cockpitAdditionalRui, RUI_DRAW_COCKPIT )
-
-	bool firstBootDisplay
-	if ( GameRules_GetGameMode() == FD )
-		firstBootDisplay = isFirstBoot || !GetGlobalNetBool( "FD_waveActive" )
-	else
-		firstBootDisplay = isFirstBoot
-
-	RuiSetBool( file.cockpitAdditionalRui, "isFirstBoot", firstBootDisplay )
-	RuiSetImage( file.cockpitAdditionalRui, "titanIcon", GetIconForTitanClass( titanClass ) )
-	RuiSetInt( file.cockpitAdditionalRui, "titanRank", FD_TitanGetLevel( GetLocalClientPlayer(), titanClass ) )
-	RuiSetInt( file.cockpitAdditionalRui, "maxActiveIndex", maxActiveIndex )
-	RuiSetGameTime( file.cockpitAdditionalRui, "updateTime", Time() )
-
-	EmitSoundOnEntity( GetLocalClientPlayer(), "UI_InGame_FD_MetaUpgradeAnnouncement" )
-
-	if ( firstBootDisplay )
-	{
 		wait 2.0
 
-		for ( int index = 0; index < maxActiveIndex; index++ )
+		TitanLoadoutDef titanLoadout = GetTitanLoadoutFromPersistentData( GetLocalClientPlayer(), GetPersistentSpawnLoadoutIndex( GetLocalClientPlayer(), "titan" ) )
+		string titanClass = titanLoadout.titanClass
+
+		array<ItemDisplayData> titanUpgrades = FD_GetUpgradesForTitanClass( titanClass )
+		int maxActiveIndex
+		foreach ( index, item in titanUpgrades )
 		{
-			EmitSoundOnEntity( GetLocalClientPlayer(), "UI_InGame_FD_MetaUpgradeTextAppear" )
+			RuiSetImage( file.cockpitAdditionalRui, "upgradeIcon" + ( index + 1 ), item.image )
+			RuiSetString( file.cockpitAdditionalRui, "upgradeName" + ( index + 1 ), item.name )
 
-			wait 0.85
-
-			EmitSoundOnEntity( GetLocalClientPlayer(), "UI_InGame_FD_MetaUpgradeBarFill" )
-
-			wait 0.15
+			if ( !IsSubItemLocked( GetLocalClientPlayer(), item.ref, item.parentRef ) )
+				maxActiveIndex++
 		}
-	}
-	else
-	{
-		wait 0.5
 
-		for ( int index = 0; index < maxActiveIndex; index++ )
+		RuiSetDrawGroup( file.cockpitAdditionalRui, RUI_DRAW_COCKPIT )
+
+		bool firstBootDisplay
+		if ( GameRules_GetGameMode() == FD )
+			firstBootDisplay = isFirstBoot || !GetGlobalNetBool( "FD_waveActive" )
+		else
+			firstBootDisplay = isFirstBoot
+
+		RuiSetBool( file.cockpitAdditionalRui, "isFirstBoot", firstBootDisplay )
+		RuiSetImage( file.cockpitAdditionalRui, "titanIcon", GetIconForTitanClass( titanClass ) )
+		RuiSetInt( file.cockpitAdditionalRui, "titanRank", FD_TitanGetLevel( GetLocalClientPlayer(), titanClass ) )
+		RuiSetInt( file.cockpitAdditionalRui, "maxActiveIndex", maxActiveIndex )
+		RuiSetGameTime( file.cockpitAdditionalRui, "updateTime", Time() )
+
+		EmitSoundOnEntity( GetLocalClientPlayer(), "UI_InGame_FD_MetaUpgradeAnnouncement" )
+
+		if ( firstBootDisplay )
 		{
-			EmitSoundOnEntity( GetLocalClientPlayer(), "UI_InGame_FD_MetaUpgradeBarFill" )
-			wait 0.05
-		}
-	}
-}
+			wait 2.0
 
-string function GetVanguardCoreString( entity player, int index )
-{
-	Assert( player.IsTitan() )
+			for ( int index = 0; index < maxActiveIndex; index++ )
+			{
+				EmitSoundOnEntity( GetLocalClientPlayer(), "UI_InGame_FD_MetaUpgradeTextAppear" )
 
-	if ( !IsConnected() ) //Persistence isn't available when we disconnect
-		return ""
+				wait 0.85
 
-	if ( player != GetLocalClientPlayer() )  //Client Persistence doesn't know about other players.
-		return ""
+				EmitSoundOnEntity( GetLocalClientPlayer(), "UI_InGame_FD_MetaUpgradeBarFill" )
 
-	TitanLoadoutDef loadout = GetActiveTitanLoadout( player )
-
-	entity soul = player.GetTitanSoul()
-	if ( !IsValid( soul ) )
-		return ""
-
-	if ( index == 1 )
-	{
-		if ( soul.GetTitanSoulNetInt( "upgradeCount" ) >= 1 )
-		{
-			return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE1_TITLE" ), Localize( GetItemName( loadout.passive4 ) ) )
+				wait 0.15
+			}
 		}
 		else
 		{
-			return  Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE1_TITLE" ), Localize( "#UPGRADE_IN_PROGRESS" ) )
+			wait 0.5
+
+			for ( int index = 0; index < maxActiveIndex; index++ )
+			{
+				EmitSoundOnEntity( GetLocalClientPlayer(), "UI_InGame_FD_MetaUpgradeBarFill" )
+				wait 0.05
+			}
 		}
 	}
-	if ( index == 2 )
+
+	string function GetVanguardCoreString( entity player, int index )
 	{
-		if ( soul.GetTitanSoulNetInt( "upgradeCount" ) >= 2 )
-		{
-			return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE2_TITLE" ), Localize( GetItemName( loadout.passive5 ) ) )
-		}
-		else
+		Assert( player.IsTitan() )
+
+		if ( !IsConnected() ) // Persistence isn't available when we disconnect
+			return ""
+
+		if ( player != GetLocalClientPlayer() ) // Client Persistence doesn't know about other players.
+			return ""
+
+		TitanLoadoutDef loadout = GetActiveTitanLoadout( player )
+
+		entity soul = player.GetTitanSoul()
+		if ( !IsValid( soul ) )
+			return ""
+
+		if ( index == 1 )
 		{
 			if ( soul.GetTitanSoulNetInt( "upgradeCount" ) >= 1 )
-				return  Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE2_TITLE" ), Localize( "#UPGRADE_IN_PROGRESS" ) )
+			{
+				return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE1_TITLE" ), Localize( GetItemName( loadout.passive4 ) ) )
+			}
 			else
-				return  Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE2_TITLE" ), Localize( "#UPGRADE_NOT_INSTALLED" ) )
+			{
+				return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE1_TITLE" ), Localize( "#UPGRADE_IN_PROGRESS" ) )
+			}
 		}
-	}
-	if ( index == 3 )
-	{
-		if ( soul.GetTitanSoulNetInt( "upgradeCount" ) >= 3 )
-		{
-			return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE3_TITLE" ), Localize( GetItemName( loadout.passive6 ) ) )
-		}
-		else
+		if ( index == 2 )
 		{
 			if ( soul.GetTitanSoulNetInt( "upgradeCount" ) >= 2 )
-				return  Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE3_TITLE" ), Localize( "#UPGRADE_IN_PROGRESS" ) )
+			{
+				return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE2_TITLE" ), Localize( GetItemName( loadout.passive5 ) ) )
+			}
 			else
-				return  Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE3_TITLE" ), Localize( "#UPGRADE_NOT_INSTALLED" ) )
+			{
+				if ( soul.GetTitanSoulNetInt( "upgradeCount" ) >= 1 )
+					return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE2_TITLE" ), Localize( "#UPGRADE_IN_PROGRESS" ) )
+				else
+					return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE2_TITLE" ), Localize( "#UPGRADE_NOT_INSTALLED" ) )
+			}
 		}
-	}
-	if ( index == 4 )
-	{
-		printt( loadout.passive4 )
-		if ( loadout.passive4 == "pas_vanguard_core1" ) // Arc Rounds
+		if ( index == 3 )
 		{
-			entity offhandWeapon = player.GetOffhandWeapon( OFFHAND_RIGHT )
-			if ( IsValid( offhandWeapon ) && ( offhandWeapon.HasMod( "missile_racks" ) || offhandWeapon.HasMod( "upgradeCore_MissileRack_Vanguard" ) ) )
-				return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE4_TITLE" ), Localize( "#GEAR_VANGUARD_CORE2" ) )
-			offhandWeapon = player.GetOffhandWeapon( OFFHAND_LEFT )
-			if ( IsValid( offhandWeapon ) && ( offhandWeapon.HasMod( "energy_transfer" ) || offhandWeapon.HasMod( "energy_field_energy_transfer" ) ) )
-				return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE4_TITLE" ), Localize( "#GEAR_VANGUARD_CORE3" ) )
+			if ( soul.GetTitanSoulNetInt( "upgradeCount" ) >= 3 )
+			{
+				return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE3_TITLE" ), Localize( GetItemName( loadout.passive6 ) ) )
+			}
+			else
+			{
+				if ( soul.GetTitanSoulNetInt( "upgradeCount" ) >= 2 )
+					return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE3_TITLE" ), Localize( "#UPGRADE_IN_PROGRESS" ) )
+				else
+					return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE3_TITLE" ), Localize( "#UPGRADE_NOT_INSTALLED" ) )
+			}
 		}
-		else if ( loadout.passive4 == "pas_vanguard_core2" ) // Missile Racks
+		if ( index == 4 )
 		{
-			entity weapon = player.GetMainWeapons()[0]
-			if ( IsValid( weapon ) && ( weapon.HasMod( "arc_rounds" ) || weapon.HasMod( "arc_rounds_with_battle_rifle" ) ) )
-				return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE4_TITLE" ), Localize( "#GEAR_VANGUARD_CORE1" ) )
-			entity offhandWeapon = player.GetOffhandWeapon( OFFHAND_LEFT )
-			if ( IsValid( offhandWeapon ) && ( offhandWeapon.HasMod( "energy_transfer" ) || offhandWeapon.HasMod( "energy_field_energy_transfer" ) ) )
-				return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE4_TITLE" ), Localize( "#GEAR_VANGUARD_CORE3" ) )
+			printt( loadout.passive4 )
+			if ( loadout.passive4 == "pas_vanguard_core1" ) // Arc Rounds
+			{
+				entity offhandWeapon = player.GetOffhandWeapon( OFFHAND_RIGHT )
+				if ( IsValid( offhandWeapon ) && ( offhandWeapon.HasMod( "missile_racks" ) || offhandWeapon.HasMod( "upgradeCore_MissileRack_Vanguard" ) ) )
+					return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE4_TITLE" ), Localize( "#GEAR_VANGUARD_CORE2" ) )
+				offhandWeapon = player.GetOffhandWeapon( OFFHAND_LEFT )
+				if ( IsValid( offhandWeapon ) && ( offhandWeapon.HasMod( "energy_transfer" ) || offhandWeapon.HasMod( "energy_field_energy_transfer" ) ) )
+					return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE4_TITLE" ), Localize( "#GEAR_VANGUARD_CORE3" ) )
+			}
+			else if ( loadout.passive4 == "pas_vanguard_core2" ) // Missile Racks
+			{
+				entity weapon = player.GetMainWeapons()[ 0 ]
+				if ( IsValid( weapon ) && ( weapon.HasMod( "arc_rounds" ) || weapon.HasMod( "arc_rounds_with_battle_rifle" ) ) )
+					return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE4_TITLE" ), Localize( "#GEAR_VANGUARD_CORE1" ) )
+				entity offhandWeapon = player.GetOffhandWeapon( OFFHAND_LEFT )
+				if ( IsValid( offhandWeapon ) && ( offhandWeapon.HasMod( "energy_transfer" ) || offhandWeapon.HasMod( "energy_field_energy_transfer" ) ) )
+					return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE4_TITLE" ), Localize( "#GEAR_VANGUARD_CORE3" ) )
+			}
+			else if ( loadout.passive4 == "pas_vanguard_core3" ) // Energy Transfer
+			{
+				entity weapon = player.GetMainWeapons()[ 0 ]
+				if ( IsValid( weapon ) && ( weapon.HasMod( "arc_rounds" ) || weapon.HasMod( "arc_rounds_with_battle_rifle" ) ) )
+					return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE4_TITLE" ), Localize( "#GEAR_VANGUARD_CORE1" ) )
+				entity offhandWeapon = player.GetOffhandWeapon( OFFHAND_RIGHT )
+				if ( IsValid( offhandWeapon ) && ( offhandWeapon.HasMod( "missile_racks" ) || offhandWeapon.HasMod( "upgradeCore_MissileRack_Vanguard" ) ) )
+					return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE4_TITLE" ), Localize( "#GEAR_VANGUARD_CORE2" ) )
+			}
+			return ""
 		}
-		else if ( loadout.passive4 == "pas_vanguard_core3" ) // Energy Transfer
-		{
-			entity weapon = player.GetMainWeapons()[0]
-			if ( IsValid( weapon ) && ( weapon.HasMod( "arc_rounds" ) || weapon.HasMod( "arc_rounds_with_battle_rifle" ) ) )
-				return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE4_TITLE" ), Localize( "#GEAR_VANGUARD_CORE1" ) )
-			entity offhandWeapon = player.GetOffhandWeapon( OFFHAND_RIGHT )
-			if ( IsValid( offhandWeapon ) && ( offhandWeapon.HasMod( "missile_racks" ) || offhandWeapon.HasMod( "upgradeCore_MissileRack_Vanguard" ) ) )
-				return Localize( "#TITAN_UPGRADE_STATUS_N_N", Localize( "#TITAN_UPGRADE4_TITLE" ), Localize( "#GEAR_VANGUARD_CORE2" ) )
-		}
-		return ""
-	}
 
-	unreachable
-}
+		unreachable
+	}
 #endif
 
 void function SetUnlimitedDash( bool active )
@@ -519,13 +533,12 @@ void function UpdateEjectHud_SetManualEjectStartTime( entity player )
 void function UpdateEjectHud_SetButtonPressTime( entity player )
 {
 	float timeNow = Time()
-	player.p.ejectPressTime	= timeNow
+	player.p.ejectPressTime = timeNow
 
 	if ( file.cockpitRui != null )
 		RuiSetGameTime( file.cockpitRui, "ejectButtonPressTime", timeNow )
-
-	//if ( file.cockpitAdditionalRui != null )
-	//	RuiSetGameTime( file.cockpitAdditionalRui, "ejectButtonPressTime", timeNow )
+	// if ( file.cockpitAdditionalRui != null )
+	// 	RuiSetGameTime( file.cockpitAdditionalRui, "ejectButtonPressTime", timeNow )
 }
 
 void function UpdateEjectHud_SetButtonPressCount( entity player, int buttonCount )
@@ -534,9 +547,8 @@ void function UpdateEjectHud_SetButtonPressCount( entity player, int buttonCount
 
 	if ( file.cockpitRui != null )
 		RuiSetInt( file.cockpitRui, "ejectButtonCount", buttonCount )
-
-	//if ( file.cockpitAdditionalRui != null )
-	//	RuiSetInt( file.cockpitAdditionalRui, "ejectButtonCount", buttonCount )
+	// if ( file.cockpitAdditionalRui != null )
+	// 	RuiSetInt( file.cockpitAdditionalRui, "ejectButtonCount", buttonCount )
 }
 
 void function UpdateTitanCockpitVisibility()
@@ -583,7 +595,7 @@ void function UpdateTitanCockpitVisibility()
 	bool isVisible = true
 
 	int ceFlags = player.GetCinematicEventFlags()
-	if ( (ceFlags & CE_FLAG_INTRO) || (ceFlags & CE_FLAG_TITAN_3P_CAM) )
+	if ( ( ceFlags & CE_FLAG_INTRO ) || ( ceFlags & CE_FLAG_TITAN_3P_CAM ) )
 		isVisible = false
 	if ( clGlobal.isSoloDialogMenuOpen )
 		isVisible = false
@@ -619,14 +631,14 @@ void function CockpitDoomedThink( entity cockpit )
 	while ( IsAlive( player ) )
 	{
 		entity soul = player.GetTitanSoul()
-		if ( !IsValid( soul ) ) //Defensive fix for bug 227087. Assumption is that the cockpit is likely to be destroyed soon if the soul is invalid.
+		if ( !IsValid( soul ) ) // Defensive fix for bug 227087. Assumption is that the cockpit is likely to be destroyed soon if the soul is invalid.
 			return
 		if ( !soul.IsDoomed() )
 			player.WaitSignal( "Doomed" )
 
 		SetCockpitUIDoomedState( true )
 
-		if ( !IsValid( soul ) ) //Defensive fix for bug 227087. Assumption is that the cockpit is likely to be destroyed soon if the soul is invalid.
+		if ( !IsValid( soul ) ) // Defensive fix for bug 227087. Assumption is that the cockpit is likely to be destroyed soon if the soul is invalid.
 			return
 		if ( soul.IsDoomed() )
 			player.WaitSignal( "TitanUnDoomed" )
@@ -685,7 +697,7 @@ void function TitanCockpitDestroyRuisOnDeath( entity cockpit )
 	entity player = GetLocalViewPlayer()
 
 	OnThreadEnd(
-	function() : ( cockpit )
+		function() : ( cockpit )
 		{
 			foreach ( managedRUI in file.titanCockpitManagedRUIs )
 			{
@@ -727,7 +739,6 @@ function CockpitBodyThink( cockpit, cockpitBody )
 	cockpitBody.Destroy()
 }
 
-
 entity function CreateCockpitBody( entity cockpit, entity player, entity cockpitParent )
 {
 	#if SP
@@ -742,10 +753,10 @@ entity function CreateCockpitBody( entity cockpit, entity player, entity cockpit
 
 	asset bodyModelName = GetPlayerSettingsAssetForClassName( bodySettings, "armsmodel" )
 	#if DEV
-	if ( bodySettings == "" )
-	{
-		CodeWarning( "Couldn't find armsmodel for set file: " + bodySettings )
-	}
+		if ( bodySettings == "" )
+		{
+			CodeWarning( "Couldn't find armsmodel for set file: " + bodySettings )
+		}
 	#endif
 
 	entity cockpitBody = CreateClientSidePropDynamic( cockpitParent.GetOrigin(), Vector( 0, 0, 0 ), bodyModelName )
@@ -777,16 +788,15 @@ function TitanCockpit_EMPFadeScale( entity cockpit, elapsedMod = 0 )
 	// Fade in/out from last frames amount so it doesnt pop
 	// Make strength var to control max fade ( less strength returns max of like 0.5 )
 
-	//------------------------
+	// ------------------------
 	// EMP effect is finished
-	//------------------------
+	// ------------------------
 
-	//printt( "elapsedTime:" + elapsedTime + " cockpit.s.empInfo.duration:" + cockpit.s.empInfo.duration + " fadeOutTime:" + fadeOutTime )
+	// printt( "elapsedTime:" + elapsedTime + " cockpit.s.empInfo.duration:" + cockpit.s.empInfo.duration + " fadeOutTime:" + fadeOutTime )
 	if ( elapsedTime < cockpit.s.empInfo.duration - fadeOutTime )
 	{
 		return 1.0
 	}
-
 
 	if ( elapsedTime >= fadeInTime + cockpit.s.empInfo.duration + fadeOutTime )
 	{
@@ -794,61 +804,67 @@ function TitanCockpit_EMPFadeScale( entity cockpit, elapsedMod = 0 )
 		return 0.0
 	}
 
-	//------------------------
+	// ------------------------
 	// EMP effect is starting
-	//------------------------
+	// ------------------------
 
 	if ( elapsedTime < fadeInTime )
 	{
 		return GraphCapped( elapsedTime, 0.0, fadeInTime, 0.0, 1.0 )
 	}
 
-	//----------------------
+	// ----------------------
 	// EMP effect is ending
-	//----------------------
+	// ----------------------
 
 	if ( elapsedTime > fadeInTime + cockpit.s.empInfo.duration )
 	{
-		cockpit.s.empInfo["sub_count"] = 0
+		cockpit.s.empInfo[ "sub_count" ] = 0
 		return GraphCapped( elapsedTime, fadeInTime + cockpit.s.empInfo.duration, fadeInTime + cockpit.s.empInfo.duration + fadeOutTime, 1.0, 0.0 )
 	}
 
-	//---------------------
+	// ---------------------
 	// EMP flicker effect
-	//---------------------
+	// ---------------------
 
 	// Time to start a new flicker
-	if ( cockpit.s.empInfo["sub_start"] == 0 )
+	if ( cockpit.s.empInfo[ "sub_start" ] == 0 )
 	{
-		cockpit.s.empInfo["sub_start"] 		<- Time()
-		if ( cockpit.s.empInfo["sub_count"] == 0 )
-			cockpit.s.empInfo["sub_pause"] 	<- RandomFloatRange( 0.5, 1.5 )
+		cockpit.s.empInfo[ "sub_start" ] <- Time()
+		if ( cockpit.s.empInfo[ "sub_count" ] == 0 )
+			cockpit.s.empInfo[ "sub_pause" ] <- RandomFloatRange( 0.5, 1.5 )
 		else
-			cockpit.s.empInfo["sub_pause"] 	<- RandomFloat( 0.5 )
-		cockpit.s.empInfo["sub_duration"] 	<- RandomFloatRange( 0.1, 0.4 )
-		cockpit.s.empInfo["sub_alpha"] 		<- RandomFloatRange( 0.4, 0.9 )
-		cockpit.s.empInfo["sub_count"]++;
+			cockpit.s.empInfo[ "sub_pause" ] <- RandomFloat( 0.5 )
+		cockpit.s.empInfo[ "sub_duration" ] <- RandomFloatRange( 0.1, 0.4 )
+		cockpit.s.empInfo[ "sub_alpha" ] <- RandomFloatRange( 0.4, 0.9 )
+		cockpit.s.empInfo[ "sub_count" ]++
 	}
-	local flickerElapsedTime = Time() - cockpit.s.empInfo["sub_start"]
+	local flickerElapsedTime = Time() - cockpit.s.empInfo[ "sub_start" ]
 
 	// Start a new flicker if the current one is finished
-	if ( flickerElapsedTime > cockpit.s.empInfo["sub_pause"] + cockpit.s.empInfo["sub_duration"] )
-		cockpit.s.empInfo["sub_start"] = 0
+	if ( flickerElapsedTime > cockpit.s.empInfo[ "sub_pause" ] + cockpit.s.empInfo[ "sub_duration" ] )
+		cockpit.s.empInfo[ "sub_start" ] = 0
 
-	if ( flickerElapsedTime < cockpit.s.empInfo["sub_pause"] )
+	if ( flickerElapsedTime < cockpit.s.empInfo[ "sub_pause" ] )
 	{
 		// Pause before the flicker
 		return 1.0
 	}
-	else if ( flickerElapsedTime < cockpit.s.empInfo["sub_pause"] + ( cockpit.s.empInfo["sub_duration"] / 2.0 ) )
+	else if ( flickerElapsedTime < cockpit.s.empInfo[ "sub_pause" ] + ( cockpit.s.empInfo[ "sub_duration" ] / 2.0 ) )
 	{
 		// First half of the flicker
-		return GraphCapped( flickerElapsedTime, 0.0, cockpit.s.empInfo["sub_duration"] / 2.0, 1.0, cockpit.s.empInfo["sub_alpha"] )
+		return GraphCapped( flickerElapsedTime, 0.0, cockpit.s.empInfo[ "sub_duration" ] / 2.0, 1.0, cockpit.s.empInfo[ "sub_alpha" ] )
 	}
 	else
 	{
 		// Second half of the flicker
-		return GraphCapped( flickerElapsedTime, cockpit.s.empInfo["sub_duration"] / 2.0, cockpit.s.empInfo["sub_duration"], cockpit.s.empInfo["sub_alpha"], 1.0 )
+		return GraphCapped(
+			flickerElapsedTime,
+			cockpit.s.empInfo[ "sub_duration" ] / 2.0,
+			cockpit.s.empInfo[ "sub_duration" ],
+			cockpit.s.empInfo[ "sub_alpha" ],
+			1.0
+		)
 	}
 }
 
@@ -934,15 +950,14 @@ function PlayCockpitEMPLights( cockpit, duration )
 		float subtractColor = GraphCapped( Time(), endTime - 0.25, endTime, 1.0, 0.0 )
 		local pulseFrac = GetPulseFrac( rate, startTime )
 		pulseFrac *= subtractColor
-		//pulseFrac -= fadeInColor
+		// pulseFrac -= fadeInColor
 
 		foreach ( index, fxLight in fxLights )
 		{
 			Assert( fxLight.modulate )
 			fxLight.light.SetLightColor( Vector( pulseFrac, 0, 0 ) )
-
 			// the case where fxLight.modulate == false used to be handled by this script, which used undefined variable fadeInColor:
-			//	fxLight.light.SetLightColor( Vector( fadeInColor, fadeInColor, fadeInColor ) )
+			// 	fxLight.light.SetLightColor( Vector( fadeInColor, fadeInColor, fadeInColor ) )
 		}
 
 		WaitFrame()
@@ -953,7 +968,6 @@ function PlayCockpitEMPLights( cockpit, duration )
 		fxLight.light.Destroy()
 	}
 }
-
 
 function TitanCockpit_IsBooting( cockpit )
 {
@@ -969,13 +983,12 @@ function TitanCockpitAnimThink( cockpit, body )
 		body.Anim_NonScriptedPlay( "atpov_cockpit_hatch_close_idle" )
 }
 
-
 bool function IsDisplayingEjectInterface( entity player )
 {
 	if ( !player.IsTitan() )
 		return false
 
-	if ( player.ContextAction_IsMeleeExecution() ) //Could just check for ContextAction_IsActive() if we need to be more general
+	if ( player.ContextAction_IsMeleeExecution() ) // Could just check for ContextAction_IsActive() if we need to be more general
 		return false
 
 	if ( !GetDoomedState( player ) && Time() - player.p.ejectEnableTime > EJECT_FADE_TIME )
@@ -984,8 +997,8 @@ bool function IsDisplayingEjectInterface( entity player )
 	if ( Riff_TitanExitEnabled() == eTitanExitEnabled.Never || Riff_TitanExitEnabled() == eTitanExitEnabled.DisembarkOnly )
 		return false
 
-	//if ( !CanDisembark( player ) )
-	//	return false
+	// if ( !CanDisembark( player ) )
+	// 	return false
 
 	return true
 }
@@ -1004,7 +1017,7 @@ void function PlayerPressed_Eject( entity player )
 	EmitSoundOnEntity( player, "titan_eject_xbutton" )
 	EmitSoundOnEntity( player, "hud_boost_card_radar_jammer_redtextbeep_1p" )
 	UpdateEjectHud_SetButtonPressTime( player )
-	UpdateEjectHud_SetButtonPressCount( player, (player.p.ejectPressCount + 1) )
+	UpdateEjectHud_SetButtonPressCount( player, ( player.p.ejectPressCount + 1 ) )
 
 	player.ClientCommand( "TitanEject " + player.p.ejectPressCount )
 
@@ -1038,19 +1051,19 @@ string function RollRandomEjectString()
 		if ( index < COCKPIT_EJECT_RARE_COUNT )
 			return "#COCKPIT_EJECT_RARE_" + index
 		else
-			return file.moddedRareEjectMessages[index - COCKPIT_EJECT_RARE_COUNT]
+			return file.moddedRareEjectMessages[ index - COCKPIT_EJECT_RARE_COUNT ]
 	}
 
 	int index = RandomInt( COCKPIT_EJECT_COMMON_COUNT + file.moddedCommonEjectMessages.len() )
 	if ( index < COCKPIT_EJECT_COMMON_COUNT )
 		return "#COCKPIT_EJECT_COMMON_" + index
 	else
-		return file.moddedCommonEjectMessages[index - COCKPIT_EJECT_COMMON_COUNT]
+		return file.moddedCommonEjectMessages[ index - COCKPIT_EJECT_COMMON_COUNT ]
 
 	unreachable
 }
 
-void function PlayerEjects( entity player, entity cockpit ) //Note that this can be run multiple times in a frame, e.g. get damaged by 4 pellets of a shotgun that brings the Titan into a doomed state with auto eject. Not ideal
+void function PlayerEjects( entity player, entity cockpit ) // Note that this can be run multiple times in a frame, e.g. get damaged by 4 pellets of a shotgun that brings the Titan into a doomed state with auto eject. Not ideal
 {
 	// prevent animation from playing if player is in the middle of execution
 	if ( player.ContextAction_IsActive() && !player.ContextAction_IsBusy() )
@@ -1096,7 +1109,6 @@ void function MonitorPlayerEjectAnimBeingStuck( entity player, float duration )
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "OnDestroy" )
 	player.EndSignal( "SettingsChanged" )
-
 
 	wait duration + 2.0 // 1s as a buffer
 
@@ -1176,7 +1188,7 @@ function EjectAudioThink( entity player, ejectAlarmSound = TITAN_ALARM_SOUND )
 	{
 		PerfStart( 127 )
 
-		diff = (Time() - startTime)
+		diff = ( Time() - startTime )
 
 		velocity = player.GetVelocity()
 		float length = Length( velocity )
@@ -1212,35 +1224,34 @@ function EjectAudioThink( entity player, ejectAlarmSound = TITAN_ALARM_SOUND )
 
 function LightingUpdateAfterOpeningCockpit()
 {
- 	while ( true )
- 	{
- 		if ( !GetLocalViewPlayer().s.inTitanCockpit )
- 			break
- 		WaitFrame()
- 	}
+	while ( true )
+	{
+		if ( !GetLocalViewPlayer().s.inTitanCockpit )
+			break
+		WaitFrame()
+	}
 
 	SetCockpitLightingEnabled( 0, false )
 }
 
-
-function TonemappingUpdateAfterOpeningCockpit() //Deprecated, no longer used
+function TonemappingUpdateAfterOpeningCockpit() // Deprecated, no longer used
 {
 	local duration = 3
 	local tonemapMin = 2
 	local tonemapMax = 5
 
- 	while ( true )
- 	{
- 		if ( !GetLocalViewPlayer().s.inTitanCockpit )
- 			break
- 		WaitFrame()
- 	}
+	while ( true )
+	{
+		if ( !GetLocalViewPlayer().s.inTitanCockpit )
+			break
+		WaitFrame()
+	}
 
 	SetCockpitLightingEnabled( 0, false )
 
 	AutoExposureSetExposureCompensationBias( tonemapMax )
 	AutoExposureSnap()
-	wait( 0.1 )
+	wait ( 0.1 )
 
 	TitanDisembarkDSP( 0.5 )
 
@@ -1250,10 +1261,10 @@ function TonemappingUpdateAfterOpeningCockpit() //Deprecated, no longer used
 		local time = Time() - startTime
 		float factor = GraphCapped( time, 0, duration, 1, 0 )
 		factor = factor * factor * factor
-		local toneMapScale = tonemapMin + (tonemapMax - tonemapMin) * factor
+		local toneMapScale = tonemapMin + ( tonemapMax - tonemapMin ) * factor
 		AutoExposureSetExposureCompensationBias( toneMapScale )
 		AutoExposureSnap()
-		wait  0
+		wait 0
 		if ( factor == 0 )
 			break
 	}
@@ -1271,12 +1282,9 @@ function ServerCallback_TitanDisembark()
 	entity player = GetLocalViewPlayer()
 
 	thread LightingUpdateAfterOpeningCockpit()
-
-	//HideFriendlyIndicatorAndCrosshairNames()
-
-	//PlayMusic( "Music_FR_Militia_PilotAction2" )
+	// HideFriendlyIndicatorAndCrosshairNames()
+	// PlayMusic( "Music_FR_Militia_PilotAction2" )
 }
-
 
 function PlayerPressed_QuickDisembark( player )
 {
@@ -1302,19 +1310,19 @@ void function PlayerPressed_EjectEnable( entity player )
 		return
 	}
 
-	if ( Riff_TitanExitEnabled() == eTitanExitEnabled.Never || 	Riff_TitanExitEnabled() == eTitanExitEnabled.DisembarkOnly )
+	if ( Riff_TitanExitEnabled() == eTitanExitEnabled.Never || Riff_TitanExitEnabled() == eTitanExitEnabled.DisembarkOnly )
 		return
 
-	//if ( !CanDisembark( player ) )
-	//	return
+	// if ( !CanDisembark( player ) )
+	// 	return
 
-	if ( player.ContextAction_IsMeleeExecution() ) //Could just check for ContextAction_IsActive() if we need to be more general
+	if ( player.ContextAction_IsMeleeExecution() ) // Could just check for ContextAction_IsActive() if we need to be more general
 		return
 
 	if ( player.GetHealth() == 1 )
 	{
 		#if MP
-		if ( !FD_ReadyUpEnabled() )
+			if ( !FD_ReadyUpEnabled() )
 		#endif
 		{
 			player.ClientCommand( "TitanEject " + 3 )
@@ -1395,7 +1403,6 @@ void function TitanCockpitHealthChangedThink( cockpit, entity player )
 	}
 }
 
-
 function FlashCockpitLight( cockpit, color, radius, duration, tag = "SCR_CL_BL" )
 {
 	cockpit.EndSignal( "TitanUnDoomed" )
@@ -1419,7 +1426,7 @@ function FlashCockpitLight( cockpit, color, radius, duration, tag = "SCR_CL_BL" 
 	local startTime = Time()
 	local rate = 3.0
 
-	while ( IsValid( cockpit ) && (Time() < startTime + duration || duration == -1 ) )
+	while ( IsValid( cockpit ) && ( Time() < startTime + duration || duration == -1 ) )
 	{
 		local pulseFrac = GetPulseFrac( rate, startTime )
 		pulseFrac += 0.5
@@ -1442,7 +1449,10 @@ function PlayCockpitSparkFX_Internal( cockpit, string tagName )
 	{
 		tagName = CoinFlip() ? "FX_TL_PANEL" : "FX_TR_PANEL"
 		attachID = cockpit.LookupAttachment( tagName )
-		Assert( attachID, "Could not find fallback attachment index " + attachID + " for '" + tagName + "'' in model " + GetLocalViewPlayer().GetCockpit().GetModelName() )
+		Assert(
+			attachID,
+			"Could not find fallback attachment index " + attachID + " for '" + tagName + "'' in model " + GetLocalViewPlayer().GetCockpit().GetModelName()
+		)
 	}
 
 	int fxID = GetParticleSystemIndex( $"xo_cockpit_spark_01" )
@@ -1454,15 +1464,15 @@ function PlayCockpitSparkFX_Internal( cockpit, string tagName )
 function PlayCockpitSparkFX( cockpit, int sparkCount )
 {
 	const int TAG_COUNT = 6
-	const string[TAG_COUNT] cockpitFXEmitTags = [ "FX_TL_PANEL", "FX_TR_PANEL", "FX_TC_PANELA", "FX_TC_PANELB", "FX_BL_PANEL", "FX_BR_PANEL" ]
-	array<int> playlist = [0,1,2,3,4,5]
+	const string[ TAG_COUNT ] cockpitFXEmitTags = [ "FX_TL_PANEL", "FX_TR_PANEL", "FX_TC_PANELA", "FX_TC_PANELB", "FX_BL_PANEL", "FX_BR_PANEL" ]
+	array<int> playlist = [ 0, 1, 2, 3, 4, 5 ]
 	playlist.randomize()
 
 	for ( int idx = 0; idx < sparkCount; idx++ )
 	{
-		int lookup = (idx % TAG_COUNT)
-		int tagIndex = playlist[lookup]
-		string tagName = cockpitFXEmitTags[tagIndex]
+		int lookup = ( idx % TAG_COUNT )
+		int tagIndex = playlist[ lookup ]
+		string tagName = cockpitFXEmitTags[ tagIndex ]
 		PlayCockpitSparkFX_Internal( cockpit, tagName )
 	}
 }
@@ -1482,16 +1492,16 @@ int function CalSparkCountForHit( entity player, float damageAmount, bool became
 	int healthMax = player.GetMaxHealth()
 
 	bool isDoomed = GetDoomedState( player )
-	int sparksNow = (healthNow / DAMAGE_PER_SPARK)
-	int sparksPrev = (healthPrev / DAMAGE_PER_SPARK)
-	if ( (healthPrev == healthMax) && !isDoomed )
-		--sparksPrev	// no spark on first damage
+	int sparksNow = ( healthNow / DAMAGE_PER_SPARK )
+	int sparksPrev = ( healthPrev / DAMAGE_PER_SPARK )
+	if ( ( healthPrev == healthMax ) && !isDoomed )
+		--sparksPrev // no spark on first damage
 
-	int delta = (sparksPrev - sparksNow)
+	int delta = ( sparksPrev - sparksNow )
 	if ( delta < 0 )
 		return 0
 
-	return (delta * SPARK_MULTIPLIER)
+	return ( delta * SPARK_MULTIPLIER )
 }
 
 function TitanCockpit_DamageFeedback( entity player, cockpit, float damageAmount, damageType, damageOrigin, damageSourceId, bool doomedNow, int doomedDamage )
@@ -1502,12 +1512,12 @@ function TitanCockpit_DamageFeedback( entity player, cockpit, float damageAmount
 	float joltDamage = doomedNow ? float( doomedDamage ) : damageAmount
 	JoltCockpit( cockpit, player, joltDir, joltDamage, damageType, damageSourceId )
 
-	bool isShieldHit = (damageType & DF_SHIELD_DAMAGE) ? true : false
+	bool isShieldHit = ( damageType & DF_SHIELD_DAMAGE ) ? true : false
 	if ( isShieldHit )
 		return
 
-	int sparkCount = CalSparkCountForHit( player, damageAmount, doomedNow );
-	//printt( "sparks: " + sparkCount + "  dmg: " + damageAmount + "  - " + player.GetHealth() + " / " + player.GetMaxHealth() )
+	int sparkCount = CalSparkCountForHit( player, damageAmount, doomedNow )
+	// printt( "sparks: " + sparkCount + "  dmg: " + damageAmount + "  - " + player.GetHealth() + " / " + player.GetMaxHealth() )
 	PlayCockpitSparkFX( cockpit, sparkCount )
 }
 
@@ -1520,7 +1530,7 @@ function ServerCallback_TitanCockpitBoot_Internal()
 {
 	AutoExposureSetExposureCompensationBias( -6 )
 	AutoExposureSnap()
-	wait  0.1
+	wait 0.1
 	AutoExposureSetExposureCompensationBias( 0 )
 }
 
@@ -1546,9 +1556,9 @@ function TitanEMP_Internal( maxValue, duration, fadeTime, doFlash = true, doSoun
 
 	float fovOffset = Graph( player.GetFOV(), 75, 120, 4, 2.5 )
 
-	local empVgui = CreateClientsideVGuiScreen( "vgui_titan_emp", VGUI_SCREEN_PASS_VIEWMODEL, Vector(0,0,0), Vector(0,0,0), wide, tall );
+	local empVgui = CreateClientsideVGuiScreen( "vgui_titan_emp", VGUI_SCREEN_PASS_VIEWMODEL, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), wide, tall )
 
-	//empVgui.SetParent( player.GetViewModelEntity(), "CAMERA_BASE" )
+	// empVgui.SetParent( player.GetViewModelEntity(), "CAMERA_BASE" )
 	empVgui.SetRefract( true ) // Force refract resolve before drawing vgui. (This can cost GPU!)
 	empVgui.SetParent( player )
 	empVgui.SetAttachOffsetOrigin( < fovOffset, wide / 2, -tall / 2 > )
@@ -1587,7 +1597,6 @@ function TitanEMP_Internal( maxValue, duration, fadeTime, doFlash = true, doSoun
 	wait fadeTime
 }
 
-
 void function LinkCoreHint( entity soul )
 {
 	if ( file.coreHintRui == null )
@@ -1595,7 +1604,6 @@ void function LinkCoreHint( entity soul )
 
 	RuiTrackFloat( file.coreHintRui, "coreFrac", soul, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "coreAvailableFrac" ) )
 }
-
 
 void function FlashCockpitHealth( vector color )
 {
@@ -1618,29 +1626,29 @@ void function UpdateHealthSegmentCount()
 	RuiSetInt( file.cockpitRui, "numHealthSegments", int( health / healthPerSegment ) )
 }
 #if MP
-void function NetworkedVarChangedCallback_UpdateVanguardRUICoreStatus( entity soul, int oldValue, int newValue, bool actuallyChanged )
-{
-	if ( file.cockpitRui == null )
-		return
-
-	if ( actuallyChanged == false )
-		return
-
-	entity player = GetLocalViewPlayer()
-	if ( !IsValid( player ) || !player.IsTitan() )
-		return
-
-	UpdateHealthSegmentCount()
-
-	string titanName = GetTitanCharacterName( player )
-	if ( titanName == "vanguard" )
+	void function NetworkedVarChangedCallback_UpdateVanguardRUICoreStatus( entity soul, int oldValue, int newValue, bool actuallyChanged )
 	{
-		RuiSetString( file.cockpitRui, "titanInfo1", GetVanguardCoreString( player, 1 ) )
-		RuiSetString( file.cockpitRui, "titanInfo2", GetVanguardCoreString( player, 2 ) )
-		RuiSetString( file.cockpitRui, "titanInfo3", GetVanguardCoreString( player, 3 ) )
-		RuiSetString( file.cockpitRui, "titanInfo4", GetVanguardCoreString( player, 4 ) )
+		if ( file.cockpitRui == null )
+			return
+
+		if ( actuallyChanged == false )
+			return
+
+		entity player = GetLocalViewPlayer()
+		if ( !IsValid( player ) || !player.IsTitan() )
+			return
+
+		UpdateHealthSegmentCount()
+
+		string titanName = GetTitanCharacterName( player )
+		if ( titanName == "vanguard" )
+		{
+			RuiSetString( file.cockpitRui, "titanInfo1", GetVanguardCoreString( player, 1 ) )
+			RuiSetString( file.cockpitRui, "titanInfo2", GetVanguardCoreString( player, 2 ) )
+			RuiSetString( file.cockpitRui, "titanInfo3", GetVanguardCoreString( player, 3 ) )
+			RuiSetString( file.cockpitRui, "titanInfo4", GetVanguardCoreString( player, 4 ) )
+		}
 	}
-}
 #endif
 
 var function Scorch_CreateHotstreakBar()
@@ -1649,7 +1657,13 @@ var function Scorch_CreateHotstreakBar()
 
 	file.scorchHotstreakRui = CreateFixedTitanCockpitRui( $"ui/scorch_hotstreak_bar.rpak" )
 
-	RuiTrackFloat( file.scorchHotstreakRui, "coreMeterMultiplier", GetLocalViewPlayer(), RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "coreMeterModifier" ) )
+	RuiTrackFloat(
+		file.scorchHotstreakRui,
+		"coreMeterMultiplier",
+		GetLocalViewPlayer(),
+		RUI_TRACK_SCRIPT_NETWORK_VAR,
+		GetNetworkedVariableIndex( "coreMeterModifier" )
+	)
 
 	return file.scorchHotstreakRui
 }
@@ -1671,6 +1685,6 @@ bool function Scorch_ShouldCreateHotstreakBar()
 	if ( mainWeapons.len() == 0 )
 		return false
 
-	entity primaryWeapon = mainWeapons[0]
+	entity primaryWeapon = mainWeapons[ 0 ]
 	return primaryWeapon.HasMod( "fd_hot_streak" )
 }

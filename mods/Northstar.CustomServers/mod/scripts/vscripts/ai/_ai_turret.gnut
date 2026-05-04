@@ -5,7 +5,6 @@ global function SetUsePromptForPanel
 
 void function AiTurret_Init()
 {
-
 }
 
 entity function GetMegaTurretLinkedToPanel( entity panel )
@@ -20,5 +19,4 @@ string function MegaTurretUsabilityFunc( var turret, var panel )
 
 void function SetUsePromptForPanel( var panel, var turret )
 {
-
 }

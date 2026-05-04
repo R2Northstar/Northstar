@@ -10,7 +10,8 @@ struct EarnChangeData
 	float updateTime = 0.0
 }
 
-struct {
+struct
+{
 	EarnChangeData lastEarnedData
 	var earnMeterRui
 	asset functionref() getIconFunction
@@ -62,7 +63,7 @@ float function Cl_GGEarnMeter_GetCurrentMeterValue( EarnChangeData earnData )
 {
 	float elapsedTime = Time() - earnData.updateTime
 	float delta = earnData.endValue - earnData.startValue
-	return earnData.endValue - (delta * EaseIn( GraphCapped( elapsedTime, 0.0, FILL_ANIM_DURATION, 1.0, 0.0 ) ) )
+	return earnData.endValue - ( delta * EaseIn( GraphCapped( elapsedTime, 0.0, FILL_ANIM_DURATION, 1.0, 0.0 ) ) )
 }
 
 void function Cl_GGEarnMeter_TrackWeaponIcon()

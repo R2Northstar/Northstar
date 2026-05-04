@@ -11,7 +11,7 @@ const DP_DOOR_MODEL = $"models/vehicle/droppod_fireteam/droppod_fireteam_door.md
 
 global enum eDropPodFlag
 {
-	DISSOLVE_AFTER_DISEMBARKS =		(1<<0)
+	DISSOLVE_AFTER_DISEMBARKS = ( 1 << 0 )
 }
 
 struct DroppodStruct
@@ -25,8 +25,7 @@ struct DroppodStruct
 struct
 {
 	table<entity, DroppodStruct> droppodTable
-}
-file
+} file
 
 void function DropPodFireteam_Init()
 {
@@ -56,26 +55,26 @@ void function ActivateFireteamDropPod( entity pod, array<entity> guys )
 
 	if ( guys.len() >= 1 )
 	{
-		SetAnim( guys[0], "drop_pod_exit_anim", "pt_dp_exit_a" )
-		SetAnim( guys[0], "drop_pod_idle_anim", "pt_dp_idle_a" )
+		SetAnim( guys[ 0 ], "drop_pod_exit_anim", "pt_dp_exit_a" )
+		SetAnim( guys[ 0 ], "drop_pod_idle_anim", "pt_dp_idle_a" )
 	}
 
 	if ( guys.len() >= 2 )
 	{
-		SetAnim( guys[1], "drop_pod_exit_anim", "pt_dp_exit_b" )
-		SetAnim( guys[1], "drop_pod_idle_anim", "pt_dp_idle_b" )
+		SetAnim( guys[ 1 ], "drop_pod_exit_anim", "pt_dp_exit_b" )
+		SetAnim( guys[ 1 ], "drop_pod_idle_anim", "pt_dp_idle_b" )
 	}
 
 	if ( guys.len() >= 3 )
 	{
-		SetAnim( guys[2], "drop_pod_exit_anim", "pt_dp_exit_c" )
-		SetAnim( guys[2], "drop_pod_idle_anim", "pt_dp_idle_c" )
+		SetAnim( guys[ 2 ], "drop_pod_exit_anim", "pt_dp_exit_c" )
+		SetAnim( guys[ 2 ], "drop_pod_idle_anim", "pt_dp_idle_c" )
 	}
 
 	if ( guys.len() >= 4 )
 	{
-		SetAnim( guys[3], "drop_pod_exit_anim", "pt_dp_exit_d" )
-		SetAnim( guys[3], "drop_pod_idle_anim", "pt_dp_idle_d" )
+		SetAnim( guys[ 3 ], "drop_pod_exit_anim", "pt_dp_exit_d" )
+		SetAnim( guys[ 3 ], "drop_pod_idle_anim", "pt_dp_idle_d" )
 	}
 
 	foreach ( guy in guys )
@@ -101,7 +100,7 @@ void function DropPodActiveThink( entity pod )
 	OnThreadEnd(
 		function() : ( pod )
 		{
-			DroppodStruct droppodData = file.droppodTable[pod]
+			DroppodStruct droppodData = file.droppodTable[ pod ]
 			if ( droppodData.flags & eDropPodFlag.DISSOLVE_AFTER_DISEMBARKS )
 				CleanupFireteamPod( pod )
 			else
@@ -150,7 +149,7 @@ void function CleanupFireteamPod( entity pod )
 	delete file.droppodTable[ pod ]
 
 	pod.NotSolid()
-	foreach( ent in pod.e.attachedEnts )
+	foreach ( ent in pod.e.attachedEnts )
 	{
 		ent.NotSolid()
 	}
@@ -225,15 +224,14 @@ void function GuyHangsInPod( entity guy, entity pod )
 
 		pod.WaitSignal( "OpenDoor" )
 
-		//wait POST_TURRET_DELAY
+		// wait POST_TURRET_DELAY
 
 		guy.SetEfficientMode( false )
 	}
 
-
 	guy.SetParent( pod, "ATTACH", false )
 
-	exitAnim =  expect string ( GetAnim( guy, "drop_pod_exit_anim" ) )
+	exitAnim = expect string( GetAnim( guy, "drop_pod_exit_anim" ) )
 	bool exitAnimExists = guy.LookupSequence( exitAnim ) != -1
 	if ( exitAnimExists )
 		guy.Anim_ScriptedPlay( exitAnim )

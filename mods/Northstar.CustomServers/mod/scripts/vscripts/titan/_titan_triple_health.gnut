@@ -2,7 +2,7 @@ untyped
 
 global function HealthRegenInit
 
-global function TitanLoseSegementFX //JFS: Only being used for Rodeo now, rename later if needed
+global function TitanLoseSegementFX // JFS: Only being used for Rodeo now, rename later if needed
 global function GibBodyPart
 
 const SEGMENT_DOWN_SOUNDS_3P = [
@@ -32,11 +32,12 @@ const LOW_HEALTH_WARNING_SOUND = "Weapon_Vortex_Gun.ExplosiveWarningBeep"
 
 const TITAN_DAMAGE_MITIGATION_DAMAGESCALE = 0.5
 
-struct {
+struct
+{
 	int shieldDecayRate = 2
 
-	table< entity, table< entity, float > > soulToSoulDamageMemory
-} file;
+	table<entity, table<entity, float> > soulToSoulDamageMemory
+} file
 
 function HealthRegenInit()
 {
@@ -58,7 +59,6 @@ function HealthRegenInit()
 
 	RegisterSignal( "HealthSegmentLost" )
 }
-
 
 void function TitanHealthDecayThink( entity soul )
 {
@@ -103,7 +103,7 @@ void function TitanHealthRegenThink_Internal( entity soul )
 	int healthPerTab = GetSegmentHealthForTitan( titan )
 
 	// set this if AI titans need to be aware of segment health. Not used currently
-	//titan.SetHealthPerSegment( healthPerTab )
+	// titan.SetHealthPerSegment( healthPerTab )
 
 	int lastTitanHealth = titan.GetHealth()
 	bool regenSound = false
@@ -135,9 +135,9 @@ void function TitanHealthRegenThink_Internal( entity soul )
 		{
 			if ( regenSound )
 			{
-			 	StopSoundOnEntity( titan, "titan_energyshield_up" )
-			 	regenSound = false
-		 	}
+				StopSoundOnEntity( titan, "titan_energyshield_up" )
+				regenSound = false
+			}
 		}
 
 		lastTitanHealth = titanHealth
@@ -196,7 +196,6 @@ function TitanSegmentedHealth_OnDamage_Thread( entity soul, damageInfo )
 
 	bool skipDoom = ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_SKIPS_DOOMED_STATE ) > 0
 
-
 	WaitEndFrame()
 
 	titan = soul.GetTitan()
@@ -223,10 +222,10 @@ function TitanSegmentedHealth_OnDamage_Thread( entity soul, damageInfo )
 
 int function CalculateHealthFloorForDamage( entity soul, entity titan, damageInfo )
 {
-	//Lets you bypass the health segment limitation and remove an entire health segment.
+	// Lets you bypass the health segment limitation and remove an entire health segment.
 	/*if ( IsRodeoDamageFromBatteryPack( soul, damageInfo ) )
 		return minint( 0, int ( titan.GetHealth() - DamageInfo_GetDamage( damageInfo ) ) )
-	*/
+*/
 	int oldTab = GetTitanCurrentRegenTab( titan )
 	return ( oldTab - 1 ) * GetSegmentHealthForTitan( titan )
 }
@@ -289,7 +288,7 @@ void function TitanLoseSegementFX( entity titan, entity attacker, vector damageO
 	if ( !IsAlive( titan ) )
 		return
 
-	int currentRegenTab = minint( GetTitanCurrentRegenTab( titan ), SEGMENT_DOWN_SOUNDS_3P_ATTACKER.len()-1 )
+	int currentRegenTab = minint( GetTitanCurrentRegenTab( titan ), SEGMENT_DOWN_SOUNDS_3P_ATTACKER.len() - 1 )
 	if ( currentRegenTab < SEGMENT_DOWN_SOUNDS_3P_ATTACKER.len() )
 	{
 		if ( titan.IsPlayer() && IsAlive( attacker ) && attacker.IsPlayer() )
@@ -317,7 +316,6 @@ void function TitanLoseSegementFX( entity titan, entity attacker, vector damageO
 	}
 }
 
-
 void function UpdateDamageStateForTab( entity titan, int tab, int hitBox )
 {
 	if ( hitBox == -1 ) // not every hitbox has data defined
@@ -331,41 +329,41 @@ void function UpdateDamageStateForTab( entity titan, int tab, int hitBox )
 		return
 	}
 
-#if MP
-	// these are flipped on purpose to prevent both legs or arms from being blown up
-	switch ( bodyGroup )
-	{
-		case "left_leg":
-			if ( IsBroken( titan, "right_leg" ) )
+	#if MP
+		// these are flipped on purpose to prevent both legs or arms from being blown up
+		switch ( bodyGroup )
+		{
+			case "left_leg":
+				if ( IsBroken( titan, "right_leg" ) )
+					return
+				break
+
+			case "right_leg":
+				if ( IsBroken( titan, "left_leg" ) )
+					return
+				break
+
+			case "left_arm":
+				if ( IsBroken( titan, "right_arm" ) )
+					return
+				break
+
+			case "right_arm":
+				if ( IsBroken( titan, "left_arm" ) )
+					return
+				break
+
+			default:
 				return
-			break
+		}
 
-		case "right_leg":
-			if ( IsBroken( titan, "left_leg" ) )
-				return
-			break
+		GibBodyPart( titan, bodyGroup )
+	#else
+		int maxTab = 3
+		int count = maxTab - tab
 
-		case "left_arm":
-			if ( IsBroken( titan, "right_arm" ) )
-				return
-			break
-
-		case "right_arm":
-			if ( IsBroken( titan, "left_arm" ) )
-				return
-			break
-
-		default:
-			return
-	}
-
-	GibBodyPart( titan, bodyGroup )
-#else
-	int maxTab = 3
-	int count = maxTab - tab
-
-	RecursiveGibBodyPart( titan, bodyGroup, count )
-#endif
+		RecursiveGibBodyPart( titan, bodyGroup, count )
+	#endif
 }
 
 void function RecursiveGibBodyPart( entity titan, var bodyGroup, int count )
@@ -376,7 +374,7 @@ void function RecursiveGibBodyPart( entity titan, var bodyGroup, int count )
 	if ( count <= 0 )
 		return
 
-	foreach ( siblingName in titan.s.skeletonData[bodyGroup].siblings )
+	foreach ( siblingName in titan.s.skeletonData[ bodyGroup ].siblings )
 	{
 		// printt( count + " recurse: " + siblingName )
 		RecursiveGibBodyPart( titan, siblingName, count )
@@ -389,7 +387,7 @@ bool function IsBroken( entity titan, var bodyGroup )
 	local stateCount = GetStateCountForBodyGroup( titan, bodyGroup )
 	local bodyGroupState = titan.GetBodyGroupState( bodyGroupIndex )
 
-	//return ( bodyGroupState >= (stateCount - 1) )
+	// return ( bodyGroupState >= (stateCount - 1) )
 	return ( bodyGroupState > 0 )
 }
 
@@ -404,7 +402,7 @@ void function GibBodyPart( entity titan, var bodyGroup )
 	local stateCount = GetStateCountForBodyGroup( titan, bodyGroup )
 	local bodyGroupState = titan.GetBodyGroupState( bodyGroupIndex )
 
-	if ( bodyGroupState >= (stateCount - 1) )
+	if ( bodyGroupState >= ( stateCount - 1 ) )
 		return
 
 	titan.SetBodygroup( bodyGroupIndex, bodyGroupState + 1 )
@@ -426,7 +424,7 @@ void function TemporaryInvul( entity titan )
 	}
 
 	OnThreadEnd(
-	function() : ( titan )
+		function() : ( titan )
 		{
 			if ( IsValid( titan ) )
 				titan.ClearInvulnerable()
@@ -452,7 +450,6 @@ void function GiveDefenderAmmo( entity titan )
 
 void function OnTitanDoomed( entity titan, var damageInfo )
 {
-
 	if ( !IsAlive( titan ) )
 		return
 
@@ -463,7 +460,7 @@ void function OnTitanDoomed( entity titan, var damageInfo )
 		if ( SoulHasPassive( soul, ePassives.PAS_RONIN_AUTOSHIFT ) )
 			PhaseShift( titan, 0, 3.0 )
 
- 		if ( SoulHasPassive( soul, ePassives.PAS_AUTO_EJECT ) )
+		if ( SoulHasPassive( soul, ePassives.PAS_AUTO_EJECT ) )
 			return
 	}
 
@@ -473,7 +470,7 @@ void function OnTitanDoomed( entity titan, var damageInfo )
 	float damageAmount = DamageInfo_GetDamage( damageInfo )
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
 
-	if ( TitanDamageRewardsTitanCoreTime() && (titan != attacker) )
+	if ( TitanDamageRewardsTitanCoreTime() && ( titan != attacker ) )
 	{
 		AddCreditToTitanCoreBuilderForDoomEntered( titan )
 		if ( attacker.IsTitan() )
@@ -512,7 +509,7 @@ void function TitanShieldDecayThink( entity soul )
 
 void function TitanShieldDecayThinkInternal( entity soul )
 {
-	soul.EndSignal( "OnDestroy" ) //This needs to be OnDestroy instead of OnDeath because souls don't have a death animation
+	soul.EndSignal( "OnDestroy" ) // This needs to be OnDestroy instead of OnDeath because souls don't have a death animation
 	soul.EndSignal( "OnTitanDeath" )
 
 	while ( 1 )

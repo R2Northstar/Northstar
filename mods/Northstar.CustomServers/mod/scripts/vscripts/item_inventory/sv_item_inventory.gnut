@@ -30,7 +30,7 @@ void function Sv_ItemInventory_OnClientConnected( entity player )
 
 void function PrematchClearInventory() // vanilla behavior
 {
-	foreach( entity player in GetPlayerArray() )
+	foreach ( entity player in GetPlayerArray() )
 	{
 		thread PlayerInventory_TakeAllInventoryItems( player )
 	}
@@ -40,9 +40,10 @@ void function Sv_ItemInventory_OnPlayerGetsNewPilotLoadout( entity player, Pilot
 {
 	array<InventoryItem> playerInventoryStack = file.playerInventoryStacks[ player ]
 
-	if (playerInventoryStack.len() > 0) {
-		InventoryItem topInventoryItem = playerInventoryStack[playerInventoryStack.len() - 1]
-		thread PlayerInventory_GiveInventoryItem(player, topInventoryItem)
+	if ( playerInventoryStack.len() > 0 )
+	{
+		InventoryItem topInventoryItem = playerInventoryStack[ playerInventoryStack.len() - 1 ]
+		thread PlayerInventory_GiveInventoryItem( player, topInventoryItem )
 	}
 
 	return
@@ -81,13 +82,13 @@ void function PlayerInventory_TakeInventoryItem( entity player )
 	player.EndSignal( "OnDestroy" )
 	entity preexistingWeapon = player.GetOffhandWeapon( OFFHAND_INVENTORY )
 
-	if( !IsValid( preexistingWeapon ) )
+	if ( !IsValid( preexistingWeapon ) )
 		return
 	preexistingWeapon.EndSignal( "OnDestroy" )
-	if( preexistingWeapon.GetWeaponClassName() == "mp_ability_burncardweapon" )
+	if ( preexistingWeapon.GetWeaponClassName() == "mp_ability_burncardweapon" )
 	{
 		var fireTime = preexistingWeapon.GetWeaponInfoFileKeyField( "fire_anim_rate" )
-		if( fireTime )
+		if ( fireTime )
 			wait fireTime
 	}
 	player.TakeWeaponNow( preexistingWeapon.GetWeaponClassName() )
@@ -99,7 +100,8 @@ void function PlayerInventory_GiveInventoryItem( entity player, InventoryItem in
 
 	array<string> mods = []
 
-	if ( inventoryItem.itemType == eInventoryItemType.burnmeter ) {
+	if ( inventoryItem.itemType == eInventoryItemType.burnmeter )
+	{
 		mods.append( "burn_card_weapon_mod" )
 		if ( inventoryItem.burnReward.extraWeaponMod != "" )
 			mods.append( inventoryItem.burnReward.extraWeaponMod )
@@ -108,7 +110,7 @@ void function PlayerInventory_GiveInventoryItem( entity player, InventoryItem in
 	// ensure inventory slot isn't full to avoid crash
 	waitthread PlayerInventory_TakeInventoryItem( player )
 	entity preexistingWeapon = player.GetOffhandWeapon( OFFHAND_INVENTORY ) // defensive fix
-	if( IsValid( preexistingWeapon ) )
+	if ( IsValid( preexistingWeapon ) )
 		player.TakeWeaponNow( preexistingWeapon.GetWeaponClassName() )
 
 	player.GiveOffhandWeapon( inventoryItem.weaponRef, OFFHAND_INVENTORY, mods )
@@ -116,10 +118,10 @@ void function PlayerInventory_GiveInventoryItem( entity player, InventoryItem in
 
 void function PlayerInventory_PushInventoryItem( entity player, InventoryItem inventoryItem )
 {
-	file.playerInventoryStacks[ player ].append(inventoryItem)
+	file.playerInventoryStacks[ player ].append( inventoryItem )
 	player.SetPlayerNetInt( "itemInventoryCount", file.playerInventoryStacks[ player ].len() )
 
-	thread PlayerInventory_GiveInventoryItem(player, inventoryItem)
+	thread PlayerInventory_GiveInventoryItem( player, inventoryItem )
 }
 
 void function PlayerInventory_PushInventoryItemByBurnRef( entity player, string burnRef )
@@ -129,21 +131,25 @@ void function PlayerInventory_PushInventoryItemByBurnRef( entity player, string 
 	inventoryItem.burnReward = BurnReward_GetByRef( burnRef )
 	inventoryItem.weaponRef = inventoryItem.burnReward.weaponName
 
-	PlayerInventory_PushInventoryItem(player, inventoryItem)
+	PlayerInventory_PushInventoryItem( player, inventoryItem )
 }
 
 void function PlayerInventory_PopInventoryItem( entity player )
 {
 	array<InventoryItem> playerInventoryStack = file.playerInventoryStacks[ player ]
 
-	if (playerInventoryStack.len() > 0) {
+	if ( playerInventoryStack.len() > 0 )
+	{
 		InventoryItem topInventoryItem = playerInventoryStack.pop()
 		player.SetPlayerNetInt( "itemInventoryCount", playerInventoryStack.len() )
 
-		if (playerInventoryStack.len() > 0) {
-			InventoryItem nextInventoryItem = playerInventoryStack[playerInventoryStack.len() - 1]
+		if ( playerInventoryStack.len() > 0 )
+		{
+			InventoryItem nextInventoryItem = playerInventoryStack[ playerInventoryStack.len() - 1 ]
 			thread PlayerInventory_GiveInventoryItem( player, nextInventoryItem )
-		} else {
+		}
+		else
+		{
 			waitthread PlayerInventory_TakeInventoryItem( player )
 		}
 	}
@@ -161,15 +167,12 @@ void function PlayerInventory_TakeAllInventoryItems( entity player )
 
 void function PlayerInventory_RefreshEquippedState( entity player )
 {
-
 }
 
 void function PlayerInventory_StartCriticalSection( entity player )
 {
-
 }
 
 void function PlayerInventory_EndCriticalSectionForWeaponOnEndFrame( entity weapon )
 {
-
 }

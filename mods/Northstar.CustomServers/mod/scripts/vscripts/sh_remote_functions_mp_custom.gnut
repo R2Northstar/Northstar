@@ -2,7 +2,8 @@ untyped
 global function InitCustomNetworkVars
 global function AddCallback_OnRegisteringCustomNetworkVars
 
-struct {
+struct
+{
 	array<void functionref()> onRegisteringCustomNetworkVarsCallbacks
 } file
 

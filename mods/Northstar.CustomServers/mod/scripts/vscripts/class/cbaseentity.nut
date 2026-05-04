@@ -2,18 +2,18 @@ untyped
 
 global function CodeCallback_RegisterClass_CBaseEntity
 
-//=========================================================
+// =========================================================
 // CBaseEntity
 // Properties and methods added here can be accessed on all script entities
-//=========================================================
+// =========================================================
 
 #if DEV
-table __scriptVarDelegate = {}
+	table __scriptVarDelegate = {}
 #endif
 
 function CodeCallback_RegisterClass_CBaseEntity()
 {
-	//printl( "Class Script: CBaseEntity" )
+	// printl( "Class Script: CBaseEntity" )
 
 	CBaseEntity.ClassName <- "CBaseEntity"
 
@@ -69,7 +69,7 @@ function CodeCallback_RegisterClass_CBaseEntity()
 		}
 		this.__SetOrigin( origin )
 	}
-	*/
+*/
 
 	function CBaseEntity::_typeof()
 	{
@@ -116,7 +116,6 @@ function CodeCallback_RegisterClass_CBaseEntity()
 	}
 	#document( "CBaseEntity::EnableDraw", "its back!" )
 
-
 	// --------------------------------------------------------
 	function CBaseEntity::Kill_Deprecated_UseDestroyInstead( time = 0 )
 	{
@@ -153,7 +152,7 @@ function CodeCallback_RegisterClass_CBaseEntity()
 		Assert( targetName.len(), "Attemped to AddOutput on an unnamed target" )
 
 		local addOutputString = outputName + " " + targetName + ":" + inputName + ":" + parameter + ":" + delay + ":" + maxFires
-		//printl(" Added output string: " + addOutputString )
+		// printl(" Added output string: " + addOutputString )
 
 		EntFireByHandle( this, "AddOutput", addOutputString, 0, null, null )
 	}
@@ -161,7 +160,7 @@ function CodeCallback_RegisterClass_CBaseEntity()
 
 	/*
 	function MoveTo()
-	*/
+*/
 
 	function CBaseEntity::MoveTo( dest, time, easeIn = 0, easeOut = 0 )
 	{
@@ -179,7 +178,7 @@ function CodeCallback_RegisterClass_CBaseEntity()
 
 	/*
 	function RotateTo()
-	*/
+*/
 
 	function CBaseEntity::RotateTo( dest, time, easeIn = 0, easeOut = 0 )
 	{
@@ -211,7 +210,7 @@ function CodeCallback_RegisterClass_CBaseEntity()
 		Assert( type( func ) == "function" )
 
 		string newGuid = UniqueString()
-		this.funcsByString[newGuid] <- func
+		this.funcsByString[ newGuid ] <- func
 
 		return "_RunFunctionByString( \"" + newGuid + "\" )"
 	}
@@ -219,10 +218,10 @@ function CodeCallback_RegisterClass_CBaseEntity()
 	function _RunFunctionByString( guid )
 	{
 		local activator = this.activator
-		Assert( activator.funcsByString[guid] )
+		Assert( activator.funcsByString[ guid ] )
 
-		local func = activator.funcsByString[guid].bindenv( activator.scope() )
-		delete activator.funcsByString[guid]
+		local func = activator.funcsByString[ guid ].bindenv( activator.scope() )
+		delete activator.funcsByString[ guid ]
 
 		func()
 	}

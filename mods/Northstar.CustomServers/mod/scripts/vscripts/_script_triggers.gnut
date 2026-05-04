@@ -1,4 +1,3 @@
-
 untyped
 
 globalize_all_functions
@@ -24,11 +23,10 @@ entity function _CreateScriptCylinderTriggerInternal( vector origin, float radiu
 {
 	entity trigger = CreateScriptRef( origin, < 0.0, 0.0, 0.0 > )
 
-
 	if ( flags & TRIG_FLAG_START_DISABLED )
 		trigger.e.scriptTriggerData.enabled = false
 	else
-	trigger.e.scriptTriggerData.enabled = true
+		trigger.e.scriptTriggerData.enabled = true
 	trigger.e.scriptTriggerData.radius = radius
 
 	trigger.e.scriptTriggerData.top = 16384.0
@@ -45,7 +43,7 @@ entity function _CreateScriptCylinderTriggerInternal( vector origin, float radiu
 
 	if ( ents.len() )
 	{
-		trigger.e.scriptTriggerData.flags = (flags | TRIG_FLAG_EXCLUSIVE)
+		trigger.e.scriptTriggerData.flags = ( flags | TRIG_FLAG_EXCLUSIVE )
 		trigger.e.scriptTriggerData.managedEntArrayHandle = CreateScriptManagedEntArray()
 
 		foreach ( ent in ents )
@@ -67,7 +65,7 @@ void function ScriptTriggerSetEnabled( entity trigger, bool state )
 
 void function CylinderTriggerThink( entity triggerEnt )
 {
-	//Ensures that any callbacks the user sets are in place when the user spawns.
+	// Ensures that any callbacks the user sets are in place when the user spawns.
 	WaitFrame()
 
 	bool wasEnabled = triggerEnt.e.scriptTriggerData.enabled
@@ -80,7 +78,7 @@ void function CylinderTriggerThink( entity triggerEnt )
 			if ( wasEnabled )
 			{
 				array<entity> entitiesToRemove // build an array since looping through a table and removing elements is undefined
-				foreach( ent in triggerEnt.e.scriptTriggerData.entities )
+				foreach ( ent in triggerEnt.e.scriptTriggerData.entities )
 				{
 					entitiesToRemove.append( ent )
 				}
@@ -130,7 +128,7 @@ void function CylinderTriggerThink( entity triggerEnt )
 					continue
 				}
 
-				if ( ent.IsPlayer() && ent.IsPhaseShifted() && (flags & TRIG_FLAG_NO_PHASE_SHIFT) )
+				if ( ent.IsPlayer() && ent.IsPhaseShifted() && ( flags & TRIG_FLAG_NO_PHASE_SHIFT ) )
 				{
 					if ( ent in triggerEnt.e.scriptTriggerData.entities )
 						ScriptTriggerRemoveEntity( triggerEnt, ent )
@@ -144,13 +142,13 @@ void function CylinderTriggerThink( entity triggerEnt )
 					if ( entityOrg.z > triggerEnt.e.scriptTriggerData.top )
 						continue
 
-					if ( entityOrg.z + 72.0 < triggerEnt.e.scriptTriggerData.bottom ) //72 is magic number for height of players. Should account for height of NPCs
+					if ( entityOrg.z + 72.0 < triggerEnt.e.scriptTriggerData.bottom ) // 72 is magic number for height of players. Should account for height of NPCs
 						continue
 
-					if ( (flags & TRIG_FLAG_NOCONTEXTBUSY) && !ent.IsPlayerDecoy() && ent.ContextAction_IsBusy() ) //This should probably be ContextAction_IsActive()
+					if ( ( flags & TRIG_FLAG_NOCONTEXTBUSY ) && !ent.IsPlayerDecoy() && ent.ContextAction_IsBusy() ) // This should probably be ContextAction_IsActive()
 						continue
 
-					if ( !(ent in triggerEnt.e.scriptTriggerData.entities) )
+					if ( !( ent in triggerEnt.e.scriptTriggerData.entities ) )
 					{
 						ScriptTriggerAddEntity( triggerEnt, ent )
 						if ( flags & TRIG_FLAG_ONCE )
@@ -182,14 +180,14 @@ void function ScriptTriggerRemoveEntity( entity triggerEnt, entity ent )
 		callbackFunc( triggerEnt, ent )
 	}
 
-	delete triggerEnt.e.scriptTriggerData.entities[ent]
+	delete triggerEnt.e.scriptTriggerData.entities[ ent ]
 }
 
 void function ScriptTriggerAddEntity( entity triggerEnt, entity ent )
 {
-	Assert( !(ent in triggerEnt.e.scriptTriggerData.entities) )
+	Assert( !( ent in triggerEnt.e.scriptTriggerData.entities ) )
 
-	triggerEnt.e.scriptTriggerData.entities[ent] <- ent
+	triggerEnt.e.scriptTriggerData.entities[ ent ] <- ent
 
 	foreach ( callbackFunc in triggerEnt.e.scriptTriggerData.enterCallbacks )
 	{
@@ -236,7 +234,7 @@ void function AddCallback_ScriptTriggerEnter( entity trigger, void functionref( 
 	trigger.e.scriptTriggerData.enterCallbacks.append( callbackFunc )
 }
 
-void function AddCallback_ScriptTriggerLeave( entity trigger, void functionref( entity, entity )  callbackFunc )
+void function AddCallback_ScriptTriggerLeave( entity trigger, void functionref( entity, entity ) callbackFunc )
 {
 	trigger.e.scriptTriggerData.leaveCallbacks.append( callbackFunc )
 }

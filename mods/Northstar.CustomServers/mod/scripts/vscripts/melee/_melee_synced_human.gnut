@@ -49,7 +49,6 @@ bool function MeleeThread_PilotVsEnemyInternal( SyncedMelee action, entity attac
 			if ( IsValid( target ) )
 				target.ClearParent()
 
-
 			if ( IsValid( attacker ) )
 			{
 				attacker.PlayerMelee_SetState( PLAYER_MELEE_STATE_NONE )
@@ -67,7 +66,6 @@ bool function MeleeThread_PilotVsEnemyInternal( SyncedMelee action, entity attac
 				{
 					PutEntityInSafeSpot( attacker, target, null, attacker.GetOrigin(), attacker.GetOrigin() )
 				}
-
 			}
 
 			if ( IsValid( target ) )
@@ -79,7 +77,6 @@ bool function MeleeThread_PilotVsEnemyInternal( SyncedMelee action, entity attac
 					// Note that the original target origin is not guarranteed to be a safe spot now because we have moving geo in the game now.
 					if ( isAttackerRef && IsValid( attacker ) )
 					{
-
 						PutEntityInSafeSpot( target, attacker, null, attacker.GetOrigin(), target.GetOrigin() )
 					}
 					else
@@ -125,37 +122,37 @@ void function RestoreCloakAfterMelee( entity player, PilotVsEnemyStruct dataStru
 		return
 
 	float remainingCloakDuration = max( 0.0, dataStruct.cloakEndTime - Time() )
-	if ( remainingCloakDuration > CLOAK_FADE_IN  ) //Has to be higher than fade in duration, otherwise will cloak forever
+	if ( remainingCloakDuration > CLOAK_FADE_IN ) // Has to be higher than fade in duration, otherwise will cloak forever
 		EnableCloak( player, remainingCloakDuration, CLOAK_FADE_IN )
 }
 
-void function HandleCloakExecutionWithCloakedAttacker( entity player, PilotVsEnemyStruct dataStruct, SyncedMelee action  )
+void function HandleCloakExecutionWithCloakedAttacker( entity player, PilotVsEnemyStruct dataStruct, SyncedMelee action )
 {
 	if ( !IsCloaked( player ) )
-		return //No need to run DisableCloakBeforeMelee() either
+		return // No need to run DisableCloakBeforeMelee() either
 
 	float attackerSequenceEndTime = Time() + player.GetSequenceDuration( action.attackerAnimation3p )
 	float scheduledCloakEndTime = player.GetCloakEndTime()
 
-	//printt( "attackerSequenceEndTime: " + attackerSequenceEndTime + ", scheduledCloakEndTime: " + scheduledCloakEndTime )
+	// printt( "attackerSequenceEndTime: " + attackerSequenceEndTime + ", scheduledCloakEndTime: " + scheduledCloakEndTime )
 
 	if ( scheduledCloakEndTime > attackerSequenceEndTime )
 	{
-		//printt( "Cloak ability lasts longer than execution sequence, just doing DisableCloakBeforeMelee" )
-		player.SetCloakFlicker( 0.0, 0.0 ) //Turn off flicker; this is normally not a problem for other executions since cloak is turned off for the entirety of those executions
+		// printt( "Cloak ability lasts longer than execution sequence, just doing DisableCloakBeforeMelee" )
+		player.SetCloakFlicker( 0.0, 0.0 ) // Turn off flicker; this is normally not a problem for other executions since cloak is turned off for the entirety of those executions
 		DisableCloakBeforeMelee( player, dataStruct )
 	}
 	else
 	{
-		//Cloak would normally run out during the animation of this execution, which is disruptive to the presentation of cloak animation, so just stop cloak now for good and prevent it from coming back.
-		//printt( "Cloak ability is shorter than execution sequence, DisableCloak now and stop it from coming back" )
-		dataStruct.wasCloaked = true //Have to do this to mark player was cloaked during start of execution, so we can track the stat correctly
+		// Cloak would normally run out during the animation of this execution, which is disruptive to the
+		// presentation of cloak animation, so just stop cloak now for good and prevent it from coming back.
+		// printt( "Cloak ability is shorter than execution sequence, DisableCloak now and stop it from coming back" )
+		dataStruct.wasCloaked = true // Have to do this to mark player was cloaked during start of execution, so we can track the stat correctly
 		dataStruct.cloakEndTime = Time()
 		DisableCloak( player, 0.0 )
 		player.Signal( "KillHandleCloakEnd" )
 	}
 }
-
 
 void function MeleeThread_PilotVsEnemy_Attacker( SyncedMelee action, entity attacker, entity target, bool isAttackerRef )
 {
@@ -167,7 +164,6 @@ void function MeleeThread_PilotVsEnemy_Attacker( SyncedMelee action, entity atta
 	attacker.EndSignal( "OnDestroy" )
 	Assert( IsValid( target ) )
 	target.EndSignal( "OnDestroy" )
-
 
 	foreach ( AnimEventData animEventData in action.attacker3pAnimEvents )
 	{
@@ -196,7 +192,7 @@ void function MeleeThread_PilotVsEnemy_Attacker( SyncedMelee action, entity atta
 
 					RestoreCloakAfterMelee( attacker, dataStruct )
 					#if MP
-					IncrementStatForPilotExecutionWhileCloaked( attacker, target, dataStruct )
+						IncrementStatForPilotExecutionWhileCloaked( attacker, target, dataStruct )
 					#endif
 				}
 
@@ -216,7 +212,7 @@ void function MeleeThread_PilotVsEnemy_Attacker( SyncedMelee action, entity atta
 	attackerSequence.attachment = "ref"
 	attackerSequence.thirdPersonAnim = action.attackerAnimation3p
 	attackerSequence.firstPersonAnim = action.attackerAnimation1p
-	attackerSequence.thirdPersonCameraAttachments = [action.thirdPersonCameraAttachment]
+	attackerSequence.thirdPersonCameraAttachments = [ action.thirdPersonCameraAttachment ]
 	attackerSequence.thirdPersonCameraVisibilityChecks = true
 
 	if ( isAttackerRef )
@@ -239,7 +235,7 @@ void function MeleeThread_PilotVsEnemy_Attacker( SyncedMelee action, entity atta
 		attacker.Lunge_ClearTarget()
 		HolsterViewModelAndDisableWeapons( attacker )
 
-		if ( action.ref == "execution_cloak" ) //Special case for cloak execution
+		if ( action.ref == "execution_cloak" ) // Special case for cloak execution
 		{
 			HandleCloakExecutionWithCloakedAttacker( attacker, dataStruct, action )
 		}
@@ -263,7 +259,6 @@ void function MeleeThread_PilotVsEnemy_Attacker( SyncedMelee action, entity atta
 
 	wait duration
 }
-
 
 void function MeleeThread_PilotVsEnemy_Target( SyncedMelee action, entity attacker, entity target, bool isAttackerRef )
 {
@@ -315,16 +310,21 @@ void function MeleeThread_PilotVsEnemy_Target( SyncedMelee action, entity attack
 
 				if ( isAlive )
 				{
-					if ( target.e.markedForExecutionDeath ) //Kill off target if he already reached blackout part of melee
+					if ( target.e.markedForExecutionDeath ) // Kill off target if he already reached blackout part of melee
 					{
-						entity killCreditAttacker = null //If the attacker disconnected, we don't have a player to give credit to, that's fine. Script will not error
+						entity killCreditAttacker = null // If the attacker disconnected, we don't have a player to give credit to, that's fine. Script will not error
 						if ( IsValid( target.e.syncedMeleeAttacker ) )
 							killCreditAttacker = target.e.syncedMeleeAttacker
-						//printt( "Killing off target "  + target + " because he already reached blackout part of execution!" )
+						// printt( "Killing off target "  + target + " because he already reached blackout part of execution!" )
 
 						int damageAmount = target.GetMaxHealth() + 1
-						target.TakeDamage( damageAmount, killCreditAttacker, killCreditAttacker, { forceKill = true, damageType = DMG_MELEE_EXECUTION, damageSourceId = eDamageSourceId.human_execution } )
-						//markedForExecutionDeath will be cleared in MarkForDeath() which sets it in the first place
+						target.TakeDamage(
+							damageAmount,
+							killCreditAttacker,
+							killCreditAttacker,
+							{ forceKill = true, damageType = DMG_MELEE_EXECUTION, damageSourceId = eDamageSourceId.human_execution }
+						)
+						// markedForExecutionDeath will be cleared in MarkForDeath() which sets it in the first place
 					}
 
 					if ( target.IsPlayer() )
@@ -354,7 +354,7 @@ void function MeleeThread_PilotVsEnemy_Target( SyncedMelee action, entity attack
 	targetSequence.blendTime = 0.25
 	targetSequence.attachment = "ref"
 	targetSequence.thirdPersonAnim = action.targetAnimation3p
-	targetSequence.thirdPersonCameraAttachments = [action.thirdPersonCameraAttachment]
+	targetSequence.thirdPersonCameraAttachments = [ action.thirdPersonCameraAttachment ]
 	targetSequence.thirdPersonCameraVisibilityChecks = true
 
 	if ( isAttackerRef )
@@ -371,7 +371,6 @@ void function MeleeThread_PilotVsEnemy_Target( SyncedMelee action, entity attack
 		targetSequence.playerPushable = true
 		targetSequence.enablePlanting = true
 	}
-
 
 	if ( target.IsPlayer() )
 	{
@@ -400,22 +399,22 @@ void function MeleeThread_PilotVsEnemy_Target( SyncedMelee action, entity attack
 }
 
 #if MP
-void function IncrementStatForPilotExecutionWhileCloaked( entity attacker, entity target, PilotVsEnemyStruct dataStruct )
-{
-	if ( !IsAlive( attacker ) )
-		return
+	void function IncrementStatForPilotExecutionWhileCloaked( entity attacker, entity target, PilotVsEnemyStruct dataStruct )
+	{
+		if ( !IsAlive( attacker ) )
+			return
 
-	if ( IsAlive( target ) )
-		return
+		if ( IsAlive( target ) )
+			return
 
-	if ( !target.IsPlayer() )
-		return
+		if ( !target.IsPlayer() )
+			return
 
-	if ( !dataStruct.wasCloaked )
-		return
+		if ( !dataStruct.wasCloaked )
+			return
 
-	IncrementPlayerDidPilotExecutionWhileCloaked( attacker ) //Kinda clumsy we have to do it here instead of where all the other kill stats are incremented. Mainly because we turn cloak off at the start of execution so you can't do it where all the other kill stats are incremented
-}
+		IncrementPlayerDidPilotExecutionWhileCloaked( attacker ) // Kinda clumsy we have to do it here instead of where all the other kill stats are incremented. Mainly because we turn cloak off at the start of execution so you can't do it where all the other kill stats are incremented
+	}
 #endif
 
 void function TargetClearedExecuted( entity target )
@@ -430,7 +429,7 @@ void function TargetClearedExecuted( entity target )
 
 void function TargetSetExecutedBy( entity target, entity attacker )
 {
-	//Break out of context actions like hacking control panel etc
+	// Break out of context actions like hacking control panel etc
 	if ( target.ContextAction_IsActive() )
 		target.Anim_Stop()
 
@@ -472,7 +471,7 @@ function AttachPlayerModelForDuration( var player, asset modelName, var tag, var
 
 	Assert( IsValid( tag ), "No tag specified for player" )
 
-	entity viewModel = player.GetFirstPersonProxy() //JFS: Defensive fix for player not having view models sometimes
+	entity viewModel = player.GetFirstPersonProxy() // JFS: Defensive fix for player not having view models sometimes
 	if ( !IsValid( viewModel ) )
 		return
 
@@ -499,26 +498,25 @@ void function MarkForDeath( entity target )
 {
 	if ( target.IsNPC() )
 	{
-		//printt("Killing marked for death npc " + target )
-		//Just kill off NPC now, otherwise it will play pain animations on death
+		// printt("Killing marked for death npc " + target )
+		// Just kill off NPC now, otherwise it will play pain animations on death
 		CodeCallback_OnMeleeKilled( target )
 		return
 	}
 
-	//printt("marking player " + target + " for death")
-	target.e.markedForExecutionDeath = true //This will kill off the player even if the execution animation is interruped from this point forward
+	// printt("marking player " + target + " for death")
+	target.e.markedForExecutionDeath = true // This will kill off the player even if the execution animation is interruped from this point forward
 
 	target.EndSignal( "OnDeath" )
 
 	OnThreadEnd(
-	function() : ( target )
+		function() : ( target )
 		{
 			target.e.markedForExecutionDeath = false
 		}
 	)
 
 	WaitForever()
-
 }
 
 void function PhaseGib( entity target )
@@ -543,9 +541,13 @@ void function PhaseGib( entity target )
 	}
 
 	int damageAmount = target.GetMaxHealth() + 1
-	target.TakeDamage( damageAmount , attacker, attacker, { forceKill = true, damageType = DMG_MELEE_EXECUTION, damageSourceId = eDamageSourceId.human_execution, scriptType = DF_NO_INDICATOR | DF_GIB } )
+	target.TakeDamage(
+		damageAmount,
+		attacker,
+		attacker,
+		{ forceKill = true, damageType = DMG_MELEE_EXECUTION, damageSourceId = eDamageSourceId.human_execution, scriptType = DF_NO_INDICATOR | DF_GIB }
+	)
 }
-
 
 entity function CreateSyncedMeleeRef( entity attacker, entity target, SyncedMelee action )
 {
@@ -568,7 +570,7 @@ void function ApplyGruntExecutionDamage( entity ref, entity attacker, entity tar
 	attacker.EndSignal( "OnDeath" )
 	target.EndSignal( "OnDeath" )
 
-	for ( ;; )
+	for ( ; ; )
 	{
 		table results = attacker.WaitSignal( "NpcDealsExecutionDamage" )
 		float damage
@@ -583,6 +585,6 @@ void function ApplyGruntExecutionDamage( entity ref, entity attacker, entity tar
 				break
 		}
 
-		target.TakeDamage( damage, attacker, attacker, { damageSourceId=eDamageSourceId.human_execution, scriptType = DF_RAGDOLL } )
+		target.TakeDamage( damage, attacker, attacker, { damageSourceId = eDamageSourceId.human_execution, scriptType = DF_RAGDOLL } )
 	}
 }

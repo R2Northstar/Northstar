@@ -9,7 +9,7 @@ global function AddOnTetherCallback
 struct TetherData
 {
 	entity owner
-	entity[2] endpointEnts
+	entity[ 2 ] endpointEnts
 	array<entity> tetherEnts = []
 	entity anchor
 	entity endEntForPlayer
@@ -18,16 +18,15 @@ struct TetherData
 	int codeTetherID
 }
 
-
 struct
 {
 	array<TetherData> activeTitanTethers = []
-	array< void functionref( entity, entity ) > onTetherCallbacks = []
+	array<void functionref( entity, entity )> onTetherCallbacks = []
 } file
 
 void function TitanTether_Init()
 {
-	PrecacheImpactEffectTable( "exp_tether_trap" ) //Needs to match damagedef_fd_tether_trap
+	PrecacheImpactEffectTable( "exp_tether_trap" ) // Needs to match damagedef_fd_tether_trap
 }
 
 void function AddOnTetherCallback( void functionref( entity, entity ) callback )
@@ -37,7 +36,7 @@ void function AddOnTetherCallback( void functionref( entity, entity ) callback )
 
 void function AddTitanTether( entity owner, entity startEnt, entity endEnt, array<entity> tetherEnts, entity anchor, entity tetherEndEntForPlayer, entity tetherEndEntForOthers, bool isExplosiveTether )
 {
-	//Run callbacks for tether trap activation.
+	// Run callbacks for tether trap activation.
 	foreach ( callback in file.onTetherCallbacks )
 	{
 		callback( owner, endEnt )
@@ -49,22 +48,22 @@ void function AddTitanTether( entity owner, entity startEnt, entity endEnt, arra
 	tetherData.teamNum = owner.GetTeam()
 
 	Assert( !startEnt.IsTitan() )
-	Assert( endEnt.IsTitan()|| IsSuperSpectre( endEnt ) )
+	Assert( endEnt.IsTitan() || IsSuperSpectre( endEnt ) )
 
 	if ( endEnt.IsTitan() || IsSuperSpectre( endEnt ) )
 	{
 		tetherData.codeTetherID = endEnt.AddTether( startEnt.GetOrigin() )
 		if ( owner.IsPlayer() )
-			EmitSoundOnEntityExceptToPlayer( startEnt, owner, "Wpn_TetherTrap_PopOpen_3p" )//Spring Sound
+			EmitSoundOnEntityExceptToPlayer( startEnt, owner, "Wpn_TetherTrap_PopOpen_3p" ) // Spring Sound
 		else
-			EmitSoundOnEntity( startEnt, "Wpn_TetherTrap_PopOpen_3p" )//Spring Sound
+			EmitSoundOnEntity( startEnt, "Wpn_TetherTrap_PopOpen_3p" ) // Spring Sound
 
 		if ( endEnt.IsTitan() )
 			endEnt = endEnt.GetTitanSoul()
 	}
 
-	tetherData.endpointEnts[0] = startEnt
-	tetherData.endpointEnts[1] = endEnt
+	tetherData.endpointEnts[ 0 ] = startEnt
+	tetherData.endpointEnts[ 1 ] = endEnt
 
 	tetherData.tetherEnts = tetherEnts
 
@@ -84,17 +83,17 @@ void function TetherCleanup( entity owner, entity startEnt, entity endEnt, Tethe
 	endEnt.EndSignal( "OnSyncedMelee" )
 
 	int tetherID = tetherData.codeTetherID
-//	int statusEffectId = StatusEffect_AddEndless( endEnt, eStatusEffect.tethered, 1.0 )
+	// 	int statusEffectId = StatusEffect_AddEndless( endEnt, eStatusEffect.tethered, 1.0 )
 	int statusEffectId = StatusEffect_AddTimed( endEnt, eStatusEffect.tethered, 1.0, 5.0, 0.0 )
 
 	vector anchorOrigin = tetherData.anchor.GetOrigin()
 
 	OnThreadEnd(
-	function() : ( owner, anchorOrigin, endEnt, tetherID, statusEffectId, isExplosiveTether )
+		function() : ( owner, anchorOrigin, endEnt, tetherID, statusEffectId, isExplosiveTether )
 		{
 			if ( isExplosiveTether && IsValid( owner ) && IsValid( endEnt ) )
 			{
-				Explosion_DamageDefSimple( damagedef_fd_tether_trap, anchorOrigin,owner, owner, anchorOrigin + < 0, 0, 32 > )
+				Explosion_DamageDefSimple( damagedef_fd_tether_trap, anchorOrigin, owner, owner, anchorOrigin + < 0, 0, 32 > )
 			}
 
 			foreach ( index, tetherData in file.activeTitanTethers )
@@ -132,10 +131,9 @@ void function TetherFlyIn( entity flyFrom, entity flyTo, entity rope, entity own
 	}
 }
 
-
 void function TitanTether_Remove( TetherData tetherData )
 {
-	entity endEnt = tetherData.endpointEnts[1]
+	entity endEnt = tetherData.endpointEnts[ 1 ]
 	if ( IsValid( endEnt ) )
 	{
 		if ( IsSoul( endEnt ) )
@@ -145,7 +143,7 @@ void function TitanTether_Remove( TetherData tetherData )
 			endEnt.RemoveTether( tetherData.codeTetherID )
 	}
 
-	vector angvel = < RandomFloatRange( 50, 1000 ), RandomFloatRange( -200, 200 ), RandomFloatRange( -200, 200 )>
+	vector angvel = < RandomFloatRange( 50, 1000 ), RandomFloatRange( -200, 200 ), RandomFloatRange( -200, 200 ) >
 
 	vector velForPlayer
 	vector velForOthers
@@ -181,10 +179,10 @@ void function TitanTether_Remove( TetherData tetherData )
 			pullDirForOthers = Normalize( tetherData.anchor.GetOrigin() - tetherData.endEntForOthers.GetOrigin() )
 	}
 
-	velForPlayer += < RandomFloatRange(-100,100), RandomFloatRange(-100,100), 0> + pullDirForPlayer * 100
+	velForPlayer += < RandomFloatRange( -100, 100 ), RandomFloatRange( -100, 100 ), 0 > + pullDirForPlayer * 100
 	float pullDirForOthersZ = pullDirForOthers.z
 	pullDirForOthers.z = 0
-	pullDirForOthers += < RandomFloatRange(-1,1), RandomFloatRange(-1,1), 0>
+	pullDirForOthers += < RandomFloatRange( -1, 1 ), RandomFloatRange( -1, 1 ), 0 >
 	velForOthers = Normalize( pullDirForOthers )
 	velForOthers.x *= RandomFloatRange( 100, 200 )
 	velForOthers.y *= RandomFloatRange( 100, 200 )
@@ -218,17 +216,17 @@ void function TitanTether_Remove( TetherData tetherData )
 	{
 		tetherData.endEntForPlayer.ClearParent()
 		tetherData.endEntForPlayer.NonPhysicsRotate( rotaxis, rotspeed )
-		tetherData.endEntForPlayer.NonPhysicsMoveWithGravity( velForPlayer, < 0, 0, -750> )
+		tetherData.endEntForPlayer.NonPhysicsMoveWithGravity( velForPlayer, < 0, 0, -750 > )
 		tetherData.endEntForPlayer.RenderWithViewModels( false )
-		tetherData.endEntForPlayer.Dissolve( ENTITY_DISSOLVE_NORMAL, <0,0,0>, 100 )
+		tetherData.endEntForPlayer.Dissolve( ENTITY_DISSOLVE_NORMAL, < 0, 0, 0 >, 100 )
 	}
 
 	if ( endEntForOthersIsValid )
 	{
 		tetherData.endEntForOthers.ClearParent()
 		tetherData.endEntForOthers.NonPhysicsRotate( rotaxis, rotspeed )
-		tetherData.endEntForOthers.NonPhysicsMoveWithGravity( velForOthers, < 0, 0, -750> )
-		tetherData.endEntForOthers.Dissolve( ENTITY_DISSOLVE_NORMAL, <0,0,0>, 100 )
+		tetherData.endEntForOthers.NonPhysicsMoveWithGravity( velForOthers, < 0, 0, -750 > )
+		tetherData.endEntForOthers.Dissolve( ENTITY_DISSOLVE_NORMAL, < 0, 0, 0 >, 100 )
 	}
 
 	wait 0.5
@@ -249,10 +247,9 @@ void function TitanTether_Remove( TetherData tetherData )
 	}
 }
 
-
 int function PROTO_GetActiveTethers( entity owner )
 {
-//	_PruneActiveTitanTethers()
+	// 	_PruneActiveTitanTethers()
 
 	int activeTethers = 0
 	foreach ( TetherData tetherData in file.activeTitanTethers )
@@ -263,7 +260,6 @@ int function PROTO_GetActiveTethers( entity owner )
 
 	return activeTethers
 }
-
 
 bool removingTether
 
@@ -303,5 +299,5 @@ void function CodeCallback_OnTetherDamageMilestone( entity guy, int tetherID, in
 	TetherData tetherData = GetTetherDataForCodeID( tetherID )
 
 	vector ang = tetherData.endEntForPlayer.GetLocalAngles()
-	tetherData.endEntForPlayer.SetLocalAngles( < healthFrac * 45, ang.y, ang.z> )
+	tetherData.endEntForPlayer.SetLocalAngles( < healthFrac * 45, ang.y, ang.z > )
 }

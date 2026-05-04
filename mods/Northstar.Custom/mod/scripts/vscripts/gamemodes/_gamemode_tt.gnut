@@ -1,6 +1,7 @@
 global function GamemodeTT_Init
 
-struct {
+struct
+{
 	entity lastPlayerDropped
 } file
 
@@ -10,7 +11,7 @@ void function GamemodeTT_Init()
 	Riff_ForceTitanAvailability( eTitanAvailability.Never )
 
 	AddCallback_GameStateEnter( eGameState.Playing, OnEnterPlaying )
-	
+
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	AddDeathCallback( "npc_titan", OnTitanKilled )
 }
@@ -21,17 +22,19 @@ void function OnEnterPlaying()
 }
 
 void function DropRandomTitan()
-{	
+{
 	array<entity> players = GetPlayerArray()
-	
+
 	if ( players.len() == 1 )
 		file.lastPlayerDropped = null // don't wanna loop forever if only 1 player
-		
+
 	entity titanPlayer
-	do {
+	do
+	{
 		titanPlayer = players[ RandomInt( players.len() ) ]
-	} while ( titanPlayer == file.lastPlayerDropped )
-		
+	}
+	while ( titanPlayer == file.lastPlayerDropped )
+
 	DropTitanForPlayer( titanPlayer, 5.0 )
 }
 

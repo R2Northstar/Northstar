@@ -20,7 +20,7 @@ void function GamemodeGG_Init()
 	AddCallback_GGEarnMeterFull( OnGGEarnMeterFilled )
 }
 
-void function OnPlayerDisconnected(entity player)
+void function OnPlayerDisconnected( entity player )
 {
 	// resetting a player's score when they leave prevents a new player to join the leaver's team and having the previous player's points
 	AddTeamScore( player.GetTeam(), -GameRules_GetTeamScore( player.GetTeam() ) )
@@ -78,15 +78,16 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	}
 
 	table<int, bool> alreadyAssisted
-	foreach( DamageHistoryStruct attackerInfo in victim.e.recentDamageHistory )
+	foreach ( DamageHistoryStruct attackerInfo in victim.e.recentDamageHistory )
 	{
 		if ( !IsValid( attackerInfo.attacker ) || !attackerInfo.attacker.IsPlayer() || attackerInfo.attacker == victim )
 			continue
 
 		if ( attackerInfo.attacker != attacker && !( attackerInfo.attacker.GetEncodedEHandle() in alreadyAssisted ) )
 		{
-			if ( attackerInfo.damageSourceId != eDamageSourceId.melee_pilot_emptyhanded ) {
-				alreadyAssisted[attackerInfo.attacker.GetEncodedEHandle()] <- true
+			if ( attackerInfo.damageSourceId != eDamageSourceId.melee_pilot_emptyhanded )
+			{
+				alreadyAssisted[ attackerInfo.attacker.GetEncodedEHandle() ] <- true
 
 				Reward( attackerInfo.attacker, victim, "PilotAssist", GetCurrentPlaylistVarFloat( "gg_assist_reward", 0.0 ) )
 			}
@@ -96,9 +97,18 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 
 void function Reward( entity player, entity victim, string scoreEvent, float percentageReward )
 {
-	percentageReward = clamp(percentageReward, 0.0, 1.0)
+	percentageReward = clamp( percentageReward, 0.0, 1.0 )
 	Sv_GGEarnMeter_AddPercentage( player, percentageReward )
-	Remote_CallFunction_NonReplay( player, "ServerCallback_ScoreEvent", GetScoreEvent(scoreEvent).eventId, 0, eEventDisplayType.MEDAL, victim.GetEncodedEHandle(), 0.0, percentageReward)
+	Remote_CallFunction_NonReplay(
+		player,
+		"ServerCallback_ScoreEvent",
+		GetScoreEvent( scoreEvent ).eventId,
+		0,
+		eEventDisplayType.MEDAL,
+		victim.GetEncodedEHandle(),
+		0.0,
+		percentageReward
+	)
 }
 
 void function DeRank( entity player )

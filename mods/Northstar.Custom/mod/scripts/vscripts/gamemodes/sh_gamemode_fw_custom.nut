@@ -46,14 +46,14 @@ void function CreateGamemodeFW()
 {
 	// we have to manually add the client/shared scripts to scripts.rson atm so we need to prevent compile errors when they aren't included
 	// best way to do this is to just ignore this whole block for now and wait until we don't have to add them manually
-	
+
 	GameMode_Create( FORT_WAR )
 	GameMode_SetName( FORT_WAR, "#GAMEMODE_fw" )
 	GameMode_SetDesc( FORT_WAR, "#PL_fw_desc" )
 
 	// fw lines are unfortunately not registered to faction dialogue, maybe do it in gamemode script manually, current using it's modeName
-	GameMode_SetGameModeAnnouncement( FORT_WAR, "fortwar_modeName" ) 
-	
+	GameMode_SetGameModeAnnouncement( FORT_WAR, "fortwar_modeName" )
+
 	// waiting to be synced with client
 	GameMode_AddScoreboardColumnData( FORT_WAR, "#SCOREBOARD_KILLS", PGS_KILLS, 2 )
 	GameMode_AddScoreboardColumnData( FORT_WAR, "#SCOREBOARD_SUPPORT_SCORE", PGS_DEFENSE_SCORE, 4 )
@@ -78,9 +78,9 @@ void function FWOnRegisteringNetworkVars()
 {
 	if ( GAMETYPE != FORT_WAR )
 		return
-	
+
 	Remote_RegisterFunction( "ServerCallback_FW_NotifyNeedsEnterEnemyArea" )
-	
+
 	RegisterNetworkedVariable( "turretSite1", SNDC_GLOBAL, SNVT_ENTITY )
 	RegisterNetworkedVariable( "turretSite2", SNDC_GLOBAL, SNVT_ENTITY )
 	RegisterNetworkedVariable( "turretSite3", SNDC_GLOBAL, SNVT_ENTITY )
@@ -90,7 +90,7 @@ void function FWOnRegisteringNetworkVars()
 	RegisterNetworkedVariable( "turretSite7", SNDC_GLOBAL, SNVT_ENTITY )
 	RegisterNetworkedVariable( "turretSite8", SNDC_GLOBAL, SNVT_ENTITY )
 	RegisterNetworkedVariable( "turretSite9", SNDC_GLOBAL, SNVT_ENTITY )
-	
+
 	RegisterNetworkedVariable( "turretStateFlags1", SNDC_GLOBAL, SNVT_INT )
 	RegisterNetworkedVariable( "turretStateFlags2", SNDC_GLOBAL, SNVT_INT )
 	RegisterNetworkedVariable( "turretStateFlags3", SNDC_GLOBAL, SNVT_INT )
@@ -100,7 +100,7 @@ void function FWOnRegisteringNetworkVars()
 	RegisterNetworkedVariable( "turretStateFlags7", SNDC_GLOBAL, SNVT_INT )
 	RegisterNetworkedVariable( "turretStateFlags8", SNDC_GLOBAL, SNVT_INT )
 	RegisterNetworkedVariable( "turretStateFlags9", SNDC_GLOBAL, SNVT_INT )
-	
+
 	RegisterNetworkedVariable( "imcTowerThreatLevel", SNDC_GLOBAL, SNVT_INT )
 	RegisterNetworkedVariable( "milTowerThreatLevel", SNDC_GLOBAL, SNVT_INT )
 	RegisterNetworkedVariable( "fwCampAlertA", SNDC_GLOBAL, SNVT_INT )
@@ -109,8 +109,8 @@ void function FWOnRegisteringNetworkVars()
 	RegisterNetworkedVariable( "fwCampStressB", SNDC_GLOBAL, SNVT_FLOAT_RANGE, 0.0, 0.0, 1.0 )
 	RegisterNetworkedVariable( "fwCampAlertC", SNDC_GLOBAL, SNVT_INT )
 	RegisterNetworkedVariable( "fwCampStressC", SNDC_GLOBAL, SNVT_FLOAT_RANGE, 0.0, 0.0, 1.0 )
-	
-	#if CLIENT                  
+
+	#if CLIENT
 		CLFortWar_RegisterNetworkFunctions()
 	#endif
 }

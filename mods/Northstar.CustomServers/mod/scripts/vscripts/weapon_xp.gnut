@@ -7,28 +7,43 @@ void function AddWeaponXP( entity player, int amount )
 	string weaponClassname = activeWeapon.GetWeaponClassName()
 	int oldLevel = WeaponGetLevel( player, weaponClassname )
 	int WeaponXPMatch = player.GetPersistentVarAsInt( "xp_match[" + XP_TYPE.WEAPON_LEVELED + "]" )
-	
+
 	// increment xp
-	player.SetPersistentVar( GetItemPersistenceStruct( weaponClassname ) + ".weaponXP", min( WeaponGetXP( player, weaponClassname ) + amount, WeaponGetMaxXP( weaponClassname ) ) )
-	Remote_CallFunction_NonReplay( player, "ServerCallback_WeaponXPAdded", shWeaponXP.weaponClassNames.find( weaponClassname ), WeaponGetXP( player, weaponClassname ), amount )
-	
+	player.SetPersistentVar(
+		GetItemPersistenceStruct( weaponClassname ) + ".weaponXP",
+		min( WeaponGetXP( player, weaponClassname ) + amount, WeaponGetMaxXP( weaponClassname ) )
+	)
+	Remote_CallFunction_NonReplay(
+		player,
+		"ServerCallback_WeaponXPAdded",
+		shWeaponXP.weaponClassNames.find( weaponClassname ),
+		WeaponGetXP( player, weaponClassname ),
+		amount
+	)
+
 	// level up notif
 	if ( WeaponGetLevel( player, weaponClassname ) != oldLevel )
 	{
-		Remote_CallFunction_NonReplay( player, "ServerCallback_WeaponLeveledUp", shWeaponXP.weaponClassNames.find( weaponClassname ), WeaponGetGen( player, weaponClassname ), WeaponGetLevel( player, weaponClassname ) )
+		Remote_CallFunction_NonReplay(
+			player,
+			"ServerCallback_WeaponLeveledUp",
+			shWeaponXP.weaponClassNames.find( weaponClassname ),
+			WeaponGetGen( player, weaponClassname ),
+			WeaponGetLevel( player, weaponClassname )
+		)
 		AddPlayerScore( player, "WeaponLevelUp" )
 		IncrementPlayerChallengeWeaponLeveledUp( player )
 		player.SetPersistentVar( "xp_match[" + XP_TYPE.WEAPON_LEVELED + "]", WeaponXPMatch + 1 )
-		
-		if( ProgressionEnabledForPlayer( player ) )
+
+		if ( ProgressionEnabledForPlayer( player ) )
 			AwardRandomItemsForWeaponLevels( player, weaponClassname, oldLevel, WeaponGetLevel( player, weaponClassname ) )
 	}
 
-	// proscreen 
+	// proscreen
 	if ( player == activeWeapon.GetProScreenOwner() )
 	{
 		player.SetPersistentVar( GetItemPersistenceStruct( weaponClassname ) + ".proScreenKills", WeaponGetProScreenKills( player, weaponClassname ) + amount )
-		
+
 		// not currently used rn, but adding a script var so scripts can handle proscreen values manually if wanted
 		if ( !( "manualProscreenControl" in activeWeapon.s && activeWeapon.s.manualProscreenControl ) )
 			activeWeapon.SetProScreenIntValForIndex( 0, WeaponGetProScreenKills( player, weaponClassname ) )

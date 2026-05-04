@@ -21,7 +21,7 @@ struct
 	array lethalPilotVolumes
 	array safePilotVolumes
 	bool volumesDebug = false
-	table< string, float > lethalFogHeights
+	table<string, float> lethalFogHeights
 } file
 
 function RiffFloorIsLavaShared_Init()
@@ -30,37 +30,37 @@ function RiffFloorIsLavaShared_Init()
 	{
 		case "mp_lagoon":
 			AddLethalTitanVolume( Vector( -45.656845, 3555.449463, 40.422455 ), Vector( 1209.944092, 5599.152832, 234.813217 ) )
-			AddLethalTitanVolume( Vector( -5232.395020, 205.406250, 0.031250 ), Vector( -777.285400, 4075.119385, 300.634771 ) )
-			AddLethalTitanVolume( Vector( -4686.448730, 4190.655273, 20.642021 ), Vector( -41.171387, 9072.019043, 200.697632 ) )
+			AddLethalTitanVolume( Vector( -5232.39502, 205.40625, 0.03125 ), Vector( -777.2854, 4075.119385, 300.634771 ) )
+			AddLethalTitanVolume( Vector( -4686.44873, 4190.655273, 20.642021 ), Vector( -41.171387, 9072.019043, 200.697632 ) )
 			AddLethalTitanVolume( Vector( -7586.861328, 4072.843994, 0.031254 ), Vector( -7012.854004, 4614.723145, 302.714966 ) )
 			break
 
 		case "mp_nexus":
 			AddLethalTitanVolume( Vector( 1567.173523, -27.374023, 209.422455 ), Vector( 2516.944092, 2585.152832, 500.813217 ) )
-			AddLethalTitanVolume( Vector( -2825.766113, 5056.203125, 243.706253 ), Vector( -2255.893555, 5688.334961, 400.251160 ) )
-			AddLethalTitanVolume( Vector( -5717.068359, -349.599976, 189.669785 ), Vector( -4960.125000, 758.196350, 400.268097 ) )
-			AddLethalTitanVolume( Vector( -3292.942139, 1713.916626, 233.749817 ), Vector( -2322.137695, 3091.497070, 477.462799 ) )
+			AddLethalTitanVolume( Vector( -2825.766113, 5056.203125, 243.706253 ), Vector( -2255.893555, 5688.334961, 400.25116 ) )
+			AddLethalTitanVolume( Vector( -5717.068359, -349.599976, 189.669785 ), Vector( -4960.125, 758.19635, 400.268097 ) )
+			AddLethalTitanVolume( Vector( -3292.942139, 1713.916626, 233.749817 ), Vector( -2322.137695, 3091.49707, 477.462799 ) )
 			AddLethalTitanVolume( Vector( -878.712769, -5878.528809, 71.145332 ), Vector( 338.741943, -5014.183594, 443.146179 ) )
-			AddLethalTitanVolume( Vector( -6930.957031, -1277.388550, 107.619537 ), Vector( -6574.779297, -779.338013, 685.485901 ) )
+			AddLethalTitanVolume( Vector( -6930.957031, -1277.38855, 107.619537 ), Vector( -6574.779297, -779.338013, 685.485901 ) )
 			break
 
 		case "mp_outpost_207":
-			AddSafePilotVolume( Vector( 2359.524658, -631.065918, -256.714142 ), Vector( 2623.051270, -182.453323, -220.125641 ) )
+			AddSafePilotVolume( Vector( 2359.524658, -631.065918, -256.714142 ), Vector( 2623.05127, -182.453323, -220.125641 ) )
 
-			AddLethalTitanVolume( Vector( -100.349350, 2218.763916, -330.968750 ), Vector( 2561.511230, 4030.028320, -133.065369 ) )
-			AddLethalTitanVolume( Vector( -452.031647, 282.244629, -255.968750 ), Vector( 2241.971069, 1594.146851, -100.212967 ) )
+			AddLethalTitanVolume( Vector( -100.34935, 2218.763916, -330.96875 ), Vector( 2561.51123, 4030.02832, -133.065369 ) )
+			AddLethalTitanVolume( Vector( -452.031647, 282.244629, -255.96875 ), Vector( 2241.971069, 1594.146851, -100.212967 ) )
 			break
 
 		case "mp_training_ground":
-			AddSafePilotVolume( Vector( -2618.053223, -3435.505615, 40.215054 ), Vector( -2309.167236, -3321.788330, 146.218491 ) )
-			AddSafePilotVolume( Vector( -3187.767090, -2886.333496, 45.746925 ), Vector( -2865.753174, -2681.679443, 109.089279 ) )
+			AddSafePilotVolume( Vector( -2618.053223, -3435.505615, 40.215054 ), Vector( -2309.167236, -3321.78833, 146.218491 ) )
+			AddSafePilotVolume( Vector( -3187.76709, -2886.333496, 45.746925 ), Vector( -2865.753174, -2681.679443, 109.089279 ) )
 			AddSafePilotVolume( Vector( -3717.815674, -2350.831543, 47.694588 ), Vector( -3431.980957, -2145.194092, 120.640717 ) )
 
 			AddLethalTitanVolume( Vector( -3439.702179, -2227.359741, -8.036909 ), Vector( 2185.765076, 2384.459412, 225.199013 ) )
-			AddLethalTitanVolume( Vector( -3200.747681, -4456.148926, 0.0 ), Vector( -1261.621826, -3000.667480, 160.689011 ) )
-			AddLethalTitanVolume( Vector( 1261.621826, 3000.667480, 0.0 ), Vector( 2700.747681, 4456.148926, 160.689011 ) )
-			AddLethalTitanVolume( Vector( -3291.510986, 3483.724609, 4.031250 ), Vector( -2018.871826, 4463.995850, 122.675621 ) )
-			AddLethalTitanVolume( Vector( 2018.871826, -3638.995850, 4.031250 ), Vector( 2241.510986, -3483.724609, 122.675621 ) )
+			AddLethalTitanVolume( Vector( -3200.747681, -4456.148926, 0.0 ), Vector( -1261.621826, -3000.66748, 160.689011 ) )
+			AddLethalTitanVolume( Vector( 1261.621826, 3000.66748, 0.0 ), Vector( 2700.747681, 4456.148926, 160.689011 ) )
+			AddLethalTitanVolume( Vector( -3291.510986, 3483.724609, 4.03125 ), Vector( -2018.871826, 4463.99585, 122.675621 ) )
+			AddLethalTitanVolume( Vector( 2018.871826, -3638.99585, 4.03125 ), Vector( 2241.510986, -3483.724609, 122.675621 ) )
 			AddLethalTitanVolume( Vector( -2798.816528, -2302.519897, -30.285933 ), Vector( -1561.589355, -791.616699, 300.917297 ) )
 			AddLethalTitanVolume( Vector( 3809.276123, 1639.001587, 11.272846 ), Vector( 4056.847412, 1862.587036, 100.205643 ) )
 			AddLethalTitanVolume( Vector( -4189.979492, -3298.505127, -5.597572 ), Vector( -3398.622803, -560.027344, 147.054291 ) )
@@ -93,7 +93,7 @@ float function GetFogHeight()
 	file.lethalFogHeights[ "mp_sandtrap" ] <- 64.0
 
 	// these don't work as well
-	file.lethalFogHeights[ "mp_swampland" ] <- 350.0	// mfd
+	file.lethalFogHeights[ "mp_swampland" ] <- 350.0 // mfd
 	file.lethalFogHeights[ "mp_backwater" ] <- 320.0 // mfd
 	file.lethalFogHeights[ "mp_airbase" ] <- 450.0
 	file.lethalFogHeights[ "mp_boneyard" ] <- 64.0
@@ -107,7 +107,7 @@ float function GetFogHeight()
 	file.lethalFogHeights[ "mp_switchback" ] <- 840.0
 
 	file.lethalFogHeights[ "mp_chin_rodeo_express" ] <- 1580.0
-	
+
 	// custom: titanfall 2 maps
 	// TODO: really need a modular system here
 	file.lethalFogHeights[ "mp_colony02" ] <- 270.0 // map changed name from tf1 => tf2
@@ -122,7 +122,7 @@ float function GetFogHeight()
 	file.lethalFogHeights[ "mp_crashsite3" ] <- 800.0 // crashsite is just as awful for this as it is for anything else
 	file.lethalFogHeights[ "mp_complex3" ] <- 630.0
 	file.lethalFogHeights[ "mp_relic02" ] <- 250.0 // not great, tf1's would honestly be worse though imo
-	
+
 	// lf maps: overall a bit hit or miss, many likely have spawn issues
 	file.lethalFogHeights[ "mp_lf_stacks" ] <- 105.0 // nonworking fogcontroller so fog is invisible | 105
 	file.lethalFogHeights[ "mp_lf_deck" ] <- 200.0 // nonworking fogcontroller so fog is invisible | 200

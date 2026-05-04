@@ -4,12 +4,12 @@ global function EmpTitans_Init
 
 global function EMPTitanThinkConstant
 
-const DAMAGE_AGAINST_TITANS 			= 150
-const DAMAGE_AGAINST_PILOTS 			= 40
+const DAMAGE_AGAINST_TITANS = 150
+const DAMAGE_AGAINST_PILOTS = 40
 
 const EMP_DAMAGE_TICK_RATE = 0.3
-const FX_EMP_FIELD						= $"P_xo_emp_field"
-const FX_EMP_FIELD_1P					= $"P_body_emp_1P"
+const FX_EMP_FIELD = $"P_xo_emp_field"
+const FX_EMP_FIELD_1P = $"P_body_emp_1P"
 
 function EmpTitans_Init()
 {
@@ -27,13 +27,13 @@ void function EMPTitanThinkConstant( entity titan )
 	titan.EndSignal( "Doomed" )
 	titan.EndSignal( "StopEMPField" )
 
-	//We don't want pilots accidently rodeoing an electrified titan.
+	// We don't want pilots accidently rodeoing an electrified titan.
 	DisableTitanRodeo( titan )
 
-	//Used to identify this titan as an arc titan
+	// Used to identify this titan as an arc titan
 	SetTargetName( titan, "empTitan" )
 
-	//Wait for titan to stand up and exit bubble shield before deploying arc ability.
+	// Wait for titan to stand up and exit bubble shield before deploying arc ability.
 	WaitTillHotDropComplete( titan )
 
 	if ( HasSoul( titan ) )
@@ -50,7 +50,7 @@ void function EMPTitanThinkConstant( entity titan )
 
 	array<entity> particles = []
 
-	//emp field fx
+	// emp field fx
 	vector origin = titan.GetAttachmentOrigin( attachID )
 	if ( titan.IsPlayer() )
 	{
@@ -69,7 +69,7 @@ void function EMPTitanThinkConstant( entity titan )
 	entity particleSystem = CreateEntity( "info_particle_system" )
 	particleSystem.kv.start_active = 1
 	if ( titan.IsPlayer() )
-		particleSystem.kv.VisibilityFlags = (ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY)	// everyone but owner
+		particleSystem.kv.VisibilityFlags = ( ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY ) // everyone but owner
 	else
 		particleSystem.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
 	particleSystem.SetValueForEffectNameKey( FX_EMP_FIELD )
@@ -82,12 +82,12 @@ void function EMPTitanThinkConstant( entity titan )
 	titan.SetDangerousAreaRadius( ARC_TITAN_EMP_FIELD_RADIUS )
 
 	OnThreadEnd(
-		function () : ( titan, particles )
+		function() : ( titan, particles )
 		{
 			if ( IsValid( titan ) )
 			{
 				StopSoundOnEntity( titan, "EMP_Titan_Electrical_Field" )
-				EnableTitanRodeo( titan ) //Make the arc titan rodeoable now that it is no longer electrified.
+				EnableTitanRodeo( titan ) // Make the arc titan rodeoable now that it is no longer electrified.
 			}
 
 			foreach ( particleSystem in particles )
@@ -108,19 +108,20 @@ void function EMPTitanThinkConstant( entity titan )
 	{
 		origin = titan.GetAttachmentOrigin( attachID )
 
-   		RadiusDamage(
-   			origin,									// center
-   			titan,									// attacker
-   			titan,									// inflictor
-   			DAMAGE_AGAINST_PILOTS,					// damage
-   			DAMAGE_AGAINST_TITANS,					// damageHeavyArmor
-   			ARC_TITAN_EMP_FIELD_INNER_RADIUS,		// innerRadius
-   			ARC_TITAN_EMP_FIELD_RADIUS,				// outerRadius
-   			SF_ENVEXPLOSION_NO_DAMAGEOWNER,			// flags
-   			0,										// distanceFromAttacker
-   			DAMAGE_AGAINST_PILOTS,					// explosionForce
-   			DF_ELECTRICAL | DF_STOPS_TITAN_REGEN,	// scriptDamageFlags
-   			eDamageSourceId.titanEmpField )			// scriptDamageSourceIdentifier
+		RadiusDamage(
+			origin, // center
+			titan, // attacker
+			titan, // inflictor
+			DAMAGE_AGAINST_PILOTS, // damage
+			DAMAGE_AGAINST_TITANS, // damageHeavyArmor
+			ARC_TITAN_EMP_FIELD_INNER_RADIUS, // innerRadius
+			ARC_TITAN_EMP_FIELD_RADIUS, // outerRadius
+			SF_ENVEXPLOSION_NO_DAMAGEOWNER, // flags
+			0, // distanceFromAttacker
+			DAMAGE_AGAINST_PILOTS, // explosionForce
+			DF_ELECTRICAL | DF_STOPS_TITAN_REGEN, // scriptDamageFlags
+			eDamageSourceId.titanEmpField
+		) // scriptDamageSourceIdentifier
 
 		wait EMP_DAMAGE_TICK_RATE
 	}
@@ -134,7 +135,7 @@ void function EmpField_DamagedEntity( entity target, var damageInfo )
 	entity titan = DamageInfo_GetAttacker( damageInfo )
 
 	if ( !IsValid( titan ) )
-		 return
+		return
 
 	local className = target.GetClassName()
 	if ( className == "rpg_missile" || className == "npc_turret_sentry" || className == "grenade" )
@@ -157,18 +158,18 @@ void function EmpField_DamagedEntity( entity target, var damageInfo )
 				titan.s.electrocutedPlayers.append( target )
 		}
 
-		const ARC_TITAN_SCREEN_EFFECTS 			= 0.085
-		const ARC_TITAN_EMP_DURATION			= 0.35
-		const ARC_TITAN_EMP_FADEOUT_DURATION	= 0.35
+		const ARC_TITAN_SCREEN_EFFECTS = 0.085
+		const ARC_TITAN_EMP_DURATION = 0.35
+		const ARC_TITAN_EMP_FADEOUT_DURATION = 0.35
 
-		local attachID 	= titan.LookupAttachment( "hijack" )
-		local origin 	= titan.GetAttachmentOrigin( attachID )
-		local distSqr 	= DistanceSqr( origin, target.GetOrigin() )
+		local attachID = titan.LookupAttachment( "hijack" )
+		local origin = titan.GetAttachmentOrigin( attachID )
+		local distSqr = DistanceSqr( origin, target.GetOrigin() )
 
-		local minDist 	= ARC_TITAN_EMP_FIELD_INNER_RADIUS_SQR
-		local maxDist 	= ARC_TITAN_EMP_FIELD_RADIUS_SQR
+		local minDist = ARC_TITAN_EMP_FIELD_INNER_RADIUS_SQR
+		local maxDist = ARC_TITAN_EMP_FIELD_RADIUS_SQR
 		local empFxHigh = ARC_TITAN_SCREEN_EFFECTS
-		local empFxLow 	= ( ARC_TITAN_SCREEN_EFFECTS * 0.6 )
+		local empFxLow = ( ARC_TITAN_SCREEN_EFFECTS * 0.6 )
 		float screenEffectAmplitude = GraphCapped( distSqr, minDist, maxDist, empFxHigh, empFxLow )
 
 		StatusEffect_AddTimed( target, eStatusEffect.emp, screenEffectAmplitude, ARC_TITAN_EMP_DURATION, ARC_TITAN_EMP_FADEOUT_DURATION )
@@ -177,5 +178,5 @@ void function EmpField_DamagedEntity( entity target, var damageInfo )
 
 string function GetEMPAttachmentForTitan( entity titan )
 {
-	return  "hijack"
+	return "hijack"
 }

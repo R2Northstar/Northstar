@@ -8,7 +8,7 @@ global function JumpRandomlyForever
 
 global function ClientCodeCallback_PlayerDidDamage
 global function ClientCodeCallback_PlayerSpawned
-//global function ClientCodeCallback_OnHudReloadScheme
+// global function ClientCodeCallback_OnHudReloadScheme
 global function ClientCodeCallback_HUDThink
 global function Player_AddPlayer
 global function Player_AddClient
@@ -16,7 +16,7 @@ global function Player_AddClient
 global function ServerCallback_PlayerConnectedOrDisconnected
 global function ClientCodeCallback_PlayerDisconnected
 global function ServerCallback_PlayerChangedTeams
-//global function ClientCodeCallback_OnModelChanged
+// global function ClientCodeCallback_OnModelChanged
 global function ServerCallback_RodeoerEjectWarning
 global function ServerCallback_PlayScreenFXWarpJump
 global function PlayShieldBreakEffect
@@ -56,17 +56,18 @@ global function ResetAbilityBindings
 global function ServerCallback_ShowDisembarkHint
 
 #if DEV
-global function BloodSprayDecals_Toggle
+	global function BloodSprayDecals_Toggle
 #endif
 
-struct {
+struct
+{
 	var orbitalstrike_tracer = null
 	var law_missile_tracer = null
 	float nextSpawnTime = 0.0
 	var UI_friendlyText
 
 	// Northstar
-	array< void functionref( entity, entity ) > OnCrosshairCurrentTargetChangedCallbacks
+	array<void functionref( entity, entity )> OnCrosshairCurrentTargetChangedCallbacks
 } file
 
 struct BloodDecalParams
@@ -103,7 +104,7 @@ void function ClPlayer_Init()
 	level.clientsLastKiller <- null
 
 	AddCreateCallback( "player", SetupPlayerAnimEvents )
-	Assert ( IsSingleplayer() )
+	Assert( IsSingleplayer() )
 	AddCreateCallback( "player", SpClientPlayerInit )
 	SpSharedInit()
 
@@ -122,12 +123,12 @@ void function ClPlayer_Init()
 	AddCreateCallback( "titan_soul", CreateCallback_TitanSoul )
 
 	file.orbitalstrike_tracer = PrecacheParticleSystem( $"Rocket_Smoke_Large" )
-	//DEBUG Remove when bug is fixed.
+	// DEBUG Remove when bug is fixed.
 	file.law_missile_tracer = PrecacheParticleSystem( $"wpn_orbital_rocket_tracer" )
 
 	level.menuHideGroups <- {}
 
-	//PrecacheParticleSystem( SHIELD_FX )
+	// PrecacheParticleSystem( SHIELD_FX )
 
 	level.spawnAsTitanSelected <- false
 
@@ -184,7 +185,6 @@ void function ClientCodeCallback_PlayerSpawned( entity player )
 	}
 }
 
-
 void function CoreReadyMessage( entity player, bool isQuick = false )
 {
 	if ( !GamePlayingOrSuddenDeath() )
@@ -240,7 +240,7 @@ void function Player_AddClient( entity player )
 
 		player.cv.deathTime <- 0.0
 		player.cv.lastSpawnTime <- 0.0
-		player.cv.deathOrigin <- <0.0, 0.0, 0.0>
+		player.cv.deathOrigin <- < 0.0, 0.0, 0.0 >
 		player.cv.roundSpawnCount <- 0
 
 		thread CinematicIntroScreen()
@@ -257,7 +257,7 @@ void function Player_AddPlayer( entity player )
 
 function Pressed_RequestTitanfall( entity player )
 {
-	//we are not using titan call-ins in SP for this game so lets disable it since it was still playing sounds and doing all the logic.
+	// we are not using titan call-ins in SP for this game so lets disable it since it was still playing sounds and doing all the logic.
 	const DISABLE_FOR_R2 = true
 	if ( DISABLE_FOR_R2 )
 		return
@@ -287,17 +287,21 @@ function Pressed_RequestTitanfall( entity player )
 		}
 
 		#if DEV
-			printt( player.GetEntIndex(), "Requested replacement Titan from eye pos " + player.EyePosition() + " view angles " + player.EyeAngles() + " player origin " + player.GetOrigin() + " map " + GetMapName() )
+			printt(
+				player.GetEntIndex(),
+				"Requested replacement Titan from eye pos " + player.EyePosition() + " view angles " + player.EyeAngles() + " player origin " + player.GetOrigin() + " map "
+					+ GetMapName()
+			)
 		#endif
 
-		player.ClientCommand( "ClientCommand_RequestTitan" ) //Send client command regardless of whether we can call the titan in or not. Server decides
+		player.ClientCommand( "ClientCommand_RequestTitan" ) // Send client command regardless of whether we can call the titan in or not. Server decides
 
 		if ( clGlobal.isAnnouncementActive && clGlobal.activeAnnouncement.messageText == "#HUD_TITAN_READY" )
 		{
 			clGlobal.levelEnt.Signal( "AnnoucementPurge" )
 		}
 
-		//PlayMusic( "Music_FR_Militia_TitanFall1" )
+		// PlayMusic( "Music_FR_Militia_TitanFall1" )
 		EmitSoundOnEntity( player, "titan_callin" )
 		return
 	}
@@ -362,8 +366,6 @@ void function ClientCodeCallback_OnHudReloadScheme()
 }
 */
 
-
-
 function Pressed_TitanLoadoutSelect( entity player )
 {
 	if ( !player.IsTitan() )
@@ -389,11 +391,8 @@ function Pressed_TitanLoadoutSelect( entity player )
 	// if ( !IsAlive( player.GetPetTitan() ) )
 	// 	return
 
-
 	RunUIScript( "OpenSPTitanLoadoutMenu" )
 }
-
-
 
 void function ClientCodeCallback_HUDThink()
 {
@@ -434,7 +433,7 @@ void function ClientCodeCallback_HUDThink()
 
 function ClientPlayerClassChanged( entity player, newClass )
 {
-	//printl( "ClientPlayerClassChanged to " + player.GetPlayerClass() )
+	// printl( "ClientPlayerClassChanged to " + player.GetPlayerClass() )
 	player.classChanged = false
 
 	level.vduOpen = false // vdu goes away when class changes
@@ -451,10 +450,10 @@ void function ResetAbilityBindings( entity player, string newClass )
 	{
 		case "titan":
 			SetStandardAbilityBindingsForTitan( player )
-			SetAbilityBinding( player, 6, "weaponSelectOrdnance", "weaponSelectOrdnance" )		// "+ability 6"
+			SetAbilityBinding( player, 6, "weaponSelectOrdnance", "weaponSelectOrdnance" ) // "+ability 6"
 
 			if ( IsConversationPlaying() )
-				SetAbilityBinding( player, 1, "+scriptCommand2", "-scriptCommand2" )			// "+ability 1"
+				SetAbilityBinding( player, 1, "+scriptCommand2", "-scriptCommand2" ) // "+ability 1"
 
 			LinkButtonPair( -1, -1, -1 )
 
@@ -462,13 +461,17 @@ void function ResetAbilityBindings( entity player, string newClass )
 
 		case level.pilotClass:
 			SetStandardAbilityBindingsForPilot( player )
-			SetAbilityBinding( player, 6, "weaponSelectOrdnance", "weaponSelectOrdnance" )		// "+ability 6"
+			SetAbilityBinding( player, 6, "weaponSelectOrdnance", "weaponSelectOrdnance" ) // "+ability 6"
 
 			LinkButtonPair( IN_OFFHAND0, IN_OFFHAND1, IN_OFFHAND3 )
 
-			if ( clGlobal.isAnnouncementActive && (clGlobal.activeAnnouncement.messageText == "#HUD_CORE_ONLINE_STRYDER" ||
-							clGlobal.activeAnnouncement.messageText == "#HUD_CORE_ONLINE_ATLAS" ||
-							clGlobal.activeAnnouncement.messageText == "#HUD_CORE_ONLINE_OGRE" ) )
+			if (
+				clGlobal.isAnnouncementActive &&
+				(
+					clGlobal.activeAnnouncement.messageText == "#HUD_CORE_ONLINE_STRYDER" || clGlobal.activeAnnouncement.messageText == "#HUD_CORE_ONLINE_ATLAS" ||
+						clGlobal.activeAnnouncement.messageText == "#HUD_CORE_ONLINE_OGRE"
+				)
+			)
 			{
 				clGlobal.levelEnt.Signal( "AnnoucementPurge" )
 			}
@@ -572,15 +575,15 @@ void function ClientCodeCallback_PlayerDidDamage( PlayerDidDamageParams params )
 	bool showCrosshairHitIndicator = true
 	bool hitIneffective = false
 	bool victimIsHeavyArmor = false
-	bool isCritShot = (damageType & DF_CRITICAL) ? true : false
-	bool isHeadShot = (damageType & DF_HEADSHOT) ? true : false
-	bool isKillShot = (damageType & DF_KILLSHOT) ? true : false
-	bool isMelee = (damageType & DF_MELEE) ? true : false
-	bool isExplosion = (damageType & DF_EXPLOSION) ? true : false
-	bool isBullet = (damageType & DF_BULLET) ? true : false
-	bool isShotgun = (damageType & DF_SHOTGUN) ? true : false
-	bool isDoomFatality = (damageType & DF_DOOM_FATALITY) ? true : false
-	bool isDoomProtected = ((damageType & DF_DOOM_PROTECTED) && !isDoomFatality) ? true : false
+	bool isCritShot = ( damageType & DF_CRITICAL ) ? true : false
+	bool isHeadShot = ( damageType & DF_HEADSHOT ) ? true : false
+	bool isKillShot = ( damageType & DF_KILLSHOT ) ? true : false
+	bool isMelee = ( damageType & DF_MELEE ) ? true : false
+	bool isExplosion = ( damageType & DF_EXPLOSION ) ? true : false
+	bool isBullet = ( damageType & DF_BULLET ) ? true : false
+	bool isShotgun = ( damageType & DF_SHOTGUN ) ? true : false
+	bool isDoomFatality = ( damageType & DF_DOOM_FATALITY ) ? true : false
+	bool isDoomProtected = ( ( damageType & DF_DOOM_PROTECTED ) && !isDoomFatality ) ? true : false
 	victimIsHeavyArmor = victim.GetArmorType() == ARMOR_TYPE_HEAVY
 
 	isDoomFatality = false
@@ -597,7 +600,7 @@ void function ClientCodeCallback_PlayerDidDamage( PlayerDidDamageParams params )
 		{
 			showCrosshairHitIndicator = true
 			if ( victim.IsTitan() )
-				hitIneffective = false //!IsHitEffectiveVsTitan( victim, damageType )
+				hitIneffective = false // !IsHitEffectiveVsTitan( victim, damageType )
 			else
 				hitIneffective = isCritShot || isHeadShot || !IsHitEffectiveVsNonTitan( victim, damageType )
 		}
@@ -606,11 +609,11 @@ void function ClientCodeCallback_PlayerDidDamage( PlayerDidDamageParams params )
 			switch ( victim.GetSignifierName() )
 			{
 				case "npc_super_spectre":
-					//if ( !( damageType & DF_CRITICAL ) )
-					//	hitIneffective = true
+					// if ( !( damageType & DF_CRITICAL ) )
+					// 	hitIneffective = true
 
 				default:
-					if ( (damageType & DF_BULLET && damageType & DF_MAX_RANGE) )
+					if ( ( damageType & DF_BULLET && damageType & DF_MAX_RANGE ) )
 						hitIneffective = true
 					break
 			}
@@ -630,14 +633,14 @@ void function ClientCodeCallback_PlayerDidDamage( PlayerDidDamageParams params )
 		playHitSound = false
 
 	if ( damageType & DF_TITAN_STEP )
-		// TODO: this is crap; these damage types should just send DF_NO_HITBEEP
+	// TODO: this is crap; these damage types should just send DF_NO_HITBEEP
 	{
 		playHitSound = false
 		playKillSound = false
 	}
 
 	if ( damageType & DF_MELEE )
-		// TODO: this is crap; these damage types should just send DF_NO_HITBEEP
+	// TODO: this is crap; these damage types should just send DF_NO_HITBEEP
 	{
 		playHitSound = false
 		playKillSound = false
@@ -678,16 +681,16 @@ void function ClientCodeCallback_PlayerDidDamage( PlayerDidDamageParams params )
 	{
 		Tracker_PlayerAttackedTarget( attacker, victim )
 
-		//if ( hitIneffective )
-		//	Crosshair_ShowHitIndicator( CROSSHAIR_HIT_INEFFECTIVE )
-		//else
-		//	Crosshair_ShowHitIndicator( CROSSHAIR_HIT_NORMAL )
+		// if ( hitIneffective )
+		// 	Crosshair_ShowHitIndicator( CROSSHAIR_HIT_INEFFECTIVE )
+		// else
+		// 	Crosshair_ShowHitIndicator( CROSSHAIR_HIT_NORMAL )
 		//
-		//if ( (isCritShot || isDoomFatality) && !isDoomProtected )
-		//	Crosshair_ShowHitIndicator( CROSSHAIR_HIT_CRITICAL )
+		// if ( (isCritShot || isDoomFatality) && !isDoomProtected )
+		// 	Crosshair_ShowHitIndicator( CROSSHAIR_HIT_CRITICAL )
 		//
-		//if ( isHeadShot )
-		//	Crosshair_ShowHitIndicator( CROSSHAIR_HIT_HEADSHOT )
+		// if ( isHeadShot )
+		// 	Crosshair_ShowHitIndicator( CROSSHAIR_HIT_HEADSHOT )
 
 		if ( IsMultiplayer() && !victim.IsTitan() && !victim.IsHologram() )
 			PROTO_HitIndicatorEffect( attacker, victim, damagePosition, isHeadShot, isKillShot )
@@ -766,15 +769,15 @@ function PROTO_HitIndicatorEffect( entity player, entity victim, vector damagePo
 		fxId = GetParticleSystemIndex( $"P_ar_impact_pilot_kill" )
 	else if ( isHeadShot && !isKillShot )
 		return
-	//		fxId = GetParticleSystemIndex( $"P_ar_impact_pilot_headshot" )
+	// 		fxId = GetParticleSystemIndex( $"P_ar_impact_pilot_headshot" )
 	else
 		return
-	//		fxId = GetParticleSystemIndex( $"P_ar_impact_pilot" )
+	// 		fxId = GetParticleSystemIndex( $"P_ar_impact_pilot" )
 
 	vector victimVelocity = victim.GetVelocity()
-	damagePosition += (Length( victimVelocity ) * 0.15) * Normalize( victimVelocity )
+	damagePosition += ( Length( victimVelocity ) * 0.15 ) * Normalize( victimVelocity )
 	vector fxOffset = damagePosition - victim.GetOrigin()
-	StartParticleEffectOnEntityWithPos( victim, fxId, FX_PATTACH_ABSORIGIN_FOLLOW, -1, damagePosition - victim.GetOrigin(), <0, 0, 0> )
+	StartParticleEffectOnEntityWithPos( victim, fxId, FX_PATTACH_ABSORIGIN_FOLLOW, -1, damagePosition - victim.GetOrigin(), < 0, 0, 0 > )
 }
 
 void function KillShotBloodSpray( entity player, entity victim, vector damagePosition, bool isExplosion, bool isBullet, bool isShotgun )
@@ -797,8 +800,8 @@ void function KillShotBloodSpray( entity player, entity victim, vector damagePos
 	int fxId = GetParticleSystemIndex( FX_KILLSHOT_BLOODSPRAY )
 
 	vector victimVelocity = victim.GetVelocity()
-	damagePosition += (Length( victimVelocity ) * 0.15) * Normalize( victimVelocity )
-	StartParticleEffectOnEntityWithPos( victim, fxId, FX_PATTACH_ABSORIGIN_FOLLOW, -1, damagePosition - victim.GetOrigin(), <0, 0, 0> )
+	damagePosition += ( Length( victimVelocity ) * 0.15 ) * Normalize( victimVelocity )
+	StartParticleEffectOnEntityWithPos( victim, fxId, FX_PATTACH_ABSORIGIN_FOLLOW, -1, damagePosition - victim.GetOrigin(), < 0, 0, 0 > )
 }
 
 void function BloodSprayDecals( entity player, entity victim, vector damagePosition, float damageAmount, bool isHeadShot, bool isKillShot, bool isMelee, bool isExplosion, bool isBullet, bool isShotgun )
@@ -852,8 +855,8 @@ void function BloodSprayDecals_Think( entity player, entity victim, vector damag
 			traceFwd = AnglesToForward( victim.GetAngles() ) * -1
 	}
 
-	vector traceEnd = damagePosition + (traceFwd * traceDist)
-	//TraceResults traceResult = TraceLine( traceStart, traceEnd, victim, TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE )
+	vector traceEnd = damagePosition + ( traceFwd * traceDist )
+	// TraceResults traceResult = TraceLine( traceStart, traceEnd, victim, TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE )
 
 	var trace_primary = DeferredTraceLineHighDetail( traceStart, traceEnd, victim, TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE )
 	WaitFrame()
@@ -861,8 +864,8 @@ void function BloodSprayDecals_Think( entity player, entity victim, vector damag
 
 	vector primaryTraceEndPos = traceResult.endPos
 	vector primaryTraceNormal = traceResult.surfaceNormal
-	//DebugDrawLine( traceStart, traceEnd, 255, 150, 0, true, 5 )
-	//DebugDrawSphere( primaryTraceEndPos, 8.0, 255, 0, 0, true, 5 )
+	// DebugDrawLine( traceStart, traceEnd, 255, 150, 0, true, 5 )
+	// DebugDrawSphere( primaryTraceEndPos, 8.0, 255, 0, 0, true, 5 )
 
 	bool doGravitySplat = isMelee ? false : true
 
@@ -872,15 +875,15 @@ void function BloodSprayDecals_Think( entity player, entity victim, vector damag
 		vector fxAng = AnglesCompose( normAng, < 90, 0, 0 > )
 
 		StartParticleEffectInWorld( fxId, primaryTraceEndPos, fxAng )
-		//DebugDrawAngles( endPos, fxAng, 5 )
+		// DebugDrawAngles( endPos, fxAng, 5 )
 	}
 	else if ( doGravitySplat )
 	{
 		// trace behind the guy on the ground and put a decal there
-		float gravitySplatBackTraceDist = 58.0  // how far behind the guy to put the gravity splat
-		float gravitySplatDownTraceDist = 100.0  // max dist vertically to try to trace and put a gravity splat
-		vector groundTraceStartPos = damagePosition + (traceFwd * gravitySplatBackTraceDist)
-		vector groundTraceEndPos = groundTraceStartPos - <0, 0, 100>
+		float gravitySplatBackTraceDist = 58.0 // how far behind the guy to put the gravity splat
+		float gravitySplatDownTraceDist = 100.0 // max dist vertically to try to trace and put a gravity splat
+		vector groundTraceStartPos = damagePosition + ( traceFwd * gravitySplatBackTraceDist )
+		vector groundTraceEndPos = groundTraceStartPos - < 0, 0, 100 >
 
 		var trace_gravitySplat = DeferredTraceLineHighDetail( groundTraceStartPos, groundTraceEndPos, victim, TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE )
 		WaitFrame()
@@ -888,13 +891,13 @@ void function BloodSprayDecals_Think( entity player, entity victim, vector damag
 
 		if ( downTraceResult.fraction < 1.0 )
 		{
-			//DebugDrawLine( groundTraceStartPos, downTraceResult.endPos, 255, 150, 0, true, 5 )
-			//DebugDrawSphere( downTraceResult.endPos, 4.0, 255, 0, 0, true, 5 )
+			// DebugDrawLine( groundTraceStartPos, downTraceResult.endPos, 255, 150, 0, true, 5 )
+			// DebugDrawSphere( downTraceResult.endPos, 4.0, 255, 0, 0, true, 5 )
 
 			vector normAng = VectorToAngles( downTraceResult.surfaceNormal )
 			vector fxAng = AnglesCompose( normAng, < 90, 0, 0 > )
 
-			//DebugDrawAngles( downTraceResult.endPos, fxAng, 5 )
+			// DebugDrawAngles( downTraceResult.endPos, fxAng, 5 )
 
 			StartParticleEffectInWorld( fxId, downTraceResult.endPos, fxAng )
 		}
@@ -922,8 +925,8 @@ void function BloodSprayDecals_Think( entity player, entity victim, vector damag
 		// mostly to cover edge cases involving corners
 		vector traceRight = AnglesToRight( tempAng )
 		vector traceLeft = traceRight * -1
-		vector backLeft = (traceFwd + traceLeft) * 0.5
-		vector backRight = (traceFwd + traceRight) * 0.5
+		vector backLeft = ( traceFwd + traceLeft ) * 0.5
+		vector backRight = ( traceFwd + traceRight ) * 0.5
 		testVecs.append( backRight )
 		testVecs.append( backLeft )
 
@@ -938,7 +941,7 @@ void function BloodSprayDecals_Think( entity player, entity victim, vector damag
 	array<var> secondaryTraces = []
 	foreach ( testVec in testVecs )
 	{
-		vector secondaryTraceEnd = traceStart + (testVec * secondaryTraceDist)
+		vector secondaryTraceEnd = traceStart + ( testVec * secondaryTraceDist )
 		var secondaryTrace = DeferredTraceLineHighDetail( traceStart, secondaryTraceEnd, victim, TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE )
 		secondaryTraces.append( secondaryTrace )
 	}
@@ -975,7 +978,7 @@ void function BloodSprayDecals_Think( entity player, entity victim, vector damag
 			vector fxAng = AnglesCompose( normAng, < 90, 0, 0 > )
 
 			vector endPos = traceResult.endPos
-			//DebugDrawSphere( endPos, 4.0, 255, 0, 0, true, 5 )
+			// DebugDrawSphere( endPos, 4.0, 255, 0, 0, true, 5 )
 			StartParticleEffectInWorld( secondaryFxId, endPos, fxAng )
 		}
 
@@ -998,9 +1001,9 @@ BloodDecalParams function BloodDecal_GetParams( float damageAmount, bool isHeadS
 		// HACK- shotguns report isBullet also
 		if ( isShotgun )
 		{
-			//if ( isKillShot )
-			//	fxType = FX_BLOODSPRAY_DECAL_LRG
-			//else
+			// if ( isKillShot )
+			// 	fxType = FX_BLOODSPRAY_DECAL_LRG
+			// else
 			fxType = FX_BLOODSPRAY_DECAL_MED
 		}
 		else
@@ -1018,7 +1021,6 @@ BloodDecalParams function BloodDecal_GetParams( float damageAmount, bool isHeadS
 			}
 		}
 	}
-
 	else if ( isExplosion )
 	{
 		secondaryTraceDist = traceDist
@@ -1047,7 +1049,6 @@ BloodDecalParams function BloodDecal_GetParams( float damageAmount, bool isHeadS
 			secondaryFxType = FX_BLOODSPRAY_DECAL_MED
 		}
 	}
-
 	else if ( isMelee )
 	{
 		traceDist = 96
@@ -1059,8 +1060,8 @@ BloodDecalParams function BloodDecal_GetParams( float damageAmount, bool isHeadS
 	// for kills, increase trace distance a bit
 	if ( isKillShot )
 	{
-		traceDist = traceDist + (traceDist * 0.1)
-		secondaryTraceDist = secondaryTraceDist + (secondaryTraceDist * 0.1)
+		traceDist = traceDist + ( traceDist * 0.1 )
+		secondaryTraceDist = secondaryTraceDist + ( secondaryTraceDist * 0.1 )
 	}
 
 	BloodDecalParams params
@@ -1072,23 +1073,23 @@ BloodDecalParams function BloodDecal_GetParams( float damageAmount, bool isHeadS
 }
 
 #if DEV
-string function BloodSprayDecals_Toggle()
-{
-	string returnStr = ""
-
-	if ( Flag( "EnableBloodSprayDecals" ) )
+	string function BloodSprayDecals_Toggle()
 	{
-		FlagClear( "EnableBloodSprayDecals" )
-		returnStr = "Blood spray decals DISABLED"
-	}
-	else
-	{
-		FlagSet( "EnableBloodSprayDecals" )
-		returnStr = "Blood spray decals ENABLED"
-	}
+		string returnStr = ""
 
-	return returnStr
-}
+		if ( Flag( "EnableBloodSprayDecals" ) )
+		{
+			FlagClear( "EnableBloodSprayDecals" )
+			returnStr = "Blood spray decals DISABLED"
+		}
+		else
+		{
+			FlagSet( "EnableBloodSprayDecals" )
+			returnStr = "Blood spray decals ENABLED"
+		}
+
+		return returnStr
+	}
 #endif
 
 function ServerCallback_RodeoerEjectWarning( soulHandle, ejectTime )
@@ -1142,8 +1143,8 @@ function TitanEjectHatchSequence( soul, ejectTime )
 			return
 		}
 
-		int attachID = titan.LookupAttachment( "HATCH_BOLT" + (index + 1) )
-		//printt( "attachID is " + attachID )
+		int attachID = titan.LookupAttachment( "HATCH_BOLT" + ( index + 1 ) )
+		// printt( "attachID is " + attachID )
 		vector boltOrgin = titan.GetAttachmentOrigin( attachID )
 		vector boltAngles = titan.GetAttachmentAngles( attachID )
 		vector launchVec = AnglesToForward( boltAngles ) * 500
@@ -1153,7 +1154,7 @@ function TitanEjectHatchSequence( soul, ejectTime )
 		effects.append( effect )
 		EmitSoundOnEntity( titan, "titan_bolt_loose" )
 
-		wait (ejectTime / boltCount)
+		wait ( ejectTime / boltCount )
 	}
 }
 
@@ -1220,12 +1221,12 @@ function PlayTargetEliminatedTitanVO( attacker, victim )
 
 function ServerCallback_SetAssistInformation( damageSourceId, attackerEHandle, entityEHandle, assistTime )
 {
-	local ent = GetEntityFromEncodedEHandle ( entityEHandle )
+	local ent = GetEntityFromEncodedEHandle( entityEHandle )
 	if ( !ent )
 		return
 
-	local latestAssistPlayer = GetEntityFromEncodedEHandle ( attackerEHandle )
-	if ( !("latestAssistPlayer" in ent.s) )
+	local latestAssistPlayer = GetEntityFromEncodedEHandle( attackerEHandle )
+	if ( !( "latestAssistPlayer" in ent.s ) )
 	{
 		ent.s.latestAssistPlayer <- latestAssistPlayer
 		ent.s.latestAssistDamageSource <- damageSourceId
@@ -1253,7 +1254,6 @@ void function ClientCodeCallback_OnModelChanged( entity ent )
 }
 */
 
-
 void function ClientCodeCallback_OnHealthChanged( entity ent, int oldHealth, int newHealth )
 {
 	if ( IsLobby() )
@@ -1272,7 +1272,10 @@ void function ClientCodeCallback_OnHealthChanged( entity ent, int oldHealth, int
 // Northstar
 void function AddCallback_OnCrosshairCurrentTargetChanged( void functionref( entity, entity ) callbackFunc )
 {
-	Assert( !file.OnCrosshairCurrentTargetChangedCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnCrosshairCurrentTargetChanged" )
+	Assert(
+		!file.OnCrosshairCurrentTargetChangedCallbacks.contains( callbackFunc ),
+		"Already added " + string( callbackFunc ) + " with AddCallback_OnCrosshairCurrentTargetChanged"
+	)
 
 	file.OnCrosshairCurrentTargetChangedCallbacks.append( callbackFunc )
 }
@@ -1296,7 +1299,7 @@ void function SetupPlayerAnimEvents( entity player )
 
 void function JumpRandomlyForever()
 {
-	for (;; )
+	for ( ; ; )
 	{
 		if ( IsWatchingReplay() )
 		{
@@ -1323,12 +1326,12 @@ void function JumpRandomlyForever()
 void function RemoteTurretFadeoutAnimEvent( entity ent )
 {
 	entity player = GetLocalViewPlayer()
-	ScreenFade( player, 0, 0, 0, 255, 0.1, 0.25, FFADE_OUT );
+	ScreenFade( player, 0, 0, 0, 255, 0.1, 0.25, FFADE_OUT )
 }
 
 void function SetupFirstPersonProxyEvents( entity firstPersonProxy )
 {
-	//printt( "SetupFirstPersonProxyEvents" )
+	// printt( "SetupFirstPersonProxyEvents" )
 
 	AddAnimEvent( firstPersonProxy, "mantle_smallmantle", OnSmallMantle )
 	AddAnimEvent( firstPersonProxy, "mantle_mediummantle", OnMediumMantle )
@@ -1343,11 +1346,11 @@ void function OnSmallMantle( entity firstPersonProxy )
 
 	if ( PlayerHasPassive( player, ePassives.PAS_STEALTH_MOVEMENT ) )
 	{
-		//printt( "mantle_smallmantle, has stealth passive" )
+		// printt( "mantle_smallmantle, has stealth passive" )
 	}
 	else
 	{
-		//printt( "mantle_smallmantle, no stealth passive" )
+		// printt( "mantle_smallmantle, no stealth passive" )
 		EmitSoundOnEntity( firstPersonProxy, "mantle_smallmantle" )
 	}
 }
@@ -1358,11 +1361,11 @@ void function OnMediumMantle( entity firstPersonProxy )
 
 	if ( PlayerHasPassive( player, ePassives.PAS_STEALTH_MOVEMENT ) )
 	{
-		//printt( "mantle_mediummantle, has stealth passive" )
+		// printt( "mantle_mediummantle, has stealth passive" )
 	}
 	else
 	{
-		//printt( "mantle_mediummantle, no stealth passive" )
+		// printt( "mantle_mediummantle, no stealth passive" )
 		EmitSoundOnEntity( firstPersonProxy, "mantle_mediummantle" )
 	}
 }
@@ -1373,11 +1376,11 @@ void function OnLowMantle( entity firstPersonProxy )
 
 	if ( PlayerHasPassive( player, ePassives.PAS_STEALTH_MOVEMENT ) )
 	{
-		//printt( "mantle_lowmantle, has stealth passive" )
+		// printt( "mantle_lowmantle, has stealth passive" )
 	}
 	else
 	{
-		//printt( "mantle_lowmantle, no stealth passive" )
+		// printt( "mantle_lowmantle, no stealth passive" )
 		EmitSoundOnEntity( firstPersonProxy, "mantle_lowmantle" )
 	}
 }
@@ -1388,11 +1391,11 @@ void function OnExtraLowMantle( entity firstPersonProxy )
 
 	if ( PlayerHasPassive( player, ePassives.PAS_STEALTH_MOVEMENT ) )
 	{
-		//printt( "mantle_extralowmantle, has stealth passive" )
+		// printt( "mantle_extralowmantle, has stealth passive" )
 	}
 	else
 	{
-		//printt( "mantle_extralowmantle, no stealth passive" )
+		// printt( "mantle_extralowmantle, no stealth passive" )
 		EmitSoundOnEntity( firstPersonProxy, "mantle_extralow" )
 	}
 }
@@ -1400,7 +1403,6 @@ void function OnExtraLowMantle( entity firstPersonProxy )
 void function CreateCallback_TitanSoul( entity ent )
 {
 }
-
 
 void function WallHangAttachDataKnife( entity player )
 {
@@ -1428,7 +1430,7 @@ void function DeleteDataKnifeAfterWallHang( entity player, entity dataknife )
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "OnDestroy" )
 
-	for (;; )
+	for ( ; ; )
 	{
 		Wait( 0.1 )
 		if ( !player.IsWallHanging() )
@@ -1453,7 +1455,7 @@ bool function SpawnFleshGibs( entity victim, vector attackDir )
 	if ( "gibDist" in victim.s )
 		cullDist = expect float( victim.s.gibDist )
 
-	vector startOrigin = victim.GetWorldSpaceCenter() + (attackDir * -30)
+	vector startOrigin = victim.GetWorldSpaceCenter() + ( attackDir * -30 )
 
 	vector origin = victim.GetOrigin() + < RandomIntRange( 10, 20 ), RandomIntRange( 10, 20 ), RandomIntRange( 32, 64 ) >
 	vector angles = < 0, 0, 0 >
@@ -1542,48 +1544,48 @@ const TONEMAP_3_MIN = 1
 
 function TonemappingUpdateAfterWarpJump()
 {
-	AutoExposureSetMaxExposureMultiplier( 500 ); // allow exposure to actually go bright, even if it's clamped in the level.
+	AutoExposureSetMaxExposureMultiplier( 500 ) // allow exposure to actually go bright, even if it's clamped in the level.
 
 	local startTime = Time()
-	while( 1 )
+	while ( 1 )
 	{
 		local time = Time() - startTime
 		float factor = GraphCapped( time, 0, TONEMAP_1_START_DURATION, 1, 0 )
 		factor = factor * factor * factor
-		local toneMapScale = TONEMAP_1_MIN + (TONEMAP_1_MAX - TONEMAP_1_MIN) * factor
+		local toneMapScale = TONEMAP_1_MIN + ( TONEMAP_1_MAX - TONEMAP_1_MIN ) * factor
 		AutoExposureSetExposureCompensationBias( toneMapScale )
 		AutoExposureSnap()
-		wait  0
+		wait 0
 		if ( factor == 0 )
-			break;
+			break
 	}
 
 	startTime = Time()
-	while( 1 )
+	while ( 1 )
 	{
 		local time = Time() - startTime
 		float factor = GraphCapped( time, 0, TONEMAP_2_START_DURATION, 1, 0 )
-		local toneMapScale = TONEMAP_2_MIN + (TONEMAP_2_MAX - TONEMAP_2_MIN) * factor
+		local toneMapScale = TONEMAP_2_MIN + ( TONEMAP_2_MAX - TONEMAP_2_MIN ) * factor
 		AutoExposureSetExposureCompensationBias( toneMapScale )
 		AutoExposureSnap()
-		wait  0
+		wait 0
 		if ( factor == 0 )
-			break;
+			break
 	}
 
 	AutoExposureSetExposureCompensationBias( 0 ) // clear the exposure bias and allow the exposure to adjust to its normal level at its own pace
 
 	// Ramp the max exposure multiplier back down to 1 (preferably slower than the autoexposure would drive the brightness down)
 	startTime = Time()
-	while( 1 )
+	while ( 1 )
 	{
 		local time = Time() - startTime
 		float factor = GraphCapped( time, 0, TONEMAP_3_START_DURATION, 1, 0 )
-		local scale = TONEMAP_3_MIN + (TONEMAP_3_MAX - TONEMAP_3_MIN) * factor
-		AutoExposureSetMaxExposureMultiplier( scale );
-		wait  0
+		local scale = TONEMAP_3_MIN + ( TONEMAP_3_MAX - TONEMAP_3_MIN ) * factor
+		AutoExposureSetMaxExposureMultiplier( scale )
+		wait 0
 		if ( factor == 0 )
-			break;
+			break
 	}
 }
 
@@ -1598,7 +1600,7 @@ function SetPanelAlphaOverTime( panel, alpha, duration )
 	local endTime = startTime + duration
 	local startAlpha = panel.GetPanelAlpha()
 
-	while( Time() <= endTime )
+	while ( Time() <= endTime )
 	{
 		float a = GraphCapped( Time(), startTime, endTime, startAlpha, alpha )
 		panel.SetPanelAlpha( a )
@@ -1607,7 +1609,6 @@ function SetPanelAlphaOverTime( panel, alpha, duration )
 
 	panel.SetPanelAlpha( alpha )
 }
-
 
 bool function ShouldShowOnDeckCard( entity player, cardOnDeck )
 {
@@ -1681,17 +1682,17 @@ function PlayShieldHitEffect( PlayerDidDamageParams params )
 {
 	entity player = GetLocalViewPlayer()
 	entity victim = params.victim
-	//vector damagePosition = params.damagePosition
-	//int hitBox = params.hitBox
-	//int damageType = params.damageType
-	//float damageAmount = params.damageAmount
-	//int damageFlags = params.damageFlags
-	//int hitGroup = params.hitGroup
-	//entity weapon = params.weapon
-	//float distanceFromAttackOrigin = params.distanceFromAttackOrigin
+	// vector damagePosition = params.damagePosition
+	// int hitBox = params.hitBox
+	// int damageType = params.damageType
+	// float damageAmount = params.damageAmount
+	// int damageFlags = params.damageFlags
+	// int hitGroup = params.hitGroup
+	// entity weapon = params.weapon
+	// float distanceFromAttackOrigin = params.distanceFromAttackOrigin
 
-	//shieldFX <- GetParticleSystemIndex( SHIELD_FX )
-	//StartParticleEffectInWorld( shieldFX, damagePosition, player.GetViewVector() * -1 )
+	// shieldFX <- GetParticleSystemIndex( SHIELD_FX )
+	// StartParticleEffectInWorld( shieldFX, damagePosition, player.GetViewVector() * -1 )
 
 	float shieldHealthFrac = GetShieldHealthFrac( victim )
 
@@ -1707,12 +1708,24 @@ function PlayShieldHitEffect( PlayerDidDamageParams params )
 	EffectSetControlPointVector( shieldFXHandle, 1, GetShieldEffectCurrentColor( 1 - shieldHealthFrac ) )
 }
 
-const table SHIELD_COLOR_CHARGE_FULL = { r = 115, g = 247, b = 255 }    // blue
-const table SHIELD_COLOR_CHARGE_MED  = { r = 200, g = 128, b = 80 } // orange
-const table SHIELD_COLOR_CHARGE_EMPTY = { r = 200, g = 80, b = 80 } // red
+const table SHIELD_COLOR_CHARGE_FULL = {
+	r = 115,
+	g = 247,
+	b = 255
+} // blue
+const table SHIELD_COLOR_CHARGE_MED = {
+	r = 200,
+	g = 128,
+	b = 80
+} // orange
+const table SHIELD_COLOR_CHARGE_EMPTY = {
+	r = 200,
+	g = 80,
+	b = 80
+} // red
 
-const SHIELD_COLOR_CROSSOVERFRAC_FULL2MED    = 0.75  // from zero to this fraction, fade between full and medium charge colors
-const SHIELD_COLOR_CROSSOVERFRAC_MED2EMPTY    = 0.95  // from "full2med" to this fraction, fade between medium and empty charge colors
+const SHIELD_COLOR_CROSSOVERFRAC_FULL2MED = 0.75 // from zero to this fraction, fade between full and medium charge colors
+const SHIELD_COLOR_CROSSOVERFRAC_MED2EMPTY = 0.95 // from "full2med" to this fraction, fade between medium and empty charge colors
 
 function GetShieldEffectCurrentColor( shieldHealthFrac )
 {
@@ -1720,8 +1733,8 @@ function GetShieldEffectCurrentColor( shieldHealthFrac )
 	local color2 = SHIELD_COLOR_CHARGE_MED
 	local color3 = SHIELD_COLOR_CHARGE_EMPTY
 
-	local crossover1 = SHIELD_COLOR_CROSSOVERFRAC_FULL2MED  // from zero to this fraction, fade between color1 and color2
-	local crossover2 = SHIELD_COLOR_CROSSOVERFRAC_MED2EMPTY  // from crossover1 to this fraction, fade between color2 and color3
+	local crossover1 = SHIELD_COLOR_CROSSOVERFRAC_FULL2MED // from zero to this fraction, fade between color1 and color2
+	local crossover2 = SHIELD_COLOR_CROSSOVERFRAC_MED2EMPTY // from crossover1 to this fraction, fade between color2 and color3
 
 	local colorVec = < 0, 0, 0 >
 	// 0 = full charge, 1 = no charge remaining
@@ -1748,7 +1761,6 @@ function GetShieldEffectCurrentColor( shieldHealthFrac )
 	return colorVec
 }
 
-
 void function UpdateRespawnHUD()
 {
 	if ( IsWatchingReplay() )
@@ -1765,7 +1777,6 @@ function OnClientPlayerAlive( entity player )
 
 	UpdateClientHudVisibility( player )
 }
-
 
 function OnClientPlayerDying( entity player )
 {
@@ -1824,12 +1835,12 @@ void function ServerCallback_HideNextSpawnMessage()
 
 float function GetWaveSpawnTime()
 {
-	return (file.nextSpawnTime)
+	return ( file.nextSpawnTime )
 }
 
 bool function IsPlayerEliminated( entity player )
 {
-	return (player.GetPlayerGameStat( PGS_ELIMINATED ) > 0)
+	return ( player.GetPlayerGameStat( PGS_ELIMINATED ) > 0 )
 }
 
 function PlayerFieryDeath( player )
@@ -1848,7 +1859,7 @@ function PlayerFieryDeath( player )
 	local fxHandle = StartParticleEffectOnEntity( scriptRef, GetParticleSystemIndex( $"P_burn_player" ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
 
 	OnThreadEnd(
-		function () : ( fxHandle, scriptRef )
+		function() : ( fxHandle, scriptRef )
 		{
 			EffectStop( fxHandle, false, false )
 			if ( IsValid( scriptRef ) )
@@ -1857,7 +1868,6 @@ function PlayerFieryDeath( player )
 	)
 	WaitForever()
 }
-
 
 function ServerCallback_GiveMatchLossProtection()
 {
@@ -1870,7 +1880,7 @@ void function EnableDoDeathCallback( entity ent )
 
 void function ServerCallback_ShowDisembarkHint( float showtime )
 {
-	AddPlayerHint( showtime, 0.5, $"","#HUD_TITAN_DISEMBARK" )
+	AddPlayerHint( showtime, 0.5, $"", "#HUD_TITAN_DISEMBARK" )
 }
 
 void function ClearDisembarkHint( entity cockpit, entity player )

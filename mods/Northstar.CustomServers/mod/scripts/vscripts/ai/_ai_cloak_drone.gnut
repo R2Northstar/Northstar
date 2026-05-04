@@ -5,14 +5,14 @@ global function CloakDrone_Init
 global function SpawnCloakDrone
 global function GetNPCCloakedDrones
 global function RemoveLeftoverCloakedDrones
-const FX_DRONE_CLOAK_BEAM 				= $"P_drone_cloak_beam"
+const FX_DRONE_CLOAK_BEAM = $"P_drone_cloak_beam"
 
 const float CLOAK_DRONE_REACHED_HARVESTER_DIST = 1300.0
 
 struct
 {
 	int cloakedDronesManagedEntArrayID
-	table<entity,string> cloakedDroneClaimedSquadList
+	table<entity, string> cloakedDroneClaimedSquadList
 } file
 
 struct CloakDronePath
@@ -38,12 +38,12 @@ entity function SpawnCloakDrone( int team, vector origin, vector angles, vector 
 	int droneCount = GetNPCCloakedDrones().len()
 
 	// add some minor randomness to the spawn location as well as an offset based on number of drones in the world.
-	origin += < RandomIntRange( -64, 64 ), RandomIntRange( -64, 64 ), 300 + (droneCount * 128) >
+	origin += < RandomIntRange( -64, 64 ), RandomIntRange( -64, 64 ), 300 + ( droneCount * 128 ) >
 
 	entity cloakedDrone = CreateGenericDrone( team, origin, angles )
 	SetSpawnOption_AISettings( cloakedDrone, "npc_drone_cloaked" )
 
-	//these enable global damage callbacks for the cloakedDrone
+	// these enable global damage callbacks for the cloakedDrone
 	cloakedDrone.s.isHidden <- false
 	cloakedDrone.s.fx <- null
 	cloakedDrone.s.towerOrigin <- towerOrigin
@@ -127,7 +127,7 @@ void function CloakedDroneWarpOutAndDestroy( entity cloakedDrone )
  ######  ########  #######  ##     ## ##    ## #### ##    ##  ######
 
 \************************************************************************************************/
-//HACK - this should probably move into code
+// HACK - this should probably move into code
 function CloakedDroneCloakThink( cloakedDrone )
 {
 	expect entity( cloakedDrone )
@@ -137,8 +137,8 @@ function CloakedDroneCloakThink( cloakedDrone )
 	cloakedDrone.EndSignal( "DroneCrashing" )
 	cloakedDrone.EndSignal( "DroneCleanup" )
 
-	wait 2	// wait a few seconds since it would start cloaking before picking an npc to follow
-			// some npcs might not be picked since they where already cloaked by accident.
+	wait 2 // wait a few seconds since it would start cloaking before picking an npc to follow
+	// some npcs might not be picked since they where already cloaked by accident.
 
 	CloakerThink( cloakedDrone, 400.0, [ "any" ], < 0, 0, -350 >, CloakDroneShouldCloakGuy, 1.5 )
 }
@@ -181,7 +181,7 @@ function CloakDroneShouldCloakGuy( cloakedDrone, guy )
 ##        ##     ##    ##    ##     ## #### ##    ##  ######
 
 \************************************************************************************************/
-//HACK -> this should probably move into code
+// HACK -> this should probably move into code
 const VALIDPATHFRAC = 0.99
 
 void function CloakedDronePathThink( entity cloakedDrone )
@@ -195,13 +195,13 @@ void function CloakedDronePathThink( entity cloakedDrone )
 	entity previousNPC = null
 	vector spawnOrigin = cloakedDrone.GetOrigin()
 	vector lastOrigin = cloakedDrone.GetOrigin()
-	float stuckDistSqr = 64.0*64.0
+	float stuckDistSqr = 64.0 * 64.0
 	float targetLostTime = Time()
 	array<entity> claimedGuys = []
 
-	while( 1 )
+	while ( 1 )
 	{
-		while( goalNPC == null )
+		while ( goalNPC == null )
 		{
 			wait 1.0
 			array<entity> testArray = GetNPCArrayEx( "any", cloakedDrone.GetTeam(), TEAM_ANY, < 0, 0, 0 >, -1 )
@@ -214,11 +214,11 @@ void function CloakedDronePathThink( entity cloakedDrone )
 				if ( !IsAlive( guy ) )
 					continue
 
-				//Only cloak titans, spectres, grunts,
+				// Only cloak titans, spectres, grunts,
 				if ( !( guy.IsTitan() || IsSpectre( guy ) || IsGrunt( guy ) || IsSuperSpectre( guy ) ) )
 					continue
 
-				//Don't cloak arc titans
+				// Don't cloak arc titans
 				if ( guy.GetTargetName() == "empTitan" )
 					continue
 
@@ -293,7 +293,7 @@ void function CloakedDronePathThink( entity cloakedDrone )
 	}
 }
 
-void function CloakedDroneClaimSquad( entity  cloakedDrone, string squadname )
+void function CloakedDroneClaimSquad( entity cloakedDrone, string squadname )
 {
 	if ( GetNPCSquadSize( squadname ) )
 		file.cloakedDroneClaimedSquadList[ cloakedDrone ] <- squadname
@@ -307,7 +307,7 @@ void function CloakedDroneReleaseSquad( entity cloakedDrone )
 
 bool function CloakedDroneIsSquadClaimed( string squadname )
 {
-	table<entity,string> cloneTable = clone file.cloakedDroneClaimedSquadList
+	table<entity, string> cloneTable = clone file.cloakedDroneClaimedSquadList
 	foreach ( entity cloakedDrone, squad in cloneTable )
 	{
 		if ( !IsAlive( cloakedDrone ) )
@@ -340,69 +340,69 @@ void function CloakedDronePathFollowNPC( entity cloakedDrone, entity goalNPC )
 
 	int droneTeam = cloakedDrone.GetTeam()
 
-	//vector maxs = < 64, 64, 53.5 >//bigger than model to compensate for large effect
-	//vector mins = < -64, -64, -64 >
+	// vector maxs = < 64, 64, 53.5 >//bigger than model to compensate for large effect
+	// vector mins = < -64, -64, -64 >
 
-	vector maxs = < 32, 32, 32 >//bigger than model to compensate for large effect
+	vector maxs = < 32, 32, 32 > // bigger than model to compensate for large effect
 	vector mins = < -32, -32, -32 >
 
 	int mask = cloakedDrone.GetPhysicsSolidMask()
 
-	float defaultHeight 					= 300
-	array<float> traceHeightsLow			= [ -75.0, -150.0, -250.0 ]
-	array<float> traceHeightsHigh			= [ 150.0, 300.0, 800.0, 1500.0 ]
+	float defaultHeight = 300
+	array<float> traceHeightsLow = [ -75.0, -150.0, -250.0 ]
+	array<float> traceHeightsHigh = [ 150.0, 300.0, 800.0, 1500.0 ]
 
-	float waitTime 	= 0.25
+	float waitTime = 0.25
 
 	CloakDronePath path
 	path.goalValid = false
 	path.lastHeight = defaultHeight
 
-	//If drone is following titan wait for titan to leave bubble shield.
+	// If drone is following titan wait for titan to leave bubble shield.
 	if ( goalNPC.IsTitan() )
 		WaitTillHotDropComplete( goalNPC )
 
-	while( goalNPC.GetTeam() == droneTeam )
+	while ( goalNPC.GetTeam() == droneTeam )
 	{
 		if ( IsValid( GetRodeoPilot( goalNPC ) ) )
 			return
 
-		//If our target npc gets revealed by a sonar pulse, ditch that chump.
+		// If our target npc gets revealed by a sonar pulse, ditch that chump.
 		if ( StatusEffect_Get( goalNPC, eStatusEffect.sonar_detected ) )
 			return
 
 		float minDist = CLOAK_DRONE_REACHED_HARVESTER_DIST * CLOAK_DRONE_REACHED_HARVESTER_DIST
 		float distToGenerator = DistanceSqr( goalNPC.GetOrigin(), cloakedDrone.s.towerOrigin )
-		//if we've gotten our npc to the generator, go find someone farther out to escort.
+		// if we've gotten our npc to the generator, go find someone farther out to escort.
 		if ( distToGenerator <= minDist )
 			return
 
-		//DebugDrawCircleOnEnt( goalNPC, 20, 255, 0, 0, 0.1 )
+		// DebugDrawCircleOnEnt( goalNPC, 20, 255, 0, 0, 0.1 )
 
 		float startTime = Time()
-		path.goalValid 	= false
+		path.goalValid = false
 
 		CloakedDroneFindPathDefault( path, defaultHeight, mins, maxs, cloakedDrone, goalNPC, mask )
 
-		//find a new path if necessary
+		// find a new path if necessary
 		if ( !path.goalValid )
 		{
-			//lets check some heights and see if any are valid
+			// lets check some heights and see if any are valid
 			CloakedDroneFindPathHorizontal( path, traceHeightsLow, defaultHeight, mins, maxs, cloakedDrone, goalNPC, mask )
 
 			if ( !path.goalValid )
 			{
-				//OK so no way to directly go to those heights - lets see if we can move vertically down,
+				// OK so no way to directly go to those heights - lets see if we can move vertically down,
 				CloakedDroneFindPathVertical( path, traceHeightsLow, defaultHeight, mins, maxs, cloakedDrone, goalNPC, mask )
 
 				if ( !path.goalValid )
 				{
-					//still no good...lets check up
+					// still no good...lets check up
 					CloakedDroneFindPathHorizontal( path, traceHeightsHigh, defaultHeight, mins, maxs, cloakedDrone, goalNPC, mask )
 
 					if ( !path.goalValid )
 					{
-						//no direct shots up - lets try moving vertically up first
+						// no direct shots up - lets try moving vertically up first
 						CloakedDroneFindPathVertical( path, traceHeightsHigh, defaultHeight, mins, maxs, cloakedDrone, goalNPC, mask )
 					}
 				}
@@ -429,40 +429,40 @@ void function CloakedDronePathFollowNPC( entity cloakedDrone, entity goalNPC )
 	}
 }
 
-bool function CloakedDroneFindPathDefault( CloakDronePath path, float defaultHeight, vector mins, vector maxs, entity cloakedDrone, entity  goalNPC, int mask )
+bool function CloakedDroneFindPathDefault( CloakDronePath path, float defaultHeight, vector mins, vector maxs, entity cloakedDrone, entity goalNPC, int mask )
 {
-	vector offset 	= < 0, 0, defaultHeight >
-	path.start 		= ( cloakedDrone.GetOrigin() ) + < 0, 0, 32 > //Offset so path start is just above drone instead at bottom of drone.
-	path.goal 		= GetCloakTargetOrigin( goalNPC ) + offset
+	vector offset = < 0, 0, defaultHeight >
+	path.start = ( cloakedDrone.GetOrigin() ) + < 0, 0, 32 > // Offset so path start is just above drone instead at bottom of drone.
+	path.goal = GetCloakTargetOrigin( goalNPC ) + offset
 
-	//find out if we can get there using the default height
-	TraceResults result = TraceHull( path.start, path.goal, mins, maxs, [ cloakedDrone, goalNPC ] , mask, TRACE_COLLISION_GROUP_NONE )
-	//DebugDrawLine( path.start, path.goal, 50, 0, 0, true, 1.0 )
+	// find out if we can get there using the default height
+	TraceResults result = TraceHull( path.start, path.goal, mins, maxs, [ cloakedDrone, goalNPC ], mask, TRACE_COLLISION_GROUP_NONE )
+	// DebugDrawLine( path.start, path.goal, 50, 0, 0, true, 1.0 )
 	if ( result.fraction >= VALIDPATHFRAC )
 	{
 		path.lastHeight = defaultHeight
-		path.goalValid 	= true
+		path.goalValid = true
 	}
 
 	return path.goalValid
 }
 
-bool function CloakedDroneFindPathHorizontal( CloakDronePath path, array<float> traceHeights, float defaultHeight, vector mins, vector maxs, entity cloakedDrone, entity  goalNPC, int mask )
+bool function CloakedDroneFindPathHorizontal( CloakDronePath path, array<float> traceHeights, float defaultHeight, vector mins, vector maxs, entity cloakedDrone, entity goalNPC, int mask )
 {
 	wait 0.1
 
 	vector offset
 	float testHeight
 
-	//slight optimization... recheck if the last time was also not the default height
+	// slight optimization... recheck if the last time was also not the default height
 	if ( path.lastHeight != defaultHeight )
 	{
-		offset 			= < 0, 0, defaultHeight + path.lastHeight >
-		path.start 		= ( cloakedDrone.GetOrigin() )
-		path.goal 		= GetCloakTargetOrigin( goalNPC ) + offset
+		offset = < 0, 0, defaultHeight + path.lastHeight >
+		path.start = ( cloakedDrone.GetOrigin() )
+		path.goal = GetCloakTargetOrigin( goalNPC ) + offset
 
 		TraceResults result = TraceHull( path.start, path.goal, mins, maxs, [ cloakedDrone, goalNPC ], mask, TRACE_COLLISION_GROUP_NONE )
-		//DebugDrawLine( path.start, path.goal, 0, 255, 0, true, 1.0 )
+		// DebugDrawLine( path.start, path.goal, 0, 255, 0, true, 1.0 )
 		if ( result.fraction >= VALIDPATHFRAC )
 		{
 			path.goalValid = true
@@ -476,20 +476,20 @@ bool function CloakedDroneFindPathHorizontal( CloakDronePath path, array<float> 
 		if ( path.lastHeight == testHeight )
 			continue
 
-//		wait 0.1
+		// 		wait 0.1
 
-		offset 			= < 0, 0, defaultHeight + testHeight >
-		path.start 		= ( cloakedDrone.GetOrigin() ) + ( testHeight > 0 ? < 0, 0, 0 > : < 0, 0, 32 > ) //Check from the top or bottom of the drone depending on if the drone is going up or down
-		path.goal 		= GetCloakTargetOrigin( goalNPC ) + offset
+		offset = < 0, 0, defaultHeight + testHeight >
+		path.start = ( cloakedDrone.GetOrigin() ) + ( testHeight > 0 ? < 0, 0, 0 > : < 0, 0, 32 > ) // Check from the top or bottom of the drone depending on if the drone is going up or down
+		path.goal = GetCloakTargetOrigin( goalNPC ) + offset
 
 		TraceResults result = TraceHull( path.start, path.goal, mins, maxs, [ cloakedDrone, goalNPC ], mask, TRACE_COLLISION_GROUP_NONE )
 		if ( result.fraction < VALIDPATHFRAC )
 		{
-			//DebugDrawLine( path.start, path.goal, 200, 0, 0, true, 3.0 )
+			// DebugDrawLine( path.start, path.goal, 200, 0, 0, true, 3.0 )
 			continue
 		}
 
-		//DebugDrawLine( path.start, path.goal, 0, 255, 0, true, 3.0 )
+		// DebugDrawLine( path.start, path.goal, 0, 255, 0, true, 3.0 )
 
 		path.lastHeight = testHeight
 		path.goalValid = true
@@ -499,7 +499,7 @@ bool function CloakedDroneFindPathHorizontal( CloakDronePath path, array<float> 
 	return path.goalValid
 }
 
-bool function CloakedDroneFindPathVertical( CloakDronePath path, array<float> traceHeights, float defaultHeight, vector mins, vector maxs, entity cloakedDrone, entity  goalNPC, int mask )
+bool function CloakedDroneFindPathVertical( CloakDronePath path, array<float> traceHeights, float defaultHeight, vector mins, vector maxs, entity cloakedDrone, entity goalNPC, int mask )
 {
 	vector offset
 	vector origin
@@ -509,25 +509,25 @@ bool function CloakedDroneFindPathVertical( CloakDronePath path, array<float> tr
 	{
 		wait 0.1
 
-		testHeight 		= traceHeights[ i ]
-		origin 			= cloakedDrone.GetOrigin()
-		offset 			= < 0, 0, defaultHeight + testHeight >
-		path.start 		= < origin.x, origin.y, defaultHeight + testHeight >
-		path.goal 		= GetCloakTargetOrigin( goalNPC ) + offset
+		testHeight = traceHeights[ i ]
+		origin = cloakedDrone.GetOrigin()
+		offset = < 0, 0, defaultHeight + testHeight >
+		path.start = < origin.x, origin.y, defaultHeight + testHeight >
+		path.goal = GetCloakTargetOrigin( goalNPC ) + offset
 
 		TraceResults result = TraceHull( path.start, path.goal, mins, maxs, [ cloakedDrone, goalNPC ], mask, TRACE_COLLISION_GROUP_NONE )
-		//DebugDrawLine( path.start, path.goal, 50, 50, 100, true, 1.0 )
+		// DebugDrawLine( path.start, path.goal, 50, 50, 100, true, 1.0 )
 		if ( result.fraction < VALIDPATHFRAC )
 			continue
 
-		//ok so it's valid - lets see if we can move to it from where we are
-//		wait 0.1
+		// ok so it's valid - lets see if we can move to it from where we are
+		// 		wait 0.1
 
-		path.goal 	= < path.start.x, path.start.y, path.start.z >
-		path.start 	= cloakedDrone.GetOrigin()
+		path.goal = < path.start.x, path.start.y, path.start.z >
+		path.start = cloakedDrone.GetOrigin()
 
 		result = TraceHull( path.start, path.goal, mins, maxs, [ cloakedDrone, goalNPC ], mask, TRACE_COLLISION_GROUP_NONE )
-		//DebugDrawLine( path.start, path.goal, 255, 255, 0, true, 1.0 )
+		// DebugDrawLine( path.start, path.goal, 255, 255, 0, true, 1.0 )
 		if ( result.fraction < VALIDPATHFRAC )
 			continue
 
@@ -564,7 +564,7 @@ void function CloakedDroneWarpOut( entity cloakedDrone, vector origin )
 		}
 		UntrackAllToneMarks( cloakedDrone )
 
-		wait 0.3	// wait a bit before hidding the done so that the fx looks better
+		wait 0.3 // wait a bit before hidding the done so that the fx looks better
 		cloakedDrone.Hide()
 	}
 
@@ -579,7 +579,7 @@ void function CloakedDroneWarpIn( entity cloakedDrone, vector origin )
 {
 	cloakedDrone.DisableBehavior( "Follow" )
 	cloakedDrone.SetOrigin( origin )
-	PutEntityInSafeSpot( cloakedDrone, cloakedDrone, null, cloakedDrone.GetOrigin() + <0, 0, 32>, cloakedDrone.GetOrigin() )
+	PutEntityInSafeSpot( cloakedDrone, cloakedDrone, null, cloakedDrone.GetOrigin() + < 0, 0, 32 >, cloakedDrone.GetOrigin() )
 	thread AssaultOrigin( cloakedDrone, origin )
 
 	EmitSoundOnEntity( cloakedDrone, CLOAKED_DRONE_HOVER_LOOP_SFX )
@@ -596,16 +596,15 @@ void function CloakedDroneWarpIn( entity cloakedDrone, vector origin )
 	cloakedDrone.SetNoTarget( false )
 }
 
-
 entity function CreateDroneCloakBeam( entity cloakedDrone )
 {
-	entity fx = PlayLoopFXOnEntity( FX_DRONE_CLOAK_BEAM, cloakedDrone, "", null, < 90, 0, 0 > )//, visibilityFlagOverride = null, visibilityFlagEntOverride = null )
+	entity fx = PlayLoopFXOnEntity( FX_DRONE_CLOAK_BEAM, cloakedDrone, "", null, < 90, 0, 0 > ) // , visibilityFlagOverride = null, visibilityFlagEntOverride = null )
 	return fx
 }
 
 entity function FindBestCloakTarget( array<entity> npcArray, vector origin, entity drone )
 {
-	entity  selectedNPC = null
+	entity selectedNPC = null
 	float maxDist = 10000 * 10000
 	float minDist = 1300 * 1300
 	float highestScore = -1
@@ -626,10 +625,10 @@ entity function FindBestCloakTarget( array<entity> npcArray, vector origin, enti
 			score += 0.75
 			if ( IsArcTitan( npc ) )
 				score -= 0.1
-		 	if ( IsMortarTitan( npc ) )
+			if ( IsMortarTitan( npc ) )
 				score -= 0.2
-//			if ( IsNukeTitan( npc ) )
-//				score += 0.1
+			// 			if ( IsNukeTitan( npc ) )
+			// 				score += 0.1
 		}
 		if ( score > highestScore )
 		{
@@ -655,7 +654,7 @@ vector function GetCloakTargetOrigin( entity npc )
 	else
 		origin = npc.GetSquadCentroid()
 
-	Assert( origin.x < ( 16384 * 100 ) );
+	Assert( origin.x < ( 16384 * 100 ) )
 
 	// defensive hack
 	if ( origin.x > ( 16384 * 100 ) )

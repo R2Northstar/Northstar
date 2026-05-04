@@ -99,7 +99,6 @@ global function OpenReviewTermsDialog
 global function ClassicMusic_OnChange
 global function IsClassicMusicAvailable
 
-
 void function UICodeCallback_CloseAllMenus()
 {
 	printt( "UICodeCallback_CloseAllMenus" )
@@ -200,10 +199,10 @@ bool function UICodeCallback_LevelLoadingStarted( string levelname )
 	// kill lingering postgame summary since persistent data may not be available at this point
 	Signal( uiGlobal.signalDummy, "PGDisplay" )
 
-#if CONSOLE_PROG
-	if ( !Console_IsSignedIn() )
-		return false
-#endif
+	#if CONSOLE_PROG
+		if ( !Console_IsSignedIn() )
+			return false
+	#endif
 
 	return true
 }
@@ -213,10 +212,10 @@ bool function UICodeCallback_UpdateLoadingLevelName( string levelname )
 {
 	printt( "UICodeCallback_UpdateLoadingLevelName: " + levelname )
 
-#if CONSOLE_PROG
-	if ( !Console_IsSignedIn() )
-		return false
-#endif
+	#if CONSOLE_PROG
+		if ( !Console_IsSignedIn() )
+			return false
+	#endif
 
 	return true
 }
@@ -273,9 +272,8 @@ void function UICodeCallback_LevelInit( string levelname )
 	}
 
 	#if DEV
-	UpdatePrecachedSPWeapons()
+		UpdatePrecachedSPWeapons()
 	#endif
-
 
 	if ( !uiGlobal.loadoutsInitialized )
 	{
@@ -311,27 +309,27 @@ void function UICodeCallback_LevelInit( string levelname )
 		Assert( gameModeString == GetConVarString( "mp_gamemode" ) )
 		Assert( gameModeString != "" )
 
-	    int gameModeId = GameMode_GetGameModeId( gameModeString )
+		int gameModeId = GameMode_GetGameModeId( gameModeString )
 
-	    int mapId = eMaps.invalid
-	    if ( levelname in getconsttable().eMaps )
-	    {
-	    	mapId = expect int( getconsttable().eMaps[ levelname ] )
-	    }
-	    else
-	    {
-	    	// Don't worry about this until we have to consider R2 Durango TCRs (10/2015)
-	    	//if ( !IsTestMap() )
-		    //	CodeWarning( "No map named '" + levelname + "' exists in eMaps, all shipping maps should be in this enum" )
-	    }
+		int mapId = eMaps.invalid
+		if ( levelname in getconsttable().eMaps )
+		{
+			mapId = expect int( getconsttable().eMaps[ levelname ] )
+		}
+		else
+		{
+			// Don't worry about this until we have to consider R2 Durango TCRs (10/2015)
+			// if ( !IsTestMap() )
+			// 	CodeWarning( "No map named '" + levelname + "' exists in eMaps, all shipping maps should be in this enum" )
+		}
 
-	    int difficultyLevelId = 0
-	    int roundId = 0
+		int difficultyLevelId = 0
+		int roundId = 0
 
-	    if ( isLobby )
-	    	Durango_OnLobbySessionStart( gameModeId, difficultyLevelId )
-	    else
-	    	Durango_OnMultiplayerRoundStart( gameModeId, mapId, difficultyLevelId, roundId, 0 )
+		if ( isLobby )
+			Durango_OnLobbySessionStart( gameModeId, difficultyLevelId )
+		else
+			Durango_OnMultiplayerRoundStart( gameModeId, mapId, difficultyLevelId, roundId, 0 )
 	}
 	else
 	{
@@ -347,7 +345,6 @@ void function UICodeCallback_LevelInit( string levelname )
 		{
 			thread callbackFunc()
 		}
-
 	}
 	thread UpdateMenusOnConnect( levelname )
 
@@ -378,9 +375,10 @@ void function UICodeCallback_NavigateBack()
 
 	if ( IsDialog( uiGlobal.activeMenu ) )
 	{
-		if ( uiGlobal.menuData[ uiGlobal.activeMenu ].dialogData.noChoice ||
-			 uiGlobal.menuData[ uiGlobal.activeMenu ].dialogData.forceChoice ||
-			 Time() < uiGlobal.dialogInputEnableTime )
+		if (
+			uiGlobal.menuData[ uiGlobal.activeMenu ].dialogData.noChoice || uiGlobal.menuData[ uiGlobal.activeMenu ].dialogData.forceChoice ||
+			Time() < uiGlobal.dialogInputEnableTime
+		)
 			return
 	}
 
@@ -403,12 +401,10 @@ void function UICodeCallback_NavigateBack()
 // Called when IsConnected() will start returning true.
 void function UICodeCallback_OnConnected()
 {
-
 }
 
 void function UICodeCallback_OnFocusChanged( var oldFocusedPanel, var newFocusedPanel )
 {
-
 }
 
 // Accepting an origin invite closes dialogs, or aborts if they can't be closed
@@ -451,14 +447,14 @@ void function UICodeCallback_ConsoleKeyboardClosed()
 
 void function UICodeCallback_OnDetenteDisplayed()
 {
-//	thread PlayDetentSound()
-//}
-//
-//void function PlayDetentSound()
-//{
-//	WaitFrame() // otherwise gets killed off by code pause
-//	WaitFrame() // otherwise gets killed off by code pause
-//	EmitUISound( "Pilot_Killed_Indicator" )
+	// 	thread PlayDetentSound()
+	// }
+	//
+	// void function PlayDetentSound()
+	// {
+	// 	WaitFrame() // otherwise gets killed off by code pause
+	// 	WaitFrame() // otherwise gets killed off by code pause
+	// 	EmitUISound( "Pilot_Killed_Indicator" )
 }
 
 void function UICodeCallback_OnSpLogDisplayed()
@@ -467,70 +463,68 @@ void function UICodeCallback_OnSpLogDisplayed()
 
 void function UICodeCallback_ErrorDialog( string errorDetails )
 {
-	printt( "UICodeCallback_ErrorDialog: " +  errorDetails )
+	printt( "UICodeCallback_ErrorDialog: " + errorDetails )
 	thread OpenErrorDialog( errorDetails )
 }
 
 void function UICodeCallback_AcceptInviteThread( string accesstoken )
 {
-	printt( "UICodeCallback_AcceptInviteThread '" + accesstoken + "'")
+	printt( "UICodeCallback_AcceptInviteThread '" + accesstoken + "'" )
 
 	#if PS4_PROG
 		if ( !Ps4_PSN_Is_Loggedin() )
 		{
-			Ps4_LoginDialog_Schedule();
-			while( Ps4_LoginDialog_Running() )
+			Ps4_LoginDialog_Schedule()
+			while ( Ps4_LoginDialog_Running() )
 				WaitFrame()
 			if ( !Ps4_PSN_Is_Loggedin() )
-				return;
+				return
 		}
 
-		if( Ps4_CheckPlus_Schedule() )
+		if ( Ps4_CheckPlus_Schedule() )
 		{
-			while( Ps4_CheckPlus_Running() )
+			while ( Ps4_CheckPlus_Running() )
 				WaitFrame()
-			if( !Ps4_CheckPlus_Allowed() )
+			if ( !Ps4_CheckPlus_Allowed() )
 			{
-				if( Ps4_CheckPlus_GetLastRequestResults() != 0 )
+				if ( Ps4_CheckPlus_GetLastRequestResults() != 0 )
 				{
 					return
 				}
 
-				if( Ps4_ScreenPlusDialog_Schedule() )
+				if ( Ps4_ScreenPlusDialog_Schedule() )
 				{
-					while( Ps4_ScreenPlusDialog_Running() )
+					while ( Ps4_ScreenPlusDialog_Running() )
 						WaitFrame()
-					if( !Ps4_ScreenPlusDialog_Allowed() )
-						return;
+					if ( !Ps4_ScreenPlusDialog_Allowed() )
+						return
 				}
 				else
 				{
-  					return;
+					return
 				}
 			}
 		}
 
 	#endif // #if PS4_PROG
 
-    SubscribeToChatroomPartyChannel( accesstoken );
-
+	SubscribeToChatroomPartyChannel( accesstoken )
 }
-
 
 void function UICodeCallback_AcceptInvite( string accesstoken )
 {
-	printt( "UICodeCallback_AcceptInvite '" + accesstoken + "'")
-	thread 	UICodeCallback_AcceptInviteThread( accesstoken )
+	printt( "UICodeCallback_AcceptInvite '" + accesstoken + "'" )
+	thread UICodeCallback_AcceptInviteThread( accesstoken )
 }
 
 // TODO: replaceCurrent should not be an option. It should be a different function.
 void function AdvanceMenu( var menu, bool replaceCurrent = false )
 {
-	//foreach ( index, menu in uiGlobal.menuStack )
-	//{
-	//	if ( menu != null )
-	//		printt( "menu index " + index + " is named " + menu.GetDisplayName() )
-	//}
+	// foreach ( index, menu in uiGlobal.menuStack )
+	// {
+	// 	if ( menu != null )
+	// 		printt( "menu index " + index + " is named " + menu.GetDisplayName() )
+	// }
 
 	if ( uiGlobal.activeMenu )
 	{
@@ -539,7 +533,10 @@ void function AdvanceMenu( var menu, bool replaceCurrent = false )
 			return
 
 		// Opening a normal menu while a dialog is open
-		Assert( !IsDialog( uiGlobal.activeMenu ), "Tried opening menu: " + Hud_GetHudName( menu ) + " when uiGlobal.activeMenu was: " + Hud_GetHudName( uiGlobal.activeMenu ) )
+		Assert(
+			!IsDialog( uiGlobal.activeMenu ),
+			"Tried opening menu: " + Hud_GetHudName( menu ) + " when uiGlobal.activeMenu was: " + Hud_GetHudName( uiGlobal.activeMenu )
+		)
 	}
 
 	if ( uiGlobal.activeMenu && !IsDialog( menu ) ) // Dialogs show on top so don't close existing menu when opening them
@@ -608,7 +605,7 @@ void function OpenSubmenu( var menu, bool updateMenuPos = true )
 	if ( updateMenuPos )
 	{
 		var vguiButtonFrame = Hud_GetChild( uiGlobal.activeMenu, "ButtonFrame" )
-		Hud_SetPos( vguiButtonFrame, submenuPos[0], submenuPos[1] )
+		Hud_SetPos( vguiButtonFrame, submenuPos[ 0 ], submenuPos[ 1 ] )
 	}
 
 	uiGlobal.lastMenuNavDirection = MENU_NAV_FORWARD
@@ -792,9 +789,9 @@ void function UpdateMenusOnConnect( string levelname )
 	// TODO: The order things are called in should be predictable so this isn't needed
 	while ( !uiGlobal.mapSupportsMenuModelsUpdated )
 	{
-		//printt( Time(), "beginning waitframe, uiGlobal.mapSupportsMenuModelsUpdated is:", uiGlobal.mapSupportsMenuModelsUpdated )
+		// printt( Time(), "beginning waitframe, uiGlobal.mapSupportsMenuModelsUpdated is:", uiGlobal.mapSupportsMenuModelsUpdated )
 		WaitFrame()
-		//printt( Time(), "ended waitframe, uiGlobal.mapSupportsMenuModelsUpdated is:", uiGlobal.mapSupportsMenuModelsUpdated )
+		// printt( Time(), "ended waitframe, uiGlobal.mapSupportsMenuModelsUpdated is:", uiGlobal.mapSupportsMenuModelsUpdated )
 	}
 
 	if ( IsLevelMultiplayer( levelname ) )
@@ -899,7 +896,9 @@ void function InitGamepadConfigs()
 {
 	uiGlobal.buttonConfigs = [ { orthodox = "gamepad_button_layout_default.cfg", southpaw = "gamepad_button_layout_default_southpaw.cfg" } ]
 	uiGlobal.buttonConfigs.append( { orthodox = "gamepad_button_layout_bumper_jumper.cfg", southpaw = "gamepad_button_layout_bumper_jumper_southpaw.cfg" } )
-	uiGlobal.buttonConfigs.append( { orthodox = "gamepad_button_layout_bumper_jumper_alt.cfg", southpaw = "gamepad_button_layout_bumper_jumper_alt_southpaw.cfg" } )
+	uiGlobal.buttonConfigs.append(
+		{ orthodox = "gamepad_button_layout_bumper_jumper_alt.cfg", southpaw = "gamepad_button_layout_bumper_jumper_alt_southpaw.cfg" }
+	)
 	uiGlobal.buttonConfigs.append( { orthodox = "gamepad_button_layout_pogo_stick.cfg", southpaw = "gamepad_button_layout_pogo_stick_southpaw.cfg" } )
 	uiGlobal.buttonConfigs.append( { orthodox = "gamepad_button_layout_button_kicker.cfg", southpaw = "gamepad_button_layout_button_kicker_southpaw.cfg" } )
 	uiGlobal.buttonConfigs.append( { orthodox = "gamepad_button_layout_circle.cfg", southpaw = "gamepad_button_layout_circle_southpaw.cfg" } )
@@ -961,9 +960,9 @@ void function InitMenus()
 	AddMenu( "CommunityEditMenu", $"resource/ui/menus/community_edit.menu" )
 	AddMenu( "CommunityAdminSendMessage", $"resource/ui/menus/community_sendMessage.menu" )
 	AddMenu( "CommunityAdminInviteRequestMenu", $"resource/ui/menus/community_inviteRequest.menu" )
-#if NETWORK_INVITE
-	AddMenu( "InviteFriendsToNetworkMenu", $"resource/ui/menus/invite_friends.menu", InitInviteFriendsToNetworkMenu )
-#endif
+	#if NETWORK_INVITE
+		AddMenu( "InviteFriendsToNetworkMenu", $"resource/ui/menus/invite_friends.menu", InitInviteFriendsToNetworkMenu )
+	#endif
 
 	AddMenu( "InGameMPMenu", $"resource/ui/menus/ingame_mp.menu", InitInGameMPMenu )
 	AddMenu( "InGameSPMenu", $"resource/ui/menus/ingame_sp.menu", InitInGameSPMenu )
@@ -980,13 +979,13 @@ void function InitMenus()
 	AddMenu( "ControlsMenu", $"resource/ui/menus/controls.menu", InitControlsMenu, "#CONTROLS" )
 	AddMenu( "ControlsAdvancedLookMenu", $"resource/ui/menus/controls_advanced_look.menu", InitControlsAdvancedLookMenu, "#CONTROLS_ADVANCED_LOOK" )
 	AddMenu( "GamepadLayoutMenu", $"resource/ui/menus/gamepadlayout.menu", InitGamepadLayoutMenu )
-#if PC_PROG
-	AddMenu_WithCreateFunc( "MouseKeyboardBindingsMenu", $"resource/ui/menus/mousekeyboardbindings.menu", InitMouseKeyboardMenu, CreateKeyBindingMenu )
-	AddMenu( "AudioMenu", $"resource/ui/menus/audio.menu", InitAudioMenu, "#AUDIO" )
-	AddMenu_WithCreateFunc( "VideoMenu", $"resource/ui/menus/video.menu", InitVideoMenu, CreateVideoOptionsMenu )
-#elseif CONSOLE_PROG
-	AddMenu( "AudioVideoMenu", $"resource/ui/menus/audio_video.menu", InitAudioVideoMenu, "#AUDIO_VIDEO" )
-#endif
+	#if PC_PROG
+		AddMenu_WithCreateFunc( "MouseKeyboardBindingsMenu", $"resource/ui/menus/mousekeyboardbindings.menu", InitMouseKeyboardMenu, CreateKeyBindingMenu )
+		AddMenu( "AudioMenu", $"resource/ui/menus/audio.menu", InitAudioMenu, "#AUDIO" )
+		AddMenu_WithCreateFunc( "VideoMenu", $"resource/ui/menus/video.menu", InitVideoMenu, CreateVideoOptionsMenu )
+	#elseif CONSOLE_PROG
+		AddMenu( "AudioVideoMenu", $"resource/ui/menus/audio_video.menu", InitAudioVideoMenu, "#AUDIO_VIDEO" )
+	#endif
 
 	AddMenu( "AdvancedHudMenu", $"resource/ui/menus/advanced_hud.menu", InitAdvancedHudMenu, "#ADVANCED_HUD" )
 
@@ -1023,9 +1022,9 @@ void function InitMenus()
 
 	AddMenu( "ViewStatsMenu", $"resource/ui/menus/viewstats.menu", InitViewStatsMenu, "#PERSONAL_STATS" )
 	AddMenu( "ViewStats_Overview_Menu", $"resource/ui/menus/viewstats_overview.menu", InitViewStatsOverviewMenu )
-	//AddMenu( "ViewStats_Kills_Menu", $"resource/ui/menus/viewstats_kills.menu", InitViewStatsKillsMenu )
+	// AddMenu( "ViewStats_Kills_Menu", $"resource/ui/menus/viewstats_kills.menu", InitViewStatsKillsMenu )
 	AddMenu( "ViewStats_Time_Menu", $"resource/ui/menus/viewstats_time.menu", InitViewStatsTimeMenu )
-	//AddMenu( "ViewStats_Distance_Menu", $"resource/ui/menus/viewstats_distance.menu", InitViewStatsDistanceMenu )
+	// AddMenu( "ViewStats_Distance_Menu", $"resource/ui/menus/viewstats_distance.menu", InitViewStatsDistanceMenu )
 	AddMenu( "ViewStats_Weapons_Menu", $"resource/ui/menus/viewstats_weapons.menu", InitViewStatsWeaponsMenu )
 	AddMenu( "ViewStats_Titans_Menu", $"resource/ui/menus/viewstats_titans.menu", InitViewStatsTitansMenu )
 	AddMenu( "ViewStats_Misc_Menu", $"resource/ui/menus/viewstats_misc.menu", InitViewStatsMiscMenu )
@@ -1050,12 +1049,17 @@ void function InitMenus()
 	AddMenu( "StoreMenu_Sales", $"resource/ui/menus/store_bundles.menu", InitStoreMenuSales, "#STORE_BUNDLES" )
 	AddMenu( "StoreMenu_Titans", $"resource/ui/menus/store_prime_titans.menu", InitStoreMenuTitans, "#STORE_TITANS" ) // reusing store_prime_titans.menu
 	AddMenu( "StoreMenu_PrimeTitans", $"resource/ui/menus/store_prime_titans.menu", InitStoreMenuPrimeTitans, "#STORE_PRIME_TITANS" )
-	//AddMenu( "StoreMenu_WeaponSelect", $"resource/ui/menus/store_weapon_select.menu", InitStoreMenuWeaponSelect )
-	//AddMenu( "StoreMenu_WeaponSkinPreview", $"resource/ui/menus/store_weapon_skin_preview.menu", InitStoreMenuWeaponSkinPreview )
+	// AddMenu( "StoreMenu_WeaponSelect", $"resource/ui/menus/store_weapon_select.menu", InitStoreMenuWeaponSelect )
+	// AddMenu( "StoreMenu_WeaponSkinPreview", $"resource/ui/menus/store_weapon_skin_preview.menu", InitStoreMenuWeaponSkinPreview )
 	AddMenu( "StoreMenu_WeaponSkinBundles", $"resource/ui/menus/store_weapon_skin_bundles.menu", InitStoreMenuWeaponSkinBundles )
 	AddMenu( "StoreMenu_WeaponSkins", $"resource/ui/menus/store_weapons.menu", InitStoreMenuWeaponSkins )
 	AddMenu( "StoreMenu_Customization", $"resource/ui/menus/store_customization.menu", InitStoreMenuCustomization, "#STORE_CUSTOMIZATION_PACKS" )
-	AddMenu( "StoreMenu_CustomizationPreview", $"resource/ui/menus/store_customization_preview.menu", InitStoreMenuCustomizationPreview, "#STORE_CUSTOMIZATION_PACKS" )
+	AddMenu(
+		"StoreMenu_CustomizationPreview",
+		$"resource/ui/menus/store_customization_preview.menu",
+		InitStoreMenuCustomizationPreview,
+		"#STORE_CUSTOMIZATION_PACKS"
+	)
 	AddMenu( "StoreMenu_Camo", $"resource/ui/menus/store_camo.menu", InitStoreMenuCamo, "#STORE_CAMO_PACKS" )
 	AddMenu( "StoreMenu_CamoPreview", $"resource/ui/menus/store_camo_preview.menu", InitStoreMenuCamoPreview, "#STORE_CAMO_PACKS" )
 	AddMenu( "StoreMenu_Callsign", $"resource/ui/menus/store_callsign.menu", InitStoreMenuCallsign, "#STORE_CALLSIGN_PACKS" )
@@ -1104,24 +1108,27 @@ void function InitMenus()
 		{
 			var panel = Hud_GetParent( button )
 
-			//Assert( elems.len() == 1, "More than 1 panel element set as DefaultFocus!" )
+			// Assert( elems.len() == 1, "More than 1 panel element set as DefaultFocus!" )
 			Assert( panel != null, "no parent panel found for button " + Hud_GetHudName( button ) )
-			Assert( panel in uiGlobal.panelData, "panel " + Hud_GetHudName( panel ) + " isn't in uiGlobal.panelData, but button " + Hud_GetHudName( button ) + " has defaultFocus set!" )
+			Assert(
+				panel in uiGlobal.panelData,
+				"panel " + Hud_GetHudName( panel ) + " isn't in uiGlobal.panelData, but button " + Hud_GetHudName( button ) + " has defaultFocus set!"
+			)
 			uiGlobal.panelData[ panel ].defaultFocus = button
-			//printt( "Found DefaultFocus, button was:", Hud_GetHudName( button ), "panel was:", Hud_GetHudName( panel ) )
+			// printt( "Found DefaultFocus, button was:", Hud_GetHudName( button ), "panel was:", Hud_GetHudName( panel ) )
 		}
 	}
 
 	InitFooterOptions()
 
 	#if DEV
-	if ( Dev_CommandLineHasParm( "-autoprecache_all" ) )
-	{
-		// repreache all levels
-		ExecuteLoadingClientCommands_SetStartPoint( "sp_training" )
-		ClientCommand( "map sp_training" )
-		CloseAllMenus()
-	}
+		if ( Dev_CommandLineHasParm( "-autoprecache_all" ) )
+		{
+			// repreache all levels
+			ExecuteLoadingClientCommands_SetStartPoint( "sp_training" )
+			ClientCommand( "map sp_training" )
+			CloseAllMenus()
+		}
 	#endif
 }
 
@@ -1153,7 +1160,7 @@ void function PCToggleSpectateButton_Activate( var button )
 
 void function ToggleButtonStates( var button )
 {
-	for ( ;; )
+	for ( ; ; )
 	{
 		Hud_SetEnabled( button, true )
 		wait 1
@@ -1178,32 +1185,25 @@ void function AddMenuElementsByClassname( var menu, string classname )
 {
 	array<var> elements = GetElementsByClassname( menu, classname )
 
-	if ( !(classname in menu.classElements) )
-		menu.classElements[classname] <- []
+	if ( !( classname in menu.classElements ) )
+		menu.classElements[ classname ] <- []
 
-	menu.classElements[classname].extend( elements )
+	menu.classElements[ classname ].extend( elements )
 }
 
 void function FocusDefault( var menu )
 {
 	if (
-				menu == GetMenu( "MainMenu" ) ||
-				menu == GetMenu( "CategorySelectMenu" ) ||
-			  menu == GetMenu( "AbilitySelectMenu" ) ||
-			  menu == GetMenu( "PassiveSelectMenu" ) ||
-			  menu == GetMenu( "WeaponSelectMenu" ) ||
-			  menu == GetMenu( "SuitSelectMenu" ) ||
-			  menu == GetMenu( "CamoSelectMenu" ) ||
-			  menu == GetMenu( "NoseArtSelectMenu" ) ||
-			  menu == GetMenu( "FactionChoiceMenu" ) ||
-			  menu == GetMenu( "BurnCardMenu" ) ||
-			  menu == GetMenu( "CallsignCardSelectMenu" ) ||
-			  menu == GetMenu( "CallsignIconSelectMenu" ) )
+		menu == GetMenu( "MainMenu" ) || menu == GetMenu( "CategorySelectMenu" ) || menu == GetMenu( "AbilitySelectMenu" ) || menu == GetMenu( "PassiveSelectMenu" )
+		|| menu == GetMenu( "WeaponSelectMenu" ) || menu == GetMenu( "SuitSelectMenu" ) || menu == GetMenu( "CamoSelectMenu" ) ||
+		menu == GetMenu( "NoseArtSelectMenu" ) || menu == GetMenu( "FactionChoiceMenu" ) || menu == GetMenu( "BurnCardMenu" ) ||
+		menu == GetMenu( "CallsignCardSelectMenu" ) || menu == GetMenu( "CallsignIconSelectMenu" )
+	)
 	{
 	}
 	else
 	{
-		//printt( "FocusDefaultMenuItem() called" )
+		// printt( "FocusDefaultMenuItem() called" )
 		FocusDefaultMenuItem( menu )
 	}
 }
@@ -1215,11 +1215,11 @@ void function SetPanelDefaultFocus( var panel, var button )
 
 void function PanelFocusDefault( var panel )
 {
-	//printt( "PanelFocusDefault called" )
+	// printt( "PanelFocusDefault called" )
 	if ( uiGlobal.panelData[ panel ].defaultFocus )
 	{
 		Hud_SetFocused( uiGlobal.panelData[ panel ].defaultFocus )
-		//printt( "PanelFocusDefault if passed,", Hud_GetHudName( uiGlobal.panelData[ panel ].defaultFocus ), "focused" )
+		// printt( "PanelFocusDefault if passed,", Hud_GetHudName( uiGlobal.panelData[ panel ].defaultFocus ), "focused" )
 	}
 }
 
@@ -1291,13 +1291,13 @@ void function OpenMenuWrapper( var menu, bool focusDefault )
 	if ( uiGlobal.menuData[ menu ].openFunc != null )
 	{
 		thread uiGlobal.menuData[ menu ].openFunc()
-		//printt( "Called openFunc for:", menu.GetHudName() )
+		// printt( "Called openFunc for:", menu.GetHudName() )
 	}
 
 	if ( focusDefault )
 		FocusDefault( menu )
 
-	//UpdateMenuTabs()
+	// UpdateMenuTabs()
 	UpdateFooterOptions()
 }
 
@@ -1310,7 +1310,7 @@ void function CloseMenuWrapper( var menu )
 	if ( uiGlobal.menuData[ menu ].closeFunc != null )
 	{
 		thread uiGlobal.menuData[ menu ].closeFunc()
-		//printt( "Called closeFunc for:", Hud_GetHudName( menu ) )
+		// printt( "Called closeFunc for:", Hud_GetHudName( menu ) )
 	}
 }
 
@@ -1336,7 +1336,7 @@ void function AddEventHandlerToButtonClass( var menu, string classname, int even
 
 	foreach ( button in buttons )
 	{
-		//printt( "button name:", Hud_GetHudName( button ) )
+		// printt( "button name:", Hud_GetHudName( button ) )
 		Hud_AddEventHandler( button, event, func )
 	}
 }
@@ -1363,19 +1363,21 @@ void function PlayMusic()
 {
 	if ( !uiGlobal.playingMusic && !uiGlobal.playingVideo && !uiGlobal.playingCredits )
 	{
-		//printt( "PlayMusic() called. Playing: MainMenu_Music. uiGlobal.playingMusic:", uiGlobal.playingMusic, "uiGlobal.playingVideo:", uiGlobal.playingVideo, "uiGlobal.playingCredits:", uiGlobal.playingCredits )
+		// printt( "PlayMusic() called. Playing: MainMenu_Music. uiGlobal.playingMusic:", uiGlobal.playingMusic,
+		// "uiGlobal.playingVideo:", uiGlobal.playingVideo, "uiGlobal.playingCredits:", uiGlobal.playingCredits )
 		uiGlobal.playingMusic = true
 		thread PlayMusicAfterDelay()
 	}
 	else
 	{
-		//printt( "PlayMusic() called, but doing nothing. uiGlobal.playingMusic:", uiGlobal.playingMusic, "uiGlobal.playingVideo:", uiGlobal.playingVideo, "uiGlobal.playingCredits:", uiGlobal.playingCredits )
+		// printt( "PlayMusic() called, but doing nothing. uiGlobal.playingMusic:", uiGlobal.playingMusic,
+		// "uiGlobal.playingVideo:", uiGlobal.playingVideo, "uiGlobal.playingCredits:", uiGlobal.playingCredits )
 	}
 }
 
 void function StopMusic()
 {
-	//printt( "StopMusic() called. Stopping: MainMenu_Music" )
+	// printt( "StopMusic() called. Stopping: MainMenu_Music" )
 	StopUISound( "MainMenu_Music" )
 	uiGlobal.playingMusic = false
 }
@@ -1386,7 +1388,7 @@ void function RegisterMenuVarInt( string varName, int value )
 
 	Assert( !( varName in intVars ) )
 
-	intVars[varName] <- value
+	intVars[ varName ] <- value
 }
 
 void function RegisterMenuVarBool( string varName, bool value )
@@ -1395,7 +1397,7 @@ void function RegisterMenuVarBool( string varName, bool value )
 
 	Assert( !( varName in boolVars ) )
 
-	boolVars[varName] <- value
+	boolVars[ varName ] <- value
 }
 
 void function RegisterMenuVarVar( string varName, var value )
@@ -1404,7 +1406,7 @@ void function RegisterMenuVarVar( string varName, var value )
 
 	Assert( !( varName in varVars ) )
 
-	varVars[varName] <- value
+	varVars[ varName ] <- value
 }
 
 int function GetMenuVarInt( string varName )
@@ -1413,7 +1415,7 @@ int function GetMenuVarInt( string varName )
 
 	Assert( varName in intVars )
 
-	return intVars[varName]
+	return intVars[ varName ]
 }
 
 bool function GetMenuVarBool( string varName )
@@ -1422,7 +1424,7 @@ bool function GetMenuVarBool( string varName )
 
 	Assert( varName in boolVars )
 
-	return boolVars[varName]
+	return boolVars[ varName ]
 }
 
 var function GetMenuVarVar( string varName )
@@ -1431,7 +1433,7 @@ var function GetMenuVarVar( string varName )
 
 	Assert( varName in varVars )
 
-	return varVars[varName]
+	return varVars[ varName ]
 }
 
 void function SetMenuVarInt( string varName, int value )
@@ -1440,18 +1442,18 @@ void function SetMenuVarInt( string varName, int value )
 
 	Assert( varName in intVars )
 
-	if ( intVars[varName] == value )
+	if ( intVars[ varName ] == value )
 		return
 
-	intVars[varName] = value
+	intVars[ varName ] = value
 
 	table<string, array<void functionref()> > varChangeFuncs = uiGlobal.varChangeFuncs
 
 	if ( varName in varChangeFuncs )
 	{
-		foreach ( func in varChangeFuncs[varName] )
+		foreach ( func in varChangeFuncs[ varName ] )
 		{
-			//printt( varName, "changed, calling changeFunc:", string( func ) )
+			// printt( varName, "changed, calling changeFunc:", string( func ) )
 			func()
 		}
 	}
@@ -1463,18 +1465,18 @@ void function SetMenuVarBool( string varName, bool value )
 
 	Assert( varName in boolVars )
 
-	if ( boolVars[varName] == value )
+	if ( boolVars[ varName ] == value )
 		return
 
-	boolVars[varName] = value
+	boolVars[ varName ] = value
 
 	table<string, array<void functionref()> > varChangeFuncs = uiGlobal.varChangeFuncs
 
 	if ( varName in varChangeFuncs )
 	{
-		foreach ( func in varChangeFuncs[varName] )
+		foreach ( func in varChangeFuncs[ varName ] )
 		{
-			//printt( varName, "changed, calling changeFunc:", string( func ) )
+			// printt( varName, "changed, calling changeFunc:", string( func ) )
 			func()
 		}
 	}
@@ -1486,18 +1488,18 @@ void function SetMenuVarVar( string varName, var value )
 
 	Assert( varName in varVars )
 
-	if ( varVars[varName] == value )
+	if ( varVars[ varName ] == value )
 		return
 
-	varVars[varName] = value
+	varVars[ varName ] = value
 
 	table<string, array<void functionref()> > varChangeFuncs = uiGlobal.varChangeFuncs
 
 	if ( varName in varChangeFuncs )
 	{
-		foreach ( func in varChangeFuncs[varName] )
+		foreach ( func in varChangeFuncs[ varName ] )
 		{
-			//printt( varName, "changed, calling changeFunc:", string( func ) )
+			// printt( varName, "changed, calling changeFunc:", string( func ) )
 			func()
 		}
 	}
@@ -1508,10 +1510,10 @@ void function AddMenuVarChangeHandler( string varName, void functionref() func )
 	table<string, array<void functionref()> > varChangeFuncs = uiGlobal.varChangeFuncs
 
 	if ( !( varName in varChangeFuncs ) )
-		varChangeFuncs[varName] <- []
+		varChangeFuncs[ varName ] <- []
 
 	// TODO: Verify we're not duplicating an existing func
-	varChangeFuncs[varName].append( func )
+	varChangeFuncs[ varName ].append( func )
 }
 
 // These are common menu statuses that trigger menu logic any time they change
@@ -1534,8 +1536,8 @@ void function InitGlobalMenuVars()
 		RegisterMenuVarBool( "DURANGO_isGameFullyInstalled", false )
 		RegisterMenuVarBool( "DURANGO_canInviteFriends", false )
 		RegisterMenuVarBool( "DURANGO_isJoinable", false )
-    #elseif PS4_PROG
-		RegisterMenuVarBool( "PS4_canInviteFriends", false)
+	#elseif PS4_PROG
+		RegisterMenuVarBool( "PS4_canInviteFriends", false )
 	#elseif PC_PROG
 		RegisterMenuVarBool( "ORIGIN_isEnabled", false )
 		RegisterMenuVarBool( "ORIGIN_isJoinable", false )
@@ -1557,7 +1559,7 @@ void function InitGlobalMenuVars()
 		thread UpdateDurango_IsGameFullyInstalled()
 		thread UpdateDurango_CanInviteFriends()
 		thread UpdateDurango_IsJoinable()
-    #elseif PS4_PROG
+	#elseif PS4_PROG
 		thread UpdatePS4_CanInviteFriends()
 	#elseif PC_PROG
 		thread UpdateOrigin_IsEnabled()
@@ -1647,7 +1649,6 @@ void function UpdateIsPrivateMatch()
 	}
 #endif // CONSOLE_PROG
 
-
 #if PS4_PROG
 	void function UpdatePS4_CanInviteFriends()
 	{
@@ -1658,8 +1659,6 @@ void function UpdateIsPrivateMatch()
 		}
 	}
 #endif // PS4_PROG
-
-
 
 #if DURANGO_PROG
 	void function UpdateDurango_IsGameFullyInstalled()
@@ -1721,12 +1720,12 @@ void function UpdateIsPrivateMatch()
 
 void function InviteFriends( var button )
 {
-	//AdvanceMenu( GetMenu( "InviteFriendsToPartyMenu" ) )
+	// AdvanceMenu( GetMenu( "InviteFriendsToPartyMenu" ) )
 
 	#if DURANGO_PROG
 		Durango_InviteFriends()
 	#elseif PS4_PROG
-	    ClientCommand("session_debug_invite");
+		ClientCommand( "session_debug_invite" )
 	#elseif PC_PROG
 		Assert( Origin_IsEnabled() )
 		Assert( Origin_IsJoinable() )
@@ -1736,15 +1735,15 @@ void function InviteFriends( var button )
 }
 
 #if DURANGO_PROG
-void function OpenXboxPartyApp( var button )
-{
-	Durango_OpenPartyApp()
-}
+	void function OpenXboxPartyApp( var button )
+	{
+		Durango_OpenPartyApp()
+	}
 
-void function OpenXboxHelp( var button )
-{
-	Durango_ShowHelpWindow()
-}
+	void function OpenXboxHelp( var button )
+	{
+		Durango_ShowHelpWindow()
+	}
 #endif // DURANGO_PROG
 
 void function OpenReviewTermsDialog( var button )
@@ -1759,11 +1758,11 @@ void function OpenErrorDialog( string errorDetails )
 	dialogData.message = errorDetails
 	dialogData.image = $"ui/menu/common/dialog_error"
 
-#if PC_PROG
-	AddDialogButton( dialogData, "#DISMISS" )
+	#if PC_PROG
+		AddDialogButton( dialogData, "#DISMISS" )
 
-	AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
-#endif // PC_PROG
+		AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
+	#endif // PC_PROG
 	AddDialogFooter( dialogData, "#B_BUTTON_DISMISS_RUI" )
 
 	while ( uiGlobal.activeMenu != GetMenu( "MainMenu" ) )
@@ -1799,13 +1798,13 @@ bool function IsDialogOnlyActiveMenu()
 	if ( stackLen < 1 )
 		return false
 
-	if ( uiGlobal.menuStack[stackLen - 1] != uiGlobal.activeMenu )
+	if ( uiGlobal.menuStack[ stackLen - 1 ] != uiGlobal.activeMenu )
 		return false
 
 	if ( stackLen == 1 )
 		return true
 
-	if ( uiGlobal.menuStack[stackLen - 2] == null )
+	if ( uiGlobal.menuStack[ stackLen - 2 ] == null )
 		return true
 
 	return false
@@ -1815,31 +1814,30 @@ void function SetNavUpDown( array<var> buttons, var wrap = true )
 {
 	Assert( buttons.len() > 0 )
 
-	var first = buttons[0]
-	var last = buttons[buttons.len() - 1]
+	var first = buttons[ 0 ]
+	var last = buttons[ buttons.len() - 1 ]
 	var prev
 	var next
 	var button
 
 	for ( int i = 0; i < buttons.len(); i++ )
 	{
-		button = buttons[i]
+		button = buttons[ i ]
 
 		if ( button == first )
 			prev = last
 		else
-			prev = buttons[i - 1]
+			prev = buttons[ i - 1 ]
 
 		if ( button == last )
 			next = first
 		else
-			next = buttons[i + 1]
+			next = buttons[ i + 1 ]
 
 		button.SetNavUp( prev )
 		button.SetNavDown( next )
-
-		//printt( "SetNavUP for:", Hud_GetHudName( button ), "to:", Hud_GetHudName( prev ) )
-		//printt( "SetNavDown for:", Hud_GetHudName( button ), "to:", Hud_GetHudName( next ) )
+		// printt( "SetNavUP for:", Hud_GetHudName( button ), "to:", Hud_GetHudName( prev ) )
+		// printt( "SetNavDown for:", Hud_GetHudName( button ), "to:", Hud_GetHudName( next ) )
 	}
 }
 
@@ -1847,31 +1845,30 @@ void function SetNavLeftRight( array<var> buttons, var wrap = true )
 {
 	Assert( buttons.len() > 0 )
 
-	var first = buttons[0]
-	var last = buttons[buttons.len() - 1]
+	var first = buttons[ 0 ]
+	var last = buttons[ buttons.len() - 1 ]
 	var prev
 	var next
 	var button
 
 	for ( int i = 0; i < buttons.len(); i++ )
 	{
-		button = buttons[i]
+		button = buttons[ i ]
 
 		if ( button == first )
 			prev = last
 		else
-			prev = buttons[i - 1]
+			prev = buttons[ i - 1 ]
 
 		if ( button == last )
 			next = first
 		else
-			next = buttons[i + 1]
+			next = buttons[ i + 1 ]
 
 		button.SetNavLeft( prev )
 		button.SetNavRight( next )
-
-		//printt( "SetNavUP for:", Hud_GetHudName( button ), "to:", Hud_GetHudName( prev ) )
-		//printt( "SetNavDown for:", Hud_GetHudName( button ), "to:", Hud_GetHudName( next ) )
+		// printt( "SetNavUP for:", Hud_GetHudName( button ), "to:", Hud_GetHudName( prev ) )
+		// printt( "SetNavDown for:", Hud_GetHudName( button ), "to:", Hud_GetHudName( next ) )
 	}
 }
 
@@ -1885,32 +1882,32 @@ void function UICodeCallback_EntitlementsChanged()
 }
 
 #if PC_PROG
-void function QuitGame()
-{
-	ClientCommand( "quit" )
-}
+	void function QuitGame()
+	{
+		ClientCommand( "quit" )
+	}
 #endif
 
 void function UICodeCallback_StoreTransactionCompleted()
 {
 	// this callback is only supported and needed on PS4 currently
-#if PS4_PROG
-	if ( InStoreMenu() )
-		OnOpenDLCStore()
-#endif
+	#if PS4_PROG
+		if ( InStoreMenu() )
+			OnOpenDLCStore()
+	#endif
 }
 
 void function UICodeCallback_GamePurchased()
 {
 	// this callback is only supported and needed on PC currently
-#if PC_PROG
-	DialogData dialogData
-	dialogData.header = "#PURCHASE_GAME_COMPLETE"
-	dialogData.message = "#PURCHASE_GAME_RESTART"
-	AddDialogButton( dialogData, "#QUIT", QuitGame )
+	#if PC_PROG
+		DialogData dialogData
+		dialogData.header = "#PURCHASE_GAME_COMPLETE"
+		dialogData.message = "#PURCHASE_GAME_RESTART"
+		AddDialogButton( dialogData, "#QUIT", QuitGame )
 
-	OpenDialog( dialogData )
-#endif
+		OpenDialog( dialogData )
+	#endif
 }
 
 bool function IsTrialPeriodActive()
@@ -1960,7 +1957,6 @@ void function UICodeCallback_PartyUpdated()
 		}
 	}
 }
-
 
 void function HACK_DelayedSetFocus_BecauseWhy( var item )
 {

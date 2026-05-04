@@ -1,10 +1,9 @@
-
 global function Viewcone_Init
 
-	//DEFAULT: if you don't set one - defaults to this one
+// DEFAULT: if you don't set one - defaults to this one
 global function ViewConeRampFree
 
-//misc
+// misc
 global function ViewConeZero
 global function ViewConeZeroInstant
 global function ViewConeNarrow
@@ -17,32 +16,32 @@ global function ViewConeTDay
 global function ViewConeTDayZero
 global function ViewConeFastball
 
-//run out ramp
+// run out ramp
 global function ViewConeRampFrontLeft
 global function ViewConeRampFrontRight
 global function ViewConeRampBackLeft
 global function ViewConeRampBackRight
 
-//droppod
+// droppod
 global function ViewConeDropPodFrontR
 global function ViewConeDropPodFrontL
 global function ViewConeDropPodBackR
 global function ViewConeDropPodBackL
 global function ViewConeDropPod
 
-//right side jump
+// right side jump
 global function ViewConeSideRightStandFront
 global function ViewConeSideRightStandBack
 global function ViewConeSideRightSitFront
 global function ViewConeSideRightSitBack
 
-//right side jump - focus on hero
+// right side jump - focus on hero
 global function ViewConeSideRightWithHeroStandFront
 global function ViewConeSideRightWithHeroStandBack
 global function ViewConeSideRightWithHeroSitFront
 global function ViewConeSideRightWithHeroSitBack
 
-//right side jump - locked 180 view forward
+// right side jump - locked 180 view forward
 global function ViewConeSideRightLockedForwardStandFront
 global function ViewConeSideRightLockedForwardSitFront
 global function ViewConeSideRightLockedForwardStandBack
@@ -51,31 +50,31 @@ global function ViewConeSideRightLockedForwardSitBack
 global function ViewConeSpSpawn
 global function InitView
 
-//evac
+// evac
 global function ViewConeFree
 
 global function IsViewConeCurrent
 
 void function Viewcone_Init()
 {
-	AddGlobalAnimEvent( "ViewConeZero",					ViewConeZero )
-	AddGlobalAnimEvent( "ViewConeTight",				ViewConeTight )
-	AddGlobalAnimEvent( "ViewConeDropPod",				ViewConeDropPod )
-	AddGlobalAnimEvent( "ViewConeDropPodFrontR",		ViewConeDropPodFrontR )
-	AddGlobalAnimEvent( "ViewConeDropPodFrontL",		ViewConeDropPodFrontL )
-	AddGlobalAnimEvent( "ViewConeDropPodBackR",			ViewConeDropPodBackR )
-	AddGlobalAnimEvent( "ViewConeDropPodBackL",			ViewConeDropPodBackL )
-	AddGlobalAnimEvent( "ViewConeNarrow",				ViewConeNarrow )
-	AddGlobalAnimEvent( "ViewConeSmall",				ViewConeSmall )
-	AddGlobalAnimEvent( "ViewConeRampFrontLeft",		ViewConeRampFrontLeft )
-	AddGlobalAnimEvent( "ViewConeRampFrontRight",		ViewConeRampFrontRight )
-	AddGlobalAnimEvent( "ViewConeRampBackLeft",			ViewConeRampBackLeft )
-	AddGlobalAnimEvent( "ViewConeRampBackRight",		ViewConeRampBackRight )
-	AddGlobalAnimEvent( "ViewConeRampFree",				ViewConeRampFree )
-	AddGlobalAnimEvent( "ViewConeFree",					ViewConeFree )
-	AddGlobalAnimEvent( "ViewConeFreeLookingForward",	ViewConeFreeLookingForward )
-	AddGlobalAnimEvent( "ViewConeTDay",					ViewConeTDay )
-	AddGlobalAnimEvent( "ViewConeTDayZero",				ViewConeTDayZero )
+	AddGlobalAnimEvent( "ViewConeZero", ViewConeZero )
+	AddGlobalAnimEvent( "ViewConeTight", ViewConeTight )
+	AddGlobalAnimEvent( "ViewConeDropPod", ViewConeDropPod )
+	AddGlobalAnimEvent( "ViewConeDropPodFrontR", ViewConeDropPodFrontR )
+	AddGlobalAnimEvent( "ViewConeDropPodFrontL", ViewConeDropPodFrontL )
+	AddGlobalAnimEvent( "ViewConeDropPodBackR", ViewConeDropPodBackR )
+	AddGlobalAnimEvent( "ViewConeDropPodBackL", ViewConeDropPodBackL )
+	AddGlobalAnimEvent( "ViewConeNarrow", ViewConeNarrow )
+	AddGlobalAnimEvent( "ViewConeSmall", ViewConeSmall )
+	AddGlobalAnimEvent( "ViewConeRampFrontLeft", ViewConeRampFrontLeft )
+	AddGlobalAnimEvent( "ViewConeRampFrontRight", ViewConeRampFrontRight )
+	AddGlobalAnimEvent( "ViewConeRampBackLeft", ViewConeRampBackLeft )
+	AddGlobalAnimEvent( "ViewConeRampBackRight", ViewConeRampBackRight )
+	AddGlobalAnimEvent( "ViewConeRampFree", ViewConeRampFree )
+	AddGlobalAnimEvent( "ViewConeFree", ViewConeFree )
+	AddGlobalAnimEvent( "ViewConeFreeLookingForward", ViewConeFreeLookingForward )
+	AddGlobalAnimEvent( "ViewConeTDay", ViewConeTDay )
+	AddGlobalAnimEvent( "ViewConeTDayZero", ViewConeTDayZero )
 }
 
 void function ViewConeZero( entity player )
@@ -166,7 +165,7 @@ void function ViewConeDropPodFrontR( entity player )
 	player.PlayerCone_SetLerpTime( 0.5 )
 
 	player.PlayerCone_FromAnim()
-	//range is 140
+	// range is 140
 	player.PlayerCone_SetMinYaw( -70 - FRONTDIF )
 	player.PlayerCone_SetMaxYaw( 70 - FRONTDIF )
 	player.PlayerCone_SetMinPitch( -30 )
@@ -180,7 +179,7 @@ void function ViewConeDropPodFrontL( entity player )
 	player.PlayerCone_SetLerpTime( 0.5 )
 
 	player.PlayerCone_FromAnim()
-	//range is 140
+	// range is 140
 	player.PlayerCone_SetMinYaw( -70 + FRONTDIF )
 	player.PlayerCone_SetMaxYaw( 70 + FRONTDIF )
 	player.PlayerCone_SetMinPitch( -30 )
@@ -194,7 +193,7 @@ void function ViewConeDropPodBackR( entity player )
 	player.PlayerCone_SetLerpTime( 0.5 )
 
 	player.PlayerCone_FromAnim()
-	//range is 140
+	// range is 140
 	player.PlayerCone_SetMinYaw( -70 - BACKDIF )
 	player.PlayerCone_SetMaxYaw( 70 - BACKDIF )
 	player.PlayerCone_SetMinPitch( -30 )
@@ -208,7 +207,7 @@ void function ViewConeDropPodBackL( entity player )
 	player.PlayerCone_SetLerpTime( 0.5 )
 
 	player.PlayerCone_FromAnim()
-	//range is 140
+	// range is 140
 	player.PlayerCone_SetMinYaw( -70 + BACKDIF )
 	player.PlayerCone_SetMaxYaw( 70 + BACKDIF )
 	player.PlayerCone_SetMinPitch( -30 )
@@ -477,12 +476,12 @@ void function ViewConeFree( entity player )
 	player.PlayerCone_SetMaxPitch( 60 )
 }
 
-void function InitView( entity player, int pitch, int yaw, void functionref( entity )callFunction )
+void function InitView( entity player, int pitch, int yaw, void functionref( entity ) callFunction )
 {
 	if ( !player.IsPlayer() )
 		return
 
-	//have we already init the viewcone from this function before
+	// have we already init the viewcone from this function before
 	if ( IsViewConeCurrent( player, callFunction ) )
 		return
 
@@ -490,7 +489,7 @@ void function InitView( entity player, int pitch, int yaw, void functionref( ent
 
 	entity dropship = player.GetParent()
 
-	while( !dropship )
+	while ( !dropship )
 	{
 		wait 0.05
 		dropship = player.GetParent()
@@ -503,7 +502,7 @@ void function InitView( entity player, int pitch, int yaw, void functionref( ent
 	}
 }
 
-bool function IsViewConeCurrent( entity actor, void functionref(entity ) func )
+bool function IsViewConeCurrent( entity actor, void functionref( entity ) func )
 {
 	entity player = actor
 
@@ -515,6 +514,6 @@ bool function IsViewConeCurrent( entity actor, void functionref(entity ) func )
 	if ( player.p.currViewConeFunction == func )
 		return true
 
-	 player.p.currViewConeFunction = func
-	 return false
+	player.p.currViewConeFunction = func
+	return false
 }

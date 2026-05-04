@@ -23,7 +23,7 @@ void function CodeCallback_PreSpawn( entity npc )
 
 	Thanks
 	-Mackey
-	*/
+*/
 	Assert( npc.IsNPC() )
 
 	if ( !npc.HasAISettings() )
@@ -67,17 +67,17 @@ void function CodeCallback_PreSpawn( entity npc )
 			// OverwriteLoadoutWithDefaultsForSetFile_ExceptSpecialAndAntiRodeo( npc.ai.titanSpawnLoadout )
 			OverwriteLoadoutWithDefaultsForSetFile( npc.ai.titanSpawnLoadout ) // get the entire loadout, including defensive and tactical
 
-			//Set camo, decal, and skin indices from npc settings.
-			//Using Dev_GetAISettingsByKeyField_Global because titan has not spawned yet, so the non-global version of this function does not work.
-			var camoIndex 	= Dev_GetAISettingByKeyField_Global( npc.GetAISettingsName(), "titanCamoIndex" )
-			var decalIndex 	= Dev_GetAISettingByKeyField_Global( npc.GetAISettingsName(), "titanDecalIndex" )
-			var skinIndex	= Dev_GetAISettingByKeyField_Global( npc.GetAISettingsName(), "titanSkinIndex" )
+			// Set camo, decal, and skin indices from npc settings.
+			// Using Dev_GetAISettingsByKeyField_Global because titan has not spawned yet, so the non-global version of this function does not work.
+			var camoIndex = Dev_GetAISettingByKeyField_Global( npc.GetAISettingsName(), "titanCamoIndex" )
+			var decalIndex = Dev_GetAISettingByKeyField_Global( npc.GetAISettingsName(), "titanDecalIndex" )
+			var skinIndex = Dev_GetAISettingByKeyField_Global( npc.GetAISettingsName(), "titanSkinIndex" )
 			if ( camoIndex != null )
-				npc.ai.titanSpawnLoadout.camoIndex = expect int ( camoIndex )
+				npc.ai.titanSpawnLoadout.camoIndex = expect int( camoIndex )
 			if ( decalIndex != null )
-				npc.ai.titanSpawnLoadout.decalIndex = expect int ( decalIndex )
+				npc.ai.titanSpawnLoadout.decalIndex = expect int( decalIndex )
 			if ( skinIndex != null )
-				npc.ai.titanSpawnLoadout.skinIndex = expect int ( skinIndex )
+				npc.ai.titanSpawnLoadout.skinIndex = expect int( skinIndex )
 		}
 
 		AssignSpawnOptionsFromLeveled( npc, SetSpawnOption_Weapon, "additionalequipment", "primaryWeapon_mods" )
@@ -102,7 +102,7 @@ void function CodeCallback_PreSpawn( entity npc )
 
 	if ( !IsTurret( npc ) && IsSingleplayer() && npc.kv.squadname == "" && npc.GetTeam() >= FIRST_GAME_TEAM )
 		npc.SetAutoSquad()
-		//AutoSquadnameAssignment( npc )
+	// AutoSquadnameAssignment( npc )
 
 	if ( !npc.IsTitan() )
 	{
@@ -171,10 +171,9 @@ void function AssignDroneSpawnAISettings( entity npc )
 	npc.ai.droneSpawnAISettings = npc.AISetting_SummonDrone()
 }
 
-
 void function AssignGrenadeWeaponFromAISettings( entity npc )
 {
-	if( npc.kv.grenadeWeaponName == "none" )
+	if ( npc.kv.grenadeWeaponName == "none" )
 	{
 		npc.kv.grenadeWeaponName = ""
 		return
@@ -209,9 +208,9 @@ void function AssignSpawnOptionsFromLeveled( entity npc, void functionref( entit
 
 string function GetDefaultAISetting( entity npc )
 {
-//	change this to map directly by file name from subClass, and error if its not there.
-//	This insures consistent settings file naming and makes settings files less of a mix-and-match concept.
-//	subclasses should also sub-name off their class (except for craaaaaazy soldier/grunt guy)
+	// 	change this to map directly by file name from subClass, and error if its not there.
+	// 	This insures consistent settings file naming and makes settings files less of a mix-and-match concept.
+	// 	subclasses should also sub-name off their class (except for craaaaaazy soldier/grunt guy)
 
 	if ( npc.mySpawnOptions_aiSettings != null )
 	{
@@ -253,7 +252,7 @@ string function GetLeveledAISettings( entity npc )
 
 string function GetSpawnAISettings( entity npc )
 {
-	if ( npc.mySpawnOptions_aiSettings != null)
+	if ( npc.mySpawnOptions_aiSettings != null )
 		return expect string( npc.mySpawnOptions_aiSettings )
 	else if ( npc.HasKey( "leveled_aisettings" ) )
 		return expect string( npc.kv.leveled_aisettings )
@@ -277,8 +276,7 @@ void function CodeCallback_OnSpawned( entity ent )
 	{
 		if ( !ent._entityVars )
 			InitEntityVars( ent )
-
-		//ent.ConnectOutput( "OnDestroy", "_RemoveFromEntityList" )
+		// ent.ConnectOutput( "OnDestroy", "_RemoveFromEntityList" )
 	}
 
 	int teamNum = int( expect string( ent.kv.teamnumber ) )
@@ -287,11 +285,11 @@ void function CodeCallback_OnSpawned( entity ent )
 
 	SetModelSkinFromLeveled( ent )
 
-    if ( IsLobby() )
-    {
+	if ( IsLobby() )
+	{
 		RunMySpawnFunctions( ent )
-        return
-    }
+		return
+	}
 
 	if ( ent.IsNPC() )
 	{
@@ -318,7 +316,7 @@ void function CodeCallback_OnSpawned( entity ent )
 
 	level.totalSpawned[ classname ][ ent ] <- ent
 	level.totalSpawned.total++
-	*/
+*/
 
 	RegisterForDamageDeathCallbacks( ent )
 
@@ -402,9 +400,12 @@ function RunEditorClassCallbacks( entity self )
 	{
 		if ( funcArray.entityEditorClassname == editorClassname )
 		{
-			//Assert( funcArray.entityClassname == classname, "Editor classname callback was set on entity with wrong base classname type" )
+			// Assert( funcArray.entityClassname == classname, "Editor classname callback was set on entity with wrong base classname type" )
 			if ( funcArray.entityClassname != classname )
-				CodeWarning( "Entity " + editorClassname + " is expecting alias of " + funcArray.entityClassname + " but found a " + classname + ". You may just need to reexport from LevelEd and recompile the map to fix this." )
+				CodeWarning(
+					"Entity " + editorClassname + " is expecting alias of " + funcArray.entityClassname + " but found a " + classname +
+						". You may just need to reexport from LevelEd and recompile the map to fix this."
+				)
 
 			foreach ( func in funcArray.callbackArray )
 			{

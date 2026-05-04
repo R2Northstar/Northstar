@@ -1,4 +1,3 @@
-
 global function ClWeaponFlyout_Init
 
 global function WeaponFlyoutThink
@@ -14,7 +13,7 @@ global function WeaponFlyout_SetLevelEnabled
 
 const float FLYOUT_DURATION = 4.0
 const float FLYOUT_DURATION_SHORT = 1.0
-const vector FLYOUT_COLOR = <0.851, 0.976, 1.0>
+const vector FLYOUT_COLOR = < 0.851, 0.976, 1.0 >
 
 struct
 {
@@ -68,7 +67,7 @@ void function WeaponFlyoutShow( entity weapon, string weaponClassName )
 	if ( GetConVarInt( "hud_setting_showWeaponFlyouts" ) == 0 )
 		return
 
-	//file.weaponRUI = RuiCreate( $"ui/weapon_flyout.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
+	// file.weaponRUI = RuiCreate( $"ui/weapon_flyout.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
 	file.weaponRUI = CreateCockpitRui( $"ui/weapon_flyout.rpak" )
 	file.flyoutShowTime = Time()
 
@@ -95,7 +94,7 @@ void function WeaponFlyoutShow( entity weapon, string weaponClassName )
 	{
 		if ( modNum >= 5 ) // setting mod5 in the rui crashes client
 			break
-	
+
 		if ( mod in file.modImages )
 			RuiSetImage( file.weaponRUI, "mod" + modNum++, file.modImages[ mod ] )
 	}
@@ -112,7 +111,7 @@ void function WeaponFlyoutShow( entity weapon, string weaponClassName )
 	HidePickupFlyout( file.lastFlyoutDuration )
 
 	#if SP
-	ScriptCallback_UpdateOnscreenHint()
+		ScriptCallback_UpdateOnscreenHint()
 	#endif
 }
 
@@ -128,18 +127,18 @@ void function WeaponFlyoutRefresh()
 	if ( file.flyoutShowTime + ( file.lastFlyoutDuration - 0.2 ) <= Time() )
 		return
 
-#if MP
-	if ( !ShouldTrackXPForWeapon( file.weaponClassName ) )
-		return
+	#if MP
+		if ( !ShouldTrackXPForWeapon( file.weaponClassName ) )
+			return
 
-	string persistenceVar = GetItemPersistenceStruct( file.weaponClassName ) + ".weaponXP"
-	int currentXP = player.GetPersistentVarAsInt( persistenceVar )
+		string persistenceVar = GetItemPersistenceStruct( file.weaponClassName ) + ".weaponXP"
+		int currentXP = player.GetPersistentVarAsInt( persistenceVar )
 
-	RuiSetInt( file.weaponRUI, "numPips", WeaponGetNumPipsForXP( file.weaponClassName, currentXP ) )
-	RuiSetInt( file.weaponRUI, "numFilledPips", WeaponGetFilledPipsForXP( file.weaponClassName, currentXP ) )
-	RuiSetString( file.weaponRUI, "currentLevel", WeaponGetDisplayGenAndLevelForXP( file.weaponClassName, currentXP ) )
-	RuiSetBool( file.weaponRUI, "showWeaponXP", true )
-#endif
+		RuiSetInt( file.weaponRUI, "numPips", WeaponGetNumPipsForXP( file.weaponClassName, currentXP ) )
+		RuiSetInt( file.weaponRUI, "numFilledPips", WeaponGetFilledPipsForXP( file.weaponClassName, currentXP ) )
+		RuiSetString( file.weaponRUI, "currentLevel", WeaponGetDisplayGenAndLevelForXP( file.weaponClassName, currentXP ) )
+		RuiSetBool( file.weaponRUI, "showWeaponXP", true )
+	#endif
 }
 
 void function WeaponFlyoutThink( entity player )
@@ -197,7 +196,7 @@ bool function ShouldShowWeaponFlyout( entity player, entity weapon, string weapo
 	if ( player.IsTitan() && GameRules_GetGameMode() == FD )
 		return false
 
-	if( !player.GetPlayerNetBool( "shouldShowWeaponFlyout" ) )
+	if ( !player.GetPlayerNetBool( "shouldShowWeaponFlyout" ) )
 		return false
 
 	return true
@@ -218,7 +217,7 @@ void function DestroyWeaponFlyout()
 	}
 
 	#if SP
-	ScriptCallback_UpdateOnscreenHint()
+		ScriptCallback_UpdateOnscreenHint()
 	#endif
 }
 
@@ -244,7 +243,7 @@ void function WeaponFlyout_SetLevelEnabled( bool state )
 
 void function SetWeaponFlyoutRemainingTime( float time )
 {
-	if ( file.weaponRUI == null	)
+	if ( file.weaponRUI == null )
 		return
 
 	file.flyoutShowTime = Time()

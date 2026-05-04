@@ -10,14 +10,13 @@ global function ClearTeamActiveObjective
 global function SetPlayerActiveObjective
 global function ClearPlayerActiveObjective
 
-int convIndex = 0 //Note that objectiveIndex 0 is reserved by code to mean no objective active!
+int convIndex = 0 // Note that objectiveIndex 0 is reserved by code to mean no objective active!
 
-//Split this out into _objective_shared, _objective and cl_objective once QA gets a chance to hammer at it.
+// Split this out into _objective_shared, _objective and cl_objective once QA gets a chance to hammer at it.
 function Objective_Init()
 {
 	level.objToIndex <- {}
 	level.teamActiveObjective <- { [TEAM_IMC] = null, [TEAM_MILITIA] = null }
-
 }
 
 function RegisterObjective( objectiveName )
@@ -52,9 +51,9 @@ function SetCurrentTeamObjectiveForPlayer( entity player )
 
 function GetTeamActiveObjective( team )
 {
-	if ( (team != TEAM_IMC) && (team != TEAM_MILITIA) )
+	if ( ( team != TEAM_IMC ) && ( team != TEAM_MILITIA ) )
 		return null
-	return level.teamActiveObjective[team]
+	return level.teamActiveObjective[ team ]
 }
 
 function SetTeamActiveObjective( team, objectiveName, objectiveTimer = 0, objectiveEntity = null )
@@ -82,7 +81,6 @@ function ClearTeamActiveObjective( team )
 	}
 
 	level.teamActiveObjective[ team ] = null
-
 }
 
 function SetPlayerActiveObjective( player, objectiveName, objectiveTimer = 0, objectiveEntity = null )
@@ -92,7 +90,7 @@ function SetPlayerActiveObjective( player, objectiveName, objectiveTimer = 0, ob
 	SetPlayerActiveObjective_Internal( player, objectiveIndex, objectiveTimer, objectiveEntity )
 }
 
-function SetPlayerActiveObjective_Internal( player, objectiveIndex, objectiveTimer, objectiveEntity  )
+function SetPlayerActiveObjective_Internal( player, objectiveIndex, objectiveTimer, objectiveEntity )
 {
 	player.SetObjectiveEndTime( objectiveTimer )
 	player.SetObjectiveEntity( objectiveEntity )

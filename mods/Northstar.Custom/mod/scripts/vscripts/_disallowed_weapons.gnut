@@ -1,6 +1,7 @@
 global function DisallowedWeapons_Init
 
-struct {
+struct
+{
 	array<string> disallowedWeapons
 	string disallowedWeaponsStringLastVal
 	string disallowedWeaponReplacement
@@ -18,11 +19,11 @@ void function UpdateDisallowedWeaponList()
 	string cvar = GetConVarString( "ns_disallowed_weapons" )
 	if ( file.disallowedWeaponsStringLastVal == cvar )
 		return
-	
+
 	file.disallowedWeapons = split( cvar, "," )
 	foreach ( string weapon in file.disallowedWeapons )
 		StringReplace( weapon, " ", "" )
-	
+
 	file.disallowedWeaponReplacement = GetConVarString( "ns_disallowed_weapon_primary_replacement" )
 }
 
@@ -31,7 +32,7 @@ void function ReplacePlayerWeapons( entity player )
 	UpdateDisallowedWeaponList()
 	if ( file.disallowedWeapons.len() == 0 )
 		return
-	
+
 	bool hadDisallowedWeapon = false
 
 	foreach ( entity weapon in player.GetMainWeapons() )
@@ -43,7 +44,7 @@ void function ReplacePlayerWeapons( entity player )
 			hadDisallowedWeapon = true
 		}
 	}
-	
+
 	if ( hadDisallowedWeapon )
 		SendHudMessage( player, "Restricted weapons were removed", -1, 0.4, 255, 255, 255, 255, 0.15, 3.0, 0.5 )
 }

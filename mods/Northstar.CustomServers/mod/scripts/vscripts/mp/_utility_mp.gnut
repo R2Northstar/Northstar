@@ -4,7 +4,6 @@ global function SafeForTitanFall
 
 void function Utility_MP_Init()
 {
-
 }
 
 bool function ClientCommand_OnDevnetBugScreenshot( entity player, array<string> args )

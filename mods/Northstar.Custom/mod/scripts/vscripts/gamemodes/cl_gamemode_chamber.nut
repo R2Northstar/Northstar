@@ -2,7 +2,7 @@ global function ClGamemodeChamber_Init
 
 void function ClGamemodeChamber_Init()
 {
-    // add ffa gamestate asset
+	// add ffa gamestate asset
 	ClGameState_RegisterGameStateAsset( $"ui/gamestate_info_ffa.rpak" )
 
 	// add music for mode, this is copied directly from the ffa/fra music registered in cl_music.gnut

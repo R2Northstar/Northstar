@@ -1,4 +1,4 @@
-//todo change this to be map-based
+// todo change this to be map-based
 global function SPMP_MapSpawn_Init
 global struct SvSpawnGlobals
 {
@@ -16,7 +16,7 @@ void function SPMP_MapSpawn_Init()
 
 	level.spawnActions <- {} // these run after all initial spawn functions have run
 	svGlobal.levelEnt = CreateEntity( "info_landmark" )
-	SetTargetName( svGlobal.levelEnt, "Level Ent"  )
+	SetTargetName( svGlobal.levelEnt, "Level Ent" )
 	DispatchSpawn( svGlobal.levelEnt )
 	level.isTestmap <- false
 
@@ -45,21 +45,21 @@ void function SPMP_MapSpawn_Init()
 	RegisterSignal( "forever" )
 	RegisterSignal( "waitOver" )
 	RegisterSignal( "HitSky" )
-	
+
 	AddSpawnCallback( "trigger_hurt", InitDamageTriggers )
 
 	AddSpawnCallbackEditorClass( "func_brush", "func_brush_navmesh_separator", NavmeshSeparatorThink )
-	
-	//AddCallback_EntitiesDidLoad( ActivateSkyBox )
+
+	// AddCallback_EntitiesDidLoad( ActivateSkyBox )
 
 	AddSpawnCallback( "player", MP_PlayerPostInit )
 
 	// unsure if this should be done here, but it's required for mp to load
 	PrecacheModel( $"models/menu/default_environment.mdl" )
 
-	//if ( IsMultiplayer() && GetClassicMPMode() && !IsLobby() )
-	//	ClassicMP_TryDefaultIntroSetup()
+	// if ( IsMultiplayer() && GetClassicMPMode() && !IsLobby() )
+	// 	ClassicMP_TryDefaultIntroSetup()
 
-	//InitDefaultLoadouts()
+	// InitDefaultLoadouts()
 	SPMP_Shared_Init()
 }

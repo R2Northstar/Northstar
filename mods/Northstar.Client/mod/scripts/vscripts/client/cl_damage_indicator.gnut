@@ -8,7 +8,7 @@ global function RumbleForTitanDamage
 
 global function ServerCallback_TitanTookDamage
 global function ServerCallback_PilotTookDamage
-//global function ClientCodeCallback_OnMissileCreation
+// global function ClientCodeCallback_OnMissileCreation
 global function ClientCodeCallback_CreateGrenadeIndicator
 
 global function DamageIndicatorRui
@@ -27,8 +27,8 @@ const float DAMAGEHUD_GRENADE_DEBOUNCE_TIME = 0.4
 const float DAMAGEHUD_GRENADE_DEBOUNCE_TIME_LOWSPEED = 0.15
 const float DAMAGEHUD_GRENADE_DEBOUNCE_TIME_LOWSPEED_VELOCITYCUTOFF = 500.0
 
-
-struct {
+struct
+{
 	array<table> damageArrows
 	int currentDamageArrow = 0
 	int numDamageArrows = 16
@@ -37,16 +37,12 @@ struct {
 	vector damageArrowAngles = < 0.0, 0.0, 0.0 >
 	vector damageArrowPointCenter = < 0.0, 0.0, 0.0 >
 
-	table whizByFX = {
-		small = null,
-		large = null,
-		titan = null,
-	}
+	table whizByFX = { small = null, large = null, titan = null, }
 
 	array<table> arrowIncomingAnims = [
 		{ anim = "damage_incoming_small", duration = 1.5 },
 		{ anim = "damage_incoming", duration = 1.75 },
-		{ anim = "damage_incoming_large", duration = 2.00 },
+		{ anim = "damage_incoming_large", duration = 2.0 }
 	]
 
 	int damageIndicatorCount = 0
@@ -77,22 +73,35 @@ function ServerCallback_TitanTookDamage( damage, x, y, z, damageType, damageSour
 	if ( IsWatchingThirdPersonKillReplay() )
 		return
 
-	if ( DebugVictimClientDamageFeedbackIsEnabled() && (damage > 0.0) )
+	if ( DebugVictimClientDamageFeedbackIsEnabled() && ( damage > 0.0 ) )
 	{
 		entity attacker = attackerEHandle ? GetHeavyWeightEntityFromEncodedEHandle( attackerEHandle ) : null
 		entity localViewPlayer = GetLocalViewPlayer()
-		bool isHeadShot = (damageType & DF_HEADSHOT) ? true : false
-		bool isKillShot = (damageType & DF_KILLSHOT) ? true : false
-		bool isCritical = (damageType & DF_CRITICAL) ? true : false
-		bool isDoomProtected = (damageType & DF_DOOM_PROTECTED) ? true : false
-		bool isDoomFatality = (damageType & DF_DOOM_FATALITY) ? true : false
+		bool isHeadShot = ( damageType & DF_HEADSHOT ) ? true : false
+		bool isKillShot = ( damageType & DF_KILLSHOT ) ? true : false
+		bool isCritical = ( damageType & DF_CRITICAL ) ? true : false
+		bool isDoomProtected = ( damageType & DF_DOOM_PROTECTED ) ? true : false
+		bool isDoomFatality = ( damageType & DF_DOOM_FATALITY ) ? true : false
 
 		local weaponMods = []
 		if ( eModId != null && eModId in modNameStrings )
-			weaponMods.append( modNameStrings[eModId] )
+			weaponMods.append( modNameStrings[ eModId ] )
 
-		string modDesc = ((eModId != null && eModId in modNameStrings) ? (expect string( modNameStrings[eModId] )) : "")
-		DebugTookDamagePrint( localViewPlayer, attacker, damage, damageSourceId, modDesc, isHeadShot, isKillShot, isCritical, doomedNow, doomedDamage, isDoomProtected, isDoomFatality )
+		string modDesc = ( ( eModId != null && eModId in modNameStrings ) ? ( expect string( modNameStrings[ eModId ] ) ) : "" )
+		DebugTookDamagePrint(
+			localViewPlayer,
+			attacker,
+			damage,
+			damageSourceId,
+			modDesc,
+			isHeadShot,
+			isKillShot,
+			isCritical,
+			doomedNow,
+			doomedDamage,
+			isDoomProtected,
+			isDoomFatality
+		)
 	}
 
 	// It appears to be faster here to create a new thread so other functions called can wait until the frame ends before running.
@@ -122,26 +131,34 @@ function TitanTookDamageThread( float damage, x, y, z, int damageType, int damag
 	if ( damage >= DAMAGE_BREAK_MELEE_ASSIST )
 		localViewPlayer.Lunge_ClearTarget()
 
-	if ( damageSourceId != eDamageSourceId.bubble_shield  ) //Don't play Betty OS dialogue if we took damage by bubble shield. We don't have appropriate dialogue for it.
+	if ( damageSourceId != eDamageSourceId.bubble_shield ) // Don't play Betty OS dialogue if we took damage by bubble shield. We don't have appropriate dialogue for it.
 		Tracker_PlayerAttackedByTarget( localViewPlayer, attacker )
 
 	array<string> weaponMods
 	if ( eModId != null && eModId in modNameStrings )
 		weaponMods.append( expect string( modNameStrings[ eModId ] ) )
 
-	if ( (damage > 0.0) || doomedDamage )
+	if ( ( damage > 0.0 ) || doomedDamage )
 	{
 		vector damageOrigin = < x, y, z >
-		DamageHistoryStruct damageHistory = StoreDamageHistoryAndUpdate( localViewPlayer, MAX_DAMAGE_HISTORY_TIME, damage, damageOrigin, damageType, damageSourceId, attacker, weaponMods )
+		DamageHistoryStruct damageHistory = StoreDamageHistoryAndUpdate(
+			localViewPlayer,
+			MAX_DAMAGE_HISTORY_TIME,
+			damage,
+			damageOrigin,
+			damageType,
+			damageSourceId,
+			attacker,
+			weaponMods
+		)
 		DamageIndicators( damageHistory, true )
 	}
 
 	entity soul = localViewPlayer.GetTitanSoul()
-	if ( PlayerHasPassive( localViewPlayer, ePassives.PAS_AUTO_EJECT ) ) //TODO: Handle nuclear eject if we ever allow nuclear + auto eject combo again
+	if ( PlayerHasPassive( localViewPlayer, ePassives.PAS_AUTO_EJECT ) ) // TODO: Handle nuclear eject if we ever allow nuclear + auto eject combo again
 	{
-		if ( ShouldPlayAutoEjectAnim( localViewPlayer, soul, doomedNow )  )
+		if ( ShouldPlayAutoEjectAnim( localViewPlayer, soul, doomedNow ) )
 			thread PlayerEjects( localViewPlayer, cockpit )
-
 	}
 
 	if ( damageType & DF_CRITICAL )
@@ -156,7 +173,7 @@ bool function ShouldPlayAutoEjectAnim( entity player, entity titanSoul, bool doo
 	if ( !titanSoul.IsDoomed() )
 		return false
 
-	if ( player.ContextAction_IsActive() && !player.ContextAction_IsBusy() ) //Some other context action, e.g. melee instead of eject. Then again
+	if ( player.ContextAction_IsActive() && !player.ContextAction_IsBusy() ) // Some other context action, e.g. melee instead of eject. Then again
 		return false
 
 	return true
@@ -168,17 +185,17 @@ string function DevBuildAttackerDesc( entity localViewPlayer, entity ent )
 		return "<null>"
 
 	if ( localViewPlayer == ent )
-		return ("<self>")
+		return ( "<self>" )
 
 	if ( ent.IsPlayer() )
-		return ("'" + ent.GetPlayerName() + "' " + ent.GetPlayerSettings())
+		return ( "'" + ent.GetPlayerName() + "' " + ent.GetPlayerSettings() )
 
 	entity bossPlayer = ent.GetBossPlayer()
-	string ownerString = ((bossPlayer != null) ? (bossPlayer.GetPlayerName() + "'s ") : "")
+	string ownerString = ( ( bossPlayer != null ) ? ( bossPlayer.GetPlayerName() + "'s " ) : "" )
 
 	var sigName = ent.GetSignifierName()
-	string debugName = (sigName != null) ? expect string( sigName ) : ent.GetClassName()
-	return (ownerString + debugName)
+	string debugName = ( sigName != null ) ? expect string( sigName ) : ent.GetClassName()
+	return ( ownerString + debugName )
 }
 
 void function DebugTookDamagePrint( entity ornull localViewPlayer, entity attacker, float damage, int damageSourceId, string modDesc, bool isHeadShot, bool isKillShot, bool isCritical, bool isDoomShot, int doomShotDamage, bool isDoomProtected, bool isDoomFatality )
@@ -187,15 +204,9 @@ void function DebugTookDamagePrint( entity ornull localViewPlayer, entity attack
 	string attackerDesc = DevBuildAttackerDesc( expect entity( localViewPlayer ), attacker )
 	string timePrint = format( "%d:%.2f", FrameCount(), PlatformTime() )
 	printt(
-				"{"+timePrint+"} TOOK DAMAGE: " + damage +
-						(isHeadShot ? " (headshot)" : "") +
-						(isCritical ? " (critical)" : "") +
-						(isKillShot ? " (KILLED)" : "") +
-						(isDoomShot ? " (DOOMED dmg:" + doomShotDamage + ")" : "") +
-						(isDoomProtected ? " (DOOM PROTECTION)" : "") +
-						(isDoomFatality ? " (DOOM FATALITY)" : "") +
-				"   " + attackerDesc +
-				"  w/ " + GetObitFromDamageSourceID( damageSourceId ) + modDesc
+		"{" + timePrint + "} TOOK DAMAGE: " + damage + ( isHeadShot ? " (headshot)" : "" ) + ( isCritical ? " (critical)" : "" ) + ( isKillShot ? " (KILLED)" : "" ) +
+			( isDoomShot ? " (DOOMED dmg:" + doomShotDamage + ")" : "" ) + ( isDoomProtected ? " (DOOM PROTECTION)" : "" ) + ( isDoomFatality ? " (DOOM FATALITY)" : "" )
+			+ "   " + attackerDesc + "  w/ " + GetObitFromDamageSourceID( damageSourceId ) + modDesc
 	)
 }
 
@@ -218,7 +229,7 @@ void function RumbleForPilotDamage( float damageAmount )
 
 void function RumbleForTitanDamage( float damageAmount )
 {
-	string rumbleName;
+	string rumbleName
 	if ( damageAmount < 500 )
 		rumbleName = "titan_damaged_small"
 	else if ( damageAmount < 1000 )
@@ -242,17 +253,17 @@ function ServerCallback_PilotTookDamage( damage, x, y, z, damageType, damageSour
 	entity localViewPlayer = GetLocalViewPlayer()
 	vector damageOrigin = < x, y, z >
 
-	bool isHeadShot = (damageType & DF_HEADSHOT) ? true : false
-	bool isKillShot = (damageType & DF_KILLSHOT) ? true : false
+	bool isHeadShot = ( damageType & DF_HEADSHOT ) ? true : false
+	bool isKillShot = ( damageType & DF_KILLSHOT ) ? true : false
 
 	if ( isHeadShot )
-		PlayVictimHeadshotConfirmation( isKillShot );
+		PlayVictimHeadshotConfirmation( isKillShot )
 
-	//Jolt view if player is getting meleed
+	// Jolt view if player is getting meleed
 	if ( damageSourceId == eDamageSourceId.human_melee )
 	{
 		vector joltDir = Normalize( localViewPlayer.CameraPosition() - damageOrigin )
-		//clear melee assist when you get meleed
+		// clear melee assist when you get meleed
 		localViewPlayer.Lunge_ClearTarget()
 	}
 
@@ -262,15 +273,24 @@ function ServerCallback_PilotTookDamage( damage, x, y, z, damageType, damageSour
 
 	if ( DebugVictimClientDamageFeedbackIsEnabled() && !IsWatchingReplay() )
 	{
-		string modDesc = (weaponMods.len() > 0 ? (" +" + weaponMods[0]) : "")
-		bool isCritical = (damageType & DF_CRITICAL) ? true : false
+		string modDesc = ( weaponMods.len() > 0 ? ( " +" + weaponMods[ 0 ] ) : "" )
+		bool isCritical = ( damageType & DF_CRITICAL ) ? true : false
 
 		DebugTookDamagePrint( localViewPlayer, attacker, damage, damageSourceId, modDesc, isHeadShot, isKillShot, isCritical, false, 0, false, false )
 	}
 
 	RumbleForPilotDamage( damage )
 
-	DamageHistoryStruct damageTable = StoreDamageHistoryAndUpdate( localViewPlayer, MAX_DAMAGE_HISTORY_TIME, damage, damageOrigin, damageType, damageSourceId, attacker, weaponMods )
+	DamageHistoryStruct damageTable = StoreDamageHistoryAndUpdate(
+		localViewPlayer,
+		MAX_DAMAGE_HISTORY_TIME,
+		damage,
+		damageOrigin,
+		damageType,
+		damageSourceId,
+		attacker,
+		weaponMods
+	)
 
 	DamageIndicators( damageTable, false )
 
@@ -293,10 +313,9 @@ void function ClientCodeCallback_CreateGrenadeIndicator( entity missileEnt, stri
 	if ( !IsValid( missileEnt ) )
 		return
 
-	//Called for all projectiles, not just missiles.
+	// Called for all projectiles, not just missiles.
 	TryAddGrenadeIndicator( missileEnt, weaponName )
 }
-
 
 void function DamageIndicators( DamageHistoryStruct damageHistory, bool playerIsTitan )
 {
@@ -322,13 +341,12 @@ void function DamageIndicators( DamageHistoryStruct damageHistory, bool playerIs
 			arrowType = DAMAGEARROW_SMALL
 		else
 			arrowType = DAMAGEARROW_SMALL
-
-			//if ( damageHistory.attacker.IsTitan() )
-			//	arrowType = DAMAGEARROW_LARGE
-			//else if ( damageHistory.attacker.IsPlayer() )
-			//	arrowType = DAMAGEARROW_MEDIUM
-			//else
-			//	arrowType = DAMAGEARROW_SMALL
+		// if ( damageHistory.attacker.IsTitan() )
+		// 	arrowType = DAMAGEARROW_LARGE
+		// else if ( damageHistory.attacker.IsPlayer() )
+		// 	arrowType = DAMAGEARROW_MEDIUM
+		// else
+		// 	arrowType = DAMAGEARROW_SMALL
 	}
 
 	if ( playerIsTitan )
@@ -421,7 +439,8 @@ void function DamageIndicatorRui( vector damageOrigin, int arrowType, bool playe
 	// slop
 	float distance = Length( damageOrigin - GetLocalViewPlayer().CameraPosition() )
 	float randomRange = GraphCapped( distance, 0.0, 2048, 0.0, 256.0 )
-	damageOrigin = <damageOrigin.x + RandomFloatRange( randomRange, -randomRange ), damageOrigin.y + RandomFloatRange( randomRange, -randomRange ), damageOrigin.z>
+	damageOrigin =
+		< damageOrigin.x + RandomFloatRange( randomRange, -randomRange ), damageOrigin.y + RandomFloatRange( randomRange, -randomRange ), damageOrigin.z >
 
 	float startTime = Time()
 
@@ -448,7 +467,7 @@ void function DamageIndicatorRui( vector damageOrigin, int arrowType, bool playe
 		vecToDamage = Normalize( vecToDamage )
 		RuiSetFloat3( rui, "vecToDamage2D", vecToDamage )
 		RuiSetFloat3( rui, "camVec2D", Normalize( AnglesToForward( < 0, GetLocalViewPlayer().CameraAngles().y, 0 > ) ) )
-		RuiSetFloat( rui, "sideDot", vecToDamage.Dot( CrossProduct( <0, 0, 1>, Normalize( AnglesToForward( < 0, GetLocalViewPlayer().CameraAngles().y, 0 > ) ) ) ) )
+		RuiSetFloat( rui, "sideDot", vecToDamage.Dot( CrossProduct( < 0, 0, 1 >, Normalize( AnglesToForward( < 0, GetLocalViewPlayer().CameraAngles().y, 0 > ) ) ) ) )
 		WaitFrame()
 	}
 }
@@ -463,14 +482,18 @@ vector function GetRandomOriginWithinBounds( entity ent )
 	vector boundingMins = ent.GetBoundingMins()
 	vector boundingMaxs = ent.GetBoundingMaxs()
 
-	vector randomOffset = < RandomFloatRange( boundingMins.x, boundingMaxs.x ), RandomFloatRange( boundingMins.y, boundingMaxs.y ), RandomFloatRange( boundingMins.z, boundingMaxs.z ) >
+	vector randomOffset = <
+		RandomFloatRange( boundingMins.x, boundingMaxs.x ),
+		RandomFloatRange( boundingMins.y, boundingMaxs.y ),
+		RandomFloatRange( boundingMins.z, boundingMaxs.z )
+	>
 
 	return ent.GetOrigin() + randomOffset
 }
 
 void function GrenadeArrowThink( entity player, entity grenade, float damageRadius, float startDelay, bool requireLos, string requiredPlayerState = "any" )
 {
-	EndSignal( grenade, "OnDeath" ) //On death added primarily for frag_drones
+	EndSignal( grenade, "OnDeath" ) // On death added primarily for frag_drones
 	EndSignal( grenade, "OnDestroy" )
 	EndSignal( player, "OnDeath" )
 
@@ -492,10 +515,10 @@ void function GrenadeArrowThink( entity player, entity grenade, float damageRadi
 		switch ( grenade.GetSignifierName() )
 		{
 			#if MP
-			case "npc_stalker":
-				grenadeModel = GRENADE_INDICATOR_STALKER_MODEL
-				break
-			#endif
+				case "npc_stalker":
+					grenadeModel = GRENADE_INDICATOR_STALKER_MODEL
+					break
+				#endif
 
 			case "npc_frag_drone":
 				grenadeModel = GRENADE_INDICATOR_TICK_MODEL
@@ -540,15 +563,17 @@ void function GrenadeArrowThink( entity player, entity grenade, float damageRadi
 			case "any":
 				shouldBeVisible = true
 				break
+
 			case "pilot":
 				shouldBeVisible = !player.IsTitan()
 				break
+
 			case "titan":
 				shouldBeVisible = player.IsTitan()
 				break
+
 			default:
 				Assert( false, "Invalid player state! Allower states: 'any' 'pilot' 'titan'" )
-
 		}
 
 		if ( shouldBeVisible )
@@ -594,7 +619,7 @@ void function GrenadeArrowThink( entity player, entity grenade, float damageRadi
 			mdl.EnableRenderWithHud()
 
 			vector damageArrowAngles = AnglesInverse( player.EyeAngles() )
-			vector vecToDamage = grenade.GetOrigin() - (player.EyePosition() + (player.GetViewVector() * 20.0))
+			vector vecToDamage = grenade.GetOrigin() - ( player.EyePosition() + ( player.GetViewVector() * 20.0 ) )
 
 			// reparent for embark/disembark
 			if ( arrow.GetParent() == null )
@@ -610,14 +635,11 @@ void function GrenadeArrowThink( entity player, entity grenade, float damageRadi
 
 		WaitFrame()
 	}
-
 }
-
 
 function Create_DamageIndicatorHUD()
 {
 }
-
 
 void function SCB_AddGrenadeIndicatorForEntity( int team, int ownerHandle, int eHandle, float damageRadius )
 {
@@ -638,10 +660,8 @@ void function SCB_AddGrenadeIndicatorForEntity( int team, int ownerHandle, int e
 
 	if ( team == player.GetTeam() && owner != player )
 		return
-
-	//TryAddGrenadeIndicator( ent, "" ) // TODO: make function handle non-grenade ents
+	// TryAddGrenadeIndicator( ent, "" ) // TODO: make function handle non-grenade ents
 }
-
 
 function TryAddGrenadeIndicator( grenade, weaponName )
 {
@@ -685,11 +705,13 @@ function TryAddGrenadeIndicator( grenade, weaponName )
 	if ( player.IsPhaseShifted() )
 		return
 
-
 	float startDelay = 0.0
 	if ( grenade.GetOwner() == player )
 	{
-		if ( !grenade.GetProjectileWeaponSettingBool( eWeaponVar.projectile_damages_owner ) && !grenade.GetProjectileWeaponSettingBool( eWeaponVar.explosion_damages_owner ) )
+		if (
+			!grenade.GetProjectileWeaponSettingBool( eWeaponVar.projectile_damages_owner ) &&
+			!grenade.GetProjectileWeaponSettingBool( eWeaponVar.explosion_damages_owner )
+		)
 			return
 
 		float relVelocity = Length( grenade.GetVelocity() - player.GetVelocity() )
@@ -705,19 +727,18 @@ function TryAddGrenadeIndicator( grenade, weaponName )
 
 	float padding = player.IsTitan() ? 204.0 : 65.0
 
-	//AddGrenadeIndicator( grenade, radius + padding, startDelay, false )
+	// AddGrenadeIndicator( grenade, radius + padding, startDelay, false )
 	ShowGrenadeArrow( player, grenade, radius + padding, startDelay )
-
-	//thread ShowRuiGrenadeThreatIndicator( grenade, float( radius ) + padding )
+	// thread ShowRuiGrenadeThreatIndicator( grenade, float( radius ) + padding )
 }
 
 void function ShowRuiGrenadeThreatIndicator( entity grenade, float radius )
 {
 	var rui = RuiCreate( $"ui/grenade_threat_indicator.rpak", clGlobal.topoCockpitHudPermanent, RUI_DRAW_COCKPIT, 0 )
-	//var rui = CreateCockpitRui( $"ui/grenade_threat_indicator.rpak", 0 )
+	// var rui = CreateCockpitRui( $"ui/grenade_threat_indicator.rpak", 0 )
 	RuiSetGameTime( rui, "startTime", Time() )
 	RuiSetFloat( rui, "damageRadius", radius )
-	//RuiTrackFloat3( rui, "pos", grenade, RUI_TRACK_ABSORIGIN_FOLLOW )`
+	// RuiTrackFloat3( rui, "pos", grenade, RUI_TRACK_ABSORIGIN_FOLLOW )`
 	RuiTrackFloat3( rui, "pos", grenade, RUI_TRACK_POINT_FOLLOW, grenade.LookupAttachment( "BACK" ) )
 
 	OnThreadEnd(
@@ -730,15 +751,13 @@ void function ShowRuiGrenadeThreatIndicator( entity grenade, float radius )
 	grenade.WaitSignal( "OnDestroy" )
 }
 
-
-
 void function InitDamageArrows()
 {
 	for ( int i = 0; i < file.numDamageArrows; i++ )
 	{
 		table arrowData = {
-			grenade = null
-			grenadeRadius = 0.0
+			grenade = null,
+			grenadeRadius = 0.0,
 			damageOrigin = < 0.0, 0.0, 0.0 >,
 			damageDirection = < 0.0, 0.0, 0.0 >,
 			endTime = -99.0 + DAMAGEARROW_DURATION,
@@ -766,7 +785,6 @@ void function InitDamageArrows()
 	arrow.Destroy()
 }
 
-
 void function DamageArrow_CockpitInit( entity cockpit )
 {
 	entity localViewPlayer = GetLocalViewPlayer()
@@ -775,7 +793,7 @@ void function DamageArrow_CockpitInit( entity cockpit )
 
 function RefreshExistingDamageArrow( entity player, arrowData, int arrowType, damageOrigin )
 {
-	//Hack - 10 tick rate is making damage feedback bunch up. If we improve that then shouldn't be threaded.
+	// Hack - 10 tick rate is making damage feedback bunch up. If we improve that then shouldn't be threaded.
 	player.EndSignal( "OnDestroy" )
 	entity cockpit = player.GetCockpit()
 	if ( IsValid( cockpit ) )
@@ -804,7 +822,7 @@ function ShowDamageArrow( entity player, damageOrigin, int arrowType, playerIsTi
 	if ( file.damageArrows.len() == 0 ) // not yet initialized
 		return
 
-	table arrowData = file.damageArrows[file.currentDamageArrow]
+	table arrowData = file.damageArrows[ file.currentDamageArrow ]
 	entity arrow = expect entity( arrowData.arrow )
 
 	file.currentDamageArrow++
@@ -819,7 +837,7 @@ function ShowDamageArrow( entity player, damageOrigin, int arrowType, playerIsTi
 	arrow.s.arrowData.endTime = time + file.arrowIncomingAnims[ arrowType ].duration
 	arrow.s.arrowData.startTime = time
 	arrow.s.arrowData.isDying = false
-	arrow.s.arrowData.whizby = false	//	hack until we get a new model/shader for the whizby indicator
+	arrow.s.arrowData.whizby = false // 	hack until we get a new model/shader for the whizby indicator
 	arrow.s.arrowData.attacker = attacker
 
 	if ( !arrow.s.arrowData.isVisible )
@@ -841,12 +859,10 @@ function ShowDamageArrow( entity player, damageOrigin, int arrowType, playerIsTi
 		arrow.SetAttachOffsetOrigin( < 20.0, 0.0, -2.0 > )
 	}
 
-
 	PulseDamageArrow( arrow, arrowType )
 	UpdateDamageArrowVars( player )
 	UpdateDamageArrowAngle( arrowData )
 }
-
 
 function PulseDamageArrow( entity arrow, int arrowType )
 {
@@ -921,7 +937,7 @@ function UpdateDamageArrows( entity localViewPlayer, entity cockpit )
 					arrowData.endTime = 0.0
 			}
 
-			if ( (file.damageArrowTime >= arrowData.endTime) || inPhaseShift )
+			if ( ( file.damageArrowTime >= arrowData.endTime ) || inPhaseShift )
 			{
 				arrowData.arrow.DisableDraw()
 				arrowData.arrow.ClearParent()
@@ -946,6 +962,6 @@ function UpdateDamageArrows( entity localViewPlayer, entity cockpit )
 			}
 		}
 
-		wait( 0.0 )
+		wait ( 0.0 )
 	}
 }

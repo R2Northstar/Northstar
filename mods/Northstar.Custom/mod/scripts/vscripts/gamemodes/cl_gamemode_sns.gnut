@@ -4,7 +4,7 @@ global function ServerCallback_AnnounceBankrupt
 
 void function ClGameModeSNS_Init()
 {
-		ClGameState_RegisterGameStateAsset( $"ui/gamestate_info_ffa.rpak" )
+	ClGameState_RegisterGameStateAsset( $"ui/gamestate_info_ffa.rpak" )
 
 	// add music for mode, this is copied directly from the ffa/fra music registered in cl_music.gnut
 	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_INTRO, "music_mp_freeagents_intro", TEAM_IMC )
@@ -32,23 +32,23 @@ void function ServerCallback_AnnounceKillLeaderBankrupt( int leaderEHandle, int 
 	entity player = GetEntityFromEncodedEHandle( leaderEHandle )
 	entity killer = GetEntityFromEncodedEHandle( killerEHandle )
 	AnnouncementData announcement = Announcement_Create( "#SNS_LEADER_BANKRUPT" )
-	Announcement_SetSubText( announcement, Localize( "#SNS_LEADER_BANKRUPT_SUB", player.GetPlayerName(), killer.GetPlayerName()))
-	Announcement_SetTitleColor( announcement, <1,1,0> )
+	Announcement_SetSubText( announcement, Localize( "#SNS_LEADER_BANKRUPT_SUB", player.GetPlayerName(), killer.GetPlayerName() ) )
+	Announcement_SetTitleColor( announcement, < 1, 1, 0 > )
 	Announcement_SetPurge( announcement, true )
-	Announcement_SetPriority( announcement, 200 ) //Be higher priority than Titanfall ready indicator etc
+	Announcement_SetPriority( announcement, 200 ) // Be higher priority than Titanfall ready indicator etc
 	Announcement_SetSoundAlias( announcement, SFX_HUD_ANNOUNCE_QUICK )
 	Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_QUICK )
 	AnnouncementFromClass( GetLocalViewPlayer(), announcement )
 }
 
-void function ServerCallback_AnnounceBankrupt(int killerEHandle)
+void function ServerCallback_AnnounceBankrupt( int killerEHandle )
 {
 	entity killer = GetEntityFromEncodedEHandle( killerEHandle )
 	AnnouncementData announcement = Announcement_Create( "#SNS_BANKRUPT" )
-	Announcement_SetSubText( announcement, Localize( "#SNS_BANKRUPT_SUB", killer.GetPlayerName() ))
-	Announcement_SetTitleColor( announcement, <1,0,0> )
+	Announcement_SetSubText( announcement, Localize( "#SNS_BANKRUPT_SUB", killer.GetPlayerName() ) )
+	Announcement_SetTitleColor( announcement, < 1, 0, 0 > )
 	Announcement_SetPurge( announcement, true )
-	Announcement_SetPriority( announcement, 200 ) //Be higher priority than Titanfall ready indicator etc
+	Announcement_SetPriority( announcement, 200 ) // Be higher priority than Titanfall ready indicator etc
 	Announcement_SetSoundAlias( announcement, SFX_HUD_ANNOUNCE_QUICK )
 	Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_QUICK )
 	AnnouncementFromClass( GetLocalViewPlayer(), announcement )

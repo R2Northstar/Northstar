@@ -4,20 +4,21 @@ global function ServerCallback_AnnounceHideAndSeekRole
 global function ServerCallback_SeekersIncoming
 global function ServerCallback_LastHiderAlive
 
-struct {
+struct
+{
 	var countdownRui
 } file
 
 void function ClGamemodeHideAndSeek_Init()
 {
 	ClGameState_RegisterGameStateAsset( $"ui/gamestate_info_lts.rpak" )
-	
+
 	RegisterLevelMusicForTeam( eMusicPieceID.GAMEMODE_1, "music_mp_fd_midwave", HIDEANDSEEK_TEAM_SEEKER )
 	RegisterLevelMusicForTeam( eMusicPieceID.GAMEMODE_1, "music_skyway_01_intro", HIDEANDSEEK_TEAM_HIDER )
-	
+
 	RegisterLevelMusicForTeam( eMusicPieceID.GAMEMODE_2, "music_skyway_04_smartpistolrun", TEAM_IMC )
 	RegisterLevelMusicForTeam( eMusicPieceID.GAMEMODE_2, "music_skyway_04_smartpistolrun", TEAM_MILITIA )
-	
+
 	AddCallback_GameStateEnter( eGameState.Postmatch, DisplayPostMatchTop3 )
 }
 
@@ -34,9 +35,9 @@ void function ServerCallback_AnnounceHideAndSeekRole()
 	{
 		AnnouncementData announcement = Announcement_Create( "#HIDEANDSEEK_YOU_ARE_SEEKER" )
 		Announcement_SetSubText( announcement, Localize( "#HIDEANDSEEK_SEEKER_DESC", GetCurrentPlaylistVarFloat( "hideandseek_hiding_time", 60.0 ).tostring() ) )
-		Announcement_SetTitleColor( announcement, <0,0,1> )
+		Announcement_SetTitleColor( announcement, < 0, 0, 1 > )
 		Announcement_SetPurge( announcement, true )
-		Announcement_SetPriority( announcement, 200 ) //Be higher priority than Titanfall ready indicator etc
+		Announcement_SetPriority( announcement, 200 ) // Be higher priority than Titanfall ready indicator etc
 		Announcement_SetSoundAlias( announcement, SFX_HUD_ANNOUNCE_QUICK )
 		Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_QUICK )
 		AnnouncementFromClass( GetLocalViewPlayer(), announcement )
@@ -45,9 +46,9 @@ void function ServerCallback_AnnounceHideAndSeekRole()
 	{
 		AnnouncementData announcement = Announcement_Create( "#HIDEANDSEEK_YOU_ARE_HIDER" )
 		Announcement_SetSubText( announcement, "#HIDEANDSEEK_HIDER_DESC" )
-		Announcement_SetTitleColor( announcement, <0,0,1> )
+		Announcement_SetTitleColor( announcement, < 0, 0, 1 > )
 		Announcement_SetPurge( announcement, true )
-		Announcement_SetPriority( announcement, 200 ) //Be higher priority than Titanfall ready indicator etc
+		Announcement_SetPriority( announcement, 200 ) // Be higher priority than Titanfall ready indicator etc
 		Announcement_SetSoundAlias( announcement, SFX_HUD_ANNOUNCE_QUICK )
 		Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_QUICK )
 		AnnouncementFromClass( GetLocalViewPlayer(), announcement )
@@ -58,9 +59,9 @@ void function ServerCallback_SeekersIncoming()
 {
 	AnnouncementData announcement = Announcement_Create( "#HIDEANDSEEK_SEEKERS_INCOMING" )
 	Announcement_SetSubText( announcement, "#HIDEANDSEEK_DONT_GET_FOUND" )
-	Announcement_SetTitleColor( announcement, <1,0,0> )
+	Announcement_SetTitleColor( announcement, < 1, 0, 0 > )
 	Announcement_SetPurge( announcement, true )
-	Announcement_SetPriority( announcement, 200 ) //Be higher priority than Titanfall ready indicator etc
+	Announcement_SetPriority( announcement, 200 ) // Be higher priority than Titanfall ready indicator etc
 	Announcement_SetSoundAlias( announcement, SFX_HUD_ANNOUNCE_QUICK )
 	Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_QUICK )
 	AnnouncementFromClass( GetLocalViewPlayer(), announcement )
@@ -70,10 +71,12 @@ void function ServerCallback_LastHiderAlive()
 {
 	if ( GetLocalViewPlayer().GetTeam() == HIDEANDSEEK_TEAM_SEEKER )
 	{
-		AnnouncementData announcement = Announcement_Create( Localize( "#HIDEANDSEEK_GET_LAST_HIDER", GetPlayerArrayOfTeam_Alive( HIDEANDSEEK_TEAM_HIDER )[ 0 ].GetPlayerName() ) )
-		Announcement_SetTitleColor( announcement, <1,0,0> )
+		AnnouncementData announcement = Announcement_Create(
+			Localize( "#HIDEANDSEEK_GET_LAST_HIDER", GetPlayerArrayOfTeam_Alive( HIDEANDSEEK_TEAM_HIDER )[ 0 ].GetPlayerName() )
+		)
+		Announcement_SetTitleColor( announcement, < 1, 0, 0 > )
 		Announcement_SetPurge( announcement, true )
-		Announcement_SetPriority( announcement, 200 ) //Be higher priority than Titanfall ready indicator etc
+		Announcement_SetPriority( announcement, 200 ) // Be higher priority than Titanfall ready indicator etc
 		Announcement_SetSoundAlias( announcement, SFX_HUD_ANNOUNCE_QUICK )
 		Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_QUICK )
 		AnnouncementFromClass( GetLocalViewPlayer(), announcement )
@@ -82,9 +85,9 @@ void function ServerCallback_LastHiderAlive()
 	{
 		AnnouncementData announcement = Announcement_Create( "#HIDEANDSEEK_YOU_ARE_LAST_HIDER" )
 		Announcement_SetSubText( announcement, "#HIDEANDSEEK_GOT_STIM" )
-		Announcement_SetTitleColor( announcement, <1,0,0> )
+		Announcement_SetTitleColor( announcement, < 1, 0, 0 > )
 		Announcement_SetPurge( announcement, true )
-		Announcement_SetPriority( announcement, 200 ) //Be higher priority than Titanfall ready indicator etc
+		Announcement_SetPriority( announcement, 200 ) // Be higher priority than Titanfall ready indicator etc
 		Announcement_SetSoundAlias( announcement, SFX_HUD_ANNOUNCE_QUICK )
 		Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_QUICK )
 		AnnouncementFromClass( GetLocalViewPlayer(), announcement )

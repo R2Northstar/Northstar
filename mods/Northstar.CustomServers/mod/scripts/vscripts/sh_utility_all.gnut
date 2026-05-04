@@ -28,7 +28,7 @@ void function ShUtilityAll_Init()
 	#document( "GetDistanceFromLineSegment", "" )
 	#document( "GetDistanceSqrFromLineSegment", "" )
 
-	LEGAL_PLAYER_TITAN_SETTINGS = GetAllowedPlayerTitanSettings() //Function reads from the data table, no point doing it over and over when it shouldn't change mid-match/game
+	LEGAL_PLAYER_TITAN_SETTINGS = GetAllowedPlayerTitanSettings() // Function reads from the data table, no point doing it over and over when it shouldn't change mid-match/game
 }
 
 bool function IsMultiplayer()
@@ -106,35 +106,35 @@ function DumpStack( int offset = 1 )
 {
 	for ( int i = offset; i < 20; i++ )
 	{
-		if ( !( "src" in getstackinfos(i) ) )
+		if ( !( "src" in getstackinfos( i ) ) )
 			break
-		printl( i + " File : " + getstackinfos(i)["src"] + " [" + getstackinfos(i)["line"] + "]\n    Function : " + getstackinfos(i)["func"] + "() " )
+		printl( i + " File : " + getstackinfos( i )[ "src" ] + " [" + getstackinfos( i )[ "line" ] + "]\n    Function : " + getstackinfos( i )[ "func" ] + "() " )
 	}
 }
 
 function DumpPreviousFunction()
 {
 	int i = 3
-	if ( !( "src" in getstackinfos(i) ) )
+	if ( !( "src" in getstackinfos( i ) ) )
 		return
-	printl( "Called from: " + getstackinfos(i)["src"] + " [" + getstackinfos(i)["line"] + "] : " + getstackinfos(i)["func"] + "() " )
+	printl( "Called from: " + getstackinfos( i )[ "src" ] + " [" + getstackinfos( i )[ "line" ] + "] : " + getstackinfos( i )[ "func" ] + "() " )
 }
 
 function GetPreviousFunction()
 {
 	int i = 3
-	if ( !( "src" in getstackinfos(i) ) )
+	if ( !( "src" in getstackinfos( i ) ) )
 		return ""
-	return "Called from: " + getstackinfos(i)["src"] + " [" + getstackinfos(i)["line"] + "] : " + getstackinfos(i)["func"] + "() "
+	return "Called from: " + getstackinfos( i )[ "src" ] + " [" + getstackinfos( i )[ "line" ] + "] : " + getstackinfos( i )[ "func" ] + "() "
 }
 
 bool function IsNewThread()
 {
-	//return threads.GetCurrentThread().co == getthread()
+	// return threads.GetCurrentThread().co == getthread()
 	int i
 	for ( i = 0; i < 20; i++ )
 	{
-		if ( !( "src" in getstackinfos(i) ) )
+		if ( !( "src" in getstackinfos( i ) ) )
 			break
 	}
 
@@ -146,7 +146,10 @@ function AssertParameters( func, paramCount, paramDesc )
 	local funcInfos = func.getinfos()
 	local funcName = funcInfos.name
 	// subtract one from the param count for the hidden "this" object
-	Assert( funcInfos.parameters.len() == (paramCount + 1), "Function \"" + funcName +"\" must have exactly " + paramCount + " parameters (" + paramDesc + ")." )
+	Assert(
+		funcInfos.parameters.len() == ( paramCount + 1 ),
+		"Function \"" + funcName + "\" must have exactly " + paramCount + " parameters (" + paramDesc + ")."
+	)
 }
 
 function PrintTable( tbl, indent = 0, maxDepth = 4 )
@@ -157,13 +160,13 @@ function PrintTable( tbl, indent = 0, maxDepth = 4 )
 
 string function TableIndent( indent )
 {
-	return ("                                            ").slice( 0, indent )
+	return ( "                                            " ).slice( 0, indent )
 }
 
 function GetHattID( id )
 {
 	local result = getconsttable()[ id ]
-	//printt( "This is hattID: " + result  )
+	// printt( "This is hattID: " + result  )
 	return getconsttable()[ id ]
 }
 
@@ -304,13 +307,13 @@ int function GetEnemyTeam( int team )
 
 	Assert( team == TEAM_IMC || team == TEAM_MILITIA )
 
-	return (TEAM_IMC + TEAM_MILITIA) - team
+	return ( TEAM_IMC + TEAM_MILITIA ) - team
 }
 
 string function GetTeamName( int team )
 {
 	#if UI
-	Assert( team == TEAM_IMC || team == TEAM_MILITIA )
+		Assert( team == TEAM_IMC || team == TEAM_MILITIA )
 	#endif
 
 	if ( team == TEAM_IMC )
@@ -353,20 +356,20 @@ string function GetMapDisplayDesc( string mapname )
 	return "#" + mapname + "_CLASSIC_DESC"
 }
 
-/// Sends a string message to player
-/// * `baseString` - The input string to search through
-/// * `searchString` - Find this substring...
-/// * `replaceString` - ...and replace with this substring
-/// * `replaceAll` - Whether to replace all occurences or just the first
-/// * `caseInsensitive` - Whether to consider casing (upper/lower)
-///
-/// Returns the updated string
+// / Sends a string message to player
+// / * `baseString` - The input string to search through
+// / * `searchString` - Find this substring...
+// / * `replaceString` - ...and replace with this substring
+// / * `replaceAll` - Whether to replace all occurences or just the first
+// / * `caseInsensitive` - Whether to consider casing (upper/lower)
+// /
+// / Returns the updated string
 string function StringReplace( string baseString, string searchString, string replaceString, bool replaceAll = false, bool caseInsensitive = false )
 {
 	bool loopedOnce = false
 	string source = caseInsensitive ? baseString.tolower() : baseString
 	var findResult = source.find( searchString )
-	while ( findResult != null  && !(loopedOnce && !replaceAll))
+	while ( findResult != null && !( loopedOnce && !replaceAll ) )
 	{
 		string part1 = baseString.slice( 0, findResult )
 		string part2 = baseString.slice( findResult + searchString.len(), baseString.len() )
@@ -408,70 +411,61 @@ function DevEverythingUnlocked( entity player = null )
 	return EverythingUnlockedConVarEnabled()
 }
 
-
 table<string, string> function GetByTitanTypes()
 {
 	return {
-		byTitan_ion 	=	"ion"
-		byTitan_scorch		=	"scorch"
-		byTitan_northstar		=	"northstar"
-		byTitan_ronin		=	"ronin"
-		byTitan_tone		=	"tone"
-		byTitan_legion		=	"legion"
-		byTitan_vanguard	=	"vanguard"
-		}
+		byTitan_ion = "ion",
+		byTitan_scorch = "scorch",
+		byTitan_northstar = "northstar",
+		byTitan_ronin = "ronin",
+		byTitan_tone = "tone",
+		byTitan_legion = "legion",
+		byTitan_vanguard = "vanguard"
+	}
 }
 
 table<string, string> function GetAsTitanTypes()
 {
 	return {
-		asTitan_ion 	=	"ion"
-		asTitan_scorch		=	"scorch"
-		asTitan_northstar		=	"northstar"
-		asTitan_ronin		=	"ronin"
-		asTitan_tone		=	"tone"
-		asTitan_legion		=	"legion"
-		asTitan_vanguard	=	"vanguard"
-		}
+		asTitan_ion = "ion",
+		asTitan_scorch = "scorch",
+		asTitan_northstar = "northstar",
+		asTitan_ronin = "ronin",
+		asTitan_tone = "tone",
+		asTitan_legion = "legion",
+		asTitan_vanguard = "vanguard"
+	}
 }
 
 table<string, string> function GetAsNPCTitanTypes()
 {
 	return {
-		byNPCTitans_ion 	=	"ion"
-		byNPCTitans_scorch		=	"scorch"
-		byNPCTitans_northstar		=	"northstar"
-		byNPCTitans_ronin		=	"ronin"
-		byNPCTitans_tone		=	"tone"
-		byNPCTitans_legion		=	"legion"
-		byNPCTitans_vanguard	=	"vanguard"
-		}
+		byNPCTitans_ion = "ion",
+		byNPCTitans_scorch = "scorch",
+		byNPCTitans_northstar = "northstar",
+		byNPCTitans_ronin = "ronin",
+		byNPCTitans_tone = "tone",
+		byNPCTitans_legion = "legion",
+		byNPCTitans_vanguard = "vanguard"
+	}
 }
 
 table<string, string> function GetPluralTitanTypes()
 {
 	return {
-		titans_ion 	=	"ion"
-		titans_scorch	=	"scorch"
-		titans_northstar		=	"northstar"
-		titans_ronin		= 	"ronin"
-		titans_tone		= 	"tone"
-		titans_legion		= 	"legion"
-		titans_vanguard		= 	"vanguard"
-		}
+		titans_ion = "ion",
+		titans_scorch = "scorch",
+		titans_northstar = "northstar",
+		titans_ronin = "ronin",
+		titans_tone = "tone",
+		titans_legion = "legion",
+		titans_vanguard = "vanguard"
+	}
 }
 
 table<string, string> function GetCapitalizedTitanTypes()
 {
-	return {
-		Ion 	=	"ion"
-		Scorch		=	"scorch"
-		Northstar		=	"northstar"
-		Ronin 	= 	"ronin"
-		Tone 	= 	"tone"
-		Legion 	= 	"legion"
-		Vanguard 	= 	"vanguard"
-		}
+	return { Ion = "ion", Scorch = "scorch", Northstar = "northstar", Ronin = "ronin", Tone = "tone", Legion = "legion", Vanguard = "vanguard" }
 }
 
 bool function ValidateTitanType( titanSubClass )
@@ -531,12 +525,13 @@ float function GetWeaponInfoFileKeyField_GlobalFloat( string ref, string variabl
 
 function PrintTimeParts( Table )
 {
-	printt( "    ", Table["month"] + "/" + Table["day"] + "/" + Table["year"], "-", Table["hour"] + ":" + Table["minute"] + ":" + Table["second"] )
+	printt( "    ", Table[ "month" ] + "/" + Table[ "day" ] + "/" + Table[ "year" ], "-", Table[ "hour" ] + ":" + Table[ "minute" ] + ":" + Table[ "second" ] )
 }
 
 function WaitFrame()
 {
-	//Don't use wait 0 since it doesn't actually wait a game frame. For example, if you have a client loop that does wait 0 even if the game is paused the loop will still run
+	// Don't use wait 0 since it doesn't actually wait a game frame. For example, if you have
+	// a client loop that does wait 0 even if the game is paused the loop will still run
 	wait 0.0001
 }
 
@@ -583,7 +578,7 @@ function DeepClone( data )
 	if ( type( data ) == "table" )
 	{
 		table newTable = {}
-		foreach( key, value in data )
+		foreach ( key, value in data )
 		{
 			newTable[ key ] <- DeepClone( value )
 		}
@@ -610,7 +605,7 @@ vector function GetClosestPointOnPlane( vector a, vector b, vector c, vector p, 
 	float eqTop = DotProduct( p - a, n )
 	float eqBot = DotProduct( n, n )
 
-	//can't devide by 0 -> this is a degenerate triangle
+	// can't devide by 0 -> this is a degenerate triangle
 	if ( fabs( eqBot ) < 0.001 )
 		return GetClosestPointOnLineSegment( a, b, p )
 
@@ -624,7 +619,7 @@ vector function GetClosestPointOnPlane( vector a, vector b, vector c, vector p, 
 		float testBC = DotProduct( CrossProduct( c - b, n ), p - b )
 		float testCA = DotProduct( CrossProduct( a - c, n ), p - c )
 
-		//if the results are negative - we're outside the triangle
+		// if the results are negative - we're outside the triangle
 		if ( testAB * testBC < 0 || testBC * testCA < 0 )
 		{
 			vector lineAB = GetClosestPointOnLineSegment( a, b, p )
@@ -647,7 +642,7 @@ vector function GetClosestPointOnPlane( vector a, vector b, vector c, vector p, 
 			}
 			return closestVector
 		}
-		//if we got this far - there are no outliers
+		// if we got this far - there are no outliers
 	}
 
 	return endPoint
@@ -673,7 +668,7 @@ vector function GetClosestPointOnLineSegment( vector a, vector b, vector p )
 	else if ( t > 1.0 )
 		return b
 
-	return a + t * (b - a)
+	return a + t * ( b - a )
 }
 
 float function GetDistanceFromLineSegment( vector a, vector b, vector p )
@@ -690,13 +685,13 @@ float function GetDistanceSqrFromLineSegment( vector a, vector b, vector p )
 
 float function GetProgressAlongLineSegment( vector P, vector A, vector B )
 {
-    vector AP = P - A
-    vector AB = B - A
+	vector AP = P - A
+	vector AB = B - A
 
-    float ab2 = DotProduct( AB, AB ) // AB.x*AB.x + AB.y*AB.y
-    float ap_ab = DotProduct( AP, AB ) // AP.x*AB.x + AP.y*AB.y
-    float t = ap_ab / ab2
-    return t
+	float ab2 = DotProduct( AB, AB ) // AB.x*AB.x + AB.y*AB.y
+	float ap_ab = DotProduct( AP, AB ) // AP.x*AB.x + AP.y*AB.y
+	float t = ap_ab / ab2
+	return t
 }
 
 array<string> function UntypedArrayToStringArray( array arr )
@@ -706,7 +701,7 @@ array<string> function UntypedArrayToStringArray( array arr )
 
 	for ( int i = 0; i < arr.len(); i++ )
 	{
-		newArray.append( expect string( arr[i] ) )
+		newArray.append( expect string( arr[ i ] ) )
 	}
 
 	return newArray
@@ -724,9 +719,6 @@ bool function IsSpawner( entity ent )
 {
 	return ( IsValid( ent ) && ent.GetClassName() == "spawner" )
 }
-
-
-
 
 string function Dev_GetEnumString( table enumTable, int enumValue )
 {
@@ -754,7 +746,7 @@ string function GetAISettingsStringForMode()
 	return "aiSettingsFile"
 }
 
-array<string> function GetAllowedPlayerTitanSettings() //Based off AllowedTItanAISettings, which is based off the titan_properties table
+array<string> function GetAllowedPlayerTitanSettings() // Based off AllowedTItanAISettings, which is based off the titan_properties table
 {
 	string searchString
 
@@ -767,7 +759,7 @@ array<string> function GetAllowedPlayerTitanSettings() //Based off AllowedTItanA
 	var dataTable = GetDataTable( $"datatable/titan_properties.rpak" )
 	int numRows = GetDatatableRowCount( dataTable )
 
-	for ( int r=0; r<numRows; r++ )
+	for ( int r = 0; r < numRows; r++ )
 	{
 		bool allowed = GetDataTableBool( dataTable, r, GetDataTableColumnByName( dataTable, searchString ) )
 		if ( allowed )
@@ -775,8 +767,8 @@ array<string> function GetAllowedPlayerTitanSettings() //Based off AllowedTItanA
 			string titanRef = GetDataTableString( dataTable, r, GetDataTableColumnByName( dataTable, "titanRef" ) )
 
 			#if MP
-			if ( IsDisabledRef( titanRef ) )
-				continue
+				if ( IsDisabledRef( titanRef ) )
+					continue
 			#endif
 
 			list.append( GetDataTableString( dataTable, r, GetDataTableColumnByName( dataTable, "setFile" ) ) )
@@ -798,7 +790,7 @@ array<string> function GetAllowedTitanAISettings( string settings = "" )
 	var dataTable = GetDataTable( $"datatable/titan_properties.rpak" )
 	int numRows = GetDatatableRowCount( dataTable )
 
-	for ( int r=0; r<numRows; r++ )
+	for ( int r = 0; r < numRows; r++ )
 	{
 		bool allowed = GetDataTableBool( dataTable, r, GetDataTableColumnByName( dataTable, searchString ) )
 		if ( allowed )
@@ -807,10 +799,10 @@ array<string> function GetAllowedTitanAISettings( string settings = "" )
 		}
 	}
 
-	for ( int i=0; i<list.len(); i++ )
+	for ( int i = 0; i < list.len(); i++ )
 	{
-		string aiSettings = expect string( Dev_GetPlayerSettingByKeyField_Global( list[i], settings ) )
-		list[i] = aiSettings
+		string aiSettings = expect string( Dev_GetPlayerSettingByKeyField_Global( list[ i ], settings ) )
+		list[ i ] = aiSettings
 	}
 
 	return list
@@ -849,12 +841,7 @@ array<string> function GetAllNPCSettings()
 	// insert titans here!
 	aiSettings.extend( GetAllowedTitanAISettings() )
 
-	aiSettings.extend( [
-		"npc_turret_mega"
-		"npc_turret_sentry"
-		"npc_turret_sentry_plasma"
-		"npc_turret_sentry_tday"
-	] )
+	aiSettings.extend( [ "npc_turret_mega", "npc_turret_sentry", "npc_turret_sentry_plasma", "npc_turret_sentry_tday" ] )
 
 	return aiSettings
 }
@@ -863,116 +850,115 @@ array<string> function GetAllDeprecatedNPCSettings()
 {
 	// this is all the npc settings, then the legal settings are subtracted from it.
 	// also commented out settings that we don't want to have appear in the dev menu
-	table<string,bool> allNpcSettings =
-	{
-		//base_vehicle = true
-		//npc_bullseye = true
-		npc_drone = true
-		npc_drone_beam = true
-		npc_drone_cloaked = true
-		npc_drone_plasma = true
-		npc_drone_rocket = true
-		npc_drone_shield = true
-		npc_drone_worker = true
-		//npc_drone_plasma_fast = true
-		//npc_drone_rocket_fast = true
-		//npc_drone_worker_fast = true
-		npc_dropship = true
-		npc_dropship_dogfighter = true
-		npc_dropship_hero = true
-		npc_frag_drone = true
-		npc_frag_drone_throwable = true
-		npc_gunship = true
-		npc_gunship_scripted = true
-		npc_marvin = true
-		//npc_pilot_elite = true
-		npc_pilot_elite_assassin = true
-		npc_pilot_elite_assassin_cqb = true
-		npc_pilot_elite_assassin_sniper = true
-		//npc_pilot_elite_s2s = true
-		npc_prowler = true
-		npc_soldier = true
-		npc_soldier_bish = true
-		npc_soldier_blisk = true
-		npc_soldier_drone_summoner = true
-		npc_soldier_hero_bear = true
-		npc_soldier_hero_sarah = true
-		npc_soldier_shield_captain = true
-		npc_soldier_sidearm = true
-		npc_soldier_specialist = true
-		npc_soldier_specialist_militia = true
-		npc_soldier_spyglass = true
-		npc_soldier_training_sentry = true
-		npc_soldier_pve_sandbox = true
-		npc_soldier_pve_specialist = true
-		npc_soldier_pve_eliteguard = true
-		npc_spectre = true
-		npc_stalker = true
-		//npc_stalker_crawling = true
-		npc_stalker_zombie = true
-		npc_stalker_zombie_mossy = true
-		npc_super_spectre = true
-		npc_super_spectre_burnmeter = true
-		npc_super_spectre_calmer = true
-		npc_titan = true
-		npc_titan_arc = true
-		npc_titan_atlas = true
-		npc_titan_atlas_stickybomb = true
-		npc_titan_atlas_tracker = true
-		npc_titan_atlas_vanguard = true
-		npc_titan_auto = true
-		npc_titan_auto_atlas = true
-		npc_titan_auto_atlas_rocketeer = true
-		npc_titan_auto_atlas_stickybomb = true
-		npc_titan_auto_atlas_tracker = true
-		npc_titan_auto_atlas_vanguard = true
-		npc_titan_auto_ogre = true
-		npc_titan_auto_ogre_fighter = true
-		npc_titan_auto_ogre_meteor = true
-		npc_titan_auto_ogre_minigun = true
-		npc_titan_auto_stryder = true
-		npc_titan_auto_stryder_arc = true
-		npc_titan_auto_stryder_leadwall = true
-		npc_titan_auto_stryder_sniper = true
-		npc_titan_buddy = true
-		npc_titan_buddy_s2s = true
-		npc_titan_mortar = true
-		npc_titan_nuke = true
-		npc_titan_ogre = true
-		npc_titan_ogre_fighter = true
-		npc_titan_ogre_fighter_berserker_core = true
-		npc_titan_ogre_meteor = true
-		npc_titan_ogre_minigun = true
-		npc_titan_proto_stasisgun = true
-		npc_titan_sarah = true
-		npc_titan_vanguard = true
-		npc_titan_sniper = true
-		npc_titan_stryder = true
-		npc_titan_stryder_arc = true
-		npc_titan_stryder_leadwall = true
-		npc_titan_stryder_leadwall_shift_core = true
-		npc_titan_stryder_rocketeer = true
-		npc_titan_stryder_rocketeer_dash_core = true
-		npc_titan_stryder_sniper = true
-		npc_turret_mega = true
-		npc_turret_mega_nowindup = true
-		//npc_turret_mega_old = true
-		npc_turret_mega_windup = true
-		npc_turret_mega_attrition = true
-		npc_turret_mega_fortwar = true
-		npc_turret_sentry = true
-		npc_turret_sentry_plasma = true
-		npc_turret_sentry_burn_card_at = true
-		npc_turret_sentry_burn_card_ap = true
-		npc_turret_sentry_tactical_ability = true
-		npc_turret_sentry_tday = true
-		npc_turret_sentry_windup = true
-		npc_titan_atlas_stickybomb_bounty = true
-		npc_titan_atlas_tracker_bounty = true
-		npc_titan_atlas_vanguard_bounty = true
-		npc_titan_stryder_leadwall_bounty = true
-		npc_titan_stryder_sniper_bounty = true
-		npc_titan_ogre_meteor_bounty = true
+	table<string, bool> allNpcSettings = {
+		// base_vehicle = true
+		// npc_bullseye = true
+		npc_drone = true,
+		npc_drone_beam = true,
+		npc_drone_cloaked = true,
+		npc_drone_plasma = true,
+		npc_drone_rocket = true,
+		npc_drone_shield = true,
+		npc_drone_worker = true,
+		// npc_drone_plasma_fast = true
+		// npc_drone_rocket_fast = true
+		// npc_drone_worker_fast = true
+		npc_dropship = true,
+		npc_dropship_dogfighter = true,
+		npc_dropship_hero = true,
+		npc_frag_drone = true,
+		npc_frag_drone_throwable = true,
+		npc_gunship = true,
+		npc_gunship_scripted = true,
+		npc_marvin = true,
+		// npc_pilot_elite = true
+		npc_pilot_elite_assassin = true,
+		npc_pilot_elite_assassin_cqb = true,
+		npc_pilot_elite_assassin_sniper = true,
+		// npc_pilot_elite_s2s = true
+		npc_prowler = true,
+		npc_soldier = true,
+		npc_soldier_bish = true,
+		npc_soldier_blisk = true,
+		npc_soldier_drone_summoner = true,
+		npc_soldier_hero_bear = true,
+		npc_soldier_hero_sarah = true,
+		npc_soldier_shield_captain = true,
+		npc_soldier_sidearm = true,
+		npc_soldier_specialist = true,
+		npc_soldier_specialist_militia = true,
+		npc_soldier_spyglass = true,
+		npc_soldier_training_sentry = true,
+		npc_soldier_pve_sandbox = true,
+		npc_soldier_pve_specialist = true,
+		npc_soldier_pve_eliteguard = true,
+		npc_spectre = true,
+		npc_stalker = true,
+		// npc_stalker_crawling = true
+		npc_stalker_zombie = true,
+		npc_stalker_zombie_mossy = true,
+		npc_super_spectre = true,
+		npc_super_spectre_burnmeter = true,
+		npc_super_spectre_calmer = true,
+		npc_titan = true,
+		npc_titan_arc = true,
+		npc_titan_atlas = true,
+		npc_titan_atlas_stickybomb = true,
+		npc_titan_atlas_tracker = true,
+		npc_titan_atlas_vanguard = true,
+		npc_titan_auto = true,
+		npc_titan_auto_atlas = true,
+		npc_titan_auto_atlas_rocketeer = true,
+		npc_titan_auto_atlas_stickybomb = true,
+		npc_titan_auto_atlas_tracker = true,
+		npc_titan_auto_atlas_vanguard = true,
+		npc_titan_auto_ogre = true,
+		npc_titan_auto_ogre_fighter = true,
+		npc_titan_auto_ogre_meteor = true,
+		npc_titan_auto_ogre_minigun = true,
+		npc_titan_auto_stryder = true,
+		npc_titan_auto_stryder_arc = true,
+		npc_titan_auto_stryder_leadwall = true,
+		npc_titan_auto_stryder_sniper = true,
+		npc_titan_buddy = true,
+		npc_titan_buddy_s2s = true,
+		npc_titan_mortar = true,
+		npc_titan_nuke = true,
+		npc_titan_ogre = true,
+		npc_titan_ogre_fighter = true,
+		npc_titan_ogre_fighter_berserker_core = true,
+		npc_titan_ogre_meteor = true,
+		npc_titan_ogre_minigun = true,
+		npc_titan_proto_stasisgun = true,
+		npc_titan_sarah = true,
+		npc_titan_vanguard = true,
+		npc_titan_sniper = true,
+		npc_titan_stryder = true,
+		npc_titan_stryder_arc = true,
+		npc_titan_stryder_leadwall = true,
+		npc_titan_stryder_leadwall_shift_core = true,
+		npc_titan_stryder_rocketeer = true,
+		npc_titan_stryder_rocketeer_dash_core = true,
+		npc_titan_stryder_sniper = true,
+		npc_turret_mega = true,
+		npc_turret_mega_nowindup = true,
+		// npc_turret_mega_old = true
+		npc_turret_mega_windup = true,
+		npc_turret_mega_attrition = true,
+		npc_turret_mega_fortwar = true,
+		npc_turret_sentry = true,
+		npc_turret_sentry_plasma = true,
+		npc_turret_sentry_burn_card_at = true,
+		npc_turret_sentry_burn_card_ap = true,
+		npc_turret_sentry_tactical_ability = true,
+		npc_turret_sentry_tday = true,
+		npc_turret_sentry_windup = true,
+		npc_titan_atlas_stickybomb_bounty = true,
+		npc_titan_atlas_tracker_bounty = true,
+		npc_titan_atlas_vanguard_bounty = true,
+		npc_titan_stryder_leadwall_bounty = true,
+		npc_titan_stryder_sniper_bounty = true,
+		npc_titan_ogre_meteor_bounty = true,
 		npc_titan_ogre_minigun_bounty = true
 	}
 
@@ -991,7 +977,7 @@ array<string> function GetAllDeprecatedNPCSettings()
 	return settings
 }
 
-///////
+// /////
 // These are Brent's utility functions that match RUI functions of the same name; use these to accurately compute RUI values from script
 float function EaseIn( float val )
 {
@@ -1007,18 +993,18 @@ float function AttackDecay( float attack, float decay, float time )
 {
 	float sum = attack + decay
 	float a = sum - 2.0
-	float b = (3.0 - attack) - sum
+	float b = ( 3.0 - attack ) - sum
 	float c = attack
 	float t = max( min( time, 1.0 ), 0.0 )
 
-	return t * (c + t * (b + t * a))
+	return t * ( c + t * ( b + t * a ) )
 }
 
 float function Clamp( float value, float minValue, float maxValue )
 {
 	return max( min( value, maxValue ), minValue )
 }
-///////
+// /////
 
 string function GetCurrentPlaylistVarString( string varName, string defaultValue )
 {
@@ -1044,7 +1030,7 @@ bool function IsPlayerPrimeTitan( entity player )
 
 int function GetCollectibleLevelIndex( string mapName )
 {
-	foreach( int i, table data in LEVEL_UNLOCKS_COUNT )
+	foreach ( int i, table data in LEVEL_UNLOCKS_COUNT )
 	{
 		if ( data.level == mapName )
 			return i
@@ -1074,7 +1060,7 @@ int function GetCombinedLionsInLevel( string mapName )
 
 	array<string> bsps = GetBSPsForLevel( mapName )
 	int count = 0
-	foreach( string bsp in bsps )
+	foreach ( string bsp in bsps )
 		count += GetMaxLionsInLevel( bsp )
 
 	return count
@@ -1106,8 +1092,6 @@ int function GetTotalLionsInGame()
 	return total
 }
 
-
-
 int function GetCollectiblesFoundForLevel( string mapName )
 {
 	int saveIndex = GetCollectibleLevelIndex( mapName )
@@ -1119,7 +1103,7 @@ int function GetCollectiblesFoundForLevel( string mapName )
 	string unlockVar = "sp_unlocks_level_" + saveIndex
 	int bitMask = GetConVarInt( unlockVar )
 
-	for ( int i = 0 ; i < numCollectiblesInLevel ; i++ )
+	for ( int i = 0; i < numCollectiblesInLevel; i++ )
 	{
 		int _id = 1 << i
 		if ( bitMask & _id )
@@ -1130,14 +1114,14 @@ int function GetCollectiblesFoundForLevel( string mapName )
 
 int function GetCombinedCollectiblesFoundForLevel( string mapName )
 {
-#if UI || CLIENT
-	if ( Script_IsRunningTrialVersion() )
-		return 0
-#endif
+	#if UI || CLIENT
+		if ( Script_IsRunningTrialVersion() )
+			return 0
+	#endif
 
 	array<string> bsps = GetBSPsForLevel( mapName )
 	int count = 0
-	foreach( string bsp in bsps )
+	foreach ( string bsp in bsps )
 		count += GetCollectiblesFoundForLevel( bsp )
 
 	return count
@@ -1149,7 +1133,7 @@ void function ResetCollectiblesProgress_All()
 		printt( "RESETTING COLLECTIBLE PROGRESS (ALL)" )
 	#endif
 
-	for ( int i = 0 ; i < 15 ; i++ )
+	for ( int i = 0; i < 15; i++ )
 	{
 		#if DEV
 			printt( "  sp_unlocks_level_" + i, 0 )
@@ -1163,14 +1147,13 @@ void function RemoveDupesFromSorted_String( array<string> data )
 {
 	for ( int i = 0; i < data.len() - 1; i++ )
 	{
-		if ( data[i] == data[i+1] )
+		if ( data[ i ] == data[ i + 1 ] )
 		{
 			data.remove( i )
 			i--
 		}
 	}
 }
-
 
 function SortAlphabetize( a, b )
 {
@@ -1205,12 +1188,11 @@ int function SortAssetAlphabetize( asset a, asset b )
 	return 0
 }
 
-
 void function RemoveDupesFromSorted_Asset( array<asset> data )
 {
 	for ( int i = 0; i < data.len() - 1; i++ )
 	{
-		if ( data[i] == data[i+1] )
+		if ( data[ i ] == data[ i + 1 ] )
 		{
 			data.remove( i )
 			i--
@@ -1218,11 +1200,10 @@ void function RemoveDupesFromSorted_Asset( array<asset> data )
 	}
 }
 
-
 array<string> function GetBSPsForLevel( string mapName )
 {
 	array<string> bsps
-	switch( mapName )
+	switch ( mapName )
 	{
 		// Levels aren't split, just return the bsp name of the level
 		case "sp_training":
@@ -1234,8 +1215,8 @@ array<string> function GetBSPsForLevel( string mapName )
 		case "sp_chadbox":
 			bsps.append( mapName )
 			break
+			// Have to return all bsps that are part of the level
 
-		// Have to return all bsps that are part of the level
 		case "sp_boomtown_start":
 		case "sp_boomtown":
 		case "sp_boomtown_end":
@@ -1267,22 +1248,23 @@ array<string> function GetBSPsForLevel( string mapName )
 array<string> function GetAllR2SPBSPs()
 {
 	return [
-		"sp_training"
-		"sp_crashsite"
-		"sp_sewers1"
-		"sp_tday"
-		"sp_s2s"
-		"sp_skyway_v1"
-		"sp_boomtown_start"
-		"sp_boomtown"
-		"sp_boomtown_end"
-		"sp_hub_timeshift"
-		"sp_timeshift_spoke02"
-		"sp_beacon"
-		"sp_beacon_spoke0" ]
+		"sp_training",
+		"sp_crashsite",
+		"sp_sewers1",
+		"sp_tday",
+		"sp_s2s",
+		"sp_skyway_v1",
+		"sp_boomtown_start",
+		"sp_boomtown",
+		"sp_boomtown_end",
+		"sp_hub_timeshift",
+		"sp_timeshift_spoke02",
+		"sp_beacon",
+		"sp_beacon_spoke0"
+	]
 }
 
-//sp_unlocks_level
+// sp_unlocks_level
 
 asset function GetWeaponModel( string weaponName )
 {
@@ -1318,13 +1300,12 @@ asset function GetWeaponViewmodel( string weaponName )
 	return modelName
 }
 
-string function GetTitanClassFromSetFile( string setFile ) //JFS: As of right now titanClass is really just the same thing as "titanCharacterName". Should change this for next game if needed.
+string function GetTitanClassFromSetFile( string setFile ) // JFS: As of right now titanClass is really just the same thing as "titanCharacterName". Should change this for next game if needed.
 {
 	var result = Dev_GetPlayerSettingByKeyField_Global( setFile, "titanCharacterName" )
 	expect string( result )
 	return result
 }
-
 
 string function GetTitanCharacterNameFromSetFile( string setFile )
 {
@@ -1339,7 +1320,6 @@ string function GetTitanCharacterNameFromSetFile( string setFile )
 	return result
 }
 
-
 string function GetTitanReadyMessageFromSetFile( string setFile )
 {
 	var result = Dev_GetPlayerSettingByKeyField_Global( setFile, "readymessage" )
@@ -1353,63 +1333,60 @@ string function GetTitanReadyMessageFromSetFile( string setFile )
 	return result
 }
 
-
-
-
 #if CLIENT || UI
-void function DisablePrecacheErrors()
-{
-	file.lastHostThreadMode = GetConVarInt( "host_thread_mode" )
-	file.lastScriptPrecacheErrors = GetConVarInt( "script_precache_errors" )
-	file.lastReportFatal = GetConVarInt( "fs_report_sync_opens_fatal" )
+	void function DisablePrecacheErrors()
+	{
+		file.lastHostThreadMode = GetConVarInt( "host_thread_mode" )
+		file.lastScriptPrecacheErrors = GetConVarInt( "script_precache_errors" )
+		file.lastReportFatal = GetConVarInt( "fs_report_sync_opens_fatal" )
 
-	#if CLIENT
-	entity player = GetLocalClientPlayer()
-	player.ClientCommand( "host_thread_mode 0" )
-	player.ClientCommand( "script_precache_errors 0" )
-	player.ClientCommand( "fs_report_sync_opens_fatal 0" )
-	#endif
+		#if CLIENT
+			entity player = GetLocalClientPlayer()
+			player.ClientCommand( "host_thread_mode 0" )
+			player.ClientCommand( "script_precache_errors 0" )
+			player.ClientCommand( "fs_report_sync_opens_fatal 0" )
+		#endif
 
-	#if UI
-	ClientCommand( "host_thread_mode 0" )
-	ClientCommand( "script_precache_errors 0" )
-	ClientCommand( "fs_report_sync_opens_fatal 0" )
-	#endif
-}
+		#if UI
+			ClientCommand( "host_thread_mode 0" )
+			ClientCommand( "script_precache_errors 0" )
+			ClientCommand( "fs_report_sync_opens_fatal 0" )
+		#endif
+	}
 
-void function RestorePrecacheErrors()
-{
-	#if CLIENT
-	entity player = GetLocalClientPlayer()
-	player.ClientCommand( "host_thread_mode " + file.lastHostThreadMode )
-	player.ClientCommand( "script_precache_errors " + file.lastScriptPrecacheErrors )
-	player.ClientCommand( "fs_report_sync_opens_fatal " + file.lastReportFatal )
-	#endif
+	void function RestorePrecacheErrors()
+	{
+		#if CLIENT
+			entity player = GetLocalClientPlayer()
+			player.ClientCommand( "host_thread_mode " + file.lastHostThreadMode )
+			player.ClientCommand( "script_precache_errors " + file.lastScriptPrecacheErrors )
+			player.ClientCommand( "fs_report_sync_opens_fatal " + file.lastReportFatal )
+		#endif
 
-	#if UI
-	ClientCommand( "host_thread_mode " + file.lastHostThreadMode )
-	ClientCommand( "script_precache_errors " + file.lastScriptPrecacheErrors )
-	ClientCommand( "fs_report_sync_opens_fatal " + file.lastReportFatal )
-	#endif
-}
+		#if UI
+			ClientCommand( "host_thread_mode " + file.lastHostThreadMode )
+			ClientCommand( "script_precache_errors " + file.lastScriptPrecacheErrors )
+			ClientCommand( "fs_report_sync_opens_fatal " + file.lastReportFatal )
+		#endif
+	}
 #endif
 
 #if SERVER
-void function DisablePrecacheErrors()
-{
-	foreach ( player in GetPlayerArray() )
+	void function DisablePrecacheErrors()
 	{
-		Remote_CallFunction_UI( player, "DisablePrecacheErrors" )
+		foreach ( player in GetPlayerArray() )
+		{
+			Remote_CallFunction_UI( player, "DisablePrecacheErrors" )
+		}
 	}
-}
 
-void function RestorePrecacheErrors()
-{
-	foreach ( player in GetPlayerArray() )
+	void function RestorePrecacheErrors()
 	{
-		Remote_CallFunction_UI( player, "RestorePrecacheErrors" )
+		foreach ( player in GetPlayerArray() )
+		{
+			Remote_CallFunction_UI( player, "RestorePrecacheErrors" )
+		}
 	}
-}
 
 #endif
 
@@ -1425,7 +1402,6 @@ string function GetTitanReadyHintFromSetFile( string setFile )
 	expect string( result )
 	return result
 }
-
 
 void function HideHudElem( var hudelem )
 {
@@ -1457,7 +1433,7 @@ bool function GetCompletedDifficultyForLevelId( string uniqueIdentifier, string 
 {
 	int bspNum = GetBSPNum( uniqueIdentifier )
 
-	Assert ( bspNum >= 0 )
+	Assert( bspNum >= 0 )
 
 	return GetCompletedDifficultyForBSPNum( bspNum, pvar )
 }
@@ -1465,7 +1441,7 @@ bool function GetCompletedDifficultyForLevelId( string uniqueIdentifier, string 
 bool function DevStartPoints()
 {
 	#if DEV
-	return true
+		return true
 	#endif
 
 	return Dev_CommandLineHasParm( "-startpoints" )
@@ -1477,7 +1453,7 @@ int function GetBSPNum( string uniqueIdentifier )
 	int numRows = GetDatatableRowCount( dataTable )
 	int bspCol = GetDataTableColumnByName( dataTable, "levelId" )
 
-	for ( int i = 0; i <numRows; i++ )
+	for ( int i = 0; i < numRows; i++ )
 	{
 		string levelBsp = GetDataTableString( dataTable, i, bspCol )
 
@@ -1490,14 +1466,14 @@ int function GetBSPNum( string uniqueIdentifier )
 
 bool function GetCompletedDifficultyForBSPNum( int bspNum, string pvar )
 {
-#if UI || CLIENT
-	if ( Script_IsRunningTrialVersion() )
-		return false
-#endif
+	#if UI || CLIENT
+		if ( Script_IsRunningTrialVersion() )
+			return false
+	#endif
 
 	int bitfield = GetConVarInt( pvar )
 
-	return (( bitfield & (1 << bspNum) ) >= 1 )
+	return ( ( bitfield & ( 1 << bspNum ) ) >= 1 )
 }
 
 int function GetLastLevelUnlocked()
@@ -1524,12 +1500,11 @@ bool function EmotesEnabled()
 	return false
 }
 
-
 array<string> function GetAvailableTitanRefs( entity player )
 {
 	array<string> availableTitanRefs
 
-	int enumCount =	PersistenceGetEnumCount( "titanClasses" )
+	int enumCount = PersistenceGetEnumCount( "titanClasses" )
 	for ( int i = 0; i < enumCount; i++ )
 	{
 		string enumName = PersistenceGetEnumItemNameForIndex( "titanClasses", i )
@@ -1545,35 +1520,34 @@ array<string> function GetAvailableTitanRefs( entity player )
 	return availableTitanRefs
 }
 
-/// Gets the highest Titan FD level and stores it in the corresponding persistent var.
-/// * `player` - The player entity to perform the action on
+// / Gets the highest Titan FD level and stores it in the corresponding persistent var.
+// / * `player` - The player entity to perform the action on
 #if MP
-void function RecalculateHighestTitanFDLevel( entity player )
-{
-	int enumCount = PersistenceGetEnumCount( "titanClasses" )
-	int highestAegis = 0
-	for ( int i = 0; i < enumCount; i++ )
+	void function RecalculateHighestTitanFDLevel( entity player )
 	{
-		string enumName = PersistenceGetEnumItemNameForIndex( "titanClasses", i )
-		int aegisLevel = FD_TitanGetLevelForXP( enumName, FD_TitanGetXP( player, enumName ) )
-		if ( highestAegis < aegisLevel )
-			highestAegis = aegisLevel
+		int enumCount = PersistenceGetEnumCount( "titanClasses" )
+		int highestAegis = 0
+		for ( int i = 0; i < enumCount; i++ )
+		{
+			string enumName = PersistenceGetEnumItemNameForIndex( "titanClasses", i )
+			int aegisLevel = FD_TitanGetLevelForXP( enumName, FD_TitanGetXP( player, enumName ) )
+			if ( highestAegis < aegisLevel )
+				highestAegis = aegisLevel
+		}
+		player.SetPersistentVar( "fdStats.highestTitanFDLevel", highestAegis )
 	}
-	player.SetPersistentVar( "fdStats.highestTitanFDLevel", highestAegis )
-}
 
-string function GetTitanRefForLoadoutIndex( entity player, int loadoutIndex )
-{
-	TitanLoadoutDef loadout = GetTitanLoadoutFromPersistentData( player, loadoutIndex )
-	return loadout.titanClass
-}
+	string function GetTitanRefForLoadoutIndex( entity player, int loadoutIndex )
+	{
+		TitanLoadoutDef loadout = GetTitanLoadoutFromPersistentData( player, loadoutIndex )
+		return loadout.titanClass
+	}
 #endif
 
 bool function DoPrematchWarpSound()
 {
 	return GetCurrentPlaylistVarInt( "pick_loadout_warp_sound", 1 ) == 1
 }
-
 
 int function GetIntFromString( string inString )
 {
@@ -1589,7 +1563,7 @@ int function GetIntFromString( string inString )
 	return 0
 }
 
-//Function returns whether the given mode name is a Frontier Defense mode.
+// Function returns whether the given mode name is a Frontier Defense mode.
 bool function IsFDMode( string modeName )
 {
 	bool isFD = false
@@ -1609,17 +1583,17 @@ bool function IsFDMode( string modeName )
 // Join an array of strings with a seperator
 string function JoinStringArray( array<string> strings, string separator )
 {
-	string output;
+	string output
 
-	foreach( int i, string stringoStarr in strings )
+	foreach ( int i, string stringoStarr in strings )
 	{
-		if (i == 0)
+		if ( i == 0 )
 			output = stringoStarr
 		else
 			output = output + separator + stringoStarr
 	}
 
-	return output;
+	return output
 }
 
 bool function StartsWith( string target, string startsWith )

@@ -8,22 +8,21 @@ function AiUtility_Init()
 	RegisterSignal( "squadInCombat" )
 	RegisterSignal( "OnEndFollow" )
 	RegisterSignal( "OnStunned" )
-
 }
-////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////
 // Cloaks npc forever (to be used by anim events)
 function NpcCloakOn( npc )
 {
-	//SetCloakDuration( fade in, duration, fade out )
+	// SetCloakDuration( fade in, duration, fade out )
 	npc.SetCloakDuration( 2.0, -1, 0 )
 	EmitSoundOnEntity( npc, CLOAKED_DRONE_CLOAK_START_SFX )
 	EmitSoundOnEntity( npc, CLOAKED_DRONE_CLOAK_LOOP_SFX )
 	npc.Minimap_Hide( TEAM_IMC, null )
 	npc.Minimap_Hide( TEAM_MILITIA, null )
 }
-////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////
 // De-cloaks npc
-function NpcCloakOff( npc)
+function NpcCloakOff( npc )
 {
 	npc.SetCloakDuration( 0, 0, 1.5 )
 	StopSoundOnEntity( npc, CLOAKED_DRONE_CLOAK_LOOP_SFX )
@@ -84,9 +83,9 @@ void function NPCFollowsPlayer( entity npc, entity leader )
 
 	thread DieOnPlayerDisconnect( npc, leader )
 	#if SP
-	Highlight_SetFriendlyHighlight( npc, "friendly_ai" )
+		Highlight_SetFriendlyHighlight( npc, "friendly_ai" )
 	#else
-	Highlight_SetOwnedHighlight( npc, "friendly_ai" )
+		Highlight_SetOwnedHighlight( npc, "friendly_ai" )
 	#endif
 
 	NpcFollowsEntity( npc, leader )
@@ -129,8 +128,7 @@ void function NpcFollowsEntity( entity npc, entity leader )
 	npc.EnableBehavior( "Follow" )
 }
 
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////////////////////////
 bool function HasEnemyWithinDist( entity npc, float dist )
 {
 	float distSq = dist * dist
@@ -161,24 +159,24 @@ SpawnPointFP function FindSpawnPointForNpcCallin( entity npc, asset model, strin
 {
 	float yaw = npc.EyeAngles().y
 
-	vector npcView 				= AnglesToForward( npc.EyeAngles() )
-	FlightPath flightPath 		= GetAnalysisForModel( model, anim )
+	vector npcView = AnglesToForward( npc.EyeAngles() )
+	FlightPath flightPath = GetAnalysisForModel( model, anim )
 
 	CallinData drop
 	InitCallinData( drop )
 	SetCallinStyle( drop, eDropStyle.NEAREST_YAW_FALLBACK )
 	SetCallinOwnerEyePos( drop, npc.EyePosition() )
-	drop.dist 			= 800
-	drop.origin 		= npc.GetOrigin() + npcView * 250
-	drop.yaw 			= yaw
+	drop.dist = 800
+	drop.origin = npc.GetOrigin() + npcView * 250
+	drop.yaw = yaw
 
 	vector angles = Vector( 0, yaw, 0 )
- 	SpawnPointFP spawnPoint = GetSpawnPointForStyle( flightPath, drop )
+	SpawnPointFP spawnPoint = GetSpawnPointForStyle( flightPath, drop )
 	if ( spawnPoint.valid )
 		return spawnPoint
 
-	//if it didn't find one where he was looking - try near him
-	drop.origin 		= npc.GetOrigin()
+	// if it didn't find one where he was looking - try near him
+	drop.origin = npc.GetOrigin()
 	spawnPoint = GetSpawnPointForStyle( flightPath, drop )
 
 	return spawnPoint
@@ -188,7 +186,7 @@ function WaitForSquadInCombat( squad )
 {
 	local master = {}
 
-	//when the thread ends, let child threads now
+	// when the thread ends, let child threads now
 	OnThreadEnd(
 		function() : ( master )
 		{
@@ -197,22 +195,21 @@ function WaitForSquadInCombat( squad )
 	)
 
 	// this internal function keeps track of each guy
-	local combatTracker =
-		function( guy, master )
-		{
-			expect entity( guy )
-			expect entity( master )
+	local combatTracker = function( guy, master )
+	{
+		expect entity( guy )
+		expect entity( master )
 
-			EndSignal( master, "OnDestroy" )
-			EndSignal( guy, "OnDeath", "OnDestroy" )
-			if ( !IsAlive( guy ) )
-				return
+		EndSignal( master, "OnDestroy" )
+		EndSignal( guy, "OnDeath", "OnDestroy" )
+		if ( !IsAlive( guy ) )
+			return
 
-			while ( guy.GetNPCState() != "combat" )
-				guy.WaitSignal( "OnStateChange" )
+		while ( guy.GetNPCState() != "combat" )
+			guy.WaitSignal( "OnStateChange" )
 
-			Signal( master, "squadInCombat" )
-		}
+		Signal( master, "squadInCombat" )
+	}
 
 	foreach ( guy in squad )
 	{
@@ -231,12 +228,12 @@ function WaitForNpcInCombat( npc )
 int function GetNpcHullType( entity npc )
 {
 	string aiSettings = npc.GetAISettingsName()
-	return int ( Dev_GetAISettingByKeyField_Global( aiSettings, "HullType" ) )
+	return int( Dev_GetAISettingByKeyField_Global( aiSettings, "HullType" ) )
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////////////////////////////////////////////////
 // "SPAWN AI" DEV MENU Fuctions
-//////////////////////////////////////////////////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////////////////////////////////////////////////
 const float CROSSHAIR_VERT_OFFSET = 32
 
 vector function GetPlayerCrosshairOriginRaw( entity player )
@@ -255,7 +252,7 @@ vector function GetPlayerCrosshairOriginRaw( entity player )
 
 vector function GetPlayerCrosshairOrigin( entity player )
 {
-	return (GetPlayerCrosshairOriginRaw( player ) + Vector( 0, 0, CROSSHAIR_VERT_OFFSET ))
+	return ( GetPlayerCrosshairOriginRaw( player ) + Vector( 0, 0, CROSSHAIR_VERT_OFFSET ) )
 }
 
 void function DEV_SpawnBTAtCrosshair( bool hotdrop = false )
@@ -265,7 +262,7 @@ void function DEV_SpawnBTAtCrosshair( bool hotdrop = false )
 	entity player = GetPlayerArray()[ 0 ]
 
 	entity pet_titan = player.GetPetTitan()
-	if ( IsValid(pet_titan) )
+	if ( IsValid( pet_titan ) )
 		pet_titan.Destroy()
 
 	vector origin = GetPlayerCrosshairOrigin( player )
@@ -357,12 +354,11 @@ void function DEV_SpawnWeaponAtCrosshair( string weaponName )
 	vector angles = Vector( 0, 0, 0 )
 	entity weapon = CreateWeaponEntityByNameWithPhysics( weaponName, origin, angles )
 
-#if SP
-	bool isTitanWeapon = weaponName.find( "mp_titanweapon_" ) != null
-	if ( isTitanWeapon )
-		thread TitanLoadoutWaitsForPickup( weapon, SPTitanLoadoutPickup )
-#endif
-
+	#if SP
+		bool isTitanWeapon = weaponName.find( "mp_titanweapon_" ) != null
+		if ( isTitanWeapon )
+			thread TitanLoadoutWaitsForPickup( weapon, SPTitanLoadoutPickup )
+	#endif
 }
 
 string function GetAISettingsFromPlayerSetFile( string playerSetfile )
@@ -374,7 +370,6 @@ string function GetAISettingsFromPlayerSetFile( string playerSetfile )
 	return expect string( Dev_GetPlayerSettingByKeyField_Global( playerSetfile, GetAISettingsStringForMode() ) )
 }
 
-
 void function DEV_SpawnBossTitanAtCrosshair( string playerSetfile )
 {
 	string aiSettings = GetAISettingsFromPlayerSetFile( playerSetfile )
@@ -385,10 +380,10 @@ void function DEV_SpawnBossTitanAtCrosshair( string playerSetfile )
 	bool restoreHostThreadMode = GetConVarInt( "host_thread_mode" ) != 0
 	entity npc = DEV_SpawnNPCWithWeaponAtCrosshairStart( restoreHostThreadMode, baseClass, aiSettings, TEAM_IMC )
 	SetSpawnOption_NPCTitan( npc, TITAN_BOSS )
-//	SetSpawnOption_TitanLoadout( npc, loadout )
+	// 	SetSpawnOption_TitanLoadout( npc, loadout )
 
 	string builtInLoadout = expect string( Dev_GetAISettingByKeyField_Global( aiSettings, "npc_titan_player_settings" ) )
-//	SetTitanSettings( npc.ai.titanSettings, builtInLoadout )
+	// 	SetTitanSettings( npc.ai.titanSettings, builtInLoadout )
 	npc.ai.titanSpawnLoadout.setFile = builtInLoadout
 	OverwriteLoadoutWithDefaultsForSetFile( npc.ai.titanSpawnLoadout ) // get the entire loadout, including defensive and tactical
 
@@ -405,7 +400,7 @@ entity function DEV_SpawnNPCWithWeaponAtCrosshairStart( bool restoreHostThreadMo
 	}
 
 	float time = Time()
-	for ( ;; )
+	for ( ; ; )
 	{
 		if ( Time() > time )
 			break
@@ -449,7 +444,6 @@ void function DEV_SpawnNPCWithWeaponAtCrosshairEnd( bool restoreHostThreadMode )
 	}
 }
 
-
 function SetAISettingsWrapper( entity npc, string settings )
 {
 	npc.SetAISettings( settings )
@@ -473,7 +467,6 @@ bool function WithinEngagementRange( entity npc, vector origin )
 
 	return dist <= weapon.GetWeaponInfoFileKeyField( "npc_max_engage_range" )
 }
-
 
 function DEV_AITitanDuel()
 {
@@ -520,7 +513,6 @@ function DEV_AITitanDuelThread()
 
 	int currentSetting = 0
 
-
 	while ( 1 )
 	{
 		if ( !IsValid( imcTitan ) )
@@ -528,8 +520,8 @@ function DEV_AITitanDuelThread()
 			vector origin = GetPlayerCrosshairOrigin( player ) + < -300, -300, 0 >
 			vector angles = Vector( 0, 0, 0 )
 
-			imcTitan = DEV_AITitanDuelSpawn( player, TEAM_IMC, origin, angles, aiSettings[currentSetting] )
-			currentSetting = (currentSetting + 1) % aiSettings.len()
+			imcTitan = DEV_AITitanDuelSpawn( player, TEAM_IMC, origin, angles, aiSettings[ currentSetting ] )
+			currentSetting = ( currentSetting + 1 ) % aiSettings.len()
 
 			if ( IsValid( militiaTitan ) )
 			{
@@ -543,8 +535,8 @@ function DEV_AITitanDuelThread()
 			vector origin = GetPlayerCrosshairOrigin( player ) + < 300, 300, 0 >
 			vector angles = Vector( 0, 180, 0 )
 
-			militiaTitan = DEV_AITitanDuelSpawn( player, TEAM_MILITIA, origin, angles, aiSettings[currentSetting] )
-			currentSetting = (currentSetting + 1) % aiSettings.len()
+			militiaTitan = DEV_AITitanDuelSpawn( player, TEAM_MILITIA, origin, angles, aiSettings[ currentSetting ] )
+			currentSetting = ( currentSetting + 1 ) % aiSettings.len()
 
 			if ( IsValid( imcTitan ) )
 			{
