@@ -1,4 +1,4 @@
-#![feature(if_let_guard, normalize_lexically, slice_as_array)]
+#![feature(normalize_lexically)]
 use std::{fs, path::PathBuf};
 
 use rrplug::{bindings::plugin_abi::PluginColor, prelude::*};

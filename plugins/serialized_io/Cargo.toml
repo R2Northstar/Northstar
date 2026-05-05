@@ -7,12 +7,11 @@ license = "Apache-2.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-sqparse = "0.3.0"
-retour = { version = "0.3.*", features = ["static-detour"] }
-rrplug = { workspace = true, features = ["async_engine"] }
-shared = { workspace = true }
 parking_lot = "*"
+retour = { version = "0.4.0-alpha.4" , features = ["static-detour"] }
+rrplug = { workspace = true, features = ["async_engine"] }
 serde_json = { version = "1.0.*", features = ["preserve_order", "raw_value"] }
+sqparse = "0.3.0"
 
 [lib]
 crate-type = ["cdylib"]
