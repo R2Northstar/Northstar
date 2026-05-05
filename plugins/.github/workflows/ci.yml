@@ -15,7 +15,7 @@ on:
 
 jobs:
   build:
-    name: Build bp_ort
+    name: Build Plugins
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
