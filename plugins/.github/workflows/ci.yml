@@ -1,0 +1,62 @@
+name: Build Northstar Plugins
+
+env:
+  nix_conf: |
+    substituters = https://cache.nixos.org/
+    trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+    keep-env-derivations = true
+    keep-outputs = true
+
+on:
+  push:
+  workflow_dispatch:
+  pull_request:
+
+
+jobs:
+  build:
+    name: Build bp_ort
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: nixbuild/nix-quick-install-action@v30
+        with:
+          # We don't enable ca-derivations here
+          # because we have later jobs where ca-derivations is enabled.
+          nix_conf: ${{ env.nix_conf }}
+
+      - name: Restore and save Nix store
+        uses: nix-community/cache-nix-action@v6
+        with:
+          # restore and save a cache using this key
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('**/*.nix', '**/flake.lock') }}
+          # if there's no cache hit, restore a cache by this prefix
+          restore-prefixes-first-match: nix-${{ runner.os }}-
+          # collect garbage until the Nix store size (in bytes) is at most this number
+          # before trying to save a new cache
+          # 1G = 1073741824
+          gc-max-store-size-linux: 2G
+          # do purge caches
+          purge: false
+          # purge all versions of the cache
+          purge-prefixes: nix-${{ runner.os }}-
+          # created more than this number of seconds ago
+          purge-created: 0
+          # or, last accessed more than this number of seconds ago
+          # relative to the start of the `Post Restore and save Nix store` phase
+          purge-last-accessed: 9000
+          # except any version with the key that is the same as the `primary-key`
+          purge-primary-key: never
+
+      - name: Build
+        run: nix build .#all
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: package
+          path: |
+            result/

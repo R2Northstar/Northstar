@@ -2,33 +2,24 @@ use rrplug::{
     bindings::squirreldatatypes::{SQObject, SQObjectType, SQString},
     high::{
         UnsafeHandle, engine_sync,
-        squirrel::{SQHandle, SuspendThread},
-        squirrel_traits::SQVMName,
+        squirrel::{SQHandle, SQOutParam, SuspendThread},
     },
-    mid::{squirrel::sqvm_to_context, utils::from_char_ptr},
+    mid::{
+        squirrel::{
+            SQVM_CLIENT, SQVM_CLIENT_GENERATION, SQVM_SERVER, SQVM_SERVER_GENERATION, SQVM_UI,
+            SQVM_UI_GENERATION, sqvm_to_context,
+        },
+        utils::from_char_ptr,
+    },
     prelude::*,
 };
-use shared::{
-    squtils::{SQOutParam, get_generation, try_get_sqvm_with_generation},
-    utils::get_from_sq_string,
-};
-use std::{fs, ptr::NonNull, thread};
+use std::{fs, ptr::NonNull, sync::atomic::Ordering, thread};
 
 use crate::{
     runtime_registration::{self, sqname_to_slot_index},
     sqtypes::TypedType,
     utils::{SQValueTyped, get_json_from_obj, sanitize_file},
 };
-
-// it is used
-#[allow(unused)]
-struct PlaylistRotationDefinition;
-
-impl SQVMName for PlaylistRotationDefinition {
-    fn get_sqvm_name() -> String {
-        stringify!(PlaylistRotationDefinition).to_string()
-    }
-}
 
 pub fn register_api_functions() {
     register_sq_functions(load_file_async);
@@ -328,4 +319,51 @@ fn get_func_name(
                 .ok_or("no name found for this native function")?,
         ))
     }
+}
+
+// TODO: move this into rrplug
+pub fn get_generation(context: ScriptContext) -> u32 {
+    match context {
+        ScriptContext::SERVER => SQVM_SERVER_GENERATION.load(Ordering::Acquire),
+        ScriptContext::CLIENT => SQVM_CLIENT_GENERATION.load(Ordering::Acquire),
+        ScriptContext::UI => SQVM_UI_GENERATION.load(Ordering::Acquire),
+    }
+}
+
+// TODO: move this into rrplug
+pub fn try_get_sqvm_with_generation(
+    generation: u32,
+    context: ScriptContext,
+    token: EngineToken,
+) -> Option<NonNull<HSquirrelVM>> {
+    match context {
+        ScriptContext::SERVER
+            if SQVM_SERVER_GENERATION.load(Ordering::Acquire) == generation
+                && let Some(sqvm) = SQVM_SERVER.get(token).borrow().as_ref().copied() =>
+        {
+            Some(sqvm)
+        }
+        ScriptContext::CLIENT
+            if SQVM_CLIENT_GENERATION.load(Ordering::Acquire) == generation
+                && let Some(sqvm) = SQVM_CLIENT.get(token).borrow().as_ref().copied() =>
+        {
+            Some(sqvm)
+        }
+        ScriptContext::UI
+            if SQVM_UI_GENERATION.load(Ordering::Acquire) == generation
+                && let Some(sqvm) = SQVM_UI.get(token).borrow().as_ref().copied() =>
+        {
+            Some(sqvm)
+        }
+        _ => None,
+    }
+}
+
+// TODO: move this into rrplug
+#[inline]
+pub fn get_from_sq_string(buf: &SQString) -> Option<&str> {
+    str::from_utf8(unsafe {
+        std::slice::from_raw_parts(buf._val.as_ptr().cast(), buf.length as usize)
+    })
+    .ok()
 }
