@@ -4,6 +4,8 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
+    nixpkgs-24-11.url = "github:NixOS/nixpkgs/24.11"; # needed for clang-format-16
+
     flake-utils.url = "github:numtide/flake-utils";
 
     treefmt-nix.url = "github:numtide/treefmt-nix";
@@ -15,6 +17,7 @@
     {
       self,
       nixpkgs,
+      nixpkgs-24-11,
       flake-utils,
       treefmt-nix,
     }:
@@ -135,14 +138,20 @@
 
               # settings
               settings.formatter.clang-format = {
-                args = [
+                package = nixpkgs-24-11.legacyPackages.${system}.llvmPackages_16.clang-tools;
+                command = "${nixpkgs-24-11.legacyPackages.${system}.llvmPackages_16.clang-tools}/bin/clang-format";
+                options = [
                   "-i"
                   "--style=file"
                 ];
                 excludes = [
                   "primedev/include/**"
-                  "primedev/*.cpp"
-                  "primedev/*.h"
+                  "primedev/thirdparty/**"
+                  "primedev/wsockproxy/**"
+                  "primedev/dllmain.cpp"
+                  "primedev/ns_version.h"
+                  "primedev/pch.h"
+                  "primedev/resource1.h"
                 ];
               };
             }
