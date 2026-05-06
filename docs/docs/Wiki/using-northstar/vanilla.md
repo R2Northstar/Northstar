@@ -12,9 +12,17 @@ Once you do this, double click the `Vanilla.bat` file to load vanilla Titanfall 
 
 ## Launching vanilla Titanfall 2 via Northstar (with mods) <a href="#vanilla-with-mods" id="vanilla-with-mods"></a>
 
-While Northstar is seeing [more progress towards vanilla compatibility](https://github.com/R2Northstar/NorthstarLauncher/pull/601), it's still decently far out.
+### Vanilla-Compatibility Mode
+
+Northstar supports playing on vanilla (Respawn owned and ran) servers through a Vanilla-Compatibility mode, `-vanilla`
+To switch, simply add `-vanilla` to your launch arguments (alongside `-northstar` if launching through Steam/EA) and disable any mods marked with an exclamation mark in-game. This is done by opening the "mods" menu found in the very bottom of the screen while in the main menu and clicking on a mod to enable/disable it.
+
+Not all mods are guaranteed to function when in Vanilla-Compatibility mode.
+
+### VanillaPlus
+
 A community made modification is available in the form of [VanillaPlus](https://northstar.thunderstore.io/package/NachosChipeados/VanillaPlus/) to load mods on vanilla.
-It should be noted that, again, this is a community made modification and is not "officially" Northstar.
+Whilst Northstar supports playing on vanilla servers, this support was based heavily on the work done in VanillaPlus before it. It should be noted that, again, this is a community made modification and is not "officially" Northstar.
 
 To use it, read the mod's description on Thunderstore to install it, as it has a special install process compared to other mods.
 If you have any issues, check the [VanillaPlus FAQ](https://github.com/NachosChipeados/NP.VanillaPlus/blob/main/FAQ.md) to see if you can find your issue there.
