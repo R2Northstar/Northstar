@@ -12,4 +12,4 @@ jobs:
           curl -sSL https://github.com/Bobbyperson/sqformat/releases/download/v1.2.0/sqformat-linux-x86_64 -o sqformat
           chmod +x sqformat
       - name: Check formatting
-        run: ./sqformat -cr .
+        run: ./sqformat -dr .
