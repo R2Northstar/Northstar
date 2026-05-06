@@ -7,6 +7,7 @@
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
+#include <cctype>
 
 class CServerGameDLL;
 
@@ -36,7 +37,17 @@ static void(__fastcall* o_pCServerGameDLL__OnReceivedSayTextMessage)(
 static void __fastcall h_CServerGameDLL__OnReceivedSayTextMessage(
 	CServerGameDLL* self, unsigned int senderPlayerId, const char* text, bool isTeam)
 {
+	if (text == nullptr)
+		return;
 	RemoveAsciiControlSequences(const_cast<char*>(text), true);
+
+	if (text[0] == '\0')
+		return;
+	const char* p = text;
+	while (isspace((unsigned char)*p))
+		p++;
+	if (*p == '\0')
+		return;
 
 	// MiniHook doesn't allow calling the base function outside of anywhere but the hook function.
 	// To allow bypassing the hook, isSkippingHook can be set.
