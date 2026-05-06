@@ -5,12 +5,15 @@
 #include "client/localchatwriter.h"
 
 #include <rapidjson/document.h>
+#include <cctype>
 
 static void(__fastcall* o_pCHudChat__AddGameLine)(void* self, const char* message, int inboxId, bool isTeam, bool isDead) = nullptr;
 static void __fastcall h_CHudChat__AddGameLine(void* self, const char* message, int inboxId, bool isTeam, bool isDead)
 {
 	// This hook is called for each HUD, but we only want our logic to run once.
 	if (self != *CHudChat::allHuds)
+		return;
+	if (message == nullptr || message[0] == '\0')
 		return;
 
 	int senderId = inboxId & CUSTOM_MESSAGE_INDEX_MASK;
@@ -27,6 +30,14 @@ static void __fastcall h_CHudChat__AddGameLine(void* self, const char* message, 
 	}
 
 	RemoveAsciiControlSequences(const_cast<char*>(message), true);
+
+	{
+		const char* p = isCustom ? payload : message;
+		while (isspace((unsigned char)*p))
+			p++;
+		if (*p == '\0')
+			return;
+	}
 
 	SQRESULT result = g_pSquirrel[ScriptContext::CLIENT]->Call(
 		"CHudChat_ProcessMessageStartThread", static_cast<int>(senderId) - 1, payload, isTeam, isDead, type);
