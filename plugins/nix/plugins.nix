@@ -24,6 +24,11 @@ rustPlatform.buildRustPackage {
     pkgs.pkg-config
   ];
 
+  cargoBuildFlags = [
+    "--package"
+    plugin
+  ];
+
   meta = {
     description = "${plugin} is a plugin for northstar";
     homepage = "https://github.com/R2Northstar/NorthstarPlugins";
