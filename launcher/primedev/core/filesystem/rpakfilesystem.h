@@ -3,6 +3,49 @@
 #include <regex>
 #include "rtech/pakfile.h"
 
+#pragma pack(push, 1)
+struct PakLoadFuncs
+{
+	void (*InitRpakSystem)();
+	void (*AddAssetLoaderWithJobDetails)(/*assetTypeHeader*/ void*, uint32_t, int);
+	void (*AddAssetLoader)(/*assetTypeHeader*/ void*);
+	PakHandle (*LoadRpakFileAsync)(const char* pPath, void* allocator, int flags);
+	void (*LoadRpakFile)(const char*, __int64(__fastcall*)(), __int64, void(__cdecl*)());
+	__int64 qword28;
+	void (*UnloadPak)(PakHandle iPakHandle, void* callback);
+	__int64 qword38;
+	__int64 qword40;
+	__int64 qword48;
+	__int64 qword50;
+	FARPROC (*GetDllCallback)(__int16 a1, const CHAR* a2);
+	__int64 (*GetAssetByHash)(__int64 hash);
+	__int64 (*GetAssetByName)(const char* a1);
+	__int64 qword70;
+	__int64 qword78;
+	__int64 qword80;
+	__int64 qword88;
+	__int64 qword90;
+	__int64 qword98;
+	__int64 qwordA0;
+	__int64 qwordA8;
+	__int64 qwordB0;
+	__int64 qwordBB;
+	void* (*OpenFile)(const char* pPath);
+	__int64 CloseFile;
+	__int64 qwordD0;
+	__int64 FileReadAsync;
+	__int64 ComplexFileReadAsync;
+	__int64 GetReadJobState;
+	__int64 WaitForFileReadJobComplete;
+	__int64 CancelFileReadJob;
+	__int64 CancelFileReadJobAsync;
+	__int64 qword108;
+};
+static_assert(sizeof(PakLoadFuncs) == 0x110);
+#pragma pack(pop)
+
+extern PakLoadFuncs* g_pakLoadApi;
+
 struct ModPak_t
 {
 	std::string m_modName;
