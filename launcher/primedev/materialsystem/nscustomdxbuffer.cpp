@@ -6,6 +6,8 @@
 #include <cctype>
 #include <string>
 #include <cstdint>
+#include "core/filesystem/rpakfilesystem.h"
+#include "cmaterialglue.h"
 
 static ID3D11DeviceContext** DeviceContext;
 static ID3D11Device** D3D11Device_14E8DD0;
@@ -15,6 +17,12 @@ struct Ns_Constant_Buffer
 	float data[320];
 };
 
+struct MaterialTextureMappings
+{
+
+	std::array<uint64_t, 60> slots;
+};
+
 AUTOHOOK_INIT()
 
 static Ns_Constant_Buffer NSCustomDXBuffer;
@@ -22,15 +30,48 @@ static std::mutex NSCustomDXBufferMutex;
 
 // map to later on associate guid > buffer
 static std::map<uint64_t, Ns_Constant_Buffer> NSCustomBuffersPerMaterial = {};
+static std::map<uint64_t, MaterialTextureMappings> NSMaterialTextureSlotBindings = {};
+static std::unordered_set<uint64_t> NSRegisteredCustomBufferMaterials = {};
+static std::unordered_set<uint64_t> NSRegisteredTextureOverrides = {};
 
-AUTOHOOK(SUB_511D0, materialsystem_dx11.dll + 0x511D0, __int64, __fastcall, (__int64 a1, __int64 a2, __int64 a3, __int64 a4))
+AUTOHOOK(SUB_511D0, materialsystem_dx11.dll + 0x511D0, __int64, __fastcall, (__int64 a1, __int64 a2, __int64 a3, CMaterialGlue_short* a4))
 {
-	int64_t subResult = SUB_511D0(a1, a2, a3, a4);
+	CMaterialGlue_short* internal_logic_material = a4;
 
-	uint32_t glueFlags = *(uint32_t*)((uint8_t*)a4 + 176);
+	int64_t subResult = SUB_511D0(a1, a2, a3, internal_logic_material);
+
+	if (!DeviceContext || !D3D11Device_14E8DD0 || !*DeviceContext || !*D3D11Device_14E8DD0)
+		return subResult;
+
+	// bind textures to slots if existing
+	if (NSMaterialTextureSlotBindings.contains(internal_logic_material->guid))
+	{
+
+		auto& mappings = NSMaterialTextureSlotBindings[internal_logic_material->guid];
+
+		for (size_t slot = 0; slot < mappings.slots.size(); ++slot)
+		{
+			uint64_t textureGUID = mappings.slots[slot];
+
+			if (textureGUID == 0)
+				continue;
+
+			__int64 texturePointer = g_pakLoadApi->GetAssetByHash(textureGUID);
+			if (!texturePointer)
+				continue;
+
+			RpakTextureHeader* TextureHeader = (RpakTextureHeader*)texturePointer;
+			ID3D11ShaderResourceView* TextureSRV = TextureHeader->shaderResourceView;
+
+			if (!TextureSRV)
+				continue;
+
+			(*DeviceContext)->PSSetShaderResources(slot, 1, &TextureSRV);
+		}
+	}
 
 	// bind custom buffer when flag is 0x04089901 in rpak mat
-	if ((glueFlags & 0x04089901) == 0x04089901)
+	if (NSRegisteredCustomBufferMaterials.contains(internal_logic_material->guid))
 	{
 
 		D3D11_BUFFER_DESC desc {};
@@ -62,7 +103,7 @@ AUTOHOOK(SUB_511D0, materialsystem_dx11.dll + 0x511D0, __int64, __fastcall, (__i
 
 		std::lock_guard<std::mutex> lock(NSCustomDXBufferMutex);
 
-		memcpy(pData, &NSCustomBuffersPerMaterial[*(uint64_t*)a4], sizeof(Ns_Constant_Buffer));
+		memcpy(pData, &NSCustomBuffersPerMaterial[internal_logic_material->guid], sizeof(Ns_Constant_Buffer));
 
 		(*DeviceContext)->Unmap(resource, 0);
 		(*DeviceContext)->PSSetConstantBuffers(4, 1, &resource);
@@ -86,7 +127,73 @@ bool isValidMaterialGUID(const std::string& str)
 	return true;
 }
 
-template <ScriptContext context> SQRESULT NSSetCustomDXBuffer(HSQUIRRELVM sqvm)
+SQRESULT NSRegisterCustomDXBufferForGUID(HSQUIRRELVM sqvm)
+{
+
+	auto rPakMaterialGUIDString = (g_pSquirrel[ScriptContext::CLIENT]->getstring(sqvm, 1));
+	uint64_t rPakMaterialGUID = std::stoull(rPakMaterialGUIDString, nullptr, 16);
+
+	__int64 AssetFromGUID = g_pakLoadApi->GetAssetByHash(rPakMaterialGUID);
+
+	if (!AssetFromGUID)
+	{
+		g_pSquirrel[ScriptContext::CLIENT]->raiseerror(
+			sqvm, fmt::format("Asset with GUID {} Doesnt Exist", rPakMaterialGUIDString).c_str());
+		return SQRESULT_ERROR;
+	}
+
+	// we need to add 16 to the pointer, matglueshort is matglue without the first 16 bytes. GetAssetByHash returns a pointer to the full
+	auto* base = reinterpret_cast<uint8_t*>(AssetFromGUID);
+	auto* GUIDMaterialGlue_short = reinterpret_cast<CMaterialGlue_short*>(base + 16);
+
+	if (!NSRegisteredCustomBufferMaterials.contains(GUIDMaterialGlue_short->guid))
+	{
+		NS::log::SCRIPT_CL->info("Registered GUID: {} to use the NSCustomDXBuffer system", GUIDMaterialGlue_short->guid);
+
+		NSRegisteredCustomBufferMaterials.insert(GUIDMaterialGlue_short->guid);
+	}
+	else
+	{
+		NS::log::SCRIPT_CL->warn(
+			"Attempted to register GUID: {} to the NSCustomDXBuffer system, GUID was already registered", GUIDMaterialGlue_short->guid);
+	}
+	return SQRESULT_NULL;
+}
+
+SQRESULT NSDeregisterCustomDXBufferForGUID(HSQUIRRELVM sqvm)
+{
+
+	auto rPakMaterialGUIDString = (g_pSquirrel[ScriptContext::CLIENT]->getstring(sqvm, 1));
+	uint64_t rPakMaterialGUID = std::stoull(rPakMaterialGUIDString, nullptr, 16);
+
+	__int64 AssetFromGUID = g_pakLoadApi->GetAssetByHash(rPakMaterialGUID);
+
+	if (!AssetFromGUID)
+	{
+		g_pSquirrel[ScriptContext::CLIENT]->raiseerror(
+			sqvm, fmt::format("Asset with GUID {} Doesnt Exist", rPakMaterialGUIDString).c_str());
+		return SQRESULT_ERROR;
+	}
+
+	// we need to add 16 to the pointer, matglueshort is matglue without the first 16 bytes. GetAssetByHash returns a pointer to the full
+	auto* base = reinterpret_cast<uint8_t*>(AssetFromGUID);
+	auto* GUIDMaterialGlue_short = reinterpret_cast<CMaterialGlue_short*>(base + 16);
+
+	if (NSRegisteredCustomBufferMaterials.contains(GUIDMaterialGlue_short->guid))
+	{
+		NS::log::SCRIPT_CL->info("Deregistered GUID: {} from the NSCustomDXBuffer system", GUIDMaterialGlue_short->guid);
+
+		NSRegisteredCustomBufferMaterials.erase(GUIDMaterialGlue_short->guid);
+	}
+	else
+	{
+		NS::log::SCRIPT_CL->warn(
+			"Attempted to deregister GUID: {} from the NSCustomDXBuffer system, GUID was not registered", GUIDMaterialGlue_short->guid);
+	}
+	return SQRESULT_NULL;
+}
+
+SQRESULT NSUpdateCustomDXBufferForGUID(HSQUIRRELVM sqvm)
 {
 
 	// get the guid as a string to later conv
@@ -107,7 +214,7 @@ template <ScriptContext context> SQRESULT NSSetCustomDXBuffer(HSQUIRRELVM sqvm)
 
 	if (!isValidMaterialGUID(guidString))
 	{
-		g_pSquirrel[ScriptContext::SERVER]->raiseerror(
+		g_pSquirrel[ScriptContext::CLIENT]->raiseerror(
 			sqvm, fmt::format("Malformed Material GUID", (NSCustomBufferDataArray->_usedSlots) * 4, sizeof(Ns_Constant_Buffer)).c_str());
 		return SQRESULT_ERROR;
 	}
@@ -118,7 +225,7 @@ template <ScriptContext context> SQRESULT NSSetCustomDXBuffer(HSQUIRRELVM sqvm)
 
 	if ((NSCustomBufferDataArray->_usedSlots) * 4 > sizeof(Ns_Constant_Buffer))
 	{
-		g_pSquirrel[ScriptContext::SERVER]->raiseerror(
+		g_pSquirrel[ScriptContext::CLIENT]->raiseerror(
 			sqvm,
 			fmt::format(
 				"Size of Squirrel array exceeds NSCustomDXBuffer size\n\nSquirrel "
@@ -136,16 +243,75 @@ template <ScriptContext context> SQRESULT NSSetCustomDXBuffer(HSQUIRRELVM sqvm)
 	return SQRESULT_NULL;
 }
 
+SQRESULT NSBindTextureToMaterial(HSQUIRRELVM sqvm)
+{
+
+	auto rPakMaterialGUIDString = (g_pSquirrel[ScriptContext::CLIENT]->getstring(sqvm, 1));
+	auto rPakTextureGUIDString = (g_pSquirrel[ScriptContext::CLIENT]->getstring(sqvm, 2));
+	auto rPakShaderSlotBindingInt = (g_pSquirrel[ScriptContext::CLIENT]->getinteger(sqvm, 3));
+
+	uint64_t rPakMaterialGUID = std::stoull(rPakMaterialGUIDString, nullptr, 16);
+	__int64 MatAssetFromGUID = g_pakLoadApi->GetAssetByHash(rPakMaterialGUID);
+
+	if (rPakShaderSlotBindingInt > 60)
+	{
+		g_pSquirrel[ScriptContext::CLIENT]->raiseerror(sqvm, fmt::format("TextureOverrides only support 30 custom bindings").c_str());
+		return SQRESULT_ERROR;
+	}
+
+	if (!MatAssetFromGUID)
+	{
+		g_pSquirrel[ScriptContext::CLIENT]->raiseerror(
+			sqvm, fmt::format("Material with GUID {} Doesnt Exist", rPakMaterialGUIDString).c_str());
+		return SQRESULT_ERROR;
+	}
+
+	auto* base = reinterpret_cast<uint8_t*>(MatAssetFromGUID);
+	auto* GUIDMaterialGlue_short = reinterpret_cast<CMaterialGlue_short*>(base + 16);
+
+	if (!rPakTextureGUIDString == 0)
+	{
+		uint64_t rPakTextureGUID = std::stoull(rPakTextureGUIDString, nullptr, 16);
+		__int64 TexAssetFromGUID = g_pakLoadApi->GetAssetByHash(rPakTextureGUID);
+
+		if (!TexAssetFromGUID)
+		{
+			g_pSquirrel[ScriptContext::CLIENT]->raiseerror(
+				sqvm, fmt::format("Texture with GUID {} Doesnt Exist", rPakTextureGUIDString).c_str());
+			return SQRESULT_ERROR;
+		}
+		NSMaterialTextureSlotBindings[GUIDMaterialGlue_short->guid].slots[rPakShaderSlotBindingInt] = rPakTextureGUID;
+	}
+	else
+		NSMaterialTextureSlotBindings[GUIDMaterialGlue_short->guid].slots[rPakShaderSlotBindingInt] = 0;
+
+	return SQRESULT_NULL;
+}
+
 ON_DLL_LOAD_CLIENT("materialsystem_dx11.dll", SUB_511D0, (CModule module))
 {
 	AUTOHOOK_DISPATCH_MODULE(materialsystem_dx11.dll)
 
 	DeviceContext = module.Offset(0x14E8DD8).RCast<ID3D11DeviceContext**>();
 	D3D11Device_14E8DD0 = module.Offset(0x14E8DD0).RCast<ID3D11Device**>();
+
 	g_pSquirrel[ScriptContext::CLIENT]->AddFuncRegistration(
 		"void",
-		"NSSetCustomDXBuffer",
+		"NSUpdateCustomDXBufferForGUID",
 		"string rPakMaterialGUID array NSCustomBufferPerMaterialData",
 		"",
-		NSSetCustomDXBuffer<ScriptContext::CLIENT>);
+		NSUpdateCustomDXBufferForGUID);
+
+	g_pSquirrel[ScriptContext::CLIENT]->AddFuncRegistration(
+		"void", "NSRegisterCustomDXBufferForGUID", "string rPakMaterialGUID", "", NSRegisterCustomDXBufferForGUID);
+
+	g_pSquirrel[ScriptContext::CLIENT]->AddFuncRegistration(
+		"void", "NSDeregisterCustomDXBufferForGUID", "string rPakMaterialGUID", "", NSDeregisterCustomDXBufferForGUID);
+
+	g_pSquirrel[ScriptContext::CLIENT]->AddFuncRegistration(
+		"void",
+		"NSBindTextureToMaterial",
+		"string rPakMaterialGUID string rPakTextureGUID int shaderBindingSlot",
+		"",
+		NSBindTextureToMaterial);
 }
