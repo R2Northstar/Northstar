@@ -468,6 +468,10 @@
 		  "ServerCallback": {
 				"Before": "Server_CustomScoreboardColumns_Init"
 		  }
+		},
+		{
+			"Path": "sh_console_shortcuts.nut",
+			"RunOn": "CLIENT || SERVER || UI"
 		}
 	],
 
