@@ -88,14 +88,12 @@ void function Utility_Shared_Init()
 	#document( "ArrayWithin", "Remove ents from array that are out of range" )
 }
 
-#if DEV
-	// short cut for the console
-	// script gp()[0].Die( gp()[1] )
-	array<entity> function gp()
-	{
-		return GetPlayerArray()
-	}
-#endif
+// short cut for the console
+// script gp()[0].Die( gp()[1] )
+array<entity> function gp()
+{
+	return GetPlayerArray()
+}
 
 void function InitWeaponScripts()
 {
