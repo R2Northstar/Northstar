@@ -96,17 +96,12 @@ jobs:
       - name: Build
         run: nix build
 
-      - name: Extract Short Commit Hash
-        id: extract
-        shell: bash
-        run: echo commit=$(git rev-parse --short HEAD) >> $GITHUB_OUTPUT
-
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: NorthstarLauncher-NIX-${{ steps.extract.outputs.commit }}
-          path: |
-            result/
+      - name: Cache this Build
+        continue-on-error: true
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        run: |
+          nix run nixpkgs#attic-client -- login northstar https://attic.catornot.net ${{ secrets.ATTIC_CACHE_TOKEN }}
+          nix run nixpkgs#attic-client -- push northstar $(nix build --print-out-paths)
 
   format-check-cmake-files:
     runs-on: ubuntu-latest
