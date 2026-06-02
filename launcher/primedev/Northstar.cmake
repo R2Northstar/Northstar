@@ -160,6 +160,8 @@ add_library(
     "squirrel/squirrelclasstypes.h"
     "rtech/pakfile.h"
     "rtech/pakfile.cpp"
+    "rtech/rui.h"
+    "rtech/rui.cpp"
     "util/printcommands.cpp"
     "util/printcommands.h"
     "util/printmaps.cpp"
