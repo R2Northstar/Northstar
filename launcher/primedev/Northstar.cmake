@@ -152,6 +152,7 @@ add_library(
     "shared/misccommands.h"
     "shared/playlist.cpp"
     "shared/playlist.h"
+    "shared/weapon_reparse.cpp"
     "squirrel/squirrel.cpp"
     "squirrel/squirrel.h"
     "squirrel/squirrelautobind.cpp"
