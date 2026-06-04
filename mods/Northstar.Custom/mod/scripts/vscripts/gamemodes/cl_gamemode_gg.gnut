@@ -30,6 +30,7 @@ void function ClGamemodeGG_Init()
 	RegisterLevelMusicForTeam( eMusicPieceID.LEVEL_LAST_MINUTE, "music_mp_freeagents_lastminute", TEAM_MILITIA )
 
 	Cl_GGEarnMeter_Init( ClGamemodeGG_GetWeaponIcon, ClGamemodeGG_ShouldChangeWeaponIcon )
+	AddCallback_GameStateEnter( eGameState.Playing, ClGamemodeGG_Playing )
 }
 
 asset function ClGamemodeGG_GetWeaponIcon()
@@ -57,4 +58,9 @@ bool function ClGamemodeGG_ShouldChangeWeaponIcon()
 	}
 
 	return false
+}
+
+void function ClGamemodeGG_Playing()
+{
+	ClGameState_SetInfoStatusText( "#GAMEMODE_GG" )
 }
