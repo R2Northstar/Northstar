@@ -619,7 +619,7 @@ playlists
 			}
 			gamemodes
 			{
-				ctf
+				ctf_comp
 				{
 					maps
 					{
