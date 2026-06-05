@@ -56,6 +56,8 @@
 			float duration
 			bool pollActive
 			array<var> ruis
+			bool keysInit = false
+			array<int> keys = [ KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9 ]
 		} poll
 
 		string id
@@ -297,6 +299,7 @@ enum eDataType
 		{
 			case eMessageType.POLL:
 				thread ShowPollMessage_Threaded()
+				InitDefaultKeyBinds()
 				break
 
 			case eMessageType.LARGE:
@@ -441,6 +444,25 @@ enum eDataType
 
 		client.poll.ruis.clear()
 		client.poll.pollActive = false
+	}
+
+	void function InitDefaultKeyBinds()
+	{
+		if ( client.poll.keysInit )
+			return
+
+		foreach ( int index, int key in client.poll.keys )
+		{
+			RegisterButtonPressedCallback(
+				key,
+				void function( var button ) : ( index )
+				{
+					if ( client.poll.pollActive )
+						GetLocalClientPlayer().ClientCommand( "vote " + ( index + 1 ) )
+				}
+			)
+		}
+		client.poll.keysInit = true
 	}
 
 	void function InfoMessageHandler_Threaded()
