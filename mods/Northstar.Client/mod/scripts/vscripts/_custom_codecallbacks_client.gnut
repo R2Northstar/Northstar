@@ -1,10 +1,13 @@
 untyped
 
 global function AddCallback_OnReceivedSayTextMessage
+global function AddCallback_OnPreSendMessage
 
 // this is global due to squirrel bridge v3 making native not be able to find non-global funcs properly
 // temp fix (surely it will get replaced), do not use this function please (although there isnt rly a downside to it?)
 global function CHudChat_ProcessMessageStartThread
+
+global function NS_PreSendMessage
 
 global struct ClClient_MessageStruct
 {
@@ -18,9 +21,18 @@ global struct ClClient_MessageStruct
 	bool noServerTag
 }
 
+global struct ClClient_PreMessageStruct
+{
+	string message
+	bool isIngame
+	bool isTeam
+	bool sendMessage
+}
+
 struct
 {
 	array<ClClient_MessageStruct functionref( ClClient_MessageStruct )> OnReceivedSayTextMessageCallbacks
+	array<ClClient_PreMessageStruct functionref( ClClient_PreMessageStruct )> OnPreSendMessageCallbacks
 } NsCustomCallbacksClient
 
 void function OnReceivedMessage( ClClient_MessageStruct localMessage )
@@ -97,6 +109,25 @@ void function CHudChat_ProcessMessageStartThread( int playerIndex, string messag
 	thread CHudChat_OnReceivedSayTextMessageCallback( playerIndex, message, isTeam, isDead, messageType )
 }
 
+void function NS_PreSendMessage( string message, bool isIngame, bool isTeam )
+{
+	ClClient_PreMessageStruct messageStruct
+	messageStruct.message = message
+	messageStruct.isIngame = isIngame
+	messageStruct.isTeam = isTeam
+	messageStruct.sendMessage = true
+
+	foreach ( callbackFunc in NsCustomCallbacksClient.OnPreSendMessageCallbacks )
+	{
+		callbackFunc( messageStruct )
+	}
+
+	if ( messageStruct.sendMessage )
+	{
+		NSSendMessage( messageStruct.message, messageStruct.isIngame, messageStruct.isTeam )
+	}
+}
+
 void function CHudChat_OnReceivedSayTextMessageCallback( int fromPlayerIndex, string message, bool isTeam, bool isDead, int messageType )
 {
 	entity fromPlayer = null
@@ -150,4 +181,9 @@ void function CHudChat_OnReceivedSayTextMessageCallback( int fromPlayerIndex, st
 void function AddCallback_OnReceivedSayTextMessage( ClClient_MessageStruct functionref( ClClient_MessageStruct ) callbackFunc )
 {
 	NsCustomCallbacksClient.OnReceivedSayTextMessageCallbacks.append( callbackFunc )
+}
+
+void function AddCallback_OnPreSendMessage( ClClient_PreMessageStruct functionref( ClClient_PreMessageStruct ) callbackFunc )
+{
+	NsCustomCallbacksClient.OnPreSendMessageCallbacks.append( callbackFunc )
 }

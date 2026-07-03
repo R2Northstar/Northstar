@@ -221,6 +221,12 @@
 	],
 	"CLIENT":[
 		{
+			"name":"NSSendMessage",
+			"helpText":"",
+			"returnTypeString":"void",
+			"argTypes":"string message, bool isIngame, bool isTeam"
+		},
+		{
 			"name":"NSChatWrite",
 			"helpText":"",
 			"returnTypeString":"void",
