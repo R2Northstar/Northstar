@@ -229,11 +229,24 @@ If none of the previous solutions apply, you can try logging out of the EA App, 
 
 ## Disable EA App overlay <a href="#ea-overlay" id="ea-overlay"></a>
 
-The purpose of disabling the EA App overlay is to increase performance, as it can be very taxing even on high end hardware. You can disable it by clicking on your profile in the top right of the EA App, clicking on the drop down arrow, going to settings, going to `Application`, then scrolling down and disabling the EA App overlay.
-This will also disable invites, however [Northstar does not use these](../faq.md#faq-invite-friends)
+The purpose of disabling the EA App overlay is to increase performance, as it can be very taxing even on high end hardware.
+
+### EA App method
+
+You can disable the overlay by clicking on your profile in the top right of the EA App, clicking on the drop down arrow, going to settings, going to `Application`, then scrolling down and disabling the EA App overlay.
+This will also disable invites, however [Northstar does not use them](../faq.md#faq-invite-friends). Do note that the app won't allow you to disable its overlay if the game is already running.
 
 ![Applications settings](../images/ea-application-settings.png)
 ![Toggling EA Overlay to OFF](../images/ea-overlay-disable.png)
+
+### Config file method
+
+You may also disable the EA App overlay by making a modification to one of its config files. This can be especially convenient when dealing with external launchers (such as Steam) that automatically close the EA App right after the game stops running.
+
+1. Make sure the EA App is closed, and navigate to `C:\Users\<username>\AppData\Local\Electronic Arts\EA Desktop` (or to `/home/<username>/.local/share/Steam/steamapps/compatdata/1237970/pfx/drive_c/users/steamuser/AppData/Local/Electronic Arts/EA Desktop` if you have installed Titanfall 2 using Steam on Linux).
+2. Open the `user_<user id>.ini` file.
+3. Set the value of `user.igoenabled` to `0`.
+4. Save the file.
 
 ## Cannot write log file when using Northstar on EA App
 
