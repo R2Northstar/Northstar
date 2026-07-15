@@ -661,7 +661,7 @@ global function ProgressionEnabledForPlayer
 					{
 						// do nothing
 					}
-					else if ( loadout.primaryMod3 == "pro_screen" )
+					else if ( loadout.primaryMod3 != "pro_screen" )
 					{
 						// fuck you and your three mod slot stuff
 						printt( "  - PRIMARY WEAPON PRO SCREEN IS INVALID, RESETTING" )
@@ -798,7 +798,7 @@ global function ProgressionEnabledForPlayer
 					{
 						// do nothing
 					}
-					else if ( loadout.secondaryMod3 == "pro_screen" )
+					else if ( loadout.secondaryMod3 != "pro_screen" )
 					{
 						// fuck you and your three mod slot stuff
 						printt( "  - SECONDARY WEAPON PRO SCREEN IS INVALID, RESETTING" )
