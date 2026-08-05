@@ -27,7 +27,7 @@
           overlays = [ (import rust-overlay) ];
         };
         pkgs-cross = pkgs.pkgsCross.mingwW64;
-        toolchain = (pkgs.pkgsBuildHost.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml);
+        toolchain = pkgs.pkgsBuildHost.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
       });
     in
     {
@@ -66,7 +66,7 @@
                   })
               )
               {
-                inherit toolchain;
+                toolchain = pkgs-cross.rust-bin.stable."1.97.1".default; # the build can't link to any pre built stuff that gets bundled with the one from rust-toolchain.toml
               };
 
           default = self.packages.${system}.discordrpc;
