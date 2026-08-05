@@ -59,7 +59,7 @@ jobs:
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         run: |
           nix run nixpkgs#attic-client -- login northstar https://attic.catornot.net ${{ secrets.ATTIC_CACHE_TOKEN }}
-          nix run nixpkgs#attic-client -- push northstar $(nix build .#all --print-out-paths) --no-closure
+          nix run nixpkgs#attic-client -- push northstar $(nix build .#all --print-out-paths)
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4

@@ -45,7 +45,8 @@
           mkPluginBuildType =
             plugin: buildType:
             pkgs-cross.callPackage ./nix/plugins.nix {
-              inherit plugin version buildType toolchain;
+              inherit plugin version buildType;
+              toolchain = pkgs-cross.pkgsBuildHost.rust-bin.nightly."${ (nixpkgs.lib.last (builtins.split "nightly-" (fromTOML (builtins.readFile ./rust-toolchain.toml)).toolchain.channel))}".default;
             };
           mkPlugin = plugin: mkPluginBuildType plugin "release";
         in
