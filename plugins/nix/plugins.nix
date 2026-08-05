@@ -3,38 +3,35 @@
   version,
   buildType ? "release",
   lib,
-  rustPlatform,
-  pkgs,
-  rust-bin,
+  makeRustPlatform,
+  toolchain,
 }:
 let
   cargoLock = (import ./cargo_lock.nix { });
 in
-rustPlatform.buildRustPackage {
-  name = plugin;
-  inherit version;
+(makeRustPlatform {
+  cargo = toolchain;
+  rustc = toolchain;
+}).buildRustPackage
+  {
+    name = plugin;
+    inherit version;
 
-  src = ../.;
+    src = ../.;
 
-  inherit buildType;
-  rustToolchain = pkgs.pkgsBuildHost.rust-bin.fromRustupToolchainFile ../toolchain.toml;
+    inherit buildType;
 
-  nativeBuildInputs = [
-    (rust-bin.fromRustupToolchainFile ../toolchain.toml)
-    pkgs.pkg-config
-  ];
+    cargoBuildFlags = [
+      "--package"
+      plugin
+    ];
 
-  cargoBuildFlags = [
-    "--package"
-    plugin
-  ];
+    meta = {
+      description = "${plugin} is a plugin for northstar";
+      homepage = "https://github.com/R2Northstar/NorthstarPlugins";
+      license = lib.licenses.mit;
+      maintainers = [ "cat_or_not" ];
+    };
 
-  meta = {
-    description = "${plugin} is a plugin for northstar";
-    homepage = "https://github.com/R2Northstar/NorthstarPlugins";
-    license = lib.licenses.mit;
-    maintainers = [ "cat_or_not" ];
-  };
-
-  inherit cargoLock;
-}
+    inherit cargoLock;
+  }
