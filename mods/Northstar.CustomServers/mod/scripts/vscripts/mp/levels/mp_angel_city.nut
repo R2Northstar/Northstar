@@ -13,12 +13,41 @@ const array<vector> BATTERY_SPAWNS = [
 
 void function CodeCallback_MapInit()
 {
-	AddEvacNode( CreateScriptRef( < 2527.889893, -2865.360107, 753.002991 >, < 0, -80.54, 0 > ) )
-	AddEvacNode( CreateScriptRef( < 1253.530029, -554.075012, 811.125 >, < 0, 180, 0 > ) )
-	AddEvacNode( CreateScriptRef( < 2446.98999, 809.364014, 576.0 >, < 0, 90.253, 0 > ) )
-	AddEvacNode( CreateScriptRef( < -2027.430054, 960.39502, 609.007996 >, < 0, 179.604, 0 > ) )
+	AddEvacNode( CreateScriptRef( Vector( 2527.889893, -2865.360107, 753.002991 ), Vector( 0, -80.54, 0 ) ) )
+	AddEvacNode( CreateScriptRef( Vector( 1253.530029, -554.075012, 811.125 ), Vector( 0, 180, 0 ) ) )
+	AddEvacNode( CreateScriptRef( Vector( 2446.98999, 809.364014, 576.0 ), Vector( 0, 90.253, 0 ) ) )
+	AddEvacNode( CreateScriptRef( Vector( -2027.430054, 960.39502, 609.007996 ), Vector( 0, 179.604, 0 ) ) )
 
-	SetEvacSpaceNode( CreateScriptRef( < -1700, -5500, -7600 >, < -3.620642, 270.307129, 0 > ) )
+	SetEvacSpaceNode( CreateScriptRef( Vector( -1700, -5500, -7600 ), Vector( -3.620642, 270.307129, 0 ) ) )
+
+	// spectator cams
+	array<vector> positions = [
+		Vector( 2154.047852, -2074.73877, 942.299316 ),
+		Vector( 1903.05896, -1322.483521, 823.097656 ),
+		Vector( 2714.390625, 45.400002, 759.743164 ),
+		Vector( -1138.018311, 195.28157, 691.62793 )
+	]
+	array<vector> angles = [
+		Vector( 7.924948, -65.822983, 0 ),
+		Vector( 4.037039, -229.682098, 0 ),
+		Vector( 0.014044, -234.180573, 0 ),
+		Vector( -4.035686, 140.311783, 0 )
+	]
+
+	for ( int i = 0; i < positions.len(); i++ )
+	{
+		entity spec_cam = CreateEntity( "info_target" )
+
+		spec_cam.SetOrigin( positions[ i ] )
+		spec_cam.SetAngles( angles[ i ] )
+		spec_cam.kv.spawnFlags = SF_INFOTARGET_ALWAYS_TRANSMIT_TO_CLIENT
+
+		DispatchSpawn( spec_cam )
+
+		SetTargetName( spec_cam, "spec_cam" + ( i + 1 ) )
+
+		spec_cam.DisableHibernation()
+	}
 
 	// Battery spawns (in LTS/Free Agents) are in old locations, so we move them to the proper locations
 	AddSpawnCallbackEditorClass( "script_ref", "script_power_up_other", FixBatterySpawns )
