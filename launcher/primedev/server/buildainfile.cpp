@@ -1,4 +1,4 @@
-#include "core/convar/convar.h"
+#include "tier1/convar.h"
 #include "engine/hoststate.h"
 #include "engine/r2engine.h"
 

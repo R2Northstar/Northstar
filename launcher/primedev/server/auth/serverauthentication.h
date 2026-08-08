@@ -1,5 +1,5 @@
 #pragma once
-#include "core/convar/convar.h"
+#include "tier1/convar.h"
 #include "engine/r2engine.h"
 #include <unordered_map>
 #include <string>

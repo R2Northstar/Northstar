@@ -1,5 +1,5 @@
 #include "masterserver/masterserver.h"
-#include "core/convar/concommand.h"
+#include "tier1/cmd.h"
 #include "shared/playlist.h"
 #include "server/auth/serverauthentication.h"
 #include "core/tier0.h"

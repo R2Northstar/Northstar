@@ -1,6 +1,6 @@
 #include "audio.h"
 #include "dedicated/dedicated.h"
-#include "core/convar/convar.h"
+#include "tier1/convar.h"
 
 #include "rapidjson/error/en.h"
 #include <fstream>

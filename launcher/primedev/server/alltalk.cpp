@@ -1,4 +1,4 @@
-#include "core/convar/convar.h"
+#include "tier1/convar.h"
 #include "engine/r2engine.h"
 
 size_t __fastcall ShouldAllowAlltalk()

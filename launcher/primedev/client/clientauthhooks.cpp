@@ -1,5 +1,5 @@
 #include "masterserver/masterserver.h"
-#include "core/convar/convar.h"
+#include "tier1/convar.h"
 #include "client/r2client.h"
 #include "core/vanilla.h"
 

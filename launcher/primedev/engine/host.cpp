@@ -1,4 +1,4 @@
-#include "core/convar/convar.h"
+#include "tier1/convar.h"
 #include "mods/modmanager.h"
 #include "util/printcommands.h"
 #include "util/printmaps.h"
