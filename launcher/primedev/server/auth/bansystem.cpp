@@ -1,6 +1,6 @@
 #include "bansystem.h"
 #include "serverauthentication.h"
-#include "core/convar/concommand.h"
+#include "tier1/cmd.h"
 #include "server/r2server.h"
 #include "engine/r2engine.h"
 #include "client/r2client.h"

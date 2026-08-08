@@ -1,7 +1,7 @@
 #include "squirrel.h"
 #include "mods/modsavefiles.h"
 #include "logging/logging.h"
-#include "core/convar/concommand.h"
+#include "tier1/cmd.h"
 #include "mods/modmanager.h"
 #include "dedicated/dedicated.h"
 #include "engine/r2engine.h"

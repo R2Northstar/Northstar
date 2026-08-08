@@ -1,6 +1,6 @@
 #include "squirrel/squirrel.h"
 #include "core/filesystem/rpakfilesystem.h"
-#include "core/convar/convar.h"
+#include "tier1/convar.h"
 #include "dedicated/dedicated.h"
 #include "core/filesystem/filesystem.h"
 #include "core/math/vector.h"

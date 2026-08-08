@@ -1,5 +1,5 @@
 #pragma once
-#include "core/convar/convar.h"
+#include "tier1/convar.h"
 
 struct ServerPresence
 {

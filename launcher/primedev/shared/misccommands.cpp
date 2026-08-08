@@ -1,5 +1,5 @@
 #include "misccommands.h"
-#include "core/convar/concommand.h"
+#include "tier1/cmd.h"
 #include "shared/playlist.h"
 #include "engine/r2engine.h"
 #include "client/r2client.h"

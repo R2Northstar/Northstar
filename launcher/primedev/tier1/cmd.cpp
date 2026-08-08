@@ -1,4 +1,4 @@
-#include "concommand.h"
+#include "cmd.h"
 #include "shared/misccommands.h"
 #include "engine/r2engine.h"
 
