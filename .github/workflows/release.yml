@@ -11,10 +11,6 @@ on:
 permissions:
   contents: write # Needed to write to GitHub draft release
 
-env:
-  NORTHSTAR_VERSION: ${{ github.ref_name }}
-  DISCORD_RPC_VERSION: v14
-
 jobs:
   build-northstar:
     runs-on: ubuntu-22.04
@@ -23,7 +19,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Install Nix
-        uses: nixbuild/nix-quick-install-action@v34
+        uses: nixbuild/nix-quick-install-action@v35
         with:
           nix_conf: |
             experimental-features = nix-command flakes
@@ -80,6 +76,26 @@ jobs:
       TS_MOD_DESCRIPTION: Titanfall 2 modding and custom server framework.
     runs-on: ubuntu-22.04
     steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Nix
+        uses: nixbuild/nix-quick-install-action@v35
+        with:
+          nix_conf: |
+            experimental-features = nix-command flakes
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+            extra-substituters = https://attic.catornot.net/northstar https://nix-community.cachix.org
+            extra-trusted-public-keys = northstar:H8QBUAeduEw6jGl3HtGeW/79pMPv7wSCAv8BSUon3kw= nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=
+
+      - name: Build
+        run: |
+          nix build 
+
+      - name: Get Northstar version
+        run: |
+          echo "NORTHSTAR_VERSION=$(nix eval --raw .#version)" >> "$GITHUB_ENV"
+
       - name: Setup tcli
         run: |
           wget --output-document tcli.tar.gz https://github.com/thunderstore-io/thunderstore-cli/releases/download/0.1.4/tcli-0.1.4-linux-x64.tar.gz
