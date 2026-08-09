@@ -11,8 +11,8 @@ pkgs.stdenv.mkDerivation (finalAttr: {
 
   src = fetchzip {
     url = "https://github.com/R2Northstar/NorthstarStubs/releases/download/${finalAttr.version}/NorthstarStubs.zip";
-    hash = "sha256-NgChtI2jmbTwqsdT1bgjO+rbj17icSaSR4DvwM/0WDU=";    
-    stripRoot=false;
+    hash = "sha256-NgChtI2jmbTwqsdT1bgjO+rbj17icSaSR4DvwM/0WDU=";
+    stripRoot = false;
   };
 
   noUnpack = true;

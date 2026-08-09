@@ -21,85 +21,43 @@ jobs:
   build-northstar:
     runs-on: ubuntu-22.04
     steps:
-      - name: Checkout release files
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ env.NORTHSTAR_VERSION }}
-          path: northstar
-      - name: Wait for launcher release build to be ready
-        timeout-minutes: 30 # Only wait for 30 minutes. If we take longer, something probably broke
-        run:
-          bash northstar/wait_for_launcher_dl.sh $NORTHSTAR_VERSION
-      - name: Download compiled launcher
-        run:
-          wget "https://github.com/R2Northstar/NorthstarLauncher/releases/download/${{ env.NORTHSTAR_VERSION }}/northstar-launcher.zip"
-      - name: Download DiscordRPC plugin
-        run:
-          wget "https://github.com/R2Northstar/NorthstarDiscordRPC/releases/download/${{ env.DISCORD_RPC_VERSION }}/northstar-discord-rpc.zip"
-      - name: Download compiled stubs
-        run:
-          wget "https://github.com/R2Northstar/NorthstarStubs/releases/download/v1/NorthstarStubs.zip"
-      - name: Checkout core mods
-        uses: actions/checkout@v4
-        with:
-          repository: R2Northstar/NorthstarMods
-          ref: ${{ env.NORTHSTAR_VERSION }}
-          path: northstar-mods
-      - name: Update mod version info
-        run: |
-          export MOD_VERSION=$(echo $NORTHSTAR_VERSION | tr --delete 'v')
-          cat <<< $(jq ".Version = \"${MOD_VERSION}\"" northstar-mods/Northstar.Client/mod.json) > northstar-mods/Northstar.Client/mod.json
-          cat <<< $(jq ".Version = \"${MOD_VERSION}\"" northstar-mods/Northstar.Custom/mod.json) > northstar-mods/Northstar.Custom/mod.json
-          cat <<< $(jq ".Version = \"${MOD_VERSION}\"" northstar-mods/Northstar.CustomServers/mod.json) > northstar-mods/Northstar.CustomServers/mod.json
-      - name: Generate md5sum file
-        working-directory: northstar-mods
-        run: |
-          echo -e "# Check with 'md5sum -c md5sum.txt' at the root of mods folder\n" > md5sum.txt
-          git ls-tree -r $NORTHSTAR_VERSION --name-only | xargs -L1 md5sum >> md5sum.txt
-      - name: Make folder structure
-        run: |
-          mv --verbose northstar/release/* northstar/.
-          rm --dir northstar/release
-          mkdir --parents northstar/R2Northstar/mods
-          mkdir --parents northstar/R2Northstar/plugins
-          mkdir --parents northstar/bin/x64_dedi
+      - name: Checkout
+        uses: actions/checkout@v5
 
-          unzip northstar-discord-rpc.zip -d northstar/R2Northstar/plugins
-
-          unzip NorthstarStubs.zip -d northstar/bin/x64_dedi
-          unzip northstar-launcher.zip -d northstar
-          rsync -avr --exclude="Northstar.Coop" --exclude=".git*" --exclude="*.md" northstar-mods/. northstar/R2Northstar/mods
-      - name: Checkout Navmesh repository
-        uses: actions/checkout@v4
+      - name: Install Nix
+        uses: nixbuild/nix-quick-install-action@v34
         with:
-          repository: R2Northstar/NorthstarNavs
-          ref: 'v4'
-          path: northstar-navs
-      - name: Navmeshes setup
+          nix_conf: |
+            experimental-features = nix-command flakes
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+            extra-substituters = https://attic.catornot.net/northstar https://nix-community.cachix.org
+            extra-trusted-public-keys = northstar:H8QBUAeduEw6jGl3HtGeW/79pMPv7wSCAv8BSUon3kw= nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=
+
+      - name: Build
         run: |
-          mkdir --parents northstar/R2Northstar/mods/Northstar.CustomServers/mod/maps
-          mv --verbose northstar-navs/graphs northstar/R2Northstar/mods/Northstar.CustomServers/mod/maps
-          mv --verbose northstar-navs/navmesh northstar/R2Northstar/mods/Northstar.CustomServers/mod/maps
-      - name: Cleanup root Northstar repository files
-        working-directory: northstar
+          nix build 
+
+      - name: Get Northstar version
         run: |
-          rm -rf .git .github .gitignore *.md LICENSE thunderstore .ci.env.example *.sh
+          echo "NORTHSTAR_VERSION=$(nix eval --raw .#version)" >> "$GITHUB_ENV"
+
       - name: Upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: Northstar.release.${{ env.NORTHSTAR_VERSION }}
-          path: northstar
+          path: ./result
+
       - name: Create zip to upload
         run: |
-          cd northstar/
-          zip --recurse-paths --quiet Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip .
-          mv Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip ../
+          zip --recurse-paths --quiet Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip ./result
+
       - name: Compute SHA-512 checksum
         run: |
           sha512sum Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           sha512sum Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
       - name: Upload zip to release draft
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/v') && !contains(env.NORTHSTAR_VERSION, '-rc')
@@ -107,74 +65,75 @@ jobs:
           draft: true
           files: Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip
 
-  build-thunderstore-package:
-    needs: build-northstar # comment out when running locally
-    env:
-      # Release envs, comment this out when running locally
-      TCLI_AUTH_TOKEN: ${{ secrets.THUNDERSTORE_TOKEN }}
-      TS_REPO: https://thunderstore.io/
-      TS_COMMUNITY: northstar
+  # no thunderstore for now
+  # build-thunderstore-package:
+  #   needs: build-northstar # comment out when running locally
+  #   env:
+  #     # Release envs, comment this out when running locally
+  #     TCLI_AUTH_TOKEN: ${{ secrets.THUNDERSTORE_TOKEN }}
+  #     TS_REPO: https://thunderstore.io/
+  #     TS_COMMUNITY: northstar
 
-      # Uncomment when testing locally, must be unique
-      # NORTHSTAR_VERSION: 0.1.8
+  #     # Uncomment when testing locally, must be unique
+  #     # NORTHSTAR_VERSION: 0.1.8
 
-      # Thunderstore info and descriptions
-      TS_NAMESPACE: northstar
-      TS_MOD_NAME: Northstar
-      TS_MOD_DESCRIPTION: Titanfall 2 modding and custom server framework.
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Setup tcli
-        run: |
-          wget --output-document tcli.tar.gz https://github.com/thunderstore-io/thunderstore-cli/releases/download/0.1.4/tcli-0.1.4-linux-x64.tar.gz
-          tar xvf tcli.tar.gz
-          sudo mv --verbose tcli-0.1.4-linux-x64/tcli /bin
+  #     # Thunderstore info and descriptions
+  #     TS_NAMESPACE: northstar
+  #     TS_MOD_NAME: Northstar
+  #     TS_MOD_DESCRIPTION: Titanfall 2 modding and custom server framework.
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     - name: Setup tcli
+  #       run: |
+  #         wget --output-document tcli.tar.gz https://github.com/thunderstore-io/thunderstore-cli/releases/download/0.1.4/tcli-0.1.4-linux-x64.tar.gz
+  #         tar xvf tcli.tar.gz
+  #         sudo mv --verbose tcli-0.1.4-linux-x64/tcli /bin
 
-      - name: (DEBUG) Download Northstar package
-        if: ${{ env.ACT }} # Download Northstar package from releases when running locally instead of relying on previous jobs
-        run: |
-          wget --output-document northstar.zip https://github.com/R2Northstar/Northstar/releases/download/v1.6.3/Northstar.release.v1.6.3.zip
-          unzip northstar.zip -d northstar
+  #     - name: (DEBUG) Download Northstar package
+  #       if: ${{ env.ACT }} # Download Northstar package from releases when running locally instead of relying on previous jobs
+  #       run: |
+  #         wget --output-document northstar.zip https://github.com/R2Northstar/Northstar/releases/download/v1.31.10/Northstar.release.v1.31.10.zip
+  #         unzip northstar.zip -d northstar
 
-      - name: Download Northstar package
-        if: ${{ !env.ACT }} # Download artifacts from previous jobs when running on GitHub's infrastructure
-        uses: actions/download-artifact@v4
-        with:
-          name: Northstar.release.${{ env.NORTHSTAR_VERSION }}
-          path: northstar
+  #     - name: Download Northstar package
+  #       if: ${{ !env.ACT }} # Download artifacts from previous jobs when running on GitHub's infrastructure
+  #       uses: actions/download-artifact@v5
+  #       with:
+  #         name: Northstar.release.${{ env.NORTHSTAR_VERSION }}
+  #         path: northstar
 
-      - name: Make package structure
-        run: |
-          mkdir --parents thunderstore/dist/Northstar
-          mv --verbose northstar/* thunderstore/dist/Northstar
-          wget --output-document thunderstore/icon.png https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/icon.png
-          wget --output-document thunderstore/README.md https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/README.md
+  #     - name: Make package structure
+  #       run: |
+  #         mkdir --parents thunderstore/dist/Northstar
+  #         mv --verbose northstar/* thunderstore/dist/Northstar
+  #         wget --output-document thunderstore/icon.png https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/icon.png
+  #         wget --output-document thunderstore/README.md https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/README.md
 
-      - name: Setup environment variables
-        run: |
-          # Strip leading `v` and if exists replace `-rc` with `0` and strip leading zeroes from last semver digit if necessary
-          echo "MOD_VERSION=$(echo $NORTHSTAR_VERSION | tr -d 'v'| sed --expression 's/-rc/0/' | sed -E 's/([0-9]+)\.([0-9]+)\.(0*)([0-9])/\1.\2.\4/;')" >> $GITHUB_ENV
+  #     - name: Setup environment variables
+  #       run: |
+  #         # Strip leading `v` and if exists replace `-rc` with `0` and strip leading zeroes from last semver digit if necessary
+  #         echo "MOD_VERSION=$(echo $NORTHSTAR_VERSION | tr -d 'v'| sed --expression 's/-rc/0/' | sed -E 's/([0-9]+)\.([0-9]+)\.(0*)([0-9])/\1.\2.\4/;')" >> $GITHUB_ENV
 
-          # If it's a release candidate we also want to change a few things
-          if [[ $NORTHSTAR_VERSION == *"-rc"* ]]; then
-            # We want to push to a different package
-            # i.e. `NorthstarReleaseCandidate` vs `Northstar`
-            echo "TS_MOD_NAME=NorthstarReleaseCandidate" >> $GITHUB_ENV
-            # And update mod description
-            echo "TS_MOD_DESCRIPTION=Release candidate for next Northstar release." >> $GITHUB_ENV
-            # Add disclaimer add the top of README
-            echo -e '> ⚠️ This is a release candidate. Please report bugs or other issues on GitHub ⚠️\n' | cat - thunderstore/README.md > temp && mv temp thunderstore/README.md
-          fi
+  #         # If it's a release candidate we also want to change a few things
+  #         if [[ $NORTHSTAR_VERSION == *"-rc"* ]]; then
+  #           # We want to push to a different package
+  #           # i.e. `NorthstarReleaseCandidate` vs `Northstar`
+  #           echo "TS_MOD_NAME=NorthstarReleaseCandidate" >> $GITHUB_ENV
+  #           # And update mod description
+  #           echo "TS_MOD_DESCRIPTION=Release candidate for next Northstar release." >> $GITHUB_ENV
+  #           # Add disclaimer add the top of README
+  #           echo -e '> ⚠️ This is a release candidate. Please report bugs or other issues on GitHub ⚠️\n' | cat - thunderstore/README.md > temp && mv temp thunderstore/README.md
+  #         fi
 
-      - name: Publish package to Thunderstore
-        working-directory: thunderstore
-        run: |
-          tcli init --package-name=$TS_MOD_NAME --package-namespace=$TS_NAMESPACE --package-version $MOD_VERSION
+  #     - name: Publish package to Thunderstore
+  #       working-directory: thunderstore
+  #       run: |
+  #         tcli init --package-name=$TS_MOD_NAME --package-namespace=$TS_NAMESPACE --package-version $MOD_VERSION
 
-          sed --in-place "s/communities = \[\]/communities = [\"$TS_COMMUNITY\"]/g" thunderstore.toml
-          sed --in-place "s/Example-Dependency = \"1.0.0\"//g" thunderstore.toml
-          sed --in-place "s/description = \"Example mod description\"/description = \"$TS_MOD_DESCRIPTION\"/g" thunderstore.toml
-          cat thunderstore.toml
+  #         sed --in-place "s/communities = \[\]/communities = [\"$TS_COMMUNITY\"]/g" thunderstore.toml
+  #         sed --in-place "s/Example-Dependency = \"1.0.0\"//g" thunderstore.toml
+  #         sed --in-place "s/description = \"Example mod description\"/description = \"$TS_MOD_DESCRIPTION\"/g" thunderstore.toml
+  #         cat thunderstore.toml
 
-          tcli build
-          tcli publish --repository "$TS_REPO" --file build/*.zip
+  #         tcli build
+  #         tcli publish --repository "$TS_REPO" --file build/*.zip

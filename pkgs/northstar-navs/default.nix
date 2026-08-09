@@ -11,7 +11,7 @@ pkgs.stdenv.mkDerivation (finalAttr: {
 
   src = fetchzip {
     url = "https://github.com/R2Northstar/NorthstarNavs/archive/refs/tags/${finalAttr.version}.zip";
-    hash = "sha256-e3f+cScOga5oD+qT0irh/ccPdx7gHnliQBfPgf+/NFM=";    
+    hash = "sha256-e3f+cScOga5oD+qT0irh/ccPdx7gHnliQBfPgf+/NFM=";
   };
 
   noUnpack = true;

@@ -36,27 +36,34 @@
       system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        version = "1.13.10";
       in
       {
         formatter = pkgs.nixfmt-tree;
 
-        packages =
-          {
-            default = self.packages.${system}.northstar;
-          }
-          // import ./pkgs {
-            inherit
-              self
-              pkgs
-              mods
-              launcher
-              discordrpc
-              plugins
-              system
-              version
-              ;
-          };
+        packages = {
+          default = self.packages.${system}.northstar;
+        }
+        // import ./pkgs {
+          inherit
+            self
+            pkgs
+            mods
+            launcher
+            discordrpc
+            plugins
+            system
+            ;
+          version = self.version;
+        };
+
+        devShells.default = pkgs.mkShell {
+          nativeBuildInputs = [
+            pkgs.act
+          ];
+        };
       }
-    );
+    )
+    // {
+      version = "1.13.10";
+    };
 }
