@@ -15,6 +15,7 @@ permissions:
 
 env:
   NORTHSTAR_VERSION: ${{ github.ref_name }}
+  DISCORD_RPC_VERSION: v14
 
 jobs:
   build-northstar:
@@ -34,7 +35,7 @@ jobs:
           wget "https://github.com/R2Northstar/NorthstarLauncher/releases/download/${{ env.NORTHSTAR_VERSION }}/northstar-launcher.zip"
       - name: Download DiscordRPC plugin
         run:
-          wget "https://github.com/R2Northstar/NorthstarDiscordRPC/releases/download/v9/northstar-discord-rpc.zip"
+          wget "https://github.com/R2Northstar/NorthstarDiscordRPC/releases/download/${{ env.DISCORD_RPC_VERSION }}/northstar-discord-rpc.zip"
       - name: Download compiled stubs
         run:
           wget "https://github.com/R2Northstar/NorthstarStubs/releases/download/v1/NorthstarStubs.zip"
@@ -46,7 +47,7 @@ jobs:
           path: northstar-mods
       - name: Update mod version info
         run: |
-          export MOD_VERSION=$(echo $NORTHSTAR_VERSION | tr -d 'v')
+          export MOD_VERSION=$(echo $NORTHSTAR_VERSION | tr --delete 'v')
           cat <<< $(jq ".Version = \"${MOD_VERSION}\"" northstar-mods/Northstar.Client/mod.json) > northstar-mods/Northstar.Client/mod.json
           cat <<< $(jq ".Version = \"${MOD_VERSION}\"" northstar-mods/Northstar.Custom/mod.json) > northstar-mods/Northstar.Custom/mod.json
           cat <<< $(jq ".Version = \"${MOD_VERSION}\"" northstar-mods/Northstar.CustomServers/mod.json) > northstar-mods/Northstar.CustomServers/mod.json
@@ -67,12 +68,12 @@ jobs:
 
           unzip NorthstarStubs.zip -d northstar/bin/x64_dedi
           unzip northstar-launcher.zip -d northstar
-          rsync -avr --exclude="Northstar.Coop" --exclude=".git*" northstar-mods/. northstar/R2Northstar/mods
+          rsync -avr --exclude="Northstar.Coop" --exclude=".git*" --exclude="*.md" northstar-mods/. northstar/R2Northstar/mods
       - name: Checkout Navmesh repository
         uses: actions/checkout@v4
         with:
           repository: R2Northstar/NorthstarNavs
-          ref: 'v3'
+          ref: 'v4'
           path: northstar-navs
       - name: Navmeshes setup
         run: |
@@ -84,7 +85,7 @@ jobs:
         run: |
           rm -rf .git .github .gitignore *.md LICENSE thunderstore .ci.env.example *.sh
       - name: Upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Northstar.release.${{ env.NORTHSTAR_VERSION }}
           path: northstar
@@ -100,7 +101,7 @@ jobs:
           sha512sum Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
       - name: Upload zip to release draft
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/v') && !contains(env.NORTHSTAR_VERSION, '-rc')
         with:
           draft: true
@@ -137,7 +138,7 @@ jobs:
 
       - name: Download Northstar package
         if: ${{ !env.ACT }} # Download artifacts from previous jobs when running on GitHub's infrastructure
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: Northstar.release.${{ env.NORTHSTAR_VERSION }}
           path: northstar

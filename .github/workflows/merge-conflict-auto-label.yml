@@ -1,0 +1,19 @@
+name: Merge Conflict Auto Label
+on:
+  workflow_dispatch: # Manual run
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "10 21 * * *" # Runs at 21:10; time was chosen based on contributor activity and low GitHub Actions cron load.
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: mschilde/auto-label-merge-conflicts@master
+        with:
+          CONFLICT_LABEL_NAME: "merge conflicts"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAX_RETRIES: 5
+          WAIT_MS: 5000
