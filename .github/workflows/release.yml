@@ -1,6 +1,8 @@
 name: Release
 on:
   push:
+    branches:
+          - main
   workflow_dispatch:
     inputs:
       job:
@@ -54,8 +56,8 @@ jobs:
 
       - name: Upload zip to release draft
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/v') && !contains(env.NORTHSTAR_VERSION, '-rc')
         with:
+          tag_name: v${{ env.NORTHSTAR_VERSION }}
           draft: true
           files: Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip
 
@@ -87,10 +89,6 @@ jobs:
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
             extra-substituters = https://attic.catornot.net/northstar https://nix-community.cachix.org
             extra-trusted-public-keys = northstar:H8QBUAeduEw6jGl3HtGeW/79pMPv7wSCAv8BSUon3kw= nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=
-
-      - name: Build
-        run: |
-          nix build 
 
       - name: Get Northstar version
         run: |
