@@ -20,12 +20,12 @@ pkgs.stdenv.mkDerivation (finalAttr: {
   noUnpack = true;
   phases = [ "installPhase" ];
   installPhase = ''
-    mkdir -p $out
-    mkdir -p $out/bin/x64_dedi
-    mkdir -p $out/R2Northstar
-    mkdir -p $out/R2Northstar/mods/
-    mkdir -p $out/R2Northstar/plugins
-    mkdir -p $out/R2Northstar/mods/Northstar.CustomServers/mod/maps
+    install -d -m 755 $out
+    install -d -m 755 $out/bin/x64_dedi
+    install -d -m 755 $out/R2Northstar
+    install -d -m 755 $out/R2Northstar/mods/
+    install -d -m 755 $out/R2Northstar/plugins
+    install -d -m 755 $out/R2Northstar/mods/Northstar.CustomServers/mod/maps
 
     cp -r ${discordrpc}/bin/* $out/R2Northstar/plugins/
     cp -r ${plugins}/bin/* $out/R2Northstar/plugins/
@@ -38,9 +38,6 @@ pkgs.stdenv.mkDerivation (finalAttr: {
 
     cp -r ${../../release/LEGAL.txt} $out/R2Northstar/LEGAL.txt
     cp -r ${../../release/r2ds.bat} $out/r2ds.bat
-
-    # make everything writable for the end user
-    chmod -R u+w "$out"
   '';
 
   meta = {

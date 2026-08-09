@@ -40,26 +40,19 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v5
         with:
-          name: Northstar.release.${{ env.NORTHSTAR_VERSION }}
+          name: Northstar.release.v${{ env.NORTHSTAR_VERSION }}
           path: ./result
 
-      - name: Create zip to upload
+      - name: Build
         run: |
-          zip --recurse-paths --quiet Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip ./result
-
-      - name: Compute SHA-512 checksum
-        run: |
-          sha512sum Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          sha512sum Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          nix build .#zip
 
       - name: Upload zip to release draft
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ env.NORTHSTAR_VERSION }}
           draft: true
-          files: Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip
+          files: ./result/Northstar.release.v${{ env.NORTHSTAR_VERSION }}.zip
 
   build-thunderstore-package:
     needs: build-northstar # comment out when running locally
@@ -110,7 +103,7 @@ jobs:
         if: ${{ !env.ACT }} # Download artifacts from previous jobs when running on GitHub's infrastructure
         uses: actions/download-artifact@v5
         with:
-          name: Northstar.release.${{ env.NORTHSTAR_VERSION }}
+          name: Northstar.release.v${{ env.NORTHSTAR_VERSION }}
           path: northstar
 
       - name: Make package structure

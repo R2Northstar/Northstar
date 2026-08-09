@@ -10,15 +10,6 @@
   ...
 }:
 let
-  getPackage = pkg: self.packages.${system}.${pkg};
-  listToPackages =
-    list:
-    builtins.listToAttrs (
-      map (name: {
-        name = name;
-        value = getPackage name;
-      }) list
-    );
 in
 {
   launcher = launcher.packages.${system}.default.overrideAttrs (final: {
@@ -30,19 +21,19 @@ in
   plugins = plugins.packages.${system}.default;
   northstar-stubs = pkgs.callPackage ./northstar-stubs { };
   northstar-navs = pkgs.callPackage ./northstar-navs { };
-  northstar = pkgs.callPackage ./northstar (
-    {
-      inherit
-        version
-        ;
-    }
-    // listToPackages [
-      "launcher"
-      "mods"
-      "discordrpc"
-      "plugins"
-      "northstar-stubs"
-      "northstar-navs"
-    ]
-  );
+  northstar = pkgs.callPackage ./northstar {
+    inherit version;
+    inherit (self.packages.${system})
+      launcher
+      mods
+      discordrpc
+      plugins
+      northstar-stubs
+      northstar-navs
+      ;
+  };
+  zip = pkgs.callPackage ./zip {
+    inherit version;
+    inherit (self.packages.${system}) northstar;
+  };
 }
