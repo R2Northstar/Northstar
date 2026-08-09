@@ -2,11 +2,6 @@ name: Release
 on:
   push:
   workflow_dispatch:
-    inputs:
-      job:
-        description: 'Job to run'
-        required: true
-        default: 'build-thunderstore-package'
 
 permissions:
   contents: write # Needed to write to GitHub draft release
@@ -62,75 +57,3 @@ jobs:
         with:
           draft: true
           files: Northstar.release.${{ env.NORTHSTAR_VERSION }}.zip
-
-  build-thunderstore-package:
-    needs: build-northstar # comment out when running locally
-    env:
-      # Release envs, comment this out when running locally
-      TCLI_AUTH_TOKEN: ${{ secrets.THUNDERSTORE_TOKEN }}
-      TS_REPO: https://thunderstore.io/
-      TS_COMMUNITY: northstar
-
-      # Uncomment when testing locally, must be unique
-      # NORTHSTAR_VERSION: 0.1.8
-
-      # Thunderstore info and descriptions
-      TS_NAMESPACE: northstar
-      TS_MOD_NAME: Northstar
-      TS_MOD_DESCRIPTION: Titanfall 2 modding and custom server framework.
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Setup tcli
-        run: |
-          wget --output-document tcli.tar.gz https://github.com/thunderstore-io/thunderstore-cli/releases/download/0.1.4/tcli-0.1.4-linux-x64.tar.gz
-          tar xvf tcli.tar.gz
-          sudo mv --verbose tcli-0.1.4-linux-x64/tcli /bin
-
-      - name: (DEBUG) Download Northstar package
-        if: ${{ env.ACT }} # Download Northstar package from releases when running locally instead of relying on previous jobs
-        run: |
-          wget --output-document northstar.zip https://github.com/R2Northstar/Northstar/releases/download/v1.31.10/Northstar.release.v1.31.10.zip
-          unzip northstar.zip -d northstar
-
-      - name: Download Northstar package
-        if: ${{ !env.ACT }} # Download artifacts from previous jobs when running on GitHub's infrastructure
-        uses: actions/download-artifact@v5
-        with:
-          name: Northstar.release.${{ env.NORTHSTAR_VERSION }}
-          path: northstar
-
-      - name: Make package structure
-        run: |
-          mkdir --parents thunderstore/dist/Northstar
-          mv --verbose northstar/* thunderstore/dist/Northstar
-          wget --output-document thunderstore/icon.png https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/icon.png
-          wget --output-document thunderstore/README.md https://raw.githubusercontent.com/R2Northstar/Northstar/main/thunderstore/README.md
-
-      - name: Setup environment variables
-        run: |
-          # Strip leading `v` and if exists replace `-rc` with `0` and strip leading zeroes from last semver digit if necessary
-          echo "MOD_VERSION=$(echo $NORTHSTAR_VERSION | tr -d 'v'| sed --expression 's/-rc/0/' | sed -E 's/([0-9]+)\.([0-9]+)\.(0*)([0-9])/\1.\2.\4/;')" >> $GITHUB_ENV
-
-          # If it's a release candidate we also want to change a few things
-          if [[ $NORTHSTAR_VERSION == *"-rc"* ]]; then
-            # We want to push to a different package
-            # i.e. `NorthstarReleaseCandidate` vs `Northstar`
-            echo "TS_MOD_NAME=NorthstarReleaseCandidate" >> $GITHUB_ENV
-            # And update mod description
-            echo "TS_MOD_DESCRIPTION=Release candidate for next Northstar release." >> $GITHUB_ENV
-            # Add disclaimer add the top of README
-            echo -e '> ⚠️ This is a release candidate. Please report bugs or other issues on GitHub ⚠️\n' | cat - thunderstore/README.md > temp && mv temp thunderstore/README.md
-          fi
-
-      - name: Publish package to Thunderstore
-        working-directory: thunderstore
-        run: |
-          tcli init --package-name=$TS_MOD_NAME --package-namespace=$TS_NAMESPACE --package-version $MOD_VERSION
-
-          sed --in-place "s/communities = \[\]/communities = [\"$TS_COMMUNITY\"]/g" thunderstore.toml
-          sed --in-place "s/Example-Dependency = \"1.0.0\"//g" thunderstore.toml
-          sed --in-place "s/description = \"Example mod description\"/description = \"$TS_MOD_DESCRIPTION\"/g" thunderstore.toml
-          cat thunderstore.toml
-
-          tcli build
-          tcli publish --repository "$TS_REPO" --file build/*.zip
