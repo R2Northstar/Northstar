@@ -9,7 +9,7 @@
       flake = false;
     };
     launcher = {
-      url = "git+https://github.com/R2Northstar/NorthstarLauncher.git?submodules=1&rev=1b0ce15673a0027b21639746fd74d4f7da1e504d";
+      url = "git+https://github.com/R2Northstar/NorthstarLauncher.git?submodules=1&rev=e283f4e14c6fdb84821a41674310c0ea17be784f";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.treefmt-nix.follows = "";
     };
@@ -64,6 +64,6 @@
       }
     )
     // {
-      version = "1.31.12";
+      version = "1.31.13";
     };
 }
