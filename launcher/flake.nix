@@ -212,7 +212,7 @@
                 versionQuadruplet = "${versionAt 0},${versionAt 1},${versionAt 2},${
                   if isDev then
                     "1"
-                  else if builtins.length > 3 then
+                  else if builtins.length versionSeq > 3 then
                     versionAt 3
                   else
                     "0"
