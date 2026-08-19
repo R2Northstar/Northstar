@@ -20,6 +20,10 @@ global enum eModInstallStatus
 	NOT_FOUND
 }
 
+struct {
+	bool abortDownload = false
+} file
+
 const int MB = 1024 * 1000
 
 void function FetchVerifiedModsManifesto()
@@ -50,8 +54,58 @@ void function FetchVerifiedModsManifesto()
 	CloseActiveMenu()
 }
 
+void function ApproveDownload()
+{
+	file.abortDownload = false
+}
+
+
+void function AbortDownload()
+{
+	file.abortDownload = true
+}
+
 bool function DownloadMod( RequiredModInfo mod )
 {
+	// Prompt user to authorize downloading non-approved mods
+	if ( !NSIsModDownloadable( mod.name, mod.version ) && IsModDownloadable( mod )) {
+		DialogData dialogData
+		dialogData.header = format("Download %s?", mod.name)
+		dialogData.image = $"rui/menu/common/unlock_random"
+
+		string message = "This mod was not approved by the community, and thus might contain malicious content.\n\n"
+		message += format("Mod: %s v%s\n", mod.name, mod.version)
+		message += "Download link: "
+		message += mod.downloadLink.len() > 0 ? mod.downloadLink : "https://temp_link"
+		message += "\n\nDo you want to download this mod?"
+		dialogData.message = message
+		dialogData.inputDisableTime = 5
+		AddDialogButton(
+			dialogData,
+			"#OK",
+			ApproveDownload
+		)
+		AddDialogButton(
+			dialogData,
+			"#CANCEL",
+			AbortDownload
+		)
+		dialogData.forceChoice = true
+		OpenDialog( dialogData )
+
+		// Wait for user selection
+		while (IsDialogActive(dialogData))
+		{
+			WaitFrame()
+		}
+
+		if ( file.abortDownload )
+		{
+			print(format("User refused downloading unapproved mod \"%s\".", mod.name ))
+			return false
+		}
+	}
+
 	// Downloading mod UI
 	DialogData dialogData
 	dialogData.header = Localize( "#DOWNLOADING_MOD_TITLE" )
