@@ -1,6 +1,7 @@
 global function DownloadMod
 global function DisplayModDownloadErrorDialog
 global function FetchVerifiedModsManifesto
+global function IsModDownloadable
 
 global enum eModInstallStatus
 {
@@ -182,4 +183,15 @@ void function DisplayModDownloadErrorDialog( string modName )
 	AddDialogFooter( dialogData, "#B_BUTTON_DISMISS_RUI" )
 
 	OpenDialog( dialogData )
+}
+
+/**
+ * Returns whether {mod} can be downloaded, using information from its manifesto.
+ *
+ * This is different from native {NSIsModDownloadable}, which returns whether a
+ * mod has been approved by the community (= appears in the verified mods list).
+ */
+bool function IsModDownloadable( RequiredModInfo mod )
+{
+	return mod.downloadLink.len() > 0
 }

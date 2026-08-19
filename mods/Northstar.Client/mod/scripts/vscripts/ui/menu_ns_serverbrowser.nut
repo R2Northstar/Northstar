@@ -1236,7 +1236,7 @@ void function OnServerSelected_Threaded( string password = "" )
 			if ( autoDownloadAllowed )
 			{
 				bool modIsVerified = NSIsModDownloadable( mod.name, mod.version )
-				bool modHasDownloadLink = mod.downloadLink.len() > 0
+				bool modHasDownloadLink = IsModDownloadable( mod )
 
 				// Display error message if mod is not verified
 				if ( !modIsVerified && !modHasDownloadLink )
