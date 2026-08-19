@@ -47,6 +47,7 @@ global struct RequiredModInfo
 {
 	string name
 	string version
+	string downloadLink
 }
 
 global struct ServerInfo
