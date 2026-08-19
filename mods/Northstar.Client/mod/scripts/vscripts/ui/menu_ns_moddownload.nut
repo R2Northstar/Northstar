@@ -73,13 +73,24 @@ bool function DownloadMod( RequiredModInfo mod )
 		dialogData.header = "Download mod?"
 		dialogData.image = $"rui/menu/common/unlock_random"
 
+		string link = mod.downloadLink.len() > 0 ? mod.downloadLink : "https://example.org/"
 		string message = "This mod was not approved by the community, and thus might contain malicious content.\n\n"
 		message += format("^FFFFFF00Mod:^0 %s v%s\n", mod.name, mod.version)
 		message += "^FFFFFF00Download link:^0 ^5588FF00"
-		message += mod.downloadLink.len() > 0 ? mod.downloadLink : "https://temp_link"
+		message += link
 		message += "^0\n\nDo you want to download this mod?"
 		dialogData.message = message
-		dialogData.inputDisableTime = 5
+		//dialogData.inputDisableTime = 5
+		AddDialogButton(
+			dialogData,
+			"Manually check the mod",
+			void function() : ( dialogData, link )
+			{
+				LaunchExternalWebBrowser( link, WEBBROWSER_FLAG_FORCEEXTERNAL )
+				// Keep the dialog open
+				OpenDialog( dialogData )
+			}
+		)
 		AddDialogButton(
 			dialogData,
 			"#OK",
