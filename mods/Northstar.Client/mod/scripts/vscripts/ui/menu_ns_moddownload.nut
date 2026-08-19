@@ -70,14 +70,14 @@ bool function DownloadMod( RequiredModInfo mod )
 	// Prompt user to authorize downloading non-approved mods
 	if ( !NSIsModDownloadable( mod.name, mod.version ) && IsModDownloadable( mod )) {
 		DialogData dialogData
-		dialogData.header = format("Download %s?", mod.name)
+		dialogData.header = "Download mod?"
 		dialogData.image = $"rui/menu/common/unlock_random"
 
 		string message = "This mod was not approved by the community, and thus might contain malicious content.\n\n"
-		message += format("Mod: %s v%s\n", mod.name, mod.version)
-		message += "Download link: "
+		message += format("^FFFFFF00Mod:^0 %s v%s\n", mod.name, mod.version)
+		message += "^FFFFFF00Download link:^0 ^5588FF00"
 		message += mod.downloadLink.len() > 0 ? mod.downloadLink : "https://temp_link"
-		message += "\n\nDo you want to download this mod?"
+		message += "^0\n\nDo you want to download this mod?"
 		dialogData.message = message
 		dialogData.inputDisableTime = 5
 		AddDialogButton(
