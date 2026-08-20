@@ -67,6 +67,8 @@ struct
 } file
 
 const table<asset> mapImages = {
+	mp_lobby = $"rui/menu/main_menu/spotlight_13",
+
 	mp_forwardbase_kodai = $"loadscreens/mp_forwardbase_kodai_lobby",
 	mp_grave = $"loadscreens/mp_grave_lobby",
 	mp_homestead = $"loadscreens/mp_homestead_lobby",
