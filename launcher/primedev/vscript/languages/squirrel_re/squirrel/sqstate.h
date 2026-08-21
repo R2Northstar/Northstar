@@ -58,7 +58,9 @@ struct SQSharedState
 	SQTable* _entityTypesMaybe;
 	SQObjectType unknownTable2Type;
 	SQTable* unknownTable2;
-	unsigned char gap_41D8[64];
+	unsigned char gap_41D8[16];
+	SQObject* compilerTypeDescriptors;
+	unsigned char gap_41F0[40];
 	SQCompiler* pCompiler;
 	SQObjectType _compilerKeywordsType;
 	SQTable* _compilerKeywords;
