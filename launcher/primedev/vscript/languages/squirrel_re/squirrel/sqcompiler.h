@@ -14,7 +14,9 @@ struct SQCompiler
 	int64_t qword98;
 	BYTE gapA0[280];
 	bool bFatalError;
-	BYTE gap1B9[143];
+	BYTE gap1B9[11];
+	int preprocessorDepth;
+	BYTE gap1C8[128];
 	int64_t qword248;
 	int64_t qword250;
 	int64_t qword258;
