@@ -48,11 +48,12 @@ void h_gamestate_info_ffa(RuiFunctions_t* funcs, RuiGlobals* globals, RuiInstanc
 
 	float endTime = data->endTime;
 	float timeLeft = endTime - globals->currentTime;
-	char* buffer = (char*)alloca(2048);
-	strcpy_s(buffer, 2048, data->statusText);
+	char buffer[2048] {};
+	strcpy_s(buffer, ARRAYSIZE(buffer) - 1, data->statusText);
+
 	if (strcmp(buffer, "") == 0)
 	{
-		strcpy_s(buffer, 2048, "#PL_ffa");
+		strcpy_s(buffer, ARRAYSIZE(buffer) - 1, "#PL_ffa");
 	}
 
 	if (timeLeft < 0.0f || endTime == -1.0e30f)
