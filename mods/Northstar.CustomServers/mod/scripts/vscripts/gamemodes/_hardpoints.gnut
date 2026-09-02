@@ -117,7 +117,7 @@ void function OnHardpointEnter( entity trigger, entity player )
 	entity hp = trigger.GetOwner()
 
 	// don't handle anything other than players yet
-	if ( !player.IsPlayer() )
+	if ( !IsValid( player ) || !player.IsPlayer() )
 		return
 
 	// it's just too hard to handle emarking and disemarking with the count stuff
@@ -136,7 +136,7 @@ void function OnHardpointLeave( entity trigger, entity player )
 	entity hp = trigger.GetOwner()
 
 	// don't handle anything other than players yet
-	if ( !player.IsPlayer() )
+	if ( !IsValid( player ) || !player.IsPlayer() )
 		return
 
 	// it's just too hard to handle emarking and disemarking with the count stuff
@@ -165,6 +165,7 @@ void function Hardpoint_Think( HardpointState hardpoint )
 		hardpoint.ent.SetHardpointPlayerCount( TEAM_MILITIA, 0 )
 		hardpoint.ent.SetHardpointPlayerTitanCount( TEAM_IMC, 0 )
 		hardpoint.ent.SetHardpointPlayerTitanCount( TEAM_MILITIA, 0 )
+		ArrayRemoveDead( hardpoint.capPlayers )
 
 		// update counts based on capPlayers
 		foreach ( entity player in hardpoint.capPlayers )
