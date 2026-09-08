@@ -189,4 +189,13 @@ public:
 	 * @returns nothing
 	 */
 	void CancelDownload();
+
+
+	/**
+	 * Downloads a mod with no verification steps.
+	 *
+	 * @param archiveUrl URL of the zip archive to be downloaded
+	 * @returns nothing
+	 **/
+	void DownloadModFromURL(std::string_view archiveUrl);
 };
