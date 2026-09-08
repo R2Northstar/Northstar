@@ -197,7 +197,30 @@ void ConCommand_reload_plugins(const CCommand& args)
 	g_pPluginManager->ReloadPlugins();
 }
 
+void ConCommand_unload_plugins(const CCommand& args)
+{
+	for (const Plugin& plugin : g_pPluginManager->GetLoadedPlugins() | std::views::reverse)
+	{
+		std::string name = plugin.GetName();
+
+		if (args.ArgC() >= 2 && !strcmp(name.c_str(), args.Arg(1)))
+			continue;
+
+		if (plugin.Unload())
+			NS::log::PLUGINSYS->info("Unloaded {}", name);
+		else
+			NS::log::PLUGINSYS->warn("{} can't be unloaded", name);
+	}
+}
+
+void ConCommand_load_plugins(const CCommand& args)
+{
+	g_pPluginManager->LoadPlugins();
+}
+
 ON_DLL_LOAD_RELIESON("engine.dll", PluginManager, ConCommand, (CModule module))
 {
 	RegisterConCommand("reload_plugins", ConCommand_reload_plugins, "reloads plugins", FCVAR_NONE);
+	RegisterConCommand("unload_plugins", ConCommand_unload_plugins, "unloads plugins or a single plugin", FCVAR_NONE);
+	RegisterConCommand("load_plugins", ConCommand_load_plugins, "loads plugins", FCVAR_NONE);
 }
