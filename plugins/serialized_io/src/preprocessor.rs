@@ -157,9 +157,12 @@ fn get_calling_file(
 }
 
 pub fn populate_rson_cache(context: ScriptContext) {
-    let extra_print = crate::PLUGIN.wait().extra_print;
+    let plugin = crate::PLUGIN.wait();
+    let extra_print = plugin.extra_print;
 
-    if let Some(Rson(rson)) = load_rson() {
+    if plugin.rson_preprocessor
+        && let Some(Rson(rson)) = load_rson()
+    {
         for file in rson
             .into_iter()
             .filter(|(vm, _)| vm.contains_context(context))
