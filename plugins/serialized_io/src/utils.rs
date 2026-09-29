@@ -424,17 +424,20 @@ pub fn get_json_from_obj(obj: &SQObject, ty: &TypedType) -> Result<JsonValue, St
             let table = obj.get();
 
             JsonValue::Object(JsonMap::from_iter(
-                unsafe { slice_from_raw_parts(table._nodes.cast_const(), 0).as_ref() }
-                    .ok_or("poor table")?
-                    .iter()
-                    .filter(|node| node.key._Type != SQObjectType::OT_NULL)
-                    .map(|node| {
-                        Ok((
-                            get_string_from_obj(node.key, &TypedType::RefFullType(key.as_ref()))?,
-                            get_json_from_obj(&node.val, &TypedType::RefFullType(value.as_ref()))?,
-                        ))
-                    })
-                    .collect::<Result<Vec<_>, String>>()?,
+                unsafe {
+                    slice_from_raw_parts(table._nodes.cast_const(), table._numOfNodes as usize)
+                        .as_ref()
+                }
+                .ok_or("poor table")?
+                .iter()
+                .filter(|node| node.key._Type != SQObjectType::OT_NULL)
+                .map(|node| {
+                    Ok((
+                        get_string_from_obj(node.key, &TypedType::RefFullType(key.as_ref()))?,
+                        get_json_from_obj(&node.val, &TypedType::RefFullType(value.as_ref()))?,
+                    ))
+                })
+                .collect::<Result<Vec<_>, String>>()?,
             ))
         }
         SQObjectType::OT_USERDATA => {
