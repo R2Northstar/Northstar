@@ -2,6 +2,7 @@
 #include "engine/r2engine.h"
 #include "shared/exploit_fixes/ns_limits.h"
 #include "masterserver/masterserver.h"
+#include "engine/custom_packet_manager.h"
 
 #include <string>
 #include <thread>
@@ -168,27 +169,6 @@ static void ProcessAtlasConnectionlessPacket(netpacket_t* packet)
 	return;
 }
 
-AUTOHOOK(ProcessConnectionlessPacket, engine.dll + 0x117800, bool, , (void* a1, netpacket_t* packet))
-{
-	// packet->data consists of 0xFFFFFFFF (int32 -1) to indicate packets aren't split, followed by a header consisting of a single
-	// character, which is used to uniquely identify the packet kind. Most kinds follow this with a null-terminated string payload
-	// then an arbitrary amoount of data.
-
-	// T (no rate limits since we authenticate packets before doing anything expensive)
-	if (4 < packet->size && packet->data[4] == 'T')
-	{
-		ProcessAtlasConnectionlessPacket(packet);
-		return false;
-	}
-
-	// check rate limits for the original unconnected packets
-	if (!g_pServerLimits->CheckConnectionlessPacketLimits(packet))
-		return false;
-
-	// A, H, I, N
-	return ProcessConnectionlessPacket(a1, packet);
-}
-
 ON_DLL_LOAD_RELIESON("engine.dll", ServerNetHooks, ConVar, (CModule module))
 {
 	AUTOHOOK_DISPATCH_MODULE(engine.dll)
@@ -215,4 +195,16 @@ ON_DLL_LOAD_RELIESON("engine.dll", ServerNetHooks, ConVar, (CModule module))
 		"0",
 		FCVAR_NONE,
 		"Whether to disable signature verification for Atlas connectionless packets (DANGEROUS: this allows anyone to impersonate Atlas)");
+}
+
+ON_DLL_LOAD_RELIESON("engine.dll", ServerAtlasPacketHandler, CustomPacketManager, (CModule module))
+{
+	assert(g_pCustomPacketManager);
+	g_pCustomPacketManager->RegisterPacketHandler(
+		'T',
+		[](void* handler, netpacket_s* packet, OUT bool& executeOriginalHandler)
+		{
+			ProcessAtlasConnectionlessPacket(packet);
+			executeOriginalHandler = false;
+		});
 }
