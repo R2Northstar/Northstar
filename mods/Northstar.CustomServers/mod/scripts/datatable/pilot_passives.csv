@@ -1,0 +1,10 @@
+passive,type,name,description,image,hidden,cost
+"pas_enemy_death_icons","PILOT_PASSIVE2","#GEAR_ENEMY_DEATH_ICONS","#GEAR_ENEMY_DEATH_ICONS_DESC","rui/pilot_loadout/kit/kill_report_menu",0,25
+"pas_ordnance_pack","PILOT_PASSIVE1","#GEAR_EXPLOSIVES_PACK","#GEAR_EXPLOSIVES_PACK_DESC","rui/pilot_loadout/kit/ordnance_expert_menu",0,125
+"pas_power_cell","PILOT_PASSIVE1","#GEAR_POWER_CELL","#GEAR_POWER_CELL_DESC","rui/pilot_loadout/kit/power_cell_menu",0,25
+"pas_fast_embark","PILOT_PASSIVE1","#GEAR_FAST_EMBARK","#GEAR_FAST_EMBARK_DESC","rui/pilot_loadout/kit/phase_embark_menu",0,125
+"pas_ads_hover","PILOT_PASSIVE2","#GEAR_ADS_HOVER","#GEAR_ADS_HOVER_DESC","rui/pilot_loadout/kit/hover_menu",0,225
+"pas_wallhang","PILOT_PASSIVE2","#GEAR_WALLHANG","#GEAR_WALLHANG_DESC","rui/pilot_loadout/kit/wall_hang_menu",0,25
+"pas_fast_health_regen","PILOT_PASSIVE1","#GEAR_FAST_HEALTH_REGEN","#GEAR_FAST_HEALTH_REGEN_DESC","rui/pilot_loadout/kit/quick_regen_menu",0,25
+"pas_stealth_movement","PILOT_PASSIVE2","#GEAR_STEALTH_KIT","#GEAR_STEALTH_KIT_DESC","rui/pilot_loadout/kit/stealth_movement_menu",0,225
+"pas_at_hunter","PILOT_PASSIVE2","#GEAR_AT_HUNTER_KIT","#GEAR_AT_HUNTER_KIT_DESC","rui/pilot_loadout/kit/titan_hunter_menu",0,225

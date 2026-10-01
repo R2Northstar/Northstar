@@ -1,0 +1,8 @@
+#base "npc_turret_mega.txt"
+npc_turret_mega_old
+{
+	DefaultModelName		"models/turrets/turret_imc_lrg.mdl"
+	DefaultWeapon			"mp_weapon_mega_turret"
+
+	windup_time 					0.0
+}

@@ -1,0 +1,5 @@
+#base "npc_titan_stryder_sniper.txt"
+npc_titan_stryder_sniper_bounty
+{
+	ui_targetinfo			"ui/targetinfo_titan_bounty" [$mp]
+}

@@ -1,0 +1,16 @@
+itemRef,type,damageSource,hidden,cost
+"mp_ability_grapple","PILOT_SPECIAL",0,0,180
+"mp_ability_heal","PILOT_SPECIAL",0,0,180
+"mp_ability_holopilot","PILOT_SPECIAL",0,0,180
+"mp_weapon_grenade_sonar","PILOT_SPECIAL",1,0,180
+"mp_ability_shifter","PILOT_SPECIAL",0,0,180
+"mp_weapon_deployable_cover","PILOT_SPECIAL",0,0,180
+"mp_ability_cloak","PILOT_SPECIAL",0,0,180
+"mp_weapon_frag_grenade","PILOT_ORDNANCE",1,0,220
+"mp_weapon_grenade_emp","PILOT_ORDNANCE",1,0,220
+"mp_weapon_grenade_gravity","PILOT_ORDNANCE",1,0,220
+"mp_weapon_grenade_electric_smoke","PILOT_ORDNANCE",1,0,220
+"mp_weapon_thermite_grenade","PILOT_ORDNANCE",1,0,220
+"mp_weapon_satchel","PILOT_ORDNANCE",1,0,220
+"melee_pilot_sword","NOT_LOADOUT",1,1,220
+"mp_ability_shifter_super","PILOT_SPECIAL",0,1,220

@@ -1,0 +1,30 @@
+# This action checks whether all Squirrel files compile successfully using standalone Squirrel compiler
+name: compile-check
+
+on: [push, pull_request]
+
+jobs:
+  compile:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          path: "mods"
+      
+      - name: Compile Scripts
+        uses: ASpoonPlaysGames/squirrel-re-compiler@v3
+        with:
+          mods-directory: "${{ github.workspace }}/mods"
+          native-json: "${{ github.workspace }}/mods/.github/natives.json"
+
+      # It's important that scripts compile when Northstar.Custom isn't enabled/installed, so run again without it
+      - name: Remove Northstar.Custom
+        run: rmdir ${{ github.workspace }}\mods\Northstar.Custom /s /q
+        shell: cmd
+          
+      - name: Compile Scripts (No Northstar.Custom)
+        uses: ASpoonPlaysGames/squirrel-re-compiler@v3
+        with:
+          mods-directory: "${{ github.workspace }}/mods"
+          native-json: "${{ github.workspace }}/mods/.github/natives.json"

@@ -1,0 +1,61 @@
+untyped
+
+global function AddCallback_OnReceivedSayTextMessage
+
+// this is global due to squirrel bridge v3 making native not be able to find non-global funcs properly
+// temp fix (surely it will get replaced), do not use this function please
+global function CServerGameDLL_ProcessMessageStartThread
+
+global struct ClServer_MessageStruct
+{
+	string message
+	entity player
+	bool isTeam
+	bool shouldBlock
+}
+
+struct
+{
+	array<ClServer_MessageStruct functionref( ClServer_MessageStruct )> OnReceivedSayTextMessageCallbacks
+} NsCustomCallbacks
+
+void function CServerGameDLL_ProcessMessageStartThread( int playerIndex, string message, bool isTeam )
+{
+	thread CServerGameDLL_OnReceivedSayTextMessageCallback( playerIndex, message, isTeam )
+}
+
+void function CServerGameDLL_OnReceivedSayTextMessageCallback( int playerIndex, string message, bool isTeam )
+{
+	entity player = GetPlayerByIndex( playerIndex )
+	if ( player == null || !player.hasConnected )
+	{
+		print( "Ignored chat message from invalid player index " + playerIndex + ": " + message )
+		return
+	}
+	print( "Received message from " + player + "(" + player.GetUID() + "): " + message )
+
+	ClServer_MessageStruct localMessage
+	localMessage.message = message
+	localMessage.player = player
+	localMessage.isTeam = isTeam
+	localMessage.shouldBlock = false
+	foreach ( callbackFunc in NsCustomCallbacks.OnReceivedSayTextMessageCallbacks )
+	{
+		ClServer_MessageStruct returnStruct = callbackFunc( localMessage )
+		localMessage.message = returnStruct.message
+		localMessage.isTeam = returnStruct.isTeam
+		localMessage.shouldBlock = localMessage.shouldBlock || returnStruct.shouldBlock
+	}
+
+	if ( localMessage.shouldBlock )
+	{
+		return
+	}
+
+	NSSendMessage( player.GetPlayerIndex(), localMessage.message, localMessage.isTeam )
+}
+
+void function AddCallback_OnReceivedSayTextMessage( ClServer_MessageStruct functionref( ClServer_MessageStruct ) callbackFunc )
+{
+	NsCustomCallbacks.OnReceivedSayTextMessageCallbacks.append( callbackFunc )
+}

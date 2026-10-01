@@ -1,0 +1,14 @@
+#base "npc_soldier.txt"
+npc_soldier_hero_bear
+{
+	title 						#NPC_BEAR_NAME
+	SettingsTitle				#NPC_BEAR_NAME
+	IsGenericGrunt			0
+
+	DefaultModelName			"models/humans/pilots/sp_heavy_roog_m.mdl"
+	DefaultModelName_IMC		"models/humans/pilots/sp_heavy_roog_m.mdl"
+	DefaultModelName_MIL		"models/humans/pilots/sp_heavy_roog_m.mdl"
+
+	DefaultWeapon				"mp_weapon_mastiff"
+}
+

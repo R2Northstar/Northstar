@@ -1,0 +1,11 @@
+#base "npc_titan_ogre_meteor.txt"
+npc_titan_ogre_meteor_nuke
+{
+    title                       #NPC_TITAN_AUTO_NUKE
+    npc_titan_player_settings	"titan_ogre_meteor_nuke"
+	minGoalRadius			32
+
+	titanCamoIndex -1
+	titanDecalIndex 11
+	titanSkinIndex 4
+}

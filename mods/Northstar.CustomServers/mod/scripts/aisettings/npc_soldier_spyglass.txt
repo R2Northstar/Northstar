@@ -1,0 +1,8 @@
+#base "npc_soldier.txt"
+npc_soldier_spyglass
+{
+	SettingsTitle				"Spyglass"
+	DefaultModelName_IMC		"models/humans/imc_villain/spyglass/imc_villain_spyglass.mdl"
+	DefaultModelName_MIL		"models/humans/imc_villain/spyglass/imc_villain_spyglass.mdl"
+}
+

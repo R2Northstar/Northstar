@@ -1,0 +1,119 @@
+npc_drone
+{
+	HullType				"HULL_SMALL"
+	AIClass					flyingdrone
+	BodyType				flyingdrone
+	SmartAmmoLockType		any
+	drone_type				"drone_type_basic"
+
+	BaseClass				"npc_drone"
+
+	BehaviorSelector		"behavior_drone"
+
+	mechanical				1
+
+	Health					90 [$sp]
+	Health					100 [$mp]
+
+	title 					#NPC_DRONE
+	ui_targetinfo			"ui/targetinfo_npc_basic" [$mp]
+	ui_targetinfo			"" [$sp]
+
+	//leechAnimSet			flyingdrone
+	//onLeechFuncName			DroneOnLeeched
+	//leechAnimTag			HIJACK
+	//leechDataKnifeTag		KNIFE
+	leechMaxDist			0
+
+	DefaultModelName		"models/robots/drone_air_attack/drone_air_attack_rockets.mdl"
+
+	FOV_Vert_Offset			0
+    FOV_Near_Dist			500		// use near values up to this distance
+	FOV_Far_Dist			1700	// use far values after this distance, interpolate horizontal in between, use far for vertical
+
+	FOV_Idle_Near_Horz		360
+	FOV_Idle_Near_Vert		360
+	FOV_Idle_Far_Horz		400
+	FOV_Idle_Far_Vert		400
+
+	FOV_Alert_Near_Horz		150
+	FOV_Alert_Near_Vert		180
+	FOV_Alert_Far_Horz		110
+	FOV_Alert_Far_Vert		110
+
+	FOV_Combat_Near_Horz	160
+	FOV_Combat_Near_Vert	180
+	FOV_Combat_Far_Horz		130
+	FOV_Combat_Far_Vert		60
+
+	aimassist_bounds_override					40.0
+	aimassist_use_short_inner_bounds			1
+	aimassist_adspull_centerAttachmentName		"HEADSHOT"
+	aimassist_adspull_centerRadius				11.0
+	aimassist_adspull_headshotAttachmentName	""
+	aimassist_adspull_headshotRadius			0.0
+
+	YawSpeed				35
+	MoveYawSpeed			15
+	AimAngularSpeed			10
+
+	// TEMP for now, make them basically blind unless you're right in front of them
+	NoticeDistNear_Idle		200
+	NoticeDistNear_Alert	300
+	NoticeDistNear_Combat	1000
+
+	NoticeDistFar_Idle		2000
+	NoticeDistFar_Alert		2000
+	NoticeDistFar_Combat	2000
+
+	NoticeTimeNear_Idle		0.1
+	NoticeTimeNear_Alert	0.1
+	NoticeTimeNear_Combat	0.0
+
+	NoticeTimeFar_Idle		1.0
+	NoticeTimeFar_Alert		1.0
+	NoticeTimeFar_Combat	1.0
+
+	NoticeForgetPreTime		0.3
+	NoticeForgetPostTime	5.0
+
+	rodeoMaxDist			0	// set to > 0 to make rodeoable
+	chaseStopDist			800
+	chaseStopDistHeavyArmor	1200
+
+	faceEnemyToleranceAngle			2
+	faceEnemyStrictToleranceAngle	1
+	PainOnHeavyDamageThreshold		0	// no heavy damage
+
+	waitBetweenWeaponBurst	1
+
+	magneticRange			125
+
+	waypointTolerance		16
+	randomHoverAmount		3
+	flyingStoppingTime		0.5
+	maxFlyingSpeed			600
+	maxFlyingSpeedNonCombat	150
+
+	maxPitch			15
+	maxRoll				30
+
+	patrolRangeMin		300
+	patrolRangeMax		600
+
+	hoverHeight			100	// if has target, offset above target's height
+
+	closestToCameraSound	Drone_Mvmt_Hover_Hero			// only works on drones for now
+	moveLoopingSound		Drone_Mvmt_Hover
+	yawChangeSound 			Drone_Mvmt_Turn
+	yawChangeSoundAngle		100
+
+	//sound0					Drone.Ambient.Searching.Loop	// scan loop (no enemy)
+	//sound1					Drone.Ambient.Has.Enemy.loop 	// scan loop (has enemy)
+	//sound2					Drone.Target.Locking			// target locking on
+	//sound3					Drone_Beam_TargetPlayer			// Target locked, plays at end of Drone.Target.Locking
+	//sound4					Drone.Target.Lost				// target lost
+
+	showTitle						1	[$mp]
+	showTitle						0	[$sp]
+}

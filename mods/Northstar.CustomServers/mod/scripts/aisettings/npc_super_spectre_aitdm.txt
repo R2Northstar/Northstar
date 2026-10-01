@@ -1,0 +1,17 @@
+#base "npc_super_spectre.txt"
+npc_super_spectre_aitdm
+{
+	enable_frag_drones				0
+	enable_harvester_assault        1
+
+	MinForceWalkDist				300
+	MinForceWalkDistVsHeavyArmor	150
+
+	Health							3500 [$mp]
+	Health							3000 [$sp]
+
+	ui_targetinfo					"ui/targetinfo_reaper_bounty" [$mp]
+	ui_targetinfo					"" [$sp]
+
+	PainOnHeavyDamageThreshold		1000
+}

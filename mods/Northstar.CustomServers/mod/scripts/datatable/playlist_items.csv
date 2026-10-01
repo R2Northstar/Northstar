@@ -1,0 +1,27 @@
+playlist,name,image,thumbnail,cost
+"at","#PL_attrition","rui/menu/gametype_select/bounty_hunt","rui/menu/gametype_select/playlist_bounty_hunt",5
+"aitdm","#PL_aitdm","rui/menu/gametype_select/attrition","rui/menu/gametype_select/playlist_attrition",5
+"cp","#PL_hardpoint","rui/menu/gametype_select/hardpoint","rui/menu/gametype_select/playlist_amped_hardpoint",5
+"ctf","#PL_capture_the_flag","rui/menu/gametype_select/capture_the_flag","rui/menu/gametype_select/playlist_ctf",5
+"lts","#PL_last_titan_standing","rui/menu/gametype_select/last_titan_standing","rui/menu/gametype_select/playlist_lts",5
+"tdm","#PL_pilot_hunter","rui/menu/gametype_select/pilot_hunter","rui/menu/gametype_select/playlist_skirmish",5
+"varietypack","Variety Pack","rui/menu/gametype_select/variety_pack","rui/menu/gametype_select/playlist_gen_weapon",5
+"coliseum","#PL_coliseum","rui/menu/gametype_select/colosseum","rui/menu/gametype_select/playlist_coliseum",0
+"fnf","Friday Night Fights","rui/menu/gametype_select/friday_night_fights","rui/menu/gametype_select/playlist_gen_star",5
+"ffa","#PL_ffa","rui/menu/gametype_select/free_for_all","rui/menu/gametype_select/playlist_free_for_all",5
+"ps","#PL_pilot_skirmish","rui/menu/gametype_select/pilot_v_pilot","rui/menu/gametype_select/playlist_pilot_vs_pilot",5
+"default","Default","rui/menu/gametype_select/bounty_hunt","rui/menu/gametype_select/playlist_gen_star",5
+"fw","#PL_titan_war","rui/menu/gametype_select/titan_war","rui/menu/gametype_select/playlist_gen_arrow",5
+"private_match","#PL_private_match","rui/menu/gametype_select/private_match","rui/menu/gametype_select/playlist_gen_star",0
+"lf","#PL_speedball","rui/menu/gametype_select/hardcore_pilot_hunter","rui/menu/gametype_select/playlist_live_fire",5
+"angel_city_247","#PL_angel_city","rui/menu/gametype_select/angel_city","rui/menu/gametype_select/playlist_gen_star",5
+"hunted","#PL_hunted","rui/menu/gametype_select/variety_pack","rui/menu/gametype_select/playlist_apex",5
+"mfd","#PL_mfd","rui/menu/gametype_select/pilot_hunter","rui/menu/gametype_select/playlist_marked_for_death",5
+"speedball","#PL_speedball","rui/menu/gametype_select/hardcore_pilot_hunter","rui/menu/gametype_select/playlist_live_fire",0
+"fd_easy","#PL_fd_easy","rui/menu/gametype_select/last_titan_standing","rui/menu/gametype_select/playlist_fd_easy",0
+"fd","#PL_fd_normal","rui/menu/gametype_select/last_titan_standing","rui/menu/gametype_select/playlist_fd_normal",0
+"fd_normal","#PL_fd_normal","rui/menu/gametype_select/last_titan_standing","rui/menu/gametype_select/playlist_fd_normal",0
+"fd_hard","#PL_fd_hard","rui/menu/gametype_select/last_titan_standing","rui/menu/gametype_select/playlist_fd_hard",0
+"fd_master","#PL_fd_master","rui/menu/gametype_select/last_titan_standing","rui/menu/gametype_select/playlist_fd_master",0
+"fd_insane","#PL_fd_insane","rui/menu/gametype_select/last_titan_standing","rui/menu/gametype_select/playlist_fd_insane",0
+"ttdm","#PL_titan_brawl","rui/menu/gametype_select/last_titan_standing","rui/menu/gametype_select/playlist_titan_brawl",5

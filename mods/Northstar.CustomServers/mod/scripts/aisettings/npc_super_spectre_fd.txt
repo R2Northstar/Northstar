@@ -1,0 +1,17 @@
+#base "npc_super_spectre.txt"
+npc_super_spectre_fd
+{
+	enable_frag_drones				0
+	assaultHarvester                0
+
+	minGoalRadius                   64
+
+	MinForceWalkDist				0
+	MinForceWalkDistVsHeavyArmor	0
+
+	Health							3500 [$mp]
+	Health							3000 [$sp]
+
+	ui_targetinfo					"ui/targetinfo_reaper_bounty" [$mp]
+	ui_targetinfo					"" [$sp]
+}

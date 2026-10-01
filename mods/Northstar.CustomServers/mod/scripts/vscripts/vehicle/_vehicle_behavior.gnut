@@ -1,0 +1,6 @@
+global function CodeCallback_OnVehiclePass
+
+// params: vehicle, nodePassed, nextNode, nextNextNode
+void function CodeCallback_OnVehiclePass( table params )
+{
+}

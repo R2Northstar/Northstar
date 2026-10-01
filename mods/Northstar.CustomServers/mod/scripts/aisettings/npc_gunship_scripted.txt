@@ -1,0 +1,6 @@
+#base "npc_gunship.txt"
+npc_gunship_scripted
+{
+	BaseClass				"npc_gunship_scripted"
+	title 					#NPC_GUNSHIP_SCRIPTED
+}

@@ -1,0 +1,33 @@
+#base "npc_stalker.txt"
+npc_stalker_crawling
+{
+	ScriptSpawnAsCrawler 		1
+
+	AIClass						stalker_crawling
+
+	useSequenceBounds			1
+	orientToGround				1
+
+	DefaultWeapon				""
+	BehaviorSelector			"behavior_stalker_crawling"
+
+	faceEnemyToleranceAngle		45
+
+	eyeOffsetOverride_enabled	1
+	eyeOffsetOverride			"5 0 20"
+
+	chaseStopDist				45
+
+	allowWalkAnims				0
+
+	MeleeDamageMax				35
+	MeleeDamageMin				30
+
+	MeleeDamageRadius			40
+	MeleeRange					45
+	MeleeInterval				0
+
+	aimassist_adspull_centerRadius				11.0
+	aimassist_adspull_headshotRadius			7.0
+	aimassist_adspull_noPitchUp					0
+}

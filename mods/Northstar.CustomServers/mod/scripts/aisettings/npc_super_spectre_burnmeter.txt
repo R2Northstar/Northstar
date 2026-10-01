@@ -1,0 +1,6 @@
+#base "npc_super_spectre.txt"
+npc_super_spectre_burnmeter
+{
+	enable_frag_drones				0
+	ui_targetinfo					"ui/targetinfo_reaper_bounty" [$mp]
+}

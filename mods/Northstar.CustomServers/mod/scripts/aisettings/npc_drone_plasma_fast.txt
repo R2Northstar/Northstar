@@ -1,0 +1,5 @@
+#base "npc_drone_plasma.txt"
+npc_drone_plasma_fast
+{
+	maxFlyingSpeedNonCombat	600 //120
+}

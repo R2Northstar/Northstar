@@ -1,0 +1,8 @@
+#base "npc_soldier.txt"
+npc_soldier_bish
+{
+	SettingsTitle				"Bish"
+	DefaultModelName_IMC		"models/humans/mcor_hero/bish/mcor_hero_bish.mdl"
+	DefaultModelName_MIL		"models/humans/mcor_hero/bish/mcor_hero_bish.mdl"
+}
+

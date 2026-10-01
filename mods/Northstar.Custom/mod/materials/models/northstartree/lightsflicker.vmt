@@ -1,0 +1,18 @@
+"UnlitTexture"
+{
+    $basetexture "models/northstartree/lightsflicker"
+    $color "[1.5 1.5 1.5]"
+
+	Proxies
+	{
+
+ 	 TextureScroll
+ 	 {
+  	 texturescrollvar $basetexturetransform
+  	 texturescrollrate 0.33
+  	 texturescrollangle 45
+		}
+
+	}
+
+}

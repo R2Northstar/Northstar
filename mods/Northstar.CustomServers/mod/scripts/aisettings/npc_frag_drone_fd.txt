@@ -1,0 +1,23 @@
+#base "npc_frag_drone.txt"
+npc_frag_drone_fd
+{
+	SuicideChaseTime				3.0 [$sp]
+	SuicideChaseTime				10.0 [$mp]
+
+	Health							45 [$sp]
+	Health							100 [$mp]
+
+	DefaultModelName				"models/weapons/sentry_frag/sentry_frag.mdl"
+	DefaultModelName_IMC			"models/weapons/sentry_frag/sentry_frag.mdl"
+	DefaultModelName_MIL			"models/weapons/sentry_frag/sentry_frag.mdl"
+
+
+	suicideExplosionDistance		200.0
+
+//	OverrideOverloadAnim            "sp_suicide_spectre_explode_stand_short"
+	JumpAtTitans 					0
+	damageDefOverride				"damagedef_frag_drone_explode_FD"
+
+	minSpeedScale					2.0
+	maxSpeedScale					2.5
+}

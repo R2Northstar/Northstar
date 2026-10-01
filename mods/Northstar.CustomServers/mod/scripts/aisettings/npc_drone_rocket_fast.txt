@@ -1,0 +1,5 @@
+#base "npc_drone_rocket.txt"
+npc_drone_rocket_fast
+{
+	maxFlyingSpeedNonCombat	600 //120
+}

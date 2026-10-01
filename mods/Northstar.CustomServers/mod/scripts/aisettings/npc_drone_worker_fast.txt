@@ -1,0 +1,6 @@
+#base "npc_drone_worker.txt"
+npc_drone_worker_fast
+{
+	maxFlyingSpeed			400 //400
+	maxFlyingSpeedNonCombat	400 //120
+}

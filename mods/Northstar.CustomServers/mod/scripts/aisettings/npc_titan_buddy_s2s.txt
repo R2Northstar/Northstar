@@ -1,0 +1,6 @@
+#base "npc_titan_buddy.txt"
+
+npc_titan_buddy_s2s
+{
+	LookDistDefault_Combat	15000 //so he and sarah can fire on ships at the intro
+}

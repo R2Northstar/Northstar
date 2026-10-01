@@ -1,0 +1,38 @@
+#base "npc_titan_stryder_leadwall.txt"
+npc_titan_stryder_leadwall_shift_core
+{
+	BehaviorSelector			"behavior_titan_melee_core"
+
+	PainOnHeavyDamageThreshold	10000
+
+	chaseStopDist				100
+   	chaseStopDistHeavyArmor		100
+
+   	circleStrafeDist			150
+
+ 	dodgePeriod					5 	  	 	// Don't dodge more than maxDodgePerPeriod within this time
+	maxDodgePerPeriod			1 		 	// Don't dodge more than this many times in dodgePeriod
+
+	meleeInterval				0.2
+	meleeChargeInterval			0.2
+	meleeMaxCombo				8
+
+	MeleeDamageMin			500
+	MeleeDamageMax			500
+	MeleeDamageMinHeavyArmor	2000
+	MeleeDamageMaxHeavyArmor	2000
+	MeleeDamageRadius		150
+	MeleeDamageForce		3000000
+	MeleeChargeDamageForce 		3200000
+	MeleeRange				200
+	MeleeChargeRange		300
+	MeleeChargeDamageRadius		150
+	MeleeChargeDamageHeight		150
+	MeleeChargeDamageMin	600
+	MeleeChargeDamageMax	600
+	MeleeChargeDamageMinHeavyArmor	2000
+	MeleeChargeDamageMaxHeavyArmor	2000
+
+	evasiveCombatHealthChangeRateDiff	-600
+	aggresiveCombatHealthChangeRateDiff	-400
+}

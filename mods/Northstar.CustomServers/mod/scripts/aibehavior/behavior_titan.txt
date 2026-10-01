@@ -1,0 +1,81 @@
+Selector Common
+
+	SelectSchedule_MissileDodge
+	CNPC_Titan::SelectSchedule_TitanCore
+	CNPC_Titan::SelectSchedule_PhysEntKnock
+	SelectSchedule_Flinch
+	SelectSchedule_DisplaceFromDangerousArea
+	SelectSchedule_ChangeToDesiredStance
+	SelectSchedule_SyncedMeleeAttack
+	SelectSchedule_PressToInitiateSyncedMeleeAttack
+	CNPC_Titan::SelectSchedule_GotoDefensivePlacement
+	SelectSchedule_LayeredBehavior
+Selector_End
+
+
+Selector Idle
+
+	SelectSchedule_Idle
+Selector_End
+
+
+Selector Alert
+
+	SelectSchedule_Alert
+Selector_End
+
+
+Selector Combat
+
+	SelectSchedule_StrafeDodge
+	//SelectSchedule_ForwardDodge
+	SelectSchedule_MeleeAttack
+	//SelectSchedule_EvasiveLowAmmo
+	//SelectSchedule_ChaseEnemy
+	SelectSchedule_EngagementDistMax
+	SelectSchedule_CircleStrafe
+	SelectSchedule_StationaryLowAmmo
+	SelectSchedule_RangeAttackEvasive
+	SelectSchedule_RangeAttack2
+	SelectSchedule_RangeAttack
+	SelectSchedule_EngagementDistMin
+	SelectSchedule_WeaponBlocked
+	SelectSchedule_CantSeeEnemy
+	//SelectSchedule_MoveToWeaponRange
+	SelectSchedule_CombatFace
+Selector_End
+
+Selector CombatAggressive
+
+	SelectSchedule_MeleeAttack
+	SelectSchedule_StrafeDodge
+	SelectSchedule_ForwardDodge
+	SelectSchedule_ChaseEnemy
+	//SelectSchedule_CircleStrafe
+	SelectSchedule_StationaryLowAmmo
+	SelectSchedule_RangeAttackEvasive
+	SelectSchedule_RangeAttack2
+	SelectSchedule_RangeAttack
+	SelectSchedule_WeaponBlocked
+	SelectSchedule_CantSeeEnemy
+	SelectSchedule_CombatFace
+Selector_End
+
+
+Selector CombatEvasive
+
+	//SelectSchedule_FearEnemy
+	SelectSchedule_MeleeAttack
+	SelectSchedule_BackwardDodge
+	SelectSchedule_StrafeDodge
+	SelectSchedule_TakeCoverFromEnemy health > 0.1
+	SelectSchedule_CircleStrafe
+	SelectSchedule_EvasiveLowAmmo
+	SelectSchedule_RangeAttackEvasive
+	SelectSchedule_RangeAttack2
+	SelectSchedule_RangeAttack
+	SelectSchedule_EngagementDistMin
+	SelectSchedule_WeaponBlocked
+	//SelectSchedule_CantSeeEnemy
+	SelectSchedule_CombatFace
+Selector_End

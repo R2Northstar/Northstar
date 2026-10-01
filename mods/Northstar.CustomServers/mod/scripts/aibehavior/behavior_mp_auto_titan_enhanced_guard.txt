@@ -1,0 +1,38 @@
+Selector Common
+
+	SelectSchedule_FallToGround
+	SelectSchedule_MissileDodge
+	CNPC_Titan::SelectSchedule_PhysEntKnock
+	SelectSchedule_Flinch
+	SelectSchedule_DisplaceFromDangerousArea
+	SelectSchedule_ChangeToDesiredStance
+	CNPC_Titan::SelectSchedule_GotoDefensivePlacement
+	SelectSchedule_LayeredBehavior
+Selector_End
+
+
+Selector Idle
+
+	SelectSchedule_Idle
+Selector_End
+
+
+Selector Alert
+
+SelectSchedule_Alert
+Selector_End
+
+
+Selector Combat
+
+	SelectSchedule_StrafeDodge
+	SelectSchedule_MeleeAttack
+	SelectSchedule_EvasiveLowAmmo
+	SelectSchedule_ChaseEnemy
+	SelectSchedule_CircleStrafe
+	SelectSchedule_StationaryLowAmmo
+	SelectSchedule_RangeAttackEvasive
+	SelectSchedule_RangeAttack
+	SelectSchedule_WeaponBlockedByFriend
+	SelectSchedule_CombatFace
+Selector_End

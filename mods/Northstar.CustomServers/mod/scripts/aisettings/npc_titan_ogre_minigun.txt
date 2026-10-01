@@ -1,0 +1,27 @@
+#base "npc_titan_ogre.txt"
+npc_titan_ogre_minigun
+{
+	title 						#NPC_TITAN_OGRE_MINIGUN
+	WeaponCapacity				"FromLoadout"
+	npc_titan_player_settings	"titan_ogre_minigun"
+
+	BehaviorSelector			"behavior_titan_ogre_minigun"
+
+	lightPainMinInterval	4
+
+	StrafeDodgeDamage		1200
+
+	chaseStopDist			2000
+   	chaseStopDistHeavyArmor	2000
+
+	aimAngularSpeed			2
+	aimConeCos 				0.5	// 60 degree
+	aimConeCloseCos			0.5	// 60 degree
+
+	footstep_type			"legion"
+
+	DefaultModelName		"models/titans/heavy/titan_heavy_deadbolt.mdl"	[$mp]
+	DefaultModelName		"models/titans/heavy/sp_titan_heavy_deadbolt.mdl" [$sp]
+
+	windup_time 			1.0
+}

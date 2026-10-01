@@ -1,0 +1,9 @@
+weapon,name,description,image,hidden
+"titanos_bt","#TITAN_OS_BT_NAME","#TITAN_OS_BT_LONGDESC","material/ui/menu/voice_personality_icons/betty_voice_icon_gen.rpak",0
+"titanos_legion","#TITAN_OS_LEGION_NAME","#TITAN_OS_LEGION_LONGDESC","material/ui/menu/voice_personality_icons/betty_voice_icon_gen.rpak",0
+"titanos_scorch","#TITAN_OS_SCORCH_NAME","#TITAN_OS_SCORCH_LONGDESC","material/ui/menu/voice_personality_icons/betty_voice_icon_gen.rpak",0
+"titanos_ronin","#TITAN_OS_RONIN_NAME","#TITAN_OS_RONIN_LONGDESC","material/ui/menu/voice_personality_icons/betty_voice_icon_gen.rpak",0
+"titanos_northstar","#TITAN_OS_NORTHSTAR_NAME","#TITAN_NORTHSTAR_BETTY_LONGDESC","material/ui/menu/voice_personality_icons/betty_voice_icon_gen.rpak",0
+"titanos_ion","#TITAN_OS_ION_NAME","#TITAN_OS_ION_LONGDESC","material/ui/menu/voice_personality_icons/betty_voice_icon_gen.rpak",0
+"titanos_tone","#TITAN_OS_TONE_NAME","#TITAN_OS_TONE_LONGDESC","material/ui/menu/voice_personality_icons/betty_voice_icon_gen.rpak",0
+"titanos_vanguard","#TITAN_OS_VANGUARD_NAME","#TITAN_OS_VANGUARD_LONGDESC","material/ui/menu/voice_personality_icons/betty_voice_icon_gen.rpak",0

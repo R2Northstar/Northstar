@@ -1,0 +1,89 @@
+npc_pilot_elite_assassin
+{
+	HullType						"HULL_HUMAN"
+	AIClass							pilot_assassin
+	BodyType						human
+	ArmorType						normal
+	smartAmmoLockAttachmentName0	CHESTFOCUS
+	TraverseAnimType				spectre
+
+	title							#NPC_PILOT_ELITE_ASSASSIN
+
+	BaseClass						"npc_pilot_elite"
+
+	DefaultModelName				"models/Robots/spectre/spectre_ninja.mdl"
+	DefaultWeapon					"mp_weapon_r97"
+	BehaviorSelector				"behavior_pilot_elite"
+
+	Health							1500
+
+	FOV_Vert_Offset					0
+    FOV_Near_Dist					150		// distance at which we transition between near and far FOV values
+	FOV_Far_Dist					1000	// use far values after this distance, interpolate horizontal in between, use far for vertical
+
+	FOV_Idle_Near_Horz				130
+	FOV_Idle_Near_Vert				180
+	FOV_Idle_Far_Horz				60
+	FOV_Idle_Far_Vert				60
+
+	FOV_Alert_Near_Horz				130
+	FOV_Alert_Near_Vert				180
+	FOV_Alert_Far_Horz				60
+	FOV_Alert_Far_Vert				60
+
+	FOV_Combat_Near_Horz			180
+	FOV_Combat_Near_Vert			180
+	FOV_Combat_Far_Horz				130
+	FOV_Combat_Far_Vert				100
+
+	YawSpeed						30
+	MoveYawSpeed					30
+	AimAngularSpeed					20
+
+	aimassist_adspull_centerAttachmentName		"CHESTFOCUS"
+	aimassist_adspull_centerRadius				11.0
+	aimassist_adspull_headshotAttachmentName	"HEADSHOT"
+	aimassist_adspull_headshotRadius			13.0
+
+	MeleeDamageMin					70
+	MeleeDamageMax					80
+	MeleeDamageRadius				32
+	MeleeRange						80
+	MeleeCosAngleRange				0.2
+	MeleeChargeRange				220
+	MeleeChargeDamageMin			180
+	MeleeChargeDamageMax			200
+	MeleeChargeDamageRadius			70
+	meleeInterval					0
+	meleeChargeInterval				3
+	meleeImpactEffectTable			"melee_spectre"
+
+	blockPeriod						7
+	maxBlockPerPeriod				3
+
+	dodgePeriod 					4 // Don't dodge more than maxDodgePerPeriod within this time
+	maxDodgePerPeriod				2 // Don't dodge more than this many times in dodgePeriod
+	minConsecutiveDodgeTime			1.5
+	dodgeForwardThreshold			800
+	dodgeBackwardThreshold 			0
+	StrafeDodgeDamage				300
+	circleStrafeDist				400
+
+	chaseStopDist					16
+    chaseStopDistHeavyArmor			250
+
+	tauntInterval					60
+
+	MinStartMoveDist				100
+	MaxArrivalDist					150
+	MinForceWalkDist				150
+
+	leechMaxDist					0
+	showFriendlyIcon				1
+
+	decloakOnShoot					1
+
+	meleeable						1
+
+	magneticRange					125
+}

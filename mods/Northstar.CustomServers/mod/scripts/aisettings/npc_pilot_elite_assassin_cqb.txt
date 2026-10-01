@@ -1,0 +1,16 @@
+#base "npc_pilot_elite_assassin.txt"
+npc_pilot_elite_assassin_cqb
+{
+	title 					#NPC_PILOT_ELITE_ASSASSIN_CQB
+
+	BehaviorSelector		"behavior_pilot_elite_assassin_cqb"
+
+	canCloak 				1
+
+//	blockPeriod				7
+//	maxBlockPerPeriod		3
+
+	dodgePeriod 			5 // Don't dodge more than maxDodgePerPeriod within this time
+	maxDodgePerPeriod		3 // Don't dodge more than this many times in dodgePeriod
+	minConsecutiveDodgeTime	1.0
+}

@@ -1,0 +1,8 @@
+titanRef,cost,coreIcon,image
+"ion",5,"rui/titan_loadout/core/titan_core_laser","rui/menu/postgame/ion_icon"
+"scorch",5,"rui/titan_loadout/core/titan_core_flame_wave","rui/menu/postgame/scorch_icon"
+"northstar",5,"rui/titan_loadout/core/titan_core_flight","rui/menu/postgame/northstar_icon"
+"ronin",10,"rui/titan_loadout/core/titan_core_sword","rui/menu/postgame/ronin_icon"
+"tone",15,"rui/titan_loadout/core/titan_core_salvo","rui/menu/postgame/tone_icon"
+"legion",20,"rui/titan_loadout/core/titan_core_smart","rui/menu/postgame/legion_icon"
+"vanguard",200,"rui/titan_loadout/core/titan_core_vanguard","rui/menu/postgame/vanguard_icon"

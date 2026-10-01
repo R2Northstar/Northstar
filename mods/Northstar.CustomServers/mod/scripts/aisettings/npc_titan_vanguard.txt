@@ -1,0 +1,24 @@
+#base "npc_titan_buddy.txt"
+
+npc_titan_vanguard
+{
+	AIClass					titan_buddy
+	footstep_type			"buddy"
+	title 					"#NPC_TITAN_VANGUARD"		[$mp]
+	title 					"#NPC_TITAN_VANGUARD_SP"	[$sp]
+
+
+	ui_targetinfo			"ui/targetinfo_titan"       [$mp]
+	ui_targetinfo			"ui/targetinfo_titan_sp"    [$sp]
+
+	DefaultModelName			"models/titans/buddy/titan_buddy.mdl"
+	Skin						1
+	npc_titan_player_settings	"titan_buddy"
+	BehaviorSelector			"behavior_titan_buddy"
+
+	MeleeChargeRange		250
+	dodgePeriod 			8 // Don't dodge more than maxDodgePerPeriod within this time
+	maxDodgePerPeriod		2 // Don't dodge more than this many times in dodgePeriod
+
+	aiEnemy_priority		20 // lower than other titans
+}

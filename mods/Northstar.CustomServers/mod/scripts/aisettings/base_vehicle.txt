@@ -1,0 +1,35 @@
+base_vehicle
+{
+	leechAnimSet			vehicle
+	leechAnimTag			HIJACK
+	leechDataKnifeTag		KNIFE
+
+	mechanical				1
+
+	DefaultModelName		"models/vehicle/goblin_dropship/goblin_dropship.mdl"
+
+	FOV_Vert_Offset			-20
+    FOV_Near_Dist			180		// use near values up to this distance
+	FOV_Far_Dist			1000	// use far values after this distance, interpolate horizontal in between, use far for vertical
+
+	FOV_Idle_Near_Horz		180
+	FOV_Idle_Near_Vert		180
+	FOV_Idle_Far_Horz		180
+	FOV_Idle_Far_Vert		180
+
+	FOV_Alert_Near_Horz		180
+	FOV_Alert_Near_Vert		180
+	FOV_Alert_Far_Horz		180
+	FOV_Alert_Far_Vert		180
+
+	FOV_Combat_Near_Horz	180
+	FOV_Combat_Near_Vert	180
+	FOV_Combat_Far_Horz		180
+	FOV_Combat_Far_Vert		180
+
+	YawSpeed				25
+	MoveYawSpeed			15
+	AimAngularSpeed			25
+
+	PainOnHeavyDamageThreshold	0	// no heavy damage
+}

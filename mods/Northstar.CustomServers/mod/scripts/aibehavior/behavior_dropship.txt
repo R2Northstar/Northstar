@@ -1,0 +1,21 @@
+Selector Common
+	SelectSchedule_LayeredBehavior
+Selector_End
+
+
+Selector Idle
+
+	SelectSchedule_IdleStand
+Selector_End
+
+
+Selector Alert
+
+	SelectSchedule_IdleStand
+Selector_End
+
+
+Selector Combat
+
+	SelectSchedule_IdleStand
+Selector_End

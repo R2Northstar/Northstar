@@ -1,0 +1,10 @@
+#base "npc_titan.txt"
+npc_titan_arc
+{
+	title						#NPC_TITAN_ARC
+	WeaponCapacity				"Locked"
+	npc_titan_player_settings	"titan_stryder"
+	footstep_type				"stryder"
+	is_arc_titan				1
+	faceEnemyWhileMovingDist	1024
+}

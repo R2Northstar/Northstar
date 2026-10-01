@@ -1,0 +1,9 @@
+# Add 'needs code review' label to any changes within the entire repository
+needs code review:
+- changed-files:
+  - any-glob-to-any-file: '**'
+
+# Add 'needs testing' label to any changes within the entire repository
+needs testing:
+- changed-files:
+  - any-glob-to-any-file: '**'

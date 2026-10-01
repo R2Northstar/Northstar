@@ -1,0 +1,27 @@
+Selector Common
+
+	SelectSchedule_LayeredBehavior
+
+Selector_End
+
+
+Selector Idle
+
+	SelectSchedule_Idle
+
+Selector_End
+
+
+Selector Alert
+
+	SelectSchedule_Alert
+
+Selector_End
+
+
+Selector Combat
+
+	SelectSchedule_ChaseEnemy
+	SelectSchedule_CombatFace
+
+Selector_End

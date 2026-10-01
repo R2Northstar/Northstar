@@ -1,0 +1,8 @@
+#base "npc_soldier.txt"
+npc_soldier_blisk
+{
+	SettingsTitle				"Blisk"
+	DefaultModelName_IMC		"models/humans/imc_villain/blisk/imc_villain_blisk.mdl"
+	DefaultModelName_MIL		"models/humans/imc_villain/blisk/imc_villain_blisk.mdl"
+}
+

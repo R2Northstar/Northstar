@@ -1,0 +1,21 @@
+#base "npc_titan.txt"
+
+npc_titan_atlas
+{
+	footstep_type			"atlas"
+	title 					#NPC_TITAN_ATLAS
+
+	StrafeDodgeDamage		800
+	PainOnRepeatDamageThreshold		3400
+
+	dodgePeriod				8 [$sp] 	  	 	// Don't dodge more than maxDodgePerPeriod within this time
+	maxDodgePerPeriod		2 [$sp] 		 	// Don't dodge more than this many times in dodgePeriod
+
+	dodgePeriod				12 [$mp] 	  	 	// Don't dodge more than maxDodgePerPeriod within this time
+	maxDodgePerPeriod		1 [$mp] 		 	// Don't dodge more than this many times in dodgePeriod
+
+	DefaultModelName		"models/titans/medium/titan_medium_wraith.mdl" [$mp]
+	DefaultModelName		"models/titans/medium/sp_titan_medium_wraith.mdl" [$sp]
+
+	npc_titan_player_settings		"titan_atlas"
+}

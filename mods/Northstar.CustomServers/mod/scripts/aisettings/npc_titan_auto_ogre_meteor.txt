@@ -1,0 +1,11 @@
+#base "npc_titan_auto_ogre.txt"
+
+npc_titan_auto_ogre_meteor
+{
+	title 					"#NPC_TITAN_AUTO_OGRE_METEOR"
+
+	maxDodgePerPeriod		0 		 	// Don't dodge more than this many times in dodgePeriod
+	npc_titan_player_settings	"titan_ogre_meteor"
+
+	footstep_type			"scorch"
+}

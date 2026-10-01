@@ -1,0 +1,13 @@
+#base "npc_turret_mega.txt"
+npc_turret_mega_windup
+{
+	windup_time 					0.0
+	Health					8000 [$mp]
+
+	maxEnemyDist			0
+
+	Health					5000 [$sp]
+	start_active					1
+	regen_rate						100
+	explode_on_death				1
+}

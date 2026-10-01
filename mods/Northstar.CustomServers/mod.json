@@ -1,0 +1,177 @@
+{
+	"Name": "Northstar.CustomServers",
+	"Description": "Attempts to recreate the behaviour of vanilla Titanfall 2 servers, as well as changing some scripts to allow better support for mods",
+	"Version": "0.0.0.1+dev",
+	"LoadPriority": 0,
+	"ConVars": [
+		{
+			"Name": "ns_should_return_to_lobby",
+			"DefaultValue": "1"
+		},
+		{
+			"Name": "ns_allow_spectators",
+			"DefaultValue": "0",
+			"Flags": "REPLICATED"
+		},
+		{
+			"Name": "ns_private_match_last_mode",
+			"DefaultValue": "tdm"
+		},
+		{
+			"Name": "ns_private_match_last_map",
+			"DefaultValue": "mp_forwardbase_kodai"
+		},
+		{
+			"Name": "ns_private_match_only_host_can_change_settings",
+			"DefaultValue": "0"
+		},
+		{
+			"Name": "ns_private_match_only_host_can_start",
+			"DefaultValue": "0"
+		},
+		{
+			"Name": "ns_private_match_countdown_length",
+			"DefaultValue": "15"
+		},
+		{
+			"Name": "ns_private_match_override_maxplayers",
+			"DefaultValue": "1"
+		},
+		{
+			"Name": "ns_should_log_unknown_clientcommands",
+			"DefaultValue": "1"
+		},
+		{
+			"Name": "ns_allow_kill_commands",
+			"DefaultValue": "0"
+		},
+		{
+			"Name": "ns_progression_enabled",
+			"DefaultValue": "0",
+			"Flags": "ARCHIVE_PLAYERPROFILE"
+		},
+		{
+			"Name": "ns_allow_team_change",
+			"DefaultValue": "1",
+			"Flags": "REPLICATED"
+		}
+	],
+	"Scripts": [
+		{
+			"Path": "_custom_codecallbacks.gnut",
+			"RunOn": "SERVER"
+		},
+		{
+			"Path": "_northstar_cheatcommands.nut",
+			"RunOn": "SERVER",
+			"ServerCallback": {
+				"After": "NorthstarCheatCommands_Init"
+			}
+		},
+		{
+			"Path": "_chat.gnut",
+			"RunOn": "SERVER"
+		},
+		{
+			"Path": "_misc_stubs.gnut",
+			"RunOn": "SERVER && MP"
+		},
+		{
+			"Path": "_store.gnut",
+			"RunOn": "SERVER && MP"
+		},
+		{
+			"Path": "_script_movers.gnut",
+			"RunOn": "SERVER && MP"
+		},
+		{
+			"Path": "sh_northstar_utils.gnut",
+			"RunOn": "CLIENT || SERVER || UI"
+		},
+		{
+			"Path": "mp/levels/_lf_maps_shared.gnut",
+			"RunOn": "SERVER && MP"
+		},
+		{
+			"Path": "gamemodes/sh_gamemodes_custom.gnut",
+			"RunOn": "(CLIENT || SERVER) && MP"
+		},
+		{
+			"Path": "sh_remote_functions_mp_custom.gnut",
+			"RunOn": "(CLIENT || SERVER) && MP"
+		},
+		{
+			"Path": "sh_server_to_client_stringcommands.gnut",
+			"RunOn": "CLIENT || SERVER"
+		},
+		{
+			"Path": "gamemodes/_gamemode_fra.nut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+				"Before": "GamemodeFRA_AddAdditionalInitCallback"
+			}
+		},
+		{
+			"Path": "mp/_classic_mp_dropship_intro.gnut",
+			"RunOn": "SERVER && MP"
+		},
+		{
+			"Path": "mp/_classic_mp_no_intro.gnut",
+			"RunOn": "SERVER && MP"
+		},
+		{
+			"Path": "mp/_spectator.gnut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+				"After": "Spectator_Init"
+			}
+		},
+		{
+			"Path": "_loadouts_mp.gnut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+				"After": "SvLoadoutsMP_Init"
+			}
+		},
+		{
+			"Path": "lobby/sh_private_lobby_modes_init.gnut",
+			"RunOn": "( SERVER || CLIENT ) && MP"
+		},
+
+		{
+			"Path": "_respawn_protection.gnut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+				"Before": "RespawnProtection_Init"
+			}
+		},
+		{
+			"Path": "/ai/_ai_turret_sentry.gnut",
+			"RunOn": "SERVER && MP",
+			"ServerCallback": {
+				"After": "AiTurretSentry_Init"
+			}
+		},
+		{
+			"Path": "sh_progression.nut",
+			"RunOn": "UI || SERVER || CLIENT",
+			"ServerCallback": {
+				"Before": "Progression_Init"
+			},
+			"ClientCallback": {
+				"Before": "Progression_Init"
+			},
+			"UICallback": {
+				"Before": "Progression_Init"
+			}
+		},
+		{
+			"Path":  "sh_northstar_http_requests.gnut",
+			"RunOn": "CLIENT || SERVER || UI"
+		},
+		{
+			"Path": "sh_northstar_safe_io.gnut",
+			"RunOn": "CLIENT || SERVER || UI"
+		}
+	]
+}

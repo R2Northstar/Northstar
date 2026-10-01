@@ -1,0 +1,416 @@
+"lang"
+{
+	"Language" "english"
+	"Tokens"
+	{
+		// This file needs to be encoded as UTF-16 LE
+
+		"MENU_LAUNCH_NORTHSTAR" "Launch Northstar"
+		"MENU_TITLE_MODS" "Mods"
+		"RELOAD_MODS" "Reload Mods"
+		"WARNING" "Warning"
+		"CORE_MOD_DISABLE_WARNING"  "Disabling core mods can break your client!"
+		"DISABLE" "Disable"
+
+		"DIALOG_TITLE_INSTALLED_NORTHSTAR" "Thanks for installing Northstar!"
+		"AUTHENTICATION_AGREEMENT_DIALOG_TEXT" "For Northstar to work, it needs to authenticate using the Northstar master server. This will require sending your origin token to the master server, it will not be stored or used for any other purposes.
+Press Yes if you agree to this. This choice can be changed in the mods menu at any time."
+		"BACK_AUTHENTICATION_AGREEMENT" "Authentication Agreement"
+		"AUTHENTICATION_AGREEMENT" "Authentication Agreement"
+		"AUTHENTICATION_AGREEMENT_RESTART" "You will need to restart Titanfall 2 for this choice to take effect."
+
+		"DIALOG_AUTHENTICATING_MASTERSERVER" "Authenticating to master server."
+		"AUTHENTICATIONAGREEMENT_NO" "You have chosen not to authenticate with Northstar. You can view the agreement in the Mods menu."
+		"HAS_NON_VANILLA_MODS" "You currently have mods enabled (marked with a \"!\") that break vanilla compatibility. You can disable them in the Mods menu."
+
+		"MENU_TITLE_SERVER_BROWSER" "Server Browser"
+		"NS_SERVERBROWSER_NOSERVERS" "No servers found"
+		"NS_SERVERBROWSER_UNKNOWNMODE" "Unknown mode"
+		"NS_SERVERBROWSER_WAITINGFORSERVERS" "Waiting for Servers..."
+		"NS_SERVERBROWSER_CONNECTIONFAILED" "Connection failed!"
+		"REFRESH_SERVERS" "Refresh"
+
+		"MENU_TITLE_CONNECT_PASSWORD" "Connect with Password"
+		"MENU_CONNECT_MENU_CONNECT" "Connect"
+
+		"PRIVATE_MATCH_PAGE_PREV" "Previous Page"
+		"PRIVATE_MATCH_PAGE_NEXT" "Next Page"
+
+		"MENU_MATCH_SETTINGS" "Match Settings"
+		"MENU_MATCH_SETTINGS_SUBMENU" "%s1 Settings"
+
+		"PRIVATE_MATCH_SINGLEPLAYER_LEVEL" "%s1 (Singleplayer)"
+
+		// fra hint for private match menu, because fra only has PL_fra_desc in vanilla
+		"PL_fra_hint" "You're running solo. Kill enemies to win. Collect 3 batteries for a Titanfall."
+
+		// mode settings
+		"MODE_SETTING_CATEGORY_PILOT" "Pilot"
+		"MODE_SETTING_CATEGORY_TITAN" "Titan"
+		"MODE_SETTING_CATEGORY_RIFF" "Riffs"
+		"MODE_SETTING_CATEGORY_MATCH" "Match"
+
+		"classic_mp" "Classic MP"
+		"run_epilogue" "Run Epilogue"
+		"scorelimit" "Score Limit"
+		"roundscorelimit" "Score Limit (round-based)"
+		"timelimit" "Time Limit"
+		"roundtimelimit" "Time Limit (round-based)"
+		"respawnprotection" "Respawn Protection Time"
+
+		"pilot_health_multiplier" "Health multiplier"
+		"respawn_delay" "Respawn Delay"
+		"boosts_enabled" "Boosts"
+		"earn_meter_pilot_overdrive" "Boost meter overdrive"
+		"earn_meter_pilot_multiplier" "Pilot boost meter multiplier"
+
+		"earn_meter_titan_multiplier" "Titan boost meter multiplier"
+		"aegis_upgrades" "Aegis Upgrades"
+		"infinite_doomed_state" "Infinite Doom State"
+		"titan_shield_regen" "Regenerating Shields"
+
+		"riff_floorislava" "Deadly Ground"
+		"featured_mode_all_holopilot" "The Great Bamboozle"
+		"featured_mode_all_grapple" "Attack on Titanfall"
+		"featured_mode_all_phase" "The Otherside"
+		"featured_mode_all_ticks" "Spicy"
+		"featured_mode_tactikill" "Tactikill"
+		"featured_mode_amped_tacticals" "Amped Tacticals"
+		"featured_mode_rocket_arena" "Rocket Arena"
+		"featured_mode_shotguns_snipers" "Armed and Dangerous"
+		"iron_rules" "Iron Titan Rules"
+
+		"cp_amped_capture_points" "Amped Hardpoints"
+		"coliseum_loadouts_enabled" "Coliseum Loadouts"
+    
+		"aitdm_archer_grunts" "Archer Grunts"
+    
+		// northstar.custom localisation is just deciding not to work, so putting it here for now
+		"PL_sbox" "Sandbox"
+		"PL_sbox_lobby" "Sandbox Lobby"
+		"PL_sbox_desc" "like gmod but worse"
+		"PL_sbox_abbr" "SBOX"
+		"GAMEMODE_SBOX" "Sandbox"
+
+		"PL_gg" "Gun Game"
+		"PL_gg_lobby" "Gun Game Lobby"
+		"PL_gg_desc" "Get a kill with each gun to win."
+		"PL_gg_hint" "Get a kill with each gun to win."
+		"PL_gg_abbr" "GG"
+		"GAMEMODE_GG" "Gun Game"
+		"gg_kill_reward" "Kill Percentage Reward"
+		"gg_assist_reward" "Assist Percentage Reward"
+		"gg_execution_reward" "Execution Percentage Reward"
+
+		"PL_tt" "Titan Tag"
+		"PL_tt_lobby" "Titan Tag Lobby"
+		"PL_tt_desc" "Earn points while in your titan. Destroy a titan to get your own."
+		"PL_tt_hint" "Earn points while in your titan. Destroy a titan to get your own."
+		"PL_tt_abbr" "TT"
+		"GAMEMODE_TT" "Titan Tag"
+
+		"PL_chamber" "One in the Chamber"
+		"PL_chamber_lobby" "One in the Chamber Lobby"
+		"PL_chamber_desc" "One Shot, One Kill. Get another bullet in your clip by scoring a kill."
+		"PL_chamber_hint" "One Shot, One Kill. Get another bullet in your clip by scoring a kill."
+		"PL_chamber_abbr" "CHAMBER"
+		"GAMEMODE_CHAMBER" "One in the Chamber"
+
+		"PL_hidden" "The Hidden"
+		"PL_hidden_lobby" "The Hidden Lobby"
+		"PL_hidden_desc" "One player is invisible. The Hidden hunts."
+		"PL_hidden_hint" "One player is invisible. The Hidden hunts."
+		"PL_hidden_abbr" "HIDDEN"
+		"GAMEMODE_HIDDEN" "The Hidden"
+		"HIDDEN_YOU_ARE_HIDDEN" "You are The Hidden!"
+		"HIDDEN_KILL_SURVIVORS" "Kill all survivors."
+		"HIDDEN_FIRST_HIDDEN" "%s1 is the The Hidden."
+
+		"PL_sns" "Sticks and Stones"
+		"PL_sns_lobby" "Sticks and Stones Lobby"
+		"PL_sns_desc" "Free For All. Use Pulse Blades and Executions to Reset Enemy Score"
+		"PL_sns_abbr" "SNS"
+		"GAMEMODE_SNS" "Sticks and Stones"
+		"SCOREBOARD_BANKRUPTS" "Bankrupt Kills"
+		"SNS_LEADER_BANKRUPT" "Score Leader Bankrupt!"
+		"SNS_LEADER_BANKRUPT_SUB" "%s1 Was Reset By %s2"
+		"SNS_BANKRUPT" "Bankrupt!"
+		"SNS_BANKRUPT_SUB" "Your Score Was Reset By %s1"
+		"sns_wme_kill_value" "Wingman Elite Kill Value"
+		"sns_softball_kill_value" "Softball Kill Value"
+		"sns_offhand_kill_value" "Offhand Kill Value"
+		"sns_reset_kill_value" "Pulse/Execution Kill Value"
+		"sns_melee_kill_value" "Melee Kill Value"
+		"sns_reset_pulse_blade_cooldown_on_pulse_blade_kill" "Kill Cooldown Resets"
+		"sns_softball_enabled" "Softball Enabled"
+
+		"PL_inf" "Infection"
+		"PL_inf_lobby" "Infection Lobby"
+		"PL_inf_desc" "Survive the infection. Survivors are infected when killed."
+		"PL_inf_hint" "Survive the infection. Survivors are infected when killed."
+		"PL_inf_abbr" "INF"
+		"GAMEMODE_INF" "Infection"
+		"INFECTION_YOU_ARE_INFECTED" "You've been Infected!"
+		"INFECTION_KILL_SURVIVORS" "Infect All Remaining Survivors."
+		"INFECTION_FIRST_INFECTED" "%s1 is the First Infected."
+		"INFECTION_LAST_SURVIVOR" "%s1 is the Last Survivor!"
+		"INFECTION_KILL_LAST_SURVIVOR" "Infect them before time runs out!"
+		"INFECTION_YOU_ARE_LAST_SURVIVOR" "You are the Last Survivor!"
+		"INFECTION_SURVIVE_LAST_SURVIVOR" "Survive."
+
+		"PL_tffa" "Titan Free for All"
+		"PL_tffa_lobby" "Titan Free for All Lobby"
+		"PL_tffa_desc" "Every pilot for themselves, destroy all enemy titans."
+		"PL_tffa_hint" "Every pilot for themselves, destroy all enemy titans."
+		"PL_tffa_abbr" "TFFA"
+		"GAMEMODE_TFFA" "Titan Free for All"
+
+		"PL_hs" "Hide and Seek"
+		"PL_hs_lobby" "Hide and Seek Lobby"
+		"PL_hs_desc" "Hiders hide, seekers try to find them."
+		"PL_hs_hint" "Hiders hide, seekers try to find them."
+		"PL_hs_abbr" "HS"
+		"GAMEMODE_hs" "Hide and Seek"
+		"HIDEANDSEEK_YOU_ARE_SEEKER" "YOU ARE A SEEKER"
+		"HIDEANDSEEK_SEEKER_DESC" "Find hiders and melee them.\nYou will spawn in %s1 seconds"
+		"HIDEANDSEEK_YOU_ARE_HIDER" "YOU ARE A HIDER"
+		"HIDEANDSEEK_HIDER_DESC" "Hide from seekers."
+		"HIDEANDSEEK_SEEKERS_INCOMING" "SEEKERS INCOMING"
+		"HIDEANDSEEK_DONT_GET_FOUND" "Dont get found!"
+		"HIDEANDSEEK_GET_LAST_HIDER" "%s1 IS THE LAST HIDER"
+		"HIDEANDSEEK_YOU_ARE_LAST_HIDER" "YOU ARE THE LAST HIDER"
+		"HIDEANDSEEK_GOT_STIM" "You are stimmed! Don't get caught!"
+		"hideandseek_balance_teams" "Autobalance Hiders/Seekers"
+		"hideandseek_hiding_time" "Hiding time"
+
+		// these are defined in r1_english but titan war is a shit name so i'm changing it to another one that was referenced in development
+		"GAMEMODE_fw" "Frontier War"
+		"PL_fw" "Frontier War"
+		"PL_fw_lobby" "Frontier War Lobby"
+		"PL_fw_desc" "Destroy the enemy's harvester and protect your own"
+		"PL_fw_abbr" "FW"
+
+		"GAMEMODE_kr" "Amped Killrace"
+		"PL_kr" "Amped Killrace"
+		"PL_kr_lobby" "Amped Killrace Lobby"
+		"PL_kr_desc" "Get kills to increase the length of your killrace. Collect the flag to start it. Set the kill record to win."
+		"PL_kr_hint" "Get kills to increase the length of your killrace. Collect the flag to start it. Set the kill record to win."
+		"PL_kr_abbr" "KR"
+		"SCOREBOARD_KR_RECORD" "Kill Record"
+		"KR_NEW_RACER" "%s1 is the amped killracer"
+		"KR_YOU_ARE_NEW_RACER" "You are the amped killracer"
+		"KR_YOU_SET_NEW_RECORD" "Set a New Kill Record!"
+		"KR_FLAG_INCOMING" "Flag incoming"
+		"KR_COLLECT_FLAG" "Collect it to become the Killracer!"
+		"KR_ENEMY_KILLRACE_OVER" "%s1's killrace is over"
+		"KR_YOUR_KILLRACE_OVER" "Your killrace is over"
+		"KR_YOUR_KILLRACE_SCORE" "You got %s1 kills."
+
+		"GAMEMODE_fastball" "Fastball"
+		"PL_fastball" "Fastball"
+		"PL_fastball_lobby" "Fastball Lobby"
+		"PL_fastball_desc" "Permadeath. Hack control panels to win rounds and respawn your teammates."
+		"PL_fastball_hint" "Permadeath. Hack control panels to win rounds and respawn your teammates."
+		"PL_fastball_abbr" "FB"
+		"FASTBALL_PANEL_CAPTURED" "%s1 captured panel %s2"
+		"SCOREBOARD_FASTBALL_HACKS" "Panels Captured"
+
+		"GAMEMODE_ctf_comp" "Competitive CTF"
+
+		// mode settings
+		"MODE_SETTING_CATEGORY_PROMODE" "Promode"
+		"MODE_SETTING_CATEGORY_BLEEDOUT" "Pilot Bleedout"
+
+		"custom_air_accel_pilot" "Air Acceleration"
+		"no_pilot_collision" "Inter-Pilot Collision"
+		"promode_enable" "Promode Weapons"
+		"fp_embark_enabled" "Firstperson embarks/executions"
+		"classic_rodeo" "Classic Rodeo"
+		"oob_timer_enabled" "Out of Bounds Timer"
+		"riff_instagib" "Instagib Mode"
+		"player_force_respawn" "Forced Respawn"
+
+		"riff_player_bleedout" "Pilot Bleedout"
+		"player_bleedout_forceHolster" "Holster weapons when downed"
+		"player_bleedout_forceDeathOnTeamBleedout" "Die on team bleedout"
+		"player_bleedout_bleedoutTime" "Bleedout time"
+		"player_bleedout_firstAidTime" "First aid time"
+		"player_bleedout_firstAidTimeSelf" "Self-res time"
+		"player_bleedout_firstAidHealPercent" "First aid health percentage"
+		"player_bleedout_aiBleedingPlayerMissChance" "Downed AI miss chance"
+		"BLEEDOUT_CALL_HELP" "You're bleeding out!"
+
+		// coop stuff
+		"PL_sp_coop" "(UNFINISHED) Singleplayer Coop"
+		"PL_sp_coop_lobby" "Singleplayer Coop Lobby"
+		"PL_sp_coop_desc" "Play through the singleplayer campaign with friends"
+		"PL_sp_coop_hint" "Play through the singleplayer campaign with friends"
+		"PL_sp_coop_abbr" "SP"
+
+		"SP_TRAINING" "The Pilot's Gauntlet"
+		"SP_TRAINING_CLASSIC_DESC" "Captain Lastimosa's training simulation."
+
+		"SP_CRASHSITE" "BT-7274"
+		"SP_CRASHSITE_CLASSIC_DESC" "Jack Cooper meets BT-7274."
+
+		"SP_SEWERS1" "Blood and Rust"
+		"SP_SEWERS1_CLASSIC_DESC" "Cooper and BT set out to rendezvous with Major Anderson."
+
+		"SP_BOOMTOWN_START" "Into the Abyss"
+		"SP_BOOMTOWN_START_CLASSIC_DESC" "An underground shortcut yields unexpected consequences."
+
+		"SP_HUB_TIMESHIFT" "Effect and Cause"
+		"SP_HUB_TIMESHIFT_CLASSIC_DESC" "A strange phenomenon is discovered at Major Anderson's coordinates."
+
+		"SP_BEACON" "The Beacon"
+		"SP_BEACON_CLASSIC_DESC" "Cooper and BT attempt to inform the remaining fleet of the IMC's plans."
+
+		"SP_TDAY" "Trial by Fire"
+		"SP_TDAY_CLASSIC_DESC" "Cooper's Titan skills are put to the test in an all-out battle to capture the Ark"
+
+		"SP_S2S" "The Ark"
+		"SP_S2S_CLASSIC_DESC" "Cooper and BT go ship to ship in pursuit of the Ark."
+
+		"SP_SKYWAY_V1" "The Fold Weapon"
+		"SP_SKYWAY_V1_CLASSIC_DESC" "BT and Cooper are captured by Kuben Blisk."
+
+		// Better.Serverbrowser
+		"SERVERS_COLUMN" "Servers"
+		"PLAYERS_COLUMN" "Players"
+		"MAP_COLUMN" "Map"
+		"GAMEMODE_COLUMN" "Gamemode"
+		"REGION_COLUMN" "Region"
+		"SEARCHBAR_LABEL" "Search:"
+		"MAP_FILTER" "Map"
+		"GAMEMODE_FILTER" "Gamemode"
+		"HIDE_FULL_FILTER" "Hide Full Servers"
+		"HIDE_EMPTY_FILTER" "Hide Empty Servers"
+		"HIDE_PROT_FILTER" "Hide Protected Servers"
+		"SERVER_DESCRIPTION" "Description"
+		"SERVER_MODS" "Mods"
+		"CLEAR_FILTERS" "CLEAR"
+		"JOIN_BUTTON" "JOIN"
+
+		"SWITCH_YES" "Yes"
+		"SWITCH_NO" "No"
+		"SWITCH_ANY" "Any"
+
+		"CONNECTING" "Connecting..."
+		"INGAME_PLAYERS" "Players: ^6BA6C400%s1"
+		"TOTAL_SERVERS" "Servers: ^C46C6C00%s1"
+
+		// Mods menu
+		"SHOW" "Show"
+		"SHOW_ALL" "All"
+		"SHOW_ONLY_ENABLED" "Only Enabled"
+		"SHOW_ONLY_DISABLED" "Only Disabled"
+		"SHOW_ONLY_NOT_REQUIRED" "Only Optional Mods"
+		"SHOW_ONLY_REQUIRED" "Only Required Mods"
+		"MOD_REQUIRED_WARNING" " : This mod may get (un)loaded when joining a server"
+
+		// Maps menu
+		"HIDE_LOCKED" "Hide locked"
+
+		// In-game chat
+		"HUD_CHAT_WHISPER_PREFIX" "[WHISPER]"
+		"HUD_CHAT_SERVER_PREFIX" "[SERVER]"
+		
+		// Team Switching
+		"TEAMSWITCH_GAMEMODE"			"Gamemode does not allow Team Switching"
+		"TEAMSWITCH_BUFFER"				"Team Switching is on Cooldown"
+		"TEAMSWITCH_GAMEPLAY"			"Team change not allowed outside playing phase"
+		"TEAMSWITCH_DISABLED"			"Current gamemode doesn't support team change"
+
+		"NO_GAMESERVER_RESPONSE" 		"Couldn't reach game server"
+		"BAD_GAMESERVER_RESPONSE" 		"Game server gave an invalid response"
+		"UNAUTHORIZED_GAMESERVER" 		"Game server is not authorized to make that request"
+		"UNAUTHORIZED_GAME"				"Stryder couldn't confirm that this account owns Titanfall 2"
+		"UNAUTHORIZED_PWD" 				"Wrong password"
+		"STRYDER_RESPONSE" 				"Couldn't parse stryder response"
+		"PLAYER_NOT_FOUND" 				"Couldn't find player account"
+		"INVALID_MASTERSERVER_TOKEN" 	"Invalid or expired masterserver token, try restarting EA App."
+		"JSON_PARSE_ERROR" 				"Error parsing json response"
+		"UNSUPPORTED_VERSION" 			"The version you are using is no longer supported"
+
+		// Mode menu
+		"MODE_MENU_PVPVE"		"PvPvE"
+		"MODE_MENU_PVE"			"PvE"
+		"MODE_MENU_PVP"			"PvP"
+		"MODE_MENU_FFA"			"FFA"
+		"MODE_MENU_TITAN_ONLY"	"Titan Only"
+		"MODE_MENU_OTHER"		"Other"
+		"MODE_MENU_CUSTOM"		"Custom"
+		"MODE_MENU_ALL"			"All"
+		"MODE_MENU_UNKNOWN"		"Unknown"
+		"MODE_MENU_SWITCH"		"Filter"
+
+		"AUTHENTICATION_FAILED_HEADER"		"Authentication Failed"
+		"AUTHENTICATION_FAILED_BODY"		"Failed to authenticate with Atlas!"
+		"AUTHENTICATION_FAILED_ERROR_CODE"	"Error code: ^DB6F2C00%s1^"
+		"AUTHENTICATION_FAILED_HELP"		"Help"
+		
+		// Mod Settings
+		"MOD_SETTINGS"					"Mod Settings"
+		"NORTHSTAR_BASE_SETTINGS"		"Northstar Base Settings"
+		"ONLY_HOST_MATCH_SETTINGS"		"Only Host can change Private Match settings"
+		"ONLY_HOST_CAN_START_MATCH"		"Only Host can Start the Match"
+		"MATCH_COUNTDOWN_LENGTH"		"Private Match Countdown Duration"
+		"LOG_UNKNOWN_CLIENTCOMMANDS"	"Log Unknown Client Commands"
+		"DISALLOWED_TACTICALS"			"Prohibited Tacticals"
+		"TACTICAL_REPLACEMENT"			"Replacement Tactical"
+		"DISALLOWED_WEAPONS"			"Prohibited Weapons"
+		"REPLACEMENT_WEAPON"			"Replacement Weapon"
+		"SHOULD_RETURN_TO_LOBBY"		"Return To Lobby After Match End"
+		"ARE_YOU_SURE"					"Are you sure?"
+		"WILL_RESET_ALL_SETTINGS"		"This will reset ALL settings that belong to this category.\n\nThis is not revertable."
+		"WILL_RESET_SETTING"			"This will reset the %s1 setting to it's default value.\n\nThis is not revertable."
+		"MOD_SETTINGS_SERVER"			"Server"
+		"MOD_SETTINGS_RESET"			"Reset"
+		"MOD_SETTINGS_RESET_ALL"		"Reset All"
+		"NO_RESULTS"					"No results."
+		"NO_MODS"						"No settings available! Install more mods at ^5588FF00northstar.thunderstore.io^0."
+
+		// Toggleable progression
+		"TOGGLE_PROGRESSION"			"Toggle Progression"
+		"Y_BUTTON_TOGGLE_PROGRESSION"	"%[Y_BUTTON|]% Toggle Progression"
+
+		"PROGRESSION_TOGGLE_VANILLA" "Progression cannot be disabled on vanilla servers."
+
+		"PROGRESSION_TOGGLE_ENABLED_HEADER" "Disable Progression?"
+		"PROGRESSION_TOGGLE_ENABLED_BODY" "Titans, Weapons, Factions, Skins, etc. will all be unlocked and usable at any time.\n\nThis can be changed at any time in the multiplayer lobby."
+
+		"PROGRESSION_TOGGLE_DISABLED_HEADER" "Enable Progression?"
+		"PROGRESSION_TOGGLE_DISABLED_BODY" "Titans, Weapons, Factions, Skins, etc. will need to be unlocked by levelling up, or bought with Merits.\n\nThis can be changed at any time in the multiplayer lobby.\n\n^CC000000Warning: if you have currently equipped any items that you do not have unlocked, they will be reset!"
+
+		"PROGRESSION_ENABLED_HEADER"	"Progression Enabled!"
+		"PROGRESSION_ENABLED_BODY"		"^CCCC0000Progression has been enabled.^\n\nTitans, Weapons, Factions, Skins, etc. will need to be unlocked by levelling up, or bought with Merits.\n\nThis can be changed at any time in the multiplayer lobby."
+
+		"PROGRESSION_DISABLED_HEADER"	"Progression Disabled!"
+		"PROGRESSION_DISABLED_BODY"		"^CCCC0000Progression has been disabled.^\n\nTitans, Weapons, Factions, Skins, etc. will all be unlocked and usable at any time.\n\nThis can be changed at any time in the multiplayer lobby."
+	
+		"PROGRESSION_ANNOUNCEMENT_BODY"	"^CCCC0000Progression can now be enabled!^\n\nNorthstar now supports vanilla progression, meaning you can choose to unlock Weapons, Skins, Titans, etc. through levelling up and completing challenges.\n\nYou can enable progression using the button at the bottom of the lobby screen.\n\nThis can be changed at any time."
+	
+		// Mod downloading
+		"MISSING_MOD"						"Missing mod \"%s1\" v%s2"
+		"WRONG_MOD_VERSION"					"Server has mod \"%s1\" v%s2 while you have v%s3"
+		"MOD_NOT_VERIFIED"					"(mod is not verified, and couldn't be downloaded automatically)"
+		"MOD_DL_DISABLED"					"(automatic mod downloading is disabled)"
+		"MANIFESTO_FETCHING_TITLE"			"Setting up mod download"
+		"MANIFESTO_FETCHING_TEXT"			"Retrieving the list of verified mods..."
+		"DOWNLOADING_MOD_TITLE"				"Downloading mod"
+		"DOWNLOADING_MOD_TITLE_W_PROGRESS" 	"Downloading mod (%s1%)"
+		"DOWNLOADING_MOD_TEXT"				"Downloading %s1 v%s2..."
+		"DOWNLOADING_MOD_TEXT_W_PROGRESS"	"Downloading %s1 v%s2...\n(%s3/%s4 MB)"
+		"CHECKSUMING_TITLE"					"Verifying mod integrity"
+		"CHECKSUMING_TEXT"					"Validating files of %s1 v%s2..."
+		"EXTRACTING_MOD_TITLE"				"Extracting mod (%s1%)"
+		"EXTRACTING_MOD_TEXT"				"Extracting %s1 v%s2...\n(%s3/%s4 MB)"
+		"FAILED_DOWNLOADING"				"Failed downloading mod"
+		"FAILED_READING_ARCHIVE"			"An error occurred while reading mod archive."
+		"FAILED_WRITING_TO_DISK"			"An error occurred while extracting mod files to the filesystem."
+		"MOD_FETCHING_FAILED"				"Mod archive could not be downloaded from Thunderstore."
+		"MOD_CORRUPTED"						"Downloaded archive checksum does not match verified signature."
+		"NO_DISK_SPACE_AVAILABLE"			"There is not enough space on your disk."
+		"MOD_FETCHING_FAILED_GENERAL"		"Mod extraction failed. Check logs for more details."
+	}
+}

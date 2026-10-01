@@ -1,0 +1,14 @@
+ref,name,description,image,hidden,cost
+"execution_neck_snap","#PILOT_EXECUTION_NECK_SNAP","#PILOT_EXECUTION_NECK_SNAP_DESC","rui/pilot_loadout/execution/execution_neck_snap",0,0
+"execution_face_stab","#PILOT_EXECUTION_FACE_STAB","#PILOT_EXECUTION_FACE_STAB_DESC","rui/pilot_loadout/execution/execution_face_stab",0,300
+"execution_backshot","#PILOT_EXECUTION_BACK_SHOT","#PILOT_EXECUTION_BACK_SHOT_DESC","rui/pilot_loadout/execution/execution_backshot",0,300
+"execution_combo","#PILOT_EXECUTION_COMBO","#PILOT_EXECUTION_COMBO_DESC","rui/pilot_loadout/execution/execution_combo",0,300
+"execution_knockout","#PILOT_EXECUTION_KNOCKOUT","#PILOT_EXECUTION_KNOCKOUT_DESC","rui/pilot_loadout/execution/execution_knockout",0,300
+"execution_telefrag","#PILOT_EXECUTION_TELEFRAG","#PILOT_EXECUTION_TELEFRAG_DESC","rui/pilot_loadout/execution/execution_inner_pieces",0,0
+"execution_stim","#PILOT_EXECUTION_STIM","#PILOT_EXECUTION_STIM_DESC","rui/pilot_loadout/execution/execution_straight_blast",0,0
+"execution_grapple","#PILOT_EXECUTION_GRAPPLE","#PILOT_EXECUTION_GRAPPLE_DESC","rui/pilot_loadout/execution/execution_grapple",0,0
+"execution_pulseblade","#PILOT_EXECUTION_PULSEBLADE","#PILOT_EXECUTION_PULSEBLADE_DESC","rui/pilot_loadout/execution/execution_pulseblade",0,0
+"execution_random","#PILOT_EXECUTION_RANDOM","#PILOT_EXECUTION_RANDOM_DESC","rui/pilot_loadout/execution/execution_random",0,0
+"execution_cloak","#PILOT_EXECUTION_CLOAK","#PILOT_EXECUTION_CLOAK_DESC","rui/pilot_loadout/execution/execution_now_you_see_me",0,0
+"execution_holopilot","#PILOT_EXECUTION_HOLOPILOT","#PILOT_EXECUTION_HOLOPILOT_DESC","rui/pilot_loadout/execution/execution_holopilot",0,0
+"execution_ampedwall","#PILOT_EXECUTION_AMPEDWALL","#PILOT_EXECUTION_AMPEDWALL_DESC","rui/pilot_loadout/execution/execution_amped_wall",0,0

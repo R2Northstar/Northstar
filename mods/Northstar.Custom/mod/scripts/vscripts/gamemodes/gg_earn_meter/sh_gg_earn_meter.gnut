@@ -1,0 +1,34 @@
+global function Sh_GGEarnMeter_Init
+
+struct
+{
+	bool callbackAdded = false
+	array<string> gamemodes
+} file
+
+void function Sh_GGEarnMeter_Init( string gamemode )
+{
+	file.gamemodes.append( gamemode )
+
+	if ( !file.callbackAdded )
+	{
+		file.callbackAdded = true
+		AddCallback_OnRegisteringCustomNetworkVars( RegisterSharedNetwork )
+	}
+
+	#if SERVER
+		Sv_GGEarnMeter_Init()
+	#endif
+}
+
+void function RegisterSharedNetwork()
+{
+	if ( !( file.gamemodes.contains( GAMETYPE ) ) )
+		return
+
+	RegisterNetworkedVariable( "gunGameLevelPercentage", SNDC_PLAYER_EXCLUSIVE, SNVT_FLOAT_RANGE, 0.0, 0.0, 1.0 )
+
+	#if CLIENT
+		Cl_GGEarnMeter_RegisterNetwork()
+	#endif
+}

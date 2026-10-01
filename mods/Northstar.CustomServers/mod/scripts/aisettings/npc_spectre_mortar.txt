@@ -1,0 +1,45 @@
+#base "npc_spectre.txt"
+npc_spectre_mortar
+{
+    title							#NPC_SPECTRE_MORTAR
+
+	minGoalRadius					8
+	assaultHarvester                0
+
+    "mp" [$mp]
+    {
+        crouchCombatDistInner	300
+        crouchCombatDistOuter	350
+
+        FOV_Alert_Far_Horz		100
+        FOV_Alert_Far_Vert		180
+        FOV_Alert_Near_Horz		130
+        FOV_Alert_Near_Vert		120
+        FOV_Combat_Far_Horz		100
+        FOV_Combat_Far_Vert		120
+        FOV_Combat_Near_Horz	130
+        FOV_Combat_Near_Vert	180
+        FOV_Idle_Far_Horz		100
+        FOV_Idle_Far_Vert		60
+        FOV_Idle_Near_Horz		130
+        FOV_Idle_Near_Vert		180
+    }
+    "sp" [$sp]
+    {
+        crouchCombatDistInner	300
+        crouchCombatDistOuter	350
+
+        FOV_Alert_Far_Horz		100
+        FOV_Alert_Far_Vert		60
+        FOV_Alert_Near_Horz		130
+        FOV_Alert_Near_Vert		180
+        FOV_Combat_Far_Horz		100
+        FOV_Combat_Far_Vert		60
+        FOV_Combat_Near_Horz	130
+        FOV_Combat_Near_Vert	180
+        FOV_Idle_Far_Horz		100
+        FOV_Idle_Far_Vert		60
+        FOV_Idle_Near_Horz		130
+        FOV_Idle_Near_Vert		180
+    }
+}

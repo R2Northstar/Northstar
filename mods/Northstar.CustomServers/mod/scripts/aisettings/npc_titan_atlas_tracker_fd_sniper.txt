@@ -1,0 +1,7 @@
+#base "npc_titan_atlas_tracker.txt"
+npc_titan_atlas_tracker_fd_sniper
+{
+	title 						#NPC_TITAN_SNIPER_FD
+	minGoalRadius			100
+	assaultHarvester                0
+}

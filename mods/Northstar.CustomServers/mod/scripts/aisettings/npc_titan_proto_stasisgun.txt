@@ -1,0 +1,8 @@
+#base "npc_titan.txt"
+
+npc_titan_proto_stasisgun
+{
+	title 					#NPC_TITAN_PROTO_STASISGUN
+
+	BehaviorSelector		"behavior_sp_npc_titan_proto_stasisgun"
+}

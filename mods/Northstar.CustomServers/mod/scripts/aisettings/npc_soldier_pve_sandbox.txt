@@ -1,0 +1,7 @@
+#base "npc_soldier.txt"
+
+npc_soldier_pve_sandbox
+{
+    title					"Grunt"
+    returnToIdleTime		3
+}

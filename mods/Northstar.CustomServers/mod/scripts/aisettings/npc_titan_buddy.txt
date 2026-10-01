@@ -1,0 +1,25 @@
+#base "npc_titan.txt"
+
+npc_titan_buddy
+{
+	AIClass					titan_buddy
+	footstep_type			"buddy"
+	title 					#NPC_BT_NAME
+
+	ui_targetinfo			""       [$mp]
+	ui_targetinfo			"ui/targetinfo_cockpit_name"    [$sp]
+
+	DefaultModelName		"models/titans/buddy/titan_buddy.mdl"
+	npc_titan_player_settings		"titan_buddy"
+	BehaviorSelector		"behavior_titan_buddy"
+
+	dodgeForwardThreshold	2500
+
+	nonCombatTurnAnimsOnlyForIdle	1
+	allowPatrol				0
+
+	MeleeChargeRange		100
+
+	returnToIdleTime		3
+	can_traverse 			1
+}

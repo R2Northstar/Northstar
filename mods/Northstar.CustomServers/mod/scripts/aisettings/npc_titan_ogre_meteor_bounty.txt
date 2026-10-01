@@ -1,0 +1,5 @@
+#base "npc_titan_ogre_meteor.txt"
+npc_titan_ogre_meteor_bounty
+{
+	ui_targetinfo			"ui/targetinfo_titan_bounty" [$mp]
+}

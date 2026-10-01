@@ -1,0 +1,11 @@
+name,suit,race,primary,primaryAttachment,primaryMod1,primaryMod2,primaryMod3,secondary,secondaryMod1,secondaryMod2,secondaryMod3,weapon3,weapon3Mod1,weapon3Mod2,weapon3Mod3,ordnance,passive1,passive2
+"#DEFAULT_PILOT_1","grapple","race_human_male","mp_weapon_rspn101","","","","","mp_weapon_defender","","","","mp_weapon_autopistol","","","","mp_weapon_frag_grenade","pas_power_cell","pas_enemy_death_icons"
+"#DEFAULT_PILOT_2","medium","race_human_female","mp_weapon_car","","","","","mp_weapon_mgl","","","","mp_weapon_autopistol","","","","mp_weapon_grenade_emp","pas_fast_health_regen","pas_wallhang"
+"#DEFAULT_PILOT_3","grapple","race_human_female","mp_weapon_lmg","","","","","mp_weapon_defender","","","","mp_weapon_autopistol","","","","mp_weapon_thermite_grenade","pas_fast_health_regen","pas_enemy_death_icons"
+"#DEFAULT_PILOT_4","medium","race_human_male","mp_weapon_shotgun","","","","","mp_weapon_defender","","","","mp_weapon_autopistol","","","","mp_weapon_frag_grenade","pas_power_cell","pas_wallhang"
+"#DEFAULT_PILOT_5","geist","race_human_female","mp_weapon_sniper","","","","","mp_weapon_defender","","","","mp_weapon_autopistol","","","","mp_weapon_grenade_emp","pas_power_cell","pas_enemy_death_icons"
+"#DEFAULT_PILOT_6","grapple","race_human_female","mp_weapon_smr","","","","","mp_weapon_defender","","","","mp_weapon_semipistol","","","","mp_weapon_thermite_grenade","pas_fast_health_regen","pas_wallhang"
+"#DEFAULT_PILOT_7","medium","race_human_female","mp_weapon_rspn101","","","","","mp_weapon_mgl","","","","mp_weapon_autopistol","","","","mp_weapon_grenade_emp","pas_power_cell","pas_enemy_death_icons"
+"#DEFAULT_PILOT_8","grapple","race_human_male","mp_weapon_car","","","","","mp_weapon_defender","","","","mp_weapon_autopistol","","","","mp_weapon_thermite_grenade","pas_fast_health_regen","pas_wallhang"
+"#DEFAULT_PILOT_9","grapple","race_human_male","mp_weapon_sniper","","","","","mp_weapon_defender","","","","mp_weapon_semipistol","","","","mp_weapon_frag_grenade","pas_power_cell","pas_enemy_death_icons"
+"#DEFAULT_PILOT_10","geist","race_human_male","mp_weapon_smr","","","","","mp_weapon_defender","","","","mp_weapon_autopistol","","","","mp_weapon_grenade_emp","pas_fast_health_regen","pas_wallhang"
