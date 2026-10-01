@@ -103,7 +103,8 @@
               toolchain =
                 plugins.pkgs-cross.pkgsBuildHost.rust-bin.nightly."${
                   (nixpkgs.lib.last (
-                    builtins.split "nightly-" (fromTOML (builtins.readFile ./plugins/rust-toolchain.toml)).toolchain.channel
+                    builtins.split "nightly-" (fromTOML (builtins.readFile ./plugins/rust-toolchain.toml))
+                    .toolchain.channel
                   ))
                 }".default;
             };

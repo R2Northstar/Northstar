@@ -3,11 +3,11 @@
 use std::num::NonZeroU32;
 
 use discord_sdk::{
-    activity::{events::ActivityEvent, ActivityBuilder, Assets, JoinRequestReply, PartyPrivacy},
+    Discord, DiscordApp, Subscriptions,
+    activity::{ActivityBuilder, Assets, JoinRequestReply, PartyPrivacy, events::ActivityEvent},
     user::User,
     wheel::UserState,
     wheel::Wheel,
-    Discord, DiscordApp, Subscriptions,
 };
 use rrplug::{mid::utils::try_cstring, prelude::*};
 use tokio::sync::broadcast::Receiver;
