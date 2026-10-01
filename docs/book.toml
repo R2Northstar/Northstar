@@ -1,0 +1,13 @@
+# This file configures `mdbook` which is used for rendering wiki locally
+# See the main README.md for more info
+
+[book]
+language = "en"
+multilingual = false
+src = "docs"
+title = "Northstar Wiki"
+
+[output.html]
+
+[output.linkcheck]
+optional = true

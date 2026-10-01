@@ -1,0 +1,570 @@
+@keyframes anim_glow
+{
+    0%
+    {
+        filter: drop-shadow( 0px 0px 5px #e9e4e6);
+    }
+    50%
+    {
+        filter: drop-shadow( 0px 0px 20px #e9e4e6);
+    }
+    100%
+    {
+        filter: drop-shadow( 0px 0px 5px #e9e4e6);
+    }
+}
+
+@keyframes colorful_link
+{
+    0%
+    {
+        filter: hue-rotate(0deg);
+    }
+
+    100%
+    {
+        filter: hue-rotate(360deg);
+    }
+}
+
+@keyframes anim_color
+{
+    from
+    {
+        filter: hue-rotate(0deg);
+    }
+    to
+    {
+        filter: hue-rotate(360deg);
+    }
+}
+
+@keyframes anim_scale
+{
+    to
+    {
+        transform: scale( 1.4 );
+    }
+}
+
+.mkde-embed-container
+{
+    overflow: hidden;
+    border-radius: 5px;
+    box-shadow: var(--md-shadow-z2);
+    transition: border .25s,box-shadow .25s;
+    border: 2px solid rgba( 255, 255, 255, 0.1 );
+    background-color: var(--md-default-fg-color--lightest);
+}
+
+.mkde-embed-container:hover
+{
+    transition: border .25s,box-shadow .25s;
+    box-shadow: var(--md-shadow-z3);
+    border: 2px solid rgba( 255, 255, 255, 0.2 );
+}
+
+.mkde-left-s2 > a,
+.item-link-container > a,
+.item-title > a
+{
+    background-color: transparent;
+    -webkit-text-decoration-skip: objects;
+}
+
+.mkde-left-s2 > a,
+.item-link-container > a,
+.item-title > a
+{
+    text-decoration: none;
+    color: inherit;
+    touch-action: manipulation;
+}
+
+.mkde-format-sub
+{
+    line-height: 1.4;
+    font-family: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI',
+        Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 400;
+    font-size: 15px;
+    color: inherit;
+    hyphens: auto;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    background-color: inherit;
+}
+
+.mkde-format, .mkde-format-sub,
+.mkde-inner
+{
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+    width: 100%;
+}
+
+.mkde-format
+{
+    line-height: 1.4;
+    color: inherit;
+}
+
+@supports (-webkit-overflow-scrolling: touch)
+{
+    .mkde-format-sub
+    {
+        max-width: 100vw;
+    }
+}
+
+.mkde-left,
+.mkde-right
+{
+    overflow: hidden;
+}
+
+._sm
+{
+    background: inherit;
+}
+
+._lc .mkde-inner
+{
+    flex-direction: row;
+}
+
+._lc .mkde-right
+{
+    display: flex;
+    flex: 1;
+    align-items: center;
+}
+
+.mkde-right
+{
+    padding: 8px 10px;
+}
+
+@media ( min-width: 360px )
+{
+    .mkde-right
+    {
+        padding: 12px 15px;
+    }
+}
+
+@media ( min-width: 600px )
+{
+    .mkde-right
+    {
+        padding: 12px 12px;
+    }
+}
+
+/*
+    Left container
+*/
+
+._lc._sm:not( .xd ) .mkde-left
+{
+    min-width: 100px;
+    width: 100px;
+    min-height: 100px;
+    padding: 10px;
+    background: rgba( 255, 255, 255, 0.10 );
+}
+
+@media ( min-width: 360px )
+{
+    ._lc._sm:not( .xd ) .mkde-left
+    {
+        min-width: 110px;
+        width: 110px;
+        min-height: 110px;
+    }
+}
+
+@media (min-width: 460px)
+{
+    ._lc._sm:not( .xd ) .mkde-left
+    {
+        min-width: 140px;
+        width: 140px;
+        min-height: 140px;
+    }
+}
+
+@media (min-width: 600px)
+{
+    ._lc._sm:not( .xd ) .mkde-left
+    {
+        min-width: 160px;
+        width: 160px;
+        min-height: 160px;
+    }
+}
+
+@supports (-moz-appearance: meterbar) and (all: initial)
+{
+    ._lc .mkde-left
+    {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        -ms-flex-align: stretch;
+        align-items: stretch;
+        -ms-flex-line-pack: stretch;
+        align-content: stretch;
+    }
+}
+
+@media (max-width: 459px)
+{
+    ._lc .ct-r-link-t
+    {
+        display: none;
+    }
+}
+
+@media (min-width: 460px)
+{
+    ._lc .ct-r-link-d
+    {
+        display: none;
+    }
+}
+
+._lc._ts .item-title
+{
+    -webkit-line-clamp: 1;
+}
+
+._lc._ts._lh-4 .item-title
+{
+    max-height: 1.4em;
+}
+
+._lc._ts .item-desc
+{
+    -webkit-line-clamp: 2;
+}
+
+._lc._ts._lh-4 .item-desc
+{
+    max-height: 2.8em;
+}
+
+@media (min-width: 460px)
+{
+    ._lc._ts .item-title {
+        -webkit-line-clamp: 1;
+    }
+
+    ._lc._ts._lh-4 .item-title
+    {
+        max-height: 1.4em;
+    }
+
+    ._lc._ts .item-desc
+    {
+        -webkit-line-clamp: 3;
+    }
+
+    ._lc._ts._lh-4 .item-desc
+    {
+        max-height: 4.2em;
+    }
+}
+
+.item-desc,
+.item-title
+{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    padding-left: 5px;
+}
+
+@supports (display: -webkit-box)
+{
+    .item-desc,
+    .item-title
+    {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+    }
+}
+
+.item-desc
+{
+    vertical-align: inherit;
+}
+
+.item-footer-format,
+.item-title
+{
+    margin-bottom: 0.5em;
+}
+
+.item-desc
+{
+    margin-bottom: 0.6em;
+}
+
+.mkde-sub
+{
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    background: none transparent;
+    text-align: left;
+}
+
+.mkde-sub .item-footer-format:last-child
+{
+    margin-bottom: 0 !important;
+}
+
+.item-link-container
+{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    padding-top: 10px;
+    display: contents;
+    flex-direction: row;
+    align-content: center;
+    padding-left: 5px;
+}
+
+@media (min-width: 460px)
+{
+    .item-desc
+    {
+        margin-bottom: 0.7em;
+    }
+}
+
+.mkde-right > ._ff
+{
+    font-family: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI',
+        Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+._fw-n
+{
+    font-weight: 400;
+}
+
+._fw-b
+{
+    font-weight: 700;
+}
+
+._fs-n
+{
+    font-style: normal;
+}
+
+._lh-4
+{
+    line-height: 1.4;
+}
+
+._fs-x,
+._fs-m
+{
+    font-size: 12px;
+}
+
+._f1p
+{
+    font-size: 13px;
+}
+
+@media ( min-width: 360px )
+{
+    ._fs-x
+    {
+        font-size: 13px;
+    }
+
+    ._f1p
+    {
+        font-size: 14px;
+    }
+}
+
+@media ( min-width: 460px )
+{
+    ._fs-m
+    {
+        font-size: 13px;
+    }
+
+    ._fs-x
+    {
+        font-size: 14px;
+    }
+
+    ._f1p
+    {
+        font-size: 15px;
+    }
+}
+
+@media ( min-width: 600px )
+{
+    ._fs-m
+    {
+        font-size: 14px;
+    }
+
+    ._fs-x
+    {
+        font-size: 15px;
+    }
+
+    ._f1p
+    {
+        font-size: 17px;
+    }
+}
+
+.mkde-left-s1
+{
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+
+@supports ( -moz-appearance: meterbar ) and ( all: initial )
+{
+    ._lc .mkde-left-s1
+    {
+        -ms-flex: 1;
+        flex: 1;
+    }
+}
+
+._lc:not( ._ap ) .mkde-left-s1
+{
+    height: 100%;
+    padding-bottom: 0;
+}
+
+/*
+    Theme > Default
+*/
+
+[ data-md-color-scheme="default" ]
+{
+    ._lc._sm:not( .xd ) .mkde-left
+    {
+        background: rgba( 255, 255, 255, 1 );
+    }
+
+    .mkde-left-s2
+    {
+        border: 1px solid rgba( 255, 255, 255, 0.35 )
+    }
+}
+
+.mkde-left-s2
+{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 1px solid rgba( 255, 255, 255, 0.10 )
+}
+
+.mkde-link-favicon
+{
+    width: 25px;
+    height: 25px;
+    padding-right: 4px;
+}
+
+.mkde-img
+{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.mkde-img
+{
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: no-repeat center;
+    background-size: cover;
+}
+
+.mkde-img
+{
+    z-index: 3;
+}
+
+.mkde-img:hover
+{
+    animation: 2s colorful_link infinite;
+}
+
+.mkde-left-s1
+{
+    padding-bottom: 100%;
+}
+
+.mkde-format
+{
+    -webkit-hyphens: auto;
+    -moz-hyphens: auto;
+    -ms-hyphens: auto;
+    hyphens: auto;
+}
+
+.item-title
+{
+    color: inherit;
+}
+
+.item-footer-format
+{
+    color: var( --md-typeset-a-color );
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-align: center;
+    align-items: center;
+}
+
+.item-link
+{
+    color: var( --md-typeset-a-color );
+    font-size: 12px;
+    padding-bottom: 6px;
+}
+
+.item-footer
+{
+    padding-block-start: 12px;
+    padding-left: 5px;
+}
+
+.mkde-link-favicon:hover
+{
+    animation: anim_scale 100ms ease-in-out forwards;
+}
+
+.mkde-left-s2 > a, a.item-title-link, a.item-link
+{
+    color: var( --md-typeset-a-color );
+}
+
+.mkde-left-s2 > a, a.item-title-link:hover, a.item-link:hover
+{
+    color: var(--md-accent-fg-color);
+}

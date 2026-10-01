@@ -1,0 +1,19 @@
+name: Linkcheck
+on:
+  push:
+  pull_request:
+  workflow_dispatch: # Manual run
+  schedule:
+    - cron: '0 0 * * 0' # Once a week
+
+jobs:
+  markdown-link-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: md-linkcheck
+        uses: tcort/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: 'yes'
+          config-file: '.github/.markdownlinkcheck.json'
