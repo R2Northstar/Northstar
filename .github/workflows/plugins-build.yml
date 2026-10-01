@@ -1,11 +1,14 @@
-name: CI
+name: Plugins CI
 on: [push, pull_request]
 
 jobs:
   # Ensure correct Rust code formatting
   formatting:
     name: format-check
-    runs-on: windows-2022
+    runs-on: windows-2025
+    defaults:
+      run:
+        working-directory: plugins
     steps:
       - uses: actions/checkout@v4
       - name: Format check
@@ -48,11 +51,11 @@ jobs:
           purge-primary-key: never
 
       - name: Build
-        run: nix build
+        run: nix build .#plugins
 
       - name: Cache this Build
         continue-on-error: true
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         run: |
           nix run nixpkgs#attic-client -- login northstar https://attic.catornot.net ${{ secrets.ATTIC_CACHE_TOKEN }}
-          nix run nixpkgs#attic-client -- push northstar $(nix build --print-out-paths)
+          nix run nixpkgs#attic-client -- push northstar $(nix build .#plugins --print-out-paths)

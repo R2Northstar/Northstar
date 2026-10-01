@@ -17,7 +17,14 @@ in
     name = plugin;
     inherit version;
 
-    src = ../.;
+    src = lib.fileset.toSource {
+      root = ../plugins;
+      fileset = lib.fileset.unions [
+        ../plugins/Cargo.toml
+        ../plugins/Cargo.lock
+        ../plugins/${plugin}
+      ];
+    };
 
     inherit buildType;
 
@@ -28,7 +35,7 @@ in
 
     meta = {
       description = "${plugin} is a plugin for northstar";
-      homepage = "https://github.com/R2Northstar/NorthstarPlugins";
+      homepage = "https://github.com/R2Northstar/Northstar";
       license = lib.licenses.mit;
       maintainers = [ "cat_or_not" ];
     };

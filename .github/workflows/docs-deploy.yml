@@ -11,10 +11,16 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: docs
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: '0'
+          sparse-checkout: |
+            docs/
+          sparse-checkout-cone-mode: true
 
       - name: Configure Git Credentials
         run: |
@@ -29,9 +35,9 @@ jobs:
       - uses: actions/cache@v4
         with:
           key: mkdocs-material-${{ env.cache_id }}
-          path: .cache
+          path: docs/.cache
           restore-keys: |
-            mkdocs-material-
+            docs/mkdocs-material-
 
       - name: Install dependencies
         run: |

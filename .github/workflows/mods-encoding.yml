@@ -4,6 +4,9 @@ on: [push, pull_request]
 jobs:
   check-loc-encoding:
     runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: mods
     steps:
       - name: Checkout
         uses: actions/checkout@v4

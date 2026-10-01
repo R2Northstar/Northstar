@@ -5,10 +5,16 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: docs
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: '0'
+          sparse-checkout: |
+            docs/
+          sparse-checkout-cone-mode: true
 
       - uses: actions/setup-python@v5
         with:

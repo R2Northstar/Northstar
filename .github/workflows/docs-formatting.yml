@@ -5,6 +5,9 @@ on: [push, pull_request]
 jobs:
   consistent-whitespace:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: docs
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -24,6 +27,9 @@ jobs:
   trailing-whitespace:
     name: Find Trailing Whitespace
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: docs
     steps:
       - uses: actions/checkout@v4
       - name: Find trailing whitespaces in text files
