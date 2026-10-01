@@ -1,0 +1,16 @@
+name: Post-to-Mastodon
+on:
+  release:
+    types: [published]
+
+jobs:
+  toot:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Send toot to Mastodon
+        id: mastodon
+        uses: cbrgm/mastodon-github-action@v2
+        with:
+          message: "We just released Northstar ${{ github.event.release.tag_name }}\n\n${{ github.event.release.html_url }}"
+          url: ${{ secrets.MASTODON_URL }}
+          access-token: ${{ secrets.MASTODON_ACCESS_TOKEN }}
