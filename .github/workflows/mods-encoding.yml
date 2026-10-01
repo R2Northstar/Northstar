@@ -1,4 +1,4 @@
-name: Build
+name: Mods Encoding
 on: [push, pull_request]
 
 jobs:

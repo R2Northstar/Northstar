@@ -1,5 +1,5 @@
 # This action checks whether all Squirrel files compile successfully using standalone Squirrel compiler
-name: compile-check
+name: Mods Compile Check
 
 on: [push, pull_request]
 

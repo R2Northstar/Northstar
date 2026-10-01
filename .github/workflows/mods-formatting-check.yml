@@ -1,4 +1,4 @@
-name: Check Formatting
+name: Mods Check Formatting
 
 on: [push, pull_request]
 

@@ -22,6 +22,11 @@ in
       fileset = lib.fileset.unions [
         ../plugins/Cargo.toml
         ../plugins/Cargo.lock
+        # TODO: set this somewhere else
+        # for now we need everything
+        ../plugins/discordrpc
+        ../plugins/serialized_io
+        ../plugins/ranim
         ../plugins/${plugin}
       ];
     };

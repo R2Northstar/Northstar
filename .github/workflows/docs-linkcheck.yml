@@ -1,4 +1,4 @@
-name: Linkcheck
+name: Docs Linkcheck
 on:
   push:
   pull_request:

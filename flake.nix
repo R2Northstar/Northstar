@@ -98,12 +98,12 @@
           version = "1.31.13";
           mkPluginBuildType =
             plugin: buildType:
-            pkgs-cross.callPackage ./nix/plugins.nix {
+            plugins.pkgs-cross.callPackage ./nix/plugins.nix {
               inherit plugin version buildType;
               toolchain =
-                pkgs-cross.pkgsBuildHost.rust-bin.nightly."${
+                plugins.pkgs-cross.pkgsBuildHost.rust-bin.nightly."${
                   (nixpkgs.lib.last (
-                    builtins.split "nightly-" (fromTOML (builtins.readFile ./rust-toolchain.toml)).toolchain.channel
+                    builtins.split "nightly-" (fromTOML (builtins.readFile ./plugins/rust-toolchain.toml)).toolchain.channel
                   ))
                 }".default;
             };

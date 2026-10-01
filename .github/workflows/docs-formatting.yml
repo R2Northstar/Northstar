@@ -1,4 +1,4 @@
-name: Formatting
+name: Docs Formatting
 
 on: [push, pull_request]
 
