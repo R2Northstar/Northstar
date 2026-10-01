@@ -1,5 +1,5 @@
 use parking_lot::Mutex;
-use std::ffi::{CStr, c_char};
+use std::ffi::{c_char, CStr};
 
 use crate::PLUGIN;
 
