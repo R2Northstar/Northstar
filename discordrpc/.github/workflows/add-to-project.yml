@@ -1,0 +1,20 @@
+name: add-to-project
+
+on:
+  issues:
+    types:
+      - opened
+  pull_request_target:
+    types:
+      - opened
+
+jobs:
+  add-to-project:
+    name: Add to project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/add-to-project@v0.5.0
+        with:
+          project-url: "https://github.com/orgs/R2Northstar/projects/3"
+          github-token: "${{ secrets.PROJECT_BOARD_TOKEN }}"
+          
