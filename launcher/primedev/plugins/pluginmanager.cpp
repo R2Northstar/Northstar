@@ -1,0 +1,226 @@
+#include "pluginmanager.h"
+
+#include <regex>
+#include <ranges>
+#include "plugins.h"
+#include "config/profile.h"
+#include "tier1/cmd.h"
+
+namespace fs = std::filesystem;
+
+PluginManager* g_pPluginManager;
+
+const std::vector<Plugin>& PluginManager::GetLoadedPlugins() const
+{
+	return this->plugins;
+}
+
+const std::optional<const Plugin*> PluginManager::GetPlugin(HMODULE handle) const
+{
+	for (const Plugin& plugin : GetLoadedPlugins())
+		if (plugin.m_handle == handle)
+			return &plugin;
+	return std::nullopt;
+}
+
+std::optional<HMODULE> PluginManager::LoadPlugin(fs::path path, bool reloaded)
+{
+	Plugin plugin = Plugin(path.string());
+
+	if (!plugin.IsValid())
+	{
+		NS::log::PLUGINSYS->warn("Unloading invalid plugin '{}'", path.string());
+		plugin.Unload();
+		return std::nullopt;
+	}
+
+	plugins.push_back(plugin);
+	plugin.Init(reloaded);
+
+	return plugins.back().m_handle;
+}
+
+inline void FindPlugins(fs::path pluginPath, std::vector<fs::path>& paths)
+{
+	// ensure dirs exist
+	if (!fs::exists(pluginPath) || !fs::is_directory(pluginPath))
+	{
+		return;
+	}
+
+	for (const fs::directory_entry& entry : fs::directory_iterator(pluginPath))
+	{
+		if (fs::is_regular_file(entry) && entry.path().extension() == ".dll")
+			paths.emplace_back(entry.path());
+	}
+}
+
+bool PluginManager::LoadPlugins(bool reloaded)
+{
+	if (strstr(GetCommandLineA(), "-noplugins") != NULL)
+	{
+		NS::log::PLUGINSYS->warn("-noplugins detected; skipping loading plugins");
+		return false;
+	}
+
+	fs::create_directories(GetThunderstoreModFolderPath());
+
+	std::vector<fs::path> paths;
+
+	pluginPath = GetNorthstarPrefix() + "\\plugins";
+
+	fs::path libPath = fs::absolute(pluginPath + "\\lib");
+	if (fs::exists(libPath) && fs::is_directory(libPath))
+		AddDllDirectory(libPath.wstring().c_str());
+
+	FindPlugins(pluginPath, paths);
+
+	// Special case for Thunderstore mods dir
+	std::filesystem::directory_iterator thunderstoreModsDir = fs::directory_iterator(GetThunderstoreModFolderPath());
+	// Set up regex for `AUTHOR-MOD-VERSION` pattern
+	std::regex pattern(R"(.*\\([a-zA-Z0-9_]+)-([a-zA-Z0-9_]+)-(\d+\.\d+\.\d+))");
+	for (fs::directory_entry dir : thunderstoreModsDir)
+	{
+		fs::path pluginsDir = dir.path() / "plugins";
+		// Use regex to match `AUTHOR-MOD-VERSION` pattern
+		if (!std::regex_match(dir.path().string(), pattern))
+		{
+			spdlog::warn("The following directory did not match 'AUTHOR-MOD-VERSION': {}", dir.path().string());
+			continue; // skip loading package that doesn't match
+		}
+
+		fs::path libDir = fs::absolute(pluginsDir / "lib");
+		if (fs::exists(libDir) && fs::is_directory(libDir))
+			AddDllDirectory(libDir.wstring().c_str());
+
+		FindPlugins(pluginsDir, paths);
+	}
+
+	if (paths.empty())
+	{
+		NS::log::PLUGINSYS->warn("Could not find any plugins. Skipped loading plugins");
+		return false;
+	}
+
+	for (fs::path path : paths)
+	{
+		LoadPlugin(path, reloaded);
+	}
+
+	InformAllPluginsInitialized();
+
+	return true;
+}
+
+void PluginManager::ReloadPlugins()
+{
+	NS::log::PLUGINSYS->info("Reloading plugins");
+
+	std::vector<HMODULE> reloadedHandles;
+	for (const Plugin& plugin : this->plugins | std::views::reverse)
+	{
+		std::optional<HMODULE> reloadedHandle = plugin.Reload();
+		if (reloadedHandle.has_value())
+		{
+			std::optional<const Plugin*> maybe = g_pPluginManager->GetPlugin(reloadedHandle.value());
+			const Plugin* reloadedPlugin = maybe.value();
+			reloadedHandles.push_back(reloadedPlugin->m_handle);
+
+			NS::log::PLUGINSYS->info("Reloaded {}", reloadedPlugin->GetName());
+		}
+	}
+
+	// inform all reloaded plugins
+	for (HMODULE handle : reloadedHandles)
+	{
+		g_pPluginManager->GetPlugin(handle).value()->Finalize();
+	}
+}
+
+void PluginManager::RemovePlugin(HMODULE handle)
+{
+	for (size_t i = 0; i < plugins.size(); i++)
+	{
+		Plugin* plugin = &plugins[i];
+		if (plugin->m_handle == handle)
+		{
+			plugins.erase(plugins.begin() + i);
+			return;
+		}
+	}
+}
+
+void PluginManager::InformAllPluginsInitialized() const
+{
+	for (const Plugin& plugin : GetLoadedPlugins())
+	{
+		plugin.Finalize();
+	}
+}
+
+void PluginManager::InformSqvmCreated(CSquirrelVM* sqvm) const
+{
+	for (const Plugin& plugin : GetLoadedPlugins())
+	{
+		plugin.OnSqvmCreated(sqvm);
+	}
+}
+
+void PluginManager::InformSqvmDestroying(CSquirrelVM* sqvm) const
+{
+	for (const Plugin& plugin : GetLoadedPlugins())
+	{
+		plugin.OnSqvmDestroying(sqvm);
+	}
+}
+
+void PluginManager::InformDllLoad(HMODULE module, fs::path path) const
+{
+	std::string fn = path.filename().string(); // without this the string gets freed immediately lmao
+	const char* filename = fn.c_str();
+	for (const Plugin& plugin : GetLoadedPlugins())
+	{
+		plugin.OnLibraryLoaded(module, filename);
+	}
+}
+
+void PluginManager::RunFrame() const
+{
+	for (const Plugin& plugin : GetLoadedPlugins())
+	{
+		plugin.RunFrame();
+	}
+}
+
+void ConCommand_reload_plugins(const CCommand& args)
+{
+	g_pPluginManager->ReloadPlugins();
+}
+
+void ConCommand_unload_plugins(const CCommand& args)
+{
+	for (const Plugin& plugin : g_pPluginManager->GetLoadedPlugins() | std::views::reverse)
+	{
+		std::string name = plugin.GetName();
+
+		if (args.ArgC() >= 2 && !strcmp(name.c_str(), args.Arg(1)))
+			continue;
+
+		if (plugin.Unload())
+			NS::log::PLUGINSYS->info("Unloaded {}", name);
+		else
+			NS::log::PLUGINSYS->warn("{} can't be unloaded", name);
+	}
+}
+
+void ConCommand_load_plugins(const CCommand& args)
+{
+	g_pPluginManager->LoadPlugins();
+}
+
+ON_DLL_LOAD_RELIESON("engine.dll", PluginManager, ConCommand, (CModule module))
+{
+	RegisterConCommand("reload_plugins", ConCommand_reload_plugins, "reloads plugins", FCVAR_NONE);
+	RegisterConCommand("unload_plugins", ConCommand_unload_plugins, "unloads plugins or a single plugin", FCVAR_NONE);
+	RegisterConCommand("load_plugins", ConCommand_load_plugins, "loads plugins", FCVAR_NONE);
+}

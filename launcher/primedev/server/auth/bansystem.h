@@ -1,0 +1,20 @@
+#pragma once
+#include <fstream>
+
+class ServerBanSystem
+{
+private:
+	std::ofstream m_sBanlistStream;
+	std::vector<uint64_t> m_vBannedUids;
+
+public:
+	void OpenBanlist();
+	void ReloadBanlist();
+	void ClearBanlist();
+	void BanUID(uint64_t uid);
+	void UnbanUID(uint64_t uid);
+	bool IsUIDAllowed(uint64_t uid);
+	const std::vector<uint64_t>& GetBannedUids() const;
+};
+
+extern ServerBanSystem* g_pBanSystem;

@@ -1,0 +1,26 @@
+{
+	"format": {
+		"line_width": 120,
+		"tab_size": 4,
+		"use_tabchars": false,
+		"fractional_tab_policy": "use-space",
+		"max_subgroups_hwrap": 2,
+		"max_pargs_hwrap": 2,
+		"max_rows_cmdline": 2,
+		"separate_ctrl_name_with_space": false,
+		"separate_fn_name_with_space": false,
+		"dangle_parens": true,
+		"dangle_align": "child",
+		"min_prefix_chars": 4,
+		"max_prefix_chars": 10,
+		"max_lines_hwrap": 2,
+		"line_ending": "unix",
+		"command_case": "canonical",
+		"keyword_case": "unchanged",
+		"always_wrap": [],
+		"enable_sort": true,
+		"autosort": false,
+		"require_valid_layout": false,
+		"layout_passes": {}
+	}
+}
