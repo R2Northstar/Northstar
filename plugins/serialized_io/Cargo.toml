@@ -1,0 +1,17 @@
+[package]
+name = "serialized_io"
+version = "0.1.0"
+edition = "2024"
+license = "Apache-2.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+parking_lot = "*"
+retour = { version = "0.4.0-alpha.4" , features = ["static-detour"] }
+rrplug = { workspace = true, features = ["async_engine"] }
+serde_json = { version = "1.0.*", features = ["preserve_order", "raw_value"] }
+sqparse = "0.3.0"
+
+[lib]
+crate-type = ["cdylib"]
