@@ -1,0 +1,15 @@
+[submodule "launcher/primedev/thirdparty/libcurl"]
+	path = launcher/primedev/thirdparty/libcurl
+	url = https://github.com/curl/curl
+	ignore = untracked
+	update = checkout
+[submodule "launcher/primedev/thirdparty/minhook"]
+	path = launcher/primedev/thirdparty/minhook
+	url = https://github.com/TsudaKageyu/minhook
+	ignore = untracked
+	update = checkout
+[submodule "launcher/primedev/thirdparty/minizip"]
+	path = launcher/primedev/thirdparty/minizip
+	url = https://github.com/zlib-ng/minizip-ng.git
+	ignore = none
+	update = checkout

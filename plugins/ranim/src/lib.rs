@@ -41,7 +41,7 @@ impl Plugin for Ranim {
         dll_ptr: &DLLPointer,
         _engine_token: EngineToken,
     ) {
-        use bindings::{RecordingFunctions, RECORDING_FUNCTIONS};
+        use bindings::{RECORDING_FUNCTIONS, RecordingFunctions};
         unsafe { RecordingFunctions::try_init(dll_ptr, &RECORDING_FUNCTIONS) }
     }
 

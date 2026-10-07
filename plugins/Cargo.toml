@@ -1,7 +1,7 @@
 [workspace]
 resolver = "3"
 
-members = ["ranim", "serialized_io"]
+members = ["discordrpc", "ranim", "serialized_io"]
 
 [workspace.dependencies]
 rrplug = { git = "https://github.com/catornot/rrplug.git" }

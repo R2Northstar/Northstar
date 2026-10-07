@@ -1,0 +1,21 @@
+# Configures dependabot
+
+version: 2
+updates:
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+  # uv
+  - package-ecosystem: "uv"
+    directory: "docs"
+    schedule:
+      interval: "weekly"
+  # rust
+  # - package-ecosystem: "cargo"
+  #   directory: '/'
+  #   schedule:
+  #     interval: "weekly"
+  #   commit-message:
+  #     prefix: "chore: "
