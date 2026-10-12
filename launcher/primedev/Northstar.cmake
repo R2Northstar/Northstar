@@ -145,6 +145,7 @@ add_library(
     "shared/exploit_fixes/exploitfixes.cpp"
     "shared/exploit_fixes/exploitfixes_lzss.cpp"
     "shared/exploit_fixes/exploitfixes_utf8parser.cpp"
+    "shared/exploit_fixes/exploitfixes_clantag.cpp"
     "shared/exploit_fixes/ns_limits.cpp"
     "shared/exploit_fixes/ns_limits.h"
     "shared/keyvalues.cpp"
