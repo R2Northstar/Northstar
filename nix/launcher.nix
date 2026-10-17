@@ -8,6 +8,7 @@
   perl,
   pkg-config,
   git,
+  version ? "0.0.0",
 }:
 let
   inherit (launcher) cross mkBuildDir;
@@ -44,9 +45,7 @@ let
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "NorthstarLauncher";
-  # version should be in the format "0.0.0" or things migth break
-  # if it needs to change update the version code in postPatch
-  version = "0.0.0"; # TODO: get a some action to update the version
+  inherit version;
 
   src = lib.fileset.toSource {
     root = ../launcher;
