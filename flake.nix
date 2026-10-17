@@ -87,6 +87,8 @@
       );
     in
     {
+      version = "1.13.13";
+
       formatter = eachSystem (
         system: (treefmtEval.${system} perSystem.${system}.pkgs).config.build.wrapper
       );
@@ -95,7 +97,7 @@
         system:
         with perSystem.${system};
         let
-          version = "1.31.13";
+          inherit (self) version;
           mkPluginBuildType =
             plugin: buildType:
             plugins.pkgs-cross.callPackage ./nix/plugins.nix {
@@ -116,13 +118,39 @@
           discordrpc = mkPlugin "discordrpc";
           plugins = pkgs.symlinkJoin {
             name = "plugins";
-            paths = with self.packages.${system}; [
-              ranim
-              serialized-io
-              discordrpc
-            ];
+            paths =
+              let
+                inherit (self.packages.${system})
+                  ranim
+                  serialized-io
+                  discordrpc
+                  ;
+              in
+              [
+                ranim
+                serialized-io
+                discordrpc
+              ];
           };
           launcher = pkgs.callPackage ./nix/launcher.nix { inherit launcher; };
+          mods = pkgs.callPackage ./nix/mods.nix { inherit version; };
+          northstar-stubs = pkgs.callPackage ./nix/northstar-stubs.nix { };
+          northstar-navmeshes = pkgs.callPackage ./nix/northstar-navmeshes.nix { };
+          release = pkgs.callPackage ./nix/northstar-release.nix {
+            inherit version;
+            inherit (self.packages.${system})
+              mods
+              plugins
+              northstar-stubs
+              northstar-navmeshes
+              ;
+            launcher = self.packages.${system}.launcher.override { inherit version; };
+          };
+          release-zip = pkgs.callPackage ./nix/northstar-release-zip.nix {
+            inherit version;
+            inherit (self.packages.${system}) release;
+          };
+          default = self.packages.${system}.release;
         }
       );
 

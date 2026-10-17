@@ -55,7 +55,7 @@ jobs:
 
       - name: Cache this Build
         continue-on-error: true
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/dev' }}
         run: |
           nix run nixpkgs#attic-client -- login northstar https://attic.catornot.net ${{ secrets.ATTIC_CACHE_TOKEN }}
           nix run nixpkgs#attic-client -- push northstar $(nix build .#plugins --print-out-paths)
