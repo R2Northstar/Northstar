@@ -41,7 +41,7 @@ jobs:
 
       - name: Build
         run: |
-          nix build .#zip
+          nix build .#release-zip
 
       - name: Upload zip to release draft
         uses: softprops/action-gh-release@v2

@@ -2,7 +2,7 @@
   lib,
   zip,
   stdenv,
-  northstar,
+  release,
   version,
 }:
 let
@@ -11,7 +11,7 @@ stdenv.mkDerivation (finalAttr: {
   pname = "NorthstarZipped";
   inherit version;
 
-  src = northstar;
+  src = release;
 
   noUnpack = true;
   phases = [ "installPhase" ];
