@@ -34,8 +34,8 @@ The current process of making release is:
 2. Push new tag (or dispatch new release in workflow dispatch)
 
 4. Make draft notes
-	`git log --pretty=format:"%an %s" $last_commit..HEAD`
-	TODO: make an actual script or cli for this step
+     `git log --pretty=format:"%an %s" $last_commit..HEAD`
+     TODO: make an actual script or cli for this step
 
 10. Once release has finished building
     1. Go to GitHub release and select the new unpublished release
@@ -49,7 +49,7 @@ The current process of making release is:
 12. Update main menu promos version on Atlas
 
 13. Push Docker image
-	1. TODO: gonna move the docker builds into the mono repo
+    1. TODO: gonna move the docker builds into the mono repo
 
 14. Observe version roll-out via [Grafana dashboard](https://northstar-stats.frontier.tf/).
 
