@@ -87,7 +87,7 @@
       );
     in
     {
-      version = "1.13.13";
+      version = "1.31.14";
 
       formatter = eachSystem (
         system: (treefmtEval.${system} perSystem.${system}.pkgs).config.build.wrapper
