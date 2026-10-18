@@ -1,0 +1,10 @@
+* @R2Northstar/owners
+
+/launcher/ @R2Northstar/launcher-maintainers
+
+/mods/ @R2Northstar/mods-maintainers
+
+/docs/ @R2Northstar/moddingdocs-maintainers
+
+/nix/ @R2Northstar/nix-maintainers
+/.github/workflows @R2Northstar/nix-maintainers
