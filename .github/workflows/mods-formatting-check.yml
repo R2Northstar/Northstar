@@ -9,7 +9,7 @@ jobs:
       run:
         working-directory: mods
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Download sqformat
         run: |
           curl -sSL https://github.com/Bobbyperson/sqformat/releases/download/v1.2.1/sqformat-linux-x86_64 -o sqformat

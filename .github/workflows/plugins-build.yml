@@ -5,12 +5,12 @@ jobs:
   # Ensure correct Rust code formatting
   formatting:
     name: format-check
-    runs-on: windows-2025
+    runs-on: windows-latest
     defaults:
       run:
         working-directory: plugins
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Format check
         run: cargo fmt --all -- --check
 
@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install Nix
         uses: nixbuild/nix-quick-install-action@v34
