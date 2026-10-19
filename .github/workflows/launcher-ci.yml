@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - uses: DoozyX/clang-format-lint-action@v0.18.2
+    - uses: DoozyX/clang-format-lint-action@v0.20
       with:
         source: 'launcher/primedev'
         exclude: 'launcher/primedev/include launcher/primedev/thirdparty launcher/primedev/wsockproxy'
@@ -113,7 +113,7 @@ jobs:
         working-directory: launcher
     steps:
     - uses: actions/checkout@v7
-    - uses: puneetmatharu/cmake-format-lint-action@v1.0.4
+    - uses: puneetmatharu/cmake-format-lint-action@v1.0.8
       with:
         args: "--in-place"
     - run: |
