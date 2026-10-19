@@ -21,14 +21,14 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Install Nix
-        uses: nixbuild/nix-quick-install-action@v34
+        uses: nixbuild/nix-quick-install-action@v35
         with:
           # We don't enable ca-derivations here
           # because we have later jobs where ca-derivations is enabled.
           nix_conf: ${{ env.nix_conf }}
 
       - name: Restore and save Nix store
-        uses: nix-community/cache-nix-action@v6
+        uses: nix-community/cache-nix-action@v7
         with:
           # restore and save a cache using this key
           primary-key: nix-${{ runner.os }}-${{ hashFiles('**/*.nix', '**/flake.lock') }}
