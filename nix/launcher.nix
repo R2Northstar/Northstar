@@ -24,21 +24,21 @@ let
   libcurl = fetchFromGitHub {
     owner = "curl";
     repo = "curl";
-    rev = "801bd5138ce31aa0d906fa4e2eabfc599d74e793";
-    hash = "sha256-4w15NHw3D+YBuK02ZIZqvGaWgyQVc61MZ34pkLu0Oug=";
+    rev = "a05f34973e6c4bb629d018f7cb51487be1c904d8"; # 8.20.0
+    hash = "sha256-WjMDjF/SleliTCn1iD/X9fZ+9TQaV5o26vn0s1GEOw0=";
     name = "curl";
   };
   minhook = fetchFromGitHub {
     owner = "TsudaKageyu";
     repo = "minhook";
-    rev = "0f25a2449b3cf878bcbdbf91b693c38149ecf029";
-    hash = "sha256-ncA9yX4jojesIc0P8+PUHQvCScaS3zNXnAodWwpuxVY=";
+    rev = "05c06c5bbca226b72ffb40fc0caaef33bcaf6f74";
+    hash = "sha256-qaelDg3wA4RecP/Cx6YossTEEM6GitH5q1g9TJdX7Uk=";
     name = "minhook";
   };
   minizip = fetchFromGitHub {
     owner = "zlib-ng";
     repo = "minizip-ng";
-    rev = "680d6f1dcf9de99fc033b54975a1dfff10be2b6b";
+    rev = "680d6f1dcf9de99fc033b54975a1dfff10be2b6b"; # 4.0.1
     hash = "sha256-3bCGZupdJWcwp2d+XeqKZG3GxzXFm1UftV/PiN0u5iA=";
     name = "minizip-ng";
   };
