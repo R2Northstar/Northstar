@@ -37,6 +37,10 @@ if(NOT libcurl_FOUND)
         "none"
         CACHE STRING "Disable CA Path"
         )
+    set(CURL_USE_LIBPSL
+        OFF
+        CACHE BOOL "Use libpsl"
+        )
 
     add_subdirectory(${PROJECT_SOURCE_DIR}/primedev/thirdparty/libcurl libcurl)
     set(libcurl_FOUND
