@@ -2,9 +2,18 @@
 
 #include "tier1/convar.h"
 #include "server/serverpresence.h"
+#include <concepts>
+#include <cstdint>
+#include <memory>
+#include <optional>
+#include <span>
+#include <variant>
+#include <vector>
+#include <winhttp.h>
 #include <winsock2.h>
 #include <string>
 #include <cstring>
+#include <expected>
 #include <future>
 #include <unordered_set>
 
@@ -18,37 +27,25 @@ public:
 	std::string Version;
 };
 
-class RemoteServerInfo
-{
-public:
-	char id[33]; // 32 bytes + nullterminator
+// class ServerState
+// {
+// public:
+// 	char id[33]; // 32 bytes + nullterminator
 
-	// server info
-	char name[64];
-	std::string description;
-	char map[32];
-	char playlist[16];
-	char region[32];
-	std::vector<RemoteModInfo> requiredMods;
+// 	// server info
+// 	char name[64];
+// 	std::string description;
+// 	char map[32];
+// 	char playlist[16];
+// 	char region[32];
+// 	std::vector<RemoteModInfo> requiredMods;
 
-	int playerCount;
-	int maxPlayers;
+// 	int playerCount;
+// 	int maxPlayers;
 
-	// connection stuff
-	bool requiresPassword;
-
-public:
-	RemoteServerInfo(
-		const char* newId,
-		const char* newName,
-		const char* newDescription,
-		const char* newMap,
-		const char* newPlaylist,
-		const char* newRegion,
-		int newPlayerCount,
-		int newMaxPlayers,
-		bool newRequiresPassword);
-};
+// 	// connection stuff
+// 	bool requiresPassword;
+// };
 
 struct RemoteServerConnectionInfo
 {
@@ -57,6 +54,42 @@ public:
 
 	in_addr ip;
 	unsigned short port;
+};
+
+class ServerAuth
+{
+	in_addr ip;
+	uint64_t uid;
+	std::string password;
+};
+
+class ServerConnect
+{
+	std::string token;
+	std::vector<uint8_t> pdata;
+};
+
+class ServerState
+{
+	std::string name;
+	std::string description;
+	bool hasPassword;
+	uint16_t port;
+	// TODO
+};
+
+class ServerInfo
+{
+	std::string id;
+	std::string name;
+	// TODO
+};
+
+class ClientConnectInfo
+{
+	in_addr ip;
+	uint16_t port;
+	std::string token;
 };
 
 struct MainMenuPromoData
@@ -80,11 +113,39 @@ public:
 	int smallButton2ImageIndex;
 };
 
+enum class MasterServerErrorCode
+{
+	session_expired = 40124, // must get a new session token (expired/invalid)
+	player_auth_req = 401, // must player (e.g., origin) auth (expired/invalid)
+	server_auth_req = 401, // must server auth (expired/invalid)
+	not_found = 404, // server: must = r, //register server (or can't connect to one); pdata: player doesn't have saved pdata
+	invalid_pdata_lock = 423, // took too long to update pdata, or lock was otherwise lost
+	no_server_response = 504, // server did not reply to connectionless packet in time
+	ns_update_required = 403, // northstar is too old
+	bad_request = 402, // obvious
+	server_connection_rejected = 403, // server rejected connection
+	internal_error = 500, // internal atlas error, shouldn't happen normally
+	error = 500, // generic error
+	stryder_auth_rejected = 403, // invalid stryder token
+	extra_verification_required = 401, // captcha, etc (will have link to open in browser) (note: can handle this with a proxy in front of
+									   // atlas since all protected requests have session tokens)
+};
+
+enum class MenuPromoState
+{
+	Fetching,
+	Available,
+	Missing,
+}
+
 class MasterServerManager
 {
 private:
 	bool m_bRequestingServerList = false;
 	bool m_bAuthenticatingWithGameServer = false;
+
+	MenuPromoState m_eMainMenuState = MenuPromoState::Missing;
+	MainMenuPromoData m_sMainMenuPromoData;
 
 public:
 	char m_sOwnServerId[33];
@@ -113,27 +174,71 @@ public:
 	bool m_bHasPendingConnectionInfo = false;
 	RemoteServerConnectionInfo m_pendingConnectionInfo;
 
-	std::vector<RemoteServerInfo> m_vRemoteServers;
+	std::vector<ServerState> m_vRemoteServers;
 
-	bool m_bHasMainMenuPromoData = false;
-	MainMenuPromoData m_sMainMenuPromoData;
-
-	std::optional<RemoteServerInfo> m_currentServer;
+	std::optional<ServerState> m_currentServer;
 	std::string m_sCurrentServerPassword;
 
 	std::unordered_set<std::string> m_handledServerConnections;
+	std::mutex m_handledServerConnectionsMutex;
 
 public:
 	MasterServerManager();
 
-	void ClearServerList();
-	void RequestServerList();
-	void RequestMainMenuPromos();
-	void AuthenticateOriginWithMasterServer(const char* uid, const char* originToken);
-	void AuthenticateWithOwnServer(const char* uid, const char* playerToken);
-	void AuthenticateWithServer(const char* uid, const char* playerToken, RemoteServerInfo server, const char* password);
-	void WritePlayerPersistentData(const char* playerId, const char* pdata, size_t pdataSize);
-	void ProcessConnectionlessPacketSigreq1(std::string req);
+	// run handling code in a thread
+	auto HandleConnectionlessPacket(std::span<uint8_t> buf) -> void;
+	// pass hooked connectionless packets to this
+	void ServerHandleConnectionlessPacket(std::span<uint8_t> buf);
+	// checks whether to accept a player connection
+	// func is of type void (*func)(ServerAuth)
+	template <class F> void ServerSetAuthCallback(F callback)
+		requires std::invocable<F, ServerAuth>;
+	// prepares the server to receive a player
+	// func is of type void void (*func)(ServerConnect)
+	template <class F> void ServerSetConnectCallback(F callback)
+		requires std::invocable<F, ServerConnect>;
+
+	// updates server presence
+	void ServerUpdate(ServerState state);
+
+	// deletes server presence
+	void ServerRemove();
+
+	// sets the current client uid (not verified or authed until a request)
+	void ClientSetUID(uint64_t uid);
+
+	// sets the callback to get a new origin token
+	// func is of type void void (*func)(std::expected<std::string, some error type>)
+	template <class F> void ClientSetOriginCallback(F callback)
+		requires std::invocable<F, std::expected<std::string, std::string>>;
+
+	// locks and gets pdata for the current uid
+	std::expected<std::vector<uint8_t>, MasterServerManager> ClientGetPdata();
+
+	// resets server-side pdata for the current uid (should usually call ClientGetPdata after)
+	void ClientResetPdata();
+
+	// sends a connection request to a server
+	std::future<std::expected<ClientConnectInfo, MasterServerErrorCode>> ClientConnect(std::string serverID);
+
+	// write pdata if we have a lock, returns an error otherwise
+	std::expected<void, MasterServerErrorCode> WritePdata(uint64_t uid, std::span<uint8_t> pdata);
+
+	// gets the server list
+	std::future<std::expected<std::vector<ServerInfo>, MasterServerErrorCode>> GetServerList();
+
+	// fetches the main menu promos
+	void FetchMainMenuPromo();
+
+	//
+	std::optional<const MainMenuPromoData*> GetMainMenuPromo();
+
+private:
+	// verify connectionless packet
+	std::string VerifyConnectionlessPacket(std::span<uint8_t> buf);
+
+	// run handling code in a thread
+	void HandleConnectionlessPacket(std::span<uint8_t> buf);
 };
 
 extern MasterServerManager* g_pMasterServerManager;

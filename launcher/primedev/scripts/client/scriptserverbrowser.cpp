@@ -3,39 +3,22 @@
 #include "server/auth/serverauthentication.h"
 #include "engine/r2engine.h"
 #include "client/r2client.h"
+#include "squirrel/squirrelthreads.h"
 
 // functions for viewing server browser
 
-ADD_SQFUNC("void", NSRequestServerList, "", "", ScriptContext::UI)
+ADD_SQFUNC("array< ServerList >", NSGetServerList, "", "", ScriptContext::UI)
 {
 	NOTE_UNUSED(sqvm);
-	g_pMasterServerManager->RequestServerList();
-	return SQRESULT_NULL;
-}
+	auto slot = SQThreadSlot::CreateSlot(sqvm);
 
-ADD_SQFUNC("bool", NSIsRequestingServerList, "", "", ScriptContext::UI)
-{
-	g_pSquirrel[context]->pushbool(sqvm, g_pMasterServerManager->m_bScriptRequestingServerList);
-	return SQRESULT_NOTNULL;
+	return SQRESULT_NULL;
 }
 
 ADD_SQFUNC("bool", NSMasterServerConnectionSuccessful, "", "", ScriptContext::UI)
 {
 	g_pSquirrel[context]->pushbool(sqvm, g_pMasterServerManager->m_bSuccessfullyConnected);
 	return SQRESULT_NOTNULL;
-}
-
-ADD_SQFUNC("int", NSGetServerCount, "", "", ScriptContext::UI)
-{
-	g_pSquirrel[context]->pushinteger(sqvm, (SQInteger)g_pMasterServerManager->m_vRemoteServers.size());
-	return SQRESULT_NOTNULL;
-}
-
-ADD_SQFUNC("void", NSClearRecievedServerList, "", "", ScriptContext::UI)
-{
-	NOTE_UNUSED(sqvm);
-	g_pMasterServerManager->ClearServerList();
-	return SQRESULT_NULL;
 }
 
 // functions for authenticating with servers
@@ -145,7 +128,7 @@ ADD_SQFUNC("array<ServerInfo>", NSGetGameServers, "", "", ScriptContext::UI)
 	g_pSquirrel[context]->newarray(sqvm, 0);
 	for (size_t i = 0; i < g_pMasterServerManager->m_vRemoteServers.size(); i++)
 	{
-		const RemoteServerInfo& remoteServer = g_pMasterServerManager->m_vRemoteServers[i];
+		const ServerState& remoteServer = g_pMasterServerManager->m_vRemoteServers[i];
 
 		g_pSquirrel[context]->pushnewstructinstance(sqvm, 11);
 

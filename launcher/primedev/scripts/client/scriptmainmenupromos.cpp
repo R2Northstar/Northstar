@@ -21,101 +21,92 @@ enum eMainMenuPromoDataProperty
 	smallButton2Url,
 	smallButton2ImageIndex
 };
-ADD_SQFUNC("void", NSRequestCustomMainMenuPromos, "", "", ScriptContext::UI)
-{
-	NOTE_UNUSED(sqvm);
-	g_pMasterServerManager->RequestMainMenuPromos();
-	return SQRESULT_NULL;
-}
-
-ADD_SQFUNC("bool", NSHasCustomMainMenuPromoData, "", "", ScriptContext::UI)
-{
-	g_pSquirrel[ScriptContext::UI]->pushbool(sqvm, g_pMasterServerManager->m_bHasMainMenuPromoData);
-	return SQRESULT_NOTNULL;
-}
 
 ADD_SQFUNC("var", NSGetCustomMainMenuPromoData, "int promoDataKey", "", ScriptContext::UI)
 {
-	if (!g_pMasterServerManager->m_bHasMainMenuPromoData)
+	auto maybePromo = g_pMasterServerManager->GetMainMenuPromo();
+	if (!maybePromo.has_value())
 		return SQRESULT_NULL;
+
+	auto promo = maybePromo.value();
 
 	switch (g_pSquirrel[ScriptContext::UI]->getinteger(sqvm, 1))
 	{
 	case eMainMenuPromoDataProperty::newInfoTitle1:
 	{
-		g_pSquirrel[ScriptContext::UI]->pushstring(sqvm, g_pMasterServerManager->m_sMainMenuPromoData.newInfoTitle1.c_str());
+		g_pSquirrel[ScriptContext::UI]->pushstring(sqvm, promo->newInfoTitle1.c_str());
 		break;
 	}
 
 	case eMainMenuPromoDataProperty::newInfoTitle2:
 	{
-		g_pSquirrel[ScriptContext::UI]->pushstring(sqvm, g_pMasterServerManager->m_sMainMenuPromoData.newInfoTitle2.c_str());
+		g_pSquirrel[ScriptContext::UI]->pushstring(sqvm, promo->newInfoTitle2.c_str());
 		break;
 	}
 
 	case eMainMenuPromoDataProperty::newInfoTitle3:
 	{
-		g_pSquirrel[ScriptContext::UI]->pushstring(sqvm, g_pMasterServerManager->m_sMainMenuPromoData.newInfoTitle3.c_str());
+		g_pSquirrel[ScriptContext::UI]->pushstring(sqvm, promo->newInfoTitle3.c_str());
 		break;
 	}
 
 	case eMainMenuPromoDataProperty::largeButtonTitle:
 	{
-		g_pSquirrel[ScriptContext::UI]->pushstring(sqvm, g_pMasterServerManager->m_sMainMenuPromoData.largeButtonTitle.c_str());
+		g_pSquirrel[ScriptContext::UI]->pushstring(sqvm, promo->largeButtonTitle.c_str());
 		break;
 	}
 
 	case eMainMenuPromoDataProperty::largeButtonText:
 	{
-		g_pSquirrel[ScriptContext::UI]->pushstring(sqvm, g_pMasterServerManager->m_sMainMenuPromoData.largeButtonText.c_str());
+		g_pSquirrel[ScriptContext::UI]->pushstring(sqvm, promo->largeButtonText.c_str());
 		break;
 	}
 
 	case eMainMenuPromoDataProperty::largeButtonUrl:
 	{
-		g_pSquirrel[ScriptContext::UI]->pushstring(sqvm, g_pMasterServerManager->m_sMainMenuPromoData.largeButtonUrl.c_str());
+		g_pSquirrel[ScriptContext::UI]->pushstring(sqvm, promo->largeButtonUrl.c_str());
 		break;
 	}
 
 	case eMainMenuPromoDataProperty::largeButtonImageIndex:
 	{
-		g_pSquirrel[ScriptContext::UI]->pushinteger(sqvm, g_pMasterServerManager->m_sMainMenuPromoData.largeButtonImageIndex);
+		g_pSquirrel[ScriptContext::UI]->pushinteger(sqvm, promo->largeButtonImageIndex);
 		break;
 	}
 
 	case eMainMenuPromoDataProperty::smallButton1Title:
 	{
-		g_pSquirrel[ScriptContext::UI]->pushstring(sqvm, g_pMasterServerManager->m_sMainMenuPromoData.smallButton1Title.c_str());
+		g_pSquirrel[ScriptContext::UI]->pushstring(sqvm, promo->smallButton1Title.c_str());
 		break;
 	}
 
 	case eMainMenuPromoDataProperty::smallButton1Url:
 	{
-		g_pSquirrel[ScriptContext::UI]->pushstring(sqvm, g_pMasterServerManager->m_sMainMenuPromoData.smallButton1Url.c_str());
+		g_pSquirrel[ScriptContext::UI]->pushstring(sqvm, promo->smallButton1Url.c_str());
 		break;
 	}
 
 	case eMainMenuPromoDataProperty::smallButton1ImageIndex:
 	{
-		g_pSquirrel[ScriptContext::UI]->pushinteger(sqvm, g_pMasterServerManager->m_sMainMenuPromoData.smallButton1ImageIndex);
+		g_pSquirrel[ScriptContext::UI]->pushinteger(sqvm, promo->smallButton1ImageIndex);
 		break;
 	}
 
 	case eMainMenuPromoDataProperty::smallButton2Title:
 	{
-		g_pSquirrel[ScriptContext::UI]->pushstring(sqvm, g_pMasterServerManager->m_sMainMenuPromoData.smallButton2Title.c_str());
+		g_pSquirrel[ScriptContext::UI]->pushstring(sqvm, promo->smallButton2Title.c_str());
 		break;
 	}
 
 	case eMainMenuPromoDataProperty::smallButton2Url:
 	{
-		g_pSquirrel[ScriptContext::UI]->pushstring(sqvm, g_pMasterServerManager->m_sMainMenuPromoData.smallButton2Url.c_str());
+		g_pSquirrel[ScriptContext::UI]->pushstring(sqvm, promo->smallButton2Url.c_str());
 		break;
 	}
 
 	case eMainMenuPromoDataProperty::smallButton2ImageIndex:
 	{
-		g_pSquirrel[ScriptContext::UI]->pushinteger(sqvm, g_pMasterServerManager->m_sMainMenuPromoData.smallButton2ImageIndex);
+		g_pSquirrel[ScriptContext::UI]->pushinteger(sqvm, promo->smallButton2ImageIndex);
 		break;
 	}
 	}

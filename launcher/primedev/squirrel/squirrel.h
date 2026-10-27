@@ -5,6 +5,7 @@
 #include "core/math/vector.h"
 #include "mods/modmanager.h"
 #include <vscript/languages/squirrel_re/vsquirrel.h>
+#include "squirrelthreads.h"
 
 namespace fs = std::filesystem;
 
@@ -67,6 +68,7 @@ protected:
 
 public:
 	ScriptContext m_context;
+	SquirrelThreads m_threads;
 	std::shared_ptr<spdlog::logger> m_logger;
 	CSquirrelVM* m_pSQVM;
 	std::map<std::string, SQFunction> m_funcOverrides = {};
