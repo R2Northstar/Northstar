@@ -199,14 +199,14 @@ std::tuple<fs::path, bool> ModDownloader::FetchModFromDistantStore(std::string_v
 	spdlog::info(std::format("Fetching mod archive from {}", url));
 	std::string archiveName = ModDownloader::GetModArchiveName(url);
 	std::filesystem::path downloadPath = std::filesystem::temp_directory_path() / archiveName;
-	spdlog::info(std::format("Downloading archive to {}", downloadPath.generic_string()));
+	spdlog::info(std::format(L"Downloading archive to {}", downloadPath.generic_wstring()));
 
 	// Update state
 	modState.state = DOWNLOADING;
 
 	// Download the actual archive
 	bool success = false;
-	FILE* fp = fopen(downloadPath.generic_string().c_str(), "wb");
+	FILE* fp = _wfopen(downloadPath.generic_wstring().c_str(), L"wb");
 	CURLcode result;
 	CURL* easyhandle;
 	easyhandle = curl_easy_init();
@@ -418,8 +418,10 @@ int GetModArchiveSize(unzFile file, unz_global_info64 info)
 void ModDownloader::ExtractMod(fs::path modPath, fs::path destinationPath, VerifiedModPlatform platform)
 {
 	unzFile file;
+	const std::u8string modPathU8 = modPath.u8string();
+	const std::string modPathA(reinterpret_cast<const char*>(modPathU8.data()), modPathU8.size());
 
-	file = unzOpen(modPath.generic_string().c_str());
+	file = unzOpen(modPathA.c_str());
 	ScopeGuard cleanup(
 		[&]
 		{

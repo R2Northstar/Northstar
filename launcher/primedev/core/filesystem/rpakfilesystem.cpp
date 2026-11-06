@@ -450,7 +450,7 @@ void*, __fastcall, (PakHandle nPakHandle, void* pCallback))
 // we hook this exclusively for resolving stbsp paths, but seemingly it's also used for other stuff like vpk, rpak, mprj and starpak loads
 // tbh this actually might be for memory mapped files or something, would make sense i think
 // clang-format off
-HOOK(OpenFileHook, o_pOpenFile, 
+HOOK(OpenFileHook, o_pOpenFile,
 void*, __fastcall, (const char* pPath, void* pCallback))
 // clang-format on
 {
