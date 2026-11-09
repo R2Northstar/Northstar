@@ -16,29 +16,29 @@ let
   # we need this since flakes cannot cope with submodules
   # these need to matched up with the submodule commit hashes
   zlib = fetchFromGitHub {
-    owner = "R2Northstar";
+    owner = "madler";
     repo = "zlib";
-    rev = "9f0f2d4f9f1f28be7e16d8bf3b4e9d4ada70aa9f";
-    hash = "sha256-PL6lH7I4qGduaVTR1pGfXUjpZp41kUERvGrqERmSoNQ=";
+    rev = "da607da739fa6047df13e66a2af6b8bec7c2a498"; # 1.3.2
+    hash = "sha256-Sthd9RsydSLaITNlBp6g1X35WKZdS4h7gr0QhRqdGoI=";
   };
   libcurl = fetchFromGitHub {
     owner = "curl";
     repo = "curl";
-    rev = "801bd5138ce31aa0d906fa4e2eabfc599d74e793";
-    hash = "sha256-4w15NHw3D+YBuK02ZIZqvGaWgyQVc61MZ34pkLu0Oug=";
+    rev = "a05f34973e6c4bb629d018f7cb51487be1c904d8"; # 8.20.0
+    hash = "sha256-WjMDjF/SleliTCn1iD/X9fZ+9TQaV5o26vn0s1GEOw0=";
     name = "curl";
   };
   minhook = fetchFromGitHub {
     owner = "TsudaKageyu";
     repo = "minhook";
-    rev = "0f25a2449b3cf878bcbdbf91b693c38149ecf029";
-    hash = "sha256-ncA9yX4jojesIc0P8+PUHQvCScaS3zNXnAodWwpuxVY=";
+    rev = "05c06c5bbca226b72ffb40fc0caaef33bcaf6f74";
+    hash = "sha256-qaelDg3wA4RecP/Cx6YossTEEM6GitH5q1g9TJdX7Uk=";
     name = "minhook";
   };
   minizip = fetchFromGitHub {
     owner = "zlib-ng";
     repo = "minizip-ng";
-    rev = "680d6f1dcf9de99fc033b54975a1dfff10be2b6b";
+    rev = "680d6f1dcf9de99fc033b54975a1dfff10be2b6b"; # 4.0.1
     hash = "sha256-3bCGZupdJWcwp2d+XeqKZG3GxzXFm1UftV/PiN0u5iA=";
     name = "minizip-ng";
   };
@@ -112,7 +112,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
       cp -r ${zlib} "$zlib_src"
 
-      chmod +rw "$zlib_src"
+      chmod -R +rw "$zlib_src"
 
       substituteInPlace primedev/thirdparty/minizip/CMakeLists.txt \
       	--replace "clone_repo(zlib https://github.com/madler/zlib)" "

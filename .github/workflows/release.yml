@@ -11,10 +11,10 @@ permissions:
 
 jobs:
   build-northstar:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Install Nix
         uses: nixbuild/nix-quick-install-action@v35
@@ -44,7 +44,7 @@ jobs:
           nix build .#release-zip
 
       - name: Upload zip to release draft
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ env.NORTHSTAR_VERSION }}
           draft: true
@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Install Nix
         uses: nixbuild/nix-quick-install-action@v35
@@ -97,7 +97,7 @@ jobs:
 
       - name: Download Northstar package
         if: ${{ !env.ACT }} # Download artifacts from previous jobs when running on GitHub's infrastructure
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: Northstar.release.v${{ env.NORTHSTAR_VERSION }}
           path: northstar

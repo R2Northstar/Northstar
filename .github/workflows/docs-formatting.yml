@@ -10,7 +10,7 @@ jobs:
         working-directory: docs
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Check for tabs
         run: |
@@ -31,7 +31,7 @@ jobs:
       run:
         working-directory: docs
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Find trailing whitespaces in text files
         run: |
           # List all text file extensions to check
