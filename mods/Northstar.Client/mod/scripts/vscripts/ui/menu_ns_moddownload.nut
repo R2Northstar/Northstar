@@ -71,20 +71,20 @@ bool function DownloadMod( RequiredModInfo mod )
 	if ( !NSIsModDownloadable( mod.name, mod.version ) && IsModDownloadable( mod ) )
 	{
 		DialogData dialogData
-		dialogData.header = "Download mod?"
+		dialogData.header = Localize( "#UNAPPROVED_MOD_DOWNLOAD_TITLE" )
 		dialogData.image = $"rui/menu/common/unlock_random"
 
 		string link = mod.downloadLink.len() > 0 ? mod.downloadLink : "https://example.org/"
-		string message = "This mod was not approved by the community, and thus might contain malicious content.\n\n"
-		message += format( "^FFFFFF00Mod:^0 %s v%s\n", mod.name, mod.version )
-		message += "^FFFFFF00Download link:^0 ^5588FF00"
+		string message = format( "%s\n\n", Localize( "#UNAPPROVED_MOD_DOWNLOAD_TEXT1" ) )
+		message += format( "^FFFFFF00%s^0 %s v%s\n", Localize( "#UNAPPROVED_MOD_DOWNLOAD_MOD" ), mod.name, mod.version)
+		message += format( "^FFFFFF00%s^0 ^5588FF00", Localize( "#UNAPPROVED_MOD_DOWNLOAD_LINK" ) )
 		message += link
-		message += "^0\n\nDo you want to download this mod?"
+		message += "^0\n\n" + Localize( "#UNAPPROVED_MOD_DOWNLOAD_TEXT2" )
 		dialogData.message = message
 		// dialogData.inputDisableTime = 5
 		AddDialogButton(
 			dialogData,
-			"Manually check the mod",
+			Localize( "#UNAPPROVED_MOD_DOWNLOAD_CHECK" ),
 			void function() : ( dialogData, link )
 			{
 				LaunchExternalWebBrowser( link, WEBBROWSER_FLAG_FORCEEXTERNAL )
