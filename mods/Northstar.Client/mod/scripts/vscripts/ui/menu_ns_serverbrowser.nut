@@ -1104,10 +1104,20 @@ string function FillInServerModsLabel( array<RequiredModInfo> mods )
 		{
 			template = "  %s v%s\n"
 		}
-		// Display a green checkmark if it can be downloaded, a red cross if not
+		// Display a green checkmark if it can be downloaded...
+		else if ( NSIsModDownloadable( mod.name, mod.version ) )
+		{
+			template = "  %s v%s ^00ff0000(↓)^FFFFFFFF\n"
+		}
+		// A yellow checkmark if it features a download link...
+		else if ( IsModDownloadable( mod ) )
+		{
+			template = "  %s v%s ^ffff0000(↓)^FFFFFFFF\n"
+		}
+		// Or a red cross if not
 		else
 		{
-			template = NSIsModDownloadable( mod.name, mod.version ) ? "  %s v%s ^00ff0000(↓)^FFFFFFFF\n" : "  %s v%s ^ff000000(x)^FFFFFFFF\n"
+			template = "  %s v%s ^ff000000(x)^FFFFFFFF\n"
 		}
 
 		ret += format( template, mod.name, mod.version )
@@ -1236,9 +1246,10 @@ void function OnServerSelected_Threaded( string password = "" )
 			if ( autoDownloadAllowed )
 			{
 				bool modIsVerified = NSIsModDownloadable( mod.name, mod.version )
+				bool modHasDownloadLink = IsModDownloadable( mod )
 
 				// Display error message if mod is not verified
-				if ( !modIsVerified )
+				if ( !modIsVerified && !modHasDownloadLink )
 				{
 					DialogData dialogData
 					dialogData.header = "#ERROR"
