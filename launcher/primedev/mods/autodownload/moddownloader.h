@@ -179,7 +179,6 @@ public:
 	 */
 	void CancelDownload();
 
-
 	/**
 	 * Downloads a mod archive from a remote URL.
 	 *
