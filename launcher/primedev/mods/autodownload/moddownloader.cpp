@@ -413,7 +413,7 @@ int GetModArchiveSize(unzFile file, unz_global_info64 info)
 	return totalSize;
 }
 
-void ModDownloader::ExtractMod(fs::path modPath, fs::path destinationPath, VerifiedModPlatform platform)
+void ModDownloader::ExtractMod(fs::path modPath, fs::path destinationPath = fs::path::path(), VerifiedModPlatform platform = VerifiedModPlatform::Unknown)
 {
 	unzFile file;
 	const std::u8string modPathU8 = modPath.u8string();

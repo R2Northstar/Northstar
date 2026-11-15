@@ -69,6 +69,10 @@ private:
 	 * to the specified `destinationPath`; the way to decompress the archive is
 	 * defined by the `platform` parameter.
 	 *
+	 * {destinationPath} and {platform} parameters are optional; if left empty, this
+	 * method will compute itself the name of the mod through its mod.json file, and
+	 * the destination to extract the mod to.
+	 *
 	 * @param modPath location of the downloaded archive
 	 * @param destinationPath destination of the extraction
 	 * @param platform origin of the downloaded archive
