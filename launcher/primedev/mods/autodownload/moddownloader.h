@@ -49,20 +49,6 @@ private:
 		void* ptr, curl_off_t totalDownloadSize, curl_off_t finishedDownloadSize, curl_off_t totalToUpload, curl_off_t nowUploaded);
 
 	/**
-	 * Downloads a mod archive from distant store.
-	 *
-	 * This rebuilds the URI of the mod archive using both a predefined store URI
-	 * and the mod dependency string from the `verifiedMods` variable, or using
-	 * input mod name as mod dependency string if bypass flag is set up; fetched
-	 * archive is then stored in a temporary location.
-	 *
-	 *
-	 * @param url location of the mod archive to be downloaded
-	 * @returns tuple containing location of the downloaded archive and whether download completed successfully
-	 */
-	std::tuple<fs::path, bool> FetchModFromDistantStore(std::string_view url);
-
-	/**
 	 * Tells if a mod archive has not been corrupted.
 	 *
 	 * The mod validation procedure includes computing the SHA256 hash of the final
@@ -191,10 +177,12 @@ public:
 
 
 	/**
-	 * Downloads a mod with no verification steps.
+	 * Downloads a mod archive from a remote URL.
 	 *
-	 * @param archiveUrl URL of the zip archive to be downloaded
-	 * @returns nothing
-	 **/
-	void DownloadModFromURL(std::string_view archiveUrl);
+	 * That's it, truly.
+	 *
+	 * @param url location of the mod archive to be downloaded
+	 * @returns tuple containing location of the downloaded archive and whether download completed successfully
+	 */
+	std::tuple<fs::path, bool> FetchModFromDistantStore(std::string_view url);
 };

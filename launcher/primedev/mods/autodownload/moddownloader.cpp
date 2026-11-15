@@ -749,12 +749,6 @@ void ModDownloader::DownloadMod(std::string modName, std::string modVersion)
 	requestThread.detach();
 }
 
-void ModDownloader::DownloadModFromURL(std::string archiveUrl)
-{
-	spdlog::info("=> Start installing mod from {}.", archiveUrl);
-}
-
-
 void ModDownloader::CancelDownload()
 {
 	modState.state = ABORTED;
@@ -811,7 +805,7 @@ ADD_SQFUNC("void", NSDownloadModFromUrl, "string url", "", ScriptContext::SERVER
 		return SQRESULT_NULL;
 
 	const SQChar* archiveUrl = g_pSquirrel[context]->getstring(sqvm, 1);
-	g_pModDownloader->DownloadModFromURL(archiveUrl);
+	g_pModDownloader->FetchModFromDistantStore(archiveUrl);
 
 	return SQRESULT_NULL;
 }
