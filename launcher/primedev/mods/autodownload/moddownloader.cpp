@@ -191,7 +191,7 @@ std::string ModDownloader::GetModArchiveName(std::string_view url)
 	return name.substr(charIndex + 10);
 }
 
-std::tuple<fs::path, bool> ModDownloader::FetchModFromDistantStore(std::string_view url)
+std::tuple<fs::path, bool> ModDownloader::FetchModArchive(std::string_view url)
 {
 	// Download destination
 	spdlog::info(std::format("Fetching mod archive from {}", url));
@@ -706,7 +706,7 @@ void ModDownloader::DownloadMod(std::string modName, std::string modVersion)
 			VerifiedModVersion fullVersion = verifiedMods[modName].versions[modVersion];
 			std::string expectedHash = fullVersion.checksum;
 
-			const std::tuple<fs::path, bool> downloadResult = FetchModFromDistantStore(std::string_view(fullVersion.downloadLink));
+			const std::tuple<fs::path, bool> downloadResult = FetchModArchive(std::string_view(fullVersion.downloadLink));
 			archiveLocation = get<0>(downloadResult);
 			bool downloadSuccessful = get<1>(downloadResult);
 
@@ -805,7 +805,7 @@ ADD_SQFUNC("void", NSDownloadModFromUrl, "string url", "", ScriptContext::SERVER
 		return SQRESULT_NULL;
 
 	const SQChar* archiveUrl = g_pSquirrel[context]->getstring(sqvm, 1);
-	g_pModDownloader->FetchModFromDistantStore(archiveUrl);
+	g_pModDownloader->FetchModArchive(archiveUrl);
 
 	return SQRESULT_NULL;
 }

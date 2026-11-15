@@ -184,5 +184,5 @@ public:
 	 * @param url location of the mod archive to be downloaded
 	 * @returns tuple containing location of the downloaded archive and whether download completed successfully
 	 */
-	std::tuple<fs::path, bool> FetchModFromDistantStore(std::string_view url);
+	std::tuple<fs::path, bool> FetchModArchive(std::string_view url);
 };
