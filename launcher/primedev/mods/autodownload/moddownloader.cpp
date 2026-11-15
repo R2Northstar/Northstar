@@ -191,7 +191,7 @@ std::string ModDownloader::GetModArchiveName(std::string url)
 	return name.substr(charIndex + 10);
 }
 
-std::tuple<fs::path, bool> ModDownloader::FetchModFromDistantStore(std::string_view modName, VerifiedModVersion version)
+std::tuple<fs::path, bool> ModDownloader::FetchModFromDistantStore(VerifiedModVersion version)
 {
 	std::string url = version.downloadLink;
 
@@ -708,7 +708,7 @@ void ModDownloader::DownloadMod(std::string modName, std::string modVersion)
 			VerifiedModVersion fullVersion = verifiedMods[modName].versions[modVersion];
 			std::string expectedHash = fullVersion.checksum;
 
-			const std::tuple<fs::path, bool> downloadResult = FetchModFromDistantStore(std::string_view(modName), fullVersion);
+			const std::tuple<fs::path, bool> downloadResult = FetchModFromDistantStore(fullVersion);
 			archiveLocation = get<0>(downloadResult);
 			bool downloadSuccessful = get<1>(downloadResult);
 

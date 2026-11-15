@@ -57,11 +57,10 @@ private:
 	 * archive is then stored in a temporary location.
 	 *
 	 *
-	 * @param modName name of the mod to be downloaded
 	 * @param modVersion version of the mod to be downloaded
 	 * @returns tuple containing location of the downloaded archive and whether download completed successfully
 	 */
-	std::tuple<fs::path, bool> FetchModFromDistantStore(std::string_view modName, VerifiedModVersion modVersion);
+	std::tuple<fs::path, bool> FetchModFromDistantStore(VerifiedModVersion modVersion);
 
 	/**
 	 * Tells if a mod archive has not been corrupted.
