@@ -176,7 +176,7 @@ int ModDownloader::ModFetchingProgressCallback(
 	return 0;
 }
 
-std::string ModDownloader::GetModArchiveName(std::string url)
+std::string ModDownloader::GetModArchiveName(std::string_view url)
 {
 	std::string name = fs::path(url).filename().generic_string();
 	std::string::size_type charIndex = name.find("?");
@@ -191,10 +191,8 @@ std::string ModDownloader::GetModArchiveName(std::string url)
 	return name.substr(charIndex + 10);
 }
 
-std::tuple<fs::path, bool> ModDownloader::FetchModFromDistantStore(VerifiedModVersion version)
+std::tuple<fs::path, bool> ModDownloader::FetchModFromDistantStore(std::string_view url)
 {
-	std::string url = version.downloadLink;
-
 	// Download destination
 	spdlog::info(std::format("Fetching mod archive from {}", url));
 	std::string archiveName = ModDownloader::GetModArchiveName(url);
@@ -708,7 +706,7 @@ void ModDownloader::DownloadMod(std::string modName, std::string modVersion)
 			VerifiedModVersion fullVersion = verifiedMods[modName].versions[modVersion];
 			std::string expectedHash = fullVersion.checksum;
 
-			const std::tuple<fs::path, bool> downloadResult = FetchModFromDistantStore(fullVersion);
+			const std::tuple<fs::path, bool> downloadResult = FetchModFromDistantStore(std::string_view(fullVersion.downloadLink));
 			archiveLocation = get<0>(downloadResult);
 			bool downloadSuccessful = get<1>(downloadResult);
 
