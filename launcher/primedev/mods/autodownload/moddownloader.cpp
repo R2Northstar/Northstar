@@ -39,12 +39,12 @@ ModDownloader::ModDownloader()
 			url = cla.substr(quote1 + 1, quote2);
 		}
 		spdlog::info("Found custom verified mods URL in command line argument: {}", url);
-		modsListUrl = strdup(url.c_str());
+		modsListUrl = _strdup(url.c_str());
 	}
 	else
 	{
 		spdlog::info("Custom verified mods URL not found in command line arguments, using default URL.");
-		modsListUrl = strdup(DEFAULT_MODS_LIST_URL);
+		modsListUrl = _strdup(DEFAULT_MODS_LIST_URL);
 	}
 }
 
@@ -414,7 +414,7 @@ int GetModArchiveSize(unzFile file, unz_global_info64 info)
 }
 
 void ModDownloader::ExtractMod(
-	fs::path modPath, fs::path destinationPath = fs::path::path(), VerifiedModPlatform platform = VerifiedModPlatform::Unknown)
+	fs::path modPath, fs::path destinationPath = fs::path(), VerifiedModPlatform platform = VerifiedModPlatform::Unknown)
 {
 	unzFile file;
 	const std::u8string modPathU8 = modPath.u8string();
