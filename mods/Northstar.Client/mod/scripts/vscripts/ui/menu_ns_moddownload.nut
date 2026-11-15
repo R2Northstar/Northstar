@@ -76,7 +76,7 @@ bool function DownloadMod( RequiredModInfo mod )
 
 		string link = mod.downloadLink.len() > 0 ? mod.downloadLink : "https://example.org/"
 		string message = format( "%s\n\n", Localize( "#UNAPPROVED_MOD_DOWNLOAD_TEXT1" ) )
-		message += format( "^FFFFFF00%s^0 %s v%s\n", Localize( "#UNAPPROVED_MOD_DOWNLOAD_MOD" ), mod.name, mod.version)
+		message += format( "^FFFFFF00%s^0 %s v%s\n", Localize( "#UNAPPROVED_MOD_DOWNLOAD_MOD" ), mod.name, mod.version )
 		message += format( "^FFFFFF00%s^0 ^5588FF00", Localize( "#UNAPPROVED_MOD_DOWNLOAD_LINK" ) )
 		message += link
 		message += "^0\n\n" + Localize( "#UNAPPROVED_MOD_DOWNLOAD_TEXT2" )
