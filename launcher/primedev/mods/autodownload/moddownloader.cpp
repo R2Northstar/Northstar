@@ -654,7 +654,15 @@ void ModDownloader::ExtractMod(
 	modState.state = DONE;
 }
 
-void ModDownloader::DownloadMod(std::string modName, std::string modVersion)
+void ModDownloader::DownloadMod(std::string modIdentifier, std::string modVersion = "")
+{
+	if (modVersion.length() > 0)
+	{
+		DownloadVerifiedMod(modIdentifier, modVersion);
+	}
+}
+
+void ModDownloader::DownloadVerifiedMod(std::string modName, std::string modVersion)
 {
 	// Check if mod can be auto-downloaded
 	if (!IsModAuthorized(std::string_view(modName), std::string_view(modVersion)))

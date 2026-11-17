@@ -96,8 +96,31 @@ private:
 	 */
 	std::string GetModArchiveName(std::string_view url);
 
+	/**
+	 * Downloads a given mod from Thunderstore API to local game profile.
+	 *
+	 * @param modName name of the mod to be downloaded
+	 * @param modVersion version of the mod to be downloaded
+	 * @returns nothing
+	 **/
+	void DownloadVerifiedMod(std::string modName, std::string modVersion);
+
 public:
 	ModDownloader();
+
+	/**
+	 * Entry point of the mod downloading API.
+	 *
+	 * {modVersion} input parameter is optional: is left empty, this will
+	 * assume {modIdentifier} is a URL pointing to a mod archive, and will
+	 * invoke {DownloadUnverifiedMod} method; otherwise, {DownloadVerifiedMod}
+	 * will be executed instead.
+	 *
+	 * @param modIdentifier name or URL of the mod to be downloaded
+	 * @param modVersion version of the mod to be downloaded
+	 * @returns nothing
+	 **/
+	void DownloadMod(std::string modIdentifier, std::string modVersion);
 
 	/**
 	 * Retrieves the verified mods list from the central authority.
@@ -128,15 +151,6 @@ public:
 	 * @returns whether the mod is authorized and can be auto-downloaded
 	 */
 	bool IsModAuthorized(std::string_view modName, std::string_view modVersion);
-
-	/**
-	 * Downloads a given mod from Thunderstore API to local game profile.
-	 *
-	 * @param modName name of the mod to be downloaded
-	 * @param modVersion version of the mod to be downloaded
-	 * @returns nothing
-	 **/
-	void DownloadMod(std::string modName, std::string modVersion);
 
 	enum ModInstallState
 	{
