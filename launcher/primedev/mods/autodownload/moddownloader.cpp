@@ -39,12 +39,12 @@ ModDownloader::ModDownloader()
 			url = cla.substr(quote1 + 1, quote2);
 		}
 		spdlog::info("Found custom verified mods URL in command line argument: {}", url);
-		modsListUrl = strdup(url.c_str());
+		modsListUrl = _strdup(url.c_str());
 	}
 	else
 	{
 		spdlog::info("Custom verified mods URL not found in command line arguments, using default URL.");
-		modsListUrl = strdup(DEFAULT_MODS_LIST_URL);
+		modsListUrl = _strdup(DEFAULT_MODS_LIST_URL);
 	}
 }
 
@@ -176,7 +176,7 @@ int ModDownloader::ModFetchingProgressCallback(
 	return 0;
 }
 
-std::string ModDownloader::GetModArchiveName(std::string url)
+std::string ModDownloader::GetModArchiveName(std::string_view url)
 {
 	std::string name = fs::path(url).filename().generic_string();
 	std::string::size_type charIndex = name.find("?");
@@ -191,10 +191,8 @@ std::string ModDownloader::GetModArchiveName(std::string url)
 	return name.substr(charIndex + 10);
 }
 
-std::tuple<fs::path, bool> ModDownloader::FetchModFromDistantStore(std::string_view modName, VerifiedModVersion version)
+std::tuple<fs::path, bool> ModDownloader::FetchModArchive(std::string_view url)
 {
-	std::string url = version.downloadLink;
-
 	// Download destination
 	spdlog::info(std::format("Fetching mod archive from {}", url));
 	std::string archiveName = ModDownloader::GetModArchiveName(url);
@@ -415,7 +413,8 @@ int GetModArchiveSize(unzFile file, unz_global_info64 info)
 	return totalSize;
 }
 
-void ModDownloader::ExtractMod(fs::path modPath, fs::path destinationPath, VerifiedModPlatform platform)
+void ModDownloader::ExtractMod(
+	fs::path modPath, fs::path destinationPath = fs::path(), VerifiedModPlatform platform = VerifiedModPlatform::Unknown)
 {
 	unzFile file;
 	const std::u8string modPathU8 = modPath.u8string();
@@ -655,7 +654,15 @@ void ModDownloader::ExtractMod(fs::path modPath, fs::path destinationPath, Verif
 	modState.state = DONE;
 }
 
-void ModDownloader::DownloadMod(std::string modName, std::string modVersion)
+void ModDownloader::DownloadMod(std::string modIdentifier, std::string modVersion = "")
+{
+	if (modVersion.length() > 0)
+	{
+		DownloadVerifiedMod(modIdentifier, modVersion);
+	}
+}
+
+void ModDownloader::DownloadVerifiedMod(std::string modName, std::string modVersion)
 {
 	// Check if mod can be auto-downloaded
 	if (!IsModAuthorized(std::string_view(modName), std::string_view(modVersion)))
@@ -708,7 +715,7 @@ void ModDownloader::DownloadMod(std::string modName, std::string modVersion)
 			VerifiedModVersion fullVersion = verifiedMods[modName].versions[modVersion];
 			std::string expectedHash = fullVersion.checksum;
 
-			const std::tuple<fs::path, bool> downloadResult = FetchModFromDistantStore(std::string_view(modName), fullVersion);
+			const std::tuple<fs::path, bool> downloadResult = FetchModArchive(std::string_view(fullVersion.downloadLink));
 			archiveLocation = get<0>(downloadResult);
 			bool downloadSuccessful = get<1>(downloadResult);
 

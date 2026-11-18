@@ -412,5 +412,11 @@ Press Yes if you agree to this. This choice can be changed in the mods menu at a
 		"MOD_CORRUPTED"						"Downloaded archive checksum does not match verified signature."
 		"NO_DISK_SPACE_AVAILABLE"			"There is not enough space on your disk."
 		"MOD_FETCHING_FAILED_GENERAL"		"Mod extraction failed. Check logs for more details."
+		"UNAPPROVED_MOD_DOWNLOAD_TITLE"		"Download mod?"
+		"UNAPPROVED_MOD_DOWNLOAD_TEXT1"		"This mod was not approved by the community, and thus might contain malicious content."
+		"UNAPPROVED_MOD_DOWNLOAD_MOD"		"Mod:"
+		"UNAPPROVED_MOD_DOWNLOAD_LINK"		"Download link:"
+		"UNAPPROVED_MOD_DOWNLOAD_TEXT2"		"Do you want to download this mod?"
+		"UNAPPROVED_MOD_DOWNLOAD_CHECK"		"Open mod page in browser"
 	}
 }

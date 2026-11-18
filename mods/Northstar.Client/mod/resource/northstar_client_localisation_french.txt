@@ -390,5 +390,11 @@ Choisissez Oui si vous êtes d'accord. Ce choix peut être modifié à tout inst
 		"MODE_MENU_UNKNOWN"        "Inconnu"
 		"MODE_MENU_SWITCH"        "Filtre"
 		"MODE_MENU_TITAN_ONLY"        "Titan Uniquement"
+		"UNAPPROVED_MOD_DOWNLOAD_TITLE"		"Télécharger le mod ?"
+		"UNAPPROVED_MOD_DOWNLOAD_TEXT1"		"Ce mod n'a pas été approuvé par la communauté, et peut donc contenir du code malicieux."
+		"UNAPPROVED_MOD_DOWNLOAD_MOD"		"Mod :"
+		"UNAPPROVED_MOD_DOWNLOAD_LINK"		"Lien :"
+		"UNAPPROVED_MOD_DOWNLOAD_TEXT2"		"Voulez-vous télécharger ce mod ?"
+		"UNAPPROVED_MOD_DOWNLOAD_CHECK"		"Ouvrir la page web"
 	}
 }

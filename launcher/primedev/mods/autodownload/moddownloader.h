@@ -49,21 +49,6 @@ private:
 		void* ptr, curl_off_t totalDownloadSize, curl_off_t finishedDownloadSize, curl_off_t totalToUpload, curl_off_t nowUploaded);
 
 	/**
-	 * Downloads a mod archive from distant store.
-	 *
-	 * This rebuilds the URI of the mod archive using both a predefined store URI
-	 * and the mod dependency string from the `verifiedMods` variable, or using
-	 * input mod name as mod dependency string if bypass flag is set up; fetched
-	 * archive is then stored in a temporary location.
-	 *
-	 *
-	 * @param modName name of the mod to be downloaded
-	 * @param modVersion version of the mod to be downloaded
-	 * @returns tuple containing location of the downloaded archive and whether download completed successfully
-	 */
-	std::tuple<fs::path, bool> FetchModFromDistantStore(std::string_view modName, VerifiedModVersion modVersion);
-
-	/**
 	 * Tells if a mod archive has not been corrupted.
 	 *
 	 * The mod validation procedure includes computing the SHA256 hash of the final
@@ -78,11 +63,25 @@ private:
 	bool IsModLegit(fs::path modPath, std::string_view expectedChecksum);
 
 	/**
+	 * Downloads a mod archive from a remote URL.
+	 *
+	 * That's it, truly.
+	 *
+	 * @param url location of the mod archive to be downloaded
+	 * @returns tuple containing location of the downloaded archive and whether download completed successfully
+	 */
+	std::tuple<fs::path, bool> FetchModArchive(std::string_view url);
+
+	/**
 	 * Extracts a mod archive to the game folder.
 	 *
 	 * This extracts a downloaded mod archive from its original location, `modPath`,
 	 * to the specified `destinationPath`; the way to decompress the archive is
 	 * defined by the `platform` parameter.
+	 *
+	 * {destinationPath} and {platform} parameters are optional; if left empty, this
+	 * method will compute itself the name of the mod through its mod.json file, and
+	 * the destination to extract the mod to.
 	 *
 	 * @param modPath location of the downloaded archive
 	 * @param destinationPath destination of the extraction
@@ -105,10 +104,33 @@ private:
 	 * @param url URL from which to extract archive file name
 	 * @returns name of the archive to be downloaded
 	 */
-	std::string GetModArchiveName(std::string url);
+	std::string GetModArchiveName(std::string_view url);
+
+	/**
+	 * Downloads a given mod from Thunderstore API to local game profile.
+	 *
+	 * @param modName name of the mod to be downloaded
+	 * @param modVersion version of the mod to be downloaded
+	 * @returns nothing
+	 **/
+	void DownloadVerifiedMod(std::string modName, std::string modVersion);
 
 public:
 	ModDownloader();
+
+	/**
+	 * Entry point of the mod downloading API.
+	 *
+	 * {modVersion} input parameter is optional: is left empty, this will
+	 * assume {modIdentifier} is a URL pointing to a mod archive, and will
+	 * invoke {DownloadUnverifiedMod} method; otherwise, {DownloadVerifiedMod}
+	 * will be executed instead.
+	 *
+	 * @param modIdentifier name or URL of the mod to be downloaded
+	 * @param modVersion version of the mod to be downloaded
+	 * @returns nothing
+	 **/
+	void DownloadMod(std::string modIdentifier, std::string modVersion);
 
 	/**
 	 * Retrieves the verified mods list from the central authority.
@@ -139,15 +161,6 @@ public:
 	 * @returns whether the mod is authorized and can be auto-downloaded
 	 */
 	bool IsModAuthorized(std::string_view modName, std::string_view modVersion);
-
-	/**
-	 * Downloads a given mod from Thunderstore API to local game profile.
-	 *
-	 * @param modName name of the mod to be downloaded
-	 * @param modVersion version of the mod to be downloaded
-	 * @returns nothing
-	 **/
-	void DownloadMod(std::string modName, std::string modVersion);
 
 	enum ModInstallState
 	{
