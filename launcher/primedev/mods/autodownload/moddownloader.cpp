@@ -808,17 +808,6 @@ ADD_SQFUNC("void", NSDownloadMod, "string name, string version", "", ScriptConte
 	return SQRESULT_NULL;
 }
 
-ADD_SQFUNC("void", NSDownloadModFromUrl, "string url", "", ScriptContext::SERVER | ScriptContext::CLIENT | ScriptContext::UI)
-{
-	if (!g_pModDownloader)
-		return SQRESULT_NULL;
-
-	const SQChar* archiveUrl = g_pSquirrel[context]->getstring(sqvm, 1);
-	g_pModDownloader->FetchModArchive(archiveUrl);
-
-	return SQRESULT_NULL;
-}
-
 ADD_SQFUNC("ModInstallState", NSGetModInstallState, "", "", ScriptContext::SERVER | ScriptContext::CLIENT | ScriptContext::UI)
 {
 	g_pSquirrel[context]->pushnewstructinstance(sqvm, 4);

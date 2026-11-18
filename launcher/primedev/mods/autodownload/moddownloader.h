@@ -63,6 +63,16 @@ private:
 	bool IsModLegit(fs::path modPath, std::string_view expectedChecksum);
 
 	/**
+	 * Downloads a mod archive from a remote URL.
+	 *
+	 * That's it, truly.
+	 *
+	 * @param url location of the mod archive to be downloaded
+	 * @returns tuple containing location of the downloaded archive and whether download completed successfully
+	 */
+	std::tuple<fs::path, bool> FetchModArchive(std::string_view url);
+
+	/**
 	 * Extracts a mod archive to the game folder.
 	 *
 	 * This extracts a downloaded mod archive from its original location, `modPath`,
@@ -192,14 +202,4 @@ public:
 	 * @returns nothing
 	 */
 	void CancelDownload();
-
-	/**
-	 * Downloads a mod archive from a remote URL.
-	 *
-	 * That's it, truly.
-	 *
-	 * @param url location of the mod archive to be downloaded
-	 * @returns tuple containing location of the downloaded archive and whether download completed successfully
-	 */
-	std::tuple<fs::path, bool> FetchModArchive(std::string_view url);
 };
