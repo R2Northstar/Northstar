@@ -4016,10 +4016,11 @@ int function GameTime_TimeLimitSeconds()
 	}
 	else
 	{
-		if ( IsSuddenDeathGameMode() && GetGameState() == eGameState.SuddenDeath )
-			return ( GetTimeLimit_ForGameMode() * 60.0 ).tointeger() + ( GetSuddenDeathTimeLimit_ForGameMode() * 60.0 ).tointeger()
-		else
-			return ( GetTimeLimit_ForGameMode() * 60.0 ).tointeger()
+		// handled by GetTimeLimit_ForGameMode()
+		// if ( IsSuddenDeathGameMode() && GetGameState() == eGameState.SuddenDeath )
+		// 	return ( GetTimeLimit_ForGameMode() * 60.0 ).tointeger() + ( GetSuddenDeathTimeLimit_ForGameMode() * 60.0 ).tointeger()
+		// else
+		return ( GetTimeLimit_ForGameMode() * 60.0 ).tointeger()
 	}
 	unreachable
 }
@@ -4043,12 +4044,10 @@ int function GameTime_TimeLimitMinutes()
 
 int function GameTime_TimeLeftMinutes()
 {
-	if ( GetGameState() == eGameState.WaitingForPlayers )
-		return 0
 	if ( GetGameState() == eGameState.Prematch )
 		return int( ( expect float( GetServerVar( "gameStartTime" ) ) - Time() ) / 60.0 )
 
-	return floor( GameTime_PlayingTime() / 60 ).tointeger()
+	return floor( GameTime_TimeLimitMinutes() - GameTime_PlayingTime() / 60 ).tointeger()
 }
 
 int function GameTime_TimeLeftSeconds()
@@ -4056,7 +4055,7 @@ int function GameTime_TimeLeftSeconds()
 	if ( GetGameState() == eGameState.Prematch )
 		return int( expect float( GetServerVar( "gameStartTime" ) ) - Time() )
 
-	return GameTime_PlayingTime().tointeger()
+	return floor( GameTime_TimeLimitSeconds() - GameTime_PlayingTime() ).tointeger()
 }
 
 // WARN: this function includes WaitingForPlayers and Prematch duration!
@@ -4074,7 +4073,13 @@ int function GameTime_Minutes()
 // this function only counts the time limit during eGameState.Playing
 float function GameTime_PlayingTime()
 {
+	return GameTime_PlayingTimeSince( Time() )
+}
+
+float function GameTime_PlayingTimeSince( float sinceTime )
+{
 	int gameState = GetGameState()
+
 	if ( gameState < eGameState.Playing )
 		return 0
 
@@ -4083,15 +4088,16 @@ float function GameTime_PlayingTime()
 		if ( gameState > eGameState.SuddenDeath )
 			return ( expect float( GetServerVar( "roundEndTime" ) ) - expect float( GetServerVar( "roundStartTime" ) ) )
 		else
-			return floor( expect float( GetServerVar( "roundEndTime" ) ) - Time() )
+			return sinceTime - expect float( GetServerVar( "roundStartTime" ) )
 	}
 	else
 	{
 		if ( gameState > eGameState.SuddenDeath )
 			return ( expect float( GetServerVar( "gameEndTime" ) ) - expect float( GetServerVar( "gameStartTime" ) ) )
 		else
-			return floor( expect float( GetServerVar( "gameEndTime" ) ) - Time() )
+			return sinceTime - expect float( GetServerVar( "gameStartTime" ) )
 	}
+
 	unreachable
 }
 
