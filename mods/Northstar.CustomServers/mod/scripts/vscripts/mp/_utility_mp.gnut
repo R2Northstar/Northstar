@@ -1,6 +1,7 @@
 global function Utility_MP_Init
 global function ClientCommand_OnDevnetBugScreenshot
 global function SafeForTitanFall
+global function GetTimeLimit_ForGameMode
 
 void function Utility_MP_Init()
 {
@@ -14,4 +15,22 @@ bool function ClientCommand_OnDevnetBugScreenshot( entity player, array<string> 
 bool function SafeForTitanFall( vector dropPoint )
 {
 	return true
+}
+
+float function GetTimeLimit_ForGameMode()
+{
+	#if DEV
+		if ( level.devForcedTimeLimit )
+			return 0.1
+	#endif
+
+	if ( GameState_GetTimeLimitOverride() >= 0 )
+		return GameState_GetTimeLimitOverride()
+
+	float timeLimit = GetCurrentPlaylistVarFloat( "timelimit", -1 )
+
+	if ( timeLimit == -1 )
+		timeLimit = float( GameMode_GetTimeLimit( GAMETYPE ) ) // not a float for some reason?
+
+	return timeLimit
 }

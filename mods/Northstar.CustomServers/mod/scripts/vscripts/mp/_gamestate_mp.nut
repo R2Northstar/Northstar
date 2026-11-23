@@ -21,10 +21,10 @@ global function AddTeamScore
 global function GetWinningTeamWithFFASupport
 
 global function GameState_GetTimeLimitOverride
+global function GameState_SetTimeLimitOverride
 global function IsRoundBasedGameOver
 global function ShouldRunEvac
 global function GiveTitanToPlayer
-global function GetTimeLimit_ForGameMode
 
 struct
 {
@@ -58,6 +58,7 @@ struct
 
 	array<void functionref()> roundEndCleanupCallbacks
 	bool functionref( entity victim, entity attacker, var damageInfo, bool isRoundEnd ) shouldTryUseProjectileReplayCallback
+	float timeLimitOverride = -1
 } file
 
 /*
@@ -70,6 +71,8 @@ struct
 
 void function PIN_GameStart()
 {
+	RegisterServerVarChangeCallback( "gameEndTime", GameEndTimeVarChanged )
+	RegisterServerVarChangeCallback( "roundEndTime", RoundEndTimeVarChanged )
 	// todo: using the pin telemetry function here, weird and was done veeery early on before i knew how this all worked, should use a different one
 
 	// called from InitGameState
@@ -95,6 +98,26 @@ void function PIN_GameStart()
 	AddCallback_EntityChangedTeam( "player", OnPlayerChangedTeam )
 
 	RegisterSignal( "CleanUpEntitiesForRoundEnd" )
+}
+
+void function GameEndTimeVarChanged()
+{
+	if ( GetGameState() > eGameState.SuddenDeath )
+		return
+
+	float startTime = GetServerVar( "gameStartTime" ) != null ? ( expect float( GetServerVar( "gameStartTime" ) ) - Time() ) : 0.0
+
+	file.timeLimitOverride = ( ( expect float( GetServerVar( "gameEndTime" ) ) - Time() ) - startTime ) / 60.0
+}
+
+void function RoundEndTimeVarChanged()
+{
+	if ( GetGameState() > eGameState.SuddenDeath )
+		return
+
+	float startTime = GetServerVar( "roundStartTime" ) != null ? ( expect float( GetServerVar( "roundStartTime" ) ) - Time() ) : 0.0
+
+	file.timeLimitOverride = ( ( expect float( GetServerVar( "roundEndTime" ) ) - Time() ) - startTime ) / 60.0
 }
 
 void function GameState_EntitiesDidLoad()
@@ -363,8 +386,11 @@ void function GameStateEnter_Prematch()
 	if ( file.switchSidesBased )
 		timeLimit /= 2 // endtime is half of total per side
 
+	if ( IsRoundBased() )
+		timeLimit = int( GameMode_GetRoundTimeLimit( GAMETYPE ) * 60 )
+
 	SetServerVar( "gameEndTime", Time() + timeLimit + ClassicMP_GetIntroLength() )
-	SetServerVar( "roundEndTime", Time() + ClassicMP_GetIntroLength() + GameMode_GetRoundTimeLimit( GAMETYPE ) * 60 )
+	SetServerVar( "roundEndTime", Time() + timeLimit + ClassicMP_GetIntroLength() )
 
 	if ( !GetClassicMPMode() && !ClassicMP_ShouldTryIntroAndEpilogueWithoutClassicMP() )
 		thread StartGameWithoutClassicMP()
@@ -1013,7 +1039,12 @@ int function GetWinningTeamWithFFASupport()
 
 float function GameState_GetTimeLimitOverride()
 {
-	return 100
+	return file.timeLimitOverride
+}
+
+void function GameState_SetTimeLimitOverride( float timeLimitOverride )
+{
+	file.timeLimitOverride = timeLimitOverride
 }
 
 bool function IsRoundBasedGameOver()
@@ -1028,15 +1059,6 @@ bool function ShouldRunEvac()
 
 void function GiveTitanToPlayer( entity player )
 {
-}
-
-float function GetTimeLimit_ForGameMode()
-{
-	string mode = GameRules_GetGameMode()
-	string playlistString = "timelimit"
-
-	// default to 10 mins, because that seems reasonable
-	return GetCurrentPlaylistVarFloat( playlistString, 10 )
 }
 
 void function DialoguePlayNormal()
